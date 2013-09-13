@@ -1,7 +1,17 @@
-NXVM PROJECT
-============
-#Introduction
-#Architecture
-#Manual
-#CodeReview
-#Summary
+Neko's x86 Virtual Machine
+A light-weight PC Emulator
+
+Author: Xu Ha (cshaxu@gatech.edu)
+
+This project includes an integrated implementation of a light-weight x86 PC emulator.
+Components are:
+Main Entry and Version Label (src/main.c)
+Virtual Machine Console (src/console.ch)
+Debugger (src/vmachine/debug/debug.ch)
+Recorder (src/vmachine/debug/record.ch)
+i386 Assembler (src/vmachine/debug/aasm32.ch)
+i386 Disassembler (src/vmachine/debug/dasm32.ch)
+Platform-related Components (src/vmachine/system/*.ch)
+Basic I/O System (src/vmacheine/bios/*.ch)'
+Hardware Emulation Modules (src/vmachine/v*.ch)
+
