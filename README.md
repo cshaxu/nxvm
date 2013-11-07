@@ -19,9 +19,9 @@ Environment
  In the previous mode, the keyboard and display are emulated using Win32 Console APIs, while in the later mode, emulator accepts input and provides output using a Window controlled by message loop.
 
  The Win32 App Window mode is preferred for two reasons:
- 
-0. The bitmap font used in MS-DOS is applied in Win32 App Window Mode.
-1. The NXVM console window still exists and won't be overrided by NXVM display.
+
+1. The bitmap font used in MS-DOS is applied in Win32 App Window Mode.
+2. The NXVM console window still exists and won't be overrided by NXVM display.
 
  Linux: The emulator runs in a terminal window of at least 80x25 size. It works like Win32 Console mode. It has some known issues which are not yet fixed.
  
@@ -35,11 +35,11 @@ Compiling
  
  Create an empty Win32 Console project and add all .c and .h files in the folders src/ and src/vmachine. Then remove the following files:
 
-0. src/vmachine/vcpuapi.h
-1. src/vmachine/vcpuapi.cc
-2. src/vmachine/vcpuins_i8086.c
-3. src/vmachine/linux.c
+1. src/vmachine/vcpuapi.h
+2. src/vmachine/vcpuapi.cc
+3. src/vmachine/vcpuins_i8086.c
 4. src/vmachine/linux.h
+5. src/vmachine/linux.c
 
  Linux: makefile is provided in src/, and could be compiled by 'make' command.
  Before compiling, you need to install ncurses and pthread libraries.
@@ -58,11 +58,12 @@ Components
 ----------
 
 ### Emulator Itself
-0. Main Entry and Version Label (src/main.c)
-1. Virtual Machine Console (src/console.ch)
-2. Platform-related Components (src/vmachine/system/*.ch)
-3. Basic I/O System (src/vmacheine/bios/*.ch)
-4. Hardware Emulation Modules (src/vmachine/v*.ch)
+
+1. Main Entry and Version Label (src/main.c)
+2. Virtual Machine Console (src/console.ch)
+3. Platform-related Components (src/vmachine/system/*.ch)
+4. Basic I/O System (src/vmacheine/bios/*.ch)
+5. Hardware Emulation Modules (src/vmachine/v*.ch)
 
  The emulator is basically divided into 4 parts: VM console, Hardware Emulation, BIOS and Platform-related Part.
 
@@ -73,8 +74,7 @@ Components
 
  The emulator is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM.
 
-### Debugger
-0. Debugger (src/vmachine/debug/debug.ch)
+### Debugger (src/vmachine/debug/debug.ch)
 
  The debugger is used to test and debug the guest operating system running inside NXVM.
 
@@ -82,15 +82,15 @@ Components
 
  NXVM has both 16-bit debugger and 32-bit debugger. The command usage of 16-bit debugger is almost the same as the MS-DOS debugger, and all the memory addresses are represented in physical address. The 32-bit debugger uses linear address format. The help command '?' will introduce all available commands supported.
 
-### Recorder
-0. Recorder (src/vmachine/debug/record.ch)
+### Recorder (src/vmachine/debug/record.ch)
 
  The recorder provides various modes to dump CPU register values and read/write operations at each CPU instruction.
 
 ### Assembler/Disassembler
-0. i386 Assembler (src/vmachine/debug/aasm32.ch)
-1. i386 Disassembler (src/vmachine/debug/dasm32.ch)
- 
+
+1. i386 Assembler (src/vmachine/debug/aasm32.ch)
+2. i386 Disassembler (src/vmachine/debug/dasm32.ch)
+
  The emulator includes an integral assembler and disassembler. They translates Assembly codes from/to machine codes. All Intel-format x86 instructions are supported.
  The assembler and disassembler are used as a part of debugger, which provides readable instructions to user.
 
@@ -101,3 +101,5 @@ Snapshots
 ![MS-DOS Editor in Linux Terminal](images/3.jpg)
 ![MS-DOS running in HMA](images/4.jpg)
 ![Type Tutor](images/5.jpg)
+![Tetris](images/6.jpg)
+![Win32 App Window Mode](images/7.jpg)
