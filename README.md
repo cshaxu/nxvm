@@ -6,7 +6,7 @@ Author: Xu Ha (cshaxu@gatech.edu)
 
 Introduction
 ------------
- This project includes an integrated implementation of a light-weight x86 PC emulator.
+ This project includes an integrated implementation of a light-weight x86 PC emulator, which is written in 37,000 lines of C codes and a few Assembly codes.
 
  It emulated a PC machine, including an Intel 80386 CPU and all other necessary devices, such as RAM, DMA, PIC, Floppy, Hard Drive, Keyboard, Display and so on.
 
@@ -52,7 +52,8 @@ Components
  The emulator includes an integral assembler and disassembler. They translates Assembly codes from/to machine codes. All Intel-format x86 instructions are supported.
  The assembler and disassembler are used as a part of debugger, which provides readable instructions to user.
 
-### Environment
+Environment
+-----------
 
  Windows: The emulator provides two modes of display: Win32 Console and Win32 App Window.
  In the previous mode, the keyboard and display are emulated using Win32 Console APIs, while in the later mode, emulator accepts input and provides output using a Window controlled by message loop.
@@ -63,7 +64,8 @@ Components
 
  Linux: The emulator runs in a terminal window of at least 80x25 size. It works like Win32 Console mode. It has some known issues which are not yet fixed.
  
-### Compiling
+Compiling
+---------
 
  The compiling options are defined in src/vmachine/vglobal.h, to specify 32/64 bit compilation. It also has a macro to specify the platform WIN32/LINUX.
  In most cases, user doesn't need to change anything there.
@@ -79,6 +81,16 @@ Components
 
  Linux: makefile is provided in src/, and could be compiled by 'make' command.
  Before compiling, you need to install ncurses and pthread libraries.
+
+Quick Start
+-----------
+1. Prepare for a 1.44MB floppy disk image file as the startup disk
+2. Start NXVM and type 'help' for available commands
+3. Type 'device fdd insrt <filename>' to laod the floppy disk image into NXVM floppy drive
+4. Type 'mode' to switch display mode(Win32 Console/Win32 App Window)
+5. Type 'info' to learn about emulator status
+6. Type 'start' to start machine
+7. Type 'stop' under Win32 App Window mode, or press 'CTRL+F9' at anytime to stop emulation. The emulation can be resumed by 'resume' command in NXVM console.
 
 Snapshots
 ---------
