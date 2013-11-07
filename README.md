@@ -19,6 +19,7 @@ Environment
  In the previous mode, the keyboard and display are emulated using Win32 Console APIs, while in the later mode, emulator accepts input and provides output using a Window controlled by message loop.
 
  The Win32 App Window mode is preferred for two reasons:
+ 
 0. The bitmap font used in MS-DOS is applied in Win32 App Window Mode.
 1. The NXVM console window still exists and won't be overrided by NXVM display.
 
@@ -33,6 +34,7 @@ Compiling
  Windows: IDE is MS Visual Studio 2008 or higher.
  
  Create an empty Win32 Console project and add all .c and .h files in the folders src/ and src/vmachine. Then remove the following files:
+
 0. src/vmachine/vcpuapi.h
 1. src/vmachine/vcpuapi.cc
 2. src/vmachine/vcpuins_i8086.c
