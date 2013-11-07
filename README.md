@@ -2,7 +2,7 @@ Neko's x86 Virtual Machine
 A light-weight pc emulator
 ==========================
 
-Author: `Xu Ha` (cshaxu@gatech.edu)
+Author: Xu Ha (cshaxu@gatech.edu)
 
 Introduction
 ------------
@@ -23,11 +23,12 @@ Components
  i386 Assembler (src/vmachine/debug/aasm32.ch)
  i386 Disassembler (src/vmachine/debug/dasm32.ch)
  Platform-related Components (src/vmachine/system/*.ch)
- Basic I/O System (src/vmacheine/bios/*.ch)'
+ Basic I/O System (src/vmacheine/bios/*.ch)
  Hardware Emulation Modules (src/vmachine/v*.ch)
 
 ### Emulator Itself
  The emulator is basically divided into 4 parts: VM console, Hardware Emulation, BIOS and Platform-related Part.
+
  VM console provides a command-line interface which accepts user input and provides machine info.
  Hardware Emulation is the "hardware" part, which provides the hardware logic of all the devices emulated.
  BIOS is the "software" part, which provides POST and interrupt services routines.
@@ -48,32 +49,9 @@ Components
 ### Assembler/Disassembler
  The emulator includes an integral assembler and disassembler. They translates Assembly codes from/to machine codes. All Intel-format x86 instructions are supported.
  The assembler and disassembler are used as a part of debugger, which provides readable instructions to user.
-
-
-[Click Here to View Demo. ](http://globus-search.appspot.com)
-`Spring 2013`
-
-## _Skills_
-    
-    Language: Java
-    Web: HTML, CSS, Servlet, JSP, jQuery, AJAX
-    Cloud: Hadoop, MapReduce, Amazon EC2, Amazon EMR, FreePastry
-    Database: Amazon S3, Berkeley DB
-    
-
-## _Contribution_
-1. Developed a scalable, Google-style crawler that distributed requests across multiple crawling peers over Pastry nodes. 
-2. Developed a TF-IDF indexer for inverted index computation and a PageRank engine for link analysis based on MapReduce. 
-3. Improved search relevancy by weighting ten ranking parameters, utilizing AJAX feedback and SVM classifier for tuning.
-4. Implemented features for fault tolerance with Berkeley DB revert, RESTful web services with Yahoo, Amazon, YouTube, Yelp, Wiki, MaxMind, EBay API.
-
-
-## _About_
-* Course: `CIS 555, Internet & Web Systems, Spring 2013, University of Pennsylvania`
-* Teamwork: `Yayang Tian, Michael Collis, Angela Wu, Krishna Choksi`
-
-## 
-## _Snapshots_
+ 
+Snapshots
+---------
 ![index.html](Snapshots/index.png)
 ![search.html](Snapshots/search.png)
 ![video.html](Snapshots/video.png)
