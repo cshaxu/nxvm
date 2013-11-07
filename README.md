@@ -96,7 +96,8 @@ Components
 
 Snapshots
 ---------
-![index.html](Snapshots/index.png)
-![search.html](Snapshots/search.png)
-![video.html](Snapshots/video.png)
-![image.html](Snapshots/image.png)
+![MS-DOS running in Win32 Console](images/1.jpg)
+![MS-DOS running in Linux Terminal](images/2.jpg)
+![MS-DOS Editor in Linux Terminal](images/3.jpg)
+![MS-DOS running in HMA](images/4.jpg)
+![Type Tutor](images/5.jpg)
