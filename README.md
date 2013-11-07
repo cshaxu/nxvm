@@ -51,7 +51,35 @@ Components
  
  The emulator includes an integral assembler and disassembler. They translates Assembly codes from/to machine codes. All Intel-format x86 instructions are supported.
  The assembler and disassembler are used as a part of debugger, which provides readable instructions to user.
+
+### Environment
+
+ Windows: The emulator provides two modes of display: Win32 Console and Win32 App Window.
+ In the previous mode, the keyboard and display are emulated using Win32 Console APIs, while in the later mode, emulator accepts input and provides output using a Window controlled by message loop.
+
+ The Win32 App Window mode is preferred for two reasons:
+0. The bitmap font used in MS-DOS is applied in Win32 App Window Mode.
+1. The NXVM console window still exists and won't be overrided by NXVM display.
+
+ Linux: The emulator runs in a terminal window of at least 80x25 size. It works like Win32 Console mode. It has some known issues which are not yet fixed.
  
+### Compiling
+
+ The compiling options are defined in src/vmachine/vglobal.h, to specify 32/64 bit compilation. It also has a macro to specify the platform WIN32/LINUX.
+ In most cases, user doesn't need to change anything there.
+
+ Windows: IDE is MS Visual Studio 2008 or higher.
+ 
+ Create an empty Win32 Console project and add all .c and .h files in the folders src/ and src/vmachine. Then remove the following files:
+0. src/vmachine/vcpuapi.h
+1. src/vmachine/vcpuapi.cc
+2. src/vmachine/vcpuins_i8086.c
+3. src/vmachine/linux.c
+4. src/vmachine/linux.h
+
+ Linux: makefile is provided in src/, and could be compiled by 'make' command.
+ Before compiling, you need to install ncurses and pthread libraries.
+
 Snapshots
 ---------
 ![index.html](Snapshots/index.png)
