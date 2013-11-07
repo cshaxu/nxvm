@@ -1,6 +1,7 @@
 Neko's x86 Virtual Machine
 ==========================
 A light-weight pc emulator
+
 Author: Xu Ha (cshaxu@gatech.edu)
 
 Introduction
@@ -13,19 +14,14 @@ Introduction
 
 Components
 ----------
- NXVM includes the following modules:
-
- Main Entry and Version Label (src/main.c)
- Virtual Machine Console (src/console.ch)
- Debugger (src/vmachine/debug/debug.ch)
- Recorder (src/vmachine/debug/record.ch)
- i386 Assembler (src/vmachine/debug/aasm32.ch)
- i386 Disassembler (src/vmachine/debug/dasm32.ch)
- Platform-related Components (src/vmachine/system/*.ch)
- Basic I/O System (src/vmacheine/bios/*.ch)
- Hardware Emulation Modules (src/vmachine/v*.ch)
 
 ### Emulator Itself
+0.Main Entry and Version Label (src/main.c)
+1.Virtual Machine Console (src/console.ch)
+2.Platform-related Components (src/vmachine/system/*.ch)
+3.Basic I/O System (src/vmacheine/bios/*.ch)
+4.Hardware Emulation Modules (src/vmachine/v*.ch)
+
  The emulator is basically divided into 4 parts: VM console, Hardware Emulation, BIOS and Platform-related Part.
 
  VM console provides a command-line interface which accepts user input and provides machine info.
@@ -36,6 +32,8 @@ Components
  The emulator is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM.
 
 ### Debugger
+0.Debugger (src/vmachine/debug/debug.ch)
+
  The debugger is used to test and debug the guest operating system running inside NXVM.
 
  User may print/modify CPU registers, print/modify/search/compare/fill/watch RAM area, operate device through I/O ports, trace/dump CPU instructions and set breakpoints.
@@ -43,9 +41,14 @@ Components
  NXVM has both 16-bit debugger and 32-bit debugger. The command usage of 16-bit debugger is almost the same as the MS-DOS debugger, and all the memory addresses are represented in physical address. The 32-bit debugger uses linear address format. The help command '?' will introduce all available commands supported.
 
 ### Recorder
+0.Recorder (src/vmachine/debug/record.ch)
+
  The recorder provides various modes to dump CPU register values and read/write operations at each CPU instruction.
 
 ### Assembler/Disassembler
+0.i386 Assembler (src/vmachine/debug/aasm32.ch)
+1.i386 Disassembler (src/vmachine/debug/dasm32.ch)
+ 
  The emulator includes an integral assembler and disassembler. They translates Assembly codes from/to machine codes. All Intel-format x86 instructions are supported.
  The assembler and disassembler are used as a part of debugger, which provides readable instructions to user.
  
