@@ -34,12 +34,13 @@ The compiling options are defined in src/vmachine/vglobal.h, to specify 32/64 bi
 
 ###Windows
 IDE is MS Visual Studio 2008 or higher.  
-Create an empty Win32 Console project and add all .c and .h files in the folders src/ and src/vmachine. Then remove the following files:  
-1. src/vmachine/vcpuapi.h  
-2. src/vmachine/vcpuapi.cc  
-3. src/vmachine/vcpuins_i8086.c  
-4. src/vmachine/linux.h  
-5. src/vmachine/linux.c  
+Create an empty Win32 Console project and add all .c and .h files in the folders src/ and src/vmachine.  
+Then remove the following files:  
+- src/vmachine/vcpuapi.h  
+- src/vmachine/vcpuapi.cc  
+- src/vmachine/vcpuins_i8086.c  
+- src/vmachine/linux.h  
+- src/vmachine/linux.c  
 
 ###Linux
 makefile is provided in src/, and could be compiled by 'make' command.  
@@ -58,11 +59,11 @@ Quick Start
 Components
 ----------
 ### Emulator Itself
-1. Main Entry and Version Label (src/main.c)  
-2. Virtual Machine Console (src/console.ch)  
-3. Platform-related Components (src/vmachine/system/*.ch)  
-4. Basic I/O System (src/vmacheine/bios/*.ch)  
-5. Hardware Emulation Modules (src/vmachine/v*.ch)  
+- Main Entry and Version Label (src/main.c)  
+- Virtual Machine Console (src/console.ch)  
+- Platform-related Components (src/vmachine/system/*.ch)  
+- Basic I/O System (src/vmacheine/bios/*.ch)  
+- Hardware Emulation Modules (src/vmachine/v*.ch)  
 
 
 The emulator is divided into 4 parts: VM console, Hardware Emulation, BIOS and Platform-related Part.
@@ -98,10 +99,17 @@ The assembler and disassembler are used as a part of debugger, which provides re
 
 Snapshots
 ---------
+MS-DOS running in Win32 Console  
 ![MS-DOS running in Win32 Console](images/1.jpg)  
+MS-DOS running in Linux Terminal  
 ![MS-DOS running in Linux Terminal](images/2.jpg)  
+MS-DOS Editor in Linux Terminal  
 ![MS-DOS Editor in Linux Terminal](images/3.jpg)  
+MS-DOS running in HMA  
 ![MS-DOS running in HMA](images/4.jpg)  
+Type Tutor  
 ![Type Tutor](images/5.jpg)  
+Tetris  
 ![Tetris](images/6.jpg)  
+Win32 App Window Mode with Bitmap Font  
 ![Win32 App Window Mode](images/7.jpg)  
