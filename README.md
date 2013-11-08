@@ -51,21 +51,21 @@ MS-DOS Editor in Linux Terminal
 
 Compiling
 ---------
-The compiling options are defined in src/vmachine/vglobal.h, to specify 32/64 bit compilation. It also has a macro to specify the platform WIN32/LINUX. In most cases, user doesn't need to change anything there.
+The compiling options are defined in ‘src/vmachine/vglobal.h‘, to specify 32/64 bit compilation. It also has a macro to specify the platform WIN32/LINUX. In most cases, user doesn't need to change anything there.
 
 ### Windows
 IDE is MS Visual Studio 2008 or higher.  
-Create an empty Win32 Console project and add all .c and .h files in the folders src/ and src/vmachine.  
+Create an empty Win32 Console project and add all .c and .h files in the folders ‘src/‘ and ‘src/vmachine‘.  
 Then remove the following files:  
-- src/vmachine/vcpuapi.h  
-- src/vmachine/vcpuapi.cc  
-- src/vmachine/vcpuins_i8086.c  
-- src/vmachine/linux.h  
-- src/vmachine/linux.c  
+- ‘src/vmachine/vcpuapi.h‘  
+- ‘src/vmachine/vcpuapi.cc‘  
+- ‘src/vmachine/vcpuins_i8086.c‘  
+- ‘src/vmachine/linux.h‘  
+- ‘src/vmachine/linux.c‘  
 
 
 ### Linux
-makefile is provided in src/, and could be compiled by 'make' command.  
+makefile is provided in ‘src/‘, and could be compiled by 'make' command.  
 Before compiling, you need to install ncurses and pthread libraries.
 
 
@@ -88,11 +88,11 @@ Emulator Status Info
 Components
 ----------
 ### Emulator Itself
-- Main Entry and Version Label (src/main.c)  
-- Virtual Machine Console (src/console.ch)  
-- Platform-related Components (src/vmachine/system/*.ch)  
-- Basic I/O System (src/vmacheine/bios/*.ch)  
-- Hardware Emulation Modules (src/vmachine/v*.ch)  
+- Main Entry and Version Label (‘src/main.c‘)  
+- Virtual Machine Console (‘src/console.ch‘)  
+- Platform-related Components (‘src/vmachine/system/*.ch‘)  
+- Basic I/O System (‘src/vmacheine/bios/*.ch‘)  
+- Hardware Emulation Modules (‘src/vmachine/v*.ch‘)  
 
 
 The emulator is divided into 4 parts: VM console, Hardware Emulation, BIOS and Platform-related Part.
@@ -107,7 +107,7 @@ Platform-related Part basically provides keyboard and display, and it is designe
 The emulator is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM.
 
 
-### Debugger (src/vmachine/debug/debug.ch)
+### Debugger (‘src/vmachine/debug/debug.ch‘)
 The debugger is used to test and debug the guest operating system running inside NXVM.
 
 
@@ -121,13 +121,13 @@ NXVM Internal Debugger
 ![NXVM Internal Debugger](images/debugger_w32c.jpg)  
 
 
-### Recorder (src/vmachine/debug/record.ch)
+### Recorder (‘src/vmachine/debug/record.ch‘)
 The recorder provides various modes to dump CPU register values and read/write operations at each CPU instruction.
 
 
 ### Assembler/Disassembler
-- i386 Assembler (src/vmachine/debug/aasm32.ch)  
-- i386 Disassembler (src/vmachine/debug/dasm32.ch)  
+- i386 Assembler (‘src/vmachine/debug/aasm32.ch‘)  
+- i386 Disassembler (‘src/vmachine/debug/dasm32.ch‘)  
 
 
 The emulator includes an integral assembler and disassembler. They translates Assembly codes from/to machine codes. All Intel-format x86 instructions are supported.  
