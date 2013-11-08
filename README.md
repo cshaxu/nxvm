@@ -83,7 +83,7 @@ Quick Start
 
 Components
 ----------
-# Console
+### Console
 - Main Entry and Version Label (src/main.c)  
 - Virtual Machine Console (src/console.ch)  
 
@@ -95,7 +95,7 @@ Emulator Status Infor
 ![Emulator Status Info](images/vminfo_w32c.jpg)  
 
 
-# Emulator Itself
+### Emulator Itself
 - Platform-related Components (src/vmachine/system/*.ch)  
 - Basic I/O System (src/vmacheine/bios/*.ch)  
 - Hardware Emulation Modules (src/vmachine/v*.ch)  
@@ -109,7 +109,7 @@ Basic I/O System is the "software" part, which provides POST and interrupt servi
 Platform-related Part basically provides keyboard and display, and it is designed to work with different operating systems.
 
 
-# Debugger (src/vmachine/debug/debug.ch)
+### Debugger (src/vmachine/debug/debug.ch)
 NXVM is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM using debugger.
 
 
@@ -126,11 +126,11 @@ NXVM Internal Debugger
 ![NXVM Internal Debugger](images/debugger_w32c.jpg)  
 
 
-### Recorder (src/vmachine/debug/record.ch)
+##### Recorder (src/vmachine/debug/record.ch)
 The recorder provides various modes to dump CPU register values and read/write operations at each CPU instruction.
 
 
-### Assembler/Disassembler
+##### Assembler/Disassembler
 - i386 Assembler (src/vmachine/debug/aasm32.ch)  
 - i386 Disassembler (src/vmachine/debug/dasm32.ch)  
 
