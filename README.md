@@ -109,28 +109,29 @@ Basic I/O System is the "software" part, which provides POST and interrupt servi
 Platform-related Part basically provides keyboard and display, and it is designed to work with different operating systems.
 
 
-### Debugger (src/vmachine/debug/debug.ch)
+### Debugger
 NXVM is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM using debugger.
 
 
+#### Debugger Console (src/vmachine/debug/debug.ch)
 The debugger is used to test and debug the guest operating system running inside NXVM.
 
 
 User may print/modify CPU registers, print/modify/search/compare/fill/watch RAM area, operate device through I/O ports, trace/dump CPU instructions and set breakpoints.
 
 
-NXVM has both 16-bit debugger and 32-bit debugger. The command usage of 16-bit debugger is almost the same as the MS-DOS debugger, and all the memory addresses are represented in physical address. The 32-bit debugger uses linear address format. The help command `?` introduces all available commands supported.
+NXVM has both 16-bit and 32-bit debugger support. The command usage of 16-bit debugger is almost the same as the MS-DOS debugger, and all the memory addresses are represented in physical address. The 32-bit debugger uses linear address format. The help command `?` introduces all available commands supported.
 
 
 NXVM Internal Debugger  
 ![NXVM Internal Debugger](images/debugger_w32c.jpg)  
 
 
-##### Recorder (src/vmachine/debug/record.ch)
+#### Recorder (src/vmachine/debug/record.ch)
 The recorder provides various modes to dump CPU register values and read/write operations at each CPU instruction.
 
 
-##### Assembler/Disassembler
+#### Assembler/Disassembler
 - i386 Assembler (src/vmachine/debug/aasm32.ch)  
 - i386 Disassembler (src/vmachine/debug/dasm32.ch)  
 
