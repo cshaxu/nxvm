@@ -91,7 +91,7 @@ Components
 VM console provides a command-line interface which accepts user input and provides machine information.  
 
 
-Emulator Status Infor  
+Emulator Status Info  
 ![Emulator Status Info](images/vminfo_w32c.jpg)  
 
 
@@ -113,7 +113,7 @@ Platform-related Part basically provides keyboard and display, and it is designe
 NXVM is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM using debugger.
 
 
-#### Debugger Console (src/vmachine/debug/debug.ch)
+##### Debugger Console (src/vmachine/debug/debug.ch)
 The debugger is used to test and debug the guest operating system running inside NXVM.
 
 
@@ -127,11 +127,11 @@ NXVM Internal Debugger
 ![NXVM Internal Debugger](images/debugger_w32c.jpg)  
 
 
-#### Recorder (src/vmachine/debug/record.ch)
+##### Recorder (src/vmachine/debug/record.ch)
 The recorder provides various modes to dump CPU register values and read/write operations at each CPU instruction.
 
 
-#### Assembler/Disassembler
+##### Assembler/Disassembler
 - i386 Assembler (src/vmachine/debug/aasm32.ch)  
 - i386 Disassembler (src/vmachine/debug/dasm32.ch)  
 
