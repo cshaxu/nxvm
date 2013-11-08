@@ -9,7 +9,7 @@ Introduction
 This project includes an integrated implementation of a light-weight x86 PC emulator, which is written in 37,000 lines of C codes and a few Assembly codes.
 
 
-It emulated a PC machine, including an Intel 80386 CPU and all other necessary devices, such as RAM, DMA, PIC, Floppy, Hard Drive, Keyboard, Display and so on.
+It emulated a PC machine which serves as a software container. The emulator has an Intel 80386 CPU and all other necessary devices, such as RAM, DMA, PIC, Floppy, Hard Drive, Keyboard, Display and so on.
 
 
 Therefore it supports the operating systems based on x86, such as MS-DOS.  
