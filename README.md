@@ -81,33 +81,38 @@ Quick Start
 8. The emulation can be resumed by `resume` command in NXVM console.  
 
 
-Emulator Status Info  
-![Emulator Status Info](images/vminfo_w32c.jpg) 
-
-
 Components
 ----------
-### Emulator Itself
+# Console
 - Main Entry and Version Label (src/main.c)  
 - Virtual Machine Console (src/console.ch)  
+
+
+VM console provides a command-line interface which accepts user input and provides machine information.  
+
+
+Emulator Status Infor  
+![Emulator Status Info](images/vminfo_w32c.jpg)  
+
+
+# Emulator Itself
 - Platform-related Components (src/vmachine/system/*.ch)  
 - Basic I/O System (src/vmacheine/bios/*.ch)  
 - Hardware Emulation Modules (src/vmachine/v*.ch)  
 
 
-The emulator is divided into 4 parts: VM console, Hardware Emulation, BIOS and Platform-related Part.
+The emulator is divided into 3 parts: Hardware Emulation, BIOS and Platform-related Part.
 
 
-VM console provides a command-line interface which accepts user input and provides machine info.  
 Hardware Emulation is the "hardware" part, which provides the hardware logic of all the devices emulated.  
 Basic I/O System is the "software" part, which provides POST and interrupt service routines.  
 Platform-related Part basically provides keyboard and display, and it is designed to work with different operating systems.
 
 
-The emulator is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM.
+# Debugger (src/vmachine/debug/debug.ch)
+NXVM is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM using debugger.
 
 
-### Debugger (src/vmachine/debug/debug.ch)
 The debugger is used to test and debug the guest operating system running inside NXVM.
 
 
@@ -134,8 +139,8 @@ The emulator includes an integral assembler and disassembler. They translates As
 The assembler and disassembler are used as a part of debugger, which provides readable instructions to user.
 
 
-Snapshots
----------
+Applications
+------------
 Some legacy MS-DOS applications are supported in NXVM.  
 
 
