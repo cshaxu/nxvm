@@ -73,7 +73,7 @@ Quick Start
 -----------
 1. Prepare for a 1.44MB floppy disk image file as the startup disk  
 2. Start NXVM and type `help` for available commands  
-3. Type `device fdd insrt <filename>` to laod the floppy disk image into NXVM floppy drive  
+3. Type `device fdd insrt <filename>` to load the floppy disk image file into NXVM floppy drive  
 4. Type `mode` to switch display mode(Win32 Console/Win32 App Window)  
 5. Type `info` to learn about emulator status  
 6. Type `start` to start machine  
