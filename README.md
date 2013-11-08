@@ -1,7 +1,7 @@
 Neko's x86 Virtual Machine
 ==========================
 A light-weight PC emulator  
-Author: Xu Ha (cshaxu@gatech.edu)
+Author: Xu Ha (cshaxu@gmail.com)
 
 
 Introduction
@@ -151,3 +151,17 @@ Type Tutor (TT)
 Tetris (NYET)  
 ![Tetris](images/nyet_start_w32c.jpg)  
 ![Tetris](images/nyet_exec_w32c.jpg)  
+
+
+References
+----------
+[Bochs Project](http://bochs.sourceforge.net/)  
+easyVM 0.2  
+LightMachine 0.5  
+Intel 80386 Reference Manual  
+IA-32 Intel Architecture Software Developer's Manual Volume 1: Basic Architecture  
+IA-32 Intel Architecture Software Developer's Manual Volume 2: Instruction Set Reference  
+IA-32 Intel Architecture Software Developer's Manual Volume 3: System Programming Guide  
+NCURSES-Programming-HOWTO  
+IBM PC/AT 5170 Technical Reference (1985)  
+and more ...
