@@ -16,7 +16,7 @@ Therefore it supports the operating systems based on x86, such as MS-DOS.
 
 
 MS-DOS running in HMA  
-![MS-DOS running in HMA](images/msds_hma_w32c.jpg)  
+![MS-DOS running in HMA](images/msdos_hma_w32c.jpg)  
 
 
 Environment
@@ -77,7 +77,8 @@ Quick Start
 4. Type 'mode' to switch display mode(Win32 Console/Win32 App Window)  
 5. Type 'info' to learn about emulator status  
 6. Type 'start' to start machine  
-7. Type 'stop' under Win32 App Window mode, or press 'CTRL+F9' at anytime to stop emulation. The emulation can be resumed by 'resume' command in NXVM console.  
+7. Type 'stop' under Win32 App Window mode, or press 'F9' at anytime to stop emulation.  
+8. The emulation can be resumed by 'resume' command in NXVM console.  
 
 
 Emulator Status Info  
@@ -116,6 +117,10 @@ User may print/modify CPU registers, print/modify/search/compare/fill/watch RAM 
 NXVM has both 16-bit debugger and 32-bit debugger. The command usage of 16-bit debugger is almost the same as the MS-DOS debugger, and all the memory addresses are represented in physical address. The 32-bit debugger uses linear address format. The help command '?' will introduce all available commands supported.
 
 
+NXVM Internal Debugger  
+![NXVM Internal Debugger](images/debugger_w32c.jpg)  
+
+
 ### Recorder (src/vmachine/debug/record.ch)
 The recorder provides various modes to dump CPU register values and read/write operations at each CPU instruction.
 
@@ -134,7 +139,6 @@ Snapshots
 Some legacy MS-DOS applications are supported in NXVM.  
 
 
-### Win32 Console Mode
 MS-DOS Defrag  
 ![MS-DOS Defrag](images/defrag_w32c.jpg)  
 MS-DOS Editor for Windows 95 (32-bit Instructions Applied)  
