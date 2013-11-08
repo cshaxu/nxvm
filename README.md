@@ -65,7 +65,7 @@ Then remove the following files:
 
 
 ### Linux
-makefile is provided in `src/`, and could be compiled by `make` command.  
+`makefile` is provided in `src/`, and could be compiled by `make` command.  
 Before compiling, you need to install ncurses and pthread libraries.
 
 
@@ -88,11 +88,11 @@ Emulator Status Info
 Components
 ----------
 ### Emulator Itself
-- Main Entry and Version Label (`src/main.c`)  
-- Virtual Machine Console (`src/console.ch`)  
-- Platform-related Components (`src/vmachine/system/*.ch`)  
-- Basic I/O System (`src/vmacheine/bios/*.ch`)  
-- Hardware Emulation Modules (`src/vmachine/v*.ch`)  
+- Main Entry and Version Label (src/main.c)  
+- Virtual Machine Console (src/console.ch)  
+- Platform-related Components (src/vmachine/system/*.ch)  
+- Basic I/O System (src/vmacheine/bios/*.ch)  
+- Hardware Emulation Modules (src/vmachine/v*.ch)  
 
 
 The emulator is divided into 4 parts: VM console, Hardware Emulation, BIOS and Platform-related Part.
