@@ -3,6 +3,7 @@ Neko's x86 Virtual Machine
 A light-weight PC emulator  
 Author: Xu Ha (cshaxu@gatech.edu)
 
+
 Introduction
 ------------
 This project includes an integrated implementation of a light-weight x86 PC emulator, which is written in 37,000 lines of C codes and a few Assembly codes.
@@ -15,7 +16,7 @@ Therefore it supports the operating systems based on x86, such as MS-DOS.
 
 
 MS-DOS running in HMA  
-![MS-DOS running in HMA](images/4.jpg)  
+![MS-DOS running in HMA](images/msds_hma_w32c.jpg)  
 
 
 Environment
@@ -26,7 +27,7 @@ In the previous mode, the keyboard and display are emulated using Win32 Console 
 
 
 MS-DOS running in Win32 Console  
-![MS-DOS running in Win32 Console](images/1.jpg) 
+![MS-DOS running in Win32 Console](images/msdos_w32c.jpg) 
 
 
 The Win32 App Window mode is preferred for two reasons:  
@@ -35,16 +36,17 @@ The Win32 App Window mode is preferred for two reasons:
 
 
 Win32 App Window Mode with Bitmap Font  
-![Win32 App Window Mode](images/7.jpg)  
+![Win32 App Window Mode](images/edit_w32a.jpg)    
+![Win32 App Window Mode](images/pv12_w32a.jpg)  
 
 ### Linux
 The emulator runs in a terminal window of at least 80x25 size. It works like Win32 Console mode. It has some known issues which are not yet fixed.  
 
 
 MS-DOS running in Linux Terminal  
-![MS-DOS running in Linux Terminal](images/2.jpg)  
+![MS-DOS running in Linux Terminal](images/msdos_linux.jpg)  
 MS-DOS Editor in Linux Terminal  
-![MS-DOS Editor in Linux Terminal](images/3.jpg)  
+![MS-DOS Editor in Linux Terminal](images/edit_linux.jpg)  
 
 
 Compiling
@@ -76,6 +78,10 @@ Quick Start
 5. Type 'info' to learn about emulator status  
 6. Type 'start' to start machine  
 7. Type 'stop' under Win32 App Window mode, or press 'CTRL+F9' at anytime to stop emulation. The emulation can be resumed by 'resume' command in NXVM console.  
+
+
+Emulator Status Info  
+![Emulator Status Info](images/vminfo_w32c.jpg) 
 
 
 Components
@@ -123,12 +129,21 @@ The emulator includes an integral assembler and disassembler. They translates As
 The assembler and disassembler are used as a part of debugger, which provides readable instructions to user.
 
 
-Applications
-------------
+Snapshots
+---------
 Some legacy MS-DOS applications are supported in NXVM.  
 
 
-Type Tutor  
-![Type Tutor](images/5.jpg)  
-Tetris  
-![Tetris](images/6.jpg)  
+### Win32 Console Mode
+MS-DOS Defrag  
+![MS-DOS Defrag](images/defrag_w32c.jpg)  
+MS-DOS Editor for Windows 95 (32-bit Instructions Applied)  
+![MS-DOS Editor for Windows 95](images/edit95_w32c.jpg)  
+MS-DOS Anti Virus  
+![MS-DOS Anti Virus](images/msav_w32c.jpg)  
+Type Tutor (TT)  
+![Type Tutor](images/tt_start_w32c.jpg)  
+![Type Tutor](images/tt_exec_w32c.jpg)  
+Tetris (NYET)  
+![Tetris](images/nyet_start_w32c.jpg)  
+![Tetris](images/nyet_exec_w32c.jpg)  
