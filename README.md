@@ -139,8 +139,8 @@ Snapshots
 Some legacy MS-DOS applications are supported in NXVM.  
 
 
-Turbo C 2.0
-![Turbo C 2.0](images/tc2_w32c.jpg)
+Turbo C 2.0  
+![Turbo C 2.0](images/tc2_w32c.jpg)  
 MS-DOS Defrag  
 ![MS-DOS Defrag](images/defrag_w32c.jpg)  
 MS-DOS Editor for Windows 95 (32-bit Instructions Applied)  
