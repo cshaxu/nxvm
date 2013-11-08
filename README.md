@@ -107,7 +107,7 @@ Platform-related Part basically provides keyboard and display, and it is designe
 The emulator is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM.
 
 
-### Debugger (‘src/vmachine/debug/debug.ch‘)
+### Debugger (‘src/vmachine/debug/debug.ch`)
 The debugger is used to test and debug the guest operating system running inside NXVM.
 
 
