@@ -1,7 +1,6 @@
 Neko's x86 Virtual Machine
 ==========================
-A light-weight pc emulator
-
+A light-weight PC emulator  
 Author: Xu Ha (cshaxu@gatech.edu)
 
 Introduction
@@ -12,27 +11,47 @@ This project includes an integrated implementation of a light-weight x86 PC emul
 It emulated a PC machine, including an Intel 80386 CPU and all other necessary devices, such as RAM, DMA, PIC, Floppy, Hard Drive, Keyboard, Display and so on.
 
 
-Therefore it supports the operating systems based on x86, such as MS-DOS.
+Therefore it supports the operating systems based on x86, such as MS-DOS.  
+
+
+MS-DOS running in HMA  
+![MS-DOS running in HMA](images/4.jpg)  
+
 
 Environment
 -----------
-###Windows
+### Windows
 The emulator provides two modes of display: Win32 Console and Win32 App Window.  
 In the previous mode, the keyboard and display are emulated using Win32 Console APIs, while in the later mode, emulator accepts input and provides output using a Window controlled by message loop.
+
+
+MS-DOS running in Win32 Console  
+![MS-DOS running in Win32 Console](images/1.jpg) 
 
 
 The Win32 App Window mode is preferred for two reasons:  
 1. The bitmap font used in MS-DOS is applied in Win32 App Window Mode.  
 2. The NXVM console window still exists and won't be overrided by NXVM display.  
 
-###Linux
-The emulator runs in a terminal window of at least 80x25 size. It works like Win32 Console mode. It has some known issues which are not yet fixed.
- 
+
+Win32 App Window Mode with Bitmap Font  
+![Win32 App Window Mode](images/7.jpg)  
+
+### Linux
+The emulator runs in a terminal window of at least 80x25 size. It works like Win32 Console mode. It has some known issues which are not yet fixed.  
+
+
+MS-DOS running in Linux Terminal  
+![MS-DOS running in Linux Terminal](images/2.jpg)  
+MS-DOS Editor in Linux Terminal  
+![MS-DOS Editor in Linux Terminal](images/3.jpg)  
+
+
 Compiling
 ---------
 The compiling options are defined in src/vmachine/vglobal.h, to specify 32/64 bit compilation. It also has a macro to specify the platform WIN32/LINUX. In most cases, user doesn't need to change anything there.
 
-###Windows
+### Windows
 IDE is MS Visual Studio 2008 or higher.  
 Create an empty Win32 Console project and add all .c and .h files in the folders src/ and src/vmachine.  
 Then remove the following files:  
@@ -42,9 +61,11 @@ Then remove the following files:
 - src/vmachine/linux.h  
 - src/vmachine/linux.c  
 
-###Linux
+
+### Linux
 makefile is provided in src/, and could be compiled by 'make' command.  
 Before compiling, you need to install ncurses and pthread libraries.
+
 
 Quick Start
 -----------
@@ -55,6 +76,7 @@ Quick Start
 5. Type 'info' to learn about emulator status  
 6. Type 'start' to start machine  
 7. Type 'stop' under Win32 App Window mode, or press 'CTRL+F9' at anytime to stop emulation. The emulation can be resumed by 'resume' command in NXVM console.  
+
 
 Components
 ----------
@@ -71,11 +93,12 @@ The emulator is divided into 4 parts: VM console, Hardware Emulation, BIOS and P
 
 VM console provides a command-line interface which accepts user input and provides machine info.  
 Hardware Emulation is the "hardware" part, which provides the hardware logic of all the devices emulated.  
-BIOS is the "software" part, which provides POST and interrupt services routines.  
+Basic I/O System is the "software" part, which provides POST and interrupt service routines.  
 Platform-related Part basically provides keyboard and display, and it is designed to work with different operating systems.
 
 
 The emulator is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM.
+
 
 ### Debugger (src/vmachine/debug/debug.ch)
 The debugger is used to test and debug the guest operating system running inside NXVM.
@@ -86,8 +109,10 @@ User may print/modify CPU registers, print/modify/search/compare/fill/watch RAM 
 
 NXVM has both 16-bit debugger and 32-bit debugger. The command usage of 16-bit debugger is almost the same as the MS-DOS debugger, and all the memory addresses are represented in physical address. The 32-bit debugger uses linear address format. The help command '?' will introduce all available commands supported.
 
+
 ### Recorder (src/vmachine/debug/record.ch)
 The recorder provides various modes to dump CPU register values and read/write operations at each CPU instruction.
+
 
 ### Assembler/Disassembler
 - i386 Assembler (src/vmachine/debug/aasm32.ch)  
@@ -97,19 +122,13 @@ The recorder provides various modes to dump CPU register values and read/write o
 The emulator includes an integral assembler and disassembler. They translates Assembly codes from/to machine codes. All Intel-format x86 instructions are supported.  
 The assembler and disassembler are used as a part of debugger, which provides readable instructions to user.
 
-Snapshots
----------
-MS-DOS running in Win32 Console  
-![MS-DOS running in Win32 Console](images/1.jpg)  
-MS-DOS running in Linux Terminal  
-![MS-DOS running in Linux Terminal](images/2.jpg)  
-MS-DOS Editor in Linux Terminal  
-![MS-DOS Editor in Linux Terminal](images/3.jpg)  
-MS-DOS running in HMA  
-![MS-DOS running in HMA](images/4.jpg)  
+
+Applications
+------------
+Some legacy MS-DOS applications are supported in NXVM.  
+
+
 Type Tutor  
 ![Type Tutor](images/5.jpg)  
 Tetris  
 ![Tetris](images/6.jpg)  
-Win32 App Window Mode with Bitmap Font  
-![Win32 App Window Mode](images/7.jpg)  
