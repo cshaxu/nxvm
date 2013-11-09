@@ -51,11 +51,11 @@ MS-DOS Editor in Linux Terminal
 
 Compiling
 ---------
-The compiling options are defined in src/vmachine/vglobal.h, to specify 32/64 bit compilation. It also has a macro to specify the platform WIN32/LINUX. In most cases, user doesn't need to change anything there.
+The compiling options are defined in `src/vmachine/vglobal.h`, to specify 32/64 bit compilation. It also has a macro to specify the platform WIN32/LINUX. In most cases, user doesn't need to change anything there.
 
 ### Windows
 IDE is MS Visual Studio 2008 or higher.  
-Create an empty Win32 Console project and add all .c and .h files in the folders src/ and src/vmachine.  
+Create an empty Win32 Console project and add all `.c` and `.h` files in the folders `src/` and `src/vmachine/`.  
 Then remove the following files:  
 - src/vmachine/vcpuapi.h  
 - src/vmachine/vcpuapi.cc  
@@ -65,20 +65,20 @@ Then remove the following files:
 
 
 ### Linux
-makefile is provided in src/, and could be compiled by 'make' command.  
+`makefile` is provided in `src/`, and could be compiled by `make` command.  
 Before compiling, you need to install ncurses and pthread libraries.
 
 
 Quick Start
 -----------
 1. Prepare for a 1.44MB floppy disk image file as the startup disk  
-2. Start NXVM and type 'help' for available commands  
-3. Type 'device fdd insrt <filename>' to laod the floppy disk image into NXVM floppy drive  
-4. Type 'mode' to switch display mode(Win32 Console/Win32 App Window)  
-5. Type 'info' to learn about emulator status  
-6. Type 'start' to start machine  
-7. Type 'stop' under Win32 App Window mode, or press 'F9' at anytime to stop emulation.  
-8. The emulation can be resumed by 'resume' command in NXVM console.  
+2. Start NXVM and type `help` for available commands  
+3. Type `device fdd insrt <filename>` to load the floppy disk image into NXVM floppy drive  
+4. Type `mode` to switch display mode(Win32 Console/Win32 App Window)  
+5. Type `info` to learn about emulator status  
+6. Type `start` to start machine  
+7. Type `stop` under Win32 App Window mode, or press `F9` at anytime to stop emulation.  
+8. The emulation can be resumed by `resume` command in NXVM console.  
 
 
 Emulator Status Info  
@@ -114,7 +114,7 @@ The debugger is used to test and debug the guest operating system running inside
 User may print/modify CPU registers, print/modify/search/compare/fill/watch RAM area, operate device through I/O ports, trace/dump CPU instructions and set breakpoints.
 
 
-NXVM has both 16-bit debugger and 32-bit debugger. The command usage of 16-bit debugger is almost the same as the MS-DOS debugger, and all the memory addresses are represented in physical address. The 32-bit debugger uses linear address format. The help command '?' will introduce all available commands supported.
+NXVM has both 16-bit debugger and 32-bit debugger. The command usage of 16-bit debugger is almost the same as the MS-DOS debugger, and all the memory addresses are represented in physical address. The 32-bit debugger uses linear address format. The help command `?` introduces all available commands supported.
 
 
 NXVM Internal Debugger  
@@ -139,6 +139,8 @@ Snapshots
 Some legacy MS-DOS applications are supported in NXVM.  
 
 
+Turbo C 2.0  
+![Turbo C 2.0](images/tc2_w32c.jpg)  
 MS-DOS Defrag  
 ![MS-DOS Defrag](images/defrag_w32c.jpg)  
 MS-DOS Editor for Windows 95 (32-bit Instructions Applied)  
