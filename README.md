@@ -73,7 +73,7 @@ Quick Start
 -----------
 1. Prepare for a 1.44MB floppy disk image file as the startup disk  
 2. Start NXVM and type `help` for available commands  
-3. Type `device fdd insrt <filename>` to load the floppy disk image into NXVM floppy drive  
+3. Type `device fdd insrt <filename>` to load the floppy disk image file into NXVM floppy drive  
 4. Type `mode` to switch display mode(Win32 Console/Win32 App Window)  
 5. Type `info` to learn about emulator status  
 6. Type `start` to start machine  
@@ -81,51 +81,57 @@ Quick Start
 8. The emulation can be resumed by `resume` command in NXVM console.  
 
 
-Emulator Status Info  
-![Emulator Status Info](images/vminfo_w32c.jpg) 
-
-
 Components
 ----------
-### Emulator Itself
+### Console
 - Main Entry and Version Label (src/main.c)  
 - Virtual Machine Console (src/console.ch)  
+
+
+VM console provides a command-line interface which accepts user input and provides machine information.  
+
+
+Emulator Status Info  
+![Emulator Status Info](images/vminfo_w32c.jpg)  
+
+
+### Emulator Itself
 - Platform-related Components (src/vmachine/system/*.ch)  
 - Basic I/O System (src/vmacheine/bios/*.ch)  
 - Hardware Emulation Modules (src/vmachine/v*.ch)  
 
 
-The emulator is divided into 4 parts: VM console, Hardware Emulation, BIOS and Platform-related Part.
+The emulator is divided into 3 parts: Hardware Emulation, BIOS and Platform-related Part.
 
 
-VM console provides a command-line interface which accepts user input and provides machine info.  
 Hardware Emulation is the "hardware" part, which provides the hardware logic of all the devices emulated.  
 Basic I/O System is the "software" part, which provides POST and interrupt service routines.  
 Platform-related Part basically provides keyboard and display, and it is designed to work with different operating systems.
 
 
-The emulator is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM.
+### Debugger
+NXVM is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM using debugger.
 
 
-### Debugger (src/vmachine/debug/debug.ch)
+##### Debugger Console (src/vmachine/debug/debug.ch)
 The debugger is used to test and debug the guest operating system running inside NXVM.
 
 
 User may print/modify CPU registers, print/modify/search/compare/fill/watch RAM area, operate device through I/O ports, trace/dump CPU instructions and set breakpoints.
 
 
-NXVM has both 16-bit debugger and 32-bit debugger. The command usage of 16-bit debugger is almost the same as the MS-DOS debugger, and all the memory addresses are represented in physical address. The 32-bit debugger uses linear address format. The help command `?` introduces all available commands supported.
+NXVM has both 16-bit and 32-bit debugger support. The command usage of 16-bit debugger is almost the same as the MS-DOS debugger, and all the memory addresses are represented in physical address. The 32-bit debugger uses linear address format. The help command `?` introduces all available commands supported.
 
 
 NXVM Internal Debugger  
 ![NXVM Internal Debugger](images/debugger_w32c.jpg)  
 
 
-### Recorder (src/vmachine/debug/record.ch)
+##### Recorder (src/vmachine/debug/record.ch)
 The recorder provides various modes to dump CPU register values and read/write operations at each CPU instruction.
 
 
-### Assembler/Disassembler
+##### Assembler/Disassembler
 - i386 Assembler (src/vmachine/debug/aasm32.ch)  
 - i386 Disassembler (src/vmachine/debug/dasm32.ch)  
 
@@ -134,8 +140,8 @@ The emulator includes an integral assembler and disassembler. They translates As
 The assembler and disassembler are used as a part of debugger, which provides readable instructions to user.
 
 
-Snapshots
----------
+Applications
+------------
 Some legacy MS-DOS applications are supported in NXVM.  
 
 
