@@ -1,6 +1,6 @@
 Light-weight PC Emulator
 ========================
-Neko's x86 Virtual Machine  
+Neko's x86 Virtual Machine, a portable x86 PC emulator with debugger  
 Author: Xu Ha (cshaxu@gmail.com)
 
 
