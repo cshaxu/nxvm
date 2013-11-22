@@ -1,6 +1,6 @@
 Light-weight PC Emulator
 ========================
-Neko's x86 Virtual Machine
+Neko's x86 Virtual Machine  
 Author: Xu Ha (cshaxu@gmail.com)
 
 
