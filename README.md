@@ -60,8 +60,8 @@ Then remove the following files:
 - src/vmachine/vcpuapi.h  
 - src/vmachine/vcpuapi.cc  
 - src/vmachine/vcpuins_i8086.c  
-- src/vmachine/linux.h  
-- src/vmachine/linux.c  
+- src/vmachine/system/linux.h  
+- src/vmachine/system/linux.c  
 
 
 ### Linux
