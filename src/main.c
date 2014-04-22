@@ -4,7 +4,7 @@
 	Platform related codes: main.c, pltfmapi.ch, msdos.ch, win32.ch
 */
 
-#define DEBUG_VER "Alpha Build 0x0020"
+#define DEBUG_VER "Alpha Build 0x0022"
 
 #define PRODUCT "Neko's Virtual Machine Under Construction\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"

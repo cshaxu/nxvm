@@ -1,5 +1,21 @@
 /* This file is a part of NekoVM project. */
 
+/*
+test code
+	mov	di,bp
+	add	di,4
+	mov	si,di
+	push	bp
+	mov	bp,si
+	mov	ax,word ptr [bp]
+	pop	bp
+	mov	bx,ax
+	push	bx
+	mov	ax,0
+	pop	bx
+	cmp	bx,ax
+*/
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -166,6 +182,7 @@ static void aconsole()
 			exitAsmFlag = 1;
 			continue;
 		}
+		if(cmdAsmBuff[0] == ';' ) continue;
 		errAsmPos = 0;
 		len = assemble(cmdAsmBuff,cpu.cs,
 			(t_nubit8 *)memory,asmSegRec,asmPtrRec);
@@ -616,7 +633,7 @@ static void q()
 // unassemble
 static t_nubit16 uoffset(Operand opr)
 {
-	t_nubit16 res;
+	t_nubit16 res = 0;
 	switch(opr.mod) {
 	case 0:
 		switch(opr.rm) {
@@ -670,7 +687,7 @@ static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 			len = disassemble(str,&operand,
 				memory,segment,start+pos);
 			for(i = 0;i < len;++i)
-				printnubit8(getbyte(segment,start+i));
+				printnubit8(getbyte(segment,start+pos+i));
 			pos += len;
 			if(len < 3) fprintf(stdout,"\t\t");
 			else fprintf(stdout,"\t");
@@ -685,7 +702,8 @@ static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 				else if(strlen(stmt) < 24) fprintf(stdout,"\t\t");
 				else if(strlen(stmt) < 30) fprintf(stdout,"\t");
 			}
-			if(operand.seg == 1) {
+			//fprintf(stdout,"opr.seg=%d,opr.flag=%d\n",operand.seg,operand.flag);
+			if(operand.seg == 1 && operand.flag != 4) {
 				switch(operand.flag) {
 				case 0:	fprintf(stdout,"ES:");offset = uoffset(operand);
 					printnubit16(offset);fprintf(stdout,"=");
