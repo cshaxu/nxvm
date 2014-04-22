@@ -5,7 +5,7 @@
 							./:					main.c
 */
 
-#define DEBUG_VER "Alpha Build 0x0027"
+#define DEBUG_VER "Alpha Build 0x0028"
 
 #define PRODUCT "Neko's Virtual Machine Under Construction\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"

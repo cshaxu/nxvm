@@ -849,16 +849,19 @@ int assemble(const char *asmStmt,unsigned short locCS,
 #define dEmitSL len+=dSLabel
 #define dEmitOP	len+=dOP
 #define dEmitPR len+=dPrefix
-#define dEmitJC len+=dJRel8
+#define dEmitJR len+=dJRel
 #define dEmitDB len+=dDB(dSOL,opcode)
 #define dEmitG1 len+=dGroup1(dSOL,opcode)
 #define dEmitXC len+=dXCHG(dSOL,opcode)
-#define dEmit9A len+=d9A(dSOL)
+#define dEmitJF len+=dJFar
 #define dEmitMO	len+=dMovOff
 #define dEmitMI len+=dMovImm(dSOL,opcode)
 #define dEmitOI len+=dOPImm
 #define dEmitG2	len+=dGroup2(dSOL,opcode)
 #define dEmitAA	len+=dAAX
+#define dEmitG3	len+=dGroup3(dSOL,opcode)
+#define dEmitG4 len+=dGroup4(dSOL)
+#define dEmitG5	len+=dGroup5(dSOL)
 #define isOperandES		(resOperand->flag == 0)
 #define isOperandCS		(resOperand->flag == 1)
 #define isOperandSS		(resOperand->flag == 2)
@@ -1032,7 +1035,8 @@ typedef enum {RM8_R8,R8_RM8,RM16_R16,R16_RM16,
 	RM8_I8,I8_RM8,RM16_I16,I16_RM16,
 	RM16_S16,S16_RM16,
 	AL_I8,I8_AL,AX_I16,I16_AX,
-	R16_MX,RM16_NONE
+	R16_MX,RM16_NONE,
+	AX_I8,I8_AX
 } InsType;
 /*	write dasmStmt, resOperand;
 	use locMemory, locSegment, locOffset;
@@ -1111,6 +1115,8 @@ static int dRImm(char *dasmStmt,Operand *resOperand,unsigned char *loc,const cha
 	case I8_AL:		dImm(8)		dCOMMA	dANY("AL")	break;
 	case AX_I16:	dANY("AX")	dCOMMA	dImm(16)	break;
 	case I16_AX:	dImm(16)	dCOMMA	dANY("AX")	break;
+	case AX_I8:		dANY("AX")	dCOMMA	dImm(8)		break;
+	case I8_AX:		dImm(8)		dCOMMA	dANY("AX")	break;
 	default:		dANY("(ERROR:REGIMM)")			break;}
 	return len;
 }
@@ -1148,16 +1154,27 @@ static int dDB(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned ch
 	dStrCat16(dasmStmt,num);
 	return len;
 }
-static int dJRel8(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op,unsigned short locOffset,int insLen)
+static int dJRel(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op,unsigned short locOffset,int bit)
 {
 	int len = 0;
 	unsigned short rel;
 	setOperandNul
 	dANY(op);
 	dANY("\t")
-	rel = *(loc+len++);
-	if(rel < 0x80) rel = locOffset+insLen+rel;
-	else rel = locOffset+insLen+rel-0x100;
+	switch(bit) {
+	case 8:
+		rel = *(loc+len++);
+		if(rel < 0x80) rel = locOffset+2+rel;
+		else rel = locOffset+2+rel-0x100;
+		break;
+	case 16:
+		rel = *(loc+len++);
+		rel += (*(loc+len++)<<8);
+		rel += locOffset+3;
+		break;
+	//case 1616:
+
+	default:	dANY("(ERROR:JREL)")	break;}
 	dStrCat16(dasmStmt,rel);
 	return len;
 }
@@ -1200,19 +1217,6 @@ static int dXCHG(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned 
 	dR(16)	dCOMMA	dANY("AX")
 	return len;
 }
-static int d9A(char *dasmStmt,Operand *resOperand,unsigned char *loc)
-{
-	int len = 0;
-	unsigned short seg,ptr;
-	setOperandNul
-	dANY("XCHG\t")
-	dGetWord(ptr)
-	dGetWord(seg)
-	dStrCat16(dasmStmt,seg);
-	dANY(":");
-	dStrCat16(dasmStmt,ptr);
-	return len;
-}
 static int dMovOff(char *dasmStmt,Operand *resOperand,unsigned char *loc,InsType it)
 {
 	int len = 0;
@@ -1222,7 +1226,7 @@ static int dMovOff(char *dasmStmt,Operand *resOperand,unsigned char *loc,InsType
 	resOperand->mod = 0x00;
 	resOperand->rm = 0x06;
 	resOperand->len = 1;
-	dANY("MOV\t");
+	dANY("MOV\t")
 	switch(it) {\
 	case AL_I8:		dANY("AL")	dCOMMA	dOff(8)		break;
 	case I8_AL:		dOff(8)		dCOMMA	dANY("AL")	break;
@@ -1285,6 +1289,74 @@ static int dAAX(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char
 	dGetByte(imm)
 	dANY(op)
 	if(imm != 0x0a) {dANY("\t")	dStrCat8(dasmStmt,imm);}
+	return len;
+}
+static int dJFar(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op)
+{
+	int len = 0;
+	unsigned short seg,ptr;
+	setOperandNul
+	dANY(op)
+	dANY("\t")
+	dGetWord(ptr)
+	dGetWord(seg)
+	dStrCat16(dasmStmt,seg);
+	dANY(":")
+	dStrCat16(dasmStmt,ptr);
+	return len;
+}
+static int dGroup3(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
+{
+	int len = 0;
+	unsigned short imm;
+	ModRM modrm;
+	dGetModRM
+	switch(modrm.reg) {
+	case 0:	dANY("TEST\t")	break;
+	case 2:	dANY("NOT\t")	break;
+	case 3:	dANY("NEG\t")	break;
+	case 4:	dANY("MUL\t")	break;
+	case 5:	dANY("IMUL\t")	break;
+	case 6:	dANY("DIV\t")	break;
+	case 7:	dANY("IDIV\t")	break;
+	default:dANY("(ERROR:GROUP3)\t")	break;
+	}
+	switch(op) {
+	case 0xf6:	dRM(8)	if(modrm.reg == 0) {dCOMMA	dImm(8)	}	break;
+	case 0xf7:	dRM(16)	if(modrm.reg == 0) {dCOMMA	dImm(16)}	break;
+	default:dANY("(ERROR:GROUP3OP)");break;
+	}
+	return len;
+}
+static int dGroup4(char *dasmStmt,Operand *resOperand,unsigned char *loc)
+{
+	int len = 0;
+	ModRM modrm;
+	dGetModRM
+	switch(modrm.reg) {
+	case 0:	dANY("INC\t")	break;
+	case 1:	dANY("DEC\t")	break;
+	default:dANY("(ERROR:GROUP4)\t")	break;
+	}
+	dRM(8)
+	return len;
+}
+static int dGroup5(char *dasmStmt,Operand *resOperand,unsigned char *loc)
+{
+	int len = 0;
+	ModRM modrm;
+	dGetModRM
+	switch(modrm.reg) {
+	case 0:	dANY("INC\t")		break;
+	case 1:	dANY("DEC\t")		break;
+	case 2:	dANY("CALL\t")		break;
+	case 3:	dANY("CALL\tFAR ")	break;
+	case 4:	dANY("JMP\t")		break;
+	case 5:	dANY("JMP\tFAR ")	break;
+	case 6:	dANY("PUSH\t")		break;
+	default:dANY("(ERROR:GROUP5)\t")	break;
+	}
+	dRM(0)
 	return len;
 }
 
@@ -1416,22 +1488,22 @@ int disassemble(char *dasmStmt,Operand *resOperand,
 	case 0x6d:	dEmitDB;						break;
 	case 0x6e:	dEmitDB;						break;
 	case 0x6f:	dEmitDB;						break;
-	case 0x70:	dEmitJC(dSOL,"JO",locOffset,2);	break;
-	case 0x71:	dEmitJC(dSOL,"JNO",locOffset,2);break;
-	case 0x72:	dEmitJC(dSOL,"JC",locOffset,2);	break;
-	case 0x73:	dEmitJC(dSOL,"JNC",locOffset,2);break;
-	case 0x74:	dEmitJC(dSOL,"JZ",locOffset,2);	break;
-	case 0x75:	dEmitJC(dSOL,"JNZ",locOffset,2);break;
-	case 0x76:	dEmitJC(dSOL,"JBE",locOffset,2);break;
-	case 0x77:	dEmitJC(dSOL,"JA",locOffset,2);	break;
-	case 0x78:	dEmitJC(dSOL,"JS",locOffset,2);	break;
-	case 0x79:	dEmitJC(dSOL,"JNS",locOffset,2);break;
-	case 0x7a:	dEmitJC(dSOL,"JP",locOffset,2);	break;
-	case 0x7b:	dEmitJC(dSOL,"JNP",locOffset,2);break;
-	case 0x7c:	dEmitJC(dSOL,"JL",locOffset,2);	break;
-	case 0x7d:	dEmitJC(dSOL,"JNL",locOffset,2);break;
-	case 0x7e:	dEmitJC(dSOL,"JLE",locOffset,2);break;
-	case 0x7f:	dEmitJC(dSOL,"JG",locOffset,2);	break;
+	case 0x70:	dEmitJR(dSOL,"JO",locOffset,8);	break;
+	case 0x71:	dEmitJR(dSOL,"JNO",locOffset,8);break;
+	case 0x72:	dEmitJR(dSOL,"JC",locOffset,8);	break;
+	case 0x73:	dEmitJR(dSOL,"JNC",locOffset,8);break;
+	case 0x74:	dEmitJR(dSOL,"JZ",locOffset,8);	break;
+	case 0x75:	dEmitJR(dSOL,"JNZ",locOffset,8);break;
+	case 0x76:	dEmitJR(dSOL,"JBE",locOffset,8);break;
+	case 0x77:	dEmitJR(dSOL,"JA",locOffset,8);	break;
+	case 0x78:	dEmitJR(dSOL,"JS",locOffset,8);	break;
+	case 0x79:	dEmitJR(dSOL,"JNS",locOffset,8);break;
+	case 0x7a:	dEmitJR(dSOL,"JP",locOffset,8);	break;
+	case 0x7b:	dEmitJR(dSOL,"JNP",locOffset,8);break;
+	case 0x7c:	dEmitJR(dSOL,"JL",locOffset,8);	break;
+	case 0x7d:	dEmitJR(dSOL,"JNL",locOffset,8);break;
+	case 0x7e:	dEmitJR(dSOL,"JLE",locOffset,8);break;
+	case 0x7f:	dEmitJR(dSOL,"JG",locOffset,8);	break;
 	case 0x80:	dEmitG1;						break;
 	case 0x81:	dEmitG1;						break;
 	case 0x82:	dEmitG1;						break;
@@ -1458,7 +1530,7 @@ int disassemble(char *dasmStmt,Operand *resOperand,
 	case 0x97:	dEmitXC;						break;
 	case 0x98:	dEmitOP(dSOL,"CBW");			break;
 	case 0x99:	dEmitOP(dSOL,"CWD");			break;
-	case 0x9a:	dEmit9A;						break;
+	case 0x9a:	dEmitJF(dSOL,"CALL");			break;
 	case 0x9b:	dEmitOP(dSOL,"WAIT");			break;
 	case 0x9c:	dEmitOP(dSOL,"PUSHF");			break;
 	case 0x9d:	dEmitOP(dSOL,"POPF");			break;
@@ -1528,38 +1600,38 @@ int disassemble(char *dasmStmt,Operand *resOperand,
 	case 0xdd:	dEmitDB;						break;
 	case 0xde:	dEmitDB;						break;
 	case 0xdf:	dEmitDB;						break;
-	case 0xe0:	dEmitJC(dSOL,"LOOPNZ",locOffset,2);break;
-	case 0xe1:	dEmitJC(dSOL,"LOOPZ",locOffset,2);break;
-	case 0xe2:	dEmitJC(dSOL,"LOOP",locOffset,2);break;
-	case 0xe3:	dEmitJC(dSOL,"JCXZ",locOffset,2);break;
-	case 0xe4:break;
-	case 0xe5:break;
-	case 0xe6:break;
-	case 0xe7:break;
-	case 0xe8:break;
-	case 0xe9:break;
-	case 0xea:break;
-	case 0xeb:break;
-	case 0xec:break;
-	case 0xed:break;
-	case 0xee:break;
-	case 0xef:break;
+	case 0xe0:	dEmitJR(dSOL,"LOOPNZ",locOffset,8);break;
+	case 0xe1:	dEmitJR(dSOL,"LOOPZ",locOffset,8);break;
+	case 0xe2:	dEmitJR(dSOL,"LOOP",locOffset,8);break;
+	case 0xe3:	dEmitJR(dSOL,"JCXZ",locOffset,8);break;
+	case 0xe4:	dEmitRI(dSOL,"IN",AL_I8);		break;
+	case 0xe5:	dEmitRI(dSOL,"IN",AX_I8);		break;
+	case 0xe6:	dEmitRI(dSOL,"OUT",I8_AL);		break;
+	case 0xe7:	dEmitRI(dSOL,"OUT",I8_AX);		break;
+	case 0xe8:	dEmitJR(dSOL,"CALL",locOffset,16);break;
+	case 0xe9:	dEmitJR(dSOL,"JML",locOffset,16);break;
+	case 0xea:	dEmitJF(dSOL,"JMP");			break;
+	case 0xeb:	dEmitJR(dSOL,"JMP",locOffset,8);break;
+	case 0xec:	dEmitOP(dSOL,"IN\tAL,DX");		break;
+	case 0xed:	dEmitOP(dSOL,"IN\tAX,DX");		break;
+	case 0xee:	dEmitOP(dSOL,"OUT\tDX,AL");		break;
+	case 0xef:	dEmitOP(dSOL,"OUT\tDX,AX");		break;
 	case 0xf0:	dEmitPR(dSOL,"LOCK");			break;
-	case 0xf1:break;
+	case 0xf1:	dEmitDB;						break;
 	case 0xf2:	dEmitPR(dSOL,"REPNZ");			break;
 	case 0xf3:	dEmitPR(dSOL,"REPZ");			break;
 	case 0xf4:	dEmitOP(dSOL,"HLT");			break;
 	case 0xf5:	dEmitOP(dSOL,"CMC");			break;
-	case 0xf6:break;
-	case 0xf7:break;
+	case 0xf6:	dEmitG3;						break;
+	case 0xf7:	dEmitG3;						break;
 	case 0xf8:	dEmitOP(dSOL,"CLC");			break;
 	case 0xf9:	dEmitOP(dSOL,"STC");			break;
 	case 0xfa:	dEmitOP(dSOL,"CLI");			break;
 	case 0xfb:	dEmitOP(dSOL,"STI");			break;
 	case 0xfc:	dEmitOP(dSOL,"CLD");			break;
 	case 0xfd:	dEmitOP(dSOL,"STD");			break;
-	case 0xfe:break;
-	case 0xff:break;
-	default:break;}
+	case 0xfe:	dEmitG4;						break;
+	case 0xff:	dEmitG5;						break;
+	default:	dANY("(IMPOSSIBLE)")			break;}
 	return len;
 }
