@@ -1,10 +1,11 @@
 /* This file is a part of NekoVM project. */
 
 /*	Type of platforms: NONE, MSDOS, WIN32
-	Platform related codes: main.c, pltfmapi.ch, msdos.ch, win32.ch
+	Platform related codes: ./vmachine/system/:	ioapi.ch, msdos.ch, win32con.ch, win32app.ch
+							./:					main.c
 */
 
-#define DEBUG_VER "Alpha Build 0x0022"
+#define DEBUG_VER "Alpha Build 0x0024"
 
 #define PRODUCT "Neko's Virtual Machine Under Construction\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"
@@ -47,7 +48,7 @@ int main(int argc, char **argv)
 #endif
 	NVMInit();
 #ifdef NVM_WIN32
-	MessageBox(NULL,"Neko's Virtual Machine WIN32 Edition","WinMain",MB_OK);
+	MessageBox(NULL,"Neko's Virtual Machine WIN32APP Edition","WinMain",MB_OK);
 #endif
 	NSConsole();
 	NVMTerm();

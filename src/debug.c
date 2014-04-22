@@ -805,6 +805,10 @@ static void parse()
 		lcase(arg[narg]);
 		narg++;
 	} else return;
+	if(strlen(arg[narg-1]) != 1) {
+		arg[narg] = arg[narg-1]+1;
+		narg++;
+	}
 	while(narg < MAXNARG) {
 		arg[narg] = strtok(NULL," ,\t\n\r\f");
 		if(arg[narg]) {
@@ -818,10 +822,10 @@ static void exec()
 {
 	errPos = 0;
 	if(!arg[0]) return;
-	if(arg[0][1] != '\0') {
+	/*if(arg[0][1] != '\0') {
 		seterr(0);
 		return;
-	}
+	}*/
 	switch(arg[0][0]) {
 	case '\?':	help();break;
 	case 'a':	a();break;
