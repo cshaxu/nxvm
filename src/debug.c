@@ -22,8 +22,10 @@ test code
 
 #include "nvm/vmachine.h"
 #include "nvm/vcpu.h"
-#define cpu vCPU
+#define cpu vcpu
 #define memory memoryBase
+#define insptr insPtr
+#define cputerm cpuTermFlag
 
 #include "asm86/asm86.h"
 
@@ -331,6 +333,43 @@ static void f()
 			}
 		}
 	}
+}
+// go
+static void rprintregs();
+static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
+{
+	t_vaddrcc start = (((t_vaddrcc)cpu.cs)<<4)+ptr1;
+	t_vaddrcc end = (((t_vaddrcc)cpu.cs)<<4)+ptr2;
+	if(start < end) {
+		insptr = start;
+		while(insptr < end && !cputerm) {
+			InsExec();
+			//RefreshVideoRAM();
+			//ExecInt();
+		}
+	} else fprintf(stdout,"\n");
+	if(cputerm) fprintf(stdout,"Program terminated normally\n");
+	else {
+		rprintregs();
+	}
+	cpu.ip = ptr2;
+	return;
+}
+static void g()
+{
+	t_nubit16 ptr1,ptr2;
+	switch(narg) {
+	case 1:	ptr1 = cpu.ip;ptr2 = 0xffff;break;
+	case 2:	addrparse(cpu.cs,arg[1]);
+			ptr1 = cpu.ip;ptr2 = ptr;	break;
+	case 3:	addrparse(cpu.cs,arg[1]);
+			ptr1 = ptr;
+			addrparse(cpu.cs,arg[2]);
+			ptr2 = ptr;
+			break;
+	default:seterr(narg-1);return;
+	}
+	gexec(ptr1,ptr2);
 }
 // hex
 static void h()
@@ -711,8 +750,7 @@ static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 	while(start <= end) {
 		pos = 0;
 		prefixflag = 0;
-		while(!pos || isprefix(getbyte(segment,start+pos)) ||
-			(prefixflag && !isprefix(getbyte(segment,start+pos)))) {
+		while(!pos || prefixflag) {
 			if(isprefix(getbyte(segment,start+pos))) prefixflag = 1;
 			else prefixflag = 0;
 			printnubit16(segment);
@@ -830,7 +868,8 @@ static void help()
 	fprintf(stdout,"dump\t\tD [range]\n");
 	fprintf(stdout,"enter\t\tE address [list]\n");
 	fprintf(stdout,"fill\t\tF range list\n");
-//!	fprintf(stdout,"go\t\tG [=address] [addresses]\n");
+	fprintf(stdout,"go\t\tG [[address] breakpoint]\n");
+	//fprintf(stdout,"go\t\tG [=address] [addresses]\n");
 	fprintf(stdout,"hex\t\tH value1 value2\n");
 //!	fprintf(stdout,"input\t\tI port\n");
 	fprintf(stdout,"load\t\tL [address]\n");
@@ -887,10 +926,6 @@ static void exec()
 {
 	errPos = 0;
 	if(!arg[0]) return;
-	/*if(arg[0][1] != '\0') {
-		seterr(0);
-		return;
-	}*/
 	switch(arg[0][0]) {
 	case '\?':	help();break;
 	case 'a':	a();break;
@@ -899,6 +934,7 @@ static void exec()
 	case 'e':	e();break;
 	case 'f':	f();break;
 	case 'h':	h();break;
+	case 'g':	g();break;
 	case 'l':	l();break;
 	case 'm':	m();break;
 	case 'n':	n();break;

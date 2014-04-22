@@ -1,9 +1,10 @@
 /* This file is a part of NekoVMac project. */
 
-/*	Type of platforms: NONE, MSDOS, WIN32CON, WIN32APP
+/*
+	Type of systems: NONE, MSDOS, WIN32CON, WIN32APP
 */
 
-#define PRODUCT "Neko's Virtual Machine [0x002a]\n\
+#define PRODUCT "Neko's Virtual Machine [0x002b]\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"
 
 /*
@@ -11,7 +12,10 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 	Email:		cshaxu@gatech.edu
 	Start:		01/25/2012
 	End:		(null)
-	Modules:	asm86, nvm, main(console,debug,dosint)
+	Module I - ASM86
+	Project Date:	01/25/2012 - 02/05/2012
+	Module II - CONSOLE
+	Project Date:	01/25/2012 - Present
 */
 
 #include "stdio.h"
@@ -20,6 +24,9 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 
 #include "global.h"
 #include "console.h"
+
+void test()
+{fprintf(stdout,"test\n");}
 
 #ifdef NVM_WIN32APP
 #include "windows.h"
@@ -34,12 +41,17 @@ int main(int argc, char **argv)
 #endif
 {
 	fprintf(stdout,"%s\n",PRODUCT);
-	NSConsole();
+	NSConsole(argc,argv);
     return 0;
 }
 
 /*	COMMENTS
-	
+	unsigned int x = (unsigned int)test;
+	void (*y)(void) = (*(void (*)(void))(x));
+	y();
 	MessageBox(NULL,"Neko's Virtual Machine WIN32APP Edition","WinMain",MB_OK);
-
+The NTVDM CPU has encountered an illegal instruction.
+CS:0db 1 IP:ffd3 OP:63 fa 65 13 64 Choose 'close' to terminate the
+application.	
+	
 */

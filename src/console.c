@@ -52,7 +52,8 @@ void NSHelp()
 	fprintf(stdout,"HELP\t\tProvides Help information for NVM console commands.\n\n");
 	fprintf(stdout,"NVM Settings\n");
 	fprintf(stdout,"============\n");
-	fprintf(stdout,"MEMORY\t\tAssigns the size of NVM.\n\n");
+	//fprintf(stdout,"STATUS\t\tPrints the status of NVM.\n");
+	fprintf(stdout,"MEMORY\t\tAssigns the size of NVM.\n");
 	fprintf(stdout,"MEMORYTEST\tTests the size of NVM.\n\n");
 	fprintf(stdout,"NVM Operations\n");
 	fprintf(stdout,"==============\n");
@@ -65,13 +66,16 @@ void NSHelp()
 void NSMemory()
 {
 	char str[MAXLINE];
+	if(runFlag) {fprintf(stdout,"Cannot modify memory size now.\n");return;}
 	fflush(stdin);
 	fprintf(stdout,"Size(KB): ");
 	fgets(str,MAXLINE,stdin);
 	memorySize = atoi(str);
-	memorySize <<= 10;
-	MemoryTerm();
-	MemoryInit();
+	if(memorySize > 0x400) {
+		memorySize <<= 0x0a;
+		MemoryTerm();
+		MemoryInit();
+	}
 }
 void NSMemoryTest()
 {
@@ -105,11 +109,13 @@ void NSOff()
 }
 void NSReset()
 {
-	NVMPowerOff();
-	NVMPowerOn();
+	if(runFlag) {
+		NVMPowerOff();
+		NVMPowerOn();
+	}
 }
 
-void NSConsole()
+void NSConsole(int argc, char **argv)
 {
 	char cmdl[MAXLINE];
 	exitFlag = 0;
@@ -122,9 +128,10 @@ void NSConsole()
 		parse(cmdl);
 		if(!strlen(cmdl)) continue;
 		else if(!strcmp(cmdl,"debug")) NSDebug();
+		else if(!strcmp(cmdl,"exec")) NSExec();
 		else if(!strcmp(cmdl,"exit")) NSExit();
 		else if(!strcmp(cmdl,"help")) NSHelp();
-		else if(!strcmp(cmdl,"exec")) NSExec();
+		else if(!strcmp(cmdl,"pwd")) fprintf(stdout,"%s\n",argv[0]);
 
 		else if(!strcmp(cmdl,"memory")) NSMemory();
 		else if(!strcmp(cmdl,"memorytest")) NSMemoryTest();

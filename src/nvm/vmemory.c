@@ -9,6 +9,7 @@
 
 void MemoryInit()
 {
+	if(memoryBase) MemoryTerm();
 	memoryBase = (t_vaddrcc)malloc(memorySize);
 	memset((void *)memoryBase,0,memorySize);
 }

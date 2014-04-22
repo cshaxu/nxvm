@@ -3,6 +3,6 @@
 #ifndef NS_CONSOLE_H
 #define NS_CONSOLE_H
 
-void NSConsole();
+void NSConsole(int,char **);
 
 #endif

@@ -1027,9 +1027,9 @@ int assemble(const char *asmStmt,unsigned short locCS,
 		if((modrm.mod == 0 && (modrm.rm == 2 || modrm.rm == 3)) || \
 			((modrm.mod == 1 || modrm.mod == 2) && (modrm.rm == 2 || modrm.rm == 3 || modrm.rm == 6))\
 			) setOperandSS\
-		else if(modrm.mod == 3) setOperandNul\
-		else setOperandDS\
+		else if(modrm.mod != 3)setOperandDS\
 	}\
+	if(modrm.mod == 3) setOperandNul\
 	if(!isOperandNul) {\
 		resOperand->seg = 0x01;\
 		resOperand->mod = modrm.mod;\
@@ -1158,7 +1158,7 @@ static int dDB(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned ch
 	int len = 0;
 	setOperandNul
 	dANY("DB\t")
-	dStrCat16(dasmStmt,num);
+	dStrCat8(dasmStmt,num);
 	return len;
 }
 static int dJRel(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op,unsigned short locOffset,int bit)

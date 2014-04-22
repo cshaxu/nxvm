@@ -8,9 +8,9 @@
 
 t_vaddrcc memoryBase;	// memory base address is 20 bit
 t_nubit32 memorySize = 0;	// memory size in byte
-t_faddrcc insInTable[0x10000];	// 65536 In Port
-t_faddrcc insOutTable[0x10000];	// 65536 Out Port
-t_faddrcc ins86Table[0x100];	// 256 8086 Instructions
+t_faddrcc InTable[0x10000];	// 65536 In Port
+t_faddrcc OutTable[0x10000];	// 65536 Out Port
+t_faddrcc InsTable[0x100];	// 256 8086 Instructions
 
 t_bool initFlag = 0;
 t_bool runFlag = 0;
@@ -19,7 +19,7 @@ void NVMInit()
 {
 	if(!initFlag) {
 		if(!memorySize)
-			memorySize = 1024 << 10;	// 1MBytes
+			memorySize = 1 << 20;	// 1MBytes
 		CPUInit();
 		MemoryInit();
 		BIOSInit();

@@ -3,7 +3,7 @@
 #ifndef NVM_VCPU_H
 #define NVM_VCPU_H
 
-#include "vmachine.h"
+#include "vglobal.h"
 
 #define CF 0x0001
 #define PF 0x0004
@@ -36,10 +36,13 @@ typedef struct {
 	t_nubit16 cs,ds,es,ss;
 } t_cpu;
 
-extern t_cpu vCPU;
+extern t_cpu vcpu;
+extern t_vaddrcc insPtr;
+extern t_bool cpuTermFlag;
+
+void InsExec();
 
 void CPUInit();
-//void CPUTest();
 void CPUTerm();
 
 #endif

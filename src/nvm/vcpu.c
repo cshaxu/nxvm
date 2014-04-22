@@ -4,27 +4,33 @@
 #include "stdlib.h"
 #include "memory.h"
 
+#include "vmachine.h"
+#include "vcpuins.h"
 #include "vcpu.h"
 
-t_cpu vCPU;
-//t_vaddrcc curIP;
+t_cpu vcpu;
+t_vaddrcc insPtr;
+t_bool cpuTermFlag;
 
-/*static void IO_NOP()
+void InsExec()
 {
-#ifdef NVM_DEBUG
-	nvmprint("IO not supported - %4x:%4x %4x%3x\n",vCPU.cs,vCPU.ip,*(t_nubit8 *)(curIP+memoryBase-1),*(t_nubit8 *)(curIP+memoryBase));
-#endif
-}*/
+	InsTable[*(t_nubit8 *)(insPtr+memoryBase)]();
+	insPtr++;
+	vcpu.ip = (insPtr-(((t_vaddrcc)vcpu.cs)<<4)) % 0x10000;
+}
 
 void CPUInit()
 {
-	memset(&vCPU,0,sizeof(vCPU));
-	vCPU.cs = 0xf000;
-	vCPU.ip = 0xfff0;
-	//curIP = (vCPU.cs << 4) + vCPU.ip;
-	//SetIns86Table();
-	//SetInOutTable();
+	memset(&vcpu,0,sizeof(vcpu));
+	vcpu.cs = 0xf000;
+	vcpu.ip = 0xfff0;
+	insPtr = vcpu.cs;
+	insPtr = (insPtr<<4)+vcpu.ip;
+	cpuTermFlag = 0;
+	CPUInsInit();
 }
 
 void CPUTerm()
-{}
+{
+	CPUInsTerm();
+}
