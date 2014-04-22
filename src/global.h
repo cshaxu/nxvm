@@ -1,9 +1,9 @@
-/* This file is a part of NekoVM project. */
+/* This file is a part of NekoVMac project. */
 
 #define DEBUG
 
-#ifndef NV_GLOBAL_H
-#define NV_GLOBAL_H
+#ifndef NS_GLOBAL_H
+#define NS_GLOBAL_H
 
 #define MAXLINE 256
 

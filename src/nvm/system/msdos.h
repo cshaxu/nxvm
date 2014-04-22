@@ -1,3 +1,5 @@
 /* This file is a part of NekoVMac project. */
 
-#include "vcpuins.h"
+#ifndef NVM_MSDOS_H
+#define NVM_MSDOS_H
+#endif

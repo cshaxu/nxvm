@@ -39,7 +39,7 @@ typedef struct {
 extern t_cpu vCPU;
 
 void CPUInit();
-void CPUTest();
+//void CPUTest();
 void CPUTerm();
 
 #endif

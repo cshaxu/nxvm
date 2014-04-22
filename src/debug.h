@@ -1,7 +1,7 @@
-/* This file is a part of NekoVM project. */
+/* This file is a part of NekoVMac project. */
 
-#ifndef NV_DEBUG_H
-#define NV_DEBUG_H
+#ifndef NS_DEBUG_H
+#define NS_DEBUG_H
 
 void NSDebug();
 

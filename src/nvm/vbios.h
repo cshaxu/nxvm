@@ -4,6 +4,6 @@
 #define NVM_VBIOS_H
 
 void BIOSInit();
-void NVMTest();
+void BIOSTerm();
 
 #endif

@@ -1,12 +1,8 @@
-/* This file is a part of NekoVM project. */
+/* This file is a part of NekoVMac project. */
 
-#ifndef NV_CONSOLE_H
-#define NV_CONSOLE_H
+#ifndef NS_CONSOLE_H
+#define NS_CONSOLE_H
 
-extern int exitFlag;
-void NSExec();
-void NSExit();
-void NSHelp();
 void NSConsole();
 
 #endif

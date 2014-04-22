@@ -1,6 +1,6 @@
-/* This file is a part of NekoVM project. */
+/* This file is a part of NekoVMac project. */
 
-#ifndef NV_DOSINT_H
-#define NV_DOSINT_H
+#ifndef NS_DOSINT_H
+#define NS_DOSINT_H
 
 #endif

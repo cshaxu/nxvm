@@ -3,7 +3,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "memory.h"
-#include "vdisplay.h"
+
 #include "vcpu.h"
 
 t_cpu vCPU;
@@ -24,11 +24,6 @@ void CPUInit()
 	//curIP = (vCPU.cs << 4) + vCPU.ip;
 	//SetIns86Table();
 	//SetInOutTable();
-}
-
-void CPUTest()
-{
-	nvmprint("Main Processor : Intel 8086 CPU\n",0);
 }
 
 void CPUTerm()

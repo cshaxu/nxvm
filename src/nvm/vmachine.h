@@ -1,7 +1,5 @@
 /* This file is a part of NekoVMac project. */
 
-#define NVM_DEBUG
-
 #ifndef NVM_VMACHINE_H
 #define NVM_VMACHINE_H
 
@@ -21,10 +19,13 @@ extern t_vaddrcc memoryBase;
 extern t_faddrcc insInTable[0x10000];
 extern t_faddrcc insOutTable[0x10000];
 extern t_faddrcc ins86Table[0x100];
-extern t_bool testFlag;
+extern t_bool initFlag;
+extern t_bool runFlag;
 
 void NVMInit();
+void NVMPowerOn();
 void NVMRun();
+void NVMPowerOff();
 void NVMTerm();
 
 #endif

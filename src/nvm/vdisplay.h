@@ -2,7 +2,4 @@
 
 #ifndef NVM_VDISPLAY_H
 #define NVM_VDISPLAY_H
-
-int nvmprint(const char *, ...);
-
 #endif

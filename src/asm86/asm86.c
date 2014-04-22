@@ -1,5 +1,12 @@
 /* This file is a part of Neko's ASM86 Project. */
 
+/*
+	Neko Confidential
+	Copyright (C) 2012 Neko. All rights reserved.
+	Project Period:	01/25/2012 - 02/04/2012
+	Current Build:	0x0029
+*/
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"

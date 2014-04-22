@@ -4,7 +4,7 @@
 #define NVM_VMEMORY_H
 
 void MemoryInit();
-void MemoryTest();
+//void MemoryTest();
 void MemoryTerm();
 
 #endif

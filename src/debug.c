@@ -1,4 +1,4 @@
-/* This file is a part of NekoVM project. */
+/* This file is a part of NekoVMac project. */
 
 /*
 test code
@@ -39,6 +39,7 @@ static char **arg;
 static int exitFlag;
 static char cmdBuff[MAXLINE];
 static char cmdCopy[MAXLINE];
+static char filename[MAXLINE];
 
 static t_nubit16 dumpSegRec;
 static t_nubit16 dumpPtrRec;
@@ -254,7 +255,7 @@ static void dprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 			c[i%0x10] = getbyte(segment,i);
 			printnubit8(c[i%0x10]);
 			t = c[i%0x10];
-			if((t >=1 && t <= 7) ||
+			if((t >=1 && t <= 7) || t == ' ' ||
 				(t >=11 && t <= 12) ||
 				(t >=14 && t <= 31) ||
 				(t >=33 && t <= 128)) ;
@@ -297,14 +298,14 @@ static void e()
 		printnubit8(getbyte(seg,ptr));
 		fprintf(stdout,".");
 		fgets(s,MAXLINE,stdin);
-		lcase(s);
-		val = scannubit8(s);
+		lcase(s);//!!
+		val = scannubit8(s);//!!
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			setbyte(seg,ptr,val);
 	} else if(narg > 2) {
 		addrparse(cpu.ds,arg[1]);
 		for(i = 2;i < narg;++i) {
-			val = scannubit8(arg[i]);
+			val = scannubit8(arg[i]);//!!
 			if(!errPos) setbyte(seg,ptr,val);
 			else break;
 			ptr++;
@@ -345,6 +346,34 @@ static void h()
 		fprintf(stdout,"\n");
 	}
 }
+// load
+static void l()
+{
+	unsigned char c;
+	unsigned long len = 0;
+	FILE *load = fopen(filename,"rb");
+	if(!load) fprintf(stdout,"File not found\n");
+	else {
+		switch(narg) {
+		case 1:
+			seg = cpu.cs;
+			ptr = 0x100;
+			break;
+		case 2:
+			addrparse(cpu.cs,arg[1]);
+			break;
+		default:	seterr(narg-1);break;}
+		c = fgetc(load);
+		while(!feof(load)) {
+			setbyte(seg,ptr+len++,c);
+			c = fgetc(load);
+		}
+		fclose(load);
+		cpu.cx = len&0xffff;
+		if(len > 0xffff) cpu.bx = (len>>16);
+		else cpu.bx = 0x0000;
+	}
+}
 // move
 static void m()
 {
@@ -374,6 +403,12 @@ static void m()
 			}
 		}
 	}
+}
+// name
+static void n()
+{
+	if(narg != 2) seterr(narg-1);
+	else strcpy(filename,arg[1]);
 }
 // register
 static void uprint(t_nubit16,t_nubit16,t_nubit16);
@@ -758,6 +793,34 @@ static void u()
 		else uprint(seg,ptr,ptr2);
 	} else seterr(3);
 }
+// write
+static void w()
+{
+	t_nubit16 i = 0;
+	t_nubit32 len = (cpu.bx<<16)+cpu.cx;
+	FILE *write;
+	if(!strlen(filename)) {fprintf(stdout,"(W)rite error, no destination defined\n");return;}
+	else write= fopen(filename,"wb");
+	if(!write) fprintf(stdout,"File not found\n");
+	else {
+		fprintf(stdout,"Writing ");
+		printnubit16(cpu.bx);
+		printnubit16(cpu.cx);
+		fprintf(stdout," bytes\n");
+		switch(narg) {
+		case 1:
+			seg = cpu.cs;
+			ptr = 0x100;
+			break;
+		case 2:
+			addrparse(cpu.cs,arg[1]);
+			break;
+		default:	seterr(narg-1);break;}
+		while(i < len)
+			fputc(getbyte(seg,ptr+i++),write);
+		fclose(write);
+	}
+}
 /* DEBUG CMD END */
 
 static void help()
@@ -770,10 +833,10 @@ static void help()
 //!	fprintf(stdout,"go\t\tG [=address] [addresses]\n");
 	fprintf(stdout,"hex\t\tH value1 value2\n");
 //!	fprintf(stdout,"input\t\tI port\n");
-//!	fprintf(stdout,"load\t\tL\n");
+	fprintf(stdout,"load\t\tL [address]\n");
 	//fprintf(stdout,"load\t\tL [address] [drive] [firstsector] [number]\n");
 	fprintf(stdout,"move\t\tM range address\n");
-//!	fprintf(stdout,"name\t\tN [pathname]\n");
+	fprintf(stdout,"name\t\tN [pathname]\n");
 	//fprintf(stdout,"name\t\tN [pathname] [arglist]\n");
 //!	fprintf(stdout,"output\t\tO port byte\n");
 //!	fprintf(stdout,"proceed\t\tP [=address] [number]\n");
@@ -782,7 +845,7 @@ static void help()
 	fprintf(stdout,"search\t\tS range list\n");
 //!	fprintf(stdout,"trace\t\tT [=address] [value]\n");
 	fprintf(stdout,"unassemble\tU [range]\n");
-//!	fprintf(stdout,"write\t\tW\n");
+	fprintf(stdout,"write\t\tW [address]\n");
 	//fprintf(stdout,"write\t\tW [address] [drive] [firstsector] [number]\n");
 	//fprintf(stdout,"allocate expanded memory\tXA [#pages]\n");
 	//fprintf(stdout,"deallocate expanded memory\tXD [handle]\n");
@@ -791,6 +854,7 @@ static void help()
 }
 static void init()
 {
+	filename[0] = '\0';
 	cpu.ax = cpu.bx = cpu.cx = cpu.dx = 0x0000;
 	cpu.si = cpu.di = cpu.sp = cpu.bp = 0x0000;
 	cpu.ds = cpu.es = cpu.ss = cpu.cs =
@@ -835,11 +899,14 @@ static void exec()
 	case 'e':	e();break;
 	case 'f':	f();break;
 	case 'h':	h();break;
+	case 'l':	l();break;
 	case 'm':	m();break;
+	case 'n':	n();break;
 	case 'q':	q();break;
 	case 'r':	r();break;
 	case 's':	s();break;
 	case 'u':	u();break;
+	case 'w':	w();break;
 	default:
 		seterr(0);
 		break;
