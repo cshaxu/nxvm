@@ -93,7 +93,7 @@ static int chartohexdigit(char c)
 			*(loc+len++) = modrm.imm;\
 			if(dispLen(modrm) == 2) *(loc+len++) = (modrm.imm>>8);}}
 #define aSINGLE(op)	aSetByte(op)
-#define aAACC(op) {	aSetByte(op)	aSetByte(0x0a)}
+#define aAACC(op) {	if(a1) len = 0; else {aSetByte(op)	aSetByte(0x0a)}}
 #define aGROUP1(reg,op,sign) {\
 	if(isALImm8) {					aSINGLE(0x04+op)					aSetByte(m2.imm)	}\
 	else if(isAXImm16) {			aSINGLE(0x05+op)					aSetWord(m2.imm)	}\
@@ -856,7 +856,9 @@ int assemble(const char *asmStmt,unsigned short locCS,
 #define dEmit9A len+=d9A(dSOL)
 #define dEmitMO	len+=dMovOff
 #define dEmitMI len+=dMovImm(dSOL,opcode)
-#define dEmitC2 len+=dC2CA(dSOL,opcode)
+#define dEmitOI len+=dOPImm
+#define dEmitG2	len+=dGroup2(dSOL,opcode)
+#define dEmitAA	len+=dAAX
 #define isOperandES		(resOperand->flag == 0)
 #define isOperandCS		(resOperand->flag == 1)
 #define isOperandSS		(resOperand->flag == 2)
@@ -870,41 +872,41 @@ int assemble(const char *asmStmt,unsigned short locCS,
 #define dGetByte(n)	{n = *(loc+len++);}
 #define dGetWord(n)	{n = *(loc+len++);n += ((*(loc+len++))<<8);}
 #define dANY(str) {strcat(dasmStmt,str);}
-#define dCOMMA {strcat(dasmStmt,",");}
+#define dCOMMA {dANY(",");}
 #define dS {\
 		switch(modrm.reg) {\
-		case 0:	strcat(dasmStmt,"ES");break;\
-		case 1:	strcat(dasmStmt,"CS");break;\
-		case 2:	strcat(dasmStmt,"SS");break;\
-		case 3:	strcat(dasmStmt,"DS");break;\
-		default:strcat(dasmStmt,"(ERROR:REG)");break;}}
+		case 0:	dANY("ES");break;\
+		case 1:	dANY("CS");break;\
+		case 2:	dANY("SS");break;\
+		case 3:	dANY("DS");break;\
+		default:dANY("(ERROR:REG)");break;}}
 #define dR(bit) {\
 	switch(bit) {\
 	case 8:\
 		switch(modrm.reg) {\
-		case 0:	strcat(dasmStmt,"AL");break;\
-		case 1:	strcat(dasmStmt,"CL");break;\
-		case 2:	strcat(dasmStmt,"DL");break;\
-		case 3:	strcat(dasmStmt,"BL");break;\
-		case 4:	strcat(dasmStmt,"AH");break;\
-		case 5:	strcat(dasmStmt,"CH");break;\
-		case 6:	strcat(dasmStmt,"DH");break;\
-		case 7:	strcat(dasmStmt,"BH");break;\
-		default:strcat(dasmStmt,"(ERROR:REG)");break;}\
+		case 0:	dANY("AL");break;\
+		case 1:	dANY("CL");break;\
+		case 2:	dANY("DL");break;\
+		case 3:	dANY("BL");break;\
+		case 4:	dANY("AH");break;\
+		case 5:	dANY("CH");break;\
+		case 6:	dANY("DH");break;\
+		case 7:	dANY("BH");break;\
+		default:dANY("(ERROR:REG)");break;}\
 		break;\
 	case 16:\
 		switch(modrm.reg) {\
-		case 0:	strcat(dasmStmt,"AX");break;\
-		case 1:	strcat(dasmStmt,"CX");break;\
-		case 2:	strcat(dasmStmt,"DX");break;\
-		case 3:	strcat(dasmStmt,"BX");break;\
-		case 4:	strcat(dasmStmt,"SP");break;\
-		case 5:	strcat(dasmStmt,"BP");break;\
-		case 6:	strcat(dasmStmt,"SI");break;\
-		case 7:	strcat(dasmStmt,"DI");break;\
-		default:strcat(dasmStmt,"(ERROR:REG)");break;}\
+		case 0:	dANY("AX");break;\
+		case 1:	dANY("CX");break;\
+		case 2:	dANY("DX");break;\
+		case 3:	dANY("BX");break;\
+		case 4:	dANY("SP");break;\
+		case 5:	dANY("BP");break;\
+		case 6:	dANY("SI");break;\
+		case 7:	dANY("DI");break;\
+		default:dANY("(ERROR:REG)");break;}\
 		break;\
-	default:strcat(dasmStmt,"(ERROR:REG)");break;}}
+	default:dANY("(ERROR:REG)");break;}}
 #define dRM(bit) {\
 	switch(bit) {\
 	case 0: resOperand->len = 2;break;\
@@ -913,94 +915,94 @@ int assemble(const char *asmStmt,unsigned short locCS,
 	default:resOperand->len = 0;break;}\
 	if(modrm.mod < 3) {\
 		switch(bit) {\
-		case 0:	strcat(dasmStmt,"[");break;\
-		case 8:	strcat(dasmStmt,"BYTE PTR [");break;\
-		case 16:strcat(dasmStmt,"WORD PTR [");break;\
-		default:strcat(dasmStmt,"(ERROR:PTR)");break;}}\
+		case 0:	dANY("[")			break;\
+		case 8:	dANY("BYTE PTR [")	break;\
+		case 16:dANY("WORD PTR [")	break;\
+		default:dANY("(ERROR:PTR)")	break;}}\
 	switch(modrm.mod) {\
 	case 0:\
 		switch(modrm.rm) {\
-		case 0:	strcat(dasmStmt,"BX+SI");break;\
-		case 1:	strcat(dasmStmt,"BX+DI");break;\
-		case 2:	strcat(dasmStmt,"BP+SI");break;\
-		case 3:	strcat(dasmStmt,"BP+DI");break;\
-		case 4:	strcat(dasmStmt,"SI");break;\
-		case 5:	strcat(dasmStmt,"DI");break;\
+		case 0:	dANY("BX+SI")	break;\
+		case 1:	dANY("BX+DI")	break;\
+		case 2:	dANY("BP+SI")	break;\
+		case 3:	dANY("BP+DI")	break;\
+		case 4:	dANY("SI")		break;\
+		case 5:	dANY("DI")		break;\
 		case 6:	dStrCat16(dasmStmt,modrm.imm);break;\
-		case 7:	strcat(dasmStmt,"BX");break;\
-		default:strcat(dasmStmt,"(ERROR:R/M)");break;}\
+		case 7:	dANY("BX")		break;\
+		default:dANY("(ERROR:R/M)");break;}\
 		break;\
 	case 1:\
 		switch(modrm.rm) {\
-		case 0:	strcat(dasmStmt,"BX+SI+");dStrCat8(dasmStmt,modrm.imm);break;\
-		case 1:	strcat(dasmStmt,"BX+DI+");dStrCat8(dasmStmt,modrm.imm);break;\
-		case 2:	strcat(dasmStmt,"BP+SI+");dStrCat8(dasmStmt,modrm.imm);break;\
-		case 3:	strcat(dasmStmt,"BP+DI+");dStrCat8(dasmStmt,modrm.imm);break;\
-		case 4:	strcat(dasmStmt,"SI+");dStrCat8(dasmStmt,modrm.imm);break;\
-		case 5:	strcat(dasmStmt,"DI+");dStrCat8(dasmStmt,modrm.imm);break;\
-		case 6:	strcat(dasmStmt,"BP+");dStrCat8(dasmStmt,modrm.imm);break;\
-		case 7:	strcat(dasmStmt,"BX+");dStrCat8(dasmStmt,modrm.imm);break;\
-		default:strcat(dasmStmt,"(ERROR:R/M)");break;}\
+		case 0:	dANY("BX+SI+")	dStrCat8(dasmStmt,modrm.imm);break;\
+		case 1:	dANY("BX+DI+")	dStrCat8(dasmStmt,modrm.imm);break;\
+		case 2:	dANY("BP+SI+")	dStrCat8(dasmStmt,modrm.imm);break;\
+		case 3:	dANY("BP+DI+")	dStrCat8(dasmStmt,modrm.imm);break;\
+		case 4:	dANY("SI+")		dStrCat8(dasmStmt,modrm.imm);break;\
+		case 5:	dANY("DI+")		dStrCat8(dasmStmt,modrm.imm);break;\
+		case 6:	dANY("BP+")		dStrCat8(dasmStmt,modrm.imm);break;\
+		case 7:	dANY("BX+")		dStrCat8(dasmStmt,modrm.imm);break;\
+		default:dANY("(ERROR:R/M)")	break;}\
 		break;\
 	case 2:\
 		switch(modrm.rm) {\
-		case 0:	strcat(dasmStmt,"BX+SI+");dStrCat16(dasmStmt,modrm.imm);break;\
-		case 1:	strcat(dasmStmt,"BX+DI+");dStrCat16(dasmStmt,modrm.imm);break;\
-		case 2:	strcat(dasmStmt,"BP+SI+");dStrCat16(dasmStmt,modrm.imm);break;\
-		case 3:	strcat(dasmStmt,"BP+DI+");dStrCat16(dasmStmt,modrm.imm);break;\
-		case 4:	strcat(dasmStmt,"SI+");dStrCat16(dasmStmt,modrm.imm);break;\
-		case 5:	strcat(dasmStmt,"DI+");dStrCat16(dasmStmt,modrm.imm);break;\
-		case 6:	strcat(dasmStmt,"BP+");dStrCat16(dasmStmt,modrm.imm);break;\
-		case 7:	strcat(dasmStmt,"BX+");dStrCat16(dasmStmt,modrm.imm);break;\
-		default:strcat(dasmStmt,"(ERROR:R/M)");break;}\
+		case 0:	dANY("BX+SI+")	dStrCat16(dasmStmt,modrm.imm);break;\
+		case 1:	dANY("BX+DI+")	dStrCat16(dasmStmt,modrm.imm);break;\
+		case 2:	dANY("BP+SI+")	dStrCat16(dasmStmt,modrm.imm);break;\
+		case 3:	dANY("BP+DI+")	dStrCat16(dasmStmt,modrm.imm);break;\
+		case 4:	dANY("SI+")		dStrCat16(dasmStmt,modrm.imm);break;\
+		case 5:	dANY("DI+")		dStrCat16(dasmStmt,modrm.imm);break;\
+		case 6:	dANY("BP+")		dStrCat16(dasmStmt,modrm.imm);break;\
+		case 7:	dANY("BX+")		dStrCat16(dasmStmt,modrm.imm);break;\
+		default:dANY("(ERROR:R/M)")	break;}\
 		break;\
 	case 3:\
 		switch(bit) {\
 		case 8:\
 			switch(modrm.rm) {\
-			case 0:	strcat(dasmStmt,"AL");break;\
-			case 1:	strcat(dasmStmt,"CL");break;\
-			case 2:	strcat(dasmStmt,"DL");break;\
-			case 3:	strcat(dasmStmt,"BL");break;\
-			case 4:	strcat(dasmStmt,"AH");break;\
-			case 5:	strcat(dasmStmt,"CH");break;\
-			case 6:	strcat(dasmStmt,"DH");break;\
-			case 7:	strcat(dasmStmt,"BH");break;\
-			default:strcat(dasmStmt,"(ERROR:R/M)");break;}\
+			case 0:	dANY("AL")	break;\
+			case 1:	dANY("CL")	break;\
+			case 2:	dANY("DL")	break;\
+			case 3:	dANY("BL")	break;\
+			case 4:	dANY("AH")	break;\
+			case 5:	dANY("CH")	break;\
+			case 6:	dANY("DH")	break;\
+			case 7:	dANY("BH")	break;\
+			default:dANY("(ERROR:R/M)")	break;}\
 			break;\
 		case 16:\
 			switch(modrm.rm) {\
-			case 0:	strcat(dasmStmt,"AX");break;\
-			case 1:	strcat(dasmStmt,"CX");break;\
-			case 2:	strcat(dasmStmt,"DX");break;\
-			case 3:	strcat(dasmStmt,"BX");break;\
-			case 4:	strcat(dasmStmt,"SP");break;\
-			case 5:	strcat(dasmStmt,"BP");break;\
-			case 6:	strcat(dasmStmt,"SI");break;\
-			case 7:	strcat(dasmStmt,"DI");break;\
-			default:strcat(dasmStmt,"(ERROR:R/M)");break;}\
+			case 0:	dANY("AX")	break;\
+			case 1:	dANY("CX")	break;\
+			case 2:	dANY("DX")	break;\
+			case 3:	dANY("BX")	break;\
+			case 4:	dANY("SP")	break;\
+			case 5:	dANY("BP")	break;\
+			case 6:	dANY("SI")	break;\
+			case 7:	dANY("DI")	break;\
+			default:dANY("(ERROR:R/M)")	break;}\
 			break;\
-		default:strcat(dasmStmt,"(ERROR:R/M)");break;}\
+		default:dANY("(ERROR:R/M)")	break;}\
 		break;\
 	default:\
 		break;\
 	}\
-	if(modrm.mod < 3) strcat(dasmStmt,"]");}
+	if(modrm.mod < 3) dANY("]");}
 #define dImm(bit) {\
 	switch(bit) {\
 	case 8:	dGetByte(imm)	dStrCat8(dasmStmt,imm);break;\
 	case 16:dGetWord(imm)	dStrCat16(dasmStmt,imm);break;\
-	default:strcat(dasmStmt,"(ERROR:IMM)");break;}}
+	default:dANY("(ERROR:IMM)")	break;}}
 #define dOff(bit) {\
 	switch(bit) {\
-	case 8:	strcat(dasmStmt,"BYTE PTR [");	dGetWord(imm)	dStrCat16(dasmStmt,imm);break;\
-	case 16:strcat(dasmStmt,"WORD PTR [");	dGetWord(imm)	dStrCat16(dasmStmt,imm);break;\
-	default:strcat(dasmStmt,"(ERROR:IMM)");break;}\
-	strcat(dasmStmt,"]");}
+	case 8:	dANY("BYTE PTR [")	dGetWord(imm)	dStrCat16(dasmStmt,imm);break;\
+	case 16:dANY("WORD PTR [")	dGetWord(imm)	dStrCat16(dasmStmt,imm);break;\
+	default:dANY("(ERROR:IMM)")	break;}\
+	dANY("]");}
 #define dSImm8 {\
 	dGetByte(imm)\
-	if((unsigned char)imm < 0x80) strcat(dasmStmt,"+");\
-	else strcat(dasmStmt,"-");\
+	if((unsigned char)imm < 0x80) dANY("+")\
+	else dANY("-")\
 	dStrCat8(dasmStmt,imm);}
 #define dGetModRM {\
 	modrm.mod = *(loc+len++);\
@@ -1027,7 +1029,7 @@ int assemble(const char *asmStmt,unsigned short locCS,
 }
 
 typedef enum {RM8_R8,R8_RM8,RM16_R16,R16_RM16,
-	RM8_Imm8,Imm8_RM8,RM16_Imm16,Imm16_RM16,
+	RM8_I8,I8_RM8,RM16_I16,I16_RM16,
 	RM16_S16,S16_RM16,
 	AL_I8,I8_AL,AX_I16,I16_AX,
 	R16_MX,RM16_NONE
@@ -1064,8 +1066,8 @@ static int dModRM(char *dasmStmt,Operand *resOperand,unsigned char *loc,const ch
 	int len = 0;
 	unsigned short imm;
 	ModRM modrm;
-	strcat(dasmStmt,op);
-	strcat(dasmStmt,"\t");
+	dANY(op);
+	dANY("\t");
 	dGetModRM
 	/*if(isOperandNul) {
 		if((modrm.mod == 0 && (modrm.rm == 2 || modrm.rm == 3)) || 
@@ -1085,15 +1087,15 @@ static int dModRM(char *dasmStmt,Operand *resOperand,unsigned char *loc,const ch
 	case R8_RM8:		dR(8)		dCOMMA	dRM(8)		break;
 	case RM16_R16:		dRM(16)		dCOMMA	dR(16)		break;
 	case R16_RM16:		dR(16)		dCOMMA	dRM(16)		break;
-	case RM8_Imm8:		dRM(8)		dCOMMA	dImm(8)		break;
-	case Imm8_RM8:		dImm(8)		dCOMMA	dRM(8)		break;
-	case RM16_Imm16:	dRM(16)		dCOMMA	dImm(16)	break;
-	case Imm16_RM16:	dImm(16)	dCOMMA	dRM(16)		break;
+	case RM8_I8:		dRM(8)		dCOMMA	dImm(8)		break;
+	case I8_RM8:		dImm(8)		dCOMMA	dRM(8)		break;
+	case RM16_I16:		dRM(16)		dCOMMA	dImm(16)	break;
+	case I16_RM16:		dImm(16)	dCOMMA	dRM(16)		break;
 	case RM16_S16:		dRM(16)		dCOMMA	dS			break;
 	case S16_RM16:		dS			dCOMMA	dRM(16)		break;
 	case R16_MX:		dR(16)		dCOMMA	dRM(0)		break;
 	case RM16_NONE:		dRM(0)							break;
-	default:strcat(dasmStmt,"(ERROR:INSFORMAT)");break;
+	default:	dANY("(ERROR:INSFORMAT)")				break;
 	}
 	return len;
 }
@@ -1102,14 +1104,14 @@ static int dRImm(char *dasmStmt,Operand *resOperand,unsigned char *loc,const cha
 	int len = 0;
 	unsigned short imm;
 	setOperandNul
-	strcat(dasmStmt,op);
-	strcat(dasmStmt,"\t");
+	dANY(op)
+	dANY("\t")
 	switch(it) {\
 	case AL_I8:		dANY("AL")	dCOMMA	dImm(8)		break;
 	case I8_AL:		dImm(8)		dCOMMA	dANY("AL")	break;
 	case AX_I16:	dANY("AX")	dCOMMA	dImm(16)	break;
 	case I16_AX:	dImm(16)	dCOMMA	dANY("AX")	break;
-	default:strcat(dasmStmt,"(ERROR:REGIMM)");break;}
+	default:		dANY("(ERROR:REGIMM)")			break;}
 	return len;
 }
 static int dSLabel(char *dasmStmt,Operand *resOperand,unsigned char *loc,int op)
@@ -1118,31 +1120,31 @@ static int dSLabel(char *dasmStmt,Operand *resOperand,unsigned char *loc,int op)
 	resOperand->flag = op;
 	resOperand->seg = 0x00;
 	switch(op) {
-	case 0:	strcat(dasmStmt,"ES:");break;
-	case 1:	strcat(dasmStmt,"CS:");break;
-	case 2:	strcat(dasmStmt,"SS:");break;
-	case 3:	strcat(dasmStmt,"DS:");break;
-	default:strcat(dasmStmt,"(ERROR:REG)");break;}
+	case 0:	dANY("ES:")	break;
+	case 1:	dANY("CS:")	break;
+	case 2:	dANY("SS:")	break;
+	case 3:	dANY("DS:")	break;
+	default:dANY("(ERROR:REG)")	break;}
 	return len;
 }
 static int dOP(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op)
 {
 	int len = 0;
 	setOperandNul
-	strcat(dasmStmt,op);
+	dANY(op);
 	return len;
 }
 static int dPrefix(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op)
 {
 	int len = 0;
-	strcat(dasmStmt,op);
+	dANY(op);
 	return len;
 }
 static int dDB(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char num)
 {
 	int len = 0;
 	setOperandNul
-	strcat(dasmStmt,"DB\t");
+	dANY("DB\t")
 	dStrCat16(dasmStmt,num);
 	return len;
 }
@@ -1151,8 +1153,8 @@ static int dJRel8(char *dasmStmt,Operand *resOperand,unsigned char *loc,const ch
 	int len = 0;
 	unsigned short rel;
 	setOperandNul
-	strcat(dasmStmt,op);
-	strcat(dasmStmt,"\t");
+	dANY(op);
+	dANY("\t")
 	rel = *(loc+len++);
 	if(rel < 0x80) rel = locOffset+insLen+rel;
 	else rel = locOffset+insLen+rel-0x100;
@@ -1177,13 +1179,13 @@ static int dGroup1(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigne
 	case 7: dANY("CMP")			break;
 	default:dANY("(ERROR:INS)")	break;
 	}
-	strcat(dasmStmt,"\t");
+	dANY("\t")
 	switch(op) {
 	case 0x80:	dRM(8)	dCOMMA	dImm(8)		break;
 	case 0x81:	dRM(16)	dCOMMA	dImm(16)	break;
 	case 0x82:	dRM(8)	dCOMMA	dImm(8)		break;
 	case 0x83:	dRM(16)	dCOMMA	dSImm8		break;
-	default:	strcat(dasmStmt,"(ERROR:INSFORMAT)");break;
+	default:	dANY("(ERROR:INSFORMAT)")	break;
 	}
 	return len;
 }
@@ -1207,7 +1209,7 @@ static int d9A(char *dasmStmt,Operand *resOperand,unsigned char *loc)
 	dGetWord(ptr)
 	dGetWord(seg)
 	dStrCat16(dasmStmt,seg);
-	strcat(dasmStmt,":");
+	dANY(":");
 	dStrCat16(dasmStmt,ptr);
 	return len;
 }
@@ -1226,7 +1228,7 @@ static int dMovOff(char *dasmStmt,Operand *resOperand,unsigned char *loc,InsType
 	case I8_AL:		dOff(8)		dCOMMA	dANY("AL")	break;
 	case AX_I16:	dANY("AX")	dCOMMA	dOff(16)	break;
 	case I16_AX:	dOff(16)	dCOMMA	dANY("AX")	break;
-	default:strcat(dasmStmt,"(ERROR:REGIMM)");break;}
+	default:dANY("(ERROR:REGIMM)");break;}
 	resOperand->imm = imm;
 	return len;
 }
@@ -1244,18 +1246,45 @@ static int dMovImm(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigne
 	switch(myop) {
 	case 0xb0:	dR(8)	dCOMMA	dImm(8)		break;
 	case 0xb8:	dR(16)	dCOMMA	dImm(16)	break;
-	default:strcat(dasmStmt,"(ERROR:MOVOP)");break;}
+	default:dANY("(ERROR:MOVOP)");break;}
 	return len;
 }
-static int dC2CA(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
+static int dOPImm(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op,int bit)
 {
 	int len = 0;
 	unsigned short imm;
 	setOperandNul
+	dANY(op)	dANY("\t")	dImm(bit)
+	return len;
+}
+static int dGroup2(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
+{	// op = 0xd0,0xd1,0xd2,0xd3
+	int len = 0;
+	unsigned short imm;
+	ModRM modrm;
+	dGetModRM
+	switch(modrm.reg) {
+	case 0:	dANY("ROL")	break;
+	case 1: dANY("ROR")	break;
+	case 2: dANY("RCL")	break;
+	case 3:	dANY("RCR")	break;
+	default:dANY("(ERROR:OPD0H)")break;}
+	dANY("\t")
 	switch(op) {
-	case 0xc2:	dANY("RET\t")	dImm(16)	break;
-	case 0xca:	dANY("RETF\t")	dImm(16)	break;
-	default:strcat(dasmStmt,"(ERROR:RET)");break;}
+	case 0xd0:	dRM(8)	dANY(",1")	break;
+	case 0xd1:	dRM(16)	dANY(",1")	break;
+	case 0xd2:	dRM(8)	dANY(",CL")	break;
+	case 0xd3:	dRM(16)	dANY(",CL")	break;}
+	return len;
+}
+static int dAAX(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op)
+{
+	int len = 0;
+	unsigned short imm;
+	setOperandNul
+	dGetByte(imm)
+	dANY(op)
+	if(imm != 0x0a) {dANY("\t")	dStrCat8(dasmStmt,imm);}
 	return len;
 }
 
@@ -1469,40 +1498,40 @@ int disassemble(char *dasmStmt,Operand *resOperand,
 	case 0xbf:	dEmitMI;						break;
 	case 0xc0:	dEmitDB;						break;
 	case 0xc1:	dEmitDB;						break;
-	case 0xc2:	dEmitC2;						break;
+	case 0xc2:	dEmitOI(dSOL,"RET",16);			break;
 	case 0xc3:	dEmitOP(dSOL,"RET");			break;
 	case 0xc4:	dEmitRM(dSOL,"LES",R16_MX);		break;
 	case 0xc5:	dEmitRM(dSOL,"LDS",R16_MX);		break;
-	case 0xc6:break;
-	case 0xc7:break;
-	case 0xc8:break;
-	case 0xc9:break;
-	case 0xca:	dEmitC2;						break;
+	case 0xc6:	dEmitRM(dSOL,"MOV",RM8_I8);		break;
+	case 0xc7:	dEmitRM(dSOL,"MOV",RM16_I16);	break;
+	case 0xc8:	dEmitDB;						break;
+	case 0xc9:	dEmitDB;						break;
+	case 0xca:	dEmitOI(dSOL,"RETF",16);		break;
 	case 0xcb:	dEmitOP(dSOL,"RETF");			break;
-	case 0xcc:break;
-	case 0xcd:break;
+	case 0xcc:	dEmitOP(dSOL,"INT\t3");			break;
+	case 0xcd:	dEmitOI(dSOL,"INT",8);			break;
 	case 0xce:	dEmitOP(dSOL,"INTO");			break;
 	case 0xcf:	dEmitOP(dSOL,"IRET");			break;
-	case 0xd0:break;
-	case 0xd1:break;
-	case 0xd2:break;
-	case 0xd3:break;
-	case 0xd4:break;
-	case 0xd5:break;
-	case 0xd6:break;
+	case 0xd0:	dEmitG2;						break;
+	case 0xd1:	dEmitG2;						break;
+	case 0xd2:	dEmitG2;						break;
+	case 0xd3:	dEmitG2;						break;
+	case 0xd4:	dEmitAA(dSOL,"AAM");			break;
+	case 0xd5:	dEmitAA(dSOL,"AAD");			break;
+	case 0xd6:	dEmitDB;						break;
 	case 0xd7:	dEmitOP(dSOL,"XLAT");			break;
-	case 0xd8:break;
-	case 0xd9:break;
-	case 0xda:break;
-	case 0xdb:break;
-	case 0xdc:break;
-	case 0xdd:break;
-	case 0xde:break;
-	case 0xdf:break;
-	case 0xe0:break;
-	case 0xe1:break;
-	case 0xe2:break;
-	case 0xe3:break;
+	case 0xd8:	dEmitDB;						break;
+	case 0xd9:	dEmitDB;						break;
+	case 0xda:	dEmitDB;						break;
+	case 0xdb:	dEmitDB;						break;
+	case 0xdc:	dEmitDB;						break;
+	case 0xdd:	dEmitDB;						break;
+	case 0xde:	dEmitDB;						break;
+	case 0xdf:	dEmitDB;						break;
+	case 0xe0:	dEmitJC(dSOL,"LOOPNZ",locOffset,2);break;
+	case 0xe1:	dEmitJC(dSOL,"LOOPZ",locOffset,2);break;
+	case 0xe2:	dEmitJC(dSOL,"LOOP",locOffset,2);break;
+	case 0xe3:	dEmitJC(dSOL,"JCXZ",locOffset,2);break;
 	case 0xe4:break;
 	case 0xe5:break;
 	case 0xe6:break;
