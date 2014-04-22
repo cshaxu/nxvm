@@ -734,6 +734,7 @@ static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 					default:fprintf(stdout,"(ERROR:OPERANDDS)");break;}
 					break;
 				default:fprintf(stdout,"(ERROR:OPERAND)");break;}
+				operand.flag = 4;
 			}
 			fprintf(stdout,"\n");
 		}

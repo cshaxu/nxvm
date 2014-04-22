@@ -854,6 +854,9 @@ int assemble(const char *asmStmt,unsigned short locCS,
 #define dEmitG1 len+=dGroup1(dSOL,opcode)
 #define dEmitXC len+=dXCHG(dSOL,opcode)
 #define dEmit9A len+=d9A(dSOL)
+#define dEmitMO	len+=dMovOff
+#define dEmitMI len+=dMovImm(dSOL,opcode)
+#define dEmitC2 len+=dC2CA(dSOL,opcode)
 #define isOperandES		(resOperand->flag == 0)
 #define isOperandCS		(resOperand->flag == 1)
 #define isOperandSS		(resOperand->flag == 2)
@@ -988,6 +991,12 @@ int assemble(const char *asmStmt,unsigned short locCS,
 	case 8:	dGetByte(imm)	dStrCat8(dasmStmt,imm);break;\
 	case 16:dGetWord(imm)	dStrCat16(dasmStmt,imm);break;\
 	default:strcat(dasmStmt,"(ERROR:IMM)");break;}}
+#define dOff(bit) {\
+	switch(bit) {\
+	case 8:	strcat(dasmStmt,"BYTE PTR [");	dGetWord(imm)	dStrCat16(dasmStmt,imm);break;\
+	case 16:strcat(dasmStmt,"WORD PTR [");	dGetWord(imm)	dStrCat16(dasmStmt,imm);break;\
+	default:strcat(dasmStmt,"(ERROR:IMM)");break;}\
+	strcat(dasmStmt,"]");}
 #define dSImm8 {\
 	dGetByte(imm)\
 	if((unsigned char)imm < 0x80) strcat(dasmStmt,"+");\
@@ -1058,7 +1067,7 @@ static int dModRM(char *dasmStmt,Operand *resOperand,unsigned char *loc,const ch
 	strcat(dasmStmt,op);
 	strcat(dasmStmt,"\t");
 	dGetModRM
-	if(isOperandNul) {
+	/*if(isOperandNul) {
 		if((modrm.mod == 0 && (modrm.rm == 2 || modrm.rm == 3)) || 
 			((modrm.mod == 1 || modrm.mod == 2) && (modrm.rm == 2 || modrm.rm == 3 || modrm.rm == 6))
 			) setOperandSS
@@ -1070,7 +1079,7 @@ static int dModRM(char *dasmStmt,Operand *resOperand,unsigned char *loc,const ch
 		resOperand->mod = modrm.mod;
 		resOperand->rm = modrm.rm;
 		resOperand->imm = modrm.imm;
-	}
+	}*/
 	switch(it) {
 	case RM8_R8:		dRM(8)		dCOMMA	dR(8)		break;
 	case R8_RM8:		dR(8)		dCOMMA	dRM(8)		break;
@@ -1158,15 +1167,15 @@ static int dGroup1(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigne
 	ModRM modrm;
 	dGetModRM
 	switch(modrm.reg) {
-	case 0:	strcat(dasmStmt,"ADD");break;
-	case 1: strcat(dasmStmt,"OR");sign = 1;break;
-	case 2: strcat(dasmStmt,"ADC");break;
-	case 3:	strcat(dasmStmt,"SBB");break;
-	case 4:	strcat(dasmStmt,"AND");sign = 1;break;
-	case 5: strcat(dasmStmt,"SUB");break;
-	case 6: strcat(dasmStmt,"XOR");sign = 1;break;
-	case 7: strcat(dasmStmt,"CMP");break;
-	default:strcat(dasmStmt,"(ERROR:INS)");break;
+	case 0:	dANY("ADD")			break;
+	case 1: dANY("OR") sign = 1;break;
+	case 2: dANY("ADC")			break;
+	case 3:	dANY("SBB")			break;
+	case 4:	dANY("AND")sign = 1;break;
+	case 5: dANY("SUB")			break;
+	case 6: dANY("XOR")sign = 1;break;
+	case 7: dANY("CMP")			break;
+	default:dANY("(ERROR:INS)")	break;
 	}
 	strcat(dasmStmt,"\t");
 	switch(op) {
@@ -1178,28 +1187,75 @@ static int dGroup1(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigne
 	}
 	return len;
 }
-static int dXCHG(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char byte)
+static int dXCHG(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
 {
 	int len = 0;
 	unsigned char rn;
 	ModRM modrm;
-	strcat(dasmStmt,"XCHG");
-	strcat(dasmStmt,"\t");
-	modrm.reg = byte-0x90;
-	dR(16)	dCOMMA	dANY("AX");
+	setOperandNul
+	dANY("XCHG\t")
+	modrm.reg = op-0x90;
+	dR(16)	dCOMMA	dANY("AX")
 	return len;
 }
 static int d9A(char *dasmStmt,Operand *resOperand,unsigned char *loc)
 {
 	int len = 0;
 	unsigned short seg,ptr;
-	strcat(dasmStmt,"XCHG");
-	strcat(dasmStmt,"\t");
+	setOperandNul
+	dANY("XCHG\t")
 	dGetWord(ptr)
 	dGetWord(seg)
 	dStrCat16(dasmStmt,seg);
 	strcat(dasmStmt,":");
 	dStrCat16(dasmStmt,ptr);
+	return len;
+}
+static int dMovOff(char *dasmStmt,Operand *resOperand,unsigned char *loc,InsType it)
+{
+	int len = 0;
+	unsigned short imm;
+	if(isOperandNul) setOperandDS
+	resOperand->seg = 0x01;
+	resOperand->mod = 0x00;
+	resOperand->rm = 0x06;
+	resOperand->len = 1;
+	dANY("MOV\t");
+	switch(it) {\
+	case AL_I8:		dANY("AL")	dCOMMA	dOff(8)		break;
+	case I8_AL:		dOff(8)		dCOMMA	dANY("AL")	break;
+	case AX_I16:	dANY("AX")	dCOMMA	dOff(16)	break;
+	case I16_AX:	dOff(16)	dCOMMA	dANY("AX")	break;
+	default:strcat(dasmStmt,"(ERROR:REGIMM)");break;}
+	resOperand->imm = imm;
+	return len;
+}
+static int dMovImm(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
+{
+	int len = 0;
+	unsigned short imm;
+	ModRM modrm;
+	unsigned char myop;
+	setOperandNul
+	if(op > 0xb7) myop = 0xb8;
+	else myop = 0xb0;
+	dANY("MOV\t")
+	modrm.reg = op-myop;
+	switch(myop) {
+	case 0xb0:	dR(8)	dCOMMA	dImm(8)		break;
+	case 0xb8:	dR(16)	dCOMMA	dImm(16)	break;
+	default:strcat(dasmStmt,"(ERROR:MOVOP)");break;}
+	return len;
+}
+static int dC2CA(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
+{
+	int len = 0;
+	unsigned short imm;
+	setOperandNul
+	switch(op) {
+	case 0xc2:	dANY("RET\t")	dImm(16)	break;
+	case 0xca:	dANY("RETF\t")	dImm(16)	break;
+	default:strcat(dasmStmt,"(ERROR:RET)");break;}
 	return len;
 }
 
@@ -1379,49 +1435,49 @@ int disassemble(char *dasmStmt,Operand *resOperand,
 	case 0x9d:	dEmitOP(dSOL,"POPF");			break;
 	case 0x9e:	dEmitOP(dSOL,"SAHF");			break;
 	case 0x9f:	dEmitOP(dSOL,"LAHF");			break;
-	case 0xa0:break;
-	case 0xa1:break;
-	case 0xa2:break;
-	case 0xa3:break;
+	case 0xa0:	dEmitMO(dSOL,AL_I8);			break;
+	case 0xa1:	dEmitMO(dSOL,AX_I16);			break;
+	case 0xa2:	dEmitMO(dSOL,I8_AL);			break;
+	case 0xa3:	dEmitMO(dSOL,I16_AX);			break;
 	case 0xa4:	dEmitOP(dSOL,"MOVSB");			break;
 	case 0xa5:	dEmitOP(dSOL,"MOVSW");			break;
 	case 0xa6:	dEmitOP(dSOL,"CMPSB");			break;
 	case 0xa7:	dEmitOP(dSOL,"CMPSW");			break;
-	case 0xa8:break;
-	case 0xa9:break;
+	case 0xa8:	dEmitRI(dSOL,"TEST",AL_I8);		break;
+	case 0xa9:	dEmitRI(dSOL,"TEST",AX_I16);	break;
 	case 0xaa:	dEmitOP(dSOL,"STOSB");			break;
 	case 0xab:	dEmitOP(dSOL,"STOSW");			break;
 	case 0xac:	dEmitOP(dSOL,"LODSB");			break;
 	case 0xad:	dEmitOP(dSOL,"LODSW");			break;
 	case 0xae:	dEmitOP(dSOL,"SCASB");			break;
 	case 0xaf:	dEmitOP(dSOL,"SCASW");			break;
-	case 0xb0:break;
-	case 0xb1:break;
-	case 0xb2:break;
-	case 0xb3:break;
-	case 0xb4:break;
-	case 0xb5:break;
-	case 0xb6:break;
-	case 0xb7:break;
-	case 0xb8:break;
-	case 0xb9:break;
-	case 0xba:break;
-	case 0xbb:break;
-	case 0xbc:break;
-	case 0xbd:break;
-	case 0xbe:break;
-	case 0xbf:break;
-	case 0xc0:break;
-	case 0xc1:break;
-	case 0xc2:break;
+	case 0xb0:	dEmitMI;						break;
+	case 0xb1:	dEmitMI;						break;
+	case 0xb2:	dEmitMI;						break;
+	case 0xb3:	dEmitMI;						break;
+	case 0xb4:	dEmitMI;						break;
+	case 0xb5:	dEmitMI;						break;
+	case 0xb6:	dEmitMI;						break;
+	case 0xb7:	dEmitMI;						break;
+	case 0xb8:	dEmitMI;						break;
+	case 0xb9:	dEmitMI;						break;
+	case 0xba:	dEmitMI;						break;
+	case 0xbb:	dEmitMI;						break;
+	case 0xbc:	dEmitMI;						break;
+	case 0xbd:	dEmitMI;						break;
+	case 0xbe:	dEmitMI;						break;
+	case 0xbf:	dEmitMI;						break;
+	case 0xc0:	dEmitDB;						break;
+	case 0xc1:	dEmitDB;						break;
+	case 0xc2:	dEmitC2;						break;
 	case 0xc3:	dEmitOP(dSOL,"RET");			break;
-	case 0xc4:break;
-	case 0xc5:break;
+	case 0xc4:	dEmitRM(dSOL,"LES",R16_MX);		break;
+	case 0xc5:	dEmitRM(dSOL,"LDS",R16_MX);		break;
 	case 0xc6:break;
 	case 0xc7:break;
 	case 0xc8:break;
 	case 0xc9:break;
-	case 0xca:break;
+	case 0xca:	dEmitC2;						break;
 	case 0xcb:	dEmitOP(dSOL,"RETF");			break;
 	case 0xcc:break;
 	case 0xcd:break;
