@@ -21,7 +21,7 @@ extern t_ram vram;
 #define vramIsAddrInMem(addr) \
 	(((t_vaddrcc)(addr) >= vram.base) && ((t_vaddrcc)(addr) < (vram.base + vram.size)))
 #define vramGetAddr(segment, offset)  (vram.base + \
-	((((segment) << 4) + (offset)) % vram.size))
+	((((segment) << 4) + ((offset) % 0x10000)) % vram.size))
 #define vramVarByte(segment, offset)  (d_nubit8(vramGetAddr(segment, offset)))
 #define vramVarWord(segment, offset)  (d_nubit16(vramGetAddr(segment, offset)))
 #define vramVarDWord(segment, offset) (d_nubit32(vramGetAddr(segment, offset)))

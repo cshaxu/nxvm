@@ -509,6 +509,8 @@ static void GetImm(t_nubitcc immbit)
 static void GetModRegRM(t_nubitcc regbit,t_nubitcc rmbit)
 {
 	// returns vcpuins.rm and vcpuins.r
+	t_nsbit8 disp8 = 0x00;
+	t_nubit16 disp16 = 0x0000;
 	t_nubit8 modrm = vramVarByte(vcpu.cs,vcpu.ip++);
 	vcpuins.rm = vcpuins.r = (t_vaddrcc)NULL;
 	switch(MOD) {
@@ -520,41 +522,44 @@ static void GetModRegRM(t_nubitcc regbit,t_nubitcc rmbit)
 		case 3:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp+vcpu.di);break;
 		case 4:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.si);break;
 		case 5:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.di);break;
-		case 6:	vcpuins.rm = vramGetAddr(vcpu.overds,vramVarWord(vcpu.cs,vcpu.ip));vcpu.ip += 2;break;
+		case 6: disp16 = vramVarWord(vcpu.cs,vcpu.ip);vcpu.ip += 2;
+			    vcpuins.rm = vramGetAddr(vcpu.overds,disp16); break;
 		case 7:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx);break;
 		default:CaseError("GetModRegRM::MOD0::RM");break;}
 		break;
 	case 1:
+		bugfix(23) {disp8 = (t_nsbit8)vramVarByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;}
 		switch(RM) {
-		case 0:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx+vcpu.si);break;
-		case 1:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx+vcpu.di);break;
-		case 2:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp+vcpu.si);break;
-		case 3:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp+vcpu.di);break;
-		case 4:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.si);break;
-		case 5:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.di);break;
-		case 6:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp);break;
-		case 7:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx);break;
+		case 0:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx+vcpu.si+disp8);break;
+		case 1:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx+vcpu.di+disp8);break;
+		case 2:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp+vcpu.si+disp8);break;
+		case 3:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp+vcpu.di+disp8);break;
+		case 4:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.si+disp8);break;
+		case 5:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.di+disp8);break;
+		case 6:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp+disp8);break;
+		case 7:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx+disp8);break;
 		default:CaseError("GetModRegRM::MOD1::RM");break;}
-		bugfix(3) {
-			vcpuins.rm += (t_nsbit8)vramVarByte(vcpu.cs,vcpu.ip);
-			vcpu.ip += 1;
-		} else {
-			vcpuins.rm += vramVarByte(vcpu.cs,vcpu.ip);
+		bugfix(23) ;
+		else {
+			bugfix(3) vcpuins.rm += (t_nsbit8)vramVarByte(vcpu.cs,vcpu.ip);
+			else vcpuins.rm += vramVarByte(vcpu.cs,vcpu.ip);
 			vcpu.ip += 1;
 		}
 		break;
 	case 2:
+		bugfix(23) {disp16 = vramVarWord(vcpu.cs,vcpu.ip);vcpu.ip += 2;}
 		switch(RM) {
-		case 0:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx+vcpu.si);break;
-		case 1:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx+vcpu.di);break;
-		case 2:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp+vcpu.si);break;
-		case 3:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp+vcpu.di);break;
-		case 4:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.si);break;
-		case 5:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.di);break;
-		case 6:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp);break;
-		case 7:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx);break;
+		case 0:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx+vcpu.si+disp16);break;
+		case 1:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx+vcpu.di+disp16);break;
+		case 2:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp+vcpu.si+disp16);break;
+		case 3:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp+vcpu.di+disp16);break;
+		case 4:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.si+disp16);break;
+		case 5:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.di+disp16);break;
+		case 6:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp+disp16);break;
+		case 7:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx+disp16);break;
 		default:CaseError("GetModRegRM::MOD2::RM");break;}
-		vcpuins.rm += vramVarWord(vcpu.cs,vcpu.ip);vcpu.ip += 2;
+		bugfix(23) ;
+		else {vcpuins.rm += vramVarWord(vcpu.cs,vcpu.ip);vcpu.ip += 2;}
 		break;
 	case 3:
 		switch(RM) {
@@ -607,6 +612,8 @@ static void GetModRegRM(t_nubitcc regbit,t_nubitcc rmbit)
 }
 static void GetModRegRMEA()
 {
+	t_nsbit8 disp8 = 0x00;
+	t_nubit16 disp16 = 0x0000;
 	t_nubit8 modrm = vramVarByte(vcpu.cs,vcpu.ip++);
 	vcpuins.rm = vcpuins.r = (t_vaddrcc)NULL;
 	switch(MOD) {
@@ -623,39 +630,41 @@ static void GetModRegRMEA()
 		default:CaseError("GetModRegRMEA::MOD0::RM");break;}
 		break;
 	case 1:
+		bugfix(23) {disp8 = (t_nsbit8)vramVarByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;}
 		switch(RM) {
-		case 0:	vcpuins.rm = vcpu.bx+vcpu.si;break;
-		case 1:	vcpuins.rm = vcpu.bx+vcpu.di;break;
-		case 2:	vcpuins.rm = vcpu.bp+vcpu.si;break;
-		case 3:	vcpuins.rm = vcpu.bp+vcpu.di;break;
-		case 4:	vcpuins.rm = vcpu.si;break;
-		case 5:	vcpuins.rm = vcpu.di;break;
-		case 6:	vcpuins.rm = vcpu.bp;break;
-		case 7:	vcpuins.rm = vcpu.bx;break;
+		case 0:	vcpuins.rm = vcpu.bx+vcpu.si+disp8;break;
+		case 1:	vcpuins.rm = vcpu.bx+vcpu.di+disp8;break;
+		case 2:	vcpuins.rm = vcpu.bp+vcpu.si+disp8;break;
+		case 3:	vcpuins.rm = vcpu.bp+vcpu.di+disp8;break;
+		case 4:	vcpuins.rm = vcpu.si+disp8;break;
+		case 5:	vcpuins.rm = vcpu.di+disp8;break;
+		case 6:	vcpuins.rm = vcpu.bp+disp8;break;
+		case 7:	vcpuins.rm = vcpu.bx+disp8;break;
 		default:CaseError("GetModRegRMEA::MOD1::RM");break;}
-		bugfix(3) {
-			vcpuins.rm += (t_nsbit8)vramVarByte(vcpu.cs,vcpu.ip);
-			vcpu.ip += 1;
-		} else {
-			vcpuins.rm += vramVarByte(vcpu.cs,vcpu.ip);
+		bugfix(23) {vcpuins.rm %= 0x10000;}
+		else {
+			bugfix(3) vcpuins.rm += (t_nsbit8)vramVarByte(vcpu.cs,vcpu.ip);
+			else vcpuins.rm += vramVarByte(vcpu.cs,vcpu.ip);
 			vcpu.ip += 1;
 		}
 		break;
 	case 2:
+		bugfix(23) {disp16 = vramVarWord(vcpu.cs,vcpu.ip);vcpu.ip += 2;}
 		switch(RM) {
-		case 0:	vcpuins.rm = vcpu.bx+vcpu.si;break;
-		case 1:	vcpuins.rm = vcpu.bx+vcpu.di;break;
-		case 2:	vcpuins.rm = vcpu.bp+vcpu.si;break;
-		case 3:	vcpuins.rm = vcpu.bp+vcpu.di;break;
-		case 4:	vcpuins.rm = vcpu.si;break;
-		case 5:	vcpuins.rm = vcpu.di;break;
+		case 0:	vcpuins.rm = vcpu.bx+vcpu.si+disp16;break;
+		case 1:	vcpuins.rm = vcpu.bx+vcpu.di+disp16;break;
+		case 2:	vcpuins.rm = vcpu.bp+vcpu.si+disp16;break;
+		case 3:	vcpuins.rm = vcpu.bp+vcpu.di+disp16;break;
+		case 4:	vcpuins.rm = vcpu.si+disp16;break;
+		case 5:	vcpuins.rm = vcpu.di+disp16;break;
 		case 6:
-			bugfix(14) vcpuins.rm = vcpu.bp;
+			bugfix(14) vcpuins.rm = vcpu.bp+disp16;
 			else vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp);
 			break;
-		case 7:	vcpuins.rm = vcpu.bx;break;
+		case 7:	vcpuins.rm = vcpu.bx+disp16;break;
 		default:CaseError("GetModRegRMEA::MOD2::RM");break;}
-		vcpuins.rm += vramVarWord(vcpu.cs,vcpu.ip);vcpu.ip += 2;
+		bugfix(23) {vcpuins.rm %= 0x10000;}
+		else {vcpuins.rm += vramVarWord(vcpu.cs,vcpu.ip);vcpu.ip += 2;}
 		break;
 	default:CaseError("GetModRegRMEA::MOD");break;}
 	switch(REG) {
@@ -1938,42 +1947,42 @@ CHECKED OpError()
 		vramVarByte(vcpu.cs,vcpu.ip+3), vramVarByte(vcpu.cs,vcpu.ip+4));
 	vapiCallBackMachineStop();
 }
-WRAPPER ADD_RM8_R8()
+CHECKED ADD_RM8_R8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	ADD((void *)vcpuins.rm,(void *)vcpuins.r,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADD_RM8_R8\n");
 }
-WRAPPER ADD_RM16_R16()
+CHECKED ADD_RM16_R16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	ADD((void *)vcpuins.rm,(void *)vcpuins.r,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADD_RM16_R16\n");
 }
-WRAPPER ADD_R8_RM8()
+CHECKED ADD_R8_RM8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	ADD((void *)vcpuins.r,(void *)vcpuins.rm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADD_R8_RM8\n");
 }
-WRAPPER ADD_R16_RM16()
+CHECKED ADD_R16_RM16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	ADD((void *)vcpuins.r,(void *)vcpuins.rm,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADD_R16_RM16\n");
 }
-WRAPPER ADD_AL_I8()
+CHECKED ADD_AL_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
 	ADD((void *)&vcpu.al,(void *)vcpuins.imm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADD_AL_I8\n");
 }
-WRAPPER ADD_AX_I16()
+CHECKED ADD_AX_I16()
 {
 	vcpu.ip++;
 	GetImm(16);
@@ -1990,42 +1999,42 @@ CHECKED POP_ES()
 	vcpu.ip++;
 	POP((void *)&vcpu.es,16);
 }
-WRAPPER OR_RM8_R8()
+CHECKED OR_RM8_R8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	OR((void *)vcpuins.rm,(void *)vcpuins.r,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OR_RM8_R8\n");
 }
-WRAPPER OR_RM16_R16()
+CHECKED OR_RM16_R16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	OR((void *)vcpuins.rm,(void *)vcpuins.r,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OR_RM16_R16\n");
 }
-WRAPPER OR_R8_RM8()
+CHECKED OR_R8_RM8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	OR((void *)vcpuins.r,(void *)vcpuins.rm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OR_R8_RM8\n");
 }
-WRAPPER OR_R16_RM16()
+CHECKED OR_R16_RM16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	OR((void *)vcpuins.r,(void *)vcpuins.rm,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OR_R16_RM16\n");
 }
-WRAPPER OR_AL_I8()
+CHECKED OR_AL_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
 	OR((void *)&vcpu.al,(void *)vcpuins.imm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OR_AL_I8\n");
 }
-WRAPPER OR_AX_I16()
+CHECKED OR_AX_I16()
 {
 	vcpu.ip++;
 	GetImm(16);
@@ -2046,42 +2055,42 @@ DIFF INS_0F()
 {
 	OpError();
 }
-WRAPPER ADC_RM8_R8()
+CHECKED ADC_RM8_R8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	ADC((void *)vcpuins.rm,(void *)vcpuins.r,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADC_RM8_R8\n");
 }
-WRAPPER ADC_RM16_R16()
+CHECKED ADC_RM16_R16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	ADC((void *)vcpuins.rm,(void *)vcpuins.r,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADC_RM16_R16\n");
 }
-WRAPPER ADC_R8_RM8()
+CHECKED ADC_R8_RM8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	ADC((void *)vcpuins.r,(void *)vcpuins.rm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADC_R8_RM8\n");
 }
-WRAPPER ADC_R16_RM16()
+CHECKED ADC_R16_RM16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	ADC((void *)vcpuins.r,(void *)vcpuins.rm,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADC_R16_RM16\n");
 }
-WRAPPER ADC_AL_I8()
+CHECKED ADC_AL_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
 	ADC((void *)&vcpu.al,(void *)vcpuins.imm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADC_AL_I8\n");
 }
-WRAPPER ADC_AX_I16()
+CHECKED ADC_AX_I16()
 {
 	vcpu.ip++;
 	GetImm(16);
@@ -2098,42 +2107,42 @@ CHECKED POP_SS()
 	vcpu.ip++;
 	POP((void *)&vcpu.ss,16);
 }
-WRAPPER SBB_RM8_R8()
+CHECKED SBB_RM8_R8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	SBB((void *)vcpuins.rm,(void *)vcpuins.r,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  SBB_RM8_R8\n");
 }
-WRAPPER SBB_RM16_R16()
+CHECKED SBB_RM16_R16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	SBB((void *)vcpuins.rm,(void *)vcpuins.r,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  SBB_RM16_R16\n");
 }
-WRAPPER SBB_R8_RM8()
+CHECKED SBB_R8_RM8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	SBB((void *)vcpuins.r,(void *)vcpuins.rm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  SBB_R8_RM8\n");
 }
-WRAPPER SBB_R16_RM16()
+CHECKED SBB_R16_RM16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	SBB((void *)vcpuins.r,(void *)vcpuins.rm,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  SBB_R16_RM16\n");
 }
-WRAPPER SBB_AL_I8()
+CHECKED SBB_AL_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
 	SBB((void *)&vcpu.al,(void *)vcpuins.imm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  SBB_AL_I8\n");
 }
-WRAPPER SBB_AX_I16()
+CHECKED SBB_AX_I16()
 {
 	vcpu.ip++;
 	GetImm(16);
@@ -2150,49 +2159,49 @@ CHECKED POP_DS()
 	vcpu.ip++;
 	POP((void *)&vcpu.ds,16);
 }
-WRAPPER AND_RM8_R8()
+CHECKED AND_RM8_R8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	AND((void *)vcpuins.rm,(void *)vcpuins.r,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  AND_RM8_R8\n");
 }
-WRAPPER AND_RM16_R16()
+CHECKED AND_RM16_R16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	AND((void *)vcpuins.rm,(void *)vcpuins.r,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  AND_RM16_R16\n");
 }
-WRAPPER AND_R8_RM8()
+CHECKED AND_R8_RM8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	AND((void *)vcpuins.r,(void *)vcpuins.rm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  AND_R8_RM8\n");
 }
-WRAPPER AND_R16_RM16()
+CHECKED AND_R16_RM16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	AND((void *)vcpuins.r,(void *)vcpuins.rm,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  AND_R16_RM16\n");
 }
-WRAPPER AND_AL_I8()
+CHECKED AND_AL_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
 	AND((void *)&vcpu.al,(void *)vcpuins.imm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  AND_AL_I8\n");
 }
-WRAPPER AND_AX_I16()
+CHECKED AND_AX_I16()
 {
 	vcpu.ip++;
 	GetImm(16);
 	AND((void *)&vcpu.ax,(void *)vcpuins.imm,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  AND_AX_I16\n");
 }
-DIFF ES()
+CHECKED ES()
 {
 	vcpu.ip++;
 	vcpu.overds = vcpu.es;
@@ -2224,49 +2233,49 @@ ASMCMP DAA()
 #undef op
 	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"DAA");
 }
-WRAPPER SUB_RM8_R8()
+CHECKED SUB_RM8_R8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	SUB((void *)vcpuins.rm,(void *)vcpuins.r,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  SUB_RM8_R8\n");
 }
-WRAPPER SUB_RM16_R16()
+CHECKED SUB_RM16_R16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	SUB((void *)vcpuins.rm,(void *)vcpuins.r,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  SUB_RM16_R16\n");
 }
-WRAPPER SUB_R8_RM8()
+CHECKED SUB_R8_RM8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	SUB((void *)vcpuins.r,(void *)vcpuins.rm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  SUB_R8_RM8\n");
 }
-WRAPPER SUB_R16_RM16()
+CHECKED SUB_R16_RM16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	SUB((void *)vcpuins.r,(void *)vcpuins.rm,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  SUB_R16_RM16\n");
 }
-WRAPPER SUB_AL_I8()
+CHECKED SUB_AL_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
 	SUB((void *)&vcpu.al,(void *)vcpuins.imm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  SUB_AL_I8\n");
 }
-WRAPPER SUB_AX_I16()
+CHECKED SUB_AX_I16()
 {
 	vcpu.ip++;
 	GetImm(16);
 	SUB((void *)&vcpu.ax,(void *)vcpuins.imm,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  SUB_AX_I16\n");
 }
-DIFF CS()
+CHECKED CS()
 {
 	vcpu.ip++;
 	vcpu.overds = vcpu.cs;
@@ -2296,49 +2305,49 @@ ASMCMP DAS()
 #undef op
 	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"DAS");
 }
-WRAPPER XOR_RM8_R8()
+CHECKED XOR_RM8_R8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	XOR((void *)vcpuins.rm,(void *)vcpuins.r,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  XOR_RM8_R8\n");
 }
-WRAPPER XOR_RM16_R16()
+CHECKED XOR_RM16_R16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	XOR((void *)vcpuins.rm,(void *)vcpuins.r,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  XOR_RM16_R16\n");
 }
-WRAPPER XOR_R8_RM8()
+CHECKED XOR_R8_RM8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	XOR((void *)vcpuins.r,(void *)vcpuins.rm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  XOR_R8_RM8\n");
 }
-WRAPPER XOR_R16_RM16()
+CHECKED XOR_R16_RM16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	XOR((void *)vcpuins.r,(void *)vcpuins.rm,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  XOR_R16_RM16\n");
 }
-WRAPPER XOR_AL_I8()
+CHECKED XOR_AL_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
 	XOR((void *)&vcpu.al,(void *)vcpuins.imm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  XOR_AL_I8\n");
 }
-WRAPPER XOR_AX_I16()
+CHECKED XOR_AX_I16()
 {
 	vcpu.ip++;
 	GetImm(16);
 	XOR((void *)&vcpu.ax,(void *)vcpuins.imm,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  XOR_AX_I16\n");
 }
-DIFF SS()
+CHECKED SS()
 {
 	vcpu.ip++;
 	vcpu.overds = vcpu.ss;

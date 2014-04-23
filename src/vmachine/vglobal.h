@@ -17,8 +17,8 @@
 /* COMPLIATION DEFINITIONS ***************************************************/
 #define VGLOBAL_SIZE_INTEGER 32
 #define VGLOBAL_PLATFORM     VGLOBAL_VAR_WIN32
-#define VCPUASM
-#define ECPUACT
+//#define VCPUASM
+//#define ECPUACT
 /*****************************************************************************/
 
 typedef char     *t_string;
@@ -94,7 +94,7 @@ typedef t_nubitcc t_faddrcc;
 #define GetLSB(n, b) (GetBit((n), 1))
 
 #define Hex2BCD(x)  ((((x) / 10) << 4) | ((x) % 10))
-#define BCD2Hex(x)  ((x) & 0x0f + (((x) & 0xf0) >> 4) * 10)
+#define BCD2Hex(x)  (((x) & 0x0f) + ((((x) & 0xf0) >> 4) * 10))
 
 #define ExecFun(faddr) (*(void (*)(void))(faddr))()
 

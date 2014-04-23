@@ -29,7 +29,7 @@
 #define QDCGA_VBIOS_ADDR_VGA_CURSOR_TOP    0x0461
 #define QDCGA_VBIOS_ADDR_VGA_ACT_PAGE_NUM  0x0462
 #define QDCGA_SIZE_TEXT_MEMORY             0x1000
-#define QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM   0xb8000
+#define QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S 0xb800
 
 typedef struct {
 	t_bool    color;
@@ -49,7 +49,7 @@ typedef struct {
 #define qdcgaVarPageNum \
 	(vramVarByte(0x0000, QDCGA_VBIOS_ADDR_VGA_ACT_PAGE_NUM))
 #define qdcgaGetTextMemAddr \
-	(vramGetAddr(0x0000, QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM))
+	(vramGetAddr(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, 0x0000))
 #define qdcgaGetPageSize \
 	(qdcgaVarRowSize * qdcga.colsize * 2)
 #define qdcgaGetTextMemAddrPage(page) \
@@ -58,10 +58,10 @@ typedef struct {
 	(qdcgaGetTextMemAddrPage(qdcgaVarPageNum))
 
 #define qdcgaVarChar(page,x,y) \
-	(vramVarByte(0x0000, QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM + \
+	(vramVarByte(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, \
 	          (page) * qdcgaGetPageSize + ((x) * qdcgaVarRowSize + (y)) * 2 + 0))
 #define qdcgaVarCharProp(page,x,y) \
-	(vramVarByte(0x0000, QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM + \
+	(vramVarByte(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, \
 	          (page) * qdcgaGetPageSize + ((x) * qdcgaVarRowSize + (y)) * 2 + 1))
 #define qdcgaGetCharAddr(page,x,y) \
 	(qdcgaGetTextMemAddrPage(page) + ((x) * qdcgaVarRowSize + (y)) * 2 + 0)
