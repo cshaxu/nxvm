@@ -12,15 +12,15 @@
 #include "vglobal.h"
 
 typedef enum {
-	ADD8,ADD16,
-	//OR8,OR16,
-	ADC8,ADC16,
-	SBB8,SBB16,
-	/*AND8,AND16,*/
-	SUB8,SUB16,
-	/*XOR8,XOR16,*/
-	CMP8,CMP16
-	/*TEST8,TEST16*/
+	ADD8,ADD16,ADD32,
+	//OR8,OR16,OR32,
+	ADC8,ADC16,ADC32,
+	SBB8,SBB16,SBB32,
+	//AND8,AND16,AND32,
+	SUB8,SUB16,SUB32,
+	//XOR8,XOR16,XOR32,
+	CMP8,CMP16,CMP32
+	//TEST8,TEST16,TEST32
 } t_cpuins_type;
 typedef enum {
 	PREFIX_REP_NONE,
@@ -35,17 +35,21 @@ typedef struct {
 	t_vaddrcc rm, r, imm;
 	t_nubitcc opr1, opr2, result, bit;
 	t_cpuins_type type;
+
 	t_cpu_segreg oldcs, overds, overss;
 	t_cpuins_prefix_rep prefix_rep;
 	t_cpuins_prefix     prefix_lock;
 	t_cpuins_prefix     prefix_oprsize;
 	t_cpuins_prefix     prefix_addrsize;
 	t_nubit32 except, excode;
+	t_vaddrcc prm, pr, pimm;
 } t_cpuins;
 
 #define VCPUINS_EXCEPT_GP 0x00000001 /* general protection */
 #define VCPUINS_EXCEPT_NP 0x00000002 /* segment not present */
 #define VCPUINS_EXCEPT_PF 0x00000004 /* page fault */
+#define VCPUINS_EXCEPT_SS 0x00000008 /* stack segment fault */
+#define VCPUINS_EXCEPT_UD 0x00000010 /* undefined opcode */
 
 extern t_cpuins vcpuins;
 

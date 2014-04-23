@@ -473,7 +473,7 @@ static void rprintflags(t_nubit8 bit)
 		vapiPrint("VIP%c ",  _GetVIP ? '+' : '-');
 		vapiPrint("VIF%c ",  _GetVIF ? '+' : '-');
 		vapiPrint("AC%c ",   _GetAC ? '+' : '-');*/
-		vapiPrint("VM%c ",   _GetVM ? '+' : '-');
+		vapiPrint("VM%c ",   _GetEFLAGS_VM ? '+' : '-');
 		vapiPrint("RF%c ",   _GetRF ? '+' : '-');
 		vapiPrint("NT%c ",   _GetNT ? '+' : '-');
 		vapiPrint("IOPL=%1d ", _GetIOPL);
@@ -484,9 +484,9 @@ static void rprintflags(t_nubit8 bit)
 	vapiPrint("%s ", _GetTF ? "TR" : "DT");
 	vapiPrint("%s ", _GetSF ? "NG" : "PL");
 	vapiPrint("%s ", _GetZF ? "ZR" : "NZ");
-	vapiPrint("%s ", _GetAF ? "AC" : "NA");
+	vapiPrint("%s ", _GetEFLAGS_AF ? "AC" : "NA");
 	vapiPrint("%s ", _GetPF ? "PE" : "PO");
-	vapiPrint("%s ", _GetCF ? "CY" : "NC");
+	vapiPrint("%s ", _GetEFLAGS_CF ? "CY" : "NC");
 }
 static void rprintregs(t_nubit8 bit)
 {
@@ -660,12 +660,12 @@ static void rscanregs()
 		else if(!STRCMP(s,"pl")) _ClrSF;
 		else if(!STRCMP(s,"zr")) _SetZF;
 		else if(!STRCMP(s,"nz")) _ClrZF;
-		else if(!STRCMP(s,"ac")) _SetAF;
-		else if(!STRCMP(s,"na")) _ClrAF;
+		else if(!STRCMP(s,"ac")) _SetEFLAGS_AF;
+		else if(!STRCMP(s,"na")) _ClrEFLAGS_AF;
 		else if(!STRCMP(s,"pe")) _SetPF;
 		else if(!STRCMP(s,"po")) _ClrPF;
-		else if(!STRCMP(s,"cy")) _SetCF;
-		else if(!STRCMP(s,"nc")) _ClrCF;
+		else if(!STRCMP(s,"cy")) _SetEFLAGS_CF;
+		else if(!STRCMP(s,"nc")) _ClrEFLAGS_CF;
 		else vapiPrint("bf Error\n");
 	} else vapiPrint("br Error\n");
 }

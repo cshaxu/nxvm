@@ -27,13 +27,13 @@ void vcpuReset()
 	vcpu.cs.selector = 0xf000;
 	vcpu.cs.base = 0xffff0000;
 	vcpu.cs.limit = 0xffffffff;
-	vcpu.cs.c_d = 0x01;
-	vcpu.cs.r_w = 0x01;
+	vcpu.cs.cd = 0x01;
+	vcpu.cs.rw = 0x01;
 	vcpu.cs.s = 0x01;
 	vcpu.cs.p = 0x01;
 	vcpu.ss.base = 0x00000000;
 	vcpu.ss.limit = 0x0000ffff;
-	vcpu.ss.r_w = 0x01;
+	vcpu.ss.rw = 0x01;
 	vcpu.ss.s = 0x01;
 	vcpu.ss.p = 0x01;
 	vcpu.ds = vcpu.es = vcpu.fs = vcpu.gs = vcpu.ss;

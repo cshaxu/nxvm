@@ -19,7 +19,7 @@ typedef struct {
 
 extern t_ram vram;
 
-#define vramAddr(physical) (vram.base + (t_vaddrcc)(physical))
+#define vramAddr(physical) (vram.base + (t_vaddrcc)((physical) & (vram.flaga20 ? 0xffffffff : 0xffefffff)))
 #define vramByte(physical)  (d_nubit8(vramAddr(physical)))
 #define vramWord(physical)  (d_nubit16(vramAddr(physical)))
 #define vramDWord(physical) (d_nubit32(vramAddr(physical)))

@@ -18,7 +18,7 @@ static t_nubit16    dods, doss;
 static t_vaddrcc    dvrm, dvr;
 static t_nubit16    dvcs, dvip;
 
-#define MOD ((modrm&0xc0)>>6)
+#define _GetModRM_MOD(modrm) ((modrm&0xc0)>>6)
 #define REG ((modrm&0x38)>>3)
 #define RM  ((modrm&0x07)>>0)
 
@@ -59,7 +59,7 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 	t_nsbit8 sign;
 	t_nubit8 disp8u;
 	ismem = 0x01;
-	switch(MOD) {
+	switch(_GetModRM_MOD(modrm)) {
 	case 0:
 		switch(RM) {
 		case 0: SPRINTF(drm, "[BX+SI]");
@@ -95,7 +95,7 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx), vramVarByte(dods,vcpu.bx));
 			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx), vramVarWord(dods,vcpu.bx));
 			break;
-		default:SPRINTF(drm, "<ERROR:MOD(%02X),RM(%02X)>", MOD, RM);break;}
+		default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X),RM(%02X)>", _GetModRM_MOD(modrm), RM);break;}
 		break;
 	case 1:
 		disp8 = (t_nsbit8)vramVarByte(dvcs, dvip);dvip += 1;
@@ -134,7 +134,7 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+disp8), vramVarByte(dods,vcpu.bx+disp8));
 			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+disp8), vramVarWord(dods,vcpu.bx+disp8));
 			break;
-		default:SPRINTF(drm, "<ERROR:MOD(%02X),RM(%02X)>", MOD, RM);break;}
+		default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X),RM(%02X)>", _GetModRM_MOD(modrm), RM);break;}
 		break;
 	case 2:
 		disp16 = vramVarWord(dvcs,dvip);dvip += 2;
@@ -171,7 +171,7 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+disp16), vramVarByte(dods,vcpu.bx+disp16));
 			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+disp16), vramVarWord(dods,vcpu.bx+disp16));
 			break;
-		default:SPRINTF(drm, "<ERROR:MOD(%02X),RM(%02X)>", MOD, RM);break;}
+		default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X),RM(%02X)>", _GetModRM_MOD(modrm), RM);break;}
 		break;
 	case 3:
 		ismem = 0x00;
@@ -184,9 +184,9 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 		case 5: if(rmbit == 8) SPRINTF(drm, "CH"); else SPRINTF(drm, "BP"); break;
 		case 6: if(rmbit == 8) SPRINTF(drm, "DH"); else SPRINTF(drm, "SI"); break;
 		case 7: if(rmbit == 8) SPRINTF(drm, "BH"); else SPRINTF(drm, "DI"); break;
-		default:SPRINTF(drm, "<ERROR:MOD(%02X),RM(%02X)>", MOD, RM);break;}
+		default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X),RM(%02X)>", _GetModRM_MOD(modrm), RM);break;}
 		break;
-	default:SPRINTF(drm, "<ERROR:MOD(%02X)>", MOD);break;}
+	default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X)>", _GetModRM_MOD(modrm));break;}
 	switch(regbit) {
 	case 0: rid = REG;break;
 	case 4:

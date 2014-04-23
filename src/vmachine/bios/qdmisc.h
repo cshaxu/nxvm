@@ -61,7 +61,7 @@ jmp near $(label_int_15_ret)      \n\
 $(label_int_15_88):               \n\
 mov ax, 400 ; 1024 KB             \n\
 ; if memory size > 16 M, ret 3c00 \n\
-sub ax, 100                       \n\
+sub ax, 300                       \n\
 clc                               \n\
 jmp near $(label_int_15_set_flag) \n\
 \

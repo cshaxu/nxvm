@@ -96,6 +96,22 @@ typedef t_nubitcc t_faddrcc;
 #define MakeBit(d, s, f)  ((f) ? SetBit((d), (s)) : ClrBit((d), (s)))
 #define GetMSB(n, b) (GetBit((n), (1 << ((b) - 1))))
 #define GetLSB(n, b) (GetBit((n), 1))
+#define Max8  0xff
+#define Max16 0xffff
+#define Max32 0xffffffff
+#define Max64 0xffffffffffffffff
+#define MSB8  0x80
+#define MSB16 0x8000
+#define MSB32 0x80000000
+#define MSB64 0x8000000000000000
+#define GetMax8(n)  ((n) & Max8)
+#define GetMax16(n) ((n) & Max16)
+#define GetMax32(n) ((n) & Max32)
+#define GetMax64(n) ((n) & Max64)
+#define GetMSB8(n)  ((n) & MSB8)
+#define GetMSB16(n) ((n) & MSB16)
+#define GetMSB32(n) ((n) & MSB32)
+#define GetMSB64(n) ((n) & MSB64)
 
 #define Hex2BCD(x)  ((((x) / 10) << 4) | ((x) % 10))
 #define BCD2Hex(x)  (((x) & 0x0f) + ((((x) & 0xf0) >> 4) * 10))

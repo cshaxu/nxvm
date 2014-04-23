@@ -19,16 +19,16 @@ typedef struct {
 		t_nubit32 limit;
 		t_nubit8  dpl; /* if segment is cs, this is cpl */
 		t_bool    g;
-		t_bool    d_b;
+		t_bool    db;
 		t_bool    p;
 		t_bool    s;
 		/* type attribute part */
 		/* for system segments */
 			t_nubit8 type; /* type id for system segments */
 		/* for application segments */
-			t_bool c_d; /* code segment or data segment */
-			t_bool c_e; /* conforming or expand-down */
-			t_bool r_w; /* readable or writable */
+			t_bool cd; /* code segment(1) or data segment(0) */
+			t_bool ce; /* conforming or expand-down */
+			t_bool rw; /* readable or writable */
 			t_bool a;   /* accessed */
 } t_cpu_segreg;
 typedef struct {
@@ -150,9 +150,9 @@ typedef struct {
 #define VCPU_EFLAGS_VIF   0x00080000
 #define VCPU_EFLAGS_VIP   0x00100000
 #define VCPU_EFLAGS_ID    0x00200000*/
-#define _GetCF    (GetBit(_eflags, VCPU_EFLAGS_CF))
+#define _GetEFLAGS_CF    (GetBit(_eflags, VCPU_EFLAGS_CF))
 #define _GetPF    (GetBit(_eflags, VCPU_EFLAGS_PF))
-#define _GetAF    (GetBit(_eflags, VCPU_EFLAGS_AF))
+#define _GetEFLAGS_AF    (GetBit(_eflags, VCPU_EFLAGS_AF))
 #define _GetZF    (GetBit(_eflags, VCPU_EFLAGS_ZF))
 #define _GetSF    (GetBit(_eflags, VCPU_EFLAGS_SF))
 #define _GetTF    (GetBit(_eflags, VCPU_EFLAGS_TF))
@@ -164,14 +164,14 @@ typedef struct {
 #define _GetIOPL  ((_eflags & VCPU_EFLAGS_IOPL) >> 12)
 #define _GetNT    (GetBit(_eflags, VCPU_EFLAGS_NT))
 #define _GetRF    (GetBit(_eflags, VCPU_EFLAGS_RF))
-#define _GetVM    (GetBit(_eflags, VCPU_EFLAGS_VM))
+#define _GetEFLAGS_VM    (GetBit(_eflags, VCPU_EFLAGS_VM))
 /*#define _GetAC    (GetBit(_eflags, VCPU_EFLAGS_AC))
 #define _GetVIF   (GetBit(_eflags, VCPU_EFLAGS_VIF))
 #define _GetVIP   (GetBit(_eflags, VCPU_EFLAGS_VIP))
 #define _GetID    (GetBit(_eflags, VCPU_EFLAGS_ID))*/
-#define _SetCF    (SetBit(_eflags, VCPU_EFLAGS_CF))
+#define _SetEFLAGS_CF    (SetBit(_eflags, VCPU_EFLAGS_CF))
 #define _SetPF    (SetBit(_eflags, VCPU_EFLAGS_PF))
-#define _SetAF    (SetBit(_eflags, VCPU_EFLAGS_AF))
+#define _SetEFLAGS_AF    (SetBit(_eflags, VCPU_EFLAGS_AF))
 #define _SetZF    (SetBit(_eflags, VCPU_EFLAGS_ZF))
 #define _SetSF    (SetBit(_eflags, VCPU_EFLAGS_SF))
 #define _SetTF    (SetBit(_eflags, VCPU_EFLAGS_TF))
@@ -188,9 +188,9 @@ typedef struct {
 #define _SetVIF   (SetBit(_eflags, VCPU_EFLAGS_VIF))
 #define _SetVIP   (SetBit(_eflags, VCPU_EFLAGS_VIP))
 #define _SetID    (SetBit(_eflags, VCPU_EFLAGS_ID))*/
-#define _ClrCF    (ClrBit(_eflags, VCPU_EFLAGS_CF))
+#define _ClrEFLAGS_CF    (ClrBit(_eflags, VCPU_EFLAGS_CF))
 #define _ClrPF    (ClrBit(_eflags, VCPU_EFLAGS_PF))
-#define _ClrAF    (ClrBit(_eflags, VCPU_EFLAGS_AF))
+#define _ClrEFLAGS_AF    (ClrBit(_eflags, VCPU_EFLAGS_AF))
 #define _ClrZF    (ClrBit(_eflags, VCPU_EFLAGS_ZF))
 #define _ClrSF    (ClrBit(_eflags, VCPU_EFLAGS_SF))
 #define _ClrTF    (ClrBit(_eflags, VCPU_EFLAGS_TF))
@@ -240,7 +240,6 @@ typedef struct {
 #define _GetSelector_INDEX(selector)  (((selector) & VCPU_SELETOR_IDX) >> 3)
 #define _GetSelector_OFFSET(selector) (((selector) & VCPU_SELETOR_IDX) >> 0)
 #define _IsSelectorNull(selector)     (!_GetSelector_TI(selector) && !_GetSelector_INDEX(selector))
-#define _GetCPL  (_GetSelector_RPL(vcpu.cs.selector))
 
 #define VCPU_SEGDESC_BASE_0  0x000000ffffff0000
 #define VCPU_SEGDESC_BASE_1  0xff00000000000000
@@ -327,6 +326,8 @@ typedef struct {
 #define _LoadDR7
 #define _LoadTR6
 #define _LoadTR7
+
+#define _GetCPL  (_GetCR0_PE ? (_GetEFLAGS_VM ? 3 : vcpu.cs.dpl) : 0)
 
 extern t_cpu vcpu;
 #else
