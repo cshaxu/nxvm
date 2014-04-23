@@ -20,16 +20,15 @@ test code
 #include "stdlib.h"
 #include "string.h"
 
-#include "vmachine/vmachine.h"
-#include "vmachine/vcpuins.h"
+#include "../vmachine/vmachine.h"
+#include "../vmachine/vcpuins.h"
 #define cpu vcpu
 #define memory vram.base
 
-#include "asm86/asm86.h"
-
-#include "global.h"
+#include "asm86.h"
 #include "debug.h"
 
+#define MAXLINE 256
 #define MAXNARG 256
 #define MAXNASMARG 4
 

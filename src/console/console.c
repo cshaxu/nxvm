@@ -4,13 +4,13 @@
 #include "stdlib.h"
 #include "string.h"
 
-#include "vmachine/vmachine.h"
-#include "system/vapi.h"
+#include "../vmachine/vmachine.h"
+#include "../system/vapi.h"
 
-#include "global.h"
 #include "debug.h"
 #include "console.h"
 
+#define MAXLINE 256
 static int exitFlag;
 
 static void parse(char *s)
