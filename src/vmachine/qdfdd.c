@@ -8,8 +8,8 @@
 
 t_fdd qdfdd;
 
-#define SetStatus (vramSetByte(0x0040, 0x0041, vcpu.ah))
-#define GetStatus (vramGetByte(0x0040, 0x0041))
+#define SetStatus (vramVarByte(0x0040, 0x0041) = vcpu.ah)
+#define GetStatus (vramVarByte(0x0040, 0x0041))
 
 t_vaddrcc qdfddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector)
 {return (qdfdd.base + ((cyl * 2 + head) * 18 + (sector-1)) * 512);}
@@ -42,7 +42,7 @@ void qdfddReadSector()
 		SetBit(vcpu.flags, VCPU_FLAG_CF);;
 		SetStatus;
 	} else {
-		memcpy((void *)vramGetRealAddress(vcpu.es,vcpu.bx),
+		memcpy((void *)vramGetAddr(vcpu.es,vcpu.bx),
 			(void *)qdfddGetAddress(cyl,head,sector), vcpu.al * 512);
 		vcpu.ah = 0x00;
 		ClrBit(vcpu.flags, VCPU_FLAG_CF);;
@@ -62,7 +62,7 @@ void qdfddWriteSector()
 		SetStatus;
 	} else {
 		memcpy((void *)qdfddGetAddress(cyl,head,sector),
-			(void *)vramGetRealAddress(vcpu.es,vcpu.bx), vcpu.al * 512);
+			(void *)vramGetAddr(vcpu.es,vcpu.bx), vcpu.al * 512);
 		vcpu.ah = 0x00;
 		ClrBit(vcpu.flags, VCPU_FLAG_CF);;
 		SetStatus;
@@ -81,8 +81,8 @@ void qdfddGetParameter()
 		vcpu.bl = 0x04;
 		vcpu.cx = 0x4f12;
 		vcpu.dx = 0x0102;
-		vcpu.di = vramGetWord(0x0000, 0x1e * 4);
-		vcpu.es = vramGetWord(0x0000, 0x1e * 4 + 2);
+		vcpu.di = vramVarWord(0x0000, 0x1e * 4);
+		vcpu.es = vramVarWord(0x0000, 0x1e * 4 + 2);
 		ClrBit(vcpu.flags, VCPU_FLAG_CF);
 		SetStatus;
 	}

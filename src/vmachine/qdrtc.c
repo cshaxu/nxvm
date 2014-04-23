@@ -3,8 +3,9 @@
 
 #include "../system/vapi.h"
 
-#include "vram.h"
+#include "vport.h"
 #include "vcpu.h"
+#include "vram.h"
 #include "qdrtc.h"
 
 #define QDRTC_TICK  54.9254
@@ -34,23 +35,23 @@ void IO_Read_0071()
 
 void qdrtcGetTimeTickCount()
 {
-	vcpu.cx = vramWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 2);
-	vcpu.dx = vramWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 0);
-	if (vramByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) == 0x00)
+	vcpu.cx = vramVarWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 2);
+	vcpu.dx = vramVarWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 0);
+	if (vramVarByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) == 0x00)
 		vcpu.al = 0x00;
 	else
 		vcpu.al = 0x01;
-	vramByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) = 0x00;
+	vramVarByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) = 0x00;
 }
 void qdrtcSetTimeTickCount()
 {
-	vramWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 2) = vcpu.cx;
-	vramWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 0) = vcpu.dx;
-	vramByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) = 0x00;
+	vramVarWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 2) = vcpu.cx;
+	vramVarWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 0) = vcpu.dx;
+	vramVarByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) = 0x00;
 }
 void qdrtcGetCmosTime()
 {
-	t_float64 total = (vramDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) *
+	t_float64 total = (vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) *
 		               QDRTC_TICK) / 1000;
 	t_nubit8 hour = (t_nubit8)(total / 3600);
 	t_nubit8 min  = (t_nubit8)((total - hour * 3600) / 60);
@@ -66,7 +67,7 @@ void qdrtcSetCmosTime()
 	t_nubit8 hour = BCD2Hex(vcpu.ch);
 	t_nubit8 min  = BCD2Hex(vcpu.cl);
 	t_nubit8 sec  = BCD2Hex(vcpu.dh);
-	vramDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) = 
+	vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) = 
 		(t_nubit32)(((hour * 3600 + min * 60 + sec) * 1000) / QDRTC_TICK);
 	ClrBit(vcpu.flags, VCPU_FLAG_CF);
 }
@@ -98,10 +99,10 @@ void qdrtcSetAlarmClock()
 
 void qdrtcUpdateTime()
 {
-	vramDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) += 1;
-	if (vramDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) >= 0x1800b2) {
-		vramDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) = 0x00000000;
-		vramByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) = 0x01;
+	vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) += 1;
+	if (vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) >= 0x1800b2) {
+		vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) = 0x00000000;
+		vramVarByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) = 0x01;
 	}
 }
 
@@ -113,17 +114,17 @@ void qdrtcInit()
 	t_nubitcc min;
 	t_nubitcc sec;
 
-	vcpuinsInPort[0x0071]  = (t_faddrcc)IO_Read_0071;
-	vcpuinsOutPort[0x0070] = (t_faddrcc)IO_Write_0070;
+	vport.in[0x0071]  = (t_faddrcc)IO_Read_0071;
+	vport.out[0x0070] = (t_faddrcc)IO_Write_0070;
 
 	qdrtc.start = time(NULL) + 3600 * (-7);
 	t = gmtime(&qdrtc.start);
 	hour = t->tm_hour;
 	min  = t->tm_min;
 	sec  = t->tm_sec;
-	vramDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) = 
+	vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) = 
 		(t_nubit32)(((hour * 3600 + min * 60 + sec) * 1000) / QDRTC_TICK);
-	vramByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) = 0x00;
+	vramVarByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) = 0x00;
 }
 void qdrtcFinal()
 {}

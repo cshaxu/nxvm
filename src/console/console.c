@@ -10,6 +10,13 @@
 #include "debug.h"
 #include "console.h"
 
+#define CONSOLE_QDFDD
+
+#ifdef CONSOLE_QDFDD
+#include "../vmachine/qdfdd.h"
+#define vfdd qdfdd
+#endif
+
 #define MAXLINE 256
 static int exitFlag;
 
@@ -30,7 +37,7 @@ static void parse(char *s)
 void Test()
 {
 	vmachine.flagrun = 0x01;
-	vapiCreateDisplay();
+	vapiStartDisplay();
 //	vapiDestroyDisplay();
 }
 void Help()
@@ -41,8 +48,9 @@ void Help()
 	fprintf(stdout,"EXIT    Quit the console\n\n");
 
 	fprintf(stdout,"DEBUG   Execute debug, a program testing and editing tool\n");
-	fprintf(stdout,"EXEC    Execute a binary of '.COM' format from host machine\n\n");
-
+	fprintf(stdout,"EXEC    Execute a binary file\n");
+	fprintf(stdout,"RECORD  Record cpu status for each instruction\n");
+	fprintf(stdout,"TRACE   Trace cpu status for each instruction\n");
 	fprintf(stdout,"FLOPPY  Load a floppy disk from image file\n");
 	fprintf(stdout,"MEMORY  Assign the memory size\n");
 	fprintf(stdout,"INFO    Print all virtual machine settings\n\n");
@@ -50,7 +58,6 @@ void Help()
 	fprintf(stdout,"START   Turn on virtual machine\n");
 	fprintf(stdout,"STOP    Turn off virtual machine\n");
 	fprintf(stdout,"RESET   Restart virtual machine\n\n");
-	/*fprintf(stdout,"STATUS\t\tPrints the status of NXVM.\n");*/
 }
 void Exit()
 {
@@ -92,7 +99,7 @@ void Exec()
 		vmachine.flagrun = 1;
 		c = fgetc(load);
 		while(!feof(load)) {
-			vramSetByte(vcpu.cs+i,vcpu.ip+((len++)%0x10000),c);
+			vramVarByte(vcpu.cs+i,vcpu.ip+((len++)%0x10000)) = c;
 			i = len / 0x10000;
 			c = fgetc(load);
 		}
@@ -102,10 +109,42 @@ void Exec()
 		while(vcpu.ip < end && vmachine.flagrun) vmachineRefresh();
 	}
 }
+void Record()
+{
+	char str[MAXLINE];
+	if (!vmachine.flaginit || vmachine.flagrun) {
+		fprintf(stdout,"Cannot change record status now.\n");
+		return;
+	}
+	if (vapirecord.flag) {
+		vapirecord.flag = 0x00;
+		vapiPrint("Recorder turned off.\n");
+	} else {
+		fprintf(stdout,"Record File: ");
+		fgets(str, MAXLINE, stdin);
+		parse(str);
+		vapirecord.flag = 0x01;
+		strcpy(vapirecord.fname, str);
+		vapiPrint("Recorder turned on.\n");
+	}
+}
+void Trace()
+{
+	if (!vmachine.flaginit || vmachine.flagrun) {
+		fprintf(stdout,"Cannot change trace status now.\n");
+		return;
+	}
+	if (vmachine.flagtrace) {
+		vmachine.flagtrace = 0x00;
+		vapiPrint("Tracer turned off.\n");
+	} else {
+		vmachine.flagtrace = 0x01;
+		vapiPrint("Tracer turned on.\n");
+	}
+}
 
 void Floppy()
 {
-/*
 	char str[MAXLINE];
 	if (!vmachine.flaginit || vmachine.flagrun) {
 		fprintf(stdout,"Cannot change floppy disk now.\n");
@@ -118,7 +157,6 @@ void Floppy()
 		vapiFloppyInsert(str);
 	else
 		vapiFloppyRemove(str);
-*/
 }
 void Memory()
 {
@@ -159,8 +197,8 @@ void Start()
 {
 	if (!vmachine.flagrun) {
 		if (!vmachine.flaginit) vmachineInit();
-		vapiCreateDisplay();
-		vapiCreateKernel();
+		vapiStartDisplay();
+		vapiStartKernel();
 	} else
 		fprintf(stdout, "Virtual machine is already running.\n");
 }
@@ -181,8 +219,9 @@ void console()
 {
 	char cmdl[MAXLINE];
 	exitFlag = 0;
+	vmachineInit();
+	memset(&vapirecord, 0x00, sizeof(t_apirecord));
 	fprintf(stdout,"Please enter 'HELP' for information.\n");
-	if(!vmachine.flaginit) vmachineInit();
 	while(!exitFlag) {
 		fflush(stdin);
 		fprintf(stdout,"Console> ");
@@ -190,12 +229,14 @@ void console()
 		parse(cmdl);
 		if(!strlen(cmdl)) continue;
 
-		else if(!strcmp(cmdl,"test"))  Test();
-		else if(!strcmp(cmdl,"help"))  Help();
-		else if(!strcmp(cmdl,"exit"))  Exit();
+		else if(!strcmp(cmdl,"test"))   Test();
+		else if(!strcmp(cmdl,"help"))   Help();
+		else if(!strcmp(cmdl,"exit"))   Exit();
 
-		else if(!strcmp(cmdl,"debug")) Debug();
-		else if(!strcmp(cmdl,"exec"))  Exec();
+		else if(!strcmp(cmdl,"debug"))  Debug();
+		else if(!strcmp(cmdl,"exec"))   Exec();
+		else if(!strcmp(cmdl,"record")) Record();
+		else if(!strcmp(cmdl,"trace"))  Trace();
 
 		else if(!strcmp(cmdl,"floppy")) Floppy();
 		else if(!strcmp(cmdl,"memory")) Memory();
@@ -211,4 +252,15 @@ void console()
 		fprintf(stdout,"\n");
 	}
 	if(vmachine.flaginit) vmachineFinal();
+}
+
+void vapiCallBackByTrace()
+{
+//	debugPrintRegs();
+	if (_cs == 0x94c6 && _ip == 0x0396) {
+		strcpy(vapirecord.fname, "d:/nxvm.log");
+		vapirecord.flag = 0x01;
+		vapiRecordStart();
+	}
+	if (vapirecord.count > 0xfffff) vapirecord.flag = 0x00;
 }

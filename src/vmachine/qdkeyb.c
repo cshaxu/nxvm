@@ -3,15 +3,15 @@
 
 #include "../system/vapi.h"
 
-#include "vpic.h"
+#include "vport.h"
 #include "vcpu.h"
-#include "vcpuins.h"
+#include "vpic.h"
 
 #include "qdbios.h"
 #include "qdkeyb.h"
 
-#define bufptrHead (vramWord(0x0000,QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD))
-#define bufptrTail (vramWord(0x0000,QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL))
+#define bufptrHead (vramVarWord(0x0000,QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD))
+#define bufptrTail (vramVarWord(0x0000,QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL))
 #define bufGetSize (QDKEYB_VBIOS_ADDR_KEYB_BUFFER_END - \
                     QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + 1)
 #define bufIsEmpty (bufptrHead == bufptrTail)
@@ -24,7 +24,7 @@ static t_bool bufPush(t_nubit16 ascii)
 {
 	if (bufIsFull) return 1;
 	// isNeedHandleKeyPress
-	vramWord(0x0000, bufptrTail) = ascii;
+	vramVarWord(0x0000, bufptrTail) = ascii;
 	bufptrAdvance(bufptrTail);
 	return 0;
 }
@@ -32,7 +32,7 @@ static t_nubit16 bufPop()
 {
 	t_nubit16 res = 0;
 	if (bufIsEmpty) return res;
-	res = vramWord(0x0000, bufptrHead);
+	res = vramVarWord(0x0000, bufptrHead);
 	bufptrAdvance(bufptrHead);
 	return res;
 }
@@ -43,12 +43,11 @@ void IO_Read_0064()
 }
 void IO_Write_00BB()
 {
-	vapiPrint("fuck BB!\n");
 	INT_16();
 	if (GetBit(vcpu.flags, VCPU_FLAG_ZF))
-		vramWord(vcpu.ss,vcpu.sp) |=  VCPU_FLAG_ZF;
+		vramVarWord(vcpu.ss,vcpu.sp + 4) |=  VCPU_FLAG_ZF;
 	else
-		vramWord(vcpu.ss,vcpu.sp) &= ~VCPU_FLAG_ZF;
+		vramVarWord(vcpu.ss,vcpu.sp + 4) &= ~VCPU_FLAG_ZF;
 }
 
 t_bool qdkeybRecvKeyPress(t_nubit16 ascii)
@@ -60,7 +59,7 @@ void qdkeybReadInput()
 {
 	if (bufIsEmpty) return;
 	vcpu.ax = bufPop();
-	vpicSetIRQ(0x01);
+	//vpicSetIRQ(0x01);
 }
 void qdkeybGetStatus()
 {
@@ -68,7 +67,7 @@ void qdkeybGetStatus()
 		vapiSleep(0);
 		SetBit(vcpu.flags, VCPU_FLAG_ZF);
 	} else {
-		vcpu.ax = vramWord(0x0000, bufptrHead);
+		vcpu.ax = vramVarWord(0x0000, bufptrHead);
 		ClrBit(vcpu.flags, VCPU_FLAG_ZF);
 	}
 }
@@ -79,8 +78,8 @@ void qdkeybGetShiftStatus()
 
 void qdkeybInit()
 {
-	vcpuinsOutPort[0x00bb] = (t_faddrcc)IO_Write_00BB;
-	vcpuinsInPort[0x0064] = (t_faddrcc)IO_Read_0064;
+	vport.out[0x00bb] = (t_faddrcc)IO_Write_00BB;
+	vport.in[0x0064] = (t_faddrcc)IO_Read_0064;
 }
 void qdkeybFinal()
 {}

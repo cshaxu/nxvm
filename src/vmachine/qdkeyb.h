@@ -1,6 +1,10 @@
 #ifndef NXVM_QDKEYB_H
 #define NXVM_QDKEYB_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "vglobal.h"
 #include "vram.h"
 
@@ -36,8 +40,8 @@ void qdkeybGetStatus();
 void qdkeybGetShiftStatus();
 
 t_bool qdkeybRecvKeyPress(t_nubit16 ascii);
-#define qdkeybVarFlag0 (vramByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG0))
-#define qdkeybVarFlag1 (vramByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG1))
+#define qdkeybVarFlag0 (vramVarByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG0))
+#define qdkeybVarFlag1 (vramVarByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG1))
 #define qdkeybGetShift (GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT) || \
                         GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT))
 #define qdkeybGetAlt   (GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT))
@@ -45,5 +49,9 @@ t_bool qdkeybRecvKeyPress(t_nubit16 ascii);
 
 void qdkeybInit();
 void qdkeybFinal();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

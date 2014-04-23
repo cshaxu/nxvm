@@ -1,6 +1,10 @@
 #ifndef NXVM_QDRTC_H
 #define NXVM_QDRTC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "time.h"
 #include "vglobal.h"
 
@@ -26,5 +30,9 @@ void qdrtcUpdateTime();
 
 void qdrtcInit();
 void qdrtcFinal();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

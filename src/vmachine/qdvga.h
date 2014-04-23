@@ -1,6 +1,10 @@
 #ifndef NXVM_QDVGA_H
 #define NXVM_QDVGA_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "vglobal.h"
 #include "vram.h"
 
@@ -28,14 +32,17 @@ typedef struct {
 
 typedef struct {
 	t_bool    color;
+	t_nubit8  page;
 	t_nubit8  vgamode; // ?
 	t_nubitcc rowsize; // char per row, 0x044a
 	t_nubitcc colsize; // char per col
+	t_nubit8  cursortop;
+	t_nubit8  cursorbottom;
 	t_vga_cursor cursor[QDVGA_COUNT_MAX_PAGE];
 } t_vga;
 
-#define qdvgaVarPageNum \
-	(vramByte(0x0000, QDVGA_VBIOS_ADDR_VGA_ACT_PAGE_NUM))
+//#define qdvgaVarPageNum \
+//	(vramVarByte(0x0000, QDVGA_VBIOS_ADDR_VGA_ACT_PAGE_NUM))
 #define qdvgaGetTextMemAddr \
 	(vramGetAddr(0x0000, QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM))
 #define qdvgaGetPageSize \
@@ -43,29 +50,29 @@ typedef struct {
 #define qdvgaGetTextMemAddrPage(page) \
 	(qdvgaGetTextMemAddr + (page) * qdvgaGetPageSize)
 #define qdvgaGetTextMemAddrPageCur \
-	(qdvgaGetTextMemAddrPage(qdvgaVarPageNum))
+	(qdvgaGetTextMemAddrPage(qdvga.page))
 
 #define qdvgaVarChar(page,x,y) \
-	(vramByte(0x0000, QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM + \
+	(vramVarByte(0x0000, QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM + \
 	          (page) * qdvgaGetPageSize + ((x) * qdvga.rowsize + (y)) * 2 + 0))
 #define qdvgaVarCharProp(page,x,y) \
-	(vramByte(0x0000, QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM + \
+	(vramVarByte(0x0000, QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM + \
 	          (page) * qdvgaGetPageSize + ((x) * qdvga.rowsize + (y)) * 2 + 1))
 #define qdvgaGetCharAddr(page,x,y) \
 	(qdvgaGetTextMemAddrPage(page) + ((x) * qdvga.rowsize + (y)) * 2 + 0)
 #define qdvgaGetCharPropAddr(page,x,y) \
 	(qdvgaGetTextMemAddrPage(page) + ((x) * qdvga.rowsize + (y)) * 2 + 1)
 
-#define qdvgaVarCursorPosCol(id) \
-	(vramByte(0x0000, QDVGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 0))
-#define qdvgaVarCursorPosRow(id) \
-	(vramByte(0x0000, QDVGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 1))
-#define qdvgaVarCursorBottom \
-	(vramByte(0x0000, QDVGA_VBIOS_ADDR_VGA_CURSOR_BOTTOM))
-#define qdvgaVarCursorTop \
-	(vramByte(0x0000, QDVGA_VBIOS_ADDR_VGA_CURSOR_TOP))
-#define qdvgaGetCursorVisible \
-	(!GetBit(qdvgaVarCursorTop & 0x08))
+//#define qdvgaVarCursorPosCol(id) \
+//	(vramVarByte(0x0000, QDVGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 0))
+//#define qdvgaVarCursorPosRow(id) \
+//	(vramVarByte(0x0000, QDVGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 1))
+//#define qdvgaVarCursorBottom \
+//	(vramVarByte(0x0000, QDVGA_VBIOS_ADDR_VGA_CURSOR_BOTTOM))
+//#define qdvgaVarCursorTop \
+//	(vramVarByte(0x0000, QDVGA_VBIOS_ADDR_VGA_CURSOR_TOP))
+//#define qdvgaGetCursorVisible \
+//	(!GetBit(qdvga.cursortop & 0x08))
 
 
 extern t_vga qdvga;
@@ -89,5 +96,9 @@ void qdvgaGetAdapterInfo();
 void qdvgaDisplayStr();
 void qdvgaInit();
 void qdvgaFinal();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

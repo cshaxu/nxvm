@@ -21,8 +21,6 @@ test code
 #include "string.h"
 
 #include "../vmachine/vmachine.h"
-#include "../vmachine/vcpuins.h"
-#define cpu vcpu
 #define memory vram.base
 
 #include "asm86.h"
@@ -126,10 +124,10 @@ static void addrparse(t_nubit16 defseg,const char *addr)
 		seg = defseg;
 		ptr = scannubit16(cseg);
 	} else {
-		if(!strcmp(cseg,"cs")) seg = cpu.cs;
-		else if(!strcmp(cseg,"ss")) seg = cpu.ss;
-		else if(!strcmp(cseg,"ds")) seg = cpu.ds;
-		else if(!strcmp(cseg,"es")) seg = cpu.es;
+		if(!strcmp(cseg,"cs")) seg = _cs;
+		else if(!strcmp(cseg,"ss")) seg = _ss;
+		else if(!strcmp(cseg,"ds")) seg = _ds;
+		else if(!strcmp(cseg,"es")) seg = _es;
 		else seg = scannubit16(cseg);
 		ptr = scannubit16(cptr);
 	}
@@ -187,7 +185,7 @@ static void aconsole()
 		}
 		if(cmdAsmBuff[0] == ';' ) continue;
 		errAsmPos = 0;
-		len = assemble(cmdAsmBuff,cpu.cs,
+		len = assemble(cmdAsmBuff,_cs,
 			(void *)memory,asmSegRec,asmPtrRec);
 		if(!len) errAsmPos = strlen(cmdAsmBuff) + 9;
 		else asmPtrRec += len;
@@ -202,7 +200,7 @@ static void a()
 	if(narg == 1) {
 		aconsole();
 	} else if(narg == 2) {
-		addrparse(cpu.cs,arg[1]);
+		addrparse(_cs,arg[1]);
 		if(errPos) return;
 		asmSegRec = seg;
 		asmPtrRec = ptr;
@@ -216,10 +214,10 @@ static void c()
 	t_nubit16 i,seg1,ptr1,range,seg2,ptr2;
 	if(narg != 4) seterr(narg-1);
 	else {
-		addrparse(cpu.ds,arg[1]);
+		addrparse(_ds,arg[1]);
 		seg1 = seg;
 		ptr1 = ptr;
-		addrparse(cpu.ds,arg[3]);
+		addrparse(_ds,arg[3]);
 		seg2 = seg;
 		ptr2 = ptr;
 		range = scannubit16(arg[2])-ptr1;
@@ -280,11 +278,11 @@ static void d()
 	t_nubit16 ptr2;
 	if(narg == 1) dprint(dumpSegRec,dumpPtrRec,dumpPtrRec+0x7f);
 	else if(narg == 2) {
-		addrparse(cpu.ds,arg[1]);
+		addrparse(_ds,arg[1]);
 		if(errPos) return;
 		dprint(seg,ptr,ptr+0x7f);
 	} else if(narg == 3) {
-		addrparse(cpu.ds,arg[1]);
+		addrparse(_ds,arg[1]);
 		ptr2 = scannubit16(arg[2]);
 		if(errPos) return;
 		if(ptr > ptr2) seterr(2);
@@ -299,7 +297,7 @@ static void e()
 	char s[MAXLINE];
 	if(narg == 1) seterr(0);
 	else if(narg == 2) {
-		addrparse(cpu.ds,arg[1]);
+		addrparse(_ds,arg[1]);
 		if(errPos) return;
 		addrprint(seg,ptr);
 		printnubit8(getbyte(seg,ptr));
@@ -310,7 +308,7 @@ static void e()
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			setbyte(seg,ptr,val);
 	} else if(narg > 2) {
-		addrparse(cpu.ds,arg[1]);
+		addrparse(_ds,arg[1]);
 		if(errPos) return;
 		for(i = 2;i < narg;++i) {
 			val = scannubit8(arg[i]);//!!
@@ -328,7 +326,7 @@ static void f()
 	t_nubit16 i,j,end;
 	if(narg < 4) seterr(narg-1);
 	else {
-		addrparse(cpu.ds,arg[1]);
+		addrparse(_ds,arg[1]);
 		end = scannubit16(arg[2]);
 		if(end < ptr) seterr(2);
 		if(!errPos) {
@@ -348,12 +346,12 @@ static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 	/* NOTE: vmachine run environment */
 	vmachine.flagrun = 1;
 	if(ptr1 < ptr2) {
-		cpu.ip = ptr1;
+		_ip = ptr1;
 		while(ptr1 < ptr2 && vmachine.flagrun) {
 			vmachineRefresh();
-			ptr1 = cpu.ip;
+			ptr1 = _ip;
 		}
-		//cpu.ip = ptr2;
+		//_ip = ptr2;
 	}
 	if(!vmachine.flagrun) {
 		fprintf(stdout,"\nProgram terminated\n");
@@ -367,12 +365,12 @@ static void g()
 {
 	t_nubit16 ptr1,ptr2;
 	switch(narg) {
-	case 1:	ptr1 = cpu.ip;ptr2 = 0xffff;break;
-	case 2:	addrparse(cpu.cs,arg[1]);
-			ptr1 = cpu.ip;ptr2 = ptr;	break;
-	case 3:	addrparse(cpu.cs,arg[1]);
+	case 1:	ptr1 = _ip;ptr2 = 0xffff;break;
+	case 2:	addrparse(_cs,arg[1]);
+			ptr1 = _ip;ptr2 = ptr;	break;
+	case 3:	addrparse(_cs,arg[1]);
 			ptr1 = ptr;
-			addrparse(cpu.cs,arg[2]);
+			addrparse(_cs,arg[2]);
 			ptr2 = ptr;
 			break;
 	default:seterr(narg-1);break;}
@@ -403,8 +401,8 @@ static void i()
 	else {
 		in = scannubit16(arg[1]);
 		if(!errPos) {
-			FUNEXEC(vcpuinsInPort[in]);
-			printnubit8(cpu.iobyte);
+			ExecFun(vport.in[in]);
+			printnubit8(vcpu.iobyte);
 			fprintf(stdout,"\n");
 		}
 	}
@@ -420,11 +418,11 @@ static void l()
 	else {
 		switch(narg) {
 		case 1:
-			seg = cpu.cs;
+			seg = _cs;
 			ptr = 0x100;
 			break;
 		case 2:
-			addrparse(cpu.cs,arg[1]);
+			addrparse(_cs,arg[1]);
 			break;
 		default:seterr(narg-1);break;}
 		if(!errPos) {
@@ -434,9 +432,9 @@ static void l()
 				i = len / 0x10000;
 				c = fgetc(load);
 			}
-			cpu.cx = len&0xffff;
-			if(len > 0xffff) cpu.bx = (len>>16);
-			else cpu.bx = 0x0000;
+			_cx = len&0xffff;
+			if(len > 0xffff) _bx = (len>>16);
+			else _bx = 0x0000;
 		}
 		fclose(load);
 	}
@@ -449,10 +447,10 @@ static void m()
 	t_nubit16 seg1,ptr1,range,seg2,ptr2;
 	if(narg != 4) seterr(narg-1);
 	else {
-		addrparse(cpu.ds,arg[1]);
+		addrparse(_ds,arg[1]);
 		seg1 = seg;
 		ptr1 = ptr;
-		addrparse(cpu.ds,arg[3]);
+		addrparse(_ds,arg[3]);
 		seg2 = seg;
 		ptr2 = ptr;
 		range = scannubit16(arg[2])-ptr1;
@@ -484,8 +482,8 @@ static void o()
 	if(narg != 3) seterr(narg-1);
 	else {
 		out = scannubit16(arg[1]);
-		cpu.iobyte = scannubit8(arg[2]);
-		if(!errPos) FUNEXEC(vcpuinsOutPort[out]);
+		vcpu.iobyte = scannubit8(arg[2]);
+		if(!errPos) ExecFun(vport.out[out]);
 	}
 }
 // quit
@@ -496,42 +494,42 @@ static void uprint(t_nubit16,t_nubit16,t_nubit16);
 static void rprintflags()
 {
 	t_nubit16 test;
-	test = cpu.flags & VCPU_FLAG_OF;
+	test = _flags & VCPU_FLAG_OF;
 	if(test == VCPU_FLAG_OF)
 		fprintf(stdout,"OV ");
 	else
 		fprintf(stdout,"NV ");
-	test = cpu.flags & VCPU_FLAG_DF;
+	test = _flags & VCPU_FLAG_DF;
 	if(test == VCPU_FLAG_DF)
 		fprintf(stdout,"DN ");
 	else
 		fprintf(stdout,"UP ");
-	test = cpu.flags & VCPU_FLAG_IF;
+	test = _flags & VCPU_FLAG_IF;
 	if(test == VCPU_FLAG_IF)
 		fprintf(stdout,"EI ");
 	else
 		fprintf(stdout,"DI ");
-	test = cpu.flags & VCPU_FLAG_SF;
+	test = _flags & VCPU_FLAG_SF;
 	if(test == VCPU_FLAG_SF)
 		fprintf(stdout,"NG ");
 	else
 		fprintf(stdout,"PL ");
-	test = cpu.flags & VCPU_FLAG_ZF;
+	test = _flags & VCPU_FLAG_ZF;
 	if(test == VCPU_FLAG_ZF)
 		fprintf(stdout,"ZR ");
 	else
 		fprintf(stdout,"NZ ");
-	test = cpu.flags & VCPU_FLAG_AF;
+	test = _flags & VCPU_FLAG_AF;
 	if(test == VCPU_FLAG_AF)
 		fprintf(stdout,"AC ");
 	else
 		fprintf(stdout,"NA ");
-	test = cpu.flags & VCPU_FLAG_PF;
+	test = _flags & VCPU_FLAG_PF;
 	if(test == VCPU_FLAG_PF)
 		fprintf(stdout,"PE ");
 	else
 		fprintf(stdout,"PO ");
-	test = cpu.flags & VCPU_FLAG_CF;
+	test = _flags & VCPU_FLAG_CF;
 	if(test == VCPU_FLAG_CF)
 		fprintf(stdout,"CY ");
 	else
@@ -540,35 +538,35 @@ static void rprintflags()
 static void rprintregs()
 {
 	fprintf(stdout,"AX=");
-	printnubit16(cpu.ax);
+	printnubit16(_ax);
 	fprintf(stdout,"  BX=");
-	printnubit16(cpu.bx);
+	printnubit16(_bx);
 	fprintf(stdout,"  CX=");
-	printnubit16(cpu.cx);
+	printnubit16(_cx);
 	fprintf(stdout,"  DX=");
-	printnubit16(cpu.dx);
+	printnubit16(_dx);
 	fprintf(stdout,"  SP=");
-	printnubit16(cpu.sp);
+	printnubit16(_sp);
 	fprintf(stdout,"  BP=");
-	printnubit16(cpu.bp);
+	printnubit16(_bp);
 	fprintf(stdout,"  SI=");
-	printnubit16(cpu.si);
+	printnubit16(_si);
 	fprintf(stdout,"  DI=");
-	printnubit16(cpu.di);
+	printnubit16(_di);
 	fprintf(stdout,"\nDS=");
-	printnubit16(cpu.ds);
+	printnubit16(_ds);
 	fprintf(stdout,"  ES=");
-	printnubit16(cpu.es);
+	printnubit16(_es);
 	fprintf(stdout,"  SS=");
-	printnubit16(cpu.ss);
+	printnubit16(_ss);
 	fprintf(stdout,"  CS=");
-	printnubit16(cpu.cs);
+	printnubit16(_cs);
 	fprintf(stdout,"  IP=");
-	printnubit16(cpu.ip);
+	printnubit16(_ip);
 	fprintf(stdout,"   ");
 	rprintflags();
 	fprintf(stdout,"\n");
-	uprint(cpu.cs,cpu.ip,cpu.ip);
+	uprint(_cs,_ip,_ip);
 }
 static void rscanregs()
 {
@@ -576,133 +574,131 @@ static void rscanregs()
 	char s[MAXLINE];
 	if(!strcmp(arg[1],"ax")) {
 		fprintf(stdout,"AX ");
-		printnubit16(cpu.ax);
+		printnubit16(_ax);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			cpu.ax = t;
+			_ax = t;
 	} else if(!strcmp(arg[1],"bx")) {
 		fprintf(stdout,"BX ");
-		printnubit16(cpu.bx);
+		printnubit16(_bx);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			cpu.bx = t;
+			_bx = t;
 	} else if(!strcmp(arg[1],"cx")) {
 		fprintf(stdout,"CX ");
-		printnubit16(cpu.cx);
+		printnubit16(_cx);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			cpu.cx = t;
+			_cx = t;
 	} else if(!strcmp(arg[1],"dx")) {
 		fprintf(stdout,"DX ");
-		printnubit16(cpu.dx);
+		printnubit16(_dx);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			cpu.dx = t;
+			_dx = t;
 	} else if(!strcmp(arg[1],"bp")) {
 		fprintf(stdout,"BP ");
-		printnubit16(cpu.bp);
+		printnubit16(_bp);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			cpu.bp = t;
+			_bp = t;
 	} else if(!strcmp(arg[1],"sp")) {
 		fprintf(stdout,"SP ");
-		printnubit16(cpu.sp);
+		printnubit16(_sp);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			cpu.sp = t;
+			_sp = t;
 	} else if(!strcmp(arg[1],"si")) {
 		fprintf(stdout,"SI ");
-		printnubit16(cpu.si);
+		printnubit16(_si);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			cpu.si = t;
+			_si = t;
 	} else if(!strcmp(arg[1],"di")) {
 		fprintf(stdout,"DI ");
-		printnubit16(cpu.di);
+		printnubit16(_di);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			cpu.di = t;
+			_di = t;
 	} else if(!strcmp(arg[1],"ss")) {
 		fprintf(stdout,"SS ");
-		printnubit16(cpu.ss);
+		printnubit16(_ss);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
-			cpu.ss = t;
-			vcpuinsClearPrefix();
+			vcpu.overss = _ss = t;
 		}
 	} else if(!strcmp(arg[1],"cs")) {
 		fprintf(stdout,"CS ");
-		printnubit16(cpu.cs);
+		printnubit16(_cs);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			cpu.cs = t;
+			_cs = t;
 	} else if(!strcmp(arg[1],"ds")) {
 		fprintf(stdout,"DS ");
-		printnubit16(cpu.ds);
+		printnubit16(_ds);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
-			cpu.ds = t;
-			vcpuinsClearPrefix();
+			vcpu.overds = _ds = t;
 		}
 	} else if(!strcmp(arg[1],"es")) {
 		fprintf(stdout,"ES ");
-		printnubit16(cpu.es);
+		printnubit16(_es);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			cpu.es = t;
+			_es = t;
 	} else if(!strcmp(arg[1],"ip")) {
 		fprintf(stdout,"IP ");
-		printnubit16(cpu.ip);
+		printnubit16(_ip);
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			cpu.ip = t;
+			_ip = t;
 	} else if(!strcmp(arg[1],"f")) {
 		rprintflags();
 		fprintf(stdout," -");
 		fgets(s,MAXLINE,stdin);
 		lcase(s);
-		if(!strcmp(s,"ov")) cpu.flags |= VCPU_FLAG_OF;
-		else if(!strcmp(s,"nv")) cpu.flags &= ~VCPU_FLAG_OF;
-		else if(!strcmp(s,"dn")) cpu.flags |= VCPU_FLAG_DF;
-		else if(!strcmp(s,"up")) cpu.flags &= ~VCPU_FLAG_DF;
-		else if(!strcmp(s,"ei")) cpu.flags |= VCPU_FLAG_IF;
-		else if(!strcmp(s,"di")) cpu.flags &= ~VCPU_FLAG_IF;
-		else if(!strcmp(s,"ng")) cpu.flags |= VCPU_FLAG_SF;
-		else if(!strcmp(s,"pl")) cpu.flags &= ~VCPU_FLAG_SF;
-		else if(!strcmp(s,"zr")) cpu.flags |= VCPU_FLAG_ZF;
-		else if(!strcmp(s,"nz")) cpu.flags &= ~VCPU_FLAG_ZF;
-		else if(!strcmp(s,"ac")) cpu.flags |= VCPU_FLAG_AF;
-		else if(!strcmp(s,"na")) cpu.flags &= ~VCPU_FLAG_AF;
-		else if(!strcmp(s,"pe")) cpu.flags |= VCPU_FLAG_PF;
-		else if(!strcmp(s,"po")) cpu.flags &= ~VCPU_FLAG_PF;
-		else if(!strcmp(s,"cy")) cpu.flags |= VCPU_FLAG_CF;
-		else if(!strcmp(s,"nc")) cpu.flags &= ~VCPU_FLAG_CF;
+		if(!strcmp(s,"ov")) _flags |= VCPU_FLAG_OF;
+		else if(!strcmp(s,"nv")) _flags &= ~VCPU_FLAG_OF;
+		else if(!strcmp(s,"dn")) _flags |= VCPU_FLAG_DF;
+		else if(!strcmp(s,"up")) _flags &= ~VCPU_FLAG_DF;
+		else if(!strcmp(s,"ei")) _flags |= VCPU_FLAG_IF;
+		else if(!strcmp(s,"di")) _flags &= ~VCPU_FLAG_IF;
+		else if(!strcmp(s,"ng")) _flags |= VCPU_FLAG_SF;
+		else if(!strcmp(s,"pl")) _flags &= ~VCPU_FLAG_SF;
+		else if(!strcmp(s,"zr")) _flags |= VCPU_FLAG_ZF;
+		else if(!strcmp(s,"nz")) _flags &= ~VCPU_FLAG_ZF;
+		else if(!strcmp(s,"ac")) _flags |= VCPU_FLAG_AF;
+		else if(!strcmp(s,"na")) _flags &= ~VCPU_FLAG_AF;
+		else if(!strcmp(s,"pe")) _flags |= VCPU_FLAG_PF;
+		else if(!strcmp(s,"po")) _flags &= ~VCPU_FLAG_PF;
+		else if(!strcmp(s,"cy")) _flags |= VCPU_FLAG_CF;
+		else if(!strcmp(s,"nc")) _flags &= ~VCPU_FLAG_CF;
 		else fprintf(stdout,"bf Error\n");
 	} else fprintf(stdout,"br Error\n");
 }
@@ -722,7 +718,7 @@ static void s()
 	t_nubit16 p,pfront,start,end;
 	if(narg < 4) seterr(narg-1);
 	else {
-		addrparse(cpu.ds,arg[1]);
+		addrparse(_ds,arg[1]);
 		start = ptr;
 		end = scannubit16(arg[2]);
 		if(!errPos) {
@@ -754,27 +750,27 @@ static t_nubit16 uoffset(Operand opr)
 	switch(opr.mod) {
 	case 0:
 		switch(opr.rm) {
-		case 0:	res = cpu.bx+cpu.si;break;
-		case 1:	res = cpu.bx+cpu.di;break;
-		case 2:	res = cpu.bp+cpu.si;break;
-		case 3:	res = cpu.bp+cpu.di;break;
-		case 4:	res = cpu.si;break;
-		case 5:	res = cpu.di;break;
+		case 0:	res = _bx+_si;break;
+		case 1:	res = _bx+_di;break;
+		case 2:	res = _bp+_si;break;
+		case 3:	res = _bp+_di;break;
+		case 4:	res = _si;break;
+		case 5:	res = _di;break;
 		case 6:	res = opr.imm;break;
-		case 7:	res = cpu.bx;break;
+		case 7:	res = _bx;break;
 		default:fprintf(stdout,"(ERROR:OFFSET)");break;}
 		break;
 	case 1:
 	case 2:
 		switch(opr.rm) {
-		case 0:	res = cpu.bx+cpu.si+opr.imm;break;
-		case 1:	res = cpu.bx+cpu.di+opr.imm;break;
-		case 2:	res = cpu.bp+cpu.si+opr.imm;break;
-		case 3:	res = cpu.bp+cpu.di+opr.imm;break;
-		case 4:	res = cpu.si+opr.imm;break;
-		case 5:	res = cpu.di+opr.imm;break;
-		case 6:	res = cpu.bp+opr.imm;break;
-		case 7:	res = cpu.bx+opr.imm;break;
+		case 0:	res = _bx+_si+opr.imm;break;
+		case 1:	res = _bx+_di+opr.imm;break;
+		case 2:	res = _bp+_si+opr.imm;break;
+		case 3:	res = _bp+_di+opr.imm;break;
+		case 4:	res = _si+opr.imm;break;
+		case 5:	res = _di+opr.imm;break;
+		case 6:	res = _bp+opr.imm;break;
+		case 7:	res = _bx+opr.imm;break;
 		default:fprintf(stdout,"(ERROR:OFFSET)");break;}
 		break;
 	default:fprintf(stdout,"(ERROR:OFFSET)");break;}
@@ -826,29 +822,29 @@ static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 				case 0:	fprintf(stdout,"ES:");offset = uoffset(operand);
 					printnubit16(offset);fprintf(stdout,"=");
 					switch(operand.len) {
-					case 1:printnubit8(getbyte(cpu.es,offset));break;
-					case 2:printnubit16(getword(cpu.es,offset));break;
+					case 1:printnubit8(getbyte(_es,offset));break;
+					case 2:printnubit16(getword(_es,offset));break;
 					default:fprintf(stdout,"(ERROR:OPERANDES)");break;}
 					break;
 				case 1:	fprintf(stdout,"CS:");offset = uoffset(operand);
 					printnubit16(offset);fprintf(stdout,"=");
 					switch(operand.len) {
-					case 1:printnubit8(getbyte(cpu.cs,offset));break;
-					case 2:printnubit16(getword(cpu.cs,offset));break;
+					case 1:printnubit8(getbyte(_cs,offset));break;
+					case 2:printnubit16(getword(_cs,offset));break;
 					default:fprintf(stdout,"(ERROR:OPERANDCS)");break;}
 					break;
 				case 2:	fprintf(stdout,"SS:");offset = uoffset(operand);
 					printnubit16(offset);fprintf(stdout,"=");
 					switch(operand.len) {
-					case 1:printnubit8(getbyte(cpu.ss,offset));break;
-					case 2:printnubit16(getword(cpu.ss,offset));break;
+					case 1:printnubit8(getbyte(_ss,offset));break;
+					case 2:printnubit16(getword(_ss,offset));break;
 					default:fprintf(stdout,"(ERROR:OPERANDSS)");break;}
 					break;
 				case 3:	fprintf(stdout,"DS:");offset = uoffset(operand);
 					printnubit16(offset);fprintf(stdout,"=");
 					switch(operand.len) {
-					case 1:printnubit8(getbyte(cpu.ds,offset));break;
-					case 2:printnubit16(getword(cpu.ds,offset));break;
+					case 1:printnubit8(getbyte(_ds,offset));break;
+					case 2:printnubit16(getword(_ds,offset));break;
 					default:fprintf(stdout,"(ERROR:OPERANDDS)");break;}
 					break;
 				default:fprintf(stdout,"(ERROR:OPERAND)");break;}
@@ -869,11 +865,11 @@ static void u()
 	t_nubit16 ptr2;
 	if(narg == 1) uprint(uasmSegRec,uasmPtrRec,uasmPtrRec+0x1f);
 	else if(narg == 2) {
-		addrparse(cpu.cs,arg[1]);
+		addrparse(_cs,arg[1]);
 		if(errPos) return;
 		uprint(seg,ptr,ptr+0x1f);
 	} else if(narg == 3) {
-		addrparse(cpu.ds,arg[1]);
+		addrparse(_ds,arg[1]);
 		ptr2 = scannubit16(arg[2]);
 		if(errPos) return;
 		if(ptr > ptr2) seterr(2);
@@ -900,23 +896,23 @@ static void v()
 static void w()
 {
 	t_nubit16 i = 0;
-	t_nubit32 len = (cpu.bx<<16)+cpu.cx;
+	t_nubit32 len = (_bx<<16)+_cx;
 	FILE *write;
 	if(!strlen(filename)) {fprintf(stdout,"(W)rite error, no destination defined\n");return;}
 	else write= fopen(filename,"wb");
 	if(!write) fprintf(stdout,"File not found\n");
 	else {
 		fprintf(stdout,"Writing ");
-		printnubit16(cpu.bx);
-		printnubit16(cpu.cx);
+		printnubit16(_bx);
+		printnubit16(_cx);
 		fprintf(stdout," bytes\n");
 		switch(narg) {
 		case 1:
-			seg = cpu.cs;
+			seg = _cs;
 			ptr = 0x100;
 			break;
 		case 2:
-			addrparse(cpu.cs,arg[1]);
+			addrparse(_cs,arg[1]);
 			break;
 		default:	seterr(narg-1);break;}
 		if(!errPos)
@@ -961,13 +957,16 @@ static void help()
 static void init()
 {
 	filename[0] = '\0';
-	cpu.ax = cpu.bx = cpu.cx = cpu.dx = 0x0000;
-	cpu.si = cpu.di = cpu.bp = 0x0000;
-	cpu.sp = 0xffee;
-	cpu.ds = cpu.es = cpu.ss = cpu.cs =
+	asmSegRec = uasmSegRec = _cs;
+	asmPtrRec = uasmPtrRec = _ip;
+	dumpSegRec = _ds;
+	dumpPtrRec = _ip;
+/*	_ax = _bx = _cx = _dx = 0x0000;
+	_si = _di = _bp = 0x0000;
+	_sp = 0xffee;
+	_ds = _es = _ss = _cs =
 		asmSegRec = dumpSegRec = uasmSegRec = 0x0001;
-	cpu.ip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;
-	vcpuinsClearPrefix();
+	_ip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;*/
 }
 static void parse()
 {
@@ -1020,12 +1019,14 @@ static void exec()
 	}
 }
 
+void debugPrintRegs() {rprintregs();}
 void debug()
 {
 	int i;
 	init();
 	arg = (char **)malloc(MAXNARG * sizeof(char *));
-	exitFlag = 0;
+	if (vmachine.flaginit) exitFlag = 0;
+	else exitFlag = 1;
 	while(!exitFlag) {
 		fflush(stdin);
 		fprintf(stdout,"-");

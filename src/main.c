@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Quick & Dirty Virtual Machine [0.2.0x82]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.2.0x85]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -8,9 +8,6 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * Email:     cshaxu@gatech.edu
  * Start:     01/25/2012
  * End:       (null)
- *
- * ref
- * bbs.chinaunix.net/forum.php?mod=viewthread&action=printable&tid=1925198
  *
  * Project Phases
  * 1. Read documents and list all necessary functionality

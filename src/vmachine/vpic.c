@@ -3,8 +3,8 @@
 #include "memory.h"
 
 #include "vglobal.h"
+#include "vport.h"
 #include "vcpu.h"
-#include "vcpuins.h"
 #include "vpic.h"
 
 #ifdef VPIC_DEBUG
@@ -341,7 +341,7 @@ t_nubit8 vpicGetINTR()
 
 #ifdef VPIC_DEBUG
 #define mov(n) (vcpu.iobyte=(n))
-#define out(n) FUNEXEC(vcpuinsOutPort[(n)])
+#define out(n) ExecFun(vport.out[(n)])
 #endif
 void vpicInit()
 {
@@ -349,19 +349,19 @@ void vpicInit()
 	memset(&vpic2, 0x00, sizeof(t_pic));
 	vpic1.flaginit = vpic2.flaginit = ICW1;
 	vpic1.ocw3 = vpic2.ocw3 = 0x02;
-	vcpuinsInPort[0x0020] = (t_faddrcc)IO_Read_0020;
-	vcpuinsInPort[0x0021] = (t_faddrcc)IO_Read_0021;
-	vcpuinsInPort[0x00a0] = (t_faddrcc)IO_Read_00A0;
-	vcpuinsInPort[0x00a1] = (t_faddrcc)IO_Read_00A1;
-	vcpuinsOutPort[0x0020] = (t_faddrcc)IO_Write_0020;
-	vcpuinsOutPort[0x0021] = (t_faddrcc)IO_Write_0021;
-	vcpuinsOutPort[0x00a0] = (t_faddrcc)IO_Write_00A0;
-	vcpuinsOutPort[0x00a1] = (t_faddrcc)IO_Write_00A1;
+	vport.in[0x0020] = (t_faddrcc)IO_Read_0020;
+	vport.in[0x0021] = (t_faddrcc)IO_Read_0021;
+	vport.in[0x00a0] = (t_faddrcc)IO_Read_00A0;
+	vport.in[0x00a1] = (t_faddrcc)IO_Read_00A1;
+	vport.out[0x0020] = (t_faddrcc)IO_Write_0020;
+	vport.out[0x0021] = (t_faddrcc)IO_Write_0021;
+	vport.out[0x00a0] = (t_faddrcc)IO_Write_00A0;
+	vport.out[0x00a1] = (t_faddrcc)IO_Write_00A1;
 #ifdef VPIC_DEBUG
-	vcpuinsInPort[0xff20] = (t_faddrcc)IO_Read_FF20;
-	vcpuinsInPort[0xff21] = (t_faddrcc)IO_Read_FF21;
-	vcpuinsInPort[0xff22] = (t_faddrcc)IO_Read_FF22;
-	vcpuinsOutPort[0xff20] = (t_faddrcc)IO_Write_FF20;
+	vport.in[0xff20] = (t_faddrcc)IO_Read_FF20;
+	vport.in[0xff21] = (t_faddrcc)IO_Read_FF21;
+	vport.in[0xff22] = (t_faddrcc)IO_Read_FF22;
+	vport.out[0xff20] = (t_faddrcc)IO_Write_FF20;
 	mov(0x11);                                            /* ICW1: 0001 0001 */
 	out(0x20);
 	mov(0x08);                                            /* ICW2: 0000 1000 */

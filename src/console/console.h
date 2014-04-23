@@ -3,6 +3,15 @@
 #ifndef NS_CONSOLE_H
 #define NS_CONSOLE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void vapiCallBackByTrace();
 void console();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef NXVM_QDFDD_H
 #define NXVM_QDFDD_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "vglobal.h"
 
 typedef struct {
@@ -24,5 +28,9 @@ void qdfddGetDriveType();
 
 void qdfddInit();
 void qdfddFinal();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

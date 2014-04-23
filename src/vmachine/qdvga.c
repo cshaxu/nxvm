@@ -31,8 +31,8 @@ static void CursorBackward(t_nubit8 page)
 		qdvga.cursor[page].y = qdvga.rowsize - 1;
 		qdvga.cursor[page].x--;
 	}
-	qdvgaVarCursorPosRow(_bh) = qdvga.cursor[page].x;
-	qdvgaVarCursorPosCol(_bh) = qdvga.cursor[page].y;
+	//qdvgaVarCursorPosRow(_bh) = qdvga.cursor[page].x;
+	//qdvgaVarCursorPosCol(_bh) = qdvga.cursor[page].y;
 }
 static void CursorForward(t_nubit8 page)
 {
@@ -42,8 +42,8 @@ static void CursorForward(t_nubit8 page)
 		qdvga.cursor[page].y = 0;
 		qdvga.cursor[page].x++;
 	}
-	qdvgaVarCursorPosRow(_bh) = qdvga.cursor[page].x;
-	qdvgaVarCursorPosCol(_bh) = qdvga.cursor[page].y;
+	//qdvgaVarCursorPosRow(_bh) = qdvga.cursor[page].x;
+	//qdvgaVarCursorPosCol(_bh) = qdvga.cursor[page].y;
 }
 static void CursorNewLine(t_nubit8 page)
 {
@@ -121,8 +121,8 @@ void qdvgaSetDisplayMode()
 	ClearTextMemory();
 }
 void qdvgaSetCursorShape() {
-	qdvgaVarCursorBottom = _cl & 0x0f;
-	qdvgaVarCursorTop    = _ch & 0x0f;
+	qdvga.cursorbottom = _cl & 0x0f;
+	qdvga.cursortop    = _ch & 0x0f;
 }
 void qdvgaSetCursorPos()
 {
@@ -130,23 +130,23 @@ void qdvgaSetCursorPos()
 		qdvga.cursor[_bh].x       = _dh;
 		qdvga.cursor[_bh].y       = _dl;
 	}
-	qdvgaVarCursorPosRow(_bh) = qdvga.cursor[_bh].x;
-	qdvgaVarCursorPosCol(_bh) = qdvga.cursor[_bh].y;
+//	qdvgaVarCursorPosRow(_bh) = qdvga.cursor[_bh].x;
+//	qdvgaVarCursorPosCol(_bh) = qdvga.cursor[_bh].y;
 }
 void qdvgaGetCursorPos()
 {
 	if (vcpu.bh < QDVGA_COUNT_MAX_PAGE) {
 		_dh = qdvga.cursor[_bh].x;
 		_dl = qdvga.cursor[_bh].y;
-		_ch = qdvgaVarCursorTop;
-		_cl = qdvgaVarCursorBottom;
+		_ch = qdvga.cursortop;
+		_cl = qdvga.cursorbottom;
 	}
-	qdvgaVarCursorPosRow(_bh) = qdvga.cursor[_bh].x;
-	qdvgaVarCursorPosCol(_bh) = qdvga.cursor[_bh].y;
+//	qdvgaVarCursorPosRow(_bh) = qdvga.cursor[_bh].x;
+//	qdvgaVarCursorPosCol(_bh) = qdvga.cursor[_bh].y;
 }
 void qdvgaSetDisplayPage()
 {
-	qdvgaVarPageNum = _al;
+	qdvga.page = _al;
 }
 void qdvgaScrollUp()
 {
@@ -157,14 +157,14 @@ void qdvgaScrollUp()
 		return;
 	}
 	for (i = 0x00;i < _dh - _ch - _al + 1;++i)
-		memcpy((void *)qdvgaGetCharAddr(qdvgaVarPageNum, (_ch + i), _cl),
-		       (void *)qdvgaGetCharAddr(qdvgaVarPageNum, (_ch + i + _al), _cl),
+		memcpy((void *)qdvgaGetCharAddr(qdvga.page, (_ch + i), _cl),
+		       (void *)qdvgaGetCharAddr(qdvga.page, (_ch + i + _al), _cl),
 		       (_dl - _cl + 1) * 2);
 /*	for(i = 0x00;i < _dh - _ch - _al + 1;++i) {
 		// TODO: a bug.
 		for(j = 0x00;j < _dl - _cl + 1;++j) {
-			qdvgaVarChar(qdvgaVarPageNum, (_ch + i + _al), _cl) = ' ';
-			qdvgaVarCharProp(qdvgaVarPageNum, (_ch + i + _al), _cl) = _bh;
+			qdvgaVarChar(qdvga.page, (_ch + i + _al), _cl) = ' ';
+			qdvgaVarCharProp(qdvga.page, (_ch + i + _al), _cl) = _bh;
 			//bh决定了空白行的属性
 		}
 	}*/
@@ -178,14 +178,14 @@ void qdvgaScrollDown()
 		return;
 	}
 	for (i = 0x00;i < _dh - _ch - _al + 1;++i)
-		memcpy((void *)qdvgaGetCharAddr(qdvgaVarPageNum, (_ch + i + _al), _cl),
-		       (void *)qdvgaGetCharAddr(qdvgaVarPageNum, (_ch + i), _cl),
+		memcpy((void *)qdvgaGetCharAddr(qdvga.page, (_ch + i + _al), _cl),
+		       (void *)qdvgaGetCharAddr(qdvga.page, (_ch + i), _cl),
 		       (_dl - _cl + 1) * 2);
 /*	for(i = 0x00;i < _dh - _ch - _al + 1;++i) {
 		// TODO: a bug.
 		for(j = 0x00;j < _dl - _cl + 1;++j) {
-			qdvgaVarChar(qdvgaVarPageNum, (_ch + i), _cl) = ' ';
-			qdvgaVarCharProp(qdvgaVarPageNum, (_ch + i), _cl) = _bh;
+			qdvgaVarChar(qdvga.page, (_ch + i), _cl) = ' ';
+			qdvgaVarCharProp(qdvga.page, (_ch + i), _cl) = _bh;
 			//bh决定了空白行的属性
 		}
 	}*/
@@ -212,19 +212,19 @@ void qdvgaGetAdapterStatus()
 {
 	_ah = qdvga.rowsize;
 	_al = qdvga.vgamode;
-	_bh = qdvgaVarPageNum;
+	_bh = qdvga.page;
 }
 void qdvgaGenerateChar()
 {
 	if (_al == 0x30) {
 		switch (_bh) {
 		case 0x00:
-			vcpu.bp = vramWord(0x0000, 0x001f * 4 + 0);
-			vcpu.es = vramWord(0x0000, 0x001f * 4 + 2);
+			vcpu.bp = vramVarWord(0x0000, 0x001f * 4 + 0);
+			vcpu.es = vramVarWord(0x0000, 0x001f * 4 + 2);
 			break;
 		case 0x01:
-			vcpu.bp = vramWord(0x0000, 0x0043 * 4 + 0);
-			vcpu.es = vramWord(0x0000, 0x0043 * 4 + 2);
+			vcpu.bp = vramVarWord(0x0000, 0x0043 * 4 + 0);
+			vcpu.es = vramVarWord(0x0000, 0x0043 * 4 + 2);
 			break;
 		default:
 			break;
@@ -251,7 +251,7 @@ void qdvgaInit()
 	qdvga.color   = 0x01;
 	qdvga.colsize = 0x19; // 25
 	qdvga.rowsize = 0x50; // 80
-	qdvgaVarPageNum = 0x00;
+	qdvga.page = 0x00;
 	qdvga.vgamode = 0x03;
 /*	for (i = 0x00;i < QDVGA_COUNT_MAX_PAGE; ++i) {
 		qdvga.cursor[i].y      = 0x00;
@@ -263,8 +263,8 @@ void qdvgaInit()
 	qdvga.cursor[i].x      = 0x05;
 	qdvga.cursor[i].top    = 0x06;
 	qdvga.cursor[i].bottom = 0x07;*/
-	qdvgaVarCursorBottom = 0x07;
-	qdvgaVarCursorTop    = 0x06;
+	qdvga.cursorbottom = 0x07;
+	qdvga.cursortop    = 0x06;
 	memset((void *)qdvgaGetTextMemAddr, 0x00, QDVGA_SIZE_TEXT_MEMORY);
 }
 void qdvgaFinal()

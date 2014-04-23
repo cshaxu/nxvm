@@ -5,6 +5,10 @@
 #ifndef NXVM_VRAM_H
 #define NXVM_VRAM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "vglobal.h"
 
 typedef struct {
@@ -14,24 +18,18 @@ typedef struct {
 
 extern t_ram vram;
 
-#define vramGetAddr(segment, offset) (vram.base + SHL4(segment) + (offset))
-#define vramByte(segment, offset)    (*(t_nubit8  *)(vramGetAddr(segment, offset)))
-#define vramWord(segment, offset)    (*(t_nubit16 *)(vramGetAddr(segment, offset)))
-#define vramDWord(segment, offset)   (*(t_nubit32 *)(vramGetAddr(segment, offset)))
-
-/* TODO: remove all following functions */
-t_nubit8  vramGetByte(t_nubit16 segment, t_nubit16 offset);
-t_nubit16 vramGetWord(t_nubit16 segment, t_nubit16 offset);
-t_nubit32 vramGetDWord(t_nubit16 segment, t_nubit16 offset);
-void      vramSetByte(t_nubit16 segment, t_nubit16 offset, t_nubit8 value);
-void      vramSetWord(t_nubit16 segment, t_nubit16 offset, t_nubit16 value);
-void      vramSetDWord(t_nubit16 segment, t_nubit16 offset, t_nubit32 value);
-t_vaddrcc vramGetAddress(t_vaddrcc immloc);
-t_vaddrcc vramGetRealAddress(t_nubit16 segment, t_nubit16 offset);
+#define vramGetAddr(segment, offset)  (vram.base + ((segment) << 4) + (offset))
+#define vramVarByte(segment, offset)  (*(t_nubit8  *)(vramGetAddr(segment, offset)))
+#define vramVarWord(segment, offset)  (*(t_nubit16 *)(vramGetAddr(segment, offset)))
+#define vramVarDWord(segment, offset) (*(t_nubit32 *)(vramGetAddr(segment, offset)))
 
 void vramAlloc(t_nubitcc newsize);
 void vramInit();
 void vramRefresh();
 void vramFinal();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

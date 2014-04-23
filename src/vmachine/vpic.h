@@ -5,6 +5,10 @@
 #ifndef NXVM_VPIC_H
 #define NXVM_VPIC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "vglobal.h"
 
 #define VPIC_DEBUG
@@ -92,5 +96,9 @@ void vpicRefresh();
  * Frees any allocated memory
  */
 void vpicFinal();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
