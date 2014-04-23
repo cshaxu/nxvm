@@ -37,8 +37,8 @@ typedef t_bool t_cpuins_prefix;
 typedef struct {
 	t_vaddrcc rm, r, imm; /* marked for deletion */
 	
-	t_cpu_sreg oldcs;
-	t_nubit32 oldeip;
+	t_cpu_sreg oldcs, oldss;
+	t_nubit32 oldeip, oldesp;
 	t_bool    flaginsloop;
 	t_faddrcc table[0x100], table_0f[0x100];
 	t_nubitcc opr1, opr2, result, bit;

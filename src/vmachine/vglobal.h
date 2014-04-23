@@ -99,18 +99,22 @@ typedef t_nubitcc t_faddrcc;
 #define Max8  0xff
 #define Max16 0xffff
 #define Max32 0xffffffff
+#define Max48 0x0000ffffffffffff
 #define Max64 0xffffffffffffffff
 #define MSB8  0x80
 #define MSB16 0x8000
 #define MSB32 0x80000000
+#define MSB48 0x0000800000000000
 #define MSB64 0x8000000000000000
-#define GetMax8(n)  ((n) & Max8)
-#define GetMax16(n) ((n) & Max16)
-#define GetMax32(n) ((n) & Max32)
-#define GetMax64(n) ((n) & Max64)
+#define GetMax8(n)  ((t_nubit8 )((n) & Max8 ))
+#define GetMax16(n) ((t_nubit16)((n) & Max16))
+#define GetMax32(n) ((t_nubit32)((n) & Max32))
+#define GetMax48(n) ((t_nubit48)((n) & Max48))
+#define GetMax64(n) ((t_nubit64)((n) & Max64))
 #define GetMSB8(n)  ((n) & MSB8)
 #define GetMSB16(n) ((n) & MSB16)
 #define GetMSB32(n) ((n) & MSB32)
+#define GetMSB48(n) ((n) & MSB48)
 #define GetMSB64(n) ((n) & MSB64)
 
 #define Hex2BCD(x)  ((((x) / 10) << 4) | ((x) % 10))
