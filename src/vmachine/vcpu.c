@@ -3,7 +3,6 @@
 #include "memory.h"
 
 #include "vcpuins.h"
-#include "vram.h"
 #include "vcpu.h"
 
 t_cpu vcpu;

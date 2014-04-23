@@ -74,7 +74,7 @@ static void UpdateTime()
 
 void IO_Write_0070()
 {
-	vcmos.rid = vcpu.al;                                    /* select reg id */
+	vcmos.rid = vcpu.iobyte;                                    /* select reg id */
 	if (vcmos.rid & 0x80) vcpu.nmi = 0;             /* if MSB=1, disable NMI */
 	else vcpu.nmi = 1;
 }
@@ -84,7 +84,7 @@ void IO_Write_0071()
 	t_nubitcc i;
 	t_nubit16 checksum = 0;
 */
-	vcmos.reg[vcmos.rid] = vcpu.al;
+	vcmos.reg[vcmos.rid] = vcpu.iobyte;
 /*
 	if((idreg > 0x0f) && (idreg < 0x2e))
 		for(i = 0x10;i < 0x2e;++i)
@@ -96,7 +96,7 @@ void IO_Write_0071()
 void IO_Read_0071()
 {
 	UpdateTime();
-	vcpu.al = vcmos.reg[vcmos.rid];
+	vcpu.iobyte = vcmos.reg[vcmos.rid];
 }
 
 void vcmosInit()

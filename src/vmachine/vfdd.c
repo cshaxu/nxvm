@@ -45,7 +45,7 @@ void vfddTransWrite()
 
 void vfddFormatTrack(t_nubit8 fillbyte)
 {
-	/* TODO: what if cyl id too large */
+	if (vfdd.cyl >= VFDD_NCYL) return;
 	vfdd.head   = 0x00;
 	vfdd.sector = 0x01;
 	vfddResetCURR;
@@ -54,6 +54,7 @@ void vfddFormatTrack(t_nubit8 fillbyte)
 	vfdd.sector = 0x01;
 	vfddResetCURR;
 	memset((void *)(vfdd.curr), fillbyte, vfdd.nsector * vfdd.nbyte);
+	vfdd.sector = vfdd.nsector;
 }
 
 void vfddRefresh()

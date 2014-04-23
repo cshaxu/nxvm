@@ -9,11 +9,11 @@
 #include "vcpu.h"
 #include "vram.h"
 #include "vpic.h"
-#include "vcmos.h"
 #include "vpit.h"
-#include "vfdd.h"
-#include "vfdc.h"
+#include "vcmos.h"
 #include "vdma.h"
+#include "vfdc.h"
+#include "vfdd.h"
 
 extern t_bool vmachineinitflag;
 extern t_bool vmachinerunflag;

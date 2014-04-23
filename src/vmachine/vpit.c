@@ -1,7 +1,5 @@
 /* This file is a part of NXVM project. */
 
-// Not completely simulated.
-
 #include "memory.h"
 
 #include "system/vapi.h"
@@ -14,7 +12,6 @@
 
 #ifdef VPIT_DEBUG
 #include "time.h"
-#define VPIT_TICK 54.925493
 static clock_t t1,t2;
 t_float64 dt;
 #endif
@@ -46,20 +43,17 @@ static void Decrease(t_nubit8 id)
 		if ((vpit.count[id] & 0xf000) == 0xf000)
 			vpit.count[id] = (vpit.count[id] & 0x0fff) | 0x9000;
 	}
-#ifdef VPIT_DEBUG
-	vapiPrint("Dec: %x\n",vpit.count[id]);
-#endif
 }
 
 static void IO_Read_004x(t_nubit8 id)
 {
 	if (vpit.flaglatch[id]) {
 		if (vpit.flagread[id] == VPIT_STATUS_RW_MSB) {
-			vcpu.al = (t_nubit8)(vpit.latch[id]>>0x08);
+			vcpu.iobyte = (t_nubit8)(vpit.latch[id]>>0x08);
 			vpit.flagread[id] = VPIT_STATUS_RW_READY;
 			vpit.flaglatch[id] = 0x00;
 		} else {
-			vcpu.al = (t_nubit8)(vpit.latch[id] & 0xff);
+			vcpu.iobyte = (t_nubit8)(vpit.latch[id] & 0xff);
 			vpit.flagread[id] = VPIT_STATUS_RW_MSB;
 		}
 	} else {
@@ -67,19 +61,19 @@ static void IO_Read_004x(t_nubit8 id)
 		case 0x00:
 			break;
 		case 0x01:
-			vcpu.al = (t_nubit8)(vpit.count[id] & 0xff);
+			vcpu.iobyte = (t_nubit8)(vpit.count[id] & 0xff);
 			vpit.flagread[id] = VPIT_STATUS_RW_READY;
 			break;
 		case 0x02:
-			vcpu.al = (t_nubit8)(vpit.count[id]>>0x08);
+			vcpu.iobyte = (t_nubit8)(vpit.count[id]>>0x08);
 			vpit.flagread[id] = VPIT_STATUS_RW_READY;
 			break;
 		case 0x03:
 			if (vpit.flagread[id] == VPIT_STATUS_RW_MSB) {
-				vcpu.al = (t_nubit8)(vpit.count[id]>>0x08);
+				vcpu.iobyte = (t_nubit8)(vpit.count[id]>>0x08);
 				vpit.flagread[id] = VPIT_STATUS_RW_READY;
 			} else {
-				vcpu.al = (t_nubit8)(vpit.count[id] & 0xff);
+				vcpu.iobyte = (t_nubit8)(vpit.count[id] & 0xff);
 				vpit.flagread[id] = VPIT_STATUS_RW_MSB;
 			}
 			break;
@@ -95,19 +89,19 @@ static void IO_Write_004x(t_nubit8 id)
 		return;
 		break;
 	case 0x01:
-		vpit.init[id] = (t_nubit16)vcpu.al;
+		vpit.init[id] = (t_nubit16)vcpu.iobyte;
 		vpit.flagwrite[id] = VPIT_STATUS_RW_READY;
 		break;
 	case 0x02:
-		vpit.init[id] = (vcpu.al<<0x08);
+		vpit.init[id] = (vcpu.iobyte<<0x08);
 		vpit.flagwrite[id] = VPIT_STATUS_RW_READY;
 		break;
 	case 0x03:
 		if (vpit.flagwrite[id] == VPIT_STATUS_RW_MSB) {
-			vpit.init[id] = (vcpu.al<<0x08) | (vpit.init[id] & 0xff);
+			vpit.init[id] = (vcpu.iobyte<<0x08) | (vpit.init[id] & 0xff);
 			vpit.flagwrite[id] = VPIT_STATUS_RW_READY;
 		} else {
-			vpit.init[id] = (t_nubit16)vcpu.al;
+			vpit.init[id] = (t_nubit16)vcpu.iobyte;
 			vpit.flagwrite[id] = VPIT_STATUS_RW_MSB;
 		}
 	default:
@@ -145,32 +139,32 @@ void IO_Write_0041() {IO_Write_004x(1);}
 void IO_Write_0042() {IO_Write_004x(2);}
 void IO_Write_0043()
 {
-	t_nubit8 id = GetSC(vcpu.al);
+	t_nubit8 id = GetSC(vcpu.iobyte);
 	if (id == 0x03) {                                       /* read-back command */
-		vpit.cw[id] = vcpu.al;
+		vpit.cw[id] = vcpu.iobyte;
 		/* TODO: implement read-back functionalities */
 	} else {
 		vpit.flaglatch[id] = 0x00;      /* unlatch when counter is re-programmed */
-		switch (GetRW(vcpu.al)) {
+		switch (GetRW(vcpu.iobyte)) {
 		case 0x00:                                              /* latch command */
 			vpit.flaglatch[id] = 0x01;
 			vpit.latch[id] = vpit.count[id];
 			vpit.flagread[id] = VPIT_STATUS_RW_LSB;
 			break;
 		case 0x01:                                                        /* LSB */
-			vpit.cw[id] = vcpu.al;
+			vpit.cw[id] = vcpu.iobyte;
 			vpit.flagready[id] = 0x00;
 			vpit.flagread[id] = VPIT_STATUS_RW_LSB;
 			vpit.flagwrite[id] = VPIT_STATUS_RW_LSB;
 			break;
 		case 0x02:                                                        /* MSB */
-			vpit.cw[id] = vcpu.al;
+			vpit.cw[id] = vcpu.iobyte;
 			vpit.flagready[id] = 0x00;
 			vpit.flagread[id] = VPIT_STATUS_RW_MSB;
 			vpit.flagwrite[id] = VPIT_STATUS_RW_MSB;
 			break;
 		case 0x03:                                                     /* 16-bit */
-			vpit.cw[id] = vcpu.al;
+			vpit.cw[id] = vcpu.iobyte;
 			vpit.flagready[id] = 0x00;
 			vpit.flagread[id] = VPIT_STATUS_RW_LSB;
 			vpit.flagwrite[id] = VPIT_STATUS_RW_LSB;
@@ -186,7 +180,7 @@ void IO_Write_0043()
 void IO_Read_FF40()
 {
 	t_nubit8 id;
-	vcpu.al = 0xff;
+	vcpu.iobyte = 0xff;
 	for (id = 0;id < 3;++id) {
 		vapiPrint("PIT INFO %d\n========\n",id);
 		vapiPrint("Control Word = %x, SC = %d, RW = %d, Mode = %d, BCD=%d\n",
@@ -204,8 +198,8 @@ void IO_Read_FF40()
 	vpit.cw[id], GetSC(vpit.cw[id]), GetRW(vpit.cw[id]),
 		GetM(vpit.cw[id]), GetBCD(vpit.cw[id]));
 }
-void IO_Write_FF40() {vpitSetGate(vcpu.al>>0x04,vcpu.al&0x01);}
-void IO_Read_FF41() {vcpu.al = 0xff;vpitRefresh();}
+void IO_Write_FF40() {vpitSetGate(vcpu.iobyte>>0x04,vcpu.iobyte&0x01);}
+void IO_Read_FF41() {vcpu.iobyte = 0xff;vpitRefresh();}
 #endif
 
 void vpitIntSystemTimer() {
@@ -300,7 +294,7 @@ void vpitRefresh()
 	}
 }
 #ifdef VPIT_DEBUG
-#define mov(n) (vcpu.al=(n))
+#define mov(n) (vcpu.iobyte=(n))
 #define out(n) FUNEXEC(vcpuinsOutPort[(n)])
 #endif
 void vpitInit()

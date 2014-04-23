@@ -93,7 +93,13 @@ void NSFloppy()
 	fprintf(stdout,"Floppy Image File: ");
 	fgets(str, MAXLINE, stdin);
 	parse(str);
-	vapiInsertFloppyDisk(str);
+	if (!vfdd.flagexist) {
+		vapiInsertFloppyDisk(str);
+		vapiPrint("Disk inserted.\n");
+	} else {
+		vapiRemoveFloppyDisk(str);
+		vapiPrint("Disk removed.\n");
+	}
 }
 void NSMemory()
 {

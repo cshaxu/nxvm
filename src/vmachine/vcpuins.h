@@ -5,6 +5,8 @@
 #ifndef NXVM_VCPUINS_H
 #define NXVM_VCPUINS_H
 
+#define VCPUINS_DEBUG
+
 #include "vglobal.h"
 
 extern t_faddrcc vcpuinsInPort[0x10000];	// 65536 In Ports

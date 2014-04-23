@@ -1,7 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#define NXVM_DEBUG_VCPUINS
-
 #include "stdio.h"
 
 #include "vcpu.h"
@@ -10,9 +8,11 @@
 #include "vpic.h"
 #include "system/vapi.h"
 
-#ifdef NXVM_DEBUG_VCPUINS
-// NOTE: INT_I8() is modified for the INT test. Please correct it finally!
-// NOTE: Need to modify the INT's! All INTs should call INT(t_nubit8 intid);
+#ifdef VCPUINS_DEBUG
+/*
+ * TODO: INT_I8() is modified for the INT test. Please correct it finally!
+ * TODO: Need to modify the INT's! All INTs should call INT(t_nubit8 intid);
+ */
 #endif
 
 #define MOD	((modrm&0xc0)>>6)
@@ -2823,37 +2823,35 @@ void IN_AL_I8()
 	vcpu.ip++;
 	GetImm(8);
 	FUNEXEC(vcpuinsInPort[*(t_nubit8 *)imm]);
+	vcpu.al = vcpu.iobyte;
 	//vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AL_I8\n");
 }
 void IN_AX_I8()
 {
-	t_nubitcc i;
 	vcpu.ip++;
 	GetImm(8);
-	for(i = 0;i < 2;++i) {
-		FUNEXEC(vcpuinsInPort[*(t_nubit8 *)imm+i]);
-		*(t_nubit8 *)(&vcpu.al+i) = vcpu.al;
-	}
+	FUNEXEC(vcpuinsInPort[*(t_nubit8 *)imm+0]);
+	vcpu.al = vcpu.iobyte;
+	FUNEXEC(vcpuinsInPort[*(t_nubit8 *)imm+1]);
+	vcpu.ah = vcpu.iobyte;
 	//vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AX_I8\n");
 }
 void OUT_I8_AL()
 {
 	vcpu.ip++;
 	GetImm(8);
+	vcpu.iobyte = vcpu.al;
 	FUNEXEC(vcpuinsOutPort[*(t_nubit8 *)imm]);
 	//vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_I8_AL\n");
 }
 void OUT_I8_AX()
 {
-	t_nubitcc i;
-	t_nubit8 tempAL = vcpu.al;
 	vcpu.ip++;
 	GetImm(8);
-	for(i = 0;i < 2;++i) {
-		vcpu.al = *(t_nubit8 *)(&vcpu.al+i);
-		FUNEXEC(vcpuinsOutPort[*(t_nubit8 *)imm+i]);
-	}
-	vcpu.al = tempAL;
+	vcpu.iobyte = vcpu.al;
+	FUNEXEC(vcpuinsOutPort[*(t_nubit8 *)imm+0]);
+	vcpu.iobyte = vcpu.ah;
+	FUNEXEC(vcpuinsOutPort[*(t_nubit8 *)imm+1]);
 	//vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_I8_AX\n");
 }
 void CALL_REL16()
@@ -2894,35 +2892,33 @@ void IN_AL_DX()
 {
 	vcpu.ip++;
 	FUNEXEC(vcpuinsInPort[vcpu.dx]);
+	vcpu.al = vcpu.iobyte;
 	//vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AL_DX\n");
 }
 void IN_AX_DX()
 {
-	t_nubitcc i;
 	vcpu.ip++;
-	for(i = 0;i < 2;++i) {
-		FUNEXEC(vcpuinsInPort[vcpu.dx+i]);
-		*(t_nubit8 *)(&vcpu.al+i) = vcpu.al;
-	}
+	FUNEXEC(vcpuinsInPort[vcpu.dx+0]);
+	vcpu.al = vcpu.iobyte;
+	FUNEXEC(vcpuinsInPort[vcpu.dx+1]);
+	vcpu.ah = vcpu.iobyte;
 	//vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AX_DX\n");
 }
 void OUT_DX_AL()
 {
 	vcpu.ip++;
+	vcpu.iobyte = vcpu.al;
 	FUNEXEC(vcpuinsOutPort[vcpu.dx]);
 	//vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_DX_AL\n");
 }
 void OUT_DX_AX()
 {
-	t_nubitcc i;
-	t_nubit8 tempAL = vcpu.al;
 	vcpu.ip++;
-	GetImm(8);
-	for(i = 0;i < 2;++i) {
-		vcpu.al = *(t_nubit8 *)(&vcpu.al+i);
-		FUNEXEC(vcpuinsOutPort[vcpu.dx+i]);
-	}
-	vcpu.al = tempAL;
+	/* TODO: this maybe a bug: GetImm(8); */
+	vcpu.iobyte = vcpu.al;
+	FUNEXEC(vcpuinsOutPort[vcpu.dx+0]);
+	vcpu.iobyte = vcpu.ah;
+	FUNEXEC(vcpuinsOutPort[vcpu.dx+1]);
 	//vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_DX_AX\n");
 }
 void LOCK()
@@ -3124,7 +3120,7 @@ void vcpuinsExecInt()
 {
 	t_nubit8 intr;
 	if(vcpu.itnlint != -1) {
-#ifdef NXVM_DEBUG_VCPUINS
+#ifdef VCPUINS_DEBUG
 		if(vcpu.itnlint >= 0x20 && vcpu.itnlint <= 0x3f)
 			_debug_dosint((t_nubit8)vcpu.itnlint);
 		else
@@ -3134,14 +3130,14 @@ void vcpuinsExecInt()
 	vcpu.itnlint = -1;
 	if(vcpu.nmi) INT(0x02);
 	vcpu.nmi = 0;
-#ifdef NXVM_DEBUG_VCPUINS
+#ifdef VCPUINS_DEBUG
 	/* this is to enable VCPU_FLAG_IF and check the hardware generated interrupts */
 	STI();
 	vcpu.ip--;
 #endif
 	if(GetFlag(VCPU_FLAG_IF) && vpicScanINTR()) {
 		intr = vpicGetINTR();
-#ifndef NXVM_DEBUG_VCPUINS
+#ifndef VCPUINS_DEBUG
 		INT(intr);
 #else
 		vapiPrint("VCPUINSEXECINT::0x%x\n",intr);
@@ -3158,7 +3154,7 @@ void vcpuinsInit()
 	vcpu.nmi = 0;
 	vcpuinsClearPrefix();
 	for(i = 0;i < 0x10000;++i) {
-		vcpuinsInPort[i] = (t_faddrcc)IO_NOP;
+		vcpuinsInPort[i]  = (t_faddrcc)IO_NOP;
 		vcpuinsOutPort[i] = (t_faddrcc)IO_NOP;
 	}
 	vcpuinsInsSet[0x00] = (t_faddrcc)ADD_RM8_R8;

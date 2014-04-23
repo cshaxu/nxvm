@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x69]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x6a]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -115,21 +115,21 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 6:
  *     Note:    simply tested
  * Componenet 6: fdc (8272)
- *     Phase 1: 04/03/2012 - present
+ *     Phase 1: 04/03/2013 - 04/06/2013
  *     Phase 2: 03/07/2012 - 03/18/2012
- *     Phase 3: 04/03/2012 - present
- *     Phase 4:
+ *     Phase 3: 04/03/2013 - 04/05/2013
+ *     Phase 4: 04/06/2013 - 04/06/2013
  *     Phase 5:
  *     Phase 6:
- *     Note:    Transfers data between flp image and memory
+ *     Note:    simply tested
  * Componenet 7: fdd
- *     Phase 1:
+ *     Phase 1: 04/03/2013 - 04/05/2013
  *     Phase 2: 03/08/2012 - 03/18/2012
- *     Phase 3:
- *     Phase 4:
+ *     Phase 3: 04/03/2013 - 04/05/2013
+ *     Phase 4: 04/06/2013 - 04/06/2013
  *     Phase 5:
  *     Phase 6:
- *     Note:    Load and unload floppy image file
+ *     Note:    simply tested
  *
  * Module: VMachine - HCI
  * Component 1: kbc
@@ -176,6 +176,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *
  * Format Unify:
  * all boolean type should be t_bool, declared TRUE or FALSE
+ * all size type should be t_nubitcc
  * check all includes, macro names, flag names
  * check all null pointer: use NULL instead of 0
  * use assert

@@ -85,7 +85,7 @@ void vapiRemoveFloppyDisk(const char *fname)
 	/* TODO: assert(vfdd.base) */
 	image = fopen(fname, "wb");
 	if(image) {
-		if (vfdd.flagro)
+		if (!vfdd.flagro)
 			count = fwrite((void *)vfdd.base, sizeof(unsigned char),
 			               0x00168000, image);
 		vfdd.flagexist = 0x00;

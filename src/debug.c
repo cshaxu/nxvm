@@ -399,17 +399,15 @@ static void h()
 static void i()
 {
 	t_nubit16 in;
-	t_nubit8 tempAL = cpu.al;
 	if(narg != 2) seterr(narg-1);
 	else {
 		in = scannubit16(arg[1]);
 		if(!errPos) {
 			FUNEXEC(vcpuinsInPort[in]);
-			printnubit8(cpu.al);
+			printnubit8(cpu.iobyte);
 			fprintf(stdout,"\n");
 		}
 	}
-	cpu.al = tempAL;
 }
 // load
 static void l()
@@ -483,14 +481,12 @@ static void n()
 static void o()
 {
 	t_nubit16 out;
-	t_nubit8 tempAL = cpu.al;
 	if(narg != 3) seterr(narg-1);
 	else {
 		out = scannubit16(arg[1]);
-		cpu.al = scannubit8(arg[2]);
+		cpu.iobyte = scannubit8(arg[2]);
 		if(!errPos) FUNEXEC(vcpuinsOutPort[out]);
 	}
-	cpu.al = tempAL;
 }
 // quit
 static void q()

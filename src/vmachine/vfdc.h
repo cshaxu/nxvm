@@ -39,7 +39,7 @@ void IO_Write_03F7();
 
 #ifdef VFDC_DEBUG
 void    IO_Read_F3F0();                                    /* print all info */
-#define IO_Write_F3F0 vfdcReset                                 /* vfdcReset */
+void    IO_Write_F3F0();                                        /* vfdcReset */
 #define IO_Write_F3F1 vfdcRefresh                             /* vfdcRefresh */
 #endif
 

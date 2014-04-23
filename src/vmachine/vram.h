@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-// Random-access Memory
+/* Random-access Memory */
 
 #ifndef NXVM_VRAM_H
 #define NXVM_VRAM_H

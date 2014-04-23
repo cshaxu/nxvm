@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-// CMOS; Real Time Clock: DS1302
+/* CMOS; Real Time Clock: DS1302 */
 
 #ifndef NXVM_VCMOS_H
 #define NXVM_VCMOS_H

@@ -9,6 +9,7 @@
 #include "vdma.h"
 #include "vfdd.h"
 #include "vfdc.h"
+#include "system/vapi.h"
 
 t_fdc vfdc;
 
@@ -87,12 +88,12 @@ static t_nubit8 GetBPSC(t_nubit8 cbyte)                  /* sector size code */
 #define IsRet(retl, count) (vfdc.cmd[0] == (retl) && vfdc.flagret == (count))
 #define SetST0 (vfdc.st0 = (0x00                    << 7) |                   \
                            (0x00                    << 6) |                   \
-                           (0x01                    << 5) |                   \
+                           (0x00                    << 5) |                   \
                            ((vfdd.cyl >= VFDD_NCYL) << 4) |                   \
                            (0x00                    << 3) |                   \
                            (vfdd.head               << 2) |                   \
                            (GetDS(vfdc.cmd[1])      << 0))
-#define SetST1 (vfdc.st1 = (((vfdd.sector - 0x01) >= vfdd.nsector) << 7) |    \
+#define SetST1 (vfdc.st1 = ((vfdd.sector >= (vfdd.nsector + 1)) << 7) |       \
                            (0x00                    << 6) |                   \
                            (0x00                    << 5) |                   \
                            (0x00                    << 4) |                   \
@@ -144,11 +145,12 @@ static void ExecCmdSenseDriveStatus()
 }
 static void ExecCmdRecalibrate()
 {
-	vfdd.cyl      = 0x00;
-	vfdd.head     = 0x00;
-	vfdd.sector   = 0x01;
+	vfdd.cyl    = 0x00;
+	vfdd.head   = 0x00;
+	vfdd.sector = 0x01;
 	vfddResetCURR;
 	SetST0;
+	vfdc.st0   |= 0x20;
 	if (GetENRQ(vfdc.dor)) {
 		vpicSetIRQ(0x06);     /* TODO: BIOS: INT 0EH Should Call Command 08H */
 		vfdc.flagintr = 0x01;
@@ -166,11 +168,12 @@ static void ExecCmdSenseInterrupt()
 }
 static void ExecCmdSeek()
 {
-	vfdd.head     = GetHDS(vfdc.cmd[1]);
-	vfdd.cyl      = vfdc.cmd[2];
-	vfdd.sector   = 0x01;
+	vfdd.head   = GetHDS(vfdc.cmd[1]);
+	vfdd.cyl    = vfdc.cmd[2];
+	vfdd.sector = 0x01;
 	vfddResetCURR;
 	SetST0;
+	vfdc.st0   |= 0x20;
 	if (GetENRQ(vfdc.dor)) {
 		vpicSetIRQ(0x06);     /* TODO: BIOS: INT 0EH Should Call Command 08H */
 		vfdc.flagintr = 0x01;
@@ -207,6 +210,10 @@ static void ExecCmdFormatTrack()
 	vfdc.ret[0] = vfdc.st0;
 	vfdc.ret[1] = vfdc.st1;
 	vfdc.ret[2] = vfdc.st2;
+	vfdc.ret[3] = 0x00;
+	vfdc.ret[4] = 0x00;
+	vfdc.ret[5] = 0x00;
+	vfdc.ret[6] = 0x00;
 	if (GetENRQ(vfdc.dor)) {
 		vpicSetIRQ(0x06);     /* TODO: BIOS: INT 0EH Should Call Command 08H */
 		vfdc.flagintr = 0x01;
@@ -243,13 +250,13 @@ static void ExecCmdError()
 
 void IO_Read_03F4()
 {
-	vcpu.al = vfdc.msr;
+	vcpu.iobyte = vfdc.msr;
 }
 void IO_Read_03F5()
 {
 	if (!GetMSRReadyRead) return;
 	else SetMSRProcRead;
-	vcpu.al = vfdc.ret[vfdc.rwid++];
+	vcpu.iobyte = vfdc.ret[vfdc.rwid++];
 	switch (vfdc.cmd[0]) {
 	case CMD_SPECIFY:
 		if (vfdc.rwid >= 0) SetMSRReadyWrite;break;
@@ -266,7 +273,7 @@ void IO_Read_03F5()
 	case CMD_READ_ID:
 		if (vfdc.rwid >= 7) SetMSRReadyWrite;break;
 	case CMD_FORMAT_TRACK:
-		if (vfdc.rwid >= 3) SetMSRReadyWrite;break;
+		if (vfdc.rwid >= 7) SetMSRReadyWrite;break;
 	case CMD_WRITE_DATA:
 		if (vfdc.rwid >= 7) SetMSRReadyWrite;break;
 	case CMD_READ_DATA_ALL:
@@ -288,20 +295,20 @@ void IO_Read_03F5()
 }
 void IO_Read_03F7()
 {
-	vcpu.al = vfdc.dir;
+	vcpu.iobyte = vfdc.dir;
 }
 
 void IO_Write_03F2()
 {
-	if (!(vfdc.dor & 0x04) && (vcpu.al & 0x04)) SetMSRReadyWrite; 
-	vfdc.dor = vcpu.al;
+	if (!(vfdc.dor & 0x04) && (vcpu.iobyte & 0x04)) SetMSRReadyWrite; 
+	vfdc.dor = vcpu.iobyte;
 	if (!(vfdc.dor & 0x04)) vfdcReset();
 }
 void IO_Write_03F5()
 {
 	if (!GetMSRReadyWrite) return;
 	else SetMSRProcWrite;
-	vfdc.cmd[vfdc.rwid++] = vcpu.al;
+	vfdc.cmd[vfdc.rwid++] = vcpu.iobyte;
 	switch (vfdc.cmd[0]) {
 	case CMD_SPECIFY:
 		if (vfdc.rwid == 3) ExecCmdSpecify();break;
@@ -339,7 +346,7 @@ void IO_Write_03F5()
 }
 void IO_Write_03F7()
 {
-	vfdc.ccr = vcpu.al;
+	vfdc.ccr = vcpu.iobyte;
 }
 
 void vfdcTransRead()
@@ -355,7 +362,7 @@ void vfdcTransInit()
 	/* read parameters */
 	vfdd.cyl       = vfdc.cmd[2];
 	vfdd.head      = vfdc.cmd[3];
-	vfdd.sector    = 0x01;
+	vfdd.sector    = vfdc.cmd[4];
 	vfdd.nbyte     = GetBPS(vfdc.cmd[5]);
 	vfdd.nsector   = vfdc.cmd[6];
 	vfdd.gaplen    = vfdc.cmd[7];
@@ -392,19 +399,48 @@ void vfdcRefresh()
 }
 void vfdcReset()
 {
+	t_nubit8 ccr = vfdc.ccr;
 	memset(&vfdc, 0, sizeof(t_fdc));
+	vfdc.ccr = ccr;
 }
 #ifdef VFDC_DEBUG
 void IO_Read_F3F0()
 {
-	/* TODO: print all info */
+	t_nubitcc i;
+	vapiPrint("FDC INFO\n========\n");
+	vapiPrint("msr = %x, dir = %x, dor = %x, ccr = %x, dr = %x\n",
+		vfdc.msr,vfdc.dir,vfdc.dor,vfdc.ccr,vfdc.dr);
+	vapiPrint("hut = %x, hlt = %x, srt = %x, Non-DMA = %x, INTR = %x\n",
+		vfdc.hut,vfdc.hlt,vfdc.srt,vfdc.flagndma,vfdc.flagintr);
+	vapiPrint("rwid = %x, st0 = %x, st1 = %x, st2 = %x, st3 = %x\n",
+		vfdc.rwid,vfdc.st0,vfdc.st1,vfdc.st2,vfdc.st3);
+	for(i = 0;i < 9;++i) vapiPrint("cmd[%d] = %x, ",i,vfdc.cmd[i]);
+	vapiPrint("\n");
+	for(i = 0;i < 7;++i) vapiPrint("ret[%d] = %x, ",i,vfdc.ret[i]);
+	vapiPrint("\n");
+	vapiPrint("FDD INFO\n========\n");
+	vapiPrint("cyl = %x, head = %x, sector = %x\n",
+		vfdd.cyl,vfdd.head,vfdd.sector);
+	vapiPrint("nsector = %x, nbyte = %x, gaplen = %x\n",
+		vfdd.nsector,vfdd.nbyte,vfdd.gaplen);
+	vapiPrint("ReadOnly = %x, Exist = %x\n",
+		vfdd.flagro,vfdd.flagexist);
+	vapiPrint("base = %x, curr = %x, count = %x\n",
+		vfdd.base,vfdd.curr,vfdd.count);
 }
-#define mov(n) (vcpu.al=(n))
+void IO_Write_F3F0()
+{
+	vfdcReset();
+	vfdc.dor = 0x0c;
+	SetMSRReadyWrite;
+}
+#define mov(n) (vcpu.iobyte=(n))
 #define out(n) FUNEXEC(vcpuinsOutPort[(n)])
 #endif
 void vfdcInit()
 {
-	vfdcReset();
+	memset(&vfdc, 0, sizeof(t_fdc));
+	vfdc.ccr = 0x02;
 	vcpuinsInPort[0x03f4] = (t_vaddrcc)IO_Read_03F4;
 	vcpuinsInPort[0x03f5] = (t_vaddrcc)IO_Read_03F5;
 	vcpuinsInPort[0x03f7] = (t_vaddrcc)IO_Read_03F7;
@@ -415,10 +451,62 @@ void vfdcInit()
 	vcpuinsInPort[0x0f3f0] = (t_vaddrcc)IO_Read_F3F0;
 	vcpuinsOutPort[0xf3f0] = (t_vaddrcc)IO_Write_F3F0;
 	vcpuinsOutPort[0xf3f1] = (t_vaddrcc)IO_Write_F3F1;
-	/* TODO: initialize fdc */
+	/* initialize fdc */
+	mov(0x00);
+	out(0x03f2);
+	mov(0x0c);
+	out(0x03f2);
+	mov(CMD_SPECIFY);
+	out(0x03f5);
+	mov(0xaf);
+	out(0x03f5);
+	mov(0x02);
+	out(0x03f5);
 #endif
 }
 void vfdcFinal() {}
 /*
+FOR FDD READ
+of3f1 00  refresh
+o03f5 0f  seek command
+o03f5 00  drv 0 head 0
+o03f5 00  cyl 0
+if3f0     show status: flagintr=1,ReadyWrite
+o03f5 08  sense interrupt
+if3f0     show status: flagintr=0,ReadyRead
+i03f5     show st0: 0x20
+i03f5     show cyl: 0x00
+if3f0     show status: ReadyWrite
+o03f5 e6  read data
+o03f5 00  dev 0 head 0
+o03f5 00  cyl 0
+o03f5 00  head 0
+o03f5 02  sector 2 (start)
+o03f5 02  sector size 512B
+o03f5 12  end sector id 18
+o03f5 1b  gap length 1b
+o03f5 ff  customized sector size not used
+if3f0     show status: ExecCmd
 
+FOR FDD WRITE
+of3f1 00  refresh
+o03f5 0f  seek command
+o03f5 00  drv 0 head 0
+o03f5 00  cyl 0
+if3f0     show status: flagintr=1,ReadyWrite
+o03f5 08  sense interrupt
+if3f0     show status: flagintr=0,ReadyRead
+i03f5     show st0: 0x20
+i03f5     show cyl: 0x01
+if3f0     show status: ReadyWrite
+o03f5 c5  write data
+o03f5 00  dev 0 head 0
+o03f5 00  cyl 0
+o03f5 00  head 0
+o03f5 02  sector 2 (start)
+o03f5 02  sector size 512B
+o03f5 12  end sector id 18
+o03f5 1b  gap length 1b
+o03f5 ff  customized sector size not used
+if3f0     show status: ExecCmd
 */

@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-// Central Processing Unit: Intel 8086
+/* Central Processing Unit: Intel 8086 */
 
 #ifndef NXVM_VCPU_H
 #define NXVM_VCPU_H
@@ -34,6 +34,7 @@ typedef struct {
 		struct {t_nubit8 dl,dh;};
 		t_nubit16 dx;
 	};
+	t_nubit8  iobyte;                               /* for i/o communication */
 	t_nubit16 sp,bp,si,di,ip,flags;
 	t_nubit16 cs,ds,es,ss;
 	t_nsbit16 itnlint;
@@ -44,7 +45,6 @@ typedef struct {
 extern t_cpu vcpu;
 
 void vcpuRefresh();
-
 void vcpuInit();
 void vcpuFinal();
 
