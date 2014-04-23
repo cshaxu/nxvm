@@ -168,6 +168,9 @@ void vapiRecordExec()
 	}
 #endif
 	if (vcpu.flaghalt) return;
+	if (vcpurec.linear ==
+		vapirecord.rec[(vapirecord.start + vapirecord.size - 1) % VAPI_RECORD_SIZE].linear)
+		return;
 
 	vapirecord.rec[_rec_ptr_last] = vcpurec;
 	dasm(vapirecord.rec[_rec_ptr_last].stmt, vcpurec.rcpu.cs.selector, vcpurec.rcpu.ip, 0x00);
@@ -178,8 +181,10 @@ void vapiRecordExec()
 			if (_restmt[j] == '\n') _restmt[j] = ' ';
 		_printexp;
 	}
-	if (vapirecord.size == VAPI_RECORD_SIZE) vapirecord.start++;
-	else vapirecord.size++;
+	if (vapirecord.size == VAPI_RECORD_SIZE)
+		vapirecord.start++;
+	else
+		vapirecord.size++;
 }
 void vapiRecordFinal()
 {

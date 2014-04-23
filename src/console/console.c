@@ -223,6 +223,7 @@ static void Record()
 		if (narg < 3) GetHelp;
 		vapiRecordDump(arg[2]);
 		vapirecord.flagnow = 0;
+		vmachine.flagrecord = 0;
 		if (vapirecord.fp) fclose(vapirecord.fp);
 	} else if (!strcmp(arg[1], "now")) {
 		if (narg < 3) GetHelp;

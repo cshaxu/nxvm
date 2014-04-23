@@ -1062,10 +1062,10 @@ static void xg()
 	case 2:
 		vmachine.flagbreakx = 1;
 		vmachine.breaklinear = scannubit32(arg[1]);
-		printf("break at: %x\n", vmachine.breaklinear);
 		break;
 	default:seterr(narg-1);break;}
 	if(errPos) return;
+	vmachine.breakcnt = 0;
 	vmachineResume();
 	while (vmachine.flagrun) vapiSleep(1);
 	vmachine.flagbreakx = 0;

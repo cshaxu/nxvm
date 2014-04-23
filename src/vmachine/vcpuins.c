@@ -527,6 +527,7 @@ static t_nubit64 _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8
 	t_nubit32 linear;
 	t_cpuins_physical physical;
 	t_nubit64 result;
+	t_nubit32 watch = 0xffffffff;
 	int i;
 	_cb("_kma_read_logical");
 	_chr(linear = _kma_linear_logical(rsreg, offset, byte, 0, vpl, force));
@@ -539,10 +540,16 @@ static t_nubit64 _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8
 		vcpurec.mem[vcpurec.msize].byte = byte;
 		vcpurec.mem[vcpurec.msize].linear = linear;
 		vcpurec.mem[vcpurec.msize].physical = physical.ph1;
+		if (watch >= vcpurec.mem[vcpurec.msize].linear &&
+			watch < vcpurec.mem[vcpurec.msize].linear + byte) {
+			vapiPrint("L%08x: READ %08x FROM L%08x\n", vcpurec.linear,
+				vcpurec.mem[vcpurec.msize].data,
+				vcpurec.mem[vcpurec.msize].linear);
+		}
 		for (i = 0;i < vcpurec.msize;++i) {
 			if (vcpurec.mem[i].flagwrite == vcpurec.mem[vcpurec.msize].flagwrite &&
 				vcpurec.mem[i].linear == vcpurec.mem[vcpurec.msize].linear) {
-				_bb("same");
+				_bb("mem(same)");
 				_impossible_r_;
 				_ce;
 			}
@@ -559,6 +566,7 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 da
 {
 	t_nubit32 linear;
 	t_cpuins_physical physical;
+	t_nubit32 watch = 0xffffffff;
 	int i;
 	_cb("_kma_write_logical");
 	_chk(linear = _kma_linear_logical(rsreg, offset, byte, 1, vpl, force));
@@ -571,10 +579,16 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 da
 		vcpurec.mem[vcpurec.msize].byte = byte;
 		vcpurec.mem[vcpurec.msize].linear = linear;
 		vcpurec.mem[vcpurec.msize].physical = physical.ph1;
+		if (watch >= vcpurec.mem[vcpurec.msize].linear &&
+			watch < vcpurec.mem[vcpurec.msize].linear + byte) {
+			vapiPrint("L%08x: WRITE %08x TO L%08x: %08x at ins L%08x\n", vcpurec.linear,
+				vcpurec.mem[vcpurec.msize].data,
+				vcpurec.mem[vcpurec.msize].linear);
+		}
 		for (i = 0;i < vcpurec.msize;++i) {
 			if (vcpurec.mem[i].flagwrite == vcpurec.mem[vcpurec.msize].flagwrite &&
 				vcpurec.mem[i].linear == vcpurec.mem[vcpurec.msize].linear) {
-				_bb("same");
+				_bb("mem(same)");
 				_impossible_;
 				_ce;
 			}
@@ -2158,21 +2172,6 @@ static t_nubit64 _e_pop(t_nubit8 byte)
 todo _e_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_e_call_far");
-	switch (byte) {
-	case 2:
-		vcpuins.bit = 16;
-		vcpuins.opr1 = newcs;
-		vcpuins.opr2 = GetMax16(neweip);
-		break;
-	case 4:
-		vcpuins.bit = 32;
-		vcpuins.opr1 = newcs;
-		vcpuins.opr2 = GetMax32(neweip);
-		break;
-	default: _bb("byte");
-		_chk(_SetExcept_CE(byte));
-		_be;break;
-	}
 	_chk(_s_descriptor(newcs));
 	if (!_IsProtected) {
 		_bb("!Protected");
@@ -2190,21 +2189,6 @@ todo _e_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 done _e_call_near(t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_e_call_near");
-	switch (byte) {
-	case 2:
-		vcpuins.bit = 16;
-		vcpuins.opr1 = vcpu.cs.selector;
-		vcpuins.opr2 = GetMax16(neweip);
-		break;
-	case 4:
-		vcpuins.bit = 32;
-		vcpuins.opr1 = vcpu.cs.selector;
-		vcpuins.opr2 = GetMax32(neweip);
-		break;
-	default: _bb("byte");
-		_chk(_SetExcept_CE(byte));
-		_be;break;
-	}
 	_chk(_kec_call_near(neweip, byte));
 	_ce;
 }

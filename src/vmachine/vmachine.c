@@ -16,10 +16,11 @@ of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x\n"
 
 static t_bool StopBeforeRefresh()
 {
-	if (vmachine.flagbreak && _cs == vmachine.breakcs && _ip == vmachine.breakip)
+	if (vmachine.flagbreak && _cs == vmachine.breakcs && _ip == vmachine.breakip && vmachine.breakcnt)
 		return 1;
-	if (vmachine.flagbreakx && (vcpu.cs.base + vcpu.eip == vmachine.breaklinear))
+	if (vmachine.flagbreakx && (vcpu.cs.base + vcpu.eip == vmachine.breaklinear) && vmachine.breakcnt) {
 		return 1;
+	}
 	return 0;
 }
 static t_bool StopAfterRefresh()
@@ -42,6 +43,7 @@ static void DoBeforeRefresh() {}
 static void DoAfterRefresh()
 {
 	if (vmachine.flagrecord) vapiRecordExec();
+	vmachine.breakcnt++;
 }
 
 void vapiCallBackMachineRun()
