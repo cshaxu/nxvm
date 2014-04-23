@@ -59,12 +59,10 @@ void NSExec()
 		while(vcpu.ip < end && !vcputermflag) vcpuInsExec();
 	}
 }
-
 void NSExit()
 {
 	exitFlag = 1;
 }
-
 void NSHelp()
 {
 	fprintf(stdout,"NXVM Console Commands\n");
@@ -75,6 +73,7 @@ void NSHelp()
 	fprintf(stdout,"HELP\t\tProvides Help information for NXVM console commands.\n\n");
 	fprintf(stdout,"POWON\t\tPowers on Neko's x86 Virtual Machine.\n");
 	//fprintf(stdout,"STATUS\t\tPrints the status of NXVM.\n");
+	fprintf(stdout,"FLOPPY\tAssigns the name of floppy image.\n");
 	fprintf(stdout,"MEMORY\t\tAssigns the memory size of NXVM.\n");
 	fprintf(stdout,"MEMORYTEST\tTests the memory size of NXVM.\n");
 /*	fprintf(stdout,"NXVM Operations\n");
@@ -84,6 +83,12 @@ void NSHelp()
 	
 }
 
+void NSFloppy()
+{
+	fprintf(stdout,"Floppy Image File: ");
+	fgets(vfddimage,VGLOBAL_SIZE_STRING,stdin);
+	parse(vfddimage);
+}
 void NSMemory()
 {
 	t_nubit32 tempSize;
@@ -157,6 +162,7 @@ void NSConsole()
 		else if(!strcmp(cmdl,"help")) NSHelp();
 		//else if(!strcmp(cmdl,"pwd")) fprintf(stdout,"%s\n",argv[0]);
 
+		else if(!strcmp(cmdl,"floppy")) NSFloppy();
 		else if(!strcmp(cmdl,"memory")) NSMemory();
 		else if(!strcmp(cmdl,"memorytest")) NSMemoryTest();
 

@@ -5,41 +5,38 @@
 #ifndef NXVM_VGLOBAL_H
 #define NXVM_VGLOBAL_H
 
+#include "stdint.h"
 #include "coption.h"
 
-typedef unsigned char t_nubit4;
-typedef unsigned char t_nubit6;
+#define VGLOBAL_SIZE_STRING 0x100
 
-typedef unsigned char t_nubit8;		//bit8: number, unsigned, 8-bit
-typedef signed char t_nsbit8;
-typedef unsigned short t_nubit16;
-typedef signed short t_nsbit16;
-typedef unsigned long t_nubit32;
-typedef signed long t_nsbit32;
+typedef uint8_t		t_nubit4;
+typedef uint8_t		t_nubit6;
+typedef uint8_t		t_nubit8;		//bit8: number, unsigned, 8-bit
+typedef int8_t		t_nsbit8;
+typedef uint16_t	t_nubit16;
+typedef int16_t		t_nsbit16;
+typedef uint32_t	t_nubit32;
+typedef int32_t		t_nsbit32;
+typedef uint64_t	t_nubit64;
+typedef int64_t		t_nsbit64;
 
-typedef float t_float;
-typedef double t_double;
-typedef char t_string[0x100];
+typedef float		t_float;
+typedef double		t_double;
+typedef char		t_string[VGLOBAL_SIZE_STRING];
 
 #if NXVM_INTLEN == 32
-typedef unsigned long t_bool;
-typedef unsigned long t_nubitcc;
-typedef signed long t_nsbitcc;
-typedef unsigned long t_vaddrcc;		// addr: variable, c compiler
-typedef unsigned long t_faddrcc;		// addr: function, c compiler
+typedef t_nubit32	t_bool;
+typedef t_nubit32	t_nubitcc;
+typedef t_nsbit32	t_nsbitcc;
+typedef t_nubit32	t_vaddrcc;		// addr: variable, c compiler
+typedef t_nubit32	t_faddrcc;		// addr: function, c compiler
 #elif NXVM_INTLEN == 64
-typedef unsigned long long t_bool;
-typedef unsigned long long t_nubitcc;
-typedef signed long long t_nsbitcc;
-typedef unsigned long long t_vaddrcc;	// addr: variable, c compiler
-typedef unsigned long long t_faddrcc;	// addr: function, c compiler
-typedef long double t_ldouble;
-#else
-typedef unsigned int t_bool;
-typedef unsigned int t_nubitcc;
-typedef signed int t_nsbitcc;
-typedef unsigned int t_vaddrcc;		// addr: variable, c compiler
-typedef unsigned int t_faddrcc;		// addr: function, c compiler
+typedef t_nubit64	t_bool;
+typedef t_nubit64	t_nubitcc;
+typedef t_nsbit64	t_nsbitcc;
+typedef t_nubit64	t_vaddrcc;	// addr: variable, c compiler
+typedef t_nubit64	t_faddrcc;	// addr: function, c compilers
 #endif
 
 #define FUNEXEC(faddr) (*(void (*)(void))(faddr))()

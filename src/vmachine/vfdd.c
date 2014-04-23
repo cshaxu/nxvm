@@ -5,6 +5,7 @@
 #include "memory.h"
 
 #include "vfdd.h"
+//#include "system/vapi.h"
 
 t_string vfddimage;
 t_vaddrcc vfddbase;
@@ -21,7 +22,7 @@ void FDDInit()
 		vfddbase = (t_vaddrcc)malloc(0x168000);
 		count = fread((void *)vfddbase,sizeof(t_nubit8),0x168000,imgfile);
 		vfddptr = vfddbase;
-		fclose(imgfile);	
+		fclose(imgfile);
 	}
 }
 void FDDTerm()
