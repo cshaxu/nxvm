@@ -4,7 +4,7 @@
 #define NXVM_VAPI_H
 
 #ifdef __cplusplus
-extern "C" {
+/*extern "C" {*/
 #endif
 
 #include "vglobal.h"
@@ -79,7 +79,7 @@ t_nubit8 vapiCallBackDisplayGetCurrentChar(t_nubit8 x, t_nubit8 y);
 t_nubit8 vapiCallBackDisplayGetCurrentCharProp(t_nubit8 x, t_nubit8 y);
 
 #ifdef __cplusplus
-}/*cends*/
+/*}_EOCD_*/
 #endif
 
 #endif

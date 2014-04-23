@@ -4,13 +4,13 @@
 #define NXVM_DEBUG_H
 
 #ifdef __cplusplus
-extern "C" {
+/*extern "C" {*/
 #endif
 
 void debug();
 
 #ifdef __cplusplus
-}/*cends*/
+/*}_EOCD_*/
 #endif
 
 #endif

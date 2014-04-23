@@ -4,7 +4,7 @@
 #define NXVM_W32AMAIN_H
 
 #ifdef __cplusplus
-extern "C" {
+/*extern "C" {*/
 #endif
 
 #include "windows.h"
@@ -19,7 +19,7 @@ void win32appStartMachine();
 extern HWND hWnd;
 
 #ifdef __cplusplus
-}/*cends*/
+/*}_EOCD_*/
 #endif
 
 #endif

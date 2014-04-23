@@ -116,17 +116,17 @@ static void printnubit16(t_nubit16 n)
 static void addrparse(t_nubit16 defseg,const char *addr)
 {
 	char *cseg,*cptr,ccopy[MAXLINE];
-	strcpy(ccopy,addr);
-	cseg = strtok(ccopy,":");
-	cptr = strtok(NULL,"");
+	STRCPY(ccopy,addr);
+	cseg = STRTOK(ccopy,":");
+	cptr = STRTOK(NULL,"");
 	if(!cptr) {
 		seg = defseg;
 		ptr = scannubit16(cseg);
 	} else {
-		if(!strcmp(cseg,"cs")) seg = _cs;
-		else if(!strcmp(cseg,"ss")) seg = _ss;
-		else if(!strcmp(cseg,"ds")) seg = _ds;
-		else if(!strcmp(cseg,"es")) seg = _es;
+		if(!STRCMP(cseg,"cs")) seg = _cs;
+		else if(!STRCMP(cseg,"ss")) seg = _ss;
+		else if(!STRCMP(cseg,"ds")) seg = _ds;
+		else if(!STRCMP(cseg,"es")) seg = _es;
 		else seg = scannubit16(cseg);
 		ptr = scannubit16(cptr);
 	}
@@ -409,7 +409,7 @@ static void l()
 	t_nubit8 c;
 	t_nubit16 i = 0;
 	t_nubit32 len = 0;
-	FILE *load = fopen(filename,"rb");
+	FILE *load = FOPEN(filename,"rb");
 	if(!load) fprintf(stdout,"File not found\n");
 	else {
 		switch(narg) {
@@ -469,7 +469,7 @@ static void m()
 static void n()
 {
 	if(narg != 2) seterr(narg-1);
-	else strcpy(filename,arg[1]);
+	else STRCPY(filename,arg[1]);
 }
 // output
 static void o()
@@ -568,7 +568,7 @@ static void rscanregs()
 {
 	t_nubit16 t;
 	char s[MAXLINE];
-	if(!strcmp(arg[1],"ax")) {
+	if(!STRCMP(arg[1],"ax")) {
 		fprintf(stdout,"AX ");
 		printnubit16(_ax);
 		fprintf(stdout,"\n:");
@@ -576,7 +576,7 @@ static void rscanregs()
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_ax = t;
-	} else if(!strcmp(arg[1],"bx")) {
+	} else if(!STRCMP(arg[1],"bx")) {
 		fprintf(stdout,"BX ");
 		printnubit16(_bx);
 		fprintf(stdout,"\n:");
@@ -584,7 +584,7 @@ static void rscanregs()
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_bx = t;
-	} else if(!strcmp(arg[1],"cx")) {
+	} else if(!STRCMP(arg[1],"cx")) {
 		fprintf(stdout,"CX ");
 		printnubit16(_cx);
 		fprintf(stdout,"\n:");
@@ -592,7 +592,7 @@ static void rscanregs()
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_cx = t;
-	} else if(!strcmp(arg[1],"dx")) {
+	} else if(!STRCMP(arg[1],"dx")) {
 		fprintf(stdout,"DX ");
 		printnubit16(_dx);
 		fprintf(stdout,"\n:");
@@ -600,7 +600,7 @@ static void rscanregs()
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_dx = t;
-	} else if(!strcmp(arg[1],"bp")) {
+	} else if(!STRCMP(arg[1],"bp")) {
 		fprintf(stdout,"BP ");
 		printnubit16(_bp);
 		fprintf(stdout,"\n:");
@@ -608,7 +608,7 @@ static void rscanregs()
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_bp = t;
-	} else if(!strcmp(arg[1],"sp")) {
+	} else if(!STRCMP(arg[1],"sp")) {
 		fprintf(stdout,"SP ");
 		printnubit16(_sp);
 		fprintf(stdout,"\n:");
@@ -616,7 +616,7 @@ static void rscanregs()
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_sp = t;
-	} else if(!strcmp(arg[1],"si")) {
+	} else if(!STRCMP(arg[1],"si")) {
 		fprintf(stdout,"SI ");
 		printnubit16(_si);
 		fprintf(stdout,"\n:");
@@ -624,7 +624,7 @@ static void rscanregs()
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_si = t;
-	} else if(!strcmp(arg[1],"di")) {
+	} else if(!STRCMP(arg[1],"di")) {
 		fprintf(stdout,"DI ");
 		printnubit16(_di);
 		fprintf(stdout,"\n:");
@@ -632,7 +632,7 @@ static void rscanregs()
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_di = t;
-	} else if(!strcmp(arg[1],"ss")) {
+	} else if(!STRCMP(arg[1],"ss")) {
 		fprintf(stdout,"SS ");
 		printnubit16(_ss);
 		fprintf(stdout,"\n:");
@@ -641,7 +641,7 @@ static void rscanregs()
 		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
 			vcpu.overss = _ss = t;
 		}
-	} else if(!strcmp(arg[1],"cs")) {
+	} else if(!STRCMP(arg[1],"cs")) {
 		fprintf(stdout,"CS ");
 		printnubit16(_cs);
 		fprintf(stdout,"\n:");
@@ -649,7 +649,7 @@ static void rscanregs()
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_cs = t;
-	} else if(!strcmp(arg[1],"ds")) {
+	} else if(!STRCMP(arg[1],"ds")) {
 		fprintf(stdout,"DS ");
 		printnubit16(_ds);
 		fprintf(stdout,"\n:");
@@ -658,7 +658,7 @@ static void rscanregs()
 		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
 			vcpu.overds = _ds = t;
 		}
-	} else if(!strcmp(arg[1],"es")) {
+	} else if(!STRCMP(arg[1],"es")) {
 		fprintf(stdout,"ES ");
 		printnubit16(_es);
 		fprintf(stdout,"\n:");
@@ -666,7 +666,7 @@ static void rscanregs()
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_es = t;
-	} else if(!strcmp(arg[1],"ip")) {
+	} else if(!STRCMP(arg[1],"ip")) {
 		fprintf(stdout,"IP ");
 		printnubit16(_ip);
 		fprintf(stdout,"\n:");
@@ -674,27 +674,27 @@ static void rscanregs()
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_ip = t;
-	} else if(!strcmp(arg[1],"f")) {
+	} else if(!STRCMP(arg[1],"f")) {
 		rprintflags();
 		fprintf(stdout," -");
 		fgets(s,MAXLINE,stdin);
 		lcase(s);
-		if(!strcmp(s,"ov"))      SetOF;
-		else if(!strcmp(s,"nv")) ClrOF;
-		else if(!strcmp(s,"dn")) SetDF;
-		else if(!strcmp(s,"up")) ClrDF;
-		else if(!strcmp(s,"ei")) SetIF;
-		else if(!strcmp(s,"di")) ClrIF;
-		else if(!strcmp(s,"ng")) SetSF;
-		else if(!strcmp(s,"pl")) ClrSF;
-		else if(!strcmp(s,"zr")) SetZF;
-		else if(!strcmp(s,"nz")) ClrZF;
-		else if(!strcmp(s,"ac")) SetAF;
-		else if(!strcmp(s,"na")) ClrAF;
-		else if(!strcmp(s,"pe")) SetPF;
-		else if(!strcmp(s,"po")) ClrPF;
-		else if(!strcmp(s,"cy")) SetCF;
-		else if(!strcmp(s,"nc")) ClrCF;
+		if(!STRCMP(s,"ov"))      SetOF;
+		else if(!STRCMP(s,"nv")) ClrOF;
+		else if(!STRCMP(s,"dn")) SetDF;
+		else if(!STRCMP(s,"up")) ClrDF;
+		else if(!STRCMP(s,"ei")) SetIF;
+		else if(!STRCMP(s,"di")) ClrIF;
+		else if(!STRCMP(s,"ng")) SetSF;
+		else if(!STRCMP(s,"pl")) ClrSF;
+		else if(!STRCMP(s,"zr")) SetZF;
+		else if(!STRCMP(s,"nz")) ClrZF;
+		else if(!STRCMP(s,"ac")) SetAF;
+		else if(!STRCMP(s,"na")) ClrAF;
+		else if(!STRCMP(s,"pe")) SetPF;
+		else if(!STRCMP(s,"po")) ClrPF;
+		else if(!STRCMP(s,"cy")) SetCF;
+		else if(!STRCMP(s,"nc")) ClrCF;
 		else fprintf(stdout,"bf Error\n");
 	} else fprintf(stdout,"br Error\n");
 }
@@ -801,10 +801,10 @@ static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 			pos += len;
 			if(len < 3) fprintf(stdout,"\t\t");
 			else fprintf(stdout,"\t");
-			op = strtok(str,"\t");
+			op = STRTOK(str,"\t");
 			if(!len || !op) {fprintf(stdout,"fail to unassemble\n");return;}
 			else fprintf(stdout,"%s\t",op);
-			stmt = strtok(NULL,"\0");
+			stmt = STRTOK(NULL,"\0");
 			if(stmt) {
 				fprintf(stdout,"%s",stmt);
 				if(strlen(stmt) < 8) fprintf(stdout,"\t\t\t\t");
@@ -895,7 +895,7 @@ static void w()
 	t_nubit32 len = (_bx<<16)+_cx;
 	FILE *write;
 	if(!strlen(filename)) {fprintf(stdout,"(W)rite error, no destination defined\n");return;}
-	else write= fopen(filename,"wb");
+	else write= FOPEN(filename,"wb");
 	if(!write) fprintf(stdout,"File not found\n");
 	else {
 		fprintf(stdout,"Writing ");
@@ -966,9 +966,9 @@ static void init()
 }
 static void parse()
 {
-	strcpy(cmdCopy,cmdBuff);
+	STRCPY(cmdCopy,cmdBuff);
 	narg = 0;
-	arg[narg] = strtok(cmdCopy," ,\t\n\r\f");
+	arg[narg] = STRTOK(cmdCopy," ,\t\n\r\f");
 	if(arg[narg]) {
 		lcase(arg[narg]);
 		narg++;
@@ -978,7 +978,7 @@ static void parse()
 		narg++;
 	}
 	while(narg < MAXNARG) {
-		arg[narg] = strtok(NULL," ,\t\n\r\f");
+		arg[narg] = STRTOK(NULL," ,\t\n\r\f");
 		if(arg[narg]) {
 			lcase(arg[narg]);
 			narg++;

@@ -6,7 +6,7 @@
 #define NXVM_VCPUINS_H
 
 #ifdef __cplusplus
-extern "C" {
+/*extern "C" {*/
 #endif
 
 #define VCPUINS_DEBUG
@@ -46,7 +46,7 @@ void vcpuinsInit();
 void vcpuinsFinal();
 
 #ifdef __cplusplus
-}/*cends*/
+/*}_EOCD_*/
 #endif
 
 #endif

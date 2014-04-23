@@ -6,7 +6,7 @@
 #define NXVM_VCPU_H
 
 #ifdef __cplusplus
-extern "C" {
+/*extern "C" {*/
 #endif
 
 #include "vglobal.h"
@@ -105,7 +105,7 @@ void vcpuFinal();
 #define ClrIF  (ClrBit(_flags, VCPU_FLAG_IF))
 
 #ifdef __cplusplus
-}/*cends*/
+/*}_EOCD_*/
 #endif
 
 #endif

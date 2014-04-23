@@ -2,7 +2,7 @@
 #define NXVM_QDFDD_H
 
 #ifdef __cplusplus
-extern "C" {
+/*extern "C" {*/
 #endif
 
 #include "vglobal.h"
@@ -30,7 +30,7 @@ void qdfddInit();
 void qdfddFinal();
 
 #ifdef __cplusplus
-}/*cends*/
+/*}_EOCD_*/
 #endif
 
 #endif

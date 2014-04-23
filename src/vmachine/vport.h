@@ -6,7 +6,7 @@
 #define NXVM_VPORT_H
 
 #ifdef __cplusplus
-extern "C" {
+/*extern "C" {*/
 #endif
 
 #include "vglobal.h"
@@ -26,7 +26,7 @@ void vportRefresh();
 void vportFinal();
 
 #ifdef __cplusplus
-}/*cends*/
+/*}_EOCD_*/
 #endif
 
 #endif

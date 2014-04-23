@@ -2,7 +2,7 @@
 #define NXVM_QDRTC_H
 
 #ifdef __cplusplus
-extern "C" {
+/*extern "C" {*/
 #endif
 
 #include "time.h"
@@ -32,7 +32,7 @@ void qdrtcInit();
 void qdrtcFinal();
 
 #ifdef __cplusplus
-}/*cends*/
+/*}_EOCD_*/
 #endif
 
 #endif

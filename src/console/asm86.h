@@ -11,7 +11,7 @@
 #define NXVM_ASM86_H
 
 #ifdef __cplusplus
-extern "C" {
+/*extern "C" {*/
 #endif
 
 typedef struct {
@@ -28,8 +28,14 @@ int assemble(const char *asmStmt,unsigned short locCS,
 int disassemble(char *dasmStmt,Operand *resOperand,
 	const void *locMemory,const unsigned short locSegment,const unsigned short locOffset);
 
+char* STRCAT(char *_Dest, const char *_Source);
+char* STRCPY(char *_Dest, const char *_Source);
+char* STRTOK(char *_Dest, const char *_Source);
+int STRCMP(const char *_Str1, const char *_Str2);
+FILE* FOPEN(const char *_Filename, const char *_Mode);
+
 #ifdef __cplusplus
-}/*cends*/
+/*}_EOCD_*/
 #endif
 
 #endif

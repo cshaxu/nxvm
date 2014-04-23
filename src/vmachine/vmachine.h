@@ -6,7 +6,7 @@
 #define NXVM_VMACHINE_H
 
 #ifdef __cplusplus
-extern "C" {
+/*extern "C" {*/
 #endif
 
 #define VMACHINE_DEBUG
@@ -50,7 +50,7 @@ void vmachineInit();
 void vmachineFinal();
 
 #ifdef __cplusplus
-}/*cends*/
+/*}_EOCD_*/
 #endif
 
 #endif

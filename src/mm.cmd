@@ -6,12 +6,12 @@ for /f "delims=" %%i in ('dir /a:-d /b *.c') do (
 echo %%i>>"list.txt"
 )
 for /f "delims=" %%i in ('dir /a:-d /b console\*.c') do (
-echo asm86/%%i>>"list.txt"
+echo console/%%i>>"list.txt"
 )
 for /f "delims=" %%i in ('dir /a:-d /b vmachine\*.c') do (
 echo vmachine/%%i>>"list.txt"
 )
-for /f "delims=" %%i in ('dir /a:-d /b system\*.c') do (
-echo system/%%i>>"list.txt"
+for /f "delims=" %%i in ('dir /a:-d /b vmachine\system\*.c') do (
+echo vmachine/system/%%i>>"list.txt"
 )
 mmakfile.exe /l "list.txt" 1>"makefile"

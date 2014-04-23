@@ -6,6 +6,7 @@
 
 #include "../vmachine/vmachine.h"
 
+#include "asm86.h"
 #include "debug.h"
 #include "console.h"
 
@@ -76,7 +77,7 @@ void Exec()
 	fgets(execmd,MAXLINE,stdin);
 	parse(execmd);
 	if(!strlen(execmd)) return;
-	load = fopen(execmd,"rb");
+	load = FOPEN(execmd,"rb");
 	if(!load) {
 		fprintf(stdout,"File not found\n");
 		return;

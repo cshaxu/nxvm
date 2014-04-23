@@ -20,6 +20,18 @@ typedef struct {
 	unsigned short imm;	// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
 	unsigned char blFar;	// 0 = blNear; 1 = blFar; 2 = N/A;
 } ModRM;
+
+char* STRCAT(char *_Dest, const char *_Source)
+{return strcat(_Dest, _Source);}
+char* STRCPY(char *_Dest, const char *_Source)
+{return strcpy(_Dest, _Source);}
+char* STRTOK(char *_Dest, const char *_Source)
+{return strtok(_Dest, _Source);}
+FILE* FOPEN(const char *_Filename, const char *_Mode)
+{return fopen(_Filename, _Mode);}
+int STRCMP(const char *_Str1, const char *_Str2)
+{return strcmp(_Str1, _Str2);}
+
 static int ishexdigit(char c)
 {
 	if( (c >= 0x30 && c <= 0x39) || 
@@ -798,7 +810,7 @@ int assemble(const char *asmStmt,unsigned short locCS,
 	char *arg1 = NULL;
 	char *arg2 = NULL;
 	int i = 0;
-	strcpy(copy,asmStmt);
+	STRCPY(copy,asmStmt);
 	while(copy[i] != '\0') {
 		if(copy[i] == ';' || copy[i] == '\n') {
 			copy[i] = '\0';
@@ -808,32 +820,32 @@ int assemble(const char *asmStmt,unsigned short locCS,
 			copy[i] += 0x20;
 		i++;
 	}
-	prefix = strtok(copy," ,\t\n\r\f");
+	prefix = STRTOK(copy," ,\t\n\r\f");
 	if(!prefix) return len;
 	while(aPrefix(prefix,loc+len)) {
 		len++;
-		prefix = strtok(NULL," ,\t\n\r\f");
+		prefix = STRTOK(NULL," ,\t\n\r\f");
 	}
 	opcode = prefix;
 	prefix = NULL;
 	if(!opcode) return len;
 	if(!strcmp(opcode,"db")) {
-		db = strtok(NULL," ,\t\n\r\f");
+		db = STRTOK(NULL," ,\t\n\r\f");
 		while(db) {
 			if(!aDB(db,loc+len)) {len = 0;break;}
 			len++;
-			db = strtok(NULL," ,\t\n\r\f");
+			db = STRTOK(NULL," ,\t\n\r\f");
 		}
 	} else if(!strcmp(opcode,"dw")) {
-		dw = strtok(NULL," ,\t\n\r\f");
+		dw = STRTOK(NULL," ,\t\n\r\f");
 		while(dw) {
 			if(!aDW(dw,loc+len)) {len = 0;break;}
 			len += 2;
-			dw = strtok(NULL," ,\t\n\r\f");
+			dw = STRTOK(NULL," ,\t\n\r\f");
 		}
 	} else {
-		arg1 = strtok(NULL,",:");
-		arg2 = strtok(NULL,",");
+		arg1 = STRTOK(NULL,",:");
+		arg2 = STRTOK(NULL,",");
 		flag = aOpCode(opcode,arg1,arg2,loc+len,locOffset,locCS);
 		if(flag) len += flag;
 		else len = 0;
@@ -872,7 +884,7 @@ int assemble(const char *asmStmt,unsigned short locCS,
 #define setOperandNul	{resOperand->flag = 4;}
 #define dGetByte(n)	{(n) = *(loc+len++);}
 #define dGetWord(n)	{(n) = *(loc+len++);(n) += ((*(loc+len++))<<8);}
-#define dANY(str) {strcat(dasmStmt,(str));}
+#define dANY(str) {STRCAT(dasmStmt,(str));}
 #define dCOMMA {dANY(",");}
 #define dS {\
 		switch(modrm.reg) {\
@@ -1048,7 +1060,7 @@ static void dStrCat8(char *str,unsigned char n)
 		if(c > 0x39) c += 0x07;
 		s[1-i] = c;
 	}
-	strcat(str,s);
+	STRCAT(str,s);
 }
 static void dStrCat16(char *str,unsigned short n)
 {
@@ -1060,7 +1072,7 @@ static void dStrCat16(char *str,unsigned short n)
 		if(c > 0x39) c += 0x07;
 		s[3-i] = c;
 	}
-	strcat(str,s);
+	STRCAT(str,s);
 }
 static int dModRM(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op,InsType it)
 {
@@ -1373,7 +1385,7 @@ int disassemble(char *dasmStmt,Operand *resOperand,
 		setOperandNul
 		resOperand->seg = 0x00;
 	}
-	strcpy(dasmStmt,"\0");
+	STRCPY(dasmStmt,"\0");
 	dGetByte(opcode)
 	switch(opcode) {
 	case 0x00:	dEmitRM(dSOL,"ADD",RM8_R8);		break;

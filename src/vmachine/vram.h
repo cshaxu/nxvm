@@ -6,7 +6,7 @@
 #define NXVM_VRAM_H
 
 #ifdef __cplusplus
-extern "C" {
+/*extern "C" {*/
 #endif
 
 #include "vglobal.h"
@@ -29,7 +29,7 @@ void vramRefresh();
 void vramFinal();
 
 #ifdef __cplusplus
-}/*cends*/
+/*}_EOCD_*/
 #endif
 
 #endif

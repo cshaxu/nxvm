@@ -2,7 +2,7 @@
 #define NXVM_QDVGA_H
 
 #ifdef __cplusplus
-extern "C" {
+/*extern "C" {*/
 #endif
 
 #include "vglobal.h"
@@ -98,7 +98,7 @@ void qdvgaInit();
 void qdvgaFinal();
 
 #ifdef __cplusplus
-}/*cends*/
+/*}_EOCD_*/
 #endif
 
 #endif
