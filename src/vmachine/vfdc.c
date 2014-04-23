@@ -122,8 +122,8 @@ void IO_Write_03F5()
 		} else if((cmd[0] == CMD_READ_DATA) && (bcount == 9)) {
 			bcount = 0;
 			succ = vfddRead(&cmd[2],&cmd[3],&cmd[4],
-				vramGetAddress((((t_vaddrcc)vdma1.dmac[2].page)<<16)+vdma1.dmac[2].baseaddr),
-				(vdma1.dmac[2].basewc+0x01)/VFDD_BYTES);
+				vramGetAddress((((t_vaddrcc)vdma1.channel[2].page)<<16)+vdma1.channel[2].baseaddr),
+				(vdma1.channel[2].basewc+0x01)/VFDD_BYTES);
 			vfdc.pcn = cmd[2];
 			vfdc.st0 = 0x20 | (cmd[3]<<2) | GET_DS(cmd[1]);
 			vfdc.st1 = 0x00 | ((t_nubit8)succ<<2);
@@ -141,8 +141,8 @@ void IO_Write_03F5()
 		} else if((cmd[0] == CMD_WRITE_DATA) && (bcount == 9)) {
 			bcount = 0;
 			succ = vfddWrite(&cmd[2],&cmd[3],&cmd[4],
-				vramGetAddress((((t_vaddrcc)vdma1.dmac[2].page)<<16)+vdma1.dmac[2].baseaddr),
-				(vdma1.dmac[2].basewc+0x01)/VFDD_BYTES);
+				vramGetAddress((((t_vaddrcc)vdma1.channel[2].page)<<16)+vdma1.channel[2].baseaddr),
+				(vdma1.channel[2].basewc+0x01)/VFDD_BYTES);
 			vfdc.pcn = cmd[2];
 			vfdc.st0 = 0x20 | (cmd[3]<<2) | GET_DS(cmd[1]);
 			vfdc.st1 = 0x00 | ((t_nubit8)succ<<2);
@@ -160,7 +160,7 @@ void IO_Write_03F5()
 		} else if((cmd[0] == CMD_READ_TRACK) && (bcount == 9)) {
 			bcount = 0;
 			succ = vfddRead(&cmd[2],&cmd[3],&cmd[4],
-				vramGetAddress((((t_vaddrcc)vdma1.dmac[2].page)<<16)+vdma1.dmac[2].baseaddr),
+				vramGetAddress((((t_vaddrcc)vdma1.channel[2].page)<<16)+vdma1.channel[2].baseaddr),
 				VFDD_SECTORS);
 			vfdc.pcn = cmd[2];
 			vfdc.st0 = 0x20 | (cmd[3]<<2) | GET_DS(cmd[1]);
