@@ -46,6 +46,7 @@ void vmachineRemoveFloppy(t_string fname);
 void vmachineStart();
 void vmachineStop();
 
+void vmachineReset();
 void vmachineRefresh();
 void vmachineInit();
 void vmachineFinal();

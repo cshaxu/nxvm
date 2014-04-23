@@ -242,10 +242,7 @@ void Reset()
 {
 	if (vmachine.flagrun) {
 		fprintf(stdout, "Virtual machine should be turned off first.\n");
-		return;
-	}
-	if (vmachine.flaginit) vmachineFinal();
-	vmachineInit();
+	} else vmachineReset();
 }
 
 void console()
@@ -253,6 +250,12 @@ void console()
 	char cmdl[MAXLINE];
 	exitFlag = 0;
 	vmachineInit();
+#if VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32
+	vapiFloppyInsert("d:/msdos.img");
+#else
+	vapiFloppyInsert("msdos.img");
+#endif
+	qdbiosPOST();
 	fprintf(stdout,"Please enter 'HELP' for information.\n");
 
 	while(!exitFlag) {

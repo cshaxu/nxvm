@@ -786,41 +786,7 @@ void INT_1A()
 	default:                                      break;
 	}
 }
-
-void qdbiosExecInt(t_nubit8 intid)
-{
-//	vapiPrint("int %02x, func %02x\n",intid,_ah);
-	switch (intid) {
-	case 0x08: /* HARDWARE rtc update */
-		INT_08();break;
-	case 0x09: /* HARDWARE keyb int */
-		INT_09();break;
-	case 0x0e: /* HARDWARE fdd sense int */
-		INT_0E();break;
-	case 0x10: /* SOFTWARE cga operate */
-		INT_10();break;
-	case 0x13: /* SOFTWARE fdd operate */
-		INT_13();break;
-	case 0x15: /* SOFTWARE bios operate */
-		INT_15();break;
-	case 0x16: /* SOFTWARE keyb opterate */
-		INT_16();break;
-	case 0x1a: /* SOFTWARE rtc operate */
-		INT_1A();break;
-	case 0x11: /* SOFTWARE bios operate */
-		INT_11();break;
-	case 0x12: /* SOFTWARE bios operate */
-		INT_12();break;
-	case 0x14: /* SOFTWARE bios operate */
-		INT_14();break;
-	case 0x17: /* SOFTWARE bios operate */
-		INT_17();break;
-	default:     break;
-	}
-}
-
-void qdbiosRefresh() {}
-void qdbiosInit()
+void qdbiosPOST()
 {
 	t_nubit8 hour, min, sec;
 	t_nubit16 i;
@@ -996,6 +962,10 @@ void qdbiosInit()
 	vramVarByte(0xf000, 0xe6fc) = 0x00;
 	vramVarByte(0xf000, 0xe6fd) = 0x00;
 	vramVarByte(0xf000, 0xe6fe) = 0x00;
+/* first cpu instruction */
+	vramVarByte(0xf000, 0xfff0) = 0xea;
+	vramVarWord(0xf000, 0xfff1) = 0x7c00;
+	vramVarWord(0xf000, 0xfff3) = 0x0000;
 
 /* device initialize */
 /* vpic init */
@@ -1026,9 +996,20 @@ void qdbiosInit()
 	out(0x40, 0x00);
 	out(0x43, 0x54);                 /* al=0101 0100: Mode=2, Counter=1, LSB */
 	out(0x41, 0x12);
-/* qddev init */
-	qdkeybInit();
-	qdcgaInit();
+
+/* qdvga init */
+	qdcga.color   = 0x01;
+	qdcgaVarRowSize = 0x50; // 80
+	qdcga.colsize = 0x19; // 25
+	qdcgaVarPageNum = 0x00;
+	qdcgaVarMode = 0x03;
+	qdcgaVarRagenSize = qdcgaModeBufSize[qdcgaVarMode];
+	qdcgaVarCursorPosRow(0) = 0x05;
+	qdcgaVarCursorPosCol(0) = 0x00;
+	qdcgaVarCursorTop       = 0x06;
+	qdcgaVarCursorBottom    = 0x07;
+	qdcga.oldcurposx = qdcga.oldcurposy = 0x00;
+	qdcga.oldcurtop  = qdcga.oldcurbottom = 0x00;
 
 /* load cmos data */
 	hour = BCD2Hex(vcmos.reg[VCMOS_RTC_HOUR]);
@@ -1038,18 +1019,52 @@ void qdbiosInit()
 		(t_nubit32)(((hour * 3600 + min * 60 + sec) * 1000) / QDBIOS_RTC_TICK);
 	vramVarByte(0x0000, QDBIOS_ADDR_RTC_ROLLOVER) = 0x00;
 /* load boot sector */
-#if VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32
-	vapiFloppyInsert("d:/msdos.img");
-#else
-	vapiFloppyInsert("msdos.img");
-#endif
+	if (!vfdd.flagexist) {
+		vapiPrint("Insert boot disk and restart.\n");
+		return;
+	}
 	memcpy((void *)vramGetAddr(0x0000,0x7c00), (void *)vfdd.base, 0x200);
-	vramVarByte(0xf000, 0xfff0) = 0xea;
-	vramVarWord(0xf000, 0xfff1) = 0x7c00;
-	vramVarWord(0xf000, 0xfff3) = 0x0000;
 	mov(_ax, 0xaa55);
 	mov(_cx, 0x0001);
 	mov(_sp, 0xfffe);
+}
+
+void qdbiosExecInt(t_nubit8 intid)
+{
+	switch (intid) {
+	case 0x08: /* HARDWARE rtc update */
+		INT_08();break;
+	case 0x09: /* HARDWARE keyb int */
+		INT_09();break;
+	case 0x0e: /* HARDWARE fdd sense int */
+		INT_0E();break;
+	case 0x10: /* SOFTWARE cga operate */
+		INT_10();break;
+	case 0x13: /* SOFTWARE fdd operate */
+		INT_13();break;
+	case 0x15: /* SOFTWARE bios operate */
+		INT_15();break;
+	case 0x16: /* SOFTWARE keyb opterate */
+		INT_16();break;
+	case 0x1a: /* SOFTWARE rtc operate */
+		INT_1A();break;
+	case 0x11: /* SOFTWARE bios operate */
+		INT_11();break;
+	case 0x12: /* SOFTWARE bios operate */
+		INT_12();break;
+	case 0x14: /* SOFTWARE bios operate */
+		INT_14();break;
+	case 0x17: /* SOFTWARE bios operate */
+		INT_17();break;
+	default:     break;
+	}
+}
+
+void qdbiosRefresh() {}
+void qdbiosInit()
+{
+	qdkeybInit();
+	qdcgaInit();
 }
 void qdbiosFinal()
 {

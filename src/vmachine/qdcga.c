@@ -10,7 +10,7 @@
 
 t_cga qdcga;
 
-static int ModeBufSize[0x14] = {
+t_nubit32 qdcgaModeBufSize[0x14] = {
 	2048,2048,4096,4096,16000,16000,16000,
 	4096,16000,32000,32000,
 	0,0,32000,64000,
@@ -100,6 +100,10 @@ t_bool vapiCallBackDisplayGetCursorChange()
 }
 t_bool vapiCallBackDisplayGetBufferChange()
 {
+	if (!qdcga.bufcomp) {
+		qdcga.bufcomp = (t_vaddrcc)malloc(qdcgaVarRagenSize);
+		return 0x01;
+	}
 	if (memcmp((void *)qdcga.bufcomp, (void *)qdcgaGetTextMemAddr, qdcgaVarRagenSize)) {
 		memcpy((void *)qdcga.bufcomp, (void *)qdcgaGetTextMemAddr, qdcgaVarRagenSize);
 		return 0x01;
@@ -122,13 +126,6 @@ t_nubit8 vapiCallBackDisplayGetCurrentChar(t_nubit8 x, t_nubit8 y)
 {return qdcgaVarChar(qdcgaVarPageNum, x, y);}
 t_nubit8 vapiCallBackDisplayGetCurrentCharProp(t_nubit8 x, t_nubit8 y)
 {return qdcgaVarCharProp(qdcgaVarPageNum, x, y);}
-
-/*void qdcgaCheckVideoRam(t_vaddrcc addr)
-{
-	t_nubit16 offset1 = vram.base + QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM;
-	t_nubit16 offset2 = offset1 + QDCGA_SIZE_TEXT_MEMORY;
-	if ((addr >= offset1) && (addr < offset2)) vapiDisplayPaint();
-}*/
 
 void qdcgaSetDisplayMode()
 {
@@ -166,7 +163,8 @@ void qdcgaSetDisplayMode()
 	default:
 		break;
 	}
-	qdcgaVarRagenSize = ModeBufSize[qdcgaVarMode];
+	qdcgaVarRagenSize = qdcgaModeBufSize[qdcgaVarMode];
+	if (qdcga.bufcomp) free((void *)qdcga.bufcomp);
 	qdcga.bufcomp = (t_vaddrcc)malloc(qdcgaVarRagenSize);
 	memcpy((void *)qdcga.bufcomp, (void *)qdcgaGetTextMemAddr, qdcgaVarRagenSize);
 	ClearTextMemory();
@@ -179,14 +177,14 @@ void qdcgaSetCursorShape()
 void qdcgaSetCursorPos()
 {
 //	qdcgaVarPageNum = _bh;
-//	qdcgaVarPageOffset = _bh * ModeBufSize[qdcgaVarMode];
+//	qdcgaVarPageOffset = _bh * qdcgaModeBufSize[qdcgaVarMode];
 	qdcgaVarCursorPosRow(_bh) = _dh;
 	qdcgaVarCursorPosCol(_bh) = _dl;
 }
 void qdcgaGetCursorPos()
 {
 //	qdcgaVarPageNum = _bh;
-//	qdcgaVarPageOffset = _bh * ModeBufSize[qdcgaVarMode];
+//	qdcgaVarPageOffset = _bh * qdcgaModeBufSize[qdcgaVarMode];
 	_dh = qdcgaVarCursorPosRow(_bh);
 	_dl = qdcgaVarCursorPosCol(_bh);
 	_ch = qdcgaVarCursorTop;
@@ -195,7 +193,7 @@ void qdcgaGetCursorPos()
 void qdcgaSetDisplayPage()
 {
 	qdcgaVarPageNum = _al;
-	qdcgaVarPageOffset = _al * ModeBufSize[qdcgaVarMode];
+	qdcgaVarPageOffset = _al * qdcgaModeBufSize[qdcgaVarMode];
 }
 void qdcgaScrollUp()
 {
@@ -309,22 +307,10 @@ void qdcgaDisplayStr()
 
 void qdcgaInit()
 {
-//	t_nubit8 i;
 	memset(&qdcga, 0x00, sizeof(t_cga));
-	qdcga.color   = 0x01;
-	qdcgaVarRowSize = 0x50; // 80
-	qdcga.colsize = 0x19; // 25
-	qdcgaVarPageNum = 0x00;
-	qdcgaVarMode = 0x03;
-	qdcgaVarRagenSize = ModeBufSize[qdcgaVarMode];
-	qdcgaVarCursorPosRow(0) = 0x05;
-	qdcgaVarCursorPosCol(0) = 0x00;
-	qdcgaVarCursorTop       = 0x06;
-	qdcgaVarCursorBottom    = 0x07;
-	memset((void *)qdcgaGetTextMemAddr, 0x00, QDCGA_SIZE_TEXT_MEMORY);
-	qdcga.bufcomp = (t_vaddrcc)malloc(qdcgaVarRagenSize);
-	qdcga.oldcurposx = qdcga.oldcurposy = 0x00;
-	qdcga.oldcurtop  = qdcga.oldcurbottom = 0x00;
 }
 void qdcgaFinal()
-{}
+{
+	if (qdcga.bufcomp) free((void *)qdcga.bufcomp);
+	qdcga.bufcomp = (t_vaddrcc)NULL;
+}

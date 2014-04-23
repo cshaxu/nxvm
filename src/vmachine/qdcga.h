@@ -81,6 +81,7 @@ typedef struct {
 	(!(qdcgaVarCursorTop & 0x08))
 
 extern t_cga qdcga;
+extern t_nubit32 qdcgaModeBufSize[0x14];
 
 //void qdcgaCheckVideoRam(t_vaddrcc addr);
 void qdcgaSetDisplayMode();

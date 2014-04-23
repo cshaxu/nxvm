@@ -55,6 +55,30 @@ void vapiCallBackMachineRun()
 t_nubit8 vapiCallBackMachineGetFlagRun() {return vmachine.flagrun;}
 void vapiCallBackMachineStop() {vmachineStop();}
 
+void vmachineReset()
+{
+	vpitFinal();
+	qdbiosFinal();
+	vfdcFinal();
+	vdmaFinal();
+	vcmosFinal();
+	vpicFinal();
+	vcpuFinal();
+	vramFinal();
+	vportFinal();
+	memset(&vmachine, 0x00, sizeof(t_machine));
+	vportInit();
+	vramInit();
+	vcpuInit();
+	vpicInit();
+	vpitInit();
+	vcmosInit();
+	vdmaInit();
+	vfdcInit();
+	qdbiosInit();
+	vmachine.flaginit = 0x01;
+	qdbiosPOST();
+}
 void vmachineRefresh()
 {
 /*
