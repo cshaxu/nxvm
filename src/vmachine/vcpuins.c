@@ -11388,7 +11388,7 @@ static void QDX()
 {
 #if VCPUINS_PRIMARY == 1
 #ifndef VGLOBAL_BOCHS
-	t_nubit32 eflags;
+	t_nubit16 flags;
 	_cb("QDX");
 	_adv;
 	_chk(_d_imm(1));
@@ -11417,10 +11417,10 @@ static void QDX()
 		_bb("QDINT");
 		qdbiosExecInt(GetMax8(vcpuins.cimm));
 		if (vcpuins.cimm < 0x80) {
-			_chk(_s_read_ss(vcpu.sp + 4, GetRef(eflags), 4));
-			MakeBit(eflags, VCPU_EFLAGS_ZF, _GetEFLAGS_ZF);
-			MakeBit(eflags, VCPU_EFLAGS_CF, _GetEFLAGS_CF);
-			_chk(_s_write_ss(vcpu.sp + 4, GetRef(eflags), 4));
+			_chk(_s_read_ss(vcpu.sp + 4, GetRef(flags), 2));
+			MakeBit(flags, VCPU_EFLAGS_ZF, _GetEFLAGS_ZF);
+			MakeBit(flags, VCPU_EFLAGS_CF, _GetEFLAGS_CF);
+			_chk(_s_write_ss(vcpu.sp + 4, GetRef(flags), 2));
 		}
 		_be;break;
 	}

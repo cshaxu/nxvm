@@ -7,44 +7,7 @@
 
 t_machine vmachine;
 
-void vapiCallBackMachineRun()
-{
-	while (vmachine.flagrun)
-		vmachineRefresh();
-}
-t_nubit8 vapiCallBackMachineGetFlagRun()
-{
-	return vmachine.flagrun;
-}
-void vapiCallBackMachineStart()
-{
-	vmachineStart();
-}
-void vapiCallBackMachineResume()
-{
-	vmachineResume();
-}
-void vapiCallBackMachineReset()
-{
-	if (vmachine.flagrun)
-		vmachine.flagreset = 1;
-	else
-		vmachineReset();
-}
-void vapiCallBackMachineStop() {vmachineStop();}
-
-void vmachineStart()
-{
-	vmachineReset();
-	vmachineResume();
-}
-void vmachineResume() {
-	if (vmachine.flagrun) return;
-	vmachine.flagrun = 1;
-	vapiStartMachine();
-}
-void vmachineStop()  {vmachine.flagrun = 0;}
-void vmachineReset()
+static void DoReset()
 {
 	vportReset();
 	vramReset();
@@ -63,9 +26,39 @@ void vmachineReset()
 	qdbiosReset();
 	vmachine.flagreset = 0;
 }
+void vapiCallBackMachineRun()
+{
+	while (vmachine.flagrun)
+		vmachineRefresh();
+}
+t_bool vapiCallBackMachineGetFlagRun()
+{
+	return vmachine.flagrun;
+}
+void vapiCallBackMachineReset() {vmachineReset();}
+void vapiCallBackMachineStop() {vmachineStop();}
+
+void vmachineStart()
+{
+	DoReset();
+	vmachineResume();
+}
+void vmachineReset()
+{
+	if (vmachine.flagrun)
+		vmachine.flagreset = 1;
+	else
+		DoReset();
+}
+void vmachineResume() {
+	if (vmachine.flagrun) return;
+	vmachine.flagrun = 1;
+	vapiStartMachine();
+}
+void vmachineStop()  {vmachine.flagrun = 0;}
 void vmachineRefresh()
 {
-	if (vmachine.flagreset) vmachineReset();
+	if (vmachine.flagreset) DoReset();
 	//vdispRefresh();
 	vvadpRefresh();
 	//vkeybRefresh();

@@ -158,6 +158,7 @@ static void Info()
 	vapiPrint("Trace:       %s\n", vdebug.tracecnt ? "On" : "Off");
 	vapiPrint("Break Point: ");
 	if (vdebug.flagbreak) vapiPrint("%04X:%04X\n",vdebug.breakcs,vdebug.breakip);
+	else if (vdebug.flagbreakx) vapiPrint("L%08X\n",vdebug.breaklinear);
 	else vapiPrint("Off\n");
 	vapiPrint("\n");
 	vapiPrint("NXVM Running Status\n");
@@ -230,15 +231,16 @@ static void Device()
 		if (narg < 3) GetHelp;
 		if (!strcmp(arg[2], "create")) {
 			vfdd.flagexist = 1;
+			vapiPrint("Floppy disk created.\n");
 		} else if (!strcmp(arg[2], "insert")) {
 			if (narg < 4) GetHelp;
-			if (vapiFloppyInsert(arg[3]))
+			if (!vapiFloppyInsert(arg[3]))
 				vapiPrint("Floppy disk inserted.\n");
 			else
 				vapiPrint("Cannot read floppy disk from '%s'.\n", arg[3]);
 		} else if (!strcmp(arg[2], "remove")) {
 			if (narg < 4) arg[3] = NULL;
-			if (vapiFloppyRemove(arg[3]))
+			if (!vapiFloppyRemove(arg[3]))
 				vapiPrint("Floppy disk removed.\n");
 			else
 				vapiPrint("Cannot write floppy disk to '%s'.\n", arg[3]);
@@ -253,18 +255,19 @@ static void Device()
 				} else GetHelp;
 			}
 			vhddAlloc();
+			vapiPrint("Hard disk created.\n");
 		} else if (!strcmp(arg[2], "connect")) {
 			if (narg < 4) GetHelp;
-			if (vapiHardDiskInsert(arg[3]))
+			if (!vapiHardDiskInsert(arg[3]))
 				vapiPrint("Hard disk connected.\n");
 			else
 				vapiPrint("Cannot read hard disk from '%s'.\n", arg[3]);
 		} else if (!strcmp(arg[2], "disconnect")) {
 			if (narg < 4) arg[3] = NULL;
-			if (vapiHardDiskRemove(arg[3]))
+			if (!vapiHardDiskRemove(arg[3]))
 				vapiPrint("Hard disk disconnected.\n");
 			else
-				vapiPrint("Cannot write hard disk from '%s'.\n", arg[3]);
+				vapiPrint("Cannot write hard disk to '%s'.\n", arg[3]);
 		} else GetHelp;
 	} else GetHelp;
 }
@@ -277,7 +280,7 @@ static void Nxvm()
 		} else
 			vapiPrint("Virtual machine is already running.\n");
 	} else if (!strcmp(arg[1], "reset")) {
-		vapiCallBackMachineReset();
+		vmachineReset();
 	} else if (!strcmp(arg[1], "stop")) {
 		vmachineStop();
 	} else if (!strcmp(arg[1], "resume")) {
@@ -311,7 +314,7 @@ static void exec()
 	/* support for convenient commands */
 	else if(!strcmp(arg[0],"mode"))  {if (!vmachine.flagrun) vmachine.flagmode = !vmachine.flagmode;}
 	else if(!strcmp(arg[0],"start"))  vmachineStart();
-	else if(!strcmp(arg[0],"reset"))  vapiCallBackMachineReset();
+	else if(!strcmp(arg[0],"reset"))  vmachineReset();
 	else if(!strcmp(arg[0],"stop"))   vmachineStop();
 	else if(!strcmp(arg[0],"resume")) vmachineResume();
 	else vapiPrint("Illegal command '%s'.\n",arg[0]);

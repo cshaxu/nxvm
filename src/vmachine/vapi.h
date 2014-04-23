@@ -59,12 +59,10 @@ void vapiDisplayPaint();
 void vapiStartMachine();
 
 /* Call Back Functions */
+t_bool vapiCallBackMachineGetFlagRun();
 void vapiCallBackMachineRun();
-t_nubit8 vapiCallBackMachineGetFlagRun();
-void vapiCallBackMachineStart();
-void vapiCallBackMachineResume();
-void vapiCallBackMachineReset();
 void vapiCallBackMachineStop();
+void vapiCallBackMachineReset();
 
 void vapiCallBackCpuPrintSreg();
 void vapiCallBackCpuPrintCreg();

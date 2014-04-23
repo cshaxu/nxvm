@@ -294,7 +294,10 @@ static void g()
 	case 3:
 		vdebug.flagbreak = 1;
 		addrparse(vcpu.cs.selector,arg[1]);
-		vcpu.cs.selector = seg;
+		if (vcpuinsLoadSreg(&vcpu.cs, seg)) {
+			vapiPrint("debug: fail to load cs from %04X\n", seg);
+			return;
+		}
 		_ip = ptr;
 		addrparse(vcpu.cs.selector,arg[2]);
 		vdebug.breakcs = seg;
@@ -316,9 +319,9 @@ static void h()
 		val1 = scannubit16(arg[1]);
 		val2 = scannubit16(arg[2]);
 		if(!nErrPos) {
-			vapiPrint("%04X",val1+val2);
+			vapiPrint("%04X",GetMax16(val1+val2));
 			vapiPrint("  ");
-			vapiPrint("%04X",val1-val2);
+			vapiPrint("%04X",GetMax16(val1-val2));
 			vapiPrint("\n");
 		}
 	}
@@ -665,7 +668,10 @@ static void t()
 		break;
 	case 3:
 		addrparse(vcpu.cs.selector,arg[1]);
-		vcpu.cs.selector = seg;
+		if (vcpuinsLoadSreg(&vcpu.cs, seg)) {
+			vapiPrint("debug: fail to load cs from %04X\n", seg);
+			return;
+		}
 		_ip = ptr;
 		count = scannubit16(arg[2]);
 		break;
@@ -1301,7 +1307,7 @@ static void xu()
 	else if(narg == 2) {
 		xulin = scannubit32(arg[1]);
 		if(nErrPos) return;
-		xuprint(xulin, 10);
+		xuprint(xulin, 0x10);
 	} else if(narg == 3) {
 		xulin = scannubit32(arg[1]);
 		count = scannubit32(arg[2]);
@@ -1366,17 +1372,17 @@ static void xhelp()
 	vapiPrint("assemble        XA [address]\n");
 	vapiPrint("compare         XC addr1 addr2 count_byte\n");
 	vapiPrint("dump            XD [address [count_byte]]\n");
-	vapiPrint("enter           XE address [list_byte]\n");
-	vapiPrint("fill            XF address count_byte list_byte\n");
-	vapiPrint("go              XG [breakpoint [count_instr]]\n");
+	vapiPrint("enter           XE address [byte_list]\n");
+	vapiPrint("fill            XF address count_byte byte_list\n");
+	vapiPrint("go              XG [address [count_instr]]\n");
 	vapiPrint("move            XM addr1 addr2 count_byte\n");
 	vapiPrint("register        XR [register]\n");
 	vapiPrint("  regular         XREG\n");
 	vapiPrint("  segment         XSREG\n");
 	vapiPrint("  control         XCREG\n");
-	vapiPrint("search          XS range list\n");
+	vapiPrint("search          XS address count_byte byte_list\n");
 	vapiPrint("trace           XT [count_instr]\n");
-	vapiPrint("unassemble      XU [range]\n");
+	vapiPrint("unassemble      XU [address [count_instr]]\n");
 	vapiPrint("watch           XW r/w/e address\n");
 }
 static void x()
@@ -1425,7 +1431,7 @@ static void help()
 	vapiPrint("load            L [address]\n");
 	//vapiPrint("load            L [address] [drive] [firstsector] [number]\n");
 	vapiPrint("move            M range address\n");
-	vapiPrint("name            N [pathname]\n");
+	vapiPrint("name            N pathname\n");
 	//vapiPrint("name            N [pathname] [arglist]\n");
 	vapiPrint("output          O port byte\n");
 //!	vapiPrint("proceed           P [=address] [number]\n");

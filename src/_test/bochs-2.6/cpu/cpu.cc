@@ -47,8 +47,6 @@ static unsigned iCacheMisses=0;
 #define InstrICache_Increment(v)
 #endif
 
-#include "d:/libraryw/scripts/nekolib/nxvm/vmachine/vcpuapi.h"
-
 void BX_CPU_C::cpu_loop(void)
 {
 #if BX_DEBUGGER
