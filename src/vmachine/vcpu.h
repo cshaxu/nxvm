@@ -297,6 +297,7 @@ typedef struct {
 	 ((t_nubit64)((type)  & 0x0000000f) << 40) | \
 	 ((t_nubit64)((base)  & 0x00ffffff) << 16) | \
 	 ((t_nubit64)((limit) & 0x0000ffff) << 0 ))
+#define _SetSegDesc_TYPE_A(descriptor)  (SetBit((descriptor), VCPU_SEGDESC_TYPE_A))
 
 #define VCPU_GDTR_LIMIT 0x00000000ffff
 #define VCPU_GDTR_BASE  0xffffffff0000

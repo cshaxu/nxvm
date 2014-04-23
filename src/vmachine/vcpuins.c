@@ -73,7 +73,10 @@ static void CaseError(const char *str)
 #define _SetExcept_GP(n) (vapiPrint("#GP(%x)\n",n), SetBit(vcpuins.except, VCPUINS_EXCEPT_GP), vcpuins.excode = (n))
 #define _SetExcept_SS(n) (vapiPrint("#SS(%x)\n",n), SetBit(vcpuins.except, VCPUINS_EXCEPT_SS), vcpuins.excode = (n))
 #define _SetExcept_UD(n) (vapiPrint("#UD(%x)\n",n), SetBit(vcpuins.except, VCPUINS_EXCEPT_UD), vcpuins.excode = (n))
+#define _SetExcept_NP(n) (vapiPrint("#NP(%x)\n",n), SetBit(vcpuins.except, VCPUINS_EXCEPT_NP), vcpuins.excode = (n))
+#define _SetExcept_BR(n) (vapiPrint("#BR(%x)\n",n), SetBit(vcpuins.except, VCPUINS_EXCEPT_BR), vcpuins.excode = (n))
 
+/* paging mechanism */
 static t_nubit32 _GetPhysicalFromLinear(t_nubit32 linear, t_nubit8 cpl, t_bool write)
 {
 	/* possible exception: pf */
@@ -125,6 +128,71 @@ static t_nubit32 _GetPhysicalFromLinear(t_nubit32 linear, t_nubit8 cpl, t_bool w
 	}
 	return physical;
 }
+
+/* read descriptor table */
+static t_nubit64 _GetDescriptorFromGDT(t_nubit16 selector)
+{
+	/* possible exception: gp/limit; pf/lost */
+	t_nubit64 descriptor = 0x0000000000000000;
+	t_nubit32 linear = _GetGDTR_BASE + _GetSelector_OFFSET(selector), physical;
+	trace("_GetDescriptorFromGDT");
+	if (vcpuins.except) return 0x0000000000000000;
+	if (_GetSelector_OFFSET(selector) + 7 > _GetGDTR_LIMIT) {
+		_SetExcept_GP(selector);
+		trace("_GetDescriptorFromLDT::gdtr.limit");
+		return descriptor;
+	}
+	physical = _GetPhysicalFromLinear(linear, 0x00, 0x01);
+	trace("_GetDescriptorFromGDT::GetPhysicalFromLinear");
+	if (vcpuins.except) return descriptor;
+	if (_GetSegDesc_S(descriptor)) _SetSegDesc_TYPE_A(vramQWord(physical));
+	descriptor = vramQWord(physical);
+	return descriptor;
+}
+static t_nubit64 _GetDescriptorFromLDT(t_nubit16 selector)
+{
+	/* possible exception: gp/limit; pf/lost */
+	t_nubit64 descriptor = 0x0000000000000000;
+	t_nubit32 linear = vcpu.ldtr.base + _GetSelector_OFFSET(selector), physical;
+	trace("_GetDescriptorFromLDT");
+	if (vcpuins.except) return 0x0000000000000000;
+	if (linear + 7 > vcpu.ldtr.limit) {
+		_SetExcept_GP(selector);
+		trace("_GetDescriptorFromLDT::ldtr.limit");
+		return descriptor;
+	}
+	physical = _GetPhysicalFromLinear(linear, 0x00, 0x01);
+	trace("_GetDescriptorFromLDT::GetPhysicalFromLinear");
+	if (vcpuins.except) return descriptor;
+	if (_GetSegDesc_S(descriptor)) _SetSegDesc_TYPE_A(vramQWord(physical));
+	descriptor = vramQWord(physical);
+	return descriptor;
+}
+static t_nubit64 _GetSegmentDescriptor(t_nubit16 selector)
+{
+	/* possible exception: gp/limit; pf/lost */
+	t_nubit64 descriptor = 0x0000000000000000;
+	trace("_GetSegmentDescriptor");
+	if (vcpuins.except) return 0x00000000;
+	if (_GetCR0_PE && !_GetEFLAGS_VM) {
+		if (_GetSelector_TI(selector)) {
+			descriptor = _GetDescriptorFromLDT(selector);
+			trace("_GetSegmentDescriptor::CR0_PE(1)::EFLAGS_VM(0)::Selector_TI(1)::_GetDescriptorFromLDT");
+			if (vcpuins.except) return 0x0000000000000000;
+		} else {
+			if (_GetSelector_INDEX(selector)) {
+				descriptor = _GetDescriptorFromGDT(selector);
+				trace("_GetSegmentDescriptor::CR0_PE(1)::EFLAGS_VM(0)::Selector_TI(0)::_GetDescriptorFromGDT");
+				if (vcpuins.except) return 0x0000000000000000;
+			} else
+				CaseError("_GetSegmentDescriptor::selector(null)");
+		}
+	} else
+		CaseError("_GetSegmentDescriptor::CR0_PE(0)/EFLAGS_VM(1)");
+	return descriptor;
+}
+
+/* segmentation machanism */
 static t_nubit32 _GetLinearFromLogical(t_cpu_sreg *psreg, t_nubit32 offset, t_nubit8 bit, t_bool write, t_bool force)
 {
 	/* gp, ss, pf */
@@ -204,6 +272,16 @@ static t_nubit32 _GetLinearFromLogical(t_cpu_sreg *psreg, t_nubit32 offset, t_nu
 			return 0x00000000;
 		}
 		break;
+	case 64:
+		if (linear < lower || linear >= upper - 6) {
+			if (psreg->sregtype == SREG_STACK)
+				_SetExcept_SS(0);
+			else
+				_SetExcept_GP(0);
+			trace("_GetLinearFromLogical::bit(64)");
+			return 0x00000000;
+		}
+		break;
 	default:
 		CaseError("_GetLinearFromLogical::bit");
 		return 0x00000000;
@@ -213,62 +291,126 @@ static t_nubit32 _GetLinearFromLogical(t_cpu_sreg *psreg, t_nubit32 offset, t_nu
 #define _GetPhysicalFromLogical(psreg, offset, bit, write, force) \
 	_GetPhysicalFromLinear(_GetLinearFromLogical((psreg), (offset), (bit), (write), (force)), ((force) ? 0 : _GetCPL), (write))
 #define _GetPhysicalOfSegment _GetPhysicalFromLogical
-static t_nubit64 _GetDescriptorFromGDT(t_nubit16 selector)
+static void _LoadSegmentRegister(t_cpu_sreg *psreg, t_nubit16 selector)
 {
-	/* possible exception: gp/limit; pf/lost */
+	/* TODO: need to be verified when constructing segment loaders */
 	t_nubit64 descriptor = 0x0000000000000000;
-	t_nubit32 linear = _GetGDTR_BASE + _GetSelector_OFFSET(selector), physical;
-	trace("_GetDescriptorFromGDT");
-	if (vcpuins.except) return 0x00000000;
-	if (_GetSelector_OFFSET(selector) + 7 > _GetGDTR_LIMIT) {
-		_SetExcept_GP(selector);
-		trace("_GetDescriptorFromLDT::gdtr.limit");
-		return descriptor;
-	}
-	physical = _GetPhysicalFromLinear(linear, 0x00, 0x00);
-	trace("_GetDescriptorFromGDT::GetPhysicalFromLinear");
-	if (vcpuins.except) return descriptor;
-	descriptor = vramQWord(physical);
-	return descriptor;
-}
-static t_nubit64 _GetDescriptorFromLDT(t_nubit16 selector)
-{
-	/* possible exception: gp/limit; pf/lost */
-	t_nubit64 descriptor = 0x0000000000000000;
-	t_nubit32 linear = vcpu.ldtr.base + _GetSelector_OFFSET(selector), physical;
-	trace("_GetDescriptorFromLDT");
-	if (vcpuins.except) return 0x00000000;
-	if (linear + 7 > vcpu.ldtr.limit) {
-		_SetExcept_GP(selector);
-		trace("_GetDescriptorFromLDT::ldtr.limit");
-		return descriptor;
-	}
-	physical = _GetPhysicalFromLinear(linear, 0x00, 0x00);
-	trace("_GetDescriptorFromLDT::GetPhysicalFromLinear");
-	if (vcpuins.except) return descriptor;
-	descriptor = vramQWord(physical);
-	return descriptor;
-}
-static t_nubit64 _GetSegmentDescriptor(t_nubit16 selector)
-{
-	/* possible exception: gp/limit; pf/lost */
-	t_nubit64 descriptor = 0x0000000000000000;
-	trace("_GetSegmentDescriptor");
-	if (vcpuins.except) return 0x00000000;
-	if (_GetCR0_PE) {
-		/* protected mode */
-		if (_GetSelector_TI(selector)) {
-			descriptor = _GetDescriptorFromLDT(selector);
+	/* this does not check for priority level */
+	if (_GetCR0_PE && !_GetEFLAGS_VM) {
+		if (!_IsSelectorNull(selector)) {
+			descriptor = _GetSegmentDescriptor(selector);
+			trace("_LoadSegmentRegister::CR0_PE(1)::EFLAGS_VM(0)::selector(!null)::_GetSegmentDescriptor");
+			if (vcpuins.except) return;
+			switch (psreg->sregtype) {
+			case SREG_CODE:
+				if (!_GetSegDesc_S(descriptor) || !_GetSegDesc_TYPE_CD(descriptor)) {
+					_SetExcept_GP(selector);
+					trace("_LoadSegmentRegister::CR0_PE(1)::EFLAGS_VM(0)::selector(!null)::sregtype(SREG_CODE)::SegDesc_TYPE_CD(0)/SegDesc_S(0)/SegDesc_P(0)");
+					return;
+				}
+				if (!_GetSegDesc_P(descriptor)) {
+					_SetExcept_NP(selector);
+					trace("_LoadSegmentRegister::CR0_PE(1)::EFLAGS_VM(0)::selector(!null)::sregtype(SREG_CODE)::SegDesc_P(0)");
+					return;
+				}
+				psreg->a     = _GetSegDesc_TYPE_A(descriptor);
+				psreg->base  = _GetSegDesc_BASE(descriptor);
+				psreg->cd    = _GetSegDesc_TYPE_CD(descriptor);
+				psreg->ce    = _GetSegDesc_TYPE_C(descriptor);
+				psreg->db    = _GetSegDesc_DB(descriptor);
+				psreg->dpl   = psreg->ce ? psreg->dpl : _GetSegDesc_DPL(descriptor);
+				psreg->g     = _GetSegDesc_G(descriptor);
+				psreg->limit = psreg->base + (psreg->g ? ((_GetSegDesc_LIMIT(descriptor) << 12) | 0x0fff) : _GetSegDesc_LIMIT(descriptor));
+				psreg->p     = _GetSegDesc_P(descriptor);
+				psreg->rw    = _GetSegDesc_TYPE_R(descriptor);
+				psreg->s     = _GetSegDesc_S(descriptor);
+				psreg->selector = (selector & ~VCPU_SELECTOR_RPL) | psreg->dpl;
+				break;
+			case SREG_STACK:
+				if (_GetCPL != _GetSelector_RPL(selector) || _GetCPL != _GetSegDesc_DPL(descriptor)) {
+					_SetExcept_GP(selector);
+					trace("_LoadSegmentRegister::CR0_PE(1)::EFLAGS_VM(0)::selector(!null)::sregtype(SREG_STACK)::?PL");
+					return;
+				}
+				if (!_GetSegDesc_S(descriptor) || _GetSegDesc_TYPE_CD(descriptor) || !_GetSegDesc_TYPE_W(descriptor)) {
+					_SetExcept_GP(selector);
+					trace("_LoadSegmentRegister::CR0_PE(1)::EFLAGS_VM(0)::selector(!null)::sregtype(SREG_STACK)::SegDesc_S(0)/SegDesc_TYPE_CD(1)/SegDesc_TYPE_W(0)");
+					return;
+				}
+				if (!_GetSegDesc_P(descriptor)) {
+					_SetExcept_SS(selector);
+					trace("_LoadSegmentRegister::CR0_PE(1)::EFLAGS_VM(0)::selector(!null)::sregtype(SREG_STACK)::SegDesc_P(0)");
+					return;
+				}
+				psreg->a     = _GetSegDesc_TYPE_A(descriptor);
+				psreg->base  = _GetSegDesc_BASE(descriptor);
+				psreg->cd    = _GetSegDesc_TYPE_CD(descriptor);
+				psreg->ce    = _GetSegDesc_TYPE_E(descriptor);
+				psreg->db    = _GetSegDesc_DB(descriptor);
+				psreg->dpl   = _GetSegDesc_DPL(descriptor);
+				psreg->g     = _GetSegDesc_G(descriptor);
+				psreg->limit = psreg->base + (psreg->g ? ((_GetSegDesc_LIMIT(descriptor) << 12) | 0x0fff) : _GetSegDesc_LIMIT(descriptor));
+				psreg->p     = _GetSegDesc_P(descriptor);
+				psreg->rw    = _GetSegDesc_TYPE_W(descriptor);
+				psreg->s     = _GetSegDesc_S(descriptor);
+				psreg->selector = selector;
+				break;
+			case SREG_DATA:
+				if (!_GetSegDesc_TYPE_CD(descriptor) || !_GetSegDesc_TYPE_C(descriptor)) {
+					if (_GetSelector_RPL(selector) > _GetSegDesc_DPL(descriptor) && _GetCPL > _GetSegDesc_DPL(descriptor)) {
+					_SetExcept_GP(selector);
+					trace("_LoadSegmentRegister::CR0_PE(1)::EFLAGS_VM(0)::selector(!null)::sregtype(SREG_DATA)::?PL");
+					return;
+					}
+				}
+				if (!_GetSegDesc_S(descriptor) || (_GetSegDesc_TYPE_CD(descriptor) && !_GetSegDesc_TYPE_R(descriptor))) {
+					_SetExcept_GP(selector);
+					trace("_LoadSegmentRegister::CR0_PE(1)::EFLAGS_VM(0)::selector(!null)::sregtype(SREG_DATA)::...");
+					return;
+				}
+				if (!_GetSegDesc_P(descriptor)) {
+					_SetExcept_NP(selector);
+					trace("_LoadSegmentRegister::CR0_PE(1)::EFLAGS_VM(0)::selector(!null)::sregtype(SREG_DATA)::SegDesc_P(0)");
+					return;
+				}
+				psreg->a     = _GetSegDesc_TYPE_A(descriptor);
+				psreg->base  = _GetSegDesc_BASE(descriptor);
+				psreg->cd    = _GetSegDesc_TYPE_CD(descriptor);
+				psreg->ce    = psreg->cd ? _GetSegDesc_TYPE_C(descriptor) : _GetSegDesc_TYPE_E(descriptor);
+				psreg->db    = _GetSegDesc_DB(descriptor);
+				psreg->dpl   = _GetSegDesc_DPL(descriptor);
+				psreg->g     = _GetSegDesc_G(descriptor);
+				psreg->limit = psreg->base + (psreg->g ? ((_GetSegDesc_LIMIT(descriptor) << 12) | 0x0fff) : _GetSegDesc_LIMIT(descriptor));
+				psreg->p     = _GetSegDesc_P(descriptor);
+				psreg->rw    = psreg->cd ? _GetSegDesc_TYPE_R(descriptor) : _GetSegDesc_TYPE_W(descriptor);
+				psreg->s     = _GetSegDesc_S(descriptor);
+				psreg->selector = selector;
+				break;
+				break;
+			default:
+				break;
+			}
 		} else {
-			if (_GetSelector_INDEX(selector))
-				descriptor = _GetDescriptorFromGDT(selector);
-			else
-				CaseError("_GetSegmentDescriptor::selector(null)");
+			switch (psreg->sregtype) {
+			case SREG_DATA:
+				psreg->selector = selector;
+				break;
+			case SREG_CODE:
+			case SREG_STACK:
+				_SetExcept_GP(0);
+				trace("_LoadSegmentRegister::CR0_PE(1)::EFLAGS_VM(0)::selector(null)::sregtype(SREG_CODE/SREG_STACK)");
+				break;
+			default:
+				CaseError("_LoadSegmentRegister::CR0_PE(1)::EFLAGS_VM(0)::selector(null)::sregtype");
+				break;
+			}
 		}
-	} else
-		CaseError("_GetSegmentDescriptor::CR0_PE(0)");
-	return descriptor;
+	} else {
+		psreg->selector = selector;
+		psreg->base = (selector << 4);
+	}
 }
+
 //static void LoadCS(t_nubit16 selector)
 //{
 //	t_nubit64 descriptor = 0x0000000000000000;
@@ -327,6 +469,8 @@ static t_nubit64 _GetSegmentDescriptor(t_nubit16 selector)
 //		return;
 //	}
 //}
+
+/* fetch instructions */
 static t_cpu_sreg *_GetPtrOverrideDS()
 {
 	t_cpu_sreg *pds = NULL;
@@ -357,7 +501,6 @@ static t_cpu_sreg *_GetPtrOverrideSS()
 	}
 	return pss;
 }
-
 static t_nubit32 _GetCode(t_nubit32 offset, t_nubit8 bit)
 {
 	/* gp, pf */
@@ -636,6 +779,10 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 			case 7: vcpuins.prm = (t_vaddrcc)(&vcpu.edi);break;
 			default:CaseError("_GetModRegRM::ModRM_MOD(3)::regbit(32)::ModRM_RM");return;}
 			break;
+		case 64:
+			_SetExcept_UD(0);
+			trace("_GetModRegRM::ModRM_MOD(3)::regbit(64)");
+			return;
 		default:
 			CaseError("GetModRegRM::regbit");
 			return;
@@ -2336,6 +2483,7 @@ DONE UndefinedOpcode()
 		vapiCallBackMachineStop();
 	}
 	_SetExcept_UD(0);
+	trace("UndefinedOpcode");
 }
 DONE ADD_RM8_R8()
 {
@@ -3161,14 +3309,54 @@ void POP_DI()
 	vcpu.eip++;
 	POP((void *)&vcpu.di,16);
 }
-DONE ARPL()
+DONE BOUND_R16_M16_16()
+{
+	t_nsbit16 a16,l16,u16;
+	t_nsbit32 a32,l32,u32;
+	i386(0x62) {
+		vcpu.eip++;
+		switch (_GetOperandSize) {
+		case 16:
+			_GetModRegRM(16, 32, 0x00);
+			trace("BOUND_R16_M16_16::OperandSize(16)::_GetModRegRM");
+			if (vcpuins.except) return;
+			a16 = d_nsbit16(vcpuins.pr);
+			l16 = d_nsbit16(vcpuins.prm);
+			u16 = d_nsbit16(vcpuins.prm + 2);
+			if (a16 < l16 || a16 > u16) {
+				_SetExcept_BR(0);
+				trace("BOUND_R16_M16_16::OperandSize(16)");
+				return;
+			}
+			break;
+		case 32:
+			_GetModRegRM(32, 64, 0x00);
+			trace("BOUND_R16_M16_16::OperandSize(32)::_GetModRegRM");
+			if (vcpuins.except) return;
+			a32 = d_nsbit32(vcpuins.pr);
+			l32 = d_nsbit32(vcpuins.prm);
+			u32 = d_nsbit32(vcpuins.prm + 4);
+			if (a32 < l32 || a32 > u32) {
+				_SetExcept_BR(0);
+				trace("BOUND_R16_M16_16::OperandSize(32)");
+				return;
+			}
+			break;
+		default:
+			CaseError("BOUND_R16_M16_16::OperandSize");
+			break;
+		}
+	} else
+		UndefinedOpcode();
+}
+DONE ARPL_RM16_R16()
 {
 	t_nubit8 drpl, srpl;
 	i386(0x63) {
 		if (_GetCR0_PE && !_GetEFLAGS_VM) {
 			vcpu.eip++;
 			_GetModRegRM(16, 16, 0x01);
-			trace("ARPL::GetModRegRM");
+			trace("ARPL_RM16_R16::GetModRegRM");
 			if (vcpuins.except) return;
 			drpl = _GetSelector_RPL(d_nubit16(vcpuins.prm));
 			srpl = _GetSelector_RPL(d_nubit16(vcpuins.pr));
@@ -3177,12 +3365,10 @@ DONE ARPL()
 				d_nubit16(vcpuins.prm) = (d_nubit16(vcpuins.prm) & ~VCPU_SELECTOR_RPL) | srpl;
 			} else
 				_ClrEFLAGS_ZF;
-			d_nubit16(vcpuins.prm), d_nubit16(vcpuins.pr) & 0x03;
 		} else
 			_SetExcept_UD(0);
-	} else {
+	} else
 		UndefinedOpcode();
-	}
 }
 void FS()
 {
@@ -4625,8 +4811,8 @@ void vcpuinsInit()
 	vcpuins.table[0x5f] = (t_faddrcc)POP_DI;
 	vcpuins.table[0x60] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table[0x61] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table[0x62] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table[0x63] = (t_faddrcc)ARPL;
+	vcpuins.table[0x62] = (t_faddrcc)BOUND_R16_M16_16;
+	vcpuins.table[0x63] = (t_faddrcc)ARPL_RM16_R16;
 	vcpuins.table[0x64] = (t_faddrcc)FS;
 	vcpuins.table[0x65] = (t_faddrcc)GS;
 	vcpuins.table[0x66] = (t_faddrcc)OprSize;

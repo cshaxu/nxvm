@@ -409,8 +409,9 @@ static void Nxvm()
 #include "../vmachine/debug/aasm.h"
 static void Test()
 {
-	vmachine.flagmode = 0x01;
-	vmachineStart();
+	t_nubit16 a = 0xabcd;
+	t_nubit8 cpl = 0x02;
+	printf("%x\n", (a & ~0x03) | cpl);
 }
 
 static void exec()
