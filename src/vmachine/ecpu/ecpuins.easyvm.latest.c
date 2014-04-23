@@ -17,7 +17,8 @@
 #include "ecpuins.h"
 #include "ecpu.h"
 
-t_vaddrcc Ins0FTable[0x100];
+static t_vaddrcc Ins0FTable[0x100];
+static t_nubit32 evIP;
 
 #define ECPUINS_FLAGS_MASKED (VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF | VCPU_EFLAGS_IOPL | VCPU_EFLAGS_VM)
 
@@ -28,8 +29,6 @@ t_vaddrcc Ins0FTable[0x100];
 
 const t_nubit16 Glbffff=0xffff;		//当寻址超过0xfffff的时候，返回的是一个可以令程序Reset的地址
 t_nubit16 GlbZero=0x0;			//有些寻址用到两个偏移寄存器；有些寻址只用到一个偏移寄存器，另外一个指向这里。
-
-t_nubit32 evIP;			//evIP读指令时的指针
 
 t_nubit16 *rm16,*r16;			//解释寻址字节的时候用
 t_nubit32 *rm32,*r32;
@@ -4213,6 +4212,7 @@ static void ecpuinsExecIns()
 	ecpuins.oldesp = ecpu.esp;
 	ecpuins.flaginsloop = 0;
 	ecpuins.flagmaskint = 0;
+	SyncEVIP();
 
 	do {
 		opcode = vramByte(evIP);

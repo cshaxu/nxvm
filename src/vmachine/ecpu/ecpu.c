@@ -9,8 +9,6 @@
 #include "ecpuins.h"
 #include "ecpuapi.h"
 
-t_vaddrcc evIP;
-
 t_ecpu ecpu;
 
 void ecpuInit()
@@ -27,7 +25,6 @@ void ecpuReset()
 void ecpuRefreshInit()
 {
 	ecpuapiSyncRegs();
-	evIP = (ecpu.cs.selector << 4) + ecpu.ip;
 }
 void ecpuRefresh()
 {
