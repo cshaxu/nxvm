@@ -144,26 +144,27 @@ void w32adispPaint()
 	USHORT ansiChar;
 	UCHAR charProp;
 	PAINTSTRUCT ps;
-
-	BeginPaint(w32aHWnd, &ps);
 	flashCount = (flashCount + 1) % 10;
-	hBrush = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	SelectObject(hdcBuf, hBrush);
-	Rectangle(hdcBuf, 0, 0, logFont.lfWidth * sizeRow, 
-		logFont.lfHeight * sizeCol);
-	for(i = 0;i < sizeCol;++i) {
-		for(j = 0;j < sizeRow;++j) {
-			ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
-			charProp = vapiCallBackDisplayGetCurrentCharProp(i, j);
-			if (!ansiChar) continue;
-			MultiByteToWideChar(437, 0, (LPCSTR)(&ansiChar), 1, (LPWSTR)(&unicodeChar), 1);
-			SetTextColor(hdcBuf, CharProp2Color(charProp, TRUE));
-			SetBkMode(hdcBuf, OPAQUE);
-			SetBkColor(hdcBuf, CharProp2Color(charProp, FALSE));
-			TextOut(hdcBuf, j * logFont.lfWidth, i * logFont.lfHeight,(LPWSTR)&unicodeChar, 1);
+	BeginPaint(w32aHWnd, &ps);
+	//if (vapiCallBackDisplayGetBufferChange()) {
+		hBrush = (HBRUSH)GetStockObject(BLACK_BRUSH);
+		SelectObject(hdcBuf, hBrush);
+		Rectangle(hdcBuf, 0, 0, logFont.lfWidth * sizeRow, 
+			logFont.lfHeight * sizeCol);
+		for(i = 0;i < sizeCol;++i) {
+			for(j = 0;j < sizeRow;++j) {
+				ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
+				charProp = vapiCallBackDisplayGetCurrentCharProp(i, j);
+				if (!ansiChar) continue;
+				MultiByteToWideChar(437, 0, (LPCSTR)(&ansiChar), 1, (LPWSTR)(&unicodeChar), 1);
+				SetTextColor(hdcBuf, CharProp2Color(charProp, TRUE));
+				SetBkMode(hdcBuf, OPAQUE);
+				SetBkColor(hdcBuf, CharProp2Color(charProp, FALSE));
+				TextOut(hdcBuf, j * logFont.lfWidth, i * logFont.lfHeight,(LPWSTR)&unicodeChar, 1);
+			}
 		}
-	}
-	BitBlt(hdcWnd, 0, 0, clientWidth, clientHeight, hdcBuf, 0, 0, SRCCOPY);
+		BitBlt(hdcWnd, 0, 0, clientWidth, clientHeight, hdcBuf, 0, 0, SRCCOPY);
+	//}
 	DisplayFlashCursor();//ÉÁË¸¹â±ê
 	EndPaint(w32aHWnd, &ps);
 }

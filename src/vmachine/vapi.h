@@ -43,11 +43,6 @@ void vapiCallBackMachineRun();
 t_nubit8 vapiCallBackMachineGetFlagRun();
 void vapiCallBackMachineStop();
 
-//void vapiCallBackRtcUpdateTime();
-
-t_bool vapiCallBackKeyboardGetShift();
-t_bool vapiCallBackKeyboardGetAlt();
-t_bool vapiCallBackKeyboardGetCtrl();
 void vapiCallBackKeyboardClrFlag0();
 void vapiCallBackKeyboardClrFlag1();
 void vapiCallBackKeyboardSetFlag0Insert();
@@ -66,8 +61,13 @@ void vapiCallBackKeyboardSetFlag1Pause();
 void vapiCallBackKeyboardSetFlag1SysRq();
 void vapiCallBackKeyboardSetFlag1LeftAlt();
 void vapiCallBackKeyboardSetFlag1LeftCtrl();
+t_bool vapiCallBackKeyboardGetShift();
+t_bool vapiCallBackKeyboardGetAlt();
+t_bool vapiCallBackKeyboardGetCtrl();
 t_bool vapiCallBackKeyboardRecvKeyPress(t_nubit16 ascii);
 
+t_bool vapiCallBackDisplayGetCursorPosChange();
+t_bool vapiCallBackDisplayGetBufferChange();
 t_nubit16 vapiCallBackDisplayGetRowSize();
 t_nubit16 vapiCallBackDisplayGetColSize();
 t_nubit8  vapiCallBackDisplayGetCursorTop();

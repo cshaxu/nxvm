@@ -34,6 +34,8 @@
 typedef struct {
 	t_bool   color;
 	t_nubit8 colsize; // char per col
+	t_vaddrcc bufcomp;
+	t_nubit8  curcompx,curcompy;
 } t_vga;
 
 #define qdvgaVarPageOffset \

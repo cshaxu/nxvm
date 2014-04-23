@@ -14,7 +14,7 @@ static USHORT sizeRow, sizeCol;
 //static CONSOLE_CURSOR_INFO defaultCurInfo;
 //static UINT defaultCodePage;
 static CONSOLE_SCREEN_BUFFER_INFO defaultBufInfo;
-
+static UCHAR bufComp[0x1000];
 void w32cdispInit()
 {
 //	GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&defaultCurInfo));
@@ -54,15 +54,16 @@ void w32cdispPaint()
 	COORD curPos;
 //	HANDLE hOutBuf;
 	if (!charBuf) return;
-	for(i = 0;i < sizeCol;++i) {
-		for(j = 0;j < sizeRow;++j) {
-			ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
-			charProp = vapiCallBackDisplayGetCurrentCharProp(i, j);
-			MultiByteToWideChar(437, 0, (LPCSTR)(&ansiChar), 1, (LPWSTR)(&unicodeChar), 1);
-			charBuf[i * sizeRow + j].Char.UnicodeChar = unicodeChar;
-			charBuf[i * sizeRow + j].Attributes = charProp;
+	if (vapiCallBackDisplayGetBufferChange()) {
+		for(i = 0;i < sizeCol;++i) {
+			for(j = 0;j < sizeRow;++j) {
+				ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
+				charProp = vapiCallBackDisplayGetCurrentCharProp(i, j);
+				MultiByteToWideChar(437, 0, (LPCSTR)(&ansiChar), 1, (LPWSTR)(&unicodeChar), 1);
+				charBuf[i * sizeRow + j].Char.UnicodeChar = unicodeChar;
+				charBuf[i * sizeRow + j].Attributes = charProp;
+			}
 		}
-	}
 /*	hOutBuf = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE,
 		0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 	WriteConsoleOutput(hOutBuf, charBuf,
@@ -72,12 +73,14 @@ void w32cdispPaint()
 	SetConsoleCursorPosition(hOutBuf,curPos);
 	SetConsoleActiveScreenBuffer(hOutBuf);*/
 
-	WriteConsoleOutput(hOut, charBuf,
-		coordBufSize, coordBufStart, &srctWriteRect);
-	curPos.X = vapiCallBackDisplayGetCurrentCursorPosY();
-	curPos.Y = vapiCallBackDisplayGetCurrentCursorPosX();
-	SetConsoleCursorPosition(hOut,curPos);
-
+		WriteConsoleOutput(hOut, charBuf,
+			coordBufSize, coordBufStart, &srctWriteRect);
+	}
+	if (vapiCallBackDisplayGetCursorPosChange()) {
+		curPos.X = vapiCallBackDisplayGetCurrentCursorPosY();
+		curPos.Y = vapiCallBackDisplayGetCurrentCursorPosX();
+		SetConsoleCursorPosition(hOut,curPos);
+	}
 //	SetConsoleActiveScreenBuffer(hOut);
 //	CloseHandle(hOutBuf);
 }

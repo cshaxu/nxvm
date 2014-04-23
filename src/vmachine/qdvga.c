@@ -1,5 +1,6 @@
 /* This file is a part of NXVM project. */
 
+#include "stdlib.h"
 #include "memory.h"
 
 #include "vapi.h"
@@ -79,6 +80,23 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 	//vapiDisplayPaint();
 }
 
+t_bool vapiCallBackDisplayGetCursorPosChange()
+{
+	if (qdvga.curcompx != qdvgaVarCursorPosRow(qdvgaVarPageNum) ||
+		qdvga.curcompy != qdvgaVarCursorPosCol(qdvgaVarPageNum)) {
+		qdvga.curcompx = qdvgaVarCursorPosRow(qdvgaVarPageNum);
+		qdvga.curcompy = qdvgaVarCursorPosCol(qdvgaVarPageNum);
+		return 0x01;
+	} else return 0x00;
+}
+t_bool vapiCallBackDisplayGetBufferChange()
+{
+	if (memcmp((void *)qdvga.bufcomp, (void *)qdvgaGetTextMemAddr, qdvgaVarRagenSize)) {
+		memcpy((void *)qdvga.bufcomp, (void *)qdvgaGetTextMemAddr, qdvgaVarRagenSize);
+		return 0x01;
+	} else return 0x00;
+
+}
 t_nubit16 vapiCallBackDisplayGetRowSize()
 {return qdvgaVarRowSize;}
 t_nubit16 vapiCallBackDisplayGetColSize()
@@ -140,6 +158,8 @@ void qdvgaSetDisplayMode()
 		break;
 	}
 	qdvgaVarRagenSize = ModeBufSize[qdvgaVarMode];
+	qdvga.bufcomp = (t_vaddrcc)malloc(qdvgaVarRagenSize);
+	memcpy((void *)qdvga.bufcomp, (void *)qdvgaGetTextMemAddr, qdvgaVarRagenSize);
 	ClearTextMemory();
 }
 void qdvgaSetCursorShape()
@@ -328,6 +348,8 @@ void qdvgaInit()
 	qdvgaVarCursorTop       = 0x06;
 	qdvgaVarCursorBottom    = 0x07;
 	memset((void *)qdvgaGetTextMemAddr, 0x00, QDVGA_SIZE_TEXT_MEMORY);
+	qdvga.bufcomp = (t_vaddrcc)malloc(qdvgaVarRagenSize);
+	qdvga.curcompx = qdvga.curcompy = 0x00;
 }
 void qdvgaFinal()
 {}
