@@ -33,10 +33,10 @@ typedef uint16_t  t_nubit16;
 typedef int16_t   t_nsbit16;
 typedef uint32_t  t_nubit32;
 typedef int32_t   t_nsbit32;
-#if VGLOBAL_SIZE_INTEGER == 64
+typedef uint64_t  t_nubit48;
+typedef int64_t   t_nsbit48;
 typedef uint64_t  t_nubit64;
 typedef int64_t   t_nsbit64;
-#endif
 typedef float     t_float32;
 typedef double    t_float64;
 #if VGLOBAL_SIZE_INTEGER == 64
@@ -59,10 +59,8 @@ typedef t_nubitcc t_faddrcc;
 #define p_nsbit16 (t_nsbit16 *)
 #define p_nubit32 (t_nubit32 *)
 #define p_nsbit32 (t_nsbit32 *)
-#if VGLOBAL_SIZE_INTEGER == 64
 #define p_nubit64 (t_nubit64 *)
 #define p_nsbit64 (t_nsbit64 *)
-#endif
 #define p_float32 (t_float32 *)
 #define p_float64 (t_float64 *)
 #define p_nubitcc (t_nubitcc *)
@@ -78,10 +76,8 @@ typedef t_nubitcc t_faddrcc;
 #define d_nsbit16(n) (*(t_nsbit16 *)(n))
 #define d_nubit32(n) (*(t_nubit32 *)(n))
 #define d_nsbit32(n) (*(t_nsbit32 *)(n))
-#if VGLOBAL_SIZE_INTEGER == 64
 #define d_nubit64(n) (*(t_nubit64 *)(n))
 #define d_nsbit64(n) (*(t_nsbit64 *)(n))
-#endif
 #define d_float32(n) (*(t_float32 *)(n))
 #define d_float64(n) (*(t_float64 *)(n))
 #define d_nubitcc(n) (*(t_nubitcc *)(n))

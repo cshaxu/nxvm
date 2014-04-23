@@ -1,1 +1,3 @@
-1. Build BIOS INT service routines
+1. Build i386
+2. Build VGA Graphics Mode
+3. Build BIOS INT Service Routines

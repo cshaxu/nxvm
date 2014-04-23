@@ -433,12 +433,13 @@ static void exec()
 	else if(!strcmp(arg[0],"set"))    Set();
 	else if(!strcmp(arg[0],"device")) Device();
 	else if(!strcmp(arg[0],"nxvm"))   Nxvm();
-	/* support for old commands */
+	/* support for convenient commands */
 	else if(!strcmp(arg[0],"mode"))  {if (!vmachine.flagrun) vmachine.flagmode = !vmachine.flagmode;}
 	else if(!strcmp(arg[0],"start"))  vmachineStart();
 	else if(!strcmp(arg[0],"reset"))  vmachineReset();
 	else if(!strcmp(arg[0],"stop"))   vmachineStop();
 	else if(!strcmp(arg[0],"resume")) vmachineResume();
+	else if(!strcmp(arg[0],"debug32")) debug(32);
 	else printc("Illegal command '%s'.\n",arg[0]);
 	printc("\n");
 }

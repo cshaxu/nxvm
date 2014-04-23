@@ -26,7 +26,8 @@ extern t_ram vram;
 	((((segment) << 4) + (offset)) % vram.size))
 #else
 #define vramGetRealAddress(segment, offset)  (vram.base + \
-	(((((t_nubit16)(segment) << 4) + (t_nubit16)(offset)) & (vram.flaga20 ? 0xffffffff : 0xffefffff)) % vram.size))
+	(((((t_nubit16)(segment) << 4) + (t_nubit16)(offset)) & \
+	  (vram.flaga20 ? 0xffffffff : 0xffefffff)) % vram.size))
 #endif
 #define vramVarByte(segment, offset)  (d_nubit8(vramGetRealAddress(segment, offset)))
 #define vramVarWord(segment, offset)  (d_nubit16(vramGetRealAddress(segment, offset)))

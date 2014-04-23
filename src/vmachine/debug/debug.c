@@ -468,22 +468,25 @@ static void q()
 static void uprint(t_nubit16,t_nubit16,t_nubit16);
 static void rprintflags(t_nubit8 bit)
 {
-	if(vcpu.eflags & VCPU_EFLAGS_OF) vapiPrint("OV ");
-	else                      vapiPrint("NV ");
-	if(vcpu.eflags & VCPU_EFLAGS_DF) vapiPrint("DN ");
-	else                      vapiPrint("UP ");
-	if(vcpu.eflags & VCPU_EFLAGS_IF) vapiPrint("EI ");
-	else                      vapiPrint("DI ");
-	if(vcpu.eflags & VCPU_EFLAGS_SF) vapiPrint("NG ");
-	else                      vapiPrint("PL ");
-	if(vcpu.eflags & VCPU_EFLAGS_ZF) vapiPrint("ZR ");
-	else                      vapiPrint("NZ ");
-	if(vcpu.eflags & VCPU_EFLAGS_AF) vapiPrint("AC ");
-	else                      vapiPrint("NA ");
-	if(vcpu.eflags & VCPU_EFLAGS_PF) vapiPrint("PE ");
-	else                      vapiPrint("PO ");
-	if(vcpu.eflags & VCPU_EFLAGS_CF) vapiPrint("CY ");
-	else                      vapiPrint("NC ");
+	if (bit == 32) {
+		/*vapiPrint("ID%c ",   _GetID ? '+' : '-');
+		vapiPrint("VIP%c ",  _GetVIP ? '+' : '-');
+		vapiPrint("VIF%c ",  _GetVIF ? '+' : '-');
+		vapiPrint("AC%c ",   _GetAC ? '+' : '-');*/
+		vapiPrint("VM%c ",   _GetVM ? '+' : '-');
+		vapiPrint("RF%c ",   _GetRF ? '+' : '-');
+		vapiPrint("NT%c ",   _GetNT ? '+' : '-');
+		vapiPrint("IOPL=%1d ", _GetIOPL);
+	}
+	vapiPrint("%s ", _GetOF ? "OV" : "NV");
+	vapiPrint("%s ", _GetDF ? "DN" : "UP");
+	vapiPrint("%s ", _GetIF ? "EI" : "DI");
+	vapiPrint("%s ", _GetTF ? "TR" : "DT");
+	vapiPrint("%s ", _GetSF ? "NG" : "PL");
+	vapiPrint("%s ", _GetZF ? "ZR" : "NZ");
+	vapiPrint("%s ", _GetAF ? "AC" : "NA");
+	vapiPrint("%s ", _GetPF ? "PE" : "PO");
+	vapiPrint("%s ", _GetCF ? "CY" : "NC");
 }
 static void rprintregs(t_nubit8 bit)
 {
@@ -510,18 +513,18 @@ static void rprintregs(t_nubit8 bit)
 		vapiPrint(" EBX=%08X", vcpu.ebx);
 		vapiPrint(" ECX=%08X", vcpu.ecx);
 		vapiPrint(" EDX=%08X", vcpu.edx);
-		vapiPrint(" ESP=%08X", vcpu.esp);
-		vapiPrint(" EBP=%08X", vcpu.ebp);
-		vapiPrint("\nESI=%08X",vcpu.esi);
-		vapiPrint(" EDI=%08X",vcpu.edi);
-		vapiPrint( " DS=%04X", vcpu.ds);
-		vapiPrint("  ES=%04X", vcpu.es);
-		vapiPrint("  FS=%04X", vcpu.fs);
-		vapiPrint("  GS=%04X", vcpu.gs);
 		vapiPrint("  SS=%04X", vcpu.ss);
-		vapiPrint("  CS=%04X", vcpu.cs);
+		vapiPrint( " CS=%04X", vcpu.cs);
+		vapiPrint( " DS=%04X", vcpu.ds);
+		vapiPrint("\nESP=%08X",vcpu.esp);
+		vapiPrint(" EBP=%08X", vcpu.ebp);
+		vapiPrint(" ESI=%08X", vcpu.esi);
+		vapiPrint(" EDI=%08X", vcpu.edi);
+		vapiPrint("  ES=%04X", vcpu.es);
+		vapiPrint( " FS=%04X", vcpu.fs);
+		vapiPrint( " GS=%04X", vcpu.gs);
 		vapiPrint("\nEIP=%08X", vcpu.eip);
-		vapiPrint("   ");
+		vapiPrint("  ");
 	default:
 		break;
 	}
@@ -647,22 +650,22 @@ static void rscanregs()
 		vapiPrint(" -");
 		FGETS(s,MAXLINE,stdin);
 		lcase(s);
-		if(!STRCMP(s,"ov"))      SetOF;
-		else if(!STRCMP(s,"nv")) ClrOF;
-		else if(!STRCMP(s,"dn")) SetDF;
-		else if(!STRCMP(s,"up")) ClrDF;
-		else if(!STRCMP(s,"ei")) SetIF;
-		else if(!STRCMP(s,"di")) ClrIF;
-		else if(!STRCMP(s,"ng")) SetSF;
-		else if(!STRCMP(s,"pl")) ClrSF;
-		else if(!STRCMP(s,"zr")) SetZF;
-		else if(!STRCMP(s,"nz")) ClrZF;
-		else if(!STRCMP(s,"ac")) SetAF;
-		else if(!STRCMP(s,"na")) ClrAF;
-		else if(!STRCMP(s,"pe")) SetPF;
-		else if(!STRCMP(s,"po")) ClrPF;
-		else if(!STRCMP(s,"cy")) SetCF;
-		else if(!STRCMP(s,"nc")) ClrCF;
+		if(!STRCMP(s,"ov"))      _SetOF;
+		else if(!STRCMP(s,"nv")) _ClrOF;
+		else if(!STRCMP(s,"dn")) _SetDF;
+		else if(!STRCMP(s,"up")) _ClrDF;
+		else if(!STRCMP(s,"ei")) _SetIF;
+		else if(!STRCMP(s,"di")) _ClrIF;
+		else if(!STRCMP(s,"ng")) _SetSF;
+		else if(!STRCMP(s,"pl")) _ClrSF;
+		else if(!STRCMP(s,"zr")) _SetZF;
+		else if(!STRCMP(s,"nz")) _ClrZF;
+		else if(!STRCMP(s,"ac")) _SetAF;
+		else if(!STRCMP(s,"na")) _ClrAF;
+		else if(!STRCMP(s,"pe")) _SetPF;
+		else if(!STRCMP(s,"po")) _ClrPF;
+		else if(!STRCMP(s,"cy")) _SetCF;
+		else if(!STRCMP(s,"nc")) _ClrCF;
 		else vapiPrint("bf Error\n");
 	} else vapiPrint("br Error\n");
 }
