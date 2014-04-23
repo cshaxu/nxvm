@@ -27,6 +27,12 @@ typedef enum {
 	PREFIX_REP_REPZ,
 	PREFIX_REP_REPZNZ
 } t_cpuins_prefix_rep;
+typedef enum {
+	PREFIX_SREG_NONE,
+	PREFIX_SREG_CS, PREFIX_SREG_SS,
+	PREFIX_SREG_DS, PREFIX_SREG_ES,
+	PREFIX_SREG_FS, PREFIX_SREG_GS
+} t_cpuins_prefix_sreg;
 typedef t_bool t_cpuins_prefix;
 typedef struct {
 	t_nubit32 oldeip;
@@ -36,11 +42,12 @@ typedef struct {
 	t_nubitcc opr1, opr2, result, bit;
 	t_cpuins_type type;
 
-	t_cpu_segreg oldcs, overds, overss;
-	t_cpuins_prefix_rep prefix_rep;
-	t_cpuins_prefix     prefix_lock;
-	t_cpuins_prefix     prefix_oprsize;
-	t_cpuins_prefix     prefix_addrsize;
+	t_cpu_sreg oldcs;
+	t_cpuins_prefix_rep  prefix_rep;
+	t_cpuins_prefix_sreg prefix_sreg;
+	t_cpuins_prefix      prefix_lock;
+	t_cpuins_prefix      prefix_oprsize;
+	t_cpuins_prefix      prefix_addrsize;
 	t_nubit32 except, excode;
 	t_vaddrcc prm, pr, pimm;
 } t_cpuins;

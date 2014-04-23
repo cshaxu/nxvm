@@ -31,13 +31,15 @@ void vcpuReset()
 	vcpu.cs.rw = 0x01;
 	vcpu.cs.s = 0x01;
 	vcpu.cs.p = 0x01;
-	vcpu.ss.base = 0x00000000;
-	vcpu.ss.limit = 0x0000ffff;
-	vcpu.ss.rw = 0x01;
-	vcpu.ss.s = 0x01;
-	vcpu.ss.p = 0x01;
-	vcpu.ss.flagstack = 0x01;
-	vcpu.ds = vcpu.es = vcpu.fs = vcpu.gs = vcpu.ss;
+	vcpu.cs.sregtype = SREG_CODE;
+	vcpu.ds.base = 0x00000000;
+	vcpu.ds.limit = 0x0000ffff;
+	vcpu.ds.rw = 0x01;
+	vcpu.ds.s = 0x01;
+	vcpu.ds.p = 0x01;
+	vcpu.ds.sregtype = SREG_DATA;
+	vcpu.ss = vcpu.gs = vcpu.fs = vcpu.es = vcpu.ds;
+	vcpu.ss.sregtype = SREG_STACK;
 	_LoadIDTR16(0x000000, 0x03ff);
 	vcpuinsReset();
 }

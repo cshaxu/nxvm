@@ -658,8 +658,8 @@ static void rscanregs()
 		else if(!STRCMP(s,"di")) _ClrIF;
 		else if(!STRCMP(s,"ng")) _SetSF;
 		else if(!STRCMP(s,"pl")) _ClrSF;
-		else if(!STRCMP(s,"zr")) _SetZF;
-		else if(!STRCMP(s,"nz")) _ClrZF;
+		else if(!STRCMP(s,"zr")) _SetEFLAGS_ZF;
+		else if(!STRCMP(s,"nz")) _ClrEFLAGS_ZF;
 		else if(!STRCMP(s,"ac")) _SetEFLAGS_AF;
 		else if(!STRCMP(s,"na")) _ClrEFLAGS_AF;
 		else if(!STRCMP(s,"pe")) _SetPF;

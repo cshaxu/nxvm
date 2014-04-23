@@ -102,7 +102,7 @@ void qdkeybGetStatus()
 {
 	t_nubit16 x = bufPeek();
 	if (bufIsEmpty) {
-		_SetZF;
+		_SetEFLAGS_ZF;
 	} else {
 		switch (x) {
 		case 0x1d00:
@@ -114,7 +114,7 @@ void qdkeybGetStatus()
 			_ax = x;
 			break;
 		}
-		_ClrZF;
+		_ClrEFLAGS_ZF;
 	}
 }
 void qdkeybGetShiftStatus()

@@ -12,6 +12,7 @@
 #include "vglobal.h"
 
 #ifndef ECPUACT
+typedef enum {SREG_CODE, SREG_DATA, SREG_STACK, SREG_LDTR, SREG_TR} t_cpu_sreg_type;
 typedef struct {
 	t_nubit16 selector;
 	/* invisible portion/descriptor part */
@@ -31,8 +32,8 @@ typedef struct {
 			t_bool rw; /* readable or writable */
 			t_bool a;   /* accessed */
 		/* additional info */
-		t_bool flagstack;
-} t_cpu_segreg;
+		t_cpu_sreg_type sregtype;
+} t_cpu_sreg;
 typedef struct {
 	union {
 		union {
@@ -86,7 +87,7 @@ typedef struct {
 		t_nubit16 flags;
 		t_nubit32 eflags;
 	};
-	t_cpu_segreg cs, ss, ds, es, fs, gs, ldtr, tr;
+	t_cpu_sreg cs, ss, ds, es, fs, gs, ldtr, tr;
 	t_nubit48 gdtr, idtr;
 	t_nubit32 ldtrcr, trcr;
 	t_nubit32 cr0, cr1, cr2, cr3;
@@ -174,7 +175,7 @@ typedef struct {
 #define _SetEFLAGS_CF    (SetBit(_eflags, VCPU_EFLAGS_CF))
 #define _SetPF    (SetBit(_eflags, VCPU_EFLAGS_PF))
 #define _SetEFLAGS_AF    (SetBit(_eflags, VCPU_EFLAGS_AF))
-#define _SetZF    (SetBit(_eflags, VCPU_EFLAGS_ZF))
+#define _SetEFLAGS_ZF    (SetBit(_eflags, VCPU_EFLAGS_ZF))
 #define _SetSF    (SetBit(_eflags, VCPU_EFLAGS_SF))
 #define _SetTF    (SetBit(_eflags, VCPU_EFLAGS_TF))
 #define _SetIF    (SetBit(_eflags, VCPU_EFLAGS_IF))
@@ -193,7 +194,7 @@ typedef struct {
 #define _ClrEFLAGS_CF    (ClrBit(_eflags, VCPU_EFLAGS_CF))
 #define _ClrPF    (ClrBit(_eflags, VCPU_EFLAGS_PF))
 #define _ClrEFLAGS_AF    (ClrBit(_eflags, VCPU_EFLAGS_AF))
-#define _ClrZF    (ClrBit(_eflags, VCPU_EFLAGS_ZF))
+#define _ClrEFLAGS_ZF    (ClrBit(_eflags, VCPU_EFLAGS_ZF))
 #define _ClrSF    (ClrBit(_eflags, VCPU_EFLAGS_SF))
 #define _ClrTF    (ClrBit(_eflags, VCPU_EFLAGS_TF))
 #define _ClrIF    (ClrBit(_eflags, VCPU_EFLAGS_IF))
@@ -241,13 +242,13 @@ typedef struct {
 #define _SetPageEntry_A(pgentry)    (SetBit((pgentry), VCPU_PGENTRY_A))
 #define _SetPageEntry_D(pgentry)    (SetBit((pgentry), VCPU_PGENTRY_D))
 
-#define VCPU_SELETOR_RPL 0x0003 /* requestor's privilege level */
-#define VCPU_SELETOR_TI  0x0004 /* table indicator */
-#define VCPU_SELETOR_IDX 0xfff8 /* index */
-#define _GetSelector_RPL(selector)    (((selector) & VCPU_SELETOR_RPL) >> 0)
-#define _GetSelector_TI(selector)     (GetBit((selector), VCPU_SELETOR_TI))
-#define _GetSelector_INDEX(selector)  (((selector) & VCPU_SELETOR_IDX) >> 3)
-#define _GetSelector_OFFSET(selector) (((selector) & VCPU_SELETOR_IDX) >> 0)
+#define VCPU_SELECTOR_RPL 0x0003 /* requestor's privilege level */
+#define VCPU_SELECTOR_TI  0x0004 /* table indicator */
+#define VCPU_SELECTOR_IDX 0xfff8 /* index */
+#define _GetSelector_RPL(selector)    (((selector) & VCPU_SELECTOR_RPL) >> 0)
+#define _GetSelector_TI(selector)     (GetBit((selector), VCPU_SELECTOR_TI))
+#define _GetSelector_INDEX(selector)  (((selector) & VCPU_SELECTOR_IDX) >> 3)
+#define _GetSelector_OFFSET(selector) (((selector) & VCPU_SELECTOR_IDX) >> 0)
 #define _IsSelectorNull(selector)     (!_GetSelector_TI(selector) && !_GetSelector_INDEX(selector))
 
 #define VCPU_SEGDESC_BASE_0  0x000000ffffff0000
