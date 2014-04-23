@@ -20,7 +20,6 @@ vmachine/bios/qdbios.c
 vmachine/bios/qdcga.c
 vmachine/bios/qddisk.c
 vmachine/bios/qdkeyb.c
-vmachine/bios/qdmisc.c
 vmachine/debug/aasm.c
 vmachine/debug/dasm.c
 vmachine/debug/debug.c

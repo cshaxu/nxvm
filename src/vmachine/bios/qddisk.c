@@ -41,7 +41,7 @@ static t_nubit16 sax, sbx, scx, sdx;
 #define QDBIOS_VAR_VFDD  0
 #define QDBIOS_VAR_QDFDD 1
 /* debugging selectors */
-#define QDBIOS_FDD QDBIOS_VAR_QDFDD
+#define QDBIOS_FDD QDBIOS_VAR_VFDD
 
 #if (QDBIOS_FDD == QDBIOS_VAR_VFDD)
 static void INT_13_00_FDD_ResetDrive()

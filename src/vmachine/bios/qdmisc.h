@@ -7,11 +7,98 @@
 /*extern "C" {*/
 #endif
 
-void INT_11();
-void INT_12();
-void INT_15();
+#define SOFT_MISC_INT_11 "\
+; device test           \n\
+push ds                 \n\
+push bx                 \n\
+mov bx, 40              \n\
+mov ds, bx              \n\
+pop bx                  \n\
+mov ax, [0010]          \n\
+pop ds                  \n\
+iret                    \n"
 
-void qdmiscReset();
+#define SOFT_MISC_INT_12 "\
+; memory test           \n\
+push ds                 \n\
+push bx                 \n\
+mov bx, 40              \n\
+mov ds, bx              \n\
+pop bx                  \n\
+mov ax, [0013]          \n\
+pop ds                  \n\
+iret                    \n"
+
+#define SOFT_MISC_INT_15 "          \
+cmp ah, 24                        \n\
+jnz $(label_int_15_cmp_88)        \n\
+jmp near $(label_int_15_24)       \n\
+$(label_int_15_cmp_88):           \n\
+cmp ah, 88                        \n\
+jnz $(label_int_15_cmp_c0)        \n\
+jmp near $(label_int_15_88)       \n\
+$(label_int_15_cmp_c0):           \n\
+cmp ah, c0                        \n\
+jnz $(label_int_15_cmp_d8)        \n\
+jmp near $(label_int_15_c0)       \n\
+$(label_int_15_cmp_d8):           \n\
+cmp ah, d8                        \n\
+jnz $(label_int_15_default)       \n\
+jmp near $(label_int_15_d8)       \n\
+$(label_int_15_default):          \n\
+jmp near $(label_int_15_ret)      \n\
+\
+$(label_int_15_24):               \n\
+cmp al, 03                        \n\
+jnz $(label_int_15_24_ret)        \n\
+mov ah, 00                        \n\
+mov bx, 03                        \n\
+clc                               \n\
+jmp near $(label_int_15_set_flag) \n\
+$(label_int_15_24_ret):           \n\
+jmp near $(label_int_15_ret)      \n\
+\
+$(label_int_15_88):               \n\
+mov ax, 400 ; 1024 KB             \n\
+; if memory size > 16 M, ret 3c00 \n\
+sub ax, 100                       \n\
+clc                               \n\
+jmp near $(label_int_15_set_flag) \n\
+\
+$(label_int_15_c0):               \n\
+mov bx, f000                      \n\
+mov es, bx                        \n\
+mov bx, e6f5                      \n\
+mov ah, 00                        \n\
+clc                               \n\
+jmp near $(label_int_15_set_flag) \n\
+\
+$(label_int_15_d8):              \n\
+mov ah, 86                       \n\
+stc                              \n\
+jmp near $(label_int_15_set_flag)\n\
+\
+$(label_int_15_set_flag):        \n\
+push ax                          \n\
+push bx                          \n\
+pushf                            \n\
+pop ax                           \n\
+mov bx, sp                       \n\
+test ax, 0001                    \n\
+jnz $(label_int_15_set_flag_stc) \n\
+ss:                              \n\
+and word [bx+08], fffe           \n\
+pop bx                           \n\
+pop ax                           \n\
+jmp short $(label_int_15_ret)    \n\
+$(label_int_15_set_flag_stc):    \n\
+ss:                              \n\
+or  word [bx+08], 0001           \n\
+pop bx                           \n\
+pop ax                           \n\
+\
+$(label_int_15_ret): \n\
+iret                 \n"
 
 #ifdef __cplusplus
 /*}_EOCD_*/

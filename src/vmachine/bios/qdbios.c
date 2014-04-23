@@ -31,7 +31,6 @@ void qdbiosMakeInt(t_nubit8 intid, t_string stmt)
 		vapiPrint("Critical internal error: invalid asm instruction.\n");
 	}
 }
-
 void qdbiosExecInt(t_nubit8 intid)
 {
 	if (qdbiosInt[intid]) ExecFun(qdbiosInt[intid]);
@@ -122,14 +121,16 @@ static void vbiosLoadInt()
 	/* load rtc int */
 	qdbiosMakeInt(0x08, HARD_RTC_INT_08);
 	qdbiosMakeInt(0x1a, SOFT_RTC_INT_1A);
+	/* load bios service int */
+	qdbiosMakeInt(0x11, SOFT_MISC_INT_11);
+	qdbiosMakeInt(0x12, SOFT_MISC_INT_12);
+	qdbiosMakeInt(0x15, SOFT_MISC_INT_15);
 	/* qdkeyb init */
 	qdkeybReset();
 	/* qdcga init */
 	qdcgaReset();
 	/* load boot sector */
 	qddiskReset();
-	/* misc */
-	qdmiscReset();
 }
 static void vbiosLoadPost()
 {
