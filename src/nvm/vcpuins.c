@@ -1,28 +1,316 @@
 /* This file is a part of NekoVMac project. */
 
+#include "stdio.h"
+#include "vcpu.h"
+#include "vmemory.h"
 #include "vcpuins.h"
 #include "system/vapi.h"
+
+#define MOD	((modrm&0xc0)>>6)
+#define REG	((modrm&0x38)>>3)
+#define RM	((modrm&0x07)>>0)
+
+#define ADD_FLAG (OF | SF | ZF | AF | CF | PF)
+
+static t_nubitcc flgoperand1,flgoperand2,flgresult,flglen;
+static enum {ADD8,ADD16} flginstype;
 
 t_faddrcc InTable[0x10000];	
 t_faddrcc OutTable[0x10000];
 t_faddrcc InsTable[0x100];
 
+static t_nubit16 insDS;
+static t_nubit16 insSS;
+
+static t_vaddrcc rm,r,imm;
+
+/*t_bool vcpuinsIsPrefix(t_nubit8 opcode)
+{
+	switch(opcode) {
+	case 0xf0: case 0xf2: case 0xf3:
+	case 0x2e: case 0x36: case 0x3e: case 0x26:
+	//case 0x64: case 0x65: case 0x66: case 0x67:
+				return 1;break;
+	default:	return 0;break;
+	}
+}*/
+
+void SetCF(t_bool flg)
+{
+	if(flg) vcpu.flags |= CF;
+	else vcpu.flags &= ~CF;
+}
+void SetPF(t_bool flg)
+{
+	if(flg) vcpu.flags |= PF;
+	else vcpu.flags &= ~PF;
+}
+void SetAF(t_bool flg)
+{
+	if(flg) vcpu.flags |= AF;
+	else vcpu.flags &= ~AF;
+}
+void SetZF(t_bool flg)
+{
+	if(flg) vcpu.flags |= ZF;
+	else vcpu.flags &= ~ZF;
+}
+void SetSF(t_bool flg)
+{
+	if(flg) vcpu.flags |= SF;
+	else vcpu.flags &= ~SF;
+}
+void SetTF(t_bool flg)
+{
+	if(flg) vcpu.flags |= TF;
+	else vcpu.flags &= ~TF;
+}
+void SetIF(t_bool flg)
+{
+	if(flg) vcpu.flags |= IF;
+	else vcpu.flags &= ~IF;
+}
+void SetDF(t_bool flg)
+{
+	if(flg) vcpu.flags |= DF;
+	else vcpu.flags &= ~DF;
+}
+void SetOF(t_bool flg)
+{
+	if(flg) vcpu.flags |= OF;
+	else vcpu.flags &= ~OF;
+}
+
+void CalcCF()
+{
+	switch(flginstype) {
+	case ADD8:
+	case ADD16:
+		SetCF((flgresult < flgoperand1) || (flgresult < flgoperand2));
+		break;
+	default:break;}
+}
+void CalcPF()
+{
+	t_nubit8 res8 = flgresult & 0xff;
+	t_nubitcc count = 0;
+	while(res8)
+	{
+		res8 &= res8-1; 
+		count++;
+	}
+	SetPF(!(count%2));
+}
+void CalcAF()
+{
+	SetAF(((flgoperand1^flgoperand2)^flgresult)&0x10);
+}
+void CalcZF()
+{
+	SetZF(!flgresult);
+}
+void CalcSF()
+{
+	switch(flglen) {
+	case 8:	SetSF(flgresult&0x0080);break;
+	case 16:SetSF(flgresult&0x8000);break;
+	default:break;}
+}
+void CalcTF() {}
+void CalcIF() {}
+void CalcDF() {}
+void CalcOF()
+{
+	switch(flginstype) {
+	case ADD8:
+		SetOF(((flgoperand1&0x0080) == (flgoperand2&0x0080)) && ((flgoperand1&0x0080) != (flgresult&0x0080)));
+		break;
+	case ADD16:
+		SetOF(((flgoperand1&0x8000) == (flgoperand2&0x8000)) && ((flgoperand1&0x8000) != (flgresult&0x8000)));
+		break;
+	default:break;}
+}
+
+static void SetFlags(t_nubit16 flags)
+{
+	if(flags & CF) CalcCF();
+	if(flags & PF) CalcPF();
+	if(flags & AF) CalcAF();
+	if(flags & ZF) CalcZF();
+	if(flags & SF) CalcSF();
+	if(flags & TF) CalcTF();
+	if(flags & IF) CalcIF();
+	if(flags & DF) CalcDF();
+	if(flags & OF) CalcOF();
+}
+static void GetImm(t_nubitcc immbit)
+{
+	imm = memoryBase+SHL4(vcpu.cs)+(vcpu.ip);
+	switch(immbit) {
+	case 8:		vcpu.ip += 1;break;
+	case 16:	vcpu.ip += 2;break;
+	case 32:	vcpu.ip += 4;break;
+	default:	break;}
+}
+static void GetModRegRM(t_nubitcc regbit,t_nubitcc rmbit)
+{
+	t_nubit8 modrm = vmemoryGetByte(vcpu.cs,vcpu.ip++);
+	switch(MOD) {
+	case 0:
+		switch(RM) {
+		case 0:	rm = memoryBase+SHL4(insDS)+vcpu.bx+vcpu.si;break;
+		case 1:	rm = memoryBase+SHL4(insDS)+vcpu.bx+vcpu.di;break;
+		case 2:	rm = memoryBase+SHL4(insSS)+vcpu.bp+vcpu.si;break;
+		case 3:	rm = memoryBase+SHL4(insSS)+vcpu.bp+vcpu.di;break;
+		case 4:	rm = memoryBase+SHL4(insDS)+vcpu.si;break;
+		case 5:	rm = memoryBase+SHL4(insDS)+vcpu.di;break;
+		case 6:	rm = memoryBase+SHL4(insDS)+vmemoryGetWord(vcpu.cs,vcpu.ip);vcpu.ip += 2;break;
+		case 7:	rm = memoryBase+SHL4(insDS)+vcpu.bx;break;
+		default:break;}
+		break;
+	case 1:
+		switch(RM) {
+		case 0:	rm = memoryBase+SHL4(insDS)+vcpu.bx+vcpu.si;break;
+		case 1:	rm = memoryBase+SHL4(insDS)+vcpu.bx+vcpu.di;break;
+		case 2:	rm = memoryBase+SHL4(insSS)+vcpu.bp+vcpu.si;break;
+		case 3:	rm = memoryBase+SHL4(insSS)+vcpu.bp+vcpu.di;break;
+		case 4:	rm = memoryBase+SHL4(insDS)+vcpu.si;break;
+		case 5:	rm = memoryBase+SHL4(insDS)+vcpu.di;break;
+		case 6:	rm = memoryBase+SHL4(insSS)+vcpu.bp;break;
+		case 7:	rm = memoryBase+SHL4(insDS)+vcpu.bx;break;
+		default:break;}
+		rm += vmemoryGetByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;
+		break;
+	case 2:
+		switch(RM) {
+		case 0:	rm = memoryBase+SHL4(insDS)+vcpu.bx+vcpu.si;break;
+		case 1:	rm = memoryBase+SHL4(insDS)+vcpu.bx+vcpu.di;break;
+		case 2:	rm = memoryBase+SHL4(insSS)+vcpu.bp+vcpu.si;break;
+		case 3:	rm = memoryBase+SHL4(insSS)+vcpu.bp+vcpu.di;break;
+		case 4:	rm = memoryBase+SHL4(insDS)+vcpu.si;break;
+		case 5:	rm = memoryBase+SHL4(insDS)+vcpu.di;break;
+		case 6:	rm = memoryBase+SHL4(insSS)+vcpu.bp;break;
+		case 7:	rm = memoryBase+SHL4(insDS)+vcpu.bx;break;
+		default:break;}
+		rm += vmemoryGetWord(vcpu.cs,vcpu.ip);vcpu.ip += 2;
+		break;
+	case 3:
+		switch(RM) {
+		case 0:	if(rmbit == 8) rm = (t_vaddrcc)(&vcpu.al); else rm = (t_vaddrcc)(&vcpu.ax); break;
+		case 1:	if(rmbit == 8) rm = (t_vaddrcc)(&vcpu.cl); else rm = (t_vaddrcc)(&vcpu.cx); break;
+		case 2:	if(rmbit == 8) rm = (t_vaddrcc)(&vcpu.dl); else rm = (t_vaddrcc)(&vcpu.dx); break;
+		case 3:	if(rmbit == 8) rm = (t_vaddrcc)(&vcpu.bl); else rm = (t_vaddrcc)(&vcpu.bx); break;
+		case 4:	if(rmbit == 8) rm = (t_vaddrcc)(&vcpu.ah); else rm = (t_vaddrcc)(&vcpu.sp); break;
+		case 5:	if(rmbit == 8) rm = (t_vaddrcc)(&vcpu.ch); else rm = (t_vaddrcc)(&vcpu.bp); break;
+		case 6:	if(rmbit == 8) rm = (t_vaddrcc)(&vcpu.dh); else rm = (t_vaddrcc)(&vcpu.si); break;
+		case 7:	if(rmbit == 8) rm = (t_vaddrcc)(&vcpu.bh); else rm = (t_vaddrcc)(&vcpu.di); break;
+		default:break;}
+		break;
+	default:break;}
+	switch(REG) {
+	case 0:	if(regbit == 8) r = (t_vaddrcc)(&vcpu.al); else r = (t_vaddrcc)(&vcpu.ax); break;
+	case 1:	if(regbit == 8) r = (t_vaddrcc)(&vcpu.cl); else r = (t_vaddrcc)(&vcpu.cx); break;
+	case 2:	if(regbit == 8) r = (t_vaddrcc)(&vcpu.dl); else r = (t_vaddrcc)(&vcpu.dx); break;
+	case 3:	if(regbit == 8) r = (t_vaddrcc)(&vcpu.bl); else r = (t_vaddrcc)(&vcpu.bx); break;
+	case 4:	if(regbit == 8) r = (t_vaddrcc)(&vcpu.ah); else r = (t_vaddrcc)(&vcpu.sp); break;
+	case 5:	if(regbit == 8) r = (t_vaddrcc)(&vcpu.ch); else r = (t_vaddrcc)(&vcpu.bp); break;
+	case 6:	if(regbit == 8) r = (t_vaddrcc)(&vcpu.dh); else r = (t_vaddrcc)(&vcpu.si); break;
+	case 7:	if(regbit == 8) r = (t_vaddrcc)(&vcpu.bh); else r = (t_vaddrcc)(&vcpu.di); break;
+	default:break;}
+}
+
+static void ADD(void *dest, void *src, t_nubitcc len)
+{
+	switch(len) {
+	case 8:
+		flglen = 8;
+		flginstype = ADD8;
+		flgoperand1 = *(t_nubit8 *)dest;
+		flgoperand2 = *(t_nubit8 *)src;
+		flgresult = (flgoperand1+flgoperand2)&0xff;
+		*(t_nubit8 *)dest = flgresult;
+		break;
+	case 16:
+		flglen = 16;
+		flginstype = ADD16;
+		flgoperand1 = *(t_nubit16 *)dest;
+		flgoperand2 = *(t_nubit16 *)src;
+		flgresult = (flgoperand1+flgoperand2)&0xffff;
+		*(t_nubit16 *)dest = flgresult;
+		break;
+	default:break;}
+	SetFlags(ADD_FLAG);
+}
+
 void OpError()
-{nvmprint("OpError\n");}
+{
+	nvmprint("The NVM CPU has encountered an illegal instruction.\nCS:");
+	nvmprintword(vcpu.cs);
+	nvmprint(" IP:");
+	nvmprintword(vcpu.ip);
+	nvmprint(" OP:");
+	nvmprintbyte(vmemoryGetByte(vcpu.cs,vcpu.ip+0));
+	nvmprint(" ");
+	nvmprintbyte(vmemoryGetByte(vcpu.cs,vcpu.ip+1));
+	nvmprint(" ");
+	nvmprintbyte(vmemoryGetByte(vcpu.cs,vcpu.ip+2));
+	nvmprint(" ");
+	nvmprintbyte(vmemoryGetByte(vcpu.cs,vcpu.ip+3));
+	nvmprint(" ");
+	nvmprintbyte(vmemoryGetByte(vcpu.cs,vcpu.ip+4));
+	nvmprint("\n");
+	cpuTermFlag = 1;
+}
 void IO_NOP()
 {nvmprint("IO_NOP\n");}
 void ADD_RM8_R8()
-{nvmprint("ADD_RM8_R8\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(8,8);
+	ADD((void *)rm,(void *)r,8);
+	vcpuinsSB();
+	//nvmprint("ADD_RM8_R8\n");
+}
 void ADD_RM16_R16()
-{nvmprint("ADD_RM16_R16\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(16,16);
+	ADD((void *)rm,(void *)r,16);
+	vcpuinsSB();
+	//nvmprint("ADD_RM16_R16\n");
+}
 void ADD_R8_RM8()
-{nvmprint("ADD_R8_RM8\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(8,8);
+	ADD((void *)r,(void *)rm,8);
+	vcpuinsSB();
+	//nvmprint("ADD_R8_RM8\n");
+}
 void ADD_R16_RM16()
-{nvmprint("ADD_R16_RM16\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(16,16);
+	ADD((void *)r,(void *)rm,16);
+	vcpuinsSB();
+	//nvmprint("ADD_R16_RM16\n");
+}
 void ADD_AL_I8()
-{nvmprint("ADD_AL_I8\n");}
+{
+	vcpu.ip++;
+	GetImm(8);
+	ADD((void *)&vcpu.al,(void *)imm,8);
+	vcpuinsSB();
+	//nvmprint("ADD_AL_I8\n");
+}
 void ADD_AX_I16()
-{nvmprint("ADD_AX_I16\n");}
+{
+	vcpu.ip++;
+	GetImm(16);
+	ADD((void *)&vcpu.ax,(void *)imm,16);
+	vcpuinsSB();
+	//nvmprint("ADD_AX_I16\n");
+}
 void PUSH_ES()
 {nvmprint("PUSH_ES\n");}
 void POP_ES()
@@ -41,8 +329,8 @@ void OR_AX_I16()
 {nvmprint("OR_AX_I16\n");}
 void PUSH_CS()
 {nvmprint("PUSH_CS\n");}
-void INS_0F()
-{nvmprint("INS_0F\n");}
+/*void INS_0F()
+{nvmprint("INS_0F\n");}*/
 void ADC_RM8_R8()
 {nvmprint("ADC_RM8_R8\n");}
 void ADC_RM16_R16()
@@ -203,12 +491,12 @@ void POP_SI()
 {nvmprint("POP_SI\n");}
 void POP_DI()
 {nvmprint("POP_DI\n");}
-void OpdSize()
+/*void OpdSize()
 {nvmprint("OpdSize\n");}
 void AddrSize()
 {nvmprint("AddrSize\n");}
 void PUSH_I16()
-{nvmprint("PUSH_I16\n");}
+{nvmprint("PUSH_I16\n");}*/
 void JO()
 {nvmprint("JO\n");}
 void JNO()
@@ -478,9 +766,16 @@ void INS_FE()
 void INS_FF()
 {nvmprint("INS_FF\n");}
 
+void vcpuinsSB()
+{
+	insDS = vcpu.ds;
+	insSS = vcpu.ss;
+}
+
 void CPUInsInit()
 {
 	int i;
+	vcpuinsSB();
 	for(i = 0;i < 0x10000;++i) {
 		InTable[i] = IO_NOP;
 		OutTable[i] = IO_NOP;
@@ -500,7 +795,8 @@ void CPUInsInit()
 	InsTable[0x0c] = OR_AL_I8;
 	InsTable[0x0d] = OR_AX_I16;
 	InsTable[0x0e] = PUSH_CS;
-	InsTable[0x0f] = INS_0F;
+	InsTable[0x0f] = OpError;
+	//InsTable[0x0f] = INS_0F;
 	InsTable[0x10] = ADC_RM8_R8;
 	InsTable[0x11] = ADC_RM16_R16;
 	InsTable[0x12] = ADC_R8_RM8;
@@ -587,9 +883,12 @@ void CPUInsInit()
 	InsTable[0x63] = OpError;
 	InsTable[0x64] = OpError;
 	InsTable[0x65] = OpError;
-	InsTable[0x66] = OpdSize;
-	InsTable[0x67] = AddrSize;
-	InsTable[0x68] = PUSH_I16;
+	InsTable[0x66] = OpError;
+	InsTable[0x67] = OpError;
+	InsTable[0x68] = OpError;
+	//InsTable[0x66] = OpdSize;
+	//InsTable[0x67] = AddrSize;
+	//InsTable[0x68] = PUSH_I16;
 	InsTable[0x69] = OpError;
 	InsTable[0x6a] = OpError;
 	InsTable[0x6b] = OpError;

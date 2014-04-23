@@ -31,3 +31,23 @@ int nvmprint(const char *format, ...)
 	va_end(arg_ptr);
 	return nWrittenBytes;
 }
+void nvmprintbyte(t_nubit8 n)
+{
+	char c;
+	int i;
+	for(i = 1;i >= 0;--i) {
+		c = ((n>>(i*4))&0x0f)+0x30;
+		if(c > 0x39) c += 0x27;
+		nvmprint("%c",c);
+	}
+}
+void nvmprintword(t_nubit16 n)
+{
+	char c;
+	int i;
+	for(i = 3;i >= 0;--i) {
+		c = ((n>>(i*4))&0x0f)+0x30;
+		if(c > 0x39) c += 0x27;
+		nvmprint("%c",c);
+	}
+}

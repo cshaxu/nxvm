@@ -4,7 +4,7 @@
 	Type of systems: NONE, MSDOS, WIN32CON, WIN32APP
 */
 
-#define PRODUCT "Neko's Virtual Machine [0x002c]\n\
+#define PRODUCT "Neko's Virtual Machine [0x002d]\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"
 
 /*
@@ -12,10 +12,14 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 	Email:		cshaxu@gatech.edu
 	Start:		01/25/2012
 	End:		(null)
+	Module 0 - CONSOLE
+	Project Date:	With Project
 	Module I - ASM86
 	Project Date:	01/25/2012 - 02/05/2012
-	Module II - CONSOLE
-	Project Date:	01/25/2012 - Present
+	Module II - VCPU
+	Module III - DOSINT
+	Module IV - VDEVICE
+	Module V - VAPI
 */
 
 #include "stdio.h"
@@ -24,9 +28,6 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 
 #include "global.h"
 #include "console.h"
-
-void test()
-{fprintf(stdout,"test\n");}
 
 #ifdef NVM_WIN32APP
 #include "windows.h"

@@ -37,7 +37,6 @@ typedef struct {
 } t_cpu;
 
 extern t_cpu vcpu;
-extern t_vaddrcc insPtr;
 extern t_bool cpuTermFlag;
 
 void InsExec();

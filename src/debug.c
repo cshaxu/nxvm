@@ -21,6 +21,7 @@ test code
 #include "string.h"
 
 #include "nvm/vmachine.h"
+#include "nvm/vcpuins.h"
 #define cpu vcpu
 #define memory memoryBase
 #define insptr insPtr
@@ -156,13 +157,14 @@ static t_nubit16 getword(t_nubit16 segment,t_nubit16 pointer)
 	p2 = (*(t_nubit8 *)(memory+(segment<<4)+pointer+1));
 	return (p1+(p2<<8));
 }
-static int isprefix(t_nubit8 n)
+static t_bool isprefix(t_nubit8 n)
 {
 	switch(n) {
 	case 0xf0: case 0xf2: case 0xf3:
-	case 0x2e: case 0x36: case 0x3e: case 0x26: case 0x64: case 0x65:
-	case 0x66: case 0x67: return 1;break;
-	default: return 0;break;
+	case 0x2e: case 0x36: case 0x3e: case 0x26:
+	//case 0x64: case 0x65: case 0x66: case 0x67:
+				return 1;break;
+	default:	return 0;break;
 	}
 }
 /* DEBUG CMD BEGIN */
@@ -187,7 +189,7 @@ static void aconsole()
 		if(cmdAsmBuff[0] == ';' ) continue;
 		errAsmPos = 0;
 		len = assemble(cmdAsmBuff,cpu.cs,
-			(t_nubit8 *)memory,asmSegRec,asmPtrRec);
+			memory,asmSegRec,asmPtrRec);
 		if(!len) errAsmPos = strlen(cmdAsmBuff) + 9;
 		else asmPtrRec += len;
 		if(errAsmPos) {
@@ -337,17 +339,16 @@ static void f()
 static void rprintregs();
 static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 {
-	t_vaddrcc start = (((t_vaddrcc)cpu.cs)<<4)+ptr1;
-	t_vaddrcc end = (((t_vaddrcc)cpu.cs)<<4)+ptr2;
-	if(start < end) {
-		insptr = start;
-		while(insptr < end && !cputerm) {
+	if(ptr1 < ptr2) {
+		cpu.ip = ptr1;
+		while(ptr1 < ptr2 && !cputerm) {
 			InsExec();
+			ptr1 = cpu.ip;
 			//RefreshVideoRAM();
 			//ExecInt();
 		}
 	} else fprintf(stdout,"\n");
-	if(cputerm) fprintf(stdout,"Program terminated normally\n");
+	if(cputerm) fprintf(stdout,"Program terminated\n");
 	else {
 		rprintregs();
 	}
@@ -387,8 +388,9 @@ static void h()
 // load
 static void l()
 {
-	unsigned char c;
-	unsigned long len = 0;
+	t_nubit8 c;
+	t_nubit16 i = 0;
+	t_nubit32 len = 0;
 	FILE *load = fopen(filename,"rb");
 	if(!load) fprintf(stdout,"File not found\n");
 	else {
@@ -403,7 +405,8 @@ static void l()
 		default:	seterr(narg-1);break;}
 		c = fgetc(load);
 		while(!feof(load)) {
-			setbyte(seg,ptr+len++,c);
+			setbyte(seg+i,ptr+len++,c);
+			i = len / 0x10000;
 			c = fgetc(load);
 		}
 		fclose(load);
@@ -894,10 +897,12 @@ static void init()
 {
 	filename[0] = '\0';
 	cpu.ax = cpu.bx = cpu.cx = cpu.dx = 0x0000;
-	cpu.si = cpu.di = cpu.sp = cpu.bp = 0x0000;
+	cpu.si = cpu.di = cpu.bp = 0x0000;
+	cpu.sp = 0xffee;
 	cpu.ds = cpu.es = cpu.ss = cpu.cs =
 		asmSegRec = dumpSegRec = uasmSegRec = 0x0a50;
 	cpu.ip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;
+	vcpuinsSB();
 }
 static void parse()
 {

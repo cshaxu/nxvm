@@ -8,6 +8,13 @@
 extern t_vaddrcc memoryBase;	// memory base address is 20 bit
 extern t_nubit32 memorySize;	// memory size in byte
 
+t_nubit8 vmemoryGetByte(t_nubit16 segment,t_nubit16 offset);
+t_nubit16 vmemoryGetWord(t_nubit16 segment,t_nubit16 offset);
+t_nubit32 vmemoryGetDWord(t_nubit16 segment,t_nubit16 offset);
+void vmemorySetByte(t_nubit16 segment,t_nubit16 offset,t_nubit8 value);
+void vmemorySetWord(t_nubit16 segment,t_nubit16 offset,t_nubit16 value);
+void vmemorySetDWord(t_nubit16 segment,t_nubit16 offset,t_nubit32 value);
+
 void MemoryInit();
 void MemoryTerm();
 
