@@ -5,10 +5,11 @@
 #ifndef NXVM_VGLOBAL_H
 #define NXVM_VGLOBAL_H
 
+/*#include "stdio.h"*/
 #include "stdint.h"
 #include "coption.h"
 
-#define VGLOBAL_SIZE_STRING 0x100
+/*#define VGLOBAL_SIZE_STRING 0x100*/
 
 typedef uint8_t		t_nubit4;
 typedef uint8_t		t_nubit6;
@@ -25,7 +26,9 @@ typedef int64_t		t_nsbit64;
 
 typedef float		t_float32;
 typedef double		t_float64;
-typedef char		t_string[VGLOBAL_SIZE_STRING];
+/*typedef FILE		t_file;
+typedef size_t		t_size;
+typedef char		t_string[VGLOBAL_SIZE_STRING];*/
 
 #if NXVM_INTLEN == 32
 typedef t_nubit32	t_nubitcc;

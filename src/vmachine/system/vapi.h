@@ -6,9 +6,12 @@
 #include "../vglobal.h"
 extern int forceNone;	// use general output or system_related vdisplay
 int vapiPrint(const char *, ...);
-void vapiPrintByte(t_nubit8 n);
-void vapiPrintWord(t_nubit16 n);
-void vapiPrintAddr(t_nubit16 segment,t_nubit16 offset);
+void vapiPrintByte(unsigned char n);
+void vapiPrintWord(unsigned short n);
+void vapiPrintAddr(unsigned short segment,unsigned short offset);
 void vapiPause();
+
+void vapiInsertFloppyDisk(const char *fname);
+void vapiRemoveFloppyDisk(const char *fname);
 
 #endif

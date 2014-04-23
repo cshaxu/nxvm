@@ -6,6 +6,8 @@
 #include "../coption.h"
 #include "vapi.h"
 
+#include "../vfdd.h"
+
 int forceNone = 1;
 
 #if NXVM_SYSTEM == NXVM_NONE
@@ -28,12 +30,12 @@ int vapiPrint(const char *format, ...)
 	int nWrittenBytes = 0;
 	va_list arg_ptr;
 	va_start(arg_ptr, format);
-	nWrittenBytes = vfprintf(stdout,format,arg_ptr);
+	nWrittenBytes = vfprintf(stdout, format,arg_ptr);
 	//nWrittenBytes = vsprintf(stringBuffer,format,arg_ptr);
 	va_end(arg_ptr);
 	return nWrittenBytes;
 }
-void vapiPrintByte(t_nubit8 n)
+void vapiPrintByte(unsigned char n)
 {
 	char c;
 	int i;
@@ -43,7 +45,7 @@ void vapiPrintByte(t_nubit8 n)
 		vapiPrint("%c",c);
 	}
 }
-void vapiPrintWord(t_nubit16 n)
+void vapiPrintWord(unsigned short n)
 {
 	char c;
 	int i;
@@ -53,11 +55,40 @@ void vapiPrintWord(t_nubit16 n)
 		vapiPrint("%c",c);
 	}
 }
-void vapiPrintAddr(t_nubit16 segment,t_nubit16 offset)
+void vapiPrintAddr(unsigned short segment,unsigned short offset)
 {vapiPrintWord(segment);vapiPrint(":");vapiPrintWord(offset);}
 void vapiPause()
 {
 	fflush(stdin);
 	vapiPrint("Press ENTER to continue . . .\n");
 	getchar();
+}
+
+void vapiInsertFloppyDisk(const char *fname)
+{
+	size_t count;
+	FILE *image = fopen(fname, "rb");
+	if (image) {
+		count = fread((void *)vfdd.base, sizeof(unsigned char),
+		              0x00168000, image);
+		/* vfddFormat(0xf6); */
+		vfdd.flagexist = 0x01;
+		fclose(image);
+		/* vapiPrint("Disk image loaded to %lx\n",vfdd.base); */
+		/* TODO: do other changes to vfdd, vfdc */
+	} else vapiPrint("FDD:\cannot read floppy image from '%s'.\n", fname);
+}
+void vapiRemoveFloppyDisk(const char *fname)
+{
+	size_t count;
+	FILE *image;
+	/* TODO: assert(vfdd.base) */
+	image = fopen(fname, "wb");
+	if(image) {
+		if (vfdd.flagro)
+			count = fwrite((void *)vfdd.base, sizeof(unsigned char),
+			               0x00168000, image);
+		vfdd.flagexist = 0x00;
+		fclose(image);
+	} else vapiPrint("FDD:\cannot write floppy image to '%s'.\n", fname);
 }

@@ -5,6 +5,7 @@
 #include "string.h"
 
 #include "vmachine/vmachine.h"
+#include "vmachine/system/vapi.h"
 
 #include "global.h"
 #include "debug.h"
@@ -98,9 +99,11 @@ void NSHelp()
 
 void NSFloppy()
 {
+	char str[MAXLINE];
 	fprintf(stdout,"Floppy Image File: ");
-	fgets(vfdd.img,VGLOBAL_SIZE_STRING,stdin);
-	parse(vfdd.img);
+	fgets(str, MAXLINE, stdin);
+	parse(str);
+	vapiInsertFloppyDisk(str);
 }
 void NSMemory()
 {

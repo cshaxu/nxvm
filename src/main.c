@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x65]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x66]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -177,6 +177,10 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * Format Unify:
  * all boolean type should be t_bool, declared TRUE or FALSE
  * check all includes, macro names, flag names
+ * check all null pointer: use NULL instead of 0
+ * use assert
+ * replace all constants with MACRO
+ * all t_bool variable names start with "flag"
  */
 
 #include "stdio.h"

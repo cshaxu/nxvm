@@ -13,8 +13,13 @@
 #define VFDD_HEADS		0x0002
 
 typedef struct {
-	t_string img;
-	t_vaddrcc ptrbase;
+	t_nubit8  head;                                  /* head number (0 or 1) */
+	t_nubit8  cyl;                              /* cylinder number (0 to 79) */
+
+	t_bool    flagro;                                /* write protect status */
+	t_bool    flagexist;                    /* flag of floppy disk existance */
+
+	t_vaddrcc base;                                /* pointer to disk in ram */
 } t_fdd;
 
 extern t_fdd vfdd;
