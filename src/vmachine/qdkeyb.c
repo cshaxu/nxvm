@@ -23,7 +23,6 @@
 static t_bool bufPush(t_nubit16 ascii)
 {
 	if (bufIsFull) return 1;
-	// isNeedHandleKeyPress
 	vramVarWord(0x0000, bufptrTail) = ascii;
 	bufptrAdvance(bufptrTail);
 	return 0;
@@ -84,7 +83,7 @@ void vapiCallBackKeyboardSetFlag1LeftAlt()
 void vapiCallBackKeyboardSetFlag1LeftCtrl()
 {SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LCTRL);}
 t_bool vapiCallBackKeyboardRecvKeyPress(t_nubit16 ascii)
-{return bufPush(ascii);}
+{vpicSetIRQ(0x01);return bufPush(ascii);}
 
 void IO_Read_0064()
 {

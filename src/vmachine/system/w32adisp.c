@@ -62,7 +62,7 @@ void w32adispInit()
 	logFont.lfClipPrecision = 0;
 	logFont.lfQuality = 0;
 	logFont.lfPitchAndFamily = 0;
-//	lstrcpy(logFont.lfFaceName,L"");
+	lstrcpy(logFont.lfFaceName,L"Courier New");
 	w32adispSetScreen();
 }
 

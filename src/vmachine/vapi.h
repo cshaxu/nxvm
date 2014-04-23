@@ -35,7 +35,7 @@ void vapiFloppyInsert(const t_string fname);
 void vapiFloppyRemove(const t_string fname);
 void vapiStartMachine();
 
-void vapiSleep();
+void vapiSleep(t_nubit32 milisec);
 void vapiDisplaySetScreen();
 void vapiDisplayPaint();
 
