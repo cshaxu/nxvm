@@ -4,7 +4,6 @@
 
 #include "../vapi.h"
 #include "../vport.h"
-#include "../vcpu.h"
 #include "../vpic.h"
 
 #include "qdbios.h"

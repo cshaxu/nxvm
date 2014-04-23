@@ -196,10 +196,32 @@ static t_nubit32 _kma_addr_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t
 	t_nubit32 linear = 0x00000000;
 	_cb("_kma_addr_linear_logical");
 	_chr(linear = (rsreg->base + offset));
-	if (linear != ((rsreg->selector << 4) + GetMax16(offset))) {
-		_SetExcept_CE(rsreg->selector);
+	if (linear > rsreg->limit) {
+		_comment("Bad translation: beyond segment limit");
+		_comment("base:");
 		_SetExcept_CE(rsreg->base);
+		_comment("limit:");
+		_SetExcept_CE(rsreg->limit);
+		_comment("selector:");
+		_SetExcept_CE(rsreg->selector);
+		_comment("offset:");
 		_SetExcept_CE(offset);
+		_comment("linear:");
+		_SetExcept_CE(linear);
+		_chr(0);
+	}
+	if (linear != ((rsreg->selector << 4) + GetMax16(offset))) {
+		_comment("Bad translation: logical -> linear");
+		_comment("base:");
+		_SetExcept_CE(rsreg->base);
+		_comment("limit:");
+		_SetExcept_CE(rsreg->limit);
+		_comment("selector:");
+		_SetExcept_CE(rsreg->selector);
+		_comment("offset:");
+		_SetExcept_CE(offset);
+		_comment("linear:");
+		_SetExcept_CE(linear);
 		_chr(0);
 	}
 	_ce;

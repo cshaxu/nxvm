@@ -109,19 +109,6 @@ void vapiRecordDump(const t_string fname)
 			_recpu.ds.selector,_recpu.es.selector,_recpu.ss.selector,
 			_recpu.flags, _rec_of,_rec_sf,_rec_zf,_rec_cf,
 			_rec_af,_rec_pf,_rec_df,_rec_if,_rec_tf,_restmt);
-#if VGLOBAL_ECPU_MODE != TEST_VCPU
-		fprintf(dump, _expression,
-			_recpu.cs.selector, _recpu.ip,
-			vramRealByte(_recpu2.cs,_recpu2.ip+0),vramRealByte(_recpu2.cs,_recpu2.ip+1),
-			vramRealByte(_recpu2.cs,_recpu2.ip+2),vramRealByte(_recpu2.cs,_recpu2.ip+3),
-			vramRealByte(_recpu2.cs,_recpu2.ip+4),vramRealByte(_recpu2.cs,_recpu2.ip+5),
-			vramRealByte(_recpu2.cs,_recpu2.ip+6),vramRealByte(_recpu2.cs,_recpu2.ip+7),
-			_recpu2.ax,_recpu2.bx,_recpu2.cx,_recpu2.dx,
-			_recpu2.sp,_recpu2.bp,_recpu2.si,_recpu2.di,
-			_recpu2.ds,_recpu2.es,_recpu2.ss,
-			_recpu2.flags, _rec_of2,_rec_sf2,_rec_zf2,_rec_cf2,
-			_rec_af2,_rec_pf2,_rec_df2,_rec_if2,_rec_tf2,"(2)");
-#endif
 		++i;
 	}
 	vapiPrint("Record dumped to '%s'.\n", fname);
@@ -141,9 +128,6 @@ void vapiRecordExec()
 	}
 #endif
 	vapirecord.rec[_rec_ptr_last].rcpu = vcpu;
-#if VGLOBAL_ECPU_MODE != TEST_VCPU
-	vapirecord.rec[_rec_ptr_last].rcpu2 = ecpu;
-#endif
 	dasm(vapirecord.rec[_rec_ptr_last].stmt, _cs, _ip, 0x00);
 	if (vapirecord.size == VAPI_RECORD_SIZE) vapirecord.start++;
 	else vapirecord.size++;

@@ -109,6 +109,11 @@ typedef struct {
 	t_bool flagnmi, flaglock, flaghalt;
 } t_cpu;
 
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
+#include "ecpu/ecpu.h"
+#endif
+
+#if VGLOBAL_ECPU_MODE != TEST_ECPU
 #define _eax    (vcpu.eax)
 #define _ebx    (vcpu.ebx)
 #define _ecx    (vcpu.ecx)
@@ -148,6 +153,7 @@ typedef struct {
 #define _idtr   (vcpu.idtr)
 #define _ldtr   (vcpu.ldtr)
 #define _tr     (vcpu.tr)
+#endif
 
 #define VCPU_EFLAGS_CF 0x00000001
 #define VCPU_EFLAGS_PF 0x00000004
@@ -172,6 +178,7 @@ typedef struct {
 #define VCPU_EFLAGS_ID    0x00200000
 #define VCPU_EFLAGS_RESERVED 0xffc0802a
 */
+#if VGLOBAL_ECPU_MODE != TEST_ECPU
 #define _GetEFLAGS_CF    (GetBit(vcpu.eflags, VCPU_EFLAGS_CF))
 #define _GetEFLAGS_PF    (GetBit(vcpu.eflags, VCPU_EFLAGS_PF))
 #define _GetEFLAGS_AF    (GetBit(vcpu.eflags, VCPU_EFLAGS_AF))
@@ -232,7 +239,7 @@ typedef struct {
 #define _ClrEFLAGS_VIF   (ClrBit(vcpu.eflags, VCPU_EFLAGS_VIF))
 #define _ClrEFLAGS_VIP   (ClrBit(vcpu.eflags, VCPU_EFLAGS_VIP))
 #define _ClrEFLAGS_ID    (ClrBit(vcpu.eflags, VCPU_EFLAGS_ID))*/
-
+#endif
 #define _GetCF _GetEFLAGS_CF
 #define _SetCF _SetEFLAGS_CF
 #define _ClrCF _ClrEFLAGS_CF

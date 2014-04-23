@@ -12,11 +12,12 @@
 #include "../bios/qdbios.h"
 #include "../vcpu.h"
 #include "../vcpuins.h"
+#include "../vram.h"
+#include "ecpuapi.h"
 #include "ecpuins.h"
 #include "ecpu.h"
 
 t_vaddrcc Ins0FTable[0x100];
-
 
 #define ECPUINS_FLAGS_MASKED (VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF | VCPU_EFLAGS_IOPL | VCPU_EFLAGS_VM)
 
@@ -50,13 +51,13 @@ t_cpuins ecpuins;
 
 VOID SyncCSIP()
 {
-	t_vaddrcc tevip = evIP - (ecpu.cs << 4);
-	ecpu.cs += tevip / 0x10000;
+	t_vaddrcc tevip = evIP - (ecpu.cs.selector << 4);
+	ecpu.cs.selector += tevip / 0x10000;
 	ecpu.ip  = tevip % 0x10000;
 }
 VOID SyncEVIP()
 {
-	evIP = (ecpu.cs << 4) + ecpu.ip;
+	evIP = (ecpu.cs.selector << 4) + ecpu.ip;
 }
 VOID PrintFlags(t_nubit16 flags)
 {
@@ -83,12 +84,12 @@ static void ecpuinsExecIns();
 
 VOID LongCallNewIP(char OffsetByte)
 {
-	t_nubit32 tcs=ecpu.cs;
+	t_nubit32 tcs=ecpu.cs.selector;
 	t_nubit32 tevIP=evIP;
 	tcs<<=4;
 	tevIP+=OffsetByte;
 	tevIP-=tcs;
-	ecpu.cs+=tevIP/0x10000;
+	ecpu.cs.selector+=tevIP/0x10000;
 	ecpu.ip=tevIP%0x10000;
 }
 VOID SegOffInc(t_nubit16 *seg, t_nubit16 *off)
@@ -102,51 +103,51 @@ VOID SegOffDec(t_nubit16 *seg, t_nubit16 *off)
 t_nubit8 GetM8_16(t_nubit16 off)
 {
 	if (off+(t=ecpu.overds,t<<4)<=0xfffff)
-		return *(t_nubit8 *)(off+(t=ecpu.overds,t<<4)+MemoryStart);
+		return *(t_nubit8 *)(off+(t=ecpu.overds,t<<4)+vram.base);
 	else
 		return 0xff;
 }
 t_nubit8 GetM8_32(t_nubit32 off)
 {
-	return *(t_nubit8 *)(off+(t=ecpu.overds,t<<4)+MemoryStart);
+	return *(t_nubit8 *)(off+(t=ecpu.overds,t<<4)+vram.base);
 }
 t_nubit16 GetM16_16(t_nubit16 off)
 {
 	if (off+(t=ecpu.overds,t<<4)<=0xfffff)
-		return d_nubit16(off+(t=ecpu.overds,t<<4)+MemoryStart);
+		return d_nubit16(off+(t=ecpu.overds,t<<4)+vram.base);
 	else
 		return 0xffff;
 }
 t_nubit16 GetM16_32(t_nubit32 off)
 {
-	return d_nubit16(off+(t=ecpu.overds,t<<4)+MemoryStart);
+	return d_nubit16(off+(t=ecpu.overds,t<<4)+vram.base);
 }
 t_nubit32 GetM32_16(t_nubit16 off)
 {
 	if (off+(t=ecpu.overds,t<<4)<=0xfffff)
-		return *(t_nubit32 *)(off+(t=ecpu.overds,t<<4)+MemoryStart);
+		return *(t_nubit32 *)(off+(t=ecpu.overds,t<<4)+vram.base);
 	else
 		return 0xffffffff;
 }
 t_nubit32 GetM32_32(t_nubit32 off)
 {
-	return *(t_nubit32 *)(off+(t=ecpu.overds,t<<4)+MemoryStart);
+	return *(t_nubit32 *)(off+(t=ecpu.overds,t<<4)+vram.base);
 }
 VOID SetM8(t_nubit16 off, t_nubit8 val)
 {
 	if (off+(t=ecpu.overds,t<<4))
-		*(t_nubit8 *)(off+(t=ecpu.overds,t<<4)+MemoryStart)=val;
+		*(t_nubit8 *)(off+(t=ecpu.overds,t<<4)+vram.base)=val;
 
 }
 VOID SetM16(t_nubit16 off, t_nubit16 val)
 {
 	if (off+(t=ecpu.overds,t<<4))
-		d_nubit16(off+(t=ecpu.overds,t<<4)+MemoryStart)=val;
+		d_nubit16(off+(t=ecpu.overds,t<<4)+vram.base)=val;
 }
 VOID SetM32(t_nubit16 off, t_nubit32 val)
 {
 	if (off+(t=ecpu.overds,t<<4))
-		*(t_nubit32 *)(off+(t=ecpu.overds,t<<4)+MemoryStart)=val;
+		*(t_nubit32 *)(off+(t=ecpu.overds,t<<4)+vram.base)=val;
 }
 VOID *FindRegAddr(t_bool w,char reg)
 {
@@ -198,16 +199,16 @@ VOID *FindSegAddr(t_bool w,char reg)
 	switch(reg)
 	{
 	case 0:
-		return &(ecpu.es);
+		return &(ecpu.es.selector);
 		break;
 	case 1:
-		return &(ecpu.cs);
+		return &(ecpu.cs.selector);
 		break;
 	case 2:
-		return &(ecpu.ss);
+		return &(ecpu.ss.selector);
 		break;
 	case 3:
-		return &(ecpu.ds);
+		return &(ecpu.ds.selector);
 		break;
 	default:
 		return 0;
@@ -219,7 +220,7 @@ t_nubit32 FindRemAddr(char rem , t_nubit16 **off1, t_nubit16 **off2)
 	t_nubit32 tds, tes, tss;
 	tds=ecpu.overds;
 	tds<<=4;
-	tes=ecpu.es;
+	tes=ecpu.es.selector;
 	tes<<=4;
 	tss=ecpu.overss;
 	tss<<=4;
@@ -230,42 +231,42 @@ t_nubit32 FindRemAddr(char rem , t_nubit16 **off1, t_nubit16 **off2)
 		case 0:
 			*off1=&ecpu.bx;
 			*off2=&ecpu.si;
-			ret=MemoryStart+(t_nubit16)(ecpu.bx+ecpu.si)+(tds);
+			ret=vram.base+(t_nubit16)(ecpu.bx+ecpu.si)+(tds);
 			break;
 		case 1:
 			*off1=&ecpu.bx;
 			*off2=&ecpu.di;
-			ret=MemoryStart+(t_nubit16)(ecpu.bx+ecpu.di)+(tds);
+			ret=vram.base+(t_nubit16)(ecpu.bx+ecpu.di)+(tds);
 			break;
 		case 2:
 			*off1=&ecpu.bp;
 			*off2=&ecpu.si;
-			ret=MemoryStart+(t_nubit16)(ecpu.bp+ecpu.si)+(tss);
+			ret=vram.base+(t_nubit16)(ecpu.bp+ecpu.si)+(tss);
 			break;
 		case 3:
 			*off1=&ecpu.bp;
 			*off2=&ecpu.di;
-			ret=MemoryStart+(t_nubit16)(ecpu.bp+ecpu.di)+(tss);
+			ret=vram.base+(t_nubit16)(ecpu.bp+ecpu.di)+(tss);
 			break;
 		case 4:
 			*off1=&ecpu.si;
 			*off2=&GlbZero;
-			ret=MemoryStart+ecpu.si+(tds);
+			ret=vram.base+ecpu.si+(tds);
 			break;
 		case 5:
 			*off1=&ecpu.di;
 			*off2=&GlbZero;
-			ret=MemoryStart+ecpu.di+(tds);
+			ret=vram.base+ecpu.di+(tds);
 			break;
 		case 6:
 			*off1=&ecpu.bp;
 			*off2=&GlbZero;
-			ret=MemoryStart+ecpu.bp+(tss);
+			ret=vram.base+ecpu.bp+(tss);
 			break;
 		case 7:
 			*off1=&ecpu.bx;
 			*off2=&GlbZero;
-			ret=MemoryStart+ecpu.bx+(tds);
+			ret=vram.base+ecpu.bx+(tds);
 			break;
 		default:
 			return 0;
@@ -278,40 +279,40 @@ t_nubit32 FindRemAddr(char rem , t_nubit16 **off1, t_nubit16 **off2)
 		{
 		case 0:
 			*off1=&ecpu.ax;
-			ret=MemoryStart+(t_nubit16)ecpu.eax+(tds);
+			ret=vram.base+(t_nubit16)ecpu.eax+(tds);
 			break;
 		case 1:
 			*off1=&ecpu.cx;
-			ret=MemoryStart+(t_nubit16)ecpu.ecx+(tds);
+			ret=vram.base+(t_nubit16)ecpu.ecx+(tds);
 			break;
 		case 2:
 			*off1=&ecpu.dx;
-			ret=MemoryStart+(t_nubit16)ecpu.edx+(tss);
+			ret=vram.base+(t_nubit16)ecpu.edx+(tss);
 			break;
 		case 3:
 			*off1=&ecpu.bx;
-			ret=MemoryStart+(t_nubit16)ecpu.ebx+(tss);
+			ret=vram.base+(t_nubit16)ecpu.ebx+(tss);
 			break;
 		case 4:
 			__asm nop		//SIB followed
 			break;
 		case 5:
 			*off1=&ecpu.bp;
-			ret=MemoryStart+ecpu.ebp+(tds);
+			ret=vram.base+ecpu.ebp+(tds);
 			break;
 		case 6:
 			*off1=&ecpu.si;
-			ret=MemoryStart+ecpu.esi+(tss);
+			ret=vram.base+ecpu.esi+(tss);
 			break;
 		case 7:
 			*off1=&ecpu.di;
-			ret=MemoryStart+ecpu.edi+(tds);
+			ret=vram.base+ecpu.edi+(tds);
 			break;
 		default:
 			return 0;
 		}
 	}
-	if (ret-MemoryStart<=0xfffff)
+	if (ret-vram.base<=0xfffff)
 		return ret;
 	else
 		return (t_nubit32)&Glbffff;
@@ -337,14 +338,14 @@ VOID TranslateOpcExt(t_bool w,char** rg,char** rm)
 		{
 			evIP++;
 			*rm=(char *)((d_nubit16(eIMS)) + tds);
-			*rm+=MemoryStart;
+			*rm+=vram.base;
 			evIP++;
 		}
 		else if (rem==5 && tmpAddrSize==4)
 		{
 			evIP++;
 			*rm=(char *)((*(t_nubit32 *)eIMS) + tds);
-			*rm+=MemoryStart;
+			*rm+=vram.base;
 			evIP+=3;
 		}
 		else
@@ -399,14 +400,14 @@ VOID TranslateOpcExtSeg(t_bool w,char** rg,char** rm)
 		{
 			evIP++;
 			*rm=(char *)((d_nubit16(eIMS)) + tds);
-			*rm+=MemoryStart;
+			*rm+=vram.base;
 			evIP++;
 		}
 		else if (rem==5 && tmpAddrSize==4)
 		{
 			evIP++;
 			*rm=(char *)((d_nubit16(eIMS)) + tds);
-			*rm+=MemoryStart;
+			*rm+=vram.base;
 			evIP+=3;
 		}
 		else
@@ -448,7 +449,7 @@ t_bool Bit(void*BitBase, int BitOffset)
 static void UndefinedOpcode()
 {
 	t_nubit8 *pc=(t_nubit8 *)vramAddr(evIP)-1;
-	vapiPrint("An unkown instruction [ %2x %2x %2x %2x %2x %2x ] was read at [ %4xh:%4xh ], easyVM only support 8086 instruction set in this version. easyVM will be terminated.",*(pc),*(pc+1),*(pc+2),*(pc+3),*(pc+4),*(pc+5),ecpu.cs,ecpu.ip);
+	vapiPrint("An unkown instruction [ %2x %2x %2x %2x %2x %2x ] was read at [ %4xh:%4xh ], easyVM only support 8086 instruction set in this version. easyVM will be terminated.",*(pc),*(pc+1),*(pc+2),*(pc+3),*(pc+4),*(pc+5),ecpu.cs.selector,ecpu.ip);
 	vapiCallBackMachineStop();
 }
 
@@ -617,13 +618,13 @@ static void SetFlags(t_nubit16 flags)
 static void GetMem()
 {
 	/* returns ecpuins.rrm */
-	ecpuins.rrm = vramGetRealAddr(ecpu.overds,vramRealWord(ecpu.cs,ecpu.ip));
+	ecpuins.rrm = vramGetRealAddr(ecpu.overds,vramRealWord(ecpu.cs.selector,ecpu.ip));
 	ecpu.ip += 2;
 }
 static void GetImm(t_nubit8 immbit)
 {
 	// returns ecpuins.rimm
-	ecpuins.rimm = vramGetRealAddr(ecpu.cs,ecpu.ip);
+	ecpuins.rimm = vramGetRealAddr(ecpu.cs.selector,ecpu.ip);
 	switch(immbit) {
 	case 8:ecpu.ip += 1;break;
 	case 16:ecpu.ip += 2;break;
@@ -633,7 +634,7 @@ static void GetImm(t_nubit8 immbit)
 static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 {
 	// returns ecpuins.rrm and ecpuins.rr
-	t_nubit8 modrm = vramRealByte(ecpu.cs,ecpu.ip++);
+	t_nubit8 modrm = vramRealByte(ecpu.cs.selector,ecpu.ip++);
 	ecpuins.rrm = ecpuins.rr = (t_vaddrcc)NULL;
 	ecpuins.flagmem = 1;
 	switch(MOD) {
@@ -645,7 +646,7 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 		case 3:ecpuins.rrm = vramGetRealAddr(ecpu.overss,ecpu.bp+ecpu.di);break;
 		case 4:ecpuins.rrm = vramGetRealAddr(ecpu.overds,ecpu.si);break;
 		case 5:ecpuins.rrm = vramGetRealAddr(ecpu.overds,ecpu.di);break;
-		case 6:ecpuins.rrm = vramGetRealAddr(ecpu.overds,vramRealWord(ecpu.cs,ecpu.ip));ecpu.ip += 2;break;
+		case 6:ecpuins.rrm = vramGetRealAddr(ecpu.overds,vramRealWord(ecpu.cs.selector,ecpu.ip));ecpu.ip += 2;break;
 		case 7:ecpuins.rrm = vramGetRealAddr(ecpu.overds,ecpu.bx);break;
 		default:CaseError("GetModRegRM::MOD0::RM");break;}
 		break;
@@ -661,10 +662,10 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 		case 7:ecpuins.rrm = vramGetRealAddr(ecpu.overds,ecpu.bx);break;
 		default:CaseError("GetModRegRM::MOD1::RM");break;}
 		bugfix(3) {
-			ecpuins.rrm += (t_nsbit8)vramRealByte(ecpu.cs,ecpu.ip);
+			ecpuins.rrm += (t_nsbit8)vramRealByte(ecpu.cs.selector,ecpu.ip);
 			ecpu.ip += 1;
 		} else {
-			ecpuins.rrm += vramRealByte(ecpu.cs,ecpu.ip);
+			ecpuins.rrm += vramRealByte(ecpu.cs.selector,ecpu.ip);
 			ecpu.ip += 1;
 		}
 		break;
@@ -679,7 +680,7 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 		case 6:ecpuins.rrm = vramGetRealAddr(ecpu.overss,ecpu.bp);break;
 		case 7:ecpuins.rrm = vramGetRealAddr(ecpu.overds,ecpu.bx);break;
 		default:CaseError("GetModRegRM::MOD2::RM");break;}
-		ecpuins.rrm += (t_nsbit16)vramRealWord(ecpu.cs,ecpu.ip);ecpu.ip += 2;
+		ecpuins.rrm += (t_nubit16)vramRealWord(ecpu.cs.selector,ecpu.ip);ecpu.ip += 2;
 		break;
 	case 3:
 		ecpuins.flagmem = 0;
@@ -699,10 +700,10 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 	case 0:ecpuins.rr = REG;					break;
 	case 4:
 		switch(REG) {
-		case 0:ecpuins.rr = (t_vaddrcc)(&ecpu.es);	break;
-		case 1:ecpuins.rr = (t_vaddrcc)(&ecpu.cs);	break;
-		case 2:ecpuins.rr = (t_vaddrcc)(&ecpu.ss);	break;
-		case 3:ecpuins.rr = (t_vaddrcc)(&ecpu.ds);	break;
+		case 0:ecpuins.rr = (t_vaddrcc)(&ecpu.es.selector);	break;
+		case 1:ecpuins.rr = (t_vaddrcc)(&ecpu.cs.selector);	break;
+		case 2:ecpuins.rr = (t_vaddrcc)(&ecpu.ss.selector);	break;
+		case 3:ecpuins.rr = (t_vaddrcc)(&ecpu.ds.selector);	break;
 		default:CaseError("GetModRegRM::regbit4::REG");break;}
 		break;
 	case 8:
@@ -733,7 +734,7 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 }
 static void GetModRegRMEA()
 {
-	t_nubit8 modrm = vramRealByte(ecpu.cs,ecpu.ip++);
+	t_nubit8 modrm = vramRealByte(ecpu.cs.selector,ecpu.ip++);
 	ecpuins.rrm = ecpuins.rr = (t_vaddrcc)NULL;
 	switch(MOD) {
 	case 0:
@@ -744,7 +745,7 @@ static void GetModRegRMEA()
 		case 3:ecpuins.rrm = ecpu.bp+ecpu.di;break;
 		case 4:ecpuins.rrm = ecpu.si;break;
 		case 5:ecpuins.rrm = ecpu.di;break;
-		case 6:ecpuins.rrm = vramRealWord(ecpu.cs,ecpu.ip);ecpu.ip += 2;break;
+		case 6:ecpuins.rrm = vramRealWord(ecpu.cs.selector,ecpu.ip);ecpu.ip += 2;break;
 		case 7:ecpuins.rrm = ecpu.bx;break;
 		default:CaseError("GetModRegRMEA::MOD0::RM");break;}
 		break;
@@ -760,10 +761,10 @@ static void GetModRegRMEA()
 		case 7:ecpuins.rrm = ecpu.bx;break;
 		default:CaseError("GetModRegRMEA::MOD1::RM");break;}
 		bugfix(3) {
-			ecpuins.rrm += (t_nsbit8)vramRealByte(ecpu.cs,ecpu.ip);
+			ecpuins.rrm += (t_nsbit8)vramRealByte(ecpu.cs.selector,ecpu.ip);
 			ecpu.ip += 1;
 		} else {
-			ecpuins.rrm += vramRealByte(ecpu.cs,ecpu.ip);
+			ecpuins.rrm += vramRealByte(ecpu.cs.selector,ecpu.ip);
 			ecpu.ip += 1;
 		}
 		break;
@@ -781,7 +782,7 @@ static void GetModRegRMEA()
 			break;
 		case 7:ecpuins.rrm = ecpu.bx;break;
 		default:CaseError("GetModRegRMEA::MOD2::RM");break;}
-		ecpuins.rrm += vramRealWord(ecpu.cs,ecpu.ip);ecpu.ip += 2;
+		ecpuins.rrm += vramRealWord(ecpu.cs.selector,ecpu.ip);ecpu.ip += 2;
 		break;
 	default:CaseError("GetModRegRMEA::MOD");break;}
 	switch(REG) {
@@ -1095,18 +1096,18 @@ DONE MOVS(t_nubit8 len)
 	switch(len) {
 	case 8:
 		ecpuins.bit = 8;
-		vramRealByte(ecpu.es,ecpu.di) = vramRealByte(ecpu.overds,ecpu.si);
+		vramRealByte(ecpu.es.selector,ecpu.di) = vramRealByte(ecpu.overds,ecpu.si);
 		STRDIR(8,1,1);
-		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  MOVSB\n");
+		// _vapiPrintAddr(ecpu.cs.selector,ecpu.ip);vapiPrint("  MOVSB\n");
 		break;
 	case 16:
 		ecpuins.bit = 16;
-		vramRealWord(ecpu.es,ecpu.di) = vramRealWord(ecpu.overds,ecpu.si);
+		vramRealWord(ecpu.es.selector,ecpu.di) = vramRealWord(ecpu.overds,ecpu.si);
 		STRDIR(16,1,1);
-		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  MOVSW\n");
+		// _vapiPrintAddr(ecpu.cs.selector,ecpu.ip);vapiPrint("  MOVSW\n");
 		break;
 	default:CaseError("MOVS::len");break;}
-	//qdcgaCheckVideoRam(vramGetRealAddr(ecpu.es, ecpu.di));
+	//qdcgaCheckVideoRam(vramGetRealAddr(ecpu.es.selector, ecpu.di));
 }
 DONE CMPS(t_nubit8 len)
 {
@@ -1115,21 +1116,21 @@ DONE CMPS(t_nubit8 len)
 		ecpuins.bit = 8;
 		ecpuins.type = CMP8;
 		ecpuins.opr1 = vramRealByte(ecpu.overds,ecpu.si);
-		ecpuins.opr2 = vramRealByte(ecpu.es,ecpu.di);
+		ecpuins.opr2 = vramRealByte(ecpu.es.selector,ecpu.di);
 		ecpuins.result = (ecpuins.opr1-ecpuins.opr2)&0xff;
 		STRDIR(8,1,1);
 		SetFlags(CMP_FLAG);
-		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  CMPSB\n");
+		// _vapiPrintAddr(ecpu.cs.selector,ecpu.ip);vapiPrint("  CMPSB\n");
 		break;
 	case 16:
 		ecpuins.bit = 16;
 		ecpuins.type = CMP16;
 		ecpuins.opr1 = vramRealWord(ecpu.overds,ecpu.si);
-		ecpuins.opr2 = vramRealWord(ecpu.es,ecpu.di);
+		ecpuins.opr2 = vramRealWord(ecpu.es.selector,ecpu.di);
 		ecpuins.result = (ecpuins.opr1-ecpuins.opr2)&0xffff;
 		STRDIR(16,1,1);
 		SetFlags(CMP_FLAG);
-		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  CMPSW\n");
+		// _vapiPrintAddr(ecpu.cs.selector,ecpu.ip);vapiPrint("  CMPSW\n");
 		break;
 	default:CaseError("_CMPS::len");break;}
 }
@@ -1138,15 +1139,15 @@ DONE STOS(t_nubit8 len)
 	switch(len) {
 	case 8:
 		ecpuins.bit = 8;
-		vramRealByte(ecpu.es,ecpu.di) = ecpu.al;
+		vramRealByte(ecpu.es.selector,ecpu.di) = ecpu.al;
 		STRDIR(8,0,1);
 		/*if (eCPU.di+t<0xc0000 && eCPU.di+t>=0xa0000)
 		WriteVideoRam(eCPU.di+t-0xa0000);*/
-		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  STOSB\n");
+		// _vapiPrintAddr(ecpu.cs.selector,ecpu.ip);vapiPrint("  STOSB\n");
 		break;
 	case 16:
 		ecpuins.bit = 16;
-		vramRealWord(ecpu.es,ecpu.di) = ecpu.ax;
+		vramRealWord(ecpu.es.selector,ecpu.di) = ecpu.ax;
 		STRDIR(16,0,1);
 		/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000)
 		{
@@ -1155,7 +1156,7 @@ DONE STOS(t_nubit8 len)
 				WriteVideoRam(eCPU.di+((t2=eCPU.es,t2<<4))-0xa0000+i);
 			}
 		}*/
-		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  STOSW\n");
+		// _vapiPrintAddr(ecpu.cs.selector,ecpu.ip);vapiPrint("  STOSW\n");
 		break;
 	default:CaseError("STOS::len");break;}
 }
@@ -1166,13 +1167,13 @@ DONE LODS(t_nubit8 len)
 		ecpuins.bit = 8;
 		ecpu.al = vramRealByte(ecpu.overds,ecpu.si);
 		STRDIR(8,1,0);
-		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  LODSB\n");
+		// _vapiPrintAddr(ecpu.cs.selector,ecpu.ip);vapiPrint("  LODSB\n");
 		break;
 	case 16:
 		ecpuins.bit = 16;
 		ecpu.ax = vramRealWord(ecpu.overds,ecpu.si);
 		STRDIR(16,1,0);
-		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  LODSW\n");
+		// _vapiPrintAddr(ecpu.cs.selector,ecpu.ip);vapiPrint("  LODSW\n");
 		break;
 	default:CaseError("LODS::len");break;}
 }
@@ -1183,7 +1184,7 @@ DONE SCAS(t_nubit8 len)
 		ecpuins.bit = 8;
 		ecpuins.type = CMP8;
 		ecpuins.opr1 = ecpu.al;
-		ecpuins.opr2 = vramRealByte(ecpu.es,ecpu.di);
+		ecpuins.opr2 = vramRealByte(ecpu.es.selector,ecpu.di);
 		ecpuins.result = (ecpuins.opr1-ecpuins.opr2)&0xff;
 		STRDIR(8,0,1);
 		SetFlags(CMP_FLAG);
@@ -1192,7 +1193,7 @@ DONE SCAS(t_nubit8 len)
 		ecpuins.bit = 16;
 		ecpuins.type = CMP16;
 		ecpuins.opr1 = ecpu.ax;
-		ecpuins.opr2 = vramRealWord(ecpu.es,ecpu.di);
+		ecpuins.opr2 = vramRealWord(ecpu.es.selector,ecpu.di);
 		ecpuins.result = (ecpuins.opr1-ecpuins.opr2)&0xffff;
 		STRDIR(16,0,1);
 		SetFlags(CMP_FLAG);
@@ -1206,8 +1207,8 @@ DONE PUSH(void *src, t_nubit8 len)
 	case 16:
 		ecpuins.bit = 16;
 		ecpu.sp -= 2;
-		bugfix(13) vramRealWord(ecpu.ss,ecpu.sp) = data;
-		else vramRealWord(ecpu.ss,ecpu.sp) = d_nubit16(src);
+		bugfix(13) vramRealWord(ecpu.ss.selector,ecpu.sp) = data;
+		else vramRealWord(ecpu.ss.selector,ecpu.sp) = d_nubit16(src);
 		break;
 	default:CaseError("PUSH::len");break;}
 }
@@ -1216,7 +1217,7 @@ DONE POP(void *dest, t_nubit8 len)
 	switch(len) {
 	case 16:
 		ecpuins.bit = 16;
-		d_nubit16(dest) = vramRealWord(ecpu.ss,ecpu.sp);
+		d_nubit16(dest) = vramRealWord(ecpu.ss.selector,ecpu.sp);
 		ecpu.sp += 2;
 		break;
 	default:CaseError("POP::len");break;}
@@ -1225,11 +1226,11 @@ static void INT(t_nubit8 intid)
 {
 	PUSH((void *)&ecpu.flags,16);
 	ClrBit(ecpu.flags, (VCPU_EFLAGS_IF | VCPU_EFLAGS_TF));
-	PUSH((void *)&ecpu.cs,16);
+	PUSH((void *)&ecpu.cs.selector,16);
 	PUSH((void *)&ecpu.ip,16);
 	ecpu.ip = vramRealWord(0x0000,intid*4+0);
-	ecpu.cs = vramRealWord(0x0000,intid*4+2);
-	evIP = (ecpu.cs << 4) + ecpu.ip;
+	ecpu.cs.selector = vramRealWord(0x0000,intid*4+2);
+	evIP = (ecpu.cs.selector << 4) + ecpu.ip;
 }
 DONE TEST(void *dest, void *src, t_nubit8 len)
 {
@@ -1463,7 +1464,21 @@ VOID XCHG(void *dest, void *src, int Len)
 		break;
 	}
 }
-VOID MOV(void *dest, void *src, int bit)
+
+SAME MOV(void *dest, void *src, t_nubit8 len)
+{
+	switch(len) {
+	case 8:
+		ecpuins.bit = 8;
+		d_nubit8(dest) = d_nubit8(src);
+		break;
+	case 16:
+		ecpuins.bit = 16;
+		d_nubit16(dest) = d_nubit16(src);
+		break;
+	default:CaseError("MOV::len");break;}
+}
+VOID _MOV(void *dest, void *src, int bit)
 {
 	switch(bit) {
 	case 1:
@@ -1625,14 +1640,14 @@ SAME PUSH_ES()
 {
 	ci1;
 	ecpu.ip++;
-	PUSH(&ecpu.es,16);
+	PUSH(&ecpu.es.selector,16);
 	ci2;
 }
 SAME POP_ES()
 {
 	ci1;
 	ecpu.ip++;
-	POP(&ecpu.es,16);
+	POP(&ecpu.es.selector,16);
 	ci2;
 }
 SAME OR_RM8_R8()
@@ -1687,7 +1702,7 @@ SAME PUSH_CS()
 {
 	ci1;
 	ecpu.ip++;
-	PUSH(&ecpu.cs,16);
+	PUSH(&ecpu.cs.selector,16);
 	ci2;
 }
 // 0x10
@@ -1743,14 +1758,14 @@ SAME PUSH_SS()
 {
 	ci1;
 	ecpu.ip++;
-	PUSH(&ecpu.ss,16);
+	PUSH(&ecpu.ss.selector,16);
 	ci2;
 }
 SAME POP_SS()
 {
 	ci1;
 	ecpu.ip++;
-	POP(&ecpu.ss,16);
+	POP(&ecpu.ss.selector,16);
 	ci2;
 }
 SAME SBB_RM8_R8()
@@ -1805,14 +1820,14 @@ SAME PUSH_DS()
 {
 	ci1;
 	ecpu.ip++;
-	PUSH(&ecpu.ds,16);
+	PUSH(&ecpu.ds.selector,16);
 	ci2;
 }
 SAME POP_DS()
 {
 	ci1;
 	ecpu.ip++;
-	POP(&ecpu.ds,16);
+	POP(&ecpu.ds.selector,16);
 	ci2;
 }
 // 0x20
@@ -1868,8 +1883,8 @@ SAME ES()
 {
 	ci1;
 	ecpu.ip++;
-	ecpu.overds=ecpu.es;
-	ecpu.overss=ecpu.es;
+	ecpu.overds=ecpu.es.selector;
+	ecpu.overss=ecpu.es.selector;
 	ci2;
 }
 SAME DAA()
@@ -1945,8 +1960,8 @@ SAME CS()
 {
 	ci1;
 	ecpu.ip++;
-	ecpu.overds=ecpu.cs;
-	ecpu.overss=ecpu.cs;
+	ecpu.overds=ecpu.cs.selector;
+	ecpu.overss=ecpu.cs.selector;
 	ci2;
 }
 SAME DAS()
@@ -2023,8 +2038,8 @@ SAME SS()
 {
 	ci1;
 	ecpu.ip++;
-	ecpu.overds=ecpu.ss;
-	ecpu.overss=ecpu.ss;
+	ecpu.overds=ecpu.ss.selector;
+	ecpu.overss=ecpu.ss.selector;
 	ci2;
 }
 SAME AAA()
@@ -2095,8 +2110,8 @@ SAME DS()
 {
 	ci1;
 	ecpu.ip++;
-	ecpu.overds=ecpu.ds;
-	ecpu.overss=ecpu.ds;
+	ecpu.overds=ecpu.ds.selector;
+	ecpu.overss=ecpu.ds.selector;
 	ci2;
 }
 SAME AAS()
@@ -2520,28 +2535,31 @@ VOID XCHG_R16_RM16()
 VOID MOV_RM8_R8()
 {
 	toe8;
-	MOV(rm8,r8,1);
+	_MOV(rm8,r8,1);
 }
 VOID MOV_RM16_R16()
 {
 	toe16;
-	MOV(rm16,r16,tmpOpdSize);
+	_MOV(rm16,r16,tmpOpdSize);
 }
-VOID MOV_R8_RM8()
+SAME MOV_R8_RM8()
 {
-	toe8;
-	MOV(r8,rm8,1);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(8,8);
+	d_nubit8(ecpuins.rr) = d_nubit8(ecpuins.rrm);
+	ci2;
 }
 VOID MOV_R16_RM16()
 {
 	toe16;
-	MOV(r16,rm16,tmpOpdSize);
+	_MOV(r16,rm16,tmpOpdSize);
 }
 VOID MOV_RM_SEG()
 {
 	TranslateOpcExtSeg(1,(char **)&rm16,(char **)&r16);
 	//*r16=*rm16;
-	MOV(r16,rm16,2);
+	_MOV(r16,rm16,2);
 }
 VOID LEA_R16_M16()
 {
@@ -2557,17 +2575,17 @@ VOID LEA_R16_M16()
 	case 4:
 	case 5:
 	case 7:
-		*r16=(t_nubit16)((t_nubit32)rm16-MemoryStart-(t=ecpu.overds,t<<4));
+		*r16=(t_nubit16)((t_nubit32)rm16-vram.base-(t=ecpu.overds,t<<4));
 		break;
 	case 2:
 	case 3:
-		*r16=(t_nubit16)((t_nubit32)rm16-MemoryStart-(t=ecpu.overss,t<<4));
+		*r16=(t_nubit16)((t_nubit32)rm16-vram.base-(t=ecpu.overss,t<<4));
 		break;
 	case 6:
 		if (mod==0)
-			*r16=(t_nubit16)((t_nubit32)rm16-MemoryStart-(t=ecpu.overds,t<<4));
+			*r16=(t_nubit16)((t_nubit32)rm16-vram.base-(t=ecpu.overds,t<<4));
 		else
-			*r16=(t_nubit16)((t_nubit32)rm16-MemoryStart-(t=ecpu.overss,t<<4));
+			*r16=(t_nubit16)((t_nubit32)rm16-vram.base-(t=ecpu.overss,t<<4));
 		break;
 	default:
 		return ;
@@ -2577,7 +2595,7 @@ VOID MOV_SEG_RM()
 {
 	TranslateOpcExtSeg(1,(char **)&rm16,(char **)&r16);
 	//*rm16=*r16;
-	MOV(rm16,r16,2);
+	_MOV(rm16,r16,2);
 }
 VOID POP_RM16()
 {
@@ -2652,13 +2670,13 @@ VOID CALL_FAR()
 	LongCallNewIP(4);			//这个指令后带4个字节的数据
 
 	ecpu.sp-=2;
-	d_nubit16(vramGetRealAddr(ecpu.ss, ecpu.sp))=ecpu.cs;
+	d_nubit16(vramGetRealAddr(ecpu.ss.selector, ecpu.sp))=ecpu.cs.selector;
 	ecpu.sp-=2;
-	d_nubit16(vramGetRealAddr(ecpu.ss, ecpu.sp))=ecpu.ip;
+	d_nubit16(vramGetRealAddr(ecpu.ss.selector, ecpu.sp))=ecpu.ip;
 	ecpu.ip=d_nubit16(eIMS);
 	evIP+=2;
-	ecpu.cs=d_nubit16(eIMS);
-	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
+	ecpu.cs.selector=d_nubit16(eIMS);
+	evIP=((t=ecpu.cs.selector,t<<4))+ecpu.ip;
 }
 VOID WAIT()
 {
@@ -2687,7 +2705,7 @@ VOID LAHF()
 VOID MOV_AL_M8()
 {
 	t81=GetM8_16(d_nubit16(eIMS));
-	MOV(&ecpu.al,&t81,1);
+	_MOV(&ecpu.al,&t81,1);
 	evIP+=2;
 }
 VOID MOV_AX_M16()
@@ -2696,11 +2714,11 @@ VOID MOV_AX_M16()
 	{
 	case 2:
 		t161=GetM16_16(d_nubit16(eIMS));
-		MOV(&ecpu.ax,&t161,tmpOpdSize);
+		_MOV(&ecpu.ax,&t161,tmpOpdSize);
 		break;
 	case 4:
 		t321=GetM32_16(d_nubit16(eIMS));
-		MOV(&ecpu.eax,&t321,tmpOpdSize);
+		_MOV(&ecpu.eax,&t321,tmpOpdSize);
 		break;
 	}
 	evIP+=tmpAddrSize;
@@ -2892,82 +2910,82 @@ SAME SCASW()
 
 VOID MOV_AL_I8()
 {
-	MOV(&ecpu.al,(void*)eIMS,1);
+	_MOV(&ecpu.al,(void*)eIMS,1);
 	evIP++;
 }
 VOID MOV_CL_I8()
 {
-	MOV(&ecpu.cl,(void*)eIMS,1);
+	_MOV(&ecpu.cl,(void*)eIMS,1);
 	evIP++;
 }
 VOID MOV_DL_I8()
 {
-	MOV(&ecpu.dl,(void*)eIMS,1);
+	_MOV(&ecpu.dl,(void*)eIMS,1);
 	evIP++;
 }
 VOID MOV_BL_I8()
 {
-	MOV(&ecpu.bl,(void*)eIMS,1);
+	_MOV(&ecpu.bl,(void*)eIMS,1);
 	evIP++;
 }
 VOID MOV_AH_I8()
 {
-	MOV(&ecpu.ah,(void*)eIMS,1);
+	_MOV(&ecpu.ah,(void*)eIMS,1);
 	evIP++;
 }
 VOID MOV_CH_I8()
 {
-	MOV(&ecpu.ch,(void*)eIMS,1);
+	_MOV(&ecpu.ch,(void*)eIMS,1);
 	evIP++;
 }
 VOID MOV_DH_I8()
 {
-	MOV(&ecpu.dh,(void*)eIMS,1);
+	_MOV(&ecpu.dh,(void*)eIMS,1);
 	evIP++;
 }
 VOID MOV_BH_I8()
 {
-	MOV(&ecpu.bh,(void*)eIMS,1);
+	_MOV(&ecpu.bh,(void*)eIMS,1);
 	evIP++;
 }
 VOID MOV_AX_I16()
 {
-	MOV(&ecpu.ax,(void*)eIMS,tmpOpdSize);
+	_MOV(&ecpu.ax,(void*)eIMS,tmpOpdSize);
 	evIP+=tmpOpdSize;
 }
 VOID MOV_CX_I16()
 {
-	MOV(&ecpu.cx,(void*)eIMS,tmpOpdSize);
+	_MOV(&ecpu.cx,(void*)eIMS,tmpOpdSize);
 	evIP+=tmpOpdSize;
 }
 VOID MOV_DX_I16()
 {
-	MOV(&ecpu.dx,(void*)eIMS,tmpOpdSize);
+	_MOV(&ecpu.dx,(void*)eIMS,tmpOpdSize);
 	evIP+=tmpOpdSize;
 }
 VOID MOV_BX_I16()
 {
-	MOV(&ecpu.bx,(void*)eIMS,tmpOpdSize);
+	_MOV(&ecpu.bx,(void*)eIMS,tmpOpdSize);
 	evIP+=tmpOpdSize;
 }
 VOID MOV_SP_I16()
 {
-	MOV(&ecpu.sp,(void*)eIMS,tmpOpdSize);
+	_MOV(&ecpu.sp,(void*)eIMS,tmpOpdSize);
 	evIP+=tmpOpdSize;
 }
 VOID MOV_BP_I16()
 {
-	MOV(&ecpu.bp,(void*)eIMS,tmpOpdSize);
+	_MOV(&ecpu.bp,(void*)eIMS,tmpOpdSize);
 	evIP+=tmpOpdSize;
 }
 VOID MOV_SI_I16()
 {
-	MOV(&ecpu.si,(void*)eIMS,tmpOpdSize);
+	_MOV(&ecpu.si,(void*)eIMS,tmpOpdSize);
 	evIP+=tmpOpdSize;
 }
 VOID MOV_DI_I16()
 {
-	MOV(&ecpu.di,(void*)eIMS,tmpOpdSize);
+	_MOV(&ecpu.di,(void*)eIMS,tmpOpdSize);
 	evIP+=tmpOpdSize;
 }
 // 0xC0
@@ -3168,16 +3186,16 @@ VOID SHL_RM16_I8()
 }
 VOID RET_I8()
 {
-	ecpu.ip=d_nubit16(vramGetRealAddr(ecpu.ss, ecpu.sp));
+	ecpu.ip=d_nubit16(vramGetRealAddr(ecpu.ss.selector, ecpu.sp));
 	ecpu.sp+=2;
 	ecpu.sp+=*(t_nubit16*)eIMS;
-	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
+	evIP=((t=ecpu.cs.selector,t<<4))+ecpu.ip;
 }
 VOID RET_NEAR()
 {
-	ecpu.ip=d_nubit16(vramGetRealAddr(ecpu.ss, ecpu.sp));
+	ecpu.ip=d_nubit16(vramGetRealAddr(ecpu.ss.selector, ecpu.sp));
 	ecpu.sp+=2;
-	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
+	evIP=((t=ecpu.cs.selector,t<<4))+ecpu.ip;
 }
 VOID LES_R16_M16()
 {
@@ -3186,12 +3204,12 @@ VOID LES_R16_M16()
 	case 2:
 		toe16;
 		*r16=*rm16;
-		ecpu.es=d_nubit16(rm16+1);
+		ecpu.es.selector=d_nubit16(rm16+1);
 		break;
 	case 4:
 		toe32;
 		*r32=*rm32;
-		ecpu.es=d_nubit16(rm32+1);
+		ecpu.es.selector=d_nubit16(rm32+1);
 		break;
 	}
 }
@@ -3202,43 +3220,43 @@ VOID LDS_R16_M16()
 	case 2:
 		toe16;
 		*r16=*rm16;
-		ecpu.ds=d_nubit16(rm16+1);		//因为rm16本来就是双字节的，所以这里+1即可求得下一双字节
+		ecpu.ds.selector=d_nubit16(rm16+1);		//因为rm16本来就是双字节的，所以这里+1即可求得下一双字节
 		break;
 	case 4:
 		toe32;
 		*r32=*rm32;
-		ecpu.ds=d_nubit16(rm32+1);		//因为rm16本来就是双字节的，所以这里+1即可求得下一双字节
+		ecpu.ds.selector=d_nubit16(rm32+1);		//因为rm16本来就是双字节的，所以这里+1即可求得下一双字节
 		break;
 	}
 }
 VOID MOV_M8_I8()
 {
 	toe8;
-	MOV(rm8,(void*)eIMS,1);
+	_MOV(rm8,(void*)eIMS,1);
 	evIP++;
 }
 VOID MOV_M16_I16()
 {
 	toe16;
-	MOV(rm16,(void*)eIMS,tmpOpdSize);
+	_MOV(rm16,(void*)eIMS,tmpOpdSize);
 	evIP+=tmpOpdSize;
 }
 VOID RET_I16()
 {
-	ecpu.ip=d_nubit16(vramGetRealAddr(ecpu.ss, ecpu.sp));
+	ecpu.ip=d_nubit16(vramGetRealAddr(ecpu.ss.selector, ecpu.sp));
 	ecpu.sp+=2;
-	ecpu.cs=d_nubit16(vramGetRealAddr(ecpu.ss, ecpu.sp));
+	ecpu.cs.selector=d_nubit16(vramGetRealAddr(ecpu.ss.selector, ecpu.sp));
 	ecpu.sp+=2;
 	ecpu.sp+=*(t_nubit16*)eIMS;
-	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
+	evIP=((t=ecpu.cs.selector,t<<4))+ecpu.ip;
 }
 VOID RET_FAR()
 {
-	ecpu.ip=d_nubit16(vramGetRealAddr(ecpu.ss, ecpu.sp));
+	ecpu.ip=d_nubit16(vramGetRealAddr(ecpu.ss.selector, ecpu.sp));
 	ecpu.sp+=2;
-	ecpu.cs=d_nubit16(vramGetRealAddr(ecpu.ss, ecpu.sp));
+	ecpu.cs.selector=d_nubit16(vramGetRealAddr(ecpu.ss.selector, ecpu.sp));
 	ecpu.sp+=2;
-	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
+	evIP=((t=ecpu.cs.selector,t<<4))+ecpu.ip;
 }
 SAME INT3() {INT(0x03);}
 SAME INT_I8()
@@ -3251,13 +3269,13 @@ SAME INT_I8()
 SAME INTO() {if (GetBit(ecpu.flags, VCPU_EFLAGS_OF)) INT(0x04);}
 VOID IRET()					//在实模式下，iret和ret far是一样的，这里可以直接调用RET_FAR()的，不过为了以后扩展着想就不这样做。
 {
-	ecpu.ip=d_nubit16(vramGetRealAddr(ecpu.ss, ecpu.sp));
+	ecpu.ip=d_nubit16(vramGetRealAddr(ecpu.ss.selector, ecpu.sp));
 	ecpu.sp+=2;
-	ecpu.cs=d_nubit16(vramGetRealAddr(ecpu.ss, ecpu.sp));
+	ecpu.cs.selector=d_nubit16(vramGetRealAddr(ecpu.ss.selector, ecpu.sp));
 	ecpu.sp+=2;
-	ecpu.flags=d_nubit16(vramGetRealAddr(ecpu.ss, ecpu.sp));
+	ecpu.flags=d_nubit16(vramGetRealAddr(ecpu.ss.selector, ecpu.sp));
 	ecpu.sp+=2;
-	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
+	evIP=((t=ecpu.cs.selector,t<<4))+ecpu.ip;
 }
 // 0xD0
 VOID INS_D0()
@@ -3702,29 +3720,29 @@ VOID CALL_NEAR()
 	LongCallNewIP(2);
 
 	ecpu.sp-=2;										//段内CALL，CS不压栈
-	d_nubit16(vramGetRealAddr(ecpu.ss, ecpu.sp))=ecpu.ip;
+	d_nubit16(vramGetRealAddr(ecpu.ss.selector, ecpu.sp))=ecpu.ip;
 	ecpu.ip+=(d_nubit16(eIMS));
-	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
+	evIP=((t=ecpu.cs.selector,t<<4))+ecpu.ip;
 }
 VOID JMP_NEAR_LABEL()	//立即数是两字节的
 {
 	LongCallNewIP(2);
 	ecpu.ip+=(d_nubit16(eIMS));
-	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
+	evIP=((t=ecpu.cs.selector,t<<4))+ecpu.ip;
 }
 VOID JMP_FAR_LABEL()
 {
 	LongCallNewIP(4);
 	ecpu.ip=d_nubit16(eIMS);
 	evIP+=2;
-	ecpu.cs=d_nubit16(eIMS);
-	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
+	ecpu.cs.selector=d_nubit16(eIMS);
+	evIP=((t=ecpu.cs.selector,t<<4))+ecpu.ip;
 }
 VOID JMP_NEAR()			//立即数是一字节的
 {
 	LongCallNewIP(1);
 	ecpu.ip+=(d_nsbit8(eIMS));
-	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
+	evIP=((t=ecpu.cs.selector,t<<4))+ecpu.ip;
 }
 SAME IN_AL_DX()
 {
@@ -3867,17 +3885,17 @@ SAME INS_FF()
 		ecpu.ip = d_nubit16(ecpuins.rrm);
 		break;
 	case 3:	/* CALL_M16_16 */
-		PUSH((void *)&ecpu.cs,16);
+		PUSH((void *)&ecpu.cs.selector,16);
 		PUSH((void *)&ecpu.ip,16);
 		ecpu.ip = d_nubit16(ecpuins.rrm);
-		ecpu.cs = d_nubit16(ecpuins.rrm+2);
+		ecpu.cs.selector = d_nubit16(ecpuins.rrm+2);
 		break;
 	case 4:	/* JMP_RM16 */
 		ecpu.ip = d_nubit16(ecpuins.rrm);
 		break;
 	case 5:	/* JMP_M16_16 */
 		ecpu.ip = d_nubit16(ecpuins.rrm);
-		ecpu.cs = d_nubit16(ecpuins.rrm+2);
+		ecpu.cs.selector = d_nubit16(ecpuins.rrm+2);
 		break;
 	case 6:	/* PUSH_RM16 */
 		PUSH((void *)ecpuins.rrm,16);
@@ -3893,10 +3911,10 @@ VOID INS_0F()
 	evIP++;
 	InsFucAddr=Ins0FTable[OpC];
 	__asm call InsFucAddr;
-	tcs=ecpu.cs;
+	tcs=ecpu.cs.selector;
 	ecpu.ip=(evIP - (tcs << 4)) % 0x10000;
-	ecpu.overds=ecpu.ds;
-	ecpu.overss=ecpu.ss;
+	ecpu.overds=ecpu.ds.selector;
+	ecpu.overss=ecpu.ss.selector;
 }
 
 // 下面这部分是0F开头的指令
@@ -4110,13 +4128,13 @@ VOID MOVZX_RM8()
 {
 	toe8;
 	t321=*rm8;
-	MOV(r16,&t321,tmpOpdSize);
+	_MOV(r16,&t321,tmpOpdSize);
 }
 VOID MOVZX_RM16()
 {
 	toe16;
 	t321=*rm16;
-	MOV(r16,&t321,tmpOpdSize);
+	_MOV(r16,&t321,tmpOpdSize);
 }
 VOID POP_FS()
 {
@@ -4160,8 +4178,8 @@ VOID QDX()
 {
 #if (VGLOBAL_ECPU_MODE == TEST_ECPU)
 	qdbiosExecInt(d_nubit8(eIMS));
-	MakeBit(vramRealWord(ecpu.ss,ecpu.sp + 4), VCPU_EFLAGS_ZF, GetBit(ecpu.eflags, VCPU_EFLAGS_ZF));
-	MakeBit(vramRealWord(ecpu.ss,ecpu.sp + 4), VCPU_EFLAGS_CF, GetBit(ecpu.eflags, VCPU_EFLAGS_CF));
+	MakeBit(vramRealWord(ecpu.ss.selector,ecpu.sp + 4), VCPU_EFLAGS_ZF, GetBit(ecpu.eflags, VCPU_EFLAGS_ZF));
+	MakeBit(vramRealWord(ecpu.ss.selector,ecpu.sp + 4), VCPU_EFLAGS_CF, GetBit(ecpu.eflags, VCPU_EFLAGS_CF));
 #else
 	ecpu.flagignore = 0x01;
 #endif
@@ -4179,8 +4197,8 @@ static t_bool IsPrefix(t_nubit8 opcode)
 }
 static void ClrPrefix()
 {
-	ecpu.overds = ecpu.ds;
-	ecpu.overss = ecpu.ss;
+	ecpu.overds = ecpu.ds.selector;
+	ecpu.overss = ecpu.ss.selector;
 	ecpuins.prefix_rep = PREFIX_REP_NONE;
 }
 
@@ -4189,8 +4207,8 @@ static void ecpuinsExecIns()
 	t_nubit8 opcode;
 	//vapiPrint("bf\n");ecpuapiPrintRegs();
 
-	ecpuins.oldcs.selector = ecpu.cs;
-	ecpuins.oldss.selector = ecpu.ss;
+	ecpuins.oldcs.selector = ecpu.cs.selector;
+	ecpuins.oldss.selector = ecpu.ss.selector;
 	ecpuins.oldeip = ecpu.eip;
 	ecpuins.oldesp = ecpu.esp;
 	ecpuins.flaginsloop = 0;
@@ -4200,13 +4218,13 @@ static void ecpuinsExecIns()
 		opcode = vramByte(evIP);
 		evIP++;
 		ExecFun(ecpuins.table[opcode]);
-		ecpu.ip = (evIP - (ecpu.cs << 4)) % 0x10000;
+		ecpu.ip = (evIP - (ecpu.cs.selector << 4)) % 0x10000;
 	} while (IsPrefix(opcode));
 	//vapiPrint("af\n");ecpuapiPrintRegs();
 	ClrPrefix();
 
 	if (ecpuins.flaginsloop) {
-		ecpu.cs = ecpuins.oldcs.selector;
+		ecpu.cs.selector = ecpuins.oldcs.selector;
 		ecpu.eip = ecpuins.oldeip;
 		SyncEVIP();
 	}

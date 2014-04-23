@@ -7,11 +7,18 @@
 #include "vcpuins.h"
 #include "vcpu.h"
 
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
+#include "ecpu/ecpu.h"
+#endif
+
 t_cpu vcpu;
 
 void vcpuInit()
 {
 	vcpuinsInit();
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
+	ecpuInit();
+#endif
 }
 void vcpuReset()
 {
@@ -73,12 +80,29 @@ void vcpuReset()
 	_LoadGDTR32(0x00000000, 0xffff);
 
 	vcpuinsReset();
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
+	ecpuReset();
+#endif
 }
 void vcpuRefresh()
 {
+#if VGLOBAL_ECPU_MODE == TEST_BOTH
+	ecpuRefreshInit();
+#endif
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
+	ecpuRefresh();
+#endif
+#if VGLOBAL_ECPU_MODE != TEST_ECPU
 	vcpuinsRefresh();
+#endif
+#if VGLOBAL_ECPU_MODE == TEST_BOTH
+	ecpuRefreshFinal();
+#endif
 }
 void vcpuFinal()
 {
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
+	ecpuFinal();
+#endif
 	vcpuinsFinal();
 }

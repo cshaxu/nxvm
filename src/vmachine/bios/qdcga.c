@@ -4,7 +4,6 @@
 #include "memory.h"
 
 #include "../vapi.h"
-#include "../vcpu.h"
 
 #include "qdbios.h"
 #include "qdcga.h"
