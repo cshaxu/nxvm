@@ -4,10 +4,10 @@
 
 #include "vapi.h"
 
-#include "vcpuins.h"
 #include "vcpu.h"
 
-t_cpu vcpu;
+void vcpuinsExecIns() {ExecIns();}
+void vcpuinsExecInt() {ExecInt();}
 
 void vcpuRefresh()
 {
@@ -17,13 +17,10 @@ void vcpuRefresh()
 
 void vcpuInit()
 {
-	memset(&vcpu, 0, sizeof(t_cpu));
-	vcpu.cs = 0xf000;
-	vcpu.ip = 0xfff0;
-	vcpuinsInit();
+	CPUInit();
 }
 
 void vcpuFinal()
 {
-	vcpuinsFinal();
+	CPUTerminate();
 }

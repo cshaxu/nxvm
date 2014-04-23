@@ -69,14 +69,14 @@ void vapiCallBackKeyboardSetFlag1LeftAlt();
 void vapiCallBackKeyboardSetFlag1LeftCtrl();
 t_bool vapiCallBackKeyboardRecvKeyPress(t_nubit16 ascii);
 
-t_nubit8 vapiCallBackDisplayGetRowSize();
-t_nubit8 vapiCallBackDisplayGetColSize();
-t_nubit8 vapiCallBackDisplayGetCursorTop();
-t_nubit8 vapiCallBackDisplayGetCursorBottom();
-t_nubit8 vapiCallBackDisplayGetCurrentCursorPosX();
-t_nubit8 vapiCallBackDisplayGetCurrentCursorPosY();
-t_nubit8 vapiCallBackDisplayGetCurrentChar(t_nubit8 x, t_nubit8 y);
-t_nubit8 vapiCallBackDisplayGetCurrentCharProp(t_nubit8 x, t_nubit8 y);
+t_nubit16 vapiCallBackDisplayGetRowSize();
+t_nubit16 vapiCallBackDisplayGetColSize();
+t_nubit8  vapiCallBackDisplayGetCursorTop();
+t_nubit8  vapiCallBackDisplayGetCursorBottom();
+t_nubit8  vapiCallBackDisplayGetCurrentCursorPosX();
+t_nubit8  vapiCallBackDisplayGetCurrentCursorPosY();
+t_nubit8  vapiCallBackDisplayGetCurrentChar(t_nubit8 x, t_nubit8 y);
+t_nubit8  vapiCallBackDisplayGetCurrentCharProp(t_nubit8 x, t_nubit8 y);
 
 #ifdef __cplusplus
 /*}_EOCD_*/

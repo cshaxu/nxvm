@@ -9,7 +9,6 @@
 #include "vcpuins.h"
 
 #ifdef VCPUINS_DEBUG
-#include "ccpu/ccpuapi.h"
 #include "qdbios.h"
 #include "qdvga.h"
 /* TODO: INT() is modified for the INT test. Please correct it finally! */
@@ -3195,36 +3194,20 @@ void vcpuinsExecInt()
 	/* hardware interrupt handeler */
 	t_nubit8 intr;
 	if(vcpu.flagnmi) {
-#if DEBUGMODE != VCPU
-		ccpuapiExecInt(0x02);
-#endif
-#if DEBUGMODE != CCPU
 		INT(0x02);
-#endif
 	}
 	vcpu.flagnmi = 0x00;
 	if(GetBit(vcpu.flags, VCPU_FLAG_IF) && vpicScanINTR()) {
 		intr = vpicGetINTR();
-#if DEBUGMODE != VCPU
-		ccpuapiExecInt(intr);
-#endif
-#if DEBUGMODE != CCPU
 		INT(intr);
-#endif
 	}
 	if(GetBit(vcpu.flags, VCPU_FLAG_TF)) {
-#if DEBUGMODE != VCPU
-		ccpuapiExecInt(0x01);
-#endif
-#if DEBUGMODE != CCPU
 		INT(0x01);
-#endif
 	}
 }
 
 void vcpuinsInit()
 {
-#if DEBUGMODE != CCPU
 	memset(&vcpuins, 0x00, sizeof(t_cpuins));
 	ClrPrefix();
 	vcpuins.table[0x00] = (t_faddrcc)ADD_RM8_R8;
@@ -3489,14 +3472,5 @@ void vcpuinsInit()
 	vcpuins.table[0xfd] = (t_faddrcc)STD;
 	vcpuins.table[0xfe] = (t_faddrcc)INS_FE;
 	vcpuins.table[0xff] = (t_faddrcc)INS_FF;
-#endif
-#if DEBUGMODE != VCPU
-	ccpuapiInit();
-#endif
 }
-void vcpuinsFinal()
-{
-#if DEBUGMODE != VCPU
-	ccpuapiFinal();
-#endif
-}
+void vcpuinsFinal() {}

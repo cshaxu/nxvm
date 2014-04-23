@@ -33,7 +33,7 @@ static INT flashCount;
 static INT flashInterval;
 static INT charWidth;
 static INT charHeight;
-static UCHAR sizeRow, sizeCol;
+static USHORT sizeRow, sizeCol;
 static UCHAR cursorTop, cursorBottom;
 
 void w32adispInit()
