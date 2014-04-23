@@ -1015,6 +1015,16 @@ static void xu()
 		xuprint(xulin, count);
 	} else seterr(3);
 }
+static void xtprintmem()
+{
+	t_nubit32 i;
+	for (i = 0;i < vcpurec.msize;++i) {
+		vapiPrint("%s: Lin=%08x, Phy=%08x, Data=%08x, Bytes=%1x\n",
+			vcpurec.mem[i].flagwrite ? "Write" : "Read",
+			vcpurec.mem[i].linear, vcpurec.mem[i].physical,
+			vcpurec.mem[i].data, vcpurec.mem[i].byte);
+	}
+}
 static void xt()
 {
 	t_nubit32 i;
@@ -1037,6 +1047,7 @@ static void xt()
 			vmachine.tracecnt = 0x01;
 			vmachineResume();
 			while (vmachine.flagrun) vapiSleep(10);
+			xtprintmem();
 			xreg();
 			if (i != count - 1) vapiPrint("\n");
 		}
@@ -1044,6 +1055,7 @@ static void xt()
 		vmachine.tracecnt = count;
 		vmachineResume();
 		while (vmachine.flagrun) vapiSleep(10);
+		xtprintmem();
 		xreg();
 	}
 	vmachine.tracecnt = 0x00;
@@ -1051,6 +1063,8 @@ static void xt()
 }
 static void xg()
 {
+	t_nubit32 i;
+	t_nubit32 count = 0;
 	if (vmachine.flagrun) {
 		vapiPrint("NXVM is already running.\n");
 		return;
@@ -1058,20 +1072,80 @@ static void xg()
 	switch(narg) {
 	case 1:
 		vmachine.flagbreakx = 0;
+		count = 1;
 		break;
 	case 2:
 		vmachine.flagbreakx = 1;
 		vmachine.breaklinear = scannubit32(arg[1]);
+		count = 1;
+		break;
+	case 3:
+		vmachine.flagbreakx = 1;
+		vmachine.breaklinear = scannubit32(arg[1]);
+		count = scannubit32(arg[2]);
 		break;
 	default:seterr(narg-1);break;}
 	if(errPos) return;
-	vmachine.breakcnt = 0;
-	vmachineResume();
-	while (vmachine.flagrun) vapiSleep(1);
+	for (i = 0;i < count;++i) {
+		vmachine.breakcnt = 0;
+		vmachineResume();
+		while (vmachine.flagrun) vapiSleep(1);
+		xreg();
+	}
 	vmachine.flagbreakx = 0;
-	xreg();
 }
 static void xr() {xreg();}
+static void xw()
+{
+	switch(narg) {
+	case 1:
+		if (vcpuins.flagwr) vapiPrint("Watch-read point: Lin=%08x\n", vcpuins.wrlin);
+		if (vcpuins.flagww) vapiPrint("Watch-write point: Lin=%08x\n", vcpuins.wwlin);
+		if (vcpuins.flagwe) vapiPrint("Watch-exec point: Lin=%08x\n", vcpuins.wwlin);
+		break;
+	case 2:
+		switch (arg[1][0]) {
+		case 'r':
+			vcpuins.flagwr = 0;
+			vapiPrint("Watch-read point removed.\n");
+			break;
+		case 'w':
+			vcpuins.flagww = 0;
+			vapiPrint("Watch-write point removed.\n");
+			break;
+		case 'e':
+			vcpuins.flagwe = 0;
+			vapiPrint("Watch-exec point removed.\n");
+			break;
+		case 'u':
+			vcpuins.flagwr = 0;
+			vcpuins.flagww = 0;
+			vcpuins.flagwe = 0;
+			vapiPrint("All watch points removed.\n");
+			break;
+		default: seterr(1);break;}
+		break;
+	case 3:
+		switch (arg[1][0]) {
+		case 'r':
+			vcpuins.flagwr = 1;
+			vcpuins.wrlin = scannubit32(arg[2]);
+			break;
+		case 'w':
+			vcpuins.flagww = 1;
+			vcpuins.wwlin = scannubit32(arg[2]);
+			break;
+		case 'e':
+			vcpuins.flagwe = 1;
+			vcpuins.welin = scannubit32(arg[2]);
+			break;
+		default:
+			seterr(2);
+			break;
+		}
+		break;
+	default:seterr(narg-1);break;}
+}
 static void x()
 {
 	t_nubitcc i;
@@ -1085,6 +1159,7 @@ static void x()
 	else if (!STRCMP(arg[0], "r"))    xr();
 	else if (!STRCMP(arg[0], "t"))    xt();
 	else if (!STRCMP(arg[0], "u"))    xu();
+	else if (!STRCMP(arg[0], "w"))    xw();
 	else if (!STRCMP(arg[0], "reg"))  xreg();
 	else if (!STRCMP(arg[0], "sreg")) xsreg();
 	else if (!STRCMP(arg[0], "creg")) xcreg();
@@ -1189,7 +1264,7 @@ static void exec()
 	}
 }
 
-void vapiCallBackDebugPrintRegs() {rprintregs();}
+void vapiCallBackDebugPrintRegs(t_bool bit32) {if (bit32) xreg(); else rprintregs();}
 void debug()
 {
 	t_nubitcc i;

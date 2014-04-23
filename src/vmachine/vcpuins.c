@@ -527,8 +527,7 @@ static t_nubit64 _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8
 	t_nubit32 linear;
 	t_cpuins_physical physical;
 	t_nubit64 result;
-	t_nubit32 watch = 0xffffffff;
-	int i;
+	t_nubitcc i;
 	_cb("_kma_read_logical");
 	_chr(linear = _kma_linear_logical(rsreg, offset, byte, 0, vpl, force));
 	_chr(_kma_physical_linear(&physical, linear, byte, 0, vpl));
@@ -540,11 +539,14 @@ static t_nubit64 _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8
 		vcpurec.mem[vcpurec.msize].byte = byte;
 		vcpurec.mem[vcpurec.msize].linear = linear;
 		vcpurec.mem[vcpurec.msize].physical = physical.ph1;
-		if (watch >= vcpurec.mem[vcpurec.msize].linear &&
-			watch < vcpurec.mem[vcpurec.msize].linear + byte) {
-			vapiPrint("L%08x: READ %08x FROM L%08x\n", vcpurec.linear,
-				vcpurec.mem[vcpurec.msize].data,
-				vcpurec.mem[vcpurec.msize].linear);
+		if (vcpuins.flagwr) {
+			if (vcpuins.wrlin >= vcpurec.mem[vcpurec.msize].linear &&
+				vcpuins.wrlin < vcpurec.mem[vcpurec.msize].linear + byte) {
+				vapiPrint("L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", vcpurec.linear,
+					vcpurec.mem[vcpurec.msize].byte,
+					vcpurec.mem[vcpurec.msize].data,
+					vcpurec.mem[vcpurec.msize].linear);
+			}
 		}
 		for (i = 0;i < vcpurec.msize;++i) {
 			if (vcpurec.mem[i].flagwrite == vcpurec.mem[vcpurec.msize].flagwrite &&
@@ -566,7 +568,6 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 da
 {
 	t_nubit32 linear;
 	t_cpuins_physical physical;
-	t_nubit32 watch = 0xffffffff;
 	int i;
 	_cb("_kma_write_logical");
 	_chk(linear = _kma_linear_logical(rsreg, offset, byte, 1, vpl, force));
@@ -579,11 +580,14 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 da
 		vcpurec.mem[vcpurec.msize].byte = byte;
 		vcpurec.mem[vcpurec.msize].linear = linear;
 		vcpurec.mem[vcpurec.msize].physical = physical.ph1;
-		if (watch >= vcpurec.mem[vcpurec.msize].linear &&
-			watch < vcpurec.mem[vcpurec.msize].linear + byte) {
-			vapiPrint("L%08x: WRITE %08x TO L%08x: %08x at ins L%08x\n", vcpurec.linear,
-				vcpurec.mem[vcpurec.msize].data,
-				vcpurec.mem[vcpurec.msize].linear);
+		if (vcpuins.flagww) {
+			if (vcpuins.wwlin >= vcpurec.mem[vcpurec.msize].linear &&
+				vcpuins.wwlin < vcpurec.mem[vcpurec.msize].linear + byte) {
+				vapiPrint("L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", vcpurec.linear,
+					vcpurec.mem[vcpurec.msize].byte,
+					vcpurec.mem[vcpurec.msize].data,
+					vcpurec.mem[vcpurec.msize].linear);
+			}
 		}
 		for (i = 0;i < vcpurec.msize;++i) {
 			if (vcpurec.mem[i].flagwrite == vcpurec.mem[vcpurec.msize].flagwrite &&
@@ -10914,6 +10918,10 @@ static void RecInit()
 	vcpurec.msize = 0;
 	vcpurec.rcpu = vcpu;
 	vcpurec.linear = _kma_linear_logical(&vcpu.cs, vcpu.eip, 1, 0x00, 0, 1);
+	if (vcpuins.flagwe && vcpuins.welin == vcpurec.linear) {
+		vapiPrint("L%08x: EXECUTED\n", vcpurec.linear);
+		vapiCallBackDebugPrintRegs(1);
+	}
 	if (vcpuins.except) vcpurec.linear = 0xcccccccc;
 	vcpurec.opcode = _kma_read_logical(&vcpu.cs, vcpu.eip, 0x08, 0, 1);
 	if (vcpuins.except) vcpurec.opcode = 0xcccccccccccccccc;

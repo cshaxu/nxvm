@@ -213,12 +213,10 @@ static void Record()
 		vmachine.flagrecord = 1;
 		vapirecord.flagnow = 0;
 		if (vapirecord.fp) fclose(vapirecord.fp);
-		printc("Recorder turned on.\n");
 	} else if (!strcmp(arg[1], "off")) {
 		vmachine.flagrecord = 0;
 		vapirecord.flagnow = 0;
 		if (vapirecord.fp) fclose(vapirecord.fp);
-		printc("Recorder turned off.\n");
 	} else if (!strcmp(arg[1], "dump")) {
 		if (narg < 3) GetHelp;
 		vapiRecordDump(arg[2]);

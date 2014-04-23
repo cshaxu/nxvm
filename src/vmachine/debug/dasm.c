@@ -46,10 +46,10 @@ static void GetImm(t_nubitcc immbit)
 	dimmoff16[0] = 0;
 	switch(immbit) {
 	case 8:  SPRINTF(dimm, "%02X", vramByte(diptr)); diptr += 1;
-		     SPRINTF(dimmoff8,  "%04X", (t_nubit16)(diptr+imm8));
+		     SPRINTF(dimmoff8,  "L%08X", (t_nubit32)(diptr+imm8));
 		     SPRINTF(dimmsign,  "%c%02X", sign8, immu8);              break;
 	case 16: SPRINTF(dimm, "%04X", vramWord(diptr)); diptr += 2;
-		     SPRINTF(dimmoff16, "%04X", (t_nubit16)(diptr+imm16));                break;
+		     SPRINTF(dimmoff16, "L%08X", (t_nubit32)(diptr+imm16));                break;
 	case 32: SPRINTF(dimm, "%08X", vramDWord(diptr));diptr += 4;break;
 	default:SPRINTF(dimm, "<ERROR:IMMBIT(%02X)>",immbit);break;}
 }

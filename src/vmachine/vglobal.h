@@ -17,6 +17,7 @@
 #define TEST_VCPU 0
 #define TEST_ECPU 1
 #define TEST_BOTH 2
+#define TEST_VECPU 3
 
 /* COMPLIATION DEFINITIONS ***************************************************/
 #define VGLOBAL_SIZE_INTEGER 64

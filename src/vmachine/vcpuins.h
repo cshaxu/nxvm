@@ -84,6 +84,10 @@ typedef struct {
 
 	/* exception handler */
 	t_nubit32 except, excode;
+
+	/* debugger */
+	t_bool flagwr, flagww, flagwe;
+	t_nubit32 wrlin, wwlin, welin;
 } t_cpuins;
 
 typedef struct {

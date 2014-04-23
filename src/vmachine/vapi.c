@@ -70,7 +70,8 @@ t_apirecord vapirecord;
 ss:esp=%04x:%08x(L%08x) stack=%04x %04x %04x %04x \
 eax=%08x ecx=%08x edx=%08x ebx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \
 eflags=%08x %s %s %s %s %s %s %s %s %s \
-bit=%02d opr1=%08x opr2=%08x result=%08x %s"
+ | \
+bit=%02d opr1=%08x opr2=%08x result=%08x cs:eip=%04x:%08x(L%08x) %s"
 #define _printexp \
 do { \
 	fprintf(vapirecord.fp, _expression, \
@@ -97,7 +98,8 @@ do { \
 	_rec_df ? "DF" : "df", \
 	_rec_if ? "IF" : "if", \
 	_rec_tf ? "TF" : "tf", \
-	_rec.abit,_rec.a1,_rec.a2,_rec.a3,_restmt); \
+	_rec.abit,_rec.a1,_rec.a2,_rec.a3, \
+	_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip, _restmt); \
 	for (j = strlen(_restmt);j < 0x21;++j) \
 		fprintf(vapirecord.fp, " "); \
 	for (j = 0;j < _rec.msize;++j) \
@@ -168,9 +170,7 @@ void vapiRecordExec()
 	}
 #endif
 	if (vcpu.flaghalt) return;
-	if (vcpurec.linear ==
-		vapirecord.rec[(vapirecord.start + vapirecord.size - 1) % VAPI_RECORD_SIZE].linear)
-		return;
+	//if (vcpurec.linear == vapirecord.rec[(vapirecord.start + vapirecord.size - 1) % VAPI_RECORD_SIZE].linear) return;
 
 	vapirecord.rec[_rec_ptr_last] = vcpurec;
 	dasm(vapirecord.rec[_rec_ptr_last].stmt, vcpurec.rcpu.cs.selector, vcpurec.rcpu.ip, 0x00);
