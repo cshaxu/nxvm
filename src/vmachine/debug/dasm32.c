@@ -1606,14 +1606,16 @@ static void IMUL_R32_RM32_I8()
 	SPRINTF(dop, "IMUL");
 	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
 	_chk(_d_imm(1));
-	SPRINTF(dopr, "%s,%s,%04X", dr, drm, GetMax8(cimm));
+	SPRINTF(dopr, "%s,%s,%02X", dr, drm, GetMax8(cimm));
 	_ce;
 }
 static void INSB()
 {
+	t_dasm_str dptr;
 	_cb("INSB");
 	_adv;
 	SPRINTF(dop, "INSB");
+	SPRINTF(dptr, "BYTE PTR");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI],DX");break;
 	case 4: SPRINTF(dopr, "ES:[EDI],DX");break;
@@ -1622,11 +1624,12 @@ static void INSB()
 }
 static void INSW()
 {
+	t_dasm_str dptr;
 	_cb("INSW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "INSW");break;
-	case 4: SPRINTF(dop, "INSD");break;
+	case 2: SPRINTF(dop, "INSW");SPRINTF(dptr, "WORD PTR");break;
+	case 4: SPRINTF(dop, "INSD");SPRINTF(dptr, "DWORD PTR");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI],DX");break;
@@ -1636,9 +1639,11 @@ static void INSW()
 }
 static void OUTSB()
 {
+	t_dasm_str dptr;
 	_cb("OUTSB");
 	_adv;
 	SPRINTF(dop, "OUTSB");
+	SPRINTF(dptr, "BYTE PTR");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "DX,%s:[SI]", doverds);break;
 	case 4: SPRINTF(dopr, "DX,%s:[ESI]", doverds);break;
@@ -1647,11 +1652,12 @@ static void OUTSB()
 }
 static void OUTSW()
 {
+	t_dasm_str dptr;
 	_cb("OUTSW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "OUTSW");break;
-	case 4: SPRINTF(dop, "OUTSD");break;
+	case 2: SPRINTF(dop, "OUTSW");SPRINTF(dptr, "WORD PTR");break;
+	case 4: SPRINTF(dop, "OUTSD");SPRINTF(dptr, "DWORD PTR");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "DX,%s:[SI]", doverds);break;
@@ -2018,9 +2024,9 @@ static void MOV_RM16_SREG()
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
-static void LEA_R16_M16()
+static void LEA_R32_M32()
 {
-	_cb("LEA_R16_M16");
+	_cb("LEA_R32_M32");
 	_adv;
 	SPRINTF(dop, "LEA");
 	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
@@ -2300,9 +2306,11 @@ static void MOV_MOFFS32_EAX()
 }
 static void MOVSB()
 {
-	_cb("MOVSB");
+	t_dasm_str dptr;
+	_cb("MOVS");
 	_adv;
 	SPRINTF(dop, "MOVSB");
+	SPRINTF(dptr, "BYTE PTR");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI],%s:[SI]", doverds);break;
 	case 4: SPRINTF(dopr, "ES:[EDI],%s:[ESI]", doverds);break;
@@ -2311,11 +2319,12 @@ static void MOVSB()
 }
 static void MOVSW()
 {
+	t_dasm_str dptr;
 	_cb("MOVSW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "MOVSW");break;
-	case 4: SPRINTF(dop, "MOVSD");break;
+	case 2: SPRINTF(dop, "MOVSW");SPRINTF(dptr, "WORD PTR");break;
+	case 4: SPRINTF(dop, "MOVSD");SPRINTF(dptr, "DWORD PTR");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI],%s:[SI]", doverds);break;
@@ -2325,9 +2334,11 @@ static void MOVSW()
 }
 static void CMPSB()
 {
+	t_dasm_str dptr;
 	_cb("CMPSB");
 	_adv;
 	SPRINTF(dop, "CMPSB");
+	SPRINTF(dptr, "BYTE PTR");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[SI],ES:[DI]", doverds);break;
 	case 4: SPRINTF(dopr, "%s:[ESI],ES:[EDI]", doverds);break;
@@ -2336,11 +2347,12 @@ static void CMPSB()
 }
 static void CMPSW()
 {
+	t_dasm_str dptr;
 	_cb("CMPSW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "CMPSW");break;
-	case 4: SPRINTF(dop, "CMPSD");break;
+	case 2: SPRINTF(dop, "CMPSW");SPRINTF(dptr, "WORD PTR");break;
+	case 4: SPRINTF(dop, "CMPSD");SPRINTF(dptr, "DWORD PTR");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[SI],ES:[DI]", doverds);break;
@@ -2371,9 +2383,11 @@ static void TEST_EAX_I32()
 }
 static void STOSB()
 {
+	t_dasm_str dptr;
 	_cb("STOSB");
 	_adv;
 	SPRINTF(dop, "STOSB");
+	SPRINTF(dptr, "BYTE PTR");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI]");break;
 	case 4: SPRINTF(dopr, "ES:[EDI]");break;
@@ -2382,11 +2396,12 @@ static void STOSB()
 }
 static void STOSW()
 {
+	t_dasm_str dptr;
 	_cb("STOSW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "STOSW");break;
-	case 4: SPRINTF(dop, "STOSD");break;
+	case 2: SPRINTF(dop, "STOSW");SPRINTF(dptr, "WORD PTR");break;
+	case 4: SPRINTF(dop, "STOSD");SPRINTF(dptr, "DWORD PTR");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI]");break;
@@ -2396,9 +2411,11 @@ static void STOSW()
 }
 static void LODSB()
 {
+	t_dasm_str dptr;
 	_cb("LODSB");
 	_adv;
 	SPRINTF(dop, "LODSB");
+	SPRINTF(dptr, "BYTE PTR");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[SI]", doverds);break;
 	case 4: SPRINTF(dopr, "%s:[ESI]", doverds);break;
@@ -2407,11 +2424,12 @@ static void LODSB()
 }
 static void LODSW()
 {
+	t_dasm_str dptr;
 	_cb("LODSW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "LODSW");break;
-	case 4: SPRINTF(dop, "LODSD");break;
+	case 2: SPRINTF(dop, "LODSW");SPRINTF(dptr, "WORD PTR");break;
+	case 4: SPRINTF(dop, "LODSD");SPRINTF(dptr, "DWORD PTR");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[SI]", doverds);break;
@@ -2421,9 +2439,11 @@ static void LODSW()
 }
 static void SCASB()
 {
+	t_dasm_str dptr;
 	_cb("SCASB");
 	_adv;
 	SPRINTF(dop, "SCASB");
+	SPRINTF(dptr, "BYTE PTR");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI]");break;
 	case 4: SPRINTF(dopr, "ES:[EDI]");break;
@@ -2432,11 +2452,12 @@ static void SCASB()
 }
 static void SCASW()
 {
+	t_dasm_str dptr;
 	_cb("SCASW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "SCASW");break;
-	case 4: SPRINTF(dop, "SCASD");break;
+	case 2: SPRINTF(dop, "SCASW");SPRINTF(dptr, "WORD PTR");break;
+	case 4: SPRINTF(dop, "SCASD");SPRINTF(dptr, "DWORD PTR");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI]");break;
@@ -2803,11 +2824,15 @@ static void INS_C7()
 }
 static void ENTER()
 {
+	t_dasm_str dframesize, dnestlevel;
 	_cb("ENTER");
 	_adv;
 	SPRINTF(dop, "ENTER");
 	_chk(_d_imm(2));
+	SPRINTF(dframesize, "%04X", GetMax16(cimm));
 	_chk(_d_imm(1));
+	SPRINTF(dnestlevel, "%02X", GetMax8(cimm));
+	SPRINTF(dopr, "%s,%s", dframesize, dnestlevel);
 	_ce;
 }
 static void LEAVE()
@@ -3077,7 +3102,11 @@ static void XLAT()
 {
 	_cb("XLAT");
 	_adv;
-	SPRINTF(dop, "XLAT");
+	SPRINTF(dop, "XLATB");
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "%s:[BX+AL]", doverds);break;
+	case 4: SPRINTF(dopr, "%s:[EBX+AL]", doverds);break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void LOOPNZ_REL8()
@@ -4544,7 +4573,7 @@ t_nubit8 dasm32(t_strptr stmt, t_vaddrcc rcode)
 		dtable[0x8a] = (t_faddrcc)MOV_R8_RM8;
 		dtable[0x8b] = (t_faddrcc)MOV_R32_RM32;
 		dtable[0x8c] = (t_faddrcc)MOV_RM16_SREG;
-		dtable[0x8d] = (t_faddrcc)LEA_R16_M16;
+		dtable[0x8d] = (t_faddrcc)LEA_R32_M32;
 		dtable[0x8e] = (t_faddrcc)MOV_SREG_RM16;
 		dtable[0x8f] = (t_faddrcc)INS_8F;
 		dtable[0x90] = (t_faddrcc)NOP;

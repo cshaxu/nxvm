@@ -6874,9 +6874,9 @@ static void MOV_RM16_SREG()
 	_chk(_m_write_rm(2));
 	_ce;
 }
-static void LEA_R16_M16()
+static void LEA_R32_M32()
 {
-	_cb("LEA_R16_M16");
+	_cb("LEA_R32_M32");
 	i386(0x8d) {
 		_adv;
 		_chk(_d_modrm_ea(_GetOperandSize, _GetOperandSize));
@@ -11557,7 +11557,7 @@ void vcpuinsInit()
 	table[0x8a] = (t_faddrcc)MOV_R8_RM8;
 	table[0x8b] = (t_faddrcc)MOV_R32_RM32;
 	table[0x8c] = (t_faddrcc)MOV_RM16_SREG;
-	table[0x8d] = (t_faddrcc)LEA_R16_M16;
+	table[0x8d] = (t_faddrcc)LEA_R32_M32;
 	table[0x8e] = (t_faddrcc)MOV_SREG_RM16;
 	table[0x8f] = (t_faddrcc)INS_8F;
 	table[0x90] = (t_faddrcc)NOP;

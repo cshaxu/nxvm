@@ -88,18 +88,6 @@ static void vmachineAsmTest()
 		return;
 	}
 	switch (d_nubit16(ins1)) {
-	case 0xac26:
-	case 0xac2e:
-	case 0xac36:
-	case 0xac3e:
-	case 0xad26:
-	case 0xad2e:
-	case 0xad3e:
-	case 0xad36:
-	case 0xd726:
-	case 0xd72e:
-	case 0xd73e:
-	case 0xd736:
 	case 0x9067:
 		return;
 	}

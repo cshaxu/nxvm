@@ -83,7 +83,8 @@ typedef enum {
 	MEM_EAX, MEM_ECX,
 	MEM_EDX, MEM_EBX,
 	MEM_SIB, MEM_EBP,
-	MEM_ESI, MEM_EDI
+	MEM_ESI, MEM_EDI,
+	MEM_BX_AL, MEM_EBX_AL
 } t_aasm_oprmem;
 typedef enum {
 	R8_AL,
@@ -285,18 +286,35 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define isDS(oprinf)    (isSREG(oprinf) && (oprinf).sreg   == SREG_DS)
 #define isFS(oprinf)    (isSREG(oprinf) && (oprinf).sreg   == SREG_FS)
 #define isGS(oprinf)    (isSREG(oprinf) && (oprinf).sreg   == SREG_GS)
-#define isESDI8(oprinf)  ( isM8 (oprinf) && (oprinf).flages && (oprinf).mem == MEM_DI  && (oprinf).mod == MOD_M)
-#define isESDI16(oprinf)  (isM16(oprinf) && (oprinf).flages && (oprinf).mem == MEM_DI  && (oprinf).mod == MOD_M)
-#define isESDI32(oprinf)  (isM32(oprinf) && (oprinf).flages && (oprinf).mem == MEM_DI  && (oprinf).mod == MOD_M)
-#define isESEDI8(oprinf)  (isM8 (oprinf) && (oprinf).flages && (oprinf).mem == MEM_EDI && (oprinf).mod == MOD_M)
-#define isESEDI16(oprinf) (isM16(oprinf) && (oprinf).flages && (oprinf).mem == MEM_EDI && (oprinf).mod == MOD_M)
-#define isESEDI32(oprinf) (isM32(oprinf) && (oprinf).flages && (oprinf).mem == MEM_EDI && (oprinf).mod == MOD_M)
-#define isDSSI8(oprinf)  ( isM8 (oprinf) && (oprinf).mem == MEM_SI  && (oprinf).mod == MOD_M)
-#define isDSSI16(oprinf)  (isM16(oprinf) && (oprinf).mem == MEM_SI  && (oprinf).mod == MOD_M)
-#define isDSSI32(oprinf)  (isM32(oprinf) && (oprinf).mem == MEM_SI  && (oprinf).mod == MOD_M)
-#define isDSESI8(oprinf)  (isM8 (oprinf) && (oprinf).mem == MEM_ESI && (oprinf).mod == MOD_M)
-#define isDSESI16(oprinf) (isM16(oprinf) && (oprinf).mem == MEM_ESI && (oprinf).mod == MOD_M)
-#define isDSESI32(oprinf) (isM32(oprinf) && (oprinf).mem == MEM_ESI && (oprinf).mod == MOD_M)
+#define isESDI8(oprinf)    (isM8 (oprinf) && (oprinf).flages && (oprinf).mem == MEM_DI  && (oprinf).mod == MOD_M)
+#define isESDI16(oprinf)   (isM16(oprinf) && (oprinf).flages && (oprinf).mem == MEM_DI  && (oprinf).mod == MOD_M)
+#define isESDI32(oprinf)   (isM32(oprinf) && (oprinf).flages && (oprinf).mem == MEM_DI  && (oprinf).mod == MOD_M)
+#define isESEDI8(oprinf)   (isM8 (oprinf) && (oprinf).flages && (oprinf).mem == MEM_EDI && (oprinf).mod == MOD_M)
+#define isESEDI16(oprinf)  (isM16(oprinf) && (oprinf).flages && (oprinf).mem == MEM_EDI && (oprinf).mod == MOD_M)
+#define isESEDI32(oprinf)  (isM32(oprinf) && (oprinf).flages && (oprinf).mem == MEM_EDI && (oprinf).mod == MOD_M)
+#define isDSSI8(oprinf)    (isM8 (oprinf) && (oprinf).mem == MEM_SI  && (oprinf).mod == MOD_M)
+#define isDSSI16(oprinf)   (isM16(oprinf) && (oprinf).mem == MEM_SI  && (oprinf).mod == MOD_M)
+#define isDSSI32(oprinf)   (isM32(oprinf) && (oprinf).mem == MEM_SI  && (oprinf).mod == MOD_M)
+#define isDSESI8(oprinf)   (isM8 (oprinf) && (oprinf).mem == MEM_ESI && (oprinf).mod == MOD_M)
+#define isDSESI16(oprinf)  (isM16(oprinf) && (oprinf).mem == MEM_ESI && (oprinf).mod == MOD_M)
+#define isDSESI32(oprinf)  (isM32(oprinf) && (oprinf).mem == MEM_ESI && (oprinf).mod == MOD_M)
+#define isDSBXAL8(oprinf)  (isM8 (oprinf) && (oprinf).mem == MEM_BX_AL)
+#define isDSEBXAL8(oprinf) (isM8 (oprinf) && (oprinf).mem == MEM_EBX_AL)
+#define isESDI8s(oprinf)    (isM8s (oprinf) && (oprinf).flages && (oprinf).mem == MEM_DI  && (oprinf).mod == MOD_M)
+#define isESDI16s(oprinf)   (isM16s(oprinf) && (oprinf).flages && (oprinf).mem == MEM_DI  && (oprinf).mod == MOD_M)
+#define isESDI32s(oprinf)   (isM32s(oprinf) && (oprinf).flages && (oprinf).mem == MEM_DI  && (oprinf).mod == MOD_M)
+#define isESEDI8s(oprinf)   (isM8s (oprinf) && (oprinf).flages && (oprinf).mem == MEM_EDI && (oprinf).mod == MOD_M)
+#define isESEDI16s(oprinf)  (isM16s(oprinf) && (oprinf).flages && (oprinf).mem == MEM_EDI && (oprinf).mod == MOD_M)
+#define isESEDI32s(oprinf)  (isM32s(oprinf) && (oprinf).flages && (oprinf).mem == MEM_EDI && (oprinf).mod == MOD_M)
+#define isDSSI8s(oprinf)    (isM8s (oprinf) && (oprinf).mem == MEM_SI  && (oprinf).mod == MOD_M)
+#define isDSSI16s(oprinf)   (isM16s(oprinf) && (oprinf).mem == MEM_SI  && (oprinf).mod == MOD_M)
+#define isDSSI32s(oprinf)   (isM32s(oprinf) && (oprinf).mem == MEM_SI  && (oprinf).mod == MOD_M)
+#define isDSESI8s(oprinf)   (isM8s (oprinf) && (oprinf).mem == MEM_ESI && (oprinf).mod == MOD_M)
+#define isDSESI16s(oprinf)  (isM16s(oprinf) && (oprinf).mem == MEM_ESI && (oprinf).mod == MOD_M)
+#define isDSESI32s(oprinf)  (isM32s(oprinf) && (oprinf).mem == MEM_ESI && (oprinf).mod == MOD_M)
+#define isDSBXAL8s(oprinf)  (isM8s (oprinf) && (oprinf).mem == MEM_BX_AL)
+#define isDSEBXAL8s(oprinf) (isM8s (oprinf) && (oprinf).mem == MEM_EBX_AL)
+
 /* arg flag level 2 */
 #define ARG_NONE        (isNONE (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
 #define ARG_I8          (isI8   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
@@ -383,6 +401,7 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define ARG_RM16_I8     (isRM16s(aopri1) && isI8  (aopri2)  && isNONE(aopri3))
 #define ARG_RM32_I8     (isRM32s(aopri1) && isI8  (aopri2)  && isNONE(aopri3))
 #define ARG_RM16_I8     (isRM16s(aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_I16_I8      (isI16  (aopri1) && isI8  (aopri2)  && isNONE(aopri3))
 #define ARG_RM16_SREG   (isRM16 (aopri1) && isSREG (aopri2) && isNONE(aopri3))
 #define ARG_RM32_SREG   (isRM32 (aopri1) && isSREG (aopri2) && isNONE(aopri3))
 #define ARG_SREG_RM16   (isSREG  (aopri1) && isRM16(aopri2) && isNONE(aopri3))
@@ -416,12 +435,15 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define ARG_I16u        (isI16u (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
 #define ARG_PNONE_I8s   (isPNONE(aopri1) && isI8s (aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_PNONE_I16s  (isPNONE(aopri1) && isI16s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_PNONE_I32s  (isPNONE(aopri1) && isI32s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_SHORT_I8s   (isSHORT(aopri1) && isI8s (aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_NEAR_I16s   (isNEAR (aopri1) && isI16s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_NEAR_I32s   (isNEAR (aopri1) && isI32s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_PNONE_I16   (isPNONE(aopri1) && isI16u(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_SHORT_I16   (isSHORT(aopri1) && isI16u(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_NEAR_I16    (isNEAR (aopri1) && isI16u(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_FAR_I16_16  (isFAR  (aopri1) && isI16p(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_FAR_I16_32  (isFAR  (aopri1) && isI32p(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_PNONE_LABEL (isPNONE(aopri1) && isLABEL(aopri1) && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_SHORT_LABEL (isSHORT(aopri1) && isLABEL(aopri1) && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_NEAR_LABEL  (isNEAR (aopri1) && isLABEL(aopri1) && isNONE(aopri2) && isNONE(aopri3))
@@ -474,6 +496,56 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define ARG_ESEDI8          (isESEDI8 (aopri1) && isNONE  (aopri2)  && isNONE(aopri3))
 #define ARG_ESEDI16         (isESEDI16(aopri1) && isNONE  (aopri2)  && isNONE(aopri3))
 #define ARG_ESEDI32         (isESEDI32(aopri1) && isNONE  (aopri2)  && isNONE(aopri3))
+#define ARG_DSBXAL8         (isDSBXAL8(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_DSEBXAL8        (isDSEBXAL8(aopri1)&& isNONE(aopri2) && isNONE(aopri3))
+#define ARG_ESDI8_DSSI8   (isESDI8 (aopri1) && isDSSI8 (aopri2) && isNONE(aopri3))
+#define ARG_ESDI16_DSSI16 (isESDI16(aopri1) && isDSSI16(aopri2) && isNONE(aopri3))
+#define ARG_ESDI32_DSSI32 (isESDI32(aopri1) && isDSSI32(aopri2) && isNONE(aopri3))
+#define ARG_DSSI8_ESDI8   (isDSSI8 (aopri1) && isESDI8 (aopri2) && isNONE(aopri3))
+#define ARG_DSSI16_ESDI16 (isDSSI16(aopri1) && isESDI16(aopri2) && isNONE(aopri3))
+#define ARG_DSSI32_ESDI32 (isDSSI32(aopri1) && isESDI32(aopri2) && isNONE(aopri3))
+
+#define ARG_ESDI8s_DSSI8s   (isESDI8s (aopri1) && isDSSI8s (aopri2) && isNONE(aopri3))
+#define ARG_ESDI16s_DSSI16s (isESDI16s(aopri1) && isDSSI16s(aopri2) && isNONE(aopri3))
+#define ARG_ESDI32s_DSSI32s (isESDI32s(aopri1) && isDSSI32s(aopri2) && isNONE(aopri3))
+#define ARG_DSSI8s_ESDI8s   (isDSSI8s (aopri1) && isESDI8s (aopri2) && isNONE(aopri3))
+#define ARG_DSSI16s_ESDI16s (isDSSI16s(aopri1) && isESDI16s(aopri2) && isNONE(aopri3))
+#define ARG_DSSI32s_ESDI32s (isDSSI32s(aopri1) && isESDI32s(aopri2) && isNONE(aopri3))
+#define ARG_ESDI8s_DX         (isESDI8s (aopri1)  && isDX(aopri2) && isNONE(aopri3))
+#define ARG_ESDI16s_DX        (isESDI16s(aopri1)  && isDX(aopri2) && isNONE(aopri3))
+#define ARG_ESDI32s_DX        (isESDI32s(aopri1)  && isDX(aopri2) && isNONE(aopri3))
+#define ARG_DX_DSSI8s         (isDX(aopri1)  && isDSSI8s (aopri2) && isNONE(aopri3))
+#define ARG_DX_DSSI16s        (isDX(aopri1)  && isDSSI16s(aopri2) && isNONE(aopri3))
+#define ARG_DX_DSSI32s        (isDX(aopri1)  && isDSSI32s(aopri2) && isNONE(aopri3))
+#define ARG_DSSI8s            (isDSSI8s (aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_DSSI16s           (isDSSI16s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_DSSI32s           (isDSSI32s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_ESDI8s            (isESDI8s (aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_ESDI16s           (isESDI16s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_ESDI32s           (isESDI32s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_ESEDI8s_DSESI8s   (isESEDI8s (aopri1) && isDSESI8s (aopri2) && isNONE(aopri3))
+#define ARG_ESEDI16s_DSESI16s (isESEDI16s(aopri1) && isDSESI16s(aopri2) && isNONE(aopri3))
+#define ARG_ESEDI32s_DSESI32s (isESEDI32s(aopri1) && isDSESI32s(aopri2) && isNONE(aopri3))
+#define ARG_DSESI8s_ESEDI8s   (isDSESI8s (aopri1) && isESEDI8s (aopri2) && isNONE(aopri3))
+#define ARG_DSESI16s_ESEDI16s (isDSESI16s(aopri1) && isESEDI16s(aopri2) && isNONE(aopri3))
+#define ARG_DSESI32s_ESEDI32s (isDSESI32s(aopri1) && isESEDI32s(aopri2) && isNONE(aopri3))
+#define ARG_ESEDI8s_DX        (isESEDI8s (aopri1) && isDX(aopri2) && isNONE(aopri3))
+#define ARG_ESEDI16s_DX       (isESEDI16s(aopri1) && isDX(aopri2) && isNONE(aopri3))
+#define ARG_ESEDI32s_DX       (isESEDI32s(aopri1) && isDX(aopri2) && isNONE(aopri3))
+#define ARG_DX_DSESI8s        (isDX(aopri1)      && isDSESI8s (aopri2) && isNONE(aopri3))
+#define ARG_DX_DSESI16s       (isDX(aopri1)      && isDSESI16s(aopri2) && isNONE(aopri3))
+#define ARG_DX_DSESI32s       (isDX(aopri1)      && isDSESI32s(aopri2) && isNONE(aopri3))
+#define ARG_DSESI8s           (isDSESI8s (aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_DSESI16s          (isDSESI16s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_DSESI32s          (isDSESI32s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_ESEDI8s           (isESEDI8s (aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_ESEDI16s          (isESEDI16s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_ESEDI32s          (isESEDI32s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_DSBXAL8s          (isDSBXAL8s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_DSEBXAL8s         (isDSEBXAL8s(aopri1)&& isNONE(aopri2) && isNONE(aopri3))
+
+#define ARG_R16_RM16_I8     (isR16(aopri1)     && isRM16  (aopri2)  && isI8(aopri3))
+#define ARG_R32_RM32_I8     (isR32(aopri1)     && isRM32  (aopri2)  && isI8(aopri3))
 #define ARG_R16_RM16_I16    (isR16(aopri1)     && isRM16  (aopri2)  && isI16(aopri3))
 #define ARG_R32_RM32_I32    (isR32(aopri1)     && isRM32  (aopri2)  && isI32(aopri3))
 /* assembly compiler: lexical scanner */
@@ -1226,12 +1298,12 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 {
 	t_aasm_oprinfo info;
 	t_bool oldtoken;
-	t_bool bx,bp,si,di,neg;
+	t_bool bx,bp,si,di,neg,al;
 	t_bool eax,ecx,edx,ebx,esp,ebp,esi,edi;
 	t_bool ieax,iecx,iedx,iebx,iebp,iesi,iedi;
 	_cb("parsearg_mem");
 	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
-	bx = bp = si = di = neg = 0;
+	bx = bp = si = di = neg = al = 0;
 	eax = ecx = edx = ebx = esp = ebp = esi = edi = 0;
 	ieax = iecx = iedx = iebx = iebp = iesi = iedi = 0;
 	info.type = TYPE_M;
@@ -1344,6 +1416,10 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 		case TOKEN_DI: _bb("token(TOKEN_DI)");
 			if (di) _serf_;
 			else di = 1;
+			_be;break;
+		case TOKEN_AL: _bb("token(TOKEN_AL)");
+			if (al) _serf_;
+			else al = 1;
 			_be;break;
 		case TOKEN_IMM8: _bb("token(TOKEN_IMM8)");
 			if (info.mod != MOD_M) _serf_;
@@ -1576,61 +1652,74 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 	_chrf(token = gettoken(NULL));
 	if (token != TOKEN_END) _serf_;
 
-	if (bx || bp || si || di || info.mod == MOD_M_DISP16) {
-		 _bb("16-bit Addressing");
-		if (!bx && !si && !bp && !di) {
-			_bb("[DISP16]");
-			info.mem = MEM_BP;
-			if (info.mod == MOD_M_DISP16)
-				info.mod = MOD_M;
-			else _serf_;
-			_be;
-		} else {
-			_bb("bx/bp/si/di");
-			if ( bx &&  si && !bp && !di) info.mem = MEM_BX_SI;
-			else if ( bx && !si && !bp &&  di) info.mem = MEM_BX_DI;
-			else if (!bx &&  si &&  bp && !di) info.mem = MEM_BP_SI;
-			else if (!bx && !si &&  bp &&  di) info.mem = MEM_BP_DI;
-			else if ( bx && !si && !bp && !di) info.mem = MEM_BX;
-			else if (!bx &&  si && !bp && !di) info.mem = MEM_SI;
-			else if (!bx && !si &&  bp && !di) {
+	if (al) {
+		_bb("al");
+		if (bp || si || di || eax || ecx || edx || esp || ebp || esi || edi ||
+			ieax || iecx || iedx || iebx || iebp || iesi || iedi || info.mod != MOD_M)
+			_serf_;
+		if (bx && !ebx) {
+			info.mem = MEM_BX_AL;
+		} else if (!bx && ebx) {
+			info.mem = MEM_EBX_AL;
+		} else _serf_;
+		_be;
+	} else {
+		if (bx || bp || si || di || info.mod == MOD_M_DISP16) {
+			 _bb("16-bit Addressing");
+			if (!bx && !si && !bp && !di) {
+				_bb("[DISP16]");
 				info.mem = MEM_BP;
-				if (info.mod == MOD_M) {
-					info.mod = MOD_M_DISP8;
-					info.disp8 = 0x00;
-				}
-			} else if (!bx && !si && !bp && di) info.mem = MEM_DI;
-			else _serf_;
+				if (info.mod == MOD_M_DISP16)
+					info.mod = MOD_M;
+				else _serf_;
+				_be;
+			} else {
+				_bb("bx/bp/si/di");
+				if ( bx &&  si && !bp && !di) info.mem = MEM_BX_SI;
+				else if ( bx && !si && !bp &&  di) info.mem = MEM_BX_DI;
+				else if (!bx &&  si &&  bp && !di) info.mem = MEM_BP_SI;
+				else if (!bx && !si &&  bp &&  di) info.mem = MEM_BP_DI;
+				else if ( bx && !si && !bp && !di) info.mem = MEM_BX;
+				else if (!bx &&  si && !bp && !di) info.mem = MEM_SI;
+				else if (!bx && !si &&  bp && !di) {
+					info.mem = MEM_BP;
+					if (info.mod == MOD_M) {
+						info.mod = MOD_M_DISP8;
+						info.disp8 = 0x00;
+					}
+				} else if (!bx && !si && !bp && di) info.mem = MEM_DI;
+				else _serf_;
+				_be;
+			}
 			_be;
-		}
-		_be;
-	} else if (eax || ecx || edx || ebx || esp || ebp || esi || edi ||
-		ieax || iecx || iedx || iebx || iebp || iesi || iedi || info.mod == MOD_M_DISP32) {
-		 _bb("32-bit Addressing");
-		if (!eax && !ecx && !edx && !ebx && !esp && !ebp && !esi && !edi &&
-			!ieax && !iecx && !iedx && !iebx && !iebp && !iesi && !iedi) {
-			_bb("[DISP32]");
-			if (info.mod == MOD_M_DISP32) {
-				info.mem = MEM_EBP;
-				info.mod = MOD_M;
-			} else _serf_;
+		} else if (eax || ecx || edx || ebx || esp || ebp || esi || edi ||
+			ieax || iecx || iedx || iebx || iebp || iesi || iedi || info.mod == MOD_M_DISP32) {
+			 _bb("32-bit Addressing");
+			if (!eax && !ecx && !edx && !ebx && !esp && !ebp && !esi && !edi &&
+				!ieax && !iecx && !iedx && !iebx && !iebp && !iesi && !iedi) {
+				_bb("[DISP32]");
+				if (info.mod == MOD_M_DISP32) {
+					info.mem = MEM_EBP;
+					info.mod = MOD_M;
+				} else _serf_;
+				_be;
+			} else {
+				_bb("eax/ecx/edx/ebx/esp/ebp/esi/edi/ieax/iecx/iedx/iebx/iebp/iesi/iedi");
+				if (esp || ieax || iecx || iedx || iebx || iebp || iesi || iedi) {
+					info.mem = MEM_SIB;
+				} else if (eax) info.mem = MEM_EAX;
+				else if (ecx) info.mem = MEM_ECX;
+				else if (edx) info.mem = MEM_EDX;
+				else if (ebx) info.mem = MEM_EBX;
+				else if (ebp) info.mem = MEM_EBP;
+				else if (esi) info.mem = MEM_ESI;
+				else if (edi) info.mem = MEM_EDI;
+				else _serf_;
+				_be;
+			}
 			_be;
-		} else {
-			_bb("eax/ecx/edx/ebx/esp/ebp/esi/edi/ieax/iecx/iedx/iebx/iebp/iesi/iedi");
-			if (esp || ieax || iecx || iedx || iebx || iebp || iesi || iedi) {
-				info.mem = MEM_SIB;
-			} else if (eax) info.mem = MEM_EAX;
-			else if (ecx) info.mem = MEM_ECX;
-			else if (edx) info.mem = MEM_EDX;
-			else if (ebx) info.mem = MEM_EBX;
-			else if (ebp) info.mem = MEM_EBP;
-			else if (esi) info.mem = MEM_ESI;
-			else if (edi) info.mem = MEM_EDI;
-			else _serf_;
-			_be;
-		}
-		_be;
-	} else _serf_;
+		} else _serf_;
+	}
 	switch (info.mem) {
 	case MEM_BX_SI:
 	case MEM_BX_DI:
@@ -1664,7 +1753,10 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 			if (info.flagss) info.flagss = 0;
 		} else if (info.flagds) info.flagds = 0;		
 		break;
-	}
+	case MEM_BX_AL:
+	case MEM_EBX_AL:
+		break;
+	default: _serf_;break;}
 	info.type = TYPE_M;
 	_ce;
 	return info;
@@ -3256,218 +3348,308 @@ static void POPA(t_nubit8 byte)
 
 static void BOUND_R32_M32_32(t_nubit8 byte)
 {
+	_cb("BOUND_R32_M32_32");
 	_SetOperandSize(byte);
 	setbyte(0x62);
 	switch (byte) {
-	case 2: _c_modrm(aopri2, aopri1.reg16);break;
-	case 4: _c_modrm(aopri2, aopri1.reg32);break;
-	default: flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void ARPL_RM16_R16()
 {
+	_cb("ARPL_RM16_R16");
 	if (ARG_RM16_R16) {
+		_bb("ARG_RM16_R16");
 		setbyte(0x63);
-		_c_modrm(aopri1, aopri2.reg16);
-	} else flagerror = 1;
+		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_be;
+	} else _se_;
+	_ce;
 }
 static void PREFIX_FS()
 {
+	_cb("PREFIX_FS");
 	if (ARG_NONE) aoprig.flagfs = 1;
-	else flagerror = 1;
+	else _se_;
+	_ce;
 }
 static void PREFIX_GS()
 {
+	_cb("PREFIX_GS");
 	if (ARG_NONE) aoprig.flaggs = 1;
-	else flagerror = 1;
+	else _se_;
+	_ce;
 }
 static void PREFIX_OprSize()
 {
+	_cb("PREFIX_OprSize");
 	if (ARG_NONE) flagoprg = 1;
-	else flagerror = 1;
+	else _se_;
+	_ce;
 }
 static void PREFIX_AddrSize()
 {
+	_cb("PREFIX_AddrSize");
 	if (ARG_NONE) flagaddrg = 1;
-	else flagerror = 1;
+	else _se_;
+	_ce;
 }
 static void PUSH_I32(t_nubit8 byte)
 {
+	_cb("PUSH_I32");
 	_SetOperandSize(byte);
 	setbyte(0x68);
 	switch (byte) {
-	case 2: _c_imm16(aopri1.imm16);break;
-	case 4: _c_imm32(aopri1.imm32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri1.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri1.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void IMUL_R32_RM32_I32(t_nubit8 byte)
 {
+	_cb("IMUL_R32_RM32_I32");
 	_SetOperandSize(byte);
 	setbyte(0x69);
 	switch (byte) {
-	case 2:
-		_c_modrm(aopri2, aopri1.reg16);
-		_c_imm16(aopri3.imm16);
-		break;
-	case 4:
-		_c_modrm(aopri2, aopri1.reg32);
-		_c_imm32(aopri3.imm32);
-		break;
-	default: flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chk(_c_imm16(aopri3.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chk(_c_imm32(aopri3.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;;
 }
 static void PUSH_I8()
 {
+	_cb("PUSH_I8");
 	setbyte(0x6a);
-	_c_imm8(aopri1.imm8);
+	_chk(_c_imm8(aopri1.imm8));
+	_ce;
+}
+static void IMUL_R32_RM32_I8(t_nubit8 byte)
+{
+	_cb("IMUL_R32_RM32_I32");
+	_SetOperandSize(byte);
+	setbyte(0x6b);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chk(_c_imm8(aopri3.imm8));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chk(_c_imm8(aopri3.imm8));
+		_be;break;
+	default: _se_;break;}
+	_ce;;
 }
 static void INSB()
 {
+	_cb("INSB");
 	setbyte(0x6c);
 	rinfo = NULL;
-	if (ARG_ESDI8_DX) {
-		_SetAddressSize(2);
-	} else if (ARG_ESEDI8_DX) {
-		_SetAddressSize(4);
-	} else flagerror = 1;
+	if (ARG_NONE) ;
+	else if (ARG_ESDI8_DX) _SetAddressSize(2);
+	else if (ARG_ESEDI8_DX) _SetAddressSize(4);
+	else _se_;
+	_ce;
 }
 static void INSW(t_nubit8 byte)
 {
+	_cb("INSW");
 	setbyte(0x6d);
 	rinfo = NULL;
 	switch (byte) {
-	case 2:
-		if (ARG_ESDI16_DX) {
-			_SetAddressSize(2);
-		} else if (ARG_ESEDI16_DX) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	case 4:
-		if (ARG_ESDI32_DX) {
-			_SetAddressSize(2);
-		} else if (ARG_ESEDI32_DX) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		if (ARG_NONE) ;
+		else if (ARG_ESDI16_DX) _SetAddressSize(2);
+		else if (ARG_ESEDI16_DX) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	case 4: _bb("byte(4)");
+		if (ARG_NONE) ;
+		else if (ARG_ESDI32_DX) _SetAddressSize(2);
+		else if (ARG_ESEDI32_DX) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void OUTSB()
 {
+	_cb("OUTSB");
 	setbyte(0x6e);
 	rinfo = &aopri1;
 	if (rinfo->flagds) rinfo->flagds = 0;
-	if (ARG_DX_DSSI8) {
-		_SetAddressSize(2);
-	} else if (ARG_DSESI8) {
-		_SetAddressSize(4);
-	} else flagerror = 1;
+	if (ARG_NONE) rinfo = NULL;
+	else if (ARG_DX_DSSI8) _SetAddressSize(2);
+	else if (ARG_DSESI8) _SetAddressSize(4);
+	else _se_;
+	_ce;
 }
 static void OUTSW(t_nubit8 byte)
 {
+	_cb("OUTSW");
 	setbyte(0x6f);
 	rinfo = &aopri1;
 	if (rinfo->flagds) rinfo->flagds = 0;
 	switch (byte) {
-	case 2:
-		if (ARG_DX_DSSI16) {
-			_SetAddressSize(2);
-		} else if (ARG_DX_DSESI16) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	case 4:
-		if (ARG_DX_DSSI32) {
-			_SetAddressSize(2);
-		} else if (ARG_DX_DSESI32) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		if (ARG_NONE) rinfo = NULL;
+		else if (ARG_DX_DSSI16) _SetAddressSize(2);
+		else if (ARG_DX_DSESI16) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	case 4: _bb("byte(4)");
+		if (ARG_NONE) rinfo = NULL;
+		else if (ARG_DX_DSSI32) _SetAddressSize(2);
+		else if (ARG_DX_DSESI32) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void INS_80(t_nubit8 rid)
 {
+	_cb("INS_80");
 	setbyte(0x80);
-	_c_modrm(aopri1, rid);
-	_c_imm8(aopri2.imm8);
+	_chk(_c_modrm(aopri1, rid));
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void INS_81(t_nubit8 rid, t_nubit8 byte)
 {
+	_cb("INS_81");
 	_SetOperandSize(byte);
 	setbyte(0x81);
-	_c_modrm(aopri1, rid);
+	_chk(_c_modrm(aopri1, rid));
 	switch (byte) {
-	case 2: _c_imm16(aopri2.imm16);break;
-	case 4: _c_imm32(aopri2.imm32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void INS_83(t_nubit8 rid, t_nubit8 byte)
 {
+	_cb("INS_83");
 	_SetOperandSize(byte);
 	setbyte(0x83);
-	_c_modrm(aopri1, rid);
-	_c_imm8(aopri2.imm8);
+	_chk(_c_modrm(aopri1, rid));
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void TEST_RM8_R8()
 {
+	_cb("TEST_RM8_R8");
 	setbyte(0x84);
-	_c_modrm(aopri1, aopri2.reg8);
+	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_ce;
 }
 static void TEST_RM32_R32(t_nubit8 byte)
 {
+	_cb("TEST_RM32_R32");
 	_SetOperandSize(byte);
 	setbyte(0x85);
 	switch (byte) {
-	case 2: _c_modrm(aopri1, aopri2.reg16);break;
-	case 4: _c_modrm(aopri1, aopri2.reg32);break;
-	default: flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void XCHG_RM8_R8()
 {
+	_cb("XCHG_RM8_R8");
 	setbyte(0x86);
-	_c_modrm(aopri1, aopri2.reg8);
+	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_ce;
 }
 static void XCHG_RM32_R32(t_nubit8 byte)
 {
+	_cb("XCHG_RM32_R32");
 	_SetOperandSize(byte);
 	setbyte(0x87);
 	switch (byte) {
-	case 2: _c_modrm(aopri1, aopri2.reg16);break;
-	case 4: _c_modrm(aopri1, aopri2.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void MOV_RM8_R8()
 {
+	_cb("MOV_RM8_R8");
 	setbyte(0x88);
-	_c_modrm(aopri1, aopri2.reg8);
+	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_ce;
 }
 static void MOV_RM32_R32(t_nubit8 byte)
 {
+	_cb("MOV_RM32_R32");
 	_SetOperandSize(byte);
 	setbyte(0x89);
 	switch (byte) {
-	case 2: _c_modrm(aopri1, aopri2.reg16);break;
-	case 4: _c_modrm(aopri1, aopri2.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void MOV_R8_RM8()
 {
+	_cb("MOV_RM8_R8");
 	setbyte(0x8a);
-	avip++;
-	_c_modrm(aopri2, aopri1.reg8);
+	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_ce;
 }
 static void MOV_R32_RM32(t_nubit8 byte)
 {
+	_cb("MOV_R32_RM32");
 	_SetOperandSize(byte);
 	setbyte(0x8b);
 	switch (byte) {
-	case 2: _c_modrm(aopri2, aopri1.reg16);break;
-	case 4: _c_modrm(aopri2, aopri1.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void MOV_RM16_SREG(t_nubit8 byte)
 {
+	_cb("MOV_RM16_SREG");
 	_SetOperandSize(byte);
 	setbyte(0x8c);
-	_c_modrm(aopri1, aopri2.sreg);
+	_chk(_c_modrm(aopri1, aopri2.sreg));
+	_ce;
 }
 static void LEA_R32_M32(t_nubit8 byte)
 {
@@ -3486,560 +3668,792 @@ static void LEA_R32_M32(t_nubit8 byte)
 }
 static void MOV_SREG_RM16(t_nubit8 byte)
 {
+	_cb("MOV_SREG_RM16");
 	_SetOperandSize(byte);
 	setbyte(0x8e);
-	_c_modrm(aopri2, aopri1.sreg);
+	_chk(_c_modrm(aopri2, aopri1.sreg));
+	_ce;
 }
-static void POP_RM32(t_nubit8 byte)
+static void INS_8F(t_nubit8 rid, t_nubit8 byte)
 {
+	_cb("INS_8F");
 	_SetOperandSize(byte);
 	setbyte(0x8f);
-	_c_modrm(aopri1, 0x00);
+	_chk(_c_modrm(aopri1, rid));
+	_ce;
 }
 static void NOP()
 {
+	_cb("NOP");
 	if (ARG_NONE) setbyte(0x90);
-	else flagerror = 1;
+	else _se_;
+	_ce;
 }
 static void XCHG_EAX_EAX(t_nubit8 byte)
 {
+	_cb("XCHG_EAX_EAX");
 	_SetOperandSize(byte);
 	setbyte(0x90);
+	_ce;
 }
 static void XCHG_ECX_EAX(t_nubit8 byte)
 {
+	_cb("XCHG_ECX_EAX");
 	_SetOperandSize(byte);
 	setbyte(0x91);
+	_ce;
 }
 static void XCHG_EDX_EAX(t_nubit8 byte)
 {
+	_cb("XCHG_EDX_EAX");
 	_SetOperandSize(byte);
 	setbyte(0x92);
+	_ce;
 }
 static void XCHG_EBX_EAX(t_nubit8 byte)
 {
+	_cb("XCHG_EBX_EAX");
 	_SetOperandSize(byte);
 	setbyte(0x93);
+	_ce;
 }
 static void XCHG_ESP_EAX(t_nubit8 byte)
 {
+	_cb("XCHG_ESP_EAX");
 	_SetOperandSize(byte);
 	setbyte(0x94);
+	_ce;
 }
 static void XCHG_EBP_EAX(t_nubit8 byte)
 {
+	_cb("XCHG_EBP_EAX");
 	_SetOperandSize(byte);
 	setbyte(0x95);
+	_ce;
 }
 static void XCHG_ESI_EAX(t_nubit8 byte)
 {
+	_cb("XCHG_ESI_EAX");
 	_SetOperandSize(byte);
 	setbyte(0x96);
+	_ce;
 }
 static void XCHG_EDI_EAX(t_nubit8 byte)
 {
+	_cb("XCHG_EDI_EAX");
 	_SetOperandSize(byte);
 	setbyte(0x97);
+	_ce;
 }
-static void CBW()
+static void CBW(t_nubit8 byte)
 {
-	if (ARG_NONE) {
-		setbyte(0x98);
-		avip++;
-	} else flagerror = 1;
+	_cb("CBW");
+	_SetOperandSize(byte);
+	if (ARG_NONE) setbyte(0x98);
+	else _se_;
+	_ce;
 }
-static void CWD()
+static void CWD(t_nubit8 byte)
 {
-	if (ARG_NONE) {
-		setbyte(0x99);
-		avip++;
-	} else flagerror = 1;
+	_cb("CWD");
+	_SetOperandSize(byte);
+	if (ARG_NONE) setbyte(0x99);
+	else _se_;
+	_ce;
 }
-static void CALL_PTR16_16()
+static void CALL_PTR16_32(t_nubit8 byte)
 {
+	_cb("CALL_PTR16_32");
+	_SetOperandSize(byte);
 	setbyte(0x9a);
-	avip++;
-	if (ARG_FAR_LABEL) {
-		labelStoreRef(aopri1.label, PTR_FAR);
-		avip += 4;
-	} else {
-		_c_imm16(aopri1.reip);
-		_c_imm16(aopri1.rcs);
-	}
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(GetMax16(aopri1.reip)));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(GetMax32(aopri1.reip)));
+		_be;break;
+	default: _se_;break;}
+	_chk(_c_imm16(aopri1.rcs));
+	_ce;
 }
 static void WAIT()
 {
+	_cb("WAIT");
 	setbyte(0x9b);
-	avip++;
+	_ce;
 }
-static void PUSHF()
+static void PUSHF(t_nubit8 byte)
 {
+	_cb("PUSHF");
+	_SetOperandSize(byte);
 	setbyte(0x9c);
-	avip++;
+	_ce;
 }
-static void POPF()
+static void POPF(t_nubit8 byte)
 {
+	_cb("POPF");
+	_SetOperandSize(byte);
 	setbyte(0x9d);
-	avip++;
+	_ce;
 }
 static void SAHF()
 {
+	_cb("SAHF");
 	setbyte(0x9e);
-	avip++;
+	_ce;
 }
 static void LAHF()
 {
+	_cb("LAHF");
 	setbyte(0x9f);
-	avip++;
+	_ce;
 }
 static void MOV_AL_MOFFS8()
 {
+	_cb("MOV_AL_MOFFS8");
 	setbyte(0xa0);
 	if (aopri2.mem == MEM_BP) {
+		_bb("16-bit Addressing");
 		_SetAddressSize(2);
-		_c_imm16(aopri2.disp16);
+		_chk(_c_imm16(aopri2.disp16));
+		_be;
 	} else if (aopri2.mem == MEM_EBP) {
+		_bb("32-bit Addressing");
 		_SetAddressSize(4);
-		_c_imm16(aopri2.disp32);
-	} else flagerror = 1;
+		_chk(_c_imm16(aopri2.disp32));
+		_be;
+	} else _se_;
+	_ce;
 }
 static void MOV_EAX_MOFFS32(t_nubit8 byte)
 {
+	_cb("MOV_EAX_MOFFS32");
 	_SetOperandSize(byte);
 	setbyte(0xa1);
 	if (aopri2.mem == MEM_BP) {
+		_bb("16-bit Addressing");
 		_SetAddressSize(2);
-		_c_imm16(aopri2.disp16);
+		_chk(_c_imm16(aopri2.disp16));
+		_be;
 	} else if (aopri2.mem == MEM_EBP) {
+		_bb("32-bit Addressing");
 		_SetAddressSize(4);
-		_c_imm32(aopri2.disp32);
-	} else flagerror = 1;
+		_chk(_c_imm32(aopri2.disp32));
+		_be;
+	} else _se_;
+	_ce;
 }
 static void MOV_MOFFS8_AL()
 {
+	_cb("MOV_MOFFS8_AL");
 	setbyte(0xa2);
 	if (aopri1.mem == MEM_BP) {
+		_bb("16-bit Addressing");
 		_SetAddressSize(2);
-		_c_imm16(aopri1.disp16);
+		_chk(_c_imm16(aopri1.disp16));
+		_be;
 	} else if (aopri1.mem == MEM_EBP) {
+		_bb("32-bit Addressing");
 		_SetAddressSize(4);
-		_c_imm16(aopri1.disp32);
-	} else flagerror = 1;
+		_chk(_c_imm16(aopri1.disp32));
+		_be;
+	} else _se_;
+	_ce;
 }
 static void MOV_MOFFS32_EAX(t_nubit8 byte)
 {
+	_cb("MOV_MOFFS32_EAX");
 	_SetOperandSize(byte);
 	setbyte(0xa3);
 	if (aopri1.mem == MEM_BP) {
+		_bb("16-bit Addressing");
 		_SetAddressSize(2);
-		_c_imm16(aopri1.disp16);
+		_chk(_c_imm16(aopri1.disp16));
+		_be;
 	} else if (aopri1.mem == MEM_EBP) {
+		_bb("32-bit Addressing");
 		_SetAddressSize(4);
-		_c_imm32(aopri1.disp32);
-	} else flagerror = 1;
+		_chk(_c_imm32(aopri1.disp32));
+		_be;
+	} else _se_;
+	_ce;
 }
 static void MOVSB()
 {
+	_cb("MOVSB");
 	setbyte(0xa4);
 	rinfo = &aopri2;
 	if (rinfo->flagds) rinfo->flagds = 0;
-	if (ARG_ESDI8_DSSI8) {
-		_SetAddressSize(2);
-	} else if (ARG_ESEDI8_DSESI8) {
-		_SetAddressSize(4);
-	} else flagerror = 1;
+	if (ARG_NONE) rinfo = NULL;
+	else if (ARG_ESDI8_DSSI8) _SetAddressSize(2);
+	else if (ARG_ESEDI8_DSESI8) _SetAddressSize(4);
+	else _se_;
+	_ce;
 }
 static void MOVSW(t_nubit8 byte)
 {
+	_cb("MOVSW");
 	_SetOperandSize(byte);
 	setbyte(0xa5);
 	rinfo = &aopri2;
 	if (rinfo->flagds) rinfo->flagds = 0;
 	switch (byte) {
-	case 2:
-		if (ARG_ESDI16_DSSI16) {
-			_SetAddressSize(2);
-		} else if (ARG_ESEDI16_DSESI16) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	case 4:
-		if (ARG_ESDI32_DSSI32) {
-			_SetAddressSize(2);
-		} else if (ARG_ESEDI32_DSESI32) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		if (ARG_NONE) rinfo = NULL;
+		else if (ARG_ESDI16_DSSI16) _SetAddressSize(2);
+		else if (ARG_ESEDI16_DSESI16) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	case 4: _bb("byte(4)");
+		if (ARG_NONE) rinfo = NULL;
+		else if (ARG_ESDI32_DSSI32) _SetAddressSize(2);
+		else if (ARG_ESEDI32_DSESI32) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void CMPSB()
 {
+	_cb("CMPSB");
 	setbyte(0xa6);
 	rinfo = &aopri1;
 	if (rinfo->flagds) rinfo->flagds = 0;
-	if (ARG_DSSI8_ESDI8) {
-		_SetAddressSize(2);
-	} else if (ARG_DSESI8_ESEDI8) {
-		_SetAddressSize(4);
-	} else flagerror = 1;
+	if (ARG_NONE) rinfo = NULL;
+	else if (ARG_DSSI8_ESDI8) _SetAddressSize(2);
+	else if (ARG_DSESI8_ESEDI8) _SetAddressSize(4);
+	else _se_;
+	_ce;
 }
 static void CMPSW(t_nubit8 byte)
 {
+	_cb("CMPSW");
 	_SetOperandSize(byte);
 	setbyte(0xa7);
 	rinfo = &aopri1;
 	if (rinfo->flagds) rinfo->flagds = 0;
 	switch (byte) {
-	case 2:
-		if (ARG_DSSI16_ESDI16) {
-			_SetAddressSize(2);
-		} else if (ARG_DSESI16_ESEDI16) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	case 4:
-		if (ARG_DSSI32_ESDI32) {
-			_SetAddressSize(2);
-		} else if (ARG_DSESI32_ESEDI32) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		if (ARG_NONE) rinfo = NULL;
+		else if (ARG_DSSI16_ESDI16) _SetAddressSize(2);
+		else if (ARG_DSESI16_ESEDI16) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	case 4: _bb("byte(4)");
+		if (ARG_NONE) rinfo = NULL;
+		else if (ARG_DSSI32_ESDI32) _SetAddressSize(2);
+		else if (ARG_DSESI32_ESEDI32) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void TEST_AL_I8()
 {
+	_cb("TEST_AL_I8");
 	setbyte(0xa8);
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void TEST_EAX_I32(t_nubit8 byte)
 {
+	_cb("TEST_EAX_I32");
 	_SetOperandSize(byte);
 	setbyte(0xa9);
 	switch (byte) {
-	case 2: _c_imm16(aopri2.imm16);break;
-	case 4: _c_imm32(aopri2.imm32);break;
-	default: flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void STOSB()
 {
+	_cb("STOSB");
 	setbyte(0xaa);
 	rinfo = NULL;
-	if (ARG_ESDI8) {
-		_SetAddressSize(2);
-	} else if (ARG_ESEDI8) {
-		_SetAddressSize(4);
-	} else flagerror = 1;
+	if (ARG_NONE) ;
+	else if (ARG_ESDI8) _SetAddressSize(2);
+	else if (ARG_ESEDI8) _SetAddressSize(4);
+	else _se_;
+	_ce;
 }
 static void STOSW(t_nubit8 byte)
 {
+	_cb("STOSW");
 	setbyte(0xab);
 	rinfo = NULL;
 	switch (byte) {
-	case 2:
-		if (ARG_ESDI16) {
-			_SetAddressSize(2);
-		} else if (ARG_ESEDI16) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	case 4:
-		if (ARG_ESDI32) {
-			_SetAddressSize(2);
-		} else if (ARG_ESEDI32) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		if (ARG_NONE) ;
+		else if (ARG_ESDI16) _SetAddressSize(2);
+		else if (ARG_ESEDI16) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	case 4: _bb("byte(4)");
+		if (ARG_NONE) ;
+		else if (ARG_ESDI32) _SetAddressSize(2);
+		else if (ARG_ESEDI32) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void LODSB()
 {
+	_cb("LODSB");
 	setbyte(0xac);
 	rinfo = &aopri1;
 	if (rinfo->flagds) rinfo->flagds = 0;
-	if (ARG_DSSI8) {
-		_SetAddressSize(2);
-	} else if (ARG_DSESI8) {
-		_SetAddressSize(4);
-	} else flagerror = 1;
+	if (ARG_NONE) rinfo = NULL;
+	else if (ARG_DSSI8) _SetAddressSize(2);
+	else if (ARG_DSESI8) _SetAddressSize(4);
+	else _se_;
+	_ce;
 }
 static void LODSW(t_nubit8 byte)
 {
+	_cb("LODSW");
 	setbyte(0xad);
 	rinfo = &aopri1;
 	if (rinfo->flagds) rinfo->flagds = 0;
 	switch (byte) {
-	case 2:
-		if (ARG_DSSI16) {
-			_SetAddressSize(2);
-		} else if (ARG_DSESI16) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	case 4:
-		if (ARG_DSSI32) {
-			_SetAddressSize(2);
-		} else if (ARG_DSESI32) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		if (ARG_NONE) rinfo = NULL;
+		else if (ARG_DSSI16) _SetAddressSize(2);
+		else if (ARG_DSESI16) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	case 4: _bb("byte(4)");
+		if (ARG_NONE) rinfo = NULL;
+		else if (ARG_DSSI32) _SetAddressSize(2);
+		else if (ARG_DSESI32) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void SCASB()
 {
+	_cb("SCASB");
 	setbyte(0xae);
 	rinfo = NULL;
-	if (ARG_ESDI8) {
-		_SetAddressSize(2);
-	} else if (ARG_ESEDI8) {
-		_SetAddressSize(4);
-	} else flagerror = 1;
+	if (ARG_NONE) ;
+	else if (ARG_ESDI8) _SetAddressSize(2);
+	else if (ARG_ESEDI8) _SetAddressSize(4);
+	else _se_;
+	_ce;
 }
 static void SCASW(t_nubit8 byte)
 {
+	_cb("SCASW");
 	setbyte(0xaf);
 	rinfo = NULL;
 	switch (byte) {
-	case 2:
-		if (ARG_ESDI16) {
-			_SetAddressSize(2);
-		} else if (ARG_ESEDI16) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	case 4:
-		if (ARG_ESDI32) {
-			_SetAddressSize(2);
-		} else if (ARG_ESEDI32) {
-			_SetAddressSize(4);
-		} else flagerror = 1;
-		break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		if (ARG_NONE) ;
+		else if (ARG_ESDI16) _SetAddressSize(2);
+		else if (ARG_ESEDI16) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	case 4: _bb("byte(4)");
+		if (ARG_NONE) ;
+		else if (ARG_ESDI32) _SetAddressSize(2);
+		else if (ARG_ESEDI32) _SetAddressSize(4);
+		else _se_;
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void MOV_AL_I8()
 {
+	_cb("MOV_AL_I8");
 	setbyte(0xb0);
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void MOV_CL_I8()
 {
+	_cb("MOV_CL_I8");
 	setbyte(0xb1);
-	avip++;
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void MOV_DL_I8()
 {
+	_cb("MOV_DL_I8");
 	setbyte(0xb2);
-	avip++;
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void MOV_BL_I8()
 {
+	_cb("MOV_BL_I8");
 	setbyte(0xb3);
-	avip++;
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void MOV_AH_I8()
 {
+	_cb("MOV_AH_I8");
 	setbyte(0xb4);
-	avip++;
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void MOV_CH_I8()
 {
+	_cb("MOV_CH_I8");
 	setbyte(0xb5);
-	avip++;
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void MOV_DH_I8()
 {
+	_cb("MOV_DH_I8");
 	setbyte(0xb6);
-	avip++;
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void MOV_BH_I8()
 {
+	_cb("MOV_BH_I8");
 	setbyte(0xb7);
-	avip++;
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
-static void MOV_AX_I16()
+static void MOV_EAX_I32(t_nubit8 byte)
 {
+	_cb("MOV_EAX_I32");
 	setbyte(0xb8);
-	avip++;
-	_c_imm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void MOV_CX_I16()
+static void MOV_ECX_I32(t_nubit8 byte)
 {
+	_cb("MOV_ECX_I32");
 	setbyte(0xb9);
-	avip++;
-	_c_imm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void MOV_DX_I16()
+static void MOV_EDX_I32(t_nubit8 byte)
 {
+	_cb("MOV_EDX_I32");
 	setbyte(0xba);
-	avip++;
-	_c_imm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void MOV_BX_I16()
+static void MOV_EBX_I32(t_nubit8 byte)
 {
+	_cb("MOV_EBX_I32");
 	setbyte(0xbb);
-	_c_imm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void MOV_SP_I16()
+static void MOV_ESP_I32(t_nubit8 byte)
 {
+	_cb("MOV_ESP_I32");
 	setbyte(0xbc);
-	avip++;
-	_c_imm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void MOV_BP_I16()
+static void MOV_EBP_I32(t_nubit8 byte)
 {
+	_cb("MOV_EBP_I32");
 	setbyte(0xbd);
-	avip++;
-	_c_imm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void MOV_SI_I16()
+static void MOV_ESI_I32(t_nubit8 byte)
 {
+	_cb("MOV_ESI_I32");
 	setbyte(0xbe);
-	avip++;
-	_c_imm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void MOV_DI_I16()
+static void MOV_EDI_I32(t_nubit8 byte)
 {
+	_cb("MOV_EDI_I32");
+	_SetOperandSize(byte);
 	setbyte(0xbf);
-	avip++;
-	_c_imm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void INS_C0(t_nubit8 rid)
 {
+	_cb("INS_C0");
 	setbyte(0xc0);
-	_c_modrm(aopri1, rid);
-	_c_imm8(aopri2.imm8);
+	_chk(_c_modrm(aopri1, rid));
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void INS_C1(t_nubit8 rid, t_nubit8 byte)
 {
+	_cb("INS_C1");
 	_SetOperandSize(byte);
 	setbyte(0xc1);
-	_c_modrm(aopri1, rid);
-	_c_imm8(aopri2.imm8);
+	_chk(_c_modrm(aopri1, rid));
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void RET_I16()
 {
+	_cb("RET_I16");
 	setbyte(0xc2);
-	avip++;
-	_c_imm16(aopri1.imm16);
+	_chk(_c_imm16(aopri1.imm16));
+	_ce;
 }
 static void RET_()
 {
+	_cb("RET");
 	setbyte(0xc3);
-	avip++;
+	_ce;
 }
-static void LES_R16_M16()
+static void LES_R32_M16_32(t_nubit8 byte)
 {
+	_cb("LES_R32_M16_32");
+	_SetOperandSize(byte);
 	setbyte(0xc4);
-	avip++;
-	_c_modrm(aopri2, aopri1.reg16);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void LDS_R16_M16()
+static void LDS_R32_M16_32(t_nubit8 byte)
 {
+	_cb("LDS_R32_M16_32");
 	setbyte(0xc5);
-	avip++;
-	_c_modrm(aopri2, aopri1.reg16);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void INS_C6(t_nubit8 rid)
 {
+	_cb("INS_C6");
 	setbyte(0xc6);
-	_c_modrm(aopri1, rid);
-	_c_imm8(aopri2.imm8);
+	_chk(_c_modrm(aopri1, rid));
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void INS_C7(t_nubit8 rid, t_nubit8 byte)
 {
+	_cb("INS_C7");
 	_SetOperandSize(byte);
 	setbyte(0xc7);
-	_c_modrm(aopri1, rid);
+	_chk(_c_modrm(aopri1, rid));
 	switch (byte) {
-	case 2: _c_imm16(aopri2.imm16);break;
-	case 4: _c_imm32(aopri2.imm32);break;
-	default: flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
+}
+static void ENTER()
+{
+	_cb("ENTER");
+	if (ARG_I16_I8) {
+		_bb("ARG_I16_I8");
+		setbyte(0xc8);
+		_chk(_c_imm16(aopri1.imm16));
+		_chk(_c_imm8(aopri2.imm8));
+		_be;
+	} else _se_;
+	_ce;
+}
+static void LEAVE()
+{
+	_cb("LEAVE");
+	if (ARG_NONE) setbyte(0xc9);
+	else _se_;
+	_ce;
 }
 static void RETF_I16()
 {
+	_cb("RETF_I16");
 	setbyte(0xca);
-	avip++;
-	_c_imm16(aopri1.imm16);
+	_chk(_c_imm16(aopri1.imm16));
+	_ce;
 }
 static void RETF_()
 {
+	_cb("RETF_");
 	setbyte(0xcb);
-	avip++;
+	_ce;
 }
 static void INT3()
 {
+	_cb("INT3");
 	setbyte(0xcc);
-	avip++;
+	_ce;
 }
 static void INT_I8()
 {
+	_cb("INT_I8");
 	setbyte(0xcd);
-	avip++;
-	_c_imm8(aopri1.imm8);
+	_chk(_c_imm8(aopri1.imm8));
+	_ce;
 }
 static void INTO()
 {
+	_cb("INTO");
 	setbyte(0xcd);
-	avip++;
+	_ce;
 }
 static void IRET()
 {
+	_cb("IRET");
 	setbyte(0xcf);
-	avip++;
+	_ce;
 }
 static void INS_D0(t_nubit8 rid)
 {
+	_cb("INS_DO");
 	setbyte(0xd0);
-	avip++;
-	_c_modrm(aopri1, rid);
+	_chk(_c_modrm(aopri1, rid));
+	_ce;
 }
 static void INS_D1(t_nubit8 rid, t_nubit8 byte)
 {
+	_cb("INS_D1");
 	_SetOperandSize(byte);
 	setbyte(0xd1);
-	_c_modrm(aopri1, rid);
+	_chk(_c_modrm(aopri1, rid));
+	_ce;
 }
 static void INS_D2(t_nubit8 rid)
 {
+	_cb("INS_D2");
 	setbyte(0xd2);
-	avip++;
-	_c_modrm(aopri1, rid);
+	_chk(_c_modrm(aopri1, rid));
+	_ce;
 }
 static void INS_D3(t_nubit8 rid, t_nubit8 byte)
 {
+	_cb("INS_D3");
 	_SetOperandSize(byte);
 	setbyte(0xd3);
-	_c_modrm(aopri1, rid);
+	_chk(_c_modrm(aopri1, rid));
+	_ce;
 }
 static void AAM()
 {
+	_cb("AAM");
 	if (ARG_NONE) {
+		_bb("ARG_NONE");
 		setbyte(0xd4);
-		avip++;
-		_c_imm8(0x0a);
-	} else flagerror = 1;
+		_chk(_c_imm8(0x0a));
+		_be;
+	} else if (ARG_I8) {
+		_bb("ARG_I8");
+		setbyte(0xd4);
+		_chk(_c_imm8(aopri1.imm8));
+		_be;
+	} else _se_;
+	_ce;
 }
 static void AAD()
 {
+	_cb("AAD");
 	if (ARG_NONE) {
+		_bb("ARG_NONE");
 		setbyte(0xd5);
-		avip++;
-		_c_imm8(0x0a);
-	} else flagerror = 1;
+		_chk(_c_imm8(0x0a));
+		_be;
+	} else if (ARG_I8) {
+		_bb("ARG_I8");
+		setbyte(0xd5);
+		_chk(_c_imm8(aopri1.imm8));
+		_be;
+	} else _se_;
+	_ce;
 }
-static void XLAT()
+static void XLATB()
 {
-	if (ARG_NONE) {
-		setbyte(0xd7);
-		avip++;
-	} else flagerror = 1;
+	_cb("XLATB");
+	rinfo = &aopri1;
+	if (rinfo->flagds) rinfo->flagds = 0;
+	setbyte(0xd7);
+	if (ARG_DSBXAL8) {
+		_SetAddressSize(2);
+	} else if (ARG_DSEBXAL8) {
+		_SetAddressSize(4);
+	} else _se_;
+	_ce;
 }
+/* TODO STARTS HERE */
 static void IN_AL_I8()
 {
 	setbyte(0xe4);
@@ -4064,12 +4478,20 @@ static void OUT_I8_AX()
 	avip++;
 	_c_imm8(aopri1.imm8);
 }
-static void CALL_REL16()
+static void CALL_REL32(t_nubit8 byte)
 {
+	_cb("CALL_REL32");
+	_SetOperandSize(byte);
 	setbyte(0xe8);
-	if (ARG_NEAR_LABEL) {
-		labelStoreRef(aopri1.label, PTR_NEAR);
-	} else _c_imm16(aopri1.imm16);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri1.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri1.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void JMP_REL16()
 {
@@ -4330,8 +4752,8 @@ static void POP()
 	else if (ARG_EBP) POP_EBP(4);
 	else if (ARG_ESI) POP_ESI(4);
 	else if (ARG_EDI) POP_EDI(4);
-	else if (ARG_RM16) POP_RM32(2);
-	else if (ARG_RM32) POP_RM32(4);
+	else if (ARG_RM16) INS_8F(0x00, 2);
+	else if (ARG_RM32) INS_8F(0x00, 4);
 	else flagerror = 1;
 }
 static void ADD()
@@ -4764,12 +5186,34 @@ static void BOUND()
 }
 static void IMUL()
 {
+	_cb("IMUL");
 	if      (ARG_RM8s) INS_F6(0x05);
 	else if (ARG_RM16s) INS_F7(0x05, 2);
 	else if (ARG_RM32s) INS_F7(0x05, 4);
+	else if (ARG_R16_RM16_I8)  IMUL_R32_RM32_I8(2);
+	else if (ARG_R32_RM32_I8)  IMUL_R32_RM32_I8(4);
 	else if (ARG_R16_RM16_I16) IMUL_R32_RM32_I32(2);
 	else if (ARG_R32_RM32_I32) IMUL_R32_RM32_I32(4);
-	else flagerror = 1;
+	else _se_;
+	_ce;
+}
+static void INS()
+{
+	_cb("INS");
+	if (ARG_ESDI8s_DX || ARG_ESEDI8s_DX) INSB();
+	else if (ARG_ESDI16s_DX || ARG_ESEDI16s_DX) INSW(2);
+	else if (ARG_ESDI32s_DX || ARG_ESEDI32s_DX) INSW(4);
+	else _se_;
+	_ce;
+}
+static void OUTS()
+{
+	_cb("OUTS");
+	if (ARG_DX_DSSI8s || ARG_DX_DSESI8s) OUTSB();
+	else if (ARG_DX_DSSI16s || ARG_DX_DSESI16s) OUTSW(2);
+	else if (ARG_DX_DSSI32s || ARG_DX_DSESI32s) OUTSW(4);
+	else _se_;
+	_ce;
 }
 static void JCC_REL(t_nubit8 opcode)
 {
@@ -4834,14 +5278,22 @@ static void MOV()
 	else if (ARG_CH_I8)  MOV_CH_I8();
 	else if (ARG_DH_I8)  MOV_DH_I8();
 	else if (ARG_BH_I8)  MOV_BH_I8();
-	else if (ARG_AX_I16) MOV_AX_I16();
-	else if (ARG_CX_I16) MOV_CX_I16();
-	else if (ARG_DX_I16) MOV_DX_I16();
-	else if (ARG_BX_I16) MOV_BX_I16();
-	else if (ARG_SP_I16) MOV_SP_I16();
-	else if (ARG_BP_I16) MOV_BP_I16();
-	else if (ARG_SI_I16) MOV_SI_I16();
-	else if (ARG_DI_I16) MOV_DI_I16();
+	else if (ARG_AX_I16) MOV_EAX_I32(2);
+	else if (ARG_CX_I16) MOV_ECX_I32(2);
+	else if (ARG_DX_I16) MOV_EDX_I32(2);
+	else if (ARG_BX_I16) MOV_EBX_I32(2);
+	else if (ARG_SP_I16) MOV_ESP_I32(2);
+	else if (ARG_BP_I16) MOV_EBP_I32(2);
+	else if (ARG_SI_I16) MOV_ESI_I32(2);
+	else if (ARG_DI_I16) MOV_EDI_I32(2);
+	else if (ARG_EAX_I32) MOV_EAX_I32(4);
+	else if (ARG_ECX_I32) MOV_ECX_I32(4);
+	else if (ARG_EDX_I32) MOV_EDX_I32(4);
+	else if (ARG_EBX_I32) MOV_EBX_I32(4);
+	else if (ARG_ESP_I32) MOV_ESP_I32(4);
+	else if (ARG_EBP_I32) MOV_EBP_I32(4);
+	else if (ARG_ESI_I32) MOV_ESI_I32(4);
+	else if (ARG_EDI_I32) MOV_EDI_I32(4);
 	else if (ARG_AL_MOFFS8)   MOV_AL_MOFFS8();
 	else if (ARG_MOFFS8_AL)   MOV_MOFFS8_AL();
 	else if (ARG_AX_MOFFS16)  MOV_EAX_MOFFS32(2);
@@ -4879,28 +5331,83 @@ static void LEA()
 }
 static void CALL()
 {
-	if      (ARG_FAR_I16_16 || ARG_FAR_LABEL) CALL_PTR16_16();
-	else if (ARG_NEAR_I16s || ARG_NEAR_LABEL || ARG_PNONE_I16s) CALL_REL16();
+	if      (ARG_FAR_I16_16) CALL_PTR16_32(2);
+	else if (ARG_FAR_I16_32)  CALL_PTR16_32(4);
+	else if (ARG_NEAR_I16s  || ARG_PNONE_I16s) CALL_REL32(2);
+	else if (ARG_NEAR_I32s  || ARG_PNONE_I32s) CALL_REL32(4);
 	else if (ARG_NEAR_RM16s || ARG_PNONE_RM16s) INS_FF(0x02, 2);
 	else if (ARG_NEAR_RM32s || ARG_PNONE_RM32s) INS_FF(0x02, 4);
 	else if (ARG_FAR_M16_16) INS_FF(0x03, 2);
 	else flagerror = 1;
 }
+static void MOVS()
+{
+	_cb("MOVS");
+	if (ARG_ESDI8s_DSSI8s || ARG_ESEDI8s_DSESI8s) MOVSB();
+	else if (ARG_ESDI16s_DSSI16s || ARG_ESEDI16s_DSESI16s) MOVSW(2);
+	else if (ARG_ESDI32s_DSSI32s || ARG_ESEDI32s_DSESI32s) MOVSW(4);
+	else _se_;
+	_ce;
+}
+static void CMPS()
+{
+	_cb("CMPS");
+	if (ARG_DSSI8s_ESDI8s || ARG_DSESI8s_ESEDI8s) CMPSB();
+	else if (ARG_DSSI16s_ESDI16s || ARG_DSESI16s_ESEDI16s) CMPSW(2);
+	else if (ARG_DSSI32s_ESDI32s || ARG_DSESI32s_ESEDI32s) CMPSW(4);
+	else _se_;
+	_ce;
+}
+static void STOS()
+{
+	_cb("STOS");
+	if (ARG_ESDI8s || ARG_ESEDI8s) STOSB();
+	else if (ARG_ESDI16s || ARG_ESEDI16s) STOSW(2);
+	else if (ARG_ESDI32s || ARG_ESEDI32s) STOSW(4);
+	else _se_;
+	_ce;
+}
+static void LODS()
+{
+	_cb("LODS");
+	if (ARG_DSSI8s || ARG_DSESI8s) LODSB();
+	else if (ARG_DSSI16s || ARG_DSESI16s) LODSW(2);
+	else if (ARG_DSSI32s || ARG_DSESI32s) LODSW(4);
+	else _se_;
+	_ce;
+}
+static void SCAS()
+{
+	_cb("SCAS");
+	if (ARG_ESDI8s || ARG_ESEDI8s) SCASB();
+	else if (ARG_ESDI16s || ARG_ESEDI16s) SCASW(2);
+	else if (ARG_ESDI32s || ARG_ESEDI32s) SCASW(4);
+	else _se_;
+	_ce;
+}
 static void RET()
 {
+	_cb("RET");
 	if (ARG_I16u) RET_I16();
 	else if (ARG_NONE) RET_();
-	else flagerror = 1;
+	else _se_;
+	_ce;
 }
 static void LES()
 {
-	if (ARG_R16_M16) LES_R16_M16();
-	else flagerror = 1;
+	_cb("LES");
+	if (ARG_R16_M16) LES_R32_M16_32(2);
+	else if (ARG_R32_M32) LES_R32_M16_32(4);
+	else _se_;
+	_ce;
 }
 static void LDS()
 {
-	if (ARG_R16_M16) LDS_R16_M16();
-	else flagerror = 1;
+	_cb("LDS");
+	if (ARG_R16_M16) LDS_R32_M16_32(2);
+	else if (ARG_R32_M32) LDS_R32_M16_32(4);
+	else _se_;
+	_ce;
 }
 static void RETF()
 {
@@ -4914,6 +5421,13 @@ static void INT()
 		if (aopri1.imm8 == 0x03) INT3();
 		else INT_I8();
 	} else flagerror = 1;
+}
+static void XLAT()
+{
+	_cb("XLAT");
+	if (ARG_DSBXAL8 || ARG_DSEBXAL8) XLATB();
+	else _se_;
+	_ce;
 }
 static void ROL()
 {
@@ -5230,9 +5744,11 @@ static void exec()
 	else if (!strcmp(rop, "op+:")) PREFIX_OprSize();
 	else if (!strcmp(rop, "az+:")) PREFIX_AddrSize();
 	else if (!strcmp(rop,"imul")) IMUL();
+	else if (!strcmp(rop,"ins"))  INS();
 	else if (!strcmp(rop,"insb")) INSB();
 	else if (!strcmp(rop,"insw")) INSW(2);
 	else if (!strcmp(rop,"insd")) INSW(4);
+	else if (!strcmp(rop,"outs"))  OUTS();
 	else if (!strcmp(rop,"outsb")) OUTSB();
 	else if (!strcmp(rop,"outsw")) OUTSW(2);
 	else if (!strcmp(rop,"outsd")) OUTSW(4);
@@ -5271,32 +5787,43 @@ static void exec()
 	else if (!strcmp(rop, "mov")) MOV();
 	else if (!strcmp(rop, "lea")) LEA();
 	else if (!strcmp(rop, "nop")) NOP();
-	else if (!strcmp(rop, "cbw")) CBW();
-	else if (!strcmp(rop, "cwd")) CWD();
+	else if (!strcmp(rop, "cbw")) CBW(2);
+	else if (!strcmp(rop, "cwde")) CBW(4);
+	else if (!strcmp(rop, "cwd")) CWD(2);
+	else if (!strcmp(rop, "cdq")) CWD(4);
 	else if (!strcmp(rop,"call")) CALL();
 	else if (!strcmp(rop,"wait")) WAIT();
-	else if (!strcmp(rop,"pushf")) PUSHF();
-	else if (!strcmp(rop,"popf")) POPF();
+	else if (!strcmp(rop,"pushf")) PUSHF(2);
+	else if (!strcmp(rop,"pushfd")) PUSHF(4);
+	else if (!strcmp(rop,"popf")) POPF(2);
+	else if (!strcmp(rop,"popfd")) POPF(4);
 	else if (!strcmp(rop,"sahf")) SAHF();
 	else if (!strcmp(rop,"lahf")) LAHF();
+	else if (!strcmp(rop,"movs"))  MOVS();
 	else if (!strcmp(rop,"movsb")) MOVSB();
 	else if (!strcmp(rop,"movsw")) MOVSW(2);
 	else if (!strcmp(rop,"movsd")) MOVSW(4);
+	else if (!strcmp(rop,"cmps"))  CMPS();
 	else if (!strcmp(rop,"cmpsb")) CMPSB();
 	else if (!strcmp(rop,"cmpsw")) CMPSW(2);
 	else if (!strcmp(rop,"cmpsd")) CMPSW(4);
+	else if (!strcmp(rop,"stos"))  STOS();
 	else if (!strcmp(rop,"stosb")) STOSB();
 	else if (!strcmp(rop,"stosw")) STOSW(2);
 	else if (!strcmp(rop,"stosd")) STOSW(4);
+	else if (!strcmp(rop,"lods"))  LODS();
 	else if (!strcmp(rop,"lodsb")) LODSB();
 	else if (!strcmp(rop,"lodsw")) LODSW(2);
 	else if (!strcmp(rop,"lodsd")) LODSW(4);
+	else if (!strcmp(rop,"scas"))  SCAS();
 	else if (!strcmp(rop,"scasb")) SCASB();
 	else if (!strcmp(rop,"scasw")) SCASW(2);
 	else if (!strcmp(rop,"scasd")) SCASW(4);
 	else if (!strcmp(rop, "ret")) RET();
 	else if (!strcmp(rop, "les")) LES();
 	else if (!strcmp(rop, "lds")) LDS();
+	else if (!strcmp(rop, "enter")) ENTER();
+	else if (!strcmp(rop, "leave")) LEAVE();
 	else if (!strcmp(rop,"retf")) RETF();
 	else if (!strcmp(rop, "int")) INT();
 	else if (!strcmp(rop,"into")) INTO();
@@ -5311,7 +5838,8 @@ static void exec()
 	else if (!strcmp(rop, "sar")) SAR();
 	else if (!strcmp(rop, "aam")) AAM();
 	else if (!strcmp(rop, "aad")) AAD();
-	else if (!strcmp(rop,"xlat")) XLAT();
+	else if (!strcmp(rop,"xlat"))  XLAT();
+	else if (!strcmp(rop,"xlatb")) XLATB();
 	else if (!strcmp(rop,"loopne")) LOOPCC(0xe0);
 	else if (!strcmp(rop,"loopnz")) LOOPCC(0xe0);
 	else if (!strcmp(rop,"loope")) LOOPCC(0xe1);
