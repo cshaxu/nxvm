@@ -453,6 +453,7 @@ extern t_cpu vcpu;
 #define _IsPaging (_GetCR0_PE && _GetCR0_PG)
 #define _IsProtected (_GetCR0_PE && !_GetEFLAGS_VM)
 #define _GetCPL  (_GetCR0_PE ? (_GetEFLAGS_VM ? 3 : vcpu.cs.dpl) : 0)
+#define _MakeCPL(cpl) (vcpu.cs.dpl = (cpl))
 
 void vcpuInit();
 void vcpuReset();

@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.012d]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.012e]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -211,6 +211,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 010d Bitmap Font Implemented
  * 0118 i386 Build Milestone 1 (32-bit ins)
  * 0128 i386 Build Milestone 2 (MMU)
+ * 012e Bochs Tester Constructed
  *
  * Format Unify:
  * check all includes, macro names, flag names

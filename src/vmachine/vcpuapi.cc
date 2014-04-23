@@ -7,8 +7,9 @@
 
 static t_cpu oldbcpu, newbcpu;
 
-#ifdef VGLOBAL_BOCHS
 
+#ifdef VGLOBAL_BOCHS
+static t_bool flagvalid = 0;
 #define NEED_CPU_REG_SHORTCUTS 1
 #include "d:/bochs-2.6/bochs.h"
 #include "d:/bochs-2.6/cpu/cpu.h"
@@ -267,13 +268,21 @@ void vcpuapiFinal()
 void vcpuapiExecBefore()
 {
 	CopyBochsCpu(&oldbcpu);
-	vcpu = oldbcpu;
-	vcpuinsRefresh();
+	if (oldbcpu.cs.base + oldbcpu.eip == 0x1ae8d/*0x7c00*/) {
+		flagvalid = 1;
+		vapiPrint("NXVM and Bochs comparison starts from here.\n");
+	}
+	if (flagvalid) {
+		vcpu = oldbcpu;
+		vcpuinsRefresh();
+	}
 }
 void vcpuapiExecAfter()
 {
-	CopyBochsCpu(&newbcpu);
-	if (vcpuapiCheckDiff()) BX_CPU_THIS_PTR magic_break = 1;
+	if (flagvalid) {
+		CopyBochsCpu(&newbcpu);
+		if (vcpuapiCheckDiff()) BX_CPU_THIS_PTR magic_break = 1;
+	}
 }
 static void PrintPhysical(t_nubit32 phy, t_nubit64 data, t_nubit8 byte, t_bool write)
 {

@@ -271,6 +271,16 @@ static t_nubit64 _kmap_read(t_nubit32 phy, t_nubit8 byte)
 #else
 	_chr(result = vcpuapiReadPhysical(phy, byte));
 #endif
+	switch (byte) {
+	case 1: result = GetMax8(result);break;
+	case 2: result = GetMax16(result);break;
+	case 3: result = GetMax24(result);break;
+	case 4: result = GetMax32(result);break;
+	case 5: result &= 0x000000ffffffffff;break;
+	case 6: result = GetMax48(result);break;
+	case 7: result &= 0x00ffffffffffffff;break;
+	case 8: result = GetMax64(result);break;
+	default:_impossible_r_;break;}
 	_ce;
 	return result;
 }
@@ -278,6 +288,16 @@ static void _kmap_write(t_nubit32 phy, t_nubit64 data, t_nubit8 byte)
 {
 	_cb("_kmap_write");
 	_chk(phy = _kmap_mapping(phy));
+	switch (byte) {
+	case 1: data = GetMax8(data);break;
+	case 2: data = GetMax16(data);break;
+	case 3: data = GetMax24(data);break;
+	case 4: data = GetMax32(data);break;
+	case 5: data &= 0x000000ffffffffff;break;
+	case 6: data = GetMax48(data);break;
+	case 7: data &= 0x00ffffffffffffff;break;
+	case 8: data = GetMax64(data);break;
+	default:_impossible_;break;}
 #ifndef VGLOBAL_BOCHS
 	_chk(_kma_write_ref(vramAddr(phy), data, byte));
 #else
@@ -291,7 +311,7 @@ static t_nubit64 _kma_read_physical(t_cpuins_physical *rphy)
 	t_nubit64 result;
 	_cb("_kma_read_physical");
 	_chr(result = _kmap_read((rphy->ph1), rphy->pl1));
-	if (_IsPaging && rphy->flag2) {
+	if (rphy->flag2) {
 		_bb("Paging(1),flag2(1)");
 		rphy->ph2 = _kmap_mapping(rphy->ph2);
 		_chr(result |= (_kmap_read(rphy->ph2, rphy->pl2) << (rphy->pl1 * 8)));
@@ -305,7 +325,7 @@ static void _kma_write_physical(t_cpuins_physical *rphy, t_nubit64 data)
 {
 	_cb("_kma_write_physical");
 	_chk(_kmap_write(rphy->ph1, data, rphy->pl1));
-	if (_IsPaging && rphy->flag2) {
+	if (rphy->flag2) {
 		_bb("Paging(1),flag2(1)");
 		_chk(_kmap_write(rphy->ph2, (data >> (rphy->pl1 * 8)), rphy->pl2));
 		_be;
@@ -321,11 +341,24 @@ static void _kma_physical_linear(t_cpuins_physical *rphy, t_nubit32 linear, t_nu
 	_cb("_kma_physical_linear");
 	if (!_IsPaging) {
 		_bb("!Paging");
-		rphy->flag2 = 0;
-		rphy->ph1 = linear;
-		rphy->pl1 = byte;
-		rphy->ph2 = 0;
-		rphy->pl2 = 0;
+		if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
+			_bb("Linear_Offset(>PageSize)");
+			byte1 = _GetPageSize - _GetLinear_Offset(linear);
+			byte2 = byte - byte1;
+			_chk(_kma_physical_linear(rphy, linear + byte1, byte2, write, vpl));
+			rphy->flag2 = 1;
+			rphy->ph2 = rphy->ph1;
+			rphy->pl2 = byte2;
+			rphy->ph1 = linear;
+			rphy->pl1 = byte1;
+			_be;
+		} else {
+			rphy->flag2 = 0;
+			rphy->ph1 = linear;
+			rphy->pl1 = byte;
+			rphy->ph2 = 0x00000000;
+			rphy->pl2 = 0x00;
+		}
 		_be;
 	} else {
 		_bb("Paging");
@@ -731,7 +764,7 @@ tots _ksa_descriptor_gdt(t_nubit16 selector)
 	if (_GetSelector_TI(selector)) _impossible_;
 	vcpuins.xdesc.selector = selector;
 	if (!_GetSelector_Index(selector)) {
-		_bb("Selector(null)");
+		_bb("selector(null)");
 		vcpuins.xdesc.flagvalid = 0;
 		vcpuins.xdesc.logical.rsreg = NULL;
 		vcpuins.xdesc.logical.offset = 0x00000000;
@@ -830,7 +863,7 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 	case SREG_DATA:
 		_bb("sregtype(SREG_DATA)");
 		if (_IsProtected) {
-			_bb("Protected(1)");
+			_bb("Protected");
 			if (!rdesc->flagvalid || _IsSelectorNull(rdesc->selector)) {
 				_bb("selector(null)");
 				rsreg->flagvalid = 0;
@@ -890,6 +923,7 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 			rsreg->flagvalid = 1;
 			rsreg->selector = rdesc->selector;
 			rsreg->base = (rdesc->selector << 4);
+			if (_GetCR0_PE && _GetEFLAGS_VM) rsreg->dpl = 0x03;
 			_be;
 		}
 		_be;break;
@@ -943,6 +977,7 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 			rsreg->flagvalid = 1;
 			rsreg->selector = rdesc->selector;
 			rsreg->base = (rdesc->selector << 4);
+			if (_GetCR0_PE && _GetEFLAGS_VM) rsreg->dpl = 0x03;
 			_be;
 		}
 		_be;break;
@@ -956,7 +991,7 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 			_chk(_SetExcept_GP(0));
 			_be;
 		}
-		if (_IsDescTSSAvl(rdesc->descriptor)) {
+		if (!_IsDescTSSAvl(rdesc->descriptor)) {
 			_bb("!DescTssAvl");
 			_chk(_SetExcept_GP(rdesc->selector));
 			_be;
@@ -1074,24 +1109,18 @@ static void _s_descriptor(t_nubit16 selector)
 }
 static t_nubit64 _s_read_idt(t_nubit8 intid)
 {
-	/* TODO: protected mode idt read not implemented */
-	t_nubit64 result = 0x0000000000000000;
+	t_nubit64 result;
 	t_vaddrcc ref = 0;
 	_cb("_s_read_idt");
 	if (!_GetCR0_PE) {
 		_bb("CR0_PE(0)");
-		if (GetMax16(intid * 4 + 3) > GetMax16(vcpu.idtr.limit)) {
-			_bb("intid(>idtr.limit)");
-			_chr(_SetExcept_GP(0));
-			_be;
-		}
+		if (GetMax16(intid * 4 + 3) > GetMax16(vcpu.idtr.limit)) _impossible_r_;
 		_chr(result = GetMax32(_kma_read_logical(&vcpu.idtr, (intid * 4), 4, 0x00, 0)));
 		_be;
 	} else {
 		_bb("CR0_PE(1)");
-		_newins_;
-		_comment("_s_read_idt::Protected: not implemented");
-		_chr(_SetExcept_UD(0));
+		if (GetMax16(intid * 8 + 7) > GetMax16(vcpu.idtr.limit)) _impossible_r_;
+		_chr(result = GetMax64(_kma_read_logical(&vcpu.idtr, (intid * 8), 8, 0x00, 0)));
 		_be;
 	}
 	_ce;
@@ -1179,27 +1208,6 @@ static void _s_write_gs(t_nubit32 offset, t_nubit64 data, t_nubit8 byte)
 {
 	_cb("_s_write_gs");
 	_chk(_m_write_logical(&vcpu.gs, offset, data, byte));
-	_ce;
-}
-todo _s_test_idt(t_nubit8 intid)
-{
-	/* TODO: protected mode idt limit check not implemented */
-	_cb("_s_test_idt");
-	if (!_GetCR0_PE) {
-		_bb("CR0_PE(0)");
-		if (GetMax16(intid * 4 + 3) > GetMax16(vcpu.idtr.limit)) {
-			_bb("intid(>idtr.limit)");
-			_chk(_SetExcept_GP(0));
-			_be;
-		}
-		_be;
-	} else {
-		_bb("CR0_PE(1)");
-		_newins_;
-		_comment("_s_test_idt::Protected: not implemented");
-		_chk(_SetExcept_UD(0));
-		_be;
-	}
 	_ce;
 }
 done _s_test_cs(t_nubit32 offset)
@@ -1972,6 +1980,27 @@ done _kec_jmp_near(t_nubit32 neweip, t_nubit8 byte)
 	vcpu.eip = neweip;
 	_ce;
 }
+tots _kec_ret_far(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte)
+{
+	t_cpu_sreg ccs = vcpu.cs;
+	_cb("_kec_ret_far");
+	switch (byte) {
+	case 2: neweip = GetMax16(neweip);break;
+	case 4: neweip = GetMax32(neweip);break;
+	default: _bb("byte");
+		_chk(_SetExcept_CE(byte));
+		_be;break;
+	}
+	_chk(_ksa_load_sreg(&ccs, rdesc));
+	_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
+	vcpu.cs = ccs;
+	vcpu.eip = neweip;
+	switch (_GetStackSize) {
+	case 2: vcpu.sp += parambyte;break;
+	case 4: vcpu.esp += parambyte;break;
+	default:_impossible_;break;}
+	_ce;
+}
 tots _kec_ret_near(t_nubit16 parambyte, t_nubit8 byte)
 {
 	t_nubit32 neweip;
@@ -1997,38 +2026,6 @@ tots _kec_ret_near(t_nubit16 parambyte, t_nubit8 byte)
 	default:_impossible_;break;}
 	_ce;
 }
-tots _kec_ret_far(t_nubit16 parambyte, t_nubit16 byte)
-{
-	t_cpu_sreg ccs = vcpu.cs;
-	t_nubit32 neweip;
-	t_nubit32 newcs = 0x00000000;
-	_cb("_kec_ret_far");
-	switch (byte) {
-	case 2: _bb("byte(2)");
-		_chk(_s_test_ss_pop(4));
-		_chk(neweip = GetMax16(_kec_pop(2)));
-		_chk(newcs = GetMax16(_kec_pop(2)));
-		_be;break;
-	case 4: _bb("byte(4)");
-		_newins_;
-		_chk(_s_test_ss_pop(8));
-		_chk(neweip = GetMax32(_kec_pop(4)));
-		_chk(newcs = GetMax16(_kec_pop(4)));
-		_be;break;
-	default: _bb("byte");
-		_chk(_SetExcept_CE(byte));
-		_be;break;
-	}
-	_chk(_s_load_sreg(&ccs, newcs));
-	_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
-	vcpu.cs = ccs;
-	vcpu.eip = neweip;
-	switch (_GetStackSize) {
-	case 2: vcpu.sp += parambyte;break;
-	case 4: vcpu.esp += parambyte;break;
-	default:_impossible_;break;}
-	_ce;
-}
 /* sub execution routine */
 done _ser_call_far_real(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
 {
@@ -2037,18 +2034,85 @@ done _ser_call_far_real(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
 	_chk(_kec_call_far(rdesc, neweip, byte));
 	_ce;
 }
-todo _ser_call_far_cs_conf(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte);
-todo _ser_call_far_cs_nonc(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte);
-todo _ser_call_far_call_gate(t_cpuins_desc *rdesc);
-todo _ser_call_far_task_gate(t_cpuins_desc *rdesc);
-todo _ser_call_far_tss(t_cpuins_desc *rdesc);
+todo _ser_call_far_cs_conf(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
+{
+	_cb("_ser_call_far_cs_conf");
+	if (!_IsProtected) _impossible_;
+	if (!rdesc->flagvalid) _impossible_;
+	if (!_IsDescCodeConform(rdesc->descriptor)) _impossible_;
+	if (_GetDesc_DPL(rdesc->descriptor) > _GetCPL) {
+		_bb("DPL(>CPL)");
+		_comment("sel=%04X, desc=%016llX\n", rdesc->selector, rdesc->descriptor);
+		_comment("dpl=%01X, cpl=%01X\n", _GetDesc_DPL(rdesc->descriptor), _GetCPL);
+		_chk(_SetExcept_GP(rdesc->selector));
+		_be;
+	}
+	if (!_IsDescPresent(rdesc->descriptor)) {
+		_bb("!DescPresent");
+		_chk(_SetExcept_NP(rdesc->selector));
+		_be;
+	}
+	_chk(_kec_call_far(rdesc, neweip, byte));
+	_ce;
+}
+todo _ser_call_far_cs_nonc(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
+{
+	_cb("_ser_call_far_cs_nonc");
+	if (!_IsProtected) _impossible_;
+	if (!rdesc->flagvalid) _impossible_;
+	if (!_IsDescCodeNonConform(rdesc->descriptor)) _impossible_;
+	if (_GetDesc_DPL(rdesc->descriptor) != _GetCPL ||
+		_GetSelector_RPL(rdesc->selector) > _GetCPL) {
+		_bb("DPL(!CPL)/RPL(>CPL)");
+		_chk(_SetExcept_GP(rdesc->selector));
+		_be;
+	}
+	if (!_IsDescPresent(rdesc->descriptor)) {
+		_bb("!DescPresent");
+		_chk(_SetExcept_NP(rdesc->selector));
+		_be;
+	}
+	_chk(_kec_call_far(rdesc, neweip, byte));
+	_ce;
+}
+todo _ser_call_far_call_gate(t_cpuins_desc *rdesc)
+{
+	_cb("_ser_call_far_call_gate");
+	if (!_IsProtected) _impossible_;
+	if (!rdesc->flagvalid) _impossible_;
+	if (!_IsDescCallGate(rdesc->descriptor)) _impossible_;
+	_chk(_SetExcept_CE(0));
+	_ce;
+}
+todo _ser_call_far_task_gate(t_cpuins_desc *rdesc)
+{
+	_cb("_ser_call_far_task_gate");
+	if (!_IsProtected) _impossible_;
+	if (!rdesc->flagvalid) _impossible_;
+	if (!_IsDescTaskGate(rdesc->descriptor)) _impossible_;
+	_chk(_SetExcept_CE(0));
+	_ce;
+}
+todo _ser_call_far_tss(t_cpuins_desc *rdesc)
+{
+	_cb("_ser_call_far_tss");
+	if (!_IsProtected) _impossible_;
+	if (!rdesc->flagvalid) _impossible_;
+	if (!_IsDescTSS(rdesc->descriptor)) _impossible_;
+	_chk(_SetExcept_CE(0));
+	_ce;
+}
 done _ser_int_real(t_nubit8 intid, t_nubit8 byte)
 {
-	t_nubit16 cip = 0x0000;
-	t_nubit32 vector = 0x00000000;
+	t_nubit16 cip;
+	t_nubit32 vector;
 	_cb("_ser_int_real");
 	if (_IsProtected) _impossible_;
-	_chk(_s_test_idt(intid));
+	if (GetMax16(intid * 4 + 3) > GetMax16(vcpu.idtr.limit)) {
+		_bb("intid(>idtr.limit)");
+		_chk(_SetExcept_GP(0));
+		_be;
+	}
 	switch (byte) {
 	case 2: _bb("byte(2)");
 		_chk(_s_test_ss_push(6));
@@ -2078,44 +2142,75 @@ done _ser_int_real(t_nubit8 intid, t_nubit8 byte)
 	_chk(_s_load_cs(GetMax16(vector >> 16)));
 	_ce;
 }
-done _ser_iret_real(t_nubit8 byte)
+todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 {
-	t_nubit32 neweip;
-	t_nubit32 newcs;
-	t_nubit32 neweflags;
-	_cb("_ser_iret_real");
-	if (_IsProtected) _impossible_;
-	switch (byte) {
-	case 2: _bb("byte(2)");
-		_chk(_s_test_ss_pop(6));
-		_chk(neweip    = GetMax16(_kec_pop(2)));
-		_chk(newcs     = GetMax16(_kec_pop(2)));
-		_chk(neweflags = GetMax16(_kec_pop(2)));
-		vcpu.eip = neweip;
-		_chk(_s_load_cs(GetMax16(newcs)));
-		vcpu.eflags = (neweflags & 0x0000ffff) | (vcpu.eflags & 0xffff0000);
+	t_nubit64 cdesc;
+	_cb("_ser_int_protected");
+	if (!_GetCR0_PE) _impossible_;
+	if (GetMax16(intid * 8 + 7) > GetMax16(vcpu.idtr.limit)) {
+		_bb("intid(>idtr.limit)");
+		_chk(_SetExcept_GP(intid * 8 + 2 + !!flagext));
+		_be;
+	}
+	_chk(cdesc = _s_read_idt(intid));
+	switch (_GetDesc_Type(cdesc)) {
+	case VCPU_DESC_SYS_TYPE_TASKGATE:
+	case VCPU_DESC_SYS_TYPE_INTGATE_16:
+	case VCPU_DESC_SYS_TYPE_INTGATE_32:
+	case VCPU_DESC_SYS_TYPE_TRAPGATE_16:
+	case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
+		break;
+	default: _bb("Desc_Type(!TaskGate/!IntGate/!TrapGate");
+		_chk(_SetExcept_GP(intid * 8 + 2 + !!flagext));
 		_be;break;
-	case 4: _bb("byte(4)");
-		_newins_;
-		_chk(_s_test_ss_pop(12));
-		_chk(neweip    = GetMax32(_kec_pop(4)));
-		_chk(newcs     = GetMax16(_kec_pop(4)));
-		_chk(neweflags = GetMax32(_kec_pop(4)));
-		vcpu.eip = neweip;
-		_chk(_s_load_cs(GetMax16(newcs)));
-		vcpu.eflags = (neweflags & 0x00257fd5) | (vcpu.eflags & 0x001a0000);
-		_be;break;
-	default: _bb("byte");
-		_chk(_SetExcept_CE(byte));
-		_be;break;
+	}
+	if (!flagext) {
+		_bb("!flagext");
+		if (_GetDesc_DPL(cdesc) < _GetCPL) {
+			_bb("DPL(<CPL)");
+			_chk(_SetExcept_GP(intid * 8 + 2));
+			_be;
+		}
+		_be;
+	}
+	if (!_IsDescPresent(cdesc)) {
+		_bb("!DescPresent");
+		_chk(_SetExcept_NP(intid * 8 + 2 + !!flagext));
+		_be;
+	}
+	if (_GetDesc_Type(cdesc) == VCPU_DESC_SYS_TYPE_TASKGATE) {
+		_bb("Desc_Type(TaskGate)");
+		_chk(_SetExcept_CE(0));
+		_be;
+	} else {
+		_bb("Desc_Type(!TaskGate)");
+		_chk(_SetExcept_CE(0));
+		_be;
 	}
 	_ce;
 }
-done _ser_ret_far_real(t_nubit16 parambyte, t_nubit16 byte)
+done _ser_ret_far_real(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte)
 {
 	_cb("_ser_ret_far_real");
 	if (_IsProtected) _impossible_;
-	_chk(_kec_ret_far(parambyte, byte));
+	if (rdesc->flagvalid) _impossible_;
+	_chk(_kec_ret_far(rdesc, neweip, parambyte, byte));
+	_ce;
+}
+tots _ser_ret_far_same(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte)
+{
+	_cb("_ser_ret_far_same");
+	if (!_IsProtected) _impossible_;
+	if (!rdesc->flagvalid) _impossible_;
+	_chk(_kec_ret_far(rdesc, neweip, parambyte, byte));
+	_ce;
+}
+todo _ser_ret_far_outer(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte)
+{
+	_cb("_ser_ret_far_outer");
+	if (!_IsProtected) _impossible_;
+	if (!rdesc->flagvalid) _impossible_;
+	_chk(_SetExcept_CE(0));
 	_ce;
 }
 done _ser_jmp_far_real(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
@@ -2134,8 +2229,6 @@ tots _ser_jmp_far_cs_conf(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
 	if (!_IsDescCodeConform(rdesc->descriptor)) _impossible_;
 	if (_GetDesc_DPL(rdesc->descriptor) > _GetCPL) {
 		_bb("DPL(>CPL)");
-		_comment("sel=%04X, desc=%016llX\n", rdesc->selector, rdesc->descriptor);
-		_comment("dpl=%01X, cpl=%01X\n", _GetDesc_DPL(rdesc->descriptor), _GetCPL);
 		_chk(_SetExcept_GP(rdesc->selector));
 		_be;
 	}
@@ -2219,9 +2312,25 @@ todo _e_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 		_be;
 	} else {
 		_bb("Protected");
-		_newins_;
-		_comment("_e_call_far::Protected: not implemented");
-		_chk(_SetExcept_CE(byte));
+		if (!vcpuins.xdesc.flagvalid) {
+			_bb("selector(null)");
+			_chk(_SetExcept_GP(0));
+			_be;
+		} else if (_IsDescCodeConform(vcpuins.xdesc.descriptor))
+			_chk(_ser_call_far_cs_conf(&vcpuins.xdesc, neweip, byte));
+		else if (_IsDescCodeNonConform(vcpuins.xdesc.descriptor))
+			_chk(_ser_call_far_cs_nonc(&vcpuins.xdesc, neweip, byte));
+		else if (_IsDescCallGate(vcpuins.xdesc.descriptor))
+			_chk(_ser_call_far_call_gate(&vcpuins.xdesc));
+		else if (_IsDescTaskGate(vcpuins.xdesc.descriptor))
+			_chk(_ser_call_far_task_gate(&vcpuins.xdesc));
+		else if (_IsDescTSS(vcpuins.xdesc.descriptor))
+			_chk(_ser_call_far_tss(&vcpuins.xdesc));
+		else {
+			_bb("desc(invalid)");
+			_chk(_SetExcept_GP(newcs));
+			_be;
+		}
 		_be;
 	}
 	_ce;
@@ -2241,9 +2350,7 @@ todo _e_int3(t_nubit8 byte)
 		_be;
 	} else {
 		_bb("!Real");
-		_newins_;
-		_comment("_e_int3::Protected: not implemented");
-		_chk(_SetExcept_UD(0));
+		_chk(_ser_int_protected(0x03, byte, 0));
 		_be;
 	}
 	_ce;
@@ -2259,9 +2366,7 @@ todo _e_into(t_nubit8 byte)
 			_be;
 		} else {
 			_bb("!Real");
-			_newins_;
-			_comment("_e_into::Protected: not implemented");
-			_chk(_SetExcept_UD(0));
+			_chk(_ser_int_protected(0x04, byte, 0));
 			_be;
 		}
 		_be;
@@ -2277,9 +2382,29 @@ todo _e_int_n(t_nubit8 intid, t_nubit8 byte)
 		_be;
 	} else {
 		_bb("!Real");
-		_newins_;
-		_comment("_e_int_n::Protected: not implemented");
-		_chk(_SetExcept_UD(0));
+		if (_GetEFLAGS_VM && _GetEFLAGS_IOPL < 3) {
+			_bb("EFLAGAS_VM(1),IOPL(<3)");
+			_chk(_SetExcept_GP(0));
+			_be;
+		} else {
+			_bb("EFLAGS_VM(0)/IOPL(3)");
+			_chk(_ser_int_protected(intid, byte, 0));
+			_be;
+		}
+		_be;
+	}
+	_ce;
+}
+todo _e_intr_n(t_nubit8 intid, t_nubit8 byte)
+{
+	_cb("_e_intr_n");
+	if (!_GetCR0_PE) {
+		_bb("Real");
+		_chk(_ser_int_real(intid, byte));
+		_be;
+	} else {
+		_bb("!Real");
+		_chk(_ser_int_protected(intid, byte, 1));
 		_be;
 	}
 	_ce;
@@ -2302,16 +2427,103 @@ todo _e_except_n(t_nubit8 exid, t_nubit8 byte)
 }
 todo _e_iret(t_nubit8 byte)
 {
+	t_nubit16 newcs, newss, newds, newes, newfs, newgs;
+	t_nubit32 neweip, newesp;
+	t_nubit32 neweflags;
+	t_nubit32 mask = VCPU_EFLAGS_RESERVED;
+	t_cpu_sreg ccs = vcpu.cs;
 	_cb("_e_iret");
 	if (!_GetCR0_PE) {
 		_bb("Real");
-		_chk(_ser_iret_real(byte));
+		switch (byte) {
+		case 2: _bb("byte(2)");
+			_chk(_s_test_ss_pop(6));
+			_chk(neweip    = GetMax16(_kec_pop(2)));
+			_chk(newcs     = GetMax16(_kec_pop(2)));
+			_chk(neweflags = GetMax16(_kec_pop(2)));
+			mask |= 0xffff0000;
+			_be;break;
+		case 4: _bb("byte(4)");
+			_newins_;
+			_chk(_s_test_ss_pop(12));
+			_chk(neweip    = GetMax32(_kec_pop(4)));
+			_chk(newcs     = GetMax16(_kec_pop(4)));
+			_chk(neweflags = GetMax32(_kec_pop(4)));
+			//vcpu.eflags = (neweflags & 0x00257fd5) | (vcpu.eflags & 0x001a0000);
+			_be;break;
+		default: _bb("byte");
+			_chk(_SetExcept_CE(byte));
+			_be;break;
+		}
+		_chk(_s_descriptor(newcs));
+		_chk(_ksa_load_sreg(&ccs, &vcpuins.xdesc));
+		_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
+		vcpu.cs = ccs;
+		vcpu.eip = neweip;
+		vcpu.eflags = (neweflags & ~mask) | (vcpu.eflags & mask);
 		_be;
 	} else {
 		_bb("!Real");
-		_newins_;
-		_comment("_e_iret::Protected: not implemented");
-		_chk(_SetExcept_UD(0));
+		if (_GetEFLAGS_VM) {
+			_bb("V86");
+			_chk(_SetExcept_CE(0));
+			_be;
+		} else if (_GetEFLAGS_NT) {
+			_bb("Nested");
+			_chk(_SetExcept_CE(0));
+			_be;
+		} else {
+			_bb("Protected,!Nested");
+			switch (byte) {
+			case 2: _bb("byte(2)");
+				_chk(_s_test_ss_pop(6));
+				_chk(neweip    = GetMax16(_kec_pop(2)));
+				_chk(newcs     = GetMax16(_kec_pop(2)));
+				_chk(neweflags = GetMax16(_kec_pop(2)));
+				_be;break;
+			case 4: _bb("byte(4)");
+				_newins_;
+				_chk(_s_test_ss_pop(12));
+				_chk(neweip    = GetMax32(_kec_pop(4)));
+				_chk(newcs     = GetMax16(_kec_pop(4)));
+				_chk(neweflags = GetMax32(_kec_pop(4)));
+				_be;break;
+			default: _bb("byte");
+				_chk(_SetExcept_CE(byte));
+				_be;break;
+			}
+			if (GetBit(neweflags, VCPU_EFLAGS_VM) && !_GetCPL) {
+				_bb("neweflags(VM),CPL(0)");
+				/* return to v86 */
+				_chk(_s_test_ss_pop(24));
+				vcpu.eflags = (neweflags & ~mask) | (vcpu.eflags & mask);
+				_chk(_s_descriptor(newcs));
+				_chk(_ksa_load_sreg(&ccs, &vcpuins.xdesc));
+				_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
+				vcpu.cs = ccs;
+				vcpu.eip = neweip;
+				_chk(newesp = GetMax32(_kec_pop(4)));
+				_chk(newss = GetMax16(_kec_pop(4)));
+				_chk(newes = GetMax16(_kec_pop(4)));
+				_chk(newds = GetMax16(_kec_pop(4)));
+				_chk(newfs = GetMax16(_kec_pop(4)));
+				_chk(newgs = GetMax16(_kec_pop(4)));
+				_chk(_s_load_ss(newss));
+				vcpu.esp = newesp;
+				_chk(_s_load_es(newes));
+				_chk(_s_load_ds(newds));
+				_chk(_s_load_fs(newfs));
+				_chk(_s_load_gs(newgs));
+				_MakeCPL(0x03);
+				_be;
+			} else {
+				_bb("neweflags(!VM)/CPL(!0)");
+				/* return to proctected */
+				_chk(_SetExcept_CE(0));
+				_be;
+			}
+			_be;
+		}
 		_be;
 	}
 	_ce;
@@ -2335,7 +2547,7 @@ tots _e_jcc(t_nubit32 csrc, t_nubit8 byte, t_bool condition)
 	}
 	_ce;
 }
-todo _e_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
+done _e_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_e_jmp_far");
 	_chk(_s_descriptor(newcs));
@@ -2423,18 +2635,72 @@ done _e_ret_near(t_nubit16 parambyte, t_nubit8 byte)
 	_chk(_kec_ret_near(parambyte, byte));
 	_ce;
 }
-todo _e_ret_far(t_nubit16 parambyte, t_nubit16 byte)
+done _e_ret_far(t_nubit16 parambyte, t_nubit16 byte)
 {
+	t_nubit16 newcs;
+	t_nubit32 neweip;
 	_cb("_e_ret_far");
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_s_test_ss_pop(4));
+		_chk(neweip = GetMax16(_kec_pop(2)));
+		_chk(newcs = GetMax16(_kec_pop(2)));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_newins_;
+		_chk(_s_test_ss_pop(8));
+		_chk(neweip = GetMax32(_kec_pop(4)));
+		_chk(newcs = GetMax16(_kec_pop(4)));
+		_be;break;
+	default: _bb("byte");
+		_chk(_SetExcept_CE(byte));
+		_be;break;
+	}
+	_chk(_s_descriptor(newcs));
 	if (!_IsProtected) {
 		_bb("!Protected");
-		_chk(_ser_ret_far_real(parambyte, byte));
+		_chk(_ser_ret_far_real(&vcpuins.xdesc, neweip, parambyte, byte));
 		_be;
 	} else {
 		_bb("Protected");
-		_newins_;
-		_comment("_e_ret_far::Protected: not implemented");
-		_chk(_SetExcept_CE(0));
+		if (!vcpuins.xdesc.flagvalid) {
+			_bb("selector(null)");
+			_chk(_SetExcept_GP(0));
+			_be;
+		}
+		if (!_IsDescCode(vcpuins.xdesc.descriptor)) {
+			_bb("!DescCode");
+			_chk(_SetExcept_GP(vcpuins.xdesc.selector));
+			_be;
+		}
+		if (_GetSelector_RPL(vcpuins.xdesc.selector) < _GetCPL) {
+			_bb("RPL(<CPL)");
+			_chk(_SetExcept_GP(vcpuins.xdesc.selector));
+			_be;
+		}
+		if (_IsDescCodeConform(vcpuins.xdesc.descriptor)) {
+			_bb("DescCodeConform");
+			if (_GetDesc_DPL(vcpuins.xdesc.descriptor) > _GetSelector_RPL(vcpuins.xdesc.selector)) {
+				_bb("DPL(>RPL)");
+				_chk(_SetExcept_GP(vcpuins.xdesc.selector));
+				_be;
+			}
+			_be;
+		}
+		if (!_IsDescPresent(vcpuins.xdesc.descriptor)) {
+			_bb("!DescPresent");
+			_chk(_SetExcept_NP(vcpuins.xdesc.selector));
+			_be;
+		}
+		if (_GetSelector_RPL(vcpuins.xdesc.selector) > _GetCPL) {
+			_bb("RPL(>CPL)");
+			_chk(_ser_ret_far_outer(&vcpuins.xdesc, neweip, parambyte, byte));
+			_be;
+		} else {
+			_bb("RPL(<=CPL)");
+			_chk(_ser_ret_far_same(&vcpuins.xdesc, neweip, parambyte, byte));
+			_be;
+		}
 		_be;
 	}
 	_ce;
@@ -2861,12 +3127,13 @@ tots _a_not(t_nubit64 cdest, t_nubit8 bit)
 tots _a_neg(t_nubit64 cdest, t_nubit8 bit)
 {
 	_cb("_a_neg");
-	vcpuins.opr2 = 0;
+	vcpuins.opr2 = cdest;
+	cdest = 0;
 	_kac_arith1(NEG_FLAG,
-		SUB8,  (0x00 - GetMax8(vcpuins.opr1)),
-		SUB16, (0x0000 - GetMax16(vcpuins.opr1)),
-		SUB32, (0x00000000 - GetMax32(vcpuins.opr1)));
-	MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, !!vcpuins.opr1);
+		SUB8,  (GetMax8(vcpuins.opr1) - GetMax8(vcpuins.opr2)),
+		SUB16, (GetMax16(vcpuins.opr1) - GetMax16(vcpuins.opr2)),
+		SUB32, (GetMax32(vcpuins.opr1) - GetMax32(vcpuins.opr2)));
+	MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, !!vcpuins.opr2);
 	_ce;
 }
 tots _a_mul(t_nubit64 csrc, t_nubit8 bit)
@@ -7007,7 +7274,7 @@ done POPF()
 	i386(0x9d) {
 		_adv;
 		if (!_GetCR0_PE || !_GetEFLAGS_VM) {
-			_bb("CR0_PE(0)/EFLAGS_VM(0)");
+			_bb("!V86");
 			if (!_GetCPL) {
 				_bb("CPL(0)");
 				switch (_GetOperandSize) {
@@ -7027,7 +7294,7 @@ done POPF()
 				switch (_GetOperandSize) {
 				case 2: _bb("OperandSize(2)");
 					_chk(ceflags = GetMax16(_e_pop(2)));
-					mask |= VCPU_EFLAGS_IOPL;
+					mask |= (0xffff0000 | VCPU_EFLAGS_IOPL);
 					_be;break;
 				case 4: _bb("OperandSize(4)");
 					_chk(ceflags = GetMax32(_e_pop(4)));
@@ -7038,8 +7305,7 @@ done POPF()
 			}
 			_be;
 		} else {
-			_bb("CR0_PE(1),EFLAGS_VM(1)");
-			_newins_;
+			_bb("V86");
 			if (vcpuins.prefix_oprsize) {
 				_bb("prefix_oprsize(1)");
 				_chk(_SetExcept_GP(0));
@@ -7050,7 +7316,7 @@ done POPF()
 				switch (_GetOperandSize) {
 				case 2: _bb("OperandSize(2)");
 					_chk(ceflags = GetMax16(_e_pop(2)));
-					mask |= VCPU_EFLAGS_IOPL;
+					mask |= (0xffff0000 | VCPU_EFLAGS_IOPL);
 					_be;break;
 				case 4: _bb("OperandSize(4)");
 					_chk(ceflags = GetMax32(_e_pop(4)));
@@ -10058,7 +10324,6 @@ tots INS_0F_01()
 		_be;break;
 	case 2: /* LGDT_M32_16 */
 		_bb("LGDT_M32_16");
-		_comment("LGDT_M32_16: executed L%08X\n", vcpurec.linear);
 		_chk(_d_modrm(0, 6));
 		if (!vcpuins.flagmem) {
 			_bb("flagmem(0)");
@@ -10073,12 +10338,12 @@ tots INS_0F_01()
 		case 2: base = GetMax24(vcpuins.crm);break;
 		case 4: base = GetMax32(vcpuins.crm);break;
 		default:_impossible_;break;}
-		_comment("LGDT_M32_16: read base=%08X, limit=%04X\n", base, limit);
+		//_comment("LGDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
+		//	vcpurec.linear, base, limit);
 		_chk(_s_load_gdtr(base, limit, _GetOperandSize));
 		_be;break;
 	case 3: /* LIDT_M32_16 */
 		_bb("LIDT_M32_16");
-		_comment("LIDT_M32_16: executed L%08X\n", vcpurec.linear);
 		_chk(_d_modrm(0, 6));
 		if (!vcpuins.flagmem) {
 			_bb("flagmem(0)");
@@ -10093,7 +10358,8 @@ tots INS_0F_01()
 		case 2: base = GetMax24(vcpuins.crm);break;
 		case 4: base = GetMax32(vcpuins.crm);break;
 		default:_impossible_;break;}
-		_comment("LIDT_M32_16: read base=%08X, limit=%04X\n", base, limit);
+		//_comment("LIDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
+		//	vcpurec.linear, base, limit);
 		_chk(_s_load_idtr(base, limit, _GetOperandSize));
 		_be;break;
 	case 4: /* SMSW_RM16 */
@@ -10297,7 +10563,6 @@ tots MOV_CR_R32()
 {
 	_cb("MOV_CR_R32");
 	_newins_;
-	_comment("MOV_CR_R32: executed at L%08X\n", vcpurec.linear);
 	_adv;
 	if (_GetCPL) {
 		_bb("CPL(!0)");
@@ -10306,9 +10571,9 @@ tots MOV_CR_R32()
 	}
 	_chk(_d_modrm_creg());
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.crm, 4));
-	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr0) _comment("MOV_CR_R32: CR0=%08X\n", vcpu.cr0);
-	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr2) _comment("MOV_CR_R32: CR2=%08X\n", vcpu.cr2);
-	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr3) _comment("MOV_CR_R32: CR3=%08X\n", vcpu.cr3);
+	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr0) _comment("MOV_CR_R32: executed at L%08X, CR0=%08X\n", vcpurec.linear, vcpu.cr0);
+	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr2) _comment("MOV_CR_R32: executed at L%08X, CR2=%08X\n", vcpurec.linear, vcpu.cr2);
+	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr3) _comment("MOV_CR_R32: executed at L%08X, CR3=%08X\n", vcpurec.linear, vcpu.cr3);
 	_ce;
 }
 tots MOV_DR_R32()
@@ -11107,7 +11372,7 @@ static void ExecInt()
 		vcpu.flaghalt = 0;
 		vcpu.flagnmi = 0;
 		ExecInit();
-		_e_int_n(0x02, _GetOperandSize);
+		_e_intr_n(0x02, _GetOperandSize);
 		ExecFinal();
 	}
 	if (_GetEFLAGS_IF && vpicScanINTR()) {
@@ -11115,13 +11380,13 @@ static void ExecInt()
 		intr = vpicGetINTR();
 		/*printf("vint = %x\n", intr);*/
 		ExecInit();
-		_e_int_n(intr, _GetOperandSize);
+		_e_intr_n(intr, _GetOperandSize);
 		ExecFinal();
 	}
 	if (_GetEFLAGS_TF) {
 		vcpu.flaghalt = 0;
 		ExecInit();
-		_e_int_n(0x01, _GetOperandSize);
+		_e_intr_n(0x01, _GetOperandSize);
 		ExecFinal();
 	}
 #endif
