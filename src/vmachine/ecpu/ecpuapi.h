@@ -4,6 +4,8 @@
 
 #include "../vglobal.h"
 
+#define im(ref) (vramIsAddrInMem(ref))
+
 void ecpuapiSyncRegs();
 t_bool ecpuapiHasDiff();
 t_bool ecpuapiScanINTR();

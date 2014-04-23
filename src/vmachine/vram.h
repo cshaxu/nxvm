@@ -27,8 +27,8 @@ extern t_ram vram;
 #define vramQWord(physical) (d_nubit64(vramAddr(physical)))
 
 /* macros below are designed for real-addressing mode */
-#define vramIsAddrInMem(addr) \
-	(((t_vaddrcc)(addr) >= vram.base) && ((t_vaddrcc)(addr) < (vram.base + vram.size)))
+#define vramIsAddrInMem(ref) \
+	(((t_vaddrcc)(ref) >= vram.base) && ((t_vaddrcc)(ref) < (vram.base + vram.size)))
 #define vramGetRealAddr(segment, offset)  (vram.base + \
 	(((((t_nubit16)(segment) << 4) + (t_nubit16)(offset)) & \
 	  (vram.flaga20 ? 0xffffffff : 0xffefffff)) % vram.size))

@@ -9,6 +9,7 @@
 
 #include "ecpu.h"
 #include "ecpuapi.h"
+#include "ecpuins.h"
 
 t_ecpu ecpu;
 static t_ecpu ecpu2;
@@ -44,6 +45,19 @@ t_bool ecpuapiHasDiff()
 	t_nubit16 mask = GetMax16(vcpuins.udf);
 	ecpu.flagignore |= vcpuins.flagrespondint;
 	if (!ecpu.flagignore) {
+		if (vcpuins.flagmem != ecpuins.flagmem) {vapiPrint("diff flagmem\n");flagdiff = 0x01;}
+		if (vcpuins.flagmem) {
+			if (vcpuins.flagmss != ecpuins.flagmss) {vapiPrint("diff flagmss: E=%01X, V=%01X\n", ecpuins.flagmss, vcpuins.flagmss);flagdiff = 0x01;}
+			if (vcpuins.flagmss) {
+				if (vcpuins.roverss->selector != ecpuins.roverss->selector) {vapiPrint("diff overss: E=%04X, V=%04X\n", ecpuins.roverss->selector, vcpuins.roverss->selector);flagdiff = 0x01;}
+			} else {
+				if (vcpuins.roverds->selector != ecpuins.roverds->selector) {vapiPrint("diff overds: E=%04X, V=%04X\n", ecpuins.roverds->selector, vcpuins.roverds->selector);flagdiff = 0x01;}
+			}
+			if (vcpuins.erm != ecpuins.erm) {vapiPrint("diff erm: E=%08X, V=%08X\n", ecpuins.erm, vcpuins.erm);flagdiff = 0x01;}
+			if (vcpuins.lrm != ecpuins.lrm) {vapiPrint("diff lrm: E=%08X, V=%08X\n", ecpuins.lrm, vcpuins.lrm);flagdiff = 0x01;}
+			if (vcpuins.prm != ecpuins.prm) {vapiPrint("diff prm: E=%08X, V=%08X\n", ecpuins.prm, vcpuins.prm);flagdiff = 0x01;}
+			if (vcpuins.rrm != ecpuins.rrm) {vapiPrint("diff rrm: E=%16llX, V=%16llX\n", ecpuins.rrm, vcpuins.rrm);flagdiff = 0x01;}
+		}
 		if (ecpu.ax != _ax) {vapiPrint("diff ax\n");flagdiff = 0x01;}
 		if (ecpu.bx != _bx) {vapiPrint("diff bx\n");flagdiff = 0x01;}
 		if (ecpu.cx != _cx) {vapiPrint("diff cx\n");flagdiff = 0x01;}
@@ -58,21 +72,24 @@ t_bool ecpuapiHasDiff()
 		if (ecpu.es.selector != _es) {vapiPrint("diff es\n");flagdiff = 0x01;}
 		if (ecpu.ss.selector != _ss) {vapiPrint("diff ss\n");flagdiff = 0x01;}
 		if ((ecpu.flags & ~mask) != (_flags & ~mask)) {
-			vapiPrint("diff flags: E: %04X, V: %04X\n", ecpu.flags, _flags);
+			vapiPrint("diff flags: E=%04X, V=%04X\n", ecpu.flags, _flags);
 			flagdiff = 0x01;
 		}
 	}
 	if (flagdiff) {
-		vapiPrint("AFTER EXECUTION:\nVCPU REGISTERS\n");
-		vapiCallBackDebugPrintRegs();
+		vapiPrint("AFTER EXECUTION:\n");
 		ecpuapiPrintRegs();
-		vapiPrint("BEFORE EXECUTION:\nVCPU REGISTERS\n");
+		vapiPrint("VCPU REGISTERS\n");
+		vapiCallBackDebugPrintRegs();
 		ecpu = ecpu2;
 #if VGLOBAL_ECPU_MODE != TEST_ECPU
 		vcpu = vcpu2;
 #endif
-		vapiCallBackDebugPrintRegs();
+		vapiPrint("BEFORE EXECUTION:\n");
 		ecpuapiPrintRegs();
+		vapiPrint("VCPU REGISTERS\n");
+		vapiCallBackDebugPrintRegs();
+		vapiPrint("-----------------------------------------\n");
 	}
 	return flagdiff;
 }

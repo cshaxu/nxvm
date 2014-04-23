@@ -39,8 +39,8 @@ t_nubit8 t81,t82;				//
 
 t_nubit32 t,t2,t3;				//
 
-t_nubit16 tmpOpdSize=2;			//Operand Size，由描述符里的D位和OpdSize前缀共同决定，初始值为2
-t_nubit16 tmpAddrSize=2;			//Address Size，由描述符里的D位和AddrSize前缀共同决定，初始值为2
+t_nubit16 OperandSize=2;			//Operand Size，由描述符里的D位和OpdSize前缀共同决定，初始值为2
+t_nubit16 AddressSize=2;			//Address Size，由描述符里的D位和AddrSize前缀共同决定，初始值为2
 
 t_cpuins ecpuins;
 
@@ -150,8 +150,7 @@ VOID SetM32(t_nubit16 off, t_nubit32 val)
 }
 VOID *FindRegAddr(t_bool w,char reg)
 {
-	switch(reg)
-	{
+	switch(reg) {
 	case 0:
 		return &(ecpu.al);
 		break;
@@ -195,8 +194,7 @@ VOID *FindRegAddr(t_bool w,char reg)
 VOID *FindSegAddr(t_bool w,char reg)
 {
 	reg&=0x03;
-	switch(reg)
-	{
+	switch(reg) {
 	case 0:
 		return &(ecpu.es.selector);
 		break;
@@ -223,10 +221,8 @@ t_nubit32 FindRemAddr(char rem , t_nubit16 **off1, t_nubit16 **off2)
 	tes<<=4;
 	tss=ecpu.overss;
 	tss<<=4;
-	if (tmpAddrSize==2)
-	{
-		switch(rem)
-		{
+	if (AddressSize == 2) {
+		switch(rem) {
 		case 0:
 			*off1=&ecpu.bx;
 			*off2=&ecpu.si;
@@ -271,11 +267,9 @@ t_nubit32 FindRemAddr(char rem , t_nubit16 **off1, t_nubit16 **off2)
 			return 0;
 		}
 	}
-	else
-	{
+	else {
 		*off2=&GlbZero;
-		switch(rem)
-		{
+		switch(rem) {
 		case 0:
 			*off1=&ecpu.ax;
 			ret=vram.base+(t_nubit16)ecpu.eax+(tds);
@@ -330,18 +324,15 @@ VOID TranslateOpcExt(t_bool w,char** rg,char** rm)
 
 	*rg=(char *)FindRegAddr(w,reg);
 
-	switch(mod)
-	{
+	switch(mod) {
 	case 0:
-		if (rem==6 && tmpAddrSize==2)
-		{
+		if (rem==6 && AddressSize==2) {
 			evIP++;
 			*rm=(char *)((d_nubit16(eIMS)) + tds);
 			*rm+=vram.base;
 			evIP++;
 		}
-		else if (rem==5 && tmpAddrSize==4)
-		{
+		else if (rem==5 && AddressSize==4) {
 			evIP++;
 			*rm=(char *)((*(t_nubit32 *)eIMS) + tds);
 			*rm+=vram.base;
@@ -353,7 +344,7 @@ VOID TranslateOpcExt(t_bool w,char** rg,char** rm)
 	case 1:
 		*rm=(char *)FindRemAddr(rem,&off1,&off2);
 		evIP++;
-		if (tmpAddrSize==2)
+		if (AddressSize==2)
 			*rm+=(*off1+*off2+d_nsbit8(vramAddr(evIP)))-(*off1+*off2);		//对偏移寄存器溢出的处理，对一字节的偏移是进行符号扩展的，用带符号char效果一样
 		else
 			*rm+=(*(t_nubit32 *)off1+*(t_nubit32 *)off2+d_nsbit8(vramAddr(evIP)))-(*(t_nubit32 *)off1+*(t_nubit32 *)off2);		//对偏移寄存器溢出的处理，对一字节的偏移是进行符号扩展的，用带符号char效果一样
@@ -361,7 +352,7 @@ VOID TranslateOpcExt(t_bool w,char** rg,char** rm)
 	case 2:
 		*rm=(char *)FindRemAddr(rem,&off1,&off2);
 		evIP++;
-		if (tmpAddrSize==2)
+		if (AddressSize==2)
 			*rm+=(t_nubit16)(*off1+*off2+d_nubit16(vramAddr(evIP)))-(*off1+*off2);			//Bochs把1094:59ae上的2B偏移解释成无符号数
 		else
 			*rm+=(t_nubit16)(*(t_nubit32 *)off1+*(t_nubit32 *)off2+d_nubit16(vramAddr(evIP)))-(*(t_nubit32 *)off1+*(t_nubit32 *)off2);			//Bochs把1094:59ae上的2B偏移解释成无符号数
@@ -392,18 +383,15 @@ VOID TranslateOpcExtSeg(t_bool w,char** rg,char** rm)
 
 	*rg=(char *)FindSegAddr(w,reg);
 
-	switch(mod)
-	{
+	switch(mod) {
 	case 0:
-		if (rem==6 && tmpAddrSize==2)
-		{
+		if (rem==6 && AddressSize==2) {
 			evIP++;
 			*rm=(char *)((d_nubit16(eIMS)) + tds);
 			*rm+=vram.base;
 			evIP++;
 		}
-		else if (rem==5 && tmpAddrSize==4)
-		{
+		else if (rem==5 && AddressSize==4) {
 			evIP++;
 			*rm=(char *)((d_nubit16(eIMS)) + tds);
 			*rm+=vram.base;
@@ -415,7 +403,7 @@ VOID TranslateOpcExtSeg(t_bool w,char** rg,char** rm)
 	case 1:
 		*rm=(char *)FindRemAddr(rem,&off1,&off2);
 		evIP++;
-		if (tmpAddrSize==2)
+		if (AddressSize==2)
 			*rm+=(*off1+*off2+d_nsbit8(vramAddr(evIP)))-(*off1+*off2);		//对偏移寄存器溢出的处理
 		else
 			*rm+=(*(t_nubit32 *)off1+*(t_nubit32 *)off2+d_nsbit8(vramAddr(evIP)))-(*(t_nubit32 *)off1+*(t_nubit32 *)off2);		//对偏移寄存器溢出的处理
@@ -423,7 +411,7 @@ VOID TranslateOpcExtSeg(t_bool w,char** rg,char** rm)
 	case 2:
 		*rm=(char *)FindRemAddr(rem,&off1,&off2);
 		evIP++;
-		if (tmpAddrSize==2)
+		if (AddressSize==2)
 			*rm+=(t_nubit16)(*off1+*off2+d_nubit16(vramAddr(evIP)))-(*off1+*off2);
 		else
 			*rm+=(t_nubit16)(*(t_nubit32 *)off1+*(t_nubit32 *)off2+d_nubit16(vramAddr(evIP)))-(*(t_nubit32 *)off1+*(t_nubit32 *)off2);
@@ -580,8 +568,7 @@ static void CalcPF()
 {
 	t_nubit8 res8 = ecpuins.result & 0xff;
 	t_nubitcc count = 0;
-	while(res8)
-	{
+	while(res8) {
 		res8 &= res8-1;
 		count++;
 	}
@@ -1148,10 +1135,8 @@ DONE STOS(t_nubit8 len)
 		ecpuins.bit = 16;
 		vramRealWord(ecpu.es.selector,ecpu.di) = ecpu.ax;
 		STRDIR(16,0,1);
-		/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000)
-		{
-			for (i=0;i<tmpOpdSize;i++)
-			{
+		/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000) {
+			for (i=0;i<OperandSize;i++) {
 				WriteVideoRam(eCPU.di+((t2=eCPU.es,t2<<4))-0xa0000+i);
 			}
 		}*/
@@ -1221,7 +1206,7 @@ DONE POP(void *dest, t_nubit8 len)
 		break;
 	default:CaseError("POP::len");break;}
 }
-static void INT(t_nubit8 intid)
+DONE INT(t_nubit8 intid)
 {
 	PUSH((void *)&ecpu.flags,16);
 	ClrBit(ecpu.flags, (VCPU_EFLAGS_IF | VCPU_EFLAGS_TF));
@@ -1500,12 +1485,10 @@ VOID SHL(void *dest, t_nubit8 mb, int Len)
 	t_nubit8 tSHLrm8;
 	t_nubit16 tSHLrm16;
 	t_nubit32 tSHLrm32;
-	switch(Len)
-	{
+	switch(Len) {
 	case 1:
 		tSHLrm8=d_nubit8(dest);
-		__asm
-		{
+		__asm {
 			mov al,tSHLrm8
 			mov cl,mb
 			push ecpu.eflags
@@ -1520,8 +1503,7 @@ VOID SHL(void *dest, t_nubit8 mb, int Len)
 		break;
 	case 2:
 		tSHLrm16=d_nubit16(dest);
-		__asm
-		{
+		__asm {
 			mov ax,tSHLrm16
 			mov cl,mb
 			push ecpu.eflags
@@ -1536,8 +1518,7 @@ VOID SHL(void *dest, t_nubit8 mb, int Len)
 		break;
 	case 4:
 		tSHLrm32=d_nubit32(dest);
-		__asm
-		{
+		__asm {
 			mov eax,tSHLrm32
 			mov cl,mb
 			push ecpu.eflags
@@ -1564,21 +1545,17 @@ VOID Jcc(int Len)
 }
 VOID JCC(char code, t_bool J)
 {
-	if (d_nsbit8(eIMS-1)==code)
-	{
-		if (J)
-		{
+	if (d_nsbit8(eIMS-1)==code) {
+		if (J) {
 			Jcc(1);
 		}
 		evIP++;
 	}
-	else
-	{
-		if (J)
-		{
-			Jcc(tmpOpdSize);
+	else {
+		if (J) {
+			Jcc(OperandSize);
 		}
-		evIP+=tmpOpdSize;
+		evIP+=OperandSize;
 	}
 }
 VOID JMP_NEAR();
@@ -2371,15 +2348,15 @@ VOID ARPL()
 }
 VOID OpdSize()
 {
-	tmpOpdSize=6-tmpOpdSize;
+	OperandSize=6-OperandSize;
 	ecpuinsExecIns();
-	tmpOpdSize=6-tmpOpdSize;
+	OperandSize=6-OperandSize;
 }
 VOID AddrSize()
 {
-	tmpAddrSize=6-tmpAddrSize;
+	AddressSize=6-AddressSize;
 	ecpuinsExecIns();
-	tmpAddrSize=6-tmpAddrSize;
+	AddressSize=6-AddressSize;
 }
 VOID PUSH_I16()
 {
@@ -2529,7 +2506,7 @@ VOID XCHG_R8_RM8()
 VOID XCHG_R16_RM16()
 {
 	toe16;
-	XCHG(r16,rm16,tmpOpdSize);
+	XCHG(r16,rm16,OperandSize);
 }
 VOID MOV_RM8_R8()
 {
@@ -2539,7 +2516,7 @@ VOID MOV_RM8_R8()
 VOID MOV_RM16_R16()
 {
 	toe16;
-	_MOV(rm16,r16,tmpOpdSize);
+	_MOV(rm16,r16,OperandSize);
 }
 SAME MOV_R8_RM8()
 {
@@ -2552,7 +2529,7 @@ SAME MOV_R8_RM8()
 VOID MOV_R16_RM16()
 {
 	toe16;
-	_MOV(r16,rm16,tmpOpdSize);
+	_MOV(r16,rm16,OperandSize);
 }
 VOID MOV_RM_SEG()
 {
@@ -2567,8 +2544,7 @@ VOID LEA_R16_M16()
 	mod>>=6;
 	rem=d_nsbit8(vramAddr(evIP)) & 0x07;
 	toe16;
-	switch(rem)
-	{
+	switch(rem) {
 	case 0:
 	case 1:
 	case 4:
@@ -2608,36 +2584,35 @@ VOID NOP()
 }
 VOID XCHG_CX_AX()
 {
-	XCHG(&ecpu.cx,&ecpu.ax,tmpOpdSize);
+	XCHG(&ecpu.cx,&ecpu.ax,OperandSize);
 }
 VOID XCHG_DX_AX()
 {
-	XCHG(&ecpu.dx,&ecpu.ax,tmpOpdSize);
+	XCHG(&ecpu.dx,&ecpu.ax,OperandSize);
 }
 VOID XCHG_BX_AX()
 {
-	XCHG(&ecpu.bx,&ecpu.ax,tmpOpdSize);
+	XCHG(&ecpu.bx,&ecpu.ax,OperandSize);
 }
 VOID XCHG_SP_AX()
 {
-	XCHG(&ecpu.sp,&ecpu.ax,tmpOpdSize);
+	XCHG(&ecpu.sp,&ecpu.ax,OperandSize);
 }
 VOID XCHG_BP_AX()
 {
-	XCHG(&ecpu.bp,&ecpu.ax,tmpOpdSize);
+	XCHG(&ecpu.bp,&ecpu.ax,OperandSize);
 }
 VOID XCHG_SI_AX()
 {
-	XCHG(&ecpu.si,&ecpu.ax,tmpOpdSize);
+	XCHG(&ecpu.si,&ecpu.ax,OperandSize);
 }
 VOID XCHG_DI_AX()
 {
-	XCHG(&ecpu.di,&ecpu.ax,tmpOpdSize);
+	XCHG(&ecpu.di,&ecpu.ax,OperandSize);
 }
 VOID CBW()
 {
-	switch(tmpOpdSize)
-	{
+	switch(OperandSize) {
 	case 2:
 		ecpu.ax=(char)ecpu.al;
 		break;
@@ -2648,8 +2623,7 @@ VOID CBW()
 }
 VOID CWD()
 {
-	switch(tmpOpdSize)
-	{
+	switch(OperandSize) {
 	case 2:
 		if (ecpu.ax & 0x8000)
 			ecpu.dx=0xffff;
@@ -2709,18 +2683,17 @@ VOID MOV_AL_M8()
 }
 VOID MOV_AX_M16()
 {
-	switch(tmpOpdSize)
-	{
+	switch(OperandSize) {
 	case 2:
 		t161=GetM16_16(d_nubit16(eIMS));
-		_MOV(&ecpu.ax,&t161,tmpOpdSize);
+		_MOV(&ecpu.ax,&t161,OperandSize);
 		break;
 	case 4:
 		t321=GetM32_16(d_nubit16(eIMS));
-		_MOV(&ecpu.eax,&t321,tmpOpdSize);
+		_MOV(&ecpu.eax,&t321,OperandSize);
 		break;
 	}
-	evIP+=tmpAddrSize;
+	evIP+=AddressSize;
 }
 VOID MOV_M8_AL()
 {
@@ -2729,8 +2702,7 @@ VOID MOV_M8_AL()
 }
 VOID MOV_M16_AX()
 {
-	switch(tmpOpdSize)
-	{
+	switch(OperandSize) {
 	case 2:
 		SetM16(d_nubit16(eIMS),ecpu.ax);
 		break;
@@ -2738,7 +2710,7 @@ VOID MOV_M16_AX()
 		SetM32(d_nubit16(eIMS),ecpu.eax);
 		break;
 	}
-	evIP+=tmpAddrSize;
+	evIP+=AddressSize;
 }
 
 SAME MOVSB()
@@ -2949,43 +2921,43 @@ VOID MOV_BH_I8()
 }
 VOID MOV_AX_I16()
 {
-	_MOV(&ecpu.ax,(void*)eIMS,tmpOpdSize);
-	evIP+=tmpOpdSize;
+	_MOV(&ecpu.ax,(void*)eIMS,OperandSize);
+	evIP+=OperandSize;
 }
 VOID MOV_CX_I16()
 {
-	_MOV(&ecpu.cx,(void*)eIMS,tmpOpdSize);
-	evIP+=tmpOpdSize;
+	_MOV(&ecpu.cx,(void*)eIMS,OperandSize);
+	evIP+=OperandSize;
 }
 VOID MOV_DX_I16()
 {
-	_MOV(&ecpu.dx,(void*)eIMS,tmpOpdSize);
-	evIP+=tmpOpdSize;
+	_MOV(&ecpu.dx,(void*)eIMS,OperandSize);
+	evIP+=OperandSize;
 }
 VOID MOV_BX_I16()
 {
-	_MOV(&ecpu.bx,(void*)eIMS,tmpOpdSize);
-	evIP+=tmpOpdSize;
+	_MOV(&ecpu.bx,(void*)eIMS,OperandSize);
+	evIP+=OperandSize;
 }
 VOID MOV_SP_I16()
 {
-	_MOV(&ecpu.sp,(void*)eIMS,tmpOpdSize);
-	evIP+=tmpOpdSize;
+	_MOV(&ecpu.sp,(void*)eIMS,OperandSize);
+	evIP+=OperandSize;
 }
 VOID MOV_BP_I16()
 {
-	_MOV(&ecpu.bp,(void*)eIMS,tmpOpdSize);
-	evIP+=tmpOpdSize;
+	_MOV(&ecpu.bp,(void*)eIMS,OperandSize);
+	evIP+=OperandSize;
 }
 VOID MOV_SI_I16()
 {
-	_MOV(&ecpu.si,(void*)eIMS,tmpOpdSize);
-	evIP+=tmpOpdSize;
+	_MOV(&ecpu.si,(void*)eIMS,OperandSize);
+	evIP+=OperandSize;
 }
 VOID MOV_DI_I16()
 {
-	_MOV(&ecpu.di,(void*)eIMS,tmpOpdSize);
-	evIP+=tmpOpdSize;
+	_MOV(&ecpu.di,(void*)eIMS,OperandSize);
+	evIP+=OperandSize;
 }
 // 0xC0
 VOID INS_C0()
@@ -3001,8 +2973,7 @@ VOID INS_C0()
 	teIMS16 = teIMS;
 	__asm push teIMS16
 	__asm push ecpu.flags
-	switch(oce)
-	{
+	switch(oce) {
 	case 0:
 		__asm popf				//因为switch语句会改变eflags的值，所以不能把这句提到switch之外。
 		__asm pop ecx			//因为push teIMS的时候压了4个字节，所以这里也要用pop ecx弹4个字节
@@ -3057,8 +3028,7 @@ VOID INS_C1()
 	char oce=d_nsbit8(vramAddr(evIP)) & 0x38;
 	t_nubit16 flagsave = ecpu.flags & ECPUINS_FLAGS_MASKED;
 	oce>>=3;
-	switch (tmpOpdSize)
-	{
+	switch (OperandSize) {
 	case 2:
 		toe16;
 		teIMS=d_nubit8(eIMS);
@@ -3066,8 +3036,7 @@ VOID INS_C1()
 		teIMS16 = teIMS;
 		__asm push teIMS16
 		__asm push ecpu.eflags
-		switch(oce)
-		{
+		switch(oce) {
 		case 0:
 			__asm popfd
 			__asm pop ecx
@@ -3118,8 +3087,7 @@ VOID INS_C1()
 		t2=*rm32;
 		__asm push teIMS16
 		__asm push ecpu.eflags
-		switch(oce)
-		{
+		switch(oce) {
 		case 0:
 			__asm popfd
 			__asm pop ecx
@@ -3180,7 +3148,7 @@ VOID SHL_RM16_I8()
 	t_nubit8 teIMS;
 	toe16;
 	teIMS=d_nubit8(eIMS);
-	SHL(rm16,teIMS,tmpOpdSize);
+	SHL(rm16,teIMS,OperandSize);
 	evIP++;
 }
 VOID RET_I8()
@@ -3198,8 +3166,7 @@ VOID RET_NEAR()
 }
 VOID LES_R16_M16()
 {
-	switch(tmpOpdSize)
-	{
+	switch(OperandSize) {
 	case 2:
 		toe16;
 		*r16=*rm16;
@@ -3214,8 +3181,7 @@ VOID LES_R16_M16()
 }
 VOID LDS_R16_M16()
 {
-	switch(tmpOpdSize)
-	{
+	switch(OperandSize) {
 	case 2:
 		toe16;
 		*r16=*rm16;
@@ -3237,8 +3203,8 @@ VOID MOV_M8_I8()
 VOID MOV_M16_I16()
 {
 	toe16;
-	_MOV(rm16,(void*)eIMS,tmpOpdSize);
-	evIP+=tmpOpdSize;
+	_MOV(rm16,(void*)eIMS,OperandSize);
+	evIP+=OperandSize;
 }
 VOID RET_I16()
 {
@@ -3286,8 +3252,7 @@ VOID INS_D0()
 	toe8;
 	t=*rm8;
 	__asm push ecpu.flags;
-	switch(oce)
-	{
+	switch(oce) {
 	case 0:
 		__asm popf				//因为switch语句会改变eflags的值，所以不能把这句提到switch之外。
 		__asm rol t,1
@@ -3332,14 +3297,12 @@ VOID INS_D1()
 	char oce=d_nsbit8(vramAddr(evIP)) & 0x38;
 	t_nubit16 flagsave = ecpu.flags & ECPUINS_FLAGS_MASKED;
 	oce>>=3;
-	switch (tmpOpdSize)
-	{
+	switch (OperandSize) {
 	case 2:
 		toe16;
 		t=*rm16;
 		__asm push ecpu.eflags;
-		switch(oce)
-		{
+		switch(oce) {
 		case 0:
 			__asm popfd
 			__asm rol t,1
@@ -3380,8 +3343,7 @@ VOID INS_D1()
 		toe32;
 		t2=*rm32;
 		__asm push ecpu.eflags;
-		switch(oce)
-		{
+		switch(oce) {
 		case 0:
 			__asm popfd
 			__asm rol t2,1
@@ -3431,8 +3393,7 @@ VOID INS_D2()
 	t=*rm8;
 	__asm mov cl,ecpu.cl;
 	__asm push ecpu.flags;
-	switch(oce)
-	{
+	switch(oce) {
 	case 0:
 		__asm popf
 		__asm rol t,cl
@@ -3478,13 +3439,11 @@ VOID INS_D3()
 	t_nubit16 flagsave = ecpu.flags & ECPUINS_FLAGS_MASKED;
 	oce=d_nsbit8(vramAddr(evIP)) & 0x38;
 	oce>>=3;
-	switch(tmpOpdSize)
-	{
+	switch(OperandSize) {
 	case 2:
 		toe16;
 		t=*rm16;
-		switch(oce)
-		{
+		switch(oce) {
 		case 0:
 			__asm mov cl,ecpu.cl;				//switch/case有可能要用到cl，所以不能把这两行提取出去
 			__asm push ecpu.flags;
@@ -3538,8 +3497,7 @@ VOID INS_D3()
 	case 4:
 		toe32;
 		t2=*rm32;
-		switch(oce)
-		{
+		switch(oce) {
 		case 0:
 			__asm mov cl,ecpu.cl;
 			__asm push ecpu.eflags;
@@ -3599,8 +3557,7 @@ VOID AAM()
 	if ((d_nubit8(eIMS))==0)
 		INT(0x00);
 	else
-	__asm
-	{
+	__asm {
 		mov ax,ecpu.ax
 		push ecpu.flags
 		popf
@@ -3614,8 +3571,7 @@ VOID AAM()
 VOID AAD()
 {
 	t_nubit16 flagsave = ecpu.flags & ECPUINS_FLAGS_MASKED;
-	__asm
-	{
+	__asm {
 		mov ax,ecpu.ax
 		push ecpu.flags
 		popf
@@ -3925,8 +3881,7 @@ VOID ADDPS()
 	a>>=4;a&=0x7;
 	__asm push ecpu.eflags;
 	__asm popf
-	for (i=0;i<4;i++)
-	{
+	for (i=0;i<4;i++) {
 		ecpu.xmm[a].fp[i]+=ecpu.xmm[b].fp[i];
 	}
 	__asm pushf
@@ -3953,8 +3908,7 @@ VOID ANDNPS()
 	a>>=4;a&=0x7;
 	__asm push ecpu.eflags
 	__asm popf
-	for (i=0;i<4;i++)
-	{
+	for (i=0;i<4;i++) {
 		ecpu.xmm[a].ip[i]=~ecpu.xmm[a].ip[i];
 		ecpu.xmm[a].ip[i]&=ecpu.xmm[b].ip[i];
 	}
@@ -3970,8 +3924,7 @@ VOID ANDPS()
 	a>>=4;a&=0x7;
 	__asm push ecpu.eflags;
 	__asm popf
-	for (i=0;i<4;i++)
-	{
+	for (i=0;i<4;i++) {
 		ecpu.xmm[a].ip[i]&=ecpu.xmm[b].ip[i];
 	}
 	__asm pushf
@@ -3981,20 +3934,16 @@ VOID ANDPS()
 VOID BSF()
 {
 	int temp;
-	switch(tmpOpdSize)
-	{
+	switch(OperandSize) {
 	case 2:
 		toe16;
-		if (*rm16==0)
-		{
+		if (*rm16==0) {
 			ecpu.eflags|=ZF;
 		}
-		else
-		{
+		else {
 			ecpu.eflags&=~ZF;
 			temp=0;
-			while (!Bit(rm16,temp))
-			{
+			while (!Bit(rm16,temp)) {
 				temp++;
 				*r16=temp;
 			}
@@ -4002,16 +3951,13 @@ VOID BSF()
 		break;
 	case 4:
 		toe32;
-		if (*rm32==0)
-		{
+		if (*rm32==0) {
 			ecpu.eflags|=ZF;
 		}
-		else
-		{
+		else {
 			ecpu.eflags&=~ZF;
 			temp=0;
-			while (!Bit(rm32,temp))
-			{
+			while (!Bit(rm32,temp)) {
 				temp++;
 				*r32=temp;
 			}
@@ -4022,20 +3968,16 @@ VOID BSF()
 VOID BSR()
 {
 	int temp;
-	switch(tmpOpdSize)
-	{
+	switch(OperandSize) {
 	case 2:
 		toe16;
-		if (*rm16==0)
-		{
+		if (*rm16==0) {
 			ecpu.eflags|=ZF;
 		}
-		else
-		{
+		else {
 			ecpu.eflags&=~ZF;
-			temp=tmpOpdSize-1;
-			while (!Bit(rm16,temp))
-			{
+			temp=OperandSize-1;
+			while (!Bit(rm16,temp)) {
 				temp--;
 				*r16=temp;
 			}
@@ -4043,16 +3985,13 @@ VOID BSR()
 		break;
 	case 4:
 		toe32;
-		if (*rm32==0)
-		{
+		if (*rm32==0) {
 			ecpu.eflags|=ZF;
 		}
-		else
-		{
+		else {
 			ecpu.eflags&=~ZF;
-			temp=tmpOpdSize-1;
-			while (!Bit(rm32,temp))
-			{
+			temp=OperandSize-1;
+			while (!Bit(rm32,temp)) {
 				temp--;
 				*r32=temp;
 			}
@@ -4089,8 +4028,7 @@ VOID INS_D9()
 	char oce,mod,rem;
 	t_nubit8 OpC=*(t_nubit8 *)(vramAddr(evIP));
 	//evIP++;
-	if (OpC<0xc0)
-	{
+	if (OpC<0xc0) {
 		oce=OpC & 0x38;
 		oce>>=3;
 		mod=OpC & 0xc0;
@@ -4098,8 +4036,7 @@ VOID INS_D9()
 		mod&=0x3;
 		rem=OpC & 0x07;
 		toe16;
-		switch(oce)
-		{
+		switch(oce) {
 		case 7:
 			if (!im((t_vaddrcc)rm16)) *rm16=ecpu.FpuSR;
 			break;
@@ -4113,8 +4050,7 @@ VOID INS_DB()
 {
 	t_nubit8 OpC=*(t_nubit8 *)(vramAddr(evIP));
 	evIP++;
-	switch(OpC)
-	{
+	switch(OpC) {
 	case 0xe3:
 		FINIT();
 		break;
@@ -4127,13 +4063,13 @@ VOID MOVZX_RM8()
 {
 	toe8;
 	t321=*rm8;
-	_MOV(r16,&t321,tmpOpdSize);
+	_MOV(r16,&t321,OperandSize);
 }
 VOID MOVZX_RM16()
 {
 	toe16;
 	t321=*rm16;
-	_MOV(r16,&t321,tmpOpdSize);
+	_MOV(r16,&t321,OperandSize);
 }
 VOID POP_FS()
 {
@@ -4144,8 +4080,7 @@ VOID INS_0F01()
 	char oce=d_nsbit8(vramAddr(evIP)) & 0x38;
 	oce>>=3;
 	toe16;
-	switch(oce)
-	{
+	switch(oce) {
 	case 0:
 		UndefinedOpcode();
 		break;
@@ -4205,7 +4140,6 @@ static void ecpuinsExecIns()
 {
 	t_nubit8 opcode;
 	//vapiPrint("bf\n");ecpuapiPrintRegs();
-
 	ecpuins.oldcs.selector = ecpu.cs.selector;
 	ecpuins.oldss.selector = ecpu.ss.selector;
 	ecpuins.oldeip = ecpu.eip;

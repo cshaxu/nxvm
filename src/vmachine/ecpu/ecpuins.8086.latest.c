@@ -80,6 +80,347 @@ static t_nsbit16 swa,swb,swc;
 static t_nubit32 uda,udb,udc;
 static t_nsbit32 sda,sdb,sdc;
 
+static void CaseError(const char *str)
+{
+	vapiPrint("The NXVM CPU has encountered an internal case error: %s.\n",str);
+	vapiCallBackMachineStop();
+}
+
+#define _GetModRM_MOD(modrm) (((modrm) & 0xc0) >> 6)
+#define _GetModRM_REG(modrm) (((modrm) & 0x38) >> 3)
+#define _GetModRM_RM(modrm)  (((modrm) & 0x07) >> 0)
+#define _GetSIB_SS(sib)      (((sib) & 0xc0) >> 6)
+#define _GetSIB_Index(sib)   (((sib) & 0x38) >> 3)
+#define _GetSIB_Base(sib)    (((sib) & 0x07) >> 0)
+
+static void ParseModRM(t_nubit8 regbyte, t_nubit8 rmbyte)
+{
+	t_nsbit8 disp8 = 0x00;
+	t_nubit16 disp16 = 0x0000;
+	t_nubit32 disp32 = 0x00000000;
+	t_nubit32 sibindex = 0x00000000;
+	t_nubit8 modrm = 0x00, sib = 0x00;
+	modrm = vramRealByte(ecpu.cs.selector, ecpu.eip++);
+	ecpuins.erm = 0x00000000;
+	ecpuins.flagmem = 1;
+	ecpuins.flagmss = 0;
+	ecpuins.crm = ecpuins.cr = 0x0000000000000000;
+	ecpuins.rrm = ecpuins.rr = (t_vaddrcc)NULL;
+	ecpuins.prm = 0x00000000;
+	ecpuins.lrm = 0x00000000;
+	switch (_GetAddressSize) {
+	case 2:
+		switch (_GetModRM_MOD(modrm)) {
+		case 0:
+			switch (_GetModRM_RM(modrm)) {
+			case 0: ecpuins.erm = GetMax16(ecpu.bx + ecpu.si); ecpuins.flagmss = 0;break;
+			case 1: ecpuins.erm = GetMax16(ecpu.bx + ecpu.di); ecpuins.flagmss = 0;break;
+			case 2: ecpuins.erm = GetMax16(ecpu.bp + ecpu.si); ecpuins.flagmss = 1;break;
+			case 3: ecpuins.erm = GetMax16(ecpu.bp + ecpu.di); ecpuins.flagmss = 1;break;
+			case 4: ecpuins.erm = GetMax16(ecpu.si); ecpuins.flagmss = 0;break;
+			case 5: ecpuins.erm = GetMax16(ecpu.di); ecpuins.flagmss = 0;break;
+			case 6:
+				disp16 = (t_nubit16)vramRealWord(ecpu.cs.selector, ecpu.eip);
+				ecpu.eip += 2;
+				ecpuins.erm = GetMax16(disp16); ecpuins.flagmss = 0;
+				break;
+			case 7: ecpuins.erm = GetMax16(ecpu.bx); ecpuins.flagmss = 0;break;
+			}
+			break;
+		case 1:
+			disp8 = (t_nsbit8)vramRealByte(ecpu.cs.selector, ecpu.eip);
+			ecpu.eip += 1;
+			switch (_GetModRM_RM(modrm)) {
+			case 0: ecpuins.erm = GetMax16(ecpu.bx + ecpu.si + disp8); ecpuins.flagmss = 0;break;
+			case 1: ecpuins.erm = GetMax16(ecpu.bx + ecpu.di + disp8); ecpuins.flagmss = 0;break;
+			case 2: ecpuins.erm = GetMax16(ecpu.bp + ecpu.si + disp8); ecpuins.flagmss = 1;break;
+			case 3: ecpuins.erm = GetMax16(ecpu.bp + ecpu.di + disp8); ecpuins.flagmss = 1;break;
+			case 4: ecpuins.erm = GetMax16(ecpu.si + disp8); ecpuins.flagmss = 0;break;
+			case 5: ecpuins.erm = GetMax16(ecpu.di + disp8); ecpuins.flagmss = 0;break;
+			case 6: ecpuins.erm = GetMax16(ecpu.bp + disp8); ecpuins.flagmss = 1;break;
+			case 7: ecpuins.erm = GetMax16(ecpu.bx + disp8); ecpuins.flagmss = 0;break;
+			}
+			break;
+		case 2:
+			disp16 = (t_nubit16)vramRealWord(ecpu.cs.selector, ecpu.eip);
+			ecpu.eip += 2;
+			switch (_GetModRM_RM(modrm)) {
+			case 0: ecpuins.erm = GetMax16(ecpu.bx + ecpu.si + disp16); ecpuins.flagmss = 0;break;
+			case 1: ecpuins.erm = GetMax16(ecpu.bx + ecpu.di + disp16); ecpuins.flagmss = 0;break;
+			case 2: ecpuins.erm = GetMax16(ecpu.bp + ecpu.si + disp16); ecpuins.flagmss = 1;break;
+			case 3: ecpuins.erm = GetMax16(ecpu.bp + ecpu.di + disp16); ecpuins.flagmss = 1;break;
+			case 4: ecpuins.erm = GetMax16(ecpu.si + disp16); ecpuins.flagmss = 0;break;
+			case 5: ecpuins.erm = GetMax16(ecpu.di + disp16); ecpuins.flagmss = 0;break;
+			case 6: ecpuins.erm = GetMax16(ecpu.bp + disp16); ecpuins.flagmss = 1;break;
+			case 7: ecpuins.erm = GetMax16(ecpu.bx + disp16); ecpuins.flagmss = 0;break;
+			}
+			break;
+		case 3:
+			break;
+		}
+		break;
+	case 4:
+		if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4) {
+			sib = (t_nubit8)vramRealByte(ecpu.cs.selector, ecpu.eip);
+			ecpu.eip += 1;
+			switch (_GetSIB_Index(sib)) {
+			case 0: sibindex = ecpu.eax;   break;
+			case 1: sibindex = ecpu.ecx;   break;
+			case 2: sibindex = ecpu.edx;   break;
+			case 3: sibindex = ecpu.ebx;   break;
+			case 4: sibindex = 0x00000000;break;
+			case 5: sibindex = ecpu.ebp;   break;
+			case 6: sibindex = ecpu.esi;   break;
+			case 7: sibindex = ecpu.edi;   break;
+			}
+			sibindex <<= _GetSIB_SS(sib);
+		}
+		switch (_GetModRM_MOD(modrm)) {
+		case 0:
+			switch (_GetModRM_RM(modrm)) {
+			case 0: ecpuins.erm = ecpu.eax; ecpuins.flagmss = 0;break;
+			case 1: ecpuins.erm = ecpu.ecx; ecpuins.flagmss = 0;break;
+			case 2: ecpuins.erm = ecpu.edx; ecpuins.flagmss = 0;break;
+			case 3: ecpuins.erm = ecpu.ebx; ecpuins.flagmss = 0;break;
+			case 4:
+				switch (_GetSIB_Base(sib)) {
+				case 0: ecpuins.erm = ecpu.eax + sibindex; ecpuins.flagmss = 0;break;
+				case 1: ecpuins.erm = ecpu.ecx + sibindex; ecpuins.flagmss = 0;break;
+				case 2: ecpuins.erm = ecpu.edx + sibindex; ecpuins.flagmss = 0;break;
+				case 3: ecpuins.erm = ecpu.ebx + sibindex; ecpuins.flagmss = 0;break;
+				case 4: ecpuins.erm = ecpu.esp + sibindex; ecpuins.flagmss = 1;break;
+				case 5:
+					disp32 = (t_nubit32)vramRealDWord(ecpu.cs.selector, ecpu.eip);
+					ecpu.eip += 4;
+					ecpuins.erm = disp32 + sibindex; ecpuins.flagmss = 0; 
+					break;
+				case 6: ecpuins.erm = ecpu.esi + sibindex; ecpuins.flagmss = 0;break;
+				case 7: ecpuins.erm = ecpu.edi + sibindex; ecpuins.flagmss = 0;break;
+				}
+				break;
+			case 5:
+				disp32 = (t_nubit32)vramRealDWord(ecpu.cs.selector, ecpu.eip);
+				ecpu.eip += 4;
+				ecpuins.erm = disp32; ecpuins.flagmss = 0;
+				break;
+			case 6: ecpuins.erm = ecpu.esi; ecpuins.flagmss = 0;
+			case 7: ecpuins.erm = ecpu.edi; ecpuins.flagmss = 0;
+			}
+			break;
+		case 1:
+			disp8 = (t_nsbit8)vramRealByte(ecpu.cs.selector, ecpu.eip);
+			ecpu.eip += 1;
+			switch (_GetModRM_RM(modrm)) {
+			case 0: ecpuins.erm = ecpu.eax + disp8; ecpuins.flagmss = 0;break;
+			case 1: ecpuins.erm = ecpu.ecx + disp8; ecpuins.flagmss = 0;break;
+			case 2: ecpuins.erm = ecpu.edx + disp8; ecpuins.flagmss = 0;break;
+			case 3: ecpuins.erm = ecpu.ebx + disp8; ecpuins.flagmss = 0;break;
+			case 4:
+				switch (_GetSIB_Base(sib)) {
+				case 0: ecpuins.erm = ecpu.eax + sibindex + disp8; ecpuins.flagmss = 0;break;
+				case 1: ecpuins.erm = ecpu.ecx + sibindex + disp8; ecpuins.flagmss = 0;break;
+				case 2: ecpuins.erm = ecpu.edx + sibindex + disp8; ecpuins.flagmss = 0;break;
+				case 3: ecpuins.erm = ecpu.ebx + sibindex + disp8; ecpuins.flagmss = 0;break;
+				case 4: ecpuins.erm = ecpu.esp + sibindex + disp8; ecpuins.flagmss = 1;break;
+				case 5: ecpuins.erm = ecpu.ebp + sibindex + disp8; ecpuins.flagmss = 1;break;
+				case 6: ecpuins.erm = ecpu.esi + sibindex + disp8; ecpuins.flagmss = 0;break;
+				case 7: ecpuins.erm = ecpu.edi + sibindex + disp8; ecpuins.flagmss = 0;break;
+				}
+				break;
+			case 5: ecpuins.erm = ecpu.ebp + disp8; ecpuins.flagmss = 1;break;
+			case 6: ecpuins.erm = ecpu.esi + disp8; ecpuins.flagmss = 0;break;
+			case 7: ecpuins.erm = ecpu.edi + disp8; ecpuins.flagmss = 0;break;
+			}
+			break;
+		case 2:
+			disp32 = (t_nubit32)vramRealDWord(ecpu.cs.selector, ecpu.eip);
+			ecpu.eip += 4;
+			switch (_GetModRM_RM(modrm)) {
+			case 0: ecpuins.erm = ecpu.eax + disp32; ecpuins.flagmss = 0;break;
+			case 1: ecpuins.erm = ecpu.ecx + disp32; ecpuins.flagmss = 0;break;
+			case 2: ecpuins.erm = ecpu.edx + disp32; ecpuins.flagmss = 0;break;
+			case 3: ecpuins.erm = ecpu.ebx + disp32; ecpuins.flagmss = 0;break;
+			case 4:
+				switch (_GetSIB_Base(sib)) {
+				case 0: ecpuins.erm = ecpu.eax + sibindex + disp32; ecpuins.flagmss = 0;break;
+				case 1: ecpuins.erm = ecpu.ecx + sibindex + disp32; ecpuins.flagmss = 0;break;
+				case 2: ecpuins.erm = ecpu.edx + sibindex + disp32; ecpuins.flagmss = 0;break;
+				case 3: ecpuins.erm = ecpu.ebx + sibindex + disp32; ecpuins.flagmss = 0;break;
+				case 4: ecpuins.erm = ecpu.esp + sibindex + disp32; ecpuins.flagmss = 1;break;
+				case 5: ecpuins.erm = ecpu.ebp + sibindex + disp32; ecpuins.flagmss = 1;break;
+				case 6: ecpuins.erm = ecpu.esi + sibindex + disp32; ecpuins.flagmss = 0;break;
+				case 7: ecpuins.erm = ecpu.edi + sibindex + disp32; ecpuins.flagmss = 0;break;
+				}
+				break;
+			case 5: ecpuins.erm = ecpu.ebp + disp32; ecpuins.flagmss = 1;break;
+			case 6: ecpuins.erm = ecpu.esi + disp32; ecpuins.flagmss = 0;break;
+			case 7: ecpuins.erm = ecpu.edi + disp32; ecpuins.flagmss = 0;break;
+			}
+			break;
+		case 3:
+			break;
+		}
+		break;
+	}
+	if (_GetModRM_MOD(modrm) == 3) {
+		ecpuins.flagmem = 0;
+		switch (rmbyte) {
+		case 1:
+			switch (_GetModRM_RM(modrm)) {
+			case 0: ecpuins.rrm = (t_vaddrcc)(&ecpu.al);break;
+			case 1: ecpuins.rrm = (t_vaddrcc)(&ecpu.cl);break;
+			case 2: ecpuins.rrm = (t_vaddrcc)(&ecpu.dl);break;
+			case 3: ecpuins.rrm = (t_vaddrcc)(&ecpu.bl);break;
+			case 4: ecpuins.rrm = (t_vaddrcc)(&ecpu.ah);break;
+			case 5: ecpuins.rrm = (t_vaddrcc)(&ecpu.ch);break;
+			case 6: ecpuins.rrm = (t_vaddrcc)(&ecpu.dh);break;
+			case 7: ecpuins.rrm = (t_vaddrcc)(&ecpu.bh);break;
+			}
+			ecpuins.crm = d_nubit8(ecpuins.rrm);
+			break;
+		case 2:
+			switch (_GetModRM_RM(modrm)) {
+			case 0: ecpuins.rrm = (t_vaddrcc)(&ecpu.ax);break;
+			case 1: ecpuins.rrm = (t_vaddrcc)(&ecpu.cx);break;
+			case 2: ecpuins.rrm = (t_vaddrcc)(&ecpu.dx);break;
+			case 3: ecpuins.rrm = (t_vaddrcc)(&ecpu.bx);break;
+			case 4: ecpuins.rrm = (t_vaddrcc)(&ecpu.sp);break;
+			case 5: ecpuins.rrm = (t_vaddrcc)(&ecpu.bp);break;
+			case 6: ecpuins.rrm = (t_vaddrcc)(&ecpu.si);break;
+			case 7: ecpuins.rrm = (t_vaddrcc)(&ecpu.di);break;
+			}
+			ecpuins.crm = d_nubit16(ecpuins.rrm);
+			break;
+		case 4:
+			switch (_GetModRM_RM(modrm)) {
+			case 0: ecpuins.rrm = (t_vaddrcc)(&ecpu.eax);break;
+			case 1: ecpuins.rrm = (t_vaddrcc)(&ecpu.ecx);break;
+			case 2: ecpuins.rrm = (t_vaddrcc)(&ecpu.edx);break;
+			case 3: ecpuins.rrm = (t_vaddrcc)(&ecpu.ebx);break;
+			case 4: ecpuins.rrm = (t_vaddrcc)(&ecpu.esp);break;
+			case 5: ecpuins.rrm = (t_vaddrcc)(&ecpu.ebp);break;
+			case 6: ecpuins.rrm = (t_vaddrcc)(&ecpu.esi);break;
+			case 7: ecpuins.rrm = (t_vaddrcc)(&ecpu.edi);break;
+			}
+			ecpuins.crm = d_nubit32(ecpuins.rrm);
+			break;
+		default: CaseError("ParseModRM::rmbyte");break;}
+	}
+	switch (regbyte) {
+	case 0:
+		/* reg is operation or segment */
+		ecpuins.cr = _GetModRM_REG(modrm);
+		break;
+	case 1:
+		switch (_GetModRM_REG(modrm)) {
+		case 0: ecpuins.rr = (t_vaddrcc)(&ecpu.al);break;
+		case 1: ecpuins.rr = (t_vaddrcc)(&ecpu.cl);break;
+		case 2: ecpuins.rr = (t_vaddrcc)(&ecpu.dl);break;
+		case 3: ecpuins.rr = (t_vaddrcc)(&ecpu.bl);break;
+		case 4: ecpuins.rr = (t_vaddrcc)(&ecpu.ah);break;
+		case 5: ecpuins.rr = (t_vaddrcc)(&ecpu.ch);break;
+		case 6: ecpuins.rr = (t_vaddrcc)(&ecpu.dh);break;
+		case 7: ecpuins.rr = (t_vaddrcc)(&ecpu.bh);break;
+		}
+		ecpuins.cr = d_nubit8(ecpuins.rr);
+		break;
+	case 2:
+		switch (_GetModRM_REG(modrm)) {
+		case 0: ecpuins.rr = (t_vaddrcc)(&ecpu.ax);break;
+		case 1: ecpuins.rr = (t_vaddrcc)(&ecpu.cx);break;
+		case 2: ecpuins.rr = (t_vaddrcc)(&ecpu.dx);break;
+		case 3: ecpuins.rr = (t_vaddrcc)(&ecpu.bx);break;
+		case 4: ecpuins.rr = (t_vaddrcc)(&ecpu.sp);break;
+		case 5: ecpuins.rr = (t_vaddrcc)(&ecpu.bp);break;
+		case 6: ecpuins.rr = (t_vaddrcc)(&ecpu.si);break;
+		case 7: ecpuins.rr = (t_vaddrcc)(&ecpu.di);break;
+		}
+		ecpuins.cr = d_nubit16(ecpuins.rr);
+		break;
+	case 4:
+		switch (_GetModRM_REG(modrm)) {
+		case 0: ecpuins.rr = (t_vaddrcc)(&ecpu.eax);break;
+		case 1: ecpuins.rr = (t_vaddrcc)(&ecpu.ecx);break;
+		case 2: ecpuins.rr = (t_vaddrcc)(&ecpu.edx);break;
+		case 3: ecpuins.rr = (t_vaddrcc)(&ecpu.ebx);break;
+		case 4: ecpuins.rr = (t_vaddrcc)(&ecpu.esp);break;
+		case 5: ecpuins.rr = (t_vaddrcc)(&ecpu.ebp);break;
+		case 6: ecpuins.rr = (t_vaddrcc)(&ecpu.esi);break;
+		case 7: ecpuins.rr = (t_vaddrcc)(&ecpu.edi);break;
+		}
+		ecpuins.cr = d_nubit32(ecpuins.rr);
+		break;
+	default: CaseError("ParseModRM::regbyte");break;}
+}
+
+static void GetMem()
+{
+	/* returns ecpuins.rrm */
+	ecpuins.rrm = vramGetRealAddr(ecpuins.roverds->selector,
+		vramRealWord(ecpu.cs.selector, ecpu.eip));
+	ecpu.ip += 2;
+}
+static void GetImm(t_nubitcc immbit)
+{
+	ecpuins.rimm = vramGetRealAddr(ecpu.cs.selector, ecpu.eip);
+	switch (immbit) {
+	case 8: ecpu.eip += 1;break;
+	case 16:ecpu.eip += 2;break;
+	case 32:ecpu.eip += 4;break;
+	default:CaseError("GetImm::immbit");break;}
+}
+static void GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit)
+{
+	t_nsbit8 disp8 = 0x00;
+	t_nubit16 disp16 = 0x0000;
+	t_nubit8 regbyte, rmbyte;
+	regbyte = regbit >> 3;
+	rmbyte = rmbit >> 3;
+	ParseModRM(regbyte, rmbyte);
+	if (ecpuins.flagmem) {
+		ecpuins.lrm = ((ecpuins.flagmss ? ecpuins.roverss->selector : ecpuins.roverds->selector) << 4) + ecpuins.erm;
+		ecpuins.prm = ecpuins.lrm;
+		ecpuins.rrm = vramAddr(ecpuins.prm);
+		switch (rmbyte) {
+		case 1: ecpuins.crm = d_nubit8(ecpuins.rrm);break;
+		case 2: ecpuins.crm = d_nubit16(ecpuins.rrm);break;
+		case 4: ecpuins.crm = d_nubit32(ecpuins.rrm);break;
+		default: CaseError("GetModRegRM::rmbyte");break;}
+	}
+}
+static void GetModSegRM(t_nubit8 rmbyte)
+{
+	t_nsbit8 disp8 = 0x00;
+	t_nubit16 disp16 = 0x0000;
+	ParseModRM(0, rmbyte);
+	if (ecpuins.flagmem) {
+		ecpuins.lrm = ((ecpuins.flagmss ? ecpuins.roverss->selector : ecpuins.roverds->selector) << 4) + ecpuins.erm;
+		ecpuins.prm = ecpuins.lrm;
+		ecpuins.rrm = vramAddr(ecpuins.prm);
+		switch (rmbyte) {
+		case 1: ecpuins.crm = d_nubit8(ecpuins.rrm);break;
+		case 2: ecpuins.crm = d_nubit16(ecpuins.rrm);break;
+		case 4: ecpuins.crm = d_nubit32(ecpuins.rrm);break;
+		default: CaseError("GetModSegRM::rmbyte");break;}
+	}
+	switch (ecpuins.cr) {
+	case 0: ecpuins.rmovsreg = &ecpu.es;break;
+	case 1: ecpuins.rmovsreg = &ecpu.cs;break;
+	case 2: ecpuins.rmovsreg = &ecpu.ss;break;
+	case 3: ecpuins.rmovsreg = &ecpu.ds;break;
+	case 4: ecpuins.rmovsreg = &ecpu.fs;break;
+	case 5: ecpuins.rmovsreg = &ecpu.gs;break;
+	default: CaseError("GetModSegRM::ecpuins.cr");break;}
+}
+static void GetModRegRMEA(t_nubit8 regbyte, t_nubit8 rmbyte)
+{
+	ParseModRM(regbyte, rmbyte);
+	if (!ecpuins.flagmem)
+		CaseError("GetModRegRMEA::flagmem(0)");
+}
+
+static void INT(t_nubit8 intid);
+
 #define arith1                                        \
 do {                                                  \
 	switch (bit) {                                     \
@@ -407,339 +748,6 @@ do { \
 	ecpu.eflags = (efres & ~ECPUINS_FLAGS_MASKED) | (ecpu.eflags & ECPUINS_FLAGS_MASKED); \
 } while (0)
 
-
-static void CaseError(const char *str)
-{
-	vapiPrint("The NXVM CPU has encountered an internal case error: %s.\n",str);
-	vapiCallBackMachineStop();
-}
-
-#define _GetModRM_MOD(modrm) (((modrm) & 0xc0) >> 6)
-#define _GetModRM_REG(modrm) (((modrm) & 0x38) >> 3)
-#define _GetModRM_RM(modrm)  (((modrm) & 0x07) >> 0)
-#define _GetSIB_SS(sib)      (((sib) & 0xc0) >> 6)
-#define _GetSIB_Index(sib)   (((sib) & 0x38) >> 3)
-#define _GetSIB_Base(sib)    (((sib) & 0x07) >> 0)
-
-static void ParseModRM(t_nubit8 regbyte, t_nubit8 rmbyte)
-{
-	t_nsbit8 disp8 = 0x00;
-	t_nubit16 disp16 = 0x0000;
-	t_nubit32 disp32 = 0x00000000;
-	t_nubit32 sibindex = 0x00000000;
-	t_nubit8 modrm = 0x00, sib = 0x00;
-	modrm = vramRealByte(ecpu.cs.selector, ecpu.eip++);
-	ecpuins.erm = 0x00000000;
-	ecpuins.flagmem = 1;
-	ecpuins.flagmss = 0;
-	ecpuins.crm = ecpuins.cr = 0x0000000000000000;
-	ecpuins.rrm = ecpuins.rr = (t_vaddrcc)NULL;
-	ecpuins.prm = 0x00000000;
-	ecpuins.lrm = 0x00000000;
-	switch (_GetAddressSize) {
-	case 2:
-		switch (_GetModRM_MOD(modrm)) {
-		case 0:
-			switch (_GetModRM_RM(modrm)) {
-			case 0: ecpuins.erm = GetMax16(ecpu.bx + ecpu.si); ecpuins.flagmss = 0;break;
-			case 1: ecpuins.erm = GetMax16(ecpu.bx + ecpu.di); ecpuins.flagmss = 0;break;
-			case 2: ecpuins.erm = GetMax16(ecpu.bp + ecpu.si); ecpuins.flagmss = 1;break;
-			case 3: ecpuins.erm = GetMax16(ecpu.bp + ecpu.di); ecpuins.flagmss = 1;break;
-			case 4: ecpuins.erm = GetMax16(ecpu.si); ecpuins.flagmss = 0;break;
-			case 5: ecpuins.erm = GetMax16(ecpu.di); ecpuins.flagmss = 0;break;
-			case 6:
-				disp16 = (t_nubit16)vramRealWord(ecpu.cs.selector, ecpu.eip);
-				ecpu.eip += 2;
-				ecpuins.erm = GetMax16(disp16); ecpuins.flagmss = 0;
-				break;
-			case 7: ecpuins.erm = GetMax16(ecpu.bx); ecpuins.flagmss = 0;break;
-			}
-			break;
-		case 1:
-			disp8 = (t_nsbit8)vramRealByte(ecpu.cs.selector, ecpu.eip);
-			ecpu.eip += 1;
-			switch (_GetModRM_RM(modrm)) {
-			case 0: ecpuins.erm = GetMax16(ecpu.bx + ecpu.si + disp8); ecpuins.flagmss = 0;break;
-			case 1: ecpuins.erm = GetMax16(ecpu.bx + ecpu.di + disp8); ecpuins.flagmss = 0;break;
-			case 2: ecpuins.erm = GetMax16(ecpu.bp + ecpu.si + disp8); ecpuins.flagmss = 1;break;
-			case 3: ecpuins.erm = GetMax16(ecpu.bp + ecpu.di + disp8); ecpuins.flagmss = 1;break;
-			case 4: ecpuins.erm = GetMax16(ecpu.si + disp8); ecpuins.flagmss = 0;break;
-			case 5: ecpuins.erm = GetMax16(ecpu.di + disp8); ecpuins.flagmss = 0;break;
-			case 6: ecpuins.erm = GetMax16(ecpu.bp + disp8); ecpuins.flagmss = 1;break;
-			case 7: ecpuins.erm = GetMax16(ecpu.bx + disp8); ecpuins.flagmss = 0;break;
-			}
-			break;
-		case 2:
-			disp16 = (t_nubit16)vramRealWord(ecpu.cs.selector, ecpu.eip);
-			ecpu.eip += 2;
-			switch (_GetModRM_RM(modrm)) {
-			case 0: ecpuins.erm = GetMax16(ecpu.bx + ecpu.si + disp16); ecpuins.flagmss = 0;break;
-			case 1: ecpuins.erm = GetMax16(ecpu.bx + ecpu.di + disp16); ecpuins.flagmss = 0;break;
-			case 2: ecpuins.erm = GetMax16(ecpu.bp + ecpu.si + disp16); ecpuins.flagmss = 1;break;
-			case 3: ecpuins.erm = GetMax16(ecpu.bp + ecpu.di + disp16); ecpuins.flagmss = 1;break;
-			case 4: ecpuins.erm = GetMax16(ecpu.si + disp16); ecpuins.flagmss = 0;break;
-			case 5: ecpuins.erm = GetMax16(ecpu.di + disp16); ecpuins.flagmss = 0;break;
-			case 6: ecpuins.erm = GetMax16(ecpu.bp + disp16); ecpuins.flagmss = 1;break;
-			case 7: ecpuins.erm = GetMax16(ecpu.bx + disp16); ecpuins.flagmss = 0;break;
-			}
-			break;
-		case 3:
-			break;
-		}
-		break;
-	case 4:
-		if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4) {
-			sib = (t_nubit8)vramRealByte(ecpu.cs.selector, ecpu.eip);
-			ecpu.eip += 1;
-			switch (_GetSIB_Index(sib)) {
-			case 0: sibindex = ecpu.eax;   break;
-			case 1: sibindex = ecpu.ecx;   break;
-			case 2: sibindex = ecpu.edx;   break;
-			case 3: sibindex = ecpu.ebx;   break;
-			case 4: sibindex = 0x00000000;break;
-			case 5: sibindex = ecpu.ebp;   break;
-			case 6: sibindex = ecpu.esi;   break;
-			case 7: sibindex = ecpu.edi;   break;
-			}
-			sibindex <<= _GetSIB_SS(sib);
-		}
-		switch (_GetModRM_MOD(modrm)) {
-		case 0:
-			switch (_GetModRM_RM(modrm)) {
-			case 0: ecpuins.erm = ecpu.eax; ecpuins.flagmss = 0;break;
-			case 1: ecpuins.erm = ecpu.ecx; ecpuins.flagmss = 0;break;
-			case 2: ecpuins.erm = ecpu.edx; ecpuins.flagmss = 0;break;
-			case 3: ecpuins.erm = ecpu.ebx; ecpuins.flagmss = 0;break;
-			case 4:
-				switch (_GetSIB_Base(sib)) {
-				case 0: ecpuins.erm = ecpu.eax + sibindex; ecpuins.flagmss = 0;break;
-				case 1: ecpuins.erm = ecpu.ecx + sibindex; ecpuins.flagmss = 0;break;
-				case 2: ecpuins.erm = ecpu.edx + sibindex; ecpuins.flagmss = 0;break;
-				case 3: ecpuins.erm = ecpu.ebx + sibindex; ecpuins.flagmss = 0;break;
-				case 4: ecpuins.erm = ecpu.esp + sibindex; ecpuins.flagmss = 1;break;
-				case 5:
-					disp32 = (t_nubit32)vramRealDWord(ecpu.cs.selector, ecpu.eip);
-					ecpu.eip += 4;
-					ecpuins.erm = disp32 + sibindex; ecpuins.flagmss = 0; 
-					break;
-				case 6: ecpuins.erm = ecpu.esi + sibindex; ecpuins.flagmss = 0;break;
-				case 7: ecpuins.erm = ecpu.edi + sibindex; ecpuins.flagmss = 0;break;
-				}
-				break;
-			case 5:
-				disp32 = (t_nubit32)vramRealDWord(ecpu.cs.selector, ecpu.eip);
-				ecpu.eip += 4;
-				ecpuins.erm = disp32; ecpuins.flagmss = 0;
-				break;
-			case 6: ecpuins.erm = ecpu.esi; ecpuins.flagmss = 0;
-			case 7: ecpuins.erm = ecpu.edi; ecpuins.flagmss = 0;
-			}
-			break;
-		case 1:
-			disp8 = (t_nsbit8)vramRealByte(ecpu.cs.selector, ecpu.eip);
-			ecpu.eip += 1;
-			switch (_GetModRM_RM(modrm)) {
-			case 0: ecpuins.erm = ecpu.eax + disp8; ecpuins.flagmss = 0;break;
-			case 1: ecpuins.erm = ecpu.ecx + disp8; ecpuins.flagmss = 0;break;
-			case 2: ecpuins.erm = ecpu.edx + disp8; ecpuins.flagmss = 0;break;
-			case 3: ecpuins.erm = ecpu.ebx + disp8; ecpuins.flagmss = 0;break;
-			case 4:
-				switch (_GetSIB_Base(sib)) {
-				case 0: ecpuins.erm = ecpu.eax + sibindex + disp8; ecpuins.flagmss = 0;break;
-				case 1: ecpuins.erm = ecpu.ecx + sibindex + disp8; ecpuins.flagmss = 0;break;
-				case 2: ecpuins.erm = ecpu.edx + sibindex + disp8; ecpuins.flagmss = 0;break;
-				case 3: ecpuins.erm = ecpu.ebx + sibindex + disp8; ecpuins.flagmss = 0;break;
-				case 4: ecpuins.erm = ecpu.esp + sibindex + disp8; ecpuins.flagmss = 1;break;
-				case 5: ecpuins.erm = ecpu.ebp + sibindex + disp8; ecpuins.flagmss = 1;break;
-				case 6: ecpuins.erm = ecpu.esi + sibindex + disp8; ecpuins.flagmss = 0;break;
-				case 7: ecpuins.erm = ecpu.edi + sibindex + disp8; ecpuins.flagmss = 0;break;
-				}
-				break;
-			case 5: ecpuins.erm = ecpu.ebp + disp8; ecpuins.flagmss = 1;break;
-			case 6: ecpuins.erm = ecpu.esi + disp8; ecpuins.flagmss = 0;break;
-			case 7: ecpuins.erm = ecpu.edi + disp8; ecpuins.flagmss = 0;break;
-			}
-			break;
-		case 2:
-			disp32 = (t_nubit32)vramRealDWord(ecpu.cs.selector, ecpu.eip);
-			ecpu.eip += 4;
-			switch (_GetModRM_RM(modrm)) {
-			case 0: ecpuins.erm = ecpu.eax + disp32; ecpuins.flagmss = 0;break;
-			case 1: ecpuins.erm = ecpu.ecx + disp32; ecpuins.flagmss = 0;break;
-			case 2: ecpuins.erm = ecpu.edx + disp32; ecpuins.flagmss = 0;break;
-			case 3: ecpuins.erm = ecpu.ebx + disp32; ecpuins.flagmss = 0;break;
-			case 4:
-				switch (_GetSIB_Base(sib)) {
-				case 0: ecpuins.erm = ecpu.eax + sibindex + disp32; ecpuins.flagmss = 0;break;
-				case 1: ecpuins.erm = ecpu.ecx + sibindex + disp32; ecpuins.flagmss = 0;break;
-				case 2: ecpuins.erm = ecpu.edx + sibindex + disp32; ecpuins.flagmss = 0;break;
-				case 3: ecpuins.erm = ecpu.ebx + sibindex + disp32; ecpuins.flagmss = 0;break;
-				case 4: ecpuins.erm = ecpu.esp + sibindex + disp32; ecpuins.flagmss = 1;break;
-				case 5: ecpuins.erm = ecpu.ebp + sibindex + disp32; ecpuins.flagmss = 1;break;
-				case 6: ecpuins.erm = ecpu.esi + sibindex + disp32; ecpuins.flagmss = 0;break;
-				case 7: ecpuins.erm = ecpu.edi + sibindex + disp32; ecpuins.flagmss = 0;break;
-				}
-				break;
-			case 5: ecpuins.erm = ecpu.ebp + disp32; ecpuins.flagmss = 1;break;
-			case 6: ecpuins.erm = ecpu.esi + disp32; ecpuins.flagmss = 0;break;
-			case 7: ecpuins.erm = ecpu.edi + disp32; ecpuins.flagmss = 0;break;
-			}
-			break;
-		case 3:
-			break;
-		}
-		break;
-	}
-	if (_GetModRM_MOD(modrm) == 3) {
-		ecpuins.flagmem = 0;
-		switch (rmbyte) {
-		case 1:
-			switch (_GetModRM_RM(modrm)) {
-			case 0: ecpuins.rrm = (t_vaddrcc)(&ecpu.al);break;
-			case 1: ecpuins.rrm = (t_vaddrcc)(&ecpu.cl);break;
-			case 2: ecpuins.rrm = (t_vaddrcc)(&ecpu.dl);break;
-			case 3: ecpuins.rrm = (t_vaddrcc)(&ecpu.bl);break;
-			case 4: ecpuins.rrm = (t_vaddrcc)(&ecpu.ah);break;
-			case 5: ecpuins.rrm = (t_vaddrcc)(&ecpu.ch);break;
-			case 6: ecpuins.rrm = (t_vaddrcc)(&ecpu.dh);break;
-			case 7: ecpuins.rrm = (t_vaddrcc)(&ecpu.bh);break;
-			}
-			ecpuins.crm = d_nubit8(ecpuins.rrm);
-			break;
-		case 2:
-			switch (_GetModRM_RM(modrm)) {
-			case 0: ecpuins.rrm = (t_vaddrcc)(&ecpu.ax);break;
-			case 1: ecpuins.rrm = (t_vaddrcc)(&ecpu.cx);break;
-			case 2: ecpuins.rrm = (t_vaddrcc)(&ecpu.dx);break;
-			case 3: ecpuins.rrm = (t_vaddrcc)(&ecpu.bx);break;
-			case 4: ecpuins.rrm = (t_vaddrcc)(&ecpu.sp);break;
-			case 5: ecpuins.rrm = (t_vaddrcc)(&ecpu.bp);break;
-			case 6: ecpuins.rrm = (t_vaddrcc)(&ecpu.si);break;
-			case 7: ecpuins.rrm = (t_vaddrcc)(&ecpu.di);break;
-			}
-			ecpuins.crm = d_nubit16(ecpuins.rrm);
-			break;
-		case 4:
-			switch (_GetModRM_RM(modrm)) {
-			case 0: ecpuins.rrm = (t_vaddrcc)(&ecpu.eax);break;
-			case 1: ecpuins.rrm = (t_vaddrcc)(&ecpu.ecx);break;
-			case 2: ecpuins.rrm = (t_vaddrcc)(&ecpu.edx);break;
-			case 3: ecpuins.rrm = (t_vaddrcc)(&ecpu.ebx);break;
-			case 4: ecpuins.rrm = (t_vaddrcc)(&ecpu.esp);break;
-			case 5: ecpuins.rrm = (t_vaddrcc)(&ecpu.ebp);break;
-			case 6: ecpuins.rrm = (t_vaddrcc)(&ecpu.esi);break;
-			case 7: ecpuins.rrm = (t_vaddrcc)(&ecpu.edi);break;
-			}
-			ecpuins.crm = d_nubit32(ecpuins.rrm);
-			break;
-		default: CaseError("ParseModRM::rmbyte");break;}
-	}
-	switch (regbyte) {
-	case 0:
-		/* reg is operation or segment */
-		ecpuins.cr = _GetModRM_REG(modrm);
-		break;
-	case 1:
-		switch (_GetModRM_REG(modrm)) {
-		case 0: ecpuins.rr = (t_vaddrcc)(&ecpu.al);break;
-		case 1: ecpuins.rr = (t_vaddrcc)(&ecpu.cl);break;
-		case 2: ecpuins.rr = (t_vaddrcc)(&ecpu.dl);break;
-		case 3: ecpuins.rr = (t_vaddrcc)(&ecpu.bl);break;
-		case 4: ecpuins.rr = (t_vaddrcc)(&ecpu.ah);break;
-		case 5: ecpuins.rr = (t_vaddrcc)(&ecpu.ch);break;
-		case 6: ecpuins.rr = (t_vaddrcc)(&ecpu.dh);break;
-		case 7: ecpuins.rr = (t_vaddrcc)(&ecpu.bh);break;
-		}
-		ecpuins.cr = d_nubit8(ecpuins.rr);
-		break;
-	case 2:
-		switch (_GetModRM_REG(modrm)) {
-		case 0: ecpuins.rr = (t_vaddrcc)(&ecpu.ax);break;
-		case 1: ecpuins.rr = (t_vaddrcc)(&ecpu.cx);break;
-		case 2: ecpuins.rr = (t_vaddrcc)(&ecpu.dx);break;
-		case 3: ecpuins.rr = (t_vaddrcc)(&ecpu.bx);break;
-		case 4: ecpuins.rr = (t_vaddrcc)(&ecpu.sp);break;
-		case 5: ecpuins.rr = (t_vaddrcc)(&ecpu.bp);break;
-		case 6: ecpuins.rr = (t_vaddrcc)(&ecpu.si);break;
-		case 7: ecpuins.rr = (t_vaddrcc)(&ecpu.di);break;
-		}
-		ecpuins.cr = d_nubit16(ecpuins.rr);
-		break;
-	case 4:
-		switch (_GetModRM_REG(modrm)) {
-		case 0: ecpuins.rr = (t_vaddrcc)(&ecpu.eax);break;
-		case 1: ecpuins.rr = (t_vaddrcc)(&ecpu.ecx);break;
-		case 2: ecpuins.rr = (t_vaddrcc)(&ecpu.edx);break;
-		case 3: ecpuins.rr = (t_vaddrcc)(&ecpu.ebx);break;
-		case 4: ecpuins.rr = (t_vaddrcc)(&ecpu.esp);break;
-		case 5: ecpuins.rr = (t_vaddrcc)(&ecpu.ebp);break;
-		case 6: ecpuins.rr = (t_vaddrcc)(&ecpu.esi);break;
-		case 7: ecpuins.rr = (t_vaddrcc)(&ecpu.edi);break;
-		}
-		ecpuins.cr = d_nubit32(ecpuins.rr);
-		break;
-	default: CaseError("ParseModRM::regbyte");break;}
-}
-
-static void GetMem()
-{
-	/* returns ecpuins.rrm */
-	ecpuins.erm = vramRealWord(ecpu.cs.selector, ecpu.eip);
-	ecpuins.lrm = (ecpuins.roverds->selector << 4) + ecpuins.erm;
-	ecpuins.prm = ecpuins.lrm;
-	ecpuins.rrm = vramAddr(ecpuins.prm);
-	ecpu.eip += _GetAddressSize;
-}
-static void GetImm(t_nubitcc byte)
-{
-	ecpuins.rimm = vramGetRealAddr(ecpu.cs.selector, ecpu.eip);
-	ecpu.eip += byte;
-}
-static void GetModRegRM(t_nubit8 regbyte, t_nubit8 rmbyte)
-{
-	ParseModRM(regbyte, rmbyte);
-	if (ecpuins.flagmem) {
-		ecpuins.lrm = ((ecpuins.flagmss ? ecpuins.roverss->selector : ecpuins.roverds->selector) << 4) + ecpuins.erm;
-		ecpuins.prm = ecpuins.lrm;
-		ecpuins.rrm = vramAddr(ecpuins.prm);
-		switch (rmbyte) {
-		case 1: ecpuins.crm = d_nubit8(ecpuins.rrm);break;
-		case 2: ecpuins.crm = d_nubit16(ecpuins.rrm);break;
-		case 4: ecpuins.crm = d_nubit32(ecpuins.rrm);break;
-		default: CaseError("GetModRegRM::rmbyte");break;}
-	}
-}
-static void GetModSegRM(t_nubit8 rmbyte)
-{
-	ParseModRM(0, rmbyte);
-	if (ecpuins.flagmem) {
-		ecpuins.lrm = ((ecpuins.flagmss ? ecpuins.roverss->selector : ecpuins.roverds->selector) << 4) + ecpuins.erm;
-		ecpuins.prm = ecpuins.lrm;
-		ecpuins.rrm = vramAddr(ecpuins.prm);
-		switch (rmbyte) {
-		case 1: ecpuins.crm = d_nubit8(ecpuins.rrm);break;
-		case 2: ecpuins.crm = d_nubit16(ecpuins.rrm);break;
-		case 4: ecpuins.crm = d_nubit32(ecpuins.rrm);break;
-		default: CaseError("GetModSegRM::rmbyte");break;}
-	}
-	switch (ecpuins.cr) {
-	case 0: ecpuins.rmovsreg = &ecpu.es;break;
-	case 1: ecpuins.rmovsreg = &ecpu.cs;break;
-	case 2: ecpuins.rmovsreg = &ecpu.ss;break;
-	case 3: ecpuins.rmovsreg = &ecpu.ds;break;
-	case 4: ecpuins.rmovsreg = &ecpu.fs;break;
-	case 5: ecpuins.rmovsreg = &ecpu.gs;break;
-	default: CaseError("GetModSegRM::ecpuins.cr");break;}
-}
-static void GetModRegRMEA(t_nubit8 regbyte, t_nubit8 rmbyte)
-{
-	ParseModRM(regbyte, rmbyte);
-	if (!ecpuins.flagmem)
-		CaseError("GetModRegRMEA::flagmem(0)");
-}
-
-static void INT(t_nubit8 intid);
-
 DONEASM ADD(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 {
 #define operation add
@@ -899,104 +907,103 @@ DONEASM IDIV(t_vaddrcc rsrc, t_nubit8 bit)
 #undef operation
 }
 
-DONEASM XCHG(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 byte)
+DONEASM XCHG(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 {
-	switch (byte) {
-	case 1:
+	switch (bit) {
+	case 8:
 		uba = d_nubit8(rdest);
 		ubb = d_nubit8(rsrc);
 		if (!im(rdest) || wm) d_nubit8(rdest) = ubb;
 		if (!im(rsrc) || wm)  d_nubit8(rsrc) = uba;
 		break;
-	case 2:
+	case 16:
 		uwa = d_nubit16(rdest);
 		uwb = d_nubit16(rsrc);
 		if (!im(rdest) || wm) d_nubit16(rdest) = uwb;
 		if (!im(rsrc) || wm)  d_nubit16(rsrc) = uwa;
 		break;
-	case 4:
+	case 32:
 		uda = d_nubit32(rdest);
 		udb = d_nubit32(rsrc);
 		if (!im(rdest) || wm) d_nubit32(rdest) = udb;
 		if (!im(rsrc) || wm)  d_nubit32(rsrc) = uda;
 		break;
-	default:CaseError("XCHG::byte");break;}
+	default:CaseError("XCHG::bit");break;}
 }
-DONEASM MOV(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 byte)
+DONEASM MOV(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 {
-	switch (byte) {
-	case 1:
+	switch (bit) {
+	case 8:
 		if (!im(rdest) || wm)  d_nubit8(rdest) = d_nubit8(rsrc);
 		break;
-	case 2:
+	case 16:
 		if (!im(rdest) || wm)  d_nubit16(rdest) = d_nubit16(rsrc);
 		break;
-	case 4:
+	case 32:
 		if (!im(rdest) || wm)  d_nubit32(rdest) = d_nubit32(rsrc);
 		break;
-	default:CaseError("MOV::byte");break;}
+	default:CaseError("MOV::bit");break;}
 }
-DONEASM PUSH(t_vaddrcc rsrc, t_nubit8 byte)
+DONEASM PUSH(t_vaddrcc rsrc, t_nubit8 bit)
 {
 	t_nubit32 data;
-	switch (byte) {
-	case 2:
+	switch (bit) {
+	case 16:
 		data = d_nubit16(rsrc);
 		switch (_GetStackSize) {
 		case 2:
 			ecpu.sp -= 2;
-			if (wm) vramRealWord(ecpu.ss.selector, ecpu.sp) = GetMax16(data);
+			if (wm) vramRealWord(ecpu.ss.selector,ecpu.sp) = GetMax16(data);
 			break;
 		case 4:
 			ecpu.esp -= 2;
-			if (wm) vramRealWord(ecpu.ss.selector, ecpu.esp) = GetMax16(data);
+			if (wm) vramRealWord(ecpu.ss.selector,ecpu.esp) = GetMax16(data);
 			break;
 		}
 		break;
-	case 4:
+	case 32:
 		data = d_nubit32(rsrc);
 		switch (_GetStackSize) {
 		case 2:
 			ecpu.sp -= 4;
-			if (wm) vramRealDWord(ecpu.ss.selector, ecpu.sp) = GetMax32(data);
+			if (wm) vramRealDWord(ecpu.ss.selector,ecpu.sp) = GetMax32(data);
 			break;
 		case 4:
 			ecpu.esp -= 4;
-			if (wm) vramRealDWord(ecpu.ss.selector, ecpu.esp) = GetMax32(data);
+			if (wm) vramRealDWord(ecpu.ss.selector,ecpu.esp) = GetMax32(data);
 			break;
 		}
 		break;
-	default:
-		CaseError("PUSH::byte");break;}
+	default:CaseError("PUSH::bit");break;}
 }
-DONEASM POP(t_vaddrcc rdest, t_nubit8 byte)
+DONEASM POP(t_vaddrcc rdest, t_nubit8 bit)
 {
-	switch (byte) {
-	case 2:
+	switch (bit) {
+	case 16:
 		switch (_GetStackSize) {
 		case 2:
-			if (!im(rdest) || wm) d_nubit16(rdest) = vramRealWord(ecpu.ss.selector, ecpu.sp);
+			if (!im(rdest) || wm) d_nubit16(rdest) = vramRealWord(ecpu.ss.selector,ecpu.sp);
 			ecpu.sp += 2;
 			break;
 		case 4:
-			if (!im(rdest) || wm) d_nubit16(rdest) = vramRealWord(ecpu.ss.selector, ecpu.esp);
+			if (!im(rdest) || wm) d_nubit16(rdest) = vramRealWord(ecpu.ss.selector,ecpu.esp);
 			ecpu.esp += 2;
 			break;
 		}
 		break;
-	case 4:
+	case 32:
 		switch (_GetStackSize) {
 		case 2:
-			if (!im(rdest) || wm) d_nubit32(rdest) = vramRealDWord(ecpu.ss.selector, ecpu.sp);
+			if (!im(rdest) || wm) d_nubit32(rdest) = vramRealDWord(ecpu.ss.selector,ecpu.sp);
 			ecpu.sp += 4;
 			break;
 		case 4:
-			if (!im(rdest) || wm) d_nubit32(rdest) = vramRealDWord(ecpu.ss.selector, ecpu.esp);
+			if (!im(rdest) || wm) d_nubit32(rdest) = vramRealDWord(ecpu.ss.selector,ecpu.esp);
 			ecpu.esp += 4;
 			break;
 		}
 		break;
-	default:CaseError("POP::byte");break;}
+	default:CaseError("POP::bit");break;}
 }
 DONEASM JCC(t_vaddrcc rsrc, t_bool condition)
 {
@@ -1032,7 +1039,7 @@ DONEASM MOVS(t_nubit8 bit)
 {
 	t_vaddrcc rdest = vramGetRealAddr(ecpu.es.selector, ecpu.di);
 	t_vaddrcc rsrc = vramGetRealAddr(ecpuins.roverds->selector, ecpu.si);
-	MOV(rdest, rsrc, (bit >> 3));
+	MOV(rdest, rsrc, bit);
 	STRDIR((bit >> 3), 1, 1);
 }
 DONEASM CMPS(t_nubit8 bit)
@@ -1046,14 +1053,14 @@ DONEASM STOS(t_nubit8 bit)
 {
 	t_vaddrcc rdest = vramGetRealAddr(ecpu.es.selector, ecpu.di);
 	t_vaddrcc rsrc = (t_vaddrcc)&ecpu.eax;
-	MOV(rdest, rsrc, (bit >> 3));
+	MOV(rdest, rsrc, bit);
 	STRDIR((bit >> 3), 0, 1);
 }
 DONEASM LODS(t_nubit8  bit)
 {
 	t_vaddrcc rdest = (t_vaddrcc)&ecpu.eax;
 	t_vaddrcc rsrc = vramGetRealAddr(ecpuins.roverds->selector, ecpu.si);
-	MOV(rdest, rsrc, (bit >> 3));
+	MOV(rdest, rsrc, bit);
 	STRDIR((bit >> 3), 1, 0);
 }
 DONEASM SCAS(t_nubit8 bit)
@@ -1063,278 +1070,250 @@ DONEASM SCAS(t_nubit8 bit)
 	CMP(rdest, rsrc, bit);
 	STRDIR((bit >> 3), 0, 1);
 }
-DONEASM INT(t_nubit8 intid)
+static void INT(t_nubit8 intid)
 {
-	t_nubit32 oldcs = ecpu.cs.selector;
-	switch (_GetOperandSize) {
-	case 2:
-		PUSH((t_vaddrcc)&ecpu.flags, 2);
-		ClrBit(ecpu.flags, (VCPU_EFLAGS_IF | VCPU_EFLAGS_TF));
-		PUSH((t_vaddrcc)&oldcs, 2);
-		PUSH((t_vaddrcc)&ecpu.ip, 2);
-		ecpu.eip = vramWord(intid * 4);
-		ecpu.cs.selector = vramWord(intid * 4 + 2);
-		break;
-	case 4:
-		PUSH((t_vaddrcc)&ecpu.eflags, 4);
-		ClrBit(ecpu.flags, (VCPU_EFLAGS_IF | VCPU_EFLAGS_TF));
-		PUSH((t_vaddrcc)&oldcs, 4);
-		PUSH((t_vaddrcc)&ecpu.eip, 4);
-		ecpu.eip = vramWord(intid * 4);
-		ecpu.cs.selector = vramWord(intid * 4 + 2);
-		break;
-	}
-
+	PUSH((t_vaddrcc)&ecpu.flags,16);
+	ClrBit(ecpu.flags, (VCPU_EFLAGS_IF | VCPU_EFLAGS_TF));
+	PUSH((t_vaddrcc)&ecpu.cs.selector,16);
+	PUSH((t_vaddrcc)&ecpu.ip,16);
+	ecpu.ip = vramRealWord(0x0000,intid*4+0);
+	ecpu.cs.selector = vramRealWord(0x0000,intid*4+2);
 }
 
-DONEASM UndefinedOpcode()
+static void UndefinedOpcode()
 {
-	ecpu.cs = ecpuins.oldcs;
-	ecpu.eip = ecpuins.oldeip;
 	vapiPrint("The NXVM CPU has encountered an illegal instruction.\n");
-	vapiPrint("CS:%04X IP:%08X OP:%02X %02X %02X %02X\n",
-		ecpu.cs.selector, ecpu.eip, vramRealByte(ecpu.cs.selector, ecpu.eip+0),
-		vramRealByte(ecpu.cs.selector, ecpu.eip+1), vramRealByte(ecpu.cs.selector, ecpu.eip+2),
-		vramRealByte(ecpu.cs.selector, ecpu.eip+3), vramRealByte(ecpu.cs.selector, ecpu.eip+4));
+	vapiPrint("CS:%04X IP:%04X OP:%02X %02X %02X %02X\n",
+		ecpu.cs.selector, ecpu.ip, vramRealByte(ecpu.cs.selector,ecpu.ip+0),
+		vramRealByte(ecpu.cs.selector,ecpu.ip+1), vramRealByte(ecpu.cs.selector,ecpu.ip+2),
+		vramRealByte(ecpu.cs.selector,ecpu.ip+3), vramRealByte(ecpu.cs.selector,ecpu.ip+4));
 	vapiCallBackMachineStop();
 }
-DONEASM ADD_RM8_R8()
+static void ADD_RM8_R8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	ADD(ecpuins.rrm, ecpuins.rr, 8);
+	GetModRegRM(8,8);
+	ADD(ecpuins.rrm,ecpuins.rr,8);
 }
-DONEASM ADD_RM16_R16()
+static void ADD_RM16_R16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	ADD(ecpuins.rrm, ecpuins.rr, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	ADD(ecpuins.rrm,ecpuins.rr,16);
 }
-DONEASM ADD_R8_RM8()
+static void ADD_R8_RM8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	ADD(ecpuins.rr, ecpuins.rrm, 8);
+	GetModRegRM(8,8);
+	ADD(ecpuins.rr,ecpuins.rrm,8);
 }
-DONEASM ADD_R16_RM16()
+static void ADD_R16_RM16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	ADD(ecpuins.rr, ecpuins.rrm, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	ADD(ecpuins.rr,ecpuins.rrm,16);
 }
-DONEASM ADD_AL_I8()
+static void ADD_AL_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	ADD((t_vaddrcc)&ecpu.al, ecpuins.rimm, 8);
+	GetImm(8);
+	ADD((t_vaddrcc)&ecpu.al,ecpuins.rimm,8);
 }
-DONEASM ADD_AX_I16()
+static void ADD_AX_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	ADD((t_vaddrcc)&ecpu.eax, ecpuins.rimm, _GetOperandSize * 8);
+	GetImm(16);
+	ADD((t_vaddrcc)&ecpu.ax,ecpuins.rimm,16);
 }
-DONEASM PUSH_ES()
+static void PUSH_ES()
 {
-	t_nubit32 oldes = ecpu.es.selector;
 	ecpu.eip++;
-	PUSH((t_vaddrcc)&oldes, _GetOperandSize);
+	PUSH((t_vaddrcc)&ecpu.es.selector,16);
 }
-DONEASM POP_ES()
+static void POP_ES()
 {
-	t_nubit32 newes;
 	ecpu.eip++;
-	POP((t_vaddrcc)&newes, _GetOperandSize);
-	ecpu.es.selector = GetMax16(newes);
+	POP((t_vaddrcc)&ecpu.es.selector,16);
 }
-DONEASM OR_RM8_R8()
+static void OR_RM8_R8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	OR(ecpuins.rrm, ecpuins.rr, 8);
+	GetModRegRM(8,8);
+	OR(ecpuins.rrm,ecpuins.rr,8);
 }
-DONEASM OR_RM16_R16()
+static void OR_RM16_R16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	OR(ecpuins.rrm, ecpuins.rr, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	OR(ecpuins.rrm,ecpuins.rr,16);
 }
-DONEASM OR_R8_RM8()
+static void OR_R8_RM8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	OR(ecpuins.rr, ecpuins.rrm, 8);
+	GetModRegRM(8,8);
+	OR(ecpuins.rr,ecpuins.rrm,8);
 }
-DONEASM OR_R16_RM16()
+static void OR_R16_RM16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	OR(ecpuins.rr, ecpuins.rrm, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	OR(ecpuins.rr,ecpuins.rrm,16);
 }
-DONEASM OR_AL_I8()
+static void OR_AL_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	OR((t_vaddrcc)&ecpu.al, ecpuins.rimm, 8);
+	GetImm(8);
+	OR((t_vaddrcc)&ecpu.al,ecpuins.rimm,8);
 }
-DONEASM OR_AX_I16()
+static void OR_AX_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	OR((t_vaddrcc)&ecpu.eax, ecpuins.rimm, _GetOperandSize * 8);
+	GetImm(16);
+	OR((t_vaddrcc)&ecpu.ax,ecpuins.rimm,16);
 }
-DONEASM PUSH_CS()
+static void PUSH_CS()
 {
-	t_nubit32 oldcs = ecpu.cs.selector;
 	ecpu.eip++;
-	PUSH((t_vaddrcc)&oldcs, _GetOperandSize);
+	PUSH((t_vaddrcc)&ecpu.cs.selector,16);
 }
-DONEASM POP_CS()
+static void POP_CS()
 {
-	t_nubit32 newcs;
 	ecpu.eip++;
-	POP((t_vaddrcc)&newcs, _GetOperandSize);
-	ecpu.cs.selector = GetMax16(newcs);
+	POP((t_vaddrcc)&ecpu.cs.selector,16);
 }
 static void INS_0F()
 {
 	UndefinedOpcode();
 }
-DONEASM ADC_RM8_R8()
+static void ADC_RM8_R8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	ADC(ecpuins.rrm, ecpuins.rr, 8);
+	GetModRegRM(8,8);
+	ADC(ecpuins.rrm,ecpuins.rr,8);
 }
-DONEASM ADC_RM16_R16()
+static void ADC_RM16_R16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	ADC(ecpuins.rrm, ecpuins.rr, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	ADC(ecpuins.rrm,ecpuins.rr,16);
 }
-DONEASM ADC_R8_RM8()
+static void ADC_R8_RM8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	ADC(ecpuins.rr, ecpuins.rrm, 8);
+	GetModRegRM(8,8);
+	ADC(ecpuins.rr,ecpuins.rrm,8);
 }
-DONEASM ADC_R16_RM16()
+static void ADC_R16_RM16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	ADC(ecpuins.rr, ecpuins.rrm, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	ADC(ecpuins.rr,ecpuins.rrm,16);
 }
-DONEASM ADC_AL_I8()
+static void ADC_AL_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	ADC((t_vaddrcc)&ecpu.al, ecpuins.rimm, 8);
+	GetImm(8);
+	ADC((t_vaddrcc)&ecpu.al,ecpuins.rimm,8);
 }
-DONEASM ADC_AX_I16()
+static void ADC_AX_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	ADC((t_vaddrcc)&ecpu.eax, ecpuins.rimm, _GetOperandSize * 8);
+	GetImm(16);
+	ADC((t_vaddrcc)&ecpu.ax,ecpuins.rimm,16);
 }
-DONEASM PUSH_SS()
-{
-	t_nubit32 oldss = ecpu.ss.selector;
-	ecpu.eip++;
-	PUSH((t_vaddrcc)&oldss, _GetOperandSize);
-}
-DONEASM POP_SS()
-{
-	t_nubit32 newss;
-	ecpu.eip++;
-	POP((t_vaddrcc)&newss, _GetOperandSize);
-	ecpu.ss.selector = GetMax16(newss);
-}
-DONEASM SBB_RM8_R8()
+static void PUSH_SS()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	SBB(ecpuins.rrm, ecpuins.rr, 8);
+	PUSH((t_vaddrcc)&ecpu.ss.selector,16);
 }
-DONEASM SBB_RM16_R16()
+static void POP_SS()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	SBB(ecpuins.rrm, ecpuins.rr, _GetOperandSize * 8);
+	POP((t_vaddrcc)&ecpu.ss.selector,16);
 }
-DONEASM SBB_R8_RM8()
+static void SBB_RM8_R8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	SBB(ecpuins.rr, ecpuins.rrm, 8);
+	GetModRegRM(8,8);
+	SBB(ecpuins.rrm,ecpuins.rr,8);
 }
-DONEASM SBB_R16_RM16()
+static void SBB_RM16_R16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	SBB(ecpuins.rr, ecpuins.rrm, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	SBB(ecpuins.rrm,ecpuins.rr,16);
 }
-DONEASM SBB_AL_I8()
+static void SBB_R8_RM8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	SBB((t_vaddrcc)&ecpu.al, ecpuins.rimm, 8);
+	GetModRegRM(8,8);
+	SBB(ecpuins.rr,ecpuins.rrm,8);
 }
-DONEASM SBB_AX_I16()
+static void SBB_R16_RM16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	SBB((t_vaddrcc)&ecpu.eax, ecpuins.rimm, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	SBB(ecpuins.rr,ecpuins.rrm,16);
 }
-DONEASM PUSH_DS()
-{
-	t_nubit32 oldds = ecpu.ds.selector;
-	ecpu.eip++;
-	PUSH((t_vaddrcc)&oldds, _GetOperandSize);
-}
-DONEASM POP_DS()
-{
-	t_nubit32 newds;
-	ecpu.eip++;
-	POP((t_vaddrcc)&newds, _GetOperandSize);
-	ecpu.ds.selector = GetMax16(newds);
-}
-DONEASM AND_RM8_R8()
+static void SBB_AL_I8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	AND(ecpuins.rrm, ecpuins.rr, 8);
+	GetImm(8);
+	SBB((t_vaddrcc)&ecpu.al,ecpuins.rimm,8);
 }
-DONEASM AND_RM16_R16()
+static void SBB_AX_I16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	AND(ecpuins.rrm, ecpuins.rr, _GetOperandSize * 8);
+	GetImm(16);
+	SBB((t_vaddrcc)&ecpu.ax,ecpuins.rimm,16);
 }
-DONEASM AND_R8_RM8()
+static void PUSH_DS()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	AND(ecpuins.rr, ecpuins.rrm, 8);
+	PUSH((t_vaddrcc)&ecpu.ds.selector,16);
 }
-DONEASM AND_R16_RM16()
+static void POP_DS()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	AND(ecpuins.rr, ecpuins.rrm, _GetOperandSize * 8);
+	POP((t_vaddrcc)&ecpu.ds.selector,16);
 }
-DONEASM AND_AL_I8()
+static void AND_RM8_R8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	AND((t_vaddrcc)&ecpu.al, ecpuins.rimm, 8);
+	GetModRegRM(8,8);
+	AND(ecpuins.rrm,ecpuins.rr,8);
 }
-DONEASM AND_AX_I16()
+static void AND_RM16_R16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	AND((t_vaddrcc)&ecpu.eax, ecpuins.rimm, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	AND(ecpuins.rrm,ecpuins.rr,16);
 }
-DONEASM ES()
+static void AND_R8_RM8()
+{
+	ecpu.eip++;
+	GetModRegRM(8,8);
+	AND(ecpuins.rr,ecpuins.rrm,8);
+}
+static void AND_R16_RM16()
+{
+	ecpu.eip++;
+	GetModRegRM(16,16);
+	AND(ecpuins.rr,ecpuins.rrm,16);
+}
+static void AND_AL_I8()
+{
+	ecpu.eip++;
+	GetImm(8);
+	AND((t_vaddrcc)&ecpu.al,ecpuins.rimm,8);
+}
+static void AND_AX_I16()
+{
+	ecpu.eip++;
+	GetImm(16);
+	AND((t_vaddrcc)&ecpu.ax,ecpuins.rimm,16);
+}
+static void ES()
 {
 	ecpu.eip++;
 	ecpuins.roverds = &ecpu.es;
@@ -1347,43 +1326,43 @@ DONEASM DAA()
 	adjustax;
 #undef operation
 }
-DONEASM SUB_RM8_R8()
+static void SUB_RM8_R8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	SUB(ecpuins.rrm, ecpuins.rr, 8);
+	GetModRegRM(8,8);
+	SUB(ecpuins.rrm,ecpuins.rr,8);
 }
-DONEASM SUB_RM16_R16()
+static void SUB_RM16_R16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	SUB(ecpuins.rrm, ecpuins.rr, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	SUB(ecpuins.rrm,ecpuins.rr,16);
 }
-DONEASM SUB_R8_RM8()
+static void SUB_R8_RM8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	SUB(ecpuins.rr, ecpuins.rrm, 8);
+	GetModRegRM(8,8);
+	SUB(ecpuins.rr,ecpuins.rrm,8);
 }
-DONEASM SUB_R16_RM16()
+static void SUB_R16_RM16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	SUB(ecpuins.rr, ecpuins.rrm, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	SUB(ecpuins.rr,ecpuins.rrm,16);
 }
-DONEASM SUB_AL_I8()
+static void SUB_AL_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	SUB((t_vaddrcc)&ecpu.al, ecpuins.rimm, 8);
+	GetImm(8);
+	SUB((t_vaddrcc)&ecpu.al,ecpuins.rimm,8);
 }
-DONEASM SUB_AX_I16()
+static void SUB_AX_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	SUB((t_vaddrcc)&ecpu.eax, ecpuins.rimm, _GetOperandSize * 8);
+	GetImm(16);
+	SUB((t_vaddrcc)&ecpu.ax,ecpuins.rimm,16);
 }
-DONEASM CS()
+static void CS()
 {
 	ecpu.eip++;
 	ecpuins.roverds = &ecpu.cs;
@@ -1396,43 +1375,43 @@ DONEASM DAS()
 	adjustax;
 #undef operation
 }
-DONEASM XOR_RM8_R8()
+static void XOR_RM8_R8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	XOR(ecpuins.rrm, ecpuins.rr, 8);
+	GetModRegRM(8,8);
+	XOR(ecpuins.rrm,ecpuins.rr,8);
 }
-DONEASM XOR_RM16_R16()
+static void XOR_RM16_R16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	XOR(ecpuins.rrm, ecpuins.rr, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	XOR(ecpuins.rrm,ecpuins.rr,16);
 }
-DONEASM XOR_R8_RM8()
+static void XOR_R8_RM8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	XOR(ecpuins.rr, ecpuins.rrm, 8);
+	GetModRegRM(8,8);
+	XOR(ecpuins.rr,ecpuins.rrm,8);
 }
-DONEASM XOR_R16_RM16()
+static void XOR_R16_RM16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	XOR(ecpuins.rr, ecpuins.rrm, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	XOR(ecpuins.rr,ecpuins.rrm,16);
 }
-DONEASM XOR_AL_I8()
+static void XOR_AL_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	XOR((t_vaddrcc)&ecpu.al, ecpuins.rimm, 8);
+	GetImm(8);
+	XOR((t_vaddrcc)&ecpu.al,ecpuins.rimm,8);
 }
-DONEASM XOR_AX_I16()
+static void XOR_AX_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	XOR((t_vaddrcc)&ecpu.eax, ecpuins.rimm, _GetOperandSize * 8);
+	GetImm(16);
+	XOR((t_vaddrcc)&ecpu.ax,ecpuins.rimm,16);
 }
-DONEASM SS()
+static void SS()
 {
 	ecpu.eip++;
 	ecpuins.roverds = &ecpu.ss;
@@ -1445,43 +1424,43 @@ DONEASM AAA()
 	adjustax;
 #undef operation
 }
-DONEASM CMP_RM8_R8()
+static void CMP_RM8_R8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	CMP(ecpuins.rrm, ecpuins.rr, 8);
+	GetModRegRM(8,8);
+	CMP(ecpuins.rrm,ecpuins.rr,8);
 }
-DONEASM CMP_RM16_R16()
+static void CMP_RM16_R16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	CMP(ecpuins.rrm, ecpuins.rr, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	CMP(ecpuins.rrm,ecpuins.rr,16);
 }
-DONEASM CMP_R8_RM8()
+static void CMP_R8_RM8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	CMP(ecpuins.rr, ecpuins.rrm, 8);
+	GetModRegRM(8,8);
+	CMP(ecpuins.rr,ecpuins.rrm,8);
 }
-DONEASM CMP_R16_RM16()
+static void CMP_R16_RM16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	CMP(ecpuins.rr, ecpuins.rrm, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	CMP(ecpuins.rr,ecpuins.rrm,16);
 }
-DONEASM CMP_AL_I8()
+static void CMP_AL_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	CMP((t_vaddrcc)&ecpu.al, ecpuins.rimm, 8);
+	GetImm(8);
+	CMP((t_vaddrcc)&ecpu.al,ecpuins.rimm,8);
 }
-DONEASM CMP_AX_I16()
+static void CMP_AX_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	CMP((t_vaddrcc)&ecpu.eax, ecpuins.rimm, _GetOperandSize * 8);
+	GetImm(16);
+	CMP((t_vaddrcc)&ecpu.ax,ecpuins.rimm,16);
 }
-DONEASM DS()
+static void DS()
 {
 	ecpu.eip++;
 	ecpuins.roverds = &ecpu.ds;
@@ -1494,371 +1473,375 @@ DONEASM AAS()
 	adjustax;
 #undef operation
 }
-DONEASM INC_AX()
+static void INC_AX()
 {
 	ecpu.eip++;
-	INC((t_vaddrcc)&ecpu.eax, _GetOperandSize * 8);
+	INC((t_vaddrcc)&ecpu.ax,16);
 }
-DONEASM INC_CX()
+static void INC_CX()
 {
 	ecpu.eip++;
-	INC((t_vaddrcc)&ecpu.ecx, _GetOperandSize * 8);
+	INC((t_vaddrcc)&ecpu.cx,16);
 }
-DONEASM INC_DX()
+static void INC_DX()
 {
 	ecpu.eip++;
-	INC((t_vaddrcc)&ecpu.edx, _GetOperandSize * 8);
+	INC((t_vaddrcc)&ecpu.dx,16);
 }
-DONEASM INC_BX()
+static void INC_BX()
 {
 	ecpu.eip++;
-	INC((t_vaddrcc)&ecpu.ebx, _GetOperandSize * 8);
+	INC((t_vaddrcc)&ecpu.bx,16);
 }
-DONEASM INC_SP()
+static void INC_SP()
 {
 	ecpu.eip++;
-	INC((t_vaddrcc)&ecpu.esp, _GetOperandSize * 8);
+	INC((t_vaddrcc)&ecpu.sp,16);
 }
-DONEASM INC_BP()
+static void INC_BP()
 {
 	ecpu.eip++;
-	INC((t_vaddrcc)&ecpu.ebp, _GetOperandSize * 8);
+	INC((t_vaddrcc)&ecpu.bp,16);
 }
-DONEASM INC_SI()
+static void INC_SI()
 {
 	ecpu.eip++;
-	INC((t_vaddrcc)&ecpu.esi, _GetOperandSize * 8);
+	INC((t_vaddrcc)&ecpu.si,16);
 }
-DONEASM INC_DI()
+static void INC_DI()
 {
 	ecpu.eip++;
-	INC((t_vaddrcc)&ecpu.edi, _GetOperandSize * 8);
+	INC((t_vaddrcc)&ecpu.di,16);
 }
-DONEASM DEC_AX()
+static void DEC_AX()
 {
 	ecpu.eip++;
-	DEC((t_vaddrcc)&ecpu.eax, _GetOperandSize * 8);
+	DEC((t_vaddrcc)&ecpu.ax,16);
 }
-DONEASM DEC_CX()
+static void DEC_CX()
 {
 	ecpu.eip++;
-	DEC((t_vaddrcc)&ecpu.ecx, _GetOperandSize * 8);
+	DEC((t_vaddrcc)&ecpu.cx,16);
 }
-DONEASM DEC_DX()
+static void DEC_DX()
 {
 	ecpu.eip++;
-	DEC((t_vaddrcc)&ecpu.edx, _GetOperandSize * 8);
+	DEC((t_vaddrcc)&ecpu.dx,16);
 }
-DONEASM DEC_BX()
+static void DEC_BX()
 {
 	ecpu.eip++;
-	DEC((t_vaddrcc)&ecpu.ebx, _GetOperandSize * 8);
+	DEC((t_vaddrcc)&ecpu.bx,16);
 }
-DONEASM DEC_SP()
+static void DEC_SP()
 {
 	ecpu.eip++;
-	DEC((t_vaddrcc)&ecpu.esp, _GetOperandSize * 8);
+	DEC((t_vaddrcc)&ecpu.sp,16);
 }
-DONEASM DEC_BP()
+static void DEC_BP()
 {
 	ecpu.eip++;
-	DEC((t_vaddrcc)&ecpu.ebp, _GetOperandSize * 8);
+	DEC((t_vaddrcc)&ecpu.bp,16);
 }
-DONEASM DEC_SI()
+static void DEC_SI()
 {
 	ecpu.eip++;
-	DEC((t_vaddrcc)&ecpu.esi, _GetOperandSize * 8);
+	DEC((t_vaddrcc)&ecpu.si,16);
 }
-DONEASM DEC_DI()
+static void DEC_DI()
 {
 	ecpu.eip++;
-	DEC((t_vaddrcc)&ecpu.edi, _GetOperandSize * 8);
+	DEC((t_vaddrcc)&ecpu.di,16);
 }
-DONEASM PUSH_AX()
+static void PUSH_AX()
 {
 	ecpu.eip++;
-	PUSH((t_vaddrcc)&ecpu.eax, _GetOperandSize);
+	PUSH((t_vaddrcc)&ecpu.ax,16);
 }
-DONEASM PUSH_CX()
+static void PUSH_CX()
 {
 	ecpu.eip++;
-	PUSH((t_vaddrcc)&ecpu.ecx, _GetOperandSize);
+	PUSH((t_vaddrcc)&ecpu.cx,16);
 }
-DONEASM PUSH_DX()
+static void PUSH_DX()
 {
 	ecpu.eip++;
-	PUSH((t_vaddrcc)&ecpu.edx, _GetOperandSize);
+	PUSH((t_vaddrcc)&ecpu.dx,16);
 }
-DONEASM PUSH_BX()
+static void PUSH_BX()
 {
 	ecpu.eip++;
-	PUSH((t_vaddrcc)&ecpu.ebx, _GetOperandSize);
+	PUSH((t_vaddrcc)&ecpu.bx,16);
 }
-DONEASM PUSH_SP()
+static void PUSH_SP()
 {
 	ecpu.eip++;
-	PUSH((t_vaddrcc)&ecpu.esp, _GetOperandSize);
+	PUSH((t_vaddrcc)&ecpu.sp,16);
 }
-DONEASM PUSH_BP()
+static void PUSH_BP()
 {
 	ecpu.eip++;
-	PUSH((t_vaddrcc)&ecpu.ebp, _GetOperandSize);
+	PUSH((t_vaddrcc)&ecpu.bp,16);
 }
-DONEASM PUSH_SI()
+static void PUSH_SI()
 {
 	ecpu.eip++;
-	PUSH((t_vaddrcc)&ecpu.esi, _GetOperandSize);
+	PUSH((t_vaddrcc)&ecpu.si,16);
 }
-DONEASM PUSH_DI()
+static void PUSH_DI()
 {
 	ecpu.eip++;
-	PUSH((t_vaddrcc)&ecpu.edi, _GetOperandSize);
+	PUSH((t_vaddrcc)&ecpu.di,16);
 }
-DONEASM POP_AX()
+static void POP_AX()
 {
 	ecpu.eip++;
-	POP((t_vaddrcc)&ecpu.eax, _GetOperandSize);
+	POP((t_vaddrcc)&ecpu.ax,16);
 }
-DONEASM POP_CX()
+static void POP_CX()
 {
 	ecpu.eip++;
-	POP((t_vaddrcc)&ecpu.ecx, _GetOperandSize);
+	POP((t_vaddrcc)&ecpu.cx,16);
 }
-DONEASM POP_DX()
+static void POP_DX()
 {
 	ecpu.eip++;
-	POP((t_vaddrcc)&ecpu.edx, _GetOperandSize);
+	POP((t_vaddrcc)&ecpu.dx,16);
 }
-DONEASM POP_BX()
+static void POP_BX()
 {
 	ecpu.eip++;
-	POP((t_vaddrcc)&ecpu.ebx, _GetOperandSize);
+	POP((t_vaddrcc)&ecpu.bx,16);
 }
-DONEASM POP_SP()
+static void POP_SP()
 {
 	ecpu.eip++;
-	POP((t_vaddrcc)&ecpu.esp, _GetOperandSize);
+	POP((t_vaddrcc)&ecpu.sp,16);
 }
-DONEASM POP_BP()
+static void POP_BP()
 {
 	ecpu.eip++;
-	POP((t_vaddrcc)&ecpu.ebp, _GetOperandSize);
+	POP((t_vaddrcc)&ecpu.bp,16);
 }
-DONEASM POP_SI()
+static void POP_SI()
 {
 	ecpu.eip++;
-	POP((t_vaddrcc)&ecpu.esi, _GetOperandSize);
+	POP((t_vaddrcc)&ecpu.si,16);
 }
-DONEASM POP_DI()
+static void POP_DI()
 {
 	ecpu.eip++;
-	POP((t_vaddrcc)&ecpu.edi, _GetOperandSize);
+	POP((t_vaddrcc)&ecpu.di,16);
 }
-DONEASM JO()
+static void JO()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, GetBit(ecpu.flags, VCPU_EFLAGS_OF));
 }
-DONEASM JNO()
+static void JNO()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, !GetBit(ecpu.flags, VCPU_EFLAGS_OF));
 }
-DONEASM JC()
+static void JC()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, GetBit(ecpu.flags, VCPU_EFLAGS_CF));
 }
-DONEASM JNC()
+static void JNC()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, !GetBit(ecpu.flags, VCPU_EFLAGS_CF));
 }
-DONEASM JZ()
+static void JZ()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, GetBit(ecpu.flags, VCPU_EFLAGS_ZF));
 }
-DONEASM JNZ()
+static void JNZ()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, !GetBit(ecpu.flags, VCPU_EFLAGS_ZF));
 }
-DONEASM JBE()
+static void JBE()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, (GetBit(ecpu.flags, VCPU_EFLAGS_CF) ||
 		GetBit(ecpu.flags, VCPU_EFLAGS_ZF)));
 }
-DONEASM JA()
+static void JA()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, (!GetBit(ecpu.flags, VCPU_EFLAGS_CF) &&
 		!GetBit(ecpu.flags, VCPU_EFLAGS_ZF)));
 }
-DONEASM JS()
+static void JS()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, GetBit(ecpu.flags, VCPU_EFLAGS_SF));
 }
-DONEASM JNS()
+static void JNS()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, !GetBit(ecpu.flags, VCPU_EFLAGS_SF));
 }
-DONEASM JP()
+static void JP()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, GetBit(ecpu.flags, VCPU_EFLAGS_PF));
 }
-DONEASM JNP()
+static void JNP()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, !GetBit(ecpu.flags, VCPU_EFLAGS_PF));
 }
-DONEASM JL()
+static void JL()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, (GetBit(ecpu.flags, VCPU_EFLAGS_SF) !=
 		GetBit(ecpu.flags, VCPU_EFLAGS_OF)));
 }
-DONEASM JNL()
+static void JNL()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, (GetBit(ecpu.flags, VCPU_EFLAGS_SF) ==
 		GetBit(ecpu.flags, VCPU_EFLAGS_OF)));
 }
-DONEASM JLE()
+static void JLE()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, (GetBit(ecpu.flags, VCPU_EFLAGS_ZF) ||
 		(GetBit(ecpu.flags, VCPU_EFLAGS_SF) !=
 		GetBit(ecpu.flags, VCPU_EFLAGS_OF))));
 }
-DONEASM JG()
+static void JG()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm, (!GetBit(ecpu.flags, VCPU_EFLAGS_ZF) &&
 		(GetBit(ecpu.flags, VCPU_EFLAGS_SF) ==
 		GetBit(ecpu.flags, VCPU_EFLAGS_OF))));
 }
-DONEASM INS_80()
+void INS_80()
 {
 	ecpu.eip++;
-	GetModRegRM(0, 1);
-	GetImm(1);
+	GetModRegRM(0,8);
+	GetImm(8);
 	switch (ecpuins.cr) {
-	case 0: ADD(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 1: OR(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 2: ADC(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 3: SBB(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 4: AND(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 5: SUB(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 6: XOR(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 7: CMP(ecpuins.rrm, ecpuins.rimm, 8);break;
-	}
+	case 0:	ADD(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 1:	OR (ecpuins.rrm,ecpuins.rimm,8);break;
+	case 2:	ADC(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 3:	SBB(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 4:	AND(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 5:	SUB(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 6:	XOR(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 7:	CMP(ecpuins.rrm,ecpuins.rimm,8);break;
+	default:CaseError("INS_80::ecpuins.rr");break;}
 }
-DONEASM INS_81()
+void INS_81()
 {
 	ecpu.eip++;
-	GetModRegRM(0, _GetOperandSize);
-	GetImm(_GetOperandSize);
+	GetModRegRM(0,16);
+	GetImm(16);
 	switch (ecpuins.cr) {
-	case 0: ADD(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 1: OR(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 2: ADC(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 3: SBB(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 4: AND(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 5: SUB(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 6: XOR(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 7: CMP(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	}
+	case 0:	ADD(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 1:	OR (ecpuins.rrm,ecpuins.rimm,16);break;
+	case 2:	ADC(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 3:	SBB(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 4:	AND(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 5:	SUB(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 6:	XOR(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 7:	CMP(ecpuins.rrm,ecpuins.rimm,16);break;
+	default:CaseError("INS_81::ecpuins.rr");break;}
 }
-DONEASM INS_83()
+void INS_82()
+{
+	INS_80();
+}
+void INS_83()
 {
 	ecpu.eip++;
-	GetModRegRM(0, _GetOperandSize);
-	GetImm(1);
+	GetModRegRM(0,16);
+	GetImm(8);
 	switch (ecpuins.cr) {
-	case 0: ADD(ecpuins.rrm, ecpuins.rimm, (_GetOperandSize + 1) * 4);break;
-	case 1: OR(ecpuins.rrm, ecpuins.rimm, (_GetOperandSize + 1) * 4);break;
-	case 2: ADC(ecpuins.rrm, ecpuins.rimm, (_GetOperandSize + 1) * 4);break;
-	case 3: SBB(ecpuins.rrm, ecpuins.rimm, (_GetOperandSize + 1) * 4);break;
-	case 4: AND(ecpuins.rrm, ecpuins.rimm, (_GetOperandSize + 1) * 4);break;
-	case 5: SUB(ecpuins.rrm, ecpuins.rimm, (_GetOperandSize + 1) * 4);break;
-	case 6: XOR(ecpuins.rrm, ecpuins.rimm, (_GetOperandSize + 1) * 4);break;
-	case 7: CMP(ecpuins.rrm, ecpuins.rimm, (_GetOperandSize + 1) * 4);break;
-	}
+	case 0:	ADD(ecpuins.rrm,ecpuins.rimm,12);break;
+	case 1:	OR (ecpuins.rrm,ecpuins.rimm,12);break;
+	case 2:	ADC(ecpuins.rrm,ecpuins.rimm,12);break;
+	case 3:	SBB(ecpuins.rrm,ecpuins.rimm,12);break;
+	case 4:	AND(ecpuins.rrm,ecpuins.rimm,12);break;
+	case 5:	SUB(ecpuins.rrm,ecpuins.rimm,12);break;
+	case 6:	XOR(ecpuins.rrm,ecpuins.rimm,12);break;
+	case 7:	CMP(ecpuins.rrm,ecpuins.rimm,12);break;
+	default:CaseError("INS_83::ecpuins.rr");break;}
 }
-DONEASM TEST_RM8_R8()
+static void TEST_RM8_R8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	TEST(ecpuins.rrm, ecpuins.rr, 8);
+	GetModRegRM(8,8);
+	TEST(ecpuins.rrm,ecpuins.rr,8);
 }
-DONEASM TEST_RM16_R16()
+static void TEST_RM16_R16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	TEST(ecpuins.rrm, ecpuins.rr, _GetOperandSize * 8);
+	GetModRegRM(16,16);
+	TEST(ecpuins.rrm,ecpuins.rr,16);
 }
-DONEASM XCHG_R8_RM8()
+static void XCHG_R8_RM8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	XCHG(ecpuins.rr, ecpuins.rrm, 1);
+	GetModRegRM(8,8);
+	XCHG(ecpuins.rr,ecpuins.rrm,8);
 }
-DONEASM XCHG_R16_RM16()
+static void XCHG_R16_RM16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	XCHG(ecpuins.rr, ecpuins.rrm, _GetOperandSize);
+	GetModRegRM(16,16);
+	XCHG(ecpuins.rr,ecpuins.rrm,16);
 }
-DONEASM MOV_RM8_R8()
+static void MOV_RM8_R8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	MOV(ecpuins.rrm, ecpuins.rr, 1);
+	GetModRegRM(8,8);
+	MOV(ecpuins.rrm,ecpuins.rr,8);
 }
-DONEASM MOV_RM16_R16()
+static void MOV_RM16_R16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	MOV(ecpuins.rrm, ecpuins.rr, _GetOperandSize);
+	GetModRegRM(16,16);
+	MOV(ecpuins.rrm,ecpuins.rr,16);
 }
-DONEASM MOV_R8_RM8()
+static void MOV_R8_RM8()
 {
 	ecpu.eip++;
-	GetModRegRM(1, 1);
-	MOV(ecpuins.rr, ecpuins.rrm, 1);
+	GetModRegRM(8,8);
+	MOV(ecpuins.rr,ecpuins.rrm,8);
 }
-DONEASM MOV_R16_RM16()
+static void MOV_R16_RM16()
 {
 	ecpu.eip++;
-	GetModRegRM(_GetOperandSize, _GetOperandSize);
-	MOV(ecpuins.rr, ecpuins.rrm, _GetOperandSize);
+	GetModRegRM(16,16);
+	MOV(ecpuins.rr,ecpuins.rrm,16);
 }
 DONEASM MOV_RM16_SEG()
 {
 	ecpu.eip++;
 	GetModSegRM(2);
-	MOV(ecpuins.rrm, (t_vaddrcc)&(ecpuins.rmovsreg->selector), 2);
+	MOV(ecpuins.rrm, (t_vaddrcc)&(ecpuins.rmovsreg->selector), 16);
 }
 DONEASM LEA_R16_M16()
 {
@@ -1873,54 +1856,57 @@ DONEASM MOV_SEG_RM16()
 {
 	ecpu.eip++;
 	GetModSegRM(2);
-	MOV((t_vaddrcc)&(ecpuins.rmovsreg->selector), ecpuins.rrm, 2);
+	MOV((t_vaddrcc)&(ecpuins.rmovsreg->selector), ecpuins.rrm, 16);
 }
-DONEASM POP_RM16()
+void POP_RM16()
 {
 	ecpu.eip++;
-	GetModRegRM(0, _GetOperandSize);
+	GetModRegRM(0,16);
 	switch (ecpuins.cr) {
-	case 0: POP(ecpuins.rrm, _GetOperandSize);break;
-	default:UndefinedOpcode();break;}
+	case 0:
+		bugfix(14) POP(ecpuins.rrm,16);
+		else POP(ecpuins.rrm,16);
+		break;
+	default:CaseError("POP_RM16::ecpuins.rr");break;}
 }
-DONEASM NOP()
+static void NOP()
 {
 	ecpu.eip++;
 }
-DONEASM XCHG_CX_AX()
+static void XCHG_CX_AX()
 {
 	ecpu.eip++;
-	XCHG((t_vaddrcc)&ecpu.ecx,(t_vaddrcc)&ecpu.eax, _GetOperandSize);
+	XCHG((t_vaddrcc)&ecpu.cx,(t_vaddrcc)&ecpu.ax,16);
 }
-DONEASM XCHG_DX_AX()
+static void XCHG_DX_AX()
 {
 	ecpu.eip++;
-	XCHG((t_vaddrcc)&ecpu.dx,(t_vaddrcc)&ecpu.ax, _GetOperandSize);
+	XCHG((t_vaddrcc)&ecpu.dx,(t_vaddrcc)&ecpu.ax,16);
 }
-DONEASM XCHG_BX_AX()
+static void XCHG_BX_AX()
 {
 	ecpu.eip++;
-	XCHG((t_vaddrcc)&ecpu.bx,(t_vaddrcc)&ecpu.ax, _GetOperandSize);
+	XCHG((t_vaddrcc)&ecpu.bx,(t_vaddrcc)&ecpu.ax,16);
 }
-DONEASM XCHG_SP_AX()
+static void XCHG_SP_AX()
 {
 	ecpu.eip++;
-	XCHG((t_vaddrcc)&ecpu.sp,(t_vaddrcc)&ecpu.ax, _GetOperandSize);
+	XCHG((t_vaddrcc)&ecpu.sp,(t_vaddrcc)&ecpu.ax,16);
 }
-DONEASM XCHG_BP_AX()
+static void XCHG_BP_AX()
 {
 	ecpu.eip++;
-	XCHG((t_vaddrcc)&ecpu.bp,(t_vaddrcc)&ecpu.ax, _GetOperandSize);
+	XCHG((t_vaddrcc)&ecpu.bp,(t_vaddrcc)&ecpu.ax,16);
 }
-DONEASM XCHG_SI_AX()
+static void XCHG_SI_AX()
 {
 	ecpu.eip++;
-	XCHG((t_vaddrcc)&ecpu.si,(t_vaddrcc)&ecpu.ax, _GetOperandSize);
+	XCHG((t_vaddrcc)&ecpu.si,(t_vaddrcc)&ecpu.ax,16);
 }
-DONEASM XCHG_DI_AX()
+static void XCHG_DI_AX()
 {
 	ecpu.eip++;
-	XCHG((t_vaddrcc)&ecpu.di,(t_vaddrcc)&ecpu.ax, _GetOperandSize);
+	XCHG((t_vaddrcc)&ecpu.di,(t_vaddrcc)&ecpu.ax,16);
 }
 DONEASM CBW()
 {
@@ -1954,98 +1940,70 @@ DONEASM CWD()
 		break;
 	}
 }
-DONEASM CALL_PTR16_16()
+void CALL_PTR16_16()
 {
-	t_nubit32 oldcs = ecpu.cs.selector, neweip;
-	t_nubit16 newcs;
+	t_nubit16 newcs,newip;
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	switch (_GetOperandSize) {
-	case 2: neweip = d_nubit16(ecpuins.rimm);break;
-	case 4: neweip = d_nubit32(ecpuins.rimm);break;
-	}
-	GetImm(2);
+	GetImm(16);
+	newip = d_nubit16(ecpuins.rimm);
+	GetImm(16);
 	newcs = d_nubit16(ecpuins.rimm);
-	switch (_GetOperandSize) {
-	case 2:
-		PUSH((t_vaddrcc)&oldcs, 2);
-		PUSH((t_vaddrcc)&ecpu.ip, 2);
-		ecpu.eip = GetMax16(neweip);
-		ecpu.cs.selector = newcs;
-		break;
-	case 4:
-		PUSH((t_vaddrcc)&oldcs, 4);
-		PUSH((t_vaddrcc)&ecpu.eip, 4);
-		ecpu.eip = GetMax32(neweip);
-		ecpu.cs.selector = newcs;
-		break;
-	}
+	PUSH((t_vaddrcc)&ecpu.cs.selector,16);
+	PUSH((t_vaddrcc)&ecpu.ip,16);
+	ecpu.ip = newip;
+	ecpu.cs.selector = newcs;
 }
 NOTIMP WAIT()
 {
 	ecpu.eip++;
 	/* not implemented */
 }
-DONEASM PUSHF()
+void PUSHF()
 {
 	ecpu.eip++;
-	switch (_GetOperandSize) {
-	case 2: PUSH((t_vaddrcc)&ecpu.flags, 2);break;
-	case 4: PUSH((t_vaddrcc)&ecpu.eflags, 4);break;
-	}
+	PUSH((t_vaddrcc)&ecpu.flags,16);
 }
-DONEASM POPF()
+void POPF()
 {
 	ecpu.eip++;
-	switch (_GetOperandSize) {
-	case 2:
-		POP((t_vaddrcc)&efres, 2);
-		ecpu.eflags = (efres & ~(VCPU_EFLAGS_RESERVED | 0xffff0000)) |
-			(ecpu.eflags & (VCPU_EFLAGS_RESERVED | 0xffff0000));
-		break;
-	case 4:
-		POP((t_vaddrcc)&efres, 4);
-		ecpu.eflags = (efres & ~(VCPU_EFLAGS_RESERVED)) |
-			(ecpu.eflags & (VCPU_EFLAGS_RESERVED));
-		break;
-	}
+	POP((t_vaddrcc)&efres,16);
+	ecpu.eflags = (efres & ~VCPU_EFLAGS_RESERVED) | (ecpu.eflags & VCPU_EFLAGS_RESERVED);
 }
-DONEASM SAHF()
+void SAHF()
 {
 	ecpu.eip++;
-	ecpu.eflags = (ecpu.ah & ~(ECPUINS_FLAGS_MASKED | 0xffffff00)) |
-		(ecpu.eflags & (ECPUINS_FLAGS_MASKED | 0xffffff00));
+	d_nubit8(&ecpu.flags) = ecpu.ah;
 }
-DONEASM LAHF()
+void LAHF()
 {
 	ecpu.eip++;
-	ecpu.ah = GetMax8(ecpu.eflags);
+	ecpu.ah = d_nubit8(&ecpu.flags);
 }
-DONEASM MOV_AL_M8()
+static void MOV_AL_M8()
 {
 	ecpu.eip++;
 	GetMem();
-	MOV((t_vaddrcc)&ecpu.al, ecpuins.rrm, 1);
+	MOV((t_vaddrcc)&ecpu.al,ecpuins.rrm,8);
 }
-DONEASM MOV_AX_M16()
+static void MOV_AX_M16()
 {
 	ecpu.eip++;
 	GetMem();
-	MOV((t_vaddrcc)&ecpu.eax, ecpuins.rrm, _GetOperandSize);
+	MOV((t_vaddrcc)&ecpu.ax,ecpuins.rrm,16);
 }
-DONEASM MOV_M8_AL()
+static void MOV_M8_AL()
 {
 	ecpu.eip++;
 	GetMem();
-	MOV(ecpuins.rrm, (t_vaddrcc)&ecpu.al, 1);
+	MOV(ecpuins.rrm,(t_vaddrcc)&ecpu.al,8);
 }
-DONEASM MOV_M16_AX()
+static void MOV_M16_AX()
 {
 	ecpu.eip++;
 	GetMem();
-	MOV(ecpuins.rrm,(t_vaddrcc)&ecpu.eax, _GetOperandSize);
+	MOV(ecpuins.rrm,(t_vaddrcc)&ecpu.ax,16);
 }
-DONEASM MOVSB()
+void MOVSB()
 {
 	ecpu.eip++;
 	if(ecpuins.prefix_rep == PREFIX_REP_NONE) MOVS(8);
@@ -2057,30 +2015,19 @@ DONEASM MOVSB()
 		if (ecpu.cx) ecpuins.flaginsloop = 0x01;
 	}
 }
-DONEASM MOVSW()
+void MOVSW()
 {
 	ecpu.eip++;
-	if(ecpuins.prefix_rep == PREFIX_REP_NONE) MOVS(_GetOperandSize * 8);
+	if(ecpuins.prefix_rep == PREFIX_REP_NONE) MOVS(16);
 	else {
-		switch (_GetAddressSize) {
-		case 2:
-			if (ecpu.cx) {
-				MOVS(_GetOperandSize * 8);
-				ecpu.cx--;
-			}
-			if (ecpu.cx) ecpuins.flaginsloop = 0x01;
-			break;
-		case 4:
-			if (ecpu.ecx) {
-				MOVS(_GetOperandSize * 8);
-				ecpu.ecx--;
-			}
-			if (ecpu.ecx) ecpuins.flaginsloop = 0x01;
-			break;
+		if (ecpu.cx) {
+			MOVS(16);
+			ecpu.cx--;
 		}
+		if (ecpu.cx) ecpuins.flaginsloop = 0x01;
 	}
 }
-DONEASM CMPSB()
+void CMPSB()
 {
 	ecpu.eip++;
 	if(ecpuins.prefix_rep == PREFIX_REP_NONE) CMPS(8);
@@ -2095,48 +2042,34 @@ DONEASM CMPSB()
 				ecpuins.flaginsloop = 1;
 	}
 }
-DONEASM CMPSW()
+void CMPSW()
 {
 	ecpu.eip++;
-	if(ecpuins.prefix_rep == PREFIX_REP_NONE) CMPS(_GetOperandSize * 8);
+	if(ecpuins.prefix_rep == PREFIX_REP_NONE) CMPS(16);
 	else {
-		switch (_GetAddressSize) {
-		case 2:
-			if (ecpu.cx) {
-				CMPS(_GetOperandSize * 8);
-				ecpu.cx--;
-			}
-			if (ecpu.cx &&
-				!(ecpuins.prefix_rep == PREFIX_REP_REPZ && !GetBit(ecpu.flags, VCPU_EFLAGS_ZF)) &&
-				!(ecpuins.prefix_rep == PREFIX_REP_REPZNZ && GetBit(ecpu.flags, VCPU_EFLAGS_ZF)))
-					ecpuins.flaginsloop = 1;
-			break;
-		case 4:
-			if (ecpu.ecx) {
-				CMPS(_GetOperandSize * 8);
-				ecpu.ecx--;
-			}
-			if (ecpu.ecx &&
-				!(ecpuins.prefix_rep == PREFIX_REP_REPZ && !GetBit(ecpu.flags, VCPU_EFLAGS_ZF)) &&
-				!(ecpuins.prefix_rep == PREFIX_REP_REPZNZ && GetBit(ecpu.flags, VCPU_EFLAGS_ZF)))
-					ecpuins.flaginsloop = 1;
-			break;
+		if (ecpu.cx) {
+			CMPS(16);
+			ecpu.cx--;
 		}
+		if (ecpu.cx &&
+			!(ecpuins.prefix_rep == PREFIX_REP_REPZ && !GetBit(ecpu.flags, VCPU_EFLAGS_ZF)) &&
+			!(ecpuins.prefix_rep == PREFIX_REP_REPZNZ && GetBit(ecpu.flags, VCPU_EFLAGS_ZF)))
+				ecpuins.flaginsloop = 1;
 	}
 }
-DONEASM TEST_AL_I8()
+static void TEST_AL_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	TEST((t_vaddrcc)&ecpu.al, ecpuins.rimm, 8);
+	GetImm(8);
+	TEST((t_vaddrcc)&ecpu.al,ecpuins.rimm,8);
 }
-DONEASM TEST_AX_I16()
+static void TEST_AX_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	TEST((t_vaddrcc)&ecpu.eax, ecpuins.rimm, _GetOperandSize * 8);
+	GetImm(16);
+	TEST((t_vaddrcc)&ecpu.ax,ecpuins.rimm,16);
 }
-DONEASM STOSB()
+void STOSB()
 {
 	ecpu.eip++;
 	if(ecpuins.prefix_rep == PREFIX_REP_NONE) STOS(8);
@@ -2148,30 +2081,19 @@ DONEASM STOSB()
 		if (ecpu.cx) ecpuins.flaginsloop = 0x01;
 	}
 }
-DONEASM STOSW()
+void STOSW()
 {
 	ecpu.eip++;
-	if(ecpuins.prefix_rep == PREFIX_REP_NONE) STOS(_GetOperandSize * 8);
+	if(ecpuins.prefix_rep == PREFIX_REP_NONE) STOS(16);
 	else {
-		switch (_GetAddressSize) {
-		case 2:
-			if (ecpu.cx) {
-				STOS(_GetOperandSize * 8);
-				ecpu.cx--;
-			}
-			if (ecpu.cx) ecpuins.flaginsloop = 0x01;
-			break;
-		case 4:
-			if (ecpu.ecx) {
-				STOS(_GetOperandSize * 8);
-				ecpu.ecx--;
-			}
-			if (ecpu.ecx) ecpuins.flaginsloop = 0x01;
-			break;
+		if (ecpu.cx) {
+			STOS(16);
+			ecpu.cx--;
 		}
+		if (ecpu.cx) ecpuins.flaginsloop = 0x01;
 	}
 }
-DONEASM LODSB()
+void LODSB()
 {
 	ecpu.eip++;
 	if(ecpuins.prefix_rep == PREFIX_REP_NONE) LODS(8);
@@ -2183,30 +2105,19 @@ DONEASM LODSB()
 		if (ecpu.cx) ecpuins.flaginsloop = 0x01;
 	}
 }
-DONEASM LODSW()
+void LODSW()
 {
 	ecpu.eip++;
-	if(ecpuins.prefix_rep == PREFIX_REP_NONE) LODS(_GetOperandSize * 8);
+	if(ecpuins.prefix_rep == PREFIX_REP_NONE) LODS(16);
 	else {
-		switch (_GetAddressSize) {
-		case 2:
-			if (ecpu.cx) {
-				LODS(_GetOperandSize * 8);
-				ecpu.cx--;
-			}
-			if (ecpu.cx) ecpuins.flaginsloop = 0x01;
-			break;
-		case 4:
-			if (ecpu.ecx) {
-				LODS(_GetOperandSize * 8);
-				ecpu.ecx--;
-			}
-			if (ecpu.ecx) ecpuins.flaginsloop = 0x01;
-			break;
+		if (ecpu.cx) {
+			LODS(16);
+			ecpu.cx--;
 		}
+		if (ecpu.cx) ecpuins.flaginsloop = 0x01;
 	}
 }
-DONEASM SCASB()
+void SCASB()
 {
 	ecpu.eip++;
 	if(ecpuins.prefix_rep == PREFIX_REP_NONE) SCAS(8);
@@ -2221,250 +2132,210 @@ DONEASM SCASB()
 				ecpuins.flaginsloop = 0x01;
 	}
 }
-DONEASM SCASW()
+void SCASW()
 {
 	ecpu.eip++;
-	if(ecpuins.prefix_rep == PREFIX_REP_NONE) SCAS(_GetOperandSize * 8);
+	if(ecpuins.prefix_rep == PREFIX_REP_NONE) SCAS(16);
 	else {
-		switch (_GetAddressSize) {
-		case 2:
-			if (ecpu.cx) {
-				SCAS(_GetOperandSize * 8);
-				ecpu.cx--;
-			}
-			if (ecpu.cx &&
-				!(ecpuins.prefix_rep == PREFIX_REP_REPZ && !GetBit(ecpu.flags, VCPU_EFLAGS_ZF)) &&
-				!(ecpuins.prefix_rep == PREFIX_REP_REPZNZ && GetBit(ecpu.flags, VCPU_EFLAGS_ZF)))
-					ecpuins.flaginsloop = 1;
-			break;
-		case 4:
-			if (ecpu.ecx) {
-				SCAS(_GetOperandSize * 8);
-				ecpu.ecx--;
-			}
-			if (ecpu.ecx &&
-				!(ecpuins.prefix_rep == PREFIX_REP_REPZ && !GetBit(ecpu.flags, VCPU_EFLAGS_ZF)) &&
-				!(ecpuins.prefix_rep == PREFIX_REP_REPZNZ && GetBit(ecpu.flags, VCPU_EFLAGS_ZF)))
-					ecpuins.flaginsloop = 1;
-			break;
+		if (ecpu.cx) {
+			SCAS(16);
+			ecpu.cx--;
 		}
+		if (ecpu.cx &&
+			!(ecpuins.prefix_rep == PREFIX_REP_REPZ && !GetBit(ecpu.flags, VCPU_EFLAGS_ZF)) &&
+			!(ecpuins.prefix_rep == PREFIX_REP_REPZNZ && GetBit(ecpu.flags, VCPU_EFLAGS_ZF)))
+				ecpuins.flaginsloop = 0x01;
 	}
 }
-DONEASM MOV_AL_I8()
+static void MOV_AL_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	MOV((t_vaddrcc)&ecpu.al, ecpuins.rimm, 1);
+	GetImm(8);
+	MOV((t_vaddrcc)&ecpu.al,ecpuins.rimm,8);
 }
-DONEASM MOV_CL_I8()
+static void MOV_CL_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	MOV((t_vaddrcc)&ecpu.cl, ecpuins.rimm, 1);
+	GetImm(8);
+	MOV((t_vaddrcc)&ecpu.cl,ecpuins.rimm,8);
 }
-DONEASM MOV_DL_I8()
+static void MOV_DL_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	MOV((t_vaddrcc)&ecpu.dl, ecpuins.rimm, 1);
+	GetImm(8);
+	MOV((t_vaddrcc)&ecpu.dl,ecpuins.rimm,8);
 }
-DONEASM MOV_BL_I8()
+static void MOV_BL_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	MOV((t_vaddrcc)&ecpu.bl, ecpuins.rimm, 1);
+	GetImm(8);
+	MOV((t_vaddrcc)&ecpu.bl,ecpuins.rimm,8);
 }
-DONEASM MOV_AH_I8()
+static void MOV_AH_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	MOV((t_vaddrcc)&ecpu.ah, ecpuins.rimm, 1);
+	GetImm(8);
+	MOV((t_vaddrcc)&ecpu.ah,ecpuins.rimm,8);
 }
-DONEASM MOV_CH_I8()
+static void MOV_CH_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	MOV((t_vaddrcc)&ecpu.ch, ecpuins.rimm, 1);
+	GetImm(8);
+	MOV((t_vaddrcc)&ecpu.ch,ecpuins.rimm,8);
 }
-DONEASM MOV_DH_I8()
+static void MOV_DH_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	MOV((t_vaddrcc)&ecpu.dh, ecpuins.rimm, 1);
+	GetImm(8);
+	MOV((t_vaddrcc)&ecpu.dh,ecpuins.rimm,8);
 }
-DONEASM MOV_BH_I8()
+static void MOV_BH_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
-	MOV((t_vaddrcc)&ecpu.bh, ecpuins.rimm, 1);
+	GetImm(8);
+	MOV((t_vaddrcc)&ecpu.bh,ecpuins.rimm,8);
 }
-DONEASM MOV_AX_I16()
+static void MOV_AX_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	MOV((t_vaddrcc)&ecpu.eax, ecpuins.rimm, _GetOperandSize);
+	GetImm(16);
+	MOV((t_vaddrcc)&ecpu.ax,ecpuins.rimm,16);
 }
-DONEASM MOV_CX_I16()
+static void MOV_CX_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	MOV((t_vaddrcc)&ecpu.ecx, ecpuins.rimm, _GetOperandSize);
+	GetImm(16);
+	MOV((t_vaddrcc)&ecpu.cx,ecpuins.rimm,16);
 }
-DONEASM MOV_DX_I16()
+static void MOV_DX_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	MOV((t_vaddrcc)&ecpu.edx, ecpuins.rimm, _GetOperandSize);
+	GetImm(16);
+	MOV((t_vaddrcc)&ecpu.dx,ecpuins.rimm,16);
 }
-DONEASM MOV_BX_I16()
+static void MOV_BX_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	MOV((t_vaddrcc)&ecpu.ebx, ecpuins.rimm, _GetOperandSize);
+	GetImm(16);
+	MOV((t_vaddrcc)&ecpu.bx,ecpuins.rimm,16);
 }
-DONEASM MOV_SP_I16()
+static void MOV_SP_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	MOV((t_vaddrcc)&ecpu.esp, ecpuins.rimm, _GetOperandSize);
+	GetImm(16);
+	MOV((t_vaddrcc)&ecpu.sp,ecpuins.rimm,16);
 }
-DONEASM MOV_BP_I16()
+static void MOV_BP_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	MOV((t_vaddrcc)&ecpu.ebp, ecpuins.rimm, _GetOperandSize);
+	GetImm(16);
+	MOV((t_vaddrcc)&ecpu.bp,ecpuins.rimm,16);
 }
-DONEASM MOV_SI_I16()
+static void MOV_SI_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	MOV((t_vaddrcc)&ecpu.esi, ecpuins.rimm, _GetOperandSize);
+	GetImm(16);
+	MOV((t_vaddrcc)&ecpu.si,ecpuins.rimm,16);
 }
-DONEASM MOV_DI_I16()
+static void MOV_DI_I16()
 {
 	ecpu.eip++;
-	GetImm(_GetOperandSize);
-	MOV((t_vaddrcc)&ecpu.edi, ecpuins.rimm, _GetOperandSize);
+	GetImm(16);
+	MOV((t_vaddrcc)&ecpu.di,ecpuins.rimm,16);
 }
-DONEASM INS_C0()
+void INS_C0()
 {
 	ecpu.eip++;
-	GetModRegRM(0, 1);
-	GetImm(1);
+	GetModRegRM(0,8);
+	GetImm(8);
 	switch (ecpuins.cr) {
-	case 0:	ROL(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 1:	ROR(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 2:	RCL(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 3:	RCR(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 4:	SHL(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 5:	SHR(ecpuins.rrm, ecpuins.rimm, 8);break;
-	case 7:	SAR(ecpuins.rrm, ecpuins.rimm, 8);break;
+	case 0:	ROL(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 1:	ROR(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 2:	RCL(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 3:	RCR(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 4:	SHL(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 5:	SHR(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 6:	SAL(ecpuins.rrm,ecpuins.rimm,8);break;
+	case 7:	SAR(ecpuins.rrm,ecpuins.rimm,8);break;
 	default:UndefinedOpcode();break;}
 }
-DONEASM INS_C1()
+void INS_C1()
 {
 	ecpu.eip++;
-	GetModRegRM(0, _GetOperandSize);
-	GetImm(1);
+	GetModRegRM(0,16);
+	GetImm(8);
 	switch (ecpuins.cr) {
-	case 0:	ROL(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 1:	ROR(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 2:	RCL(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 3:	RCR(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 4:	SHL(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 5:	SHR(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
-	case 7:	SAR(ecpuins.rrm, ecpuins.rimm, _GetOperandSize * 8);break;
+	case 0:	ROL(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 1:	ROR(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 2:	RCL(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 3:	RCR(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 4:	SHL(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 5:	SHR(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 6:	SAL(ecpuins.rrm,ecpuins.rimm,16);break;
+	case 7:	SAR(ecpuins.rrm,ecpuins.rimm,16);break;
 	default:UndefinedOpcode();break;}
 }
-DONEASM RET_I16()
+void RET_I16()
 {
 	t_nubit16 addsp;
 	ecpu.eip++;
-	GetImm(2);
-	addsp = d_nubit16(ecpuins.rimm);
-	switch (_GetOperandSize) {
-	case 2:
-		POP((t_vaddrcc)&ecpu.ip, 2);
-		ecpu.eip = GetMax16(ecpu.eip);
-		break;
-	case 4:
-		POP((t_vaddrcc)&ecpu.eip, 4);
-		break;
+	bugfix(15) {
+		GetImm(16);
+		addsp = d_nubit16(ecpuins.rimm);
+	} else {
+		GetImm(8);
+		addsp = d_nubit8(ecpuins.rimm);
 	}
-	switch (_GetStackSize) {
-	case 2: ecpu.sp += addsp; break;
-	case 4: ecpu.esp += addsp;break;
-	}
+	POP((t_vaddrcc)&ecpu.ip,16);
+	ecpu.sp += addsp;
 }
-DONEASM RET()
+void RET()
 {
 	ecpu.eip++;
-	switch (_GetOperandSize) {
-	case 2:
-		POP((t_vaddrcc)&ecpu.ip, 2);
-		ecpu.eip = GetMax16(ecpu.eip);
-		break;
-	case 4:
-		POP((t_vaddrcc)&ecpu.eip, 4);
-		break;
-	}
+	POP((t_vaddrcc)&ecpu.ip,16);
 }
 void LES_R16_M16()
 {
 	ecpu.eip++;
-	GetModRegRM(2, 2);
-	MOV(ecpuins.rr, ecpuins.rrm, 2);
-	MOV((t_vaddrcc)&ecpu.es.selector,(t_vaddrcc)(ecpuins.rrm+2), 2);
+	GetModRegRM(16,16);
+	MOV(ecpuins.rr,ecpuins.rrm,16);
+	MOV((t_vaddrcc)&ecpu.es.selector,(t_vaddrcc)(ecpuins.rrm+2),16);
 }
 void LDS_R16_M16()
 {
 	ecpu.eip++;
-	GetModRegRM(2, 2);
-	MOV(ecpuins.rr, ecpuins.rrm, 2);
-	MOV((t_vaddrcc)&ecpu.ds.selector,(t_vaddrcc)(ecpuins.rrm+2), 2);
+	GetModRegRM(16,16);
+	MOV(ecpuins.rr,ecpuins.rrm,16);
+	MOV((t_vaddrcc)&ecpu.ds.selector,(t_vaddrcc)(ecpuins.rrm+2),16);
 }
-DONEASM INS_C6()
+static void MOV_M8_I8()
 {
 	ecpu.eip++;
-	GetModRegRM(0, 1);
-	GetImm(1);
-	switch (ecpuins.cr) {
-	case 0: /* MOV_M8_I8 */
-		MOV(ecpuins.rrm, ecpuins.rimm, 1);
-		break;
-	default:
-		UndefinedOpcode();
-		break;
-	}
+	GetModRegRM(8,8);
+	GetImm(8);
+	MOV(ecpuins.rrm,ecpuins.rimm,8);
 }
-DONEASM INS_C7()
+static void MOV_M16_I16()
 {
 	ecpu.eip++;
-	GetModRegRM(0, _GetOperandSize);
-	GetImm(_GetOperandSize);
-	switch (ecpuins.cr) {
-	case 0: /* MOV_M16_I16 */
-		MOV(ecpuins.rrm, ecpuins.rimm, _GetOperandSize);
-		break;
-	default:
-		UndefinedOpcode();
-		break;
-	}
+	GetModRegRM(16,16);
+	GetImm(16);
+	MOV(ecpuins.rrm,ecpuins.rimm,16);
 }
 void RETF_I16()
 {
 	t_nubit16 addsp;
 	ecpu.eip++;
-	GetImm(2);
+	GetImm(16);
 	addsp = d_nubit16(ecpuins.rimm);
-	POP((t_vaddrcc)&ecpu.ip, 2);
-	POP((t_vaddrcc)&ecpu.cs.selector, 2);
+	POP((t_vaddrcc)&ecpu.ip,16);
+	POP((t_vaddrcc)&ecpu.cs.selector,16);
 	ecpu.sp += addsp;
 }
 void RETF()
 {
-	POP((t_vaddrcc)&ecpu.ip, 2);
-	POP((t_vaddrcc)&ecpu.cs.selector, 2);
+	POP((t_vaddrcc)&ecpu.ip,16);
+	POP((t_vaddrcc)&ecpu.cs.selector,16);
 }
 void INT3()
 {
@@ -2474,7 +2345,7 @@ void INT3()
 void INT_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	INT(d_nubit8(ecpuins.rimm));
 }
 void INTO()
@@ -2485,74 +2356,74 @@ void INTO()
 void IRET()
 {
 	ecpu.eip++;
-	POP((t_vaddrcc)&ecpu.ip, 2);
-	POP((t_vaddrcc)&ecpu.cs.selector, 2);
-	POP((t_vaddrcc)&ecpu.flags, 2);
+	POP((t_vaddrcc)&ecpu.ip,16);
+	POP((t_vaddrcc)&ecpu.cs.selector,16);
+	POP((t_vaddrcc)&ecpu.flags,16);
 }
 void INS_D0()
 {
 	ecpu.eip++;
-	GetModRegRM(0, 1);
+	GetModRegRM(0,8);
 	switch (ecpuins.cr) {
-	case 0:	ROL(ecpuins.rrm,(t_vaddrcc)NULL, 8);break;
-	case 1:	ROR(ecpuins.rrm,(t_vaddrcc)NULL, 8);break;
-	case 2:	RCL(ecpuins.rrm,(t_vaddrcc)NULL, 8);break;
-	case 3:	RCR(ecpuins.rrm,(t_vaddrcc)NULL, 8);break;
-	case 4:	SHL(ecpuins.rrm,(t_vaddrcc)NULL, 8);break;
-	case 5:	SHR(ecpuins.rrm,(t_vaddrcc)NULL, 8);break;
-	case 6:	SAL(ecpuins.rrm,(t_vaddrcc)NULL, 8);break;
-	case 7:	SAR(ecpuins.rrm,(t_vaddrcc)NULL, 8);break;
+	case 0:	ROL(ecpuins.rrm,(t_vaddrcc)NULL,8);break;
+	case 1:	ROR(ecpuins.rrm,(t_vaddrcc)NULL,8);break;
+	case 2:	RCL(ecpuins.rrm,(t_vaddrcc)NULL,8);break;
+	case 3:	RCR(ecpuins.rrm,(t_vaddrcc)NULL,8);break;
+	case 4:	SHL(ecpuins.rrm,(t_vaddrcc)NULL,8);break;
+	case 5:	SHR(ecpuins.rrm,(t_vaddrcc)NULL,8);break;
+	case 6:	SAL(ecpuins.rrm,(t_vaddrcc)NULL,8);break;
+	case 7:	SAR(ecpuins.rrm,(t_vaddrcc)NULL,8);break;
 	default:UndefinedOpcode();break;}
 }
 void INS_D1()
 {
 	ecpu.eip++;
-	GetModRegRM(0, 2);
+	GetModRegRM(0,16);
 	switch (ecpuins.cr) {
-	case 0:	ROL(ecpuins.rrm,(t_vaddrcc)NULL, 16);break;
-	case 1:	ROR(ecpuins.rrm,(t_vaddrcc)NULL, 16);break;
-	case 2:	RCL(ecpuins.rrm,(t_vaddrcc)NULL, 16);break;
-	case 3:	RCR(ecpuins.rrm,(t_vaddrcc)NULL, 16);break;
-	case 4:	SHL(ecpuins.rrm,(t_vaddrcc)NULL, 16);break;
-	case 5:	SHR(ecpuins.rrm,(t_vaddrcc)NULL, 16);break;
-	case 6:	SAL(ecpuins.rrm,(t_vaddrcc)NULL, 16);break;
-	case 7:	SAR(ecpuins.rrm,(t_vaddrcc)NULL, 16);break;
+	case 0:	ROL(ecpuins.rrm,(t_vaddrcc)NULL,16);break;
+	case 1:	ROR(ecpuins.rrm,(t_vaddrcc)NULL,16);break;
+	case 2:	RCL(ecpuins.rrm,(t_vaddrcc)NULL,16);break;
+	case 3:	RCR(ecpuins.rrm,(t_vaddrcc)NULL,16);break;
+	case 4:	SHL(ecpuins.rrm,(t_vaddrcc)NULL,16);break;
+	case 5:	SHR(ecpuins.rrm,(t_vaddrcc)NULL,16);break;
+	case 6:	SAL(ecpuins.rrm,(t_vaddrcc)NULL,16);break;
+	case 7:	SAR(ecpuins.rrm,(t_vaddrcc)NULL,16);break;
 	default:UndefinedOpcode();break;}
 }
 void INS_D2()
 {
 	ecpu.eip++;
-	GetModRegRM(0, 1);
+	GetModRegRM(0,8);
 	switch (ecpuins.cr) {
-	case 0:	ROL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 8);break;
-	case 1:	ROR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 8);break;
-	case 2:	RCL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 8);break;
-	case 3:	RCR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 8);break;
-	case 4:	SHL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 8);break;
-	case 5:	SHR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 8);break;
-	case 6:	SAL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 8);break;
-	case 7:	SAR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 8);break;
+	case 0:	ROL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,8);break;
+	case 1:	ROR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,8);break;
+	case 2:	RCL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,8);break;
+	case 3:	RCR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,8);break;
+	case 4:	SHL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,8);break;
+	case 5:	SHR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,8);break;
+	case 6:	SAL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,8);break;
+	case 7:	SAR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,8);break;
 	default:UndefinedOpcode();break;}
 }
 void INS_D3()
 {
 	ecpu.eip++;
-	GetModRegRM(0, 2);
+	GetModRegRM(0,16);
 	switch (ecpuins.cr) {
-	case 0:	ROL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 16);break;
-	case 1:	ROR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 16);break;
-	case 2:	RCL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 16);break;
-	case 3:	RCR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 16);break;
-	case 4:	SHL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 16);break;
-	case 5:	SHR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 16);break;
-	case 6:	SAL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 16);break;
-	case 7:	SAR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl, 16);break;
+	case 0:	ROL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,16);break;
+	case 1:	ROR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,16);break;
+	case 2:	RCL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,16);break;
+	case 3:	RCR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,16);break;
+	case 4:	SHL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,16);break;
+	case 5:	SHR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,16);break;
+	case 6:	SAL(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,16);break;
+	case 7:	SAR(ecpuins.rrm,(t_vaddrcc)&ecpu.cl,16);break;
 	default:UndefinedOpcode();break;}
 }
 DONEASM AAM()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	if (d_nubit8(ecpuins.rimm) != 0x0a) CaseError("AAM::imm");
 #define operation aam
 	adjustax;
@@ -2561,7 +2432,7 @@ DONEASM AAM()
 DONEASM AAD()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	if (d_nubit8(ecpuins.rimm) != 0x0a) CaseError("AAD::imm");
 #define operation aad
 	adjustax;
@@ -2570,7 +2441,7 @@ DONEASM AAD()
 void XLAT()
 {
 	ecpu.eip++;
-	ecpu.al = vramRealByte(ecpuins.roverds->selector, ecpu.bx+ecpu.al);
+	ecpu.al = vramRealByte(ecpuins.roverds->selector,ecpu.bx+ecpu.al);
 }
 /*
 void INS_D9();
@@ -2580,7 +2451,7 @@ void LOOPNZ()
 {
 	t_nsbit8 rel8;
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	bugfix(12) rel8 = d_nsbit8(ecpuins.rimm);
 	else rel8 = d_nubit8(ecpuins.rimm);
 	ecpu.cx--;
@@ -2590,7 +2461,7 @@ void LOOPZ()
 {
 	t_nsbit8 rel8;
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	bugfix(12) rel8 = d_nsbit8(ecpuins.rimm);
 	else rel8 = d_nubit8(ecpuins.rimm);
 	ecpu.cx--;
@@ -2600,7 +2471,7 @@ void LOOP()
 {
 	t_nsbit8 rel8;
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	bugfix(12) rel8 = d_nsbit8(ecpuins.rimm);
 	else rel8 = d_nubit8(ecpuins.rimm);
 	ecpu.cx--;
@@ -2609,13 +2480,13 @@ void LOOP()
 void JCXZ_REL8()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	JCC(ecpuins.rimm,!ecpu.cx);
 }
 DONEASM IN_AL_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 #if VGLOBAL_ECPU_MODE == TEST_ECPU
 	ExecFun(vport.in[d_nubit8(ecpuins.rimm)]);
 	ecpu.al = vport.iobyte;
@@ -2626,7 +2497,7 @@ DONEASM IN_AL_I8()
 DONEASM IN_AX_I8()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 #if VGLOBAL_ECPU_MODE == TEST_ECPU
 	ExecFun(vport.in[d_nubit8(ecpuins.rimm)]);
 	ecpu.ax = vport.ioword;
@@ -2637,7 +2508,7 @@ DONEASM IN_AX_I8()
 DONEASM OUT_I8_AL()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 #if VGLOBAL_ECPU_MODE == TEST_ECPU
 	vport.iobyte = ecpu.al;
 	ExecFun(vport.out[d_nubit8(ecpuins.rimm)]);
@@ -2648,7 +2519,7 @@ DONEASM OUT_I8_AL()
 DONEASM OUT_I8_AX()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 #if VGLOBAL_ECPU_MODE == TEST_ECPU
 	vport.ioword = ecpu.ax;
 	ExecFun(vport.out[d_nubit8(ecpuins.rimm)]);
@@ -2660,9 +2531,9 @@ void CALL_REL16()
 {
 	t_nsbit16 rel16;
 	ecpu.eip++;
-	GetImm(2);
+	GetImm(16);
 	rel16 = d_nsbit16(ecpuins.rimm);
-	PUSH((t_vaddrcc)&ecpu.ip, 2);
+	PUSH((t_vaddrcc)&ecpu.ip,16);
 	bugfix(12) ecpu.ip += rel16;
 	else ecpu.ip += d_nubit16(ecpuins.rimm);
 }
@@ -2670,7 +2541,7 @@ void JMP_REL16()
 {
 	t_nsbit16 rel16;
 	ecpu.eip++;
-	GetImm(2);
+	GetImm(16);
 	rel16 = d_nsbit16(ecpuins.rimm);
 	bugfix(2) ecpu.ip += rel16;
 	else ecpu.ip += d_nubit16(ecpuins.rimm);
@@ -2679,9 +2550,9 @@ void JMP_PTR16_16()
 {
 	t_nubit16 newip,newcs;
 	ecpu.eip++;
-	GetImm(2);
+	GetImm(16);
 	newip = d_nubit16(ecpuins.rimm);
-	GetImm(2);
+	GetImm(16);
 	newcs = d_nubit16(ecpuins.rimm);
 	ecpu.ip = newip;
 	ecpu.cs.selector = newcs;
@@ -2690,7 +2561,7 @@ void JMP_REL8()
 {
 	t_nsbit8 rel8;
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 	rel8 = d_nsbit8(ecpuins.rimm);
 	bugfix(9) ecpu.ip += rel8;
 	else ecpu.ip += d_nubit8(ecpuins.rimm);
@@ -2764,35 +2635,35 @@ DONEASM CMC()
 void INS_F6()
 {
 	ecpu.eip++;
-	GetModRegRM(0, 1);
+	GetModRegRM(0,8);
 	switch (ecpuins.cr) {
 	case 0:
-		GetImm(1);
-		TEST(ecpuins.rrm, ecpuins.rimm, 8);
+		GetImm(8);
+		TEST(ecpuins.rrm,ecpuins.rimm,8);
 		break;
-	case 2: NOT(ecpuins.rrm, 8);break;
-	case 3: NEG(ecpuins.rrm, 8);break;
-	case 4: MUL(ecpuins.rrm, 8);break;
-	case 5: IMUL(ecpuins.rrm, 8);break;
-	case 6: DIV(ecpuins.rrm, 8);break;
-	case 7: IDIV(ecpuins.rrm, 8);break;
+	case 2: NOT(ecpuins.rrm,8);break;
+	case 3: NEG(ecpuins.rrm,8);break;
+	case 4: MUL(ecpuins.rrm,8);break;
+	case 5: IMUL(ecpuins.rrm,8);break;
+	case 6: DIV(ecpuins.rrm,8);break;
+	case 7: IDIV(ecpuins.rrm,8);break;
 	default:UndefinedOpcode();break;}
 }
 void INS_F7()
 {
 	ecpu.eip++;
-	GetModRegRM(0, 2);
+	GetModRegRM(0,16);
 	switch (ecpuins.cr) {
 	case 0:
-		GetImm(2);
-		TEST(ecpuins.rrm, ecpuins.rimm, 16);
+		GetImm(16);
+		TEST(ecpuins.rrm,ecpuins.rimm,16);
 		break;
-	case 2: NOT(ecpuins.rrm, 16);break;
-	case 3: NEG(ecpuins.rrm, 16);break;
-	case 4: MUL(ecpuins.rrm, 16);break;
-	case 5: IMUL(ecpuins.rrm, 16);break;
-	case 6: DIV(ecpuins.rrm, 16);break;
-	case 7: IDIV(ecpuins.rrm, 16);break;
+	case 2: NOT(ecpuins.rrm,16);break;
+	case 3: NEG(ecpuins.rrm,16);break;
+	case 4: MUL(ecpuins.rrm,16);break;
+	case 5: IMUL(ecpuins.rrm,16);break;
+	case 6: DIV(ecpuins.rrm,16);break;
+	case 7: IDIV(ecpuins.rrm,16);break;
 	default:UndefinedOpcode();break;}
 }
 DONEASM CLC()
@@ -2828,26 +2699,26 @@ DONEASM STD()
 void INS_FE()
 {
 	ecpu.eip++;
-	GetModRegRM(0, 1);
+	GetModRegRM(0,8);
 	switch (ecpuins.cr) {
-	case 0: INC(ecpuins.rrm, 8);break;
-	case 1: DEC(ecpuins.rrm, 8);break;
+	case 0: INC(ecpuins.rrm,8);break;
+	case 1: DEC(ecpuins.rrm,8);break;
 	default:UndefinedOpcode();break;}
 }
 void INS_FF()
 {
 	ecpu.eip++;
-	GetModRegRM(0, _GetOperandSize);
+	GetModRegRM(0,16);
 	switch (ecpuins.cr) {
-	case 0: INC(ecpuins.rrm, 16);break;
-	case 1: DEC(ecpuins.rrm, 16);break;
+	case 0: INC(ecpuins.rrm,16);break;
+	case 1: DEC(ecpuins.rrm,16);break;
 	case 2: /* CALL_RM16 */
-		PUSH((t_vaddrcc)&ecpu.ip, 2);
+		PUSH((t_vaddrcc)&ecpu.ip,16);
 		ecpu.ip = d_nubit16(ecpuins.rrm);
 		break;
 	case 3: /* CALL_M16_16 */
-		PUSH((t_vaddrcc)&ecpu.cs.selector, 2);
-		PUSH((t_vaddrcc)&ecpu.ip, 2);
+		PUSH((t_vaddrcc)&ecpu.cs.selector,16);
+		PUSH((t_vaddrcc)&ecpu.ip,16);
 		ecpu.ip = d_nubit16(ecpuins.rrm);
 		bugfix(11) ecpu.cs.selector = d_nubit16(ecpuins.rrm+2);
 		else ecpu.cs.selector = d_nubit16(ecpuins.rrm+1);
@@ -2861,7 +2732,7 @@ void INS_FF()
 		else ecpu.cs.selector = d_nubit16(ecpuins.rrm+1);
 		break;
 	case 6: /* PUSH_RM16 */
-		PUSH(ecpuins.rrm, _GetOperandSize);
+		PUSH(ecpuins.rrm,16);
 		break;
 	default:UndefinedOpcode();break;}
 }
@@ -2928,20 +2799,20 @@ static void ExecInt()
 static void QDX()
 {
 	ecpu.eip++;
-	GetImm(1);
+	GetImm(8);
 #if VGLOBAL_ECPU_MODE == TEST_ECPU
 	switch (d_nubit8(ecpuins.rimm)) {
 	case 0x00:
 	case 0xff:
 		vapiPrint("\nNXVM STOP at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
-			ecpu.cs.selector, ecpu.ip,d_nubit8(ecpuins.rimm));
+			ecpu.cs.selector,ecpu.ip,d_nubit8(ecpuins.rimm));
 		vapiPrint("This happens because of the special instruction.\n");
 		vapiCallBackMachineStop();
 		break;
 	case 0x01:
 	case 0xfe:
 		vapiPrint("\nNXVM RESET at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
-			ecpu.cs.selector, ecpu.ip,d_nubit8(ecpuins.rimm));
+			ecpu.cs.selector,ecpu.ip,d_nubit8(ecpuins.rimm));
 		vapiPrint("This happens because of the special instruction.\n");
 		vapiCallBackMachineReset();
 		break;
@@ -3093,7 +2964,7 @@ void ecpuinsInit()
 	ecpuins.table[0x7f] = (t_faddrcc)JG;
 	ecpuins.table[0x80] = (t_faddrcc)INS_80;
 	ecpuins.table[0x81] = (t_faddrcc)INS_81;
-	ecpuins.table[0x82] = (t_faddrcc)UndefinedOpcode;
+	ecpuins.table[0x82] = (t_faddrcc)INS_82;
 	ecpuins.table[0x83] = (t_faddrcc)INS_83;
 	ecpuins.table[0x84] = (t_faddrcc)TEST_RM8_R8;
 	ecpuins.table[0x85] = (t_faddrcc)TEST_RM16_R16;
@@ -3161,8 +3032,8 @@ void ecpuinsInit()
 	ecpuins.table[0xc3] = (t_faddrcc)RET;
 	ecpuins.table[0xc4] = (t_faddrcc)LES_R16_M16;
 	ecpuins.table[0xc5] = (t_faddrcc)LDS_R16_M16;
-	ecpuins.table[0xc6] = (t_faddrcc)INS_C6;
-	ecpuins.table[0xc7] = (t_faddrcc)INS_C7;
+	ecpuins.table[0xc6] = (t_faddrcc)MOV_M8_I8;
+	ecpuins.table[0xc7] = (t_faddrcc)MOV_M16_I16;
 	ecpuins.table[0xc8] = (t_faddrcc)UndefinedOpcode;
 	ecpuins.table[0xc9] = (t_faddrcc)UndefinedOpcode;
 	ecpuins.table[0xca] = (t_faddrcc)RETF_I16;

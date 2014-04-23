@@ -47,4 +47,6 @@ void ecpuinsRefresh();
 void ecpuinsInit();
 void ecpuinsFinal();
 
+extern t_cpuins ecpuins;
+
 #endif

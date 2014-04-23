@@ -28,6 +28,12 @@ void ecpuRefreshInit()
 }
 void ecpuRefresh()
 {
+	ecpu.flagignore = 0;
+	ecpuins.flaginsloop = 0;
+	ecpuins.flagmaskint = 0;
+	ecpuins.flagmem = 0;
+	ecpuins.flagmss = 0;
+	ecpuins.flagrespondint = 0;
 	ecpuinsRefresh();
 }
 void ecpuRefreshFinal()

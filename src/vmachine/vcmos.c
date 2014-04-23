@@ -14,8 +14,8 @@ t_cmos vcmos;
 void IO_Write_0070()
 {
 	vcmos.rid = vport.iobyte;                                /* select reg id */
-	if (vcmos.rid & 0x80) vcpu.flagnmi = 0x00;      /* if MSB=1, disable NMI */
-	else vcpu.flagnmi = 0x01;
+	if (GetMSB8(vcmos.rid)) vcpu.flagmasknmi = 1;      /* if MSB=1, disable NMI */
+	else vcpu.flagmasknmi = 0;
 }
 void IO_Write_0071()
 {

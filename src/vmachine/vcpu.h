@@ -111,6 +111,7 @@ typedef struct {
 	t_nubit32 cr0, cr1, cr2, cr3;
 	t_nubit32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
 	t_nubit32 tr6, tr7;
+	t_bool flagmasknmi;
 	t_bool flagnmi, flaglock, flaghalt;
 } t_cpu;
 
