@@ -12,7 +12,7 @@
 
 t_fdc vfdc;
 
-#define VFDC_ERROR 0x80                                        /* Error Code */
+#define VFDC_RET_ERROR 0x80                                        /* Error Code */
 
 /* Commands */
 #define CMD_SPECIFY            0x03                  /* set drive parameters */
@@ -49,73 +49,132 @@ t_fdc vfdc;
 //#define GET_EOT(cbyte)                                     /* End Of Track */
 //#define GET_GPL(cbyte)                                       /* Gap Length */
 //#define GET_H(cbyte)                                 /* Head Address (0-1) */
+//#define GET_MFM(cbyte)                                   /* fm or mfm mode */
+//#define GET_MT(cbyte)                                       /* multi-track */
+//#define GET_N(cbyte)                                             /* number */
+//#define GET_NCN(cbyte)                              /* new cylinder number */
+//#define GET_R(cbyte)                                             /* record */
+//#define GET_RW(cbyte)                                 /* read/write signal */
+//#define GET_SC(cbyte)                                            /* sector */
+//#define GET_SK(cbyte)                                              /* skip */
+//#define GET_STP(cbyte)                                             /* step */
 
-#define GET_MFM(cbyte)                                     /* FM or MFM Mode */
-#define GET_MT(cbyte)                                         /* Multi-track */
-#define GET_N(cbyte)                                               /* Number */
-#define GET_NCN(cbyte)                                /* New Cylinder Number */
-#define GET_R(cbyte)                                               /* Record */
-#define GET_RW(cbyte)                                   /* Read/Write Signal */
-#define GET_SC(cbyte)                                              /* Sector */
-#define GET_SK(cbyte)                                                /* Skip */
-#define GET_STP(cbyte)                                               /* Step */
-
-#define GetDS(cbyte)   ((cbyte) & 0x03)            /* Drive Select (DS0,DS1) */
-#define GetHUT(cbyte)  ((cbyte) & 0x0f)                  /* Head Unload Time */
-#define GetSRT(cbyte)  ((cbyte) >> 4)                      /* Step Rate Time */
-#define GetHLT(cbyte)  ((cbyte) >> 1)                      /* Head Load Time */
-#define GetNDMA(cbyte) ((cbyte) & 0x01)                      /* Non-DMA Mode */
-#define GetHDS(cbyte)  (!!((cbyte) & 0x04))          /* Head Select (0 or 1) */
+#define GetDS(cbyte)   ((cbyte) & 0x03)            /* drive select (ds0,ds1) */
+#define GetHUT(cbyte)  ((cbyte) & 0x0f)                  /* head unload time */
+#define GetSRT(cbyte)  ((cbyte) >> 4)                      /* step rate time */
+#define GetHLT(cbyte)  ((cbyte) >> 1)                      /* head load time */
+#define GetNDMA(cbyte) ((cbyte) & 0x01)                      /* non-dma mode */
+#define GetHDS(cbyte)  (!!((cbyte) & 0x04))          /* head select (0 or 1) */
+#define GetBPS(cbyte)  (0x0080 << (cbyte))               /* bytes per sector */
 
 #define IsCmd(cmdl, count) (vfdc.cmd[0] == (cmdl) && vfdc.flagcmd == (count))
 #define IsRet(retl, count) (vfdc.cmd[0] == (retl) && vfdc.flagret == (count))
+#define SetST0 (vfdc.st0 = (0x00                    << 7) |                   \
+                           (0x00                    << 6) |                   \
+                           (0x01                    << 5) |                   \
+                           ((vfdd.cyl >= VFDD_NCYL) << 4) |                   \
+                           (0x00                    << 3) |                   \
+                           (vfdd.head               << 2) |                   \
+                           (GetDS(vfdc.cmd[1])      << 0))
+#define SetST1 (vfdc.st1 = (((vfdd.sector - 0x01) >= vfdd.nsector) << 7) |    \
+                           (0x00                    << 6) |                   \
+                           (0x00                    << 5) |                   \
+                           (0x00                    << 4) |                   \
+                           (0x00                    << 3) |                   \
+                           (0x00                    << 2) |                   \
+                           (0x00                    << 1) |                   \
+                           (0x00                    << 0))
+#define SetST2 (vfdc.st2 = (0x00                    << 7) |                   \
+                           (0x00                    << 6) |                   \
+                           (0x00                    << 5) |                   \
+                           ((vfdd.cyl >= VFDD_NCYL) << 4) |                   \
+                           (0x00                    << 3) |                   \
+                           (0x00                    << 2) |                   \
+                           (0x00                    << 1) |                   \
+                           (0x00                    << 0))
+#define SetST3 (vfdc.st3 = (0x00                    << 7) |                   \
+                           (vfdd.flagro             << 6) |                   \
+                           (0x01                    << 5) |                   \
+                           ((!vfdd.cyl)             << 4) |                   \
+                           (0x01                    << 3) |                   \
+                           (vfdd.head               << 2) |                   \
+                           (GetDS(vfdc.cmd[1])      << 0))
 
 static void ExecCmdSpecify()
 {
-	vfdc.flagcmd = 0;
+	vfdc.flagcmd  = 0x00;
 	vfdc.hut      = GetHUT (vfdc.cmd[1]);
 	vfdc.srt      = GetSRT (vfdc.cmd[1]);
 	vfdc.hlt      = GetHLT (vfdc.cmd[2]);
 	vfdc.flagndma = GetNDMA(vfdc.cmd[2]);
+	vfdc.flagintr = 0x00;
 }
 static void ExecCmdSenseDriveStatus()
 {
-	vfdc.flagcmd = 0;
+	vfdc.flagcmd = 0x00;
 	vfdd.head = GetHDS(vfdc.cmd[1]);
-	vfdc.st3 = (0x00        << 7) |
-	           (vfdd.flagro << 6) |
-	           (0x01        << 5) |
-	           ((!vfdd.cyl) << 4) |
-	           (0x01        << 3) |
-	           (vfdd.head   << 2) |
-	           (GetDS(vfdc.cmd[1]));
+	SetST3;
 	vfdc.ret[0] = vfdc.st3;
+	vfdc.flagintr = 0x00;
 }
 static void ExecCmdRecalibrate()
 {
-	vfdc.flagcmd = 0;
-	vfdd.pcn  = 0x00;
+	vfdc.flagcmd = 0x00;
+	vfdd.cyl  = 0x00;
 	vfdd.head = 0x00;
-	vfdc.st0 = 0x20 | GetDS(vfdc.cmd[1]);
-	vfdc.flagintr = 1;
+	SetST0;
 	vpicSetIRQ(0x06);         /* TODO: BIOS: INT 0EH Should Call Command 08H */
+	vfdc.flagintr = 0x01;
 }
 static void ExecCmdSenseInterrupt()
 {
-	vfdc.flagcmd = 0;
-	if(vfdc.flagintr) {
-		vfdc.flagintr = 0;
+	vfdc.flagcmd = 0x00;
+	if (vfdc.flagintr) {
 		vfdc.ret[0] = vfdc.st0;
-		vfdc.ret[1] = vfdc.pcn;
-	} else vfdc.ret[0] = VFDC_ERROR;
+		vfdc.ret[1] = vfdd.cyl;
+	} else vfdc.ret[0] = vfdc.st0 = VFDC_RET_ERROR;
+	vfdc.flagintr = 0x00;
 }
 static void ExecCmdSeek()
 {
-	vfdc.flagcmd = 0;
-	vfdc.st0 = 0x20 | (GetHDS(vfdc.cmd[1]) << 2) | GetDS(vfdc.cmd[1]);
-	vfdc.pcn = vfdc.cmd[2];
-	vfdc.flagintr = 1;
+	vfdc.flagcmd = 0x00;
+	vfdd.head = GetHDS(vfdc.cmd[1]);
+	vfdd.cyl = vfdc.cmd[2];
+	SetST0;
 	vpicSetIRQ(0x06);
+	vfdc.flagintr = 0x01;
+}
+static void ExecCmdReadTrack()
+{
+	vfdc.flagcmd   = 0x00;
+	/* TODO: vfdc.flagret = 0x00; */
+	/* load parameters */
+	vfdd.cyl       = vfdc.cmd[2];
+	vfdd.head      = vfdc.cmd[3];
+	vfdd.sector    = 0x01;
+	vfdd.nbyte     = GetBPS(vfdc.cmd[5]);
+	vfdd.nsector   = vfdc.cmd[6];
+	vfdd.gaplen    = vfdc.cmd[7];
+	if (!vfdc.cmd[5])
+		vfdd.nbyte = vfdc.cmd[8];
+	/* execute read track */
+	vfdd.count     = vfdd.nsector * vfdd.nbyte;
+	vfdd.curr      = vfdd.base +
+	                 ((vfdd.cyl * VFDD_NHEAD + vfdd.head) * vfdd.nsector +
+	                  (vfdd.sector - 0x01) * vfdd.nbyte);
+	SetST0;
+	SetST1;
+	/* TODO: 调用 DMA 执行传送/使用 PIO 传送*/
+	/* TODO: 标准结果留待回调函数使用 return execute results */
+	vfdc.ret[0] = vfdc.st0;
+	vfdc.ret[1] = vfdc.st1;
+	vfdc.ret[2] = vfdc.st2;
+	vfdc.ret[3] = vfdd.cyl;
+	vfdc.ret[4] = vfdd.head;
+	vfdc.ret[5] = vfdd.sector;                      /* TODO: correct the EOT */
+	vfdc.ret[6] = vfdc.cmd[5];
+	vpicSetIRQ(0x06);
+	vfdc.flagintr = 0x01;
 }
 static void ExecCmdReadData()
 {
@@ -161,28 +220,6 @@ static void ExecCmdWriteData()
 	vfdc.flagintr = 1;
 	vpicSetIRQ(0x06);
 }
-static void ExecCmdReadTrack()
-{
-	t_bool succ;
-	vfdc.flagcmd = 0;
-	succ = vfddRead(&vfdc.cmd[2],&vfdc.cmd[3],&vfdc.cmd[4],
-		vramGetAddress((((t_vaddrcc)vdma1.channel[2].page)<<16)+vdma1.channel[2].baseaddr),
-		VFDD_SECTORS);
-	vfdc.pcn = vfdc.cmd[2];
-	vfdc.st0 = 0x20 | (vfdc.cmd[3]<<2) | GetDS(vfdc.cmd[1]);
-	vfdc.st1 = 0x00 | ((t_nubit8)succ<<2);
-	if(vfdc.pcn >= 0x50) vfdc.st2 = 0x10;
-	else vfdc.st2 = 0x00;
-	vfdc.ret[0] = vfdc.st0;
-	vfdc.ret[1] = vfdc.st1;
-	vfdc.ret[2] = vfdc.st2;
-	vfdc.ret[3] = vfdc.cmd[2];
-	vfdc.ret[4] = vfdc.cmd[3];
-	vfdc.ret[5] = vfdc.cmd[4];
-	vfdc.ret[6] = 0x02;
-	vfdc.flagintr = 1;
-	vpicSetIRQ(0x06);
-}
 static void ExecCmdFormatTrack()
 {
 	vfdc.flagcmd = 0;
@@ -210,7 +247,7 @@ void IO_Read_03F4()
 void IO_Read_03F5()
 {
 	vcpu.al = vfdc.ret[vfdc.flagret++];
-	if(vfdc.ret[0] == VFDC_ERROR) {
+	if(vfdc.ret[0] == VFDC_RET_ERROR) {
 		vfdc.flagret = 0;
 		return;
 	}
@@ -236,7 +273,7 @@ void IO_Write_03F5()
 
 	vfdc.cmd[vfdc.flagcmd++] = vcpu.al;
 	if(GetDS(vfdc.cmd[1])) {
-		vfdc.ret[0] = VFDC_ERROR;
+		vfdc.ret[0] = VFDC_RET_ERROR;
 		return;
 	}
 	if(IsCmd(CMD_SPECIFY, 3))                 ExecCmdSpecify();
@@ -244,9 +281,9 @@ void IO_Write_03F5()
 	else if(IsCmd(CMD_RECALIBRATE,2))         ExecCmdRecalibrate();
 	else if(IsCmd(CMD_SENSE_INTERRUPT,1))     ExecCmdSenseInterrupt();
 	else if(IsCmd(CMD_SEEK,3))                ExecCmdSeek();
+	else if(IsCmd(CMD_READ_TRACK,9))          ExecCmdReadTrack();
 	else if(IsCmd(CMD_READ_DATA,9))           ExecCmdReadData();
 	else if(IsCmd(CMD_WRITE_DATA,9))          ExecCmdWriteData();
-	else if(IsCmd(CMD_READ_TRACK,9))          ExecCmdReadTrack();
 	else if(IsCmd(CMD_FORMAT_TRACK,9))        ExecCmdFormatTrack();
 }
 void IO_Write_03F7()
