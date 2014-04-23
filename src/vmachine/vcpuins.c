@@ -7010,13 +7010,13 @@ static void INS_8F()
 			_chk(vcpuins.crm = _e_pop(_GetOperandSize));
 			_chk(_m_write_rm(_GetOperandSize));
 			_be;break;
-		case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
-		case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
-		case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
-		case 4: _bb("cr(4)");_chk(UndefinedOpcode());_be;break;
-		case 5: _bb("cr(5)");_chk(UndefinedOpcode());_be;break;
-		case 6: _bb("cr(6)");_chk(UndefinedOpcode());_be;break;
-		case 7: _bb("cr(7)");_chk(UndefinedOpcode());_be;break;
+		case 1: _bb("vcpuins.cr(1)");_chk(UndefinedOpcode());_be;break;
+		case 2: _bb("vcpuins.cr(2)");_chk(UndefinedOpcode());_be;break;
+		case 3: _bb("vcpuins.cr(3)");_chk(UndefinedOpcode());_be;break;
+		case 4: _bb("vcpuins.cr(4)");_chk(UndefinedOpcode());_be;break;
+		case 5: _bb("vcpuins.cr(5)");_chk(UndefinedOpcode());_be;break;
+		case 6: _bb("vcpuins.cr(6)");_chk(UndefinedOpcode());_be;break;
+		case 7: _bb("vcpuins.cr(7)");_chk(UndefinedOpcode());_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
@@ -7027,13 +7027,13 @@ static void INS_8F()
 			_chk(vcpuins.crm = GetMax16(_e_pop(2)));
 			_chk(_m_write_rm(2));
 			_be;break;
-		case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
-		case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
-		case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
-		case 4: _bb("cr(4)");_chk(UndefinedOpcode());_be;break;
-		case 5: _bb("cr(5)");_chk(UndefinedOpcode());_be;break;
-		case 6: _bb("cr(6)");_chk(UndefinedOpcode());_be;break;
-		case 7: _bb("cr(7)");_chk(UndefinedOpcode());_be;break;
+		case 1: _bb("vcpuins.cr(1)");_chk(UndefinedOpcode());_be;break;
+		case 2: _bb("vcpuins.cr(2)");_chk(UndefinedOpcode());_be;break;
+		case 3: _bb("vcpuins.cr(3)");_chk(UndefinedOpcode());_be;break;
+		case 4: _bb("vcpuins.cr(4)");_chk(UndefinedOpcode());_be;break;
+		case 5: _bb("vcpuins.cr(5)");_chk(UndefinedOpcode());_be;break;
+		case 6: _bb("vcpuins.cr(6)");_chk(UndefinedOpcode());_be;break;
+		case 7: _bb("vcpuins.cr(7)");_chk(UndefinedOpcode());_be;break;
 		default:_impossible_;break;}
 	}
 	_ce;
@@ -8467,13 +8467,13 @@ static void INS_C6()
 		_chk(_d_imm(1));
 		vcpuins.crm = vcpuins.cimm;_chk(_m_write_rm(1));
 		_be;break;
-	case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
-	case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
-	case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
-	case 4: _bb("cr(4)");_chk(UndefinedOpcode());_be;break;
-	case 5: _bb("cr(5)");_chk(UndefinedOpcode());_be;break;
-	case 6: _bb("cr(6)");_chk(UndefinedOpcode());_be;break;
-	case 7: _bb("cr(7)");_chk(UndefinedOpcode());_be;break;
+	case 1: _bb("vcpuins.cr(1)");_chk(UndefinedOpcode());_be;break;
+	case 2: _bb("vcpuins.cr(2)");_chk(UndefinedOpcode());_be;break;
+	case 3: _bb("vcpuins.cr(3)");_chk(UndefinedOpcode());_be;break;
+	case 4: _bb("vcpuins.cr(4)");_chk(UndefinedOpcode());_be;break;
+	case 5: _bb("vcpuins.cr(5)");_chk(UndefinedOpcode());_be;break;
+	case 6: _bb("vcpuins.cr(6)");_chk(UndefinedOpcode());_be;break;
+	case 7: _bb("vcpuins.cr(7)");_chk(UndefinedOpcode());_be;break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -8489,13 +8489,13 @@ static void INS_C7()
 			_chk(_d_imm(_GetOperandSize));
 			vcpuins.crm = vcpuins.cimm;_chk(_m_write_rm(_GetOperandSize));
 			_be;break;
-		case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
-		case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
-		case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
-		case 4: _bb("cr(4)");_chk(UndefinedOpcode());_be;break;
-		case 5: _bb("cr(5)");_chk(UndefinedOpcode());_be;break;
-		case 6: _bb("cr(6)");_chk(UndefinedOpcode());_be;break;
-		case 7: _bb("cr(7)");_chk(UndefinedOpcode());_be;break;
+		case 1: _bb("vcpuins.cr(1)");_chk(UndefinedOpcode());_be;break;
+		case 2: _bb("vcpuins.cr(2)");_chk(UndefinedOpcode());_be;break;
+		case 3: _bb("vcpuins.cr(3)");_chk(UndefinedOpcode());_be;break;
+		case 4: _bb("vcpuins.cr(4)");_chk(UndefinedOpcode());_be;break;
+		case 5: _bb("vcpuins.cr(5)");_chk(UndefinedOpcode());_be;break;
+		case 6: _bb("vcpuins.cr(6)");_chk(UndefinedOpcode());_be;break;
+		case 7: _bb("vcpuins.cr(7)");_chk(UndefinedOpcode());_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
@@ -8506,13 +8506,13 @@ static void INS_C7()
 			_chk(_d_imm(2));
 			vcpuins.crm = vcpuins.cimm;_chk(_m_write_rm(2));
 			_be;break;
-		case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
-		case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
-		case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
-		case 4: _bb("cr(4)");_chk(UndefinedOpcode());_be;break;
-		case 5: _bb("cr(5)");_chk(UndefinedOpcode());_be;break;
-		case 6: _bb("cr(6)");_chk(UndefinedOpcode());_be;break;
-		case 7: _bb("cr(7)");_chk(UndefinedOpcode());_be;break;
+		case 1: _bb("vcpuins.cr(1)");_chk(UndefinedOpcode());_be;break;
+		case 2: _bb("vcpuins.cr(2)");_chk(UndefinedOpcode());_be;break;
+		case 3: _bb("vcpuins.cr(3)");_chk(UndefinedOpcode());_be;break;
+		case 4: _bb("vcpuins.cr(4)");_chk(UndefinedOpcode());_be;break;
+		case 5: _bb("vcpuins.cr(5)");_chk(UndefinedOpcode());_be;break;
+		case 6: _bb("vcpuins.cr(6)");_chk(UndefinedOpcode());_be;break;
+		case 7: _bb("vcpuins.cr(7)");_chk(UndefinedOpcode());_be;break;
 		default:_impossible_;break;}
 	}
 	_ce;
@@ -9032,9 +9032,9 @@ static void XLAT()
 	}
 	_ce;
 }
-static void LOOPNZ()
+static void LOOPNZ_REL8()
 {
-	_cb("LOOPNZ");
+	_cb("LOOPNZ_REL8");
 	i386(0xe0) {
 		_adv;
 	} else {
@@ -9044,9 +9044,9 @@ static void LOOPNZ()
 	_chk(_e_loopcc((t_nsbit8)vcpuins.cimm, !_GetEFLAGS_ZF));
 	_ce;
 }
-static void LOOPZ()
+static void LOOPZ_REL8()
 {
-	_cb("LOOPZ");
+	_cb("LOOPZ_REL8");
 	i386(0xe1) {
 		_adv;
 	} else {
@@ -9056,9 +9056,9 @@ static void LOOPZ()
 	_chk(_e_loopcc((t_nsbit8)vcpuins.cimm, _GetEFLAGS_ZF));
 	_ce;
 }
-static void LOOP()
+static void LOOP_REL8()
 {
-	_cb("LOOP");
+	_cb("LOOP_REL8");
 	i386(0xe2) {
 		_adv;
 	} else {
@@ -9309,7 +9309,6 @@ static void PREFIX_LOCK()
 	t_nubit8 opcode_0f = 0x00;
 	t_nubit32 ceip = vcpu.eip;
 	_cb("PREFIX_LOCK");
-	_newins_;
 	i386(0xf0) {
 		_adv;
 		do {
@@ -9478,30 +9477,30 @@ static void INS_F7()
 			_bb("ModRM_REG(1)");
 			_chk(UndefinedOpcode());
 			_be;break;
-		case 2: /* NOT_RM16 */
-			_bb("NOT_RM16");
+		case 2: /* NOT_RM32 */
+			_bb("NOT_RM32");
 			_chk(_a_not(vcpuins.crm, _GetOperandSize * 8));
 			vcpuins.crm = vcpuins.result;_chk(_m_write_rm(_GetOperandSize));
 			_be;break;
-		case 3: /* NEG_RM16 */
-			_bb("NEG_RM16");
+		case 3: /* NEG_RM32 */
+			_bb("NEG_RM32");
 			_chk(_a_neg(vcpuins.crm, _GetOperandSize * 8));
 			vcpuins.crm = vcpuins.result;_chk(_m_write_rm(_GetOperandSize));
 			_be;break;
-		case 4: /* MUL_RM16 */
-			_bb("MUL_RM16");
+		case 4: /* MUL_RM32 */
+			_bb("MUL_RM32");
 			_chk(_a_mul(vcpuins.crm, _GetOperandSize * 8));
 			_be;break;
-		case 5: /* IMUL_RM16 */
-			_bb("IMUL_RM16");
+		case 5: /* IMUL_RM32 */
+			_bb("IMUL_RM32");
 			_chk(_a_imul(vcpuins.crm, _GetOperandSize * 8));
 			_be;break;
-		case 6: /* DIV_RM16 */
-			_bb("DIV_RM16");
+		case 6: /* DIV_RM32 */
+			_bb("DIV_RM32");
 			_chk(_a_div(vcpuins.crm, _GetOperandSize * 8));
 			_be;break;
-		case 7: /* IDIV_RM16 */
-			_bb("IDIV_RM16");
+		case 7: /* IDIV_RM32 */
+			_bb("IDIV_RM32");
 			_chk(_a_idiv(vcpuins.crm, _GetOperandSize * 8));
 			_be;break;
 		default:_impossible_;break;}
@@ -9685,12 +9684,12 @@ static void INS_FE()
 		_chk(_a_dec(vcpuins.crm, 8));
 		vcpuins.crm = vcpuins.result;_chk(_m_write_rm(1));
 		_be;break;
-	case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
-	case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
-	case 4: _bb("cr(4)");_chk(UndefinedOpcode());_be;break;
-	case 5: _bb("cr(5)");_chk(UndefinedOpcode());_be;break;
-	case 6: _bb("cr(6)");_chk(UndefinedOpcode());_be;break;
-	case 7: _bb("cr(7)");_chk(UndefinedOpcode());_be;break;
+	case 2: _bb("vcpuins.cr(2)");_chk(UndefinedOpcode());_be;break;
+	case 3: _bb("vcpuins.cr(3)");_chk(UndefinedOpcode());_be;break;
+	case 4: _bb("vcpuins.cr(4)");_chk(UndefinedOpcode());_be;break;
+	case 5: _bb("vcpuins.cr(5)");_chk(UndefinedOpcode());_be;break;
+	case 6: _bb("vcpuins.cr(6)");_chk(UndefinedOpcode());_be;break;
+	case 7: _bb("vcpuins.cr(7)");_chk(UndefinedOpcode());_be;break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -11030,7 +11029,6 @@ _______todo CPUID()
 static void BT_RM32_R32()
 {
 	_cb("BT_RM32_R32");
-	_newins_;
 	_adv;
 	_chk(_d_bit_rmimm(_GetOperandSize, _GetOperandSize, 0));
 	_chk(_m_read_rm(_GetOperandSize));
@@ -11040,7 +11038,7 @@ static void BT_RM32_R32()
 static void SHLD_RM32_R32_I8()
 {
 	_cb("SHLD_RM32_R32_I8");
-	_newins_;
+	_adv;
 	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
 	_chk(_m_read_rm(_GetOperandSize));
 	_chk(_d_imm(1));
@@ -11051,7 +11049,7 @@ static void SHLD_RM32_R32_I8()
 static void SHLD_RM32_R32_CL()
 {
 	_cb("SHLD_RM32_R32_CL");
-	_newins_;
+	_adv;
 	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
 	_chk(_m_read_rm(_GetOperandSize));
 	_chk(_a_shld(vcpuins.crm, vcpuins.cr, vcpu.cl, _GetOperandSize * 8));
@@ -11090,7 +11088,6 @@ _______todo RSM()
 static void BTS_RM32_R32()
 {
 	_cb("BTS_RM32_R32");
-	_newins_;
 	_adv;
 	_chk(_d_bit_rmimm(_GetOperandSize, _GetOperandSize, 1));
 	_chk(_m_read_rm(_GetOperandSize));
@@ -11112,7 +11109,6 @@ static void SHRD_RM32_R32_I8()
 static void SHRD_RM32_R32_CL()
 {
 	_cb("SHRD_RM32_R32_CL");
-	_newins_;
 	_adv;
 	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
 	_chk(_m_read_rm(_GetOperandSize));
@@ -11123,7 +11119,6 @@ static void SHRD_RM32_R32_CL()
 static void IMUL_R32_RM32()
 {
 	_cb("IMUL_R32_RM32");
-	_newins_;
 	_adv;
 	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
 	_chk(_m_read_rm(_GetOperandSize));
@@ -11136,7 +11131,6 @@ static void LSS_R32_M16_32()
 	t_nubit16 selector;
 	t_nubit32 offset;
 	_cb("LSS_R32_M16_32");
-	_newins_;
 	_adv;
 	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
 	if (!vcpuins.flagmem) {
@@ -11158,7 +11152,6 @@ static void LSS_R32_M16_32()
 static void BTR_RM32_R32()
 {
 	_cb("BTR_RM32_R32");
-	_newins_;
 	_adv;
 	_chk(_d_bit_rmimm(_GetOperandSize, _GetOperandSize, 1));
 	_chk(_m_read_rm(_GetOperandSize));
@@ -11171,7 +11164,6 @@ static void LFS_R32_M16_32()
 	t_nubit16 selector;
 	t_nubit32 offset;
 	_cb("LFS_R32_M16_32");
-	_newins_;
 	_adv;
 	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
 	if (!vcpuins.flagmem) {
@@ -11227,10 +11219,10 @@ static void INS_0F_BA()
 	_chk(_d_bit_rmimm(0, _GetOperandSize, write));
 	_chk(_m_read_rm(_GetOperandSize));
 	switch (vcpuins.cr) {
-	case 0: _bb("cr(0)");_chk(UndefinedOpcode());_be;break;
-	case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
-	case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
-	case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
+	case 0: _bb("vcpuins.cr(0)");_chk(UndefinedOpcode());_be;break;
+	case 1: _bb("vcpuins.cr(1)");_chk(UndefinedOpcode());_be;break;
+	case 2: _bb("vcpuins.cr(2)");_chk(UndefinedOpcode());_be;break;
+	case 3: _bb("vcpuins.cr(3)");_chk(UndefinedOpcode());_be;break;
 	case 4: /* BT_RM32_I8 */
 		_bb("BT_RM32_I8");
 		_chk(_a_bt((t_nubit32)vcpuins.crm, (t_nubit32)vcpuins.cimm, _GetOperandSize * 8));
@@ -11366,7 +11358,6 @@ static void ExecInit()
 	vcpuins.roverds = &vcpu.ds;
 	vcpuins.roverss = &vcpu.ss;
 	vcpuins.prefix_rep = PREFIX_REP_NONE;
-	vcpuins.prefix_lock = 0x00;
 	vcpuins.prefix_oprsize = 0x00;
 	vcpuins.prefix_addrsize = 0x00;
 	vcpuins.flagmem = 0;
@@ -11730,9 +11721,9 @@ void vcpuinsInit()
 	table[0xdd] = (t_faddrcc)UndefinedOpcode;
 	table[0xde] = (t_faddrcc)UndefinedOpcode;
 	table[0xdf] = (t_faddrcc)UndefinedOpcode;
-	table[0xe0] = (t_faddrcc)LOOPNZ;
-	table[0xe1] = (t_faddrcc)LOOPZ;
-	table[0xe2] = (t_faddrcc)LOOP;
+	table[0xe0] = (t_faddrcc)LOOPNZ_REL8;
+	table[0xe1] = (t_faddrcc)LOOPZ_REL8;
+	table[0xe2] = (t_faddrcc)LOOP_REL8;
 	table[0xe3] = (t_faddrcc)JCXZ_REL8;
 	table[0xe4] = (t_faddrcc)IN_AL_I8;
 	table[0xe5] = (t_faddrcc)IN_EAX_I8;

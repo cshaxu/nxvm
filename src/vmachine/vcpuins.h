@@ -46,7 +46,6 @@ typedef struct {
 typedef struct {
 	/* prefixes */
 	t_cpuins_prefix_rep  prefix_rep;
-	t_cpuins_prefix      prefix_lock;
 	t_cpuins_prefix      prefix_oprsize;
 	t_cpuins_prefix      prefix_addrsize;
 	t_cpu_sreg *roverds, *roverss, *rmovsreg;

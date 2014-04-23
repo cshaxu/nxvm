@@ -49,6 +49,7 @@ static t_nubit16 uasmPtrRec;
 
 static t_nubit16 seg;
 static t_nubit16 ptr;
+static t_nubit8 rcode[16];
 
 static void lcase(t_string s)
 {
@@ -516,6 +517,7 @@ static void rprintregs()
 	vapiPrint("   ");
 	rprintflags();
 	vapiPrint("\n");
+
 	dasm(str, _cs, _ip, 0x02);
 	uasmSegRec = _cs;
 	uasmPtrRec = _ip;
