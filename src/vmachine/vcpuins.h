@@ -11,6 +11,9 @@
 
 #include "vcpu.h"
 
+#define i386(n) if (1)
+#define VCPUINS_TRACE 1
+
 typedef enum {
 	ARITHTYPE_NULL,
 	ADD8,ADD16,ADD32,
@@ -53,7 +56,8 @@ typedef struct {
 	t_cpu_sreg oldcs, oldss;
 	t_nubit32 oldeip, oldesp;
 	t_bool    flaginsloop;
-	t_nubit32 opr1, opr2, result, bit;
+	t_nubit64 opr1, opr2, result;
+	t_nubit32 bit;
 	t_cpuins_type type;
 	t_cpuins_prefix_rep  prefix_rep;
 	t_cpuins_prefix      prefix_lock;
@@ -63,19 +67,19 @@ typedef struct {
 	t_nubit32 except, excode;
 	t_faddrcc table[0x100], table_0f[0x100];
 	t_cpuins_selector descsel;
-	t_cpuins_logical rmlog;
-	t_nubit64 cimm, crm, cr;
-	t_vaddrcc rimm, rrm, rr;
-	t_nubit32 pimm, prm;
-	t_nubit32 limm, lrm;
-	t_nubit32 eimm, erm;
+	t_cpuins_logical mrm;
+	t_vaddrcc rrm, rr;
+	t_nubit64 crm, cr, cimm;
+	t_vaddrcc rimm;
 	t_bool    flagmem; /* if rm is in memory */
-
-	t_bool    flagmss; /* if rm is in stack segment */
 	t_bool    flagmaskint; /* if int is disabled once */
 	t_bool    flagrespondint; /* if intr is responded in one Refresh */
 	t_nubit8  isrs; /* if inside int serv rout */
 	t_nubit32 udf; /* undefined eflags bits */
+
+	t_bool flagmss;
+	t_nubit32 lrm,prm,erm;
+	t_nubit32 lins;
 } t_cpuins;
 
 #define VCPUINS_EXCEPT_DE 0x00000001 /* 00 - divide error */

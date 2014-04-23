@@ -71,7 +71,7 @@ t_apirecord vapirecord;
 ss:esp=%04x:%08x stack=%04x %04x %04x %04x \
 eax=%08x ebx=%08x ecx=%08x edx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \
 eflags=%08x %s %s %s %s %s %s %s %s %s \
-linear=%08x bit=%02d opr1=%08x opr2=%08x result=%016llx %s\n"
+bit=%02d opr1=%08x opr2=%08x result=%016llx %s\n"
 
 void vapiRecordNow(const t_string fname)
 {
@@ -123,7 +123,7 @@ void vapiRecordDump(const t_string fname)
 			_rec_df ? "DF" : "df",
 			_rec_if ? "IF" : "if",
 			_rec_tf ? "TF" : "tf",
-			_rec.linear,_rec.bit,_rec.opr1,_rec.opr2,_rec.result,_restmt);
+			_rec.bit,_rec.opr1,_rec.opr2,_rec.result,_restmt);
 		++i;
 	}
 	vapiPrint("Record dumped to '%s'.\n", fname);
@@ -169,7 +169,6 @@ void vapiRecordExec()
 	vapirecord.rec[_rec_ptr_last].opr1 = vcpuins.opr1;
 	vapirecord.rec[_rec_ptr_last].opr2 = vcpuins.opr2;
 	vapirecord.rec[_rec_ptr_last].result = vcpuins.result;
-	vapirecord.rec[_rec_ptr_last].linear = vcpuins.lrm;
 
 	if (vapirecord.flagnow) {
 		i = vapirecord.size;
@@ -196,7 +195,7 @@ void vapiRecordExec()
 			_rec_df ? "DF" : "df",
 			_rec_if ? "IF" : "if",
 			_rec_tf ? "TF" : "tf",
-			_rec.linear,_rec.bit,_rec.opr1,_rec.opr2,_rec.result,_restmt);
+			_rec.bit,_rec.opr1,_rec.opr2,_rec.result,_restmt);
 	}
 	if (vapirecord.size == VAPI_RECORD_SIZE) vapirecord.start++;
 	else vapirecord.size++;

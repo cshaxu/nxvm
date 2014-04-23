@@ -695,6 +695,7 @@ static void ParseModRM(t_nubit8 regbyte, t_nubit8 rmbyte)
 static void GetMem()
 {
 	/* returns ecpuins.rrm */
+	ecpuins.flagmem = 1;
 	ecpuins.erm = vramRealWord(ecpu.cs.selector, ecpu.eip);
 	ecpuins.lrm = (ecpuins.roverds->selector << 4) + ecpuins.erm;
 	ecpuins.prm = ecpuins.lrm;

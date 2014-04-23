@@ -37,7 +37,6 @@ typedef struct {
 #endif
 		t_nubit8 opcode[8];
 		t_nubit16 stack[4];
-		t_nubit32 linear;
 		t_nubit8  bit;
 		t_nubit32 opr1, opr2;
 		t_nubit64 result;
