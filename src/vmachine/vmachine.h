@@ -13,21 +13,19 @@
 
 #include "vglobal.h"
 #include "vport.h"
-#include "vcpu.h"
 #include "vram.h"
+#include "vcpu.h"
 #include "vpic.h"
-/*#include "vpit.h"
-#include "vcmos.h"
 #include "vdma.h"
 #include "vfdc.h"
 #include "vfdd.h"
+/*#include "vpit.h"
+#include "vcmos.h"
 #include "vkbc.h"
 #include "vkeyb.h"*/
 
 #ifdef VMACHINE_DEBUG
 #include "qdbios.h"
-#include "qdfdd.h"
-#define vfdd qdfdd
 #endif
 
 typedef struct {

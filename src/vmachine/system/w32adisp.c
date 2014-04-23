@@ -126,8 +126,7 @@ static VOID DisplayFlashCursor()
 	x2_cursor += cursorBottom;// + 8;
 	y1_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 0) * charWidth;
 	y2_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 1) * charWidth;
-	if (vapiCallBackMachineGetFlagRun() &&
-		((flashCount % 10) < flashInterval)) { //光标变白
+	if ((flashCount % 10) < flashInterval) { //光标变白
 		hPen = (HPEN)CreatePen(PS_SOLID,2,RGB(255,255,255));
 		SelectObject(hdcWnd, hPen);
 		Rectangle(hdcWnd, y1_cursor, x1_cursor, y2_cursor, x2_cursor);

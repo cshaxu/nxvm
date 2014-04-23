@@ -34,7 +34,7 @@ static LRESULT CALLBACK WndProc(HWND w32aHWnd, UINT message,
 	case WM_TIMER:
 		switch (wParam) {
 		case TIMER_PAINT:
-			w32adispPaint();
+			if (vapiCallBackMachineGetFlagRun()) w32adispPaint();
 			break;
 		case TIMER_RTC:
 			vapiCallBackRtcUpdateTime();
@@ -43,7 +43,7 @@ static LRESULT CALLBACK WndProc(HWND w32aHWnd, UINT message,
 		}
 		break;
  	case WM_PAINT:
-		w32adispPaint();
+		if (vapiCallBackMachineGetFlagRun()) w32adispPaint();
 		break;
 	case WM_SIZE:
 		break;

@@ -26,7 +26,7 @@ void vapiCallBackMachineRun()
 			}
 			if (vmachine.flagrecord) {vapiRecordWrite();}
 			vmachineRefresh();
-			if (vmachine.flagrecord) {vapiRecordWrite();++vapirecord.count;	}
+			if (vmachine.flagrecord) {vapiRecordWrite();++vapirecord.count;}
 			if (vmachine.flagtrace) vmachineStop();
 		}
 		if (vmachine.flagrecord) vapiRecordEnd();
@@ -46,11 +46,11 @@ void vmachineRefresh()
 	vvadpRefresh();
 	vkeybRefresh();
 	vkbcRefresh();
+	vpitRefresh();
+*/
 	vfddRefresh();
 	vfdcRefresh();
 	vdmaRefresh();
-	vpitRefresh();
-*/
 	vpicRefresh();
 	vramRefresh();
 	vcpuRefresh();
@@ -63,20 +63,21 @@ void vmachineInit()
 	vcpuInit();
 	vramInit();
 	vpicInit();
+	vdmaInit();
+	vfdcInit();
+	vfddInit();
 #ifdef VMACHINE_DEBUG
 	qdbiosInit();
 #endif
 /*
 	vpitInit();
-	vdmaInit();
-	vfdcInit();
-	vfddInit();
 	vkbcInit();
 	vkeybInit();
 	vvadpInit();
 	vdispInit();
 	vcmosInit();
 */
+	vmachine.flagmode = 0x01;
 	vmachine.flaginit = 0x01;
 }
 void vmachineFinal()
@@ -87,14 +88,14 @@ void vmachineFinal()
 	vkeybFinal();
 	vvadpFinal();
 	vdispFinal();
-	vfddFinal();
-	vfdcFinal();
-	vdmaFinal();
 	vpitFinal();
 */
 #ifdef VMACHINE_DEBUG
 	qdbiosFinal();
 #endif
+	vfddFinal();
+	vfdcFinal();
+	vdmaFinal();
 	vpicFinal();
 	vramFinal();
 	vcpuFinal();

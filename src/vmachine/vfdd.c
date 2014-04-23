@@ -15,7 +15,7 @@ t_fdd vfdd;
 void vfddTransRead()
 {
 	if (IsCylEnd) return;
-	vlatch.byte = *((t_nubit8 *)vfdd.curr);
+	vlatch.byte = d_nubit8(vfdd.curr);
 	vfdd.curr++;
 	vfdd.count++;
 	if (!(vfdd.count % vfdd.nbyte)) {
@@ -30,7 +30,7 @@ void vfddTransRead()
 void vfddTransWrite()
 {
 	if (IsCylEnd) return;
-	*((t_nubit8 *)vfdd.curr) = vlatch.byte;
+	d_nubit8(vfdd.curr) = vlatch.byte;
 	vfdd.curr++;
 	vfdd.count++;
 	if (!(vfdd.count % vfdd.nbyte)) {

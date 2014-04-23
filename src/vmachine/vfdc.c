@@ -2,14 +2,13 @@
 
 #include "memory.h"
 
+#include "vapi.h"
+#include "vport.h"
 #include "vcpu.h"
-#include "vcpuins.h"
 #include "vpic.h"
-#include "vram.h"
 #include "vdma.h"
 #include "vfdd.h"
 #include "vfdc.h"
-#include "../system/vapi.h"
 
 t_fdc vfdc;
 
@@ -70,7 +69,7 @@ t_fdc vfdc;
 #define GetNDMA(cbyte) ((cbyte) & 0x01)                      /* non-dma mode */
 #define GetHDS(cbyte)  (!!((cbyte) & 0x04))          /* head select (0 or 1) */
 #define GetBPS(cbyte)  (0x0080 << (cbyte))               /* bytes per sector */
-static t_nubit8 GetBPSC(t_nubit8 cbyte)                  /* sector size code */
+static t_nubit8 GetBPSC(t_nubit16 cbyte)                  /* sector size code */
 {
 	switch (cbyte) {
 	case 0x0080: return 0x00;
@@ -434,23 +433,25 @@ void IO_Write_F3F0()
 	vfdc.dor = 0x0c;
 	SetMSRReadyWrite;
 }
-#define mov(n) (vcpu.iobyte=(n))
-#define out(n) FUNEXEC(vcpuinsOutPort[(n)])
+
+#include "vcpu.h"
+#define mov(n) (vcpu.iobyte = (n))
+#define out(n) ExecFun(vport.out[(n)])
 #endif
 void vfdcInit()
 {
 	memset(&vfdc, 0, sizeof(t_fdc));
 	vfdc.ccr = 0x02;
-	vcpuinsInPort[0x03f4] = (t_faddrcc)IO_Read_03F4;
-	vcpuinsInPort[0x03f5] = (t_faddrcc)IO_Read_03F5;
-	vcpuinsInPort[0x03f7] = (t_faddrcc)IO_Read_03F7;
-	vcpuinsOutPort[0x03f2] = (t_faddrcc)IO_Write_03F2;
-	vcpuinsOutPort[0x03f5] = (t_faddrcc)IO_Write_03F5;
-	vcpuinsOutPort[0x03f7] = (t_faddrcc)IO_Write_03F7;
+	vport.in[0x03f4] = (t_faddrcc)IO_Read_03F4;
+	vport.in[0x03f5] = (t_faddrcc)IO_Read_03F5;
+	vport.in[0x03f7] = (t_faddrcc)IO_Read_03F7;
+	vport.out[0x03f2] = (t_faddrcc)IO_Write_03F2;
+	vport.out[0x03f5] = (t_faddrcc)IO_Write_03F5;
+	vport.out[0x03f7] = (t_faddrcc)IO_Write_03F7;
 #ifdef VFDC_DEBUG
-	vcpuinsInPort[0x0f3f0] = (t_faddrcc)IO_Read_F3F0;
-	vcpuinsOutPort[0xf3f0] = (t_faddrcc)IO_Write_F3F0;
-	vcpuinsOutPort[0xf3f1] = (t_faddrcc)IO_Write_F3F1;
+	vport.in[0x0f3f0] = (t_faddrcc)IO_Read_F3F0;
+	vport.out[0xf3f0] = (t_faddrcc)IO_Write_F3F0;
+	vport.out[0xf3f1] = (t_faddrcc)IO_Write_F3F1;
 	/* initialize fdc */
 	mov(0x00);
 	out(0x03f2);

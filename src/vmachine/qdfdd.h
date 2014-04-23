@@ -6,15 +6,7 @@
 #endif
 
 #include "vglobal.h"
-
-typedef struct {
-	t_bool    flagro;                                /* write protect status */
-	t_bool    flagexist;                    /* flag of floppy disk existance */
-
-	t_vaddrcc base;                                /* pointer to disk in ram */
-} t_fdd;
-
-extern t_fdd qdfdd;
+#include "vfdd.h"
 
 t_vaddrcc qdfddGetAddress(t_nubit8 cyl,
                           t_nubit8 head,

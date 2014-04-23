@@ -61,7 +61,7 @@ static void lcase(char *s)
 }
 static void seterr(int pos)
 {
-	errPos = arg[pos] - cmdCopy + strlen(arg[pos]) + 1;
+	errPos = arg[pos] - cmdCopy + (int)strlen(arg[pos]) + 1;
 }
 static t_nubit8 scannubit8(char *s)
 {
@@ -184,7 +184,7 @@ static void aconsole()
 		errAsmPos = 0;
 		len = assemble(cmdAsmBuff,_cs,
 			(void *)vramGetAddr(0x0000,0x0000),asmSegRec,asmPtrRec);
-		if(!len) errAsmPos = strlen(cmdAsmBuff) + 9;
+		if(!len) errAsmPos = (int)strlen(cmdAsmBuff) + 9;
 		else asmPtrRec += len;
 		if(errAsmPos) {
 			for(i = 0;i < errAsmPos;++i) fprintf(stdout," ");

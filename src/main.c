@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.2.0x96]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.2.0x97]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -206,6 +206,9 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * all t_bool variable names start with "flag"
  * new flag system: FLAG_X_X 0x0010, bit macros
  * replace all (void *) with t_vaddrcc
+ *
+ * NEXT: CPUINS Trace List
+ *
  */
 
 #include "stdio.h"

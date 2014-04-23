@@ -17,7 +17,7 @@ typedef struct {
 	t_nubit8  head;                              /* vfdc.H; head id (0 or 1) */
 	t_nubit8  sector;                         /* vfdc.R; sector id (1 to 18) */
 	t_nubit8  nsector;            /* vfdc.EOT; end sector id (default is 18) */
-	t_nubitcc nbyte;            /* vfdc.N; bytes per sector (default is 512) */
+	t_nubit16 nbyte;            /* vfdc.N; bytes per sector (default is 512) */
 	t_nubit8  gaplen;       /* vfdc.GPL; gap length of sector (default is 3) */
 
 	t_bool    flagro;                                /* write protect status */
@@ -25,7 +25,7 @@ typedef struct {
 
 	t_vaddrcc base;                                /* pointer to disk in ram */
 	t_vaddrcc curr;                               /* pointer to current byte */
-	t_nubitcc count;                             /* number of transfer bytes */
+	t_nubit16 count;                             /* number of transfer bytes */
 } t_fdd;
 
 extern t_fdd vfdd;

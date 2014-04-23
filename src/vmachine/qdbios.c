@@ -1,14 +1,284 @@
 #include "memory.h"
 
 #include "vapi.h"
-#include "vcpu.h"
+#include "vport.h"
 #include "vram.h"
+#include "vcpu.h"
+#include "vdma.h"
+#include "vfdd.h"
 
 #include "qdvga.h"
-#include "qdfdd.h"
 #include "qdkeyb.h"
 #include "qdrtc.h"
 #include "qdbios.h"
+
+static t_nubit16 sax, sbx, scx, sdx;
+#define push_ax  (sax = _ax)
+#define push_bx  (sbx = _bx)
+#define push_cx  (scx = _cx)
+#define push_dx  (sdx = _dx)
+#define pop_ax   (_ax = sax)
+#define pop_bx   (_bx = sbx)
+#define pop_cx   (_cx = scx)
+#define pop_dx   (_dx = sdx)
+#define add(a,b) ((a) += (b))
+#define and(a,b) ((a) &= (b))
+#define or(a,b)  ((a) |= (b))
+#define cmp(a,b) ((a) == (b))
+#define mov(a,b) ((a) = (b))
+#define in(a,b)  (ExecFun(vport.in[(b)]), (a) = vcpu.iobyte)
+#define out(a,b) (vcpu.iobyte = (b), ExecFun(vport.out[(a)]))
+#define shl(a,b) ((a) <<= (b))
+#define shr(a,b) ((a) >>= (b))
+#define stc      (SetCF)
+#define clc      (ClrCF)
+#define clp      (ClrPF)
+#define cli      (ClrIF)
+#define mbp(n)   (vramVarByte(0x0000, (n)))
+#define mwp(n)   (vramVarWord(0x0000, (n)))
+#define nop
+#define inc(n)   ((n)++)
+#define dec(n)   ((n)--)
+
+#define ifddSetStatus (mov(mbp(0x0441), _ah))
+#define ifddGetStatus (mov(_ah, mbp(0x0441)))
+//t_vaddrcc ifddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector)
+//{return (vfdd.base + ((cyl * 2 + head) * 18 + (sector-1)) * 512);}
+void ifddResetDrive()
+{
+	// _ah = 0x00
+	if (cmp(_dl, 0x00)) {
+		mov(_ah, 0x00);
+		clc;
+	} else {
+		/* only one drive */
+		mov(_ah, 0x0c);
+		stc;
+	}
+	ifddSetStatus;
+}
+void ifddGetDiskStatus()
+{
+	// _ah = 0x01
+	ifddGetStatus;
+}
+void ifddReadSector()
+{
+	// _ah = 0x02
+/*	t_nubit8 drive  = _dl;
+	t_nubit8 head   = _dh;
+	t_nubit8 cyl    = _ch;
+	t_nubit8 sector = _cl;
+	t_nubit8 nsec   = _al;*/
+	if (_dl || _dh > 1 || _cl > 18 || _ch > 79) {
+		/* sector not found */
+		mov(_ah, 0x04);
+		stc;
+		ifddSetStatus;
+	} else {
+//		memcpy((void *)vramGetAddr(_es,_bx),
+//			(void *)ifddGetAddress(cyl,head,sector), nsec * 512);
+		/* set dma */
+		push_bx;
+		push_cx;
+		push_dx;
+		push_ax;
+		out(0x000b, 0x86); /* set dma mode: block, inc, write, chn2 */
+		mov(_cx, _bx);
+		mov(_dx, _es);
+		shr(_cx, 0x04);
+		add(_dx, _cx);
+		mov(_ax, _dx);
+		shl(_ax, 0x04);
+		mov(_cx, _bx);
+		and(_cx, 0x000f);
+		or(_ax, _cx);      /* calc base addr */
+		shr(_dx, 0x0c);    /* calc page register */
+		out(0x0004, _al);  /* set addr low byte */
+		out(0x0004, _ah);  /* set addr high byte */
+		out(0x0081, _dl);  /* set page register */
+		pop_ax;
+		pop_dx;
+		pop_cx;
+		pop_bx;
+		mov(_ah, 0x00);    /* clear ah for wc */
+		shl(_ax, 0x09);    /* calc wc from al */
+		dec(_ax);
+		out(0x0005, _al);  /* set wc low byte */
+		out(0x0005, _ah);  /* set wc high byte */
+		out(0x000a, 0x02); /* unmask dma1.chn2 */
+		out(0x00d4, 0x00); /* unmask dma2.chn0 */
+		/* set fdc */
+		out(0x03f5, 0x0f); /* send seek command */
+		shl(_dh, 0x02);    /* calc hds byte */
+		or (_dl, _dh);      /* calc hds byte */
+		shr(_dh, 0x02);    /* calc hds byte */
+		out(0x03f5, _dl);  /* set seek hds byte */
+		out(0x03f5, _ch);  /* set seek cyl */
+/* Note: vfdc set IRQ6 and vcpu calls INT E */
+// TODO: Need to move these codes into INT E ///
+		out(0x03f5, 0x08); /* send senseint command */
+		in (_al, 0x03f5);   /* read senseint ret st0: 0x20 */
+		in (_al, 0x03f5);   /* read senseint ret cyl: 0x00 */
+		/* FDC 3F5 4A to check id; not needed for vm */
+////////////////////////////////////////////////
+		out(0x03f5, 0xe6); /* send read command */
+		out(0x03f5, _dl);  /* set stdi hds */
+		out(0x03f5, _ch);  /* set stdi cyl */
+		out(0x03f5, _dh);  /* set stdi head */
+		out(0x03f5, _cl);  /* set stdi start sector id */
+		out(0x03f5, 0x02); /* set stdi sector size code (512) */
+		out(0x03f5, 0x12); /* set stdi end sector id */
+		out(0x03f5, 0x1b); /* set stdi gap length */
+		out(0x03f5, 0xff); /* set stdi customized sect size (0xff) */
+		/* now everything is ready; DRQ also generated. */
+		vdmaRefresh();
+		nop; /* wait until dma finish */
+		in(_al, 0x03f4); /* get msr */
+		and(_al, 0xc0);  /* get ready read status */
+		if (cmp(_al, 0xc0)) {
+			in(_al, 0x03f5); /* get stdo st0 */
+			in(_al, 0x03f5); /* get stdo st1 */
+			in(_al, 0x03f5); /* get stdo st2 */
+			in(_al, 0x03f5); /* get stdo cyl */
+			in(_al, 0x03f5); /* get stdo head */
+			in(_al, 0x03f5); /* get stdo sector */
+			in(_al, 0x03f5); /* get stdo sector size code */
+		}
+		mov(_ah, 0x00);
+		clc;
+		ifddSetStatus;
+	}
+}
+void ifddWriteSector()
+{
+/*	t_nubit8 drive  = _dl;
+	t_nubit8 head   = _dh;
+	t_nubit8 cyl    = _ch;
+	t_nubit8 sector = _cl;*/
+	if (_dl || _dh > 1 || _cl > 18 || _ch > 79) {
+		/* sector not found */
+		mov(_ah, 0x04);
+		stc;
+		ifddSetStatus;
+	} else {
+//		memcpy((void *)ifddGetAddress(cyl,head,sector),
+//			(void *)vramGetAddr(_es,_bx), _al * 512);
+		/* set dma */
+		push_bx;
+		push_cx;
+		push_dx;
+		push_ax;
+		out(0x000b, 0x8a); /* set dma mode: block, inc, read, chn2 */
+		mov(_cx, _bx);
+		mov(_dx, _es);
+		shr(_cx, 0x04);
+		add(_dx, _cx);
+		mov(_ax, _dx);
+		shl(_ax, 0x04);
+		mov(_cx, _bx);
+		and(_cx, 0x000f);
+		or(_ax, _cx);      /* calc base addr */
+		shr(_dx, 0x0c);    /* calc page register */
+		out(0x0004, _al);  /* set addr low byte */
+		out(0x0004, _ah);  /* set addr high byte */
+		out(0x0081, _dl);  /* set page register */
+		pop_ax;
+		pop_dx;
+		pop_cx;
+		pop_bx;
+		mov(_ah, 0x00);    /* clear ah for wc */
+		shl(_ax, 0x09);    /* calc wc from al */
+		dec(_ax);
+		out(0x0005, _al);  /* set wc low byte */
+		out(0x0005, _ah);  /* set wc high byte */
+		out(0x000a, 0x02); /* unmask dma1.chn2 */
+		out(0x00d4, 0x00); /* unmask dma2.chn0 */
+		/* set fdc */
+		out(0x03f5, 0x0f); /* send seek command */
+		shl(_dh, 0x02);    /* calc hds byte */
+		or (_dl, _dh);      /* calc hds byte */
+		shr(_dh, 0x02);    /* calc hds byte */
+		out(0x03f5, _dl);  /* set seek hds byte */
+		out(0x03f5, _ch);  /* set seek cyl */
+/* Note: vfdc set IRQ6 and vcpu calls INT E */
+// TODO: Need to move these codes into INT E ///
+		out(0x03f5, 0x08); /* send senseint command */
+		in (_al, 0x03f5);   /* read senseint ret st0: 0x20 */
+		in (_al, 0x03f5);   /* read senseint ret cyl: 0x00 */
+		/* FDC 3F5 4A to check id; not needed for vm */
+////////////////////////////////////////////////
+		out(0x03f5, 0xc5); /* send write command */
+		out(0x03f5, _dl);  /* set stdi hds */
+		out(0x03f5, _ch);  /* set stdi cyl */
+		out(0x03f5, _dh);  /* set stdi head */
+		out(0x03f5, _cl);  /* set stdi start sector id */
+		out(0x03f5, 0x02); /* set stdi sector size code (512) */
+		out(0x03f5, 0x12); /* set stdi end sector id */
+		out(0x03f5, 0x1b); /* set stdi gap length */
+		out(0x03f5, 0xff); /* set stdi customized sect size (0xff) */
+		/* now everything is ready; DRQ also generated. */
+		vdmaRefresh();
+		nop; /* wait until dma finish */
+		in(_al, 0x03f4); /* get msr */
+		and(_al, 0xc0);  /* get ready read status */
+		if (cmp(_al, 0xc0)) {
+			in(_al, 0x03f5); /* get stdo st0 */
+			in(_al, 0x03f5); /* get stdo st1 */
+			in(_al, 0x03f5); /* get stdo st2 */
+			in(_al, 0x03f5); /* get stdo cyl */
+			in(_al, 0x03f5); /* get stdo head */
+			in(_al, 0x03f5); /* get stdo sector */
+			in(_al, 0x03f5); /* get stdo sector size code */
+		}
+		mov(_ah, 0x00);
+		clc;
+		ifddSetStatus;
+	}
+}
+void ifddGetParameter()
+{
+	switch (_dl) {
+	case 0x00:
+	case 0x01:
+		mov(_ah, 0x00);
+		mov(_bl, 0x04);
+		mov(_cx, 0x4f12);
+		mov(_dx, 0x0102);
+		mov(_di, mwp(0x1e * 4 + 0));
+		mov(_es, mwp(0x1e * 4 + 2));
+		clc;
+		ifddSetStatus;
+		break;
+	case 0x02:
+	case 0x03:
+		_ah = 0x01;
+		stc;
+		ifddSetStatus;
+		clp;
+		cli;
+		break;		
+	}
+}
+void ifddGetDriveType()
+{
+	switch (_dl) {
+	case 0x00:
+	case 0x01:
+		mov(_ah, 0x01);
+		clc;
+		ifddSetStatus;
+		break;
+	case 0x02:
+	case 0x03:
+		mov(_ah, 0x00);
+		stc;
+		ifddSetStatus;
+		break;
+	default:
+		break;
+	}
+}
 
 /* vga */
 void INT_10()
@@ -98,22 +368,22 @@ void INT_13()
 {
 	switch (_ah) {
 	case 0x00:
-		qdfddResetDrive();
+		ifddResetDrive();
 		break;
 	case 0x01:
-		qdfddGetDiskStatus();
+		ifddGetDiskStatus();
 		break;
 	case 0x02:
-		qdfddReadSector();
+		ifddReadSector();
 		break;
 	case 0x03:
-		qdfddWriteSector();
+		ifddWriteSector();
 		break;
 	case 0x08:
-		qdfddGetParameter();
+		ifddGetParameter();
 		break;
 	case 0x15:
-		qdfddGetDriveType();
+		ifddGetDriveType();
 		break;
 	default:
 		break;
@@ -330,14 +600,13 @@ void qdbiosInit()
 	vramVarByte(0xf000, 0xe6fe) = 0x00;
 
 /* device initialize */
-	qdfddInit();
 	qdrtcInit();
 	qdkeybInit();
 	qdvgaInit();
 
 /* load boot sector */
 	vapiFloppyInsert("d:/msdos.img");
-	memcpy((void *)vramGetAddr(0x0000,0x7c00), (void *)qdfdd.base, 0x200);
+	memcpy((void *)vramGetAddr(0x0000,0x7c00), (void *)vfdd.base, 0x200);
 	vramVarByte(0xf000, 0xfff0) = 0xea;
 	vramVarWord(0xf000, 0xfff1) = 0x7c00;
 	vramVarWord(0xf000, 0xfff3) = 0x0000;
@@ -347,5 +616,4 @@ void qdbiosFinal()
 	qdvgaFinal();
 	qdkeybFinal();
 	qdrtcFinal();
-	qdfddFinal();
 }

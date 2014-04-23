@@ -78,8 +78,7 @@ void vapiRecordEnd()
 }
 
 /* Floppy Disk */
-#include "qdfdd.h"
-#define vfdd qdfdd
+#include "vfdd.h"
 
 void vapiFloppyInsert(const t_string fname)
 {
