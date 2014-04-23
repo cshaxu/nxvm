@@ -102,22 +102,37 @@ typedef t_nubitcc t_faddrcc;
 #define Max32 0xffffffff
 #define Max48 0x0000ffffffffffff
 #define Max64 0xffffffffffffffff
+#define MSB7  0x40
 #define MSB8  0x80
+#define MSB15 0x4000
 #define MSB16 0x8000
+#define MSB31 0x40000000
 #define MSB32 0x80000000
+#define MSB47 0x0000400000000000
 #define MSB48 0x0000800000000000
+#define MSB63 0x4000000000000000
 #define MSB64 0x8000000000000000
-#define GetMax8(n)  ((t_nubit8 )((n) & Max8 ))
-#define GetMax16(n) ((t_nubit16)((n) & Max16))
-#define GetMax24(n) ((t_nubit24)((n) & Max24))
-#define GetMax32(n) ((t_nubit32)((n) & Max32))
-#define GetMax48(n) ((t_nubit48)((n) & Max48))
-#define GetMax64(n) ((t_nubit64)((n) & Max64))
-#define GetMSB8(n)  ((n) & MSB8)
-#define GetMSB16(n) ((n) & MSB16)
-#define GetMSB32(n) ((n) & MSB32)
-#define GetMSB48(n) ((n) & MSB48)
-#define GetMSB64(n) ((n) & MSB64)
+#define GetMax8(n)  ((t_nubit8 )(n) & Max8 )
+#define GetMax16(n) ((t_nubit16)(n) & Max16)
+#define GetMax24(n) ((t_nubit24)(n) & Max24)
+#define GetMax32(n) ((t_nubit32)(n) & Max32)
+#define GetMax48(n) ((t_nubit48)(n) & Max48)
+#define GetMax64(n) ((t_nubit64)(n) & Max64)
+#define GetMSB7(n)  ((t_nubit8 )(n) & MSB7 )
+#define GetMSB8(n)  ((t_nubit8 )(n) & MSB8 )
+#define GetMSB15(n) ((t_nubit16)(n) & MSB15)
+#define GetMSB16(n) ((t_nubit16)(n) & MSB16)
+#define GetMSB31(n) ((t_nubit32)(n) & MSB31)
+#define GetMSB32(n) ((t_nubit32)(n) & MSB32)
+#define GetMSB47(n) ((t_nubit48)(n) & MSB47)
+#define GetMSB48(n) ((t_nubit48)(n) & MSB48)
+#define GetMSB63(n) ((t_nubit64)(n) & MSB63)
+#define GetMSB64(n) ((t_nubit64)(n) & MSB64)
+#define GetLSB8(n)  ((t_nubit8 )(n) & 1)
+#define GetLSB16(n) ((t_nubit16)(n) & 1)
+#define GetLSB32(n) ((t_nubit32)(n) & 1)
+#define GetLSB48(n) ((t_nubit48)(n) & 1)
+#define GetLSB64(n) ((t_nubit64)(n) & 1)
 
 #define Hex2BCD(x)  ((((x) / 10) << 4) | ((x) % 10))
 #define BCD2Hex(x)  (((x) & 0x0f) + ((((x) & 0xf0) >> 4) * 10))
