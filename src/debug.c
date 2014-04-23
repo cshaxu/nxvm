@@ -56,6 +56,7 @@ static t_nubit16 ptr;
 static void lcase(char *s)
 {
 	int i = 0;
+	if(s[0] == '\'') return;
 	while(s[i] != '\0') {
 		if(s[i] == '\n') s[i] = '\0';
 		else if(s[i] > 0x40 && s[i] < 0x5b)
