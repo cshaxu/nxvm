@@ -425,6 +425,7 @@ void OpcError()
 
 void ADD(void **Des, void **Src, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 1:
@@ -452,6 +453,7 @@ void ADD(void **Des, void **Src, int Len)
 		__asm pop eCPU.eflags			
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void PUSH(void *Src,int Len)
 {
@@ -472,17 +474,18 @@ void POP(void *Des, int Len)
 	switch(Len)
 	{
 	case 2:
-		*(t_nubit16 *)Des=*(t_nubit16*)(EvSP+MemoryStart);
+		d_nubit16(Des)=*(t_nubit16*)(EvSP+MemoryStart);
 		eCPU.sp+=2;
 		break;
 	case 4:
-		*(t_nubit32 *)Des=*(t_nubit32*)(EvSP+MemoryStart);
+		d_nubit32(Des)=*(t_nubit32*)(EvSP+MemoryStart);
 		eCPU.sp+=4;
 		break;
 	}
 }
 void OR(void **Des, void **Src, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 1:
@@ -510,9 +513,11 @@ void OR(void **Des, void **Src, int Len)
 		__asm pop eCPU.eflags			
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void ADC(void **Des, void **Src, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 1:
@@ -555,9 +560,11 @@ void ADC(void **Des, void **Src, int Len)
 		*(t_nubit32 *)*Des=t321;
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void SBB(void **Des, void **Src, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 1:
@@ -600,9 +607,11 @@ void SBB(void **Des, void **Src, int Len)
 		*(t_nubit32 *)*Des=t321;
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void AND(void **Des, void **Src, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 1:
@@ -630,9 +639,11 @@ void AND(void **Des, void **Src, int Len)
 		__asm pop eCPU.eflags			
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void SUB(void **Des, void **Src, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 1:
@@ -660,9 +671,11 @@ void SUB(void **Des, void **Src, int Len)
 		__asm pop eCPU.eflags			
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void XOR(void **Des, void **Src, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 1:
@@ -690,9 +703,11 @@ void XOR(void **Des, void **Src, int Len)
 		__asm pop eCPU.eflags			
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void CMP(void **Des, void **Src, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 1:
@@ -723,57 +738,63 @@ void CMP(void **Des, void **Src, int Len)
 		*(t_nubit32 *)*Des+=*(t_nubit32 *)*Src;
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void INC(void *Des, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 2:
-		t161=*(t_nubit16 *)Des;
+		t161=d_nubit16(Des);
 		__asm push eCPU.eflags
 		__asm popfd
 		__asm inc t161
 		__asm pushfd
 		__asm pop eCPU.eflags
-		*(t_nubit16 *)Des=t161;
+		d_nubit16(Des)=t161;
 		break;
 	case 4:
-		t321=*(t_nubit32 *)Des;
+		t321=d_nubit32(Des);
 		__asm push eCPU.eflags
 		__asm popfd
 		__asm inc t321
 		__asm pushfd
 		__asm pop eCPU.eflags
-		*(t_nubit32 *)Des=t321;
+		d_nubit32(Des)=t321;
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void DEC(void *Des, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 2:
-		t161=*(t_nubit16 *)Des;
+		t161=d_nubit16(Des);
 		__asm push eCPU.eflags
 		__asm popfd
 		__asm dec t161
 		__asm pushfd
 		__asm pop eCPU.eflags
-		*(t_nubit16 *)Des=t161;
+		d_nubit16(Des)=t161;
 		break;
 	case 4:
-		t321=*(t_nubit32 *)Des;
+		t321=d_nubit32(Des);
 		__asm push eCPU.eflags
 		__asm popfd
 		__asm dec t321
 		__asm pushfd
 		__asm pop eCPU.eflags
-		*(t_nubit32 *)Des=t321;
+		d_nubit32(Des)=t321;
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void TEST(void **Des, void **Src, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 1:
@@ -807,52 +828,58 @@ void TEST(void **Des, void **Src, int Len)
 		__asm pop eCPU.eflags
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void XCHG(void *Des, void *Src, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 1:
-		t81=*(t_nubit8 *)Des;
-		*(t_nubit8 *)Des=*(t_nubit8 *)Src;
-		*(t_nubit8 *)Src=t81;
+		t81=d_nubit8(Des);
+		d_nubit8(Des)=d_nubit8(Src);
+		d_nubit8(Src)=t81;
 		break;
 	case 2:
-		t161=*(t_nubit16 *)Des;
-		*(t_nubit16 *)Des=*(t_nubit16 *)Src;
+		t161=d_nubit16(Des);
+		d_nubit16(Des)=*(t_nubit16 *)Src;
 		*(t_nubit16 *)Src=t161;
 		break;
 	case 4:
-		t321=*(t_nubit32 *)Des;
-		*(t_nubit32 *)Des=*(t_nubit32 *)Src;
+		t321=d_nubit32(Des);
+		d_nubit32(Des)=*(t_nubit32 *)Src;
 		*(t_nubit32 *)Src=t321;
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void MOV(void *Des, void *Src, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	switch(Len)
 	{
 	case 1:
-		*(t_nubit8 *)Des=*(t_nubit8 *)Src;
+		d_nubit8(Des)=d_nubit8(Src);
 		break;
 	case 2:
-		*(t_nubit16 *)Des=*(t_nubit16 *)Src;
+		d_nubit16(Des)=*(t_nubit16 *)Src;
 		break;
 	case 4:
-		*(t_nubit32 *)Des=*(t_nubit32 *)Src;
+		d_nubit32(Des)=*(t_nubit32 *)Src;
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void SHL(void *Des, t_nubit8 mb, int Len)
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	t_nubit8 tSHLrm8;
 	t_nubit16 tSHLrm16;
 	t_nubit32 tSHLrm32;
 	switch(Len)
 	{
 	case 1:
-		tSHLrm8=*(t_nubit8 *)Des;		
+		tSHLrm8=d_nubit8(Des);		
 		__asm
 		{		
 			mov al,tSHLrm8
@@ -864,10 +891,10 @@ void SHL(void *Des, t_nubit8 mb, int Len)
 			pop eCPU.eflags
 			mov tSHLrm8,al
 		}
-		*(t_nubit8 *)Des=tSHLrm8;
+		d_nubit8(Des)=tSHLrm8;
 		break;
 	case 2:
-		tSHLrm16=*(t_nubit16 *)Des;		
+		tSHLrm16=d_nubit16(Des);		
 		__asm
 		{		
 			mov ax,tSHLrm16
@@ -879,10 +906,10 @@ void SHL(void *Des, t_nubit8 mb, int Len)
 			pop eCPU.eflags
 			mov tSHLrm16,ax
 		}
-		*(t_nubit16 *)Des=tSHLrm16;
+		d_nubit16(Des)=tSHLrm16;
 		break;
 	case 4:
-		tSHLrm32=*(t_nubit32 *)Des;		
+		tSHLrm32=d_nubit32(Des);		
 		__asm
 		{		
 			mov eax,tSHLrm32
@@ -894,27 +921,18 @@ void SHL(void *Des, t_nubit8 mb, int Len)
 			pop eCPU.eflags
 			mov tSHLrm32,eax
 		}
-		*(t_nubit32 *)Des=tSHLrm8;
+		d_nubit32(Des)=tSHLrm8;
 		break;
 	}
+	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
 }
 void Jcc(int Len)
 {
-	int tsj;
-	switch(Len)
-	{
-	case 1:
-		tsj=*(char *)eIMS;
-		evIP+=tsj;
-		break;
-	case 2:
-		tsj=*(short *)eIMS;
-		evIP+=tsj;
-		break;
-	case 4:
-		tsj=*(int *)eIMS;
-		evIP+=tsj;
-		break;
+	switch(Len) {
+	case 1: evIP += d_nsbit8(eIMS);break;
+	case 2: evIP += d_nsbit16(eIMS);break;
+	case 4: evIP += d_nsbit32(eIMS);break;
+	default: break;
 	}
 }
 void JCC(char code, t_bool J)
@@ -1137,6 +1155,7 @@ void ES()
 }
 void DAA()
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	__asm
 	{
 		mov al,eCPU.al
@@ -1193,6 +1212,7 @@ void CS()
 }
 void DAS()
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	__asm
 	{
 		mov al,eCPU.al
@@ -1250,6 +1270,7 @@ void SS()
 }
 void AAA()
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	__asm
 	{
 		mov al,eCPU.al
@@ -1301,6 +1322,7 @@ void DS()
 }
 void AAS()
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	__asm
 	{
 		mov ax,eCPU.ax
@@ -2612,14 +2634,6 @@ void INT3()
 }
 void INT_I8()
 {
-#ifdef _VM_DEBUG_	
-	if (*(t_nubit8*)(evIP+MemoryStart)==0x13)// && eCPU.dl==0x80)
-		__asm nop
-	if (eCPU.dl==1)
-		__asm nop
-	if (bStartRecord && *(t_nubit8*)(evIP+MemoryStart)!=0x10 && *(t_nubit8*)(evIP+MemoryStart)<0x21)
-		__asm nop
-#endif
 	LongCallNewIP(1);
 	eCPU.sp-=2;
 	*(t_nubit16*)( EvSP +MemoryStart)=eCPU.flags;
@@ -2973,6 +2987,7 @@ void INS_D3()
 // 只实现了以10为基数的情况，同AAD
 void AAM()
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	if ((*(t_nubit8 *)eIMS)==0)
 		GlobINT|=IntDE;
 	else
@@ -2995,6 +3010,7 @@ void AAM()
 // number base (for example, 08H for octal, 0AH for decimal, or 0CH for base 12 numbers).
 void AAD()
 {
+	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
 	__asm
 	{
 		mov ax,eCPU.ax
@@ -3083,57 +3099,32 @@ void JCXZ_NEAR()
 }
 void IN_AL_N()
 {
-	t_nubit32 t=InTable[*(t_nubit8*)eIMS];
-	__asm
-	{
-		mov eax,t
-		call eax		
-	}
+	ExecFun(InTable[d_nubit8(eIMS)]);
+	eCPU.al = eCPU.iobyte;
 	evIP++;
 }
 void IN_AX_N()
 {
 	// in ax,n 或者 in eax,n 是连续地读端口。InTable里的函数都是直接修改eCPU.al的，最好把每个eCPU.al都保存起来，再一次过赋给eCPU.ax或eCPU.eax
 	int i;
-	t_nubit32 t;
-	for (i=0;i<tmpOpdSize;i++)
-	{
-		t=InTable[*(t_nubit8*)eIMS+i];
-		__asm
-		{
-			mov eax,t
-			call eax			
-		}
-		*(t_nubit8 *)(&eCPU.al+i)=eCPU.al;
+	for (i=0;i<tmpOpdSize;i++) {
+		ExecFun(InTable[d_nubit8(eIMS)+i]);
+		d_nubit8(&eCPU.al+i)=eCPU.iobyte;
 	}
 	evIP++;
 }
 void OUT_N_AL()
 {
-	t_nubit32 t=OutTable[*(t_nubit8*)eIMS];
-	t_nubit32 tal=eCPU.al;
-	__asm
-	{
-		push tal
-		call t
-		pop tal
-	}
+	eCPU.iobyte = eCPU.al;
+	ExecFun(OutTable[d_nubit8(eIMS)]);
 	evIP++;
 }
 void OUT_N_AX()
 {
 	int i;
-	t_nubit32 t, tax;
-	for (i=0;i<tmpOpdSize;i++)
-	{
-		t=OutTable[*(t_nubit8*)eIMS+i];
-		tax=*(t_nubit8 *)(&eCPU.ax+i);
-		__asm
-		{
-			push tax
-			call t
-			pop tax
-		}
+	for (i=0;i<tmpOpdSize;i++) {
+		eCPU.iobyte = d_nubit8(&eCPU.ax+i);
+		ExecFun(OutTable[d_nubit8(eIMS)+i]);
 	}
 	evIP++;
 }
@@ -3168,54 +3159,28 @@ void JMP_NEAR()			//立即数是一字节的
 }
 void IN_AL_DX()
 {
-	t_nubit32 t=InTable[eCPU.dx];
-	__asm
-	{
-		mov eax,t
-		call eax		
-	}
+	ExecFun(InTable[eCPU.dx]);
+	eCPU.al = eCPU.iobyte;
 }
 void IN_AX_DX()
 {
 	int i;
-	t_nubit32 t;
-	for (i=0;i<tmpOpdSize;i++)
-	{
-		t=InTable[eCPU.dx+i];
-		__asm
-		{
-			mov eax,t
-			call eax		
-		}
-		*(t_nubit8 *)(&eCPU.al+i)=eCPU.al;
+	for (i=0;i<tmpOpdSize;i++) {
+		ExecFun(InTable[eCPU.dx+i]);
+		d_nubit8(&eCPU.al+i)=eCPU.iobyte;
 	}
 }
 void OUT_DX_AL()
 {
-	t_nubit32 t=OutTable[eCPU.dx];
-	t_nubit32 tal=eCPU.al;
-	__asm
-	{
-		push tal
-		call t		
-		pop tal
-	}
+	eCPU.iobyte = eCPU.al;
+	ExecFun(OutTable[eCPU.dx]);
 }
 void OUT_DX_AX()
 {
 	int i;
-	t_nubit16 tdx=eCPU.dx;
-	t_nubit32 t, tal;
-	for (i=0;i<tmpOpdSize;i++)
-	{
-		t=OutTable[tdx+i];
-		tal=d_nubit8(&eCPU.al+i);
-		__asm
-		{
-			push tal
-			call t
-			pop tal
-		}
+	for (i=0;i<tmpOpdSize;i++) {
+		eCPU.iobyte = d_nubit8(&eCPU.al+i);
+		ExecFun(OutTable[eCPU.dx+i]);
 	}
 }
 
@@ -4337,11 +4302,8 @@ void SetupInstructionTable()
 	InsTable[0xFD]=(t_faddrcc)STD;
 	InsTable[0xFE]=(t_faddrcc)INS_FE;
 	InsTable[0xFF]=(t_faddrcc)INS_FF;
-
-
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-
 	Ins0FTable[0x00]=(t_faddrcc)OpcError;
 	Ins0FTable[0x01]=(t_faddrcc)INS_0F01;
 	Ins0FTable[0x02]=(t_faddrcc)OpcError;

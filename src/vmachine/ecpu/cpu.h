@@ -9,8 +9,7 @@ extern unsigned short tmpDs;				//eCPU.dsµÄÒ»¸ö¸±±¾¡£ÓĞÊ±ºò»áÓöµ½ESÖ®ÀàµÄÖ¸ÁîÇ°×
 extern unsigned short tmpSs;				//Í¬ÉÏ
 extern void LongCallNewIP(char OffsetByte);	//LongCallµÄÊ±ºò£¬°Ñµ±Ç°IPĞŞ¸Ä³ÉÏÂÒ»ÌõÖ¸ÁîµÄIP£¬ÒÔ±ãÑ¹Õ»
 extern unsigned short *rm16;			//½âÊÍÑ°Ö·×Ö½ÚµÄÊ±ºòÓÃ
-extern unsigned char *rm8;				//
-
+extern unsigned char *rm8;
 
 typedef struct {
 	__int64 Fraction;
@@ -149,6 +148,7 @@ typedef struct {
 			unsigned int ip[4];
 		};
 	}xmm[8];
+	t_nubit8 iobyte;
 	t_bool flagnmi;
 	t_nubit16 overss,overds;
 } t_cpu;

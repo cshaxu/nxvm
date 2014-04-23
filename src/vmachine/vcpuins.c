@@ -2894,24 +2894,22 @@ void IN_AL_I8()
 	vcpu.ip++;
 	GetImm(8);
 	ExecFun(vport.in[d_nubit8(vcpuins.imm)]);
-	vcpu.al = vcpu.iobyte;
+	vcpu.al = vport.iobyte;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AL_I8\n");
 }
 void IN_AX_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
-	ExecFun(vport.in[d_nubit8(vcpuins.imm)+0]);
-	vcpu.al = vcpu.iobyte;
-	ExecFun(vport.in[d_nubit8(vcpuins.imm)+1]);
-	vcpu.ah = vcpu.iobyte;
+	ExecFun(vport.in[d_nubit8(vcpuins.imm)]);
+	vcpu.ax = vport.ioword;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AX_I8\n");
 }
 void OUT_I8_AL()
 {
 	vcpu.ip++;
 	GetImm(8);
-	vcpu.iobyte = vcpu.al;
+	vport.iobyte = vcpu.al;
 	ExecFun(vport.out[d_nubit8(vcpuins.imm)]);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_I8_AL\n");
 }
@@ -2919,10 +2917,8 @@ void OUT_I8_AX()
 {
 	vcpu.ip++;
 	GetImm(8);
-	vcpu.iobyte = vcpu.al;
-	ExecFun(vport.out[d_nubit8(vcpuins.imm)+0]);
-	vcpu.iobyte = vcpu.ah;
-	ExecFun(vport.out[d_nubit8(vcpuins.imm)+1]);
+	vport.ioword = vcpu.ax;
+	ExecFun(vport.out[d_nubit8(vcpuins.imm)]);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_I8_AX\n");
 }
 void CALL_REL16()
@@ -2975,33 +2971,28 @@ void IN_AL_DX()
 {
 	vcpu.ip++;
 	ExecFun(vport.in[vcpu.dx]);
-	vcpu.al = vcpu.iobyte;
+	vcpu.al = vport.iobyte;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AL_DX\n");
 }
 void IN_AX_DX()
 {
 	vcpu.ip++;
-	ExecFun(vport.in[vcpu.dx+0]);
-	vcpu.al = vcpu.iobyte;
-	ExecFun(vport.in[vcpu.dx+1]);
-	vcpu.ah = vcpu.iobyte;
+	ExecFun(vport.in[vcpu.dx]);
+	vcpu.ax = vport.ioword;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AX_DX\n");
 }
 void OUT_DX_AL()
 {
 	vcpu.ip++;
-	vcpu.iobyte = vcpu.al;
+	vport.iobyte = vcpu.al;
 	ExecFun(vport.out[vcpu.dx]);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_DX_AL\n");
 }
 void OUT_DX_AX()
 {
 	vcpu.ip++;
-	/* TODO: this maybe a bug: GetImm(8); */
-	vcpu.iobyte = vcpu.al;
-	ExecFun(vport.out[vcpu.dx+0]);
-	vcpu.iobyte = vcpu.ah;
-	ExecFun(vport.out[vcpu.dx+1]);
+	vport.ioword = vcpu.ax;
+	ExecFun(vport.out[vcpu.dx]);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_DX_AX\n");
 }
 void LOCK()

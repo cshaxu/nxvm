@@ -90,14 +90,14 @@ static void RespondINTR(t_pic *vpic, t_nubit8 id)
 static void IO_Read_00x0(t_pic *vpic)
 {
 	if (GetP(vpic)) {                                  /* P=1 (Poll Command) */
-		vcpu.iobyte = 0x80 | GetIntrTopId(vpic);
-		if (vcpu.iobyte == 0x88) vcpu.iobyte = 0x00;
+		vport.iobyte = 0x80 | GetIntrTopId(vpic);
+		if (vport.iobyte == 0x88) vport.iobyte = 0x00;
 	} else {
 		switch (vpic->ocw3&0x03) {
 		case 0x02:                                  /* RR=1, RIS=0, Read IRR */
-			vcpu.iobyte = vpic->irr;break;
+			vport.iobyte = vpic->irr;break;
 		case 0x03:                                  /* RR=1, RIS=1, Read ISR */
-			vcpu.iobyte = vpic->isr;break;
+			vport.iobyte = vpic->isr;break;
 		default:                                       /* RR=0, No Operation */
 			break;
 		}
@@ -112,8 +112,8 @@ static void IO_Read_00x0(t_pic *vpic)
 static void IO_Write_00x0(t_pic *vpic)
 {
 	t_nubitcc id;
-	if (vcpu.iobyte & 0x10) {                                     /* ICW1 (D4=1) */
-		vpic->icw1 = vcpu.iobyte;
+	if (vport.iobyte & 0x10) {                                     /* ICW1 (D4=1) */
+		vpic->icw1 = vport.iobyte;
 		vpic->flaginit = ICW2;
 		if (GetIC4(vpic)) ;                                   /* D0=1, IC4=1 */
 		else vpic->icw4 = 0x00;                               /* D0=0, IC4=0 */
@@ -122,27 +122,27 @@ static void IO_Write_00x0(t_pic *vpic)
 		if (GetLTIM(vpic)) ;           /* D3=1, LTIM=1, Level Triggered Mode */
 		else ;                         /* D3=0, LTIM=0, Edge  Triggered Mode */
 	} else {                                                  /* OCWs (D4=0) */
-		if (vcpu.iobyte & 0x08) {                                 /* OCW3 (D3=1) */
-			if (vcpu.iobyte & 0x40) {        /* ESMM=1: Enable Special Mask Mode */
-				vpic->ocw3 = vcpu.iobyte;
+		if (vport.iobyte & 0x08) {                                 /* OCW3 (D3=1) */
+			if (vport.iobyte & 0x40) {        /* ESMM=1: Enable Special Mask Mode */
+				vpic->ocw3 = vport.iobyte;
 				if (GetSMM(vpic)) ;          /* SMM=1: Set Special Mask Mode */
 				else ;                     /* SMM=0: Clear Sepcial Mask Mode */
 			} else                                       /* ESMM=0: Keep SMM */
-				vpic->ocw3 = (vpic->ocw3 & 0x20) | (vcpu.iobyte & 0xdf);
+				vpic->ocw3 = (vpic->ocw3 & 0x20) | (vport.iobyte & 0xdf);
 		} else {                                              /* OCW2 (D3=0) */
-			switch (vcpu.iobyte & 0xe0) {
+			switch (vport.iobyte & 0xe0) {
 			                        /* D7=R, D6=SL, D5=EOI(End Of Interrupt) */
 			case 0x80:      /* 100: Set (Rotate Priorities in Auto EOI Mode) */
-				if (GetAEOI(vpic)) vpic->ocw2 = vcpu.iobyte;
+				if (GetAEOI(vpic)) vpic->ocw2 = vport.iobyte;
 				break;
 			case 0x00:    /* 000: Clear (Rotate Priorities in Auto EOI Mode) */
-				if (GetAEOI(vpic)) vpic->ocw2 = vcpu.iobyte;
+				if (GetAEOI(vpic)) vpic->ocw2 = vport.iobyte;
 				/* Bug in easyVM (0x00 ?= 0x20) */
 				break;
 			case 0x20:                      /* 001: Non-specific EOI Command */
 				/* Set bit of highest priority interrupt in ISR to 0,
 				 IR0 > IR1 > IR2(IR8 > ... > IR15) > IR3 > ... > IR7 */
-				vpic->ocw2 = vcpu.iobyte;
+				vpic->ocw2 = vport.iobyte;
 				if (vpic->isr) {
 					id = GetIsrTopId(vpic);
 					//vapiPrint("EOI %d\n", id);
@@ -150,7 +150,7 @@ static void IO_Write_00x0(t_pic *vpic)
 				}
 				break;
 			case 0x60:                          /* 011: Specific EOI Command */
-				vpic->ocw2 = vcpu.iobyte;
+				vpic->ocw2 = vport.iobyte;
 				if (vpic->isr) {
 					id = vpic->ocw2 & 0x07;                  /* Get L2,L1,L0 */
 					vpic->isr &= ~(1<<id);
@@ -158,7 +158,7 @@ static void IO_Write_00x0(t_pic *vpic)
 				/* Bug in easyVM: "isr &= (1<<i)" */
 				break;
 			case 0xa0:         /* 101: Rotate Priorities on Non-specific EOI */
-				vpic->ocw2 = vcpu.iobyte;
+				vpic->ocw2 = vport.iobyte;
 				if (vpic->isr) {
 					id = GetIsrTopId(vpic);
 					vpic->isr &= ~(1<<id);
@@ -166,7 +166,7 @@ static void IO_Write_00x0(t_pic *vpic)
 				}
 				break;
 			case 0xe0:       /* 111: Rotate Priority on Specific EOI Command */
-				vpic->ocw2 = vcpu.iobyte;
+				vpic->ocw2 = vport.iobyte;
 				if (vpic->isr) {
 					id = GetIsrTopId(vpic);
 					vpic->isr &= ~(1<<id);
@@ -174,7 +174,7 @@ static void IO_Write_00x0(t_pic *vpic)
 				}
 				break;
 			case 0xc0: /* 110: Set Priority (does not reset current ISR bit) */
-				vpic->ocw2 = vcpu.iobyte;
+				vpic->ocw2 = vport.iobyte;
 				vpic->irx = ((vpic->ocw2 & 0x07) + 0x01) % 0x08;
 				break;
 			case 0x40:                                  /* 010: No Operation */
@@ -190,7 +190,7 @@ static void IO_Write_00x0(t_pic *vpic)
  */
 static void IO_Read_00x1(t_pic *vpic)
 {
-	vcpu.iobyte = vpic->imr;
+	vport.iobyte = vpic->imr;
 }
 /*
  * IO_Write_00x1
@@ -200,7 +200,7 @@ static void IO_Write_00x1(t_pic *vpic)
 {
 	switch (vpic->flaginit) {
 	case ICW2:
-		vpic->icw2 = vcpu.iobyte & (~0x07);
+		vpic->icw2 = vport.iobyte & (~0x07);
 		if (!((vpic->icw1) & 0x02))             /* ICW1.D1=0, SNGL=0, ICW3=1 */
 			vpic->flaginit = ICW3;
 		else if (vpic->icw1 & 0x01)                      /* ICW1.D0=1, IC4=1 */
@@ -209,12 +209,12 @@ static void IO_Write_00x1(t_pic *vpic)
 			vpic->flaginit = OCW1;
 		break;
 	case ICW3:
-		vpic->icw3 = vcpu.iobyte;
+		vpic->icw3 = vport.iobyte;
 		if ((vpic->icw1) & 0x01) vpic->flaginit = ICW4;      /* ICW1.D0=1, IC4=1 */
 		else vpic->flaginit = OCW1;
 		break;
 	case ICW4:
-		vpic->icw4 = vcpu.iobyte & 0x1f;
+		vpic->icw4 = vport.iobyte & 0x1f;
 		if ((vpic->icw4) & 0x01) ;                     /*uPM=1, 16-bit 80x86 */
 		else ;                                     /* uPM=0, 8-bit 8080/8085 */
 		if ((vpic->icw4) & 0x02) ;     /* AEOI=1, Automatic End of Interrupt */
@@ -228,7 +228,7 @@ static void IO_Write_00x1(t_pic *vpic)
 		vpic->flaginit = OCW1;
 		break;
 	case OCW1:
-		vpic->ocw1 = vcpu.iobyte;
+		vpic->ocw1 = vport.iobyte;
 		if (GetSMM(vpic)) vpic->isr &= ~(vpic->imr);
 		break;
 	default:
@@ -249,7 +249,7 @@ void IO_Write_00A1() {IO_Write_00x1(&vpic2);}
 #ifdef VPIC_DEBUG
 void IO_Read_FF20()
 {
-	vcpu.iobyte = 0xff;
+	vport.iobyte = 0xff;
 
 	vapiPrint("INFO PIC 1\n==========\n");
 	vapiPrint("Init Status = %d, IRX = %x\n",
@@ -291,9 +291,9 @@ void IO_Read_FF20()
 		vpic2.ocw3, GetESMM(&vpic2), GetSMM(&vpic2),
 		GetP(&vpic2), GetRR(&vpic2), GetRIS(&vpic2));
 }
-void IO_Read_FF21() {vcpu.iobyte = (t_nubit8)vpicScanINTR();}
-void IO_Read_FF22() {vcpu.iobyte = vpicGetINTR();}
-void IO_Write_FF20() {vpicSetIRQ(vcpu.iobyte);}
+void IO_Read_FF21() {vport.iobyte = (t_nubit8)vpicScanINTR();}
+void IO_Read_FF22() {vport.iobyte = vpicGetINTR();}
+void IO_Write_FF20() {vpicSetIRQ(vport.iobyte);}
 #endif
 
 void     vpicSetIRQ(t_nubit8 irqid)
@@ -341,7 +341,7 @@ t_nubit8 vpicGetINTR()
 }
 
 #ifdef VPIC_DEBUG
-#define mov(n) (vcpu.iobyte=(n))
+#define mov(n) (vport.iobyte=(n))
 #define out(n) ExecFun(vport.out[(n)])
 #endif
 void vpicInit()

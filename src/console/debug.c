@@ -419,7 +419,7 @@ static void i()
 		in = scannubit16(arg[1]);
 		if(!errPos) {
 			ExecFun(vport.in[in]);
-			printnubit8(vcpu.iobyte);
+			printnubit8(vport.iobyte);
 			fprintf(stdout,"\n");
 		}
 	}
@@ -499,7 +499,7 @@ static void o()
 	if(narg != 3) seterr(narg-1);
 	else {
 		out = scannubit16(arg[1]);
-		vcpu.iobyte = scannubit8(arg[2]);
+		vport.iobyte = scannubit8(arg[2]);
 		if(!errPos) ExecFun(vport.out[out]);
 	}
 }

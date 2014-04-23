@@ -4,7 +4,6 @@
 #include "vapi.h"
 #include "vmachine.h"
 
-#include "vcpuins.h"
 #include "qdvga.h"
 #include "qdkeyb.h"
 #include "qdbios.h"
@@ -23,8 +22,8 @@ static t_nubit16 sax, sbx, scx, sdx;
 #define or(a,b)  ((a) |= (b))
 #define cmp(a,b) ((a) == (b))
 #define mov(a,b) ((a) = (b))
-#define in(a,b)  (ExecFun(vport.in[(b)]), (a) = vcpu.iobyte)
-#define out(a,b) (vcpu.iobyte = (b), ExecFun(vport.out[(a)]))
+#define in(a,b)  (ExecFun(vport.in[(b)]), (a) = vport.iobyte)
+#define out(a,b) (vport.iobyte = (b), ExecFun(vport.out[(a)]))
 #define shl(a,b) ((a) <<= (b))
 #define shr(a,b) ((a) >>= (b))
 #define stc      (SetCF)

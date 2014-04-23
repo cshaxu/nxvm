@@ -249,13 +249,13 @@ static void ExecCmdError()
 
 void IO_Read_03F4()
 {
-	vcpu.iobyte = vfdc.msr;
+	vport.iobyte = vfdc.msr;
 }
 void IO_Read_03F5()
 {
 	if (!GetMSRReadyRead) return;
 	else SetMSRProcRead;
-	vcpu.iobyte = vfdc.ret[vfdc.rwid++];
+	vport.iobyte = vfdc.ret[vfdc.rwid++];
 	switch (vfdc.cmd[0]) {
 	case CMD_SPECIFY:
 		if (vfdc.rwid >= 0) SetMSRReadyWrite;break;
@@ -294,20 +294,20 @@ void IO_Read_03F5()
 }
 void IO_Read_03F7()
 {
-	vcpu.iobyte = vfdc.dir;
+	vport.iobyte = vfdc.dir;
 }
 
 void IO_Write_03F2()
 {
-	if (!(vfdc.dor & 0x04) && (vcpu.iobyte & 0x04)) SetMSRReadyWrite; 
-	vfdc.dor = vcpu.iobyte;
+	if (!(vfdc.dor & 0x04) && (vport.iobyte & 0x04)) SetMSRReadyWrite; 
+	vfdc.dor = vport.iobyte;
 	if (!(vfdc.dor & 0x04)) vfdcReset();
 }
 void IO_Write_03F5()
 {
 	if (!GetMSRReadyWrite) return;
 	else SetMSRProcWrite;
-	vfdc.cmd[vfdc.rwid++] = vcpu.iobyte;
+	vfdc.cmd[vfdc.rwid++] = vport.iobyte;
 	switch (vfdc.cmd[0]) {
 	case CMD_SPECIFY:
 		if (vfdc.rwid == 3) ExecCmdSpecify();break;
@@ -345,7 +345,7 @@ void IO_Write_03F5()
 }
 void IO_Write_03F7()
 {
-	vfdc.ccr = vcpu.iobyte;
+	vfdc.ccr = vport.iobyte;
 }
 
 void vfdcTransRead()
@@ -435,7 +435,7 @@ void IO_Write_F3F0()
 }
 
 #include "vcpu.h"
-#define mov(n) (vcpu.iobyte = (n))
+#define mov(n) (vport.iobyte = (n))
 #define out(n) ExecFun(vport.out[(n)])
 #endif
 void vfdcInit()

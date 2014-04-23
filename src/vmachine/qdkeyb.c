@@ -87,7 +87,7 @@ t_bool vapiCallBackKeyboardRecvKeyPress(t_nubit16 ascii)
 
 void IO_Read_0064()
 {
-	vcpu.iobyte = 0x10;
+	vport.iobyte = 0x10;
 }
 /*void IO_Write_00BB()
 {

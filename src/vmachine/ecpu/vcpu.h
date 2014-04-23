@@ -25,7 +25,6 @@
 #define VCPU_FLAG_OF 0x0800
 
 #define vcpu eCPU
-#define iobyte al
 
 void vcpuinsExecIns();
 void vcpuinsExecInt();

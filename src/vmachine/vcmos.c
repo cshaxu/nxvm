@@ -13,7 +13,7 @@ t_cmos vcmos;
 
 void IO_Write_0070()
 {
-	vcmos.rid = vcpu.iobyte;                                /* select reg id */
+	vcmos.rid = vport.iobyte;                                /* select reg id */
 	if (vcmos.rid & 0x80) vcpu.flagnmi = 0x00;      /* if MSB=1, disable NMI */
 	else vcpu.flagnmi = 0x01;
 }
@@ -21,7 +21,7 @@ void IO_Write_0071()
 {
 	t_nubitcc i;
 	t_nubit16 checksum = 0x00;
-	vcmos.reg[vcmos.rid] = vcpu.iobyte;
+	vcmos.reg[vcmos.rid] = vport.iobyte;
 	if((vcmos.rid > 0x0f) && (vcmos.rid < 0x2e))
 		for(i = 0x10;i < 0x2e;++i) checksum += vcmos.reg[i];
 	vcmos.reg[VCMOS_CHECKSUM_LSB] = (t_nubit8)(checksum & 0xff);
@@ -29,7 +29,7 @@ void IO_Write_0071()
 }
 void IO_Read_0071()
 {
-	vcpu.iobyte = vcmos.reg[vcmos.rid];
+	vport.iobyte = vcmos.reg[vcmos.rid];
 }
 
 void vcmosRefresh()

@@ -62,7 +62,7 @@ void GoInt(int r)
 	eCPU.flags &= ~IF;
 	eCPU.flags &= ~TF;
 	eCPU.flags &= ~AF;
-	eCPU.sp -= 2
+	eCPU.sp -= 2;
 	d_nubit16(EvSP + MemoryStart) = eCPU.cs;				//先压CS，再压IP，而且是要压CALL指令之后的IP
 	eCPU.sp -= 2;
 	d_nubit16(EvSP + MemoryStart) = eCPU.ip;

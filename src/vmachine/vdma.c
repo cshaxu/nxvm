@@ -52,68 +52,68 @@ t_dma vdma1,vdma2;
 static void IO_Read_CurrentAddress(t_dma *vdma, t_nubitcc id)
 {
 	if(!vdma->flagmsb)
-		vcpu.iobyte = (t_nubit8)(vdma->channel[id].curraddr & 0x00ff);
+		vport.iobyte = (t_nubit8)(vdma->channel[id].curraddr & 0x00ff);
 	else
-		vcpu.iobyte = (t_nubit8)(vdma->channel[id].curraddr >> 8);
+		vport.iobyte = (t_nubit8)(vdma->channel[id].curraddr >> 8);
 	vdma->flagmsb = 0x01 - vdma->flagmsb;
 }
 static void IO_Read_CurrentWordCount(t_dma *vdma, t_nubitcc id)
 {
 	if(!vdma->flagmsb)
-		vcpu.iobyte = (t_nubit8)(vdma->channel[id].currwc & 0x00ff);
+		vport.iobyte = (t_nubit8)(vdma->channel[id].currwc & 0x00ff);
 	else
-		vcpu.iobyte = (t_nubit8)(vdma->channel[id].currwc >> 8);
+		vport.iobyte = (t_nubit8)(vdma->channel[id].currwc >> 8);
 	vdma->flagmsb = 0x01 - vdma->flagmsb;
 }
 static void IO_Read_Status(t_dma *vdma)
 {
-	vcpu.iobyte = vdma->status;
+	vport.iobyte = vdma->status;
 	vdma->status &= 0xf0;
 }
-#define     IO_Read_Temp(vdma) (vcpu.iobyte = (vdma)->temp)
-#define     IO_Read_Page(vdma, id) (vcpu.iobyte = (vdma)->channel[(id)].page)
+#define     IO_Read_Temp(vdma) (vport.iobyte = (vdma)->temp)
+#define     IO_Read_Page(vdma, id) (vport.iobyte = (vdma)->channel[(id)].page)
 
 static void IO_Write_Address(t_dma *vdma, t_nubitcc id)
 {
 	if(!vdma->flagmsb)
-		vdma->channel[id].baseaddr  = (t_nubit16)vcpu.iobyte;
+		vdma->channel[id].baseaddr  = (t_nubit16)vport.iobyte;
 	else
-		vdma->channel[id].baseaddr |= (t_nubit16)(vcpu.iobyte << 8);
+		vdma->channel[id].baseaddr |= (t_nubit16)(vport.iobyte << 8);
 	vdma->channel[id].curraddr = vdma->channel[id].baseaddr;
 	vdma->flagmsb = 0x01 - vdma->flagmsb;
 }
 static void IO_Write_WordCount(t_dma *vdma, t_nubitcc id)
 {
 	if(!vdma->flagmsb)
-		vdma->channel[id].basewc  = (t_nubit16)vcpu.iobyte;
+		vdma->channel[id].basewc  = (t_nubit16)vport.iobyte;
 	else
-		vdma->channel[id].basewc |= (t_nubit16)(vcpu.iobyte << 8);
+		vdma->channel[id].basewc |= (t_nubit16)(vport.iobyte << 8);
 	vdma->channel[id].currwc = vdma->channel[id].basewc;
 	vdma->flagmsb = 0x01 - vdma->flagmsb;
 }
-#define     IO_Write_Command(vdma) ((vdma)->command = vcpu.iobyte)
+#define     IO_Write_Command(vdma) ((vdma)->command = vport.iobyte)
 static void IO_Write_Request(t_dma *vdma)
 {
-	if (vcpu.iobyte & 0x04)
-		vdma->request |= 1 << (vcpu.iobyte & 0x03);
+	if (vport.iobyte & 0x04)
+		vdma->request |= 1 << (vport.iobyte & 0x03);
 	else
-		vdma->request &= ~(1 << (vcpu.iobyte & 0x03));
+		vdma->request &= ~(1 << (vport.iobyte & 0x03));
 }
 static void IO_Write_Mask_Single(t_dma *vdma)
 {
-	if(vcpu.iobyte & 0x04)
-		vdma->mask |= 1 << (vcpu.iobyte & 0x03);
+	if(vport.iobyte & 0x04)
+		vdma->mask |= 1 << (vport.iobyte & 0x03);
 	else
-		vdma->mask &= ~(1 << (vcpu.iobyte & 0x03));
+		vdma->mask &= ~(1 << (vport.iobyte & 0x03));
 }
 #define     IO_Write_Mode(vdma) \
-            ((vdma)->channel[vcpu.iobyte & 0x03].mode = vcpu.iobyte >> 2)
+            ((vdma)->channel[vport.iobyte & 0x03].mode = vport.iobyte >> 2)
 #define     IO_Write_Flipflop_Clear(vdma) ((vdma)->flagmsb = 0x00)
 #define     IO_Write_Reset(vdma) (vdmaReset(vdma))
 #define     IO_Write_Mask_Clear(vdma) ((vdma)->mask = 0x00)
-#define     IO_Write_Mask_All(vdma) ((vdma)->mask = vcpu.iobyte & 0x0f)
+#define     IO_Write_Mask_All(vdma) ((vdma)->mask = vport.iobyte & 0x0f)
 #define     IO_Write_Page(vdma, id, m) \
-            ((vdma)->channel[(id)].page = vcpu.iobyte & (m))
+            ((vdma)->channel[(id)].page = vport.iobyte & (m))
 
 void IO_Read_0000()  {IO_Read_CurrentAddress   (&vdma1, 0);}
 void IO_Read_0001()  {IO_Read_CurrentWordCount (&vdma1, 0);}
@@ -381,7 +381,7 @@ void vdmaRefresh()
 void IO_Read_FF00() /* print all info of dma */
 {
 	t_nubitcc i;
-	vcpu.iobyte = 0xff;
+	vport.iobyte = 0xff;
 	vapiPrint("DMA 1 Info\n==========\n");
 	vapiPrint("Command = %x, status = %x, mask = %x\n",
 	          vdma1.command, vdma1.status, vdma1.mask);
@@ -415,9 +415,9 @@ void IO_Read_FF00() /* print all info of dma */
 	vapiPrint("\nLatch: byte = %x, word = %x\n", vlatch.byte, vlatch.word);
 }
 void IO_Write_FF00() {vdmaReset(&vdma1);vdmaReset(&vdma2);}
-void IO_Write_FF01() {vdmaSetDRQ(vcpu.iobyte);}
+void IO_Write_FF01() {vdmaSetDRQ(vport.iobyte);}
 void IO_Write_FF02() {vdmaRefresh();}
-#define mov(n) (vcpu.iobyte=(n))
+#define mov(n) (vport.iobyte=(n))
 #define out(n) ExecFun(vport.out[(n)])
 #endif
 void vdmaInit()
