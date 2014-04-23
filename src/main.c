@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xcc]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xcd]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -195,16 +195,15 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Files:   vcdrom.c, vcdrom.h
  *
  * Milestones
- * 0x45	Console and 8086 CPU
- * 0x82 Basic devices (QD Devices)
+ * 0x45 Console and 8086 CPU
+ * 0x82 Basic Devices (QD Devices)
  * 0x90 Win32 Application
  * 0xbc Win32 Console
- * 0x?? Linux Console
+ * 0xbf Linux Console
+ * 0xca New BIOS System
+ * 0xcc New Console Commands
  *
  * Format Unify:
- * all boolean type should be t_bool, declared TRUE or FALSE
- * all size type should be t_size
- * all id type should be t_id
  * check all includes, macro names, flag names
  * check all null pointer: use NULL instead of 0
  * use assert
@@ -212,9 +211,6 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * all t_bool variable names start with "flag"
  * new flag system: FLAG_X_X 0x0010, bit macros
  * replace all (void *) with t_vaddrcc
- * vport.iobyte => vport.iobyte
- *
- * NEXT: CPUINS Trace List
  *
  */
 

@@ -44,7 +44,6 @@ static t_nubit16 sax, sbx, scx, sdx;
 #define QDBIOS_ADDR_RTC_DAILY_COUNTER 0x046c
 #define QDBIOS_ADDR_RTC_ROLLOVER      0x0470
 
-#if (QDBIOS_RTC == QDBIOS_VAR_VCMOS)
 static void INT_1A_00_BIOS_GetTimeTickCount()
 {
 	mov(_cx, mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER + 2));
@@ -167,8 +166,6 @@ static void INT_1A_06_CMOS_SetAlarmClock()
 	/* return a fail to cpu */
 	stc;
 }
-#elif (QDBIOS_RTC == QDBIOS_VAR_QDRTC)
-#endif
 
 /* rtc update */
 void INT_08()

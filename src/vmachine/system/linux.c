@@ -1,8 +1,8 @@
 /* This file is a part of NXVM project. */
 
-#include "unistd.h"
 #include "curses.h"
 #include "pthread.h"
+#include "unistd.h"
 
 #include "../vapi.h"
 #include "linux.h"
