@@ -785,11 +785,11 @@ static int aOpCode(const char *op,const char *a1,const char *a2,
 	use locMemory, locSegment, locOffset;
 	write (unsigned char *)(locMemory+(locSegment<<4)+locOffset)*/
 int assemble(const char *asmStmt,unsigned short locCS,
-	unsigned int locMemory,
+	void *locMemory,
 	unsigned short locSegment,
 	unsigned short locOffset)
 {
-	unsigned char *loc = (unsigned char *)(locMemory+(locSegment<<4)+locOffset);
+	unsigned char *loc = (unsigned char *)(((unsigned char *)locMemory)+(locSegment<<4)+locOffset);
 	int len = 0,flag;
 	char copy[0x100];
 	char *prefix = NULL;
@@ -1364,14 +1364,14 @@ static int dGroup5(char *dasmStmt,Operand *resOperand,unsigned char *loc)
 }
 
 int disassemble(char *dasmStmt,Operand *resOperand,
-	const unsigned int locMemory,
+	const void *locMemory,
 	const unsigned short locSegment,
 	const unsigned short locOffset)
 {
 	//unsigned short imm;
 	int len = 0;
 	unsigned char opcode;
-	unsigned char *loc = (unsigned char *)(locMemory+(locSegment<<4)+locOffset);
+	unsigned char *loc = (unsigned char *)(((unsigned char *)locMemory)+(locSegment<<4)+locOffset);
 	if(!isOperandES && !isOperandCS && !isOperandSS && !isOperandES) {
 		setOperandNul
 		resOperand->seg = 0x00;

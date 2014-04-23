@@ -1,10 +1,10 @@
-/* This file is a part of NekoVMac project. */
+/* This file is a part of NVMx86 project. */
 
 /*
-	Type of systems: NONE, MSDOS, WIN32CON, WIN32APP
+	Type of systems: NONE, WIN32CON, WIN32APP
 */
 
-#define PRODUCT "Neko's Virtual Machine [0x003b]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0x003d]\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"
 
 /*
@@ -24,9 +24,9 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 		Stage 2: Verify		Not Started
 		Stage 3: Test		Not Started
 		Stage 4: Connect	02/12/2012 - 02/12/2012
-	Module III - DOSINT
-	Module IV - VDEVICE
-	Module V - VAPI
+	Module III - VDEVICE
+	Module IV - VAPI
+	Module V - DOSINT
 */
 
 #include "stdio.h"
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 	unsigned int x = (unsigned int)test;
 	void (*y)(void) = (*(void (*)(void))(x));
 	y();
-	MessageBox(NULL,"Neko's Virtual Machine WIN32APP Edition","WinMain",MB_OK);
+	MessageBox(NULL,"Neko's x86 Virtual Machine WIN32APP Edition","WinMain",MB_OK);
 The NTVDM CPU has encountered an illegal instruction.
 CS:0db 1 IP:ffd3 OP:63 fa 65 13 64 Choose 'close' to terminate the
 application.	

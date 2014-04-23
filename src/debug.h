@@ -1,4 +1,4 @@
-/* This file is a part of NekoVMac project. */
+/* This file is a part of NVMx86 project. */
 
 #ifndef NS_DEBUG_H
 #define NS_DEBUG_H

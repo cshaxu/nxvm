@@ -1,4 +1,4 @@
-/* This file is a part of NekoVMac project. */
+/* This file is a part of NVMx86 project. */
 
 #include "stdio.h"
 #include "stdarg.h"

@@ -1,4 +1,4 @@
-/* This file is a part of NekoVMac project. */
+/* This file is a part of NVMx86 project. */
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -76,14 +76,14 @@ void NSHelp()
 	fprintf(stdout,"HELP\t\tProvides Help information for NVM console commands.\n\n");
 	fprintf(stdout,"NVM Operations\n");
 	fprintf(stdout,"============\n");
-	fprintf(stdout,"ON\t\tPowers on Neko's Virtual Machine.\n");
+	fprintf(stdout,"ON\t\tPowers on Neko's x86 Virtual Machine.\n");
 	//fprintf(stdout,"STATUS\t\tPrints the status of NVM.\n");
 	fprintf(stdout,"MEMORY\t\tAssigns the memory size of NVM.\n");
 	fprintf(stdout,"MEMORYTEST\tTests the memory size of NVM.\n\n");
 /*	fprintf(stdout,"NVM Operations\n");
 	fprintf(stdout,"==============\n");
-	fprintf(stdout,"OFF\t\tTurns off Neko's Virtual Machine.\n");
-	fprintf(stdout,"RESET\t\tRestarts Neko's Virtual Machine.\n");*/
+	fprintf(stdout,"OFF\t\tTurns off Neko's x86 Virtual Machine.\n");
+	fprintf(stdout,"RESET\t\tRestarts Neko's x86 Virtual Machine.\n");*/
 	
 }
 
@@ -110,13 +110,11 @@ void NSMemoryTest()
 {
 	t_bool testFlag = 0;
 	t_nubit32 i;
-	t_vaddrcc memPtr;
 	if(runFlag || !initFlag) {fprintf(stdout,"Cannot perform memory test now.\n");return;}
-	memPtr = memoryBase;
 	for(i = 0;i < memorySize;++i)
 	{
 		if(i % 1024 == 0) fprintf(stdout,"\rMemory Testing : %dK",i/1024);
-		if(*(t_nubit8 *)memPtr != 0) {
+		if(*(t_nubit8 *)(memoryBase+i) != 0) {
 			fprintf(stdout,"\nMemory test failed.\n");
 			testFlag = 1;
 			break;

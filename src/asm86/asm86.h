@@ -2,7 +2,7 @@
 
 /*
 	Neko Confidential
-	Copyright (C) 2012 Neko. All rights reserved.
+	Copyright (c) 2012 Neko. All rights reserved.
 	Project Period:	01/25/2012 - 02/05/2012
 	Current Build:	0x002b
 */
@@ -18,11 +18,11 @@ typedef struct {
 } Operand;
 
 int assemble(const char *asmStmt,unsigned short locCS,
-	unsigned int locMemory,
+	void *locMemory,
 	unsigned short locSegment,
 	unsigned short locOffset);	// returns length of instruct
 int disassemble(char *dasmStmt,Operand *resOperand,
-	const unsigned int locMemory,
+	const void *locMemory,
 	const unsigned short locSegment,
 	const unsigned short locOffset);	// returns length of instruct
 

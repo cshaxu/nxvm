@@ -1,4 +1,4 @@
-/* This file is a part of NekoVMac project. */
+/* This file is a part of NVMx86 project. */
 
 /*
 test code
@@ -71,6 +71,7 @@ static t_nubit8 scannubit8(char *s)
 {
 	t_nubit8 ans = 0;
 	int i = 0;
+	if(s[0] == '\'' && s[2] == '\'') return s[1];
 	lcase(s);
 	while(s[i] != '\0' && s[i] != '\n') {
 		if(i > 1) {seterr(narg-1);break;}
@@ -189,7 +190,7 @@ static void aconsole()
 		if(cmdAsmBuff[0] == ';' ) continue;
 		errAsmPos = 0;
 		len = assemble(cmdAsmBuff,cpu.cs,
-			memory,asmSegRec,asmPtrRec);
+			(void *)memory,asmSegRec,asmPtrRec);
 		if(!len) errAsmPos = strlen(cmdAsmBuff) + 9;
 		else asmPtrRec += len;
 		if(errAsmPos) {
@@ -204,6 +205,7 @@ static void a()
 		aconsole();
 	} else if(narg == 2) {
 		addrparse(cpu.cs,arg[1]);
+		if(errPos) return;
 		asmSegRec = seg;
 		asmPtrRec = ptr;
 		aconsole();
@@ -280,10 +282,12 @@ static void d()
 	if(narg == 1) dprint(dumpSegRec,dumpPtrRec,dumpPtrRec+0x7f);
 	else if(narg == 2) {
 		addrparse(cpu.ds,arg[1]);
+		if(errPos) return;
 		dprint(seg,ptr,ptr+0x7f);
 	} else if(narg == 3) {
 		addrparse(cpu.ds,arg[1]);
 		ptr2 = scannubit16(arg[2]);
+		if(errPos) return;
 		if(ptr > ptr2) seterr(2);
 		else dprint(seg,ptr,ptr2);
 	} else seterr(3);
@@ -297,6 +301,7 @@ static void e()
 	if(narg == 1) seterr(0);
 	else if(narg == 2) {
 		addrparse(cpu.ds,arg[1]);
+		if(errPos) return;
 		addrprint(seg,ptr);
 		printnubit8(getbyte(seg,ptr));
 		fprintf(stdout,".");
@@ -307,6 +312,7 @@ static void e()
 			setbyte(seg,ptr,val);
 	} else if(narg > 2) {
 		addrparse(cpu.ds,arg[1]);
+		if(errPos) return;
 		for(i = 2;i < narg;++i) {
 			val = scannubit8(arg[i]);//!!
 			if(!errPos) setbyte(seg,ptr,val);
@@ -330,7 +336,8 @@ static void f()
 			nbyte = narg - 3;
 			for(i = ptr,j = 0;i <= end;++i,++j) {
 				val = scannubit8(arg[j%nbyte+3]);
-				setbyte(seg,i,val);
+				if(!errPos) setbyte(seg,i,val);
+				else return;
 			}
 		}
 	}
@@ -346,7 +353,7 @@ static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 			vcpuInsExec();
 			ptr1 = cpu.ip;
 		}
-		cpu.ip = ptr2;
+		//cpu.ip = ptr2;
 	}
 	if(cputerm) {
 		fprintf(stdout,"\nProgram terminated\n");
@@ -368,8 +375,8 @@ static void g()
 			addrparse(cpu.cs,arg[2]);
 			ptr2 = ptr;
 			break;
-	default:seterr(narg-1);return;
-	}
+	default:seterr(narg-1);break;}
+	if(errPos) return;
 	gexec(ptr1,ptr2);
 }
 // hex
@@ -380,10 +387,12 @@ static void h()
 	else {
 		val1 = scannubit16(arg[1]);
 		val2 = scannubit16(arg[2]);
-		printnubit16(val1+val2);
-		fprintf(stdout,"  ");
-		printnubit16(val1-val2);
-		fprintf(stdout,"\n");
+		if(!errPos) {
+			printnubit16(val1+val2);
+			fprintf(stdout,"  ");
+			printnubit16(val1-val2);
+			fprintf(stdout,"\n");
+		}
 	}
 }
 // load
@@ -403,17 +412,19 @@ static void l()
 		case 2:
 			addrparse(cpu.cs,arg[1]);
 			break;
-		default:	seterr(narg-1);break;}
-		c = fgetc(load);
-		while(!feof(load)) {
-			setbyte(seg+i,ptr+len++,c);
-			i = len / 0x10000;
+		default:seterr(narg-1);break;}
+		if(!errPos) {
 			c = fgetc(load);
+			while(!feof(load)) {
+				setbyte(seg+i,ptr+len++,c);
+				i = len / 0x10000;
+				c = fgetc(load);
+			}
+			cpu.cx = len&0xffff;
+			if(len > 0xffff) cpu.bx = (len>>16);
+			else cpu.bx = 0x0000;
 		}
 		fclose(load);
-		cpu.cx = len&0xffff;
-		if(len > 0xffff) cpu.bx = (len>>16);
-		else cpu.bx = 0x0000;
 	}
 }
 // move
@@ -765,7 +776,7 @@ static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 			printnubit16(start+pos);
 			fprintf(stdout," ");
 			len = disassemble(str,&operand,
-				memory,segment,start+pos);
+				(void *)memory,segment,start+pos);
 			for(i = 0;i < len;++i)
 				printnubit8(getbyte(segment,start+pos+i));
 			pos += len;
@@ -830,10 +841,12 @@ static void u()
 	if(narg == 1) uprint(uasmSegRec,uasmPtrRec,uasmPtrRec+0x1f);
 	else if(narg == 2) {
 		addrparse(cpu.cs,arg[1]);
+		if(errPos) return;
 		uprint(seg,ptr,ptr+0x1f);
 	} else if(narg == 3) {
 		addrparse(cpu.ds,arg[1]);
 		ptr2 = scannubit16(arg[2]);
+		if(errPos) return;
 		if(ptr > ptr2) seterr(2);
 		else uprint(seg,ptr,ptr2);
 	} else seterr(3);
@@ -861,8 +874,9 @@ static void w()
 			addrparse(cpu.cs,arg[1]);
 			break;
 		default:	seterr(narg-1);break;}
-		while(i < len)
-			fputc(getbyte(seg,ptr+i++),write);
+		if(!errPos)
+			while(i < len)
+				fputc(getbyte(seg,ptr+i++),write);
 		fclose(write);
 	}
 }
