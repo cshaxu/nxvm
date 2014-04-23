@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0117]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0118]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -207,8 +207,9 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0xcc New Console Commands
  * 0xdf New ASM/DASM/Debug System
  * 0xf2 Clean CPUINS; Hard Disk Installed
- * 0xf5 i386 Build Begins
+ * 0xf5 i386 Build Begin
  * 010d Bitmap Font Implemented
+ * 0118 i386 Build Done, FPU Begin
  *
  * Format Unify:
  * check all includes, macro names, flag names
