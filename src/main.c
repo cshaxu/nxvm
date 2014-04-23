@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Quick & Dirty Virtual Machine [0.2.0x7c]\n\
+#define PRODUCT "Quick & Dirty Virtual Machine [0.2.0x7d]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -79,7 +79,8 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 4:
  *     Phase 5:
  *     Phase 6:
- *     Note:    simply tested
+ *     Debug:   04/14/2013 - 04/15/2013
+ *     Note:    being tested by msdos 6.22
  * Component 2: ram
  *     Files:   vram.c, vram.h
  *     Phase 1:

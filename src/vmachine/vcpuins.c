@@ -155,7 +155,7 @@ static void CalcZF()
 static void CalcSF()
 {
 	switch(flglen) {
-	case 8:	SetFlag(VCPU_FLAG_SF,!!(flgresult&0x0080));break;
+	case 8:	SetFlag(VCPU_FLAG_SF,!!(flgresult&0x80));break;
 	case 16:SetFlag(VCPU_FLAG_SF,!!(flgresult&0x8000));break;
 	default:CaseError("CalcSF::flglen");break;}
 }
@@ -356,6 +356,8 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 		flgoperand2 = U_SRC_8;
 		flgresult = (flgoperand1+flgoperand2)&0xff;
 		U_DEST_8 = (t_nubit8)flgresult;
+/* vcpuins bug fix #6 */
+		break;
 	case 12:
 		flglen = 16;
 		flginstype = ADD16;
@@ -566,15 +568,13 @@ static void XOR(void *dest, void *src, t_nubit8 len)
 }
 static void CMP(void *op1, void *op2, t_nubit8 len)
 {
+/* vcpuins debug: TODO: still need to check */
 	switch(len) {
 	case 8:
 		flglen = 8;
 		flginstype = CMP8;
-/* vcpuins bug fix #6
-		flgoperand1 = *(t_nubit8 *)op1;
-		flgoperand2 = *(t_nubit8 *)op2;*/
 		flgoperand1 = (*(t_nubit8 *)op1) & 0xff;
-		flgoperand2 = (*(t_nubit8 *)op2) & 0xff;
+		flgoperand2 = (*(t_nsbit8 *)op2) & 0xff;
 /* vcpuins bug fix #7
 		flgresult = (flgoperand1-flgoperand2)&0xff;*/
 		flgresult = ((t_nubit8)flgoperand1-(t_nsbit8)flgoperand2)&0xff;
@@ -582,18 +582,15 @@ static void CMP(void *op1, void *op2, t_nubit8 len)
 	case 12:
 		flglen = 16;
 		flginstype = CMP16;
-		flgoperand1 = *(t_nubit16 *)op1;
-		flgoperand2 = *(t_nsbit8 *)op2;
-		flgresult = (flgoperand1-flgoperand2)&0xffff;
+		flgoperand1 = (*(t_nubit16 *)op1) & 0xffff;
+		flgoperand2 = (*(t_nsbit8  *)op2) & 0xffff;
+		flgresult = ((t_nubit16)flgoperand1-(t_nsbit8)flgoperand2)&0xffff;
 		break;
 	case 16:
 		flglen = 16;
 		flginstype = CMP16;
-/* vcpuins bug fix #6
-		flgoperand1 = *(t_nubit16 *)op1;
-		flgoperand2 = *(t_nubit16 *)op2;*/
 		flgoperand1 = (*(t_nubit16 *)op1) & 0xffff;
-		flgoperand2 = (*(t_nubit16 *)op2) & 0xffff;
+		flgoperand2 = (*(t_nsbit16 *)op2) & 0xffff;
 /* vcpuins bug fix #7
 		flgresult = (flgoperand1-flgoperand2)&0xffff;*/
 		flgresult = ((t_nubit16)flgoperand1-(t_nsbit16)flgoperand2)&0xffff;
@@ -605,6 +602,7 @@ static void PUSH(void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 16:
+		flglen = 16;
 		vcpu.sp -= 2;
 		vramSetWord(vcpu.ss,vcpu.sp,U_SRC_16);
 		break;
@@ -614,6 +612,7 @@ static void POP(void *dest, t_nubit8 len)
 {
 	switch(len) {
 	case 16:
+		flglen = 16;
 		U_DEST_16 = vramGetWord(vcpu.ss,vcpu.sp);
 		vcpu.sp += 2;
 		break;
@@ -667,6 +666,7 @@ static void JCC(void *src, t_bool jflag,t_nubit8 len)
 {
 	switch(len) {
 	case 8:
+		flglen = 8;
 		if(jflag)
 /* vcpuins bug fix #5
 			vcpu.ip += U_SRC_8;*/
@@ -701,12 +701,14 @@ static void XCHG(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
+		flglen = 8;
 		flgoperand1 = U_DEST_8;
 		flgoperand2 = U_SRC_8;
 		U_DEST_8 = (t_nubit8)flgoperand2;
 		U_SRC_8 = (t_nubit8)flgoperand1;
 		break;
 	case 16:
+		flglen = 16;
 		flgoperand1 = U_DEST_16;
 		flgoperand2 = U_SRC_16;
 		U_DEST_16 = (t_nubit16)flgoperand2;
@@ -718,9 +720,11 @@ static void MOV(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
+		flglen = 8;
 		U_DEST_8 = U_SRC_8;
 		break;
 	case 16:
+		flglen = 16;
 		U_DEST_16 = U_SRC_16;
 		break;
 	default:CaseError("MOV::len");break;}
@@ -734,6 +738,7 @@ static void ROL(void *dest, void *src, t_nubit8 len)
 	tempcount = count;
 	switch(len) {
 	case 8:
+		flglen = 8;
 		while(tempcount) {
 			tempCF = MSB_DEST_8;
 			U_DEST_8 = (U_DEST_8<<1)+(t_nubit8)tempCF;
@@ -743,6 +748,7 @@ static void ROL(void *dest, void *src, t_nubit8 len)
 		if(count == 1) SetFlag(VCPU_FLAG_OF,MSB_DEST_8^GetFlag(VCPU_FLAG_CF));
 		break;
 	case 16:
+		flglen = 16;
 		while(tempcount) {
 			tempCF = MSB_DEST_16;
 			U_DEST_16 = (U_DEST_16<<1)+(t_nubit16)tempCF;
@@ -762,6 +768,7 @@ static void ROR(void *dest, void *src, t_nubit8 len)
 	tempcount = count;
 	switch(len) {
 	case 8:
+		flglen = 8;
 		while(tempcount) {
 			tempCF = LSB_DEST_8;
 			U_DEST_8 >>= 1;
@@ -772,6 +779,7 @@ static void ROR(void *dest, void *src, t_nubit8 len)
 		if(count == 1) SetFlag(VCPU_FLAG_OF,MSB_DEST_8^(!!(U_DEST_8&0x40)));
 		break;
 	case 16:
+		flglen = 16;
 		while(tempcount) {
 			tempCF = LSB_DEST_16;
 			U_DEST_16 >>= 1;
@@ -792,6 +800,7 @@ static void RCL(void *dest, void *src, t_nubit8 len)
 	tempcount = count;
 	switch(len) {
 	case 8:
+		flglen = 8;
 		while(tempcount) {
 			tempCF = MSB_DEST_8;
 			U_DEST_8 = (U_DEST_8<<1)+GetFlag(VCPU_FLAG_CF);
@@ -801,6 +810,7 @@ static void RCL(void *dest, void *src, t_nubit8 len)
 		if(count == 1) SetFlag(VCPU_FLAG_OF,MSB_DEST_8^GetFlag(VCPU_FLAG_CF));
 		break;
 	case 16:
+		flglen = 16;
 		while(tempcount) {
 			tempCF = MSB_DEST_16;
 			U_DEST_16 = (U_DEST_16<<1)+GetFlag(VCPU_FLAG_CF);
@@ -820,6 +830,7 @@ static void RCR(void *dest, void *src, t_nubit8 len)
 	tempcount = count;
 	switch(len) {
 	case 8:
+		flglen = 8;
 		if(count == 1) SetFlag(VCPU_FLAG_OF,MSB_DEST_8^GetFlag(VCPU_FLAG_CF));
 		while(tempcount) {
 			tempCF = LSB_DEST_8;
@@ -830,6 +841,7 @@ static void RCR(void *dest, void *src, t_nubit8 len)
 		}
 		break;
 	case 16:
+		flglen = 16;
 		if(count == 1) SetFlag(VCPU_FLAG_OF,MSB_DEST_16^GetFlag(VCPU_FLAG_CF));
 		while(tempcount) {
 			tempCF = LSB_DEST_16;
@@ -848,6 +860,7 @@ static void SHL(void *dest, void *src, t_nubit8 len)
 	else count = 1;
 	switch(len) {
 	case 8:
+		flglen = 8;
 		tempcount = count&0x1f;
 		while(tempcount) {
 			SetFlag(VCPU_FLAG_CF,MSB_DEST_8);
@@ -863,6 +876,7 @@ static void SHL(void *dest, void *src, t_nubit8 len)
 		}
 		break;
 	case 16:
+		flglen = 16;
 		tempcount = count&0x1f;
 		while(tempcount) {
 			SetFlag(VCPU_FLAG_CF,MSB_DEST_16);
@@ -887,6 +901,7 @@ static void SHR(void *dest, void *src, t_nubit8 len)
 	else count = 1;
 	switch(len) {
 	case 8:
+		flglen = 8;
 		tempcount = count&0x1f;
 		tempdest8 = U_DEST_8;
 		while(tempcount) {
@@ -903,6 +918,7 @@ static void SHR(void *dest, void *src, t_nubit8 len)
 		}
 		break;
 	case 16:
+		flglen = 16;
 		tempcount = count&0x1f;
 		tempdest16 = U_DEST_16;
 		while(tempcount) {
@@ -927,6 +943,7 @@ static void SAL(void *dest, void *src, t_nubit8 len)
 	else count = 1;
 	switch(len) {
 	case 8:
+		flglen = 8;
 		tempcount = count&0x1f;
 		while(tempcount) {
 			SetFlag(VCPU_FLAG_CF,MSB_DEST_8);
@@ -942,6 +959,7 @@ static void SAL(void *dest, void *src, t_nubit8 len)
 		}
 		break;
 	case 16:
+		flglen = 16;
 		tempcount = count&0x1f;
 		while(tempcount) {
 			SetFlag(VCPU_FLAG_CF,MSB_DEST_16);
@@ -966,6 +984,7 @@ static void SAR(void *dest, void *src, t_nubit8 len)
 	else count = 1;
 	switch(len) {
 	case 8:
+		flglen = 8;
 		tempcount = count&0x1f;
 		tempdest8 = U_DEST_8;
 		while(tempcount) {
@@ -983,6 +1002,7 @@ static void SAR(void *dest, void *src, t_nubit8 len)
 		}
 		break;
 	case 16:
+		flglen = 16;
 		tempcount = count&0x1f;
 		tempdest16 = U_DEST_16;
 		while(tempcount) {
@@ -1006,6 +1026,7 @@ static void STRDIR(t_nubit8 len, t_bool flagsi, t_bool flagdi)
 /* vcpuins bug fix #10: add parameters flagsi, flagdi*/
 	switch(len) {
 	case 8:
+		flglen = 8;
 		if(GetFlag(VCPU_FLAG_DF)) {
 			if (flagdi) vcpu.di--;
 			if (flagsi) vcpu.si--;
@@ -1015,6 +1036,7 @@ static void STRDIR(t_nubit8 len, t_bool flagsi, t_bool flagdi)
 		}
 		break;
 	case 16:
+		flglen = 16;
 		if(GetFlag(VCPU_FLAG_DF)) {
 			if (flagdi) vcpu.di -= 2;
 			if (flagsi) vcpu.si -= 2;
@@ -1029,6 +1051,7 @@ static void MOVS(t_nubit8 len)
 {
 	switch(len) {
 	case 8:
+		flglen = 8;
 		vramSetByte(vcpu.es,vcpu.di,vramGetByte(insDS,vcpu.si));
 		STRDIR(8,1,1);
 		/*if (eCPU.di+t<0xc0000 && eCPU.di+t>=0xa0000)
@@ -1036,6 +1059,7 @@ static void MOVS(t_nubit8 len)
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  MOVSB\n");
 		break;
 	case 16:
+		flglen = 16;
 		vramSetWord(vcpu.es,vcpu.di,vramGetWord(insDS,vcpu.si));
 		STRDIR(16,1,1);
 		/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000)
@@ -1078,6 +1102,7 @@ static void STOS(t_nubit8 len)
 {
 	switch(len) {
 	case 8:
+		flglen = 8;
 		vramSetByte(vcpu.es,vcpu.di,vcpu.al);
 		STRDIR(8,0,1);
 		/*if (eCPU.di+t<0xc0000 && eCPU.di+t>=0xa0000)
@@ -1085,6 +1110,7 @@ static void STOS(t_nubit8 len)
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  STOSB\n");
 		break;
 	case 16:
+		flglen = 16;
 		vramSetWord(vcpu.es,vcpu.di,vcpu.ax);
 		STRDIR(16,0,1);
 		/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000)
@@ -1102,11 +1128,13 @@ static void LODS(t_nubit8 len)
 {
 	switch(len) {
 	case 8:
+		flglen = 8;
 		vcpu.al = vramGetByte(insDS,vcpu.si);
 		STRDIR(8,1,0);
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  LODSB\n");
 		break;
 	case 16:
+		flglen = 16;
 		vcpu.ax = vramGetWord(insDS,vcpu.si);
 		STRDIR(16,1,0);
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  LODSW\n");
@@ -1139,16 +1167,24 @@ static void SCAS(t_nubit8 len)
 static void NOT(void *dest, t_nubit8 len)
 {
 	switch(len) {
-	case 8:	U_DEST_8 = ~U_DEST_8;break;
-	case 16:U_DEST_16 = ~U_DEST_16;break;
+	case 8:	flglen = 8; U_DEST_8  = ~U_DEST_8; break;
+	case 16:flglen = 16;U_DEST_16 = ~U_DEST_16;break;
 	default:CaseError("NOT::len");break;}
 }
 static void NEG(void *dest, t_nubit8 len)
 {
 	t_nubitcc zero = 0;
 	switch(len) {
-	case 8:	SUB((void *)&zero,(void *)dest,8);U_DEST_8 = (t_nubit8)zero;break;
-	case 16:SUB((void *)&zero,(void *)dest,16);U_DEST_16 = (t_nubit16)zero;break;
+	case 8:	
+		flglen = 8;
+		SUB((void *)&zero,(void *)dest,8);
+		U_DEST_8 = (t_nubit8)zero;
+		break;
+	case 16:
+		flglen = 16;
+		SUB((void *)&zero,(void *)dest,16);
+		U_DEST_16 = (t_nubit16)zero;
+		break;
 	default:CaseError("NEG::len");break;}
 }
 static void MUL(void *src, t_nubit8 len)
@@ -1156,11 +1192,13 @@ static void MUL(void *src, t_nubit8 len)
 	t_nubit32 tempresult;
 	switch(len) {
 	case 8:
+		flglen = 8;
 		vcpu.ax = vcpu.al * U_SRC_8;
 		SetFlag(VCPU_FLAG_OF,!!vcpu.ah);
 		SetFlag(VCPU_FLAG_CF,!!vcpu.ah);
 		break;
 	case 16:
+		flglen = 16;
 		tempresult = vcpu.ax * U_SRC_16;
 		vcpu.dx = (tempresult>>16)&0xffff;
 		vcpu.ax = tempresult&0xffff;
@@ -1174,6 +1212,7 @@ static void IMUL(void *src, t_nubit8 len)
 	t_nsbit32 tempresult;
 	switch(len) {
 	case 8:
+		flglen = 8;
 		vcpu.ax = (t_nsbit8)vcpu.al * S_SRC_8;
 		if(vcpu.ax == vcpu.al) {
 			SetFlag(VCPU_FLAG_OF,0);
@@ -1184,6 +1223,7 @@ static void IMUL(void *src, t_nubit8 len)
 		}
 		break;
 	case 16:
+		flglen = 16;
 		tempresult = (t_nsbit16)vcpu.ax * S_SRC_16;
 		vcpu.dx = (t_nubit16)((tempresult>>16)&0xffff);
 		vcpu.ax = (t_nubit16)(tempresult&0xffff);
@@ -1203,6 +1243,7 @@ static void DIV(void *src, t_nubit8 len)
 	t_nubit32 tempDXAX = (((t_nubit32)vcpu.dx)<<16)+vcpu.ax;
 	switch(len) {
 	case 8:
+		flglen = 8;
 		if(U_SRC_8 == 0) {
 			INT(0x00);
 		} else {
@@ -1211,6 +1252,7 @@ static void DIV(void *src, t_nubit8 len)
 		}
 		break;
 	case 16:
+		flglen = 16;
 		if(U_SRC_16 == 0) {
 			INT(0x00);
 		} else {
@@ -1226,6 +1268,7 @@ static void IDIV(void *src, t_nubit8 len)
 	t_nsbit32 tempDXAX = (((t_nubit32)vcpu.dx)<<16)+vcpu.ax;
 	switch(len) {
 	case 8:
+		flglen = 8;
 		if(U_SRC_8 == 0) {
 			INT(0x00);
 		} else {
@@ -1234,6 +1277,7 @@ static void IDIV(void *src, t_nubit8 len)
 		}
 		break;
 	case 16:
+		flglen = 16;
 		if(U_SRC_16 == 0) {
 			INT(0x00);
 		} else {
@@ -1249,7 +1293,7 @@ static void INT(t_nubit8 intid)
 	if (qdbiosExecInt(intid)) return;
 #endif
 	PUSH((void *)&vcpu.flags,16);
-	SetFlag((VCPU_FLAG_IF|VCPU_FLAG_TF|VCPU_FLAG_AF),0);
+	SetFlag((VCPU_FLAG_IF | VCPU_FLAG_TF),0);
 	PUSH((void *)&vcpu.cs,16);
 	PUSH((void *)&vcpu.ip,16);
 	vcpu.ip = vramGetWord(0x0000,intid*4+0);
@@ -3102,14 +3146,18 @@ void INS_FF()
 		PUSH((void *)&vcpu.cs,16);
 		PUSH((void *)&vcpu.ip,16);
 		vcpu.ip = *(t_nubit16 *)rm;
-		vcpu.cs = *(t_nubit16 *)(rm+1);
+/* vcpuins bug fix #11
+		vcpu.cs = *(t_nubit16 *)(rm+1);*/
+		vcpu.cs = *(t_nubit16 *)(rm+2);
 		break;
 	case 4:	/* JMP_RM16 */
 		vcpu.ip = *(t_nubit16 *)rm;
 		break;
 	case 5:	/* JMP_M16_16 */
 		vcpu.ip = *(t_nubit16 *)rm;
-		vcpu.cs = *(t_nubit16 *)(rm+1);
+/* vcpuins bug fix #11
+		vcpu.cs = *(t_nubit16 *)(rm+1);*/
+		vcpu.cs = *(t_nubit16 *)(rm+2);
 		break;
 	case 6:	/* PUSH_RM16 */
 		PUSH((void *)rm,16);

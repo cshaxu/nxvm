@@ -6,6 +6,7 @@
 
 #include "../vmachine/vmachine.h"
 
+#include "vlog.h"
 #include "vapi.h"
 
 #define VAPI_QDFDD
@@ -144,7 +145,9 @@ static DWORD WINAPI DisplayThread(LPVOID lpParam)
 }
 static DWORD WINAPI KernelThread(LPVOID lpParam)
 {
+	vlogInit();
 	vmachineRunLoop();
+	vlogFinal();
 	return 0;
 }
 void vapiDisplayPaint()

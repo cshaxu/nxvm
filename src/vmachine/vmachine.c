@@ -38,7 +38,6 @@ void vmachineRefresh()
 void vmachineInit()
 {
 	memset(&vmachine, 0x00, sizeof(t_machine));
-	vlogInit();
 	vcpuInit();
 	vramInit();
 	vpicInit();
@@ -77,6 +76,5 @@ void vmachineFinal()
 	vpicFinal();
 	vramFinal();
 	vcpuFinal();
-	vlogFinal();
 	memset(&vmachine, 0x00, sizeof(t_machine));
 }

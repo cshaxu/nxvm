@@ -312,6 +312,7 @@ void qdbiosInit()
 /* device initialize */
 	qdfddInit();
 	qdrtcInit();
+	qdkeybInit();
 
 /* load boot sector */
 	vapiInsertFloppyDisk("d:/msdos.img");
@@ -322,6 +323,7 @@ void qdbiosInit()
 }
 void qdbiosFinal()
 {
+	qdkeybFinal();
 	qdrtcFinal();
 	qdfddFinal();
 }

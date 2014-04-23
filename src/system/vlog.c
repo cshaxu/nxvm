@@ -1,4 +1,5 @@
 
+#include "vapi.h"
 #include "vlog.h"
 
 #include "../vmachine/vcpu.h"
@@ -32,6 +33,7 @@ void vlogExec()
 	t_nubit16 _cs = vcpu.cs;
 	t_nubit16 _es = vcpu.es;
 	t_nubit16 _ss = vcpu.ss;
+	t_nubit16 _flags = vcpu.flags;
 	t_bool    _of = GetBit(vcpu.flags, VCPU_FLAG_OF);
 	t_bool    _sf = GetBit(vcpu.flags, VCPU_FLAG_SF);
 	t_bool    _zf = GetBit(vcpu.flags, VCPU_FLAG_ZF);
@@ -42,8 +44,11 @@ void vlogExec()
 	t_bool    _tf = GetBit(vcpu.flags, VCPU_FLAG_TF);
 	t_bool    _if = GetBit(vcpu.flags, VCPU_FLAG_IF);
 
-	if ((vlog.line >= VLOG_COUNT_MAX) || (!vlog.fp)) return;
-
+	if ((vlog.line >= VLOG_COUNT_MAX) || (!vlog.fp)) {
+		if (vlog.line == VLOG_COUNT_MAX) vapiPrint("Log ends.\n");
+		return;
+	}
+	vramDWord(0x0040,0x006c) = 0x00000000;
 	fprintf(vlog.fp, "%d\tcs:ip=%x:%x opcode=%x %x %x %x %x %x %x %x ",
 		vlog.line, _cs, _ip,
 		vramByte(_cs,_ip+0),
@@ -64,5 +69,5 @@ pf=%1x df=%1x if=%1x tf=%1x ram=%x\n",
 		_sp,_bp,_si,_di,
 		_ds,_es,_ss,
 		_of,_sf,_zf,_cf,_af,
-		_pf,_df,_if,_tf,vramByte(vcpu.cs,0x0130));
+		_pf,_df,_if,_tf,vramWord(_ss,_sp));
 }

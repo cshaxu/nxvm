@@ -5,7 +5,7 @@
 #include "stdio.h"
 #include "../vmachine/vglobal.h"
 
-#define VLOG_COUNT_MAX 0x4000
+#define VLOG_COUNT_MAX 0xffff
 
 typedef struct {
 	FILE *fp;
