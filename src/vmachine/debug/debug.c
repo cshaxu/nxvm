@@ -187,9 +187,9 @@ static void c()
 				if(val1 != val2) {
 					addrprint(seg1,ptr1+i);
 					vapiPrint("  ");
-					vapiPrint("%02X",val1);
+					vapiPrint("%02X",val1 & 0xff);
 					vapiPrint("  ");
-					vapiPrint("%02X",val2);
+					vapiPrint("%02X",val2 & 0xff);
 					vapiPrint("  ");
 					addrprint(seg2,ptr2+i);
 					vapiPrint("\n");
@@ -214,7 +214,7 @@ static void dprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 			c[i%0x10] = ' ';
 		} else {
 			c[i%0x10] = vramVarByte(segment,i);
-			vapiPrint("%02X",c[i%0x10]);
+			vapiPrint("%02X",c[i%0x10] & 0xff);
 			t = c[i%0x10];
 			if((t >=1 && t <= 7) || t == ' ' ||
 				(t >=11 && t <= 12) ||

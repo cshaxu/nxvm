@@ -99,7 +99,7 @@ typedef struct {
 	char            label[0x100];
 } t_aasm_oprinfo;
 
-static char pool[0x1000];
+static t_string pool;
 static t_bool error;
 static t_aasm_oprinfo aopri1, aopri2;
 static t_string astmt, aop, aopr1, aopr2;
@@ -1250,8 +1250,10 @@ static void labelRealizeRef(t_aasm_label_def_node *pdef, t_aasm_label_ref_node *
 {
 	t_nubit16 lo, hi, ta;
 	t_nsbit8 rel8;
-	if (!pdef || !pref) {error = 1;return;}
+	if (!pdef || !pref) error = 1;
+	if (error) return;
 	//printf("realize: target %04X:%04X current %04X:%04X\n",pdef->cs,pdef->ip,pref->cs,pref->ip);
+	//printf("ptr: %d, name: %s\n",pref->ptr,pdef->name);
 	switch (pref->ptr) {
 	case PTR_FAR:
 		vramVarWord(pref->cs, pref->ip + 0) = pdef->ip;
@@ -1271,6 +1273,7 @@ static void labelRealizeRef(t_aasm_label_def_node *pdef, t_aasm_label_ref_node *
 		else if (ta <= hi && ta >= lo)
 			rel8 = ta - pref->ip - 0x0001;
 		else error = 1;
+		//printf("lo: %x, hi: %x, ta = %x, rel8 = %x\n",lo, hi, ta, rel8 & 0xff);
 		if (error) return;
 		vramVarByte(pref->cs, pref->ip + 0) = rel8;
 		break;
@@ -1363,7 +1366,7 @@ static void labelStoreRef(t_string strlabel, t_aasm_oprptr ptrlabel)
 	}
 	if (s) s->next = n;
 	else p->ref = n;	
-//	printf("ref saved: '%s' at %04X:%04X\n", strlabel, avcs, avip);
+	//printf("ref saved: '%s' at %04X:%04X\n", strlabel, avcs, avip);
 }
 
 #define setbyte(n) (vramVarByte(avcs, avip) = (t_nubit8)(n))
@@ -1377,7 +1380,6 @@ static void LABEL()
 	avip++;
 	if (token == TOKEN_LABEL) labelStoreDef(toklabel); 
 	matchtoken(TOKEN_COLON);
-	labelRealizeDefList();
 }
 
 static void SetImm8(t_nubit8 byte)
@@ -3455,15 +3457,14 @@ t_nubitcc aasm(const t_string stmt, t_nubit16 seg, t_nubit16 off)
 	t_bool prefix;
 	t_nubitcc i, slen, l, len;
 	if (!stmt || !stmt[0]) return 0;
+	pool = (char *)malloc(strlen(stmt) + 2);
 	STRCPY(pool, stmt);
 	astmt = pool;
 	slen = strlen(pool);
-	if (slen >= 0x0fff) return 0;
 	if (pool[slen - 1] != '\n') {
 		pool[slen] = '\n';
 		pool[slen + 1] = 0;
 	}
-
 	do {
 		prefix = 0x00;
 		while (*astmt != '\n' && *astmt != ';' && (*astmt == ' ' || *astmt == '\t')) astmt++;
@@ -3506,6 +3507,8 @@ t_nubitcc aasm(const t_string stmt, t_nubit16 seg, t_nubit16 off)
 		len = 0;
 		vapiPrint("invalid instruction: '%s'\n",aop);
 	}
+	free(pool);
+	pool = NULL;
 	return len;
 }
 

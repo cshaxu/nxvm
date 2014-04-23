@@ -51,7 +51,7 @@ void qdbiosReset()
 /* build general int service routine */
 	ics = 0xf000;
 	iip = 0x0000;
-	aasm("iret", ics, iip);
+	iip += aasm("iret", ics, iip);
 /* bios data area */
 	memset((void *)vramGetAddr(0x0040,0x0000), 0x00, 0x100);
 	vramVarByte(0x0040, 0x0000) = 0xf8;
@@ -160,10 +160,10 @@ void qdbiosReset()
 	qdkeybReset();
 	/* qdcga init */
 	qdcgaReset();
-	/* load cmos data */
-	qdrtcReset();
 	/* load boot sector */
 	qddiskReset();
 	/* misc */
 	qdmiscReset();
+	/* load cmos data */
+	qdrtcReset();
 }
