@@ -32,7 +32,7 @@ typedef struct {
 	t_nubit8      temp;
 	t_bool        flagmsb;                          /* flip-flop for msb/lsb */
 	t_nubit8      drx;                        /* dreq id of highest priority */
-	t_bool        eop;                                     /* end of process */
+	t_bool        flageop;                                 /* end of process */
 	t_nubit8      isr;
               /* id of request in service in D5-D4, flag of in service in D0 */
 } t_dma;

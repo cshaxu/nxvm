@@ -246,7 +246,7 @@ static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
 	if (GetR(vdma)) vdma->drx = (id + 1) % 4;
 	if (flagm2m) {
 		/* memory-to-memory */
-		while (vdma->channel[0x01].currwc != 0xffff && !vdma->eop) {
+		while (vdma->channel[0x01].currwc != 0xffff && !vdma->flageop) {
 			vdma->temp = vramGetByte(
 			             ((t_nubit16)vdma->channel[0x00].page << 12),
 			             vdma->channel[0x00].curraddr);
@@ -263,12 +263,12 @@ static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
 		}
 		if (vdma->channel[0x01].currwc == 0xffff) {
 			vdma->status |= 0x01;
-			vdma->eop     = 0x01;
+			vdma->flageop = 0x01;
 		}
 	} else {
 		switch (GetM(vdma,id)) {                  /* select mode and command */
 		case 0x00:                                                 /* demand */
-			while (vdma->channel[id].currwc != 0xffff && !vdma->eop
+			while (vdma->channel[id].currwc != 0xffff && !vdma->flageop
 					&& GetDRQ(vdma,id))
 				Transmission(vdma, id, word);
 			break;
@@ -276,22 +276,22 @@ static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
 			Transmission(vdma, id, word);
 			break;
 		case 0x02:                                                  /* block */
-			while (vdma->channel[id].currwc != 0xffff && !vdma->eop)
+			while (vdma->channel[id].currwc != 0xffff && !vdma->flageop)
 				Transmission(vdma, id, word);
 			break;
 		case 0x03:                                                /* cascade */
 			/* do nothing */
-			vdma->eop = 0x01;
+			vdma->flageop = 0x01;
 			break;
 		default:
 			break;
 		}
 		if (vdma->channel[id].currwc == 0xffff) {
 			vdma->status |= 0x01 << id;                   /* set terminate count */
-			vdma->eop     = 0x01;
+			vdma->flageop     = 0x01;
 		}
 	}
-	if (vdma->eop) {
+	if (vdma->flageop) {
 		vdma->isr = 0x00;
 		if (vdma->channel[id].devfinal) FUNEXEC(vdma->channel[id].devfinal);
 		if (GetAI(vdma,id)) {
@@ -301,7 +301,7 @@ static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
 		} else
 			vdma->mask |= 0x01 << id;
 	}
-	vdma->eop = 0x00;
+	vdma->flageop = 0x00;
 }
 
 void vdmaSetDRQ(t_nubit8 dreqid)
@@ -329,7 +329,7 @@ void vdmaReset(t_dma *vdma)
 	vdma->temp    = 0x00;
 	vdma->flagmsb = 0x00;
 	vdma->drx     = 0x00;
-	vdma->eop     = 0x00;
+	vdma->flageop = 0x00;
 	vdma->isr     = 0x00;
 }
 
@@ -374,8 +374,8 @@ void IO_Read_FF00() /* print all info of dma */
 	          vdma1.command, vdma1.status, vdma1.mask);
 	vapiPrint("request = %x, temp = %x, flagmsb = %x\n",
 	          vdma1.request, vdma1.temp, vdma1.flagmsb);
-	vapiPrint("drx = %x, eop = %x, isr = %x\n",
-	          vdma1.drx, vdma1.eop, vdma1.isr);
+	vapiPrint("drx = %x, flageop = %x, isr = %x\n",
+	          vdma1.drx, vdma1.flageop, vdma1.isr);
 	for (i = 0;i < 4;++i) {
 		vapiPrint("Channel %d: baseaddr = %x, basewc = %x, curraddr = %x, currwc = %x\n",
 		          i, vdma1.channel[i].baseaddr, vdma1.channel[i].basewc,
@@ -389,8 +389,8 @@ void IO_Read_FF00() /* print all info of dma */
 	          vdma2.command, vdma2.status, vdma2.mask);
 	vapiPrint("request = %x, temp = %x, flagmsb = %x\n",
 	          vdma2.request, vdma2.temp, vdma2.flagmsb);
-	vapiPrint("drx = %x, eop = %x, isr = %x\n",
-	          vdma2.drx, vdma2.eop, vdma2.isr);
+	vapiPrint("drx = %x, flageop = %x, isr = %x\n",
+	          vdma2.drx, vdma2.flageop, vdma2.isr);
 	for (i = 0;i < 4;++i) {
 		vapiPrint("Channel %d: baseaddr = %x, basewc = %x, curraddr = %x, currwc = %x\n",
 		          i, vdma2.channel[i].baseaddr, vdma2.channel[i].basewc,

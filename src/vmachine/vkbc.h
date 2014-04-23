@@ -13,6 +13,8 @@ typedef struct {
 	t_nubit8  status;                                     /* status register */
 	t_nubit8  outbuf;                                       /* output buffer */
 	t_nubit8  inbuf;                                         /* input buffer */
+	t_nubit8  outport;                                        /* output port */
+	t_nubit8  inport;                                          /* input port */
 	t_nubit8  ram[0x20];
 
 	t_bool    flagpswd;
@@ -28,6 +30,8 @@ extern t_kbc vkbc;
  * OB  scan code / return / 
  * IB  command / parameter
  * CR  0  | CM | DA | DK | IO | SF | 0   | OBFI 
+ * IP  ~KI | MDA | ~MJI | 256K | UNDEFINED 0-3
+ * OP 
  */
 
 void IO_Read_0060();
