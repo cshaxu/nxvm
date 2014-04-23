@@ -7,8 +7,7 @@
 
 #include "vglobal.h"
 
-typedef t_nubit8 t_fdc_status_cmd;
-typedef t_nubit8 t_fdc_status_ret;
+#define VFDC_DEBUG
 
 typedef struct {
 	t_nubit8         dor;                         /* digital output register */
@@ -22,10 +21,8 @@ typedef struct {
 	t_nubit8         srt;                                  /* step rate time */
 	t_bool           flagndma;             /* 0 = dma mode; 1 = non-dma mode */
 	t_bool           flagintr;                  /* 0 = no intr; 1 = has intr */
-	t_bool           flagis;                               /* 1 = in service */
 
-	t_fdc_status_cmd flagcmd;
-	t_fdc_status_ret flagret;
+	t_nubit8         rwid;                   /* io port command/result rw id */
 	t_nubit8         cmd[9];
 	t_nubit8         ret[7];
 	t_nubit8         st0,st1,st2,st3;                     /* state registers */
@@ -40,17 +37,24 @@ void IO_Write_03F2();                       /* write digital output register */
 void IO_Write_03F5();                             /* write standard commands */
 void IO_Write_03F7();
 
+#ifdef VFDC_DEBUG
+void    IO_Read_F3F0();                                    /* print all info */
+#define IO_Write_F3F0 vfdcReset                                 /* vfdcReset */
+#define IO_Write_F3F1 vfdcRefresh                             /* vfdcRefresh */
+#endif
+
 #define vfdcPIORead   vfdcTransRead
 #define vfdcDMARead   vfdcTransRead
 #define vfdcPIOWrite  vfdcTransWrite
 #define vfdcDMAWrite  vfdcTransWrite
-#define vfdcPIOFinish vfdcTransFinish
-#define vfdcDMAFinish vfdcTransFinish
+#define vfdcPIOFinal  vfdcTransFinal
+#define vfdcDMAFinal  vfdcTransFinal
 void vfdcTransRead();
 void vfdcTransWrite();
 void vfdcTransInit();
 void vfdcTransFinal();
 void vfdcRefresh();
+void vfdcReset();
 void vfdcInit();
 void vfdcFinal();
 

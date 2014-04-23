@@ -76,7 +76,7 @@ void vapiInsertFloppyDisk(const char *fname)
 		fclose(image);
 		/* vapiPrint("Disk image loaded to %lx\n",vfdd.base); */
 		/* TODO: do other changes to vfdd, vfdc */
-	} else vapiPrint("FDD:\cannot read floppy image from '%s'.\n", fname);
+	} else vapiPrint("FDD:\tcannot read floppy image from '%s'.\n", fname);
 }
 void vapiRemoveFloppyDisk(const char *fname)
 {
@@ -90,5 +90,5 @@ void vapiRemoveFloppyDisk(const char *fname)
 			               0x00168000, image);
 		vfdd.flagexist = 0x00;
 		fclose(image);
-	} else vapiPrint("FDD:\cannot write floppy image to '%s'.\n", fname);
+	} else vapiPrint("FDD:\tcannot write floppy image to '%s'.\n", fname);
 }

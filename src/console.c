@@ -28,17 +28,7 @@ static void parse(char *s)
 }
 
 void NSTest()
-{
-	t_nubit8 cyl,head,sector;
-	vfddInit();
-	cyl = head = 0;
-	sector = 1;
-	//printf("%lx\n",vramGetAddress(0));
-	vfddWrite(&cyl,&head,&sector,vramGetAddress(0),2);
-	//cyl = head = sector = 0;
-	//vfddWrite(&cyl,&head,&sector,vramGetAddress(0),36);
-	vfddFinal();
-}
+{}
 
 void NSExec()
 {
@@ -87,7 +77,7 @@ void NSHelp()
 	fprintf(stdout,"HELP\t\tProvides Help information for NXVM console commands.\n\n");
 	fprintf(stdout,"POWON\t\tPowers on Neko's x86 Virtual Machine.\n");
 	//fprintf(stdout,"STATUS\t\tPrints the status of NXVM.\n");
-	fprintf(stdout,"FLOPPY\tAssigns the name of floppy image.\n");
+	fprintf(stdout,"FLOPPY\t\tAssigns the name of floppy image.\n");
 	fprintf(stdout,"MEMORY\t\tAssigns the memory size of NXVM.\n");
 	fprintf(stdout,"MEMORYTEST\tTests the memory size of NXVM.\n");
 /*	fprintf(stdout,"NXVM Operations\n");

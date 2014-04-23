@@ -6,9 +6,10 @@
 #include "vcpu.h"
 #include "vcpuins.h"
 #include "vram.h"
+#include "vfdc.h"
 #include "vdma.h"
 
-t_dma_latch vdmalatch;
+t_latch vlatch;
 t_dma vdma1,vdma2;
 
 /* command register bits */
@@ -209,21 +210,21 @@ static void Transmission(t_dma *vdma, t_nubit8 id, t_bool word)
 		if (vdma->channel[id].devread) FUNEXEC(vdma->channel[id].devread);
 		if (!word)
 			vramSetByte(((t_nubit16)vdma->channel[id].page << 12),
-			            vdma->channel[id].curraddr, vdmalatch.byte);
+			            vdma->channel[id].curraddr, vlatch.byte);
 		else
 			vramSetWord(((t_nubit16)vdma->channel[id].page << 12),
-			            (vdma->channel[id].curraddr << 1), vdmalatch.word);
+			            (vdma->channel[id].curraddr << 1), vlatch.word);
 		vdma->channel[id].currwc--;
 		if (GetAIDS(vdma,id)) vdma->channel[id].curraddr--;
 		else                  vdma->channel[id].curraddr++;
 		break;
 	case 0x02:                                                       /* read */
 		if (!word)
-			vdmalatch.byte = vramGetByte(
+			vlatch.byte = vramGetByte(
 			                 ((t_nubit16)vdma->channel[id].page << 12),
 			                 vdma->channel[id].curraddr);
 		else
-			vdmalatch.word = vramGetWord(
+			vlatch.word = vramGetWord(
 			                 ((t_nubit16)vdma->channel[id].page << 12),
 			                 (vdma->channel[id].curraddr << 1));
 		if (vdma->channel[id].devwrite) FUNEXEC(vdma->channel[id].devwrite);
@@ -239,7 +240,7 @@ static void Transmission(t_dma *vdma, t_nubit8 id, t_bool word)
 }
 static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
 {
-	t_bool flagm2m = (id == 0x00) && (vdma->request & 0x01) && GetM2M(vdma);
+	t_bool flagm2m = ((id == 0x00) && (vdma->request & 0x01) && GetM2M(vdma));
 	vdma->status  &= ~(0x10 << id);
 	vdma->request &= ~(0x01 << id);
 	if (GetR(vdma)) vdma->drx = (id + 1) % 4;
@@ -292,6 +293,7 @@ static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
 	}
 	if (vdma->eop) {
 		vdma->isr = 0x00;
+		if (vdma->channel[id].devfinal) FUNEXEC(vdma->channel[id].devfinal);
 		if (GetAI(vdma,id)) {
 			vdma->channel[id].curraddr = vdma->channel[id].baseaddr;
 			vdma->channel[id].currwc = vdma->channel[id].basewc;
@@ -321,14 +323,14 @@ void vdmaSetDRQ(t_nubit8 dreqid)
 void vdmaReset(t_dma *vdma)
 {
 	vdma->command = 0x00;
-	vdma->status = 0x00;
-	vdma->mask = 0x0f;
+	vdma->status  = 0x00;
+	vdma->mask    = 0x0f;
 	vdma->request = 0x00;
-	vdma->temp = 0x00;
+	vdma->temp    = 0x00;
 	vdma->flagmsb = 0x00;
-	vdma->drx = 0x00;
-	vdma->eop = 0x00;
-	vdma->isr = 0x00;
+	vdma->drx     = 0x00;
+	vdma->eop     = 0x00;
+	vdma->isr     = 0x00;
 }
 
 void vdmaRefresh()
@@ -397,16 +399,11 @@ void IO_Read_FF00() /* print all info of dma */
 		          i, vdma2.channel[i].mode, vdma2.channel[i].page,
 		          vdma2.channel[i].devread, vdma2.channel[i].devwrite);
 	}
-	vapiPrint("\nLatch: byte = %x, word = %x\n", vdmalatch.byte, vdmalatch.word);
+	vapiPrint("\nLatch: byte = %x, word = %x\n", vlatch.byte, vlatch.word);
 }
 void IO_Write_FF00() {vdmaReset(&vdma1);vdmaReset(&vdma2);}
 void IO_Write_FF01() {vdmaSetDRQ(vcpu.al);}
 void IO_Write_FF02() {vdmaRefresh();}
-void DevReadTest()
-{
-	static t_nubit8 i = 0x00;
-	vdmalatch.byte = ++i;
-}
 #define mov(n) (vcpu.al=(n))
 #define out(n) FUNEXEC(vcpuinsOutPort[(n)])
 #endif
@@ -414,13 +411,15 @@ void vdmaInit()
 {
 	memset(&vdma1, 0x00, sizeof(t_dma));
 	memset(&vdma2, 0x00, sizeof(t_dma));
-	memset(&vdmalatch, 0x00, sizeof(t_dma_latch));
+	memset(&vlatch, 0x00, sizeof(t_latch));
 	vdmaReset(&vdma1);
 	vdmaReset(&vdma2);
-	/* TODO: connect device io functions with dma channels */
-#ifdef VDMA_DEBUG
-	vdma1.channel[2].devread = (t_faddrcc)DevReadTest;
-#endif
+
+	/* connect device io functions with dma channels */
+	vdma1.channel[2].devread  = (t_faddrcc)vfdcDMARead;
+	vdma1.channel[2].devwrite = (t_faddrcc)vfdcDMAWrite;
+	vdma1.channel[2].devfinal = (t_faddrcc)vfdcDMAFinal;
+
 	vcpuinsInPort[0x0000] = (t_faddrcc)IO_Read_0000;
 	vcpuinsInPort[0x0001] = (t_faddrcc)IO_Read_0001;
 	vcpuinsInPort[0x0002] = (t_faddrcc)IO_Read_0002;
@@ -508,17 +507,18 @@ void vdmaInit()
 void vdmaFinal() {}
 /*
 debug
-off00 0
-o0b 86  (block)  c6(cascade)  46(single) 06(demand)
-o04 30
-o04 60
-o05 5
-o05 0
-od4 0
-o0a 2
-off01 2
-off02 0
-d6020
+off00 0  reset dma
+o0b 86   write mode: block, write, channel 2;
+         other options: c6(cascade)  46(single) 06(demand)
+o04 00   write address to: channel 2 low
+o04 00   write address to: channel 2 high
+o05 00   write word count to: channel 2 low
+o05 02   write word count to: channel 2 high
+o0a 02   write mask: dma 1, channel 2
+od4 00   write mask: dma 2, channel 0
+off01 2  generate dreq; otherwise ASK DEVICE TO GENERATE DREQ
+off02 0  refresh: exec
+d0:0     show results
 
 off00 0
 e6020 ab

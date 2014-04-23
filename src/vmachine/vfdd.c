@@ -3,55 +3,61 @@
 #include "stdlib.h"
 #include "memory.h"
 
+#include "vdma.h"
 #include "vfdd.h"
 
 t_fdd vfdd;
 
-t_bool vfddRead(t_nubit8 *cyl,t_nubit8 *head,t_nubit8 *sector,t_vaddrcc memloc,t_nubit8 count)
+#define IsTrackEnd  (vfdd.sector >= (vfdd.nsector + 1))
+#define IsCylHalf   (vfdd.head == 0x00 && IsTrackEnd)
+#define IsCylEnd    (vfdd.head == 0x01 && IsTrackEnd)
+
+void vfddTransRead()
 {
-	if((*cyl >= VFDD_NCYL) || (*head >= VFDD_NHEAD) || ((*sector < 0x01) && (*sector > vfdd.nsector)))
-		return 1;
-
-	memcpy((void *)memloc,
-		(void *)(vfdd.base+(((*cyl)*VFDD_NHEAD+(*head))*vfdd.nsector+(*sector)-1)*vfdd.nbyte),
-		count*vfdd.nbyte);
-
-	*cyl = (*cyl+count/(VFDD_NHEAD*vfdd.nsector))%VFDD_NCYL;
-	count %= VFDD_NHEAD*vfdd.nsector;
-	*head = (*head+count/(vfdd.nsector))%VFDD_NHEAD;
-	count %= vfdd.nsector;
-	*sector = (*sector+count)%vfdd.nsector;
-	return 0;
+	if (IsCylEnd) return;
+	vlatch.byte = *((t_nubit8 *)vfdd.curr);
+	vfdd.curr++;
+	vfdd.count++;
+	if (!(vfdd.count % vfdd.nbyte)) {
+		vfdd.sector++;
+		if (IsCylHalf) {
+			vfdd.sector = 0x01;
+			vfdd.head   = 0x01;
+		}
+		vfddResetCURR;
+	}
 }
-t_bool vfddWrite(t_nubit8 *cyl,t_nubit8 *head,t_nubit8 *sector,t_vaddrcc memloc,t_nubit8 count)
+void vfddTransWrite()
 {
-	if((*cyl >= VFDD_NCYL) || (*head >= VFDD_NHEAD) || ((*sector < 0x01) && (*sector > vfdd.nsector)))
-		return 1;
-
-	memcpy((void *)(vfdd.base+(((*cyl)*VFDD_NHEAD+(*head))*vfdd.nsector+(*sector)-1)*vfdd.nbyte),
-		(void *)memloc,
-		count*vfdd.nbyte);
-
-	*cyl = (*cyl+count/(VFDD_NHEAD*vfdd.nsector))%VFDD_NCYL;
-	count %= VFDD_NHEAD*vfdd.nsector;
-	*head = (*head+count/(vfdd.nsector))%VFDD_NHEAD;
-	count %= vfdd.nsector;
-	*sector = (*sector+count)%vfdd.nsector;
-	return 0;
+	if (IsCylEnd) return;
+	*((t_nubit8 *)vfdd.curr) = vlatch.byte;
+	vfdd.curr++;
+	vfdd.count++;
+	if (!(vfdd.count % vfdd.nbyte)) {
+		vfdd.sector++;
+		if (IsCylHalf) {
+			vfdd.sector = 0x01;
+			vfdd.head   = 0x01;
+		}
+		vfddResetCURR;
+	}
 }
 
 void vfddFormatTrack(t_nubit8 fillbyte)
 {
+	/* TODO: what if cyl id too large */
 	vfdd.head   = 0x00;
 	vfdd.sector = 0x01;
-	vfdd.curr   = vfddSetCURR;
+	vfddResetCURR;
 	memset((void *)(vfdd.curr), fillbyte, vfdd.nsector * vfdd.nbyte);
 	vfdd.head   = 0x01;
 	vfdd.sector = 0x01;
-	vfdd.curr   = vfddSetCURR;
+	vfddResetCURR;
 	memset((void *)(vfdd.curr), fillbyte, vfdd.nsector * vfdd.nbyte);
 }
 
+void vfddRefresh()
+{}
 void vfddInit()
 {
 	memset(&vfdd, 0x00, sizeof(t_fdd));

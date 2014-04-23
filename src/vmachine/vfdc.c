@@ -20,12 +20,9 @@ t_fdc vfdc;
 #define CMD_RECALIBRATE        0x07                    /* seek to cylinder 0 */
 #define CMD_SENSE_INTERRUPT    0x08
                               /* acknowledge IRQ6 get status of last command */
-#define CMD_WRITE_DELETED_DATA 0x09
-#define CMD_READ_DELETED_DATA  0x0c
-#define CMD_FORMAT_TRACK_2     0x0d
 #define CMD_SEEK               0x0f  /* ! seek (both(?)) heads to cylinder X */
 #define CMD_VERSION            0x10     /* ! used during initialization once */
-#define CMD_SCAN_EQUAL         0x11
+
 #define CMD_PERPENDICULAR_MODE 0x12
                                   /* ! used during initialization once maybe */
 #define CMD_CONFIGURE          0x13           /* ! set controller parameters */
@@ -37,8 +34,13 @@ t_fdc vfdc;
 #define CMD_READ_TRACK         0x42                        /* generates irq6 */
 #define CMD_READ_ID            0x4a                        /* generates irq6 */
 #define CMD_FORMAT_TRACK       0x4d                        /* generates irq6 */
-#define CMD_WRITE_DATA         0xc5                   /* ! write to the disk */
+#define CMD_WRITE_DATA         0xc5                     /* write to the disk */
+#define CMD_READ_DATA_ALL      0xc6        /* read all data, even if deleted */
+#define CMD_WRITE_DELETED_DATA 0xc9
+#define CMD_READ_DELETED_DATA  0xcc
+#define CMD_SCAN_EQUAL_ALL     0xd1
 #define CMD_READ_DATA          0xe6                  /* ! read from the disk */
+#define CMD_SCAN_EQUAL         0xf1
 
 /* Command Bytes */
 //#define GET_A0(cbyte)                                    /* Address Line 0 */
@@ -59,6 +61,7 @@ t_fdc vfdc;
 //#define GET_SK(cbyte)                                              /* skip */
 //#define GET_STP(cbyte)                                             /* step */
 
+#define GetENRQ(cbyte) ((cbyte) & 0x08)               /* enable dma and intr */
 #define GetDS(cbyte)   ((cbyte) & 0x03)            /* drive select (ds0,ds1) */
 #define GetHUT(cbyte)  ((cbyte) & 0x0f)                  /* head unload time */
 #define GetSRT(cbyte)  ((cbyte) >> 4)                      /* step rate time */
@@ -81,7 +84,6 @@ static t_nubit8 GetBPSC(t_nubit8 cbyte)                  /* sector size code */
 	}
 }
 
-#define IsCmd(cmdl, count) (vfdc.cmd[0] == (cmdl) && vfdc.flagcmd == (count))
 #define IsRet(retl, count) (vfdc.cmd[0] == (retl) && vfdc.flagret == (count))
 #define SetST0 (vfdc.st0 = (0x00                    << 7) |                   \
                            (0x00                    << 6) |                   \
@@ -113,62 +115,74 @@ static t_nubit8 GetBPSC(t_nubit8 cbyte)                  /* sector size code */
                            (0x01                    << 3) |                   \
                            (vfdd.head               << 2) |                   \
                            (GetDS(vfdc.cmd[1])      << 0))
+#define SetMSRReadyRead  (vfdc.msr = 0xc0, vfdc.rwid = 0x00)
+#define SetMSRReadyWrite (vfdc.msr = 0x80, vfdc.rwid = 0x00)
+#define SetMSRProcRead   (vfdc.msr = 0xd0)
+#define SetMSRProcWrite  (vfdc.msr = 0x90)
+#define SetMSRExecCmd    (vfdc.msr = 0x20)
+
+#define GetMSRReadyRead  ((vfdc.msr & 0xc0) == 0xc0)
+#define GetMSRReadyWrite ((vfdc.msr & 0xc0) == 0x80)
+#define GetMSRProcRW     (!!(vfdc.msr & 0x10))
+#define GetMSRExecCmd    (!!(vfdc.msr & 0x20))
 
 static void ExecCmdSpecify()
 {
-	vfdc.flagcmd  = 0x00;
-	vfdc.flagret  = 0x00;
 	vfdc.hut      = GetHUT (vfdc.cmd[1]);
 	vfdc.srt      = GetSRT (vfdc.cmd[1]);
 	vfdc.hlt      = GetHLT (vfdc.cmd[2]);
 	vfdc.flagndma = GetNDMA(vfdc.cmd[2]);
+	SetMSRReadyWrite;
 }
 static void ExecCmdSenseDriveStatus()
 {
-	vfdc.flagcmd = 0x00;
-	vfdc.flagret = 0x00;
 	vfdd.head    = GetHDS(vfdc.cmd[1]);
+	vfddResetCURR;
 	SetST3;
 	vfdc.ret[0]  = vfdc.st3;
+	SetMSRReadyRead;
 }
 static void ExecCmdRecalibrate()
 {
-	vfdc.flagcmd  = 0x00;
-	vfdc.flagret  = 0x00;
 	vfdd.cyl      = 0x00;
 	vfdd.head     = 0x00;
 	vfdd.sector   = 0x01;
+	vfddResetCURR;
 	SetST0;
-	vpicSetIRQ(0x06);         /* TODO: BIOS: INT 0EH Should Call Command 08H */
-	vfdc.flagintr = 0x01;
+	if (GetENRQ(vfdc.dor)) {
+		vpicSetIRQ(0x06);     /* TODO: BIOS: INT 0EH Should Call Command 08H */
+		vfdc.flagintr = 0x01;
+	}
+	SetMSRReadyWrite;
 }
 static void ExecCmdSenseInterrupt()
 {
-	vfdc.flagcmd       = 0x00;
-	vfdc.flagret       = 0x00;
 	if (vfdc.flagintr) {
 		vfdc.ret[0]    = vfdc.st0;
 		vfdc.ret[1]    = vfdd.cyl;
 		vfdc.flagintr  = 0x00;
 	} else vfdc.ret[0] = vfdc.st0 = VFDC_RET_ERROR;
+	SetMSRReadyRead;
 }
 static void ExecCmdSeek()
 {
-	vfdc.flagcmd  = 0x00;
-	vfdc.flagret  = 0x00;
 	vfdd.head     = GetHDS(vfdc.cmd[1]);
 	vfdd.cyl      = vfdc.cmd[2];
+	vfdd.sector   = 0x01;
+	vfddResetCURR;
 	SetST0;
-	vpicSetIRQ(0x06);
-	vfdc.flagintr = 0x01;
+	if (GetENRQ(vfdc.dor)) {
+		vpicSetIRQ(0x06);     /* TODO: BIOS: INT 0EH Should Call Command 08H */
+		vfdc.flagintr = 0x01;
+	}
+	SetMSRReadyWrite;
 }
-#define     ExecCmdReadTrack vfdcTransInit
+#define     ExecCmdReadTrack        vfdcTransInit
 static void ExecCmdReadID()
 {
-	vfdc.flagcmd  = 0x00;
-	vfdc.flagret  = 0x00;
 	vfdd.head     = GetHDS(vfdc.cmd[1]);
 	vfdd.sector   = 0x01;
+	vfddResetCURR;
 	vfdc.dr       = 0x00;                   /* data register: sector id info */
 	vfdcTransFinal();
 }
@@ -176,8 +190,6 @@ static void ExecCmdFormatTrack()
 {
 	/* NOTE: simplified procedure; dma not used */
 	t_nubit8 fillbyte;
-	vfdc.flagcmd = 0;
-	vfdc.flagret = 0x00;
 	/* load parameters*/
 	vfdd.head    = GetHDS(vfdc.cmd[1]);
 	vfdd.sector  = 0x01;
@@ -185,6 +197,7 @@ static void ExecCmdFormatTrack()
 	vfdd.nsector = vfdc.cmd[3];
 	vfdd.gaplen  = vfdc.cmd[4];
 	fillbyte     = vfdc.cmd[5];
+	vfddResetCURR;
 	/* execute format track*/
 	vfddFormatTrack(fillbyte);
 	/* finish transaction */
@@ -194,91 +207,151 @@ static void ExecCmdFormatTrack()
 	vfdc.ret[0] = vfdc.st0;
 	vfdc.ret[1] = vfdc.st1;
 	vfdc.ret[2] = vfdc.st2;
-	vpicSetIRQ(0x06);
-	vfdc.flagintr = 0x01;
+	if (GetENRQ(vfdc.dor)) {
+		vpicSetIRQ(0x06);     /* TODO: BIOS: INT 0EH Should Call Command 08H */
+		vfdc.flagintr = 0x01;
+	}
+	SetMSRReadyRead;
 }
-#define     ExecCmdWriteData vfdcTransInit
-#define     ExecCmdReadData  vfdcTransInit
-/*static void ExecCmdReadData()
+#define     ExecCmdWriteData        vfdcTransInit
+#define     ExecCmdReadDataAll      vfdcTransInit
+#define     ExecCmdWriteDeletedData vfdcTransInit
+#define     ExecCmdReadDeletedData  vfdcTransInit
+#define     ExecCmdScanEqualAll     ExecCmdScanEqual
+#define     ExecCmdReadData         vfdcTransInit
+static void ExecCmdScanEqual()
 {
-	t_bool succ;
-	vfdc.flagcmd = 0;
-	succ = vfddRead(&vfdc.cmd[2],&vfdc.cmd[3],&vfdc.cmd[4],
-		vramGetAddress((((t_vaddrcc)vdma1.channel[2].page)<<16)+vdma1.channel[2].baseaddr),
-		(vdma1.channel[2].basewc+0x01)/vfdd.nbyte);
-	vfdc.pcn = vfdc.cmd[2];
-	vfdc.st0 = 0x20 | (vfdc.cmd[3]<<2) | GetDS(vfdc.cmd[1]);
-	vfdc.st1 = 0x00 | ((t_nubit8)succ<<2);
-	if(vfdc.pcn >= 0x50) vfdc.st2 = 0x10;
-	else vfdc.st2 = 0x00;
+	/* NOTE: not fully implemented; lack of reference */
+	SetST0;
+	SetST1;
+	SetST2;
+	vfdc.st2   |= 0x04;         /* assume all data match; otherwise use 0x08 */
 	vfdc.ret[0] = vfdc.st0;
 	vfdc.ret[1] = vfdc.st1;
 	vfdc.ret[2] = vfdc.st2;
-	vfdc.ret[3] = vfdc.cmd[2];
-	vfdc.ret[4] = vfdc.cmd[3];
-	vfdc.ret[5] = vfdc.cmd[4];
-	vfdc.ret[6] = 0x02;
-	vfdc.flagintr = 1;
-	vpicSetIRQ(0x06);
-}*/
+	vfdc.ret[3] = vfdd.cyl;
+	vfdc.ret[4] = vfdd.head;
+	vfdc.ret[5] = vfdd.sector;                      /* TODO: correct the EOT */
+	vfdc.ret[6] = GetBPSC(vfdd.nbyte);
+	SetMSRReadyRead;
+}
+static void ExecCmdError()
+{
+	vfdc.ret[0] = VFDC_RET_ERROR;
+	SetMSRReadyRead;
+}
 
 void IO_Read_03F4()
 {
-	/* TODO: remember to modify msr when executing commands */
 	vcpu.al = vfdc.msr;
 }
 void IO_Read_03F5()
 {
-	vcpu.al = vfdc.ret[vfdc.flagret++];
-	if(vfdc.ret[0] == VFDC_RET_ERROR) {
-		vfdc.flagret = 0;
-		return;
+	if (!GetMSRReadyRead) return;
+	else SetMSRProcRead;
+	vcpu.al = vfdc.ret[vfdc.rwid++];
+	switch (vfdc.cmd[0]) {
+	case CMD_SPECIFY:
+		if (vfdc.rwid >= 0) SetMSRReadyWrite;break;
+	case CMD_SENSE_DRIVE_STATUS:
+		if (vfdc.rwid >= 1) SetMSRReadyWrite;break;
+	case CMD_RECALIBRATE:
+		if (vfdc.rwid >= 0) SetMSRReadyWrite;break;
+	case CMD_SENSE_INTERRUPT:
+		if (vfdc.rwid >= 2) SetMSRReadyWrite;break;
+	case CMD_SEEK:
+		if (vfdc.rwid >= 0) SetMSRReadyWrite;break;
+	case CMD_READ_TRACK:
+		if (vfdc.rwid >= 7) SetMSRReadyWrite;break;
+	case CMD_READ_ID:
+		if (vfdc.rwid >= 7) SetMSRReadyWrite;break;
+	case CMD_FORMAT_TRACK:
+		if (vfdc.rwid >= 3) SetMSRReadyWrite;break;
+	case CMD_WRITE_DATA:
+		if (vfdc.rwid >= 7) SetMSRReadyWrite;break;
+	case CMD_READ_DATA_ALL:
+		if (vfdc.rwid >= 7) SetMSRReadyWrite;break;
+	case CMD_WRITE_DELETED_DATA:
+		if (vfdc.rwid >= 7) SetMSRReadyWrite;break;
+	case CMD_READ_DELETED_DATA:
+		if (vfdc.rwid >= 7) SetMSRReadyWrite;break;
+	case CMD_SCAN_EQUAL_ALL:
+		if (vfdc.rwid >= 7) SetMSRReadyWrite;break;
+	case CMD_READ_DATA:
+		if (vfdc.rwid >= 7) SetMSRReadyWrite;break;
+	case CMD_SCAN_EQUAL:
+		if (vfdc.rwid >= 7) SetMSRReadyWrite;break;
+	default: 
+		if (vfdc.rwid >= 1) SetMSRReadyWrite;break;
+		break;
 	}
-	if(IsRet(CMD_SENSE_DRIVE_STATUS,1))   {vfdc.flagret = 0;}
-	else if(IsRet(CMD_SENSE_INTERRUPT,2)) {vfdc.flagret = 0;}
-	else if(IsRet(CMD_READ_DATA,7))       {vfdc.flagret = 0;}
-	else if(IsRet(CMD_WRITE_DATA,7))      {vfdc.flagret = 0;}
-	else if(IsRet(CMD_READ_TRACK,7))      {vfdc.flagret = 0;}
-	else if(IsRet(CMD_FORMAT_TRACK,7))    {vfdc.flagret = 0;}
 }
 void IO_Read_03F7()
 {
-	/* TODO: remember to modify dir when executing commands */
 	vcpu.al = vfdc.dir;
 }
 
 void IO_Write_03F2()
 {
+	if (!(vfdc.dor & 0x04) && (vcpu.al & 0x04)) SetMSRReadyWrite; 
 	vfdc.dor = vcpu.al;
+	if (!(vfdc.dor & 0x04)) vfdcReset();
 }
 void IO_Write_03F5()
 {
-
-	vfdc.cmd[vfdc.flagcmd++] = vcpu.al;
-	if(GetDS(vfdc.cmd[1])) {
-		vfdc.ret[0] = VFDC_RET_ERROR;
-		return;
+	if (!GetMSRReadyWrite) return;
+	else SetMSRProcWrite;
+	vfdc.cmd[vfdc.rwid++] = vcpu.al;
+	switch (vfdc.cmd[0]) {
+	case CMD_SPECIFY:
+		if (vfdc.rwid == 3) ExecCmdSpecify();break;
+	case CMD_SENSE_DRIVE_STATUS:
+		if (vfdc.rwid == 2) ExecCmdSenseDriveStatus();break;
+	case CMD_RECALIBRATE:
+		if (vfdc.rwid == 2) ExecCmdRecalibrate();break;
+	case CMD_SENSE_INTERRUPT:
+		if (vfdc.rwid == 1) ExecCmdSenseInterrupt();break;
+	case CMD_SEEK:
+		if (vfdc.rwid == 3) ExecCmdSeek();break;
+	case CMD_READ_TRACK:
+		if (vfdc.rwid == 9) ExecCmdReadTrack();break;
+	case CMD_READ_ID:
+		if (vfdc.rwid == 2) ExecCmdReadID();break;
+	case CMD_FORMAT_TRACK:
+		if (vfdc.rwid == 6) ExecCmdFormatTrack();break;
+	case CMD_WRITE_DATA:
+		if (vfdc.rwid == 9) ExecCmdWriteData();break;
+	case CMD_READ_DATA_ALL:
+		if (vfdc.rwid == 9) ExecCmdReadDataAll();break;
+	case CMD_WRITE_DELETED_DATA:
+		if (vfdc.rwid == 9) ExecCmdWriteDeletedData();break;
+	case CMD_READ_DELETED_DATA:
+		if (vfdc.rwid == 9) ExecCmdReadDeletedData();break;
+	case CMD_SCAN_EQUAL_ALL:
+		if (vfdc.rwid == 9) ExecCmdScanEqualAll();break;
+	case CMD_READ_DATA:
+		if (vfdc.rwid == 9) ExecCmdReadData();break;
+	case CMD_SCAN_EQUAL:
+		if (vfdc.rwid == 9) ExecCmdScanEqual();break;
+	default:
+		                    ExecCmdError();break;
 	}
-	if(IsCmd(CMD_SPECIFY, 3))                 ExecCmdSpecify();
-	else if(IsCmd(CMD_SENSE_DRIVE_STATUS, 2)) ExecCmdSenseDriveStatus();
-	else if(IsCmd(CMD_RECALIBRATE,2))         ExecCmdRecalibrate();
-	else if(IsCmd(CMD_SENSE_INTERRUPT,1))     ExecCmdSenseInterrupt();
-	else if(IsCmd(CMD_SEEK,3))                ExecCmdSeek();
-	else if(IsCmd(CMD_READ_TRACK,9))          ExecCmdReadTrack();
-	else if(IsCmd(CMD_READ_ID,2))             ExecCmdReadID();
-	else if(IsCmd(CMD_FORMAT_TRACK,9))        ExecCmdFormatTrack();
-	else if(IsCmd(CMD_WRITE_DATA,9))          ExecCmdWriteData();
-	else if(IsCmd(CMD_READ_DATA,9))           ExecCmdReadData();
 }
 void IO_Write_03F7()
 {
 	vfdc.ccr = vcpu.al;
 }
 
+void vfdcTransRead()
+{	/* NOTE: being called by DMA/PIO */
+	vfddTransRead();
+}
+void vfdcTransWrite()
+{	/* NOTE: being called by DMA/PIO */
+	vfddTransWrite();
+}
 void vfdcTransInit()
 {	/* NOTE: being called internally in vfdc */
-	vfdc.flagcmd   = 0x00;
-	vfdc.flagret   = 0x00;
 	/* read parameters */
 	vfdd.cyl       = vfdc.cmd[2];
 	vfdd.head      = vfdc.cmd[3];
@@ -288,15 +361,14 @@ void vfdcTransInit()
 	vfdd.gaplen    = vfdc.cmd[7];
 	if (!vfdc.cmd[5])
 		vfdd.nbyte = vfdc.cmd[8];
+	vfdd.count     = 0x00;
+	vfddResetCURR;
 	/* send trans request */
-	vfdd.count    = 0x00;
-	vfdd.curr      = vfddSetCURR;
-	if (!vfdc.flagndma) vdmaSetDRQ(0x02);
-	vfdc.flagis    = 0x01;
+	if (!vfdc.flagndma && GetENRQ(vfdc.dor)) vdmaSetDRQ(0x02);
+	SetMSRExecCmd;
 }
 void vfdcTransFinal()
 {	/* NOTE: being called by DMA/PIO */
-	vfdc.flagis = 0x00;
 	SetST0;
 	SetST1;
 	SetST2;
@@ -305,24 +377,48 @@ void vfdcTransFinal()
 	vfdc.ret[2] = vfdc.st2;
 	vfdc.ret[3] = vfdd.cyl;
 	vfdc.ret[4] = vfdd.head;
-	vfdc.ret[5] = vfdd.sector;                      /* TODO: correct the EOT */
+	vfdc.ret[5] = vfdd.sector;
 	vfdc.ret[6] = GetBPSC(vfdd.nbyte);
-	vpicSetIRQ(0x06);
-	vfdc.flagintr = 0x01;
+	if (GetENRQ(vfdc.dor)) {
+		vpicSetIRQ(0x06);     /* TODO: BIOS: INT 0EH Should Call Command 08H */
+		vfdc.flagintr = 0x01;
+	}
+	SetMSRReadyRead;
 }
 void vfdcRefresh()
 {
-	/* TODO: test/write msr here */
-	if(!vfdd.base) vfdc.dir = 0x80;
+	if (!vfdd.flagexist) vfdc.dir |= 0x80;
+	else                 vfdc.dir &= 0x7f;
 }
-void vfdcInit()
+void vfdcReset()
 {
 	memset(&vfdc, 0, sizeof(t_fdc));
+}
+#ifdef VFDC_DEBUG
+void IO_Read_F3F0()
+{
+	/* TODO: print all info */
+}
+#define mov(n) (vcpu.al=(n))
+#define out(n) FUNEXEC(vcpuinsOutPort[(n)])
+#endif
+void vfdcInit()
+{
+	vfdcReset();
 	vcpuinsInPort[0x03f4] = (t_vaddrcc)IO_Read_03F4;
 	vcpuinsInPort[0x03f5] = (t_vaddrcc)IO_Read_03F5;
 	vcpuinsInPort[0x03f7] = (t_vaddrcc)IO_Read_03F7;
 	vcpuinsOutPort[0x03f2] = (t_vaddrcc)IO_Write_03F2;
 	vcpuinsOutPort[0x03f5] = (t_vaddrcc)IO_Write_03F5;
 	vcpuinsOutPort[0x03f7] = (t_vaddrcc)IO_Write_03F7;
+#ifdef VFDC_DEBUG
+	vcpuinsInPort[0x0f3f0] = (t_vaddrcc)IO_Read_F3F0;
+	vcpuinsOutPort[0xf3f0] = (t_vaddrcc)IO_Write_F3F0;
+	vcpuinsOutPort[0xf3f1] = (t_vaddrcc)IO_Write_F3F1;
+	/* TODO: initialize fdc */
+#endif
 }
 void vfdcFinal() {}
+/*
+
+*/

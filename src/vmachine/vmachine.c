@@ -14,9 +14,9 @@ void vmachineRefresh()
 	vvadpRefresh();
 	vkeybRefresh();
 	vkbcRefresh();
-	vfdcRefresh();
-	vfddRefresh();
 */
+	vfddRefresh();
+	vfdcRefresh();
 	vdmaRefresh();
 	vpitRefresh();
 	vpicRefresh();
@@ -33,8 +33,8 @@ void vmachineInit()
 		vpicInit();
 		vpitInit();
 		vdmaInit();
-		vfddInit();
 		vfdcInit();
+		vfddInit();
 /*
 		vkbcInit();
 		vkeybInit();
@@ -86,8 +86,8 @@ void vmachineFinal()
 		vvadpFinal();
 		vdispFinal();
 */
-		vfdcFinal();
 		vfddFinal();
+		vfdcFinal();
 		vdmaFinal();
 		vpitFinal();
 		vpicFinal();

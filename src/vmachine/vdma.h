@@ -18,8 +18,9 @@ typedef struct {
 	t_nubit16 currwc;                                  /* current word count */
 	t_nubit6  mode;                                         /* mode register */
 	t_page    page;                                         /* page register */
-	t_faddrcc devread;                  /* get data from device to dma_latch */
-	t_faddrcc devwrite;               /* write data to device from dma_latch */
+	t_faddrcc devread;                      /* get data from device to latch */
+	t_faddrcc devwrite;                   /* write data to device from latch */
+	t_faddrcc devfinal;                         /* send eop signal to device */
 } t_dma_channel;
 
 typedef struct {
@@ -39,9 +40,9 @@ typedef struct {
 typedef union {
 	t_nubit8  byte;
 	t_nubit16 word;
-} t_dma_latch;
+} t_latch;
 
-extern t_dma_latch vdmalatch;
+extern t_latch vlatch;
 extern t_dma vdma1,vdma2;
 
 void IO_Read_0000();

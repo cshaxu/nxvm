@@ -14,17 +14,16 @@ typedef struct {
 
 extern t_ram vram;
 
-t_nubit8 vramGetByte(t_nubit16 segment,t_nubit16 offset);
-t_nubit16 vramGetWord(t_nubit16 segment,t_nubit16 offset);
-t_nubit32 vramGetDWord(t_nubit16 segment,t_nubit16 offset);
-void vramSetByte(t_nubit16 segment,t_nubit16 offset,t_nubit8 value);
-void vramSetWord(t_nubit16 segment,t_nubit16 offset,t_nubit16 value);
-void vramSetDWord(t_nubit16 segment,t_nubit16 offset,t_nubit32 value);
+t_nubit8  vramGetByte(t_nubit16 segment, t_nubit16 offset);
+t_nubit16 vramGetWord(t_nubit16 segment, t_nubit16 offset);
+t_nubit32 vramGetDWord(t_nubit16 segment, t_nubit16 offset);
+void      vramSetByte(t_nubit16 segment, t_nubit16 offset, t_nubit8 value);
+void      vramSetWord(t_nubit16 segment, t_nubit16 offset, t_nubit16 value);
+void      vramSetDWord(t_nubit16 segment, t_nubit16 offset, t_nubit32 value);
 t_vaddrcc vramGetAddress(t_vaddrcc immloc);
-t_vaddrcc vramGetRealAddress(t_nubit16 segment,t_nubit16 offset);
+t_vaddrcc vramGetRealAddress(t_nubit16 segment, t_nubit16 offset);
 
 void vramAlloc(t_nubitcc newsize);
-
 void vramInit();
 void vramRefresh();
 void vramFinal();

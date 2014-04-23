@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x68]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x69]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -181,6 +181,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * use assert
  * replace all constants with MACRO
  * all t_bool variable names start with "flag"
+ * new flag system: FLAG_X_X 0x0010, bit macros
  */
 
 #include "stdio.h"
