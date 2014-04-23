@@ -32,6 +32,8 @@ void vapiRecordEnd();
 
 void vapiFloppyInsert(const t_string fname);
 void vapiFloppyRemove(const t_string fname);
+void vapiHardDiskInsert(const t_string fname);
+void vapiHardDiskRemove(const t_string fname);
 void vapiStartMachine();
 
 void vapiSleep(t_nubit32 milisec);

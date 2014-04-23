@@ -17,5 +17,10 @@ void vportInit()
 		vport.out[i] = (t_faddrcc)IO_Write_VOID;
 	}
 }
+void vportReset()
+{
+	vport.iobyte = 0x00;
+	vport.ioword = 0x0000;
+}
 void vportRefresh() {}
 void vportFinal() {}

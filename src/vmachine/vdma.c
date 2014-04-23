@@ -49,6 +49,26 @@ t_dma vdma1,vdma2;
 #define GetIS(vdma)      ((vdma)->isr & 0x01)
 #define GetISR(vdma)     ((vdma)->isr >> 4)
 
+static void Reset(t_dma *vdma)
+{
+	t_nubitcc i;
+	vdma->command = 0x00;
+	vdma->status  = 0x00;
+	vdma->mask    = 0x0f;
+	vdma->request = 0x00;
+	vdma->temp    = 0x00;
+	vdma->flagmsb = 0x00;
+	vdma->drx     = 0x00;
+	vdma->flageop = 0x00;
+	vdma->isr     = 0x00;
+	for(i = 0;i < 4;++i) {
+		vdma->channel[i].baseaddr = vdma->channel[i].curraddr = 0x0000;
+		vdma->channel[i].basewc = vdma->channel[i].currwc = 0x0000;
+		vdma->channel[i].mode = 0x0000;
+		vdma->channel[i].page = 0x00;
+	}
+}
+
 static void IO_Read_CurrentAddress(t_dma *vdma, t_nubitcc id)
 {
 	if(!vdma->flagmsb)
@@ -109,7 +129,7 @@ static void IO_Write_Mask_Single(t_dma *vdma)
 #define     IO_Write_Mode(vdma) \
             ((vdma)->channel[vport.iobyte & 0x03].mode = vport.iobyte >> 2)
 #define     IO_Write_Flipflop_Clear(vdma) ((vdma)->flagmsb = 0x00)
-#define     IO_Write_Reset(vdma) (vdmaReset(vdma))
+#define     IO_Write_Reset(vdma) (Reset(vdma))
 #define     IO_Write_Mask_Clear(vdma) ((vdma)->mask = 0x00)
 #define     IO_Write_Mask_All(vdma) ((vdma)->mask = vport.iobyte & 0x0f)
 #define     IO_Write_Page(vdma, id, m) \
@@ -332,50 +352,6 @@ void vdmaSetDRQ(t_nubit8 dreqid)
 	if (vdma1.status >> 4) vdma2.status |=  0x10;
 	else                   vdma2.status &= ~0x10;
 }
-void vdmaReset(t_dma *vdma)
-{
-	vdma->command = 0x00;
-	vdma->status  = 0x00;
-	vdma->mask    = 0x0f;
-	vdma->request = 0x00;
-	vdma->temp    = 0x00;
-	vdma->flagmsb = 0x00;
-	vdma->drx     = 0x00;
-	vdma->flageop = 0x00;
-	vdma->isr     = 0x00;
-}
-void vdmaRefresh()
-{
-	t_nubit8 id;
-	t_nubit8 realdrq1, realdrq2;
-	if (GetCTRL(&vdma2)) return;
-	if (GetIS(&vdma2)) {
-		if (GetISR(&vdma2) != 0x00) Execute(&vdma2, GetISR(&vdma2), 0x01);
-		else if (GetIS(&vdma1))     Execute(&vdma1, GetISR(&vdma1), 0x00);
-		if (!GetIS(&vdma1)) vdma2.isr = 0x00;
-	}
-	if (!GetIS(&vdma2)) {
-		realdrq2 = vdma2.request | ((vdma2.status >> 4) & ~vdma2.mask);
-		if (realdrq2 == 0x00) return;
-		id = GetRegTopId(&vdma2, realdrq2);
-		if (id == 0x00) {
-			if (GetCTRL(&vdma1)) return;
-			realdrq1 = vdma1.request | ((vdma1.status >> 4) & ~vdma1.mask);
-			if (realdrq1 == 0x00) return;
-			id = GetRegTopId(&vdma1, realdrq1);
-			vdma2.isr = 0x01;
-			vdma1.isr = (id << 4) | 0x01;
-			Execute(&vdma1, id, 0x00);
-			if (!GetIS(&vdma1)) vdma2.isr = 0x00;
-			if (!(vdma1.status >> 4)) vdma2.status &= ~0x10;
-			if (!vdma1.request) vdma2.request &= ~0x01;
-		} else {
-			vdma2.isr = (id << 4) | 0x01;
-			Execute(&vdma2, id, 0x01);
-		}
-	}
-	//vapiPrint("transmitted! es=%x, bx=%x\n",_es,_bx);
-}
 #ifdef VDMA_DEBUG
 void IO_Read_FF00() /* print all info of dma */
 {
@@ -413,7 +389,7 @@ void IO_Read_FF00() /* print all info of dma */
 	}
 	vapiPrint("\nLatch: byte = %x, word = %x\n", vlatch.byte, vlatch.word);
 }
-void IO_Write_FF00() {vdmaReset(&vdma1);vdmaReset(&vdma2);}
+void IO_Write_FF00() {Reset(&vdma1);Reset(&vdma2);}
 void IO_Write_FF01() {vdmaSetDRQ(vport.iobyte);}
 void IO_Write_FF02() {vdmaRefresh();}
 #endif
@@ -422,9 +398,6 @@ void vdmaInit()
 {
 	memset(&vdma1, 0x00, sizeof(t_dma));
 	memset(&vdma2, 0x00, sizeof(t_dma));
-	memset(&vlatch, 0x00, sizeof(t_latch));
-	vdmaReset(&vdma1);
-	vdmaReset(&vdma2);
 
 	/* connect device io functions with dma channels */
 	vdma1.channel[2].devread  = (t_faddrcc)vfdcDMARead;
@@ -509,6 +482,44 @@ void vdmaInit()
 	vport.out[0xff01] = (t_faddrcc)IO_Write_FF01;
 	vport.out[0xff02] = (t_faddrcc)IO_Write_FF02;
 #endif
+}
+void vdmaReset()
+{
+	memset(&vlatch, 0x00, sizeof(t_latch));
+	Reset(&vdma1);
+	Reset(&vdma2);
+}
+void vdmaRefresh()
+{
+	t_nubit8 id;
+	t_nubit8 realdrq1, realdrq2;
+	if (GetCTRL(&vdma2)) return;
+	if (GetIS(&vdma2)) {
+		if (GetISR(&vdma2) != 0x00) Execute(&vdma2, GetISR(&vdma2), 0x01);
+		else if (GetIS(&vdma1))     Execute(&vdma1, GetISR(&vdma1), 0x00);
+		if (!GetIS(&vdma1)) vdma2.isr = 0x00;
+	}
+	if (!GetIS(&vdma2)) {
+		realdrq2 = vdma2.request | ((vdma2.status >> 4) & ~vdma2.mask);
+		if (realdrq2 == 0x00) return;
+		id = GetRegTopId(&vdma2, realdrq2);
+		if (id == 0x00) {
+			if (GetCTRL(&vdma1)) return;
+			realdrq1 = vdma1.request | ((vdma1.status >> 4) & ~vdma1.mask);
+			if (realdrq1 == 0x00) return;
+			id = GetRegTopId(&vdma1, realdrq1);
+			vdma2.isr = 0x01;
+			vdma1.isr = (id << 4) | 0x01;
+			Execute(&vdma1, id, 0x00);
+			if (!GetIS(&vdma1)) vdma2.isr = 0x00;
+			if (!(vdma1.status >> 4)) vdma2.status &= ~0x10;
+			if (!vdma1.request) vdma2.request &= ~0x01;
+		} else {
+			vdma2.isr = (id << 4) | 0x01;
+			Execute(&vdma2, id, 0x01);
+		}
+	}
+	//vapiPrint("transmitted! es=%x, bx=%x\n",_es,_bx);
 }
 void vdmaFinal() {}
 /*

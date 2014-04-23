@@ -24,6 +24,7 @@ void IO_Read_VOID();
 void IO_Write_VOID();
 
 void vportInit();
+void vportReset();
 void vportRefresh();
 void vportFinal();
 

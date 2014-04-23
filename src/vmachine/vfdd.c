@@ -24,7 +24,7 @@ void vfddTransRead()
 			vfdd.sector = 0x01;
 			vfdd.head   = 0x01;
 		}
-		vfddResetCURR;
+		vfddSetPointer;
 	}
 }
 void vfddTransWrite()
@@ -39,20 +39,20 @@ void vfddTransWrite()
 			vfdd.sector = 0x01;
 			vfdd.head   = 0x01;
 		}
-		vfddResetCURR;
+		vfddSetPointer;
 	}
 }
 
 void vfddFormatTrack(t_nubit8 fillbyte)
 {
-	if (vfdd.cyl >= VFDD_NCYL) return;
+	if (vfdd.cyl >= vfdd.ncyl) return;
 	vfdd.head   = 0x00;
 	vfdd.sector = 0x01;
-	vfddResetCURR;
+	vfddSetPointer;
 	memset((void *)(vfdd.curr), fillbyte, vfdd.nsector * vfdd.nbyte);
 	vfdd.head   = 0x01;
 	vfdd.sector = 0x01;
-	vfddResetCURR;
+	vfddSetPointer;
 	memset((void *)(vfdd.curr), fillbyte, vfdd.nsector * vfdd.nbyte);
 	vfdd.sector = vfdd.nsector;
 }
@@ -62,8 +62,13 @@ void vfddRefresh()
 void vfddInit()
 {
 	memset(&vfdd, 0x00, sizeof(t_fdd));
-	vfdd.base = (t_vaddrcc)malloc(0x00168000);
+	vfdd.ncyl    = 0x0050;
+	vfdd.nhead   = 0x0002;
+	vfdd.nsector = 0x0012;
+	vfdd.nbyte   = 0x0200;
+	vfdd.base    = (t_vaddrcc)malloc(vfddGetImageSize);
 }
+void vfddReset() {}
 void vfddFinal()
 {
 	if (vfdd.base) free((void*)vfdd.base);

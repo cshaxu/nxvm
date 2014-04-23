@@ -334,13 +334,8 @@ t_nubit8 vpicGetINTR()
 	} else                     /* find the final int id based on master ICW2 */
 		return (irid1 | vpic1.icw2);
 }
-
 void vpicInit()
 {
-	memset(&vpic1, 0x00, sizeof(t_pic));
-	memset(&vpic2, 0x00, sizeof(t_pic));
-	vpic1.flaginit = vpic2.flaginit = ICW1;
-	vpic1.ocw3 = vpic2.ocw3 = 0x02;
 	vport.in[0x0020] = (t_faddrcc)IO_Read_0020;
 	vport.in[0x0021] = (t_faddrcc)IO_Read_0021;
 	vport.in[0x00a0] = (t_faddrcc)IO_Read_00A0;
@@ -355,6 +350,13 @@ void vpicInit()
 	vport.in[0xff22] = (t_faddrcc)IO_Read_FF22;
 	vport.out[0xff20] = (t_faddrcc)IO_Write_FF20;
 #endif
+}
+void vpicReset()
+{
+	memset(&vpic1, 0x00, sizeof(t_pic));
+	memset(&vpic2, 0x00, sizeof(t_pic));
+	vpic1.flaginit = vpic2.flaginit = ICW1;
+	vpic1.ocw3 = vpic2.ocw3 = 0x02;
 }
 void vpicRefresh()
 {

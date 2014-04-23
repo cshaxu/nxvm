@@ -128,9 +128,9 @@ void IO_Write_FF02();                    /* vdmaRefresh - Detect and Execute */
 
 void vdmaSetDRQ(t_nubit8 dreqid);
 
-void vdmaReset(t_dma *vdma);
-void vdmaRefresh();
 void vdmaInit();
+void vdmaReset();
+void vdmaRefresh();
 void vdmaFinal();
 
 #endif

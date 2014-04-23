@@ -44,7 +44,7 @@ static t_nubit16 sax, sbx, scx, sdx;
 #define QDBIOS_VAR_VCMOS 0
 #define QDBIOS_VAR_QDRTC 1
 /* debugging selectors */
-#define QDBIOS_FDD QDBIOS_VAR_VFDD
+#define QDBIOS_FDD QDBIOS_VAR_QDFDD
 #define QDBIOS_RTC QDBIOS_VAR_VCMOS
 
 #if (QDBIOS_FDD == QDBIOS_VAR_VFDD)
@@ -291,25 +291,43 @@ static void INT_13_15_FDD_GetDriveType()
 	mov(mbp(0x0441), _ah); /* set status*/
 }
 #else
-#define SetStatus (vramVarByte(0x0040, 0x0041) = _ah)
-#define GetStatus (vramVarByte(0x0040, 0x0041))
+#define SetFddStatus (vramVarByte(0x0040, 0x0041) = _ah)
+#define GetFddStatus (vramVarByte(0x0040, 0x0041))
+#define SetHddStatus (vramVarByte(0x0040, 0x0074) = _ah)
+#define GetHddStatus (vramVarByte(0x0040, 0x0074))
 t_vaddrcc vfddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector)
-{return (vfdd.base + ((cyl * 2 + head) * 18 + (sector-1)) * 512);}
+{
+	vfdd.cyl = cyl;
+	vfdd.head = head;
+	vfdd.sector = sector;
+	vfddSetPointer;
+	return vfdd.curr;
+}
+t_vaddrcc vhddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector)
+{
+	vhdd.cyl = cyl;
+	vhdd.head = head;
+	vhdd.sector = sector;
+	vhddSetPointer;
+	return vhdd.curr;
+}
 static void INT_13_00_FDD_ResetDrive()
 {
-	if (_dl) {
-		/* only one drive */
-		_ah = 0x0c;
-		SetBit(_flags, VCPU_FLAG_CF);
-	} else {
-		_ah = 0x00;
-		ClrBit(_flags, VCPU_FLAG_CF);
-	}
-	SetStatus;
+	_ah = 0x00;
+	ClrBit(_flags, VCPU_FLAG_CF);
+	SetFddStatus;
+	SetHddStatus;
 }
 static void INT_13_01_FDD_GetDiskStatus()
 {
-	_ah = GetStatus;
+	if (_dl & 0x80) {/* Hard Disk */
+		_ah = 0x80;
+		SetHddStatus;
+	} else {
+		_ah = 0x00;
+		SetFddStatus;
+	}
+	SetFddStatus;
 }
 static void INT_13_02_FDD_ReadSector()
 {
@@ -317,17 +335,33 @@ static void INT_13_02_FDD_ReadSector()
 	t_nubit8 head   = _dh;
 	t_nubit8 cyl    = _ch;
 	t_nubit8 sector = _cl;
-	if (drive || head > 1 || sector > 18 || cyl > 79) {
-		/* sector not found */
-		_ah = 0x04;
-		SetBit(_flags, VCPU_FLAG_CF);
-		SetStatus;
+	if (_dl & 0x80) {
+		drive &= 0x7f;
+		if (drive || !sector || head >= vhdd.nhead || sector > vhdd.nsector || cyl >= vhdd.ncyl) {
+			/* sector not found */
+			_ah = 0x04;
+			SetBit(_flags, VCPU_FLAG_CF);
+			SetHddStatus;
+		} else {
+			memcpy((void *)vramGetAddr(_es,_bx),
+				(void *)vhddGetAddress(cyl,head,sector), _al * 512);
+			_ah = 0x00;
+			ClrBit(_flags, VCPU_FLAG_CF);
+			SetHddStatus;
+		}
 	} else {
-		memcpy((void *)vramGetAddr(_es,_bx),
-			(void *)vfddGetAddress(cyl,head,sector), _al * 512);
-		_ah = 0x00;
-		ClrBit(_flags, VCPU_FLAG_CF);
-		SetStatus;
+		if (drive || !sector || head >= vfdd.nhead || sector > vfdd.nsector || cyl >= vfdd.ncyl) {
+			/* sector not found */
+			_ah = 0x04;
+			SetBit(_flags, VCPU_FLAG_CF);
+			SetFddStatus;
+		} else {
+			memcpy((void *)vramGetAddr(_es,_bx),
+				(void *)vfddGetAddress(cyl,head,sector), _al * 512);
+			_ah = 0x00;
+			ClrBit(_flags, VCPU_FLAG_CF);
+			SetFddStatus;
+		}
 	}
 }
 static void INT_13_03_FDD_WriteSector()
@@ -336,55 +370,96 @@ static void INT_13_03_FDD_WriteSector()
 	t_nubit8 head   = _dh;
 	t_nubit8 cyl    = _ch;
 	t_nubit8 sector = _cl;
-	if (drive || head > 1 || sector > 18 || cyl > 79) {
-		/* sector not found */
-		_ah = 0x04;
-		SetBit(_flags, VCPU_FLAG_CF);
-		SetStatus;
+	if (_dl & 0x80) {
+		drive &= 0x7f;
+		if (drive || !sector || head >= vhdd.nhead || sector > vhdd.nsector || cyl >= vhdd.ncyl) {
+			/* sector not found */
+			_ah = 0x04;
+			SetBit(_flags, VCPU_FLAG_CF);
+			SetHddStatus;
+		} else {
+			memcpy((void *)vhddGetAddress(cyl,head,sector),
+				(void *)vramGetAddr(_es,_bx), _al * 512);
+			_ah = 0x00;
+			ClrBit(_flags, VCPU_FLAG_CF);
+			SetHddStatus;
+		}
 	} else {
-		memcpy((void *)vfddGetAddress(cyl,head,sector),
-			(void *)vramGetAddr(_es,_bx), _al * 512);
-		_ah = 0x00;
-		ClrBit(_flags, VCPU_FLAG_CF);
-		SetStatus;
+		if (drive || !sector || head >= vfdd.nhead || sector > vfdd.nsector || cyl >= vfdd.ncyl) {
+			/* sector not found */
+			_ah = 0x04;
+			SetBit(_flags, VCPU_FLAG_CF);
+			SetFddStatus;
+		} else {
+			memcpy((void *)vfddGetAddress(cyl,head,sector),
+				(void *)vramGetAddr(_es,_bx), _al * 512);
+			_ah = 0x00;
+			ClrBit(_flags, VCPU_FLAG_CF);
+			SetFddStatus;
+		}
 	}
 }
 static void INT_13_08_FDD_GetParameter()
 {
-	if (_dl == 0x80) {
+
+	if (_dl & 0x7f) {
 		_ah = 0x01;
 		SetBit(_flags, VCPU_FLAG_CF);
-		SetStatus;
+		SetFddStatus;
 		ClrBit(_flags, VCPU_FLAG_PF);
 		ClrBit(_flags, VCPU_FLAG_IF);
+		return;
+	}
+	if (_dl & 0x80) {
+		_ah = 0x00;
+		_ch = (t_nubit8)vhdd.ncyl - 1;
+		_cl = ((t_nubit8)(vhdd.ncyl >> 2) & 0xc0) | ((t_nubit8)vhdd.nsector);
+		_dh = (t_nubit8)vhdd.nhead - 1;
+		_dl = vramVarByte(0x0040, 0x0075);
 	} else {
 		_ah = 0x00;
 		_bl = 0x04;
-		_cx = 0x4f12;
-		_dx = 0x0102;
+		_ch = (t_nubit8)vfdd.ncyl - 1;
+		_cl = (t_nubit8)vfdd.nsector;
+		_dh = (t_nubit8)vfdd.nhead - 1;
+		_dl = 0x02; /* installed 3 fdd (?) */
 		_di = vramVarWord(0x0000, 0x1e * 4);
 		_es = vramVarWord(0x0000, 0x1e * 4 + 2);
 		ClrBit(_flags, VCPU_FLAG_CF);
-		SetStatus;
+		SetFddStatus;
 	}
 }
 static void INT_13_15_FDD_GetDriveType()
 {
-	switch (_dl) {
-	case 0x00:
-	case 0x01:
-		ClrBit(_flags, VCPU_FLAG_CF);
-		SetStatus;
-		_ah = 0x01;
-		break;
-	case 0x02:
-	case 0x03:
-		ClrBit(_flags, VCPU_FLAG_CF);
-		SetStatus;
-		_ah = 0x00;
-		break;
-	default:
-		break;
+	t_nubit32 count;
+	if (_dl & 0x80) {
+		if (_dl & 0x7f) {
+			_ax = _cx = _dx = 0x00;
+			stc;
+		} else {
+			_ax = 0x0003;
+			clc;
+			count = (vhdd.ncyl - 1) * vhdd.nhead * vhdd.nsector;
+			_cx = (t_nubit16)(count >> 16);
+			_dx = (t_nubit16)count;
+		}
+	} else {
+		switch (_dl) {
+		case 0x00:
+		case 0x01:
+			ClrBit(_flags, VCPU_FLAG_CF);
+			SetFddStatus;
+			_ah = 0x01;
+			break;
+		case 0x02:
+		case 0x03:
+			ClrBit(_flags, VCPU_FLAG_CF);
+			SetFddStatus;
+			_ah = 0x00;
+			break;
+		default:
+			break;
+		}
 	}
 }
 #endif
@@ -522,7 +597,6 @@ static void INT_1A_06_CMOS_SetAlarmClock()
 /* rtc update */
 void INT_08()
 {
-	if (cmp(vmachine.flaginit,0x00)) return;
 	push_ax;
 	mov(_ax, 0x0001);
 	add(mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER+0),_ax);
@@ -786,7 +860,45 @@ void INT_1A()
 	default:                                      break;
 	}
 }
-void qdbiosPOST()
+
+void qdbiosExecInt(t_nubit8 intid)
+{
+	switch (intid) {
+	case 0x08: /* HARDWARE rtc update */
+		INT_08();break;
+	case 0x09: /* HARDWARE keyb int */
+		INT_09();break;
+	case 0x0e: /* HARDWARE fdd sense int */
+		INT_0E();break;
+	case 0x10: /* SOFTWARE cga operate */
+		INT_10();break;
+	case 0x13: /* SOFTWARE fdd operate */
+		INT_13();break;
+	case 0x15: /* SOFTWARE bios operate */
+		INT_15();break;
+	case 0x16: /* SOFTWARE keyb opterate */
+		INT_16();break;
+	case 0x1a: /* SOFTWARE rtc operate */
+		INT_1A();break;
+	case 0x11: /* SOFTWARE bios operate */
+		INT_11();break;
+	case 0x12: /* SOFTWARE bios operate */
+		INT_12();break;
+	case 0x14: /* SOFTWARE bios operate */
+		INT_14();break;
+	case 0x17: /* SOFTWARE bios operate */
+		INT_17();break;
+	default:     break;
+	}
+}
+
+void qdbiosRefresh() {}
+void qdbiosInit()
+{
+	qdkeybInit();
+	qdcgaInit();
+}
+void qdbiosReset()
 {
 	t_nubit8 hour, min, sec;
 	t_nubit16 i;
@@ -934,6 +1046,7 @@ void qdbiosPOST()
 	vramVarByte(0x0040, 0x0065) = 0x29;
 	vramVarByte(0x0040, 0x0066) = 0x30;
 	vramVarByte(0x0040, 0x0074) = 0x01;
+	vramVarByte(0x0040, 0x0075) = vhdd.flagexist ? 0x01 : 0x00; /* number of hard disks */
 	vramVarByte(0x0040, 0x0076) = 0xc0;
 	vramVarByte(0x0040, 0x0078) = 0x14;
 	vramVarByte(0x0040, 0x007c) = 0x0a;
@@ -952,6 +1065,7 @@ void qdbiosPOST()
 	vramVarByte(0x0040, 0x00a8) = 0x3a;
 	vramVarByte(0x0040, 0x00a9) = 0x5d;
 	vramVarByte(0x0040, 0x00ab) = 0xc0;
+	vramVarByte(0x0040, 0x0100) = vmachine.flagboot ? 0x80 : 0x00; /* boot disk */
 /* bios rom info area */
 	vramVarWord(0xf000, 0xe6f5) = 0x0008;
 	vramVarByte(0xf000, 0xe6f7) = 0xfc;
@@ -1019,52 +1133,25 @@ void qdbiosPOST()
 		(t_nubit32)(((hour * 3600 + min * 60 + sec) * 1000) / QDBIOS_RTC_TICK);
 	vramVarByte(0x0000, QDBIOS_ADDR_RTC_ROLLOVER) = 0x00;
 /* load boot sector */
-	if (!vfdd.flagexist) {
-		vapiPrint("Insert boot disk and restart.\n");
-		return;
+	if (vramVarByte(0x0040, 0x0100) & 0x80) {
+		if (!vhdd.flagexist) {
+			vapiPrint("Insert boot disk and restart.\n");
+			return;
+		} else {
+			memcpy((void *)vramGetAddr(0x0000,0x7c00), (void *)vhdd.base, 0x200);
+			mov(_ax, 0xaa55);
+		}
+	} else {
+		if (!vfdd.flagexist) {
+			vapiPrint("Insert boot disk and restart.\n");
+			return;
+		} else {
+			memcpy((void *)vramGetAddr(0x0000,0x7c00), (void *)vfdd.base, 0x200);
+			mov(_ax, 0xaa55);
+		}
 	}
-	memcpy((void *)vramGetAddr(0x0000,0x7c00), (void *)vfdd.base, 0x200);
-	mov(_ax, 0xaa55);
 	mov(_cx, 0x0001);
 	mov(_sp, 0xfffe);
-}
-
-void qdbiosExecInt(t_nubit8 intid)
-{
-	switch (intid) {
-	case 0x08: /* HARDWARE rtc update */
-		INT_08();break;
-	case 0x09: /* HARDWARE keyb int */
-		INT_09();break;
-	case 0x0e: /* HARDWARE fdd sense int */
-		INT_0E();break;
-	case 0x10: /* SOFTWARE cga operate */
-		INT_10();break;
-	case 0x13: /* SOFTWARE fdd operate */
-		INT_13();break;
-	case 0x15: /* SOFTWARE bios operate */
-		INT_15();break;
-	case 0x16: /* SOFTWARE keyb opterate */
-		INT_16();break;
-	case 0x1a: /* SOFTWARE rtc operate */
-		INT_1A();break;
-	case 0x11: /* SOFTWARE bios operate */
-		INT_11();break;
-	case 0x12: /* SOFTWARE bios operate */
-		INT_12();break;
-	case 0x14: /* SOFTWARE bios operate */
-		INT_14();break;
-	case 0x17: /* SOFTWARE bios operate */
-		INT_17();break;
-	default:     break;
-	}
-}
-
-void qdbiosRefresh() {}
-void qdbiosInit()
-{
-	qdkeybInit();
-	qdcgaInit();
 }
 void qdbiosFinal()
 {

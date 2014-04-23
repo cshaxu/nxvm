@@ -69,6 +69,7 @@ void vapiRecordDump(const t_string fname)
 			_rec_af,_rec_pf,_rec_df,_rec_if,_rec_tf);
 		++i;
 	}
+	vapiPrint("Record dumped to '%s'.\n", fname);
 	fclose(dump);
 }
 void vapiRecordStart()
@@ -92,15 +93,14 @@ void vapiRecordExec()
 }
 void vapiRecordEnd() {}
 
-/* Floppy Disk */
+/* Disk */
 #include "vfdd.h"
-
 void vapiFloppyInsert(const t_string fname)
 {
 	t_nubitcc count;
 	FILE *image = fopen(fname, "rb");
 	if (image) {
-		count = fread((void *)vfdd.base, sizeof(t_nubit8), 0x00168000, image);
+		count = fread((void *)vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
 		vfdd.flagexist = 0x01;
 		fclose(image);
 		vapiPrint("Floppy disk inserted.\n");
@@ -115,7 +115,7 @@ void vapiFloppyRemove(const t_string fname)
 		image = fopen(fname, "wb");
 		if(image) {
 			if (!vfdd.flagro)
-				count = fwrite((void *)vfdd.base, sizeof(t_nubit8), 0x00168000, image);
+				count = fwrite((void *)vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
 			vfdd.flagexist = 0x00;
 			fclose(image);
 		} else {
@@ -124,8 +124,41 @@ void vapiFloppyRemove(const t_string fname)
 		}
 	}
 	vfdd.flagexist = 0x00;
-	memset((void *)vfdd.base, 0x00, 0x00168000);
+	memset((void *)vfdd.base, 0x00, vfddGetImageSize);
 	vapiPrint("Floppy disk removed.\n");
+}
+#include "vhdd.h"
+void vapiHardDiskInsert(const t_string fname)
+{
+	t_nubitcc count;
+	FILE *image = fopen(fname, "rb");
+	if (image) {
+		count = fread((void *)vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
+		vhdd.flagexist = 0x01;
+		fclose(image);
+		vapiPrint("Hard disk connected.\n");
+	} else
+		vapiPrint("Cannot read hard disk image from '%s'.\n", fname);
+}
+void vapiHardDiskRemove(const t_string fname)
+{
+	t_nubitcc count;
+	FILE *image;
+	if (fname) {
+		image = fopen(fname, "wb");
+		if(image) {
+			if (!vhdd.flagro)
+				count = fwrite((void *)vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
+			vhdd.flagexist = 0x00;
+			fclose(image);
+		} else {
+			vapiPrint("Cannot write hard disk image to '%s'.\n", fname);
+			return;
+		}
+	}
+	vhdd.flagexist = 0x00;
+	memset((void *)vhdd.base, 0x00, vhddGetImageSize);
+	vapiPrint("Hard disk removed.\n");
 }
 
 /* Platform Related */

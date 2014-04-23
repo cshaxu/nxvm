@@ -33,6 +33,7 @@ extern t_ram vram;
 
 void vramAlloc(t_nubitcc newsize);
 void vramInit();
+void vramReset();
 void vramRefresh();
 void vramFinal();
 

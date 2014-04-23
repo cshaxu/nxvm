@@ -2,6 +2,7 @@
 
 #include "stdio.h"
 #include "stdlib.h"
+#include "stdarg.h"
 #include "string.h"
 
 #include "../vmachine/vmachine.h"
@@ -11,285 +12,427 @@
 #include "debug.h"
 #include "console.h"
 
-#define MAXLINE 256
-static int exitFlag;
+///*void Exec()
+//{
+//	char execmd[MAXLINE];
+//	FILE *load;
+//	t_nubit8 c;
+//	t_nubit16 i = 0,end;
+//	t_nubit32 len = 0;
+//	if (!vmachine.flaginit || vmachine.flagrun) {
+//		printc("Cannot execute binary file now.\n");
+//		return;
+//	}
+//	printc(".COM File: ");
+//	fgets(execmd,MAXLINE,stdin);
+//	parse(execmd);
+//	if(!strlen(execmd)) return;
+//	load = FOPEN(execmd,"rb");
+//	if(!load) {
+//		printc("File not found\n");
+//		return;
+//	} else {
+//		vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
+//		vcpu.si = vcpu.di = vcpu.bp = 0x0000;
+//		vcpu.sp = 0xffee;	vcpu.ip = 0x0100;
+//		vcpu.ds = vcpu.es = vcpu.ss = vcpu.cs = 0x0001;
+//		vmachine.flagrun = 1;
+//		c = fgetc(load);
+//		while(!feof(load)) {
+//			vramVarByte(vcpu.cs+i,vcpu.ip+((len++)%0x10000)) = c;
+//			i = len / 0x10000;
+//			c = fgetc(load);
+//		}
+//		end = vcpu.ip+len;
+//		fclose(load);
+//		while(vcpu.ip < end && vmachine.flagrun) vmachineRefresh();
+//	}
+//}*/
+////#define _rec (vapirecord.rec[(i + vapirecord.start) % VAPI_RECORD_SIZE])
+//void Dump()
+//{
+//	t_nubitcc i = 0;
+////	Operand x;
+////	FILE *fp;
+//	char str[MAXLINE];
+//	printc("Dump File: ");
+//	fgets(str, MAXLINE, stdin);
+//	parse(str);
+//	vmachineDumpRecordFile(str);
+//	/*printc("Instruction Dump File: ");
+//	fgets(str, MAXLINE, stdin);
+//	parse(str);
+//	fp = fopen(str,"w");
+//	if (!fp) {
+//		printc("ERORR:\tfailed to dump instruction.\n");
+//		return;
+//	}
+//	while (i < vapirecord.size) {
+//		disassemble(str, &x, (void *)vram.base, _rec.cs, _rec.ip);
+//		fprintf(fp,"%04X:%04X\t%s\n",_rec.cs,_rec.ip,str);
+//		_rec.cs;
+//		++i;
+//	}
+//	fclose(fp);*/
+//}
+//void Memory()
+//{
+//	unsigned int i;
+//	unsigned int tempSize;
+//	unsigned char testFlag = 0;
+//	char str[MAXLINE];
+//	if (!vmachine.flaginit || vmachine.flagrun) {
+//		printc("Cannot modify memory size now.\n");
+//		return;
+//	}
+//	fflush(stdin);
+//	printc("Size(KB): ");
+//	fgets(str,MAXLINE,stdin);
+//	tempSize = atoi(str);
+//	if(tempSize > 0x400) {
+//		vramAlloc(tempSize<<0x0a);
+//	} else {
+//		vramAlloc(1024<<0x0a);
+//	}
+//	for(i = 0;i < vram.size;++i)
+//	{
+//		if(i % 1024 == 0) printc("\rMemory Testing : %dK",i/1024);
+//		if(d_nubit8(vram.base+i) != 0) {
+//			printc("\nMemory test failed.\n");
+//			testFlag = 1;
+//			break;
+//		}
+//	}
+//	if(!testFlag) printc("\rMemory Testing : %dK OK\n",i/1024);
+//	return;
+//
+//}
 
-static void parse(char *s)
+
+#define MAXLINE 256
+#define MAXNARG 256
+#define MAXNASMARG 4
+
+static int narg;
+static char **arg;
+static int exitFlag;
+static char cmdBuff[MAXLINE];
+static char cmdCopy[MAXLINE];
+static char filename[MAXLINE];
+static t_nubit32 printc(const t_string format, ...)
+{
+	t_nubit32 nWrittenBytes = 0;
+	va_list arg_ptr;
+	va_start(arg_ptr, format);
+	nWrittenBytes = vfprintf(stdout,format,arg_ptr);
+	//nWrittenBytes = vsprintf(stringBuffer,format,arg_ptr);
+	va_end(arg_ptr);
+	fflush(stdout);
+	return nWrittenBytes;
+}
+static void cgets(char *_Buf, int _MaxCount, FILE *_File)
+{
+	fgets(_Buf,_MaxCount,_File);
+	fflush(stdin);
+}
+static void lcase(char *s)
 {
 	int i = 0;
+	if(s[0] == '\'') return;
 	while(s[i] != '\0') {
-		if(s[i] == '\n') {
-			s[i] = '\0';
-			break;
-		}
-		if(s[i] > 0x40 && s[i] < 0x5b)
+		if(s[i] == '\n') s[i] = '\0';
+		else if(s[i] > 0x40 && s[i] < 0x5b)
 			s[i] += 0x20;
 		i++;
 	}
 }
-
-void Test()
+static void parse()
 {
-/*	t_nubit32 eflags = 0x00000000;
-	__asm push eflags
-	__asm popfd
-	__asm mov al, 0xff
-	__asm cmp al, 0xff
-	__asm pushfd
-	__asm pop eflags
-	vcpu.flags = (t_nubit16)(eflags & 0xffff);*/
-}
-
-void Help()
-{
-	fprintf(stdout,"NXVM Console Commands\n");
-	fprintf(stdout,"=====================\n");
-	fprintf(stdout,"HELP    Show this help menu\n");
-	fprintf(stdout,"EXIT    Quit the console\n\n");
-
-	fprintf(stdout,"DEBUG   Execute virtual debugger\n");
-/*	fprintf(stdout,"EXEC    Execute a binary file\n");*/
-	fprintf(stdout,"RECORD  Record cpu status for each instruction\n");
-	fprintf(stdout,"DUMP    Dump records into log file\n\n");
-/*	fprintf(stdout,"TRACE   Trace cpu status for each instruction\n");*/
-	fprintf(stdout,"FLOPPY  Load a floppy disk from image file\n");
-	fprintf(stdout,"MEMORY  Assign the memory size\n");
-	fprintf(stdout,"INFO    Print all virtual machine settings\n\n");
-
-	fprintf(stdout,"START   Turn on virtual machine\n");
-	fprintf(stdout,"STOP    Turn off virtual machine; hotkey is F9\n");
-	fprintf(stdout,"RESET   Restart virtual machine\n");
-}
-void Exit()
-{
-	if (!vmachine.flagrun) {
-		if (vmachine.flaginit) vmachineFinal();
-		exitFlag = 1;
+	STRCPY(cmdCopy,cmdBuff);
+	narg = 0;
+	arg[narg] = STRTOK(cmdCopy," \t\n\r\f");
+	if(arg[narg]) {
+		lcase(arg[narg]);
+		narg++;
+	} else return;
+	while(narg < MAXNARG) {
+		arg[narg] = STRTOK(NULL," \t\n\r\f");
+		if(arg[narg]) {
+			lcase(arg[narg]);
+			narg++;
+		} else break;
 	}
 }
 
-void Debug() {debug();}
-/*void Exec()
+#define GetHelp if(1) {Help();return;} else
+static void Help()
 {
-	char execmd[MAXLINE];
-	FILE *load;
-	t_nubit8 c;
-	t_nubit16 i = 0,end;
-	t_nubit32 len = 0;
-	if (!vmachine.flaginit || vmachine.flagrun) {
-		fprintf(stdout,"Cannot execute binary file now.\n");
-		return;
+	if (strcmp(arg[0], "help")) {
+		narg = 2;
+		arg[1] = arg[0];
 	}
-	fprintf(stdout,".COM File: ");
-	fgets(execmd,MAXLINE,stdin);
-	parse(execmd);
-	if(!strlen(execmd)) return;
-	load = FOPEN(execmd,"rb");
-	if(!load) {
-		fprintf(stdout,"File not found\n");
-		return;
-	} else {
-		vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
-		vcpu.si = vcpu.di = vcpu.bp = 0x0000;
-		vcpu.sp = 0xffee;	vcpu.ip = 0x0100;
-		vcpu.ds = vcpu.es = vcpu.ss = vcpu.cs = 0x0001;
-		vmachine.flagrun = 1;
-		c = fgetc(load);
-		while(!feof(load)) {
-			vramVarByte(vcpu.cs+i,vcpu.ip+((len++)%0x10000)) = c;
-			i = len / 0x10000;
-			c = fgetc(load);
-		}
-		end = vcpu.ip+len;
-		fclose(load);
-		while(vcpu.ip < end && vmachine.flagrun) vmachineRefresh();
-	}
-}*/
-void Record()
-{
-	if (!vmachine.flaginit || vmachine.flagrun) {
-		fprintf(stdout,"Cannot change record status now.\n");
-		return;
-	}
-	if (vmachine.flagrecord) {
-		vmachine.flagrecord = 0x00;
-		fprintf(stdout,"Recorder turned off.\n");
-	} else {
-		vmachine.flagrecord = 0x01;
-		fprintf(stdout,"Recorder turned on.\n");
-	}
-}
-#define _rec (vapirecord.rec[(i + vapirecord.start) % VAPI_RECORD_SIZE])
-void Dump()
-{
-	t_nubitcc i = 0;
-	Operand x;
-	FILE *fp;
-	char str[MAXLINE];
-	fprintf(stdout,"Dump File: ");
-	fgets(str, MAXLINE, stdin);
-	parse(str);
-	vmachineDumpRecordFile(str);
-	fprintf(stdout,"Instruction Dump File: ");
-	fgets(str, MAXLINE, stdin);
-	parse(str);
-	fp = fopen(str,"w");
-	if (!fp) {
-		fprintf(stdout,"ERORR:\tfailed to dump instruction.\n");
-		return;
-	}
-	while (i < vapirecord.size) {
-		disassemble(str, &x, (void *)vram.base, _rec.cs, _rec.ip);
-		fprintf(fp,"%04X:%04X\t%s\n",_rec.cs,_rec.ip,str);
-		_rec.cs;
-		++i;
-	}
-	fclose(fp);
-}
-
-void Floppy()
-{
-	char str[MAXLINE];
-	if (!vmachine.flaginit || vmachine.flagrun) {
-		fprintf(stdout,"Cannot change floppy disk now.\n");
-		return;
-	}
-	fprintf(stdout,"Floppy Image File: ");
-	fflush(stdout);
-	fgets(str, MAXLINE, stdin);
-	fflush(stdin);
-	parse(str);
-	if (!vfdd.flagexist)
-		vmachineInsertFloppy(str);
-	else
-		if (strlen(str))
-			vmachineRemoveFloppy(str);
-		else
-			vmachineRemoveFloppy(NULL);
-}
-void Memory()
-{
-	unsigned int i;
-	unsigned int tempSize;
-	unsigned char testFlag = 0;
-	char str[MAXLINE];
-	if (!vmachine.flaginit || vmachine.flagrun) {
-		fprintf(stdout,"Cannot modify memory size now.\n");
-		return;
-	}
-	fflush(stdin);
-	fprintf(stdout,"Size(KB): ");
-	fgets(str,MAXLINE,stdin);
-	tempSize = atoi(str);
-	if(tempSize > 0x400) {
-		vramAlloc(tempSize<<0x0a);
-	} else {
-		vramAlloc(1024<<0x0a);
-	}
-	for(i = 0;i < vram.size;++i)
-	{
-		if(i % 1024 == 0) fprintf(stdout,"\rMemory Testing : %dK",i/1024);
-		if(d_nubit8(vram.base+i) != 0) {
-			fprintf(stdout,"\nMemory test failed.\n");
-			testFlag = 1;
+	switch (narg) {
+	case 2:
+		if (!strcmp(arg[1], "help")) {
+			printc("Show help info\n");
+			printc("\n");
+			printc("HELP\n");
+			printc("  show menu of all commands\n");
+			printc("HELP [command]\n");
+			printc("  show help info for command\n");
 			break;
-		}
+		} else if (!strcmp(arg[1], "exit")) {
+			printc("Quit the console\n");
+			printc("\n");
+			printc("EXIT\n");
+			break;
+		} else if (!strcmp(arg[1], "info")) {
+			printc("List all NXVM info\n");
+			printc("\n");
+			printc("INFO\n");
+			break;
+		} else if (!strcmp(arg[1], "debug")) {
+			printc("Launch NXVM hardware debugger\n");
+			printc("\n");
+			printc("DEBUG\n");
+			break;
+		} else if (!strcmp(arg[1], "record")) {
+			printc("Record cpu status in each iteration for futher dumping\n");
+			printc("\n");
+			printc("RECORD [on | off | dump <file>]\n");
+			break;
+		} else if (!strcmp(arg[1], "set")) {
+			printc("Change BIOS settings\n");
+			printc("\n");
+			printc("SET <item> <value>\n");
+			printc("  available items and values\n");
+			printc("  BOOTDISK   FDD, HDD\n");
+			break;
+		} else if (!strcmp(arg[1], "device")) {
+			printc("Change nxvm devices\n");
+			printc("\n");
+			printc("DEVICE memory <size>\n");
+			printc("  change memory size (KB)\n");
+			printc("DEVICE display [console | window]\n");
+			printc("  change display type\n");
+			printc("DEVICE floppy [create | insert <file>| remove <file>]");
+			printc("  change floppy status:\n");
+			printc("  create: discard previous floppy image and create a new one\n");
+			printc("  insert: load floppy image from file\n");
+			printc("  remove: remove floppy image and dump to file\n");
+			printc("DEVICE harddisk [create | connect <file>| disconnect <file>]\n");
+			printc("  change floppy status:\n");
+			printc("  create:     discard previous hard disk image and create a new one\n");
+			printc("  connect:    load hard disk image from file\n");
+			printc("  disconnect: remove hard disk image and dump to file\n");
+			break;
+		} else if (!strcmp(arg[1], "nxvm")) {
+			printc("Change virtual machine status\n");
+			printc("\n");
+			printc("NXVM [start | reset | stop | continue]\n");
+			printc("  start:    start virtual machine\n");
+			printc("  reset:    reset all device and restart machine\n");
+			printc("  stop:     stop virtual machine\n");
+			printc("  resume:   resume virtual macine\n");
+			break;
+		} else ;
+	case 1:
+	default:
+		printc("NXVM Console Commands\n");
+		printc("=====================\n");
+		printc("HELP    Show help info\n");
+		printc("EXIT    Quit the console\n");
+		printc("INFO    List all NXVM info\n");
+		printc("\n");
+		printc("DEBUG   Launch NXVM hardware debugger\n");
+		printc("RECORD  Record cpu status for each instruction\n");
+/*		printc("RUN     Execute a binary file\n");*/
+		printc("\n");
+		printc("SET     Change BIOS settings\n");
+		printc("DEVICE  Change hardware parts\n");
+		printc("NXVM    Change virtual machine status\n");
+		printc("\n");
+		printc("For command usage, type 'HELP <command>'.\n");
+		break;
 	}
-	if(!testFlag) fprintf(stdout,"\rMemory Testing : %dK OK\n",i/1024);
-	return;
-
 }
-void Info()
+static void Exit()
 {
-	fprintf(stdout,"NXVM Initialized: %d\n"
-		           "NXVM Running:     %d\n"
-		           "Recorder Enabled: %d\n"
-		           "Breakpoint Set:   %d\n"
-		           "Trace Mode:       %d\n",
-		vmachine.flaginit,vmachine.flagrun,vmachine.flagrecord,vmachine.flagbreak,vmachine.flagtrace);
+	if (narg != 1) GetHelp;
+	if (!vmachine.flagrun) {
+		vmachineFinal();
+		exitFlag = 1;
+	} else {
+		printc("Please stop NXVM before exit.\n");
+	}
 }
-
-void Mode()
+static void Info()
 {
-	if (!vmachine.flaginit || vmachine.flagrun) {
-		fprintf(stdout,"Cannot change display mode now.\n");
+	if (narg != 1) GetHelp;
+	printc("NXVM Device Info\n");
+	printc("================\n");
+	printc("IBM PC/AT");
+	printc("CPU: Intel 8086, 16-bit\n");
+	printc("RAM Size:          %d KB\n", vram.size >> 10);
+	printc("Floppy Disk Drive: 3.5\", 1.44 MB, %s\n",
+		vfdd.flagexist ? "inserted" : "not inserted\n");
+	printc("Hard Disk Drive:   %d cylinders, 10 MB, %s\n",
+		vhdd.ncyl, vhdd.flagexist ? "connected" : "disconnected");
+	printc("Display Type:      ");
+	if (vmachine.flagmode) printc("Window\n");
+	else printc("Console\n");
+	printc("\n");
+	printc("NXVM BIOS Settings\n");
+	printc("==================\n");
+	printc("Boot Disk: %s\n", vmachine.flagboot ? "Hard Drive" : "Floppy");
+	printc("\n");
+	printc("NXVM Debug Status\n");
+	printc("=================\n");
+	printc("Recorder:    %s\n", vmachine.flagrecord ? "On" : "Off");
+	printc("Trace:       %s\n", vmachine.flagtrace ? "On" : "Off");
+	printc("Break Point: ");
+	if (vmachine.flagtrace) printc("%04X:%04X\n",vmachine.breakcs,vmachine.breakip);
+	else printc("Off\n");
+	printc("\n");
+	printc("NXVM Running Status\n");
+	printc("===================\n");
+	printc("Running: %s\n",	vmachine.flagrun  ? "Yes" : "No");
+}
+static void Debug()
+{
+	if (narg != 1) GetHelp;
+	debug();
+}
+static void Record()
+{
+	if (narg < 2) GetHelp;
+	if (vmachine.flagrun) {
+		printc("Cannot change record status or dump record now.\n");
 		return;
 	}
-	if (vmachine.flagmode) {
-		vmachine.flagmode = 0x00;
-		fprintf(stdout,"Display in console.\n");
-	} else {
-		vmachine.flagmode = 0x01;
-		fprintf(stdout,"Display in window.\n");
+	if (!strcmp(arg[1], "on")) {
+		vmachine.flagrecord = 0x01;
+		printc("Recorder turned on.\n");
+	} else if (!strcmp(arg[1], "off")) {
+		vmachine.flagrecord = 0x00;
+		printc("Recorder turned off.\n");
+	} else if (!strcmp(arg[1], "dump")) {
+		if (narg < 3) GetHelp;
+		vapiRecordDump(arg[2]);
+	} else GetHelp;
+}
+static void Set()
+{
+	if (narg < 2) GetHelp;
+	if (!strcmp(arg[1], "bootdisk")) {
+		if (narg != 3) GetHelp;
+		if (!strcmp(arg[2], "fdd"))
+			vmachine.flagboot = 0x00;
+		else if(!strcmp(arg[2], "hdd"))
+			vmachine.flagboot = 0x01;
+		else GetHelp;
+	} else GetHelp;
+}
+static void Device()
+{
+	if (narg < 2) GetHelp;
+	if (!strcmp(arg[1], "memory")) {
+		if (narg != 3) GetHelp;
+		vramAlloc(atoi(arg[2]));
+	} else if(!strcmp(arg[1], "display")) {
+		if (narg != 3) GetHelp;
+		if (!strcmp(arg[2], "console"))
+			vmachine.flagmode = 0x00;
+		else if (!strcmp(arg[2], "window"))
+			vmachine.flagmode = 0x01;
+		else GetHelp;
+	} else if(!strcmp(arg[1], "floppy")) {
+		if (narg < 3) GetHelp;
+		if (!strcmp(arg[2], "create")) {
+			vfdd.flagexist = 0x01;
+		} else if (!strcmp(arg[2], "insert")) {
+			if (narg < 4) GetHelp;
+			vapiFloppyInsert(arg[3]);
+		} else if (!strcmp(arg[2], "remove")) {
+			if (narg < 4) arg[3] = NULL;
+			vapiFloppyRemove(arg[3]);			
+		} else GetHelp;
+	} else if(!strcmp(arg[1], "harddisk")) {
+		if (narg < 3) GetHelp;
+		if (!strcmp(arg[2], "create")) {
+			vhdd.flagexist = 0x01;
+		} else if (!strcmp(arg[2], "connect")) {
+			if (narg < 4) GetHelp;
+			vapiHardDiskInsert(arg[3]);
+		} else if (!strcmp(arg[2], "disconnect")) {
+			if (narg < 4) arg[3] = NULL;
+			vapiHardDiskRemove(arg[3]);			
+		} else GetHelp;
 	}
 }
-void Start()
+static void Nxvm()
 {
-	if (!vmachine.flagrun) {
-		if (!vmachine.flaginit) vmachineInit();
-		vmachineStart();
-	} else
-		fprintf(stdout, "Virtual machine is already running.\n");
-}
-void Stop()
-{
-	if (vmachine.flagrun) {
+	if (narg != 2) GetHelp;
+	if (!strcmp(arg[1], "start")) {
+		if (!vmachine.flagrun) {
+			vmachineStart();
+		} else
+			printc("Virtual machine is already running.\n");
+	} else if (!strcmp(arg[1], "reset")) {
+		vmachineReset();
+	} else if (!strcmp(arg[1], "stop")) {
 		vmachineStop();
-	} else
-		fprintf(stdout, "Virtual machine is already turned off.\n");
+	} else if (!strcmp(arg[1], "resume")) {
+		if (!vmachine.flagrun)
+			vmachineResume();
+		else
+			printc("Virtual machine is already running.\n");
+	} else GetHelp;
 }
-void Reset()
+
+static void exec()
 {
-	if (vmachine.flagrun) {
-		fprintf(stdout, "Virtual machine should be turned off first.\n");
-	} else vmachineReset();
+	if (!arg[0] || !strlen(arg[0])) return;
+	else if(!strcmp(arg[0],"help"))   Help();
+	else if(!strcmp(arg[0],"exit"))   Exit();
+	else if(!strcmp(arg[0],"info"))   Info();
+/*	else if(!strcmp(arg[0],"run"))    Run();*/
+	else if(!strcmp(arg[0],"debug"))  Debug();
+	else if(!strcmp(arg[0],"record")) Record();
+	else if(!strcmp(arg[0],"set"))    Set();
+	else if(!strcmp(arg[0],"device")) Device();
+	else if(!strcmp(arg[0],"nxvm"))   Nxvm();
+	else printc("Illegal command '%s'.\n",arg[0]);
+	printc("\n");
+}
+static void init()
+{
+	arg = (char **)malloc(MAXNARG * sizeof(char *));
+	exitFlag = 0x00;
+	vmachineInit();
+#if VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32
+	vapiFloppyInsert("d:/fd.img");
+	vapiHardDiskInsert("d:/hd.img");
+#else
+	vapiFloppyInsert("fd.img");
+	vapiHardDiskInsert("hd.img");
+#endif
+}
+static void final()
+{
+	vmachineFinal();
+	if (arg) free(arg);
 }
 
 void console()
 {
-	char cmdl[MAXLINE];
-	exitFlag = 0;
-	vmachineInit();
-#if VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32
-	vapiFloppyInsert("d:/msdos.img");
-#else
-	vapiFloppyInsert("msdos.img");
-#endif
-	qdbiosPOST();
-	fprintf(stdout,"Please enter 'HELP' for information.\n");
-
+	init();
+	printc("Please enter 'HELP' for information.\n");
 	while(!exitFlag) {
-		fflush(stdin);
-		fprintf(stdout,"Console> ");
-		fflush(stdout);
-		fgets(cmdl,MAXLINE,stdin);
-		fflush(stdin);
-		parse(cmdl);
-		if(!strlen(cmdl)) continue;
-
-		else if(!strcmp(cmdl,"test"))   Test();
-		else if(!strcmp(cmdl,"help"))   Help();
-		else if(!strcmp(cmdl,"exit"))   Exit();
-
-		else if(!strcmp(cmdl,"debug"))  Debug();
-/*		else if(!strcmp(cmdl,"exec"))   Exec();*/
-		else if(!strcmp(cmdl,"record")) Record();
-		else if(!strcmp(cmdl,"dump"))   Dump();
-
-		else if(!strcmp(cmdl,"floppy")) Floppy();
-		else if(!strcmp(cmdl,"memory")) Memory();
-		else if(!strcmp(cmdl,"info"))   Info();
-
-		else if(!strcmp(cmdl,"mode"))   Mode();
-		else if(!strcmp(cmdl,"start"))  Start();
-		else if(!strcmp(cmdl,"stop"))   Stop();
-		else if(!strcmp(cmdl,"reset"))  Reset();
-
-		else fprintf(stdout,"Illegal command '%s'.\n",cmdl);
-		
-		fflush(stdin);
-		fprintf(stdout,"\n");
-		fflush(stdout);
+		printc("Console> ");
+		cgets(cmdBuff,MAXLINE,stdin);
+		parse();
+		exec();
 	}
-	if(vmachine.flaginit) vmachineFinal();
+	final();
 }

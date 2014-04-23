@@ -1059,8 +1059,7 @@ void debug()
 	int i;
 	init();
 	arg = (char **)malloc(MAXNARG * sizeof(char *));
-	if (vmachine.flaginit) exitFlag = 0;
-	else exitFlag = 1;
+	exitFlag = 0;
 	while(!exitFlag) {
 		fflush(stdin);
 		debugprint("-");

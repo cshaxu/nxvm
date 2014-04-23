@@ -89,6 +89,7 @@ void vpicInit();
  * Refreshes PIC
  * If slave pic has irq, set master pic IRQ 2
  */
+void vpicReset();
 void vpicRefresh();
 /*
  * vpicFinal: Public interface for vmachine

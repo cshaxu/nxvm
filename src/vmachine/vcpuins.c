@@ -3833,8 +3833,7 @@ static void ClrPrefix()
 	vcpu.overss = vcpu.ss;
 	vcpuins.rep = RT_NONE;
 }
-
-void vcpuinsExecIns()
+static void ExecIns()
 {
 	t_nubit8 opcode;
 	bugfix(17) {
@@ -3859,7 +3858,7 @@ void vcpuinsExecIns()
 		}
 	}
 }
-void vcpuinsExecInt()
+static void ExecInt()
 {
 	/* hardware interrupt handeler */
 	if(vcpu.flagnmi) INT(0x02);
@@ -3890,7 +3889,6 @@ void QDX()
 void vcpuinsInit()
 {
 	memset(&vcpuins, 0x00, sizeof(t_cpuins));
-	ClrPrefix();
 	vcpuins.table[0x00] = (t_faddrcc)ADD_RM8_R8;
 	vcpuins.table[0x01] = (t_faddrcc)ADD_RM16_R16;
 	vcpuins.table[0x02] = (t_faddrcc)ADD_R8_RM8;
@@ -4153,5 +4151,16 @@ void vcpuinsInit()
 	vcpuins.table[0xfd] = (t_faddrcc)STD;
 	vcpuins.table[0xfe] = (t_faddrcc)INS_FE;
 	vcpuins.table[0xff] = (t_faddrcc)INS_FF;
+}
+void vcpuinsReset()
+{
+	vcpuins.rm = vcpuins.r = vcpuins.imm = (t_vaddrcc)NULL;
+	vcpuins.opr1 = vcpuins.opr2 = vcpuins.result = vcpuins.bit = 0;
+	ClrPrefix();
+}
+void vcpuinsRefresh()
+{
+	ExecIns();
+	ExecInt();
 }
 void vcpuinsFinal() {}

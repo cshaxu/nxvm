@@ -32,6 +32,15 @@ void IO_Read_0071()
 	vport.iobyte = vcmos.reg[vcmos.rid];
 }
 
+void vcmosInit()
+{
+	memset(&vcmos, 0x00, sizeof(t_cmos));
+	vport.in[0x0071] = (t_faddrcc)IO_Read_0071;
+	vport.out[0x0070] = (t_faddrcc)IO_Write_0070;
+	vport.out[0x0071] = (t_faddrcc)IO_Write_0071;
+	vcmosRefresh();
+}
+void vcmosReset() {}
 void vcmosRefresh()
 {
 	static time_t tprev = 0;
@@ -61,13 +70,5 @@ void vcmosRefresh()
 	vcmos.reg[VCMOS_RTC_MONTH]     = Hex2BCD(month);
 	vcmos.reg[VCMOS_RTC_YEAR]      = Hex2BCD(year);
 	vcmos.reg[VCMOS_RTC_CENTURY]   = Hex2BCD(century);
-}
-void vcmosInit()
-{
-	memset(&vcmos, 0x00, sizeof(t_cmos));
-	vport.in[0x0071] = (t_faddrcc)IO_Read_0071;
-	vport.out[0x0070] = (t_faddrcc)IO_Write_0070;
-	vport.out[0x0071] = (t_faddrcc)IO_Write_0071;
-	vcmosRefresh();
 }
 void vcmosFinal() {}

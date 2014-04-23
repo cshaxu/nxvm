@@ -22,10 +22,10 @@ void INT_16();
 void INT_17();
 void INT_1A();
 
-void qdbiosPOST();
 void qdbiosExecInt(t_nubit8 intid);
 void qdbiosRefresh();
 void qdbiosInit();
+void qdbiosReset(); /* POST */
 void qdbiosFinal();
 
 #ifdef __cplusplus

@@ -52,8 +52,9 @@ typedef t_ecpu t_cpu;
 #define vcpu ecpu
 #endif
 
-void vcpuRefresh();
 void vcpuInit();
+void vcpuReset();
+void vcpuRefresh();
 void vcpuFinal();
 
 #define _ax    (vcpu.ax)

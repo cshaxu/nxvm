@@ -27,8 +27,8 @@ typedef struct {
 	t_bool           flaglatch[3];                   /* flag of latch status */
 	t_pit_status_rw  flagread[3];                   /* flag of low byte read */
 	t_pit_status_rw  flagwrite[3];                 /* flag of low byte write */
-	t_bool           flaggate[3];               /* enable or disable counter */
 
+	t_bool           flaggate[3];               /* enable or disable counter */
 	t_faddrcc        out[3];              /* action when out signal is valid */
 } t_pit;
 
@@ -56,8 +56,9 @@ void IO_Read_FF41();                                              /* refresh */
 #endif
 
 void vpitSetGate(t_nubit8 id, t_bool gate);  /* set gate value and load init */
-void vpitRefresh();                                    /* act as a CLK pulse */
 void vpitInit();
+void vpitReset();
+void vpitRefresh();                                    /* act as a CLK pulse */
 void vpitFinal();
 
 #endif

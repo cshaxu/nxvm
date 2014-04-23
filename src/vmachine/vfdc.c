@@ -85,7 +85,7 @@ static t_nubit8 GetBPSC(t_nubit16 cbyte)                  /* sector size code */
 #define SetST0 (vfdc.st0 = (0x00                    << 7) |                   \
                            (0x00                    << 6) |                   \
                            (0x00                    << 5) |                   \
-                           ((vfdd.cyl >= VFDD_NCYL) << 4) |                   \
+                           ((vfdd.cyl >= vfdd.ncyl) << 4) |                   \
                            (0x00                    << 3) |                   \
                            (vfdd.head               << 2) |                   \
                            (GetDS(vfdc.cmd[1])      << 0))
@@ -94,13 +94,13 @@ static t_nubit8 GetBPSC(t_nubit16 cbyte)                  /* sector size code */
                            (0x00                    << 5) |                   \
                            (0x00                    << 4) |                   \
                            (0x00                    << 3) |                   \
-                           ((vfdd.cyl >= VFDD_NCYL) << 2) |                   \
+                           ((vfdd.cyl >= vfdd.ncyl) << 2) |                   \
                            (0x00                    << 1) |                   \
                            (0x00                    << 0))
 #define SetST2 (vfdc.st2 = (0x00                    << 7) |                   \
                            (0x00                    << 6) |                   \
                            (0x00                    << 5) |                   \
-                           ((vfdd.cyl >= VFDD_NCYL) << 4) |                   \
+                           ((vfdd.cyl >= vfdd.ncyl) << 4) |                   \
                            (0x00                    << 3) |                   \
                            (0x00                    << 2) |                   \
                            (0x00                    << 1) |                   \
@@ -134,7 +134,7 @@ static void ExecCmdSpecify()
 static void ExecCmdSenseDriveStatus()
 {
 	vfdd.head    = GetHDS(vfdc.cmd[1]);
-	vfddResetCURR;
+	vfddSetPointer;
 	SetST3;
 	vfdc.ret[0]  = vfdc.st3;
 	SetMSRReadyRead;
@@ -144,7 +144,7 @@ static void ExecCmdRecalibrate()
 	vfdd.cyl    = 0x00;
 	vfdd.head   = 0x00;
 	vfdd.sector = 0x01;
-	vfddResetCURR;
+	vfddSetPointer;
 	SetST0;
 	vfdc.st0   |= 0x20;
 	if (GetENRQ(vfdc.dor)) {
@@ -157,7 +157,7 @@ static void ExecCmdSenseInterrupt()
 {
 	if (vfdc.flagintr) {
 		vfdc.ret[0]    = vfdc.st0;
-		vfdc.ret[1]    = vfdd.cyl;
+		vfdc.ret[1]    = (t_nubit8)vfdd.cyl;
 		vfdc.flagintr  = 0x00;
 	} else vfdc.ret[0] = vfdc.st0 = VFDC_RET_ERROR;
 	SetMSRReadyRead;
@@ -167,7 +167,7 @@ static void ExecCmdSeek()
 	vfdd.head   = GetHDS(vfdc.cmd[1]);
 	vfdd.cyl    = vfdc.cmd[2];
 	vfdd.sector = 0x01;
-	vfddResetCURR;
+	vfddSetPointer;
 	SetST0;
 	vfdc.st0   |= 0x20;
 	if (GetENRQ(vfdc.dor)) {
@@ -181,7 +181,7 @@ static void ExecCmdReadID()
 {
 	vfdd.head     = GetHDS(vfdc.cmd[1]);
 	vfdd.sector   = 0x01;
-	vfddResetCURR;
+	vfddSetPointer;
 	vfdc.dr       = 0x00;                   /* data register: sector id info */
 	vfdcTransFinal();
 }
@@ -196,7 +196,7 @@ static void ExecCmdFormatTrack()
 	vfdd.nsector = vfdc.cmd[3];
 	vfdd.gaplen  = vfdc.cmd[4];
 	fillbyte     = vfdc.cmd[5];
-	vfddResetCURR;
+	vfddSetPointer;
 	/* execute format track*/
 	vfddFormatTrack(fillbyte);
 	/* finish transaction */
@@ -232,9 +232,9 @@ static void ExecCmdScanEqual()
 	vfdc.ret[0] = vfdc.st0;
 	vfdc.ret[1] = vfdc.st1;
 	vfdc.ret[2] = vfdc.st2;
-	vfdc.ret[3] = vfdd.cyl;
-	vfdc.ret[4] = vfdd.head;
-	vfdc.ret[5] = vfdd.sector;                      /* NOTE: eot not changed */
+	vfdc.ret[3] = (t_nubit8)vfdd.cyl;
+	vfdc.ret[4] = (t_nubit8)vfdd.head;
+	vfdc.ret[5] = (t_nubit8)vfdd.sector;            /* NOTE: eot not changed */
 	vfdc.ret[6] = GetBPSC(vfdd.nbyte);
 	SetMSRReadyRead;
 }
@@ -365,7 +365,7 @@ void vfdcTransInit()
 	if (!vfdc.cmd[5])
 		vfdd.nbyte = vfdc.cmd[8];
 	vfdd.count     = 0x00;
-	vfddResetCURR;
+	vfddSetPointer;
 	/* send trans request */
 	if (!vfdc.flagndma && GetENRQ(vfdc.dor)) vdmaSetDRQ(0x02);
 	SetMSRExecCmd;
@@ -378,9 +378,9 @@ void vfdcTransFinal()
 	vfdc.ret[0] = vfdc.st0;
 	vfdc.ret[1] = vfdc.st1;
 	vfdc.ret[2] = vfdc.st2;
-	vfdc.ret[3] = vfdd.cyl;
-	vfdc.ret[4] = vfdd.head;
-	vfdc.ret[5] = vfdd.sector;
+	vfdc.ret[3] = (t_nubit8)vfdd.cyl;
+	vfdc.ret[4] = (t_nubit8)vfdd.head;
+	vfdc.ret[5] = (t_nubit8)vfdd.sector;
 	vfdc.ret[6] = GetBPSC(vfdd.nbyte);
 	if (GetENRQ(vfdc.dor)) {
 		vpicSetIRQ(0x06);

@@ -35,10 +35,9 @@ typedef struct {
 
 extern t_cpuins vcpuins;
 
-void vcpuinsExecIns();
-void vcpuinsExecInt();
-
 void vcpuinsInit();
+void vcpuinsReset();
+void vcpuinsRefresh();
 void vcpuinsFinal();
 
 #ifdef __cplusplus

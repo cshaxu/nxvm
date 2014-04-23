@@ -48,8 +48,9 @@ typedef struct {
 
 extern t_cmos vcmos;
 
-void vcmosRefresh();
 void vcmosInit();
+void vcmosReset();
+void vcmosRefresh();
 void vcmosFinal();
 
 #endif

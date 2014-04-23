@@ -203,6 +203,41 @@ void vpitSetGate(t_nubit8 id, t_bool gate)
 			LoadInit(id);
 	vpit.flaggate[id] = gate;
 }
+
+#define vpitRefDRAM NULL
+
+void vpitInit()
+{
+	memset(&vpit,0,sizeof(t_pit));
+	vpit.flaggate[0] = vpit.flaggate[1] = 0x01;
+	                               /* GATE for counter 0 and 1 are connected */
+	vpit.out[0] = (t_faddrcc)vpitIntSystemTimer;
+	vpit.out[1] = (t_faddrcc)vpitRefDRAM;
+	vport.in[0x0040] = (t_faddrcc)IO_Read_0040;
+	vport.in[0x0041] = (t_faddrcc)IO_Read_0041;
+	vport.in[0x0042] = (t_faddrcc)IO_Read_0042;
+	vport.out[0x0040] = (t_faddrcc)IO_Write_0040;
+	vport.out[0x0041] = (t_faddrcc)IO_Write_0041;
+	vport.out[0x0042] = (t_faddrcc)IO_Write_0042;
+	vport.out[0x0043] = (t_faddrcc)IO_Write_0043;
+	vpit.flaggate[0] = vpit.flaggate[1] = 0x01;
+#ifdef VPIT_DEBUG
+	vport.in[0xff40] = (t_faddrcc)IO_Read_FF40;
+	vport.out[0xff40] = (t_faddrcc)IO_Write_FF40;
+	vport.in[0xff41] = (t_faddrcc)IO_Read_FF41;
+#endif
+}
+void vpitReset()
+{
+	t_nubitcc i;
+	for(i = 0;i < 3;++i) {
+		vpit.cw[i] = 0x00;
+		vpit.init[i] = vpit.count[i] = vpit.latch[i] = 0x0000;
+		vpit.flagready[i] = vpit.flaglatch[i] = 0x01;
+		vpit.flagread[i] = vpit.flagwrite[i] = VPIT_STATUS_RW_READY;
+	}
+	vpit.cw[3] = 0x00;
+}
 void vpitRefresh()
 {
 	t_nubit8 i;
@@ -276,29 +311,5 @@ void vpitRefresh()
 			break;
 		}
 	}
-}
-
-#define vpitRefDRAM NULL
-
-void vpitInit()
-{
-	memset(&vpit,0,sizeof(t_pit));
-	vpit.flaggate[0] = vpit.flaggate[1] = 0x01;
-	                               /* GATE for counter 0 and 1 are connected */
-	vpit.out[0] = (t_faddrcc)vpitIntSystemTimer;
-	vpit.out[1] = (t_faddrcc)vpitRefDRAM;
-	vport.in[0x0040] = (t_faddrcc)IO_Read_0040;
-	vport.in[0x0041] = (t_faddrcc)IO_Read_0041;
-	vport.in[0x0042] = (t_faddrcc)IO_Read_0042;
-	vport.out[0x0040] = (t_faddrcc)IO_Write_0040;
-	vport.out[0x0041] = (t_faddrcc)IO_Write_0041;
-	vport.out[0x0042] = (t_faddrcc)IO_Write_0042;
-	vport.out[0x0043] = (t_faddrcc)IO_Write_0043;
-	vpit.flaggate[0] = vpit.flaggate[1] = 0x01;
-#ifdef VPIT_DEBUG
-	vport.in[0xff40] = (t_faddrcc)IO_Read_FF40;
-	vport.out[0xff40] = (t_faddrcc)IO_Write_FF40;
-	vport.in[0xff41] = (t_faddrcc)IO_Read_FF41;
-#endif
 }
 void vpitFinal() {}
