@@ -82,7 +82,7 @@ typedef struct {
                            // 0 = AX, 1 = CX, 2 = DX, 3 = BX,
                            // 4 = SP, 5 = BP, 6 = SI, 7 = DI      
 	t_aasm_oprseg   seg;   // active when type = 3
-                           //0 = ES, 1 = CS, 2 = SS, 3 = DS
+                           // 0 = ES, 1 = CS, 2 = SS, 3 = DS
 	t_nsbit8        imm8s;
 	t_nubit16       imm16;
 	t_nsbit8        disp8;
@@ -185,225 +185,7 @@ static t_nubit16 avcs, avip;
 #define ARG_AX_M16      (isAX   (aopri1) && isM16 (aopri2))
 #define ARG_M16_AX      (isM16  (aopri1) && isAX  (aopri2))
 
-#define setbyte(n) (vramVarByte(avcs, avip) = (t_nubit8)(n))
-#define setword(n) (vramVarWord(avcs, avip) = (t_nubit16)(n))
-
-static void SetImm8(t_nubit8 byte)
-{
-	setbyte(byte);
-	avip += 1;
-}
-static void SetImm16(t_nubit16 word)
-{
-	setword(word);
-	avip += 2;
-}
-static void SetModRegRM(t_aasm_oprinfo modrm, t_nubit8 reg)
-{
-	t_nubit8 modregrm = ((t_nubit8)modrm.mod << 6) | (reg << 3);
-	switch(modrm.mod) {
-	case MOD_M:
-		modregrm |= (t_nubit8)modrm.mem;
-		setbyte(modregrm); avip++;
-		switch(modrm.mem) {
-		case 0: break;
-		case 1: break;
-		case 2: break;
-		case 3: break;
-		case 4: break;
-		case 5: break;
-		case 6: setword(modrm.disp16);avip += 2;break;
-		case 7: break;
-		default:error = 1;break;}
-		break;
-	case MOD_M_DISP8:
-		modregrm |= (t_nubit8)modrm.mem;
-		setbyte(modregrm); avip++;
-		setbyte(modrm.disp8); avip++;
-		switch(modrm.mem) {
-		case 0: break;
-		case 1: break;
-		case 2: break;
-		case 3: break;
-		case 4: break;
-		case 5: break;
-		case 6: break;
-		case 7: break;
-		default:error = 1;break;}
-		break;
-	case MOD_M_DISP16:
-		modregrm |= (t_nubit8)modrm.mem;
-		setbyte(modregrm); avip++;
-		setword(modrm.disp16); avip+= 2;
-		switch(modrm.mem) {
-		case 0: break;
-		case 1: break;
-		case 2: break;
-		case 3: break;
-		case 4: break;
-		case 5: break;
-		case 6: break;
-		case 7: break;
-		default:error = 1;break;}
-		break;
-	case 3:
-		switch (modrm.type) {
-		case TYPE_R8:
-			modregrm |= (t_nubit8)modrm.reg8;
-			setbyte(modregrm); avip++;
-			switch(modrm.reg8) {
-			case 0: break;
-			case 1: break;
-			case 2: break;
-			case 3: break;
-			case 4: break;
-			case 5: break;
-			case 6: break;
-			case 7: break;
-			default:error = 1;break;}
-			break;
-		case TYPE_R16:
-			modregrm |= (t_nubit8)modrm.reg16;
-			setbyte(modregrm); avip++;
-			switch(modrm.reg16) {
-			case 0: break;
-			case 1: break;
-			case 2: break;
-			case 3: break;
-			case 4: break;
-			case 5: break;
-			case 6: break;
-			case 7: break;
-			default:error = 1;break;}
-			break;
-		}
-		break;
-	default:error = 1;break;}
-}
-
-static void ES()
-{
-	if (!ARG_NONE) return;
-	setbyte(0x26);
-	avip++;
-}
-static void CS()
-{
-	if (!ARG_NONE) return;
-	setbyte(0x2e);
-	avip++;
-}
-static void SS()
-{
-	if (!ARG_NONE) return;
-	setbyte(0x36);
-	avip++;
-}
-static void DS()
-{
-	if (!ARG_NONE) return;
-	setbyte(0x3e);
-	avip++;
-}
-static void AAA()
-{
-	if (!ARG_NONE) return;
-	setbyte(0x37);
-	avip++;
-}
-static void AAD()
-{
-	if (!ARG_NONE) return;
-	setbyte(0xd5);
-	avip++;
-	SetImm8(0x0a);
-}
-static void AAM()
-{
-	if (!ARG_NONE) return;
-	setbyte(0xd4);
-	avip++;
-	SetImm8(0x0a);
-}
-static void AAS()
-{
-	if (!ARG_NONE) return;
-	setbyte(0x3f);
-	avip++;
-}
-
-static void ADD_RM8_R8()
-{
-	setbyte(0x00);
-	avip++;
-	SetModRegRM(aopri1, aopri2.reg8);
-}
-static void ADD_RM16_R16()
-{
-	setbyte(0x01);
-	avip++;
-	SetModRegRM(aopri1, aopri2.reg16);
-}
-static void ADD_R8_RM8()
-{
-	setbyte(0x02);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg8);
-}
-static void ADD_R16_RM16()
-{
-	setbyte(0x03);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
-}
-static void ADD_AL_I8()
-{
-	setbyte(0x04);
-	avip++;
-	SetImm8(aopri2.imm8s);
-}
-static void ADD_AX_I16()
-{
-	setbyte(0x05);
-	avip++;
-	SetImm16(aopri2.imm16);
-}
-static void INS_80(t_nubit8 rid)
-{
-	setbyte(0x80);
-	avip++;
-	SetModRegRM(aopri1, rid);
-	SetImm8(aopri2.imm8s);
-}
-static void INS_81(t_nubit8 rid)
-{
-	setbyte(0x81);
-	avip++;
-	SetModRegRM(aopri1, rid);
-	SetImm16(aopri2.imm16);
-}
-static void INS_83(t_nubit8 rid)
-{
-	setbyte(0x83);
-	avip++;
-	SetModRegRM(aopri1, rid);
-	SetImm8(aopri2.imm8s);
-}
-
-static void ADD()
-{
-	if      (ARG_AL_I8)    ADD_AL_I8();
-	else if (ARG_AX_I16)   ADD_AX_I16();
-	else if (ARG_RM8_I8)   INS_80(0x00);
-	else if (ARG_RM16_I8)  INS_83(0x00);
-	else if (ARG_RM16_I16) INS_81(0x00);
-	else if (ARG_RM8_R8)   ADD_RM8_R8();
-	else if (ARG_RM16_R16) ADD_RM16_R16();
-	else if (ARG_R8_RM8)   ADD_R8_RM8();
-	else if (ARG_R16_RM16) ADD_R16_RM16();
-	else error = 1;
-}
-
+/* assembly compiler: lexical scanner */
 typedef enum {
 	STATE_START,
 	        STATE_BY,STATE_BYT, /* BYTE */
@@ -863,31 +645,7 @@ static void matchtoken(t_aasm_token token)
 	if (gettoken(NULL) != token) error = 1;
 }
 
-/*
-typedef struct {
-	t_aasm_oprtype  type;  // 0 = none, 1 = reg8, 2 = reg16, 3 = seg,
-                           // 4 = imm8, 5 = imm16, 6 = mem, 7 = mem8, 8 = mem16
-	t_aasm_oprmod   mod;   // active when type = 1,2,3,6,7,8
-	                       // 0 = mem; 1 = mem+disp8; 2 = mem+disp16; 3 = reg
-	t_aasm_oprmem   mem;   // active when mod = 0,1,2
-                           // 0 = [BX+SI], 1 = [BX+DI], 2 = [BP+SI], 3 = [BP+DI],
-                           // 4 = [SI], 5 = [DI], 6 = [BP], 7 = [BX]
-	t_aasm_oprreg8  reg8;  // active when type = 1, mod = 3
-                           // 0 = AL, 1 = CL, 2 = DL, 3 = BL,
-                           // 4 = AH, 5 = CH, 6 = DH, 7 = BH
-	t_aasm_oprreg16 reg16; // active when type = 2, mod = 3
-                           // 0 = AX, 1 = CX, 2 = DX, 3 = BX,
-                           // 4 = SP, 5 = BP, 6 = SI, 7 = DI      
-	t_aasm_oprseg   seg;   // active when type = 3
-                           //0 = ES, 1 = CS, 2 = SS, 3 = DS
-	t_nsbit8        imm8s;
-	t_nubit8        imm8u;
-	t_nubit16       imm16;
-	t_nsbit8        disp8;
-	t_nubit16       disp16;// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
-	t_aasm_oprptr   isfar; // 0 = near; 1 = far
-} t_aasm_oprinfo;
-*/
+/* assembly compiler: parser / grammar analyzer */
 static t_aasm_oprinfo parsearg_mem()
 {
 	t_aasm_token token;
@@ -1015,8 +773,12 @@ static t_aasm_oprinfo parsearg(t_string arg)
 {
 	t_aasm_token token;
 	t_aasm_oprinfo info;
-	vapiPrint("parsearg: \"%s\"\n", arg);
+//	vapiPrint("parsearg: \"%s\"\n", arg);
 	memset(&info, 0x00 ,sizeof(t_aasm_oprinfo));
+	if (!arg || !arg[0]) {
+		info.type = TYPE_NONE;
+		return info;
+	}
 	token = gettoken(arg);
 	switch (token) {
 	case TOKEN_NULL:
@@ -1119,6 +881,26 @@ static t_aasm_oprinfo parsearg(t_string arg)
 		info.mod = MOD_R;
 		info.reg16 = R16_DI;
 		break;
+	case TOKEN_CS:
+		info.type = TYPE_SEG;
+		info.mod = MOD_R;
+		info.seg = SEG_CS;
+		break;
+	case TOKEN_DS:
+		info.type = TYPE_SEG;
+		info.mod = MOD_R;
+		info.seg = SEG_DS;
+		break;
+	case TOKEN_ES:
+		info.type = TYPE_SEG;
+		info.mod = MOD_R;
+		info.seg = SEG_ES;
+		break;
+	case TOKEN_SS:
+		info.type = TYPE_SEG;
+		info.mod = MOD_R;
+		info.seg = SEG_SS;
+		break;
 	case TOKEN_PLUS:
 	case TOKEN_MINUS:
 	case TOKEN_IMM8:
@@ -1126,9 +908,6 @@ static t_aasm_oprinfo parsearg(t_string arg)
 		info = parsearg_imm(token);
 		if (info.type == TYPE_I8)
 			info.imm16 = (t_nsbit8)info.imm8s;
-		vapiPrint("16=%d, imm8s=%x, imm16=%x\n",
-			info.type == TYPE_I16,
-			info.imm8s,info.imm16);
 		break;
 	default:
 		info.type = TYPE_NONE;
@@ -1180,24 +959,693 @@ static void parse()
 		}
 	}
 	aopri1 = parsearg(aopr1);
+	if (error) vapiPrint("error1\n");
 	aopri2 = parsearg(aopr2);
-	if (error) vapiPrint("error\n");
+	if (error) vapiPrint("error2\n");
 }
+
+#define setbyte(n) (vramVarByte(avcs, avip) = (t_nubit8)(n))
+#define setword(n) (vramVarWord(avcs, avip) = (t_nubit16)(n))
+
+static void SetImm8(t_nubit8 byte)
+{
+	setbyte(byte);
+	avip += 1;
+}
+static void SetImm16(t_nubit16 word)
+{
+	setword(word);
+	avip += 2;
+}
+static void SetModRegRM(t_aasm_oprinfo modrm, t_nubit8 reg)
+{
+	t_nubit8 modregrm = ((t_nubit8)modrm.mod << 6) | (reg << 3);
+	switch(modrm.mod) {
+	case MOD_M:
+		modregrm |= (t_nubit8)modrm.mem;
+		setbyte(modregrm); avip++;
+		switch(modrm.mem) {
+		case 0: break;
+		case 1: break;
+		case 2: break;
+		case 3: break;
+		case 4: break;
+		case 5: break;
+		case 6: setword(modrm.disp16);avip += 2;break;
+		case 7: break;
+		default:error = 1;break;}
+		break;
+	case MOD_M_DISP8:
+		modregrm |= (t_nubit8)modrm.mem;
+		setbyte(modregrm); avip++;
+		setbyte(modrm.disp8); avip++;
+		switch(modrm.mem) {
+		case 0: break;
+		case 1: break;
+		case 2: break;
+		case 3: break;
+		case 4: break;
+		case 5: break;
+		case 6: break;
+		case 7: break;
+		default:error = 1;break;}
+		break;
+	case MOD_M_DISP16:
+		modregrm |= (t_nubit8)modrm.mem;
+		setbyte(modregrm); avip++;
+		setword(modrm.disp16); avip+= 2;
+		switch(modrm.mem) {
+		case 0: break;
+		case 1: break;
+		case 2: break;
+		case 3: break;
+		case 4: break;
+		case 5: break;
+		case 6: break;
+		case 7: break;
+		default:error = 1;break;}
+		break;
+	case 3:
+		switch (modrm.type) {
+		case TYPE_R8:
+			modregrm |= (t_nubit8)modrm.reg8;
+			setbyte(modregrm); avip++;
+			switch(modrm.reg8) {
+			case 0: break;
+			case 1: break;
+			case 2: break;
+			case 3: break;
+			case 4: break;
+			case 5: break;
+			case 6: break;
+			case 7: break;
+			default:error = 1;break;}
+			break;
+		case TYPE_R16:
+			modregrm |= (t_nubit8)modrm.reg16;
+			setbyte(modregrm); avip++;
+			switch(modrm.reg16) {
+			case 0: break;
+			case 1: break;
+			case 2: break;
+			case 3: break;
+			case 4: break;
+			case 5: break;
+			case 6: break;
+			case 7: break;
+			default:error = 1;break;}
+			break;
+		}
+		break;
+	default:error = 1;break;}
+}
+
+static void ADD_RM8_R8()
+{
+	setbyte(0x00);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg8);
+}
+static void ADD_RM16_R16()
+{
+	setbyte(0x01);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg16);
+}
+static void ADD_R8_RM8()
+{
+	setbyte(0x02);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg8);
+}
+static void ADD_R16_RM16()
+{
+	setbyte(0x03);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void ADD_AL_I8()
+{
+	setbyte(0x04);
+	avip++;
+	SetImm8(aopri2.imm8s);
+}
+static void ADD_AX_I16()
+{
+	setbyte(0x05);
+	avip++;
+	SetImm16(aopri2.imm16);
+}
+static void PUSH_ES()
+{
+	setbyte(0x06);
+	avip++;
+}
+static void POP_ES()
+{
+	setbyte(0x07);
+	avip++;
+}
+static void OR_RM8_R8()
+{
+	setbyte(0x08);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg8);
+}
+static void OR_RM16_R16()
+{
+	setbyte(0x09);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg16);
+}
+static void OR_R8_RM8()
+{
+	setbyte(0x0a);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg8);
+}
+static void OR_R16_RM16()
+{
+	setbyte(0x0b);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void OR_AL_I8()
+{
+	setbyte(0x0c);
+	avip++;
+	SetImm8(aopri2.imm8s);
+}
+static void OR_AX_I16()
+{
+	setbyte(0x0d);
+	avip++;
+	SetImm16(aopri2.imm16);
+}
+static void PUSH_CS()
+{
+	setbyte(0x0e);
+	avip++;
+}
+static void POP_CS()
+{
+	setbyte(0x0f);
+	avip++;
+}
+static void ADC_RM8_R8()
+{
+	setbyte(0x10);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg8);
+}
+static void ADC_RM16_R16()
+{
+	setbyte(0x11);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg16);
+}
+static void ADC_R8_RM8()
+{
+	setbyte(0x12);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg8);
+}
+static void ADC_R16_RM16()
+{
+	setbyte(0x13);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void ADC_AL_I8()
+{
+	setbyte(0x14);
+	avip++;
+	SetImm8(aopri2.imm8s);
+}
+static void ADC_AX_I16()
+{
+	setbyte(0x15);
+	avip++;
+	SetImm16(aopri2.imm16);
+}
+static void PUSH_SS()
+{
+	setbyte(0x16);
+	avip++;
+}
+static void POP_SS()
+{
+	setbyte(0x17);
+	avip++;
+}
+static void SBB_RM8_R8()
+{
+	setbyte(0x18);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg8);
+}
+static void SBB_RM16_R16()
+{
+	setbyte(0x19);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg16);
+}
+static void SBB_R8_RM8()
+{
+	setbyte(0x1a);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg8);
+}
+static void SBB_R16_RM16()
+{
+	setbyte(0x1b);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void SBB_AL_I8()
+{
+	setbyte(0x1c);
+	avip++;
+	SetImm8(aopri2.imm8s);
+}
+static void SBB_AX_I16()
+{
+	setbyte(0x1d);
+	avip++;
+	SetImm16(aopri2.imm16);
+}
+static void PUSH_DS()
+{
+	setbyte(0x1e);
+	avip++;
+}
+static void POP_DS()
+{
+	setbyte(0x1f);
+	avip++;
+}
+static void AND_RM8_R8()
+{
+	setbyte(0x20);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg8);
+}
+static void AND_RM16_R16()
+{
+	setbyte(0x21);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg16);
+}
+static void AND_R8_RM8()
+{
+	setbyte(0x22);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg8);
+}
+static void AND_R16_RM16()
+{
+	setbyte(0x23);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void AND_AL_I8()
+{
+	setbyte(0x24);
+	avip++;
+	SetImm8(aopri2.imm8s);
+}
+static void AND_AX_I16()
+{
+	setbyte(0x25);
+	avip++;
+	SetImm16(aopri2.imm16);
+}
+static void ES()
+{
+	if (ARG_NONE) {
+		setbyte(0x26);
+		avip++;
+	} else error = 1;
+}
+static void DAA()
+{
+	if (ARG_NONE) {
+		setbyte(0x27);
+		avip++;
+	} else error = 1;
+}
+static void SUB_RM8_R8()
+{
+	setbyte(0x28);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg8);
+}
+static void SUB_RM16_R16()
+{
+	setbyte(0x29);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg16);
+}
+static void SUB_R8_RM8()
+{
+	setbyte(0x2a);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg8);
+}
+static void SUB_R16_RM16()
+{
+	setbyte(0x2b);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void SUB_AL_I8()
+{
+	setbyte(0x2c);
+	avip++;
+	SetImm8(aopri2.imm8s);
+}
+static void SUB_AX_I16()
+{
+	setbyte(0x2d);
+	avip++;
+	SetImm16(aopri2.imm16);
+}
+static void CS()
+{
+	if (ARG_NONE) {
+		setbyte(0x2e);
+		avip++;
+	} else error = 1;
+}
+static void DAS()
+{
+	if (ARG_NONE) {
+		setbyte(0x2f);
+		avip++;
+	} else error = 1;
+}
+static void XOR_RM8_R8()
+{
+	setbyte(0x30);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg8);
+}
+static void XOR_RM16_R16()
+{
+	setbyte(0x31);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg16);
+}
+static void XOR_R8_RM8()
+{
+	setbyte(0x32);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg8);
+}
+static void XOR_R16_RM16()
+{
+	setbyte(0x33);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void XOR_AL_I8()
+{
+	setbyte(0x34);
+	avip++;
+	SetImm8(aopri2.imm8s);
+}
+static void XOR_AX_I16()
+{
+	setbyte(0x35);
+	avip++;
+	SetImm16(aopri2.imm16);
+}
+static void SS()
+{
+	if (ARG_NONE) {
+		setbyte(0x36);
+		avip++;
+	} else error = 1;
+}
+static void AAA()
+{
+	if (ARG_NONE) {
+		setbyte(0x37);
+		avip++;
+	} else error = 1;
+}
+static void CMP_RM8_R8()
+{
+	setbyte(0x38);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg8);
+}
+static void CMP_RM16_R16()
+{
+	setbyte(0x39);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg16);
+}
+static void CMP_R8_RM8()
+{
+	setbyte(0x3a);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg8);
+}
+static void CMP_R16_RM16()
+{
+	setbyte(0x3b);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void CMP_AL_I8()
+{
+	setbyte(0x3c);
+	avip++;
+	SetImm8(aopri2.imm8s);
+}
+static void CMP_AX_I16()
+{
+	setbyte(0x3d);
+	avip++;
+	SetImm16(aopri2.imm16);
+}
+static void DS()
+{
+	if (ARG_NONE) {
+		setbyte(0x3e);
+		avip++;
+	} else error = 1;
+}
+static void AAS()
+{
+	if (ARG_NONE) {
+		setbyte(0x3f);
+		avip++;
+	} else error = 1;
+}
+
+static void INS_80(t_nubit8 rid)
+{
+	setbyte(0x80);
+	avip++;
+	SetModRegRM(aopri1, rid);
+	SetImm8(aopri2.imm8s);
+}
+static void INS_81(t_nubit8 rid)
+{
+	setbyte(0x81);
+	avip++;
+	SetModRegRM(aopri1, rid);
+	SetImm16(aopri2.imm16);
+}
+static void INS_83(t_nubit8 rid)
+{
+	setbyte(0x83);
+	avip++;
+	SetModRegRM(aopri1, rid);
+	SetImm8(aopri2.imm8s);
+}
+static void AAM()
+{
+	if (ARG_NONE) {
+		setbyte(0xd4);
+		avip++;
+		SetImm8(0x0a);
+	} error = 1;
+}
+static void AAD()
+{
+	if (ARG_NONE) {
+		setbyte(0xd5);
+		avip++;
+		SetImm8(0x0a);
+	} error = 1;
+}
+
+static void PUSH()
+{
+	     if (ARG_ES) PUSH_ES();
+	else if (ARG_CS) PUSH_CS();
+	else if (ARG_SS) PUSH_SS();
+	else if (ARG_DS) PUSH_DS();
+}
+static void POP()
+{
+	     if (ARG_ES) POP_ES();
+	else if (ARG_CS) POP_CS();
+	else if (ARG_SS) POP_SS();
+	else if (ARG_DS) POP_DS();
+}
+static void ADD()
+{
+	if      (ARG_AL_I8)    ADD_AL_I8();
+	else if (ARG_AX_I16)   ADD_AX_I16();
+	else if (ARG_RM8_I8)   INS_80(0x00);
+	else if (ARG_RM16_I8)  INS_83(0x00);
+	else if (ARG_RM16_I16) INS_81(0x00);
+	else if (ARG_RM8_R8)   ADD_RM8_R8();
+	else if (ARG_RM16_R16) ADD_RM16_R16();
+	else if (ARG_R8_RM8)   ADD_R8_RM8();
+	else if (ARG_R16_RM16) ADD_R16_RM16();
+	else error = 1;
+}
+static void OR()
+{
+	if      (ARG_AL_I8)    OR_AL_I8();
+	else if (ARG_AX_I16)   OR_AX_I16();
+	else if (ARG_RM8_I8)   INS_80(0x01);
+	else if (ARG_RM16_I8)  INS_83(0x01);
+	else if (ARG_RM16_I16) INS_81(0x01);
+	else if (ARG_RM8_R8)   OR_RM8_R8();
+	else if (ARG_RM16_R16) OR_RM16_R16();
+	else if (ARG_R8_RM8)   OR_R8_RM8();
+	else if (ARG_R16_RM16) OR_R16_RM16();
+	else error = 1;
+}
+static void ADC()
+{
+	if      (ARG_AL_I8)    ADC_AL_I8();
+	else if (ARG_AX_I16)   ADC_AX_I16();
+	else if (ARG_RM8_I8)   INS_80(0x02);
+	else if (ARG_RM16_I8)  INS_83(0x02);
+	else if (ARG_RM16_I16) INS_81(0x02);
+	else if (ARG_RM8_R8)   ADC_RM8_R8();
+	else if (ARG_RM16_R16) ADC_RM16_R16();
+	else if (ARG_R8_RM8)   ADC_R8_RM8();
+	else if (ARG_R16_RM16) ADC_R16_RM16();
+	else error = 1;
+}
+static void SBB()
+{
+	if      (ARG_AL_I8)    SBB_AL_I8();
+	else if (ARG_AX_I16)   SBB_AX_I16();
+	else if (ARG_RM8_I8)   INS_80(0x03);
+	else if (ARG_RM16_I8)  INS_83(0x03);
+	else if (ARG_RM16_I16) INS_81(0x03);
+	else if (ARG_RM8_R8)   SBB_RM8_R8();
+	else if (ARG_RM16_R16) SBB_RM16_R16();
+	else if (ARG_R8_RM8)   SBB_R8_RM8();
+	else if (ARG_R16_RM16) SBB_R16_RM16();
+	else error = 1;
+}
+static void AND()
+{
+	if      (ARG_AL_I8)    AND_AL_I8();
+	else if (ARG_AX_I16)   AND_AX_I16();
+	else if (ARG_RM8_I8)   INS_80(0x04);
+	else if (ARG_RM16_I8)  INS_83(0x04);
+	else if (ARG_RM16_I16) INS_81(0x04);
+	else if (ARG_RM8_R8)   AND_RM8_R8();
+	else if (ARG_RM16_R16) AND_RM16_R16();
+	else if (ARG_R8_RM8)   AND_R8_RM8();
+	else if (ARG_R16_RM16) AND_R16_RM16();
+	else error = 1;
+}
+static void SUB()
+{
+	if      (ARG_AL_I8)    SUB_AL_I8();
+	else if (ARG_AX_I16)   SUB_AX_I16();
+	else if (ARG_RM8_I8)   INS_80(0x05);
+	else if (ARG_RM16_I8)  INS_83(0x05);
+	else if (ARG_RM16_I16) INS_81(0x05);
+	else if (ARG_RM8_R8)   SUB_RM8_R8();
+	else if (ARG_RM16_R16) SUB_RM16_R16();
+	else if (ARG_R8_RM8)   SUB_R8_RM8();
+	else if (ARG_R16_RM16) SUB_R16_RM16();
+	else error = 1;
+}
+static void XOR()
+{
+	if      (ARG_AL_I8)    XOR_AL_I8();
+	else if (ARG_AX_I16)   XOR_AX_I16();
+	else if (ARG_RM8_I8)   INS_80(0x06);
+	else if (ARG_RM16_I8)  INS_83(0x06);
+	else if (ARG_RM16_I16) INS_81(0x06);
+	else if (ARG_RM8_R8)   XOR_RM8_R8();
+	else if (ARG_RM16_R16) XOR_RM16_R16();
+	else if (ARG_R8_RM8)   XOR_R8_RM8();
+	else if (ARG_R16_RM16) XOR_R16_RM16();
+	else error = 1;
+}
+static void CMP()
+{
+	if      (ARG_AL_I8)    CMP_AL_I8();
+	else if (ARG_AX_I16)   CMP_AX_I16();
+	else if (ARG_RM8_I8)   INS_80(0x07);
+	else if (ARG_RM16_I8)  INS_83(0x07);
+	else if (ARG_RM16_I16) INS_81(0x07);
+	else if (ARG_RM8_R8)   CMP_RM8_R8();
+	else if (ARG_RM16_R16) CMP_RM16_R16();
+	else if (ARG_R8_RM8)   CMP_R8_RM8();
+	else if (ARG_R16_RM16) CMP_R16_RM16();
+	else error = 1;
+}
+
+static void QDX()
+{
+	if (ARG_I8) {
+		setbyte(0xf1);
+		avip++;
+		SetImm8(aopri1.imm8s);
+	} else error = 1;
+}
+static void IRET()
+{
+	setbyte(0xcf);
+	avip++;
+}
+
 static void exec()
 {
 	/* assemble single statement */
 	if (!aop || !aop[0]) return;
-	if (!strcmp(aop, "db"))       ;
-	else if(!strcmp(aop, "dw"))   ;
-	else if(!strcmp(aop, "add"))  ADD();
-	else if(!strcmp(aop,"es:"))   ES();
-	else if(!strcmp(aop,"cs:"))   CS();
-	else if(!strcmp(aop,"ss:"))   SS();
-	else if(!strcmp(aop,"ds:"))   DS();
-	else if(!strcmp(aop,"aaa"))   AAA();
-	else if(!strcmp(aop,"aad"))   AAD();
-	else if(!strcmp(aop,"aam"))   AAM();
-	else if(!strcmp(aop,"aas"))   AAS();
+	if      (!strcmp(aop, "db"))   ;
+	else if (!strcmp(aop, "dw"))   ;
+
+	else if (!strcmp(aop, "add"))  ADD();
+	else if (!strcmp(aop, "push")) PUSH();
+	else if (!strcmp(aop, "pop"))  POP();
+	else if (!strcmp(aop, "or"))   OR();
+	else if (!strcmp(aop, "adc"))  ADC();
+	else if (!strcmp(aop, "and"))  AND();
+	else if (!strcmp(aop, "es:"))  ES();
+	else if (!strcmp(aop, "daa"))  DAA();
+	else if (!strcmp(aop, "sub"))  SUB();
+	else if (!strcmp(aop, "cs:"))  CS();
+	else if (!strcmp(aop, "das"))  DAS();
+	else if (!strcmp(aop, "xor"))  XOR();
+	else if (!strcmp(aop, "ss:"))  SS();
+	else if (!strcmp(aop, "aaa"))  AAA();
+	else if (!strcmp(aop, "cmp"))  CMP();
+	else if (!strcmp(aop, "ds:"))  DS();
+	else if (!strcmp(aop, "aas"))  AAS();
+	
+	else if (!strcmp(aop, "aam"))  AAM();
+	else if (!strcmp(aop, "aad"))  AAD();
+
+	else if (!strcmp(aop, "qdx"))  QDX();
+	else if (!strcmp(aop, "iret")) IRET();
 /*	else if(!strcmp(aop,"adc"))	aGROUP1(0x02,0x10,0)
 	else if(!strcmp(aop,"add"))	aGROUP1(0x00,0x00,0)
 	else if(!strcmp(aop,"and"))	aGROUP1(0x04,0x20,1)
@@ -1317,6 +1765,7 @@ static void exec()
 	else if(!strcmp(aop,"xlat"))	aSINGLE(0xd7)
 	else if(!strcmp(aop,"xor"))	aGROUP1(0x06,0x30,1)
 	else ;//*/
+	if (error) printf("exec.error = %d\n",error);
 }
 
 /* op opr1,opr2 ;comment \n op opr1,opr2 ;end\n */

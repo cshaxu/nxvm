@@ -62,9 +62,9 @@ void qdmiscReset()
 	qdbiosInt[0x12] = (t_faddrcc)INT_12; /* soft bios */
 	qdbiosInt[0x15] = (t_faddrcc)INT_15; /* soft bios */
 /* special: INT 11 */
-	qdbiosMakeInt(0x11, "qdx 11;iret");
+	qdbiosMakeInt(0x11, "qdx 11\niret");
 /* special: INT 12 */
-	qdbiosMakeInt(0x12, "qdx 12;iret");
+	qdbiosMakeInt(0x12, "qdx 12\niret");
 /* special: INT 15 */
-	qdbiosMakeInt(0x15, "qdx 15;iret");
+	qdbiosMakeInt(0x15, "qdx 15\niret");
 }

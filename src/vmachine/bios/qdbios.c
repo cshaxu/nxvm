@@ -13,7 +13,7 @@
 #include "qdrtc.h"
 #include "qdmisc.h"
 #include "qdbios.h"
-#include "../../console/asm86.h"
+#include "../debug/aasm.h"
 
 t_faddrcc qdbiosInt[0x100];
 static t_nubit16 ics, iip;
@@ -24,47 +24,15 @@ void qdbiosSetInt(t_nubit8 intid, t_nubit16 intcs, t_nubit16 intip)
 	vramVarWord(0x0000, intid * 4 + 2) = intcs;
 }
 
-static void doasm(t_string s)
-{
-	int id;
-	static t_nubit16 jcs[10], jip[10];
-	switch (s[0]) {
-	case '!':
-		id = s[1] - '0';
-		jcs[id] = ics;
-		jip[id] = iip;
-		s[0] = s[1] = ' ';
-		break;
-	case '#': /* entrance of short jmp */
-		id = s[1] - '0';
-		vramVarByte(jcs[id], jip[id]+1) = (t_nubit8)(iip - jip[id] + 2);
-		s[0] = ' ';
-		break;
-	}
-	iip += assemble(s, 0xf000, (void *)vram.base, ics, iip);
-}
-void qdbiosAsmInt(t_string stmt)
-{
-	int i = 0;
-	char str[0x1000];
-	char *p;
-	STRCPY(str,stmt);
-	p = str;
-	while (i < 0x1000) {
-		if (str[i] == ';') {
-			str[i] = 0;
-			doasm(p);
-			p = str + i + 1;
-		} else if (!str[i]) {
-			doasm(p);
-			break;
-		} else ++i;
-	}
-}
 void qdbiosMakeInt(t_nubit8 intid, t_string stmt)
 {
+	t_nubitcc len;
 	qdbiosSetInt(intid, ics, iip);
-	qdbiosAsmInt(stmt);
+	len = aasm(stmt, ics, iip);
+	if (len) iip += len;
+	else {
+		vapiPrint("Critical internal error: invalid asm instruction.\n");
+	}
 }
 
 void qdbiosExecInt(t_nubit8 intid)
@@ -83,7 +51,7 @@ void qdbiosReset()
 /* build general int service routine */
 	ics = 0xf000;
 	iip = 0x0000;
-	qdbiosAsmInt("iret");
+	aasm("iret", ics, iip);
 /* bios data area */
 	memset((void *)vramGetAddr(0x0040,0x0000), 0x00, 0x100);
 	vramVarByte(0x0040, 0x0000) = 0xf8;

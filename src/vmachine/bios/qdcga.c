@@ -365,7 +365,7 @@ void INT_10()
 void qdcgaReset()
 {
 	qdbiosInt[0x10] = (t_faddrcc)INT_10; /* soft cga*/
-	qdbiosMakeInt(0x10, "qdx 10;iret");
+	qdbiosMakeInt(0x10, "qdx 10\niret");
 	vvadp.color   = 0x01;
 	qdcgaVarRowSize = 0x50; // 80
 	vvadp.colsize = 0x19; // 25

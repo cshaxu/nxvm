@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xd6]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xd7]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -32,7 +32,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 5:
  *     Phase 6:
  * Component 2: asembler
- *     Files:   asm86.c, asm86.h
+ *     Files:   (asm86) aasm.c, aasm.h
  *     Phase 1:
  *     Phase 2: 01/25/2012 - 01/31/2012
  *     Phase 3:
@@ -40,7 +40,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 5:
  *     Phase 6:
  * Component 3: disassembler 
- *     Files:   asm86.c, asm86.h
+ *     Files:   (asm86) dasm.c, dasm.h
  *     Phase 1:
  *     Phase 2: 02/01/2012 - 02/05/2012
  *     Phase 3:

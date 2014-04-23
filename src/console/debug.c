@@ -23,9 +23,9 @@ test code
 
 #include "../vmachine/vmachine.h"
 #include "../vmachine/vapi.h"
+#include "../vmachine/debug/aasm.h"
 #include "../vmachine/debug/dasm.h"
 
-#include "asm86.h"
 #include "debug.h"
 
 #define MAXLINE 256
@@ -200,8 +200,9 @@ static void aconsole()
 		}
 		if(cmdAsmBuff[0] == ';' ) continue;
 		errAsmPos = 0;
-		len = assemble(cmdAsmBuff,_cs,
-			(void *)vramGetAddr(0x0000,0x0000),asmSegRec,asmPtrRec);
+		len = aasm(cmdAsmBuff, asmSegRec, asmPtrRec);
+		/*len = assemble(cmdAsmBuff,_cs,
+			(void *)vramGetAddr(0x0000,0x0000),asmSegRec,asmPtrRec);*/
 		if(!len) errAsmPos = (int)strlen(cmdAsmBuff) + 9;
 		else asmPtrRec += len;
 		if(errAsmPos) {

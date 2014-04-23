@@ -158,7 +158,7 @@ void qdkeybReset()
 	qdbiosInt[0x09] = (t_faddrcc)INT_09; /* hard keyb */
 	qdbiosInt[0x16] = (t_faddrcc)INT_16; /* soft keyb */
 /* special: INT 09 */
-	qdbiosMakeInt(0x09, "qdx 09;iret");
+	qdbiosMakeInt(0x09, "qdx 09\niret");
 /* special: INT 16 */
-	qdbiosMakeInt(0x16, "qdx 16;iret");
+	qdbiosMakeInt(0x16, "qdx 16\niret");
 }

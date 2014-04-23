@@ -236,10 +236,10 @@ void qdrtcReset()
 			");
 	} else {*/
 		qdbiosInt[0x08] = (t_faddrcc)INT_08; /* hard rtc */
-		qdbiosMakeInt(0x08, "qdx 08;iret");
+		qdbiosMakeInt(0x08, "qdx 08\niret");
 	//}
 	qdbiosInt[0x1a] = (t_faddrcc)INT_1A; /* soft rtc */
-	qdbiosMakeInt(0x1a, "qdx 1a;iret");
+	qdbiosMakeInt(0x1a, "qdx 1a\niret");
 	/* load cmos data */
 	hour = BCD2Hex(vcmos.reg[VCMOS_RTC_HOUR]);
 	min  = BCD2Hex(vcmos.reg[VCMOS_RTC_MINUTE]);

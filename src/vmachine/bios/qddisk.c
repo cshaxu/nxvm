@@ -497,9 +497,9 @@ void qddiskReset()
 	qdbiosInt[0x0e] = (t_faddrcc)INT_0E; /* hard fdd */
 	qdbiosInt[0x13] = (t_faddrcc)INT_13; /* soft fdd */
 /* special: INT 0E */
-	qdbiosMakeInt(0x09, "qdx 0e;iret");
+	qdbiosMakeInt(0x09, "qdx 0e\niret");
 /* special: INT 13 */
-	qdbiosMakeInt(0x13, "qdx 13;iret");
+	qdbiosMakeInt(0x13, "qdx 13\niret");
 	if (vramVarByte(0x0040, 0x0100) & 0x80) {
 		if (!vhdd.flagexist) {
 			vapiPrint("Insert boot disk and restart.\n");
