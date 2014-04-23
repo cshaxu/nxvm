@@ -12,14 +12,14 @@ static COORD coordDefaultBufSize, coordBufSize, coordBufStart;
 static SMALL_RECT srctWriteRect;
 static USHORT sizeRow, sizeCol;
 //static CONSOLE_CURSOR_INFO defaultCurInfo;
-//static UINT defaultCodePage;
+static UINT defaultCodePage;
 static CONSOLE_SCREEN_BUFFER_INFO defaultBufInfo;
 static UCHAR bufComp[0x1000];
 void w32cdispInit()
 {
 //	GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&defaultCurInfo));
 	GetConsoleScreenBufferInfo(hOut, &defaultBufInfo);
-//	defaultCodePage = GetConsoleCP();
+	defaultCodePage = GetConsoleCP();
 	charBuf = NULL;
 //	vapiSleep(1000);
 	w32cdispSetScreen();
@@ -40,7 +40,7 @@ void w32cdispSetScreen()
 	if (charBuf) free(charBuf);
 	charBuf = (PCHAR_INFO)malloc(sizeCol * sizeRow * sizeof(CHAR_INFO));
 //	SetConsoleCursorInfo(hOut, &curInfo);
-//	SetConsoleCP(437);
+	SetConsoleOutputCP(437);
 	SetConsoleScreenBufferSize(hOut, coordBufSize);
 }
 
@@ -91,7 +91,7 @@ void w32cdispFinal()
 	if (charBuf) free((void *)charBuf);
 	charBuf = NULL;
 //	SetConsoleCursorInfo(hOut, &defaultCurInfo);
-//	SetConsoleCP(defaultCodePage);
+	SetConsoleOutputCP(defaultCodePage);
 	SetConsoleScreenBufferSize(hOut, defaultBufInfo.dwSize);
 	hOut = INVALID_HANDLE_VALUE;
 }
