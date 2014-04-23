@@ -326,7 +326,7 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 		vcpuins.bit = 16;
 		vcpuins.type = ADD16;
 		vcpuins.opr1 = d_nubit16(dest);
-		vcpuins.opr2 = *(t_nsbit8 *)src;
+		vcpuins.opr2 = d_nsbit8(src);
 		vcpuins.result = (vcpuins.opr1+vcpuins.opr2)&0xffff;
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
@@ -356,7 +356,7 @@ static void OR(void *dest, void *src, t_nubit8 len)
 		vcpuins.bit = 16;
 		//vcpuins.type = OR16;
 		vcpuins.opr1 = d_nubit16(dest);
-		vcpuins.opr2 = *(t_nsbit8 *)src;
+		vcpuins.opr2 = d_nsbit8(src);
 		vcpuins.result = (vcpuins.opr1|vcpuins.opr2)&0xffff;
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
@@ -389,7 +389,7 @@ static void ADC(void *dest, void *src, t_nubit8 len)
 		vcpuins.bit = 16;
 		vcpuins.type = ADC16;
 		vcpuins.opr1 = d_nubit16(dest);
-		vcpuins.opr2 = *(t_nsbit8 *)src;
+		vcpuins.opr2 = d_nsbit8(src);
 		vcpuins.result = (vcpuins.opr1+vcpuins.opr2+GetBit(vcpu.flags, VCPU_FLAG_CF))&0xffff;
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
@@ -419,7 +419,7 @@ static void SBB(void *dest, void *src, t_nubit8 len)
 		vcpuins.bit = 16;
 		vcpuins.type = SBB16;
 		vcpuins.opr1 = d_nubit16(dest);
-		vcpuins.opr2 = *(t_nsbit8 *)src;
+		vcpuins.opr2 = d_nsbit8(src);
 		vcpuins.result = (vcpuins.opr1-(vcpuins.opr2+GetBit(vcpu.flags, VCPU_FLAG_CF)))&0xffff;
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
@@ -449,7 +449,7 @@ static void AND(void *dest, void *src, t_nubit8 len)
 		vcpuins.bit = 16;
 		//vcpuins.type = AND16;
 		vcpuins.opr1 = d_nubit16(dest);
-		vcpuins.opr2 = *(t_nsbit8 *)src;
+		vcpuins.opr2 = d_nsbit8(src);
 		vcpuins.result = (vcpuins.opr1&vcpuins.opr2)&0xffff;
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
@@ -512,7 +512,7 @@ static void XOR(void *dest, void *src, t_nubit8 len)
 		vcpuins.bit = 16;
 		//vcpuins.type = XOR16;
 		vcpuins.opr1 = d_nubit16(dest);
-		vcpuins.opr2 = *(t_nsbit8 *)src;
+		vcpuins.opr2 = d_nsbit8(src);
 		vcpuins.result = (vcpuins.opr1^vcpuins.opr2)&0xffff;
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
@@ -1149,7 +1149,7 @@ static void SCAS(t_nubit8 len)
 static void NOT(void *dest, t_nubit8 len)
 {
 	switch(len) {
-	case 8:	vcpuins.bit = 8; d_nubit8(dest)  = ~d_nubit8(dest); break;
+	case 8:	vcpuins.bit = 8; d_nubit8(dest) = ~d_nubit8(dest); break;
 	case 16:vcpuins.bit = 16;d_nubit16(dest) = ~d_nubit16(dest);break;
 	default:CaseError("NOT::len");break;}
 }
@@ -2286,21 +2286,6 @@ void MOV_R8_RM8()
 		default:CaseError("GetModRegRM::regbit16::REG");break;}
 		break;
 	default:CaseError("GetModRegRM::regbit");break;}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	MOV((void *)vcpuins.r,(void *)vcpuins.rm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  MOV_R8_RM8\n");
 }
@@ -2322,7 +2307,7 @@ void LEA_R16_M16()
 {
 	vcpu.ip++;
 	GetModRegRMEA();
-	*(t_nubit16 *)vcpuins.r = vcpuins.rm&0xffff;
+	d_nubit16(vcpuins.r) = vcpuins.rm&0xffff;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  LEA_R16_M16\n");
 }
 void MOV_SEG_RM16()
@@ -2408,9 +2393,9 @@ void CALL_PTR16_16()
 	t_nubit16 newcs,newip;
 	vcpu.ip++;
 	GetImm(16);
-	newip = *(t_nubit16 *)vcpuins.imm;
+	newip = d_nubit16(vcpuins.imm);
 	GetImm(16);
-	newcs = *(t_nubit16 *)vcpuins.imm;
+	newcs = d_nubit16(vcpuins.imm);
 	PUSH((void *)&vcpu.cs,16);
 	PUSH((void *)&vcpu.ip,16);
 	vcpu.ip = newip;
@@ -2437,13 +2422,13 @@ void POPF()
 void SAHF()
 {
 	vcpu.ip++;
-	*(t_nubit8 *)&vcpu.flags = vcpu.ah;
+	d_nubit8(&vcpu.flags) = vcpu.ah;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  SAHF\n");
 }
 void LAHF()
 {
 	vcpu.ip++;
-	vcpu.ah = *(t_nubit8 *)&vcpu.flags;
+	vcpu.ah = d_nubit8(&vcpu.flags);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  LAHF\n");
 }
 void MOV_AL_M8()
@@ -2763,7 +2748,7 @@ void RET_I8()
 	t_nubit8 addsp;
 	vcpu.ip++;
 	GetImm(8);
-	addsp = *(t_nubit8 *)vcpuins.imm;
+	addsp = d_nubit8(vcpuins.imm);
 	POP((void *)&vcpu.ip,16);
 	vcpu.sp += addsp;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  RET_I8\n");
@@ -2810,7 +2795,7 @@ void RETF_I16()
 	t_nubit16 addsp;
 	vcpu.ip++;
 	GetImm(16);
-	addsp = *(t_nubit16 *)vcpuins.imm;
+	addsp = d_nubit16(vcpuins.imm);
 	POP((void *)&vcpu.ip,16);
 	POP((void *)&vcpu.cs,16);
 	vcpu.sp += addsp;
@@ -2832,7 +2817,7 @@ void INT_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
-	INT(*(t_nubit8 *)vcpuins.imm);
+	INT(d_nubit8(vcpuins.imm));
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INT_I8\n");
 }
 void INTO()
@@ -2917,13 +2902,14 @@ void AAM()
 	t_nubit8 base,tempAL;
 	vcpu.ip++;
 	GetImm(8);
-	base = *(t_nubit8 *)vcpuins.imm;
+	base = d_nubit8(vcpuins.imm);
 	if(base == 0) INT(0x00);
 	else {
 		tempAL = vcpu.al;
-		vcpu.ah = tempAL/base;
-		vcpu.al = tempAL%base;
-		vcpuins.result = vcpu.al;
+		vcpu.ah = tempAL / base;
+		vcpu.al = tempAL % base;
+		vcpuins.bit = 0x08;
+		vcpuins.result = vcpu.al & 0xff;
 		SetFlags(AAM_FLAG);
 	}
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  AAM\n");
@@ -2933,14 +2919,15 @@ void AAD()
 	t_nubit8 base,tempAL,tempAH;
 	vcpu.ip++;
 	GetImm(8);
-	base = *(t_nubit8 *)vcpuins.imm;
+	base = d_nubit8(vcpuins.imm);
 	if(base == 0) INT(0x00);
 	else {
 		tempAL = vcpu.al;
 		tempAH = vcpu.ah;
-		vcpu.al = (tempAL+(tempAH*base))&0xff;
+		vcpu.al = (tempAL+(tempAH*base)) & 0xff;
 		vcpu.ah = 0x00;
-		vcpuins.result = vcpu.al;
+		vcpuins.bit = 0x08;
+		vcpuins.result = vcpu.al & 0xff;
 		SetFlags(AAD_FLAG);
 	}
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  AAD\n");
@@ -2987,7 +2974,7 @@ void LOOP()
 /* vcpuins bug fix #2
 	vcpu.ip++;
 	GetImm(8);
-	rel8 = *(t_nubit8 *)vcpuins.imm;
+	rel8 = d_nubit8(vcpuins.imm);
 	vcpu.cx--;
 	if(vcpu.cx) vcpu.ip += rel8;*/
 	vcpu.ip++;
@@ -3009,7 +2996,7 @@ void IN_AL_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
-	ExecFun(vport.in[*(t_nubit8 *)vcpuins.imm]);
+	ExecFun(vport.in[d_nubit8(vcpuins.imm)]);
 	vcpu.al = vcpu.iobyte;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AL_I8\n");
 }
@@ -3017,9 +3004,9 @@ void IN_AX_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
-	ExecFun(vport.in[*(t_nubit8 *)vcpuins.imm+0]);
+	ExecFun(vport.in[d_nubit8(vcpuins.imm)+0]);
 	vcpu.al = vcpu.iobyte;
-	ExecFun(vport.in[*(t_nubit8 *)vcpuins.imm+1]);
+	ExecFun(vport.in[d_nubit8(vcpuins.imm)+1]);
 	vcpu.ah = vcpu.iobyte;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AX_I8\n");
 }
@@ -3028,7 +3015,7 @@ void OUT_I8_AL()
 	vcpu.ip++;
 	GetImm(8);
 	vcpu.iobyte = vcpu.al;
-	ExecFun(vport.out[*(t_nubit8 *)vcpuins.imm]);
+	ExecFun(vport.out[d_nubit8(vcpuins.imm)]);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_I8_AL\n");
 }
 void OUT_I8_AX()
@@ -3036,9 +3023,9 @@ void OUT_I8_AX()
 	vcpu.ip++;
 	GetImm(8);
 	vcpu.iobyte = vcpu.al;
-	ExecFun(vport.out[*(t_nubit8 *)vcpuins.imm+0]);
+	ExecFun(vport.out[d_nubit8(vcpuins.imm)+0]);
 	vcpu.iobyte = vcpu.ah;
-	ExecFun(vport.out[*(t_nubit8 *)vcpuins.imm+1]);
+	ExecFun(vport.out[d_nubit8(vcpuins.imm)+1]);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_I8_AX\n");
 }
 void CALL_REL16()
@@ -3049,7 +3036,7 @@ void CALL_REL16()
 	rel16 = d_nsbit16(vcpuins.imm);
 	PUSH((void *)&vcpu.ip,16);
 /* vcpuins bug fix #12
-	vcpu.ip += *(t_nubit16 *)vcpuins.imm;*/
+	vcpu.ip += d_nubit16(vcpuins.imm);*/
 	vcpu.ip += rel16;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  CALL_REL16\n");
 }
@@ -3060,7 +3047,7 @@ void JMP_REL16()
 	GetImm(16);
 	rel16 = d_nsbit16(vcpuins.imm);
 /* vcpuins bug fix #p
-	vcpu.ip += *(t_nubit16 *)vcpuins.imm;*/
+	vcpu.ip += d_nubit16(vcpuins.imm);*/
 	vcpu.ip += rel16;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  JMP_REL16\n");
 }
@@ -3069,9 +3056,9 @@ void JMP_PTR16_16()
 	t_nubit16 newip,newcs;
 	vcpu.ip++;
 	GetImm(16);
-	newip = *(t_nubit16 *)vcpuins.imm;
+	newip = d_nubit16(vcpuins.imm);
 	GetImm(16);
-	newcs = *(t_nubit16 *)vcpuins.imm;
+	newcs = d_nubit16(vcpuins.imm);
 	vcpu.ip = newip;
 	vcpu.cs = newcs;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  JMP_PTR16_16\n");
@@ -3083,7 +3070,7 @@ void JMP_REL8()
 	GetImm(8);
 	rel8 = d_nsbit8(vcpuins.imm);
 /* vcpuins bug fix #9
-	vcpu.ip += *(t_nubit8 *)vcpuins.imm;*/
+	vcpu.ip += d_nubit8(vcpuins.imm);*/
 	vcpu.ip += rel8;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  JMP_REL8\n");
 }
@@ -3240,24 +3227,24 @@ void INS_FF()
 	case 1:	DEC((void *)vcpuins.rm,16);	break;
 	case 2:	/* CALL_RM16 */
 		PUSH((void *)&vcpu.ip,16);
-		vcpu.ip = *(t_nubit16 *)vcpuins.rm;
+		vcpu.ip = d_nubit16(vcpuins.rm);
 		break;
 	case 3:	/* CALL_M16_16 */
 		PUSH((void *)&vcpu.cs,16);
 		PUSH((void *)&vcpu.ip,16);
-		vcpu.ip = *(t_nubit16 *)vcpuins.rm;
+		vcpu.ip = d_nubit16(vcpuins.rm);
 /* vcpuins bug fix #11
 		vcpu.cs = *(t_nubit16 *)(vcpuins.rm+1);*/
-		vcpu.cs = *(t_nubit16 *)(vcpuins.rm+2);
+		vcpu.cs = d_nubit16(vcpuins.rm+2);
 		break;
 	case 4:	/* JMP_RM16 */
-		vcpu.ip = *(t_nubit16 *)vcpuins.rm;
+		vcpu.ip = d_nubit16(vcpuins.rm);
 		break;
 	case 5:	/* JMP_M16_16 */
-		vcpu.ip = *(t_nubit16 *)vcpuins.rm;
+		vcpu.ip = d_nubit16(vcpuins.rm);
 /* vcpuins bug fix #11
 		vcpu.cs = *(t_nubit16 *)(vcpuins.rm+1);*/
-		vcpu.cs = *(t_nubit16 *)(vcpuins.rm+2);
+		vcpu.cs = d_nubit16(vcpuins.rm+2);
 		break;
 	case 6:	/* PUSH_RM16 */
 		PUSH((void *)vcpuins.rm,16);

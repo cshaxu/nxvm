@@ -18,6 +18,8 @@ typedef struct {
 
 extern t_ram vram;
 
+#define vramIsAddrInMem(addr) \
+	(((addr) >= vram.base) && ((addr) < (vram.base + vram.size)))
 #define vramGetAddr(segment, offset)  (vram.base + ((segment) << 4) + (offset))
 #define vramVarByte(segment, offset)  (*(t_nubit8  *)(vramGetAddr(segment, offset)))
 #define vramVarWord(segment, offset)  (*(t_nubit16 *)(vramGetAddr(segment, offset)))

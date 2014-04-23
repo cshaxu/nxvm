@@ -16,6 +16,7 @@ void vapiCallBackMachineRun()
 {
 	if(vmachine.flaginit && !vmachine.flagrun) {
 		if (vmachine.flagrecord) vapiRecordStart();
+		vcpu.flagterm = 0x00;
 		vmachine.flagrun = 0x01;
 		while (vmachine.flagrun) {
 			vmachineRefresh();

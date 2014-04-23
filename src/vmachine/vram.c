@@ -20,7 +20,7 @@ void vramAlloc(t_nubitcc newsize)
 void vramInit()
 {
 	memset(&vram, 0x00, sizeof(t_ram));
-	vramAlloc(1<<21);
+	vramAlloc(1 << 20);
 }
 void vramRefresh() {}
 void vramFinal()
