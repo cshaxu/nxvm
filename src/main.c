@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x5c]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x5d]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -105,7 +105,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *
  * Module: VMachine - Storage
  * Component 1: dmac (8237)
- *     Files:   vdmac.c, vdmac.h
+ *     Files:   vdma.c, vdma.h
  *     Phase 1:
  *     Phase 2: 03/03/2012 - 04/01/2012
  *     Phase 3:

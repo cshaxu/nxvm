@@ -13,7 +13,7 @@
 #include "vpit.h"
 #include "vfdd.h"
 #include "vfdc.h"
-#include "vdmac.h"
+#include "vdma.h"
 
 extern t_bool vmachineinitflag;
 extern t_bool vmachinerunflag;

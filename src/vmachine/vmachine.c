@@ -18,7 +18,6 @@ void vmachineRefresh()
 	vfddRefresh();
 	vdmacRefresh();
 */
-/*	vpitIntTick();    */                 /* interrupt request comes from PIT */
 	vpitRefresh();
 	vpicRefresh();
 	vramRefresh();
@@ -33,7 +32,7 @@ void vmachineInit()
 		vramInit();
 		vpicInit();
 		vpitInit();
-		vdmacInit();
+		vdmaInit();
 		vfddInit();
 		vfdcInit();
 /*
@@ -89,7 +88,7 @@ void vmachineFinal()
 */
 		vfdcFinal();
 		vfddFinal();
-		vdmacFinal();
+		vdmaFinal();
 		vpitFinal();
 		vpicFinal();
 		vramFinal();
