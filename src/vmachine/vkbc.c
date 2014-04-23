@@ -4,53 +4,104 @@
 
 #include "vcpuins.h"
 #include "vcpu.h"
+#include "vpic.h"
 #include "vkbc.h"
 
 #define GetBit(a,b) (!!((a) &   (b)))
 #define SetBit(a,b) (   (a) |=  (b))
 #define ClrBit(a,b) (   (a) &= ~(b))
 
-#define VKBC_FLAG_STATUS_OUTPUT_BUFFER_FULL            0x01
-#define VKBC_FLAG_STATUS_INPUT_BUFFER_FULL             0x02
-#define VKBC_FLAG_STATUS_SYSTEM_FLAG                   0x04
-#define VKBC_FLAG_STATUS_COMMAND                       0x08
-#define VKBC_FLAG_STATUS_INHIBIT_SWITCH                0x10
-#define VKBC_FLAG_STATUS_TRANSMIT_TIME_OUT             0x20
-#define VKBC_FLAG_STATUS_RECEIVE_TIME_OUT              0x40
-#define VKBC_FLAG_STATUS_PARITY_ERROR                  0x80
+#define VKBC_FLAG_CONTROL_OUTBUF_FULL           0x01
+#define VKBC_FLAG_STATUS_INBUF_FULL             0x02
+#define VKBC_FLAG_STATUS_SYSTEM_FLAG            0x04
+#define VKBC_FLAG_STATUS_COMMAND                0x08
+#define VKBC_FLAG_STATUS_INHIBIT_SWITCH         0x10
+#define VKBC_FLAG_STATUS_TRANSMIT_TIME_OUT      0x20
+#define VKBC_FLAG_STATUS_RECEIVE_TIME_OUT       0x40
+#define VKBC_FLAG_STATUS_PARITY_ERROR           0x80
 
-#define VKBC_FLAG_COMMAND_OUTPUT_BUFFER_FULL_INTERRUPT 0x01
-#define VKBC_FLAG_COMMAND_RESERVED_BIT_1               0x02
-#define VKBC_FLAG_COMMAND_SYSTEM_FLAG                  0x04
-#define VKBC_FLAG_COMMAND_INHIBIT_OVERRIDE             0x08
-#define VKBC_FLAG_COMMAND_DISABLE_KEYBOARD             0x10
-#define VKBC_FLAG_COMMAND_PC_MODE                      0x20
-#define VKBC_FLAG_COMMAND_PC_COMPATIBILITY_MODE        0x40
-#define VKBC_FLAG_COMMAND_RESERVED_BIT_7               0x80
+#define VKBC_FLAG_CONTROL_OUTBUF_FULL_INTERRUPT 0x01
+#define VKBC_FLAG_CONTROL_RESERVED_BIT_1        0x02
+#define VKBC_FLAG_CONTROL_SYSTEM_FLAG           0x04
+#define VKBC_FLAG_CONTROL_INHIBIT_OVERRIDE      0x08
+#define VKBC_FLAG_CONTROL_DISABLE_KEYBOARD      0x10
+#define VKBC_FLAG_CONTROL_PC_MODE               0x20
+#define VKBC_FLAG_CONTROL_PC_COMPATIBILITY_MODE 0x40
+#define VKBC_FLAG_CONTROL_RESERVED_BIT_7        0x80
 
-#define GetIBF (GetBit(vkbc.status, VKBC_FLAG_STATUS_INPUT_BUFFER_FULL))
-#define SetIBF (SetBit(vkbc.status, VKBC_FLAG_STATUS_INPUT_BUFFER_FULL))
-#define ClrIBF (ClrBit(vkbc.status, VKBC_FLAG_STATUS_INPUT_BUFFER_FULL))
-#define GetOBF (GetBit(vkbc.status, VKBC_FLAG_STATUS_OUTPUT_BUFFER_FULL))
-#define SetOBF (SetBit(vkbc.status, VKBC_FLAG_STATUS_OUTPUT_BUFFER_FULL))
-#define ClrOBF (ClrBit(vkbc.status, VKBC_FLAG_STATUS_OUTPUT_BUFFER_FULL))
+#define VKBC_FLAG_OUTPORT_RESET                 0x01
+#define VKBC_FLAG_OUTPORT_A20_LINE              0x02
+#define VKBC_FLAG_OUTPORT_UNDEFINED_BIT_2       0x04
+#define VKBC_FLAG_OUTPORT_UNDEFINED_BIT_3       0x08
+#define VKBC_FLAG_OUTPORT_OUTBUF_FULL           0x10
+#define VKBC_FLAG_OUTPORT_INBUF_FULL            0x20
+#define VKBC_FLAG_OUTPORT_CLOCK_LINE            0x40
+#define VKBC_FLAG_OUTPORT_DATA_LINE             0x80
+
+#define GetIBF (GetBit(vkbc.status, VKBC_FLAG_STATUS_INBUF_FULL))
+#define SetIBF (SetBit(vkbc.status, VKBC_FLAG_STATUS_INBUF_FULL))
+#define ClrIBF (ClrBit(vkbc.status, VKBC_FLAG_STATUS_INBUF_FULL))
+#define GetOBF (GetBit(vkbc.status, VKBC_FLAG_CONTROL_OUTBUF_FULL))
+#define SetOBF (SetBit(vkbc.status, VKBC_FLAG_CONTROL_OUTBUF_FULL))
+#define ClrOBF (ClrBit(vkbc.status, VKBC_FLAG_CONTROL_OUTBUF_FULL))
 #define GetCMD (GetBit(vkbc.status, VKBC_FLAG_STATUS_COMMAND))
 #define SetCMD (SetBit(vkbc.status, VKBC_FLAG_STATUS_COMMAND))
 #define ClrCMD (ClrBit(vkbc.status, VKBC_FLAG_STATUS_COMMAND))
 
-#define SetIP (vkbc.inport =                                                  \
+static void SetInBuf(t_nubit8 byte)
+{
+	vkbc.inbuf = byte;
+	SetIBF;
+}
+static void SetOutBuf(t_nubit8 byte)
+{
+	vkbc.outbuf = byte;
+	SetOBF;
+	if (GetBit (vkbc.control, VKBC_FLAG_CONTROL_OUTBUF_FULL_INTERRUPT))
+		vpicSetIRQ(0x01);
+}
+static t_nubit8 GetInBuf()
+{
+	ClrIBF;
+	return vkbc.inbuf;
+}
+static t_nubit8 GetOutBuf()
+{
+	ClrOBF;
+	return vkbc.outbuf;
+}
+static void SetFlagA20(t_bool flag)
+{
+	vkbc.flaga20 = flag;
+}
+static void SetFlagReset(t_bool flag)
+{
+	vkbc.flagreset = flag;
+	/*  */
+}
+
+#define GetInhibitStatus (                                                    \
+	GetBit(vkbc.control, VKBC_FLAG_CONTROL_INHIBIT_OVERRIDE) ? 0 :            \
+	GetBit(vkbc.control, VKBC_FLAG_CONTROL_DISABLE_KEYBOARD))
+
+#define GetInPort (                                                           \
 	((!GetInhibitStatus) << 7) |                                              \
-	(0x01                << 6) |                 /* display is mda, not cga */\
-	(0x01                << 5) |                    /* jumper not installed */\
-	(0x00                << 4) |                   /* disable 2nd 256kb ram */\
+	(vkbc.flagmda        << 6) |                 /* display is mda, not cga */\
+	(vkbc.flagjumper     << 5) |                    /* jumper not installed */\
+	(vkbc.flagram256     << 4) |                   /* disable 2nd 256kb ram */\
 	(0x00                << 3) |                                              \
 	(0x00                << 2) |                                              \
 	(0x00                << 1) |                                              \
 	(0x00                << 0))
-
-#define GetInhibitStatus (\
-	GetBit(vkbc.control, VKBC_FLAG_COMMAND_INHIBIT_OVERRIDE) ? 0 : \
-	GetBit(vkbc.control, VKBC_FLAG_COMMAND_DISABLE_KEYBOARD))
+#define GetOutPort (                                                          \
+	vkbc.flagdata        << 7 |                                               \
+	vkbc.flagclock       << 6 |                                               \
+	GetIBF               << 5 |                                               \
+	GetOBF               << 4 |                                               \
+	0x00                 << 3 |                                               \
+	0x00                 << 2 |                                               \
+	vkbc.flaga20         << 1 |                                               \
+	vkbc.flagreset       << 0)
 
 t_kbc vkbc;
 
@@ -69,223 +120,193 @@ void IO_Read_0064()
 }
 void IO_Write_0060()
 {
-	if (!GetIBF && GetCMD) {
+	if (GetIBF) return;
+	if (GetCMD) {
 		switch (vkbc.inbuf) {
-		case 0x60: vkbc.control   = vcpu.iobyte; break;
-		case 0x61: vkbc.ram[0x01] = vcpu.iobyte; break;
-		case 0x62: vkbc.ram[0x02] = vcpu.iobyte; break;
-		case 0x63: vkbc.ram[0x03] = vcpu.iobyte; break;
-		case 0x64: vkbc.ram[0x04] = vcpu.iobyte; break;
-		case 0x65: vkbc.ram[0x05] = vcpu.iobyte; break;
-		case 0x66: vkbc.ram[0x06] = vcpu.iobyte; break;
-		case 0x67: vkbc.ram[0x07] = vcpu.iobyte; break;
-		case 0x68: vkbc.ram[0x08] = vcpu.iobyte; break;
-		case 0x69: vkbc.ram[0x09] = vcpu.iobyte; break;
-		case 0x6a: vkbc.ram[0x0a] = vcpu.iobyte; break;
-		case 0x6b: vkbc.ram[0x0b] = vcpu.iobyte; break;
-		case 0x6c: vkbc.ram[0x0c] = vcpu.iobyte; break;
-		case 0x6d: vkbc.ram[0x0d] = vcpu.iobyte; break;
-		case 0x6e: vkbc.ram[0x0e] = vcpu.iobyte; break;
-		case 0x6f: vkbc.ram[0x0f] = vcpu.iobyte; break;
-		case 0x70: vkbc.ram[0x10] = vcpu.iobyte; break;
-		case 0x71: vkbc.ram[0x11] = vcpu.iobyte; break;
-		case 0x72: vkbc.ram[0x12] = vcpu.iobyte; break;
-		case 0x73: vkbc.ram[0x13] = vcpu.iobyte; break;
-		case 0x74: vkbc.ram[0x14] = vcpu.iobyte; break;
-		case 0x75: vkbc.ram[0x15] = vcpu.iobyte; break;
-		case 0x76: vkbc.ram[0x16] = vcpu.iobyte; break;
-		case 0x77: vkbc.ram[0x17] = vcpu.iobyte; break;
-		case 0x78: vkbc.ram[0x18] = vcpu.iobyte; break;
-		case 0x79: vkbc.ram[0x19] = vcpu.iobyte; break;
-		case 0x7a: vkbc.ram[0x1a] = vcpu.iobyte; break;
-		case 0x7b: vkbc.ram[0x1b] = vcpu.iobyte; break;
-		case 0x7c: vkbc.ram[0x1c] = vcpu.iobyte; break;
-		case 0x7d: vkbc.ram[0x1d] = vcpu.iobyte; break;
-		case 0x7e: vkbc.ram[0x1e] = vcpu.iobyte; break;
-		case 0x7f: vkbc.ram[0x1f] = vcpu.iobyte; break;
-		case 0xa5:                      /* NOTE: set password; not supported */
-			break;
-		case 0xa6:                   /* NOTE: enable password; not supported */
-			break;
+		case 0x60: SetInBuf(vcpu.iobyte); vkbc.control   = GetInBuf(); return;
+		case 0x61: SetInBuf(vcpu.iobyte); vkbc.ram[0x01] = GetInBuf(); return;
+		case 0x62: SetInBuf(vcpu.iobyte); vkbc.ram[0x02] = GetInBuf(); return;
+		case 0x63: SetInBuf(vcpu.iobyte); vkbc.ram[0x03] = GetInBuf(); return;
+		case 0x64: SetInBuf(vcpu.iobyte); vkbc.ram[0x04] = GetInBuf(); return;
+		case 0x65: SetInBuf(vcpu.iobyte); vkbc.ram[0x05] = GetInBuf(); return;
+		case 0x66: SetInBuf(vcpu.iobyte); vkbc.ram[0x06] = GetInBuf(); return;
+		case 0x67: SetInBuf(vcpu.iobyte); vkbc.ram[0x07] = GetInBuf(); return;
+		case 0x68: SetInBuf(vcpu.iobyte); vkbc.ram[0x08] = GetInBuf(); return;
+		case 0x69: SetInBuf(vcpu.iobyte); vkbc.ram[0x09] = GetInBuf(); return;
+		case 0x6a: SetInBuf(vcpu.iobyte); vkbc.ram[0x0a] = GetInBuf(); return;
+		case 0x6b: SetInBuf(vcpu.iobyte); vkbc.ram[0x0b] = GetInBuf(); return;
+		case 0x6c: SetInBuf(vcpu.iobyte); vkbc.ram[0x0c] = GetInBuf(); return;
+		case 0x6d: SetInBuf(vcpu.iobyte); vkbc.ram[0x0d] = GetInBuf(); return;
+		case 0x6e: SetInBuf(vcpu.iobyte); vkbc.ram[0x0e] = GetInBuf(); return;
+		case 0x6f: SetInBuf(vcpu.iobyte); vkbc.ram[0x0f] = GetInBuf(); return;
+		case 0x70: SetInBuf(vcpu.iobyte); vkbc.ram[0x10] = GetInBuf(); return;
+		case 0x71: SetInBuf(vcpu.iobyte); vkbc.ram[0x11] = GetInBuf(); return;
+		case 0x72: SetInBuf(vcpu.iobyte); vkbc.ram[0x12] = GetInBuf(); return;
+		case 0x73: SetInBuf(vcpu.iobyte); vkbc.ram[0x13] = GetInBuf(); return;
+		case 0x74: SetInBuf(vcpu.iobyte); vkbc.ram[0x14] = GetInBuf(); return;
+		case 0x75: SetInBuf(vcpu.iobyte); vkbc.ram[0x15] = GetInBuf(); return;
+		case 0x76: SetInBuf(vcpu.iobyte); vkbc.ram[0x16] = GetInBuf(); return;
+		case 0x77: SetInBuf(vcpu.iobyte); vkbc.ram[0x17] = GetInBuf(); return;
+		case 0x78: SetInBuf(vcpu.iobyte); vkbc.ram[0x18] = GetInBuf(); return;
+		case 0x79: SetInBuf(vcpu.iobyte); vkbc.ram[0x19] = GetInBuf(); return;
+		case 0x7a: SetInBuf(vcpu.iobyte); vkbc.ram[0x1a] = GetInBuf(); return;
+		case 0x7b: SetInBuf(vcpu.iobyte); vkbc.ram[0x1b] = GetInBuf(); return;
+		case 0x7c: SetInBuf(vcpu.iobyte); vkbc.ram[0x1c] = GetInBuf(); return;
+		case 0x7d: SetInBuf(vcpu.iobyte); vkbc.ram[0x1d] = GetInBuf(); return;
+		case 0x7e: SetInBuf(vcpu.iobyte); vkbc.ram[0x1e] = GetInBuf(); return;
+		case 0x7f: SetInBuf(vcpu.iobyte); vkbc.ram[0x1f] = GetInBuf(); return;
+		case 0xa5: SetInBuf(vcpu.iobyte);                  GetInBuf();
+			                            /* NOTE: set password; not supported */
+			return;
+		case 0xa6: SetInBuf(vcpu.iobyte);                  GetInBuf();
+			                         /* NOTE: enable password; not supported */
+			return;
+		case 0xd1: SetInBuf(vcpu.iobyte);                  GetInBuf();
+			vkbc.flagdata  = !!(vcpu.iobyte & VKBC_FLAG_OUTPORT_DATA_LINE);
+			vkbc.flagclock = !!(vcpu.iobyte & VKBC_FLAG_OUTPORT_CLOCK_LINE);
+			      /* TODO: need to do something when data/clock line changes */
+			if (!!(vcpu.iobyte & VKBC_FLAG_OUTPORT_OUTBUF_FULL))
+				SetOutBuf(vkbc.outbuf);
+			vkbc.flaga20   = !!(vcpu.iobyte & VKBC_FLAG_OUTPORT_A20_LINE);
+			vkbc.flagreset = !!(vcpu.iobyte & VKBC_FLAG_OUTPORT_RESET);
+			return;
+		case 0xd2: SetInBuf(vcpu.iobyte);
+			SetOutBuf(GetInBuf());                   /* TODO: need to verify */
+			return;
+		case 0xd3: SetInBuf(vcpu.iobyte);                  GetInBuf();
+			               /* NOTE: write mouse output buffer; not supported */
+			return;
+		case 0xd4: SetInBuf(vcpu.iobyte);                  GetInBuf();
+			                     /* NOTE: write data to mouse; not supported */
+			return;
 		default: break;
 		}
-		ClrCMD;
-		vkbc.inbuf = vcpu.iobyte;
-		ClrIBF;
-	} else {
-		vkbc.inbuf = vcpu.iobyte;
-		SetIBF;
-		ClrCMD;
+	}
+	SetInBuf(vcpu.iobyte);
+	ClrCMD;
+	switch (GetInBuf()) {
+	default: break;
 	}
 }
 void IO_Write_0064()
 {
-	vkbc.inbuf = vcpu.iobyte;
-	SetIBF;
+	SetInBuf(vcpu.iobyte);
 	SetCMD;
-	switch (vkbc.inbuf) {
+	switch (GetInBuf()) {                           /* TODO: need to verify  */
 	case 0x20:                    /* read keyboard controller's command byte */
-		       ClrIBF; vkbc.outbuf = vkbc.control;   SetOBF; break;
-	case 0x21: ClrIBF; vkbc.outbuf = vkbc.ram[0x01]; SetOBF; break;
-	case 0x22: ClrIBF; vkbc.outbuf = vkbc.ram[0x02]; SetOBF; break;
-	case 0x23: ClrIBF; vkbc.outbuf = vkbc.ram[0x03]; SetOBF; break;
-	case 0x24: ClrIBF; vkbc.outbuf = vkbc.ram[0x04]; SetOBF; break;
-	case 0x25: ClrIBF; vkbc.outbuf = vkbc.ram[0x05]; SetOBF; break;
-	case 0x26: ClrIBF; vkbc.outbuf = vkbc.ram[0x06]; SetOBF; break;
-	case 0x27: ClrIBF; vkbc.outbuf = vkbc.ram[0x07]; SetOBF; break;
-	case 0x28: ClrIBF; vkbc.outbuf = vkbc.ram[0x08]; SetOBF; break;
-	case 0x29: ClrIBF; vkbc.outbuf = vkbc.ram[0x09]; SetOBF; break;
-	case 0x2a: ClrIBF; vkbc.outbuf = vkbc.ram[0x0a]; SetOBF; break;
-	case 0x2b: ClrIBF; vkbc.outbuf = vkbc.ram[0x0b]; SetOBF; break;
-	case 0x2c: ClrIBF; vkbc.outbuf = vkbc.ram[0x0c]; SetOBF; break;
-	case 0x2d: ClrIBF; vkbc.outbuf = vkbc.ram[0x0d]; SetOBF; break;
-	case 0x2e: ClrIBF; vkbc.outbuf = vkbc.ram[0x0e]; SetOBF; break;
-	case 0x2f: ClrIBF; vkbc.outbuf = vkbc.ram[0x0f]; SetOBF; break;
-	case 0x30: ClrIBF; vkbc.outbuf = vkbc.ram[0x10]; SetOBF; break;
-	case 0x31: ClrIBF; vkbc.outbuf = vkbc.ram[0x11]; SetOBF; break;
-	case 0x32: ClrIBF; vkbc.outbuf = vkbc.ram[0x12]; SetOBF; break;
-	case 0x33: ClrIBF; vkbc.outbuf = vkbc.ram[0x13]; SetOBF; break;
-	case 0x34: ClrIBF; vkbc.outbuf = vkbc.ram[0x14]; SetOBF; break;
-	case 0x35: ClrIBF; vkbc.outbuf = vkbc.ram[0x15]; SetOBF; break;
-	case 0x36: ClrIBF; vkbc.outbuf = vkbc.ram[0x16]; SetOBF; break;
-	case 0x37: ClrIBF; vkbc.outbuf = vkbc.ram[0x17]; SetOBF; break;
-	case 0x38: ClrIBF; vkbc.outbuf = vkbc.ram[0x18]; SetOBF; break;
-	case 0x39: ClrIBF; vkbc.outbuf = vkbc.ram[0x19]; SetOBF; break;
-	case 0x3a: ClrIBF; vkbc.outbuf = vkbc.ram[0x1a]; SetOBF; break;
-	case 0x3b: ClrIBF; vkbc.outbuf = vkbc.ram[0x1b]; SetOBF; break;
-	case 0x3c: ClrIBF; vkbc.outbuf = vkbc.ram[0x1c]; SetOBF; break;
-	case 0x3d: ClrIBF; vkbc.outbuf = vkbc.ram[0x1d]; SetOBF; break;
-	case 0x3e: ClrIBF; vkbc.outbuf = vkbc.ram[0x1e]; SetOBF; break;
-	case 0x3f: ClrIBF; vkbc.outbuf = vkbc.ram[0x1f]; SetOBF; break;
+		       SetOutBuf(vkbc.control);   break;
+	case 0x21: SetOutBuf(vkbc.ram[0x01]); break;
+	case 0x22: SetOutBuf(vkbc.ram[0x02]); break;
+	case 0x23: SetOutBuf(vkbc.ram[0x03]); break;
+	case 0x24: SetOutBuf(vkbc.ram[0x04]); break;
+	case 0x25: SetOutBuf(vkbc.ram[0x05]); break;
+	case 0x26: SetOutBuf(vkbc.ram[0x06]); break;
+	case 0x27: SetOutBuf(vkbc.ram[0x07]); break;
+	case 0x28: SetOutBuf(vkbc.ram[0x08]); break;
+	case 0x29: SetOutBuf(vkbc.ram[0x09]); break;
+	case 0x2a: SetOutBuf(vkbc.ram[0x0a]); break;
+	case 0x2b: SetOutBuf(vkbc.ram[0x0b]); break;
+	case 0x2c: SetOutBuf(vkbc.ram[0x0c]); break;
+	case 0x2d: SetOutBuf(vkbc.ram[0x0d]); break;
+	case 0x2e: SetOutBuf(vkbc.ram[0x0e]); break;
+	case 0x2f: SetOutBuf(vkbc.ram[0x0f]); break;
+	case 0x30: SetOutBuf(vkbc.ram[0x10]); break;
+	case 0x31: SetOutBuf(vkbc.ram[0x11]); break;
+	case 0x32: SetOutBuf(vkbc.ram[0x12]); break;
+	case 0x33: SetOutBuf(vkbc.ram[0x13]); break;
+	case 0x34: SetOutBuf(vkbc.ram[0x14]); break;
+	case 0x35: SetOutBuf(vkbc.ram[0x15]); break;
+	case 0x36: SetOutBuf(vkbc.ram[0x16]); break;
+	case 0x37: SetOutBuf(vkbc.ram[0x17]); break;
+	case 0x38: SetOutBuf(vkbc.ram[0x18]); break;
+	case 0x39: SetOutBuf(vkbc.ram[0x19]); break;
+	case 0x3a: SetOutBuf(vkbc.ram[0x1a]); break;
+	case 0x3b: SetOutBuf(vkbc.ram[0x1b]); break;
+	case 0x3c: SetOutBuf(vkbc.ram[0x1c]); break;
+	case 0x3d: SetOutBuf(vkbc.ram[0x1d]); break;
+	case 0x3e: SetOutBuf(vkbc.ram[0x1e]); break;
+	case 0x3f: SetOutBuf(vkbc.ram[0x1f]); break;
 	case 0x60:                   /* write keyboard controller's command byte */
-		       ClrIBF; break;
-	case 0x61: ClrIBF; break;
-	case 0x62: ClrIBF; break;
-	case 0x63: ClrIBF; break;
-	case 0x64: ClrIBF; break;
-	case 0x65: ClrIBF; break;
-	case 0x66: ClrIBF; break;
-	case 0x67: ClrIBF; break;
-	case 0x68: ClrIBF; break;
-	case 0x69: ClrIBF; break;
-	case 0x6a: ClrIBF; break;
-	case 0x6b: ClrIBF; break;
-	case 0x6c: ClrIBF; break;
-	case 0x6d: ClrIBF; break;
-	case 0x6e: ClrIBF; break;
-	case 0x6f: ClrIBF; break;
-	case 0x70: ClrIBF; break;
-	case 0x71: ClrIBF; break;
-	case 0x72: ClrIBF; break;
-	case 0x73: ClrIBF; break;
-	case 0x74: ClrIBF; break;
-	case 0x75: ClrIBF; break;
-	case 0x76: ClrIBF; break;
-	case 0x77: ClrIBF; break;
-	case 0x78: ClrIBF; break;
-	case 0x79: ClrIBF; break;
-	case 0x7a: ClrIBF; break;
-	case 0x7b: ClrIBF; break;
-	case 0x7c: ClrIBF; break;
-	case 0x7d: ClrIBF; break;
-	case 0x7e: ClrIBF; break;
-	case 0x7f: ClrIBF; break;
-	case 0xa4: ClrIBF;                         /* test if password installed */
-		vkbc.outbuf = (vkbc.flagpswd) ? 0xfa : 0xf1;
-		SetOBF; break;
-	case 0xa5: ClrIBF; break;        /* NOTE: modify password; not supported */
-	case 0xa6: ClrIBF; break;        /* NOTE: enable password; not supported */
-	case 0xa7: ClrIBF;                                        /* block mouse */
-		SetBit(vkbc.control, VKBC_FLAG_COMMAND_PC_MODE); break;
-	case 0xa8: ClrIBF;                                       /* enable mouse */
-		ClrBit(vkbc.control, VKBC_FLAG_COMMAND_PC_MODE); break;
-	case 0xa9: ClrIBF;                                    /* test mouse port */
-		vkbc.outbuf = 0x01;                             /* mouse not enabled */
-		SetOBF; break;
-	case 0xaa: ClrIBF;                                           /* self test*/
-		vkbc.outbuf = 0x55;                                /* keyboard is ok */
-		SetOBF; break;
-	case 0xab: ClrIBF;                                     /* interface test */
-		vkbc.outbuf = 0x00;                             /* no error detected */
-		SetOBF; break;
-	case 0xac: ClrIBF; break;        /* NOTE: diagnostic dump; not supported */
-	case 0xad: ClrIBF;                           /* disable keyboard feature */
-		SetBit(vkbc.control, VKBC_FLAG_COMMAND_DISABLE_KEYBOARD); break;
-	case 0xae: ClrIBF;                          /* enable keyboard interface */
-		ClrBit(vkbc.control, VKBC_FLAG_COMMAND_DISABLE_KEYBOARD); break;
-	case 0xc0: ClrIBF;                                 /* read input port p1 */
-		/* update vkbc.inport here */
-		SetIP;
-		vkbc.outbuf = vkbc.inport;
-		SetOBF; break;
-	case 0xc1:ClrIBF;   /* poll low 4 bits of input port and place in sr 4-7 */
-		SetIP;
-		vkbc.status = (vkbc.status & 0x0f) | ((vkbc.inport & 0x0f) << 4);
-		break;
-	case 0xc2: ClrIBF; /* poll high 4 bits of input port and place in sr 4-7 */
-		SetIP;
-		vkbc.status = (vkbc.status & 0x0f) | (vkbc.inport & 0xf0);
-		break;
-	case 0xd0:                                        /* read output port p2 */
-		ClrIBF;
-		SetOBF;
-		vkbc.outbuf = (0x00   << 7) |           /* TODO: need command detail */
-		              (0x00   << 6) |           /* TODO: need command detail */
-		              (GetIBF << 5) |
-		              (GetOBF << 4) |
-		              (0x00   << 3) |
-		              (0x00   << 2) |
-		              (0x00   << 1) |                    /* TODO: a20 status */
-		              (0x00   << 1);
-		break;
-	case 0xd1: ClrIBF; break;                        /* write output port p2 */
-	case 0xd2: ClrIBF; break;                      /* write to output buffer */
-	case 0xd3: ClrIBF; break;                /* write to mouse output buffer */
-	case 0xd4: ClrIBF; break;                   /* TODO: need command detail */
-	case 0xdd:
-		ClrIBF;
-		/* TODO: block a20 line */
-		break;
-	case 0xde:
-		ClrIBF;
-		/* TODO: enable a20 line */
-		break;
-	case 0xe0:
-		ClrIBF;
-		/* TODO: need command detail
-		vkbc.outbuf = (vkbc.data  << 1) |
-		              (vkbc.clock << 0);
-		*/
-		SetOBF;
-		break;
-	case 0xf0:
-	case 0xf1:
-	case 0xf2:
-	case 0xf3:
-	case 0xf4:
-	case 0xf5:
-	case 0xf6:
-	case 0xf7:
-	case 0xf8:
-	case 0xf9:
-	case 0xfa:
-	case 0xfb:
-	case 0xfc:
-	case 0xfd:
-		ClrIBF;
-		/* TODO: l4b of this command controls 4 outbits of p2 */
-		/* TODO: need command detail */
-		/* NOTE: not used */
-		break;
-	case 0xfe:
-		ClrIBF;
-		/* restarts the cpu */
-		break;
-	default:
-		ClrIBF;
-		break;
+		       break;
+	case 0x61: break;
+	case 0x62: break;
+	case 0x63: break;
+	case 0x64: break;
+	case 0x65: break;
+	case 0x66: break;
+	case 0x67: break;
+	case 0x68: break;
+	case 0x69: break;
+	case 0x6a: break;
+	case 0x6b: break;
+	case 0x6c: break;
+	case 0x6d: break;
+	case 0x6e: break;
+	case 0x6f: break;
+	case 0x70: break;
+	case 0x71: break;
+	case 0x72: break;
+	case 0x73: break;
+	case 0x74: break;
+	case 0x75: break;
+	case 0x76: break;
+	case 0x77: break;
+	case 0x78: break;
+	case 0x79: break;
+	case 0x7a: break;
+	case 0x7b: break;
+	case 0x7c: break;
+	case 0x7d: break;
+	case 0x7e: break;
+	case 0x7f: break;
+	case 0xa4:                                 /* test if password installed */
+		SetOutBuf((vkbc.flagpswd) ? 0xfa : 0xf1); break;
+	case 0xa5: break;                /* NOTE: modify password; not supported */
+	case 0xa6: break;                /* NOTE: enable password; not supported */
+	case 0xa7:                                                /* block mouse */
+		SetBit(vkbc.control, VKBC_FLAG_CONTROL_PC_MODE); break;
+	case 0xa8:                                               /* enable mouse */
+		ClrBit(vkbc.control, VKBC_FLAG_CONTROL_PC_MODE); break;
+	case 0xa9: SetOutBuf(0x01); break;          /* test mouse port; disabled */
+	case 0xaa: SetOutBuf(0x55); break;          /* self test; keyboard is ok */
+	case 0xab: SetOutBuf(0x00); break;           /* interface test; no error */
+	case 0xac: break;                /* NOTE: diagnostic dump; not supported */
+	case 0xad:                                   /* disable keyboard feature */
+		SetBit(vkbc.control, VKBC_FLAG_CONTROL_DISABLE_KEYBOARD); break;
+	case 0xae:                                  /* enable keyboard interface */
+		ClrBit(vkbc.control, VKBC_FLAG_CONTROL_DISABLE_KEYBOARD); break;
+	case 0xc0: break;             /* NOTE: read input port p1; not supported */
+	case 0xc1: break;
+   /* NOTE: poll low 4 bits of input port and place in sr 4-7; not supported */
+	case 0xc2: break;
+  /* NOTE: poll high 4 bits of input port and place in sr 4-7; not supported */
+	case 0xd0: SetOBF; SetOutBuf(GetOutPort); break;/* ! read output port p2 */
+	case 0xd1: break;                                /* write output port p2 */
+	case 0xd2: break;                              /* write to output buffer */
+	case 0xd3: break;                        /* write to mouse output buffer */
+	case 0xd4: break;                                 /* write data to mouse */
+	case 0xdd: vkbc.flaga20 = 0x00; break;               /* disable a20 line */
+	case 0xde: vkbc.flaga20 = 0x01; break;                /* enable a20 line */
+	case 0xe0:                                            /* read test input */
+		SetOutBuf((vkbc.flagdata << 1) | (vkbc.flagclock << 0)); break;
+	case 0xf0: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xf1: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xf2: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xf3: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xf4: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xf5: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xf6: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xf7: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xf8: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xf9: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xfa: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xfb: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xfc: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xfd: break;           /* NOTE: pulse output port p2; not supported */
+	case 0xfe: vkbc.flagreset = 0x01; break;       /* TODO: restarts the cpu */
+	case 0xff: break;                                          /* do nothing */
+	default:   break;                                     /* invalid command */
 	}
-	vkbc.control = vcpu.iobyte;
 }
 
 void vkbcRefresh()

@@ -11,11 +11,18 @@
 
 typedef struct {
 	t_nubit8  status;                                     /* status register */
-	t_nubit8  outbuf;                                       /* output buffer */
 	t_nubit8  inbuf;                                         /* input buffer */
-	t_nubit8  outport;                                        /* output port */
-	t_nubit8  inport;                                          /* input port */
+	t_nubit8  outbuf;                                       /* output buffer */
 	t_nubit8  ram[0x20];
+
+	t_bool    flagreset;                            /* TODO: cpu/ram related */
+	t_bool    flaga20;                              /* TODO: cpu/ram related */
+	t_bool    flagclock;
+	t_bool    flagdata;
+
+	t_bool    flagmda;
+	t_bool    flagjumper;
+	t_bool    flagram256;
 
 	t_bool    flagpswd;
 	t_nubit8  pswd;
