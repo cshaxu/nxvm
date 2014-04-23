@@ -33,7 +33,7 @@ void vramInit()
 	memset(&vram, 0x00, sizeof(t_ram));
 	vport.in[0x0092] = (t_faddrcc)IO_Read_0092;
 	vport.out[0x0092] = (t_faddrcc)IO_Write_0092;
-	vramAlloc(1 << 22);
+	vramAlloc(1 << 21);
 }
 void vramReset()
 {

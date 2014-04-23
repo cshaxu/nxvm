@@ -69,8 +69,8 @@ t_apirecord vapirecord;
 
 #define _expression "cs:eip=%04x:%08x opcode=%02x %02x %02x %02x %02x %02x %02x %02x \
 ss:esp=%04x:%08x stack=%04x %04x %04x %04x \
-eax=%08x ebx=%08x ecx=%08x edx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x\
-flags=%04x %s %s zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x \
+eax=%08x ebx=%08x ecx=%08x edx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \
+eflags=%08x %s %s %s %s %s %s %s %s %s \
 linear=%08x bit=%02d opr1=%08x opr2=%08x result=%016llx %s\n"
 
 void vapiRecordDump(const t_string fname)
@@ -99,7 +99,7 @@ void vapiRecordDump(const t_string fname)
 			_recpu.ebp,_recpu.esi,_recpu.edi,
 			_recpu.ds.selector,_recpu.es.selector,
 			_recpu.fs.selector,_recpu.gs.selector,
-			_recpu.flags,
+			_recpu.eflags,
 			_rec_of ? "OF" : "of",
 			_rec_sf ? "SF" : "sf",
 			_rec_zf ? "ZF" : "zf",

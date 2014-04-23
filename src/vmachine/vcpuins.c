@@ -48,6 +48,7 @@ typedef struct {
 	t_cpuins_trace_block callstack[0x100];
 	t_nubit8 cid;
 } t_cpuins_trace_call;
+
 t_cpuins_trace_call trace;
 
 static void _Trace_Print_Call()
@@ -130,7 +131,6 @@ static void _Trace_Block_End()
 #define _chk(n) if (1) {(n);if (vcpuins.except) {_Trace_Release(1);return;}} else
 #define _chr(n) if (1) {(n);if (vcpuins.except) {_Trace_Release(1);return 0;}} else
 #define _newins_ if (1) {vapiPrint("NEWINS: ");_Trace_Print_Call();} else
-#define _comment(s) if (1) {vapiPrint("COMMENT: %s\n", (s));} else
 #else
 #define _cb(s)
 #define _ce
@@ -140,8 +140,9 @@ static void _Trace_Block_End()
 #define _chk(n) if (1) {(n);if (vcpuins.except) return;} else
 #define _chr(n) if (1) {(n);if (vcpuins.except) return 0;} else
 #define _newins_
-#define _comment
 #endif
+
+#define _comment vapiPrint
 
 t_cpuins vcpuins;
 
@@ -194,16 +195,24 @@ static t_nubit32 _kma_addr_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t
 {
 	/* TODO: segmentation mechanism not implemented */
 	t_nubit32 linear = 0x00000000;
+	t_nubit64 limit = ((t_nubit64)rsreg->base + (t_nubit64)rsreg->limit);
 	_cb("_kma_addr_linear_logical");
 	_chr(linear = (rsreg->base + offset));
-	if (linear > rsreg->limit) {
-		_comment("Bad translation: beyond segment limit");
-		vapiPrint("base: %x; limit: %x; sel: %x; off: %x; linear: %x\n",
+	if (linear > limit) {
+		_comment("Bad translation: beyond segment limit\n");
+		_comment("base: %x; limit: %x; sel: %x; off: %x; linear: %x\n",
 			rsreg->base, rsreg->limit, rsreg->selector, offset, linear);
+		_chr(_SetExcept_CE(0));
+	}
+	if (linear >= vram.size) {
+		_comment("Bad translation: beyond physical limit\n");
+		_comment("base: %x; limit: %x; sel: %x; off: %x; linear: %x\n",
+			rsreg->base, rsreg->limit, rsreg->selector, offset, linear);
+		_chr(_SetExcept_CE(0));
 	}
 	if (linear != ((rsreg->selector << 4) + offset)) {
-		_comment("Bad translation: logical -> linear");
-		vapiPrint("base: %x; limit: %x; sel: %x; off: %x; linear: %x\n",
+		_comment("Bad translation: logical -> linear\n");
+		_comment("base: %x; limit: %x; sel: %x; off: %x; linear: %x\n",
 			rsreg->base, rsreg->limit, rsreg->selector, offset, linear);
 		_chr(_SetExcept_CE(0));
 	}
@@ -554,8 +563,7 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 			rsreg->selector = selector;
 			rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.cdesc);
 			rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.cdesc);
-			rsreg->limit = (t_nubit32)(rsreg->base +
-				(_IsDescSegGranularLarge(vcpuins.cdesc) ?
+			rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.cdesc) ?
 				((_GetDescSeg_Limit(vcpuins.cdesc) << 12) | 0x0fff) : (_GetDescSeg_Limit(vcpuins.cdesc))));
 			rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(vcpuins.cdesc);
 			rsreg->seg.executable = (t_bool)_IsDescUserExecutable(vcpuins.cdesc);
@@ -565,9 +573,7 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 			_be;
 		} else {
 			rsreg->selector = selector;
-			rsreg->limit -= rsreg->base;
 			rsreg->base = (selector << 4);
-			rsreg->limit += rsreg->base;
 		}
 		_be;break;
 	case SREG_DATA:
@@ -606,8 +612,7 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 				rsreg->selector = selector;
 				rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.cdesc);
 				rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.cdesc);
-				rsreg->limit = (t_nubit32)(rsreg->base +
-					(_IsDescSegGranularLarge(vcpuins.cdesc) ?
+				rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.cdesc) ?
 					((_GetDescSeg_Limit(vcpuins.cdesc) << 12) | 0x0fff) : (_GetDescSeg_Limit(vcpuins.cdesc))));
 				rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(vcpuins.cdesc);
 				rsreg->seg.executable = (t_bool)_IsDescUserExecutable(vcpuins.cdesc);
@@ -620,14 +625,13 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 					rsreg->seg.data.expdown = (t_bool)_IsDescDataExpDown(vcpuins.cdesc);
 					rsreg->seg.data.writable = (t_bool)_IsDescDataWritable(vcpuins.cdesc);
 				}
+				_comment("Load data seg under protected mode: sel=%x, base=%x, limit=%x\n", selector, rsreg->base, rsreg->limit);
 				_be;
 			}
 			_be;
 		} else {
 			rsreg->selector = selector;
-			rsreg->limit -= rsreg->base;
 			rsreg->base = (selector << 4);
-			rsreg->limit += rsreg->base;
 		}
 		_be;break;
 	case SREG_STACK:
@@ -665,8 +669,7 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 			rsreg->selector = selector;
 			rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.cdesc);
 			rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.cdesc);
-			rsreg->limit = (t_nubit32)(rsreg->base +
-				(_IsDescSegGranularLarge(vcpuins.cdesc) ?
+			rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.cdesc) ?
 				((_GetDescSeg_Limit(vcpuins.cdesc) << 12) | 0x0fff) : (_GetDescSeg_Limit(vcpuins.cdesc))));
 			rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(vcpuins.cdesc);
 			rsreg->seg.executable = (t_bool)_IsDescUserExecutable(vcpuins.cdesc);
@@ -676,9 +679,7 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 			_be;
 		} else {
 			rsreg->selector = selector;
-			rsreg->limit -= rsreg->base;
 			rsreg->base = (selector << 4);
-			rsreg->limit += rsreg->base;
 		}
 		_be;break;
 	case SREG_TR:
@@ -704,10 +705,8 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 		rsreg->selector = selector;
 		rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.cdesc);
 		rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.cdesc);
-		rsreg->limit = (t_nubit32)(rsreg->base + \
-			(_IsDescSegGranularLarge(vcpuins.cdesc) ? \
-				(_GetDescSeg_Limit(vcpuins.cdesc) << 12 | 0x0fff) : \
-				(_GetDescSeg_Limit(vcpuins.cdesc))));
+		rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.cdesc) ?
+				(_GetDescSeg_Limit(vcpuins.cdesc) << 12 | 0x0fff) : (_GetDescSeg_Limit(vcpuins.cdesc))));
 		rsreg->sys.type = (t_nubit4)_GetDesc_Type(vcpuins.cdesc);
 		_be;break;
 	case SREG_LDTR:
@@ -731,10 +730,8 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 		rsreg->selector = selector;
 		rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.cdesc);
 		rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.cdesc);
-		rsreg->limit = (t_nubit32)(rsreg->base + \
-			(_IsDescSegGranularLarge(vcpuins.cdesc) ? \
-				(_GetDescSeg_Limit(vcpuins.cdesc) << 12 | 0x0fff) : \
-				(_GetDescSeg_Limit(vcpuins.cdesc))));
+		rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.cdesc) ?
+				(_GetDescSeg_Limit(vcpuins.cdesc) << 12 | 0x0fff) : (_GetDescSeg_Limit(vcpuins.cdesc))));
 		rsreg->sys.type = (t_nubit4)_GetDesc_Type(vcpuins.cdesc);
 		_be;break;
 	default:_impossible_;break;}
@@ -10272,6 +10269,7 @@ tots MOV_CR_R32()
 	}
 	_chk(_d_modrm_creg());
 	_chk(_m_mov(vcpuins.rr, vcpuins.rrm, 4));
+	_comment("new cr: %x\n", vcpu.cr0);
 	_ce;
 }
 tots MOV_DR_R32()
@@ -10909,7 +10907,7 @@ tots MOVSX_R32_RM16()
 	_ce;
 }
 
-static void ExecInsInit()
+static void ExecInit()
 {
 	vcpuins.prefix_rep = PREFIX_REP_NONE;
 	vcpuins.prefix_lock = 0x00;
@@ -10935,7 +10933,7 @@ static void ExecInsInit()
 	vcpuins.prm = 0x00000000;
 	vcpuins.udf = 0x00000000;
 }
-static void ExecInsFinal()
+static void ExecFinal()
 {
 	if (vcpuins.flaginsloop) {
 		vcpu.cs = vcpuins.oldcs;
@@ -10950,7 +10948,7 @@ static void ExecInsFinal()
 	}
 #if VCPUINS_TRACE == 1
 	if (trace.cid) {
-		vapiPrint("unbalanced call stack at final:\n");
+		_comment("unbalanced call stack at final\n");
 		_Trace_Release(1);
 		vcpu.cs = vcpuins.oldcs;
 		vcpu.eip = vcpuins.oldeip;
@@ -10963,7 +10961,7 @@ static void ExecInsFinal()
 static void ExecIns()
 {
 	t_nubit8 opcode;
-	ExecInsInit();
+	ExecInit();
 	do {
 		_cb("ExecIns");
 		_chb(opcode = (t_nubit8)_s_read_cs(vcpu.eip, 1));
@@ -10972,7 +10970,7 @@ static void ExecIns()
 		_chb(_s_test_esp());
 		_ce;
 	} while (IsPrefix(opcode));
-	ExecInsFinal();
+	ExecFinal();
 }
 static void ExecInt()
 {
@@ -10983,19 +10981,25 @@ static void ExecInt()
 	if(!vcpu.flagmasknmi && vcpu.flagnmi) {
 		vcpu.flaghalt = 0;
 		vcpu.flagnmi = 0;
+		ExecInit();
 		_e_int_n(0x02, _GetOperandSize);
+		ExecFinal();
 	}
 	vcpuins.flagrespondint = 0;
 	if (_GetEFLAGS_IF && vpicScanINTR()) {
 		vcpu.flaghalt = 0;
 		intr = vpicGetINTR();
 		/*printf("vint = %x\n", intr);*/
+		ExecInit();
 		_e_int_n(intr, _GetOperandSize);
+		ExecFinal();
 		vcpuins.flagrespondint = 1;
 	}
 	if (_GetEFLAGS_TF) {
 		vcpu.flaghalt = 0;
+		ExecInit();
 		_e_int_n(0x01, _GetOperandSize);
+		ExecFinal();
 	}
 }
 

@@ -1,3 +1,7 @@
-1. Build i386
-2. Build VGA Graphics Mode
-3. Build BIOS INT Service Routines
+1. Debug i386 32-bit Real Mode
+   exception for int 0x0d (#GP):
+     break bochs at 0xa6c4 or see int vector 0x34
+2. Build asm/dasm/debug for i386
+3. Build exception handler (int service routines)
+4. Build VGA Graphics Mode
+5. Build BIOS INT Service Routines
