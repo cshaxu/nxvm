@@ -247,7 +247,7 @@ static void dprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 	char t,c[0x11];
 	t_nubit16 i;
 	if(start > end) end = 0xffff;
-	if(((segment<<4)+end) > 0xfffff) end = (0xfffff - (segment << 4));
+	if((t_nubit32)((segment<<4)+end) > 0xfffff) end = (0xfffff - (segment << 4));
 	c[0x10] = '\0';
 	if(end < start) end = 0xffff;
 	for(i = start-(start%0x10);i <= end+(0x10-end%0x10)-1;++i) {
@@ -791,7 +791,7 @@ static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 	operand.flag = 4;
 	operand.seg = 0x00;
 	if(start > end) end = 0xffff;
-	if ((segment<<4) + end < 0xfffff) end = (0xfffff-(segment<<4));
+	if ((t_nubit32)((segment<<4) + end) > 0xfffff) end = (0xfffff-(segment<<4));
 	while(start <= end) {
 		pos = 0;
 		prefixflag = 0;

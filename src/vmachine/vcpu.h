@@ -7,6 +7,8 @@
 
 #include "vglobal.h"
 
+#define VCPU_DEBUG
+
 #define VCPU_FLAG_CF 0x0001
 #define VCPU_FLAG_PF 0x0004
 #define VCPU_FLAG_AF 0x0010

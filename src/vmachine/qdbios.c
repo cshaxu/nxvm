@@ -10,7 +10,8 @@
 #include "qdrtc.h"
 #include "qdbios.h"
 
-void INT_10() // vga
+// vga
+void INT_10()
 {
 	switch (vcpu.ah) {
 	case 0x00:
@@ -84,9 +85,14 @@ void INT_10() // vga
 	}
 	vapiDisplayPaint();
 }
-void INT_11() {vcpu.al = 0x61;}   /* device test*/
-void INT_12() {vcpu.ax = 0x027f;} /* memory test*/
-void INT_13() // fdd
+/* device test*/
+void INT_11()
+{vcpu.al = 0x61;}
+/* memory test*/
+void INT_12()
+{vcpu.ax = 0x027f;}
+/* fdd */
+void INT_13()
 {
 	switch (vcpu.ah) {
 	case 0x00:
@@ -111,8 +117,11 @@ void INT_13() // fdd
 		break;
 	}
 }
-void INT_14() {/* do nothing */}  /* com ports */
-void INT_15() // bios
+/* com ports */
+void INT_14()
+{/* do nothing */}
+/* bios: device detect */
+void INT_15()
 {
 	int MemorySize = 1;
 	switch (vcpu.ah)
@@ -125,29 +134,62 @@ void INT_15() // bios
 		break;
 	case 0x24:
 		if (vcpu.al == 0x03) {
-			vramSetWord(vcpu.ss, vcpu.sp + 4, vramGetWord(vcpu.ss, vcpu.sp+4) & (~VCPU_FLAG_CF));
+			/*ClrBit(vramWord(vcpu.ss, vcpu.sp + 4), VCPU_FLAG_CF);*/
+			// remember: all flags set in INT handler should be modified
+			ClrBit(vcpu.flags, VCPU_FLAG_CF);
 			vcpu.ah=0;
 			vcpu.bx=3;
 		}
 		break;
 	case 0x88:
-		vramSetWord(vcpu.ss, vcpu.sp + 4, vramGetWord(vcpu.ss, vcpu.sp+4) & (~VCPU_FLAG_CF));
+		ClrBit(vcpu.flags, VCPU_FLAG_CF);
+		/*ClrBit(vramWord(vcpu.ss, vcpu.sp + 4), VCPU_FLAG_CF);*/
 		if (MemorySize > 16)		
 			vcpu.ax = 0x3c00;					
 		else		
-			vcpu.ax = MemorySize*1024-256;
+			vcpu.ax = MemorySize * 1024 - 256;
 		break;
 	case 0xd8:
-		(*(unsigned short*)((vcpu.ss<<4)+vcpu.sp+4+memStartAddr))|=MASK_FLAG_CF;
+		SetBit(vramWord(vcpu.ss, vcpu.sp + 4), VCPU_FLAG_CF);
 		vcpu.ah=0x86;
 		break;
 	}
 }
-void INT_16() // keyb
+// keyb
+void INT_16()
 {}
-void INT_17() {/* do nothing */}  /* lpt ports */
-void INT_1A() // rtc
-{}
+/* lpt ports */
+void INT_17()
+{/* do nothing */}
+/* rtc */
+void INT_1A()
+{
+	switch(vcpu.ah) {
+	case 0x00:
+		qdrtcGetTimeTickCount();
+		break;
+	case 0x01:
+		qdrtcSetTimeTickCount();
+		break;
+	case 0x2:
+		qdrtcGetCmosTime();
+		break;
+	case 0x3:
+		qdrtcSetCmosTime();
+		break;
+	case 0x4:
+		qdrtcGetCmosDate();
+		break;
+	case 0x5:
+		qdrtcSetCmosDate();
+		break;
+	case 0x6:
+		qdrtcSetAlarmClock();
+		break;
+	default:
+		break;
+	}
+}
 
 t_bool qdbiosExecInt(t_nubit8 intid)
 {
@@ -176,6 +218,9 @@ t_bool qdbiosExecInt(t_nubit8 intid)
 void qdbiosInit()
 {
 	t_nubit16 i;
+	qdfddInit();
+	qdrtcInit();
+
 /* build interrupt vector table */
 	for (i = 0x0000;i < 0x0100;++i) {
 		vramSetByte(0x0000, i*4 + 0x00, 0x00);
@@ -264,7 +309,6 @@ void qdbiosInit()
 	vramSetByte(0xf000, 0xe6fd, 0x00);
 	vramSetByte(0xf000, 0xe6fe, 0x00);
 /* load boot sector */
-	qdfddInit();
 	vapiInsertFloppyDisk("d:/msdos.img");
 	memcpy((void *)vramGetAddress(0x7c00), (void *)qdfdd.base, 0x200);
 	vramSetByte(0xf000, 0xfff0, 0xea);
@@ -273,5 +317,6 @@ void qdbiosInit()
 }
 void qdbiosFinal()
 {
+	qdrtcFinal();
 	qdfddFinal();
 }

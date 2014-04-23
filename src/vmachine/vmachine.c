@@ -4,6 +4,7 @@
 
 #include "vmachine.h"
 #ifdef VMACHINE_DEBUG
+#include "../system/vlog.h"
 #include "qdbios.h"
 #endif
 
@@ -14,7 +15,6 @@ void vmachineRunLoop()
 	if(vmachine.flaginit && !vmachine.flagrun) {
 		vmachine.flagrun = 0x01;
 		while (vmachine.flagrun) vmachineRefresh();
-		vmachineFinal();
 	}
 }
 void vmachineRefresh()
@@ -38,6 +38,7 @@ void vmachineRefresh()
 void vmachineInit()
 {
 	memset(&vmachine, 0x00, sizeof(t_machine));
+	vlogInit();
 	vcpuInit();
 	vramInit();
 	vpicInit();
@@ -76,5 +77,6 @@ void vmachineFinal()
 	vpicFinal();
 	vramFinal();
 	vcpuFinal();
+	vlogFinal();
 	memset(&vmachine, 0x00, sizeof(t_machine));
 }

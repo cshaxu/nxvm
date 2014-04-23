@@ -14,6 +14,12 @@ typedef struct {
 
 extern t_ram vram;
 
+#define vramGetAddr(segment, offset) (vram.base + SHL4(segment) + (offset))
+#define vramByte(segment, offset)    (*(t_nubit8  *)(vramGetAddr(segment, offset)))
+#define vramWord(segment, offset)    (*(t_nubit16 *)(vramGetAddr(segment, offset)))
+#define vramDWord(segment, offset)   (*(t_nubit32 *)(vramGetAddr(segment, offset)))
+
+/* TODO: remove all following functions */
 t_nubit8  vramGetByte(t_nubit16 segment, t_nubit16 offset);
 t_nubit16 vramGetWord(t_nubit16 segment, t_nubit16 offset);
 t_nubit32 vramGetDWord(t_nubit16 segment, t_nubit16 offset);

@@ -54,7 +54,10 @@ void Help()
 }
 void Exit()
 {
-	if (!vmachine.flagrun) exitFlag = 1;
+	if (!vmachine.flagrun) {
+		if (vmachine.flaginit) vmachineFinal();
+		exitFlag = 1;
+	}
 }
 
 void Debug()
@@ -178,8 +181,8 @@ void console()
 {
 	char cmdl[MAXLINE];
 	exitFlag = 0;
-	if(!vmachine.flaginit) vmachineInit();
 	fprintf(stdout,"Please enter 'HELP' for information.\n");
+	if(!vmachine.flaginit) vmachineInit();
 	while(!exitFlag) {
 		fflush(stdin);
 		fprintf(stdout,"Console> ");
