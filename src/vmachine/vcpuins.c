@@ -34,7 +34,6 @@
 #define done static void
 #define todo static void /* need to implement */
 #define tots static void /* need to test */
-#define bugfix(n) if(1)
 #define i386(n)  if (1)
 
 typedef struct {
@@ -3724,15 +3723,36 @@ done ADD_AX_I16()
 	}
 	_ce;
 }
-void PUSH_ES()
+done PUSH_ES()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.es.selector,16);
+	/* note: not sure if operand size is 32,
+		push/pop selector only or with higher 16 bit */
+	t_nubit32 oldes = vcpu.es.selector;
+	_cb("PUSH_ES");
+	i386(0x06) {
+		_adv;
+		_chk(_e_push((t_vaddrcc)&oldes, _GetOperandSize));
+	} else {
+		vcpu.ip++;
+		_e_push((t_vaddrcc)&vcpu.es.selector, 2);
+	}
+	_ce;
 }
-void POP_ES()
+done POP_ES()
 {
-	vcpu.eip++;
-	POP((void *)&vcpu.es.selector,16);
+	/* note: not sure if operand size is 32,
+		push/pop selector only or with higher 16 bit */
+	t_nubit32 newes = 0x00000000;
+	_cb("POP_ES");
+	i386(0x07) {
+		_adv;
+		_chk(_e_pop((t_vaddrcc)&newes, _GetOperandSize));
+		_chk(_s_load_seg(&vcpu.es, GetMax16(newes)));
+	} else {
+		vcpu.ip++;
+		_e_pop((t_vaddrcc)&vcpu.es.selector, 2);
+	}
+	_ce;
 }
 done OR_RM8_R8()
 {
@@ -3826,13 +3846,24 @@ done OR_AX_I16()
 	}
 	_ce;
 }
-void PUSH_CS()
+done PUSH_CS()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.cs.selector,16);
+	/* note: not sure if operand size is 32,
+		push/pop selector only or with higher 16 bit */
+	t_nubit32 oldcs = vcpu.cs.selector;
+	_cb("PUSH_CS");
+	i386(0x0e) {
+		_adv;
+		_chk(_e_push((t_vaddrcc)&oldcs, _GetOperandSize));
+	} else {
+		vcpu.ip++;
+		_e_push((t_vaddrcc)&vcpu.cs.selector, 2);
+	}
+	_ce;
 }
 tots POP_CS()
 {
+	t_nubit32 newcs = 0x00000000;
 	_cb("POP_CS");
 	_newins_;
 	i386(0x0f) {
@@ -3841,7 +3872,8 @@ tots POP_CS()
 		_be;
 	} else {
 		_adv;
-		POP((void *)&vcpu.cs.selector,16);
+		_chk(_e_pop((t_vaddrcc)&newcs, _GetOperandSize));
+		_chk(_s_load_seg(&vcpu.cs, GetMax16(newcs)));
 	}
 	_ce;
 }
@@ -3950,15 +3982,36 @@ done ADC_AX_I16()
 	}
 	_ce;
 }
-void PUSH_SS()
+done PUSH_SS()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.ss.selector,16);
+	/* note: not sure if operand size is 32,
+		push/pop selector only or with higher 16 bit */
+	t_nubit32 oldss = vcpu.ss.selector;
+	_cb("PUSH_SS");
+	i386(0x16) {
+		_adv;
+		_chk(_e_push((t_vaddrcc)&oldss, _GetOperandSize));
+	} else {
+		vcpu.ip++;
+		_e_push((t_vaddrcc)&vcpu.ss.selector, 2);
+	}
+	_ce;
 }
-void POP_SS()
+done POP_SS()
 {
-	vcpu.eip++;
-	POP((void *)&vcpu.ss.selector,16);
+	/* note: not sure if operand size is 32,
+		push/pop selector only or with higher 16 bit */
+	t_nubit32 newss = 0x00000000;
+	_cb("POP_SS");
+	i386(0x17) {
+		_adv;
+		_chk(_e_pop((t_vaddrcc)&newss, _GetOperandSize));
+		_chk(_s_load_seg(&vcpu.ss, GetMax16(newss)));
+	} else {
+		vcpu.ip++;
+		_e_pop((t_vaddrcc)&vcpu.ss.selector, 2);
+	}
+	_ce;
 }
 void SBB_RM8_R8()
 {
@@ -4002,15 +4055,36 @@ void SBB_AX_I16()
 	_a_sbb((void *)&vcpu.ax, vcpuins.rimm,16);
 	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SBB_AX_I16\n");
 }
-void PUSH_DS()
+done PUSH_DS()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.ds.selector,16);
+	/* note: not sure if operand size is 32,
+		push/pop selector only or with higher 16 bit */
+	t_nubit32 oldds = vcpu.ds.selector;
+	_cb("PUSH_DS");
+	i386(0x1e) {
+		_adv;
+		_chk(_e_push((t_vaddrcc)&oldds, _GetOperandSize));
+	} else {
+		vcpu.ip++;
+		_e_push((t_vaddrcc)&vcpu.ds.selector, 2);
+	}
+	_ce;
 }
-void POP_DS()
+done POP_DS()
 {
-	vcpu.eip++;
-	POP((void *)&vcpu.ds.selector,16);
+	/* note: not sure if operand size is 32,
+		push/pop selector only or with higher 16 bit */
+	t_nubit32 newds = 0x00000000;
+	_cb("POP_DS");
+	i386(0x1f) {
+		_adv;
+		_chk(_e_pop((t_vaddrcc)&newds, _GetOperandSize));
+		_chk(_s_load_seg(&vcpu.ds, GetMax16(newds)));
+	} else {
+		vcpu.ip++;
+		_e_pop((t_vaddrcc)&vcpu.ds.selector, 2);
+	}
+	_ce;
 }
 done AND_RM8_R8()
 {
@@ -4669,85 +4743,314 @@ done DEC_DI()
 	}
 	_ce;
 }
-void PUSH_AX()
+done PUSH_AX()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.ax,16);
+	_cb("PUSH_AX");
+	i386(0x50) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_push((t_vaddrcc)&vcpu.ax, 2));break;
+		case 4: _chk(_e_push((t_vaddrcc)&vcpu.eax, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_push((t_vaddrcc)&vcpu.ax, 2);
+	}
+	_ce;
 }
-void PUSH_CX()
+done PUSH_CX()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.cx,16);
+	_cb("PUSH_CX");
+	i386(0x51) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_push((t_vaddrcc)&vcpu.cx, 2));break;
+		case 4: _chk(_e_push((t_vaddrcc)&vcpu.ecx, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_push((t_vaddrcc)&vcpu.cx, 2);
+	}
+	_ce;
 }
-void PUSH_DX()
+done PUSH_DX()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.dx,16);
+	_cb("PUSH_DX");
+	i386(0x52) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_push((t_vaddrcc)&vcpu.dx, 2));break;
+		case 4: _chk(_e_push((t_vaddrcc)&vcpu.edx, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_push((t_vaddrcc)&vcpu.dx, 2);
+	}
+	_ce;
 }
-void PUSH_BX()
+done PUSH_BX()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.bx,16);
+	_cb("PUSH_BX");
+	i386(0x53) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_push((t_vaddrcc)&vcpu.bx, 2));break;
+		case 4: _chk(_e_push((t_vaddrcc)&vcpu.ebx, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_push((t_vaddrcc)&vcpu.bx, 2);
+	}
+	_ce;
 }
-void PUSH_SP()
+done PUSH_SP()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.sp,16);
+	_cb("PUSH_SP");
+	i386(0x54) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_push((t_vaddrcc)&vcpu.sp, 2));break;
+		case 4: _chk(_e_push((t_vaddrcc)&vcpu.esp, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_push((t_vaddrcc)&vcpu.sp, 2);
+	}
+	_ce;
 }
-void PUSH_BP()
+done PUSH_BP()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.bp,16);
+	_cb("PUSH_BP");
+	i386(0x55) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_push((t_vaddrcc)&vcpu.bp, 2));break;
+		case 4: _chk(_e_push((t_vaddrcc)&vcpu.ebp, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_push((t_vaddrcc)&vcpu.bp, 2);
+	}
+	_ce;
 }
-void PUSH_SI()
+done PUSH_SI()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.si,16);
+	_cb("PUSH_SI");
+	i386(0x56) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_push((t_vaddrcc)&vcpu.si, 2));break;
+		case 4: _chk(_e_push((t_vaddrcc)&vcpu.esi, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_push((t_vaddrcc)&vcpu.si, 2);
+	}
+	_ce;
 }
-void PUSH_DI()
+done PUSH_DI()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.di,16);
+	_cb("PUSH_DI");
+	i386(0x57) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_push((t_vaddrcc)&vcpu.di, 2));break;
+		case 4: _chk(_e_push((t_vaddrcc)&vcpu.edi, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_push((t_vaddrcc)&vcpu.di, 2);
+	}
+	_ce;
 }
-void POP_AX()
+done POP_AX()
 {
-	vcpu.eip++;
-	POP((void *)&vcpu.ax,16);
+	_cb("POP_AX");
+	i386(0x58) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_pop((t_vaddrcc)&vcpu.ax, 2));break;
+		case 4: _chk(_e_pop((t_vaddrcc)&vcpu.eax, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_pop((t_vaddrcc)&vcpu.ax, 2);
+	}
+	_ce;
 }
-void POP_CX()
+done POP_CX()
 {
-	vcpu.eip++;
-	POP((void *)&vcpu.cx,16);
+	_cb("POP_CX");
+	i386(0x59) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_pop((t_vaddrcc)&vcpu.cx, 2));break;
+		case 4: _chk(_e_pop((t_vaddrcc)&vcpu.ecx, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_pop((t_vaddrcc)&vcpu.cx, 2);
+	}
+	_ce;
 }
-void POP_DX()
+done POP_DX()
 {
-	vcpu.eip++;
-	POP((void *)&vcpu.dx,16);
+	_cb("POP_DX");
+	i386(0x5a) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_pop((t_vaddrcc)&vcpu.dx, 2));break;
+		case 4: _chk(_e_pop((t_vaddrcc)&vcpu.edx, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_pop((t_vaddrcc)&vcpu.dx, 2);
+	}
+	_ce;
 }
-void POP_BX()
+done POP_BX()
 {
-	vcpu.eip++;
-	POP((void *)&vcpu.bx,16);
+	_cb("POP_BX");
+	i386(0x5b) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_pop((t_vaddrcc)&vcpu.bx, 2));break;
+		case 4: _chk(_e_pop((t_vaddrcc)&vcpu.ebx, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_pop((t_vaddrcc)&vcpu.bx, 2);
+	}
+	_ce;
 }
-void POP_SP()
+tots POP_SP()
 {
-	vcpu.eip++;
-	POP((void *)&vcpu.sp,16);
+	_cb("POP_SP");
+	_newins_;
+	i386(0x5c) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_pop((t_vaddrcc)&vcpu.sp, 2));break;
+		case 4: _chk(_e_pop((t_vaddrcc)&vcpu.esp, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_pop((t_vaddrcc)&vcpu.sp, 2);
+	}
+	_ce;
 }
-void POP_BP()
+done POP_BP()
 {
-	vcpu.eip++;
-	POP((void *)&vcpu.bp,16);
+	_cb("POP_BP");
+	i386(0x5d) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_pop((t_vaddrcc)&vcpu.bp, 2));break;
+		case 4: _chk(_e_pop((t_vaddrcc)&vcpu.ebp, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_pop((t_vaddrcc)&vcpu.bp, 2);
+	}
+	_ce;
 }
-void POP_SI()
+done POP_SI()
 {
-	vcpu.eip++;
-	POP((void *)&vcpu.si,16);
+	_cb("POP_SI");
+	i386(0x5e) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_pop((t_vaddrcc)&vcpu.si, 2));break;
+		case 4: _chk(_e_pop((t_vaddrcc)&vcpu.esi, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_pop((t_vaddrcc)&vcpu.si, 2);
+	}
+	_ce;
 }
-void POP_DI()
+done POP_DI()
 {
-	vcpu.eip++;
-	POP((void *)&vcpu.di,16);
+	_cb("POP_DI");
+	i386(0x5f) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _chk(_e_pop((t_vaddrcc)&vcpu.di, 2));break;
+		case 4: _chk(_e_pop((t_vaddrcc)&vcpu.edi, 4));break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		_e_pop((t_vaddrcc)&vcpu.di, 2);
+	}
+	_ce;
+}
+tots PUSHA()
+{
+	t_nubit32 cesp = 0x00000000;
+	_cb("PUSHA");
+	_newins_;
+	i386(0x60) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _bb("OperandSize(2)");
+			cesp = vcpu.sp;
+			_chk(_e_push((t_vaddrcc)&vcpu.ax, 2));
+			_chk(_e_push((t_vaddrcc)&vcpu.cx, 2));
+			_chk(_e_push((t_vaddrcc)&vcpu.dx, 2));
+			_chk(_e_push((t_vaddrcc)&vcpu.bx, 2));
+			_chk(_e_push((t_vaddrcc)&cesp,    2));
+			_chk(_e_push((t_vaddrcc)&vcpu.bp, 2));
+			_chk(_e_push((t_vaddrcc)&vcpu.si, 2));
+			_chk(_e_push((t_vaddrcc)&vcpu.di, 2));
+			_be;break;
+		case 4: _bb("OperandSize(4)");
+			cesp = vcpu.esp;
+			_chk(_e_push((t_vaddrcc)&vcpu.eax, 4));
+			_chk(_e_push((t_vaddrcc)&vcpu.ecx, 4));
+			_chk(_e_push((t_vaddrcc)&vcpu.edx, 4));
+			_chk(_e_push((t_vaddrcc)&vcpu.ebx, 4));
+			_chk(_e_push((t_vaddrcc)&cesp,     4));
+			_chk(_e_push((t_vaddrcc)&vcpu.ebp, 4));
+			_chk(_e_push((t_vaddrcc)&vcpu.esi, 4));
+			_chk(_e_push((t_vaddrcc)&vcpu.edi, 4));
+			_be;break;
+		default:_impossible_;break;}
+	} else
+		UndefinedOpcode();
+	_ce;
+}
+tots POPA()
+{
+	t_nubit32 cesp = 0x00000000;
+	_cb("POPA");
+	_newins_;
+	i386(0x61) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _bb("OperandSize(2)");
+			_chk(_e_pop((t_vaddrcc)&vcpu.di, 2));
+			_chk(_e_pop((t_vaddrcc)&vcpu.si, 2));
+			_chk(_e_pop((t_vaddrcc)&vcpu.bp, 2));
+			_chk(_e_pop((t_vaddrcc)&cesp,    2));
+			_chk(_e_pop((t_vaddrcc)&vcpu.bx, 2));
+			_chk(_e_pop((t_vaddrcc)&vcpu.dx, 2));
+			_chk(_e_pop((t_vaddrcc)&vcpu.cx, 2));
+			_chk(_e_pop((t_vaddrcc)&vcpu.ax, 2));
+			_be;break;
+		case 4: _bb("OperandSize(4)");
+			_chk(_e_pop((t_vaddrcc)&vcpu.edi, 4));
+			_chk(_e_pop((t_vaddrcc)&vcpu.esi, 4));
+			_chk(_e_pop((t_vaddrcc)&vcpu.ebp, 4));
+			_chk(_e_pop((t_vaddrcc)&cesp,     4));
+			_chk(_e_pop((t_vaddrcc)&vcpu.ebx, 4));
+			_chk(_e_pop((t_vaddrcc)&vcpu.edx, 4));
+			_chk(_e_pop((t_vaddrcc)&vcpu.ecx, 4));
+			_chk(_e_pop((t_vaddrcc)&vcpu.eax, 4));
+			_be;break;
+		default:_impossible_;break;}
+	} else
+		UndefinedOpcode();
+	_ce;
 }
 tots BOUND_R16_M16_16()
 {
@@ -4851,6 +5154,18 @@ tots PREFIX_AddrSize()
 		UndefinedOpcode();
 	_ce;
 }
+tots PUSH_I16()
+{
+	_cb("PUSH_I16");
+	_newins_;
+	i386(0x68) {
+		_adv;
+		_chk(_d_imm(_GetOperandSize));
+		_chk(_e_push(vcpuins.rimm, _GetOperandSize));
+	} else
+		UndefinedOpcode();
+	_ce;
+}
 tots IMUL_R16_RM16_I16()
 {
 	_cb("IMUL_R16_RM16_I16");
@@ -4860,6 +5175,18 @@ tots IMUL_R16_RM16_I16()
 		_chk(_d_modrm(_GetOperandSize, _GetOperandSize, 0));
 		_chk(_d_imm(_GetOperandSize));
 		_chk(_a_imul3(vcpuins.rr, vcpuins.rrm, vcpuins.rimm, _GetOperandSize * 8));
+	} else
+		UndefinedOpcode();
+	_ce;
+}
+tots PUSH_I8()
+{
+	_cb("PUSH_I8");
+	_newins_;
+	i386(0x6a) {
+		_adv;
+		_chk(_d_imm(1));
+		_chk(_e_push(vcpuins.rimm, 1));
 	} else
 		UndefinedOpcode();
 	_ce;
@@ -5484,9 +5811,9 @@ done MOV_SREG_RM16()
 			_chk(_SetExcept_UD(0));
 			_be;
 		}
+		_chk(_s_load_seg(vcpuins.rmovsreg, GetMax16(vcpuins.crm)));
 		if (vcpuins.rmovsreg->sregtype == SREG_STACK)
 			vcpuins.flagmaskint = 1;
-		_chk(_s_load_seg(vcpuins.rmovsreg, GetMax16(vcpuins.crm)));
 	} else {
 		vcpu.ip++;
 		GetModRegRM(4,16);
@@ -5494,16 +5821,35 @@ done MOV_SREG_RM16()
 	}
 	_ce;
 }
-void POP_RM16()
+done INS_8F()
 {
-	vcpu.eip++;
-	GetModRegRM(0,16);
-	switch (vcpuins.cr) {
-	case 0:
-		bugfix(14) POP((void *)vcpuins.rrm,16);
-		else POP((void *)vcpuins.rrm,16);
-		break;
-	default:CaseError("POP_RM16::vcpuins.rr");break;}
+	_cb("INS_8F");
+	i386(0x8f) {
+		_adv;
+		_chk(_d_modrm(0, _GetOperandSize, 1));
+		switch (vcpuins.cr) {
+		case 0: /* POP_RM16 */
+			_bb("POP_RM16");
+			_chk(_e_pop(vcpuins.rrm, _GetOperandSize));
+			_be;break;
+		case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
+		case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
+		case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
+		case 4: _bb("cr(4)");_chk(UndefinedOpcode());_be;break;
+		case 5: _bb("cr(5)");_chk(UndefinedOpcode());_be;break;
+		case 6: _bb("cr(6)");_chk(UndefinedOpcode());_be;break;
+		case 7: _bb("cr(7)");_chk(UndefinedOpcode());_be;break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.ip++;
+		GetModRegRM(0,16);
+		switch (vcpuins.cr) {
+		case 0:
+			POP((void *)vcpuins.rrm,16);
+			break;
+		default:_impossible_;break;}
+	}
+	_ce;
 }
 done NOP()
 {
@@ -5631,15 +5977,109 @@ todo WAIT()
 	_newins_;
 	_ce;
 }
-void PUSHF()
+done PUSHF()
 {
-	vcpu.eip++;
-	PUSH((void *)&vcpu.eflags,16);
+	t_nubit32 ceflags = 0x00000000;
+	_cb("PUSHF");
+	i386(0x9c) {
+		_adv;
+		if (!_GetCR0_PE || (_GetCR0_PE && (!_GetEFLAGS_VM || (_GetEFLAGS_VM && (_GetEFLAGS_IOPL == 3))))) {
+			_bb("Real/Protected/(V86,IOPL(3))");
+			switch (_GetOperandSize) {
+			case 2: _bb("OperandSize(2)");
+				ceflags = vcpu.flags;
+				_chk(_e_push((t_vaddrcc)&ceflags, 2));
+				_be;break;
+			case 4: _bb("OperandSize(2)");
+				_newins_;
+				ceflags = vcpu.eflags & ~(VCPU_EFLAGS_VM | VCPU_EFLAGS_RF);
+				_chk(_e_push((t_vaddrcc)&ceflags, 4));
+				_be;break;
+			default:_impossible_;break;}
+			_be;
+		} else {
+			_bb("EFLAGS_VM(1),EFLAGS_IOPL(!3)");
+			_chk(_SetExcept_GP(0));
+			_be;
+		}
+	} else {
+		vcpu.ip++;
+		_e_push((t_vaddrcc)&vcpu.eflags, 2);
+	}
+	_ce;
 }
-void POPF()
+done POPF()
 {
-	vcpu.eip++;
-	POP((void *)&vcpu.eflags,16);
+	t_nubit32 mask = 0x00000000;
+	t_nubit32 ceflags = 0x00000000;
+	_cb("POPF");
+	i386(0x9d) {
+		_adv;
+		if (!_GetEFLAGS_VM) {
+			_bb("EFLAGS_VM(0)");
+			if (!_GetCPL) {
+				_bb("CPL(0)");
+				switch (_GetOperandSize) {
+				case 2: _bb("OperandSize(2)");
+					_chk(_e_pop((t_vaddrcc)&ceflags, 2));
+					mask = 0xffff0000;
+					_be;break;
+				case 4: _bb("OperandSize(4)");
+					_chk(_e_pop((t_vaddrcc)&ceflags, 4));
+					mask = VCPU_EFLAGS_VM;
+					_be;break;
+				default:_impossible_;break;}
+				_be;
+			} else {
+				_bb("CPL(!0)");
+				_newins_;
+				switch (_GetOperandSize) {
+				case 2: _bb("OperandSize(2)");
+					_chk(_e_pop((t_vaddrcc)&ceflags, 2));
+					mask = VCPU_EFLAGS_IOPL;
+					_be;break;
+				case 4: _bb("OperandSize(4)");
+					_chk(_e_pop((t_vaddrcc)&ceflags, 4));
+					mask = (VCPU_EFLAGS_VM | VCPU_EFLAGS_RF | VCPU_EFLAGS_IOPL);
+					_be;break;
+				default:_impossible_;break;}
+				_be;
+			}
+			_be;
+		} else {
+			_bb("EFLAGS_VM(1)");
+			_newins_;
+			if (vcpuins.prefix_oprsize) {
+				_bb("prefix_oprsize(1)");
+				_chk(_SetExcept_GP(0));
+				_be;
+			}
+			if (_GetEFLAGS_IOPL == 0x03) {
+				_bb("EFLAGS_IOPL(3)");
+				switch (_GetOperandSize) {
+				case 2: _bb("OperandSize(2)");
+					_chk(_e_pop((t_vaddrcc)&ceflags, 2));
+					mask = VCPU_EFLAGS_IOPL;
+					_be;break;
+				case 4: _bb("OperandSize(4)");
+					_chk(_e_pop((t_vaddrcc)&ceflags, 4));
+					mask = (VCPU_EFLAGS_VM | VCPU_EFLAGS_RF | VCPU_EFLAGS_IOPL);
+					_be;break;
+				default:_impossible_;break;}
+				_be;
+			} else {
+				_bb("EFLAGS_IOPL(!3)");
+				_chk(_SetExcept_GP(0));
+				_be;
+			}
+			_be;
+		}
+		vcpu.eflags = (ceflags & ~mask) | (vcpu.eflags & mask);
+	} else {
+		vcpu.ip++;
+		_e_pop((t_vaddrcc)&vcpu.flags, 2);
+	}
+	_ce;
 }
 void SAHF()
 {
@@ -6412,14 +6852,9 @@ void INS_C1()
 void RET_I16()
 {
 	t_nubit16 addsp;
-	vcpu.eip++;
-	bugfix(15) {
-		GetImm(16);
-		addsp = d_nubit16(vcpuins.rimm);
-	} else {
-		GetImm(8);
-		addsp = d_nubit8(vcpuins.rimm);
-	}
+	vcpu.ip++;
+	GetImm(16);
+	addsp = d_nubit16(vcpuins.rimm);
 	POP((void *)&vcpu.eip,16);
 	vcpu.sp += addsp;
 }
@@ -7717,7 +8152,7 @@ void INS_FF()
 			default:_impossible_;break;}
 			_chk(_e_jmp_far(newcs, neweip, _GetOperandSize));
 			_be;break;
-		case 6: /* PUSH_RM16 ----------------*/
+		case 6: /* PUSH_RM16 */
 			_bb("PUSH_RM16");
 			_chk(_d_modrm(0, _GetOperandSize, 0));
 			_chk(_e_push(vcpuins.rrm, _GetOperandSize));
@@ -7750,7 +8185,7 @@ void INS_FF()
 			vcpu.eip = d_nubit16(vcpuins.rrm);
 			vcpu.cs.selector = d_nubit16(vcpuins.rrm+2);
 			break;
-		case 6:	/* PUSH_RM16 */
+		case 6: /* PUSH_RM16 */
 			PUSH((void *)vcpuins.rrm,16);
 			break;
 		case 7:
@@ -8495,6 +8930,29 @@ tots JG_REL16()
 		(!_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF))));
 	_ce;
 }
+tots PUSH_FS()
+{
+	/* note: not sure if operand size is 32,
+		push/pop selector only or with higher 16 bit */
+	t_nubit32 oldfs = vcpu.fs.selector;
+	_cb("PUSH_FS");
+	_newins_;
+	_adv;
+	_chk(_e_push((t_vaddrcc)&oldfs, _GetOperandSize));
+	_ce;
+}
+tots POP_FS()
+{
+	/* note: not sure if operand size is 32,
+		push/pop selector only or with higher 16 bit */
+	t_nubit32 newfs = 0x00000000;
+	_cb("POP_FS");
+	_newins_;
+	_adv;
+	_chk(_e_pop((t_vaddrcc)&newfs, _GetOperandSize));
+	_chk(_s_load_seg(&vcpu.fs, GetMax16(newfs)));
+	_ce;
+}
 tots BT_RM16_R16()
 {
 	t_nsbitcc bitoffset = 0;
@@ -8504,6 +8962,29 @@ tots BT_RM16_R16()
 	_adv;
 	_chk(_d_bit_rmimm(_GetOperandSize, _GetOperandSize, 0));
 	_chk(_a_bt(vcpuins.rrm, (t_nubit32)vcpuins.cimm, _GetOperandSize * 8));
+	_ce;
+}
+tots PUSH_GS()
+{
+	/* note: not sure if operand size is 32,
+		push/pop selector only or with higher 16 bit */
+	t_nubit32 oldgs = vcpu.gs.selector;
+	_cb("PUSH_GS");
+	_newins_;
+	_adv;
+	_chk(_e_push((t_vaddrcc)&oldgs, _GetOperandSize));
+	_ce;
+}
+tots POP_GS()
+{
+	/* note: not sure if operand size is 32,
+		push/pop selector only or with higher 16 bit */
+	t_nubit32 newgs = 0x00000000;
+	_cb("POP_GS");
+	_newins_;
+	_adv;
+	_chk(_e_pop((t_vaddrcc)&newgs, _GetOperandSize));
+	_chk(_s_load_seg(&vcpu.gs, GetMax16(newgs)));
 	_ce;
 }
 tots BTS_RM16_R16()
@@ -8847,7 +9328,7 @@ void vcpuinsInit()
 	vcpuins.table[0x0c] = (t_faddrcc)OR_AL_I8;
 	vcpuins.table[0x0d] = (t_faddrcc)OR_AX_I16;
 	vcpuins.table[0x0e] = (t_faddrcc)PUSH_CS;
-	vcpuins.table[0x0f] = (t_faddrcc)INS_0F;
+	vcpuins.table[0x0f] = (t_faddrcc)INS_0F;//
 	vcpuins.table[0x10] = (t_faddrcc)ADC_RM8_R8;
 	vcpuins.table[0x11] = (t_faddrcc)ADC_RM16_R16;
 	vcpuins.table[0x12] = (t_faddrcc)ADC_R8_RM8;
@@ -8928,21 +9409,20 @@ void vcpuinsInit()
 	vcpuins.table[0x5d] = (t_faddrcc)POP_BP;
 	vcpuins.table[0x5e] = (t_faddrcc)POP_SI;
 	vcpuins.table[0x5f] = (t_faddrcc)POP_DI;
-	vcpuins.table[0x60] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table[0x61] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table[0x62] = (t_faddrcc)BOUND_R16_M16_16;
-	vcpuins.table[0x63] = (t_faddrcc)ARPL_RM16_R16;
-	vcpuins.table[0x64] = (t_faddrcc)PREFIX_FS;
-	vcpuins.table[0x65] = (t_faddrcc)PREFIX_GS;
-	vcpuins.table[0x66] = (t_faddrcc)PREFIX_OprSize;
-	vcpuins.table[0x67] = (t_faddrcc)PREFIX_AddrSize;
-	vcpuins.table[0x68] = (t_faddrcc)UndefinedOpcode;
-	//vcpuins.table[0x68] = (t_faddrcc)PUSH_I16;
-	vcpuins.table[0x69] = (t_faddrcc)IMUL_R16_RM16_I16;
-	vcpuins.table[0x6a] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table[0x6b] = (t_faddrcc)IMUL_R16_RM16_I8;
-	vcpuins.table[0x6c] = (t_faddrcc)INSB;
-	vcpuins.table[0x6d] = (t_faddrcc)INSW;
+	vcpuins.table[0x60] = (t_faddrcc)PUSHA;//
+	vcpuins.table[0x61] = (t_faddrcc)POPA;//
+	vcpuins.table[0x62] = (t_faddrcc)BOUND_R16_M16_16;//
+	vcpuins.table[0x63] = (t_faddrcc)ARPL_RM16_R16;//
+	vcpuins.table[0x64] = (t_faddrcc)PREFIX_FS;//
+	vcpuins.table[0x65] = (t_faddrcc)PREFIX_GS;//
+	vcpuins.table[0x66] = (t_faddrcc)PREFIX_OprSize;//
+	vcpuins.table[0x67] = (t_faddrcc)PREFIX_AddrSize;//
+	vcpuins.table[0x68] = (t_faddrcc)PUSH_I16;//
+	vcpuins.table[0x69] = (t_faddrcc)IMUL_R16_RM16_I16;//
+	vcpuins.table[0x6a] = (t_faddrcc)PUSH_I8;//
+	vcpuins.table[0x6b] = (t_faddrcc)IMUL_R16_RM16_I8;//
+	vcpuins.table[0x6c] = (t_faddrcc)INSB;//
+	vcpuins.table[0x6d] = (t_faddrcc)INSW;//
 	vcpuins.table[0x6e] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table[0x6f] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table[0x70] = (t_faddrcc)JO_REL8;
@@ -8976,7 +9456,7 @@ void vcpuinsInit()
 	vcpuins.table[0x8c] = (t_faddrcc)MOV_RM16_SREG;
 	vcpuins.table[0x8d] = (t_faddrcc)LEA_R16_M16;
 	vcpuins.table[0x8e] = (t_faddrcc)MOV_SREG_RM16;
-	vcpuins.table[0x8f] = (t_faddrcc)POP_RM16;
+	vcpuins.table[0x8f] = (t_faddrcc)INS_8F;
 	vcpuins.table[0x90] = (t_faddrcc)NOP;
 	vcpuins.table[0x91] = (t_faddrcc)XCHG_CX_AX;
 	vcpuins.table[0x92] = (t_faddrcc)XCHG_DX_AX;
@@ -9033,8 +9513,8 @@ void vcpuinsInit()
 	vcpuins.table[0xc5] = (t_faddrcc)LDS_R16_M16_16;
 	vcpuins.table[0xc6] = (t_faddrcc)INS_C6;
 	vcpuins.table[0xc7] = (t_faddrcc)INS_C7;
-	vcpuins.table[0xc8] = (t_faddrcc)ENTER;
-	vcpuins.table[0xc9] = (t_faddrcc)LEAVE;
+	vcpuins.table[0xc8] = (t_faddrcc)ENTER;//
+	vcpuins.table[0xc9] = (t_faddrcc)LEAVE;//
 	vcpuins.table[0xca] = (t_faddrcc)RETF_I16;
 	vcpuins.table[0xcb] = (t_faddrcc)RETF;
 	vcpuins.table[0xcc] = (t_faddrcc)INT3;
@@ -9251,16 +9731,16 @@ void vcpuinsInit()
 	vcpuins.table_0f[0x9d] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0x9e] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0x9f] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0xa0] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0xa1] = (t_faddrcc)UndefinedOpcode;
+	vcpuins.table_0f[0xa0] = (t_faddrcc)PUSH_FS;
+	vcpuins.table_0f[0xa1] = (t_faddrcc)POP_FS;
 	vcpuins.table_0f[0xa2] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0xa3] = (t_faddrcc)BT_RM16_R16;
 	vcpuins.table_0f[0xa4] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0xa5] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0xa6] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0xa7] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0xa8] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0xa9] = (t_faddrcc)UndefinedOpcode;
+	vcpuins.table_0f[0xa8] = (t_faddrcc)PUSH_GS;
+	vcpuins.table_0f[0xa9] = (t_faddrcc)POP_GS;
 	vcpuins.table_0f[0xaa] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0xab] = (t_faddrcc)BTS_RM16_R16;
 	vcpuins.table_0f[0xac] = (t_faddrcc)UndefinedOpcode;
