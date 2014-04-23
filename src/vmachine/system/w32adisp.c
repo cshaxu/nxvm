@@ -8,7 +8,7 @@
 #include "win32app.h"
 #include "w32adisp.h"
 
-#define W32ADISP_FONT_BITMAP 0
+#define W32ADISP_FONT_BITMAP 1
 
 #define COLOR_BLACK			0
 #define COLOR_BLUE			RGB(0,0,255)
@@ -292,14 +292,11 @@ static INT clientHeight, clientWidth;
 #if W32ADISP_FONT_BITMAP == 0
 static HFONT hFont;
 static LOGFONT logFont;
-#else
-static HDC hdcChar;
-static HBITMAP hBmpChar;
 #endif
 static INT flashCount;
 static INT flashInterval;
-static INT charWidth;
-static INT charHeight;
+static INT FONT_WIDTH;
+static INT FONT_HEIGHT;
 static USHORT sizeRow, sizeCol;
 static UCHAR cursorTop, cursorBottom;
 
@@ -329,31 +326,45 @@ static COLORREF CharProp2Color(UCHAR prop, BOOL fore)
 	}
 }
 
-static HDC hdcFont[256][128];
-static HBITMAP hBmpFont[256][128];
+#define FONT_WIDTH  8
+#define FONT_HEIGHT 16
+#define FONT_NCHAR  256
+#define FONT_NCOLOR 128
+static HDC hdcFont;
+static HBITMAP hBmpFont;
 
 static VOID CreateBitmapFont()
 {
 	UINT c;
 	UCHAR p, i, j;
 	COLORREF fc, bc;
-	for (p = 0;p < 128;++p) {
+	HDC hdcChar;
+	HBITMAP hBmpChar;
+	HGDIOBJ hOldGdiObj;
+	hdcFont = CreateCompatibleDC(NULL);
+	hBmpFont = CreateCompatibleBitmap(hdcWnd, FONT_WIDTH * FONT_NCHAR, FONT_HEIGHT * FONT_NCOLOR);
+	SelectObject(hdcFont, hBmpFont);
+	hdcChar = CreateCompatibleDC(NULL);
+	hBmpChar = CreateCompatibleBitmap(hdcWnd, FONT_WIDTH, FONT_HEIGHT);
+	hOldGdiObj = SelectObject(hdcChar, hBmpChar);
+	for (p = 0;p < FONT_NCOLOR;++p) {
 		fc = CharProp2Color(p, TRUE);
 		bc = CharProp2Color(p, FALSE);
-		for (c = 0;c < 256;++c) {
-			hdcFont[c][p] = CreateCompatibleDC(NULL);
-			hBmpFont[c][p] = CreateCompatibleBitmap(hdcWnd, 8, 16);
-			SelectObject(hdcFont[c][p], hBmpFont[c][p]);
-			for (i = 0;i < 16;++i) {
-				for (j = 0;j < 8;++j) {
+		for (c = 0;c < FONT_NCHAR;++c) {
+			for (i = 0;i < FONT_HEIGHT;++i) {
+				for (j = 0;j < FONT_WIDTH;++j) {
 					if (!!(fontBitmap[c][i] & (1 << j)))
-						SetPixel(hdcFont[c][p], j, i, fc);
+						SetPixel(hdcChar, j, i, fc);
 					else
-						SetPixel(hdcFont[c][p], j, i, bc);
+						SetPixel(hdcChar, j, i, bc);
 				}
 			}
+			BitBlt(hdcFont, c * FONT_WIDTH, p * FONT_HEIGHT, FONT_WIDTH, FONT_HEIGHT, hdcChar, 0, 0, SRCCOPY);
 		}
 	}
+	SelectObject(hdcChar, hOldGdiObj);
+	DeleteObject(hBmpChar);
+	DeleteDC(hdcChar);
 }
 
 void w32adispInit()
@@ -365,32 +376,8 @@ void w32adispInit()
 	clientWidth  = 0;
 	flashCount   = 0;
 	flashInterval = 5;
-	charWidth = 8;
-	charHeight = 16;
-#if W32ADISP_FONT_BITMAP == 0
-	logFont.lfWidth = 0;
-	logFont.lfHeight = 0;
-	logFont.lfEscapement = 0;
-	logFont.lfOrientation = 0;
-	logFont.lfWeight = 0;
-	logFont.lfItalic = 0;
-	logFont.lfUnderline = 0;
-	logFont.lfStrikeOut = 0;
-	logFont.lfCharSet = DEFAULT_CHARSET;
-	logFont.lfOutPrecision = 0;
-	logFont.lfClipPrecision = 0;
-	logFont.lfQuality = 0;
-	logFont.lfPitchAndFamily = 0;
-	lstrcpy(logFont.lfFaceName,_T("Courier New"));
-	charWidth = 9;
 	w32adispSetScreen();
-#else
-	w32adispSetScreen();
-	hdcChar = CreateCompatibleDC(NULL);
-	hBmpChar = CreateCompatibleBitmap(hdcWnd, 8, 16);
-	SelectObject(hdcChar, hBmpChar);
 	CreateBitmapFont();
-#endif
 }
 
 void w32adispSetScreen()
@@ -403,17 +390,11 @@ void w32adispSetScreen()
 	GetWindowRect(w32aHWnd,&windowRect);
 	widthOffset = windowRect.right - windowRect.left - clientRect.right;
 	heightOffset = windowRect.bottom - windowRect.top - clientRect.bottom;//获取窗口和客户区大小，以决定窗口大小，从而决定客户区大小
-	MoveWindow(w32aHWnd, windowRect.left, windowRect.top, sizeRow * charWidth + widthOffset,
-		sizeCol * charHeight + heightOffset, SWP_NOMOVE);
+	MoveWindow(w32aHWnd, windowRect.left, windowRect.top, sizeRow * FONT_WIDTH + widthOffset,
+		sizeCol * FONT_HEIGHT + heightOffset, SWP_NOMOVE);
 	GetClientRect(w32aHWnd,&clientRect);
 	clientHeight = clientRect.bottom - clientRect.top;
 	clientWidth  = clientRect.right - clientRect.left;
-#if W32ADISP_FONT_BITMAP == 0
-	logFont.lfWidth  = charWidth;
-	logFont.lfHeight = charHeight;
-	hFont  = CreateFontIndirect(&logFont);
-	hFont  = (HFONT)SelectObject(hdcBuf, hFont);
-#endif
 	hBmpBuf = CreateCompatibleBitmap(hdcWnd,
 		GetDeviceCaps(hdcWnd, HORZRES), GetDeviceCaps(hdcWnd, VERTRES));
 	SelectObject(hdcBuf, hBmpBuf);
@@ -423,22 +404,28 @@ void w32adispSetScreen()
 static VOID DisplayCursor()
 {
 	HDC hdcCursorFore, hdcCursorBack;
-	HPEN hPen;
+	HBRUSH hBrush;
 	HGDIOBJ hOldGdiObj;
+	RECT rect;
 	INT x1_cursor, y1_cursor, x2_cursor, y2_cursor;
 	x1_cursor = x2_cursor =
-		vapiCallBackDisplayGetCurrentCursorPosX() * charHeight;// + charHeight / 2;
+		vapiCallBackDisplayGetCurrentCursorPosX() * FONT_HEIGHT;// + FONT_HEIGHT / 2;
 	cursorTop = vapiCallBackDisplayGetCursorTop();
 	cursorBottom = vapiCallBackDisplayGetCursorBottom();
-	x1_cursor += (cursorTop % 8) * charHeight / 8;// + 8;
-	x2_cursor += (cursorBottom % 8) * charHeight / 8;// + 8;
-	y1_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 0) * charWidth;
-	y2_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 1) * charWidth;
-	hPen = CreatePen(PS_SOLID, 2, COLOR_WHITE);
-	hOldGdiObj = SelectObject(hdcWnd, hPen);
-	Rectangle(hdcWnd, y1_cursor, x1_cursor, y2_cursor, x2_cursor);
+	x1_cursor += (cursorTop % 8) * FONT_HEIGHT / 8;
+	x2_cursor += (cursorBottom % 8) * FONT_HEIGHT / 8;
+	y1_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 0) * FONT_WIDTH;
+	y2_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 1) * FONT_WIDTH;
+	rect.left = y1_cursor;
+	rect.top = x1_cursor;
+	rect.right = y2_cursor;
+	rect.bottom = x2_cursor;
+	hBrush = CreateSolidBrush(COLOR_LIGHTGRAY);
+	hOldGdiObj = SelectObject(hdcWnd, hBrush);
+	FillRect(hdcWnd, &rect, hBrush);
+//	Rectangle(hdcWnd, y1_cursor, x1_cursor, y2_cursor, x2_cursor);
 	SelectObject(hdcWnd, hOldGdiObj);
-	DeleteObject((HGDIOBJ)hPen);
+	DeleteObject((HGDIOBJ)hBrush);
 }
 
 void w32adispPaint(BOOL force)
@@ -451,47 +438,25 @@ void w32adispPaint(BOOL force)
 	UCHAR charProp;
 	PAINTSTRUCT ps;
 	flashCount = (flashCount + 1) % 10;
-	BeginPaint(w32aHWnd, &ps);
 	if (force || vapiCallBackDisplayGetBufferChange() || vapiCallBackDisplayGetCursorChange()) {
-		/*hBrush = (HBRUSH)GetStockObject(BLACK_BRUSH);
+		hBrush = (HBRUSH)GetStockObject(BLACK_BRUSH);
 		hOldGdiObj = SelectObject(hdcBuf, hBrush);
-		Rectangle(hdcBuf, 0, 0, charWidth * sizeRow, charHeight * sizeCol);
+		Rectangle(hdcBuf, 0, 0, FONT_WIDTH * sizeRow, FONT_HEIGHT * sizeCol);
 		SelectObject(hdcBuf, hOldGdiObj);
-		DeleteObject((HGDIOBJ)hBrush);*/
+		DeleteObject((HGDIOBJ)hBrush);
 		for(i = 0;i < sizeCol;++i) {
 			for(j = 0;j < sizeRow;++j) {
 				ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
-				charProp = vapiCallBackDisplayGetCurrentCharProp(i, j);
-//				if (!ansiChar) continue;
-#if W32ADISP_FONT_BITMAP == 1
-
-#if 0
-				for (k = 0;k < 16;++k) {
-					for (l = 0;l < 8;++l) {
-						if (!!(fontBitmap[ansiChar][k] & (1 << l)))
-							SetPixel(hdcChar, l, k, CharProp2Color(charProp, TRUE));
-						else
-							SetPixel(hdcChar, l, k, CharProp2Color(charProp, FALSE));
-					}
-				}
-				BitBlt(hdcBuf, j * 8, i * 16, 8, 16, hdcChar, 0, 0, SRCCOPY);
-#else
-				BitBlt(hdcBuf, j * 8, i * 16, 8, 16, hdcFont[ansiChar][07], 0, 0, SRCCOPY);
-#endif
-
-#else
-				MultiByteToWideChar(437, 0, (LPCSTR)(&ansiChar), 1, (LPWSTR)(&unicodeChar), 1);
-				SetTextColor(hdcBuf, CharProp2Color(charProp, TRUE));
+				charProp = vapiCallBackDisplayGetCurrentCharProp(i, j) & 0x7f;
+				if (!ansiChar) continue;
 				SetBkMode(hdcBuf, OPAQUE);
-				SetBkColor(hdcBuf, CharProp2Color(charProp, FALSE));
-				TextOut(hdcBuf, j * logFont.lfWidth, i * logFont.lfHeight,(LPWSTR)&unicodeChar, 1);
-#endif
+				BitBlt(hdcBuf, j * FONT_WIDTH, i * FONT_HEIGHT, FONT_WIDTH, FONT_HEIGHT,
+					hdcFont, ansiChar * FONT_WIDTH, charProp * FONT_HEIGHT, SRCCOPY);
 			}
 		}
 	}
 	BitBlt(hdcWnd, 0, 0, clientWidth, clientHeight, hdcBuf, 0, 0, SRCCOPY);
 	if (vapiCallBackDisplayGetCursorVisible() && ((flashCount % 10) < flashInterval)) DisplayCursor();
-	EndPaint(w32aHWnd, &ps);
 }
 void w32adispFinal()
 {

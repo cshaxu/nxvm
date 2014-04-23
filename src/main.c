@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.010c]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.010d]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -208,6 +208,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0xdf New ASM/DASM/Debug System
  * 0xf2 Clean CPUINS; Hard Disk Installed
  * 0xf5 i386 Build Begins
+ * 010d Bitmap Font Implemented
  *
  * Format Unify:
  * check all includes, macro names, flag names

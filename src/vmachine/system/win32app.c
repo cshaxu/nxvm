@@ -18,6 +18,7 @@ static LPCWSTR szTitle = _T("Neko's x86 Virtual Machine");
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
                                 WPARAM wParam, LPARAM lParam)
 {
+	PAINTSTRUCT ps;
 	INT wmId, wmEvent;
 	UCHAR scanCode, virtualKey;
 	switch (message) {
@@ -40,7 +41,9 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 		}
 		break;
  	case WM_PAINT:
+		BeginPaint(hWnd, &ps);
 		if (vapiCallBackMachineGetFlagRun()) w32adispPaint(TRUE);
+		EndPaint(hWnd, &ps);
 		break;
 	/*case WM_SIZE: break;
 	case WM_SIZING: break;
