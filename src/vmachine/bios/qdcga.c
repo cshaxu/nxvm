@@ -70,31 +70,29 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 	t_bool move, t_nubit8 charprop, t_nubit8 page, t_nubit8 x, t_nubit8 y)
 {
 	t_nubitcc i;
-	t_bool tempmove = move;
 //	vapiPrint("%c", d_nubit8(string));
 	qdcgaVarCursorPosRow(page) = x;
 	qdcgaVarCursorPosCol(page) = y;
-	if (dup && count != 1) tempmove = 0x01;
 	//vapiPrint("x=%x,y=%x,move!\n",x,y);
 	for (i = 0;i < count;++i) {
 		switch (d_nubit8(string)) {
 		case 0x07: /* bell */
 			break;
 		case 0x08: /* backspace */
-			if (tempmove) CursorBackward(page);
+			CursorBackward(page);
 			break;
 		case 0x0a: /* new line */
-			if (tempmove) CursorLineFeed(page);
+			CursorLineFeed(page);
 			break;
 		case 0x0d:
-			if (tempmove) CursorCarriageReturn(page);
+			CursorCarriageReturn(page);
 			break;
 		default:
 			qdcgaVarChar(page, qdcgaVarCursorPosRow(page),
 				qdcgaVarCursorPosCol(page)) = d_nubit8(string);
 			qdcgaVarCharProp(page, qdcgaVarCursorPosRow(page),
 				qdcgaVarCursorPosCol(page)) = charprop;
-			if (tempmove) CursorForward(page);
+			CursorForward(page);
 			break;
 		}
 		if (!dup) string++;
@@ -108,7 +106,10 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 }
 
 t_bool vapiCallBackDisplayGetCursorVisible()
-{return qdcgaGetCursorVisible;}
+{
+	return (qdcgaVarCursorTop < qdcgaVarCursorBottom);
+		//qdcgaGetCursorVisible;
+}
 t_bool vapiCallBackDisplayGetCursorChange()
 {
 	if (vvadp.oldcurposx != qdcgaVarCursorPosRow(qdcgaVarPageNum) ||
