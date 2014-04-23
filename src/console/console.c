@@ -205,7 +205,7 @@ static void Help()
 			printc("\n");
 			printc("SET <item> <value>\n");
 			printc("  available items and values\n");
-			printc("  bootdisk   fdd, hdd\n");
+			printc("  boot   fdd, hdd\n");
 			break;
 		} else if (!strcmp(arg[1], "device")) {
 			printc("Change nxvm devices\n");
@@ -219,9 +219,9 @@ static void Help()
 			printc("  create: discard previous floppy image and create a new one\n");
 			printc("  insert: load floppy image from file\n");
 			printc("  remove: remove floppy image and dump to file\n");
-			printc("DEVICE hdd [create | connect <file>| disconnect <file>]\n");
+			printc("DEVICE hdd [create [cyl <num>]| connect <file>| disconnect <file>]\n");
 			printc("  change hard disk drive status:\n");
-			printc("  create:     discard previous hard disk image and create a new one\n");
+			printc("  create:     discard previous hard disk image and create a new one of n cyls\n");
 			printc("  connect:    load hard disk image from file\n");
 			printc("  disconnect: remove hard disk image and dump to file\n");
 			break;
@@ -269,13 +269,15 @@ static void Info()
 	if (narg != 1) GetHelp;
 	printc("NXVM Device Info\n");
 	printc("================\n");
-	printc("IBM PC/AT");
+	printc("IBM PC/AT\n");
 	printc("CPU: Intel 8086, 16-bit\n");
 	printc("RAM Size:          %d KB\n", vram.size >> 10);
-	printc("Floppy Disk Drive: 3.5\", 1.44 MB, %s\n",
+	printc("Floppy Disk Drive: 3.5\", %.2f MB, %s\n",
+		vfddGetImageSize * 1. / 0xfa000,
 		vfdd.flagexist ? "inserted" : "not inserted");
-	printc("Hard Disk Drive:   %d cylinders, 10 MB, %s\n",
-		vhdd.ncyl, vhdd.flagexist ? "connected" : "disconnected");
+	printc("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n",
+		vhdd.ncyl, vhddGetImageSize * 1. / 0x100000,
+		vhdd.flagexist ? "connected" : "disconnected");
 	printc("Display Type:      ");
 	if (vmachine.flagmode) printc("Window\n");
 	else printc("Console\n");
@@ -322,7 +324,7 @@ static void Record()
 static void Set()
 {
 	if (narg < 2) GetHelp;
-	if (!strcmp(arg[1], "bootdisk")) {
+	if (!strcmp(arg[1], "boot")) {
 		if (narg != 3) GetHelp;
 		if (!strcmp(arg[2], "fdd"))
 			vmachine.flagboot = 0x00;
@@ -363,6 +365,12 @@ static void Device()
 		if (narg < 3) GetHelp;
 		if (!strcmp(arg[2], "create")) {
 			vhdd.flagexist = 0x01;
+			if (narg > 3) {
+				if (narg == 5 && !strcmp(arg[3], "cyl")) {
+					vhdd.ncyl = atoi(arg[4]);
+				} else GetHelp;
+			}
+			vhddAlloc();
 		} else if (!strcmp(arg[2], "connect")) {
 			if (narg < 4) GetHelp;
 			vapiHardDiskInsert(arg[3]);

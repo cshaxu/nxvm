@@ -57,15 +57,20 @@ void vhddFormatTrack(t_nubit8 fillbyte)
 }
 
 void vhddRefresh() {}
+void vhddAlloc()
+{
+	if (vhdd.base) free((void *)vhdd.base);
+	vhdd.base = (t_vaddrcc)malloc(vhddGetImageSize);
+	memset((void *)vhdd.base, 0x00, vhddGetImageSize);
+}
 void vhddInit()
 {
 	memset(&vhdd, 0x00, sizeof(t_hdd));
-	vhdd.ncyl    = 20;
+	vhdd.ncyl    = 0;
 	vhdd.nhead   = 16;
 	vhdd.nsector = 63;
 	vhdd.nbyte   = 512;
-	vhdd.base    = (t_vaddrcc)malloc(vhddGetImageSize);
-	memset((void *)vhdd.base, 0x00, vhddGetImageSize);
+	vhdd.base    = NULL;
 }
 void vhddReset() {}
 void vhddFinal()

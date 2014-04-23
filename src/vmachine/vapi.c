@@ -155,7 +155,12 @@ void vapiHardDiskInsert(const t_string fname)
 {
 	t_nubitcc count;
 	FILE *image = FOPEN(fname, "rb");
-	if (image && vhdd.base) {
+	if (image) {
+		fseek(image, 0, SEEK_END);
+		count = ftell(image);
+		vhdd.ncyl = (t_nubit16)(count / vhdd.nhead / vhdd.nsector / vhdd.nbyte);
+		fseek(image, 0, SEEK_SET);
+		vhddAlloc();
 		count = fread((void *)vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
 		vhdd.flagexist = 0x01;
 		fclose(image);

@@ -36,6 +36,7 @@ void vhddTransRead();
 void vhddTransWrite();
 void vhddFormatTrack(t_nubit8 fillbyte);
 
+void vhddAlloc();
 void vhddRefresh();
 void vhddInit();
 void vhddReset();

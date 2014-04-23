@@ -98,15 +98,34 @@ jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_08):         \n\
 ; get hdd parameters        \n\
-mov ch, 13 ; ncyl - 1       \n\
-mov cl, 3f ; (ncyl<<2)&0xc0 \n\
-           ; | nsector      \n\
-mov dh, 0f ; nhead - 1      \n\
+push ax                     \n\
+push bx                     \n\
 push ds                     \n\
+mov ax, 00                  \n\
+mov ds, ax                  \n\
+mov bx, [0104]              \n\
+mov ax, [0106]              \n\
+mov ds, ax                  \n\
+mov ch, [bx+00]             \n\
+dec ch          ; ncyl - 1  \n\
+mov cl, [bx+01]             \n\
+shl cl, 1                   \n\
+shl cl, 1                   \n\
+shl cl, 1                   \n\
+shl cl, 1                   \n\
+shl cl, 1                   \n\
+shl cl, 1                   \n\
+mov al, [bx+04] ; nsector   \n\
+or  cl, al ; (ncyl>>2)&0xc0 \n\
+           ; | nsector      \n\
+mov dh, [bx+02]             \n\
+dec dh          ; nhead - 1 \n\
 mov ax, 0040                \n\
 mov ds, ax                  \n\
 mov dl, [0075]              \n\
 pop ds                      \n\
+pop bx                      \n\
+pop ax                      \n\
 mov ah, 00                  \n\
 clc                         \n\
 jmp near $(label_int_13_end)\n\
@@ -114,9 +133,25 @@ jmp near $(label_int_13_end)\n\
 $(label_int_13_15):         \n\
 ; get drive type            \n\
 ; count=(ncyl-1)*nhead*nsec \n\
+push bx                     \n\
+push ds                     \n\
+mov ax, 00                  \n\
+mov ds, ax                  \n\
+mov bx, [0104]              \n\
+mov ax, [0106]              \n\
+mov ds, ax                  \n\
+mov cx, [bx+00]             \n\
+dec cx          ; ncyl - 1  \n\
+mov al, [bx+04] ; nsector   \n\
+mov dh, [bx+02] ; nhead     \n\
+mov ah, 00                  \n\
+mul dh ; nhead * nsector    \n\
+mul cx ; total size         \n\
+mov cx, dx ; size high 16   \n\
+mov dx, ax ; size low  16   \n\
+pop ds                      \n\
+pop bx                      \n\
 mov ax, 03                  \n\
-mov cx, 00 ; cx=count>>16   \n\
-mov dx, 4ad0 ;dx=count&ffff \n\
 clc                         \n\
 jmp near $(label_int_13_end)\n\
 \

@@ -148,6 +148,21 @@ static void vbiosLoadPost()
 	iip += (t_nubit16)aasm(VBIOS_POST_VCMOS, ics, iip);
 	iip += (t_nubit16)aasm(VBIOS_POST_QDRTC, ics, iip);
 	iip += (t_nubit16)aasm(VBIOS_POST_BOOT,  ics, iip);
+	/* hard disk param table */
+	vramVarWord(0x0000, 0x0104) = 0xe431;
+	vramVarWord(0x0000, 0x0106) = 0xf000;
+	vramVarWord(0xf000, 0xe431 +  0) = vhdd.ncyl;
+	vramVarByte(0xf000, 0xe431 +  2) = (t_nubit8)vhdd.nhead;
+	vramVarByte(0xf000, 0xe431 +  3) = 0xa0;
+	vramVarByte(0xf000, 0xe431 +  4) = (t_nubit8)vhdd.nsector;
+	vramVarWord(0xf000, 0xe431 +  5) = 0xffff;
+	vramVarByte(0xf000, 0xe431 +  7) = 0x00;
+	vramVarByte(0xf000, 0xe431 +  8) = 0x08;
+	vramVarWord(0xf000, 0xe431 +  9) = vhdd.ncyl;
+	vramVarByte(0xf000, 0xe431 + 11) = (t_nubit8)vhdd.nhead;
+	vramVarWord(0xf000, 0xe431 + 12) = 0x0000;
+	vramVarByte(0xf000, 0xe431 + 14) = (t_nubit8)vhdd.nsector;
+	vramVarByte(0xf000, 0xe431 + 15) = 0x00;
 }
 
 void qdbiosReset()
