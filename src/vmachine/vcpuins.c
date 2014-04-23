@@ -5660,8 +5660,8 @@ static void PUSH_EAX()
 	i386(0x50) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _chk(_e_push(GetRef(vcpu.ax), 2));break;
-		case 4: _chk(_e_push(GetRef(vcpu.eax), 4));break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.ax), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.eax), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
@@ -5675,8 +5675,8 @@ static void PUSH_ECX()
 	i386(0x51) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _chk(_e_push(GetRef(vcpu.cx), 2));break;
-		case 4: _chk(_e_push(GetRef(vcpu.ecx), 4));break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.cx), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.ecx), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
@@ -5690,8 +5690,8 @@ static void PUSH_EDX()
 	i386(0x52) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _chk(_e_push(GetRef(vcpu.dx), 2));break;
-		case 4: _chk(_e_push(GetRef(vcpu.edx), 4));break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.dx), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.edx), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
@@ -5705,8 +5705,8 @@ static void PUSH_EBX()
 	i386(0x53) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _chk(_e_push(GetRef(vcpu.bx), 2));break;
-		case 4: _chk(_e_push(GetRef(vcpu.ebx), 4));break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.bx), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.ebx), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
@@ -5716,12 +5716,13 @@ static void PUSH_EBX()
 }
 static void PUSH_ESP()
 {
+	t_nubit32 cesp = vcpu.esp;
 	_cb("PUSH_ESP");
 	i386(0x54) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _chk(_e_push(GetRef(vcpu.sp), 2));break;
-		case 4: _chk(_e_push(GetRef(vcpu.esp), 4));break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(cesp), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(cesp), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
@@ -5735,8 +5736,8 @@ static void PUSH_EBP()
 	i386(0x55) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _chk(_e_push(GetRef(vcpu.bp), 2));break;
-		case 4: _chk(_e_push(GetRef(vcpu.ebp), 4));break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.bp), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.ebp), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
@@ -5750,8 +5751,8 @@ static void PUSH_ESI()
 	i386(0x56) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _chk(_e_push(GetRef(vcpu.si), 2));break;
-		case 4: _chk(_e_push(GetRef(vcpu.esi), 4));break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.si), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.esi), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
@@ -5765,8 +5766,8 @@ static void PUSH_EDI()
 	i386(0x57) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _chk(_e_push(GetRef(vcpu.di), 2));break;
-		case 4: _chk(_e_push(GetRef(vcpu.edi), 4));break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.di), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.edi), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
