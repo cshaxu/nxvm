@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0x0045]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x46]\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"
 
 /*
@@ -21,7 +21,21 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 		Stage 3: Test		Not Started
 		Stage 4: Connect	02/12/2012 - 02/12/2012
 	Module III - VDEVICE
+		Stage 1: PIC(8259A)	02/24/2012 - 02/26/2012
+		Stage 2: DMA(8237A)	Not Started
+		Stage 3: RTC		Not Started
+		Stage 4: Serial		Not Started
+		Stage 5: Floppy		Not Started
+		Stage 6: HDD		Not Started
+		Stage 7: CDROM		Not Started
+		Stage 8: Printer	Not Started
+		Stage 9: KEYB		Not Started
+		Stage A: VGA		Not Started
+		Stage B: Monitor	Not Started
 	Module IV - VAPI
+		Stage 1: NONE		Not Started
+		Stage 2: W32CON		Not Started
+		Stage 3: W32APP		Not Started
 	Module V - DOSINT
 */
 
