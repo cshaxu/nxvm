@@ -91,6 +91,9 @@ typedef t_nubitcc t_faddrcc;
 #define GetMSB(n, b) (GetBit((n), (1 << ((b) - 1))))
 #define GetLSB(n, b) (GetBit((n), 1))
 
+#define Hex2BCD(x)  ((((x) / 10) << 4) | ((x) % 10))
+#define BCD2Hex(x)  ((x) & 0x0f + (((x) & 0xf0) >> 4) * 10)
+
 #define ExecFun(faddr) (*(void (*)(void))(faddr))()
 
 #define VCPU 0

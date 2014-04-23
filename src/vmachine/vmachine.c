@@ -40,18 +40,18 @@ void vapiCallBackMachineStop() {vmachineStop();}
 void vmachineRefresh()
 {
 /*
-	vcmosRefresh();
 	vdispRefresh();
 	vvadpRefresh();
 	vkeybRefresh();
 	vkbcRefresh();
-	vpitRefresh();
 */
+	vpitRefresh();
 	qdbiosRefresh();
 	vfddRefresh();
 	vfdcRefresh();
 	vdmaRefresh();
 	vpicRefresh();
+	vcmosRefresh();
 	vcpuRefresh();
 	vramRefresh();
 	vportRefresh();
@@ -63,20 +63,19 @@ void vmachineInit()
 	vramInit();
 	vcpuInit();
 	vpicInit();
+	vcmosInit();
 	vdmaInit();
 	vfdcInit();
 	vfddInit();
 #ifdef VMACHINE_DEBUG
 	qdbiosInit();
 #endif
-// temp
-/*
 	vpitInit();
+/*
 	vkbcInit();
 	vkeybInit();
 	vvadpInit();
 	vdispInit();
-	vcmosInit();
 */
 	vmachine.flagrecord = 0x01;
 	vmachine.flaginit   = 0x01;
@@ -84,19 +83,19 @@ void vmachineInit()
 void vmachineFinal()
 {
 /*
-	vcmosFinal();
 	vkbcFinal();
 	vkeybFinal();
 	vvadpFinal();
 	vdispFinal();
-	vpitFinal();
 */
+	vpitFinal();
 #ifdef VMACHINE_DEBUG
 	qdbiosFinal();
 #endif
 	vfddFinal();
 	vfdcFinal();
 	vdmaFinal();
+	vcmosFinal();
 	vpicFinal();
 	vcpuFinal();
 	vramFinal();

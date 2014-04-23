@@ -16,12 +16,12 @@
 #include "vram.h"
 #include "vcpu.h"
 #include "vpic.h"
+#include "vcmos.h"
 #include "vdma.h"
 #include "vfdc.h"
 #include "vfdd.h"
-/*#include "vpit.h"
-#include "vcmos.h"
-#include "vkbc.h"
+#include "vpit.h"
+/*#include "vkbc.h"
 #include "vkeyb.h"*/
 
 #ifdef VMACHINE_DEBUG

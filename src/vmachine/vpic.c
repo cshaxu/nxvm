@@ -145,6 +145,7 @@ static void IO_Write_00x0(t_pic *vpic)
 				vpic->ocw2 = vcpu.iobyte;
 				if (vpic->isr) {
 					id = GetIsrTopId(vpic);
+					//vapiPrint("EOI %d\n", id);
 					vpic->isr &= ~(1<<id);
 				}
 				break;

@@ -2,19 +2,19 @@
 
 #include "memory.h"
 
-#include "../system/vapi.h"
+#include "vapi.h"
 
+#include "vport.h"
 #include "vcpu.h"
 #include "vpic.h"
-#include "vcpuins.h"
-
+#include "vram.h"
 #include "vpit.h"
 
-#ifdef VPIT_DEBUG
+/*#ifdef VPIT_DEBUG
 #include "time.h"
 static clock_t t1,t2;
 t_float64 dt;
-#endif
+#endif*/
 
 t_pit vpit;
 
@@ -172,7 +172,7 @@ void IO_Write_0043()
 		default:
 			break;
 		}
-		if (GetM(vpit.cw[id]) != 0x00 && vpit.out[id]) FUNEXEC(vpit.out[id]); 
+		if (GetM(vpit.cw[id]) != 0x00 && vpit.out[id]) ExecFun(vpit.out[id]); 
 	}
 }
 
@@ -202,15 +202,7 @@ void IO_Write_FF40() {vpitSetGate(vcpu.iobyte>>0x04,vcpu.iobyte&0x01);}
 void IO_Read_FF41() {vcpu.iobyte = 0xff;vpitRefresh();}
 #endif
 
-void vpitIntSystemTimer() {
-#ifdef VPIT_DEBUG
-	t2 = clock();
-	dt = (t_float64)((t2-t1)*1e3/((t_float64)CLOCKS_PER_SEC));
-	t1 = t2;
-	vapiPrint("%d, %lf\n", vpit.count[0], dt);
-#endif
-	vpicSetIRQ(0x00);
-}
+void vpitIntSystemTimer() {vpicSetIRQ(0x00);}
 
 void vpitSetGate(t_nubit8 id, t_bool gate)
 {
@@ -221,7 +213,7 @@ void vpitSetGate(t_nubit8 id, t_bool gate)
 }
 void vpitRefresh()
 {
-	t_nubitcc i;
+	t_nubit8 i;
 	for (i = 0;i < 3;++i) {
 		switch (GetM(vpit.cw[i])) {
 		case 0x00:
@@ -229,7 +221,7 @@ void vpitRefresh()
 				if (vpit.flaggate[i]) {
 					Decrease(i);
 					if (vpit.count[i] == 0x00) {
-						if (vpit.out[i]) FUNEXEC(vpit.out[i]);
+						if (vpit.out[i]) ExecFun(vpit.out[i]);
 						vpit.flagready[i] = 0x00;
 					}
 				}
@@ -239,7 +231,7 @@ void vpitRefresh()
 			if (vpit.flagready[i]) {
 				Decrease(i);
 				if (vpit.count[i] == 0x00) {
-					if (vpit.out[i]) FUNEXEC(vpit.out[i]);
+					if (vpit.out[i]) ExecFun(vpit.out[i]);
 					vpit.flagready[i] = 0x00;
 				}
 			}
@@ -250,7 +242,7 @@ void vpitRefresh()
 				if (vpit.flaggate[i]) {
 					Decrease(i);
 					if (vpit.count[i] == 0x01) {
-						if (vpit.out[i]) FUNEXEC(vpit.out[i]);
+						if (vpit.out[i]) ExecFun(vpit.out[i]);
 						LoadInit(i);
 					}
 				}
@@ -262,7 +254,7 @@ void vpitRefresh()
 				if (vpit.flaggate[i]) {
 					Decrease(i);
 					if (vpit.count[i] == 0x00) {
-						if (vpit.out[i]) FUNEXEC(vpit.out[i]);
+						if (vpit.out[i]) ExecFun(vpit.out[i]);
 						LoadInit(i);
 					}
 				}
@@ -273,7 +265,7 @@ void vpitRefresh()
 				if (vpit.flaggate[i]) {
 					Decrease(i);
 					if (vpit.count[i] == 0x00) {
-						if (vpit.out[i]) FUNEXEC(vpit.out[i]);
+						if (vpit.out[i]) ExecFun(vpit.out[i]);
 						vpit.flagready[i] = 0x00;
 					}
 				}
@@ -283,7 +275,7 @@ void vpitRefresh()
 			if (vpit.flagready[i]) {
 				Decrease(i);
 				if (vpit.count[i] == 0x00) {
-					if (vpit.out[i]) FUNEXEC(vpit.out[i]);
+					if (vpit.out[i]) ExecFun(vpit.out[i]);
 					vpit.flagready[i] = 0x00;
 				}
 			}
@@ -295,7 +287,7 @@ void vpitRefresh()
 }
 #ifdef VPIT_DEBUG
 #define mov(n) (vcpu.iobyte=(n))
-#define out(n) FUNEXEC(vcpuinsOutPort[(n)])
+#define out(n) ExecFun(vport.out[(n)])
 #endif
 void vpitInit()
 {
@@ -304,19 +296,18 @@ void vpitInit()
 	                               /* GATE for counter 0 and 1 are connected */
 	vpit.out[0] = (t_faddrcc)vpitIntSystemTimer;
 	vpit.out[1] = (t_faddrcc)vpitRefDRAM;
-	vcpuinsInPort[0x0040] = (t_faddrcc)IO_Read_0040;
-	vcpuinsInPort[0x0041] = (t_faddrcc)IO_Read_0041;
-	vcpuinsInPort[0x0042] = (t_faddrcc)IO_Read_0042;
-	vcpuinsOutPort[0x0040] = (t_faddrcc)IO_Write_0040;
-	vcpuinsOutPort[0x0041] = (t_faddrcc)IO_Write_0041;
-	vcpuinsOutPort[0x0042] = (t_faddrcc)IO_Write_0042;
-	vcpuinsOutPort[0x0043] = (t_faddrcc)IO_Write_0043;
+	vport.in[0x0040] = (t_faddrcc)IO_Read_0040;
+	vport.in[0x0041] = (t_faddrcc)IO_Read_0041;
+	vport.in[0x0042] = (t_faddrcc)IO_Read_0042;
+	vport.out[0x0040] = (t_faddrcc)IO_Write_0040;
+	vport.out[0x0041] = (t_faddrcc)IO_Write_0041;
+	vport.out[0x0042] = (t_faddrcc)IO_Write_0042;
+	vport.out[0x0043] = (t_faddrcc)IO_Write_0043;
 	vpit.flaggate[0] = vpit.flaggate[1] = 0x01;
 #ifdef VPIT_DEBUG
-	t1 = clock();
-	vcpuinsInPort[0xff40] = (t_faddrcc)IO_Read_FF40;
-	vcpuinsOutPort[0xff40] = (t_faddrcc)IO_Write_FF40;
-	vcpuinsInPort[0xff41] = (t_faddrcc)IO_Read_FF41;
+	vport.in[0xff40] = (t_faddrcc)IO_Read_FF40;
+	vport.out[0xff40] = (t_faddrcc)IO_Write_FF40;
+	vport.in[0xff41] = (t_faddrcc)IO_Read_FF41;
 	mov(0x36); /* al=0011 0110: Mode=3, Counter=0, 16b */
 	out(0x43);
 	mov(0x00);

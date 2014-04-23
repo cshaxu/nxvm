@@ -91,7 +91,7 @@ void IO_Read_0064()
 }
 void IO_Write_00BB()
 {
-	INT_16();
+	qdbiosExecInt(0x16);
 	if (GetBit(_flags, VCPU_FLAG_ZF))
 		vramVarWord(_ss,_sp + 4) |=  VCPU_FLAG_ZF;
 	else

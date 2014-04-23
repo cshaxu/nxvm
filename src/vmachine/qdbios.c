@@ -1,15 +1,12 @@
 #include "memory.h"
+#include "time.h"
 
 #include "vapi.h"
-#include "vport.h"
-#include "vram.h"
-#include "vcpu.h"
-#include "vdma.h"
-#include "vfdd.h"
+#include "vmachine.h"
 
+#include "vcpuins.h"
 #include "qdvga.h"
 #include "qdkeyb.h"
-#include "qdrtc.h"
 #include "qdbios.h"
 
 static t_nubit16 sax, sbx, scx, sdx;
@@ -39,6 +36,7 @@ static t_nubit16 sax, sbx, scx, sdx;
 #define nop
 #define inc(n)   ((n)++)
 #define dec(n)   ((n)--)
+#define _int(n)
 
 static void INT_13_00_FDD_ResetDrive()
 {
@@ -105,17 +103,17 @@ static void INT_13_02_FDD_ReadSector()
 		/* set fdc */
 		out(0x03f5, 0x0f); /* send seek command */
 		shl(_dh, 0x02);    /* calc hds byte */
-		or (_dl, _dh);      /* calc hds byte */
+		or (_dl, _dh);     /* calc hds byte */
 		shr(_dh, 0x02);    /* calc hds byte */
 		out(0x03f5, _dl);  /* set seek hds byte */
 		out(0x03f5, _ch);  /* set seek cyl */
-/* Note: vfdc set IRQ6 and vcpu calls INT E */
-// TODO: Need to move these codes into INT E ///
-		out(0x03f5, 0x08); /* send senseint command */
-		in (_al, 0x03f5);   /* read senseint ret st0: 0x20 */
-		in (_al, 0x03f5);   /* read senseint ret cyl: 0x00 */
-		/* FDC 3F5 4A to check id; not needed for vm */
-////////////////////////////////////////////////
+/* Note: here vfdc set IRQ6 and vcpu calls INT E */
+		do {
+			vcpuinsExecInt();
+			nop;
+			in(_al, 0x03f4); /* get msr */
+			and(_al, 0xc0);  /* get ready write status */
+		} while(!cmp(_al, 0x80));
 		out(0x03f5, 0xe6); /* send read command */
 		out(0x03f5, _dl);  /* set stdi hds */
 		out(0x03f5, _ch);  /* set stdi cyl */
@@ -196,13 +194,13 @@ static void INT_13_03_FDD_WriteSector()
 		shr(_dh, 0x02);    /* calc hds byte */
 		out(0x03f5, _dl);  /* set seek hds byte */
 		out(0x03f5, _ch);  /* set seek cyl */
-/* Note: vfdc set IRQ6 and vcpu calls INT E */
-// TODO: Need to move these codes into INT E ///
-		out(0x03f5, 0x08); /* send senseint command */
-		in (_al, 0x03f5);   /* read senseint ret st0: 0x20 */
-		in (_al, 0x03f5);   /* read senseint ret cyl: 0x00 */
-		/* FDC 3F5 4A to check id; not needed for vm */
-////////////////////////////////////////////////
+/* Note: here vfdc set IRQ6 and vcpu calls INT E */
+		do {
+			vcpuinsExecInt();
+			nop;
+			in(_al, 0x03f4); /* get msr */
+			and(_al, 0xc0);  /* get ready write status */
+		} while(!cmp(_al, 0x80));
 		out(0x03f5, 0xc5); /* send write command */
 		out(0x03f5, _dl);  /* set stdi hds */
 		out(0x03f5, _ch);  /* set stdi cyl */
@@ -214,8 +212,8 @@ static void INT_13_03_FDD_WriteSector()
 		out(0x03f5, 0xff); /* set stdi customized sect size (0xff) */
 		/* now everything is ready; DRQ also generated. */
 		do {
-			nop;
 			vdmaRefresh();
+			nop;
 			in(_al, 0x03f4); /* get msr */
 			and(_al, 0xc0);  /* get ready read status */
 		} while(!cmp(_al, 0xc0));
@@ -273,6 +271,177 @@ static void INT_13_15_FDD_GetDriveType()
 	mov(mbp(0x0441), _ah); /* set status*/
 }
 
+#define QDBIOS_RTC_TICK  54.9254
+#define QDBIOS_ADDR_RTC_DAILY_COUNTER 0x046c
+#define QDBIOS_ADDR_RTC_ROLLOVER      0x0470
+
+static void INT_1A_00_BIOS_GetTimeTickCount()
+{
+	mov(_cx, mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER + 2));
+	mov(_dx, mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER + 0));
+	if (cmp(mbp(QDBIOS_ADDR_RTC_ROLLOVER),0x00))
+		mov(_al, 0x00);
+	else
+		mov(_al, 0x01);
+	mov(mbp(QDBIOS_ADDR_RTC_ROLLOVER), 0x00);
+}
+static void INT_1A_01_BIOS_SetTimeTickCount()
+{
+	mov(mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER + 2), _cx);
+	mov(mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER + 0), _dx);
+	mov(mbp(QDBIOS_ADDR_RTC_ROLLOVER), 0x00);
+}
+static void INT_1A_02_CMOS_GetCmosTime()
+{
+/*	t_float64 total = (vramVarDWord(0x0000, QDBIOS_ADDR_RTC_DAILY_COUNTER) *
+		               QDRTC_TICK) / 1000;
+	t_nubit8 hour = (t_nubit8)(total / 3600);
+	t_nubit8 min  = (t_nubit8)((total - hour * 3600) / 60);
+	t_nubit8 sec  = (t_nubit8)(total - hour * 3600 - min * 60);
+	mov(_ch, Hex2BCD(hour));
+	mov(_cl, Hex2BCD(min));
+	mov(_dh, Hex2BCD(sec));*/
+	mov(_ch, vcmos.reg[VCMOS_RTC_HOUR]);
+	mov(_cl, vcmos.reg[VCMOS_RTC_MINUTE]);
+	mov(_dh, vcmos.reg[VCMOS_RTC_SECOND]);
+	push_ax;
+	out(0x0070, VCMOS_RTC_REG_B);
+	in(_al, 0x0071);
+	and(_al, 0x01);
+	mov(_dl, _al);
+	pop_ax;
+	clc;
+}
+static void INT_1A_03_CMOS_SetCmosTime()
+{
+	push_ax;
+	out(0x0070, VCMOS_RTC_HOUR);
+	out(0x0071, _ch);
+	out(0x0070, VCMOS_RTC_MINUTE);
+	out(0x0071, _cl);
+	out(0x0070, VCMOS_RTC_SECOND);
+	out(0x0071, _dh);
+	if (cmp(_dl, 0x00)) {
+		out(0x0070, VCMOS_RTC_REG_B);
+		in(_al, 0x0071);
+		and(_al, 0xfe);
+		out(0x0070, VCMOS_RTC_REG_B);
+		out(0x0071, _al);
+	} else {
+		out(0x0070, VCMOS_RTC_REG_B);
+		in(_al, 0x0071);
+		or(_al, 0x01);
+		out(0x0070, VCMOS_RTC_REG_B);
+		out(0x0071, _al);
+	}
+	pop_ax;
+/*	t_nubit8 hour = BCD2Hex(_ch);
+	t_nubit8 min  = BCD2Hex(_cl);
+	t_nubit8 sec  = BCD2Hex(_dh);
+	vramVarDWord(0x0000, QDBIOS_ADDR_RTC_DAILY_COUNTER) = 
+		(t_nubit32)(((hour * 3600 + min * 60 + sec) * 1000) / QDRTC_TICK);*/
+	clc;
+}
+static void INT_1A_04_CMOS_GetCmosDate()
+{
+	//struct tm *t = gmtime(&qdbios_rtc_start);
+	//if(t->tm_year >= 100) {       /* tm_year starts from 1900 */
+	//	mov(_ch, 0x20);                                 /* century: 20 (BCD) */
+	//	mov(_cl, Hex2BCD(t->tm_year - 100));
+	//} else {
+	//	mov(_ch, 0x19);
+	//	mov(_cl, Hex2BCD(t->tm_year - 100));
+	//}
+	//mov(_dh, Hex2BCD(t->tm_mon + 1));
+	//mov(_dl, Hex2BCD(t->tm_mday));
+	push_ax;
+	out(0x0070, VCMOS_RTC_CENTURY);
+	in(_al, 0x0071);
+	mov(_ch, _al);
+	out(0x0070, VCMOS_RTC_YEAR);
+	in(_al, 0x0071);
+	mov(_cl, _al);
+	out(0x0070, VCMOS_RTC_MONTH);
+	in(_al, 0x0071);
+	mov(_dh, _al);
+	out(0x0070, VCMOS_RTC_DAY_MONTH);
+	in(_al, 0x0071);
+	mov(_dl, _al);
+	pop_ax;
+	clc;
+}
+static void INT_1A_05_CMOS_SetCmosDate()
+{
+/*
+	struct tm *t = gmtime(&qdbios_rtc_start);
+	t->tm_year = BCD2Hex(_cl);
+	if(cmp(_ch, 0x20)) t->tm_year += 100;*/
+	push_ax;
+	out(0x0070, VCMOS_RTC_CENTURY);
+	mov(_al, _ch);
+	out(0x0071, _al);
+	out(0x0070, VCMOS_RTC_YEAR);
+	mov(_al, _cl);
+	out(0x0071, _al);
+	out(0x0070, VCMOS_RTC_MONTH);
+	mov(_al, _dh);
+	out(0x0071, _al);
+	out(0x0070, VCMOS_RTC_DAY_MONTH);
+	mov(_al, _dl);
+	out(0x0071, _al);
+	pop_ax;
+	clc;
+}
+static void INT_1A_06_CMOS_SetAlarmClock()
+{
+	/* return a fail to cpu */
+	stc;
+}
+
+/* rtc update */
+void INT_08()
+{
+	if (cmp(vmachine.flaginit,0x00)) return;
+	push_ax;
+	mov(_ax, 0x0001);
+	add(mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER+0),_ax);
+	if (cmp(mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER+0),0x0000))
+		add(mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER+2),_ax);
+	if (cmp(mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER+0),0x00b2)) {
+		if (cmp(mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER+2),0x0018)) {
+			mov(mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER+0), 0x0000);
+			mov(mwp(QDBIOS_ADDR_RTC_DAILY_COUNTER+2), 0x0000);
+			mov(mbp(QDBIOS_ADDR_RTC_ROLLOVER),0x00);
+		}
+	}
+	pop_ax;
+	_int(0x1c);
+	push_ax;
+	mov(_al, 0x20);
+	out(0x20, _al); /* send eoi command to vpic */
+	pop_ax;
+/*	vramVarDWord(0x0000, QDBIOS_ADDR_RTC_DAILY_COUNTER) += 1;
+	if (vramVarDWord(0x0000, QDBIOS_ADDR_RTC_DAILY_COUNTER) >= 0x1800b2) {
+		vramVarDWord(0x0000, QDBIOS_ADDR_RTC_DAILY_COUNTER) = 0x00000000;
+		vramVarByte(0x0000, QDBIOS_ADDR_RTC_ROLLOVER) = 0x01;
+	}*/
+}
+/* fdd respond to int */
+void INT_0E()
+{
+	push_ax;
+	push_dx;
+	mov(_dx, 0x03f5);
+	mov(_al, 0x08);
+ 	out(_dx, _al); /* send senseint command */ 
+	in (_al, _dx); /* read senseint ret st0: 0x20 */
+	in (_al, _dx); /* read senseint ret cyl: 0x00 */
+	/* FDC 3F5 4A to check id; not needed for vm */
+	mov(_al, 0x20);
+	out(0x20, _al); /* send eoi command to vpic */
+	pop_dx;
+	pop_ax;
+}
 /* vga */
 void INT_10()
 {
@@ -351,11 +520,9 @@ void INT_10()
 	}
 }
 /* device test*/
-void INT_11()
-{_ax = 0x0061;}
+void INT_11() {mov(_ax, 0x0061);}
 /* memory test*/
-void INT_12()
-{_ax = 0x027f;}
+void INT_12() {mov(_ax, 0x027f);}
 /* fdd */
 void INT_13()
 {
@@ -435,68 +602,50 @@ void INT_17()
 void INT_1A()
 {
 	switch(_ah) {
-	case 0x00:
-		qdrtcGetTimeTickCount();
-		break;
-	case 0x01:
-		qdrtcSetTimeTickCount();
-		break;
-	case 0x2:
-		qdrtcGetCmosTime();
-		break;
-	case 0x3:
-		qdrtcSetCmosTime();
-		break;
-	case 0x4:
-		qdrtcGetCmosDate();
-		break;
-	case 0x5:
-		qdrtcSetCmosDate();
-		break;
-	case 0x6:
-		qdrtcSetAlarmClock();
-		break;
-	default:
-		break;
+	case 0x00: INT_1A_00_BIOS_GetTimeTickCount(); break;
+	case 0x01: INT_1A_01_BIOS_SetTimeTickCount(); break;
+	case 0x02: INT_1A_02_CMOS_GetCmosTime();      break;
+	case 0x03: INT_1A_03_CMOS_SetCmosTime();      break;
+	case 0x04: INT_1A_04_CMOS_GetCmosDate();      break;
+	case 0x05: INT_1A_05_CMOS_SetCmosDate();      break;
+	case 0x06: INT_1A_06_CMOS_SetAlarmClock();    break;
+	default:                                      break;
 	}
 }
 
 t_bool qdbiosExecInt(t_nubit8 intid)
 {
 	switch (intid) {
-	case 0x10: /* vga */
+	case 0x08: /* HARDWARE rtc update */
+		INT_08();return 0x01;
+	case 0x0e: /* HARDWARE fdd sense int */
+		INT_0E();return 0x01;
+	case 0x10: /* SOFTWARE vga operate */
 		INT_10();return 0x01;
-	case 0x13: /* fdd */
+	case 0x13: /* SOFTWARE fdd operate */
 		INT_13();return 0x01;
-	case 0x15: /* bios */
+	case 0x15: /* SOFTWARE bios operate */
 		INT_15();return 0x01;
-	case 0x16: /* keyb */
+	case 0x16: /* SOFTWARE keyb opterate */
 		INT_16();return 0x01;
-	case 0x1a: /* rtc */
+	case 0x1a: /* SOFTWARE rtc operate */
 		INT_1A();return 0x01;
-	case 0x11: /* bios */
+	case 0x11: /* SOFTWARE bios operate */
 		INT_11();return 0x01;
-	case 0x12: /* bios */
+	case 0x12: /* SOFTWARE bios operate */
 		INT_12();return 0x01;
-	case 0x14: /* bios */
+	case 0x14: /* SOFTWARE bios operate */
 		INT_14();return 0x01;
-	case 0x17: /* bios */
+	case 0x17: /* SOFTWARE bios operate */
 		INT_17();return 0x01;
 	default:     return 0x00;
 	}
 }
 
-void qdbiosRefresh()
-{
-	static int rtctest = 0;
-	rtctest++;
-	if (rtctest == 0x10000) {
-		vapiCallBackRtcUpdateTime();
-		rtctest = 0;
-	}
-}
+void qdbiosRefresh() {}
 void qdbiosInit()
 {
+	t_nubit8 hour, min, sec;
 	t_nubit16 i;
 /* build interrupt vector table */
 	for (i = 0x0000;i < 0x0100;++i) {
@@ -507,11 +656,21 @@ void qdbiosInit()
 	}
 /* build general int service routine */
 	vramVarByte(0xf000, 0x0000) = 0xcf;
-/* special: out bb,al for INT 16 */
-	vramVarByte(0xf000, 0x0001) = 0xe6;  
-	vramVarByte(0xf000, 0x0002) = 0xbb;
-	vramVarByte(0xf000, 0x0003) = 0xcf;
-	vramVarByte(0x0000, 0x58 + 0x00) = 0x01;
+/* special: INT 09, send eoi command to vpic */
+	vramVarByte(0xf000, 0x0001) = 0xb0;	/* mov al,20 */
+	vramVarByte(0xf000, 0x0002) = 0x20;
+	vramVarByte(0xf000, 0x0003) = 0xe6; /* out 20,al */
+	vramVarByte(0xf000, 0x0004) = 0x20;
+	vramVarByte(0xf000, 0x0005) = 0xcf; /* iret */
+	vramVarByte(0x0000, 0x24 + 0x00) = 0x01;
+	vramVarByte(0x0000, 0x24 + 0x01) = 0x00;
+	vramVarByte(0x0000, 0x24 + 0x02) = 0x00;
+	vramVarByte(0x0000, 0x24 + 0x03) = 0xf0;
+/* special: INT 16, call warpper "out bb,al" */
+	vramVarByte(0xf000, 0x0006) = 0xe6; /* out bb,al */
+	vramVarByte(0xf000, 0x0007) = 0xbb;
+	vramVarByte(0xf000, 0x0008) = 0xcf; /* iret */
+	vramVarByte(0x0000, 0x58 + 0x00) = 0x06;
 	vramVarByte(0x0000, 0x58 + 0x01) = 0x00;
 	vramVarByte(0x0000, 0x58 + 0x02) = 0x00;
 	vramVarByte(0x0000, 0x58 + 0x03) = 0xf0;
@@ -590,7 +749,6 @@ void qdbiosInit()
 	vramVarByte(0xf000, 0xe6fe) = 0x00;
 
 /* device initialize */
-	qdrtcInit();
 	qdkeybInit();
 	qdvgaInit();
 
@@ -600,10 +758,18 @@ void qdbiosInit()
 	vramVarByte(0xf000, 0xfff0) = 0xea;
 	vramVarWord(0xf000, 0xfff1) = 0x7c00;
 	vramVarWord(0xf000, 0xfff3) = 0x0000;
+
+/* load real time */
+	hour = BCD2Hex(vcmos.reg[VCMOS_RTC_HOUR]);
+	min  = BCD2Hex(vcmos.reg[VCMOS_RTC_MINUTE]);
+	sec  = BCD2Hex(vcmos.reg[VCMOS_RTC_SECOND]);
+	vramVarDWord(0x0000, QDBIOS_ADDR_RTC_DAILY_COUNTER) = 
+		(t_nubit32)(((hour * 3600 + min * 60 + sec) * 1000) / QDBIOS_RTC_TICK);
+	vramVarByte(0x0000, QDBIOS_ADDR_RTC_ROLLOVER) = 0x00;
+
 }
 void qdbiosFinal()
 {
 	qdvgaFinal();
 	qdkeybFinal();
-	qdrtcFinal();
 }

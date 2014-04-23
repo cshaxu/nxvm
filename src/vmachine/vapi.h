@@ -44,7 +44,7 @@ void vapiCallBackMachineRun();
 t_nubit8 vapiCallBackMachineGetFlagRun();
 void vapiCallBackMachineStop();
 
-void vapiCallBackRtcUpdateTime();
+//void vapiCallBackRtcUpdateTime();
 
 t_bool vapiCallBackKeyboardGetShift();
 t_bool vapiCallBackKeyboardGetAlt();
