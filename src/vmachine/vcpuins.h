@@ -47,11 +47,13 @@ typedef struct {
 	t_cpu_sreg *roverds, *roverss;
 	t_nubit32 except, excode;
 	t_faddrcc table[0x100], table_0f[0x100];
+	t_nubit64 cimm, crm, cr;
 	t_vaddrcc rimm, rrm, rr;
 	t_nubit32 pimm, prm;
 	t_nubit32 limm, lrm;
-	t_nubit64 cimm, crm, cr;
-	t_bool    flagmem; /* if prm is in memory */
+	t_nubit32 eimm, erm;
+	t_bool    flagmem; /* if rm is in memory */
+	t_bool    flagmss; /* if rm is in stack segment */
 } t_cpuins;
 
 #define VCPUINS_EXCEPT_GP 0x00000001 /* general protection */

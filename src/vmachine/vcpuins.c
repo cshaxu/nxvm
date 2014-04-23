@@ -239,7 +239,10 @@ static t_nubit64 _kma_read_ref(t_vaddrcc ref, t_nubit8 byte)
 	case 4: result = d_nubit32(ref);break;
 	case 6: result = GetMax48(d_nubit64(ref));break;
 	case 8: result = d_nubit64(ref);break;
-	default: _chr(_SetExcept_CE(0));break;}
+	default: _bb("byte");
+		_chr(_SetExcept_CE(byte));
+		_be;break;
+	}
 	_ce;
 	return result;
 }
@@ -289,7 +292,10 @@ static void _kma_write_ref(t_vaddrcc ref, t_nubit64 data, t_nubit8 byte)
 		d_nubit16(ref + 4) = GetMax16(data >> 32);
 		break;
 	case 8: d_nubit64(ref) = GetMax64(data);break;
-	default: _chk(_SetExcept_CE(0));break;}
+	default: _bb("byte");
+		_chk(_SetExcept_CE(byte));
+		_be;break;
+	}
 	_ce;
 }
 /* write content to physical */
@@ -441,7 +447,7 @@ done _m_test_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool 
 
 /* segment accessing unit: _s_ */
 /* kernel segment accessing */
-tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
+todo _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 {
 	_cb("_ksa_load_seg");
 	rsreg->selector = selector;
@@ -451,6 +457,19 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 	_ce;
 }
 /* regular segment accessing */
+/* 0 = succ, 1 = fail */
+static t_bool _s_check_selector(t_nubit16 selector) {
+	_cb("_s_check_selector");
+	_comment("not implememted");
+	_ce;
+	return 1;
+}
+static t_nubit64 _s_read_descriptor(t_nubit16 selector) {
+	_cb("_s_check_selector");
+	_comment("not implememted");
+	_ce;
+	return 0;
+}
 static t_nubit64 _s_read_idt(t_nubit8 intid)
 {
 	t_nubit64 result = 0x0000000000000000;
@@ -602,7 +621,7 @@ static t_nubit32 _p_input(t_nubit16 portid, t_nubit8 byte)
 	case 2: result = vport.ioword;break;
 	case 4: result = vport.iodword;break;
 	default: _bb("byte");
-		_chr(_SetExcept_CE(0));
+		_chr(_SetExcept_CE(byte));
 		_be;break;
 	}
 	_ce;
@@ -617,7 +636,7 @@ tots _p_output(t_nubit16 portid, t_nubit32 data, t_nubit8 byte)
 	case 2: vport.ioword = (t_nubit16)data;break;
 	case 4: vport.iodword = (t_nubit32)data;break;
 	default: _bb("byte");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(byte));
 		_be;break;
 	}
 	ExecFun(vport.out[portid]);
@@ -631,96 +650,81 @@ tots _p_output(t_nubit16 portid, t_nubit32 data, t_nubit8 byte)
 #define _GetSIB_SS(sib)      (((sib) & 0xc0) >> 6)
 #define _GetSIB_Index(sib)   (((sib) & 0x38) >> 3)
 #define _GetSIB_Base(sib)    (((sib) & 0x07) >> 0)
-done _d_skip(t_nubit8 byte)
+/* kernel decoding function */
+done _kdf_skip(t_nubit8 byte)
 {
-	_cb("_d_skip");
+	_cb("_kdf_skip");
 	_chk(vcpu.eip += byte);
 	_ce;
 }
-static t_nubit64 _d_code(t_nubit8 byte)
+static t_nubit64 _kdf_code(t_nubit8 byte)
 {
 	t_nubit64 result = 0x0000000000000000;
-	_cb("_d_code");
+	_cb("_kdf_code");
 	_chr(result = _s_read_cs(vcpu.eip, byte));
-	_chr(_d_skip(byte));
+	_chr(_kdf_skip(byte));
 	_ce;
 	return result;
 }
-done _d_imm(t_nubit8 byte)
-{
-	_cb("_d_imm");
-	_chk(vcpuins.limm = _kma_addr_linear_logical(&vcpu.cs, vcpu.eip, byte, 0x00, 0x00, 0x01));
-	_chk(vcpuins.pimm = _kma_addr_physical_linear(vcpuins.limm, byte, 0x00, 0x00, 0x01));
-	_chk(vcpuins.rimm = _kma_ref_physical(vcpuins.pimm));
-	_chk(vcpuins.cimm = _kma_read_ref(vcpuins.rimm, byte));
-	_chk(_d_skip(byte));
-	_ce;
-}
-tots _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
+tots _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
 {
 	t_nsbit8 disp8 = 0x00;
 	t_nubit16 disp16 = 0x0000;
 	t_nubit32 disp32 = 0x00000000;
 	t_nubit32 sibindex = 0x00000000;
 	t_nubit8 modrm = 0x00, sib = 0x00;
-	_cb("_d_modrm");
-	_chk(modrm = (t_nubit8)_d_code(1));
-	vcpuins.rrm = vcpuins.rr = (t_vaddrcc)NULL;
-	vcpuins.prm = vcpuins.lrm = 0x00000000;
+	_cb("_kdf_modrm");
+	_chk(modrm = (t_nubit8)_kdf_code(1));
+	vcpuins.erm = 0x00000000;
+	vcpuins.flagmem = 1;
+	vcpuins.flagmss = 0;
 	vcpuins.crm = vcpuins.cr = 0x0000000000000000;
-	vcpuins.flagmem = 0x01;
+	vcpuins.rrm = vcpuins.rr = (t_vaddrcc)NULL;
+	vcpuins.prm = 0x00000000;
+	vcpuins.lrm = 0x00000000;
 	switch (_GetAddressSize) {
 	case 2: _bb("AddressSize(2)");
 		switch (_GetModRM_MOD(modrm)) {
 		case 0: _bb("ModRM_MOD(0)");
 			switch (_GetModRM_RM(modrm)) {
-			case 0: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.bx+vcpu.si), rmbyte, write)); break;
-			case 1: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.bx+vcpu.di), rmbyte, write)); break;
-			case 2: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, GetMax16(vcpu.bp+vcpu.si), rmbyte, write)); break;
-			case 3: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, GetMax16(vcpu.bp+vcpu.di), rmbyte, write)); break;
-			case 4: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.si), rmbyte, write)); break;
-			case 5: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.di), rmbyte, write)); break;
+			case 0: vcpuins.erm = GetMax16(vcpu.bx + vcpu.si); vcpuins.flagmss = 0; break;
+			case 1: vcpuins.erm = GetMax16(vcpu.bx + vcpu.di); vcpuins.flagmss = 0; break;
+			case 2: vcpuins.erm = GetMax16(vcpu.bp + vcpu.si); vcpuins.flagmss = 1; break;
+			case 3: vcpuins.erm = GetMax16(vcpu.bp + vcpu.di); vcpuins.flagmss = 1; break;
+			case 4: vcpuins.erm = GetMax16(vcpu.si); vcpuins.flagmss = 0; break;
+			case 5: vcpuins.erm = GetMax16(vcpu.di); vcpuins.flagmss = 0; break;
 			case 6: _bb("ModRM_RM(6)");
-				_chk(disp16 = (t_nubit16)_d_code(2));
-				_chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(disp16), rmbyte, write));
+				_chk(disp16 = (t_nubit16)_kdf_code(2));
+				vcpuins.erm = GetMax16(disp16); vcpuins.flagmss = 0;
 				_be;break;
-			case 7: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.bx), rmbyte, write)); break;
+			case 7: vcpuins.erm = GetMax16(vcpu.bx); vcpuins.flagmss = 0; break;
 			default:_impossible_;break;}
-			_chk(vcpuins.prm = _m_addr_physical_linear(vcpuins.lrm, rmbyte, write));
-			_chk(vcpuins.rrm = _m_ref_physical(vcpuins.prm));
-			_chk(vcpuins.crm = _m_read_ref(vcpuins.rrm, rmbyte));
 			_be;break;
 		case 1: _bb("ModRM_MOD(1)");
-			_chk(disp8 = (t_nsbit8)_d_code(1));
+			_chk(disp8 = (t_nsbit8)_kdf_code(1));
 			switch (_GetModRM_RM(modrm)) {
-			case 0: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.bx+vcpu.si+disp8), rmbyte, write)); break;
-			case 1: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.bx+vcpu.di+disp8), rmbyte, write)); break;
-			case 2: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, GetMax16(vcpu.bp+vcpu.si+disp8), rmbyte, write)); break;
-			case 3: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, GetMax16(vcpu.bp+vcpu.di+disp8), rmbyte, write)); break;
-			case 4: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.si+disp8), rmbyte, write)); break;
-			case 5: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.di+disp8), rmbyte, write)); break;
-			case 6: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, GetMax16(vcpu.bp+disp8), rmbyte, write)); break;
-			case 7: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.bx+disp8), rmbyte, write)); break;
+			case 0: vcpuins.erm = GetMax16(vcpu.bx + vcpu.si + disp8); vcpuins.flagmss = 0; break;
+			case 1: vcpuins.erm = GetMax16(vcpu.bx + vcpu.di + disp8); vcpuins.flagmss = 0; break;
+			case 2: vcpuins.erm = GetMax16(vcpu.bp + vcpu.si + disp8); vcpuins.flagmss = 1; break;
+			case 3: vcpuins.erm = GetMax16(vcpu.bp + vcpu.di + disp8); vcpuins.flagmss = 1; break;
+			case 4: vcpuins.erm = GetMax16(vcpu.si + disp8); vcpuins.flagmss = 0; break;
+			case 5: vcpuins.erm = GetMax16(vcpu.di + disp8); vcpuins.flagmss = 0; break;
+			case 6: vcpuins.erm = GetMax16(vcpu.bp + disp8); vcpuins.flagmss = 1; break;
+			case 7: vcpuins.erm = GetMax16(vcpu.bx + disp8); vcpuins.flagmss = 0; break;
 			default:_impossible_;break;}
-			_chk(vcpuins.prm = _m_addr_physical_linear(vcpuins.lrm, rmbyte, write));
-			_chk(vcpuins.rrm = _m_ref_physical(vcpuins.prm));
-			_chk(vcpuins.crm = _m_read_ref(vcpuins.rrm, rmbyte));
 			_be;break;
 		case 2: _bb("ModRM_MOD(2)");
-			_chk(disp16 = (t_nubit16)_d_code(2));
+			_chk(disp16 = (t_nubit16)_kdf_code(2));
 			switch (_GetModRM_RM(modrm)) {
-			case 0: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.bx+vcpu.si+disp16), rmbyte, write)); break;
-			case 1: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.bx+vcpu.di+disp16), rmbyte, write)); break;
-			case 2: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, GetMax16(vcpu.bp+vcpu.si+disp16), rmbyte, write)); break;
-			case 3: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, GetMax16(vcpu.bp+vcpu.di+disp16), rmbyte, write)); break;
-			case 4: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.si+disp16), rmbyte, write)); break;
-			case 5: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.di+disp16), rmbyte, write)); break;
-			case 6: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, GetMax16(vcpu.bp+disp16), rmbyte, write)); break;
-			case 7: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, GetMax16(vcpu.bx+disp16), rmbyte, write)); break;
+			case 0: vcpuins.erm = GetMax16(vcpu.bx + vcpu.si + disp16); vcpuins.flagmss = 0; break;
+			case 1: vcpuins.erm = GetMax16(vcpu.bx + vcpu.di + disp16); vcpuins.flagmss = 0; break;
+			case 2: vcpuins.erm = GetMax16(vcpu.bp + vcpu.si + disp16); vcpuins.flagmss = 1; break;
+			case 3: vcpuins.erm = GetMax16(vcpu.bp + vcpu.di + disp16); vcpuins.flagmss = 1; break;
+			case 4: vcpuins.erm = GetMax16(vcpu.si + disp16); vcpuins.flagmss = 0; break;
+			case 5: vcpuins.erm = GetMax16(vcpu.di + disp16); vcpuins.flagmss = 0; break;
+			case 6: vcpuins.erm = GetMax16(vcpu.bp + disp16); vcpuins.flagmss = 1; break;
+			case 7: vcpuins.erm = GetMax16(vcpu.bx + disp16); vcpuins.flagmss = 0; break;
 			default:_impossible_;break;}
-			_chk(vcpuins.prm = _m_addr_physical_linear(vcpuins.lrm, rmbyte, write));
-			_chk(vcpuins.rrm = _m_ref_physical(vcpuins.prm));
-			_chk(vcpuins.crm = _m_read_ref(vcpuins.rrm, rmbyte));
 			_be;break;
 		case 3:
 			break;
@@ -730,9 +734,10 @@ tots _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
 		}
 		_be;break;
 	case 4: _bb("AddressSize(4)");
+		_comment("_kdf_modrm::AddressSize(4)::welcome");
 		if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4) {
 			_bb("ModRM_MOD(!3),ModRM_RM(4)");
-			_chk(sib = (t_nubit8)_d_code(1));
+			_chk(sib = (t_nubit8)_kdf_code(1));
 			switch (_GetSIB_Index(sib)) {
 			case 0: sibindex = vcpu.eax;   break;
 			case 1: sibindex = vcpu.ecx;   break;
@@ -750,91 +755,81 @@ tots _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
 		case 0:
 			_bb("ModRM_MOD(0)");
 			switch (_GetModRM_RM(modrm)) {
-			case 0: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.eax, rmbyte, write)); break;
-			case 1: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.ecx, rmbyte, write)); break;
-			case 2: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.edx, rmbyte, write)); break;
-			case 3: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.ebx, rmbyte, write)); break;
+			case 0: vcpuins.erm = vcpu.eax; vcpuins.flagmss = 0; break;
+			case 1: vcpuins.erm = vcpu.ecx; vcpuins.flagmss = 0; break;
+			case 2: vcpuins.erm = vcpu.edx; vcpuins.flagmss = 0; break;
+			case 3: vcpuins.erm = vcpu.ebx; vcpuins.flagmss = 0; break;
 			case 4:
 				_bb("ModRM_RM(4)");
 				switch (_GetSIB_Base(sib)) {
-				case 0: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.eax + sibindex, rmbyte, write)); break;
-				case 1: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.ecx + sibindex, rmbyte, write)); break;
-				case 2: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.edx + sibindex, rmbyte, write)); break;
-				case 3: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.ebx + sibindex, rmbyte, write)); break;
-				case 4: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, vcpu.esp + sibindex, rmbyte, write)); break;
+				case 0: vcpuins.erm = vcpu.eax + sibindex; vcpuins.flagmss = 0; break;
+				case 1: vcpuins.erm = vcpu.ecx + sibindex; vcpuins.flagmss = 0; break;
+				case 2: vcpuins.erm = vcpu.edx + sibindex; vcpuins.flagmss = 0; break;
+				case 3: vcpuins.erm = vcpu.ebx + sibindex; vcpuins.flagmss = 0; break;
+				case 4: vcpuins.erm = vcpu.esp + sibindex; vcpuins.flagmss = 1; break;
 				case 5: _bb("SIB_Base(5)");
-					_chk(disp32 = (t_nubit32)_d_code(4));
-					_chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, disp32 + sibindex, rmbyte, write));
+					_chk(disp32 = (t_nubit32)_kdf_code(4));
+					vcpuins.erm = disp32 + sibindex; vcpuins.flagmss = 0; 
 					_be;break;
-				case 6: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.esi + sibindex, rmbyte, write)); break;
-				case 7: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.edi + sibindex, rmbyte, write)); break;
+				case 6: vcpuins.erm = vcpu.esi + sibindex; vcpuins.flagmss = 0; break;
+				case 7: vcpuins.erm = vcpu.edi + sibindex; vcpuins.flagmss = 0; break;
 				default:_impossible_;break;}
 				_be;break;
 			case 5: _bb("ModRM_RM(5)");
-				_chk(disp32 = (t_nubit32)_d_code(4));
-				_chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, disp32, rmbyte, write));
+				_chk(disp32 = (t_nubit32)_kdf_code(4));
+				vcpuins.erm = disp32; vcpuins.flagmss = 0;
 				_be;break;
-			case 6: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.esi, rmbyte, write)); break;
-			case 7: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.edi, rmbyte, write)); break;
+			case 6: vcpuins.erm = vcpu.esi; vcpuins.flagmss = 0;
+			case 7: vcpuins.erm = vcpu.edi; vcpuins.flagmss = 0;
 			default:_impossible_;break;}
-			_chk(vcpuins.prm = _m_addr_physical_linear(vcpuins.lrm, rmbyte, write));
-			_chk(vcpuins.rrm = _m_ref_physical(vcpuins.prm));
-			_chk(vcpuins.crm = _m_read_ref(vcpuins.rrm, rmbyte));
 			_be;break;
 		case 1: _bb("ModRM_MOD(1)");
-			_chk(disp8 = (t_nsbit8)_d_code(1));
+			_chk(disp8 = (t_nsbit8)_kdf_code(1));
 			switch (_GetModRM_RM(modrm)) {
-			case 0: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.eax + disp8, rmbyte, write)); break;
-			case 1: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.ecx + disp8, rmbyte, write)); break;
-			case 2: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.edx + disp8, rmbyte, write)); break;
-			case 3: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.ebx + disp8, rmbyte, write)); break;
+			case 0: vcpuins.erm = vcpu.eax + disp8; vcpuins.flagmss = 0; break;
+			case 1: vcpuins.erm = vcpu.ecx + disp8; vcpuins.flagmss = 0; break;
+			case 2: vcpuins.erm = vcpu.edx + disp8; vcpuins.flagmss = 0; break;
+			case 3: vcpuins.erm = vcpu.ebx + disp8; vcpuins.flagmss = 0; break;
 			case 4: _bb("ModRM_RM(4)");
 				switch (_GetSIB_Base(sib)) {
-				case 0: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.eax + sibindex + disp8, rmbyte, write)); break;
-				case 1: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.ecx + sibindex + disp8, rmbyte, write)); break;
-				case 2: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.edx + sibindex + disp8, rmbyte, write)); break;
-				case 3: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.ebx + sibindex + disp8, rmbyte, write)); break;
-				case 4: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, vcpu.esp + sibindex + disp8, rmbyte, write)); break;
-				case 5: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, vcpu.ebp + sibindex + disp8, rmbyte, write)); break;
-				case 6: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.esi + sibindex + disp8, rmbyte, write)); break;
-				case 7: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.edi + sibindex + disp8, rmbyte, write)); break;
+				case 0: vcpuins.erm = vcpu.eax + sibindex + disp8; vcpuins.flagmss = 0; break;
+				case 1: vcpuins.erm = vcpu.ecx + sibindex + disp8; vcpuins.flagmss = 0; break;
+				case 2: vcpuins.erm = vcpu.edx + sibindex + disp8; vcpuins.flagmss = 0; break;
+				case 3: vcpuins.erm = vcpu.ebx + sibindex + disp8; vcpuins.flagmss = 0; break;
+				case 4: vcpuins.erm = vcpu.esp + sibindex + disp8; vcpuins.flagmss = 1; break;
+				case 5: vcpuins.erm = vcpu.ebp + sibindex + disp8; vcpuins.flagmss = 1; break;
+				case 6: vcpuins.erm = vcpu.esi + sibindex + disp8; vcpuins.flagmss = 0; break;
+				case 7: vcpuins.erm = vcpu.edi + sibindex + disp8; vcpuins.flagmss = 0; break;
 				default:_impossible_;break;}
 				_be;break;
-			case 5: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, vcpu.ebp + disp8, rmbyte, write)); break;
-			case 6: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.esi + disp8, rmbyte, write)); break;
-			case 7: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.edi + disp8, rmbyte, write)); break;
+			case 5: vcpuins.erm = vcpu.ebp + disp8; vcpuins.flagmss = 1; break;
+			case 6: vcpuins.erm = vcpu.esi + disp8; vcpuins.flagmss = 0; break;
+			case 7: vcpuins.erm = vcpu.edi + disp8; vcpuins.flagmss = 0; break;
 			default:_impossible_;break;}
-			_chk(vcpuins.prm = _m_addr_physical_linear(vcpuins.lrm, rmbyte, write));
-			_chk(vcpuins.rrm = _m_ref_physical(vcpuins.prm));
-			_chk(vcpuins.crm = _m_read_ref(vcpuins.rrm, rmbyte));
 			_be;break;
 		case 2: _bb("ModRM_MOD(2)");
-			_chk(disp32 = (t_nubit32)_d_code(4));
+			_chk(disp32 = (t_nubit32)_kdf_code(4));
 			switch (_GetModRM_RM(modrm)) {
-			case 0: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.eax + disp32, rmbyte, write)); break;
-			case 1: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.ecx + disp32, rmbyte, write)); break;
-			case 2: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.edx + disp32, rmbyte, write)); break;
-			case 3: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.ebx + disp32, rmbyte, write)); break;
-			case 4:
-				_bb("ModRM_RM(4)");
+			case 0: vcpuins.erm = vcpu.eax + disp32; vcpuins.flagmss = 0; break;
+			case 1: vcpuins.erm = vcpu.ecx + disp32; vcpuins.flagmss = 0; break;
+			case 2: vcpuins.erm = vcpu.edx + disp32; vcpuins.flagmss = 0; break;
+			case 3: vcpuins.erm = vcpu.ebx + disp32; vcpuins.flagmss = 0; break;
+			case 4: _bb("ModRM_RM(4)");
 				switch (_GetSIB_Base(sib)) {
-				case 0: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.eax + sibindex + disp32, rmbyte, write)); break;
-				case 1: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.ecx + sibindex + disp32, rmbyte, write)); break;
-				case 2: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.edx + sibindex + disp32, rmbyte, write)); break;
-				case 3: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.ebx + sibindex + disp32, rmbyte, write)); break;
-				case 4: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, vcpu.esp + sibindex + disp32, rmbyte, write)); break;
-				case 5: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, vcpu.ebp + sibindex + disp32, rmbyte, write)); break;
-				case 6: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.esi + sibindex + disp32, rmbyte, write)); break;
-				case 7: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.edi + sibindex + disp32, rmbyte, write)); break;
+				case 0: vcpuins.erm = vcpu.eax + sibindex + disp32; vcpuins.flagmss = 0; break;
+				case 1: vcpuins.erm = vcpu.ecx + sibindex + disp32; vcpuins.flagmss = 0; break;
+				case 2: vcpuins.erm = vcpu.edx + sibindex + disp32; vcpuins.flagmss = 0; break;
+				case 3: vcpuins.erm = vcpu.ebx + sibindex + disp32; vcpuins.flagmss = 0; break;
+				case 4: vcpuins.erm = vcpu.esp + sibindex + disp32; vcpuins.flagmss = 1; break;
+				case 5: vcpuins.erm = vcpu.ebp + sibindex + disp32; vcpuins.flagmss = 1; break;
+				case 6: vcpuins.erm = vcpu.esi + sibindex + disp32; vcpuins.flagmss = 0; break;
+				case 7: vcpuins.erm = vcpu.edi + sibindex + disp32; vcpuins.flagmss = 0; break;
 				default:_impossible_;break;}
 				_be;break;
-			case 5: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverss, vcpu.ebp + disp32, rmbyte, write)); break;
-			case 6: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.esi + disp32, rmbyte, write)); break;
-			case 7: _chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpu.edi + disp32, rmbyte, write)); break;
+			case 5: vcpuins.erm = vcpu.ebp + disp32; vcpuins.flagmss = 1; break;
+			case 6: vcpuins.erm = vcpu.esi + disp32; vcpuins.flagmss = 0; break;
+			case 7: vcpuins.erm = vcpu.edi + disp32; vcpuins.flagmss = 0; break;
 			default:_impossible_;break;}
-			_chk(vcpuins.prm = _m_addr_physical_linear(vcpuins.lrm, rmbyte, write));
-			_chk(vcpuins.rrm = _m_ref_physical(vcpuins.prm));
-			_chk(vcpuins.crm = _m_read_ref(vcpuins.rrm, rmbyte));
 			_be;break;
 		case 3:
 			break;
@@ -849,7 +844,7 @@ tots _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
 	}
 	if (_GetModRM_MOD(modrm) == 3) {
 		_bb("ModRM_MOD(3)");
-		vcpuins.flagmem = 0x00;
+		vcpuins.flagmem = 0;
 		switch (rmbyte) {
 		case 1:
 			switch (_GetModRM_RM(modrm)) {
@@ -888,7 +883,7 @@ tots _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
 			default:_impossible_;break;}
 			break;
 		default: _bb("rmbyte");
-			_chk(_SetExcept_CE(0));
+			_chk(_SetExcept_CE(rmbyte));
 			_be;break;
 		}
 		_chk(vcpuins.crm = _m_read_ref(vcpuins.rrm, rmbyte));
@@ -939,8 +934,61 @@ tots _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
 		_chk(vcpuins.cr = _m_read_ref(vcpuins.rr, rmbyte));
 		break;
 	default: _bb("regbyte");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(regbyte));
 		_be;break;
+	}
+	_ce;
+}
+done _d_skip(t_nubit8 byte)
+{
+	_cb("_d_skip");
+	_chk(_kdf_skip(byte));
+	_ce;
+}
+static t_nubit64 _d_code(t_nubit8 byte)
+{
+	t_nubit64 result = 0x0000000000000000;
+	_cb("_d_code");
+	_chr(result = _kdf_code(byte));
+	_ce;
+	return result;
+}
+done _d_imm(t_nubit8 byte)
+{
+	_cb("_d_imm");
+	vcpuins.eimm = vcpu.eip;
+	_chk(vcpuins.limm = _kma_addr_linear_logical(&vcpu.cs, vcpuins.eimm, byte, 0x00, 0x00, 0x01));
+	_chk(vcpuins.pimm = _kma_addr_physical_linear(vcpuins.limm, byte, 0x00, 0x00, 0x01));
+	_chk(vcpuins.rimm = _kma_ref_physical(vcpuins.pimm));
+	_chk(vcpuins.cimm = _kma_read_ref(vcpuins.rimm, byte));
+	_chk(_d_skip(byte));
+	_ce;
+}
+done _d_modrm_ea(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
+{
+	t_nubit8 modrm = 0x00;
+	_cb("_d_modrm_ea");
+	_chk(_kdf_modrm(regbyte, rmbyte, write));
+	if (!vcpuins.flagmem) {
+		_bb("flagmem(0)");
+		_chk(_SetExcept_UD(0));
+		_be;
+	}
+	_ce;
+}
+done _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
+{
+	t_nubit8 modrm = 0x00;
+	_cb("_d_modrm");
+	_chk(_kdf_modrm(regbyte, rmbyte, write));
+	if (vcpuins.flagmem) {
+		_bb("flagmem(1)");
+		_chk(vcpuins.lrm = _m_addr_linear_logical((vcpuins.flagmss ? vcpuins.roverss : vcpuins.roverds),
+			vcpuins.erm, rmbyte, write));
+		_chk(vcpuins.prm = _m_addr_physical_linear(vcpuins.lrm, rmbyte, write));
+		_chk(vcpuins.rrm = _m_ref_physical(vcpuins.prm));
+		_chk(vcpuins.crm = _m_read_ref(vcpuins.rrm, rmbyte));
+		_be;
 	}
 	_ce;
 }
@@ -962,7 +1010,7 @@ tots _kec_push(t_vaddrcc rsrc, t_nubit8 byte)
 		data = d_nubit32(rsrc);
 		_be;break;
 	default: _bb("byte");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(byte));
 		_be;break;
 	}
 	switch (_GetStackSize) {
@@ -996,7 +1044,7 @@ static t_nubit64 _kec_pop(t_nubit8 byte)
 	case 2: result = GetMax16(result);break;
 	case 4: result = GetMax32(result);break;
 	default: _bb("byte");
-		_chr(_SetExcept_CE(0));
+		_chr(_SetExcept_CE(byte));
 		_be;break;
 	}
 	_ce;
@@ -1026,7 +1074,7 @@ tots _kec_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 		_chk(_kec_push((t_vaddrcc)&vcpu.eip, 4));
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(byte));
 		_be;break;
 	}
 	vcpu.cs = ccs;
@@ -1049,7 +1097,7 @@ tots _kec_call_near(t_nubit32 neweip, t_nubit8 byte)
 		_chk(_kec_push((t_vaddrcc)&vcpu.eip, 4));
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(byte));
 		_be;break;
 	}
 	vcpu.eip = neweip;
@@ -1064,7 +1112,7 @@ tots _kec_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 	case 2: neweip = GetMax16(neweip);break;
 	case 4: neweip = GetMax32(neweip);break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(byte));
 		_be;break;
 	}
 	_chk(_ksa_load_seg(&ccs, newcs));
@@ -1080,7 +1128,7 @@ tots _kec_jmp_near(t_nubit32 neweip, t_nubit8 byte)
 	case 2: neweip = GetMax16(neweip);break;
 	case 4: neweip = GetMax32(neweip);break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(byte));
 		_be;break;
 	}
 	_chk(_s_test_cs(neweip));
@@ -1137,8 +1185,9 @@ tots _ser_iret_real(t_nubit8 byte)
 		_chk(vcpu.eflags = (tempEFLAGS & 0x00257fd5) | (vcpu.eflags & 0x001a0000));
 		_be;break;
 	default: _bb("byte");
-		_chk(_SetExcept_CE(0));
-		_be;break;}
+		_chk(_SetExcept_CE(byte));
+		_be;break;
+	}
 	_ce;
 }
 done _ser_jmp_far_real(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
@@ -1164,7 +1213,7 @@ todo _e_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 	} else {
 		_bb("Protected(1)");
 		_comment("_e_call_far::Protected: not implemented");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(byte));
 		_be;
 	}
 	_ce;
@@ -1250,7 +1299,7 @@ tots _e_jcc(t_vaddrcc rsrc, t_nubit8 byte, t_bool condition)
 		case 2: neweip += d_nsbit16(rsrc);break;
 		case 4: neweip += d_nsbit32(rsrc);break;
 		default: _bb("byte");
-			_chk(_SetExcept_CE(0));
+			_chk(_SetExcept_CE(byte));
 			_be;break;
 		}
 		_be;
@@ -1268,7 +1317,7 @@ todo _e_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 	} else {
 		_bb("Protected(1)");
 		_comment("_e_jmp_far::Protected: not implemented");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(byte));
 		_be;
 	}
 	_ce;
@@ -1277,6 +1326,19 @@ done _e_jmp_near(t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_e_jmp_near");
 	_chk(_kec_jmp_near(neweip, byte));
+	_ce;
+}
+done _e_load_far(t_cpu_sreg *rsreg, t_vaddrcc rdest, t_nubit16 selector, t_nubit32 offset, t_nubit8 byte)
+{
+	_cb("_e_load_far");
+	_chk(_ksa_load_seg(rsreg, selector));
+	switch (byte) {
+	case 2: d_nubit16(rdest) = GetMax16(offset);break;
+	case 4: d_nubit32(rdest) = GetMax32(offset);break;
+	default: _bb("byte");
+		_chk(_SetExcept_CE(byte));
+		_be;break;
+	}
 	_ce;
 }
 
@@ -1348,7 +1410,10 @@ done _kaf_calc_CF()
 	case CMP32:
 		MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, vcpuins.opr1 < vcpuins.opr2);
 		break;
-	default:_chk(_SetExcept_CE(0));break;}
+	default: _bb("type");
+		_chk(_SetExcept_CE(vcpuins.type));
+		_be;break;
+	}
 	_ce;
 }
 done _kaf_calc_OF()
@@ -1388,7 +1453,10 @@ done _kaf_calc_OF()
 		MakeBit(vcpu.eflags, VCPU_EFLAGS_OF,
 			(GetMSB32(vcpuins.opr1) != GetMSB32(vcpuins.opr2)) && (GetMSB32(vcpuins.opr2) == GetMSB32(vcpuins.result)));
 		break;
-	default:_chk(_SetExcept_CE(0));break;}
+	default: _bb("type");
+		_chk(_SetExcept_CE(vcpuins.type));
+		_be;break;
+	}
 	_ce;
 }
 done _kaf_calc_AF()
@@ -1422,7 +1490,10 @@ done _kaf_calc_SF()
 	case 8: MakeBit(vcpu.eflags, VCPU_EFLAGS_SF, GetMSB8(vcpuins.result));break;
 	case 16:MakeBit(vcpu.eflags, VCPU_EFLAGS_SF, GetMSB16(vcpuins.result));break;
 	case 32:MakeBit(vcpu.eflags, VCPU_EFLAGS_SF, GetMSB32(vcpuins.result));break;
-	default:_chk(_SetExcept_CE(0));break;}
+	default: _bb("bit");
+		_chk(_SetExcept_CE(vcpuins.bit));
+		_be;break;
+	}
 	_ce;
 }
 done _kaf_set_flags(t_nubit16 flags)
@@ -1444,8 +1515,8 @@ done _kas_move_index(t_nubit8 bit, t_bool flagsi, t_bool flagdi)
 	case 8: step = 0x01;break;
 	case 16:step = 0x02;break;
 	case 32:step = 0x04;break;
-	default:_bb("bit");
-		_chk(_SetExcept_CE(0));
+	default: _bb("bit");
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	switch (_GetAddressSize) {
@@ -1701,7 +1772,7 @@ tots _a_add(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 		/* note: should not use rsrc after this point */
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_chk(_kaf_set_flags(ADD_FLAG));
@@ -1759,7 +1830,7 @@ tots _a_adc(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 		/* note: should not use rsrc after this point */
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_chk(_kaf_set_flags(ADC_FLAG));
@@ -1817,7 +1888,7 @@ tots _a_and(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 		/* note: should not use rsrc after this point */
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_ClrEFLAGS_OF;
@@ -1994,7 +2065,7 @@ tots _a_cmp(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 		vcpuins.result = GetMax32((t_nubit32)vcpuins.opr1 - (t_nsbit32)vcpuins.opr2);
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_chk(_kaf_set_flags(CMP_FLAG));
@@ -2059,7 +2130,7 @@ tots _a_inc(t_vaddrcc rdest, t_nubit8 bit)
 		d_nubit32(rdest) = GetMax32(vcpuins.result);
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_chk(_kaf_set_flags(INC_FLAG));
@@ -2095,7 +2166,7 @@ tots _a_dec(t_vaddrcc rdest, t_nubit8 bit)
 		d_nubit32(rdest) = GetMax32(vcpuins.result);
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_chk(_kaf_set_flags(DEC_FLAG));
@@ -2545,7 +2616,7 @@ tots _a_imul(t_vaddrcc rsrc, t_nubit8 bit)
 		}
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_ce;
@@ -2612,7 +2683,7 @@ tots _a_imul3(t_vaddrcc rdest, t_vaddrcc rsrc1, t_vaddrcc rsrc2, t_nubit8 bit)
 		}
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_ce;
@@ -2692,7 +2763,7 @@ tots _a_div(t_vaddrcc rsrc, t_nubit8 bit)
 		}
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_ce;
@@ -2780,7 +2851,7 @@ tots _a_idiv(t_vaddrcc rsrc, t_nubit8 bit)
 		}
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_ce;
@@ -2820,8 +2891,9 @@ tots _p_ins(t_nubit8 bit)
 		_chk(_kas_move_index(32, 1, 1));
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
-		_be;break;}
+		_chk(_SetExcept_CE(bit));
+		_be;break;
+	}
 	_ce;
 }
 static void MOVS(t_nubit8 bit)
@@ -2886,7 +2958,7 @@ tots _a_cmps(t_nubit8 bit)
 		_chk(_kaf_set_flags(CMP_FLAG));
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_ce;
@@ -3130,7 +3202,9 @@ tots POP_CS()
 	_cb("POP_CS");
 	_newins_;
 	i386(0x0f) {
-		_chk(_SetExcept_CE(0));
+		_bb("i386");
+		_chk(_SetExcept_CE(0x0f));
+		_be;
 	} else {
 		_adv;
 		_chk(POP((void *)&vcpu.cs.selector,16));
@@ -4049,9 +4123,12 @@ tots BOUND_R16_M16_16()
 	_newins_;
 	i386(0x62) {
 		_adv;
-		_chk(_d_modrm(_GetOperandSize, _GetOperandSize * 2, 0x00));
-		if (!vcpuins.flagmem)
+		_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2, 0x00));
+		if (!vcpuins.flagmem) {
+			_bb("flagmem(0)");
 			_chk(_SetExcept_UD(0));
+			_be;
+		}
 		switch (_GetOperandSize) {
 		case 2: _bb("OperandSize(16)");
 			a16 = d_nsbit16(vcpuins.rr);
@@ -4480,7 +4557,7 @@ void INS_80()
 			_chk(_d_imm(1));
 			_chk(_a_cmp(vcpuins.rrm, vcpuins.rimm, 8));
 			_be;break;
-		default: _impossible_;break;}
+		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
 		GetModRegRM(0, 8);
@@ -4554,7 +4631,7 @@ void INS_81()
 			_chk(_d_imm(_GetOperandSize));
 			_chk(_a_cmp(vcpuins.rrm, vcpuins.rimm, _GetOperandSize * 8));
 			_be;break;
-		default: _impossible_;break;}
+		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
 		GetModRegRM(0, 16);
@@ -4629,7 +4706,7 @@ void INS_83()
 			_chk(_d_imm(1));
 			_chk(_a_cmp(vcpuins.rrm, vcpuins.rimm, bit));
 			_be;break;
-		default: _impossible_;break;}
+		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
 		GetModRegRM(0, 16);
@@ -4710,11 +4787,22 @@ void MOV_RM16_SEG()
 	MOV((void *)vcpuins.rrm,(void *)vcpuins.rr,16);
 	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  MOV_RM16_SEG\n");
 }
-void LEA_R16_M16()
+done LEA_R16_M16()
 {
-	vcpu.eip++;
-	GetModRegRMEA();
-	d_nubit16(vcpuins.rr) = vcpuins.rrm & 0xffff;
+	_cb("LEA_R16_M16");
+	i386(0x8d) {
+		_adv;
+		_chk(_d_modrm_ea(_GetOperandSize, _GetOperandSize, 0));
+		switch (_GetOperandSize) {
+		case 2: d_nubit16(vcpuins.rr) = GetMax16(vcpuins.erm);break;
+		case 4: d_nubit32(vcpuins.rr) = GetMax32(vcpuins.erm);break;
+		default:_impossible_;break;}
+	} else {
+		vcpu.eip++;
+		GetModRegRMEA();
+		d_nubit16(vcpuins.rr) = vcpuins.rrm & 0xffff;
+	}
+	_ce;
 }
 void MOV_SEG_RM16()
 {
@@ -4871,12 +4959,17 @@ void SAHF()
 	d_nubit8(&vcpu.eflags) = vcpu.ah;
 	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SAHF\n");
 }
-void LAHF()
+done LAHF()
 {
-	vcpu.eip++;
-//	vapiPrint("1:LAHF:%4X\n",vcpu.eflags);
-	vcpu.ah = d_nubit8(&vcpu.eflags);
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  LAHF\n");
+	_cb("LAHF");
+	i386(0x9f) {
+		_adv;
+		vcpu.ah = GetMax8(vcpu.flags);
+	} else {
+		vcpu.eip++;
+		vcpu.ah = d_nubit8(&vcpu.eflags);
+	}
+	_ce;
 }
 void MOV_AL_M8()
 {
@@ -5322,19 +5415,71 @@ void RET()
 	vcpu.eip++;
 	POP((void *)&vcpu.eip,16);
 }
-void LES_R16_M16()
+done LES_R16_M16_16()
 {
-	vcpu.eip++;
-	GetModRegRM(16,16);
-	MOV((void *)vcpuins.rr,(void *)vcpuins.rrm,16);
-	MOV((void *)&vcpu.es.selector,(void *)(vcpuins.rrm+2),16);
+	t_nubit16 selector = 0x0000;
+	t_nubit32 offset = 0x00000000;
+	_cb("LES_R16_M16_16");
+	i386(0xc4) {
+		_adv;
+		_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2, 0));
+		if (!vcpuins.flagmem) {
+			_bb("flagmem(0)");
+			_chk(_SetExcept_UD(0));
+			_be;
+		}
+		switch (_GetOperandSize) {
+		case 2:
+			offset = d_nubit16(vcpuins.rrm);
+			selector = d_nubit16(vcpuins.rrm + 2);
+			break;
+		case 4:
+			_newins_;
+			offset = d_nubit32(vcpuins.rrm);
+			selector = d_nubit16(vcpuins.rrm + 4);
+			break;
+		default:_impossible_;break;}
+		_chk(_e_load_far(&vcpu.es, vcpuins.rr, selector, offset, _GetOperandSize));
+	} else {
+		vcpu.eip++;
+		GetModRegRM(16,16);
+		d_nubit16(vcpuins.rr) = d_nubit16(vcpuins.rrm);
+		vcpu.es.selector = d_nubit16(vcpuins.rrm + 2);
+	}
+	_ce;
 }
-void LDS_R16_M16()
+done LDS_R16_M16_16()
 {
-	vcpu.eip++;
-	GetModRegRM(16,16);
-	MOV((void *)vcpuins.rr,(void *)vcpuins.rrm,16);
-	MOV((void *)&vcpu.ds.selector,(void *)(vcpuins.rrm+2),16);
+	t_nubit16 selector = 0x0000;
+	t_nubit32 offset = 0x00000000;
+	_cb("LDS_R16_M16_16");
+	i386(0xc5) {
+		_adv;
+		_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2, 0));
+		if (!vcpuins.flagmem) {
+			_bb("flagmem(0)");
+			_chk(_SetExcept_UD(0));
+			_be;
+		}
+		switch (_GetOperandSize) {
+		case 2:
+			offset = d_nubit16(vcpuins.rrm);
+			selector = d_nubit16(vcpuins.rrm + 2);
+			break;
+		case 4:
+			_newins_;
+			offset = d_nubit32(vcpuins.rrm);
+			selector = d_nubit16(vcpuins.rrm + 4);
+			break;
+		default:_impossible_;break;}
+		_chk(_e_load_far(&vcpu.ds, vcpuins.rr, selector, offset, _GetOperandSize));
+	} else {
+		vcpu.eip++;
+		GetModRegRM(16,16);
+		d_nubit16(vcpuins.rr) = d_nubit16(vcpuins.rrm);
+		vcpu.ds.selector = d_nubit16(vcpuins.rrm + 2);
+	}
+	_ce;
 }
 void MOV_M8_I8()
 {
@@ -5900,7 +6045,7 @@ done CALL_REL16()
 			_chk(_e_call_near(GetMax32(vcpu.eip + rel32), 4));
 			_be;break;
 		default: _bb("OperandSize");
-			_chk(_SetExcept_CE(0));
+			_chk(_SetExcept_CE(_GetOperandSize));
 			_be;break;
 		}
 	} else {
@@ -6047,6 +6192,11 @@ tots HLT()
 {
 	_cb("HLT");
 	_newins_;
+	if (_GetCR0_PE && _GetCPL) {
+		_bb("CR0_PE(1),CPL(!0)");
+		_SetExcept_GP(0);
+		_be;
+	}
 	_adv;
 	vcpu.flaghalt = 1;
 	_ce;
@@ -6327,7 +6477,12 @@ void INS_FF()
 			_be;break;
 		case 3: /* CALL_M16_16 */
 			_bb("CALL_M16_16");
-			_chk(_d_modrm(0, _GetOperandSize * 2, 0));
+			_chk(_d_modrm(0, _GetOperandSize + 2, 0));
+			if (!vcpuins.flagmem) {
+				_bb("flagmem(0)");
+				_chk(_SetExcept_UD(0));
+				_be;
+			}
 			switch (_GetOperandSize) {
 			case 2:
 				neweip = d_nubit16(vcpuins.rrm);
@@ -6348,7 +6503,12 @@ void INS_FF()
 			_be;break;
 		case 5: /* JMP_M16_16 */
 			_bb("JMP_M16_16");
-			_chk(_d_modrm(0, _GetOperandSize * 2, 0));
+			_chk(_d_modrm(0, _GetOperandSize + 2, 0));
+			if (!vcpuins.flagmem) {
+				_bb("flagmem(0)");
+				_chk(_SetExcept_UD(0));
+				_be;
+			}
 			switch (_GetOperandSize) {
 			case 2:
 				neweip = d_nubit16(vcpuins.rrm);
@@ -6447,8 +6607,9 @@ tots _d_bit_rmimm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
 		_chk(vcpuins.rrm = _m_ref_linear(vcpuins.lrm, 4, write));
 		_be;break;
 	default: _bb("rmbyte");
-		_chk(_SetExcept_CE(0));
-		_be;break;}
+		_chk(_SetExcept_CE(rmbyte));
+		_be;break;
+	}
 	_ce;
 }
 
@@ -6486,7 +6647,10 @@ tots _a_bscc(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit, t_bool forward)
 			d_nubit32(rdest) = (t_nubit32)temp;
 		}
 		break;
-	default:_chk(_SetExcept_CE(0));break;}
+	default: _bb("bit");
+		_chk(_SetExcept_CE(bit));
+		_be;break;
+	}
 	_ce;
 }
 tots _a_bt(t_vaddrcc dest, t_nubit32 bitoperand, t_nubit8 bit)
@@ -6496,7 +6660,7 @@ tots _a_bt(t_vaddrcc dest, t_nubit32 bitoperand, t_nubit8 bit)
 	case 16: MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, GetBit(d_nubit16(dest), bitoperand));break;
 	case 32: MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, GetBit(d_nubit32(dest), bitoperand));break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_ce;
@@ -6514,7 +6678,7 @@ tots _a_btc(t_vaddrcc dest, t_nubit32 bitoperand, t_nubit8 bit)
 		MakeBit(d_nubit32(dest), bitoperand, !_GetEFLAGS_CF);
 		break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_ce;
@@ -6532,7 +6696,7 @@ tots _a_btr(t_vaddrcc dest, t_nubit32 bitoperand, t_nubit8 bit)
 		ClrBit(d_nubit32(dest), bitoperand);
 		break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_ce;
@@ -6550,7 +6714,7 @@ tots _a_bts(t_vaddrcc dest, t_nubit32 bitoperand, t_nubit8 bit)
 		SetBit(d_nubit32(dest), bitoperand);
 		break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_ce;
@@ -6589,7 +6753,7 @@ tots _a_imul2(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 		}
 		_be;break;
 	default: _bb("bit");
-		_chk(_SetExcept_CE(0));
+		_chk(_SetExcept_CE(bit));
 		_be;break;
 	}
 	_ce;
@@ -6613,6 +6777,65 @@ tots CLTS()
 	_ce;
 }
 
+tots LAR()
+{
+	t_nubit16 selector = 0x0000;
+	t_nubit64 descriptor = 0x0000000000000000;
+	_cb("LAR");
+	_newins_;
+	if (_IsProtected) {
+		_bb("Protected(1)");
+		_adv;
+		_chk(_d_modrm(_GetOperandSize, _GetOperandSize, 0));
+		selector = GetMax16(vcpuins.crm);
+		if (_s_check_selector(selector)) {
+			_ClrEFLAGS_ZF;
+		} else {
+			_chk(descriptor = _s_read_descriptor(selector));
+			if (_IsDescSeg(descriptor)) {
+				if (_IsDescSegCodeConforming(descriptor))
+					_SetEFLAGS_ZF;
+				else {
+					if (_GetCPL > _GetSegDesc_DPL(descriptor) || _GetSelector_RPL(selector) > _GetSegDesc_DPL(descriptor))
+						_ClrEFLAGS_ZF;
+					else
+						_SetEFLAGS_ZF;
+				}
+			} else {
+				switch (_GetGateDesc_TYPE(descriptor)) {
+				case 0x1:
+				case 0x2:
+				case 0x3:
+				case 0x4:
+				case 0x5:
+				case 0x9:
+				case 0xb:
+				case 0xc:
+					_SetEFLAGS_ZF;
+					break;
+				default:
+					_ClrEFLAGS_ZF;
+				}
+			}
+		}
+		if (_GetEFLAGS_ZF) {
+			switch (_GetOperandSize) {
+			case 2:
+				d_nubit16(vcpuins.rr) = GetMax16(descriptor >> 32) & 0xff00;
+				break;
+			case 4:
+				d_nubit32(vcpuins.rr) = GetMax32(descriptor >> 32) & 0x00ffff00;
+				break;
+			default:_impossible_;break;}
+		}
+		_be;
+	} else {
+		_bb("Protected(0)");
+		_chk(_SetExcept_UD(0));
+		_be;
+	}
+	_ce;
+}
 tots JO_REL16()
 {
 	_cb("JO_REL16");
@@ -6778,6 +7001,32 @@ tots IMUL_R16_RM16()
 	_chk(_a_imul2(vcpuins.rr, vcpuins.rrm, _GetOperandSize * 8));
 	_ce;
 }
+tots LSS_R16_M16_16()
+{
+	t_nubit16 selector = 0x0000;
+	t_nubit32 offset = 0x00000000;
+	_cb("LSS_R16_M16_16");
+	_newins_;
+	_adv;
+	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2, 0));
+	if (!vcpuins.flagmem) {
+		_bb("flagmem(0)");
+		_chk(_SetExcept_UD(0));
+		_be;
+	}
+	switch (_GetOperandSize) {
+	case 2:
+		offset = d_nubit16(vcpuins.rrm);
+		selector = d_nubit16(vcpuins.rrm + 2);
+		break;
+	case 4:
+		offset = d_nubit32(vcpuins.rrm);
+		selector = d_nubit16(vcpuins.rrm + 4);
+		break;
+	default:_impossible_;break;}
+	_chk(_e_load_far(&vcpu.ss, vcpuins.rr, selector, offset, _GetOperandSize));
+	_ce;
+}
 tots BTR_RM16_R16()
 {
 	_cb("BTR_RM16_R16");
@@ -6785,6 +7034,58 @@ tots BTR_RM16_R16()
 	_adv;
 	_chk(_d_bit_rmimm(_GetOperandSize, _GetOperandSize, 1));
 	_chk(_a_btr(vcpuins.rrm, (t_nubit32)vcpuins.cimm, _GetOperandSize * 8));
+	_ce;
+}
+tots LFS_R16_M16_16()
+{
+	t_nubit16 selector = 0x0000;
+	t_nubit32 offset = 0x00000000;
+	_cb("LFS_R16_M16_16");
+	_newins_;
+	_adv;
+	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2, 0));
+	if (!vcpuins.flagmem) {
+		_bb("flagmem(0)");
+		_chk(_SetExcept_UD(0));
+		_be;
+	}
+	switch (_GetOperandSize) {
+	case 2:
+		offset = d_nubit16(vcpuins.rrm);
+		selector = d_nubit16(vcpuins.rrm + 2);
+		break;
+	case 4:
+		offset = d_nubit32(vcpuins.rrm);
+		selector = d_nubit16(vcpuins.rrm + 4);
+		break;
+	default:_impossible_;break;}
+	_chk(_e_load_far(&vcpu.fs, vcpuins.rr, selector, offset, _GetOperandSize));
+	_ce;
+}
+tots LGS_R16_M16_16()
+{
+	t_nubit16 selector = 0x0000;
+	t_nubit32 offset = 0x00000000;
+	_cb("LGS_R16_M16_16");
+	_newins_;
+	_adv;
+	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2, 0));
+	if (!vcpuins.flagmem) {
+		_bb("flagmem(0)");
+		_chk(_SetExcept_UD(0));
+		_be;
+	}
+	switch (_GetOperandSize) {
+	case 2:
+		offset = d_nubit16(vcpuins.rrm);
+		selector = d_nubit16(vcpuins.rrm + 2);
+		break;
+	case 4:
+		offset = d_nubit32(vcpuins.rrm);
+		selector = d_nubit16(vcpuins.rrm + 4);
+		break;
+	default:_impossible_;break;}
+	_chk(_e_load_far(&vcpu.gs, vcpuins.rr, selector, offset, _GetOperandSize));
 	_ce;
 }
 tots INS_0F_BA()
@@ -6819,7 +7120,7 @@ tots INS_0F_BA()
 		_bb("BTC_RM16_I8");
 		_chk(_a_btc(vcpuins.rrm, (t_nubit32)vcpuins.cimm, _GetOperandSize * 8));
 		_be;break;
-	default: _impossible_;break;}
+	default:_impossible_;break;}
 	_ce;
 }
 tots BTC_RM16_R16()
@@ -7175,8 +7476,8 @@ void vcpuinsInit()
 	vcpuins.table[0xc1] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table[0xc2] = (t_faddrcc)RET_I16;
 	vcpuins.table[0xc3] = (t_faddrcc)RET;
-	vcpuins.table[0xc4] = (t_faddrcc)LES_R16_M16;
-	vcpuins.table[0xc5] = (t_faddrcc)LDS_R16_M16;
+	vcpuins.table[0xc4] = (t_faddrcc)LES_R16_M16_16;
+	vcpuins.table[0xc5] = (t_faddrcc)LDS_R16_M16_16;
 	vcpuins.table[0xc6] = (t_faddrcc)MOV_M8_I8;
 	vcpuins.table[0xc7] = (t_faddrcc)MOV_M16_I16;
 	vcpuins.table[0xc8] = (t_faddrcc)ENTER;
@@ -7239,7 +7540,7 @@ void vcpuinsInit()
 	vcpuins.table[0xff] = (t_faddrcc)INS_FF;
 	vcpuins.table_0f[0x00] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0x01] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x02] = (t_faddrcc)UndefinedOpcode;
+	vcpuins.table_0f[0x02] = (t_faddrcc)LAR;
 	vcpuins.table_0f[0x03] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0x04] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0x05] = (t_faddrcc)UndefinedOpcode;
@@ -7415,10 +7716,10 @@ void vcpuinsInit()
 	vcpuins.table_0f[0xaf] = (t_faddrcc)IMUL_R16_RM16;
 	vcpuins.table_0f[0xb0] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0xb1] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0xb2] = (t_faddrcc)UndefinedOpcode;
+	vcpuins.table_0f[0xb2] = (t_faddrcc)LSS_R16_M16_16;
 	vcpuins.table_0f[0xb3] = (t_faddrcc)BTR_RM16_R16;
-	vcpuins.table_0f[0xb4] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0xb5] = (t_faddrcc)UndefinedOpcode;
+	vcpuins.table_0f[0xb4] = (t_faddrcc)LFS_R16_M16_16;
+	vcpuins.table_0f[0xb5] = (t_faddrcc)LGS_R16_M16_16;
 	vcpuins.table_0f[0xb6] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0xb7] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0xb8] = (t_faddrcc)UndefinedOpcode;

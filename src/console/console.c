@@ -11,103 +11,6 @@
 
 #include "console.h"
 
-///*void Exec()
-//{
-//	char execmd[MAXLINE];
-//	FILE *load;
-//	t_nubit8 c;
-//	t_nubit16 i = 0,end;
-//	t_nubit32 len = 0;
-//	if (!vmachine.flaginit || vmachine.flagrun) {
-//		printc("Cannot execute binary file now.\n");
-//		return;
-//	}
-//	printc(".COM File: ");
-//	FGETS(execmd,MAXLINE,stdin);
-//	parse(execmd);
-//	if(!strlen(execmd)) return;
-//	load = FOPEN(execmd,"rb");
-//	if(!load) {
-//		printc("File not found\n");
-//		return;
-//	} else {
-//		vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
-//		vcpu.si = vcpu.di = vcpu.bp = 0x0000;
-//		vcpu.sp = 0xffee;	vcpu.eip = 0x0100;
-//		vcpu.ds.selector = vcpu.es.selector = vcpu.ss.selector = vcpu.cs.selector = 0x0001;
-//		vmachine.flagrun = 1;
-//		c = fgetc(load);
-//		while(!feof(load)) {
-//			vramVarByte(vcpu.cs.selector+i,vcpu.eip+((len++)%0x10000)) = c;
-//			i = len / 0x10000;
-//			c = fgetc(load);
-//		}
-//		end = vcpu.eip+len;
-//		fclose(load);
-//		while(vcpu.eip < end && vmachine.flagrun) vmachineRefresh();
-//	}
-//}*/
-////#define _rec (vapirecord.rec[(i + vapirecord.start) % VAPI_RECORD_SIZE])
-//void Dump()
-//{
-//	t_nubitcc i = 0;
-////	Operand x;
-////	FILE *fp;
-//	char str[MAXLINE];
-//	printc("Dump File: ");
-//	FGETS(str, MAXLINE, stdin);
-//	parse(str);
-//	vmachineDumpRecordFile(str);
-//	/*printc("Instruction Dump File: ");
-//	FGETS(str, MAXLINE, stdin);
-//	parse(str);
-//	fp = FOPEN(str,"w");
-//	if (!fp) {
-//		printc("ERORR:\tfailed to dump instruction.\n");
-//		return;
-//	}
-//	while (i < vapirecord.size) {
-//		disassemble(str, &x, (void *)vram.base, _rec.cs, _rec.ip);
-//		fprintf(fp,"%04X:%04X\t%s\n",_rec.cs,_rec.ip,str);
-//		_rec.cs;
-//		++i;
-//	}
-//	fclose(fp);*/
-//}
-//void Memory()
-//{
-//	unsigned int i;
-//	unsigned int tempSize;
-//	unsigned char testFlag = 0;
-//	char str[MAXLINE];
-//	if (!vmachine.flaginit || vmachine.flagrun) {
-//		printc("Cannot modify memory size now.\n");
-//		return;
-//	}
-//	fflush(stdin);
-//	printc("Size(KB): ");
-//	FGETS(str,MAXLINE,stdin);
-//	tempSize = atoi(str);
-//	if(tempSize > 0x400) {
-//		vramAlloc(tempSize<<0x0a);
-//	} else {
-//		vramAlloc(1024<<0x0a);
-//	}
-//	for(i = 0;i < vram.size;++i)
-//	{
-//		if(i % 1024 == 0) printc("\rMemory Testing : %dK",i/1024);
-//		if(d_nubit8(vram.base+i) != 0) {
-//			printc("\nMemory test failed.\n");
-//			testFlag = 1;
-//			break;
-//		}
-//	}
-//	if(!testFlag) printc("\rMemory Testing : %dK OK\n",i/1024);
-//	return;
-//
-//}
-
-
 #define MAXLINE 256
 #define MAXNARG 256
 #define MAXNASMARG 4
@@ -238,7 +141,6 @@ static void Help()
 		printc("\n");
 		printc("DEBUG   Launch NXVM hardware debugger\n");
 		printc("RECORD  Record cpu status for each instruction\n");
-/*		printc("RUN     Execute a binary file\n");*/
 		printc("\n");
 		printc("SET     Change BIOS settings\n");
 		printc("DEVICE  Change hardware parts\n");
@@ -406,26 +308,7 @@ static void Nxvm()
 }
 
 static void Test()
-{
-	/*
-	int cid, i, j;
-	t_bool ch[16][8];
-	cid = arg[1][0];
-	for (i = 0;i < 16;++i) {
-		for (j = 0;j < 8;++j) {
-			ch[i][j] = !!(fontBitmap[cid][i] & (1 << j));
-		}
-	}
-	for (i = 0;i < 16;++i) {
-		for (j = 0;j < 8;++j) {
-			if (ch[i][j])
-				printf(" ");
-			else
-				printf("*");
-		}
-		printf("\n");
-	}*/
-}
+{}
 
 static void exec()
 {
@@ -434,7 +317,6 @@ static void exec()
 	else if(!strcmp(arg[0],"help"))   Help();
 	else if(!strcmp(arg[0],"exit"))   Exit();
 	else if(!strcmp(arg[0],"info"))   Info();
-/*	else if(!strcmp(arg[0],"run"))    Run();*/
 	else if(!strcmp(arg[0],"debug"))  Debug();
 	else if(!strcmp(arg[0],"record")) Record();
 	else if(!strcmp(arg[0],"set"))    Set();

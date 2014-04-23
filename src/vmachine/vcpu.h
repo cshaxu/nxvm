@@ -317,6 +317,15 @@ typedef struct {
 	 ((t_nubit64)((limit) & 0x0000ffff) << 0 ))
 #define _SetSegDesc_TYPE_A(descriptor)  (SetBit((descriptor), VCPU_SEGDESC_TYPE_A))
 
+#define _IsDescSeg(descriptor)  (_GetSegDesc_S(descriptor))
+#define _IsDescGate(desciprtor) (!_GetSegDesc_S(descriptor))
+#define _IsDescSegCode(descriptor) (_IsDescSeg(descriptor) && _GetSegDesc_TYPE_CD(descriptor))
+#define _IsDescSegData(descriptor) (_IsDescSeg(descriptor) && !_GetSegDesc_TYPE_CD(descriptor))
+#define _IsDescSegCodeReadable(descriptor) (_IsDescSegCode(descriptor) && _GetSegDesc_TYPE_R(descriptor))
+#define _IsDescSegDataWritable(descriptor) (_IsDescSegData(descriptor) && _GetSegDesc_TYPE_W(descriptor))
+#define _IsDescSegCodeConforming(descriptor) (_IsDescSegCode(descriptor) && _GetSegDesc_TYPE_C(descriptor))
+#define _IsDescSegDataExpandDown(descriptor) (_IsDescSegData(descriptor) && _GetSegDesc_TYPE_E(descriptor))
+
 #define VCPU_GATEDESC_OFFSET_0 0x000000000000ffff
 #define VCPU_GATEDESC_OFFSET_1 0xffff000000000000
 #define VCPU_GATEDESC_SELECTOR 0x00000000ffff0000
