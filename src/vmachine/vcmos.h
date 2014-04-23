@@ -11,6 +11,8 @@ extern "C" {
 
 #include "vglobal.h"
 
+#define NXVM_DEVICE_CMOS "DS1302"
+
 #define VCMOS_DEBUG
 
 #define VCMOS_RTC_SECOND         0x00

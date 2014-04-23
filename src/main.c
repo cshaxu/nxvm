@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0148]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0149]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -148,9 +148,6 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0144 Built Aasm 32
  *
  * Format Unify:
- * construct aasm32
- * check all includes
- * reconstruct debug.ch (external interface)
  * reconstruct t_cpu_sreg
  * check all macro names
  * replace all constants with MACRO

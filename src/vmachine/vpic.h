@@ -13,6 +13,8 @@ extern "C" {
 
 #define VPIC_DEBUG
 
+#define NXVM_DEVICE_PIC "Intel 8259A"
+
 typedef enum {ICW1,ICW2,ICW3,ICW4,OCW1} t_pic_init_status;
 
 #define ocw1 imr

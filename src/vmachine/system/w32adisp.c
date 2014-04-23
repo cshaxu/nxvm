@@ -1,10 +1,9 @@
 /* This file is a part of NXVM project. */
 
-#include "../vapi.h"
-
 #include "tchar.h"
 
-#include "win32.h"
+#include "../vapi.h"
+
 #include "win32app.h"
 #include "w32adisp.h"
 

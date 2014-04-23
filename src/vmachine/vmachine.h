@@ -11,6 +11,8 @@ extern "C" {
 
 #define VMACHINE_DEBUG
 
+#define NXVM_DEVICE_MACHINE "IBM PC/AT"
+
 #include "vglobal.h"
 #include "vport.h"
 #include "vram.h"
@@ -37,12 +39,6 @@ typedef struct {
 	t_bool    flagmode;         /* mode flag: console (0) or application (1) */
 	t_bool    flagboot;             /* boot from floppy (0) or hard disk (1) */
 	t_bool    flagrecord;
-	t_bool    flagbreak;                    /* breakpoint set (1) or not (0) */
-	t_nubit16 breakcs, breakip;
-	t_bool    flagbreakx;
-	t_nubit32 breaklinear;
-	t_nubitcc breakcnt;
-	t_nubitcc tracecnt;
 	t_bool    flagreset;
 } t_machine;
 

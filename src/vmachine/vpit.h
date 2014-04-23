@@ -9,6 +9,8 @@
 
 #define VPIT_DEBUG
 
+#define NXVM_DEVICE_PIT "Intel 8254"
+
 typedef enum {
 	VPIT_STATUS_RW_READY,
 	VPIT_STATUS_RW_LSB,

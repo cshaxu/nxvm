@@ -1,5 +1,4 @@
 /* This file is a part of NXVM project. */
-#include "memory.h"
 
 #include "vapi.h"
 #include "vport.h"

@@ -15,6 +15,8 @@ extern "C" {
 typedef struct {
 	t_cpurec rec[RECORD_SIZE];
 	t_nubitcc start, size;
+	t_bool flagrecord; /* recorder is turned on */
+	t_bool flagready;
 	t_bool flagnow; /* record now! */
 	char fn[0x100];
 	FILE *fp;
@@ -26,6 +28,7 @@ void recordNow(const t_strptr fname);
 void recordDump(const t_strptr fname);
 void recordInit();
 void recordExec(t_cpurec *rcpurec);
+void recordRefresh();
 void recordFinal();
 
 #ifdef __cplusplus

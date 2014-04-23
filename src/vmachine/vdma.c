@@ -1,10 +1,7 @@
 /* This file is a part of NXVM project. */
 
-#include "memory.h"
-
 #include "vapi.h"
 #include "vport.h"
-#include "vcpu.h"
 #include "vram.h"
 #include "vfdc.h"
 #include "vdma.h"

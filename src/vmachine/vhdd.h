@@ -7,6 +7,8 @@
 
 #include "vglobal.h"
 
+#define NXVM_DEVICE_HDD "20 cylinders"
+
 typedef struct {
 	t_nubit16  cyl;                          /* vfdc.C; cylinder id (0 to 79) */
 	t_nubit16  head;                              /* vfdc.H; head id (0 or 1) */

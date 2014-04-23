@@ -9,7 +9,9 @@
 extern "C" {
 #endif
 
-#include "vglobal.h"
+#include "vglobal.h"	
+
+#define NXVM_DEVICE_CPU "Intel 8086+"
 
 typedef enum {
 	SREG_DATA,

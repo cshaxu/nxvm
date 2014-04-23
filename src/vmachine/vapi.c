@@ -1,8 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#include "stdarg.h"
 #include "string.h"
-#include "memory.h"
 
 #include "vmachine.h"
 #include "vapi.h"

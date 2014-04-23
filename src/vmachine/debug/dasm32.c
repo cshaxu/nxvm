@@ -1,9 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "stdlib.h"
-#include "string.h"
-
-#include "../vcpu.h"
 #include "dasm32.h"
 
 #ifdef VGLOBAL_BOCHS
@@ -11,6 +7,7 @@
 #else
 #include "../vapi.h"
 #endif
+#include "../vcpu.h"
 
 /* DEBUGGING OPTIONS ******************************************************* */
 #define DASM_TRACE 0

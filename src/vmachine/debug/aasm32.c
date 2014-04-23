@@ -1,12 +1,8 @@
 /* This file is a part of NXVM project. */
 
-#include "stdarg.h"
-#include "stdlib.h"
-#include "string.h"
-
-#include "../vcpu.h"
 #include "aasm32.h"
 #include "../vapi.h"
+#include "../vcpu.h"
 
 /* DEBUGGING OPTIONS ******************************************************* */
 #define AASM_TRACE 0

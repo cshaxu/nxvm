@@ -1,10 +1,11 @@
 /* This file is a part of NXVM project. */
 
+#include "tchar.h"
+
 #include "../vapi.h"
 
-#include "tchar.h"
-#include "w32adisp.h"
 #include "win32.h"
+#include "w32adisp.h"
 #include "win32app.h"
 
 HWND w32aHWnd = NULL;/* handler for window; if null, window is not yet ready */

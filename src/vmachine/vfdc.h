@@ -9,6 +9,8 @@
 
 #define VFDC_DEBUG
 
+#define NXVM_DEVICE_FDC "Intel 8272A"
+
 typedef struct {
 	t_nubit8         dor;                         /* digital output register */
 	t_nubit8         msr;                            /* main status register */

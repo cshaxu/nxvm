@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-#include "../vcpu.h"
-
 extern t_faddrcc qdbiosInt[0x100];
 
 void qdbiosMakeInt(t_nubit8 intid, t_strptr stmt);

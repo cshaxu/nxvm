@@ -1,16 +1,16 @@
 /* This file is a part of NXVM project. */
 
-#include "stdlib.h"
 #include "string.h"
 
 #include "record.h"
-
 #include "dasm32.h"
 
 #ifndef VGLOBAL_BOCHS
 #include "../vapi.h"
+#include "../vmachine.h"
 #else
 #include "../vcpuapi.h"
+#include "../vcpu.h"
 #endif
 
 /* Record */
@@ -119,29 +119,13 @@ void recordDump(const t_strptr fname)
 	vapiPrint("Record dumped to '%s'.\n", fname);
 	fclose(vrecord.fp);
 }
-void recordInit()
-{
-	vrecord.start = 0;
-	vrecord.size = 0;
-	if (vrecord.flagnow) {
-		if (!vrecord.fp) {
-			vapiPrint("ERROR:\tcannot write dump file.\n");
-		} else {
-			vapiPrint("Record dumping began.\n");
-		}
-	} else {
-		if (vrecord.fp) fclose(vrecord.fp);
-		vrecord.fp = NULL;
-		vapiPrint("Record began.\n");
-	}
-}
 void recordExec(t_cpurec *rcpurec)
 {
 	t_cpu oldcpu;
 	t_nubitcc i, j;
 #if RECORD_SELECT_FIRST == 1
 	if (vrecord.size == RECORD_SIZE) {
-		vmachine.flagrecord = 0;
+		vrecord.flagrecord = 0;
 		return;
 	}
 #endif
@@ -161,14 +145,51 @@ void recordExec(t_cpurec *rcpurec)
 	else
 		vrecord.size++;
 }
-void recordFinal()
+
+void recordInit()
 {
-	if (vrecord.flagnow && vrecord.fp) {
-		fclose(vrecord.fp);
-		vapiPrint("Record dumping ended.\n");
-	} else {
-		vapiPrint("Record ended.\n");
-	}
-	vrecord.flagnow = 0;
-	vrecord.fp = NULL;
+	memset(&vrecord, 0x00, sizeof(t_record));
 }
+#ifndef VGLOBAL_BOCHS
+void recordRefresh()
+{
+	if (!vrecord.flagrecord) return;
+	if (!vrecord.flagready) {
+		/* prepare the recorder */
+		vrecord.start = 0;
+		vrecord.size = 0;
+		if (vrecord.flagnow) {
+			if (!vrecord.fp) {
+				vapiPrint("ERROR:\tcannot write dump file.\n");
+				vrecord.flagrecord = 0;
+				vrecord.flagready = 0;
+			} else {
+				vapiPrint("Record dumping began.\n");
+				vrecord.flagready = 1;
+			}
+		} else {
+			if (vrecord.fp) fclose(vrecord.fp);
+			vrecord.fp = NULL;
+			vapiPrint("Record began.\n");
+			vrecord.flagready = 1;
+		}
+	}
+	if (vrecord.flagready) {
+		recordExec(&vcpurec);
+		if (!vmachine.flagrun) {
+			/* terminate the recorder */
+			if (vrecord.flagnow && vrecord.fp) {
+				fclose(vrecord.fp);
+				vapiPrint("Record dumping ended.\n");
+			} else {
+				vapiPrint("Record ended.\n");
+			}
+			vrecord.flagrecord = 0;
+			vrecord.flagnow = 0;
+			vrecord.fp = NULL;
+			vrecord.flagready = 0;
+		}
+	}
+}
+#endif
+void recordFinal() {}

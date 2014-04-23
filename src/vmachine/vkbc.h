@@ -11,6 +11,8 @@ extern "C" {
 
 #include "vglobal.h"
 
+#define NXVM_DEVICE_KBC "Unknown"
+
 void IO_Read_0064();
 
 void vkbcInit();

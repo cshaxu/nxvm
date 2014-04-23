@@ -11,6 +11,8 @@ extern "C" {
 
 #include "vglobal.h"
 
+#define NXVM_DEVICE_RAM "Unknown"
+
 typedef struct {
 	t_bool    flaga20;                            /* 0 = disable, 1 = enable */
 	t_vaddrcc base;                         /* memory base address is 20 bit */

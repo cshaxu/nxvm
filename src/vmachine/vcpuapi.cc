@@ -1,17 +1,15 @@
 /* This file is a part of NXVM project. */
 
-#include "stdio.h"
-
 #include "debug/record.h"
+
 #include "vcpuapi.h"
-#include "vcpuins.h"
 
 static t_cpu oldbcpu, newbcpu;
 static t_bool flagbrec;
 static t_cpurec bcpurec;
 
-#define VCPUAPI_COMPARE 1
-#define VCPUAPI_RECORD  0
+#define VCPUAPI_COMPARE 0
+#define VCPUAPI_RECORD  1
 
 #ifdef VGLOBAL_BOCHS
 static t_bool flagvalid = 0;
@@ -346,15 +344,15 @@ void vcpuapiExecBefore()
 		flagvalid = 1;
 		vapiPrint("NXVM and Bochs comparison starts here.\n");
 #if VCPUAPI_RECORD == 1
-		recordInit();
+		vrecord.start = 0;
+		vrecord.size = 0;
 #endif
 	}
-	if (bcpurec.linear == 0x0000) {
+	if (bcpurec.linear == 0x2eab) {
 		flagvalid = 0;
 		vapiPrint("NXVM and Bochs comparison stops here.\n");
 		BX_CPU_THIS_PTR magic_break = 1;
 #if VCPUAPI_RECORD == 1
-		recordFinal();
 		recordDump("d:/bx.log");
 #endif
 	}

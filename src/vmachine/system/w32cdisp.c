@@ -1,8 +1,8 @@
 /* This file is a part of NXVM project. */
 
-#include "../vapi.h"
-
 #include "tchar.h"
+
+#include "../vapi.h"
 
 #include "win32con.h"
 #include "w32cdisp.h"

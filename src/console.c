@@ -1,8 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "stdlib.h"
-#include "string.h"
-
 #include "vmachine/vapi.h"
 #include "vmachine/vmachine.h"
 #include "vmachine/debug/debug.h"
@@ -139,14 +136,14 @@ static void Info()
 	if (narg != 1) GetHelp;
 	vapiPrint("NXVM Device Info\n");
 	vapiPrint("================\n");
-	vapiPrint("Machine:           IBM PC/AT\n");
-	vapiPrint("CPU:               Intel 8086+\n");
+	vapiPrint("Machine:           %s\n", NXVM_DEVICE_MACHINE);
+	vapiPrint("CPU:               %s\n", NXVM_DEVICE_CPU);
 	vapiPrint("RAM Size:          %d MB\n", vram.size >> 20);
-	vapiPrint("Floppy Disk Drive: 3.5\", %.2f MB, %s\n",
+	vapiPrint("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
 		vfddGetImageSize * 1. / 0xfa000,
 		vfdd.flagexist ? "inserted" : "not inserted");
-	vapiPrint("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n",
-		vhdd.ncyl, vhddGetImageSize * 1. / 0x100000,
+	vapiPrint("Hard Disk Drive:   %s, %.2f MB, %s\n", NXVM_DEVICE_HDD,
+		vhddGetImageSize * 1. / 0x100000,
 		vhdd.flagexist ? "connected" : "disconnected");
 	vapiPrint("Display Type:      ");
 	if (vmachine.flagmode) vapiPrint("Window\n");
@@ -158,10 +155,10 @@ static void Info()
 	vapiPrint("\n");
 	vapiPrint("NXVM Debug Status\n");
 	vapiPrint("=================\n");
-	vapiPrint("Recorder:    %s\n", vmachine.flagrecord ? "On" : "Off");
-	vapiPrint("Trace:       %s\n", vmachine.tracecnt ? "On" : "Off");
+	vapiPrint("Recorder:    %s\n", vrecord.flagrecord ? "On" : "Off");
+	vapiPrint("Trace:       %s\n", vdebug.tracecnt ? "On" : "Off");
 	vapiPrint("Break Point: ");
-	if (vmachine.flagbreak) vapiPrint("%04X:%04X\n",vmachine.breakcs,vmachine.breakip);
+	if (vdebug.flagbreak) vapiPrint("%04X:%04X\n",vdebug.breakcs,vdebug.breakip);
 	else vapiPrint("Off\n");
 	vapiPrint("\n");
 	vapiPrint("NXVM Running Status\n");
@@ -181,22 +178,22 @@ static void Record()
 		return;
 	}
 	if (!strcmp(arg[1], "on")) {
-		vmachine.flagrecord = 1;
+		vrecord.flagrecord = 1;
 		vrecord.flagnow = 0;
 		if (vrecord.fp) fclose(vrecord.fp);
 	} else if (!strcmp(arg[1], "off")) {
-		vmachine.flagrecord = 0;
+		vrecord.flagrecord = 0;
 		vrecord.flagnow = 0;
 		if (vrecord.fp) fclose(vrecord.fp);
 	} else if (!strcmp(arg[1], "dump")) {
 		if (narg < 3) GetHelp;
 		recordDump(arg[2]);
 		vrecord.flagnow = 0;
-		vmachine.flagrecord = 0;
+		vrecord.flagrecord = 0;
 		if (vrecord.fp) fclose(vrecord.fp);
 	} else if (!strcmp(arg[1], "now")) {
 		if (narg < 3) GetHelp;
-		vmachine.flagrecord = 1;
+		vrecord.flagrecord = 1;
 		vrecord.flagnow = 1;
 		recordNow(arg[2]);
 	} else GetHelp;

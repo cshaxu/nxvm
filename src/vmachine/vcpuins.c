@@ -1,8 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "stdlib.h"
-#include "memory.h"
-
 #include "vglobal.h"
 #ifndef VGLOBAL_BOCHS
 #include "vapi.h"

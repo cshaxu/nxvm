@@ -1,7 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "memory.h"
-
 #include "vglobal.h"
 
 #ifndef VGLOBAL_BOCHS
@@ -10,7 +8,6 @@
 #include "vcpuapi.h"
 #endif
 
-#include "debug/dasm32.h"
 #include "vcpuins.h"
 #include "vcpu.h"
 
@@ -38,26 +35,6 @@ static void print_sreg_sys(t_cpu_sreg *rsreg, const t_strptr label)
 	vapiPrint("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, Type=%04X\n", label,
 		rsreg->selector, rsreg->base, rsreg->limit,
 		rsreg->dpl, rsreg->sys.type);
-}
-void vapiCallBackCpuPrintIns()
-{
-	t_nubitcc i;
-	t_nubit8 len;
-	t_nubit8  ucode[15];
-	t_string str, stmt, sbin;
-	t_nubit32 linear = vcpu.cs.base + vcpu.eip;
-	if (vcpuinsReadLinear(linear, (t_vaddrcc)ucode, 15)) {
-		len = 0;
-		SPRINTF(str, "L%08X <ERROR>", linear);
-	} else {
-		len = dasm32(stmt, (t_vaddrcc)ucode);
-		sbin[0] = 0;
-		for (i = 0;i < len;++i) SPRINTF(sbin, "%s%02X", sbin, GetMax8(ucode[i]));
-		SPRINTF(str, "L%08X %s ", linear, sbin);
-		for (i = strlen(str);i < 24;++i) STRCAT(str, " ");
-		STRCAT(str, stmt);
-	}
-	vapiPrint("%s\n", str);
 }
 void vapiCallBackCpuPrintSreg()
 {
@@ -113,9 +90,17 @@ void vapiCallBackCpuPrintReg()
 	vapiPrint("%s ", _GetEFLAGS_PF ? "PF" : "pf");
 	vapiPrint("%s ", _GetEFLAGS_CF ? "CF" : "cf");
 	vapiPrint("\n");
-	vapiCallBackCpuPrintIns();
 }
 
+void vapiCallBackCpuPrintMem()
+{
+	t_nubit8 i;
+	for (i = 0;i < vcpu.msize;++i) {
+		vapiPrint("%s: Lin=%08x, Data=%08x, Bytes=%1x\n",
+			vcpu.mem[i].flagwrite ? "Write" : "Read",
+			vcpu.mem[i].linear, vcpu.mem[i].data, vcpu.mem[i].byte);
+	}
+}
 void vcpuInit()
 {
 	vcpuinsInit();

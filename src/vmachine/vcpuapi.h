@@ -9,8 +9,7 @@
 extern "C" {
 #endif
 
-#include "stdarg.h"
-
+#include "string.h"
 #include "vcpu.h"
 
 #define MAXLINE 0x100

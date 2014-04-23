@@ -9,6 +9,8 @@
 
 #define VDMA_DEBUG
 
+#define NXVM_DEVICE_DMA "Intel 8237A"
+
 typedef t_nubit8 t_page;
 
 typedef struct {

@@ -1,8 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "memory.h"
-#include "time.h"
-
 #include "../vapi.h"
 #include "../vmachine.h"
 #include "../debug/aasm32.h"
@@ -11,10 +8,11 @@
 #include "qdkeyb.h"
 #include "qddisk.h"
 #include "qdmisc.h"
-#include "qdbios.h"
 
 #include "qdrtc.h"
 #include "post.h"
+
+#include "qdbios.h"
 
 t_faddrcc qdbiosInt[0x100];
 static t_nubit16 ics, iip;

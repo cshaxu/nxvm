@@ -11,6 +11,8 @@ extern "C" {
 
 #include "vglobal.h"
 
+#define NXVM_DEVICE_VADP "Unknown"
+
 typedef struct {
 	t_bool    flagcolor;
 	t_nubit8  colsize; // char per col

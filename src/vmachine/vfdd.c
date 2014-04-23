@@ -1,9 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "stdlib.h"
-#include "memory.h"
-
-#include "vapi.h"
 #include "vdma.h"
 #include "vfdd.h"
 

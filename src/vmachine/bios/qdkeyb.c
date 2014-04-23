@@ -1,8 +1,7 @@
 /* This file is a part of NXVM project. */
 
 #include "../vapi.h"
-#include "../vport.h"
-#include "../vpic.h"
+#include "../vmachine.h"
 
 #include "qdbios.h"
 #include "qdkeyb.h"
