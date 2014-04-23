@@ -3171,7 +3171,7 @@ tots _a_shr(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 		tempdest = d_nubit32(rdest);
 		while (tempcount) {
 			MakeBit(vcpu.eflags,VCPU_EFLAGS_CF, (!!GetLSB32(d_nubit32(rdest))));
-			d_nubit32(rdest) <<= 1;
+			d_nubit32(rdest) >>= 1;
 			tempcount--;
 		}
 		if(count == 1)

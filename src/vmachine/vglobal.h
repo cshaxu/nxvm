@@ -22,7 +22,7 @@
 #define VGLOBAL_SIZE_INTEGER 32
 #define VGLOBAL_PLATFORM     VGLOBAL_VAR_WIN32
 #if ((VGLOBAL_SIZE_INTEGER == 32) && (VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32))
-#define VGLOBAL_ECPU_MODE  TEST_ECPU
+#define VGLOBAL_ECPU_MODE  TEST_BOTH
 #else
 #define VGLOBAL_ECPU_MODE  TEST_VCPU
 #endif
@@ -68,6 +68,8 @@ typedef t_nubitcc t_faddrcc;
 #define p_nsbit24 (t_nsbit24 *)
 #define p_nubit32 (t_nubit32 *)
 #define p_nsbit32 (t_nsbit32 *)
+#define p_nubit48 (t_nubit48 *)
+#define p_nsbit48 (t_nsbit48 *)
 #define p_nubit64 (t_nubit64 *)
 #define p_nsbit64 (t_nsbit64 *)
 #define p_float32 (t_float32 *)
@@ -87,6 +89,8 @@ typedef t_nubitcc t_faddrcc;
 #define d_nsbit24(n) (*(t_nsbit24 *)(n))
 #define d_nubit32(n) (*(t_nubit32 *)(n))
 #define d_nsbit32(n) (*(t_nsbit32 *)(n))
+#define d_nubit48(n) (*(t_nubit48 *)(n))
+#define d_nsbit48(n) (*(t_nsbit48 *)(n))
 #define d_nubit64(n) (*(t_nubit64 *)(n))
 #define d_nsbit64(n) (*(t_nsbit64 *)(n))
 #define d_float32(n) (*(t_float32 *)(n))
