@@ -33,18 +33,18 @@
 //	} else {
 //		vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
 //		vcpu.si = vcpu.di = vcpu.bp = 0x0000;
-//		vcpu.sp = 0xffee;	vcpu.ip = 0x0100;
+//		vcpu.sp = 0xffee;	vcpu.eip = 0x0100;
 //		vcpu.ds = vcpu.es = vcpu.ss = vcpu.cs = 0x0001;
 //		vmachine.flagrun = 1;
 //		c = fgetc(load);
 //		while(!feof(load)) {
-//			vramVarByte(vcpu.cs+i,vcpu.ip+((len++)%0x10000)) = c;
+//			vramVarByte(vcpu.cs+i,vcpu.eip+((len++)%0x10000)) = c;
 //			i = len / 0x10000;
 //			c = fgetc(load);
 //		}
-//		end = vcpu.ip+len;
+//		end = vcpu.eip+len;
 //		fclose(load);
-//		while(vcpu.ip < end && vmachine.flagrun) vmachineRefresh();
+//		while(vcpu.eip < end && vmachine.flagrun) vmachineRefresh();
 //	}
 //}*/
 ////#define _rec (vapirecord.rec[(i + vapirecord.start) % VAPI_RECORD_SIZE])
@@ -264,7 +264,7 @@ static void Info()
 	printc("NXVM Device Info\n");
 	printc("================\n");
 	printc("IBM PC/AT 16-bit\n");
-	printc("CPU:               Intel 8086\n");
+	printc("CPU:               Intel 8086e\n");
 	printc("RAM Size:          %d KB\n", vram.size >> 10);
 	printc("Floppy Disk Drive: 3.5\", %.2f MB, %s\n",
 		vfddGetImageSize * 1. / 0xfa000,
@@ -336,7 +336,7 @@ static void Device()
 	}
 	if (!strcmp(arg[1], "ram")) {
 		if (narg != 3) GetHelp;
-		vramAlloc(atoi(arg[2]));
+		vramAlloc(atoi(arg[2]) << 10);
 	} else if(!strcmp(arg[1], "display")) {
 		if (narg != 3) GetHelp;
 		if (!strcmp(arg[2], "console"))

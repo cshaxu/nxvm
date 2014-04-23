@@ -12,6 +12,7 @@
 #include "vglobal.h"
 
 typedef struct {
+	t_bool    flaga20;                            /* 0 = disable, 1 = enable */
 	t_vaddrcc base;                         /* memory base address is 20 bit */
 	t_nubitcc size;                                   /* memory size in byte */
 } t_ram;
@@ -25,7 +26,7 @@ extern t_ram vram;
 	((((segment) << 4) + (offset)) % vram.size))
 #else
 #define vramGetAddr(segment, offset)  (vram.base + \
-	((((t_nubit16)(segment) << 4) + (t_nubit16)(offset)) % vram.size))
+	(((((t_nubit16)(segment) << 4) + (t_nubit16)(offset)) & (vram.flaga20 ? 0xffffffff : 0xffefffff)) % vram.size))
 #endif
 #define vramVarByte(segment, offset)  (d_nubit8(vramGetAddr(segment, offset)))
 #define vramVarWord(segment, offset)  (d_nubit16(vramGetAddr(segment, offset)))

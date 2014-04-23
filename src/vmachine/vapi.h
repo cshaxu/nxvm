@@ -29,7 +29,10 @@ void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins);
 #define VAPI_RECORD_SELECT_FIRST 0x0000/* keep first (1) records or last (0) */
 
 typedef struct {
-	t_cpu rec[VAPI_RECORD_SIZE];
+	struct {
+		t_cpu rcpu;
+		char stmt[0x20];
+	} rec[VAPI_RECORD_SIZE];
 	t_nubitcc start, size;
 } t_apirecord;
 
@@ -49,6 +52,8 @@ void vapiStartMachine();
 void vapiSleep(t_nubit32 milisec);
 void vapiDisplaySetScreen();
 void vapiDisplayPaint();
+
+void vapiCallBackDebugPrintRegs();
 
 void vapiCallBackMachineRun();
 t_nubit8 vapiCallBackMachineGetFlagRun();

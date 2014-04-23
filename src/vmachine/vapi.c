@@ -7,6 +7,7 @@
 
 #include "vmachine.h"
 #include "vapi.h"
+#include "debug/dasm.h"
 
 /* Standard C Library */
 char* STRCAT(char *_Dest, const char *_Source)
@@ -52,23 +53,26 @@ void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins)
 
 t_apirecord vapirecord;
 
-#define _expression "cs:ip=%x:%x opcode=%x %x %x %x %x %x %x %x \
-ax=%x bx=%x cx=%x dx=%x sp=%x bp=%x si=%x di=%x ds=%x es=%x ss=%x \
-of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x\n"
+#define _expression "cs:ip=%04x:%04x opcode=%02x %02x %02x %02x %02x %02x %02x %02x \
+ax=%04x bx=%04x cx=%04x dx=%04x sp=%04x bp=%04x si=%04x di=%04x ds=%04x es=%04x ss=%04x \
+of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x %s\n"
 #define _rec (vapirecord.rec[(i + vapirecord.start) % VAPI_RECORD_SIZE])
-#define _rec_of    (GetBit(_rec.flags, VCPU_FLAG_OF))
-#define _rec_sf    (GetBit(_rec.flags, VCPU_FLAG_SF))
-#define _rec_zf    (GetBit(_rec.flags, VCPU_FLAG_ZF))
-#define _rec_cf    (GetBit(_rec.flags, VCPU_FLAG_CF))
-#define _rec_af    (GetBit(_rec.flags, VCPU_FLAG_AF))
-#define _rec_pf    (GetBit(_rec.flags, VCPU_FLAG_PF))
-#define _rec_df    (GetBit(_rec.flags, VCPU_FLAG_DF))
-#define _rec_tf    (GetBit(_rec.flags, VCPU_FLAG_TF))
-#define _rec_if    (GetBit(_rec.flags, VCPU_FLAG_IF))
+#define _recpu     (_rec.rcpu)
+#define _restmt    (_rec.stmt)
+#define _rec_of    (GetBit(_rec.rcpu.eflags, VCPU_FLAG_OF))
+#define _rec_sf    (GetBit(_rec.rcpu.eflags, VCPU_FLAG_SF))
+#define _rec_zf    (GetBit(_rec.rcpu.eflags, VCPU_FLAG_ZF))
+#define _rec_cf    (GetBit(_rec.rcpu.eflags, VCPU_FLAG_CF))
+#define _rec_af    (GetBit(_rec.rcpu.eflags, VCPU_FLAG_AF))
+#define _rec_pf    (GetBit(_rec.rcpu.eflags, VCPU_FLAG_PF))
+#define _rec_df    (GetBit(_rec.rcpu.eflags, VCPU_FLAG_DF))
+#define _rec_tf    (GetBit(_rec.rcpu.eflags, VCPU_FLAG_TF))
+#define _rec_if    (GetBit(_rec.rcpu.eflags, VCPU_FLAG_IF))
+#define _rec_ptr_last ((vapirecord.start + vapirecord.size) % VAPI_RECORD_SIZE)
 
 void vapiRecordDump(const t_string fname)
 {
-	t_nubitcc i = 0;
+	t_nubitcc i = 0, j;
 	FILE *dump = FOPEN(fname, "w");
 	if (!dump) {
 		vapiPrint("ERROR:\tcannot write dump file.\n");
@@ -79,17 +83,20 @@ void vapiRecordDump(const t_string fname)
 		return;
 	}
 	while (i < vapirecord.size) {
+		_restmt[strlen(_restmt) - 1] = 0;
+		for (j = 0;j < strlen(_restmt);++j)
+			if (_restmt[j] == '\n') _restmt[j] = ' ';
 		fprintf(dump, _expression,
-			_rec.cs, _rec.ip,
-			vramVarByte(_rec.cs,_rec.ip+0),vramVarByte(_rec.cs,_rec.ip+1),
-			vramVarByte(_rec.cs,_rec.ip+2),vramVarByte(_rec.cs,_rec.ip+3),
-			vramVarByte(_rec.cs,_rec.ip+4),vramVarByte(_rec.cs,_rec.ip+5),
-			vramVarByte(_rec.cs,_rec.ip+6),vramVarByte(_rec.cs,_rec.ip+7),
-			_rec.ax,_rec.bx,_rec.cx,_rec.dx,
-			_rec.sp,_rec.bp,_rec.si,_rec.di,
-			_rec.ds,_rec.es,_rec.ss,
+			_recpu.cs, _recpu.eip,
+			vramVarByte(_recpu.cs,_recpu.eip+0),vramVarByte(_recpu.cs,_recpu.eip+1),
+			vramVarByte(_recpu.cs,_recpu.eip+2),vramVarByte(_recpu.cs,_recpu.eip+3),
+			vramVarByte(_recpu.cs,_recpu.eip+4),vramVarByte(_recpu.cs,_recpu.eip+5),
+			vramVarByte(_recpu.cs,_recpu.eip+6),vramVarByte(_recpu.cs,_recpu.eip+7),
+			_recpu.ax,_recpu.bx,_recpu.cx,_recpu.dx,
+			_recpu.sp,_recpu.bp,_recpu.si,_recpu.di,
+			_recpu.ds,_recpu.es,_recpu.ss,
 			_rec_of,_rec_sf,_rec_zf,_rec_cf,
-			_rec_af,_rec_pf,_rec_df,_rec_if,_rec_tf);
+			_rec_af,_rec_pf,_rec_df,_rec_if,_rec_tf,_restmt);
 		++i;
 	}
 	vapiPrint("Record dumped to '%s'.\n", fname);
@@ -108,10 +115,9 @@ void vapiRecordExec()
 		return;
 	}
 #endif
-	vapirecord.rec[(vapirecord.start + vapirecord.size) % VAPI_RECORD_SIZE]
-		= vcpu;
-	if (vapirecord.size == VAPI_RECORD_SIZE)
-		vapirecord.start++;
+	vapirecord.rec[_rec_ptr_last].rcpu = vcpu;
+	dasm(vapirecord.rec[_rec_ptr_last].stmt, vcpu.cs, vcpu.eip, 0x00);
+	if (vapirecord.size == VAPI_RECORD_SIZE) vapirecord.start++;
 	else vapirecord.size++;
 }
 void vapiRecordEnd() {}

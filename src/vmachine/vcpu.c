@@ -23,7 +23,7 @@ void vcpuReset()
 {
 	memset(&vcpu, 0, sizeof(t_cpu));
 	vcpu.cs = 0xf000;
-	vcpu.ip = 0xfff0;
+	vcpu.eip = 0xfff0;
 	vcpuinsReset();
 }
 void vcpuRefresh()

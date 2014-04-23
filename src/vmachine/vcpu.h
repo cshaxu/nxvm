@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-/* Central Processing Unit: Intel 8086 */
+/* Central Processing Unit: Intel 8086e */
 
 #ifndef NXVM_VCPU_H
 #define NXVM_VCPU_H
@@ -24,23 +24,51 @@
 #ifndef ECPUACT
 typedef struct {
 	union {
-		struct {t_nubit8 al,ah;};
-		t_nubit16 ax;
+		union {
+			struct {t_nubit8 al,ah;};
+			t_nubit16 ax;
+		};
+		t_nubit32 eax;
 	};
 	union {
-		struct {t_nubit8 bl,bh;};
-		t_nubit16 bx;
+		union {
+			struct {t_nubit8 bl,bh;};
+			t_nubit16 bx;
+		};
+		t_nubit32 ebx;
 	};
 	union {
-		struct {t_nubit8 cl,ch;};
-		t_nubit16 cx;
+		union {
+			struct {t_nubit8 cl,ch;};
+			t_nubit16 cx;
+		};
+		t_nubit32 ecx;
 	};
 	union {
-		struct {t_nubit8 dl,dh;};
-		t_nubit16 dx;
+		union {
+			struct {t_nubit8 dl,dh;};
+			t_nubit16 dx;
+		};
+		t_nubit32 edx;
 	};
-	t_nubit16 sp,bp,si,di,ip,flags;
-	t_nubit16 cs,ds,es,ss;
+	union {
+		struct {t_nubit16 sp, hwsp;};
+		t_nubit32 esp;
+	};
+	union {
+		struct {t_nubit16 bp, hwbp;};
+		t_nubit32 ebp;
+	};
+	union {
+		struct {t_nubit16 si, hwsi;};
+		t_nubit32 esi;
+	};
+	union {
+		struct {t_nubit16 di, hwdi;};
+		t_nubit32 edi;
+	};
+	t_nubit32 eip, eflags;
+	t_nubit16 cs,ds,ss,es,fs,gs;
 	t_nubit16 overds, overss;
 	t_bool flagnmi;
 } t_cpu;
@@ -73,39 +101,39 @@ void vcpuFinal();
 #define _bp    (vcpu.bp)
 #define _si    (vcpu.si)
 #define _di    (vcpu.di)
-#define _ip    (vcpu.ip)
+#define _eip   (vcpu.eip)
 #define _ds    (vcpu.ds)
 #define _cs    (vcpu.cs)
 #define _es    (vcpu.es)
 #define _ss    (vcpu.ss)
-#define _flags (vcpu.flags)
-#define _of    (GetBit(_flags, VCPU_FLAG_OF))
-#define _sf    (GetBit(_flags, VCPU_FLAG_SF))
-#define _zf    (GetBit(_flags, VCPU_FLAG_ZF))
-#define _cf    (GetBit(_flags, VCPU_FLAG_CF))
-#define _af    (GetBit(_flags, VCPU_FLAG_AF))
-#define _pf    (GetBit(_flags, VCPU_FLAG_PF))
-#define _df    (GetBit(_flags, VCPU_FLAG_DF))
-#define _tf    (GetBit(_flags, VCPU_FLAG_TF))
-#define _if    (GetBit(_flags, VCPU_FLAG_IF))
-#define SetOF  (SetBit(_flags, VCPU_FLAG_OF))
-#define SetSF  (SetBit(_flags, VCPU_FLAG_SF))
-#define SetZF  (SetBit(_flags, VCPU_FLAG_ZF))
-#define SetCF  (SetBit(_flags, VCPU_FLAG_CF))
-#define SetAF  (SetBit(_flags, VCPU_FLAG_AF))
-#define SetPF  (SetBit(_flags, VCPU_FLAG_PF))
-#define SetDF  (SetBit(_flags, VCPU_FLAG_DF))
-#define SetTF  (SetBit(_flags, VCPU_FLAG_TF))
-#define SetIF  (SetBit(_flags, VCPU_FLAG_IF))
-#define ClrOF  (ClrBit(_flags, VCPU_FLAG_OF))
-#define ClrSF  (ClrBit(_flags, VCPU_FLAG_SF))
-#define ClrZF  (ClrBit(_flags, VCPU_FLAG_ZF))
-#define ClrCF  (ClrBit(_flags, VCPU_FLAG_CF))
-#define ClrAF  (ClrBit(_flags, VCPU_FLAG_AF))
-#define ClrPF  (ClrBit(_flags, VCPU_FLAG_PF))
-#define ClrDF  (ClrBit(_flags, VCPU_FLAG_DF))
-#define ClrTF  (ClrBit(_flags, VCPU_FLAG_TF))
-#define ClrIF  (ClrBit(_flags, VCPU_FLAG_IF))
+#define _eflags (vcpu.eflags)
+#define _of    (GetBit(_eflags, VCPU_FLAG_OF))
+#define _sf    (GetBit(_eflags, VCPU_FLAG_SF))
+#define _zf    (GetBit(_eflags, VCPU_FLAG_ZF))
+#define _cf    (GetBit(_eflags, VCPU_FLAG_CF))
+#define _af    (GetBit(_eflags, VCPU_FLAG_AF))
+#define _pf    (GetBit(_eflags, VCPU_FLAG_PF))
+#define _df    (GetBit(_eflags, VCPU_FLAG_DF))
+#define _tf    (GetBit(_eflags, VCPU_FLAG_TF))
+#define _if    (GetBit(_eflags, VCPU_FLAG_IF))
+#define SetOF  (SetBit(_eflags, VCPU_FLAG_OF))
+#define SetSF  (SetBit(_eflags, VCPU_FLAG_SF))
+#define SetZF  (SetBit(_eflags, VCPU_FLAG_ZF))
+#define SetCF  (SetBit(_eflags, VCPU_FLAG_CF))
+#define SetAF  (SetBit(_eflags, VCPU_FLAG_AF))
+#define SetPF  (SetBit(_eflags, VCPU_FLAG_PF))
+#define SetDF  (SetBit(_eflags, VCPU_FLAG_DF))
+#define SetTF  (SetBit(_eflags, VCPU_FLAG_TF))
+#define SetIF  (SetBit(_eflags, VCPU_FLAG_IF))
+#define ClrOF  (ClrBit(_eflags, VCPU_FLAG_OF))
+#define ClrSF  (ClrBit(_eflags, VCPU_FLAG_SF))
+#define ClrZF  (ClrBit(_eflags, VCPU_FLAG_ZF))
+#define ClrCF  (ClrBit(_eflags, VCPU_FLAG_CF))
+#define ClrAF  (ClrBit(_eflags, VCPU_FLAG_AF))
+#define ClrPF  (ClrBit(_eflags, VCPU_FLAG_PF))
+#define ClrDF  (ClrBit(_eflags, VCPU_FLAG_DF))
+#define ClrTF  (ClrBit(_eflags, VCPU_FLAG_TF))
+#define ClrIF  (ClrBit(_eflags, VCPU_FLAG_IF))
 
 #ifdef __cplusplus
 /*}_EOCD_*/

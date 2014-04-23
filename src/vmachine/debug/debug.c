@@ -303,12 +303,12 @@ static void rprintregs();
 /*static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 {
 	if(ptr1 < ptr2) {
-		vcpu.ip = ptr1;
+		vcpu.eip = ptr1;
 		while(ptr1 < ptr2 && vmachine.flagrun) {
 			vmachineRefresh();
-			ptr1 = vcpu.ip;
+			ptr1 = vcpu.eip;
 		}
-		//vcpu.ip = ptr2;
+		//vcpu.eip = ptr2;
 	}
 	if(!vmachine.flagrun) {
 		vapiPrint("\nProgram terminated\n");
@@ -328,20 +328,20 @@ static void g()
 	switch(narg) {
 	case 1:
 		vmachine.flagbreak = 0x00;
-	//	ptr1 = vcpu.ip;ptr2 = 0xffff;
+	//	ptr1 = vcpu.eip;ptr2 = 0xffff;
 		break;
 	case 2:
 		vmachine.flagbreak = 0x01;
 		addrparse(vcpu.cs,arg[1]);
 		vmachine.breakcs = seg;
 		vmachine.breakip = ptr;
-	//	ptr1 = vcpu.ip;ptr2 = ptr;
+	//	ptr1 = vcpu.eip;ptr2 = ptr;
 		break;
 	case 3:
 		vmachine.flagbreak = 0x01;
 		addrparse(vcpu.cs,arg[1]);
 		vcpu.cs = seg;
-		vcpu.ip = ptr;
+		vcpu.eip = ptr;
 	//	ptr1 = ptr;
 		addrparse(vcpu.cs,arg[2]);
 		vmachine.breakcs = seg;
@@ -467,21 +467,21 @@ static void q()
 static void uprint(t_nubit16,t_nubit16,t_nubit16);
 static void rprintflags()
 {
-	if(vcpu.flags & VCPU_FLAG_OF) vapiPrint("OV ");
+	if(vcpu.eflags & VCPU_FLAG_OF) vapiPrint("OV ");
 	else                      vapiPrint("NV ");
-	if(vcpu.flags & VCPU_FLAG_DF) vapiPrint("DN ");
+	if(vcpu.eflags & VCPU_FLAG_DF) vapiPrint("DN ");
 	else                      vapiPrint("UP ");
-	if(vcpu.flags & VCPU_FLAG_IF) vapiPrint("EI ");
+	if(vcpu.eflags & VCPU_FLAG_IF) vapiPrint("EI ");
 	else                      vapiPrint("DI ");
-	if(vcpu.flags & VCPU_FLAG_SF) vapiPrint("NG ");
+	if(vcpu.eflags & VCPU_FLAG_SF) vapiPrint("NG ");
 	else                      vapiPrint("PL ");
-	if(vcpu.flags & VCPU_FLAG_ZF) vapiPrint("ZR ");
+	if(vcpu.eflags & VCPU_FLAG_ZF) vapiPrint("ZR ");
 	else                      vapiPrint("NZ ");
-	if(vcpu.flags & VCPU_FLAG_AF) vapiPrint("AC ");
+	if(vcpu.eflags & VCPU_FLAG_AF) vapiPrint("AC ");
 	else                      vapiPrint("NA ");
-	if(vcpu.flags & VCPU_FLAG_PF) vapiPrint("PE ");
+	if(vcpu.eflags & VCPU_FLAG_PF) vapiPrint("PE ");
 	else                      vapiPrint("PO ");
-	if(vcpu.flags & VCPU_FLAG_CF) vapiPrint("CY ");
+	if(vcpu.eflags & VCPU_FLAG_CF) vapiPrint("CY ");
 	else                      vapiPrint("NC ");
 }
 static void rprintregs()
@@ -499,13 +499,13 @@ static void rprintregs()
 	vapiPrint("  ES=%04X", vcpu.es);
 	vapiPrint("  SS=%04X", vcpu.ss);
 	vapiPrint("  CS=%04X", vcpu.cs);
-	vapiPrint("  IP=%04X", vcpu.ip);
+	vapiPrint("  IP=%04X", vcpu.eip);
 	vapiPrint("   ");
 	rprintflags();
 	vapiPrint("\n");
-	dasm(str, vcpu.cs, vcpu.ip, 0x02);
+	dasm(str, vcpu.cs, vcpu.eip, 0x02);
 	uasmSegRec = vcpu.cs;
-	uasmPtrRec = vcpu.ip;
+	uasmPtrRec = vcpu.eip;
 	vapiPrint("%s", str);
 }
 static void rscanregs()
@@ -612,12 +612,12 @@ static void rscanregs()
 			vcpu.es = t;
 	} else if(!STRCMP(arg[1],"ip")) {
 		vapiPrint("IP ");
-		vapiPrint("%04X",vcpu.ip);
+		vapiPrint("%04X",vcpu.eip);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.ip = t;
+			vcpu.eip = t;
 	} else if(!STRCMP(arg[1],"f")) {
 		rprintflags();
 		vapiPrint(" -");
@@ -701,7 +701,7 @@ static void t()
 	case 3:
 		addrparse(vcpu.cs,arg[1]);
 		vcpu.cs = seg;
-		vcpu.ip = ptr;
+		vcpu.eip = ptr;
 		count = scannubit16(arg[2]);
 		break;
 	default:seterr(narg-1);break;}
@@ -841,15 +841,15 @@ static void init()
 {
 	filename[0] = '\0';
 	asmSegRec = uasmSegRec = vcpu.cs;
-	asmPtrRec = uasmPtrRec = vcpu.ip;
+	asmPtrRec = uasmPtrRec = vcpu.eip;
 	dumpSegRec = vcpu.ds;
-	dumpPtrRec = vcpu.ip / 0x10 * 0x10;
+	dumpPtrRec = vcpu.eip / 0x10 * 0x10;
 /*	vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
 	vcpu.si = vcpu.di = vcpu.bp = 0x0000;
 	vcpu.sp = 0xffee;
 	vcpu.ds = vcpu.es = vcpu.ss = vcpu.cs =
 		asmSegRec = dumpSegRec = uasmSegRec = 0x0001;
-	vcpu.ip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;*/
+	vcpu.eip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;*/
 }
 static void parse()
 {
@@ -903,6 +903,7 @@ static void exec()
 	}
 }
 
+void vapiCallBackDebugPrintRegs() {rprintregs();}
 void debug()
 {
 	t_nubitcc i;

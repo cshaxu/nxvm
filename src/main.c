@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xf1]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xf2+]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -203,6 +203,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0xca New BIOS System
  * 0xcc New Console Commands
  * 0xdf New ASM/DASM/Debug System
+ * 0xf2 Clean CPUINS; Hard Disk Installed
  *
  * Format Unify:
  * check all includes, macro names, flag names
