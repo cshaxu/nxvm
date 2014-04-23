@@ -2,7 +2,7 @@
 
 #include "memory.h"
 
-#include "system/vapi.h"
+#include "../system/vapi.h"
 
 #include "vcpu.h"
 #include "vpic.h"
@@ -214,7 +214,7 @@ void vpitIntSystemTimer() {
 
 void vpitSetGate(t_nubit8 id, t_bool gate)
 {
-	if (GetM(vpit.cw[id]) != 0x00)                  /* TODO: check mode 0x04 */
+	if (GetM(vpit.cw[id]) != 0x00)
 		if (vpit.flaggate[id] == 0x00 && gate == 0x01)
 			LoadInit(id);
 	vpit.flaggate[id] = gate;

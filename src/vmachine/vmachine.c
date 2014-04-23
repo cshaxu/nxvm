@@ -1,10 +1,19 @@
 /* This file is a part of NXVM project. */
 
-#include "system/vapi.h"
+#include "memory.h"
+
 #include "vmachine.h"
 
-t_bool vmachineinitflag = 0;
-t_bool vmachinerunflag = 0;
+t_machine vmachine;
+
+void vmachineRunLoop()
+{
+	if(vmachine.flaginit && !vmachine.flagrun) {
+		vmachine.flagrun = 0x01;
+		while (vmachine.flagrun) vmachineRefresh();
+		vmachineFinal();
+	}
+}
 
 void vmachineRefresh()
 {
@@ -12,9 +21,9 @@ void vmachineRefresh()
 	vcmosRefresh();
 	vdispRefresh();
 	vvadpRefresh();
+*/
 	vkeybRefresh();
 	vkbcRefresh();
-*/
 	vfddRefresh();
 	vfdcRefresh();
 	vdmaRefresh();
@@ -22,78 +31,42 @@ void vmachineRefresh()
 	vpicRefresh();
 	vramRefresh();
 	vcpuRefresh();
-	vmachinerunflag = !vcpu.term;
+	if (vmachine.flagrun) vmachine.flagrun = !vcpu.term;
 }
-
 void vmachineInit()
 {
-	if(!vmachineinitflag) {
-		vcpuInit();
-		vramInit();
-		vpicInit();
-		vpitInit();
-		vdmaInit();
-		vfdcInit();
-		vfddInit();
+	memset(&vmachine, 0x00, sizeof(t_machine));
+	vcpuInit();
+	vramInit();
+	vpicInit();
+	vpitInit();
+	vdmaInit();
+	vfdcInit();
+	vfddInit();
+	vkbcInit();
+	vkeybInit();
 /*
-		vkbcInit();
-		vkeybInit();
-		vvadpInit();
-		vdispInit();
+	vvgaInit();
+	vdispInit();
 */
-		vcmosInit();
-		vmachineinitflag = 1;
-	} else
-		vapiPrint("ERROR:\tNeko's x86 Virtual Machine is already initialized.\n");
-}
-void vmachinePowerOn()
-{
-	if(!vmachinerunflag) {
-		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is powered on.\n");
-		vmachinerunflag = 1;
-		forceNone = 0;
-		if(!vmachineinitflag) vmachineInit();
-		// Create Screen Here
-		vmachineRunLoop();
-	} else
-		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is already running.\n");
-}
-void vmachineRunLoop()
-{
-	if(!vmachineinitflag || !vmachinerunflag)
-		vapiPrint("ERROR:\tNeko's x86 Virtual Machine is not running.\n");
-	else {
-		while (vmachinerunflag) vmachineRefresh();
-	}
-}
-void vmachinePowerOff()
-{
-	if(vmachinerunflag) {
-		if(vmachineinitflag) vmachineFinal();
-		forceNone = 1;
-		vmachinerunflag = 0;
-		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is terminated.\n");
-	} else
-		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is already powered off.\n");
+	vcmosInit();
+	vmachine.flaginit = 0x01;
 }
 void vmachineFinal()
 {
-	if(vmachineinitflag) {
-		vcmosFinal();
+	vcmosFinal();
 /*
-		vkbcFinal();
-		vkeybFinal();
-		vvadpFinal();
-		vdispFinal();
+	vkbcFinal();
+	vkeybFinal();
+	vvadpFinal();
+	vdispFinal();
 */
-		vfddFinal();
-		vfdcFinal();
-		vdmaFinal();
-		vpitFinal();
-		vpicFinal();
-		vramFinal();
-		vcpuFinal();
-		vmachineinitflag = 0;
-	} else
-		vapiPrint("ERROR:\tNeko's x86 Virtual Machine is not initialized.\n");
+	vfddFinal();
+	vfdcFinal();
+	vdmaFinal();
+	vpitFinal();
+	vpicFinal();
+	vramFinal();
+	vcpuFinal();
+	memset(&vmachine, 0x00, sizeof(t_machine));
 }

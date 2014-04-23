@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x6f]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x73]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -8,6 +8,9 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * Email:     cshaxu@gatech.edu
  * Start:     01/25/2012
  * End:       (null)
+ *
+ * ref
+ * bbs.chinaunix.net/forum.php?mod=viewthread&action=printable&tid=1925198
  *
  * Project Phases
  * 1. Read documents and list all necessary functionality
@@ -104,7 +107,8 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 4: 03/25/2013 - 03/25/2013
  *     Phase 5:
  *     Phase 6:
- *     Note:    simply tested
+ *     Note:    not fully implemented (read-back command)
+ *              simply tested
  * Component 5: dma (8237)
  *     Files:   vdma.c, vdma.h
  *     Phase 1: 03/25/2013 - 03/28/2013
@@ -115,6 +119,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 6:
  *     Note:    simply tested
  * Componenet 6: fdc (8272)
+ *     Files:   vfdc.c, vfdc.h
  *     Phase 1: 04/03/2013 - 04/06/2013
  *     Phase 2: 03/07/2012 - 03/18/2012
  *     Phase 3: 04/03/2013 - 04/05/2013
@@ -123,6 +128,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 6:
  *     Note:    simply tested
  * Componenet 7: fdd
+ *     Files:   vfdd.c, vfdd.h
  *     Phase 1: 04/03/2013 - 04/05/2013
  *     Phase 2: 03/08/2012 - 03/18/2012
  *     Phase 3: 04/03/2013 - 04/05/2013
@@ -134,10 +140,27 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * Module: VMachine - HCI
  * Component 1: kbc
  *     Files:   vkbc.c, vkbc.h
- * Component 2: keyb (?)
+ *     Phase 1: 04/07/2013-04/11/2013
+ *     Phase 2: 04/07/2013-04/11/2013
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ *     Phase 6:
+ *     Note:    not fully implemented
+ *              not tested
+ * Component 2: keyb
  *     Files:   vkeyb.c, vkeyb.h
- * Component 3: vadapter
- *     Files:  vvadp.c, vvadp.h
+ *     Phase 1: 04/09/2013-04/11/2013
+ *     Phase 2: 04/09/2013-04/11/2013
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ *     Phase 6:
+ *     Note:    not fully implemented
+ *              not tested
+ *              apiKeyEvent() MUST send scan code 1 to vkeyb
+ * Component 3: vvga
+ *     Files:  vvga.c, vvga.h
  * Component 4: display (?)
  *     Files:  vdisp.c, vdisp.h
  *
@@ -156,7 +179,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *
  * Module: VMachine - Platform Related APIs
  * Component 1: none
- *     Files:   vapi.c, vapi.h
+ *     Files:   api.c, vapi.h
  * Component 2: win32con
  *     Files:   win32con.c, win32con.h
  * Component 3: win32app
@@ -176,7 +199,8 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *
  * Format Unify:
  * all boolean type should be t_bool, declared TRUE or FALSE
- * all size type should be t_nubitcc
+ * all size type should be t_size
+ * all id type should be t_id
  * check all includes, macro names, flag names
  * check all null pointer: use NULL instead of 0
  * use assert
@@ -189,55 +213,46 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 #include "stdlib.h"
 #include "string.h"
 
-#include "vmachine/coption.h"
 #include "global.h"
 #include "console.h"
 
-#if NXVM_SYSTEM == NXVM_NONE
+/*
 int main(int argc, char **argv)
 {
 	fprintf(stdout,"%s\n",PRODUCT);
 	NSConsole();
     return 0;
 }
-#elif NXVM_SYSTEM == NXVM_LINUX_TERMINAL
-#elif NXVM_SYSTEM == NXVM_LINUX_APPLICATION
-#elif NXVM_SYSTEM == NXVM_WIN32_CONSOLE
-int main(int argc, char **argv)
-{
-	fprintf(stdout, "%s\n", PRODUCT);
-	NSConsole();
-    return 0;
-}
-#elif NXVM_SYSTEM == NXVM_WIN32_APPLICATION
-#include "windows.h"
-/*
-#pragma comment(linker, \
-	"/subsystem:\"console\" /entry:\"WinMainCRTStartup\"") 
-#pragma comment(linker, \
-	"/manifestdependency:\"type='win32' \
-	 name='Microsoft.Windows.Common-Controls' \
-	 version='6.0.0.0' \
-	 processorArchitecture='*' \
-	 publicKeyToken='6595b64144ccf1df' \
-	 language='*'\"")
 */
-int WINAPI WinMain(HINSTANCE hInstance,
-                   HINSTANCE hPreInstance,
-                   LPSTR lpCmdLine,
-                   int nShowCmd)
+#include "windows.h"
+
+#pragma comment(linker, "/subsystem:\"console\" /entry:\"WinMainCRTStartup\"") 
+
+
+int WINAPI WinMain(
+	HINSTANCE hInstance,
+	HINSTANCE hPreInstance,
+	LPSTR lpCmdLine,
+	int nShowCmd)
 {
+	fprintf(stdout,"%s\n",PRODUCT);
+	console();
 	return 0;
 }
-#else
-#endif
 
-/********************************************
-* COMMENTS
-*	unsigned int x = (unsigned int)test;
-*	void (*y)(void) = (*(void (*)(void))(x));
-*	y();
-*	MessageBox(NULL,"Neko's x86 Virtual Machine WIN32APP Edition","WinMain",MB_OK);
-*	The NTVDM CPU has encountered an illegal instruction.
-*	CS:0db 1 IP:ffd3 OP:63 fa 65 13 64 Choose 'close' to terminate the application.
-********************************************/
+/**********************************************
+ * COMMENTS
+ *	unsigned int x = (unsigned int)test;
+ *	void (*y)(void) = (*(void (*)(void))(x));
+ *	y();
+ *	MessageBox(NULL,"Neko's x86 Virtual Machine WIN32APP Edition","WinMain",MB_OK);
+ *	The NTVDM CPU has encountered an illegal instruction.
+ *	CS:0db 1 IP:ffd3 OP:63 fa 65 13 64 Choose 'close' to terminate the application.
+ * #pragma comment(linker, \
+ *	"/manifestdependency:\"type='win32' \
+ *	 name='Microsoft.Windows.Common-Controls' \
+ *	 version='6.0.0.0' \
+ *	 processorArchitecture='*' \
+ *	 publicKeyToken='6595b64144ccf1df' \
+ *	 language='*'\"")
+ *********************************************/

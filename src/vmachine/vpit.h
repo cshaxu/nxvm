@@ -9,7 +9,7 @@
 
 #include "vglobal.h"
 
-/*#define VPIT_DEBUG*/
+#define VPIT_DEBUG
 
 typedef enum {
 	VPIT_STATUS_RW_READY,

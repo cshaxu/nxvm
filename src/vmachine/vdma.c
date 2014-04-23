@@ -2,7 +2,7 @@
 
 #include "memory.h"
 
-#include "system/vapi.h"
+#include "../system/vapi.h"
 #include "vcpu.h"
 #include "vcpuins.h"
 #include "vram.h"

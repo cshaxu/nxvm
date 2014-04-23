@@ -7,21 +7,33 @@
 
 #include "vglobal.h"
 
-typedef struct {
-	t_nubit8 scancode;
-	t_nubit8 repeat;
-	t_nubit8 delay;
-	t_nubit8 inbuf;
-	t_bool flagcmd;
+#define VKEYB_SIZE_BUFFER 0x10
 
-	t_bool flagledcaps;
-	t_bool flaglednum;
-	t_bool flagledscroll;
+typedef struct {
+	t_nubit8 bufptr;
+	t_nubit8 bufsize;
+	t_nubit8 buffer[VKEYB_SIZE_BUFFER];
+
+	t_nubit8 inbuf;
+	t_nubit8 scancode;                                     /* NOTE: not used */
+	t_nubit8 repeat;                                       /* NOTE: not used */
+	t_nubit8 delay;                                        /* NOTE: not used */
+	t_bool   flagcmd;
+	t_bool   flagenable;                                   /* NOTE: not used */
+	t_bool   flagledcaps;                                  /* NOTE: not used */
+	t_bool   flaglednum;                                   /* NOTE: not used */
+	t_bool   flagledscroll;                                /* NOTE: not used */
 } t_keyb;
 
 extern t_keyb vkeyb;
 
-void vkeybGetInput(t_nubit8 byte);
+t_nubit8 vkeybBufSize();
+t_nubit8 vkeybBufPop();
+void vkeybBufPush(t_nubit8 byte, t_bool done);
+
+void vkeybSetInput(t_nubit8 byte);
+void vkeybDefault();
+void vkeybReset();
 void vkeybRefresh();
 void vkeybInit();
 void vkeybFinal();

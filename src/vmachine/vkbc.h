@@ -15,19 +15,17 @@ typedef struct {
 	t_nubit8         status;                              /* status register */
 	t_nubit8         inbuf;                                  /* input buffer */
 	t_nubit8         outbuf;                                /* output buffer */
-	t_nubit8         ram[0x20];
+	t_nubit8         ram[0x20];                        /* internal registers */
 
 	t_bool           flagreset;                     /* TODO: cpu/ram related */
 	t_bool           flaga20;                       /* TODO: cpu/ram related */
-	t_bool           flagclock;
-	t_bool           flagdata;
-
-	t_bool           flagmda;
-	t_bool           flagjumper;
-	t_bool           flagram256;
-
-	t_bool           flagpswd;
-	t_nubit8         pswd;
+	t_bool           flagclock;                            /* NOTE: not used */
+	t_bool           flagdata;                             /* NOTE: not used */
+	t_bool           flagmda;                              /* NOTE: not used */
+	t_bool           flagjumper;                           /* NOTE: not used */
+	t_bool           flagram256;                           /* NOTE: not used */
+	t_bool           flagpswd;                             /* NOTE: not used */
+	t_nubit8         pswd;                                 /* NOTE: not used */
 } t_kbc;
 
 #define control ram[0x00]                                /* control register */
@@ -48,7 +46,7 @@ void IO_Read_0064();
 void IO_Write_0060();
 void IO_Write_0064();
 
-void vkbcSetOutBuf(t_nubit8 byte);
+void vkbcSetResponse(t_nubit8 byte);
 void vkbcRefresh();
 void vkbcInit();
 void vkbcFinal();

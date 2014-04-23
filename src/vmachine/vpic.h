@@ -7,7 +7,7 @@
 
 #include "vglobal.h"
 
-/*#define VPIC_DEBUG*/
+#define VPIC_DEBUG
 
 typedef enum {ICW1,ICW2,ICW3,ICW4,OCW1} t_pic_status_init;
 

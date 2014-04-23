@@ -346,16 +346,17 @@ static void f()
 static void rprintregs();
 static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 {
-	vmachinerunflag = 1;
+	/* NOTE: vmachine run environment */
+	vmachine.flagrun = 1;
 	if(ptr1 < ptr2) {
 		cpu.ip = ptr1;
-		while(ptr1 < ptr2 && vmachinerunflag) {
+		while(ptr1 < ptr2 && vmachine.flagrun) {
 			vmachineRefresh();
 			ptr1 = cpu.ip;
 		}
 		//cpu.ip = ptr2;
 	}
-	if(!vmachinerunflag) {
+	if(!vmachine.flagrun) {
 		fprintf(stdout,"\nProgram terminated\n");
 	} else {
 		fprintf(stdout,"\n");
@@ -1016,7 +1017,7 @@ static void exec()
 	}
 }
 
-void NSDebug()
+void debug()
 {
 	int i;
 	init();

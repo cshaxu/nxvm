@@ -2,7 +2,7 @@
 
 #include "memory.h"
 
-#include "system/vapi.h"
+#include "../system/vapi.h"
 #include "vglobal.h"
 #include "vcpu.h"
 #include "vcpuins.h"
@@ -360,8 +360,6 @@ void vpicInit()
 	vcpuinsInPort[0xff21] = (t_faddrcc)IO_Read_FF21;
 	vcpuinsInPort[0xff22] = (t_faddrcc)IO_Read_FF22;
 	vcpuinsOutPort[0xff20] = (t_faddrcc)IO_Write_FF20;
-	/* TODO: the following should be done by BIOS
-	   we leaev it here just for test. */
 	mov(0x11);                                            /* ICW1: 0001 0001 */
 	out(0x20);
 	mov(0x08);                                            /* ICW2: 0000 1000 */
@@ -495,7 +493,7 @@ off20 d
 		o20 4b	ocw3 = 0100 1011, disable poll, enable ISR
 		i20		see isr
 	Test AEOI (ICW4 50%)
-TODO
+	not tested yet
 	Test OCW2
-TODO
+	not tested yet
 */

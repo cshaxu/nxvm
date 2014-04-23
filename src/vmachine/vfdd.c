@@ -63,7 +63,6 @@ void vfddInit()
 {
 	memset(&vfdd, 0x00, sizeof(t_fdd));
 	vfdd.base = (t_vaddrcc)malloc(0x00168000);
-	/* TODO: assert(vfdd.base); */
 }
 void vfddFinal()
 {

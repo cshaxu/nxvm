@@ -2,15 +2,18 @@
 
 #include "memory.h"
 
+#include "../system/vapi.h"
 #include "vcpuins.h"
 #include "vcpu.h"
 #include "vpic.h"
 #include "vkeyb.h"
 #include "vkbc.h"
 
-#define GetBit(a,b) (!!((a) &   (b)))
-#define SetBit(a,b) (   (a) |=  (b))
-#define ClrBit(a,b) (   (a) &= ~(b))
+/* NOTE: references
+ * http://bbs.chinaunix.net/thread-3609756-1-1.html
+ * http://www.cnblogs.com/huqingyu/archive/2005/02/17/105376.html
+ * http://blog.csdn.net/luo_brian/article/details/8460334
+ */
 
 #define VKBC_FLAG_CONTROL_OUTBUF_FULL           0x01
 #define VKBC_FLAG_STATUS_INBUF_FULL             0x02
@@ -68,14 +71,17 @@ static t_nubit8 GetInBuf()
 }
 static t_nubit8 GetOutBuf()
 {
-	ClrOBF;
-	return vkbc.outbuf;
+	t_nubit8 out = vkbc.outbuf;
+	if (vkeybBufSize()) {
+		vkbc.outbuf = vkeybBufPop();
+		SetOBF;
+	} else ClrOBF;
+	return out;
 }
 
 #define GetInhibitStatus (                                                    \
 	GetBit(vkbc.control, VKBC_FLAG_CONTROL_INHIBIT_OVERRIDE) ? 0 :            \
 	GetBit(vkbc.control, VKBC_FLAG_CONTROL_DISABLE_KEYBOARD))
-
 #define GetInPort (                                                           \
 	((!GetInhibitStatus) << 7) |                                              \
 	(vkbc.flagmda        << 6) |                 /* display is mda, not cga */\
@@ -97,14 +103,10 @@ static t_nubit8 GetOutBuf()
 
 t_kbc vkbc;
 
-/* TODO: REF http://bbs.chinaunix.net/thread-3609756-1-1.html */
-/* TODO: REF http://www.cnblogs.com/huqingyu/archive/2005/02/17/105376.html */
-
-
 void IO_Read_0060()
 {
-	vcpu.iobyte = vkbc.outbuf;
-	ClrOBF;
+	if (!GetOBF) return;
+	vcpu.iobyte = GetOutBuf();
 }
 void IO_Read_0064()
 {
@@ -154,27 +156,26 @@ void IO_Write_0060()
 		case 0xd1: vkbc.inbuf     = GetInBuf();
 			vkbc.flagdata  = !!(vkbc.inbuf & VKBC_FLAG_OUTPORT_DATA_LINE);
 			vkbc.flagclock = !!(vkbc.inbuf & VKBC_FLAG_OUTPORT_CLOCK_LINE);
-			      /* TODO: need to do something when data/clock line changes */
 			if (!!(vkbc.inbuf & VKBC_FLAG_OUTPORT_OUTBUF_FULL))
 				SetOutBuf(vkbc.outbuf);
 			vkbc.flaga20   = !!(vkbc.inbuf & VKBC_FLAG_OUTPORT_A20_LINE);
 			vkbc.flagreset = !!(vkbc.inbuf & VKBC_FLAG_OUTPORT_RESET);
 			break;
 		case 0xd2:
-			SetOutBuf(GetInBuf());                   /* TODO: need to verify */
+			SetOutBuf(GetInBuf());
 			break;
 		default:                         /* invalid parameter, could be data */
 			break;
 		}
 	}
-	if (GetIBF) vkeybGetInput(GetInBuf());
+	if (GetIBF) vkeybSetInput(GetInBuf());
 }
 void IO_Write_0064()
 {
 	if (GetIBF) return;
 	SetInBuf(vcpu.iobyte);
 	SetCMD;
-	switch (GetInBuf()) {                           /* TODO: need to verify  */
+	switch (GetInBuf()) {
 	case 0x20:                    /* read keyboard controller's command byte */
 		       SetOutBuf(vkbc.control);   break;
 	case 0x21: SetOutBuf(vkbc.ram[0x01]); break;
@@ -285,27 +286,45 @@ void IO_Write_0064()
 	case 0xfb: break;           /* NOTE: pulse output port p2; not supported */
 	case 0xfc: break;           /* NOTE: pulse output port p2; not supported */
 	case 0xfd: break;           /* NOTE: pulse output port p2; not supported */
-	case 0xfe: vkbc.flagreset = 0x01; break;       /* TODO: restarts the cpu */
+	case 0xfe: vkbc.flagreset = 0x01; break;             /* restarts the cpu */
 	case 0xff: break;                                          /* do nothing */
 	default:   break;                                     /* invalid command */
 	}
 }
 
-void vkbcSetOutBuf(t_nubit8 byte)
+void vkbcSetResponse(t_nubit8 byte)
 {
 	SetOutBuf(byte);
 }
-
 void vkbcRefresh()
 {}
+#ifdef VKBC_DEBUG
+void IO_Read_FF60()
+{
+	vapiPrint("KBC Info\n========\n");
+	vapiPrint("status = %x, control = %x, inbuf = %x, outbuf = %x\n",
+		vkbc.status, vkbc.control, vkbc.inbuf, vkbc.outbuf);
+	vapiPrint("kbd.bufptr = %x, kbd.bufsize = %x\n",
+		vkeyb.bufptr, vkeyb.bufsize);
+}
+#define mov(n) (vcpu.iobyte=(n))
+#define out(n) FUNEXEC(vcpuinsOutPort[(n)])
+#endif
 void vkbcInit()
 {
 	memset(&vkbc, 0x00, sizeof(t_kbc));
 	SetBit(vkbc.status, VKBC_FLAG_STATUS_SYSTEM_FLAG);
-	vcpuinsInPort[0x0060]  = (t_vaddrcc)IO_Read_0060;
-	vcpuinsInPort[0x0064]  = (t_vaddrcc)IO_Read_0064;
-	vcpuinsOutPort[0x0060] = (t_vaddrcc)IO_Write_0060;
-	vcpuinsOutPort[0x0064] = (t_vaddrcc)IO_Write_0064;
+	vcpuinsInPort[0x0060]  = (t_faddrcc)IO_Read_0060;
+	vcpuinsInPort[0x0064]  = (t_faddrcc)IO_Read_0064;
+	vcpuinsOutPort[0x0060] = (t_faddrcc)IO_Write_0060;
+	vcpuinsOutPort[0x0064] = (t_faddrcc)IO_Write_0064;
+#ifdef VKBC_DEBUG
+	vcpuinsInPort[0xff60]  = (t_faddrcc)IO_Read_FF60;
+	mov(0x60);
+	out(0x64);
+	mov(0x01);
+	out(0x60);
+#endif
 }
 void vkbcFinal()
 {}

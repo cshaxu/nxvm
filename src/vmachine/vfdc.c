@@ -9,7 +9,7 @@
 #include "vdma.h"
 #include "vfdd.h"
 #include "vfdc.h"
-#include "system/vapi.h"
+#include "../system/vapi.h"
 
 t_fdc vfdc;
 
@@ -152,7 +152,7 @@ static void ExecCmdRecalibrate()
 	SetST0;
 	vfdc.st0   |= 0x20;
 	if (GetENRQ(vfdc.dor)) {
-		vpicSetIRQ(0x06);     /* TODO: BIOS: INT 0EH Should Call Command 08H */
+		vpicSetIRQ(0x06);
 		vfdc.flagintr = 0x01;
 	}
 	SetMSRReadyWrite;
@@ -175,7 +175,7 @@ static void ExecCmdSeek()
 	SetST0;
 	vfdc.st0   |= 0x20;
 	if (GetENRQ(vfdc.dor)) {
-		vpicSetIRQ(0x06);     /* TODO: BIOS: INT 0EH Should Call Command 08H */
+		vpicSetIRQ(0x06);
 		vfdc.flagintr = 0x01;
 	}
 	SetMSRReadyWrite;
@@ -215,7 +215,7 @@ static void ExecCmdFormatTrack()
 	vfdc.ret[5] = 0x00;
 	vfdc.ret[6] = 0x00;
 	if (GetENRQ(vfdc.dor)) {
-		vpicSetIRQ(0x06);     /* TODO: BIOS: INT 0EH Should Call Command 08H */
+		vpicSetIRQ(0x06);
 		vfdc.flagintr = 0x01;
 	}
 	SetMSRReadyRead;
@@ -238,7 +238,7 @@ static void ExecCmdScanEqual()
 	vfdc.ret[2] = vfdc.st2;
 	vfdc.ret[3] = vfdd.cyl;
 	vfdc.ret[4] = vfdd.head;
-	vfdc.ret[5] = vfdd.sector;                      /* TODO: correct the EOT */
+	vfdc.ret[5] = vfdd.sector;                      /* NOTE: eot not changed */
 	vfdc.ret[6] = GetBPSC(vfdd.nbyte);
 	SetMSRReadyRead;
 }
@@ -387,7 +387,7 @@ void vfdcTransFinal()
 	vfdc.ret[5] = vfdd.sector;
 	vfdc.ret[6] = GetBPSC(vfdd.nbyte);
 	if (GetENRQ(vfdc.dor)) {
-		vpicSetIRQ(0x06);     /* TODO: BIOS: INT 0EH Should Call Command 08H */
+		vpicSetIRQ(0x06);
 		vfdc.flagintr = 0x01;
 	}
 	SetMSRReadyRead;
@@ -441,16 +441,16 @@ void vfdcInit()
 {
 	memset(&vfdc, 0, sizeof(t_fdc));
 	vfdc.ccr = 0x02;
-	vcpuinsInPort[0x03f4] = (t_vaddrcc)IO_Read_03F4;
-	vcpuinsInPort[0x03f5] = (t_vaddrcc)IO_Read_03F5;
-	vcpuinsInPort[0x03f7] = (t_vaddrcc)IO_Read_03F7;
-	vcpuinsOutPort[0x03f2] = (t_vaddrcc)IO_Write_03F2;
-	vcpuinsOutPort[0x03f5] = (t_vaddrcc)IO_Write_03F5;
-	vcpuinsOutPort[0x03f7] = (t_vaddrcc)IO_Write_03F7;
+	vcpuinsInPort[0x03f4] = (t_faddrcc)IO_Read_03F4;
+	vcpuinsInPort[0x03f5] = (t_faddrcc)IO_Read_03F5;
+	vcpuinsInPort[0x03f7] = (t_faddrcc)IO_Read_03F7;
+	vcpuinsOutPort[0x03f2] = (t_faddrcc)IO_Write_03F2;
+	vcpuinsOutPort[0x03f5] = (t_faddrcc)IO_Write_03F5;
+	vcpuinsOutPort[0x03f7] = (t_faddrcc)IO_Write_03F7;
 #ifdef VFDC_DEBUG
-	vcpuinsInPort[0x0f3f0] = (t_vaddrcc)IO_Read_F3F0;
-	vcpuinsOutPort[0xf3f0] = (t_vaddrcc)IO_Write_F3F0;
-	vcpuinsOutPort[0xf3f1] = (t_vaddrcc)IO_Write_F3F1;
+	vcpuinsInPort[0x0f3f0] = (t_faddrcc)IO_Read_F3F0;
+	vcpuinsOutPort[0xf3f0] = (t_faddrcc)IO_Write_F3F0;
+	vcpuinsOutPort[0xf3f1] = (t_faddrcc)IO_Write_F3F1;
 	/* initialize fdc */
 	mov(0x00);
 	out(0x03f2);

@@ -14,16 +14,19 @@
 #include "vdma.h"
 #include "vfdc.h"
 #include "vfdd.h"
+#include "vkbc.h"
+#include "vkeyb.h"
 
-extern t_bool vmachineinitflag;
-extern t_bool vmachinerunflag;
+typedef struct {
+	t_bool flaginit;
+	t_bool flagrun;
+} t_machine;
+
+extern t_machine vmachine;
 
 void vmachineRefresh();
-
 void vmachineInit();
-void vmachinePowerOn();
 void vmachineRunLoop();
-void vmachinePowerOff();
 void vmachineFinal();
 
 #endif
