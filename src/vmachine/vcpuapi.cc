@@ -139,9 +139,10 @@ static t_bool vcpuapiCheckDiff()
 		if (vcpu.edi != newbcpu.edi) {vapiPrint("diff edi\n");flagdiff = 0x01;}
 		if (vcpu.eip != newbcpu.eip) {vapiPrint("diff eip\n");flagdiff = 0x01;}
 		if (vcpu.es.selector != newbcpu.es.selector ||
+			(vcpu.es.flagvalid && (
 			vcpu.es.base != newbcpu.es.base ||
 			vcpu.es.limit != newbcpu.es.limit ||
-			vcpu.es.dpl != newbcpu.es.dpl) {
+			vcpu.es.dpl != newbcpu.es.dpl))) {
 				vapiPrint("diff es (V=%04X/%08X/%08X/%1X, B=%04X/%08X/%08X/%1X)\n",
 					vcpu.es.selector, vcpu.es.base, vcpu.es.limit, vcpu.es.dpl,
 					newbcpu.es.selector, newbcpu.es.base, newbcpu.es.limit, newbcpu.es.dpl);
@@ -166,27 +167,30 @@ static t_bool vcpuapiCheckDiff()
 				flagdiff = 0x01;
 		}
 		if (vcpu.ds.selector != newbcpu.ds.selector ||
+			(vcpu.ds.flagvalid && (
 			vcpu.ds.base != newbcpu.ds.base ||
 			vcpu.ds.limit != newbcpu.ds.limit ||
-			vcpu.ds.dpl != newbcpu.ds.dpl) {
+			vcpu.ds.dpl != newbcpu.ds.dpl))) {
 				vapiPrint("diff ds (V=%04X/%08X/%08X/%1X, B=%04X/%08X/%08X/%1X)\n",
 					vcpu.ds.selector, vcpu.ds.base, vcpu.ds.limit, vcpu.ds.dpl,
 					newbcpu.ds.selector, newbcpu.ds.base, newbcpu.ds.limit, newbcpu.ds.dpl);
 				flagdiff = 0x01;
 		}
 		if (vcpu.fs.selector != newbcpu.fs.selector ||
+			(vcpu.fs.flagvalid && (
 			vcpu.fs.base != newbcpu.fs.base ||
 			vcpu.fs.limit != newbcpu.fs.limit ||
-			vcpu.fs.dpl != newbcpu.fs.dpl) {
+			vcpu.fs.dpl != newbcpu.fs.dpl))) {
 				vapiPrint("diff fs (V=%04X/%08X/%08X/%1X, B=%04X/%08X/%08X/%1X)\n",
 					vcpu.fs.selector, vcpu.fs.base, vcpu.fs.limit, vcpu.fs.dpl,
 					newbcpu.fs.selector, newbcpu.fs.base, newbcpu.fs.limit, newbcpu.fs.dpl);
 				flagdiff = 0x01;
 		}
 		if (vcpu.gs.selector != newbcpu.gs.selector ||
+			(vcpu.gs.flagvalid && (
 			vcpu.gs.base != newbcpu.gs.base ||
 			vcpu.gs.limit != newbcpu.gs.limit ||
-			vcpu.gs.dpl != newbcpu.gs.dpl) {
+			vcpu.gs.dpl != newbcpu.gs.dpl))) {
 				vapiPrint("diff gs (V=%04X/%08X/%08X/%1X, B=%04X/%08X/%08X/%1X)\n",
 					vcpu.gs.selector, vcpu.gs.base, vcpu.gs.limit, vcpu.gs.dpl,
 					newbcpu.gs.selector, newbcpu.gs.base, newbcpu.gs.limit, newbcpu.gs.dpl);
@@ -272,6 +276,7 @@ void vcpuapiExecBefore()
 		flagvalid = 1;
 		vapiPrint("NXVM and Bochs comparison starts from here.\n");
 	}
+	flagvalid = 1;
 	if (flagvalid) {
 		vcpu = oldbcpu;
 		vcpuinsRefresh();

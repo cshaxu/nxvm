@@ -12,7 +12,7 @@ extern "C" {
 #include "vcpu.h"
 
 #define i386(n) if (1)
-#define VCPUINS_TRACE 1
+#define VCPUINS_TRACE 0
 
 typedef enum {
 	ARITHTYPE_NULL,

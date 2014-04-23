@@ -316,9 +316,11 @@ extern t_cpu vcpu;
 #define VCPU_DESC_SYS_TYPE_1 0x0000020000000000
 #define VCPU_DESC_SYS_TYPE_2 0x0000040000000000
 #define VCPU_DESC_SYS_TYPE_3 0x0000080000000000
-#define VCPU_DESC_GATE_TYPE_E VCPU_DESC_SYS_TYPE_3 /* 32-bit gate */
+
+#define VCPU_DESC_SYS_TYPE_E  VCPU_DESC_SYS_TYPE_3 /* 32-bit sys desc */
+#define VCPU_DESC_GATE_TYPE_E VCPU_DESC_SYS_TYPE_E /* 32-bit gate */
 #define VCPU_DESC_TSS_TYPE_B  VCPU_DESC_SYS_TYPE_1  /* busy tss */
-#define VCPU_DESC_TSS_TYPE_E  VCPU_DESC_GATE_TYPE_E /* 32-bit tss */
+#define VCPU_DESC_TSS_TYPE_E  VCPU_DESC_SYS_TYPE_E /* 32-bit tss */
 #define VCPU_DESC_SYS_TYPE_TSS_16_AVL  0x01
 #define VCPU_DESC_SYS_TYPE_LDT         0x02
 #define VCPU_DESC_SYS_TYPE_TSS_16_BUSY 0x03
@@ -332,9 +334,11 @@ extern t_cpu vcpu;
 #define VCPU_DESC_SYS_TYPE_INTGATE_32  0x0e
 #define VCPU_DESC_SYS_TYPE_TRAPGATE_32 0x0f
 
+#define _GetDescSys_Type_E(descriptor)   (GetBit((descriptor), VCPU_DESC_TSS_TYPE_E))
 #define _GetDescTSS_Type_B(descriptor)   (GetBit((descriptor), VCPU_DESC_TSS_TYPE_B))
 #define _SetDescTSS_Type_B(descriptor)   (SetBit((descriptor), VCPU_DESC_TSS_TYPE_B))
 
+#define _IsDescSys32(descriptor)      (_IsDescSys(descriptor) && _GetDescSys_Type_E(descriptor))
 #define _IsDescLDT(descriptor)        (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_LDT))
 #define _IsDescTaskGate(descriptor)   (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TASKGATE))
 #define _IsDescTSS(descriptor)        (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x05) == 0x01))

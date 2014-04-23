@@ -449,8 +449,6 @@ static t_nubit32 _kma_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubi
 		if (!rsreg->flagvalid) _impossible_r_;
 		if (_IsProtected) {
 			_bb("Protected");
-			if (!rsreg->seg.executable)
-				_comment("WARNING: code segment not executable.\n");
 			if (!force) {
 				_bb("force");
 				if (write) {
@@ -534,7 +532,7 @@ static t_nubit32 _kma_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubi
 		_be;break;
 	case SREG_GDTR:
 		_bb("sregtype(SREG_GDTR)");
-		if (!_IsProtected) _impossible_r_;
+		if (!_GetCR0_PE) _impossible_r_;
 		lower = 0x00000000;
 		upper = rsreg->limit;
 		_be;break;
@@ -545,7 +543,7 @@ static t_nubit32 _kma_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubi
 		_be;break;
 	case SREG_LDTR:
 		_bb("sregtype(SREG_LDTR)");
-		if (!_IsProtected) _impossible_r_;
+		if (!_GetCR0_PE) _impossible_r_;
 		if (_GetSelector_TI(rsreg->selector)) _impossible_r_;
 		if (!rsreg->flagvalid || _IsSelectorNull(rsreg->selector)) {
 			_bb("selector(null)");
@@ -557,7 +555,7 @@ static t_nubit32 _kma_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubi
 		_be;break;
 	case SREG_TR:
 		_bb("sregtype(SREG_TR)");
-		if (!_IsProtected) _impossible_r_;
+		if (!_GetCR0_PE) _impossible_r_;
 		if (!rsreg->flagvalid || _IsSelectorNull(rsreg->selector)) _impossible_r_;
 		if (_GetSelector_TI(rsreg->selector)) _impossible_r_;
 		lower = 0x00000000;
@@ -618,7 +616,6 @@ static t_nubit64 _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8
 			if (vcpurec.mem[i].flagwrite == vcpurec.mem[vcpurec.msize].flagwrite &&
 				vcpurec.mem[i].linear == vcpurec.mem[vcpurec.msize].linear) {
 				_bb("mem(same)");
-				_comment("");
 				_impossible_r_;
 				_ce;
 			}
@@ -760,7 +757,7 @@ static void _m_write_rm(t_nubit64 data, t_nubit8 byte)
 tots _ksa_descriptor_gdt(t_nubit16 selector)
 {
 	_cb("_ksa_descriptor_gdt");
-	if (!_IsProtected) _impossible_;
+	if (!_GetCR0_PE) _impossible_;
 	if (_GetSelector_TI(selector)) _impossible_;
 	vcpuins.xdesc.selector = selector;
 	if (!_GetSelector_Index(selector)) {
@@ -787,7 +784,7 @@ tots _ksa_descriptor_gdt(t_nubit16 selector)
 tots _ksa_descriptor_ldt(t_nubit16 selector)
 {
 	_cb("_ksa_descriptor_ldt");
-	if (!_IsProtected) _impossible_;
+	if (!_GetCR0_PE) _impossible_;
 	if (!_GetSelector_TI(selector)) _impossible_;
 	if (GetMax16(_GetSelector_Offset(selector) + 7) > GetMax16(vcpu.ldtr.limit)) {
 		_bb("Selector_Offset(>ldtr.limit)");
@@ -804,7 +801,7 @@ tots _ksa_descriptor_ldt(t_nubit16 selector)
 tots _ksa_descriptor(t_nubit16 selector)
 {
 	_cb("_ksa_descriptor");
-	if (!_IsProtected) _impossible_;
+	if (!_GetCR0_PE) _impossible_;
 	if (_GetSelector_TI(selector))
 		_chk(_ksa_descriptor_ldt(selector));
 	else
@@ -857,6 +854,10 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 			rsreg->flagvalid = 1;
 			rsreg->base = (rdesc->selector << 4);
 			rsreg->selector = rdesc->selector;
+			if (_GetCR0_PE && _GetEFLAGS_VM) {
+				rsreg->dpl = 0x03;
+				rsreg->limit = 0x0000ffff;
+			}
 			_be;
 		}
 		_be;break;
@@ -868,9 +869,6 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 				_bb("selector(null)");
 				rsreg->flagvalid = 0;
 				rsreg->selector = rdesc->selector;
-				rsreg->base = 0x00000000;
-				rsreg->limit = 0x00000000;
-				rsreg->dpl = 0x00;
 				_be;
 			} else {
 				_bb("selector(!null)");
@@ -923,7 +921,10 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 			rsreg->flagvalid = 1;
 			rsreg->selector = rdesc->selector;
 			rsreg->base = (rdesc->selector << 4);
-			if (_GetCR0_PE && _GetEFLAGS_VM) rsreg->dpl = 0x03;
+			if (_GetCR0_PE && _GetEFLAGS_VM) {
+				rsreg->dpl = 0x03;
+				rsreg->limit = 0x0000ffff;
+			}
 			_be;
 		}
 		_be;break;
@@ -977,7 +978,10 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 			rsreg->flagvalid = 1;
 			rsreg->selector = rdesc->selector;
 			rsreg->base = (rdesc->selector << 4);
-			if (_GetCR0_PE && _GetEFLAGS_VM) rsreg->dpl = 0x03;
+			if (_GetCR0_PE && _GetEFLAGS_VM) {
+				rsreg->dpl = 0x03;
+				rsreg->limit = 0x0000ffff;
+			}
 			_be;
 		}
 		_be;break;
@@ -1126,6 +1130,14 @@ static t_nubit64 _s_read_idt(t_nubit8 intid)
 	_ce;
 	return result;
 }
+static t_nubit64 _s_read_tss(t_nubit32 offset, t_nubit8 byte)
+{
+	t_nubit64 result;
+	_cb("_s_read_tss");
+	_chr(result = _kma_read_logical(&vcpu.tr, offset, byte, 0, 1));
+	_ce;
+	return result;
+}
 static t_nubit64 _s_read_cs(t_nubit32 offset, t_nubit8 byte)
 {
 	t_nubit64 result;
@@ -1210,10 +1222,16 @@ static void _s_write_gs(t_nubit32 offset, t_nubit64 data, t_nubit8 byte)
 	_chk(_m_write_logical(&vcpu.gs, offset, data, byte));
 	_ce;
 }
-done _s_test_cs(t_nubit32 offset)
+done _s_test_tss(t_nubit32 offset, t_nubit8 byte)
 {
 	_cb("_s_test_cs");
-	_chk(_kma_test_logical(&vcpu.cs, offset, 0x01, 0, 0x00, 1));
+	_chk(_kma_test_logical(&vcpu.tr, offset, byte, 0, 0x00, 1));
+	_ce;
+}
+done _s_test_cs(t_nubit32 offset, t_nubit8 byte)
+{
+	_cb("_s_test_cs");
+	_chk(_kma_test_logical(&vcpu.cs, offset, byte, 0, 0x00, 1));
 	_ce;
 }
 done _s_test_ss_push(t_nubit8 byte)
@@ -1381,7 +1399,7 @@ done _s_load_gs(t_nubit16 newgs)
 done _s_test_eip()
 {
 	_cb("_s_test_eip");
-	_chk(_s_test_cs(vcpu.eip));
+	_chk(_s_test_cs(vcpu.eip, 0x01));
 	_ce;
 }
 done _s_test_esp()
@@ -1511,11 +1529,11 @@ static t_nubit64 _kdf_code(t_nubit8 byte)
 }
 tots _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 {
-	t_nsbit8 disp8 = 0x00;
-	t_nubit16 disp16 = 0x0000;
-	t_nubit32 disp32 = 0x00000000;
-	t_nubit32 sibindex = 0x00000000;
-	t_nubit8 modrm = 0x00, sib = 0x00;
+	t_nsbit8 disp8;
+	t_nubit16 disp16;
+	t_nubit32 disp32;
+	t_nubit32 sibindex;
+	t_nubit8 modrm, sib;
 	_cb("_kdf_modrm");
 	_chk(modrm = (t_nubit8)_kdf_code(1));
 	vcpuins.flagmem = 1;
@@ -1788,7 +1806,7 @@ done _d_skip(t_nubit8 byte)
 }
 static t_nubit64 _d_code(t_nubit8 byte)
 {
-	t_nubit64 result = 0x0000000000000000;
+	t_nubit64 result;
 	_cb("_d_code");
 	_chr(result = _kdf_code(byte));
 	_ce;
@@ -1802,7 +1820,6 @@ done _d_imm(t_nubit8 byte)
 }
 done _d_moffs(t_nubit8 byte)
 {
-	t_nubit32 offset = 0x00000000;
 	_cb("_d_moffs");
 	vcpuins.flagmem = 1;
 	vcpuins.mrm.rsreg = vcpuins.roverds;
@@ -1836,7 +1853,6 @@ done _d_modrm_sreg(t_nubit8 rmbyte)
 }
 done _d_modrm_ea(t_nubit8 regbyte, t_nubit8 rmbyte)
 {
-	t_nubit8 modrm = 0x00;
 	_cb("_d_modrm_ea");
 	_chk(_kdf_modrm(regbyte, rmbyte));
 	if (!vcpuins.flagmem) {
@@ -1848,7 +1864,6 @@ done _d_modrm_ea(t_nubit8 regbyte, t_nubit8 rmbyte)
 }
 done _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 {
-	t_nubit8 modrm = 0x00;
 	_cb("_d_modrm");
 	_chk(_kdf_modrm(regbyte, rmbyte));
 	if (!vcpuins.flagmem && vcpu.flaglock) {
@@ -1932,13 +1947,13 @@ tots _kec_call_near(t_nubit32 neweip, t_nubit8 byte)
 	switch (byte) {
 	case 2: _bb("byte(2)");
 		neweip = GetMax16(neweip);
-		_chk(_s_test_cs(neweip));
+		_chk(_s_test_cs(neweip, 0x01));
 		_chk(_kec_push(vcpu.ip, 2));
 		_be;break;
 	case 4: _bb("byte(4)");
 		_newins_;
 		neweip = GetMax32(neweip);
-		_chk(_s_test_cs(neweip));
+		_chk(_s_test_cs(neweip, 0x01));
 		_chk(_kec_push(vcpu.eip, 4));
 		_be;break;
 	default: _bb("bit");
@@ -1976,7 +1991,7 @@ done _kec_jmp_near(t_nubit32 neweip, t_nubit8 byte)
 		_chk(_SetExcept_CE(byte));
 		_be;break;
 	}
-	_chk(_s_test_cs(neweip));
+	_chk(_s_test_cs(neweip, 0x01));
 	vcpu.eip = neweip;
 	_ce;
 }
@@ -2008,12 +2023,12 @@ tots _kec_ret_near(t_nubit16 parambyte, t_nubit8 byte)
 	switch (byte) {
 	case 2: _bb("byte(2)");
 		_chk(neweip = GetMax16(_kec_pop(2)));
-		_chk(_s_test_cs(GetMax16(neweip)));
+		_chk(_s_test_cs(GetMax16(neweip), 0x01));
 		_be;break;
 	case 4: _bb("byte(4)");
 		_newins_;
 		_chk(neweip = GetMax32(_kec_pop(4)));
-		_chk(_s_test_cs(GetMax32(neweip)));
+		_chk(_s_test_cs(GetMax32(neweip), 0x01));
 		_be;break;
 	default: _bb("byte");
 		_chk(_SetExcept_CE(byte));
@@ -2137,14 +2152,19 @@ done _ser_int_real(t_nubit8 intid, t_nubit8 byte)
 	}
 	_chk(vector = (t_nubit32)_s_read_idt(intid));
 	cip = GetMax16(vector);
-	_chk(_s_test_cs(cip));
+	_chk(_s_test_cs(cip, 0x01));
 	vcpu.eip = cip;
 	_chk(_s_load_cs(GetMax16(vector >> 16)));
 	_ce;
 }
 todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 {
-	t_nubit64 cdesc;
+	t_nubit32 oldeflags;
+	t_nubit16 oldss_sel;
+	t_nubit32 oldesp, newesp;
+	t_nubit16 cs_sel,ss_sel;
+	t_nubit64 gate_cdesc;
+	t_cpuins_desc cs_xdesc,ss_xdesc;
 	_cb("_ser_int_protected");
 	if (!_GetCR0_PE) _impossible_;
 	if (GetMax16(intid * 8 + 7) > GetMax16(vcpu.idtr.limit)) {
@@ -2152,39 +2172,188 @@ todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 		_chk(_SetExcept_GP(intid * 8 + 2 + !!flagext));
 		_be;
 	}
-	_chk(cdesc = _s_read_idt(intid));
-	switch (_GetDesc_Type(cdesc)) {
+	_chk(gate_cdesc = _s_read_idt(intid));
+	switch (_GetDesc_Type(gate_cdesc)) {
 	case VCPU_DESC_SYS_TYPE_TASKGATE:
 	case VCPU_DESC_SYS_TYPE_INTGATE_16:
 	case VCPU_DESC_SYS_TYPE_INTGATE_32:
 	case VCPU_DESC_SYS_TYPE_TRAPGATE_16:
 	case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
 		break;
-	default: _bb("Desc_Type(!TaskGate/!IntGate/!TrapGate");
+	default: _bb("Desc_Type(!TaskGate/!IntGate/!TrapGate)");
+		_comment("int:%02x\n", intid);
 		_chk(_SetExcept_GP(intid * 8 + 2 + !!flagext));
 		_be;break;
 	}
 	if (!flagext) {
 		_bb("!flagext");
-		if (_GetDesc_DPL(cdesc) < _GetCPL) {
+		if (_GetDesc_DPL(gate_cdesc) < _GetCPL) {
 			_bb("DPL(<CPL)");
 			_chk(_SetExcept_GP(intid * 8 + 2));
 			_be;
 		}
 		_be;
 	}
-	if (!_IsDescPresent(cdesc)) {
+	if (!_IsDescPresent(gate_cdesc)) {
 		_bb("!DescPresent");
 		_chk(_SetExcept_NP(intid * 8 + 2 + !!flagext));
 		_be;
 	}
-	if (_GetDesc_Type(cdesc) == VCPU_DESC_SYS_TYPE_TASKGATE) {
+	if (_GetDesc_Type(gate_cdesc) == VCPU_DESC_SYS_TYPE_TASKGATE) {
 		_bb("Desc_Type(TaskGate)");
 		_chk(_SetExcept_CE(0));
 		_be;
 	} else {
 		_bb("Desc_Type(!TaskGate)");
-		_chk(_SetExcept_CE(0));
+		cs_sel = GetMax16(_GetDescGate_Selector(gate_cdesc));
+		if (_IsSelectorNull(cs_sel)) {
+			_bb("cs_sel(null)");
+			_chk(_SetExcept_GP(!!flagext));
+			_be;
+		}
+		if (_GetSelector_TI(cs_sel)) {
+			_bb("Selector_TI(1)");
+			if (GetMax16(_GetSelector_Offset(cs_sel) + 7) > GetMax16(vcpu.ldtr.limit)) {
+				_bb("Selector_Offset(>ldtr.limit)");
+				_chk(_SetExcept_GP(cs_sel & 0xfffc + !!flagext));
+				_be;
+			}
+			_be;
+		} else {
+			_bb("Selector_TI(0)");
+			if (GetMax16(_GetSelector_Offset(cs_sel) + 7) > GetMax16(vcpu.gdtr.limit)) {
+				_bb("Selector_Offset(>gdtr.limit)");
+				_chk(_SetExcept_GP(cs_sel & 0xfffc + !!flagext));
+				_be;
+			}
+			_be;
+		}
+		_chk(_ksa_descriptor(cs_sel));
+		cs_xdesc = vcpuins.xdesc;
+		if (!_IsDescCode(cs_xdesc.descriptor) ||
+			_GetDesc_DPL(cs_xdesc.descriptor) > _GetCPL) {
+			_bb("!DescCode/DPL(>CPL)");
+			_chk(_SetExcept_GP(cs_xdesc.selector & 0xfffc + !!flagext));
+			_be;
+		}
+		if (!_IsDescPresent(cs_xdesc.descriptor)) {
+			_bb("!DescPresent");
+			_chk(_SetExcept_NP(cs_xdesc.selector & 0xfffc + !!flagext));
+			_be;
+		}
+		if (_IsDescCodeNonConform(cs_xdesc.descriptor) &&
+			_GetDesc_DPL(cs_xdesc.descriptor) < _GetCPL) {
+			_bb("DescCodeNonConform,DPL(<CPL)");
+			if (!_GetEFLAGS_VM) {
+				_bb("EFLAS_VM(0)");
+				/* INTER-PRIVILEGE-LEVEL-INTERRUPT */
+				_chk(_SetExcept_CE(0));
+				_be;
+			} else {
+				_bb("EFLAS_VM(1)");
+				if (_GetDesc_DPL(cs_xdesc.descriptor) != 0) {
+					_bb("DPL(!0)");
+					_chk(_SetExcept_GP(cs_xdesc.selector));
+					_be;
+				}
+				/* INTERRUPT-FROM-VIRTUAL-8086-MODE */
+				switch (vcpu.tr.sys.type) {
+				case VCPU_DESC_SYS_TYPE_TSS_32_AVL:
+				case VCPU_DESC_SYS_TYPE_TSS_32_BUSY:
+					_bb("tr.type(32)");
+					_chk(_s_test_tss(4, 8));
+					_chk(newesp = GetMax32(_s_read_tss(4, 4)));
+					_chk(ss_sel = GetMax16(_s_read_tss(8,4)));
+					_be;break;
+				case VCPU_DESC_SYS_TYPE_TSS_16_AVL:
+				case VCPU_DESC_SYS_TYPE_TSS_16_BUSY:
+					_bb("tr.type(16)");
+					_chk(_s_test_tss(2, 4));
+					_chk(newesp = GetMax16(_s_read_tss(2, 2)));
+					_chk(ss_sel = GetMax16(_s_read_tss(4,2)));
+					_be;break;
+				default:_impossible_;break;}
+				if (_IsSelectorNull(ss_sel)) {
+					_bb("ss_sel(null)");
+					_chk(_SetExcept_TS(!!flagext));
+					_be;
+				}
+				if (_GetSelector_RPL(ss_sel) != _GetDesc_DPL(cs_xdesc.descriptor)) {
+					_bb("RPL(newss)!=DPL(newcs)");
+					_chk(_SetExcept_TS(ss_sel & 0xfffc + !!flagext));
+					_be;
+				}
+				_chk(_ksa_descriptor(ss_sel));
+				ss_xdesc = vcpuins.xdesc;
+				if (_GetDesc_DPL(ss_xdesc.descriptor) !=
+					_GetDesc_DPL(cs_xdesc.descriptor)) {
+					_bb("DPL(newss)!=DPL(newcs)");
+					_chk(_SetExcept_TS(ss_xdesc.selector & 0xfffc + !!flagext));
+					_be;
+				}
+				if (!_IsDescPresent(ss_xdesc.descriptor)) {
+					_bb("!DescPresent(newss)");
+					_chk(_SetExcept_SS(ss_xdesc.selector & 0xfffc + !!flagext));
+					_be;
+				}
+				/*_chk(_ksa_load_sreg(&css, &ss_xdesc));
+				if (_IsDescSys32(gate_cdesc)) {
+					_bb("DescSys32(gate)");
+					_chk(_kma_test_logical(&css, newesp, 36, 1, 0x00, 0));
+					_be;
+				} else {
+					_bb("!DescSys32(gate)");
+					_chk(_kma_test_logical(&css, newesp, 18, 1, 0x00, 0));
+					_be;
+				}*/
+				oldeflags = vcpu.eflags;
+				_ClrEFLAGS_VM;_MakeCPL(0x00);
+				_ClrEFLAGS_TF;
+				_ClrEFLAGS_NT;
+				_ClrEFLAGS_RF;
+				if (_IsDescIntGate(gate_cdesc))
+					_ClrEFLAGS_IF;
+				oldss_sel = vcpu.ss.selector;
+				oldesp = vcpu.esp;
+				_chk(_ksa_load_sreg(&vcpu.ss, &ss_xdesc));
+				vcpu.esp = newesp;
+				if (_IsDescSys32(gate_cdesc)) {
+					_bb("DescSys32(gate)");
+					_chk(_kec_push(vcpu.gs.selector, 4));
+					_chk(_kec_push(vcpu.fs.selector, 4));
+					_chk(_kec_push(vcpu.ds.selector, 4));
+					_chk(_kec_push(vcpu.es.selector, 4));
+					_chk(_kec_push(oldss_sel, 4));
+					_chk(_kec_push(oldesp, 4));
+					_chk(_kec_push(oldeflags, 4));
+					_chk(_kec_push(vcpu.cs.selector, 4));
+					_chk(_kec_push(vcpu.eip, 4));
+					_chk(_s_load_gs(0x0000));
+					_chk(_s_load_fs(0x0000));
+					_chk(_s_load_ds(0x0000));
+					_chk(_s_load_es(0x0000));
+					_chk(_ksa_load_sreg(&vcpu.cs, &cs_xdesc));
+					switch (byte) {
+					case 2: vcpu.eip = GetMax16(_GetDescGate_Offset(gate_cdesc));break;
+					case 4: vcpu.eip = GetMax32(_GetDescGate_Offset(gate_cdesc));break;
+					default:_bb("byte");
+						_chk(_SetExcept_CE(byte));
+						_be;break;
+					}
+					_be;
+				} else {
+					_bb("!DescSys32(gate)");
+					_chk(_SetExcept_CE(0));
+					_be;
+				}
+				_be;
+			}
+			_be;
+		} else {
+			_bb("DescCodeConform/DPL(>=CPL)");
+			_chk(_SetExcept_CE(0));
+			_be;
+		}
 		_be;
 	}
 	_ce;
@@ -2466,7 +2635,43 @@ todo _e_iret(t_nubit8 byte)
 		_bb("!Real");
 		if (_GetEFLAGS_VM) {
 			_bb("V86");
-			_chk(_SetExcept_CE(0));
+			/* RETURN-FROM-VIRTUAL-8086-MODE */
+			if (_GetEFLAGS_IOPL == 3) {
+				_bb("EFLAGS_IOPL(3)");
+				switch (byte) {
+				case 2: _bb("byte(2)");
+					_chk(_s_test_ss_pop(6));
+					_chk(neweip    = GetMax16(_kec_pop(2)));
+					_chk(newcs     = GetMax16(_kec_pop(2)));
+					_chk(neweflags = GetMax16(_kec_pop(2)));
+					mask |= (0xffff0000 | VCPU_EFLAGS_IOPL);
+					_be;break;
+				case 4: _bb("byte(4)");
+					_newins_;
+					_chk(_s_test_ss_pop(12));
+					_chk(neweip    = GetMax32(_kec_pop(4)));
+					_chk(newcs     = GetMax16(_kec_pop(4)));
+					_chk(neweflags = GetMax32(_kec_pop(4)));
+					mask |= (VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL);
+					_be;break;
+				default: _bb("byte");
+					_chk(_SetExcept_CE(byte));
+					_be;break;
+				}
+				_chk(_s_descriptor(newcs));
+				_chk(_ksa_load_sreg(&ccs, &vcpuins.xdesc));
+				_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
+				vcpu.cs = ccs;
+				vcpu.eip = neweip;
+				vcpu.eflags = (neweflags & ~mask) | (vcpu.eflags & mask);
+				_be;
+			} else {
+				_bb("EFLAGS_IOPL(!3)");
+				/* trap to virtual-8086 monitor */
+				vcpuins.oldcpu = vcpu;
+				_chk(_SetExcept_GP(0));
+				_be;
+			}
 			_be;
 		} else if (_GetEFLAGS_NT) {
 			_bb("Nested");
@@ -2608,7 +2813,7 @@ done _e_load_far(t_cpu_sreg *rsreg, t_vaddrcc rdest, t_nubit16 selector, t_nubit
 }
 done _e_loopcc(t_nsbit8 csrc, t_bool condition)
 {
-	t_nubit32 cecx = 0x00000000;
+	t_nubit32 cecx;
 	t_nubit32 neweip = vcpu.eip;
 	_cb("_e_loopcc");
 	switch (_GetAddressSize) {
@@ -3138,7 +3343,7 @@ tots _a_neg(t_nubit64 cdest, t_nubit8 bit)
 }
 tots _a_mul(t_nubit64 csrc, t_nubit8 bit)
 {
-	t_nubit64 cdest = 0x0000000000000000;
+	t_nubit64 cdest;
 	_cb("_a_mul");
 	switch (bit) {
 	case 8: _bb("bit(8)");
@@ -3184,7 +3389,7 @@ tots _a_mul(t_nubit64 csrc, t_nubit8 bit)
 }
 tots _a_imul(t_nubit64 csrc, t_nubit8 bit)
 {
-	t_nsbit64 cdest = 0x0000000000000000;
+	t_nsbit64 cdest;
 	_cb("_a_imul");
 	switch (bit) {
 	case 8: _bb("bit(8)");
@@ -10185,7 +10390,6 @@ tots INS_0F_00()
 {
 	t_nubit8 modrm;
 	_cb("INS_0F_00");
-	_newins_;
 	_adv;
 	if (_IsProtected) {
 		_bb("Protected");
@@ -10280,7 +10484,6 @@ tots INS_0F_01()
 	t_nubit16 limit;
 	t_nubit32 base;
 	_cb("INS_0F_01");
-	_newins_;
 	_adv;
 	_chk(modrm = (t_nubit8)_s_read_cs(vcpu.eip, 1));
 	switch (_GetModRM_REG(modrm)) {
