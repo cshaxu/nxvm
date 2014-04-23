@@ -391,7 +391,7 @@ static void Nxvm()
 #include "../vmachine/debug/aasm.h"
 static void Test()
 {
-	if (aasm("aas", 0, 0)) printf("succ\n");
+	if (aasm("cs: aas\n mov byte word near far -ptr [bp+di+fa23], dl\n", 0, 0)) printf("succ\n");
 	else printf("fail\n");
 	debug();
 	//cs:\nss:\nds:\n mov ah,[1234]\n@label1:\n\nmov bx, [bp+si]\n\n\njmp @label1", 0, 0);

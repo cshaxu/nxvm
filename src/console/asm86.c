@@ -8,18 +8,19 @@
 
 /* GENERAL */
 typedef struct {
-	unsigned char type;	// 0 = error; 1 = reg8; 2 = reg16; 3 = ptr16;
-						// 4 = seg16(es=0,cs=1,ss=2,ds=3);
-						// 5 = imm8; 6 = imm16; 7 = mem8; 8 = mem16; 9 = null;
-	unsigned char mod;	// 0 = mem; 1 = mem+imm8; 2 = mem+imm16; 3 = reg; 4 = other;
-	unsigned char rm;	// use by modrm when mod = 0,1,2; by reg/ptr/seg when mod = 3; 8 = other;
-						// 0 = BX+SI, 1 = BX+DI, 2 = BP+SI, 3 = BP+DI,
-						// 4 = SI, 5 = DI, 6 = BP, 7 = BX
-	//unsigned char reg;	// use by modrm when mod = 0,1,2; by reg/ptr/seg when mod = 3; 8 = other;
-						// 0 = AX/AL, 1 = CX/CL, 2 = DX/DL, 3 = BX/CL,
-						// 4 = SP/AH, 5 = BP/CH, 6 = SI/DH, 7 = DI/BH
-	unsigned short imm;	// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
-	unsigned char blFar;	// 0 = blNear; 1 = blFar; 2 = N/A;
+	t_nubit8 type;	// 0 = error; 1 = reg8; 2 = reg16; 3 = ptr16;
+					// 4 = seg16(es=0,cs=1,ss=2,ds=3);
+					// 5 = imm8; 6 = imm16; 7 = mem8; 8 = mem16; 9 = null;
+	t_nubit8 mod;	// 0 = mem; 1 = mem+imm8; 2 = mem+imm16; 3 = reg; 4 = other;
+	t_nubit8 rm;	// use by modrm when mod = 0,1,2
+					// 0 = BX+SI, 1 = BX+DI, 2 = BP+SI, 3 = BP+DI,
+					// 4 = SI, 5 = DI, 6 = BP, 7 = BX
+					// by reg/ptr/seg when mod = 3;
+					// 0 = AX/AL, 1 = CX/CL, 2 = DX/DL, 3 = BX/CL,
+					// 4 = SP/AH, 5 = BP/CH, 6 = SI/DH, 7 = DI/BH
+					// 8 = other;
+	t_nubit16 imm;	// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
+	t_nubit8 blFar;	// 0 = blNear; 1 = blFar; 2 = N/A;
 } ModRM;
 
 static int ishexdigit(char c)
@@ -72,9 +73,9 @@ static int chartohexdigit(char c)
 #define isRM16R16	(isRM16(m1) && isR16(m2))
 #define isR8RM8		(isReg8(m1) && isRM8(m2))
 #define isR16RM16	(isR16(m1) && isRM16(m2))
-#define isShort(ins,off,len) (((off)+(len) < 0x0080 && (((ins) < (off)+(len)+0x0080) || ((ins) >= (unsigned short)((off)+(len)-0x0080)))) ||\
+#define isShort(ins,off,len) (((off)+(len) < 0x0080 && (((ins) < (off)+(len)+0x0080) || ((ins) >= (t_nubit16)((off)+(len)-0x0080)))) ||\
 	((off)+(len) >= 0x0080 && (off)+(len) <= 0xff80 && (((ins) >= (off)+(len)-0x0080) && ((ins) < (off)+(len)+0x0080))) ||\
-	((off)+(len) > 0xff80 && (((ins) < (unsigned short)((off)+(len)+0x0080)) || ((ins) <= 0xffff && (ins) >= (off)+(len)-0x0080))))
+	((off)+(len) > 0xff80 && (((ins) < (t_nubit16)((off)+(len)+0x0080)) || ((ins) <= 0xffff && (ins) >= (off)+(len)-0x0080))))
 #define dispLen(m)	((((m).mod == 0 && (m).rm == 6) || (m).mod == 2)?2:(((m).mod == 1)?1:0))
 
 /*#define dumpArg {\
@@ -86,13 +87,13 @@ static int chartohexdigit(char c)
 
 #undef dumpArg*/
 
-#define aSetByte(n)	{*(loc+len++) = (unsigned char)(n);}
-#define aSetWord(n)	{*(loc+len++) = (unsigned char)(n);*(loc+len++) = (unsigned char)((n)>>8);}
+#define aSetByte(n)	{*(loc+len++) = (t_nubit8)(n);}
+#define aSetWord(n)	{*(loc+len++) = (t_nubit8)(n);*(loc+len++) = (t_nubit8)((n)>>8);}
 #define aSetModRM(modrm,reg) {\
 	*(loc+len++) = ((modrm).mod<<6) + ((reg)<<3) + ((modrm).rm);\
 	if(dispLen(modrm)) {\
-			*(loc+len++) = (unsigned char)((modrm).imm);\
-			if(dispLen(modrm) == 2) *(loc+len++) = (unsigned char)((modrm).imm>>8);}}
+			*(loc+len++) = (t_nubit8)((modrm).imm);\
+			if(dispLen(modrm) == 2) *(loc+len++) = (t_nubit8)((modrm).imm>>8);}}
 #define aSINGLE(op)	aSetByte(op)
 #define aAACC(op) {	if(a1) len = 0; else {aSetByte(op)	aSetByte(0x0a)}}
 #define aGROUP1(reg,op,sign) {\
@@ -254,7 +255,7 @@ static ModRM aArgParse(const char *s)
 {
 	ModRM a;
 	States state;
-	unsigned short n,nn,nsum,nnsum;
+	t_nubit16 n,nn,nsum,nnsum;
 	int p,f;
 	int sparen;
 	int cs,ds,es,ss;int bs16;
@@ -600,7 +601,7 @@ static ModRM aArgParse(const char *s)
 #endif
 	return a;
 }
-static int aPrefix(const char *s,unsigned char *loc)
+static int aPrefix(const char *s,t_nubit8 *loc)
 {
 	if(!s) return 0;
 	if(!strcmp(s,"lock")) *loc = 0xf0;
@@ -611,11 +612,11 @@ static int aPrefix(const char *s,unsigned char *loc)
 	else return 0;
 	return 1;
 }
-static int aDB(const char *db,unsigned char *loc)
+static int aDB(const char *db,t_nubit8 *loc)
 {
 	int i = 0;
 	int flag = 1;
-	unsigned char res = 0;
+	t_nubit8 res = 0;
 	if(!db) return 0;
 	while(db[i] != '\0') {
 		if(ishexdigit(db[i])) res = (res<<4)+chartohexdigit(db[i]);
@@ -628,11 +629,11 @@ static int aDB(const char *db,unsigned char *loc)
 	else flag = 0;
 	return flag;
 }
-static int aDW(const char *dw,unsigned char *loc)
+static int aDW(const char *dw,t_nubit8 *loc)
 {
 	int i = 0;
 	int flag = 1;
-	unsigned short res = 0;
+	t_nubit16 res = 0;
 	if(!dw) return 0;
 	while(dw[i] != '\0') {
 		if(ishexdigit(dw[i])) res = (res<<4)+chartohexdigit(dw[i]);
@@ -640,13 +641,13 @@ static int aDW(const char *dw,unsigned char *loc)
 		++i;
 	}
 	if(flag && i < 5) {
-		*(loc) = (unsigned char)res;
+		*(loc) = (t_nubit8)res;
 		*(loc+1) = (res>>8);
 	} else flag = 0;
 	return flag;
 }
 static int aOpCode(const char *op,const char *a1,const char *a2,
-	unsigned char *loc,unsigned short offset,unsigned short cs)
+	t_nubit8 *loc,t_nubit16 offset,t_nubit16 cs)
 {
 	int len = 0;
 	ModRM m1,m2;
@@ -788,13 +789,13 @@ static int aOpCode(const char *op,const char *a1,const char *a2,
 
 /*	read asmStmt, locCS;
 	use locMemory, locSegment, locOffset;
-	write (unsigned char *)(locMemory+(locSegment<<4)+locOffset)*/
-int assemble(const char *asmStmt,unsigned short locCS,
+	write (t_nubit8 *)(locMemory+(locSegment<<4)+locOffset)*/
+int assemble(const char *asmStmt,t_nubit16 locCS,
 	void *locMemory,
-	unsigned short locSegment,
-	unsigned short locOffset)
+	t_nubit16 locSegment,
+	t_nubit16 locOffset)
 {
-	unsigned char *loc = (unsigned char *)(((unsigned char *)locMemory)+(locSegment<<4)+locOffset);
+	t_nubit8 *loc = (t_nubit8 *)(((t_nubit8 *)locMemory)+(locSegment<<4)+locOffset);
 	int len = 0,flag;
 	char copy[0x100];
 	char *prefix = NULL;
@@ -941,14 +942,14 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //		break;\
 //	case 1:\
 //		switch(modrm.rm) {\
-//		case 0:	dANY("BX+SI")	dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
-//		case 1:	dANY("BX+DI")	dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
-//		case 2:	dANY("BP+SI")	dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
-//		case 3:	dANY("BP+DI")	dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
-//		case 4:	dANY("SI")		dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
-//		case 5:	dANY("DI")		dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
-//		case 6:	dANY("BP")		dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
-//		case 7:	dANY("BX")		dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
+//		case 0:	dANY("BX+SI")	dStrCat8s(dasmStmt,(t_nubit8)modrm.imm);break;\
+//		case 1:	dANY("BX+DI")	dStrCat8s(dasmStmt,(t_nubit8)modrm.imm);break;\
+//		case 2:	dANY("BP+SI")	dStrCat8s(dasmStmt,(t_nubit8)modrm.imm);break;\
+//		case 3:	dANY("BP+DI")	dStrCat8s(dasmStmt,(t_nubit8)modrm.imm);break;\
+//		case 4:	dANY("SI")		dStrCat8s(dasmStmt,(t_nubit8)modrm.imm);break;\
+//		case 5:	dANY("DI")		dStrCat8s(dasmStmt,(t_nubit8)modrm.imm);break;\
+//		case 6:	dANY("BP")		dStrCat8s(dasmStmt,(t_nubit8)modrm.imm);break;\
+//		case 7:	dANY("BX")		dStrCat8s(dasmStmt,(t_nubit8)modrm.imm);break;\
 //		default:dANY("(ERROR:R/M)")	break;}\
 //		break;\
 //	case 2:\
@@ -997,7 +998,7 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	if(modrm.mod < 3) dANY("]");}
 //#define dImm(bit) {\
 //	switch(bit) {\
-//	case 8:	dGetByte(imm)	dStrCat8u(dasmStmt,(unsigned char)imm);break;\
+//	case 8:	dGetByte(imm)	dStrCat8u(dasmStmt,(t_nubit8)imm);break;\
 //	case 16:dGetWord(imm)	dStrCat16u(dasmStmt,imm);break;\
 //	default:dANY("(ERROR:IMM)")	break;}}
 //#define dOff(bit) {\
@@ -1040,8 +1041,8 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //} InsType;
 ////	write dasmStmt, resOperand;
 ////	use locMemory, locSegment, locOffset;
-////	read (unsigned char *)(locMemory+(locSegment<<4)+locOffset)
-//static void dStrCat8u(char *str,unsigned char n)
+////	read (t_nubit8 *)(locMemory+(locSegment<<4)+locOffset)
+//static void dStrCat8u(char *str,t_nubit8 n)
 //{
 //	char c,s[3];
 //	int i;
@@ -1067,7 +1068,7 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	}
 //	STRCAT(str,s);
 //}
-//static void dStrCat16u(char *str,unsigned short n)
+//static void dStrCat16u(char *str,t_nubit16 n)
 //{
 //	char c,s[5];
 //	int i;
@@ -1079,10 +1080,10 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	}
 //	STRCAT(str,s);
 //}
-//static int dModRM(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op,InsType it)
+//static int dModRM(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,const char *op,InsType it)
 //{
 //	int len = 0;
-//	unsigned short imm;
+//	t_nubit16 imm;
 //	ModRM modrm;
 //	dANY(op);
 //	dANY("\t");
@@ -1117,10 +1118,10 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	}
 //	return len;
 //}
-//static int dRImm(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op,InsType it)
+//static int dRImm(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,const char *op,InsType it)
 //{
 //	int len = 0;
-//	unsigned short imm;
+//	t_nubit16 imm;
 //	setOperandNul
 //	dANY(op)
 //	dANY("\t")
@@ -1134,7 +1135,7 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	default:		dANY("(ERROR:REGIMM)")			break;}
 //	return len;
 //}
-//static int dSLabel(char *dasmStmt,Operand *resOperand,unsigned char *loc,int op)
+//static int dSLabel(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,int op)
 //{
 //	int len = 0;
 //	resOperand->flag = op;
@@ -1147,20 +1148,20 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	default:dANY("(ERROR:REG)")	break;}
 //	return len;
 //}
-//static int dOP(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op)
+//static int dOP(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,const char *op)
 //{
 //	int len = 0;
 //	setOperandNul
 //	dANY(op);
 //	return len;
 //}
-//static int dPrefix(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op)
+//static int dPrefix(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,const char *op)
 //{
 //	int len = 0;
 //	dANY(op);
 //	return len;
 //}
-//static int dDB(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char num)
+//static int dDB(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,t_nubit8 num)
 //{
 //	int len = 0;
 //	setOperandNul
@@ -1168,10 +1169,10 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	dStrCat8u(dasmStmt,num);
 //	return len;
 //}
-//static int dJRel(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op,unsigned short locOffset,int bit)
+//static int dJRel(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,const char *op,t_nubit16 locOffset,int bit)
 //{
 //	int len = 0;
-//	unsigned short rel;
+//	t_nubit16 rel;
 //	setOperandNul
 //	dANY(op);
 //	dANY("\t")
@@ -1192,11 +1193,11 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	dStrCat16u(dasmStmt,rel);
 //	return len;
 //}
-//static int dGroup1(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
+//static int dGroup1(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,t_nubit8 op)
 //{	// op = 0x80,0x81,0x82,0x83
 //	int len = 0;
 //	int sign = 0;
-//	unsigned short imm;
+//	t_nubit16 imm;
 //	ModRM modrm;
 //	dGetModRM
 //	switch(modrm.reg) {
@@ -1220,7 +1221,7 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	}
 //	return len;
 //}
-//static int dXCHG(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
+//static int dXCHG(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,t_nubit8 op)
 //{
 //	int len = 0;
 //	ModRM modrm;
@@ -1230,10 +1231,10 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	dR(16)	dCOMMA	dANY("AX")
 //	return len;
 //}
-//static int dMovOff(char *dasmStmt,Operand *resOperand,unsigned char *loc,InsType it)
+//static int dMovOff(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,InsType it)
 //{
 //	int len = 0;
-//	unsigned short imm;
+//	t_nubit16 imm;
 //	if(isOperandNul) setOperandDS
 //	resOperand->seg = 0x01;
 //	resOperand->mod = 0x00;
@@ -1249,12 +1250,12 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	resOperand->imm = imm;
 //	return len;
 //}
-//static int dMovImm(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
+//static int dMovImm(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,t_nubit8 op)
 //{
 //	int len = 0;
-//	unsigned short imm;
+//	t_nubit16 imm;
 //	ModRM modrm;
-//	unsigned char myop;
+//	t_nubit8 myop;
 //	setOperandNul
 //	if(op > 0xb7) myop = 0xb8;
 //	else myop = 0xb0;
@@ -1266,18 +1267,18 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	default:dANY("(ERROR:MOVOP)");break;}
 //	return len;
 //}
-//static int dOPImm(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op,int bit)
+//static int dOPImm(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,const char *op,int bit)
 //{
 //	int len = 0;
-//	unsigned short imm;
+//	t_nubit16 imm;
 //	setOperandNul
 //	dANY(op)	dANY("\t")	dImm(bit)
 //	return len;
 //}
-//static int dGroup2(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
+//static int dGroup2(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,t_nubit8 op)
 //{	// op = 0xd0,0xd1,0xd2,0xd3
 //	int len = 0;
-//	//unsigned short imm;
+//	//t_nubit16 imm;
 //	ModRM modrm;
 //	dGetModRM
 //	switch(modrm.reg) {
@@ -1298,20 +1299,20 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	case 0xd3:	dRM(16)	dANY(",CL")	break;}
 //	return len;
 //}
-//static int dAAX(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op)
+//static int dAAX(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,const char *op)
 //{
 //	int len = 0;
-//	unsigned short imm;
+//	t_nubit16 imm;
 //	setOperandNul
 //	dGetByte(imm)
 //	dANY(op)
-//	if(imm != 0x0a) {dANY("\t")	dStrCat8u(dasmStmt,(unsigned char)imm);}
+//	if(imm != 0x0a) {dANY("\t")	dStrCat8u(dasmStmt,(t_nubit8)imm);}
 //	return len;
 //}
-//static int dJFar(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op)
+//static int dJFar(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,const char *op)
 //{
 //	int len = 0;
-//	unsigned short seg,ptr;
+//	t_nubit16 seg,ptr;
 //	setOperandNul
 //	dANY(op)
 //	dANY("\t")
@@ -1322,10 +1323,10 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	dStrCat16u(dasmStmt,ptr);
 //	return len;
 //}
-//static int dGroup3(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
+//static int dGroup3(char *dasmStmt,Operand *resOperand,t_nubit8 *loc,t_nubit8 op)
 //{
 //	int len = 0;
-//	unsigned short imm;
+//	t_nubit16 imm;
 //	ModRM modrm;
 //	dGetModRM
 //	switch(modrm.reg) {
@@ -1345,7 +1346,7 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	}
 //	return len;
 //}
-//static int dGroup4(char *dasmStmt,Operand *resOperand,unsigned char *loc)
+//static int dGroup4(char *dasmStmt,Operand *resOperand,t_nubit8 *loc)
 //{
 //	int len = 0;
 //	ModRM modrm;
@@ -1358,7 +1359,7 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //	dRM(8)
 //	return len;
 //}
-//static int dGroup5(char *dasmStmt,Operand *resOperand,unsigned char *loc)
+//static int dGroup5(char *dasmStmt,Operand *resOperand,t_nubit8 *loc)
 //{
 //	int len = 0;
 //	ModRM modrm;
@@ -1379,13 +1380,13 @@ int assemble(const char *asmStmt,unsigned short locCS,
 //
 //int disassemble(char *dasmStmt,Operand *resOperand,
 //	const void *locMemory,
-//	const unsigned short locSegment,
-//	const unsigned short locOffset)
+//	const t_nubit16 locSegment,
+//	const t_nubit16 locOffset)
 //{
-//	//unsigned short imm;
+//	//t_nubit16 imm;
 //	int len = 0;
-//	unsigned char opcode;
-//	unsigned char *loc = (unsigned char *)(((unsigned char *)locMemory)+(locSegment<<4)+locOffset);
+//	t_nubit8 opcode;
+//	t_nubit8 *loc = (t_nubit8 *)(((t_nubit8 *)locMemory)+(locSegment<<4)+locOffset);
 //	if(!isOperandES && !isOperandCS && !isOperandSS && !isOperandES) {
 //		setOperandNul
 //		resOperand->seg = 0x00;
