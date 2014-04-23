@@ -1205,9 +1205,9 @@ static void parse()
 		}
 	}
 	aopri1 = parsearg(aopr1);
-	if (error) vapiPrint("error1\n");
+//	if (error) vapiPrint("error1\n");
 	aopri2 = parsearg(aopr2);
-	if (error) vapiPrint("error2\n");
+//	if (error) vapiPrint("error2\n");
 }
 
 /* assembly compiler: analyzer / label table */
@@ -3438,7 +3438,7 @@ static void exec()
 	else if (!strcmp(aop, "std")) STD();
 	else if (aop[0] == '$') LABEL();
 	else error = 1;
-	if (error) printf("exec.error = %d\n",error);
+//	if (error) printf("exec.error = %d\n",error);
 }
 
 /* op opr1,opr2 ;comment \n op opr1,opr2 ;end\n */
