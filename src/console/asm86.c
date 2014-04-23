@@ -807,7 +807,7 @@ int assemble(const char *asmStmt,unsigned short locCS,
 	unsigned char *loc = (unsigned char *)(((unsigned char *)locMemory)+(locSegment<<4)+locOffset);
 	int len = 0,flag;
 	char copy[0x100];
-	char *prefix = NULL, *p;
+	char *prefix = NULL;
 	char *db = NULL;
 	char *dw = NULL;
 	char *opcode = NULL;

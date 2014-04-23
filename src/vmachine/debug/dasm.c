@@ -1740,6 +1740,177 @@ static void JMP_REL8()
 	SPRINTF(dop, "JMP");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
+static void IN_AL_DX()
+{
+	dvip++;
+	SPRINTF(dop, "IN");
+	SPRINTF(dopr, "AL,DX");
+}
+static void IN_AX_DX()
+{
+	dvip++;
+	SPRINTF(dop, "IN");
+	SPRINTF(dopr, "AX,DX");
+}
+static void OUT_DX_AL()
+{
+	dvip++;
+	SPRINTF(dop, "OUT");
+	SPRINTF(dopr, "DX,AL");
+}
+static void OUT_DX_AX()
+{
+	dvip++;
+	SPRINTF(dop, "OUT");
+	SPRINTF(dopr, "DX,AX");
+}
+static void LOCK()
+{
+	dvip++;
+	SPRINTF(dop, "LOCK");
+}
+static void QDX()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "QDX");
+	SPRINTF(dopr, "%s", dimm);
+}
+static void REPNZ()
+{
+	dvip++;
+	SPRINTF(dop, "REPNZ");
+}
+static void REP()
+{
+	dvip++;
+	SPRINTF(dop, "REP");
+}
+static void HLT()
+{
+	dvip++;
+	SPRINTF(dop, "HLT");
+}
+static void CMC()
+{
+	dvip++;
+	SPRINTF(dop, "CMC");
+}
+static void INS_F6()
+{
+	dvip++;
+	GetModRegRM(0,8);
+	switch(rid) {
+	case 0:	GetImm(8);
+		SPRINTF(dop, "TEST");
+		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		return;
+	case 2: SPRINTF(dop, "NOT");break;
+	case 3:	SPRINTF(dop, "NEG");break;
+	case 4:	SPRINTF(dop, "MUL");break;
+	case 5:	SPRINTF(dop, "IMUL");break;
+	case 6:	SPRINTF(dop, "DIV");break;
+	case 7:	SPRINTF(dop, "IDIV");break;
+	default:SPRINTF(dop, "<ERROR:REGID(%02X)>",rid);return;}
+	if (ismem) SPRINTF(dopr, "BYTE PTR %s", drm);
+	else       SPRINTF(dopr, "%s", drm);
+}
+static void INS_F7()
+{
+	dvip++;
+	GetModRegRM(0,16);
+	switch(rid) {
+	case 0:	GetImm(16);
+		SPRINTF(dop, "TEST");
+		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		return;
+	case 2: SPRINTF(dop, "NOT");break;
+	case 3:	SPRINTF(dop, "NEG");break;
+	case 4:	SPRINTF(dop, "MUL");break;
+	case 5:	SPRINTF(dop, "IMUL");break;
+	case 6:	SPRINTF(dop, "DIV");break;
+	case 7:	SPRINTF(dop, "IDIV");break;
+	default:SPRINTF(dop, "<ERROR:REGID(%02X)>",rid);return;}
+	if (ismem) SPRINTF(dopr, "WORD PTR %s", drm);
+	else       SPRINTF(dopr, "%s", drm);
+}
+static void CLC()
+{
+	dvip++;
+	SPRINTF(dop, "CLC");
+}
+static void STC()
+{
+	dvip++;
+	SPRINTF(dop, "STC");
+}
+static void CLI()
+{
+	dvip++;
+	SPRINTF(dop, "CLI");
+}
+static void STI()
+{
+	dvip++;
+	SPRINTF(dop, "STI");
+}
+static void CLD()
+{
+	dvip++;
+	SPRINTF(dop, "CLD");
+}
+static void STD()
+{
+	dvip++;
+	SPRINTF(dop, "STD");
+}
+static void INS_FE()
+{
+	dvip++;
+	GetModRegRM(0,8);
+	switch(rid) {
+	case 0:	SPRINTF(dop, "INC");
+		if (ismem) SPRINTF(dopr, "BYTE PTR %s", drm);
+		else       SPRINTF(dopr, "%s", drm);
+		break;
+	case 1:	SPRINTF(dop, "DEC");
+		if (ismem) SPRINTF(dopr, "BYTE PTR %s", drm);
+		else       SPRINTF(dopr, "%s", drm);
+		break;
+	default:SPRINTF(dop, "<ERROR:REGID(%02X)>", rid);break;}
+}
+static void INS_FF()
+{
+	dvip++;
+	GetModRegRM(0,16);
+	switch(rid) {
+	case 0:	SPRINTF(dop, "INC");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s", drm);
+		else       SPRINTF(dopr, "%s", drm);
+		break;
+	case 1:	SPRINTF(dop, "DEC");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s", drm);
+		else       SPRINTF(dopr, "%s", drm);
+		break;
+	case 2:	SPRINTF(dop, "CALL");
+		SPRINTF(dopr, "%s", drm);
+		break;
+	case 3:	SPRINTF(dop, "CALL");
+		SPRINTF(dopr, "FAR %s", drm);
+		break;
+	case 4:	SPRINTF(dop, "JMP"); /* JMP_RM16 */
+		SPRINTF(dopr, "%s", drm);
+		break;
+	case 5: SPRINTF(dop, "JMP"); /* JMP_M16_16 */
+		SPRINTF(dopr, "FAR %s", drm);
+		break;
+	case 6: SPRINTF(dop, "PUSH"); /* PUSH_RM16 */
+		SPRINTF(dopr, "%s", drm);
+		break;
+	default:SPRINTF(dop, "<ERROR:REGID(%02X)>", rid);break;}
+}
 
 static t_bool IsPrefix(t_nubit8 opcode)
 {
@@ -1759,12 +1930,13 @@ static void ClrPrefix()
 	doss = vcpu.ss;
 }
 
-t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off)
+t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off, t_bool flagtip)
 {
 	t_nubitcc i,l;
 	t_nubit8 opcode;
 	dvcs  = seg;
 	dvip  = off;
+	len     = 0;
 	stmt[0] = 0;
 	ClrPrefix();
 	do {
@@ -2016,27 +2188,27 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off)
 		case 0xe9: JMP_REL16();    break;
 		case 0xea: JMP_PTR16_16(); break;
 		case 0xeb: JMP_REL8();     break;
-/*		case 0xec: IN_AL_DX(); break;
-		case 0xed: IN_AX_DX(); break;
-		case 0xee: OUT_DX_AL(); break;
-		case 0xef: OUT_DX_AX(); break;
-		case 0xf0: LOCK(); break;
-		case 0xf1: QDX(); break;
-		case 0xf2: REPNZ(); break;
-		case 0xf3: REP(); break;
-		case 0xf4: HLT(); break;
-		case 0xf5: CMC(); break;
-		case 0xf6: INS_F6(); break;
-		case 0xf7: INS_F7(); break;
-		case 0xf8: CLC(); break;
-		case 0xf9: STC(); break;
-		case 0xfa: CLI(); break;
-		case 0xfb: STI(); break;
-		case 0xfc: CLD(); break;
-		case 0xfd: STD(); break;
-		case 0xfe: INS_FE(); break;
-		case 0xff: INS_FF(); break;*/
-		default:   DB();            break;
+		case 0xec: IN_AL_DX();     break;
+		case 0xed: IN_AX_DX();     break;
+		case 0xee: OUT_DX_AL();    break;
+		case 0xef: OUT_DX_AX();    break;
+		case 0xf0: LOCK();         break;
+		case 0xf1: QDX();          break;
+		case 0xf2: REPNZ();        break;
+		case 0xf3: REP();          break;
+		case 0xf4: HLT();          break;
+		case 0xf5: CMC();          break;
+		case 0xf6: INS_F6();       break;
+		case 0xf7: INS_F7();       break;
+		case 0xf8: CLC();          break;
+		case 0xf9: STC();          break;
+		case 0xfa: CLI();          break;
+		case 0xfb: STI();          break;
+		case 0xfc: CLD();          break;
+		case 0xfd: STD();          break;
+		case 0xfe: INS_FE();       break;
+		case 0xff: INS_FF();       break;
+		default:   DB();           break;
 		}
 		l = (dvip - off);
 		len += l;
@@ -2047,7 +2219,7 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off)
 		STRCAT(dstmt, dop);
 		for (i = strlen(dstmt);i < 32;++i) STRCAT(dstmt, " ");
 		STRCAT(dstmt, dopr);
-		if (dtip[0]) {
+		if (flagtip && dtip[0]) {
 			for (i = strlen(dstmt);i < 64;++i) STRCAT(dstmt, " ");
 			STRCAT(dstmt, dtip);
 		}

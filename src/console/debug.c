@@ -23,6 +23,7 @@ test code
 
 #include "../vmachine/vmachine.h"
 #include "../vmachine/vapi.h"
+#include "../vmachine/debug/dasm.h"
 
 #include "asm86.h"
 #include "debug.h"
@@ -548,6 +549,7 @@ static void rprintflags()
 }
 static void rprintregs()
 {
+	char str[MAXLINE];
 	printd(  "AX=%04X", _ax);
 	printd("  BX=%04X", _bx);
 	printd("  CX=%04X", _cx);
@@ -564,7 +566,8 @@ static void rprintregs()
 	printd("   ");
 	rprintflags();
 	printd("\n");
-	uprint(_cs,_ip,_ip);
+	dasm(str, _cs, _ip, 0x01);
+	printd("%s", str);
 }
 static void rscanregs()
 {
@@ -777,116 +780,18 @@ static void t()
 //	gexec(ptr1,ptr2);
 }
 // unassemble
-static t_nubit16 uoffset(Operand opr)
-{
-	t_nubit16 res = 0;
-	switch(opr.mod) {
-	case 0:
-		switch(opr.rm) {
-		case 0:	res = _bx+_si;break;
-		case 1:	res = _bx+_di;break;
-		case 2:	res = _bp+_si;break;
-		case 3:	res = _bp+_di;break;
-		case 4:	res = _si;break;
-		case 5:	res = _di;break;
-		case 6:	res = opr.imm;break;
-		case 7:	res = _bx;break;
-		default:printd("(ERROR:OFFSET)");break;}
-		break;
-	case 1:
-	case 2:
-		switch(opr.rm) {
-		case 0:	res = _bx+_si+opr.imm;break;
-		case 1:	res = _bx+_di+opr.imm;break;
-		case 2:	res = _bp+_si+opr.imm;break;
-		case 3:	res = _bp+_di+opr.imm;break;
-		case 4:	res = _si+opr.imm;break;
-		case 5:	res = _di+opr.imm;break;
-		case 6:	res = _bp+opr.imm;break;
-		case 7:	res = _bx+opr.imm;break;
-		default:printd("(ERROR:OFFSET)");break;}
-		break;
-	default:printd("(ERROR:OFFSET)");break;}
-	return res;
-}
 static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 {
-	char str[MAXLINE],*op = NULL, *stmt = NULL;
-	t_nubit16 pos = 0,len = 0;
-	int i,prefixflag;
-	t_nubit16 offset;
+	char str[MAXLINE], *stmt = NULL;
+	t_nubit16 len = 0;
 	t_nubit32 boundary;
-	Operand operand;
-	operand.flag = 4;
-	operand.seg = 0x00;
 	if(start > end) end = 0xffff;
 	if ((t_nubit32)((segment<<4) + end) > 0xfffff) end = (0xfffff-(segment<<4));
 	while(start <= end) {
-		pos = 0;
-		prefixflag = 0;
-		while(!pos || prefixflag) {
-			if(isprefix(getbyte(segment,start+pos))) prefixflag = 1;
-			else prefixflag = 0;
-			printnubit16(segment);
-			printd(":");
-			printnubit16(start+pos);
-			printd(" ");
-			len = disassemble(str,&operand,
-				(void *)vramGetAddr(0x0000,0x0000),segment,start+pos);
-			for(i = 0;i < len;++i)
-				printnubit8(getbyte(segment,start+pos+i));
-			pos += len;
-			if(len < 3) printd("\t\t");
-			else printd("\t");
-			op = STRTOK(str,"\t");
-			if(!len || !op) {printd("fail to unassemble\n");return;}
-			else printd("%s\t",op);
-			stmt = STRTOK(NULL,"\0");
-			if(stmt) {
-				printd("%s",stmt);
-				if(strlen(stmt) < 8) printd("\t\t\t\t");
-				else if(strlen(stmt) < 16) printd("\t\t\t");
-				else if(strlen(stmt) < 24) printd("\t\t");
-				else if(strlen(stmt) < 30) printd("\t");
-			}
-			//printd("opr.seg=%d,opr.flag=%d\n",operand.seg,operand.flag);
-			if(operand.seg == 1 && operand.flag != 4) {
-				switch(operand.flag) {
-				case 0:	printd("ES:");offset = uoffset(operand);
-					printnubit16(offset);printd("=");
-					switch(operand.len) {
-					case 1:printnubit8(getbyte(_es,offset));break;
-					case 2:printnubit16(getword(_es,offset));break;
-					default:printd("(ERROR:OPERANDES)");break;}
-					break;
-				case 1:	printd("CS:");offset = uoffset(operand);
-					printnubit16(offset);printd("=");
-					switch(operand.len) {
-					case 1:printnubit8(getbyte(_cs,offset));break;
-					case 2:printnubit16(getword(_cs,offset));break;
-					default:printd("(ERROR:OPERANDCS)");break;}
-					break;
-				case 2:	printd("SS:");offset = uoffset(operand);
-					printnubit16(offset);printd("=");
-					switch(operand.len) {
-					case 1:printnubit8(getbyte(_ss,offset));break;
-					case 2:printnubit16(getword(_ss,offset));break;
-					default:printd("(ERROR:OPERANDSS)");break;}
-					break;
-				case 3:	printd("DS:");offset = uoffset(operand);
-					printnubit16(offset);printd("=");
-					switch(operand.len) {
-					case 1:printnubit8(getbyte(_ds,offset));break;
-					case 2:printnubit16(getword(_ds,offset));break;
-					default:printd("(ERROR:OPERANDDS)");break;}
-					break;
-				default:printd("(ERROR:OPERAND)");break;}
-				operand.flag = 4;
-			}
-			printd("\n");
-		}
-		start += pos;
-		boundary = (t_nubit32)start + (t_nubit32)pos;
+		len = (t_nubit16)dasm(str, segment, start, 0x00);
+		printd("%s", str);
+		start += len;
+		boundary = (t_nubit32)start + (t_nubit32)len;
 		if (boundary > 0xffff) break;
 	}
 	uasmSegRec = segment;

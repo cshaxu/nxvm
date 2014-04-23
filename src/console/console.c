@@ -393,7 +393,7 @@ static void Nxvm()
 static void Test()
 {
 	char str[0x100];
-	dasm(str, 0, 0);
+	dasm(str, 0, 0, 1);
 	printf("%s",str);
 }
 
