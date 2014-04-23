@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x64]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x65]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -115,9 +115,9 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 6:
  *     Note:    simply tested
  * Componenet 6: fdc (8272)
- *     Phase 1:
+ *     Phase 1: 04/03/2012 - present
  *     Phase 2: 03/07/2012 - 03/18/2012
- *     Phase 3:
+ *     Phase 3: 04/03/2012 - present
  *     Phase 4:
  *     Phase 5:
  *     Phase 6:
@@ -176,7 +176,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *
  * Format Unify:
  * all boolean type should be t_bool, declared TRUE or FALSE
- * check all parameters of macros
+ * check all includes, macro names, flag names
  */
 
 #include "stdio.h"
