@@ -10,17 +10,32 @@
 #define REG	((modrm&0x38)>>3)
 #define RM	((modrm&0x07)>>0)
 
-#define ADD_FLAG (OF | SF | ZF | AF | CF | PF)
-#define OR_FLAG (SF | ZF | PF)
-#define ADC_FLAG (OF | SF | ZF | AF | CF | PF)
-#define SBB_FLAG (OF | SF | ZF | AF | CF | PF)
-#define AND_FLAG (SF | ZF | PF)
-#define SUB_FLAG (OF | SF | ZF | AF | CF | PF)
-#define XOR_FLAG (SF | ZF | PF)
-#define CMP_FLAG (OF | SF | ZF | AF | CF | PF)
-#define INC_FLAG (OF | SF | ZF | AF | PF)
-#define DEC_FLAG (OF | SF | ZF | AF | PF)
-#define TEST_FLAG (SF | ZF | PF)
+#define ADD_FLAG	(OF | SF | ZF | AF | CF | PF)
+#define	 OR_FLAG	(SF | ZF | PF)
+#define ADC_FLAG	(OF | SF | ZF | AF | CF | PF)
+#define SBB_FLAG	(OF | SF | ZF | AF | CF | PF)
+#define AND_FLAG	(SF | ZF | PF)
+#define SUB_FLAG	(OF | SF | ZF | AF | CF | PF)
+#define XOR_FLAG	(SF | ZF | PF)
+#define CMP_FLAG	(OF | SF | ZF | AF | CF | PF)
+#define INC_FLAG	(OF | SF | ZF | AF | PF)
+#define DEC_FLAG	(OF | SF | ZF | AF | PF)
+#define TEST_FLAG	(SF | ZF | PF)
+#define SHL_FLAG	(SF | ZF | PF)
+#define SHR_FLAG	(SF | ZF | PF)
+#define SAL_FLAG	(SF | ZF | PF)
+#define SAR_FLAG	(SF | ZF | PF)
+#define AAM_FLAG	(SF | ZF | PF)
+#define AAD_FLAG	(SF | ZF | PF)
+
+#define DEST_8	(*(t_nubit8 *)dest)
+#define DEST_16	(*(t_nubit16 *)dest)
+#define SRC_8	(*(t_nubit8 *)src)
+#define SRC_16	(*(t_nubit16 *)src)
+#define MSB_DEST_8	(!!(DEST_8&0x80))
+#define MSB_DEST_16	(!!(DEST_16&0x8000))
+#define LSB_DEST_8	(DEST_8&0x01)
+#define LSB_DEST_16	(DEST_16&0x0001)
 
 static t_nubitcc flgoperand1,flgoperand2,flgresult,flglen;
 static enum {
@@ -38,6 +53,7 @@ static enum {
 t_faddrcc InTable[0x10000];	
 t_faddrcc OutTable[0x10000];
 t_faddrcc InsTable[0x100];
+t_nsbit16 HardINT;
 
 static t_nubit16 insDS;
 static t_nubit16 insSS;
@@ -148,6 +164,11 @@ void CalcOF()
 	default:break;}
 }
 
+void CalcAF()
+{
+	SetAF(((flgoperand1^flgoperand2)^flgresult)&0x10);
+}
+
 void CalcPF()
 {
 	t_nubit8 res8 = flgresult & 0xff;
@@ -158,10 +179,6 @@ void CalcPF()
 		count++;
 	}
 	SetPF(!(count%2));
-}
-void CalcAF()
-{
-	SetAF(((flgoperand1^flgoperand2)^flgresult)&0x10);
 }
 void CalcZF()
 {
@@ -210,7 +227,7 @@ static void GetModRegRM(t_nubitcc regbit,t_nubitcc rmbit)
 {
 	// returns rm and r
 	t_nubit8 modrm = vmemoryGetByte(vcpu.cs,vcpu.ip++);
-	rm = r = NULL;
+	rm = r = (t_vaddrcc)NULL;
 	switch(MOD) {
 	case 0:
 		switch(RM) {
@@ -306,7 +323,7 @@ static void GetModRegRMEA()
 {
 	// returns rm and r
 	t_nubit8 modrm = vmemoryGetByte(vcpu.cs,vcpu.ip++);
-	rm = r = NULL;
+	rm = r = (t_vaddrcc)NULL;
 	switch(MOD) {
 	case 0:
 		switch(RM) {
@@ -365,25 +382,25 @@ static void ADD(void *dest, void *src, t_nubitcc len)
 	case 8:
 		flglen = 8;
 		flginstype = ADD8;
-		flgoperand1 = *(t_nubit8 *)dest;
-		flgoperand2 = *(t_nubit8 *)src;
+		flgoperand1 = DEST_8;
+		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1+flgoperand2)&0xff;
-		*(t_nubit8 *)dest = flgresult;
+		DEST_8 = flgresult;
 	case 12:
 		flglen = 16;
 		flginstype = ADD16;
-		flgoperand1 = *(t_nubit16 *)dest;
+		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
 		flgresult = (flgoperand1+flgoperand2)&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		DEST_16 = flgresult;
 		break;
 	case 16:
 		flglen = 16;
 		flginstype = ADD16;
-		flgoperand1 = *(t_nubit16 *)dest;
-		flgoperand2 = *(t_nubit16 *)src;
+		flgoperand1 = DEST_16;
+		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1+flgoperand2)&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		DEST_16 = flgresult;
 		break;
 	default:break;}
 	SetFlags(ADD_FLAG);
@@ -394,26 +411,26 @@ static void OR(void *dest, void *src, t_nubitcc len)
 	case 8:
 		flglen = 8;
 		//flginstype = OR8;
-		flgoperand1 = *(t_nubit8 *)dest;
-		flgoperand2 = *(t_nubit8 *)src;
+		flgoperand1 = DEST_8;
+		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1|flgoperand2)&0xff;
-		*(t_nubit8 *)dest = flgresult;
+		DEST_8 = flgresult;
 		break;
 	case 12:
 		flglen = 16;
 		//flginstype = OR16;
-		flgoperand1 = *(t_nubit16 *)dest;
+		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
 		flgresult = (flgoperand1|flgoperand2)&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		DEST_16 = flgresult;
 		break;
 	case 16:
 		flglen = 16;
 		//flginstype = OR16;
-		flgoperand1 = *(t_nubit16 *)dest;
-		flgoperand2 = *(t_nubit16 *)src;
+		flgoperand1 = DEST_16;
+		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1|flgoperand2)&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		DEST_16 = flgresult;
 		break;
 	default:break;}
 	SetOF(0);
@@ -427,26 +444,26 @@ static void ADC(void *dest, void *src, t_nubitcc len)
 	case 8:
 		flglen = 8;
 		flginstype = ADC8;
-		flgoperand1 = *(t_nubit8 *)dest;
-		flgoperand2 = *(t_nubit8 *)src;
-		flgresult = (flgoperand1+flgoperand2+GetCF())&0xff;
-		*(t_nubit8 *)dest = flgresult;
+		flgoperand1 = DEST_8;
+		flgoperand2 = SRC_8;
+		flgresult = (flgoperand1+flgoperand2+!!GetCF())&0xff;
+		DEST_8 = flgresult;
 		break;
 	case 12:
 		flglen = 16;
 		flginstype = ADC16;
-		flgoperand1 = *(t_nubit16 *)dest;
+		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
-		flgresult = (flgoperand1+flgoperand2+GetCF())&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		flgresult = (flgoperand1+flgoperand2+!!GetCF())&0xffff;
+		DEST_16 = flgresult;
 		break;
 	case 16:
 		flglen = 16;
 		flginstype = ADC16;
-		flgoperand1 = *(t_nubit16 *)dest;
-		flgoperand2 = *(t_nubit16 *)src;
-		flgresult = (flgoperand1+flgoperand2+GetCF())&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		flgoperand1 = DEST_16;
+		flgoperand2 = SRC_16;
+		flgresult = (flgoperand1+flgoperand2+!!GetCF())&0xffff;
+		DEST_16 = flgresult;
 		break;
 	default:break;}
 	SetFlags(ADC_FLAG);
@@ -457,26 +474,26 @@ static void SBB(void *dest, void *src, t_nubitcc len)
 	case 8:
 		flglen = 8;
 		flginstype = SBB8;
-		flgoperand1 = *(t_nubit8 *)dest;
-		flgoperand2 = *(t_nubit8 *)src;
-		flgresult = (flgoperand1-(flgoperand2+GetCF()))&0xff;
-		*(t_nubit8 *)dest = flgresult;
+		flgoperand1 = DEST_8;
+		flgoperand2 = SRC_8;
+		flgresult = (flgoperand1-(flgoperand2+!!GetCF()))&0xff;
+		DEST_8 = flgresult;
 		break;
 	case 12:
 		flglen = 16;
 		flginstype = SBB16;
-		flgoperand1 = *(t_nubit16 *)dest;
+		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
-		flgresult = (flgoperand1-(flgoperand2+GetCF()))&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		flgresult = (flgoperand1-(flgoperand2+!!GetCF()))&0xffff;
+		DEST_16 = flgresult;
 		break;
 	case 16:
 		flglen = 16;
 		flginstype = SBB16;
-		flgoperand1 = *(t_nubit16 *)dest;
-		flgoperand2 = *(t_nubit16 *)src;
-		flgresult = (flgoperand1-(flgoperand2+GetCF()))&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		flgoperand1 = DEST_16;
+		flgoperand2 = SRC_16;
+		flgresult = (flgoperand1-(flgoperand2+!!GetCF()))&0xffff;
+		DEST_16 = flgresult;
 		break;
 	default:break;}
 	SetFlags(SBB_FLAG);
@@ -487,26 +504,26 @@ static void AND(void *dest, void *src, t_nubitcc len)
 	case 8:
 		flglen = 8;
 		//flginstype = AND8;
-		flgoperand1 = *(t_nubit8 *)dest;
-		flgoperand2 = *(t_nubit8 *)src;
+		flgoperand1 = DEST_8;
+		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1&flgoperand2)&0xff;
-		*(t_nubit8 *)dest = flgresult;
+		DEST_8 = flgresult;
 		break;
 	case 12:
 		flglen = 16;
 		//flginstype = AND16;
-		flgoperand1 = *(t_nubit16 *)dest;
+		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
 		flgresult = (flgoperand1&flgoperand2)&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		DEST_16 = flgresult;
 		break;
 	case 16:
 		flglen = 16;
 		//flginstype = AND16;
-		flgoperand1 = *(t_nubit16 *)dest;
-		flgoperand2 = *(t_nubit16 *)src;
+		flgoperand1 = DEST_16;
+		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1&flgoperand2)&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		DEST_16 = flgresult;
 		break;
 	default:break;}
 	SetOF(0);
@@ -520,26 +537,26 @@ static void SUB(void *dest, void *src, t_nubitcc len)
 	case 8:
 		flglen = 8;
 		flginstype = SUB8;
-		flgoperand1 = *(t_nubit8 *)dest;
-		flgoperand2 = *(t_nubit8 *)src;
+		flgoperand1 = DEST_8;
+		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1-flgoperand2)&0xff;
-		*(t_nubit8 *)dest = flgresult;
+		DEST_8 = flgresult;
 		break;
 	case 12:
 		flglen = 16;
 		flginstype = SUB16;
-		flgoperand1 = *(t_nubit16 *)dest;
+		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
 		flgresult = (flgoperand1-flgoperand2)&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		DEST_16 = flgresult;
 		break;
 	case 16:
 		flglen = 16;
 		flginstype = SUB16;
-		flgoperand1 = *(t_nubit16 *)dest;
-		flgoperand2 = *(t_nubit16 *)src;
+		flgoperand1 = DEST_16;
+		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1-flgoperand2)&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		DEST_16 = flgresult;
 		break;
 	default:break;}
 	SetFlags(SUB_FLAG);
@@ -550,26 +567,26 @@ static void XOR(void *dest, void *src, t_nubitcc len)
 	case 8:
 		flglen = 8;
 		//flginstype = XOR8;
-		flgoperand1 = *(t_nubit8 *)dest;
-		flgoperand2 = *(t_nubit8 *)src;
+		flgoperand1 = DEST_8;
+		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1^flgoperand2)&0xff;
-		*(t_nubit8 *)dest = flgresult;
+		DEST_8 = flgresult;
 		break;
 	case 12:
 		flglen = 16;
 		//flginstype = XOR16;
-		flgoperand1 = *(t_nubit16 *)dest;
+		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
 		flgresult = (flgoperand1^flgoperand2)&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		DEST_16 = flgresult;
 		break;
 	case 16:
 		flglen = 16;
 		//flginstype = XOR16;
-		flgoperand1 = *(t_nubit16 *)dest;
-		flgoperand2 = *(t_nubit16 *)src;
+		flgoperand1 = DEST_16;
+		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1^flgoperand2)&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		DEST_16 = flgresult;
 		break;
 	default:break;}
 	SetOF(0);
@@ -609,7 +626,7 @@ static void PUSH(void *src, t_nubitcc len)
 	switch(len) {
 	case 16:
 		vcpu.sp -= 2;
-		vmemorySetWord(vcpu.ss,vcpu.sp,*(t_nubit16 *)src);
+		vmemorySetWord(vcpu.ss,vcpu.sp,SRC_16);
 		break;
 	default:break;}
 }
@@ -617,7 +634,7 @@ static void POP(void *dest, t_nubitcc len)
 {
 	switch(len) {
 	case 16:
-		*(t_nubit16 *)dest = vmemoryGetWord(vcpu.ss,vcpu.sp);
+		DEST_16 = vmemoryGetWord(vcpu.ss,vcpu.sp);
 		vcpu.sp += 2;
 		break;
 	default:break;}
@@ -628,18 +645,18 @@ static void INC(void *dest, t_nubitcc len)
 	case 8:
 		flglen = 8;
 		flginstype = ADD8;
-		flgoperand1 = *(t_nubit8 *)dest;
+		flgoperand1 = DEST_8;
 		flgoperand2 = 0x01;
-		flgresult = (flgoperand1+flgoperand2)&0x00ff;
-		*(t_nubit8 *)dest = flgresult;
+		flgresult = (flgoperand1+flgoperand2)&0xff;
+		DEST_8 = flgresult;
 		break;
 	case 16:
 		flglen = 16;
 		flginstype = ADD16;
-		flgoperand1 = *(t_nubit16 *)dest;
-		flgoperand2 = 0x01;
+		flgoperand1 = DEST_16;
+		flgoperand2 = 0x0001;
 		flgresult = (flgoperand1+flgoperand2)&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		DEST_16 = flgresult;
 		break;
 	default:break;}
 	SetFlags(INC_FLAG);
@@ -650,18 +667,18 @@ static void DEC(void *dest, t_nubitcc len)
 	case 8:
 		flglen = 8;
 		flginstype = SUB8;
-		flgoperand1 = *(t_nubit8 *)dest;
+		flgoperand1 = DEST_8;
 		flgoperand2 = 0x01;
-		flgresult = (flgoperand1-flgoperand2)&0x00ff;
-		*(t_nubit8 *)dest = flgresult;
+		flgresult = (flgoperand1-flgoperand2)&0xff;
+		DEST_8 = flgresult;
 		break;
 	case 16:
 		flglen = 16;
 		flginstype = SUB16;
-		flgoperand1 = *(t_nubit16 *)dest;
-		flgoperand2 = 0x01;
+		flgoperand1 = DEST_16;
+		flgoperand2 = 0x0001;
 		flgresult = (flgoperand1-flgoperand2)&0xffff;
-		*(t_nubit16 *)dest = flgresult;
+		DEST_16 = flgresult;
 		break;
 	default:break;}
 	SetFlags(DEC_FLAG);
@@ -682,15 +699,15 @@ static void TEST(void *dest, void *src, t_nubitcc len)
 	case 8:
 		flglen = 8;
 		//flginstype = TEST8;
-		flgoperand1 = *(t_nubit8 *)dest;
-		flgoperand2 = *(t_nubit8 *)src;
+		flgoperand1 = DEST_8;
+		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1&flgoperand2)&0xff;
 		break;
 	case 16:
 		flglen = 16;
 		//flginstype = TEST16;
-		flgoperand1 = *(t_nubit16 *)dest;
-		flgoperand2 = *(t_nubit16 *)src;
+		flgoperand1 = DEST_16;
+		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1&flgoperand2)&0xffff;
 		break;
 	default:break;}
@@ -703,16 +720,16 @@ static void XCHG(void *dest, void *src, t_nubitcc len)
 {
 	switch(len) {
 	case 8:
-		flgoperand1 = *(t_nubit8 *)dest;
-		flgoperand2 = *(t_nubit8 *)src;
-		*(t_nubit8 *)dest = flgoperand2;
-		*(t_nubit8 *)src = flgoperand1;
+		flgoperand1 = DEST_8;
+		flgoperand2 = SRC_8;
+		DEST_8 = flgoperand2;
+		SRC_8 = flgoperand1;
 		break;
 	case 16:
-		flgoperand1 = *(t_nubit16 *)dest;
-		flgoperand2 = *(t_nubit16 *)src;
-		*(t_nubit16 *)dest = flgoperand2;
-		*(t_nubit16 *)src = flgoperand1;
+		flgoperand1 = DEST_16;
+		flgoperand2 = SRC_16;
+		DEST_16 = flgoperand2;
+		SRC_16 = flgoperand1;
 		break;
 	default:break;}
 }
@@ -720,10 +737,272 @@ static void MOV(void *dest, void *src, t_nubitcc len)
 {
 	switch(len) {
 	case 8:
-		*(t_nubit8 *)dest = *(t_nubit8 *)src;
+		DEST_8 = SRC_8;
 		break;
 	case 16:
-		*(t_nubit16 *)dest = *(t_nubit16 *)src;
+		DEST_16 = SRC_16;
+		break;
+	default:break;}
+}
+static void ROL(void *dest, void *src, t_nubitcc len)
+{
+	t_nubit8 count,tempcount;
+	t_nubit16 tempCF;
+	if(src) count = SRC_8;
+	else count = 1;
+	tempcount = count;
+	switch(len) {
+	case 8:
+		while(tempcount) {
+			tempCF = MSB_DEST_8;
+			DEST_8 = (DEST_8<<1)+tempCF;
+			tempcount--;
+		}
+		SetCF(LSB_DEST_8);
+		if(count == 1) SetOF(MSB_DEST_8^GetCF());
+		break;
+	case 16:
+		while(tempcount) {
+			tempCF = MSB_DEST_16;
+			DEST_16 = (DEST_16<<1)+tempCF;
+			tempcount--;
+		}
+		SetCF(LSB_DEST_16);
+		if(count == 1) SetOF(MSB_DEST_16^GetCF());
+		break;
+	default:break;}
+}
+static void ROR(void *dest, void *src, t_nubitcc len)
+{
+	t_nubit8 count,tempcount;
+	t_nubit16 tempCF;
+	if(src) count = SRC_8;
+	else count = 1;
+	tempcount = count;
+	switch(len) {
+	case 8:
+		while(tempcount) {
+			tempCF = LSB_DEST_8;
+			DEST_8 >>= 1;
+			if(tempCF) DEST_8 |= 0x80;
+			tempcount--;
+		}
+		SetCF(MSB_DEST_8);
+		if(count == 1) SetOF(MSB_DEST_8^(!!(DEST_8&0x40)));
+		break;
+	case 16:
+		while(tempcount) {
+			tempCF = LSB_DEST_16;
+			DEST_16 >>= 1;
+			if(tempCF) DEST_16 |= 0x8000;
+			tempcount--;
+		}
+		SetCF(MSB_DEST_16);
+		if(count == 1) SetOF(MSB_DEST_16^(!!(DEST_16&0x4000)));
+		break;
+	default:break;}
+}
+static void RCL(void *dest, void *src, t_nubitcc len)
+{
+	t_nubit8 count,tempcount;
+	t_nubit16 tempCF;
+	if(src) count = SRC_8;
+	else count = 1;
+	tempcount = count;
+	switch(len) {
+	case 8:
+		while(tempcount) {
+			tempCF = MSB_DEST_8;
+			DEST_8 = (DEST_8<<1)+!!GetCF();
+			SetCF(tempCF);
+			tempcount--;
+		}
+		if(count == 1) SetOF(MSB_DEST_8^GetCF());
+		break;
+	case 16:
+		while(tempcount) {
+			tempCF = MSB_DEST_16;
+			DEST_16 = (DEST_16<<1)+!!GetCF();
+			SetCF(tempCF);
+			tempcount--;
+		}
+		if(count == 1) SetOF(MSB_DEST_16^GetCF());
+		break;
+	default:break;}
+}
+static void RCR(void *dest, void *src, t_nubitcc len)
+{
+	t_nubit8 count,tempcount;
+	t_nubit16 tempCF;
+	if(src) count = SRC_8;
+	else count = 1;
+	tempcount = count;
+	switch(len) {
+	case 8:
+		if(count == 1) SetOF(MSB_DEST_8^GetCF());
+		while(tempcount) {
+			tempCF = LSB_DEST_8;
+			DEST_8 >>= 1;
+			if(GetCF()) DEST_8 |= 0x80;
+			SetCF(tempCF);
+			tempcount--;
+		}
+		break;
+	case 16:
+		if(count == 1) SetOF(MSB_DEST_16^GetCF());
+		while(tempcount) {
+			tempCF = LSB_DEST_16;
+			DEST_16 >>= 1;
+			if(GetCF()) DEST_16 |= 0x8000;
+			SetCF(tempCF);
+			tempcount--;
+		}
+		break;
+	default:break;}
+}
+static void SHL(void *dest, void *src, t_nubitcc len)
+{
+	t_nubit8 count,tempcount;
+	t_nubit16 tempCF;
+	if(src) count = SRC_8;
+	else count = 1;
+	switch(len) {
+	case 8:
+		tempcount = count&0x1f;
+		while(tempcount) {
+			SetCF(MSB_DEST_8);
+			DEST_8 <<= 1;
+			tempcount--;
+		}
+		if(count == 1) SetOF(MSB_DEST_8^GetCF());
+		else if(count != 0) {
+			flgresult = DEST_8;
+			SetFlags(SHL_FLAG);
+		}
+		break;
+	case 16:
+		tempcount = count&0x1f;
+		while(tempcount) {
+			SetCF(MSB_DEST_16);
+			DEST_16 <<= 1;
+			tempcount--;
+		}
+		if(count == 1) SetOF(MSB_DEST_16^GetCF());
+		else if(count != 0) {
+			flgresult = DEST_16;
+			SetFlags(SHL_FLAG);
+		}
+		break;
+	default:break;}
+}
+static void SHR(void *dest, void *src, t_nubitcc len)
+{
+	t_nubit8 count,tempcount,tempdest8;
+	t_nubit16 tempCF,tempdest16;
+	if(src) count = SRC_8;
+	else count = 1;
+	switch(len) {
+	case 8:
+		tempcount = count&0x1f;
+		tempdest8 = DEST_8;
+		while(tempcount) {
+			SetCF(LSB_DEST_8);
+			DEST_8 >>= 1;
+			tempcount--;
+		}
+		if(count == 1) SetOF(!!(tempdest8&0x80));
+		else if(count != 0) {
+			flgresult = DEST_8;
+			SetFlags(SHR_FLAG);
+		}
+		break;
+	case 16:
+		tempcount = count&0x1f;
+		tempdest16 = DEST_16;
+		while(tempcount) {
+			SetCF(LSB_DEST_16);
+			DEST_16 >>= 1;
+			tempcount--;
+		}
+		if(count == 1) SetOF(!!(tempdest16&0x8000));
+		else if(count != 0) {
+			flgresult = DEST_16;
+			SetFlags(SHR_FLAG);
+		}
+		break;
+	default:break;}
+}
+static void SAL(void *dest, void *src, t_nubitcc len)
+{
+	t_nubit8 count,tempcount;
+	t_nubit16 tempCF;
+	if(src) count = SRC_8;
+	else count = 1;
+	switch(len) {
+	case 8:
+		tempcount = count&0x1f;
+		while(tempcount) {
+			SetCF(MSB_DEST_8);
+			DEST_8 <<= 1;
+			tempcount--;
+		}
+		if(count == 1) SetOF(MSB_DEST_8^GetCF());
+		else if(count != 0) {
+			flgresult = DEST_8;
+			SetFlags(SAL_FLAG);
+		}
+		break;
+	case 16:
+		tempcount = count&0x1f;
+		while(tempcount) {
+			SetCF(MSB_DEST_16);
+			DEST_16 <<= 1;
+			tempcount--;
+		}
+		if(count == 1) SetOF(MSB_DEST_16^GetCF());
+		else if(count != 0) {
+			flgresult = DEST_16;
+			SetFlags(SAL_FLAG);
+		}
+		break;
+	default:break;}
+}
+static void SAR(void *dest, void *src, t_nubitcc len)
+{
+	t_nubit8 count,tempcount,tempdest8;
+	t_nubit16 tempCF,tempdest16;
+	if(src) count = SRC_8;
+	else count = 1;
+	switch(len) {
+	case 8:
+		tempcount = count&0x1f;
+		tempdest8 = DEST_8;
+		while(tempcount) {
+			SetCF(LSB_DEST_8);
+			DEST_8 >>= 1;
+			DEST_8 |= tempdest8&0x80;
+			tempcount--;
+		}
+		if(count == 1) SetOF(0);
+		else if(count != 0) {
+			flgresult = DEST_8;
+			SetFlags(SAR_FLAG);
+		}
+		break;
+	case 16:
+		tempcount = count&0x1f;
+		tempdest16 = DEST_16;
+		while(tempcount) {
+			SetCF(LSB_DEST_16);
+			DEST_16 >>= 1;
+			DEST_16 |= tempdest16&0x8000;
+			tempcount--;
+		}
+		if(count == 1) SetOF(0);
+		else if(count != 0) {
+			flgresult = DEST_16;
+			SetFlags(SAR_FLAG);
+		}
 		break;
 	default:break;}
 }
@@ -1718,14 +1997,16 @@ void CWD()
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CWD\n");}
 void CALL_FAR()
 {
-	t_nubit16 tvcs = vcpu.cs;
-	t_nubit16 tvip = ++vcpu.ip;
-	vcpu.ip += 4;
+	t_nubit16 newcs,newip;
+	vcpu.ip++;
+	GetImm(16);
+	newip = *(t_nubit16 *)imm;
+	GetImm(16);
+	newcs = *(t_nubit16 *)imm;
 	PUSH((void *)&vcpu.cs,16);
 	PUSH((void *)&vcpu.ip,16);
-	vcpu.ip = vmemoryGetWord(tvcs,tvip);
-	tvip += 2;
-	vcpu.cs = vmemoryGetWord(tvcs,tvip);
+	vcpu.ip = newip;
+	vcpu.cs = newcs;
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CALL_FAR\n");
 }
 void WAIT()
@@ -2052,17 +2333,47 @@ void MOV_DI_I16()
 	MOV((void *)&vcpu.di,(void *)imm,16);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  MOV_DI_I16\n");
 }
-/*
 void INS_C0()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_C0\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(0,8);
+	GetImm(8);
+	switch(r) {
+	case 0:	ROL((void *)rm,(void *)imm,8);break;
+	case 1:	ROR((void *)rm,(void *)imm,8);break;
+	case 2:	RCL((void *)rm,(void *)imm,8);break;
+	case 3:	RCR((void *)rm,(void *)imm,8);break;
+	case 4:	SHL((void *)rm,(void *)imm,8);break;
+	case 5:	SHR((void *)rm,(void *)imm,8);break;
+	case 6:	SAL((void *)rm,(void *)imm,8);break;
+	case 7:	SAR((void *)rm,(void *)imm,8);break;
+	default:break;}
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_C0\n");}
 void INS_C1()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_C1\n");}
-*/
+{
+	vcpu.ip++;
+	GetModRegRM(0,16);
+	GetImm(8);
+	switch(r) {
+	case 0:	ROL((void *)rm,(void *)imm,16);break;
+	case 1:	ROR((void *)rm,(void *)imm,16);break;
+	case 2:	RCL((void *)rm,(void *)imm,16);break;
+	case 3:	RCR((void *)rm,(void *)imm,16);break;
+	case 4:	SHL((void *)rm,(void *)imm,16);break;
+	case 5:	SHR((void *)rm,(void *)imm,16);break;
+	case 6:	SAL((void *)rm,(void *)imm,16);break;
+	case 7:	SAR((void *)rm,(void *)imm,16);break;
+	default:break;}
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_C1\n");
+}
 void RET_I8()
 {
-	t_nubit16 tvip = ++vcpu.ip;
+	t_nubit8 addsp;
+	vcpu.ip++;
+	GetImm(8);
+	addsp = *(t_nubit8 *)imm;
 	POP((void *)&vcpu.ip,16);
-	vcpu.sp += vmemoryGetByte(vcpu.cs,tvip);
+	vcpu.sp += addsp;
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  RET_I8\n");
 }
 void RET_NEAR()
@@ -2104,11 +2415,13 @@ void MOV_M16_I16()
 }
 void RET_I16()
 {
-	t_nubit16 tvcs = vcpu.cs;
-	t_nubit16 tvip = ++vcpu.ip;
+	t_nubit16 addsp;
+	vcpu.ip++;
+	GetImm(16);
+	addsp = *(t_nubit16 *)imm;
 	POP((void *)&vcpu.ip,16);
 	POP((void *)&vcpu.cs,16);
-	vcpu.sp += vmemoryGetWord(tvcs,tvip);
+	vcpu.sp += addsp;
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  RET_I16\n");
 }
 void RET_FAR()
@@ -2117,43 +2430,180 @@ void RET_FAR()
 	POP((void *)&vcpu.cs,16);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  RET_FAR\n");
 }
-
-// TODO
 void INT3()
 {
-
+	vcpu.ip++;
+	HardINT = 3;
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INT3\n");
 }
 void INT_I8()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INT_I8\n");}
+{
+	t_nubit8 intid;
+	vcpu.ip++;
+	GetImm(8);
+	intid = *(t_nubit8 *)imm;
+	PUSH((void *)&vcpu.flags,16);
+	SetIF(0);
+	SetTF(0);
+	SetAF(0);
+	PUSH((void *)&vcpu.cs,16);
+	PUSH((void *)&vcpu.ip,16);
+	vcpu.ip = vmemoryGetWord(0x0000,intid*4+0);
+	vcpu.cs = vmemoryGetWord(0x0000,intid*4+2);
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INT_I8\n");
+}
 void INTO()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INTO\n");}
+{
+	vcpu.ip++;
+	if(GetOF()) HardINT = 4;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INTO\n");
+}
 void IRET()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  IRET\n");}
+{
+	POP((void *)&vcpu.ip,16);
+	POP((void *)&vcpu.cs,16);
+	POP((void *)&vcpu.flags,16);
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  IRET\n");
+}
 void INS_D0()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_D0\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(0,8);
+	switch(r) {
+	case 0:	ROL((void *)rm,NULL,8);break;
+	case 1:	ROR((void *)rm,NULL,8);break;
+	case 2:	RCL((void *)rm,NULL,8);break;
+	case 3:	RCR((void *)rm,NULL,8);break;
+	case 4:	SHL((void *)rm,NULL,8);break;
+	case 5:	SHR((void *)rm,NULL,8);break;
+	case 6:	SAL((void *)rm,NULL,8);break;
+	case 7:	SAR((void *)rm,NULL,8);break;
+	default:break;}
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_D0\n");
+}
 void INS_D1()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_D1\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(0,16);
+	switch(r) {
+	case 0:	ROL((void *)rm,NULL,16);break;
+	case 1:	ROR((void *)rm,NULL,16);break;
+	case 2:	RCL((void *)rm,NULL,16);break;
+	case 3:	RCR((void *)rm,NULL,16);break;
+	case 4:	SHL((void *)rm,NULL,16);break;
+	case 5:	SHR((void *)rm,NULL,16);break;
+	case 6:	SAL((void *)rm,NULL,16);break;
+	case 7:	SAR((void *)rm,NULL,16);break;
+	default:break;}
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_D1\n");
+}
 void INS_D2()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_D2\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(0,8);
+	switch(r) {
+	case 0:	ROL((void *)rm,(void *)&vcpu.cl,8);break;
+	case 1:	ROR((void *)rm,(void *)&vcpu.cl,8);break;
+	case 2:	RCL((void *)rm,(void *)&vcpu.cl,8);break;
+	case 3:	RCR((void *)rm,(void *)&vcpu.cl,8);break;
+	case 4:	SHL((void *)rm,(void *)&vcpu.cl,8);break;
+	case 5:	SHR((void *)rm,(void *)&vcpu.cl,8);break;
+	case 6:	SAL((void *)rm,(void *)&vcpu.cl,8);break;
+	case 7:	SAR((void *)rm,(void *)&vcpu.cl,8);break;
+	default:break;}
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_D2\n");
+}
 void INS_D3()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_D3\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(0,16);
+	switch(r) {
+	case 0:	ROL((void *)rm,(void *)&vcpu.cl,16);break;
+	case 1:	ROR((void *)rm,(void *)&vcpu.cl,16);break;
+	case 2:	RCL((void *)rm,(void *)&vcpu.cl,16);break;
+	case 3:	RCR((void *)rm,(void *)&vcpu.cl,16);break;
+	case 4:	SHL((void *)rm,(void *)&vcpu.cl,16);break;
+	case 5:	SHR((void *)rm,(void *)&vcpu.cl,16);break;
+	case 6:	SAL((void *)rm,(void *)&vcpu.cl,16);break;
+	case 7:	SAR((void *)rm,(void *)&vcpu.cl,16);break;
+	default:break;}
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_D3\n");
+}
 void AAM()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  AAM\n");}
+{
+	t_nubit8 base,tempAL;
+	vcpu.ip++;
+	GetImm(8);
+	base = *(t_nubit8 *)imm;
+	if(base == 0) HardINT = 0;
+	else {
+		tempAL = vcpu.al;
+		vcpu.ah = tempAL/base;
+		vcpu.al = tempAL%base;
+		flgresult = vcpu.al;
+		SetFlags(AAM_FLAG);
+	}
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  AAM\n");
+}
 void AAD()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  AAD\n");}
+{
+	t_nubit8 base,tempAL,tempAH;
+	vcpu.ip++;
+	GetImm(8);
+	base = *(t_nubit8 *)imm;
+	if(base == 0) HardINT = 0;
+	else {
+		tempAL = vcpu.al;
+		tempAH = vcpu.ah;
+		vcpu.al = (tempAL+(tempAH*base))&0xff;
+		vcpu.ah = 0x00;
+		flgresult = vcpu.al;
+		SetFlags(AAD_FLAG);
+	}
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  AAD\n");}
 void XLAT()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  XLAT\n");}
+{
+	vcpu.ip++;
+	vcpu.al = vmemoryGetByte(insDS,vcpu.bx+vcpu.al);
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  XLAT\n");
+}
+/*
 void INS_D9()
 {nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_D9\n");}
 void INS_DB()
 {nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_DB\n");}
-void LOOPNE()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LOOPNE\n");}
-void LOOPE()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LOOPE\n");}
-void LOOP_NEAR()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LOOP_NEAR\n");}
+*/
+void LOOPNZ()
+{
+	t_nubit8 rel8;
+	vcpu.ip++;
+	GetImm(8);
+	rel8 = *(t_nubit8 *)imm;
+	vcpu.cx--;
+	if(vcpu.cx && !GetZF()) vcpu.ip += rel8;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LOOPNZ\n");
+}
+void LOOPZ()
+{
+	t_nubit8 rel8;
+	vcpu.ip++;
+	GetImm(8);
+	rel8 = *(t_nubit8 *)imm;
+	vcpu.cx--;
+	if(vcpu.cx && GetZF()) vcpu.ip += rel8;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LOOPZ\n");
+}
+void LOOP()
+{
+	t_nubit8 rel8;
+	vcpu.ip++;
+	GetImm(8);
+	rel8 = *(t_nubit8 *)imm;
+	vcpu.cx--;
+	if(vcpu.cx) vcpu.ip += rel8;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LOOP\n");
+}
+// TODO
 void JCXZ_NEAR()
 {nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JCXZ_NEAR\n");}
 void IN_AL_N()
@@ -2230,6 +2680,7 @@ void vcpuinsSB()
 void CPUInsInit()
 {
 	int i;
+	HardINT = -1;
 	vcpuinsSB();
 	for(i = 0;i < 0x10000;++i) {
 		InTable[i] = IO_NOP;
@@ -2456,16 +2907,18 @@ void CPUInsInit()
 	InsTable[0xd6] = OpError;
 	InsTable[0xd7] = XLAT;
 	InsTable[0xd8] = OpError;
-	InsTable[0xd9] = INS_D9;
+	InsTable[0xd9] = OpError;
+	//InsTable[0xd9] = INS_D9;
 	InsTable[0xda] = OpError;
-	InsTable[0xdb] = INS_DB;
+	InsTable[0xdb] = OpError;
+	//InsTable[0xdb] = INS_DB;
 	InsTable[0xdc] = OpError;
 	InsTable[0xdd] = OpError;
 	InsTable[0xde] = OpError;
 	InsTable[0xdf] = OpError;
-	InsTable[0xe0] = LOOPNE;
-	InsTable[0xe1] = LOOPE;
-	InsTable[0xe2] = LOOP_NEAR;
+	InsTable[0xe0] = LOOPNZ;
+	InsTable[0xe1] = LOOPZ;
+	InsTable[0xe2] = LOOP;
 	InsTable[0xe3] = JCXZ_NEAR;
 	InsTable[0xe4] = IN_AL_N;
 	InsTable[0xe5] = IN_AX_N;

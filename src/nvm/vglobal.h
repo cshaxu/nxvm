@@ -25,7 +25,7 @@ typedef signed __int64 t_nsbitcc;
 typedef unsigned __int64 t_vaddrcc;		// addr: variable, c compiler
 #endif
 
-typedef unsigned int t_bool;
+typedef unsigned char t_bool;
 typedef void (*t_faddrcc)(void);	// addr: function, c compiler
 
 #define SHL4(n) (((t_vaddrcc)n)<<4)

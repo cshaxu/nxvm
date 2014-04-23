@@ -1272,11 +1272,15 @@ static int dGroup2(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigne
 	case 1: dANY("ROR")	break;
 	case 2: dANY("RCL")	break;
 	case 3:	dANY("RCR")	break;
+	case 4:	dANY("SHL")	break;
+	case 5:	dANY("SHR")	break;
+	//case 6:	dANY("SAL")	break;
+	case 7:	dANY("SAR")	break;
 	default:dANY("(ERROR:OPD0H)")break;}
 	dANY("\t")
 	switch(op) {
-	case 0xd0:	dRM(8)	dANY(",1")	break;
-	case 0xd1:	dRM(16)	dANY(",1")	break;
+	case 0xd0:	dRM(8)	if(modrm.reg < 4) dANY(",1")	break;
+	case 0xd1:	dRM(16)	if(modrm.reg < 4) dANY(",1")	break;
 	case 0xd2:	dRM(8)	dANY(",CL")	break;
 	case 0xd3:	dRM(16)	dANY(",CL")	break;}
 	return len;
