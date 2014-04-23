@@ -34,13 +34,13 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 	case WM_TIMER:
 		switch (wParam) {
 		case TIMER_PAINT:
-			if (vapiCallBackMachineGetFlagRun()) w32adispPaint();
+			if (vapiCallBackMachineGetFlagRun()) w32adispPaint(FALSE);
 			break;
 		default: break;
 		}
 		break;
  	case WM_PAINT:
-		if (vapiCallBackMachineGetFlagRun()) w32adispPaint();
+		if (vapiCallBackMachineGetFlagRun()) w32adispPaint(TRUE);
 		break;
 	/*case WM_SIZE: break;
 	case WM_SIZING: break;
@@ -117,7 +117,7 @@ static DWORD WINAPI ThreadKernel(LPVOID lpParam)
 }
 
 void win32appDisplaySetScreen() {w32adispSetScreen();}
-void win32appDisplayPaint() {w32adispPaint();}
+void win32appDisplayPaint() {w32adispPaint(TRUE);}
 void win32appStartMachine()
 {
 	if (!ThreadIdDisplay)

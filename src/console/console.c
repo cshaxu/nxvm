@@ -406,34 +406,26 @@ static void Nxvm()
 	} else GetHelp;
 }
 
-#include "../vmachine/debug/aasm.h"
-
-typedef struct {
-	t_nubit32 x,y;
-} tt;
-
 static void Test()
 {
-	/*t_nubit32 c = 0xffff0000;
-	tt a;
-	a.x = 0xff00f0f0;
-	a.y = 0xaaaaaaaa;
-	__asm {
-		pushfd
-		push eax
-		push ebx
-		mov eax, 0
-		mov ebx, -2
-		bt a.y, -2
-		pushfd
-		pop eax
-		mov c, eax
-		and c, 1
-		pop ebx
-		pop eax
-		popfd
+	/*
+	int cid, i, j;
+	t_bool ch[16][8];
+	cid = arg[1][0];
+	for (i = 0;i < 16;++i) {
+		for (j = 0;j < 8;++j) {
+			ch[i][j] = !!(fontBitmap[cid][i] & (1 << j));
+		}
 	}
-	printc("%d\n",c);*/
+	for (i = 0;i < 16;++i) {
+		for (j = 0;j < 8;++j) {
+			if (ch[i][j])
+				printf(" ");
+			else
+				printf("*");
+		}
+		printf("\n");
+	}*/
 }
 
 static void exec()
