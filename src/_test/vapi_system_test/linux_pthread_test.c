@@ -27,19 +27,19 @@ void * fun2(void * arg)
 int main()
 {
 	char str[0xff];
-    pthread_t id1,id2;
-    pthread_attr_t attr;
+	pthread_t id1,id2;
+	pthread_attr_t attr;
 	str[0] = 0;
 	exitflag = 0x00;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
-    pthread_create(&id1,&attr,fun1,NULL);
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
+	pthread_create(&id1,&attr,fun1,NULL);
 	pthread_create(&id2,&attr,fun2,NULL);
 	while (!exitflag) {
 		fgets(str, 0xff, stdin);
 		str[strlen(str) - 1] = 0;
 		if (!strcmp(str, "exit")) exitflag = 0x01;
 	};
-    pthread_attr_destroy(&attr);
+	pthread_attr_destroy(&attr);
 	return 0;
 }

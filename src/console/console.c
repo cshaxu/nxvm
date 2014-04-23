@@ -390,14 +390,9 @@ static void Nxvm()
 }
 static void Test()
 {
-	char str[0x1000];
-	char *p;
-	strcpy(str, "a;b;c;d;e;f");
-	p = strtok(str, ";");
-	while (p) {
-		printf("<%s>\n",p);
-		p = strtok(NULL, ";");
-	}
+	char x = 0x79;
+	char y = ~x + 1;
+	printf("%02X,%02X, %02X\n",x, y, x+y);
 }
 
 static void exec()

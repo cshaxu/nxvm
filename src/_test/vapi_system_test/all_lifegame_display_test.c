@@ -108,7 +108,7 @@ void w32ckeybProcess(t_world *pworld)
 		}
 	}
 	if (inRec.EventType == KEY_EVENT)
-		if (inRec.Event.KeyEvent.wVirtualKeyCode == VK_F3)
+		if (inRec.Event.KeyEvent.wVirtualKeyCode == VK_F9)
 			pworld->exit = TRUE;
 	if (GetKeyState(VK_CAPITAL) & 0x0001) pworld->pause = FALSE;
 	else pworld->pause = TRUE;
@@ -152,7 +152,7 @@ void lnxcdispFinal()
 }
 void lnxckeybProcess(t_world *pworld)
 {
-	if (getch() == KEY_F(3)) pworld->exit = 0x01;
+	if (getch() == KEY_F(9)) pworld->exit = 0x01;
 }
 #endif
 

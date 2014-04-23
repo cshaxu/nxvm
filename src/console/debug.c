@@ -407,7 +407,7 @@ static void g()
 		break;
 	default:seterr(narg-1);break;}
 	if(errPos) return;
-	vmachineStart();
+	vmachineResume();
 	while (vmachine.flagrun) vapiSleep(1);
 	vmachine.flagbreak = 0x00;
 	rprintregs();
@@ -768,7 +768,7 @@ static void t()
 	default:seterr(narg-1);break;}
 	if(errPos) return;
 	for(i = 0;i < count;++i) {
-		vmachineStart();
+		vmachineResume();
 		while (vmachine.flagrun) vapiSleep(1);
 		if (count < 0x0100 || i == count - 0x01)
 			rprintregs();
