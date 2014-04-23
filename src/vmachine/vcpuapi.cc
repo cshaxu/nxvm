@@ -8,8 +8,10 @@
 static t_cpu bcpu, oldbcpu;
 static t_bool flagbrec;
 
+/* DEBUGGING OPTIONS ******************************************************* */
 #define VCPUAPI_COMPARE 1
 #define VCPUAPI_RECORD  1
+/* ************************************************************************* */
 
 #ifdef VGLOBAL_BOCHS
 static t_bool flagvalid = 0;

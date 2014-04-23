@@ -28,8 +28,8 @@ void vramInit()
 	memset(&vram, 0x00, sizeof(t_ram));
 	vport.in[0x0092] = (t_faddrcc)IO_Read_0092;
 	vport.out[0x0092] = (t_faddrcc)IO_Write_0092;
-	/* 8 MB */
-	vramAlloc(1 << 23);
+	/* 16 MB */
+	vramAlloc(1 << 24);
 }
 void vramReset()
 {

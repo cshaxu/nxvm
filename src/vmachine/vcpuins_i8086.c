@@ -46,7 +46,6 @@ static t_faddrcc table[0x100];
 #define DAS_FLAG  (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF)
 
 t_cpuins vcpuins;
-t_cpurec vcpurec;
 
 static t_vaddrcc rimm;
 
@@ -2892,17 +2891,22 @@ static void ClrPrefix()
 static void ExecIns()
 {
 	t_nubit8 opcode;
-	vcpurec.rcpu = vcpu;
-	vcpurec.linear = (vcpu.cs.selector << 4) + vcpu.ip;
-	if (vcpuinsReadLinear(vcpurec.linear, (t_vaddrcc)vcpurec.opcodes, 15))
-		vcpurec.oplen = 0;
+	vcpu.reccs = vcpu.cs.selector;
+	vcpu.receip = vcpu.ip;
+	vcpu.linear = (vcpu.cs.selector << 4) + vcpu.ip;
+	if (vcpuinsReadLinear(vcpu.linear, (t_vaddrcc)vcpu.opcodes, 15))
+		vcpu.oplen = 0;
 	else
-		vcpurec.oplen = 15;
+		vcpu.oplen = 15;
 	ClrPrefix();
 	do {
 		opcode = vramRealByte(vcpu.cs.selector, vcpu.ip);
 		ExecFun(table[opcode]);
 	} while (IsPrefix(opcode));
+	vcpu.es.base = vcpu.es.selector << 4;
+	vcpu.cs.base = vcpu.cs.selector << 4;
+	vcpu.ss.base = vcpu.ss.selector << 4;
+	vcpu.ds.base = vcpu.ds.selector << 4;
 }
 static void ExecInt()
 {
@@ -3234,7 +3238,7 @@ void vcpuinsReset()
 	vcpuins.rrm = vcpuins.rr = rimm = (t_vaddrcc)NULL;
 	vcpuins.opr1 = vcpuins.opr2 = vcpuins.result = vcpuins.bit = 0;
 	ClrPrefix();
-	vcpurec.svcextl = 0;
+	vcpu.svcextl = 0;
 }
 void vcpuinsRefresh()
 {
