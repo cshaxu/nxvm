@@ -805,6 +805,12 @@ void ins_method_IN_eAX_Ib(){
 }
 void ins_method_OUT_Ib_AL()
 {
+	if (ccpu.deCodeBlock.opContactData_8bit == 0xbb) {
+		if (GetBit(_flags, VCPU_FLAG_ZF))
+			cramVarWord(ccpu.ss,ccpu.sp + 4) |=  VCPU_FLAG_ZF;
+		else
+			cramVarWord(ccpu.ss,ccpu.sp + 4) &= ~VCPU_FLAG_ZF;
+	}
 	ccpu.flagignore = 0x01;
 // NEKO LOG
 //	ExecFun(vport.out[ccpu.deCodeBlock.opContactData_8bit]);
@@ -1495,7 +1501,9 @@ void ins_method_JMP_Jb()//段内直接转移之二
 }
 void ins_method_IN_AL_DX() {ccpu.flagignore = 0x01;}//暂时没有
 void ins_method_IN_eAX_DX() {ccpu.flagignore = 0x01;}//暂时没有
-void ins_method_OUT_DX_AL() {ccpu.flagignore = 0x01;}//暂时没有
+void ins_method_OUT_DX_AL() {
+	ccpu.flagignore = 0x01;
+}//暂时没有
 void ins_method_OUT_DX_eAX() {ccpu.flagignore = 0x01;}//暂时没有
 
 void ins_method_CLC()//0xf8

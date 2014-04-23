@@ -7,10 +7,16 @@
 #include "../vcpuins.h"
 #include "ccpuapi.h"
 
+#define min(a,b)  ((a) < (b) ? (a) : (b))
+#define limit(n)  (min(0x10000, (0x100000 - ((n) << 4))))
+
 t_bool ccpuapiHasDiff()
 {
+#if CCPU_RAM == CRAM
 	t_nubit16 s1,s2;
 	t_nubitcc i;
+	t_bool flagmemdiff = 0x00;
+#endif
 	t_bool flagdiff = 0x00;
 #if CCPU_RAM == CRAM
 	if (ccpu.icount % 10000 == 0) vapiPrint("at #%d\n",ccpu.icount);
@@ -39,20 +45,45 @@ t_bool ccpuapiHasDiff()
 		if (ccpu_getSF_Flag() != _sf) {vapiPrint("diff sf\n");flagdiff = 0x01;}
 		if (ccpu_getTF_Flag() != _tf) {vapiPrint("diff tf\n");flagdiff = 0x01;}
 		if (ccpu_getZF_Flag() != _zf) {vapiPrint("diff zf\n");flagdiff = 0x01;}
+#if CCPU_RAM == CRAM
 		s1 = vramVarWord(_ss,_sp);
 		s2 = cramVarWord(ccpu.ss, ccpu.sp);
 		if (s1 != s2) {
 			vapiPrint("diff stack: 1=%04X, 2=%04X\n",s1,s2);
 			flagdiff = 0x01;
 		}
+
+		if (flagdiff) flagmemdiff = 0x01;
+		else if (memcmp((void *)cramGetAddr(ccpu.ds,0),(void *)vramGetAddr(_ds,0),limit(_ds)))
+			flagmemdiff = 0x01;
+		else if (_ss != _ds &&
+			memcmp((void *)cramGetAddr(ccpu.ss,0),(void *)vramGetAddr(_ss,0),limit(_ss)))
+			flagmemdiff = 0x01;
+		else if (_es != _ss && _es != _ds &&
+			memcmp((void *)cramGetAddr(ccpu.es,0),(void *)vramGetAddr(_es,0),limit(_es)))
+			flagmemdiff = 0x01;
+		else if (_cs != _es && _cs != _ss && _cs != _ds &&
+			memcmp((void *)cramGetAddr(ccpu.cs,0),(void *)vramGetAddr(_cs,0),limit(_cs)))
+			flagmemdiff = 0x01;
+#endif
 	} else {
 #if CCPU_RAM == CRAM
-		memcpy((void *)cram.base, (void *)vram.base, vram.size);
+		flagdiff = 0x00;
+		flagmemdiff = 0x00;
+		if (vramVarWord(_cs,_ip-2) == 0x13cd) {
+			memcpy((void *)cram.base, (void *)vram.base, vram.size);
+		} else {
+			memcpy((void *)(cram.base+0x0400), (void *)(vram.base+0x0400), 0x0100);
+			memcpy((void *)(cram.base+0xb8000),(void *)(vram.base+0xb8000),0x1000);
+		}
 #endif
 	}
 #if CCPU_RAM == CRAM
-	if (ccpu.icount < 20000000) return flagdiff;
-	if (memcmp((void *)cram.base, (void *)vram.base, vram.size)) {
+	if (flagmemdiff) {
+		if (!memcmp((void *)cram.base,(void *)vram.base,0x0417) &&
+			!memcmp((void *)(cram.base+0x043e),(void *)(vram.base+0x043e),(vram.size-0x043e)))
+			return 0x00;
+		flagdiff = 0x01;
 		vapiPrint("diff ram\n");flagdiff = 0x01;
 		for(i = 0;i < vram.size;++i)
 			if (cramVarByte(0,i) != vramVarByte(0,i))
@@ -161,9 +192,9 @@ void ccpuapiSyncRegs()
 	ccpu_setTF_Flag_flag(_tf);
 	ccpu_setZF_Flag_flag(_zf);
 #if CCPU_RAM == CRAM
-	if (!ccpu.icount)
+	if (!ccpu.icount) {
 		memcpy((void *)cram.base, (void *)vram.base, vram.size);
-	else {
+	} else {
 		memcpy((void *)(cram.base+0x0400), (void *)(vram.base+0x0400), 0x0100);
 	}
 #endif

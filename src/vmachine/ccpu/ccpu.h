@@ -8,8 +8,8 @@
 #define CRAM 0
 #define VRAM 1
 
-#define CPU2 0
-#define CCPU_RAM VRAM
+#define CPU2 1
+#define CCPU_RAM CRAM
 
 #define MASK_00000000  0
 #define MASK_00000001  1

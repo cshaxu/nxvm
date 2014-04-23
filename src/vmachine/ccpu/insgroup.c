@@ -665,7 +665,7 @@ void ins_methodGroup_SAR_Eb_CL()
 }
 void ins_methodGroup_SAR_Ev_CL()
 {
-	t_nubit8 oldEv = d_nubit16(ccpu.deCodeBlock.prm);
+	t_nubit16 oldEv = d_nubit16(ccpu.deCodeBlock.prm);
 	t_bool finalBit = 0x00;
 	t_nubit8 tmpCL = ccpu.cl;
 	if(0 == ccpu.cl)
