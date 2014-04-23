@@ -289,10 +289,6 @@ static const UCHAR fontBitmap[256][16] = {
 static HDC  hdcWnd, hdcBuf;
 static HBITMAP hBmpBuf;
 static INT clientHeight, clientWidth;
-#if W32ADISP_FONT_BITMAP == 0
-static HFONT hFont;
-static LOGFONT logFont;
-#endif
 static INT flashCount;
 static INT flashInterval;
 static INT FONT_WIDTH;
@@ -332,43 +328,39 @@ static COLORREF CharProp2Color(UCHAR prop, BOOL fore)
 #define FONT_NCOLOR 128
 static HDC hdcFont;
 static HBITMAP hBmpFont;
+static BOOL bFontCharExist[256][128];
 
-static VOID CreateBitmapFont()
+static VOID CreateBitmapFontChar(UCHAR ch, UCHAR prop)
 {
-	UINT c;
-	UCHAR p, i, j;
+	UCHAR i, j;
 	COLORREF fc, bc;
 	HDC hdcChar;
 	HBITMAP hBmpChar;
 	HGDIOBJ hOldGdiObj;
-	hdcFont = CreateCompatibleDC(NULL);
-	hBmpFont = CreateCompatibleBitmap(hdcWnd, FONT_WIDTH * FONT_NCHAR, FONT_HEIGHT * FONT_NCOLOR);
-	SelectObject(hdcFont, hBmpFont);
 	hdcChar = CreateCompatibleDC(NULL);
 	hBmpChar = CreateCompatibleBitmap(hdcWnd, FONT_WIDTH, FONT_HEIGHT);
 	hOldGdiObj = SelectObject(hdcChar, hBmpChar);
-	for (p = 0;p < FONT_NCOLOR;++p) {
-		fc = CharProp2Color(p, TRUE);
-		bc = CharProp2Color(p, FALSE);
-		for (c = 0;c < FONT_NCHAR;++c) {
-			for (i = 0;i < FONT_HEIGHT;++i) {
-				for (j = 0;j < FONT_WIDTH;++j) {
-					if (!!(fontBitmap[c][i] & (1 << j)))
-						SetPixel(hdcChar, j, i, fc);
-					else
-						SetPixel(hdcChar, j, i, bc);
-				}
-			}
-			BitBlt(hdcFont, c * FONT_WIDTH, p * FONT_HEIGHT, FONT_WIDTH, FONT_HEIGHT, hdcChar, 0, 0, SRCCOPY);
+	prop &= 0x7f;
+	fc = CharProp2Color(prop, TRUE);
+	bc = CharProp2Color(prop, FALSE);
+	for (i = 0;i < FONT_HEIGHT;++i) {
+		for (j = 0;j < FONT_WIDTH;++j) {
+			if (!!(fontBitmap[ch][i] & (1 << j)))
+				SetPixel(hdcChar, j, i, fc);
+			else
+				SetPixel(hdcChar, j, i, bc);
 		}
 	}
+	BitBlt(hdcFont, ch * FONT_WIDTH, prop * FONT_HEIGHT, FONT_WIDTH, FONT_HEIGHT, hdcChar, 0, 0, SRCCOPY);
 	SelectObject(hdcChar, hOldGdiObj);
 	DeleteObject(hBmpChar);
 	DeleteDC(hdcChar);
+	bFontCharExist[ch][prop] = TRUE;
 }
 
 void w32adispInit()
 {
+	UINT i, j;
 	hdcWnd = GetDC(w32aHWnd);
 	hdcBuf = CreateCompatibleDC(NULL);
 	hBmpBuf = NULL;
@@ -377,7 +369,12 @@ void w32adispInit()
 	flashCount   = 0;
 	flashInterval = 5;
 	w32adispSetScreen();
-	CreateBitmapFont();
+	hdcFont = CreateCompatibleDC(NULL);
+	hBmpFont = CreateCompatibleBitmap(hdcWnd, FONT_WIDTH * FONT_NCHAR, FONT_HEIGHT * FONT_NCOLOR);
+	SelectObject(hdcFont, hBmpFont);
+	for (i = 0;i < FONT_NCHAR;++i)
+		for (j = 0;j < FONT_NCOLOR;++j)
+			bFontCharExist[i][j] = FALSE;
 }
 
 void w32adispSetScreen()
@@ -398,7 +395,7 @@ void w32adispSetScreen()
 	hBmpBuf = CreateCompatibleBitmap(hdcWnd,
 		GetDeviceCaps(hdcWnd, HORZRES), GetDeviceCaps(hdcWnd, VERTRES));
 	SelectObject(hdcBuf, hBmpBuf);
-	SendMessage(w32aHWnd, WM_PAINT, 0, 0);
+	w32adispPaint(TRUE);
 }
 
 static VOID DisplayCursor()
@@ -422,31 +419,22 @@ static VOID DisplayCursor()
 	hBrush = CreateSolidBrush(COLOR_LIGHTGRAY);
 	hOldGdiObj = SelectObject(hdcWnd, hBrush);
 	FillRect(hdcWnd, &rect, hBrush);
-//	Rectangle(hdcWnd, y1_cursor, x1_cursor, y2_cursor, x2_cursor);
 	SelectObject(hdcWnd, hOldGdiObj);
-	DeleteObject((HGDIOBJ)hBrush);
+	DeleteObject(hBrush);
 }
 
 void w32adispPaint(BOOL force)
 {
-	UCHAR i, j;
-	HBRUSH hBrush;
-	HGDIOBJ hOldGdiObj;
-	USHORT ansiChar;
-	UCHAR charProp;
+	UCHAR i, j, ch, prop;
 	flashCount = (flashCount + 1) % 10;
 	if (force || vapiCallBackDisplayGetBufferChange() || vapiCallBackDisplayGetCursorChange()) {
-		hBrush = (HBRUSH)GetStockObject(BLACK_BRUSH);
-		hOldGdiObj = SelectObject(hdcBuf, hBrush);
-		Rectangle(hdcBuf, 0, 0, FONT_WIDTH * sizeRow, FONT_HEIGHT * sizeCol);
-		SelectObject(hdcBuf, hOldGdiObj);
-		DeleteObject((HGDIOBJ)hBrush);
 		for(i = 0;i < sizeCol;++i) {
 			for(j = 0;j < sizeRow;++j) {
-				ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
-				charProp = vapiCallBackDisplayGetCurrentCharProp(i, j) & 0x7f;
+				ch = vapiCallBackDisplayGetCurrentChar(i, j);
+				prop = vapiCallBackDisplayGetCurrentCharProp(i, j) & 0x7f;
+				if (!bFontCharExist[ch][prop]) CreateBitmapFontChar(ch, prop);
 				BitBlt(hdcBuf, j * FONT_WIDTH, i * FONT_HEIGHT, FONT_WIDTH, FONT_HEIGHT,
-					hdcFont, ansiChar * FONT_WIDTH, charProp * FONT_HEIGHT, SRCCOPY);
+					hdcFont, ch * FONT_WIDTH, prop * FONT_HEIGHT, SRCCOPY);
 			}
 		}
 	}
@@ -455,6 +443,8 @@ void w32adispPaint(BOOL force)
 }
 void w32adispFinal()
 {
-	DeleteObject((HGDIOBJ)hBmpBuf);
+	DeleteObject(hBmpFont);
+	DeleteDC(hdcFont);
+	DeleteObject(hBmpBuf);
 	DeleteDC(hdcBuf);
 }

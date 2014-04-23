@@ -130,7 +130,7 @@ void vapiFloppyInsert(const t_string fname)
 	FILE *image = FOPEN(fname, "rb");
 	if (image && vfdd.base) {
 		count = fread((void *)vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
-		vfdd.flagexist = 0x01;
+		vfdd.flagexist = 1;
 		fclose(image);
 		vapiPrint("Floppy disk inserted.\n");
 	} else
@@ -152,7 +152,7 @@ void vapiFloppyRemove(const t_string fname)
 			return;
 		}
 	}
-	vfdd.flagexist = 0x00;
+	vfdd.flagexist = 0;
 	memset((void *)vfdd.base, 0x00, vfddGetImageSize);
 	vapiPrint("Floppy disk removed.\n");
 }
@@ -168,7 +168,7 @@ void vapiHardDiskInsert(const t_string fname)
 		fseek(image, 0, SEEK_SET);
 		vhddAlloc();
 		count = fread((void *)vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
-		vhdd.flagexist = 0x01;
+		vhdd.flagexist = 1;
 		fclose(image);
 		vapiPrint("Hard disk connected.\n");
 	} else
@@ -183,7 +183,7 @@ void vapiHardDiskRemove(const t_string fname)
 		if(image) {
 			if (!vhdd.flagro)
 				count = fwrite((void *)vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
-			vhdd.flagexist = 0x00;
+			vhdd.flagexist = 0;
 			fclose(image);
 		} else {
 			vapiPrint("Cannot write hard disk image to '%s'.\n", fname);

@@ -510,6 +510,12 @@ tots _s_test_idt(t_nubit8 intid)
 	}
 	_ce;
 }
+tots _s_test_cs(t_nubit32 offset)
+{
+	_cb("_s_test_cs");
+	_chk(_kma_addr_linear_logical(&vcpu.cs, offset, 0x01, 0, 0x00, 1));
+	_ce;
+}
 tots _s_test_ss_push(t_nubit8 byte)
 {
 	t_nubit32 cesp = 0x00000000;
@@ -567,30 +573,30 @@ tots _s_test_esp()
 	_ce;
 }
 
-/* port accessing unit */
-/* kernel port accessing */
-tots _kpa_test_iomap(t_nubit16 port, t_nubit8 byte)
+/* portid accessing unit */
+/* kernel portid accessing */
+tots _kpa_test_iomap(t_nubit16 portid, t_nubit8 byte)
 {
 	_cb("_kpa_test_iomap");
 	_ce;
 }
-tots _kpa_test_mode(t_nubit16 port, t_nubit8 byte)
+tots _kpa_test_mode(t_nubit16 portid, t_nubit8 byte)
 {
 	_cb("_p_test");
 	if (_GetCR0_PE && (_GetCPL > (t_nubit8)_GetEFLAGS_IOPL || _GetEFLAGS_VM)) {
 		_bb("CR0_PE(1),(CPL>IOPL/EFLAGS_VM(1))");
-		_chk(_kpa_test_iomap(port, byte));
+		_chk(_kpa_test_iomap(portid, byte));
 		_be;
 	}
 	_ce;
 }
-/* regular port accessing */
-static t_nubit32 _p_input(t_nubit16 port, t_nubit8 byte)
+/* regular portid accessing */
+static t_nubit32 _p_input(t_nubit16 portid, t_nubit8 byte)
 {
 	t_nubit32 result = 0x00000000;
 	_cb("_p_input");
-	_chr(_kpa_test_mode(port, byte));
-	ExecFun(vport.in[port]);
+	_chr(_kpa_test_mode(portid, byte));
+	ExecFun(vport.in[portid]);
 	switch (byte) {
 	case 1: result = vport.iobyte;break;
 	case 2: result = vport.ioword;break;
@@ -602,10 +608,10 @@ static t_nubit32 _p_input(t_nubit16 port, t_nubit8 byte)
 	_ce;
 	return result;
 }
-tots _p_output(t_nubit16 port, t_nubit32 data, t_nubit8 byte)
+tots _p_output(t_nubit16 portid, t_nubit32 data, t_nubit8 byte)
 {
 	_cb("_p_output");
-	_chk(_kpa_test_mode(port, byte));
+	_chk(_kpa_test_mode(portid, byte));
 	switch (byte) {
 	case 1: vport.iobyte = (t_nubit8)data;break;
 	case 2: vport.ioword = (t_nubit16)data;break;
@@ -614,7 +620,7 @@ tots _p_output(t_nubit16 port, t_nubit32 data, t_nubit8 byte)
 		_chk(_SetExcept_CE(0));
 		_be;break;
 	}
-	ExecFun(vport.out[port]);
+	ExecFun(vport.out[portid]);
 	_ce;
 }
 
@@ -951,6 +957,7 @@ tots _kec_push(t_vaddrcc rsrc, t_nubit8 byte)
 		data = d_nubit16(rsrc);
 		_be;break;
 	case 4: _bb("byte(4)");
+		_comment("_kec_push::byte(4)");
 		_chk(_s_test_ss_push(4));
 		data = d_nubit32(rsrc);
 		_be;break;
@@ -980,6 +987,7 @@ static t_nubit64 _kec_pop(t_nubit8 byte)
 		vcpu.sp += byte;
 		_be;break;
 	case 4: _bb("StackSize(4)");
+		_comment("_kec_pop::byte(4)");
 		_chr(result = _m_read_logical(&vcpu.ss, vcpu.esp, byte));
 		vcpu.esp += byte;
 		_be;break;
@@ -996,27 +1004,33 @@ static t_nubit64 _kec_pop(t_nubit8 byte)
 }
 tots _kec_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
+	t_cpu_sreg ccs = vcpu.cs;
 	t_nubit32 oldcs = vcpu.cs.selector;
 	_cb("_kec_call_far");
 	switch (byte) {
 	case 2: _bb("byte(2)");
 		_chk(_s_test_ss_push(4));
+		neweip = GetMax16(neweip);
+		_chk(_ksa_load_seg(&ccs, newcs));
+		_chk(_kma_addr_linear_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
 		_chk(_kec_push((t_vaddrcc)&oldcs, 2));
 		_chk(_kec_push((t_vaddrcc)&vcpu.ip, 2));
-		_chk(_s_load_cs(newcs));
-		vcpu.eip = GetMax16(neweip);
 		_be;break;
 	case 4: _bb("byte(4)");
+		_comment("_kec_call_far::byte(4)");
 		_chk(_s_test_ss_push(8));
+		neweip = GetMax32(neweip);
+		_chk(_ksa_load_seg(&ccs, newcs));
+		_chk(_kma_addr_linear_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
 		_chk(_kec_push((t_vaddrcc)&oldcs, 4));
 		_chk(_kec_push((t_vaddrcc)&vcpu.eip, 4));
-		_chk(_s_load_cs(newcs));
-		vcpu.eip = GetMax32(neweip);
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(0));
 		_be;break;
 	}
+	vcpu.cs = ccs;
+	vcpu.eip = neweip;
 	_ce;
 }
 tots _kec_call_near(t_nubit32 neweip, t_nubit8 byte)
@@ -1024,23 +1038,58 @@ tots _kec_call_near(t_nubit32 neweip, t_nubit8 byte)
 	_cb("_kec_call_near");
 	switch (byte) {
 	case 2: _bb("byte(2)");
+		neweip = GetMax16(neweip);
+		_chk(_s_test_cs(neweip));
 		_chk(_kec_push((t_vaddrcc)&vcpu.ip, 2));
-		vcpu.eip = GetMax16(neweip);
 		_be;break;
 	case 4: _bb("byte(4)");
+		_comment("_kec_call_near::byte(4)");
+		neweip = GetMax32(neweip);
+		_chk(_s_test_cs(neweip));
 		_chk(_kec_push((t_vaddrcc)&vcpu.eip, 4));
-		vcpu.eip = GetMax32(neweip);
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(0));
 		_be;break;
 	}
+	vcpu.eip = neweip;
 	_ce;
 }
 todo _kec_task_switch (t_nubit16 newtss);
+tots _kec_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
+{
+	t_cpu_sreg ccs = vcpu.cs;
+	_cb("_kec_jmp_far");
+	switch (byte) {
+	case 2: neweip = GetMax16(neweip);break;
+	case 4: neweip = GetMax32(neweip);break;
+	default: _bb("bit");
+		_chk(_SetExcept_CE(0));
+		_be;break;
+	}
+	_chk(_ksa_load_seg(&ccs, newcs));
+	_chk(_kma_addr_linear_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
+	vcpu.cs = ccs;
+	vcpu.eip = neweip;
+	_ce;
+}
+tots _kec_jmp_near(t_nubit32 neweip, t_nubit8 byte)
+{
+	_cb("_kec_jmp_near");
+	switch (byte) {
+	case 2: neweip = GetMax16(neweip);break;
+	case 4: neweip = GetMax32(neweip);break;
+	default: _bb("bit");
+		_chk(_SetExcept_CE(0));
+		_be;break;
+	}
+	_chk(_s_test_cs(neweip));
+	vcpu.eip = neweip;
+	_ce;
+}
 /* sub execution routine */
 done _ser_call_far_real(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
-{	
+{
 	_cb("_ser_call_far_real");
 	_chk(_kec_call_far(newcs, neweip, byte));
 	_ce;
@@ -1050,6 +1099,7 @@ todo _ser_call_far_task_gate(t_nubit16 tgsel);
 tots _ser_call_far_tss(t_nubit16 newtss);
 tots _ser_int_real(t_nubit8 intid)
 {
+	t_nubit16 cip = 0x0000;
 	t_nubit32 vector = 0x00000000;
 	_cb("_ser_int_real");
 	_chk(_s_test_idt(intid));
@@ -1060,9 +1110,10 @@ tots _ser_int_real(t_nubit8 intid)
 	_chk(_kec_push((t_vaddrcc)&vcpu.cs.selector, 2));
 	_chk(_kec_push((t_vaddrcc)&vcpu.ip, 2));
 	_chk(vector = (t_nubit32)_s_read_idt(intid));
-	vcpu.eip = GetMax16(vector);
-	vcpu.cs.selector = GetMax16(vector >> 16);
-	_chk(_s_load_cs(vcpu.cs.selector));
+	cip = GetMax16(vector);
+	_chk(_s_test_cs(cip));
+	vcpu.eip = cip;
+	_chk(_s_load_cs(GetMax16(vector >> 16)));
 	_ce;
 }
 tots _ser_iret_real(t_nubit8 byte)
@@ -1090,6 +1141,12 @@ tots _ser_iret_real(t_nubit8 byte)
 		_be;break;}
 	_ce;
 }
+done _ser_jmp_far_real(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
+{
+	_cb("_ser_jmp_far_real");
+	_chk(_kec_jmp_far(newcs, neweip, byte));
+	_ce;
+}
 /* regular execute control */
 done _e_push(t_vaddrcc rsrc, t_nubit8 byte)
 {
@@ -1100,14 +1157,14 @@ done _e_push(t_vaddrcc rsrc, t_nubit8 byte)
 todo _e_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_e_call_far");
-	if (!_GetCR0_PE) {
-		_bb("CR0_PE(0)");
+	if (!_IsProtected) {
+		_bb("Protected(0)");
 		_chk(_ser_call_far_real(newcs, neweip, byte));
 		_be;
 	} else {
-		_bb("CR0_PE(1)");
+		_bb("Protected(1)");
 		_comment("_e_call_far::Protected: not implemented");
-		_chk(_SetExcept_UD(0));
+		_chk(_SetExcept_CE(0));
 		_be;
 	}
 	_ce;
@@ -1197,16 +1254,29 @@ tots _e_jcc(t_vaddrcc rsrc, t_nubit8 byte, t_bool condition)
 			_be;break;
 		}
 		_be;
-		switch (_GetOperandSize) {
-		case 2: _bb("OperandSize(2)");
-			vcpu.eip = GetMax16(neweip);
-			_be;break;
-		case 4: _bb("OperandSize(4)");
-			vcpu.eip = GetMax32(neweip);
-			_be;break;
-		default:_impossible_;break;}
-		_chk(_s_test_eip());
+		_chk(_kec_jmp_near(neweip, _GetOperandSize));
 	}
+	_ce;
+}
+todo _e_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
+{
+	_cb("_e_jmp_far");
+	if (!_IsProtected) {
+		_bb("Protected(0)");
+		_chk(_ser_jmp_far_real(newcs, neweip, byte));
+		_be;
+	} else {
+		_bb("Protected(1)");
+		_comment("_e_jmp_far::Protected: not implemented");
+		_chk(_SetExcept_CE(0));
+		_be;
+	}
+	_ce;
+}
+done _e_jmp_near(t_nubit32 neweip, t_nubit8 byte)
+{
+	_cb("_e_jmp_near");
+	_chk(_kec_jmp_near(neweip, byte));
 	_ce;
 }
 
@@ -2888,7 +2958,7 @@ static void SCAS(t_nubit8 bit)
 	default:CaseError("SCAS::bit");break;}
 }
 
-#define _adv _d_skip(1)
+#define _adv _chk(_d_skip(1))
 
 done UndefinedOpcode()
 {
@@ -3055,15 +3125,15 @@ void PUSH_CS()
 	vcpu.eip++;
 	PUSH((void *)&vcpu.cs.selector,16);
 }
-void POP_CS()
+tots POP_CS()
 {
 	_cb("POP_CS");
 	_newins_;
 	i386(0x0f) {
 		_chk(_SetExcept_CE(0));
 	} else {
-		vcpu.ip++;
-		POP((void *)&vcpu.cs.selector,16);
+		_adv;
+		_chk(POP((void *)&vcpu.cs.selector,16));
 	}
 	_ce;
 }
@@ -3108,10 +3178,9 @@ done ADC_RM16_R16()
 	}
 	_ce;
 }
-tots ADC_R8_RM8()
+done ADC_R8_RM8()
 {
 	_cb("ADC_R8_RM8");
-	_newins_;
 	i386(0x12) {
 		_adv;
 		_chk(_d_modrm(1, 1, 0));
@@ -3712,10 +3781,9 @@ done INC_BX()
 	}
 	_ce;
 }
-tots INC_SP()
+done INC_SP()
 {
 	_cb("INC_SP");
-	_newins_;
 	i386(0x44) {
 		_adv;
 		switch (_GetOperandSize) {
@@ -3833,10 +3901,9 @@ done DEC_BX()
 	}
 	_ce;
 }
-tots DEC_SP()
+done DEC_SP()
 {
 	_cb("DEC_SP");
-	_newins_;
 	i386(0x4c) {
 		_adv;
 		switch (_GetOperandSize) {
@@ -4121,9 +4188,9 @@ tots INSW()
 		UndefinedOpcode();
 	_ce;
 }
-tots JO()
+tots JO_REL8()
 {
-	_cb("JO");
+	_cb("JO_REL8");
 	_newins_;
 	i386(0x70) {
 		_adv;
@@ -4136,9 +4203,9 @@ tots JO()
 	}
 	_ce;
 }
-tots JNO()
+tots JNO_REL8()
 {
-	_cb("JNO");
+	_cb("JNO_REL8");
 	_newins_;
 	i386(0x71) {
 		_adv;
@@ -4151,9 +4218,9 @@ tots JNO()
 	}
 	_ce;
 }
-done JC()
+done JC_REL8()
 {
-	_cb("JC");
+	_cb("JC_REL8");
 	i386(0x72) {
 		_adv;
 		_chk(_d_imm(1));
@@ -4165,9 +4232,9 @@ done JC()
 	}
 	_ce;
 }
-done JNC()
+done JNC_REL8()
 {
-	_cb("JNC");
+	_cb("JNC_REL8");
 	i386(0x73) {
 		_adv;
 		_chk(_d_imm(1));
@@ -4179,9 +4246,9 @@ done JNC()
 	}
 	_ce;
 }
-done JZ()
+done JZ_REL8()
 {
-	_cb("JZ");
+	_cb("JZ_REL8");
 	i386(0x74) {
 		_adv;
 		_chk(_d_imm(1));
@@ -4193,9 +4260,9 @@ done JZ()
 	}
 	_ce;
 }
-done JNZ()
+done JNZ_REL8()
 {
-	_cb("JNZ");
+	_cb("JNZ_REL8");
 	i386(0x75) {
 		_adv;
 		_chk(_d_imm(1));
@@ -4207,9 +4274,9 @@ done JNZ()
 	}
 	_ce;
 }
-done JNA()
+done JNA_REL8()
 {
-	_cb("JNA");
+	_cb("JNA_REL8");
 	i386(0x76) {
 		_adv;
 		_chk(_d_imm(1));
@@ -4223,9 +4290,9 @@ done JNA()
 	}
 	_ce;
 }
-done JA()
+done JA_REL8()
 {
-	_cb("JA");
+	_cb("JA_REL8");
 	i386(0x77) {
 		_adv;
 		_chk(_d_imm(1));
@@ -4239,9 +4306,9 @@ done JA()
 	}
 	_ce;
 }
-done JS()
+done JS_REL8()
 {
-	_cb("JS");
+	_cb("JS_REL8");
 	i386(0x78) {
 		_adv;
 		_chk(_d_imm(1));
@@ -4253,9 +4320,9 @@ done JS()
 	}
 	_ce;
 }
-done JNS()
+done JNS_REL8()
 {
-	_cb("JNS");
+	_cb("JNS_REL8");
 	i386(0x79) {
 		_adv;
 		_chk(_d_imm(1));
@@ -4267,9 +4334,9 @@ done JNS()
 	}
 	_ce;
 }
-tots JP()
+tots JP_REL8()
 {
-	_cb("JP");
+	_cb("JP_REL8");
 	_newins_;
 	i386(0x7a) {
 		_adv;
@@ -4282,9 +4349,9 @@ tots JP()
 	}
 	_ce;
 }
-tots JNP()
+tots JNP_REL8()
 {
-	_cb("JNP");
+	_cb("JNP_REL8");
 	_newins_;
 	i386(0x7b) {
 		_adv;
@@ -4297,9 +4364,9 @@ tots JNP()
 	}
 	_ce;
 }
-done JL()
+done JL_REL8()
 {
-	_cb("JL");
+	_cb("JL_REL8");
 	i386(0x7c) {
 		_adv;
 		_chk(_d_imm(1));
@@ -4311,9 +4378,9 @@ done JL()
 	}
 	_ce;
 }
-done JNL()
+done JNL_REL8()
 {
-	_cb("JNL");
+	_cb("JNL_REL8");
 	i386(0x7d) {
 		_adv;
 		_chk(_d_imm(1));
@@ -4325,9 +4392,9 @@ done JNL()
 	}
 	_ce;
 }
-done JNG()
+done JNG_REL8()
 {
-	_cb("JNG");
+	_cb("JNG_REL8");
 	i386(0x7e) {
 		_adv;
 		_chk(_d_imm(1));
@@ -4341,9 +4408,9 @@ done JNG()
 	}
 	_ce;
 }
-done JG()
+done JG_REL8()
 {
-	_cb("JG");
+	_cb("JG_REL8");
 	i386(0x7f) {
 		_adv;
 		_chk(_d_imm(1));
@@ -5314,8 +5381,6 @@ tots ENTER()
 		if (level) {
 			_bb("level(!0)");
 			_comment("ENTER: this instruction is too inefficient and error-prone.");
-			_comment("ENTER: should I use vcpu.ss or overss in the for-loop?");
-			_comment("ENTER: ");
 			for (i = 0;i < level;++i) {
 				_bb("for");
 				switch (_GetOperandSize) {
@@ -5667,11 +5732,10 @@ void INS_D3()
 	}
 	_ce;
 }
-tots AAM()
+done AAM()
 {
 	t_nubit8 base;
 	_cb("AAM");
-	_newins_;
 	i386(0xd4) {
 		_adv;
 		_chk(_d_imm(1));
@@ -5848,35 +5912,68 @@ done CALL_REL16()
 	}
 	_ce;
 }
-void JMP_REL16()
+done JMP_REL16()
 {
-	t_nsbit16 rel16;
-	vcpu.eip++;
-	GetImm(16);
-	rel16 = d_nsbit16(vcpuins.rimm);
-	vcpu.eip += rel16;
-	vcpu.eip &= 0x0000ffff;
+	_cb("JMP_REL16");
+	i386(0xe9) {
+		_adv;
+		_chk(_d_imm(_GetOperandSize));
+		_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, 1));
+	} else {
+		vcpu.eip++;
+		GetImm(16);
+		vcpu.eip += d_nsbit16(vcpuins.rimm);
+		vcpu.eip &= 0x0000ffff;
+	}
+	_ce;
 }
-void JMP_PTR16_16()
+done JMP_PTR16_16()
 {
-	t_nubit16 newip,newcs;
-	vcpu.eip++;
-	GetImm(16);
-	newip = d_nubit16(vcpuins.rimm);
-	GetImm(16);
-	newcs = d_nubit16(vcpuins.rimm);
-	vcpu.eip = newip;
-	vcpu.cs.selector = newcs;
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  JMP_PTR16_16\n");
+	t_nubit16 newcs = 0x0000;
+	t_nubit32 neweip = 0x00000000;
+	_cb("JMP_PTR16_16");
+	i386(0xea) {
+		_adv;
+		switch (_GetOperandSize) {
+		case 2: _bb("OperandSize(2)");
+			_chk(_d_imm(2));
+			neweip = (t_nubit16)vcpuins.cimm;
+			_chk(_d_imm(2));
+			newcs = (t_nubit16)vcpuins.cimm;
+			_be;break;
+		case 4: _bb("OperandSize(4)");
+			_newins_;
+			_chk(_d_imm(4));
+			neweip = (t_nubit32)vcpuins.cimm;
+			_chk(_d_imm(2));
+			newcs = (t_nubit16)vcpuins.cimm;
+			_be;break;
+		default:_impossible_;break;}
+		_chk(_e_jmp_far(newcs, neweip, _GetOperandSize));
+	} else {
+		vcpu.eip++;
+		GetImm(16);
+		neweip = d_nubit16(vcpuins.rimm);
+		GetImm(16);
+		newcs = d_nubit16(vcpuins.rimm);
+		vcpu.eip = neweip;
+		vcpu.cs.selector = newcs;
+	}
+	_ce;
 }
-void JMP_REL8()
+done JMP_REL8()
 {
-	t_nsbit8 rel8;
-	vcpu.eip++;
-	GetImm(8);
-	rel8 = d_nsbit8(vcpuins.rimm);
-	bugfix(9) vcpu.eip += rel8;
-	else vcpu.eip += d_nubit8(vcpuins.rimm);
+	_cb("JMP_REL8");
+	i386(0xeb) {
+		_adv;
+		_chk(_d_imm(1));
+		_chk(_e_jcc(vcpuins.rimm, 1, 1));
+	} else {
+		vcpu.eip++;
+		GetImm(8);
+		vcpu.eip += d_nsbit8(vcpuins.rimm);
+	}
+	_ce;
 }
 done IN_AL_DX()
 {
@@ -6243,16 +6340,26 @@ void INS_FF()
 			default:_impossible_;break;}
 			_chk(_e_call_far(newcs, neweip, _GetOperandSize));
 			_be;break;
-		case 4: /* JMP_RM16 -----------------*/
+		case 4: /* JMP_RM16 */
 			_bb("JMP_RM16");
 			_chk(_d_modrm(0, _GetOperandSize, 0));
-			vcpu.eip = d_nubit16(vcpuins.rrm);
+			neweip = ((_GetOperandSize == 2) ? GetMax16(vcpuins.crm) : GetMax32(vcpuins.crm));
+			_chk(_e_jmp_near(neweip, _GetOperandSize));
 			_be;break;
-		case 5: /* JMP_M16_16 ---------------*/
+		case 5: /* JMP_M16_16 */
 			_bb("JMP_M16_16");
 			_chk(_d_modrm(0, _GetOperandSize * 2, 0));
-			vcpu.eip = d_nubit16(vcpuins.rrm);
-			vcpu.cs.selector = d_nubit16(vcpuins.rrm+2);
+			switch (_GetOperandSize) {
+			case 2:
+				neweip = d_nubit16(vcpuins.rrm);
+				newcs = d_nubit16(vcpuins.rrm + 2);
+				break;
+			case 4:
+				neweip = d_nubit32(vcpuins.rrm);
+				newcs = d_nubit16(vcpuins.rrm + 4);
+				break;
+			default:_impossible_;break;}
+			_chk(_e_jmp_far(newcs, neweip, _GetOperandSize));
 			_be;break;
 		case 6: /* PUSH_RM16 ----------------*/
 			_bb("PUSH_RM16");
@@ -6503,6 +6610,143 @@ tots CLTS()
 			_ClrCR0_TS;
 		_be;
 	}
+	_ce;
+}
+
+tots JO_REL16()
+{
+	_cb("JO_REL16");
+	_newins_;
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, _GetEFLAGS_OF));
+	_ce;
+}
+tots JNO_REL16()
+{
+	_cb("JNO_REL16");
+	_newins_;
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, !_GetEFLAGS_OF));
+	_ce;
+}
+done JC_REL16()
+{
+	_cb("JC_REL16");
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, _GetEFLAGS_CF));
+	_ce;
+}
+done JNC_REL16()
+{
+	_cb("JNC_REL16");
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, !_GetEFLAGS_CF));
+	_ce;
+}
+done JZ_REL16()
+{
+	_cb("JZ_REL16");
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, _GetEFLAGS_ZF));
+	_ce;
+}
+done JNZ_REL16()
+{
+	_cb("JNZ_REL16");
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, !_GetEFLAGS_ZF));
+	_ce;
+}
+done JNA_REL16()
+{
+	_cb("JNA_REL16");
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize,
+		(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
+	_ce;
+}
+done JA_REL16()
+{
+	_cb("JA_REL16");
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize,
+		!(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
+	_ce;
+}
+done JS_REL16()
+{
+	_cb("JS_REL16");
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, _GetEFLAGS_SF));
+	_ce;
+}
+done JNS_REL16()
+{
+	_cb("JNS_REL16");
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, !_GetEFLAGS_SF));
+	_ce;
+}
+tots JP_REL16()
+{
+	_cb("JP_REL16");
+	_newins_;
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, _GetEFLAGS_PF));
+	_ce;
+}
+tots JNP_REL16()
+{
+	_cb("JNP_REL16");
+	_newins_;
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, !_GetEFLAGS_PF));
+	_ce;
+}
+done JL_REL16()
+{
+	_cb("JL_REL16");
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
+	_ce;
+}
+done JNL_REL16()
+{
+	_cb("JNL_REL16");
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
+	_ce;
+}
+done JNG_REL16()
+{
+	_cb("JNG_REL16");
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize,
+			(_GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF))));
+	_ce;
+}
+done JG_REL16()
+{
+	_cb("JG_REL16");
+	_adv;
+	_chk(_d_imm(_GetOperandSize));
+	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize,
+		(!_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF))));
 	_ce;
 }
 tots BT_RM16_R16()
@@ -6847,22 +7091,22 @@ void vcpuinsInit()
 	vcpuins.table[0x6d] = (t_faddrcc)INSW;
 	vcpuins.table[0x6e] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table[0x6f] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table[0x70] = (t_faddrcc)JO;
-	vcpuins.table[0x71] = (t_faddrcc)JNO;
-	vcpuins.table[0x72] = (t_faddrcc)JC;
-	vcpuins.table[0x73] = (t_faddrcc)JNC;
-	vcpuins.table[0x74] = (t_faddrcc)JZ;
-	vcpuins.table[0x75] = (t_faddrcc)JNZ;
-	vcpuins.table[0x76] = (t_faddrcc)JNA;
-	vcpuins.table[0x77] = (t_faddrcc)JA;
-	vcpuins.table[0x78] = (t_faddrcc)JS;
-	vcpuins.table[0x79] = (t_faddrcc)JNS;
-	vcpuins.table[0x7a] = (t_faddrcc)JP;
-	vcpuins.table[0x7b] = (t_faddrcc)JNP;
-	vcpuins.table[0x7c] = (t_faddrcc)JL;
-	vcpuins.table[0x7d] = (t_faddrcc)JNL;
-	vcpuins.table[0x7e] = (t_faddrcc)JNG;
-	vcpuins.table[0x7f] = (t_faddrcc)JG;
+	vcpuins.table[0x70] = (t_faddrcc)JO_REL8;
+	vcpuins.table[0x71] = (t_faddrcc)JNO_REL8;
+	vcpuins.table[0x72] = (t_faddrcc)JC_REL8;
+	vcpuins.table[0x73] = (t_faddrcc)JNC_REL8;
+	vcpuins.table[0x74] = (t_faddrcc)JZ_REL8;
+	vcpuins.table[0x75] = (t_faddrcc)JNZ_REL8;
+	vcpuins.table[0x76] = (t_faddrcc)JNA_REL8;
+	vcpuins.table[0x77] = (t_faddrcc)JA_REL8;
+	vcpuins.table[0x78] = (t_faddrcc)JS_REL8;
+	vcpuins.table[0x79] = (t_faddrcc)JNS_REL8;
+	vcpuins.table[0x7a] = (t_faddrcc)JP_REL8;
+	vcpuins.table[0x7b] = (t_faddrcc)JNP_REL8;
+	vcpuins.table[0x7c] = (t_faddrcc)JL_REL8;
+	vcpuins.table[0x7d] = (t_faddrcc)JNL_REL8;
+	vcpuins.table[0x7e] = (t_faddrcc)JNG_REL8;
+	vcpuins.table[0x7f] = (t_faddrcc)JG_REL8;
 	vcpuins.table[0x80] = (t_faddrcc)INS_80;
 	vcpuins.table[0x81] = (t_faddrcc)INS_81;
 	vcpuins.table[0x82] = (t_faddrcc)UndefinedOpcode;
@@ -7121,22 +7365,22 @@ void vcpuinsInit()
 	vcpuins.table_0f[0x7d] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0x7e] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0x7f] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x80] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x81] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x82] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x83] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x84] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x85] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x86] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x87] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x88] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x89] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x8a] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x8b] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x8c] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x8d] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x8e] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x8f] = (t_faddrcc)UndefinedOpcode;
+	vcpuins.table_0f[0x80] = (t_faddrcc)JO_REL16;
+	vcpuins.table_0f[0x81] = (t_faddrcc)JNO_REL16;
+	vcpuins.table_0f[0x82] = (t_faddrcc)JC_REL16;
+	vcpuins.table_0f[0x83] = (t_faddrcc)JNC_REL16;
+	vcpuins.table_0f[0x84] = (t_faddrcc)JZ_REL16;
+	vcpuins.table_0f[0x85] = (t_faddrcc)JNZ_REL16;
+	vcpuins.table_0f[0x86] = (t_faddrcc)JNA_REL16;
+	vcpuins.table_0f[0x87] = (t_faddrcc)JA_REL16;
+	vcpuins.table_0f[0x88] = (t_faddrcc)JS_REL16;
+	vcpuins.table_0f[0x89] = (t_faddrcc)JNS_REL16;
+	vcpuins.table_0f[0x8a] = (t_faddrcc)JP_REL16;
+	vcpuins.table_0f[0x8b] = (t_faddrcc)JNP_REL16;
+	vcpuins.table_0f[0x8c] = (t_faddrcc)JL_REL16;
+	vcpuins.table_0f[0x8d] = (t_faddrcc)JNL_REL16;
+	vcpuins.table_0f[0x8e] = (t_faddrcc)JNG_REL16;
+	vcpuins.table_0f[0x8f] = (t_faddrcc)JG_REL16;
 	vcpuins.table_0f[0x90] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0x91] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0x92] = (t_faddrcc)UndefinedOpcode;

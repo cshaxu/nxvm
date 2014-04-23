@@ -117,7 +117,6 @@ static char **arg;
 static int exitFlag;
 static char cmdBuff[MAXLINE];
 static char cmdCopy[MAXLINE];
-static char filename[MAXLINE];
 static t_nubit32 printc(const t_string format, ...)
 {
 	t_nubit32 nWrittenBytes = 0;
@@ -456,12 +455,16 @@ static void init()
 	arg = (char **)malloc(MAXNARG * sizeof(char *));
 	exitFlag = 0x00;
 	vmachineInit();
+	if (!vfdd.flagexist) vapiFloppyInsert("fd.img");
+	if (!vhdd.flagexist) vapiHardDiskInsert("hd.img");
 #if VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32
-	vapiFloppyInsert("d:/fd.img");
-	vapiHardDiskInsert("d:/hd.img");
+	if (!vfdd.flagexist) vapiFloppyInsert("d:/fd.img");
+	if (!vhdd.flagexist) vapiHardDiskInsert("d:/hd.img");
 #else
-	vapiFloppyInsert("fd.img");
-	vapiHardDiskInsert("hd.img");
+	if (!vfdd.flagexist) vapiFloppyInsert("/mnt/hgfs/D/fd.img");
+	if (!vhdd.flagexist) vapiHardDiskInsert("/mnt/hgfs/D/hd.img");
+	if (!vfdd.flagexist) vapiFloppyInsert("~/fd.img");
+	if (!vhdd.flagexist) vapiHardDiskInsert("~/hd.img");
 #endif
 }
 static void final()
