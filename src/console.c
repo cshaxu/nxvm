@@ -54,7 +54,7 @@ void NSExec()
 			c = fgetc(load);
 		}
 		end = vcpu.ip+len;
-		fprintf(stdout,"File '%s' is loaded to 0001:0100, length is %d bytes.\n\n",execmd,len);
+		//fprintf(stdout,"File '%s' is loaded to 0001:0100, length is %d bytes.\n",execmd,len);
 		fclose(load);
 		while(vcpu.ip < end && !cpuTermFlag) vcpuInsExec();
 	}

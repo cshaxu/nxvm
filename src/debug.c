@@ -852,6 +852,22 @@ static void u()
 		else uprint(seg,ptr,ptr2);
 	} else seterr(3);
 }
+// verbal
+static void v()
+{
+	int i;
+	char str[MAXLINE];
+	fprintf(stdout,":");
+	fgets(str,MAXLINE,stdin);
+	str[strlen(str)-1] = '\0';
+	for(i = 0;i < strlen(str);++i) {
+		printnubit8(str[i]);
+		if(!((i+1)%0x10)) fprintf(stdout,"\n"); 
+		else if(!((i+1)%0x08)&&(str[i+1]!='\0')) fprintf(stdout,"-");
+		else fprintf(stdout," ");
+	}
+	if(i%0x10) fprintf(stdout,"\n");
+}
 // write
 static void w()
 {
@@ -906,6 +922,7 @@ static void help()
 	fprintf(stdout,"search\t\tS range list\n");
 //!	fprintf(stdout,"trace\t\tT [=address] [value]\n");
 	fprintf(stdout,"unassemble\tU [range]\n");
+	fprintf(stdout,"verbal\tV\n");
 	fprintf(stdout,"write\t\tW [address]\n");
 	//fprintf(stdout,"write\t\tW [address] [drive] [firstsector] [number]\n");
 	//fprintf(stdout,"allocate expanded memory\tXA [#pages]\n");
@@ -966,6 +983,7 @@ static void exec()
 	case 'r':	r();break;
 	case 's':	s();break;
 	case 'u':	u();break;
+	case 'v':	v();break;
 	case 'w':	w();break;
 	default:
 		seterr(0);
