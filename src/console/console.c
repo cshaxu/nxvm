@@ -299,7 +299,7 @@ static void Nxvm()
 		} else
 			printc("Virtual machine is already running.\n");
 	} else if (!strcmp(arg[1], "reset")) {
-		vmachineReset();
+		vapiCallBackMachineReset();
 	} else if (!strcmp(arg[1], "stop")) {
 		vmachineStop();
 	} else if (!strcmp(arg[1], "resume")) {
@@ -333,7 +333,7 @@ static void exec()
 	/* support for convenient commands */
 	else if(!strcmp(arg[0],"mode"))  {if (!vmachine.flagrun) vmachine.flagmode = !vmachine.flagmode;}
 	else if(!strcmp(arg[0],"start"))  vmachineStart();
-	else if(!strcmp(arg[0],"reset"))  vmachineReset();
+	else if(!strcmp(arg[0],"reset"))  vapiCallBackMachineReset();
 	else if(!strcmp(arg[0],"stop"))   vmachineStop();
 	else if(!strcmp(arg[0],"resume")) vmachineResume();
 	else printc("Illegal command '%s'.\n",arg[0]);

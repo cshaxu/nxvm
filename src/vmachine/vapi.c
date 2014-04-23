@@ -50,7 +50,6 @@ void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins)
 }
 
 /* Record */
-#include "vcpuins.h"
 t_apirecord vapirecord;
 
 #define _rec (vapirecord.rec[(i + vapirecord.start) % VAPI_RECORD_SIZE])
@@ -67,11 +66,46 @@ t_apirecord vapirecord;
 #define _rec_if    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_IF))
 #define _rec_ptr_last ((vapirecord.start + vapirecord.size) % VAPI_RECORD_SIZE)
 
-#define _expression "%scs:eip=%04x:%08x(%08x) opcode=%02x %02x %02x %02x %02x %02x %02x %02x \
-ss:esp=%04x:%08x stack=%04x %04x %04x %04x \
-eax=%08x ebx=%08x ecx=%08x edx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \
+#define _expression "%scs:eip=%04x:%08x(L%08x) opcode=%02x %02x %02x %02x %02x %02x %02x %02x \
+ss:esp=%04x:%08x(L%08x) stack=%04x %04x %04x %04x \
+eax=%08x ecx=%08x edx=%08x ebx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \
 eflags=%08x %s %s %s %s %s %s %s %s %s \
-bit=%02d opr1=%08x opr2=%08x result=%016llx %s\n"
+bit=%02d opr1=%08x opr2=%08x result=%08x %s"
+#define _printexp \
+do { \
+	fprintf(vapirecord.fp, _expression, \
+	_rec.svcextl ? "* " : "", \
+	_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip, \
+	GetMax8(_rec.opcode >> 0), GetMax8(_rec.opcode >> 8), \
+	GetMax8(_rec.opcode >> 16), GetMax8(_rec.opcode >> 24), \
+	GetMax8(_rec.opcode >> 32), GetMax8(_rec.opcode >> 40), \
+	GetMax8(_rec.opcode >> 48), GetMax8(_rec.opcode >> 56), \
+	_recpu.ss.selector, _recpu.esp, _recpu.ss.base + _recpu.esp, \
+	GetMax16(_rec.opcode >> 0), GetMax16(_rec.opcode >> 16), \
+	GetMax16(_rec.opcode >> 32), GetMax16(_rec.opcode >> 48), \
+	_recpu.eax,_recpu.ecx,_recpu.edx,_recpu.ebx, \
+	_recpu.ebp,_recpu.esi,_recpu.edi, \
+	_recpu.ds.selector,_recpu.es.selector, \
+	_recpu.fs.selector,_recpu.gs.selector, \
+	_recpu.eflags, \
+	_rec_of ? "OF" : "of", \
+	_rec_sf ? "SF" : "sf", \
+	_rec_zf ? "ZF" : "zf", \
+	_rec_cf ? "CF" : "cf", \
+	_rec_af ? "AF" : "af", \
+	_rec_pf ? "PF" : "pf", \
+	_rec_df ? "DF" : "df", \
+	_rec_if ? "IF" : "if", \
+	_rec_tf ? "TF" : "tf", \
+	_rec.abit,_rec.a1,_rec.a2,_rec.a3,_restmt); \
+	for (j = strlen(_restmt);j < 0x21;++j) \
+		fprintf(vapirecord.fp, " "); \
+	for (j = 0;j < _rec.msize;++j) \
+		fprintf(vapirecord.fp, "[%c:L%08x/%1d/%08x] ", \
+			_rec.mem[j].flagwrite ? 'W' : 'R', _rec.mem[j].linear, \
+			_rec.mem[j].byte, _rec.mem[j].data); \
+	fprintf(vapirecord.fp, "\n"); \
+} while (0)
 
 void vapiRecordNow(const t_string fname)
 {
@@ -102,28 +136,7 @@ void vapiRecordDump(const t_string fname)
 	while (i < vapirecord.size) {
 		for (j = 0;j < strlen(_restmt);++j)
 			if (_restmt[j] == '\n') _restmt[j] = ' ';
-		fprintf(vapirecord.fp, _expression,
-			_rec.flagisr ? "*" : "",
-			_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip, 
-			_rec.opcode[0], _rec.opcode[1], _rec.opcode[2], _rec.opcode[3],
-			_rec.opcode[4], _rec.opcode[5], _rec.opcode[6], _rec.opcode[7],
-			_recpu.ss.selector, _recpu.esp,
-			_rec.stack[0], _rec.stack[1], _rec.stack[2], _rec.stack[3],
-			_recpu.eax,_recpu.ebx,_recpu.ecx,_recpu.edx,
-			_recpu.ebp,_recpu.esi,_recpu.edi,
-			_recpu.ds.selector,_recpu.es.selector,
-			_recpu.fs.selector,_recpu.gs.selector,
-			_recpu.eflags,
-			_rec_of ? "OF" : "of",
-			_rec_sf ? "SF" : "sf",
-			_rec_zf ? "ZF" : "zf",
-			_rec_cf ? "CF" : "cf",
-			_rec_af ? "AF" : "af",
-			_rec_pf ? "PF" : "pf",
-			_rec_df ? "DF" : "df",
-			_rec_if ? "IF" : "if",
-			_rec_tf ? "TF" : "tf",
-			_rec.bit,_rec.opr1,_rec.opr2,_rec.result,_restmt);
+		_printexp;
 		++i;
 	}
 	vapiPrint("Record dumped to '%s'.\n", fname);
@@ -156,46 +169,14 @@ void vapiRecordExec()
 #endif
 	if (vcpu.flaghalt) return;
 
-	vapirecord.rec[_rec_ptr_last].flagisr = !!vcpuins.isrs;
-	vapirecord.rec[_rec_ptr_last].rcpu = vcpu;
-	vapirecord.rec[_rec_ptr_last].rcpu.eax = vcpu.eax;
-	dasm(vapirecord.rec[_rec_ptr_last].stmt, _cs, _ip, 0x00);
-	for (i = 0;i < 8;++i)
-		vapirecord.rec[_rec_ptr_last].opcode[i] = vramRealByte(_cs, _eip + i);
-	for (i = 0;i < 4;++i)
-		vapirecord.rec[_rec_ptr_last].stack[i] = vramRealWord(_ss, _esp + (i * 2));
-
-	vapirecord.rec[_rec_ptr_last].bit = vcpuins.bit;
-	vapirecord.rec[_rec_ptr_last].opr1 = vcpuins.opr1;
-	vapirecord.rec[_rec_ptr_last].opr2 = vcpuins.opr2;
-	vapirecord.rec[_rec_ptr_last].result = vcpuins.result;
+	vapirecord.rec[_rec_ptr_last] = vcpurec;
+	dasm(vapirecord.rec[_rec_ptr_last].stmt, vcpurec.rcpu.cs.selector, vcpurec.rcpu.ip, 0x00);
 
 	if (vapirecord.flagnow) {
 		i = vapirecord.size;
 		for (j = 0;j < strlen(_restmt);++j)
 			if (_restmt[j] == '\n') _restmt[j] = ' ';
-		fprintf(vapirecord.fp, _expression,
-			_rec.flagisr ? "*" : "",
-			_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip, 
-			_rec.opcode[0], _rec.opcode[1], _rec.opcode[2], _rec.opcode[3],
-			_rec.opcode[4], _rec.opcode[5], _rec.opcode[6], _rec.opcode[7],
-			_recpu.ss.selector, _recpu.esp,
-			_rec.stack[0], _rec.stack[1], _rec.stack[2], _rec.stack[3],
-			_recpu.eax,_recpu.ebx,_recpu.ecx,_recpu.edx,
-			_recpu.ebp,_recpu.esi,_recpu.edi,
-			_recpu.ds.selector,_recpu.es.selector,
-			_recpu.fs.selector,_recpu.gs.selector,
-			_recpu.eflags,
-			_rec_of ? "OF" : "of",
-			_rec_sf ? "SF" : "sf",
-			_rec_zf ? "ZF" : "zf",
-			_rec_cf ? "CF" : "cf",
-			_rec_af ? "AF" : "af",
-			_rec_pf ? "PF" : "pf",
-			_rec_df ? "DF" : "df",
-			_rec_if ? "IF" : "if",
-			_rec_tf ? "TF" : "tf",
-			_rec.bit,_rec.opr1,_rec.opr2,_rec.result,_restmt);
+		_printexp;
 	}
 	if (vapirecord.size == VAPI_RECORD_SIZE) vapirecord.start++;
 	else vapirecord.size++;

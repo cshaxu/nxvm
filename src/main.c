@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0128]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0129]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -209,8 +209,8 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0xf2 Clean CPUINS; Hard Disk Installed
  * 0xf5 i386 Build Begin
  * 010d Bitmap Font Implemented
- * 0118 i386 Build Milestone I (32-bit ins)
- * 0126 New Memory System I
+ * 0118 i386 Build Milestone 1 (32-bit ins)
+ * 0128 i386 Build Milestone 2 (MMU)
  *
  * Format Unify:
  * check all includes, macro names, flag names
@@ -229,7 +229,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 int main(int argc, char **argv)
 {
-	fprintf(stdout,"%s\n", PRODUCT);
+	fprintf(stdout, "%s\n", PRODUCT);
 	console();
 	return 0;
 }

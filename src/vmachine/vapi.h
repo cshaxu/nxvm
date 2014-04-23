@@ -11,7 +11,7 @@
 #include "stdarg.h"
 
 #include "vglobal.h"
-#include "vcpu.h"
+#include "vcpuins.h"
 
 char* STRCAT(char *_Dest, const char *_Source);
 char* STRCPY(char *_Dest, const char *_Source);
@@ -29,22 +29,9 @@ void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins);
 #define VAPI_RECORD_SELECT_FIRST 0x0000/* keep first (1) records or last (0) */
 
 typedef struct {
-	struct {
-#if VGLOBAL_ECPU_MODE == TEST_ECPU
-		t_ecpu rcpu;
-#else
-		t_cpu rcpu;
-#endif
-		t_nubit8 opcode[8];
-		t_nubit16 stack[4];
-		t_nubit8  bit;
-		t_nubit32 opr1, opr2;
-		t_nubit64 result;
-		t_bool    flagisr;
-		char stmt[0x20];
-	} rec[VAPI_RECORD_SIZE];
+	t_cpurec rec[VAPI_RECORD_SIZE];
 	t_nubitcc start, size;
-	t_bool    flagnow; /* record now! */
+	t_bool flagnow; /* record now! */
 	char fn[0x100];
 	FILE *fp;
 } t_apirecord;

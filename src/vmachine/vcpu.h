@@ -21,6 +21,7 @@ typedef enum {
 	SREG_IDTR
 } t_cpu_sreg_type;
 typedef struct {
+	t_bool flagvalid;
 	t_nubit16 selector;
 	/* invisible portion/descriptor part */
 	t_cpu_sreg_type sregtype;
@@ -122,6 +123,7 @@ extern t_cpu vcpu;
 #define vcpu ecpu
 #endif
 
+#define VCPU_PAGESIZE      0x1000
 
 #define _eax    (vcpu.eax)
 #define _ebx    (vcpu.ebx)
@@ -266,24 +268,27 @@ extern t_cpu vcpu;
 #define VCPU_LINEAR_DIR    0xffc00000
 #define VCPU_LINEAR_PAGE   0x003ff000
 #define VCPU_LINEAR_OFFSET 0x00000fff
-#define _GetLinear_DIR(linear)    (((linear) & VCPU_LINEAR_DIR)    >> 22)
-#define _GetLinear_PAGE(linear)   (((linear) & VCPU_LINEAR_PAGE)   >> 12)
-#define _GetLinear_OFFSET(linear) (((linear) & VCPU_LINEAR_OFFSET) >>  0)
+#define _GetLinear_Dir(linear)    (((linear) & VCPU_LINEAR_DIR)    >> 22)
+#define _GetLinear_Page(linear)   (((linear) & VCPU_LINEAR_PAGE)   >> 12)
+#define _GetLinear_Offset(linear) (((linear) & VCPU_LINEAR_OFFSET) >>  0)
 
 #define VCPU_PGENTRY_BASE  0xfffff000
-#define VCPU_PGENTRY_D     0x00000040
-#define VCPU_PGENTRY_A     0x00000020
-#define VCPU_PGENTRY_US    0x00000004
-#define VCPU_PGENTRY_RW    0x00000002
-#define VCPU_PGENTRY_P     0x00000001
-#define _GetPageEntry_P(pgentry)    (GetBit((pgentry), VCPU_PGENTRY_P))
-#define _GetPageEntry_RW(pgentry)   (GetBit((pgentry), VCPU_PGENTRY_RW))
-#define _GetPageEntry_US(pgentry)   (GetBit((pgentry), VCPU_PGENTRY_US))
-#define _GetPageEntry_A(pgentry)    (GetBit((pgentry), VCPU_PGENTRY_A))
-#define _GetPageEntry_D(pgentry)    (GetBit((pgentry), VCPU_PGENTRY_D))
-#define _GetPageEntry_BASE(pgentry) ((pgentry) & VCPU_PGENTRY_BASE)
-#define _SetPageEntry_A(pgentry)    (SetBit((pgentry), VCPU_PGENTRY_A))
-#define _SetPageEntry_D(pgentry)    (SetBit((pgentry), VCPU_PGENTRY_D))
+#define VCPU_PGENTRY_D     0x00000040 /* dirty */
+#define VCPU_PGENTRY_A     0x00000020 /* accessed */
+#define VCPU_PGENTRY_US    0x00000004 /* user/supervisor */
+#define VCPU_PGENTRY_RW    0x00000002 /* writable */
+#define VCPU_PGENTRY_P     0x00000001 /* present */
+#define _GetPageEntry_P(pge)      (GetBit((pge), VCPU_PGENTRY_P))
+#define _GetPageEntry_RW(pge)     (GetBit((pge), VCPU_PGENTRY_RW))
+#define _GetPageEntry_US(pge)     (GetBit((pge), VCPU_PGENTRY_US))
+#define _GetPageEntry_A(pge)      (GetBit((pge), VCPU_PGENTRY_A))
+#define _GetPageEntry_D(pge)      (GetBit((pge), VCPU_PGENTRY_D))
+#define _GetPageEntry_Base(pge)   ((pge) & VCPU_PGENTRY_BASE)
+#define _SetPageEntry_A(pge)      (SetBit((pge), VCPU_PGENTRY_A))
+#define _SetPageEntry_D(pge)      (SetBit((pge), VCPU_PGENTRY_D))
+#define _IsPageEntryPresent(pge)  _GetPageEntry_P(pge)
+#define _IsPageEntryWritable(pge) _GetPageEntry_RW(pge)
+#define _GetPageSize              VCPU_PAGESIZE
 
 #define VCPU_SELECTOR_RPL 0x0003 /* requestor's privilege level */
 #define VCPU_SELECTOR_TI  0x0004 /* table indicator */
@@ -431,24 +436,6 @@ extern t_cpu vcpu;
 #define _GetDescGate_Offset(descriptor) \
 	(((descriptor) & VCPU_DESC_GATE_OFFSET_0) | (((descriptor) & VCPU_DESC_GATE_OFFSET_1) >> 32))
 #define _GetDescCall_Count(descriptor)    (((descriptor) & VCPU_DESC_CALL_COUNT) >> 32)
-
-/*
-#define VCPU_GDTR_LIMIT 0x00000000ffff
-#define VCPU_GDTR_BASE  0xffffffff0000
-#define _GetGDTR_Limit ((vcpu.gdtr & VCPU_GDTR_LIMIT) >>  0)
-#define _GetGDTR_Base  ((vcpu.gdtr & VCPU_GDTR_BASE)  >> 16)
-#define _LoadGDTR16(base,limit)  (vcpu.gdtr = ((t_nubit48)GetMax24(base) << 16) | (t_nubit16)(limit))
-#define _LoadGDTR32(base,limit)  (vcpu.gdtr = ((t_nubit48)GetMax32(base) << 16) | (t_nubit16)(limit))
-
-#define VCPU_IDTR_LIMIT 0x00000000ffff
-#define VCPU_IDTR_BASE  0xffffffff0000
-#define _GetIDTR_Limit (vcpu.idtr & VCPU_IDTR_LIMIT)
-#define _GetIDTR_Base  ((vcpu.idtr & VCPU_IDTR_BASE) >> 16)
-#define _LoadIDTR16(base,limit)  (vcpu.idtr = ((t_nubit48)GetMax24(base) << 16) | (t_nubit16)(limit))
-#define _LoadIDTR32(base,limit)  (vcpu.idtr = ((t_nubit48)GetMax32(base) << 16) | (t_nubit16)(limit))
-
-#define _GetLDTR_Limit (vcpu.ldtr.limit - vcpu.ldtr.base)
-#define _GetLDTR_Base  (vcpu.ldtr.base)*/
 
 #define VCPU_CR0_PE     0x00000001
 #define VCPU_CR0_MP     0x00000002

@@ -25,7 +25,7 @@ typedef enum {
 	XOR8,XOR16,XOR32,
 	CMP8,CMP16,CMP32,
 	TEST8,TEST16,TEST32
-} t_cpuins_type;
+} t_cpuins_arithtype;
 typedef enum {
 	PREFIX_REP_NONE,
 	PREFIX_REP_REPZ,
@@ -48,54 +48,86 @@ typedef struct {
 	t_nubit32 pl1, pl2;
 } t_cpuins_physical;
 typedef struct {
-	t_nubit16 sel;
-	t_nubit64 desc;
+	t_nubit64 descriptor;
+	t_nubit16 selector;
 	t_cpuins_logical logical;
-} t_cpuins_selector;
+	t_bool flagvalid;
+} t_cpuins_desc;
 typedef struct {
-	t_cpu_sreg oldcs, oldss;
-	t_nubit32 oldeip, oldesp;
-	t_bool    flaginsloop;
-	t_nubit64 opr1, opr2, result;
-	t_nubit32 bit;
-	t_cpuins_type type;
+	/* instruction dispatch */
+	t_faddrcc table[0x100], table_0f[0x100];
+
+	/* prefixes */
 	t_cpuins_prefix_rep  prefix_rep;
 	t_cpuins_prefix      prefix_lock;
 	t_cpuins_prefix      prefix_oprsize;
 	t_cpuins_prefix      prefix_addrsize;
 	t_cpu_sreg *roverds, *roverss, *rmovsreg;
-	t_nubit32 except, excode;
-	t_faddrcc table[0x100], table_0f[0x100];
-	t_cpuins_selector descsel;
+
+	/* execution control */
+	t_cpu oldcpu;
+	t_bool flaginsloop;
+	t_bool flagmaskint; /* if int is disabled once */
+
+	/* memory management */
+	t_cpuins_desc xdesc;
 	t_cpuins_logical mrm;
 	t_vaddrcc rrm, rr;
 	t_nubit64 crm, cr, cimm;
-	t_vaddrcc rimm;
 	t_bool    flagmem; /* if rm is in memory */
-	t_bool    flagmaskint; /* if int is disabled once */
-	t_bool    flagrespondint; /* if intr is responded in one Refresh */
-	t_nubit8  isrs; /* if inside int serv rout */
+
+	/* arithmetic operands */
+	t_nubit64 opr1, opr2, result;
+	t_nubit32 bit;
+	t_cpuins_arithtype type;
 	t_nubit32 udf; /* undefined eflags bits */
 
-	t_bool flagmss;
-	t_nubit32 lrm,prm,erm;
-	t_nubit32 lins;
+	/* exception handler */
+	t_nubit32 except, excode;
 } t_cpuins;
 
-#define VCPUINS_EXCEPT_DE 0x00000001 /* 00 - divide error */
-#define VCPUINS_EXCEPT_BR 0x00000020 /* 05 - boundary check fail */
-#define VCPUINS_EXCEPT_UD 0x00000040 /* 06 - invalid opcode */
-#define VCPUINS_EXCEPT_NM 0x00000080 /* 07 - coprocessor not available */
-#define VCPUINS_EXCEPT_DF 0x00000100 /* 08 - double fault */
-#define VCPUINS_EXCEPT_TS 0x00000400 /* 10 - task state segment fail */
-#define VCPUINS_EXCEPT_NP 0x00000800 /* 11 - segment not present */
-#define VCPUINS_EXCEPT_SS 0x00001000 /* 12 - stack segment fault */
-#define VCPUINS_EXCEPT_GP 0x00002000 /* 13 - general protection */
-#define VCPUINS_EXCEPT_PF 0x00004000 /* 14 - page fault */
+typedef struct {
+	t_bool flagwrite;
+	t_nubit32 byte;
+	t_nubit32 linear;
+	t_nubit32 physical;
+	t_nubit32 data;
+} t_cpurec_memory;
 
-#define VCPUINS_EXCEPT_CE 0x80000000 /* 31 - internal case error */
+typedef struct {
+	t_cpu rcpu;
+	char stmt[0x20];
+	t_cpurec_memory mem[0x20];
+	t_nubit8 msize;
+	t_nubit64 opcode;
+	t_nubit64 stack;
+	t_nubit8 svcextl;
+	t_nubit32 linear;
+	t_nubit32 a1, a2, a3, abit;
+} t_cpurec;
+
+#define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */
+#define VCPUINS_EXCEPT_DB  0x00000002 /* 01 - trap/fault: debug exception */
+#define VCPUINS_EXCEPT_NMI 0x00000004 /* 02 - n/a: non-maskable interrupt */
+#define VCPUINS_EXCEPT_BP  0x00000008 /* 03 - trap: break point */
+#define VCPUINS_EXCEPT_OF  0x00000010 /* 04 - trap: overflow exception */
+#define VCPUINS_EXCEPT_BR  0x00000020 /* 05 - fault: boundary check fail */
+#define VCPUINS_EXCEPT_UD  0x00000040 /* 06 - fault: invalid opcode */
+#define VCPUINS_EXCEPT_NM  0x00000080 /* 07 - fault: coprocessor not available */
+#define VCPUINS_EXCEPT_DF  0x00000100 /* 08 - abort: double fault */
+#define VCPUINS_EXCEPT_09  0x00000200 /* 09 - abort: reserved */
+#define VCPUINS_EXCEPT_TS  0x00000400 /* 10 - fault: task state segment fail */
+#define VCPUINS_EXCEPT_NP  0x00000800 /* 11 - fault: segment not present */
+#define VCPUINS_EXCEPT_SS  0x00001000 /* 12 - fault: stack segment fault */
+#define VCPUINS_EXCEPT_GP  0x00002000 /* 13 - fault: general protection */
+#define VCPUINS_EXCEPT_PF  0x00004000 /* 14 - fault: page fault */
+#define VCPUINS_EXCEPT_15  0x00008000 /* 15 - n/a: reserved */
+#define VCPUINS_EXCEPT_MF  0x00010000 /* 16 - fault: x87 fpu floating point error */
+
+#define VCPUINS_EXCEPT_CE  0x80000000 /* 31 - internal case error */
 
 extern t_cpuins vcpuins;
+extern t_cpurec vcpurec;
 
 void vcpuinsInit();
 void vcpuinsReset();

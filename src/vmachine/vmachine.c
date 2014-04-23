@@ -38,12 +38,11 @@ static void DoAfterRunLoop()
 {
 	if (vmachine.flagrecord) vapiRecordFinal();
 }
-static void DoBeforeRefresh()
+static void DoBeforeRefresh() {}
+static void DoAfterRefresh()
 {
 	if (vmachine.flagrecord) vapiRecordExec();
 }
-static void DoAfterRefresh()
-{}
 
 void vapiCallBackMachineRun()
 {
@@ -66,7 +65,13 @@ void vapiCallBackMachineRun()
 t_nubit8 vapiCallBackMachineGetFlagRun() {return vmachine.flagrun;}
 void vapiCallBackMachineStart() {vmachineStart();}
 void vapiCallBackMachineResume() {vmachineResume();}
-void vapiCallBackMachineReset() {vmachineReset();}
+void vapiCallBackMachineReset()
+{
+	if (vmachine.flagrun)
+		vmachine.flagreset = 1;
+	else
+		vmachineReset();
+}
 void vapiCallBackMachineStop() {vmachineStop();}
 
 static void vmachineAsmTest()
@@ -107,7 +112,7 @@ void vmachineResume() {
 	vmachine.flagrun = 0x01;
 	vapiStartMachine();
 }
-void vmachineStop()  {vmachine.flagrun = 0x00;}
+void vmachineStop()  {vmachine.flagrun = 0;}
 void vmachineReset()
 {
 	vportReset();
@@ -125,9 +130,11 @@ void vmachineReset()
 	vvadpReset();
 	//vdispReset();
 	qdbiosReset();
+	vmachine.flagreset = 0;
 }
 void vmachineRefresh()
 {
+	if (vmachine.flagreset) vmachineReset();
 	//vmachineAsmTest();
 	//vdispRefresh();
 	vvadpRefresh();

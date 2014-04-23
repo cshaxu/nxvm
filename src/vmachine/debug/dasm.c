@@ -2217,7 +2217,7 @@ t_nubitcc dasmx(t_string stmt, t_nubit32 linear, t_nubit8 flagout)
 		STRCAT(dstmt, dop);
 		if (flagout) {
 			for (i = strlen(dstmt);i < 32;++i) STRCAT(dstmt, " ");
-		} else STRCAT(dstmt, "\t");
+		} else STRCAT(dstmt, "  ");
 		STRCAT(dstmt, dopr);
 		if (flagout == 2 && dtip[0]) {
 			for (i = strlen(dstmt);i < 64;++i) STRCAT(dstmt, " ");
@@ -2262,7 +2262,7 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off, t_nubit8 flagout)
 		STRCAT(dstmt, dop);
 		if (flagout) {
 			for (i = strlen(dstmt);i < 32;++i) STRCAT(dstmt, " ");
-		} else STRCAT(dstmt, "\t");
+		} else STRCAT(dstmt, "  ");
 		STRCAT(dstmt, dopr);
 		if (flagout == 2 && dtip[0]) {
 			for (i = strlen(dstmt);i < 64;++i) STRCAT(dstmt, " ");
