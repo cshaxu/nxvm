@@ -5,10 +5,9 @@
 #include "stdarg.h"
 #include "string.h"
 
-#include "../vmachine/vmachine.h"
 #include "../vmachine/vapi.h"
+#include "../vmachine/vmachine.h"
 
-#include "asm86.h"
 #include "debug.h"
 #include "console.h"
 
@@ -24,7 +23,7 @@
 //		return;
 //	}
 //	printc(".COM File: ");
-//	fgets(execmd,MAXLINE,stdin);
+//	FGETS(execmd,MAXLINE,stdin);
 //	parse(execmd);
 //	if(!strlen(execmd)) return;
 //	load = FOPEN(execmd,"rb");
@@ -56,13 +55,13 @@
 ////	FILE *fp;
 //	char str[MAXLINE];
 //	printc("Dump File: ");
-//	fgets(str, MAXLINE, stdin);
+//	FGETS(str, MAXLINE, stdin);
 //	parse(str);
 //	vmachineDumpRecordFile(str);
 //	/*printc("Instruction Dump File: ");
-//	fgets(str, MAXLINE, stdin);
+//	FGETS(str, MAXLINE, stdin);
 //	parse(str);
-//	fp = fopen(str,"w");
+//	fp = FOPEN(str,"w");
 //	if (!fp) {
 //		printc("ERORR:\tfailed to dump instruction.\n");
 //		return;
@@ -87,7 +86,7 @@
 //	}
 //	fflush(stdin);
 //	printc("Size(KB): ");
-//	fgets(str,MAXLINE,stdin);
+//	FGETS(str,MAXLINE,stdin);
 //	tempSize = atoi(str);
 //	if(tempSize > 0x400) {
 //		vramAlloc(tempSize<<0x0a);
@@ -132,7 +131,7 @@ static t_nubit32 printc(const t_string format, ...)
 }
 static void cgets(char *_Buf, int _MaxCount, FILE *_File)
 {
-	fgets(_Buf,_MaxCount,_File);
+	FGETS(_Buf,_MaxCount,_File);
 	fflush(stdin);
 }
 static void lcase(char *s)
@@ -411,10 +410,12 @@ static void exec()
 	else if(!strcmp(arg[0],"set"))    Set();
 	else if(!strcmp(arg[0],"device")) Device();
 	else if(!strcmp(arg[0],"nxvm"))   Nxvm();
-	else if(!strcmp(arg[0],"start")) {narg = 2;arg[1] = arg[0];Nxvm();}
-	else if(!strcmp(arg[0],"reset")) {narg = 2;arg[1] = arg[0];Nxvm();}
-	else if(!strcmp(arg[0],"stop"))  {narg = 2;arg[1] = arg[0];Nxvm();}
-	else if(!strcmp(arg[0],"resume")){narg = 2;arg[1] = arg[0];Nxvm();}
+	/* support for old commands */
+	else if(!strcmp(arg[0],"mode"))  {vmachine.flagmode = !vmachine.flagmode;}
+	else if(!strcmp(arg[0],"start")) {vmachineStart();}
+	else if(!strcmp(arg[0],"reset")) {vmachineReset();}
+	else if(!strcmp(arg[0],"stop"))  {vmachineStop();}
+	else if(!strcmp(arg[0],"resume")){vmachineResume();}
 	else printc("Illegal command '%s'.\n",arg[0]);
 	printc("\n");
 }

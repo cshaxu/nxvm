@@ -192,7 +192,7 @@ static void aconsole()
 		fflush(stdin);
 		printd("\b");
 		/*fflush(stdout);*/
-		fgets(cmdAsmBuff,MAXLINE,stdin);
+		FGETS(cmdAsmBuff,MAXLINE,stdin);
 		lcase(cmdAsmBuff);
 		if(!strlen(cmdAsmBuff)) {
 			exitAsmFlag = 1;
@@ -319,7 +319,7 @@ static void e()
 		printnubit8(getbyte(seg,ptr));
 		printd(".");
 		/*fflush(stdout);*/
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		lcase(s);//!!
 		val = scannubit8(s);//!!
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
@@ -577,7 +577,7 @@ static void rscanregs()
 		printd("AX ");
 		printnubit16(_ax);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_ax = t;
@@ -585,7 +585,7 @@ static void rscanregs()
 		printd("BX ");
 		printnubit16(_bx);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_bx = t;
@@ -593,7 +593,7 @@ static void rscanregs()
 		printd("CX ");
 		printnubit16(_cx);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_cx = t;
@@ -601,7 +601,7 @@ static void rscanregs()
 		printd("DX ");
 		printnubit16(_dx);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_dx = t;
@@ -609,7 +609,7 @@ static void rscanregs()
 		printd("BP ");
 		printnubit16(_bp);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_bp = t;
@@ -617,7 +617,7 @@ static void rscanregs()
 		printd("SP ");
 		printnubit16(_sp);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_sp = t;
@@ -625,7 +625,7 @@ static void rscanregs()
 		printd("SI ");
 		printnubit16(_si);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_si = t;
@@ -633,7 +633,7 @@ static void rscanregs()
 		printd("DI ");
 		printnubit16(_di);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_di = t;
@@ -641,7 +641,7 @@ static void rscanregs()
 		printd("SS ");
 		printnubit16(_ss);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
 			vcpu.overss = _ss = t;
@@ -650,7 +650,7 @@ static void rscanregs()
 		printd("CS ");
 		printnubit16(_cs);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_cs = t;
@@ -658,7 +658,7 @@ static void rscanregs()
 		printd("DS ");
 		printnubit16(_ds);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
 			vcpu.overds = _ds = t;
@@ -667,7 +667,7 @@ static void rscanregs()
 		printd("ES ");
 		printnubit16(_es);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_es = t;
@@ -675,14 +675,14 @@ static void rscanregs()
 		printd("IP ");
 		printnubit16(_ip);
 		printd("\n:");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_ip = t;
 	} else if(!STRCMP(arg[1],"f")) {
 		rprintflags();
 		printd(" -");
-		fgets(s,MAXLINE,stdin);
+		FGETS(s,MAXLINE,stdin);
 		lcase(s);
 		if(!STRCMP(s,"ov"))      SetOF;
 		else if(!STRCMP(s,"nv")) ClrOF;
@@ -820,7 +820,7 @@ static void v()
 	unsigned int i;
 	char str[MAXLINE];
 	printd(":");
-	fgets(str,MAXLINE,stdin);
+	FGETS(str,MAXLINE,stdin);
 	str[strlen(str)-1] = '\0';
 	for(i = 0;i < strlen(str);++i) {
 		printnubit8(str[i]);
@@ -968,7 +968,7 @@ void debug()
 	while(!exitFlag) {
 		fflush(stdin);
 		printd("-");
-		fgets(cmdBuff,MAXLINE,stdin);
+		FGETS(cmdBuff,MAXLINE,stdin);
 		parse();
 		exec();
 		if(errPos) {

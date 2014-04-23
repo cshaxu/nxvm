@@ -15,7 +15,7 @@ void vapiCallBackMachineRun()
 {
 //FILE *fp;
 	if (vmachine.flagrecord) vapiRecordStart();
-//fp = fopen("d:/nxvm.log","w");
+//fp = FOPEN("d:/nxvm.log","w");
 	while (vmachine.flagrun) {
 		if (vmachine.flagbreak &&
 			vcpu.cs == vmachine.breakcs && vcpu.ip == vmachine.breakip) {

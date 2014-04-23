@@ -5,38 +5,145 @@
 #include "stdlib.h"
 #include "string.h"
 
+#include "../vapi.h"
 #include "../vmachine.h"
 #include "aasm.h"
 
-static char* STRCAT(char *_Dest, const char *_Source)
-{return strcat(_Dest, _Source);}
-static char* STRCPY(char *_Dest, const char *_Source)
-{return strcpy(_Dest, _Source);}
-static char* STRTOK(char *_Str, const char *_Delim)
-{return strtok(_Str, _Delim);}
-static int STRCMP(const char *_Str1, const char *_Str2)
-{return strcmp(_Str1, _Str2);}
-static int SPRINTF(char *_Dest, const char *_Format, ...)
-{
-	int nWrittenBytes = 0;
-	va_list arg_ptr;
-	va_start(arg_ptr, _Format);
-	nWrittenBytes = vsprintf(_Dest, _Format, arg_ptr);
-	va_end(arg_ptr);
-	return nWrittenBytes;
-}
+typedef enum {
+	TYPE_NONE,
+	TYPE_REG8,
+	TYPE_REG16,
+	TYPE_PTR16,
+	TYPE_SEG16,
+	TYPE_IMM8,
+	TYPE_IMM16,
+	TYPE_MEM,
+	TYPE_MEM8,
+	TYPE_MEM16
+} t_aasm_oprtype;
+typedef enum {
+	MOD_MEM,
+	MOD_MEM_IMM8,
+	MOD_MEM_IMM16,
+	MOD_REG} t_aasm_oprmod;
+typedef enum {
+	MEM_BX_SI,
+	MEM_BX_DI,
+	MEM_BP_SI,
+	MEM_BP_DI,
+	MEM_SI,
+	MEM_DI,
+	MEM_BP,
+	MEM_BX
+} t_aasm_oprmem;
+typedef enum {
+	R8_AL,
+	R8_CL,
+	R8_DL,
+	R8_BL,
+	R8_AH,
+	R8_CH,
+	R8_DH,
+	R8_BH
+} t_aasm_oprreg8;
+typedef enum {
+	R16_AX,
+	R16_CX,
+	R16_DX,
+	R16_BX,
+	R16_SP,
+	R16_BP,
+	R16_SI,
+	R16_DI
+} t_aasm_oprreg16;
+typedef enum {
+	S16_ES,
+	S16_CS,
+	S16_SS,
+	S16_DS
+} t_aasm_oprseg16;
+typedef enum {
+	FIP_NONE,
+	FIP_NEAR,
+	FIP_FAR
+} t_aasm_oprip;
+
+typedef struct {
+	t_aasm_oprtype  type;  // 0 = error; 1 = reg8; 2 = reg16; 3 = ptr16;
+                           // 4 = seg16(es=rm.0,cs=rm.1,ss=rm.2,ds=rm.3);
+                           // 5 = imm8; 6 = imm16; 7 = mem8; 8 = mem16; 9 = null;
+	t_aasm_oprmod   mod;   // 0 = mem; 1 = mem+imm8; 2 = mem+imm16; 3 = reg; 4 = other;
+	t_aasm_oprmem   mem;   // use by modrm when mod = 0,1,2; by reg/ptr/seg when mod = 3; 8 = other;
+                           // 0 = [BX+SI], 1 = [BX+DI], 2 = [BP+SI], 3 = [BP+DI],
+                           // 4 = [SI], 5 = [DI], 6 = [BP], 7 = [BX]
+	t_aasm_oprreg8  reg8;  // use by modrm when mod = 0,1,2; by reg/ptr/seg when mod = 3; 8 = other;
+                           // 0 = AX/AL, 1 = CX/CL, 2 = DX/DL, 3 = BX/BL,
+                           // 4 = SP/AH, 5 = BP/CH, 6 = SI/DH, 7 = DI/BH
+	t_aasm_oprreg16 reg16;
+	t_aasm_oprseg16 seg16;
+	t_nubit8        imm8;
+	t_nubit16       imm16;
+	t_nubit8        disp8;
+	t_nubit16       disp16;// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
+	t_aasm_oprip    fip;   // 0 = blNear; 1 = blFar; 2 = N/A;
+} t_aasm_oprinfo;
 
 static char pool[0x1000];
+static t_aasm_oprinfo aopri1, aopri2;
 static t_string astmt, aop, aopr1, aopr2;
 static t_nubit16 avcs, avip;
+
+#define isNone(oprinf)  ((oprinf).type  == TYPE_NONE)
+#define isReg8(oprinf)  ((oprinf).type  == TYPE_REG8  && (oprinf).mod == MOD_REG)
+#define isReg16(oprinf) ((oprinf).type  == TYPE_REG16 && (oprinf).mod == MOD_REG)
+#define isPtr16(oprinf) ((oprinf).type  == TYPE_PTR16 && (oprinf).mod == MOD_REG)
+#define isSeg16(oprinf) ((oprinf).type  == TYPE_SEG16 && (oprinf).mod == MOD_REG)
+#define isImm8(oprinf)  ((oprinf).type  == TYPE_IMM8)
+#define isImm16(oprinf) ((oprinf).type  == TYPE_IMM16)
+#define isMem8(oprinf)  (((oprinf).type == TYPE_MEM   || (oprinf).type == TYPE_MEM8 ) && (oprinf).mod != MOD_REG)
+#define isMem16(oprinf) (((oprinf).type == TYPE_MEM   || (oprinf).type == TYPE_MEM16) && (oprinf).mod != MOD_REG)
+#define isNear(oprinf)  ((oprinf).fip   == FIP_NEAR)
+#define isFar(oprinf)   ((oprinf).fip   == FIP_FAR)
+
+#define isImm(oprinf)   (isImm8 (oprinf) || isImm16(oprinf))
+#define isRM8(oprinf)   (isReg8 (oprinf) || isMem8 (oprinf))
+#define isRM16(oprinf)  (isReg16(oprinf) || isPtr16(oprinf) || isMem16(oprinf))
+#define isR16(oprinf)   (isReg16(oprinf) || isPtr16(oprinf))
+#define isRM(oprinf)    (isRM8  (oprinf) || isRM16(oprinf))
+#define isAL(oprinf)    (isReg8 (oprinf) && (oprinf).reg8  == R8_AL)
+#define isCL(oprinf)    (isReg8 (oprinf) && (oprinf).reg8  == R8_CL)
+#define isDL(oprinf)    (isReg8 (oprinf) && (oprinf).reg8  == R8_DL)
+#define isAX(oprinf)    (isReg16(oprinf) && (oprinf).reg16 == R16_AX)
+#define isCX(oprinf)    (isReg16(oprinf) && (oprinf).reg16 == R16_CX)
+#define isDX(oprinf)    (isReg16(oprinf) && (oprinf).reg16 == R16_DX)
+#define isES(oprinf)    (isSeg16(oprinf) && (oprinf).seg16 == S16_ES)
+#define isCS(oprinf)    (isSeg16(oprinf) && (oprinf).seg16 == S16_CS)
+#define isSS(oprinf)    (isSeg16(oprinf) && (oprinf).seg16 == S16_SS)
+#define isDS(oprinf)    (isSeg16(oprinf) && (oprinf).seg16 == S16_DS)
+#define isALImm8        (isAL(aopri1)    && isImm8(aopri2))
+#define isAXImm8        (isAX(aopri1)    && isImm8(aopri2))
+#define isAXImm16       (isAX(aopri1)    && isImm (aopri2))
+#define isRM8Imm8       (isRM8 (aopri1)  && isImm8(aopri2))
+#define isRM16Imm       (isRM16(aopri1)  && isImm (aopri2))
+#define isRM8R8         (isRM8 (aopri1)  && isReg8(aopri2))
+#define isRM16R16       (isRM16(aopri1)  && isR16 (aopri2))
+#define isR8RM8         (isReg8(aopri1)  && isRM8 (aopri2))
+#define isR16RM16       (isR16 (aopri1)  && isRM16(aopri2))
 
 #define setbyte(n) (vramVarByte(avcs, avip) = (t_nubit8)(n))
 #define setword(n) (vramVarWord(avcs, avip) = (t_nubit16)(n))
 
 static void SetImm8(t_nubit8 byte)
 {
-	setbyte(byte);avip++;
+	setbyte(byte);
+	avip += 1;
 }
+static void SetImm16(t_nubit16 word)
+{
+	setword(word);
+	avip += 2;
+}
+static void SetModRegRM(t_nubit8 mod, t_nubit8 reg, t_nubit8 rm) {/* todo */}
 
 static void ES()
 {
@@ -82,7 +189,56 @@ static void AAS()
 	setbyte(0x3f);
 	avip++;
 }
+static void ADC()
+{
+	t_nubit8 mod, rm;
+	if (isALImm8) {
+		setbyte(0x14);
+		avip++;
+		SetImm8(aopri2.imm8);
+	} else if (isAXImm16) {
+		setbyte(0x15);
+		avip++;
+		SetImm16(aopri2.imm16);
+	} else if (isRM8Imm8) {
+		setbyte(0x80);
+		avip++;
+		mod = (t_nubit8)aopri1.mod;
+		switch (aopri1.type) {
+		case TYPE_REG8:
+			rm = (t_nubit8)aopri1.reg8;
+			break;
+		case TYPE_MEM:
+		case TYPE_MEM8:
+			rm = (t_nubit8)aopri1.mem;
+			break;
+		default: avip = 0;break;
+		}
+		SetModRegRM(mod, 0x02, rm);
+	}
+/*
+#define aGROUP1(reg,op,sign) {\
+if(isALImm8) {					aSINGLE(0x04+(op))					aSetByte(m2.imm)	}\
+else if(isAXImm16) {			aSINGLE(0x05+(op))					aSetWord(m2.imm)	}\
+else if(isRM8Imm8) {			aSINGLE(0x80)	aSetModRM(m1,(reg))	aSetByte(m2.imm)	}\
+else if(isRM16Imm)\
+{	if((sign) || m2.imm < 0xff80) {\
+								aSINGLE(0x81)	aSetModRM(m1,(reg))	aSetWord(m2.imm)	}\
+	else {						aSINGLE(0x83)	aSetModRM(m1,(reg))	aSetByte(m2.imm)	}}\
+else if(isRM8R8) {				aSINGLE(0x00+(op))	aSetModRM(m1,m2.rm)					}\
+else if(isRM16R16) {			aSINGLE(0x01+(op))	aSetModRM(m1,m2.rm)					}\
+else if(isR8RM8) {				aSINGLE(0x02+(op))	aSetModRM(m2,m1.rm)					}\
+else if(isR16RM16) {			aSINGLE(0x03+(op))	aSetModRM(m2,m1.rm)					}\
+else len = 0;}
+*/
+}
 
+static t_aasm_oprinfo parsearg(t_string arg)
+{
+	t_aasm_oprinfo info;
+	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
+	return info;
+}
 static void parse()
 {
 	/* parse single statement */
@@ -123,6 +279,8 @@ static void parse()
 			}
 		}
 	}
+	aopri1 = parsearg(aopr1);
+	aopri2 = parsearg(aopr2);
 }
 static void exec()
 {

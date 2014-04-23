@@ -61,6 +61,7 @@ void w32adispInit()
 	logFont.lfClipPrecision = 0;
 	logFont.lfQuality = 0;
 	logFont.lfPitchAndFamily = 0;
+	//lstrcpy(logFont.lfFaceName,_T("Perfect DOS VGA 437 Win"));
 	lstrcpy(logFont.lfFaceName,_T("Courier New"));
 	w32adispSetScreen();
 }

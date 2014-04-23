@@ -4,6 +4,7 @@
 #include "stdlib.h"
 #include "string.h"
 #include "asm86.h"
+#include "../vmachine/vapi.h"
 
 /* GENERAL */
 typedef struct {
@@ -14,23 +15,12 @@ typedef struct {
 	unsigned char rm;	// use by modrm when mod = 0,1,2; by reg/ptr/seg when mod = 3; 8 = other;
 						// 0 = BX+SI, 1 = BX+DI, 2 = BP+SI, 3 = BP+DI,
 						// 4 = SI, 5 = DI, 6 = BP, 7 = BX
-	unsigned char reg;	// use by modrm when mod = 0,1,2; by reg/ptr/seg when mod = 3; 8 = other;
+	//unsigned char reg;	// use by modrm when mod = 0,1,2; by reg/ptr/seg when mod = 3; 8 = other;
 						// 0 = AX/AL, 1 = CX/CL, 2 = DX/DL, 3 = BX/CL,
 						// 4 = SP/AH, 5 = BP/CH, 6 = SI/DH, 7 = DI/BH
 	unsigned short imm;	// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
 	unsigned char blFar;	// 0 = blNear; 1 = blFar; 2 = N/A;
 } ModRM;
-
-char* STRCAT(char *_Dest, const char *_Source)
-{return strcat(_Dest, _Source);}
-char* STRCPY(char *_Dest, const char *_Source)
-{return strcpy(_Dest, _Source);}
-char* STRTOK(char *_Str, const char *_Delim)
-{return strtok(_Str, _Delim);}
-FILE* FOPEN(const char *_Filename, const char *_Mode)
-{return fopen(_Filename, _Mode);}
-int STRCMP(const char *_Str1, const char *_Str2)
-{return strcmp(_Str1, _Str2);}
 
 static int ishexdigit(char c)
 {

@@ -7,13 +7,23 @@
 /*extern "C" {*/
 #endif
 
+#include "stdio.h"
+#include "stdarg.h"
+
 #include "vglobal.h"
 #include "vcpu.h"
 
-t_nubit32  vapiPrint(const t_string format, ...);
+char* STRCAT(char *_Dest, const char *_Source);
+char* STRCPY(char *_Dest, const char *_Source);
+char* STRTOK(char *_Str, const char *_Delim);
+int   STRCMP(const char *_Str1, const char *_Str2);
+int   SPRINTF(char *_Dest, const char *_Format, ...);
+FILE* FOPEN(const char *_Filename, const char *_Mode);
+char* FGETS(char *_Buf, int _MaxCount, FILE *_File);
+
+t_nubit32 vapiPrint(const t_string format, ...);
 void vapiPrintByte(t_nubit8 n);
 void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins);
-
 
 #define VAPI_RECORD_SIZE         0xffff             /* maximum record number */
 #define VAPI_RECORD_SELECT_FIRST 0x0000/* keep first (1) records or last (0) */

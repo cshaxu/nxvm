@@ -8,6 +8,29 @@
 #include "vmachine.h"
 #include "vapi.h"
 
+/* Standard C Library */
+char* STRCAT(char *_Dest, const char *_Source)
+{return strcat(_Dest, _Source);}
+char* STRCPY(char *_Dest, const char *_Source)
+{return strcpy(_Dest, _Source);}
+char* STRTOK(char *_Str, const char *_Delim)
+{return strtok(_Str, _Delim);}
+int STRCMP(const char *_Str1, const char *_Str2)
+{return strcmp(_Str1, _Str2);}
+int SPRINTF(char *_Dest, const char *_Format, ...)
+{
+	int nWrittenBytes = 0;
+	va_list arg_ptr;
+	va_start(arg_ptr, _Format);
+	nWrittenBytes = vsprintf(_Dest, _Format, arg_ptr);
+	va_end(arg_ptr);
+	return nWrittenBytes;
+}
+FILE* FOPEN(const char *_Filename, const char *_Mode)
+{return fopen(_Filename, _Mode);}
+char* FGETS(char *_Buf, int _MaxCount, FILE *_File)
+{return fgets(_Buf, _MaxCount, _File);}
+
 /* General Functions */
 t_nubit32 vapiPrint(const t_string format, ...)
 {
@@ -46,7 +69,7 @@ of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x\n"
 void vapiRecordDump(const t_string fname)
 {
 	t_nubitcc i = 0;
-	FILE *dump = fopen(fname, "w");
+	FILE *dump = FOPEN(fname, "w");
 	if (!dump) {
 		vapiPrint("ERROR:\tcannot write dump file.\n");
 		return;
@@ -98,7 +121,7 @@ void vapiRecordEnd() {}
 void vapiFloppyInsert(const t_string fname)
 {
 	t_nubitcc count;
-	FILE *image = fopen(fname, "rb");
+	FILE *image = FOPEN(fname, "rb");
 	if (image && vfdd.base) {
 		count = fread((void *)vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
 		vfdd.flagexist = 0x01;
@@ -112,7 +135,7 @@ void vapiFloppyRemove(const t_string fname)
 	t_nubitcc count;
 	FILE *image;
 	if (fname) {
-		image = fopen(fname, "wb");
+		image = FOPEN(fname, "wb");
 		if(image) {
 			if (!vfdd.flagro)
 				count = fwrite((void *)vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
@@ -131,7 +154,7 @@ void vapiFloppyRemove(const t_string fname)
 void vapiHardDiskInsert(const t_string fname)
 {
 	t_nubitcc count;
-	FILE *image = fopen(fname, "rb");
+	FILE *image = FOPEN(fname, "rb");
 	if (image && vhdd.base) {
 		count = fread((void *)vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
 		vhdd.flagexist = 0x01;
@@ -145,7 +168,7 @@ void vapiHardDiskRemove(const t_string fname)
 	t_nubitcc count;
 	FILE *image;
 	if (fname) {
-		image = fopen(fname, "wb");
+		image = FOPEN(fname, "wb");
 		if(image) {
 			if (!vhdd.flagro)
 				count = fwrite((void *)vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);

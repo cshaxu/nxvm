@@ -1,10 +1,10 @@
 /* This file is a part of NXVM project. */
 
 #include "stdio.h"
-#include "stdarg.h"
 #include "stdlib.h"
 #include "string.h"
 
+#include "../vapi.h"
 #include "../vmachine.h"
 
 typedef char t_dasm_strl[0x0200];
@@ -17,24 +17,6 @@ static t_nubit8     rid;
 static t_nubit16    dods, doss;
 static t_vaddrcc    dvrm, dvr;
 static t_nubit16    dvcs, dvip;
-
-static char* STRCAT(char *_Dest, const char *_Source)
-{return strcat(_Dest, _Source);}
-static char* STRCPY(char *_Dest, const char *_Source)
-{return strcpy(_Dest, _Source);}
-static char* STRTOK(char *_Str, const char *_Delim)
-{return strtok(_Str, _Delim);}
-static int STRCMP(const char *_Str1, const char *_Str2)
-{return strcmp(_Str1, _Str2);}
-static int SPRINTF(char *_Dest, const char *_Format, ...)
-{
-	int nWrittenBytes = 0;
-	va_list arg_ptr;
-	va_start(arg_ptr, _Format);
-	nWrittenBytes = vsprintf(_Dest, _Format, arg_ptr);
-	va_end(arg_ptr);
-	return nWrittenBytes;
-}
 
 #define MOD ((modrm&0xc0)>>6)
 #define REG ((modrm&0x38)>>3)
