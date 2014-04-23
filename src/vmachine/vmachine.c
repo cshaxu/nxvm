@@ -18,7 +18,7 @@ void vmachineRefresh()
 	vfddRefresh();
 	vdmacRefresh();
 */
-	vpitIntTick();                       /* interrupt request comes from PIT */
+/*	vpitIntTick();    */                 /* interrupt request comes from PIT */
 	vpitRefresh();
 	vpicRefresh();
 	vramRefresh();

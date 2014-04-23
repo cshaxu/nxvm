@@ -112,7 +112,7 @@ static void IO_Write_00x0(t_pic *vpic)
 	t_nubitcc id;
 	if (vcpu.al & 0x10) {                                     /* ICW1 (D4=1) */
 		vpic->icw1 = vcpu.al;
-		vpic->init = ICW2;
+		vpic->flaginit = ICW2;
 		if (GetIC4(vpic)) ;                                   /* D0=1, IC4=1 */
 		else vpic->icw4 = 0x00;                               /* D0=0, IC4=0 */
 		if (GetSNGL(vpic)) ;                         /* D1=1, SNGL=1, ICW3=0 */
@@ -195,20 +195,20 @@ static void IO_Read_00x1(t_pic *vpic)
  */
 static void IO_Write_00x1(t_pic *vpic)
 {
-	switch (vpic->init) {
+	switch (vpic->flaginit) {
 	case ICW2:
 		vpic->icw2 = vcpu.al & (~0x07);
 		if (!((vpic->icw1) & 0x02))             /* ICW1.D1=0, SNGL=0, ICW3=1 */
-			vpic->init = ICW3;
+			vpic->flaginit = ICW3;
 		else if (vpic->icw1 & 0x01)                      /* ICW1.D0=1, IC4=1 */
-			vpic->init = ICW4;
+			vpic->flaginit = ICW4;
 		else
-			vpic->init = OCW1;
+			vpic->flaginit = OCW1;
 		break;
 	case ICW3:
 		vpic->icw3 = vcpu.al;
-		if ((vpic->icw1) & 0x01) vpic->init = ICW4;      /* ICW1.D0=1, IC4=1 */
-		else vpic->init = OCW1;
+		if ((vpic->icw1) & 0x01) vpic->flaginit = ICW4;      /* ICW1.D0=1, IC4=1 */
+		else vpic->flaginit = OCW1;
 		break;
 	case ICW4:
 		vpic->icw4 = vcpu.al & 0x1f;
@@ -222,7 +222,7 @@ static void IO_Write_00x1(t_pic *vpic)
 		} else ;                                        /* BUF=0, Non-buffer */
 		if ((vpic->icw4) & 0x10) ;      /* SFNM=1, Special Fully Nested Mode */
 		else ;                      /* SFNM=0, Non-special Fully Nested Mode */
-		vpic->init = OCW1;
+		vpic->flaginit = OCW1;
 		break;
 	case OCW1:
 		vpic->ocw1 = vcpu.al;
@@ -250,7 +250,7 @@ void IO_Read_FF20()
 
 	vapiPrint("INFO PIC 1\n==========\n");
 	vapiPrint("Init Status = %d, IRX = %x\n",
-		vpic1.init, vpic1.irx);
+		vpic1.flaginit, vpic1.irx);
 	vapiPrint("IRR = %x, ISR = %x, IMR = %x, intr = %x\n",
 		vpic1.irr, vpic1.isr, vpic1.imr, vpic1.irr & (~vpic1.imr));
 	vapiPrint("ICW1 = %x, LTIM = %d, SNGL = %d, IC4 = %d\n",
@@ -270,7 +270,7 @@ void IO_Read_FF20()
 
 	vapiPrint("INFO PIC 2\n==========\n");
 	vapiPrint("Init Status = %d, IRX = %x\n",
-		vpic2.init, vpic2.irx);
+		vpic2.flaginit, vpic2.irx);
 	vapiPrint("IRR = %x, ISR = %x, IMR = %x, intr = %x\n",
 		vpic2.irr, vpic2.isr, vpic2.imr, vpic2.irr & (~vpic2.imr));
 	vapiPrint("ICW1 = %x, LTIM = %d, SNGL = %d, IC4 = %d\n",
@@ -317,7 +317,6 @@ void     vpicSetIRQ(t_nubit8 irqid)
 t_bool   vpicScanINTR()
 {
 	t_bool intr1;
-
 	intr1 = HasINTR(&vpic1);
 	if (intr1 && (GetIntrTopId(&vpic1) == 0x02) )
 			return HasINTR(&vpic2);
@@ -346,7 +345,7 @@ void vpicInit()
 {
 	memset(&vpic1, 0x00, sizeof(t_pic));
 	memset(&vpic2, 0x00, sizeof(t_pic));
-	vpic1.init = vpic2.init = ICW1;
+	vpic1.flaginit = vpic2.flaginit = ICW1;
 	vpic1.ocw3 = vpic2.ocw3 = 0x02;
 	vcpuinsInPort[0x0020] = (t_faddrcc)IO_Read_0020;
 	vcpuinsInPort[0x0021] = (t_faddrcc)IO_Read_0021;
