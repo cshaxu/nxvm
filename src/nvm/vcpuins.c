@@ -1,8 +1,11 @@
 /* This file is a part of NekoVMac project. */
 
-#include "vmachine.h"
 #include "vcpuins.h"
 #include "system/vapi.h"
+
+t_faddrcc InTable[0x10000];	
+t_faddrcc OutTable[0x10000];
+t_faddrcc InsTable[0x100];
 
 void OpError()
 {nvmprint("OpError\n");}

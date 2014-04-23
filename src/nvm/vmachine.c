@@ -2,15 +2,6 @@
 
 #include "system/vapi.h"
 #include "vmachine.h"
-#include "vcpu.h"
-#include "vmemory.h"
-#include "vbios.h"
-
-t_vaddrcc memoryBase;	// memory base address is 20 bit
-t_nubit32 memorySize = 0;	// memory size in byte
-t_faddrcc InTable[0x10000];	// 65536 In Port
-t_faddrcc OutTable[0x10000];	// 65536 Out Port
-t_faddrcc InsTable[0x100];	// 256 8086 Instructions
 
 t_bool initFlag = 0;
 t_bool runFlag = 0;
@@ -18,11 +9,8 @@ t_bool runFlag = 0;
 void NVMInit()
 {
 	if(!initFlag) {
-		if(!memorySize)
-			memorySize = 1 << 20;	// 1MBytes
 		CPUInit();
 		MemoryInit();
-		BIOSInit();
 		initFlag = 1;
 	} else
 		nvmprint("ERROR:\tNeko's Virtual Machine is already initialized.\n");

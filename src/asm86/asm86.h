@@ -3,8 +3,8 @@
 /*
 	Neko Confidential
 	Copyright (C) 2012 Neko. All rights reserved.
-	Project Period:	01/25/2012 - 02/04/2012
-	Current Build:	0x0029
+	Project Period:	01/25/2012 - 02/05/2012
+	Current Build:	0x002b
 */
 
 #ifndef NKASM86_ASM86_H

@@ -4,12 +4,15 @@
 #include "stdlib.h"
 #include "memory.h"
 
-#include "vmachine.h"
 #include "vmemory.h"
+
+t_vaddrcc memoryBase;
+t_nubit32 memorySize = 0;
 
 void MemoryInit()
 {
 	if(memoryBase) MemoryTerm();
+	if(!memorySize) memorySize = 1 << 20;	// 1MBytes
 	memoryBase = (t_vaddrcc)malloc(memorySize);
 	memset((void *)memoryBase,0,memorySize);
 }

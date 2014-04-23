@@ -21,7 +21,6 @@ test code
 #include "string.h"
 
 #include "nvm/vmachine.h"
-#include "nvm/vcpu.h"
 #define cpu vcpu
 #define memory memoryBase
 #define insptr insPtr

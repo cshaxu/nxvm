@@ -4,8 +4,8 @@
 #include "stdlib.h"
 #include "memory.h"
 
-#include "vmachine.h"
 #include "vcpuins.h"
+#include "vmemory.h"
 #include "vcpu.h"
 
 t_cpu vcpu;

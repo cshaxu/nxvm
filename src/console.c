@@ -50,16 +50,16 @@ void NSHelp()
 	fprintf(stdout,"EXEC\t\tRuns a binary of '.COM' format from host machine.\n");
 	fprintf(stdout,"EXIT\t\tQuits the NVM console (command interpreter).\n");
 	fprintf(stdout,"HELP\t\tProvides Help information for NVM console commands.\n\n");
-	fprintf(stdout,"NVM Settings\n");
+	fprintf(stdout,"NVM Operations\n");
 	fprintf(stdout,"============\n");
+	fprintf(stdout,"ON\t\tPowers on Neko's Virtual Machine.\n");
 	//fprintf(stdout,"STATUS\t\tPrints the status of NVM.\n");
 	fprintf(stdout,"MEMORY\t\tAssigns the size of NVM.\n");
 	fprintf(stdout,"MEMORYTEST\tTests the size of NVM.\n\n");
-	fprintf(stdout,"NVM Operations\n");
+/*	fprintf(stdout,"NVM Operations\n");
 	fprintf(stdout,"==============\n");
-	fprintf(stdout,"ON\t\tPowers on Neko's Virtual Machine.\n");
 	fprintf(stdout,"OFF\t\tTurns off Neko's Virtual Machine.\n");
-	fprintf(stdout,"RESET\t\tRestarts Neko's Virtual Machine.\n");
+	fprintf(stdout,"RESET\t\tRestarts Neko's Virtual Machine.\n");*/
 	
 }
 
@@ -102,7 +102,7 @@ void NSOn()
 	if(initFlag) NVMTerm();
 	NVMPowerOn();
 }
-void NSOff()
+/*void NSOff()
 {
 	NVMPowerOff();
 	if(!initFlag) NVMInit();
@@ -113,7 +113,7 @@ void NSReset()
 		NVMPowerOff();
 		NVMPowerOn();
 	}
-}
+}*/
 
 void NSConsole(int argc, char **argv)
 {
@@ -137,8 +137,8 @@ void NSConsole(int argc, char **argv)
 		else if(!strcmp(cmdl,"memorytest")) NSMemoryTest();
 
 		else if(!strcmp(cmdl,"on")) NSOn();
-		else if(!strcmp(cmdl,"off")) NSOff();
-		else if(!strcmp(cmdl,"reset")) NSReset();
+		/*else if(!strcmp(cmdl,"off")) NSOff();
+		else if(!strcmp(cmdl,"reset")) NSReset();*/
 
 		else fprintf(stdout,"Illegal command '%s'.\n",cmdl);
 		fprintf(stdout,"\n");
