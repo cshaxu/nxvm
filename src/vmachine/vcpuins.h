@@ -9,8 +9,6 @@
 /*extern "C" {*/
 #endif
 
-#define VCPUINS_DEBUG
-
 #include "vglobal.h"
 
 typedef enum {
@@ -24,11 +22,9 @@ typedef enum {
 	CMP8,CMP16
 	/*TEST8,TEST16*/
 } t_cpuins_type;
-
 typedef enum {
 	RT_NONE,RT_REPZ,RT_REPZNZ
 } t_cpuins_rep;
-
 typedef struct {
 	t_faddrcc table[0x100];
 	t_vaddrcc rm, r, imm;

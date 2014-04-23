@@ -1,10 +1,8 @@
 /* This file is a part of NXVM project. */
-
 #include "memory.h"
 
 #include "vapi.h"
 #include "vport.h"
-#include "vcpu.h"
 #include "vpic.h"
 #include "vdma.h"
 #include "vfdd.h"
@@ -12,8 +10,7 @@
 
 t_fdc vfdc;
 
-#define VFDC_RET_ERROR 0x80                                        /* Error Code */
-
+#define VFDC_RET_ERROR         0x80                            /* Error Code */
 /* Commands */
 #define CMD_SPECIFY            0x03                  /* set drive parameters */
 #define CMD_SENSE_DRIVE_STATUS 0x04
@@ -402,6 +399,7 @@ void vfdcReset()
 	memset(&vfdc, 0, sizeof(t_fdc));
 	vfdc.ccr = ccr;
 }
+
 #ifdef VFDC_DEBUG
 void IO_Read_F3F0()
 {
@@ -433,11 +431,8 @@ void IO_Write_F3F0()
 	vfdc.dor = 0x0c;
 	SetMSRReadyWrite;
 }
-
-#include "vcpu.h"
-#define mov(n) (vport.iobyte = (n))
-#define out(n) ExecFun(vport.out[(n)])
 #endif
+
 void vfdcInit()
 {
 	memset(&vfdc, 0, sizeof(t_fdc));
@@ -452,17 +447,6 @@ void vfdcInit()
 	vport.in[0x0f3f0] = (t_faddrcc)IO_Read_F3F0;
 	vport.out[0xf3f0] = (t_faddrcc)IO_Write_F3F0;
 	vport.out[0xf3f1] = (t_faddrcc)IO_Write_F3F1;
-	/* initialize fdc */
-	mov(0x00);
-	out(0x03f2);
-	mov(0x0c);
-	out(0x03f2);
-	mov(CMD_SPECIFY);
-	out(0x03f5);
-	mov(0xaf);
-	out(0x03f5);
-	mov(0x02);
-	out(0x03f5);
 #endif
 }
 void vfdcFinal() {}

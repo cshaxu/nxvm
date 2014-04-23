@@ -344,7 +344,6 @@ void vdmaReset(t_dma *vdma)
 	vdma->flageop = 0x00;
 	vdma->isr     = 0x00;
 }
-
 void vdmaRefresh()
 {
 	t_nubit8 id;
@@ -417,9 +416,8 @@ void IO_Read_FF00() /* print all info of dma */
 void IO_Write_FF00() {vdmaReset(&vdma1);vdmaReset(&vdma2);}
 void IO_Write_FF01() {vdmaSetDRQ(vport.iobyte);}
 void IO_Write_FF02() {vdmaRefresh();}
-#define mov(n) (vport.iobyte=(n))
-#define out(n) ExecFun(vport.out[(n)])
 #endif
+
 void vdmaInit()
 {
 	memset(&vdma1, 0x00, sizeof(t_dma));
@@ -510,11 +508,6 @@ void vdmaInit()
 	vport.out[0xff00] = (t_faddrcc)IO_Write_FF00;
 	vport.out[0xff01] = (t_faddrcc)IO_Write_FF01;
 	vport.out[0xff02] = (t_faddrcc)IO_Write_FF02;
-	mov(0x00);
-	out(0x08);
-	out(0xd0);
-	mov(0xc0);
-	out(0xd6);
 #endif
 }
 void vdmaFinal() {}

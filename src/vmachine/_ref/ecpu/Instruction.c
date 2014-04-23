@@ -719,14 +719,12 @@ void CMP(void **Des, void **Src, int Len)
 		opr12 = d_nubit8(*Src);
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		__asm push eax
 		__asm mov al, opr11
 		__asm cmp al, opr12
-		__asm pop eax
 //		d_nubit8(*Des)-=d_nubit8(*Src);
 		__asm pushfd
-		__asm pop eCPU.eflags			
-		d_nubit8(*Des)+=d_nubit8(*Src);
+		__asm pop eCPU.eflags
+//		d_nubit8(*Des)+=d_nubit8(*Src);
 		break;
 	case 2:
 		toe16;
@@ -1573,27 +1571,26 @@ void JG()
 // 0x80
 void INS_80()	//这里是以80开头的指令的集。
 {
-	char oce=*(char*)(evIP+MemoryStart) & 0x38;
+	char oce=d_nsbit8(evIP+MemoryStart) & 0x38;
 	oce>>=3;
 	toe8;
-	switch(oce)
-	{
-	case 0:		
+	switch(oce) {
+	case 0:
 		__asm push eCPU.flags
 		__asm popf
-		*rm8+=*(char *)eIMS;	
+		*rm8+=d_nsbit8(eIMS);
 		break;
 	case 1:
 		__asm push eCPU.flags
 		__asm popf
-		*rm8|=*(char *)eIMS;
+		*rm8|=d_nsbit8(eIMS);
 		break;
 	case 2:
 		t81=*rm8;
-		t82=*(char *)eIMS;
+		t82=d_nsbit8(eIMS);
 		__asm push eCPU.flags
 		__asm popf
-		//*rm8+=(*(char *)eIMS+((eCPU.flags & CF)!=0));	//在VC6里，逻辑值“真”＝1
+		//*rm8+=(d_nsbit8(eIMS)+((eCPU.flags & CF)!=0));	//在VC6里，逻辑值“真”＝1
 		__asm mov al,t81
 		__asm adc al,t82
 		__asm mov t81,al
@@ -1601,10 +1598,10 @@ void INS_80()	//这里是以80开头的指令的集。
 		break;
 	case 3:		
 		t81=*rm8;
-		t82=*(char *)eIMS;
+		t82=d_nsbit8(eIMS);
 		__asm push eCPU.flags
 		__asm popf
-		//*rm8-=(*(char *)eIMS+((eCPU.flags & CF)!=0));			
+		//*rm8-=(d_nsbit8(eIMS)+((eCPU.flags & CF)!=0));			
 		__asm mov al,t81
 		__asm sbb al,t82
 		__asm mov t81,al
@@ -1613,28 +1610,35 @@ void INS_80()	//这里是以80开头的指令的集。
 	case 4:		
 		__asm push eCPU.flags
 		__asm popf
-		*rm8&=*(char *)eIMS;			
+		*rm8&=d_nsbit8(eIMS);
 		break;
 	case 5:		
 		__asm push eCPU.flags
 		__asm popf
-		*rm8-=*(char *)eIMS;			
+		*rm8-=d_nsbit8(eIMS);
 		break;
-	case 6:		
+	case 6:
 		__asm push eCPU.flags
 		__asm popf
-		*rm8^=*(char *)eIMS;			
+		*rm8^=d_nsbit8(eIMS);
 		break;
-	case 7:		
+	case 7:
+		t81 = *rm8;
+		t82 = d_nsbit8(eIMS);
 		__asm push eCPU.flags
 		__asm popf
-		*rm8-=*(char *)eIMS;					
-		break;
+		__asm mov al, t81
+		__asm cmp al, t82
+//		*rm8-=d_nsbit8(eIMS);
+		__asm pushf
+		__asm pop eCPU.flags
+		evIP++;
+		return;
 	}
 	__asm pushf
 	__asm pop eCPU.flags
-	if (oce==7)
-		*rm8+=*(char *)eIMS;
+	//if (oce==7)
+	//	*rm8+=d_nsbit8(eIMS);
 	evIP++;
 }
 void INS_81()	//这里是以81开头的指令的集。
@@ -1684,7 +1688,7 @@ void INS_82()	//这里是以82开头的指令的集。
 	t_nubit16 tfg;
 	oce>>=3;
 	toe8;
-	tfg=*(char *)eIMS;			//这个强制转换就是按符号扩展完成的
+	tfg=d_nsbit8(eIMS);			//这个强制转换就是按符号扩展完成的
 // 	if (tfg & 0x0080)		//符号扩展
 // 		tfg+=0xff00;
 	switch(oce)
@@ -1757,7 +1761,7 @@ void INS_83()	//这里是以83开头的指令的集。
 	oce>>=3;
 	tevIP=evIP;
 	toe16;
-	tfg=*(char *)eIMS;			//这个强制转换本身就是符号扩展的
+	tfg=d_nsbit8(eIMS);			//这个强制转换本身就是符号扩展的
 	ptfg=(t_nubit32)&tfg;
 	evIP=tevIP;
 	switch(oce)
@@ -3163,7 +3167,7 @@ void JMP_FAR_LABEL()
 void JMP_NEAR()			//立即数是一字节的
 {	
 	LongCallNewIP(1);
-	eCPU.ip+=(*(char *)eIMS);
+	eCPU.ip+=(d_nsbit8(eIMS));
 	evIP=((t=eCPU.cs,t<<4))+eCPU.ip;	
 }
 void IN_AL_DX()
@@ -3262,7 +3266,7 @@ void INS_F6()
 	oce>>=3;
 	toe8;
 	trm8=*rm8;
-	tc=*(char *)eIMS;	
+	tc=d_nsbit8(eIMS);	
 	__asm push eCPU.flags
 	switch(oce)
 	{

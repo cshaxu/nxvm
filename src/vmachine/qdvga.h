@@ -1,3 +1,5 @@
+/* This file is a part of NXVM project. */
+
 #ifndef NXVM_QDVGA_H
 #define NXVM_QDVGA_H
 

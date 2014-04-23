@@ -2,8 +2,8 @@
 
 #include "memory.h"
 
-#include "vmachine.h"
 #include "vapi.h"
+#include "vmachine.h"
 
 t_machine vmachine;
 
@@ -81,6 +81,7 @@ void vmachineInit()
 	vramInit();
 	vcpuInit();
 	vpicInit();
+	vpitInit();
 	vcmosInit();
 	vdmaInit();
 	vfdcInit();
@@ -88,7 +89,6 @@ void vmachineInit()
 #ifdef VMACHINE_DEBUG
 	qdbiosInit();
 #endif
-	vpitInit();
 /*
 	vkbcInit();
 	vkeybInit();

@@ -96,23 +96,25 @@ static t_nubit16 scannubit16(char *s)
 }
 static void printnubit8(t_nubit8 n)
 {
-	char c;
+/*	char c;
 	int i;
 	for(i = 1;i >= 0;--i) {
 		c = ((n>>(i*4))&0x0f)+0x30;
 		if(c > 0x39) c += 0x07;
 		fprintf(stdout,"%c",c);
-	}
+	}*/
+	fprintf(stdout,"%02X",n);
 }
 static void printnubit16(t_nubit16 n)
 {
-	char c;
+/*	char c;
 	int i;
 	for(i = 3;i >= 0;--i) {
 		c = ((n>>(i*4))&0x0f)+0x30;
 		if(c > 0x39) c += 0x07;
 		fprintf(stdout,"%c",c);
-	}
+	}*/
+	fprintf(stdout,"%04X",n);
 }
 static void addrparse(t_nubit16 defseg,const char *addr)
 {
@@ -510,76 +512,38 @@ static void q()
 static void uprint(t_nubit16,t_nubit16,t_nubit16);
 static void rprintflags()
 {
-	t_nubit16 test;
-	test = _flags & VCPU_FLAG_OF;
-	if(test == VCPU_FLAG_OF)
-		fprintf(stdout,"OV ");
-	else
-		fprintf(stdout,"NV ");
-	test = _flags & VCPU_FLAG_DF;
-	if(test == VCPU_FLAG_DF)
-		fprintf(stdout,"DN ");
-	else
-		fprintf(stdout,"UP ");
-	test = _flags & VCPU_FLAG_IF;
-	if(test == VCPU_FLAG_IF)
-		fprintf(stdout,"EI ");
-	else
-		fprintf(stdout,"DI ");
-	test = _flags & VCPU_FLAG_SF;
-	if(test == VCPU_FLAG_SF)
-		fprintf(stdout,"NG ");
-	else
-		fprintf(stdout,"PL ");
-	test = _flags & VCPU_FLAG_ZF;
-	if(test == VCPU_FLAG_ZF)
-		fprintf(stdout,"ZR ");
-	else
-		fprintf(stdout,"NZ ");
-	test = _flags & VCPU_FLAG_AF;
-	if(test == VCPU_FLAG_AF)
-		fprintf(stdout,"AC ");
-	else
-		fprintf(stdout,"NA ");
-	test = _flags & VCPU_FLAG_PF;
-	if(test == VCPU_FLAG_PF)
-		fprintf(stdout,"PE ");
-	else
-		fprintf(stdout,"PO ");
-	test = _flags & VCPU_FLAG_CF;
-	if(test == VCPU_FLAG_CF)
-		fprintf(stdout,"CY ");
-	else
-		fprintf(stdout,"NC ");
+	if(_flags & VCPU_FLAG_OF) fprintf(stdout,"OV ");
+	else                      fprintf(stdout,"NV ");
+	if(_flags & VCPU_FLAG_DF) fprintf(stdout,"DN ");
+	else                      fprintf(stdout,"UP ");
+	if(_flags & VCPU_FLAG_IF) fprintf(stdout,"EI ");
+	else                      fprintf(stdout,"DI ");
+	if(_flags & VCPU_FLAG_SF) fprintf(stdout,"NG ");
+	else                      fprintf(stdout,"PL ");
+	if(_flags & VCPU_FLAG_ZF) fprintf(stdout,"ZR ");
+	else                      fprintf(stdout,"NZ ");
+	if(_flags & VCPU_FLAG_AF) fprintf(stdout,"AC ");
+	else                      fprintf(stdout,"NA ");
+	if(_flags & VCPU_FLAG_PF) fprintf(stdout,"PE ");
+	else                      fprintf(stdout,"PO ");
+	if(_flags & VCPU_FLAG_CF) fprintf(stdout,"CY ");
+	else                      fprintf(stdout,"NC ");
 }
 static void rprintregs()
 {
-	fprintf(stdout,"AX=");
-	printnubit16(_ax);
-	fprintf(stdout,"  BX=");
-	printnubit16(_bx);
-	fprintf(stdout,"  CX=");
-	printnubit16(_cx);
-	fprintf(stdout,"  DX=");
-	printnubit16(_dx);
-	fprintf(stdout,"  SP=");
-	printnubit16(_sp);
-	fprintf(stdout,"  BP=");
-	printnubit16(_bp);
-	fprintf(stdout,"  SI=");
-	printnubit16(_si);
-	fprintf(stdout,"  DI=");
-	printnubit16(_di);
-	fprintf(stdout,"\nDS=");
-	printnubit16(_ds);
-	fprintf(stdout,"  ES=");
-	printnubit16(_es);
-	fprintf(stdout,"  SS=");
-	printnubit16(_ss);
-	fprintf(stdout,"  CS=");
-	printnubit16(_cs);
-	fprintf(stdout,"  IP=");
-	printnubit16(_ip);
+	fprintf(stdout,  "AX=%04X", _ax);
+	fprintf(stdout,"  BX=%04X", _bx);
+	fprintf(stdout,"  CX=%04X", _cx);
+	fprintf(stdout,"  DX=%04X", _dx);
+	fprintf(stdout,"  SP=%04X", _sp);
+	fprintf(stdout,"  BP=%04X", _bp);
+	fprintf(stdout,"  SI=%04X", _si);
+	fprintf(stdout,"  DI=%04X", _di);
+	fprintf(stdout,"\nDS=%04X", _ds);
+	fprintf(stdout,"  ES=%04X", _es);
+	fprintf(stdout,"  SS=%04X", _ss);
+	fprintf(stdout,"  CS=%04X", _cs);
+	fprintf(stdout,"  IP=%04X", _ip);
 	fprintf(stdout,"   ");
 	rprintflags();
 	fprintf(stdout,"\n");

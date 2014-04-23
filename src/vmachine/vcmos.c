@@ -68,9 +68,6 @@ void vcmosInit()
 	vport.in[0x0071] = (t_faddrcc)IO_Read_0071;
 	vport.out[0x0070] = (t_faddrcc)IO_Write_0070;
 	vport.out[0x0071] = (t_faddrcc)IO_Write_0071;
-/* initialize regisetrs */
-	vcmos.reg[VCMOS_RTC_REG_B] = 0x02;
-/* end of init regs */
 	vcmosRefresh();
 }
 void vcmosFinal() {}

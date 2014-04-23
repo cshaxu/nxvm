@@ -5,14 +5,12 @@
 
 #include "vapi.h"
 
-#include "vmachine.h"
-#include "vcpuins.h"
-
-#ifdef VCPUINS_DEBUG
+#include "vport.h"
+#include "vram.h"
+#include "vcpu.h"
+#include "vpic.h"
 #include "qdbios.h"
-#include "qdvga.h"
-/* TODO: INT() is modified for the INT test. Please correct it finally! */
-#endif
+#include "vcpuins.h"
 
 #define MOD ((modrm&0xc0)>>6)
 #define REG ((modrm&0x38)>>3)
@@ -38,10 +36,78 @@
 
 t_cpuins vcpuins;
 
+#ifdef VCPUASM
+t_cpu acpu;
+static void acpuPrintRegs()
+{
+	vapiPrint("ACPU REGISTERS\n");
+	vapiPrint(  "AX=%04X", acpu.ax);
+	vapiPrint("  BX=%04X", acpu.bx);
+	vapiPrint("  CX=%04X", acpu.cx);
+	vapiPrint("  DX=%04X", acpu.dx);
+	vapiPrint("  SP=%04X", acpu.sp);
+	vapiPrint("  BP=%04X", acpu.bp);
+	vapiPrint("  SI=%04X", acpu.si);
+	vapiPrint("  DI=%04X", acpu.di);
+	vapiPrint("\nDS=%04X", acpu.ds);
+	vapiPrint("  ES=%04X", acpu.es);
+	vapiPrint("  SS=%04X", acpu.ss);
+	vapiPrint("  CS=%04X", acpu.cs);
+	vapiPrint("  IP=%04X", acpu.ip);
+	vapiPrint("   ");
+	if(acpu.flags & VCPU_FLAG_OF) vapiPrint("OV ");
+	else                      vapiPrint("NV ");
+	if(acpu.flags & VCPU_FLAG_DF) vapiPrint("DN ");
+	else                      vapiPrint("UP ");
+	if(acpu.flags & VCPU_FLAG_IF) vapiPrint("EI ");
+	else                      vapiPrint("DI ");
+	if(acpu.flags & VCPU_FLAG_SF) vapiPrint("NG ");
+	else                      vapiPrint("PL ");
+	if(acpu.flags & VCPU_FLAG_ZF) vapiPrint("ZR ");
+	else                      vapiPrint("NZ ");
+	if(acpu.flags & VCPU_FLAG_AF) vapiPrint("AC ");
+	else                      vapiPrint("NA ");
+	if(acpu.flags & VCPU_FLAG_PF) vapiPrint("PE ");
+	else                      vapiPrint("PO ");
+	if(acpu.flags & VCPU_FLAG_CF) vapiPrint("CY ");
+	else                      vapiPrint("NC ");
+	vapiPrint("\n");
+}
+static void acpuCheck()
+{
+	t_bool flagdiff = 0x00;
+	if (acpu.ax != vcpu.ax)       {vapiPrint("diff ax\n");flagdiff = 0x01;}
+	if (acpu.bx != vcpu.bx)       {vapiPrint("diff bx\n");flagdiff = 0x01;}
+	if (acpu.cx != vcpu.cx)       {vapiPrint("diff cx\n");flagdiff = 0x01;}
+	if (acpu.dx != vcpu.dx)       {vapiPrint("diff dx\n");flagdiff = 0x01;}
+	if (acpu.sp != vcpu.sp)       {vapiPrint("diff sp\n");flagdiff = 0x01;}
+	if (acpu.bp != vcpu.bp)       {vapiPrint("diff bp\n");flagdiff = 0x01;}
+	if (acpu.si != vcpu.si)       {vapiPrint("diff si\n");flagdiff = 0x01;}
+	if (acpu.di != vcpu.di)       {vapiPrint("diff di\n");flagdiff = 0x01;}
+	if (acpu.ip != vcpu.ip)       {vapiPrint("diff ip\n");flagdiff = 0x01;}
+	if (acpu.cs != vcpu.cs)       {vapiPrint("diff cs\n");flagdiff = 0x01;}
+	if (acpu.ds != vcpu.ds)       {vapiPrint("diff ds\n");flagdiff = 0x01;}
+	if (acpu.es != vcpu.es)       {vapiPrint("diff es\n");flagdiff = 0x01;}
+	if (acpu.ss != vcpu.ss)       {vapiPrint("diff ss\n");flagdiff = 0x01;}
+	if (acpu.flags != vcpu.flags) {vapiPrint("diff fg\n");flagdiff = 0x01;}
+	if (flagdiff) {
+		acpuPrintRegs();
+		vapiCallBackMachineStop();
+	}
+}
+#define async (acpu = vcpu)
+#define aexec __asm
+#define achek acpuCheck();
+#else
+#define async
+#define aexec
+#define achek
+#endif
+
 static void CaseError(const char *str)
 {
 	vapiPrint("The NXVM CPU has encountered an internal case error: %s.\n",str);
-	vmachineStop();
+	vapiCallBackMachineStop();
 }
 static void CalcCF()
 {
@@ -1293,11 +1359,7 @@ void OpError()
 	vapiPrint(" ");
 	vapiPrintByte(vramVarByte(vcpu.cs,vcpu.ip+4));
 	vapiPrint("\n");
-	vmachineStop();
-}
-void IO_NOP()
-{
-	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IO_NOP\n");
+	vapiCallBackMachineStop();
 }
 void ADD_RM8_R8()
 {

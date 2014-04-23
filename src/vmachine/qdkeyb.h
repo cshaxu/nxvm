@@ -1,3 +1,5 @@
+/* This file is a part of NXVM project. */
+
 #ifndef NXVM_QDKEYB_H
 #define NXVM_QDKEYB_H
 

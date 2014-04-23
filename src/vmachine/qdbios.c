@@ -1,3 +1,5 @@
+/* This file is a part of NXVM project. */
+
 #include "memory.h"
 #include "time.h"
 
@@ -714,6 +716,7 @@ void qdbiosInit()
 {
 	t_nubit8 hour, min, sec;
 	t_nubit16 i;
+
 /* build interrupt vector table */
 	for (i = 0x0000;i < 0x0100;++i) {
 		vramVarByte(0x0000, i*4 + 0x00) = 0x00;
@@ -857,12 +860,6 @@ void qdbiosInit()
 	vramVarByte(0x0040, 0x0064) = 0x03;
 	vramVarByte(0x0040, 0x0065) = 0x29;
 	vramVarByte(0x0040, 0x0066) = 0x30;
-/*
-	RTC Tick Count Storage
-	vramVarByte(0x0040, 0x006c) = 0xf7;
-	vramVarByte(0x0040, 0x006d) = 0xd6;
-	vramVarByte(0x0040, 0x006e) = 0x0f;
-*/
 	vramVarByte(0x0040, 0x0074) = 0x01;
 	vramVarByte(0x0040, 0x0076) = 0xc0;
 	vramVarByte(0x0040, 0x0078) = 0x14;
@@ -894,17 +891,44 @@ void qdbiosInit()
 	vramVarByte(0xf000, 0xe6fe) = 0x00;
 
 /* device initialize */
+/* vpic init */
+	out(0x20, 0x11);                                      /* ICW1: 0001 0001 */
+	out(0x21, 0x08);                                      /* ICW2: 0000 1000 */
+	out(0x21, 0x04);                                      /* ICW3: 0000 0100 */
+	out(0x21, 0x11);                                      /* ICW4: 0001 0001 */
+	out(0xa0, 0x11);                                      /* ICW1: 0001 0001 */
+	out(0xa1, 0x70);                                      /* ICW2: 0111 0000 */
+	out(0xa1, 0x02);                                      /* ICW3: 0000 0010 */
+	out(0xa1, 0x01);                                      /* ICW4: 0000 0001 */
+/* vcmos init */
+	out(0x70, VCMOS_RTC_REG_B);
+	out(0x71, 0x02);
+/* vdma init */
+	out(0x08, 0x00);
+	out(0xd0, 0x00);
+	out(0xd6, 0xc0);
+/* vfdc init */
+	out(0x03f2, 0x00);
+	out(0x03f2, 0x0c);
+	out(0x03f5, 0x03);                               /* send specify command */
+	out(0x03f5, 0xaf);
+	out(0x03f5, 0x02);
+/* vpit init*/
+	out(0x43, 0x36);                 /* al=0011 0110: Mode=3, Counter=0, 16b */
+	out(0x40, 0x00);
+	out(0x40, 0x00);
+	out(0x43, 0x54);                 /* al=0101 0100: Mode=2, Counter=1, LSB */
+	out(0x41, 0x12);
+/* qddev init */
 	qdkeybInit();
 	qdvgaInit();
-
-/* load real time */
+/* load cmos data */
 	hour = BCD2Hex(vcmos.reg[VCMOS_RTC_HOUR]);
 	min  = BCD2Hex(vcmos.reg[VCMOS_RTC_MINUTE]);
 	sec  = BCD2Hex(vcmos.reg[VCMOS_RTC_SECOND]);
 	vramVarDWord(0x0000, QDBIOS_ADDR_RTC_DAILY_COUNTER) = 
 		(t_nubit32)(((hour * 3600 + min * 60 + sec) * 1000) / QDBIOS_RTC_TICK);
 	vramVarByte(0x0000, QDBIOS_ADDR_RTC_ROLLOVER) = 0x00;
-
 /* load boot sector */
 	vapiFloppyInsert("d:/msdos.img");
 	memcpy((void *)vramGetAddr(0x0000,0x7c00), (void *)vfdd.base, 0x200);

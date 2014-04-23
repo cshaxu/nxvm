@@ -11,8 +11,6 @@
 
 #include "vglobal.h"
 
-#define VCPU_DEBUG
-
 #define VCPU_FLAG_CF 0x0001
 #define VCPU_FLAG_PF 0x0004
 #define VCPU_FLAG_AF 0x0010
@@ -46,12 +44,7 @@ typedef struct {
 	t_bool flagnmi;
 } t_cpu;
 
-#if DEBUGMODE != CCPU
 extern t_cpu vcpu;
-#else
-extern t_cpu ccpu;
-#define vcpu ccpu
-#endif
 
 void vcpuRefresh();
 void vcpuInit();

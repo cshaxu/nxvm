@@ -2,14 +2,9 @@
 
 #include "memory.h"
 
-#include "vglobal.h"
-#include "vport.h"
-#include "vcpu.h"
-#include "vpic.h"
-
-#ifdef VPIC_DEBUG
 #include "vapi.h"
-#endif
+#include "vport.h"
+#include "vpic.h"
 
 t_pic vpic1,vpic2;
 
@@ -340,10 +335,6 @@ t_nubit8 vpicGetINTR()
 		return (irid1 | vpic1.icw2);
 }
 
-#ifdef VPIC_DEBUG
-#define mov(n) (vport.iobyte=(n))
-#define out(n) ExecFun(vport.out[(n)])
-#endif
 void vpicInit()
 {
 	memset(&vpic1, 0x00, sizeof(t_pic));
@@ -363,22 +354,6 @@ void vpicInit()
 	vport.in[0xff21] = (t_faddrcc)IO_Read_FF21;
 	vport.in[0xff22] = (t_faddrcc)IO_Read_FF22;
 	vport.out[0xff20] = (t_faddrcc)IO_Write_FF20;
-	mov(0x11);                                            /* ICW1: 0001 0001 */
-	out(0x20);
-	mov(0x08);                                            /* ICW2: 0000 1000 */
-	out(0x21);
-	mov(0x04);                                            /* ICW3: 0000 0100 */
-	out(0x21);
-	mov(0x11);                                            /* ICW4: 0001 0001 */
-	out(0x21);
-	mov(0x11);                                            /* ICW1: 0001 0001 */
-	out(0xa0);
-	mov(0x70);                                            /* ICW2: 0111 0000 */
-	out(0xa1);
-	mov(0x02);                                            /* ICW3: 0000 0010 */
-	out(0xa1);
-	mov(0x01);                                            /* ICW4: 0000 0001 */
-	out(0xa1);
 #endif
 }
 void vpicRefresh()

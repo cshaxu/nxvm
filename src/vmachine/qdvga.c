@@ -1,8 +1,11 @@
+/* This file is a part of NXVM project. */
+
+#include "memory.h"
+
 #include "vapi.h"
 #include "vcpu.h"
 #include "qdvga.h"
 
-#include "memory.h"
 
 t_vga qdvga;
 

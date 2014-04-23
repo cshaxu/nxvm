@@ -3,18 +3,9 @@
 #include "memory.h"
 
 #include "vapi.h"
-
 #include "vport.h"
-#include "vcpu.h"
 #include "vpic.h"
-#include "vram.h"
 #include "vpit.h"
-
-/*#ifdef VPIT_DEBUG
-#include "time.h"
-static clock_t t1,t2;
-t_float64 dt;
-#endif*/
 
 t_pit vpit;
 
@@ -285,10 +276,7 @@ void vpitRefresh()
 		}
 	}
 }
-#ifdef VPIT_DEBUG
-#define mov(n) (vport.iobyte=(n))
-#define out(n) ExecFun(vport.out[(n)])
-#endif
+
 void vpitInit()
 {
 	memset(&vpit,0,sizeof(t_pit));
@@ -308,15 +296,6 @@ void vpitInit()
 	vport.in[0xff40] = (t_faddrcc)IO_Read_FF40;
 	vport.out[0xff40] = (t_faddrcc)IO_Write_FF40;
 	vport.in[0xff41] = (t_faddrcc)IO_Read_FF41;
-	mov(0x36); /* al=0011 0110: Mode=3, Counter=0, 16b */
-	out(0x43);
-	mov(0x00);
-	out(0x40);
-	out(0x40);
-	mov(0x54); /* al=0101 0100: Mode=2, Counter=1, LSB */
-	out(0x43);
-	mov(0x12);
-    out(0x41);
 #endif
 }
 void vpitFinal() {}
