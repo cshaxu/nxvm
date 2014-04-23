@@ -20,7 +20,7 @@ t_fdc vfdc;
 #define CMD_SEEK               0x0f  /* ! seek (both(?)) heads to cylinder X */
 #define CMD_VERSION            0x10     /* ! used during initialization once */
 
-#define CMD_PERPENDICULAR_MODE 0x12
+#define CMD_PERPENDICULAR_R16_RM16_MODE 0x12
                                   /* ! used during initialization once maybe */
 #define CMD_CONFIGURE          0x13           /* ! set controller parameters */
 #define CMD_LOCK               0x14

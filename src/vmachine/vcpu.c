@@ -62,14 +62,14 @@ void vcpuReset()
 	vcpu.ldtr.limit = 0x0000ffff;
 	vcpu.ldtr.selector = 0x0000;
 	vcpu.ldtr.sregtype = SREG_LDTR;
-	vcpu.ldtr.sys.type = 0x2;
+	vcpu.ldtr.sys.type = VCPU_DESC_SYS_TYPE_LDT;
 
 	vcpu.tr.base = 0x00000000;
 	vcpu.tr.dpl = 0x00;
 	vcpu.tr.limit = 0x0000ffff;
 	vcpu.tr.selector = 0x0000;
 	vcpu.tr.sregtype = SREG_TR;
-	vcpu.tr.sys.type = 0x1;
+	vcpu.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_16_AVL;
 
 	_LoadIDTR16(0x000000, 0x03ff);
 	_LoadGDTR32(0x00000000, 0xffff);

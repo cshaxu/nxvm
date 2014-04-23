@@ -295,8 +295,8 @@ static t_aasm_token gettoken(t_string str)
 		switch (state) {
 		case STATE_START:
 			switch (tokch) {
-			case '[': take(TOKEN_LSPAREN); break;
-			case ']': take(TOKEN_RSPAREN); break;
+			case '[': take(TOKEN_LSPAREN);break;
+			case ']': take(TOKEN_RSPAREN);break;
 			case ':': take(TOKEN_COLON);   break;
 			case '+': take(TOKEN_PLUS);    break;
 			case '-': take(TOKEN_MINUS);   break;
@@ -821,10 +821,10 @@ static t_aasm_oprinfo parsearg_mem()
 			default: error = 1;break;
 			}
 			break;
-		case TOKEN_BX: if (bx) error = 1; else bx = 1; break;
-		case TOKEN_SI: if (si) error = 1; else si = 1; break;
-		case TOKEN_BP: if (bp) error = 1; else bp = 1; break;
-		case TOKEN_DI: if (di) error = 1; else di = 1; break;
+		case TOKEN_BX: if (bx) error = 1; else bx = 1;break;
+		case TOKEN_SI: if (si) error = 1; else si = 1;break;
+		case TOKEN_BP: if (bp) error = 1; else bp = 1;break;
+		case TOKEN_DI: if (di) error = 1; else di = 1;break;
 		case TOKEN_IMM8:
 			if (info.mod != MOD_M) error = 1;
 			info.mod = MOD_M_DISP16;
@@ -3477,7 +3477,7 @@ t_nubitcc aasm(const t_string stmt, t_nubit16 seg, t_nubit16 off)
 		prefix = isprefix(aop);
 		switch (oldchar) {
 		case ';' :
-		case '\n': *astmt = oldchar; break;
+		case '\n': *astmt = oldchar;break;
 		case ' ' :
 		case '\t':
 			if (prefix) *astmt = '\n';
