@@ -135,10 +135,6 @@ static void vmachineAsmTest()
 		for (i = 0;i < lend2;++i) vapiPrint("%02X", ins2[i]);
 		vapiPrint("\t%s\n", dstr2);
 		vmachineStop();
-		/*if (lena < lend1) {
-			for (i = lena;i < lend1;++i) ins2[i] = 0x90;
-			for (i = 0;i < lend1;++i) vramRealByte(_cs, _ip + i) = ins2[i];
-		}*/
 	}
 }
 

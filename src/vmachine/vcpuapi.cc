@@ -416,7 +416,7 @@ void vcpuapiExecBefore()
 	flagbrec = 0;
 
 #if VCPUAPI_RECORD == 1
-	if (vcpuinsReadIns(bcpurec.linear, (t_vaddrcc)bcpurec.opcodes))
+	if (vcpuinsReadLinear(bcpurec.linear, (t_vaddrcc)bcpurec.opcodes, 15))
 		bcpurec.oplen = 0;
 	else
 		bcpurec.oplen = 15;

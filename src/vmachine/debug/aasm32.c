@@ -50,22 +50,12 @@ static t_api_trace_call trace;
 
 typedef enum {
 	TYPE_NONE,
-	TYPE_R8,
-	TYPE_R16,
-	TYPE_R32,
-	TYPE_SREG,
-	TYPE_CREG,
-	TYPE_DREG,
-	TYPE_TREG,
-	TYPE_I8,
-	TYPE_I16,
-	TYPE_I32,
-	TYPE_M,
-	TYPE_M8,
-	TYPE_M16,
-	TYPE_M32,
-	TYPE_I16_16,
-	TYPE_I16_32
+	TYPE_SREG, TYPE_CREG,
+	TYPE_DREG, TYPE_TREG,
+	TYPE_I16_16, TYPE_I16_32,
+	TYPE_R8, TYPE_R16, TYPE_R32,
+	TYPE_I8, TYPE_I16, TYPE_I32,
+	TYPE_M, TYPE_M8, TYPE_M16, TYPE_M32
 } t_aasm_oprtype;
 typedef enum {
 	MOD_M,
@@ -77,8 +67,8 @@ typedef enum {
 typedef enum {
 	MEM_BX_SI, MEM_BX_DI,
 	MEM_BP_SI, MEM_BP_DI,
-	MEM_SI, MEM_DI,
-	MEM_BP, MEM_BX,
+	MEM_SI,    MEM_DI,
+	MEM_BP,    MEM_BX,
 	MEM_EAX, MEM_ECX,
 	MEM_EDX, MEM_EBX,
 	MEM_SIB, MEM_EBP,
@@ -86,72 +76,33 @@ typedef enum {
 	MEM_BX_AL, MEM_EBX_AL
 } t_aasm_oprmem;
 typedef enum {
-	R8_AL,
-	R8_CL,
-	R8_DL,
-	R8_BL,
-	R8_AH,
-	R8_CH,
-	R8_DH,
-	R8_BH
+	R8_AL, R8_CL, R8_DL, R8_BL,
+	R8_AH, R8_CH, R8_DH, R8_BH
 } t_aasm_oprreg8;
 typedef enum {
-	R16_AX,
-	R16_CX,
-	R16_DX,
-	R16_BX,
-	R16_SP,
-	R16_BP,
-	R16_SI,
-	R16_DI
+	R16_AX, R16_CX, R16_DX, R16_BX,
+	R16_SP, R16_BP, R16_SI, R16_DI
 } t_aasm_oprreg16;
 typedef enum {
-	R32_EAX,
-	R32_ECX,
-	R32_EDX,
-	R32_EBX,
-	R32_ESP,
-	R32_EBP,
-	R32_ESI,
-	R32_EDI
+	R32_EAX, R32_ECX, R32_EDX, R32_EBX,
+	R32_ESP, R32_EBP, R32_ESI, R32_EDI
 } t_aasm_oprreg32;//
 typedef enum {
-	SREG_ES,
-	SREG_CS,
-	SREG_SS,
-	SREG_DS,
-	SREG_FS,//
-	SREG_GS//
+	SREG_ES, SREG_CS,
+	SREG_SS, SREG_DS,
+	SREG_FS, SREG_GS
 } t_aasm_oprsreg;
 typedef enum {
-	CREG_CR0,
-	CREG_CR1,
-	CREG_CR2,
-	CREG_CR3,
-	CREG_CR4,
-	CREG_CR5,
-	CREG_CR6,
-	CREG_CR7
+	CREG_CR0, CREG_CR1, CREG_CR2, CREG_CR3,
+	CREG_CR4, CREG_CR5, CREG_CR6, CREG_CR7
 } t_aasm_oprcreg;
 typedef enum {
-	DREG_DR0,
-	DREG_DR1,
-	DREG_DR2,
-	DREG_DR3,
-	DREG_DR4,
-	DREG_DR5,
-	DREG_DR6,
-	DREG_DR7
+	DREG_DR0, DREG_DR1, DREG_DR2, DREG_DR3, 
+	DREG_DR4, DREG_DR5, DREG_DR6, DREG_DR7
 } t_aasm_oprdreg;
 typedef enum {
-	TREG_TR0,
-	TREG_TR1,
-	TREG_TR2,
-	TREG_TR3,
-	TREG_TR4,
-	TREG_TR5,
-	TREG_TR6,
-	TREG_TR7
+	TREG_TR0, TREG_TR1, TREG_TR2, TREG_TR3,
+	TREG_TR4, TREG_TR5, TREG_TR6, TREG_TR7
 } t_aasm_oprtreg;
 typedef enum {
 	PTR_NONE,
@@ -6515,5 +6466,18 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 	vapiTraceFinal(&trace);
 #endif
 
+	return len;
+}
+
+/* extended routines - assemble a paragraph with jmp labels */
+typedef struct {
+	t_string stmt;
+	t_nubit8 code[15];
+	t_nubit8 len;
+} t_aasm_instr;
+t_nubit32 aasm32x(const t_strptr stmt, t_vaddrcc rcode)
+{
+	t_nubit32 len;
+	len = 0;
 	return len;
 }
