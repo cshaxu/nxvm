@@ -801,6 +801,39 @@ static void ADD(void *dest, void *src, int len)
 	default:CaseError("ADD::len");break;}
 	SetFlags(ADD_FLAG);
 }
+static void OR(void *dest, void *src, t_nubit8 len)
+{
+	switch(len) {
+	case 8:
+		ecpuins.bit = 8;
+		//ecpuins.type = OR8;
+		ecpuins.opr1 = d_nubit8(dest) & 0xff;
+		ecpuins.opr2 = d_nubit8(src) & 0xff;
+		ecpuins.result = (ecpuins.opr1|ecpuins.opr2) & 0xff;
+		d_nubit8(dest) = (t_nubit8)ecpuins.result;
+		break;
+	case 12:
+		ecpuins.bit = 16;
+		//ecpuins.type = OR16;
+		ecpuins.opr1 = d_nubit16(dest) & 0xffff;
+		ecpuins.opr2 = d_nsbit8(src) & 0xffff;
+		ecpuins.result = (ecpuins.opr1|ecpuins.opr2) & 0xffff;
+		d_nubit16(dest) = (t_nubit16)ecpuins.result;
+		break;
+	case 16:
+		ecpuins.bit = 16;
+		//ecpuins.type = OR16;
+		ecpuins.opr1 = d_nubit16(dest) & 0xffff;
+		ecpuins.opr2 = d_nubit16(src) & 0xffff;
+		ecpuins.result = (ecpuins.opr1|ecpuins.opr2) & 0xffff;
+		d_nubit16(dest) = (t_nubit16)ecpuins.result;
+		break;
+	default:CaseError("OR::len");break;}
+	ClrBit(ecpu.flags, VCPU_FLAG_OF);
+	ClrBit(ecpu.flags, VCPU_FLAG_CF);
+	ClrBit(ecpu.flags, VCPU_FLAG_AF);
+	SetFlags(OR_FLAG);
+}
 static void PUSH(void *src, t_nubit8 len)
 {
 	t_nubit16 data = d_nubit16(src);
@@ -822,6 +855,16 @@ static void INT(t_nubit8 intid)
 	ecpu.ip = vramVarWord(0x0000,intid*4+0);
 	ecpu.cs = vramVarWord(0x0000,intid*4+2);
 	evIP = (ecpu.cs << 4) + ecpu.ip;
+}
+static void POP(void *dest, t_nubit8 len)
+{
+	switch(len) {
+	case 16:
+		ecpuins.bit = 16;
+		d_nubit16(dest) = vramVarWord(ecpu.ss,ecpu.sp);
+		ecpu.sp += 2;
+		break;
+	default:CaseError("POP::len");break;}
 }
 VOID _ADD(void**Des, void**Src, int Len)
 {
@@ -901,7 +944,7 @@ VOID _PUSH(void*Src,int Len)
 		break;
 	}
 }
-VOID POP(void*Des, int Len)
+VOID _POP(void*Des, int Len)
 {
 	switch(Len)
 	{
@@ -915,7 +958,7 @@ VOID POP(void*Des, int Len)
 		break;
 	}
 }
-VOID OR(void**Des, void**Src, int Len)
+VOID _OR(void**Des, void**Src, int Len)
 {
 	t_bool intf = GetBit(ecpu.flags, VCPU_FLAG_IF);
 	switch(Len)
@@ -1105,7 +1148,7 @@ VOID SUB(void**Des, void**Src, int Len)
 	}
 	MakeBit(ecpu.flags, VCPU_FLAG_IF, intf);
 }
-VOID XOR(void**Des, void**Src, int Len)
+VOID _XOR(void**Des, void**Src, int Len)
 {
 	t_bool intf = GetBit(ecpu.flags, VCPU_FLAG_IF);
 	switch(Len)
@@ -1414,79 +1457,111 @@ VOID JMP_NEAR();
 // 0x00
 SAME ADD_RM8_R8()
 {
-	toe8;
-	ADD((void *)rm8, (void *)r8, 8);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(8,8);
+	ADD((void *)ecpuins.rm, (void *)ecpuins.r, 8);
+	ci2;
 }
 SAME ADD_RM16_R16()
 {
-	toe16;
-	ADD((void *)rm16,(void *)r16,16);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(16,16);
+	ADD((void *)ecpuins.rm, (void *)ecpuins.r, 16);
+	ci2;
 }
 SAME ADD_R8_RM8()
 {
-	toe8;
-	ADD((void *)r8,(void *)rm8,8);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(8,8);
+	ADD((void *)ecpuins.r, (void *)ecpuins.rm, 8);
+	ci2;
 }
 SAME ADD_R16_RM16()
 {
-	toe16;
-	ADD((void *)r16,(void *)rm16,16);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(16,16);
+	ADD((void *)ecpuins.r, (void *)ecpuins.rm, 16);
+	ci2;
 }
 SAME ADD_AL_I8()
 {
-	t_nubit32 tevIP=evIP;
-	toe8;
-	ADD((void *)&ecpu.al,(void *)(vramGetAddr(0, tevIP)),8);
-	evIP=tevIP+1;
+	ci1;
+	ecpu.ip++;
+	GetImm(8);
+	ADD((void *)&ecpu.al,(void *)ecpuins.imm,8);
+	ci2;
 }
 SAME ADD_AX_I16()
 {
-	t_nubit32 tevIP=evIP;
-	toe16;
-	ADD((void *)&ecpu.ax,(void *)(vramGetAddr(0, tevIP)),16);
-	evIP=tevIP+2;
+	ci1;
+	ecpu.ip++;
+	GetImm(16);
+	ADD((void *)&ecpu.ax,(void *)ecpuins.imm,16);
+	ci2;
 }
 SAME PUSH_ES()
 {
 	PUSH(&ecpu.es,16);
 }
-VOID POP_ES()
+SAME POP_ES()
 {
-	POP(&ecpu.es,tmpOpdSize);
+	POP(&ecpu.es,16);
 }
-VOID OR_RM8_R8()
+SAME OR_RM8_R8()
 {
-	OR((void**)&rm8,(void**)&r8,1);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(8,8);
+	OR((void *)ecpuins.rm,(void *)ecpuins.r,8);
+	ci2;
 }
-VOID OR_RM16_R16()
+SAME OR_RM16_R16()
 {
-	OR((void**)&rm16,(void**)&r16,tmpOpdSize);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(16,16);
+	OR((void *)ecpuins.rm,(void *)ecpuins.r,16);
+	ci2;
 }
-VOID OR_R8_RM8()
+SAME OR_R8_RM8()
 {
-	OR((void**)&r8,(void**)&rm8,1);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(8,8);
+	OR((void *)ecpuins.r,(void *)ecpuins.rm,8);
+	ci2;
 }
-VOID OR_R16_RM16()
+SAME OR_R16_RM16()
 {
-	OR((void**)&r16,(void**)&rm16,tmpOpdSize);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(16,16);
+	OR((void *)ecpuins.r,(void *)ecpuins.rm,16);
+	ci2;
 }
-VOID OR_AL_I8()
+SAME OR_AL_I8()
 {
-	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.al,*pb=(void*)(vramGetAddr(0, evIP));
-	OR((void**)&pa,(void**)&pb,1);	
-	evIP=tevIP+1;
+	ci1;
+	ecpu.ip++;
+	GetImm(8);
+	OR((void *)&ecpu.al,(void *)ecpuins.imm,8);
+	ci2;
 }
-VOID OR_AX_I16()
+SAME OR_AX_I16()
 {
-	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.ax,*pb=(void*)(vramGetAddr(0, evIP));
-	OR((void**)&pa,(void**)&pb,tmpOpdSize);
-	evIP=tevIP+tmpOpdSize;
+	ci1;
+	ecpu.ip++;
+	GetImm(16);
+	OR((void *)&ecpu.al,(void *)ecpuins.imm,16);
+	ci2;
 }
-VOID PUSH_CS()
+SAME PUSH_CS()
 {
-	_PUSH(&ecpu.cs,tmpOpdSize);
+	PUSH(&ecpu.cs,16);
 }
 // 0x10
 VOID ADC_RM8_R8()
@@ -1525,7 +1600,7 @@ VOID PUSH_SS()
 }
 VOID POP_SS()
 {
-	POP(&ecpu.ss,tmpOpdSize);
+	_POP(&ecpu.ss,tmpOpdSize);
 }
 VOID SBB_RM8_R8()
 {
@@ -1563,7 +1638,7 @@ VOID PUSH_DS()
 }
 VOID POP_DS()
 {
-	POP(&ecpu.ds,tmpOpdSize);
+	_POP(&ecpu.ds,tmpOpdSize);
 }
 // 0x20
 VOID AND_RM8_R8()
@@ -1684,32 +1759,32 @@ VOID DAS()
 // 0x30
 VOID XOR_RM8_R8()
 {
-	XOR((void**)&rm8,(void**)&r8,1);
+	_XOR((void**)&rm8,(void**)&r8,1);
 }
 VOID XOR_RM16_R16()
 {
-	XOR((void**)&rm16,(void**)&r16,tmpOpdSize);
+	_XOR((void**)&rm16,(void**)&r16,tmpOpdSize);
 }
 VOID XOR_R8_RM8()
 {
-	XOR((void**)&r8,(void**)&rm8,1);
+	_XOR((void**)&r8,(void**)&rm8,1);
 }
 VOID XOR_R16_RM16()
 {
-	XOR((void**)&r16,(void**)&rm16,tmpOpdSize);
+	_XOR((void**)&r16,(void**)&rm16,tmpOpdSize);
 }
 VOID XOR_AL_I8()
 {
 	t_nubit32 tevIP=evIP;
 	void*pa=&ecpu.al,*pb=(void*)(vramGetAddr(0, evIP));
-	XOR((void**)&pa,(void**)&pb,1);	
+	_XOR((void**)&pa,(void**)&pb,1);	
 	evIP=tevIP+1;
 }
 VOID XOR_AX_I16()
 {
 	t_nubit32 tevIP=evIP;
 	void*pa=&ecpu.ax,*pb=(void*)(vramGetAddr(0, evIP));
-	XOR((void**)&pa,(void**)&pb,tmpOpdSize);
+	_XOR((void**)&pa,(void**)&pb,tmpOpdSize);
 	evIP=tevIP+tmpOpdSize;
 }
 VOID SS()
@@ -1892,36 +1967,36 @@ VOID PUSH_DI()
 }
 VOID POP_AX()
 {
-	POP(&ecpu.ax,tmpOpdSize);
+	_POP(&ecpu.ax,tmpOpdSize);
 }
 VOID POP_CX()
 {
-	POP(&ecpu.cx,tmpOpdSize);
+	_POP(&ecpu.cx,tmpOpdSize);
 }
 VOID POP_DX()
 {
-	POP(&ecpu.dx,tmpOpdSize);
+	_POP(&ecpu.dx,tmpOpdSize);
 }
 VOID POP_BX()
 {
-	POP(&ecpu.bx,tmpOpdSize);
+	_POP(&ecpu.bx,tmpOpdSize);
 }
 VOID POP_SP()
 {
-	POP(&ecpu.sp,tmpOpdSize);
-	ecpu.sp-=tmpOpdSize;				//POP()里是先赋值后加的，所以这里要减回去
+	_POP(&ecpu.sp,tmpOpdSize);
+	ecpu.sp-=tmpOpdSize;				//_POP()里是先赋值后加的，所以这里要减回去
 }
 VOID POP_BP()
 {
-	POP(&ecpu.bp,tmpOpdSize);
+	_POP(&ecpu.bp,tmpOpdSize);
 }
 VOID POP_SI()
 {
-	POP(&ecpu.si,tmpOpdSize);
+	_POP(&ecpu.si,tmpOpdSize);
 }
 VOID POP_DI()
 {
-	POP(&ecpu.di,tmpOpdSize);
+	_POP(&ecpu.di,tmpOpdSize);
 }
 // 0x60
 VOID ARPL()
@@ -2109,7 +2184,7 @@ VOID INS_81()	//这里是以81开头的指令的集。
 		_ADD((void**)&rm16,(void**)&teIMS,tmpOpdSize);
 		break;
 	case 1:
-		OR((void**)&rm16,(void**)&teIMS,tmpOpdSize);
+		_OR((void**)&rm16,(void**)&teIMS,tmpOpdSize);
 		break;
 	case 2:
 		ADC((void**)&rm16,(void**)&teIMS,tmpOpdSize);
@@ -2124,7 +2199,7 @@ VOID INS_81()	//这里是以81开头的指令的集。
 		SUB((void**)&rm16,(void**)&teIMS,tmpOpdSize);
 		break;
 	case 6:		
-		XOR((void**)&rm16,(void**)&teIMS,tmpOpdSize);
+		_XOR((void**)&rm16,(void**)&teIMS,tmpOpdSize);
 		break;
 	case 7:		
 		CMP((void**)&rm16,(void**)&teIMS,tmpOpdSize);
@@ -2220,7 +2295,7 @@ VOID INS_83()	//这里是以83开头的指令的集。
 		_ADD((void**)&rm16,(void**)&ptfg,tmpOpdSize);
 		break;
 	case 1:
-		OR((void**)&rm16,(void**)&ptfg,tmpOpdSize);
+		_OR((void**)&rm16,(void**)&ptfg,tmpOpdSize);
 		break;
 	case 2:
 		ADC((void**)&rm16,(void**)&ptfg,tmpOpdSize);
@@ -2235,7 +2310,7 @@ VOID INS_83()	//这里是以83开头的指令的集。
 		SUB((void**)&rm16,(void**)&ptfg,tmpOpdSize);
 		break;
 	case 6:		
-		XOR((void**)&rm16,(void**)&ptfg,tmpOpdSize);
+		_XOR((void**)&rm16,(void**)&ptfg,tmpOpdSize);
 		break;
 	case 7:		
 		CMP((void**)&rm16,(void**)&ptfg,tmpOpdSize);
@@ -2326,7 +2401,7 @@ VOID MOV_SEG_RM()
 VOID POP_RM16()
 {
 	toe16;
- 	POP((void*)rm16,tmpOpdSize);
+ 	_POP((void*)rm16,tmpOpdSize);
 }
 // 0x90
 VOID NOP()
@@ -2414,7 +2489,7 @@ VOID PUSHF()
 }
 VOID POPF()
 {
-	POP(&ecpu.flags,tmpOpdSize);
+	_POP(&ecpu.flags,tmpOpdSize);
 }
 VOID SAHF()
 {	
@@ -4439,7 +4514,7 @@ VOID MOVZX_RM16()
 }
 VOID POP_FS()
 {
-	POP(&ecpu.fs,2);
+	_POP(&ecpu.fs,2);
 }
 VOID INS_0F01()
 {
