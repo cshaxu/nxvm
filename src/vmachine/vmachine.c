@@ -81,6 +81,21 @@ static void vmachineAsmTest()
 	t_nubit8 ins1[15], ins2[15];
 	total++;
 	vcpuinsReadLinear((_cs << 4) + _ip, (t_vaddrcc)ins1, 15);
+	switch (d_nubit16(ins1)) {
+	case 0xac26:
+	case 0xac2e:
+	case 0xac36:
+	case 0xac3e:
+	case 0xad26:
+	case 0xad2e:
+	case 0xad3e:
+	case 0xad36:
+	case 0xd726:
+	case 0xd72e:
+	case 0xd73e:
+	case 0xd736:
+		return;
+	}
 	lend1 = dasm32(dstr1, (t_vaddrcc)ins1);
 	lena  = aasm32(dstr1, (t_vaddrcc)ins2);
 	lend2 = dasm32(dstr2, (t_vaddrcc)ins2);
@@ -93,6 +108,10 @@ static void vmachineAsmTest()
 		for (i = 0;i < lend2;++i) vapiPrint("%02X", ins2[i]);
 		vapiPrint("\t%s\n", dstr2);
 		vmachineStop();
+		/*if (lena < lend1) {
+			for (i = lena;i < lend1;++i) ins2[i] = 0x90;
+			for (i = 0;i < lend1;++i) vramRealByte(_cs, _ip + i) = ins2[i];
+		}*/
 	}
 }
 
@@ -129,7 +148,7 @@ void vmachineReset()
 void vmachineRefresh()
 {
 	if (vmachine.flagreset) vmachineReset();
-	//vmachineAsmTest();
+	vmachineAsmTest();
 	//vdispRefresh();
 	vvadpRefresh();
 	//vkeybRefresh();

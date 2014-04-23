@@ -5,6 +5,7 @@
 #include "string.h"
 
 #include "../vapi.h"
+#include "../vcpuins.h"
 #include "../vmachine.h"
 #include "debug.h"
 #include "aasm.h"
@@ -19,10 +20,16 @@ static t_strptr rop, ropr1, ropr2, ropr3;
 static t_nubit16 avcs, avip;
 static t_strptr aop, aopr1, aopr2;
 
+/* operand size */
+#define _SetOperandSize(n) (flagopr = ((vcpu.cs.seg.exec.defsize ? 4 : 2) != (n)))
+/* address size of the source operand */
+#define _SetAddressSize(n) (flagaddr = ((vcpu.cs.seg.exec.defsize ? 4 : 2) != (n)))
+
 typedef enum {
 	TYPE_NONE,
 	TYPE_R8,
 	TYPE_R16,
+	TYPE_R32,
 	TYPE_SREG,
 	TYPE_I8,
 	TYPE_I16,
@@ -32,7 +39,6 @@ typedef enum {
 	TYPE_M32,
 	TYPE_I16_16,
 	TYPE_LABEL,
-	TYPE_R32,//
 	TYPE_CREG,//
 	TYPE_DREG,//
 	TYPE_TREG,//
@@ -101,10 +107,9 @@ typedef enum {
 	PTR_NEAR,
 	PTR_FAR
 } t_aasm_oprptr;
-
 typedef struct {
-	t_aasm_oprtype  type;  // 0 = none, 1 = reg8, 2 = reg16, 3 = seg,
-                           // 4 = imm8, 5 = imm16, 6 = mem, 7 = mem8, 8 = mem16
+	t_aasm_oprtype  type;  // 0 = none, 1 = reg8, 2 = reg16, 3 = reg32, 4 = seg,
+                           // 5 = imm8, 6 = imm16, 7 = mem, 8 = mem8, 9 = mem16
 	t_aasm_oprmod   mod;   // active when type = 1,2,3,6,7,8
 	                       // 0 = mem; 1 = mem+disp8; 2 = mem+disp16; 3 = reg
 	t_aasm_oprmem   mem;   // active when mod = 0,1,2
@@ -115,13 +120,17 @@ typedef struct {
                            // 4 = AH, 5 = CH, 6 = DH, 7 = BH
 	t_aasm_oprreg16 reg16; // active when type = 2, mod = 3
                            // 0 = AX, 1 = CX, 2 = DX, 3 = BX,
-                           // 4 = SP, 5 = BP, 6 = SI, 7 = DI      
+                           // 4 = SP, 5 = BP, 6 = SI, 7 = DI
+	t_aasm_oprreg32 reg32; // active when type = 3, mod = 3
+                           // 0 = EAX, 1 = ECX, 2 = EDX, 3 = EBX,
+                           // 4 = ESP, 5 = EBP, 6 = ESI, 7 = EDI   
 	t_aasm_oprseg   seg;   // active when type = 3
                            // 0 = ES, 1 = CS, 2 = SS, 3 = DS
 	t_bool          imms;  // if imm is signed
 	t_bool          immn;  // if imm is negative
 	t_nubit8        imm8;
 	t_nubit16       imm16;
+	t_nubit32       imm32;
 	t_nsbit8        disp8;
 	t_nubit16       disp16;// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
 	t_aasm_oprptr   ptr; // 0 = near; 1 = far
@@ -133,13 +142,18 @@ static t_bool flagerror;
 static t_aasm_oprinfo aopri1, aopri2, aopri3;
 
 #define isNONE(oprinf)  ((oprinf).type  == TYPE_NONE)
-#define isR8(oprinf)    ((oprinf).type  == TYPE_R8  && (oprinf).mod == MOD_R)
+#define isR8(oprinf)    ((oprinf).type  == TYPE_R8 && (oprinf).mod == MOD_R)
 #define isR16(oprinf)   ((oprinf).type  == TYPE_R16 && (oprinf).mod == MOD_R)
-#define isSEG(oprinf)   ((oprinf).type  == TYPE_SREG && (oprinf).mod == MOD_R)
+#define isR32(oprinf)   ((oprinf).type  == TYPE_R32 && (oprinf).mod == MOD_R)
+#define isSREG(oprinf)  ((oprinf).type  == TYPE_SREG && (oprinf).mod == MOD_R)
 #define isI8(oprinf)    ((oprinf).type  == TYPE_I8)
 #define isI8u(oprinf)   (isI8(oprinf)   && !(oprinf).imms)
-#define isI16(oprinf)   ((oprinf).type  == TYPE_I8  || (oprinf).type == TYPE_I16)
+#define isI8s(oprinf)   (isI8(oprinf)   && (oprinf).imms)
+#define isI16(oprinf)   ((oprinf).type  == TYPE_I16)
 #define isI16u(oprinf)  (isI16(oprinf)  && !(oprinf).imms)
+#define isI16s(oprinf)  (isI16(oprinf)  && (oprinf).imms)
+#define isI32(oprinf)   ((oprinf).type  == TYPE_I32)
+#define isI32s(oprinf)  (isI32(oprinf)  && (oprinf).imms)
 #define isI16p(oprinf)  ((oprinf).type  == TYPE_I16_16)
 #define isM(oprinf)     (((oprinf).type == TYPE_M   || (oprinf).type == TYPE_M8   || \
                           (oprinf).type == TYPE_M16 || (oprinf).type == TYPE_M32) && (oprinf).mod != MOD_R)
@@ -158,8 +172,10 @@ static t_aasm_oprinfo aopri1, aopri2, aopri3;
 
 #define isRM8s(oprinf)  (isR8 (oprinf) || isM8s(oprinf))
 #define isRM16s(oprinf) (isR16(oprinf) || isM16s(oprinf))
+#define isRM32s(oprinf) (isR32(oprinf) || isM32s(oprinf))
 #define isRM8(oprinf)   (isR8 (oprinf) || isM8 (oprinf))
 #define isRM16(oprinf)  (isR16(oprinf) || isM16(oprinf))
+#define isRM32(oprinf)  (isR32(oprinf) || isM32(oprinf))
 #define isRM(oprinf)    (isRM8(oprinf) || isRM16(oprinf))
 #define isAL(oprinf)    (isR8 (oprinf) && (oprinf).reg8  == R8_AL)
 #define isCL(oprinf)    (isR8 (oprinf) && (oprinf).reg8  == R8_CL)
@@ -177,22 +193,41 @@ static t_aasm_oprinfo aopri1, aopri2, aopri3;
 #define isBP(oprinf)    (isR16(oprinf) && (oprinf).reg16 == R16_BP)
 #define isSI(oprinf)    (isR16(oprinf) && (oprinf).reg16 == R16_SI)
 #define isDI(oprinf)    (isR16(oprinf) && (oprinf).reg16 == R16_DI)
-#define isES(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SREG_ES)
-#define isCS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SREG_CS)
-#define isSS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SREG_SS)
-#define isDS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SREG_DS)
+#define isEAX(oprinf)   (isR32(oprinf) && (oprinf).reg32 == R32_EAX)
+#define isECX(oprinf)   (isR32(oprinf) && (oprinf).reg32 == R32_ECX)
+#define isEDX(oprinf)   (isR32(oprinf) && (oprinf).reg32 == R32_EDX)
+#define isEBX(oprinf)   (isR32(oprinf) && (oprinf).reg32 == R32_EBX)
+#define isESP(oprinf)   (isR32(oprinf) && (oprinf).reg32 == R32_ESP)
+#define isEBP(oprinf)   (isR32(oprinf) && (oprinf).reg32 == R32_EBP)
+#define isESI(oprinf)   (isR32(oprinf) && (oprinf).reg32 == R32_ESI)
+#define isEDI(oprinf)   (isR32(oprinf) && (oprinf).reg32 == R32_EDI)
+#define isES(oprinf)    (isSREG(oprinf) && (oprinf).seg   == SREG_ES)
+#define isCS(oprinf)    (isSREG(oprinf) && (oprinf).seg   == SREG_CS)
+#define isSS(oprinf)    (isSREG(oprinf) && (oprinf).seg   == SREG_SS)
+#define isDS(oprinf)    (isSREG(oprinf) && (oprinf).seg   == SREG_DS)
+#define isFS(oprinf)    (isSREG(oprinf) && (oprinf).seg   == SREG_FS)
+#define isGS(oprinf)    (isSREG(oprinf) && (oprinf).seg   == SREG_GS)
 
 #define ARG_NONE        (isNONE (aopri1) && isNONE(aopri2))
+#define ARG_I8          (isI8   (aopri1) && isNONE(aopri2))
+#define ARG_I16         (isI16  (aopri1) && isNONE(aopri2))
+#define ARG_I8s         (isI8s  (aopri1) && isNONE(aopri2))
+#define ARG_I16s        (isI16s (aopri1) && isNONE(aopri2))
+#define ARG_I32s        (isI32s (aopri1) && isNONE(aopri2))
 #define ARG_RM8s        (isRM8s (aopri1) && isNONE(aopri2))
 #define ARG_RM16s       (isRM16s(aopri1) && isNONE(aopri2))
 #define ARG_RM8_R8      (isRM8  (aopri1) && isR8  (aopri2))
 #define ARG_RM16_R16    (isRM16 (aopri1) && isR16 (aopri2))
+#define ARG_RM32_R32    (isRM32 (aopri1) && isR32 (aopri2))
 #define ARG_R8_RM8      (isR8   (aopri1) && isRM8 (aopri2))
 #define ARG_R16_RM16    (isR16  (aopri1) && isRM16(aopri2))
+#define ARG_R32_RM32    (isR32  (aopri1) && isRM32(aopri2))
 #define ARG_ES          (isES   (aopri1) && isNONE(aopri2))
 #define ARG_CS          (isCS   (aopri1) && isNONE(aopri2))
 #define ARG_SS          (isSS   (aopri1) && isNONE(aopri2))
 #define ARG_DS          (isDS   (aopri1) && isNONE(aopri2))
+#define ARG_FS          (isFS   (aopri1) && isNONE(aopri2))
+#define ARG_GS          (isGS   (aopri1) && isNONE(aopri2))
 #define ARG_AX          (isAX   (aopri1) && isNONE(aopri2))
 #define ARG_CX          (isCX   (aopri1) && isNONE(aopri2))
 #define ARG_DX          (isDX   (aopri1) && isNONE(aopri2))
@@ -201,6 +236,14 @@ static t_aasm_oprinfo aopri1, aopri2, aopri3;
 #define ARG_BP          (isBP   (aopri1) && isNONE(aopri2))
 #define ARG_SI          (isSI   (aopri1) && isNONE(aopri2))
 #define ARG_DI          (isDI   (aopri1) && isNONE(aopri2))
+#define ARG_EAX         (isEAX  (aopri1) && isNONE(aopri2))
+#define ARG_ECX         (isECX  (aopri1) && isNONE(aopri2))
+#define ARG_EDX         (isEDX  (aopri1) && isNONE(aopri2))
+#define ARG_EBX         (isEBX  (aopri1) && isNONE(aopri2))
+#define ARG_ESP         (isESP  (aopri1) && isNONE(aopri2))
+#define ARG_EBP         (isEBP  (aopri1) && isNONE(aopri2))
+#define ARG_ESI         (isESI  (aopri1) && isNONE(aopri2))
+#define ARG_EDI         (isEDI  (aopri1) && isNONE(aopri2))
 #define ARG_AL_I8u      (isAL   (aopri1) && isI8u (aopri2))
 #define ARG_AX_I8u      (isAX   (aopri1) && isI8u (aopri2))
 #define ARG_I8u_AL      (isI8u  (aopri1) && isAL  (aopri2))
@@ -221,13 +264,13 @@ static t_aasm_oprinfo aopri1, aopri2, aopri3;
 #define ARG_BP_I16      (isBP   (aopri1) && isI16 (aopri2))
 #define ARG_SI_I16      (isSI   (aopri1) && isI16 (aopri2))
 #define ARG_DI_I16      (isDI   (aopri1) && isI16 (aopri2))
-#define ARG_I8          (isI8   (aopri1) && isNONE(aopri2))
-#define ARG_I16         (isI16  (aopri1) && isNONE(aopri2))
 #define ARG_RM8_I8      (isRM8s (aopri1) && isI8  (aopri2))
 #define ARG_RM16_I16    (isRM16s(aopri1) && isI16 (aopri2))
 #define ARG_RM16_I8     (isRM16s(aopri1) && isI8  (aopri2))
-#define ARG_RM16_SEG    (isRM16 (aopri1) && isSEG (aopri2))
-#define ARG_SREG_RM16    (isSEG  (aopri1) && isRM16(aopri2))
+#define ARG_RM32_I8     (isRM32s(aopri1) && isI8  (aopri2))
+#define ARG_RM16_I8     (isRM16s(aopri1) && isI8  (aopri2))
+#define ARG_RM16_SREG    (isRM16 (aopri1) && isSREG (aopri2))
+#define ARG_SREG_RM16    (isSREG  (aopri1) && isRM16(aopri2))
 #define ARG_RM16        (isRM16 (aopri1) && isNONE(aopri2))
 #define ARG_AX_AX       (isAX   (aopri1) && isAX  (aopri2))
 #define ARG_CX_AX       (isCX   (aopri1) && isAX  (aopri2))
@@ -243,6 +286,10 @@ static t_aasm_oprinfo aopri1, aopri2, aopri3;
 #define ARG_m16_AX      (isM16  (aopri1) && isAX  (aopri2) && (aopri1.mod == MOD_M && aopri1.mem == MEM_BP))
 #define ARG_R16_M16     (isR16  (aopri1) && isM16 (aopri2))
 #define ARG_I16u        (isI16u (aopri1) && isNONE(aopri2))
+#define ARG_PNONE_I8s   (isPNONE(aopri1) && isI8s (aopri1) && isNONE(aopri2))
+#define ARG_PNONE_I16s  (isPNONE(aopri1) && isI16s(aopri1) && isNONE(aopri2))
+#define ARG_SHORT_I8s   (isSHORT(aopri1) && isI8s (aopri1) && isNONE(aopri2))
+#define ARG_NEAR_I16s   (isNEAR (aopri1) && isI16s(aopri1) && isNONE(aopri2))
 #define ARG_PNONE_I16   (isPNONE(aopri1) && isI16u(aopri1) && isNONE(aopri2))
 #define ARG_SHORT_I16   (isSHORT(aopri1) && isI16u(aopri1) && isNONE(aopri2))
 #define ARG_NEAR_I16    (isNEAR (aopri1) && isI16u(aopri1) && isNONE(aopri2))
@@ -251,6 +298,7 @@ static t_aasm_oprinfo aopri1, aopri2, aopri3;
 #define ARG_SHORT_LABEL (isSHORT(aopri1) && isLABEL(aopri1) && isNONE(aopri2))
 #define ARG_NEAR_LABEL  (isNEAR (aopri1) && isLABEL(aopri1) && isNONE(aopri2))
 #define ARG_FAR_LABEL   (isFAR  (aopri1) && isLABEL(aopri1) && isNONE(aopri2))
+#define ARG_PNONE_RM16  (isPNONE(aopri1) && isRM16(aopri1) && isNONE(aopri2))
 #define ARG_NEAR_RM16   (isNEAR (aopri1) && isRM16(aopri1) && isNONE(aopri2))
 #define ARG_FAR_M16_16  (isFAR  (aopri1) && isM32 (aopri1) && isNONE(aopri2))
 #define ARG_RM8_CL      (isRM8s (aopri1) && isCL  (aopri2))
@@ -269,19 +317,29 @@ typedef enum {
 	STATE_DWOR,
 	STATE_P,STATE_PT,           /* PTR */
 	STATE_N,STATE_NE,STATE_NEA, /* NEAR */
+	        STATE_EA,           /* EAX */
+	        STATE_EC,           /* ECX */
+	        STATE_ED,           /* EDX, EDI */
+	        STATE_EB,           /* EBX, EBP */
+	        STATE_ES,           /* ESP, ESI */
 	        STATE_FA,           /* FAR */
-	        STATE_SH,STATE_SHO, /* SHORT */
-	STATE_SHOR,
+	        STATE_SH,STATE_SHO, STATE_SHOR, /* SHORT */
 	STATE_A,                    /* AX, AH, AL, NUM */
 	STATE_B,                    /* BX, BH, BL, BP, NUM */
 	STATE_C,                    /* CX, CH, CL, CS, NUM */
 	STATE_D,                    /* DX, DH, DL, DS, DI, NUM, DWORD */
 	STATE_E,                    /* ES, NUM */
-	STATE_F,                    /* NUM, FAR */
+	STATE_F,                    /* FS, NUM, FAR */
+	STATE_G,                    /* GS, NUM, FAR */
 	STATE_S,                    /* SS, SP, SI, SHORT */
 	STATE_NUM1,                 /* NUM */
 	STATE_NUM2,
-	STATE_NUM3
+	STATE_NUM3,
+	STATE_NUM4,
+	STATE_NUM5,
+	STATE_NUM6,
+	STATE_NUM7,
+	STATE_NUM8
 } t_aasm_scan_state;
 typedef enum {
 	TOKEN_NULL,TOKEN_END,
@@ -289,32 +347,36 @@ typedef enum {
 	TOKEN_COLON,TOKEN_PLUS,TOKEN_MINUS,
 	TOKEN_BYTE,TOKEN_WORD,TOKEN_DWORD,
 	TOKEN_SHORT,TOKEN_NEAR,TOKEN_FAR,TOKEN_PTR,
-	TOKEN_IMM8,TOKEN_IMM16,
+	TOKEN_IMM8,TOKEN_IMM16,TOKEN_IMM32,
 	TOKEN_AH,TOKEN_BH,TOKEN_CH,TOKEN_DH,
 	TOKEN_AL,TOKEN_BL,TOKEN_CL,TOKEN_DL,
 	TOKEN_AX,TOKEN_BX,TOKEN_CX,TOKEN_DX,
 	TOKEN_SP,TOKEN_BP,TOKEN_SI,TOKEN_DI,
-	TOKEN_CS,TOKEN_DS,TOKEN_ES,TOKEN_SS,
+	TOKEN_EAX,TOKEN_EBX,TOKEN_ECX,TOKEN_EDX,
+	TOKEN_ESP,TOKEN_EBP,TOKEN_ESI,TOKEN_EDI,
+	TOKEN_ES,TOKEN_CS,TOKEN_SS,TOKEN_DS,TOKEN_FS,TOKEN_GS,
 	TOKEN_CHAR,TOKEN_STRING,TOKEN_LABEL
 } t_aasm_token;
-
 static t_nubit8 tokimm8;
 static t_nubit16 tokimm16;
+static t_nubit32 tokimm32;
 static t_nsbit8 tokchar;
-static char tokstring[0x100];
-static char toklabel[0x100];
+t_string tokstring, toklabel;
 #define tokch  (*tokptr)
 #define take(n) (flagend = 1, token = (n))
 static t_aasm_token gettoken(t_strptr str)
 {
 	static t_strptr tokptr = NULL;
 	t_nubit8 i;
+	t_nubit8 toklen = 0;
+	t_nubit32 tokimm = 0;
 	t_bool flagend = 0;
 	t_aasm_token token = TOKEN_NULL;
 	t_aasm_scan_state state = STATE_START;
 	t_strptr tokptrbak;
 	tokimm8 = 0x00;
 	tokimm16 = 0x0000;
+	tokimm32 = 0x00000000;
 	if (str) tokptr = str;
 	if (!tokptr) return token;
 	tokptrbak = tokptr;
@@ -327,22 +389,22 @@ static t_aasm_token gettoken(t_strptr str)
 			case ':': take(TOKEN_COLON);   break;
 			case '+': take(TOKEN_PLUS);    break;
 			case '-': take(TOKEN_MINUS);   break;
-			case '0': tokimm8 = 0x00;state = STATE_NUM1;break;
-			case '1': tokimm8 = 0x01;state = STATE_NUM1;break;
-			case '2': tokimm8 = 0x02;state = STATE_NUM1;break;
-			case '3': tokimm8 = 0x03;state = STATE_NUM1;break;
-			case '4': tokimm8 = 0x04;state = STATE_NUM1;break;
-			case '5': tokimm8 = 0x05;state = STATE_NUM1;break;
-			case '6': tokimm8 = 0x06;state = STATE_NUM1;break;
-			case '7': tokimm8 = 0x07;state = STATE_NUM1;break;
-			case '8': tokimm8 = 0x08;state = STATE_NUM1;break;
-			case '9': tokimm8 = 0x09;state = STATE_NUM1;break;
-			case 'a': tokimm8 = 0x0a;state = STATE_A;break;
-			case 'b': tokimm8 = 0x0b;state = STATE_B;break;
-			case 'c': tokimm8 = 0x0c;state = STATE_C;break;
-			case 'd': tokimm8 = 0x0d;state = STATE_D;break;
-			case 'e': tokimm8 = 0x0e;state = STATE_E;break;
-			case 'f': tokimm8 = 0x0f;state = STATE_F;break;
+			case '0': tokimm = 0x0;toklen = 1;state = STATE_NUM1;break;
+			case '1': tokimm = 0x1;toklen = 1;state = STATE_NUM1;break;
+			case '2': tokimm = 0x2;toklen = 1;state = STATE_NUM1;break;
+			case '3': tokimm = 0x3;toklen = 1;state = STATE_NUM1;break;
+			case '4': tokimm = 0x4;toklen = 1;state = STATE_NUM1;break;
+			case '5': tokimm = 0x5;toklen = 1;state = STATE_NUM1;break;
+			case '6': tokimm = 0x6;toklen = 1;state = STATE_NUM1;break;
+			case '7': tokimm = 0x7;toklen = 1;state = STATE_NUM1;break;
+			case '8': tokimm = 0x8;toklen = 1;state = STATE_NUM1;break;
+			case '9': tokimm = 0x9;toklen = 1;state = STATE_NUM1;break;
+			case 'a': tokimm = 0xa;toklen = 1;state = STATE_A;break;
+			case 'b': tokimm = 0xb;toklen = 1;state = STATE_B;break;
+			case 'c': tokimm = 0xc;toklen = 1;state = STATE_C;break;
+			case 'd': tokimm = 0xd;toklen = 1;state = STATE_D;break;
+			case 'e': tokimm = 0xe;toklen = 1;state = STATE_E;break;
+			case 'f': tokimm = 0xf;toklen = 1;state = STATE_F;break;
 			case 'n': state = STATE_N;break;
 			case 'p': state = STATE_P;break;
 			case 's': state = STATE_S;break;
@@ -410,212 +472,324 @@ static t_aasm_token gettoken(t_strptr str)
 			break;
 		case STATE_NUM1:
 			switch (tokch) {
-			case '0': tokimm8 = (tokimm8 << 4) | 0x00;state = STATE_NUM2;break;
-			case '1': tokimm8 = (tokimm8 << 4) | 0x01;state = STATE_NUM2;break;
-			case '2': tokimm8 = (tokimm8 << 4) | 0x02;state = STATE_NUM2;break;
-			case '3': tokimm8 = (tokimm8 << 4) | 0x03;state = STATE_NUM2;break;
-			case '4': tokimm8 = (tokimm8 << 4) | 0x04;state = STATE_NUM2;break;
-			case '5': tokimm8 = (tokimm8 << 4) | 0x05;state = STATE_NUM2;break;
-			case '6': tokimm8 = (tokimm8 << 4) | 0x06;state = STATE_NUM2;break;
-			case '7': tokimm8 = (tokimm8 << 4) | 0x07;state = STATE_NUM2;break;
-			case '8': tokimm8 = (tokimm8 << 4) | 0x08;state = STATE_NUM2;break;
-			case '9': tokimm8 = (tokimm8 << 4) | 0x09;state = STATE_NUM2;break;
-			case 'a': tokimm8 = (tokimm8 << 4) | 0x0a;state = STATE_NUM2;break;
-			case 'b': tokimm8 = (tokimm8 << 4) | 0x0b;state = STATE_NUM2;break;
-			case 'c': tokimm8 = (tokimm8 << 4) | 0x0c;state = STATE_NUM2;break;
-			case 'd': tokimm8 = (tokimm8 << 4) | 0x0d;state = STATE_NUM2;break;
-			case 'e': tokimm8 = (tokimm8 << 4) | 0x0e;state = STATE_NUM2;break;
-			case 'f': tokimm8 = (tokimm8 << 4) | 0x0f;state = STATE_NUM2;break;
-			default: tokptr--;take(TOKEN_IMM8);break;
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 2;state = STATE_NUM2;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 2;state = STATE_NUM2;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 2;state = STATE_NUM2;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 2;state = STATE_NUM2;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 2;state = STATE_NUM2;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 2;state = STATE_NUM2;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 2;state = STATE_NUM2;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 2;state = STATE_NUM2;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 2;state = STATE_NUM2;break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 2;state = STATE_NUM2;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 2;state = STATE_NUM2;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 2;state = STATE_NUM2;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 2;state = STATE_NUM2;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 2;state = STATE_NUM2;break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_NUM2:
-			tokimm16 = (t_nubit16)tokimm8;
 			switch (tokch) {
-			case '0': tokimm16 = (tokimm16 << 4) | 0x0000;state = STATE_NUM3;break;
-			case '1': tokimm16 = (tokimm16 << 4) | 0x0001;state = STATE_NUM3;break;
-			case '2': tokimm16 = (tokimm16 << 4) | 0x0002;state = STATE_NUM3;break;
-			case '3': tokimm16 = (tokimm16 << 4) | 0x0003;state = STATE_NUM3;break;
-			case '4': tokimm16 = (tokimm16 << 4) | 0x0004;state = STATE_NUM3;break;
-			case '5': tokimm16 = (tokimm16 << 4) | 0x0005;state = STATE_NUM3;break;
-			case '6': tokimm16 = (tokimm16 << 4) | 0x0006;state = STATE_NUM3;break;
-			case '7': tokimm16 = (tokimm16 << 4) | 0x0007;state = STATE_NUM3;break;
-			case '8': tokimm16 = (tokimm16 << 4) | 0x0008;state = STATE_NUM3;break;
-			case '9': tokimm16 = (tokimm16 << 4) | 0x0009;state = STATE_NUM3;break;
-			case 'a': tokimm16 = (tokimm16 << 4) | 0x000a;state = STATE_NUM3;break;
-			case 'b': tokimm16 = (tokimm16 << 4) | 0x000b;state = STATE_NUM3;break;
-			case 'c': tokimm16 = (tokimm16 << 4) | 0x000c;state = STATE_NUM3;break;
-			case 'd': tokimm16 = (tokimm16 << 4) | 0x000d;state = STATE_NUM3;break;
-			case 'e': tokimm16 = (tokimm16 << 4) | 0x000e;state = STATE_NUM3;break;
-			case 'f': tokimm16 = (tokimm16 << 4) | 0x000f;state = STATE_NUM3;break;
-			default: tokptr--;take(TOKEN_IMM8);break;
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 3;state = STATE_NUM3;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 3;state = STATE_NUM3;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 3;state = STATE_NUM3;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 3;state = STATE_NUM3;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 3;state = STATE_NUM3;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 3;state = STATE_NUM3;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 3;state = STATE_NUM3;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 3;state = STATE_NUM3;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 3;state = STATE_NUM3;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 3;state = STATE_NUM3;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 3;state = STATE_NUM3;break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 3;state = STATE_NUM3;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 3;state = STATE_NUM3;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 3;state = STATE_NUM3;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 3;state = STATE_NUM3;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 3;state = STATE_NUM3;break;
+			default: tokptr--;tokimm8 = GetMax8(tokimm);take(TOKEN_IMM8);break;
 			}
 			break;
 		case STATE_NUM3:
 			switch (tokch) {
-			case '0': tokimm16 = (tokimm16 << 4) | 0x0000;break;
-			case '1': tokimm16 = (tokimm16 << 4) | 0x0001;break;
-			case '2': tokimm16 = (tokimm16 << 4) | 0x0002;break;
-			case '3': tokimm16 = (tokimm16 << 4) | 0x0003;break;
-			case '4': tokimm16 = (tokimm16 << 4) | 0x0004;break;
-			case '5': tokimm16 = (tokimm16 << 4) | 0x0005;break;
-			case '6': tokimm16 = (tokimm16 << 4) | 0x0006;break;
-			case '7': tokimm16 = (tokimm16 << 4) | 0x0007;break;
-			case '8': tokimm16 = (tokimm16 << 4) | 0x0008;break;
-			case '9': tokimm16 = (tokimm16 << 4) | 0x0009;break;
-			case 'a': tokimm16 = (tokimm16 << 4) | 0x000a;break;
-			case 'b': tokimm16 = (tokimm16 << 4) | 0x000b;break;
-			case 'c': tokimm16 = (tokimm16 << 4) | 0x000c;break;
-			case 'd': tokimm16 = (tokimm16 << 4) | 0x000d;break;
-			case 'e': tokimm16 = (tokimm16 << 4) | 0x000e;break;
-			case 'f': tokimm16 = (tokimm16 << 4) | 0x000f;break;
-			default: tokptr--;break;
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 4;state = STATE_NUM4;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 4;state = STATE_NUM4;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 4;state = STATE_NUM4;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 4;state = STATE_NUM4;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 4;state = STATE_NUM4;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 4;state = STATE_NUM4;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 4;state = STATE_NUM4;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 4;state = STATE_NUM4;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 4;state = STATE_NUM4;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 4;state = STATE_NUM4;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 4;state = STATE_NUM4;break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 4;state = STATE_NUM4;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 4;state = STATE_NUM4;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 4;state = STATE_NUM4;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 4;state = STATE_NUM4;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 4;state = STATE_NUM4;break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
-			take(TOKEN_IMM16);
+			break;
+		case STATE_NUM4:
+			switch (tokch) {
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 5;state = STATE_NUM5;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 5;state = STATE_NUM5;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 5;state = STATE_NUM5;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 5;state = STATE_NUM5;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 5;state = STATE_NUM5;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 5;state = STATE_NUM5;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 5;state = STATE_NUM5;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 5;state = STATE_NUM5;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 5;state = STATE_NUM5;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 5;state = STATE_NUM5;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 5;state = STATE_NUM5;break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 5;state = STATE_NUM5;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 5;state = STATE_NUM5;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 5;state = STATE_NUM5;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 5;state = STATE_NUM5;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 5;state = STATE_NUM5;break;
+			default: tokptr--;tokimm16 = GetMax16(tokimm);take(TOKEN_IMM16);break;
+			}
+			break;
+		case STATE_NUM5:
+			switch (tokch) {
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 6;state = STATE_NUM6;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 6;state = STATE_NUM6;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 6;state = STATE_NUM6;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 6;state = STATE_NUM6;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 6;state = STATE_NUM6;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 6;state = STATE_NUM6;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 6;state = STATE_NUM6;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 6;state = STATE_NUM6;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 6;state = STATE_NUM6;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 6;state = STATE_NUM6;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 6;state = STATE_NUM6;break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 6;state = STATE_NUM6;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 6;state = STATE_NUM6;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 6;state = STATE_NUM6;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 6;state = STATE_NUM6;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 6;state = STATE_NUM6;break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			}
+			break;
+		case STATE_NUM6:
+			switch (tokch) {
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 7;state = STATE_NUM7;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 7;state = STATE_NUM7;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 7;state = STATE_NUM7;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 7;state = STATE_NUM7;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 7;state = STATE_NUM7;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 7;state = STATE_NUM7;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 7;state = STATE_NUM7;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 7;state = STATE_NUM7;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 7;state = STATE_NUM7;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 7;state = STATE_NUM7;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 7;state = STATE_NUM7;break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 7;state = STATE_NUM7;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 7;state = STATE_NUM7;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 7;state = STATE_NUM7;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 7;state = STATE_NUM7;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 7;state = STATE_NUM7;break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			}
+			break;
+		case STATE_NUM7:
+			switch (tokch) {
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 8;state = STATE_NUM8;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 8;state = STATE_NUM8;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 8;state = STATE_NUM8;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 8;state = STATE_NUM8;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 8;state = STATE_NUM8;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 8;state = STATE_NUM8;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 8;state = STATE_NUM8;break;
+			case '7': tokimm = (tokimm << 4) | 0x8;toklen = 8;state = STATE_NUM8;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 8;state = STATE_NUM8;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 8;state = STATE_NUM8;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 8;state = STATE_NUM8;break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 8;state = STATE_NUM8;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 8;state = STATE_NUM8;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 8;state = STATE_NUM8;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 8;state = STATE_NUM8;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 8;state = STATE_NUM8;break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			}
+			break;
+		case STATE_NUM8:
+			switch (tokch) {
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+			case 'a':
+			case 'b':
+			case 'c':
+			case 'd':
+			case 'e':
+			case 'f':
+				tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+				break;
+			default: tokptr--;tokimm32 = GetMax32(tokimm);take(TOKEN_IMM32);break;
+			}
 			break;
 		case STATE_A:
 			switch (tokch) {
-			case '0': tokimm8 = (tokimm8 << 4) | 0x00;state = STATE_NUM2;break;
-			case '1': tokimm8 = (tokimm8 << 4) | 0x01;state = STATE_NUM2;break;
-			case '2': tokimm8 = (tokimm8 << 4) | 0x02;state = STATE_NUM2;break;
-			case '3': tokimm8 = (tokimm8 << 4) | 0x03;state = STATE_NUM2;break;
-			case '4': tokimm8 = (tokimm8 << 4) | 0x04;state = STATE_NUM2;break;
-			case '5': tokimm8 = (tokimm8 << 4) | 0x05;state = STATE_NUM2;break;
-			case '6': tokimm8 = (tokimm8 << 4) | 0x06;state = STATE_NUM2;break;
-			case '7': tokimm8 = (tokimm8 << 4) | 0x07;state = STATE_NUM2;break;
-			case '8': tokimm8 = (tokimm8 << 4) | 0x08;state = STATE_NUM2;break;
-			case '9': tokimm8 = (tokimm8 << 4) | 0x09;state = STATE_NUM2;break;
-			case 'a': tokimm8 = (tokimm8 << 4) | 0x0a;state = STATE_NUM2;break;
-			case 'b': tokimm8 = (tokimm8 << 4) | 0x0b;state = STATE_NUM2;break;
-			case 'c': tokimm8 = (tokimm8 << 4) | 0x0c;state = STATE_NUM2;break;
-			case 'd': tokimm8 = (tokimm8 << 4) | 0x0d;state = STATE_NUM2;break;
-			case 'e': tokimm8 = (tokimm8 << 4) | 0x0e;state = STATE_NUM2;break;
-			case 'f': tokimm8 = (tokimm8 << 4) | 0x0f;state = STATE_NUM2;break;
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 2;state = STATE_NUM2;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 2;state = STATE_NUM2;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 2;state = STATE_NUM2;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 2;state = STATE_NUM2;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 2;state = STATE_NUM2;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 2;state = STATE_NUM2;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 2;state = STATE_NUM2;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 2;state = STATE_NUM2;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 2;state = STATE_NUM2;break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 2;state = STATE_NUM2;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 2;state = STATE_NUM2;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 2;state = STATE_NUM2;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 2;state = STATE_NUM2;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 2;state = STATE_NUM2;break;
 			case 'x': take(TOKEN_AX);break;
 			case 'h': take(TOKEN_AH);break;
 			case 'l': take(TOKEN_AL);break;
-			default: tokptr--;take(TOKEN_IMM8);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_B:
 			switch (tokch) {
-			case '0': tokimm8 = (tokimm8 << 4) | 0x00;state = STATE_NUM2;break;
-			case '1': tokimm8 = (tokimm8 << 4) | 0x01;state = STATE_NUM2;break;
-			case '2': tokimm8 = (tokimm8 << 4) | 0x02;state = STATE_NUM2;break;
-			case '3': tokimm8 = (tokimm8 << 4) | 0x03;state = STATE_NUM2;break;
-			case '4': tokimm8 = (tokimm8 << 4) | 0x04;state = STATE_NUM2;break;
-			case '5': tokimm8 = (tokimm8 << 4) | 0x05;state = STATE_NUM2;break;
-			case '6': tokimm8 = (tokimm8 << 4) | 0x06;state = STATE_NUM2;break;
-			case '7': tokimm8 = (tokimm8 << 4) | 0x07;state = STATE_NUM2;break;
-			case '8': tokimm8 = (tokimm8 << 4) | 0x08;state = STATE_NUM2;break;
-			case '9': tokimm8 = (tokimm8 << 4) | 0x09;state = STATE_NUM2;break;
-			case 'a': tokimm8 = (tokimm8 << 4) | 0x0a;state = STATE_NUM2;break;
-			case 'b': tokimm8 = (tokimm8 << 4) | 0x0b;state = STATE_NUM2;break;
-			case 'c': tokimm8 = (tokimm8 << 4) | 0x0c;state = STATE_NUM2;break;
-			case 'd': tokimm8 = (tokimm8 << 4) | 0x0d;state = STATE_NUM2;break;
-			case 'e': tokimm8 = (tokimm8 << 4) | 0x0e;state = STATE_NUM2;break;
-			case 'f': tokimm8 = (tokimm8 << 4) | 0x0f;state = STATE_NUM2;break;
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 2;state = STATE_NUM2;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 2;state = STATE_NUM2;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 2;state = STATE_NUM2;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 2;state = STATE_NUM2;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 2;state = STATE_NUM2;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 2;state = STATE_NUM2;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 2;state = STATE_NUM2;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 2;state = STATE_NUM2;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 2;state = STATE_NUM2;break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 2;state = STATE_NUM2;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 2;state = STATE_NUM2;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 2;state = STATE_NUM2;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 2;state = STATE_NUM2;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 2;state = STATE_NUM2;break;
 			case 'x': take(TOKEN_BX);break;
 			case 'h': take(TOKEN_BH);break;
 			case 'l': take(TOKEN_BL);break;
 			case 'p': take(TOKEN_BP);break;
 			case 'y': state = STATE_BY;break;
-			default: tokptr--;take(TOKEN_IMM8);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_C:
 			switch (tokch) {
-			case '0': tokimm8 = (tokimm8 << 4) | 0x00;state = STATE_NUM2;break;
-			case '1': tokimm8 = (tokimm8 << 4) | 0x01;state = STATE_NUM2;break;
-			case '2': tokimm8 = (tokimm8 << 4) | 0x02;state = STATE_NUM2;break;
-			case '3': tokimm8 = (tokimm8 << 4) | 0x03;state = STATE_NUM2;break;
-			case '4': tokimm8 = (tokimm8 << 4) | 0x04;state = STATE_NUM2;break;
-			case '5': tokimm8 = (tokimm8 << 4) | 0x05;state = STATE_NUM2;break;
-			case '6': tokimm8 = (tokimm8 << 4) | 0x06;state = STATE_NUM2;break;
-			case '7': tokimm8 = (tokimm8 << 4) | 0x07;state = STATE_NUM2;break;
-			case '8': tokimm8 = (tokimm8 << 4) | 0x08;state = STATE_NUM2;break;
-			case '9': tokimm8 = (tokimm8 << 4) | 0x09;state = STATE_NUM2;break;
-			case 'a': tokimm8 = (tokimm8 << 4) | 0x0a;state = STATE_NUM2;break;
-			case 'b': tokimm8 = (tokimm8 << 4) | 0x0b;state = STATE_NUM2;break;
-			case 'c': tokimm8 = (tokimm8 << 4) | 0x0c;state = STATE_NUM2;break;
-			case 'd': tokimm8 = (tokimm8 << 4) | 0x0d;state = STATE_NUM2;break;
-			case 'e': tokimm8 = (tokimm8 << 4) | 0x0e;state = STATE_NUM2;break;
-			case 'f': tokimm8 = (tokimm8 << 4) | 0x0f;state = STATE_NUM2;break;
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 2;state = STATE_NUM2;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 2;state = STATE_NUM2;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 2;state = STATE_NUM2;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 2;state = STATE_NUM2;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 2;state = STATE_NUM2;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 2;state = STATE_NUM2;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 2;state = STATE_NUM2;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 2;state = STATE_NUM2;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 2;state = STATE_NUM2;break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 2;state = STATE_NUM2;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 2;state = STATE_NUM2;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 2;state = STATE_NUM2;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 2;state = STATE_NUM2;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 2;state = STATE_NUM2;break;
 			case 'x': take(TOKEN_CX);break;
 			case 'h': take(TOKEN_CH);break;
 			case 'l': take(TOKEN_CL);break;
 			case 's': take(TOKEN_CS);break;
-			default: tokptr--;take(TOKEN_IMM8);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_D:
 			switch (tokch) {
-			case '0': tokimm8 = (tokimm8 << 4) | 0x00;state = STATE_NUM2;break;
-			case '1': tokimm8 = (tokimm8 << 4) | 0x01;state = STATE_NUM2;break;
-			case '2': tokimm8 = (tokimm8 << 4) | 0x02;state = STATE_NUM2;break;
-			case '3': tokimm8 = (tokimm8 << 4) | 0x03;state = STATE_NUM2;break;
-			case '4': tokimm8 = (tokimm8 << 4) | 0x04;state = STATE_NUM2;break;
-			case '5': tokimm8 = (tokimm8 << 4) | 0x05;state = STATE_NUM2;break;
-			case '6': tokimm8 = (tokimm8 << 4) | 0x06;state = STATE_NUM2;break;
-			case '7': tokimm8 = (tokimm8 << 4) | 0x07;state = STATE_NUM2;break;
-			case '8': tokimm8 = (tokimm8 << 4) | 0x08;state = STATE_NUM2;break;
-			case '9': tokimm8 = (tokimm8 << 4) | 0x09;state = STATE_NUM2;break;
-			case 'a': tokimm8 = (tokimm8 << 4) | 0x0a;state = STATE_NUM2;break;
-			case 'b': tokimm8 = (tokimm8 << 4) | 0x0b;state = STATE_NUM2;break;
-			case 'c': tokimm8 = (tokimm8 << 4) | 0x0c;state = STATE_NUM2;break;
-			case 'd': tokimm8 = (tokimm8 << 4) | 0x0d;state = STATE_NUM2;break;
-			case 'e': tokimm8 = (tokimm8 << 4) | 0x0e;state = STATE_NUM2;break;
-			case 'f': tokimm8 = (tokimm8 << 4) | 0x0f;state = STATE_NUM2;break;
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 2;state = STATE_NUM2;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 2;state = STATE_NUM2;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 2;state = STATE_NUM2;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 2;state = STATE_NUM2;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 2;state = STATE_NUM2;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 2;state = STATE_NUM2;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 2;state = STATE_NUM2;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 2;state = STATE_NUM2;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 2;state = STATE_NUM2;break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 2;state = STATE_NUM2;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 2;state = STATE_NUM2;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 2;state = STATE_NUM2;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 2;state = STATE_NUM2;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 2;state = STATE_NUM2;break;
 			case 'x': take(TOKEN_DX);break;
 			case 'h': take(TOKEN_DH);break;
 			case 'l': take(TOKEN_DL);break;
 			case 's': take(TOKEN_DS);break;
 			case 'i': take(TOKEN_DI);break;
 			case 'w': state = STATE_DW;break;
-			default: tokptr--;take(TOKEN_IMM8);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_E:
 			switch (tokch) {
-			case '0': tokimm8 = (tokimm8 << 4) | 0x00;state = STATE_NUM2;break;
-			case '1': tokimm8 = (tokimm8 << 4) | 0x01;state = STATE_NUM2;break;
-			case '2': tokimm8 = (tokimm8 << 4) | 0x02;state = STATE_NUM2;break;
-			case '3': tokimm8 = (tokimm8 << 4) | 0x03;state = STATE_NUM2;break;
-			case '4': tokimm8 = (tokimm8 << 4) | 0x04;state = STATE_NUM2;break;
-			case '5': tokimm8 = (tokimm8 << 4) | 0x05;state = STATE_NUM2;break;
-			case '6': tokimm8 = (tokimm8 << 4) | 0x06;state = STATE_NUM2;break;
-			case '7': tokimm8 = (tokimm8 << 4) | 0x07;state = STATE_NUM2;break;
-			case '8': tokimm8 = (tokimm8 << 4) | 0x08;state = STATE_NUM2;break;
-			case '9': tokimm8 = (tokimm8 << 4) | 0x09;state = STATE_NUM2;break;
-			case 'a': tokimm8 = (tokimm8 << 4) | 0x0a;state = STATE_NUM2;break;
-			case 'b': tokimm8 = (tokimm8 << 4) | 0x0b;state = STATE_NUM2;break;
-			case 'c': tokimm8 = (tokimm8 << 4) | 0x0c;state = STATE_NUM2;break;
-			case 'd': tokimm8 = (tokimm8 << 4) | 0x0d;state = STATE_NUM2;break;
-			case 'e': tokimm8 = (tokimm8 << 4) | 0x0e;state = STATE_NUM2;break;
-			case 'f': tokimm8 = (tokimm8 << 4) | 0x0f;state = STATE_NUM2;break;
-			case 's': take(TOKEN_ES);break;
-			default: tokptr--;take(TOKEN_IMM8);break;
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 2;state = STATE_NUM2;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 2;state = STATE_NUM2;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 2;state = STATE_NUM2;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 2;state = STATE_NUM2;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 2;state = STATE_NUM2;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 2;state = STATE_NUM2;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 2;state = STATE_NUM2;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 2;state = STATE_NUM2;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 2;state = STATE_EA;  break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 2;state = STATE_EB;  break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 2;state = STATE_EC;  break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 2;state = STATE_ED;  break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 2;state = STATE_NUM2;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 2;state = STATE_NUM2;break;
+			case 's': state = STATE_ES;break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_F:
 			switch (tokch) {
-			case '0': tokimm8 = (tokimm8 << 4) | 0x00;state = STATE_NUM2;break;
-			case '1': tokimm8 = (tokimm8 << 4) | 0x01;state = STATE_NUM2;break;
-			case '2': tokimm8 = (tokimm8 << 4) | 0x02;state = STATE_NUM2;break;
-			case '3': tokimm8 = (tokimm8 << 4) | 0x03;state = STATE_NUM2;break;
-			case '4': tokimm8 = (tokimm8 << 4) | 0x04;state = STATE_NUM2;break;
-			case '5': tokimm8 = (tokimm8 << 4) | 0x05;state = STATE_NUM2;break;
-			case '6': tokimm8 = (tokimm8 << 4) | 0x06;state = STATE_NUM2;break;
-			case '7': tokimm8 = (tokimm8 << 4) | 0x07;state = STATE_NUM2;break;
-			case '8': tokimm8 = (tokimm8 << 4) | 0x08;state = STATE_NUM2;break;
-			case '9': tokimm8 = (tokimm8 << 4) | 0x09;state = STATE_NUM2;break;
-			case 'a': tokimm8 = (tokimm8 << 4) | 0x0a;state = STATE_FA;  break;
-			case 'b': tokimm8 = (tokimm8 << 4) | 0x0b;state = STATE_NUM2;break;
-			case 'c': tokimm8 = (tokimm8 << 4) | 0x0c;state = STATE_NUM2;break;
-			case 'd': tokimm8 = (tokimm8 << 4) | 0x0d;state = STATE_NUM2;break;
-			case 'e': tokimm8 = (tokimm8 << 4) | 0x0e;state = STATE_NUM2;break;
-			case 'f': tokimm8 = (tokimm8 << 4) | 0x0f;state = STATE_NUM2;break;
-			default: tokptr--;take(TOKEN_IMM8);break;
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 2;state = STATE_NUM2;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 2;state = STATE_NUM2;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 2;state = STATE_NUM2;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 2;state = STATE_NUM2;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 2;state = STATE_NUM2;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 2;state = STATE_NUM2;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 2;state = STATE_NUM2;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 2;state = STATE_NUM2;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 2;state = STATE_FA;  break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 2;state = STATE_NUM2;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 2;state = STATE_NUM2;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 2;state = STATE_NUM2;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 2;state = STATE_NUM2;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 2;state = STATE_NUM2;break;
+			case 's': take(TOKEN_FS);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			}
+			break;
+		case STATE_G:
+			switch (tokch) {
+			case 's': take(TOKEN_GS);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_N:
@@ -657,27 +831,59 @@ static t_aasm_token gettoken(t_strptr str)
 			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
-		case STATE_FA:
-			tokimm16 = (t_nubit16)tokimm8;
+		case STATE_EA:
 			switch (tokch) {
-			case '0': tokimm16 = (tokimm16 << 4) | 0x0000;state = STATE_NUM3;break;
-			case '1': tokimm16 = (tokimm16 << 4) | 0x0001;state = STATE_NUM3;break;
-			case '2': tokimm16 = (tokimm16 << 4) | 0x0002;state = STATE_NUM3;break;
-			case '3': tokimm16 = (tokimm16 << 4) | 0x0003;state = STATE_NUM3;break;
-			case '4': tokimm16 = (tokimm16 << 4) | 0x0004;state = STATE_NUM3;break;
-			case '5': tokimm16 = (tokimm16 << 4) | 0x0005;state = STATE_NUM3;break;
-			case '6': tokimm16 = (tokimm16 << 4) | 0x0006;state = STATE_NUM3;break;
-			case '7': tokimm16 = (tokimm16 << 4) | 0x0007;state = STATE_NUM3;break;
-			case '8': tokimm16 = (tokimm16 << 4) | 0x0008;state = STATE_NUM3;break;
-			case '9': tokimm16 = (tokimm16 << 4) | 0x0009;state = STATE_NUM3;break;
-			case 'a': tokimm16 = (tokimm16 << 4) | 0x000a;state = STATE_NUM3;break;
-			case 'b': tokimm16 = (tokimm16 << 4) | 0x000b;state = STATE_NUM3;break;
-			case 'c': tokimm16 = (tokimm16 << 4) | 0x000c;state = STATE_NUM3;break;
-			case 'd': tokimm16 = (tokimm16 << 4) | 0x000d;state = STATE_NUM3;break;
-			case 'e': tokimm16 = (tokimm16 << 4) | 0x000e;state = STATE_NUM3;break;
-			case 'f': tokimm16 = (tokimm16 << 4) | 0x000f;state = STATE_NUM3;break;
+			case 'x': take(TOKEN_EAX);break;
+			default: tokptr--;tokimm8 = GetMax8(tokimm);take(TOKEN_IMM8);break;
+			}
+			break;
+		case STATE_EB:
+			switch (tokch) {
+			case 'p': take(TOKEN_EBP);break;
+			case 'x': take(TOKEN_EBX);break;
+			default: tokptr--;tokimm8 = GetMax8(tokimm);take(TOKEN_IMM8);break;
+			}
+			break;
+		case STATE_EC:
+			switch (tokch) {
+			case 'x': take(TOKEN_ECX);break;
+			default: tokptr--;tokimm8 = GetMax8(tokimm);take(TOKEN_IMM8);break;
+			}
+			break;
+		case STATE_ED:
+			switch (tokch) {
+			case 'i': take(TOKEN_EDI);break;
+			case 'x': take(TOKEN_EDX);break;
+			default: tokptr--;tokimm8 = GetMax8(tokimm);take(TOKEN_IMM8);break;
+			}
+			break;
+		case STATE_ES:
+			switch (tokch) {
+			case 'i': take(TOKEN_ESI);break;
+			case 'p': take(TOKEN_ESP);break;
+			default: tokptr--;take(TOKEN_ES);break;
+			}
+			break;
+		case STATE_FA:
+			switch (tokch) {
+			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 3;state = STATE_NUM3;break;
+			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 3;state = STATE_NUM3;break;
+			case '2': tokimm = (tokimm << 4) | 0x2;toklen = 3;state = STATE_NUM3;break;
+			case '3': tokimm = (tokimm << 4) | 0x3;toklen = 3;state = STATE_NUM3;break;
+			case '4': tokimm = (tokimm << 4) | 0x4;toklen = 3;state = STATE_NUM3;break;
+			case '5': tokimm = (tokimm << 4) | 0x5;toklen = 3;state = STATE_NUM3;break;
+			case '6': tokimm = (tokimm << 4) | 0x6;toklen = 3;state = STATE_NUM3;break;
+			case '7': tokimm = (tokimm << 4) | 0x7;toklen = 3;state = STATE_NUM3;break;
+			case '8': tokimm = (tokimm << 4) | 0x8;toklen = 3;state = STATE_NUM3;break;
+			case '9': tokimm = (tokimm << 4) | 0x9;toklen = 3;state = STATE_NUM3;break;
+			case 'a': tokimm = (tokimm << 4) | 0xa;toklen = 3;state = STATE_NUM3;break;
+			case 'b': tokimm = (tokimm << 4) | 0xb;toklen = 3;state = STATE_NUM3;break;
+			case 'c': tokimm = (tokimm << 4) | 0xc;toklen = 3;state = STATE_NUM3;break;
+			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 3;state = STATE_NUM3;break;
+			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 3;state = STATE_NUM3;break;
+			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 3;state = STATE_NUM3;break;
 			case 'r': take(TOKEN_FAR);break;
-			default: tokptr--;take(TOKEN_IMM8);break;
+			default: tokptr--;tokimm8 = GetMax8(tokimm);take(TOKEN_IMM8);break;
 			}
 			break;
 		case STATE_NE:
@@ -750,10 +956,6 @@ static t_aasm_token gettoken(t_strptr str)
 		}
 		tokptr++;
 	} while (!flagend);
-	if (token == TOKEN_IMM16 && !(tokimm16 & 0xff00)) {
-		token = TOKEN_IMM8;
-		tokimm8 = (t_nubit8)tokimm16;
-	}
 	return token;
 }
 static void printtoken(t_aasm_token token)
@@ -804,22 +1006,71 @@ static void matchtoken(t_aasm_token token)
 }
 
 /* assembly compiler: parser / grammar */
-static t_aasm_oprinfo parsearg_mem()
+static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 {
-	t_aasm_token token;
 	t_aasm_oprinfo info;
+	t_bool oldtoken;
 	t_bool bx,bp,si,di,neg;
 	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
-	bx = bp = si = di = neg = 0x00;
+	bx = bp = si = di = neg = 0;
 	info.type = TYPE_M;
 	info.mod = MOD_M;
+	oldtoken = token;
+	token = gettoken(NULL);
+	if (token == TOKEN_COLON) {
+		switch (oldtoken) {
+		case TOKEN_ES: flages = 1;break;
+		case TOKEN_CS: flagcs = 1;break;
+		case TOKEN_SS: flagss = 1;break;
+		case TOKEN_DS: flagds = 1;break;
+		case TOKEN_FS: flagfs = 1;break;
+		case TOKEN_GS: flaggs = 1;break;
+		default: flagerror = 1;break;
+		}
+	} else if (token == TOKEN_NULL || token == TOKEN_END) {
+		switch (oldtoken) {
+		case TOKEN_ES: 
+			info.type = TYPE_SREG;
+			info.mod =  MOD_R;
+			info.seg =  SREG_ES;
+			break;
+		case TOKEN_CS: 
+			info.type = TYPE_SREG;
+			info.mod =  MOD_R;
+			info.seg =  SREG_CS;
+			break;
+		case TOKEN_SS: 
+			info.type = TYPE_SREG;
+			info.mod =  MOD_R;
+			info.seg =  SREG_SS;
+			break;
+		case TOKEN_DS: 
+			info.type = TYPE_SREG;
+			info.mod =  MOD_R;
+			info.seg =  SREG_DS;
+			break;
+		case TOKEN_FS: 
+			info.type = TYPE_SREG;
+			info.mod =  MOD_R;
+			info.seg =  SREG_FS;
+			break;
+		case TOKEN_GS: 
+			info.type = TYPE_SREG;
+			info.mod =  MOD_R;
+			info.seg =  SREG_GS;
+			break;
+		default: flagerror = 1;break;
+		}
+		return info;
+	} else flagerror = 1;
+	matchtoken(TOKEN_LSPAREN);
 	token = gettoken(NULL);
 	while (token != TOKEN_RSPAREN && !flagerror) {
 		switch (token) {
 		case TOKEN_PLUS:break;
 		case TOKEN_MINUS:
 			token = gettoken(NULL);
-			neg = 0x01;
+			neg = 1;
 			switch (token) {
 			case TOKEN_IMM8:
 				if (info.mod != MOD_M) flagerror = 1;
@@ -866,7 +1117,7 @@ static t_aasm_oprinfo parsearg_mem()
 		}
 		token = gettoken(NULL);
 	}
-	if (token != TOKEN_END || token != TOKEN_NULL) info.type = TYPE_NONE;
+	if (flagerror || token != TOKEN_END || token != TOKEN_NULL) info.type = TYPE_NONE;
 
 	if (!bx && !si && !bp && !di && info.mod != MOD_M) {
 		info.mem = MEM_BP;
@@ -894,6 +1145,24 @@ static t_aasm_oprinfo parsearg_mem()
 			info.disp8 = (t_nubit8)info.disp16;
 		}
 	}
+	switch (info.mem) {
+	case MEM_BX_SI:
+	case MEM_BX_DI:
+	case MEM_BX:
+	case MEM_SI:
+	case MEM_DI:
+		if (flagds) flagds = 0;
+		break;
+	case MEM_BP_SI:
+	case MEM_BP_DI:
+		if (flagss) flagss = 0;
+		break;
+	case MEM_BP:
+		if (!bp && flagds) flagds = 0;
+		else if (bp && flagss) flagss = 0;
+		break;
+	}
+	info.type = TYPE_M;
 	return info;
 }
 static t_aasm_oprinfo parsearg_imm(t_aasm_token token)
@@ -902,40 +1171,38 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token)
 	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
 	info.type = TYPE_NONE;
 	info.mod = MOD_M;
-	info.imms = 0x00;
-	info.immn = 0x00;
+	info.imms = 0;
+	info.immn = 0;
 	info.ptr = PTR_NONE;
 	if (token == TOKEN_PLUS) {
-		info.imms = 0x01;
+		info.imms = 1;
+		info.immn = 0;
 		token = gettoken(NULL);
 	} else if (token == TOKEN_MINUS) {
-		info.imms = 0x01;
-		info.immn = 0x01;
+		info.imms = 1;
+		info.immn = 1;
 		token = gettoken(NULL);
 	}
 	if (token == TOKEN_IMM8) {
 		info.type = TYPE_I8;
-		if (!info.immn) {
-			info.imm16 = (t_nubit16)tokimm8;
-			info.imm8 = tokimm8;
-		} else {
-			info.imm16 = (~((t_nubit16)tokimm8)) + 1;
-			info.imm8 = (~tokimm8) + 1;
-		}
+		if (!info.immn) info.imm8 = tokimm8;
+		else info.imm8 = (~tokimm8) + 1;
 	} else if (token == TOKEN_IMM16) {
 		info.type = TYPE_I16;
 		if (!info.immn) info.imm16 = tokimm16;
 		else info.imm16 = (~tokimm16) + 1;
+	} else if (token == TOKEN_IMM32) {
+		info.type = TYPE_I32;
+		if (!info.immn) info.imm32 = tokimm32;
+		else info.imm32 = (~tokimm32) + 1;
 	} else flagerror = 1;
 
 	token = gettoken(NULL);
 	if (!info.imms && token == TOKEN_COLON) {
-		if (info.type == TYPE_I8) info.pcs = (t_nubit16)info.imm8;
-		else if (info.type == TYPE_I16) info.pcs = info.imm16;
+		if (info.type == TYPE_I16) info.pcs = info.imm16;
 		else flagerror = 1;
 		token = gettoken(NULL);
-		if (token == TOKEN_IMM8) info.pip = tokimm8;
-		else if (token == TOKEN_IMM16) info.pip = tokimm16;
+		if (token == TOKEN_IMM16) info.pip = tokimm16;
 		else flagerror = 1;
 		info.type = TYPE_I16_16;
 	}
@@ -968,30 +1235,22 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 	case TOKEN_BYTE:
 		token = gettoken(NULL);
 		if (token == TOKEN_PTR) token = gettoken(NULL);
-		if (token != TOKEN_LSPAREN) flagerror = 1;
-		info = parsearg_mem();
+		info = parsearg_mem(token);
 		info.type = TYPE_M8;
 		break;
 	case TOKEN_WORD:
 		token = gettoken(NULL);
 		if (token == TOKEN_PTR) token = gettoken(NULL);
-		if (token != TOKEN_LSPAREN) flagerror = 1;
-		info = parsearg_mem();
+		info = parsearg_mem(token);
 		info.type = TYPE_M16;
 		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_DWORD:
 		token = gettoken(NULL);
 		if (token == TOKEN_PTR) token = gettoken(NULL);
-		if (token != TOKEN_LSPAREN) flagerror = 1;
-		info = parsearg_mem();
+		info = parsearg_mem(token);
 		info.type = TYPE_M32;
 		info.ptr = PTR_FAR;
-		break;
-	case TOKEN_LSPAREN:
-		info = parsearg_mem();
-		info.type = TYPE_M;
-		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_AL:
 		info.type = TYPE_R8;
@@ -1081,30 +1340,67 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 		info.reg16 = R16_DI;
 		info.ptr = PTR_NEAR;
 		break;
-	case TOKEN_CS:
-		info.type = TYPE_SREG;
+	case TOKEN_EAX:
+		info.type = TYPE_R32;
 		info.mod = MOD_R;
-		info.seg = SREG_CS;
+		info.reg32 = R32_EAX;
+		info.ptr = PTR_NEAR;
 		break;
-	case TOKEN_DS:
-		info.type = TYPE_SREG;
+	case TOKEN_ECX:
+		info.type = TYPE_R32;
 		info.mod = MOD_R;
-		info.seg = SREG_DS;
+		info.reg32 = R32_ECX;
+		info.ptr = PTR_NEAR;
+		break;
+	case TOKEN_EDX:
+		info.type = TYPE_R32;
+		info.mod = MOD_R;
+		info.reg32 = R32_EDX;
+		info.ptr = PTR_NEAR;
+		break;
+	case TOKEN_EBX:
+		info.type = TYPE_R32;
+		info.mod = MOD_R;
+		info.reg32 = R32_EBX;
+		info.ptr = PTR_NEAR;
+		break;
+	case TOKEN_ESP:
+		info.type = TYPE_R32;
+		info.mod = MOD_R;
+		info.reg32 = R32_ESP;
+		info.ptr = PTR_NEAR;
+		break;
+	case TOKEN_EBP:
+		info.type = TYPE_R32;
+		info.mod = MOD_R;
+		info.reg32 = R32_EBP;
+		info.ptr = PTR_NEAR;
+		break;
+	case TOKEN_ESI:
+		info.type = TYPE_R32;
+		info.mod = MOD_R;
+		info.reg32 = R32_ESI;
+		info.ptr = PTR_NEAR;
+		break;
+	case TOKEN_EDI:
+		info.type = TYPE_R32;
+		info.mod = MOD_R;
+		info.reg32 = R32_EDI;
+		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_ES:
-		info.type = TYPE_SREG;
-		info.mod = MOD_R;
-		info.seg = SREG_ES;
-		break;
+	case TOKEN_CS:
 	case TOKEN_SS:
-		info.type = TYPE_SREG;
-		info.mod = MOD_R;
-		info.seg = SREG_SS;
+	case TOKEN_DS:
+	case TOKEN_FS:
+	case TOKEN_GS:
+		info = parsearg_mem(token);
 		break;
 	case TOKEN_PLUS:
 	case TOKEN_MINUS:
 	case TOKEN_IMM8:
 	case TOKEN_IMM16:
+	case TOKEN_IMM32:
 		info = parsearg_imm(token);
 		if (info.type == TYPE_I16_16)
 			info.ptr = PTR_FAR;
@@ -1114,13 +1410,9 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 	case TOKEN_SHORT:
 		token = gettoken(NULL);
 		if (token == TOKEN_PTR) token = gettoken(NULL);
-		if (token == TOKEN_IMM8 || token == TOKEN_IMM16) {
+		if (token == TOKEN_PLUS || token == TOKEN_MINUS) {
 			info = parsearg_imm(token);
-			if (info.type == TYPE_I8) {
-				info.imm16 = (t_nubit8)info.imm8;
-				info.type = TYPE_I16;
-			}
-			if (info.type != TYPE_I16) flagerror = 1;
+			if (info.type != TYPE_I8) flagerror = 1;
 		} else if (token == TOKEN_LABEL) {
 			info.type = TYPE_LABEL;
 			STRCPY(info.label, toklabel);
@@ -1134,10 +1426,7 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 			token = gettoken(NULL);
 			if (token == TOKEN_PTR) token = gettoken(NULL);
 			if (token != TOKEN_LSPAREN) flagerror = 1;
-			info = parsearg_mem();
-			info.type = TYPE_M16;
-		} else if (token == TOKEN_LSPAREN) {
-			info = parsearg_mem();
+			info = parsearg_mem(token);
 			info.type = TYPE_M16;
 		} else if (token == TOKEN_IMM8 || token == TOKEN_IMM16) {
 			info = parsearg_imm(token);
@@ -1155,31 +1444,39 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 	case TOKEN_FAR:
 		token = gettoken(NULL);
 		if (token == TOKEN_PTR) token = gettoken(NULL);
-		if (token == TOKEN_DWORD) {
+		switch (token) {
+		case TOKEN_WORD:
 			token = gettoken(NULL);
 			if (token == TOKEN_PTR) token = gettoken(NULL);
-			if (token != TOKEN_LSPAREN) flagerror = 1;
-			info = parsearg_mem();
+			info = parsearg_mem(token);
+			info.type = TYPE_M16;
+			info.ptr = PTR_FAR;
+			break;
+		case TOKEN_DWORD:
+			token = gettoken(NULL);
+			if (token == TOKEN_PTR) token = gettoken(NULL);
+			info = parsearg_mem(token);
 			info.type = TYPE_M32;
-		} else if (token == TOKEN_LSPAREN) {
-			info = parsearg_mem();
-			info.type = TYPE_M32;
-		} else if (token == TOKEN_IMM8 || token == TOKEN_IMM16) {
+			info.ptr = PTR_FAR;
+			break;
+		case TOKEN_IMM16:
 			info = parsearg_imm(token);
-			if (info.type == TYPE_I8) {
-				info.type = TYPE_I16_16;
-				info.pcs  = avcs;
-				info.pip  = (t_nubit8)info.imm8;
-			} else if (info.type == TYPE_I16) {
-				info.type = TYPE_I16_16;
-				info.pcs = avcs;
-				info.pip = info.imm16;
-			} else if (info.type == TYPE_I16_16) {
-			} else flagerror = 1;
-		} else if (token == TOKEN_LABEL) {
+			if (info.type != TYPE_I16_16) flagerror = 1;
+			break;
+		case TOKEN_LABEL:
 			info.type = TYPE_LABEL;
 			STRCPY(info.label, toklabel);
-		} else flagerror = 1;
+		case TOKEN_ES:
+		case TOKEN_CS:
+		case TOKEN_SS:
+		case TOKEN_DS:
+		case TOKEN_FS:
+		case TOKEN_GS:
+			info = parsearg_mem(token);
+			if (info.type != TYPE_M) flagerror = 1;
+			break;
+		default:flagerror = 1;break;
+		}
 		info.ptr = PTR_FAR;
 		break;
 	default:
@@ -1916,45 +2213,45 @@ static void DEC_DI()
 	setbyte(0x4f);
 	avip++;
 }
-static void PUSH_AX()
+static void PUSH_EAX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x50);
-	avip++;
 }
-static void PUSH_CX()
+static void PUSH_ECX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x51);
-	avip++;
 }
-static void PUSH_DX()
+static void PUSH_EDX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x52);
-	avip++;
 }
-static void PUSH_BX()
+static void PUSH_EBX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x53);
-	avip++;
 }
-static void PUSH_SP()
+static void PUSH_ESP(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x54);
-	avip++;
 }
-static void PUSH_BP()
+static void PUSH_EBP(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x55);
-	avip++;
 }
-static void PUSH_SI()
+static void PUSH_ESI(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x56);
-	avip++;
 }
-static void PUSH_DI()
+static void PUSH_EDI(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x57);
-	avip++;
 }
 static void POP_AX()
 {
@@ -1999,7 +2296,6 @@ static void POP_DI()
 static void INS_80(t_nubit8 rid)
 {
 	setbyte(0x80);
-	avip++;
 	SetModRegRM(aopri1, rid);
 	SetImm8(aopri2.imm8);
 }
@@ -2029,17 +2325,15 @@ static void TEST_RM16_R16()
 	avip++;
 	SetModRegRM(aopri1, aopri2.reg16);
 }
-static void XCHG_R8_RM8()
+static void XCHG_RM8_R8()
 {
 	setbyte(0x86);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg8);
+	SetModRegRM(aopri1, aopri2.reg8);
 }
-static void XCHG_R16_RM16()
+static void XCHG_RM16_R16()
 {
 	setbyte(0x87);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	SetModRegRM(aopri1, aopri2.reg16);
 }
 static void MOV_RM8_R8()
 {
@@ -2047,11 +2341,14 @@ static void MOV_RM8_R8()
 	avip++;
 	SetModRegRM(aopri1, aopri2.reg8);
 }
-static void MOV_RM16_R16()
+static void MOV_RM32_R32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x89);
-	avip++;
-	SetModRegRM(aopri1, aopri2.reg16);
+	switch (byte) {
+	case 2: SetModRegRM(aopri1, aopri2.reg16);break;
+	case 4: SetModRegRM(aopri1, aopri2.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void MOV_R8_RM8()
 {
@@ -2059,11 +2356,14 @@ static void MOV_R8_RM8()
 	avip++;
 	SetModRegRM(aopri2, aopri1.reg8);
 }
-static void MOV_R16_RM16()
+static void MOV_R32_RM32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x8b);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	switch (byte) {
+	case 2: SetModRegRM(aopri2, aopri1.reg16);break;
+	case 4: SetModRegRM(aopri2, aopri1.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void MOV_RM16_SREG()
 {
@@ -2341,7 +2641,6 @@ static void MOV_DX_I16()
 static void MOV_BX_I16()
 {
 	setbyte(0xbb);
-	avip++;
 	SetImm16(aopri2.imm16);
 }
 static void MOV_SP_I16()
@@ -2443,10 +2742,10 @@ static void INS_D0(t_nubit8 rid)
 	avip++;
 	SetModRegRM(aopri1, rid);
 }
-static void INS_D1(t_nubit8 rid)
+static void INS_D1(t_nubit8 rid, t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0xd1);
-	avip++;
 	SetModRegRM(aopri1, rid);
 }
 static void INS_D2(t_nubit8 rid)
@@ -2511,20 +2810,16 @@ static void OUT_I8_AX()
 static void CALL_REL16()
 {
 	setbyte(0xe8);
-	avip++;
 	if (ARG_NEAR_LABEL) {
 		labelStoreRef(aopri1.label, PTR_NEAR);
-		avip += 2;
-	} else SetImm16(aopri1.imm16 - avip - 0x02);
+	} else SetImm16(aopri1.imm16);
 }
 static void JMP_REL16()
 {
 	setbyte(0xe9);
-	avip++;
 	if (ARG_NEAR_LABEL) {
 		labelStoreRef(aopri1.label, PTR_NEAR);
-		avip += 2;
-	} else SetImm16(aopri1.imm16 - avip - 0x02);
+	} else SetImm16(aopri1.imm16);
 }
 static void JMP_PTR16_16()
 {
@@ -2574,17 +2869,11 @@ static void QDX()
 }
 static void REPNZ()
 {
-	if (ARG_NONE) {
-		setbyte(0xf2);
-		avip++;
-	} else flagerror = 1;
+	flagrepnz = 1;
 }
-static void REP()
+static void REPZ()
 {
-	if (ARG_NONE) {
-		setbyte(0xf3);
-		avip++;
-	} else flagerror = 1;
+	flagrepz = 1;
 }
 static void HLT()
 {
@@ -2668,21 +2957,41 @@ static void INS_FF(t_nubit8 rid)
 	avip++;
 	SetModRegRM(aopri1, rid);
 }
-
+static void PUSH_FS()
+{
+	setbyte(0xf0);
+	setbyte(0xa0);
+}
+static void PUSH_GS()
+{
+	setbyte(0xf0);
+	setbyte(0xa8);
+}
+/* abstract instructions */
 static void PUSH()
 {
 	if      (ARG_ES) PUSH_ES();
 	else if (ARG_CS) PUSH_CS();
 	else if (ARG_SS) PUSH_SS();
 	else if (ARG_DS) PUSH_DS();
-	else if (ARG_AX) PUSH_AX();
-	else if (ARG_CX) PUSH_CX();
-	else if (ARG_DX) PUSH_DX();
-	else if (ARG_BX) PUSH_BX();
-	else if (ARG_SP) PUSH_SP();
-	else if (ARG_BP) PUSH_BP();
-	else if (ARG_SI) PUSH_SI();
-	else if (ARG_DI) PUSH_DI();
+	else if (ARG_FS) PUSH_FS();
+	else if (ARG_GS) PUSH_GS();
+	else if (ARG_AX) PUSH_EAX(2);
+	else if (ARG_CX) PUSH_ECX(2);
+	else if (ARG_DX) PUSH_EDX(2);
+	else if (ARG_BX) PUSH_EBX(2);
+	else if (ARG_SP) PUSH_ESP(2);
+	else if (ARG_BP) PUSH_EBP(2);
+	else if (ARG_SI) PUSH_ESI(2);
+	else if (ARG_DI) PUSH_EDI(2);
+	else if (ARG_EAX) PUSH_EAX(4);
+	else if (ARG_ECX) PUSH_ECX(4);
+	else if (ARG_EDX) PUSH_EDX(4);
+	else if (ARG_EBX) PUSH_EBX(4);
+	else if (ARG_ESP) PUSH_ESP(4);
+	else if (ARG_EBP) PUSH_EBP(4);
+	else if (ARG_ESI) PUSH_ESI(4);
+	else if (ARG_EDI) PUSH_EDI(4);
 	else if (ARG_RM16) INS_FF(0x06);
 	else flagerror = 1;
 }
@@ -2947,27 +3256,21 @@ static void DEC()
 	else if (ARG_RM16s) INS_FF(0x01);
 	else flagerror = 1;
 }
-static void JCC(t_nubit8 opcode)
+static void JCC_REL(t_nubit8 opcode)
 {
-	t_nubit16 lo, hi, ta;
-	t_nsbit8 rel8;
-	if (ARG_I16u) {
-		lo = avip - 0x0080 + 0x0002;
-		hi = avip + 0x007f + 0x0002;
-		if (isI8(aopri1)) ta = aopri1.imm8 & 0x00ff; 
-		else if (isI16(aopri1)) ta = aopri1.imm16;
-		else flagerror = 1;
-		if (avip < lo || avip > hi)
-			if (ta <= hi || ta >= lo)
-				rel8 = ta - avip - 0x0002;
-			else flagerror = 1;
-		else if (ta <= hi && ta >= lo)
-			rel8 = ta - avip - 0x0002;
-		else flagerror = 1;
-		if (flagerror) return;
+	if (ARG_I8s) {
 		setbyte(opcode);
-		avip++;
-		SetImm8(rel8);
+		SetImm8(aopri1.imm8);
+	} else if (ARG_I16s) {
+		_SetOperandSize(2);
+		setbyte(0x0f);
+		setbyte(opcode + 0x10);
+		SetImm16(aopri1.imm16);
+	} else if (ARG_I32s) {
+		_SetOperandSize(4);
+		setbyte(0x0f);
+		setbyte(opcode + 0x10);
+		SetImm16(aopri1.imm32);
 	} else if (ARG_PNONE_LABEL || ARG_SHORT_LABEL) {
 		setbyte(opcode);
 		avip++;
@@ -2995,8 +3298,8 @@ static void XCHG()
 	else if (ARG_BP_AX) XCHG_BP_AX();
 	else if (ARG_SI_AX) XCHG_SI_AX();
 	else if (ARG_DI_AX) XCHG_DI_AX();
-	else if (ARG_R8_RM8) XCHG_R8_RM8();
-	else if (ARG_R16_RM16) XCHG_R16_RM16();
+	else if (ARG_RM8_R8) XCHG_RM8_R8();
+	else if (ARG_RM16_R16) XCHG_RM16_R16();
 	else flagerror = 1;
 }
 static void MOV()
@@ -3022,10 +3325,12 @@ static void MOV()
 	else if (ARG_AX_m16) MOV_AX_M16();
 	else if (ARG_m16_AX) MOV_M16_AX();
 	else if (ARG_R8_RM8) MOV_R8_RM8();
-	else if (ARG_R16_RM16) MOV_R16_RM16();
+	else if (ARG_R16_RM16) MOV_R32_RM32(2);
+	else if (ARG_R32_RM32) MOV_R32_RM32(4);
 	else if (ARG_RM8_R8) MOV_RM8_R8();
-	else if (ARG_RM16_R16) MOV_RM16_R16();
-	else if (ARG_RM16_SEG) MOV_RM16_SREG();
+	else if (ARG_RM16_R16) MOV_RM32_R32(2);
+	else if (ARG_RM32_R32) MOV_RM32_R32(4);
+	else if (ARG_RM16_SREG) MOV_RM16_SREG();
 	else if (ARG_SREG_RM16) MOV_SREG_RM16();
 	else if (ARG_RM8_I8) MOV_M8_I8();
 	else if (ARG_RM16_I16) MOV_M16_I16();
@@ -3039,8 +3344,8 @@ static void LEA()
 static void CALL()
 {
 	if      (ARG_FAR_I16_16 || ARG_FAR_LABEL) CALL_PTR16_16();
-	else if ((ARG_I16u && !isSHORT(aopri1)) || ARG_NEAR_LABEL) CALL_REL16();
-	else if (ARG_NEAR_RM16) INS_FF(0x02);
+	else if (ARG_NEAR_I16s || ARG_NEAR_LABEL || ARG_PNONE_I16s) CALL_REL16();
+	else if (ARG_NEAR_RM16 || ARG_PNONE_RM16) INS_FF(0x02);
 	else if (ARG_FAR_M16_16) INS_FF(0x03);
 	else flagerror = 1;
 }
@@ -3076,62 +3381,63 @@ static void INT()
 static void ROL()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x00);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x00);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x00, 2);
 	else if (ARG_RM8_CL) INS_D2(0x00);
 	else if (ARG_RM16_CL) INS_D3(0x00);
 }
 static void ROR()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x01);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x01);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x01, 2);
 	else if (ARG_RM8_CL) INS_D2(0x01);
 	else if (ARG_RM16_CL) INS_D3(0x01);
 }
 static void RCL()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x02);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x02);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x02, 2);
 	else if (ARG_RM8_CL) INS_D2(0x02);
 	else if (ARG_RM16_CL) INS_D3(0x02);
 }
 static void RCR()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x03);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x03);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x03, 2);
 	else if (ARG_RM8_CL) INS_D2(0x03);
 	else if (ARG_RM16_CL) INS_D3(0x03);
 }
 static void SHL()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x04);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x04);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x04, 2);
 	else if (ARG_RM8_CL) INS_D2(0x04);
 	else if (ARG_RM16_CL) INS_D3(0x04);
 }
 static void SHR()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x05);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x05);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x05, 2);
+	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(0x05, 4);
 	else if (ARG_RM8_CL) INS_D2(0x05);
 	else if (ARG_RM16_CL) INS_D3(0x05);
 }
 static void SAL()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x04);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x04);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x04, 2);
 	else if (ARG_RM8_CL) INS_D2(0x04);
 	else if (ARG_RM16_CL) INS_D3(0x04);
 }
 static void SAR()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x07);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x07);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x07, 2);
 	else if (ARG_RM8_CL) INS_D2(0x07);
 	else if (ARG_RM16_CL) INS_D3(0x07);
 }
 static void LOOPCC(t_nubit8 opcode)
 {
-	JCC(opcode);
+	JCC_REL(opcode);
 }
 static void IN()
 {
@@ -3181,25 +3487,10 @@ static void IDIV()
 }
 static void JMP()
 {
-	t_nubit16 lo, hi, ta;
 	if      (ARG_FAR_I16_16 || ARG_FAR_LABEL) JMP_PTR16_16();
-	else if (ARG_SHORT_I16 || ARG_SHORT_LABEL) JCC(0xeb);
-	else if (ARG_NEAR_I16 || ARG_NEAR_LABEL) JMP_REL16();
-	else if (ARG_PNONE_I16) {
-		lo = avip - 0x0080 + 0x0002;
-		hi = avip + 0x007f + 0x0002;
-		if (isI8(aopri1)) ta = aopri1.imm8 & 0x00ff; 
-		else if (isI16(aopri1)) ta = aopri1.imm16;
-		else flagerror = 1;
-		if (avip < lo || avip > hi)
-			if (ta <= hi || ta >= lo)
-				JCC(0xeb);
-			else JMP_REL16();
-		else if (ta <= hi && ta >= lo)
-			JCC(0xeb);
-		else JMP_REL16();
-	}
-	else if (ARG_NEAR_RM16) INS_FF(0x04);
+	else if (ARG_SHORT_I8s || ARG_SHORT_LABEL || ARG_PNONE_I8s) JCC_REL(0xeb);
+	else if (ARG_NEAR_I16s || ARG_NEAR_LABEL || ARG_PNONE_I16s) JMP_REL16();
+	else if (ARG_NEAR_RM16 || ARG_PNONE_RM16) INS_FF(0x04);
 	else if (ARG_FAR_M16_16) INS_FF(0x05);
 	else flagerror = 1;
 
@@ -3311,36 +3602,36 @@ static void exec()
 	else if (!strcmp(rop, "aas")) AAS();
 	else if (!strcmp(rop, "inc")) INC();
 	else if (!strcmp(rop, "dec")) DEC();
-	else if (!strcmp(rop, "jo" )) JCC(0x70);
-	else if (!strcmp(rop, "jno")) JCC(0x71);
-	else if (!strcmp(rop, "jb" )) JCC(0x72);
-	else if (!strcmp(rop, "jc" )) JCC(0x72);
-	else if (!strcmp(rop,"jnae")) JCC(0x72);
-	else if (!strcmp(rop, "jae")) JCC(0x73);
-	else if (!strcmp(rop, "jnb")) JCC(0x73);
-	else if (!strcmp(rop, "jnc")) JCC(0x73);
-	else if (!strcmp(rop, "je" )) JCC(0x74);
-	else if (!strcmp(rop, "jz" )) JCC(0x74);
-	else if (!strcmp(rop, "jne")) JCC(0x75);
-	else if (!strcmp(rop, "jnz")) JCC(0x75);
-	else if (!strcmp(rop, "jbe")) JCC(0x76);
-	else if (!strcmp(rop, "jna")) JCC(0x76);
-	else if (!strcmp(rop, "ja" )) JCC(0x77);
-	else if (!strcmp(rop,"jnbe")) JCC(0x77);
-	else if (!strcmp(rop, "js" )) JCC(0x78);
-	else if (!strcmp(rop, "jns")) JCC(0x79);
-	else if (!strcmp(rop, "jp" )) JCC(0x7a);
-	else if (!strcmp(rop, "jpe")) JCC(0x7a);
-	else if (!strcmp(rop, "jnp")) JCC(0x7b);
-	else if (!strcmp(rop, "jpo")) JCC(0x7b);
-	else if (!strcmp(rop, "jl" )) JCC(0x7c);
-	else if (!strcmp(rop,"jnge")) JCC(0x7c);
-	else if (!strcmp(rop, "jge")) JCC(0x7d);
-	else if (!strcmp(rop, "jnl")) JCC(0x7d);
-	else if (!strcmp(rop, "jle")) JCC(0x7e);
-	else if (!strcmp(rop, "jng")) JCC(0x7e);
-	else if (!strcmp(rop, "jg" )) JCC(0x7f);
-	else if (!strcmp(rop,"jnle")) JCC(0x7f);
+	else if (!strcmp(rop, "jo" )) JCC_REL(0x70);
+	else if (!strcmp(rop, "jno")) JCC_REL(0x71);
+	else if (!strcmp(rop, "jb" )) JCC_REL(0x72);
+	else if (!strcmp(rop, "jc" )) JCC_REL(0x72);
+	else if (!strcmp(rop,"jnae")) JCC_REL(0x72);
+	else if (!strcmp(rop, "jae")) JCC_REL(0x73);
+	else if (!strcmp(rop, "jnb")) JCC_REL(0x73);
+	else if (!strcmp(rop, "jnc")) JCC_REL(0x73);
+	else if (!strcmp(rop, "je" )) JCC_REL(0x74);
+	else if (!strcmp(rop, "jz" )) JCC_REL(0x74);
+	else if (!strcmp(rop, "jne")) JCC_REL(0x75);
+	else if (!strcmp(rop, "jnz")) JCC_REL(0x75);
+	else if (!strcmp(rop, "jbe")) JCC_REL(0x76);
+	else if (!strcmp(rop, "jna")) JCC_REL(0x76);
+	else if (!strcmp(rop, "ja" )) JCC_REL(0x77);
+	else if (!strcmp(rop,"jnbe")) JCC_REL(0x77);
+	else if (!strcmp(rop, "js" )) JCC_REL(0x78);
+	else if (!strcmp(rop, "jns")) JCC_REL(0x79);
+	else if (!strcmp(rop, "jp" )) JCC_REL(0x7a);
+	else if (!strcmp(rop, "jpe")) JCC_REL(0x7a);
+	else if (!strcmp(rop, "jnp")) JCC_REL(0x7b);
+	else if (!strcmp(rop, "jpo")) JCC_REL(0x7b);
+	else if (!strcmp(rop, "jl" )) JCC_REL(0x7c);
+	else if (!strcmp(rop,"jnge")) JCC_REL(0x7c);
+	else if (!strcmp(rop, "jge")) JCC_REL(0x7d);
+	else if (!strcmp(rop, "jnl")) JCC_REL(0x7d);
+	else if (!strcmp(rop, "jle")) JCC_REL(0x7e);
+	else if (!strcmp(rop, "jng")) JCC_REL(0x7e);
+	else if (!strcmp(rop, "jg" )) JCC_REL(0x7f);
+	else if (!strcmp(rop,"jnle")) JCC_REL(0x7f);
 	else if (!strcmp(rop,"test")) TEST();
 	else if (!strcmp(rop,"xchg")) XCHG();
 	else if (!strcmp(rop, "mov")) MOV();
@@ -3387,16 +3678,17 @@ static void exec()
 	else if (!strcmp(rop,"loope")) LOOPCC(0xe1);
 	else if (!strcmp(rop,"loopz")) LOOPCC(0xe1);
 	else if (!strcmp(rop,"loop")) LOOPCC(0xe2);
-	else if (!strcmp(rop,"jcxz")) JCC(0xe3);
+	else if (!strcmp(rop,"jcxz")) JCC_REL(0xe3);
 	else if (!strcmp(rop, "in" )) IN();
 	else if (!strcmp(rop, "out")) OUT();
 	else if (!strcmp(rop, "jmp")) JMP();
 	else if (!strcmp(rop, "lock")) LOCK();
 	else if (!strcmp(rop, "qdx")) QDX();
-	else if (!strcmp(rop,"repnz")) REPNZ();
-	else if (!strcmp(rop, "rep")) REP();
-	else if (!strcmp(rop,"repe")) REP();
-	else if (!strcmp(rop,"repz")) REP();
+	else if (!strcmp(rop,"repne:")) REPNZ();
+	else if (!strcmp(rop,"repnz:")) REPNZ();
+	else if (!strcmp(rop, "rep:")) REPZ();
+	else if (!strcmp(rop,"repe:")) REPZ();
+	else if (!strcmp(rop,"repz:")) REPZ();
 	else if (!strcmp(rop, "hlt")) HLT();
 	else if (!strcmp(rop, "cmc")) CMC();
 	else if (!strcmp(rop, "not")) NOT();
@@ -3487,7 +3779,6 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 		lcase(rop);
 		flagprefix = is_prefix();
 		if (flagprefix) exec();
-		if (flagerror) break;
 	} while (flagprefix);
 
 	/* process assembly statement */
@@ -3505,10 +3796,12 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 
 	exec();
 
+	//if (!strcmp(rop, "cmp") && !strcmp(ropr2, "fa"))
+	//	vapiPrint("[%s] [%s/%d] [%s/%d] [%s/%d]\n", rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
 	if (flagerror) {
 		len = 0;
 		vapiPrint("bad instruction: '%s'\n", stmt);
-		vapiPrint("[%s] [%s] [%s] [%s]\n", rop, ropr1, ropr2, ropr3);
+		vapiPrint("[%s] [%s/%d] [%s/%d] [%s/%d]\n", rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
 	} else {
 		len = 0;
 		if (flages) {d_nubit8(rcode + len) = 0x26;len++;}

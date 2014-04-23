@@ -2920,32 +2920,32 @@ static void INS_D0()
 	case 0: /* ROL_RM8 */
 		_bb("ROL_RM8");
 		SPRINTF(dop, "ROL");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	case 1: /* ROR_RM8 */
 		_bb("ROR_RM8");
 		SPRINTF(dop, "ROR");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	case 2: /* RCL_RM8 */
 		_bb("RCL_RM8");
 		SPRINTF(dop, "RCL");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	case 3: /* RCR_RM8 */
 		_bb("RCR_RM8");
 		SPRINTF(dop, "RCR");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	case 4: /* SHL_RM8 */
 		_bb("SHL_RM8");
 		SPRINTF(dop, "SHL");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	case 5: /* SHR_RM8 */
 		_bb("SHR_RM8");
 		SPRINTF(dop, "SHR");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	case 6: /* UndefinedOpcode */
 		_bb("cr(6)");
@@ -2954,7 +2954,7 @@ static void INS_D0()
 	case 7: /* SAR_RM8 */
 		_bb("SAR_RM8");
 		SPRINTF(dop, "SAR");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	default:_impossible_;break;}
 	_ce;
@@ -2968,32 +2968,32 @@ static void INS_D1()
 	case 0: /* ROL_RM32 */
 		_bb("ROL_RM32");
 		SPRINTF(dop, "ROL");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	case 1: /* ROR_RM32 */
 		_bb("ROR_RM32");
 		SPRINTF(dop, "ROR");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	case 2: /* RCL_RM32 */
 		_bb("RCL_RM32");
 		SPRINTF(dop, "RCL");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	case 3: /* RCR_RM32 */
 		_bb("RCR_RM32");
 		SPRINTF(dop, "RCR");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	case 4: /* SHL_RM32 */
 		_bb("SHL_RM32");
 		SPRINTF(dop, "SHL");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	case 5: /* SHR_RM32 */
 		_bb("SHR_RM32");
 		SPRINTF(dop, "SHR");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	case 6: /* UndefinedOpcode */
 		_bb("cr(6)");
@@ -3002,7 +3002,7 @@ static void INS_D1()
 	case 7: /* SAR_RM32 */
 		_bb("SAR_RM32");
 		SPRINTF(dop, "SAR");
-		SPRINTF(dopr, "%s,1", drm);
+		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
 	default:_impossible_;break;}
 	_ce;
@@ -3839,8 +3839,8 @@ static void JO_REL32()
 	SPRINTF(dop, "JO");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3851,8 +3851,8 @@ static void JNO_REL32()
 	SPRINTF(dop, "JNO");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3863,8 +3863,8 @@ static void JC_REL32()
 	SPRINTF(dop, "JC");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3875,8 +3875,8 @@ static void JNC_REL32()
 	SPRINTF(dop, "JNC");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3887,8 +3887,8 @@ static void JZ_REL32()
 	SPRINTF(dop, "JZ");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3899,8 +3899,8 @@ static void JNZ_REL32()
 	SPRINTF(dop, "JNZ");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3911,8 +3911,8 @@ static void JNA_REL32()
 	SPRINTF(dop, "JNA");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3923,8 +3923,8 @@ static void JA_REL32()
 	SPRINTF(dop, "JA");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3935,8 +3935,8 @@ static void JS_REL32()
 	SPRINTF(dop, "JS");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3947,8 +3947,8 @@ static void JNS_REL32()
 	SPRINTF(dop, "JNS");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3959,8 +3959,8 @@ static void JP_REL32()
 	SPRINTF(dop, "JP");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3971,8 +3971,8 @@ static void JNP_REL32()
 	SPRINTF(dop, "JNP");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3983,8 +3983,8 @@ static void JL_REL32()
 	SPRINTF(dop, "JL");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3995,8 +3995,8 @@ static void JNL_REL32()
 	SPRINTF(dop, "JNL");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -4007,8 +4007,8 @@ static void JNG_REL32()
 	SPRINTF(dop, "JNG");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -4019,8 +4019,8 @@ static void JG_REL32()
 	SPRINTF(dop, "JG");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dopr, "%04X", GetMax16(cimm));break;
-	case 4: SPRINTF(dopr, "%08X", GetMax32(cimm));break;
+	case 2: SPRINTFSI(dopr, GetMax16(cimm), 2);break;
+	case 4: SPRINTFSI(dopr, GetMax32(cimm), 4);break;
 	default:_impossible_;break;}
 	_ce;
 }
