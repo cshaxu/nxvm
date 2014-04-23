@@ -11,7 +11,7 @@
 #include "vpit.h"
 #include "vpic.h"
 
-t_pic vpicmaster,vpicslave;
+t_pic vpic1,vpic2;
 
 static void IO_Write_00x0(t_pic *vpic)
 {
@@ -168,35 +168,35 @@ static void IO_Read_00x1(t_pic *vpic)
 	vcpu.al = vpic->imr;
 }
 
-void IO_Read_0020()	{IO_Read_00x0(&vpicmaster);}
-void IO_Read_0021()	{IO_Read_00x1(&vpicmaster);}
-void IO_Read_00A0()	{IO_Read_00x0(&vpicslave);}
-void IO_Read_00A1()	{IO_Read_00x1(&vpicslave);}
-void IO_Write_0020() {IO_Write_00x0(&vpicmaster);}
-void IO_Write_0021() {IO_Write_00x1(&vpicmaster);}
-void IO_Write_00A0() {IO_Write_00x0(&vpicslave);}
-void IO_Write_00A1() {IO_Write_00x1(&vpicslave);}
+void IO_Read_0020()	{IO_Read_00x0(&vpic1);}
+void IO_Read_0021()	{IO_Read_00x1(&vpic1);}
+void IO_Read_00A0()	{IO_Read_00x0(&vpic2);}
+void IO_Read_00A1()	{IO_Read_00x1(&vpic2);}
+void IO_Write_0020() {IO_Write_00x0(&vpic1);}
+void IO_Write_0021() {IO_Write_00x1(&vpic1);}
+void IO_Write_00A0() {IO_Write_00x0(&vpic2);}
+void IO_Write_00A1() {IO_Write_00x1(&vpic2);}
 
 t_nubit16 vpicGetIMR()
-{return (((t_nubit16)vpicslave.imr)<<8)+vpicmaster.imr;}
+{return (((t_nubit16)vpic2.imr)<<8)+vpic1.imr;}
 t_nubit16 vpicGetISR()
-{return (((t_nubit16)vpicslave.isr)<<8)+vpicmaster.isr;}
+{return (((t_nubit16)vpic2.isr)<<8)+vpic1.isr;}
 t_nubit16 vpicGetIRR()
-{return (((t_nubit16)vpicslave.irr)<<8)+vpicmaster.irr;}
+{return (((t_nubit16)vpic2.irr)<<8)+vpic1.irr;}
 void vpicSetIMR(t_nubit16 imr)
 {
-	vpicmaster.imr = imr&0xff;
-	vpicslave.imr = imr>>8;
+	vpic1.imr = imr&0xff;
+	vpic2.imr = imr>>8;
 }
 void vpicSetISR(t_nubit16 isr)
 {
-	vpicmaster.isr = isr&0xff;
-	vpicslave.isr = isr>>8;
+	vpic1.isr = isr&0xff;
+	vpic2.isr = isr>>8;
 }
 void vpicSetIRR(t_nubit16 irr)
 {
-	vpicmaster.irr = irr&0xff;
-	vpicslave.irr = irr>>8;
+	vpic1.irr = irr&0xff;
+	vpic2.irr = irr>>8;
 }
 
 t_bool vpicIsINTR()
@@ -204,66 +204,66 @@ t_bool vpicIsINTR()
 	/* Device INT Begin */
 	vpitIntTick();
 	/* Device INT End */
-	vpicslave.isr = vpicslave.irr&(~vpicslave.imr);
-	if(!!vpicslave.isr) vpicmaster.irr |= 0x04;
-	vpicmaster.isr = vpicmaster.irr&(~vpicmaster.imr);
-	return !!vpicmaster.isr;
+	vpic2.isr = vpic2.irr&(~vpic2.imr);
+	if(!!vpic2.isr) vpic1.irr |= 0x04;
+	vpic1.isr = vpic1.irr&(~vpic1.imr);
+	return !!vpic1.isr;
 }
 t_nubit8 vpicGetINTR()
 {
 	t_nubit8 i = 0;
-	while(!((vpicmaster.isr>>i)&0x01) && (i < 0x08)) i++;
+	while(!((vpic1.isr>>i)&0x01) && (i < 0x08)) i++;
 	if(i == 2) {
 		// IRQ2: IRQ8~IRQ15
 		i = 0;
 		vapiPrint("IsSlave!\n");
-		while(!((vpicslave.isr>>i)&0x01) && (i < 0x08)) i++;
-		i |= vpicslave.icw2;
+		while(!((vpic2.isr>>i)&0x01) && (i < 0x08)) i++;
+		i |= vpic2.icw2;
 	} else {
 		// IRQ0~IRQ1, IRQ3~IRQ7
-		i |= vpicmaster.icw2;
+		i |= vpic1.icw2;
 	}
 	return i;
 }
 void vpicRespondINTR(t_nubit8 intr)
 {
 	t_nubit8 i = 0;
-	while(!((vpicmaster.isr>>i)&0x01) && (i < 0x08)) i++;
+	while(!((vpic1.isr>>i)&0x01) && (i < 0x08)) i++;
 	if(i == 2) {
 		i = 0;
-		while(!((vpicslave.isr>>i)&0x01) && (i < 0x08)) i++;
-		vpicslave.isr &= ~(1<<i);
-		vpicslave.irr &= ~(1<<i);
+		while(!((vpic2.isr>>i)&0x01) && (i < 0x08)) i++;
+		vpic2.isr &= ~(1<<i);
+		vpic2.irr &= ~(1<<i);
 		i = 0;
-		while(!((vpicslave.isr>>i)&0x01) && (i < 0x08)) i++;
+		while(!((vpic2.isr>>i)&0x01) && (i < 0x08)) i++;
 		if(i == 0x08) {
-			vpicmaster.isr &= ~0x04;
-			vpicmaster.irr &= ~0x04;
+			vpic1.isr &= ~0x04;
+			vpic1.irr &= ~0x04;
 		}
 	} else {
-		vpicmaster.isr &= ~(1<<i);
-		vpicmaster.irr &= ~(1<<i);
+		vpic1.isr &= ~(1<<i);
+		vpic1.irr &= ~(1<<i);
 	}
 }
 void vpicSetIRQ(t_nubit8 irqid)
 {
 	switch(irqid) {
-	case 0x00:	vpicmaster.irr |= 0x01;break;
-	case 0x01:	vpicmaster.irr |= 0x02;break;
-//	case 0x02:	vpicmaster.irr |= 0x04;break;
-	case 0x03:	vpicmaster.irr |= 0x08;break;
-	case 0x04:	vpicmaster.irr |= 0x10;break;
-	case 0x05:	vpicmaster.irr |= 0x20;break;
-	case 0x06:	vpicmaster.irr |= 0x40;break;
-	case 0x07:	vpicmaster.irr |= 0x80;break;
-	case 0x08:	vpicslave.irr |= 0x01;vpicmaster.irr |= 0x04;break;
-	case 0x09:	vpicslave.irr |= 0x02;vpicmaster.irr |= 0x04;break;
-	case 0x0a:	vpicslave.irr |= 0x04;vpicmaster.irr |= 0x04;break;
-	case 0x0b:	vpicslave.irr |= 0x08;vpicmaster.irr |= 0x04;break;
-	case 0x0c:	vpicslave.irr |= 0x10;vpicmaster.irr |= 0x04;break;
-	case 0x0d:	vpicslave.irr |= 0x20;vpicmaster.irr |= 0x04;break;
-	case 0x0e:	vpicslave.irr |= 0x40;vpicmaster.irr |= 0x04;break;
-	case 0x0f:	vpicslave.irr |= 0x80;vpicmaster.irr |= 0x04;break;
+	case 0x00:	vpic1.irr |= 0x01;break;
+	case 0x01:	vpic1.irr |= 0x02;break;
+//	case 0x02:	vpic1.irr |= 0x04;break;
+	case 0x03:	vpic1.irr |= 0x08;break;
+	case 0x04:	vpic1.irr |= 0x10;break;
+	case 0x05:	vpic1.irr |= 0x20;break;
+	case 0x06:	vpic1.irr |= 0x40;break;
+	case 0x07:	vpic1.irr |= 0x80;break;
+	case 0x08:	vpic2.irr |= 0x01;vpic1.irr |= 0x04;break;
+	case 0x09:	vpic2.irr |= 0x02;vpic1.irr |= 0x04;break;
+	case 0x0a:	vpic2.irr |= 0x04;vpic1.irr |= 0x04;break;
+	case 0x0b:	vpic2.irr |= 0x08;vpic1.irr |= 0x04;break;
+	case 0x0c:	vpic2.irr |= 0x10;vpic1.irr |= 0x04;break;
+	case 0x0d:	vpic2.irr |= 0x20;vpic1.irr |= 0x04;break;
+	case 0x0e:	vpic2.irr |= 0x40;vpic1.irr |= 0x04;break;
+	case 0x0f:	vpic2.irr |= 0x80;vpic1.irr |= 0x04;break;
 	default:break;}
 }
 
@@ -272,9 +272,9 @@ void vpicSetIRQ(t_nubit8 irqid)
 
 void PICInit()
 {
-	memset(&vpicmaster,0,sizeof(t_pic));
-	memset(&vpicslave,0,sizeof(t_pic));
-	vpicmaster.init = vpicslave.init = ICW1;
+	memset(&vpic1,0,sizeof(t_pic));
+	memset(&vpic2,0,sizeof(t_pic));
+	vpic1.init = vpic2.init = ICW1;
 	vcpuinsInPort[0x0020] = (t_faddrcc)IO_Read_0020;
 	vcpuinsInPort[0x0021] = (t_faddrcc)IO_Read_0021;
 	vcpuinsInPort[0x00a0] = (t_faddrcc)IO_Read_00A0;

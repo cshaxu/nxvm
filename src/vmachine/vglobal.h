@@ -7,7 +7,10 @@
 
 #include "coption.h"
 
-typedef unsigned char t_nubit8;		//bit8: number, 8-bit
+typedef unsigned char t_nubit4;
+typedef unsigned char t_nubit6;
+
+typedef unsigned char t_nubit8;		//bit8: number, unsigned, 8-bit
 typedef signed char t_nsbit8;
 typedef unsigned short t_nubit16;
 typedef signed short t_nsbit16;

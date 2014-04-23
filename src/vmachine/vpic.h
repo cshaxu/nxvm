@@ -7,7 +7,6 @@
 
 #include "vglobal.h"
 
-
 typedef enum {ICW1,ICW2,ICW3,ICW4,OCW1} PICInitStatus;
 
 typedef struct {
@@ -19,7 +18,7 @@ typedef struct {
 	t_bool slave;
 } t_pic;
 
-extern t_pic vpicmaster,vpicslave; // 0x08; 
+extern t_pic vpic1,vpic2;
 
 t_nubit16 vpicGetIMR();
 t_nubit16 vpicGetISR();
@@ -35,6 +34,5 @@ void vpicSetIRQ(t_nubit8 irqid);
 
 void PICInit();
 void PICTerm();
-
 
 #endif

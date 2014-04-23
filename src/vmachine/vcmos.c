@@ -102,14 +102,14 @@ void IO_Write_0070()
 }
 void IO_Write_0071()
 {
-	t_nubitcc i;
-	t_nubit16 checksum = 0;
+//	t_nubitcc i;
+//	t_nubit16 checksum = 0;
 	vcmosreg[idreg] = vcpu.al;
-	if((idreg > 0x0f) && (idreg < 0x2e))
+/*	if((idreg > 0x0f) && (idreg < 0x2e))
 		for(i = 0x10;i < 0x2e;++i)
 			checksum += vcmosreg[i];
 	vcmosreg[CMOS_CHECKSUM_LSB] = checksum&0xff;
-	vcmosreg[CMOS_CHECKSUM_MSB] = checksum>>8;
+	vcmosreg[CMOS_CHECKSUM_MSB] = checksum>>8;*/
 }
 void IO_Read_0071()
 {

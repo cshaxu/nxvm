@@ -28,10 +28,6 @@ void CPUInit()
 }
 void CPURun()
 {
-	//8259A Test
-	//vpicmaster.irr = 0x40;
-	//vpicslave.irr = 0x10;
-	//vcpu.flags |= VCPU_FLAG_IF;
 	vcputermflag = 0;
 	while(!vcputermflag) vcpuInsExec();
 }

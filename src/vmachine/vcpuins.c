@@ -3141,7 +3141,7 @@ void vcpuinsExecInt()
 		INT(intr);
 //#endif
 		vpicRespondINTR(intr);
-		//vapiPrint("m.isr=%x,s.isr=%x\n",vpicmaster.isr,vpicslave.isr);
+		//vapiPrint("m.isr=%x,s.isr=%x\n",vpic1.isr,vpic2.isr);
 		//vapiPause();
 	}
 	if(GetFlag(VCPU_FLAG_TF)) INT(0x01);

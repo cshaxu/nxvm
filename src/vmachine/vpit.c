@@ -13,11 +13,6 @@
 
 #include "vpit.h"
 
-typedef struct {
-	t_nubit8 mode0,mode1,mode2,rcw;
-	t_nubit16 count0,count1,count2;
-} t_pit;
-
 t_pit vpit;
 static clock_t t1,t2;
 
