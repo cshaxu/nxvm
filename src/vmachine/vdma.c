@@ -64,6 +64,20 @@ static void IO_Write_Request(t_dma *vdma)
 	else
 		vdma->request &= ~(1 << (vcpu.al & 0x03));
 }
+static void IO_Write_Mask_Single(t_dma *vdma)
+{
+	if(vcpu.al & 0x04)
+		vdma->mask |= 1 << (vcpu.al & 0x03);
+	else
+		vdma->mask &= ~(1 << (vcpu.al & 0x03));
+}
+#define     IO_Write_Mode(vdma) ((vdma)->dmac[vcpu.al & 0x03].mode = vcpu.al >> 2)
+#define     IO_Write_Flipflop_Clear(vdma) ((vdma)->flagmsb = 0x00)
+#define     IO_Write_Reset(vdma) (vdmaReset(vdma))
+#define     IO_Write_Mask_Clear(vdma) ((vdma)->mask = 0x00)
+#define     IO_Write_Mask_All(vdma) ((vdma)->mask = vcpu.al & 0x0f)
+#define     IO_Read_Page(vdma, id) (vcpu.al = (vdma)->dmac[id].page)
+#define     IO_Write_Page(vdma, id)((vdma)->dmac[id].page = vcpu.al)
 
 void IO_Read_0000()  {IO_Read_CurrentAddress   (&vdma1, 0);}
 void IO_Read_0001()  {IO_Read_CurrentWordCount (&vdma1, 0);}
@@ -86,30 +100,15 @@ void IO_Write_0006() {IO_Write_Address         (&vdma1, 3);}
 void IO_Write_0007() {IO_Write_WordCount       (&vdma1, 3);}
 void IO_Write_0008() {IO_Write_Command         (&vdma1   );}
 void IO_Write_0009() {IO_Write_Request         (&vdma1   );}
-void IO_Write_000A()
-{
-	if(vcpu.al&0x04) vdma1.mask |= 1<<(vcpu.al&0x03);
-	else vdma1.mask &= ~(1<<(vcpu.al&0x03));
-}
-void IO_Write_000B()
-{vdma1.dmac[vcpu.al&0x03].mode = vcpu.al>>2;}
-void IO_Write_000C() {vdma1.flagmsb = 0;}
-void IO_Write_000D()
-{
-	vdma1.command = vdma1.status = vdma1.temp = 0;
-	vdma1.request = 0;
-	vdma1.flagmsb = 0;
-	vdma1.mask = 0x0f;
-}
-void IO_Write_000E()
-{vdma1.mask = 0;}
-void IO_Write_000F()
-{vdma1.mask = vcpu.al&0x0f;}
+void IO_Write_000A() {IO_Write_Mask_Single     (&vdma1   );}
+void IO_Write_000B() {IO_Write_Mode            (&vdma1   );}
+void IO_Write_000C() {IO_Write_Flipflop_Clear  (&vdma1   );}
+void IO_Write_000D() {IO_Write_Reset           (&vdma1   );}
+void IO_Write_000E() {IO_Write_Mask_Clear      (&vdma1   );}
+void IO_Write_000F() {IO_Write_Mask_All        (&vdma1   );}
 
-void IO_Read_0081()
-{vcpu.al = vdma1.dmac[2].page;}
-void IO_Read_0082()
-{vcpu.al = vdma1.dmac[3].page;}
+void IO_Read_0081()  {IO_Read_Page             (&vdma1, 2);}
+void IO_Read_0082()  {IO_Read_Page             (&vdma1, 3);}
 void IO_Read_0083()
 {vcpu.al = vdma1.dmac[1].page;}
 void IO_Read_0087()
@@ -161,27 +160,12 @@ void IO_Write_00CC() {IO_Write_Address         (&vdma2, 3);}
 void IO_Write_00CE() {IO_Write_WordCount       (&vdma2, 3);}
 void IO_Write_00D0() {IO_Write_Command         (&vdma2   );}
 void IO_Write_00D2() {IO_Write_Request         (&vdma2   );}
-void IO_Write_00D4()
-{
-	if(vcpu.al&0x04) vdma2.mask |= 1<<(vcpu.al&0x03);
-	else vdma2.mask &= ~(1<<(vcpu.al&0x03));
-}
-void IO_Write_00D6()
-{vdma2.dmac[vcpu.al&0x03].mode = vcpu.al;}
-void IO_Write_00D8()
-{vdma2.flagmsb = 0;}
-void IO_Write_00DA()
-{
-	vdma2.command = vdma2.status = vdma2.temp = 0;
-	vdma2.request = 0;
-	vdma2.flagmsb = 0;
-	vdma2.mask = 0x0f;
-}
-void IO_Write_00DC()
-{vdma2.mask = 0;}
-void IO_Write_00DE()
-{vdma2.mask = vcpu.al&0x0f;}
-
+void IO_Write_00D4() {IO_Write_Mask_Single     (&vdma2   );}
+void IO_Write_00D6() {IO_Write_Mode            (&vdma2   );}
+void IO_Write_00D8() {IO_Write_Flipflop_Clear  (&vdma2   );}
+void IO_Write_00DA() {IO_Write_Reset           (&vdma2   );}
+void IO_Write_00DC() {IO_Write_Mask_Clear      (&vdma2   );}
+void IO_Write_00DE() {IO_Write_Mask_All        (&vdma2   );}
 
 void vdmaReset(t_dma *vdma)
 {

@@ -85,7 +85,7 @@ static int chartohexdigit(char c)
 #undef dumpArg*/
 
 #define aSetByte(n)	{*(loc+len++) = n;}
-#define aSetWord(n)	{*(loc+len++) = n;*(loc+len++) = n>>8;}
+#define aSetWord(n)	{*(loc+len++) = n;*(loc+len++) = (n>>8);}
 #define aSetModRM(modrm,reg) {\
 	*(loc+len++) = (modrm.mod<<6) + (reg<<3) + (modrm.rm);\
 	if(dispLen(modrm)) {\
