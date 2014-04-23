@@ -206,7 +206,7 @@ static void Help()
 			printc("\n");
 			printc("SET <item> <value>\n");
 			printc("  available items and values\n");
-			printc("  BOOTDISK   FDD, HDD\n");
+			printc("  bootdisk   fdd, hdd\n");
 			break;
 		} else if (!strcmp(arg[1], "device")) {
 			printc("Change nxvm devices\n");
@@ -215,13 +215,13 @@ static void Help()
 			printc("  change memory size (KB)\n");
 			printc("DEVICE display [console | window]\n");
 			printc("  change display type\n");
-			printc("DEVICE floppy [create | insert <file>| remove <file>]");
-			printc("  change floppy status:\n");
+			printc("DEVICE fdd [create | insert <file>| remove <file>]");
+			printc("  change floppy drive status:\n");
 			printc("  create: discard previous floppy image and create a new one\n");
 			printc("  insert: load floppy image from file\n");
 			printc("  remove: remove floppy image and dump to file\n");
-			printc("DEVICE harddisk [create | connect <file>| disconnect <file>]\n");
-			printc("  change floppy status:\n");
+			printc("DEVICE hdd [create | connect <file>| disconnect <file>]\n");
+			printc("  change hard disk drive status:\n");
 			printc("  create:     discard previous hard disk image and create a new one\n");
 			printc("  connect:    load hard disk image from file\n");
 			printc("  disconnect: remove hard disk image and dump to file\n");
@@ -335,7 +335,7 @@ static void Set()
 static void Device()
 {
 	if (narg < 2) GetHelp;
-	if (!strcmp(arg[1], "memory")) {
+	if (!strcmp(arg[1], "ram")) {
 		if (narg != 3) GetHelp;
 		vramAlloc(atoi(arg[2]));
 	} else if(!strcmp(arg[1], "display")) {
@@ -345,7 +345,7 @@ static void Device()
 		else if (!strcmp(arg[2], "window"))
 			vmachine.flagmode = 0x01;
 		else GetHelp;
-	} else if(!strcmp(arg[1], "floppy")) {
+	} else if(!strcmp(arg[1], "fdd")) {
 		if (narg < 3) GetHelp;
 		if (!strcmp(arg[2], "create")) {
 			vfdd.flagexist = 0x01;
@@ -356,7 +356,7 @@ static void Device()
 			if (narg < 4) arg[3] = NULL;
 			vapiFloppyRemove(arg[3]);			
 		} else GetHelp;
-	} else if(!strcmp(arg[1], "harddisk")) {
+	} else if(!strcmp(arg[1], "hdd")) {
 		if (narg < 3) GetHelp;
 		if (!strcmp(arg[2], "create")) {
 			vhdd.flagexist = 0x01;

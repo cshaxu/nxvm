@@ -10,7 +10,7 @@
 #include "../vglobal.h"
 #include "../vpic.h"
 #include "../vapi.h"
-#include "../qdbios.h"
+#include "../bios/qdbios.h"
 #include "../VCPU.H"
 #include "../VCPUINS.H"
 #include "ecpuins.h"

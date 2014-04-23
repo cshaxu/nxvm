@@ -2,9 +2,6 @@ main.c
 console/asm86.c
 console/console.c
 console/debug.c
-vmachine/qdbios.c
-vmachine/qdcga.c
-vmachine/qdkeyb.c
 vmachine/vapi.c
 vmachine/vcmos.c
 vmachine/vcpu.c
@@ -13,9 +10,14 @@ vmachine/vdma.c
 vmachine/vfdc.c
 vmachine/vfdd.c
 vmachine/vhdd.c
+vmachine/vkbc.c
 vmachine/vmachine.c
 vmachine/vpic.c
 vmachine/vpit.c
 vmachine/vport.c
 vmachine/vram.c
+vmachine/vvadp.c
 vmachine/system/linux.c
+vmachine/bios/qdbios.c
+vmachine/bios/qdcga.c
+vmachine/bios/qdkeyb.c
