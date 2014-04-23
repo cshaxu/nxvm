@@ -58,6 +58,7 @@ t_nsbit16 HardINT;
 static t_nubit16 insDS;
 static t_nubit16 insSS;
 static t_vaddrcc rm,r,imm;
+static enum {RT_NONE,RT_REPZ,RT_REPZNZ} reptype;
 
 void SetCF(t_bool flg)
 {
@@ -187,8 +188,8 @@ void CalcZF()
 void CalcSF()
 {
 	switch(flglen) {
-	case 8:	SetSF(flgresult&0x0080);break;
-	case 16:SetSF(flgresult&0x8000);break;
+	case 8:	SetSF(!!(flgresult&0x0080));break;
+	case 16:SetSF(!!(flgresult&0x8000));break;
 	default:break;}
 }
 void CalcTF() {}
@@ -683,13 +684,12 @@ static void DEC(void *dest, t_nubitcc len)
 	default:break;}
 	SetFlags(DEC_FLAG);
 }
-static void JCC(t_bool jflag,t_nubitcc len)
+static void JCC(void *src, t_bool jflag,t_nubitcc len)
 {
 	switch(len) {
 	case 8:
 		if(jflag)
-			vcpu.ip += vmemoryGetByte(vcpu.cs,vcpu.ip);
-		vcpu.ip++;
+			vcpu.ip += SRC_8;;
 		break;
 	default:break;}
 }
@@ -1003,6 +1003,140 @@ static void SAR(void *dest, void *src, t_nubitcc len)
 			flgresult = DEST_16;
 			SetFlags(SAR_FLAG);
 		}
+		break;
+	default:break;}
+}
+static void STRDIR(t_nubitcc len)
+{
+	switch(len) {
+	case 8:
+		if(GetDF()) {
+			vcpu.di--;
+			vcpu.si--;
+		} else {
+			vcpu.di++;
+			vcpu.si++;
+		}
+		break;
+	case 16:
+		if(GetDF()) {
+			vcpu.di -= 2;
+			vcpu.si -= 2;
+		} else {
+			vcpu.di += 2;
+			vcpu.si += 2;
+		}
+		break;
+	default:break;}
+}
+static void MOVS(t_nubitcc len)
+{
+	switch(len) {
+	case 8:
+		vmemorySetByte(vcpu.es,vcpu.di,vmemoryGetByte(insDS,vcpu.si));
+		STRDIR(8);
+		/*if (eCPU.di+t<0xc0000 && eCPU.di+t>=0xa0000)
+		WriteVideoRam(eCPU.di+t-0xa0000);*/
+		nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  MOVSB\n");
+		break;
+	case 16:
+		vmemorySetWord(vcpu.es,vcpu.di,vmemoryGetWord(insDS,vcpu.si));
+		STRDIR(16);
+		/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000)
+		{
+			for (i=0;i<tmpOpdSize;i++)
+			{
+				WriteVideoRam(eCPU.di+((t2=eCPU.es,t2<<4))-0xa0000+i);
+			}
+		}*/
+		nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  MOVSW\n");
+		break;
+	default:break;}
+}
+static void CMPS(t_nubitcc len)
+{
+	switch(len) {
+	case 8:
+		flglen = 8;
+		flginstype = CMP8;
+		flgoperand1 = vmemoryGetByte(insDS,vcpu.si);
+		flgoperand2 = vmemoryGetByte(vcpu.es,vcpu.di);
+		flgresult = (flgoperand1-flgoperand2)&0xff;
+		STRDIR(8);
+		SetFlags(CMP_FLAG);
+		nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CMPSB\n");
+		break;
+	case 16:
+		flglen = 16;
+		flginstype = CMP16;
+		flgoperand1 = vmemoryGetWord(insDS,vcpu.si);
+		flgoperand2 = vmemoryGetWord(vcpu.es,vcpu.di);
+		flgresult = (flgoperand1-flgoperand2)&0xffff;
+		STRDIR(16);
+		SetFlags(CMP_FLAG);
+		nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CMPSW\n");
+		break;
+	default:break;}
+}
+static void STOS(t_nubitcc len)
+{
+	switch(len) {
+	case 8:
+		vmemorySetByte(vcpu.es,vcpu.di,vcpu.al);
+		STRDIR(8);
+		/*if (eCPU.di+t<0xc0000 && eCPU.di+t>=0xa0000)
+		WriteVideoRam(eCPU.di+t-0xa0000);*/
+		nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  STOSB\n");
+		break;
+	case 16:
+		vmemorySetWord(vcpu.es,vcpu.di,vcpu.ax);
+		STRDIR(16);
+		/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000)
+		{
+			for (i=0;i<tmpOpdSize;i++)
+			{
+				WriteVideoRam(eCPU.di+((t2=eCPU.es,t2<<4))-0xa0000+i);
+			}
+		}*/
+		nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  STOSW\n");
+		break;
+	default:break;}
+}
+static void LODS(t_nubitcc len)
+{
+	switch(len) {
+	case 8:
+		vcpu.al = vmemoryGetByte(insDS,vcpu.si);
+		STRDIR(8);
+		nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LODSB\n");
+		break;
+	case 16:
+		vcpu.ax = vmemoryGetWord(insDS,vcpu.si);
+		STRDIR(16);
+		nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LODSW\n");
+		break;
+	default:break;}
+}
+static void SCAS(t_nubitcc len)
+{
+	switch(len) {
+	case 8:
+		flglen = 8;
+		flginstype = CMP8;
+		flgoperand1 = vcpu.al;
+		flgoperand2 = vmemoryGetByte(vcpu.es,vcpu.di);
+		flgresult = (flgoperand1-flgoperand2)&0xff;
+		STRDIR(8);
+		SetFlags(CMP_FLAG);
+		break;
+	case 16:
+		flglen = 16;
+		flginstype = CMP16;
+		flgoperand1 = vcpu.ax;
+		flgoperand2 = vmemoryGetWord(vcpu.es,vcpu.di);
+		flgresult = (flgoperand1-flgoperand2)&0xffff;
+		STRDIR(16);
+		SetFlags(CMP_FLAG);
 		break;
 	default:break;}
 }
@@ -1704,96 +1838,112 @@ void PUSH_I16()
 void JO()
 {
 	vcpu.ip++;
-	JCC(GetOF(),8);
+	GetImm(8);
+	JCC((void *)imm,GetOF(),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JO\n");
 }
 void JNO()
 {
 	vcpu.ip++;
-	JCC(!GetOF(),8);
+	GetImm(8);
+	JCC((void *)imm,!GetOF(),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JNO\n");
 }
 void JC()
 {
 	vcpu.ip++;
-	JCC(GetCF(),8);
+	GetImm(8);
+	JCC((void *)imm,GetCF(),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JC\n");
 }
 void JNC()
 {
 	vcpu.ip++;
-	JCC(!GetCF(),8);
+	GetImm(8);
+	JCC((void *)imm,!GetCF(),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JNC\n");
 }
 void JZ()
 {
 	vcpu.ip++;
-	JCC(GetZF(),8);
+	GetImm(8);
+	JCC((void *)imm,GetZF(),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JZ\n");
 }
 void JNZ()
 {
 	vcpu.ip++;
-	JCC(!GetZF(),8);
+	GetImm(8);
+	JCC((void *)imm,!GetZF(),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JNZ\n");
 }
 void JBE()
 {
 	vcpu.ip++;
-	JCC((GetCF() || GetZF()),8);
+	GetImm(8);
+	JCC((void *)imm,(GetCF() || GetZF()),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JBE\n");
 }
 void JA()
 {
 	vcpu.ip++;
-	JCC((!GetCF() && !GetZF()),8);
+	GetImm(8);
+	JCC((void *)imm,(!GetCF() && !GetZF()),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JA\n");
 }
 void JS()
 {
 	vcpu.ip++;
-	JCC(GetSF(),8);
+	GetImm(8);
+	JCC((void *)imm,GetSF(),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JS\n");
 }
 void JNS()
 {
 	vcpu.ip++;
-	JCC(!GetSF(),8);
+	GetImm(8);
+	JCC((void *)imm,!GetSF(),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JNS\n");
 }
 void JP()
 {
 	vcpu.ip++;
-	JCC(GetPF(),8);
+	GetImm(8);
+	JCC((void *)imm,GetPF(),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JP\n");
 }
 void JNP()
 {
 	vcpu.ip++;
-	JCC(!GetPF(),8);
+	GetImm(8);
+	JCC((void *)imm,!GetPF(),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JNP\n");
 }
 void JL()
 {
 	vcpu.ip++;
-	JCC((GetSF() != GetOF()),8);
+	GetImm(8);
+	JCC((void *)imm,(GetSF() != GetOF()),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JL\n");
 }
 void JNL()
 {
 	vcpu.ip++;
-	JCC((GetSF() == GetOF()),8);
+	GetImm(8);
+	JCC((void *)imm,(GetSF() == GetOF()),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JNL\n");
 }
 void JLE()
 {
 	vcpu.ip++;
-	JCC(((GetSF() != GetOF()) || GetZF()),8);
+	GetImm(8);
+	JCC((void *)imm,((GetSF() != GetOF()) || GetZF()),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JLE\n");}
 void JG()
 {
 	vcpu.ip++;
-	JCC(((GetSF() == GetOF()) && !GetZF()),8);
+	GetImm(8);
+	JCC((void *)imm,((GetSF() == GetOF()) && !GetZF()),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JG\n");}
 void INS_80()
 {
@@ -1995,7 +2145,7 @@ void CWD()
 	if(vcpu.ax&0x8000) vcpu.dx = 0xffff;
 	else vcpu.dx = 0x0000;
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CWD\n");}
-void CALL_FAR()
+void CALL_PTR16_16()
 {
 	t_nubit16 newcs,newip;
 	vcpu.ip++;
@@ -2007,7 +2157,7 @@ void CALL_FAR()
 	PUSH((void *)&vcpu.ip,16);
 	vcpu.ip = newip;
 	vcpu.cs = newcs;
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CALL_FAR\n");
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CALL_PTR16_16\n");
 }
 void WAIT()
 {
@@ -2067,73 +2217,52 @@ void MOV_M16_AX()
 void MOVSB()
 {
 	vcpu.ip++;
-	vmemorySetByte(vcpu.es,vcpu.di,vmemoryGetByte(insDS,vcpu.si));
-	if(GetDF()) {
-		vcpu.di--;
-		vcpu.si--;
-	} else {
-		vcpu.di++;
-		vcpu.si++;
+	if(reptype == RT_NONE) MOVS(8);
+	else {
+		while(vcpu.cx) {
+			vcpuinsExecINT();
+			MOVS(8);
+			vcpu.cx--;
+		}
 	}
-	/*if (eCPU.di+t<0xc0000 && eCPU.di+t>=0xa0000)
-		WriteVideoRam(eCPU.di+t-0xa0000);*/
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  MOVSB\n");
 }
 void MOVSW()
 {
 	vcpu.ip++;
-	vmemorySetWord(vcpu.es,vcpu.di,vmemoryGetWord(insDS,vcpu.si));
-	if(GetDF()) {
-		vcpu.di -= 2;
-		vcpu.si -= 2;
-	} else {
-		vcpu.di += 2;
-		vcpu.si += 2;
-	}
-	/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000)
-	{
-		for (i=0;i<tmpOpdSize;i++)
-		{
-			WriteVideoRam(eCPU.di+((t2=eCPU.es,t2<<4))-0xa0000+i);
+	if(reptype == RT_NONE) MOVS(16);
+	else {
+		while(vcpu.cx) {
+			vcpuinsExecINT();
+			MOVS(16);
+			vcpu.cx--;
 		}
-	}*/
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  MOVSW\n");
+	}
 }
 void CMPSB()
 {
 	vcpu.ip++;
-	flglen = 8;
-	flginstype = CMP8;
-	flgoperand1 = vmemoryGetByte(insDS,vcpu.si);
-	flgoperand2 = vmemoryGetByte(vcpu.es,vcpu.di);
-	flgresult = (flgoperand1-flgoperand2)&0xff;
-	if(GetDF()) {
-		vcpu.di--;
-		vcpu.si--;
-	} else {
-		vcpu.di++;
-		vcpu.si++;
+	if(reptype == RT_NONE) CMPS(8);
+	else {
+		while(vcpu.cx) {
+			vcpuinsExecINT();
+			CMPS(8);
+			vcpu.cx--;
+			if((reptype == RT_REPZ && !GetZF()) || (reptype == RT_REPZNZ && GetZF())) break;
+		}
 	}
-	SetFlags(CMP_FLAG);
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CMPSB\n");
 }
 void CMPSW()
 {
 	vcpu.ip++;
-	flglen = 16;
-	flginstype = CMP16;
-	flgoperand1 = vmemoryGetWord(insDS,vcpu.si);
-	flgoperand2 = vmemoryGetWord(vcpu.es,vcpu.di);
-	flgresult = (flgoperand1-flgoperand2)&0xffff;
-	if(GetDF()) {
-		vcpu.di -= 2;
-		vcpu.si -= 2;
-	} else {
-		vcpu.di += 2;
-		vcpu.si += 2;
+	if(reptype == RT_NONE) CMPS(16);
+	else {
+		while(vcpu.cx) {
+			vcpuinsExecINT();
+			CMPS(16);
+			vcpu.cx--;
+			if((reptype == RT_REPZ && !GetZF()) || (reptype == RT_REPZNZ && GetZF())) break;
+		}
 	}
-	SetFlags(CMP_FLAG);
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CMPSW\n");
 }
 void TEST_AL_I8()
 {
@@ -2152,75 +2281,76 @@ void TEST_AX_I16()
 void STOSB()
 {
 	vcpu.ip++;
-	vmemorySetByte(vcpu.es,vcpu.di,vcpu.al);
-	if(GetDF()) {
-		vcpu.di--;
-	} else {
-		vcpu.di++;
+	if(reptype == RT_NONE) STOS(8);
+	else {
+		while(vcpu.cx) {
+			vcpuinsExecINT();
+			STOS(8);
+			vcpu.cx--;
+		}
 	}
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  STOSB\n");
 }
 void STOSW()
 {
 	vcpu.ip++;
-	vmemorySetWord(vcpu.es,vcpu.di,vcpu.ax);
-	if(GetDF()) {
-		vcpu.di -= 2;
-	} else {
-		vcpu.di += 2;
+	if(reptype == RT_NONE) STOS(16);
+	else {
+		while(vcpu.cx) {
+			vcpuinsExecINT();
+			STOS(16);
+			vcpu.cx--;
+		}
 	}
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  STOSW\n");
 }
 void LODSB()
 {
 	vcpu.ip++;
-	vcpu.al = vmemoryGetByte(insDS,vcpu.si);
-	if(GetDF()) {
-		vcpu.si--;
-	} else {
-		vcpu.si++;
+	if(reptype == RT_NONE) LODS(8);
+	else {
+		while(vcpu.cx) {
+			vcpuinsExecINT();
+			LODS(8);
+			vcpu.cx--;
+		}
 	}
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LODSB\n");}
+}
 void LODSW()
 {
 	vcpu.ip++;
-	vcpu.ax = vmemoryGetWord(insDS,vcpu.si);
-	if(GetDF()) {
-		vcpu.si -= 2;
-	} else {
-		vcpu.si += 2;
+	if(reptype == RT_NONE) LODS(16);
+	else {
+		while(vcpu.cx) {
+			vcpuinsExecINT();
+			LODS(16);
+			vcpu.cx--;
+		}
 	}
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LODSW\n");}
+}
 void SCASB()
 {
 	vcpu.ip++;
-	flglen = 8;
-	flginstype = CMP8;
-	flgoperand1 = vcpu.al;
-	flgoperand2 = vmemoryGetByte(vcpu.es,vcpu.di);
-	flgresult = (flgoperand1-flgoperand2)&0x00ff;
-	if(GetDF()) {
-		vcpu.di--;
-	} else {
-		vcpu.di++;
+	if(reptype == RT_NONE) SCAS(8);
+	else {
+		while(vcpu.cx) {
+			vcpuinsExecINT();
+			SCAS(8);
+			vcpu.cx--;
+			if((reptype == RT_REPZ && !GetZF()) || (reptype == RT_REPZNZ && GetZF())) break;
+		}
 	}
-	SetFlags(CMP_FLAG);
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  SCASB\n");}
+}
 void SCASW()
 {
 	vcpu.ip++;
-	flglen = 16;
-	flginstype = CMP16;
-	flgoperand1 = vcpu.ax;
-	flgoperand2 = vmemoryGetByte(vcpu.es,vcpu.di);
-	flgresult = (flgoperand1-flgoperand2)&0xffff;
-	if(GetDF()) {
-		vcpu.di -= 2;
-	} else {
-		vcpu.di += 2;
+	if(reptype == RT_NONE) SCAS(16);
+	else {
+		while(vcpu.cx) {
+			vcpuinsExecINT();
+			SCAS(16);
+			vcpu.cx--;
+			if((reptype == RT_REPZ && !GetZF()) || (reptype == RT_REPZNZ && GetZF())) break;
+		}
 	}
-	SetFlags(CMP_FLAG);
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  SCASW\n");
 }
 void MOV_AL_I8()
 {
@@ -2376,10 +2506,10 @@ void RET_I8()
 	vcpu.sp += addsp;
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  RET_I8\n");
 }
-void RET_NEAR()
+void RET()
 {
 	POP((void *)&vcpu.ip,16);
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  RET_NEAR\n");
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  RET\n");
 }
 void LES_R16_M16()
 {
@@ -2413,7 +2543,7 @@ void MOV_M16_I16()
 	MOV((void *)rm,(void *)imm,16);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  MOV_M16_I16\n");
 }
-void RET_I16()
+void RETF_I16()
 {
 	t_nubit16 addsp;
 	vcpu.ip++;
@@ -2422,13 +2552,13 @@ void RET_I16()
 	POP((void *)&vcpu.ip,16);
 	POP((void *)&vcpu.cs,16);
 	vcpu.sp += addsp;
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  RET_I16\n");
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  RETF_I16\n");
 }
-void RET_FAR()
+void RETF()
 {
 	POP((void *)&vcpu.ip,16);
 	POP((void *)&vcpu.cs,16);
-	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  RET_FAR\n");
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  RETF\n");
 }
 void INT3()
 {
@@ -2603,41 +2733,144 @@ void LOOP()
 	if(vcpu.cx) vcpu.ip += rel8;
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LOOP\n");
 }
-// TODO
-void JCXZ_NEAR()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JCXZ_NEAR\n");}
-void IN_AL_N()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  IN_AL_N\n");}
-void IN_AX_N()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  IN_AX_N\n");}
-void OUT_N_AL()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  OUT_N_AL\n");}
-void OUT_N_AX()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  OUT_N_AX\n");}
-void CALL_NEAR()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CALL_NEAR\n");}
-void JMP_NEAR_LABEL()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JMP_NEAR_LABEL\n");}
-void JMP_FAR_LABEL()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JMP_FAR_LABEL\n");}
-void JMP_NEAR()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JMP_NEAR\n");}
+void JCXZ_REL8()
+{
+	vcpu.ip++;
+	GetImm(8);
+	JCC((void*)imm,!vcpu.cx,8);
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JCXZ_REL8\n");
+}
+void IN_AL_I8()
+{
+	vcpu.ip++;
+	GetImm(8);
+	FUNEXEC(InTable[*(t_nubit8 *)imm]);
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  IN_AL_I8\n");
+}
+void IN_AX_I8()
+{
+	t_nubitcc i;
+	vcpu.ip++;
+	GetImm(8);
+	for(i = 0;i < 2;++i) {
+		FUNEXEC(InTable[*(t_nubit8 *)imm+i]);
+		*(t_nubit8 *)(&vcpu.al+i) = vcpu.al;
+	}
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  IN_AX_I8\n");
+}
+void OUT_I8_AL()
+{
+	vcpu.ip++;
+	GetImm(8);
+	FUNEXEC(OutTable[*(t_nubit8 *)imm]);
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  OUT_I8_AL\n");
+}
+void OUT_I8_AX()
+{
+	t_nubitcc i;
+	t_nubit8 tempAL = vcpu.al;
+	vcpu.ip++;
+	GetImm(8);
+	for(i = 0;i < 2;++i) {
+		vcpu.al = *(t_nubit8 *)(&vcpu.al+i);
+		FUNEXEC(OutTable[*(t_nubit8 *)imm+i]);
+	}
+	vcpu.al = tempAL;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  OUT_I8_AX\n");
+}
+void CALL_REL16()
+{
+	vcpu.ip++;
+	GetImm(16);
+	PUSH((void *)&vcpu.ip,16);
+	vcpu.ip += *(t_nubit16 *)imm;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CALL_REL16\n");
+}
+void JMP_REL16()
+{
+	vcpu.ip++;
+	GetImm(16);
+	vcpu.ip += *(t_nubit16 *)imm;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JMP_REL16\n");
+}
+void JMP_PTR16_16()
+{
+	t_nubit16 newip,newcs;
+	vcpu.ip++;
+	GetImm(16);
+	newip = *(t_nubit16 *)imm;
+	GetImm(16);
+	newcs = *(t_nubit16 *)imm;
+	vcpu.ip = newip;
+	vcpu.cs = newcs;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JMP_PTR16_16\n");
+}
+void JMP_REL8()
+{
+	vcpu.ip++;
+	GetImm(8);
+	vcpu.ip += *(t_nubit8 *)imm;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JMP_REL8\n");}
 void IN_AL_DX()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  IN_AL_DX\n");}
+{
+	vcpu.ip++;
+	FUNEXEC(InTable[vcpu.dx]);
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  IN_AL_DX\n");
+}
 void IN_AX_DX()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  IN_AX_DX\n");}
+{
+	t_nubitcc i;
+	vcpu.ip++;
+	for(i = 0;i < 2;++i) {
+		FUNEXEC(InTable[vcpu.dx+i]);
+		*(t_nubit8 *)(&vcpu.al+i) = vcpu.al;
+	}
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  IN_AX_DX\n");
+}
 void OUT_DX_AL()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  OUT_DX_AL\n");}
+{
+	vcpu.ip++;
+	FUNEXEC(OutTable[vcpu.dx]);
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  OUT_DX_AL\n");}
 void OUT_DX_AX()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  OUT_DX_AX\n");}
+{
+	t_nubitcc i;
+	t_nubit8 tempAL = vcpu.al;
+	vcpu.ip++;
+	GetImm(8);
+	for(i = 0;i < 2;++i) {
+		vcpu.al = *(t_nubit8 *)(&vcpu.al+i);
+		FUNEXEC(OutTable[vcpu.dx+i]);
+	}
+	vcpu.al = tempAL;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  OUT_DX_AX\n");
+}
 void LOCK()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LOCK\n");}
-void REPNE()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  REPNE\n");}
+{
+	vcpu.ip++;
+	/* DO NOTHING HERE */
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LOCK\n");
+}
+void REPNZ()
+{
+	// CMPS,SCAS
+	vcpu.ip++;
+	reptype = RT_REPZNZ;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  REPNZ\n");
+}
 void REP()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  REP\n");}
+{	// MOVS,LODS,STOS,CMPS,SCAS
+	vcpu.ip++;
+	reptype = RT_REPZ;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  REP\n");
+}
 void HLT()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  HLT\n");}
+{
+	vcpu.ip++;
+	// Check external interrupt here
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  HLT\n");
+}
+// TODO
 void CMC()
 {nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CMC\n");}
 void INS_F6()
@@ -2671,17 +2904,28 @@ t_bool vcpuinsIsPrefix(t_nubit8 opcode)
 	default:	return 0;break;
 	}
 }
-void vcpuinsSB()
+void vcpuinsClearPrefix()
 {
 	insDS = vcpu.ds;
 	insSS = vcpu.ss;
+	reptype = RT_NONE;
+}
+
+void vcpuinsExecIns()
+{
+	t_nubit8 opcode = vmemoryGetByte(vcpu.cs,vcpu.ip);
+	FUNEXEC(InsTable[opcode]);
+	if(!vcpuinsIsPrefix(opcode)) vcpuinsClearPrefix();
+}
+void vcpuinsExecINT()
+{
 }
 
 void CPUInsInit()
 {
 	int i;
 	HardINT = -1;
-	vcpuinsSB();
+	vcpuinsClearPrefix();
 	for(i = 0;i < 0x10000;++i) {
 		InTable[i] = IO_NOP;
 		OutTable[i] = IO_NOP;
@@ -2844,7 +3088,7 @@ void CPUInsInit()
 	InsTable[0x97] = XCHG_DI_AX;
 	InsTable[0x98] = CBW;
 	InsTable[0x99] = CWD;
-	InsTable[0x9a] = CALL_FAR;
+	InsTable[0x9a] = CALL_PTR16_16;
 	InsTable[0x9b] = WAIT;
 	InsTable[0x9c] = PUSHF;
 	InsTable[0x9d] = POPF;
@@ -2885,15 +3129,15 @@ void CPUInsInit()
 	InsTable[0xc0] = OpError;
 	InsTable[0xc1] = OpError;
 	InsTable[0xc2] = RET_I8;
-	InsTable[0xc3] = RET_NEAR;
+	InsTable[0xc3] = RET;
 	InsTable[0xc4] = LES_R16_M16;
 	InsTable[0xc5] = LDS_R16_M16;
 	InsTable[0xc6] = MOV_M8_I8;
 	InsTable[0xc7] = MOV_M16_I16;
 	InsTable[0xc8] = OpError;
 	InsTable[0xc9] = OpError;
-	InsTable[0xca] = RET_I16;
-	InsTable[0xcb] = RET_FAR;
+	InsTable[0xca] = RETF_I16;
+	InsTable[0xcb] = RETF;
 	InsTable[0xcc] = INT3;
 	InsTable[0xcd] = INT_I8;
 	InsTable[0xce] = INTO;
@@ -2919,22 +3163,22 @@ void CPUInsInit()
 	InsTable[0xe0] = LOOPNZ;
 	InsTable[0xe1] = LOOPZ;
 	InsTable[0xe2] = LOOP;
-	InsTable[0xe3] = JCXZ_NEAR;
-	InsTable[0xe4] = IN_AL_N;
-	InsTable[0xe5] = IN_AX_N;
-	InsTable[0xe6] = OUT_N_AL;
-	InsTable[0xe7] = OUT_N_AX;
-	InsTable[0xe8] = CALL_NEAR;
-	InsTable[0xe9] = JMP_NEAR_LABEL;
-	InsTable[0xea] = JMP_FAR_LABEL;
-	InsTable[0xeb] = JMP_NEAR;
+	InsTable[0xe3] = JCXZ_REL8;
+	InsTable[0xe4] = IN_AL_I8;
+	InsTable[0xe5] = IN_AX_I8;
+	InsTable[0xe6] = OUT_I8_AL;
+	InsTable[0xe7] = OUT_I8_AX;
+	InsTable[0xe8] = CALL_REL16;
+	InsTable[0xe9] = JMP_REL16;
+	InsTable[0xea] = JMP_PTR16_16;
+	InsTable[0xeb] = JMP_REL8;
 	InsTable[0xec] = IN_AL_DX;
 	InsTable[0xed] = IN_AX_DX;
 	InsTable[0xee] = OUT_DX_AL;
 	InsTable[0xef] = OUT_DX_AX;
 	InsTable[0xf0] = LOCK;
 	InsTable[0xf1] = OpError;
-	InsTable[0xf2] = REPNE;
+	InsTable[0xf2] = REPNZ;
 	InsTable[0xf3] = REP;
 	InsTable[0xf4] = HLT;
 	InsTable[0xf5] = CMC;

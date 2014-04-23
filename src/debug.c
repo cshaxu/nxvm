@@ -604,8 +604,10 @@ static void rscanregs()
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
 			cpu.ss = t;
+			vcpuinsClearPrefix();
+		}
 	} else if(!strcmp(arg[1],"cs")) {
 		fprintf(stdout,"CS ");
 		printnubit16(cpu.cs);
@@ -620,8 +622,10 @@ static void rscanregs()
 		fprintf(stdout,"\n:");
 		fgets(s,MAXLINE,stdin);
 		t = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
 			cpu.ds = t;
+			vcpuinsClearPrefix();
+		}
 	} else if(!strcmp(arg[1],"es")) {
 		fprintf(stdout,"ES ");
 		printnubit16(cpu.es);
@@ -902,7 +906,7 @@ static void init()
 	cpu.ds = cpu.es = cpu.ss = cpu.cs =
 		asmSegRec = dumpSegRec = uasmSegRec = 0x0a50;
 	cpu.ip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;
-	vcpuinsSB();
+	vcpuinsClearPrefix();
 }
 static void parse()
 {

@@ -5,6 +5,7 @@
 #include "memory.h"
 
 #include "vmemory.h"
+#include "system/vapi.h"
 
 t_vaddrcc memoryBase;
 t_nubit32 memorySize = 0;
@@ -36,6 +37,6 @@ void MemoryTerm()
 {
 	if(memoryBase) {
 		free((void *)memoryBase);
-		memoryBase = NULL;
+		memoryBase = (t_vaddrcc)NULL;
 	}
 }

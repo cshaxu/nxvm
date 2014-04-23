@@ -70,7 +70,6 @@ static int chartohexdigit(char c)
 #define isRM16R16	(isRM16(m1) && isR16(m2))
 #define isR8RM8		(isReg8(m1) && isRM8(m2))
 #define isR16RM16	(isR16(m1) && isRM16(m2))
-//#define isShort(ins,off,len) (((ins >= off+len) && (ins-off < 0x80+len)) || ((ins < off+len) && (off-ins < 0x81-len)))
 #define isShort(ins,off,len) ((off+len < 0x0080 && ((ins < off+len+0x0080) || (ins >= (unsigned short)(off+len-0x0080)))) ||\
 	(off+len >= 0x0080 && off+len <= 0xff80 && ((ins >= off+len-0x0080) && (ins < off+len+0x0080))) ||\
 	(off+len > 0xff80 && ((ins < (unsigned short)(off+len+0x0080)) || (ins <= 0xffff && ins >= off+len-0x0080))))
@@ -601,7 +600,7 @@ static int aPrefix(const char *s,unsigned char *loc)
 {
 	if(!s) return 0;
 	if(!strcmp(s,"lock")) *loc = 0xf0;
-	else if(!strcmp(s,"repne") || !strcmp(s,"repnz"))
+	else if(!strcmp(s,"REPNZ") || !strcmp(s,"repnz"))
 		*loc = 0xf2;
 	else if(!strcmp(s,"rep") || !strcmp(s,"repe") || !strcmp(s,"repz"))
 		*loc = 0xf3;
@@ -751,7 +750,7 @@ static int aOpCode(const char *op,const char *a1,const char *a2,
 //	else if(!strcmp(op,"rep"))	PREFIX(0xf3)
 //	else if(!strcmp(op,"repe")
 //		|| !strcmp(op,"repz"))	PREFIX(0xf3)
-//	else if(!strcmp(op,"repne")
+//	else if(!strcmp(op,"REPNZ")
 //		|| !strcmp(op,"repnz"))	PREFIX(0xf2)
 	else if(!strcmp(op,"ret"))	aRET
 	else if(!strcmp(op,"retf"))	aRETF

@@ -13,9 +13,9 @@ t_bool cpuTermFlag;
 
 void vcpuInsExec()
 {
-	t_nubit8 opcode = vmemoryGetByte(vcpu.cs,vcpu.ip);
-	InsTable[opcode]();
-	if(!vcpuinsIsPrefix(opcode)) vcpuinsSB();
+	vcpuinsExecIns();
+	//RefreshVideoRAM();
+	vcpuinsExecINT();
 }
 
 void CPUInit()

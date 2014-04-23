@@ -11,7 +11,10 @@ extern t_faddrcc InsTable[0x100];	// 256 Instructions
 extern t_nsbit16 HardINT;	// 256 Hard INTs; -1 = non-INT
 
 t_bool vcpuinsIsPrefix(t_nubit8 opcode);
-void vcpuinsSB();
+void vcpuinsClearPrefix();
+
+void vcpuinsExecIns();
+void vcpuinsExecINT();
 
 void CPUInsInit();
 void CPUInsTerm();
