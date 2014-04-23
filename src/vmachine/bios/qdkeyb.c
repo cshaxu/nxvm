@@ -2,10 +2,10 @@
 
 #include "stdio.h"
 
-#include "vapi.h"
-#include "vport.h"
-#include "vcpu.h"
-#include "vpic.h"
+#include "../vapi.h"
+#include "../vport.h"
+#include "../vcpu.h"
+#include "../vpic.h"
 
 #include "qdbios.h"
 #include "qdkeyb.h"
@@ -91,11 +91,6 @@ void vapiCallBackKeyboardRecvKeyPress(t_nubit16 code)
 	vpicSetIRQ(0x01);
 }
 
-void IO_Read_0064()
-{
-	vport.iobyte = 0x10;
-}
-
 void qdkeybReadInput()
 {
 	/* TODO: this should have been working with INT 15 */
@@ -130,9 +125,3 @@ void qdkeybBufferKey()
 {
 	_al = bufPush((_ch << 8) | _cl);
 }
-
-void qdkeybInit()
-{
-	vport.in[0x0064] = (t_faddrcc)IO_Read_0064;
-}
-void qdkeybFinal() {}

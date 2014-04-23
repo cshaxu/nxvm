@@ -62,22 +62,18 @@ void vmachineReset()
 	vfdcReset();
 	vfddReset();
 	vhddReset();
-	qdbiosReset();
-/*
 	vkbcReset();
-	vkeybReset();
+	//vkeybReset();
 	vvadpReset();
-	vdispReset();
-*/
+	//vdispReset();
+	qdbiosReset();
 }
 void vmachineRefresh()
 {
-/*
-	vdispRefresh();
+	//vdispRefresh();
 	vvadpRefresh();
-	vkeybRefresh();
+	//vkeybRefresh();
 	vkbcRefresh();
-*/
 	vhddRefresh();
 	vfddRefresh();
 	vfdcRefresh();
@@ -102,23 +98,17 @@ void vmachineInit()
 	vfdcInit();
 	vfddInit();
 	vhddInit();
-	qdbiosInit();
-/*
 	vkbcInit();
-	vkeybInit();
+	//vkeybInit();
 	vvadpInit();
-	vdispInit();
-*/
+	//vdispInit();
 }
 void vmachineFinal()
 {
-/*
-	vkbcFinal();
-	vkeybFinal();
+//	vdispFinal();
 	vvadpFinal();
-	vdispFinal();
-*/
-	qdbiosFinal();
+//	vkeybFinal();
+	vkbcFinal();
 	vhddFinal();
 	vfddFinal();
 	vfdcFinal();

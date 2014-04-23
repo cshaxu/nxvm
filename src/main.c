@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xc9]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xca]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -157,7 +157,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *              not tested
  *              apiKeyEvent() MUST send scan code 1 to vkeyb
  * Component 3: vvadp
- *     Files:  vvadp.c, vvadp.h
+ *     Files:  vvadp.c, qdcga.h
  * Component 4: display (?)
  *     Files:  vdisp.c, vdisp.h
  *

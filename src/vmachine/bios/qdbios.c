@@ -3,8 +3,8 @@
 #include "memory.h"
 #include "time.h"
 
-#include "vapi.h"
-#include "vmachine.h"
+#include "../vapi.h"
+#include "../vmachine.h"
 
 #include "qdcga.h"
 #include "qdkeyb.h"
@@ -892,12 +892,6 @@ void qdbiosExecInt(t_nubit8 intid)
 	}
 }
 
-void qdbiosRefresh() {}
-void qdbiosInit()
-{
-	qdkeybInit();
-	qdcgaInit();
-}
 void qdbiosReset()
 {
 	t_nubit8 hour, min, sec;
@@ -1111,10 +1105,10 @@ void qdbiosReset()
 	out(0x43, 0x54);                 /* al=0101 0100: Mode=2, Counter=1, LSB */
 	out(0x41, 0x12);
 
-/* qdvga init */
-	qdcga.color   = 0x01;
+/* qdcga init */
+	vvadp.color   = 0x01;
 	qdcgaVarRowSize = 0x50; // 80
-	qdcga.colsize = 0x19; // 25
+	vvadp.colsize = 0x19; // 25
 	qdcgaVarPageNum = 0x00;
 	qdcgaVarMode = 0x03;
 	qdcgaVarRagenSize = qdcgaModeBufSize[qdcgaVarMode];
@@ -1122,8 +1116,8 @@ void qdbiosReset()
 	qdcgaVarCursorPosCol(0) = 0x00;
 	qdcgaVarCursorTop       = 0x06;
 	qdcgaVarCursorBottom    = 0x07;
-	qdcga.oldcurposx = qdcga.oldcurposy = 0x00;
-	qdcga.oldcurtop  = qdcga.oldcurbottom = 0x00;
+	vvadp.oldcurposx = vvadp.oldcurposy = 0x00;
+	vvadp.oldcurtop  = vvadp.oldcurbottom = 0x00;
 
 /* load cmos data */
 	hour = BCD2Hex(vcmos.reg[VCMOS_RTC_HOUR]);
@@ -1152,9 +1146,4 @@ void qdbiosReset()
 	}
 	mov(_cx, 0x0001);
 	mov(_sp, 0xfffe);
-}
-void qdbiosFinal()
-{
-	qdcgaFinal();
-	qdkeybFinal();
 }

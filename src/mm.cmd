@@ -14,4 +14,7 @@ echo vmachine/%%i>>"list.txt"
 for /f "delims=" %%i in ('dir /a:-d /b vmachine\system\l*.c') do (
 echo vmachine/system/%%i>>"list.txt"
 )
+for /f "delims=" %%i in ('dir /a:-d /b vmachine\bios\*.c') do (
+echo vmachine/system/%%i>>"list.txt"
+)
 mmakfile.exe /l "list.txt" 1>"makefile"

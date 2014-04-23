@@ -7,8 +7,9 @@
 /*extern "C" {*/
 #endif
 
-#include "vglobal.h"
-#include "vram.h"
+#include "../vglobal.h"
+#include "../vvadp.h"
+#include "../vram.h"
 
 #define QDCGA_COUNT_MAX_PAGE               0x08
 #define QDCGA_SIZE_CHAR_WIDTH              0x0a
@@ -31,14 +32,6 @@
 #define QDCGA_SIZE_TEXT_MEMORY             0x1000
 #define QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S 0xb800
 
-typedef struct {
-	t_bool    color;
-	t_nubit8  colsize; // char per col
-	t_vaddrcc bufcomp;
-	t_nubit8  oldcurposx,oldcurposy;
-	t_nubit8  oldcurtop, oldcurbottom;
-} t_cga;
-
 #define qdcgaVarPageOffset \
 	(vramVarWord(0x0000, QDCGA_VBIOS_ADDR_VGA_PAGE_OFFSET))
 #define qdcgaVarRagenSize \
@@ -52,7 +45,7 @@ typedef struct {
 #define qdcgaGetTextMemAddr \
 	(vramGetAddr(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, 0x0000))
 #define qdcgaGetPageSize \
-	(qdcgaVarRowSize * qdcga.colsize * 2)
+	(qdcgaVarRowSize * vvadp.colsize * 2)
 #define qdcgaGetTextMemAddrPage(page) \
 	(qdcgaGetTextMemAddr + (page) * qdcgaGetPageSize)
 #define qdcgaGetTextMemAddrPageCur \
@@ -80,10 +73,8 @@ typedef struct {
 #define qdcgaGetCursorVisible \
 	(!(qdcgaVarCursorTop & 0x08))
 
-extern t_cga qdcga;
 extern t_nubit32 qdcgaModeBufSize[0x14];
 
-//void qdcgaCheckVideoRam(t_vaddrcc addr);
 void qdcgaSetDisplayMode();
 void qdcgaSetCursorShape();
 void qdcgaSetCursorPos();
@@ -94,9 +85,6 @@ void qdcgaScrollDown();
 void qdcgaGetCharProp();
 void qdcgaDisplayCharProp();
 void qdcgaDisplayChar();
-//void qdcgaSetPalette();
-//void qdcgaDisplayPixel();
-//void qdcgaGetPixel();
 void qdcgaGetAdapterStatus();
 void qdcgaGenerateChar();
 void qdcgaGetAdapterInfo();

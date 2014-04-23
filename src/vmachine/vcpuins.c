@@ -9,7 +9,7 @@
 #include "vram.h"
 #include "vcpu.h"
 #include "vpic.h"
-#include "qdbios.h"
+#include "bios/qdbios.h"
 #include "vcpuins.h"
 
 #define MOD ((modrm&0xc0)>>6)
@@ -3562,6 +3562,7 @@ void IN_AX_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
+//	vapiPrint("IN: %02X\n",d_nubit8(vcpuins.imm));
 	ExecFun(vport.in[d_nubit8(vcpuins.imm)]);
 	vcpu.ax = vport.ioword;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AX_I8\n");
@@ -3579,6 +3580,7 @@ void OUT_I8_AX()
 {
 	vcpu.ip++;
 	GetImm(8);
+//	vapiPrint("OUT: %02X\n",d_nubit8(vcpuins.imm));
 	vport.ioword = vcpu.ax;
 	ExecFun(vport.out[d_nubit8(vcpuins.imm)]);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_I8_AX\n");
@@ -3636,6 +3638,7 @@ void IN_AL_DX()
 void IN_AX_DX()
 {
 	vcpu.ip++;
+//	vapiPrint("IN: %04X\n",vcpu.dx);
 	ExecFun(vport.in[vcpu.dx]);
 	vcpu.ax = vport.ioword;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AX_DX\n");
@@ -3651,6 +3654,7 @@ void OUT_DX_AL()
 void OUT_DX_AX()
 {
 	vcpu.ip++;
+//	vapiPrint("OUT: %04X\n",vcpu.dx);
 	vport.ioword = vcpu.ax;
 	ExecFun(vport.out[vcpu.dx]);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_DX_AX\n");
@@ -3876,8 +3880,7 @@ void QDX()
 	GetImm(8);
 	if (d_nubit8(vcpuins.imm) == 0xff) {
 		vapiPrint("\nNXVM stopped at CS:%04X IP:%04X F1 FF\n",vcpu.cs,vcpu.ip);
-		vapiPrint("This happens because of the NXVM pause instruction.\n");
-		vapiPrint("Enter START to continue.\n");
+		vapiPrint("This happens because of the NXVM stop instruction.\n");
 		vapiCallBackMachineStop();
 		return;
 	}

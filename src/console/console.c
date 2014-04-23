@@ -274,7 +274,7 @@ static void Info()
 	printc("CPU: Intel 8086, 16-bit\n");
 	printc("RAM Size:          %d KB\n", vram.size >> 10);
 	printc("Floppy Disk Drive: 3.5\", 1.44 MB, %s\n",
-		vfdd.flagexist ? "inserted" : "not inserted\n");
+		vfdd.flagexist ? "inserted" : "not inserted");
 	printc("Hard Disk Drive:   %d cylinders, 10 MB, %s\n",
 		vhdd.ncyl, vhdd.flagexist ? "connected" : "disconnected");
 	printc("Display Type:      ");

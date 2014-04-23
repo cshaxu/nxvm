@@ -7,8 +7,8 @@
 /*extern "C" {*/
 #endif
 
-#include "vglobal.h"
-#include "vram.h"
+#include "../vglobal.h"
+#include "../vram.h"
 
 #define QDKEYB_VBIOS_ADDR_KEYB_FLAG0         0x0417
 #define QDKEYB_VBIOS_ADDR_KEYB_FLAG1         0x0418
@@ -44,9 +44,6 @@ void qdkeybBufferKey();
 
 #define qdkeybVarFlag0 (vramVarByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG0))
 #define qdkeybVarFlag1 (vramVarByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG1))
-
-void qdkeybInit();
-void qdkeybFinal();
 
 #ifdef __cplusplus
 /*}_EOCD_*/

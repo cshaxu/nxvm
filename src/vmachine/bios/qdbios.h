@@ -7,7 +7,7 @@
 /*extern "C" {*/
 #endif
 
-#include "vglobal.h"
+#include "../vglobal.h"
 
 void INT_08();
 void INT_09();
@@ -23,10 +23,7 @@ void INT_17();
 void INT_1A();
 
 void qdbiosExecInt(t_nubit8 intid);
-void qdbiosRefresh();
-void qdbiosInit();
 void qdbiosReset(); /* POST */
-void qdbiosFinal();
 
 #ifdef __cplusplus
 /*}_EOCD_*/

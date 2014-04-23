@@ -21,16 +21,16 @@ console.o: console/console.c console/asm86.h console/debug.h console/console.h
 debug.o: console/debug.c console/asm86.h console/debug.h
 	$(CC) -c $(CFLAGS) console/debug.c
 
-qdbios.o: vmachine/qdbios.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/vmachine.h vmachine/vport.h vmachine/vram.h vmachine/vpic.h vmachine/vcmos.h vmachine/vdma.h vmachine/vfdc.h vmachine/vfdd.h vmachine/vhdd.h vmachine/vpit.h vmachine/qdbios.h vmachine/qdcga.h vmachine/qdkeyb.h
-	$(CC) -c $(CFLAGS) vmachine/qdbios.c
+qdbios.o: vmachine/bios/qdbios.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/vmachine.h vmachine/vport.h vmachine/vram.h vmachine/vpic.h vmachine/vcmos.h vmachine/vdma.h vmachine/vfdc.h vmachine/vfdd.h vmachine/vhdd.h vmachine/vpit.h vmachine/bios/qdbios.h vmachine/bios/qdcga.h vmachine/bios/qdkeyb.h
+	$(CC) -c $(CFLAGS) vmachine/bios/qdbios.c
 
-qdcga.o: vmachine/qdcga.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/qdcga.h vmachine/vram.h
-	$(CC) -c $(CFLAGS) vmachine/qdcga.c
+qdcga.o: vmachine/bios/qdcga.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/bios/qdcga.h vmachine/vram.h
+	$(CC) -c $(CFLAGS) vmachine/bios/qdcga.c
 
-qdkeyb.o: vmachine/qdkeyb.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/vport.h vmachine/vpic.h vmachine/qdbios.h vmachine/qdkeyb.h vmachine/vram.h
-	$(CC) -c $(CFLAGS) vmachine/qdkeyb.c
+qdkeyb.o: vmachine/bios/qdkeyb.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/vport.h vmachine/vpic.h vmachine/bios/qdbios.h vmachine/bios/qdkeyb.h vmachine/vram.h
+	$(CC) -c $(CFLAGS) vmachine/bios/qdkeyb.c
 
-vapi.o: vmachine/vapi.c vmachine/vmachine.h vmachine/vglobal.h vmachine/vport.h vmachine/vram.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/vpic.h vmachine/vcmos.h vmachine/vdma.h vmachine/vfdc.h vmachine/vfdd.h vmachine/vhdd.h vmachine/vpit.h vmachine/qdbios.h vmachine/vapi.h vmachine/system/win32.h vmachine/system/linux.h
+vapi.o: vmachine/vapi.c vmachine/vmachine.h vmachine/vglobal.h vmachine/vport.h vmachine/vram.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/vpic.h vmachine/vcmos.h vmachine/vdma.h vmachine/vfdc.h vmachine/vfdd.h vmachine/vhdd.h vmachine/vpit.h vmachine/bios/qdbios.h vmachine/vapi.h vmachine/system/win32.h vmachine/system/linux.h
 	$(CC) -c $(CFLAGS) vmachine/vapi.c
 
 vcmos.o: vmachine/vcmos.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/vport.h vmachine/vcmos.h
@@ -39,7 +39,7 @@ vcmos.o: vmachine/vcmos.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vma
 vcpu.o: vmachine/vcpu.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/vcpuins.h
 	$(CC) -c $(CFLAGS) vmachine/vcpu.c
 
-vcpuins.o: vmachine/vcpuins.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/vport.h vmachine/vram.h vmachine/vpic.h vmachine/qdbios.h vmachine/vcpuins.h
+vcpuins.o: vmachine/vcpuins.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/vport.h vmachine/vram.h vmachine/vpic.h vmachine/bios/qdbios.h vmachine/vcpuins.h
 	$(CC) -c $(CFLAGS) vmachine/vcpuins.c
 
 vdma.o: vmachine/vdma.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/vport.h vmachine/vram.h vmachine/vfdc.h vmachine/vdma.h
@@ -54,7 +54,7 @@ vfdd.o: vmachine/vfdd.c vmachine/vdma.h vmachine/vglobal.h vmachine/vfdd.h
 vhdd.o: vmachine/vhdd.c vmachine/vdma.h vmachine/vglobal.h vmachine/vhdd.h
 	$(CC) -c $(CFLAGS) vmachine/vhdd.c
 
-vmachine.o: vmachine/vmachine.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/vmachine.h vmachine/vport.h vmachine/vram.h vmachine/vpic.h vmachine/vcmos.h vmachine/vdma.h vmachine/vfdc.h vmachine/vfdd.h vmachine/vhdd.h vmachine/vpit.h vmachine/qdbios.h
+vmachine.o: vmachine/vmachine.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/vmachine.h vmachine/vport.h vmachine/vram.h vmachine/vpic.h vmachine/vcmos.h vmachine/vdma.h vmachine/vfdc.h vmachine/vfdd.h vmachine/vhdd.h vmachine/vpit.h vmachine/bios/qdbios.h
 	$(CC) -c $(CFLAGS) vmachine/vmachine.c
 
 vpic.o: vmachine/vpic.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/ecpu/ecpu.h vmachine/ecpu/ecpuins.h vmachine/vport.h vmachine/vpic.h

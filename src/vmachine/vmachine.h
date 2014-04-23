@@ -22,11 +22,14 @@
 #include "vfdd.h"
 #include "vhdd.h"
 #include "vpit.h"
-/*#include "vkbc.h"
-#include "vkeyb.h"*/
+#include "vkbc.h"
+//#include "vkeyb.h"
+#include "vvadp.h"
+//#include "vdisp.h"
+
 
 #ifdef VMACHINE_DEBUG
-#include "qdbios.h"
+#include "bios/qdbios.h"
 #endif
 
 typedef struct {
