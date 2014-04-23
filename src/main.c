@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Quick & Dirty Virtual Machine [0.2.0x80]\n\
+#define PRODUCT "Quick & Dirty Virtual Machine [0.2.0x81]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*

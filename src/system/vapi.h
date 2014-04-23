@@ -10,11 +10,15 @@ void vapiPrintAddr(unsigned short segment,unsigned short offset);
 void vapiPause();
 void vapiSleep(unsigned int milisec);
 
+void vapiDisplayInit();
+void vapiDisplaySetScreen();
 void vapiDisplayPaint();
+void vapiDisplayFinal();
+
 void vapiCreateDisplay();
 void vapiCreateKernel();
 
-void vapiInsertFloppyDisk(const char *fname);
-void vapiRemoveFloppyDisk(const char *fname);
+void vapiFloppyInsert(const char *fname);
+void vapiFloppyRemove(const char *fname);
 
 #endif

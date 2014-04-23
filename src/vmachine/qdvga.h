@@ -44,9 +44,21 @@ typedef struct {
 	(qdvgaGetTextMemAddr + (page) * qdvgaGetPageSize)
 #define qdvgaGetTextMemAddrPageCur \
 	(qdvgaGetTextMemAddrPage(qdvgaVarPageNum))
-#define qdvgaVarCursorPosRow(id) \
-	(vramByte(0x0000, QDVGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 0))
+
+#define qdvgaVarChar(page,x,y) \
+	(vramByte(0x0000, QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM + \
+	          (page) * qdvgaGetPageSize + ((x) * qdvga.rowsize + (y)) * 2 + 0))
+#define qdvgaVarCharProp(page,x,y) \
+	(vramByte(0x0000, QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM + \
+	          (page) * qdvgaGetPageSize + ((x) * qdvga.rowsize + (y)) * 2 + 1))
+#define qdvgaGetCharAddr(page,x,y) \
+	(qdvgaGetTextMemAddrPage(page) + ((x) * qdvga.rowsize + (y)) * 2 + 0)
+#define qdvgaGetCharPropAddr(page,x,y) \
+	(qdvgaGetTextMemAddrPage(page) + ((x) * qdvga.rowsize + (y)) * 2 + 1)
+
 #define qdvgaVarCursorPosCol(id) \
+	(vramByte(0x0000, QDVGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 0))
+#define qdvgaVarCursorPosRow(id) \
 	(vramByte(0x0000, QDVGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 1))
 #define qdvgaVarCursorBottom \
 	(vramByte(0x0000, QDVGA_VBIOS_ADDR_VGA_CURSOR_BOTTOM))
@@ -66,7 +78,7 @@ void qdvgaSetDisplayPage();
 void qdvgaScrollUp();
 void qdvgaScrollDown();
 void qdvgaGetCharProp();
-void qdvgaDisplayCharProp(t_nubit16 count);
+void qdvgaDisplayCharProp();
 void qdvgaDisplayChar();
 //void qdvgaSetPalette();
 //void qdvgaDisplayPixel();

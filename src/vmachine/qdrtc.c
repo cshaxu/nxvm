@@ -55,13 +55,9 @@ void qdrtcGetCmosTime()
 	t_nubit8 hour = (t_nubit8)(total / 3600);
 	t_nubit8 min  = (t_nubit8)((total - hour * 3600) / 60);
 	t_nubit8 sec  = (t_nubit8)(total - hour * 3600 - min * 60);
-/* for output log */
-	vcpu.ch = 0x08;
-	vcpu.cl = 0x15;
-	vcpu.dh = 0x30;
-//	vcpu.ch = Hex2BCD(hour);
-//	vcpu.cl = Hex2BCD(min);
-//	vcpu.dh = Hex2BCD(sec);
+	vcpu.ch = Hex2BCD(hour);
+	vcpu.cl = Hex2BCD(min);
+	vcpu.dh = Hex2BCD(sec);
 	vcpu.dl = 0x00;
 	ClrBit(vcpu.flags, VCPU_FLAG_CF);
 }
@@ -100,11 +96,18 @@ void qdrtcSetAlarmClock()
 	SetBit(vcpu.flags, VCPU_FLAG_CF);
 }
 
+void qdrtcUpdateTime()
+{
+	vramDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) += 1;
+	if (vramDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) >= 0x1800b2) {
+		vramDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) = 0x00000000;
+		vramByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) = 0x01;
+	}
+}
+
 void qdrtcInit()
 {
 	/* this is actually a part of bios initialization */
-t_float64 total;
-
 	struct tm *t;
 	t_nubitcc hour;
 	t_nubitcc min;

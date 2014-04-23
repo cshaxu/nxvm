@@ -3,6 +3,7 @@
 
 #include "../system/vapi.h"
 
+#include "vpic.h"
 #include "vcpu.h"
 #include "vcpuins.h"
 
@@ -49,7 +50,7 @@ void qdkeybReadInput()
 {
 	if (bufIsEmpty) return;
 	vcpu.ax = bufPop();
-	// isKeyhandle = true;
+	vpicSetIRQ(0x01);
 }
 void qdkeybGetStatus()
 {

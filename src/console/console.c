@@ -115,9 +115,9 @@ void Floppy()
 	fgets(str, MAXLINE, stdin);
 	parse(str);
 	if (!vfdd.flagexist)
-		vapiInsertFloppyDisk(str);
+		vapiFloppyInsert(str);
 	else
-		vapiRemoveFloppyDisk(str);
+		vapiFloppyRemove(str);
 */
 }
 void Memory()

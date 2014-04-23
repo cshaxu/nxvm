@@ -13,6 +13,7 @@
 /* vga */
 void INT_10()
 {
+	t_nubit16 tmpCX = vcpu.cx;
 	switch (vcpu.ah) {
 	case 0x00:
 		qdvgaSetDisplayMode();
@@ -41,7 +42,7 @@ void INT_10()
 		qdvgaGetCharProp();
 		break;
 	case 0x09:
-		qdvgaDisplayCharProp(vcpu.cx);
+		qdvgaDisplayCharProp();
 		break;
 	case 0x0a:
 		qdvgaDisplayChar();
@@ -56,7 +57,9 @@ void INT_10()
 		//qdvgaGetPixel();
 		break;
 	case 0x0e:
-		qdvgaDisplayCharProp(0x01);
+		vcpu.cx = 0x01;
+		qdvgaDisplayCharProp();
+		vcpu.cx = tmpCX;
 		break;
 	case 0x0f:
 		qdvgaGetAdapterStatus();
@@ -332,7 +335,7 @@ void qdbiosInit()
 	qdvgaInit();
 
 /* load boot sector */
-	vapiInsertFloppyDisk("d:/msdos.img");
+	vapiFloppyInsert("d:/msdos.img");
 	memcpy((void *)vramGetAddress(0x7c00), (void *)qdfdd.base, 0x200);
 	vramSetByte(0xf000, 0xfff0, 0xea);
 	vramSetWord(0xf000, 0xfff1, 0x7c00);

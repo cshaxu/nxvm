@@ -9,17 +9,23 @@ t_log vlog;
 
 void vlogInit()
 {
-
 	vlog.line = 0;
+	vlog.fp = NULL;
+#ifdef VLOG_DEBUG
 	vlog.fp = fopen("d:/nxvm.log","w");
+#endif
 }
 void vlogFinal()
 {
+#ifdef VLOG_DEBUG
 	if (vlog.fp) fclose(vlog.fp);
+#endif
 	vlog.fp = NULL;
+	vlog.line = 0;
 }
 void vlogExec()
 {
+#ifdef VLOG_DEBUG
 #define _ax    (vcpu.ax)
 #define _bx    (vcpu.bx)
 #define _cx    (vcpu.cx)
@@ -60,4 +66,5 @@ of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x ram=%x\n"
 		vramByte(_cs,_ip+6),vramByte(_cs,_ip+7),
 		_ax,_bx,_cx,_dx,_sp,_bp,_si,_di,_ds,_es,_ss,
 		_of,_sf,_zf,_cf,_af,_pf,_df,_if,_tf,vramWord(_ss,_sp));
+#endif
 }

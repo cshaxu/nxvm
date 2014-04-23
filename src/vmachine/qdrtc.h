@@ -22,6 +22,8 @@ void qdrtcGetCmosDate();
 void qdrtcSetCmosDate();
 void qdrtcSetAlarmClock();
 
+void qdrtcUpdateTime();
+
 void qdrtcInit();
 void qdrtcFinal();
 
