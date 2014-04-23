@@ -339,18 +339,19 @@ static void f()
 static void rprintregs();
 static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 {
+	cputerm = 0;
 	if(ptr1 < ptr2) {
 		cpu.ip = ptr1;
 		while(ptr1 < ptr2 && !cputerm) {
 			vcpuInsExec();
 			ptr1 = cpu.ip;
-			//RefreshVideoRAM();
-			//ExecInt();
 		}
 		cpu.ip = ptr2;
-	} else fprintf(stdout,"\n");
-	if(cputerm) fprintf(stdout,"Program terminated\n");
-	else {
+	}
+	if(cputerm) {
+		fprintf(stdout,"\nProgram terminated\n");
+	} else {
+		fprintf(stdout,"\n");
 		rprintregs();
 	}
 	return;
@@ -904,7 +905,7 @@ static void init()
 	cpu.si = cpu.di = cpu.bp = 0x0000;
 	cpu.sp = 0xffee;
 	cpu.ds = cpu.es = cpu.ss = cpu.cs =
-		asmSegRec = dumpSegRec = uasmSegRec = 0x0a50;
+		asmSegRec = dumpSegRec = uasmSegRec = 0x0001;
 	cpu.ip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;
 	vcpuinsClearPrefix();
 }

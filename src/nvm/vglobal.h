@@ -27,7 +27,7 @@ typedef unsigned __int64 t_faddrcc;	// addr: function, c compiler
 #else
 #endif
 
-#if NVM_CCOMPILER == NVM_CC_MSVC
+#if NVM_CCOMPILER == NVM_MSVC
 #define FUNEXEC(faddr) (*(void (__cdecl *)(void))(faddr))()
 #else
 #define FUNEXEC(faddr) (*(void (*)(void))(faddr))()

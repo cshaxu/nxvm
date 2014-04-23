@@ -5,7 +5,6 @@
 #include "string.h"
 
 #include "nvm/vmachine.h"
-#include "nvm/vmemory.h"
 
 #include "global.h"
 #include "debug.h"
@@ -30,11 +29,36 @@ static void parse(char *s)
 void NSExec()
 {
 	char execmd[MAXLINE];
-	fprintf(stdout,"Command: ");
+	FILE *load;
+	t_nubit8 c;
+	t_nubit16 i = 0,end;
+	t_nubit32 len = 0;
+	fprintf(stdout,".COM File: ");
 	fgets(execmd,MAXLINE,stdin);
 	parse(execmd);
 	if(!strlen(execmd)) return;
-	fprintf(stdout,"DEBUG:\tFile to be executed: '%s'\n",execmd);
+	load = fopen(execmd,"rb");
+	if(!load) {
+		fprintf(stdout,"File not found\n");
+		return;
+	} else {
+		vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
+		vcpu.si = vcpu.di = vcpu.bp = 0x0000;
+		vcpu.sp = 0xffee;	vcpu.ip = 0x0100;
+		vcpu.ds = vcpu.es = vcpu.ss = vcpu.cs = 0x0001;
+		cpuTermFlag = 0;
+		c = fgetc(load);
+		while(!feof(load)) {
+			vmemorySetByte(vcpu.cs+i,vcpu.ip+len++,c);
+			i = len / 0x10000;
+			c = fgetc(load);
+		}
+		end = vcpu.ip+len;
+		fprintf(stdout,"File '%s' is loaded to 0001:0100, length is %d bytes.\n\n",execmd,len);
+		fclose(load);
+		while(vcpu.ip < end && !cpuTermFlag) vcpuInsExec();
+		fprintf(stdout,"\n");
+	}
 }
 
 void NSExit()
@@ -54,8 +78,8 @@ void NSHelp()
 	fprintf(stdout,"============\n");
 	fprintf(stdout,"ON\t\tPowers on Neko's Virtual Machine.\n");
 	//fprintf(stdout,"STATUS\t\tPrints the status of NVM.\n");
-	fprintf(stdout,"MEMORY\t\tAssigns the size of NVM.\n");
-	fprintf(stdout,"MEMORYTEST\tTests the size of NVM.\n\n");
+	fprintf(stdout,"MEMORY\t\tAssigns the memory size of NVM.\n");
+	fprintf(stdout,"MEMORYTEST\tTests the memory size of NVM.\n\n");
 /*	fprintf(stdout,"NVM Operations\n");
 	fprintf(stdout,"==============\n");
 	fprintf(stdout,"OFF\t\tTurns off Neko's Virtual Machine.\n");

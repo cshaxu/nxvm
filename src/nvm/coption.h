@@ -8,16 +8,15 @@
 // Length of integer: 16,32,64
 
 // Type of system
-#define NVM_SYS_MSDOS 1
-#define NVM_SYS_WIN32CON 2
-#define NVM_SYS_WIN32APP 3
+#define NVM_WIN32CON 1
+#define NVM_WIN32APP 2
 
 // Type of c compiler
-#define NVM_CC_MSVC 1
+#define NVM_MSVC 1
 
 // Selector - For User's Information
 #define NVM_INTLEN 64
-#define NVM_SYSTEM NVM_SYS_WIN32CON
-#define NVM_CCOMPILER NVM_CC_MSVC
+#define NVM_SYSTEM NVM_WIN32CON
+#define NVM_CCOMPILER NVM_MSVC
 
 #endif

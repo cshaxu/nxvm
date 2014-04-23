@@ -1,7 +1,5 @@
 /* This file is a part of NekoVMac project. */
 
-#include "stdio.h"
-#include "stdlib.h"
 #include "memory.h"
 
 #include "vcpuins.h"
@@ -26,7 +24,10 @@ void CPUInit()
 	cpuTermFlag = 0;
 	CPUInsInit();
 }
-
+void CPURun()
+{
+	while(!cpuTermFlag) vcpuInsExec();
+}
 void CPUTerm()
 {
 	CPUInsTerm();

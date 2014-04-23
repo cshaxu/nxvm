@@ -4,7 +4,7 @@
 	Type of systems: NONE, MSDOS, WIN32CON, WIN32APP
 */
 
-#define PRODUCT "Neko's Virtual Machine [0x0039]\n\
+#define PRODUCT "Neko's Virtual Machine [0x003a]\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"
 
 /*
@@ -23,7 +23,7 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 		Stage 1: Code		02/06/2012 - 02/12/2012
 		Stage 2: Verify		Not Started
 		Stage 3: Test		Not Started
-		Stage 4: Connect	Not Started (Console.Exec)
+		Stage 4: Connect	02/12/2012 - 02/12/2012
 	Module III - DOSINT
 	Module IV - VDEVICE
 	Module V - VAPI
@@ -37,7 +37,7 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 #include "global.h"
 #include "console.h"
 
-#if NVM_SYSTEM == NVM_SYS_WIN32APP
+#if NVM_SYSTEM == NVM_WIN32APP
 #include "windows.h"
 #pragma comment(linker, "/subsystem:\"console\" /entry:\"WinMainCRTStartup\"")
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
