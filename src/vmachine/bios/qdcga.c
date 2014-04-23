@@ -73,6 +73,7 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 //	vapiPrint("%c", d_nubit8(string));
 	qdcgaVarCursorPosRow(page) = x;
 	qdcgaVarCursorPosCol(page) = y;
+	if (dup && count != 1) move = 0x01;
 	for (i = 0;i < count;++i) {
 		switch (d_nubit8(string)) {
 		case 0x07: /* bell */
@@ -318,14 +319,12 @@ void qdcgaDisplayStr()
 
 void INT_10()
 {
-	t_nubit16 tmpCX = _cx;
-	/*switch (_ah) {
-	case 0x02:
-	case 0x09:
-	case 0x0e:
-		break;
+	/*static int count = 0;
+	switch (_ah) {
 	default:
+		count++;
 		vapiPrint("int 10, ax=%04x, bx=%04x, cx=%04x, dx=%04x, al='%c'\n", _ax, _bx, _cx, _dx, _al);
+		if (!(count % 100)) vapiCallBackMachineStop();
 		break;
 	}*/
 	switch (_ah) {
