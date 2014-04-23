@@ -10,7 +10,7 @@
 #endif
 
 #include "vglobal.h"
-#include "ecpu/cpu.h"
+#include "ecpu/ecpu.h"
 
 #define VCPU_DEBUG
 
@@ -24,7 +24,7 @@
 #define VCPU_FLAG_DF 0x0400
 #define VCPU_FLAG_OF 0x0800
 
-#define vcpu eCPU
+#define vcpu ecpu
 
 void vcpuinsExecIns();
 void vcpuinsExecInt();

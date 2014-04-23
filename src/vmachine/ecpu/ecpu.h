@@ -5,7 +5,7 @@
 
 #define MemoryStart vram.base
 extern unsigned int evIP;					//CS:IP所表示的线性地址，只供内部使用
-extern unsigned short tmpDs;				//eCPU.ds的一个副本。有时候会遇到ES之类的指令前缀，则修改这个副本。对内在的读写操作是以这个副本为准的，而不是eCPU.ds
+extern unsigned short tmpDs;				//ecpu.ds的一个副本。有时候会遇到ES之类的指令前缀，则修改这个副本。对内在的读写操作是以这个副本为准的，而不是ecpu.ds
 extern unsigned short tmpSs;				//同上
 extern void LongCallNewIP(char OffsetByte);	//LongCall的时候，把当前IP修改成下一条指令的IP，以便压栈
 extern unsigned short *rm16;			//解释寻址字节的时候用
@@ -151,14 +151,12 @@ typedef struct {
 	t_nubit8 iobyte;
 	t_bool flagnmi;
 	t_nubit16 overss,overds;
-} t_cpu;
+} t_ecpu;
 
-extern t_cpu eCPU;
+extern t_ecpu ecpu;
 
-int CPUInit();
-int CPURun();
-void CPUTerminate();
-int ExecIns();
-int ExecInt();
+void ecpuRefresh();
+void ecpuInit();
+void ecpuFinal();
 
 #endif

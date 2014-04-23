@@ -6,21 +6,17 @@
 
 #include "vcpu.h"
 
-void vcpuinsExecIns() {ExecIns();}
-void vcpuinsExecInt() {ExecInt();}
-
 void vcpuRefresh()
 {
-	vcpuinsExecIns();
-	vcpuinsExecInt();
+	ecpuRefresh();
 }
 
 void vcpuInit()
 {
-	CPUInit();
+	ecpuInit();
 }
 
 void vcpuFinal()
 {
-	CPUTerminate();
+	ecpuFinal();
 }

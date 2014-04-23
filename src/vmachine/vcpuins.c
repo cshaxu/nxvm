@@ -12,6 +12,9 @@
 #include "qdbios.h"
 #include "vcpuins.h"
 
+#include "ecpu/ecpu.h"
+#include "ecpu/ecpuins.h"
+
 #define MOD ((modrm&0xc0)>>6)
 #define REG ((modrm&0x38)>>3)
 #define RM  ((modrm&0x07)>>0)
@@ -288,6 +291,56 @@ static t_bool acpuCheck(t_nubit16 flags)
 	__asm pop edx\
 	__asm pop eax\
 	__asm popfd} else
+#define aexec_nxx8 if(1) {\
+	__asm pushfd\
+	__asm push eax\
+	__asm mov al, ub1\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm op al\
+	__asm pushf\
+	__asm pop acpu.flags\
+	__asm mov ub3, al\
+	__asm pop eax\
+	__asm popfd} else
+#define aexec_nxx16 if(1) {\
+	__asm pushfd\
+	__asm push eax\
+	__asm mov ax, uw1\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm op ax\
+	__asm pushf\
+	__asm pop acpu.flags\
+	__asm mov uw3, ax\
+	__asm pop eax\
+	__asm popfd} else
+#define aexec_mdx8 if(1) {\
+	__asm pushfd\
+	__asm push eax\
+	__asm mov ax, acpu.ax\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm op ub2\
+	__asm pushf\
+	__asm pop acpu.flags\
+	__asm mov acpu.ax, ax\
+	__asm pop eax\
+	__asm popfd} else
+#define aexec_mdx16 if(1) {\
+	__asm pushfd\
+	__asm push eax\
+	__asm mov ax, acpu.ax\
+	__asm mov dx, acpu.dx\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm op uw2\
+	__asm pushf\
+	__asm pop acpu.flags\
+	__asm mov acpu.dx, dx\
+	__asm mov acpu.ax, ax\
+	__asm pop eax\
+	__asm popfd} else
 #else
 #define async     if(0)
 #define aexec     __asm
@@ -315,6 +368,10 @@ static t_bool acpuCheck(t_nubit16 flags)
 #define aexec_srd16 if(0)
 #define aexec_cax8  if(0)
 #define aexec_cax16 if(0)
+#define aexec_nxx8  if(0)
+#define aexec_nxx16 if(0)
+#define aexec_mdx8  if(0)
+#define aexec_mdx16 if(0)
 #endif
 
 static void CaseError(const char *str)
@@ -1677,54 +1734,92 @@ static void SCAS(t_nubit8 len)
 		break;
 	default:CaseError("SCAS::len");break;}
 }
-static void NOT(void *dest, t_nubit8 len)
+static ASMCMP NOT(void *dest, t_nubit8 len)
 {
 	switch(len) {
-	case 8:	vcpuins.bit = 8; d_nubit8(dest) = ~d_nubit8(dest); break;
-	case 16:vcpuins.bit = 16;d_nubit16(dest) = ~d_nubit16(dest);break;
+	case 8:
+		async ub1 = d_nubit8(dest);
+		vcpuins.bit = 8;
+		d_nubit8(dest) = ~d_nubit8(dest);
+#define op not
+		aexec_nxx8;
+#undef op
+		break;
+	case 16:
+		async uw1 = d_nubit16(dest);
+		vcpuins.bit = 16;
+		d_nubit16(dest) = ~d_nubit16(dest);
+#define op not
+		aexec_nxx16;
+#undef op
+		break;
 	default:CaseError("NOT::len");break;}
+	asregall
+	acheckall(AFLAGS1)
 }
-static void NEG(void *dest, t_nubit8 len)
+static ASMCMP NEG(void *dest, t_nubit8 len)
 {
 	t_nubitcc zero = 0;
 	switch(len) {
 	case 8:	
+		async ub1 = d_nubit8(dest);
 		vcpuins.bit = 8;
 		SUB((void *)&zero,(void *)dest,8);
 		d_nubit8(dest) = (t_nubit8)zero;
+#define op neg
+		aexec_nxx8;
+#undef op
 		break;
 	case 16:
+		async uw1 = d_nubit16(dest);
 		vcpuins.bit = 16;
 		SUB((void *)&zero,(void *)dest,16);
 		d_nubit16(dest) = (t_nubit16)zero;
+#define op neg
+		aexec_nxx16;
+#undef op
 		break;
 	default:CaseError("NEG::len");break;}
+	asregall
+	acheckall(AFLAGS1)
 }
-static void MUL(void *src, t_nubit8 len)
+static ASMCMP MUL(void *src, t_nubit8 len)
 {
 	t_nubit32 tempresult;
 	switch(len) {
 	case 8:
+		async ub2 = d_nubit8(src);
 		vcpuins.bit = 8;
 		vcpu.ax = vcpu.al * d_nubit8(src);
 		MakeBit(vcpu.flags,VCPU_FLAG_OF,!!vcpu.ah);
 		MakeBit(vcpu.flags,VCPU_FLAG_CF,!!vcpu.ah);
+#define op mul
+		aexec_mdx8;
+#undef op
+		acheck(VCPU_FLAG_OF | VCPU_FLAG_CF) vapiPrintIns(vcpu.cs,vcpu.ip,"+MUL");
 		break;
 	case 16:
+		async uw2 = d_nubit16(src);
 		vcpuins.bit = 16;
 		tempresult = vcpu.ax * d_nubit16(src);
 		vcpu.dx = (tempresult>>16)&0xffff;
 		vcpu.ax = tempresult&0xffff;
 		MakeBit(vcpu.flags,VCPU_FLAG_OF,!!vcpu.dx);
 		MakeBit(vcpu.flags,VCPU_FLAG_CF,!!vcpu.dx);
+#define op mul
+		aexec_mdx16;
+#undef op
+		acheck(VCPU_FLAG_OF | VCPU_FLAG_CF) vapiPrintIns(vcpu.cs,vcpu.ip,"+MUL");
 		break;
 	default:CaseError("MUL::len");break;}
+
 }
-static void IMUL(void *src, t_nubit8 len)
+static ASMCMP IMUL(void *src, t_nubit8 len)
 {
 	t_nsbit32 tempresult;
 	switch(len) {
 	case 8:
+		async ub2 = d_nubit8(src);
 		vcpuins.bit = 8;
 		vcpu.ax = (t_nsbit8)vcpu.al * d_nsbit8(src);
 		if(vcpu.ax == vcpu.al) {
@@ -1734,8 +1829,13 @@ static void IMUL(void *src, t_nubit8 len)
 			SetBit(vcpu.flags,VCPU_FLAG_OF);
 			SetBit(vcpu.flags,VCPU_FLAG_CF);
 		}
+#define op imul
+		aexec_mdx8;
+#undef op
+		acheck(VCPU_FLAG_OF | VCPU_FLAG_CF) vapiPrintIns(vcpu.cs,vcpu.ip,"+IMUL");
 		break;
 	case 16:
+		async uw2 = d_nubit16(src);
 		vcpuins.bit = 16;
 		tempresult = (t_nsbit16)vcpu.ax * d_nsbit16(src);
 		vcpu.dx = (t_nubit16)((tempresult>>16)&0xffff);
@@ -1747,15 +1847,20 @@ static void IMUL(void *src, t_nubit8 len)
 			SetBit(vcpu.flags,VCPU_FLAG_OF);
 			SetBit(vcpu.flags,VCPU_FLAG_CF);
 		}
+#define op imul
+		aexec_mdx16;
+#undef op
+		acheck(VCPU_FLAG_OF | VCPU_FLAG_CF) vapiPrintIns(vcpu.cs,vcpu.ip,"+IMUL");
 		break;
 	default:CaseError("IMUL::len");break;}
 }
-static void DIV(void *src, t_nubit8 len)
+static ASMCMP DIV(void *src, t_nubit8 len)
 {
 	t_nubit16 tempAX = vcpu.ax;
 	t_nubit32 tempDXAX = (((t_nubit32)vcpu.dx)<<16)+vcpu.ax;
 	switch(len) {
 	case 8:
+		async ub2 = d_nubit8(src);
 		vcpuins.bit = 8;
 		if(d_nubit8(src) == 0) {
 			INT(0x00);
@@ -1763,8 +1868,13 @@ static void DIV(void *src, t_nubit8 len)
 			vcpu.al = (t_nubit8)(tempAX / d_nubit8(src));
 			vcpu.ah = (t_nubit8)(tempAX % d_nubit8(src));
 		}
+#define op div
+		aexec_mdx8;
+#undef op
+		acheck(VCPU_FLAG_DF | VCPU_FLAG_TF) vapiPrintIns(vcpu.cs,vcpu.ip,"+DIV");
 		break;
 	case 16:
+		async uw2 = d_nubit16(src);
 		vcpuins.bit = 16;
 		if(d_nubit16(src) == 0) {
 			INT(0x00);
@@ -1772,6 +1882,10 @@ static void DIV(void *src, t_nubit8 len)
 			vcpu.ax = (t_nubit16)(tempDXAX / d_nubit16(src));
 			vcpu.dx = (t_nubit16)(tempDXAX % d_nubit16(src));
 		}
+#define op div
+		aexec_mdx16;
+#undef op
+		acheck(VCPU_FLAG_DF | VCPU_FLAG_TF) vapiPrintIns(vcpu.cs,vcpu.ip,"+DIV");
 		break;
 	default:CaseError("DIV::len");break;}
 }
@@ -1781,6 +1895,7 @@ static void IDIV(void *src, t_nubit8 len)
 	t_nsbit32 tempDXAX = (((t_nubit32)vcpu.dx)<<16)+vcpu.ax;
 	switch(len) {
 	case 8:
+		async ub2 = d_nubit8(src);
 		vcpuins.bit = 8;
 		if(d_nubit8(src) == 0) {
 			INT(0x00);
@@ -1788,8 +1903,13 @@ static void IDIV(void *src, t_nubit8 len)
 			vcpu.al = (t_nubit8)(tempAX / d_nsbit8(src));
 			vcpu.ah = (t_nubit8)(tempAX % d_nsbit8(src));
 		}
+#define op idiv
+		aexec_mdx8;
+#undef op
+		acheck(VCPU_FLAG_DF | VCPU_FLAG_TF) vapiPrintIns(vcpu.cs,vcpu.ip,"+IDIV");
 		break;
 	case 16:
+		async uw2 = d_nubit16(src);
 		vcpuins.bit = 16;
 		if(d_nubit16(src) == 0) {
 			INT(0x00);
@@ -1797,6 +1917,10 @@ static void IDIV(void *src, t_nubit8 len)
 			vcpu.ax = (t_nubit16)(tempDXAX / d_nsbit16(src));
 			vcpu.dx = (t_nubit16)(tempDXAX % d_nsbit16(src));
 		}
+#define op idiv
+		aexec_mdx16;
+#undef op
+		acheck(VCPU_FLAG_DF | VCPU_FLAG_TF) vapiPrintIns(vcpu.cs,vcpu.ip,"+IDIV");
 		break;
 	default:CaseError("IDIV::len");break;}
 }
@@ -3730,6 +3854,7 @@ void vcpuinsExecIns()
 			if (!IsPrefix(opcode)) ClrPrefix();
 		}
 	}
+//	ecpuinsExecIns();
 }
 void vcpuinsExecInt()
 {
@@ -3742,6 +3867,7 @@ void vcpuinsExecInt()
 	if(GetBit(vcpu.flags, VCPU_FLAG_IF) && vpicScanINTR()) {
 		intr = vpicGetINTR();
 		INT(intr);
+//		ecpuinsExecInt();
 	}
 	if(GetBit(vcpu.flags, VCPU_FLAG_TF)) {
 		INT(0x01);
@@ -3766,6 +3892,7 @@ void QDX()
 
 void vcpuinsInit()
 {
+	ecpuInit();
 	memset(&vcpuins, 0x00, sizeof(t_cpuins));
 	ClrPrefix();
 	vcpuins.table[0x00] = (t_faddrcc)ADD_RM8_R8;
@@ -4031,4 +4158,4 @@ void vcpuinsInit()
 	vcpuins.table[0xfe] = (t_faddrcc)INS_FE;
 	vcpuins.table[0xff] = (t_faddrcc)INS_FF;
 }
-void vcpuinsFinal() {}
+void vcpuinsFinal() {ecpuFinal();}

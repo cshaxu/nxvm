@@ -9,6 +9,8 @@
 /*extern "C" {*/
 #endif
 
+#include "ecpu/ecpu.h"
+
 #include "vglobal.h"
 
 #define VCPU_FLAG_CF 0x0001
