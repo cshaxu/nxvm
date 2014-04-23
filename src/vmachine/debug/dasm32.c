@@ -208,14 +208,14 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 			_bb("ModRM_MOD(!3),ModRM_RM(4)");
 			_chk(sib = (t_nubit8)_kdf_code(1));
 			switch (_GetSIB_Index(sib)) {
-			case 0: SPRINTF(dsibindex, "+EAX*%d", (1 << _GetSIB_SS(sib)));break;
-			case 1: SPRINTF(dsibindex, "+ECX*%d", (1 << _GetSIB_SS(sib)));break;
-			case 2: SPRINTF(dsibindex, "+EDX*%d", (1 << _GetSIB_SS(sib)));break;
-			case 3: SPRINTF(dsibindex, "+EBX*%d", (1 << _GetSIB_SS(sib)));break;
+			case 0: SPRINTF(dsibindex, "+EAX*%02X", (1 << _GetSIB_SS(sib)));break;
+			case 1: SPRINTF(dsibindex, "+ECX*%02X", (1 << _GetSIB_SS(sib)));break;
+			case 2: SPRINTF(dsibindex, "+EDX*%02X", (1 << _GetSIB_SS(sib)));break;
+			case 3: SPRINTF(dsibindex, "+EBX*%02X", (1 << _GetSIB_SS(sib)));break;
 			case 4: break;
-			case 5: SPRINTF(dsibindex, "+EBP*%d", (1 << _GetSIB_SS(sib)));break;
-			case 6: SPRINTF(dsibindex, "+ESI*%d", (1 << _GetSIB_SS(sib)));break;
-			case 7: SPRINTF(dsibindex, "+EDI*%d", (1 << _GetSIB_SS(sib)));break;
+			case 5: SPRINTF(dsibindex, "+EBP*%02X", (1 << _GetSIB_SS(sib)));break;
+			case 6: SPRINTF(dsibindex, "+ESI*%02X", (1 << _GetSIB_SS(sib)));break;
+			case 7: SPRINTF(dsibindex, "+EDI*%02X", (1 << _GetSIB_SS(sib)));break;
 			default:_impossible_;break;}
 		}
 		switch (_GetModRM_MOD(modrm)) {
@@ -1710,19 +1710,23 @@ static void INSB()
 	_cb("INSB");
 	_adv;
 	SPRINTF(dop, "INSB");
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "ES:[DI],DX");break;
+	case 4: SPRINTF(dopr, "ES:[EDI],DX");break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void INSW()
 {
 	_cb("INSW");
 	_adv;
+	switch (_GetOperandSize) {
+	case 2: SPRINTF(dop, "INSW");break;
+	case 4: SPRINTF(dop, "INSD");break;
+	default:_impossible_;break;}
 	switch (_GetAddressSize) {
-	case 2: _bb("AddressSize(2)");
-		SPRINTF(dop, "INSW");
-		_be;break;
-	case 4: _bb("AddressSize(4)");
-		SPRINTF(dop, "INSW");
-		_be;break;
+	case 2: SPRINTF(dopr, "ES:[DI],DX");break;
+	case 4: SPRINTF(dopr, "ES:[EDI],DX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1731,19 +1735,23 @@ static void OUTSB()
 	_cb("OUTSB");
 	_adv;
 	SPRINTF(dop, "OUTSB");
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "DX,%s:[SI]", doverds);break;
+	case 4: SPRINTF(dopr, "DX,%s:[ESI]", doverds);break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void OUTSW()
 {
 	_cb("OUTSW");
 	_adv;
+	switch (_GetOperandSize) {
+	case 2: SPRINTF(dop, "OUTSW");break;
+	case 4: SPRINTF(dop, "OUTSD");break;
+	default:_impossible_;break;}
 	switch (_GetAddressSize) {
-	case 2: _bb("AddressSize(2)");
-		SPRINTF(dop, "OUTSW");
-		_be;break;
-	case 4: _bb("AddressSize(4)");
-		SPRINTF(dop, "OUT	");
-		_be;break;
+	case 2: SPRINTF(dopr, "DX,%s:[SI]", doverds);break;
+	case 4: SPRINTF(dopr, "DX,%s:[ESI]", doverds);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -2391,6 +2399,10 @@ static void MOVSB()
 	_cb("MOVSB");
 	_adv;
 	SPRINTF(dop, "MOVSB");
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "ES:[DI],%s:[SI]", doverds);break;
+	case 4: SPRINTF(dopr, "ES:[EDI],%s:[ESI]", doverds);break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void MOVSW()
@@ -2401,6 +2413,10 @@ static void MOVSW()
 	case 2: SPRINTF(dop, "MOVSW");break;
 	case 4: SPRINTF(dop, "MOVSD");break;
 	default:_impossible_;break;}
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "ES:[DI],%s:[SI]", doverds);break;
+	case 4: SPRINTF(dopr, "ES:[EDI],%s:[ESI]", doverds);break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void CMPSB()
@@ -2408,6 +2424,10 @@ static void CMPSB()
 	_cb("CMPSB");
 	_adv;
 	SPRINTF(dop, "CMPSB");
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "%s:[SI],ES:[DI]", doverds);break;
+	case 4: SPRINTF(dopr, "%s:[ESI],ES:[EDI]", doverds);break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void CMPSW()
@@ -2417,6 +2437,10 @@ static void CMPSW()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "CMPSW");break;
 	case 4: SPRINTF(dop, "CMPSD");break;
+	default:_impossible_;break;}
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "%s:[SI],ES:[DI]", doverds);break;
+	case 4: SPRINTF(dopr, "%s:[ESI],ES:[EDI]", doverds);break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -2446,6 +2470,10 @@ static void STOSB()
 	_cb("STOSB");
 	_adv;
 	SPRINTF(dop, "STOSB");
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "ES:[DI]");break;
+	case 4: SPRINTF(dopr, "ES:[EDI]");break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void STOSW()
@@ -2456,6 +2484,10 @@ static void STOSW()
 	case 2: SPRINTF(dop, "STOSW");break;
 	case 4: SPRINTF(dop, "STOSD");break;
 	default:_impossible_;break;}
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "ES:[DI]");break;
+	case 4: SPRINTF(dopr, "ES:[EDI]");break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void LODSB()
@@ -2463,6 +2495,10 @@ static void LODSB()
 	_cb("LODSB");
 	_adv;
 	SPRINTF(dop, "LODSB");
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "%s:[SI]", doverds);break;
+	case 4: SPRINTF(dopr, "%s:[ESI]", doverds);break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void LODSW()
@@ -2473,6 +2509,10 @@ static void LODSW()
 	case 2: SPRINTF(dop, "LODSW");break;
 	case 4: SPRINTF(dop, "LODSD");break;
 	default:_impossible_;break;}
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "%s:[SI]", doverds);break;
+	case 4: SPRINTF(dopr, "%s:[ESI]", doverds);break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void SCASB()
@@ -2480,6 +2520,10 @@ static void SCASB()
 	_cb("SCASB");
 	_adv;
 	SPRINTF(dop, "SCASB");
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "ES:[DI]");break;
+	case 4: SPRINTF(dopr, "ES:[EDI]");break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void SCASW()
@@ -2489,6 +2533,10 @@ static void SCASW()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "SCASW");break;
 	case 4: SPRINTF(dop, "SCASD");break;
+	default:_impossible_;break;}
+	switch (_GetAddressSize) {
+	case 2: SPRINTF(dopr, "ES:[DI]");break;
+	case 4: SPRINTF(dopr, "ES:[EDI]");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -3531,13 +3579,13 @@ static void INS_FF()
 	case 2: /* CALL_RM32 */
 		_bb("CALL_RM32");
 		SPRINTF(dop, "CALL");
-		_chk(_d_modrm(9, _GetOperandSize));
+		_chk(_d_modrm(0, _GetOperandSize));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 3: /* CALL_M16_32 */
 		_bb("CALL_M16_32");
 		SPRINTF(dop, "CALL");
-		_chk(_d_modrm(9, _GetOperandSize + 2));
+		_chk(_d_modrm(0, _GetOperandSize + 2));
 		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
@@ -3548,13 +3596,13 @@ static void INS_FF()
 	case 4: /* JMP_RM32 */
 		_bb("JMP_RM32");
 		SPRINTF(dop, "JMP");
-		_chk(_d_modrm(9, _GetOperandSize));
+		_chk(_d_modrm(0, _GetOperandSize));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 5: /* JMP_M16_32 */
 		_bb("JMP_M16_32");
 		SPRINTF(dop, "JMP");
-		_chk(_d_modrm(9, _GetOperandSize + 2));
+		_chk(_d_modrm(0, _GetOperandSize + 2));
 		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
@@ -3564,11 +3612,8 @@ static void INS_FF()
 		_be;break;
 	case 6: /* PUSH_RM32 */
 		_bb("PUSH_RM32");
-		switch (_GetOperandSize) {
-		case 2: SPRINTF(dop, "PUSH");break;
-		case 4: SPRINTF(dop, "PUSHD");break;
-		default:_impossible_;break;}
-		_chk(_d_modrm(9, _GetOperandSize));
+		SPRINTF(dop, "PUSH");
+		_chk(_d_modrm(0, _GetOperandSize));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 7: /* UndefinedOpcode */
@@ -3720,7 +3765,10 @@ static void INS_0F_01()
 			SPRINTF(drm, "<ERROR>");
 			_be;
 		}
-		SPRINTF(dopr, "%s", drm);
+		switch (_GetOperandSize) {
+		case 2: SPRINTF(dopr, "WORD PTR %s", drm);break;
+		case 4: SPRINTF(dopr, "DWORD PTR %s", drm);break;
+		default:_impossible_;break;}
 		_be;break;
 	case 3: /* LIDT_M32_16 */
 		_bb("LIDT_M32_16");

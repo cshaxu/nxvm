@@ -96,13 +96,17 @@ static void vmachineAsmTest()
 	case 0xd736:
 		return;
 	}
+	switch (d_nubit32(ins1)) {
+	case 0xc7b70f66:
+		return;
+	}
 	lend1 = dasm32(dstr1, (t_vaddrcc)ins1);
 	lena  = aasm32(dstr1, (t_vaddrcc)ins2);
 	lend2 = dasm32(dstr2, (t_vaddrcc)ins2);
 	if (lena != lend1 || lena != lend2 || lend1 != lend2 ||
 		memcmp(ins1, ins2, lend1) || STRCMP(dstr1, dstr2)) {
-		vapiPrint("diff at #%d %04X:%04X, len(a=%x,d1=%x,d2=%x)\n",
-			total, _cs, _ip, lena, lend1, lend2);
+		vapiPrint("diff at #%d %04X:%04X, len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
+			total, _cs, _ip, lena, lend1, lend2, vcpu.cs.seg.exec.defsize ? 32 : 16);
 		for (i = 0;i < lend1;++i) vapiPrint("%02X", ins1[i]);
 		vapiPrint("\t%s\n", dstr1);
 		for (i = 0;i < lend2;++i) vapiPrint("%02X", ins2[i]);

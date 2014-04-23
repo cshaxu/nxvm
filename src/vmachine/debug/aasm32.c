@@ -10,16 +10,6 @@
 #include "debug.h"
 #include "aasm.h"
 
-static t_bool flagopr, flagaddr;
-static t_bool flages, flagcs, flagss, flagds, flagfs, flaggs;
-static t_bool flaglock, flagrepz, flagrepnz;
-static t_nubit8 acode[15];
-static t_nubit8 iop;
-static t_strptr rop, ropr1, ropr2, ropr3;
-
-static t_nubit16 avcs, avip;
-static t_strptr aop, aopr1, aopr2;
-
 /* operand size */
 #define _SetOperandSize(n) (flagopr = ((vcpu.cs.seg.exec.defsize ? 4 : 2) != (n)))
 /* address size of the source operand */
@@ -33,6 +23,7 @@ typedef enum {
 	TYPE_SREG,
 	TYPE_I8,
 	TYPE_I16,
+	TYPE_I32,//
 	TYPE_M,
 	TYPE_M8,
 	TYPE_M16,
@@ -42,7 +33,6 @@ typedef enum {
 	TYPE_CREG,//
 	TYPE_DREG,//
 	TYPE_TREG,//
-	TYPE_I32,//
 	TYPE_I16_32,//
 	TYPE_I32_16//
 } t_aasm_oprtype;
@@ -50,18 +40,18 @@ typedef enum {
 	MOD_M,
 	MOD_M_DISP8,
 	MOD_M_DISP16,
-	MOD_R,
-	MOD_M_DISP32//
+	MOD_M_DISP32,//
+	MOD_R
 } t_aasm_oprmod;
 typedef enum {
-	MEM_BX_SI,
-	MEM_BX_DI,
-	MEM_BP_SI,
-	MEM_BP_DI,
-	MEM_SI,
-	MEM_DI,
-	MEM_BP,
-	MEM_BX
+	MEM_BX_SI, MEM_BX_DI,
+	MEM_BP_SI, MEM_BP_DI,
+	MEM_SI, MEM_DI,
+	MEM_BP, MEM_BX,
+	MEM_EAX, MEM_ECX,
+	MEM_EDX, MEM_EBX,
+	MEM_SIB, MEM_EBP,
+	MEM_ESI, MEM_EDI
 } t_aasm_oprmem;
 typedef enum {
 	R8_AL,
@@ -100,7 +90,37 @@ typedef enum {
 	SREG_DS,
 	SREG_FS,//
 	SREG_GS//
-} t_aasm_oprseg;
+} t_aasm_oprsreg;
+typedef enum {
+	CREG_CR0,
+	CREG_CR1,
+	CREG_CR2,
+	CREG_CR3,
+	CREG_CR4,
+	CREG_CR5,
+	CREG_CR6,
+	CREG_CR7
+} t_aasm_oprcreg;
+typedef enum {
+	DREG_DR0,
+	DREG_DR1,
+	DREG_DR2,
+	DREG_DR3,
+	DREG_DR4,
+	DREG_DR5,
+	DREG_DR6,
+	DREG_DR7
+} t_aasm_oprdreg;
+typedef enum {
+	TREG_TR0,
+	TREG_TR1,
+	TREG_TR2,
+	TREG_TR3,
+	TREG_TR4,
+	TREG_TR5,
+	TREG_TR6,
+	TREG_TR7
+} t_aasm_oprtreg;
 typedef enum {
 	PTR_NONE,
 	PTR_SHORT,
@@ -108,13 +128,18 @@ typedef enum {
 	PTR_FAR
 } t_aasm_oprptr;
 typedef struct {
-	t_aasm_oprtype  type;  // 0 = none, 1 = reg8, 2 = reg16, 3 = reg32, 4 = seg,
-                           // 5 = imm8, 6 = imm16, 7 = mem, 8 = mem8, 9 = mem16
+	t_aasm_oprreg32 base;
+	t_aasm_oprreg32 index;
+	t_nubit8 scale;
+} t_aasm_oprsib;
+typedef struct {
+	t_aasm_oprtype  type;
 	t_aasm_oprmod   mod;   // active when type = 1,2,3,6,7,8
 	                       // 0 = mem; 1 = mem+disp8; 2 = mem+disp16; 3 = reg
 	t_aasm_oprmem   mem;   // active when mod = 0,1,2
                            // 0 = [BX+SI], 1 = [BX+DI], 2 = [BP+SI], 3 = [BP+DI],
                            // 4 = [SI], 5 = [DI], 6 = [BP], 7 = [BX]
+	t_aasm_oprsib   sib;   // active when mem = MEM_SIB
 	t_aasm_oprreg8  reg8;  // active when type = 1, mod = 3
                            // 0 = AL, 1 = CL, 2 = DL, 3 = BL,
                            // 4 = AH, 5 = CH, 6 = DH, 7 = BH
@@ -124,23 +149,36 @@ typedef struct {
 	t_aasm_oprreg32 reg32; // active when type = 3, mod = 3
                            // 0 = EAX, 1 = ECX, 2 = EDX, 3 = EBX,
                            // 4 = ESP, 5 = EBP, 6 = ESI, 7 = EDI   
-	t_aasm_oprseg   seg;   // active when type = 3
-                           // 0 = ES, 1 = CS, 2 = SS, 3 = DS
+	t_aasm_oprsreg  sreg;   // active when type = 3
+                           // 0 = ES, 1 = CS, 2 = SS, 3 = DS, 4 = FS, 5 = GS
+	t_aasm_oprcreg  creg;
+	t_aasm_oprdreg  dreg;
+	t_aasm_oprtreg  treg;
 	t_bool          imms;  // if imm is signed
 	t_bool          immn;  // if imm is negative
 	t_nubit8        imm8;
 	t_nubit16       imm16;
 	t_nubit32       imm32;
 	t_nsbit8        disp8;
-	t_nubit16       disp16;// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
+	t_nubit16       disp16;// use as imm when type = 6; use by modrm as disp when mod = 0,1,2;
+	t_nubit32       disp32;// use as imm when type = 7; use by modrm as disp when mod = 0,1,2;
 	t_aasm_oprptr   ptr; // 0 = near; 1 = far
 	t_nubit16       pcs,pip;
 	char            label[0x100];
+	t_bool flages, flagcs, flagss, flagds, flagfs, flaggs;
 } t_aasm_oprinfo;
-
+/* global variables */
+static t_bool flagopr, flagaddr;
+static t_bool flaglock, flagrepz, flagrepnz;
+static t_nubit8 acode[15];
+static t_nubit8 iop;
+static t_strptr rop, ropr1, ropr2, ropr3;
+static t_nubit16 avcs, avip;
+static t_strptr aop, aopr1, aopr2;
 static t_bool flagerror;
 static t_aasm_oprinfo aopri1, aopri2, aopri3;
-
+static t_aasm_oprinfo *rinfo = NULL;
+/* arg flag level 0 */
 #define isNONE(oprinf)  ((oprinf).type  == TYPE_NONE)
 #define isR8(oprinf)    ((oprinf).type  == TYPE_R8 && (oprinf).mod == MOD_R)
 #define isR16(oprinf)   ((oprinf).type  == TYPE_R16 && (oprinf).mod == MOD_R)
@@ -153,6 +191,7 @@ static t_aasm_oprinfo aopri1, aopri2, aopri3;
 #define isI16u(oprinf)  (isI16(oprinf)  && !(oprinf).imms)
 #define isI16s(oprinf)  (isI16(oprinf)  && (oprinf).imms)
 #define isI32(oprinf)   ((oprinf).type  == TYPE_I32)
+#define isI32u(oprinf)  (isI32(oprinf)  && !(oprinf).imms)
 #define isI32s(oprinf)  (isI32(oprinf)  && (oprinf).imms)
 #define isI16p(oprinf)  ((oprinf).type  == TYPE_I16_16)
 #define isM(oprinf)     (((oprinf).type == TYPE_M   || (oprinf).type == TYPE_M8   || \
@@ -169,7 +208,7 @@ static t_aasm_oprinfo aopri1, aopri2, aopri3;
 #define isNEAR(oprinf)  ((oprinf).ptr == PTR_NEAR)
 #define isSHORT(oprinf) ((oprinf).ptr == PTR_SHORT)
 #define isFAR(oprinf)   ((oprinf).ptr == PTR_FAR)
-
+/* arg flag level 1 */
 #define isRM8s(oprinf)  (isR8 (oprinf) || isM8s(oprinf))
 #define isRM16s(oprinf) (isR16(oprinf) || isM16s(oprinf))
 #define isRM32s(oprinf) (isR32(oprinf) || isM32s(oprinf))
@@ -201,113 +240,183 @@ static t_aasm_oprinfo aopri1, aopri2, aopri3;
 #define isEBP(oprinf)   (isR32(oprinf) && (oprinf).reg32 == R32_EBP)
 #define isESI(oprinf)   (isR32(oprinf) && (oprinf).reg32 == R32_ESI)
 #define isEDI(oprinf)   (isR32(oprinf) && (oprinf).reg32 == R32_EDI)
-#define isES(oprinf)    (isSREG(oprinf) && (oprinf).seg   == SREG_ES)
-#define isCS(oprinf)    (isSREG(oprinf) && (oprinf).seg   == SREG_CS)
-#define isSS(oprinf)    (isSREG(oprinf) && (oprinf).seg   == SREG_SS)
-#define isDS(oprinf)    (isSREG(oprinf) && (oprinf).seg   == SREG_DS)
-#define isFS(oprinf)    (isSREG(oprinf) && (oprinf).seg   == SREG_FS)
-#define isGS(oprinf)    (isSREG(oprinf) && (oprinf).seg   == SREG_GS)
-
-#define ARG_NONE        (isNONE (aopri1) && isNONE(aopri2))
-#define ARG_I8          (isI8   (aopri1) && isNONE(aopri2))
-#define ARG_I16         (isI16  (aopri1) && isNONE(aopri2))
-#define ARG_I8s         (isI8s  (aopri1) && isNONE(aopri2))
-#define ARG_I16s        (isI16s (aopri1) && isNONE(aopri2))
-#define ARG_I32s        (isI32s (aopri1) && isNONE(aopri2))
-#define ARG_RM8s        (isRM8s (aopri1) && isNONE(aopri2))
-#define ARG_RM16s       (isRM16s(aopri1) && isNONE(aopri2))
-#define ARG_RM8_R8      (isRM8  (aopri1) && isR8  (aopri2))
-#define ARG_RM16_R16    (isRM16 (aopri1) && isR16 (aopri2))
-#define ARG_RM32_R32    (isRM32 (aopri1) && isR32 (aopri2))
-#define ARG_R8_RM8      (isR8   (aopri1) && isRM8 (aopri2))
-#define ARG_R16_RM16    (isR16  (aopri1) && isRM16(aopri2))
-#define ARG_R32_RM32    (isR32  (aopri1) && isRM32(aopri2))
-#define ARG_ES          (isES   (aopri1) && isNONE(aopri2))
-#define ARG_CS          (isCS   (aopri1) && isNONE(aopri2))
-#define ARG_SS          (isSS   (aopri1) && isNONE(aopri2))
-#define ARG_DS          (isDS   (aopri1) && isNONE(aopri2))
-#define ARG_FS          (isFS   (aopri1) && isNONE(aopri2))
-#define ARG_GS          (isGS   (aopri1) && isNONE(aopri2))
-#define ARG_AX          (isAX   (aopri1) && isNONE(aopri2))
-#define ARG_CX          (isCX   (aopri1) && isNONE(aopri2))
-#define ARG_DX          (isDX   (aopri1) && isNONE(aopri2))
-#define ARG_BX          (isBX   (aopri1) && isNONE(aopri2))
-#define ARG_SP          (isSP   (aopri1) && isNONE(aopri2))
-#define ARG_BP          (isBP   (aopri1) && isNONE(aopri2))
-#define ARG_SI          (isSI   (aopri1) && isNONE(aopri2))
-#define ARG_DI          (isDI   (aopri1) && isNONE(aopri2))
-#define ARG_EAX         (isEAX  (aopri1) && isNONE(aopri2))
-#define ARG_ECX         (isECX  (aopri1) && isNONE(aopri2))
-#define ARG_EDX         (isEDX  (aopri1) && isNONE(aopri2))
-#define ARG_EBX         (isEBX  (aopri1) && isNONE(aopri2))
-#define ARG_ESP         (isESP  (aopri1) && isNONE(aopri2))
-#define ARG_EBP         (isEBP  (aopri1) && isNONE(aopri2))
-#define ARG_ESI         (isESI  (aopri1) && isNONE(aopri2))
-#define ARG_EDI         (isEDI  (aopri1) && isNONE(aopri2))
-#define ARG_AL_I8u      (isAL   (aopri1) && isI8u (aopri2))
-#define ARG_AX_I8u      (isAX   (aopri1) && isI8u (aopri2))
-#define ARG_I8u_AL      (isI8u  (aopri1) && isAL  (aopri2))
-#define ARG_I8u_AX      (isI8u  (aopri1) && isAX  (aopri2))
-#define ARG_AL_I8       (isAL   (aopri1) && isI8  (aopri2))
-#define ARG_CL_I8       (isCL   (aopri1) && isI8  (aopri2))
-#define ARG_DL_I8       (isDL   (aopri1) && isI8  (aopri2))
-#define ARG_BL_I8       (isBL   (aopri1) && isI8  (aopri2))
-#define ARG_AH_I8       (isAH   (aopri1) && isI8  (aopri2))
-#define ARG_CH_I8       (isCH   (aopri1) && isI8  (aopri2))
-#define ARG_DH_I8       (isDH   (aopri1) && isI8  (aopri2))
-#define ARG_BH_I8       (isBH   (aopri1) && isI8  (aopri2))
-#define ARG_AX_I16      (isAX   (aopri1) && isI16 (aopri2))
-#define ARG_CX_I16      (isCX   (aopri1) && isI16 (aopri2))
-#define ARG_DX_I16      (isDX   (aopri1) && isI16 (aopri2))
-#define ARG_BX_I16      (isBX   (aopri1) && isI16 (aopri2))
-#define ARG_SP_I16      (isSP   (aopri1) && isI16 (aopri2))
-#define ARG_BP_I16      (isBP   (aopri1) && isI16 (aopri2))
-#define ARG_SI_I16      (isSI   (aopri1) && isI16 (aopri2))
-#define ARG_DI_I16      (isDI   (aopri1) && isI16 (aopri2))
-#define ARG_RM8_I8      (isRM8s (aopri1) && isI8  (aopri2))
-#define ARG_RM16_I16    (isRM16s(aopri1) && isI16 (aopri2))
-#define ARG_RM16_I8     (isRM16s(aopri1) && isI8  (aopri2))
-#define ARG_RM32_I8     (isRM32s(aopri1) && isI8  (aopri2))
-#define ARG_RM16_I8     (isRM16s(aopri1) && isI8  (aopri2))
-#define ARG_RM16_SREG    (isRM16 (aopri1) && isSREG (aopri2))
-#define ARG_SREG_RM16    (isSREG  (aopri1) && isRM16(aopri2))
-#define ARG_RM16        (isRM16 (aopri1) && isNONE(aopri2))
-#define ARG_AX_AX       (isAX   (aopri1) && isAX  (aopri2))
-#define ARG_CX_AX       (isCX   (aopri1) && isAX  (aopri2))
-#define ARG_DX_AX       (isDX   (aopri1) && isAX  (aopri2))
-#define ARG_BX_AX       (isBX   (aopri1) && isAX  (aopri2))
-#define ARG_SP_AX       (isSP   (aopri1) && isAX  (aopri2))
-#define ARG_BP_AX       (isBP   (aopri1) && isAX  (aopri2))
-#define ARG_SI_AX       (isSI   (aopri1) && isAX  (aopri2))
-#define ARG_DI_AX       (isDI   (aopri1) && isAX  (aopri2))
-#define ARG_AL_m8       (isAL   (aopri1) && isM8  (aopri2) && (aopri2.mod == MOD_M && aopri2.mem == MEM_BP))
-#define ARG_m8_AL       (isM8   (aopri1) && isAL  (aopri2) && (aopri1.mod == MOD_M && aopri1.mem == MEM_BP))
-#define ARG_AX_m16      (isAX   (aopri1) && isM16 (aopri2) && (aopri2.mod == MOD_M && aopri2.mem == MEM_BP))
-#define ARG_m16_AX      (isM16  (aopri1) && isAX  (aopri2) && (aopri1.mod == MOD_M && aopri1.mem == MEM_BP))
-#define ARG_R16_M16     (isR16  (aopri1) && isM16 (aopri2))
-#define ARG_I16u        (isI16u (aopri1) && isNONE(aopri2))
-#define ARG_PNONE_I8s   (isPNONE(aopri1) && isI8s (aopri1) && isNONE(aopri2))
-#define ARG_PNONE_I16s  (isPNONE(aopri1) && isI16s(aopri1) && isNONE(aopri2))
-#define ARG_SHORT_I8s   (isSHORT(aopri1) && isI8s (aopri1) && isNONE(aopri2))
-#define ARG_NEAR_I16s   (isNEAR (aopri1) && isI16s(aopri1) && isNONE(aopri2))
-#define ARG_PNONE_I16   (isPNONE(aopri1) && isI16u(aopri1) && isNONE(aopri2))
-#define ARG_SHORT_I16   (isSHORT(aopri1) && isI16u(aopri1) && isNONE(aopri2))
-#define ARG_NEAR_I16    (isNEAR (aopri1) && isI16u(aopri1) && isNONE(aopri2))
-#define ARG_FAR_I16_16  (isFAR  (aopri1) && isI16p(aopri1) && isNONE(aopri2))
-#define ARG_PNONE_LABEL (isPNONE(aopri1) && isLABEL(aopri1) && isNONE(aopri2))
-#define ARG_SHORT_LABEL (isSHORT(aopri1) && isLABEL(aopri1) && isNONE(aopri2))
-#define ARG_NEAR_LABEL  (isNEAR (aopri1) && isLABEL(aopri1) && isNONE(aopri2))
-#define ARG_FAR_LABEL   (isFAR  (aopri1) && isLABEL(aopri1) && isNONE(aopri2))
-#define ARG_PNONE_RM16  (isPNONE(aopri1) && isRM16(aopri1) && isNONE(aopri2))
-#define ARG_NEAR_RM16   (isNEAR (aopri1) && isRM16(aopri1) && isNONE(aopri2))
-#define ARG_FAR_M16_16  (isFAR  (aopri1) && isM32 (aopri1) && isNONE(aopri2))
-#define ARG_RM8_CL      (isRM8s (aopri1) && isCL  (aopri2))
-#define ARG_RM16_CL     (isRM16s(aopri1) && isCL  (aopri2))
-#define ARG_AL_DX       (isAL   (aopri1) && isDX  (aopri2))
-#define ARG_DX_AL       (isDX   (aopri1) && isAL  (aopri2))
-#define ARG_AX_DX       (isAX   (aopri1) && isDX  (aopri2))
-#define ARG_DX_AX       (isDX   (aopri1) && isAX  (aopri2))
-
+#define isES(oprinf)    (isSREG(oprinf) && (oprinf).sreg   == SREG_ES)
+#define isCS(oprinf)    (isSREG(oprinf) && (oprinf).sreg   == SREG_CS)
+#define isSS(oprinf)    (isSREG(oprinf) && (oprinf).sreg   == SREG_SS)
+#define isDS(oprinf)    (isSREG(oprinf) && (oprinf).sreg   == SREG_DS)
+#define isFS(oprinf)    (isSREG(oprinf) && (oprinf).sreg   == SREG_FS)
+#define isGS(oprinf)    (isSREG(oprinf) && (oprinf).sreg   == SREG_GS)
+#define isESDI8(oprinf)  ( isM8 (oprinf) && (oprinf).flages && (oprinf).mem == MEM_DI  && (oprinf).mod == MOD_M)
+#define isESDI16(oprinf)  (isM16(oprinf) && (oprinf).flages && (oprinf).mem == MEM_DI  && (oprinf).mod == MOD_M)
+#define isESDI32(oprinf)  (isM32(oprinf) && (oprinf).flages && (oprinf).mem == MEM_DI  && (oprinf).mod == MOD_M)
+#define isESEDI8(oprinf)  (isM8 (oprinf) && (oprinf).flages && (oprinf).mem == MEM_EDI && (oprinf).mod == MOD_M)
+#define isESEDI16(oprinf) (isM16(oprinf) && (oprinf).flages && (oprinf).mem == MEM_EDI && (oprinf).mod == MOD_M)
+#define isESEDI32(oprinf) (isM32(oprinf) && (oprinf).flages && (oprinf).mem == MEM_EDI && (oprinf).mod == MOD_M)
+#define isDSSI8(oprinf)  ( isM8 (oprinf) && (oprinf).mem == MEM_SI  && (oprinf).mod == MOD_M)
+#define isDSSI16(oprinf)  (isM16(oprinf) && (oprinf).mem == MEM_SI  && (oprinf).mod == MOD_M)
+#define isDSSI32(oprinf)  (isM32(oprinf) && (oprinf).mem == MEM_SI  && (oprinf).mod == MOD_M)
+#define isDSESI8(oprinf)  (isM8 (oprinf) && (oprinf).mem == MEM_ESI && (oprinf).mod == MOD_M)
+#define isDSESI16(oprinf) (isM16(oprinf) && (oprinf).mem == MEM_ESI && (oprinf).mod == MOD_M)
+#define isDSESI32(oprinf) (isM32(oprinf) && (oprinf).mem == MEM_ESI && (oprinf).mod == MOD_M)
+/* arg flag level 2 */
+#define ARG_NONE        (isNONE (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_I8          (isI8   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_I16         (isI16  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_I32         (isI32  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_I8s         (isI8s  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_I16s        (isI16s (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_I32s        (isI32s (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_R32         (isR32  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_M32         (isM32  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_M16s        (isM16s (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_M32s        (isM32s (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_RM8s        (isRM8s (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_RM16s       (isRM16s(aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_RM32s       (isRM32s(aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_RM8_R8      (isRM8  (aopri1) && isR8  (aopri2)  && isNONE(aopri3))
+#define ARG_RM16_R16    (isRM16 (aopri1) && isR16 (aopri2)  && isNONE(aopri3))
+#define ARG_RM32_R32    (isRM32 (aopri1) && isR32 (aopri2)  && isNONE(aopri3))
+#define ARG_R8_RM8      (isR8   (aopri1) && isRM8 (aopri2)  && isNONE(aopri3))
+#define ARG_R16_RM16    (isR16  (aopri1) && isRM16(aopri2)  && isNONE(aopri3))
+#define ARG_R32_RM32    (isR32  (aopri1) && isRM32(aopri2)  && isNONE(aopri3))
+#define ARG_R16_RM8     (isR16 (aopri1)  && isRM8s(aopri2)  && isNONE(aopri3))
+#define ARG_R32_RM8     (isR32 (aopri1)  && isRM8s(aopri2)  && isNONE(aopri3))
+#define ARG_R32_RM16    (isR32 (aopri1)  && isRM16s(aopri2) && isNONE(aopri3))
+#define ARG_ES          (isES   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_CS          (isCS   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_SS          (isSS   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_DS          (isDS   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_FS          (isFS   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_GS          (isGS   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_AX          (isAX   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_CX          (isCX   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_DX          (isDX   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_BX          (isBX   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_SP          (isSP   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_BP          (isBP   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_SI          (isSI   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_DI          (isDI   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_EAX         (isEAX  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_ECX         (isECX  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_EDX         (isEDX  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_EBX         (isEBX  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_ESP         (isESP  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_EBP         (isEBP  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_ESI         (isESI  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_EDI         (isEDI  (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_AL_I8u      (isAL   (aopri1) && isI8u (aopri2)  && isNONE(aopri3))
+#define ARG_AX_I8u      (isAX   (aopri1) && isI8u (aopri2)  && isNONE(aopri3))
+#define ARG_I8u_AL      (isI8u  (aopri1) && isAL  (aopri2)  && isNONE(aopri3))
+#define ARG_I8u_AX      (isI8u  (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
+#define ARG_AL_I8       (isAL   (aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_CL_I8       (isCL   (aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_DL_I8       (isDL   (aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_BL_I8       (isBL   (aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_AH_I8       (isAH   (aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_CH_I8       (isCH   (aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_DH_I8       (isDH   (aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_BH_I8       (isBH   (aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_AX_I16      (isAX   (aopri1) && isI16 (aopri2)  && isNONE(aopri3))
+#define ARG_CX_I16      (isCX   (aopri1) && isI16 (aopri2)  && isNONE(aopri3))
+#define ARG_DX_I16      (isDX   (aopri1) && isI16 (aopri2)  && isNONE(aopri3))
+#define ARG_BX_I16      (isBX   (aopri1) && isI16 (aopri2)  && isNONE(aopri3))
+#define ARG_SP_I16      (isSP   (aopri1) && isI16 (aopri2)  && isNONE(aopri3))
+#define ARG_BP_I16      (isBP   (aopri1) && isI16 (aopri2)  && isNONE(aopri3))
+#define ARG_SI_I16      (isSI   (aopri1) && isI16 (aopri2)  && isNONE(aopri3))
+#define ARG_DI_I16      (isDI   (aopri1) && isI16 (aopri2)  && isNONE(aopri3))
+#define ARG_EAX_I32     (isEAX  (aopri1) && isI32 (aopri2)  && isNONE(aopri3))
+#define ARG_ECX_I32     (isECX  (aopri1) && isI32 (aopri2)  && isNONE(aopri3))
+#define ARG_EDX_I32     (isEDX  (aopri1) && isI32 (aopri2)  && isNONE(aopri3))
+#define ARG_EBX_I32     (isEBX  (aopri1) && isI32 (aopri2)  && isNONE(aopri3))
+#define ARG_ESP_I32     (isESP  (aopri1) && isI32 (aopri2)  && isNONE(aopri3))
+#define ARG_EBP_I32     (isEBP  (aopri1) && isI32 (aopri2)  && isNONE(aopri3))
+#define ARG_ESI_I32     (isESI  (aopri1) && isI32 (aopri2)  && isNONE(aopri3))
+#define ARG_EDI_I32     (isEDI  (aopri1) && isI32 (aopri2)  && isNONE(aopri3))
+#define ARG_RM8_I8      (isRM8s (aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_RM16_I16    (isRM16s(aopri1) && isI16 (aopri2)  && isNONE(aopri3))
+#define ARG_RM32_I32    (isRM32s(aopri1) && isI32 (aopri2)  && isNONE(aopri3))
+#define ARG_RM16_I8     (isRM16s(aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_RM32_I8     (isRM32s(aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_RM16_I8     (isRM16s(aopri1) && isI8  (aopri2)  && isNONE(aopri3))
+#define ARG_RM16_SREG   (isRM16 (aopri1) && isSREG (aopri2) && isNONE(aopri3))
+#define ARG_SREG_RM16   (isSREG  (aopri1) && isRM16(aopri2) && isNONE(aopri3))
+#define ARG_RM16        (isRM16 (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_RM32        (isRM32 (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_AX_AX       (isAX   (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
+#define ARG_CX_AX       (isCX   (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
+#define ARG_DX_AX       (isDX   (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
+#define ARG_BX_AX       (isBX   (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
+#define ARG_SP_AX       (isSP   (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
+#define ARG_BP_AX       (isBP   (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
+#define ARG_SI_AX       (isSI   (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
+#define ARG_DI_AX       (isDI   (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
+#define ARG_AL_M8       (isAL   (aopri1) && isM8  (aopri2)  && (aopri2.mod == MOD_M && (aopri2.mem == MEM_BP || aopri2.mem == MEM_EBP)) && isNONE(aopri3))
+#define ARG_M8_AL       (isM8   (aopri1) && isAL  (aopri2)  && (aopri1.mod == MOD_M && (aopri1.mem == MEM_BP || aopri2.mem == MEM_EBP)) && isNONE(aopri3))
+#define ARG_AX_M16      (isAX   (aopri1) && isM16 (aopri2)  && (aopri2.mod == MOD_M && (aopri2.mem == MEM_BP || aopri2.mem == MEM_EBP)) && isNONE(aopri3))
+#define ARG_M16_AX      (isM16  (aopri1) && isAX  (aopri2)  && (aopri1.mod == MOD_M && (aopri1.mem == MEM_BP || aopri1.mem == MEM_EBP)) && isNONE(aopri3))
+#define ARG_EAX_M32     (isEAX  (aopri1) && isM32 (aopri2)  && (aopri2.mod == MOD_M && (aopri2.mem == MEM_BP || aopri2.mem == MEM_EBP)) && isNONE(aopri3))
+#define ARG_M32_EAX     (isM32  (aopri1) && isEAX (aopri2)  && (aopri1.mod == MOD_M && (aopri1.mem == MEM_BP || aopri1.mem == MEM_EBP)) && isNONE(aopri3))
+#define ARG_R16_M16     (isR16  (aopri1) && isM16 (aopri2)  && isNONE(aopri3))
+#define ARG_I16u        (isI16u (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
+#define ARG_PNONE_I8s   (isPNONE(aopri1) && isI8s (aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_PNONE_I16s  (isPNONE(aopri1) && isI16s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_SHORT_I8s   (isSHORT(aopri1) && isI8s (aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_NEAR_I16s   (isNEAR (aopri1) && isI16s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_PNONE_I16   (isPNONE(aopri1) && isI16u(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_SHORT_I16   (isSHORT(aopri1) && isI16u(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_NEAR_I16    (isNEAR (aopri1) && isI16u(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_FAR_I16_16  (isFAR  (aopri1) && isI16p(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_PNONE_LABEL (isPNONE(aopri1) && isLABEL(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_SHORT_LABEL (isSHORT(aopri1) && isLABEL(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_NEAR_LABEL  (isNEAR (aopri1) && isLABEL(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_FAR_LABEL   (isFAR  (aopri1) && isLABEL(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_PNONE_RM16s (isPNONE(aopri1) && isRM16s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_NEAR_RM16s  (isNEAR (aopri1) && isRM16s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_PNONE_RM32s (isPNONE(aopri1) && isRM32s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_NEAR_RM32s  (isNEAR (aopri1) && isRM32s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_FAR_M16_16  (isFAR  (aopri1) && isM32  (aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_RM8_CL      (isRM8s (aopri1) && isCL   (aopri2) && isNONE(aopri3))
+#define ARG_RM16_CL     (isRM16s(aopri1) && isCL   (aopri2) && isNONE(aopri3))
+#define ARG_AL_DX       (isAL   (aopri1) && isDX   (aopri2) && isNONE(aopri3))
+#define ARG_DX_AL       (isDX   (aopri1) && isAL   (aopri2) && isNONE(aopri3))
+#define ARG_AX_DX       (isAX   (aopri1) && isDX   (aopri2) && isNONE(aopri3))
+#define ARG_DX_AX       (isDX   (aopri1) && isAX   (aopri2) && isNONE(aopri3))
+#define ARG_ESDI8_DSSI8   (isESDI8 (aopri1) && isDSSI8 (aopri2) && isNONE(aopri3))
+#define ARG_ESDI16_DSSI16 (isESDI16(aopri1) && isDSSI16(aopri2) && isNONE(aopri3))
+#define ARG_ESDI32_DSSI32 (isESDI32(aopri1) && isDSSI32(aopri2) && isNONE(aopri3))
+#define ARG_DSSI8_ESDI8   (isDSSI8 (aopri1) && isESDI8 (aopri2) && isNONE(aopri3))
+#define ARG_DSSI16_ESDI16 (isDSSI16(aopri1) && isESDI16(aopri2) && isNONE(aopri3))
+#define ARG_DSSI32_ESDI32 (isDSSI32(aopri1) && isESDI32(aopri2) && isNONE(aopri3))
+#define ARG_ESDI8_DX      (isESDI8 (aopri1) && isDX    (aopri2) && isNONE(aopri3))
+#define ARG_ESDI16_DX     (isESDI16(aopri1) && isDX    (aopri2) && isNONE(aopri3))
+#define ARG_ESDI32_DX     (isESDI32(aopri1) && isDX    (aopri2) && isNONE(aopri3))
+#define ARG_DX_DSSI8      (isDX(aopri1)     && isDSSI8 (aopri2) && isNONE(aopri3))
+#define ARG_DX_DSSI16     (isDX(aopri1)     && isDSSI16(aopri2) && isNONE(aopri3))
+#define ARG_DX_DSSI32     (isDX(aopri1)     && isDSSI32(aopri2) && isNONE(aopri3))
+#define ARG_DSSI8         (isDSSI8 (aopri1) && isNONE  (aopri2) && isNONE(aopri3))
+#define ARG_DSSI16        (isDSSI16(aopri1) && isNONE  (aopri2) && isNONE(aopri3))
+#define ARG_DSSI32        (isDSSI32(aopri1) && isNONE  (aopri2) && isNONE(aopri3))
+#define ARG_ESDI8         (isESDI8 (aopri1) && isNONE  (aopri2) && isNONE(aopri3))
+#define ARG_ESDI16        (isESDI16(aopri1) && isNONE  (aopri2) && isNONE(aopri3))
+#define ARG_ESDI32        (isESDI32(aopri1) && isNONE  (aopri2) && isNONE(aopri3))
+#define ARG_ESEDI8_DSESI8   (isESEDI8 (aopri1) && isDSESI8 (aopri2) && isNONE(aopri3))
+#define ARG_ESEDI16_DSESI16 (isESEDI16(aopri1) && isDSESI16(aopri2) && isNONE(aopri3))
+#define ARG_ESEDI32_DSESI32 (isESEDI32(aopri1) && isDSESI32(aopri2) && isNONE(aopri3))
+#define ARG_DSESI8_ESEDI8   (isDSESI8 (aopri1) && isESEDI8 (aopri2) && isNONE(aopri3))
+#define ARG_DSESI16_ESEDI16 (isDSESI16(aopri1) && isESEDI16(aopri2) && isNONE(aopri3))
+#define ARG_DSESI32_ESEDI32 (isDSESI32(aopri1) && isESEDI32(aopri2) && isNONE(aopri3))
+#define ARG_ESEDI8_DX       (isESEDI8 (aopri1) && isDX    (aopri2)  && isNONE(aopri3))
+#define ARG_ESEDI16_DX      (isESEDI16(aopri1) && isDX    (aopri2)  && isNONE(aopri3))
+#define ARG_ESEDI32_DX      (isESEDI32(aopri1) && isDX    (aopri2)  && isNONE(aopri3))
+#define ARG_DX_DSESI8       (isDX(aopri1)      && isDSESI8 (aopri2) && isNONE(aopri3))
+#define ARG_DX_DSESI16      (isDX(aopri1)      && isDSESI16(aopri2) && isNONE(aopri3))
+#define ARG_DX_DSESI32      (isDX(aopri1)      && isDSESI32(aopri2) && isNONE(aopri3))
+#define ARG_DSESI8          (isDSESI8 (aopri1) && isNONE  (aopri2)  && isNONE(aopri3))
+#define ARG_DSESI16         (isDSESI16(aopri1) && isNONE  (aopri2)  && isNONE(aopri3))
+#define ARG_DSESI32         (isDSESI32(aopri1) && isNONE  (aopri2)  && isNONE(aopri3))
+#define ARG_ESEDI8          (isESEDI8 (aopri1) && isNONE  (aopri2)  && isNONE(aopri3))
+#define ARG_ESEDI16         (isESEDI16(aopri1) && isNONE  (aopri2)  && isNONE(aopri3))
+#define ARG_ESEDI32         (isESEDI32(aopri1) && isNONE  (aopri2)  && isNONE(aopri3))
 /* assembly compiler: lexical scanner */
 typedef enum {
 	STATE_START,
@@ -324,6 +433,9 @@ typedef enum {
 	        STATE_ES,           /* ESP, ESI */
 	        STATE_FA,           /* FAR */
 	        STATE_SH,STATE_SHO, STATE_SHOR, /* SHORT */
+			STATE_CR,           /* CRn */
+			STATE_DR,           /* DRn */
+	STATE_T,STATE_TR,           /* TRn */
 	STATE_A,                    /* AX, AH, AL, NUM */
 	STATE_B,                    /* BX, BH, BL, BP, NUM */
 	STATE_C,                    /* CX, CH, CL, CS, NUM */
@@ -344,7 +456,7 @@ typedef enum {
 typedef enum {
 	TOKEN_NULL,TOKEN_END,
 	TOKEN_LSPAREN,TOKEN_RSPAREN,
-	TOKEN_COLON,TOKEN_PLUS,TOKEN_MINUS,
+	TOKEN_COLON,TOKEN_PLUS,TOKEN_MINUS,TOKEN_TIMES,
 	TOKEN_BYTE,TOKEN_WORD,TOKEN_DWORD,
 	TOKEN_SHORT,TOKEN_NEAR,TOKEN_FAR,TOKEN_PTR,
 	TOKEN_IMM8,TOKEN_IMM16,TOKEN_IMM32,
@@ -355,8 +467,12 @@ typedef enum {
 	TOKEN_EAX,TOKEN_EBX,TOKEN_ECX,TOKEN_EDX,
 	TOKEN_ESP,TOKEN_EBP,TOKEN_ESI,TOKEN_EDI,
 	TOKEN_ES,TOKEN_CS,TOKEN_SS,TOKEN_DS,TOKEN_FS,TOKEN_GS,
+	TOKEN_CR0,TOKEN_CR2,TOKEN_CR3,
+	TOKEN_DR0,TOKEN_DR1,TOKEN_DR2,TOKEN_DR3,TOKEN_DR6,TOKEN_DR7,
+	TOKEN_TR6,TOKEN_TR7,
 	TOKEN_CHAR,TOKEN_STRING,TOKEN_LABEL
 } t_aasm_token;
+/* token variables */
 static t_nubit8 tokimm8;
 static t_nubit16 tokimm16;
 static t_nubit32 tokimm32;
@@ -389,6 +505,7 @@ static t_aasm_token gettoken(t_strptr str)
 			case ':': take(TOKEN_COLON);   break;
 			case '+': take(TOKEN_PLUS);    break;
 			case '-': take(TOKEN_MINUS);   break;
+			case '*': take(TOKEN_TIMES);   break;
 			case '0': tokimm = 0x0;toklen = 1;state = STATE_NUM1;break;
 			case '1': tokimm = 0x1;toklen = 1;state = STATE_NUM1;break;
 			case '2': tokimm = 0x2;toklen = 1;state = STATE_NUM1;break;
@@ -408,6 +525,7 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'n': state = STATE_N;break;
 			case 'p': state = STATE_P;break;
 			case 's': state = STATE_S;break;
+			case 't': state = STATE_T;break;
 			case 'w': state = STATE_W;break;
 			case '\'':
 				if (*(tokptr + 2) == '\'') {
@@ -711,6 +829,7 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'x': take(TOKEN_CX);break;
 			case 'h': take(TOKEN_CH);break;
 			case 'l': take(TOKEN_CL);break;
+			case 'r': state = STATE_CR;break;
 			case 's': take(TOKEN_CS);break;
 			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
@@ -736,6 +855,7 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'x': take(TOKEN_DX);break;
 			case 'h': take(TOKEN_DH);break;
 			case 'l': take(TOKEN_DL);break;
+			case 'r': state = STATE_DR;break;
 			case 's': take(TOKEN_DS);break;
 			case 'i': take(TOKEN_DI);break;
 			case 'w': state = STATE_DW;break;
@@ -813,6 +933,12 @@ static t_aasm_token gettoken(t_strptr str)
 			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
+		case STATE_T:
+			switch (tokch) {
+			case 'r': state = STATE_TR;break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			}
+			break;
 		case STATE_W:
 			switch (tokch) {
 			case 'o': state = STATE_WO;break;
@@ -822,6 +948,25 @@ static t_aasm_token gettoken(t_strptr str)
 		case STATE_BY:
 			switch (tokch) {
 			case 't': state = STATE_BYT;break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			}
+			break;
+		case STATE_CR:
+			switch (tokch) {
+			case '0': take(TOKEN_CR0);break;
+			case '2': take(TOKEN_CR2);break;
+			case '3': take(TOKEN_CR3);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			}
+			break;
+		case STATE_DR:
+			switch (tokch) {
+			case '0': take(TOKEN_DR0);break;
+			case '1': take(TOKEN_DR1);break;
+			case '2': take(TOKEN_DR2);break;
+			case '3': take(TOKEN_DR3);break;
+			case '6': take(TOKEN_DR6);break;
+			case '7': take(TOKEN_DR7);break;
 			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
@@ -901,6 +1046,13 @@ static t_aasm_token gettoken(t_strptr str)
 		case STATE_SH:
 			switch (tokch) {
 			case 'o': state = STATE_SHO;break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			}
+			break;
+		case STATE_TR:
+			switch (tokch) {
+			case '6': take(TOKEN_TR6);break;
+			case '7': take(TOKEN_TR7);break;
 			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
@@ -1011,20 +1163,27 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 	t_aasm_oprinfo info;
 	t_bool oldtoken;
 	t_bool bx,bp,si,di,neg;
+	t_bool eax,ecx,edx,ebx,esp,ebp,esi,edi;
+	t_bool ieax,iecx,iedx,iebx,iebp,iesi,iedi;
 	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
 	bx = bp = si = di = neg = 0;
+	eax = ecx = edx = ebx = esp = ebp = esi = edi = 0;
+	ieax = iecx = iedx = iebx = iebp = iesi = iedi = 0;
 	info.type = TYPE_M;
 	info.mod = MOD_M;
+	info.sib.base = R32_EBP; //EBP for NULL Base
+	info.sib.index = R32_ESP; //ESP for NULL Scale
+	info.sib.scale = 0;
 	oldtoken = token;
 	token = gettoken(NULL);
 	if (token == TOKEN_COLON) {
 		switch (oldtoken) {
-		case TOKEN_ES: flages = 1;break;
-		case TOKEN_CS: flagcs = 1;break;
-		case TOKEN_SS: flagss = 1;break;
-		case TOKEN_DS: flagds = 1;break;
-		case TOKEN_FS: flagfs = 1;break;
-		case TOKEN_GS: flaggs = 1;break;
+		case TOKEN_ES: info.flages = 1;break;
+		case TOKEN_CS: info.flagcs = 1;break;
+		case TOKEN_SS: info.flagss = 1;break;
+		case TOKEN_DS: info.flagds = 1;break;
+		case TOKEN_FS: info.flagfs = 1;break;
+		case TOKEN_GS: info.flaggs = 1;break;
 		default: flagerror = 1;break;
 		}
 	} else if (token == TOKEN_NULL || token == TOKEN_END) {
@@ -1032,32 +1191,32 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 		case TOKEN_ES: 
 			info.type = TYPE_SREG;
 			info.mod =  MOD_R;
-			info.seg =  SREG_ES;
+			info.sreg =  SREG_ES;
 			break;
 		case TOKEN_CS: 
 			info.type = TYPE_SREG;
 			info.mod =  MOD_R;
-			info.seg =  SREG_CS;
+			info.sreg =  SREG_CS;
 			break;
 		case TOKEN_SS: 
 			info.type = TYPE_SREG;
 			info.mod =  MOD_R;
-			info.seg =  SREG_SS;
+			info.sreg =  SREG_SS;
 			break;
 		case TOKEN_DS: 
 			info.type = TYPE_SREG;
 			info.mod =  MOD_R;
-			info.seg =  SREG_DS;
+			info.sreg =  SREG_DS;
 			break;
 		case TOKEN_FS: 
 			info.type = TYPE_SREG;
 			info.mod =  MOD_R;
-			info.seg =  SREG_FS;
+			info.sreg =  SREG_FS;
 			break;
 		case TOKEN_GS: 
 			info.type = TYPE_SREG;
 			info.mod =  MOD_R;
-			info.seg =  SREG_GS;
+			info.sreg =  SREG_GS;
 			break;
 		default: flagerror = 1;break;
 		}
@@ -1074,11 +1233,8 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 			switch (token) {
 			case TOKEN_IMM8:
 				if (info.mod != MOD_M) flagerror = 1;
-				if (tokimm8 > 0x80) {
-					tokimm16 = (~((t_nubit16)tokimm8)) + 1;
-					info.disp16 = tokimm16;
-					info.mod = MOD_M_DISP16;
-				} else {
+				if (tokimm8 > 0x80) flagerror = 1;
+				else {
 					tokimm8 = (~tokimm8) + 1;
 					info.disp8 = tokimm8;
 					info.mod = MOD_M_DISP8;
@@ -1086,14 +1242,20 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 				break;
 			case TOKEN_IMM16:
 				if (info.mod != MOD_M) flagerror = 1;
-				if (tokimm16 > 0xff80) {
-					tokimm8 = (t_nubit8)((~tokimm16) + 1);
-					info.disp8 = tokimm8;
-					info.mod = MOD_M_DISP8;
-				} else {
+				if (tokimm16 > 0xff80) flagerror = 1;
+				else {
 					tokimm16 = (~tokimm16) + 1;
 					info.disp16 = tokimm16;
 					info.mod = MOD_M_DISP16;
+				}
+				break;
+			case TOKEN_IMM32:
+				if (info.mod != MOD_M) flagerror = 1;
+				if (tokimm32 > 0xffffff80) flagerror = 1;
+				else {
+					tokimm32 = (~tokimm32) + 1;
+					info.disp32 = tokimm32;
+					info.mod = MOD_M_DISP32;
 				}
 				break;
 			default: flagerror = 1;break;
@@ -1105,61 +1267,276 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 		case TOKEN_DI: if (di) flagerror = 1; else di = 1;break;
 		case TOKEN_IMM8:
 			if (info.mod != MOD_M) flagerror = 1;
-			info.mod = MOD_M_DISP16;
-			info.disp16 = tokimm8;
+			info.mod = MOD_M_DISP8;
+			info.disp8 = tokimm8;
 			break;
 		case TOKEN_IMM16:
 			if (info.mod != MOD_M) flagerror = 1;
 			info.mod = MOD_M_DISP16;
 			info.disp16 = tokimm16;
 			break;
-		default: flagerror = 1;break;
-		}
+		case TOKEN_IMM32:
+			if (info.mod != MOD_M) flagerror = 1;
+			info.mod = MOD_M_DISP32;
+			info.disp32 = tokimm32;
+			break;
+		case TOKEN_EAX:
+			token = gettoken(NULL);
+			if (token == TOKEN_TIMES) {
+				if (ieax) flagerror = 1;
+				else {
+					ieax = 1;
+					token = gettoken(NULL);
+					if (token != TOKEN_IMM8) flagerror = 1;
+					else {
+						info.sib.scale = tokimm8;
+						info.sib.index = R32_EAX;
+					}
+				}
+			} else {
+				if (eax) flagerror = 1;
+				else {
+					eax = 1;
+					info.sib.base = R32_EAX;
+				}
+			}
+			continue;
+			break;
+		case TOKEN_ECX:
+			token = gettoken(NULL);
+			if (token == TOKEN_TIMES) {
+				if (iecx) flagerror = 1;
+				else {
+					iecx = 1;
+					token = gettoken(NULL);
+					if (token != TOKEN_IMM8) flagerror = 1;
+					else {
+						info.sib.scale = tokimm8;
+						info.sib.index = R32_ECX;
+					}
+				}
+			} else {
+				if (ecx) flagerror = 1;
+				else {
+					ecx = 1;
+					info.sib.base = R32_ECX;
+				}
+			}
+			continue;
+			break;
+		case TOKEN_EDX:
+			token = gettoken(NULL);
+			if (token == TOKEN_TIMES) {
+				if (iedx) flagerror = 1;
+				else {
+					iedx = 1;
+					token = gettoken(NULL);
+					if (token != TOKEN_IMM8) flagerror = 1;
+					else {
+						info.sib.scale = tokimm8;
+						info.sib.index = R32_EDX;
+					}
+				}
+			} else {
+				if (edx) flagerror = 1;
+				else {
+					edx = 1;
+					info.sib.base = R32_EDX;
+				}
+			}
+			continue;
+			break;
+		case TOKEN_EBX:
+			token = gettoken(NULL);
+			if (token == TOKEN_TIMES) {
+				if (iebx) flagerror = 1;
+				else {
+					iebx = 1;
+					token = gettoken(NULL);
+					if (token != TOKEN_IMM8) flagerror = 1;
+					else {
+						info.sib.scale = tokimm8;
+						info.sib.index = R32_EBX;
+					}
+				}
+			} else {
+				if (ebx) flagerror = 1;
+				else {
+					ebx = 1;
+					info.sib.base = R32_EBX;
+				}
+			}
+			continue;
+			break;
+		case TOKEN_ESP:
+			token = gettoken(NULL);
+			if (token == TOKEN_TIMES) flagerror = 1;
+			else {
+				if (esp) flagerror = 1;
+				else {
+					esp = 1;
+					info.sib.base = R32_ESP;
+				}
+			}
+			continue;
+			break;
+		case TOKEN_EBP:
+			token = gettoken(NULL);
+			if (token == TOKEN_TIMES) {
+				if (iebp) flagerror = 1;
+				else {
+					iebx = 1;
+					token = gettoken(NULL);
+					if (token != TOKEN_IMM8) flagerror = 1;
+					else {
+						info.sib.scale = tokimm8;
+						info.sib.index = R32_EBP;
+					}
+				}
+			} else {
+				if (ebp) flagerror = 1;
+				else {
+					ebp = 1;
+					info.sib.base = R32_EBP;
+				}
+			}
+			continue;
+			break;
+		case TOKEN_ESI:
+			token = gettoken(NULL);
+			if (token == TOKEN_TIMES) {
+				if (iesi) flagerror = 1;
+				else {
+					iesi = 1;
+					token = gettoken(NULL);
+					if (token != TOKEN_IMM8) flagerror = 1;
+					else {
+						info.sib.scale = tokimm8;
+						info.sib.index = R32_ESI;
+					}
+				}
+			} else {
+				if (esi) flagerror = 1;
+				else {
+					esi = 1;
+					info.sib.base = R32_ESI;
+				}
+			}
+			continue;
+			break;
+		case TOKEN_EDI:
+			token = gettoken(NULL);
+			if (token == TOKEN_TIMES) {
+				if (iedi) flagerror = 1;
+				else {
+					iedi = 1;
+					token = gettoken(NULL);
+					if (token != TOKEN_IMM8) flagerror = 1;
+					else {
+						info.sib.scale = tokimm8;
+						info.sib.index = R32_EDI;
+					}
+				}
+			} else {
+				if (edi) flagerror = 1;
+				else {
+					edi = 1;
+					info.sib.base = R32_EDI;
+				}
+			}
+			continue;
+			break;
+		default: flagerror = 1;break;}
 		token = gettoken(NULL);
 	}
-	if (flagerror || token != TOKEN_END || token != TOKEN_NULL) info.type = TYPE_NONE;
-
-	if (!bx && !si && !bp && !di && info.mod != MOD_M) {
-		info.mem = MEM_BP;
-		if (info.mod == MOD_M_DISP8) {
-			info.disp16 = ((t_nubit16)info.disp8) & 0x00ff;
-			info.mod = MOD_M;
-		} else if (info.mod == MOD_M_DISP16)
-			info.mod = MOD_M;
-		else flagerror = 1;
-	} else {
-		if ( bx &&  si && !bp && !di) info.mem = MEM_BX_SI;
-		else if ( bx && !si && !bp &&  di) info.mem = MEM_BX_DI;
-		else if (!bx &&  si &&  bp && !di) info.mem = MEM_BP_SI;
-		else if (!bx && !si &&  bp &&  di) info.mem = MEM_BP_DI;
-		else if ( bx && !si && !bp && !di) info.mem = MEM_BX;
-		else if (!bx &&  si && !bp && !di) info.mem = MEM_SI;
-		else if (!bx && !si &&  bp && !di) {info.mem = MEM_BP;
-			if (info.mod == MOD_M) {
-				info.mod = MOD_M_DISP8;
-				info.disp8 = 0x00; }}
-		else if (!bx && !si && !bp &&  di) info.mem = MEM_DI;
-		else flagerror = 1;
-		if (info.mod == MOD_M_DISP16 && (info.disp16 < 0x0080 || info.disp16 > 0xff7f)) {
-			info.mod = MOD_M_DISP8;
-			info.disp8 = (t_nubit8)info.disp16;
-		}
+	token = gettoken(NULL);
+	if (flagerror || token != TOKEN_END) {
+		info.type = TYPE_NONE;
+		printtoken(token);
+		return info;
 	}
+
+	if (bx || bp || si || di || info.mod == MOD_M_DISP16) {
+		if (!bx && !si && !bp && !di) {
+			info.mem = MEM_BP;
+			if (info.mod == MOD_M_DISP16)
+				info.mod = MOD_M;
+			else flagerror = 1;
+		} else {
+			if ( bx &&  si && !bp && !di) info.mem = MEM_BX_SI;
+			else if ( bx && !si && !bp &&  di) info.mem = MEM_BX_DI;
+			else if (!bx &&  si &&  bp && !di) info.mem = MEM_BP_SI;
+			else if (!bx && !si &&  bp &&  di) info.mem = MEM_BP_DI;
+			else if ( bx && !si && !bp && !di) info.mem = MEM_BX;
+			else if (!bx &&  si && !bp && !di) info.mem = MEM_SI;
+			else if (!bx && !si &&  bp && !di) {
+				info.mem = MEM_BP;
+				if (info.mod == MOD_M) {
+					info.mod = MOD_M_DISP8;
+					info.disp8 = 0x00;
+				}
+			} else if (!bx && !si && !bp && di) info.mem = MEM_DI;
+			else flagerror = 1;
+			if (info.mod == MOD_M_DISP16) {
+				if (info.disp16 < 0x0080 || info.disp16 > 0xff7f) flagerror = 1;
+			}
+		}
+	} else if (eax || ecx || edx || ebx || esp || ebp || esi || edi ||
+		ieax || iecx || iedx || iebx || iebp || iesi || iedi || info.mod == MOD_M_DISP32) {
+		if (!eax && !ecx && !edx && !ebx && !esp && !ebp && !esi && !edi &&
+			!ieax && !iecx && !iedx && !iebx && !iebp && !iesi && !iedi) {
+			if (info.mod == MOD_M_DISP32) {
+				info.mem = MEM_EBP;
+				info.mod = MOD_M;
+			} else flagerror = 1;
+		} else {
+			if (esp || ieax || iecx || iedx || iebx || iebp || iesi || iedi) {
+				info.mem = MEM_SIB;
+			} else if (eax) info.mem = MEM_EAX;
+			else if (ecx) info.mem = MEM_ECX;
+			else if (edx) info.mem = MEM_EDX;
+			else if (ebx) info.mem = MEM_EBX;
+			else if (ebp) info.mem = MEM_EBP;
+			else if (esi) info.mem = MEM_ESI;
+			else if (edi) info.mem = MEM_EDI;
+			else flagerror = 1;
+			if (info.mod == MOD_M_DISP32) {
+				if (info.disp32 < 0x00000080 || info.disp32 > 0xffffff7f) flagerror = 1;
+			}
+		}
+	} else flagerror = 1;
 	switch (info.mem) {
 	case MEM_BX_SI:
 	case MEM_BX_DI:
 	case MEM_BX:
 	case MEM_SI:
 	case MEM_DI:
-		if (flagds) flagds = 0;
+		if (info.flagds) info.flagds = 0;
 		break;
 	case MEM_BP_SI:
 	case MEM_BP_DI:
-		if (flagss) flagss = 0;
+		if (info.flagss) info.flagss = 0;
 		break;
 	case MEM_BP:
-		if (!bp && flagds) flagds = 0;
-		else if (bp && flagss) flagss = 0;
+		if (!bp && info.flagds) info.flagds = 0;
+		else if (bp && info.flagss) info.flagss = 0;
+		break;
+	case MEM_EAX:
+	case MEM_ECX:
+	case MEM_EDX:
+	case MEM_EBX:
+	case MEM_ESI:
+	case MEM_EDI:
+		if (info.flagds) info.flagds = 0;
+		break;
+	case MEM_EBP:
+		if (info.flagss) info.flagss = 0;
+		break;
+	case MEM_SIB:
+		if (info.sib.base == R32_ESP ||
+			(info.sib.base == R32_EBP && info.mod != MOD_M)) {
+			if (info.flagss) info.flagss = 0;
+		} else if (info.flagds) info.flagds = 0;		
 		break;
 	}
 	info.type = TYPE_M;
@@ -1479,6 +1856,17 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 		}
 		info.ptr = PTR_FAR;
 		break;
+	case TOKEN_CR0: info.type = TYPE_CREG;info.creg = CREG_CR0;break;
+	case TOKEN_CR2: info.type = TYPE_CREG;info.creg = CREG_CR2;break;
+	case TOKEN_CR3: info.type = TYPE_CREG;info.creg = CREG_CR3;break;
+	case TOKEN_DR0: info.type = TYPE_DREG;info.dreg = DREG_DR0;break;
+	case TOKEN_DR1: info.type = TYPE_DREG;info.dreg = DREG_DR1;break;
+	case TOKEN_DR2: info.type = TYPE_DREG;info.dreg = DREG_DR2;break;
+	case TOKEN_DR3: info.type = TYPE_DREG;info.dreg = DREG_DR3;break;
+	case TOKEN_DR6: info.type = TYPE_DREG;info.dreg = DREG_DR6;break;
+	case TOKEN_DR7: info.type = TYPE_DREG;info.dreg = DREG_DR7;break;
+	case TOKEN_TR6: info.type = TYPE_TREG;info.treg = TREG_TR6;break;
+	case TOKEN_TR7: info.type = TYPE_TREG;info.treg = TREG_TR7;break;
 	default:
 		info.type = TYPE_NONE;
 		flagerror = 1;
@@ -1645,9 +2033,21 @@ static void labelStoreRef(t_strptr strlabel, t_aasm_oprptr ptrlabel)
 	//printf("ref saved: '%s' at %04X:%04X\n", strlabel, avcs, avip);
 }
 
-#define setbyte(n) (d_nubit8(acode + iop) = (t_nubit8)(n), iop += 1)
-#define setword(n) (d_nubit16(acode + iop) = (t_nubit16)(n), iop += 2)
-
+static void setbyte(t_nubit8 byte)
+{
+	d_nubit8(acode + iop) = byte;
+	iop += 1;
+}
+static void setword(t_nubit16 word)
+{
+	d_nubit16(acode + iop) = word;
+	iop += 2;
+}
+static void setdword(t_nubit32 dword)
+{
+	d_nubit32(acode + iop) = dword;
+	iop += 4;
+}
 static void LABEL()
 {
 	t_aasm_token token;
@@ -1658,132 +2058,208 @@ static void LABEL()
 	matchtoken(TOKEN_COLON);
 }
 
-static void SetImm8(t_nubit8 byte)
+static void _c_imm8(t_nubit8 byte)
 {
 	setbyte(byte);
 }
-static void SetImm16(t_nubit16 word)
+static void _c_imm16(t_nubit16 word)
 {
 	setword(word);
 }
-static void SetModRegRM(t_aasm_oprinfo modrm, t_nubit8 reg)
+static void _c_imm32(t_nubit32 dword)
 {
-	t_nubit8 modregrm = ((t_nubit8)modrm.mod << 6) | (reg << 3);
-	switch(modrm.mod) {
-	case MOD_M:
-		modregrm |= (t_nubit8)modrm.mem;
-		setbyte(modregrm); avip++;
-		switch(modrm.mem) {
-		case 0: break;
-		case 1: break;
-		case 2: break;
-		case 3: break;
-		case 4: break;
-		case 5: break;
-		case 6: setword(modrm.disp16);avip += 2;break;
-		case 7: break;
-		default:flagerror = 1;break;}
-		break;
-	case MOD_M_DISP8:
-		modregrm |= (t_nubit8)modrm.mem;
-		setbyte(modregrm); avip++;
-		setbyte(modrm.disp8); avip++;
-		switch(modrm.mem) {
-		case 0: break;
-		case 1: break;
-		case 2: break;
-		case 3: break;
-		case 4: break;
-		case 5: break;
-		case 6: break;
-		case 7: break;
-		default:flagerror = 1;break;}
-		break;
-	case MOD_M_DISP16:
-		modregrm |= (t_nubit8)modrm.mem;
-		setbyte(modregrm); avip++;
-		setword(modrm.disp16); avip+= 2;
-		switch(modrm.mem) {
-		case 0: break;
-		case 1: break;
-		case 2: break;
-		case 3: break;
-		case 4: break;
-		case 5: break;
-		case 6: break;
-		case 7: break;
-		default:flagerror = 1;break;}
-		break;
-	case 3:
-		switch (modrm.type) {
-		case TYPE_R8:
-			modregrm |= (t_nubit8)modrm.reg8;
-			setbyte(modregrm); avip++;
-			switch(modrm.reg8) {
-			case 0: break;
-			case 1: break;
-			case 2: break;
-			case 3: break;
-			case 4: break;
-			case 5: break;
-			case 6: break;
-			case 7: break;
+	setdword(dword);
+}
+static void _c_modrm(t_aasm_oprinfo modrm, t_nubit8 reg)
+{
+	t_nubit8 sibval;
+	t_nubit8 modregrm = (reg << 3);
+	switch (modrm.mem) {
+	case MEM_BX_SI:
+	case MEM_BX_DI:
+	case MEM_BP_SI:
+	case MEM_BP_DI:
+	case MEM_SI:
+	case MEM_DI:
+	case MEM_BP:
+	case MEM_BX:
+		_SetAddressSize(2);
+		switch(modrm.mod) {
+		case MOD_M:
+			modregrm |= (0 << 6);
+			modregrm |= (t_nubit8)modrm.mem;
+			setbyte(modregrm);
+			switch(modrm.mem) {
+			case MEM_BP: setword(modrm.disp16);break;
+			default:break;}
+			break;
+		case MOD_M_DISP8:
+			modregrm |= (1 << 6);
+			modregrm |= (t_nubit8)modrm.mem;
+			setbyte(modregrm);
+			setbyte(modrm.disp8);
+			break;
+		case MOD_M_DISP16:
+			modregrm |= (2 << 6);
+			modregrm |= (t_nubit8)modrm.mem;
+			setbyte(modregrm);
+			setword(modrm.disp16);
+			break;
+		case MOD_R:
+			modregrm |= (3 << 6);
+			switch (modrm.type) {
+			case TYPE_R8:
+				modregrm |= (t_nubit8)modrm.reg8;
+				setbyte(modregrm);
+				break;
+			case TYPE_R16:
+				modregrm |= (t_nubit8)modrm.reg16;
+				setbyte(modregrm);
+				break;
+			case TYPE_R32:
+				modregrm |= (t_nubit8)modrm.reg32;
+				setbyte(modregrm);
+				break;
 			default:flagerror = 1;break;}
 			break;
-		case TYPE_R16:
-			modregrm |= (t_nubit8)modrm.reg16;
-			setbyte(modregrm); avip++;
-			switch(modrm.reg16) {
-			case 0: break;
-			case 1: break;
-			case 2: break;
-			case 3: break;
-			case 4: break;
-			case 5: break;
-			case 6: break;
-			case 7: break;
+		default:flagerror = 1;break;}
+		break;
+	case MEM_EAX:
+	case MEM_ECX:
+	case MEM_EDX:
+	case MEM_EBX:
+	case MEM_SIB:
+	case MEM_EBP:
+	case MEM_ESI:
+	case MEM_EDI:
+		_SetAddressSize(4);
+		switch(modrm.mod) {
+		case MOD_M:
+			modregrm |= (0 << 6);
+			modregrm |= (t_nubit8)modrm.mem & 0x07;
+			setbyte(modregrm);
+			switch(modrm.mem) {
+			case MEM_SIB:
+				sibval = (t_nubit8)modrm.sib.base;
+				sibval |= ((t_nubit8)modrm.sib.index << 3);
+				switch (modrm.sib.scale) {
+				case 0: modrm.sib.scale = 0;break;
+				case 1: modrm.sib.scale = 0;break;
+				case 2: modrm.sib.scale = 1;break;
+				case 4: modrm.sib.scale = 2;break;
+				case 8: modrm.sib.scale = 3;break;
+				default:flagerror = 1;break;}
+				sibval |= (modrm.sib.scale << 3);
+				setbyte(sibval);
+				break;
+			case MEM_EBP: setdword(modrm.disp32);break;
+			default:break;}
+			break;
+		case MOD_M_DISP8:
+			modregrm |= (1 << 6);
+			modregrm |= (t_nubit8)modrm.mem & 0x07;
+			setbyte(modregrm);
+			switch(modrm.mem) {
+			case MEM_SIB:
+				sibval = (t_nubit8)modrm.sib.base;
+				sibval |= ((t_nubit8)modrm.sib.index << 3);
+				switch (modrm.sib.scale) {
+				case 0: modrm.sib.scale = 0;break;
+				case 1: modrm.sib.scale = 0;break;
+				case 2: modrm.sib.scale = 1;break;
+				case 4: modrm.sib.scale = 2;break;
+				case 8: modrm.sib.scale = 3;break;
+				default:flagerror = 1;break;}
+				sibval |= (modrm.sib.scale << 3);
+				setbyte(sibval);
+				break;
+			default:break;}
+			setbyte(modrm.disp8);
+			break;
+		case MOD_M_DISP32:
+			modregrm |= (2 << 6);
+			modregrm |= (t_nubit8)modrm.mem & 0x07;
+			setbyte(modregrm);
+			switch(modrm.mem) {
+			case MEM_SIB:
+				sibval = (t_nubit8)modrm.sib.base;
+				sibval |= ((t_nubit8)modrm.sib.index << 3);
+				switch (modrm.sib.scale) {
+				case 0: modrm.sib.scale = 0;break;
+				case 1: modrm.sib.scale = 0;break;
+				case 2: modrm.sib.scale = 1;break;
+				case 4: modrm.sib.scale = 2;break;
+				case 8: modrm.sib.scale = 3;break;
+				default:flagerror = 1;break;}
+				sibval |= (modrm.sib.scale << 3);
+				setbyte(sibval);
+				break;
+			default:break;}
+			setword(modrm.disp32);
+			break;
+		case MOD_R:
+			modregrm |= (3 << 6);
+			switch (modrm.type) {
+			case TYPE_R8:
+				modregrm |= (t_nubit8)modrm.reg8;
+				setbyte(modregrm);
+				break;
+			case TYPE_R16:
+				modregrm |= (t_nubit8)modrm.reg16;
+				setbyte(modregrm);
+				break;
+			case TYPE_R32:
+				modregrm |= (t_nubit8)modrm.reg32;
+				setbyte(modregrm);
+				break;
 			default:flagerror = 1;break;}
 			break;
-		}
+		default:flagerror = 1;break;}
 		break;
-	default:flagerror = 1;break;}
+	default: flagerror = 1;break;}
 }
 
 static void ADD_RM8_R8()
 {
 	setbyte(0x00);
-	avip++;
-	SetModRegRM(aopri1, aopri2.reg8);
+	_c_modrm(aopri1, aopri2.reg8);
 }
-static void ADD_RM16_R16()
+static void ADD_RM32_R32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x01);
-	avip++;
-	SetModRegRM(aopri1, aopri2.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri1, aopri2.reg16);break;
+	case 4: _c_modrm(aopri1, aopri2.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void ADD_R8_RM8()
 {
 	setbyte(0x02);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg8);
+	_c_modrm(aopri2, aopri1.reg8);
 }
-static void ADD_R16_RM16()
+static void ADD_R32_RM32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x03);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri2, aopri1.reg16);break;
+	case 4: _c_modrm(aopri2, aopri1.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void ADD_AL_I8()
 {
 	setbyte(0x04);
-	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
-static void ADD_AX_I16()
+static void ADD_EAX_I32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x05);
-	avip++;
-	SetImm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _c_imm16(aopri2.imm16);break;
+	case 4: _c_imm32(aopri2.imm32);break;
+	default:flagerror = 1;break;}
 }
 static void PUSH_ES()
 {
@@ -1799,37 +2275,46 @@ static void OR_RM8_R8()
 {
 	setbyte(0x08);
 	avip++;
-	SetModRegRM(aopri1, aopri2.reg8);
+	_c_modrm(aopri1, aopri2.reg8);
 }
-static void OR_RM16_R16()
+static void OR_RM32_R32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x09);
-	avip++;
-	SetModRegRM(aopri1, aopri2.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri1, aopri2.reg16);break;
+	case 4: _c_modrm(aopri1, aopri2.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void OR_R8_RM8()
 {
 	setbyte(0x0a);
 	avip++;
-	SetModRegRM(aopri2, aopri1.reg8);
+	_c_modrm(aopri2, aopri1.reg8);
 }
-static void OR_R16_RM16()
+static void OR_R32_RM32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x0b);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri2, aopri1.reg16);break;
+	case 4: _c_modrm(aopri2, aopri1.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void OR_AL_I8()
 {
 	setbyte(0x0c);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
-static void OR_AX_I16()
+static void OR_EAX_I32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x0d);
-	avip++;
-	SetImm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _c_imm16(aopri2.imm16);break;
+	case 4: _c_imm32(aopri2.imm32);break;
+	default:flagerror = 1;break;}
 }
 static void PUSH_CS()
 {
@@ -1845,37 +2330,52 @@ static void ADC_RM8_R8()
 {
 	setbyte(0x10);
 	avip++;
-	SetModRegRM(aopri1, aopri2.reg8);
+	_c_modrm(aopri1, aopri2.reg8);
 }
-static void ADC_RM16_R16()
+static void ADC_RM32_R32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x11);
-	avip++;
-	SetModRegRM(aopri1, aopri2.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri1, aopri2.reg16);break;
+	case 4: _c_modrm(aopri1, aopri2.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void ADC_R8_RM8()
 {
 	setbyte(0x12);
 	avip++;
-	SetModRegRM(aopri2, aopri1.reg8);
+	_c_modrm(aopri2, aopri1.reg8);
 }
 static void ADC_R16_RM16()
 {
 	setbyte(0x13);
 	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	_c_modrm(aopri2, aopri1.reg16);
+}
+static void ADC_R32_RM32(t_nubit8 byte)
+{
+	_SetOperandSize(byte);
+	setbyte(0x13);
+	switch (byte) {
+	case 2: _c_modrm(aopri2, aopri1.reg16);break;
+	case 4: _c_modrm(aopri2, aopri1.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void ADC_AL_I8()
 {
 	setbyte(0x14);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
-static void ADC_AX_I16()
+static void ADC_EAX_I32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x15);
-	avip++;
-	SetImm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _c_imm16(aopri2.imm16);break;
+	case 4: _c_imm32(aopri2.imm32);break;
+	default:flagerror = 1;break;}
 }
 static void PUSH_SS()
 {
@@ -1891,37 +2391,46 @@ static void SBB_RM8_R8()
 {
 	setbyte(0x18);
 	avip++;
-	SetModRegRM(aopri1, aopri2.reg8);
+	_c_modrm(aopri1, aopri2.reg8);
 }
-static void SBB_RM16_R16()
+static void SBB_RM32_R32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x19);
-	avip++;
-	SetModRegRM(aopri1, aopri2.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri1, aopri2.reg16);break;
+	case 4: _c_modrm(aopri1, aopri2.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void SBB_R8_RM8()
 {
 	setbyte(0x1a);
 	avip++;
-	SetModRegRM(aopri2, aopri1.reg8);
+	_c_modrm(aopri2, aopri1.reg8);
 }
-static void SBB_R16_RM16()
+static void SBB_R32_RM32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x1b);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri2, aopri1.reg16);break;
+	case 4: _c_modrm(aopri2, aopri1.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void SBB_AL_I8()
 {
 	setbyte(0x1c);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
-static void SBB_AX_I16()
+static void SBB_EAX_I32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x1d);
-	avip++;
-	SetImm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _c_imm16(aopri2.imm16);break;
+	case 4: _c_imm32(aopri2.imm32);break;
+	default:flagerror = 1;break;}
 }
 static void PUSH_DS()
 {
@@ -1937,37 +2446,46 @@ static void AND_RM8_R8()
 {
 	setbyte(0x20);
 	avip++;
-	SetModRegRM(aopri1, aopri2.reg8);
+	_c_modrm(aopri1, aopri2.reg8);
 }
-static void AND_RM16_R16()
+static void AND_RM32_R32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x21);
-	avip++;
-	SetModRegRM(aopri1, aopri2.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri1, aopri2.reg16);break;
+	case 4: _c_modrm(aopri1, aopri2.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void AND_R8_RM8()
 {
 	setbyte(0x22);
 	avip++;
-	SetModRegRM(aopri2, aopri1.reg8);
+	_c_modrm(aopri2, aopri1.reg8);
 }
-static void AND_R16_RM16()
+static void AND_R32_RM32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x23);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri2, aopri1.reg16);break;
+	case 4: _c_modrm(aopri2, aopri1.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void AND_AL_I8()
 {
 	setbyte(0x24);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
-static void AND_AX_I16()
+static void AND_EAX_I32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x25);
-	avip++;
-	SetImm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _c_imm16(aopri2.imm16);break;
+	case 4: _c_imm32(aopri2.imm32);break;
+	default:flagerror = 1;break;}
 }
 static void ES()
 {
@@ -1987,37 +2505,46 @@ static void SUB_RM8_R8()
 {
 	setbyte(0x28);
 	avip++;
-	SetModRegRM(aopri1, aopri2.reg8);
+	_c_modrm(aopri1, aopri2.reg8);
 }
-static void SUB_RM16_R16()
+static void SUB_RM32_R32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x29);
-	avip++;
-	SetModRegRM(aopri1, aopri2.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri1, aopri2.reg16);break;
+	case 4: _c_modrm(aopri1, aopri2.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void SUB_R8_RM8()
 {
 	setbyte(0x2a);
 	avip++;
-	SetModRegRM(aopri2, aopri1.reg8);
+	_c_modrm(aopri2, aopri1.reg8);
 }
-static void SUB_R16_RM16()
+static void SUB_R32_RM32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x2b);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri2, aopri1.reg16);break;
+	case 4: _c_modrm(aopri2, aopri1.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void SUB_AL_I8()
 {
 	setbyte(0x2c);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
-static void SUB_AX_I16()
+static void SUB_EAX_I32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x2d);
-	avip++;
-	SetImm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _c_imm16(aopri2.imm16);break;
+	case 4: _c_imm32(aopri2.imm32);break;
+	default:flagerror = 1;break;}
 }
 static void CS()
 {
@@ -2037,37 +2564,46 @@ static void XOR_RM8_R8()
 {
 	setbyte(0x30);
 	avip++;
-	SetModRegRM(aopri1, aopri2.reg8);
+	_c_modrm(aopri1, aopri2.reg8);
 }
-static void XOR_RM16_R16()
+static void XOR_RM32_R32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x31);
-	avip++;
-	SetModRegRM(aopri1, aopri2.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri1, aopri2.reg16);break;
+	case 4: _c_modrm(aopri1, aopri2.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void XOR_R8_RM8()
 {
 	setbyte(0x32);
 	avip++;
-	SetModRegRM(aopri2, aopri1.reg8);
+	_c_modrm(aopri2, aopri1.reg8);
 }
-static void XOR_R16_RM16()
+static void XOR_R32_RM32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x33);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri2, aopri1.reg16);break;
+	case 4: _c_modrm(aopri2, aopri1.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void XOR_AL_I8()
 {
 	setbyte(0x34);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
-static void XOR_AX_I16()
+static void XOR_EAX_I32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x35);
-	avip++;
-	SetImm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _c_imm16(aopri2.imm16);break;
+	case 4: _c_imm32(aopri2.imm32);break;
+	default:flagerror = 1;break;}
 }
 static void SS()
 {
@@ -2087,37 +2623,46 @@ static void CMP_RM8_R8()
 {
 	setbyte(0x38);
 	avip++;
-	SetModRegRM(aopri1, aopri2.reg8);
+	_c_modrm(aopri1, aopri2.reg8);
 }
-static void CMP_RM16_R16()
+static void CMP_RM32_R32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x39);
-	avip++;
-	SetModRegRM(aopri1, aopri2.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri1, aopri2.reg16);break;
+	case 4: _c_modrm(aopri1, aopri2.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void CMP_R8_RM8()
 {
 	setbyte(0x3a);
 	avip++;
-	SetModRegRM(aopri2, aopri1.reg8);
+	_c_modrm(aopri2, aopri1.reg8);
 }
-static void CMP_R16_RM16()
+static void CMP_R32_RM32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x3b);
-	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri2, aopri1.reg16);break;
+	case 4: _c_modrm(aopri2, aopri1.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void CMP_AL_I8()
 {
 	setbyte(0x3c);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
-static void CMP_AX_I16()
+static void CMP_EAX_I32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x3d);
-	avip++;
-	SetImm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _c_imm16(aopri2.imm16);break;
+	case 4: _c_imm32(aopri2.imm32);break;
+	default:flagerror = 1;break;}
 }
 static void DS()
 {
@@ -2253,141 +2798,161 @@ static void PUSH_EDI(t_nubit8 byte)
 	_SetOperandSize(byte);
 	setbyte(0x57);
 }
-static void POP_AX()
+static void POP_EAX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x58);
-	avip++;
 }
-static void POP_CX()
+static void POP_ECX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x59);
-	avip++;
 }
-static void POP_DX()
+static void POP_EDX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x5a);
-	avip++;
 }
-static void POP_BX()
+static void POP_EBX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x5b);
-	avip++;
 }
-static void POP_SP()
+static void POP_ESP(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x5c);
-	avip++;
 }
-static void POP_BP()
+static void POP_EBP(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x5d);
-	avip++;
 }
-static void POP_SI()
+static void POP_ESI(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x5e);
-	avip++;
 }
-static void POP_DI()
+static void POP_EDI(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x5f);
-	avip++;
+}
+static void PUSH_I32(t_nubit8 byte)
+{
+	_SetOperandSize(byte);
+	setbyte(0x68);
+	switch (byte) {
+	case 2: _c_imm16(aopri1.imm16);break;
+	case 4: _c_imm32(aopri1.imm32);break;
+	default:flagerror = 1;break;}
+}
+static void PUSH_I8()
+{
+	setbyte(0x6a);
+	_c_imm8(aopri1.imm8);
 }
 static void INS_80(t_nubit8 rid)
 {
 	setbyte(0x80);
-	SetModRegRM(aopri1, rid);
-	SetImm8(aopri2.imm8);
+	_c_modrm(aopri1, rid);
+	_c_imm8(aopri2.imm8);
 }
-static void INS_81(t_nubit8 rid)
+static void INS_81(t_nubit8 rid, t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x81);
-	avip++;
-	SetModRegRM(aopri1, rid);
-	SetImm16(aopri2.imm16);
+	_c_modrm(aopri1, rid);
+	switch (byte) {
+	case 2: _c_imm16(aopri2.imm16);break;
+	case 4: _c_imm32(aopri2.imm32);break;
+	default:flagerror = 1;break;}
 }
-static void INS_83(t_nubit8 rid)
+static void INS_83(t_nubit8 rid, t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x83);
-	avip++;
-	SetModRegRM(aopri1, rid);
-	SetImm8(aopri2.imm8);
+	_c_modrm(aopri1, rid);
+	_c_imm8(aopri2.imm8);
 }
 static void TEST_RM8_R8()
 {
 	setbyte(0x84);
 	avip++;
-	SetModRegRM(aopri1, aopri2.reg8);
+	_c_modrm(aopri1, aopri2.reg8);
 }
 static void TEST_RM16_R16()
 {
 	setbyte(0x85);
 	avip++;
-	SetModRegRM(aopri1, aopri2.reg16);
+	_c_modrm(aopri1, aopri2.reg16);
 }
 static void XCHG_RM8_R8()
 {
 	setbyte(0x86);
-	SetModRegRM(aopri1, aopri2.reg8);
+	_c_modrm(aopri1, aopri2.reg8);
 }
-static void XCHG_RM16_R16()
+static void XCHG_RM32_R32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x87);
-	SetModRegRM(aopri1, aopri2.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri1, aopri2.reg16);break;
+	case 4: _c_modrm(aopri1, aopri2.reg32);break;
+	default:flagerror = 1;break;}
 }
 static void MOV_RM8_R8()
 {
 	setbyte(0x88);
 	avip++;
-	SetModRegRM(aopri1, aopri2.reg8);
+	_c_modrm(aopri1, aopri2.reg8);
 }
 static void MOV_RM32_R32(t_nubit8 byte)
 {
 	_SetOperandSize(byte);
 	setbyte(0x89);
 	switch (byte) {
-	case 2: SetModRegRM(aopri1, aopri2.reg16);break;
-	case 4: SetModRegRM(aopri1, aopri2.reg32);break;
+	case 2: _c_modrm(aopri1, aopri2.reg16);break;
+	case 4: _c_modrm(aopri1, aopri2.reg32);break;
 	default:flagerror = 1;break;}
 }
 static void MOV_R8_RM8()
 {
 	setbyte(0x8a);
 	avip++;
-	SetModRegRM(aopri2, aopri1.reg8);
+	_c_modrm(aopri2, aopri1.reg8);
 }
 static void MOV_R32_RM32(t_nubit8 byte)
 {
 	_SetOperandSize(byte);
 	setbyte(0x8b);
 	switch (byte) {
-	case 2: SetModRegRM(aopri2, aopri1.reg16);break;
-	case 4: SetModRegRM(aopri2, aopri1.reg32);break;
+	case 2: _c_modrm(aopri2, aopri1.reg16);break;
+	case 4: _c_modrm(aopri2, aopri1.reg32);break;
 	default:flagerror = 1;break;}
 }
 static void MOV_RM16_SREG()
 {
 	setbyte(0x8c);
 	avip++;
-	SetModRegRM(aopri1, aopri2.seg);
+	_c_modrm(aopri1, aopri2.sreg);
 }
 static void LEA_R16_M16()
 {
 	setbyte(0x8d);
 	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	_c_modrm(aopri2, aopri1.reg16);
 }
 static void MOV_SREG_RM16()
 {
 	setbyte(0x8e);
-	avip++;
-	SetModRegRM(aopri2, aopri1.seg);
+	_c_modrm(aopri2, aopri1.sreg);
 }
-static void POP_RM16()
+static void POP_RM32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x8f);
-	avip++;
-	SetModRegRM(aopri1, 0x00);
+	_c_modrm(aopri1, 0x00);
 }
 static void NOP()
 {
@@ -2458,8 +3023,8 @@ static void CALL_PTR16_16()
 		labelStoreRef(aopri1.label, PTR_FAR);
 		avip += 4;
 	} else {
-		SetImm16(aopri1.pip);
-		SetImm16(aopri1.pcs);
+		_c_imm16(aopri1.pip);
+		_c_imm16(aopri1.pcs);
 	}
 }
 static void WAIT()
@@ -2487,191 +3052,339 @@ static void LAHF()
 	setbyte(0x9f);
 	avip++;
 }
-static void MOV_AL_M8()
+static void MOV_AL_MOFFS8()
 {
 	setbyte(0xa0);
-	avip++;
-	SetImm16(aopri2.disp16);
+	if (aopri2.mem == MEM_BP) {
+		_SetAddressSize(2);
+		_c_imm16(aopri2.disp16);
+	} else if (aopri2.mem == MEM_EBP) {
+		_SetAddressSize(4);
+		_c_imm16(aopri2.disp32);
+	} else flagerror = 1;
 }
-static void MOV_AX_M16()
+static void MOV_EAX_MOFFS32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0xa1);
-	avip++;
-	SetImm16(aopri2.disp16);
+	if (aopri2.mem == MEM_BP) {
+		_SetAddressSize(2);
+		_c_imm16(aopri2.disp16);
+	} else if (aopri2.mem == MEM_EBP) {
+		_SetAddressSize(4);
+		_c_imm16(aopri2.disp32);
+	} else flagerror = 1;
 }
-static void MOV_M8_AL()
+static void MOV_MOFFS8_AL()
 {
 	setbyte(0xa2);
-	avip++;
-	SetImm16(aopri1.disp16);
+	if (aopri1.mem == MEM_BP) {
+		_SetAddressSize(2);
+		_c_imm16(aopri1.disp16);
+	} else if (aopri1.mem == MEM_EBP) {
+		_SetAddressSize(4);
+		_c_imm16(aopri1.disp32);
+	} else flagerror = 1;
 }
-static void MOV_M16_AX()
+static void MOV_MOFFS32_EAX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0xa3);
-	avip++;
-	SetImm16(aopri1.disp16);
+	if (aopri1.mem == MEM_BP) {
+		_SetAddressSize(2);
+		_c_imm16(aopri1.disp16);
+	} else if (aopri1.mem == MEM_EBP) {
+		_SetAddressSize(4);
+		_c_imm16(aopri1.disp32);
+	} else flagerror = 1;
 }
 static void MOVSB()
 {
 	setbyte(0xa4);
-	avip++;
+	rinfo = &aopri2;
+	if (rinfo->flagds) rinfo->flagds = 0;
+	if (ARG_ESDI8_DSSI8) {
+		_SetAddressSize(2);
+	} else if (ARG_ESEDI8_DSESI8) {
+		_SetAddressSize(4);
+	} else flagerror = 1;
 }
-static void MOVSW()
+static void MOVSW(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0xa5);
-	avip++;
+	rinfo = &aopri2;
+	if (rinfo->flagds) rinfo->flagds = 0;
+	switch (byte) {
+	case 2:
+		if (ARG_ESDI16_DSSI16) {
+			_SetAddressSize(2);
+		} else if (ARG_ESEDI16_DSESI16) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	case 4:
+		if (ARG_ESDI32_DSSI32) {
+			_SetAddressSize(2);
+		} else if (ARG_ESEDI32_DSESI32) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	default:flagerror = 1;break;}
 }
 static void CMPSB()
 {
 	setbyte(0xa6);
-	avip++;
+	rinfo = &aopri1;
+	if (rinfo->flagds) rinfo->flagds = 0;
+	if (ARG_DSSI8_ESDI8) {
+		_SetAddressSize(2);
+	} else if (ARG_DSESI8_ESEDI8) {
+		_SetAddressSize(4);
+	} else flagerror = 1;
 }
-static void CMPSW()
+static void CMPSW(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0xa7);
-	avip++;
+	rinfo = &aopri1;
+	if (rinfo->flagds) rinfo->flagds = 0;
+	switch (byte) {
+	case 2:
+		if (ARG_DSSI16_ESDI16) {
+			_SetAddressSize(2);
+		} else if (ARG_DSESI16_ESEDI16) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	case 4:
+		if (ARG_DSSI32_ESDI32) {
+			_SetAddressSize(2);
+		} else if (ARG_DSESI32_ESEDI32) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	default:flagerror = 1;break;}
 }
 static void TEST_AL_I8()
 {
 	setbyte(0xa8);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
 static void TEST_AX_I16()
 {
 	setbyte(0xa9);
 	avip++;
-	SetImm16(aopri2.imm16);
+	_c_imm16(aopri2.imm16);
 }
 static void STOSB()
 {
 	setbyte(0xaa);
-	avip++;
+	rinfo = NULL;
+	if (ARG_ESDI8) {
+		_SetAddressSize(2);
+	} else if (ARG_ESEDI8) {
+		_SetAddressSize(4);
+	} else flagerror = 1;
 }
-static void STOSW()
+static void STOSW(t_nubit8 byte)
 {
 	setbyte(0xab);
-	avip++;
+	rinfo = NULL;
+	switch (byte) {
+	case 2:
+		if (ARG_ESDI16) {
+			_SetAddressSize(2);
+		} else if (ARG_ESEDI16) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	case 4:
+		if (ARG_ESDI32) {
+			_SetAddressSize(2);
+		} else if (ARG_ESEDI32) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	default:flagerror = 1;break;}
 }
 static void LODSB()
 {
 	setbyte(0xac);
-	avip++;
+	rinfo = &aopri1;
+	if (rinfo->flagds) rinfo->flagds = 0;
+	if (ARG_DSSI8) {
+		_SetAddressSize(2);
+	} else if (ARG_DSESI8) {
+		_SetAddressSize(4);
+	} else flagerror = 1;
 }
-static void LODSW()
+static void LODSW(t_nubit8 byte)
 {
 	setbyte(0xad);
-	avip++;
+	rinfo = &aopri1;
+	if (rinfo->flagds) rinfo->flagds = 0;
+	switch (byte) {
+	case 2:
+		if (ARG_DSSI16) {
+			_SetAddressSize(2);
+		} else if (ARG_DSESI16) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	case 4:
+		if (ARG_DSSI32) {
+			_SetAddressSize(2);
+		} else if (ARG_DSESI32) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	default:flagerror = 1;break;}
 }
 static void SCASB()
 {
 	setbyte(0xae);
-	avip++;
+	rinfo = NULL;
+	if (ARG_ESDI8) {
+		_SetAddressSize(2);
+	} else if (ARG_ESEDI8) {
+		_SetAddressSize(4);
+	} else flagerror = 1;
 }
-static void SCASW()
+static void SCASW(t_nubit8 byte)
 {
 	setbyte(0xaf);
-	avip++;
+	rinfo = NULL;
+	switch (byte) {
+	case 2:
+		if (ARG_ESDI16) {
+			_SetAddressSize(2);
+		} else if (ARG_ESEDI16) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	case 4:
+		if (ARG_ESDI32) {
+			_SetAddressSize(2);
+		} else if (ARG_ESEDI32) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	default:flagerror = 1;break;}
 }
 static void MOV_AL_I8()
 {
 	setbyte(0xb0);
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
 static void MOV_CL_I8()
 {
 	setbyte(0xb1);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
 static void MOV_DL_I8()
 {
 	setbyte(0xb2);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
 static void MOV_BL_I8()
 {
 	setbyte(0xb3);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
 static void MOV_AH_I8()
 {
 	setbyte(0xb4);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
 static void MOV_CH_I8()
 {
 	setbyte(0xb5);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
 static void MOV_DH_I8()
 {
 	setbyte(0xb6);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
 static void MOV_BH_I8()
 {
 	setbyte(0xb7);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
 static void MOV_AX_I16()
 {
 	setbyte(0xb8);
 	avip++;
-	SetImm16(aopri2.imm16);
+	_c_imm16(aopri2.imm16);
 }
 static void MOV_CX_I16()
 {
 	setbyte(0xb9);
 	avip++;
-	SetImm16(aopri2.imm16);
+	_c_imm16(aopri2.imm16);
 }
 static void MOV_DX_I16()
 {
 	setbyte(0xba);
 	avip++;
-	SetImm16(aopri2.imm16);
+	_c_imm16(aopri2.imm16);
 }
 static void MOV_BX_I16()
 {
 	setbyte(0xbb);
-	SetImm16(aopri2.imm16);
+	_c_imm16(aopri2.imm16);
 }
 static void MOV_SP_I16()
 {
 	setbyte(0xbc);
 	avip++;
-	SetImm16(aopri2.imm16);
+	_c_imm16(aopri2.imm16);
 }
 static void MOV_BP_I16()
 {
 	setbyte(0xbd);
 	avip++;
-	SetImm16(aopri2.imm16);
+	_c_imm16(aopri2.imm16);
 }
 static void MOV_SI_I16()
 {
 	setbyte(0xbe);
 	avip++;
-	SetImm16(aopri2.imm16);
+	_c_imm16(aopri2.imm16);
 }
 static void MOV_DI_I16()
 {
 	setbyte(0xbf);
 	avip++;
-	SetImm16(aopri2.imm16);
+	_c_imm16(aopri2.imm16);
+}
+static void INS_C0(t_nubit8 rid)
+{
+	setbyte(0xc0);
+	_c_modrm(aopri1, rid);
+	_c_imm8(aopri2.imm8);
+}
+static void INS_C1(t_nubit8 rid, t_nubit8 byte)
+{
+	_SetOperandSize(byte);
+	setbyte(0xc1);
+	_c_modrm(aopri1, rid);
+	_c_imm8(aopri2.imm8);
 }
 static void RET_I16()
 {
 	setbyte(0xc2);
 	avip++;
-	SetImm16(aopri1.imm16);
+	_c_imm16(aopri1.imm16);
 }
 static void RET_()
 {
@@ -2682,33 +3395,33 @@ static void LES_R16_M16()
 {
 	setbyte(0xc4);
 	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	_c_modrm(aopri2, aopri1.reg16);
 }
 static void LDS_R16_M16()
 {
 	setbyte(0xc5);
 	avip++;
-	SetModRegRM(aopri2, aopri1.reg16);
+	_c_modrm(aopri2, aopri1.reg16);
 }
 static void MOV_M8_I8()
 {
 	setbyte(0xc6);
 	avip++;
-	SetModRegRM(aopri1, 0x00);
-	SetImm8(aopri2.imm8);
+	_c_modrm(aopri1, 0x00);
+	_c_imm8(aopri2.imm8);
 }
 static void MOV_M16_I16()
 {
 	setbyte(0xc7);
 	avip++;
-	SetModRegRM(aopri1, 0x00);
-	SetImm16(aopri2.imm16);
+	_c_modrm(aopri1, 0x00);
+	_c_imm16(aopri2.imm16);
 }
 static void RETF_I16()
 {
 	setbyte(0xca);
 	avip++;
-	SetImm16(aopri1.imm16);
+	_c_imm16(aopri1.imm16);
 }
 static void RETF_()
 {
@@ -2724,7 +3437,7 @@ static void INT_I8()
 {
 	setbyte(0xcd);
 	avip++;
-	SetImm8(aopri1.imm8);
+	_c_imm8(aopri1.imm8);
 }
 static void INTO()
 {
@@ -2740,32 +3453,32 @@ static void INS_D0(t_nubit8 rid)
 {
 	setbyte(0xd0);
 	avip++;
-	SetModRegRM(aopri1, rid);
+	_c_modrm(aopri1, rid);
 }
 static void INS_D1(t_nubit8 rid, t_nubit8 byte)
 {
 	_SetOperandSize(byte);
 	setbyte(0xd1);
-	SetModRegRM(aopri1, rid);
+	_c_modrm(aopri1, rid);
 }
 static void INS_D2(t_nubit8 rid)
 {
 	setbyte(0xd2);
 	avip++;
-	SetModRegRM(aopri1, rid);
+	_c_modrm(aopri1, rid);
 }
 static void INS_D3(t_nubit8 rid)
 {
 	setbyte(0xd3);
 	avip++;
-	SetModRegRM(aopri1, rid);
+	_c_modrm(aopri1, rid);
 }
 static void AAM()
 {
 	if (ARG_NONE) {
 		setbyte(0xd4);
 		avip++;
-		SetImm8(0x0a);
+		_c_imm8(0x0a);
 	} else flagerror = 1;
 }
 static void AAD()
@@ -2773,7 +3486,7 @@ static void AAD()
 	if (ARG_NONE) {
 		setbyte(0xd5);
 		avip++;
-		SetImm8(0x0a);
+		_c_imm8(0x0a);
 	} else flagerror = 1;
 }
 static void XLAT()
@@ -2787,39 +3500,39 @@ static void IN_AL_I8()
 {
 	setbyte(0xe4);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
 static void IN_AX_I8()
 {
 	setbyte(0xe5);
 	avip++;
-	SetImm8(aopri2.imm8);
+	_c_imm8(aopri2.imm8);
 }
 static void OUT_I8_AL()
 {
 	setbyte(0xe6);
 	avip++;
-	SetImm8(aopri1.imm8);
+	_c_imm8(aopri1.imm8);
 }
 static void OUT_I8_AX()
 {
 	setbyte(0xe7);
 	avip++;
-	SetImm8(aopri1.imm8);
+	_c_imm8(aopri1.imm8);
 }
 static void CALL_REL16()
 {
 	setbyte(0xe8);
 	if (ARG_NEAR_LABEL) {
 		labelStoreRef(aopri1.label, PTR_NEAR);
-	} else SetImm16(aopri1.imm16);
+	} else _c_imm16(aopri1.imm16);
 }
 static void JMP_REL16()
 {
 	setbyte(0xe9);
 	if (ARG_NEAR_LABEL) {
 		labelStoreRef(aopri1.label, PTR_NEAR);
-	} else SetImm16(aopri1.imm16);
+	} else _c_imm16(aopri1.imm16);
 }
 static void JMP_PTR16_16()
 {
@@ -2828,8 +3541,8 @@ static void JMP_PTR16_16()
 		labelStoreRef(aopri1.label, PTR_FAR);
 		iop += 4;
 	} else {
-		SetImm16(aopri1.pip);
-		SetImm16(aopri1.pcs);
+		_c_imm16(aopri1.pip);
+		_c_imm16(aopri1.pcs);
 	}
 }
 static void IN_AL_DX()
@@ -2864,7 +3577,7 @@ static void QDX()
 	if (ARG_I8) {
 		setbyte(0xf1);
 		avip++;
-		SetImm8(aopri1.imm8);
+		_c_imm8(aopri1.imm8);
 	} else flagerror = 1;
 }
 static void REPNZ()
@@ -2893,15 +3606,15 @@ static void INS_F6(t_nubit8 rid)
 {
 	setbyte(0xf6);
 	avip++;
-	SetModRegRM(aopri1, rid);
-	if (!rid) SetImm8(aopri2.imm8);
+	_c_modrm(aopri1, rid);
+	if (!rid) _c_imm8(aopri2.imm8);
 }
 static void INS_F7(t_nubit8 rid)
 {
 	setbyte(0xf7);
 	avip++;
-	SetModRegRM(aopri1, rid);
-	if (!rid) SetImm16(aopri2.imm16);
+	_c_modrm(aopri1, rid);
+	if (!rid) _c_imm16(aopri2.imm16);
 }
 static void CLC()
 {
@@ -2948,24 +3661,56 @@ static void STD()
 static void INS_FE(t_nubit8 rid)
 {
 	setbyte(0xfe);
-	avip++;
-	SetModRegRM(aopri1, rid);
+	_c_modrm(aopri1, rid);
 }
-static void INS_FF(t_nubit8 rid)
+static void INS_FF(t_nubit8 rid, t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0xff);
-	avip++;
-	SetModRegRM(aopri1, rid);
+	_c_modrm(aopri1, rid);
 }
 static void PUSH_FS()
 {
-	setbyte(0xf0);
+	setbyte(0x0f);
 	setbyte(0xa0);
+}
+static void POP_FS()
+{
+	setbyte(0x0f);
+	setbyte(0xa1);
 }
 static void PUSH_GS()
 {
-	setbyte(0xf0);
+	setbyte(0x0f);
 	setbyte(0xa8);
+}
+static void POP_GS()
+{
+	setbyte(0x0f);
+	setbyte(0xa9);
+}
+static void INS_0F_01(t_nubit8 rid, t_nubit8 byte)
+{
+	_SetOperandSize(byte);
+	setbyte(0x0f);
+	setbyte(0x01);
+	_c_modrm(aopri1, rid);
+}
+static void MOVZX_R32_RM8(t_nubit8 byte)
+{
+	_SetOperandSize(byte);
+	setbyte(0x0f);
+	setbyte(0xb6);
+	switch (byte) {
+	case 2: _c_modrm(aopri2, aopri1.reg16);break;
+	case 4: _c_modrm(aopri2, aopri1.reg32);break;
+	default:flagerror = 1;break;}
+}
+static void MOVZX_R32_RM16()
+{
+	setbyte(0x0f);
+	setbyte(0xb7);
+	_c_modrm(aopri2, aopri1.reg32);
 }
 /* abstract instructions */
 static void PUSH()
@@ -2992,7 +3737,11 @@ static void PUSH()
 	else if (ARG_EBP) PUSH_EBP(4);
 	else if (ARG_ESI) PUSH_ESI(4);
 	else if (ARG_EDI) PUSH_EDI(4);
-	else if (ARG_RM16) INS_FF(0x06);
+	else if (ARG_RM16) INS_FF(0x06, 2);
+	else if (ARG_RM32) INS_FF(0x06, 4);
+	else if (ARG_I8)  PUSH_I8();
+	else if (ARG_I16) PUSH_I32(2);
+	else if (ARG_I32) PUSH_I32(4);
 	else flagerror = 1;
 }
 static void POP()
@@ -3001,231 +3750,402 @@ static void POP()
 	else if (ARG_CS) POP_CS();
 	else if (ARG_SS) POP_SS();
 	else if (ARG_DS) POP_DS();
-	else if (ARG_AX) POP_AX();
-	else if (ARG_CX) POP_CX();
-	else if (ARG_DX) POP_DX();
-	else if (ARG_BX) POP_BX();
-	else if (ARG_SP) POP_SP();
-	else if (ARG_BP) POP_BP();
-	else if (ARG_SI) POP_SI();
-	else if (ARG_DI) POP_DI();
-	else if (ARG_RM16) POP_RM16();
+	else if (ARG_FS) POP_FS();
+	else if (ARG_GS) POP_GS();
+	else if (ARG_AX) POP_EAX(2);
+	else if (ARG_CX) POP_ECX(2);
+	else if (ARG_DX) POP_EDX(2);
+	else if (ARG_BX) POP_EBX(2);
+	else if (ARG_SP) POP_ESP(2);
+	else if (ARG_BP) POP_EBP(2);
+	else if (ARG_SI) POP_ESI(2);
+	else if (ARG_DI) POP_EDI(2);
+	else if (ARG_EAX) POP_EAX(4);
+	else if (ARG_ECX) POP_ECX(4);
+	else if (ARG_EDX) POP_EDX(4);
+	else if (ARG_EBX) POP_EBX(4);
+	else if (ARG_ESP) POP_ESP(4);
+	else if (ARG_EBP) POP_EBP(4);
+	else if (ARG_ESI) POP_ESI(4);
+	else if (ARG_EDI) POP_EDI(4);
+	else if (ARG_RM16) POP_RM32(2);
+	else if (ARG_RM32) POP_RM32(4);
 	else flagerror = 1;
 }
 static void ADD()
 {
+	t_nubit8 rid = 0x00;
 	if      (ARG_AL_I8)    ADD_AL_I8();
-	else if (ARG_AX_I16)   ADD_AX_I16();
+	else if (ARG_AX_I16)   ADD_EAX_I32(2);
+	else if (ARG_EAX_I32)  ADD_EAX_I32(4);
 	else if (ARG_R8_RM8)   ADD_R8_RM8();
-	else if (ARG_R16_RM16) ADD_R16_RM16();
-	else if (ARG_RM8_I8)   INS_80(0x00);
-	else if (ARG_RM16_I8)  {
+	else if (ARG_R16_RM16) ADD_R32_RM32(2);
+	else if (ARG_R32_RM32) ADD_R32_RM32(4);
+	else if (ARG_RM8_I8)   INS_80(rid);
+	else if (ARG_RM16_I8) {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x00);
-			} else INS_83(0x00);
+				INS_81(rid, 2);
+			} else INS_83(rid, 2);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x00);
+				INS_83(rid, 2);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x00);
+				INS_81(rid, 2);
 			}
-	} else if (ARG_RM16_I16) INS_81(0x00);
+	} else if (ARG_RM32_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = aopri2.imm8;
+				INS_81(rid, 4);
+			} else INS_83(rid, 4);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(rid, 4);
+			else {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = 0xffffff00 | aopri2.imm8;
+				INS_81(rid, 4);
+			}
+	} else if (ARG_RM16_I16) INS_81(rid, 2);
+	else if (ARG_RM32_I32) INS_81(rid, 4);
 	else if (ARG_RM8_R8)   ADD_RM8_R8();
-	else if (ARG_RM16_R16) ADD_RM16_R16();
+	else if (ARG_RM16_R16) ADD_RM32_R32(2);
+	else if (ARG_RM32_R32) ADD_RM32_R32(4);
 	else flagerror = 1;
 }
 static void OR()
 {
+	t_nubit8 rid = 0x01;
 	if      (ARG_AL_I8)    OR_AL_I8();
-	else if (ARG_AX_I16)   OR_AX_I16();
+	else if (ARG_AX_I16)   OR_EAX_I32(2);
+	else if (ARG_EAX_I32)  OR_EAX_I32(4);
 	else if (ARG_R8_RM8)   OR_R8_RM8();
-	else if (ARG_R16_RM16) OR_R16_RM16();
-	else if (ARG_RM8_I8)   INS_80(0x01);
-	else if (ARG_RM16_I8)  {
+	else if (ARG_R16_RM16) OR_R32_RM32(2);
+	else if (ARG_R32_RM32) OR_R32_RM32(4);
+	else if (ARG_RM8_I8)   INS_80(rid);
+	else if (ARG_RM16_I8) {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x01);
-			} else INS_83(0x01);
+				INS_81(rid, 2);
+			} else INS_83(rid, 2);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x01);
+				INS_83(rid, 2);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x01);
+				INS_81(rid, 2);
 			}
-	} else if (ARG_RM16_I16) INS_81(0x01);
+	} else if (ARG_RM32_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = aopri2.imm8;
+				INS_81(rid, 4);
+			} else INS_83(rid, 4);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(rid, 4);
+			else {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = 0xffffff00 | aopri2.imm8;
+				INS_81(rid, 4);
+			}
+	} else if (ARG_RM16_I16) INS_81(rid, 2);
+	else if (ARG_RM32_I32) INS_81(rid, 4);
 	else if (ARG_RM8_R8)   OR_RM8_R8();
-	else if (ARG_RM16_R16) OR_RM16_R16();
+	else if (ARG_RM16_R16) OR_RM32_R32(2);
+	else if (ARG_RM32_R32) OR_RM32_R32(4);
 	else flagerror = 1;
 }
 static void ADC()
 {
+	t_nubit8 rid = 0x02;
 	if      (ARG_AL_I8)    ADC_AL_I8();
-	else if (ARG_AX_I16)   ADC_AX_I16();
+	else if (ARG_AX_I16)   ADC_EAX_I32(2);
+	else if (ARG_EAX_I32)  ADC_EAX_I32(4);
 	else if (ARG_R8_RM8)   ADC_R8_RM8();
-	else if (ARG_R16_RM16) ADC_R16_RM16();
-	else if (ARG_RM8_I8)   INS_80(0x02);
-	else if (ARG_RM16_I8)  {
+	else if (ARG_R16_RM16) ADC_R32_RM32(2);
+	else if (ARG_R32_RM32) ADC_R32_RM32(4);
+	else if (ARG_RM8_I8)   INS_80(rid);
+	else if (ARG_RM16_I8) {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x02);
-			} else INS_83(0x02);
+				INS_81(rid, 2);
+			} else INS_83(rid, 2);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x02);
+				INS_83(rid, 2);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x02);
+				INS_81(rid, 2);
 			}
-	} else if (ARG_RM16_I16) INS_81(0x02);
+	} else if (ARG_RM32_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = aopri2.imm8;
+				INS_81(rid, 4);
+			} else INS_83(rid, 4);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(rid, 4);
+			else {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = 0xffffff00 | aopri2.imm8;
+				INS_81(rid, 4);
+			}
+	} else if (ARG_RM16_I16) INS_81(rid, 2);
+	else if (ARG_RM32_I32) INS_81(rid, 4);
 	else if (ARG_RM8_R8)   ADC_RM8_R8();
-	else if (ARG_RM16_R16) ADC_RM16_R16();
+	else if (ARG_RM16_R16) ADC_RM32_R32(2);
+	else if (ARG_RM32_R32) ADC_RM32_R32(4);
 	else flagerror = 1;
 }
 static void SBB()
 {
+	t_nubit8 rid = 0x03;
 	if      (ARG_AL_I8)    SBB_AL_I8();
-	else if (ARG_AX_I16)   SBB_AX_I16();
+	else if (ARG_AX_I16)   SBB_EAX_I32(2);
+	else if (ARG_EAX_I32)  SBB_EAX_I32(4);
 	else if (ARG_R8_RM8)   SBB_R8_RM8();
-	else if (ARG_R16_RM16) SBB_R16_RM16();
-	else if (ARG_RM8_I8)   INS_80(0x03);
-	else if (ARG_RM16_I8)  {
+	else if (ARG_R16_RM16) SBB_R32_RM32(2);
+	else if (ARG_R32_RM32) SBB_R32_RM32(4);
+	else if (ARG_RM8_I8)   INS_80(rid);
+	else if (ARG_RM16_I8) {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x03);
-			} else INS_83(0x03);
+				INS_81(rid, 2);
+			} else INS_83(rid, 2);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x03);
+				INS_83(rid, 2);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x03);
+				INS_81(rid, 2);
 			}
-	} else if (ARG_RM16_I16) INS_81(0x03);
+	} else if (ARG_RM32_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = aopri2.imm8;
+				INS_81(rid, 4);
+			} else INS_83(rid, 4);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(rid, 4);
+			else {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = 0xffffff00 | aopri2.imm8;
+				INS_81(rid, 4);
+			}
+	} else if (ARG_RM16_I16) INS_81(rid, 2);
+	else if (ARG_RM32_I32) INS_81(rid, 4);
 	else if (ARG_RM8_R8)   SBB_RM8_R8();
-	else if (ARG_RM16_R16) SBB_RM16_R16();
+	else if (ARG_RM16_R16) SBB_RM32_R32(2);
+	else if (ARG_RM32_R32) SBB_RM32_R32(4);
 	else flagerror = 1;
 }
 static void AND()
 {
+	t_nubit8 rid = 0x04;
 	if      (ARG_AL_I8)    AND_AL_I8();
-	else if (ARG_AX_I16)   AND_AX_I16();
+	else if (ARG_AX_I16)   AND_EAX_I32(2);
+	else if (ARG_EAX_I32)  AND_EAX_I32(4);
 	else if (ARG_R8_RM8)   AND_R8_RM8();
-	else if (ARG_R16_RM16) AND_R16_RM16();
-	else if (ARG_RM8_I8)   INS_80(0x04);
-	else if (ARG_RM16_I8)  {
+	else if (ARG_R16_RM16) AND_R32_RM32(2);
+	else if (ARG_R32_RM32) AND_R32_RM32(4);
+	else if (ARG_RM8_I8)   INS_80(rid);
+	else if (ARG_RM16_I8) {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x04);
-			} else INS_83(0x04);
+				INS_81(rid, 2);
+			} else INS_83(rid, 2);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x04);
+				INS_83(rid, 2);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x04);
+				INS_81(rid, 2);
 			}
-	} else if (ARG_RM16_I16) INS_81(0x04);
+	} else if (ARG_RM32_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = aopri2.imm8;
+				INS_81(rid, 4);
+			} else INS_83(rid, 4);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(rid, 4);
+			else {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = 0xffffff00 | aopri2.imm8;
+				INS_81(rid, 4);
+			}
+	} else if (ARG_RM16_I16) INS_81(rid, 2);
+	else if (ARG_RM32_I32) INS_81(rid, 4);
 	else if (ARG_RM8_R8)   AND_RM8_R8();
-	else if (ARG_RM16_R16) AND_RM16_R16();
+	else if (ARG_RM16_R16) AND_RM32_R32(2);
+	else if (ARG_RM32_R32) AND_RM32_R32(4);
 	else flagerror = 1;
 }
 static void SUB()
 {
+	t_nubit8 rid = 0x05;
 	if      (ARG_AL_I8)    SUB_AL_I8();
-	else if (ARG_AX_I16)   SUB_AX_I16();
+	else if (ARG_AX_I16)   SUB_EAX_I32(2);
+	else if (ARG_EAX_I32)  SUB_EAX_I32(4);
 	else if (ARG_R8_RM8)   SUB_R8_RM8();
-	else if (ARG_R16_RM16) SUB_R16_RM16();
-	else if (ARG_RM8_I8)   INS_80(0x05);
-	else if (ARG_RM16_I8)  {
+	else if (ARG_R16_RM16) SUB_R32_RM32(2);
+	else if (ARG_R32_RM32) SUB_R32_RM32(4);
+	else if (ARG_RM8_I8)   INS_80(rid);
+	else if (ARG_RM16_I8) {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x05);
-			} else INS_83(0x05);
+				INS_81(rid, 2);
+			} else INS_83(rid, 2);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x05);
+				INS_83(rid, 2);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x05);
+				INS_81(rid, 2);
 			}
-	} else if (ARG_RM16_I16) INS_81(0x05);
+	} else if (ARG_RM32_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = aopri2.imm8;
+				INS_81(rid, 4);
+			} else INS_83(rid, 4);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(rid, 4);
+			else {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = 0xffffff00 | aopri2.imm8;
+				INS_81(rid, 4);
+			}
+	} else if (ARG_RM16_I16) INS_81(rid, 2);
+	else if (ARG_RM32_I32) INS_81(rid, 4);
 	else if (ARG_RM8_R8)   SUB_RM8_R8();
-	else if (ARG_RM16_R16) SUB_RM16_R16();
+	else if (ARG_RM16_R16) SUB_RM32_R32(2);
+	else if (ARG_RM32_R32) SUB_RM32_R32(4);
 	else flagerror = 1;
 }
 static void XOR()
 {
+	t_nubit8 rid = 0x06;
 	if      (ARG_AL_I8)    XOR_AL_I8();
-	else if (ARG_AX_I16)   XOR_AX_I16();
+	else if (ARG_AX_I16)   XOR_EAX_I32(2);
+	else if (ARG_EAX_I32)  XOR_EAX_I32(4);
 	else if (ARG_R8_RM8)   XOR_R8_RM8();
-	else if (ARG_R16_RM16) XOR_R16_RM16();
-	else if (ARG_RM8_I8)   INS_80(0x06);
-	else if (ARG_RM16_I8)  {
+	else if (ARG_R16_RM16) XOR_R32_RM32(2);
+	else if (ARG_R32_RM32) XOR_R32_RM32(4);
+	else if (ARG_RM8_I8)   INS_80(rid);
+	else if (ARG_RM16_I8) {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x06);
-			} else INS_83(0x06);
+				INS_81(rid, 2);
+			} else INS_83(rid, 2);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x06);
+				INS_83(rid, 2);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x06);
+				INS_81(rid, 2);
 			}
-	} else if (ARG_RM16_I16) INS_81(0x06);
+	} else if (ARG_RM32_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = aopri2.imm8;
+				INS_81(rid, 4);
+			} else INS_83(rid, 4);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(rid, 4);
+			else {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = 0xffffff00 | aopri2.imm8;
+				INS_81(rid, 4);
+			}
+	} else if (ARG_RM16_I16) INS_81(rid, 2);
+	else if (ARG_RM32_I32) INS_81(rid, 4);
 	else if (ARG_RM8_R8)   XOR_RM8_R8();
-	else if (ARG_RM16_R16) XOR_RM16_R16();
+	else if (ARG_RM16_R16) XOR_RM32_R32(2);
+	else if (ARG_RM32_R32) XOR_RM32_R32(4);
 	else flagerror = 1;
 }
 static void CMP()
 {
+	t_nubit8 rid = 0x07;
 	if      (ARG_AL_I8)    CMP_AL_I8();
-	else if (ARG_AX_I16)   CMP_AX_I16();
+	else if (ARG_AX_I16)   CMP_EAX_I32(2);
+	else if (ARG_EAX_I32)  CMP_EAX_I32(4);
 	else if (ARG_R8_RM8)   CMP_R8_RM8();
-	else if (ARG_R16_RM16) CMP_R16_RM16();
-	else if (ARG_RM8_I8)   INS_80(0x07);
-	else if (ARG_RM16_I8)  {
+	else if (ARG_R16_RM16) CMP_R32_RM32(2);
+	else if (ARG_R32_RM32) CMP_R32_RM32(4);
+	else if (ARG_RM8_I8)   INS_80(rid);
+	else if (ARG_RM16_I8) {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x07);
-			} else INS_83(0x07);
+				INS_81(rid, 2);
+			} else INS_83(rid, 2);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x07);
+				INS_83(rid, 2);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x07);
+				INS_81(rid, 2);
 			}
-	} else if (ARG_RM16_I16) INS_81(0x07);
+	} else if (ARG_RM32_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = aopri2.imm8;
+				INS_81(rid, 4);
+			} else INS_83(rid, 4);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(rid, 4);
+			else {
+				aopri2.type = TYPE_I32;
+				aopri2.imm32 = 0xffffff00 | aopri2.imm8;
+				INS_81(rid, 4);
+			}
+	} else if (ARG_RM16_I16) INS_81(rid, 2);
+	else if (ARG_RM32_I32) INS_81(rid, 4);
 	else if (ARG_RM8_R8)   CMP_RM8_R8();
-	else if (ARG_RM16_R16) CMP_RM16_R16();
+	else if (ARG_RM16_R16) CMP_RM32_R32(2);
+	else if (ARG_RM32_R32) CMP_RM32_R32(4);
 	else flagerror = 1;
 }
 static void INC()
@@ -3239,7 +4159,8 @@ static void INC()
 	else if (ARG_SI) INC_SI();
 	else if (ARG_DI) INC_DI();
 	else if (ARG_RM8s) INS_FE(0x00);
-	else if (ARG_RM16s) INS_FF(0x00);
+	else if (ARG_RM16s) INS_FF(0x00, 2);
+	else if (ARG_RM32s) INS_FF(0x00, 4);
 	else flagerror = 1;
 }
 static void DEC()
@@ -3253,24 +4174,25 @@ static void DEC()
 	else if (ARG_SI) DEC_SI();
 	else if (ARG_DI) DEC_DI();
 	else if (ARG_RM8s) INS_FE(0x01);
-	else if (ARG_RM16s) INS_FF(0x01);
+	else if (ARG_RM16s) INS_FF(0x01, 2);
+	else if (ARG_RM32s) INS_FF(0x01, 4);
 	else flagerror = 1;
 }
 static void JCC_REL(t_nubit8 opcode)
 {
 	if (ARG_I8s) {
 		setbyte(opcode);
-		SetImm8(aopri1.imm8);
+		_c_imm8(aopri1.imm8);
 	} else if (ARG_I16s) {
 		_SetOperandSize(2);
 		setbyte(0x0f);
 		setbyte(opcode + 0x10);
-		SetImm16(aopri1.imm16);
+		_c_imm16(aopri1.imm16);
 	} else if (ARG_I32s) {
 		_SetOperandSize(4);
 		setbyte(0x0f);
 		setbyte(opcode + 0x10);
-		SetImm16(aopri1.imm32);
+		_c_imm16(aopri1.imm32);
 	} else if (ARG_PNONE_LABEL || ARG_SHORT_LABEL) {
 		setbyte(opcode);
 		avip++;
@@ -3299,7 +4221,8 @@ static void XCHG()
 	else if (ARG_SI_AX) XCHG_SI_AX();
 	else if (ARG_DI_AX) XCHG_DI_AX();
 	else if (ARG_RM8_R8) XCHG_RM8_R8();
-	else if (ARG_RM16_R16) XCHG_RM16_R16();
+	else if (ARG_RM16_R16) XCHG_RM32_R32(2);
+	else if (ARG_RM32_R32) XCHG_RM32_R32(4);
 	else flagerror = 1;
 }
 static void MOV()
@@ -3320,10 +4243,12 @@ static void MOV()
 	else if (ARG_BP_I16) MOV_BP_I16();
 	else if (ARG_SI_I16) MOV_SI_I16();
 	else if (ARG_DI_I16) MOV_DI_I16();
-	else if (ARG_AL_m8) MOV_AL_M8();
-	else if (ARG_m8_AL) MOV_M8_AL();
-	else if (ARG_AX_m16) MOV_AX_M16();
-	else if (ARG_m16_AX) MOV_M16_AX();
+	else if (ARG_AL_M8) MOV_AL_MOFFS8();
+	else if (ARG_M8_AL) MOV_MOFFS8_AL();
+	else if (ARG_AX_M16) MOV_EAX_MOFFS32(2);
+	else if (ARG_M16_AX) MOV_MOFFS32_EAX(2);
+	else if (ARG_EAX_M32) MOV_EAX_MOFFS32(4);
+	else if (ARG_M32_EAX) MOV_MOFFS32_EAX(4);
 	else if (ARG_R8_RM8) MOV_R8_RM8();
 	else if (ARG_R16_RM16) MOV_R32_RM32(2);
 	else if (ARG_R32_RM32) MOV_R32_RM32(4);
@@ -3345,8 +4270,9 @@ static void CALL()
 {
 	if      (ARG_FAR_I16_16 || ARG_FAR_LABEL) CALL_PTR16_16();
 	else if (ARG_NEAR_I16s || ARG_NEAR_LABEL || ARG_PNONE_I16s) CALL_REL16();
-	else if (ARG_NEAR_RM16 || ARG_PNONE_RM16) INS_FF(0x02);
-	else if (ARG_FAR_M16_16) INS_FF(0x03);
+	else if (ARG_NEAR_RM16s || ARG_PNONE_RM16s) INS_FF(0x02, 2);
+	else if (ARG_NEAR_RM32s || ARG_PNONE_RM32s) INS_FF(0x02, 4);
+	else if (ARG_FAR_M16_16) INS_FF(0x03, 2);
 	else flagerror = 1;
 }
 static void RET()
@@ -3382,58 +4308,91 @@ static void ROL()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x00);
 	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x00, 2);
-	else if (ARG_RM8_CL) INS_D2(0x00);
+	else if (ARG_RM8_CL)  INS_D2(0x00);
 	else if (ARG_RM16_CL) INS_D3(0x00);
+	else if (ARG_RM8_I8)  INS_C0(0x00);
+	else if (ARG_RM16_I8) INS_C1(0x00, 2);
+	else if (ARG_RM32_I8) INS_C1(0x00, 4);
+	else flagerror = 1;
 }
 static void ROR()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x01);
 	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x01, 2);
-	else if (ARG_RM8_CL) INS_D2(0x01);
+	else if (ARG_RM8_CL)  INS_D2(0x01);
 	else if (ARG_RM16_CL) INS_D3(0x01);
+	else if (ARG_RM8_I8)  INS_C0(0x01);
+	else if (ARG_RM16_I8) INS_C1(0x01, 2);
+	else if (ARG_RM32_I8) INS_C1(0x01, 4);
+	else flagerror = 1;
 }
 static void RCL()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x02);
 	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x02, 2);
-	else if (ARG_RM8_CL) INS_D2(0x02);
+	else if (ARG_RM8_CL)  INS_D2(0x02);
 	else if (ARG_RM16_CL) INS_D3(0x02);
+	else if (ARG_RM8_I8)  INS_C0(0x02);
+	else if (ARG_RM16_I8) INS_C1(0x02, 2);
+	else if (ARG_RM32_I8) INS_C1(0x02, 4);
+	else flagerror = 1;
 }
 static void RCR()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x03);
 	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x03, 2);
-	else if (ARG_RM8_CL) INS_D2(0x03);
+	else if (ARG_RM8_CL)  INS_D2(0x03);
 	else if (ARG_RM16_CL) INS_D3(0x03);
+	else if (ARG_RM8_I8)  INS_C0(0x03);
+	else if (ARG_RM16_I8) INS_C1(0x03, 2);
+	else if (ARG_RM32_I8) INS_C1(0x03, 4);
+	else flagerror = 1;
 }
 static void SHL()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x04);
 	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x04, 2);
-	else if (ARG_RM8_CL) INS_D2(0x04);
+	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(0x04, 4);
+	else if (ARG_RM8_CL)  INS_D2(0x04);
 	else if (ARG_RM16_CL) INS_D3(0x04);
+	else if (ARG_RM8_I8)  INS_C0(0x04);
+	else if (ARG_RM16_I8) INS_C1(0x04, 2);
+	else if (ARG_RM32_I8) INS_C1(0x04, 4);
+	else flagerror = 1;
 }
 static void SHR()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x05);
 	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x05, 2);
 	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(0x05, 4);
-	else if (ARG_RM8_CL) INS_D2(0x05);
+	else if (ARG_RM8_CL)  INS_D2(0x05);
 	else if (ARG_RM16_CL) INS_D3(0x05);
+	else if (ARG_RM8_I8)  INS_C0(0x05);
+	else if (ARG_RM16_I8) INS_C1(0x05, 2);
+	else if (ARG_RM32_I8) INS_C1(0x05, 4);
+	else flagerror = 1;
 }
 static void SAL()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x04);
 	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x04, 2);
-	else if (ARG_RM8_CL) INS_D2(0x04);
+	else if (ARG_RM8_CL)  INS_D2(0x04);
 	else if (ARG_RM16_CL) INS_D3(0x04);
+	else if (ARG_RM8_I8)  INS_C0(0x04);
+	else if (ARG_RM16_I8) INS_C1(0x04, 2);
+	else if (ARG_RM32_I8) INS_C1(0x04, 4);
+	else flagerror = 1;
 }
 static void SAR()
 {
 	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x07);
 	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x07, 2);
-	else if (ARG_RM8_CL) INS_D2(0x07);
+	else if (ARG_RM8_CL)  INS_D2(0x07);
 	else if (ARG_RM16_CL) INS_D3(0x07);
+	else if (ARG_RM8_I8)  INS_C0(0x07);
+	else if (ARG_RM16_I8) INS_C1(0x07, 2);
+	else if (ARG_RM32_I8) INS_C1(0x07, 4);
+	else flagerror = 1;
 }
 static void LOOPCC(t_nubit8 opcode)
 {
@@ -3490,12 +4449,31 @@ static void JMP()
 	if      (ARG_FAR_I16_16 || ARG_FAR_LABEL) JMP_PTR16_16();
 	else if (ARG_SHORT_I8s || ARG_SHORT_LABEL || ARG_PNONE_I8s) JCC_REL(0xeb);
 	else if (ARG_NEAR_I16s || ARG_NEAR_LABEL || ARG_PNONE_I16s) JMP_REL16();
-	else if (ARG_NEAR_RM16 || ARG_PNONE_RM16) INS_FF(0x04);
-	else if (ARG_FAR_M16_16) INS_FF(0x05);
+	else if (ARG_NEAR_RM16s || ARG_PNONE_RM16s) INS_FF(0x04, 2);
+	else if (ARG_NEAR_RM32s || ARG_PNONE_RM32s) INS_FF(0x04, 4);
+	else if (ARG_FAR_M16_16) INS_FF(0x05, 2);
 	else flagerror = 1;
 
 }
-
+static void LGDT()
+{
+	if (ARG_M16s) INS_0F_01(0x02, 2);
+	else if (ARG_M32) INS_0F_01(0x02, 4);
+	else flagerror = 1;
+}
+static void SMSW()
+{
+	if (ARG_RM16) INS_0F_01(0x04, 2);
+	else if (ARG_R32) INS_0F_01(0x04, 4);
+	else flagerror = 1;
+}
+static void MOVZX()
+{
+	if (ARG_R16_RM8) MOVZX_R32_RM8(2);
+	else if (ARG_R32_RM8) MOVZX_R32_RM8(4);
+	else if (ARG_R32_RM16) MOVZX_R32_RM16();
+	else flagerror = 1;
+}
 static void DB()
 {
 	t_nubitcc i;
@@ -3646,15 +4624,20 @@ static void exec()
 	else if (!strcmp(rop,"sahf")) SAHF();
 	else if (!strcmp(rop,"lahf")) LAHF();
 	else if (!strcmp(rop,"movsb")) MOVSB();
-	else if (!strcmp(rop,"movsw")) MOVSW();
+	else if (!strcmp(rop,"movsw")) MOVSW(2);
+	else if (!strcmp(rop,"movsd")) MOVSW(4);
 	else if (!strcmp(rop,"cmpsb")) CMPSB();
-	else if (!strcmp(rop,"cmpsw")) CMPSW();
+	else if (!strcmp(rop,"cmpsw")) CMPSW(2);
+	else if (!strcmp(rop,"cmpsd")) CMPSW(4);
 	else if (!strcmp(rop,"stosb")) STOSB();
-	else if (!strcmp(rop,"stosw")) STOSW();
+	else if (!strcmp(rop,"stosw")) STOSW(2);
+	else if (!strcmp(rop,"stosd")) STOSW(4);
 	else if (!strcmp(rop,"lodsb")) LODSB();
-	else if (!strcmp(rop,"lodsw")) LODSW();
+	else if (!strcmp(rop,"lodsw")) LODSW(2);
+	else if (!strcmp(rop,"lodsd")) LODSW(4);
 	else if (!strcmp(rop,"scasb")) SCASB();
-	else if (!strcmp(rop,"scasw")) SCASW();
+	else if (!strcmp(rop,"scasw")) SCASW(2);
+	else if (!strcmp(rop,"scasd")) SCASW(4);
 	else if (!strcmp(rop, "ret")) RET();
 	else if (!strcmp(rop, "les")) LES();
 	else if (!strcmp(rop, "lds")) LDS();
@@ -3704,6 +4687,9 @@ static void exec()
 	else if (!strcmp(rop, "cld")) CLD();
 	else if (!strcmp(rop, "std")) STD();
 	else if (rop[0] == '$') LABEL();
+	else if (!strcmp(rop, "lgdt"))  LGDT();
+	else if (!strcmp(rop, "smsw"))  SMSW();
+	else if (!strcmp(rop, "movzx")) MOVZX();
 	else flagerror = 1;
 //	if (flagerror) printf("exec.flagerror = %d\n",flagerror);
 }
@@ -3763,7 +4749,7 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 	memcpy(astmt, stmt, MAXLINE);
 	rstmt = astmt;
 
-	flages = flagcs = flagss = flagds = flagfs = flaggs = 0;
+	flagopr = flagaddr = 0;
 	flaglock = flagrepz = flagrepnz = 0;
 
 	iop = 0;
@@ -3794,9 +4780,13 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 	aopri3 = parsearg(ropr3);
 	if (flagerror) vapiPrint("bad operand 3: '%s'\n", ropr3);
 
+	if (isM(aopri1)) rinfo = &aopri1;
+	else if (isM(aopri2)) rinfo = &aopri2;
+	else if (isM(aopri3)) rinfo = &aopri3;
+	else rinfo = NULL;
+
 	exec();
 
-	//if (!strcmp(rop, "cmp") && !strcmp(ropr2, "fa"))
 	//	vapiPrint("[%s] [%s/%d] [%s/%d] [%s/%d]\n", rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
 	if (flagerror) {
 		len = 0;
@@ -3804,17 +4794,17 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 		vapiPrint("[%s] [%s/%d] [%s/%d] [%s/%d]\n", rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
 	} else {
 		len = 0;
-		if (flages) {d_nubit8(rcode + len) = 0x26;len++;}
-		if (flagcs) {d_nubit8(rcode + len) = 0x2e;len++;}
-		if (flagss) {d_nubit8(rcode + len) = 0x36;len++;}
-		if (flagds) {d_nubit8(rcode + len) = 0x3e;len++;}
-		if (flagfs) {d_nubit8(rcode + len) = 0x64;len++;}
-		if (flaggs) {d_nubit8(rcode + len) = 0x65;len++;}
-		if (flagopr) {d_nubit8(rcode + len) = 0x66;len++;}
-		if (flagaddr) {d_nubit8(rcode + len) = 0x67;len++;}
+		if (rinfo && rinfo->flages) {d_nubit8(rcode + len) = 0x26;len++;}
+		if (rinfo && rinfo->flagcs) {d_nubit8(rcode + len) = 0x2e;len++;}
+		if (rinfo && rinfo->flagss) {d_nubit8(rcode + len) = 0x36;len++;}
+		if (rinfo && rinfo->flagds) {d_nubit8(rcode + len) = 0x3e;len++;}
+		if (rinfo && rinfo->flagfs) {d_nubit8(rcode + len) = 0x64;len++;}
+		if (rinfo && rinfo->flaggs) {d_nubit8(rcode + len) = 0x65;len++;}
 		if (flaglock) {d_nubit8(rcode + len) = 0xf0;len++;}
 		if (flagrepnz) {d_nubit8(rcode + len) = 0xf2;len++;}
 		if (flagrepz) {d_nubit8(rcode + len) = 0xf3;len++;}
+		if (flagaddr) {d_nubit8(rcode + len) = 0x67;len++;}
+		if (flagopr) {d_nubit8(rcode + len) = 0x66;len++;}
 		memcpy((void *)(rcode + len), (void *)acode, iop);
 		len += iop;
 	}
