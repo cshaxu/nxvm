@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0149]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.014a]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -135,7 +135,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0xbf Linux Console
  * 0xca New BIOS System
  * 0xcc New Console Commands
- * 0xdf Built New Aasm/Dasm/Debug System
+ * 0xdf Rebuilt Aasm/Dasm/Debug System
  * 0xf2 Clean CPUINS; Hard Disk Installed
  * 0xf5 i386 Build Begin
  * 010d Bitmap Font Implemented
@@ -146,6 +146,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0140 Built Trace System
  * 0143 Built Debug 32
  * 0144 Built Aasm 32
+ * 014a Rebuilt VMachine
  *
  * Format Unify:
  * reconstruct t_cpu_sreg

@@ -2892,10 +2892,9 @@ static void ClrPrefix()
 static void ExecIns()
 {
 	t_nubit8 opcode;
-	vcpurec.msize = 0;
 	vcpurec.rcpu = vcpu;
 	vcpurec.linear = (vcpu.cs.selector << 4) + vcpu.ip;
-	if (vcpuinsReadIns(vcpurec.linear, (t_vaddrcc)vcpurec.opcodes))
+	if (vcpuinsReadLinear(vcpurec.linear, (t_vaddrcc)vcpurec.opcodes, 15))
 		vcpurec.oplen = 0;
 	else
 		vcpurec.oplen = 15;
@@ -2945,12 +2944,26 @@ static void QDX()
 }
 
 /* external interface */
-t_bool vcpuinsReadIns(t_nubit32 linear, t_vaddrcc rcode)
+t_bool vcpuinsLoadSreg(t_cpu_sreg *rsreg, t_nubit16 selector)
+{
+	rsreg->selector = selector;
+	rsreg->base = (selector << 4);
+	return 0;
+}
+t_bool vcpuinsReadLinear(t_nubit32 linear, t_vaddrcc rcode, t_nubit8 byte)
 {
 	t_nubit8 i;
 	t_nubit32 physical = linear;
-	for (i = 0;i < 15;++i)
+	for (i = 0;i < byte;++i)
 		d_nubit8(rcode + i) = vramByte(physical + i);
+	return 0;
+}
+t_bool vcpuinsWriteLinear(t_nubit32 linear, t_vaddrcc rcode, t_nubit8 byte)
+{
+	t_nubit8 i;
+	t_nubit32 physical = linear;
+	for (i = 0;i < byte;++i)
+		vramByte(physical + i) = d_nubit8(rcode + i);
 	return 0;
 }
 void vcpuinsInit()
