@@ -23,3 +23,4 @@ vmachine/bios/qdkeyb.c
 vmachine/debug/aasm.c
 vmachine/debug/dasm.c
 vmachine/debug/debug.c
+vmachine/debug/record.c

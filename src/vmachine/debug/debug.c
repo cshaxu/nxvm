@@ -1212,7 +1212,7 @@ static void parse()
 {
 	STRCPY(cmdCopy,cmdBuff);
 	narg = 0;
-	arg[narg] = STRTOK(cmdCopy," ,\t\n\r\f");
+	arg[0] = STRTOK(cmdCopy," ,\t\n\r\f");
 	if(arg[narg]) {
 		lcase(arg[narg]);
 		narg++;

@@ -385,7 +385,7 @@ void vcpuapiPrintCreg(t_cpu *rcpu)
 	vcpuapiPrint("CR3=PDBR=%08X\n", rcpu->cr3);
 }
 
-/*void vcpuapiInit()
+void vcpuapiInit()
 {
 #ifdef VGLOBAL_BOCHS
 	flagvalid = 1;
@@ -427,49 +427,5 @@ void vcpuapiExecAfter()
 		CopyBochsCpu(&newbcpu);
 		if (vcpuapiCheckDiff()) BX_CPU_THIS_PTR magic_break = 1;
 	}
-#endif
-}*/
-
-void vcpuapiInit()
-{
-#ifdef VGLOBAL_BOCHS
-	flagvalid = 1;
-	vcpuInit();
-	oldbcpu = vcpu;
-	recordInit();
-#endif
-}
-void vcpuapiFinal()
-{
-#ifdef VGLOBAL_BOCHS
-	vcpuFinal();
-	recordFinal();
-	recordDump("d:/bx.log");
-#endif
-}
-void vcpuapiExecBefore()
-{
-#ifdef VGLOBAL_BOCHS
-	CopyBochsCpu(&oldbcpu);
-	vcpu = oldbcpu;
-	vcpurec.rcpu = vcpu;
-	vcpurec.linear = vcpu.cs.base + vcpu.eip;
-	if (vcpurec.linear == 0xa78f/*0x7c00*/) {
-		flagvalid = 1;
-		vcpuapiPrint("NXVM and Bochs recording starts here.\n");
-	}
-	if (vcpurec.linear == 0xf4128/*0x7c00*/) {
-		flagvalid = 0;
-		vcpuapiPrint("NXVM and Bochs recording stops here.\n");
-		BX_CPU_THIS_PTR magic_break = 1;
-	}
-	if (flagvalid) {
-		recordExec();
-	}
-#endif
-}
-void vcpuapiExecAfter()
-{
-#ifdef VGLOBAL_BOCHS
 #endif
 }

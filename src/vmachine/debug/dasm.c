@@ -10,7 +10,7 @@
 #include "dasm.h"
 
 typedef char t_dasm_strl[0x0200];
-typedef char t_dasm_strs[0x0020];
+typedef char t_dasm_strs[0x0100];
 
 static t_dasm_strl  dstmt;
 static t_dasm_strs  dbin, dop, dopr, dtip, drm, dr, dimm, dds, dss, dimmoff8, dimmoff16, dimmsign;
@@ -2537,6 +2537,7 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off, t_nubit8 flagout)
 		STRCAT(stmt, dstmt);
 		off = GetMax16(off + l);
 		physical = diptr;
+		if (strlen(stmt) > 0x100) vapiPrint("disassembly failed.\n");
 	} while (IsPrefix(opcode));
 	return len;
 }

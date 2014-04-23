@@ -100,14 +100,13 @@ typedef struct {
 
 typedef struct {
 	t_cpu rcpu;
-	char stmt[0x100];
 	t_cpurec_memory mem[0x20];
 	t_nubit8 msize;
 	t_nubit64 opcode;
 	t_nubit64 stack;
 	t_nubit8 svcextl;
 	t_nubit32 linear;
-	t_nubit32 a1, a2, a3, abit;
+	char dstmt[0x100];
 } t_cpurec;
 
 #define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */

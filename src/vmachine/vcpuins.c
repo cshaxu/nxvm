@@ -9554,7 +9554,6 @@ done CMC()
 }
 tots INS_F6()
 {
-	int i;
 	_cb("INS_F6");
 	i386(0xf6) {
 		_adv;
@@ -11495,12 +11494,7 @@ static void RecInit()
 #endif
 }
 static void RecFinal()
-{
-	vcpurec.a1 = GetMax32(vcpuins.opr1);
-	vcpurec.a2 = GetMax32(vcpuins.opr2);
-	vcpurec.a3 = GetMax32(vcpuins.result);
-	vcpurec.abit = vcpuins.bit;
-}
+{}
 static void ExecInit()
 {
 	vcpu.flagignore = 0;
