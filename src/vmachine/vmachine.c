@@ -64,15 +64,15 @@ void vmachineRefresh()
 	vkbcRefresh();
 */
 	vpitRefresh();
-	qdbiosRefresh();
-	vfddRefresh();
+//	qdbiosRefresh();
+//	vfddRefresh();
 	vfdcRefresh();
 	vdmaRefresh();
 	vpicRefresh();
 	vcmosRefresh();
 	vcpuRefresh();
-	vramRefresh();
-	vportRefresh();
+//	vramRefresh();
+//	vportRefresh();
 }
 void vmachineInit()
 {

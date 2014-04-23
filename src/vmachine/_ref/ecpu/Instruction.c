@@ -5,6 +5,8 @@
 // 作者：梁一信
 //////////////////////////////////////////////////////////////////////////
 
+#if (0)
+
 #include "../vglobal.h"
 #include "../vapi.h"
 #include "../qdbios.h"
@@ -4574,3 +4576,5 @@ void SetupInstructionTable()
 	Ins0FTable[0xFE]=(t_faddrcc)OpcError;
 	Ins0FTable[0xFF]=(t_faddrcc)OpcError;
 }
+
+#endif

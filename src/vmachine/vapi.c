@@ -19,26 +19,10 @@ t_nubit32 vapiPrint(const t_string format, ...)
 	va_end(arg_ptr);
 	return nWrittenBytes;
 }
-void vapiPrintByte(t_nubit8 n)
+void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins)
 {
-	t_nsbit8 c, i;
-	for(i = 1;i >= 0;--i) {
-		c = ((n>>(i*4))&0x0f)+0x30;
-		if(c > 0x39) c += 0x07;
-		vapiPrint("%c",c);
-	}
+	vapiPrint("%04X:%04X  %s\n",segment,offset,ins);
 }
-void vapiPrintWord(t_nubit16 n)
-{
-	t_nsbit8 c, i;
-	for(i = 3;i >= 0;--i) {
-		c = ((n>>(i*4))&0x0f)+0x30;
-		if(c > 0x39) c += 0x07;
-		vapiPrint("%c",c);
-	}
-}
-void vapiPrintAddr(t_nubit16 segment, t_nubit16 offset)
-{vapiPrintWord(segment);vapiPrint(":");vapiPrintWord(offset);}
 
 /* Record */
 

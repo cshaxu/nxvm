@@ -12,8 +12,7 @@
 
 t_nubit32  vapiPrint(const t_string format, ...);
 void vapiPrintByte(t_nubit8 n);
-void vapiPrintWord(t_nubit16 n);
-void vapiPrintAddr(t_nubit16 segment, t_nubit16 offset);
+void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins);
 
 #include "stdio.h"
 
