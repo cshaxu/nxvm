@@ -12,7 +12,7 @@ extern "C" {
 #include "vcpu.h"
 
 #define i386(n) if (1)
-#define VCPUINS_TRACE 0
+#define VCPUINS_TRACE 1
 
 typedef enum {
 	ARITHTYPE_NULL,
@@ -43,17 +43,6 @@ typedef struct {
 	t_nubit32 offset;
 } t_cpuins_logical;
 typedef struct {
-	t_bool flag2;
-	t_nubit32 ph1, ph2;
-	t_nubit32 pl1, pl2;
-} t_cpuins_physical;
-typedef struct {
-	t_nubit64 descriptor;
-	t_nubit16 selector;
-	t_cpuins_logical logical;
-	t_bool flagvalid;
-} t_cpuins_desc;
-typedef struct {
 	/* instruction dispatch */
 	t_faddrcc table[0x100], table_0f[0x100];
 
@@ -70,7 +59,6 @@ typedef struct {
 	t_bool flagmaskint; /* if int is disabled once */
 
 	/* memory management */
-	t_cpuins_desc xdesc;
 	t_cpuins_logical mrm;
 	t_vaddrcc rrm, rr;
 	t_nubit64 crm, cr, cimm;

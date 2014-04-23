@@ -42,8 +42,8 @@ eflags=%08x %s %s %s %s %s %s %s %s %s %s %s %s \
 | cs:eip=%04x:%08x(L%08x) %s"
 #define _printexp \
 do { \
-	fprintf(vrecord.fp, "%04x:%08x(L%08x)\n", _recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip);\
-/*	fprintf(vrecord.fp, _expression, \
+/*	fprintf(vrecord.fp, "%04x:%08x(L%08x)\n", _recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip);*/\
+	fprintf(vrecord.fp, _expression, \
 	_rec.svcextl ? "* " : "", \
 	_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip, \
 	GetMax8(_rec.opcode >> 0), GetMax8(_rec.opcode >> 8), \
@@ -77,7 +77,7 @@ do { \
 		fprintf(vrecord.fp, "[%c:L%08x/%1d/%08x] ", \
 			_rec.mem[j].flagwrite ? 'W' : 'R', _rec.mem[j].linear, \
 			_rec.mem[j].byte, _rec.mem[j].data); \
-	fprintf(vrecord.fp, "\n");*/\
+	fprintf(vrecord.fp, "\n");\
 } while (0)
 
 void recordNow(const t_string fname)

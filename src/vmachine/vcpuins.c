@@ -17,24 +17,7 @@
 #endif
 #include "vcpuins.h"
 
-/*
- * no protected mode
- * no task switch / gates
- * no segmentation
- * no paging
- */
-
-#define _a_ _Arith_
-#define _e_ _Execute_
-#define _s_ _Segment_
-#define _d_ _Decode_
-#define _m_ _Memory_
-#define _p_ _Port_
-#define _c_ _Check_
-
-#define done static void
 #define todo static void /* need to implement */
-#define tots static void /* need to test */
 
 static t_bool flagignore;
 
@@ -251,192 +234,133 @@ static void _kma_write_ref(t_vaddrcc ref, t_nubit64 data, t_nubit8 byte)
 	}
 	_ce;
 }
-/* physical address operations */
-static t_nubit32 _kmap_mapping(t_nubit32 phy)
+/* physical address mapping */
+static t_nubit32 _kma_map_physical(t_nubit32 physical)
 {
-	_cb("_kmap_mapping");
+	_cb("_kma_map_physical");
 #ifndef VGLOBAL_BOCHS
-	if (phy >= 0xfffe0000) phy &= 0x001fffff;
-	if (phy > vramSize) _impossible_r_;
+	if (physical > vramSize) {
+		if (physical >= 0xfffe0000)
+			physical &= 0x001fffff;
+		else
+			_impossible_r_;
+	}
 #endif
 	_ce;
-	return phy;
-}
-static t_nubit64 _kmap_read(t_nubit32 phy, t_nubit8 byte)
-{
-	t_nubit64 result;
-	_cb("_kmap_read");
-	_chr(phy = _kmap_mapping(phy));
-#ifndef VGLOBAL_BOCHS
-	_chr(result = _kma_read_ref(vramAddr(phy), byte));
-#else
-	_chr(result = vcpuapiReadPhysical(phy, byte));
-#endif
-	switch (byte) {
-	case 1: result = GetMax8(result);break;
-	case 2: result = GetMax16(result);break;
-	case 3: result = GetMax24(result);break;
-	case 4: result = GetMax32(result);break;
-	case 5: result &= 0x000000ffffffffff;break;
-	case 6: result = GetMax48(result);break;
-	case 7: result &= 0x00ffffffffffffff;break;
-	case 8: result = GetMax64(result);break;
-	default:_impossible_r_;break;}
-	_ce;
-	return result;
-}
-static void _kmap_write(t_nubit32 phy, t_nubit64 data, t_nubit8 byte)
-{
-	_cb("_kmap_write");
-	_chk(phy = _kmap_mapping(phy));
-	switch (byte) {
-	case 1: data = GetMax8(data);break;
-	case 2: data = GetMax16(data);break;
-	case 3: data = GetMax24(data);break;
-	case 4: data = GetMax32(data);break;
-	case 5: data &= 0x000000ffffffffff;break;
-	case 6: data = GetMax48(data);break;
-	case 7: data &= 0x00ffffffffffffff;break;
-	case 8: data = GetMax64(data);break;
-	default:_impossible_;break;}
-#ifndef VGLOBAL_BOCHS
-	_chk(_kma_write_ref(vramAddr(phy), data, byte));
-#else
-	_chk(vcpuapiWritePhysical(phy, data, byte));
-#endif
-	_ce;
+	return physical;
 }
 /* read content from physical */
-static t_nubit64 _kma_read_physical(t_cpuins_physical *rphy)
+static t_nubit64 _kma_read_physical(t_nubit32 physical, t_nubit8 byte)
 {
-	t_nubit64 result;
+	t_nubit64 cdata;
 	_cb("_kma_read_physical");
-	_chr(result = _kmap_read((rphy->ph1), rphy->pl1));
-	if (rphy->flag2) {
-		_bb("Paging(1),flag2(1)");
-		rphy->ph2 = _kmap_mapping(rphy->ph2);
-		_chr(result |= (_kmap_read(rphy->ph2, rphy->pl2) << (rphy->pl1 * 8)));
-		_be;
-	}
+	_chr(physical = _kma_map_physical(physical));
+#ifndef VGLOBAL_BOCHS
+	_chr(cdata = _kma_read_ref(vramAddr(physical), byte));
+#else
+	_chr(cdata = vcpuapiReadPhysical(physical, byte));
+#endif
+	switch (byte) {
+	case 1: cdata &= 0x00000000000000ff;break;
+	case 2: cdata &= 0x000000000000ffff;break;
+	case 3: cdata &= 0x0000000000ffffff;break;
+	case 4: cdata &= 0x00000000ffffffff;break;
+	case 5: cdata &= 0x000000ffffffffff;break;
+	case 6: cdata &= 0x0000ffffffffffff;break;
+	case 7: cdata &= 0x00ffffffffffffff;break;
+	case 8: cdata &= 0xffffffffffffffff;break;
+	default:_impossible_r_;break;}
 	_ce;
-	return result;
+	return cdata;
 }
 /* write content to physical */
-static void _kma_write_physical(t_cpuins_physical *rphy, t_nubit64 data)
+static void _kma_write_physical(t_nubit32 physical, t_nubit64 cdata, t_nubit8 byte)
 {
 	_cb("_kma_write_physical");
-	_chk(_kmap_write(rphy->ph1, data, rphy->pl1));
-	if (rphy->flag2) {
-		_bb("Paging(1),flag2(1)");
-		_chk(_kmap_write(rphy->ph2, (data >> (rphy->pl1 * 8)), rphy->pl2));
-		_be;
-	}
+	_chk(physical = _kma_map_physical(physical));
+	switch (byte) {
+	case 1: cdata &= 0x00000000000000ff;break;
+	case 2: cdata &= 0x000000000000ffff;break;
+	case 3: cdata &= 0x0000000000ffffff;break;
+	case 4: cdata &= 0x00000000ffffffff;break;
+	case 5: cdata &= 0x000000ffffffffff;break;
+	case 6: cdata &= 0x0000ffffffffffff;break;
+	case 7: cdata &= 0x00ffffffffffffff;break;
+	case 8: cdata &= 0xffffffffffffffff;break;
+	default:_impossible_;break;}
+#ifndef VGLOBAL_BOCHS
+	_chk(_kma_write_ref(vramAddr(physical), cdata, byte));
+#else
+	_chk(vcpuapiWritePhysical(physical, cdata, byte));
+#endif
 	_ce;
 }
 /* translate linear to physical - paging mechanism*/
-static void _kma_physical_linear(t_cpuins_physical *rphy, t_nubit32 linear, t_nubit8 byte, t_bool write, t_nubit8 vpl)
+static t_nubit32 _kma_physical_linear(t_nubit32 linear, t_nubit8 byte, t_bool write, t_nubit8 vpl)
 {
 	t_nubit32 ppde, ppte; /* page table entries */
 	t_nubit32 cpde, cpte;
-	t_nubit8  byte1, byte2;
-	_cb("_kma_physical_linear");
+	_cb("_t_kma_physical_linear");
+	if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) _impossible_r_;
 	if (!_IsPaging) {
-		_bb("!Paging");
-		if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
-			_bb("Linear_Offset(>PageSize)");
-			byte1 = _GetPageSize - _GetLinear_Offset(linear);
-			byte2 = byte - byte1;
-			_chk(_kma_physical_linear(rphy, linear + byte1, byte2, write, vpl));
-			rphy->flag2 = 1;
-			rphy->ph2 = rphy->ph1;
-			rphy->pl2 = byte2;
-			rphy->ph1 = linear;
-			rphy->pl1 = byte1;
-			_be;
-		} else {
-			rphy->flag2 = 0;
-			rphy->ph1 = linear;
-			rphy->pl1 = byte;
-			rphy->ph2 = 0x00000000;
-			rphy->pl2 = 0x00;
-		}
+		_ce;
+		return linear;
+	}
+	ppde = _GetCR3_Base + _GetLinear_Dir(linear) * 4;
+	_chr(cpde =  GetMax32(_kma_read_physical(ppde, 4)));
+	if (!_IsPageEntryPresent(cpde)) {
+		_bb("!PageDirEntryPresent");
+		vcpu.cr2 = linear;
+		_chr(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
 		_be;
-	} else {
-		_bb("Paging");
-		ppde = _GetCR3_Base + _GetLinear_Dir(linear) * 4;
-		_chk(cpde =  GetMax32(_kmap_read(ppde, 4)));
-		if (!_IsPageEntryPresent(cpde)) {
-			_bb("!PageDirEntryPresent");
+	}
+	if (vpl == 0x03) {
+		_bb("vpl(3)");
+		if (!_GetPageEntry_US(cpde)) {
+			_bb("PageDirEntry_US(0)");
 			vcpu.cr2 = linear;
-			_chk(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
+			_chr(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
 			_be;
 		}
-		if (vpl == 0x03) {
-			_bb("vpl(3)");
-			if (!_GetPageEntry_US(cpde)) {
-				_bb("PageDirEntry_US(0)");
-				vcpu.cr2 = linear;
-				_chk(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
-				_be;
-			}
-			if (write && !_IsPageEntryWritable(cpde)) {
-				_bb("write,!PageDirEntryWritable");
-				vcpu.cr2 = linear;
-				_chk(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
-				_be;
-			}
-			_be;
-		}
-		_SetPageEntry_A(cpde);
-		_chk(_kmap_write(ppde, cpde, 4));
-		ppte = _GetPageEntry_Base(cpde) + _GetLinear_Page(linear) * 4;
-		_chk(cpte = GetMax32(_kmap_read(ppte, 4)));
-		if (!_IsPageEntryPresent(cpte)) {
-			_bb("!PageTabEntryPresent");
+		if (write && !_IsPageEntryWritable(cpde)) {
+			_bb("write,!PageDirEntryWritable");
 			vcpu.cr2 = linear;
-			_chk(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
+			_chr(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
 			_be;
-		}
-		if (vpl == 0x03) {
-			_bb("vpl(3)");
-			if (!_GetPageEntry_US(cpte)) {
-				_bb("PageTabEntry_US(0)");
-				vcpu.cr2 = linear;
-				_chk(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
-				_be;
-			}
-			if (write && !_IsPageEntryWritable(cpte)) {
-				_bb("write,!PageTabEntryWritable");
-				vcpu.cr2 = linear;
-				_chk(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
-				_be;
-			}
-			_be;
-		}
-		_SetPageEntry_A(cpte);
-		if (write) _SetPageEntry_D(cpte);
-		_chk(_kmap_write(ppte, cpte, 4));
-		if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
-			_bb("Linear_Offset(>PageSize)");
-			byte1 = _GetPageSize - _GetLinear_Offset(linear);
-			byte2 = byte - byte1;
-			_chk(_kma_physical_linear(rphy, linear + byte1, byte2, write, vpl));
-			rphy->flag2 = 1;
-			rphy->ph2 = rphy->ph1;
-			rphy->pl2 = byte2;
-			rphy->ph1 = _GetPageEntry_Base(cpte) + _GetLinear_Offset(linear);
-			rphy->pl1 = byte1;
-			_be;
-		} else {
-			rphy->flag2 = 0;
-			rphy->ph1 = _GetPageEntry_Base(cpte) + _GetLinear_Offset(linear);
-			rphy->pl1 = byte;
-			rphy->ph2 = 0x00000000;
-			rphy->pl2 = 0x00;
 		}
 		_be;
 	}
+	_SetPageEntry_A(cpde);
+	_chr(_kma_write_physical(ppde, cpde, 4));
+	ppte = _GetPageEntry_Base(cpde) + _GetLinear_Page(linear) * 4;
+	_chr(cpte = GetMax32(_kma_read_physical(ppte, 4)));
+	if (!_IsPageEntryPresent(cpte)) {
+		_bb("!PageTabEntryPresent");
+		vcpu.cr2 = linear;
+		_chr(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
+		_be;
+	}
+	if (vpl == 0x03) {
+		_bb("vpl(3)");
+		if (!_GetPageEntry_US(cpte)) {
+			_bb("PageTabEntry_US(0)");
+			vcpu.cr2 = linear;
+			_chr(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
+			_be;
+		}
+		if (write && !_IsPageEntryWritable(cpte)) {
+			_bb("write,!PageTabEntryWritable");
+			vcpu.cr2 = linear;
+			_chr(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
+			_be;
+		}
+		_be;
+	}
+	_SetPageEntry_A(cpte);
+	if (write) _SetPageEntry_D(cpte);
+	_chr(_kma_write_physical(ppte, cpte, 4));
 	_ce;
+	return (_GetPageEntry_Base(cpte) + _GetLinear_Offset(linear));
 }
 /* translate logical to linear - segmentation mechanism */
 static t_nubit32 _kma_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
@@ -589,14 +513,31 @@ static t_nubit32 _kma_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubi
 /* read content from logical */
 static t_nubit64 _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_nubit8 vpl, t_bool force)
 {
+//	t_nubitcc i;
 	t_nubit32 linear;
-	t_cpuins_physical physical;
-	t_nubit64 result;
-	t_nubitcc i;
+	t_nubit32 phy1, phy2;
+	t_nubit8  byte1, byte2;
+	t_nubit64 res1, res2, result;
 	_cb("_kma_read_logical");
 	_chr(linear = _kma_linear_logical(rsreg, offset, byte, 0, vpl, force));
-	_chr(_kma_physical_linear(&physical, linear, byte, 0, vpl));
-	_chr(result = _kma_read_physical(&physical));
+	if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
+		_bb("Linear_Offset(>PageSize)");
+		byte1 = _GetPageSize - _GetLinear_Offset(linear);
+		byte2 = byte - byte1;
+		_chr(phy1 = _kma_physical_linear(linear        , byte1, 0, vpl));
+		_chr(phy2 = _kma_physical_linear(linear + byte1, byte2, 0, vpl));
+		_chr(res1 = _kma_read_physical(phy1, byte1));
+		_chr(res2 = _kma_read_physical(phy2, byte2));
+		result = ((res2 << (byte1 * 8)) | res1);
+		_be;
+	} else {
+		_bb("Linear_Offset(<=PageSize)");
+		byte1 = byte;
+		_chr(phy1 = _kma_physical_linear(linear, byte1, 0, vpl));
+		_chr(res1 = _kma_read_physical(phy1, byte1));
+		result = res1;
+		_be;
+	}
 	if (!force) {
 		_bb("!force");
 		vcpurec.mem[vcpurec.msize].flagwrite = 0;
@@ -606,20 +547,20 @@ static t_nubit64 _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8
 		if (vcpuins.flagwr) {
 			if (vcpuins.wrlin >= vcpurec.mem[vcpurec.msize].linear &&
 				vcpuins.wrlin < vcpurec.mem[vcpurec.msize].linear + byte) {
-				vapiPrint("L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", vcpurec.linear,
+				vapiPrint("Watch point caught at L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", vcpurec.linear,
 					vcpurec.mem[vcpurec.msize].byte,
 					vcpurec.mem[vcpurec.msize].data,
 					vcpurec.mem[vcpurec.msize].linear);
 			}
 		}
-		for (i = 0;i < vcpurec.msize;++i) {
+		/*for (i = 0;i < vcpurec.msize;++i) {
 			if (vcpurec.mem[i].flagwrite == vcpurec.mem[vcpurec.msize].flagwrite &&
 				vcpurec.mem[i].linear == vcpurec.mem[vcpurec.msize].linear) {
 				_bb("mem(same)");
 				_impossible_r_;
 				_ce;
 			}
-		}
+		}*/
 		vcpurec.msize++;
 		if (vcpurec.msize == 0x20) _impossible_r_;
 		_be;
@@ -630,13 +571,32 @@ static t_nubit64 _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8
 /* write content to logical */
 static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 data, t_nubit8 byte, t_nubit8 vpl, t_bool force)
 {
+//	t_nubitcc i;
 	t_nubit32 linear;
-	t_cpuins_physical physical;
-	int i;
+	t_nubit32 phy1, phy2;
+	t_nubit8  byte1, byte2;
+	t_nubit64 data1, data2;
 	_cb("_kma_write_logical");
 	_chk(linear = _kma_linear_logical(rsreg, offset, byte, 1, vpl, force));
-	_chk(_kma_physical_linear(&physical, linear, byte, 1, vpl));
-	_chk(_kma_write_physical(&physical, data));
+	if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
+		_bb("Linear_Offset(>PageSize)");
+		byte1 = _GetPageSize - _GetLinear_Offset(linear);
+		byte2 = byte - byte1;
+		data1 = data;
+		data2 = (data >> (byte1 * 8));
+		_chk(phy1 = _kma_physical_linear(linear        , byte1, 1, vpl));
+		_chk(phy2 = _kma_physical_linear(linear + byte1, byte2, 1, vpl));
+		_chk(_kma_write_physical(phy1, data1, byte1));
+		_chk(_kma_write_physical(phy2, data2, byte2));
+		_be;
+	} else {
+		_bb("Linear_Offset(<=PageSize)");
+		byte1 = byte;
+		data1 = data;
+		_chk(phy1 = _kma_physical_linear(linear, byte1, 1, vpl));
+		_chk(_kma_write_physical(phy1, data1, byte1));
+		_be;
+	}
 	if (!force) {
 		_bb("!force");
 		vcpurec.mem[vcpurec.msize].flagwrite = 1;
@@ -652,14 +612,14 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 da
 					vcpurec.mem[vcpurec.msize].linear);
 			}
 		}
-		for (i = 0;i < vcpurec.msize;++i) {
+		/*for (i = 0;i < vcpurec.msize;++i) {
 			if (vcpurec.mem[i].flagwrite == vcpurec.mem[vcpurec.msize].flagwrite &&
 				vcpurec.mem[i].linear == vcpurec.mem[vcpurec.msize].linear) {
 				_bb("mem(same)");
 				_impossible_;
 				_ce;
 			}
-		}
+		}*/
 		vcpurec.msize++;
 		if (vcpurec.msize == 0x20) _impossible_;
 		_be;
@@ -670,10 +630,23 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 da
 static void _kma_test_access(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
 {
 	t_nubit32 linear;
-	t_cpuins_physical physical;
+	t_nubit32 phy1, phy2;
+	t_nubit8  byte1, byte2;
 	_cb("_kma_test_access");
 	_chk(linear = _kma_linear_logical(rsreg, offset, byte, write, vpl, force));
-	_chk(_kma_physical_linear(&physical, linear, byte, write, vpl));
+	if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
+		_bb("Linear_Offset(>PageSize)");
+		byte1 = _GetPageSize - _GetLinear_Offset(linear);
+		byte2 = byte - byte1;
+		_chk(phy1 = _kma_physical_linear(linear        , byte1, 0, vpl));
+		_chk(phy2 = _kma_physical_linear(linear + byte1, byte2, 0, vpl));
+		_be;
+	} else {
+		_bb("Linear_Offset(<=PageSize)");
+		byte1 = byte;
+		_chk(phy1 = _kma_physical_linear(linear, byte1, 0, vpl));
+		_be;
+	}
 	_ce;
 }
 static void _kma_test_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
@@ -753,62 +726,91 @@ static void _m_write_rm(t_nubit64 data, t_nubit8 byte)
 
 /* segment accessing unit: _s_ */
 /* kernel segment accessing */
-tots _ksa_descriptor_gdt(t_nubit16 selector)
+static t_nubit64 _ksa_read_ldt(t_nubit16 selector)
 {
-	_cb("_ksa_descriptor_gdt");
-	if (!_GetCR0_PE) _impossible_;
-	if (_GetSelector_TI(selector)) _impossible_;
-	vcpuins.xdesc.selector = selector;
-	if (!_GetSelector_Index(selector)) {
-		_bb("selector(null)");
-		vcpuins.xdesc.flagvalid = 0;
-		vcpuins.xdesc.logical.rsreg = NULL;
-		vcpuins.xdesc.logical.offset = 0x00000000;
-		vcpuins.xdesc.descriptor = 0x0000000000000000;
-		_be;
-	} else {
-		if (GetMax16(_GetSelector_Offset(selector) + 7) > GetMax16(vcpu.gdtr.limit)) {
-			_bb("Selector_Offset(>gdtr.limit)");
-			_chk(_SetExcept_GP(selector));
-			_be;
-		}
-		vcpuins.xdesc.flagvalid = 1;
-		vcpuins.xdesc.logical.rsreg = &vcpu.gdtr;
-		vcpuins.xdesc.logical.offset = _GetSelector_Offset(selector);
-		_chk(vcpuins.xdesc.descriptor = _kma_read_logical(vcpuins.xdesc.logical.rsreg,
-			vcpuins.xdesc.logical.offset, 8, 0x00, 0));
-	}
-	_ce;
-}
-tots _ksa_descriptor_ldt(t_nubit16 selector)
-{
-	_cb("_ksa_descriptor_ldt");
-	if (!_GetCR0_PE) _impossible_;
-	if (!_GetSelector_TI(selector)) _impossible_;
+	t_nubit64 result;
+	_cb("_ksa_read_ldt");
+	if (!_GetCR0_PE) _impossible_r_;
+	if (!_GetSelector_TI(selector)) _impossible_r_;
 	if (GetMax16(_GetSelector_Offset(selector) + 7) > GetMax16(vcpu.ldtr.limit)) {
 		_bb("Selector_Offset(>ldtr.limit)");
-		_chk(_SetExcept_GP(selector));
+		_chr(_SetExcept_GP(selector));
 		_be;
 	}
-	vcpuins.xdesc.selector = selector;
-	vcpuins.xdesc.logical.rsreg = &vcpu.ldtr;
-	vcpuins.xdesc.logical.offset = _GetSelector_Offset(selector);
-	_chk(vcpuins.xdesc.descriptor = _kma_read_logical(vcpuins.xdesc.logical.rsreg,
-		vcpuins.xdesc.logical.offset, 8, 0x00, 0));
+	_chr(result = _kma_read_logical(&vcpu.ldtr, _GetSelector_Offset(selector), 8, 0x00, 1));
 	_ce;
+	return result;
 }
-tots _ksa_descriptor(t_nubit16 selector)
+static t_nubit64 _ksa_read_gdt(t_nubit16 selector)
 {
-	_cb("_ksa_descriptor");
+	t_nubit64 result;
+	_cb("_ksa_read_gdt");
+	if (!_GetCR0_PE) _impossible_r_;
+	if (_GetSelector_TI(selector)) _impossible_r_;
+	if (GetMax16(_GetSelector_Offset(selector) + 7) > GetMax16(vcpu.gdtr.limit)) {
+		_bb("Selector_Offset(>gdtr.limit)");
+		_chr(_SetExcept_GP(selector));
+		_be;
+	}
+	_chr(result = _kma_read_logical(&vcpu.gdtr, _GetSelector_Offset(selector), 8, 0x00, 1));
+	_ce;
+	return result;
+}
+static t_nubit64 _ksa_read_xdt(t_nubit16 selector)
+{
+	t_nubit64 result;
+	_cb("_ksa_read_xdt");
+	if (!_GetCR0_PE) _impossible_r_;
+	if (_GetSelector_TI(selector)) {
+		_bb("Selector_TI");
+		_chr(result = _ksa_read_ldt(selector));
+		_be;
+	} else {
+		_bb("!Selector_TI");
+		_chr(result = _ksa_read_gdt(selector));
+		_be;
+	}
+	_ce;
+	return result;
+}
+static void _ksa_write_ldt(t_nubit16 selector, t_nubit64 descriptor)
+{
+	_cb("_ksa_write_ldt");
 	if (!_GetCR0_PE) _impossible_;
-	if (_GetSelector_TI(selector))
-		_chk(_ksa_descriptor_ldt(selector));
-	else
-		_chk(_ksa_descriptor_gdt(selector));
+	if (!_GetSelector_TI(selector)) _impossible_;
+	if (GetMax16(_GetSelector_Offset(selector) + 7) > GetMax16(vcpu.ldtr.limit))
+		_impossible_;
+	_chk(_kma_write_logical(&vcpu.ldtr, _GetSelector_Offset(selector), descriptor, 8, 0x00, 1));
 	_ce;
 }
-tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
+static void _ksa_write_gdt(t_nubit16 selector, t_nubit64 descriptor)
 {
+	_cb("_ksa_write_gdt");
+	if (!_GetCR0_PE) _impossible_;
+	if (_GetSelector_TI(selector)) _impossible_;
+	if (GetMax16(_GetSelector_Offset(selector) + 7) > GetMax16(vcpu.gdtr.limit))
+		_impossible_;
+	_chk(_kma_write_logical(&vcpu.gdtr, _GetSelector_Offset(selector), descriptor, 8, 0x00, 1));
+	_ce;
+}
+static void _ksa_write_xdt(t_nubit16 selector, t_nubit64 descriptor)
+{
+	_cb("_ksa_write_xdt");
+	if (!_GetCR0_PE) _impossible_;
+	if (_GetSelector_TI(selector)) {
+		_bb("Selector_TI");
+		_chk(_ksa_write_ldt(selector, descriptor));
+		_be;
+	} else {
+		_bb("!Selector_TI");
+		_chk(_ksa_write_gdt(selector, descriptor));
+		_be;
+	}
+	_ce;
+}
+static void _ksa_load_sreg(t_cpu_sreg *rsreg, t_nubit16 selector)
+{
+	t_nubit64 descriptor;
 	_cb("_ksa_load_sreg");
 	switch (rsreg->sregtype) {
 	case SREG_CODE:
@@ -816,43 +818,42 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 		_bb("sregtype(SREG_CODE)");
 		if (_IsProtected) {
 			_bb("Protected(1)");
-			if (!rdesc->flagvalid || _IsSelectorNull(rdesc->selector)) {
+			if (_IsSelectorNull(selector)) {
 				_bb("selector(null)");
 				_chk(_SetExcept_GP(0));
 				_be;
 			}
-			if (!_IsDescCode(rdesc->descriptor)) {
+			_chk(descriptor = _ksa_read_xdt(selector));
+			if (!_IsDescCode(descriptor)) {
 				_bb("!DescCode");
-				_chk(_SetExcept_GP(rdesc->selector));
+				_chk(_SetExcept_GP(selector));
 				_be;
 			}
-			if (!_IsDescPresent(rdesc->descriptor)) {
+			if (!_IsDescPresent(descriptor)) {
 				_bb("!DescPresent");
-				_chk(_SetExcept_NP(rdesc->selector));
+				_chk(_SetExcept_NP(selector));
 				_be;
 			}
-			_SetDescUserAccessed(rdesc->descriptor);
+			_SetDescUserAccessed(descriptor);
+			_chk(_ksa_write_xdt(selector, descriptor));
 			rsreg->flagvalid = 1;
-			rsreg->base = (t_nubit32)_GetDescSeg_Base(rdesc->descriptor);
-			if (_IsDescCodeNonConform(rdesc->descriptor))
-				rsreg->dpl = (t_nubit4)_GetDesc_DPL(rdesc->descriptor);
-			rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(rdesc->descriptor) ?
-				((_GetDescSeg_Limit(rdesc->descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(rdesc->descriptor))));
-			rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(rdesc->descriptor);
-			rsreg->seg.executable = (t_bool)_IsDescUserExecutable(rdesc->descriptor);
-			rsreg->seg.exec.defsize = (t_bool)_IsDescCode32(rdesc->descriptor);
-			rsreg->seg.exec.conform = (t_bool)_IsDescCodeConform(rdesc->descriptor);
-			rsreg->seg.exec.readable = (t_bool)_IsDescCodeReadable(rdesc->descriptor);
-			rsreg->selector = (rdesc->selector & ~VCPU_SELECTOR_RPL) | _GetCPL;
-			_chk(_kma_write_logical(rdesc->logical.rsreg,
-				rdesc->logical.offset, rdesc->descriptor, 8, 0, 1));
+			rsreg->base = (t_nubit32)_GetDescSeg_Base(descriptor);
+			if (_IsDescCodeNonConform(descriptor))
+				rsreg->dpl = (t_nubit4)_GetDesc_DPL(descriptor);
+			rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(descriptor) ?
+				((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
+			rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(descriptor);
+			rsreg->seg.executable = (t_bool)_IsDescUserExecutable(descriptor);
+			rsreg->seg.exec.defsize = (t_bool)_IsDescCode32(descriptor);
+			rsreg->seg.exec.conform = (t_bool)_IsDescCodeConform(descriptor);
+			rsreg->seg.exec.readable = (t_bool)_IsDescCodeReadable(descriptor);
+			rsreg->selector = (selector & ~VCPU_SELECTOR_RPL) | _GetCPL;
 			_be;
 		} else {
 			_bb("!Protected");
-			if (rdesc->flagvalid) _impossible_;
 			rsreg->flagvalid = 1;
-			rsreg->base = (rdesc->selector << 4);
-			rsreg->selector = rdesc->selector;
+			rsreg->base = (selector << 4);
+			rsreg->selector = selector;
 			if (_GetCR0_PE && _GetEFLAGS_VM) {
 				rsreg->dpl = 0x03;
 				rsreg->limit = 0x0000ffff;
@@ -864,62 +865,61 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 		_bb("sregtype(SREG_DATA)");
 		if (_IsProtected) {
 			_bb("Protected");
-			if (!rdesc->flagvalid || _IsSelectorNull(rdesc->selector)) {
+			if (_IsSelectorNull(selector)) {
 				_bb("selector(null)");
 				rsreg->flagvalid = 0;
-				rsreg->selector = rdesc->selector;
+				rsreg->selector = selector;
 				_be;
 			} else {
 				_bb("selector(!null)");
-				if (!_IsDescData(rdesc->descriptor) && !_IsDescCodeReadable(rdesc->descriptor)) {
+				_chk(descriptor = _ksa_read_xdt(selector));
+				if (!_IsDescData(descriptor) && !_IsDescCodeReadable(descriptor)) {
 					_bb("!DescData,!DescCodeReadable");
-					_chk(_SetExcept_GP(rdesc->selector));
+					_chk(_SetExcept_GP(selector));
 					_be;
 				}
-				if (_IsDescData(rdesc->descriptor) || _IsDescCodeNonConform(rdesc->descriptor)) {
+				if (_IsDescData(descriptor) || _IsDescCodeNonConform(descriptor)) {
 					_bb("DescData/DescCodeNonConform)");
-					if (_GetSelector_RPL(rdesc->selector) > _GetDesc_DPL(rdesc->descriptor) ||
-						_GetCPL > _GetDesc_DPL(rdesc->descriptor)) {
+					if (_GetSelector_RPL(selector) > _GetDesc_DPL(descriptor) ||
+						_GetCPL > _GetDesc_DPL(descriptor)) {
 						_bb("PL(fail)");
-						_chk(_SetExcept_GP(rdesc->selector));
+						_chk(_SetExcept_GP(selector));
 						_be;
 					}
 					_be;
 				}
-				if (!_IsDescPresent(rdesc->descriptor)) {
+				if (!_IsDescPresent(descriptor)) {
 					_bb("!DescPresent");
-					_chk(_SetExcept_NP(rdesc->selector));
+					_chk(_SetExcept_NP(selector));
 					_be;
 				}
-				_SetDescUserAccessed(rdesc->descriptor);
+				_SetDescUserAccessed(descriptor);
+				_chk(_ksa_write_xdt(selector, descriptor));
 				rsreg->flagvalid = 1;
-				rsreg->selector = rdesc->selector;
-				rsreg->base = (t_nubit32)_GetDescSeg_Base(rdesc->descriptor);
-				rsreg->dpl = (t_nubit4)_GetDesc_DPL(rdesc->descriptor);
-				rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(rdesc->descriptor) ?
-					((_GetDescSeg_Limit(rdesc->descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(rdesc->descriptor))));
-				rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(rdesc->descriptor);
-				rsreg->seg.executable = (t_bool)_IsDescUserExecutable(rdesc->descriptor);
+				rsreg->selector = selector;
+				rsreg->base = (t_nubit32)_GetDescSeg_Base(descriptor);
+				rsreg->dpl = (t_nubit4)_GetDesc_DPL(descriptor);
+				rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(descriptor) ?
+					((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
+				rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(descriptor);
+				rsreg->seg.executable = (t_bool)_IsDescUserExecutable(descriptor);
 				if (rsreg->seg.executable) {
-					rsreg->seg.exec.defsize = (t_bool)_IsDescCode32(rdesc->descriptor);
-					rsreg->seg.exec.conform = (t_bool)_IsDescCodeConform(rdesc->descriptor);
-					rsreg->seg.exec.readable = (t_bool)_IsDescCodeReadable(rdesc->descriptor);
+					rsreg->seg.exec.defsize = (t_bool)_IsDescCode32(descriptor);
+					rsreg->seg.exec.conform = (t_bool)_IsDescCodeConform(descriptor);
+					rsreg->seg.exec.readable = (t_bool)_IsDescCodeReadable(descriptor);
 				} else {
-					rsreg->seg.data.big = (t_bool)_IsDescDataBig(rdesc->descriptor);
-					rsreg->seg.data.expdown = (t_bool)_IsDescDataExpDown(rdesc->descriptor);
-					rsreg->seg.data.writable = (t_bool)_IsDescDataWritable(rdesc->descriptor);
+					rsreg->seg.data.big = (t_bool)_IsDescDataBig(descriptor);
+					rsreg->seg.data.expdown = (t_bool)_IsDescDataExpDown(descriptor);
+					rsreg->seg.data.writable = (t_bool)_IsDescDataWritable(descriptor);
 				}
-				_chk(_kma_write_logical(rdesc->logical.rsreg,
-					rdesc->logical.offset, rdesc->descriptor, 8, 0, 1));
 				_be;
 			}
 			_be;
 		} else {
 			_bb("!Protected");
-			if (rdesc->flagvalid) _impossible_;
 			rsreg->flagvalid = 1;
-			rsreg->selector = rdesc->selector;
-			rsreg->base = (rdesc->selector << 4);
+			rsreg->selector = selector;
+			rsreg->base = (selector << 4);
 			if (_GetCR0_PE && _GetEFLAGS_VM) {
 				rsreg->dpl = 0x03;
 				rsreg->limit = 0x0000ffff;
@@ -931,52 +931,51 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 		_bb("sregtype(SREG_STACK)");
 		if (_IsProtected) {
 			_bb("Protected(1)");
-			if (!rdesc->flagvalid || _IsSelectorNull(rdesc->selector)) {
+			if (_IsSelectorNull(selector)) {
 				_bb("selector(null)");
 				_chk(_SetExcept_GP(0));
 				_be;
 			}
-			if (_GetSelector_RPL(rdesc->selector) != _GetCPL) {
+			if (_GetSelector_RPL(selector) != _GetCPL) {
 				_bb("Selector_RPL(!CPL)");
-				_chk(_SetExcept_GP(rdesc->selector));
+				_chk(_SetExcept_GP(selector));
 				_be;
 			}
-			if (!_IsDescDataWritable(rdesc->descriptor)) {
+			_chk(descriptor = _ksa_read_xdt(selector));
+			if (!_IsDescDataWritable(descriptor)) {
 				_bb("!DescDataWritable");
-				_chk(_SetExcept_GP(rdesc->selector));
+				_chk(_SetExcept_GP(selector));
 				_be;
 			}
-			if (_GetDesc_DPL(rdesc->descriptor) != _GetCPL) {
+			if (_GetDesc_DPL(descriptor) != _GetCPL) {
 				_bb("Desc_DPL(!CPL)");
-				_chk(_SetExcept_GP(rdesc->selector));
+				_chk(_SetExcept_GP(selector));
 				_be;
 			}
-			if (!_IsDescPresent(rdesc->descriptor)) {
+			if (!_IsDescPresent(descriptor)) {
 				_bb("!DescPresent");
-				_chk(_SetExcept_SS(rdesc->selector));
+				_chk(_SetExcept_SS(selector));
 				_be;
 			}
-			_SetDescUserAccessed(rdesc->descriptor);
+			_SetDescUserAccessed(descriptor);
+			_chk(_ksa_write_xdt(selector, descriptor));
 			rsreg->flagvalid = 1;
-			rsreg->selector = rdesc->selector;
-			rsreg->base = (t_nubit32)_GetDescSeg_Base(rdesc->descriptor);
-			rsreg->dpl = (t_nubit4)_GetDesc_DPL(rdesc->descriptor);
-			rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(rdesc->descriptor) ?
-				((_GetDescSeg_Limit(rdesc->descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(rdesc->descriptor))));
-			rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(rdesc->descriptor);
-			rsreg->seg.executable = (t_bool)_IsDescUserExecutable(rdesc->descriptor);
-			rsreg->seg.data.big = (t_bool)_IsDescDataBig(rdesc->descriptor);
-			rsreg->seg.data.expdown = (t_bool)_IsDescDataExpDown(rdesc->descriptor);
-			rsreg->seg.data.writable = (t_bool)_IsDescDataWritable(rdesc->descriptor);
-			_chk(_kma_write_logical(rdesc->logical.rsreg,
-				rdesc->logical.offset, rdesc->descriptor, 8, 0, 1));
+			rsreg->selector = selector;
+			rsreg->base = (t_nubit32)_GetDescSeg_Base(descriptor);
+			rsreg->dpl = (t_nubit4)_GetDesc_DPL(descriptor);
+			rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(descriptor) ?
+				((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
+			rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(descriptor);
+			rsreg->seg.executable = (t_bool)_IsDescUserExecutable(descriptor);
+			rsreg->seg.data.big = (t_bool)_IsDescDataBig(descriptor);
+			rsreg->seg.data.expdown = (t_bool)_IsDescDataExpDown(descriptor);
+			rsreg->seg.data.writable = (t_bool)_IsDescDataWritable(descriptor);
 			_be;
 		} else {
 			_bb("!Protected");
-			if (rdesc->flagvalid) _impossible_;
 			rsreg->flagvalid = 1;
-			rsreg->selector = rdesc->selector;
-			rsreg->base = (rdesc->selector << 4);
+			rsreg->selector = selector;
+			rsreg->base = (selector << 4);
 			if (_GetCR0_PE && _GetEFLAGS_VM) {
 				rsreg->dpl = 0x03;
 				rsreg->limit = 0x0000ffff;
@@ -988,62 +987,63 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 		_bb("sregtype(SREG_TR)");
 		if (!_IsProtected) _impossible_;
 		if (_GetCPL) _impossible_;
-		if (_GetSelector_TI(rdesc->selector)) _impossible_;
-		if (!rdesc->flagvalid || _IsSelectorNull(rdesc->selector)) {
+		if (_GetSelector_TI(selector)) _impossible_;
+		if (_IsSelectorNull(selector)) {
 			_bb("selector(null)");
 			_chk(_SetExcept_GP(0));
 			_be;
 		}
-		if (!_IsDescTSSAvl(rdesc->descriptor)) {
+		_chk(descriptor = _ksa_read_xdt(selector));
+		if (!_IsDescTSSAvl(descriptor)) {
 			_bb("!DescTssAvl");
-			_chk(_SetExcept_GP(rdesc->selector));
+			_chk(_SetExcept_GP(selector));
 			_be;
 		}
-		if (!_IsDescPresent(rdesc->descriptor)) {
+		if (!_IsDescPresent(descriptor)) {
 			_bb("!DescPresent");
-			_chk(_SetExcept_NP(rdesc->selector));
+			_chk(_SetExcept_NP(selector));
 			_be;
 		}
-		_SetDescTSSBusy(rdesc->descriptor);
+		_SetDescTSSBusy(descriptor);
+		_chk(_ksa_write_xdt(selector, descriptor));
 		rsreg->flagvalid = 1;
-		rsreg->selector = rdesc->selector;
-		rsreg->base = (t_nubit32)_GetDescSeg_Base(rdesc->descriptor);
-		rsreg->dpl = (t_nubit4)_GetDesc_DPL(rdesc->descriptor);
-		rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(rdesc->descriptor) ?
-				(_GetDescSeg_Limit(rdesc->descriptor) << 12 | 0x0fff) : (_GetDescSeg_Limit(rdesc->descriptor))));
-		rsreg->sys.type = (t_nubit4)_GetDesc_Type(rdesc->descriptor);
-		_chk(_kma_write_logical(rdesc->logical.rsreg,
-			rdesc->logical.offset, rdesc->descriptor, 8, 0, 1));
+		rsreg->selector = selector;
+		rsreg->base = (t_nubit32)_GetDescSeg_Base(descriptor);
+		rsreg->dpl = (t_nubit4)_GetDesc_DPL(descriptor);
+		rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(descriptor) ?
+				(_GetDescSeg_Limit(descriptor) << 12 | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
+		rsreg->sys.type = (t_nubit4)_GetDesc_Type(descriptor);
 		_be;break;
 	case SREG_LDTR:
 		_bb("sregtype(SREG_LDTR)");
 		if (!_IsProtected) _impossible_;
 		if (_GetCPL) _impossible_;
-		if (_GetSelector_TI(rdesc->selector)) _impossible_;
-		if (!rdesc->flagvalid || _IsSelectorNull(rdesc->selector)) {
+		if (_GetSelector_TI(selector)) _impossible_;
+		if (_IsSelectorNull(selector)) {
 			_bb("selector(null)");
 			rsreg->flagvalid = 0;
-			rsreg->selector = rdesc->selector;
+			rsreg->selector = selector;
 			_be;
 		} else {
 			_bb("selector(!null)");
-			if (!_IsDescLDT(rdesc->descriptor)) {
+			_chk(descriptor = _ksa_read_xdt(selector));
+			if (!_IsDescLDT(descriptor)) {
 				_bb("descriptor(!LDT)");
-				_chk(_SetExcept_GP(rdesc->selector));
+				_chk(_SetExcept_GP(selector));
 				_be;
 			}
-			if (!_IsDescPresent(rdesc->descriptor)) {
+			if (!_IsDescPresent(descriptor)) {
 				_bb("descriptor(!P)");
-				_chk(_SetExcept_NP(rdesc->selector));
+				_chk(_SetExcept_NP(selector));
 				_be;
 			}
 			rsreg->flagvalid = 1;
-			rsreg->selector = rdesc->selector;
-			rsreg->base = (t_nubit32)_GetDescSeg_Base(rdesc->descriptor);
-			rsreg->dpl = (t_nubit4)_GetDesc_DPL(rdesc->descriptor);
-			rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(rdesc->descriptor) ?
-					(_GetDescSeg_Limit(rdesc->descriptor) << 12 | 0x0fff) : (_GetDescSeg_Limit(rdesc->descriptor))));
-			rsreg->sys.type = (t_nubit4)_GetDesc_Type(rdesc->descriptor);
+			rsreg->selector = selector;
+			rsreg->base = (t_nubit32)_GetDescSeg_Base(descriptor);
+			rsreg->dpl = (t_nubit4)_GetDesc_DPL(descriptor);
+			rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(descriptor) ?
+					(_GetDescSeg_Limit(descriptor) << 12 | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
+			rsreg->sys.type = (t_nubit4)_GetDesc_Type(descriptor);
 			_be;
 		}
 		_be;break;
@@ -1052,10 +1052,11 @@ tots _ksa_load_sreg(t_cpu_sreg *rsreg, t_cpuins_desc *rdesc)
 	default:_impossible_;break;}
 	_ce;
 }
+
 /* regular segment accessing */
-/* 0 = succ, 1 = fail */
 static t_bool _s_check_selector(t_nubit16 selector)
 {
+	/* 0 = succ, 1 = fail */
 	_cb("_s_check_selector");
 	if (_IsSelectorNull(selector)) {
 		_ce;
@@ -1069,46 +1070,6 @@ static t_bool _s_check_selector(t_nubit16 selector)
 	}
 	_ce;
 	return 0;
-}
-static void _s_descriptor_gdt(t_nubit16 selector)
-{
-	_cb("_s_descriptor_gdt");
-	if (!_IsProtected) _impossible_;
-	if (_GetSelector_TI(selector)) {
-		_bb("Selector_TI(1)");
-		_chk(_SetExcept_GP(selector));
-		_be;
-	}
-	_chk(_ksa_descriptor_gdt(selector));
-	_ce;
-}
-static void _s_descriptor_ldt(t_nubit16 selector)
-{
-	_cb("_s_descriptor_gdt");
-	if (!_IsProtected) _impossible_;
-	if (!_GetSelector_TI(selector)) {
-		_bb("Selector_TI(0)");
-		_chk(_SetExcept_GP(selector));
-		_be;
-	}
-	_chk(_ksa_descriptor_ldt(selector));
-	_ce;
-}
-static void _s_descriptor(t_nubit16 selector)
-{
-	_cb("_s_read_descriptor");
-	if (!_IsProtected) {
-		vcpuins.xdesc.selector = selector;
-		vcpuins.xdesc.flagvalid = 0;
-		vcpuins.xdesc.logical.rsreg = NULL;
-		vcpuins.xdesc.logical.offset = 0x00000000;
-		vcpuins.xdesc.descriptor = 0x0000000000000000;
-	} else {
-		_bb("Protected");
-		_chk(_ksa_descriptor(selector));
-		_be;
-	}
-	_ce;
 }
 static t_nubit64 _s_read_idt(t_nubit8 intid)
 {
@@ -1126,6 +1087,15 @@ static t_nubit64 _s_read_idt(t_nubit8 intid)
 		_chr(result = GetMax64(_kma_read_logical(&vcpu.idtr, (intid * 8), 8, 0x00, 0)));
 		_be;
 	}
+	_ce;
+	return result;
+}
+static t_nubit64 _s_read_xdt(t_nubit16 selector)
+{
+	t_nubit64 result;
+	_cb("_s_read_xdt");
+	if (!_GetCR0_PE) _impossible_r_;
+	_chr(result = _ksa_read_xdt(selector));
 	_ce;
 	return result;
 }
@@ -1185,6 +1155,25 @@ static t_nubit64 _s_read_gs(t_nubit32 offset, t_nubit8 byte)
 	_ce;
 	return result;
 }
+static void _s_write_idt(t_nubit8 intid)
+{
+	_cb("_s_write_idt");
+	_impossible_;
+	_ce;
+}
+static void _s_write_xdt(t_nubit16 selector, t_nubit64 descriptor)
+{
+	_cb("_s_write_xdt");
+	if (!_GetCR0_PE) _impossible_;
+	_chk(_ksa_write_xdt(selector, descriptor));
+	_ce;
+}
+static void _s_write_tss(t_nubit32 offset, t_nubit64 data, t_nubit8 byte)
+{
+	_cb("_s_write_tss");
+	_impossible_;
+	_ce;
+}
 static void _s_write_cs(t_nubit32 offset, t_nubit64 data, t_nubit8 byte)
 {
 	_cb("_s_write_cs");
@@ -1221,19 +1210,19 @@ static void _s_write_gs(t_nubit32 offset, t_nubit64 data, t_nubit8 byte)
 	_chk(_m_write_logical(&vcpu.gs, offset, data, byte));
 	_ce;
 }
-done _s_test_tss(t_nubit32 offset, t_nubit8 byte)
+static void _s_test_tss(t_nubit32 offset, t_nubit8 byte)
 {
 	_cb("_s_test_cs");
 	_chk(_kma_test_logical(&vcpu.tr, offset, byte, 0, 0x00, 1));
 	_ce;
 }
-done _s_test_cs(t_nubit32 offset, t_nubit8 byte)
+static void _s_test_cs(t_nubit32 offset, t_nubit8 byte)
 {
 	_cb("_s_test_cs");
 	_chk(_kma_test_logical(&vcpu.cs, offset, byte, 0, 0x00, 1));
 	_ce;
 }
-done _s_test_ss_push(t_nubit8 byte)
+static void _s_test_ss_push(t_nubit8 byte)
 {
 	t_nubit32 cesp = 0x00000000;
 	_cb("_s_test_ss_push");
@@ -1251,7 +1240,7 @@ done _s_test_ss_push(t_nubit8 byte)
 	default:_impossible_;break;}
 	_ce;
 }
-done _s_test_ss_pop(t_nubit8 byte)
+static void _s_test_ss_pop(t_nubit8 byte)
 {
 	t_nubit32 cesp = 0x00000000;
 	_cb("_s_test_ss_pop");
@@ -1265,16 +1254,13 @@ done _s_test_ss_pop(t_nubit8 byte)
 	default:_impossible_;break;}
 	_ce;
 }
-done _s_load_sreg(t_cpu_sreg *rsreg, t_nubit16 selector)
+static void _s_load_sreg(t_cpu_sreg *rsreg, t_nubit16 selector)
 {
 	_cb("_s_load_sreg");
-	if (rsreg->sregtype == SREG_GDTR || rsreg->sregtype == SREG_IDTR)
-		_impossible_;
-	_chk(_s_descriptor(selector));
-	_chk(_ksa_load_sreg(rsreg, &vcpuins.xdesc));
+	_chk(_ksa_load_sreg(rsreg, selector));
 	_ce;
 }
-tots _s_load_gdtr(t_nubit32 base, t_nubit16 limit, t_nubit8 byte)
+static void _s_load_gdtr(t_nubit32 base, t_nubit16 limit, t_nubit8 byte)
 {
 	_cb("_s_load_gdtr");
 	if (_GetCPL) {
@@ -1291,7 +1277,7 @@ tots _s_load_gdtr(t_nubit32 base, t_nubit16 limit, t_nubit8 byte)
 		_be;break;}
 	_ce;
 }
-tots _s_load_idtr(t_nubit32 base, t_nubit16 limit, t_nubit8 byte)
+static void _s_load_idtr(t_nubit32 base, t_nubit16 limit, t_nubit8 byte)
 {
 	_cb("_s_load_idtr");
 	if (_GetCPL) {
@@ -1308,7 +1294,7 @@ tots _s_load_idtr(t_nubit32 base, t_nubit16 limit, t_nubit8 byte)
 		_be;break;}
 	_ce;
 }
-done _s_load_ldtr(t_nubit16 selector)
+static void _s_load_ldtr(t_nubit16 selector)
 {
 	_cb("_s_load_ldtr");
 	if (_GetCPL) {
@@ -1324,7 +1310,7 @@ done _s_load_ldtr(t_nubit16 selector)
 	_chk(_s_load_sreg(&vcpu.ldtr, selector));
 	_ce;
 }
-done _s_load_tr(t_nubit16 selector)
+static void _s_load_tr(t_nubit16 selector)
 {
 	_cb("_s_load_tr");
 	if (_GetCPL) {
@@ -1340,7 +1326,7 @@ done _s_load_tr(t_nubit16 selector)
 	_chk(_s_load_sreg(&vcpu.tr, selector));
 	_ce;
 }
-tots _s_load_cr0_msw(t_nubit16 msw)
+static void _s_load_cr0_msw(t_nubit16 msw)
 {
 	_cb("_s_load_cr0_msw");
 	if (_GetCPL) {
@@ -1359,49 +1345,49 @@ tots _s_load_cr0_msw(t_nubit16 msw)
 	}
 	_ce;
 }
-done _s_load_cs(t_nubit16 newcs)
+static void _s_load_cs(t_nubit16 newcs)
 {
 	_cb("_s_load_cs");
 	_chk(_s_load_sreg(&vcpu.cs, newcs));
 	_ce;
 }
-done _s_load_ss(t_nubit16 newss)
+static void _s_load_ss(t_nubit16 newss)
 {
 	_cb("_s_load_ss");
 	_chk(_s_load_sreg(&vcpu.ss, newss));
 	_ce;
 }
-done _s_load_ds(t_nubit16 newds)
+static void _s_load_ds(t_nubit16 newds)
 {
 	_cb("_s_load_ds");
 	_chk(_s_load_sreg(&vcpu.ds, newds));
 	_ce;
 }
-done _s_load_es(t_nubit16 newes)
+static void _s_load_es(t_nubit16 newes)
 {
 	_cb("_s_load_es");
 	_chk(_s_load_sreg(&vcpu.es, newes));
 	_ce;
 }
-done _s_load_fs(t_nubit16 newfs)
+static void _s_load_fs(t_nubit16 newfs)
 {
 	_cb("_s_load_fs");
 	_chk(_s_load_sreg(&vcpu.fs, newfs));
 	_ce;
 }
-done _s_load_gs(t_nubit16 newgs)
+static void _s_load_gs(t_nubit16 newgs)
 {
 	_cb("_s_load_gs");
 	_chk(_s_load_sreg(&vcpu.gs, newgs));
 	_ce;
 }
-done _s_test_eip()
+static void _s_test_eip()
 {
 	_cb("_s_test_eip");
 	_chk(_s_test_cs(vcpu.eip, 0x01));
 	_ce;
 }
-done _s_test_esp()
+static void _s_test_esp()
 {
 	t_nubit32 cesp;
 	_cb("_s_test_esp");
@@ -1421,7 +1407,7 @@ todo _kpa_test_iomap(t_nubit16 portid, t_nubit8 byte)
 	_cb("_kpa_test_iomap");
 	_ce;
 }
-done _kpa_test_mode(t_nubit16 portid, t_nubit8 byte)
+static void _kpa_test_mode(t_nubit16 portid, t_nubit8 byte)
 {
 	_cb("_p_test");
 	if (_GetCR0_PE && (_GetCPL > (t_nubit8)_GetEFLAGS_IOPL || _GetEFLAGS_VM)) {
@@ -1468,7 +1454,7 @@ static t_nubit32 _p_input(t_nubit16 portid, t_nubit8 byte)
 	_ce;
 	return result;
 }
-done _p_output(t_nubit16 portid, t_nubit32 data, t_nubit8 byte)
+static void _p_output(t_nubit16 portid, t_nubit32 data, t_nubit8 byte)
 {
 	_cb("_p_output");
 #ifndef VGLOBAL_BOCHS
@@ -1511,7 +1497,7 @@ done _p_output(t_nubit16 portid, t_nubit32 data, t_nubit8 byte)
 #define _GetSIB_Index(sib)   (((sib) & 0x38) >> 3)
 #define _GetSIB_Base(sib)    (((sib) & 0x07) >> 0)
 /* kernel decoding function */
-done _kdf_skip(t_nubit8 byte)
+static void _kdf_skip(t_nubit8 byte)
 {
 	_cb("_kdf_skip");
 	_chk(vcpu.eip += byte);
@@ -1526,7 +1512,7 @@ static t_nubit64 _kdf_code(t_nubit8 byte)
 	_ce;
 	return result;
 }
-tots _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
+static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 {
 	t_nsbit8 disp8;
 	t_nubit16 disp16;
@@ -1797,7 +1783,7 @@ tots _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 	}
 	_ce;
 }
-done _d_skip(t_nubit8 byte)
+static void _d_skip(t_nubit8 byte)
 {
 	_cb("_d_skip");
 	_chk(_kdf_skip(byte));
@@ -1811,13 +1797,13 @@ static t_nubit64 _d_code(t_nubit8 byte)
 	_ce;
 	return result;
 }
-done _d_imm(t_nubit8 byte)
+static void _d_imm(t_nubit8 byte)
 {
 	_cb("_d_imm");
 	_chk(vcpuins.cimm = _d_code(byte));
 	_ce;
 }
-done _d_moffs(t_nubit8 byte)
+static void _d_moffs(t_nubit8 byte)
 {
 	_cb("_d_moffs");
 	vcpuins.flagmem = 1;
@@ -1832,7 +1818,7 @@ done _d_moffs(t_nubit8 byte)
 	default:_impossible_;break;}
 	_ce;
 }
-done _d_modrm_sreg(t_nubit8 rmbyte)
+static void _d_modrm_sreg(t_nubit8 rmbyte)
 {
 	_cb("_d_modrm_sreg");
 	_chk(_kdf_modrm(0, rmbyte));
@@ -1850,7 +1836,7 @@ done _d_modrm_sreg(t_nubit8 rmbyte)
 	}
 	_ce;
 }
-done _d_modrm_ea(t_nubit8 regbyte, t_nubit8 rmbyte)
+static void _d_modrm_ea(t_nubit8 regbyte, t_nubit8 rmbyte)
 {
 	_cb("_d_modrm_ea");
 	_chk(_kdf_modrm(regbyte, rmbyte));
@@ -1861,7 +1847,7 @@ done _d_modrm_ea(t_nubit8 regbyte, t_nubit8 rmbyte)
 	}
 	_ce;
 }
-done _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
+static void _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 {
 	_cb("_d_modrm");
 	_chk(_kdf_modrm(regbyte, rmbyte));
@@ -1910,7 +1896,7 @@ static t_nubit64 _kec_pop(t_nubit8 byte)
 	_ce;
 	return result;
 }
-tots _kec_call_far(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
+static void _kec_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
 	t_cpu_sreg ccs = vcpu.cs;
 	_cb("_kec_call_far");
@@ -1918,7 +1904,7 @@ tots _kec_call_far(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
 	case 2: _bb("byte(2)");
 		_chk(_s_test_ss_push(4));
 		neweip = GetMax16(neweip);
-		_chk(_ksa_load_sreg(&ccs, rdesc));
+		_chk(_ksa_load_sreg(&ccs, newcs));
 		_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
 		_chk(_kec_push(vcpu.cs.selector, 2));
 		_chk(_kec_push(vcpu.ip, 2));
@@ -1927,7 +1913,7 @@ tots _kec_call_far(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
 		_newins_;
 		_chk(_s_test_ss_push(8));
 		neweip = GetMax32(neweip);
-		_chk(_ksa_load_sreg(&ccs, rdesc));
+		_chk(_ksa_load_sreg(&ccs, newcs));
 		_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
 		_chk(_kec_push(vcpu.cs.selector, 4));
 		_chk(_kec_push(vcpu.eip, 4));
@@ -1940,7 +1926,7 @@ tots _kec_call_far(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
 	vcpu.eip = neweip;
 	_ce;
 }
-tots _kec_call_near(t_nubit32 neweip, t_nubit8 byte)
+static void _kec_call_near(t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_kec_call_near");
 	switch (byte) {
@@ -1963,7 +1949,7 @@ tots _kec_call_near(t_nubit32 neweip, t_nubit8 byte)
 	_ce;
 }
 todo _kec_task_switch(t_nubit16 newtss);
-done _kec_jmp_far(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
+static void _kec_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
 	t_cpu_sreg ccs = vcpu.cs;
 	_cb("_kec_jmp_far");
@@ -1974,13 +1960,13 @@ done _kec_jmp_far(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
 		_chk(_SetExcept_CE(byte));
 		_be;break;
 	}
-	_chk(_ksa_load_sreg(&ccs, rdesc));
+	_chk(_ksa_load_sreg(&ccs, newcs));
 	_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
 	vcpu.cs = ccs;
 	vcpu.eip = neweip;
 	_ce;
 }
-done _kec_jmp_near(t_nubit32 neweip, t_nubit8 byte)
+static void _kec_jmp_near(t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_kec_jmp_near");
 	switch (byte) {
@@ -1994,7 +1980,7 @@ done _kec_jmp_near(t_nubit32 neweip, t_nubit8 byte)
 	vcpu.eip = neweip;
 	_ce;
 }
-tots _kec_ret_far(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte)
+static void _kec_ret_far(t_nubit32 newcs, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte)
 {
 	t_cpu_sreg ccs = vcpu.cs;
 	_cb("_kec_ret_far");
@@ -2005,7 +1991,7 @@ tots _kec_ret_far(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit16 parambyte, t
 		_chk(_SetExcept_CE(byte));
 		_be;break;
 	}
-	_chk(_ksa_load_sreg(&ccs, rdesc));
+	_chk(_ksa_load_sreg(&ccs, newcs));
 	_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
 	vcpu.cs = ccs;
 	vcpu.eip = neweip;
@@ -2015,7 +2001,7 @@ tots _kec_ret_far(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit16 parambyte, t
 	default:_impossible_;break;}
 	_ce;
 }
-tots _kec_ret_near(t_nubit16 parambyte, t_nubit8 byte)
+static void _kec_ret_near(t_nubit16 parambyte, t_nubit8 byte)
 {
 	t_nubit32 neweip;
 	_cb("_kec_ret_near");
@@ -2041,82 +2027,87 @@ tots _kec_ret_near(t_nubit16 parambyte, t_nubit8 byte)
 	_ce;
 }
 /* sub execution routine */
-done _ser_call_far_real(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
+static void _ser_call_far_real(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_ser_call_far_real");
 	if (_IsProtected) _impossible_;
-	_chk(_kec_call_far(rdesc, neweip, byte));
+	_chk(_kec_call_far(newcs, neweip, byte));
 	_ce;
 }
-todo _ser_call_far_cs_conf(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
+todo _ser_call_far_cs_conf(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
+	t_nubit64 descriptor;
 	_cb("_ser_call_far_cs_conf");
 	if (!_IsProtected) _impossible_;
-	if (!rdesc->flagvalid) _impossible_;
-	if (!_IsDescCodeConform(rdesc->descriptor)) _impossible_;
-	if (_GetDesc_DPL(rdesc->descriptor) > _GetCPL) {
+	_chk(descriptor = _s_read_xdt(newcs));
+	if (!_IsDescCodeConform(descriptor)) _impossible_;
+	if (_GetDesc_DPL(descriptor) > _GetCPL) {
 		_bb("DPL(>CPL)");
-		_comment("sel=%04X, desc=%016llX\n", rdesc->selector, rdesc->descriptor);
-		_comment("dpl=%01X, cpl=%01X\n", _GetDesc_DPL(rdesc->descriptor), _GetCPL);
-		_chk(_SetExcept_GP(rdesc->selector));
+		_comment("sel=%04X, desc=%016llX\n", newcs, descriptor);
+		_comment("dpl=%01X, cpl=%01X\n", _GetDesc_DPL(descriptor), _GetCPL);
+		_chk(_SetExcept_GP(newcs));
 		_be;
 	}
-	if (!_IsDescPresent(rdesc->descriptor)) {
+	if (!_IsDescPresent(descriptor)) {
 		_bb("!DescPresent");
-		_chk(_SetExcept_NP(rdesc->selector));
+		_chk(_SetExcept_NP(newcs));
 		_be;
 	}
-	_chk(_kec_call_far(rdesc, neweip, byte));
+	_chk(_kec_call_far(newcs, neweip, byte));
 	_ce;
 }
-todo _ser_call_far_cs_nonc(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
+todo _ser_call_far_cs_nonc(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
+	t_nubit64 descriptor;
 	_cb("_ser_call_far_cs_nonc");
 	if (!_IsProtected) _impossible_;
-	if (!rdesc->flagvalid) _impossible_;
-	if (!_IsDescCodeNonConform(rdesc->descriptor)) _impossible_;
-	if (_GetDesc_DPL(rdesc->descriptor) != _GetCPL ||
-		_GetSelector_RPL(rdesc->selector) > _GetCPL) {
+	_chk(descriptor = _s_read_xdt(newcs));
+	if (!_IsDescCodeNonConform(descriptor)) _impossible_;
+	if (_GetDesc_DPL(descriptor) != _GetCPL ||
+		_GetSelector_RPL(newcs) > _GetCPL) {
 		_bb("DPL(!CPL)/RPL(>CPL)");
-		_chk(_SetExcept_GP(rdesc->selector));
+		_chk(_SetExcept_GP(newcs));
 		_be;
 	}
-	if (!_IsDescPresent(rdesc->descriptor)) {
+	if (!_IsDescPresent(descriptor)) {
 		_bb("!DescPresent");
-		_chk(_SetExcept_NP(rdesc->selector));
+		_chk(_SetExcept_NP(newcs));
 		_be;
 	}
-	_chk(_kec_call_far(rdesc, neweip, byte));
+	_chk(_kec_call_far(newcs, neweip, byte));
 	_ce;
 }
-todo _ser_call_far_call_gate(t_cpuins_desc *rdesc)
+todo _ser_call_far_call_gate(t_nubit16 newcs)
 {
+	t_nubit64 descriptor;
 	_cb("_ser_call_far_call_gate");
 	if (!_IsProtected) _impossible_;
-	if (!rdesc->flagvalid) _impossible_;
-	if (!_IsDescCallGate(rdesc->descriptor)) _impossible_;
+	_chk(descriptor = _s_read_xdt(newcs));
+	if (!_IsDescCallGate(descriptor)) _impossible_;
 	_chk(_SetExcept_CE(0));
 	_ce;
 }
-todo _ser_call_far_task_gate(t_cpuins_desc *rdesc)
+todo _ser_call_far_task_gate(t_nubit16 newcs)
 {
+	t_nubit64 descriptor;
 	_cb("_ser_call_far_task_gate");
 	if (!_IsProtected) _impossible_;
-	if (!rdesc->flagvalid) _impossible_;
-	if (!_IsDescTaskGate(rdesc->descriptor)) _impossible_;
+	_chk(descriptor = _s_read_xdt(newcs));
+	if (!_IsDescTaskGate(descriptor)) _impossible_;
 	_chk(_SetExcept_CE(0));
 	_ce;
 }
-todo _ser_call_far_tss(t_cpuins_desc *rdesc)
+todo _ser_call_far_tss(t_nubit16 newcs)
 {
+	t_nubit64 descriptor;
 	_cb("_ser_call_far_tss");
 	if (!_IsProtected) _impossible_;
-	if (!rdesc->flagvalid) _impossible_;
-	if (!_IsDescTSS(rdesc->descriptor)) _impossible_;
+	_chk(descriptor = _s_read_xdt(newcs));
+	if (!_IsDescTSS(descriptor)) _impossible_;
 	_chk(_SetExcept_CE(0));
 	_ce;
 }
-done _ser_int_real(t_nubit8 intid, t_nubit8 byte)
+static void _ser_int_real(t_nubit8 intid, t_nubit8 byte)
 {
 	t_nubit16 cip;
 	t_nubit32 vector;
@@ -2162,8 +2153,7 @@ todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 	t_nubit16 oldss_sel;
 	t_nubit32 oldesp, newesp;
 	t_nubit16 cs_sel,ss_sel;
-	t_nubit64 gate_cdesc;
-	t_cpuins_desc cs_xdesc,ss_xdesc;
+	t_nubit64 cs_cdesc, ss_cdesc, gate_cdesc;
 	_cb("_ser_int_protected");
 	if (!_GetCR0_PE) _impossible_;
 	if (GetMax16(intid * 8 + 7) > GetMax16(vcpu.idtr.limit)) {
@@ -2180,7 +2170,6 @@ todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 	case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
 		break;
 	default: _bb("Desc_Type(!TaskGate/!IntGate/!TrapGate)");
-		_comment("int:%02x\n", intid);
 		_chk(_SetExcept_GP(intid * 8 + 2 + !!flagext));
 		_be;break;
 	}
@@ -2227,21 +2216,20 @@ todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 			}
 			_be;
 		}
-		_chk(_ksa_descriptor(cs_sel));
-		cs_xdesc = vcpuins.xdesc;
-		if (!_IsDescCode(cs_xdesc.descriptor) ||
-			_GetDesc_DPL(cs_xdesc.descriptor) > _GetCPL) {
+		_chk(cs_cdesc = _s_read_xdt(cs_sel));
+		if (!_IsDescCode(cs_cdesc) ||
+			_GetDesc_DPL(cs_cdesc) > _GetCPL) {
 			_bb("!DescCode/DPL(>CPL)");
-			_chk(_SetExcept_GP(cs_xdesc.selector & 0xfffc + !!flagext));
+			_chk(_SetExcept_GP(cs_sel & 0xfffc + !!flagext));
 			_be;
 		}
-		if (!_IsDescPresent(cs_xdesc.descriptor)) {
+		if (!_IsDescPresent(cs_cdesc)) {
 			_bb("!DescPresent");
-			_chk(_SetExcept_NP(cs_xdesc.selector & 0xfffc + !!flagext));
+			_chk(_SetExcept_NP(cs_sel & 0xfffc + !!flagext));
 			_be;
 		}
-		if (_IsDescCodeNonConform(cs_xdesc.descriptor) &&
-			_GetDesc_DPL(cs_xdesc.descriptor) < _GetCPL) {
+		if (_IsDescCodeNonConform(cs_cdesc) &&
+			_GetDesc_DPL(cs_cdesc) < _GetCPL) {
 			_bb("DescCodeNonConform,DPL(<CPL)");
 			if (!_GetEFLAGS_VM) {
 				_bb("EFLAS_VM(0)");
@@ -2250,9 +2238,9 @@ todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 				_be;
 			} else {
 				_bb("EFLAS_VM(1)");
-				if (_GetDesc_DPL(cs_xdesc.descriptor) != 0) {
+				if (_GetDesc_DPL(cs_cdesc) != 0) {
 					_bb("DPL(!0)");
-					_chk(_SetExcept_GP(cs_xdesc.selector));
+					_chk(_SetExcept_GP(cs_sel));
 					_be;
 				}
 				/* INTERRUPT-FROM-VIRTUAL-8086-MODE */
@@ -2277,22 +2265,21 @@ todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 					_chk(_SetExcept_TS(!!flagext));
 					_be;
 				}
-				if (_GetSelector_RPL(ss_sel) != _GetDesc_DPL(cs_xdesc.descriptor)) {
+				if (_GetSelector_RPL(ss_sel) != _GetDesc_DPL(cs_cdesc)) {
 					_bb("RPL(newss)!=DPL(newcs)");
 					_chk(_SetExcept_TS(ss_sel & 0xfffc + !!flagext));
 					_be;
 				}
-				_chk(_ksa_descriptor(ss_sel));
-				ss_xdesc = vcpuins.xdesc;
-				if (_GetDesc_DPL(ss_xdesc.descriptor) !=
-					_GetDesc_DPL(cs_xdesc.descriptor)) {
+				_chk(ss_cdesc = _s_read_xdt(ss_sel));
+				if (_GetDesc_DPL(ss_cdesc) !=
+					_GetDesc_DPL(cs_cdesc)) {
 					_bb("DPL(newss)!=DPL(newcs)");
-					_chk(_SetExcept_TS(ss_xdesc.selector & 0xfffc + !!flagext));
+					_chk(_SetExcept_TS(ss_sel & 0xfffc + !!flagext));
 					_be;
 				}
-				if (!_IsDescPresent(ss_xdesc.descriptor)) {
+				if (!_IsDescPresent(ss_cdesc)) {
 					_bb("!DescPresent(newss)");
-					_chk(_SetExcept_SS(ss_xdesc.selector & 0xfffc + !!flagext));
+					_chk(_SetExcept_SS(ss_sel & 0xfffc + !!flagext));
 					_be;
 				}
 				/*_chk(_ksa_load_sreg(&css, &ss_xdesc));
@@ -2314,7 +2301,7 @@ todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 					_ClrEFLAGS_IF;
 				oldss_sel = vcpu.ss.selector;
 				oldesp = vcpu.esp;
-				_chk(_ksa_load_sreg(&vcpu.ss, &ss_xdesc));
+				_chk(_ksa_load_sreg(&vcpu.ss, ss_sel));
 				vcpu.esp = newesp;
 				if (_IsDescSys32(gate_cdesc)) {
 					_bb("DescSys32(gate)");
@@ -2331,7 +2318,7 @@ todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 					_chk(_s_load_fs(0x0000));
 					_chk(_s_load_ds(0x0000));
 					_chk(_s_load_es(0x0000));
-					_chk(_ksa_load_sreg(&vcpu.cs, &cs_xdesc));
+					_chk(_ksa_load_sreg(&vcpu.cs, cs_sel));
 					switch (byte) {
 					case 2: vcpu.eip = GetMax16(_GetDescGate_Offset(gate_cdesc));break;
 					case 4: vcpu.eip = GetMax32(_GetDescGate_Offset(gate_cdesc));break;
@@ -2357,106 +2344,107 @@ todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 	}
 	_ce;
 }
-done _ser_ret_far_real(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte)
+static void _ser_ret_far_real(t_nubit16 newcs, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte)
 {
 	_cb("_ser_ret_far_real");
 	if (_IsProtected) _impossible_;
-	if (rdesc->flagvalid) _impossible_;
-	_chk(_kec_ret_far(rdesc, neweip, parambyte, byte));
+	_chk(_kec_ret_far(newcs, neweip, parambyte, byte));
 	_ce;
 }
-tots _ser_ret_far_same(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte)
+static void _ser_ret_far_same(t_nubit16 newcs, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte)
 {
 	_cb("_ser_ret_far_same");
 	if (!_IsProtected) _impossible_;
-	if (!rdesc->flagvalid) _impossible_;
-	_chk(_kec_ret_far(rdesc, neweip, parambyte, byte));
+	_chk(_kec_ret_far(newcs, neweip, parambyte, byte));
 	_ce;
 }
-todo _ser_ret_far_outer(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte)
+todo _ser_ret_far_outer(t_nubit16 newcs, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte)
 {
 	_cb("_ser_ret_far_outer");
 	if (!_IsProtected) _impossible_;
-	if (!rdesc->flagvalid) _impossible_;
 	_chk(_SetExcept_CE(0));
 	_ce;
 }
-done _ser_jmp_far_real(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
+static void _ser_jmp_far_real(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_ser_jmp_far_real");
 	if (_IsProtected) _impossible_;
-	if (rdesc->flagvalid) _impossible_;
-	_chk(_kec_jmp_far(rdesc, neweip, byte));
+	_chk(_kec_jmp_far(newcs, neweip, byte));
 	_ce;
 }
-tots _ser_jmp_far_cs_conf(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
+static void _ser_jmp_far_cs_conf(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
+	t_nubit64 descriptor;
 	_cb("_ser_jmp_far_cs_conf");
 	if (!_IsProtected) _impossible_;
-	if (!rdesc->flagvalid) _impossible_;
-	if (!_IsDescCodeConform(rdesc->descriptor)) _impossible_;
-	if (_GetDesc_DPL(rdesc->descriptor) > _GetCPL) {
+	_chk(descriptor = _s_read_xdt(newcs));
+	if (!_IsDescCodeConform(descriptor)) _impossible_;
+	if (_GetDesc_DPL(descriptor) > _GetCPL) {
 		_bb("DPL(>CPL)");
-		_chk(_SetExcept_GP(rdesc->selector));
+		_chk(_SetExcept_GP(newcs));
 		_be;
 	}
-	if (!_IsDescPresent(rdesc->descriptor)) {
+	if (!_IsDescPresent(descriptor)) {
 		_bb("!DescPresent");
-		_chk(_SetExcept_NP(rdesc->selector));
+		_chk(_SetExcept_NP(newcs));
 		_be;
 	}
-	_chk(_kec_jmp_far(rdesc, neweip, byte));
+	_chk(_kec_jmp_far(newcs, neweip, byte));
 	_ce;
 }
-tots _ser_jmp_far_cs_nonc(t_cpuins_desc *rdesc, t_nubit32 neweip, t_nubit8 byte)
+static void _ser_jmp_far_cs_nonc(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
+	t_nubit64 descriptor;
 	_cb("_ser_jmp_far_cs_nonc");
 	if (!_IsProtected) _impossible_;
-	if (!rdesc->flagvalid) _impossible_;
-	if (!_IsDescCodeNonConform(rdesc->descriptor)) _impossible_;
-	if (_GetDesc_DPL(rdesc->descriptor) != _GetCPL ||
-		_GetSelector_RPL(rdesc->selector) > _GetCPL) {
+	_chk(descriptor = _s_read_xdt(newcs));
+	if (!_IsDescCodeNonConform(descriptor)) _impossible_;
+	if (_GetDesc_DPL(descriptor) != _GetCPL ||
+		_GetSelector_RPL(newcs) > _GetCPL) {
 		_bb("DPL(!CPL)/RPL(>CPL)");
-		_chk(_SetExcept_GP(rdesc->selector));
+		_chk(_SetExcept_GP(newcs));
 		_be;
 	}
-	if (!_IsDescPresent(rdesc->descriptor)) {
+	if (!_IsDescPresent(descriptor)) {
 		_bb("!DescPresent");
-		_chk(_SetExcept_NP(rdesc->selector));
+		_chk(_SetExcept_NP(newcs));
 		_be;
 	}
-	_chk(_kec_jmp_far(rdesc, neweip, byte));
+	_chk(_kec_jmp_far(newcs, neweip, byte));
 	_ce;
 }
-todo _ser_jmp_far_call_gate(t_cpuins_desc *rdesc)
+todo _ser_jmp_far_call_gate(t_nubit16 newcs)
 {
+	t_nubit64 descriptor;
 	_cb("_ser_jmp_far_call_gate");
 	if (!_IsProtected) _impossible_;
-	if (!rdesc->flagvalid) _impossible_;
-	if (!_IsDescCallGate(rdesc->descriptor)) _impossible_;
+	_chk(descriptor = _s_read_xdt(newcs));
+	if (!_IsDescCallGate(descriptor)) _impossible_;
 	_chk(_SetExcept_CE(0));
 	_ce;
 }
-todo _ser_jmp_far_task_gate(t_cpuins_desc *rdesc)
+todo _ser_jmp_far_task_gate(t_nubit16 newcs)
 {
+	t_nubit64 descriptor;
 	_cb("_ser_jmp_far_task_gate");
 	if (!_IsProtected) _impossible_;
-	if (!rdesc->flagvalid) _impossible_;
-	if (!_IsDescTaskGate(rdesc->descriptor)) _impossible_;
+	_chk(descriptor = _s_read_xdt(newcs));
+	if (!_IsDescTaskGate(descriptor)) _impossible_;
 	_chk(_SetExcept_CE(0));
 	_ce;
 }
-todo _ser_jmp_far_tss(t_cpuins_desc *rdesc)
+todo _ser_jmp_far_tss(t_nubit16 newcs)
 {
+	t_nubit64 descriptor;
 	_cb("_ser_jmp_far_tss");
 	if (!_IsProtected) _impossible_;
-	if (!rdesc->flagvalid) _impossible_;
-	if (!_IsDescTSS(rdesc->descriptor)) _impossible_;
+	_chk(descriptor = _s_read_xdt(newcs));
+	if (!_IsDescTSS(descriptor)) _impossible_;
 	_chk(_SetExcept_CE(0));
 	_ce;
 }
 /* regular execute control */
-done _e_push(t_nubit64 data, t_nubit8 byte)
+static void _e_push(t_nubit64 data, t_nubit8 byte)
 {
 	_cb("_e_push");
 	_chk(_kec_push(data, byte));
@@ -2472,28 +2460,30 @@ static t_nubit64 _e_pop(t_nubit8 byte)
 }
 todo _e_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
+	t_nubit64 descriptor;
 	_cb("_e_call_far");
-	_chk(_s_descriptor(newcs));
 	if (!_IsProtected) {
 		_bb("!Protected");
-		_chk(_ser_call_far_real(&vcpuins.xdesc, neweip, byte));
+		_chk(_ser_call_far_real(newcs, neweip, byte));
 		_be;
 	} else {
 		_bb("Protected");
-		if (!vcpuins.xdesc.flagvalid) {
+		if (_IsSelectorNull(newcs)) {
 			_bb("selector(null)");
 			_chk(_SetExcept_GP(0));
 			_be;
-		} else if (_IsDescCodeConform(vcpuins.xdesc.descriptor))
-			_chk(_ser_call_far_cs_conf(&vcpuins.xdesc, neweip, byte));
-		else if (_IsDescCodeNonConform(vcpuins.xdesc.descriptor))
-			_chk(_ser_call_far_cs_nonc(&vcpuins.xdesc, neweip, byte));
-		else if (_IsDescCallGate(vcpuins.xdesc.descriptor))
-			_chk(_ser_call_far_call_gate(&vcpuins.xdesc));
-		else if (_IsDescTaskGate(vcpuins.xdesc.descriptor))
-			_chk(_ser_call_far_task_gate(&vcpuins.xdesc));
-		else if (_IsDescTSS(vcpuins.xdesc.descriptor))
-			_chk(_ser_call_far_tss(&vcpuins.xdesc));
+		}
+		_chk(descriptor = _s_read_xdt(newcs));
+		if (_IsDescCodeConform(descriptor))
+			_chk(_ser_call_far_cs_conf(newcs, neweip, byte));
+		else if (_IsDescCodeNonConform(descriptor))
+			_chk(_ser_call_far_cs_nonc(newcs, neweip, byte));
+		else if (_IsDescCallGate(descriptor))
+			_chk(_ser_call_far_call_gate(newcs));
+		else if (_IsDescTaskGate(descriptor))
+			_chk(_ser_call_far_task_gate(newcs));
+		else if (_IsDescTSS(descriptor))
+			_chk(_ser_call_far_tss(newcs));
 		else {
 			_bb("desc(invalid)");
 			_chk(_SetExcept_GP(newcs));
@@ -2503,7 +2493,7 @@ todo _e_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 	}
 	_ce;
 }
-done _e_call_near(t_nubit32 neweip, t_nubit8 byte)
+static void _e_call_near(t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_e_call_near");
 	_chk(_kec_call_near(neweip, byte));
@@ -2623,8 +2613,7 @@ todo _e_iret(t_nubit8 byte)
 			_chk(_SetExcept_CE(byte));
 			_be;break;
 		}
-		_chk(_s_descriptor(newcs));
-		_chk(_ksa_load_sreg(&ccs, &vcpuins.xdesc));
+		_chk(_ksa_load_sreg(&ccs, newcs));
 		_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
 		vcpu.cs = ccs;
 		vcpu.eip = neweip;
@@ -2657,8 +2646,7 @@ todo _e_iret(t_nubit8 byte)
 					_chk(_SetExcept_CE(byte));
 					_be;break;
 				}
-				_chk(_s_descriptor(newcs));
-				_chk(_ksa_load_sreg(&ccs, &vcpuins.xdesc));
+				_chk(_ksa_load_sreg(&ccs, newcs));
 				_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
 				vcpu.cs = ccs;
 				vcpu.eip = neweip;
@@ -2701,8 +2689,7 @@ todo _e_iret(t_nubit8 byte)
 				/* return to v86 */
 				_chk(_s_test_ss_pop(24));
 				vcpu.eflags = (neweflags & ~mask) | (vcpu.eflags & mask);
-				_chk(_s_descriptor(newcs));
-				_chk(_ksa_load_sreg(&ccs, &vcpuins.xdesc));
+				_chk(_ksa_load_sreg(&ccs, newcs));
 				_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
 				vcpu.cs = ccs;
 				vcpu.eip = neweip;
@@ -2732,7 +2719,7 @@ todo _e_iret(t_nubit8 byte)
 	}
 	_ce;
 }
-tots _e_jcc(t_nubit32 csrc, t_nubit8 byte, t_bool condition)
+static void _e_jcc(t_nubit32 csrc, t_nubit8 byte, t_bool condition)
 {
 	t_nubit32 neweip = vcpu.eip;
 	_cb("_e_jcc");
@@ -2751,31 +2738,32 @@ tots _e_jcc(t_nubit32 csrc, t_nubit8 byte, t_bool condition)
 	}
 	_ce;
 }
-done _e_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
+static void _e_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
+	t_nubit64 descriptor;
 	_cb("_e_jmp_far");
-	_chk(_s_descriptor(newcs));
 	if (!_IsProtected) {
 		_bb("Protected(0)");
-		_chk(_ser_jmp_far_real(&vcpuins.xdesc, neweip, byte));
+		_chk(_ser_jmp_far_real(newcs, neweip, byte));
 		_be;
 	} else {
 		_bb("Protected(1)");
-		_newins_;
-		if (!vcpuins.xdesc.flagvalid) {
+		if (_IsSelectorNull(newcs)) {
 			_bb("selector(null)");
 			_chk(_SetExcept_GP(0));
 			_be;
-		} else if (_IsDescCodeConform(vcpuins.xdesc.descriptor))
-			_chk(_ser_jmp_far_cs_conf(&vcpuins.xdesc, neweip, byte));
-		else if (_IsDescCodeNonConform(vcpuins.xdesc.descriptor))
-			_chk(_ser_jmp_far_cs_nonc(&vcpuins.xdesc, neweip, byte));
-		else if (_IsDescCallGate(vcpuins.xdesc.descriptor))
-			_chk(_ser_jmp_far_call_gate(&vcpuins.xdesc));
-		else if (_IsDescTaskGate(vcpuins.xdesc.descriptor))
-			_chk(_ser_jmp_far_task_gate(&vcpuins.xdesc));
-		else if (_IsDescTSS(vcpuins.xdesc.descriptor))
-			_chk(_ser_jmp_far_tss(&vcpuins.xdesc));
+		}
+		_chk(descriptor = _s_read_xdt(newcs));
+		if (_IsDescCodeConform(descriptor))
+			_chk(_ser_jmp_far_cs_conf(newcs, neweip, byte));
+		else if (_IsDescCodeNonConform(descriptor))
+			_chk(_ser_jmp_far_cs_nonc(newcs, neweip, byte));
+		else if (_IsDescCallGate(descriptor))
+			_chk(_ser_jmp_far_call_gate(newcs));
+		else if (_IsDescTaskGate(descriptor))
+			_chk(_ser_jmp_far_task_gate(newcs));
+		else if (_IsDescTSS(descriptor))
+			_chk(_ser_jmp_far_tss(newcs));
 		else {
 			_bb("newcs(invalid)");
 			_chk(_SetExcept_GP(newcs));
@@ -2787,13 +2775,13 @@ done _e_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 	vcpuins.opr2 = vcpu.eip;
 	_ce;
 }
-done _e_jmp_near(t_nubit32 neweip, t_nubit8 byte)
+static void _e_jmp_near(t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_e_jmp_near");
 	_chk(_kec_jmp_near(neweip, byte));
 	_ce;
 }
-done _e_load_far(t_cpu_sreg *rsreg, t_vaddrcc rdest, t_nubit16 selector, t_nubit32 offset, t_nubit8 byte)
+static void _e_load_far(t_cpu_sreg *rsreg, t_vaddrcc rdest, t_nubit16 selector, t_nubit32 offset, t_nubit8 byte)
 {
 	_cb("_e_load_far");
 	_chk(_s_load_sreg(rsreg, selector));
@@ -2810,7 +2798,7 @@ done _e_load_far(t_cpu_sreg *rsreg, t_vaddrcc rdest, t_nubit16 selector, t_nubit
 	}
 	_ce;
 }
-done _e_loopcc(t_nsbit8 csrc, t_bool condition)
+static void _e_loopcc(t_nsbit8 csrc, t_bool condition)
 {
 	t_nubit32 cecx;
 	t_nubit32 neweip = vcpu.eip;
@@ -2833,16 +2821,17 @@ done _e_loopcc(t_nsbit8 csrc, t_bool condition)
 	}
 	_ce;
 }
-done _e_ret_near(t_nubit16 parambyte, t_nubit8 byte)
+static void _e_ret_near(t_nubit16 parambyte, t_nubit8 byte)
 {
 	_cb("_e_ret_near");
 	_chk(_kec_ret_near(parambyte, byte));
 	_ce;
 }
-done _e_ret_far(t_nubit16 parambyte, t_nubit16 byte)
+static void _e_ret_far(t_nubit16 parambyte, t_nubit16 byte)
 {
 	t_nubit16 newcs;
 	t_nubit32 neweip;
+	t_nubit64 descriptor;
 	_cb("_e_ret_far");
 	switch (byte) {
 	case 2: _bb("byte(2)");
@@ -2860,49 +2849,49 @@ done _e_ret_far(t_nubit16 parambyte, t_nubit16 byte)
 		_chk(_SetExcept_CE(byte));
 		_be;break;
 	}
-	_chk(_s_descriptor(newcs));
 	if (!_IsProtected) {
 		_bb("!Protected");
-		_chk(_ser_ret_far_real(&vcpuins.xdesc, neweip, parambyte, byte));
+		_chk(_ser_ret_far_real(newcs, neweip, parambyte, byte));
 		_be;
 	} else {
 		_bb("Protected");
-		if (!vcpuins.xdesc.flagvalid) {
+		if (_IsSelectorNull(newcs)) {
 			_bb("selector(null)");
 			_chk(_SetExcept_GP(0));
 			_be;
 		}
-		if (!_IsDescCode(vcpuins.xdesc.descriptor)) {
+		_chk(descriptor = _s_read_xdt(newcs));
+		if (!_IsDescCode(descriptor)) {
 			_bb("!DescCode");
-			_chk(_SetExcept_GP(vcpuins.xdesc.selector));
+			_chk(_SetExcept_GP(newcs));
 			_be;
 		}
-		if (_GetSelector_RPL(vcpuins.xdesc.selector) < _GetCPL) {
+		if (_GetSelector_RPL(newcs) < _GetCPL) {
 			_bb("RPL(<CPL)");
-			_chk(_SetExcept_GP(vcpuins.xdesc.selector));
+			_chk(_SetExcept_GP(newcs));
 			_be;
 		}
-		if (_IsDescCodeConform(vcpuins.xdesc.descriptor)) {
+		if (_IsDescCodeConform(descriptor)) {
 			_bb("DescCodeConform");
-			if (_GetDesc_DPL(vcpuins.xdesc.descriptor) > _GetSelector_RPL(vcpuins.xdesc.selector)) {
+			if (_GetDesc_DPL(descriptor) > _GetSelector_RPL(newcs)) {
 				_bb("DPL(>RPL)");
-				_chk(_SetExcept_GP(vcpuins.xdesc.selector));
+				_chk(_SetExcept_GP(newcs));
 				_be;
 			}
 			_be;
 		}
-		if (!_IsDescPresent(vcpuins.xdesc.descriptor)) {
+		if (!_IsDescPresent(descriptor)) {
 			_bb("!DescPresent");
-			_chk(_SetExcept_NP(vcpuins.xdesc.selector));
+			_chk(_SetExcept_NP(newcs));
 			_be;
 		}
-		if (_GetSelector_RPL(vcpuins.xdesc.selector) > _GetCPL) {
+		if (_GetSelector_RPL(newcs) > _GetCPL) {
 			_bb("RPL(>CPL)");
-			_chk(_ser_ret_far_outer(&vcpuins.xdesc, neweip, parambyte, byte));
+			_chk(_ser_ret_far_outer(newcs, neweip, parambyte, byte));
 			_be;
 		} else {
 			_bb("RPL(<=CPL)");
-			_chk(_ser_ret_far_same(&vcpuins.xdesc, neweip, parambyte, byte));
+			_chk(_ser_ret_far_same(newcs, neweip, parambyte, byte));
 			_be;
 		}
 		_be;
@@ -2942,7 +2931,7 @@ done _e_ret_far(t_nubit16 parambyte, t_nubit16 byte)
 #define DAA_FLAG  (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF)
 #define DAS_FLAG  (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF)
 
-done _kaf_calc_CF()
+static void _kaf_calc_CF()
 {
 	_cb("_kaf_calc_CF");
 	switch (vcpuins.type) {
@@ -2992,7 +2981,7 @@ done _kaf_calc_CF()
 	}
 	_ce;
 }
-done _kaf_calc_OF()
+static void _kaf_calc_OF()
 {
 	_cb("_kaf_calc_OF");
 	switch (vcpuins.type) {
@@ -3035,13 +3024,13 @@ done _kaf_calc_OF()
 	}
 	_ce;
 }
-done _kaf_calc_AF()
+static void _kaf_calc_AF()
 {
 	_cb("_kaf_calc_AF");
 	MakeBit(vcpu.eflags, VCPU_EFLAGS_AF, ((vcpuins.opr1 ^ vcpuins.opr2) ^ vcpuins.result) & 0x10);
 	_ce;
 }
-done _kaf_calc_PF()
+static void _kaf_calc_PF()
 {
 	t_nubit8 res8 = GetMax8(vcpuins.result);
 	t_bool even = 1;
@@ -3053,13 +3042,13 @@ done _kaf_calc_PF()
 	MakeBit(vcpu.eflags, VCPU_EFLAGS_PF, even);
 	_ce;
 }
-done _kaf_calc_ZF()
+static void _kaf_calc_ZF()
 {
 	_cb("_kaf_calc_ZF");
 	MakeBit(vcpu.eflags, VCPU_EFLAGS_ZF, !vcpuins.result);
 	_ce;
 }
-done _kaf_calc_SF()
+static void _kaf_calc_SF()
 {
 	_cb("_kaf_calc_SF");
 	switch (vcpuins.bit) {
@@ -3072,7 +3061,7 @@ done _kaf_calc_SF()
 	}
 	_ce;
 }
-done _kaf_set_flags(t_nubit16 flags)
+static void _kaf_set_flags(t_nubit16 flags)
 {
 	_cb("_kaf_set_flags");
 	if(flags & VCPU_EFLAGS_CF) _chk(_kaf_calc_CF());
@@ -3083,7 +3072,7 @@ done _kaf_set_flags(t_nubit16 flags)
 	if(flags & VCPU_EFLAGS_OF) _chk(_kaf_calc_OF());
 	_ce;
 }
-done _kas_move_index(t_nubit8 byte, t_bool flagsi, t_bool flagdi)
+static void _kas_move_index(t_nubit8 byte, t_bool flagsi, t_bool flagdi)
 {
 	_cb("_kas_move_index");
 	switch (_GetAddressSize) {
@@ -3187,7 +3176,7 @@ do { \
 	_chk(_kaf_set_flags(funflag)); \
 } while (0)
 
-tots _a_add(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
+static void _a_add(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 {
 	_cb("_a_add");
 	_kac_arith2(ADD_FLAG,
@@ -3198,7 +3187,7 @@ tots _a_add(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 		ADD32, (vcpuins.opr1 + vcpuins.opr2));
 	_ce;
 }
-tots _a_adc(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
+static void _a_adc(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 {
 	_cb("_a_adc");
 	_kac_arith2(ADC_FLAG,
@@ -3209,7 +3198,7 @@ tots _a_adc(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 		ADC32, (vcpuins.opr1 + vcpuins.opr2 + _GetEFLAGS_CF));
 	_ce;
 }
-tots _a_and(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
+static void _a_and(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 {
 	_cb("_a_and");
 	_kac_arith2(AND_FLAG,
@@ -3223,7 +3212,7 @@ tots _a_and(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 	vcpuins.udf |= VCPU_EFLAGS_AF;
 	_ce;
 }
-tots _a_or(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
+static void _a_or(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 {
 	_cb("_a_or");
 	_kac_arith2(OR_FLAG,
@@ -3237,7 +3226,7 @@ tots _a_or(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 	vcpuins.udf |= VCPU_EFLAGS_AF;
 	_ce;
 }
-tots _a_sbb(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
+static void _a_sbb(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 {
 	_cb("_a_sbb");
 	_kac_arith2(SBB_FLAG,
@@ -3248,7 +3237,7 @@ tots _a_sbb(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 		SBB32, (vcpuins.opr1 - (vcpuins.opr2 + _GetEFLAGS_CF)));
 	_ce;
 }
-tots _a_sub(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
+static void _a_sub(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 {
 	_cb("_a_sub");
 	_kac_arith2(SUB_FLAG,
@@ -3259,7 +3248,7 @@ tots _a_sub(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 		SUB32, (vcpuins.opr1 - vcpuins.opr2));
 	_ce;
 }
-tots _a_xor(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
+static void _a_xor(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 {
 	_cb("_a_xor");
 	_kac_arith2(XOR_FLAG,
@@ -3273,7 +3262,7 @@ tots _a_xor(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 	vcpuins.udf |= VCPU_EFLAGS_AF;
 	_ce;
 }
-tots _a_cmp(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
+static void _a_cmp(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 {
 	_cb("_a_cmp");
 	_kac_arith2(CMP_FLAG,
@@ -3284,7 +3273,7 @@ tots _a_cmp(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 		CMP32, ((t_nubit32)vcpuins.opr1 - (t_nsbit32)vcpuins.opr2));
 	_ce;
 }
-tots _a_test(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
+static void _a_test(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 {
 	_cb("_a_test");
 	_kac_arith2(TEST_FLAG,
@@ -3298,7 +3287,7 @@ tots _a_test(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 	vcpuins.udf |= VCPU_EFLAGS_AF;
 	_ce;
 }
-tots _a_inc(t_nubit64 cdest, t_nubit8 bit)
+static void _a_inc(t_nubit64 cdest, t_nubit8 bit)
 {
 	_cb("_a_inc");
 	vcpuins.opr2 = 1;
@@ -3308,7 +3297,7 @@ tots _a_inc(t_nubit64 cdest, t_nubit8 bit)
 		ADD32, (vcpuins.opr1 + vcpuins.opr2));
 	_ce;
 }
-tots _a_dec(t_nubit64 cdest, t_nubit8 bit)
+static void _a_dec(t_nubit64 cdest, t_nubit8 bit)
 {
 	_cb("_a_dec");
 	vcpuins.opr2 = 1;
@@ -3318,7 +3307,7 @@ tots _a_dec(t_nubit64 cdest, t_nubit8 bit)
 		SUB32, (vcpuins.opr1 - vcpuins.opr2));
 	_ce;
 }
-tots _a_not(t_nubit64 cdest, t_nubit8 bit)
+static void _a_not(t_nubit64 cdest, t_nubit8 bit)
 {
 	_cb("_a_not");
 	vcpuins.opr2 = 0;
@@ -3328,7 +3317,7 @@ tots _a_not(t_nubit64 cdest, t_nubit8 bit)
 		ARITHTYPE_NULL, (~vcpuins.opr1));
 	_ce;
 }
-tots _a_neg(t_nubit64 cdest, t_nubit8 bit)
+static void _a_neg(t_nubit64 cdest, t_nubit8 bit)
 {
 	_cb("_a_neg");
 	vcpuins.opr2 = cdest;
@@ -3340,7 +3329,7 @@ tots _a_neg(t_nubit64 cdest, t_nubit8 bit)
 	MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, !!vcpuins.opr2);
 	_ce;
 }
-tots _a_mul(t_nubit64 csrc, t_nubit8 bit)
+static void _a_mul(t_nubit64 csrc, t_nubit8 bit)
 {
 	t_nubit64 cdest;
 	_cb("_a_mul");
@@ -3386,7 +3375,7 @@ tots _a_mul(t_nubit64 csrc, t_nubit8 bit)
 		VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
 	_ce;
 }
-tots _a_imul(t_nubit64 csrc, t_nubit8 bit)
+static void _a_imul(t_nubit64 csrc, t_nubit8 bit)
 {
 	t_nsbit64 cdest;
 	_cb("_a_imul");
@@ -3447,7 +3436,7 @@ tots _a_imul(t_nubit64 csrc, t_nubit8 bit)
 		VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
 	_ce;
 }
-tots _a_div(t_nubit64 csrc, t_nubit8 bit)
+static void _a_div(t_nubit64 csrc, t_nubit8 bit)
 {
 	t_nubit64 temp = 0x0000000000000000;
 	_cb("_a_div");
@@ -3530,7 +3519,7 @@ tots _a_div(t_nubit64 csrc, t_nubit8 bit)
 		VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_OF);
 	_ce;
 }
-tots _a_idiv(t_nubit64 csrc, t_nubit8 bit)
+static void _a_idiv(t_nubit64 csrc, t_nubit8 bit)
 {
 	t_nsbit64 temp = 0x0000000000000000;
 	_cb("_a_idiv");
@@ -3618,7 +3607,7 @@ tots _a_idiv(t_nubit64 csrc, t_nubit8 bit)
 	_ce;
 }
 
-tots _a_imul3(t_nubit64 csrc1, t_nubit64 csrc2, t_nubit8 bit)
+static void _a_imul3(t_nubit64 csrc1, t_nubit64 csrc2, t_nubit8 bit)
 {
 	t_nsbit64 cdest = 0x0000000000000000;
 	_cb("_a_imul3");
@@ -3689,7 +3678,7 @@ tots _a_imul3(t_nubit64 csrc1, t_nubit64 csrc2, t_nubit8 bit)
 	_ce;
 }
 
-tots _a_rol(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
+static void _a_rol(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 {
 	t_nubit8 count;
 	t_nubit32 flagcf;
@@ -3756,7 +3745,7 @@ tots _a_rol(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 	}
 	_ce;
 }
-tots _a_ror(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
+static void _a_ror(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 {
 	t_nubit8 count;
 	t_nubit32 flagcf;
@@ -3823,7 +3812,7 @@ tots _a_ror(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 	}
 	_ce;
 }
-tots _a_rcl(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
+static void _a_rcl(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 {
 	t_nubit8 count;
 	t_nubit32 flagcf;
@@ -3890,7 +3879,7 @@ tots _a_rcl(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 	}
 	_ce;
 }
-tots _a_rcr(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
+static void _a_rcr(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 {
 	t_nubit8 count;
 	t_nubit32 flagcf;
@@ -3957,7 +3946,7 @@ tots _a_rcr(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 	}
 	_ce;
 }
-tots _a_shl(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
+static void _a_shl(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 {
 	t_nubit8 count;
 	_cb("_a_shl");
@@ -4035,7 +4024,7 @@ tots _a_shl(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 	}
 	_ce;
 }
-tots _a_shr(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
+static void _a_shr(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 {
 	t_nubit8 count;
 	_cb("_a_shr");
@@ -4110,7 +4099,7 @@ tots _a_shr(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 	}
 	_ce;
 }
-tots _a_sar(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
+static void _a_sar(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 {
 	t_nubit8 count;
 	t_bool tempcf;
@@ -4185,7 +4174,7 @@ tots _a_sar(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 	_ce;
 }
 
-tots _p_ins(t_nubit8 byte)
+static void _p_ins(t_nubit8 byte)
 {
 	t_nubit32 data;
 	t_nubit32 cedi;
@@ -4231,7 +4220,7 @@ tots _p_ins(t_nubit8 byte)
 	}
 	_ce;
 }
-tots _p_outs(t_nubit8 byte)
+static void _p_outs(t_nubit8 byte)
 {
 	t_nubit32 data = 0x00000000;
 	t_nubit32 cesi = 0x00000000;
@@ -4274,7 +4263,7 @@ tots _p_outs(t_nubit8 byte)
 	}
 	_ce;
 }
-done _m_movs(t_nubit8 byte)
+static void _m_movs(t_nubit8 byte)
 {
 	t_nubit32 data = 0x00000000;
 	t_nubit32 cesi = 0x00000000, cedi = 0x00000000;
@@ -4317,7 +4306,7 @@ done _m_movs(t_nubit8 byte)
 	}
 	_ce;
 }
-tots _m_stos(t_nubit8 byte)
+static void _m_stos(t_nubit8 byte)
 {
 	t_nubit32 cedi = 0x00000000;
 	_cb("_m_stos");
@@ -4351,7 +4340,7 @@ tots _m_stos(t_nubit8 byte)
 	}
 	_ce;
 }
-tots _m_lods(t_nubit8 byte)
+static void _m_lods(t_nubit8 byte)
 {
 	t_nubit32 cesi = 0x00000000;
 	_cb("_m_lods");
@@ -4385,7 +4374,7 @@ tots _m_lods(t_nubit8 byte)
 	}
 	_ce;
 }
-tots _a_cmps(t_nubit8 bit)
+static void _a_cmps(t_nubit8 bit)
 {
 	t_nubit32 cesi = 0x00000000, cedi = 0x00000000;
 	_cb("_a_cmps");
@@ -4432,7 +4421,7 @@ tots _a_cmps(t_nubit8 bit)
 	_chk(_kaf_set_flags(CMP_FLAG));
 	_ce;
 }
-tots _a_scas(t_nubit8 bit)
+static void _a_scas(t_nubit8 bit)
 {
 	t_nubit32 cedi = 0x00000000;
 	_cb("_a_scas");
@@ -4476,7 +4465,7 @@ tots _a_scas(t_nubit8 bit)
 
 #define _adv _chk(_d_skip(1))
 
-done UndefinedOpcode()
+static void UndefinedOpcode()
 {
 	_cb("UndefinedOpcode");
 	vcpu = vcpuins.oldcpu;
@@ -4491,7 +4480,7 @@ done UndefinedOpcode()
 	_chk(_SetExcept_UD(0));
 	_ce;
 }
-done ADD_RM8_R8()
+static void ADD_RM8_R8()
 {
 	_cb("ADD_RM8_R8");
 	i386(0x00) {
@@ -4505,7 +4494,7 @@ done ADD_RM8_R8()
 	_chk(_m_write_rm(vcpuins.result, 1));
 	_ce;
 }
-done ADD_RM32_R32()
+static void ADD_RM32_R32()
 {
 	_cb("ADD_RM32_R32");
 	i386(0x01) {
@@ -4523,7 +4512,7 @@ done ADD_RM32_R32()
 	}
 	_ce;
 }
-done ADD_R8_RM8()
+static void ADD_R8_RM8()
 {
 	_cb("ADD_R8_RM8");
 	i386(0x02) {
@@ -4537,7 +4526,7 @@ done ADD_R8_RM8()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.result, 1));
 	_ce;
 }
-done ADD_R32_RM32()
+static void ADD_R32_RM32()
 {
 	_cb("ADD_R32_RM32");
 	i386(0x03) {
@@ -4555,7 +4544,7 @@ done ADD_R32_RM32()
 	}
 	_ce;
 }
-done ADD_AL_I8()
+static void ADD_AL_I8()
 {
 	_cb("ADD_AL_I8");
 	i386(0x04) {
@@ -4568,7 +4557,7 @@ done ADD_AL_I8()
 	vcpu.al = GetMax8(vcpuins.result);
 	_ce;
 }
-tots ADD_EAX_I32()
+static void ADD_EAX_I32()
 {
 	_cb("ADD_EAX_I32");
 	i386(0x05) {
@@ -4594,7 +4583,7 @@ tots ADD_EAX_I32()
 	}
 	_ce;
 }
-done PUSH_ES()
+static void PUSH_ES()
 {
 	_cb("PUSH_ES");
 	i386(0x06) {
@@ -4605,7 +4594,7 @@ done PUSH_ES()
 	_chk(_e_push(vcpu.es.selector, _GetOperandSize));
 	_ce;
 }
-done POP_ES()
+static void POP_ES()
 {
 	/* note: not sure if operand size is 32,
 		push/pop selector only or with higher 16 bit */
@@ -4620,7 +4609,7 @@ done POP_ES()
 	_chk(_s_load_es(sel));
 	_ce;
 }
-done OR_RM8_R8()
+static void OR_RM8_R8()
 {
 	_cb("OR_RM8_R8");
 	i386(0x08) {
@@ -4634,7 +4623,7 @@ done OR_RM8_R8()
 	_chk(_m_write_rm(vcpuins.result, 1));
 	_ce;
 }
-done OR_RM32_R32()
+static void OR_RM32_R32()
 {
 	_cb("OR_RM32_R32");
 	i386(0x09) {
@@ -4652,7 +4641,7 @@ done OR_RM32_R32()
 	}
 	_ce;
 }
-done OR_R8_RM8()
+static void OR_R8_RM8()
 {
 	_cb("OR_R8_RM8");
 	i386(0x0a) {
@@ -4666,7 +4655,7 @@ done OR_R8_RM8()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.result, 1));
 	_ce;
 }
-done OR_R32_RM32()
+static void OR_R32_RM32()
 {
 	_cb("OR_R32_RM32");
 	i386(0x0b) {
@@ -4684,7 +4673,7 @@ done OR_R32_RM32()
 	}
 	_ce;
 }
-done OR_AL_I8()
+static void OR_AL_I8()
 {
 	_cb("OR_AL_I8");
 	i386(0x0c) {
@@ -4697,7 +4686,7 @@ done OR_AL_I8()
 	vcpu.al = GetMax8(vcpuins.result);
 	_ce;
 }
-tots OR_EAX_I32()
+static void OR_EAX_I32()
 {
 	_cb("OR_EAX_I32");
 	i386(0x0d) {
@@ -4723,7 +4712,7 @@ tots OR_EAX_I32()
 	}
 	_ce;
 }
-done PUSH_CS()
+static void PUSH_CS()
 {
 	_cb("PUSH_CS");
 	i386(0x0e) {
@@ -4734,7 +4723,7 @@ done PUSH_CS()
 	_chk(_e_push(vcpu.cs.selector, _GetOperandSize));
 	_ce;
 }
-tots POP_CS()
+static void POP_CS()
 {
 	t_nubit16 sel;
 	_cb("POP_CS");
@@ -4750,7 +4739,7 @@ tots POP_CS()
 	}
 	_ce;
 }
-done INS_0F()
+static void INS_0F()
 {
 	t_nubit8 opcode = 0x00;
 	_cb("INS_0F");
@@ -4762,7 +4751,7 @@ done INS_0F()
 		POP_CS();
 	_ce;
 }
-done ADC_RM8_R8()
+static void ADC_RM8_R8()
 {
 	_cb("ADC_RM8_R8");
 	_newins_;
@@ -4777,7 +4766,7 @@ done ADC_RM8_R8()
 	_chk(_m_write_rm(vcpuins.result, 1));
 	_ce;
 }
-done ADC_RM32_R32()
+static void ADC_RM32_R32()
 {
 	_cb("ADC_RM32_R32");
 	i386(0x11) {
@@ -4795,7 +4784,7 @@ done ADC_RM32_R32()
 	}
 	_ce;
 }
-done ADC_R8_RM8()
+static void ADC_R8_RM8()
 {
 	_cb("ADC_R8_RM8");
 	i386(0x12) {
@@ -4809,7 +4798,7 @@ done ADC_R8_RM8()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.result, 1));
 	_ce;
 }
-done ADC_R32_RM32()
+static void ADC_R32_RM32()
 {
 	_cb("ADC_R32_RM32");
 	i386(0x13) {
@@ -4827,7 +4816,7 @@ done ADC_R32_RM32()
 	}
 	_ce;
 }
-done ADC_AL_I8()
+static void ADC_AL_I8()
 {
 	_cb("ADC_AL_I8");
 	i386(0x14) {
@@ -4840,7 +4829,7 @@ done ADC_AL_I8()
 	vcpu.al = GetMax8(vcpuins.result);
 	_ce;
 }
-tots ADC_EAX_I32()
+static void ADC_EAX_I32()
 {
 	_cb("ADC_EAX_I32");
 	i386(0x15) {
@@ -4866,7 +4855,7 @@ tots ADC_EAX_I32()
 	}
 	_ce;
 }
-done PUSH_SS()
+static void PUSH_SS()
 {
 	_cb("PUSH_SS");
 	i386(0x16) {
@@ -4877,7 +4866,7 @@ done PUSH_SS()
 	_chk(_e_push(vcpu.ss.selector, _GetOperandSize));
 	_ce;
 }
-done POP_SS()
+static void POP_SS()
 {
 	t_nubit16 sel;
 	_cb("POP_SS");
@@ -4890,7 +4879,7 @@ done POP_SS()
 	_chk(_s_load_ss(sel));
 	_ce;
 }
-tots SBB_RM8_R8()
+static void SBB_RM8_R8()
 {
 	_cb("SBB_RM8_R8");
 	_newins_;
@@ -4905,7 +4894,7 @@ tots SBB_RM8_R8()
 	_chk(_m_write_rm(vcpuins.result, 1));
 	_ce;
 }
-done SBB_RM32_R32()
+static void SBB_RM32_R32()
 {
 	_cb("SBB_RM32_R32");
 	i386(0x19) {
@@ -4923,7 +4912,7 @@ done SBB_RM32_R32()
 	}
 	_ce;
 }
-done SBB_R8_RM8()
+static void SBB_R8_RM8()
 {
 	_cb("SBB_R8_RM8");
 	i386(0x1a) {
@@ -4937,7 +4926,7 @@ done SBB_R8_RM8()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.result, 1));
 	_ce;
 }
-done SBB_R32_RM32()
+static void SBB_R32_RM32()
 {
 	_cb("SBB_R32_RM32");
 	i386(0x1b) {
@@ -4955,7 +4944,7 @@ done SBB_R32_RM32()
 	}
 	_ce;
 }
-tots SBB_AL_I8()
+static void SBB_AL_I8()
 {
 	_cb("SBB_AL_I8");
 	_newins_;
@@ -4969,7 +4958,7 @@ tots SBB_AL_I8()
 	vcpu.al = GetMax8(vcpuins.result);
 	_ce;
 }
-tots SBB_EAX_I32()
+static void SBB_EAX_I32()
 {
 	_cb("SBB_EAX_I32");
 	i386(0x1d) {
@@ -4995,7 +4984,7 @@ tots SBB_EAX_I32()
 	}
 	_ce;
 }
-done PUSH_DS()
+static void PUSH_DS()
 {
 	_cb("PUSH_DS");
 	i386(0x1e) {
@@ -5006,7 +4995,7 @@ done PUSH_DS()
 	_chk(_e_push(vcpu.ds.selector, _GetOperandSize));
 	_ce;
 }
-done POP_DS()
+static void POP_DS()
 {
 	t_nubit16 sel;
 	_cb("POP_DS");
@@ -5019,7 +5008,7 @@ done POP_DS()
 	_chk(_s_load_ds(sel));
 	_ce;
 }
-done AND_RM8_R8()
+static void AND_RM8_R8()
 {
 	_cb("AND_RM8_R8");
 	i386(0x20) {
@@ -5033,7 +5022,7 @@ done AND_RM8_R8()
 	_chk(_m_write_rm(vcpuins.result, 1));
 	_ce;
 }
-done AND_RM32_R32()
+static void AND_RM32_R32()
 {
 	_cb("AND_RM32_R32");
 	i386(0x21) {
@@ -5051,7 +5040,7 @@ done AND_RM32_R32()
 	}
 	_ce;
 }
-done AND_R8_RM8()
+static void AND_R8_RM8()
 {
 	_cb("AND_R8_RM8");
 	i386(0x22) {
@@ -5065,7 +5054,7 @@ done AND_R8_RM8()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.result, 1));
 	_ce;
 }
-done AND_R32_RM32()
+static void AND_R32_RM32()
 {
 	_cb("AND_R32_RM32");
 	i386(0x23) {
@@ -5083,7 +5072,7 @@ done AND_R32_RM32()
 	}
 	_ce;
 }
-done AND_AL_I8()
+static void AND_AL_I8()
 {
 	_cb("AND_AL_I8");
 	i386(0x24) {
@@ -5096,7 +5085,7 @@ done AND_AL_I8()
 	vcpu.al = GetMax8(vcpuins.result);
 	_ce;
 }
-tots AND_EAX_I32()
+static void AND_EAX_I32()
 {
 	_cb("AND_EAX_I32");
 	i386(0x25) {
@@ -5122,7 +5111,7 @@ tots AND_EAX_I32()
 	}
 	_ce;
 }
-done PREFIX_ES()
+static void PREFIX_ES()
 {
 	_cb("PREFIX_ES");
 	i386(0x26) {
@@ -5136,7 +5125,7 @@ done PREFIX_ES()
 	}
 	_ce;
 }
-done DAA()
+static void DAA()
 {
 	t_nubit8 oldAL = vcpu.al;
 	_cb("DAA");
@@ -5160,7 +5149,7 @@ done DAA()
 	vcpuins.udf |= VCPU_EFLAGS_OF;
 	_ce;
 }
-done SUB_RM8_R8()
+static void SUB_RM8_R8()
 {
 	_cb("SUB_RM8_R8");
 	i386(0x28) {
@@ -5174,7 +5163,7 @@ done SUB_RM8_R8()
 	_chk(_m_write_rm(vcpuins.result, 1));
 	_ce;
 }
-done SUB_RM32_R32()
+static void SUB_RM32_R32()
 {
 	_cb("SUB_RM32_R32");
 	i386(0x29) {
@@ -5192,7 +5181,7 @@ done SUB_RM32_R32()
 	}
 	_ce;
 }
-done SUB_R8_RM8()
+static void SUB_R8_RM8()
 {
 	_cb("SUB_R8_RM8");
 	i386(0x2a) {
@@ -5206,7 +5195,7 @@ done SUB_R8_RM8()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.result, 1));
 	_ce;
 }
-done SUB_R32_RM32()
+static void SUB_R32_RM32()
 {
 	_cb("SUB_R32_RM32");
 	i386(0x2b) {
@@ -5224,7 +5213,7 @@ done SUB_R32_RM32()
 	}
 	_ce;
 }
-done SUB_AL_I8()
+static void SUB_AL_I8()
 {
 	_cb("SUB_AL_I8");
 	i386(0x2c) {
@@ -5237,7 +5226,7 @@ done SUB_AL_I8()
 	vcpu.al = GetMax8(vcpuins.result);
 	_ce;
 }
-tots SUB_EAX_I32()
+static void SUB_EAX_I32()
 {
 	_cb("SUB_EAX_I32");
 	i386(0x2d) {
@@ -5263,7 +5252,7 @@ tots SUB_EAX_I32()
 	}
 	_ce;
 }
-done PREFIX_CS()
+static void PREFIX_CS()
 {
 	_cb("PREFIX_CS");
 	i386(0x2e) {
@@ -5277,7 +5266,7 @@ done PREFIX_CS()
 	}
 	_ce;
 }
-tots DAS()
+static void DAS()
 {
 	t_nubit8 oldAL = vcpu.al;
 	_cb("DAS");
@@ -5302,7 +5291,7 @@ tots DAS()
 	vcpuins.udf |= VCPU_EFLAGS_OF;
 	_ce;
 }
-done XOR_RM8_R8()
+static void XOR_RM8_R8()
 {
 	_cb("XOR_RM8_R8");
 	i386(0x30) {
@@ -5316,7 +5305,7 @@ done XOR_RM8_R8()
 	_chk(_m_write_rm(vcpuins.result, 1));
 	_ce;
 }
-done XOR_RM32_R32()
+static void XOR_RM32_R32()
 {
 	_cb("XOR_RM32_R32");
 	i386(0x31) {
@@ -5334,7 +5323,7 @@ done XOR_RM32_R32()
 	}
 	_ce;
 }
-done XOR_R8_RM8()
+static void XOR_R8_RM8()
 {
 	_cb("XOR_R8_RM8");
 	i386(0x32) {
@@ -5348,7 +5337,7 @@ done XOR_R8_RM8()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.result, 1));
 	_ce;
 }
-done XOR_R32_RM32()
+static void XOR_R32_RM32()
 {
 	_cb("XOR_R32_RM32");
 	i386(0x33) {
@@ -5366,7 +5355,7 @@ done XOR_R32_RM32()
 	}
 	_ce;
 }
-tots XOR_AL_I8()
+static void XOR_AL_I8()
 {
 	_cb("XOR_AL_I8");
 	_newins_;
@@ -5380,7 +5369,7 @@ tots XOR_AL_I8()
 	vcpu.al = GetMax8(vcpuins.result);
 	_ce;
 }
-tots XOR_EAX_I32()
+static void XOR_EAX_I32()
 {
 	_cb("XOR_EAX_I32");
 	i386(0x35) {
@@ -5406,7 +5395,7 @@ tots XOR_EAX_I32()
 	}
 	_ce;
 }
-done PREFIX_SS()
+static void PREFIX_SS()
 {
 	_cb("PREFIX_SS");
 	i386(0x36) {
@@ -5420,7 +5409,7 @@ done PREFIX_SS()
 	}
 	_ce;
 }
-tots AAA()
+static void AAA()
 {
 	_cb("AAA");
 	_newins_;
@@ -5442,7 +5431,7 @@ tots AAA()
 	vcpuins.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF);
 	_ce;
 }
-done CMP_RM8_R8()
+static void CMP_RM8_R8()
 {
 	_cb("CMP_RM8_R8");
 	i386(0x38) {
@@ -5455,7 +5444,7 @@ done CMP_RM8_R8()
 	_chk(_a_cmp(vcpuins.crm, vcpuins.cr, 8));
 	_ce;
 }
-done CMP_RM32_R32()
+static void CMP_RM32_R32()
 {
 	_cb("CMP_RM32_R32");
 	i386(0x39) {
@@ -5471,7 +5460,7 @@ done CMP_RM32_R32()
 	}
 	_ce;
 }
-done CMP_R8_RM8()
+static void CMP_R8_RM8()
 {
 	_cb("CMP_R8_RM8");
 	i386(0x3a) {
@@ -5484,7 +5473,7 @@ done CMP_R8_RM8()
 	_chk(_a_cmp(vcpuins.cr, vcpuins.crm, 8));
 	_ce;
 }
-done CMP_R32_RM32()
+static void CMP_R32_RM32()
 {
 	_cb("CMP_R32_RM32");
 	i386(0x3b) {
@@ -5500,7 +5489,7 @@ done CMP_R32_RM32()
 	}
 	_ce;
 }
-done CMP_AL_I8()
+static void CMP_AL_I8()
 {
 	_cb("CMP_AL_I8");
 	i386(0x3c) {
@@ -5512,7 +5501,7 @@ done CMP_AL_I8()
 	_chk(_a_cmp(vcpu.al, vcpuins.cimm, 8));
 	_ce;
 }
-tots CMP_EAX_I32()
+static void CMP_EAX_I32()
 {
 	_cb("CMP_EAX_I32");
 	i386(0x3d) {
@@ -5535,7 +5524,7 @@ tots CMP_EAX_I32()
 	}
 	_ce;
 }
-done PREFIX_DS()
+static void PREFIX_DS()
 {
 	_cb("PREFIX_DS");
 	i386(0x3e) {
@@ -5549,7 +5538,7 @@ done PREFIX_DS()
 	}
 	_ce;
 }
-tots AAS()
+static void AAS()
 {
 	_cb("AAS");
 	_newins_;
@@ -5571,7 +5560,7 @@ tots AAS()
 	vcpuins.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF);
 	_ce;
 }
-done INC_AX()
+static void INC_AX()
 {
 	_cb("INC_AX");
 	i386(0x40) {
@@ -5593,7 +5582,7 @@ done INC_AX()
 	}
 	_ce;
 }
-done INC_CX()
+static void INC_CX()
 {
 	_cb("INC_CX");
 	i386(0x41) {
@@ -5615,7 +5604,7 @@ done INC_CX()
 	}
 	_ce;
 }
-done INC_DX()
+static void INC_DX()
 {
 	_cb("INC_DX");
 	i386(0x42) {
@@ -5637,7 +5626,7 @@ done INC_DX()
 	}
 	_ce;
 }
-done INC_BX()
+static void INC_BX()
 {
 	_cb("INC_BX");
 	i386(0x43) {
@@ -5659,7 +5648,7 @@ done INC_BX()
 	}
 	_ce;
 }
-done INC_SP()
+static void INC_SP()
 {
 	_cb("INC_SP");
 	i386(0x44) {
@@ -5681,7 +5670,7 @@ done INC_SP()
 	}
 	_ce;
 }
-done INC_BP()
+static void INC_BP()
 {
 	_cb("INC_BP");
 	i386(0x45) {
@@ -5703,7 +5692,7 @@ done INC_BP()
 	}
 	_ce;
 }
-done INC_SI()
+static void INC_SI()
 {
 	_cb("INC_SI");
 	i386(0x46) {
@@ -5725,7 +5714,7 @@ done INC_SI()
 	}
 	_ce;
 }
-done INC_DI()
+static void INC_DI()
 {
 	_cb("INC_DI");
 	i386(0x47) {
@@ -5747,7 +5736,7 @@ done INC_DI()
 	}
 	_ce;
 }
-done DEC_AX()
+static void DEC_AX()
 {
 	_cb("DEC_AX");
 	i386(0x48) {
@@ -5769,7 +5758,7 @@ done DEC_AX()
 	}
 	_ce;
 }
-done DEC_CX()
+static void DEC_CX()
 {
 	_cb("DEC_CX");
 	i386(0x49) {
@@ -5791,7 +5780,7 @@ done DEC_CX()
 	}
 	_ce;
 }
-done DEC_DX()
+static void DEC_DX()
 {
 	_cb("DEC_DX");
 	i386(0x4a) {
@@ -5813,7 +5802,7 @@ done DEC_DX()
 	}
 	_ce;
 }
-done DEC_BX()
+static void DEC_BX()
 {
 	_cb("DEC_BX");
 	i386(0x4b) {
@@ -5835,7 +5824,7 @@ done DEC_BX()
 	}
 	_ce;
 }
-done DEC_SP()
+static void DEC_SP()
 {
 	_cb("DEC_SP");
 	i386(0x4c) {
@@ -5857,7 +5846,7 @@ done DEC_SP()
 	}
 	_ce;
 }
-done DEC_BP()
+static void DEC_BP()
 {
 	_cb("DEC_BP");
 	i386(0x4d) {
@@ -5879,7 +5868,7 @@ done DEC_BP()
 	}
 	_ce;
 }
-done DEC_SI()
+static void DEC_SI()
 {
 	_cb("DEC_SI");
 	i386(0x4e) {
@@ -5901,7 +5890,7 @@ done DEC_SI()
 	}
 	_ce;
 }
-done DEC_DI()
+static void DEC_DI()
 {
 	_cb("DEC_DI");
 	i386(0x4f) {
@@ -5923,7 +5912,7 @@ done DEC_DI()
 	}
 	_ce;
 }
-done PUSH_AX()
+static void PUSH_AX()
 {
 	_cb("PUSH_AX");
 	i386(0x50) {
@@ -5938,7 +5927,7 @@ done PUSH_AX()
 	}
 	_ce;
 }
-done PUSH_CX()
+static void PUSH_CX()
 {
 	_cb("PUSH_CX");
 	i386(0x51) {
@@ -5953,7 +5942,7 @@ done PUSH_CX()
 	}
 	_ce;
 }
-done PUSH_DX()
+static void PUSH_DX()
 {
 	_cb("PUSH_DX");
 	i386(0x52) {
@@ -5968,7 +5957,7 @@ done PUSH_DX()
 	}
 	_ce;
 }
-done PUSH_BX()
+static void PUSH_BX()
 {
 	_cb("PUSH_BX");
 	i386(0x53) {
@@ -5983,7 +5972,7 @@ done PUSH_BX()
 	}
 	_ce;
 }
-done PUSH_SP()
+static void PUSH_SP()
 {
 	_cb("PUSH_SP");
 	i386(0x54) {
@@ -5998,7 +5987,7 @@ done PUSH_SP()
 	}
 	_ce;
 }
-done PUSH_BP()
+static void PUSH_BP()
 {
 	_cb("PUSH_BP");
 	i386(0x55) {
@@ -6013,7 +6002,7 @@ done PUSH_BP()
 	}
 	_ce;
 }
-done PUSH_SI()
+static void PUSH_SI()
 {
 	_cb("PUSH_SI");
 	i386(0x56) {
@@ -6028,7 +6017,7 @@ done PUSH_SI()
 	}
 	_ce;
 }
-done PUSH_DI()
+static void PUSH_DI()
 {
 	_cb("PUSH_DI");
 	i386(0x57) {
@@ -6043,7 +6032,7 @@ done PUSH_DI()
 	}
 	_ce;
 }
-done POP_AX()
+static void POP_AX()
 {
 	_cb("POP_AX");
 	i386(0x58) {
@@ -6062,7 +6051,7 @@ done POP_AX()
 	}
 	_ce;
 }
-done POP_CX()
+static void POP_CX()
 {
 	_cb("POP_CX");
 	i386(0x59) {
@@ -6081,7 +6070,7 @@ done POP_CX()
 	}
 	_ce;
 }
-done POP_DX()
+static void POP_DX()
 {
 	_cb("POP_DX");
 	i386(0x5a) {
@@ -6100,7 +6089,7 @@ done POP_DX()
 	}
 	_ce;
 }
-done POP_BX()
+static void POP_BX()
 {
 	_cb("POP_BX");
 	i386(0x5b) {
@@ -6119,7 +6108,7 @@ done POP_BX()
 	}
 	_ce;
 }
-tots POP_SP()
+static void POP_SP()
 {
 	_cb("POP_SP");
 	_newins_;
@@ -6139,7 +6128,7 @@ tots POP_SP()
 	}
 	_ce;
 }
-done POP_BP()
+static void POP_BP()
 {
 	_cb("POP_BP");
 	i386(0x5d) {
@@ -6158,7 +6147,7 @@ done POP_BP()
 	}
 	_ce;
 }
-done POP_SI()
+static void POP_SI()
 {
 	_cb("POP_SI");
 	i386(0x5e) {
@@ -6177,7 +6166,7 @@ done POP_SI()
 	}
 	_ce;
 }
-done POP_DI()
+static void POP_DI()
 {
 	_cb("POP_DI");
 	i386(0x5f) {
@@ -6196,7 +6185,7 @@ done POP_DI()
 	}
 	_ce;
 }
-tots PUSHA()
+static void PUSHA()
 {
 	t_nubit32 cesp;
 	_cb("PUSHA");
@@ -6231,7 +6220,7 @@ tots PUSHA()
 		UndefinedOpcode();
 	_ce;
 }
-tots POPA()
+static void POPA()
 {
 	t_nubit32 cesp;
 	_cb("POPA");
@@ -6264,7 +6253,7 @@ tots POPA()
 		UndefinedOpcode();
 	_ce;
 }
-tots BOUND_R16_M16_16()
+static void BOUND_R16_M16_16()
 {
 	t_nsbit16 a16,l16,u16;
 	t_nsbit32 a32,l32,u32;
@@ -6304,7 +6293,7 @@ tots BOUND_R16_M16_16()
 		UndefinedOpcode();
 	_ce;
 }
-tots ARPL_RM16_R16()
+static void ARPL_RM16_R16()
 {
 	_cb("ARPL_RM16_R16");
 	_newins_;
@@ -6327,7 +6316,7 @@ tots ARPL_RM16_R16()
 		UndefinedOpcode();
 	_ce;
 }
-tots PREFIX_FS()
+static void PREFIX_FS()
 {
 	_cb("PREFIX_FS");
 	_newins_;
@@ -6339,7 +6328,7 @@ tots PREFIX_FS()
 		UndefinedOpcode();
 	_ce;
 }
-tots PREFIX_GS()
+static void PREFIX_GS()
 {
 	_cb("PREFIX_GS");
 	_newins_;
@@ -6351,7 +6340,7 @@ tots PREFIX_GS()
 		UndefinedOpcode();
 	_ce;
 }
-done PREFIX_OprSize()
+static void PREFIX_OprSize()
 {
 	_cb("PREFIX_OprSize");
 	i386(0x66) {
@@ -6361,7 +6350,7 @@ done PREFIX_OprSize()
 		UndefinedOpcode();
 	_ce;
 }
-done PREFIX_AddrSize()
+static void PREFIX_AddrSize()
 {
 	_cb("PREFIX_AddrSize");
 	i386(0x67) {
@@ -6371,7 +6360,7 @@ done PREFIX_AddrSize()
 		UndefinedOpcode();
 	_ce;
 }
-tots PUSH_I32()
+static void PUSH_I32()
 {
 	_cb("PUSH_I32");
 	_newins_;
@@ -6383,7 +6372,7 @@ tots PUSH_I32()
 		UndefinedOpcode();
 	_ce;
 }
-tots IMUL_R32_RM32_I32()
+static void IMUL_R32_RM32_I32()
 {
 	_cb("IMUL_R32_RM32_I32");
 	_newins_;
@@ -6398,7 +6387,7 @@ tots IMUL_R32_RM32_I32()
 		UndefinedOpcode();
 	_ce;
 }
-tots PUSH_I8()
+static void PUSH_I8()
 {
 	_cb("PUSH_I8");
 	_newins_;
@@ -6410,7 +6399,7 @@ tots PUSH_I8()
 		UndefinedOpcode();
 	_ce;
 }
-tots IMUL_R32_RM32_I8()
+static void IMUL_R32_RM32_I8()
 {
 	_cb("IMUL_R32_RM32_I8");
 	_newins_;
@@ -6425,7 +6414,7 @@ tots IMUL_R32_RM32_I8()
 		UndefinedOpcode();
 	_ce;
 }
-tots INSB()
+static void INSB()
 {
 	_cb("INSB");
 	_newins_;
@@ -6463,7 +6452,7 @@ tots INSB()
 		UndefinedOpcode();
 	_ce;
 }
-tots INSW()
+static void INSW()
 {
 	_cb("INSW");
 	_newins_;
@@ -6501,7 +6490,7 @@ tots INSW()
 		UndefinedOpcode();
 	_ce;
 }
-tots JO_REL8()
+static void JO_REL8()
 {
 	_cb("JO_REL8");
 	_newins_;
@@ -6514,7 +6503,7 @@ tots JO_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, _GetEFLAGS_OF));
 	_ce;
 }
-tots JNO_REL8()
+static void JNO_REL8()
 {
 	_cb("JNO_REL8");
 	_newins_;
@@ -6527,7 +6516,7 @@ tots JNO_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, !_GetEFLAGS_OF));
 	_ce;
 }
-done JC_REL8()
+static void JC_REL8()
 {
 	_cb("JC_REL8");
 	i386(0x72) {
@@ -6539,7 +6528,7 @@ done JC_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, _GetEFLAGS_CF));
 	_ce;
 }
-done JNC_REL8()
+static void JNC_REL8()
 {
 	_cb("JNC_REL8");
 	i386(0x73) {
@@ -6551,7 +6540,7 @@ done JNC_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, !_GetEFLAGS_CF));
 	_ce;
 }
-done JZ_REL8()
+static void JZ_REL8()
 {
 	_cb("JZ_REL8");
 	i386(0x74) {
@@ -6563,7 +6552,7 @@ done JZ_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, _GetEFLAGS_ZF));
 	_ce;
 }
-done JNZ_REL8()
+static void JNZ_REL8()
 {
 	_cb("JNZ_REL8");
 	i386(0x75) {
@@ -6575,7 +6564,7 @@ done JNZ_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, !_GetEFLAGS_ZF));
 	_ce;
 }
-done JNA_REL8()
+static void JNA_REL8()
 {
 	_cb("JNA_REL8");
 	i386(0x76) {
@@ -6588,7 +6577,7 @@ done JNA_REL8()
 		(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
 	_ce;
 }
-done JA_REL8()
+static void JA_REL8()
 {
 	_cb("JA_REL8");
 	i386(0x77) {
@@ -6601,7 +6590,7 @@ done JA_REL8()
 		!(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
 	_ce;
 }
-done JS_REL8()
+static void JS_REL8()
 {
 	_cb("JS_REL8");
 	i386(0x78) {
@@ -6613,7 +6602,7 @@ done JS_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, _GetEFLAGS_SF));
 	_ce;
 }
-done JNS_REL8()
+static void JNS_REL8()
 {
 	_cb("JNS_REL8");
 	i386(0x79) {
@@ -6625,7 +6614,7 @@ done JNS_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, !_GetEFLAGS_SF));
 	_ce;
 }
-tots JP_REL8()
+static void JP_REL8()
 {
 	_cb("JP_REL8");
 	_newins_;
@@ -6638,7 +6627,7 @@ tots JP_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, _GetEFLAGS_PF));
 	_ce;
 }
-tots JNP_REL8()
+static void JNP_REL8()
 {
 	_cb("JNP_REL8");
 	_newins_;
@@ -6651,7 +6640,7 @@ tots JNP_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, !_GetEFLAGS_PF));
 	_ce;
 }
-done JL_REL8()
+static void JL_REL8()
 {
 	_cb("JL_REL8");
 	i386(0x7c) {
@@ -6663,7 +6652,7 @@ done JL_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
 	_ce;
 }
-done JNL_REL8()
+static void JNL_REL8()
 {
 	_cb("JNL_REL8");
 	i386(0x7d) {
@@ -6675,7 +6664,7 @@ done JNL_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
 	_ce;
 }
-done JNG_REL8()
+static void JNG_REL8()
 {
 	_cb("JNG_REL8");
 	i386(0x7e) {
@@ -6688,7 +6677,7 @@ done JNG_REL8()
 		 (_GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF))));
 	_ce;
 }
-done JG_REL8()
+static void JG_REL8()
 {
 	_cb("JG_REL8");
 	i386(0x7f) {
@@ -6701,7 +6690,7 @@ done JG_REL8()
 		(!_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF))));
 	_ce;
 }
-tots INS_80()
+static void INS_80()
 {
 	_cb("INS_80");
 	i386 (0x80) {
@@ -6756,7 +6745,7 @@ tots INS_80()
 	default:_impossible_;break;}
 	_ce;
 }
-tots INS_81()
+static void INS_81()
 {
 	_cb("INS_81");
 	i386(0x81) {
@@ -6856,7 +6845,7 @@ tots INS_81()
 	}
 	_ce;
 }
-tots INS_83()
+static void INS_83()
 {
 	t_nubit8 bit;
 	_cb("INS_83");
@@ -6957,7 +6946,7 @@ tots INS_83()
 	}
 	_ce;
 }
-done TEST_RM8_R8()
+static void TEST_RM8_R8()
 {
 	_cb("TEST_RM8_R8");
 	i386(0x84) {
@@ -6970,7 +6959,7 @@ done TEST_RM8_R8()
 	_chk(_a_test(vcpuins.crm, vcpuins.cr, 8));
 	_ce;
 }
-done TEST_RM32_R32()
+static void TEST_RM32_R32()
 {
 	_cb("TEST_RM32_R32");
 	i386(0x85) {
@@ -6986,7 +6975,7 @@ done TEST_RM32_R32()
 	}
 	_ce;
 }
-done XCHG_RM8_R8()
+static void XCHG_RM8_R8()
 {
 	_cb("XCHG_RM8_R8");
 	i386(0x86) {
@@ -7000,7 +6989,7 @@ done XCHG_RM8_R8()
 	_chk(_m_write_rm(vcpuins.cr, 1));
 	_ce;
 }
-done XCHG_RM32_R32()
+static void XCHG_RM32_R32()
 {
 	_cb("XCHG_RM32_R32");
 	i386(0x87) {
@@ -7018,7 +7007,7 @@ done XCHG_RM32_R32()
 	}
 	_ce;
 }
-done MOV_RM8_R8()
+static void MOV_RM8_R8()
 {
 	_cb("MOV_RM8_R8");
 	i386(0x88) {
@@ -7030,7 +7019,7 @@ done MOV_RM8_R8()
 	_chk(_m_write_rm(vcpuins.cr, 1));
 	_ce;
 }
-done MOV_RM32_R32()
+static void MOV_RM32_R32()
 {
 	_cb("MOV_RM32_R32");
 	i386(0x89) {
@@ -7044,7 +7033,7 @@ done MOV_RM32_R32()
 	}
 	_ce;
 }
-done MOV_R8_RM8()
+static void MOV_R8_RM8()
 {
 	_cb("MOV_R8_RM8");
 	i386(0x8a) {
@@ -7057,7 +7046,7 @@ done MOV_R8_RM8()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.crm, 1));
 	_ce;
 }
-done MOV_R32_RM32()
+static void MOV_R32_RM32()
 {
 	_cb("MOV_R32_RM32");
 	i386(0x8b) {
@@ -7073,7 +7062,7 @@ done MOV_R32_RM32()
 	}
 	_ce;
 }
-done MOV_RM16_SREG()
+static void MOV_RM16_SREG()
 {
 	_cb("MOV_RM16_SREG");
 	i386(0x8c) {
@@ -7085,7 +7074,7 @@ done MOV_RM16_SREG()
 	_chk(_m_write_rm(vcpuins.rmovsreg->selector, 2));
 	_ce;
 }
-done LEA_R16_M16()
+static void LEA_R16_M16()
 {
 	_cb("LEA_R16_M16");
 	i386(0x8d) {
@@ -7106,7 +7095,7 @@ done LEA_R16_M16()
 	}
 	_ce;
 }
-done MOV_SREG_RM16()
+static void MOV_SREG_RM16()
 {
 	_cb("MOV_SREG_RM16");
 	i386(0x8e) {
@@ -7129,7 +7118,7 @@ done MOV_SREG_RM16()
 	}
 	_ce;
 }
-done INS_8F()
+static void INS_8F()
 {
 	_cb("INS_8F");
 	i386(0x8f) {
@@ -7169,7 +7158,7 @@ done INS_8F()
 	}
 	_ce;
 }
-done NOP()
+static void NOP()
 {
 	_cb("NOP");
 	i386(0x90) {
@@ -7178,7 +7167,7 @@ done NOP()
 		vcpu.ip++;
 	_ce;
 }
-tots XCHG_ECX_EAX()
+static void XCHG_ECX_EAX()
 {
 	_cb("XCHG_ECX_EAX");
 	i386(0x91) {
@@ -7204,7 +7193,7 @@ tots XCHG_ECX_EAX()
 	}
 	_ce;
 }
-tots XCHG_EDX_EAX()
+static void XCHG_EDX_EAX()
 {
 	_cb("XCHG_EDX_EAX");
 	i386(0x92) {
@@ -7230,7 +7219,7 @@ tots XCHG_EDX_EAX()
 	}
 	_ce;
 }
-tots XCHG_EBX_EAX()
+static void XCHG_EBX_EAX()
 {
 	_cb("XCHG_EBX_EAX");
 	i386(0x93) {
@@ -7256,7 +7245,7 @@ tots XCHG_EBX_EAX()
 	}
 	_ce;
 }
-tots XCHG_ESP_EAX()
+static void XCHG_ESP_EAX()
 {
 	_cb("XCHG_ESP_EAX");
 	_newins_;
@@ -7283,7 +7272,7 @@ tots XCHG_ESP_EAX()
 	}
 	_ce;
 }
-tots XCHG_EBP_EAX()
+static void XCHG_EBP_EAX()
 {
 	_cb("XCHG_EBP_EAX");
 	i386(0x95) {
@@ -7309,7 +7298,7 @@ tots XCHG_EBP_EAX()
 	}
 	_ce;
 }
-tots XCHG_ESI_EAX()
+static void XCHG_ESI_EAX()
 {
 	_cb("XCHG_ESI_EAX");
 	i386(0x96) {
@@ -7335,7 +7324,7 @@ tots XCHG_ESI_EAX()
 	}
 	_ce;
 }
-tots XCHG_EDI_EAX()
+static void XCHG_EDI_EAX()
 {
 	_cb("XCHG_EDI_EAX");
 	i386(0x97) {
@@ -7361,7 +7350,7 @@ tots XCHG_EDI_EAX()
 	}
 	_ce;
 }
-done CBW()
+static void CBW()
 {
 	_cb("CBW");
 	i386(0x98) {
@@ -7376,7 +7365,7 @@ done CBW()
 	}
 	_ce;
 }
-done CWD()
+static void CWD()
 {
 	_cb("CWD");
 	i386(0x99) {
@@ -7392,7 +7381,7 @@ done CWD()
 	}
 	_ce;
 }
-done CALL_PTR16_32()
+static void CALL_PTR16_32()
 {
 	t_nubit16 newcs;
 	t_nubit32 neweip;
@@ -7439,7 +7428,7 @@ todo WAIT()
 	}
 	_ce;
 }
-done PUSHF()
+static void PUSHF()
 {
 	t_nubit32 ceflags;
 	_cb("PUSHF");
@@ -7470,7 +7459,7 @@ done PUSHF()
 	}
 	_ce;
 }
-done POPF()
+static void POPF()
 {
 	t_nubit32 mask = VCPU_EFLAGS_RESERVED;
 	t_nubit32 ceflags;
@@ -7542,7 +7531,7 @@ done POPF()
 	}
 	_ce;
 }
-done SAHF()
+static void SAHF()
 {
 	t_nubit32 mask = (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF |
 		VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_CF);
@@ -7555,7 +7544,7 @@ done SAHF()
 	vcpu.eflags = (vcpu.ah & mask) | (vcpu.eflags & ~mask);
 	_ce;
 }
-done LAHF()
+static void LAHF()
 {
 	_cb("LAHF");
 	i386(0x9f) {
@@ -7566,7 +7555,7 @@ done LAHF()
 	vcpu.ah = GetMax8(vcpu.flags);
 	_ce;
 }
-done MOV_AL_MOFFS8()
+static void MOV_AL_MOFFS8()
 {
 	_cb("MOV_AL_MOFFS8");
 	i386(0xa0) {
@@ -7579,7 +7568,7 @@ done MOV_AL_MOFFS8()
 	vcpu.al = GetMax8(vcpuins.result);
 	_ce;
 }
-done MOV_EAX_MOFFS32()
+static void MOV_EAX_MOFFS32()
 {
 	_cb("MOV_EAX_MOFFS32");
 	i386(0xa1) {
@@ -7598,7 +7587,7 @@ done MOV_EAX_MOFFS32()
 	}
 	_ce;
 }
-done MOV_MOFFS8_AL()
+static void MOV_MOFFS8_AL()
 {
 	_cb("MOV_MOFFS8_AL");
 	i386(0xa2) {
@@ -7611,7 +7600,7 @@ done MOV_MOFFS8_AL()
 	_chk(_m_write_rm(vcpuins.result, 1));
 	_ce;
 }
-tots MOV_MOFFS32_EAX()
+static void MOV_MOFFS32_EAX()
 {
 	_cb("MOV_MOFFS32_EAX");
 	i386(0xa3) {
@@ -7630,7 +7619,7 @@ tots MOV_MOFFS32_EAX()
 	}
 	_ce;
 }
-done MOVSB()
+static void MOVSB()
 {
 	_cb("MOVSB");
 	i386(0xa4) {
@@ -7676,7 +7665,7 @@ done MOVSB()
 	}
 	_ce;
 }
-done MOVSW()
+static void MOVSW()
 {
 	_cb("MOVSW");
 	i386(0xa5) {
@@ -7722,7 +7711,7 @@ done MOVSW()
 	}
 	_ce;
 }
-done CMPSB()
+static void CMPSB()
 {
 	_cb("CMPSB");
 	i386(0xa6) {
@@ -7777,7 +7766,7 @@ done CMPSB()
 	}
 	_ce;
 }
-done CMPSW()
+static void CMPSW()
 {
 	_cb("CMPSW");
 	i386(0xa7) {
@@ -7832,7 +7821,7 @@ done CMPSW()
 	}
 	_ce;
 }
-done TEST_AL_I8()
+static void TEST_AL_I8()
 {
 	_cb("TEST_AL_I8");
 	i386(0xa8) {
@@ -7844,7 +7833,7 @@ done TEST_AL_I8()
 	_chk(_a_test(vcpu.al, vcpuins.cimm, 8));
 	_ce;
 }
-tots TEST_EAX_I32()
+static void TEST_EAX_I32()
 {
 	_cb("TEST_EAX_I32");
 	i386(0xa9) {
@@ -7867,7 +7856,7 @@ tots TEST_EAX_I32()
 	}
 	_ce;
 }
-done STOSB()
+static void STOSB()
 {
 	_cb("STOSB");
 	i386(0xaa) {
@@ -7913,7 +7902,7 @@ done STOSB()
 	}
 	_ce;
 }
-done STOSW()
+static void STOSW()
 {
 	_cb("STOSW");
 	i386(0xab) {
@@ -7959,7 +7948,7 @@ done STOSW()
 	}
 	_ce;
 }
-done LODSB()
+static void LODSB()
 {
 	_cb("LODSB");
 	i386(0xac) {
@@ -8005,7 +7994,7 @@ done LODSB()
 	}
 	_ce;
 }
-done LODSW()
+static void LODSW()
 {
 	_cb("LODSW");
 	i386(0xad) {
@@ -8051,7 +8040,7 @@ done LODSW()
 	}
 	_ce;
 }
-done SCASB()
+static void SCASB()
 {
 	_cb("SCASB");
 	i386(0xae) {
@@ -8106,7 +8095,7 @@ done SCASB()
 	}
 	_ce;
 }
-done SCASW()
+static void SCASW()
 {
 	_cb("SCASW");
 	i386(0xaf) {
@@ -8161,7 +8150,7 @@ done SCASW()
 	}
 	_ce;
 }
-done MOV_AL_I8()
+static void MOV_AL_I8()
 {
 	_cb("MOV_AL_I8");
 	i386(0xb0) {
@@ -8173,7 +8162,7 @@ done MOV_AL_I8()
 	vcpu.al = GetMax8(vcpuins.cimm);
 	_ce;
 }
-done MOV_CL_I8()
+static void MOV_CL_I8()
 {
 	_cb("MOV_CL_I8");
 	i386(0xb1) {
@@ -8185,7 +8174,7 @@ done MOV_CL_I8()
 	vcpu.cl = GetMax8(vcpuins.cimm);
 	_ce;
 }
-done MOV_DL_I8()
+static void MOV_DL_I8()
 {
 	_cb("MOV_DL_I8");
 	i386(0xb2) {
@@ -8197,7 +8186,7 @@ done MOV_DL_I8()
 	vcpu.dl = GetMax8(vcpuins.cimm);
 	_ce;
 }
-done MOV_BL_I8()
+static void MOV_BL_I8()
 {
 	_cb("MOV_BL_I8");
 	i386(0xb3) {
@@ -8209,7 +8198,7 @@ done MOV_BL_I8()
 	vcpu.bl = GetMax8(vcpuins.cimm);
 	_ce;
 }
-done MOV_AH_I8()
+static void MOV_AH_I8()
 {
 	_cb("MOV_AH_I8");
 	i386(0xb4) {
@@ -8221,7 +8210,7 @@ done MOV_AH_I8()
 	vcpu.ah = GetMax8(vcpuins.cimm);
 	_ce;
 }
-done MOV_CH_I8()
+static void MOV_CH_I8()
 {
 	_cb("MOV_CH_I8");
 	i386(0xb5) {
@@ -8233,7 +8222,7 @@ done MOV_CH_I8()
 	vcpu.ch = GetMax8(vcpuins.cimm);
 	_ce;
 }
-done MOV_DH_I8()
+static void MOV_DH_I8()
 {
 	_cb("MOV_DH_I8");
 	i386(0xb6) {
@@ -8245,7 +8234,7 @@ done MOV_DH_I8()
 	vcpu.dh = GetMax8(vcpuins.cimm);
 	_ce;
 }
-done MOV_BH_I8()
+static void MOV_BH_I8()
 {
 	_cb("MOV_BH_I8");
 	i386(0xb7) {
@@ -8257,7 +8246,7 @@ done MOV_BH_I8()
 	vcpu.bh = GetMax8(vcpuins.cimm);
 	_ce;
 }
-done MOV_EAX_I32()
+static void MOV_EAX_I32()
 {
 	_cb("MOV_EAX_I32");
 	i386(0xb8) {
@@ -8274,7 +8263,7 @@ done MOV_EAX_I32()
 	}
 	_ce;
 }
-done MOV_ECX_I32()
+static void MOV_ECX_I32()
 {
 	_cb("MOV_ECX_I32");
 	i386(0xb9) {
@@ -8291,7 +8280,7 @@ done MOV_ECX_I32()
 	}
 	_ce;
 }
-done MOV_EDX_I32()
+static void MOV_EDX_I32()
 {
 	_cb("MOV_EDX_I32");
 	i386(0xba) {
@@ -8308,7 +8297,7 @@ done MOV_EDX_I32()
 	}
 	_ce;
 }
-done MOV_EBX_I32()
+static void MOV_EBX_I32()
 {
 	_cb("MOV_EBX_I32");
 	i386(0xbb) {
@@ -8325,7 +8314,7 @@ done MOV_EBX_I32()
 	}
 	_ce;
 }
-done MOV_ESP_I32()
+static void MOV_ESP_I32()
 {
 	_cb("MOV_ESP_I32");
 	i386(0xbc) {
@@ -8342,7 +8331,7 @@ done MOV_ESP_I32()
 	}
 	_ce;
 }
-done MOV_EBP_I32()
+static void MOV_EBP_I32()
 {
 	_cb("MOV_EBP_I32");
 	i386(0xbd) {
@@ -8359,7 +8348,7 @@ done MOV_EBP_I32()
 	}
 	_ce;
 }
-done MOV_ESI_I32()
+static void MOV_ESI_I32()
 {
 	_cb("MOV_ESI_I32");
 	i386(0xbe) {
@@ -8376,7 +8365,7 @@ done MOV_ESI_I32()
 	}
 	_ce;
 }
-done MOV_EDI_I32()
+static void MOV_EDI_I32()
 {
 	_cb("MOV_EDI_I32");
 	i386(0xbf) {
@@ -8393,7 +8382,7 @@ done MOV_EDI_I32()
 	}
 	_ce;
 }
-tots INS_C0()
+static void INS_C0()
 {
 	_cb("INS_C0");
 	_newins_;
@@ -8441,7 +8430,7 @@ tots INS_C0()
 		UndefinedOpcode();
 	_ce;
 }
-tots INS_C1()
+static void INS_C1()
 {
 	_cb("INS_C1");
 	_newins_;
@@ -8489,7 +8478,7 @@ tots INS_C1()
 		UndefinedOpcode();
 	_ce;
 }
-done RET_I16()
+static void RET_I16()
 {
 	_cb("RET_I16");
 	i386(0xc2) {
@@ -8503,7 +8492,7 @@ done RET_I16()
 	}
 	_ce;
 }
-done RET()
+static void RET()
 {
 	_cb("RET");
 	i386(0xc3) {
@@ -8515,7 +8504,7 @@ done RET()
 	}
 	_ce;
 }
-done LES_R32_M16_32()
+static void LES_R32_M16_32()
 {
 	t_nubit16 selector;
 	t_nubit32 offset;
@@ -8549,7 +8538,7 @@ done LES_R32_M16_32()
 	}
 	_ce;
 }
-done LDS_R32_M16_32()
+static void LDS_R32_M16_32()
 {
 	t_nubit16 selector;
 	t_nubit32 offset;
@@ -8583,7 +8572,7 @@ done LDS_R32_M16_32()
 	}
 	_ce;
 }
-done INS_C6()
+static void INS_C6()
 {
 	_cb("INS_C6");
 	i386(0xc6) {
@@ -8608,7 +8597,7 @@ done INS_C6()
 	default:_impossible_;break;}
 	_ce;
 }
-done INS_C7()
+static void INS_C7()
 {
 	_cb("INS_C7");
 	i386(0xc7) {
@@ -8648,7 +8637,7 @@ done INS_C7()
 	}
 	_ce;
 }
-tots ENTER()
+static void ENTER()
 {
 	t_nubit32 data = 0x00000000;
 	t_nubit32 temp = 0x00000000;
@@ -8737,7 +8726,7 @@ tots ENTER()
 		UndefinedOpcode();
 	_ce;
 }
-tots LEAVE()
+static void LEAVE()
 {
 	_cb("LEAVE");
 	_newins_;
@@ -8764,7 +8753,7 @@ tots LEAVE()
 		UndefinedOpcode();
 	_ce;
 }
-done RETF_I16()
+static void RETF_I16()
 {
 	_cb("RETF_I16");
 	i386(0xca) {
@@ -8778,7 +8767,7 @@ done RETF_I16()
 	}
 	_ce;
 }
-done RETF()
+static void RETF()
 {
 	_cb("RETF");
 	i386(0xcb) {
@@ -8790,7 +8779,7 @@ done RETF()
 	}
 	_ce;
 }
-tots INT3()
+static void INT3()
 {
 	_cb("INT3");
 	_newins_;
@@ -8803,7 +8792,7 @@ tots INT3()
 	}
 	_ce;
 }
-done INT_I8()
+static void INT_I8()
 {
 	_cb("INT_I8");
 	i386(0xcc) {
@@ -8817,7 +8806,7 @@ done INT_I8()
 	}
 	_ce;
 }
-tots INTO()
+static void INTO()
 {
 	_cb("INTO");
 	_newins_;
@@ -8842,7 +8831,7 @@ todo IRET()
 	}
 	_ce;
 }
-done INS_D0()
+static void INS_D0()
 {
 	_cb("INS_D0");
 	i386(0xd0) {
@@ -8889,7 +8878,7 @@ done INS_D0()
 	_chk(_m_write_rm(vcpuins.result, 1));
 	_ce;
 }
-done INS_D1()
+static void INS_D1()
 {
 	_cb("INS_D1");
 	i386(0xd1) {
@@ -8973,7 +8962,7 @@ done INS_D1()
 	}
 	_ce;
 }
-done INS_D2()
+static void INS_D2()
 {
 	_cb("INS_D2");
 	i386(0xd2) {
@@ -9020,7 +9009,7 @@ done INS_D2()
 	_chk(_m_write_rm(vcpuins.result, 1));
 	_ce;
 }
-done INS_D3()
+static void INS_D3()
 {
 	_cb("INS_D3");
 	i386(0xd3) {
@@ -9104,7 +9093,7 @@ done INS_D3()
 	}
 	_ce;
 }
-done AAM()
+static void AAM()
 {
 	t_nubit8 base;
 	_cb("AAM");
@@ -9124,7 +9113,7 @@ done AAM()
 	vcpuins.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_CF);
 	_ce;
 }
-done AAD()
+static void AAD()
 {
 	t_nubit8 base;
 	_cb("AAD");
@@ -9144,7 +9133,7 @@ done AAD()
 	vcpuins.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_CF);
 	_ce;
 }
-tots XLAT()
+static void XLAT()
 {
 	_cb("XLAT");
 	i386(0xd7) {
@@ -9164,7 +9153,7 @@ tots XLAT()
 	}
 	_ce;
 }
-done LOOPNZ()
+static void LOOPNZ()
 {
 	_cb("LOOPNZ");
 	i386(0xe0) {
@@ -9176,7 +9165,7 @@ done LOOPNZ()
 	_chk(_e_loopcc((t_nsbit8)vcpuins.cimm, !_GetEFLAGS_ZF));
 	_ce;
 }
-done LOOPZ()
+static void LOOPZ()
 {
 	_cb("LOOPZ");
 	i386(0xe1) {
@@ -9188,7 +9177,7 @@ done LOOPZ()
 	_chk(_e_loopcc((t_nsbit8)vcpuins.cimm, _GetEFLAGS_ZF));
 	_ce;
 }
-done LOOP()
+static void LOOP()
 {
 	_cb("LOOP");
 	i386(0xe2) {
@@ -9200,7 +9189,7 @@ done LOOP()
 	_chk(_e_loopcc((t_nsbit8)vcpuins.cimm, 1));
 	_ce;
 }
-done JCXZ_REL8()
+static void JCXZ_REL8()
 {
 	t_nubit32 cecx = 0x00000000;
 	_cb("JCXZ_REL8");
@@ -9219,7 +9208,7 @@ done JCXZ_REL8()
 	}
 	_ce;
 }
-done IN_AL_I8()
+static void IN_AL_I8()
 {
 	_cb("IN_AL_I8");
 	i386(0xe4) {
@@ -9233,7 +9222,7 @@ done IN_AL_I8()
 	}
 	_ce;
 }
-tots IN_AX_I8()
+static void IN_AX_I8()
 {
 	_cb("IN_AX_I8");
 	_newins_;
@@ -9255,7 +9244,7 @@ tots IN_AX_I8()
 	}
 	_ce;
 }
-done OUT_I8_AL()
+static void OUT_I8_AL()
 {
 	_cb("OUT_I8_AL");
 	i386(0xe6) {
@@ -9270,7 +9259,7 @@ done OUT_I8_AL()
 	_ce;
 
 }
-tots OUT_I8_AX()
+static void OUT_I8_AX()
 {
 	_cb("OUT_I8_AX");
 	_newins_;
@@ -9292,7 +9281,7 @@ tots OUT_I8_AX()
 	}
 	_ce;
 }
-done CALL_REL32()
+static void CALL_REL32()
 {
 	_cb("CALL_REL32");
 	i386(0xe8) {
@@ -9318,7 +9307,7 @@ done CALL_REL32()
 	}
 	_ce;
 }
-done JMP_REL32()
+static void JMP_REL32()
 {
 	_cb("JMP_REL32");
 	i386(0xe9) {
@@ -9332,7 +9321,7 @@ done JMP_REL32()
 	}
 	_ce;
 }
-done JMP_PTR16_32()
+static void JMP_PTR16_32()
 {
 	t_nubit16 newcs = 0x0000;
 	t_nubit32 neweip = 0x00000000;
@@ -9365,7 +9354,7 @@ done JMP_PTR16_32()
 	}
 	_ce;
 }
-done JMP_REL8()
+static void JMP_REL8()
 {
 	_cb("JMP_REL8");
 	i386(0xeb) {
@@ -9377,7 +9366,7 @@ done JMP_REL8()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, 1));
 	_ce;
 }
-done IN_AL_DX()
+static void IN_AL_DX()
 {
 	_cb("IN_AL_DX");
 	i386(0xec) {
@@ -9389,7 +9378,7 @@ done IN_AL_DX()
 	}
 	_ce;
 }
-tots IN_AX_DX()
+static void IN_AX_DX()
 {
 	_cb("IN_AX_DX");
 	_newins_;
@@ -9409,7 +9398,7 @@ tots IN_AX_DX()
 	}
 	_ce;
 }
-done OUT_DX_AL()
+static void OUT_DX_AL()
 {
 	_cb("OUT_DX_AL");
 	i386(0xee) {
@@ -9421,7 +9410,7 @@ done OUT_DX_AL()
 	}
 	_ce;
 }
-tots OUT_DX_AX()
+static void OUT_DX_AX()
 {
 	_cb("OUT_DX_AX");
 	_newins_;
@@ -9441,7 +9430,7 @@ tots OUT_DX_AX()
 	}
 	_ce;
 }
-tots PREFIX_LOCK()
+static void PREFIX_LOCK()
 {
 	t_nubit8 opcode = 0x00;
 	t_nubit8 modrm = 0x00;
@@ -9501,7 +9490,7 @@ tots PREFIX_LOCK()
 	} else _adv;
 	_ce;
 }
-done PREFIX_REPNZ()
+static void PREFIX_REPNZ()
 {
 	_cb("PREFIX_REPNZ");
 	i386(0xf2) {
@@ -9513,7 +9502,7 @@ done PREFIX_REPNZ()
 	}
 	_ce;
 }
-done PREFIX_REPZ()
+static void PREFIX_REPZ()
 {
 	_cb("PREFIX_REPZ");
 	i386(0xf3) {
@@ -9525,7 +9514,7 @@ done PREFIX_REPZ()
 	}
 	_ce;
 }
-tots HLT()
+static void HLT()
 {
 	_cb("HLT");
 	_newins_;
@@ -9538,7 +9527,7 @@ tots HLT()
 	vcpu.flaghalt = 1;
 	_ce;
 }
-done CMC()
+static void CMC()
 {
 	_cb("CMC");
 	i386(0xf5) {
@@ -9550,7 +9539,7 @@ done CMC()
 	}
 	_ce;
 }
-tots INS_F6()
+static void INS_F6()
 {
 	_cb("INS_F6");
 	i386(0xf6) {
@@ -9600,7 +9589,7 @@ tots INS_F6()
 	default:_impossible_;break;}
 	_ce;
 }
-tots INS_F7()
+static void INS_F7()
 {
 	_cb("INS_F7");
 	i386(0xf7) {
@@ -9688,7 +9677,7 @@ tots INS_F7()
 	}
 	_ce;
 }
-done CLC()
+static void CLC()
 {
 	_cb("CLC");
 	i386(0xf8) {
@@ -9700,7 +9689,7 @@ done CLC()
 	}
 	_ce;
 }
-done STC()
+static void STC()
 {
 	_cb("STC");
 	i386(0xf9) {
@@ -9712,7 +9701,7 @@ done STC()
 	}
 	_ce;
 }
-tots CLI()
+static void CLI()
 {
 	_cb("CLI");
 	i386(0xfa) {
@@ -9745,7 +9734,7 @@ tots CLI()
 	}
 	_ce;
 }
-tots STI()
+static void STI()
 {
 	_cb("STI");
 	i386(0xfb) {
@@ -9779,7 +9768,7 @@ tots STI()
 	}
 	_ce;
 }
-done CLD()
+static void CLD()
 {
 	_cb("CLD");
 	i386(0xfc) {
@@ -9791,7 +9780,7 @@ done CLD()
 	}
 	_ce;
 }
-done STD()
+static void STD()
 {
 	_cb("CLD");
 	i386(0xfd) {
@@ -9803,7 +9792,7 @@ done STD()
 	}
 	_ce;
 }
-done INS_FE()
+static void INS_FE()
 {
 	_cb("INS_FE");
 	i386(0xfe) {
@@ -9833,7 +9822,7 @@ done INS_FE()
 	default:_impossible_;break;}
 	_ce;
 }
-done INS_FF()
+static void INS_FF()
 {
 	t_nubit8 modrm;
 	t_nubit16 newcs;
@@ -9989,7 +9978,7 @@ done INS_FF()
 	_ce;
 }
 
-tots _d_modrm_creg()
+static void _d_modrm_creg()
 {
 	_cb("_d_modrm_creg");
 	_chk(_kdf_modrm(0, 4));
@@ -10011,7 +10000,7 @@ tots _d_modrm_creg()
 	_chk(vcpuins.cr = _m_read_ref(vcpuins.rr, 4));
 	_ce;
 }
-tots _d_modrm_dreg()
+static void _d_modrm_dreg()
 {
 	_cb("_d_modrm_dreg");
 	_chk(_kdf_modrm(0, 4));
@@ -10033,7 +10022,7 @@ tots _d_modrm_dreg()
 	_chk(vcpuins.cr = _m_read_ref(vcpuins.rr, 4));
 	_ce;
 }
-tots _d_modrm_treg()
+static void _d_modrm_treg()
 {
 	_cb("_d_modrm_treg");
 	_chk(_kdf_modrm(0, 4));
@@ -10055,7 +10044,7 @@ tots _d_modrm_treg()
 	_chk(vcpuins.cr = _m_read_ref(vcpuins.rr, 4));
 	_ce;
 }
-tots _d_bit_rmimm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
+static void _d_bit_rmimm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
 {
 	/* xrm = actual destination, cimm = (1 << bitoffset) */
 	t_nsbit16 bitoff16 = 0;
@@ -10124,7 +10113,7 @@ do { \
 	MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, GetBit(vcpuins.opr1, vcpuins.opr2)); \
 } while (0)
 
-tots _a_bscc(t_nubit64 csrc, t_nubit8 bit, t_bool forward)
+static void _a_bscc(t_nubit64 csrc, t_nubit8 bit, t_bool forward)
 {
 	t_nubit32 temp;
 	_cb("_a_bscc");
@@ -10163,27 +10152,27 @@ tots _a_bscc(t_nubit64 csrc, t_nubit8 bit, t_bool forward)
 	}
 	_ce;
 }
-tots _a_bt(t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit)
+static void _a_bt(t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit)
 {
 	_cb("_a_bt");
 	_kac_btcc;
 	_ce;
 }
-tots _a_btc(t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit)
+static void _a_btc(t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit)
 {
 	_cb("_a_btc");
 	_kac_btcc;
 	MakeBit(vcpuins.result, vcpuins.opr2, !_GetEFLAGS_CF);
 	_ce;
 }
-tots _a_btr(t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit)
+static void _a_btr(t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit)
 {
 	_cb("_a_btr");
 	_kac_btcc;
 	ClrBit(vcpuins.result, vcpuins.opr2);
 	_ce;
 }
-tots _a_bts(t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit)
+static void _a_bts(t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit)
 {
 	_cb("_a_bts");
 	_kac_btcc;
@@ -10191,7 +10180,7 @@ tots _a_bts(t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit)
 	_ce;
 }
 
-tots _a_imul2(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
+static void _a_imul2(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 {
 	t_nubit64 temp;
 	_cb("_a_imul2");
@@ -10232,7 +10221,7 @@ tots _a_imul2(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 	}
 	_ce;
 }
-tots _a_shld(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 count, t_nubit8 bit)
+static void _a_shld(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 count, t_nubit8 bit)
 {
 	t_bool flagcf;
 	t_bool flagbit;
@@ -10304,7 +10293,7 @@ tots _a_shld(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 count, t_nubit8 bit)
 	}
 	_ce;
 }
-tots _a_shrd(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 count, t_nubit8 bit)
+static void _a_shrd(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 count, t_nubit8 bit)
 {
 	t_bool flagcf;
 	t_bool flagbit;
@@ -10377,7 +10366,7 @@ tots _a_shrd(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 count, t_nubit8 bit)
 	_ce;
 }
 
-tots _m_setcc_rm(t_bool condition)
+static void _m_setcc_rm(t_bool condition)
 {
 	_cb("_m_setcc_rm");
 	vcpuins.result = GetMax8(!!condition);
@@ -10385,9 +10374,10 @@ tots _m_setcc_rm(t_bool condition)
 	_ce;
 }
 
-tots INS_0F_00()
+static void INS_0F_00()
 {
 	t_nubit8 modrm;
+	t_nubit64 descriptor;
 	_cb("INS_0F_00");
 	_adv;
 	if (_IsProtected) {
@@ -10424,15 +10414,14 @@ tots INS_0F_00()
 				_ClrEFLAGS_ZF;
 			} else {
 				_bb("selector(valid)");
-				_chk(_s_descriptor(GetMax16(vcpuins.crm)));
-				if (!vcpuins.xdesc.flagvalid) _impossible_;
-				if (_IsDescSys(vcpuins.xdesc.descriptor) ||
-						(!_IsDescCodeConform(vcpuins.xdesc.descriptor) &&
-							(_GetCPL > _GetDesc_DPL(vcpuins.xdesc.descriptor) ||
-							_GetSelector_RPL(GetMax16(vcpuins.crm)) > _GetDesc_DPL(vcpuins.xdesc.descriptor)))) {
+				_chk(descriptor = _s_read_xdt(GetMax16(vcpuins.crm)));
+				if (_IsDescSys(descriptor) ||
+						(!_IsDescCodeConform(descriptor) &&
+							(_GetCPL > _GetDesc_DPL(descriptor) ||
+							_GetSelector_RPL(GetMax16(vcpuins.crm)) > _GetDesc_DPL(descriptor)))) {
 					_ClrEFLAGS_ZF;
 				} else {
-					if (_IsDescData(vcpuins.xdesc.descriptor) || _IsDescCodeReadable(vcpuins.xdesc.descriptor)) {
+					if (_IsDescData(descriptor) || _IsDescCodeReadable(descriptor)) {
 						_SetEFLAGS_ZF;
 					} else {
 						_ClrEFLAGS_ZF;
@@ -10449,15 +10438,14 @@ tots INS_0F_00()
 				_ClrEFLAGS_ZF;
 			} else {
 				_bb("selector(valid)");
-				_chk(_s_descriptor(GetMax16(vcpuins.crm)));
-				if (!vcpuins.xdesc.flagvalid) _impossible_;
-				if (_IsDescSys(vcpuins.xdesc.descriptor) ||
-						(!_IsDescCodeConform(vcpuins.xdesc.descriptor) &&
-							(_GetCPL > _GetDesc_DPL(vcpuins.xdesc.descriptor) ||
-							_GetSelector_RPL(GetMax16(vcpuins.crm)) > _GetDesc_DPL(vcpuins.xdesc.descriptor)))) {
+				_chk(descriptor = _s_read_xdt(GetMax16(vcpuins.crm)));
+				if (_IsDescSys(descriptor) ||
+						(!_IsDescCodeConform(descriptor) &&
+							(_GetCPL > _GetDesc_DPL(descriptor) ||
+							_GetSelector_RPL(GetMax16(vcpuins.crm)) > _GetDesc_DPL(descriptor)))) {
 					_ClrEFLAGS_ZF;
 				} else {
-					if (_IsDescDataWritable(vcpuins.xdesc.descriptor)) {
+					if (_IsDescDataWritable(descriptor)) {
 						_SetEFLAGS_ZF;
 					} else {
 						_ClrEFLAGS_ZF;
@@ -10477,7 +10465,7 @@ tots INS_0F_00()
 	}
 	_ce;
 }
-tots INS_0F_01()
+static void INS_0F_01()
 {
 	t_nubit8 modrm;
 	t_nubit16 limit;
@@ -10583,9 +10571,10 @@ tots INS_0F_01()
 	default:_impossible_;break;}
 	_ce;
 }
-tots LAR_R32_RM32()
+static void LAR_R32_RM32()
 {
-	t_nubit16 selector = 0x0000;
+	t_nubit16 selector;
+	t_nubit64 descriptor;
 	_cb("LAR_R32_RM32");
 	_newins_;
 	_adv;
@@ -10598,19 +10587,18 @@ tots LAR_R32_RM32()
 			_ClrEFLAGS_ZF;
 		} else {
 			_bb("selector(valid)");
-			_chk(_s_descriptor(selector));
-			if (!vcpuins.xdesc.flagvalid) _impossible_;
-			if (_IsDescUser(vcpuins.xdesc.descriptor)) {
-				if (_IsDescCodeConform(vcpuins.xdesc.descriptor))
+			_chk(descriptor = _s_read_xdt(selector));
+			if (_IsDescUser(descriptor)) {
+				if (_IsDescCodeConform(descriptor))
 					_SetEFLAGS_ZF;
 				else {
-					if (_GetCPL > _GetDesc_DPL(vcpuins.xdesc.descriptor) || _GetSelector_RPL(selector) > _GetDesc_DPL(vcpuins.xdesc.descriptor))
+					if (_GetCPL > _GetDesc_DPL(descriptor) || _GetSelector_RPL(selector) > _GetDesc_DPL(descriptor))
 						_ClrEFLAGS_ZF;
 					else
 						_SetEFLAGS_ZF;
 				}
 			} else {
-				switch (_GetDesc_Type(vcpuins.xdesc.descriptor)) {
+				switch (_GetDesc_Type(descriptor)) {
 				case VCPU_DESC_SYS_TYPE_TSS_16_AVL:
 				case VCPU_DESC_SYS_TYPE_LDT:
 				case VCPU_DESC_SYS_TYPE_TSS_16_BUSY:
@@ -10625,17 +10613,19 @@ tots LAR_R32_RM32()
 					_ClrEFLAGS_ZF;
 				}
 			}
+			if (_GetEFLAGS_ZF) {
+				_bb("EFLAGS_ZF");
+				switch (_GetOperandSize) {
+				case 2: _bb("OperandSize(2)");
+					_chk(_m_write_ref(vcpuins.rr, (GetMax16(descriptor >> 32) & 0xff00), 2));
+					_be;break;
+				case 4: _bb("OperandSize(4)");
+					_chk(_m_write_ref(vcpuins.rr, (GetMax32(descriptor >> 32) & 0x00ffff00), 4));
+					_be;break;
+				default:_impossible_;break;}
+				_be;
+			}
 			_be;
-		}
-		if (_GetEFLAGS_ZF) {
-			switch (_GetOperandSize) {
-			case 2: _bb("OperandSize(2)");
-				_chk(_m_write_ref(vcpuins.rr, (GetMax16(vcpuins.xdesc.descriptor >> 32) & 0xff00), 2));
-				_be;break;
-			case 4: _bb("OperandSize(4)");
-				_chk(_m_write_ref(vcpuins.rr, (GetMax32(vcpuins.xdesc.descriptor >> 32) & 0x00ffff00), 4));
-				_be;break;
-			default:_impossible_;break;}
 		}
 		_be;
 	} else {
@@ -10645,10 +10635,11 @@ tots LAR_R32_RM32()
 	}
 	_ce;
 }
-tots LSL_R32_RM32()
+static void LSL_R32_RM32()
 {
-	t_nubit16 selector = 0x0000;
-	t_nubit32 limit = 0x00000000;
+	t_nubit16 selector;
+	t_nubit32 limit;
+	t_nubit64 descriptor;
 	_cb("LSL_R32_RM32");
 	_newins_;
 	_adv;
@@ -10660,19 +10651,19 @@ tots LSL_R32_RM32()
 		if (_s_check_selector(selector)) {
 			_ClrEFLAGS_ZF;
 		} else {
-			_chk(_s_descriptor(selector));
-			if (!vcpuins.xdesc.flagvalid) _impossible_;
-			if (_IsDescUser(vcpuins.xdesc.descriptor)) {
-				if (_IsDescCodeConform(vcpuins.xdesc.descriptor))
+			_bb("selector(valid)");
+			_chk(descriptor = _s_read_xdt(selector));
+			if (_IsDescUser(descriptor)) {
+				if (_IsDescCodeConform(descriptor))
 					_SetEFLAGS_ZF;
 				else {
-					if (_GetCPL > _GetDesc_DPL(vcpuins.xdesc.descriptor) || _GetSelector_RPL(selector) > _GetDesc_DPL(vcpuins.xdesc.descriptor))
+					if (_GetCPL > _GetDesc_DPL(descriptor) || _GetSelector_RPL(selector) > _GetDesc_DPL(descriptor))
 						_ClrEFLAGS_ZF;
 					else
 						_SetEFLAGS_ZF;
 				}
 			} else {
-				switch (_GetDesc_Type(vcpuins.xdesc.descriptor)) {
+				switch (_GetDesc_Type(descriptor)) {
 				case VCPU_DESC_SYS_TYPE_TSS_16_AVL:
 				case VCPU_DESC_SYS_TYPE_LDT:
 				case VCPU_DESC_SYS_TYPE_TSS_16_BUSY:
@@ -10684,18 +10675,21 @@ tots LSL_R32_RM32()
 					_ClrEFLAGS_ZF;
 				}
 			}
-		}
-		if (_GetEFLAGS_ZF) {
-			limit = _IsDescSegGranularLarge(vcpuins.xdesc.descriptor) ?
-				((_GetDescSeg_Limit(vcpuins.xdesc.descriptor) << 12) | 0x0fff) : _GetDescSeg_Limit(vcpuins.xdesc.descriptor);
-			switch (_GetOperandSize) {
-			case 2: _bb("OperandSize(2)");
-				_chk(_m_write_ref(vcpuins.rr, GetMax16(limit), 2));
-				_be;break;
-			case 4: _bb("OperandSize(4)");
-				_chk(_m_write_ref(vcpuins.rr, GetMax32(limit), 4));
-				_be;break;
-			default:_impossible_;break;}
+			if (_GetEFLAGS_ZF) {
+				_bb("EFLAGS_ZF");
+				limit = _IsDescSegGranularLarge(descriptor) ?
+					((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : _GetDescSeg_Limit(descriptor);
+				switch (_GetOperandSize) {
+				case 2: _bb("OperandSize(2)");
+					_chk(_m_write_ref(vcpuins.rr, GetMax16(limit), 2));
+					_be;break;
+				case 4: _bb("OperandSize(4)");
+					_chk(_m_write_ref(vcpuins.rr, GetMax32(limit), 4));
+					_be;break;
+				default:_impossible_;break;}
+				_be;
+			}
+			_be;
 		}
 		_be;
 	} else {
@@ -10705,7 +10699,7 @@ tots LSL_R32_RM32()
 	}
 	_ce;
 }
-tots CLTS()
+static void CLTS()
 {
 	_cb("CLTS");
 	_newins_;
@@ -10733,7 +10727,7 @@ todo WBINVD()
 #endif
 	_ce;
 }
-tots MOV_R32_CR()
+static void MOV_R32_CR()
 {
 	_cb("MOV_R32_CR");
 	_newins_;
@@ -10747,7 +10741,7 @@ tots MOV_R32_CR()
 	_chk(_m_write_ref(vcpuins.rrm, vcpuins.cr, 4));
 	_ce;
 }
-tots MOV_R32_DR()
+static void MOV_R32_DR()
 {
 	_cb("MOV_R32_DR");
 	_newins_;
@@ -10761,7 +10755,7 @@ tots MOV_R32_DR()
 	_chk(_m_write_ref(vcpuins.rrm, vcpuins.cr, 4));
 	_ce;
 }
-tots MOV_CR_R32()
+static void MOV_CR_R32()
 {
 	_cb("MOV_CR_R32");
 	_newins_;
@@ -10778,7 +10772,7 @@ tots MOV_CR_R32()
 	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr3) _comment("MOV_CR_R32: executed at L%08X, CR3=%08X\n", vcpurec.linear, vcpu.cr3);
 	_ce;
 }
-tots MOV_DR_R32()
+static void MOV_DR_R32()
 {
 	_cb("MOV_DR_R32");
 	_newins_;
@@ -10792,7 +10786,7 @@ tots MOV_DR_R32()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.crm, 4));
 	_ce;
 }
-tots MOV_R32_TR()
+static void MOV_R32_TR()
 {
 	_cb("MOV_R32_TR");
 	_newins_;
@@ -10806,7 +10800,7 @@ tots MOV_R32_TR()
 	_chk(_m_write_ref(vcpuins.rrm, vcpuins.cr, 4));
 	_ce;
 }
-tots MOV_TR_R32()
+static void MOV_TR_R32()
 {
 	_cb("MOV_TR_R32");
 	_newins_;
@@ -10842,7 +10836,7 @@ todo RDMSR()
 #endif
 	_ce;
 }
-tots JO_REL32()
+static void JO_REL32()
 {
 	_cb("JO_REL32");
 	_newins_;
@@ -10851,7 +10845,7 @@ tots JO_REL32()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, _GetEFLAGS_OF));
 	_ce;
 }
-tots JNO_REL32()
+static void JNO_REL32()
 {
 	_cb("JNO_REL32");
 	_newins_;
@@ -10860,7 +10854,7 @@ tots JNO_REL32()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, !_GetEFLAGS_OF));
 	_ce;
 }
-tots JC_REL32()
+static void JC_REL32()
 {
 	_cb("JC_REL32");
 	_newins_;
@@ -10869,7 +10863,7 @@ tots JC_REL32()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, _GetEFLAGS_CF));
 	_ce;
 }
-tots JNC_REL32()
+static void JNC_REL32()
 {
 	_cb("JNC_REL32");
 	_newins_;
@@ -10878,7 +10872,7 @@ tots JNC_REL32()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, !_GetEFLAGS_CF));
 	_ce;
 }
-tots JZ_REL32()
+static void JZ_REL32()
 {
 	_cb("JZ_REL32");
 	_newins_;
@@ -10887,7 +10881,7 @@ tots JZ_REL32()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, _GetEFLAGS_ZF));
 	_ce;
 }
-tots JNZ_REL32()
+static void JNZ_REL32()
 {
 	_cb("JNZ_REL32");
 	_newins_;
@@ -10896,7 +10890,7 @@ tots JNZ_REL32()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, !_GetEFLAGS_ZF));
 	_ce;
 }
-tots JNA_REL32()
+static void JNA_REL32()
 {
 	_cb("JNA_REL32");
 	_newins_;
@@ -10906,7 +10900,7 @@ tots JNA_REL32()
 		(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
 	_ce;
 }
-tots JA_REL32()
+static void JA_REL32()
 {
 	_cb("JA_REL32");
 	_newins_;
@@ -10916,7 +10910,7 @@ tots JA_REL32()
 		!(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
 	_ce;
 }
-tots JS_REL32()
+static void JS_REL32()
 {
 	_cb("JS_REL32");
 	_newins_;
@@ -10925,7 +10919,7 @@ tots JS_REL32()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, _GetEFLAGS_SF));
 	_ce;
 }
-tots JNS_REL32()
+static void JNS_REL32()
 {
 	_cb("JNS_REL32");
 	_newins_;
@@ -10934,7 +10928,7 @@ tots JNS_REL32()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, !_GetEFLAGS_SF));
 	_ce;
 }
-tots JP_REL32()
+static void JP_REL32()
 {
 	_cb("JP_REL32");
 	_newins_;
@@ -10943,7 +10937,7 @@ tots JP_REL32()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, _GetEFLAGS_PF));
 	_ce;
 }
-tots JNP_REL32()
+static void JNP_REL32()
 {
 	_cb("JNP_REL32");
 	_newins_;
@@ -10952,7 +10946,7 @@ tots JNP_REL32()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, !_GetEFLAGS_PF));
 	_ce;
 }
-tots JL_REL32()
+static void JL_REL32()
 {
 	_cb("JL_REL32");
 	_newins_;
@@ -10961,7 +10955,7 @@ tots JL_REL32()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
 	_ce;
 }
-tots JNL_REL32()
+static void JNL_REL32()
 {
 	_cb("JNL_REL32");
 	_newins_;
@@ -10970,7 +10964,7 @@ tots JNL_REL32()
 	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
 	_ce;
 }
-tots JNG_REL32()
+static void JNG_REL32()
 {
 	_cb("JNG_REL32");
 	_newins_;
@@ -10980,7 +10974,7 @@ tots JNG_REL32()
 			(_GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF))));
 	_ce;
 }
-tots JG_REL32()
+static void JG_REL32()
 {
 	_cb("JG_REL32");
 	_newins_;
@@ -10990,7 +10984,7 @@ tots JG_REL32()
 		(!_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF))));
 	_ce;
 }
-tots SETO_RM8()
+static void SETO_RM8()
 {
 	_cb("SETO_RM8");
 	_newins_;
@@ -10999,7 +10993,7 @@ tots SETO_RM8()
 	_chk(_m_setcc_rm(_GetEFLAGS_OF));
 	_ce;
 }
-tots SETNO_RM8()
+static void SETNO_RM8()
 {
 	_cb("SETO_RM8");
 	_newins_;
@@ -11008,7 +11002,7 @@ tots SETNO_RM8()
 	_chk(_m_setcc_rm(!_GetEFLAGS_OF));
 	_ce;
 }
-tots SETC_RM8()
+static void SETC_RM8()
 {
 	_cb("SETC_RM8");
 	_newins_;
@@ -11017,7 +11011,7 @@ tots SETC_RM8()
 	_chk(_m_setcc_rm(_GetEFLAGS_CF));
 	_ce;
 }
-tots SETNC_RM8()
+static void SETNC_RM8()
 {
 	_cb("SETNC_RM8");
 	_newins_;
@@ -11026,7 +11020,7 @@ tots SETNC_RM8()
 	_chk(_m_setcc_rm(!_GetEFLAGS_CF));
 	_ce;
 }
-tots SETZ_RM8()
+static void SETZ_RM8()
 {
 	_cb("SETZ_RM8");
 	_newins_;
@@ -11035,7 +11029,7 @@ tots SETZ_RM8()
 	_chk(_m_setcc_rm(_GetEFLAGS_ZF));
 	_ce;
 }
-tots SETNZ_RM8()
+static void SETNZ_RM8()
 {
 	_cb("SETNZ_RM8");
 	_newins_;
@@ -11044,7 +11038,7 @@ tots SETNZ_RM8()
 	_chk(_m_setcc_rm(!_GetEFLAGS_ZF));
 	_ce;
 }
-tots SETNA_RM8()
+static void SETNA_RM8()
 {
 	_cb("SETNA_RM8");
 	_newins_;
@@ -11053,7 +11047,7 @@ tots SETNA_RM8()
 	_chk(_m_setcc_rm(_GetEFLAGS_CF || _GetEFLAGS_ZF));
 	_ce;
 }
-tots SETA_RM8()
+static void SETA_RM8()
 {
 	_cb("SETA_RM8");
 	_newins_;
@@ -11062,7 +11056,7 @@ tots SETA_RM8()
 	_chk(_m_setcc_rm(!(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
 	_ce;
 }
-tots SETS_RM8()
+static void SETS_RM8()
 {
 	_cb("SETS_RM8");
 	_newins_;
@@ -11071,7 +11065,7 @@ tots SETS_RM8()
 	_chk(_m_setcc_rm(_GetEFLAGS_SF));
 	_ce;
 }
-tots SETNS_RM8()
+static void SETNS_RM8()
 {
 	_cb("SETNS_RM8");
 	_newins_;
@@ -11080,7 +11074,7 @@ tots SETNS_RM8()
 	_chk(_m_setcc_rm(!_GetEFLAGS_SF));
 	_ce;
 }
-tots SETP_RM8()
+static void SETP_RM8()
 {
 	_cb("SETP_RM8");
 	_newins_;
@@ -11089,7 +11083,7 @@ tots SETP_RM8()
 	_chk(_m_setcc_rm(_GetEFLAGS_PF));
 	_ce;
 }
-tots SETNP_RM8()
+static void SETNP_RM8()
 {
 	_cb("SETNP_RM8");
 	_newins_;
@@ -11098,7 +11092,7 @@ tots SETNP_RM8()
 	_chk(_m_setcc_rm(!_GetEFLAGS_PF));
 	_ce;
 }
-tots SETL_RM8()
+static void SETL_RM8()
 {
 	_cb("SETL_RM8");
 	_newins_;
@@ -11107,7 +11101,7 @@ tots SETL_RM8()
 	_chk(_m_setcc_rm(_GetEFLAGS_SF != _GetEFLAGS_OF));
 	_ce;
 }
-tots SETNL_RM8()
+static void SETNL_RM8()
 {
 	_cb("SETNL_RM8");
 	_newins_;
@@ -11116,7 +11110,7 @@ tots SETNL_RM8()
 	_chk(_m_setcc_rm(_GetEFLAGS_SF == _GetEFLAGS_OF));
 	_ce;
 }
-tots SETNG_RM8()
+static void SETNG_RM8()
 {
 	_cb("SETNG_RM8");
 	_newins_;
@@ -11125,7 +11119,7 @@ tots SETNG_RM8()
 	_chk(_m_setcc_rm(_GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF)));
 	_ce;
 }
-tots SETG_RM8()
+static void SETG_RM8()
 {
 	_cb("SETG_RM8");
 	_newins_;
@@ -11134,7 +11128,7 @@ tots SETG_RM8()
 	_chk(_m_setcc_rm(!_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF)));
 	_ce;
 }
-tots PUSH_FS()
+static void PUSH_FS()
 {
 	_cb("PUSH_FS");
 	_newins_;
@@ -11142,7 +11136,7 @@ tots PUSH_FS()
 	_chk(_e_push(vcpu.fs.selector, _GetOperandSize));
 	_ce;
 }
-tots POP_FS()
+static void POP_FS()
 {
 	t_nubit16 sel;
 	_cb("POP_FS");
@@ -11163,7 +11157,7 @@ todo CPUID()
 #endif
 	_ce;
 }
-tots BT_RM32_R32()
+static void BT_RM32_R32()
 {
 	_cb("BT_RM32_R32");
 	_newins_;
@@ -11173,7 +11167,7 @@ tots BT_RM32_R32()
 	_chk(_a_bt((t_nubit32)vcpuins.crm, (t_nubit32)vcpuins.cimm, _GetOperandSize * 8));
 	_ce;
 }
-tots SHLD_RM32_R32_I8()
+static void SHLD_RM32_R32_I8()
 {
 	_cb("SHLD_RM32_R32_I8");
 	_newins_;
@@ -11184,7 +11178,7 @@ tots SHLD_RM32_R32_I8()
 	_chk(_m_write_rm(vcpuins.result, _GetOperandSize));
 	_ce;
 }
-tots SHLD_RM32_R32_CL()
+static void SHLD_RM32_R32_CL()
 {
 	_cb("SHLD_RM32_R32_CL");
 	_newins_;
@@ -11194,7 +11188,7 @@ tots SHLD_RM32_R32_CL()
 	_chk(_m_write_rm(vcpuins.result, _GetOperandSize));
 	_ce;
 }
-tots PUSH_GS()
+static void PUSH_GS()
 {
 	_cb("PUSH_GS");
 	_newins_;
@@ -11202,7 +11196,7 @@ tots PUSH_GS()
 	_chk(_e_push(vcpu.gs.selector, _GetOperandSize));
 	_ce;
 }
-tots POP_GS()
+static void POP_GS()
 {
 	t_nubit16 sel;
 	_cb("POP_GS");
@@ -11223,7 +11217,7 @@ todo RSM()
 #endif
 	_ce;
 }
-tots BTS_RM32_R32()
+static void BTS_RM32_R32()
 {
 	_cb("BTS_RM32_R32");
 	_newins_;
@@ -11234,7 +11228,7 @@ tots BTS_RM32_R32()
 	_chk(_m_write_rm(vcpuins.result, _GetOperandSize));
 	_ce;
 }
-tots SHRD_RM32_R32_I8()
+static void SHRD_RM32_R32_I8()
 {
 	_cb("SHRD_RM32_R32_I8");
 	_adv;
@@ -11245,7 +11239,7 @@ tots SHRD_RM32_R32_I8()
 	_chk(_m_write_rm(vcpuins.result, _GetOperandSize));
 	_ce;
 }
-tots SHRD_RM32_R32_CL()
+static void SHRD_RM32_R32_CL()
 {
 	_cb("SHRD_RM32_R32_CL");
 	_newins_;
@@ -11256,7 +11250,7 @@ tots SHRD_RM32_R32_CL()
 	_chk(_m_write_rm(vcpuins.result, _GetOperandSize));
 	_ce;
 }
-tots IMUL_R32_RM32()
+static void IMUL_R32_RM32()
 {
 	_cb("IMUL_R32_RM32");
 	_newins_;
@@ -11267,7 +11261,7 @@ tots IMUL_R32_RM32()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.result, _GetOperandSize));
 	_ce;
 }
-tots LSS_R32_M16_32()
+static void LSS_R32_M16_32()
 {
 	t_nubit16 selector;
 	t_nubit32 offset;
@@ -11291,7 +11285,7 @@ tots LSS_R32_M16_32()
 	_chk(_e_load_far(&vcpu.ss, vcpuins.rr, selector, offset, _GetOperandSize));
 	_ce;
 }
-tots BTR_RM32_R32()
+static void BTR_RM32_R32()
 {
 	_cb("BTR_RM32_R32");
 	_newins_;
@@ -11302,7 +11296,7 @@ tots BTR_RM32_R32()
 	_chk(_m_write_rm(vcpuins.result, _GetOperandSize));
 	_ce;
 }
-tots LFS_R32_M16_32()
+static void LFS_R32_M16_32()
 {
 	t_nubit16 selector;
 	t_nubit32 offset;
@@ -11326,7 +11320,7 @@ tots LFS_R32_M16_32()
 	_chk(_e_load_far(&vcpu.fs, vcpuins.rr, selector, offset, _GetOperandSize));
 	_ce;
 }
-tots LGS_R32_M16_32()
+static void LGS_R32_M16_32()
 {
 	t_nubit16 selector;
 	t_nubit32 offset;
@@ -11350,7 +11344,7 @@ tots LGS_R32_M16_32()
 	_chk(_e_load_far(&vcpu.gs, vcpuins.rr, selector, offset, _GetOperandSize));
 	_ce;
 }
-tots INS_0F_BA()
+static void INS_0F_BA()
 {
 	t_bool write = 0;
 	t_nubit8 modrm = 0x00;
@@ -11389,7 +11383,7 @@ tots INS_0F_BA()
 	default:_impossible_;break;}
 	_ce;
 }
-tots BTC_RM32_R32()
+static void BTC_RM32_R32()
 {
 	_cb("BTC_RM32_R32");
 	_newins_;
@@ -11400,7 +11394,7 @@ tots BTC_RM32_R32()
 	_chk(_m_write_rm(vcpuins.result, _GetOperandSize));
 	_ce;
 }
-tots BSF_R32_RM32()
+static void BSF_R32_RM32()
 {
 	_cb("BSF_R32_RM32");
 	_newins_;
@@ -11415,7 +11409,7 @@ tots BSF_R32_RM32()
 	}
 	_ce;
 }
-tots BSR_R32_RM32()
+static void BSR_R32_RM32()
 {
 	_cb("BSR_R32_RM32");
 	_newins_;
@@ -11430,7 +11424,7 @@ tots BSR_R32_RM32()
 	}
 	_ce;
 }
-tots MOVZX_R32_RM8()
+static void MOVZX_R32_RM8()
 {
 	_cb("MOVZX_R32_RM8");
 	_newins_;
@@ -11440,7 +11434,7 @@ tots MOVZX_R32_RM8()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.crm, _GetOperandSize));
 	_ce;
 }
-tots MOVZX_R32_RM16()
+static void MOVZX_R32_RM16()
 {
 	_cb("MOVZX_R32_RM16");
 	_newins_;
@@ -11450,7 +11444,7 @@ tots MOVZX_R32_RM16()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.crm, 4));
 	_ce;
 }
-tots MOVSX_R32_RM8()
+static void MOVSX_R32_RM8()
 {
 	_cb("MOVSX_R32_RM8");
 	_newins_;
@@ -11460,7 +11454,7 @@ tots MOVSX_R32_RM8()
 	_chk(_m_write_ref(vcpuins.rr, vcpuins.crm, _GetOperandSize));
 	_ce;
 }
-tots MOVSX_R32_RM16()
+static void MOVSX_R32_RM16()
 {
 	_cb("MOVSX_R32_RM16");
 	_newins_;
@@ -11594,7 +11588,7 @@ static void ExecInt()
 #endif
 }
 
-done QDX()
+static void QDX()
 {
 #ifndef VGLOBAL_BOCHS
 	t_nubit32 eflags;

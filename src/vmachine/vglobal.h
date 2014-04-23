@@ -25,7 +25,7 @@ extern "C" {
 #else
 #define VGLOBAL_PLATFORM VGLOBAL_VAR_LINUX
 #endif
-//#define VGLOBAL_BOCHS
+#define VGLOBAL_BOCHS
 /*****************************************************************************/
 
 typedef char     *t_string;

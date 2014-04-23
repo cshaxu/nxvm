@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0135]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0136]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -124,6 +124,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 04/14-05/05  debugged i8086 cpu
  * 04/21-05/23  updated debugger
  * 05/24-07/31  built 80386 cpu
+ * 08/06-.....  unify format
  *
  * Milestones
  * 0x45 Console and 8086 CPU

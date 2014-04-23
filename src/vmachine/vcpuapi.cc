@@ -246,6 +246,7 @@ static t_bool vcpuapiCheckDiff()
 				}
 			}
 		}
+		if (vcpuins.except) flagdiff = 1;
 	}
 	if (flagdiff) {
 		vcpuapiPrint("BEFORE EXECUTION:\n");
@@ -411,14 +412,14 @@ void vcpuapiInit()
 	oldbcpu = vcpu;
 	newbcpu = vcpu;
 	memset(&bcpurec, 0x00, sizeof(t_cpurec));
-	recordInit();
+	//recordInit();
 #endif
 }
 void vcpuapiFinal()
 {
 #ifdef VGLOBAL_BOCHS
 	vcpuFinal();
-	recordFinal();
+	//recordFinal();
 #endif
 }
 void vcpuapiExecBefore()
@@ -430,30 +431,30 @@ void vcpuapiExecBefore()
 	bcpurec.msize = 0;
 	flagbrec = 0;
 
-	if (bcpurec.linear == 0xa78f) {
+	//if (bcpurec.linear == 0xa78f) {
 		flagvalid = 1;
-		vcpuapiPrint("NXVM and Bochs comparison starts here.\n");
-		recordNow("d:/bx.log");
-	}
-	if (bcpurec.linear == 0x2eab) {
+		//vcpuapiPrint("NXVM and Bochs comparison starts here.\n");
+		//recordNow("d:/bx.log");
+	//}
+	/*if (bcpurec.linear == 0x2eab) {
 		flagvalid = 0;
 		vcpuapiPrint("NXVM and Bochs comparison stops here.\n");
 		BX_CPU_THIS_PTR magic_break = 1;
-	}
+	}*/
 	if (flagvalid) {
-		recordExec(&bcpurec);
-		/*vcpu = oldbcpu;
-		vcpuinsRefresh();*/
+		//recordExec(&bcpurec);
+		vcpu = oldbcpu;
+		vcpuinsRefresh();
 	}
-	flagbrec = 1;
+	//flagbrec = 1;
 #endif
 }
 void vcpuapiExecAfter()
 {
 #ifdef VGLOBAL_BOCHS
 	if (flagvalid) {
-		/*CopyBochsCpu(&newbcpu);
-		if (vcpuapiCheckDiff()) BX_CPU_THIS_PTR magic_break = 1;*/
+		CopyBochsCpu(&newbcpu);
+		if (vcpuapiCheckDiff()) BX_CPU_THIS_PTR magic_break = 1;
 	}
 #endif
 }
