@@ -76,7 +76,7 @@ void w32adispSetScreen()
 	GetWindowRect(w32aHWnd,&windowRect);
 	widthOffset = windowRect.right - windowRect.left - clientRect.right;
 	heightOffset = windowRect.bottom - windowRect.top - clientRect.bottom;//获取窗口和客户区大小，以决定窗口大小，从而决定客户区大小
-	MoveWindow(w32aHWnd, 0, 0, sizeRow * charWidth + widthOffset,
+	MoveWindow(w32aHWnd, windowRect.left, windowRect.top, sizeRow * charWidth + widthOffset,
 		sizeCol * charHeight + heightOffset, SWP_NOMOVE);
 	GetClientRect(w32aHWnd,&clientRect);
 	clientHeight = clientRect.bottom - clientRect.top;
@@ -85,7 +85,7 @@ void w32adispSetScreen()
 	logFont.lfHeight = charHeight;
 	hFont  = CreateFontIndirect(&logFont);
 	hFont  = (HFONT)SelectObject(hdcBuf, hFont);
-	hBmpBuf = CreateCompatibleBitmap(hdcWnd,//创建缓冲位图
+	hBmpBuf = CreateCompatibleBitmap(hdcWnd,
 		GetDeviceCaps(hdcWnd, HORZRES), GetDeviceCaps(hdcWnd, VERTRES));
 	SelectObject(hdcBuf, hBmpBuf);	
 	SendMessage(w32aHWnd, WM_PAINT, 0, 0);

@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.010a]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.010b]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -226,7 +226,9 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 int main(int argc, char **argv)
 {
-	fprintf(stdout,"%s\n",PRODUCT);
+	/*signed int x = 0xffffffff;
+	printf("%llx\n", (unsigned __int64)x);*/
+	fprintf(stdout,"%s\n", PRODUCT);
 	console();
 	return 0;
 }

@@ -61,6 +61,7 @@ typedef struct {
 #define VCPUINS_EXCEPT_UD 0x00000010 /* undefined opcode */
 #define VCPUINS_EXCEPT_BR 0x00000020 /* boundary check fail */
 #define VCPUINS_EXCEPT_TS 0x00000040 /* task state segment fail */
+#define VCPUINS_EXCEPT_DE 0x00000080 /* divide error */
 #define VCPUINS_EXCEPT_CE 0x80000000 /* case error */
 
 extern t_cpuins vcpuins;

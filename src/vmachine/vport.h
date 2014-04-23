@@ -14,8 +14,13 @@
 typedef struct {
 	t_faddrcc in[0x10000];
 	t_faddrcc out[0x10000];
-	t_nubit8  iobyte;
-	t_nubit16 ioword;
+	union {
+		union {
+			t_nubit8 iobyte;
+			t_nubit16 ioword;
+		};
+		t_nubit32 iodword;
+	};
 } t_port;
 
 extern t_port vport;

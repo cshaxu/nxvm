@@ -100,7 +100,7 @@ typedef struct {
 	t_nubit32 cr0, cr1, cr2, cr3;
 	t_nubit32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
 	t_nubit32 tr6, tr7;
-	t_bool flagnmi;
+	t_bool flagnmi, flaghalt;
 } t_cpu;
 
 #define _eax    (vcpu.eax)
@@ -362,6 +362,10 @@ typedef struct {
 
 #define VCPU_IDTR_LIMIT 0x00000000ffff
 #define VCPU_IDTR_BASE  0xffffffff0000
+#define _GetIDTR_LIMIT (vcpu.idtr & VCPU_IDTR_LIMIT)
+#define _GetIDTR_BASE  ((vcpu.idtr & VCPU_IDTR_BASE) >> 16)
+#define _LoadIDTR16(base,limit)  (vcpu.idtr = ((t_nubit24)(base) << 16) | (t_nubit16)(limit))
+#define _LoadIDTR32(base,limit)  (vcpu.idtr = ((t_nubit32)(base) << 16) | (t_nubit16)(limit))
 
 #define VCPU_CR0_PE     0x00000001
 #define VCPU_CR0_TS     0x00000008
@@ -378,8 +382,6 @@ typedef struct {
 #define _LoadGDTR16(base,limit)  (vcpu.gdtr = ((t_nubit24)(base) << 16) | (t_nubit16)(limit))
 #define _LoadGDTR32(base,limit)  (vcpu.gdtr = ((t_nubit32)(base) << 16) | (t_nubit16)(limit))
 #define _LoadLDTR(selector)      (vcpu.ldtr = (t_nubit16)(selector))
-#define _LoadIDTR16(base,limit)  (vcpu.idtr = ((t_nubit24)(base) << 16) | (t_nubit16)(limit))
-#define _LoadIDTR32(base,limit)  (vcpu.idtr = ((t_nubit32)(base) << 16) | (t_nubit16)(limit))
 #define _LoadTR
 #define _LoadCR0
 #define _LoadCR1
