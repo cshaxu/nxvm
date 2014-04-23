@@ -1,0 +1,149 @@
+/* This file is a part of NXVM project. */
+
+#include "../vapi.h"
+
+#include "tchar.h"
+#include "w32cdisp.h"
+//#include "w32ckeyb.h"
+#include "win32con.h"
+#include "win32app.h"
+
+HANDLE hIn, hOut;
+static DWORD ThreadIdDisplay;
+static DWORD ThreadIdKernel;
+
+VOID w32ckeybMakeStatus()
+{
+	vapiCallBackKeyboardClrFlag0();
+	vapiCallBackKeyboardClrFlag1();
+	if (GetKeyState(VK_INSERT)  < 0) vapiCallBackKeyboardSetFlag1Insert();
+	if (GetKeyState(VK_CAPITAL) < 0) vapiCallBackKeyboardSetFlag1CapLck();
+	if (GetKeyState(VK_NUMLOCK) < 0) vapiCallBackKeyboardSetFlag1NumLck();
+	if (GetKeyState(VK_SCROLL)  < 0) vapiCallBackKeyboardSetFlag1ScrLck();
+	if (GetKeyState(VK_PAUSE)   < 0) vapiCallBackKeyboardSetFlag1Pause();
+	if (GetKeyState(VK_MENU)    < 0) vapiCallBackKeyboardSetFlag1LeftAlt();
+	if (GetKeyState(VK_CONTROL) < 0) vapiCallBackKeyboardSetFlag1LeftCtrl();
+	if (GetKeyState(VK_INSERT)  < 0) vapiCallBackKeyboardSetFlag0Insert();
+	if (GetKeyState(VK_CAPITAL) < 0) vapiCallBackKeyboardSetFlag0CapLck();
+	if (GetKeyState(VK_NUMLOCK) < 0) vapiCallBackKeyboardSetFlag0NumLck();
+	if (GetKeyState(VK_SCROLL)  < 0) vapiCallBackKeyboardSetFlag0ScrLck();
+	if (GetKeyState(VK_MENU)    < 0) vapiCallBackKeyboardSetFlag0Alt();
+	if (GetKeyState(VK_CONTROL) < 0) vapiCallBackKeyboardSetFlag0Ctrl();
+	if (GetKeyState(VK_LSHIFT)  < 0) vapiCallBackKeyboardSetFlag0LeftShift();
+	if (GetKeyState(VK_RSHIFT)  < 0) vapiCallBackKeyboardSetFlag0RightShift();
+}
+
+VOID w32ckeybMakeKey(INPUT_RECORD inRec)
+{
+	t_nubit16 ascii = (inRec.Event.KeyEvent.wVirtualScanCode << 8);
+	t_nubit16 vkey = inRec.Event.KeyEvent.wVirtualKeyCode;
+	if (inRec.Event.KeyEvent.bKeyDown) {
+		/*vapiPrint("key.vsc = %x, vk = %x, ascii = %x, uni = %x\n",
+			inRec.Event.KeyEvent.wVirtualScanCode,
+			inRec.Event.KeyEvent.wVirtualKeyCode,
+			inRec.Event.KeyEvent.uChar.AsciiChar,
+			inRec.Event.KeyEvent.uChar.UnicodeChar);*/
+		switch (vkey) {
+		case VK_F1:
+		case VK_F2:
+		case VK_F3:
+		case VK_F4:
+		case VK_F5:
+		case VK_F6:
+		case VK_F7:
+		case VK_F8:
+		case VK_F9:
+		case VK_F10:
+		case VK_F11:
+		case VK_F12://F1~~F12
+			if(vapiCallBackKeyboardGetShift())      ascii += 0x1900;
+			else if(vapiCallBackKeyboardGetAlt())   ascii += 0x2d00;
+			else if (vapiCallBackKeyboardGetCtrl()) ascii += 0x2300;
+			vapiCallBackKeyboardRecvKeyPress(ascii);
+			break;
+		case VK_BACK:  // BACKSPACE
+		case VK_ESCAPE://ESC
+		case VK_PRIOR: //PageUP
+		case VK_NEXT: //pageDown
+		case VK_END:
+		case VK_HOME:
+		case VK_LEFT:
+		case VK_UP:
+		case VK_RIGHT:
+		case VK_DOWN:
+		case VK_RETURN:
+			vapiCallBackKeyboardRecvKeyPress(ascii |
+				inRec.Event.KeyEvent.uChar.AsciiChar);
+			break;
+		default://剩下的字符可能是alt。。ctl与普通字符等，但是updateKBStatus会过滤掉普通字符
+			w32ckeybMakeStatus();
+			if (vkey >= 0x41 && vkey <= 0x41+'Z'-'A') {
+				if (vapiCallBackKeyboardGetAlt())
+					vapiCallBackKeyboardRecvKeyPress(ascii);
+				else if (vapiCallBackKeyboardGetCtrl())
+					vapiCallBackKeyboardRecvKeyPress(ascii + vkey - 0x0041);
+				else
+					vapiCallBackKeyboardRecvKeyPress(ascii |
+						inRec.Event.KeyEvent.uChar.AsciiChar);
+				//如果不是按下ctrl，则是按下alt
+			}
+			break;
+		}
+		
+	} else w32ckeybMakeStatus();
+}
+
+VOID w32ckeybProcess()
+{
+	INPUT_RECORD inRec;
+	DWORD res;
+	
+	GetNumberOfConsoleInputEvents(hIn, &res);
+	if (!res) return;
+	ReadConsoleInput(hIn,&inRec,1,&res);
+	switch (inRec.EventType) {
+	case KEY_EVENT:
+		w32ckeybMakeKey(inRec);
+		break;
+	case FOCUS_EVENT:
+		w32ckeybMakeStatus();
+		break;
+	default:
+		break;
+	}
+}
+
+static DWORD WINAPI ThreadDisplay(LPVOID lpParam)
+{
+	static int i = 0;
+	hIn = GetStdHandle(STD_INPUT_HANDLE);
+	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	w32cdispInit();
+	while (vapiCallBackMachineGetRunFlag()) {
+		vapiSleep(55);
+		vapiCallBackRtcUpdateTime();
+		w32cdispPaint();
+		w32ckeybProcess();
+	}
+	w32cdispFinal();
+	return 0;
+}
+static DWORD WINAPI ThreadKernel(LPVOID lpParam)
+{
+	vapiCallBackMachineRun();
+	return 0;
+}
+
+void win32conDisplaySetScreen() {w32cdispSetScreen();}
+void win32conDisplayPaint() {w32cdispPaint();}
+void win32conStartMachine()
+{
+	if (!vapiCallBackMachineGetRunFlag())
+		CreateThread(NULL, 0, ThreadKernel, NULL, 0, &ThreadIdKernel);
+	while (!vapiCallBackMachineGetRunFlag()) vapiSleep(1);
+
+//	win32appStartMachine();
+
+	//CreateThread(NULL, 0, 
+	ThreadDisplay(NULL);//, NULL, 0, &ThreadIdDisplay);
+}

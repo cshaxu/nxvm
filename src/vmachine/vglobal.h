@@ -11,7 +11,16 @@
 
 #include "stdint.h"
 
+#define VGLOBAL_VAR_WIN32 0
+#define VGLOBAL_VAR_LINUX 1
+#define VGLOBAL_VAR_CON   0
+#define VGLOBAL_VAR_APP   1
+
+/* COMPLIATION DEFINITIONS ***************************************************/
 #define VGLOBAL_SIZE_INTEGER 32
+#define VGLOBAL_PLATFORM     VGLOBAL_VAR_WIN32
+#define VGLOBAL_APPTYPE      VGLOBAL_VAR_APP
+/*****************************************************************************/
 
 typedef char     *t_string;
 typedef uint8_t   t_nubit1;

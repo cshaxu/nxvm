@@ -30,6 +30,7 @@ typedef enum {
 } t_cpuins_rep;
 
 typedef struct {
+//	t_nubit16 pcs, pip;
 	t_faddrcc table[0x100];
 	t_vaddrcc rm, r, imm;
 	t_nubitcc opr1, opr2, result, bit;

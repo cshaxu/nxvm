@@ -2,6 +2,8 @@
 
 #include "../vapi.h"
 
+#include "tchar.h"
+
 #include "win32app.h"
 #include "w32adisp.h"
 
@@ -34,13 +36,9 @@ static INT charHeight;
 static UCHAR sizeRow, sizeCol;
 static UCHAR cursorTop, cursorBottom;
 
-void w32adispIncFlash()
-{
-	flashCount = (flashCount + 1) % 10;
-}
 void w32adispInit()
 {
-	hdcWnd = GetDC(hWnd);
+	hdcWnd = GetDC(w32aHWnd);
 	hdcBuf = CreateCompatibleDC(NULL);
 	hBmpBuf = NULL;
 	clientHeight = 0;
@@ -62,7 +60,7 @@ void w32adispInit()
 	logFont.lfClipPrecision = 0;
 	logFont.lfQuality = 0;
 	logFont.lfPitchAndFamily = 0;
-	lstrcpy(logFont.lfFaceName,L"Courier New");
+	lstrcpy(logFont.lfFaceName,_T("Courier New"));
 	w32adispSetScreen();
 }
 
@@ -74,13 +72,13 @@ void w32adispSetScreen()
 	sizeCol = vapiCallBackDisplayGetColSize();
 	cursorTop = vapiCallBackDisplayGetCursorTop();
 	cursorBottom = vapiCallBackDisplayGetCursorBottom();
-	GetClientRect(hWnd,&clientRect);
-	GetWindowRect(hWnd,&windowRect);
+	GetClientRect(w32aHWnd,&clientRect);
+	GetWindowRect(w32aHWnd,&windowRect);
 	widthOffset = windowRect.right - windowRect.left - clientRect.right;
 	heightOffset = windowRect.bottom - windowRect.top - clientRect.bottom;//获取窗口和客户区大小，以决定窗口大小，从而决定客户区大小
-	MoveWindow(hWnd, 0, 0, sizeRow * charWidth + widthOffset,
+	MoveWindow(w32aHWnd, 0, 0, sizeRow * charWidth + widthOffset,
 		sizeCol * charHeight + heightOffset, SWP_NOMOVE);
-	GetClientRect(hWnd,&clientRect);
+	GetClientRect(w32aHWnd,&clientRect);
 	clientHeight = clientRect.bottom - clientRect.top;
 	clientWidth  = clientRect.right - clientRect.left;
 	logFont.lfWidth  = charWidth;
@@ -90,7 +88,7 @@ void w32adispSetScreen()
 	hBmpBuf = CreateCompatibleBitmap(hdcWnd,//创建缓冲位图
 		GetDeviceCaps(hdcWnd, HORZRES), GetDeviceCaps(hdcWnd, VERTRES));
 	SelectObject(hdcBuf, hBmpBuf);	
-	SendMessage(hWnd, WM_PAINT, 0, 0);
+	SendMessage(w32aHWnd, WM_PAINT, 0, 0);
 }
 static COLORREF CharProp2Color(UCHAR prop, BOOL font)
 {
@@ -144,8 +142,12 @@ void w32adispPaint()
 	UCHAR i, j;
 	HBRUSH hBrush;
 	WCHAR unicodeChar;
-	CHAR ansiChar;
+	USHORT ansiChar;
 	UCHAR charProp;
+	PAINTSTRUCT ps;
+
+	BeginPaint(w32aHWnd, &ps);
+	flashCount = (flashCount + 1) % 10;
 	hBrush = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	SelectObject(hdcBuf, hBrush);
 	Rectangle(hdcBuf, 0, 0, logFont.lfWidth * sizeRow, 
@@ -155,7 +157,7 @@ void w32adispPaint()
 			ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
 			charProp = vapiCallBackDisplayGetCurrentCharProp(i, j);
 			if (!ansiChar) continue;
-			MultiByteToWideChar(437, 0, &ansiChar, 1, &unicodeChar, 1);
+			MultiByteToWideChar(437, 0, (LPCSTR)(&ansiChar), 1, (LPWSTR)(&unicodeChar), 1);
 			SetTextColor(hdcBuf, CharProp2Color(charProp, TRUE));
 			SetBkMode(hdcBuf, OPAQUE);
 			SetBkColor(hdcBuf, CharProp2Color(charProp, FALSE));
@@ -164,5 +166,6 @@ void w32adispPaint()
 	}
 	BitBlt(hdcWnd, 0, 0, clientWidth, clientHeight, hdcBuf, 0, 0, SRCCOPY);
 	DisplayFlashCursor();//闪烁光标
+	EndPaint(w32aHWnd, &ps);
 }
 void w32adispFinal() {}

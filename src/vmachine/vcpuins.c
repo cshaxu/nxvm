@@ -682,7 +682,7 @@ static void XCHG(void *dest, void *src, t_nubit8 len)
 }
 static void MOV(void *dest, void *src, t_nubit8 len)
 {
-	t_vaddrcc pd  = (t_vaddrcc)(dest);
+/*	t_vaddrcc pd  = (t_vaddrcc)(dest);
 	t_vaddrcc ps  = (t_vaddrcc)(src);
 	t_vaddrcc pal = (t_vaddrcc)(&vcpu.al);
 	t_vaddrcc pah = (t_vaddrcc)(&vcpu.ah);
@@ -699,7 +699,7 @@ static void MOV(void *dest, void *src, t_nubit8 len)
 	t_vaddrcc psp = (t_vaddrcc)(&vcpu.sp);
 	t_vaddrcc pbp = (t_vaddrcc)(&vcpu.bp);
 	t_vaddrcc psi = (t_vaddrcc)(&vcpu.si);
-	t_vaddrcc pdi = (t_vaddrcc)(&vcpu.di);
+	t_vaddrcc pdi = (t_vaddrcc)(&vcpu.di);*/
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
@@ -2191,11 +2191,10 @@ void MOV_RM16_R16()
 }
 void MOV_R8_RM8()
 {
-	t_nubit8 modrm, regbit=8, rmbit=8;
+//	t_nubit8 modrm, regbit=8, rmbit=8;
 	vcpu.ip++;
-//	GetModRegRM(8,8);
-	// returns vcpuins.rm and vcpuins.r
-	modrm = vramVarByte(vcpu.cs,vcpu.ip++);
+	GetModRegRM(8,8);
+/*	modrm = vramVarByte(vcpu.cs,vcpu.ip++);
 	vcpuins.rm = vcpuins.r = (t_vaddrcc)NULL;
 	switch(MOD) {
 	case 0:
@@ -2220,9 +2219,9 @@ void MOV_R8_RM8()
 		case 5:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.di);break;
 		case 6:	vcpuins.rm = vramGetAddr(vcpu.overss,vcpu.bp);break;
 		case 7:	vcpuins.rm = vramGetAddr(vcpu.overds,vcpu.bx);break;
-		default:CaseError("GetModRegRM::MOD1::RM");break;}
+		default:CaseError("GetModRegRM::MOD1::RM");break;}*/
 /* vcpuins bug fix #3
-		vcpuins.rm += vramVarByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;*/
+		vcpuins.rm += vramVarByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;*//*
 		vcpuins.rm += (t_nsbit8)vramVarByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;
 		break;
 	case 2:
@@ -2285,7 +2284,7 @@ void MOV_R8_RM8()
 		case 7: vcpuins.r = (t_vaddrcc)(&vcpu.di);	break;
 		default:CaseError("GetModRegRM::regbit16::REG");break;}
 		break;
-	default:CaseError("GetModRegRM::regbit");break;}
+	default:CaseError("GetModRegRM::regbit");break;}*/
 	MOV((void *)vcpuins.r,(void *)vcpuins.rm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  MOV_R8_RM8\n");
 }
@@ -3270,11 +3269,24 @@ static void ClrPrefix()
 	vcpuins.rep = RT_NONE;
 }
 
+/*#include "qdvga.h"
+static t_bool IsVideoMem(t_vaddrcc addr)
+{
+	if ((addr >= vramGetAddr(0x0000, QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM)) &&
+		(addr < vramGetAddr(0x0000, (QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM +
+		QDVGA_SIZE_TEXT_MEMORY)))) return 0x01;
+	else return 0x00;
+}*/
+
 void vcpuinsExecIns()
 {
 	t_nubit8 opcode = vramVarByte(vcpu.cs,vcpu.ip);
+//	vcpuins.pcs = vcpu.cs;
+//	vcpuins.pip = vcpu.ip;
+//	vcpuins.rm = (t_vaddrcc)NULL;
 	ExecFun(vcpuins.table[opcode]);
-	if(!IsPrefix(opcode)) ClrPrefix();
+	if (!IsPrefix(opcode)) ClrPrefix();
+/*	if (IsVideoMem(vcpuins.rm)) vapiDisplayPaint();*/
 }
 void vcpuinsExecInt()
 {

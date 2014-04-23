@@ -115,13 +115,35 @@ void vapiFloppyRemove(const t_string fname)
 }
 
 /* Platform Related */
-#include "system/win32app.h"
-
-void vapiSleep(t_nubit32 milisec) {win32appSleep(milisec);}
-void vapiDisplaySetScreen() {win32appDisplaySetScreen();}
-void vapiDisplayPaint() {win32appDisplayPaint();}
-
-void vapiStartMachine() {win32appStartMachine();}
+#if VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32
+	#include "windows.h"
+	void vapiSleep(t_nubit32 milisec) {Sleep(milisec);}
+	#if VGLOBAL_APPTYPE == VGLOBAL_VAR_CON
+		#include "system/win32con.h"
+		void vapiDisplaySetScreen() {win32conDisplaySetScreen();}
+		void vapiDisplayPaint() {win32conDisplayPaint();}
+		void vapiStartMachine() {win32conStartMachine();}
+	#elif VGLOBAL_APPTYPE == VGLOBAL_VAR_APP
+		#include "system/win32app.h"
+		void vapiDisplaySetScreen() {win32appDisplaySetScreen();}
+		void vapiDisplayPaint() {win32appDisplayPaint();}
+		void vapiStartMachine() {win32appStartMachine();}
+	#endif
+#elif VGLOBAL_PLATFORM == VGLOBAL_VAR_LINUX
+	#include "system.h"
+	void vapiSleep(t_nubit32 milisec) {usleep(milisec);}
+	#if VGLOBAL_APPTYPE == VGLOBAL_VAR_CON
+		#include "system/linuxcon.h"
+		void vapiDisplaySetScreen() {linuxconDisplaySetScreen();}
+		void vapiDisplayPaint() {linuxconDisplayPaint();}
+		void vapiStartMachine() {linuxconStartMachine();}
+	#elif VGLOBAL_APPTYPE == VGLOBAL_VAR_APP
+		#include "system/linuxapp.h"
+		void vapiDisplaySetScreen() {linuxappDisplaySetScreen();}
+		void vapiDisplayPaint() {linuxappDisplayPaint();}
+		void vapiStartMachine() {linuxappStartMachine();}
+	#endif
+#endif
 
 void vapiInit() {memset(&vapirecord, 0x00, sizeof(t_apirecord));}
 void vapiFinal() {}

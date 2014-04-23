@@ -37,7 +37,10 @@ void w32akeybMakeStatus(UINT message, WPARAM wParam, LPARAM lParam)
 void w32akeybMakeChar(WPARAM wParam, LPARAM lParam)
 {
 	UINT16 ascii = (UINT16)(((lParam & 0xffff0000) >> 8) | wParam);
-	while(vapiCallBackKeyboardRecvKeyPress(ascii)) win32appSleep(10);
+	while(vapiCallBackKeyboardRecvKeyPress(ascii)) vapiSleep(10);
+//#if VGLOBAL_APPTYPE == VGLOBAL_VAR_APP
+//	vapiPrint("char ascii = %x\n",ascii);
+//#endif
 }
 void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -83,7 +86,9 @@ void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		}
-		
+//#if VGLOBAL_APPTYPE == VGLOBAL_VAR_APP
+//		vapiPrint("key ascii = %x\n",ascii);
+//#endif
 	}
 	else //keyUp, sysKeyUp
 		w32akeybMakeStatus(message, wParam, lParam);

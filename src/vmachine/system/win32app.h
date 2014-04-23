@@ -9,14 +9,12 @@
 
 #include "windows.h"
 
-void win32appSleep(DWORD milisec);
-
 void win32appDisplaySetScreen();
 void win32appDisplayPaint();
 
 void win32appStartMachine();
 
-extern HWND hWnd;
+extern HWND w32aHWnd;
 
 #ifdef __cplusplus
 /*}_EOCD_*/

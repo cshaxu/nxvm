@@ -18,6 +18,10 @@ void vapiCallBackMachineRun()
 		if (vmachine.flagrecord) vapiRecordStart();
 		vcpu.flagterm = 0x00;
 		vmachine.flagrun = 0x01;
+		if (vcpu.cs == 15 && vcpu.ip == 40975) {
+			vmachine.flagrun = 0x00;
+			vapiPrint("stop!\n");
+		}
 		while (vmachine.flagrun) {
 			vmachineRefresh();
 			if (vmachine.flagtrace) vapiTrace();

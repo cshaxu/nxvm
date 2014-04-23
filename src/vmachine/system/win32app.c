@@ -2,28 +2,28 @@
 
 #include "../vapi.h"
 
+#include "tchar.h"
 #include "w32adisp.h"
 #include "w32akeyb.h"
 #include "win32app.h"
 
-HWND hWnd = NULL;
+HWND w32aHWnd = NULL;
 
 static HINSTANCE hInstance;
-static LPCWSTR szWindowClass = L"nxvm";
-static LPCWSTR szTitle = L"Neko's x86 Virtual Machine";
+static LPCWSTR szWindowClass = _T("nxvm");
+static LPCWSTR szTitle = _T("Neko's x86 Virtual Machine");
 static DWORD ThreadIdDisplay;
 static DWORD ThreadIdKernel;
 #define TIMER_PAINT   0
 #define TIMER_RTC     1
-static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
+static LRESULT CALLBACK WndProc(HWND w32aHWnd, UINT message,
                                 WPARAM wParam, LPARAM lParam)
 {
-	PAINTSTRUCT ps;
 	INT wmId, wmEvent;
 	switch (message) {
 	case WM_CREATE:
-		SetTimer(hWnd, TIMER_PAINT, 50, NULL);
-		SetTimer(hWnd, TIMER_RTC,   55, NULL);
+		SetTimer(w32aHWnd, TIMER_PAINT, 50, NULL);
+		SetTimer(w32aHWnd, TIMER_RTC,    55, NULL);
 		break;
 	case WM_DESTROY:
 		vapiCallBackMachineSetRunFlag(0x00);
@@ -36,7 +36,6 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 	case WM_TIMER:
 		switch (wParam) {
 		case TIMER_PAINT:
-			w32adispIncFlash();
 			w32adispPaint();
 			break;
 		case TIMER_RTC:
@@ -46,28 +45,35 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 		}
 		break;
  	case WM_PAINT:
-		BeginPaint(hWnd, &ps);
 		w32adispPaint();
-		EndPaint(hWnd, &ps);
 		break;
 	case WM_SIZE:
 		break;
 	case WM_SIZING:
 		break;
 	case WM_CHAR:
+// NEKO DEBUG
+//#if VGLOBAL_APPTYPE == VGLOBAL_VAR_APP
 		w32akeybMakeChar(wParam, lParam);
+//#endif
 		break;
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
+// NEKO DEBUG
+//#if VGLOBAL_APPTYPE == VGLOBAL_VAR_APP
 		w32akeybMakeKey(message, wParam, lParam);
+//#endif
 		break;
 	case WM_SETFOCUS:
+// NEKO DEBUG
+//#if VGLOBAL_APPTYPE == VGLOBAL_VAR_APP
 		w32akeybMakeStatus(WM_KEYUP, wParam, lParam);
+//#endif
 		break;
 	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
+		return DefWindowProc(w32aHWnd, message, wParam, lParam);
    }
    return 0;
 }
@@ -92,12 +98,12 @@ static BOOL ThreadDisplayInitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	DWORD dwStyle = WS_THICKFRAME | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
 		            WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
-	hWnd = CreateWindow(szWindowClass, szTitle, dwStyle, CW_USEDEFAULT, 0,
+	w32aHWnd = CreateWindow(szWindowClass, szTitle, dwStyle, CW_USEDEFAULT, 0,
 	                    888, 484, NULL, NULL, hInstance, NULL);
 	                           /* window size is 888 x 484 for "Courier New" */
-	if (!hWnd) return FALSE;
-	ShowWindow(hWnd, SW_SHOW);
-	UpdateWindow(hWnd);
+	if (!w32aHWnd) return FALSE;
+	ShowWindow(w32aHWnd, SW_SHOW);
+	UpdateWindow(w32aHWnd);
 	return TRUE;
 }
 
@@ -114,7 +120,7 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam)
 		DispatchMessage(&msg);
 	}
 	vapiCallBackMachineSetRunFlag(0x00);
-	hWnd = NULL;
+	w32aHWnd = NULL;
 	w32adispFinal();
 
 	return 0;
@@ -125,15 +131,11 @@ static DWORD WINAPI ThreadKernel(LPVOID lpParam)
 	return 0;
 }
 
-void win32appSleep(DWORD milisec)
-{
-	Sleep(milisec);
-}
 void win32appDisplaySetScreen() {w32adispSetScreen();}
 void win32appDisplayPaint() {w32adispPaint();}
 void win32appStartMachine()
 {
-	if (!hWnd)
+	if (!w32aHWnd)
 		CreateThread(NULL, 0, ThreadDisplay, NULL, 0, &ThreadIdDisplay);
 	if (!vapiCallBackMachineGetRunFlag())
 		CreateThread(NULL, 0, ThreadKernel, NULL, 0, &ThreadIdKernel);
