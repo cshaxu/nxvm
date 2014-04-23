@@ -45,6 +45,7 @@ void vapiCallBackMachineStop();
 
 void vapiCallBackKeyboardClrFlag0();
 void vapiCallBackKeyboardClrFlag1();
+
 void vapiCallBackKeyboardSetFlag0Insert();
 void vapiCallBackKeyboardSetFlag0CapLck();
 void vapiCallBackKeyboardSetFlag0NumLck();
@@ -53,6 +54,16 @@ void vapiCallBackKeyboardSetFlag0Alt();
 void vapiCallBackKeyboardSetFlag0Ctrl();
 void vapiCallBackKeyboardSetFlag0LeftShift();
 void vapiCallBackKeyboardSetFlag0RightShift();
+
+void vapiCallBackKeyboardClrFlag0Insert();
+void vapiCallBackKeyboardClrFlag0CapLck();
+void vapiCallBackKeyboardClrFlag0NumLck();
+void vapiCallBackKeyboardClrFlag0ScrLck();
+void vapiCallBackKeyboardClrFlag0Alt();
+void vapiCallBackKeyboardClrFlag0Ctrl();
+void vapiCallBackKeyboardClrFlag0LeftShift();
+void vapiCallBackKeyboardClrFlag0RightShift();
+
 void vapiCallBackKeyboardSetFlag1Insert();
 void vapiCallBackKeyboardSetFlag1CapLck();
 void vapiCallBackKeyboardSetFlag1NumLck();
@@ -61,11 +72,24 @@ void vapiCallBackKeyboardSetFlag1Pause();
 void vapiCallBackKeyboardSetFlag1SysRq();
 void vapiCallBackKeyboardSetFlag1LeftAlt();
 void vapiCallBackKeyboardSetFlag1LeftCtrl();
-t_bool vapiCallBackKeyboardGetShift();
-t_bool vapiCallBackKeyboardGetAlt();
-t_bool vapiCallBackKeyboardGetCtrl();
-t_bool vapiCallBackKeyboardRecvKeyPress(t_nubit16 ascii);
 
+void vapiCallBackKeyboardClrFlag1Insert();
+void vapiCallBackKeyboardClrFlag1CapLck();
+void vapiCallBackKeyboardClrFlag1NumLck();
+void vapiCallBackKeyboardClrFlag1ScrLck();
+void vapiCallBackKeyboardClrFlag1Pause();
+void vapiCallBackKeyboardClrFlag1SysRq();
+void vapiCallBackKeyboardClrFlag1LeftAlt();
+void vapiCallBackKeyboardClrFlag1LeftCtrl();
+
+t_bool vapiCallBackKeyboardGetFlag0NumLock();
+t_bool vapiCallBackKeyboardGetFlag0CapsLock();
+t_bool vapiCallBackKeyboardGetFlag0Shift();
+t_bool vapiCallBackKeyboardGetFlag0Alt();
+t_bool vapiCallBackKeyboardGetFlag0Ctrl();
+void vapiCallBackKeyboardRecvKeyPress(t_nubit16 code);
+
+t_bool vapiCallBackDisplayGetCursorVisible();
 t_bool vapiCallBackDisplayGetCursorPosChange();
 t_bool vapiCallBackDisplayGetBufferChange();
 t_nubit16 vapiCallBackDisplayGetRowSize();

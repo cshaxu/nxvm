@@ -80,6 +80,8 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 	//vapiDisplayPaint();
 }
 
+t_bool vapiCallBackDisplayGetCursorVisible()
+{return qdcgaGetCursorVisible;}
 t_bool vapiCallBackDisplayGetCursorPosChange()
 {
 	if (qdcga.curcompx != qdcgaVarCursorPosRow(qdcgaVarPageNum) ||
@@ -164,8 +166,8 @@ void qdcgaSetDisplayMode()
 }
 void qdcgaSetCursorShape()
 {
-	qdcgaVarCursorBottom = _cl & 0x0f;
-	qdcgaVarCursorTop    = _ch & 0x0f;
+	qdcgaVarCursorBottom = _cl;// & 0x0f;
+	qdcgaVarCursorTop    = _ch;// & 0x0f;
 }
 void qdcgaSetCursorPos()
 {

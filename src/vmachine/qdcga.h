@@ -77,7 +77,7 @@ typedef struct {
 #define qdcgaVarCursorTop \
 	(vramVarByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_TOP))
 #define qdcgaGetCursorVisible \
-	(!GetBit(qdcgaVarCursorTop & 0x08))
+	(!(qdcgaVarCursorTop & 0x08))
 
 extern t_cga qdcga;
 

@@ -20,10 +20,10 @@
 #define bufptrAdvance(ptr) ((ptr) = (QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + \
 		((ptr) - QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + 2) % bufGetSize))
 
-static t_bool bufPush(t_nubit16 ascii)
+static t_bool bufPush(t_nubit16 code)
 {
 	if (bufIsFull) return 1;
-	vramVarWord(0x0000, bufptrTail) = ascii;
+	vramVarWord(0x0000, bufptrTail) = code;
 	bufptrAdvance(bufptrTail);
 	return 0;
 }
@@ -36,54 +36,56 @@ static t_nubit16 bufPop()
 	return res;
 }
 
-t_bool vapiCallBackKeyboardGetShift()
-{
-	return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT) || \
-	       GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT);
-}
-t_bool vapiCallBackKeyboardGetAlt()
-{return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT);}
-t_bool vapiCallBackKeyboardGetCtrl()
-{return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL);}
-void vapiCallBackKeyboardClrFlag0()
-{qdkeybVarFlag0 = 0x00;}
-void vapiCallBackKeyboardClrFlag1()
-{qdkeybVarFlag1 = 0x00;}
-void vapiCallBackKeyboardSetFlag0Insert()
-{/*vapiPrint("0.ins\n");*/SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_INSERT);}
-void vapiCallBackKeyboardSetFlag0CapLck()
-{/*vapiPrint("0.cap\n");*/SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);}
-void vapiCallBackKeyboardSetFlag0NumLck()
-{/*vapiPrint("0.num\n");*/SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_NUMLCK);}
-void vapiCallBackKeyboardSetFlag0ScrLck()
-{/*vapiPrint("0.scr\n");*/SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_SCRLCK);}
-void vapiCallBackKeyboardSetFlag0Alt()
-{/*vapiPrint("0.alt\n");*/SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT);}
-void vapiCallBackKeyboardSetFlag0Ctrl()
-{/*vapiPrint("0.ctrl\n");*/(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL);}
-void vapiCallBackKeyboardSetFlag0LeftShift()
-{/*vapiPrint("0.lshift\n");*/SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT);}
-void vapiCallBackKeyboardSetFlag0RightShift()
-{/*vapiPrint("0.rshift\n");*/SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT);}
+t_bool vapiCallBackKeyboardGetFlag0CapsLock() {return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);}
+t_bool vapiCallBackKeyboardGetFlag0NumLock()  {return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_NUMLCK);}
+t_bool vapiCallBackKeyboardGetFlag0Shift()    {return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT) || GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT);}
+t_bool vapiCallBackKeyboardGetFlag0Alt()  {return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT);}
+t_bool vapiCallBackKeyboardGetFlag0Ctrl() {return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL);}
+void vapiCallBackKeyboardClrFlag0() {qdkeybVarFlag0 = 0x00;}
+void vapiCallBackKeyboardClrFlag1() {qdkeybVarFlag1 = 0x00;}
 
-void vapiCallBackKeyboardSetFlag1Insert()
-{/*vapiPrint("1.ins\n");*/SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_INSERT);}
-void vapiCallBackKeyboardSetFlag1CapLck()
-{/*vapiPrint("1.cap\n");*/SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_CAPLCK);}
-void vapiCallBackKeyboardSetFlag1NumLck()
-{/*vapiPrint("1.num\n");*/SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_NUMLCK);}
-void vapiCallBackKeyboardSetFlag1ScrLck()
-{/*vapiPrint("1.scr\n");*/SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SCRLCK);}
-void vapiCallBackKeyboardSetFlag1Pause()
-{/*vapiPrint("1.pau\n");*/SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_PAUSE);}
-void vapiCallBackKeyboardSetFlag1SysRq()
-{/*vapiPrint("1.sys\n");*/SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SYSRQ);}
-void vapiCallBackKeyboardSetFlag1LeftAlt()
-{/*vapiPrint("1.lalt\n");*/SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LALT);}
-void vapiCallBackKeyboardSetFlag1LeftCtrl()
-{/*vapiPrint("1.lctrl\n");*/SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LCTRL);}
-t_bool vapiCallBackKeyboardRecvKeyPress(t_nubit16 ascii)
-{/*vapiPrint("push ascii = %x\n",ascii);*/vpicSetIRQ(0x01);return bufPush(ascii);}
+void vapiCallBackKeyboardSetFlag0Insert()     {SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_INSERT);}
+void vapiCallBackKeyboardSetFlag0CapLck()     {SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);}
+void vapiCallBackKeyboardSetFlag0NumLck()     {SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_NUMLCK);}
+void vapiCallBackKeyboardSetFlag0ScrLck()     {SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_SCRLCK);}
+void vapiCallBackKeyboardSetFlag0Alt()        {SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT);}
+void vapiCallBackKeyboardSetFlag0Ctrl()       {SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL);}
+void vapiCallBackKeyboardSetFlag0LeftShift()  {SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT);}
+void vapiCallBackKeyboardSetFlag0RightShift() {SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT);}
+
+void vapiCallBackKeyboardClrFlag0Insert()     {ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_INSERT);}
+void vapiCallBackKeyboardClrFlag0CapLck()     {ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);}
+void vapiCallBackKeyboardClrFlag0NumLck()     {ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_NUMLCK);}
+void vapiCallBackKeyboardClrFlag0ScrLck()     {ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_SCRLCK);}
+void vapiCallBackKeyboardClrFlag0Alt()        {ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT);}
+void vapiCallBackKeyboardClrFlag0Ctrl()       {ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL);}
+void vapiCallBackKeyboardClrFlag0LeftShift()  {ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT);}
+void vapiCallBackKeyboardClrFlag0RightShift() {ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT);}
+
+void vapiCallBackKeyboardSetFlag1Insert()   {SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_INSERT);}
+void vapiCallBackKeyboardSetFlag1CapLck()   {SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_CAPLCK);}
+void vapiCallBackKeyboardSetFlag1NumLck()   {SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_NUMLCK);}
+void vapiCallBackKeyboardSetFlag1ScrLck()   {SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SCRLCK);}
+void vapiCallBackKeyboardSetFlag1Pause()    {SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_PAUSE);}
+void vapiCallBackKeyboardSetFlag1SysRq()    {SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SYSRQ);}
+void vapiCallBackKeyboardSetFlag1LeftAlt()  {SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LALT);}
+void vapiCallBackKeyboardSetFlag1LeftCtrl() {SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LCTRL);}
+
+void vapiCallBackKeyboardClrFlag1Insert()   {ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_INSERT);}
+void vapiCallBackKeyboardClrFlag1CapLck()   {ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_CAPLCK);}
+void vapiCallBackKeyboardClrFlag1NumLck()   {ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_NUMLCK);}
+void vapiCallBackKeyboardClrFlag1ScrLck()   {ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SCRLCK);}
+void vapiCallBackKeyboardClrFlag1Pause()    {ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_PAUSE);}
+void vapiCallBackKeyboardClrFlag1SysRq()    {ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SYSRQ);}
+void vapiCallBackKeyboardClrFlag1LeftAlt()  {ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LALT);}
+void vapiCallBackKeyboardClrFlag1LeftCtrl() {ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LCTRL);}
+
+void vapiCallBackKeyboardRecvKeyPress(t_nubit16 code)
+{
+//	while(bufPush(code)) vapiSleep(1);
+	bufPush(code);
+	vpicSetIRQ(0x01);
+}
 
 void IO_Read_0064()
 {
@@ -100,6 +102,8 @@ void IO_Read_0064()
 
 void qdkeybReadInput()
 {
+	/* TODO: this should have been working with INT 15 */
+	while (bufIsEmpty) vapiSleep(10);
 	if (bufIsEmpty) return;
 	_ax = bufPop();
 	vpicSetIRQ(0x01);
@@ -107,7 +111,6 @@ void qdkeybReadInput()
 void qdkeybGetStatus()
 {
 	if (bufIsEmpty) {
-		vapiSleep(0);
 		SetZF;
 	} else {
 		_ax = vramVarWord(0x0000, bufptrHead);

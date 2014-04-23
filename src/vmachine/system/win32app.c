@@ -45,9 +45,9 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 		break;
 	case WM_SIZING:
 		break;
-	case WM_CHAR:
+	/*case WM_CHAR:
 		w32akeybMakeChar(wParam, lParam);
-		break;
+		break;*/
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
 	case WM_KEYUP:
@@ -55,7 +55,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 		w32akeybMakeKey(message, wParam, lParam);
 		break;
 	case WM_SETFOCUS:
-		w32akeybMakeStatus(WM_KEYUP, wParam, lParam);
+		w32akeybMakeStatus();
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);

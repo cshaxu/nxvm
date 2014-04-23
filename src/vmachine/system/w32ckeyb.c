@@ -50,9 +50,9 @@ static VOID w32ckeybMakeKey(INPUT_RECORD inRec)
 		case VK_F9:
 		case VK_F11:
 		case VK_F12://F1~~F12
-			if(vapiCallBackKeyboardGetShift())      ascii += 0x1900;
-			else if(vapiCallBackKeyboardGetAlt())   ascii += 0x2d00;
-			else if (vapiCallBackKeyboardGetCtrl()) ascii += 0x2300;
+			if(vapiCallBackKeyboardGetFlag0Shift())      ascii += 0x1900;
+			else if(vapiCallBackKeyboardGetFlag0Alt())   ascii += 0x2d00;
+			else if (vapiCallBackKeyboardGetFlag0Ctrl()) ascii += 0x2300;
 			vapiCallBackKeyboardRecvKeyPress(ascii);
 			break;
 		/*case VK_ESCAPE://ESC
@@ -71,9 +71,9 @@ static VOID w32ckeybMakeKey(INPUT_RECORD inRec)
 			break;*/
 		default://剩下的字符可能是alt。。ctl与普通字符等，但是updateKBStatus会过滤掉普通字符
 			w32ckeybMakeStatus();
-			if (vapiCallBackKeyboardGetAlt())
+			if (vapiCallBackKeyboardGetFlag0Alt())
 				vapiCallBackKeyboardRecvKeyPress(ascii);
-			else if (vapiCallBackKeyboardGetCtrl())
+			else if (vapiCallBackKeyboardGetFlag0Ctrl())
 				vapiCallBackKeyboardRecvKeyPress(ascii + vkey - 0x0041);
 			else
 				vapiCallBackKeyboardRecvKeyPress(ascii |

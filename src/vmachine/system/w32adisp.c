@@ -165,7 +165,7 @@ void w32adispPaint()
 		}
 		BitBlt(hdcWnd, 0, 0, clientWidth, clientHeight, hdcBuf, 0, 0, SRCCOPY);
 	//}
-	DisplayFlashCursor();//闪烁光标
+	if (vapiCallBackDisplayGetCursorVisible()) DisplayFlashCursor();//闪烁光标
 	EndPaint(w32aHWnd, &ps);
 }
 void w32adispFinal() {}
