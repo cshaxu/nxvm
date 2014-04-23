@@ -28,12 +28,12 @@ typedef struct {
 	t_nubit8      status;
 	t_nubit4      mask;
 	t_nubit4      request;
-	t_nubit16     tempaddr;
-	t_nubit16     tempwc;
+	t_nubit8      temp;
 	t_bool        flagmsb;                          /* flip-flop for msb/lsb */
 	t_nubit8      drx;                        /* dreq id of highest priority */
-	t_nubit8      temp;
 	t_bool        eop;                                     /* end of process */
+	t_nubit8      isr;
+              /* id of request in service in D5-D4, flag of in service in D0 */
 } t_dma;
 
 typedef union {
@@ -118,10 +118,17 @@ void IO_Write_00DA();
 void IO_Write_00DC();
 void IO_Write_00DE();
 
+#ifdef VDMA_DEBUG
+void IO_Read_FF00();                                /* print all info of dma */
+void IO_Write_FF00();                         /* vdmaReset - Clear Registers */
+void IO_Write_FF01();                           /* vdmaSetDRQ - Hardware DREQ*/
+void IO_Write_FF02();                    /* vdmaRefresh - Detect and Execute */
+#endif
+
 void vdmaSetDRQ(t_nubit8 dreqid);
 
 void vdmaReset();
-void vdmaRefresh(); /* TODO: act as CLK input */
+void vdmaRefresh();
 void vdmaInit();
 void vdmaFinal();
 

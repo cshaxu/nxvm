@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x62]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x63]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -76,6 +76,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 4:
  *     Phase 5:
  *     Phase 6:
+ *     Note:    simply tested
  * Component 2: ram
  *     Files:   vram.c, vram.h
  *     Phase 1:
@@ -84,6 +85,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 4:
  *     Phase 5:
  *     Phase 6:
+ *     Note:    simply tested
  * Component 3: pic (8259)
  *     Files:   vpic.c, vpic.h
  *     Phase 1: 02/06/2012 - 02/12/2012
@@ -92,7 +94,8 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 4: 03/20/2013 - 03/21/2013
  *     Phase 5: 03/21/2013 - 03/21/2013
  *     Phase 6:
- *     Note:    OCW2, ICW4(AEOI) not tested
+ *     Note:    fully tested, except for
+ *              OCW2, ICW4(AEOI) not tested
  * Component 4: pit (8254)
  *     Files:   vpit.c, vpit.h
  *     Phase 1: 03/22/2013 - 03/23/2013
@@ -101,19 +104,18 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 4: 03/25/2013 - 03/25/2013
  *     Phase 5:
  *     Phase 6:
- *     Note:    not tested
- *
- * Module: VMachine - Storage
- * Component 1: dma (8237)
+ *     Note:    simply tested
+ * Component 5: dma (8237)
  *     Files:   vdma.c, vdma.h
- *     Phase 1:
+ *     Phase 1: 03/25/2013 - 03/28/2013
  *     Phase 2: 03/03/2012 - 04/01/2012
- *     Phase 3:
- *     Phase 4:
+ *     Phase 3: 03/25/2013 - 03/28/2013
+ *     Phase 4: 03/25/2013 - 03/28/2013
  *     Phase 5:
  *     Phase 6:
- *     Note:    DMA is only used to store memory address and word count
- * Componenet 2: fdc (8272)
+ *     Note:    m2m not implemented
+ *              simply tested
+ * Componenet 6: fdc (8272)
  *     Phase 1:
  *     Phase 2: 03/07/2012 - 03/18/2012
  *     Phase 3:
@@ -121,7 +123,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 5:
  *     Phase 6:
  *     Note:    Transfers data between flp image and memory
- * Componenet 3: fdd
+ * Componenet 7: fdd
  *     Phase 1:
  *     Phase 2: 03/08/2012 - 03/18/2012
  *     Phase 3:

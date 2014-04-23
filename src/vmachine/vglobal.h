@@ -40,6 +40,6 @@ typedef t_nubitcc	t_vaddrcc;		// addr: variable, c compiler
 typedef t_nubitcc	t_faddrcc;		// addr: function, c compiler
 
 #define FUNEXEC(faddr) (*(void (*)(void))(faddr))()
-#define SHL4(n) (((t_vaddrcc)n)<<4)
+#define SHL4(n) (((t_vaddrcc)(n))<<4)
 
 #endif

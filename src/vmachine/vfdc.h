@@ -27,6 +27,10 @@ typedef struct {
 
 extern t_fdc vfdc;
 
+void vfdcDMARead();
+void vfdcDMAWrite();
+
+void vfdcRefresh();
 void vfdcInit();
 void vfdcFinal();
 
