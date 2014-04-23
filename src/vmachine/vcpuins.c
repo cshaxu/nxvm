@@ -3134,15 +3134,16 @@ void vcpuinsExecInt()
 	vcpu.nmi = 0;
 #ifdef NXVM_DEBUG_VCPUINS
 	STI();
+	vcpu.ip--;
 #endif
 	if(GetFlag(VCPU_FLAG_IF) && vpicIsINTR()) {	
 		intr = vpicGetINTR();
-//#ifndef NXVM_DEBUG_VCPUINS
-		//INT(intr);
-//#endif
-		//if(intr == 0x08) vpic1.isr ^= 0x01;
+#ifndef NXVM_DEBUG_VCPUINS
+		INT(intr);
+#else
 		vapiPrint("0x%x\n",intr);
-		//vapiPause();
+		if(intr == 0x08) vpic1.isr ^= 0x01;
+#endif
 	}
 	if(GetFlag(VCPU_FLAG_TF)) INT(0x01);
 }

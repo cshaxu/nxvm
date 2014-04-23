@@ -14,11 +14,14 @@ typedef struct {
 	t_nubit8 dr;		// Data Register
 	t_nubit8 dir;		// Digital Input Register
 	t_nubit8 ccr;		// Configuration Control Register
-
+// input
 	t_nubit4 hut;	// Head Unload Time
 	t_nubit4 hlt;	// Head Load Time
 	t_nubit8 srt;	// Step Rate Time
-	t_bool nondma;		// 0 = Non-DMA Mode; 1 = DMA Mode
+	t_bool nd;		// 0 = Non-DMA Mode; 1 = DMA Mode
+	t_bool intr;	// 0 = No Intr; 1 = Has Intr
+// output
+	t_nubit8 st0,st1,st2,st3;
 } t_fdc;
 
 extern t_fdc vfdc;

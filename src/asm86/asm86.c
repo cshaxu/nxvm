@@ -98,10 +98,9 @@ static int chartohexdigit(char c)
 	else if(isAXImm16) {			aSINGLE(0x05+op)					aSetWord(m2.imm)	}\
 	else if(isRM8Imm8) {			aSINGLE(0x80)	aSetModRM(m1,reg)	aSetByte(m2.imm)	}\
 	else if(isRM16Imm)\
-	{	if(sign) {					aSINGLE(0x81)	aSetModRM(m1,reg)	aSetWord(m2.imm)	}\
-		else {\
-			if(m2.imm > 0x007f) {	aSINGLE(0x81)	aSetModRM(m1,reg)	aSetWord(m2.imm)	}\
-			else {					aSINGLE(0x83)	aSetModRM(m1,reg)	aSetByte(m2.imm)	}}}\
+	{	if(sign || m2.imm < 0xff80) {\
+									aSINGLE(0x81)	aSetModRM(m1,reg)	aSetWord(m2.imm)	}\
+		else {						aSINGLE(0x83)	aSetModRM(m1,reg)	aSetByte(m2.imm)	}}\
 	else if(isRM8R8) {				aSINGLE(0x00+op)	aSetModRM(m1,m2.rm)					}\
 	else if(isRM16R16) {			aSINGLE(0x01+op)	aSetModRM(m1,m2.rm)					}\
 	else if(isR8RM8) {				aSINGLE(0x02+op)	aSetModRM(m2,m1.rm)					}\

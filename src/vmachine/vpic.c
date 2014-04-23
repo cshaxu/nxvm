@@ -245,26 +245,6 @@ t_nubit8 vpicGetINTR()
 		return irid1;
 	}
 }
-/*void vpicRespondINTR()
-{
-	t_nubit8 i = 0;
-	while(!((vpic1.isr>>i)&0x01) && (i < 0x08)) i++;
-	if(i == 2) {
-		i = 0;
-		while(!((vpic2.isr>>i)&0x01) && (i < 0x08)) i++;
-		vpic2.isr &= ~(1<<i);
-		vpic2.irr &= ~(1<<i);
-		i = 0;
-		while(!((vpic2.isr>>i)&0x01) && (i < 0x08)) i++;
-		if(i == 0x08) {
-			vpic1.isr &= ~0x04;
-			vpic1.irr &= ~0x04;
-		}
-	} else {
-		vpic1.isr &= ~(1<<i);
-		vpic1.irr &= ~(1<<i);
-	}
-}*/
 void vpicSetIRQ(t_nubit8 irqid)
 {
 	switch(irqid) {

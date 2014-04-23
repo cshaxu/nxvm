@@ -4,7 +4,7 @@
 	Neko Confidential
 	Copyright (c) 2012 Neko. All rights reserved.
 	Project Period:	01/25/2012 - 02/05/2012
-	Current Build:	0x002b
+	Current Build:	0x002d (03/15/2012)
 */
 
 #ifndef NKASM86_ASM86_H
@@ -17,13 +17,11 @@ typedef struct {
 	int len;	// length of target value
 } Operand;
 
+// returns length of instruction
 int assemble(const char *asmStmt,unsigned short locCS,
-	void *locMemory,
-	unsigned short locSegment,
-	unsigned short locOffset);	// returns length of instruct
+	const void *locMemory,const unsigned short locSegment,const unsigned short locOffset);	
+// returns length of instruction
 int disassemble(char *dasmStmt,Operand *resOperand,
-	const void *locMemory,
-	const unsigned short locSegment,
-	const unsigned short locOffset);	// returns length of instruct
+	const void *locMemory,const unsigned short locSegment,const unsigned short locOffset);	
 
 #endif

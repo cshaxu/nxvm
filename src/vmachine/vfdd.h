@@ -7,14 +7,18 @@
 
 #include "vglobal.h"
 
-#define BYTES_PER_SECTOR	512
-#define SECTORS_PER_TRACK	18
-#define TRACKS_PER_HEAD		80
-#define HEADS_PER_CYLENDER	2
+#define VFDD_BYTES_PER_SECTOR	0x0200
+#define VFDD_SECTORS_PER_TRACK	0x0012
+#define VFDD_TRACKS_PER_HEAD	0x0050
+#define VFDD_HEADS_PER_DISK		0x0002
 
-extern t_string vfddimage;
-extern t_vaddrcc vfddbase;
-extern t_vaddrcc vfddptr;
+typedef struct {
+	t_string img;
+	t_vaddrcc ptrbase;
+	t_nubit8 pcn[2];	// Present Track Number
+} t_fdd;
+
+extern t_fdd vfdd;
 
 void FDDInit();
 void FDDTerm();

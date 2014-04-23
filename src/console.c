@@ -86,8 +86,8 @@ void NSHelp()
 void NSFloppy()
 {
 	fprintf(stdout,"Floppy Image File: ");
-	fgets(vfddimage,VGLOBAL_SIZE_STRING,stdin);
-	parse(vfddimage);
+	fgets(vfdd.img,VGLOBAL_SIZE_STRING,stdin);
+	parse(vfdd.img);
 }
 void NSMemory()
 {
