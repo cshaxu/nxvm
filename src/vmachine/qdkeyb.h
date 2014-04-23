@@ -5,6 +5,10 @@
 
 void IO_Read_0064();
 
+void qdkeybReadInput();
+void qdkeybGetStatus();
+void qdkeybGetShift();
+
 void qdkeybInit();
 void qdkeybFinal();
 

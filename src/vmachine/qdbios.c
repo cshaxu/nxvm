@@ -157,7 +157,23 @@ void INT_15()
 }
 // keyb
 void INT_16()
-{}
+{
+	switch (vcpu.ah) {
+	case 0x00:
+	case 0x10:
+		qdkeybReadInput();
+		break;
+	case 0x01:
+	case 0x11:
+		qdkeybGetStatus();
+		break;
+	case 0x02:
+		qdkeybGetShift();
+		break;
+	default:
+		break;
+	}
+}
 /* lpt ports */
 void INT_17()
 {/* do nothing */}
