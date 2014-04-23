@@ -17,6 +17,7 @@ t_nubit32 vapiPrint(const t_string format, ...)
 	nWrittenBytes = vfprintf(stdout, format,arg_ptr);
 	//nWrittenBytes = vsprintf(stringBuffer,format,arg_ptr);
 	va_end(arg_ptr);
+	fflush(stdout);
 	return nWrittenBytes;
 }
 void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins)

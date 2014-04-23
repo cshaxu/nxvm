@@ -14,15 +14,29 @@ void linuxSleep(int milisec)
 	usleep((milisec) * 1000);
 }
 
+#define COLOR_GRAY         0x08
+#define COLOR_LIGHTBLUE    0x09
+#define COLOR_LIGHTGREEN   0x0a
+#define COLOR_LIGHTCYAN    0x0b
+#define COLOR_LIGHTRED     0x0c
+#define COLOR_LIGHTMAGENTA 0x0d
+#define COLOR_BROWN        0x0e
+#define COLOR_LIGHTGRAY    0x0f
+
 void linuxDisplayInit()
 {
+	int i,j;
 	initscr();
 	raw();
 	nodelay(stdscr, TRUE);
 	keypad(stdscr, TRUE);
 	noecho();
-/*	start_color();
-	init_pair(1, COLOR_WHITE, COLOR_BLACK);*/
+	start_color();
+	for (i = 0;i < 8;++i) {
+		for(j = 0;j < 8;++j) {
+			init_pair(i * 8 + j, i, j);
+		}
+	}
 }
 void linuxDisplayFinal()
 {
@@ -35,10 +49,43 @@ void linuxDisplaySetScreen()
 {
 	/* there's no way to set screen */
 }
+
+static unsigned char CharProp2Color(unsigned char value)
+{
+	value &= 0x07;
+	switch (value) {
+	case 0x00: return COLOR_BLACK;       break;
+	case 0x01: return COLOR_BLUE;        break;
+	case 0x02: return COLOR_GREEN;       break;
+	case 0x03: return COLOR_CYAN;        break;
+	case 0x04: return COLOR_RED;         break;
+	case 0x05: return COLOR_MAGENTA;     break;
+	case 0x06: return COLOR_YELLOW;      break;
+	case 0x07: return COLOR_WHITE;       break;
+/*	case 0x08: return COLOR_GRAY;        break;
+	case 0x09: return COLOR_LIGHTBLUE;   break;
+	case 0x0a: return COLOR_LIGHTGREEN;  break;
+	case 0x0b: return COLOR_LIGHTCYAN;   break;
+	case 0x0c: return COLOR_LIGHTRED;    break;
+	case 0x0d: return COLOR_LIGHTMAGENTA;break;
+	case 0x0e: return COLOR_YELLOW;      break;
+	case 0x0f: return COLOR_WHITE;       break;*/
+	default:   return COLOR_BLACK;       break;
+	}
+}
+static unsigned char GetColorFromProp(unsigned char prop)
+{
+	unsigned char fore,back;
+	fore = prop & 0x0f;
+	back = ((prop & 0x70) >> 4);
+	fore = CharProp2Color(fore);
+	back = CharProp2Color(back);
+	return (fore * 8 + back);
+}
 void linuxDisplayPaint(unsigned char force)
 {
-	unsigned char ref;
-	int i, j, c, sizeRow, sizeCol;
+	unsigned char ref,p,c;
+	int i, j, sizeRow, sizeCol, curX, curY;
 	sizeRow = GetMin(COLS, vapiCallBackDisplayGetRowSize());
 	sizeCol = GetMin(LINES, vapiCallBackDisplayGetColSize());
 	ref = 0x00;
@@ -47,17 +94,22 @@ void linuxDisplayPaint(unsigned char force)
 		for(i = 0;i < sizeCol;++i) {
 			for(j = 0;j < sizeRow;++j) {
 				c = vapiCallBackDisplayGetCurrentChar(i, j);
+				p = vapiCallBackDisplayGetCurrentCharProp(i, j);
 				if (!c) c = ' ';
 				move(i, j);
-				/*c |= COLOR_PAIR(1);*/
-				addch(c);
+				addch(c | COLOR_PAIR(GetColorFromProp(p)));
 			}
 		}
 		ref = 0x01;
 	}
 	if (force || vapiCallBackDisplayGetCursorChange()) {
-		move(vapiCallBackDisplayGetCurrentCursorPosX(),
-			vapiCallBackDisplayGetCurrentCursorPosY());
+		curX = vapiCallBackDisplayGetCurrentCursorPosX();
+		curY = vapiCallBackDisplayGetCurrentCursorPosY();
+		if (curX < sizeCol && curY < sizeRow)
+			move(vapiCallBackDisplayGetCurrentCursorPosX(),
+				vapiCallBackDisplayGetCurrentCursorPosY());
+		else
+			move(0, 0);
 		ref = 0x01;
 	}
 	if (ref) refresh();

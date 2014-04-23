@@ -37,10 +37,10 @@ int main(int argc, char **argv)
 	while(1) {
 		ReadConsoleInput(hIn,&inRec,1,(LPDWORD)(&res));
 		SetConsoleCursorPosition(hOut,pos);
-		if(inRec.Event.KeyEvent.dwControlKeyState != state) {
+		/*if(inRec.Event.KeyEvent.dwControlKeyState != state) {
 			state = inRec.Event.KeyEvent.dwControlKeyState;
 			ShowControlStatus(state);
-		}
+		}*/
 		if(inRec.EventType == MOUSE_EVENT) {
 			if(inRec.Event.MouseEvent.dwEventFlags == DOUBLE_CLICK) break;
 			pos = inRec.Event.MouseEvent.dwMousePosition;

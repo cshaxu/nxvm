@@ -94,7 +94,7 @@ static COLORREF CharProp2Color(UCHAR prop, BOOL font)
 	UCHAR byte;
 	if (font) byte = (prop & 0x0f);                             /* font color*/
 	else      byte = ((prop & 0x70) >> 4);               /* background color */
-	switch(byte) {
+	switch (byte) {
 	case 0x00: return COLOR_BLACK;       break;
 	case 0x01: return COLOR_BLUE;        break;
 	case 0x02: return COLOR_GREEN;       break;
@@ -106,7 +106,7 @@ static COLORREF CharProp2Color(UCHAR prop, BOOL font)
 	case 0x08: return COLOR_GRAY;        break;
 	case 0x09: return COLOR_LIGHTBLUE;   break;
 	case 0x0a: return COLOR_LIGHTGREEN;  break;
-	case 0x0b: return COLOR_LIGHTGRAY;   break;
+	case 0x0b: return COLOR_LIGHTCYAN;   break;
 	case 0x0c: return COLOR_LIGHTRED;    break;
 	case 0x0d: return COLOR_LIGHTMAGENTA;break;
 	case 0x0e: return COLOR_YELLOW;      break;

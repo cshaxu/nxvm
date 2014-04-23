@@ -1038,7 +1038,11 @@ void qdbiosInit()
 		(t_nubit32)(((hour * 3600 + min * 60 + sec) * 1000) / QDBIOS_RTC_TICK);
 	vramVarByte(0x0000, QDBIOS_ADDR_RTC_ROLLOVER) = 0x00;
 /* load boot sector */
+#if VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32
 	vapiFloppyInsert("d:/msdos.img");
+#else
+	vapiFloppyInsert("msdos.img");
+#endif
 	memcpy((void *)vramGetAddr(0x0000,0x7c00), (void *)vfdd.base, 0x200);
 	vramVarByte(0xf000, 0xfff0) = 0xea;
 	vramVarWord(0xf000, 0xfff1) = 0x7c00;
