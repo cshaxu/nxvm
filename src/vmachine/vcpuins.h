@@ -36,6 +36,20 @@ typedef enum {
 } t_cpuins_prefix_sreg;
 typedef t_bool t_cpuins_prefix;
 typedef struct {
+	t_cpu_sreg *rsreg;
+	t_nubit32 offset;
+} t_cpuins_logical;
+typedef struct {
+	t_bool flag2;
+	t_nubit32 ph1, ph2;
+	t_nubit32 pl1, pl2;
+} t_cpuins_physical;
+typedef struct {
+	t_nubit16 sel;
+	t_nubit64 desc;
+	t_cpuins_logical logical;
+} t_cpuins_selector;
+typedef struct {
 	t_cpu_sreg oldcs, oldss;
 	t_nubit32 oldeip, oldesp;
 	t_bool    flaginsloop;
@@ -48,12 +62,15 @@ typedef struct {
 	t_cpu_sreg *roverds, *roverss, *rmovsreg;
 	t_nubit32 except, excode;
 	t_faddrcc table[0x100], table_0f[0x100];
-	t_nubit64 cdesc, cimm, crm, cr;
-	t_vaddrcc rdesc, rimm, rrm, rr;
-	t_nubit32 pdesc, pimm, prm;
-	t_nubit32 ldesc, limm, lrm;
+	t_cpuins_selector descsel;
+	t_cpuins_logical rmlog;
+	t_nubit64 cimm, crm, cr;
+	t_vaddrcc rimm, rrm, rr;
+	t_nubit32 pimm, prm;
+	t_nubit32 limm, lrm;
 	t_nubit32 eimm, erm;
 	t_bool    flagmem; /* if rm is in memory */
+
 	t_bool    flagmss; /* if rm is in stack segment */
 	t_bool    flagmaskint; /* if int is disabled once */
 	t_bool    flagrespondint; /* if intr is responded in one Refresh */

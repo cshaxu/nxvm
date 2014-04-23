@@ -16,7 +16,9 @@ typedef enum {
 	SREG_DATA,
 	SREG_STACK,
 	SREG_LDTR,
-	SREG_TR
+	SREG_TR,
+	SREG_GDTR,
+	SREG_IDTR
 } t_cpu_sreg_type;
 typedef struct {
 	t_nubit16 selector;
@@ -105,8 +107,7 @@ typedef struct {
 		t_nubit16 flags;
 		t_nubit32 eflags;
 	};
-	t_cpu_sreg cs, ss, ds, es, fs, gs, ldtr, tr;
-	t_nubit48 gdtr, idtr;
+	t_cpu_sreg cs, ss, ds, es, fs, gs, ldtr, tr, gdtr, idtr;
 	t_nubit32 ldtrcr, trcr;
 	t_nubit32 cr0, cr1, cr2, cr3;
 	t_nubit32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
@@ -432,28 +433,6 @@ extern t_cpu vcpu;
 #define _GetDescCall_Count(descriptor)    (((descriptor) & VCPU_DESC_CALL_COUNT) >> 32)
 
 /*
-#define VCPU_TSSDESC_TYPE_B 0x0000020000000000
-#define _GetTssDesc_TYPE_B(descriptor) (GetBit((descriptor), VCPU_TSSDESC_TYPE_B))
-#define _SetTssDesc_TYPE_B(descriptor) (SetBit((descriptor), VCPU_TSSDESC_TYPE_B))
-#define _ClrTssDesc_TYPE_B(descriptor) (ClrBit((descriptor), VCPU_TSSDESC_TYPE_B))
-#define _GetTssDesc_TYPE    _GetDesc_TYPE
-#define _GetTssDesc_TYPE_32 _GetDesc_Type_32
-#define _GetTssDesc_BASE    _GetDescSeg_Base
-#define _GetTssDesc_LIMIT   _GetDescSeg_Limit
-#define _GetTssDesc_S       _GetDesc_S
-#define _GetTssDesc_DPL     _GetDesc_DPL
-#define _GetTssDesc_P       _GetDesc_P
-#define _GetTssDesc_G       _GetDescSeg_G
-
-#define _GetLdtDesc_TYPE    _GetDesc_Type
-#define _GetLdtDesc_BASE    _GetDescSeg_Base
-#define _GetLdtDesc_LIMIT   _GetDescSeg_Limit
-#define _GetLdtDesc_S       _GetDesc_S
-#define _GetLdtDesc_DPL     _GetDesc_DPL
-#define _GetLdtDesc_P       _GetDesc_P
-#define _GetLdtDesc_G       _GetDescSeg_G
-*/
-
 #define VCPU_GDTR_LIMIT 0x00000000ffff
 #define VCPU_GDTR_BASE  0xffffffff0000
 #define _GetGDTR_Limit ((vcpu.gdtr & VCPU_GDTR_LIMIT) >>  0)
@@ -469,7 +448,7 @@ extern t_cpu vcpu;
 #define _LoadIDTR32(base,limit)  (vcpu.idtr = ((t_nubit48)GetMax32(base) << 16) | (t_nubit16)(limit))
 
 #define _GetLDTR_Limit (vcpu.ldtr.limit - vcpu.ldtr.base)
-#define _GetLDTR_Base  (vcpu.ldtr.base)
+#define _GetLDTR_Base  (vcpu.ldtr.base)*/
 
 #define VCPU_CR0_PE     0x00000001
 #define VCPU_CR0_MP     0x00000002
@@ -491,22 +470,7 @@ extern t_cpu vcpu;
 #define VCPU_CR3_BASE   0xfffff000
 #define _GetCR3_Base    (vcpu.cr3 & VCPU_CR3_BASE)
 
-#define _LoadTR
-#define _LoadCR0
-#define _LoadCR1
-#define _LoadCR2
-#define _LoadCR3
-#define _LoadDR0
-#define _LoadDR1
-#define _LoadDR2
-#define _LoadDR3
-#define _LoadDR4
-#define _LoadDR5
-#define _LoadDR6
-#define _LoadDR7
-#define _LoadTR6
-#define _LoadTR7
-
+#define _IsPaging (_GetCR0_PE && _GetCR0_PG)
 #define _IsProtected (_GetCR0_PE && !_GetEFLAGS_VM)
 #define _GetCPL  (_GetCR0_PE ? (_GetEFLAGS_VM ? 3 : vcpu.cs.dpl) : 0)
 

@@ -78,8 +78,10 @@ void vcpuReset()
 	vcpu.tr.sregtype = SREG_TR;
 	vcpu.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_16_AVL;
 
-	_LoadIDTR16(0x000000, 0x03ff);
-	_LoadGDTR32(0x00000000, 0xffff);
+	vcpu.idtr.base = 0x00000000;
+	vcpu.idtr.limit = 0x03ff;
+	vcpu.gdtr.base = 0x00000000;
+	vcpu.gdtr.limit = 0xffff;
 
 	vcpuinsReset();
 #if VGLOBAL_ECPU_MODE != TEST_VCPU

@@ -966,9 +966,9 @@ static void xsreg()
 	xsregsys(&vcpu.tr, "TR  ");
 	xsregsys(&vcpu.ldtr, "LDTR");
 	vapiPrint("GDTR Base=%08X, Limit=%04X\n",
-		GetMax32(_GetGDTR_Base), GetMax16(_GetGDTR_Limit));
+		_gdtr.base, _gdtr.limit);
 	vapiPrint("IDTR Base=%08X, Limit=%04X\n",
-		GetMax32(_GetIDTR_Base), GetMax16(_GetIDTR_Limit));
+		_idtr.base, _idtr.limit);
 }
 static void xcreg()
 {

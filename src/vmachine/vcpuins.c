@@ -21,7 +21,7 @@
  * no paging
  */
 
-#define i386(n) if (0)
+#define i386(n) if (1)
 #define VCPUINS_TRACE 1
 
 #define _a_ _Arith_
@@ -35,7 +35,6 @@
 #define done static void
 #define todo static void /* need to implement */
 #define tots static void /* need to test */
-
 
 #if VCPUINS_TRACE == 1
 
@@ -179,17 +178,163 @@ static t_bool IsPrefix(t_nubit8 opcode)
 
 /* memory management unit */
 /* kernel memory accessing */
-/* get physical from linear by paging */
+/* read content from reference */
+static t_nubit64 _kma_read_ref(t_vaddrcc ref, t_nubit8 byte)
+{
+	t_nubit64 result = 0x0000000000000000;
+	_cb("_kma_read_ref");
+	switch (byte) {
+	case 0: break;
+	case 1: result = d_nubit8(ref);break;
+	case 2: result = d_nubit16(ref);break;
+	case 3: result = d_nubit16(ref) | ((t_nubit32)d_nubit8(ref + 2) << 16);break;
+	case 4: result = d_nubit32(ref);break;
+	case 5: result = d_nubit32(ref) | ((t_nubit64)d_nubit8(ref + 4) << 32);break;
+	case 6: result = d_nubit32(ref) | ((t_nubit64)d_nubit16(ref + 4) << 32);break;
+	case 7: result = d_nubit32(ref) | ((t_nubit64)d_nubit16(ref + 4) << 32) | ((t_nubit64)d_nubit8(ref + 6) << 48);break;
+	case 8: result = d_nubit64(ref);break;
+	default: _bb("byte");
+		_chr(_SetExcept_CE(byte));
+		_be;break;
+	}
+	_ce;
+	return result;
+}
+/* write content to reference */
+static void _kma_write_ref(t_vaddrcc ref, t_nubit64 data, t_nubit8 byte)
+{
+	_cb("_kma_write_ref");
+	switch (byte) {
+	case 0: break;
+	case 1: d_nubit8(ref) = GetMax8(data);break;
+	case 2: d_nubit16(ref) = GetMax16(data);break;
+	case 3:
+		d_nubit16(ref) = GetMax16(data);
+		d_nubit16(ref + 2) = GetMax8(data >> 16);
+		break;
+	case 4: d_nubit32(ref) = GetMax32(data);break;
+	case 5:
+		d_nubit32(ref) = GetMax32(data);
+		d_nubit8(ref + 4) = GetMax8(data >> 32);
+		break;
+	case 6:
+		d_nubit32(ref) = GetMax32(data);
+		d_nubit16(ref + 4) = GetMax16(data >> 32);
+		break;
+	case 7:
+		d_nubit32(ref) = GetMax32(data);
+		d_nubit16(ref + 4) = GetMax16(data >> 32);
+		d_nubit8(ref + 6) = GetMax8(data >> 48);break;
+		break;
+	case 8: d_nubit64(ref) = GetMax64(data);break;
+	default: _bb("byte");
+		_chk(_SetExcept_CE(byte));
+		_be;break;
+	}
+	_ce;
+}
+/* read content from physical */
+static t_nubit64 _kma_read_physical(t_cpuins_physical *rphy)
+{
+	t_nubit64 result = 0x0000000000000000;
+	_cb("_kma_read_physical");
+	_chr(result = _kma_read_ref(vramAddr(rphy->ph1), rphy->pl1));
+	if (_IsPaging && rphy->flag2) {
+		_bb("Paging(1),flag2(1)");
+		_chr(result |= (_kma_read_ref(vramAddr(rphy->ph2), rphy->pl2) << (rphy->pl1 * 8)));
+		_be;
+	}
+	_ce;
+	return result;
+}
+/* write content to physical */
+static void _kma_write_physical(t_cpuins_physical *rphy, t_nubit64 data)
+{
+	_cb("_kma_write_physical");
+	_chk(_kma_write_ref(vramAddr(rphy->ph1), data, rphy->pl1));
+	if (_IsPaging && rphy->flag2) {
+		_bb("Paging(1),flag2(1)");
+		_chk(_kma_write_ref(vramAddr(rphy->ph2), (data >> (rphy->pl1 * 8)), rphy->pl2));
+		_be;
+	}
+	_ce;
+}
+/* translate linear to physical - paging mechanism*/
+static void _kma_physical_linear(t_cpuins_physical *rphy, t_nubit32 linear, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
+{
+	_cb("_kma_physical_linear");
+	rphy->flag2 = 0;
+	rphy->ph1 = linear;
+	rphy->pl1 = byte;
+	rphy->ph2 = 0;
+	rphy->pl2 = 0;
+	_ce;
+}
+/* translate logical to linear - segmentation mechanism */
+static t_nubit32 _kma_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
+{
+	t_nubit32 linear = 0x00000000;
+	t_nubit64 limit = ((t_nubit64)rsreg->base + (t_nubit64)rsreg->limit);
+	_cb("_kma_linear_logical");
+	_chr(linear = (rsreg->base + offset));
+	if (linear > limit) {
+		_comment("log->lin: bas=%x lim=%x sel=%x off=%x lin=%x\n",
+			rsreg->base, rsreg->limit, rsreg->selector, offset, linear);
+		_chr(_SetExcept_GP(0));
+	}
+	if (linear >= vram.size) {
+		_comment("log->lin: beyond physical boundary\n");
+		_comment("base: %x; limit: %x; sel: %x; off: %x; linear: %x\n",
+			rsreg->base, rsreg->limit, rsreg->selector, offset, linear);
+		_chr(_SetExcept_CE(0));
+	}
+	_ce;
+	return linear;
+}
+/* read content from logical */
+static t_nubit64 _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_nubit8 vpl, t_bool force)
+{
+	t_nubit32 linear;
+	t_cpuins_physical physical;
+	t_nubit64 result;
+	_cb("_kma_read_logical");
+	_chr(linear = _kma_linear_logical(rsreg, offset, byte, 0, vpl, force));
+	_chr(_kma_physical_linear(&physical, linear, byte, 0, vpl, force));
+	_chr(result = _kma_read_physical(&physical));
+	_ce;
+	return result;
+}
+/* write content to logical */
+static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 data, t_nubit8 byte, t_nubit8 vpl, t_bool force)
+{
+	t_nubit32 linear;
+	t_cpuins_physical physical;
+	_cb("_kma_write_logical");
+	_chk(linear = _kma_linear_logical(rsreg, offset, byte, 1, vpl, force));
+	_chk(_kma_physical_linear(&physical, linear, byte, 1, vpl, force));
+	_chk(_kma_write_physical(&physical, data));
+	_ce;
+}
+/* test logical accessing */
+static void _kma_test_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
+{
+	t_nubit32 linear;
+	t_cpuins_physical physical;
+	_cb("_kma_test_logical");
+	_chk(linear = _kma_linear_logical(rsreg, offset, byte, write, vpl, force));
+	_chk(_kma_physical_linear(&physical, linear, byte, write, vpl, force));
+	_ce;
+}
+
+/* to be removed */
 static t_nubit32 _kma_addr_physical_linear(t_nubit32 linear, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
 {
-	/* TODO: paging mechanism not implemented */
 	t_nubit32 physical = 0x00000000;
 	_cb("_kma_addr_physical_linear");
 	_chr(physical = linear);
 	_ce;
 	return physical;
 }
-/* get linear from logical by segmentation */
 static t_nubit32 _kma_addr_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
 {
 	/* TODO: segmentation mechanism not implemented */
@@ -211,7 +356,6 @@ static t_nubit32 _kma_addr_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t
 	_ce;
 	return linear;
 }
-/* get physical from logical */
 static t_nubit32 _kma_addr_physical_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
 {
 	t_nubit32 linear = 0x00000000;
@@ -222,7 +366,6 @@ static t_nubit32 _kma_addr_physical_logical(t_cpu_sreg *rsreg, t_nubit32 offset,
 	_ce;
 	return physical;
 }
-/* reference from physical */
 static t_vaddrcc _kma_ref_physical(t_nubit32 physical)
 {
 	t_vaddrcc ref = 0;
@@ -231,7 +374,6 @@ static t_vaddrcc _kma_ref_physical(t_nubit32 physical)
 	_ce;
 	return ref;
 }
-/* reference from linear */
 static t_vaddrcc _kma_ref_linear(t_nubit32 linear, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
 {
 	t_vaddrcc ref = 0;
@@ -242,7 +384,6 @@ static t_vaddrcc _kma_ref_linear(t_nubit32 linear, t_nubit8 byte, t_bool write, 
 	_ce;
 	return ref;
 }
-/* reference from logical */
 static t_vaddrcc _kma_ref_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
 {
 	t_vaddrcc ref = 0;
@@ -253,103 +394,49 @@ static t_vaddrcc _kma_ref_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 
 	_ce;
 	return ref;
 }
-/* read content from reference */
-static t_nubit64 _kma_read_ref(t_vaddrcc ref, t_nubit8 byte)
+static t_nubit64 _m_read_ref(t_vaddrcc ref, t_nubit8 byte)
 {
 	t_nubit64 result = 0x0000000000000000;
-	_cb("_kma_read_ref");
-	switch (byte) {
-	case 0: break;
-	case 1: result = d_nubit8(ref);break;
-	case 2: result = d_nubit16(ref);break;
-	case 4: result = d_nubit32(ref);break;
-	case 6: result = GetMax48(d_nubit64(ref));break;
-	case 8: result = d_nubit64(ref);break;
-	default: _bb("byte");
-		_chr(_SetExcept_CE(byte));
-		_be;break;
+	_cb("_m_read_ref");
+	if (vramIsAddrInMem(ref)) {
+		_bb("ref(im)");
+		//_chk(_SetExcept_CE(0));
+		_be;
 	}
-	_ce;
-	return result;
-}
-/* read content from physical */
-static t_nubit64 _kma_read_physical(t_nubit32 physical, t_nubit8 byte)
-{
-	t_vaddrcc ref = 0;
-	t_nubit64 result = 0x0000000000000000;
-	_cb("_kma_read_physical");
-	_chr(ref = _kma_ref_physical(physical));
 	_chr(result = _kma_read_ref(ref, byte));
 	_ce;
 	return result;
 }
-/* read content from linear */
-static t_nubit64 _kma_read_linear(t_nubit32 linear, t_nubit8 byte, t_nubit8 vpl, t_bool force)
+static t_nubit64 _m_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte)
 {
-	t_vaddrcc ref = 0;
 	t_nubit64 result = 0x0000000000000000;
-	_cb("_kma_read_linear");
-	_chr(ref = _kma_ref_linear(linear, byte, 0, vpl, force));
-	_chr(result = _kma_read_ref(ref, byte));
+	_cb("_m_read_logical");
+	_chr(result = _kma_read_logical(rsreg, offset, byte, _GetCPL, 0));
 	_ce;
 	return result;
 }
-/* read content from logical */
-static t_nubit64 _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_nubit8 vpl, t_bool force)
+static void _m_write_ref(t_vaddrcc ref, t_nubit64 data, t_nubit8 byte)
 {
-	t_vaddrcc ref = 0;
-	t_nubit64 result = 0x0000000000000000;
-	_cb("_kma_read_logical");
-	_chr(ref = _kma_ref_logical(rsreg, offset, byte, 0, vpl, force));
-	_chr(result = _kma_read_ref(ref, byte));
-	_ce;
-	return result;
-}
-/* write content to reference */
-static void _kma_write_ref(t_vaddrcc ref, t_nubit64 data, t_nubit8 byte)
-{
-	_cb("_kma_write_ref");
-	switch (byte) {
-	case 0: break;
-	case 1: d_nubit8(ref) = GetMax8(data);break;
-	case 2: d_nubit16(ref) = GetMax16(data);break;
-	case 4: d_nubit32(ref) = GetMax32(data);break;
-	case 6:
-		d_nubit32(ref) = GetMax32(data);
-		d_nubit16(ref + 4) = GetMax16(data >> 32);
-		break;
-	case 8: d_nubit64(ref) = GetMax64(data);break;
-	default: _bb("byte");
-		_chk(_SetExcept_CE(byte));
-		_be;break;
+	_cb("_m_write_ref");
+	if (vramIsAddrInMem(ref)) {
+		_bb("ref(im)");
+		//_chk(_SetExcept_CE(0));
+		_be;
 	}
-	_ce;
-}
-/* write content to physical */
-static void _kma_write_physical(t_nubit32 physical, t_nubit64 data, t_nubit8 byte)
-{
-	t_vaddrcc ref = 0;
-	_cb("_kma_write_physical");
-	_chk(ref = _kma_ref_physical(physical));
 	_chk(_kma_write_ref(ref, data, byte));
 	_ce;
 }
-/* write content to linear */
-static void _kma_write_linear(t_nubit32 linear, t_nubit64 data, t_nubit8 byte, t_nubit8 vpl, t_bool force)
+static void _m_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 data, t_nubit8 byte)
 {
-	t_vaddrcc ref = 0;
-	_cb("_kma_write_linear");
-	_chk(ref = _kma_ref_linear(linear, byte, 1, vpl, force));
-	_chk(_kma_write_ref(ref, data, byte));
+	_cb("_m_write_logical");
+	_chk(_kma_write_logical(rsreg, offset, data, byte, _GetCPL, 0));
 	_ce;
 }
-/* write content to logical */
-static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 data, t_nubit8 byte, t_nubit8 vpl, t_bool force)
+static void _m_test_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write)
 {
 	t_vaddrcc ref = 0;
-	_cb("_kma_write_logical");
-	_chk(ref = _kma_ref_logical(rsreg, offset, byte, 1, vpl, force));
-	_chk(_kma_write_ref(ref, data, byte));
+	_cb("_m_test_logical");
+	_chk(_kma_test_logical(rsreg, offset, byte, write, _GetCPL, 0));
 	_ce;
 }
 
@@ -370,14 +457,6 @@ static t_nubit32 _m_addr_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_n
 	_ce;
 	return linear;
 }
-static t_nubit32 _m_addr_physical_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write)
-{
-	t_nubit32 physical = 0x00000000;
-	_cb("_m_addr_physical_logical");
-	_chr(physical = _kma_addr_physical_logical(rsreg, offset, byte, write, _GetCPL, 0));
-	_ce;
-	return physical;
-}
 static t_vaddrcc _m_ref_physical(t_nubit32 physical)
 {
 	t_vaddrcc ref = 0;
@@ -394,104 +473,10 @@ static t_vaddrcc _m_ref_linear(t_nubit32 linear, t_nubit8 byte, t_bool write)
 	_ce;
 	return ref;
 }
-static t_vaddrcc _m_ref_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write)
-{
-	t_vaddrcc ref = 0;
-	_cb("_m_ref_logical");
-	_chr(ref = _kma_ref_logical(rsreg, offset, byte, write, _GetCPL, 0));
-	_ce;
-	return ref;
-}
-static t_nubit64 _m_read_ref(t_vaddrcc ref, t_nubit8 byte)
-{
-	t_nubit64 result = 0x0000000000000000;
-	_cb("_m_read_ref");
-	_chr(result = _kma_read_ref(ref, byte));
-	_ce;
-	return result;
-}
-static t_nubit64 _m_read_physical(t_nubit32 physical, t_nubit8 byte)
-{
-	t_nubit64 result = 0x0000000000000000;
-	_cb("_m_read_physical");
-	_chr(result = _kma_read_physical(physical, byte));
-	_ce;
-	return result;
-}
-static t_nubit64 _m_read_linear(t_nubit32 linear, t_nubit8 byte)
-{
-	t_nubit64 result = 0x0000000000000000;
-	_cb("_m_read_linear");
-	_chr(result = _kma_read_linear(linear, byte, _GetCPL, 0));
-	_ce;
-	return result;
-}
-static t_nubit64 _m_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte)
-{
-	t_nubit64 result = 0x0000000000000000;
-	_cb("_m_read_logical");
-	_chr(result = _kma_read_logical(rsreg, offset, byte, _GetCPL, 0));
-	_ce;
-	return result;
-}
-done _m_write_ref(t_vaddrcc ref, t_nubit64 data, t_nubit8 byte)
-{
-	_cb("_m_write_ref");
-	_chk(_kma_write_ref(ref, data, byte));
-	_ce;
-}
-done _m_write_physical(t_nubit32 physical, t_nubit64 data, t_nubit8 byte)
-{
-	_cb("_m_write_physical");
-	_chk(_kma_write_physical(physical, data, byte));
-	_ce;
-}
-done _m_write_linear(t_nubit32 linear, t_nubit32 offset, t_nubit64 data, t_nubit8 byte)
-{
-	_cb("_m_write_linear");
-	_chk(_kma_write_linear(linear, data, byte, _GetCPL, 0));
-	_ce;
-}
-done _m_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 data, t_nubit8 byte)
-{
-	_cb("_m_write_logical");
-	_chk(_kma_write_logical(rsreg, offset, data, byte, _GetCPL, 0));
-	_ce;
-}
-done _m_test_linear(t_nubit32 linear, t_nubit8 byte, t_bool write)
-{
-	t_vaddrcc ref = 0;
-	_cb("_m_test_linear");
-	_chk(ref = _kma_ref_linear(linear, byte, write, _GetCPL, 0));
-	_ce;
-}
-done _m_test_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write)
-{
-	t_vaddrcc ref = 0;
-	_cb("_m_test_logical");
-	_chk(ref = _kma_ref_logical(rsreg, offset, byte, write, _GetCPL, 0));
-	_ce;
-}
-
-/* instruction memory accessing */
-static t_nubit64 _im_read_ref(t_vaddrcc ref, t_nubit8 byte)
-{
-	t_nubit64 result = 0x0000000000000000;
-	_cb("_im_read_ref");
-	_chr(result = _m_read_ref(ref, byte));
-	_ce;
-	return result;
-}
-done _im_write_ref(t_vaddrcc ref, t_nubit64 data, t_nubit8 byte)
-{
-	_cb("_im_write_ref");
-	_chk(_m_write_ref(ref, data, byte));
-	_ce;
-}
 
 /* segment accessing unit: _s_ */
 /* kernel segment accessing */
-tots _ksa_descriptor_gdt(t_nubit16 selector, t_bool write)
+tots _ksa_descriptor_gdt(t_nubit16 selector)
 {
 	_cb("_ksa_descriptor_gdt");
 	if (_GetSelector_TI(selector)) {
@@ -504,18 +489,19 @@ tots _ksa_descriptor_gdt(t_nubit16 selector, t_bool write)
 		_chk(_SetExcept_GP(0));
 		_be;
 	}
-	if ((_GetSelector_Offset(selector) + 7) > _GetGDTR_Limit) {
-		_bb("Selector_Offset(>GDTR_Limit)");
+	if ((_GetSelector_Offset(selector) + 7) > vcpu.gdtr.limit) {
+		_bb("Selector_Offset(>gdtr.limit)");
 		_chk(_SetExcept_GP(selector));
 		_be;
 	}
-	vcpuins.ldesc = (t_nubit32)(_GetGDTR_Base + _GetSelector_Offset(selector));
-	_chk(vcpuins.pdesc = _kma_addr_physical_linear(vcpuins.ldesc, 8, write, 0, 1));
-	_chk(vcpuins.rdesc = _kma_ref_physical(vcpuins.pdesc));
-	_chk(vcpuins.cdesc = _kma_read_ref(vcpuins.rdesc, 8));
+	vcpuins.descsel.sel = selector;
+	vcpuins.descsel.logical.rsreg = &vcpu.gdtr;
+	vcpuins.descsel.logical.offset = _GetSelector_Offset(selector);
+	_chk(vcpuins.descsel.desc = _m_read_logical(vcpuins.descsel.logical.rsreg,
+		vcpuins.descsel.logical.offset, 8));
 	_ce;
 }
-tots _ksa_descriptor_ldt(t_nubit16 selector, t_bool write)
+tots _ksa_descriptor_ldt(t_nubit16 selector)
 {
 	_cb("_ksa_descriptor_ldt");
 	if (!_GetSelector_TI(selector)) {
@@ -523,24 +509,25 @@ tots _ksa_descriptor_ldt(t_nubit16 selector, t_bool write)
 		_chk(_SetExcept_GP(selector));
 		_be;
 	}
-	if ((_GetSelector_Offset(selector) + 7) > (t_nubit16)_GetLDTR_Limit) {
-		_bb("Selector_Offset(>LDTR_Limit)");
+	if ((_GetSelector_Offset(selector) + 7) > vcpu.ldtr.limit) {
+		_bb("Selector_Offset(>ldtr.limit)");
 		_chk(_SetExcept_GP(selector));
 		_be;
 	}
-	vcpuins.ldesc = _GetLDTR_Base + _GetSelector_Offset(selector);
-	_chk(vcpuins.pdesc = _kma_addr_physical_linear(vcpuins.ldesc, 8, write, 0, 1));
-	_chk(vcpuins.rdesc = _kma_ref_physical(vcpuins.pdesc));
-	_chk(vcpuins.cdesc = _kma_read_ref(vcpuins.rdesc, 8));
+	vcpuins.descsel.sel = selector;
+	vcpuins.descsel.logical.rsreg = &vcpu.ldtr;
+	vcpuins.descsel.logical.offset = _GetSelector_Offset(selector);
+	_chk(vcpuins.descsel.desc = _m_read_logical(vcpuins.descsel.logical.rsreg,
+		vcpuins.descsel.logical.offset, 8));
 	_ce;
 }
-tots _ksa_descriptor(t_nubit16 selector, t_bool write)
+tots _ksa_descriptor(t_nubit16 selector)
 {
 	_cb("_ksa_descriptor");
 	if (_GetSelector_TI(selector))
-		_chk(_ksa_descriptor_ldt(selector, write));
+		_chk(_ksa_descriptor_ldt(selector));
 	else
-		_chk(_ksa_descriptor_gdt(selector, write));
+		_chk(_ksa_descriptor_gdt(selector));
 	_ce;
 }
 tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
@@ -557,31 +544,31 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 				_chk(_SetExcept_GP(0));
 				_be;
 			}
-			_chk(_ksa_descriptor(selector, 1));
-			if (!_IsDescCode(vcpuins.cdesc)) {
+			_chk(_ksa_descriptor(selector));
+			if (!_IsDescCode(vcpuins.descsel.desc)) {
 				_bb("DescUser_Type(!Code)");
 				_chk(_SetExcept_GP(selector));
 				_be;
 			}
-			if (!_IsDescPresent(vcpuins.cdesc)) {
+			if (!_IsDescPresent(vcpuins.descsel.desc)) {
 				_bb("Desc_P(0)");
 				_chk(_SetExcept_NP(selector));
 				_be;
 			}
-			_SetDescUserAccessed(vcpuins.cdesc);
-			_chk(_m_write_physical(vcpuins.pdesc, vcpuins.cdesc, 8));
-			_chk(vcpuins.cdesc = (t_nubit64)_m_read_physical(vcpuins.pdesc, 8));
-			rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.cdesc);
-			if (_IsDescCodeNonConform(vcpuins.cdesc))
-				rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.cdesc);
-			rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.cdesc) ?
-				((_GetDescSeg_Limit(vcpuins.cdesc) << 12) | 0x0fff) : (_GetDescSeg_Limit(vcpuins.cdesc))));
-			rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(vcpuins.cdesc);
-			rsreg->seg.executable = (t_bool)_IsDescUserExecutable(vcpuins.cdesc);
-			rsreg->seg.exec.defsize = (t_bool)_IsDescCode32(vcpuins.cdesc);
-			rsreg->seg.exec.conform = (t_bool)_IsDescCodeConform(vcpuins.cdesc);
-			rsreg->seg.exec.readable = (t_bool)_IsDescCodeReadable(vcpuins.cdesc);
+			_SetDescUserAccessed(vcpuins.descsel.desc);
+			rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.descsel.desc);
+			if (_IsDescCodeNonConform(vcpuins.descsel.desc))
+				rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.descsel.desc);
+			rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.descsel.desc) ?
+				((_GetDescSeg_Limit(vcpuins.descsel.desc) << 12) | 0x0fff) : (_GetDescSeg_Limit(vcpuins.descsel.desc))));
+			rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(vcpuins.descsel.desc);
+			rsreg->seg.executable = (t_bool)_IsDescUserExecutable(vcpuins.descsel.desc);
+			rsreg->seg.exec.defsize = (t_bool)_IsDescCode32(vcpuins.descsel.desc);
+			rsreg->seg.exec.conform = (t_bool)_IsDescCodeConform(vcpuins.descsel.desc);
+			rsreg->seg.exec.readable = (t_bool)_IsDescCodeReadable(vcpuins.descsel.desc);
 			rsreg->selector = (selector & ~VCPU_SELECTOR_RPL) | _GetCPL;
+			_chk(_kma_write_logical(vcpuins.descsel.logical.rsreg,
+				vcpuins.descsel.logical.offset, vcpuins.descsel.desc, 8, 0, 1));
 			_be;
 		} else {
 			rsreg->selector = selector;
@@ -598,46 +585,46 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 				_be;
 			} else {
 				_bb("selector(!null)");
-				_chk(_ksa_descriptor(selector, 1));
-				if (!_IsDescData(vcpuins.cdesc) && !_IsDescCodeReadable(vcpuins.cdesc)) {
+				_chk(_ksa_descriptor(selector));
+				if (!_IsDescData(vcpuins.descsel.desc) && !_IsDescCodeReadable(vcpuins.descsel.desc)) {
 					_bb("DescUser_Type(!Data,!CodeReadable)");
 					_chk(_SetExcept_GP(selector));
 					_be;
 				}
-				if (_IsDescData(vcpuins.cdesc) || _IsDescCodeNonConform(vcpuins.cdesc)) {
+				if (_IsDescData(vcpuins.descsel.desc) || _IsDescCodeNonConform(vcpuins.descsel.desc)) {
 					_bb("DescUser_Type(Data/CodeNonConform)");
-					if (_GetSelector_RPL(selector) > _GetDesc_DPL(vcpuins.cdesc) ||
-						_GetCPL > _GetDesc_DPL(vcpuins.cdesc)) {
+					if (_GetSelector_RPL(selector) > _GetDesc_DPL(vcpuins.descsel.desc) ||
+						_GetCPL > _GetDesc_DPL(vcpuins.descsel.desc)) {
 						_bb("PL(fail)");
 						_chk(_SetExcept_GP(selector));
 						_be;
 					}
 					_be;
 				}
-				if (!_IsDescPresent(vcpuins.cdesc)) {
+				if (!_IsDescPresent(vcpuins.descsel.desc)) {
 					_bb("Desc_P(0)");
 					_chk(_SetExcept_NP(selector));
 					_be;
 				}
-				_SetDescUserAccessed(vcpuins.cdesc);
-				_chk(_m_write_physical(vcpuins.pdesc, vcpuins.cdesc, 8));
-				_chk(vcpuins.cdesc = (t_nubit64)_m_read_physical(vcpuins.pdesc, 8));
+				_SetDescUserAccessed(vcpuins.descsel.desc);
 				rsreg->selector = selector;
-				rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.cdesc);
-				rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.cdesc);
-				rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.cdesc) ?
-					((_GetDescSeg_Limit(vcpuins.cdesc) << 12) | 0x0fff) : (_GetDescSeg_Limit(vcpuins.cdesc))));
-				rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(vcpuins.cdesc);
-				rsreg->seg.executable = (t_bool)_IsDescUserExecutable(vcpuins.cdesc);
+				rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.descsel.desc);
+				rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.descsel.desc);
+				rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.descsel.desc) ?
+					((_GetDescSeg_Limit(vcpuins.descsel.desc) << 12) | 0x0fff) : (_GetDescSeg_Limit(vcpuins.descsel.desc))));
+				rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(vcpuins.descsel.desc);
+				rsreg->seg.executable = (t_bool)_IsDescUserExecutable(vcpuins.descsel.desc);
 				if (rsreg->seg.executable) {
-					rsreg->seg.exec.defsize = (t_bool)_IsDescCode32(vcpuins.cdesc);
-					rsreg->seg.exec.conform = (t_bool)_IsDescCodeConform(vcpuins.cdesc);
-					rsreg->seg.exec.readable = (t_bool)_IsDescCodeReadable(vcpuins.cdesc);
+					rsreg->seg.exec.defsize = (t_bool)_IsDescCode32(vcpuins.descsel.desc);
+					rsreg->seg.exec.conform = (t_bool)_IsDescCodeConform(vcpuins.descsel.desc);
+					rsreg->seg.exec.readable = (t_bool)_IsDescCodeReadable(vcpuins.descsel.desc);
 				} else {
-					rsreg->seg.data.big = (t_bool)_IsDescDataBig(vcpuins.cdesc);
-					rsreg->seg.data.expdown = (t_bool)_IsDescDataExpDown(vcpuins.cdesc);
-					rsreg->seg.data.writable = (t_bool)_IsDescDataWritable(vcpuins.cdesc);
+					rsreg->seg.data.big = (t_bool)_IsDescDataBig(vcpuins.descsel.desc);
+					rsreg->seg.data.expdown = (t_bool)_IsDescDataExpDown(vcpuins.descsel.desc);
+					rsreg->seg.data.writable = (t_bool)_IsDescDataWritable(vcpuins.descsel.desc);
 				}
+				_chk(_kma_write_logical(vcpuins.descsel.logical.rsreg,
+					vcpuins.descsel.logical.offset, vcpuins.descsel.desc, 8, 0, 1));
 				_be;
 			}
 			_be;
@@ -660,35 +647,35 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 				_chk(_SetExcept_GP(selector));
 				_be;
 			}
-			_chk(_ksa_descriptor(selector, 1));
-			if (!_IsDescDataWritable(vcpuins.cdesc)) {
-				_bb("vcpuins.cdesc(!DATASEG/!TYPE_W)");
+			_chk(_ksa_descriptor(selector));
+			if (!_IsDescDataWritable(vcpuins.descsel.desc)) {
+				_bb("vcpuins.descsel.desc(!DATASEG/!TYPE_W)");
 				_chk(_SetExcept_GP(selector));
 				_be;
 			}
-			if (_GetDesc_DPL(vcpuins.cdesc) != _GetCPL) {
+			if (_GetDesc_DPL(vcpuins.descsel.desc) != _GetCPL) {
 				_bb("Desc_DPL(!CPL)");
 				_chk(_SetExcept_GP(selector));
 				_be;
 			}
-			if (!_IsDescPresent(vcpuins.cdesc)) {
+			if (!_IsDescPresent(vcpuins.descsel.desc)) {
 				_bb("Desc_P(0)");
 				_chk(_SetExcept_SS(selector));
 				_be;
 			}
-			_SetDescUserAccessed(vcpuins.cdesc);
-			_chk(_m_write_physical(vcpuins.pdesc, vcpuins.cdesc, 8));
-			_chk(vcpuins.cdesc = (t_nubit64)_m_read_physical(vcpuins.pdesc, 8));
+			_SetDescUserAccessed(vcpuins.descsel.desc);
 			rsreg->selector = selector;
-			rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.cdesc);
-			rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.cdesc);
-			rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.cdesc) ?
-				((_GetDescSeg_Limit(vcpuins.cdesc) << 12) | 0x0fff) : (_GetDescSeg_Limit(vcpuins.cdesc))));
-			rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(vcpuins.cdesc);
-			rsreg->seg.executable = (t_bool)_IsDescUserExecutable(vcpuins.cdesc);
-			rsreg->seg.data.big = (t_bool)_IsDescDataBig(vcpuins.cdesc);
-			rsreg->seg.data.expdown = (t_bool)_IsDescDataExpDown(vcpuins.cdesc);
-			rsreg->seg.data.writable = (t_bool)_IsDescDataWritable(vcpuins.cdesc);
+			rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.descsel.desc);
+			rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.descsel.desc);
+			rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.descsel.desc) ?
+				((_GetDescSeg_Limit(vcpuins.descsel.desc) << 12) | 0x0fff) : (_GetDescSeg_Limit(vcpuins.descsel.desc))));
+			rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(vcpuins.descsel.desc);
+			rsreg->seg.executable = (t_bool)_IsDescUserExecutable(vcpuins.descsel.desc);
+			rsreg->seg.data.big = (t_bool)_IsDescDataBig(vcpuins.descsel.desc);
+			rsreg->seg.data.expdown = (t_bool)_IsDescDataExpDown(vcpuins.descsel.desc);
+			rsreg->seg.data.writable = (t_bool)_IsDescDataWritable(vcpuins.descsel.desc);
+			_chk(_kma_write_logical(vcpuins.descsel.logical.rsreg,
+				vcpuins.descsel.logical.offset, vcpuins.descsel.desc, 8, 0, 1));
 			_be;
 		} else {
 			rsreg->selector = selector;
@@ -702,26 +689,26 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 			_chk(_SetExcept_GP(0));
 			_be;
 		}
-		_chk(_ksa_descriptor_gdt(selector, 1));
-		if (_IsDescTSSAvl(vcpuins.cdesc)) {
+		_chk(_ksa_descriptor_gdt(selector));
+		if (_IsDescTSSAvl(vcpuins.descsel.desc)) {
 			_bb("descriptor(!TSSAvl)");
 			_chk(_SetExcept_GP(selector));
 			_be;
 		}
-		if (!_IsDescPresent(vcpuins.cdesc)) {
+		if (!_IsDescPresent(vcpuins.descsel.desc)) {
 			_bb("descriptor(!P)");
 			_chk(_SetExcept_NP(selector));
 			_be;
 		}
-		_SetDescTSSBusy(vcpuins.cdesc);
-		_chk(_m_write_physical(vcpuins.pdesc, vcpuins.cdesc, 8));
-		_chk(vcpuins.cdesc = (t_nubit64)_m_read_physical(vcpuins.pdesc, 8));
+		_SetDescTSSBusy(vcpuins.descsel.desc);
 		rsreg->selector = selector;
-		rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.cdesc);
-		rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.cdesc);
-		rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.cdesc) ?
-				(_GetDescSeg_Limit(vcpuins.cdesc) << 12 | 0x0fff) : (_GetDescSeg_Limit(vcpuins.cdesc))));
-		rsreg->sys.type = (t_nubit4)_GetDesc_Type(vcpuins.cdesc);
+		rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.descsel.desc);
+		rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.descsel.desc);
+		rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.descsel.desc) ?
+				(_GetDescSeg_Limit(vcpuins.descsel.desc) << 12 | 0x0fff) : (_GetDescSeg_Limit(vcpuins.descsel.desc))));
+		rsreg->sys.type = (t_nubit4)_GetDesc_Type(vcpuins.descsel.desc);
+		_chk(_kma_write_logical(vcpuins.descsel.logical.rsreg,
+			vcpuins.descsel.logical.offset, vcpuins.descsel.desc, 8, 0, 1));
 		_be;break;
 	case SREG_LDTR:
 		_bb("sregtype(SREG_LDTR)");
@@ -730,23 +717,23 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 			_chk(_SetExcept_GP(0));
 			_be;
 		}
-		_chk(_ksa_descriptor_gdt(selector, 0));
-		if (!_IsDescLDT(vcpuins.cdesc)) {
+		_chk(_ksa_descriptor_gdt(selector));
+		if (!_IsDescLDT(vcpuins.descsel.desc)) {
 			_bb("descriptor(!LDT)");
 			_chk(_SetExcept_GP(selector));
 			_be;
 		}
-		if (!_IsDescPresent(vcpuins.cdesc)) {
+		if (!_IsDescPresent(vcpuins.descsel.desc)) {
 			_bb("descriptor(!P)");
 			_chk(_SetExcept_NP(selector));
 			_be;
 		}
 		rsreg->selector = selector;
-		rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.cdesc);
-		rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.cdesc);
-		rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.cdesc) ?
-				(_GetDescSeg_Limit(vcpuins.cdesc) << 12 | 0x0fff) : (_GetDescSeg_Limit(vcpuins.cdesc))));
-		rsreg->sys.type = (t_nubit4)_GetDesc_Type(vcpuins.cdesc);
+		rsreg->base = (t_nubit32)_GetDescSeg_Base(vcpuins.descsel.desc);
+		rsreg->dpl = (t_nubit4)_GetDesc_DPL(vcpuins.descsel.desc);
+		rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(vcpuins.descsel.desc) ?
+				(_GetDescSeg_Limit(vcpuins.descsel.desc) << 12 | 0x0fff) : (_GetDescSeg_Limit(vcpuins.descsel.desc))));
+		rsreg->sys.type = (t_nubit4)_GetDesc_Type(vcpuins.descsel.desc);
 		_be;break;
 	default:_impossible_;break;}
 	_ce;
@@ -761,17 +748,17 @@ static t_bool _s_check_selector(t_nubit16 selector)
 		return 1;
 	}
 	if ((_GetSelector_Offset(selector) + 7) >
-		(_GetSelector_TI(selector) ? _GetLDTR_Limit : _GetGDTR_Limit)) {
+		(_GetSelector_TI(selector) ? vcpu.ldtr.limit : vcpu.gdtr.limit)) {
 		_ce;
 		return 1;
 	}
 	_ce;
 	return 0;
 }
-done _s_descriptor(t_nubit16 selector, t_bool write)
+done _s_descriptor(t_nubit16 selector)
 {
 	_cb("_s_read_descriptor");
-	_chk(_ksa_descriptor(selector, write));
+	_chk(_ksa_descriptor(selector));
 	_ce;
 }
 static t_nubit64 _s_read_idt(t_nubit8 intid)
@@ -782,13 +769,12 @@ static t_nubit64 _s_read_idt(t_nubit8 intid)
 	_cb("_s_read_idt");
 	if (!_GetCR0_PE) {
 		_bb("CR0_PE(0)");
-		if ((intid * 4 + 3) > _GetIDTR_Limit) {
+		if ((intid * 4 + 3) > vcpu.idtr.limit) {
 			_bb("intid(>idtr.limit)");
 			_chr(_SetExcept_GP(0));
 			_be;
 		}
-		_chr(ref = (t_vaddrcc)_m_ref_linear(((t_nubit32)_GetIDTR_Base + intid * 4), 4, 0));
-		_chr(result = GetMax32(_m_read_ref(ref, 4)));
+		_chr(result = GetMax32(_m_read_logical(&vcpu.idtr, (intid * 4), 4)));
 		_be;
 	} else {
 		_bb("CR0_PE(1)");
@@ -822,7 +808,7 @@ todo _s_test_idt(t_nubit8 intid)
 	_cb("_s_test_idt");
 	if (!_GetCR0_PE) {
 		_bb("CR0_PE(0)");
-		if ((intid * 4 + 3) > _GetIDTR_Limit) {
+		if ((intid * 4 + 3) > vcpu.idtr.limit) {
 			_bb("intid(>idtr.limit)");
 			_chk(_SetExcept_GP(0));
 			_be;
@@ -889,9 +875,10 @@ tots _s_load_gdtr(t_nubit32 base, t_nubit16 limit, t_nubit8 byte)
 		_chk(_SetExcept_GP(0));
 		_be;
 	}
+	vcpu.gdtr.limit = limit;
 	switch (byte) {
-	case 2: _LoadGDTR16(base, limit);break;
-	case 4: _LoadGDTR32(base, limit);break;
+	case 2: vcpu.gdtr.base = GetMax24(base);break;
+	case 4: vcpu.gdtr.base = GetMax32(base);break;
 	default: _bb("byte");
 		_chk(_SetExcept_CE(byte));
 		_be;break;}
@@ -905,9 +892,10 @@ tots _s_load_idtr(t_nubit32 base, t_nubit16 limit, t_nubit8 byte)
 		_chk(_SetExcept_GP(0));
 		_be;
 	}
+	vcpu.idtr.limit = limit;
 	switch (byte) {
-	case 2: _LoadIDTR16(base, limit);break;
-	case 4: _LoadIDTR32(base, limit);break;
+	case 2: vcpu.idtr.base = GetMax24(base);break;
+	case 4: vcpu.idtr.base = GetMax32(base);break;
 	default: _bb("byte");
 		_chk(_SetExcept_CE(byte));
 		_be;break;}
@@ -1115,7 +1103,7 @@ tots _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
 	vcpuins.erm = 0x00000000;
 	vcpuins.flagmem = 1;
 	vcpuins.flagmss = 0;
-	vcpuins.crm = vcpuins.cr = 0x0000000000000000;
+	vcpuins.cr = 0x0000000000000000;
 	vcpuins.rrm = vcpuins.rr = (t_vaddrcc)NULL;
 	vcpuins.prm = 0x00000000;
 	vcpuins.lrm = 0x00000000;
@@ -1323,7 +1311,6 @@ tots _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
 			_chk(_SetExcept_CE(rmbyte));
 			_be;break;
 		}
-		_chk(vcpuins.crm = _m_read_ref(vcpuins.rrm, rmbyte));
 		_be;
 	}
 	switch (regbyte) {
@@ -1416,7 +1403,6 @@ done _d_moffs(t_nubit8 byte, t_bool write)
 	_chk(vcpuins.lrm = _m_addr_linear_logical(vcpuins.roverds, vcpuins.erm, byte, write));
 	_chk(vcpuins.prm = _m_addr_physical_linear(vcpuins.lrm, byte, write));
 	_chk(vcpuins.rrm = _m_ref_physical(vcpuins.prm));
-	_chk(vcpuins.crm = _m_read_ref(vcpuins.rrm, byte));
 	_ce;
 }
 done _d_modrm_sreg(t_nubit8 rmbyte, t_bool write)
@@ -1429,7 +1415,6 @@ done _d_modrm_sreg(t_nubit8 rmbyte, t_bool write)
 			vcpuins.erm, rmbyte, write));
 		_chk(vcpuins.prm = _m_addr_physical_linear(vcpuins.lrm, rmbyte, write));
 		_chk(vcpuins.rrm = _m_ref_physical(vcpuins.prm));
-		_chk(vcpuins.crm = _m_read_ref(vcpuins.rrm, rmbyte));
 		_be;
 	}
 	vcpuins.rmovsreg = NULL;
@@ -1469,7 +1454,6 @@ done _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
 			vcpuins.erm, rmbyte, write));
 		_chk(vcpuins.prm = _m_addr_physical_linear(vcpuins.lrm, rmbyte, write));
 		_chk(vcpuins.rrm = _m_ref_physical(vcpuins.prm));
-		_chk(vcpuins.crm = _m_read_ref(vcpuins.rrm, rmbyte));
 		_be;
 	} else if (vcpu.flaglock) {
 		_bb("flagmem(0),flaglock(1)");
@@ -1760,20 +1744,20 @@ done _ser_jmp_far_real(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 tots _ser_jmp_far_cs_conf(t_nubit16 cssel, t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_ser_jmp_far_cs_conf");
-	_chk(_s_descriptor(cssel, 1));
-	if (!_IsDescCodeConform(vcpuins.cdesc)) {
+	_chk(_s_descriptor(cssel));
+	if (!_IsDescCodeConform(vcpuins.descsel.desc)) {
 		_bb("desc(!code/!conform)");
 		_chk(_SetExcept_CE(0));
 		_be;
 	}
-	if (_GetDesc_DPL(vcpuins.cdesc) > _GetCPL) {
+	if (_GetDesc_DPL(vcpuins.descsel.desc) > _GetCPL) {
 		_bb("dpl(>cpl)");
-		_comment("cssel=%04X, cdesc=%016llX\n", cssel, vcpuins.cdesc);
-		_comment("dpl=%01X, cpl=%01X\n", _GetDesc_DPL(vcpuins.cdesc), _GetCPL);
+		_comment("cssel=%04X, descsel.desc=%016llX\n", cssel, vcpuins.descsel.desc);
+		_comment("dpl=%01X, cpl=%01X\n", _GetDesc_DPL(vcpuins.descsel.desc), _GetCPL);
 		_chk(_SetExcept_GP(cssel));
 		_be;
 	}
-	if (!_IsDescPresent(vcpuins.cdesc)) {
+	if (!_IsDescPresent(vcpuins.descsel.desc)) {
 		_bb("desc(!p)");
 		_chk(_SetExcept_NP(cssel));
 		_be;
@@ -1784,22 +1768,22 @@ tots _ser_jmp_far_cs_conf(t_nubit16 cssel, t_nubit32 neweip, t_nubit8 byte)
 tots _ser_jmp_far_cs_nonc(t_nubit16 cssel, t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_ser_jmp_far_cs_nonc");
-	_chk(_s_descriptor(cssel, 1));
-	if (!_IsDescCodeNonConform(vcpuins.cdesc)) {
+	_chk(_s_descriptor(cssel));
+	if (!_IsDescCodeNonConform(vcpuins.descsel.desc)) {
 		_bb("desc(!code/conform)");
 		_chk(_SetExcept_CE(0));
 		_be;
 	}
-	if (_GetDesc_DPL(vcpuins.cdesc) != _GetCPL ||
+	if (_GetDesc_DPL(vcpuins.descsel.desc) != _GetCPL ||
 		_GetSelector_RPL(cssel) > _GetCPL) {
 		_bb("dpl(!cpl)/rpl(>cpl)");
-		_comment("cssel=%04X, cdesc=%016llX\n", cssel, vcpuins.cdesc);
+		_comment("cssel=%04X, descsel.desc=%016llX\n", cssel, vcpuins.descsel.desc);
 		_comment("dpl=%01x, rpl=%01x, cpl=%01x\n",
-			_GetDesc_DPL(vcpuins.cdesc), _GetSelector_RPL(cssel), _GetCPL);
+			_GetDesc_DPL(vcpuins.descsel.desc), _GetSelector_RPL(cssel), _GetCPL);
 		_chk(_SetExcept_GP(cssel));
 		_be;
 	}
-	if (!_IsDescPresent(vcpuins.cdesc)) {
+	if (!_IsDescPresent(vcpuins.descsel.desc)) {
 		_bb("desc(!p)");
 		_chk(_SetExcept_NP(cssel));
 		_be;
@@ -1832,11 +1816,11 @@ done _e_push(t_vaddrcc rsrc, t_nubit8 byte)
 	switch (byte) {
 	case 2: _bb("byte(2)");
 		vcpuins.bit = 16;
-		_chk(vcpuins.result = _im_read_ref(rsrc, 2));
+		_chk(vcpuins.result = _m_read_ref(rsrc, 2));
 		_be;break;
 	case 4: _bb("byte(4)");
 		vcpuins.bit = 32;
-		_chk(vcpuins.result = _im_read_ref(rsrc, 4));
+		_chk(vcpuins.result = _m_read_ref(rsrc, 4));
 		_be;break;
 	default: _bb("byte");
 		_chk(_SetExcept_CE(byte));
@@ -1852,11 +1836,11 @@ done _e_pop(t_vaddrcc rdest, t_nubit8 byte)
 	switch (byte) {
 	case 2: _bb("byte(2)");
 		vcpuins.bit = 16;
-		_chk(vcpuins.result = _im_read_ref(rdest, 2));
+		_chk(vcpuins.result = _m_read_ref(rdest, 2));
 		_be;break;
 	case 4: _bb("byte(4)");
 		vcpuins.bit = 32;
-		_chk(vcpuins.result = _im_read_ref(rdest, 4));
+		_chk(vcpuins.result = _m_read_ref(rdest, 4));
 		_be;break;
 	default: _bb("byte");
 		_chk(_SetExcept_CE(byte));
@@ -2050,16 +2034,16 @@ todo _e_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 	} else {
 		_bb("Protected(1)");
 		_newins_;
-		_chk(_s_descriptor(newcs, 1));
-		if (_IsDescCodeConform(vcpuins.cdesc))
+		_chk(_s_descriptor(newcs));
+		if (_IsDescCodeConform(vcpuins.descsel.desc))
 			_chk(_ser_jmp_far_cs_conf(newcs, neweip, byte));
-		else if (_IsDescCodeNonConform(vcpuins.cdesc))
+		else if (_IsDescCodeNonConform(vcpuins.descsel.desc))
 			_chk(_ser_jmp_far_cs_nonc(newcs, neweip, byte));
-		else if (_IsDescCallGate(vcpuins.cdesc))
+		else if (_IsDescCallGate(vcpuins.descsel.desc))
 			_chk(_ser_jmp_far_call_gate(newcs));
-		else if (_IsDescTaskGate(vcpuins.cdesc))
+		else if (_IsDescTaskGate(vcpuins.descsel.desc))
 			_chk(_ser_jmp_far_task_gate(newcs));
-		else if (_IsDescTSS(vcpuins.cdesc))
+		else if (_IsDescTSS(vcpuins.descsel.desc))
 			_chk(_ser_jmp_far_tss(newcs));
 		else {
 			_bb("newcs(invalid)");
@@ -2369,14 +2353,14 @@ do { \
 		vcpuins.type = (type8); \
 		_chk(vcpuins.opr1 = GetMax8(_m_read_ref(rdest, 1))); \
 		vcpuins.result = GetMax8(expr8); \
-		_chk(_im_write_ref(rdest, vcpuins.result, 1)); \
+		_chk(_m_write_ref(rdest, vcpuins.result, 1)); \
 		_be;break; \
 	case 16: _bb("bit(16+16)"); \
 		vcpuins.bit = 16; \
 		vcpuins.type = (type16); \
 		_chk(vcpuins.opr1 = GetMax16(_m_read_ref(rdest, 2))); \
 		vcpuins.result = GetMax16(expr16); \
-		_chk(_im_write_ref(rdest, vcpuins.result, 2)); \
+		_chk(_m_write_ref(rdest, vcpuins.result, 2)); \
 		_be;break; \
 	case 32: _bb("bit(32+32)"); \
 		_newins_; \
@@ -2384,7 +2368,7 @@ do { \
 		vcpuins.type = (type32); \
 		_chk(vcpuins.opr1 = GetMax32(_m_read_ref(rdest, 4))); \
 		vcpuins.result = GetMax32(expr32); \
-		_chk(_im_write_ref(rdest, vcpuins.result, 4)); \
+		_chk(_m_write_ref(rdest, vcpuins.result, 4)); \
 		_be;break; \
 	default: _bb("bit"); \
 		_chk(_SetExcept_CE(bit)); \
@@ -2401,43 +2385,43 @@ do { \
 		vcpuins.bit = 8; \
 		vcpuins.type = (type8); \
 		_chk(vcpuins.opr1 = GetMax8(_m_read_ref(rdest, 1))); \
-		_chk(vcpuins.opr2 = GetMax8(_im_read_ref(rsrc, 1))); \
+		_chk(vcpuins.opr2 = GetMax8(_m_read_ref(rsrc, 1))); \
 		vcpuins.result = GetMax8(expr8); \
-		if (write) _chk(_im_write_ref(rdest, vcpuins.result, 1)); \
+		if (write) _chk(_m_write_ref(rdest, vcpuins.result, 1)); \
 		_be;break; \
 	case 12: _bb("bit(16+8)"); \
 		vcpuins.bit = 16; \
 		vcpuins.type = (type12);\
 		_chk(vcpuins.opr1 = GetMax16(_m_read_ref(rdest, 2))); \
-		_chk(vcpuins.opr2 = GetMax16((t_nsbit8)_im_read_ref(rsrc, 1))); \
+		_chk(vcpuins.opr2 = GetMax16((t_nsbit8)_m_read_ref(rsrc, 1))); \
 		vcpuins.result = GetMax16(expr12); \
-		if (write) _chk(_im_write_ref(rdest, vcpuins.result, 2)); \
+		if (write) _chk(_m_write_ref(rdest, vcpuins.result, 2)); \
 		_be;break; \
 	case 16: _bb("bit(16+16)"); \
 		vcpuins.bit = 16; \
 		vcpuins.type = (type16); \
 		_chk(vcpuins.opr1 = GetMax16(_m_read_ref(rdest, 2))); \
-		_chk(vcpuins.opr2 = GetMax16(_im_read_ref(rsrc, 2))); \
+		_chk(vcpuins.opr2 = GetMax16(_m_read_ref(rsrc, 2))); \
 		vcpuins.result = GetMax16(expr16); \
-		if (write) _chk(_im_write_ref(rdest, vcpuins.result, 2)); \
+		if (write) _chk(_m_write_ref(rdest, vcpuins.result, 2)); \
 		_be;break; \
 	case 20: _bb("bit(32+8)"); \
 		_newins_; \
 		vcpuins.bit = 32; \
 		vcpuins.type = (type20); \
 		_chk(vcpuins.opr1 = GetMax32(_m_read_ref(rdest, 4))); \
-		_chk(vcpuins.opr2 = GetMax32((t_nsbit8)_im_read_ref(rsrc, 1))); \
+		_chk(vcpuins.opr2 = GetMax32((t_nsbit8)_m_read_ref(rsrc, 1))); \
 		vcpuins.result = GetMax32(expr20); \
-		if (write) _chk(_im_write_ref(rdest, vcpuins.result, 4)); \
+		if (write) _chk(_m_write_ref(rdest, vcpuins.result, 4)); \
 		_be;break; \
 	case 32: _bb("bit(32+32)"); \
 		_newins_; \
 		vcpuins.bit = 32; \
 		vcpuins.type = (type32); \
 		_chk(vcpuins.opr1 = GetMax32(_m_read_ref(rdest, 4))); \
-		_chk(vcpuins.opr2 = GetMax32(_im_read_ref(rsrc, 4))); \
+		_chk(vcpuins.opr2 = GetMax32(_m_read_ref(rsrc, 4))); \
 		vcpuins.result = GetMax32(expr32); \
-		if (write) _chk(_im_write_ref(rdest, vcpuins.result, 4)); \
+		if (write) _chk(_m_write_ref(rdest, vcpuins.result, 4)); \
 		_be;break; \
 	default: _bb("bit"); \
 		_chk(_SetExcept_CE(bit)); \
@@ -2603,23 +2587,23 @@ tots _a_xchg(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 		vcpuins.bit = 8;
 		_chk(vcpuins.opr1 = GetMax8(_m_read_ref(rdest, 1)));
 		_chk(vcpuins.opr2 = GetMax8(_m_read_ref(rsrc, 1)));
-		_chk(_im_write_ref(rdest, vcpuins.opr2, 1));
-		_chk(_im_write_ref(rsrc, vcpuins.opr1, 1));
+		_chk(_m_write_ref(rdest, vcpuins.opr2, 1));
+		_chk(_m_write_ref(rsrc, vcpuins.opr1, 1));
 		_be;break;
 	case 16: _bb("bit(16)");
 		vcpuins.bit = 16;
 		_chk(vcpuins.opr1 = GetMax16(_m_read_ref(rdest, 2)));
 		_chk(vcpuins.opr2 = GetMax16(_m_read_ref(rsrc, 2)));
-		_chk(_im_write_ref(rdest, vcpuins.opr2, 2));
-		_chk(_im_write_ref(rsrc, vcpuins.opr1, 2));
+		_chk(_m_write_ref(rdest, vcpuins.opr2, 2));
+		_chk(_m_write_ref(rsrc, vcpuins.opr1, 2));
 		_be;break;
 	case 32: _bb("bit(32)");
 		_newins_;
 		vcpuins.bit = 32;
 		_chk(vcpuins.opr1 = GetMax32(_m_read_ref(rdest, 4)));
 		_chk(vcpuins.opr2 = GetMax32(_m_read_ref(rsrc, 4)));
-		_chk(_im_write_ref(rdest, vcpuins.opr2, 4));
-		_chk(_im_write_ref(rsrc, vcpuins.opr1, 4));
+		_chk(_m_write_ref(rdest, vcpuins.opr2, 4));
+		_chk(_m_write_ref(rsrc, vcpuins.opr1, 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -2634,23 +2618,23 @@ tots _m_mov(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 byte)
 	case 1: _bb("byte(1)");
 		vcpuins.bit = 8;
 		_chk(vcpuins.opr1 = GetMax8(_m_read_ref(rdest, 1)));
-		_chk(vcpuins.opr2 = GetMax8(_im_read_ref(rsrc, 1)));
+		_chk(vcpuins.opr2 = GetMax8(_m_read_ref(rsrc, 1)));
 		vcpuins.result = vcpuins.opr2;
-		_chk(_im_write_ref(rdest, vcpuins.result, 1));
+		_chk(_m_write_ref(rdest, vcpuins.result, 1));
 		_be;break;
 	case 2: _bb("byte(2)");
 		vcpuins.bit = 16;
 		_chk(vcpuins.opr1 = GetMax16(_m_read_ref(rdest, 2)));
-		_chk(vcpuins.opr2 = GetMax16(_im_read_ref(rsrc, 2)));
+		_chk(vcpuins.opr2 = GetMax16(_m_read_ref(rsrc, 2)));
 		vcpuins.result = vcpuins.opr2;
-		_chk(_im_write_ref(rdest, vcpuins.result, 2));
+		_chk(_m_write_ref(rdest, vcpuins.result, 2));
 		_be;break;
 	case 4: _bb("byte(4)");
 		vcpuins.bit = 32;
 		_chk(vcpuins.opr1 = GetMax32(_m_read_ref(rdest, 4)));
-		_chk(vcpuins.opr2 = GetMax32(_im_read_ref(rsrc, 4)));
+		_chk(vcpuins.opr2 = GetMax32(_m_read_ref(rsrc, 4)));
 		vcpuins.result = vcpuins.opr2;
-		_chk(_im_write_ref(rdest, vcpuins.result, 4));
+		_chk(_m_write_ref(rdest, vcpuins.result, 4));
 		_be;break;
 	default: _bb("byte");
 		_chk(_SetExcept_CE(byte));
@@ -2685,7 +2669,7 @@ tots _a_rol(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 				((!!GetMSB8(vcpuins.result)) ^ _GetEFLAGS_CF));
 		else
 			vcpuins.udf |= VCPU_EFLAGS_OF;
-		_chk(_im_write_ref(rdest, vcpuins.result, 1));
+		_chk(_m_write_ref(rdest, vcpuins.result, 1));
 		_be;break;
 	case 16: _bb("bit(16)");
 		tempcount = (count & 0x0f);
@@ -2704,7 +2688,7 @@ tots _a_rol(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 				((!!GetMSB16(vcpuins.result)) ^ _GetEFLAGS_CF));
 		else
 			vcpuins.udf |= VCPU_EFLAGS_OF;
-		_chk(_im_write_ref(rdest, vcpuins.result, 2));
+		_chk(_m_write_ref(rdest, vcpuins.result, 2));
 		_be;break;
 	case 32: _bb("bit(32)");
 		_newins_;
@@ -2724,7 +2708,7 @@ tots _a_rol(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 				((!!GetMSB32(vcpuins.result)) ^ _GetEFLAGS_CF));
 		else
 			vcpuins.udf |= VCPU_EFLAGS_OF;
-		_chk(_im_write_ref(rdest, vcpuins.result, 4));
+		_chk(_m_write_ref(rdest, vcpuins.result, 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -2758,7 +2742,7 @@ tots _a_ror(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			((!!GetMSB8(vcpuins.result)) ^ (!!GetMSB7(vcpuins.result))));
 		else
 			vcpuins.udf |= VCPU_EFLAGS_OF;
-		_chk(_im_write_ref(rdest, vcpuins.result, 1));
+		_chk(_m_write_ref(rdest, vcpuins.result, 1));
 		_be;break;
 	case 16: _bb("bit(16)");
 		tempcount = (count & 0x0f);
@@ -2777,7 +2761,7 @@ tots _a_ror(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			((!!GetMSB16(vcpuins.result)) ^ (!!GetMSB15(vcpuins.result))));
 		else
 			vcpuins.udf |= VCPU_EFLAGS_OF;
-		_chk(_im_write_ref(rdest, vcpuins.result, 2));
+		_chk(_m_write_ref(rdest, vcpuins.result, 2));
 		_be;break;
 	case 32: _bb("bit(32)");
 		_newins_;
@@ -2797,7 +2781,7 @@ tots _a_ror(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			((!!GetMSB32(vcpuins.result)) ^ (!!GetMSB31(vcpuins.result))));
 		else
 			vcpuins.udf |= VCPU_EFLAGS_OF;
-		_chk(_im_write_ref(rdest, vcpuins.result, 4));
+		_chk(_m_write_ref(rdest, vcpuins.result, 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -2831,7 +2815,7 @@ tots _a_rcl(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 				((!!GetMSB8(vcpuins.result)) ^ _GetEFLAGS_CF));
 		else
 			vcpuins.udf |= VCPU_EFLAGS_OF;
-		_chk(_im_write_ref(rdest, vcpuins.result, 1));
+		_chk(_m_write_ref(rdest, vcpuins.result, 1));
 		_be;break;
 	case 16: _bb("bit(16)");
 		tempcount = (count & 0x1f) % 17;
@@ -2850,7 +2834,7 @@ tots _a_rcl(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 				((!!GetMSB16(vcpuins.result)) ^ _GetEFLAGS_CF));
 		else
 			vcpuins.udf |= VCPU_EFLAGS_OF;
-		_chk(_im_write_ref(rdest, vcpuins.result, 2));
+		_chk(_m_write_ref(rdest, vcpuins.result, 2));
 		_be;break;
 	case 32: _bb("bit(32)");
 		_newins_;
@@ -2870,7 +2854,7 @@ tots _a_rcl(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 				((!!GetMSB32(vcpuins.result)) ^ _GetEFLAGS_CF));
 		else
 			vcpuins.udf |= VCPU_EFLAGS_OF;
-		_chk(_im_write_ref(rdest, vcpuins.result, 4));
+		_chk(_m_write_ref(rdest, vcpuins.result, 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -2904,7 +2888,7 @@ tots _a_rcr(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, !!flagcf);
 			tempcount--;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 1));
+		_chk(_m_write_ref(rdest, vcpuins.result, 1));
 		_be;break;
 	case 16: _bb("bit(16)");
 		tempcount = (count & 0x1f) % 17;
@@ -2923,7 +2907,7 @@ tots _a_rcr(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, !!flagcf);
 			tempcount--;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 2));
+		_chk(_m_write_ref(rdest, vcpuins.result, 2));
 		_be;break;
 	case 32: _bb("bit(32)");
 		_newins_;
@@ -2943,7 +2927,7 @@ tots _a_rcr(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, !!flagcf);
 			tempcount--;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 4));
+		_chk(_m_write_ref(rdest, vcpuins.result, 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -2982,7 +2966,7 @@ tots _a_shl(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			vcpuins.udf |= VCPU_EFLAGS_AF;
 			_be;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 1));
+		_chk(_m_write_ref(rdest, vcpuins.result, 1));
 		_be;break;
 	case 16: _bb("bit(16)");
 		vcpuins.bit = 16;
@@ -3005,7 +2989,7 @@ tots _a_shl(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			vcpuins.udf |= VCPU_EFLAGS_AF;
 			_be;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 2));
+		_chk(_m_write_ref(rdest, vcpuins.result, 2));
 		_be;break;
 	case 32: _bb("bit(32)");
 		_newins_;
@@ -3029,7 +3013,7 @@ tots _a_shl(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			vcpuins.udf |= VCPU_EFLAGS_AF;
 			_be;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 4));
+		_chk(_m_write_ref(rdest, vcpuins.result, 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -3067,7 +3051,7 @@ tots _a_shr(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			vcpuins.udf |= VCPU_EFLAGS_AF;
 			_be;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 1));
+		_chk(_m_write_ref(rdest, vcpuins.result, 1));
 		_be;break;
 	case 16: _bb("bit(16)");
 		vcpuins.bit = 16;
@@ -3089,7 +3073,7 @@ tots _a_shr(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			vcpuins.udf |= VCPU_EFLAGS_AF;
 			_be;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 2));
+		_chk(_m_write_ref(rdest, vcpuins.result, 2));
 		_be;break;
 	case 32: _bb("bit(32)");
 		_newins_;
@@ -3112,7 +3096,7 @@ tots _a_shr(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			vcpuins.udf |= VCPU_EFLAGS_AF;
 			_be;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 4));
+		_chk(_m_write_ref(rdest, vcpuins.result, 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -3150,7 +3134,7 @@ tots _a_sar(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			vcpuins.udf |= VCPU_EFLAGS_AF;
 			_be;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 1));
+		_chk(_m_write_ref(rdest, vcpuins.result, 1));
 		_be;break;
 	case 16: _bb("bit(16)");
 		vcpuins.bit = 16;
@@ -3170,7 +3154,7 @@ tots _a_sar(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			vcpuins.udf |= VCPU_EFLAGS_AF;
 			_be;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 2));
+		_chk(_m_write_ref(rdest, vcpuins.result, 2));
 		_be;break;
 	case 32: _bb("bit(32)");
 		_newins_;
@@ -3191,7 +3175,7 @@ tots _a_sar(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 			vcpuins.udf |= VCPU_EFLAGS_AF;
 			_be;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 4));
+		_chk(_m_write_ref(rdest, vcpuins.result, 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -3207,7 +3191,7 @@ tots _a_mul(t_vaddrcc rsrc, t_nubit8 bit)
 	case 8: _bb("bit(8)");
 		vcpuins.bit = 8;
 		vcpuins.opr1 = vcpu.al;
-		_chk(vcpuins.opr2 = GetMax8(_im_read_ref(rsrc, 1)));
+		_chk(vcpuins.opr2 = GetMax8(_m_read_ref(rsrc, 1)));
 		cdest = GetMax16(vcpu.al * GetMax8(vcpuins.opr2));
 		vcpu.ax = GetMax16(cdest);
 		MakeBit(vcpu.eflags, VCPU_EFLAGS_OF, !!vcpu.ah);
@@ -3217,7 +3201,7 @@ tots _a_mul(t_vaddrcc rsrc, t_nubit8 bit)
 	case 16: _bb("bit(16)");
 		vcpuins.bit = 16;
 		vcpuins.opr1 = vcpu.ax;
-		_chk(vcpuins.opr2 = GetMax16(_im_read_ref(rsrc, 2)));
+		_chk(vcpuins.opr2 = GetMax16(_m_read_ref(rsrc, 2)));
 		cdest = GetMax32(vcpu.ax * GetMax16(vcpuins.opr2));
 		vcpu.dx = GetMax16(cdest >> 16);
 		vcpu.ax = GetMax16(cdest);
@@ -3229,7 +3213,7 @@ tots _a_mul(t_vaddrcc rsrc, t_nubit8 bit)
 		_newins_;
 		vcpuins.bit = 32;
 		vcpuins.opr1 = vcpu.eax;
-		_chk(vcpuins.opr2 = GetMax32(_im_read_ref(rsrc, 4)));
+		_chk(vcpuins.opr2 = GetMax32(_m_read_ref(rsrc, 4)));
 		cdest = GetMax64(vcpu.eax * GetMax32(vcpuins.opr2));
 		vcpu.edx = GetMax32(cdest >> 32);
 		vcpu.eax = GetMax32(cdest);
@@ -3253,7 +3237,7 @@ tots _a_imul(t_vaddrcc rsrc, t_nubit8 bit)
 	case 8: _bb("bit(8)");
 		vcpuins.bit = 8;
 		vcpuins.opr1 = vcpu.al;
-		_chk(vcpuins.opr2 = (t_nsbit8)(_im_read_ref(rsrc, 1)));
+		_chk(vcpuins.opr2 = (t_nsbit8)(_m_read_ref(rsrc, 1)));
 		cdest = GetMax16((t_nsbit8)vcpu.al * (t_nsbit8)vcpuins.opr2);
 		vcpu.ax = GetMax16(cdest);
 		if (GetMax16(cdest) == (t_nsbit16)((t_nsbit8)vcpu.al)) {
@@ -3268,7 +3252,7 @@ tots _a_imul(t_vaddrcc rsrc, t_nubit8 bit)
 	case 16: _bb("bit(16)");
 		vcpuins.bit = 16;
 		vcpuins.opr1 = vcpu.ax;
-		_chk(vcpuins.opr2 = (t_nsbit16)(_im_read_ref(rsrc, 2)));
+		_chk(vcpuins.opr2 = (t_nsbit16)(_m_read_ref(rsrc, 2)));
 		cdest = GetMax32((t_nsbit16)vcpu.ax * (t_nsbit16)vcpuins.opr2);
 		vcpu.ax = GetMax16(cdest);
 		vcpu.dx = GetMax16(cdest >> 16);
@@ -3285,7 +3269,7 @@ tots _a_imul(t_vaddrcc rsrc, t_nubit8 bit)
 		_newins_;
 		vcpuins.bit = 32;
 		vcpuins.opr1 = vcpu.eax;
-		_chk(vcpuins.opr2 = (t_nsbit32)(_im_read_ref(rsrc, 4)));
+		_chk(vcpuins.opr2 = (t_nsbit32)(_m_read_ref(rsrc, 4)));
 		cdest = GetMax64((t_nsbit32)vcpu.eax * (t_nsbit32)vcpuins.opr2);
 		vcpu.eax = GetMax32(cdest);
 		vcpu.edx = GetMax32(cdest >> 32);
@@ -3314,8 +3298,8 @@ tots _a_imul3(t_vaddrcc rdest, t_vaddrcc rsrc1, t_vaddrcc rsrc2, t_nubit8 bit)
 	switch (bit) {
 	case 12: _bb("bit(16+8)");
 		vcpuins.bit = 16;
-		_chk(vcpuins.opr1 = (t_nsbit16)(_im_read_ref(rsrc1, 2)));
-		_chk(vcpuins.opr2 = (t_nsbit8)(_im_read_ref(rsrc2, 1)));
+		_chk(vcpuins.opr1 = (t_nsbit16)(_m_read_ref(rsrc1, 2)));
+		_chk(vcpuins.opr2 = (t_nsbit8)(_m_read_ref(rsrc2, 1)));
 		cdest = GetMax32((t_nsbit16)vcpuins.opr1 * (t_nsbit8)vcpuins.opr2);
 		vcpuins.result = GetMax16(cdest);
 		/* note: should not use rsrc1 after this point */
@@ -3326,12 +3310,12 @@ tots _a_imul3(t_vaddrcc rdest, t_vaddrcc rsrc1, t_vaddrcc rsrc2, t_nubit8 bit)
 			_ClrEFLAGS_CF;
 			_ClrEFLAGS_OF;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 2));
+		_chk(_m_write_ref(rdest, vcpuins.result, 2));
 		_be;break;
 	case 16: _bb("bit(16+16)");
 		vcpuins.bit = 16;
-		_chk(vcpuins.opr1 = (t_nsbit16)(_im_read_ref(rsrc1, 2)));
-		_chk(vcpuins.opr2 = (t_nsbit16)(_im_read_ref(rsrc2, 2)));
+		_chk(vcpuins.opr1 = (t_nsbit16)(_m_read_ref(rsrc1, 2)));
+		_chk(vcpuins.opr2 = (t_nsbit16)(_m_read_ref(rsrc2, 2)));
 		cdest = GetMax32((t_nsbit16)vcpuins.opr1 * (t_nsbit16)vcpuins.opr2);
 		vcpuins.result = GetMax16(cdest);
 		/* note: should not use rsrc1 after this point */
@@ -3342,12 +3326,12 @@ tots _a_imul3(t_vaddrcc rdest, t_vaddrcc rsrc1, t_vaddrcc rsrc2, t_nubit8 bit)
 			_ClrEFLAGS_CF;
 			_ClrEFLAGS_OF;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 2));
+		_chk(_m_write_ref(rdest, vcpuins.result, 2));
 		_be;break;
 	case 20: _bb("bit(32+8)");
 		vcpuins.bit = 32;
-		_chk(vcpuins.opr1 = (t_nsbit32)(_im_read_ref(rsrc1, 4)));
-		_chk(vcpuins.opr2 = (t_nsbit8)(_im_read_ref(rsrc2, 1)));
+		_chk(vcpuins.opr1 = (t_nsbit32)(_m_read_ref(rsrc1, 4)));
+		_chk(vcpuins.opr2 = (t_nsbit8)(_m_read_ref(rsrc2, 1)));
 		cdest = GetMax64((t_nsbit32)vcpuins.opr1 * (t_nsbit8)vcpuins.opr2);
 		vcpuins.result = GetMax32(cdest);
 		/* note: should not use rsrc1 after this point */
@@ -3358,12 +3342,12 @@ tots _a_imul3(t_vaddrcc rdest, t_vaddrcc rsrc1, t_vaddrcc rsrc2, t_nubit8 bit)
 			_ClrEFLAGS_CF;
 			_ClrEFLAGS_OF;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 4));
+		_chk(_m_write_ref(rdest, vcpuins.result, 4));
 		_be;break;
 	case 32: _bb("bit(32+32");
 		vcpuins.bit = 32;
-		_chk(vcpuins.opr1 = (t_nsbit32)(_im_read_ref(rsrc1, 4)));
-		_chk(vcpuins.opr2 = (t_nsbit32)(_im_read_ref(rsrc2, 4)));
+		_chk(vcpuins.opr1 = (t_nsbit32)(_m_read_ref(rsrc1, 4)));
+		_chk(vcpuins.opr2 = (t_nsbit32)(_m_read_ref(rsrc2, 4)));
 		cdest = GetMax64((t_nsbit32)vcpuins.opr1 * (t_nsbit32)vcpuins.opr2);
 		vcpuins.result = GetMax32(cdest);
 		/* note: should not use rsrc1 after this point */
@@ -3374,7 +3358,7 @@ tots _a_imul3(t_vaddrcc rdest, t_vaddrcc rsrc1, t_vaddrcc rsrc2, t_nubit8 bit)
 			_ClrEFLAGS_CF;
 			_ClrEFLAGS_OF;
 		}
-		_chk(_im_write_ref(rdest, vcpuins.result, 4));
+		_chk(_m_write_ref(rdest, vcpuins.result, 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -3394,7 +3378,7 @@ tots _a_div(t_vaddrcc rsrc, t_nubit8 bit)
 	case 8: _bb("bit(8)");
 		vcpuins.bit = 8;
 		cdest = GetMax16(vcpu.ax);
-		_chk(csrc = GetMax8(_im_read_ref(rsrc, 1)));
+		_chk(csrc = GetMax8(_m_read_ref(rsrc, 1)));
 		vcpuins.opr1 = GetMax16(cdest);
 		vcpuins.opr2 = GetMax8(csrc);
 		if(!csrc) {
@@ -3419,7 +3403,7 @@ tots _a_div(t_vaddrcc rsrc, t_nubit8 bit)
 	case 16: _bb("bit(16)");
 		vcpuins.bit = 16;
 		cdest = GetMax32((vcpu.dx << 16) | vcpu.ax);
-		_chk(csrc = GetMax16(_im_read_ref(rsrc, 2)));
+		_chk(csrc = GetMax16(_m_read_ref(rsrc, 2)));
 		vcpuins.opr1 = GetMax32(cdest);
 		vcpuins.opr2 = GetMax16(csrc);
 		if(!csrc) {
@@ -3445,7 +3429,7 @@ tots _a_div(t_vaddrcc rsrc, t_nubit8 bit)
 		_newins_;
 		vcpuins.bit = 32;
 		cdest = GetMax64(((t_nubit64)vcpu.edx << 32) | vcpu.eax);
-		_chk(csrc = GetMax32(_im_read_ref(rsrc, 4)));
+		_chk(csrc = GetMax32(_m_read_ref(rsrc, 4)));
 		vcpuins.opr1 = GetMax64(cdest);
 		vcpuins.opr2 = GetMax32(csrc);
 		if(!csrc) {
@@ -3490,7 +3474,7 @@ tots _a_idiv(t_vaddrcc rsrc, t_nubit8 bit)
 		_newins_;
 		vcpuins.bit = 8;
 		cdest16 = (t_nsbit16)vcpu.ax;
-		_chk(csrc8 = (t_nsbit8)_im_read_ref(rsrc, 1));
+		_chk(csrc8 = (t_nsbit8)_m_read_ref(rsrc, 1));
 		vcpuins.opr1 = GetMax16(cdest16);
 		vcpuins.opr2 = GetMax8(csrc8);
 		if(!csrc8) {
@@ -3516,7 +3500,7 @@ tots _a_idiv(t_vaddrcc rsrc, t_nubit8 bit)
 	case 16: _bb("bit(16)");
 		vcpuins.bit = 16;
 		cdest32 = (t_nsbit32)((vcpu.dx << 16) | vcpu.ax);
-		_chk(csrc16 = (t_nsbit16)_im_read_ref(rsrc, 2));
+		_chk(csrc16 = (t_nsbit16)_m_read_ref(rsrc, 2));
 		vcpuins.opr1 = GetMax32(cdest32);
 		vcpuins.opr2 = GetMax16(csrc16);
 		if(!csrc16) {
@@ -3543,7 +3527,7 @@ tots _a_idiv(t_vaddrcc rsrc, t_nubit8 bit)
 		_newins_;
 		vcpuins.bit = 32;
 		cdest64 = (t_nsbit64)(((t_nubit64)vcpu.edx << 32) | vcpu.eax);
-		_chk(csrc32 = (t_nsbit32)_im_read_ref(rsrc, 4));
+		_chk(csrc32 = (t_nsbit32)_m_read_ref(rsrc, 4));
 		vcpuins.opr1 = GetMax64(cdest64);
 		vcpuins.opr2 = GetMax32(csrc32);
 		if(!csrc32) {
@@ -5473,6 +5457,7 @@ tots POPA()
 }
 tots BOUND_R16_M16_16()
 {
+	t_nubit64 data;
 	t_nsbit16 a16,l16,u16;
 	t_nsbit32 a32,l32,u32;
 	_cb("BOUND_R16_M16_16");
@@ -5488,15 +5473,17 @@ tots BOUND_R16_M16_16()
 		switch (_GetOperandSize) {
 		case 2: _bb("OperandSize(2)");
 			a16 = (t_nsbit16)GetMax16(vcpuins.cr);
-			l16 = (t_nsbit16)GetMax16(vcpuins.crm);
-			u16 = (t_nsbit16)GetMax16(vcpuins.crm >> 16);
+			_chk(data = _m_read_ref(vcpuins.rrm, 4));
+			l16 = (t_nsbit16)GetMax16(data);
+			u16 = (t_nsbit16)GetMax16(data >> 16);
 			if (a16 < l16 || a16 > u16)
 				_chk(_SetExcept_BR(0));
 			_be;break;
 		case 4: _bb("OperandSize(4)");
 			a32 = (t_nsbit32)GetMax32(vcpuins.cr);
-			l32 = (t_nsbit32)GetMax32(vcpuins.crm);
-			u32 = (t_nsbit32)GetMax32(vcpuins.crm >> 32);
+			_chk(data = _m_read_ref(vcpuins.rrm, 8));
+			l32 = (t_nsbit32)GetMax32(data);
+			u32 = (t_nsbit32)GetMax32(data >> 32);
 			if (a32 < l32 || a32 > u32)
 				_chk(_SetExcept_BR(0));
 			_be;break;
@@ -6309,6 +6296,7 @@ done LEA_R16_M16()
 }
 done MOV_SREG_RM16()
 {
+	t_nubit64 data;
 	_cb("MOV_SREG_RM16");
 	i386(0x8e) {
 		_adv;
@@ -6318,13 +6306,15 @@ done MOV_SREG_RM16()
 			_chk(_SetExcept_UD(0));
 			_be;
 		}
-		_chk(_s_load_seg(vcpuins.rmovsreg, GetMax16(vcpuins.crm)));
+		_chk(data = _m_read_ref(vcpuins.rrm, 2));
+		_chk(_s_load_seg(vcpuins.rmovsreg, GetMax16(data)));
 		if (vcpuins.rmovsreg->sregtype == SREG_STACK)
 			vcpuins.flagmaskint = 1;
 	} else {
 		vcpu.ip++;
 		_d_modrm_sreg(2, 0);
-		_s_load_seg(vcpuins.rmovsreg, GetMax16(vcpuins.crm));
+		data = _m_read_ref(vcpuins.rrm, 2);
+		_s_load_seg(vcpuins.rmovsreg, GetMax16(data));
 	}
 	_ce;
 }
@@ -6542,31 +6532,29 @@ done CALL_PTR16_16()
 {
 	t_nubit16 newcs;
 	t_nubit32 neweip;
+	t_nubit64 data;
 	_cb("CALL_PTR16_16");
 	i386(0x9a) {
 		_adv;
 		switch (_GetOperandSize) {
 		case 2: _bb("OperandSize(2)");
-			_chk(_d_imm(2));
+			_chk(_d_imm(4));
 			neweip = GetMax16(vcpuins.cimm);
-			_chk(_d_imm(2));
-			newcs = GetMax16(vcpuins.cimm);
+			newcs = GetMax16(vcpuins.cimm >> 16);
 			_chk(_e_call_far(newcs, neweip, 2));
 			_be;break;
 		case 4: _bb("OperandSize(4)");
-			_chk(_d_imm(4));
+			_chk(_d_imm(8));
 			neweip = GetMax32(vcpuins.cimm);
-			_chk(_d_imm(2));
-			newcs = GetMax16(vcpuins.cimm);
+			newcs = GetMax32(vcpuins.cimm >> 32);
 			_chk(_e_call_far(newcs, neweip, 4));
 			_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
-		_d_imm(2);
+		_d_imm(4);
 		neweip = GetMax16(vcpuins.cimm);
-		_d_imm(2);
-		newcs = GetMax16(vcpuins.cimm);
+		newcs = GetMax16(vcpuins.cimm >> 16);
 		_e_call_far(newcs, neweip, 2);
 	}
 	_ce;
@@ -7757,8 +7745,9 @@ done RET()
 }
 done LES_R16_M16_16()
 {
-	t_nubit16 selector = 0x0000;
-	t_nubit32 offset = 0x00000000;
+	t_nubit64 data;
+	t_nubit16 selector;
+	t_nubit32 offset;
 	_cb("LES_R16_M16_16");
 	i386(0xc4) {
 		_adv;
@@ -7768,30 +7757,33 @@ done LES_R16_M16_16()
 			_chk(UndefinedOpcode());
 			_be;
 		}
+		_chk(data = _m_read_ref(vcpuins.rrm, _GetOperandSize + 2));
 		switch (_GetOperandSize) {
 		case 2:
-			offset = GetMax16(vcpuins.crm);
-			selector = GetMax16(vcpuins.crm >> 16);
+			offset = GetMax16(data);
+			selector = GetMax16(data >> 16);
 			break;
 		case 4:
 			_newins_;
-			offset = GetMax32(vcpuins.crm);
-			selector = GetMax16(vcpuins.crm >> 32);
+			offset = GetMax32(data);
+			selector = GetMax16(data >> 32);
 			break;
 		default:_impossible_;break;}
 		_chk(_e_load_far(&vcpu.es, vcpuins.rr, selector, offset, _GetOperandSize));
 	} else {
 		vcpu.ip++;
 		_d_modrm(2, 4, 0);
-		_m_write_ref(vcpuins.rr, vcpuins.crm, 2);
-		_s_load_seg(&vcpu.es, (vcpuins.crm >> 16));
+		data = _m_read_ref(vcpuins.rrm, 4);
+		_m_write_ref(vcpuins.rr, data, 2);
+		_s_load_seg(&vcpu.es, (data >> 16));
 	}
 	_ce;
 }
 done LDS_R16_M16_16()
 {
-	t_nubit16 selector = 0x0000;
-	t_nubit32 offset = 0x00000000;
+	t_nubit64 data;
+	t_nubit16 selector;
+	t_nubit32 offset;
 	_cb("LDS_R16_M16_16");
 	i386(0xc5) {
 		_adv;
@@ -7801,23 +7793,25 @@ done LDS_R16_M16_16()
 			_chk(UndefinedOpcode());
 			_be;
 		}
+		_chk(data = _m_read_ref(vcpuins.rrm, _GetOperandSize + 2));
 		switch (_GetOperandSize) {
 		case 2:
-			offset = GetMax16(vcpuins.crm);
-			selector = GetMax16(vcpuins.crm >> 16);
+			offset = GetMax16(data);
+			selector = GetMax16(data >> 16);
 			break;
 		case 4:
 			_newins_;
-			offset = GetMax32(vcpuins.crm);
-			selector = GetMax16(vcpuins.crm >> 32);
+			offset = GetMax32(data);
+			selector = GetMax16(data >> 32);
 			break;
 		default:_impossible_;break;}
 		_chk(_e_load_far(&vcpu.ds, vcpuins.rr, selector, offset, _GetOperandSize));
 	} else {
 		vcpu.ip++;
 		_d_modrm(2, 4, 0);
-		_m_write_ref(vcpuins.rr, vcpuins.crm, 2);
-		_s_load_seg(&vcpu.ds, (vcpuins.crm >> 16));
+		data = _m_read_ref(vcpuins.rrm, 4);
+		_m_write_ref(vcpuins.rr, data, 2);
+		_s_load_seg(&vcpu.ds, (data >> 16));
 	}
 	_ce;
 }
@@ -9048,9 +9042,10 @@ done INS_FE()
 }
 done INS_FF()
 {
-	t_nubit8 modrm = 0x00;
-	t_nubit16 newcs = 0x0000;
-	t_nubit32 neweip = 0x00000000;
+	t_nubit8 modrm;
+	t_nubit16 newcs;
+	t_nubit32 neweip;
+	t_nubit64 data;
 	_cb("INS_FF");
 	i386(0xff) {
 		_adv;
@@ -9069,7 +9064,11 @@ done INS_FF()
 		case 2: /* CALL_RM16 */
 			_bb("CALL_RM16");
 			_chk(_d_modrm(0, _GetOperandSize, 0));
-			neweip = ((_GetOperandSize == 2) ? GetMax16(vcpuins.crm) : GetMax32(vcpuins.crm));
+			_chk(data = _m_read_ref(vcpuins.rrm, _GetOperandSize));
+			switch (_GetOperandSize) {
+			case 2: neweip = GetMax16(data);break;
+			case 4: neweip = GetMax32(data);break;
+			default:_impossible_;break;}
 			_chk(_e_call_near(neweip, _GetOperandSize));
 			_be;break;
 		case 3: /* CALL_M16_16 */
@@ -9080,14 +9079,15 @@ done INS_FF()
 				_chk(UndefinedOpcode());
 				_be;
 			}
+			_chk(data = _m_read_ref(vcpuins.rrm, _GetOperandSize + 2));
 			switch (_GetOperandSize) {
 			case 2:
-				neweip = GetMax16(vcpuins.crm);
-				newcs = GetMax16(vcpuins.crm >> 16);
+				neweip = GetMax16(data);
+				newcs = GetMax16(data >> 16);
 				break;
 			case 4:
-				neweip = GetMax32(vcpuins.crm);
-				newcs = GetMax16(vcpuins.crm >> 32);
+				neweip = GetMax32(data);
+				newcs = GetMax16(data >> 32);
 				break;
 			default:_impossible_;break;}
 			_chk(_e_call_far(newcs, neweip, _GetOperandSize));
@@ -9095,7 +9095,11 @@ done INS_FF()
 		case 4: /* JMP_RM16 */
 			_bb("JMP_RM16");
 			_chk(_d_modrm(0, _GetOperandSize, 0));
-			neweip = ((_GetOperandSize == 2) ? GetMax16(vcpuins.crm) : GetMax32(vcpuins.crm));
+			_chk(data = _m_read_ref(vcpuins.rrm, _GetOperandSize));
+			switch (_GetOperandSize) {
+			case 2: neweip = GetMax16(data);break;
+			case 4: neweip = GetMax32(data);break;
+			default:_impossible_;break;}
 			_chk(_e_jmp_near(neweip, _GetOperandSize));
 			_be;break;
 		case 5: /* JMP_M16_16 */
@@ -9106,14 +9110,15 @@ done INS_FF()
 				_chk(UndefinedOpcode());
 				_be;
 			}
+			_chk(data = _m_read_ref(vcpuins.rrm, _GetOperandSize + 2));
 			switch (_GetOperandSize) {
 			case 2:
-				neweip = GetMax16(vcpuins.crm);
-				newcs = GetMax16(vcpuins.crm >> 16);
+				neweip = GetMax16(data);
+				newcs = GetMax16(data >> 16);
 				break;
 			case 4:
-				neweip = GetMax32(vcpuins.crm);
-				newcs = GetMax16(vcpuins.crm >> 32);
+				neweip = GetMax32(data);
+				newcs = GetMax16(data >> 32);
 				break;
 			default:_impossible_;break;}
 			_chk(_e_jmp_far(newcs, neweip, _GetOperandSize));
@@ -9135,21 +9140,25 @@ done INS_FF()
 		case 0:	_a_inc(vcpuins.rrm,16);	break;
 		case 1:	_a_dec(vcpuins.rrm,16);	break;
 		case 2:	/* CALL_RM16 */
+			data = _m_read_ref(vcpuins.rrm, 2);
 			PUSH((t_vaddrcc)&vcpu.eip,16);
-			vcpu.eip = GetMax16(vcpuins.crm);
+			vcpu.eip = GetMax16(data);
 			break;
 		case 3:	/* CALL_M16_16 */
-			PUSH((t_vaddrcc)&vcpu.cs.selector,16);
-			PUSH((t_vaddrcc)&vcpu.eip,16);
-			vcpu.eip = GetMax16(vcpuins.crm);
-			_s_load_cs(_m_read_ref(vcpuins.rrm + 2, 2));
+			data = _m_read_ref(vcpuins.rrm, 4);
+			PUSH((t_vaddrcc)&vcpu.cs.selector, 16);
+			PUSH((t_vaddrcc)&vcpu.eip, 16);
+			vcpu.eip = GetMax16(data);
+			_s_load_cs(GetMax16(data >> 16));
 			break;
 		case 4:	/* JMP_RM16 */
-			vcpu.eip = GetMax16(vcpuins.crm);
+			data = _m_read_ref(vcpuins.rrm, 2);
+			vcpu.eip = GetMax16(data);
 			break;
 		case 5:	/* JMP_M16_16 */
-			vcpu.eip = GetMax16(vcpuins.crm);
-			_s_load_cs(_m_read_ref(vcpuins.rrm + 2, 2));
+			data = _m_read_ref(vcpuins.rrm, 4);
+			vcpu.eip = GetMax16(data);
+			_s_load_cs(GetMax16(data >> 16));
 			break;
 		case 6: /* PUSH_RM16 */
 			PUSH(vcpuins.rrm,16);
@@ -9282,13 +9291,13 @@ tots _m_movsx(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 destbyte, t_nubit8 srcby
 	_cb("_m_movsx");
 	switch (srcbyte) {
 	case 1: _bb("srcbyte(1)");
-		_chk(cdest = (t_nsbit8)_im_read_ref(rsrc, 1));
+		_chk(cdest = (t_nsbit8)_m_read_ref(rsrc, 1));
 		_be;break;
 	case 2: _bb("srcbyte(2)");
-		_chk(cdest = (t_nsbit16)_im_read_ref(rsrc, 2));
+		_chk(cdest = (t_nsbit16)_m_read_ref(rsrc, 2));
 		_be;break;
 	case 4: _bb("srcbyte(4)");
-		_chk(cdest = (t_nsbit32)_im_read_ref(rsrc, 4));
+		_chk(cdest = (t_nsbit32)_m_read_ref(rsrc, 4));
 		_be;break;
 	default: _bb("srcbyte");
 		_chk(_SetExcept_CE(srcbyte));
@@ -9296,10 +9305,10 @@ tots _m_movsx(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 destbyte, t_nubit8 srcby
 	}
 	switch (destbyte) {
 	case 2: _bb("destbyte(2)");
-		_chk(_im_write_ref(rdest, GetMax16(cdest), 2));
+		_chk(_m_write_ref(rdest, GetMax16(cdest), 2));
 		_be;break;
 	case 4: _bb("destbyte(4)");
-		_chk(_im_write_ref(rdest, GetMax32(cdest), 4));
+		_chk(_m_write_ref(rdest, GetMax32(cdest), 4));
 		_be;break;
 	default: _bb("destbyte");
 		_chk(_SetExcept_CE(destbyte));
@@ -9313,13 +9322,13 @@ tots _m_movzx(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 destbyte, t_nubit8 srcby
 	_cb("_m_movzx");
 	switch (srcbyte) {
 	case 1: _bb("srcbyte(1)");
-		_chk(cdest = (t_nubit8)_im_read_ref(rsrc, 1));
+		_chk(cdest = (t_nubit8)_m_read_ref(rsrc, 1));
 		_be;break;
 	case 2: _bb("srcbyte(2)");
-		_chk(cdest = (t_nubit16)_im_read_ref(rsrc, 2));
+		_chk(cdest = (t_nubit16)_m_read_ref(rsrc, 2));
 		_be;break;
 	case 4: _bb("srcbyte(4)");
-		_chk(cdest = (t_nubit32)_im_read_ref(rsrc, 4));
+		_chk(cdest = (t_nubit32)_m_read_ref(rsrc, 4));
 		_be;break;
 	default: _bb("srcbyte");
 		_chk(_SetExcept_CE(srcbyte));
@@ -9327,10 +9336,10 @@ tots _m_movzx(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 destbyte, t_nubit8 srcby
 	}
 	switch (destbyte) {
 	case 2: _bb("destbyte(2)");
-		_chk(_im_write_ref(rdest, GetMax16(cdest), 2));
+		_chk(_m_write_ref(rdest, GetMax16(cdest), 2));
 		_be;break;
 	case 4: _bb("destbyte(4)");
-		_chk(_im_write_ref(rdest, GetMax32(cdest), 4));
+		_chk(_m_write_ref(rdest, GetMax32(cdest), 4));
 		_be;break;
 	default: _bb("destbyte");
 		_chk(_SetExcept_CE(destbyte));
@@ -9347,7 +9356,7 @@ tots _a_bscc(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit, t_bool forward)
 	else temp = bit - 1;
 	switch (bit) {
 	case 16: _bb("bit(16)");
-		_chk(vcpuins.opr1 = GetMax16(_im_read_ref(rsrc, 2)));
+		_chk(vcpuins.opr1 = GetMax16(_m_read_ref(rsrc, 2)));
 		if (!vcpuins.opr1)
 			_SetEFLAGS_ZF;
 		else {
@@ -9356,11 +9365,11 @@ tots _a_bscc(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit, t_bool forward)
 				if (forward) temp++;
 				else temp--;
 			}
-			_chk(_im_write_ref(rdest, GetMax16(temp), 2));
+			_chk(_m_write_ref(rdest, GetMax16(temp), 2));
 		}
 		_be;break;
 	case 32: _bb("bit(32)");
-		_chk(vcpuins.opr1 = GetMax32(_im_read_ref(rsrc, 4)));
+		_chk(vcpuins.opr1 = GetMax32(_m_read_ref(rsrc, 4)));
 		if (!vcpuins.opr1)
 			_SetEFLAGS_ZF;
 		else {
@@ -9369,7 +9378,7 @@ tots _a_bscc(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit, t_bool forward)
 				if (forward) temp++;
 				else temp--;
 			}
-			_chk(_im_write_ref(rdest, GetMax32(temp), 4));
+			_chk(_m_write_ref(rdest, GetMax32(temp), 4));
 		}
 		_be;break;
 	default: _bb("bit");
@@ -9384,10 +9393,10 @@ tots _a_bt(t_vaddrcc rdest, t_nubit32 bitoperand, t_nubit8 bit)
 	_cb("_a_bt");
 	switch (bit) {
 	case 16: _bb("bit(16)");
-		_chk(cdest = GetMax16(_im_read_ref(rdest, 2)));
+		_chk(cdest = GetMax16(_m_read_ref(rdest, 2)));
 		_be;break;
 	case 32: _bb("bit(32)");
-		_chk(cdest = GetMax32(_im_read_ref(rdest, 4)));
+		_chk(cdest = GetMax32(_m_read_ref(rdest, 4)));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -9405,13 +9414,13 @@ tots _a_btc(t_vaddrcc rdest, t_nubit32 bitoperand, t_nubit8 bit)
 		_chk(cdest = GetMax16(_m_read_ref(rdest, 2)));
 		MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, GetBit(cdest, bitoperand));
 		MakeBit(cdest, bitoperand, !_GetEFLAGS_CF);
-		_chk(_im_write_ref(rdest, GetMax16(cdest), 2));
+		_chk(_m_write_ref(rdest, GetMax16(cdest), 2));
 		_be;break;
 	case 32: _bb("bit(32)");
 		_chk(cdest = GetMax32(_m_read_ref(rdest, 4)));
 		MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, GetBit(cdest, bitoperand));
 		MakeBit(cdest, bitoperand, !_GetEFLAGS_CF);
-		_chk(_im_write_ref(rdest, GetMax32(cdest), 4));
+		_chk(_m_write_ref(rdest, GetMax32(cdest), 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -9428,13 +9437,13 @@ tots _a_btr(t_vaddrcc rdest, t_nubit32 bitoperand, t_nubit8 bit)
 		_chk(cdest = GetMax16(_m_read_ref(rdest, 2)));
 		MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, GetBit(cdest, bitoperand));
 		ClrBit(cdest, bitoperand);
-		_chk(_im_write_ref(rdest, GetMax16(cdest), 2));
+		_chk(_m_write_ref(rdest, GetMax16(cdest), 2));
 		_be;break;
 	case 32: _bb("bit(32)");
 		_chk(cdest = GetMax32(_m_read_ref(rdest, 4)));
 		MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, GetBit(cdest, bitoperand));
 		ClrBit(cdest, bitoperand);
-		_chk(_im_write_ref(rdest, GetMax32(cdest), 4));
+		_chk(_m_write_ref(rdest, GetMax32(cdest), 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -9451,13 +9460,13 @@ tots _a_bts(t_vaddrcc rdest, t_nubit32 bitoperand, t_nubit8 bit)
 		_chk(cdest = GetMax16(_m_read_ref(rdest, 2)));
 		MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, GetBit(cdest, bitoperand));
 		SetBit(cdest, bitoperand);
-		_chk(_im_write_ref(rdest, GetMax16(cdest), 2));
+		_chk(_m_write_ref(rdest, GetMax16(cdest), 2));
 		_be;break;
 	case 32: _bb("bit(32)");
 		_chk(cdest = GetMax32(_m_read_ref(rdest, 4)));
 		MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, GetBit(cdest, bitoperand));
 		SetBit(cdest, bitoperand);
-		_chk(_im_write_ref(rdest, GetMax32(cdest), 4));
+		_chk(_m_write_ref(rdest, GetMax32(cdest), 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(bit));
@@ -9474,10 +9483,10 @@ tots _a_imul2(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 		_newins_;
 		vcpuins.bit = 16;
 		_chk(vcpuins.opr1 = (t_nsbit16)_m_read_ref(rdest, 2));
-		_chk(vcpuins.opr2 = (t_nsbit16)_im_read_ref(rsrc, 2));
+		_chk(vcpuins.opr2 = (t_nsbit16)_m_read_ref(rsrc, 2));
 		cdest = GetMax32((t_nsbit16)vcpuins.opr1 * (t_nsbit16)vcpuins.opr2);
 		vcpuins.result = GetMax16(cdest);
-		_chk(_im_write_ref(rdest, vcpuins.result, 2));
+		_chk(_m_write_ref(rdest, vcpuins.result, 2));
 		/* note: should not use rsrc after this point */
 		if (GetMax32(cdest) != GetMax32((t_nsbit16)vcpuins.result)) {
 			_SetEFLAGS_CF;
@@ -9491,10 +9500,10 @@ tots _a_imul2(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 bit)
 		_newins_;
 		vcpuins.bit = 32;
 		_chk(vcpuins.opr1 = (t_nsbit32)_m_read_ref(rdest, 4));
-		_chk(vcpuins.opr2 = (t_nsbit32)_im_read_ref(rsrc, 4));
+		_chk(vcpuins.opr2 = (t_nsbit32)_m_read_ref(rsrc, 4));
 		cdest = GetMax64((t_nsbit32)vcpuins.opr1 * (t_nsbit32)vcpuins.opr2);
 		vcpuins.result = GetMax32(cdest);
-		_chk(_im_write_ref(rdest, vcpuins.result, 4));
+		_chk(_m_write_ref(rdest, vcpuins.result, 4));
 		/* note: should not use rsrc after this point */
 		if (GetMax64(cdest) != GetMax64((t_nsbit32)vcpuins.result)) {
 			_SetEFLAGS_CF;
@@ -9514,7 +9523,7 @@ tots _a_setcc(t_vaddrcc rdest, t_bool condition)
 {
 	_cb("_a_setcc");
 	vcpuins.result = GetMax8(!!condition);
-	_chk(_im_write_ref(rdest, vcpuins.result, 1));
+	_chk(_m_write_ref(rdest, vcpuins.result, 1));
 	_ce;
 }
 tots _a_shld(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 count, t_nubit8 bit)
@@ -9539,7 +9548,7 @@ tots _a_shld(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 count, t_nubit8 bit)
 		case 16: _bb("bit(16)");
 			vcpuins.bit = 16;
 			vcpuins.opr1 = GetMax16(_m_read_ref(rdest, 2));
-			vcpuins.opr2 = GetMax16(_im_read_ref(rsrc, 2));
+			vcpuins.opr2 = GetMax16(_m_read_ref(rsrc, 2));
 			vcpuins.result = vcpuins.opr1;
 			flagcf = !!GetMSB16(vcpuins.result);
 			MakeBit(vcpu.eflags, VCPU_EFLAGS_CF,
@@ -9557,12 +9566,12 @@ tots _a_shld(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 count, t_nubit8 bit)
 					((!!GetMSB16(vcpuins.result)) ^ flagcf));
 			else
 				vcpuins.udf |= VCPU_EFLAGS_OF;
-			_chk(_im_write_ref(rdest, vcpuins.result, 2));
+			_chk(_m_write_ref(rdest, vcpuins.result, 2));
 			_be;break;
 		case 32: _bb("bit(32)");
 			vcpuins.bit = 32;
 			vcpuins.opr1 = GetMax32(_m_read_ref(rdest, 4));
-			vcpuins.opr2 = GetMax32(_im_read_ref(rsrc, 4));
+			vcpuins.opr2 = GetMax32(_m_read_ref(rsrc, 4));
 			vcpuins.result = vcpuins.opr1;
 			flagcf = !!GetMSB32(vcpuins.result);
 			MakeBit(vcpu.eflags, VCPU_EFLAGS_CF,
@@ -9580,7 +9589,7 @@ tots _a_shld(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 count, t_nubit8 bit)
 					((!!GetMSB32(vcpuins.result)) ^ flagcf));
 			else
 				vcpuins.udf |= VCPU_EFLAGS_OF;
-			_chk(_im_write_ref(rdest, vcpuins.result, 4));
+			_chk(_m_write_ref(rdest, vcpuins.result, 4));
 			_be;break;
 		default: _bb("bit");
 			_chk(_SetExcept_CE(bit));
@@ -9613,7 +9622,7 @@ tots _a_shrd(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 count, t_nubit8 bit)
 		case 16: _bb("bit(16)");
 			vcpuins.bit = 16;
 			vcpuins.opr1 = GetMax16(_m_read_ref(rdest, 2));
-			vcpuins.opr2 = GetMax16(_im_read_ref(rsrc, 2));
+			vcpuins.opr2 = GetMax16(_m_read_ref(rsrc, 2));
 			vcpuins.result = vcpuins.opr1;
 			flagcf = !!GetMSB16(vcpuins.result);
 			MakeBit(vcpu.eflags, VCPU_EFLAGS_CF,
@@ -9631,12 +9640,12 @@ tots _a_shrd(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 count, t_nubit8 bit)
 					((!!GetMSB16(vcpuins.result)) ^ flagcf));
 			else
 				vcpuins.udf |= VCPU_EFLAGS_OF;
-			_chk(_im_write_ref(rdest, vcpuins.result, 2));
+			_chk(_m_write_ref(rdest, vcpuins.result, 2));
 			_be;break;
 		case 32: _bb("bit(32)");
 			vcpuins.bit = 32;
 			vcpuins.opr1 = GetMax32(_m_read_ref(rdest, 4));
-			vcpuins.opr2 = GetMax32(_im_read_ref(rsrc, 4));
+			vcpuins.opr2 = GetMax32(_m_read_ref(rsrc, 4));
 			vcpuins.result = vcpuins.opr1;
 			flagcf = !!GetMSB32(vcpuins.result);
 			MakeBit(vcpu.eflags, VCPU_EFLAGS_CF,
@@ -9654,7 +9663,7 @@ tots _a_shrd(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 count, t_nubit8 bit)
 					((!!GetMSB32(vcpuins.result)) ^ flagcf));
 			else
 				vcpuins.udf |= VCPU_EFLAGS_OF;
-			_chk(_im_write_ref(rdest, vcpuins.result, 4));
+			_chk(_m_write_ref(rdest, vcpuins.result, 4));
 			_be;break;
 		default: _bb("bit");
 			_chk(_SetExcept_CE(bit));
@@ -9668,8 +9677,9 @@ tots _a_shrd(t_vaddrcc rdest, t_vaddrcc rsrc, t_nubit8 count, t_nubit8 bit)
 
 tots INS_0F_00()
 {
-	t_nubit8 modrm = 0x00;
-	t_nubit32 csel = 0x00000000;
+	t_nubit8 modrm;
+	t_nubit32 csel;
+	t_nubit64 data;
 	_cb("INS_0F_00");
 	_newins_;
 	_adv;
@@ -9682,43 +9692,46 @@ tots INS_0F_00()
 			_chk(_d_modrm(0, ((_GetModRM_MOD(modrm) == 3) ? _GetOperandSize : 2), 1));
 			csel = vcpu.ldtr.selector;
 			if (_GetOperandSize == 4 && !vcpuins.flagmem)
-				_chk(_im_write_ref(vcpuins.rrm, GetMax16(csel), 4));
+				_chk(_m_write_ref(vcpuins.rrm, GetMax16(csel), 4));
 			else
-				_chk(_im_write_ref(vcpuins.rrm, GetMax16(csel), 2));
+				_chk(_m_write_ref(vcpuins.rrm, GetMax16(csel), 2));
 			_be;break;
 		case 1: /* STR_RM16 */
 			_bb("STR_RM16");
 			_chk(_d_modrm(0, ((_GetModRM_MOD(modrm) == 3) ? _GetOperandSize : 2), 1));
 			csel = vcpu.tr.selector;
 			if (_GetOperandSize == 4 && !vcpuins.flagmem)
-				_chk(_im_write_ref(vcpuins.rrm, GetMax16(csel), 4));
+				_chk(_m_write_ref(vcpuins.rrm, GetMax16(csel), 4));
 			else
-				_chk(_im_write_ref(vcpuins.rrm, GetMax16(csel), 2));
+				_chk(_m_write_ref(vcpuins.rrm, GetMax16(csel), 2));
 			_be;break;
 		case 2: /* LLDT_RM16 */
 			_bb("LLDT_RM16");
 			_chk(_d_modrm(0, 2, 0));
-			_chk(_s_load_ldtr(GetMax16(vcpuins.crm)));
+			_chk(data = _m_read_ref(vcpuins.rrm, 2));
+			_chk(_s_load_ldtr(GetMax16(data)));
 			_be;break;
 		case 3: /* LTR_RM16 */
 			_bb("LTR_RM16");
 			_chk(_d_modrm(0, 2, 0));
-			_chk(_s_load_tr(GetMax16(vcpuins.crm)));
+			_chk(data = _m_read_ref(vcpuins.rrm, 2));
+			_chk(_s_load_tr(GetMax16(data)));
 			_be;break;
 		case 4: /* VERR_RM16 */
 			_bb("VERR_RM16");
 			_chk(_d_modrm(0, 2, 0));
-			if (_s_check_selector(GetMax16(vcpuins.crm))) {
+			_chk(data = _m_read_ref(vcpuins.rrm, 2));
+			if (_s_check_selector(GetMax16(data))) {
 				_ClrEFLAGS_ZF;
 			} else {
-				_chk(_s_descriptor(GetMax16(vcpuins.crm), 0));
-				if (_IsDescSys(vcpuins.cdesc) ||
-						(!_IsDescCodeConform(vcpuins.cdesc) &&
-							(_GetCPL > _GetDesc_DPL(vcpuins.cdesc) ||
-							_GetSelector_RPL(GetMax16(vcpuins.crm)) > _GetDesc_DPL(vcpuins.cdesc)))) {
+				_chk(_s_descriptor(GetMax16(data)));
+				if (_IsDescSys(vcpuins.descsel.desc) ||
+						(!_IsDescCodeConform(vcpuins.descsel.desc) &&
+							(_GetCPL > _GetDesc_DPL(vcpuins.descsel.desc) ||
+							_GetSelector_RPL(GetMax16(data)) > _GetDesc_DPL(vcpuins.descsel.desc)))) {
 					_ClrEFLAGS_ZF;
 				} else {
-					if (_IsDescData(vcpuins.cdesc) || _IsDescCodeReadable(vcpuins.cdesc)) {
+					if (_IsDescData(vcpuins.descsel.desc) || _IsDescCodeReadable(vcpuins.descsel.desc)) {
 						_SetEFLAGS_ZF;
 					} else {
 						_ClrEFLAGS_ZF;
@@ -9729,17 +9742,18 @@ tots INS_0F_00()
 		case 5: /* VERW_RM16 */
 			_bb("VERW_RM16");
 			_chk(_d_modrm(0, 2, 0));
-			if (_s_check_selector(GetMax16(vcpuins.crm))) {
+			_chk(data = _m_read_ref(vcpuins.rrm, 2));
+			if (_s_check_selector(GetMax16(data))) {
 				_ClrEFLAGS_ZF;
 			} else {
-				_chk(_s_descriptor(GetMax16(vcpuins.crm), 0));
-				if (_IsDescSys(vcpuins.cdesc) ||
-						(!_IsDescCodeConform(vcpuins.cdesc) &&
-							(_GetCPL > _GetDesc_DPL(vcpuins.cdesc) ||
-							_GetSelector_RPL(GetMax16(vcpuins.crm)) > _GetDesc_DPL(vcpuins.cdesc)))) {
+				_chk(_s_descriptor(GetMax16(data)));
+				if (_IsDescSys(vcpuins.descsel.desc) ||
+						(!_IsDescCodeConform(vcpuins.descsel.desc) &&
+							(_GetCPL > _GetDesc_DPL(vcpuins.descsel.desc) ||
+							_GetSelector_RPL(GetMax16(data)) > _GetDesc_DPL(vcpuins.descsel.desc)))) {
 					_ClrEFLAGS_ZF;
 				} else {
-					if (_IsDescDataWritable(vcpuins.cdesc)) {
+					if (_IsDescDataWritable(vcpuins.descsel.desc)) {
 						_SetEFLAGS_ZF;
 					} else {
 						_ClrEFLAGS_ZF;
@@ -9760,10 +9774,10 @@ tots INS_0F_00()
 }
 tots INS_0F_01()
 {
-	t_nubit8 modrm = 0x00;
-	t_nubit16 limit = 0x0000;
-	t_nubit32 base = 0x00000000;
-	t_nubit48 data = 0x000000000000;
+	t_nubit8 modrm;
+	t_nubit16 limit;
+	t_nubit32 base;
+	t_nubit64 data;
 	_cb("INS_0F_01");
 	_newins_;
 	_adv;
@@ -9778,10 +9792,10 @@ tots INS_0F_01()
 			_be;
 		}
 		switch (_GetOperandSize) {
-		case 2: data = ((t_nubit48)GetMax24(_GetGDTR_Base) << 16) | _GetGDTR_Limit;break;
-		case 4: data = ((t_nubit48)GetMax32(_GetGDTR_Base) << 16) | _GetGDTR_Limit;break;
+		case 2: data = ((t_nubit48)GetMax24(vcpu.gdtr.base) << 16) | vcpu.gdtr.limit;break;
+		case 4: data = ((t_nubit48)GetMax32(vcpu.gdtr.base) << 16) | vcpu.gdtr.limit;break;
 		default:_impossible_;break;}
-		_chk(_im_write_ref(vcpuins.rrm, data, 6));
+		_chk(_m_write_ref(vcpuins.rrm, data, 6));
 		_be;break;
 	case 1: /* SIDT_M16_32 */
 		_bb("SIDT_M16_32");
@@ -9792,10 +9806,10 @@ tots INS_0F_01()
 			_be;
 		}
 		switch (_GetOperandSize) {
-		case 2: data = ((t_nubit48)GetMax24(_GetIDTR_Base) << 16) | _GetIDTR_Limit;break;
-		case 4: data = ((t_nubit48)GetMax32(_GetIDTR_Base) << 16) | _GetIDTR_Limit;break;
+		case 2: data = ((t_nubit48)GetMax24(vcpu.idtr.base) << 16) | vcpu.idtr.limit;break;
+		case 4: data = ((t_nubit48)GetMax32(vcpu.idtr.base) << 16) | vcpu.idtr.limit;break;
 		default:_impossible_;break;}
-		_chk(_im_write_ref(vcpuins.rrm, data, 6));
+		_chk(_m_write_ref(vcpuins.rrm, data, 6));
 		_be;break;
 	case 2: /* LGDT_M16_32 */
 		_bb("LGDT_M16_32");
@@ -9807,11 +9821,12 @@ tots INS_0F_01()
 			_be;
 		}
 		_comment("LGDT_M16_32: read data L%08X\n", vcpuins.rrm - vram.base);
-		limit = GetMax16(vcpuins.crm);
-		base = GetMax32(vcpuins.crm >> 16);
+		_chk(data = _m_read_ref(vcpuins.rrm, 6));
+		limit = GetMax16(data);
+		base = GetMax32(data >> 16);
 		_comment("LGDT_M16_32: read base=%08X, limit=%04X\n", base, limit);
 		_chk(_s_load_gdtr(base, limit, _GetOperandSize));
-		_comment("LGDT_M16_32: load base=%08X, limit=%04X\n", GetMax32(_GetGDTR_Base), GetMax16(_GetGDTR_Limit));
+		_comment("LGDT_M16_32: load base=%08X, limit=%04X\n", GetMax32(vcpu.gdtr.base), GetMax16(vcpu.gdtr.limit));
 		_be;break;
 	case 3: /* LIDT_M16_32 */
 		_bb("LIDT_M16_32");
@@ -9823,25 +9838,27 @@ tots INS_0F_01()
 			_be;
 		}
 		_comment("LIDT_M16_32: read data L%08X\n", vcpuins.rrm - vram.base);
-		limit = GetMax16(vcpuins.crm);
-		base = GetMax32(vcpuins.crm >> 16);
+		_chk(data = _m_read_ref(vcpuins.rrm, 6));
+		limit = GetMax16(data);
+		base = GetMax32(data >> 16);
 		_comment("LIDT_M16_32: read base=%08X, limit=%04X\n", base, limit);
 		_chk(_s_load_idtr(base, limit, _GetOperandSize));
-		_comment("LIDT_M16_32: load base=%08X, limit=%04X\n", GetMax32(_GetIDTR_Base), GetMax16(_GetIDTR_Limit));
+		_comment("LIDT_M16_32: load base=%08X, limit=%04X\n", GetMax32(vcpu.idtr.base), GetMax16(vcpu.idtr.limit));
 		_be;break;
 	case 4: /* SMSW_RM16 */
 		_bb("SMSW_RM16");
 		_chk(_d_modrm(0, ((_GetModRM_MOD(modrm) == 3) ? _GetOperandSize : 2), 1));
 		if (_GetOperandSize == 4 && !vcpuins.flagmem)
-			_chk(_im_write_ref(vcpuins.rrm, GetMax16(vcpu.cr0), 4));
+			_chk(_m_write_ref(vcpuins.rrm, GetMax16(vcpu.cr0), 4));
 		else
-			_chk(_im_write_ref(vcpuins.rrm, GetMax16(vcpu.cr0), 2));
+			_chk(_m_write_ref(vcpuins.rrm, GetMax16(vcpu.cr0), 2));
 		_be;break;
 	case 5: _bb("ModRM_REG(5)");_chk(UndefinedOpcode());_be;break;
 	case 6: /* LMSW_RM16 */
 		_bb("LMSW_RM16");
 		_chk(_d_modrm(0, 2, 0));
-		_chk(_s_load_cr0_msw(GetMax16(vcpuins.crm)));
+		_chk(data = _m_read_ref(vcpuins.rrm, 2));
+		_chk(_s_load_cr0_msw(GetMax16(data)));
 		_be;break;
 	case 7: _bb("ModRM_REG(7)");_chk(UndefinedOpcode());_be;break;
 	default:_impossible_;break;}
@@ -9856,22 +9873,22 @@ tots LAR_R16_RM16()
 	if (_IsProtected) {
 		_bb("Protected(1)");
 		_chk(_d_modrm(_GetOperandSize, _GetOperandSize, 0));
-		selector = GetMax16(vcpuins.crm);
+		selector = GetMax16(_m_read_ref(vcpuins.rrm, 2));
 		if (_s_check_selector(selector)) {
 			_ClrEFLAGS_ZF;
 		} else {
-			_chk(_s_descriptor(selector, 0));
-			if (_IsDescUser(vcpuins.cdesc)) {
-				if (_IsDescCodeConform(vcpuins.cdesc))
+			_chk(_s_descriptor(selector));
+			if (_IsDescUser(vcpuins.descsel.desc)) {
+				if (_IsDescCodeConform(vcpuins.descsel.desc))
 					_SetEFLAGS_ZF;
 				else {
-					if (_GetCPL > _GetDesc_DPL(vcpuins.cdesc) || _GetSelector_RPL(selector) > _GetDesc_DPL(vcpuins.cdesc))
+					if (_GetCPL > _GetDesc_DPL(vcpuins.descsel.desc) || _GetSelector_RPL(selector) > _GetDesc_DPL(vcpuins.descsel.desc))
 						_ClrEFLAGS_ZF;
 					else
 						_SetEFLAGS_ZF;
 				}
 			} else {
-				switch (_GetDesc_Type(vcpuins.cdesc)) {
+				switch (_GetDesc_Type(vcpuins.descsel.desc)) {
 				case VCPU_DESC_SYS_TYPE_TSS_16_AVL:
 				case VCPU_DESC_SYS_TYPE_LDT:
 				case VCPU_DESC_SYS_TYPE_TSS_16_BUSY:
@@ -9890,10 +9907,10 @@ tots LAR_R16_RM16()
 		if (_GetEFLAGS_ZF) {
 			switch (_GetOperandSize) {
 			case 2: _bb("OperandSize(2)");
-				_chk(_m_write_ref(vcpuins.rr, (GetMax16(vcpuins.cdesc >> 32) & 0xff00), 2));
+				_chk(_m_write_ref(vcpuins.rr, (GetMax16(vcpuins.descsel.desc >> 32) & 0xff00), 2));
 				_be;break;
 			case 4: _bb("OperandSize(4)");
-				_chk(_m_write_ref(vcpuins.rr, (GetMax32(vcpuins.cdesc >> 32) & 0x00ffff00), 4));
+				_chk(_m_write_ref(vcpuins.rr, (GetMax32(vcpuins.descsel.desc >> 32) & 0x00ffff00), 4));
 				_be;break;
 			default:_impossible_;break;}
 		}
@@ -9915,22 +9932,22 @@ tots LSL_R16_RM16()
 	if (_IsProtected) {
 		_bb("Protected(1)");
 		_chk(_d_modrm(_GetOperandSize, _GetOperandSize, 0));
-		selector = GetMax16(vcpuins.crm);
+		selector = GetMax16(_m_read_ref(vcpuins.rrm, 2));
 		if (_s_check_selector(selector)) {
 			_ClrEFLAGS_ZF;
 		} else {
-			_chk(_s_descriptor(selector, 0));
-			if (_IsDescUser(vcpuins.cdesc)) {
-				if (_IsDescCodeConform(vcpuins.cdesc))
+			_chk(_s_descriptor(selector));
+			if (_IsDescUser(vcpuins.descsel.desc)) {
+				if (_IsDescCodeConform(vcpuins.descsel.desc))
 					_SetEFLAGS_ZF;
 				else {
-					if (_GetCPL > _GetDesc_DPL(vcpuins.cdesc) || _GetSelector_RPL(selector) > _GetDesc_DPL(vcpuins.cdesc))
+					if (_GetCPL > _GetDesc_DPL(vcpuins.descsel.desc) || _GetSelector_RPL(selector) > _GetDesc_DPL(vcpuins.descsel.desc))
 						_ClrEFLAGS_ZF;
 					else
 						_SetEFLAGS_ZF;
 				}
 			} else {
-				switch (_GetDesc_Type(vcpuins.cdesc)) {
+				switch (_GetDesc_Type(vcpuins.descsel.desc)) {
 				case VCPU_DESC_SYS_TYPE_TSS_16_AVL:
 				case VCPU_DESC_SYS_TYPE_LDT:
 				case VCPU_DESC_SYS_TYPE_TSS_16_BUSY:
@@ -9944,8 +9961,8 @@ tots LSL_R16_RM16()
 			}
 		}
 		if (_GetEFLAGS_ZF) {
-			limit = _IsDescSegGranularLarge(vcpuins.cdesc) ?
-				((_GetDescSeg_Limit(vcpuins.cdesc) << 12) | 0x0fff) : _GetDescSeg_Limit(vcpuins.cdesc);
+			limit = _IsDescSegGranularLarge(vcpuins.descsel.desc) ?
+				((_GetDescSeg_Limit(vcpuins.descsel.desc) << 12) | 0x0fff) : _GetDescSeg_Limit(vcpuins.descsel.desc);
 			switch (_GetOperandSize) {
 			case 2: _bb("OperandSize(2)");
 				_chk(_m_write_ref(vcpuins.rr, GetMax16(limit), 2));
@@ -10477,8 +10494,9 @@ tots IMUL_R16_RM16()
 }
 tots LSS_R16_M16_16()
 {
-	t_nubit16 selector = 0x0000;
-	t_nubit32 offset = 0x00000000;
+	t_nubit16 selector;
+	t_nubit32 offset;
+	t_nubit64 data;
 	_cb("LSS_R16_M16_16");
 	_newins_;
 	_adv;
@@ -10488,14 +10506,15 @@ tots LSS_R16_M16_16()
 		_chk(UndefinedOpcode());
 		_be;
 	}
+	_chk(data = _m_read_ref(vcpuins.rrm, _GetOperandSize + 2));
 	switch (_GetOperandSize) {
 	case 2:
-		offset = GetMax16(vcpuins.crm);
-		selector = GetMax16(vcpuins.crm >> 16);
+		offset = GetMax16(data);
+		selector = GetMax16(data >> 16);
 		break;
 	case 4:
-		offset = GetMax32(vcpuins.crm);
-		selector = GetMax16(vcpuins.crm >> 32);
+		offset = GetMax32(data);
+		selector = GetMax16(data >> 32);
 		break;
 	default:_impossible_;break;}
 	_chk(_e_load_far(&vcpu.ss, vcpuins.rr, selector, offset, _GetOperandSize));
@@ -10512,8 +10531,9 @@ tots BTR_RM16_R16()
 }
 tots LFS_R16_M16_16()
 {
-	t_nubit16 selector = 0x0000;
-	t_nubit32 offset = 0x00000000;
+	t_nubit16 selector;
+	t_nubit32 offset;
+	t_nubit64 data;
 	_cb("LFS_R16_M16_16");
 	_newins_;
 	_adv;
@@ -10523,14 +10543,15 @@ tots LFS_R16_M16_16()
 		_chk(UndefinedOpcode());
 		_be;
 	}
+	_chk(data = _m_read_ref(vcpuins.rrm, _GetOperandSize + 2));
 	switch (_GetOperandSize) {
 	case 2:
-		offset = GetMax16(vcpuins.crm);
-		selector = GetMax16(vcpuins.crm >> 16);
+		offset = GetMax16(data);
+		selector = GetMax16(data >> 16);
 		break;
 	case 4:
-		offset = GetMax32(vcpuins.crm);
-		selector = GetMax16(vcpuins.crm >> 32);
+		offset = GetMax32(data);
+		selector = GetMax16(data >> 32);
 		break;
 	default:_impossible_;break;}
 	_chk(_e_load_far(&vcpu.fs, vcpuins.rr, selector, offset, _GetOperandSize));
@@ -10538,8 +10559,9 @@ tots LFS_R16_M16_16()
 }
 tots LGS_R16_M16_16()
 {
-	t_nubit16 selector = 0x0000;
-	t_nubit32 offset = 0x00000000;
+	t_nubit16 selector;
+	t_nubit32 offset;
+	t_nubit64 data;
 	_cb("LGS_R16_M16_16");
 	_newins_;
 	_adv;
@@ -10549,14 +10571,15 @@ tots LGS_R16_M16_16()
 		_chk(UndefinedOpcode());
 		_be;
 	}
+	_chk(data = _m_read_ref(vcpuins.rrm, _GetOperandSize + 2));
 	switch (_GetOperandSize) {
 	case 2:
-		offset = GetMax16(vcpuins.crm);
-		selector = GetMax16(vcpuins.crm >> 16);
+		offset = GetMax16(data);
+		selector = GetMax16(data >> 16);
 		break;
 	case 4:
-		offset = GetMax32(vcpuins.crm);
-		selector = GetMax16(vcpuins.crm >> 32);
+		offset = GetMax32(data);
+		selector = GetMax16(data >> 32);
 		break;
 	default:_impossible_;break;}
 	_chk(_e_load_far(&vcpu.gs, vcpuins.rr, selector, offset, _GetOperandSize));
