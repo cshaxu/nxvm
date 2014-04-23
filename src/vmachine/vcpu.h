@@ -22,6 +22,7 @@ typedef struct {
 	t_nubit4  dpl; /* if segment is cs, this is cpl */
 	union {
 		struct {
+			t_bool executable;
 			t_bool accessed;
 			union {
 				struct {
@@ -309,13 +310,15 @@ typedef struct {
 #define VCPU_DESC_SYS_TYPE_INTGATE_32  0x0e
 #define VCPU_DESC_SYS_TYPE_TRAPGATE_32 0x0f
 
-#define _GetDescTSSBusy(descriptor)   (GetBit((descriptor), VCPU_DESC_TSS_TYPE_B))
-#define _SetDescTSSBusy(descriptor)   (SetBit((descriptor), VCPU_DESC_TSS_TYPE_B))
+#define _GetDescTSS_Type_B(descriptor)   (GetBit((descriptor), VCPU_DESC_TSS_TYPE_B))
+#define _SetDescTSS_Type_B(descriptor)   (SetBit((descriptor), VCPU_DESC_TSS_TYPE_B))
+
 #define _IsDescLDT(descriptor)        (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_LDT))
 #define _IsDescTaskGate(descriptor)   (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TASKGATE))
 #define _IsDescTSS(descriptor)        (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x05) == 0x01))
 #define _IsDescTSSAvl(descriptor)     (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x07) == 0x01))
 #define _IsDescTSSBusy(descriptor)    (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x07) == 0x03))
+#define _SetDescTSSBusy(descriptor)   (_SetDescTSS_Type_B(descriptor))
 #define _IsDescTSS32(descriptor)      (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x0d) == 0x09))
 #define _IsDescTSS16Avl(descriptor)   (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TSS_16_AVL))
 #define _IsDescTSS16Busy(descriptor)  (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TSS_16_BUSY))
@@ -369,6 +372,7 @@ typedef struct {
 
 #define _IsDescSegGranularLarge(descriptor)  (_GetDescSeg_G(descriptor))
 #define _IsDescUserAccessed(descriptor)      (_IsDescUser(descriptor) && _GetDescUser_Type_A(descriptor))
+#define _SetDescUserAccessed(descriptor)     (_SetDescUser_Type_A(descriptor))
 #define _IsDescUserExecutable(descriptor)    (_IsDescUser(descriptor) && _GetDescUser_Type_CD(descriptor))
 #define _IsDescCode(descriptor)              (_IsDescUser(descriptor) && _IsDescUserExecutable(descriptor))
 #define _IsDescData(descriptor)              (_IsDescUser(descriptor) && !_IsDescUserExecutable(descriptor))
@@ -376,6 +380,7 @@ typedef struct {
 #define _IsDescDataExpDown(descriptor)       (_IsDescData(descriptor) && _GetDescData_Type_E(descriptor))
 #define _IsDescCodeReadable(descriptor)      (_IsDescCode(descriptor) && _GetDescCode_Type_R(descriptor))
 #define _IsDescCodeConform(descriptor)       (_IsDescCode(descriptor) && _GetDescCode_Type_C(descriptor))
+#define _IsDescCodeNonConform(descriptor)    (_IsDescCode(descriptor) && !_GetDescCode_Type_C(descriptor))
 #define _IsDescDataBig(descriptor)           (_IsDescData(descriptor) && _GetDescData_B(descriptor))
 #define _IsDescCode32(descriptor)            (_IsDescCode(descriptor) && _GetDescCode_D(descriptor))
 

@@ -1141,7 +1141,7 @@ static void MOV_R16_RM16()
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
-static void MOV_RM16_SEG()
+static void MOV_RM16_SREG()
 {
 	dvip++;
 	GetModRegRM(4,16);
@@ -1155,7 +1155,7 @@ static void LEA_R16_M16()
 	SPRINTF(dop, "LEA");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
-static void MOV_SEG_RM16()
+static void MOV_SREG_RM16()
 {
 	dvip++;
 	GetModRegRM(4,16);
@@ -2052,9 +2052,9 @@ static void exec(t_nubit8 opcode)
 	case 0x89: MOV_RM16_R16();break;
 	case 0x8a: MOV_R8_RM8();   break;
 	case 0x8b: MOV_R16_RM16();break;
-	case 0x8c: MOV_RM16_SEG();break;
+	case 0x8c: MOV_RM16_SREG();break;
 	case 0x8d: LEA_R16_M16();  break;
-	case 0x8e: MOV_SEG_RM16();break;
+	case 0x8e: MOV_SREG_RM16();break;
 	case 0x8f: POP_RM16();     break;
 	case 0x90: NOP();          break;
 	case 0x91: XCHG_CX_AX();   break;

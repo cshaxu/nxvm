@@ -44,7 +44,7 @@ typedef struct {
 	t_cpuins_prefix      prefix_lock;
 	t_cpuins_prefix      prefix_oprsize;
 	t_cpuins_prefix      prefix_addrsize;
-	t_cpu_sreg *roverds, *roverss;
+	t_cpu_sreg *roverds, *roverss, *rmovsreg;
 	t_nubit32 except, excode;
 	t_faddrcc table[0x100], table_0f[0x100];
 	t_nubit64 cdesc, cimm, crm, cr;
@@ -54,6 +54,7 @@ typedef struct {
 	t_nubit32 eimm, erm;
 	t_bool    flagmem; /* if rm is in memory */
 	t_bool    flagmss; /* if rm is in stack segment */
+	t_bool    flagmaskint; /* if int is disabled once */
 } t_cpuins;
 
 #define VCPUINS_EXCEPT_GP 0x00000001 /* general protection */

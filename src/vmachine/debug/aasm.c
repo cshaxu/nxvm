@@ -2090,7 +2090,7 @@ static void MOV_R16_RM16()
 	avip++;
 	SetModRegRM(aopri2, aopri1.reg16);
 }
-static void MOV_RM16_SEG()
+static void MOV_RM16_SREG()
 {
 	setbyte(0x8c);
 	avip++;
@@ -2102,7 +2102,7 @@ static void LEA_R16_M16()
 	avip++;
 	SetModRegRM(aopri2, aopri1.reg16);
 }
-static void MOV_SEG_RM16()
+static void MOV_SREG_RM16()
 {
 	setbyte(0x8e);
 	avip++;
@@ -3052,8 +3052,8 @@ static void MOV()
 	else if (ARG_R16_RM16) MOV_R16_RM16();
 	else if (ARG_RM8_R8) MOV_RM8_R8();
 	else if (ARG_RM16_R16) MOV_RM16_R16();
-	else if (ARG_RM16_SEG) MOV_RM16_SEG();
-	else if (ARG_SEG_RM16) MOV_SEG_RM16();
+	else if (ARG_RM16_SEG) MOV_RM16_SREG();
+	else if (ARG_SEG_RM16) MOV_SREG_RM16();
 	else if (ARG_RM8_I8) MOV_M8_I8();
 	else if (ARG_RM16_I16) MOV_M16_I16();
 	else error = 1;
