@@ -6373,7 +6373,6 @@ static t_strptr take_arg(t_strptr s)
 	*(rend + 1) = 0;
 	return rresult;
 }
-
 t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 {
 	t_nubit8 len;
@@ -6468,7 +6467,7 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 	return len;
 }
 
-/* extended routines - assemble a paragraph with jmp labels */
+/* extended routines - assemble a paragraph with call/jmp labels */
 typedef struct {
 	t_string stmt;
 	t_nubit32 stmt_id;

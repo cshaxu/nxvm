@@ -13,8 +13,6 @@ extern "C" {
 
 #define NXVM_DEVICE_CMOS "DS1302"
 
-#define VCMOS_DEBUG
-
 #define VCMOS_RTC_SECOND         0x00
 #define VCMOS_RTC_SECOND_ALARM   0x01
 #define VCMOS_RTC_MINUTE         0x02

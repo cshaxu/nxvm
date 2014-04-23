@@ -171,9 +171,10 @@ typedef t_nubitcc t_faddrcc;
 
 #define ExecFun(faddr) (*(void (*)(void))(faddr))()
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "memory.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <memory.h>
 
 #ifdef __cplusplus
 }/*_EOCD_*/

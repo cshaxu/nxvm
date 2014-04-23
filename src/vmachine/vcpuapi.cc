@@ -8,8 +8,8 @@ static t_cpu oldbcpu, newbcpu;
 static t_bool flagbrec;
 static t_cpurec bcpurec;
 
-#define VCPUAPI_COMPARE 0
-#define VCPUAPI_RECORD  1
+#define VCPUAPI_COMPARE 1
+#define VCPUAPI_RECORD  0
 
 #ifdef VGLOBAL_BOCHS
 static t_bool flagvalid = 0;

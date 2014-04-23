@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.014a]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.014b]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -146,23 +146,21 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0140 Built Trace System
  * 0143 Built Debug 32
  * 0144 Built Aasm 32
- * 014a Rebuilt VMachine
+ * 014b Rebuilt VMachine
  *
  * Format Unify:
- * reconstruct t_cpu_sreg
- * check all macro names
- * replace all constants with MACRO
  * new flag system: FLAG_X_X 0x0010, bit macros
  *
  */
 
-#include "stdio.h"
+#include <stdio.h>
 
 #include "console.h"
 
 int main(int argc, char **argv)
 {
 	fprintf(stdout, "%s\n", PRODUCT);
+	fprintf(stdout, "Built on %s at %s.\n", __DATE__, __TIME__);
 	console();
 	return 0;
 }

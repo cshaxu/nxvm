@@ -10,20 +10,20 @@
 
 t_debug vdebug;
 
-#define MAXNARG 256
-#define MAXNASMARG 4
+#define DEBUG_MAXNARG 256
+#define DEBUG_MAXNASMARG 4
 
-static t_nubitcc errPos;
+static t_nubitcc nErrPos;
 static t_nubit8 narg;
 static char **arg;
 static t_bool flagexit;
-static t_string cmdBuff, cmdCopy, filename;
+static t_string strCmdBuff, strCmdCopy, strFileName;
 
 static void seterr(t_nubitcc pos)
 {
-	errPos = (t_nubitcc)(arg[pos] - cmdCopy + strlen(arg[pos]) + 1);
+	nErrPos = (t_nubitcc)(arg[pos] - strCmdCopy + strlen(arg[pos]) + 1);
 }
-static t_nubit8 scannubit8(t_strptr s)
+static t_nubit8 scannubit8(const t_strptr s)
 {
 	t_nubit8 ans = 0;
 	int i = 0;
@@ -39,7 +39,7 @@ static t_nubit8 scannubit8(t_strptr s)
 	}
 	return ans;
 }
-static t_nubit16 scannubit16(t_strptr s)
+static t_nubit16 scannubit16(const t_strptr s)
 {
 	t_nubit16 ans = 0;
 	int i = 0;
@@ -54,7 +54,7 @@ static t_nubit16 scannubit16(t_strptr s)
 	}
 	return ans;
 }
-static t_nubit32 scannubit32(t_strptr s)
+static t_nubit32 scannubit32(const t_strptr s)
 {
 	t_nubit32 ans = 0;
 	int i = 0;
@@ -141,7 +141,7 @@ static void a()
 		aconsole();
 	} else if(narg == 2) {
 		addrparse(vcpu.cs.selector, arg[1]);
-		if(errPos) return;
+		if(nErrPos) return;
 		asmSegRec = seg;
 		asmPtrRec = ptr;
 		aconsole();
@@ -161,7 +161,7 @@ static void c()
 		seg2 = seg;
 		ptr2 = ptr;
 		range = scannubit16(arg[2])-ptr1;
-		if(!errPos) {
+		if(!nErrPos) {
 			for(i = 0;i <= range;++i) {
 				val1 = vramRealByte(seg1,ptr1+i);
 				val2 = vramRealByte(seg2,ptr2+i);
@@ -214,12 +214,12 @@ static void d()
 	if(narg == 1) dprint(dumpSegRec,dumpPtrRec,dumpPtrRec+0x7f);
 	else if(narg == 2) {
 		addrparse(vcpu.ds.selector,arg[1]);
-		if(errPos) return;
+		if(nErrPos) return;
 		dprint(seg,ptr,ptr+0x7f);
 	} else if(narg == 3) {
 		addrparse(vcpu.ds.selector,arg[1]);
 		ptr2 = scannubit16(arg[2]);
-		if(errPos) return;
+		if(nErrPos) return;
 		if(ptr > ptr2) seterr(2);
 		else dprint(seg,ptr,ptr2);
 	} else seterr(3);
@@ -232,21 +232,21 @@ static void e()
 	if(narg == 1) seterr(0);
 	else if(narg == 2) {
 		addrparse(vcpu.ds.selector,arg[1]);
-		if(errPos) return;
+		if(nErrPos) return;
 		vapiPrint("%04X:%04X  ", seg, ptr);
 		vapiPrint("%02X",vramRealByte(seg,ptr));
 		vapiPrint(".");
 		FGETS(s,MAXLINE,stdin);
 		lcase(s);//!!
 		val = scannubit8(s);//!!
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			vramRealByte(seg,ptr) = val;
 	} else if(narg > 2) {
 		addrparse(vcpu.ds.selector,arg[1]);
-		if(errPos) return;
+		if(nErrPos) return;
 		for(i = 2;i < narg;++i) {
 			val = scannubit8(arg[i]);//!!
-			if(!errPos) vramRealByte(seg,ptr) = val;
+			if(!nErrPos) vramRealByte(seg,ptr) = val;
 			else break;
 			ptr++;
 		}
@@ -263,11 +263,11 @@ static void f()
 		addrparse(vcpu.ds.selector,arg[1]);
 		end = scannubit16(arg[2]);
 		if(end < ptr) seterr(2);
-		if(!errPos) {
+		if(!nErrPos) {
 			nbyte = narg - 3;
 			for(i = ptr,j = 0;i <= end;++i,++j) {
 				val = scannubit8(arg[j%nbyte+3]);
-				if(!errPos) vramRealByte(seg,i) = val;
+				if(!nErrPos) vramRealByte(seg,i) = val;
 				else return;
 			}
 		}
@@ -301,7 +301,7 @@ static void g()
 		vdebug.breakip = ptr;
 		break;
 	default:seterr(narg-1);break;}
-	if(errPos) return;
+	if(nErrPos) return;
 	vmachineResume();
 	while (vmachine.flagrun) vapiSleep(1);
 	vdebug.flagbreak = 0;
@@ -315,7 +315,7 @@ static void h()
 	else {
 		val1 = scannubit16(arg[1]);
 		val2 = scannubit16(arg[2]);
-		if(!errPos) {
+		if(!nErrPos) {
 			vapiPrint("%04X",val1+val2);
 			vapiPrint("  ");
 			vapiPrint("%04X",val1-val2);
@@ -330,7 +330,7 @@ static void i()
 	if(narg != 2) seterr(narg-1);
 	else {
 		in = scannubit16(arg[1]);
-		if (errPos) return;
+		if (nErrPos) return;
 		ExecFun(vport.in[in]);
 		vapiPrint("%08X\n", vport.iodword);
 	}
@@ -341,7 +341,7 @@ static void l()
 	t_nubit8 c;
 	t_nubit16 i = 0;
 	t_nubit32 len = 0;
-	FILE *load = FOPEN(filename,"rb");
+	FILE *load = FOPEN(strFileName,"rb");
 	if(!load) vapiPrint("File not found\n");
 	else {
 		switch(narg) {
@@ -353,7 +353,7 @@ static void l()
 			addrparse(vcpu.cs.selector,arg[1]);
 			break;
 		default:seterr(narg-1);break;}
-		if(!errPos) {
+		if(!nErrPos) {
 			c = fgetc(load);
 			while(!feof(load)) {
 				vramRealByte(seg+i,ptr+len++) = c;
@@ -381,7 +381,7 @@ static void m()
 		seg2 = seg;
 		ptr2 = ptr;
 		range = scannubit16(arg[2])-ptr1;
-		if(!errPos) {
+		if(!nErrPos) {
 			if(((seg1<<4)+ptr1) < ((seg2<<4)+ptr2)) {
 				for(i = range;i >= 0;--i)
 					vramRealByte(seg2,ptr2+i) = vramRealByte(seg1,ptr1+i);
@@ -396,7 +396,7 @@ static void m()
 static void n()
 {
 	if(narg != 2) seterr(narg-1);
-	else STRCPY(filename,arg[1]);
+	else STRCPY(strFileName,arg[1]);
 }
 // output
 static void o()
@@ -405,9 +405,9 @@ static void o()
 	if(narg != 3) seterr(narg-1);
 	else {
 		out = scannubit16(arg[1]);
-		if (errPos) return;
+		if (nErrPos) return;
 		vport.iodword = scannubit32(arg[2]);
-		if (errPos) return;
+		if (nErrPos) return;
 		ExecFun(vport.out[out]);
 	}
 }
@@ -478,7 +478,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_ax = value;
 	} else if(!STRCMP(arg[1],"bx")) {
 		vapiPrint("BX ");
@@ -486,7 +486,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_bx = value;
 	} else if(!STRCMP(arg[1],"cx")) {
 		vapiPrint("CX ");
@@ -494,7 +494,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_cx = value;
 	} else if(!STRCMP(arg[1],"dx")) {
 		vapiPrint("DX ");
@@ -502,7 +502,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_dx = value;
 	} else if(!STRCMP(arg[1],"bp")) {
 		vapiPrint("BP ");
@@ -510,7 +510,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_bp = value;
 	} else if(!STRCMP(arg[1],"sp")) {
 		vapiPrint("SP ");
@@ -518,7 +518,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_sp = value;
 	} else if(!STRCMP(arg[1],"si")) {
 		vapiPrint("SI ");
@@ -526,7 +526,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_si = value;
 	} else if(!STRCMP(arg[1],"di")) {
 		vapiPrint("DI ");
@@ -534,7 +534,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_di = value;
 	} else if(!STRCMP(arg[1],"ss")) {
 		vapiPrint("SS ");
@@ -542,7 +542,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.ss, GetMax16(value)))
 				vapiPrint("debug: fail to load ss from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1],"cs")) {
@@ -551,7 +551,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.cs, GetMax16(value)))
 				vapiPrint("debug: fail to load cs from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1],"ds")) {
@@ -560,7 +560,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.ds, GetMax16(value)))
 				vapiPrint("debug: fail to load ds from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1],"es")) {
@@ -569,7 +569,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.es, GetMax16(value)))
 				vapiPrint("debug: fail to load es from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1],"ip")) {
@@ -578,7 +578,7 @@ static void rscanregs()
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_ip = value;
 	} else if(!STRCMP(arg[1],"f")) {
 		rprintflags();
@@ -624,7 +624,7 @@ static void s()
 		addrparse(vcpu.ds.selector,arg[1]);
 		start = ptr;
 		end = scannubit16(arg[2]);
-		if(!errPos) {
+		if(!nErrPos) {
 			p = start;
 			cstart = scannubit8(arg[3]);
 			while(p <= end) {
@@ -670,7 +670,7 @@ static void t()
 		count = scannubit16(arg[2]);
 		break;
 	default:seterr(narg-1);break;}
-	if(errPos) return;
+	if(nErrPos) return;
 	if (count < 0x0100) {
 		for(i = 0;i < count;++i) {
 			vdebug.tracecnt = 0x01;
@@ -711,12 +711,12 @@ static void u()
 	if(narg == 1) uprint(uasmSegRec,uasmPtrRec,uasmPtrRec+0x1f);
 	else if(narg == 2) {
 		addrparse(vcpu.cs.selector,arg[1]);
-		if(errPos) return;
+		if(nErrPos) return;
 		uprint(seg,ptr,ptr+0x1f);
 	} else if(narg == 3) {
 		addrparse(vcpu.ds.selector,arg[1]);
 		ptr2 = scannubit16(arg[2]);
-		if(errPos) return;
+		if(nErrPos) return;
 		if(ptr > ptr2) seterr(2);
 		else uprint(seg,ptr,ptr2);
 	} else seterr(3);
@@ -743,8 +743,8 @@ static void w()
 	t_nubit16 i = 0;
 	t_nubit32 len = (_bx<<16)+_cx;
 	FILE *write;
-	if(!strlen(filename)) {vapiPrint("(W)rite error, no destination defined\n");return;}
-	else write= FOPEN(filename,"wb");
+	if(!strlen(strFileName)) {vapiPrint("(W)rite error, no destination defined\n");return;}
+	else write= FOPEN(strFileName,"wb");
 	if(!write) vapiPrint("File not found\n");
 	else {
 		vapiPrint("Writing ");
@@ -760,7 +760,7 @@ static void w()
 			addrparse(vcpu.cs.selector,arg[1]);
 			break;
 		default:	seterr(narg-1);break;}
-		if(!errPos)
+		if(!nErrPos)
 			while(i < len)
 				fputc(vramRealByte(seg,ptr+i++),write);
 		fclose(write);
@@ -839,7 +839,7 @@ static void xa()
 	if(narg == 1) xaconsole(xalin);
 	else if(narg == 2) {
 		xalin = scannubit32(arg[1]);
-		if(errPos) return;
+		if(nErrPos) return;
 		xaconsole(xalin);
 	} else seterr(2);
 }
@@ -853,11 +853,11 @@ static void xc()
 	if(narg != 4) seterr(narg-1);
 	else {
 		lin1 = scannubit32(arg[1]);
-		if(errPos) return;
+		if(nErrPos) return;
 		lin2 = scannubit32(arg[2]);
-		if(errPos) return;
+		if(nErrPos) return;
 		count = scannubit32(arg[3]);
-		if(errPos) return;
+		if(nErrPos) return;
 		if (!count) return;
 		for (i = 0;i < count;++i) {
 			if (vcpuinsReadLinear(lin1 + i, GetRef(val1), 1)) {
@@ -918,12 +918,12 @@ static void xd()
 	if(narg == 1) xdprint(xdlin, 0x80);
 	else if(narg == 2) {
 		xdlin = scannubit32(arg[1]);
-		if(errPos) return;
+		if(nErrPos) return;
 		xdprint(xdlin, 0x80);
 	} else if(narg == 3) {
 		xdlin = scannubit32(arg[1]);
 		count = scannubit32(arg[2]);
-		if(errPos) return;
+		if(nErrPos) return;
 		xdprint(xdlin, count);
 	} else seterr(3);
 }
@@ -936,7 +936,7 @@ static void xe()
 	if(narg == 1) seterr(0);
 	else if(narg == 2) {
 		linear = scannubit32(arg[1]);
-		if(errPos) return;
+		if(nErrPos) return;
 		if (vcpuinsReadLinear(linear, GetRef(val), 1)) {
 			vapiPrint("debug: fail to read from L%08X.\n", linear);
 			return;
@@ -945,16 +945,16 @@ static void xe()
 		FGETS(s,MAXLINE,stdin);
 		lcase(s);
 		val = scannubit8(s);
-		if(errPos) return;
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(nErrPos) return;
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsWriteLinear(linear, GetRef(val), 1))
 				vapiPrint("debug: fail to write to L%08X.\n", linear);
 	} else if(narg > 2) {
 		linear = scannubit32(arg[1]);
-		if(errPos) return;
+		if(nErrPos) return;
 		for(i = 2;i < narg;++i) {
 			val = scannubit8(arg[i]);
-			if(!errPos) {
+			if(!nErrPos) {
 				if (vcpuinsWriteLinear(linear, GetRef(val), 1)) {
 					vapiPrint("debug: fail to write to L%08X.\n", linear);
 					return;
@@ -975,13 +975,13 @@ static void xf()
 	if(narg < 4) seterr(narg-1);
 	else {
 		linear = scannubit32(arg[1]);
-		if (errPos) return;
+		if (nErrPos) return;
 		count = scannubit32(arg[2]);
-		if (errPos) return;
+		if (nErrPos) return;
 		bcount = narg - 3;
 		for (i = 0, j = 0;i < count;++i, ++j) {
 			val = scannubit8(arg[j % bcount + 3]);
-			if (errPos) return;
+			if (nErrPos) return;
 			if (vcpuinsWriteLinear(linear + i, GetRef(val), 1)) {
 				vapiPrint("debug: fail to write to L%08X.\n", linear + i);
 				return;
@@ -1014,7 +1014,7 @@ static void xg()
 		count = scannubit32(arg[2]);
 		break;
 	default:seterr(narg-1);break;}
-	if(errPos) return;
+	if(nErrPos) return;
 	for (i = 0;i < count;++i) {
 		vdebug.breakcnt = 0;
 		vmachineResume();
@@ -1032,11 +1032,11 @@ static void xm()
 	if(narg != 4) seterr(narg-1);
 	else {
 		lin1 = scannubit32(arg[1]);
-		if (errPos) return;
+		if (nErrPos) return;
 		lin2 = scannubit32(arg[2]);
-		if (errPos) return;
+		if (nErrPos) return;
 		count = scannubit32(arg[3]);
-		if (errPos) return;
+		if (nErrPos) return;
 		for (i = 0;i < count;++i) {
 			if (vcpuinsReadLinear(lin1 + i, GetRef(val), 1)) {
 				vapiPrint("debug: fail to read from L%08X.\n", lin1 + i);
@@ -1057,14 +1057,14 @@ static void xs()
 	if(narg < 4) seterr(narg-1);
 	else {
 		linear = scannubit32(arg[1]);
-		if (errPos) return;
+		if (nErrPos) return;
 		count = scannubit32(arg[2]);
-		if (errPos) return;
+		if (nErrPos) return;
 		addrparse(vcpu.ds.selector,arg[1]);
 		bcount = narg - 3;
 		for (i = 0;i < bcount;++i) {
 			val = scannubit8(arg[i + 3]);
-			if (errPos) return;
+			if (nErrPos) return;
 			line[i] = val;
 		}
 		for (i = 0;i < count;++i) {
@@ -1095,7 +1095,7 @@ static void xt()
 		count = scannubit32(arg[1]);
 		break;
 	default:seterr(narg-1);break;}
-	if(errPos) return;
+	if(nErrPos) return;
 	if (count < 0x0100) {
 		for(i = 0;i < count;++i) {
 			vdebug.tracecnt = 0x01;
@@ -1126,7 +1126,7 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_eax = value;
 	} else if(!STRCMP(arg[1], "ecx")) {
 		vapiPrint("ECX ");
@@ -1134,7 +1134,7 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_ecx = value;
 	} else if(!STRCMP(arg[1], "edx")) {
 		vapiPrint("EDX ");
@@ -1142,7 +1142,7 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_edx = value;
 	} else if(!STRCMP(arg[1], "ebx")) {
 		vapiPrint("EBX ");
@@ -1150,7 +1150,7 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_ebx = value;
 	} else if(!STRCMP(arg[1], "esp")) {
 		vapiPrint("ESP ");
@@ -1158,7 +1158,7 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			vcpu.esp = value;
 	} else if(!STRCMP(arg[1], "ebp")) {
 		vapiPrint("EBP ");
@@ -1166,7 +1166,7 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_ebp = value;
 	} else if(!STRCMP(arg[1], "esi")) {
 		vapiPrint("ESI ");
@@ -1174,7 +1174,7 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			vcpu.esi = value;
 	} else if(!STRCMP(arg[1], "edi")) {
 		vapiPrint("EDI ");
@@ -1182,7 +1182,7 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_edi = value;
 	} else if(!STRCMP(arg[1], "eip")) {
 		vapiPrint("EIP ");
@@ -1190,7 +1190,7 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_eip = value;
 	} else if(!STRCMP(arg[1], "eflags")) {
 		vapiPrint("EFLAGS ");
@@ -1198,14 +1198,14 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_eflags = value;
 	} else if(!STRCMP(arg[1], "es")) {
 		vapiCallBackCpuPrintSreg();
 		vapiPrint(":");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.es, GetMax16(value)))
 				vapiPrint("debug: fail to load es from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "cs")) {
@@ -1213,7 +1213,7 @@ static void xrscanreg()
 		vapiPrint(":");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.cs, GetMax16(value)))
 				vapiPrint("debug: fail to load cs from %04X\n", GetMax16(value));
 	}  else if(!STRCMP(arg[1], "ss")) {
@@ -1221,7 +1221,7 @@ static void xrscanreg()
 		vapiPrint(":");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.ss, GetMax16(value)))
 				vapiPrint("debug: fail to load ss from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "ds")) {
@@ -1229,7 +1229,7 @@ static void xrscanreg()
 		vapiPrint(":");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos) 
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos) 
 			if (vcpuinsLoadSreg(&vcpu.ds, GetMax16(value)))
 				vapiPrint("debug: fail to load ds from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "fs")) {
@@ -1237,7 +1237,7 @@ static void xrscanreg()
 		vapiPrint(":");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos) 
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos) 
 			if (vcpuinsLoadSreg(&vcpu.fs, GetMax16(value)))
 				vapiPrint("debug: fail to load fs from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "gs")) {
@@ -1245,7 +1245,7 @@ static void xrscanreg()
 		vapiPrint(":");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos) 
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos) 
 			if (vcpuinsLoadSreg(&vcpu.gs, GetMax16(value)))
 				vapiPrint("debug: fail to load gs from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "cr0")) {
@@ -1254,7 +1254,7 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			vcpu.cr0 = value;
 	} else if(!STRCMP(arg[1], "cr2")) {
 		vapiPrint("CR2 ");
@@ -1262,7 +1262,7 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			vcpu.cr2 = value;
 	} else if(!STRCMP(arg[1], "cr3")) {
 		vapiPrint("CR3 ");
@@ -1270,7 +1270,7 @@ static void xrscanreg()
 		vapiPrint("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
-		if(s[0] != '\0' && s[0] != '\n' && !errPos)
+		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			vcpu.cr3 = value;
 	} else vapiPrint("br Error\n");
 }
@@ -1300,12 +1300,12 @@ static void xu()
 	if(narg == 1) xuprint(xulin, 10);
 	else if(narg == 2) {
 		xulin = scannubit32(arg[1]);
-		if(errPos) return;
+		if(nErrPos) return;
 		xuprint(xulin, 10);
 	} else if(narg == 3) {
 		xulin = scannubit32(arg[1]);
 		count = scannubit32(arg[2]);
-		if(errPos) return;
+		if(nErrPos) return;
 		xuprint(xulin, count);
 	} else seterr(3);
 }
@@ -1446,7 +1446,7 @@ static void help()
 }
 static void init()
 {
-	filename[0] = '\0';
+	strFileName[0] = '\0';
 	asmSegRec = uasmSegRec = vcpu.cs.selector;
 	asmPtrRec = uasmPtrRec = _ip;
 	dumpSegRec = vcpu.ds.selector;
@@ -1457,9 +1457,9 @@ static void init()
 }
 static void parse()
 {
-	STRCPY(cmdCopy,cmdBuff);
+	STRCPY(strCmdCopy,strCmdBuff);
 	narg = 0;
-	arg[0] = STRTOK(cmdCopy," ,\t\n\r\f");
+	arg[0] = STRTOK(strCmdCopy," ,\t\n\r\f");
 	if(arg[narg]) {
 		lcase(arg[narg]);
 		narg++;
@@ -1468,7 +1468,7 @@ static void parse()
 		arg[narg] = arg[narg-1]+1;
 		narg++;
 	}
-	while(narg < MAXNARG) {
+	while(narg < DEBUG_MAXNARG) {
 		arg[narg] = STRTOK(NULL," ,\t\n\r\f");
 		if(arg[narg]) {
 			lcase(arg[narg]);
@@ -1478,7 +1478,7 @@ static void parse()
 }
 static void exec()
 {
-	errPos = 0;
+	nErrPos = 0;
 	if(!arg[0]) return;
 	switch(arg[0][0]) {
 	case '\?':	help();break;
@@ -1597,16 +1597,16 @@ void debug()
 {
 	t_nubitcc i;
 	init();
-	arg = (char **)malloc(MAXNARG * sizeof(char *));
+	arg = (char **)malloc(DEBUG_MAXNARG * sizeof(char *));
 	flagexit = 0;
 	while(!flagexit) {
 		fflush(stdin);
 		vapiPrint("-");
-		FGETS(cmdBuff,MAXLINE,stdin);
+		FGETS(strCmdBuff,MAXLINE,stdin);
 		parse();
 		exec();
-		if(errPos) {
-			for(i = 0;i < errPos;++i) vapiPrint(" ");
+		if(nErrPos) {
+			for(i = 0;i < nErrPos;++i) vapiPrint(" ");
 			vapiPrint("^ Error\n");
 		}
 	}

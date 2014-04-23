@@ -1,7 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "string.h"
-
 #include "record.h"
 #include "dasm32.h"
 

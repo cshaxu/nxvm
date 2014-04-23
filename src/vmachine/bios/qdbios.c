@@ -169,21 +169,6 @@ static void vbiosLoadPost()
 	vramRealByte(0xf000, 0xe431 + 15) = 0x00;
 }
 
-/*static void asmcmp(const t_strptr stmt, const t_strptr stmtx)
-{
-	t_nubit8 acode[0x10000];
-	t_nubit32 len, lenx;
-	t_nubit32 i;
-	len  = GetMax32(aasm(stmt, 0, 0));
-	lenx = aasm32x(stmtx, (t_vaddrcc)acode);
-	for (i = 0;i < 200 + 0 * (len > lenx ? len : lenx);++i) {
-		if (acode[i] != vramRealByte(0, i)) {
-			vapiPrint("%x: %02X, %02X\n", i, acode[i], vramRealByte(0, i));
-		}
-	}
-	vapiPrint("len=%d,lenx=%d\n",len,lenx);
-}*/
-
 void qdbiosReset()
 {
 	ics = 0xf000;

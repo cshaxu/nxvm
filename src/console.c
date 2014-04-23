@@ -7,24 +7,23 @@
 
 #include "console.h"
 
-#define MAXNARG 256
-#define MAXNASMARG 4
+#define CONSOLE_MAXNARG 256
 
 static int narg;
 static char **arg;
 static t_bool   flagexit;
-static t_string cmdBuff, cmdCopy;
+static t_string strCmdBuff, strCmdCopy;
 
 static void parse()
 {
-	STRCPY(cmdCopy,cmdBuff);
+	STRCPY(strCmdCopy,strCmdBuff);
 	narg = 0;
-	arg[narg] = STRTOK(cmdCopy," \t\n\r\f");
+	arg[narg] = STRTOK(strCmdCopy," \t\n\r\f");
 	if(arg[narg]) {
 		lcase(arg[narg]);
 		narg++;
 	} else return;
-	while(narg < MAXNARG) {
+	while(narg < CONSOLE_MAXNARG) {
 		arg[narg] = STRTOK(NULL," \t\n\r\f");
 		if(arg[narg]) {
 			lcase(arg[narg]);
@@ -155,7 +154,7 @@ static void Info()
 	vapiPrint("\n");
 	vapiPrint("NXVM Debug Status\n");
 	vapiPrint("=================\n");
-	vapiPrint("Recorder:    %s\n", vrecord.flagrecord ? "On" : "Off");
+	vapiPrint("Recorder:    %s\n", vrecord.flagrecord ? (vrecord.flagnow ? "Now" : "On") : "Off");
 	vapiPrint("Trace:       %s\n", vdebug.tracecnt ? "On" : "Off");
 	vapiPrint("Break Point: ");
 	if (vdebug.flagbreak) vapiPrint("%04X:%04X\n",vdebug.breakcs,vdebug.breakip);
@@ -308,7 +307,7 @@ static void exec()
 }
 static void init()
 {
-	arg = (char **)malloc(MAXNARG * sizeof(char *));
+	arg = (char **)malloc(CONSOLE_MAXNARG * sizeof(char *));
 	flagexit = 0;
 	vmachineInit();
 	if (!vfdd.flagexist) vapiFloppyInsert("fd.img");
@@ -335,7 +334,7 @@ void console()
 	vapiPrint("Please enter 'HELP' for information.\n");
 	while(!flagexit) {
 		vapiPrint("Console> ");
-		FGETS(cmdBuff,MAXLINE,stdin);
+		FGETS(strCmdBuff,MAXLINE,stdin);
 		parse();
 		exec();
 	}
