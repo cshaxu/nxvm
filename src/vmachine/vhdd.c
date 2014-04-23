@@ -70,7 +70,7 @@ void vhddInit()
 	vhdd.nhead   = 16;
 	vhdd.nsector = 63;
 	vhdd.nbyte   = 512;
-	vhdd.base    = NULL;
+	vhdd.base    = (t_vaddrcc)NULL;
 }
 void vhddReset() {}
 void vhddFinal()

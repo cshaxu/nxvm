@@ -50,6 +50,22 @@ static void CursorNewLine(t_nubit8 page)
 		       0x00, 2 * qdcgaVarRowSize);//最后一行置零
 	}
 }
+static void CursorCarriageReturn(t_nubit8 page)
+{
+	qdcgaVarCursorPosCol(page) = 0;
+}
+static void CursorLineFeed(t_nubit8 page)
+{
+	if (qdcgaVarCursorPosRow(page) < vvadp.colsize - 1)
+		qdcgaVarCursorPosRow(page)++;
+	else {
+		memcpy((void *)qdcgaGetCharAddr(page, 0, 0),
+		       (void *)qdcgaGetCharAddr(page, 1, 0),
+		       qdcgaGetPageSize - 2 * qdcgaVarRowSize);//显存内容上移
+		memset((void *)qdcgaGetCharAddr(page + 1, -1, 0),
+		       0x00, 2 * qdcgaVarRowSize);//最后一行置零
+	}
+}
 static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 	t_bool move, t_nubit8 charprop, t_nubit8 page, t_nubit8 x, t_nubit8 y)
 {
@@ -65,9 +81,10 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 			if (move) CursorBackward(page);
 			break;
 		case 0x0a: /* new line */
-			if (move) CursorNewLine(page);
+			if (move) CursorLineFeed(page);
 			break;
 		case 0x0d:
+			if (move) CursorCarriageReturn(page);
 			break;
 		default:
 			qdcgaVarChar(page, qdcgaVarCursorPosRow(page),
