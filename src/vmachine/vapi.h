@@ -60,7 +60,7 @@ void vapiSleep(t_nubit32 milisec);
 void vapiDisplaySetScreen();
 void vapiDisplayPaint();
 
-void vapiCallBackDebugPrintRegs(t_nubit8 bit);
+void vapiCallBackDebugPrintRegs();
 
 void vapiCallBackMachineRun();
 t_nubit8 vapiCallBackMachineGetFlagRun();

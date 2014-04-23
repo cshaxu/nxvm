@@ -15,6 +15,8 @@
 #include "ecpuins.h"
 
 t_ecpu ecpu;
+static t_ecpu ecpu2;
+static t_cpu  vcpu2;
 
 void ecpuapiSyncRegs()
 {
@@ -39,6 +41,7 @@ t_bool ecpuapiHasDiff()
 {
 	t_bool flagdiff = 0x00;
 	t_nubit16 mask = GetMax16(vcpuins.udf);
+	ecpu.flagignore |= vcpuins.flagrespondint;
 	if (!ecpu.flagignore) {
 		if (ecpu.ax != _ax) {vapiPrint("diff ax\n");flagdiff = 0x01;}
 		if (ecpu.bx != _bx) {vapiPrint("diff bx\n");flagdiff = 0x01;}
@@ -58,7 +61,16 @@ t_bool ecpuapiHasDiff()
 			flagdiff = 0x01;
 		}
 	}
-	if (flagdiff) ecpuapiPrintRegs();
+	if (flagdiff) {
+		vapiPrint("AFTER EXECUTION:\nVCPU REGISTERS\n");
+		vapiCallBackDebugPrintRegs();
+		ecpuapiPrintRegs();
+		vapiPrint("BEFORE EXECUTION:\nVCPU REGISTERS\n");
+		ecpu = ecpu2;
+		vcpu = vcpu2;
+		vapiCallBackDebugPrintRegs();
+		ecpuapiPrintRegs();
+	}
 	return flagdiff;
 }
 void ecpuapiPrintRegs()
@@ -148,6 +160,8 @@ void ecpuRefresh()
 	ecpuinsRefresh();
 #else
 	ecpuapiSyncRegs();
+	vcpu2 = vcpu;
+	ecpu2 = ecpu;
 	ecpuinsRefresh();
 	vcpuRefresh();
 	if (ecpuapiHasDiff())

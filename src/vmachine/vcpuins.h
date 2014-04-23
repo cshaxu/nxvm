@@ -55,6 +55,7 @@ typedef struct {
 	t_bool    flagmem; /* if rm is in memory */
 	t_bool    flagmss; /* if rm is in stack segment */
 	t_bool    flagmaskint; /* if int is disabled once */
+	t_bool    flagrespondint; /* if intr is responded in one Refresh */
 	t_nubit32 udf; /* undefined eflags bits */
 } t_cpuins;
 

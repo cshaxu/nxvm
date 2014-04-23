@@ -291,7 +291,7 @@ void IO_Read_FF22() {vport.iobyte = vpicGetINTR();}
 void IO_Write_FF20() {vpicSetIRQ(vport.iobyte);}
 #endif
 
-void     vpicSetIRQ(t_nubit8 irqid)
+void vpicSetIRQ(t_nubit8 irqid)
 {
 	switch(irqid) {
 	case 0x00:	vpic1.irr |= 0x01;break;

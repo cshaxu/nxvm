@@ -10667,11 +10667,13 @@ static void ExecInt()
 		vcpu.flagnmi = 0;
 		_e_int_n(0x02);
 	}
+	vcpuins.flagrespondint = 0;
 	if (_GetEFLAGS_IF && vpicScanINTR()) {
 		vcpu.flaghalt = 0;
 		intr = vpicGetINTR();
 		/*printf("vint = %x\n", intr);*/
 		_e_int_n(intr);
+		vcpuins.flagrespondint = 1;
 	}
 	if (_GetEFLAGS_TF) {
 		vcpu.flaghalt = 0;

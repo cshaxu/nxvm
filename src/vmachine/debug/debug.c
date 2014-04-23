@@ -895,7 +895,7 @@ static void exec()
 	}
 }
 
-void vapiCallBackDebugPrintRegs(t_nubit8 bit) {rprintregs();}
+void vapiCallBackDebugPrintRegs() {rprintregs();}
 void debug()
 {
 	t_nubitcc i;
