@@ -20,7 +20,8 @@ typedef enum {
 	TYPE_M8,
 	TYPE_M16,
 	TYPE_M32,
-	TYPE_I16_16
+	TYPE_I16_16,
+	TYPE_LABEL
 } t_aasm_oprtype;
 typedef enum {
 	MOD_M,
@@ -95,6 +96,7 @@ typedef struct {
 	t_nubit16       disp16;// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
 	t_aasm_oprptr   ptr; // 0 = near; 1 = far
 	t_nubit16       pcs,pip;
+	char            label[0x100];
 } t_aasm_oprinfo;
 
 static char pool[0x1000];
@@ -121,6 +123,7 @@ static t_nubit16 avcs, avip;
 #define isM8s(oprinf)   ((oprinf).type  == TYPE_M8  && (oprinf).mod != MOD_R)
 #define isM16s(oprinf)  ((oprinf).type  == TYPE_M16 && (oprinf).mod != MOD_R)
 #define isM32s(oprinf)  ((oprinf).type  == TYPE_M32 && (oprinf).mod != MOD_R)
+#define isLABEL(oprinf) ((oprinf).type  == TYPE_LABEL)
 #define isPNONE(oprinf) ((oprinf).ptr == PTR_NONE)
 #define isNEAR(oprinf)  ((oprinf).ptr == PTR_NEAR)
 #define isSHORT(oprinf) ((oprinf).ptr == PTR_SHORT)
@@ -153,7 +156,6 @@ static t_nubit16 avcs, avip;
 #define isDS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SEG_DS)
 
 #define ARG_NONE        (isNONE (aopri1) && isNONE(aopri2))
-#define ARG_LABEL       (0)
 #define ARG_RM8s        (isRM8s (aopri1) && isNONE(aopri2))
 #define ARG_RM16s       (isRM16s(aopri1) && isNONE(aopri2))
 #define ARG_RM8_R8      (isRM8  (aopri1) && isR8  (aopri2))
@@ -214,14 +216,18 @@ static t_nubit16 avcs, avip;
 #define ARG_m16_AX      (isM16  (aopri1) && isAX  (aopri2) && (aopri1.mod == MOD_M && aopri1.mem == MEM_BP))
 #define ARG_R16_M16     (isR16  (aopri1) && isM16 (aopri2))
 #define ARG_I16u        (isI16u (aopri1) && isNONE(aopri2))
+#define ARG_PNONE_I16   (isPNONE(aopri1) && isI16u(aopri1) && isNONE(aopri2))
 #define ARG_SHORT_I16   (isSHORT(aopri1) && isI16u(aopri1) && isNONE(aopri2))
 #define ARG_NEAR_I16    (isNEAR (aopri1) && isI16u(aopri1) && isNONE(aopri2))
 #define ARG_FAR_I16_16  (isFAR  (aopri1) && isI16p(aopri1) && isNONE(aopri2))
+#define ARG_PNONE_LABEL (isPNONE(aopri1) && isLABEL(aopri1) && isNONE(aopri2))
+#define ARG_SHORT_LABEL (isSHORT(aopri1) && isLABEL(aopri1) && isNONE(aopri2))
+#define ARG_NEAR_LABEL  (isNEAR (aopri1) && isLABEL(aopri1) && isNONE(aopri2))
+#define ARG_FAR_LABEL   (isFAR  (aopri1) && isLABEL(aopri1) && isNONE(aopri2))
 #define ARG_NEAR_RM16   (isNEAR (aopri1) && isRM16(aopri1) && isNONE(aopri2))
 #define ARG_FAR_M16_16  (isFAR  (aopri1) && isM32 (aopri1) && isNONE(aopri2))
 #define ARG_RM8_CL      (isRM8s (aopri1) && isCL  (aopri2))
 #define ARG_RM16_CL     (isRM16s(aopri1) && isCL  (aopri2))
-#define ARG_PNONE_I16   (isPNONE(aopri1) && isI16u(aopri1) && isNONE(aopri2))
 #define ARG_AL_DX       (isAL   (aopri1) && isDX  (aopri2))
 #define ARG_DX_AL       (isDX   (aopri1) && isAL  (aopri2))
 #define ARG_AX_DX       (isAX   (aopri1) && isDX  (aopri2))
@@ -921,6 +927,11 @@ static t_aasm_oprinfo parsearg(t_string arg)
 	}
 	token = gettoken(arg);
 	switch (token) {
+	case TOKEN_LABEL:
+		info.type = TYPE_LABEL;
+		info.ptr = PTR_NONE;
+		STRCPY(info.label, toklabel);
+		break;
 	case TOKEN_CHAR:
 	case TOKEN_STRING:
 	case TOKEN_NULL:
@@ -1083,6 +1094,9 @@ static t_aasm_oprinfo parsearg(t_string arg)
 				info.type = TYPE_I16;
 			}
 			if (info.type != TYPE_I16) error = 1;
+		} else if (token == TOKEN_LABEL) {
+			info.type = TYPE_LABEL;
+			STRCPY(info.label, toklabel);
 		} else error = 1;
 		info.ptr = PTR_SHORT;
 		break;
@@ -1105,6 +1119,9 @@ static t_aasm_oprinfo parsearg(t_string arg)
 				info.type = TYPE_I16;
 			}
 			if (info.type != TYPE_I16) error = 1;
+		} else if (token == TOKEN_LABEL) {
+			info.type = TYPE_LABEL;
+			STRCPY(info.label, toklabel);
 		} else error = 1;
 		info.ptr = PTR_NEAR;
 		break;
@@ -1132,6 +1149,9 @@ static t_aasm_oprinfo parsearg(t_string arg)
 				info.pip = info.imm16;
 			} else if (info.type == TYPE_I16_16) {
 			} else error = 1;
+		} else if (token == TOKEN_LABEL) {
+			info.type = TYPE_LABEL;
+			STRCPY(info.label, toklabel);
 		} else error = 1;
 		info.ptr = PTR_FAR;
 		break;
@@ -1226,6 +1246,40 @@ static t_aasm_label_ref_node *labelNewRefNode(t_aasm_oprptr pptr, t_nubit16 pcs,
 	return p;
 }
 
+static void labelRealizeRef(t_aasm_label_def_node *pdef, t_aasm_label_ref_node *pref)
+{
+	t_nubit16 lo, hi, ta;
+	t_nsbit8 rel8;
+	if (!pdef || !pref) {error = 1;return;}
+	//printf("realize: target %04X:%04X current %04X:%04X\n",pdef->cs,pdef->ip,pref->cs,pref->ip);
+	switch (pref->ptr) {
+	case PTR_FAR:
+		vramVarWord(pref->cs, pref->ip + 0) = pdef->ip;
+		vramVarWord(pref->cs, pref->ip + 2) = pdef->cs;
+		break;
+	case PTR_NEAR:
+		vramVarWord(pref->cs, pref->ip + 0) = pdef->ip - pref->ip - 0x02;
+		break;
+	case PTR_SHORT:
+		lo = pref->ip - 0x0080 + 0x0001;
+		hi = pref->ip + 0x007f + 0x0001;
+		ta = pdef->ip;
+		if (pref->ip < lo || pref->ip > hi)
+			if (ta <= hi || ta >= lo)
+				rel8 = ta - pref->ip - 0x0001;
+			else error = 1;
+		else if (ta <= hi && ta >= lo)
+			rel8 = ta - pref->ip - 0x0001;
+		else error = 1;
+		if (error) return;
+		vramVarByte(pref->cs, pref->ip + 0) = rel8;
+		break;
+	case PTR_NONE:
+	default:
+		error = 1;
+		break;
+	}
+}
 static void labelRemoveRefList(t_aasm_label_def_node *pdef)
 {
 	t_aasm_label_ref_node *p = NULL, *q = NULL;
@@ -1233,9 +1287,11 @@ static void labelRemoveRefList(t_aasm_label_def_node *pdef)
 	p = pdef->ref;
 	while (p) {
 		q = p->next;
+		labelRealizeRef(pdef, p);
 		free(p);
 		p = q;
 	}
+	pdef->ref = NULL;
 }
 static void labelRemoveDefList()
 {
@@ -1249,36 +1305,79 @@ static void labelRemoveDefList()
 	}
 	label_entry = NULL;
 }
+static void labelRealizeDefList()
+{
+	t_aasm_label_def_node *p = label_entry;
+	while (p) {
+		labelRemoveRefList(p);
+		p = p->next;
+	}
+}
+static void labelStoreDef(t_string strlabel)
+{
+	t_bool flagfound = 0x00;
+	t_aasm_label_def_node *p = label_entry, *q = NULL;
+	while (p && !error) {
+		q = p;
+		if (!strcmp(p->name, strlabel)) {
+			if (p->cs || p->ip) labelRemoveRefList(p);
+			p->cs = avcs;
+			p->ip = avip;
+			flagfound = 0x01;
+			labelRemoveRefList(p);
+			//printf("def replaced: '%s' at %04X:%04X\n", strlabel, avcs, avip);
+			break;
+		}
+		p = p->next;
+	}
+	if (flagfound || error) return;
+	if (!q) label_entry = labelNewDefNode(strlabel, avcs, avip);
+	else q->next = labelNewDefNode(strlabel, avcs, avip);
+	//printf("def saved: '%s' at %04X:%04X\n", strlabel, avcs, avip);
+}
+static void labelStoreRef(t_string strlabel, t_aasm_oprptr ptrlabel)
+{
+	t_aasm_label_def_node *p = label_entry;
+	t_aasm_label_ref_node *r = NULL, *s = NULL, *n = NULL;
+	while (p && strcmp(p->name, strlabel) && !error)
+		p = p->next;
+	if (error) return;
+	n = labelNewRefNode(ptrlabel, avcs, avip);
+	if (!p) {
+		labelStoreDef(strlabel);
+		p = label_entry;
+		while (p && strcmp(p->name, strlabel) && !error)
+			p = p->next;
+		p->cs = p->ip = 0x0000;
+	} else if (p && (p->cs || p->ip)) {
+		//printf("ref real: '%s' at %04X:%04X\n", strlabel, avcs, avip);
+		labelRealizeRef(p, n);
+		//printf("result: %04X:%04X\n",vramVarWord(avcs, avip+2),vramVarWord(avcs, avip));
+		free(n);
+		return;
+	}
+	r = p->ref;
+	while (r) {
+		s = r;
+		r = r->next;
+	}
+	if (s) s->next = n;
+	else p->ref = n;	
+//	printf("ref saved: '%s' at %04X:%04X\n", strlabel, avcs, avip);
+}
 
 #define setbyte(n) (vramVarByte(avcs, avip) = (t_nubit8)(n))
 #define setword(n) (vramVarWord(avcs, avip) = (t_nubit16)(n))
 
 static void LABEL()
 {
-	t_aasm_label_def_node *p = label_entry, *q = NULL;
 	t_aasm_token token;
-
 	token = gettoken(aop);
-	if (token == TOKEN_LABEL) {
-		while (p && !error) {
-			q = p;
-			if (!strcmp(p->name, toklabel)) {
-				p->cs = avcs;
-				p->ip = avip;
-				matchtoken(TOKEN_COLON);
-				setbyte(0x90);
-				avip++;
-				return;
-			}
-			p = p->next;
-		}
-		if (!q) label_entry = labelNewDefNode(toklabel, avcs, avip);
-		else q->next = labelNewDefNode(toklabel, avcs, avip);
-	}
-	printf("%04X,%04X,%s\n",label_entry->cs,label_entry->ip,label_entry->name);
-	matchtoken(TOKEN_COLON);
 	setbyte(0x90);
 	avip++;
+	if (token == TOKEN_LABEL) labelStoreDef(toklabel); 
+	matchtoken(TOKEN_COLON);
+	labelRealizeDefList();
 }
 
 static void SetImm8(t_nubit8 byte)
@@ -2076,8 +2175,13 @@ static void CALL_PTR16_16()
 {
 	setbyte(0x9a);
 	avip++;
-	SetImm16(aopri1.pip);
-	SetImm16(aopri1.pcs);
+	if (ARG_FAR_LABEL) {
+		labelStoreRef(aopri1.label, PTR_FAR);
+		avip += 4;
+	} else {
+		SetImm16(aopri1.pip);
+		SetImm16(aopri1.pcs);
+	}
 }
 static void WAIT()
 {
@@ -2430,20 +2534,31 @@ static void CALL_REL16()
 {
 	setbyte(0xe8);
 	avip++;
-	SetImm16(aopri1.imm16 - avip - 0x02);
+	if (ARG_NEAR_LABEL) {
+		labelStoreRef(aopri1.label, PTR_NEAR);
+		avip += 2;
+	} else SetImm16(aopri1.imm16 - avip - 0x02);
 }
 static void JMP_REL16()
 {
 	setbyte(0xe9);
 	avip++;
-	SetImm16(aopri1.imm16 - avip - 0x02);
+	if (ARG_NEAR_LABEL) {
+		labelStoreRef(aopri1.label, PTR_NEAR);
+		avip += 2;
+	} else SetImm16(aopri1.imm16 - avip - 0x02);
 }
 static void JMP_PTR16_16()
 {
 	setbyte(0xea);
 	avip++;
-	SetImm16(aopri1.pip);
-	SetImm16(aopri1.pcs);
+	if (ARG_FAR_LABEL) {
+		labelStoreRef(aopri1.label, PTR_FAR);
+		avip += 4;
+	} else {
+		SetImm16(aopri1.pip);
+		SetImm16(aopri1.pcs);
+	}
 }
 static void IN_AL_DX()
 {
@@ -2876,11 +2991,12 @@ static void JCC(t_nubit8 opcode)
 		setbyte(opcode);
 		avip++;
 		SetImm8(rel8);
-	} else if (ARG_LABEL) {
-		;
-	}
-	else
-		error = 1;
+	} else if (ARG_PNONE_LABEL || ARG_SHORT_LABEL) {
+		setbyte(opcode);
+		avip++;
+		labelStoreRef(aopri1.label, PTR_SHORT);
+		avip++;
+	} else error = 1;
 }
 static void TEST()
 {
@@ -2945,30 +3061,8 @@ static void LEA()
 }
 static void CALL()
 {
-	/*
-JMP I16 (REL8 or REL16)
-JMP [M/M16] (RM16)
-JMP [M32] (M16:16)
-JMP SHORT $(LABEL) (REL8)
-JMP SHORT I16 (REL8)
-JMP NEAR $(LABEL) (REL16)
-JMP NEAR I16 (REL16)
-JMP NEAR [M/M16] (RM16)
-JMP I16:16  (I16:16)
-JMP FAR $(LABEL) (I16:16)
-JMP FAR I16 (I16:16)
-JMP FAR [M/M32] (M16:16)
-JMP FAR I16:16 (I16:16)
-
-ARG_I16u, PNONE, SHORT, NEAR
-ARG_RM16, PNONE, NEAR
-ARG_M32, PNONE, FAR
-ARG_LABEL, SHORT, NEAR, FAR
-ARG_I16_16, PNONE, FAR
-*/
-	/* TODO */
-	if      (ARG_FAR_I16_16) CALL_PTR16_16();
-	else if (ARG_I16u && !isSHORT(aopri1)) CALL_REL16();
+	if      (ARG_FAR_I16_16 || ARG_FAR_LABEL) CALL_PTR16_16();
+	else if ((ARG_I16u && !isSHORT(aopri1)) || ARG_NEAR_LABEL) CALL_REL16();
 	else if (ARG_NEAR_RM16) INS_FF(0x02);
 	else if (ARG_FAR_M16_16) INS_FF(0x03);
 	else error = 1;
@@ -3111,9 +3205,9 @@ static void IDIV()
 static void JMP()
 {
 	t_nubit16 lo, hi, ta;
-	if      (ARG_FAR_I16_16) JMP_PTR16_16();
-	else if (ARG_SHORT_I16) JCC(0xeb);
-	else if (ARG_NEAR_I16) JMP_REL16();
+	if      (ARG_FAR_I16_16 || ARG_FAR_LABEL) JMP_PTR16_16();
+	else if (ARG_SHORT_I16 || ARG_SHORT_LABEL) JCC(0xeb);
+	else if (ARG_NEAR_I16 || ARG_NEAR_LABEL) JMP_REL16();
 	else if (ARG_PNONE_I16) {
 		lo = avip - 0x0080 + 0x0002;
 		hi = avip + 0x007f + 0x0002;
@@ -3409,6 +3503,7 @@ t_nubitcc aasm(const t_string stmt, t_nubit16 seg, t_nubit16 off)
 		if (error) break;
 	}
 	if (error) len = 0;
+//	else labelRealizeDefList();
 	return len;
 }
 

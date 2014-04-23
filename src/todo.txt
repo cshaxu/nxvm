@@ -1,3 +1,2 @@
-1. Build label tabel for aasm
-2. Rebuild hardware debugger
-3. Build BIOS INT service routines
+1. Rebuild hardware debugger
+2. Build BIOS INT service routines

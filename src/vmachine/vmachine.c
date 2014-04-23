@@ -2,6 +2,8 @@
 
 #include "memory.h"
 
+#include "debug/aasm.h"
+#include "debug/dasm.h"
 #include "vapi.h"
 #include "vmachine.h"
 
@@ -13,9 +15,7 @@ of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x\n"
 
 void vapiCallBackMachineRun()
 {
-//FILE *fp;
 	if (vmachine.flagrecord) vapiRecordStart();
-//fp = FOPEN("d:/nxvm.log","w");
 	while (vmachine.flagrun) {
 		if (vmachine.flagbreak &&
 			vcpu.cs == vmachine.breakcs && vcpu.ip == vmachine.breakip) {
@@ -23,34 +23,21 @@ void vapiCallBackMachineRun()
 			break;
 		}
 		if (vmachine.flagrecord) vapiRecordExec();
-//fprintf(fp, _expression,
-//_cs, _ip,
-//vramVarByte(_cs,_ip+0),vramVarByte(_cs,_ip+1),
-//vramVarByte(_cs,_ip+2),vramVarByte(_cs,_ip+3),
-//vramVarByte(_cs,_ip+4),vramVarByte(_cs,_ip+5),
-//vramVarByte(_cs,_ip+6),vramVarByte(_cs,_ip+7),
-//_ax,_bx,_cx,_dx,
-//_sp,_bp,_si,_di,
-//_ds,_es,_ss,
-//_of,_sf,_zf,_cf,
-//_af,_pf,_df,_if,_tf);
 		vmachineRefresh();
 		if (vmachine.flagtrace) vmachineStop();
 	}
-//fclose(fp);
 	if (vmachine.flagrecord) vapiRecordEnd();
 }
 t_nubit8 vapiCallBackMachineGetFlagRun() {return vmachine.flagrun;}
 void vapiCallBackMachineReset() {vmachineReset();}
 void vapiCallBackMachineStop() {vmachineStop();}
 
-/*static void vmachineAsmTest()
+static void vmachineAsmTest()
 {
 	static t_nubitcc total = 0;
 	t_nubitcc i,lend, lena;
 	char fetch[0x50], result[0x50];
 	t_nubit8 ins[0x20];
-	char c;
 	total++;
 	lend = dasm(fetch, _cs, _ip, 0x00);
 	memcpy(ins, (void *)vramGetAddr(_cs, _ip), lend);
@@ -71,7 +58,7 @@ void vapiCallBackMachineStop() {vmachineStop();}
 				vramVarByte(_cs, _ip + i) = 0x90;
 		}
 	}
-}*/
+}
 
 void vmachineStart()
 {
@@ -100,6 +87,7 @@ void vmachineReset()
 }
 void vmachineRefresh()
 {
+	//vmachineAsmTest();
 	//vdispRefresh();
 	vvadpRefresh();
 	//vkeybRefresh();

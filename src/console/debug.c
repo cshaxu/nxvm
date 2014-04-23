@@ -166,17 +166,6 @@ static t_nubit16 getword(t_nubit16 segment,t_nubit16 pointer)
 {
 	return vramVarWord(segment, pointer);
 }
-static t_bool isprefix(t_nubit8 n)
-{
-	switch(n) {
-	case 0xf0: case 0xf2: case 0xf3:
-	case 0x2e: case 0x36: case 0x3e: case 0x26:
-	//case 0x64: case 0x65: case 0x66: case 0x67:
-				return 1;break;
-	default:	return 0;break;
-	}
-}
-
 
 /* DEBUG CMD BEGIN */
 // assemble
