@@ -14,6 +14,7 @@
 #define OR_FLAG (SF | ZF | PF)
 #define ADC_FLAG (OF | SF | ZF | AF | CF | PF)
 #define SBB_FLAG (OF | SF | ZF | AF | CF | PF)
+#define AND_FLAG (SF | ZF | PF)
 
 static t_nubitcc flgoperand1,flgoperand2,flgresult,flglen;
 static enum {
@@ -353,6 +354,31 @@ static void SBB(void *dest, void *src, t_nubitcc len)
 	default:break;}
 	SetFlags(SBB_FLAG);
 }
+static void AND(void *dest, void *src, t_nubitcc len)
+{
+	switch(len) {
+	case 8:
+		flglen = 8;
+		flginstype = OR8;
+		flgoperand1 = *(t_nubit8 *)dest;
+		flgoperand2 = *(t_nubit8 *)src;
+		flgresult = (flgoperand1&flgoperand2)&0xff;
+		*(t_nubit8 *)dest = flgresult;
+		break;
+	case 16:
+		flglen = 16;
+		flginstype = OR16;
+		flgoperand1 = *(t_nubit16 *)dest;
+		flgoperand2 = *(t_nubit16 *)src;
+		flgresult = (flgoperand1&flgoperand2)&0xffff;
+		*(t_nubit16 *)dest = flgresult;
+		break;
+	default:break;}
+	SetOF(0);
+	SetCF(0);
+	SetAF(0);
+	SetFlags(AND_FLAG);
+}
 
 void OpError()
 {
@@ -434,7 +460,6 @@ void OR_RM8_R8()
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	OR((void *)rm,(void *)r,8);
-	
 	nvmprint("OR_RM8_R8\n");
 }
 void OR_RM16_R16()
@@ -449,7 +474,6 @@ void OR_R8_RM8()
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	OR((void *)r,(void *)rm,8);
-	
 	nvmprint("OR_R8_RM8\n");
 }
 void OR_R16_RM16()
@@ -457,7 +481,6 @@ void OR_R16_RM16()
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	OR((void *)r,(void *)rm,16);
-	
 	nvmprint("OR_R16_RM16\n");
 }
 void OR_AL_I8()
@@ -472,7 +495,6 @@ void OR_AX_I16()
 	vcpu.ip++;
 	GetImm(16);
 	OR((void *)&vcpu.ax,(void *)imm,16);
-	
 	nvmprint("OR_AX_I16\n");
 }
 void PUSH_CS()
@@ -599,23 +621,68 @@ void POP_DS()
 	POP((void *)&vcpu.ds,16);
 	nvmprint("POP_DS\n");
 }
-
 void AND_RM8_R8()
-{nvmprint("AND_RM8_R8\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(8,8);
+	AND((void *)rm,(void *)r,8);
+	nvmprint("AND_RM8_R8\n");
+}
 void AND_RM16_R16()
-{nvmprint("AND_RM16_R16\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(16,16);
+	AND((void *)rm,(void *)r,16);
+	nvmprint("AND_RM16_R16\n");
+}
 void AND_R8_RM8()
-{nvmprint("AND_R8_RM8\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(8,8);
+	AND((void *)r,(void *)rm,8);
+	nvmprint("AND_R8_RM8\n");
+}
 void AND_R16_RM16()
-{nvmprint("AND_R16_RM16\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(16,16);
+	AND((void *)r,(void *)rm,16);
+	nvmprint("AND_R16_RM16\n");
+}
 void AND_AL_I8()
-{nvmprint("AND_AL_I8\n");}
+{
+	vcpu.ip++;
+	GetImm(8);
+	AND((void *)&vcpu.al,(void *)imm,8);
+	nvmprint("AND_AL_I8\n");
+}
 void AND_AX_I16()
-{nvmprint("AND_AX_I16\n");}
+{
+	vcpu.ip++;
+	GetImm(16);
+	AND((void *)&vcpu.ax,(void *)imm,16);
+	nvmprint("AND_AX_I16\n");
+}
 void ES()
-{nvmprint("ES\n");}
+{
+	insDS = vcpu.es;
+	insSS = vcpu.es;
+	nvmprint("ES\n");
+}
 void DAA()
-{nvmprint("DAA\n");}
+{
+	t_nubit8 oldAL = vcpu.al;
+	t_nubit8 newAL = vcpu.al + 0x06;
+	if(((vcpu.al & 0x0f) > 0x09) || GetAF()) {
+		vcpu.al = newAL;
+		SetCF(GetCF() | ((newAL < oldAL) || (newAL < 0x06)));
+	} else SetAF(0);
+	if(((vcpu.al & 0xf0) > 0x90) || GetCF()) {
+		vcpu.al += 0x60;
+		SetCF(1);
+	} else SetCF(0);
+	nvmprint("DAA\n");
+}
 void SUB_RM8_R8()
 {nvmprint("SUB_RM8_R8\n");}
 void SUB_RM16_R16()
