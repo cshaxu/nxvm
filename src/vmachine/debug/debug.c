@@ -108,10 +108,10 @@ static void addrparse(t_nubit16 defseg,const t_string addr)
 		seg = defseg;
 		ptr = scannubit16(cseg);
 	} else {
-		if(!STRCMP(cseg,"cs")) seg = vcpu.cs;
-		else if(!STRCMP(cseg,"ss")) seg = vcpu.ss;
-		else if(!STRCMP(cseg,"ds")) seg = vcpu.ds;
-		else if(!STRCMP(cseg,"es")) seg = vcpu.es;
+		if(!STRCMP(cseg,"cs")) seg = vcpu.cs.selector;
+		else if(!STRCMP(cseg,"ss")) seg = vcpu.ss.selector;
+		else if(!STRCMP(cseg,"ds")) seg = vcpu.ds.selector;
+		else if(!STRCMP(cseg,"es")) seg = vcpu.es.selector;
 		else seg = scannubit16(cseg);
 		ptr = scannubit16(cptr);
 	}
@@ -160,7 +160,7 @@ static void a()
 	if(narg == 1) {
 		aconsole();
 	} else if(narg == 2) {
-		addrparse(vcpu.cs,arg[1]);
+		addrparse(vcpu.cs.selector,arg[1]);
 		if(errPos) return;
 		asmSegRec = seg;
 		asmPtrRec = ptr;
@@ -174,10 +174,10 @@ static void c()
 	t_nubit16 i,seg1,ptr1,range,seg2,ptr2;
 	if(narg != 4) seterr(narg-1);
 	else {
-		addrparse(vcpu.ds,arg[1]);
+		addrparse(vcpu.ds.selector,arg[1]);
 		seg1 = seg;
 		ptr1 = ptr;
-		addrparse(vcpu.ds,arg[3]);
+		addrparse(vcpu.ds.selector,arg[3]);
 		seg2 = seg;
 		ptr2 = ptr;
 		range = scannubit16(arg[2])-ptr1;
@@ -238,11 +238,11 @@ static void d()
 	t_nubit16 ptr2;
 	if(narg == 1) dprint(dumpSegRec,dumpPtrRec,dumpPtrRec+0x7f);
 	else if(narg == 2) {
-		addrparse(vcpu.ds,arg[1]);
+		addrparse(vcpu.ds.selector,arg[1]);
 		if(errPos) return;
 		dprint(seg,ptr,ptr+0x7f);
 	} else if(narg == 3) {
-		addrparse(vcpu.ds,arg[1]);
+		addrparse(vcpu.ds.selector,arg[1]);
 		ptr2 = scannubit16(arg[2]);
 		if(errPos) return;
 		if(ptr > ptr2) seterr(2);
@@ -257,7 +257,7 @@ static void e()
 	char s[MAXLINE];
 	if(narg == 1) seterr(0);
 	else if(narg == 2) {
-		addrparse(vcpu.ds,arg[1]);
+		addrparse(vcpu.ds.selector,arg[1]);
 		if(errPos) return;
 		addrprint(seg,ptr);
 		vapiPrint("%02X",vramVarByte(seg,ptr));
@@ -268,7 +268,7 @@ static void e()
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			vramVarByte(seg,ptr) = val;
 	} else if(narg > 2) {
-		addrparse(vcpu.ds,arg[1]);
+		addrparse(vcpu.ds.selector,arg[1]);
 		if(errPos) return;
 		for(i = 2;i < narg;++i) {
 			val = scannubit8(arg[i]);//!!
@@ -286,7 +286,7 @@ static void f()
 	t_nubit16 i,j,end;
 	if(narg < 4) seterr(narg-1);
 	else {
-		addrparse(vcpu.ds,arg[1]);
+		addrparse(vcpu.ds.selector,arg[1]);
 		end = scannubit16(arg[2]);
 		if(end < ptr) seterr(2);
 		if(!errPos) {
@@ -333,18 +333,18 @@ static void g()
 		break;
 	case 2:
 		vmachine.flagbreak = 0x01;
-		addrparse(vcpu.cs,arg[1]);
+		addrparse(vcpu.cs.selector,arg[1]);
 		vmachine.breakcs = seg;
 		vmachine.breakip = ptr;
 	//	ptr1 = vcpu.eip;ptr2 = ptr;
 		break;
 	case 3:
 		vmachine.flagbreak = 0x01;
-		addrparse(vcpu.cs,arg[1]);
-		vcpu.cs = seg;
+		addrparse(vcpu.cs.selector,arg[1]);
+		vcpu.cs.selector = seg;
 		vcpu.eip = ptr;
 	//	ptr1 = ptr;
-		addrparse(vcpu.cs,arg[2]);
+		addrparse(vcpu.cs.selector,arg[2]);
 		vmachine.breakcs = seg;
 		vmachine.breakip = ptr;
 	//	ptr2 = ptr;
@@ -398,11 +398,11 @@ static void l()
 	else {
 		switch(narg) {
 		case 1:
-			seg = vcpu.cs;
+			seg = vcpu.cs.selector;
 			ptr = 0x100;
 			break;
 		case 2:
-			addrparse(vcpu.cs,arg[1]);
+			addrparse(vcpu.cs.selector,arg[1]);
 			break;
 		default:seterr(narg-1);break;}
 		if(!errPos) {
@@ -426,10 +426,10 @@ static void m()
 	t_nubit16 seg1,ptr1,range,seg2,ptr2;
 	if(narg != 4) seterr(narg-1);
 	else {
-		addrparse(vcpu.ds,arg[1]);
+		addrparse(vcpu.ds.selector,arg[1]);
 		seg1 = seg;
 		ptr1 = ptr;
-		addrparse(vcpu.ds,arg[3]);
+		addrparse(vcpu.ds.selector,arg[3]);
 		seg2 = seg;
 		ptr2 = ptr;
 		range = scannubit16(arg[2])-ptr1;
@@ -501,10 +501,10 @@ static void rprintregs(t_nubit8 bit)
 		vapiPrint("  BP=%04X", vcpu.bp);
 		vapiPrint("  SI=%04X", vcpu.si);
 		vapiPrint("  DI=%04X", vcpu.di);
-		vapiPrint("\nDS=%04X", vcpu.ds);
-		vapiPrint("  ES=%04X", vcpu.es);
-		vapiPrint("  SS=%04X", vcpu.ss);
-		vapiPrint("  CS=%04X", vcpu.cs);
+		vapiPrint("\nDS=%04X", vcpu.ds.selector);
+		vapiPrint("  ES=%04X", vcpu.es.selector);
+		vapiPrint("  SS=%04X", vcpu.ss.selector);
+		vapiPrint("  CS=%04X", vcpu.cs.selector);
 		vapiPrint("  IP=%04X", vcpu.eip);
 		vapiPrint("   ");
 		break;
@@ -513,16 +513,16 @@ static void rprintregs(t_nubit8 bit)
 		vapiPrint(" EBX=%08X", vcpu.ebx);
 		vapiPrint(" ECX=%08X", vcpu.ecx);
 		vapiPrint(" EDX=%08X", vcpu.edx);
-		vapiPrint("  SS=%04X", vcpu.ss);
-		vapiPrint( " CS=%04X", vcpu.cs);
-		vapiPrint( " DS=%04X", vcpu.ds);
+		vapiPrint("  SS=%04X", vcpu.ss.selector);
+		vapiPrint( " CS=%04X", vcpu.cs.selector);
+		vapiPrint( " DS=%04X", vcpu.ds.selector);
 		vapiPrint("\nESP=%08X",vcpu.esp);
 		vapiPrint(" EBP=%08X", vcpu.ebp);
 		vapiPrint(" ESI=%08X", vcpu.esi);
 		vapiPrint(" EDI=%08X", vcpu.edi);
-		vapiPrint("  ES=%04X", vcpu.es);
-		vapiPrint( " FS=%04X", vcpu.fs);
-		vapiPrint( " GS=%04X", vcpu.gs);
+		vapiPrint("  ES=%04X", vcpu.es.selector);
+		vapiPrint( " FS=%04X", vcpu.fs.selector);
+		vapiPrint( " GS=%04X", vcpu.gs.selector);
 		vapiPrint("\nEIP=%08X", vcpu.eip);
 		vapiPrint("  ");
 	default:
@@ -530,8 +530,8 @@ static void rprintregs(t_nubit8 bit)
 	}
 	rprintflags(bit);
 	vapiPrint("\n");
-	dasm(str, vcpu.cs, vcpu.eip, 0x02);
-	uasmSegRec = vcpu.cs;
+	dasm(str, vcpu.cs.selector, vcpu.eip, 0x02);
+	uasmSegRec = vcpu.cs.selector;
 	uasmPtrRec = vcpu.eip;
 	vapiPrint("%s", str);
 }
@@ -605,38 +605,38 @@ static void rscanregs()
 			vcpu.di = t;
 	} else if(!STRCMP(arg[1],"ss")) {
 		vapiPrint("SS ");
-		vapiPrint("%04X",vcpu.ss);
+		vapiPrint("%04X",vcpu.ss.selector);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
-			vcpu.overss = vcpu.ss = t;
+			vcpu.ss.selector = t;
 		}
 	} else if(!STRCMP(arg[1],"cs")) {
 		vapiPrint("CS ");
-		vapiPrint("%04X",vcpu.cs);
+		vapiPrint("%04X",vcpu.cs.selector);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.cs = t;
+			vcpu.cs.selector = t;
 	} else if(!STRCMP(arg[1],"ds")) {
 		vapiPrint("DS ");
-		vapiPrint("%04X",vcpu.ds);
+		vapiPrint("%04X",vcpu.ds.selector);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
-			vcpu.overds = vcpu.ds = t;
+			vcpu.ds.selector = t;
 		}
 	} else if(!STRCMP(arg[1],"es")) {
 		vapiPrint("ES ");
-		vapiPrint("%04X",vcpu.es);
+		vapiPrint("%04X",vcpu.es.selector);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.es = t;
+			vcpu.es.selector = t;
 	} else if(!STRCMP(arg[1],"ip")) {
 		vapiPrint("IP ");
 		vapiPrint("%04X",vcpu.eip);
@@ -685,7 +685,7 @@ static void s()
 	t_nubit16 p,pfront,start,end;
 	if(narg < 4) seterr(narg-1);
 	else {
-		addrparse(vcpu.ds,arg[1]);
+		addrparse(vcpu.ds.selector,arg[1]);
 		start = ptr;
 		end = scannubit16(arg[2]);
 		if(!errPos) {
@@ -726,8 +726,8 @@ static void t()
 		count = scannubit16(arg[1]);
 		break;
 	case 3:
-		addrparse(vcpu.cs,arg[1]);
-		vcpu.cs = seg;
+		addrparse(vcpu.cs.selector,arg[1]);
+		vcpu.cs.selector = seg;
 		vcpu.eip = ptr;
 		count = scannubit16(arg[2]);
 		break;
@@ -774,11 +774,11 @@ static void u()
 	t_nubit16 ptr2;
 	if(narg == 1) uprint(uasmSegRec,uasmPtrRec,uasmPtrRec+0x1f);
 	else if(narg == 2) {
-		addrparse(vcpu.cs,arg[1]);
+		addrparse(vcpu.cs.selector,arg[1]);
 		if(errPos) return;
 		uprint(seg,ptr,ptr+0x1f);
 	} else if(narg == 3) {
-		addrparse(vcpu.ds,arg[1]);
+		addrparse(vcpu.ds.selector,arg[1]);
 		ptr2 = scannubit16(arg[2]);
 		if(errPos) return;
 		if(ptr > ptr2) seterr(2);
@@ -817,11 +817,11 @@ static void w()
 		vapiPrint(" bytes\n");
 		switch(narg) {
 		case 1:
-			seg = vcpu.cs;
+			seg = vcpu.cs.selector;
 			ptr = 0x100;
 			break;
 		case 2:
-			addrparse(vcpu.cs,arg[1]);
+			addrparse(vcpu.cs.selector,arg[1]);
 			break;
 		default:	seterr(narg-1);break;}
 		if(!errPos)
@@ -867,14 +867,14 @@ static void help()
 static void init()
 {
 	filename[0] = '\0';
-	asmSegRec = uasmSegRec = vcpu.cs;
+	asmSegRec = uasmSegRec = vcpu.cs.selector;
 	asmPtrRec = uasmPtrRec = vcpu.eip;
-	dumpSegRec = vcpu.ds;
+	dumpSegRec = vcpu.ds.selector;
 	dumpPtrRec = (t_nubit16)(vcpu.eip) / 0x10 * 0x10;
 /*	vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
 	vcpu.si = vcpu.di = vcpu.bp = 0x0000;
 	vcpu.sp = 0xffee;
-	vcpu.ds = vcpu.es = vcpu.ss = vcpu.cs =
+	vcpu.ds.selector = vcpu.es.selector = vcpu.ss.selector = vcpu.cs.selector =
 		asmSegRec = dumpSegRec = uasmSegRec = 0x0001;
 	vcpu.eip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;*/
 }

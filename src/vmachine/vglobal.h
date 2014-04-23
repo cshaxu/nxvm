@@ -31,6 +31,8 @@ typedef uint8_t   t_nubit8;
 typedef int8_t    t_nsbit8;
 typedef uint16_t  t_nubit16;
 typedef int16_t   t_nsbit16;
+typedef uint32_t  t_nubit24;
+typedef int32_t   t_nsbit24;
 typedef uint32_t  t_nubit32;
 typedef int32_t   t_nsbit32;
 typedef uint64_t  t_nubit48;
@@ -57,6 +59,8 @@ typedef t_nubitcc t_faddrcc;
 #define p_nsbit8  (t_nsbit8 *)
 #define p_nubit16 (t_nubit16 *)
 #define p_nsbit16 (t_nsbit16 *)
+#define p_nubit24 (t_nubit24 *)
+#define p_nsbit24 (t_nsbit24 *)
 #define p_nubit32 (t_nubit32 *)
 #define p_nsbit32 (t_nsbit32 *)
 #define p_nubit64 (t_nubit64 *)
@@ -74,6 +78,8 @@ typedef t_nubitcc t_faddrcc;
 #define d_nsbit8(n)  (*(t_nsbit8 *)(n))
 #define d_nubit16(n) (*(t_nubit16 *)(n))
 #define d_nsbit16(n) (*(t_nsbit16 *)(n))
+#define d_nubit24(n) (*(t_nubit24 *)(n))
+#define d_nsbit24(n) (*(t_nsbit24 *)(n))
 #define d_nubit32(n) (*(t_nubit32 *)(n))
 #define d_nsbit32(n) (*(t_nsbit32 *)(n))
 #define d_nubit64(n) (*(t_nubit64 *)(n))

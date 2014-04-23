@@ -19,6 +19,12 @@ typedef struct {
 
 extern t_ram vram;
 
+#define vramAddr(physical) (vram.base + (t_vaddrcc)(physical))
+#define vramByte(physical)  (d_nubit8(vramAddr(physical)))
+#define vramWord(physical)  (d_nubit16(vramAddr(physical)))
+#define vramDWord(physical) (d_nubit32(vramAddr(physical)))
+#define vramQWord(physical) (d_nubit64(vramAddr(physical)))
+
 #define vramIsAddrInMem(addr) \
 	(((t_vaddrcc)(addr) >= vram.base) && ((t_vaddrcc)(addr) < (vram.base + vram.size)))
 #ifdef ECPUACT
@@ -29,9 +35,11 @@ extern t_ram vram;
 	(((((t_nubit16)(segment) << 4) + (t_nubit16)(offset)) & \
 	  (vram.flaga20 ? 0xffffffff : 0xffefffff)) % vram.size))
 #endif
+
 #define vramVarByte(segment, offset)  (d_nubit8(vramGetRealAddress(segment, offset)))
 #define vramVarWord(segment, offset)  (d_nubit16(vramGetRealAddress(segment, offset)))
 #define vramVarDWord(segment, offset) (d_nubit32(vramGetRealAddress(segment, offset)))
+
 
 void vramAlloc(t_nubitcc newsize);
 void vramInit();

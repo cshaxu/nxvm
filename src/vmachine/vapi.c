@@ -88,10 +88,10 @@ void vapiRecordDump(const t_string fname)
 			if (_restmt[j] == '\n') _restmt[j] = ' ';
 		fprintf(dump, _expression,
 			_recpu.cs, _recpu.eip,
-			vramVarByte(_recpu.cs,_recpu.eip+0),vramVarByte(_recpu.cs,_recpu.eip+1),
-			vramVarByte(_recpu.cs,_recpu.eip+2),vramVarByte(_recpu.cs,_recpu.eip+3),
-			vramVarByte(_recpu.cs,_recpu.eip+4),vramVarByte(_recpu.cs,_recpu.eip+5),
-			vramVarByte(_recpu.cs,_recpu.eip+6),vramVarByte(_recpu.cs,_recpu.eip+7),
+			vramVarByte(_recpu.cs.selector,_recpu.eip+0),vramVarByte(_recpu.cs.selector,_recpu.eip+1),
+			vramVarByte(_recpu.cs.selector,_recpu.eip+2),vramVarByte(_recpu.cs.selector,_recpu.eip+3),
+			vramVarByte(_recpu.cs.selector,_recpu.eip+4),vramVarByte(_recpu.cs.selector,_recpu.eip+5),
+			vramVarByte(_recpu.cs.selector,_recpu.eip+6),vramVarByte(_recpu.cs.selector,_recpu.eip+7),
 			_recpu.ax,_recpu.bx,_recpu.cx,_recpu.dx,
 			_recpu.sp,_recpu.bp,_recpu.si,_recpu.di,
 			_recpu.ds,_recpu.es,_recpu.ss,
@@ -116,7 +116,7 @@ void vapiRecordExec()
 	}
 #endif
 	vapirecord.rec[_rec_ptr_last].rcpu = vcpu;
-	dasm(vapirecord.rec[_rec_ptr_last].stmt, vcpu.cs, vcpu.eip, 0x00);
+	dasm(vapirecord.rec[_rec_ptr_last].stmt, vcpu.cs.selector, vcpu.eip, 0x00);
 	if (vapirecord.size == VAPI_RECORD_SIZE) vapirecord.start++;
 	else vapirecord.size++;
 }

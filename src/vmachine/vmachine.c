@@ -18,7 +18,7 @@ void vapiCallBackMachineRun()
 	if (vmachine.flagrecord) vapiRecordStart();
 	while (vmachine.flagrun) {
 		if (vmachine.flagbreak &&
-			vcpu.cs == vmachine.breakcs && vcpu.eip == vmachine.breakip) {
+			vcpu.cs.selector == vmachine.breakcs && vcpu.eip == vmachine.breakip) {
 			vmachineStop();
 			break;
 		}

@@ -495,8 +495,8 @@ static void ES()
 	SPRINTF(dop, "ES:");
 	SPRINTF(dds, "ES");
 	SPRINTF(dss, "ES");
-	dods = vcpu.es;
-	doss = vcpu.es;
+	dods = vcpu.es.selector;
+	doss = vcpu.es.selector;
 }
 static void DAA()
 {
@@ -551,8 +551,8 @@ static void CS()
 	SPRINTF(dop, "CS:");
 	SPRINTF(dds, "CS");
 	SPRINTF(dss, "CS");
-	dods = vcpu.cs;
-	doss = vcpu.cs;
+	dods = vcpu.cs.selector;
+	doss = vcpu.cs.selector;
 }
 static void DAS()
 {
@@ -607,8 +607,8 @@ static void SS()
 	SPRINTF(dop, "SS:");
 	SPRINTF(dds, "SS");
 	SPRINTF(dss, "SS");
-	dods = vcpu.ss;
-	doss = vcpu.ss;
+	dods = vcpu.ss.selector;
+	doss = vcpu.ss.selector;
 }
 static void AAA()
 {
@@ -663,8 +663,8 @@ static void DS()
 	SPRINTF(dop, "DS:");
 	SPRINTF(dds, "DS");
 	SPRINTF(dss, "DS");
-	dods = vcpu.ds;
-	doss = vcpu.ds;
+	dods = vcpu.ds.selector;
+	doss = vcpu.ds.selector;
 }
 static void AAS()
 {
@@ -1905,8 +1905,8 @@ static void ClrPrefix()
 {
 	SPRINTF(dds, "DS");
 	SPRINTF(dss, "SS");
-	dods = vcpu.ds;
-	doss = vcpu.ss;
+	dods = vcpu.ds.selector;
+	doss = vcpu.ss.selector;
 }
 
 static void exec(t_nubit8 opcode)

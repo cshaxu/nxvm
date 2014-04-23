@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xf4]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xf5]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -77,6 +77,9 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 5: 04/14/2013 - 05/05/2013
  *     Phase 6:
  *     Note:    tested by msdos 6.22
+ * Component +: cpu (80386)
+ *     Files:   vcpu.c, vcpu.h
+ *     Files:   vcpuins.c, vcpuins.h
  * Component 2: ram
  *     Files:   vram.c, vram.h
  *     Phase 1:
@@ -204,6 +207,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0xcc New Console Commands
  * 0xdf New ASM/DASM/Debug System
  * 0xf2 Clean CPUINS; Hard Disk Installed
+ * 0xf5 i386 Build Begins
  *
  * Format Unify:
  * check all includes, macro names, flag names

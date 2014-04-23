@@ -23,15 +23,29 @@ typedef enum {
 	/*TEST8,TEST16*/
 } t_cpuins_type;
 typedef enum {
-	RT_NONE,RT_REPZ,RT_REPZNZ
-} t_cpuins_rep;
+	PREFIX_REP_NONE,
+	PREFIX_REP_REPZ,
+	PREFIX_REP_REPZNZ
+} t_cpuins_prefix_rep;
+typedef t_bool t_cpuins_prefix;
 typedef struct {
+	t_nubit32 oldeip;
+	t_bool    flaginsloop;
 	t_faddrcc table[0x100];
 	t_vaddrcc rm, r, imm;
 	t_nubitcc opr1, opr2, result, bit;
 	t_cpuins_type type;
-	t_cpuins_rep rep;
+	t_cpu_segreg oldcs, overds, overss;
+	t_cpuins_prefix_rep prefix_rep;
+	t_cpuins_prefix     prefix_lock;
+	t_cpuins_prefix     prefix_oprsize;
+	t_cpuins_prefix     prefix_addrsize;
+	t_nubit32 except, excode;
 } t_cpuins;
+
+#define VCPUINS_EXCEPT_GP 0x00000001 /* general protection */
+#define VCPUINS_EXCEPT_NP 0x00000002 /* segment not present */
+#define VCPUINS_EXCEPT_PF 0x00000004 /* page fault */
 
 extern t_cpuins vcpuins;
 

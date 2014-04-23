@@ -48,11 +48,180 @@
 
 t_cpuins vcpuins;
 
+#define GetCPL         (_GetSegSel_RPL(vcpu.cs.selector))
+#define GetOperandSize ((vcpu.cs.d_b ^ vcpuins.prefix_oprsize) ? 32 : 16)
+#define GetAddressSize ((vcpu.cs.d_b ^ vcpuins.prefix_addrsize) ? 32 : 16)
+
 #define bugfix if
 
 #define NOTIMP void
 #define ASMCMP void
 #define EXCEPT void
+
+static void CaseError(const char *str)
+{
+	vapiPrint("The NXVM CPU has encountered an internal case error: \n%s\n",str);
+	vapiCallBackMachineStop();
+}
+
+static t_nubit32 GetPhysicalFromLinear(t_nubit32 linear, t_nubit8 cpl, t_bool write)
+{
+	/* possible exception: pf */
+	t_nubit32 physical = linear;
+	t_vaddrcc ppdtitem, ppetitem; /* page table entries */
+	if (_GetCR0_PG) {
+		ppdtitem = vramAddr(_GetCR3_BASE + _GetLinear_DIR(linear) * 4);
+		if (!_GetPageEntry_P(d_nubit32(ppdtitem))) {
+			/* #PF(excode) */
+			SetBit(vcpuins.except, VCPUINS_EXCEPT_PF);
+			vcpuins.excode = _MakePageFaultErrorCode(0, write, (cpl == 3));
+			return physical;
+		}
+		if (cpl == 0x03) {
+			if (!_GetPageEntry_US(d_nubit32(ppdtitem))) {
+				/* #PF(excode) */
+				SetBit(vcpuins.except, VCPUINS_EXCEPT_PF);
+				vcpuins.excode = _MakePageFaultErrorCode(1, write, 1);
+				return physical;
+			}
+			if (!_GetPageEntry_RW(d_nubit32(ppdtitem)) && write) {
+				/* #PF(excode) */
+				SetBit(vcpuins.except, VCPUINS_EXCEPT_PF);
+				vcpuins.excode = _MakePageFaultErrorCode(1, 1, 1);
+				return physical;
+			}
+		}
+		_SetPageEntry_A(d_nubit32(ppdtitem));
+		ppetitem = vramAddr(_GetPageEntry_BASE(d_nubit32(ppdtitem)) + _GetLinear_PAGE(linear) * 4);
+		if (!_GetPageEntry_P(d_nubit32(ppetitem))) {
+			/* #PF(excode) */
+			SetBit(vcpuins.except, VCPUINS_EXCEPT_PF);
+			vcpuins.excode = _MakePageFaultErrorCode(0, write, (cpl == 3));
+			return physical;
+		}
+		if (cpl == 0x03) {
+			if (!_GetPageEntry_US(d_nubit32(ppetitem))) {
+				/* #PF(excode) */
+				SetBit(vcpuins.except, VCPUINS_EXCEPT_PF);
+				vcpuins.excode = _MakePageFaultErrorCode(1, write, 1);
+				return physical;
+			}
+			if (!_GetPageEntry_RW(d_nubit32(ppetitem)) && write) {
+				/* #PF(excode) */
+				SetBit(vcpuins.except, VCPUINS_EXCEPT_PF);
+				vcpuins.excode = _MakePageFaultErrorCode(1, 1, 1);
+				return physical;
+			}
+		}
+		_SetPageEntry_A(d_nubit32(ppetitem));
+		if (write) _SetPageEntry_D(d_nubit32(ppetitem));
+		physical = _GetPageEntry_BASE(d_nubit32(ppetitem)) + _GetLinear_OFFSET(linear);
+	}
+	return physical;
+}
+static t_nubit64 GetDescriptorFromGDT(t_nubit16 selector)
+{
+	/* possible exception: gp/limit; pf/lost */
+	t_nubit64 descriptor = 0x0000000000000000;
+	t_nubit32 linear = _GetGDTR_BASE + _GetSelector_OFFSET(selector);
+	if (_GetSelector_OFFSET(selector) + 7 > _GetGDTR_LIMIT) {
+		/* #GP(selector) */
+		SetBit(vcpuins.except, VCPUINS_EXCEPT_GP);
+		vcpuins.excode = selector;
+		return descriptor;
+	}
+	descriptor = vramQWord(GetPhysicalFromLinear(linear, 0x00, 0x00));
+	return descriptor;
+}
+static t_nubit64 GetDescriptorFromLDT(t_nubit16 selector)
+{
+	/* possible exception: gp/limit; pf/lost */
+	t_nubit64 descriptor = 0x0000000000000000;
+	t_nubit32 linear = vcpu.ldtr.base + _GetSelector_OFFSET(selector);
+	if (linear + 7 > vcpu.ldtr.limit) {
+		/* #GP(selector) */
+		SetBit(vcpuins.except, VCPUINS_EXCEPT_GP);
+		vcpuins.excode = selector;
+		return descriptor;
+	}
+	descriptor = vramQWord(GetPhysicalFromLinear(linear, 0x00, 0x00));
+	return descriptor;
+}
+static t_nubit64 GetSegmentDescriptor(t_nubit16 selector)
+{
+	/* possible exception: gp/limit; pf/lost */
+	t_nubit64 descriptor = 0x0000000000000000;
+	if (_GetCR0_PE) {
+		/* protected mode */
+		if (_GetSelector_TI(selector))
+			if (_GetSelector_INDEX(selector))
+				descriptor = GetDescriptorFromLDT(selector);
+			else
+				CaseError("GetSegmentDescriptor::selector(null)");
+		else
+			descriptor = GetDescriptorFromGDT(selector);
+	} else
+		CaseError("GetSegmentDescriptor::CR0_PE(0)");
+	return descriptor;
+}
+//static void LoadCS(t_nubit16 selector)
+//{
+//	t_nubit64 descriptor = 0x0000000000000000;
+//	/* check for protected mode */
+//	if (!_GetCR0_PE) {
+//		vcpu.cs.base = (selector << 4);
+//		return;
+//	}
+//	/* check for v86 mode */
+//	if (_GetVM) {
+//		vcpu.cs.base = (selector << 4);
+//		return;
+//	}
+//	/* check for null selector */
+//	if (_IsSelectorNull(selector)) {
+//		/* #GP(0) */
+//		SetBit(vcpuins.except, VCPUINS_EXCEPT_GP);
+//		vcpuins.excode = 0;
+//		return;
+//	}
+//	descriptor = GetSegmentDescriptor(selector);
+//	if (vcpuins.except) return;
+///*#define VCPU_SEGDESC_BASE_0  0x000000ffffff0000
+//#define VCPU_SEGDESC_BASE_1  0xff00000000000000
+//#define VCPU_SEGDESC_LIMIT_0 0x000000000000ffff
+//#define VCPU_SEGDESC_LIMIT_1 0x000f000000000000
+//#define VCPU_SEGDESC_TYPE_A  0x0000010000000000 * descriptor type: accessed *
+//#define VCPU_SEGDESC_TYPE_R  0x0000020000000000 DISCARD!
+//#define VCPU_SEGDESC_TYPE_C  0x0000040000000000 * descriptor type: conforming  (code) *
+//#define VCPU_SEGDESC_TYPE_CD 0x0000080000000000 DONE!
+//#define VCPU_SEGDESC_S       0x0000100000000000 DONE!
+//#define VCPU_SEGDESC_DPL     0x0000600000000000 * descriptor previlege level*
+//#define VCPU_SEGDESC_P       0x0000800000000000 DONE!
+//#define VCPU_SEGDESC_AVL     0x0010000000000000 DISCARD!
+//#define VCPU_SEGDESC_DB      0x0040000000000000 * default size / b *
+//#define VCPU_SEGDESC_G       0x0080000000000000 * granularity */
+//	/* check for non-system descriptor */
+//	if (!_GetSegDesc_S(descriptor)) {
+//		/* #GP(selector) */
+//		SetBit(vcpuins.except, VCPUINS_EXCEPT_GP);
+//		vcpuins.excode = selector;
+//		return;
+//	}
+//	/* check for executable segment */
+//	if (!_GetSegDesc_TYPE_CD(descriptor)) {
+//		/* #GP(selector) */
+//		SetBit(vcpuins.except, VCPUINS_EXCEPT_GP);
+//		vcpuins.excode = selector;
+//		return;
+//	}
+//	/* check for presence */
+//	if (!_GetSegDesc_P(descriptor)) {
+//		/* #NP(selector) */
+//		SetBit(vcpuins.except, VCPUINS_EXCEPT_NP);
+//		vcpuins.excode = selector;
+//		return;
+//	}
+//}
 
 static t_cpu acpu;
 static t_nubit8 ub1,ub2,ub3;
@@ -119,10 +288,10 @@ static t_bool acpuCheck(t_nubit16 flags)
 	if (acpu.si != vcpu.si)       {vapiPrint("diff si\n");flagdiff = 0x01;}
 	if (acpu.di != vcpu.di)       {vapiPrint("diff di\n");flagdiff = 0x01;}
 	if (acpu.ip != vcpu.eip)       {vapiPrint("diff ip\n");flagdiff = 0x01;}
-	if (acpu.cs != vcpu.cs)       {vapiPrint("diff cs\n");flagdiff = 0x01;}
-	if (acpu.ds != vcpu.ds)       {vapiPrint("diff ds\n");flagdiff = 0x01;}
-	if (acpu.es != vcpu.es)       {vapiPrint("diff es\n");flagdiff = 0x01;}
-	if (acpu.ss != vcpu.ss)       {vapiPrint("diff ss\n");flagdiff = 0x01;}
+	if (acpu.cs != vcpu.cs.selector)       {vapiPrint("diff cs\n");flagdiff = 0x01;}
+	if (acpu.ds != vcpu.ds.selector)       {vapiPrint("diff ds\n");flagdiff = 0x01;}
+	if (acpu.es != vcpu.es.selector)       {vapiPrint("diff es\n");flagdiff = 0x01;}
+	if (acpu.ss != vcpu.ss.selector)       {vapiPrint("diff ss\n");flagdiff = 0x01;}
 	if ((acpu.flags & flags) != (vcpu.eflags & flags))
 		                          {vapiPrint("diff fg\n");flagdiff = 0x01;}
 	if (flagdiff) {
@@ -368,11 +537,6 @@ static t_bool acpuCheck(t_nubit16 flags)
 #define aexec_mdx16 if(0)
 #endif
 
-static void CaseError(const char *str)
-{
-	vapiPrint("The NXVM CPU has encountered an internal case error: %s.\n",str);
-	vapiCallBackMachineStop();
-}
 static void CalcCF()
 {
 	switch(vcpuins.type) {
@@ -490,73 +654,73 @@ static void SetFlags(t_nubit16 flags)
 static void GetMem()
 {
 	/* returns vcpuins.rm */
-	vcpuins.rm = vramGetRealAddress(vcpu.overds,vramVarWord(vcpu.cs,vcpu.eip));
+	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vramVarWord(vcpu.cs.selector,vcpu.eip));
 	vcpu.eip += 2;
 }
 static void GetImm(t_nubitcc immbit)
 {
 	// returns vcpuins.imm
-	vcpuins.imm = vramGetRealAddress(vcpu.cs,vcpu.eip);
+	vcpuins.imm = vramGetRealAddress(vcpu.cs.selector,vcpu.eip);
 	switch(immbit) {
-	case 8:		vcpu.eip += 1;break;
-	case 16:	vcpu.eip += 2;break;
-	case 32:	vcpu.eip += 4;break;
-	default:CaseError("GetImm::immbit");break;}
+	case 8:  vcpu.eip += 1;break;
+	case 16: vcpu.eip += 2;break;
+	case 32: vcpu.eip += 4;break;
+	default: CaseError("GetImm::immbit");break;}
 }
 static void GetModRegRM(t_nubitcc regbit,t_nubitcc rmbit)
 {
 	// returns vcpuins.rm and vcpuins.r
 	t_nsbit8 disp8 = 0x00;
 	t_nubit16 disp16 = 0x0000;
-	t_nubit8 modrm = vramVarByte(vcpu.cs,vcpu.eip++);
+	t_nubit8 modrm = vramVarByte(vcpu.cs.selector,vcpu.eip++);
 	vcpuins.rm = vcpuins.r = (t_vaddrcc)NULL;
 	switch(MOD) {
 	case 0:
 		switch(RM) {
-		case 0:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.bx+vcpu.si);break;
-		case 1:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.bx+vcpu.di);break;
-		case 2:	vcpuins.rm = vramGetRealAddress(vcpu.overss,vcpu.bp+vcpu.si);break;
-		case 3:	vcpuins.rm = vramGetRealAddress(vcpu.overss,vcpu.bp+vcpu.di);break;
-		case 4:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.si);break;
-		case 5:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.di);break;
-		case 6: disp16 = vramVarWord(vcpu.cs,vcpu.eip);vcpu.eip += 2;
-			    vcpuins.rm = vramGetRealAddress(vcpu.overds,disp16); break;
-		case 7:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.bx);break;
+		case 0:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.bx+vcpu.si);break;
+		case 1:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.bx+vcpu.di);break;
+		case 2:	vcpuins.rm = vramGetRealAddress(vcpuins.overss.selector,vcpu.bp+vcpu.si);break;
+		case 3:	vcpuins.rm = vramGetRealAddress(vcpuins.overss.selector,vcpu.bp+vcpu.di);break;
+		case 4:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.si);break;
+		case 5:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.di);break;
+		case 6: disp16 = vramVarWord(vcpu.cs.selector,vcpu.eip);vcpu.eip += 2;
+			    vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,disp16); break;
+		case 7:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.bx);break;
 		default:CaseError("GetModRegRM::MOD0::RM");break;}
 		break;
 	case 1:
-		bugfix(23) {disp8 = (t_nsbit8)vramVarByte(vcpu.cs,vcpu.eip);vcpu.eip += 1;}
+		bugfix(23) {disp8 = (t_nsbit8)vramVarByte(vcpu.cs.selector,vcpu.eip);vcpu.eip += 1;}
 		switch(RM) {
-		case 0:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.bx+vcpu.si+disp8);break;
-		case 1:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.bx+vcpu.di+disp8);break;
-		case 2:	vcpuins.rm = vramGetRealAddress(vcpu.overss,vcpu.bp+vcpu.si+disp8);break;
-		case 3:	vcpuins.rm = vramGetRealAddress(vcpu.overss,vcpu.bp+vcpu.di+disp8);break;
-		case 4:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.si+disp8);break;
-		case 5:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.di+disp8);break;
-		case 6:	vcpuins.rm = vramGetRealAddress(vcpu.overss,vcpu.bp+disp8);break;
-		case 7:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.bx+disp8);break;
+		case 0:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.bx+vcpu.si+disp8);break;
+		case 1:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.bx+vcpu.di+disp8);break;
+		case 2:	vcpuins.rm = vramGetRealAddress(vcpuins.overss.selector,vcpu.bp+vcpu.si+disp8);break;
+		case 3:	vcpuins.rm = vramGetRealAddress(vcpuins.overss.selector,vcpu.bp+vcpu.di+disp8);break;
+		case 4:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.si+disp8);break;
+		case 5:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.di+disp8);break;
+		case 6:	vcpuins.rm = vramGetRealAddress(vcpuins.overss.selector,vcpu.bp+disp8);break;
+		case 7:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.bx+disp8);break;
 		default:CaseError("GetModRegRM::MOD1::RM");break;}
 		bugfix(23) ;
 		else {
-			bugfix(3) vcpuins.rm += (t_nsbit8)vramVarByte(vcpu.cs,vcpu.eip);
-			else vcpuins.rm += vramVarByte(vcpu.cs,vcpu.eip);
+			bugfix(3) vcpuins.rm += (t_nsbit8)vramVarByte(vcpu.cs.selector,vcpu.eip);
+			else vcpuins.rm += vramVarByte(vcpu.cs.selector,vcpu.eip);
 			vcpu.eip += 1;
 		}
 		break;
 	case 2:
-		bugfix(23) {disp16 = vramVarWord(vcpu.cs,vcpu.eip);vcpu.eip += 2;}
+		bugfix(23) {disp16 = vramVarWord(vcpu.cs.selector,vcpu.eip);vcpu.eip += 2;}
 		switch(RM) {
-		case 0:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.bx+vcpu.si+disp16);break;
-		case 1:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.bx+vcpu.di+disp16);break;
-		case 2:	vcpuins.rm = vramGetRealAddress(vcpu.overss,vcpu.bp+vcpu.si+disp16);break;
-		case 3:	vcpuins.rm = vramGetRealAddress(vcpu.overss,vcpu.bp+vcpu.di+disp16);break;
-		case 4:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.si+disp16);break;
-		case 5:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.di+disp16);break;
-		case 6:	vcpuins.rm = vramGetRealAddress(vcpu.overss,vcpu.bp+disp16);break;
-		case 7:	vcpuins.rm = vramGetRealAddress(vcpu.overds,vcpu.bx+disp16);break;
+		case 0:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.bx+vcpu.si+disp16);break;
+		case 1:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.bx+vcpu.di+disp16);break;
+		case 2:	vcpuins.rm = vramGetRealAddress(vcpuins.overss.selector,vcpu.bp+vcpu.si+disp16);break;
+		case 3:	vcpuins.rm = vramGetRealAddress(vcpuins.overss.selector,vcpu.bp+vcpu.di+disp16);break;
+		case 4:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.si+disp16);break;
+		case 5:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.di+disp16);break;
+		case 6:	vcpuins.rm = vramGetRealAddress(vcpuins.overss.selector,vcpu.bp+disp16);break;
+		case 7:	vcpuins.rm = vramGetRealAddress(vcpuins.overds.selector,vcpu.bx+disp16);break;
 		default:CaseError("GetModRegRM::MOD2::RM");break;}
 		bugfix(23) ;
-		else {vcpuins.rm += vramVarWord(vcpu.cs,vcpu.eip);vcpu.eip += 2;}
+		else {vcpuins.rm += vramVarWord(vcpu.cs.selector,vcpu.eip);vcpu.eip += 2;}
 		break;
 	case 3:
 		switch(RM) {
@@ -575,10 +739,12 @@ static void GetModRegRM(t_nubitcc regbit,t_nubitcc rmbit)
 	case 0:		vcpuins.r = REG;					break;
 	case 4:
 		switch(REG) {
-		case 0:	vcpuins.r = (t_vaddrcc)(&vcpu.es);	break;
-		case 1:	vcpuins.r = (t_vaddrcc)(&vcpu.cs);	break;
-		case 2:	vcpuins.r = (t_vaddrcc)(&vcpu.ss);	break;
-		case 3:	vcpuins.r = (t_vaddrcc)(&vcpu.ds);	break;
+		case 0:	vcpuins.r = (t_vaddrcc)(&vcpu.es.selector);	break;
+		case 1:	vcpuins.r = (t_vaddrcc)(&vcpu.cs.selector);	break;
+		case 2:	vcpuins.r = (t_vaddrcc)(&vcpu.ss.selector);	break;
+		case 3:	vcpuins.r = (t_vaddrcc)(&vcpu.ds.selector);	break;
+		case 4:	vcpuins.r = (t_vaddrcc)(&vcpu.fs.selector);	break;
+		case 5:	vcpuins.r = (t_vaddrcc)(&vcpu.gs.selector);	break;
 		default:CaseError("GetModRegRM::regbit4::REG");break;}
 		break;
 	case 8:
@@ -611,7 +777,7 @@ static void GetModRegRMEA()
 {
 	t_nsbit8 disp8 = 0x00;
 	t_nubit16 disp16 = 0x0000;
-	t_nubit8 modrm = vramVarByte(vcpu.cs,vcpu.eip++);
+	t_nubit8 modrm = vramVarByte(vcpu.cs.selector,vcpu.eip++);
 	vcpuins.rm = vcpuins.r = (t_vaddrcc)NULL;
 	switch(MOD) {
 	case 0:
@@ -622,12 +788,12 @@ static void GetModRegRMEA()
 		case 3:	vcpuins.rm = vcpu.bp+vcpu.di;break;
 		case 4:	vcpuins.rm = vcpu.si;break;
 		case 5:	vcpuins.rm = vcpu.di;break;
-		case 6:	vcpuins.rm = vramVarWord(vcpu.cs,vcpu.eip);vcpu.eip += 2;break;
+		case 6:	vcpuins.rm = vramVarWord(vcpu.cs.selector,vcpu.eip);vcpu.eip += 2;break;
 		case 7:	vcpuins.rm = vcpu.bx;break;
 		default:CaseError("GetModRegRMEA::MOD0::RM");break;}
 		break;
 	case 1:
-		bugfix(23) {disp8 = (t_nsbit8)vramVarByte(vcpu.cs,vcpu.eip);vcpu.eip += 1;}
+		bugfix(23) {disp8 = (t_nsbit8)vramVarByte(vcpu.cs.selector,vcpu.eip);vcpu.eip += 1;}
 		switch(RM) {
 		case 0:	vcpuins.rm = vcpu.bx+vcpu.si+disp8;break;
 		case 1:	vcpuins.rm = vcpu.bx+vcpu.di+disp8;break;
@@ -640,13 +806,13 @@ static void GetModRegRMEA()
 		default:CaseError("GetModRegRMEA::MOD1::RM");break;}
 		bugfix(23) {vcpuins.rm %= 0x10000;}
 		else {
-			bugfix(3) vcpuins.rm += (t_nsbit8)vramVarByte(vcpu.cs,vcpu.eip);
-			else vcpuins.rm += vramVarByte(vcpu.cs,vcpu.eip);
+			bugfix(3) vcpuins.rm += (t_nsbit8)vramVarByte(vcpu.cs.selector,vcpu.eip);
+			else vcpuins.rm += vramVarByte(vcpu.cs.selector,vcpu.eip);
 			vcpu.eip += 1;
 		}
 		break;
 	case 2:
-		bugfix(23) {disp16 = vramVarWord(vcpu.cs,vcpu.eip);vcpu.eip += 2;}
+		bugfix(23) {disp16 = vramVarWord(vcpu.cs.selector,vcpu.eip);vcpu.eip += 2;}
 		switch(RM) {
 		case 0:	vcpuins.rm = vcpu.bx+vcpu.si+disp16;break;
 		case 1:	vcpuins.rm = vcpu.bx+vcpu.di+disp16;break;
@@ -656,12 +822,12 @@ static void GetModRegRMEA()
 		case 5:	vcpuins.rm = vcpu.di+disp16;break;
 		case 6:
 			bugfix(14) vcpuins.rm = vcpu.bp+disp16;
-			else vcpuins.rm = vramGetRealAddress(vcpu.overss,vcpu.bp);
+			else vcpuins.rm = vramGetRealAddress(vcpuins.overss.selector,vcpu.bp);
 			break;
 		case 7:	vcpuins.rm = vcpu.bx+disp16;break;
 		default:CaseError("GetModRegRMEA::MOD2::RM");break;}
 		bugfix(23) {vcpuins.rm %= 0x10000;}
-		else {vcpuins.rm += vramVarWord(vcpu.cs,vcpu.eip);vcpu.eip += 2;}
+		else {vcpuins.rm += vramVarWord(vcpu.cs.selector,vcpu.eip);vcpu.eip += 2;}
 		break;
 	default:CaseError("GetModRegRMEA::MOD");break;}
 	switch(REG) {
@@ -976,8 +1142,8 @@ static void PUSH(void *src, t_nubit8 len)
 	case 16:
 		vcpuins.bit = 16;
 		vcpu.sp -= 2;
-		bugfix(13) vramVarWord(vcpu.ss,vcpu.sp) = data;
-		else vramVarWord(vcpu.ss,vcpu.sp) = d_nubit16(src);
+		bugfix(13) vramVarWord(vcpu.ss.selector,vcpu.sp) = data;
+		else vramVarWord(vcpu.ss.selector,vcpu.sp) = d_nubit16(src);
 		break;
 	default:CaseError("PUSH::len");break;}
 }
@@ -986,7 +1152,7 @@ static void POP(void *dest, t_nubit8 len)
 	switch(len) {
 	case 16:
 		vcpuins.bit = 16;
-		d_nubit16(dest) = vramVarWord(vcpu.ss,vcpu.sp);
+		d_nubit16(dest) = vramVarWord(vcpu.ss.selector,vcpu.sp);
 		vcpu.sp += 2;
 		break;
 	default:CaseError("POP::len");break;}
@@ -1627,18 +1793,18 @@ static void MOVS(t_nubit8 len)
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
-		vramVarByte(vcpu.es,vcpu.di) = vramVarByte(vcpu.overds,vcpu.si);
+		vramVarByte(vcpu.es.selector,vcpu.di) = vramVarByte(vcpuins.overds.selector,vcpu.si);
 		STRDIR(8,1,1);
-		// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  MOVSB\n");
+		// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  MOVSB\n");
 		break;
 	case 16:
 		vcpuins.bit = 16;
-		vramVarWord(vcpu.es,vcpu.di) = vramVarWord(vcpu.overds,vcpu.si);
+		vramVarWord(vcpu.es.selector,vcpu.di) = vramVarWord(vcpuins.overds.selector,vcpu.si);
 		STRDIR(16,1,1);
-		// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  MOVSW\n");
+		// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  MOVSW\n");
 		break;
 	default:CaseError("MOVS::len");break;}
-	//qdcgaCheckVideoRam(vramGetRealAddress(vcpu.es, vcpu.di));
+	//qdcgaCheckVideoRam(vramGetRealAddress(vcpu.es.selector, vcpu.di));
 }
 static void CMPS(t_nubit8 len)
 {
@@ -1646,22 +1812,22 @@ static void CMPS(t_nubit8 len)
 	case 8:
 		vcpuins.bit = 8;
 		vcpuins.type = CMP8;
-		vcpuins.opr1 = vramVarByte(vcpu.overds,vcpu.si);
-		vcpuins.opr2 = vramVarByte(vcpu.es,vcpu.di);
+		vcpuins.opr1 = vramVarByte(vcpuins.overds.selector,vcpu.si);
+		vcpuins.opr2 = vramVarByte(vcpu.es.selector,vcpu.di);
 		vcpuins.result = (vcpuins.opr1-vcpuins.opr2)&0xff;
 		STRDIR(8,1,1);
 		SetFlags(CMP_FLAG);
-		// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  CMPSB\n");
+		// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  CMPSB\n");
 		break;
 	case 16:
 		vcpuins.bit = 16;
 		vcpuins.type = CMP16;
-		vcpuins.opr1 = vramVarWord(vcpu.overds,vcpu.si);
-		vcpuins.opr2 = vramVarWord(vcpu.es,vcpu.di);
+		vcpuins.opr1 = vramVarWord(vcpuins.overds.selector,vcpu.si);
+		vcpuins.opr2 = vramVarWord(vcpu.es.selector,vcpu.di);
 		vcpuins.result = (vcpuins.opr1-vcpuins.opr2)&0xffff;
 		STRDIR(16,1,1);
 		SetFlags(CMP_FLAG);
-		// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  CMPSW\n");
+		// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  CMPSW\n");
 		break;
 	default:CaseError("CMPS::len");break;}
 }
@@ -1670,15 +1836,15 @@ static void STOS(t_nubit8 len)
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
-		vramVarByte(vcpu.es,vcpu.di) = vcpu.al;
+		vramVarByte(vcpu.es.selector,vcpu.di) = vcpu.al;
 		STRDIR(8,0,1);
 		/*if (eCPU.di+t<0xc0000 && eCPU.di+t>=0xa0000)
 		WriteVideoRam(eCPU.di+t-0xa0000);*/
-		// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  STOSB\n");
+		// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  STOSB\n");
 		break;
 	case 16:
 		vcpuins.bit = 16;
-		vramVarWord(vcpu.es,vcpu.di) = vcpu.ax;
+		vramVarWord(vcpu.es.selector,vcpu.di) = vcpu.ax;
 		STRDIR(16,0,1);
 		/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000)
 		{
@@ -1687,7 +1853,7 @@ static void STOS(t_nubit8 len)
 				WriteVideoRam(eCPU.di+((t2=eCPU.es,t2<<4))-0xa0000+i);
 			}
 		}*/
-		// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  STOSW\n");
+		// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  STOSW\n");
 		break;
 	default:CaseError("STOS::len");break;}
 }
@@ -1696,15 +1862,15 @@ static void LODS(t_nubit8 len)
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
-		vcpu.al = vramVarByte(vcpu.overds,vcpu.si);
+		vcpu.al = vramVarByte(vcpuins.overds.selector,vcpu.si);
 		STRDIR(8,1,0);
-		// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  LODSB\n");
+		// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  LODSB\n");
 		break;
 	case 16:
 		vcpuins.bit = 16;
-		vcpu.ax = vramVarWord(vcpu.overds,vcpu.si);
+		vcpu.ax = vramVarWord(vcpuins.overds.selector,vcpu.si);
 		STRDIR(16,1,0);
-		// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  LODSW\n");
+		// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  LODSW\n");
 		break;
 	default:CaseError("LODS::len");break;}
 }
@@ -1715,7 +1881,7 @@ static void SCAS(t_nubit8 len)
 		vcpuins.bit = 8;
 		vcpuins.type = CMP8;
 		vcpuins.opr1 = vcpu.al;
-		vcpuins.opr2 = vramVarByte(vcpu.es,vcpu.di);
+		vcpuins.opr2 = vramVarByte(vcpu.es.selector,vcpu.di);
 		vcpuins.result = (vcpuins.opr1-vcpuins.opr2)&0xff;
 		STRDIR(8,0,1);
 		SetFlags(CMP_FLAG);
@@ -1724,7 +1890,7 @@ static void SCAS(t_nubit8 len)
 		vcpuins.bit = 16;
 		vcpuins.type = CMP16;
 		vcpuins.opr1 = vcpu.ax;
-		vcpuins.opr2 = vramVarWord(vcpu.es,vcpu.di);
+		vcpuins.opr2 = vramVarWord(vcpu.es.selector,vcpu.di);
 		vcpuins.result = (vcpuins.opr1-vcpuins.opr2)&0xffff;
 		STRDIR(16,0,1);
 		SetFlags(CMP_FLAG);
@@ -1807,7 +1973,7 @@ static ASMCMP MUL(void *src, t_nubit8 len)
 #undef op
 		break;
 	default:CaseError("MUL::len");break;}
-	acheck(VCPU_EFLAGS_OF | VCPU_EFLAGS_CF) vapiPrintIns(vcpu.cs,vcpu.eip,"+MUL");
+	acheck(VCPU_EFLAGS_OF | VCPU_EFLAGS_CF) vapiPrintIns(vcpu.cs.selector,vcpu.eip,"+MUL");
 }
 static ASMCMP IMUL(void *src, t_nubit8 len)
 {
@@ -1827,7 +1993,7 @@ static ASMCMP IMUL(void *src, t_nubit8 len)
 #define op imul
 		aexec_mdx8;
 #undef op
-		acheck(VCPU_EFLAGS_OF | VCPU_EFLAGS_CF) vapiPrintIns(vcpu.cs,vcpu.eip,"+IMUL");
+		acheck(VCPU_EFLAGS_OF | VCPU_EFLAGS_CF) vapiPrintIns(vcpu.cs.selector,vcpu.eip,"+IMUL");
 		break;
 	case 16:
 		async uw2 = d_nubit16(src);
@@ -1845,7 +2011,7 @@ static ASMCMP IMUL(void *src, t_nubit8 len)
 #define op imul
 		aexec_mdx16;
 #undef op
-		acheck(VCPU_EFLAGS_OF | VCPU_EFLAGS_CF) vapiPrintIns(vcpu.cs,vcpu.eip,"+IMUL");
+		acheck(VCPU_EFLAGS_OF | VCPU_EFLAGS_CF) vapiPrintIns(vcpu.cs.selector,vcpu.eip,"+IMUL");
 		break;
 	default:CaseError("IMUL::len");break;}
 }
@@ -1866,7 +2032,7 @@ static ASMCMP DIV(void *src, t_nubit8 len)
 #define op div
 		aexec_mdx8;
 #undef op
-		acheck(VCPU_EFLAGS_DF | VCPU_EFLAGS_TF) vapiPrintIns(vcpu.cs,vcpu.eip,"+DIV");
+		acheck(VCPU_EFLAGS_DF | VCPU_EFLAGS_TF) vapiPrintIns(vcpu.cs.selector,vcpu.eip,"+DIV");
 		break;
 	case 16:
 		async uw2 = d_nubit16(src);
@@ -1880,7 +2046,7 @@ static ASMCMP DIV(void *src, t_nubit8 len)
 #define op div
 		aexec_mdx16;
 #undef op
-		acheck(VCPU_EFLAGS_DF | VCPU_EFLAGS_TF) vapiPrintIns(vcpu.cs,vcpu.eip,"+DIV");
+		acheck(VCPU_EFLAGS_DF | VCPU_EFLAGS_TF) vapiPrintIns(vcpu.cs.selector,vcpu.eip,"+DIV");
 		break;
 	default:CaseError("DIV::len");break;}
 }
@@ -1901,7 +2067,7 @@ static void IDIV(void *src, t_nubit8 len)
 #define op idiv
 		aexec_mdx8;
 #undef op
-		acheck(VCPU_EFLAGS_DF | VCPU_EFLAGS_TF) vapiPrintIns(vcpu.cs,vcpu.eip,"+IDIV");
+		acheck(VCPU_EFLAGS_DF | VCPU_EFLAGS_TF) vapiPrintIns(vcpu.cs.selector,vcpu.eip,"+IDIV");
 		break;
 	case 16:
 		async uw2 = d_nubit16(src);
@@ -1915,7 +2081,7 @@ static void IDIV(void *src, t_nubit8 len)
 #define op idiv
 		aexec_mdx16;
 #undef op
-		acheck(VCPU_EFLAGS_DF | VCPU_EFLAGS_TF) vapiPrintIns(vcpu.cs,vcpu.eip,"+IDIV");
+		acheck(VCPU_EFLAGS_DF | VCPU_EFLAGS_TF) vapiPrintIns(vcpu.cs.selector,vcpu.eip,"+IDIV");
 		break;
 	default:CaseError("IDIV::len");break;}
 }
@@ -1924,19 +2090,19 @@ static void INT(t_nubit8 intid)
 	PUSH((void *)&vcpu.eflags,16);
 	_ClrIF;
 	_ClrTF;
-	PUSH((void *)&vcpu.cs,16);
+	PUSH((void *)&vcpu.cs.selector,16);
 	PUSH((void *)&vcpu.eip,16);
 	vcpu.eip = vramVarWord(0x0000,intid*4+0);
-	vcpu.cs = vramVarWord(0x0000,intid*4+2);
+	vcpu.cs.selector = vramVarWord(0x0000,intid*4+2);
 }
 
 void OpError()
 {
 	vapiPrint("The NXVM CPU has encountered an illegal instruction.\n");
 	vapiPrint("CS:%04X IP:%04X OP:%02X %02X %02X %02X\n",
-		vcpu.cs, vcpu.eip, vramVarByte(vcpu.cs,vcpu.eip+0),
-		vramVarByte(vcpu.cs,vcpu.eip+1), vramVarByte(vcpu.cs,vcpu.eip+2),
-		vramVarByte(vcpu.cs,vcpu.eip+3), vramVarByte(vcpu.cs,vcpu.eip+4));
+		vcpu.cs.selector, vcpu.eip, vramVarByte(vcpu.cs.selector,vcpu.eip+0),
+		vramVarByte(vcpu.cs.selector,vcpu.eip+1), vramVarByte(vcpu.cs.selector,vcpu.eip+2),
+		vramVarByte(vcpu.cs.selector,vcpu.eip+3), vramVarByte(vcpu.cs.selector,vcpu.eip+4));
 	vapiCallBackMachineStop();
 }
 void ADD_RM8_R8()
@@ -1974,69 +2140,69 @@ void ADD_AX_I16()
 	vcpu.eip++;
 	GetImm(16);
 	ADD((void *)&vcpu.ax,(void *)vcpuins.imm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  ADD_AX_I16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  ADD_AX_I16\n");
 }
 void PUSH_ES()
 {
 	vcpu.eip++;
-	PUSH((void *)&vcpu.es,16);
+	PUSH((void *)&vcpu.es.selector,16);
 }
 void POP_ES()
 {
 	vcpu.eip++;
-	POP((void *)&vcpu.es,16);
+	POP((void *)&vcpu.es.selector,16);
 }
 void OR_RM8_R8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	OR((void *)vcpuins.rm,(void *)vcpuins.r,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  OR_RM8_R8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  OR_RM8_R8\n");
 }
 void OR_RM16_R16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	OR((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  OR_RM16_R16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  OR_RM16_R16\n");
 }
 void OR_R8_RM8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	OR((void *)vcpuins.r,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  OR_R8_RM8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  OR_R8_RM8\n");
 }
 void OR_R16_RM16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	OR((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  OR_R16_RM16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  OR_R16_RM16\n");
 }
 void OR_AL_I8()
 {
 	vcpu.eip++;
 	GetImm(8);
 	OR((void *)&vcpu.al,(void *)vcpuins.imm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  OR_AL_I8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  OR_AL_I8\n");
 }
 void OR_AX_I16()
 {
 	vcpu.eip++;
 	GetImm(16);
 	OR((void *)&vcpu.ax,(void *)vcpuins.imm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  OR_AX_I16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  OR_AX_I16\n");
 }
 void PUSH_CS()
 {
 	vcpu.eip++;
-	PUSH((void *)&vcpu.cs,16);
+	PUSH((void *)&vcpu.cs.selector,16);
 }
 void POP_CS()
 {
 	vcpu.eip++;
-	POP((void *)&vcpu.cs,16);
+	POP((void *)&vcpu.cs.selector,16);
 }
 void INS_0F()
 {
@@ -2047,152 +2213,152 @@ void ADC_RM8_R8()
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	ADC((void *)vcpuins.rm,(void *)vcpuins.r,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  ADC_RM8_R8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  ADC_RM8_R8\n");
 }
 void ADC_RM16_R16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	ADC((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  ADC_RM16_R16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  ADC_RM16_R16\n");
 }
 void ADC_R8_RM8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	ADC((void *)vcpuins.r,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  ADC_R8_RM8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  ADC_R8_RM8\n");
 }
 void ADC_R16_RM16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	ADC((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  ADC_R16_RM16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  ADC_R16_RM16\n");
 }
-void ADC_AL_I8()
+static void ADC_AL_I8()
 {
+	// 0x14 0xib
 	vcpu.eip++;
 	GetImm(8);
 	ADC((void *)&vcpu.al,(void *)vcpuins.imm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  ADC_AL_I8\n");
 }
-void ADC_AX_I16()
+static void ADC_AX_I16()
 {
+	// 0x15 0xiw/0xid
 	vcpu.eip++;
-	GetImm(16);
-	ADC((void *)&vcpu.ax,(void *)vcpuins.imm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  ADC_AX_I16\n");
+	GetImm(GetOperandSize);
+	ADC((void *)&vcpu.ax, (void *)vcpuins.imm, GetOperandSize);
 }
 void PUSH_SS()
 {
 	vcpu.eip++;
-	PUSH((void *)&vcpu.ss,16);
+	PUSH((void *)&vcpu.ss.selector,16);
 }
 void POP_SS()
 {
 	vcpu.eip++;
-	POP((void *)&vcpu.ss,16);
+	POP((void *)&vcpu.ss.selector,16);
 }
 void SBB_RM8_R8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	SBB((void *)vcpuins.rm,(void *)vcpuins.r,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SBB_RM8_R8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SBB_RM8_R8\n");
 }
 void SBB_RM16_R16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	SBB((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SBB_RM16_R16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SBB_RM16_R16\n");
 }
 void SBB_R8_RM8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	SBB((void *)vcpuins.r,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SBB_R8_RM8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SBB_R8_RM8\n");
 }
 void SBB_R16_RM16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	SBB((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SBB_R16_RM16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SBB_R16_RM16\n");
 }
 void SBB_AL_I8()
 {
 	vcpu.eip++;
 	GetImm(8);
 	SBB((void *)&vcpu.al,(void *)vcpuins.imm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SBB_AL_I8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SBB_AL_I8\n");
 }
 void SBB_AX_I16()
 {
 	vcpu.eip++;
 	GetImm(16);
 	SBB((void *)&vcpu.ax,(void *)vcpuins.imm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SBB_AX_I16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SBB_AX_I16\n");
 }
 void PUSH_DS()
 {
 	vcpu.eip++;
-	PUSH((void *)&vcpu.ds,16);
+	PUSH((void *)&vcpu.ds.selector,16);
 }
 void POP_DS()
 {
 	vcpu.eip++;
-	POP((void *)&vcpu.ds,16);
+	POP((void *)&vcpu.ds.selector,16);
 }
 void AND_RM8_R8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	AND((void *)vcpuins.rm,(void *)vcpuins.r,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  AND_RM8_R8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  AND_RM8_R8\n");
 }
 void AND_RM16_R16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	AND((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  AND_RM16_R16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  AND_RM16_R16\n");
 }
 void AND_R8_RM8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	AND((void *)vcpuins.r,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  AND_R8_RM8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  AND_R8_RM8\n");
 }
 void AND_R16_RM16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	AND((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  AND_R16_RM16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  AND_R16_RM16\n");
 }
 void AND_AL_I8()
 {
 	vcpu.eip++;
 	GetImm(8);
 	AND((void *)&vcpu.al,(void *)vcpuins.imm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  AND_AL_I8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  AND_AL_I8\n");
 }
 void AND_AX_I16()
 {
 	vcpu.eip++;
 	GetImm(16);
 	AND((void *)&vcpu.ax,(void *)vcpuins.imm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  AND_AX_I16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  AND_AX_I16\n");
 }
 void ES()
 {
 	vcpu.eip++;
-	vcpu.overds = vcpu.es;
-	vcpu.overss = vcpu.es;
+	vcpuins.overds = vcpu.es;
+	vcpuins.overss = vcpu.es;
 }
 ASMCMP DAA()
 {
@@ -2218,55 +2384,55 @@ ASMCMP DAA()
 #define op daa
 	aexec_cax8;
 #undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-1,"DAA");
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs.selector,vcpu.eip-1,"DAA");
 }
 void SUB_RM8_R8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	SUB((void *)vcpuins.rm,(void *)vcpuins.r,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SUB_RM8_R8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SUB_RM8_R8\n");
 }
 void SUB_RM16_R16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	SUB((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SUB_RM16_R16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SUB_RM16_R16\n");
 }
 void SUB_R8_RM8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	SUB((void *)vcpuins.r,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SUB_R8_RM8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SUB_R8_RM8\n");
 }
 void SUB_R16_RM16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	SUB((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SUB_R16_RM16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SUB_R16_RM16\n");
 }
 void SUB_AL_I8()
 {
 	vcpu.eip++;
 	GetImm(8);
 	SUB((void *)&vcpu.al,(void *)vcpuins.imm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SUB_AL_I8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SUB_AL_I8\n");
 }
 void SUB_AX_I16()
 {
 	vcpu.eip++;
 	GetImm(16);
 	SUB((void *)&vcpu.ax,(void *)vcpuins.imm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SUB_AX_I16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SUB_AX_I16\n");
 }
 void CS()
 {
 	vcpu.eip++;
-	vcpu.overds = vcpu.cs;
-	vcpu.overss = vcpu.cs;
+	vcpuins.overds = vcpu.cs;
+	vcpuins.overss = vcpu.cs;
 }
 ASMCMP DAS()
 {
@@ -2290,62 +2456,63 @@ ASMCMP DAS()
 #define op das
 	aexec_cax8;
 #undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-1,"DAS");
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs.selector,vcpu.eip-1,"DAS");
 }
 void XOR_RM8_R8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	XOR((void *)vcpuins.rm,(void *)vcpuins.r,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XOR_RM8_R8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XOR_RM8_R8\n");
 }
 void XOR_RM16_R16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	XOR((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XOR_RM16_R16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XOR_RM16_R16\n");
 }
 void XOR_R8_RM8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	XOR((void *)vcpuins.r,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XOR_R8_RM8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XOR_R8_RM8\n");
 }
 void XOR_R16_RM16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	XOR((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XOR_R16_RM16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XOR_R16_RM16\n");
 }
 void XOR_AL_I8()
 {
 	vcpu.eip++;
 	GetImm(8);
 	XOR((void *)&vcpu.al,(void *)vcpuins.imm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XOR_AL_I8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XOR_AL_I8\n");
 }
 void XOR_AX_I16()
 {
 	vcpu.eip++;
 	GetImm(16);
 	XOR((void *)&vcpu.ax,(void *)vcpuins.imm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XOR_AX_I16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XOR_AX_I16\n");
 }
 void SS()
 {
 	vcpu.eip++;
-	vcpu.overds = vcpu.ss;
-	vcpu.overss = vcpu.ss;
+	vcpuins.overds = vcpu.ss;
+	vcpuins.overss = vcpu.ss;
 }
-ASMCMP AAA()
+static void AAA()
 {
+	// 0x37
 	vcpu.eip++;
-	async;
-	if(((vcpu.al&0x0f) > 0x09) || _GetAF) {
+	if(((vcpu.al & 0x0f) > 0x09) || _GetAF) {
 		vcpu.al += 0x06;
+		vcpu.al &= 0x0f;
 		vcpu.ah += 0x01;
 		_SetAF;
 		_SetCF;
@@ -2353,174 +2520,165 @@ ASMCMP AAA()
 		_ClrAF;
 		_ClrCF;
 	}
-	vcpu.al &= 0x0f;
-#define op aaa
-	aexec_cax16;
-#undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-1,"AAA");
 }
 void CMP_RM8_R8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	CMP((void *)vcpuins.rm,(void *)vcpuins.r,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  CMP_RM8_R8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  CMP_RM8_R8\n");
 }
 void CMP_RM16_R16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	CMP((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  CMP_RM16_R16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  CMP_RM16_R16\n");
 }
 void CMP_R8_RM8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	CMP((void *)vcpuins.r,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  CMP_R8_RM8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  CMP_R8_RM8\n");
 }
 void CMP_R16_RM16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	CMP((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  CMP_R16_RM16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  CMP_R16_RM16\n");
 }
 void CMP_AL_I8()
 {
 	vcpu.eip++;
 	GetImm(8);
 	CMP((void *)&vcpu.al,(void *)vcpuins.imm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  CMP_AL_I8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  CMP_AL_I8\n");
 }
 void CMP_AX_I16()
 {
 	vcpu.eip++;
 	GetImm(16);
 	CMP((void *)&vcpu.ax,(void *)vcpuins.imm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  CMP_AX_I16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  CMP_AX_I16\n");
 }
 void DS()
 {
 	vcpu.eip++;
-	vcpu.overds = vcpu.ds;
-	vcpu.overss = vcpu.ds;
+	vcpuins.overds = vcpu.ds;
+	vcpuins.overss = vcpu.ds;
 }
-ASMCMP AAS()
+static void AAS()
 {
+	// 0x3f
 	vcpu.eip++;
-	async;
-	if(((vcpu.al&0x0f) > 0x09) || _GetAF) {
+	if(((vcpu.al & 0x0f) > 0x09) || _GetAF) {
 		vcpu.al -= 0x06;
-		vcpu.ah += 0x01;
+		vcpu.al &= 0x0f;
+		vcpu.ah -= 0x01;
 		_SetAF;
 		_SetCF;
 	} else {
 		_ClrCF;
 		_ClrAF;
 	}
-	vcpu.al &= 0x0f;
-#define op aas
-	aexec_cax16;
-#undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-1,"AAS");
 }
 void INC_AX()
 {
 	vcpu.eip++;
 	INC((void *)&vcpu.ax,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INC_AX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INC_AX\n");
 }
 void INC_CX()
 {
 	vcpu.eip++;
 	INC((void *)&vcpu.cx,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INC_CX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INC_CX\n");
 }
 void INC_DX()
 {
 	vcpu.eip++;
 	INC((void *)&vcpu.dx,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INC_DX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INC_DX\n");
 }
 void INC_BX()
 {
 	vcpu.eip++;
 	INC((void *)&vcpu.bx,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INC_BX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INC_BX\n");
 }
 void INC_SP()
 {
 	vcpu.eip++;
 	INC((void *)&vcpu.sp,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INC_SP\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INC_SP\n");
 }
 void INC_BP()
 {
 	vcpu.eip++;
 	INC((void *)&vcpu.bp,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INC_BP\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INC_BP\n");
 }
 void INC_SI()
 {
 	vcpu.eip++;
 	INC((void *)&vcpu.si,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INC_SI\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INC_SI\n");
 }
 void INC_DI()
 {
 	vcpu.eip++;
 	INC((void *)&vcpu.di,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INC_DI\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INC_DI\n");
 }
 void DEC_AX()
 {
 	vcpu.eip++;
 	DEC((void *)&vcpu.ax,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  DEC_AX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  DEC_AX\n");
 }
 void DEC_CX()
 {
 	vcpu.eip++;
 	DEC((void *)&vcpu.cx,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  DEC_CX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  DEC_CX\n");
 }
 void DEC_DX()
 {
 	vcpu.eip++;
 	DEC((void *)&vcpu.dx,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  DEC_DX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  DEC_DX\n");
 }
 void DEC_BX()
 {
 	vcpu.eip++;
 	DEC((void *)&vcpu.bx,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  DEC_BX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  DEC_BX\n");
 }
 void DEC_SP()
 {
 	vcpu.eip++;
 	DEC((void *)&vcpu.sp,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  DEC_SP\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  DEC_SP\n");
 }
 void DEC_BP()
 {
 	vcpu.eip++;
 	DEC((void *)&vcpu.bp,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  DEC_BP\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  DEC_BP\n");
 }
 void DEC_SI()
 {
 	vcpu.eip++;
 	DEC((void *)&vcpu.si,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  DEC_SI\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  DEC_SI\n");
 }
 void DEC_DI()
 {
 	vcpu.eip++;
 	DEC((void *)&vcpu.di,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  DEC_DI\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  DEC_DI\n");
 }
 void PUSH_AX()
 {
@@ -2602,6 +2760,28 @@ void POP_DI()
 	vcpu.eip++;
 	POP((void *)&vcpu.di,16);
 }
+void FS()
+{
+	vcpu.eip++;
+	vcpuins.overds = vcpu.fs;
+	vcpuins.overss = vcpu.fs;
+}
+void GS()
+{
+	vcpu.eip++;
+	vcpuins.overds = vcpu.gs;
+	vcpuins.overss = vcpu.gs;
+}
+void OprSize()
+{
+	vcpu.eip++;
+	vcpuins.prefix_oprsize = 0x01;
+}
+void AddrSize()
+{
+	vcpu.eip++;
+	vcpuins.prefix_addrsize = 0x01;
+}
 void JO()
 {
 	vcpu.eip++;
@@ -2625,7 +2805,7 @@ void JNC()
 	vcpu.eip++;
 	GetImm(8);
 	JCC((void *)vcpuins.imm, !_GetCF, 8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  JNC\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  JNC\n");
 }
 void JZ()
 {
@@ -2759,70 +2939,70 @@ void INS_83()
 	case 6:	XOR((void *)vcpuins.rm,(void *)vcpuins.imm,12);break;
 	case 7:	CMP((void *)vcpuins.rm,(void *)vcpuins.imm,12);break;
 	default:CaseError("INS_83::vcpuins.r");break;}
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INS_83\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INS_83\n");
 }
 void TEST_RM8_R8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	TEST((void *)vcpuins.rm,(void *)vcpuins.r,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  TEST_RM8_R8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  TEST_RM8_R8\n");
 }
 void TEST_RM16_R16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	TEST((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  TEST_RM16_R16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  TEST_RM16_R16\n");
 }
 void XCHG_R8_RM8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	XCHG((void *)vcpuins.r,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XCHG_R8_RM8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XCHG_R8_RM8\n");
 }
 void XCHG_R16_RM16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	XCHG((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XCHG_R16_RM16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XCHG_R16_RM16\n");
 }
 void MOV_RM8_R8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	MOV((void *)vcpuins.rm,(void *)vcpuins.r,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  MOV_RM8_R8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  MOV_RM8_R8\n");
 }
 void MOV_RM16_R16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	MOV((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  MOV_RM16_R16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  MOV_RM16_R16\n");
 }
 void MOV_R8_RM8()
 {
 	vcpu.eip++;
 	GetModRegRM(8,8);
 	MOV((void *)vcpuins.r,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  MOV_R8_RM8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  MOV_R8_RM8\n");
 }
 void MOV_R16_RM16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	MOV((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  MOV_R16_RM16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  MOV_R16_RM16\n");
 }
 void MOV_RM16_SEG()
 {
 	vcpu.eip++;
 	GetModRegRM(4,16);
 	MOV((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  MOV_RM16_SEG\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  MOV_RM16_SEG\n");
 }
 void LEA_R16_M16()
 {
@@ -2835,7 +3015,7 @@ void MOV_SEG_RM16()
 	vcpu.eip++;
 	GetModRegRM(4,16);
 	MOV((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  MOV_SEG_RM16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  MOV_SEG_RM16\n");
 }
 void POP_RM16()
 {
@@ -2856,43 +3036,43 @@ void XCHG_CX_AX()
 {
 	vcpu.eip++;
 	XCHG((void *)&vcpu.cx,(void *)&vcpu.ax,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XCHG_CX_AX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XCHG_CX_AX\n");
 }
 void XCHG_DX_AX()
 {
 	vcpu.eip++;
 	XCHG((void *)&vcpu.dx,(void *)&vcpu.ax,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XCHG_DX_AX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XCHG_DX_AX\n");
 }
 void XCHG_BX_AX()
 {
 	vcpu.eip++;
 	XCHG((void *)&vcpu.bx,(void *)&vcpu.ax,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XCHG_BX_AX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XCHG_BX_AX\n");
 }
 void XCHG_SP_AX()
 {
 	vcpu.eip++;
 	XCHG((void *)&vcpu.sp,(void *)&vcpu.ax,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XCHG_SP_AX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XCHG_SP_AX\n");
 }
 void XCHG_BP_AX()
 {
 	vcpu.eip++;
 	XCHG((void *)&vcpu.bp,(void *)&vcpu.ax,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XCHG_BP_AX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XCHG_BP_AX\n");
 }
 void XCHG_SI_AX()
 {
 	vcpu.eip++;
 	XCHG((void *)&vcpu.si,(void *)&vcpu.ax,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XCHG_SI_AX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XCHG_SI_AX\n");
 }
 void XCHG_DI_AX()
 {
 	vcpu.eip++;
 	XCHG((void *)&vcpu.di,(void *)&vcpu.ax,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  XCHG_DI_AX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  XCHG_DI_AX\n");
 }
 ASMCMP CBW()
 {
@@ -2902,7 +3082,7 @@ ASMCMP CBW()
 #define op cbw
 	aexec_cax16;
 #undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-1,"CBW");
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs.selector,vcpu.eip-1,"CBW");
 }
 ASMCMP CWD()
 {
@@ -2913,7 +3093,7 @@ ASMCMP CWD()
 #define op cwd
 	aexec_cax16;
 #undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-1,"CWD");
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs.selector,vcpu.eip-1,"CWD");
 }
 void CALL_PTR16_16()
 {
@@ -2924,10 +3104,10 @@ void CALL_PTR16_16()
 	newip = d_nubit16(vcpuins.imm);
 	GetImm(16);
 	newcs = d_nubit16(vcpuins.imm);
-	PUSH((void *)&vcpu.cs,16);
+	PUSH((void *)&vcpu.cs.selector,16);
 	PUSH((void *)&vcpu.eip,16);
 	vcpu.eip = newip;
-	vcpu.cs = newcs;
+	vcpu.cs.selector = newcs;
 }
 NOTIMP WAIT()
 {
@@ -2948,35 +3128,35 @@ void SAHF()
 {
 	vcpu.eip++;
 	d_nubit8(&vcpu.eflags) = vcpu.ah;
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  SAHF\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  SAHF\n");
 }
 void LAHF()
 {
 	vcpu.eip++;
 //	vapiPrint("1:LAHF:%4X\n",vcpu.eflags);
 	vcpu.ah = d_nubit8(&vcpu.eflags);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  LAHF\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  LAHF\n");
 }
 void MOV_AL_M8()
 {
 	vcpu.eip++;
 	GetMem();
 	MOV((void *)&vcpu.al,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  MOV_AL_M8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  MOV_AL_M8\n");
 }
 void MOV_AX_M16()
 {
 	vcpu.eip++;
 	GetMem();
 	MOV((void *)&vcpu.ax,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  MOV_AX_M16\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  MOV_AX_M16\n");
 }
 void MOV_M8_AL()
 {
 	vcpu.eip++;
 	GetMem();
 	MOV((void *)vcpuins.rm,(void *)&vcpu.al,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  MOV_M8_AL\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  MOV_M8_AL\n");
 }
 void MOV_M16_AX()
 {
@@ -2987,51 +3167,51 @@ void MOV_M16_AX()
 void MOVSB()
 {
 	vcpu.eip++;
-	if(vcpuins.rep == RT_NONE) MOVS(8);
+	if(vcpuins.prefix_rep == PREFIX_REP_NONE) MOVS(8);
 	else {
-		while(vcpu.cx) {
-			//vcpuinsExecInt();
+		if (vcpu.cx) {
 			MOVS(8);
 			vcpu.cx--;
 		}
+		if (vcpu.cx) vcpuins.flaginsloop = 0x01;
 	}
 }
 void MOVSW()
 {
 	vcpu.eip++;
-	if(vcpuins.rep == RT_NONE) MOVS(16);
+	if(vcpuins.prefix_rep == PREFIX_REP_NONE) MOVS(16);
 	else {
-		while(vcpu.cx) {
-			//vcpuinsExecInt();
+		if (vcpu.cx) {
 			MOVS(16);
 			vcpu.cx--;
 		}
+		if (vcpu.cx) vcpuins.flaginsloop = 0x01;
 	}
 }
 void CMPSB()
 {
 	vcpu.eip++;
-	if(vcpuins.rep == RT_NONE) CMPS(8);
+	if(vcpuins.prefix_rep == PREFIX_REP_NONE) CMPS(8);
 	else {
-		while(vcpu.cx) {
-			//vcpuinsExecInt();
+		if (vcpu.cx) {
 			CMPS(8);
 			vcpu.cx--;
-			if((vcpuins.rep == RT_REPZ && !_GetZF) || (vcpuins.rep == RT_REPZNZ && _GetZF)) break;
 		}
+		if (vcpu.cx && !(vcpuins.prefix_rep == PREFIX_REP_REPZ && !_GetZF) && !(vcpuins.prefix_rep == PREFIX_REP_REPZNZ && _GetZF))
+			 vcpuins.flaginsloop = 0x01;
 	}
 }
 void CMPSW()
 {
 	vcpu.eip++;
-	if(vcpuins.rep == RT_NONE) CMPS(16);
+	if(vcpuins.prefix_rep == PREFIX_REP_NONE) CMPS(16);
 	else {
-		while(vcpu.cx) {
-			//vcpuinsExecInt();
+		if (vcpu.cx) {
 			CMPS(16);
 			vcpu.cx--;
-			if((vcpuins.rep == RT_REPZ && !_GetZF) || (vcpuins.rep == RT_REPZNZ && _GetZF)) break;
 		}
+		if (vcpu.cx && !(vcpuins.prefix_rep == PREFIX_REP_REPZ && !_GetZF) && !(vcpuins.prefix_rep == PREFIX_REP_REPZNZ && _GetZF))
+			 vcpuins.flaginsloop = 0x01;
 	}
 }
 void TEST_AL_I8()
@@ -3049,75 +3229,75 @@ void TEST_AX_I16()
 void STOSB()
 {
 	vcpu.eip++;
-	if(vcpuins.rep == RT_NONE) STOS(8);
+	if(vcpuins.prefix_rep == PREFIX_REP_NONE) STOS(8);
 	else {
-		while(vcpu.cx) {
-			//vcpuinsExecInt();
+		if (vcpu.cx) {
 			STOS(8);
 			vcpu.cx--;
 		}
+		if (vcpu.cx) vcpuins.flaginsloop = 0x01;
 	}
 }
 void STOSW()
 {
 	vcpu.eip++;
-	if(vcpuins.rep == RT_NONE) STOS(16);
+	if(vcpuins.prefix_rep == PREFIX_REP_NONE) STOS(16);
 	else {
-		while(vcpu.cx) {
-			//vcpuinsExecInt();
+		if (vcpu.cx) {
 			STOS(16);
 			vcpu.cx--;
 		}
+		if (vcpu.cx) vcpuins.flaginsloop = 0x01;
 	}
 }
 void LODSB()
 {
 	vcpu.eip++;
-	if(vcpuins.rep == RT_NONE) LODS(8);
+	if(vcpuins.prefix_rep == PREFIX_REP_NONE) LODS(8);
 	else {
-		while(vcpu.cx) {
-			//vcpuinsExecInt();
+		if (vcpu.cx) {
 			LODS(8);
 			vcpu.cx--;
 		}
+		if (vcpu.cx) vcpuins.flaginsloop = 0x01;
 	}
 }
 void LODSW()
 {
 	vcpu.eip++;
-	if(vcpuins.rep == RT_NONE) LODS(16);
+	if(vcpuins.prefix_rep == PREFIX_REP_NONE) LODS(16);
 	else {
-		while(vcpu.cx) {
-			//vcpuinsExecInt();
+		if (vcpu.cx) {
 			LODS(16);
 			vcpu.cx--;
 		}
+		if (vcpu.cx) vcpuins.flaginsloop = 0x01;
 	}
 }
 void SCASB()
 {
 	vcpu.eip++;
-	if(vcpuins.rep == RT_NONE) SCAS(8);
+	if(vcpuins.prefix_rep == PREFIX_REP_NONE) SCAS(8);
 	else {
-		while(vcpu.cx) {
-			//vcpuinsExecInt();
+		if (vcpu.cx) {
 			SCAS(8);
 			vcpu.cx--;
-			if((vcpuins.rep == RT_REPZ && !_GetZF) || (vcpuins.rep == RT_REPZNZ && _GetZF)) break;
 		}
+		if (vcpu.cx && !(vcpuins.prefix_rep == PREFIX_REP_REPZ && !_GetZF) && !(vcpuins.prefix_rep == PREFIX_REP_REPZNZ && _GetZF))
+			 vcpuins.flaginsloop = 0x01;
 	}
 }
 void SCASW()
 {
 	vcpu.eip++;
-	if(vcpuins.rep == RT_NONE) SCAS(16);
+	if(vcpuins.prefix_rep == PREFIX_REP_NONE) SCAS(16);
 	else {
-		while(vcpu.cx) {
-			//vcpuinsExecInt();
+		if (vcpu.cx) {
 			SCAS(16);
 			vcpu.cx--;
-			if((vcpuins.rep == RT_REPZ && !_GetZF) || (vcpuins.rep == RT_REPZNZ && _GetZF)) break;
 		}
+		if (vcpu.cx && !(vcpuins.prefix_rep == PREFIX_REP_REPZ && !_GetZF) && !(vcpuins.prefix_rep == PREFIX_REP_REPZNZ && _GetZF))
+			 vcpuins.flaginsloop = 0x01;
 	}
 }
 void MOV_AL_I8()
@@ -3272,14 +3452,14 @@ void LES_R16_M16()
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	MOV((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	MOV((void *)&vcpu.es,(void *)(vcpuins.rm+2),16);
+	MOV((void *)&vcpu.es.selector,(void *)(vcpuins.rm+2),16);
 }
 void LDS_R16_M16()
 {
 	vcpu.eip++;
 	GetModRegRM(16,16);
 	MOV((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	MOV((void *)&vcpu.ds,(void *)(vcpuins.rm+2),16);
+	MOV((void *)&vcpu.ds.selector,(void *)(vcpuins.rm+2),16);
 }
 void MOV_M8_I8()
 {
@@ -3302,13 +3482,13 @@ void RETF_I16()
 	GetImm(16);
 	addsp = d_nubit16(vcpuins.imm);
 	POP((void *)&vcpu.eip,16);
-	POP((void *)&vcpu.cs,16);
+	POP((void *)&vcpu.cs.selector,16);
 	vcpu.sp += addsp;
 }
 void RETF()
 {
 	POP((void *)&vcpu.eip,16);
-	POP((void *)&vcpu.cs,16);
+	POP((void *)&vcpu.cs.selector,16);
 }
 void INT3()
 {
@@ -3333,7 +3513,7 @@ void IRET()
 {
 	vcpu.eip++;
 	POP((void *)&vcpu.eip,16);
-	POP((void *)&vcpu.cs,16);
+	POP((void *)&vcpu.cs.selector,16);
 	POP((void *)&vcpu.eflags,16);
 }
 void INS_D0()
@@ -3396,60 +3576,53 @@ void INS_D3()
 	case 7:	SAR((void *)vcpuins.rm,(void *)&vcpu.cl,16);break;
 	default:CaseError("INS_D3::vcpuins.r");break;}
 }
-ASMCMP AAM()
+static void AAM()
 {
-	t_nubit8 base,tempAL;
+	// 0xd4 0x0a
+	t_nubit8 base;
 	vcpu.eip++;
 	GetImm(8);
-	async;
 	base = d_nubit8(vcpuins.imm);
-	if(base == 0) INT(0x00);
-	else {
-		tempAL = vcpu.al;
-		vcpu.ah = tempAL / base;
-		vcpu.al = tempAL % base;
-		vcpuins.bit = 0x08;
-		vcpuins.result = vcpu.al & 0xff;
-		SetFlags(AAM_FLAG);
+	if (base != 0x0a) {
+		/* TODO: EXCEPTION */
+		/* 06: invalid instruction */
+		return;
 	}
-#define op aam
-	aexec_cax16
-#undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-2,"AAM");
+	vcpu.ah = vcpu.al / base;
+	vcpu.al = vcpu.al % base;
+	vcpuins.bit = 0x08;
+	vcpuins.result = vcpu.al & 0xff;
+	SetFlags(AAM_FLAG);
 }
-ASMCMP AAD()
+static void AAD()
 {
-	t_nubit8 base,tempAL,tempAH;
+	// 0xd5 0x0a
+	t_nubit8 base;
 	vcpu.eip++;
 	GetImm(8);
-	async;
 	base = d_nubit8(vcpuins.imm);
-	if(base == 0) INT(0x00);
-	else {
-		tempAL = vcpu.al;
-		tempAH = vcpu.ah;
-		vcpu.al = (tempAL+(tempAH*base)) & 0xff;
-		vcpu.ah = 0x00;
-		vcpuins.bit = 0x08;
-		vcpuins.result = vcpu.al & 0xff;
-		SetFlags(AAD_FLAG);
+	if (base != 0x0a) {
+		/* TODO: EXCEPTION */
+		/* 06: invalid instruction */
+		return;
 	}
-#define op aad
-	aexec_cax16
-#undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-2,"AAD");
+	vcpu.al = (vcpu.al + (vcpu.ah * base)) & 0xff;
+	vcpu.ah = 0x00;
+	vcpuins.bit = 0x08;
+	vcpuins.result = vcpu.al & 0xff;
+	SetFlags(AAD_FLAG);
 }
 void XLAT()
 {
 	vcpu.eip++;
-	vcpu.al = vramVarByte(vcpu.overds,vcpu.bx+vcpu.al);
+	vcpu.al = vramVarByte(vcpuins.overds.selector,vcpu.bx+vcpu.al);
 }
 /*
 void INS_D9()
-{// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INS_D9\n");
+{// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INS_D9\n");
 }
 void INS_DB()
-{// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INS_DB\n");
+{// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INS_DB\n");
 }
 */
 void LOOPNZ()
@@ -3495,7 +3668,7 @@ void IN_AL_I8()
 //	vapiPrint("IN: %02X\n",d_nubit8(vcpuins.imm));
 	ExecFun(vport.in[d_nubit8(vcpuins.imm)]);
 	vcpu.al = vport.iobyte;
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  IN_AL_I8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  IN_AL_I8\n");
 }
 void IN_AX_I8()
 {
@@ -3504,7 +3677,7 @@ void IN_AX_I8()
 //	vapiPrint("IN: %02X\n",d_nubit8(vcpuins.imm));
 	ExecFun(vport.in[d_nubit8(vcpuins.imm)]);
 	vcpu.ax = vport.ioword;
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  IN_AX_I8\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  IN_AX_I8\n");
 }
 void OUT_I8_AL()
 {
@@ -3513,7 +3686,7 @@ void OUT_I8_AL()
 //	vapiPrint("OUT: %02X\n",d_nubit8(vcpuins.imm));
 	vport.iobyte = vcpu.al;
 	ExecFun(vport.out[d_nubit8(vcpuins.imm)]);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  OUT_I8_AL\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  OUT_I8_AL\n");
 }
 void OUT_I8_AX()
 {
@@ -3522,7 +3695,7 @@ void OUT_I8_AX()
 //	vapiPrint("OUT: %02X\n",d_nubit8(vcpuins.imm));
 	vport.ioword = vcpu.ax;
 	ExecFun(vport.out[d_nubit8(vcpuins.imm)]);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  OUT_I8_AX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  OUT_I8_AX\n");
 }
 void CALL_REL16()
 {
@@ -3553,8 +3726,8 @@ void JMP_PTR16_16()
 	GetImm(16);
 	newcs = d_nubit16(vcpuins.imm);
 	vcpu.eip = newip;
-	vcpu.cs = newcs;
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  JMP_PTR16_16\n");
+	vcpu.cs.selector = newcs;
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  JMP_PTR16_16\n");
 }
 void JMP_REL8()
 {
@@ -3571,7 +3744,7 @@ void IN_AL_DX()
 //	vapiPrint("IN: %04X\n",vcpu.dx);
 	ExecFun(vport.in[vcpu.dx]);
 	vcpu.al = vport.iobyte;
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  IN_AL_DX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  IN_AL_DX\n");
 }
 void IN_AX_DX()
 {
@@ -3579,7 +3752,7 @@ void IN_AX_DX()
 //	vapiPrint("IN: %04X\n",vcpu.dx);
 	ExecFun(vport.in[vcpu.dx]);
 	vcpu.ax = vport.ioword;
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  IN_AX_DX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  IN_AX_DX\n");
 }
 void OUT_DX_AL()
 {
@@ -3587,7 +3760,7 @@ void OUT_DX_AL()
 	vport.iobyte = vcpu.al;
 //	vapiPrint("OUT: %04X\n",vcpu.dx);
 	ExecFun(vport.out[vcpu.dx]);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  OUT_DX_AL\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  OUT_DX_AL\n");
 }
 void OUT_DX_AX()
 {
@@ -3595,7 +3768,7 @@ void OUT_DX_AX()
 //	vapiPrint("OUT: %04X\n",vcpu.dx);
 	vport.ioword = vcpu.ax;
 	ExecFun(vport.out[vcpu.dx]);
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  OUT_DX_AX\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  OUT_DX_AX\n");
 }
 NOTIMP LOCK()
 {
@@ -3606,14 +3779,14 @@ void REPNZ()
 {
 	// CMPS,SCAS
 	vcpu.eip++;
-	vcpuins.rep = RT_REPZNZ;
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  REPNZ\n");
+	vcpuins.prefix_rep = PREFIX_REP_REPZNZ;
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  REPNZ\n");
 }
 void REP()
 {	// MOVS,LODS,STOS,CMPS,SCAS
 	vcpu.eip++;
-	vcpuins.rep = RT_REPZ;
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  REP\n");
+	vcpuins.prefix_rep = PREFIX_REP_REPZ;
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  REP\n");
 }
 NOTIMP HLT()
 {
@@ -3628,7 +3801,7 @@ ASMCMP CMC()
 #define op cmc
 	aexec_csf
 #undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-1,"CMC");
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs.selector,vcpu.eip-1,"CMC");
 }
 void INS_F6()
 {
@@ -3661,7 +3834,7 @@ void INS_F7()
 	case 6:	DIV ((void *)vcpuins.rm,16);	break;
 	case 7:	IDIV((void *)vcpuins.rm,16);	break;
 	default:CaseError("INS_F7::vcpuins.r");break;}
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INS_F7\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INS_F7\n");
 }
 ASMCMP CLC()
 {
@@ -3671,7 +3844,7 @@ ASMCMP CLC()
 #define op clc
 	aexec_csf
 #undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-1,"CLC");
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs.selector,vcpu.eip-1,"CLC");
 }
 ASMCMP STC()
 {
@@ -3681,7 +3854,7 @@ ASMCMP STC()
 #define op stc
 	aexec_csf
 #undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-1,"STC");
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs.selector,vcpu.eip-1,"STC");
 }
 void CLI()
 {
@@ -3701,7 +3874,7 @@ ASMCMP CLD()
 #define op cld
 	aexec_csf
 #undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-1,"CLD");
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs.selector,vcpu.eip-1,"CLD");
 }
 ASMCMP STD()
 {
@@ -3711,7 +3884,7 @@ ASMCMP STD()
 #define op STD
 	aexec_csf
 #undef op
-	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.eip-1,"STD");
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs.selector,vcpu.eip-1,"STD");
 }
 void INS_FE()
 {
@@ -3721,7 +3894,7 @@ void INS_FE()
 	case 0:	INC((void *)vcpuins.rm,8);	break;
 	case 1:	DEC((void *)vcpuins.rm,8);	break;
 	default:CaseError("INS_FE::vcpuins.r");break;}
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INS_FE\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INS_FE\n");
 }
 void INS_FF()
 {
@@ -3736,25 +3909,25 @@ void INS_FF()
 		vcpu.eip = d_nubit16(vcpuins.rm);
 		break;
 	case 3:	/* CALL_M16_16 */
-		PUSH((void *)&vcpu.cs,16);
+		PUSH((void *)&vcpu.cs.selector,16);
 		PUSH((void *)&vcpu.eip,16);
 		vcpu.eip = d_nubit16(vcpuins.rm);
-		bugfix(11) vcpu.cs = d_nubit16(vcpuins.rm+2);
-		else vcpu.cs = d_nubit16(vcpuins.rm+1);
+		bugfix(11) vcpu.cs.selector = d_nubit16(vcpuins.rm+2);
+		else vcpu.cs.selector = d_nubit16(vcpuins.rm+1);
 		break;
 	case 4:	/* JMP_RM16 */
 		vcpu.eip = d_nubit16(vcpuins.rm);
 		break;
 	case 5:	/* JMP_M16_16 */
 		vcpu.eip = d_nubit16(vcpuins.rm);
-		bugfix(11) vcpu.cs = d_nubit16(vcpuins.rm+2);
-		else vcpu.cs = d_nubit16(vcpuins.rm+1);
+		bugfix(11) vcpu.cs.selector = d_nubit16(vcpuins.rm+2);
+		else vcpu.cs.selector = d_nubit16(vcpuins.rm+1);
 		break;
 	case 6:	/* PUSH_RM16 */
 		PUSH((void *)vcpuins.rm,16);
 		break;
 	default:CaseError("INS_FF::vcpuins.r");break;}
-	// _vapiPrintAddr(vcpu.cs,vcpu.eip);vapiPrint("  INS_FF\n");
+	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INS_FF\n");
 }
 
 static t_bool IsPrefix(t_nubit8 opcode)
@@ -3762,16 +3935,19 @@ static t_bool IsPrefix(t_nubit8 opcode)
 	switch(opcode) {
 	case 0xf0: case 0xf2: case 0xf3:
 	case 0x2e: case 0x36: case 0x3e: case 0x26:
-	//case 0x64: case 0x65: case 0x66: case 0x67:
+	case 0x64: case 0x65: case 0x66: case 0x67:
 				return 0x01;break;
 	default:	return 0x00;break;
 	}
 }
 static void ClrPrefix()
 {
-	vcpu.overds = vcpu.ds;
-	vcpu.overss = vcpu.ss;
-	vcpuins.rep = RT_NONE;
+	vcpuins.overds = vcpu.ds;
+	vcpuins.overss = vcpu.ss;
+	vcpuins.prefix_rep = PREFIX_REP_NONE;
+	vcpuins.prefix_lock = 0x00;
+	vcpuins.prefix_oprsize = 0x00;
+	vcpuins.prefix_addrsize = 0x00;
 }
 static void ExecIns()
 {
@@ -3781,16 +3957,25 @@ static void ExecIns()
 		/* Note: in this case, if we use two prefixes, the second prefix
 		   will be discarded incorrectly */
 		ClrPrefix();
+		vcpuins.oldcs   = vcpu.cs;
+		vcpuins.oldeip  = vcpu.eip;
+		vcpuins.flaginsloop = 0x00;
+		vcpuins.except = 0x00;
+		vcpuins.excode = 0x00;
 		do {
-			opcode = vramVarByte(vcpu.cs, vcpu.eip);
+			opcode = vramVarByte(vcpu.cs.selector, vcpu.eip);
 			ExecFun(vcpuins.table[opcode]);
 		} while (IsPrefix(opcode));
+		if (vcpuins.flaginsloop) {
+			vcpu.cs = vcpuins.oldcs;
+			vcpu.eip  = vcpuins.oldeip;
+		}
 	} else {
 		bugfix(16) {
 			/* Note: in this bug, if an interrupt generated between
 			   prefix and operation, the prefix may not be deployed */
 			if (IsPrefix(opcode)) ExecFun(vcpuins.table[opcode]);
-			opcode = vramVarByte(vcpu.cs, vcpu.eip);
+			opcode = vramVarByte(vcpu.cs.selector, vcpu.eip);
 			ExecFun(vcpuins.table[opcode]);
 			ClrPrefix();
 		} else {
@@ -3818,22 +4003,27 @@ void QDX()
 	switch (d_nubit8(vcpuins.imm)) {
 	case 0x00:
 	case 0xff:
-		vapiPrint("\nNXVM STOP at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
-			vcpu.cs,vcpu.eip,d_nubit8(vcpuins.imm));
+		vapiPrint("\nNXVM CPU STOP at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
+			vcpu.cs.selector,vcpu.eip,d_nubit8(vcpuins.imm));
 		vapiPrint("This happens because of the special instruction.\n");
 		vapiCallBackMachineStop();
 		break;
 	case 0x01:
 	case 0xfe:
-		vapiPrint("\nNXVM RESET at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
-			vcpu.cs,vcpu.eip,d_nubit8(vcpuins.imm));
+		vapiPrint("\nNXVM CPU RESET at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
+			vcpu.cs.selector,vcpu.eip,d_nubit8(vcpuins.imm));
 		vapiPrint("This happens because of the special instruction.\n");
 		vapiCallBackMachineReset();
 		break;
 	case 0x02:
-		vapiPrint("\nNXVM PRINT REGISTERS at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
-			vcpu.cs,vcpu.eip,d_nubit8(vcpuins.imm));
+		vapiPrint("\nNXVM CPU PRINT16 at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
+			vcpu.cs.selector,vcpu.eip,d_nubit8(vcpuins.imm));
 		vapiCallBackDebugPrintRegs(16);
+		break;
+	case 0x03:
+		vapiPrint("\nNXVM CPU PRINT32 at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
+			vcpu.cs.selector,vcpu.eip,d_nubit8(vcpuins.imm));
+		vapiCallBackDebugPrintRegs(32);
 		break;
 	default:
 		qdbiosExecInt(d_nubit8(vcpuins.imm));
@@ -3947,13 +4137,11 @@ void vcpuinsInit()
 	vcpuins.table[0x61] = (t_faddrcc)OpError;
 	vcpuins.table[0x62] = (t_faddrcc)OpError;
 	vcpuins.table[0x63] = (t_faddrcc)OpError;
-	vcpuins.table[0x64] = (t_faddrcc)OpError;
-	vcpuins.table[0x65] = (t_faddrcc)OpError;
-	vcpuins.table[0x66] = (t_faddrcc)OpError;
-	vcpuins.table[0x67] = (t_faddrcc)OpError;
+	vcpuins.table[0x64] = (t_faddrcc)FS;
+	vcpuins.table[0x65] = (t_faddrcc)GS;
+	vcpuins.table[0x66] = (t_faddrcc)OprSize;
+	vcpuins.table[0x67] = (t_faddrcc)AddrSize;
 	vcpuins.table[0x68] = (t_faddrcc)OpError;
-	//vcpuins.table[0x66] = (t_faddrcc)OpdSize;
-	//vcpuins.table[0x67] = (t_faddrcc)AddrSize;
 	//vcpuins.table[0x68] = (t_faddrcc)PUSH_I16;
 	vcpuins.table[0x69] = (t_faddrcc)OpError;
 	vcpuins.table[0x6a] = (t_faddrcc)OpError;
