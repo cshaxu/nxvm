@@ -98,7 +98,7 @@ typedef t_nubitcc t_faddrcc;
 #define BVRM 2 // BOTH CPU WITH VRAM ONLY
 #define BCRM 3 // BOTH CPU WITH CRAM ALSO
 
-#define DEBUGMODE CCPU
+#define DEBUGMODE VCPU
 
 #ifdef __cplusplus
 /*}_EOCD_*/

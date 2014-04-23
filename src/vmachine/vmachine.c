@@ -79,7 +79,6 @@ void vmachineInit()
 	vcmosInit();
 */
 	vmachine.flagrecord = 0x01;
-	vmachine.flagmode   = 0x01;
 	vmachine.flaginit   = 0x01;
 }
 void vmachineFinal()

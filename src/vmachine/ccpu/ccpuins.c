@@ -286,8 +286,8 @@ void ins_self_REP_StringIns();
 void ins_self_REPE_StringIns();
 void ins_self_REPNE_StringIns();
 
-void decode_deOpCode_singleDefine() {ccpu.ip += sizeof(t_nubit8);}
-void decode_deOpCode_doubleDefine() {ccpu.ip += sizeof(t_nubit16);}
+void decode_deOpCode_singleDefine() {ccpu.ip += 1;}
+void decode_deOpCode_doubleDefine() {ccpu.ip += 2;}
 void decode_deCodeInsStuff()
 {
 	t_nubit8 tmpOpCode ;
@@ -3041,32 +3041,38 @@ void ccpuins_extern_JCXZ_Jb()
 
 void ccpuins_extern_IN_AL_Ib()
 {
-	//vapiPrint("flagignore set in ccpuins_extern_IN_AL_Ib\n");
-	ccpu_flagignore = 0x01;
-}
-void ccpuins_extern_IN_eAX_Ib()
-{
-	//vapiPrint("flagignore set in ccpuins_extern_IN_eAX_Ib\n");
-	ccpu_flagignore = 0x01;
-}
-void ccpuins_extern_OUT_Ib_AL()
-{
+#if (DEBUGMODE == CCPU)
+	ExecFun(vport.in[ccpuins_deCodeBlock.opContactData_8bit]);
+	ccpu.al = ccpu.iobyte;
 	if (ccpuins_deCodeBlock.opContactData_8bit == 0xbb) {
-		if (GetBit(_flags, VCPU_FLAG_ZF))
+		if (GetBit(ccpu.flags, VCPU_FLAG_ZF))
 			cramVarWord(ccpu.ss,ccpu.sp + 4) |=  VCPU_FLAG_ZF;
 		else
 			cramVarWord(ccpu.ss,ccpu.sp + 4) &= ~VCPU_FLAG_ZF;
 	}
-	//vapiPrint("flagignore set in ccpuins_extern_OUT_Ib_AL\n");
+#endif
+#if (DEBUGMODE == BVRM || DEBUGMODE == BCRM)
 	ccpu_flagignore = 0x01;
-// NEKO LOG
-//	ExecFun(vport.out[ccpuins_deCodeBlock.opContactData_8bit]);
+#endif
 }
-void ccpuins_extern_OUT_Ib_eAX()
+void ccpuins_extern_IN_eAX_Ib() {ccpu_flagignore = 0x01;}
+void ccpuins_extern_OUT_Ib_AL()
 {
-	//vapiPrint("flagignore set in ccpuins_extern_OUT_Ib_eAX\n");
+#if (DEBUGMODE == CCPU)
+	ccpu.iobyte = ccpu.al;
+	ExecFun(vport.out[ccpuins_deCodeBlock.opContactData_8bit]);
+	if (ccpuins_deCodeBlock.opContactData_8bit == 0xbb) {
+		if (GetBit(ccpu.flags, VCPU_FLAG_ZF))
+			cramVarWord(ccpu.ss,ccpu.sp + 4) |=  VCPU_FLAG_ZF;
+		else
+			cramVarWord(ccpu.ss,ccpu.sp + 4) &= ~VCPU_FLAG_ZF;
+	}
+#endif
+#if (DEBUGMODE == BVRM || DEBUGMODE == BCRM)
 	ccpu_flagignore = 0x01;
+#endif
 }
+void ccpuins_extern_OUT_Ib_eAX() {ccpu_flagignore = 0x01;}
 
 void ccpuins_extern_LOCK(){/*在这个版本的虚拟机内，此指令什么都不做*/}
 void ccpuins_extern_REPNE()
@@ -3871,12 +3877,15 @@ void ins_self_REPNE_StringIns()
 void ccpuinsExecIns()
 {
 	t_faddrcc func;
-	t_nubit8 opcode = cramVarByte(ccpu.cs, ccpu.ip);
+	t_nubit8 opcode;
+
+	opcode = cramVarByte(ccpu.cs, ccpu.ip);
 	ccpuins_deCodeBlock.pOpCode = p_nubit8(cramGetAddr(ccpu.cs, ccpu.ip));
 	func = ccpuins.table[opcode];
 	decode_deCodeInsStuff();
 	ExecFun(func);
-	if(!IsPrefix(opcode)) ClrPrefix();
+	if (!IsPrefix(opcode)) ClrPrefix();
+	else ccpuinsExecIns();
 }
 void ccpuinsExecInt(t_nubit8 intid) {ccpuins_atom_INT(intid);}
 
