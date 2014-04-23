@@ -12,7 +12,7 @@
 
 #ifdef NXVM_DEBUG_VCPUINS
 // NOTE: INT_I8() is modified for the INT test. Please correct it finally!
-// NOTE: Need to modify the INT processor! All INTs should call INT(t_nubit8 intid);
+// NOTE: Need to modify the INT's! All INTs should call INT(t_nubit8 intid);
 #endif
 
 #define MOD	((modrm&0xc0)>>6)
@@ -38,7 +38,7 @@
 #define AAD_FLAG	(VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
 
 #define GetFlag(flg) (!!(vcpu.flags&flg))
-#define SetFlag(flg,bl) ((!!bl)?(vcpu.flags|=flg):(vcpu.flags&=~flg))
+#define SetFlag(flg,bl) ((!!(bl))?(vcpu.flags|=flg):(vcpu.flags&=~flg))
 
 #define U_DEST_8	(*(t_nubit8 *)dest)
 #define U_DEST_16	(*(t_nubit16 *)dest)
@@ -142,7 +142,7 @@ static void CalcPF()
 		res8 &= res8-1; 
 		count++;
 	}
-	SetFlag(VCPU_FLAG_PF,!(count%2));
+	SetFlag(VCPU_FLAG_PF,!(count&0x01));
 }
 static void CalcZF()
 {
@@ -3098,14 +3098,16 @@ static void _debug_dosint(t_nubit8 intid)
 			vcputermflag = 1;
 			break;
 		case 0x02:
-			vapiPrint("%c",vcpu.dl);
+			vapiPrint("_DEBUG_DOSINT::intid0x02::\'%c\'\n",vcpu.dl);
 			break;
 		case 0x09:
 			i = 0x0000;
+			vapiPrint("_DEBUG_DOSINT::intid0x09::\"");
 			while((c = vramGetByte(vcpu.ds,vcpu.dx+i)) != '$' && i < 0x0100) {
 				i++;
 				vapiPrint("%c",c);
 			}
+			vapiPrint("\"\n");
 			break;
 		default:CaseError("_DEBUG_DOSINT::intid0x21::vcpu.ah");break;}
 		break;
@@ -3133,15 +3135,16 @@ void vcpuinsExecInt()
 	if(vcpu.nmi) INT(0x02);
 	vcpu.nmi = 0;
 #ifdef NXVM_DEBUG_VCPUINS
+	/* this is to enable VCPU_FLAG_IF and check the hardware generated interrupts */
 	STI();
 	vcpu.ip--;
 #endif
-	if(GetFlag(VCPU_FLAG_IF) && vpicIsINTR()) {	
+	if(GetFlag(VCPU_FLAG_IF) && vpicScanINTR()) {
 		intr = vpicGetINTR();
 #ifndef NXVM_DEBUG_VCPUINS
 		INT(intr);
 #else
-		vapiPrint("0x%x\n",intr);
+		vapiPrint("VCPUINSEXECINT::0x%x\n",intr);
 		if(intr == 0x08) vpic1.isr ^= 0x01;
 #endif
 	}

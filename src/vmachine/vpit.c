@@ -19,9 +19,9 @@ static clock_t t1,t2;
 
 void vpitIntTick()
 {
-	t_double dt;
+	t_float64 dt;
 	t2 = clock();
-	dt = (t_double)((t2-t1)*1e3/((t_double)CLOCKS_PER_SEC));
+	dt = (t_float64)((t2-t1)*1e3/((t_float64)CLOCKS_PER_SEC));
 	//i++;
 	if(dt >= VPIT_TICK) {
 		//vapiPrint("%lf,%d\n",dt,i);

@@ -15,7 +15,7 @@
 #define NXVM_WIN32_APPLICATION 4
 
 // Selector
-#define NXVM_INTLEN 64
+#define NXVM_INTLEN 32
 #define NXVM_SYSTEM NXVM_WIN32_CONSOLE
 
 #endif

@@ -6,6 +6,9 @@ asm86/asm86.c
 vmachine/vcmos.c
 vmachine/vcpu.c
 vmachine/vcpuins.c
+vmachine/vdmac.c
+vmachine/vfdc.c
+vmachine/vfdd.c
 vmachine/vmachine.c
 vmachine/vpic.c
 vmachine/vpit.c

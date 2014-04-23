@@ -10,18 +10,26 @@
 #ifndef NKASM86_ASM86_H
 #define NKASM86_ASM86_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
-	int flag;	// 0 = es; 1 = cs; 2 = ss; 3 = ds; 4 = no operand;
-	int seg;	// when flag = 0,1,2,3: 0 = seglabel; 1 = instruction;
+	int flag;	/* 0 = es; 1 = cs; 2 = ss; 3 = ds; 4 = no operand; */
+	int seg;	/* when flag = 0,1,2,3: 0 = seglabel; 1 = instruction; */
 	unsigned short mod,rm,imm;
-	int len;	// length of target value
+	int len;	/* length of target value */
 } Operand;
 
-// returns length of instruction
+/* returns length of instruction */
 int assemble(const char *asmStmt,unsigned short locCS,
-	const void *locMemory,const unsigned short locSegment,const unsigned short locOffset);	
-// returns length of instruction
+	void *locMemory,unsigned short locSegment,unsigned short locOffset);
+/* returns length of instruction  */
 int disassemble(char *dasmStmt,Operand *resOperand,
-	const void *locMemory,const unsigned short locSegment,const unsigned short locOffset);	
+	const void *locMemory,const unsigned short locSegment,const unsigned short locOffset);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

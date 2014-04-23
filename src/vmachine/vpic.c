@@ -1,7 +1,5 @@
 /* This file is a part of NXVM project. */
 
-// NOTE: For IBM-PC, 8259A will work only on Fixed Priority Mode with Non-specific EOI.
-
 #include "memory.h"
 
 #include "system/vapi.h"
@@ -13,244 +11,294 @@
 
 t_pic vpic1,vpic2;
 
+/* Get flags from ICWs */
+#define GetLTIM(vpic) (!!((vpic)->icw1 & 0x08))
+#define GetSNGL(vpic) (!!((vpic)->icw1 & 0x02))
+#define GetIC4(vpic)  (!!((vpic)->icw1 & 0x01))
+#define GetSFNM(vpic) (!!((vpic)->icw4 & 0x10))
+#define GetBUF(vpic)  (!!((vpic)->icw4 & 0x08))
+#define GetMS(vpic)   (!!((vpic)->icw4 & 0x04))
+#define GetAEOI(vpic) (!!((vpic)->icw4 & 0x02))
+#define GetuPM(vpic)  (!!((vpic)->icw4 & 0x01))
+#define GetR(vpic)    (!!((vpic)->ocw2 & 0x80))
+#define GetSL(vpic)   (!!((vpic)->ocw2 & 0x40))
+#define GetEOI(vpic)  (!!((vpic)->ocw2 & 0x20))
+#define GetESMM(vpic) (!!((vpic)->ocw3 & 0x40))
+#define GetSMM(vpic)  (!!((vpic)->ocw3 & 0x20))
+#define GetP(vpic)    (!!((vpic)->ocw3 & 0x04))
+#define GetRR(vpic)   (!!((vpic)->ocw3 & 0x02))
+#define GetRIS(vpic)  (!!((vpic)->ocw3 & 0x01))
+
+/* Get id of highest priority interrupts in different registers */
+#define GetIntrTopId(vpic) (GetRegTopId((vpic), ((vpic)->irr & (~(vpic)->imr))))
+#define GetIsrTopId(vpic)  (GetRegTopId((vpic), (vpic)->isr))
+#define GetIrrTopId(vpic)  (GetRegTopId((vpic), (vpic)->irr))
+#define GetImrTopId(vpic)  (GetRegTopId((vpic), (vpic)->imr))
+
+/*
+ * GetRegTopId: Internal function
+ * Returns id of highest priority interrupt
+ * Returns 0x08 if reg is null
+ */
+static t_nubit8 GetRegTopId(t_pic *vpic, t_nubit8 reg)
+{
+	t_nubit8 id = 0x00;
+	if (reg == 0x00) return 0x08;
+	reg = (reg<<(0x08 - (vpic->irx))) | (reg>>(vpic->irx));
+	while (!((reg>>id) & 0x01) && (id < 0x08)) id++;
+	return ((id + (vpic->irx)) % 0x08);
+}
+/*
+ * GetRegTopId: Internal function
+ * Returns flag of higher priority interrupt
+ */
+static t_bool HasINTR(t_pic *vpic)
+{
+	t_nubit8 irid;                     /* top requested int id in master pic */
+	t_nubit8 isid;                    /* top in service int id in master pic */
+	irid = GetIntrTopId(vpic);
+	isid = GetIsrTopId(vpic);
+	if (irid == 0x08) return 0x00;
+	if (isid == 0x08) return 0x01;
+	if (irid < vpic->irx) irid += 0x08;
+	if (isid < vpic->irx) isid += 0x08;
+	if (GetSFNM(vpic)) return irid <= isid;
+	else return irid < isid;
+}
+/*
+ * RespondINTR: Internal function
+ * Adds INTR to IRR and removes it from ISR
+ */
+static void RespondINTR(t_pic *vpic, t_nubit8 id)
+{
+	vpic->isr |= 1<<id;                                  /* put int into ISR */
+	vpic->irr &= ~(1<<id);                           /* remove int from  IRR */
+	if (GetAEOI(vpic)) {                                    /* Auto EOI Mode */
+		vpic->isr &= ~(1<<id);
+		if (GetR(vpic)) vpic->irx = (id + 0x01) % 0x08;       /* Rotate Mode */
+	}
+}
+
+/*
+ * IO_Read_00x0
+ * PIC provide POLL, IRR, ISR based on OCW3
+ * Reference: 16-32.PDF, Page 192
+ * Reference: PC.PDF, Page 950
+ */
+static void IO_Read_00x0(t_pic *vpic)
+{
+	if (GetP(vpic)) {                                  /* P=1 (Poll Command) */
+		vcpu.al = 0x80 | GetIntrTopId(vpic);
+		if (vcpu.al == 0x88) vcpu.al = 0x00;
+	} else {
+		switch (vpic->ocw3&0x03) {
+		case 0x02:                                  /* RR=1, RIS=0, Read IRR */
+			vcpu.al = vpic->irr;break;
+		case 0x03:                                  /* RR=1, RIS=1, Read ISR */
+			vcpu.al = vpic->isr;break;
+		default:                                       /* RR=0, No Operation */
+			break;
+		}
+	}
+}
+/*
+ * IO_Write_00x0
+ * PIC get ICW1, OCW2, OCW3
+ * Reference: 16-32.PDF, Page 184
+ * Reference: PC.PDF, Page 950
+ */
 static void IO_Write_00x0(t_pic *vpic)
 {
-	// PIC 8259A Command Port
-	// Write: ICW1,OCW2,OCW3
-	t_nubitcc i;
-	if(vcpu.al&0x10) {	// ICW1 (D4=1)
+	t_nubitcc id;
+	if (vcpu.al & 0x10) {                                     /* ICW1 (D4=1) */
 		vpic->icw1 = vcpu.al;
 		vpic->init = ICW2;
-		//vapiPrint("DEBUG:\tICW1:%x\n",vpic->icw1);
-		if(vpic->icw1&0x01) ;	// D0=1, IC4=1
-		else vpic->icw4 = 0x00;	// D0=0, IC4=0
-		if(vpic->icw1&0x02) ;	// D1=1, SNGL=1, ICW3=0
-		else ;					// D1=0, SNGL=0, ICW3=1
-		if(vpic->icw1&0x08) ;	// D3=1, LTIM=1, Level Triggered Mode
-		else ;					// D3=0, LTIM=0, Edge Triggered Mode
-	} else {			// OCW (D4=0)
-		if(vcpu.al&0x08) {	// OCW3 (D3=1)
-			vpic->ocw3 = vcpu.al;
-			//vapiPrint("DEBUG:\tOCW3:%x\n",vpic->ocw3);
-			if(vpic->ocw3&0x80) vapiPrint("PIC:\tInvalid OCW3 command.\n");
-			else {
-				switch(vpic->ocw3&0x60) {	// ESMM (Enable Special Mask Mode)
-				case 0x40:	// ESMM=1, SMM=0: Clear Sepcial Mask Mode
-					/* Not Implemented */
-					break;
-				case 0x60:	// ESMM=1, SMM=1: Set Special Mask Mode
-					/* Not Implemented */
-					break;
-				default:	// ESMM=0
-					break;
+		if (GetIC4(vpic)) ;                                   /* D0=1, IC4=1 */
+		else vpic->icw4 = 0x00;                               /* D0=0, IC4=0 */
+		if (GetSNGL(vpic)) ;                         /* D1=1, SNGL=1, ICW3=0 */
+		else ;                                       /* D1=0, SNGL=0, ICW3=1 */
+		if (GetLTIM(vpic)) ;           /* D3=1, LTIM=1, Level Triggered Mode */
+		else ;                         /* D3=0, LTIM=0, Edge  Triggered Mode */
+	} else {                                                  /* OCWs (D4=0) */
+		if (vcpu.al & 0x08) {                                 /* OCW3 (D3=1) */
+			if (vcpu.al & 0x40) {        /* ESMM=1: Enable Special Mask Mode */
+				vpic->ocw3 = vcpu.al;
+				if (GetSMM(vpic)) ;          /* SMM=1: Set Special Mask Mode */
+				else ;                     /* SMM=0: Clear Sepcial Mask Mode */
+			} else                                       /* ESMM=0: Keep SMM */
+				vpic->ocw3 = (vpic->ocw3 & 0x20) | (vcpu.al & 0xdf);
+		} else {                                              /* OCW2 (D3=0) */
+			switch (vcpu.al & 0xe0) {
+			                        /* D7=R, D6=SL, D5=EOI(End Of Interrupt) */
+			case 0x80:      /* 100: Set (Rotate Priorities in Auto EOI Mode) */
+				if (GetAEOI(vpic)) vpic->ocw2 = vcpu.al;
+				break;
+			case 0x00:    /* 000: Clear (Rotate Priorities in Auto EOI Mode) */
+				if (GetAEOI(vpic)) vpic->ocw2 = vcpu.al;
+				/* Bug in easyVM (0x00 ?= 0x20) */
+				break;
+			case 0x20:                      /* 001: Non-specific EOI Command */
+				/* Set bit of highest priority interrupt in ISR to 0,
+				 IR0 > IR1 > IR2(IR8 > ... > IR15) > IR3 > ... > IR7 */
+				vpic->ocw2 = vcpu.al;
+				if (vpic->isr) {
+					id = GetIsrTopId(vpic);
+					vpic->isr &= ~(1<<id);
 				}
-			}
-		} else {				// OCW2 (D3=0)
-			vpic->ocw2 = vcpu.al;
-			//vapiPrint("DEBUG:\tOCW2:%x\n",vpic->ocw2);
-			switch(vpic->ocw2&0xe0) {	// D7=R, D6=SL, D5=EOI(End Of Interrupt)
-			case 0x80:	// 100: Set  (Rotate Priorities in Auto EOI Mode)
-				/* Not Implemented */
 				break;
-			case 0x00:	// 000: Clear(Rotate Priorities in Auto EOI Mode)
-				/* Not Implemented */
-				// Why 0x00 equals to 0x20 in easyVM?
+			case 0x60:                          /* 011: Specific EOI Command */
+				vpic->ocw2 = vcpu.al;
+				if (vpic->isr) {
+					id = vpic->ocw2 & 0x07;                  /* Get L2,L1,L0 */
+					vpic->isr &= ~(1<<id);
+				}
+				/* Bug in easyVM: "isr &= (1<<i)" */
 				break;
-			case 0x20:	// 001: Non-specific EOI Command
-						// Set bit of highest priority interrupt in ISR to 0,
-						// where IR0 > IR1 > IR2(IR8 > ... > IR15) > IR3 > ... > IR7
-				i=0;
-				while (!((vpic->isr)&(1<<i)) && (i < 8)) i++;
-				if(i < 8) vpic->isr ^= (1<<i);
-				if(vpic->slave && !vpic->isr) vpic1.isr ^= 0x04; 
+			case 0xa0:         /* 101: Rotate Priorities on Non-specific EOI */
+				vpic->ocw2 = vcpu.al;
+				if (vpic->isr) {
+					id = GetIsrTopId(vpic);
+					vpic->isr &= ~(1<<id);
+					vpic->irx = (id + 0x01) % 0x08;
+				}
 				break;
-			case 0x60:	// 011: Specific EOI Command
-				i = (vpic->ocw2)&0x07;	// Get L2,L1,L0
-				vpic->isr &= ~(1<<i);	// easyVM may have problem with this stmt: "isr &= (1<<i)"@PIC.CPP
+			case 0xe0:       /* 111: Rotate Priority on Specific EOI Command */
+				vpic->ocw2 = vcpu.al;
+				if (vpic->isr) {
+					id = GetIsrTopId(vpic);
+					vpic->isr &= ~(1<<id);
+					vpic->irx = ((vpic->ocw2 & 0x07) + 0x01) % 0x08;
+				}
 				break;
-			case 0xa0:	// 101: Rotate Priorities on Non-specific EOI
-				/* Not Implemented */
+			case 0xc0: /* 110: Set Priority (does not reset current ISR bit) */
+				vpic->ocw2 = vcpu.al;
+				vpic->irx = ((vpic->ocw2 & 0x07) + 0x01) % 0x08;
 				break;
-			case 0xe0:	// 111: Rotate Priority on Specific EOI Command (resets current ISR bit)
-				/* Not Implemented */
-				break;
-			case 0xc0:	// 110: Set Priority (does not reset current ISR bit)
-				/* Not Implemented */
-				break;
-			case 0x40:	// 010: No Operation
+			case 0x40:                                  /* 010: No Operation */
 				break;
 			default:break;}
 		}
 	}
 }
-static void IO_Read_00x0(t_pic *vpic)
+/*
+ * IO_Read_00x1
+ * PIC provide IMR
+ * Reference: 16-32.PDF, Page 184
+ */
+static void IO_Read_00x1(t_pic *vpic)
 {
-	// PIC 8259A Command Port
-	// Read: POLL, IRR, ISR
-	t_nubitcc i;
-	if((vpic->ocw3)&0x04) {	// P=1 (Poll Command)
-		if(vpic->irr) {
-			vcpu.al = 0x80;
-			i = 0;
-			while (!((vpic->isr)&(1<<i)) && (i < 8)) i++;
-			vcpu.al |= i;
-		} else vcpu.al = 0x00;
-	} else {
-		switch(vpic->ocw3&0x03) {
-		case 0x02:	// RR=1, RIS=0, Read IRR
-			vcpu.al = vpic->irr;
-			break;
-		case 0x03:	// RR=1, RIS=1, Read ISR
-			vcpu.al = vpic->isr;
-			break;
-		default:	// RR=0, No Operation
-			vcpu.al = 0x00;
-			break;
-		}
-	}
+	vcpu.al = vpic->imr;
 }
+/*
+ * IO_Write_00x1
+ * PIC get ICW2, ICW3, ICW4, OCW1 after ICW1
+ */
 static void IO_Write_00x1(t_pic *vpic)
 {
-	// PIC 8259A Interrupt Mask Register
-	// Write(After ICW1): ICW2, ICW3, ICW4, OCW1
-
-	switch(vpic->init) {
+	switch (vpic->init) {
 	case ICW2:
-		vpic->icw2 = vcpu.al&(~0x07);
-		//vapiPrint("DEBUG:\tICW2:%x\n",vpic->icw2);
-		if(!((vpic->icw1)&0x02)) vpic->init = ICW3;		// ICW1.D1=0, SNGL=0, ICW3=1
-		else if(vpic->icw1&0x01) vpic->init = ICW4;	// ICW1.D0=1, IC4=1
-		else vpic->init = OCW1;
+		vpic->icw2 = vcpu.al & (~0x07);
+		if (!((vpic->icw1) & 0x02))             /* ICW1.D1=0, SNGL=0, ICW3=1 */
+			vpic->init = ICW3;
+		else if (vpic->icw1 & 0x01)                      /* ICW1.D0=1, IC4=1 */
+			vpic->init = ICW4;
+		else
+			vpic->init = OCW1;
 		break;
 	case ICW3:
 		vpic->icw3 = vcpu.al;
-		//vapiPrint("DEBUG:\tICW3:%x\n",vpic->icw3);
-		if((vpic->icw1)&0x01) vpic->init = ICW4;		// ICW1.D0=1, IC4=1
+		if ((vpic->icw1) & 0x01) vpic->init = ICW4;      /* ICW1.D0=1, IC4=1 */
 		else vpic->init = OCW1;
 		break;
 	case ICW4:
-		vpic->icw4 = vcpu.al&0x1f;
-		//vapiPrint("DEBUG:\tICW4:%x\n",vpic->icw4);
-		if((vpic->icw4)&0x01) ;	// uPM=1, 16-bit 80x86
-		else ;			// uPM=0, 8-bit 8080/8085
-		if((vpic->icw4)&0x02) ;	// AEOI=1, Automatic End of Interrupt
-		else ;			// AEOI=0, Non-automatic End of Interrupt
-		if((vpic->icw4)&0x04)
-			vpic->slave = 0;		// M/S=1, Master 8259A
-		else
-			vpic->slave = 1;		// M/S=0, Slave 8259A
-		if((vpic->icw4)&0x08) ;	// BUF=1, Buffer
-		else ;			// BUF=0, Non-buffer
-		if((vpic->icw4)&0x10) ;	// SFNM=1, Special Fully Nested Mode
-		else ;			// SFNM=0, Non-special Fully Nested Mode
-
-		if(vpic->slave) {
-			vpic->icw3 &= 0x07;		// INT pin of slave connected to IR(vpic->icw3) of master
-			if((vpic->icw3)&0x02) ;//vapiPrint("DEBUG:\tSlave connected to IR2.\n");
-			else vapiPrint("PIC:\tCommand not supported: ICW3.\n");
-		} else {
-			if((vpic->icw3)&0x04) ;//vapiPrint("DEBUG:\tBit-2 has slave\n");
-			else vapiPrint("PIC:\tCommand not supported: ICW3.\n");
-		}
+		vpic->icw4 = vcpu.al & 0x1f;
+		if ((vpic->icw4) & 0x01) ;                     /*uPM=1, 16-bit 80x86 */
+		else ;                                     /* uPM=0, 8-bit 8080/8085 */
+		if ((vpic->icw4) & 0x02) ;     /* AEOI=1, Automatic End of Interrupt */
+		else ;                     /* AEOI=0, Non-automatic End of Interrupt */
+		if ((vpic->icw4) & 0x08) {                          /* BUF=1, Buffer */
+			if ((vpic->icw4) & 0x04) ;                /* M/S=1, Master 8259A */
+			else ;                                     /* M/S=0, Slave 8259A */
+		} else ;                                        /* BUF=0, Non-buffer */
+		if ((vpic->icw4) & 0x10) ;      /* SFNM=1, Special Fully Nested Mode */
+		else ;                      /* SFNM=0, Non-special Fully Nested Mode */
 		vpic->init = OCW1;
 		break;
 	case OCW1:
-		//vapiPrint("DEBUG:\tOCW1:%x\n",vpic->ocw1);
-		vpic->imr = vcpu.al;
+		vpic->ocw1 = vcpu.al;
+		if (GetSMM(vpic)) vpic->isr &= ~(vpic->imr);
 		break;
 	default:
-		break;	
+		break;
 	}
 }
-static void IO_Read_00x1(t_pic *vpic)
-{
-	// PIC 8259A Interrupt Mask Register
-	// Read: IMR
-	vcpu.al = vpic->imr;
-}
 
-void IO_Read_0020()	{IO_Read_00x0(&vpic1);}
-void IO_Read_0021()	{IO_Read_00x1(&vpic1);}
-void IO_Read_00A0()	{IO_Read_00x0(&vpic2);}
-void IO_Read_00A1()	{IO_Read_00x1(&vpic2);}
+void IO_Read_0020() {IO_Read_00x0(&vpic1);}
+void IO_Read_0021() {IO_Read_00x1(&vpic1);}
+void IO_Read_00A0() {IO_Read_00x0(&vpic2);}
+void IO_Read_00A1() {IO_Read_00x1(&vpic2);}
 void IO_Write_0020() {IO_Write_00x0(&vpic1);}
 void IO_Write_0021() {IO_Write_00x1(&vpic1);}
 void IO_Write_00A0() {IO_Write_00x0(&vpic2);}
 void IO_Write_00A1() {IO_Write_00x1(&vpic2);}
 
-t_nubit16 vpicGetIMR()
-{return (((t_nubit16)vpic2.imr)<<8)+vpic1.imr;}
-t_nubit16 vpicGetISR()
-{return (((t_nubit16)vpic2.isr)<<8)+vpic1.isr;}
-t_nubit16 vpicGetIRR()
-{return (((t_nubit16)vpic2.irr)<<8)+vpic1.irr;}
-void vpicSetIMR(t_nubit16 imr)
+/* Test I/O Ports */
+#ifdef VPIC_DEBUG
+void IO_Read_FF20()
 {
-	vpic1.imr = imr&0xff;
-	vpic2.imr = imr>>8;
-}
-void vpicSetISR(t_nubit16 isr)
-{
-	vpic1.isr = isr&0xff;
-	vpic2.isr = isr>>8;
-}
-void vpicSetIRR(t_nubit16 irr)
-{
-	vpic1.irr = irr&0xff;
-	vpic2.irr = irr>>8;
-}
+	vcpu.al = 0xff;
 
-static t_nubit8 GetIntID(t_nubit8 reg)
-{
-	t_nubit8 id = 0;
-	while(!((reg>>id)&0x01) && (id < 0x08)) id++;
-	return id;
+	vapiPrint("INFO PIC 1\n==========\n");
+	vapiPrint("Init Status = %d, IRX = %x\n",
+		vpic1.init, vpic1.irx);
+	vapiPrint("IRR = %x, ISR = %x, IMR = %x, intr = %x\n",
+		vpic1.irr, vpic1.isr, vpic1.imr, vpic1.irr & (~vpic1.imr));
+	vapiPrint("ICW1 = %x, LTIM = %d, SNGL = %d, IC4 = %d\n",
+		vpic1.icw1, GetLTIM(&vpic1), GetSNGL(&vpic1), GetIC4(&vpic1));
+	vapiPrint("ICW2 = %x\n",vpic1.icw2);
+	vapiPrint("ICW3 = %x\n", vpic1.icw3);
+	vapiPrint("ICW4 = %x, SFNM = %d, BUF = %d, M/S = %d, AEOI = %d, uPM = %d\n",
+		vpic1.icw4, GetSFNM(&vpic1), GetBUF(&vpic1), GetMS(&vpic1),
+		GetAEOI(&vpic1), GetuPM(&vpic1));
+	vapiPrint("OCW1 = %x\n", vpic1.ocw1);
+	vapiPrint("OCW2 = %x, R = %d, SL = %d, EOI = %d, L = %d\n",
+		vpic1.ocw2, GetR(&vpic1), GetSL(&vpic1), GetEOI(&vpic1),
+		vpic1.ocw2 & 0x07);
+	vapiPrint("OCW3 = %x, ESMM = %d, SMM = %d, P = %d, RR = %d, RIS = %d\n",
+		vpic1.ocw3, GetESMM(&vpic1), GetSMM(&vpic1),
+		GetP(&vpic1), GetRR(&vpic1), GetRIS(&vpic1));
+
+	vapiPrint("INFO PIC 2\n==========\n");
+	vapiPrint("Init Status = %d, IRX = %x\n",
+		vpic2.init, vpic2.irx);
+	vapiPrint("IRR = %x, ISR = %x, IMR = %x, intr = %x\n",
+		vpic2.irr, vpic2.isr, vpic2.imr, vpic2.irr & (~vpic2.imr));
+	vapiPrint("ICW1 = %x, LTIM = %d, SNGL = %d, IC4 = %d\n",
+		vpic2.icw1, GetLTIM(&vpic2), GetSNGL(&vpic2), GetIC4(&vpic2));
+	vapiPrint("ICW2 = %x\n",vpic2.icw2);
+	vapiPrint("ICW3 = %x\n", vpic2.icw3);
+	vapiPrint("ICW4 = %x, SFNM = %d, BUF = %d, M/S = %d, AEOI = %d, uPM = %d\n",
+		vpic2.icw4, GetSFNM(&vpic2), GetBUF(&vpic2), GetMS(&vpic2),
+		GetAEOI(&vpic2), GetuPM(&vpic2));
+	vapiPrint("OCW1 = %x\n", vpic2.ocw1);
+	vapiPrint("OCW2 = %x, R = %d, SL = %d, EOI = %d, L = %d\n",
+		vpic2.ocw2, GetR(&vpic2), GetSL(&vpic2), GetEOI(&vpic2),
+		vpic2.ocw2 & 0x07);
+	vapiPrint("OCW3 = %x, ESMM = %d, SMM = %d, P = %d, RR = %d, RIS = %d\n",
+		vpic2.ocw3, GetESMM(&vpic2), GetSMM(&vpic2),
+		GetP(&vpic2), GetRR(&vpic2), GetRIS(&vpic2));
 }
-t_bool vpicIsINTR()
-{
-	t_nubit8 isid1,irid1,isid2,irid2;
-	/* Device INT Begin */
-	vpitIntTick();
-	/* Device INT End */
-	if(vpic2.irr&(~vpic2.imr)) vpic1.irr |= 0x04;
-	irid1 = GetIntID(vpic1.irr&(~vpic1.imr));
-	isid1 = GetIntID(vpic1.isr);
-	//vapiPrint("irid1 = %d, isid1 = %d\n",irid1,isid1);
-	if(irid1 < isid1) return 1;
-	else if(irid1 == isid1 && irid1 == 2) {
-		irid2 = GetIntID(vpic2.irr&(~vpic2.imr));
-		isid2 = GetIntID(vpic2.isr);
-		if(irid2 < isid2) return 1;
-		else return 0;
-	} else return 0;
-}
-t_nubit8 vpicGetINTR()
-{
-	t_nubit8 irid1,irid2;
-	irid1 = GetIntID(vpic1.irr&(~vpic1.imr));
-	if(irid1 == 2) {
-		// IRQ2: IRQ8~IRQ15
-		vpic1.isr |= 0x04;
-		irid2 = GetIntID(vpic2.irr&(~vpic2.imr));
-		vpic2.isr |= 1<<irid2;
-		vpic2.irr |= 1<<irid2;
-		if(GetIntID(vpic2.irr&(~vpic2.imr)) == 0x08) vpic1.irr ^= 0x04;
-		irid2 |= vpic2.icw2;
-		return irid2;
-	} else {
-		// IRQ0~IRQ1, IRQ3~IRQ7
-		vpic1.isr |= 1<<irid1;
-		vpic1.irr ^= 1<<irid1;
-		irid1 |= vpic1.icw2;
-		return irid1;
-	}
-}
-void vpicSetIRQ(t_nubit8 irqid)
+void IO_Read_FF21() {vcpu.al = (t_nubit8)vpicScanINTR();}
+void IO_Read_FF22() {vcpu.al = vpicGetINTR();}
+void IO_Write_FF20() {vpicSetIRQ(vcpu.al);}
+#endif
+
+void     vpicSetIRQ(t_nubit8 irqid)
 {
 	switch(irqid) {
 	case 0x00:	vpic1.irr |= 0x01;break;
 	case 0x01:	vpic1.irr |= 0x02;break;
-//	case 0x02:	vpic1.irr |= 0x04;break;
+/*	case 0x02:	vpic1.irr |= 0x04;break; */
 	case 0x03:	vpic1.irr |= 0x08;break;
 	case 0x04:	vpic1.irr |= 0x10;break;
 	case 0x05:	vpic1.irr |= 0x20;break;
@@ -266,15 +314,46 @@ void vpicSetIRQ(t_nubit8 irqid)
 	case 0x0f:	vpic2.irr |= 0x80;vpic1.irr |= 0x04;break;
 	default:break;}
 }
+t_bool   vpicScanINTR()
+{
+	t_bool intr1;
+	/* Device INT Begin */
+	vpitIntTick();                       /* interrupt request comes from PIT */
+	/* Device INT End */
+	if (vpic2.irr & (~vpic2.imr))      /* see if slave pic has requested int */
+		vpic1.irr |= 0x04;        /* pass the request into IR2 of master pic */
+	else
+		vpic1.irr &= 0xfb;                     /* remove IR2 from master pic */
+	intr1 = HasINTR(&vpic1);
+	if (intr1 && (GetIntrTopId(&vpic1) == 0x02) )
+			return HasINTR(&vpic2);
+	return intr1;
+}
+t_nubit8 vpicGetINTR()
+{
+	t_nubit8 irid1;                    /* top requested int id in master pic */
+	t_nubit8 irid2;                     /* top requested int id in slave pic */
+	irid1 = GetIntrTopId(&vpic1);
+	RespondINTR(&vpic1, irid1);
+	if (irid1 == 0x02) {      /* if IR2 has int request, then test slave pic */
+		irid2 = GetIntrTopId(&vpic2);
+		RespondINTR(&vpic2, irid2);
+		                        /* find the final int id based on slave ICW2 */
+		return (irid2 | vpic2.icw2);
+	} else                     /* find the final int id based on master ICW2 */
+		return (irid1 | vpic1.icw2);
+}
 
+#ifdef VPIC_DEBUG
 #define mov(n) (vcpu.al=n)
 #define out(n) FUNEXEC(vcpuinsOutPort[n])
-
+#endif
 void PICInit()
 {
-	memset(&vpic1,0,sizeof(t_pic));
-	memset(&vpic2,0,sizeof(t_pic));
+	memset(&vpic1, 0x00, sizeof(t_pic));
+	memset(&vpic2, 0x00, sizeof(t_pic));
 	vpic1.init = vpic2.init = ICW1;
+	vpic1.ocw3 = vpic2.ocw3 = 0x02;
 	vcpuinsInPort[0x0020] = (t_faddrcc)IO_Read_0020;
 	vcpuinsInPort[0x0021] = (t_faddrcc)IO_Read_0021;
 	vcpuinsInPort[0x00a0] = (t_faddrcc)IO_Read_00A0;
@@ -283,24 +362,140 @@ void PICInit()
 	vcpuinsOutPort[0x0021] = (t_faddrcc)IO_Write_0021;
 	vcpuinsOutPort[0x00a0] = (t_faddrcc)IO_Write_00A0;
 	vcpuinsOutPort[0x00a1] = (t_faddrcc)IO_Write_00A1;
-	// Initialization Start
-	/* Should be done by BIOS */
-	mov(0x11);	// ICW1: 0001 0001
+#ifdef VPIC_DEBUG
+	vcpuinsInPort[0xff20] = (t_faddrcc)IO_Read_FF20;
+	vcpuinsInPort[0xff21] = (t_faddrcc)IO_Read_FF21;
+	vcpuinsInPort[0xff22] = (t_faddrcc)IO_Read_FF22;
+	vcpuinsOutPort[0xff20] = (t_faddrcc)IO_Write_FF20;
+	/* TODO: the following should be done by BIOS
+	   we leaev it here just for test. */
+	mov(0x11);                                            /* ICW1: 0001 0001 */
 	out(0x20);
-	mov(0x08);	// ICW2: 0000 1000
+	mov(0x08);                                            /* ICW2: 0000 1000 */
 	out(0x21);
-	mov(0x04);	// ICW3: 0000 0100
+	mov(0x04);                                            /* ICW3: 0000 0100 */
 	out(0x21);
-	mov(0x05);	// ICW4: 0000 0101 (Why everyone says it's 0x01???)
+	mov(0x11);                                            /* ICW4: 0001 0001 */
 	out(0x21);
-	mov(0x11);	// ICW1: 0001 0001
+	mov(0x11);                                            /* ICW1: 0001 0001 */
 	out(0xa0);
-	mov(0x70);	// ICW2: 0111 0000
+	mov(0x70);                                            /* ICW2: 0111 0000 */
 	out(0xa1);
-	mov(0x02);	// ICW3: 0000 0010
+	mov(0x02);                                            /* ICW3: 0000 0010 */
 	out(0xa1);
-	mov(0x01);	// ICW4: 0000 0001
+	mov(0x01);                                            /* ICW4: 0000 0001 */
 	out(0xa1);
-	// Initialization Ends
+#endif
 }
 void PICTerm() {}
+
+/*
+Test Case for regular IBM PC use
+Initialize (ICW1, ICW2, ICW3, ICW4 50%)
+o20 11
+o21 08
+o21 04
+o21 11
+oa0 11
+oa1 70
+oa1 02
+oa1 01
+	PrintInfo
+iff20
+	Mask IRQ 5 and IRQ c by OCW1
+o21 20
+oa1 10
+	SetIRQs
+off20 1
+off20 5
+off20 a
+off20 c
+off20 d
+	ScanINTR
+		iff21
+		result should be 01
+	GetINTR
+		iff22
+		result should be 09
+	EOI 0x20, PrintInfo, look at IRR, ISR(0), IMR
+		o20 20
+	ScanINTR
+		iff21
+		result should be 01
+	GetINTR
+		iff22
+		result should be 72 now ISR1 is 4, ISR2 is 4
+		SetIRQ
+			off20 0
+		ScanINTR
+			iff21
+			result should be 01
+		GetINTR
+			iff22
+			result should be 08
+		EOI
+			o20 20, now ISR1 should be 4, ISR2 should be 4
+		SetIRQ
+			off20 8
+		ScanINTR
+			iff21
+			result should be 01
+		GetINTR
+			iff22
+			result should be 01, ISR2 should be 5
+		EOI
+			oa0 20, now ISR1 should be 4, ISR2 should be 4
+		SetIRQ
+			off20 4
+		ScanINTR
+			iff21
+			result should be 00
+	EOI
+		oa0 20
+		o20 20
+	ScanINTR, PrintInfo, look at IRR, ISR, IMR
+	GetINTR, PrintInfo, look at IRR, ISR, IMR
+	EOI 0x20, PrintInfo, look at IRR, ISR, IMR (think about pic2)
+
+	Test case for port commands
+	Initialize
+o20 11
+o21 08
+o21 04
+o21 11
+oa0 11
+oa1 70
+oa1 02
+oa1 01
+	SetIRQs
+off20 1
+off20 5
+off20 a
+off20 c
+off20 d
+	Test ESMM (OCW3 50%)
+		o20 29	ocw3 = 0010 1001, see if D5 changes
+		o20 4a	ocw3 = 0100 1010, see if D5 changes
+		o20 6c	ocw3 = 0110 1100, see if D5 changes
+		o20 49	ocw3 = 0100 1001, see if D5 changes
+	Test SMM (OCW1)
+		o20 49, disable SMM
+		iff21
+		iff22, get ISR 1
+		o21 33
+		iff20, print info
+		o20 6c, enable SMM
+		o21 33
+		iff20, print info
+	Test P/RR/RIS (OCW3 50%)
+		o20 4c	ocw3 = 0100 1100, enable poll
+		i20		see poll
+		o20 4a	ocw3 = 0100 1010, disable poll, enable IRR
+		i20		see irr
+		o20 4b	ocw3 = 0100 1011, disable poll, enable ISR
+		i20		see isr
+	Test AEOI (ICW4 50%)
+TODO
+	Test OCW2
+TODO
+*/

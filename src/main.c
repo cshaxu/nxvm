@@ -1,46 +1,170 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x54]\n\
-Copyright (c) 2012 Neko. All rights reserved.\n"
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x58]\n\
+Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
-	Developer:	Xu Ha
-	Email:		cshaxu@gatech.edu
-	Start:		01/25/2012
-	End:		(null)
-	Module 0 - CONSOLE
-		With Project
-	Module I - ASM86
-		Stage 1: Asm		01/25/2012 - 01/31/2012
-		Stage 2: Disasm		02/01/2012 - 02/05/2012
-	Module II - VM_KERNEL
-		Stage 1: CPU		02/06/2012 - 02/12/2012
-		Stage 2: PIC(8259)	02/24/2012 - 03/08/2012
-		Stage 3: RTC(DS1302	03/02/2012 - Present.	// TODO: 在CMOSInit()中对CMOS寄存器初始化
-		Stage 4: PIT(8254)	03/03/2012 - Present.	// IO not implemented.
-	Module III - VM_STORAGE
-		Stage 1: DMAC(8237)	03/03/2012 - Present.	// DMA is only used to store memory address and word count
-		Stage 2: FDDrive)	03/08/2012 - 03/18/2012	// Load and unload floppy image file
-		Stage 3: FDC(8272)	03/07/2012 - 03/18/2012	// Transfers data between flp image and memory.
-	Module IV - VM_INPUT
-		Stage ?: KEYB		Not Started
-	Module V - VM_OUTPUT
-		Stage ?: VGA		Not Started
-		Stage ?: Monitor	Not Started
-	Module VI - VM_BIOS
-		Stage ?: BIOS		Not Started BIOS Service via I/O
-		Stage ?: BIOS		Not Started BIOS INT Routine via ASM
-	Module VII - VAPI
-		Stage 1: NONE		Not Started
-		Stage 2: W32CON		Not Started
-		Stage 3: W32APP		Not Started
-	Module VIII - DOSINT
-	Other:
-		Stage ?: Serial		Not Started
-		Stage ?: Printer	Not Started
-		Stage ?: HDD		Not Started
-		Stage ?: CDROM		Not Started
-*/
+ * Developer: Xu Ha
+ * Email:     cshaxu@gatech.edu
+ * Start:     01/25/2012
+ * End:       (null)
+ *
+ * Project Phases
+ * 1. Read documents and list all necessary functionality
+ * 2. Code the functions
+ * 3. add comment for each I/O function, check logic
+ * 4. Create test functions and corresponding test case
+ * 5. Perform unit tests
+ *
+ * Module: Console
+ *     Files:   main.c, global.h
+ *     Files:   console.c, console.h
+ *     Files:   dosint.c, dosint.h
+ *     Phase 1:
+ *     Phase 2:
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ *
+ * Module: Debugger
+ * Component 1: debugger
+ *     Files:   debug.c, debug.h
+ *     Phase 1:
+ *     Phase 2: 01/01/2012 - 01/24/2012
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ * Component 2: asembler
+ *     Files:   asm86.c, asm86.h
+ *     Phase 1:
+ *     Phase 2: 01/25/2012 - 01/31/2012
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ * Component 3: disassembler 
+ *     Files:   asm86.c, asm86.h
+ *     Phase 1:
+ *     Phase 2: 02/01/2012 - 02/05/2012
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ *
+ * Module: VMachine - Global
+ * Component 1: types and definitions
+ *     Files:   global.h, coption.h
+ *     Phase 1:
+ *     Phase 2: done
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ * Component 2: chassis
+ *     Files:   vmachine.c, vmachine.h
+ *     Phase 1:
+ *     Phase 2: done
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ *
+ * Module: VMachine - Kernel
+ * Component 1: cpu (8086)
+ *     Files:   vcpu.c, vcpu.h
+ *     Files:   vcpuins.c, vcpuins.h
+ *     Phase 1:
+ *     Phase 2: 02/06/2012 - 02/12/2012
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ * Component 2: ram
+ *     Files:   vram.c, vram.h
+ *     Phase 1:
+ *     Phase 2: 02/06/2012 - 02/12/2012
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ * Component 3: pic (8259)
+ *     Files:   vpic.c, vpic.h
+ *     Phase 1: 02/06/2012 - 02/12/2012
+ *     Phase 2: 02/06/2012 - 02/12/2012
+ *     Phase 3: 03/17/2013 - 03/19/2013
+ *     Phase 4: 03/20/2013 - 03/21/2013
+ *     Phase 5: 03/21/2013 - 03/21/2013
+ *     Note:    OCW2, ICW4(AEOI) not tested
+ * Component 4: pit (8254)
+ *     Files:   vpit.c, vpit.h
+ *     Phase 1:
+ *     Phase 2: 03/03/2012 - 04/01/2012
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ *     Note:    I/O not yet implemented
+ *
+ * Module: VMachine - Storage
+ * Component 1: dmac (8237)
+ *     Files:   vdmac.c, vdmac.h
+ *     Phase 1:
+ *     Phase 2: 03/03/2012 - 04/01/2012
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ *     Note:    DMA is only used to store memory address and word count
+ * Componenet 2: fdc (8272)
+ *     Phase 1:
+ *     Phase 2: 03/07/2012 - 03/18/2012
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ *     Note:    Transfers data between flp image and memory
+ * Componenet 3: fdd
+ *     Phase 1:
+ *     Phase 2: 03/08/2012 - 03/18/2012
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ *     Note:    Load and unload floppy image file
+ *
+ * Module: VMachine - HCI
+ * Component 1: kbc
+ *     Files:   vkbc.c, vkbc.h
+ * Component 2: keyb (?)
+ *     Files:   vkeyb.c, vkeyb.h
+ * Component 3: vadapter
+ *     Files:  vvadp.c, vvadp.h
+ * Component 4: display (?)
+ *     Files:  vdisp.c, vdisp.h
+ *
+ * Module: VMachine - BIOS
+ * Component 1: cmos
+ *     Files:   vcmos.c, vcmos.h
+ *     Phase 1:
+ *     Phase 2: 03/02/2012 - 04/01/2012
+ *     Phase 3:
+ *     Phase 4:
+ *     Phase 5:
+ *     Note:    init regs; continue when creating BIOS
+ * Component 2: bios
+ *     Files:   vbios.asm
+ *
+ * Module: VMachine - Platform Related APIs
+ * Component 1: none
+ *     Files:   vapi.c, vapi.h
+ * Component 2: win32con
+ *     Files:   win32con.c, win32con.h
+ * Component 3: win32app
+ *     Files:   win32app.c, win32app.h
+ *
+ * Module: VMachine - Additional
+ * Component 1: serial
+ *     Files:   vseri.c, vseri.h
+ * Component 2: parallel
+ *     Files:   vpara.c, vpara.h
+ * Component 3: hdc, hdd
+ *     Files:   vhdc.c, vhdc.h, vhdd.c, vhdd.h
+ * Component 4: printer
+ *     Files:   vprinter.c, vprinter.h
+ * Component 5: cdrom
+ *     Files:   vcdrom.c, vcdrom.h
+ *
+ */
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -62,14 +186,23 @@ int main(int argc, char **argv)
 #elif NXVM_SYSTEM == NXVM_WIN32_CONSOLE
 int main(int argc, char **argv)
 {
-	fprintf(stdout,"%s\n",PRODUCT);
+	fprintf(stdout, "%s\n", PRODUCT);
 	NSConsole();
     return 0;
 }
 #elif NXVM_SYSTEM == NXVM_WIN32_APPLICATION
 #include "windows.h"
-//#pragma comment(linker, "/subsystem:\"console\" /entry:\"WinMainCRTStartup\"")
-//#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+/*
+#pragma comment(linker, \
+	"/subsystem:\"console\" /entry:\"WinMainCRTStartup\"") 
+#pragma comment(linker, \
+	"/manifestdependency:\"type='win32' \
+	 name='Microsoft.Windows.Common-Controls' \
+	 version='6.0.0.0' \
+	 processorArchitecture='*' \
+	 publicKeyToken='6595b64144ccf1df' \
+	 language='*'\"")
+*/
 int WINAPI WinMain(HINSTANCE hInstance,
                    HINSTANCE hPreInstance,
                    LPSTR lpCmdLine,
@@ -79,13 +212,13 @@ int WINAPI WinMain(HINSTANCE hInstance,
 }
 #else
 #endif
-/*	COMMENTS
-	unsigned int x = (unsigned int)test;
-	void (*y)(void) = (*(void (*)(void))(x));
-	y();
-	MessageBox(NULL,"Neko's x86 Virtual Machine WIN32APP Edition","WinMain",MB_OK);
-The NTVDM CPU has encountered an illegal instruction.
-CS:0db 1 IP:ffd3 OP:63 fa 65 13 64 Choose 'close' to terminate the
-application.	
-	
-*/
+
+/********************************************
+* COMMENTS
+*	unsigned int x = (unsigned int)test;
+*	void (*y)(void) = (*(void (*)(void))(x));
+*	y();
+*	MessageBox(NULL,"Neko's x86 Virtual Machine WIN32APP Edition","WinMain",MB_OK);
+*	The NTVDM CPU has encountered an illegal instruction.
+*	CS:0db 1 IP:ffd3 OP:63 fa 65 13 64 Choose 'close' to terminate the application.
+********************************************/

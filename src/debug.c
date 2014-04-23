@@ -952,7 +952,7 @@ static void help()
 	fprintf(stdout,"search\t\tS range list\n");
 //!	fprintf(stdout,"trace\t\tT [=address] [value]\n");
 	fprintf(stdout,"unassemble\tU [range]\n");
-	fprintf(stdout,"verbal\tV\n");
+	fprintf(stdout,"verbal\t\tV\n");
 	fprintf(stdout,"write\t\tW [address]\n");
 	//fprintf(stdout,"write\t\tW [address] [drive] [firstsector] [number]\n");
 	//fprintf(stdout,"allocate expanded memory\tXA [#pages]\n");
@@ -989,8 +989,7 @@ static void parse()
 		if(arg[narg]) {
 			lcase(arg[narg]);
 			narg++;
-		}
-		else break;
+		} else break;
 	}
 }
 static void exec()
