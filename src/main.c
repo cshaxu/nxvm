@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x5d]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x5e]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -173,6 +173,8 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * Component 5: cdrom
  *     Files:   vcdrom.c, vcdrom.h
  *
+ * Format Unify:
+ * all boolean type should be t_bool, declared TRUE or FALSE
  */
 
 #include "stdio.h"

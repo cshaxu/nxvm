@@ -16,8 +16,8 @@ void vmachineRefresh()
 	vkbcRefresh();
 	vfdcRefresh();
 	vfddRefresh();
-	vdmacRefresh();
 */
+	vdmaRefresh();
 	vpitRefresh();
 	vpicRefresh();
 	vramRefresh();
