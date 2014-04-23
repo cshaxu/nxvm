@@ -3208,10 +3208,8 @@ void QDX()
 	vcpu.ip++;
 	GetImm(8);
 	qdbiosExecInt(d_nubit8(vcpuins.imm));
-	if (GetBit(_flags, VCPU_FLAG_ZF))
-		vramVarWord(_ss,_sp + 4) |=  VCPU_FLAG_ZF;
-	else
-		vramVarWord(_ss,_sp + 4) &= ~VCPU_FLAG_ZF;
+	MakeBit(vramVarWord(_ss,_sp + 4), VCPU_FLAG_ZF, GetBit(_flags, VCPU_FLAG_ZF));
+	MakeBit(vramVarWord(_ss,_sp + 4), VCPU_FLAG_CF, GetBit(_flags, VCPU_FLAG_CF));
 }
 
 void vcpuinsInit()

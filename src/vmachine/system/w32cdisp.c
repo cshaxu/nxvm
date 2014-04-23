@@ -10,7 +10,7 @@
 static PCHAR_INFO charBuf;
 static COORD coordDefaultBufSize, coordBufSize, coordBufStart;
 static SMALL_RECT srctWriteRect;
-static UCHAR sizeRow, sizeCol;
+static USHORT sizeRow, sizeCol;
 //static CONSOLE_CURSOR_INFO defaultCurInfo;
 //static UINT defaultCodePage;
 static CONSOLE_SCREEN_BUFFER_INFO defaultBufInfo;

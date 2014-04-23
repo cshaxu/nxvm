@@ -319,7 +319,9 @@ void qdvgaInit()
 	qdvga.colsize = 0x19; // 25
 	qdvgaVarPageNum = 0x00;
 	qdvgaVarMode = 0x03;
+	qdvgaVarRagenSize = ModeBufSize[qdvgaVarMode];
 	qdvgaVarCursorPosRow(0) = 0x05;
+	qdvgaVarCursorPosCol(0) = 0x00;
 	qdvgaVarCursorTop       = 0x06;
 	qdvgaVarCursorBottom    = 0x07;
 	memset((void *)qdvgaGetTextMemAddr, 0x00, QDVGA_SIZE_TEXT_MEMORY);

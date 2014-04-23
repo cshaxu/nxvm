@@ -107,9 +107,12 @@ static void INT_13_02_FDD_ReadSector()
 		shr(_dh, 0x02);    /* calc hds byte */
 		out(0x03f5, _dl);  /* set seek hds byte */
 		out(0x03f5, _ch);  /* set seek cyl */
-/* Note: here vfdc set IRQ6 and vcpu calls INT E */
+/* Note: here vfdc sets IRQ6 and vcpu calls INT E */
+		//vcpuinsExecInt();
+		vpic1.isr |=  0x40;
+		vpic1.irr &= ~0x40;
+		INT_0E();
 		do {
-			vcpuinsExecInt();
 			nop;
 			in(_al, 0x03f4); /* get msr */
 			and(_al, 0xc0);  /* get ready write status */
@@ -124,9 +127,13 @@ static void INT_13_02_FDD_ReadSector()
 		out(0x03f5, 0x1b); /* set stdi gap length */
 		out(0x03f5, 0xff); /* set stdi customized sect size (0xff) */
 		/* now everything is ready; DRQ also generated. */
+		vdmaRefresh();
+		/* vdma send eop to vfdc, vfdc set IRQ 6 */
+		vpic1.isr |=  0x40;
+		vpic1.irr &= ~0x40;
+		INT_0E();
 		do {
 			nop;
-			vdmaRefresh();
 			in(_al, 0x03f4); /* get msr */
 			and(_al, 0xc0);  /* get ready read status */
 		} while(!cmp(_al, 0xc0));
@@ -141,6 +148,8 @@ static void INT_13_02_FDD_ReadSector()
 		clc;
 	}
 	mov(mbp(0x0441), _ah); /* set status*/
+	//vapiPrint("read: drv=%x, head=%x, cyl=%x, sec=%x, es=%x, bx=%x\n",_dl,_dh,_ch,_cl,_es,_bx);
+	//vmachineStop();
 }
 static void INT_13_03_FDD_WriteSector()
 {
@@ -195,8 +204,10 @@ static void INT_13_03_FDD_WriteSector()
 		out(0x03f5, _dl);  /* set seek hds byte */
 		out(0x03f5, _ch);  /* set seek cyl */
 /* Note: here vfdc set IRQ6 and vcpu calls INT E */
+		vpic1.isr |=  0x40;
+		vpic1.irr &= ~0x40;
+		INT_0E();
 		do {
-			vcpuinsExecInt();
 			nop;
 			in(_al, 0x03f4); /* get msr */
 			and(_al, 0xc0);  /* get ready write status */
@@ -211,8 +222,12 @@ static void INT_13_03_FDD_WriteSector()
 		out(0x03f5, 0x1b); /* set stdi gap length */
 		out(0x03f5, 0xff); /* set stdi customized sect size (0xff) */
 		/* now everything is ready; DRQ also generated. */
+		vdmaRefresh();
+		/* vdma send eop to vfdc, vfdc set IRQ 6 */
+		vpic1.isr |=  0x40;
+		vpic1.irr &= ~0x40;
+		INT_0E();
 		do {
-			vdmaRefresh();
 			nop;
 			in(_al, 0x03f4); /* get msr */
 			and(_al, 0xc0);  /* get ready read status */
@@ -439,11 +454,15 @@ void INT_0E()
 {
 	push_ax;
 	push_dx;
-	mov(_dx, 0x03f5);
-	mov(_al, 0x08);
- 	out(_dx, _al); /* send senseint command */ 
-	in (_al, _dx); /* read senseint ret st0: 0x20 */
-	in (_al, _dx); /* read senseint ret cyl: 0x00 */
+	in(_al, 0x03f4); /* get msr */
+	and(_al, 0xc0);  /* get ready write status */
+	if(cmp(_al, 0x80)) {
+		mov(_dx, 0x03f5);
+		mov(_al, 0x08);
+		out(_dx, _al); /* send senseint command */ 
+		in (_al, _dx); /* read senseint ret st0: 0x20 */
+		in (_al, _dx); /* read senseint ret cyl: 0x00 */
+	}
 	/* FDC 3F5 4A to check id; not needed for vm */
 	mov(_al, 0x20);
 	out(0x20, _al); /* send eoi command to vpic */
@@ -520,8 +539,8 @@ void INT_10()
 		//qdvgaGetPixel();
 		break;
 	case 0x0e:
-		//vapiPrint("DisplayCharProp, ah=%02X, al=%02X('%c', %d)\n",
-		//	_ah,_al,_al,_al);
+		//vapiPrint("DisplayCharProp, ah=%02X, al=%02X('%c', %d), page=%x\n",
+		//	_ah,_al,_al,_al,_bh);
 		_cx = 0x01;
 		qdvgaDisplayCharProp();
 		_cx = tmpCX;
@@ -658,6 +677,7 @@ void INT_1A()
 
 void qdbiosExecInt(t_nubit8 intid)
 {
+//	vapiPrint("int %02x, func %02x\n",intid,_ah);
 	switch (intid) {
 	case 0x08: /* HARDWARE rtc update */
 		INT_08();break;
@@ -889,6 +909,9 @@ void qdbiosInit()
 	vramVarByte(0xf000, 0xfff0) = 0xea;
 	vramVarWord(0xf000, 0xfff1) = 0x7c00;
 	vramVarWord(0xf000, 0xfff3) = 0x0000;
+	mov(_ax, 0xaa55);
+	mov(_cx, 0x0001);
+	mov(_sp, 0xfffe);
 }
 void qdbiosFinal()
 {

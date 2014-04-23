@@ -14,10 +14,16 @@ void vmachineRemoveFloppy(t_string fname)  {vapiFloppyRemove(fname);}
 void vmachineStart() {vmachine.flagrun = 0x01;vapiStartMachine();}
 void vmachineStop()  {vmachine.flagrun = 0x00;}
 
+#define _expression "cs:ip=%x:%x opcode=%x %x %x %x %x %x %x %x \
+ax=%x bx=%x cx=%x dx=%x sp=%x bp=%x si=%x di=%x ds=%x es=%x ss=%x \
+of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x\n"
+
 void vapiCallBackMachineRun()
 {
+//FILE *fp;
 	if(vmachine.flaginit) {
 		if (vmachine.flagrecord) vapiRecordStart();
+//fp = fopen("d:/nxvm.log","w");
 		while (vmachine.flagrun) {
 			if (vmachine.flagbreak &&
 				vcpu.cs == vmachine.breakcs && vcpu.ip == vmachine.breakip) {
@@ -25,9 +31,21 @@ void vapiCallBackMachineRun()
 				break;
 			}
 			if (vmachine.flagrecord) vapiRecordExec();
+//fprintf(fp, _expression,
+//_cs, _ip,
+//vramVarByte(_cs,_ip+0),vramVarByte(_cs,_ip+1),
+//vramVarByte(_cs,_ip+2),vramVarByte(_cs,_ip+3),
+//vramVarByte(_cs,_ip+4),vramVarByte(_cs,_ip+5),
+//vramVarByte(_cs,_ip+6),vramVarByte(_cs,_ip+7),
+//_ax,_bx,_cx,_dx,
+//_sp,_bp,_si,_di,
+//_ds,_es,_ss,
+//_of,_sf,_zf,_cf,
+//_af,_pf,_df,_if,_tf);
 			vmachineRefresh();
 			if (vmachine.flagtrace) vmachineStop();
 		}
+//fclose(fp);
 		if (vmachine.flagrecord) vapiRecordEnd();
 	} else {
 		vmachineStop();
@@ -77,6 +95,7 @@ void vmachineInit()
 	vvadpInit();
 	vdispInit();
 */
+	vmachine.flagmode   = 0x01;
 	vmachine.flagrecord = 0x01;
 	vmachine.flaginit   = 0x01;
 }
