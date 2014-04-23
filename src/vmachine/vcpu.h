@@ -20,6 +20,14 @@ typedef enum {
 	SREG_GDTR,
 	SREG_IDTR
 } t_cpu_sreg_type;
+
+typedef struct {
+	t_bool flagwrite;
+	t_nubit32 byte;
+	t_nubit32 linear;
+	t_nubit64 data;
+} t_cpu_memory;
+
 typedef struct {
 	t_bool flagvalid;
 	t_nubit16 selector;
@@ -112,6 +120,9 @@ typedef struct {
 	t_bool flagignore;
 	t_bool flagmasknmi;
 	t_bool flagnmi, flaglock, flaghalt;
+
+	t_cpu_memory mem[0x20];
+	t_nubit8 msize;
 } t_cpu;
 
 extern t_cpu vcpu;

@@ -794,85 +794,10 @@ static t_nubit8 xuprintins(t_nubit32 linear)
 	vapiPrint("%s\n", str);
 	return len;
 }
-static void xrprintsreg_seg(t_cpu_sreg *rsreg, const t_strptr label)
-{
-	vapiPrint("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, %s, ", label,
-		rsreg->selector, rsreg->base, rsreg->limit,
-		rsreg->dpl, rsreg->seg.accessed ? "A" : "a");
-	if (rsreg->seg.executable) {
-		vapiPrint("Code, %s, %s, %s\n",
-			rsreg->seg.exec.conform ? "C" : "c",
-			rsreg->seg.exec.readable ? "Rw" : "rw",
-			rsreg->seg.exec.defsize ? "32" : "16");
-	} else {
-		vapiPrint("Data, %s, %s, %s\n",
-			rsreg->seg.data.expdown ? "E" : "e",
-			rsreg->seg.data.writable ? "RW" : "Rw",
-			rsreg->seg.data.big ? "BIG" : "big");
-	} 
-}
-static void xrprintsreg_sys(t_cpu_sreg *rsreg, const t_strptr label)
-{
-	vapiPrint("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, Type=%04X\n", label,
-		rsreg->selector, rsreg->base, rsreg->limit,
-		rsreg->dpl, rsreg->sys.type);
-}
-static void xrprintsreg()
-{
-	xrprintsreg_seg(&vcpu.es, "ES");
-	xrprintsreg_seg(&vcpu.cs, "CS");
-	xrprintsreg_seg(&vcpu.ss, "SS");
-	xrprintsreg_seg(&vcpu.ds, "DS");
-	xrprintsreg_seg(&vcpu.fs, "FS");
-	xrprintsreg_seg(&vcpu.gs, "GS");
-	xrprintsreg_sys(&vcpu.tr, "TR  ");
-	xrprintsreg_sys(&vcpu.ldtr, "LDTR");
-	vapiPrint("GDTR Base=%08X, Limit=%04X\n",
-		_gdtr.base, _gdtr.limit);
-	vapiPrint("IDTR Base=%08X, Limit=%04X\n",
-		_idtr.base, _idtr.limit);
-}
-static void xrprintcreg()
-{
-	vapiPrint("CR0=%08X: %s %s %s %s %s %s\n", vcpu.cr0,
-		_GetCR0_PG ? "PG" : "pg",
-		_GetCR0_ET ? "ET" : "et",
-		_GetCR0_TS ? "TS" : "ts",
-		_GetCR0_EM ? "EM" : "em",
-		_GetCR0_MP ? "MP" : "mp",
-		_GetCR0_PE ? "PE" : "pe");
-	vapiPrint("CR2=PFLR=%08X\n", vcpu.cr2);
-	vapiPrint("CR3=PDBR=%08X\n", vcpu.cr3);
-}
 static void xrprintreg()
 {
-	vapiPrint( "EAX=%08X", _eax);
-	vapiPrint(" EBX=%08X", _ebx);
-	vapiPrint(" ECX=%08X", _ecx);
-	vapiPrint(" EDX=%08X", _edx);
-	vapiPrint("\nESP=%08X",vcpu.esp);
-	vapiPrint(" EBP=%08X", _ebp);
-	vapiPrint(" ESI=%08X", vcpu.esi);
-	vapiPrint(" EDI=%08X", _edi);
-	vapiPrint("\nEIP=%08X",_eip);
-	vapiPrint(" EFL=%08X", _eflags);
-	vapiPrint(": ");
-	vapiPrint("%s ", _GetEFLAGS_VM ? "VM" : "vm");
-	vapiPrint("%s ", _GetEFLAGS_RF ? "RF" : "rf");
-	vapiPrint("%s ", _GetEFLAGS_NT ? "NT" : "nt");
-	vapiPrint("IOPL=%01X ", _GetEFLAGS_IOPL);
-	vapiPrint("%s ", _GetEFLAGS_OF ? "OF" : "of");
-	vapiPrint("%s ", _GetEFLAGS_DF ? "DF" : "df");
-	vapiPrint("%s ", _GetEFLAGS_IF ? "IF" : "if");
-	vapiPrint("%s ", _GetEFLAGS_TF ? "TF" : "tf");
-	vapiPrint("%s ", _GetEFLAGS_SF ? "SF" : "sf");
-	vapiPrint("%s ", _GetEFLAGS_ZF ? "ZF" : "zf");
-	vapiPrint("%s ", _GetEFLAGS_AF ? "AF" : "af");
-	vapiPrint("%s ", _GetEFLAGS_PF ? "PF" : "pf");
-	vapiPrint("%s ", _GetEFLAGS_CF ? "CF" : "cf");
-	vapiPrint("\n");
+	vapiCallBackCpuPrintReg();
 	xulin = vcpu.cs.base + _eip;
-	xuprintins(xulin);
 }
 /* assemble */
 static void xaconsole(t_nubit32 linear)
@@ -1157,10 +1082,10 @@ static void xs()
 static void xtprintmem()
 {
 	t_nubit32 i;
-	for (i = 0;i < vcpurec.msize;++i) {
+	for (i = 0;i < vcpu.msize;++i) {
 		vapiPrint("%s: Lin=%08x, Data=%08x, Bytes=%1x\n",
-			vcpurec.mem[i].flagwrite ? "Write" : "Read",
-			vcpurec.mem[i].linear, vcpurec.mem[i].data, vcpurec.mem[i].byte);
+			vcpu.mem[i].flagwrite ? "Write" : "Read",
+			vcpu.mem[i].linear, vcpu.mem[i].data, vcpu.mem[i].byte);
 	}
 }
 static void xt()
@@ -1285,7 +1210,7 @@ static void xrscanreg()
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			_eflags = value;
 	} else if(!STRCMP(arg[1], "es")) {
-		xrprintsreg_seg(&vcpu.es, "ES");
+		vapiCallBackCpuPrintSreg();
 		vapiPrint(":");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit16(s);
@@ -1293,7 +1218,7 @@ static void xrscanreg()
 			if (vcpuinsLoadSreg(&vcpu.es, GetMax16(value)))
 				vapiPrint("debug: fail to load es from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "cs")) {
-		xrprintsreg_seg(&vcpu.cs, "CS");
+		vapiCallBackCpuPrintSreg();
 		vapiPrint(":");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit16(s);
@@ -1301,7 +1226,7 @@ static void xrscanreg()
 			if (vcpuinsLoadSreg(&vcpu.cs, GetMax16(value)))
 				vapiPrint("debug: fail to load cs from %04X\n", GetMax16(value));
 	}  else if(!STRCMP(arg[1], "ss")) {
-		xrprintsreg_seg(&vcpu.ss, "SS");
+		vapiCallBackCpuPrintSreg();
 		vapiPrint(":");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit16(s);
@@ -1309,7 +1234,7 @@ static void xrscanreg()
 			if (vcpuinsLoadSreg(&vcpu.ss, GetMax16(value)))
 				vapiPrint("debug: fail to load ss from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "ds")) {
-		xrprintsreg_seg(&vcpu.ds, "DS");
+		vapiCallBackCpuPrintSreg();
 		vapiPrint(":");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
@@ -1317,7 +1242,7 @@ static void xrscanreg()
 			if (vcpuinsLoadSreg(&vcpu.ds, GetMax16(value)))
 				vapiPrint("debug: fail to load ds from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "fs")) {
-		xrprintsreg_seg(&vcpu.fs, "FS");
+		vapiCallBackCpuPrintSreg();
 		vapiPrint(":");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
@@ -1325,7 +1250,7 @@ static void xrscanreg()
 			if (vcpuinsLoadSreg(&vcpu.fs, GetMax16(value)))
 				vapiPrint("debug: fail to load fs from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "gs")) {
-		xrprintsreg_seg(&vcpu.gs, "GS");
+		vapiCallBackCpuPrintSreg();
 		vapiPrint(":");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
@@ -1485,8 +1410,8 @@ static void x()
 	else if (!STRCMP(arg[0], "u"))    xu();
 	else if (!STRCMP(arg[0], "w"))    xw();
 	else if (!STRCMP(arg[0], "reg"))  xrprintreg();
-	else if (!STRCMP(arg[0], "sreg")) xrprintsreg();
-	else if (!STRCMP(arg[0], "creg")) xrprintcreg();
+	else if (!STRCMP(arg[0], "sreg")) vapiCallBackCpuPrintSreg();
+	else if (!STRCMP(arg[0], "creg")) vapiCallBackCpuPrintCreg();
 	else {
 		arg[0] = arg[narg];
 		seterr(0);
@@ -1592,11 +1517,6 @@ static void exec()
 	}
 }
 
-void vapiCallBackDebugPrintRegs(t_bool flag32)
-{
-	if (flag32) xrprintreg();
-	else rprintregs();
-}
 void debug()
 {
 	t_nubitcc i;

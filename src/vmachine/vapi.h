@@ -60,15 +60,17 @@ void vapiDisplaySetScreen();
 void vapiDisplayPaint();
 
 /* Call Back Functions */
-
-void vapiCallBackDebugPrintRegs(t_bool flag32);
-
 void vapiCallBackMachineRun();
 t_nubit8 vapiCallBackMachineGetFlagRun();
 void vapiCallBackMachineStart();
 void vapiCallBackMachineResume();
 void vapiCallBackMachineReset();
 void vapiCallBackMachineStop();
+
+void vapiCallBackCpuPrintIns();
+void vapiCallBackCpuPrintSreg();
+void vapiCallBackCpuPrintCreg();
+void vapiCallBackCpuPrintReg();
 
 void vapiCallBackKeyboardClrFlag0();
 void vapiCallBackKeyboardClrFlag1();

@@ -12,6 +12,7 @@
 #include "bios/qdbios.h"
 #else
 #include "vcpuapi.h"
+#define vapiPrint vcpuapiPrint
 #endif
 #include "vcpuins.h"
 
@@ -407,30 +408,30 @@ static void _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rda
 	_chk(_kma_read_linear(linear, rdata, byte, vpl, force));
 	if (!force) {
 		_bb("!force");
-		vcpu.mem[vcpu.msize].flagwrite = 0;
-		vcpu.mem[vcpu.msize].data = 0;
-		_chk(_kma_read_ref(rdata, GetRef(vcpu.mem[vcpu.msize].data), byte));
-		vcpu.mem[vcpu.msize].byte = byte;
-		vcpu.mem[vcpu.msize].linear = linear;
+		vcpurec.mem[vcpurec.msize].flagwrite = 0;
+		vcpurec.mem[vcpurec.msize].data = 0;
+		_chk(_kma_read_ref(rdata, GetRef(vcpurec.mem[vcpurec.msize].data), byte));
+		vcpurec.mem[vcpurec.msize].byte = byte;
+		vcpurec.mem[vcpurec.msize].linear = linear;
 		if (vcpuins.flagwr) {
-			if (vcpuins.wrlin >= vcpu.mem[vcpu.msize].linear &&
-				vcpuins.wrlin < vcpu.mem[vcpu.msize].linear + byte) {
+			if (vcpuins.wrlin >= vcpurec.mem[vcpurec.msize].linear &&
+				vcpuins.wrlin < vcpurec.mem[vcpurec.msize].linear + byte) {
 				vapiPrint("Watch point caught at L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", vcpurec.linear,
-					vcpu.mem[vcpu.msize].byte,
-					vcpu.mem[vcpu.msize].data,
-					vcpu.mem[vcpu.msize].linear);
+					vcpurec.mem[vcpurec.msize].byte,
+					vcpurec.mem[vcpurec.msize].data,
+					vcpurec.mem[vcpurec.msize].linear);
 			}
 		}
-		/*for (i = 0;i < vcpu.msize;++i) {
-			if (vcpu.mem[i].flagwrite == vcpu.mem[vcpu.msize].flagwrite &&
-				vcpu.mem[i].linear == vcpu.mem[vcpu.msize].linear) {
+		/*for (i = 0;i < vcpurec.msize;++i) {
+			if (vcpurec.mem[i].flagwrite == vcpurec.mem[vcpurec.msize].flagwrite &&
+				vcpurec.mem[i].linear == vcpurec.mem[vcpurec.msize].linear) {
 				_bb("mem(same)");
 				_impossible_r_;
 				_ce;
 			}
 		}*/
-		vcpu.msize++;
-		if (vcpu.msize == 0x20) _impossible_;
+		vcpurec.msize++;
+		if (vcpurec.msize == 0x20) _impossible_;
 		_be;
 	}
 	_ce;
@@ -445,30 +446,30 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rd
 	_chk(_kma_write_linear(linear, rdata, byte, vpl, force));
 	if (!force) {
 		_bb("!force");
-		vcpu.mem[vcpu.msize].flagwrite = 1;
-		vcpu.mem[vcpu.msize].data = 0;
-		_chk(_kma_read_ref(rdata, GetRef(vcpu.mem[vcpu.msize].data), byte));
-		vcpu.mem[vcpu.msize].byte = byte;
-		vcpu.mem[vcpu.msize].linear = linear;
+		vcpurec.mem[vcpurec.msize].flagwrite = 1;
+		vcpurec.mem[vcpurec.msize].data = 0;
+		_chk(_kma_read_ref(rdata, GetRef(vcpurec.mem[vcpurec.msize].data), byte));
+		vcpurec.mem[vcpurec.msize].byte = byte;
+		vcpurec.mem[vcpurec.msize].linear = linear;
 		if (vcpuins.flagww) {
-			if (vcpuins.wwlin >= vcpu.mem[vcpu.msize].linear &&
-				vcpuins.wwlin < vcpu.mem[vcpu.msize].linear + byte) {
+			if (vcpuins.wwlin >= vcpurec.mem[vcpurec.msize].linear &&
+				vcpuins.wwlin < vcpurec.mem[vcpurec.msize].linear + byte) {
 				vapiPrint("Watch point caught at L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", vcpurec.linear,
-					vcpu.mem[vcpu.msize].byte,
-					vcpu.mem[vcpu.msize].data,
-					vcpu.mem[vcpu.msize].linear);
+					vcpurec.mem[vcpurec.msize].byte,
+					vcpurec.mem[vcpurec.msize].data,
+					vcpurec.mem[vcpurec.msize].linear);
 			}
 		}
-		/*for (i = 0;i < vcpu.msize;++i) {
-			if (vcpu.mem[i].flagwrite == vcpu.mem[vcpu.msize].flagwrite &&
-				vcpu.mem[i].linear == vcpu.mem[vcpu.msize].linear) {
+		/*for (i = 0;i < vcpurec.msize;++i) {
+			if (vcpurec.mem[i].flagwrite == vcpurec.mem[vcpurec.msize].flagwrite &&
+				vcpurec.mem[i].linear == vcpurec.mem[vcpurec.msize].linear) {
 				_bb("mem(same)");
 				_impossible_;
 				_ce;
 			}
 		}*/
-		vcpu.msize++;
-		if (vcpu.msize == 0x20) _impossible_;
+		vcpurec.msize++;
+		if (vcpurec.msize == 0x20) _impossible_;
 		_be;
 	}
 	_ce;
@@ -1690,35 +1691,33 @@ static void _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 /* kernel execution control */
 static void _kec_push(t_vaddrcc rdata, t_nubit8 byte)
 {
-	t_nubit32 cesp;
 	_cb("_kec_push");
 	_chk(_s_test_ss_push(byte));
 	switch (_GetStackSize) {
-	case 2: cesp = GetMax16(vcpu.sp - byte);break;
-	case 4: cesp = GetMax32(vcpu.esp - byte);break;
-	default:_impossible_;break;}
-	_chk(_s_write_ss(cesp, rdata, byte));
-	switch (_GetStackSize) {
-	case 2: vcpu.sp -= byte;break;
-	case 4: vcpu.esp -= byte;break;
+	case 2: _bb("StackSize(2)");
+		vcpu.sp -= byte;
+		_chk(_s_write_ss(vcpu.sp, rdata, byte));
+		_be;break;
+	case 4: _bb("StackSize(4)");
+		vcpu.esp -= byte;
+		_chk(_s_write_ss(vcpu.esp, rdata, byte));
+		_be;break;
 	default:_impossible_;break;}
 	_ce;
 }
 static void _kec_pop(t_vaddrcc rdata, t_nubit8 byte)
 {
-	t_nubit32 cesp;
 	_cb("_kec_pop");
 	switch (_GetStackSize) {
-	case 2: cesp = vcpu.sp;break;
-	case 4: cesp = vcpu.esp;break;
+	case 2: _bb("StackSize(2)");
+		_chk(_s_read_ss(vcpu.sp, rdata, byte));
+		vcpu.sp += byte;
+		_be;break;
+	case 4: _bb("StackSize(4)");
+		_chk(_s_read_ss(vcpu.esp, rdata, byte));
+		vcpu.esp += byte;
+		_be;break;
 	default:_impossible_;break;}
-	_chk(_s_read_ss(cesp, rdata, byte));
-	if (rdata != GetRef(vcpu.esp)) {
-		switch (_GetStackSize) {
-		case 2: vcpu.sp += byte;break;
-		case 4: vcpu.esp += byte;break;
-		default:_impossible_;break;}
-	}
 	_ce;
 }
 static void _kec_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
@@ -2404,8 +2403,9 @@ _______todo _e_except_n(t_nubit8 exid, t_nubit8 byte)
 _______todo _e_iret(t_nubit8 byte)
 {
 	t_nubit16 newcs, newss, newds, newes, newfs, newgs;
-	t_nubit32 neweip = 0, newesp, neweflags = 0;
-	t_nubit32 xs_sel;
+	t_nubit32 xs_sel = 0;
+	t_nubit32 neweip = 0, newesp;
+	t_nubit32 neweflags = 0;
 	t_nubit32 mask = VCPU_EFLAGS_RESERVED;
 	t_cpu_sreg ccs = vcpu.cs;
 	_cb("_e_iret");
@@ -4219,6 +4219,7 @@ static void _a_scas(t_nubit8 bit)
 	_chk(_kaf_set_flags(CMP_FLAG));
 	_ce;
 }
+
 #define _adv _chk(_d_skip(1))
 static void UndefinedOpcode()
 {
@@ -4478,17 +4479,17 @@ static void PUSH_CS()
 }
 static void POP_CS()
 {
-	/* note: not sure if operand size is 32,
-		push/pop selector only or with higher 16 bit */
 	t_nubit32 xs_sel;
 	_cb("POP_CS");
 	i386(0x0f) {
-		_adv;
+		_bb("i386");
+		_chk(_SetExcept_CE(0x0f));
+		_be;
 	} else {
 		vcpu.ip++;
+		_chk(_e_pop(GetRef(xs_sel), _GetOperandSize));
+		_chk(_s_load_cs(GetMax16(xs_sel)));
 	}
-	_chk(_e_pop(GetRef(xs_sel), _GetOperandSize));
-	_chk(_s_load_cs(GetMax16(xs_sel)));
 	_ce;
 }
 static void INS_0F()
@@ -4620,8 +4621,6 @@ static void PUSH_SS()
 }
 static void POP_SS()
 {
-	/* note: not sure if operand size is 32,
-		push/pop selector only or with higher 16 bit */
 	t_nubit32 xs_sel;
 	_cb("POP_SS");
 	i386(0x17) {
@@ -4750,8 +4749,6 @@ static void PUSH_DS()
 }
 static void POP_DS()
 {
-	/* note: not sure if operand size is 32,
-		push/pop selector only or with higher 16 bit */
 	t_nubit32 xs_sel;
 	_cb("POP_DS");
 	i386(0x1f) {
@@ -5665,16 +5662,12 @@ static void PUSH_EAX()
 	i386(0x50) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _bb("OperandSize(2)");
-			_chk(_e_push(GetRef(vcpu.ax), 2));
-			_be;break;
-		case 4: _bb("OperandSize(4)");
-			_chk(_e_push(GetRef(vcpu.eax), 4));
-			_be;break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.ax), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.eax), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
-		_chk(_e_push(GetRef(vcpu.ax), 2));
+		_e_push(GetRef(vcpu.ax), 2);
 	}
 	_ce;
 }
@@ -5684,16 +5677,12 @@ static void PUSH_ECX()
 	i386(0x51) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _bb("OperandSize(2)");
-			_chk(_e_push(GetRef(vcpu.cx), 2));
-			_be;break;
-		case 4: _bb("OperandSize(4)");
-			_chk(_e_push(GetRef(vcpu.ecx), 4));
-			_be;break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.cx), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.ecx), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
-		_chk(_e_push(GetRef(vcpu.cx), 2));
+		_e_push(GetRef(vcpu.cx), 2);
 	}
 	_ce;
 }
@@ -5703,16 +5692,12 @@ static void PUSH_EDX()
 	i386(0x52) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _bb("OperandSize(2)");
-			_chk(_e_push(GetRef(vcpu.dx), 2));
-			_be;break;
-		case 4: _bb("OperandSize(4)");
-			_chk(_e_push(GetRef(vcpu.edx), 4));
-			_be;break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.dx), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.edx), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
-		_chk(_e_push(GetRef(vcpu.dx), 2));
+		_e_push(GetRef(vcpu.dx), 2);
 	}
 	_ce;
 }
@@ -5722,35 +5707,28 @@ static void PUSH_EBX()
 	i386(0x53) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _bb("OperandSize(2)");
-			_chk(_e_push(GetRef(vcpu.bx), 2));
-			_be;break;
-		case 4: _bb("OperandSize(4)");
-			_chk(_e_push(GetRef(vcpu.ebx), 4));
-			_be;break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.bx), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.ebx), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
-		_chk(_e_push(GetRef(vcpu.bx), 2));
+		_e_push(GetRef(vcpu.bx), 2);
 	}
 	_ce;
 }
 static void PUSH_ESP()
 {
+	t_nubit32 cesp = vcpu.esp;
 	_cb("PUSH_ESP");
 	i386(0x54) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _bb("OperandSize(2)");
-			_chk(_e_push(GetRef(vcpu.sp), 2));
-			_be;break;
-		case 4: _bb("OperandSize(4)");
-			_chk(_e_push(GetRef(vcpu.esp), 4));
-			_be;break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(cesp), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(cesp), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
-		_chk(_e_push(GetRef(vcpu.sp), 2));
+		_e_push(GetRef(vcpu.sp), 2);
 	}
 	_ce;
 }
@@ -5760,16 +5738,12 @@ static void PUSH_EBP()
 	i386(0x55) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _bb("OperandSize(2)");
-			_chk(_e_push(GetRef(vcpu.bp), 2));
-			_be;break;
-		case 4: _bb("OperandSize(4)");
-			_chk(_e_push(GetRef(vcpu.ebp), 4));
-			_be;break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.bp), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.ebp), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
-		_chk(_e_push(GetRef(vcpu.bp), 2));
+		_e_push(GetRef(vcpu.bp), 2);
 	}
 	_ce;
 }
@@ -5779,16 +5753,12 @@ static void PUSH_ESI()
 	i386(0x56) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _bb("OperandSize(2)");
-			_chk(_e_push(GetRef(vcpu.si), 2));
-			_be;break;
-		case 4: _bb("OperandSize(4)");
-			_chk(_e_push(GetRef(vcpu.esi), 4));
-			_be;break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.si), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.esi), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
-		_chk(_e_push(GetRef(vcpu.si), 2));
+		_e_push(GetRef(vcpu.si), 2);
 	}
 	_ce;
 }
@@ -5798,16 +5768,12 @@ static void PUSH_EDI()
 	i386(0x57) {
 		_adv;
 		switch (_GetOperandSize) {
-		case 2: _bb("OperandSize(2)");
-			_chk(_e_push(GetRef(vcpu.di), 2));
-			_be;break;
-		case 4: _bb("OperandSize(4)");
-			_chk(_e_push(GetRef(vcpu.edi), 4));
-			_be;break;
+		case 2: _bb("OperandSize(2)");_chk(_e_push(GetRef(vcpu.di), 2));_be;break;
+		case 4: _bb("OperandSize(4)");_chk(_e_push(GetRef(vcpu.edi), 4));_be;break;
 		default:_impossible_;break;}
 	} else {
 		vcpu.ip++;
-		_chk(_e_push(GetRef(vcpu.di), 2));
+		_e_push(GetRef(vcpu.di), 2);
 	}
 	_ce;
 }
@@ -5889,15 +5855,18 @@ static void POP_EBX()
 }
 static void POP_ESP()
 {
+	t_nubit32 cesp = 0;
 	_cb("POP_ESP");
 	i386(0x5c) {
 		_adv;
 		switch (_GetOperandSize) {
 		case 2: _bb("OperandSize(2)");
-			_chk(_e_pop(GetRef(vcpu.sp), 2));
+			_chk(_e_pop(GetRef(cesp), 2));
+			vcpu.sp = GetMax16(cesp);
 			_be;break;
 		case 4: _bb("OperandSize(4)");
-			_chk(_e_pop(GetRef(vcpu.esp), 4));
+			_chk(_e_pop(GetRef(cesp), 4));
+			vcpu.esp = GetMax32(cesp);
 			_be;break;
 		default:_impossible_;break;}
 	} else {
@@ -6008,7 +5977,7 @@ static void POPA()
 			_chk(_e_pop(GetRef(vcpu.di), 2));
 			_chk(_e_pop(GetRef(vcpu.si), 2));
 			_chk(_e_pop(GetRef(vcpu.bp), 2));
-			_chk(_e_pop(GetRef(cesp),    2));
+			_chk(_e_pop(GetRef(cesp   ), 2));
 			_chk(_e_pop(GetRef(vcpu.bx), 2));
 			_chk(_e_pop(GetRef(vcpu.dx), 2));
 			_chk(_e_pop(GetRef(vcpu.cx), 2));
@@ -6018,7 +5987,7 @@ static void POPA()
 			_chk(_e_pop(GetRef(vcpu.edi), 4));
 			_chk(_e_pop(GetRef(vcpu.esi), 4));
 			_chk(_e_pop(GetRef(vcpu.ebp), 4));
-			_chk(_e_pop(GetRef(cesp),     4));
+			_chk(_e_pop(GetRef(cesp    ), 4));
 			_chk(_e_pop(GetRef(vcpu.ebx), 4));
 			_chk(_e_pop(GetRef(vcpu.edx), 4));
 			_chk(_e_pop(GetRef(vcpu.ecx), 4));
@@ -7293,7 +7262,7 @@ static void PUSHF()
 		}
 	} else {
 		vcpu.ip++;
-		_e_push(GetRef(vcpu.flags), 2);
+		_e_push(GetRef(vcpu.eflags), 2);
 	}
 	_ce;
 }
@@ -10959,8 +10928,6 @@ static void PUSH_FS()
 }
 static void POP_FS()
 {
-	/* note: not sure if operand size is 32,
-		push/pop selector only or with higher 16 bit */
 	t_nubit32 xs_sel;
 	_cb("POP_FS");
 	_adv;
@@ -11014,14 +10981,12 @@ static void PUSH_GS()
 	t_nubit32 xs_sel;
 	_cb("PUSH_GS");
 	_adv;
-	xs_sel = vcpu.gs.selector;
+	xs_sel = vcpu.fs.selector;
 	_chk(_e_push(GetRef(xs_sel), _GetOperandSize));
 	_ce;
 }
 static void POP_GS()
 {
-	/* note: not sure if operand size is 32,
-		push/pop selector only or with higher 16 bit */
 	t_nubit32 xs_sel;
 	_cb("POP_GS");
 	_adv;
@@ -11285,7 +11250,7 @@ static void MOVSX_R32_RM16()
 
 static void RecInit()
 {
-	vcpu.msize = 0;
+	vcpurec.msize = 0;
 	vcpurec.rcpu = vcpu;
 	vcpurec.linear = vcpu.cs.base + vcpu.eip;
 	if (vcpuinsReadLinear(vcpurec.linear, (t_vaddrcc)vcpurec.opcodes, 15))
@@ -11350,7 +11315,7 @@ static void ExecIns()
 	linear = vcpu.cs.base + vcpu.eip;
 	if (vcpuins.flagwe && vcpuins.welin == linear) {
 		vapiPrint("Watch point caught at L%08x: EXECUTED\n", linear);
-		vapiCallBackCpuPrintReg();
+		vapiCallBackDebugPrintRegs(1);
 	}
 	do {
 		_cb("ExecIns");

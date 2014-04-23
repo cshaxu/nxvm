@@ -76,10 +76,10 @@ do { \
 	fprintf(vrecord.fp, "%s ", _restmt); \
 	for (j = strlen(_restmt);j < 40;++j) \
 		fprintf(vrecord.fp, " "); \
-	for (j = 0;j < _rec.msize;++j) \
+	for (j = 0;j < _recpu.msize;++j) \
 		fprintf(vrecord.fp, "[%c:L%08x/%1d/%016llx] ", \
-			_rec.mem[j].flagwrite ? 'W' : 'R', _rec.mem[j].linear, \
-			_rec.mem[j].byte, _rec.mem[j].data); \
+			_recpu.mem[j].flagwrite ? 'W' : 'R', _recpu.mem[j].linear, \
+			_recpu.mem[j].byte, _recpu.mem[j].data); \
 	fprintf(vrecord.fp, "\n");\
 } while (0)
 

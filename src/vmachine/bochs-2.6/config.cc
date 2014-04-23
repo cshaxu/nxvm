@@ -641,7 +641,7 @@ void bx_init_options()
       "size",
       "Memory size (megabytes)",
       "Amount of RAM in megabytes",
-      2, ((Bit64u)(2) << BX_PHY_ADDRESS_WIDTH) / (1024*1024),
+      1, ((Bit64u)(1) << BX_PHY_ADDRESS_WIDTH) / (1024*1024),
       BX_DEFAULT_MEM_MEGS);
   ramsize->set_ask_format("Enter memory size (MB): [%d] ");
   ramsize->set_options(ramsize->USE_SPIN_CONTROL);
@@ -650,7 +650,7 @@ void bx_init_options()
       "host_size",
       "Host allocated memory size (megabytes)",
       "Amount of host allocated memory in megabytes",
-      2, 2048,
+      1, 2048,
       BX_DEFAULT_MEM_MEGS);
   host_ramsize->set_ask_format("Enter host memory size (MB): [%d] ");
   host_ramsize->set_options(ramsize->USE_SPIN_CONTROL);

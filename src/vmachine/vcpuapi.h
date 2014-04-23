@@ -16,14 +16,17 @@ extern "C" {
 #define MAXLINE 0x100
 
 #ifdef VGLOBAL_BOCHS
-#define vapiPrint vcpuapiPrint
+#define vapiPrint printf
 #define FOPEN fopen
 #define SPRINTF sprintf
 #define STRCPY strcpy
 #define STRCAT strcat
 void vapiCallBackMachineStop();
 void vapiSleep(t_nubit32 milisec);
-void vapiCallBackDebugPrintRegs(t_bool bit32);
+void vapiCallBackCpuPrintIns();
+void vapiCallBackCpuPrintSreg();
+void vapiCallBackCpuPrintCreg();
+void vapiCallBackCpuPrintReg();
 #define vramIsAddrInMem(ref) 0
 
 void vcpuapiLoadSreg(t_cpu_sreg *rsreg, t_nubit32 lo, t_nubit32 hi);
@@ -32,6 +35,7 @@ void vcpuapiWritePhysical(t_nubit32 physical, t_vaddrcc rdata, t_nubit8 byte);
 #endif
 
 t_nubit32 vcpuapiPrint(const t_string format, ...);
+
 void vcpuapiPrintReg(t_cpu *rcpu);
 void vcpuapiPrintSreg(t_cpu *rcpu);
 void vcpuapiPrintCreg(t_cpu *rcpu);

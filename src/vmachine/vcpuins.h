@@ -72,16 +72,7 @@ typedef struct {
 } t_cpuins;
 
 typedef struct {
-	t_bool flagwrite;
-	t_nubit32 byte;
-	t_nubit32 linear;
-	t_nubit64 data;
-} t_cpurec_memory;
-
-typedef struct {
 	t_cpu rcpu;
-	t_cpurec_memory mem[0x20];
-	t_nubit8 msize;
 	t_nubit8 oplen;
 	t_nubit8 opcodes[15];
 	t_nubit8 svcextl;
