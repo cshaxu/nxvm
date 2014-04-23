@@ -86,7 +86,6 @@ void INT_10()
 	default:
 		break;
 	}
-	vapiDisplayPaint();
 }
 /* device test*/
 void INT_11()

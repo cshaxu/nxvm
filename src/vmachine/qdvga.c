@@ -18,8 +18,8 @@ static void CursorBackward(t_nubit8 page)
 		qdvga.cursor[page].y = qdvga.rowsize - 1;
 		qdvga.cursor[page].x--;
 	}
-	//qdvgaVarCursorPosRow(_bh) = qdvga.cursor[page].x;
-	//qdvgaVarCursorPosCol(_bh) = qdvga.cursor[page].y;
+//	qdvgaVarCursorPosRow(_bh) = qdvga.cursor[page].x;
+//	qdvgaVarCursorPosCol(_bh) = qdvga.cursor[page].y;
 }
 static void CursorForward(t_nubit8 page)
 {
@@ -52,7 +52,7 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 	qdvga.cursor[page].x = x;
 	qdvga.cursor[page].y = y;
 	for (i = 0;i < count;++i) {
-		switch (*(t_nubit8 *)string) {
+		switch (d_nubit8(string)) {
 		case 0x07: /* bell */
 			break;
 		case 0x08: /* backspace */
@@ -64,7 +64,7 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 		case 0x0d:
 			break;
 		default:
-			qdvgaVarChar(page, x, y)     = *(t_nubit8 *)string;
+			qdvgaVarChar(page, x, y)     = d_nubit8(string);
 			qdvgaVarCharProp(page, x, y) = charprop;
 			CursorForward(page);
 			break;
@@ -233,6 +233,8 @@ void qdvgaGenerateChar()
 		default:
 			break;
 		}
+		_cx = 0x0010;
+		_dl = qdvga.colsize - 0x01;
 	}
 }
 void qdvgaGetAdapterInfo()
@@ -253,10 +255,11 @@ void qdvgaInit()
 //	t_nubit8 i;
 	memset(&qdvga, 0x00, sizeof(t_vga));
 	qdvga.color   = 0x01;
-	qdvga.colsize = 0x19; // 25
 	qdvga.rowsize = 0x50; // 80
+	qdvga.colsize = 0x19; // 25
 	qdvga.page = 0x00;
 	qdvga.vgamode = 0x03;
+	qdvga.cursor[qdvga.page].x = 0x05;
 /*	for (i = 0x00;i < QDVGA_COUNT_MAX_PAGE; ++i) {
 		qdvga.cursor[i].y      = 0x00;
 		qdvga.cursor[i].x      = 0x00;
@@ -267,8 +270,8 @@ void qdvgaInit()
 	qdvga.cursor[i].x      = 0x05;
 	qdvga.cursor[i].top    = 0x06;
 	qdvga.cursor[i].bottom = 0x07;*/
-	qdvga.cursorbottom = 0x07;
 	qdvga.cursortop    = 0x06;
+	qdvga.cursorbottom = 0x07;
 	memset((void *)qdvgaGetTextMemAddr, 0x00, QDVGA_SIZE_TEXT_MEMORY);
 }
 void qdvgaFinal()

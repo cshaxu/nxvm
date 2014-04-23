@@ -40,6 +40,25 @@ typedef t_nubit1  t_bool;
 typedef t_nubitcc t_vaddrcc;
 typedef t_nubitcc t_faddrcc;
 
+#define p_nubit1  (t_nubit1 *)
+#define p_nubit4  (t_nubit4 *)
+#define p_nubit6  (t_nubit6 *)
+#define p_nubit8  (t_nubit8 *)
+#define p_nsbit8  (t_nsbit8 *)
+#define p_nubit16 (t_nubit16 *)
+#define p_nsbit16 (t_nsbit16 *)
+#define p_nubit32 (t_nubit32 *)
+#define p_nsbit32 (t_nsbit32 *)
+#if VGLOBAL_SIZE_INTEGER == 64
+#define p_nubit64 (t_nubit64 *)
+#define p_nsbit64 (t_nsbit64 *)
+#endif
+#define p_float32 (t_float32 *)
+#define p_float64 (t_float64 *)
+#define p_nubitcc (t_nubitcc *)
+#define p_nsbitcc (t_nsbitcc *)
+#define p_bool    (t_bool *)
+
 #define d_nubit1(n)  (*(t_nubit1 *)(n))
 #define d_nubit4(n)  (*(t_nubit4 *)(n))
 #define d_nubit6(n)  (*(t_nubit6 *)(n))
