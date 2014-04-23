@@ -45,10 +45,10 @@ void w32adispInit()
 	clientWidth  = 0;
 	flashCount   = 0;
 	flashInterval = 5;
-	charWidth = 10;
+	charWidth = 9;
 	charHeight = 16;
-	logFont.lfWidth = 8;
-	logFont.lfHeight = 8;
+	logFont.lfWidth = 0;
+	logFont.lfHeight = 0;
 	logFont.lfEscapement = 0;
 	logFont.lfOrientation = 0;
 	logFont.lfWeight = 0;
@@ -120,14 +120,14 @@ static VOID DisplayFlashCursor()
 {
 	HPEN hPen;
 	INT x1_cursor, y1_cursor, x2_cursor, y2_cursor;
-	x1_cursor = x2_cursor = 
-	x1_cursor = vapiCallBackDisplayGetCurrentCursorPosX() * logFont.lfHeight +
-		cursorTop    + 8;
-	x2_cursor = vapiCallBackDisplayGetCurrentCursorPosX() * logFont.lfHeight +
-		cursorBottom + 8;
-	y1_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 0)* logFont.lfWidth;
-	y2_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 1) * logFont.lfWidth;
-	if (flashCount % 10 < flashInterval) { //光标变白
+	x1_cursor = x2_cursor =
+		vapiCallBackDisplayGetCurrentCursorPosX() * charHeight + charHeight / 2;
+	x1_cursor += cursorTop;// + 8;
+	x2_cursor += cursorBottom;// + 8;
+	y1_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 0) * charWidth;
+	y2_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 1) * charWidth;
+	if (vapiCallBackMachineGetFlagRun() &&
+		((flashCount % 10) < flashInterval)) { //光标变白
 		hPen = (HPEN)CreatePen(PS_SOLID,2,RGB(255,255,255));
 		SelectObject(hdcWnd, hPen);
 		Rectangle(hdcWnd, y1_cursor, x1_cursor, y2_cursor, x2_cursor);

@@ -8,39 +8,38 @@
 t_machine vmachine;
 
 void vmachineSetRecordFile(t_string fname) {vapiRecordSetFile(fname);}
-void vmachineInsertFloppy(t_string fname) {vapiFloppyInsert(fname);}
-void vmachineRemoveFloppy(t_string fname) {vapiFloppyRemove(fname);}
-void vmachineStart() {vapiStartMachine();}
+void vmachineInsertFloppy(t_string fname)  {vapiFloppyInsert(fname);}
+void vmachineRemoveFloppy(t_string fname)  {vapiFloppyRemove(fname);}
+
+void vmachineStart() {vmachine.flagrun = 0x01;vapiStartMachine();}
+void vmachineStop()  {vmachine.flagrun = 0x00;}
 
 void vapiCallBackMachineRun()
 {
-	if(vmachine.flaginit && !vmachine.flagrun) {
+	if(vmachine.flaginit) {
 		if (vmachine.flagrecord) vapiRecordStart();
-		vcpu.flagterm = 0x00;
-		vmachine.flagrun = 0x01;
-		if (vcpu.cs == 15 && vcpu.ip == 40975) {
-			vmachine.flagrun = 0x00;
-			vapiPrint("stop!\n");
-		}
 		while (vmachine.flagrun) {
+			if (vmachine.flagbreak &&
+				vcpu.cs == vmachine.breakcs && vcpu.ip == vmachine.breakip) {
+				vmachineStop();
+				break;
+			}
+			if (vmachine.flagrecord) {vapiRecordWrite();}
 			vmachineRefresh();
-			if (vmachine.flagtrace) vapiTrace();
+			if (vmachine.flagrecord) {vapiRecordWrite();++vapirecord.count;	}
+			if (vmachine.flagtrace) vmachineStop();
 		}
 		if (vmachine.flagrecord) vapiRecordEnd();
+	} else {
+		vmachineStop();
+		vapiPrint("NXVM is not initialized.\n");
 	}
 }
-t_bool vapiCallBackMachineGetRunFlag()
-{
-	return vmachine.flagrun;
-}
-void   vapiCallBackMachineSetRunFlag(t_bool flag)
-{
-	vmachine.flagrun = flag;
-}
+t_nubit8 vapiCallBackMachineGetFlagRun() {return vmachine.flagrun;}
+void vapiCallBackMachineStop() {vmachineStop();}
 
 void vmachineRefresh()
 {
-	if (vmachine.flagrecord) vapiRecordWrite();
 /*
 	vcmosRefresh();
 	vdispRefresh();
@@ -56,13 +55,6 @@ void vmachineRefresh()
 	vramRefresh();
 	vcpuRefresh();
 	vportRefresh();
-
-	if (vmachine.flagrecord) {
-		vapiRecordWrite();
-		++vapirecord.count;
-	}
-
-	vmachine.flagrun = (vmachine.flagrun && (!vcpu.flagterm));
 }
 void vmachineInit()
 {

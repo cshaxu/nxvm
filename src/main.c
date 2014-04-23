@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.2.0x90]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.2.0x95]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -217,37 +217,5 @@ int main(int argc, char **argv)
 {
 	fprintf(stdout,"%s\n",PRODUCT);
 	console();
-    return 0;
-}
-
-/*#include "windows.h"
-
-#pragma comment(linker, "/subsystem:\"console\" /entry:\"WinMainCRTStartup\"") 
-
-int WINAPI WinMain(
-	HINSTANCE hInstance,
-	HINSTANCE hPreInstance,
-	LPSTR lpCmdLine,
-	int nShowCmd)
-{
-	fprintf(stdout,"%s\n",PRODUCT);
-	console();
 	return 0;
-}*/
-
-/**********************************************
- * COMMENTS
- *	unsigned int x = (unsigned int)test;
- *	void (*y)(void) = (*(void (*)(void))(x));
- *	y();
- *	MessageBox(NULL,"Neko's x86 Virtual Machine WIN32APP Edition","WinMain",MB_OK);
- *	The NTVDM CPU has encountered an illegal instruction.
- *	CS:0db 1 IP:ffd3 OP:63 fa 65 13 64 Choose 'close' to terminate the application.
- * #pragma comment(linker, \
- *	"/manifestdependency:\"type='win32' \
- *	 name='Microsoft.Windows.Common-Controls' \
- *	 version='6.0.0.0' \
- *	 processorArchitecture='*' \
- *	 publicKeyToken='6595b64144ccf1df' \
- *	 language='*'\"")
- *********************************************/
+}

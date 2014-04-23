@@ -29,8 +29,6 @@ void vapiRecordStart();
 void vapiRecordWrite();
 void vapiRecordEnd();
 
-void vapiTrace();
-
 void vapiFloppyInsert(const t_string fname);
 void vapiFloppyRemove(const t_string fname);
 void vapiStartMachine();
@@ -39,10 +37,9 @@ void vapiSleep(t_nubit32 milisec);
 void vapiDisplaySetScreen();
 void vapiDisplayPaint();
 
-t_bool vapiCallBackMachineGetRunFlag();
-void vapiCallBackMachineSetRunFlag(t_bool flag);
-void vapiCallBackMachineTrace();
 void vapiCallBackMachineRun();
+t_nubit8 vapiCallBackMachineGetFlagRun();
+void vapiCallBackMachineStop();
 
 void vapiCallBackRtcUpdateTime();
 

@@ -7,17 +7,24 @@
 #include "win32con.h"
 #include "w32cdisp.h"
 
-static CHAR_INFO *scrBuf;
-static COORD coordBufSize, coordBufStart;
+static CHAR_INFO *charBuf;
+static COORD coordDefaultBufSize, coordBufSize, coordBufStart;
 static SMALL_RECT srctWriteRect;
 static UCHAR sizeRow, sizeCol;
+//static CONSOLE_CURSOR_INFO defaultCurInfo;
+static CONSOLE_SCREEN_BUFFER_INFO defaultBufInfo;
 
 void w32cdispInit()
 {
+//	GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&defaultCurInfo));
+	GetConsoleScreenBufferInfo(hOut, &defaultBufInfo);
+	vapiSleep(1000);
 	w32cdispSetScreen();
 }
 void w32cdispSetScreen()
 {
+//	CONSOLE_CURSOR_INFO curInfo = defaultCurInfo;
+//	curInfo.bVisible = 0;
 	sizeCol = vapiCallBackDisplayGetColSize();
 	sizeRow = vapiCallBackDisplayGetRowSize();
 	coordBufSize.X = sizeRow; // number of cols
@@ -28,7 +35,8 @@ void w32cdispSetScreen()
 	srctWriteRect.Bottom = sizeCol - 1;
 	srctWriteRect.Left = 0;
 	srctWriteRect.Right = sizeRow - 1;
-	scrBuf = (CHAR_INFO *)malloc(sizeCol * sizeRow * sizeof(CHAR_INFO));
+	charBuf = (CHAR_INFO *)malloc(sizeCol * sizeRow * sizeof(CHAR_INFO));
+//	SetConsoleCursorInfo(hOut, &curInfo);
 	SetConsoleScreenBufferSize(hOut, coordBufSize);
 }
 
@@ -39,22 +47,38 @@ void w32cdispPaint()
 	WORD  charProp;
 	UCHAR i, j;
 	COORD curPos;
+//	HANDLE hOutBuf;
 	for(i = 0;i < sizeCol;++i) {
 		for(j = 0;j < sizeRow;++j) {
 			ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
 			charProp = vapiCallBackDisplayGetCurrentCharProp(i, j);
 			MultiByteToWideChar(437, 0, (LPCSTR)(&ansiChar), 1, (LPWSTR)(&unicodeChar), 1);
-			scrBuf[i * sizeRow + j].Char.UnicodeChar = unicodeChar;
-			scrBuf[i * sizeRow + j].Attributes = charProp;
+			charBuf[i * sizeRow + j].Char.UnicodeChar = unicodeChar;
+			charBuf[i * sizeRow + j].Attributes = charProp;
 		}
 	}
-	WriteConsoleOutput(hOut, scrBuf,
+/*	hOutBuf = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE,
+		0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+	WriteConsoleOutput(hOutBuf, charBuf,
+		coordBufSize, coordBufStart, &srctWriteRect);
+	curPos.X = vapiCallBackDisplayGetCurrentCursorPosY();
+	curPos.Y = vapiCallBackDisplayGetCurrentCursorPosX();
+	SetConsoleCursorPosition(hOutBuf,curPos);
+	SetConsoleActiveScreenBuffer(hOutBuf);*/
+
+	WriteConsoleOutput(hOut, charBuf,
 		coordBufSize, coordBufStart, &srctWriteRect);
 	curPos.X = vapiCallBackDisplayGetCurrentCursorPosY();
 	curPos.Y = vapiCallBackDisplayGetCurrentCursorPosX();
 	SetConsoleCursorPosition(hOut,curPos);
+
+//	SetConsoleActiveScreenBuffer(hOut);
+//	CloseHandle(hOutBuf);
 }
 void w32cdispFinal()
 {
-	if (scrBuf) free((void *)scrBuf);
+	if (charBuf) free((void *)charBuf);
+//	SetConsoleCursorInfo(hOut, &defaultCurInfo);
+	SetConsoleScreenBufferSize(hOut, defaultBufInfo.dwSize);
+	hOut = INVALID_HANDLE_VALUE;
 }

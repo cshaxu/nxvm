@@ -77,12 +77,6 @@ void vapiRecordEnd()
 	vapirecord.count = 0;
 }
 
-/* Trace */
-void vapiTrace()
-{
-	vmachine.flagrun = 0x00;
-}
-
 /* Floppy Disk */
 #include "qdfdd.h"
 #define vfdd qdfdd
@@ -103,46 +97,72 @@ void vapiFloppyRemove(const t_string fname)
 {
 	t_nubitcc count;
 	FILE *image;
-	image = fopen(fname, "wb");
-	if(image) {
-		if (!vfdd.flagro)
-			count = fwrite((void *)vfdd.base, sizeof(t_nubit8), 0x00168000, image);
-		vfdd.flagexist = 0x00;
-		fclose(image);
-		vapiPrint("Floppy disk removed.\n");
-	} else
-		vapiPrint("Cannot write floppy image to '%s'.\n", fname);
+	if (fname) {
+		image = fopen(fname, "wb");
+		if(image) {
+			if (!vfdd.flagro)
+				count = fwrite((void *)vfdd.base, sizeof(t_nubit8), 0x00168000, image);
+			vfdd.flagexist = 0x00;
+			fclose(image);
+		} else {
+			vapiPrint("Cannot write floppy image to '%s'.\n", fname);
+			return;
+		}
+	}
+	vfdd.flagexist = 0x00;
+	memset((void *)vfdd.base, 0x00, 0x00168000);
+	vapiPrint("Floppy disk removed.\n");
 }
 
 /* Platform Related */
 #if VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32
-	#include "windows.h"
+	#include "system/win32con.h"
+	#include "system/win32app.h"
 	void vapiSleep(t_nubit32 milisec) {Sleep(milisec);}
-	#if VGLOBAL_APPTYPE == VGLOBAL_VAR_CON
-		#include "system/win32con.h"
-		void vapiDisplaySetScreen() {win32conDisplaySetScreen();}
-		void vapiDisplayPaint() {win32conDisplayPaint();}
-		void vapiStartMachine() {win32conStartMachine();}
-	#elif VGLOBAL_APPTYPE == VGLOBAL_VAR_APP
-		#include "system/win32app.h"
-		void vapiDisplaySetScreen() {win32appDisplaySetScreen();}
-		void vapiDisplayPaint() {win32appDisplayPaint();}
-		void vapiStartMachine() {win32appStartMachine();}
-	#endif
+	void vapiDisplaySetScreen() {
+		if (!vmachine.flagmode)
+			win32conDisplaySetScreen();
+		else
+			win32appDisplaySetScreen();
+	}
+	void vapiDisplayPaint() {
+		if (!vmachine.flagmode)
+			win32conDisplayPaint();
+		else
+			win32appDisplayPaint();
+	}
+	void vapiStartMachine() {
+		if (!vmachine.flagmode)
+			win32conStartMachine();
+		else
+			win32appStartMachine();
+	}
 #elif VGLOBAL_PLATFORM == VGLOBAL_VAR_LINUX
 	#include "system.h"
+	#include "system/linuxcon.h"
+	#include "system/linuxapp.h"
 	void vapiSleep(t_nubit32 milisec) {usleep(milisec);}
-	#if VGLOBAL_APPTYPE == VGLOBAL_VAR_CON
-		#include "system/linuxcon.h"
-		void vapiDisplaySetScreen() {linuxconDisplaySetScreen();}
-		void vapiDisplayPaint() {linuxconDisplayPaint();}
-		void vapiStartMachine() {linuxconStartMachine();}
-	#elif VGLOBAL_APPTYPE == VGLOBAL_VAR_APP
-		#include "system/linuxapp.h"
-		void vapiDisplaySetScreen() {linuxappDisplaySetScreen();}
-		void vapiDisplayPaint() {linuxappDisplayPaint();}
-		void vapiStartMachine() {linuxappStartMachine();}
-	#endif
+	void vapiDisplaySetScreen() {
+		if (!vmachine.flagmode)
+			linuxconDisplaySetScreen();
+		else
+			linuxappDisplaySetScreen();
+		}
+	}
+	void vapiDisplayPaint() {
+		if (!vmachine.flagmode)
+			linuxconDisplayPaint();
+		else
+			linuxappDisplayPaint();
+		}
+	}
+	void vapiStartMachine() {
+		if (!vmachine.flagmode)
+			linuxconStartMachine();
+		else
+			linuxappStartMachine();
+		}
+	}
 #endif
 
 void vapiInit() {memset(&vapirecord, 0x00, sizeof(t_apirecord));}

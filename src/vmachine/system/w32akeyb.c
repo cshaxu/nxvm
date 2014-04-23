@@ -47,6 +47,9 @@ void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
 	UINT16 ascii = (UINT16)((lParam & 0xffff0000)>>8);
 	if (WM_SYSKEYDOWN == message || WM_KEYDOWN == message) {
 		switch(wParam) {
+		case VK_F10:
+			vapiCallBackMachineStop();
+			break;
 		case VK_F1:
 		case VK_F2:
 		case VK_F3:
@@ -56,7 +59,6 @@ void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
 		case VK_F7:
 		case VK_F8:
 		case VK_F9:
-		case VK_F10:
 		case VK_F11:
 		case VK_F12://F1~~F12
 			if(vapiCallBackKeyboardGetShift())      ascii += 0x1900;
@@ -78,11 +80,13 @@ void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
 		default://剩下的字符可能是alt。。ctl与普通字符等，但是updateKBStatus会过滤掉普通字符
 			w32akeybMakeStatus(message, wParam, lParam);
 			if (wParam>= 0x41 && wParam<=0x41+'Z'-'A') {
-				if (vapiCallBackKeyboardGetAlt())
+				if (vapiCallBackKeyboardGetAlt() &&
+					vapiCallBackKeyboardGetCtrl()) ;
+				else if (vapiCallBackKeyboardGetAlt())
 					vapiCallBackKeyboardRecvKeyPress(ascii);
-				if (vapiCallBackKeyboardGetCtrl())
+				else if (vapiCallBackKeyboardGetCtrl())
 					vapiCallBackKeyboardRecvKeyPress(ascii + wParam - 0x0041);
-				//如果不是按下ctrl，则是按下alt
+				else ; /* processed by MakeChar() */
 			}
 			break;
 		}

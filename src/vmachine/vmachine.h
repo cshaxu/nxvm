@@ -31,11 +31,13 @@
 #endif
 
 typedef struct {
-	t_bool    flaginit;
-	t_bool    flagrun;
+	t_bool    flagmode;         /* mode flag: console (0) or application (1) */
+	t_bool    flaginit;      /* vmachine is initialized (1) or finalized (0) */
+	t_bool    flagrun;         /* vmachine is running (1) or not running (0) */
 	t_bool    flagtrace;
+	t_bool    flagbreak;                    /* breakpoint set (1) or not (0) */
 	t_bool    flagrecord;
-	t_bool    flagdisplay;
+	t_nubit16 breakcs, breakip;
 } t_machine;
 
 extern t_machine vmachine;
@@ -44,6 +46,7 @@ void vmachineSetRecordFile(t_string fname);
 void vmachineInsertFloppy(t_string fname);
 void vmachineRemoveFloppy(t_string fname);
 void vmachineStart();
+void vmachineStop();
 
 void vmachineRefresh();
 void vmachineInit();

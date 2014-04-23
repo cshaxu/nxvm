@@ -98,16 +98,16 @@ void Help()
 	fprintf(stdout,"HELP    Show this help menu\n");
 	fprintf(stdout,"EXIT    Quit the console\n\n");
 
-	fprintf(stdout,"DEBUG   Execute debug, a program testing and editing tool\n");
-	fprintf(stdout,"EXEC    Execute a binary file\n");
-	fprintf(stdout,"RECORD  Record cpu status for each instruction\n");
-	fprintf(stdout,"TRACE   Trace cpu status for each instruction\n");
+	fprintf(stdout,"DEBUG   Execute virtual debugger\n");
+//	fprintf(stdout,"EXEC    Execute a binary file\n");
+	fprintf(stdout,"RECORD  Record cpu status for each instruction\n\n");
+//	fprintf(stdout,"TRACE   Trace cpu status for each instruction\n");
 	fprintf(stdout,"FLOPPY  Load a floppy disk from image file\n");
 	fprintf(stdout,"MEMORY  Assign the memory size\n");
 	fprintf(stdout,"INFO    Print all virtual machine settings\n\n");
 
 	fprintf(stdout,"START   Turn on virtual machine\n");
-	fprintf(stdout,"STOP    Turn off virtual machine\n");
+	fprintf(stdout,"STOP    Turn off virtual machine; hotkey is F10\n");
 	fprintf(stdout,"RESET   Restart virtual machine\n\n");
 }
 void Exit()
@@ -122,44 +122,43 @@ void Debug()
 {
 	debug();
 }
-void Exec()
-{
-	/* NOTE: vmachine run environment */
-	char execmd[MAXLINE];
-	FILE *load;
-	t_nubit8 c;
-	t_nubit16 i = 0,end;
-	t_nubit32 len = 0;
-	if (!vmachine.flaginit || vmachine.flagrun) {
-		fprintf(stdout,"Cannot execute binary file now.\n");
-		return;
-	}
-	fprintf(stdout,".COM File: ");
-	fgets(execmd,MAXLINE,stdin);
-	parse(execmd);
-	if(!strlen(execmd)) return;
-	load = FOPEN(execmd,"rb");
-	if(!load) {
-		fprintf(stdout,"File not found\n");
-		return;
-	} else {
-		vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
-		vcpu.si = vcpu.di = vcpu.bp = 0x0000;
-		vcpu.sp = 0xffee;	vcpu.ip = 0x0100;
-		vcpu.ds = vcpu.es = vcpu.ss = vcpu.cs = 0x0001;
-		vmachine.flagrun = 1;
-		c = fgetc(load);
-		while(!feof(load)) {
-			vramVarByte(vcpu.cs+i,vcpu.ip+((len++)%0x10000)) = c;
-			i = len / 0x10000;
-			c = fgetc(load);
-		}
-		end = vcpu.ip+len;
-		//fprintf(stdout,"File '%s' is loaded to 0001:0100, length is %d bytes.\n",execmd,len);
-		fclose(load);
-		while(vcpu.ip < end && vmachine.flagrun) vmachineRefresh();
-	}
-}
+//void Exec()
+//{
+//	char execmd[MAXLINE];
+//	FILE *load;
+//	t_nubit8 c;
+//	t_nubit16 i = 0,end;
+//	t_nubit32 len = 0;
+//	if (!vmachine.flaginit || vmachine.flagrun) {
+//		fprintf(stdout,"Cannot execute binary file now.\n");
+//		return;
+//	}
+//	fprintf(stdout,".COM File: ");
+//	fgets(execmd,MAXLINE,stdin);
+//	parse(execmd);
+//	if(!strlen(execmd)) return;
+//	load = FOPEN(execmd,"rb");
+//	if(!load) {
+//		fprintf(stdout,"File not found\n");
+//		return;
+//	} else {
+//		vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
+//		vcpu.si = vcpu.di = vcpu.bp = 0x0000;
+//		vcpu.sp = 0xffee;	vcpu.ip = 0x0100;
+//		vcpu.ds = vcpu.es = vcpu.ss = vcpu.cs = 0x0001;
+//		vmachine.flagrun = 1;
+//		c = fgetc(load);
+//		while(!feof(load)) {
+//			vramVarByte(vcpu.cs+i,vcpu.ip+((len++)%0x10000)) = c;
+//			i = len / 0x10000;
+//			c = fgetc(load);
+//		}
+//		end = vcpu.ip+len;
+//		//fprintf(stdout,"File '%s' is loaded to 0001:0100, length is %d bytes.\n",execmd,len);
+//		fclose(load);
+//		while(vcpu.ip < end && vmachine.flagrun) vmachineRefresh();
+//	}
+//}
 void Record()
 {
 	char str[MAXLINE];
@@ -179,20 +178,6 @@ void Record()
 		fprintf(stdout,"Recorder turned on.\n");
 	}
 }
-void Trace()
-{
-	if (!vmachine.flaginit || vmachine.flagrun) {
-		fprintf(stdout,"Cannot change trace status now.\n");
-		return;
-	}
-	if (vmachine.flagtrace) {
-		vmachine.flagtrace = 0x00;
-		fprintf(stdout,"Tracer turned off.\n");
-	} else {
-		vmachine.flagtrace = 0x01;
-		fprintf(stdout,"Tracer turned on.\n");
-	}
-}
 
 void Floppy()
 {
@@ -207,7 +192,10 @@ void Floppy()
 	if (!vfdd.flagexist)
 		vmachineInsertFloppy(str);
 	else
-		vmachineRemoveFloppy(str);
+		if (strlen(str))
+			vmachineRemoveFloppy(str);
+		else
+			vmachineRemoveFloppy(NULL);
 }
 void Memory()
 {
@@ -231,7 +219,7 @@ void Memory()
 	for(i = 0;i < vram.size;++i)
 	{
 		if(i % 1024 == 0) fprintf(stdout,"\rMemory Testing : %dK",i/1024);
-		if(*(t_nubit8 *)(vram.base+i) != 0) {
+		if(d_nubit8(vram.base+i) != 0) {
 			fprintf(stdout,"\nMemory test failed.\n");
 			testFlag = 1;
 			break;
@@ -242,8 +230,26 @@ void Memory()
 
 }
 void Info()
-{}
+{
+	fprintf(stdout,"init = %d\nrun = %d\nrecord=%d\nbreak = %d\ntrace = %d\n\n",
+		vmachine.flaginit,vmachine.flagrun,vmachine.flagrecord,vmachine.flagbreak,vmachine.flagtrace);
+}
 
+void Mode()
+{
+	char str[MAXLINE];
+	if (!vmachine.flaginit || vmachine.flagrun) {
+		fprintf(stdout,"Cannot change display mode now.\n");
+		return;
+	}
+	if (vmachine.flagmode) {
+		vmachine.flagmode = 0x00;
+		fprintf(stdout,"Display in console.\n");
+	} else {
+		vmachine.flagmode = 0x01;
+		fprintf(stdout,"Display in window.\n");
+	}
+}
 void Start()
 {
 	if (!vmachine.flagrun) {
@@ -254,15 +260,19 @@ void Start()
 }
 void Stop()
 {
-	if (vmachine.flagrun)
-		vmachine.flagrun = 0x00;
-	else
+	if (vmachine.flagrun) {
+		vmachineStop();
+	} else
 		fprintf(stdout, "Virtual machine is already turned off.\n");
 }
 void Reset()
 {
-/*	if (vmachine.flaginit && vmachine.flagrun)
-		vkbc.flagreset = 0x01;*/
+	if (vmachine.flagrun) {
+		fprintf(stdout, "Virtual machine should be turned off first.\n");
+		return;
+	}
+	if (vmachine.flaginit) vmachineFinal();
+	vmachineInit();
 }
 
 void console()
@@ -283,14 +293,14 @@ void console()
 		else if(!strcmp(cmdl,"exit"))   Exit();
 
 		else if(!strcmp(cmdl,"debug"))  Debug();
-		else if(!strcmp(cmdl,"exec"))   Exec();
+		//else if(!strcmp(cmdl,"exec"))   Exec();
 		else if(!strcmp(cmdl,"record")) Record();
-		else if(!strcmp(cmdl,"trace"))  Trace();
 
 		else if(!strcmp(cmdl,"floppy")) Floppy();
 		else if(!strcmp(cmdl,"memory")) Memory();
 		else if(!strcmp(cmdl,"info"))   Info();
 
+		else if(!strcmp(cmdl,"mode"))   Mode();
 		else if(!strcmp(cmdl,"start"))  Start();
 		else if(!strcmp(cmdl,"stop"))   Stop();
 		else if(!strcmp(cmdl,"reset"))  Reset();

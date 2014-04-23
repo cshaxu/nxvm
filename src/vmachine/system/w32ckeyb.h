@@ -9,9 +9,7 @@
 
 #include "windows.h"
 
-//void w32ckeybMakeStatus(UINT message, WPARAM wParam, LPARAM lParam);
-//void w32ckeybMakeChar(WPARAM wParam, LPARAM lParam);
-//void w32ckeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam);
+VOID w32ckeybProcess();
 
 #ifdef __cplusplus
 /*}_EOCD_*/

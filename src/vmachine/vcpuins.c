@@ -5,14 +5,12 @@
 
 #include "vapi.h"
 
-#include "vport.h"
-#include "vcpu.h"
-#include "vram.h"
-#include "vpic.h"
+#include "vmachine.h"
 #include "vcpuins.h"
 
 #ifdef VCPUINS_DEBUG
 #include "qdbios.h"
+#include "qdvga.h"
 /*
  * TODO: INT() is modified for the INT test. Please correct it finally!
  */
@@ -45,7 +43,7 @@ t_cpuins vcpuins;
 static void CaseError(const char *str)
 {
 	vapiPrint("The NXVM CPU has encountered an internal case error: %s.\n",str);
-	vcpu.flagterm = 1;
+	vmachineStop();
 }
 static void CalcCF()
 {
@@ -1036,24 +1034,16 @@ static void MOVS(t_nubit8 len)
 		vcpuins.bit = 8;
 		vramVarByte(vcpu.es,vcpu.di) = vramVarByte(vcpu.overds,vcpu.si);
 		STRDIR(8,1,1);
-		/*if (eCPU.di+t<0xc0000 && eCPU.di+t>=0xa0000)
-		WriteVideoRam(eCPU.di+t-0xa0000);*/
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  MOVSB\n");
 		break;
 	case 16:
 		vcpuins.bit = 16;
 		vramVarWord(vcpu.es,vcpu.di) = vramVarWord(vcpu.overds,vcpu.si);
 		STRDIR(16,1,1);
-		/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000)
-		{
-			for (i=0;i<tmpOpdSize;i++)
-			{
-				WriteVideoRam(eCPU.di+((t2=eCPU.es,t2<<4))-0xa0000+i);
-			}
-		}*/
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  MOVSW\n");
 		break;
 	default:CaseError("MOVS::len");break;}
+	//qdvgaCheckVideoRam(vramGetAddr(vcpu.es, vcpu.di));
 }
 static void CMPS(t_nubit8 len)
 {
@@ -1299,7 +1289,7 @@ void OpError()
 	vapiPrint(" ");
 	vapiPrintByte(vramVarByte(vcpu.cs,vcpu.ip+4));
 	vapiPrint("\n");
-	vcpu.flagterm = 0x01;
+	vmachineStop();
 }
 void IO_NOP()
 {
@@ -3233,7 +3223,7 @@ void INS_FF()
 		PUSH((void *)&vcpu.ip,16);
 		vcpu.ip = d_nubit16(vcpuins.rm);
 /* vcpuins bug fix #11
-		vcpu.cs = *(t_nubit16 *)(vcpuins.rm+1);*/
+		vcpu.cs = _nubit16(vcpuins.rm+1);*/
 		vcpu.cs = d_nubit16(vcpuins.rm+2);
 		break;
 	case 4:	/* JMP_RM16 */
@@ -3242,7 +3232,7 @@ void INS_FF()
 	case 5:	/* JMP_M16_16 */
 		vcpu.ip = d_nubit16(vcpuins.rm);
 /* vcpuins bug fix #11
-		vcpu.cs = *(t_nubit16 *)(vcpuins.rm+1);*/
+		vcpu.cs = d_nubit16(vcpuins.rm+1);*/
 		vcpu.cs = d_nubit16(vcpuins.rm+2);
 		break;
 	case 6:	/* PUSH_RM16 */
@@ -3281,12 +3271,10 @@ static t_bool IsVideoMem(t_vaddrcc addr)
 void vcpuinsExecIns()
 {
 	t_nubit8 opcode = vramVarByte(vcpu.cs,vcpu.ip);
-//	vcpuins.pcs = vcpu.cs;
-//	vcpuins.pip = vcpu.ip;
-//	vcpuins.rm = (t_vaddrcc)NULL;
+	vcpuins.rm = (t_vaddrcc)NULL;
 	ExecFun(vcpuins.table[opcode]);
 	if (!IsPrefix(opcode)) ClrPrefix();
-/*	if (IsVideoMem(vcpuins.rm)) vapiDisplayPaint();*/
+	//qdvgaCheckVideoRam(vcpuins.rm);
 }
 void vcpuinsExecInt()
 {

@@ -21,6 +21,7 @@ test code
 #include "string.h"
 
 #include "../vmachine/vmachine.h"
+#include "../vmachine/vapi.h"
 
 #include "asm86.h"
 #include "debug.h"
@@ -337,10 +338,8 @@ static void f()
 }
 // go
 static void rprintregs();
-static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
+/*static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 {
-	/* NOTE: vmachine run environment */
-	vmachine.flagrun = 1;
 	if(ptr1 < ptr2) {
 		_ip = ptr1;
 		while(ptr1 < ptr2 && vmachine.flagrun) {
@@ -356,22 +355,44 @@ static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 		rprintregs();
 	}
 	return;
-}
+}*/
 static void g()
 {
-	t_nubit16 ptr1,ptr2;
+//	t_nubit16 ptr1,ptr2;
+	if (vmachine.flagrun) {
+		fprintf(stdout,"NXVM is running.\n");
+		return;
+	}
 	switch(narg) {
-	case 1:	ptr1 = _ip;ptr2 = 0xffff;break;
-	case 2:	addrparse(_cs,arg[1]);
-			ptr1 = _ip;ptr2 = ptr;	break;
-	case 3:	addrparse(_cs,arg[1]);
-			ptr1 = ptr;
-			addrparse(_cs,arg[2]);
-			ptr2 = ptr;
-			break;
+	case 1:
+		vmachine.flagbreak = 0x00;
+	//	ptr1 = _ip;ptr2 = 0xffff;
+		break;
+	case 2:
+		vmachine.flagbreak = 0x01;
+		addrparse(_cs,arg[1]);
+		vmachine.breakcs = seg;
+		vmachine.breakip = ptr;
+	//	ptr1 = _ip;ptr2 = ptr;
+		break;
+	case 3:
+		vmachine.flagbreak = 0x01;
+		addrparse(_cs,arg[1]);
+		_cs = seg;
+		_ip = ptr;
+	//	ptr1 = ptr;
+		addrparse(_cs,arg[2]);
+		vmachine.breakcs = seg;
+		vmachine.breakip = ptr;
+	//	ptr2 = ptr;
+		break;
 	default:seterr(narg-1);break;}
 	if(errPos) return;
-	gexec(ptr1,ptr2);
+	vmachineStart();
+	while (vmachine.flagrun) vapiSleep(1);
+	vmachine.flagbreak = 0x00;
+	rprintregs();
+//	gexec(ptr1,ptr2);
 }
 // hex
 static void h()
@@ -739,6 +760,43 @@ static void s()
 		}
 	}
 }
+// trace
+static void t()
+{
+	unsigned short i, count;
+	if (vmachine.flagrun) {
+		fprintf(stdout,"NXVM is running.\n");
+		return;
+	}
+	switch(narg) {
+	case 1:
+		vmachine.flagtrace = 0x01;
+		count = 1;
+		break;
+	case 2:
+		vmachine.flagtrace = 0x01;
+		count = 1;
+		addrparse(_cs,arg[1]);
+		_cs = seg;
+		_ip = ptr;
+		break;
+	case 3:
+		vmachine.flagtrace = 0x01;
+		addrparse(_cs,arg[1]);
+		_cs = seg;
+		_ip = ptr;
+		count = scannubit16(arg[2]);
+		break;
+	default:seterr(narg-1);break;}
+	if(errPos) return;
+	for(i = 0;i < count;++i) {
+		vmachineStart();
+		while (vmachine.flagrun) vapiSleep(1);
+		rprintregs();
+	}
+	vmachine.flagtrace = 0x00;
+//	gexec(ptr1,ptr2);
+}
 // unassemble
 static t_nubit16 uoffset(Operand opr)
 {
@@ -940,7 +998,8 @@ static void help()
 	fprintf(stdout,"quit\t\tQ\n");
 	fprintf(stdout,"register\tR [register]\n");
 	fprintf(stdout,"search\t\tS range list\n");
-//!	fprintf(stdout,"trace\t\tT [=address] [value]\n");
+	fprintf(stdout,"trace\t\tT [address] [value]\n");
+	//fprintf(stdout,"trace\t\tT [=address] [value]\n");
 	fprintf(stdout,"unassemble\tU [range]\n");
 	fprintf(stdout,"verbal\t\tV\n");
 	fprintf(stdout,"write\t\tW [address]\n");
@@ -1006,6 +1065,7 @@ static void exec()
 	case 'q':	q();break;
 	case 'r':	r();break;
 	case 's':	s();break;
+	case 't':	t();break;
 	case 'u':	u();break;
 	case 'v':	v();break;
 	case 'w':	w();break;

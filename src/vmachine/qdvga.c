@@ -71,6 +71,7 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 		}
 		if (!dup) string++;
 	}
+	//vapiDisplayPaint();
 }
 
 t_nubit8 vapiCallBackDisplayGetRowSize()
@@ -89,6 +90,13 @@ t_nubit8 vapiCallBackDisplayGetCurrentChar(t_nubit8 x, t_nubit8 y)
 {return qdvgaVarChar(qdvga.page, x, y);}
 t_nubit8 vapiCallBackDisplayGetCurrentCharProp(t_nubit8 x, t_nubit8 y)
 {return qdvgaVarCharProp(qdvga.page, x, y);}
+
+/*void qdvgaCheckVideoRam(t_vaddrcc addr)
+{
+	t_nubit16 offset1 = vram.base + QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM;
+	t_nubit16 offset2 = offset1 + QDVGA_SIZE_TEXT_MEMORY;
+	if ((addr >= offset1) && (addr < offset2)) vapiDisplayPaint();
+}*/
 
 void qdvgaSetDisplayMode()
 {

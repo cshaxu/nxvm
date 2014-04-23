@@ -941,32 +941,32 @@ int assemble(const char *asmStmt,unsigned short locCS,
 		case 3:	dANY("BP+DI")	break;\
 		case 4:	dANY("SI")		break;\
 		case 5:	dANY("DI")		break;\
-		case 6:	dStrCat16(dasmStmt,modrm.imm);break;\
+		case 6:	dStrCat16u(dasmStmt,modrm.imm);break;\
 		case 7:	dANY("BX")		break;\
 		default:dANY("(ERROR:R/M)");break;}\
 		break;\
 	case 1:\
 		switch(modrm.rm) {\
-		case 0:	dANY("BX+SI+")	dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
-		case 1:	dANY("BX+DI+")	dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
-		case 2:	dANY("BP+SI+")	dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
-		case 3:	dANY("BP+DI+")	dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
-		case 4:	dANY("SI+")		dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
-		case 5:	dANY("DI+")		dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
-		case 6:	dANY("BP+")		dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
-		case 7:	dANY("BX+")		dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 0:	dANY("BX+SI")	dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 1:	dANY("BX+DI")	dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 2:	dANY("BP+SI")	dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 3:	dANY("BP+DI")	dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 4:	dANY("SI")		dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 5:	dANY("DI")		dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 6:	dANY("BP")		dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 7:	dANY("BX")		dStrCat8s(dasmStmt,(unsigned char)modrm.imm);break;\
 		default:dANY("(ERROR:R/M)")	break;}\
 		break;\
 	case 2:\
 		switch(modrm.rm) {\
-		case 0:	dANY("BX+SI+")	dStrCat16(dasmStmt,modrm.imm);break;\
-		case 1:	dANY("BX+DI+")	dStrCat16(dasmStmt,modrm.imm);break;\
-		case 2:	dANY("BP+SI+")	dStrCat16(dasmStmt,modrm.imm);break;\
-		case 3:	dANY("BP+DI+")	dStrCat16(dasmStmt,modrm.imm);break;\
-		case 4:	dANY("SI+")		dStrCat16(dasmStmt,modrm.imm);break;\
-		case 5:	dANY("DI+")		dStrCat16(dasmStmt,modrm.imm);break;\
-		case 6:	dANY("BP+")		dStrCat16(dasmStmt,modrm.imm);break;\
-		case 7:	dANY("BX+")		dStrCat16(dasmStmt,modrm.imm);break;\
+		case 0:	dANY("BX+SI+")	dStrCat16u(dasmStmt,modrm.imm);break;\
+		case 1:	dANY("BX+DI+")	dStrCat16u(dasmStmt,modrm.imm);break;\
+		case 2:	dANY("BP+SI+")	dStrCat16u(dasmStmt,modrm.imm);break;\
+		case 3:	dANY("BP+DI+")	dStrCat16u(dasmStmt,modrm.imm);break;\
+		case 4:	dANY("SI+")		dStrCat16u(dasmStmt,modrm.imm);break;\
+		case 5:	dANY("DI+")		dStrCat16u(dasmStmt,modrm.imm);break;\
+		case 6:	dANY("BP+")		dStrCat16u(dasmStmt,modrm.imm);break;\
+		case 7:	dANY("BX+")		dStrCat16u(dasmStmt,modrm.imm);break;\
 		default:dANY("(ERROR:R/M)")	break;}\
 		break;\
 	case 3:\
@@ -1003,19 +1003,16 @@ int assemble(const char *asmStmt,unsigned short locCS,
 	if(modrm.mod < 3) dANY("]");}
 #define dImm(bit) {\
 	switch(bit) {\
-	case 8:	dGetByte(imm)	dStrCat8(dasmStmt,(unsigned char)imm);break;\
-	case 16:dGetWord(imm)	dStrCat16(dasmStmt,imm);break;\
+	case 8:	dGetByte(imm)	dStrCat8u(dasmStmt,(unsigned char)imm);break;\
+	case 16:dGetWord(imm)	dStrCat16u(dasmStmt,imm);break;\
 	default:dANY("(ERROR:IMM)")	break;}}
 #define dOff(bit) {\
 	switch(bit) {\
-	case 8:	dANY("BYTE PTR [")	dGetWord(imm)	dStrCat16(dasmStmt,imm);break;\
-	case 16:dANY("WORD PTR [")	dGetWord(imm)	dStrCat16(dasmStmt,imm);break;\
+	case 8:	dANY("BYTE PTR [")	dGetWord(imm)	dStrCat16u(dasmStmt,imm);break;\
+	case 16:dANY("WORD PTR [")	dGetWord(imm)	dStrCat16u(dasmStmt,imm);break;\
 	default:dANY("(ERROR:IMM)")	break;}\
 	dANY("]");}
-#define dSImm8 {\
-	dGetByte(imm)\
-	if(imm&0x80) {dANY("-")	dStrCat8(dasmStmt,(unsigned char)((~imm)+1));}\
-	else {dANY("+")	dStrCat8(dasmStmt,(unsigned char)imm);}}
+#define dSImm8 {dGetByte(imm) dStrCat8s(dasmStmt, (signed char)imm);}
 #define dGetModRM {\
 	modrm.mod = *(loc+len++);\
 	modrm.rm = ((modrm.mod&0x07)>>0);\
@@ -1050,7 +1047,7 @@ typedef enum {RM8_R8,R8_RM8,RM16_R16,R16_RM16,
 /*	write dasmStmt, resOperand;
 	use locMemory, locSegment, locOffset;
 	read (unsigned char *)(locMemory+(locSegment<<4)+locOffset)*/
-static void dStrCat8(char *str,unsigned char n)
+static void dStrCat8u(char *str,unsigned char n)
 {
 	char c,s[3];
 	int i;
@@ -1062,7 +1059,21 @@ static void dStrCat8(char *str,unsigned char n)
 	}
 	STRCAT(str,s);
 }
-static void dStrCat16(char *str,unsigned short n)
+static void dStrCat8s(char *str,signed char n)
+{
+	char c,s[4];
+	int i;
+	s[0] = (n & 0x80) ? '-' : '+';
+	s[3] = '\0';
+	n = (n & 0x80) ? ((~n)+1) : n;
+	for(i = 1;i >= 0;--i) {
+		c = ((n>>(i*4))&0x0f)+0x30;
+		if(c > 0x39) c += 0x07;
+		s[2-i] = c;
+	}
+	STRCAT(str,s);
+}
+static void dStrCat16u(char *str,unsigned short n)
 {
 	char c,s[5];
 	int i;
@@ -1160,7 +1171,7 @@ static int dDB(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned ch
 	int len = 0;
 	setOperandNul
 	dANY("DB\t")
-	dStrCat8(dasmStmt,num);
+	dStrCat8u(dasmStmt,num);
 	return len;
 }
 static int dJRel(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op,unsigned short locOffset,int bit)
@@ -1184,7 +1195,7 @@ static int dJRel(char *dasmStmt,Operand *resOperand,unsigned char *loc,const cha
 	//case 1616:
 
 	default:	dANY("(ERROR:JREL)")	break;}
-	dStrCat16(dasmStmt,rel);
+	dStrCat16u(dasmStmt,rel);
 	return len;
 }
 static int dGroup1(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
@@ -1300,7 +1311,7 @@ static int dAAX(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char
 	setOperandNul
 	dGetByte(imm)
 	dANY(op)
-	if(imm != 0x0a) {dANY("\t")	dStrCat8(dasmStmt,(unsigned char)imm);}
+	if(imm != 0x0a) {dANY("\t")	dStrCat8u(dasmStmt,(unsigned char)imm);}
 	return len;
 }
 static int dJFar(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op)
@@ -1312,9 +1323,9 @@ static int dJFar(char *dasmStmt,Operand *resOperand,unsigned char *loc,const cha
 	dANY("\t")
 	dGetWord(ptr)
 	dGetWord(seg)
-	dStrCat16(dasmStmt,seg);
+	dStrCat16u(dasmStmt,seg);
 	dANY(":")
-	dStrCat16(dasmStmt,ptr);
+	dStrCat16u(dasmStmt,ptr);
 	return len;
 }
 static int dGroup3(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)

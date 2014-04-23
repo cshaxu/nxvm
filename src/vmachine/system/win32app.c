@@ -12,8 +12,6 @@ HWND w32aHWnd = NULL;
 static HINSTANCE hInstance;
 static LPCWSTR szWindowClass = _T("nxvm");
 static LPCWSTR szTitle = _T("Neko's x86 Virtual Machine");
-static DWORD ThreadIdDisplay;
-static DWORD ThreadIdKernel;
 #define TIMER_PAINT   0
 #define TIMER_RTC     1
 static LRESULT CALLBACK WndProc(HWND w32aHWnd, UINT message,
@@ -23,10 +21,10 @@ static LRESULT CALLBACK WndProc(HWND w32aHWnd, UINT message,
 	switch (message) {
 	case WM_CREATE:
 		SetTimer(w32aHWnd, TIMER_PAINT, 50, NULL);
-		SetTimer(w32aHWnd, TIMER_RTC,    55, NULL);
+		SetTimer(w32aHWnd, TIMER_RTC,   55, NULL);
 		break;
 	case WM_DESTROY:
-		vapiCallBackMachineSetRunFlag(0x00);
+		vapiCallBackMachineStop();
 		PostQuitMessage(0);
 		break;
 	case WM_COMMAND:
@@ -119,7 +117,7 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam)
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-	vapiCallBackMachineSetRunFlag(0x00);
+	vapiCallBackMachineStop();
 	w32aHWnd = NULL;
 	w32adispFinal();
 
@@ -135,8 +133,9 @@ void win32appDisplaySetScreen() {w32adispSetScreen();}
 void win32appDisplayPaint() {w32adispPaint();}
 void win32appStartMachine()
 {
+	DWORD ThreadIdDisplay;
+	DWORD ThreadIdKernel;
 	if (!w32aHWnd)
 		CreateThread(NULL, 0, ThreadDisplay, NULL, 0, &ThreadIdDisplay);
-	if (!vapiCallBackMachineGetRunFlag())
-		CreateThread(NULL, 0, ThreadKernel, NULL, 0, &ThreadIdKernel);
+	CreateThread(NULL, 0, ThreadKernel, NULL, 0, &ThreadIdKernel);
 }

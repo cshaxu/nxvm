@@ -77,6 +77,7 @@ typedef struct {
 
 extern t_vga qdvga;
 
+//void qdvgaCheckVideoRam(t_vaddrcc addr);
 void qdvgaSetDisplayMode();
 void qdvgaSetCursorShape();
 void qdvgaSetCursorPos();
