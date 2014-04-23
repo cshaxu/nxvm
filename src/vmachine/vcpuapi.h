@@ -18,25 +18,20 @@ extern "C" {
 void vcpuapiPrintReg(t_cpu *rcpu);
 void vcpuapiPrintSreg(t_cpu *rcpu);
 void vcpuapiPrintCreg(t_cpu *rcpu);
-void vcpuapiLoadSreg(t_cpu_sreg *rsreg, t_nubit32 lo, t_nubit32 hi);
-
-void vcpuapiInit();
-void vcpuapiFinal();
-t_bool vcpuapiExecBefore(t_cpu *rcpu);
-t_bool vcpuapiExecAfter(t_cpu *rcpu);
-
-t_nubit64 vcpuapiReadPhysical(t_nubit32 phy, t_nubit8 byte);
-void vcpuapiWritePhysical(t_nubit32 phy, t_nubit64 data, t_nubit8 byte);
 
 #ifdef VGLOBAL_BOCHS
 t_nubit32 vapiPrint(const t_string format, ...);
 void vapiCallBackMachineStop();
 void vapiSleep(t_nubit32 milisec);
 void vapiCallBackDebugPrintRegs(t_bool bit32);
-#define vramSize 2097152
-#define vramAddr(phy) 0
 #define vramIsAddrInMem(ref) 0
-
+void vcpuapiLoadSreg(t_cpu_sreg *rsreg, t_nubit32 lo, t_nubit32 hi);
+void vcpuapiInit();
+void vcpuapiFinal();
+void vcpuapiExecBefore();
+void vcpuapiExecAfter();
+t_nubit64 vcpuapiReadPhysical(t_nubit32 phy, t_nubit8 byte);
+void vcpuapiWritePhysical(t_nubit32 phy, t_nubit64 data, t_nubit8 byte);
 #endif
 
 #ifdef __cplusplus

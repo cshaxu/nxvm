@@ -912,7 +912,7 @@ static void xreg()
 	vapiPrint(" EBP=%08X", _ebp);
 	vapiPrint(" ESI=%08X", _esi);
 	vapiPrint(" EDI=%08X", _edi);
-	vapiPrint("\nEIP=%08X", _ip);
+	vapiPrint("\nEIP=%08X",_eip);
 	vapiPrint(" EFL=%08X", _eflags);
 	vapiPrint(": ");
 	vapiPrint("%s ", _GetEFLAGS_VM ? "VM" : "vm");

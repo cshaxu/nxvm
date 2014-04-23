@@ -49,86 +49,6 @@ static unsigned iCacheMisses=0;
 
 #include "d:/libraryw/scripts/nekolib/nxvm/vmachine/vcpuapi.h"
 
-static t_cpu bcpu;
-
-static void bcpuLoadSreg(t_cpu_sreg *rvsreg, int id)
-{
-	bx_dbg_sreg_t bsreg;
-	BX_CPU_THIS_PTR dbg_get_sreg(&bsreg, id);
-	rvsreg->selector = bsreg.sel;
-	rvsreg->flagvalid = bsreg.valid;
-	vcpuapiLoadSreg(rvsreg, bsreg.des_l, bsreg.des_h);
-}
-
-static void bcpuFetch()
-{
-	bx_dbg_sreg_t bsreg;
-	bx_dbg_global_sreg_t bgsreg;
-
-	bcpu.eax = EAX;
-	bcpu.ecx = ECX;
-	bcpu.edx = EDX;
-	bcpu.ebx = EBX;
-	bcpu.esp = ESP;
-	bcpu.ebp = EBP;
-	bcpu.esi = ESI;
-	bcpu.edi = EDI;
-	bcpu.eip = EIP;
-	bcpu.eflags = BX_CPU_THIS_PTR read_eflags();
-
-	bcpuLoadSreg(&bcpu.es, 0); bcpu.es.sregtype = SREG_DATA;
-	bcpuLoadSreg(&bcpu.cs, 1); bcpu.cs.sregtype = SREG_CODE;
-	bcpuLoadSreg(&bcpu.ss, 2); bcpu.ss.sregtype = SREG_STACK;
-	bcpuLoadSreg(&bcpu.ds, 3); bcpu.ds.sregtype = SREG_DATA;
-	bcpuLoadSreg(&bcpu.fs, 4); bcpu.fs.sregtype = SREG_DATA;
-	bcpuLoadSreg(&bcpu.gs, 5); bcpu.gs.sregtype = SREG_DATA;
-	
-	BX_CPU_THIS_PTR dbg_get_ldtr(&bsreg);
-	bcpu.ldtr.selector = bsreg.sel;
-	bcpu.ldtr.flagvalid = bsreg.valid;
-	vcpuapiLoadSreg(&bcpu.ldtr, bsreg.des_l, bsreg.des_h);
-	bcpu.ldtr.sregtype = SREG_LDTR;
-
-	BX_CPU_THIS_PTR dbg_get_tr(&bsreg);
-	bcpu.tr.selector = bsreg.sel;
-	bcpu.tr.flagvalid = bsreg.valid;
-	vcpuapiLoadSreg(&bcpu.tr, bsreg.des_l, bsreg.des_h);
-	bcpu.tr.sregtype = SREG_TR;
-
-	BX_CPU_THIS_PTR dbg_get_gdtr(&bgsreg);
-	bcpu.gdtr.base = GetMax32(bgsreg.base);
-	bcpu.gdtr.limit = bgsreg.limit;
-	bcpu.gdtr.sregtype = SREG_GDTR;
-
-	BX_CPU_THIS_PTR dbg_get_idtr(&bgsreg);
-	bcpu.idtr.base = GetMax32(bgsreg.base);
-	bcpu.idtr.limit = bgsreg.limit;
-	bcpu.idtr.sregtype = SREG_IDTR;
-	
-	bcpu.cr0 = BX_CPU_THIS_PTR cr0.get32();
-	bcpu.cr2 = GetMax32(BX_CPU_THIS_PTR cr2);
-	bcpu.cr3 = GetMax32(BX_CPU_THIS_PTR cr3);
-}
-
-static void bcpuBeforeLoop()
-{
-	vcpuapiInit();
-}
-static void bcpuAfterLoop()
-{
-	vcpuapiFinal();
-}
-static void bcpuBeforeIns()
-{
-	bcpuFetch();
-	//vcpuapiExecBefore(&bcpu);
-}
-static t_bool bcpuAfterIns()
-{
-	bcpuFetch();
-	return vcpuapiExecAfter(&bcpu);
-}
-
 void BX_CPU_C::cpu_loop(void)
 {
 #if BX_DEBUGGER
@@ -197,7 +117,7 @@ void BX_CPU_C::cpu_loop(void)
 
     bxInstruction_c *last = i + (entry->tlen);
 
-	bcpuBeforeLoop();
+	vcpuapiInit();
 
     for(;;) {
 
@@ -209,15 +129,13 @@ void BX_CPU_C::cpu_loop(void)
       // want to allow changing of the instruction inside instrumentation callback
       BX_INSTR_BEFORE_EXECUTION(BX_CPU_ID, i);
 
-	  bcpuBeforeIns();
+	  vcpuapiExecBefore();
 
       RIP += i->ilen();
       BX_CPU_CALL_METHOD(i->execute, (i)); // might iterate repeat instruction
       BX_CPU_THIS_PTR prev_rip = RIP; // commit new RIP
 
-	  if (bcpuAfterIns()) {
-		BX_CPU_THIS_PTR magic_break = 1;
-	  }
+	  vcpuapiExecAfter();
 
       BX_INSTR_AFTER_EXECUTION(BX_CPU_ID, i);
       BX_CPU_THIS_PTR icount++;
@@ -237,7 +155,7 @@ void BX_CPU_C::cpu_loop(void)
         last = i + (entry->tlen);
       }
     }
-	bcpuAfterLoop();
+	vcpuapiFinal();
 #endif
 
     // clear stop trace magic indication that probably was set by repeat or branch32/64
