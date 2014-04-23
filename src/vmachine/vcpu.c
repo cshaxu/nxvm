@@ -2,10 +2,12 @@
 
 #include "memory.h"
 
+#include "vapi.h"
+
 #include "vcpuins.h"
 #include "vcpu.h"
 
-#include "vapi.h"
+#include "ccpu/ccpuapi.h"
 
 #if DEBUGMODE != CCPU
 t_cpu vcpu;
@@ -13,7 +15,18 @@ t_cpu vcpu;
 
 void vcpuRefresh()
 {
+#if (DEBUGMODE != VCPU && DEBUGMODE != CCPU)
+	ccpuapiSyncRegs();
+#endif
+#if DEBUGMODE != VCPU
+	ccpuapiExecIns();
+#endif
+#if DEBUGMODE != CCPU
 	vcpuinsExecIns();
+#endif
+#if (DEBUGMODE != VCPU && DEBUGMODE != CCPU)
+	if (ccpuapiHasDiff()) vapiCallBackMachineStop();
+#endif
 	vcpuinsExecInt();
 }
 

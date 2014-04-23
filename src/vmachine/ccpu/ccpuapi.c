@@ -124,10 +124,10 @@ t_bool ccpuapiHasDiff()
 {
 	t_bool flagdiff = 0x00;
 #if (DEBUGMODE != VCPU && DEBUGMODE != CCPU)
+#if DEBUGMODE == BCRM
 	t_bool flagmemdiff = 0x00;
 	t_nubit16 s1,s2;
 	t_nubitcc i;
-#if DEBUGMODE == BCRM
 	if (ccpu_icount % 10000 == 0) vapiPrint("at #%d\n",ccpu_icount);
 #endif
 	if (!ccpu_flagignore) {
@@ -170,12 +170,12 @@ t_bool ccpuapiHasDiff()
 #if DEBUGMODE == BCRM
 		flagdiff = 0x00;
 		flagmemdiff = 0x00;
-		if (vramVarWord(_cs,_ip-2) == 0x13cd) {
+		//if (vramVarWord(_cs,_ip-2) == 0x13cd) {
 			memcpy((void *)cram.base, (void *)vram.base, vram.size);
-		} else {
-			memcpy((void *)(cram.base+0x0400), (void *)(vram.base+0x0400), 0x0100);
-			memcpy((void *)(cram.base+0xb8000),(void *)(vram.base+0xb8000),0x1000);
-		}
+	//	} else {
+	//		memcpy((void *)(cram.base+0x0400), (void *)(vram.base+0x0400), 0x0100);
+	//		memcpy((void *)(cram.base+0xb8000),(void *)(vram.base+0xb8000),0x1000);
+	//	}
 #endif
 	}
 #if DEBUGMODE == BCRM

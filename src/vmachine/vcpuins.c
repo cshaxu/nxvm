@@ -3174,19 +3174,11 @@ static void ClrPrefix()
 void vcpuinsExecIns()
 {
 	t_nubit8 opcode = vramVarByte(vcpu.cs, vcpu.ip);
-#if (DEBUGMODE != VCPU && DEBUGMODE != CCPU)
-	ccpuapiSyncRegs();
-#endif
-#if DEBUGMODE != VCPU
-	ccpuapiExecIns();
-#endif
-#if DEBUGMODE != CCPU
 /* vcpuins bug fix #16
 	Note: in this bug, if an interrupt generated between
 	prefix and operation, the prefix may not be deployed
 	ExecFun(vcpuins.table[opcode]);
 	if (!IsPrefix(opcode)) ClrPrefix();*/
-
 /* vcpuins bug fix #17
 	Note: in this case, if we use two prefixes, the second prefix
 	will be discarded incorrectly
@@ -3194,14 +3186,9 @@ void vcpuinsExecIns()
 	opcode = vramVarByte(vcpu.cs, vcpu.ip);
 	ExecFun(vcpuins.table[opcode]);
 	ClrPrefix();*/
-
 	ExecFun(vcpuins.table[opcode]);
 	if (!IsPrefix(opcode)) ClrPrefix();
 	else vcpuinsExecIns();
-#endif
-#if (DEBUGMODE != VCPU && DEBUGMODE != CCPU)
-	if (ccpuapiHasDiff()) vmachine.flagrun = 0x00;
-#endif
 }
 void vcpuinsExecInt()
 {

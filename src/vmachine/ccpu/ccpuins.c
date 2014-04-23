@@ -1353,6 +1353,8 @@ t_nubit16 ccpuins_atom_POP()
 void ccpuins_atom_INT(const t_nubit8 INT_num)
 {
 	switch (INT_num) {
+	case 0x08:
+	case 0x0e:
 	case 0x13:
 	case 0x16:
 	case 0x10:
@@ -3044,12 +3046,6 @@ void ccpuins_extern_IN_AL_Ib()
 #if (DEBUGMODE == CCPU)
 	ExecFun(vport.in[ccpuins_deCodeBlock.opContactData_8bit]);
 	ccpu.al = ccpu.iobyte;
-	if (ccpuins_deCodeBlock.opContactData_8bit == 0xbb) {
-		if (GetBit(ccpu.flags, VCPU_FLAG_ZF))
-			cramVarWord(ccpu.ss,ccpu.sp + 4) |=  VCPU_FLAG_ZF;
-		else
-			cramVarWord(ccpu.ss,ccpu.sp + 4) &= ~VCPU_FLAG_ZF;
-	}
 #endif
 #if (DEBUGMODE == BVRM || DEBUGMODE == BCRM)
 	ccpu_flagignore = 0x01;
