@@ -1,4 +1,5 @@
 #include "stdio.h"
+#include "stdarg.h"
 #include "stdlib.h"
 #include "string.h"
 #include "memory.h"
@@ -6,10 +7,13 @@
 #include "../vglobal.h"
 #include "../vmachine.h"
 
-typedef char t_dasm_strs[0x20];
+typedef char t_dasm_strl[0x0200];
+typedef char t_dasm_strs[0x0020];
 typedef enum {PF_NONE, PF_CS, PF_DS, PF_SS, PF_ES, PF_REPZ, PF_REPNZ} t_dasm_prefix;
 
-static t_dasm_strs  dstmt, dbin, dop, dopr, dtip, drm, dr, dimm, dds, dss;
+static t_dasm_strl  dstmt;
+static t_dasm_strs  dbin, dop, dopr, dtip, drm, dr, dimm, dds, dss, dimmoff, dimmsign;
+static t_bool       ismem;
 static t_nubit8     rid;
 static t_nubit16    dods, doss;
 static t_nubitcc    len;
@@ -25,11 +29,33 @@ static char* STRTOK(char *_Str, const char *_Delim)
 {return strtok(_Str, _Delim);}
 static int STRCMP(const char *_Str1, const char *_Str2)
 {return strcmp(_Str1, _Str2);}
+static int SPRINTF(char *_Dest, const char *_Format, ...)
+{
+	int nWrittenBytes = 0;
+	va_list arg_ptr;
+	va_start(arg_ptr, _Format);
+	nWrittenBytes = vsprintf(_Dest, _Format, arg_ptr);
+	va_end(arg_ptr);
+	return nWrittenBytes;
+}
 
 #define MOD ((modrm&0xc0)>>6)
 #define REG ((modrm&0x38)>>3)
 #define RM  ((modrm&0x07)>>0)
 
+static void GetImm(t_nubitcc immbit)
+{
+	t_nsbit8 imm = (t_nsbit8)vramVarByte(dvcs, dvip);
+	t_nsbit8 sign = (imm & 0x80) ? '-' : '+';
+	t_nubit8 immu = (imm & 0x80) ? ((~imm) + 0x01) : imm;
+	switch(immbit) {
+	case 8:  SPRINTF(dimm, "%02X", vramVarByte(dvcs,dvip)); dvip += 1;
+		     SPRINTF(dimmoff, "%04X", (dvip+imm));
+		     SPRINTF(dimmsign, "%c%02X", sign, immu);                 break;
+	case 16: SPRINTF(dimm, "%04X", vramVarWord(dvcs,dvip)); dvip += 2;break;
+	case 32: SPRINTF(dimm, "%08X", vramVarDWord(dvcs,dvip));dvip += 4;break;
+	default:SPRINTF(dimm, "<ERROR:IMMBIT(%02X)>",immbit);break;}
+}
 static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 {
 	t_nsbit8 disp8 = 0x00;
@@ -37,185 +63,1058 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 	t_nubit8 modrm = vramVarByte(dvcs, dvip++);
 	t_nsbit8 sign;
 	t_nubit8 disp8u;
+	ismem = 0x01;
 	switch(MOD) {
 	case 0:
 		switch(RM) {
-		case 0: sprintf(drm, "[BX+SI]");
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si), vramVarByte(dods,vcpu.bx+vcpu.si));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si), vramVarWord(dods,vcpu.bx+vcpu.si));
+		case 0: SPRINTF(drm, "[BX+SI]");
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si), vramVarByte(dods,vcpu.bx+vcpu.si));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si), vramVarWord(dods,vcpu.bx+vcpu.si));
 			break;
-		case 1: sprintf(drm, "[BX+DI]");
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.di), vramVarByte(dods,vcpu.bx+vcpu.di));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.di), vramVarWord(dods,vcpu.bx+vcpu.di));
+		case 1: SPRINTF(drm, "[BX+DI]");
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.di), vramVarByte(dods,vcpu.bx+vcpu.di));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.di), vramVarWord(dods,vcpu.bx+vcpu.di));
 			break;
-		case 2: sprintf(drm, "[BP+SI]");
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.si), vramVarByte(doss,vcpu.bp+vcpu.si));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.si), vramVarWord(doss,vcpu.bp+vcpu.si));
+		case 2: SPRINTF(drm, "[BP+SI]");
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.si), vramVarByte(doss,vcpu.bp+vcpu.si));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.si), vramVarWord(doss,vcpu.bp+vcpu.si));
 			break;
-		case 3: sprintf(drm, "[BP+DI]");
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.di), vramVarByte(doss,vcpu.bp+vcpu.di));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.di), vramVarWord(doss,vcpu.bp+vcpu.di));
+		case 3: SPRINTF(drm, "[BP+DI]");
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.di), vramVarByte(doss,vcpu.bp+vcpu.di));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.di), vramVarWord(doss,vcpu.bp+vcpu.di));
 			break;
-		case 4: sprintf(drm, "[SI]");
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.si), vramVarByte(dods,vcpu.si));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.si), vramVarWord(dods,vcpu.si));
+		case 4: SPRINTF(drm, "[SI]");
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.si), vramVarByte(dods,vcpu.si));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.si), vramVarWord(dods,vcpu.si));
 			break;
-		case 5: sprintf(drm, "[DI]");
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di), vramVarByte(dods,vcpu.di));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di), vramVarWord(dods,vcpu.di));
+		case 5: SPRINTF(drm, "[DI]");
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di), vramVarByte(dods,vcpu.di));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di), vramVarWord(dods,vcpu.di));
 			break;
 		case 6: disp16 = vramVarWord(dvcs, dvip); dvip += 2;
-			    sprintf(drm, "[%04X]", disp16);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(disp16), vramVarByte(dods,disp16));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(disp16), vramVarWord(dods,disp16));
+			    SPRINTF(drm, "[%04X]", disp16);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(disp16), vramVarByte(dods,disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(disp16), vramVarWord(dods,disp16));
 			break;
-		case 7: sprintf(drm, "[BX]");
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx), vramVarByte(dods,vcpu.bx));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx), vramVarWord(dods,vcpu.bx));
+		case 7: SPRINTF(drm, "[BX]");
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx), vramVarByte(dods,vcpu.bx));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx), vramVarWord(dods,vcpu.bx));
 			break;
-		default:sprintf(drm, "<ERROR:MOD(%02X),RM(%02X)>", MOD, RM);break;}
+		default:SPRINTF(drm, "<ERROR:MOD(%02X),RM(%02X)>", MOD, RM);break;}
 		break;
 	case 1:
 		disp8 = (t_nsbit8)vramVarByte(dvcs, dvip);dvip += 1;
 		sign = (disp8 & 0x80) ? '-' : '+';
 		disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
 		switch(RM) {
-		case 0: sprintf(drm, "[BX+SI%c%02X]", sign, disp8u);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp8), vramVarByte(dods,vcpu.bx+vcpu.si+disp8));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp8), vramVarWord(dods,vcpu.bx+vcpu.si+disp8));
+		case 0: SPRINTF(drm, "[BX+SI%c%02X]", sign, disp8u);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp8), vramVarByte(dods,vcpu.bx+vcpu.si+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp8), vramVarWord(dods,vcpu.bx+vcpu.si+disp8));
 			break;
-		case 1: sprintf(drm, "[BX+DI%c%02X]", sign, disp8u);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp8), vramVarByte(dods,vcpu.bx+vcpu.di+disp8));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp8), vramVarWord(dods,vcpu.bx+vcpu.di+disp8));
+		case 1: SPRINTF(drm, "[BX+DI%c%02X]", sign, disp8u);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp8), vramVarByte(dods,vcpu.bx+vcpu.di+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp8), vramVarWord(dods,vcpu.bx+vcpu.di+disp8));
 			break;
-		case 2: sprintf(drm, "[BP+SI%c%02X]", sign, disp8u);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp8), vramVarByte(doss,vcpu.bp+vcpu.si+disp8));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp8), vramVarWord(doss,vcpu.bp+vcpu.si+disp8));
+		case 2: SPRINTF(drm, "[BP+SI%c%02X]", sign, disp8u);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp8), vramVarByte(doss,vcpu.bp+vcpu.si+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp8), vramVarWord(doss,vcpu.bp+vcpu.si+disp8));
 			break;
-		case 3: sprintf(drm, "[BP+DI%c%02X]", sign, disp8u);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp8), vramVarByte(doss,vcpu.bp+vcpu.di+disp8));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp8), vramVarWord(doss,vcpu.bp+vcpu.di+disp8));
+		case 3: SPRINTF(drm, "[BP+DI%c%02X]", sign, disp8u);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp8), vramVarByte(doss,vcpu.bp+vcpu.di+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp8), vramVarWord(doss,vcpu.bp+vcpu.di+disp8));
 			break;
-		case 4: sprintf(drm, "[SI%c%02X]", sign, disp8u);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.si+disp8), vramVarByte(dods,vcpu.si+disp8));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.si+disp8), vramVarWord(dods,vcpu.si+disp8));
+		case 4: SPRINTF(drm, "[SI%c%02X]", sign, disp8u);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.si+disp8), vramVarByte(dods,vcpu.si+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.si+disp8), vramVarWord(dods,vcpu.si+disp8));
 			break;
-		case 5: sprintf(drm, "[DI%c%02X]", sign, disp8u);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di+disp8), vramVarByte(dods,vcpu.di+disp8));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di+disp8), vramVarWord(dods,vcpu.di+disp8));
+		case 5: SPRINTF(drm, "[DI%c%02X]", sign, disp8u);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di+disp8), vramVarByte(dods,vcpu.di+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di+disp8), vramVarWord(dods,vcpu.di+disp8));
 			break;
-		case 6: sprintf(drm, "[BP%c%02X]", sign, disp8u);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+disp8), vramVarByte(doss,vcpu.bp+disp8));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+disp8), vramVarWord(doss,vcpu.bp+disp8));
+		case 6: SPRINTF(drm, "[BP%c%02X]", sign, disp8u);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+disp8), vramVarByte(doss,vcpu.bp+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+disp8), vramVarWord(doss,vcpu.bp+disp8));
 			break;
-		case 7: sprintf(drm, "[BX%c%02X]", sign, disp8u);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+disp8), vramVarByte(dods,vcpu.bx+disp8));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+disp8), vramVarWord(dods,vcpu.bx+disp8));
+		case 7: SPRINTF(drm, "[BX%c%02X]", sign, disp8u);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+disp8), vramVarByte(dods,vcpu.bx+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+disp8), vramVarWord(dods,vcpu.bx+disp8));
 			break;
-		default:sprintf(drm, "<ERROR:MOD(%02X),RM(%02X)>", MOD, RM);break;}
+		default:SPRINTF(drm, "<ERROR:MOD(%02X),RM(%02X)>", MOD, RM);break;}
 		break;
 	case 2:
 		disp16 = vramVarWord(dvcs,dvip);dvip += 2;
 		switch(RM) {
-		case 0: sprintf(drm, "[BX+SI+%04X]", disp16);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp16), vramVarByte(dods,vcpu.bx+vcpu.si+disp16));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp16), vramVarWord(dods,vcpu.bx+vcpu.si+disp16));
+		case 0: SPRINTF(drm, "[BX+SI+%04X]", disp16);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp16), vramVarByte(dods,vcpu.bx+vcpu.si+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp16), vramVarWord(dods,vcpu.bx+vcpu.si+disp16));
 			break;
-		case 1: sprintf(drm, "[BX+DI+%04X]", disp16);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp16), vramVarByte(dods,vcpu.bx+vcpu.di+disp16));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp16), vramVarWord(dods,vcpu.bx+vcpu.di+disp16));
+		case 1: SPRINTF(drm, "[BX+DI+%04X]", disp16);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp16), vramVarByte(dods,vcpu.bx+vcpu.di+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp16), vramVarWord(dods,vcpu.bx+vcpu.di+disp16));
 			break;
-		case 2: sprintf(drm, "[BP+SI+%04X]", disp16);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp16), vramVarByte(doss,vcpu.bp+vcpu.si+disp16));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp16), vramVarWord(doss,vcpu.bp+vcpu.si+disp16));
+		case 2: SPRINTF(drm, "[BP+SI+%04X]", disp16);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp16), vramVarByte(doss,vcpu.bp+vcpu.si+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp16), vramVarWord(doss,vcpu.bp+vcpu.si+disp16));
 			break;
-		case 3: sprintf(drm, "[BP+DI+%04X]", disp16);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp16), vramVarByte(doss,vcpu.bp+vcpu.di+disp16));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp16), vramVarWord(doss,vcpu.bp+vcpu.di+disp16));
+		case 3: SPRINTF(drm, "[BP+DI+%04X]", disp16);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp16), vramVarByte(doss,vcpu.bp+vcpu.di+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp16), vramVarWord(doss,vcpu.bp+vcpu.di+disp16));
 			break;
-		case 4: sprintf(drm, "[SI+%04X]", disp16);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.si+disp16), vramVarByte(dods,vcpu.si+disp16));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.si+disp16), vramVarWord(dods,vcpu.si+disp16));
+		case 4: SPRINTF(drm, "[SI+%04X]", disp16);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.si+disp16), vramVarByte(dods,vcpu.si+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.si+disp16), vramVarWord(dods,vcpu.si+disp16));
 			break;
-		case 5: sprintf(drm, "[DI+%04X]", disp16);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di+disp16), vramVarByte(dods,vcpu.di+disp16));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di+disp16), vramVarWord(dods,vcpu.di+disp16));
+		case 5: SPRINTF(drm, "[DI+%04X]", disp16);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di+disp16), vramVarByte(dods,vcpu.di+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di+disp16), vramVarWord(dods,vcpu.di+disp16));
 			break;
-		case 6: sprintf(drm, "[BP+%04X]", disp16);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+disp16), vramVarByte(doss,vcpu.bp+disp16));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+disp16), vramVarWord(doss,vcpu.bp+disp16));
+		case 6: SPRINTF(drm, "[BP+%04X]", disp16);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+disp16), vramVarByte(doss,vcpu.bp+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+disp16), vramVarWord(doss,vcpu.bp+disp16));
 			break;
-		case 7: sprintf(drm, "[BX+%04X]", disp16);
-			if (rmbit == 8)       sprintf(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+disp16), vramVarByte(dods,vcpu.bx+disp16));
-			else if (rmbit == 16) sprintf(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+disp16), vramVarWord(dods,vcpu.bx+disp16));
+		case 7: SPRINTF(drm, "[BX+%04X]", disp16);
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+disp16), vramVarByte(dods,vcpu.bx+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+disp16), vramVarWord(dods,vcpu.bx+disp16));
 			break;
-		default:sprintf(drm, "<ERROR:MOD(%02X),RM(%02X)>", MOD, RM);break;}
+		default:SPRINTF(drm, "<ERROR:MOD(%02X),RM(%02X)>", MOD, RM);break;}
 		break;
 	case 3:
+		ismem = 0x00;
 		switch(RM) {
-		case 0: if(rmbit == 8) sprintf(drm, "AL"); else sprintf(drm, "AX"); break;
-		case 1: if(rmbit == 8) sprintf(drm, "CL"); else sprintf(drm, "CX"); break;
-		case 2: if(rmbit == 8) sprintf(drm, "DL"); else sprintf(drm, "DX"); break;
-		case 3: if(rmbit == 8) sprintf(drm, "BL"); else sprintf(drm, "BX"); break;
-		case 4: if(rmbit == 8) sprintf(drm, "AH"); else sprintf(drm, "SP"); break;
-		case 5: if(rmbit == 8) sprintf(drm, "CH"); else sprintf(drm, "BP"); break;
-		case 6: if(rmbit == 8) sprintf(drm, "DH"); else sprintf(drm, "SI"); break;
-		case 7: if(rmbit == 8) sprintf(drm, "BH"); else sprintf(drm, "DI"); break;
-		default:sprintf(drm, "<ERROR:MOD(%02X),RM(%02X)>", MOD, RM);break;}
+		case 0: if(rmbit == 8) SPRINTF(drm, "AL"); else SPRINTF(drm, "AX"); break;
+		case 1: if(rmbit == 8) SPRINTF(drm, "CL"); else SPRINTF(drm, "CX"); break;
+		case 2: if(rmbit == 8) SPRINTF(drm, "DL"); else SPRINTF(drm, "DX"); break;
+		case 3: if(rmbit == 8) SPRINTF(drm, "BL"); else SPRINTF(drm, "BX"); break;
+		case 4: if(rmbit == 8) SPRINTF(drm, "AH"); else SPRINTF(drm, "SP"); break;
+		case 5: if(rmbit == 8) SPRINTF(drm, "CH"); else SPRINTF(drm, "BP"); break;
+		case 6: if(rmbit == 8) SPRINTF(drm, "DH"); else SPRINTF(drm, "SI"); break;
+		case 7: if(rmbit == 8) SPRINTF(drm, "BH"); else SPRINTF(drm, "DI"); break;
+		default:SPRINTF(drm, "<ERROR:MOD(%02X),RM(%02X)>", MOD, RM);break;}
 		break;
-	default:sprintf(drm, "<ERROR:MOD(%02X)>", MOD);break;}
+	default:SPRINTF(drm, "<ERROR:MOD(%02X)>", MOD);break;}
 	switch(regbit) {
 	case 0: rid = REG;break;
 	case 4:
 		switch(REG) {
-		case 0: sprintf(dr, "ES");break;
-		case 1: sprintf(dr, "CS");break;
-		case 2: sprintf(dr, "SS");break;
-		case 3: sprintf(dr, "DS");break;
-		default:sprintf(dr, "<ERROR:BIT(%02X),REG(%02X)>", regbit, REG);break;}
+		case 0: SPRINTF(dr, "ES");break;
+		case 1: SPRINTF(dr, "CS");break;
+		case 2: SPRINTF(dr, "SS");break;
+		case 3: SPRINTF(dr, "DS");break;
+		default:SPRINTF(dr, "<ERROR:REGBIT(%02X),REG(%02X)>", regbit, REG);break;}
 		break;
 	case 8:
 		switch(REG) {
-		case 0: sprintf(dr, "AL");break;
-		case 1: sprintf(dr, "CL");break;
-		case 2: sprintf(dr, "DL");break;
-		case 3: sprintf(dr, "BL");break;
-		case 4: sprintf(dr, "AH");break;
-		case 5: sprintf(dr, "CH");break;
-		case 6: sprintf(dr, "DH");break;
-		case 7: sprintf(dr, "BH");break;
-		default:sprintf(dr, "<ERROR:BIT(%02X),REG(%02X)>", regbit, REG);break;}
+		case 0: SPRINTF(dr, "AL");break;
+		case 1: SPRINTF(dr, "CL");break;
+		case 2: SPRINTF(dr, "DL");break;
+		case 3: SPRINTF(dr, "BL");break;
+		case 4: SPRINTF(dr, "AH");break;
+		case 5: SPRINTF(dr, "CH");break;
+		case 6: SPRINTF(dr, "DH");break;
+		case 7: SPRINTF(dr, "BH");break;
+		default:SPRINTF(dr, "<ERROR:REGBIT(%02X),REG(%02X)>", regbit, REG);break;}
 		break;
 	case 16:
 		switch(REG) {
-		case 0: sprintf(dr, "AX");break;
-		case 1: sprintf(dr, "CX");break;
-		case 2: sprintf(dr, "DX");break;
-		case 3: sprintf(dr, "BX");break;
-		case 4: sprintf(dr, "SP");break;
-		case 5: sprintf(dr, "BP");break;
-		case 6: sprintf(dr, "SI");break;
-		case 7: sprintf(dr, "DI");break;
-		default:sprintf(dr, "<ERROR:BIT(%02X),REG(%02X)>", regbit, REG);break;}
+		case 0: SPRINTF(dr, "AX");break;
+		case 1: SPRINTF(dr, "CX");break;
+		case 2: SPRINTF(dr, "DX");break;
+		case 3: SPRINTF(dr, "BX");break;
+		case 4: SPRINTF(dr, "SP");break;
+		case 5: SPRINTF(dr, "BP");break;
+		case 6: SPRINTF(dr, "SI");break;
+		case 7: SPRINTF(dr, "DI");break;
+		default:SPRINTF(dr, "<ERROR:REGBIT(%02X),REG(%02X)>", regbit, REG);break;}
 		break;
-	default:sprintf(dr, "<ERROR:BIT(%02X)>", regbit);break;}
+	default:SPRINTF(dr, "<ERROR:REGBIT(%02X)>", regbit);break;}
 }
 
+static void DB()
+{
+	t_nubit8 opcode = vramVarByte(dvcs, dvip);
+	dvip++;
+	SPRINTF(dop, "DB");
+	SPRINTF(dopr, "%02X", opcode);
+}
 static void ADD_RM8_R8()
 {
 	dvip++;
 	GetModRegRM(8,8);
-	sprintf(dop, "ADD");
-	sprintf(dopr, "%s,%s", drm, dr);
+	SPRINTF(dop, "ADD");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void ADD_RM16_R16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "ADD");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void ADD_R8_RM8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "ADD");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void ADD_R16_RM16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "ADD");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void ADD_AL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "ADD");
+	SPRINTF(dopr, "AL,%s", dimm);
+}
+static void ADD_AX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "ADD");
+	SPRINTF(dopr, "AX,%s", dimm);
+}
+static void PUSH_ES()
+{
+	dvip++;
+	SPRINTF(dop, "PUSH");
+	SPRINTF(dopr, "ES");
+}
+static void POP_ES()
+{
+	dvip++;
+	SPRINTF(dop, "POP");
+	SPRINTF(dopr, "ES");
+}
+static void OR_RM8_R8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "OR");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void OR_RM16_R16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "OR");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void OR_R8_RM8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "OR");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void OR_R16_RM16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "OR");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void OR_AL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "OR");
+	SPRINTF(dopr, "AL,%s", dimm);
+}
+static void OR_AX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "OR");
+	SPRINTF(dopr, "AX,%s", dimm);
+}
+static void PUSH_CS()
+{
+	dvip++;
+	SPRINTF(dop, "PUSH");
+	SPRINTF(dopr, "CS");
+}
+static void POP_CS()
+{
+	dvip++;
+	SPRINTF(dop, "POP");
+	SPRINTF(dopr, "CS");
+}
+static void ADC_RM8_R8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "ADC");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void ADC_RM16_R16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "ADC");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void ADC_R8_RM8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "ADC");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void ADC_R16_RM16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "ADC");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void ADC_AL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "ADC");
+	SPRINTF(dopr, "AL,%s", dimm);
+}
+static void ADC_AX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "ADC");
+	SPRINTF(dopr, "AX,%s", dimm);
+}
+static void PUSH_SS()
+{
+	dvip++;
+	SPRINTF(dop, "PUSH");
+	SPRINTF(dopr, "SS");
+}
+static void POP_SS()
+{
+	dvip++;
+	SPRINTF(dop, "POP");
+	SPRINTF(dopr, "SS");
+}
+static void SBB_RM8_R8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "SBB");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void SBB_RM16_R16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "SBB");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void SBB_R8_RM8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "SBB");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void SBB_R16_RM16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "SBB");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void SBB_AL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "SBB");
+	SPRINTF(dopr, "AL,%s", dimm);
+}
+static void SBB_AX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "SBB");
+	SPRINTF(dopr, "AX,%s", dimm);
+}
+static void PUSH_DS()
+{
+	dvip++;
+	SPRINTF(dop, "PUSH");
+	SPRINTF(dopr, "DS");
+}
+static void POP_DS()
+{
+	dvip++;
+	SPRINTF(dop, "POP");
+	SPRINTF(dopr, "DS");
+}
+static void AND_RM8_R8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "AND");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void AND_RM16_R16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "AND");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void AND_R8_RM8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "AND");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void AND_R16_RM16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "AND");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void AND_AL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "AND");
+	SPRINTF(dopr, "AL,%s", dimm);
+}
+static void AND_AX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "AND");
+	SPRINTF(dopr, "AX,%s", dimm);
 }
 static void ES()
 {
 	dvip++;
-	sprintf(dop, "ES:");
-	sprintf(dds, "ES");
-	sprintf(dss, "ES");
+	SPRINTF(dop, "ES:");
+	SPRINTF(dds, "ES");
+	SPRINTF(dss, "ES");
 	dods = vcpu.es;
 	doss = vcpu.es;
+}
+static void DAA()
+{
+	dvip++;
+	SPRINTF(dop, "DAA");
+}
+static void SUB_RM8_R8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "SUB");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void SUB_RM16_R16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "SUB");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void SUB_R8_RM8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "SUB");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void SUB_R16_RM16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "SUB");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void SUB_AL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "SUB");
+	SPRINTF(dopr, "AL,%s", dimm);
+}
+static void SUB_AX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "SUB");
+	SPRINTF(dopr, "AX,%s", dimm);
+}
+static void CS()
+{
+	dvip++;
+	SPRINTF(dop, "CS:");
+	SPRINTF(dds, "CS");
+	SPRINTF(dss, "CS");
+	dods = vcpu.cs;
+	doss = vcpu.cs;
+}
+static void DAS()
+{
+	dvip++;
+	SPRINTF(dop, "DAS");
+}
+static void XOR_RM8_R8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "XOR");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void XOR_RM16_R16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "XOR");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void XOR_R8_RM8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "XOR");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void XOR_R16_RM16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "XOR");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void XOR_AL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "XOR");
+	SPRINTF(dopr, "AL,%s", dimm);
+}
+static void XOR_AX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "XOR");
+	SPRINTF(dopr, "AX,%s", dimm);
+}
+static void SS()
+{
+	dvip++;
+	SPRINTF(dop, "SS:");
+	SPRINTF(dds, "SS");
+	SPRINTF(dss, "SS");
+	dods = vcpu.ss;
+	doss = vcpu.ss;
+}
+static void AAA()
+{
+	dvip++;
+	SPRINTF(dop, "AAA");
+}
+static void CMP_RM8_R8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "CMP");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void CMP_RM16_R16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "CMP");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void CMP_R8_RM8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "CMP");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void CMP_R16_RM16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "CMP");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void CMP_AL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "CMP");
+	SPRINTF(dopr, "AL,%s", dimm);
+}
+static void CMP_AX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "CMP");
+	SPRINTF(dopr, "AX,%s", dimm);
+}
+static void DS()
+{
+	dvip++;
+	SPRINTF(dop, "DS:");
+	SPRINTF(dds, "DS");
+	SPRINTF(dss, "DS");
+	dods = vcpu.ds;
+	doss = vcpu.ds;
+}
+static void AAS()
+{
+	dvip++;
+	SPRINTF(dop, "AAS");
+}
+static void INC_AX()
+{
+	dvip++;
+	SPRINTF(dop, "INC");
+	SPRINTF(dopr, "AX");
+}
+static void INC_CX()
+{
+	dvip++;
+	SPRINTF(dop, "INC");
+	SPRINTF(dopr, "CX");
+}
+static void INC_DX()
+{
+	dvip++;
+	SPRINTF(dop, "INC");
+	SPRINTF(dopr, "DX");
+}
+static void INC_BX()
+{
+	dvip++;
+	SPRINTF(dop, "INC");
+	SPRINTF(dopr, "BX");
+}
+static void INC_SP()
+{
+	dvip++;
+	SPRINTF(dop, "INC");
+	SPRINTF(dopr, "SP");
+}
+static void INC_BP()
+{
+	dvip++;
+	SPRINTF(dop, "INC");
+	SPRINTF(dopr, "BP");
+}
+static void INC_SI()
+{
+	dvip++;
+	SPRINTF(dop, "INC");
+	SPRINTF(dopr, "SI");
+}
+static void INC_DI()
+{
+	dvip++;
+	SPRINTF(dop, "INC");
+	SPRINTF(dopr, "DI");
+}
+static void DEC_AX()
+{
+	dvip++;
+	SPRINTF(dop, "DEC");
+	SPRINTF(dopr, "AX");
+}
+static void DEC_CX()
+{
+	dvip++;
+	SPRINTF(dop, "DEC");
+	SPRINTF(dopr, "CX");
+}
+static void DEC_DX()
+{
+	dvip++;
+	SPRINTF(dop, "DEC");
+	SPRINTF(dopr, "DX");
+}
+static void DEC_BX()
+{
+	dvip++;
+	SPRINTF(dop, "DEC");
+	SPRINTF(dopr, "BX");
+}
+static void DEC_SP()
+{
+	dvip++;
+	SPRINTF(dop, "DEC");
+	SPRINTF(dopr, "SP");
+}
+static void DEC_BP()
+{
+	dvip++;
+	SPRINTF(dop, "DEC");
+	SPRINTF(dopr, "BP");
+}
+static void DEC_SI()
+{
+	dvip++;
+	SPRINTF(dop, "DEC");
+	SPRINTF(dopr, "SI");
+}
+static void DEC_DI()
+{
+	dvip++;
+	SPRINTF(dop, "DEC");
+	SPRINTF(dopr, "DI");
+}
+static void PUSH_AX()
+{
+	dvip++;
+	SPRINTF(dop, "PUSH");
+	SPRINTF(dopr, "AX");
+}
+static void PUSH_CX()
+{
+	dvip++;
+	SPRINTF(dop, "PUSH");
+	SPRINTF(dopr, "CX");
+}
+static void PUSH_DX()
+{
+	dvip++;
+	SPRINTF(dop, "PUSH");
+	SPRINTF(dopr, "DX");
+}
+static void PUSH_BX()
+{
+	dvip++;
+	SPRINTF(dop, "PUSH");
+	SPRINTF(dopr, "BX");
+}
+static void PUSH_SP()
+{
+	dvip++;
+	SPRINTF(dop, "PUSH");
+	SPRINTF(dopr, "SP");
+}
+static void PUSH_BP()
+{
+	dvip++;
+	SPRINTF(dop, "PUSH");
+	SPRINTF(dopr, "BP");
+}
+static void PUSH_SI()
+{
+	dvip++;
+	SPRINTF(dop, "PUSH");
+	SPRINTF(dopr, "SI");
+}
+static void PUSH_DI()
+{
+	dvip++;
+	SPRINTF(dop, "PUSH");
+	SPRINTF(dopr, "DI");
+}
+static void POP_AX()
+{
+	dvip++;
+	SPRINTF(dop, "POP");
+	SPRINTF(dopr, "AX");
+}
+static void POP_CX()
+{
+	dvip++;
+	SPRINTF(dop, "POP");
+	SPRINTF(dopr, "CX");
+}
+static void POP_DX()
+{
+	dvip++;
+	SPRINTF(dop, "POP");
+	SPRINTF(dopr, "DX");
+}
+static void POP_BX()
+{
+	dvip++;
+	SPRINTF(dop, "POP");
+	SPRINTF(dopr, "BX");
+}
+static void POP_SP()
+{
+	dvip++;
+	SPRINTF(dop, "POP");
+	SPRINTF(dopr, "SP");
+}
+static void POP_BP()
+{
+	dvip++;
+	SPRINTF(dop, "POP");
+	SPRINTF(dopr, "BP");
+}
+static void POP_SI()
+{
+	dvip++;
+	SPRINTF(dop, "POP");
+	SPRINTF(dopr, "SI");
+}
+static void POP_DI()
+{
+	dvip++;
+	SPRINTF(dop, "POP");
+	SPRINTF(dopr, "DI");
+}
+static void JO()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JO");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JNO()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JNO");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JC()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JC");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JNC()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JNC");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JZ()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JZ");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JNZ()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JNZ");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JBE()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JBE");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JA()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JA");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JS()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JS");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JNS()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JNS");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JP()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JP");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JNP()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JNP");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JL()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JL");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JNL()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JNL");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JLE()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JLE");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void JG()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JG");
+	SPRINTF(dopr, "%s", dimmoff);
+}
+static void INS_80()
+{
+	dvip++;
+	GetModRegRM(0,8);
+	GetImm(8);
+	switch(rid) {
+	case 0: SPRINTF(dop, "ADD");
+		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 1: SPRINTF(dop, "OR");
+		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 2: SPRINTF(dop, "ADC");
+		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 3: SPRINTF(dop, "SBB");
+		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 4: SPRINTF(dop, "AND");
+		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 5: SPRINTF(dop, "SUB");
+		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 6: SPRINTF(dop, "XOR");
+		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 7: SPRINTF(dop, "CMP");
+		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	default:
+		SPRINTF(dop, "INS_80");
+		SPRINTF(dopr, "<ERROR:REGID(%02X)>", rid);
+		break;
+	}
+}
+static void INS_81()
+{
+	dvip++;
+	GetModRegRM(0,16);
+	GetImm(16);
+	switch(rid) {
+	case 0: SPRINTF(dop, "ADD");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 1: SPRINTF(dop, "OR");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 2: SPRINTF(dop, "ADC");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 3: SPRINTF(dop, "SBB");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 4: SPRINTF(dop, "AND");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 5: SPRINTF(dop, "SUB");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 6: SPRINTF(dop, "XOR");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	case 7: SPRINTF(dop, "CMP");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimm);
+		else       SPRINTF(dopr, "%s,%s", drm, dimm);
+		break;
+	default:
+		SPRINTF(dop, "INS_81");
+		SPRINTF(dopr, "<ERROR:REGID(%02X)>", rid);
+		break;
+	}
+}
+static void INS_82()
+{
+	INS_80();
+}
+static void INS_83()
+{
+	dvip++;
+	GetModRegRM(0,16);
+	GetImm(8);
+	switch(rid) {
+	case 0: SPRINTF(dop, "ADD");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimmsign);
+		else       SPRINTF(dopr, "%s,%s", drm, dimmsign);
+		break;
+	case 1: SPRINTF(dop, "OR");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimmsign);
+		else       SPRINTF(dopr, "%s,%s", drm, dimmsign);
+		break;
+	case 2: SPRINTF(dop, "ADC");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimmsign);
+		else       SPRINTF(dopr, "%s,%s", drm, dimmsign);
+		break;
+	case 3: SPRINTF(dop, "SBB");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimmsign);
+		else       SPRINTF(dopr, "%s,%s", drm, dimmsign);
+		break;
+	case 4: SPRINTF(dop, "AND");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimmsign);
+		else       SPRINTF(dopr, "%s,%s", drm, dimmsign);
+		break;
+	case 5: SPRINTF(dop, "SUB");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimmsign);
+		else       SPRINTF(dopr, "%s,%s", drm, dimmsign);
+		break;
+	case 6: SPRINTF(dop, "XOR");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimmsign);
+		else       SPRINTF(dopr, "%s,%s", drm, dimmsign);
+		break;
+	case 7: SPRINTF(dop, "CMP");
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimmsign);
+		else       SPRINTF(dopr, "%s,%s", drm, dimmsign);
+		break;
+	default:
+		SPRINTF(dop, "INS_81");
+		SPRINTF(dopr, "<ERROR:REGID(%02X)>", rid);
+		break;
+	}
 }
 
 static t_bool IsPrefix(t_nubit8 opcode)
@@ -230,8 +1129,8 @@ static t_bool IsPrefix(t_nubit8 opcode)
 }
 static void ClrPrefix()
 {
-	sprintf(dds, "DS");
-	sprintf(dss, "SS");
+	SPRINTF(dds, "DS");
+	SPRINTF(dss, "SS");
 	dods = vcpu.ds;
 	doss = vcpu.ss;
 }
@@ -251,18 +1150,284 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off)
 		dtip[0] = 0;
 		opcode = vramVarByte(dvcs, dvip);
 		switch (opcode) {
-		case 0x00:  ADD_RM8_R8(); break;
-		case 0x26:  ES();         break;
-		default:                  break;
+		case 0x00: ADD_RM8_R8();   break;
+		case 0x01: ADD_RM16_R16(); break;
+		case 0x02: ADD_R8_RM8();   break;
+		case 0x03: ADD_R16_RM16(); break;
+		case 0x04: ADD_AL_I8();    break;
+		case 0x05: ADD_AX_I16();   break;
+		case 0x06: PUSH_ES();      break;
+		case 0x07: POP_ES();       break;
+		case 0x08: OR_RM8_R8();    break;
+		case 0x09: OR_RM16_R16();  break;
+		case 0x0a: OR_R8_RM8();    break;
+		case 0x0b: OR_R16_RM16();  break;
+		case 0x0c: OR_AL_I8();     break;
+		case 0x0d: OR_AX_I16();    break;
+		case 0x0e: PUSH_CS();      break;
+		case 0x0f: POP_CS();       break;
+		//case 0x0f: INS_0F();     break;
+		case 0x10: ADC_RM8_R8();   break;
+		case 0x11: ADC_RM16_R16(); break;
+		case 0x12: ADC_R8_RM8();   break;
+		case 0x13: ADC_R16_RM16(); break;
+		case 0x14: ADC_AL_I8();    break;
+		case 0x15: ADC_AX_I16();   break;
+		case 0x16: PUSH_SS();      break;
+		case 0x17: POP_SS();       break;
+		case 0x18: SBB_RM8_R8();   break;
+		case 0x19: SBB_RM16_R16(); break;
+		case 0x1a: SBB_R8_RM8();   break;
+		case 0x1b: SBB_R16_RM16(); break;
+		case 0x1c: SBB_AL_I8();    break;
+		case 0x1d: SBB_AX_I16();   break;
+		case 0x1e: PUSH_DS();      break;
+		case 0x1f: POP_DS();       break;
+		case 0x20: AND_RM8_R8();   break;
+		case 0x21: AND_RM16_R16(); break;
+		case 0x22: AND_R8_RM8();   break;
+		case 0x23: AND_R16_RM16(); break;
+		case 0x24: AND_AL_I8();    break;
+		case 0x25: AND_AX_I16();   break;
+		case 0x26: ES();           break;
+		case 0x27: DAA();          break;
+		case 0x28: SUB_RM8_R8();   break;
+		case 0x29: SUB_RM16_R16(); break;
+		case 0x2a: SUB_R8_RM8();   break;
+		case 0x2b: SUB_R16_RM16(); break;
+		case 0x2c: SUB_AL_I8();    break;
+		case 0x2d: SUB_AX_I16();   break;
+		case 0x2e: CS();           break;
+		case 0x2f: DAS();          break;
+		case 0x30: XOR_RM8_R8();   break;
+		case 0x31: XOR_RM16_R16(); break;
+		case 0x32: XOR_R8_RM8();   break;
+		case 0x33: XOR_R16_RM16(); break;
+		case 0x34: XOR_AL_I8();    break;
+		case 0x35: XOR_AX_I16();   break;
+		case 0x36: SS();           break;
+		case 0x37: AAA();          break;
+		case 0x38: CMP_RM8_R8();   break;
+		case 0x39: CMP_RM16_R16(); break;
+		case 0x3a: CMP_R8_RM8();   break;
+		case 0x3b: CMP_R16_RM16(); break;
+		case 0x3c: CMP_AL_I8();    break;
+		case 0x3d: CMP_AX_I16();   break;
+		case 0x3e: DS();           break;
+		case 0x3f: AAS();          break;
+		case 0x40: INC_AX();       break;
+		case 0x41: INC_CX();       break;
+		case 0x42: INC_DX();       break;
+		case 0x43: INC_BX();       break;
+		case 0x44: INC_SP();       break;
+		case 0x45: INC_BP();       break;
+		case 0x46: INC_SI();       break;
+		case 0x47: INC_DI();       break;
+		case 0x48: DEC_AX();       break;
+		case 0x49: DEC_CX();       break;
+		case 0x4a: DEC_DX();       break;
+		case 0x4b: DEC_BX();       break;
+		case 0x4c: DEC_SP();       break;
+		case 0x4d: DEC_BP();       break;
+		case 0x4e: DEC_SI();       break;
+		case 0x4f: DEC_DI();       break;
+		case 0x50: PUSH_AX();      break;
+		case 0x51: PUSH_CX();      break;
+		case 0x52: PUSH_DX();      break;
+		case 0x53: PUSH_BX();      break;
+		case 0x54: PUSH_SP();      break;
+		case 0x55: PUSH_BP();      break;
+		case 0x56: PUSH_SI();      break;
+		case 0x57: PUSH_DI();      break;
+		case 0x58: POP_AX();       break;
+		case 0x59: POP_CX();       break;
+		case 0x5a: POP_DX();       break;
+		case 0x5b: POP_BX();       break;
+		case 0x5c: POP_SP();       break;
+		case 0x5d: POP_BP();       break;
+		case 0x5e: POP_SI();       break;
+		case 0x5f: POP_DI();       break;
+		case 0x60: DB();           break;
+		case 0x61: DB();           break;
+		case 0x62: DB();           break;
+		case 0x63: DB();           break;
+		case 0x64: DB();           break;
+		case 0x65: DB();           break;
+		case 0x66: DB();           break;
+		case 0x67: DB();           break;
+		case 0x68: DB();           break;
+		//case 0x66: OpdSize();    break;
+		//case 0x67: AddrSize();   break;
+		//case 0x68: PUSH_I16();   break;
+		case 0x69: DB();           break;
+		case 0x6a: DB();           break;
+		case 0x6b: DB();           break;
+		case 0x6c: DB();           break;
+		case 0x6d: DB();           break;
+		case 0x6e: DB();           break;
+		case 0x6f: DB();           break;
+		case 0x70: JO();           break;
+		case 0x71: JNO();          break;
+		case 0x72: JC();           break;
+		case 0x73: JNC();          break;
+		case 0x74: JZ();           break;
+		case 0x75: JNZ();          break;
+		case 0x76: JBE();          break;
+		case 0x77: JA();           break;
+		case 0x78: JS();           break;
+		case 0x79: JNS();          break;
+		case 0x7a: JP();           break;
+		case 0x7b: JNP();          break;
+		case 0x7c: JL();           break;
+		case 0x7d: JNL();          break;
+		case 0x7e: JLE();          break;
+		case 0x7f: JG();           break;
+		case 0x80: INS_80();       break;
+		case 0x81: INS_81();       break;
+		case 0x82: INS_82();       break;
+		case 0x83: INS_83();       break;
+/*		case 0x84: TEST_RM8_R8();  break;
+		case 0x85: TEST_RM16_R16();break;
+		case 0x86: XCHG_R8_RM8();  break;
+		case 0x87: XCHG_R16_RM16();break;
+		case 0x88: MOV_RM8_R8();   break;
+		case 0x89: MOV_RM16_R16(); break;
+		case 0x8a: MOV_R8_RM8();   break;
+		case 0x8b: MOV_R16_RM16(); break;
+		case 0x8c: MOV_RM16_SEG(); break;
+		case 0x8d: LEA_R16_M16();  break;
+		case 0x8e: MOV_SEG_RM16(); break;
+		case 0x8f: POP_RM16();     break;
+		case 0x90: NOP();          break;
+		case 0x91: XCHG_CX_AX();   break;
+		case 0x92: XCHG_DX_AX();   break;
+		case 0x93: XCHG_BX_AX();   break;
+		case 0x94: XCHG_SP_AX();   break;
+		case 0x95: XCHG_BP_AX();   break;
+		case 0x96: XCHG_SI_AX();   break;
+		case 0x97: XCHG_DI_AX();   break;
+		case 0x98: CBW(); break;
+		case 0x99: CWD(); break;
+		case 0x9a: CALL_PTR16_16();break;
+		case 0x9b: WAIT(); break;
+		case 0x9c: PUSHF(); break;
+		case 0x9d: POPF(); break;
+		case 0x9e: SAHF(); break;
+		case 0x9f: LAHF(); break;
+		case 0xa0: MOV_AL_M8(); break;
+		case 0xa1: MOV_AX_M16(); break;
+		case 0xa2: MOV_M8_AL(); break;
+		case 0xa3: MOV_M16_AX(); break;
+		case 0xa4: MOVSB(); break;
+		case 0xa5: MOVSW(); break;
+		case 0xa6: CMPSB(); break;
+		case 0xa7: CMPSW(); break;
+		case 0xa8: TEST_AL_I8(); break;
+		case 0xa9: TEST_AX_I16(); break;
+		case 0xaa: STOSB(); break;
+		case 0xab: STOSW(); break;
+		case 0xac: LODSB(); break;
+		case 0xad: LODSW(); break;
+		case 0xae: SCASB(); break;
+		case 0xaf: SCASW(); break;
+		case 0xb0: MOV_AL_I8(); break;
+		case 0xb1: MOV_CL_I8(); break;
+		case 0xb2: MOV_DL_I8(); break;
+		case 0xb3: MOV_BL_I8(); break;
+		case 0xb4: MOV_AH_I8(); break;
+		case 0xb5: MOV_CH_I8(); break;
+		case 0xb6: MOV_DH_I8(); break;
+		case 0xb7: MOV_BH_I8(); break;
+		case 0xb8: MOV_AX_I16(); break;
+		case 0xb9: MOV_CX_I16(); break;
+		case 0xba: MOV_DX_I16(); break;
+		case 0xbb: MOV_BX_I16(); break;
+		case 0xbc: MOV_SP_I16(); break;
+		case 0xbd: MOV_BP_I16(); break;
+		case 0xbe: MOV_SI_I16(); break;
+		case 0xbf: MOV_DI_I16(); break;
+		case 0xc0: DB();           break;
+		case 0xc1: DB();           break;
+		case 0xc2: RET_I16(); break;
+		case 0xc3: RET(); break;
+		case 0xc4: LES_R16_M16(); break;
+		case 0xc5: LDS_R16_M16(); break;
+		case 0xc6: MOV_M8_I8(); break;
+		case 0xc7: MOV_M16_I16(); break;
+		case 0xc8: DB();           break;
+		case 0xc9: DB();           break;
+		case 0xca: RETF_I16(); break;
+		case 0xcb: RETF(); break;
+		case 0xcc: INT3(); break;
+		case 0xcd: INT_I8(); break;
+		case 0xce: INTO(); break;
+		case 0xcf: IRET(); break;
+		case 0xd0: INS_D0(); break;
+		case 0xd1: INS_D1(); break;
+		case 0xd2: INS_D2(); break;
+		case 0xd3: INS_D3(); break;
+		case 0xd4: AAM(); break;
+		case 0xd5: AAD(); break;
+		case 0xd6: DB();           break;
+		case 0xd7: XLAT(); break;
+		case 0xd8: DB();           break;
+		case 0xd9: DB();           break;
+		//case 0xd9: INS_D9(); break;
+		case 0xda: DB();           break;
+		case 0xdb: DB();           break;
+		//case 0xdb: INS_DB(); break;
+		case 0xdc: DB();           break;
+		case 0xdd: DB();           break;
+		case 0xde: DB();           break;
+		case 0xdf: DB();           break;
+		case 0xe0: LOOPNZ(); break;
+		case 0xe1: LOOPZ(); break;
+		case 0xe2: LOOP(); break;
+		case 0xe3: JCXZ_REL8(); break;
+		case 0xe4: IN_AL_I8(); break;
+		case 0xe5: IN_AX_I8(); break;
+		case 0xe6: OUT_I8_AL(); break;
+		case 0xe7: OUT_I8_AX(); break;
+		case 0xe8: CALL_REL16(); break;
+		case 0xe9: JMP_REL16(); break;
+		case 0xea: JMP_PTR16_16(); break;
+		case 0xeb: JMP_REL8(); break;
+		case 0xec: IN_AL_DX(); break;
+		case 0xed: IN_AX_DX(); break;
+		case 0xee: OUT_DX_AL(); break;
+		case 0xef: OUT_DX_AX(); break;
+		case 0xf0: LOCK(); break;
+		case 0xf1: QDX(); break;
+		case 0xf2: REPNZ(); break;
+		case 0xf3: REP(); break;
+		case 0xf4: HLT(); break;
+		case 0xf5: CMC(); break;
+		case 0xf6: INS_F6(); break;
+		case 0xf7: INS_F7(); break;
+		case 0xf8: CLC(); break;
+		case 0xf9: STC(); break;
+		case 0xfa: CLI(); break;
+		case 0xfb: STI(); break;
+		case 0xfc: CLD(); break;
+		case 0xfd: STD(); break;
+		case 0xfe: INS_FE(); break;
+		case 0xff: INS_FF(); break;*/
+		default:   DB();            break;
 		}
 		l = (dvip - off);
 		len += l;
-		for (i = 0;i < l;++i) sprintf(dbin, "%s%02X", dbin, vramVarByte(seg, off+i));
-		if (dtip[0])
-			sprintf(dstmt, "%04X:%04X\t%s\t%s\t%s\t;%s\n", seg, off, dbin, dop, dopr, dtip);
-		else
-			sprintf(dstmt, "%04X:%04X\t%s\t%s\t%s\n", seg, off, dbin, dop, dopr);
+		for (i = 0;i < l;++i) SPRINTF(dbin, "%s%02X", dbin, vramVarByte(seg, off+i));
+		SPRINTF(dstmt, "%04X:%04X %s", seg, off, dbin);
 		off = dvip;
+		for (i = strlen(dstmt);i < 24;++i) STRCAT(dstmt, " ");
+		STRCAT(dstmt, dop);
+		for (i = strlen(dstmt);i < 32;++i) STRCAT(dstmt, " ");
+		STRCAT(dstmt, dopr);
+		if (dtip[0]) {
+			for (i = strlen(dstmt);i < 64;++i) STRCAT(dstmt, " ");
+			STRCAT(dstmt, dtip);
+		}
+		STRCAT(dstmt, "\n");
 		STRCAT(stmt, dstmt);
 	} while (IsPrefix(opcode));
 	return len;

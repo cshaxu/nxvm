@@ -1952,35 +1952,30 @@ CHECKED ADD_RM8_R8()
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	ADD((void *)vcpuins.rm,(void *)vcpuins.r,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADD_RM8_R8\n");
 }
 CHECKED ADD_RM16_R16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	ADD((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADD_RM16_R16\n");
 }
 CHECKED ADD_R8_RM8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	ADD((void *)vcpuins.r,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADD_R8_RM8\n");
 }
 CHECKED ADD_R16_RM16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
 	ADD((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADD_R16_RM16\n");
 }
 CHECKED ADD_AL_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
 	ADD((void *)&vcpu.al,(void *)vcpuins.imm,8);
-	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  ADD_AL_I8\n");
 }
 CHECKED ADD_AX_I16()
 {
@@ -2735,7 +2730,6 @@ void INS_80()
 	case 6:	XOR((void *)vcpuins.rm,(void *)vcpuins.imm,8);break;
 	case 7:	CMP((void *)vcpuins.rm,(void *)vcpuins.imm,8);break;
 	default:CaseError("INS_80::vcpuins.r");break;}
-	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INS_80\n");
 }
 void INS_81()
 {
@@ -2753,12 +2747,10 @@ void INS_81()
 	case 7:	CMP((void *)vcpuins.rm,(void *)vcpuins.imm,16);
 	break;
 	default:CaseError("INS_81::vcpuins.r");break;}
-	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INS_81\n");
 }
 void INS_82()
 {
 	INS_80();
-	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INS_82\n");
 }
 void INS_83()
 {

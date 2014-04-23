@@ -394,7 +394,7 @@ static void Test()
 {
 	char str[0x100];
 	dasm(str, 0, 0);
-	printf("%s\n",str);
+	printf("%s",str);
 }
 
 static void exec()
