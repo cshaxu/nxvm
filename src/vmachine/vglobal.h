@@ -20,7 +20,7 @@ extern "C" {
 #else
 #define VGLOBAL_SIZE_INTEGER 32
 #endif
-#ifdef WIN32
+#ifdef _WIN32
 #define VGLOBAL_PLATFORM VGLOBAL_VAR_WIN32
 #else
 #define VGLOBAL_PLATFORM VGLOBAL_VAR_LINUX

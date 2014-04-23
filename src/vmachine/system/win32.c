@@ -235,7 +235,6 @@ void win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey)
 						code = CodeMap[scanCode][3];
 					else
 						code = CodeMap[scanCode][1];
-
 				}
 			} else {
 				if (vapiCallBackKeyboardGetFlag0Shift())

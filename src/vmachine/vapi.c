@@ -44,8 +44,6 @@ t_nubit32 vapiPrint(const t_string format, ...)
 	return nWrittenBytes;
 }
 
-
-
 /* Disk */
 #include "vfdd.h"
 void vapiFloppyInsert(const t_string fname)

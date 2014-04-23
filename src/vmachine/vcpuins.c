@@ -9554,6 +9554,7 @@ done CMC()
 }
 tots INS_F6()
 {
+	int i;
 	_cb("INS_F6");
 	i386(0xf6) {
 		_adv;
@@ -10542,8 +10543,8 @@ tots INS_0F_01()
 		case 2: base = GetMax24(vcpuins.crm);break;
 		case 4: base = GetMax32(vcpuins.crm);break;
 		default:_impossible_;break;}
-		//_comment("LGDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
-		//	vcpurec.linear, base, limit);
+		_comment("LGDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
+			vcpurec.linear, base, limit);
 		_chk(_s_load_gdtr(base, limit, _GetOperandSize));
 		_be;break;
 	case 3: /* LIDT_M32_16 */
@@ -10562,8 +10563,8 @@ tots INS_0F_01()
 		case 2: base = GetMax24(vcpuins.crm);break;
 		case 4: base = GetMax32(vcpuins.crm);break;
 		default:_impossible_;break;}
-		//_comment("LIDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
-		//	vcpurec.linear, base, limit);
+		_comment("LIDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
+			vcpurec.linear, base, limit);
 		_chk(_s_load_idtr(base, limit, _GetOperandSize));
 		_be;break;
 	case 4: /* SMSW_RM16 */
@@ -11551,6 +11552,7 @@ static void ExecFinal()
 }
 static void ExecIns()
 {
+	static t_bool y = 0;
 	t_nubit8 opcode;
 	RecInit();
 	ExecInit();
@@ -11562,6 +11564,10 @@ static void ExecIns()
 		_chb(_s_test_esp());
 		_ce;
 	} while (IsPrefix(opcode));
+	if (!y && _GetCR0_PE && _GetEFLAGS_VM) {
+		_comment("enter v86!\n");
+		y = 1;
+	}
 	ExecFinal();
 	RecFinal();
 } 

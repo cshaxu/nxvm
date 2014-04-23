@@ -12,7 +12,7 @@ extern "C" {
 #include "vcpu.h"
 
 #define i386(n) if (1)
-#define VCPUINS_TRACE 0
+#define VCPUINS_TRACE 1
 
 typedef enum {
 	ARITHTYPE_NULL,
@@ -100,7 +100,7 @@ typedef struct {
 
 typedef struct {
 	t_cpu rcpu;
-	char stmt[0x20];
+	char stmt[0x100];
 	t_cpurec_memory mem[0x20];
 	t_nubit8 msize;
 	t_nubit64 opcode;
