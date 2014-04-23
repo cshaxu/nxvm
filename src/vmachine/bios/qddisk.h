@@ -8,6 +8,7 @@
 #endif
 
 #define HARD_FDD_INT_0E "  \
+cli                      \n\
 push ax                  \n\
 push dx                  \n\
 mov dx, 03f4             \n\
@@ -26,7 +27,8 @@ $(label_int_0e_ret):     \n\
 mov al, 20               \n\
 out 20, al ; eoi cmd     \n\
 pop dx                   \n\
-pop ax                   \n"
+pop ax                   \n\
+sti                      \n"
 
 #define SOFT_DISK_INT_13 "    \
 test dl, 80                 \n\
@@ -90,7 +92,7 @@ push bx                     \n\
 push ds                     \n\
 mov bx, 40                  \n\
 mov ds, bx                  \n\
-mov [0041], ah              \n\
+mov [0074], ah              \n\
 pop ds                      \n\
 pop bx                      \n\
 ; set/clear cf              \n\
@@ -111,7 +113,9 @@ iret                        \n"
 #define SOFT_DISK_INT_40 "    \
 test dl, 80                 \n\
 jz $(label_int_40_fdd)      \n\
-iret ; invalid drive id     \n\
+mov ah, 01                  \n\
+stc                         \n\
+jmp near $(label_int_40_end)\n\
 $(label_int_40_fdd):        \n\
 cmp ah, 00                  \n\
 jnz $(label_int_40_cmp_01)  \n\
@@ -163,19 +167,248 @@ pop bx                      \n\
 jmp near $(label_int_40_end)\n\
 \
 $(label_int_40_02):         \n\
-qdx a2 \n\
+; read sector               \n\
+cmp dl, 00                  \n\
+ja $(label_int_40_02_bad)   \n\
+cmp dh, 01                  \n\
+ja $(label_int_40_02_bad)   \n\
+cmp cl, 12                  \n\
+ja $(label_int_40_02_bad)   \n\
+cmp ch, 4f                  \n\
+ja $(label_int_40_02_bad)   \n\
+jmp near $(label_int_40_02_work) \n\
+$(label_int_40_02_bad):     \n\
+mov ah, 04                  \n\
+stc                         \n\
 jmp near $(label_int_40_end)\n\
+$(label_int_40_02_work):    \n\
+; set dma                        \n\
+push bx                          \n\
+push cx                          \n\
+push dx                          \n\
+push ax                          \n\
+mov al, 86 ; block, inc, w, chn2 \n\
+out 0b, al                       \n\
+mov cx, bx                       \n\
+mov dx, es                       \n\
+shr cx, 01                       \n\
+shr cx, 01                       \n\
+shr cx, 01                       \n\
+shr cx, 01                       \n\
+add dx, cx                       \n\
+mov ax, dx                       \n\
+shl ax, 01                       \n\
+shl ax, 01                       \n\
+shl ax, 01                       \n\
+shl ax, 01                       \n\
+mov cx, bx                       \n\
+and cx, 0f                       \n\
+or  ax, cx ; calc base addr      \n\
+mov cl, 0c                       \n\
+shr dx, cl ; calc page register  \n\
+out 04, al ; addr low byte       \n\
+mov al, ah                       \n\
+out 04, al ; addr high byte      \n\
+mov al, dl                       \n\
+out 81, al ; page register       \n\
+pop ax                           \n\
+pop dx                           \n\
+mov ah, 00 ; clear ah for wc     \n\
+mov cl, 09                       \n\
+shl ax, cl ; al * 512            \n\
+dec ax                           \n\
+pop cx                           \n\
+pop bx                           \n\
+out 05, al ; wc low byte         \n\
+mov al, ah                       \n\
+out 05, al ; wc high byte        \n\
+mov al, 02                       \n\
+out 0a, al ; unmask dma1.ch2     \n\
+mov al, 00                       \n\
+out d4, al ; unmask dma2.ch0     \n\
+; set fdc                        \n\
+push bx                          \n\
+mov bx, dx                       \n\
+mov dx, 03f5                     \n\
+mov al, e6                       \n\
+out dx, al ; read command        \n\
+shl bh, 01                       \n\
+shl bh, 01                       \n\
+or  bl, bh                       \n\
+shr bh, 01                       \n\
+shr bh, 01 ; calc hds byte       \n\
+mov al, bl                       \n\
+out dx, al ; set stdi hds        \n\
+mov al, ch                       \n\
+out dx, al ; set stdi cyl        \n\
+mov al, bh                       \n\
+out dx, al ; set stdi head       \n\
+mov al, cl                       \n\
+out dx, al ; set stdi sec start  \n\
+mov al, 02                       \n\
+out dx, al ; set stdi sec size   \n\
+mov al, 12                       \n\
+out dx, al ; set stdi sec end    \n\
+mov al, 1b                       \n\
+out dx, al ; set stdi gap len    \n\
+mov al, ff                       \n\
+out dx, al ; set stdi cus secsz  \n\
+pop bx                           \n\
+; vdma drq generated, wait       \n\
+sti                              \n\
+mov dx, 03f4                     \n\
+$(label_int_40_02_l2):           \n\
+in  al, dx                       \n\
+and al, c0                       \n\
+cmp al, c0                       \n\
+jnz $(label_int_40_02_l2)        \n\
+mov dx, 03f5                     \n\
+in  al, dx ; get stdo st0        \n\
+in  al, dx ; get stdo st1        \n\
+in  al, dx ; get stdo st2        \n\
+in  al, dx ; get stdo cyl        \n\
+in  al, dx ; get stdo head       \n\
+in  al, dx ; get stdo sec        \n\
+in  al, dx ; get stdo sec size   \n\
+mov ah, 00                       \n\
+clc                              \n\
+jmp near $(label_int_40_end)     \n\
 \
 $(label_int_40_03):         \n\
-qdx a3 \n\
+; write sector              \n\
+cmp dl, 00                  \n\
+ja $(label_int_40_03_bad)   \n\
+cmp dh, 01                  \n\
+ja $(label_int_40_03_bad)   \n\
+cmp cl, 12                  \n\
+ja $(label_int_40_03_bad)   \n\
+cmp ch, 4f                  \n\
+ja $(label_int_40_03_bad)   \n\
+jmp near $(label_int_40_03_work) \n\
+$(label_int_40_03_bad):     \n\
+mov ah, 04                  \n\
+stc                         \n\
+jmp near $(label_int_40_end)\n\
+$(label_int_40_03_work):    \n\
+\
+; HERE!!!! \n\
+; set dma                        \n\
+push bx                          \n\
+push cx                          \n\
+push dx                          \n\
+push ax                          \n\
+mov al, 8a ; block, inc, r, chn2 \n\
+out 0b, al                       \n\
+mov cx, bx                       \n\
+mov dx, es                       \n\
+shr cx, 01                       \n\
+shr cx, 01                       \n\
+shr cx, 01                       \n\
+shr cx, 01                       \n\
+add dx, cx                       \n\
+mov ax, dx                       \n\
+shl ax, 01                       \n\
+shl ax, 01                       \n\
+shl ax, 01                       \n\
+shl ax, 01                       \n\
+mov cx, bx                       \n\
+and cx, 0f                       \n\
+or  ax, cx ; calc base addr      \n\
+mov cl, 0c                       \n\
+shr dx, cl ; calc page register  \n\
+out 04, al ; addr low byte       \n\
+mov al, ah                       \n\
+out 04, al ; addr high byte      \n\
+mov al, dl                       \n\
+out 81, al ; page register       \n\
+pop ax                           \n\
+pop dx                           \n\
+mov ah, 00 ; clear ah for wc     \n\
+mov cl, 09                       \n\
+shl ax, cl ; al * 512            \n\
+dec ax                           \n\
+pop cx                           \n\
+pop bx                           \n\
+out 05, al ; wc low byte         \n\
+mov al, ah                       \n\
+out 05, al ; wc high byte        \n\
+mov al, 02                       \n\
+out 0a, al ; unmask dma1.ch2     \n\
+mov al, 00                       \n\
+out d4, al ; unmask dma2.ch0     \n\
+; set fdc                        \n\
+push bx                          \n\
+mov bx, dx                       \n\
+mov dx, 03f5                     \n\
+mov al, c5                       \n\
+out dx, al ; write command       \n\
+shl bh, 01                       \n\
+shl bh, 01                       \n\
+or  bl, bh                       \n\
+shr bh, 01                       \n\
+shr bh, 01 ; calc hds byte       \n\
+mov al, bl                       \n\
+out dx, al ; set stdi hds        \n\
+mov al, ch                       \n\
+out dx, al ; set stdi cyl        \n\
+mov al, bh                       \n\
+out dx, al ; set stdi head       \n\
+mov al, cl                       \n\
+out dx, al ; set stdi sec start  \n\
+mov al, 02                       \n\
+out dx, al ; set stdi sec size   \n\
+mov al, 12                       \n\
+out dx, al ; set stdi sec end    \n\
+mov al, 1b                       \n\
+out dx, al ; set stdi gap len    \n\
+mov al, ff                       \n\
+out dx, al ; set stdi cus secsz  \n\
+pop bx                           \n\
+; vdma drq generated, wait       \n\
+sti                              \n\
+mov dx, 03f4                     \n\
+$(label_int_40_02_l2):           \n\
+in  al, dx                       \n\
+and al, c0                       \n\
+cmp al, c0                       \n\
+jnz $(label_int_40_02_l2)        \n\
+mov dx, 03f5                     \n\
+in  al, dx ; get stdo st0        \n\
+in  al, dx ; get stdo st1        \n\
+in  al, dx ; get stdo st2        \n\
+in  al, dx ; get stdo cyl        \n\
+in  al, dx ; get stdo head       \n\
+in  al, dx ; get stdo sec        \n\
+in  al, dx ; get stdo sec size   \n\
+mov ah, 00                       \n\
+clc                              \n\
+\
 jmp near $(label_int_40_end)\n\
 \
 $(label_int_40_08):         \n\
-qdx a8 \n\
+;get parameter              \n\
+mov bx, 0004                \n\
+mov cx, 4f12                \n\
+mov dx, 0102                \n\
+push ds                     \n\
+mov ax, 0000                \n\
+mov ds, ax                  \n\
+mov di, [0078]              \n\
+mov ax, [007a]              \n\
+mov es, ax                  \n\
+pop ds                      \n\
+mov ax, 0000                \n\
+clc                         \n\
 jmp near $(label_int_40_end)\n\
 \
 $(label_int_40_15):         \n\
-qdx b5 \n\
+; get drive type            \n\
+mov ah, dl                  \n\
+and ah, 02                  \n\
+shr ah, 01                  \n\
+not ah                      \n\
+and ah, 01                  \n\
+clc                         \n\
 jmp near $(label_int_40_end)\n\
 \
 $(label_int_40_end):        \n\
@@ -201,8 +434,6 @@ or  word [bx+8], ax         \n\
 pop bx                      \n\
 pop ax                      \n\
 iret                        \n"
-
-// TODO: IMPLEMENT INT 40 FDD SOFT SERVICE 08/15/02/03
 
 void qddiskReset();
 

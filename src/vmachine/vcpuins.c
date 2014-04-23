@@ -3833,15 +3833,19 @@ void QDX()
 	vcpu.ip++;
 	GetImm(8);
 	switch (d_nubit8(vcpuins.imm)) {
-	case 0xfe:
-		vapiPrint("\nNXVM reseted at CS:%04X IP:%04X by QDX FE\n",vcpu.cs,vcpu.ip);
-		vapiPrint("This happens because of the special reset instruction.\n");
-		vapiCallBackMachineReset();
-		break;
+	case 0x00:
 	case 0xff:
-		vapiPrint("\nNXVM stopped at CS:%04X IP:%04X by QDX FF\n",vcpu.cs,vcpu.ip);
-		vapiPrint("This happens because of the special stop instruction.\n");
+		vapiPrint("\nNXVM STOP at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
+			vcpu.cs,vcpu.ip,d_nubit8(vcpuins.imm));
+		vapiPrint("This happens because of the nxvm special instruction.\n");
 		vapiCallBackMachineStop();
+		break;
+	case 0x01:
+	case 0xfe:
+		vapiPrint("\nNXVM RESET at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
+			vcpu.cs,vcpu.ip,d_nubit8(vcpuins.imm));
+		vapiPrint("This happens because of the nxvm special instruction.\n");
+		vapiCallBackMachineReset();
 		break;
 	default:
 		qdbiosExecInt(d_nubit8(vcpuins.imm));

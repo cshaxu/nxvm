@@ -29,6 +29,8 @@ void vapiCallBackMachineRun()
 	if (vmachine.flagrecord) vapiRecordEnd();
 }
 t_nubit8 vapiCallBackMachineGetFlagRun() {return vmachine.flagrun;}
+void vapiCallBackMachineStart() {vmachineStart();}
+void vapiCallBackMachineResume() {vmachineResume();}
 void vapiCallBackMachineReset() {vmachineReset();}
 void vapiCallBackMachineStop() {vmachineStop();}
 

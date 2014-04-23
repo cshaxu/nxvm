@@ -52,6 +52,8 @@ void vapiDisplayPaint();
 
 void vapiCallBackMachineRun();
 t_nubit8 vapiCallBackMachineGetFlagRun();
+void vapiCallBackMachineStart();
+void vapiCallBackMachineResume();
 void vapiCallBackMachineReset();
 void vapiCallBackMachineStop();
 

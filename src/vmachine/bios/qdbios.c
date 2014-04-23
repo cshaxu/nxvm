@@ -128,7 +128,7 @@ static void vbiosLoadInt()
 	/* load disk int */
 	qdbiosMakeInt(0x0e, HARD_FDD_INT_0E);
 	qdbiosMakeInt(0x13, SOFT_DISK_INT_13);
-	qdbiosMakeInt(0x13, SOFT_DISK_INT_40);
+	qdbiosMakeInt(0x40, SOFT_DISK_INT_40);
 	/* qdkeyb init */
 	qdkeybReset();
 	/* qdcga init */

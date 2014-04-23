@@ -324,6 +324,7 @@ static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
 		}
 	}
 	if (vdma->flageop) {
+//		vapiPrint("DMA EXECUTED\n");
 		vdma->isr = 0x00;
 		if (vdma->channel[id].devfinal) ExecFun(vdma->channel[id].devfinal);
 		if (GetAI(vdma,id)) {
