@@ -2,7 +2,7 @@
 Copyright (c) Neko 2013. All rights reserved.\n"
 
 #define USAGE "INFO:\tcommand-line usage\n\
-lifegame <rows> <cols>"
+lifegame"
 
 /*
 http://bbs.chinaunix.net/thread-235738-1-1.html

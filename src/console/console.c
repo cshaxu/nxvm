@@ -155,7 +155,9 @@ void Floppy()
 		return;
 	}
 	fprintf(stdout,"Floppy Image File: ");
+	fflush(stdout);
 	fgets(str, MAXLINE, stdin);
+	fflush(stdin);
 	parse(str);
 	if (!vfdd.flagexist)
 		vmachineInsertFloppy(str);
@@ -199,7 +201,11 @@ void Memory()
 }
 void Info()
 {
-	fprintf(stdout,"init = %d\nrun = %d\nrecord=%d\nbreak = %d\ntrace = %d\n",
+	fprintf(stdout,"NXVM Initialized: %d\n"
+		           "NXVM Running:     %d\n"
+		           "Recorder Enabled: %d\n"
+		           "Breakpoint Set:   %d\n"
+		           "Trace Mode:       %d\n",
 		vmachine.flaginit,vmachine.flagrun,vmachine.flagrecord,vmachine.flagbreak,vmachine.flagtrace);
 }
 
