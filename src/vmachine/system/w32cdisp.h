@@ -11,7 +11,7 @@
 
 void w32cdispIncFlash();
 void w32cdispSetScreen();
-void w32cdispPaint();
+void w32cdispPaint(BOOL force);
 
 void w32cdispInit();
 void w32cdispFinal();

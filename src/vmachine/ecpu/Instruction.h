@@ -7,6 +7,32 @@
 #define InTable vport.in
 #define OutTable vport.out
 
+typedef enum {
+	ADD8,ADD16,
+	//OR8,OR16,
+	ADC8,ADC16,
+	SBB8,SBB16,
+	/*AND8,AND16,*/
+	SUB8,SUB16,
+	/*XOR8,XOR16,*/
+	CMP8,CMP16
+	/*TEST8,TEST16*/
+} t_cpuins_type;
+
+typedef enum {
+	RT_NONE,RT_REPZ,RT_REPZNZ
+} t_cpuins_rep;
+
+typedef struct {
+	t_faddrcc table[0x100];
+	t_vaddrcc rm, r, imm;
+	t_nubitcc opr1, opr2, result, bit;
+	t_cpuins_type type;
+	t_cpuins_rep rep;
+} t_cpuins;
+
+extern t_cpuins vcpuins;
+
 extern t_faddrcc InsTable[0x100];
 extern t_nubitcc GlobINT;
 extern t_vaddrcc evIP;	//evIP永远指向将要读的那个字节
@@ -53,6 +79,7 @@ extern t_vaddrcc evIP;	//evIP永远指向将要读的那个字节
 void JMP_NEAR_LABEL();
 void JMP_NEAR();
 
-void SetupInstructionTable();
+void ecpuinsInit();
+void ecpuinsFinal();
 
 #endif

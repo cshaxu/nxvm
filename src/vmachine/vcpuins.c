@@ -1245,7 +1245,7 @@ static void MOVS(t_nubit8 len)
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  MOVSW\n");
 		break;
 	default:CaseError("MOVS::len");break;}
-	//qdvgaCheckVideoRam(vramGetAddr(vcpu.es, vcpu.di));
+	//qdcgaCheckVideoRam(vramGetAddr(vcpu.es, vcpu.di));
 }
 static void CMPS(t_nubit8 len)
 {

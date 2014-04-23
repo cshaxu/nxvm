@@ -23,9 +23,9 @@ t_cpu eCPU;
 int CPUInit()
 {
 	memset(&eCPU,0,sizeof(t_cpu));
-	SetupInstructionTable();
 	eCPU.cs=0xf000;
 	eCPU.ip=0xfff0;
+	ecpuinsInit();
 	evIP=eCPU.cs;
 	evIP<<=4;
 	evIP+=eCPU.ip;
@@ -125,4 +125,4 @@ int ExecInt()
 
 //////////////////////////////////////////////////////////////////////////
 // easyVM关机时被调用
-void CPUTerminate() {}
+void CPUTerminate() {ecpuinsFinal();}

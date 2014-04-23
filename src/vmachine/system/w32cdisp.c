@@ -45,7 +45,7 @@ void w32cdispSetScreen()
 	SetConsoleScreenBufferSize(hOut, coordBufSize);
 }
 
-void w32cdispPaint()
+void w32cdispPaint(BOOL force)
 {
 	UCHAR ansiChar;
 	WCHAR unicodeChar;
@@ -54,7 +54,7 @@ void w32cdispPaint()
 	COORD curPos;
 //	HANDLE hOutBuf;
 	if (!charBuf) return;
-	if (vapiCallBackDisplayGetBufferChange()) {
+	if (force || vapiCallBackDisplayGetBufferChange()) {
 		for(i = 0;i < sizeCol;++i) {
 			for(j = 0;j < sizeRow;++j) {
 				ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
@@ -76,7 +76,7 @@ void w32cdispPaint()
 		WriteConsoleOutput(hOut, charBuf,
 			coordBufSize, coordBufStart, &srctWriteRect);
 	}
-	if (vapiCallBackDisplayGetCursorPosChange()) {
+	if (force || vapiCallBackDisplayGetCursorPosChange()) {
 		curPos.X = vapiCallBackDisplayGetCurrentCursorPosY();
 		curPos.Y = vapiCallBackDisplayGetCurrentCursorPosX();
 		SetConsoleCursorPosition(hOut,curPos);

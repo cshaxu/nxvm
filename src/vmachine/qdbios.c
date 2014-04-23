@@ -6,7 +6,7 @@
 #include "vapi.h"
 #include "vmachine.h"
 
-#include "qdvga.h"
+#include "qdcga.h"
 #include "qdkeyb.h"
 #include "qdbios.h"
 
@@ -575,7 +575,7 @@ void INT_0E()
 	pop_dx;
 	pop_ax;
 }
-/* vga */
+/* cga */
 void INT_10()
 {
 	t_nubit16 tmpCX = _cx;
@@ -584,22 +584,22 @@ void INT_10()
 	case 0x00:
 //		vapiPrint("SetDisplayMode, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaSetDisplayMode();
+		qdcgaSetDisplayMode();
 		break;
 	case 0x01:
 //		vapiPrint("SetCursorShape, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaSetCursorShape();
+		qdcgaSetCursorShape();
 		break;
 	case 0x02:
 //		vapiPrint("SetCursorPos, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaSetCursorPos();
+		qdcgaSetCursorPos();
 		break;
 	case 0x03:
 //		vapiPrint("GetCursorPos, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaGetCursorPos();
+		qdcgaGetCursorPos();
 		break;
 	case 0x04:
 //		vapiPrint("Wrong, ah=%02X, al=%02X(%d)\n",
@@ -608,71 +608,71 @@ void INT_10()
 	case 0x05:
 //		vapiPrint("SetDisplayPage, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaSetDisplayPage();
+		qdcgaSetDisplayPage();
 		break;
 	case 0x06:
 //		vapiPrint("ScrollUp, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaScrollUp();
+		qdcgaScrollUp();
 		break;
 	case 0x07:
 //		vapiPrint("ScrollDown, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaScrollDown();
+		qdcgaScrollDown();
 		break;
 	case 0x08:
 //		vapiPrint("GetCharProp, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaGetCharProp();
+		qdcgaGetCharProp();
 		break;
 	case 0x09:
 //		vapiPrint("DisplayCharProp, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaDisplayCharProp();
+		qdcgaDisplayCharProp();
 		break;
 	case 0x0a:
 //		vapiPrint("DisplayCharOnly, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaDisplayChar();
+		qdcgaDisplayChar();
 		break;
 	case 0x0b:
-		//qdvgaSetPalette();
+		//qdcgaSetPalette();
 		break;
 	case 0x0c:
-		//qdvgaDisplayPixel();
+		//qdcgaDisplayPixel();
 		break;
 	case 0x0d:
-		//qdvgaGetPixel();
+		//qdcgaGetPixel();
 		break;
 	case 0x0e:
 //		vapiPrint("DisplayCharProp, ah=%02X, al=%02X(%d), page=%x\n",
 //			_ah,_al,_al,_bh);
 		_cx = 0x01;
-		qdvgaDisplayCharProp();
+		qdcgaDisplayCharProp();
 		_cx = tmpCX;
 		break;
 	case 0x0f:
 //		vapiPrint("GetAdapterStatus, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaGetAdapterStatus();
+		qdcgaGetAdapterStatus();
 		break;
 	case 0x10:
 		break;
 	case 0x11:
 //		vapiPrint("GenerateChar, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaGenerateChar();
+		qdcgaGenerateChar();
 		break;
 	case 0x12:
 //		vapiPrint("GetAdapterInfo, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
 		if (_bl == 0x10)
-			qdvgaGetAdapterInfo();
+			qdcgaGetAdapterInfo();
 		break;
 	case 0x13:
 //		vapiPrint("DisplayStr, ah=%02X, al=%02X(%d)\n",
 //			_ah,_al,_al);
-		qdvgaDisplayStr();
+		qdcgaDisplayStr();
 		break;
 	case 0x1a:
 //		vapiPrint("1A, ah=%02X, al=%02X(%d)\n",
@@ -794,7 +794,7 @@ void qdbiosExecInt(t_nubit8 intid)
 		INT_09();break;
 	case 0x0e: /* HARDWARE fdd sense int */
 		INT_0E();break;
-	case 0x10: /* SOFTWARE vga operate */
+	case 0x10: /* SOFTWARE cga operate */
 		INT_10();break;
 	case 0x13: /* SOFTWARE fdd operate */
 		INT_13();break;
@@ -1025,7 +1025,7 @@ void qdbiosInit()
 	out(0x41, 0x12);
 /* qddev init */
 	qdkeybInit();
-	qdvgaInit();
+	qdcgaInit();
 
 /* load cmos data */
 	hour = BCD2Hex(vcmos.reg[VCMOS_RTC_HOUR]);
@@ -1046,6 +1046,6 @@ void qdbiosInit()
 }
 void qdbiosFinal()
 {
-	qdvgaFinal();
+	qdcgaFinal();
 	qdkeybFinal();
 }
