@@ -3,7 +3,7 @@
 #include "memory.h"
 
 #include "debug/aasm.h"
-#include "debug/dasm.h"
+#include "debug/dasm32.h"
 #include "debug/record.h"
 #include "debug/debug.h"
 #include "vapi.h"
@@ -15,9 +15,8 @@ static t_bool StopBeforeRefresh()
 {
 	if (vmachine.flagbreak && _cs == vmachine.breakcs && _ip == vmachine.breakip && vmachine.breakcnt)
 		return 1;
-	if (vmachine.flagbreakx && (vcpu.cs.base + vcpu.eip == vmachine.breaklinear) && vmachine.breakcnt) {
+	if (vmachine.flagbreakx && (vcpu.cs.base + vcpu.eip == vmachine.breaklinear) && vmachine.breakcnt)
 		return 1;
-	}
 	return 0;
 }
 static t_bool StopAfterRefresh()
@@ -80,10 +79,10 @@ static void vmachineAsmTest()
 	char fetch[0x50], result[0x50];
 	t_nubit8 ins[0x20];
 	total++;
-	lend = dasm(fetch, _cs, _ip, 0x00);
-	memcpy(ins, (void *)vramGetRealAddr(_cs, _ip), lend);
+	vcpuinsReadIns((_cs << 4) + _ip, (t_vaddrcc)ins);
+	lend = dasm32(fetch, (t_vaddrcc)ins);
 	lena = aasm(fetch, _cs, _ip);
-	dasm(result, _cs, _ip, 0x00);
+	dasm32(result, (t_vaddrcc)ins);
 	for (i = 0;i < 0x50;++i) {
 		if (fetch[i] == '\n') fetch[i] = ' ';
 		if (result[i] == '\n') result[i] = ' ';

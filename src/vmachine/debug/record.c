@@ -8,7 +8,7 @@
 
 #ifndef VGLOBAL_BOCHS
 #include "../vapi.h"
-#include "dasm.h"
+#include "dasm32.h"
 #else
 #include "../vcpuapi.h"
 #define vapiPrint vcpuapiPrint
@@ -35,24 +35,17 @@ t_record vrecord;
 #define _rec_nt    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_NT))
 #define _rec_ptr_last ((vrecord.start + vrecord.size) % RECORD_SIZE)
 
-#define _expression "%scs:eip=%04x:%08x(L%08x) opcode=%02x %02x %02x %02x %02x %02x %02x %02x \
-ss:esp=%04x:%08x(L%08x) stack=%04x %04x %04x %04x \
+#define _expression "%scs:eip=%04x:%08x(L%08x) ss:esp=%04x:%08x(L%08x) \
 eax=%08x ecx=%08x edx=%08x ebx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \
 eflags=%08x %s %s %s %s %s %s %s %s %s %s %s %s \
-| cs:eip=%04x:%08x(L%08x) %s"
+| cs:eip=%04x:%08x(L%08x) "
 #define _printexp \
 do { \
 /*	fprintf(vrecord.fp, "%04x:%08x(L%08x)\n", _recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip);*/\
 	fprintf(vrecord.fp, _expression, \
 	_rec.svcextl ? "* " : "", \
 	_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip, \
-	GetMax8(_rec.opcode >> 0), GetMax8(_rec.opcode >> 8), \
-	GetMax8(_rec.opcode >> 16), GetMax8(_rec.opcode >> 24), \
-	GetMax8(_rec.opcode >> 32), GetMax8(_rec.opcode >> 40), \
-	GetMax8(_rec.opcode >> 48), GetMax8(_rec.opcode >> 56), \
 	_recpu.ss.selector, _recpu.esp, _recpu.ss.base + _recpu.esp, \
-	GetMax16(_rec.opcode >> 0), GetMax16(_rec.opcode >> 16), \
-	GetMax16(_rec.opcode >> 32), GetMax16(_rec.opcode >> 48), \
 	_recpu.eax,_recpu.ecx,_recpu.edx,_recpu.ebx, \
 	_recpu.ebp,_recpu.esi,_recpu.edi, \
 	_recpu.ds.selector,_recpu.es.selector, \
@@ -70,8 +63,20 @@ do { \
 	_rec_vm ? "VM" : "vm", \
 	_rec_rf ? "RF" : "rf", \
 	_rec_nt ? "NT" : "nt", \
-	_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip, _restmt); \
-	for (j = strlen(_restmt);j < 0x21;++j) \
+	_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip); \
+	if (_rec.oplen) { \
+		oldcpu = vcpu; \
+		vcpu = _recpu; \
+		_rec.oplen = dasm32(_rec.dstmt, (t_vaddrcc)_rec.opcodes); \
+		vcpu = oldcpu; \
+		for (j = 0;j < _rec.oplen;++j) \
+			fprintf(vrecord.fp, "%02X", _rec.opcodes[j]); \
+	} else { \
+		SPRINTF(_rec.dstmt, "<ERROR>"); \
+	} \
+	for (j = _rec.oplen;j < 8;++j) fprintf(vrecord.fp, "  "); \
+	fprintf(vrecord.fp, "%s ", _restmt); \
+	for (j = strlen(_restmt);j < 40;++j) \
 		fprintf(vrecord.fp, " "); \
 	for (j = 0;j < _rec.msize;++j) \
 		fprintf(vrecord.fp, "[%c:L%08x/%1d/%08x] ", \
@@ -95,6 +100,7 @@ void recordNow(const t_string fname)
 }
 void recordDump(const t_string fname)
 {
+	t_cpu oldcpu;
 	t_nubitcc i = 0, j;
 	if (vrecord.fp) fclose(vrecord.fp);
 	vrecord.fp = FOPEN(fname, "w");
@@ -133,6 +139,7 @@ void recordInit()
 }
 void recordExec(t_cpurec *rcpurec)
 {
+	t_cpu oldcpu;
 	t_nubitcc i, j;
 #if RECORD_SELECT_FIRST == 1
 	if (vrecord.size == RECORD_SIZE) {
@@ -142,12 +149,9 @@ void recordExec(t_cpurec *rcpurec)
 #endif
 	if (rcpurec->rcpu.flaghalt) return;
 	if (rcpurec->linear == vrecord.rec[(vrecord.start + vrecord.size - 1) % RECORD_SIZE].linear) return;
-#ifndef VGLOBAL_BOCHS
-	dasm(rcpurec->dstmt, rcpurec->rcpu.cs.selector, rcpurec->rcpu.ip, 0x00);
-#else
-	rcpurec->dstmt[0] = 0;
-#endif
+
 	vrecord.rec[_rec_ptr_last] = (*rcpurec);
+
 	if (vrecord.flagnow) {
 		i = vrecord.size;
 		for (j = 0;j < strlen(_restmt);++j)

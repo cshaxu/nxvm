@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0139]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.013a]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -29,9 +29,9 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *  b-Assembler for Intel 8086
  *   vmachine/debug/aasm.c
  *   vmachine/debug/aasm.h
- *  c-Disassembler for Intel 8086+
- *   vmachine/debug/dasm.c
- *   vmachine/debug/dasm.h
+ *  c-Disassembler for Intel 80386
+ *   vmachine/debug/dasm32.c
+ *   vmachine/debug/dasm32.h
  *  d-Recorder
  *   vmachine/debug/record.c
  *   vmachine/debug/record.h
@@ -124,10 +124,10 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 04/14-05/05  debugged i8086 cpu
  * 04/21-05/23  updated debugger
  * 05/24-07/31  built 80386 cpu
- * 08/06-.....  unify format
+ * 08/06-08/09  built dasm32
  *
  * Milestones
- * 0x45 Console and 8086 CPU
+ * 0x45 Console, 8086 CPU, 8086 Debugger
  * 0x82 Basic Devices (QD Devices)
  * 0x90 Win32 Application
  * 0xbc Win32 Console
@@ -141,6 +141,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0118 i386 Build Milestone 1 (32-bit ins)
  * 0128 i386 Build Milestone 2 (MMU)
  * 012e Bochs Tester Constructed
+ * 013a Built Dasm 32
  *
  * Format Unify:
  * check all includes, macro names, flag names

@@ -25,7 +25,7 @@ test code
 #include "../vcpuins.h"
 
 #include "aasm.h"
-#include "dasm.h"
+#include "dasm32.h"
 #include "debug.h"
 
 #define MAXLINE 256
@@ -46,10 +46,10 @@ static t_nubit16 asmSegRec;
 static t_nubit16 asmPtrRec;
 static t_nubit16 uasmSegRec;
 static t_nubit16 uasmPtrRec;
+static t_nubit8  ucode[15];
 
 static t_nubit16 seg;
 static t_nubit16 ptr;
-static t_nubit8 rcode[16];
 
 static void lcase(t_string s)
 {
@@ -456,7 +456,25 @@ static void o()
 static void q()
 {exitFlag = 1;}
 // register
-static void uprint(t_nubit16,t_nubit16,t_nubit16);
+static t_nubit8 uprintins(t_nubit16 seg, t_nubit16 off)
+{
+	t_nubitcc i;
+	t_nubit8 len;
+	char str[MAXLINE], stmt[MAXLINE], sbin[MAXLINE];
+	if (vcpuinsReadIns((seg << 4) + off, (t_vaddrcc)ucode)) {
+		len = 0;
+		SPRINTF(str, "%04X:%04X <ERROR>", seg, off);
+	} else {
+		len = dasm32(stmt, (t_vaddrcc)ucode);
+		sbin[0] = 0;
+		for (i = 0;i < len;++i) SPRINTF(sbin, "%s%02X", sbin, GetMax8(ucode[i]));
+		SPRINTF(str, "%04X:%04X %s", seg, off, sbin);
+		for (i = strlen(str);i < 24;++i) STRCAT(str, " ");
+		STRCAT(str, stmt);
+	}
+	vapiPrint("%s\n", str);
+	return len;
+}
 static void rprintflags()
 {
 	/*if (bit == 32) {
@@ -481,7 +499,6 @@ static void rprintflags()
 }
 static void rprintregs()
 {
-	char str[MAXLINE];
 /*
 	32-bit
 	vapiPrint( "EAX=%08X", _eax);
@@ -517,11 +534,7 @@ static void rprintregs()
 	vapiPrint("   ");
 	rprintflags();
 	vapiPrint("\n");
-
-	dasm(str, _cs, _ip, 0x02);
-	uasmSegRec = _cs;
-	uasmPtrRec = _ip;
-	vapiPrint("%s", str);
+	uprintins(_cs, _ip);
 }
 static void rscanregs()
 {
@@ -742,14 +755,12 @@ static void t()
 // unassemble
 static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 {
-	char str[MAXLINE];
-	t_nubit16 len = 0;
+	t_nubit8 len;
 	t_nubit32 boundary;
 	if(start > end) end = 0xffff;
 	if ((t_nubit32)((segment<<4) + end) > 0xfffff) end = (0xfffff-(segment<<4));
 	while(start <= end) {
-		len = (t_nubit16)dasm(str, segment, start, 0x01);
-		vapiPrint("%s", str);
+		len = uprintins(segment, start);
 		start += len;
 		boundary = (t_nubit32)start + (t_nubit32)len;
 		if (boundary > 0xffff) break;
@@ -905,9 +916,27 @@ static void xd()
 		xdprint(xdlin, count);
 	} else seterr(3);
 }
+static t_nubit8 xuprintins(t_nubit32 linear)
+{
+	t_nubitcc i;
+	t_nubit8 len;
+	char str[MAXLINE], stmt[MAXLINE], sbin[MAXLINE];
+	if (vcpuinsReadIns(linear, (t_vaddrcc)ucode)) {
+		len = 0;
+		SPRINTF(str, "L%08X <ERROR>", linear);
+	} else {
+		len = dasm32(stmt, (t_vaddrcc)ucode);
+		sbin[0] = 0;
+		for (i = 0;i < len;++i) SPRINTF(sbin, "%s%02X", sbin, GetMax8(ucode[i]));
+		SPRINTF(str, "L%08X %s ", linear, sbin);
+		for (i = strlen(str);i < 24;++i) STRCAT(str, " ");
+		STRCAT(str, stmt);
+	}
+	vapiPrint("%s\n", str);
+	return len;
+}
 static void xreg()
 {
-	char str[MAXLINE];
 	vapiPrint( "EAX=%08X", _eax);
 	vapiPrint(" EBX=%08X", _ebx);
 	vapiPrint(" ECX=%08X", _ecx);
@@ -933,8 +962,7 @@ static void xreg()
 	vapiPrint("%s ", _GetEFLAGS_PF ? "PF" : "pf");
 	vapiPrint("%s ", _GetEFLAGS_CF ? "CF" : "cf");
 	vapiPrint("\n");
-	dasmx(str, vcpu.cs.base + vcpu.eip, 0x02);
-	vapiPrint("%s", str);
+	xuprintins(vcpu.cs.base + vcpu.eip);
 }
 static void xsregseg(t_cpu_sreg *rsreg, const t_string label)
 {
@@ -988,12 +1016,10 @@ static void xcreg()
 }
 static void xuprint(t_nubit32 linear, t_nubit8 count)
 {
-	char str[MAXLINE];
 	t_nubit32 len = 0;
 	t_nubit8 i;
 	for (i = 0;i < count;++i) {
-		len = GetMax32(dasmx(str, linear, 0x01));
-		vapiPrint("%s", str);
+		len = xuprintins(linear);
 		linear += len;
 	}
 	xulin = linear;
@@ -1019,7 +1045,7 @@ static void xtprintmem()
 	for (i = 0;i < vcpurec.msize;++i) {
 		vapiPrint("%s: Lin=%08x, Data=%08x, Bytes=%1x\n",
 			vcpurec.mem[i].flagwrite ? "Write" : "Read",
-			vcpurec.mem[i].data, vcpurec.mem[i].byte);
+			vcpurec.mem[i].linear, vcpurec.mem[i].data, vcpurec.mem[i].byte);
 	}
 }
 static void xt()

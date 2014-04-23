@@ -439,14 +439,11 @@ static t_nubit32 _kma_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubi
 	return linear;
 }
 /* read content from logical */
-static void _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte, t_nubit8 vpl, t_bool force)
+static void _kma_read_linear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte, t_nubit8 vpl, t_bool force)
 {
-//	t_nubitcc i;
-	t_nubit32 linear;
 	t_nubit32 phy1, phy2;
 	t_nubit8  byte1, byte2;
 	_cb("_kma_read_logical");
-	_chk(linear = _kma_linear_logical(rsreg, offset, byte, 0, vpl, force));
 	if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
 		_bb("Linear_Offset(>PageSize)");
 		byte1 = _GetPageSize - _GetLinear_Offset(linear);
@@ -463,6 +460,40 @@ static void _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rda
 		_chk(_kma_read_physical(phy1, rdata, byte1));
 		_be;
 	}
+	_ce;
+}
+/* write content to logical */
+static void _kma_write_linear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte, t_nubit8 vpl, t_bool force)
+{
+	t_nubit32 phy1, phy2;
+	t_nubit8  byte1, byte2;
+	_cb("_kma_write_linear");
+	if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
+		_bb("Linear_Offset(>PageSize)");
+		byte1 = _GetPageSize - _GetLinear_Offset(linear);
+		byte2 = byte - byte1;
+		_chk(phy1 = _kma_physical_linear(linear        , byte1, 1, vpl));
+		_chk(phy2 = _kma_physical_linear(linear + byte1, byte2, 1, vpl));
+		_chk(_kma_write_physical(phy1, rdata        , byte1));
+		_chk(_kma_write_physical(phy2, rdata + byte1, byte2));
+		_be;
+	} else {
+		_bb("Linear_Offset(<=PageSize)");
+		byte1 = byte;
+		_chk(phy1 = _kma_physical_linear(linear, byte1, 1, vpl));
+		_chk(_kma_write_physical(phy1, rdata, byte1));
+		_be;
+	}
+	_ce;
+}
+/* read content from logical */
+static void _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte, t_nubit8 vpl, t_bool force)
+{
+//	t_nubitcc i;
+	t_nubit32 linear;
+	_cb("_kma_read_logical");
+	_chk(linear = _kma_linear_logical(rsreg, offset, byte, 0, vpl, force));
+	_chk(_kma_read_linear(linear, rdata, byte, vpl, force));
 	if (!force) {
 		_bb("!force");
 		vcpurec.mem[vcpurec.msize].flagwrite = 0;
@@ -498,26 +529,9 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rd
 {
 //	t_nubitcc i;
 	t_nubit32 linear;
-	t_nubit32 phy1, phy2;
-	t_nubit8  byte1, byte2;
 	_cb("_kma_write_logical");
 	_chk(linear = _kma_linear_logical(rsreg, offset, byte, 1, vpl, force));
-	if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
-		_bb("Linear_Offset(>PageSize)");
-		byte1 = _GetPageSize - _GetLinear_Offset(linear);
-		byte2 = byte - byte1;
-		_chk(phy1 = _kma_physical_linear(linear        , byte1, 1, vpl));
-		_chk(phy2 = _kma_physical_linear(linear + byte1, byte2, 1, vpl));
-		_chk(_kma_write_physical(phy1, rdata        , byte1));
-		_chk(_kma_write_physical(phy2, rdata + byte1, byte2));
-		_be;
-	} else {
-		_bb("Linear_Offset(<=PageSize)");
-		byte1 = byte;
-		_chk(phy1 = _kma_physical_linear(linear, byte1, 1, vpl));
-		_chk(_kma_write_physical(phy1, rdata, byte1));
-		_be;
-	}
+	_chk(_kma_write_linear(linear, rdata, byte, vpl, force));
 	if (!force) {
 		_bb("!force");
 		vcpurec.mem[vcpurec.msize].flagwrite = 1;
@@ -549,24 +563,22 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rd
 	_ce;
 }
 /* test logical accessing */
-static void _kma_test_access(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
+static void _kma_test_linear(t_nubit32 linear, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
 {
-	t_nubit32 linear;
 	t_nubit32 phy1, phy2;
 	t_nubit8  byte1, byte2;
-	_cb("_kma_test_access");
-	_chk(linear = _kma_linear_logical(rsreg, offset, byte, write, vpl, force));
+	_cb("_kma_test_linear");
 	if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
 		_bb("Linear_Offset(>PageSize)");
 		byte1 = _GetPageSize - _GetLinear_Offset(linear);
 		byte2 = byte - byte1;
-		_chk(phy1 = _kma_physical_linear(linear        , byte1, 0, vpl));
-		_chk(phy2 = _kma_physical_linear(linear + byte1, byte2, 0, vpl));
+		_chk(phy1 = _kma_physical_linear(linear        , byte1, write, vpl));
+		_chk(phy2 = _kma_physical_linear(linear + byte1, byte2, write, vpl));
 		_be;
 	} else {
 		_bb("Linear_Offset(<=PageSize)");
 		byte1 = byte;
-		_chk(phy1 = _kma_physical_linear(linear, byte1, 0, vpl));
+		_chk(phy1 = _kma_physical_linear(linear, byte1, write, vpl));
 		_be;
 	}
 	_ce;
@@ -576,6 +588,14 @@ static void _kma_test_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte
 	t_nubit32 linear;
 	_cb("_kma_test_logical");
 	_chk(linear = _kma_linear_logical(rsreg, offset, byte, write, vpl, force));
+	_ce;
+}
+static void _kma_test_access(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
+{
+	t_nubit32 linear;
+	_cb("_kma_test_access");
+	_chk(linear = _kma_linear_logical(rsreg, offset, byte, write, vpl, force));
+	_chk(_kma_test_linear(linear, byte, write, vpl, force));
 	_ce;
 }
 
@@ -10627,7 +10647,6 @@ static void MOV_R32_DR()
 static void MOV_CR_R32()
 {
 	_cb("MOV_CR_R32");
-	_newins_;
 	_adv;
 	if (_GetCPL) {
 		_bb("CPL(!0)");
@@ -11332,21 +11351,11 @@ static void RecInit()
 {
 	vcpurec.msize = 0;
 	vcpurec.rcpu = vcpu;
-	vcpurec.linear = _kma_linear_logical(&vcpu.cs, vcpu.eip, 1, 0x00, 0, 1);
-	if (vcpuins.flagwe && vcpuins.welin == vcpurec.linear) {
-		vapiPrint("L%08x: EXECUTED\n", vcpurec.linear);
-		vapiCallBackDebugPrintRegs(1);
-	}
-	if (vcpuins.except) vcpurec.linear = 0xcccccccc;
-#ifndef VGLOBAL_BOCHS
-	_kma_read_logical(&vcpu.cs, vcpu.eip, GetRef(vcpurec.opcode), 0x08, 0, 1);
-	if (vcpuins.except) vcpurec.opcode = 0xcccccccccccccccc;
-	if (vcpu.esp + 7 > vcpu.ss.limit)
-		_kma_read_logical(&vcpu.ss, vcpu.esp, GetRef(vcpurec.stack), vcpu.ss.limit - vcpu.esp + 1, 0, 1);
+	vcpurec.linear = vcpu.cs.base + vcpu.eip;
+	if (vcpuinsReadIns(vcpurec.linear, (t_vaddrcc)vcpurec.opcodes))
+		vcpurec.oplen = 0;
 	else
-		_kma_read_logical(&vcpu.ss, vcpu.esp, GetRef(vcpurec.stack), 0x08, 0, 1);
-	if (vcpuins.except) vcpurec.stack = 0xcccccccccccccccc;
-#endif
+		vcpurec.oplen = 15;
 }
 static void RecFinal()
 {}
@@ -11401,8 +11410,14 @@ static void ExecFinal()
 static void ExecIns()
 {
 	t_nubit8 opcode = 0;
+	t_nubit32 linear;
 	RecInit();
 	ExecInit();
+	linear = vcpu.cs.base + vcpu.eip;
+	if (vcpuins.flagwe && vcpuins.welin == linear) {
+		vapiPrint("L%08x: EXECUTED\n", linear);
+		vapiCallBackDebugPrintRegs(1);
+	}
 	do {
 		_cb("ExecIns");
 		_chb(_s_read_cs(vcpu.eip, GetRef(opcode), 1));
@@ -11488,6 +11503,17 @@ static void QDX()
 #endif
 }
 
+/* external interface */
+t_bool vcpuinsReadIns(t_nubit32 linear, t_vaddrcc rcode)
+{
+	t_bool fail;
+	t_nubit32 oldexcept = vcpuins.except;
+	vcpuins.except = 0;
+	_kma_read_linear(linear, rcode, 15, 0x00, 1);
+	fail = !!vcpuins.except;
+	vcpuins.except = oldexcept;
+	return fail;
+}
 void vcpuinsInit()
 {
 #if VCPUINS_TRACE == 1

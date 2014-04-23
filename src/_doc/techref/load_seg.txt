@@ -20,3 +20,14 @@ CODE && !psreg->cd
 STACK && psreg->cd
 DATA && psreg->cd && psreg->rw
 STACK && !psreg->cd && !psreg->rw
+
+LOAD CS:
+normal
+ nc: cpl == dpl
+ cf: cpl >= dpl
+call gate
+ jmp
+  nc: cpl <= dplg, rpl <= dplg, cpl == dpls
+  cf: cpl <= dplg, rpl <= dplg, cpl >= dpls
+ call
+  cf: cpl <= dplg, rpl <= dplg, cpl >= dpls

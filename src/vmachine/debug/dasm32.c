@@ -148,17 +148,17 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 		switch (_GetModRM_MOD(modrm)) {
 		case 0: _bb("ModRM_MOD(0)");
 			switch (_GetModRM_RM(modrm)) {
-			case 0: SPRINTF(drm, "%s%s:[BX+SI]", dptr, doverds);break;
-			case 1: SPRINTF(drm, "%s%s:[BX+DI]", dptr, doverds);break;
-			case 2: SPRINTF(drm, "%s%s:[BP+SI]", dptr, doverss);break;
-			case 3: SPRINTF(drm, "%s%s:[BP+DI]", dptr, doverss);break;
-			case 4: SPRINTF(drm, "%s%s:[SI]",    dptr, doverds);break;
-			case 5: SPRINTF(drm, "%s%s:[DI]",    dptr, doverds);break;
+			case 0: SPRINTF(drm, "%s:[BX+SI]", doverds);break;
+			case 1: SPRINTF(drm, "%s:[BX+DI]", doverds);break;
+			case 2: SPRINTF(drm, "%s:[BP+SI]", doverss);break;
+			case 3: SPRINTF(drm, "%s:[BP+DI]", doverss);break;
+			case 4: SPRINTF(drm, "%s:[SI]",    doverds);break;
+			case 5: SPRINTF(drm, "%s:[DI]",    doverds);break;
 			case 6: _bb("ModRM_RM(6)");
 				_chk(disp16 = (t_nubit16)_kdf_code(2));
-				SPRINTF(drm, "%s%s:[%04X]", dptr, doverds, disp16);
+				SPRINTF(drm, "%s:[%04X]", doverds, disp16);
 				_be;break;
-			case 7: SPRINTF(drm, "%s%s:[BX]", doverds);break;
+			case 7: SPRINTF(drm, "%s:[BX]", doverds);break;
 			default:_impossible_;break;}
 			
 			_be;break;
@@ -167,27 +167,27 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 			sign = (disp8 & 0x80) ? '-' : '+';
 			disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
 			switch (_GetModRM_RM(modrm)) {
-			case 0: SPRINTF(drm, "%s%s:[BX+SI%c%02X]", dptr, doverds, sign, disp8);break;
-			case 1: SPRINTF(drm, "%s%s:[BX+DI%c%02X]", dptr, doverds, sign, disp8);break;
-			case 2: SPRINTF(drm, "%s%s:[BP+SI%c%02X]", dptr, doverss, sign, disp8);break;
-			case 3: SPRINTF(drm, "%s%s:[BP+DI%c%02X]", dptr, doverss, sign, disp8);break;
-			case 4: SPRINTF(drm, "%s%s:[SI%c%02X]",    dptr, doverds, sign, disp8);break;
-			case 5: SPRINTF(drm, "%s%s:[DI%c%02X]",    dptr, doverds, sign, disp8);break;
-			case 6: SPRINTF(drm, "%s%s:[BP%c%02X]",    dptr, doverss, sign, disp8);break;
-			case 7: SPRINTF(drm, "%s%s:[BX%c%02x]",    dptr, doverds, sign, disp8);break;
+			case 0: SPRINTF(drm, "%s:[BX+SI%c%02X]", doverds, sign, disp8u);break;
+			case 1: SPRINTF(drm, "%s:[BX+DI%c%02X]", doverds, sign, disp8u);break;
+			case 2: SPRINTF(drm, "%s:[BP+SI%c%02X]", doverss, sign, disp8u);break;
+			case 3: SPRINTF(drm, "%s:[BP+DI%c%02X]", doverss, sign, disp8u);break;
+			case 4: SPRINTF(drm, "%s:[SI%c%02X]",    doverds, sign, disp8u);break;
+			case 5: SPRINTF(drm, "%s:[DI%c%02X]",    doverds, sign, disp8u);break;
+			case 6: SPRINTF(drm, "%s:[BP%c%02X]",    doverss, sign, disp8u);break;
+			case 7: SPRINTF(drm, "%s:[BX%c%02X]",    doverds, sign, disp8u);break;
 			default:_impossible_;break;}
 			_be;break;
 		case 2: _bb("ModRM_MOD(2)");
 			_chk(disp16 = (t_nubit16)_kdf_code(2));
 			switch (_GetModRM_RM(modrm)) {
-			case 0: SPRINTF(drm, "%s%s:[BX+SI+%04X]", dptr, doverds, disp16);break;
-			case 1: SPRINTF(drm, "%s%s:[BX+DI+%04X]", dptr, doverds, disp16);break;
-			case 2: SPRINTF(drm, "%s%s:[BP+SI+%04X]", dptr, doverss, disp16);break;
-			case 3: SPRINTF(drm, "%s%s:[BP+DI+%04X]", dptr, doverss, disp16);break;
-			case 4: SPRINTF(drm, "%s%s:[SI+%04X]",    dptr, doverds, disp16);break;
-			case 5: SPRINTF(drm, "%s%s:[DI+%04X]",    dptr, doverds, disp16);break;
-			case 6: SPRINTF(drm, "%s%s:[BP+%04X]",    dptr, doverss, disp16);break;
-			case 7: SPRINTF(drm, "%s%s:[BX+%04x]",    dptr, doverds, disp16);break;
+			case 0: SPRINTF(drm, "%s:[BX+SI+%04X]", doverds, disp16);break;
+			case 1: SPRINTF(drm, "%s:[BX+DI+%04X]", doverds, disp16);break;
+			case 2: SPRINTF(drm, "%s:[BP+SI+%04X]", doverss, disp16);break;
+			case 3: SPRINTF(drm, "%s:[BP+DI+%04X]", doverss, disp16);break;
+			case 4: SPRINTF(drm, "%s:[SI+%04X]",    doverds, disp16);break;
+			case 5: SPRINTF(drm, "%s:[DI+%04X]",    doverds, disp16);break;
+			case 6: SPRINTF(drm, "%s:[BP+%04X]",    doverss, disp16);break;
+			case 7: SPRINTF(drm, "%s:[BX+%04X]",    doverds, disp16);break;
 			default:_impossible_;break;}
 			_be;break;
 		case 3:
@@ -216,32 +216,32 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 		case 0:
 			_bb("ModRM_MOD(0)");
 			switch (_GetModRM_RM(modrm)) {
-			case 0: SPRINTF(drm, "%s%s:[EAX]", dptr, doverds);break;
-			case 1: SPRINTF(drm, "%s%s:[ECX]", dptr, doverds);break;
-			case 2: SPRINTF(drm, "%s%s:[EDX]", dptr, doverds);break;
-			case 3: SPRINTF(drm, "%s%s:[EBX]", dptr, doverds);break;
+			case 0: SPRINTF(drm, "%s:[EAX]", doverds);break;
+			case 1: SPRINTF(drm, "%s:[ECX]", doverds);break;
+			case 2: SPRINTF(drm, "%s:[EDX]", doverds);break;
+			case 3: SPRINTF(drm, "%s:[EBX]", doverds);break;
 			case 4:
 				_bb("ModRM_RM(4)");
 				switch (_GetSIB_Base(sib)) {
-				case 0: SPRINTF(drm, "%s%s:[EAX%s]", dptr, doverds, dsibindex);break;
-				case 1: SPRINTF(drm, "%s%s:[ECX%s]", dptr, doverds, dsibindex);break;
-				case 2: SPRINTF(drm, "%s%s:[EDX%s]", dptr, doverds, dsibindex);break;
-				case 3: SPRINTF(drm, "%s%s:[EBX%s]", dptr, doverds, dsibindex);break;
-				case 4: SPRINTF(drm, "%s%s:[ESP%s]", dptr, doverss, dsibindex);break;
+				case 0: SPRINTF(drm, "%s:[EAX%s]", doverds, dsibindex);break;
+				case 1: SPRINTF(drm, "%s:[ECX%s]", doverds, dsibindex);break;
+				case 2: SPRINTF(drm, "%s:[EDX%s]", doverds, dsibindex);break;
+				case 3: SPRINTF(drm, "%s:[EBX%s]", doverds, dsibindex);break;
+				case 4: SPRINTF(drm, "%s:[ESP%s]", doverss, dsibindex);break;
 				case 5: _bb("SIB_Base(5)");
 					_chk(disp32 = (t_nubit32)_kdf_code(4));
-					SPRINTF(drm, "%s%s:[%08X%s]", dptr, doverds, disp32, dsibindex);
+					SPRINTF(drm, "%s:[%08X%s]", doverds, disp32, dsibindex);
 					_be;break;
-				case 6: SPRINTF(drm, "%s%s:[ESI%s]", dptr, doverds, dsibindex);break;
-				case 7: SPRINTF(drm, "%s%s:[EDI%s]", dptr, doverds, dsibindex);break;
+				case 6: SPRINTF(drm, "%s:[ESI%s]", doverds, dsibindex);break;
+				case 7: SPRINTF(drm, "%s:[EDI%s]", doverds, dsibindex);break;
 				default:_impossible_;break;}
 				_be;break;
 			case 5: _bb("ModRM_RM(5)");
 				_chk(disp32 = (t_nubit32)_kdf_code(4));
-				SPRINTF(drm, "%s%s:[%08X]", dptr, doverds, disp32);
+				SPRINTF(drm, "%s:[%08X]", doverds, disp32);
 				_be;break;
-			case 6: SPRINTF(drm, "%s%s:[ESI]", dptr, doverds);break;
-			case 7: SPRINTF(drm, "%s%s:[EDI]", dptr, doverds);break;
+			case 6: SPRINTF(drm, "%s:[ESI]", doverds);break;
+			case 7: SPRINTF(drm, "%s:[EDI]", doverds);break;
 			default:_impossible_;break;}
 			_be;break;
 		case 1: _bb("ModRM_MOD(1)");
@@ -249,49 +249,49 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 			sign = (disp8 & 0x80) ? '-' : '+';
 			disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
 			switch (_GetModRM_RM(modrm)) {
-			case 0: SPRINTF(drm, "%s%s:[EAX%c%02X]", dptr, doverds, sign, disp8u);break;
-			case 1: SPRINTF(drm, "%s%s:[ECX%c%02X]", dptr, doverds, sign, disp8u);break;
-			case 2: SPRINTF(drm, "%s%s:[EDX%c%02X]", dptr, doverds, sign, disp8u);break;
-			case 3: SPRINTF(drm, "%s%s:[EBX%c%02X]", dptr, doverds, sign, disp8u);break;
+			case 0: SPRINTF(drm, "%s:[EAX%c%02X]", doverds, sign, disp8u);break;
+			case 1: SPRINTF(drm, "%s:[ECX%c%02X]", doverds, sign, disp8u);break;
+			case 2: SPRINTF(drm, "%s:[EDX%c%02X]", doverds, sign, disp8u);break;
+			case 3: SPRINTF(drm, "%s:[EBX%c%02X]", doverds, sign, disp8u);break;
 			case 4: _bb("ModRM_RM(4)");
 				switch (_GetSIB_Base(sib)) {
-				case 0: SPRINTF(drm, "%s%s:[EAX%s%c%02X]", dptr, doverds, dsibindex, sign, disp8u);break;
-				case 1: SPRINTF(drm, "%s%s:[ECX%s%c%02X]", dptr, doverds, dsibindex, sign, disp8u);break;
-				case 2: SPRINTF(drm, "%s%s:[EDX%s%c%02X]", dptr, doverds, dsibindex, sign, disp8u);break;
-				case 3: SPRINTF(drm, "%s%s:[EBX%s%c%02X]", dptr, doverds, dsibindex, sign, disp8u);break;
-				case 4: SPRINTF(drm, "%s%s:[ESP%s%c%02X]", dptr, doverss, dsibindex, sign, disp8u);break;
-				case 5: SPRINTF(drm, "%s%s:[EBP%s%c%02X]", dptr, doverss, dsibindex, sign, disp8u);break;
-				case 6: SPRINTF(drm, "%s%s:[ESI%s%c%02X]", dptr, doverds, dsibindex, sign, disp8u);break;
-				case 7: SPRINTF(drm, "%s%s:[EDI%s%c%02X]", dptr, doverds, dsibindex, sign, disp8u);break;
+				case 0: SPRINTF(drm, "%s:[EAX%s%c%02X]", doverds, dsibindex, sign, disp8u);break;
+				case 1: SPRINTF(drm, "%s:[ECX%s%c%02X]", doverds, dsibindex, sign, disp8u);break;
+				case 2: SPRINTF(drm, "%s:[EDX%s%c%02X]", doverds, dsibindex, sign, disp8u);break;
+				case 3: SPRINTF(drm, "%s:[EBX%s%c%02X]", doverds, dsibindex, sign, disp8u);break;
+				case 4: SPRINTF(drm, "%s:[ESP%s%c%02X]", doverss, dsibindex, sign, disp8u);break;
+				case 5: SPRINTF(drm, "%s:[EBP%s%c%02X]", doverss, dsibindex, sign, disp8u);break;
+				case 6: SPRINTF(drm, "%s:[ESI%s%c%02X]", doverds, dsibindex, sign, disp8u);break;
+				case 7: SPRINTF(drm, "%s:[EDI%s%c%02X]", doverds, dsibindex, sign, disp8u);break;
 				default:_impossible_;break;}
 				_be;break;
-			case 5: SPRINTF(drm, "%s%s:[EBP%c%02X]", dptr, doverss, sign, disp8u);break;
-			case 6: SPRINTF(drm, "%s%s:[ESI%c%02X]", dptr, doverds, sign, disp8u);break;
-			case 7: SPRINTF(drm, "%s%s:[EDI%c%02X]", dptr, doverds, sign, disp8u);break;
+			case 5: SPRINTF(drm, "%s:[EBP%c%02X]", doverss, sign, disp8u);break;
+			case 6: SPRINTF(drm, "%s:[ESI%c%02X]", doverds, sign, disp8u);break;
+			case 7: SPRINTF(drm, "%s:[EDI%c%02X]", doverds, sign, disp8u);break;
 			default:_impossible_;break;}
 			_be;break;
 		case 2: _bb("ModRM_MOD(2)");
 			_chk(disp32 = (t_nubit32)_kdf_code(4));
 			switch (_GetModRM_RM(modrm)) {
-			case 0: SPRINTF(drm, "%s%s:[EAX+%08X]", dptr, doverds, disp32);break;
-			case 1: SPRINTF(drm, "%s%s:[ECX+%08X]", dptr, doverds, disp32);break;
-			case 2: SPRINTF(drm, "%s%s:[EDX+%08X]", dptr, doverds, disp32);break;
-			case 3: SPRINTF(drm, "%s%s:[EBX+%08X]", dptr, doverds, disp32);break;
+			case 0: SPRINTF(drm, "%s:[EAX+%08X]", doverds, disp32);break;
+			case 1: SPRINTF(drm, "%s:[ECX+%08X]", doverds, disp32);break;
+			case 2: SPRINTF(drm, "%s:[EDX+%08X]", doverds, disp32);break;
+			case 3: SPRINTF(drm, "%s:[EBX+%08X]", doverds, disp32);break;
 			case 4: _bb("ModRM_RM(4)");
 				switch (_GetSIB_Base(sib)) {
-				case 0: SPRINTF(drm, "%s%s:[EAX%s+%08X]", dptr, doverds, dsibindex, disp32);break;
-				case 1: SPRINTF(drm, "%s%s:[ECX%s+%08X]", dptr, doverds, dsibindex, disp32);break;
-				case 2: SPRINTF(drm, "%s%s:[EDX%s+%08X]", dptr, doverds, dsibindex, disp32);break;
-				case 3: SPRINTF(drm, "%s%s:[EBX%s+%08X]", dptr, doverds, dsibindex, disp32);break;
-				case 4: SPRINTF(drm, "%s%s:[ESP%s+%08X]", dptr, doverss, dsibindex, disp32);break;
-				case 5: SPRINTF(drm, "%s%s:[EBP%s+%08X]", dptr, doverss, dsibindex, disp32);break;
-				case 6: SPRINTF(drm, "%s%s:[ESI%s+%08X]", dptr, doverds, dsibindex, disp32);break;
-				case 7: SPRINTF(drm, "%s%s:[EDI%s+%08X]", dptr, doverds, dsibindex, disp32);break;
+				case 0: SPRINTF(drm, "%s:[EAX%s+%08X]", doverds, dsibindex, disp32);break;
+				case 1: SPRINTF(drm, "%s:[ECX%s+%08X]", doverds, dsibindex, disp32);break;
+				case 2: SPRINTF(drm, "%s:[EDX%s+%08X]", doverds, dsibindex, disp32);break;
+				case 3: SPRINTF(drm, "%s:[EBX%s+%08X]", doverds, dsibindex, disp32);break;
+				case 4: SPRINTF(drm, "%s:[ESP%s+%08X]", doverss, dsibindex, disp32);break;
+				case 5: SPRINTF(drm, "%s:[EBP%s+%08X]", doverss, dsibindex, disp32);break;
+				case 6: SPRINTF(drm, "%s:[ESI%s+%08X]", doverds, dsibindex, disp32);break;
+				case 7: SPRINTF(drm, "%s:[EDI%s+%08X]", doverds, dsibindex, disp32);break;
 				default:_impossible_;break;}
 				_be;break;
-			case 5: SPRINTF(drm, "%s%s:[EBP+%08X]", dptr, doverss, disp32);break;
-			case 6: SPRINTF(drm, "%s%s:[ESI+%08X]", dptr, doverds, disp32);break;
-			case 7: SPRINTF(drm, "%s%s:[EDI+%08X]", dptr, doverds, disp32);break;
+			case 5: SPRINTF(drm, "%s:[EBP+%08X]", doverss, disp32);break;
+			case 6: SPRINTF(drm, "%s:[ESI+%08X]", doverds, disp32);break;
+			case 7: SPRINTF(drm, "%s:[EDI+%08X]", doverds, disp32);break;
 			default:_impossible_;break;}
 			_be;break;
 		case 3:
@@ -350,6 +350,11 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 	}
 	switch (regbyte) {
 	case 0:
+		if (flagmem) {
+			STRCAT(dptr, drm);
+			STRCPY(drm, dptr);
+		}
+	case 9:
 		/* reg is operation or segment */
 		cr = _GetModRM_REG(modrm);
 		break;
@@ -415,23 +420,17 @@ static void _d_imm(t_nubit8 byte)
 }
 static void _d_moffs(t_nubit8 byte)
 {
-	t_dasm_str dptr;
 	t_nubit32 offset;
 	_cb("_d_moffs");
 	flagmem = 1;
-	switch (byte) {
-	case 1: SPRINTF(dptr, "BYTE PTR ");break;
-	case 2: SPRINTF(dptr, "WORD PTR ");break;
-	case 4: SPRINTF(dptr, "DWORD PTR ");break;
-	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: _bb("AddressSize(2)");
 		_chk(offset = GetMax16(_d_code(2)));
-		SPRINTF(drm, "%s%s:[%04X]", dptr, doverds, GetMax16(offset));
+		SPRINTF(drm, "%s:[%04X]", doverds, GetMax16(offset));
 		_be;break;
 	case 4: _bb("AddressSize(4)");
 		_chk(offset = GetMax32(_d_code(4)));
-		SPRINTF(drm, "%s%s:[%08X]", dptr, doverds, GetMax32(offset));
+		SPRINTF(drm, "%s:[%08X]", doverds, GetMax32(offset));
 		_be;break;
 	default:_impossible_;break;}
 	_ce;
@@ -439,7 +438,7 @@ static void _d_moffs(t_nubit8 byte)
 static void _d_modrm_sreg(t_nubit8 rmbyte)
 {
 	_cb("_d_modrm_sreg");
-	_chk(_kdf_modrm(0, rmbyte));
+	_chk(_kdf_modrm(9, rmbyte));
 	switch (cr) {
 	case 0: SPRINTF(dr, "ES");break;
 	case 1: SPRINTF(dr, "CS");break;
@@ -450,22 +449,6 @@ static void _d_modrm_sreg(t_nubit8 rmbyte)
 	default: _bb("cr");
 		SPRINTF(dr, "<ERROR>");
 		_be;break;
-	}
-	_ce;
-}
-static void _d_modrm_ea(t_nubit8 regbyte, t_nubit8 rmbyte)
-{
-	t_dasm_str drm2;
-	_cb("_d_modrm_ea");
-	_chk(_kdf_modrm(regbyte, rmbyte));
-	if (!flagmem) {
-		_bb("flagmem(0)");
-		SPRINTF(drm, "<ERROR>");
-		_be;
-	} else {
-		drm[strlen(drm) - 1] = 0;
-		STRCPY(drm2, drm);
-		SPRINTF(drm, "%s", (drm2 + 4));
 	}
 	_ce;
 }
@@ -1993,11 +1976,12 @@ static void INS_81()
 }
 static void INS_83()
 {
+	t_dasm_str dsimm;
 	_cb("INS_83");
 	_adv;
 	_chk(_d_modrm(0, _GetOperandSize));
 	_chk(_d_imm(1));
-	switch (vcpuins.cr) {
+	switch (cr) {
 	case 0: /* ADD_RM32_I8 */
 		_bb("ADD_RM32_I8");
 		SPRINTF(dop, "ADD");
@@ -2031,7 +2015,8 @@ static void INS_83()
 		SPRINTF(dop, "CMP");
 		_be;break;
 	default:_impossible_;break;}
-	SPRINTF(dopr, "%s,%02X", drm, GetMax8(cimm));
+	SPRINTFSI(dsimm, GetMax8(cimm), 1);
+	SPRINTF(dopr, "%s,%s", drm, dsimm);
 	_ce;
 }
 static void TEST_RM8_R8()
@@ -2120,7 +2105,7 @@ static void LEA_R16_M16()
 	_cb("LEA_R16_M16");
 	_adv;
 	SPRINTF(dop, "LEA");
-	_chk(_d_modrm_ea(_GetOperandSize, _GetOperandSize));
+	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -2137,11 +2122,14 @@ static void INS_8F()
 {
 	_cb("INS_8F");
 	_adv;
-	_chk(_d_modrm(0, _GetOperandSize));
-	switch (vcpuins.cr) {
+	_chk(_d_modrm(9, _GetOperandSize));
+	switch (cr) {
 	case 0: /* POP_RM32 */
 		_bb("POP_RM32");
-		SPRINTF(dop, "POP");
+		switch (_GetOperandSize) {
+		case 2: SPRINTF(dop, "POP");break;
+		case 4: SPRINTF(dop, "POPD");break;
+		default:_impossible_;break;}
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
@@ -2296,14 +2284,14 @@ static void CALL_PTR16_32()
 	switch (_GetOperandSize) {
 	case 2: _bb("OperandSize(2)");
 		_chk(_d_imm(4));
-		neweip = GetMax16(vcpuins.cimm);
-		newcs = GetMax16(vcpuins.cimm >> 16);
+		neweip = GetMax16(cimm);
+		newcs = GetMax16(cimm >> 16);
 		SPRINTF(dopr, "%04X:%04X", newcs, GetMax16(neweip));
 		_be;break;
 	case 4: _bb("OperandSize(4)");
 		_chk(_d_imm(8));
-		neweip = GetMax32(vcpuins.cimm);
-		newcs = GetMax16(vcpuins.cimm >> 32);
+		neweip = GetMax32(cimm);
+		newcs = GetMax16(cimm >> 32);
 		SPRINTF(dopr, "%04X:%08X", newcs, GetMax32(neweip));
 		_be;break;
 	default:_impossible_;break;}
@@ -2320,14 +2308,20 @@ static void PUSHF()
 {
 	_cb("PUSHF");
 	_adv;
-	SPRINTF(dop, "PUSHF");
+	switch (_GetOperandSize) {
+	case 2: SPRINTF(dop, "PUSHF");break;
+	case 4: SPRINTF(dop, "PUSHFD");break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void POPF()
 {
 	_cb("POPF");
 	_adv;
-	SPRINTF(dop, "POPF");
+	switch (_GetOperandSize) {
+	case 2: SPRINTF(dop, "POPF");break;
+	case 4: SPRINTF(dop, "POPFD");break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void SAHF()
@@ -2495,6 +2489,7 @@ static void SCASW()
 static void MOV_AL_I8()
 {
 	_cb("MOV_AL_I8");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(1));
 	SPRINTF(dopr, "AL,%02X", GetMax8(cimm));
@@ -2503,6 +2498,7 @@ static void MOV_AL_I8()
 static void MOV_CL_I8()
 {
 	_cb("MOV_CL_I8");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(1));
 	SPRINTF(dopr, "CL,%02X", GetMax8(cimm));
@@ -2511,6 +2507,7 @@ static void MOV_CL_I8()
 static void MOV_DL_I8()
 {
 	_cb("MOV_DL_I8");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(1));
 	SPRINTF(dopr, "DL,%02X", GetMax8(cimm));
@@ -2519,6 +2516,7 @@ static void MOV_DL_I8()
 static void MOV_BL_I8()
 {
 	_cb("MOV_BL_I8");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(1));
 	SPRINTF(dopr, "BL,%02X", GetMax8(cimm));
@@ -2527,6 +2525,7 @@ static void MOV_BL_I8()
 static void MOV_AH_I8()
 {
 	_cb("MOV_AH_I8");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(1));
 	SPRINTF(dopr, "AH,%02X", GetMax8(cimm));
@@ -2535,6 +2534,7 @@ static void MOV_AH_I8()
 static void MOV_CH_I8()
 {
 	_cb("MOV_CH_I8");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(1));
 	SPRINTF(dopr, "CH,%02X", GetMax8(cimm));
@@ -2543,6 +2543,7 @@ static void MOV_CH_I8()
 static void MOV_DH_I8()
 {
 	_cb("MOV_DH_I8");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(1));
 	SPRINTF(dopr, "DH,%02X", GetMax8(cimm));
@@ -2551,6 +2552,7 @@ static void MOV_DH_I8()
 static void MOV_BH_I8()
 {
 	_cb("MOV_BH_I8");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(1));
 	SPRINTF(dopr, "BH,%02X", GetMax8(cimm));
@@ -2559,6 +2561,7 @@ static void MOV_BH_I8()
 static void MOV_EAX_I32()
 {
 	_cb("MOV_EAX_I32");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
@@ -2570,6 +2573,7 @@ static void MOV_EAX_I32()
 static void MOV_ECX_I32()
 {
 	_cb("MOV_ECX_I32");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
@@ -2581,6 +2585,7 @@ static void MOV_ECX_I32()
 static void MOV_EDX_I32()
 {
 	_cb("MOV_EDX_I32");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
@@ -2592,6 +2597,7 @@ static void MOV_EDX_I32()
 static void MOV_EBX_I32()
 {
 	_cb("MOV_EBX_I32");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
@@ -2603,6 +2609,7 @@ static void MOV_EBX_I32()
 static void MOV_ESP_I32()
 {
 	_cb("MOV_ESP_I32");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
@@ -2614,6 +2621,7 @@ static void MOV_ESP_I32()
 static void MOV_EBP_I32()
 {
 	_cb("MOV_EBP_I32");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
@@ -2625,6 +2633,7 @@ static void MOV_EBP_I32()
 static void MOV_ESI_I32()
 {
 	_cb("MOV_ESI_I32");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
@@ -2636,6 +2645,7 @@ static void MOV_ESI_I32()
 static void MOV_EDI_I32()
 {
 	_cb("MOV_EDI_I32");
+	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
@@ -2650,7 +2660,7 @@ static void INS_C0()
 	_adv;
 	_chk(_d_modrm(0, 1));
 	_chk(_d_imm(1));
-	switch (vcpuins.cr) {
+	switch (cr) {
 	case 0: /* ROL_RM8_I8 */
 		_bb("ROL_RM8_I8");
 		SPRINTF(dop, "ROL");
@@ -2813,7 +2823,7 @@ static void INS_C7()
 	_cb("INS_C7");
 	_adv;
 	_chk(_d_modrm(0, _GetOperandSize));
-	switch (vcpuins.cr) {
+	switch (cr) {
 	case 0: /* MOV_RM32_I32 */
 		_bb("MOV_RM32_I32");
 		SPRINTF(dop, "MOV");
@@ -2904,32 +2914,32 @@ static void INS_D0()
 	case 0: /* ROL_RM8 */
 		_bb("ROL_RM8");
 		SPRINTF(dop, "ROL");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	case 1: /* ROR_RM8 */
 		_bb("ROR_RM8");
 		SPRINTF(dop, "ROR");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	case 2: /* RCL_RM8 */
 		_bb("RCL_RM8");
 		SPRINTF(dop, "RCL");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	case 3: /* RCR_RM8 */
 		_bb("RCR_RM8");
 		SPRINTF(dop, "RCR");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	case 4: /* SHL_RM8 */
 		_bb("SHL_RM8");
 		SPRINTF(dop, "SHL");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	case 5: /* SHR_RM8 */
 		_bb("SHR_RM8");
 		SPRINTF(dop, "SHR");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	case 6: /* UndefinedOpcode */
 		_bb("cr(6)");
@@ -2938,7 +2948,7 @@ static void INS_D0()
 	case 7: /* SAR_RM8 */
 		_bb("SAR_RM8");
 		SPRINTF(dop, "SAR");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	default:_impossible_;break;}
 	_ce;
@@ -2952,32 +2962,32 @@ static void INS_D1()
 	case 0: /* ROL_RM32 */
 		_bb("ROL_RM32");
 		SPRINTF(dop, "ROL");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	case 1: /* ROR_RM32 */
 		_bb("ROR_RM32");
 		SPRINTF(dop, "ROR");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	case 2: /* RCL_RM32 */
 		_bb("RCL_RM32");
 		SPRINTF(dop, "RCL");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	case 3: /* RCR_RM32 */
 		_bb("RCR_RM32");
 		SPRINTF(dop, "RCR");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	case 4: /* SHL_RM32 */
 		_bb("SHL_RM32");
 		SPRINTF(dop, "SHL");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	case 5: /* SHR_RM32 */
 		_bb("SHR_RM32");
 		SPRINTF(dop, "SHR");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	case 6: /* UndefinedOpcode */
 		_bb("cr(6)");
@@ -2986,7 +2996,7 @@ static void INS_D1()
 	case 7: /* SAR_RM32 */
 		_bb("SAR_RM32");
 		SPRINTF(dop, "SAR");
-		SPRINTF(dopr, "%s, 1", drm);
+		SPRINTF(dopr, "%s,1", drm);
 		_be;break;
 	default:_impossible_;break;}
 	_ce;
@@ -3000,32 +3010,32 @@ static void INS_D2()
 	case 0: /* ROL_RM8_CL */
 		_bb("ROL_RM8_CL");
 		SPRINTF(dop, "ROL");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	case 1: /* ROR_RM8_CL */
 		_bb("ROR_RM8_CL");
 		SPRINTF(dop, "ROR");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	case 2: /* RCL_RM8_CL */
 		_bb("RCL_RM8_CL");
 		SPRINTF(dop, "RCL");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	case 3: /* RCR_RM8_CL */
 		_bb("RCR_RM8_CL");
 		SPRINTF(dop, "RCR");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	case 4: /* SHL_RM8_CL */
 		_bb("SHL_RM8_CL");
 		SPRINTF(dop, "SHL");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	case 5: /* SHR_RM8_CL */
 		_bb("SHR_RM8_CL");
 		SPRINTF(dop, "SHR");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	case 6: /* UndefinedOpcode */
 		_bb("cr(6)");
@@ -3034,7 +3044,7 @@ static void INS_D2()
 	case 7: /* SAR_RM8_CL */
 		_bb("SAR_RM8_CL");
 		SPRINTF(dop, "SAR");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	default:_impossible_;break;}
 	_ce;
@@ -3048,32 +3058,32 @@ static void INS_D3()
 	case 0: /* ROL_RM32_CL */
 		_bb("ROL_RM32_CL");
 		SPRINTF(dop, "ROL");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	case 1: /* ROR_RM32_CL */
 		_bb("ROR_RM32_CL");
 		SPRINTF(dop, "ROR");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	case 2: /* RCL_RM32_CL */
 		_bb("RCL_RM32_CL");
 		SPRINTF(dop, "RCL");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	case 3: /* RCR_RM32_CL */
 		_bb("RCR_RM32_CL");
 		SPRINTF(dop, "RCR");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	case 4: /* SHL_RM32_CL */
 		_bb("SHL_RM32_CL");
 		SPRINTF(dop, "SHL");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	case 5: /* SHR_RM32_CL */
 		_bb("SHR_RM32_CL");
 		SPRINTF(dop, "SHR");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	case 6: /* UndefinedOpcode */
 		_bb("cr(6)");
@@ -3082,7 +3092,7 @@ static void INS_D3()
 	case 7: /* SAR_RM32_CL */
 		_bb("SAR_RM32_CL");
 		SPRINTF(dop, "SAR");
-		SPRINTF(dopr, "%s, CL", drm);
+		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
 	default:_impossible_;break;}
 	_ce;
@@ -3460,9 +3470,9 @@ static void CLD()
 }
 static void STD()
 {
-	_cb("CLD");
+	_cb("STD");
 	_adv;
-	SPRINTF(dop, "CLD");
+	SPRINTF(dop, "STD");
 	_ce;
 }
 static void INS_FE()
@@ -3515,41 +3525,44 @@ static void INS_FF()
 	case 2: /* CALL_RM32 */
 		_bb("CALL_RM32");
 		SPRINTF(dop, "CALL");
-		_chk(_d_modrm(0, _GetOperandSize));
-		SPRINTF(dopr, "NEAR PTR %s", drm);
+		_chk(_d_modrm(9, _GetOperandSize));
+		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 3: /* CALL_M16_32 */
 		_bb("CALL_M16_32");
 		SPRINTF(dop, "CALL");
-		_chk(_d_modrm(0, _GetOperandSize + 2));
-		if (!vcpuins.flagmem) {
+		_chk(_d_modrm(9, _GetOperandSize + 2));
+		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
 			_be;
 		}
-		SPRINTF(dopr, "FAR PTR %s", drm);
+		SPRINTF(dopr, "FAR %s", drm);
 		_be;break;
 	case 4: /* JMP_RM32 */
 		_bb("JMP_RM32");
 		SPRINTF(dop, "JMP");
-		_chk(_d_modrm(0, _GetOperandSize));
-		SPRINTF(dopr, "NEAR PTR %s", drm);
+		_chk(_d_modrm(9, _GetOperandSize));
+		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 5: /* JMP_M16_32 */
 		_bb("JMP_M16_32");
 		SPRINTF(dop, "JMP");
-		_chk(_d_modrm(0, _GetOperandSize + 2));
-		if (!vcpuins.flagmem) {
+		_chk(_d_modrm(9, _GetOperandSize + 2));
+		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
 			_be;
 		}
-		SPRINTF(dopr, "FAR PTR %s", drm);
+		SPRINTF(dopr, "FAR %s", drm);
 		_be;break;
 	case 6: /* PUSH_RM32 */
 		_bb("PUSH_RM32");
-		SPRINTF(dop, "PUSH");
-		_chk(_d_modrm(0, _GetOperandSize));
+		switch (_GetOperandSize) {
+		case 2: SPRINTF(dop, "PUSH");break;
+		case 4: SPRINTF(dop, "PUSHD");break;
+		default:_impossible_;break;}
+		_chk(_d_modrm(9, _GetOperandSize));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 7: /* UndefinedOpcode */
@@ -3563,13 +3576,13 @@ static void INS_FF()
 static void _d_modrm_creg()
 {
 	_cb("_d_modrm_creg");
-	_chk(_kdf_modrm(0, 4));
+	_chk(_kdf_modrm(9, 4));
 	if (flagmem) {
 		_bb("flagmem(1)");
 		SPRINTF(drm, "<ERROR>");
 		_be;
 	}
-	switch (vcpuins.cr) {
+	switch (cr) {
 	case 0: SPRINTF(dr, "CR0");break;
 	case 2: SPRINTF(dr, "CR2");break;
 	case 3: SPRINTF(dr, "CR3");break;;
@@ -3579,13 +3592,13 @@ static void _d_modrm_creg()
 static void _d_modrm_dreg()
 {
 	_cb("_d_modrm_dreg");
-	_chk(_kdf_modrm(0, 4));
+	_chk(_kdf_modrm(9, 4));
 	if (flagmem) {
 		_bb("flagmem(1)");
 		SPRINTF(drm, "<ERROR>");
 		_be;
 	}
-	switch (vcpuins.cr) {
+	switch (cr) {
 	case 0: SPRINTF(dr, "DR0");break;
 	case 1: SPRINTF(dr, "DR1");break;
 	case 2: SPRINTF(dr, "DR2");break;
@@ -3598,13 +3611,13 @@ static void _d_modrm_dreg()
 static void _d_modrm_treg()
 {
 	_cb("_d_modrm_treg");
-	_chk(_kdf_modrm(0, 4));
+	_chk(_kdf_modrm(9, 4));
 	if (flagmem) {
 		_bb("flagmem(1)");
 		SPRINTF(drm, "<ERROR>");
 		_be;
 	}
-	switch (vcpuins.cr) {
+	switch (cr) {
 	case 6: SPRINTF(dr, "TR6");break;
 	case 7: SPRINTF(dr, "TR7");break;
 	default:SPRINTF(dr, "<ERROR>");break;}
@@ -3674,7 +3687,7 @@ static void INS_0F_01()
 		_bb("SGDT_M32_16");
 		SPRINTF(dop, "SGDT");
 		_chk(_d_modrm(0, 6));
-		if (!vcpuins.flagmem) {
+		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
 			_be;
@@ -3685,7 +3698,7 @@ static void INS_0F_01()
 		_bb("SIDT_M32_16");
 		SPRINTF(dop, "SIDT");
 		_chk(_d_modrm(0, 6));
-		if (!vcpuins.flagmem) {
+		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
 			_be;
@@ -3696,7 +3709,7 @@ static void INS_0F_01()
 		_bb("LGDT_M32_16");
 		SPRINTF(dop, "LGDT");
 		_chk(_d_modrm(0, 6));
-		if (!vcpuins.flagmem) {
+		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
 			_be;
@@ -3707,7 +3720,7 @@ static void INS_0F_01()
 		_bb("LIDT_M32_16");
 		SPRINTF(dop, "LIDT");
 		_chk(_d_modrm(0, 6));
-		if (!vcpuins.flagmem) {
+		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
 			_be;
@@ -4412,522 +4425,527 @@ static void QDX()
 	SPRINTF(dopr, "%02X", GetMax8(cimm));
 }
 
+static t_bool flaginit = 0;
+
 t_nubit8 dasm32(t_string stmt, t_vaddrcc rcode)
 {
 	t_nubitcc i;
 	t_nubit8 opcode, oldiop;
-	dtable[0x00] = (t_faddrcc)ADD_RM8_R8;
-	dtable[0x01] = (t_faddrcc)ADD_RM32_R32;
-	dtable[0x02] = (t_faddrcc)ADD_R8_RM8;
-	dtable[0x03] = (t_faddrcc)ADD_R32_RM32;
-	dtable[0x04] = (t_faddrcc)ADD_AL_I8;
-	dtable[0x05] = (t_faddrcc)ADD_EAX_I32;
-	dtable[0x06] = (t_faddrcc)PUSH_ES;
-	dtable[0x07] = (t_faddrcc)POP_ES;
-	dtable[0x08] = (t_faddrcc)OR_RM8_R8;
-	dtable[0x09] = (t_faddrcc)OR_RM32_R32;
-	dtable[0x0a] = (t_faddrcc)OR_R8_RM8;
-	dtable[0x0b] = (t_faddrcc)OR_R32_RM32;
-	dtable[0x0c] = (t_faddrcc)OR_AL_I8;
-	dtable[0x0d] = (t_faddrcc)OR_EAX_I32;
-	dtable[0x0e] = (t_faddrcc)PUSH_CS;
-	dtable[0x0f] = (t_faddrcc)INS_0F;//
-	dtable[0x10] = (t_faddrcc)ADC_RM8_R8;
-	dtable[0x11] = (t_faddrcc)ADC_RM32_R32;
-	dtable[0x12] = (t_faddrcc)ADC_R8_RM8;
-	dtable[0x13] = (t_faddrcc)ADC_R32_RM32;
-	dtable[0x14] = (t_faddrcc)ADC_AL_I8;
-	dtable[0x15] = (t_faddrcc)ADC_EAX_I32;
-	dtable[0x16] = (t_faddrcc)PUSH_SS;
-	dtable[0x17] = (t_faddrcc)POP_SS;
-	dtable[0x18] = (t_faddrcc)SBB_RM8_R8;
-	dtable[0x19] = (t_faddrcc)SBB_RM32_R32;
-	dtable[0x1a] = (t_faddrcc)SBB_R8_RM8;
-	dtable[0x1b] = (t_faddrcc)SBB_R32_RM32;
-	dtable[0x1c] = (t_faddrcc)SBB_AL_I8;
-	dtable[0x1d] = (t_faddrcc)SBB_EAX_I32;
-	dtable[0x1e] = (t_faddrcc)PUSH_DS;
-	dtable[0x1f] = (t_faddrcc)POP_DS;
-	dtable[0x20] = (t_faddrcc)AND_RM8_R8;
-	dtable[0x21] = (t_faddrcc)AND_RM32_R32;
-	dtable[0x22] = (t_faddrcc)AND_R8_RM8;
-	dtable[0x23] = (t_faddrcc)AND_R32_RM32;
-	dtable[0x24] = (t_faddrcc)AND_AL_I8;
-	dtable[0x25] = (t_faddrcc)AND_EAX_I32;
-	dtable[0x26] = (t_faddrcc)PREFIX_ES;
-	dtable[0x27] = (t_faddrcc)DAA;
-	dtable[0x28] = (t_faddrcc)SUB_RM8_R8;
-	dtable[0x29] = (t_faddrcc)SUB_RM32_R32;
-	dtable[0x2a] = (t_faddrcc)SUB_R8_RM8;
-	dtable[0x2b] = (t_faddrcc)SUB_R32_RM32;
-	dtable[0x2c] = (t_faddrcc)SUB_AL_I8;
-	dtable[0x2d] = (t_faddrcc)SUB_EAX_I32;
-	dtable[0x2e] = (t_faddrcc)PREFIX_CS;
-	dtable[0x2f] = (t_faddrcc)DAS;
-	dtable[0x30] = (t_faddrcc)XOR_RM8_R8;
-	dtable[0x31] = (t_faddrcc)XOR_RM32_R32;
-	dtable[0x32] = (t_faddrcc)XOR_R8_RM8;
-	dtable[0x33] = (t_faddrcc)XOR_R32_RM32;
-	dtable[0x34] = (t_faddrcc)XOR_AL_I8;
-	dtable[0x35] = (t_faddrcc)XOR_EAX_I32;
-	dtable[0x36] = (t_faddrcc)PREFIX_SS;
-	dtable[0x37] = (t_faddrcc)AAA;
-	dtable[0x38] = (t_faddrcc)CMP_RM8_R8;
-	dtable[0x39] = (t_faddrcc)CMP_RM32_R32;
-	dtable[0x3a] = (t_faddrcc)CMP_R8_RM8;
-	dtable[0x3b] = (t_faddrcc)CMP_R32_RM32;
-	dtable[0x3c] = (t_faddrcc)CMP_AL_I8;
-	dtable[0x3d] = (t_faddrcc)CMP_EAX_I32;
-	dtable[0x3e] = (t_faddrcc)PREFIX_DS;
-	dtable[0x3f] = (t_faddrcc)AAS;
-	dtable[0x40] = (t_faddrcc)INC_EAX;
-	dtable[0x41] = (t_faddrcc)INC_ECX;
-	dtable[0x42] = (t_faddrcc)INC_EDX;
-	dtable[0x43] = (t_faddrcc)INC_EBX;
-	dtable[0x44] = (t_faddrcc)INC_ESP;
-	dtable[0x45] = (t_faddrcc)INC_EBP;
-	dtable[0x46] = (t_faddrcc)INC_ESI;
-	dtable[0x47] = (t_faddrcc)INC_EDI;
-	dtable[0x48] = (t_faddrcc)DEC_EAX;
-	dtable[0x49] = (t_faddrcc)DEC_ECX;
-	dtable[0x4a] = (t_faddrcc)DEC_EDX;
-	dtable[0x4b] = (t_faddrcc)DEC_EBX;
-	dtable[0x4c] = (t_faddrcc)DEC_ESP;
-	dtable[0x4d] = (t_faddrcc)DEC_EBP;
-	dtable[0x4e] = (t_faddrcc)DEC_ESI;
-	dtable[0x4f] = (t_faddrcc)DEC_EDI;
-	dtable[0x50] = (t_faddrcc)PUSH_EAX;
-	dtable[0x51] = (t_faddrcc)PUSH_ECX;
-	dtable[0x52] = (t_faddrcc)PUSH_EDX;
-	dtable[0x53] = (t_faddrcc)PUSH_EBX;
-	dtable[0x54] = (t_faddrcc)PUSH_ESP;
-	dtable[0x55] = (t_faddrcc)PUSH_EBP;
-	dtable[0x56] = (t_faddrcc)PUSH_ESI;
-	dtable[0x57] = (t_faddrcc)PUSH_EDI;
-	dtable[0x58] = (t_faddrcc)POP_EAX;
-	dtable[0x59] = (t_faddrcc)POP_ECX;
-	dtable[0x5a] = (t_faddrcc)POP_EDX;
-	dtable[0x5b] = (t_faddrcc)POP_EBX;
-	dtable[0x5c] = (t_faddrcc)POP_ESP;
-	dtable[0x5d] = (t_faddrcc)POP_EBP;
-	dtable[0x5e] = (t_faddrcc)POP_ESI;
-	dtable[0x5f] = (t_faddrcc)POP_EDI;
-	dtable[0x60] = (t_faddrcc)PUSHA;//
-	dtable[0x61] = (t_faddrcc)POPA;//
-	dtable[0x62] = (t_faddrcc)BOUND_R16_M16_16;//
-	dtable[0x63] = (t_faddrcc)ARPL_RM16_R16;//
-	dtable[0x64] = (t_faddrcc)PREFIX_FS;//
-	dtable[0x65] = (t_faddrcc)PREFIX_GS;//
-	dtable[0x66] = (t_faddrcc)PREFIX_OprSize;//
-	dtable[0x67] = (t_faddrcc)PREFIX_AddrSize;//
-	dtable[0x68] = (t_faddrcc)PUSH_I32;//
-	dtable[0x69] = (t_faddrcc)IMUL_R32_RM32_I32;//
-	dtable[0x6a] = (t_faddrcc)PUSH_I8;//
-	dtable[0x6b] = (t_faddrcc)IMUL_R32_RM32_I8;//
-	dtable[0x6c] = (t_faddrcc)INSB;//
-	dtable[0x6d] = (t_faddrcc)INSW;//
-	dtable[0x6e] = (t_faddrcc)OUTSB;
-	dtable[0x6f] = (t_faddrcc)OUTSW;
-	dtable[0x70] = (t_faddrcc)JO_REL8;
-	dtable[0x71] = (t_faddrcc)JNO_REL8;
-	dtable[0x72] = (t_faddrcc)JC_REL8;
-	dtable[0x73] = (t_faddrcc)JNC_REL8;
-	dtable[0x74] = (t_faddrcc)JZ_REL8;
-	dtable[0x75] = (t_faddrcc)JNZ_REL8;
-	dtable[0x76] = (t_faddrcc)JNA_REL8;
-	dtable[0x77] = (t_faddrcc)JA_REL8;
-	dtable[0x78] = (t_faddrcc)JS_REL8;
-	dtable[0x79] = (t_faddrcc)JNS_REL8;
-	dtable[0x7a] = (t_faddrcc)JP_REL8;
-	dtable[0x7b] = (t_faddrcc)JNP_REL8;
-	dtable[0x7c] = (t_faddrcc)JL_REL8;
-	dtable[0x7d] = (t_faddrcc)JNL_REL8;
-	dtable[0x7e] = (t_faddrcc)JNG_REL8;
-	dtable[0x7f] = (t_faddrcc)JG_REL8;
-	dtable[0x80] = (t_faddrcc)INS_80;
-	dtable[0x81] = (t_faddrcc)INS_81;
-	dtable[0x82] = (t_faddrcc)UndefinedOpcode;
-	dtable[0x83] = (t_faddrcc)INS_83;
-	dtable[0x84] = (t_faddrcc)TEST_RM8_R8;
-	dtable[0x85] = (t_faddrcc)TEST_RM32_R32;
-	dtable[0x86] = (t_faddrcc)XCHG_RM8_R8;
-	dtable[0x87] = (t_faddrcc)XCHG_RM32_R32;
-	dtable[0x88] = (t_faddrcc)MOV_RM8_R8;
-	dtable[0x89] = (t_faddrcc)MOV_RM32_R32;
-	dtable[0x8a] = (t_faddrcc)MOV_R8_RM8;
-	dtable[0x8b] = (t_faddrcc)MOV_R32_RM32;
-	dtable[0x8c] = (t_faddrcc)MOV_RM16_SREG;
-	dtable[0x8d] = (t_faddrcc)LEA_R16_M16;
-	dtable[0x8e] = (t_faddrcc)MOV_SREG_RM16;
-	dtable[0x8f] = (t_faddrcc)INS_8F;
-	dtable[0x90] = (t_faddrcc)NOP;
-	dtable[0x91] = (t_faddrcc)XCHG_ECX_EAX;
-	dtable[0x92] = (t_faddrcc)XCHG_EDX_EAX;
-	dtable[0x93] = (t_faddrcc)XCHG_EBX_EAX;
-	dtable[0x94] = (t_faddrcc)XCHG_ESP_EAX;
-	dtable[0x95] = (t_faddrcc)XCHG_EBP_EAX;
-	dtable[0x96] = (t_faddrcc)XCHG_ESI_EAX;
-	dtable[0x97] = (t_faddrcc)XCHG_EDI_EAX;
-	dtable[0x98] = (t_faddrcc)CBW;
-	dtable[0x99] = (t_faddrcc)CWD;
-	dtable[0x9a] = (t_faddrcc)CALL_PTR16_32;
-	dtable[0x9b] = (t_faddrcc)WAIT;
-	dtable[0x9c] = (t_faddrcc)PUSHF;
-	dtable[0x9d] = (t_faddrcc)POPF;
-	dtable[0x9e] = (t_faddrcc)SAHF;
-	dtable[0x9f] = (t_faddrcc)LAHF;
-	dtable[0xa0] = (t_faddrcc)MOV_AL_MOFFS8;
-	dtable[0xa1] = (t_faddrcc)MOV_EAX_MOFFS32;
-	dtable[0xa2] = (t_faddrcc)MOV_MOFFS8_AL;
-	dtable[0xa3] = (t_faddrcc)MOV_MOFFS32_EAX;
-	dtable[0xa4] = (t_faddrcc)MOVSB;
-	dtable[0xa5] = (t_faddrcc)MOVSW;
-	dtable[0xa6] = (t_faddrcc)CMPSB;
-	dtable[0xa7] = (t_faddrcc)CMPSW;
-	dtable[0xa8] = (t_faddrcc)TEST_AL_I8;
-	dtable[0xa9] = (t_faddrcc)TEST_EAX_I32;
-	dtable[0xaa] = (t_faddrcc)STOSB;
-	dtable[0xab] = (t_faddrcc)STOSW;
-	dtable[0xac] = (t_faddrcc)LODSB;
-	dtable[0xad] = (t_faddrcc)LODSW;
-	dtable[0xae] = (t_faddrcc)SCASB;
-	dtable[0xaf] = (t_faddrcc)SCASW;
-	dtable[0xb0] = (t_faddrcc)MOV_AL_I8;
-	dtable[0xb1] = (t_faddrcc)MOV_CL_I8;
-	dtable[0xb2] = (t_faddrcc)MOV_DL_I8;
-	dtable[0xb3] = (t_faddrcc)MOV_BL_I8;
-	dtable[0xb4] = (t_faddrcc)MOV_AH_I8;
-	dtable[0xb5] = (t_faddrcc)MOV_CH_I8;
-	dtable[0xb6] = (t_faddrcc)MOV_DH_I8;
-	dtable[0xb7] = (t_faddrcc)MOV_BH_I8;
-	dtable[0xb8] = (t_faddrcc)MOV_EAX_I32;
-	dtable[0xb9] = (t_faddrcc)MOV_ECX_I32;
-	dtable[0xba] = (t_faddrcc)MOV_EDX_I32;
-	dtable[0xbb] = (t_faddrcc)MOV_EBX_I32;
-	dtable[0xbc] = (t_faddrcc)MOV_ESP_I32;
-	dtable[0xbd] = (t_faddrcc)MOV_EBP_I32;
-	dtable[0xbe] = (t_faddrcc)MOV_ESI_I32;
-	dtable[0xbf] = (t_faddrcc)MOV_EDI_I32;
-	dtable[0xc0] = (t_faddrcc)INS_C0;//
-	dtable[0xc1] = (t_faddrcc)INS_C1;//
-	dtable[0xc2] = (t_faddrcc)RET_I16;
-	dtable[0xc3] = (t_faddrcc)RET;
-	dtable[0xc4] = (t_faddrcc)LES_R32_M16_32;
-	dtable[0xc5] = (t_faddrcc)LDS_R32_M16_32;
-	dtable[0xc6] = (t_faddrcc)INS_C6;
-	dtable[0xc7] = (t_faddrcc)INS_C7;
-	dtable[0xc8] = (t_faddrcc)ENTER;//
-	dtable[0xc9] = (t_faddrcc)LEAVE;//
-	dtable[0xca] = (t_faddrcc)RETF_I16;
-	dtable[0xcb] = (t_faddrcc)RETF;
-	dtable[0xcc] = (t_faddrcc)INT3;
-	dtable[0xcd] = (t_faddrcc)INT_I8;
-	dtable[0xce] = (t_faddrcc)INTO;
-	dtable[0xcf] = (t_faddrcc)IRET;
-	dtable[0xd0] = (t_faddrcc)INS_D0;
-	dtable[0xd1] = (t_faddrcc)INS_D1;
-	dtable[0xd2] = (t_faddrcc)INS_D2;
-	dtable[0xd3] = (t_faddrcc)INS_D3;
-	dtable[0xd4] = (t_faddrcc)AAM;
-	dtable[0xd5] = (t_faddrcc)AAD;
-	dtable[0xd6] = (t_faddrcc)UndefinedOpcode;
-	dtable[0xd7] = (t_faddrcc)XLAT;
-	dtable[0xd8] = (t_faddrcc)UndefinedOpcode;
-	dtable[0xd9] = (t_faddrcc)UndefinedOpcode;
-	dtable[0xda] = (t_faddrcc)UndefinedOpcode;
-	dtable[0xdb] = (t_faddrcc)UndefinedOpcode;
-	dtable[0xdc] = (t_faddrcc)UndefinedOpcode;
-	dtable[0xdd] = (t_faddrcc)UndefinedOpcode;
-	dtable[0xde] = (t_faddrcc)UndefinedOpcode;
-	dtable[0xdf] = (t_faddrcc)UndefinedOpcode;
-	dtable[0xe0] = (t_faddrcc)LOOPNZ_REL8;
-	dtable[0xe1] = (t_faddrcc)LOOPZ_REL8;
-	dtable[0xe2] = (t_faddrcc)LOOP_REL8;
-	dtable[0xe3] = (t_faddrcc)JCXZ_REL8;
-	dtable[0xe4] = (t_faddrcc)IN_AL_I8;
-	dtable[0xe5] = (t_faddrcc)IN_EAX_I8;
-	dtable[0xe6] = (t_faddrcc)OUT_I8_AL;
-	dtable[0xe7] = (t_faddrcc)OUT_I8_EAX;
-	dtable[0xe8] = (t_faddrcc)CALL_REL32;
-	dtable[0xe9] = (t_faddrcc)JMP_REL32;
-	dtable[0xea] = (t_faddrcc)JMP_PTR16_32;
-	dtable[0xeb] = (t_faddrcc)JMP_REL8;
-	dtable[0xec] = (t_faddrcc)IN_AL_DX;
-	dtable[0xed] = (t_faddrcc)IN_EAX_DX;
-	dtable[0xee] = (t_faddrcc)OUT_DX_AL;
-	dtable[0xef] = (t_faddrcc)OUT_DX_EAX;
-	dtable[0xf0] = (t_faddrcc)PREFIX_LOCK;
-	dtable[0xf1] = (t_faddrcc)QDX;
-	dtable[0xf2] = (t_faddrcc)PREFIX_REPNZ;
-	dtable[0xf3] = (t_faddrcc)PREFIX_REPZ;
-	dtable[0xf4] = (t_faddrcc)HLT;
-	dtable[0xf5] = (t_faddrcc)CMC;
-	dtable[0xf6] = (t_faddrcc)INS_F6;
-	dtable[0xf7] = (t_faddrcc)INS_F7;
-	dtable[0xf8] = (t_faddrcc)CLC;
-	dtable[0xf9] = (t_faddrcc)STC;
-	dtable[0xfa] = (t_faddrcc)CLI;
-	dtable[0xfb] = (t_faddrcc)STI;
-	dtable[0xfc] = (t_faddrcc)CLD;
-	dtable[0xfd] = (t_faddrcc)STD;
-	dtable[0xfe] = (t_faddrcc)INS_FE;
-	dtable[0xff] = (t_faddrcc)INS_FF;
-	dtable_0f[0x00] = (t_faddrcc)INS_0F_00;
-	dtable_0f[0x01] = (t_faddrcc)INS_0F_01;
-	dtable_0f[0x02] = (t_faddrcc)LAR_R32_RM32;
-	dtable_0f[0x03] = (t_faddrcc)LSL_R32_RM32;
-	dtable_0f[0x04] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x05] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x06] = (t_faddrcc)CLTS;
-	dtable_0f[0x07] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x08] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x09] = (t_faddrcc)WBINVD;
-	dtable_0f[0x0a] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x0b] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x0c] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x0d] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x0e] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x0f] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x10] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x11] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x12] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x13] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x14] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x15] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x16] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x17] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x18] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x19] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x1a] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x1b] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x1c] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x1d] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x1e] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x1f] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x20] = (t_faddrcc)MOV_R32_CR;
-	dtable_0f[0x21] = (t_faddrcc)MOV_R32_DR;
-	dtable_0f[0x22] = (t_faddrcc)MOV_CR_R32;
-	dtable_0f[0x23] = (t_faddrcc)MOV_DR_R32;
-	dtable_0f[0x24] = (t_faddrcc)MOV_R32_TR;
-	dtable_0f[0x25] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x26] = (t_faddrcc)MOV_TR_R32;
-	dtable_0f[0x27] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x28] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x29] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x2a] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x2b] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x2c] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x2d] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x2e] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x2f] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x30] = (t_faddrcc)WRMSR;
-	dtable_0f[0x31] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x32] = (t_faddrcc)RDMSR;
-	dtable_0f[0x33] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x34] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x35] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x36] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x37] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x38] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x39] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x3a] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x3b] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x3c] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x3d] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x3e] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x3f] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x40] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x41] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x42] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x43] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x44] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x45] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x46] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x47] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x48] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x49] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x4a] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x4b] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x4c] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x4d] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x4e] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x4f] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x50] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x51] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x52] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x53] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x54] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x55] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x56] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x57] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x58] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x59] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x5a] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x5b] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x5c] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x5d] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x5e] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x5f] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x60] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x61] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x62] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x63] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x64] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x65] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x66] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x67] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x68] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x69] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x6a] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x6b] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x6c] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x6d] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x6e] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x6f] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x70] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x71] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x72] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x73] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x74] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x75] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x76] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x77] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x78] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x79] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x7a] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x7b] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x7c] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x7d] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x7e] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x7f] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0x80] = (t_faddrcc)JO_REL32;
-	dtable_0f[0x81] = (t_faddrcc)JNO_REL32;
-	dtable_0f[0x82] = (t_faddrcc)JC_REL32;
-	dtable_0f[0x83] = (t_faddrcc)JNC_REL32;
-	dtable_0f[0x84] = (t_faddrcc)JZ_REL32;
-	dtable_0f[0x85] = (t_faddrcc)JNZ_REL32;
-	dtable_0f[0x86] = (t_faddrcc)JNA_REL32;
-	dtable_0f[0x87] = (t_faddrcc)JA_REL32;
-	dtable_0f[0x88] = (t_faddrcc)JS_REL32;
-	dtable_0f[0x89] = (t_faddrcc)JNS_REL32;
-	dtable_0f[0x8a] = (t_faddrcc)JP_REL32;
-	dtable_0f[0x8b] = (t_faddrcc)JNP_REL32;
-	dtable_0f[0x8c] = (t_faddrcc)JL_REL32;
-	dtable_0f[0x8d] = (t_faddrcc)JNL_REL32;
-	dtable_0f[0x8e] = (t_faddrcc)JNG_REL32;
-	dtable_0f[0x8f] = (t_faddrcc)JG_REL32;
-	dtable_0f[0x90] = (t_faddrcc)SETO_RM8;
-	dtable_0f[0x91] = (t_faddrcc)SETNO_RM8;
-	dtable_0f[0x92] = (t_faddrcc)SETC_RM8;
-	dtable_0f[0x93] = (t_faddrcc)SETNC_RM8;
-	dtable_0f[0x94] = (t_faddrcc)SETZ_RM8;
-	dtable_0f[0x95] = (t_faddrcc)SETNZ_RM8;
-	dtable_0f[0x96] = (t_faddrcc)SETNA_RM8;
-	dtable_0f[0x97] = (t_faddrcc)SETA_RM8;
-	dtable_0f[0x98] = (t_faddrcc)SETS_RM8;
-	dtable_0f[0x99] = (t_faddrcc)SETNS_RM8;
-	dtable_0f[0x9a] = (t_faddrcc)SETP_RM8;
-	dtable_0f[0x9b] = (t_faddrcc)SETNP_RM8;
-	dtable_0f[0x9c] = (t_faddrcc)SETL_RM8;
-	dtable_0f[0x9d] = (t_faddrcc)SETNL_RM8;
-	dtable_0f[0x9e] = (t_faddrcc)SETNG_RM8;
-	dtable_0f[0x9f] = (t_faddrcc)SETG_RM8;
-	dtable_0f[0xa0] = (t_faddrcc)PUSH_FS;
-	dtable_0f[0xa1] = (t_faddrcc)POP_FS;
-	dtable_0f[0xa2] = (t_faddrcc)CPUID;
-	dtable_0f[0xa3] = (t_faddrcc)BT_RM32_R32;
-	dtable_0f[0xa4] = (t_faddrcc)SHLD_RM32_R32_I8;
-	dtable_0f[0xa5] = (t_faddrcc)SHLD_RM32_R32_CL;
-	dtable_0f[0xa6] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xa7] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xa8] = (t_faddrcc)PUSH_GS;
-	dtable_0f[0xa9] = (t_faddrcc)POP_GS;
-	dtable_0f[0xaa] = (t_faddrcc)RSM;
-	dtable_0f[0xab] = (t_faddrcc)BTS_RM32_R32;
-	dtable_0f[0xac] = (t_faddrcc)SHRD_RM32_R32_I8;
-	dtable_0f[0xad] = (t_faddrcc)SHRD_RM32_R32_CL;
-	dtable_0f[0xae] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xaf] = (t_faddrcc)IMUL_R32_RM32;
-	dtable_0f[0xb0] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xb1] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xb2] = (t_faddrcc)LSS_R32_M16_32;
-	dtable_0f[0xb3] = (t_faddrcc)BTR_RM32_R32;
-	dtable_0f[0xb4] = (t_faddrcc)LFS_R32_M16_32;
-	dtable_0f[0xb5] = (t_faddrcc)LGS_R32_M16_32;
-	dtable_0f[0xb6] = (t_faddrcc)MOVZX_R32_RM8;
-	dtable_0f[0xb7] = (t_faddrcc)MOVZX_R32_RM16;
-	dtable_0f[0xb8] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xb9] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xba] = (t_faddrcc)INS_0F_BA;
-	dtable_0f[0xbb] = (t_faddrcc)BTC_RM32_R32;
-	dtable_0f[0xbc] = (t_faddrcc)BSF_R32_RM32;
-	dtable_0f[0xbd] = (t_faddrcc)BSR_R32_RM32;
-	dtable_0f[0xbe] = (t_faddrcc)MOVSX_R32_RM8;
-	dtable_0f[0xbf] = (t_faddrcc)MOVSX_R32_RM16;
-	dtable_0f[0xc0] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xc1] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xc2] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xc3] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xc4] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xc5] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xc6] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xc7] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xc8] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xc9] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xca] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xcb] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xcc] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xcd] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xce] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xcf] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xd0] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xd1] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xd2] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xd3] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xd4] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xd5] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xd6] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xd7] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xd8] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xd9] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xda] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xdb] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xdc] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xdd] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xde] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xdf] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xe0] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xe1] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xe2] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xe3] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xe4] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xe5] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xe6] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xe7] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xe8] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xe9] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xea] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xeb] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xec] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xed] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xee] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xef] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xf0] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xf1] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xf2] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xf3] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xf4] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xf5] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xf6] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xf7] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xf8] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xf9] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xfa] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xfb] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xfc] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xfd] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xfe] = (t_faddrcc)UndefinedOpcode;
-	dtable_0f[0xff] = (t_faddrcc)UndefinedOpcode;
+	if (!flaginit) {
+		dtable[0x00] = (t_faddrcc)ADD_RM8_R8;
+		dtable[0x01] = (t_faddrcc)ADD_RM32_R32;
+		dtable[0x02] = (t_faddrcc)ADD_R8_RM8;
+		dtable[0x03] = (t_faddrcc)ADD_R32_RM32;
+		dtable[0x04] = (t_faddrcc)ADD_AL_I8;
+		dtable[0x05] = (t_faddrcc)ADD_EAX_I32;
+		dtable[0x06] = (t_faddrcc)PUSH_ES;
+		dtable[0x07] = (t_faddrcc)POP_ES;
+		dtable[0x08] = (t_faddrcc)OR_RM8_R8;
+		dtable[0x09] = (t_faddrcc)OR_RM32_R32;
+		dtable[0x0a] = (t_faddrcc)OR_R8_RM8;
+		dtable[0x0b] = (t_faddrcc)OR_R32_RM32;
+		dtable[0x0c] = (t_faddrcc)OR_AL_I8;
+		dtable[0x0d] = (t_faddrcc)OR_EAX_I32;
+		dtable[0x0e] = (t_faddrcc)PUSH_CS;
+		dtable[0x0f] = (t_faddrcc)INS_0F;//
+		dtable[0x10] = (t_faddrcc)ADC_RM8_R8;
+		dtable[0x11] = (t_faddrcc)ADC_RM32_R32;
+		dtable[0x12] = (t_faddrcc)ADC_R8_RM8;
+		dtable[0x13] = (t_faddrcc)ADC_R32_RM32;
+		dtable[0x14] = (t_faddrcc)ADC_AL_I8;
+		dtable[0x15] = (t_faddrcc)ADC_EAX_I32;
+		dtable[0x16] = (t_faddrcc)PUSH_SS;
+		dtable[0x17] = (t_faddrcc)POP_SS;
+		dtable[0x18] = (t_faddrcc)SBB_RM8_R8;
+		dtable[0x19] = (t_faddrcc)SBB_RM32_R32;
+		dtable[0x1a] = (t_faddrcc)SBB_R8_RM8;
+		dtable[0x1b] = (t_faddrcc)SBB_R32_RM32;
+		dtable[0x1c] = (t_faddrcc)SBB_AL_I8;
+		dtable[0x1d] = (t_faddrcc)SBB_EAX_I32;
+		dtable[0x1e] = (t_faddrcc)PUSH_DS;
+		dtable[0x1f] = (t_faddrcc)POP_DS;
+		dtable[0x20] = (t_faddrcc)AND_RM8_R8;
+		dtable[0x21] = (t_faddrcc)AND_RM32_R32;
+		dtable[0x22] = (t_faddrcc)AND_R8_RM8;
+		dtable[0x23] = (t_faddrcc)AND_R32_RM32;
+		dtable[0x24] = (t_faddrcc)AND_AL_I8;
+		dtable[0x25] = (t_faddrcc)AND_EAX_I32;
+		dtable[0x26] = (t_faddrcc)PREFIX_ES;
+		dtable[0x27] = (t_faddrcc)DAA;
+		dtable[0x28] = (t_faddrcc)SUB_RM8_R8;
+		dtable[0x29] = (t_faddrcc)SUB_RM32_R32;
+		dtable[0x2a] = (t_faddrcc)SUB_R8_RM8;
+		dtable[0x2b] = (t_faddrcc)SUB_R32_RM32;
+		dtable[0x2c] = (t_faddrcc)SUB_AL_I8;
+		dtable[0x2d] = (t_faddrcc)SUB_EAX_I32;
+		dtable[0x2e] = (t_faddrcc)PREFIX_CS;
+		dtable[0x2f] = (t_faddrcc)DAS;
+		dtable[0x30] = (t_faddrcc)XOR_RM8_R8;
+		dtable[0x31] = (t_faddrcc)XOR_RM32_R32;
+		dtable[0x32] = (t_faddrcc)XOR_R8_RM8;
+		dtable[0x33] = (t_faddrcc)XOR_R32_RM32;
+		dtable[0x34] = (t_faddrcc)XOR_AL_I8;
+		dtable[0x35] = (t_faddrcc)XOR_EAX_I32;
+		dtable[0x36] = (t_faddrcc)PREFIX_SS;
+		dtable[0x37] = (t_faddrcc)AAA;
+		dtable[0x38] = (t_faddrcc)CMP_RM8_R8;
+		dtable[0x39] = (t_faddrcc)CMP_RM32_R32;
+		dtable[0x3a] = (t_faddrcc)CMP_R8_RM8;
+		dtable[0x3b] = (t_faddrcc)CMP_R32_RM32;
+		dtable[0x3c] = (t_faddrcc)CMP_AL_I8;
+		dtable[0x3d] = (t_faddrcc)CMP_EAX_I32;
+		dtable[0x3e] = (t_faddrcc)PREFIX_DS;
+		dtable[0x3f] = (t_faddrcc)AAS;
+		dtable[0x40] = (t_faddrcc)INC_EAX;
+		dtable[0x41] = (t_faddrcc)INC_ECX;
+		dtable[0x42] = (t_faddrcc)INC_EDX;
+		dtable[0x43] = (t_faddrcc)INC_EBX;
+		dtable[0x44] = (t_faddrcc)INC_ESP;
+		dtable[0x45] = (t_faddrcc)INC_EBP;
+		dtable[0x46] = (t_faddrcc)INC_ESI;
+		dtable[0x47] = (t_faddrcc)INC_EDI;
+		dtable[0x48] = (t_faddrcc)DEC_EAX;
+		dtable[0x49] = (t_faddrcc)DEC_ECX;
+		dtable[0x4a] = (t_faddrcc)DEC_EDX;
+		dtable[0x4b] = (t_faddrcc)DEC_EBX;
+		dtable[0x4c] = (t_faddrcc)DEC_ESP;
+		dtable[0x4d] = (t_faddrcc)DEC_EBP;
+		dtable[0x4e] = (t_faddrcc)DEC_ESI;
+		dtable[0x4f] = (t_faddrcc)DEC_EDI;
+		dtable[0x50] = (t_faddrcc)PUSH_EAX;
+		dtable[0x51] = (t_faddrcc)PUSH_ECX;
+		dtable[0x52] = (t_faddrcc)PUSH_EDX;
+		dtable[0x53] = (t_faddrcc)PUSH_EBX;
+		dtable[0x54] = (t_faddrcc)PUSH_ESP;
+		dtable[0x55] = (t_faddrcc)PUSH_EBP;
+		dtable[0x56] = (t_faddrcc)PUSH_ESI;
+		dtable[0x57] = (t_faddrcc)PUSH_EDI;
+		dtable[0x58] = (t_faddrcc)POP_EAX;
+		dtable[0x59] = (t_faddrcc)POP_ECX;
+		dtable[0x5a] = (t_faddrcc)POP_EDX;
+		dtable[0x5b] = (t_faddrcc)POP_EBX;
+		dtable[0x5c] = (t_faddrcc)POP_ESP;
+		dtable[0x5d] = (t_faddrcc)POP_EBP;
+		dtable[0x5e] = (t_faddrcc)POP_ESI;
+		dtable[0x5f] = (t_faddrcc)POP_EDI;
+		dtable[0x60] = (t_faddrcc)PUSHA;//
+		dtable[0x61] = (t_faddrcc)POPA;//
+		dtable[0x62] = (t_faddrcc)BOUND_R16_M16_16;//
+		dtable[0x63] = (t_faddrcc)ARPL_RM16_R16;//
+		dtable[0x64] = (t_faddrcc)PREFIX_FS;//
+		dtable[0x65] = (t_faddrcc)PREFIX_GS;//
+		dtable[0x66] = (t_faddrcc)PREFIX_OprSize;//
+		dtable[0x67] = (t_faddrcc)PREFIX_AddrSize;//
+		dtable[0x68] = (t_faddrcc)PUSH_I32;//
+		dtable[0x69] = (t_faddrcc)IMUL_R32_RM32_I32;//
+		dtable[0x6a] = (t_faddrcc)PUSH_I8;//
+		dtable[0x6b] = (t_faddrcc)IMUL_R32_RM32_I8;//
+		dtable[0x6c] = (t_faddrcc)INSB;//
+		dtable[0x6d] = (t_faddrcc)INSW;//
+		dtable[0x6e] = (t_faddrcc)OUTSB;
+		dtable[0x6f] = (t_faddrcc)OUTSW;
+		dtable[0x70] = (t_faddrcc)JO_REL8;
+		dtable[0x71] = (t_faddrcc)JNO_REL8;
+		dtable[0x72] = (t_faddrcc)JC_REL8;
+		dtable[0x73] = (t_faddrcc)JNC_REL8;
+		dtable[0x74] = (t_faddrcc)JZ_REL8;
+		dtable[0x75] = (t_faddrcc)JNZ_REL8;
+		dtable[0x76] = (t_faddrcc)JNA_REL8;
+		dtable[0x77] = (t_faddrcc)JA_REL8;
+		dtable[0x78] = (t_faddrcc)JS_REL8;
+		dtable[0x79] = (t_faddrcc)JNS_REL8;
+		dtable[0x7a] = (t_faddrcc)JP_REL8;
+		dtable[0x7b] = (t_faddrcc)JNP_REL8;
+		dtable[0x7c] = (t_faddrcc)JL_REL8;
+		dtable[0x7d] = (t_faddrcc)JNL_REL8;
+		dtable[0x7e] = (t_faddrcc)JNG_REL8;
+		dtable[0x7f] = (t_faddrcc)JG_REL8;
+		dtable[0x80] = (t_faddrcc)INS_80;
+		dtable[0x81] = (t_faddrcc)INS_81;
+		dtable[0x82] = (t_faddrcc)UndefinedOpcode;
+		dtable[0x83] = (t_faddrcc)INS_83;
+		dtable[0x84] = (t_faddrcc)TEST_RM8_R8;
+		dtable[0x85] = (t_faddrcc)TEST_RM32_R32;
+		dtable[0x86] = (t_faddrcc)XCHG_RM8_R8;
+		dtable[0x87] = (t_faddrcc)XCHG_RM32_R32;
+		dtable[0x88] = (t_faddrcc)MOV_RM8_R8;
+		dtable[0x89] = (t_faddrcc)MOV_RM32_R32;
+		dtable[0x8a] = (t_faddrcc)MOV_R8_RM8;
+		dtable[0x8b] = (t_faddrcc)MOV_R32_RM32;
+		dtable[0x8c] = (t_faddrcc)MOV_RM16_SREG;
+		dtable[0x8d] = (t_faddrcc)LEA_R16_M16;
+		dtable[0x8e] = (t_faddrcc)MOV_SREG_RM16;
+		dtable[0x8f] = (t_faddrcc)INS_8F;
+		dtable[0x90] = (t_faddrcc)NOP;
+		dtable[0x91] = (t_faddrcc)XCHG_ECX_EAX;
+		dtable[0x92] = (t_faddrcc)XCHG_EDX_EAX;
+		dtable[0x93] = (t_faddrcc)XCHG_EBX_EAX;
+		dtable[0x94] = (t_faddrcc)XCHG_ESP_EAX;
+		dtable[0x95] = (t_faddrcc)XCHG_EBP_EAX;
+		dtable[0x96] = (t_faddrcc)XCHG_ESI_EAX;
+		dtable[0x97] = (t_faddrcc)XCHG_EDI_EAX;
+		dtable[0x98] = (t_faddrcc)CBW;
+		dtable[0x99] = (t_faddrcc)CWD;
+		dtable[0x9a] = (t_faddrcc)CALL_PTR16_32;
+		dtable[0x9b] = (t_faddrcc)WAIT;
+		dtable[0x9c] = (t_faddrcc)PUSHF;
+		dtable[0x9d] = (t_faddrcc)POPF;
+		dtable[0x9e] = (t_faddrcc)SAHF;
+		dtable[0x9f] = (t_faddrcc)LAHF;
+		dtable[0xa0] = (t_faddrcc)MOV_AL_MOFFS8;
+		dtable[0xa1] = (t_faddrcc)MOV_EAX_MOFFS32;
+		dtable[0xa2] = (t_faddrcc)MOV_MOFFS8_AL;
+		dtable[0xa3] = (t_faddrcc)MOV_MOFFS32_EAX;
+		dtable[0xa4] = (t_faddrcc)MOVSB;
+		dtable[0xa5] = (t_faddrcc)MOVSW;
+		dtable[0xa6] = (t_faddrcc)CMPSB;
+		dtable[0xa7] = (t_faddrcc)CMPSW;
+		dtable[0xa8] = (t_faddrcc)TEST_AL_I8;
+		dtable[0xa9] = (t_faddrcc)TEST_EAX_I32;
+		dtable[0xaa] = (t_faddrcc)STOSB;
+		dtable[0xab] = (t_faddrcc)STOSW;
+		dtable[0xac] = (t_faddrcc)LODSB;
+		dtable[0xad] = (t_faddrcc)LODSW;
+		dtable[0xae] = (t_faddrcc)SCASB;
+		dtable[0xaf] = (t_faddrcc)SCASW;
+		dtable[0xb0] = (t_faddrcc)MOV_AL_I8;
+		dtable[0xb1] = (t_faddrcc)MOV_CL_I8;
+		dtable[0xb2] = (t_faddrcc)MOV_DL_I8;
+		dtable[0xb3] = (t_faddrcc)MOV_BL_I8;
+		dtable[0xb4] = (t_faddrcc)MOV_AH_I8;
+		dtable[0xb5] = (t_faddrcc)MOV_CH_I8;
+		dtable[0xb6] = (t_faddrcc)MOV_DH_I8;
+		dtable[0xb7] = (t_faddrcc)MOV_BH_I8;
+		dtable[0xb8] = (t_faddrcc)MOV_EAX_I32;
+		dtable[0xb9] = (t_faddrcc)MOV_ECX_I32;
+		dtable[0xba] = (t_faddrcc)MOV_EDX_I32;
+		dtable[0xbb] = (t_faddrcc)MOV_EBX_I32;
+		dtable[0xbc] = (t_faddrcc)MOV_ESP_I32;
+		dtable[0xbd] = (t_faddrcc)MOV_EBP_I32;
+		dtable[0xbe] = (t_faddrcc)MOV_ESI_I32;
+		dtable[0xbf] = (t_faddrcc)MOV_EDI_I32;
+		dtable[0xc0] = (t_faddrcc)INS_C0;//
+		dtable[0xc1] = (t_faddrcc)INS_C1;//
+		dtable[0xc2] = (t_faddrcc)RET_I16;
+		dtable[0xc3] = (t_faddrcc)RET;
+		dtable[0xc4] = (t_faddrcc)LES_R32_M16_32;
+		dtable[0xc5] = (t_faddrcc)LDS_R32_M16_32;
+		dtable[0xc6] = (t_faddrcc)INS_C6;
+		dtable[0xc7] = (t_faddrcc)INS_C7;
+		dtable[0xc8] = (t_faddrcc)ENTER;//
+		dtable[0xc9] = (t_faddrcc)LEAVE;//
+		dtable[0xca] = (t_faddrcc)RETF_I16;
+		dtable[0xcb] = (t_faddrcc)RETF;
+		dtable[0xcc] = (t_faddrcc)INT3;
+		dtable[0xcd] = (t_faddrcc)INT_I8;
+		dtable[0xce] = (t_faddrcc)INTO;
+		dtable[0xcf] = (t_faddrcc)IRET;
+		dtable[0xd0] = (t_faddrcc)INS_D0;
+		dtable[0xd1] = (t_faddrcc)INS_D1;
+		dtable[0xd2] = (t_faddrcc)INS_D2;
+		dtable[0xd3] = (t_faddrcc)INS_D3;
+		dtable[0xd4] = (t_faddrcc)AAM;
+		dtable[0xd5] = (t_faddrcc)AAD;
+		dtable[0xd6] = (t_faddrcc)UndefinedOpcode;
+		dtable[0xd7] = (t_faddrcc)XLAT;
+		dtable[0xd8] = (t_faddrcc)UndefinedOpcode;
+		dtable[0xd9] = (t_faddrcc)UndefinedOpcode;
+		dtable[0xda] = (t_faddrcc)UndefinedOpcode;
+		dtable[0xdb] = (t_faddrcc)UndefinedOpcode;
+		dtable[0xdc] = (t_faddrcc)UndefinedOpcode;
+		dtable[0xdd] = (t_faddrcc)UndefinedOpcode;
+		dtable[0xde] = (t_faddrcc)UndefinedOpcode;
+		dtable[0xdf] = (t_faddrcc)UndefinedOpcode;
+		dtable[0xe0] = (t_faddrcc)LOOPNZ_REL8;
+		dtable[0xe1] = (t_faddrcc)LOOPZ_REL8;
+		dtable[0xe2] = (t_faddrcc)LOOP_REL8;
+		dtable[0xe3] = (t_faddrcc)JCXZ_REL8;
+		dtable[0xe4] = (t_faddrcc)IN_AL_I8;
+		dtable[0xe5] = (t_faddrcc)IN_EAX_I8;
+		dtable[0xe6] = (t_faddrcc)OUT_I8_AL;
+		dtable[0xe7] = (t_faddrcc)OUT_I8_EAX;
+		dtable[0xe8] = (t_faddrcc)CALL_REL32;
+		dtable[0xe9] = (t_faddrcc)JMP_REL32;
+		dtable[0xea] = (t_faddrcc)JMP_PTR16_32;
+		dtable[0xeb] = (t_faddrcc)JMP_REL8;
+		dtable[0xec] = (t_faddrcc)IN_AL_DX;
+		dtable[0xed] = (t_faddrcc)IN_EAX_DX;
+		dtable[0xee] = (t_faddrcc)OUT_DX_AL;
+		dtable[0xef] = (t_faddrcc)OUT_DX_EAX;
+		dtable[0xf0] = (t_faddrcc)PREFIX_LOCK;
+		dtable[0xf1] = (t_faddrcc)QDX;
+		dtable[0xf2] = (t_faddrcc)PREFIX_REPNZ;
+		dtable[0xf3] = (t_faddrcc)PREFIX_REPZ;
+		dtable[0xf4] = (t_faddrcc)HLT;
+		dtable[0xf5] = (t_faddrcc)CMC;
+		dtable[0xf6] = (t_faddrcc)INS_F6;
+		dtable[0xf7] = (t_faddrcc)INS_F7;
+		dtable[0xf8] = (t_faddrcc)CLC;
+		dtable[0xf9] = (t_faddrcc)STC;
+		dtable[0xfa] = (t_faddrcc)CLI;
+		dtable[0xfb] = (t_faddrcc)STI;
+		dtable[0xfc] = (t_faddrcc)CLD;
+		dtable[0xfd] = (t_faddrcc)STD;
+		dtable[0xfe] = (t_faddrcc)INS_FE;
+		dtable[0xff] = (t_faddrcc)INS_FF;
+		dtable_0f[0x00] = (t_faddrcc)INS_0F_00;
+		dtable_0f[0x01] = (t_faddrcc)INS_0F_01;
+		dtable_0f[0x02] = (t_faddrcc)LAR_R32_RM32;
+		dtable_0f[0x03] = (t_faddrcc)LSL_R32_RM32;
+		dtable_0f[0x04] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x05] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x06] = (t_faddrcc)CLTS;
+		dtable_0f[0x07] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x08] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x09] = (t_faddrcc)WBINVD;
+		dtable_0f[0x0a] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x0b] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x0c] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x0d] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x0e] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x0f] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x10] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x11] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x12] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x13] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x14] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x15] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x16] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x17] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x18] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x19] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x1a] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x1b] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x1c] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x1d] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x1e] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x1f] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x20] = (t_faddrcc)MOV_R32_CR;
+		dtable_0f[0x21] = (t_faddrcc)MOV_R32_DR;
+		dtable_0f[0x22] = (t_faddrcc)MOV_CR_R32;
+		dtable_0f[0x23] = (t_faddrcc)MOV_DR_R32;
+		dtable_0f[0x24] = (t_faddrcc)MOV_R32_TR;
+		dtable_0f[0x25] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x26] = (t_faddrcc)MOV_TR_R32;
+		dtable_0f[0x27] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x28] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x29] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x2a] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x2b] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x2c] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x2d] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x2e] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x2f] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x30] = (t_faddrcc)WRMSR;
+		dtable_0f[0x31] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x32] = (t_faddrcc)RDMSR;
+		dtable_0f[0x33] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x34] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x35] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x36] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x37] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x38] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x39] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x3a] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x3b] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x3c] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x3d] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x3e] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x3f] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x40] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x41] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x42] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x43] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x44] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x45] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x46] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x47] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x48] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x49] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x4a] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x4b] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x4c] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x4d] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x4e] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x4f] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x50] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x51] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x52] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x53] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x54] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x55] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x56] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x57] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x58] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x59] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x5a] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x5b] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x5c] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x5d] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x5e] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x5f] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x60] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x61] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x62] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x63] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x64] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x65] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x66] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x67] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x68] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x69] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x6a] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x6b] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x6c] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x6d] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x6e] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x6f] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x70] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x71] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x72] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x73] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x74] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x75] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x76] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x77] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x78] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x79] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x7a] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x7b] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x7c] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x7d] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x7e] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x7f] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0x80] = (t_faddrcc)JO_REL32;
+		dtable_0f[0x81] = (t_faddrcc)JNO_REL32;
+		dtable_0f[0x82] = (t_faddrcc)JC_REL32;
+		dtable_0f[0x83] = (t_faddrcc)JNC_REL32;
+		dtable_0f[0x84] = (t_faddrcc)JZ_REL32;
+		dtable_0f[0x85] = (t_faddrcc)JNZ_REL32;
+		dtable_0f[0x86] = (t_faddrcc)JNA_REL32;
+		dtable_0f[0x87] = (t_faddrcc)JA_REL32;
+		dtable_0f[0x88] = (t_faddrcc)JS_REL32;
+		dtable_0f[0x89] = (t_faddrcc)JNS_REL32;
+		dtable_0f[0x8a] = (t_faddrcc)JP_REL32;
+		dtable_0f[0x8b] = (t_faddrcc)JNP_REL32;
+		dtable_0f[0x8c] = (t_faddrcc)JL_REL32;
+		dtable_0f[0x8d] = (t_faddrcc)JNL_REL32;
+		dtable_0f[0x8e] = (t_faddrcc)JNG_REL32;
+		dtable_0f[0x8f] = (t_faddrcc)JG_REL32;
+		dtable_0f[0x90] = (t_faddrcc)SETO_RM8;
+		dtable_0f[0x91] = (t_faddrcc)SETNO_RM8;
+		dtable_0f[0x92] = (t_faddrcc)SETC_RM8;
+		dtable_0f[0x93] = (t_faddrcc)SETNC_RM8;
+		dtable_0f[0x94] = (t_faddrcc)SETZ_RM8;
+		dtable_0f[0x95] = (t_faddrcc)SETNZ_RM8;
+		dtable_0f[0x96] = (t_faddrcc)SETNA_RM8;
+		dtable_0f[0x97] = (t_faddrcc)SETA_RM8;
+		dtable_0f[0x98] = (t_faddrcc)SETS_RM8;
+		dtable_0f[0x99] = (t_faddrcc)SETNS_RM8;
+		dtable_0f[0x9a] = (t_faddrcc)SETP_RM8;
+		dtable_0f[0x9b] = (t_faddrcc)SETNP_RM8;
+		dtable_0f[0x9c] = (t_faddrcc)SETL_RM8;
+		dtable_0f[0x9d] = (t_faddrcc)SETNL_RM8;
+		dtable_0f[0x9e] = (t_faddrcc)SETNG_RM8;
+		dtable_0f[0x9f] = (t_faddrcc)SETG_RM8;
+		dtable_0f[0xa0] = (t_faddrcc)PUSH_FS;
+		dtable_0f[0xa1] = (t_faddrcc)POP_FS;
+		dtable_0f[0xa2] = (t_faddrcc)CPUID;
+		dtable_0f[0xa3] = (t_faddrcc)BT_RM32_R32;
+		dtable_0f[0xa4] = (t_faddrcc)SHLD_RM32_R32_I8;
+		dtable_0f[0xa5] = (t_faddrcc)SHLD_RM32_R32_CL;
+		dtable_0f[0xa6] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xa7] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xa8] = (t_faddrcc)PUSH_GS;
+		dtable_0f[0xa9] = (t_faddrcc)POP_GS;
+		dtable_0f[0xaa] = (t_faddrcc)RSM;
+		dtable_0f[0xab] = (t_faddrcc)BTS_RM32_R32;
+		dtable_0f[0xac] = (t_faddrcc)SHRD_RM32_R32_I8;
+		dtable_0f[0xad] = (t_faddrcc)SHRD_RM32_R32_CL;
+		dtable_0f[0xae] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xaf] = (t_faddrcc)IMUL_R32_RM32;
+		dtable_0f[0xb0] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xb1] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xb2] = (t_faddrcc)LSS_R32_M16_32;
+		dtable_0f[0xb3] = (t_faddrcc)BTR_RM32_R32;
+		dtable_0f[0xb4] = (t_faddrcc)LFS_R32_M16_32;
+		dtable_0f[0xb5] = (t_faddrcc)LGS_R32_M16_32;
+		dtable_0f[0xb6] = (t_faddrcc)MOVZX_R32_RM8;
+		dtable_0f[0xb7] = (t_faddrcc)MOVZX_R32_RM16;
+		dtable_0f[0xb8] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xb9] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xba] = (t_faddrcc)INS_0F_BA;
+		dtable_0f[0xbb] = (t_faddrcc)BTC_RM32_R32;
+		dtable_0f[0xbc] = (t_faddrcc)BSF_R32_RM32;
+		dtable_0f[0xbd] = (t_faddrcc)BSR_R32_RM32;
+		dtable_0f[0xbe] = (t_faddrcc)MOVSX_R32_RM8;
+		dtable_0f[0xbf] = (t_faddrcc)MOVSX_R32_RM16;
+		dtable_0f[0xc0] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xc1] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xc2] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xc3] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xc4] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xc5] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xc6] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xc7] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xc8] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xc9] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xca] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xcb] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xcc] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xcd] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xce] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xcf] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xd0] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xd1] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xd2] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xd3] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xd4] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xd5] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xd6] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xd7] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xd8] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xd9] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xda] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xdb] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xdc] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xdd] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xde] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xdf] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xe0] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xe1] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xe2] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xe3] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xe4] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xe5] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xe6] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xe7] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xe8] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xe9] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xea] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xeb] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xec] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xed] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xee] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xef] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xf0] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xf1] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xf2] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xf3] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xf4] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xf5] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xf6] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xf7] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xf8] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xf9] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xfa] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xfb] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xfc] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xfd] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xfe] = (t_faddrcc)UndefinedOpcode;
+		dtable_0f[0xff] = (t_faddrcc)UndefinedOpcode;
+		flaginit = 1;
+	}
 
 	stmt[0] = 0;
 	drcode = rcode;
@@ -4944,15 +4962,19 @@ t_nubit8 dasm32(t_string stmt, t_vaddrcc rcode)
 	do {
 		dop[0] = 0;
 		dopr[0] = 0;
+		dstmt[0] = 0;
 		_cb("ExecIns");
 		oldiop = iop;
 		_chb(opcode = GetMax8(_d_code(1)));
 		iop = oldiop;
 		_chb(ExecFun(dtable[opcode]));
-		STRCPY(dstmt, dop);
-		for (i = strlen(dop);i < 8;++i) STRCAT(dstmt, " ");
-		STRCAT(dstmt, dopr);
-		STRCAT(stmt, dstmt);
+		if (strlen(dop)) {
+			STRCAT(dop, " ");
+			STRCPY(dstmt, dop);
+			for (i = strlen(dop);i < 8;++i) STRCAT(dstmt, " ");
+			STRCAT(dstmt, dopr);
+			STRCAT(stmt, dstmt);
+		}
 		_ce;
 	} while (_kdf_check_prefix(opcode));
 

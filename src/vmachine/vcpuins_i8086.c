@@ -12,9 +12,6 @@
 #include "bios/qdbios.h"
 #include "vcpuins.h"
 
-#include "debug/aasm.h"
-#include "debug/dasm.h"
-
 static t_faddrcc table[0x100];
 
 #define MOD ((modrm&0xc0)>>6)
@@ -223,49 +220,49 @@ static void GetModRegRM(t_nubitcc regbit,t_nubitcc rmbit)
 		break;
 	case 3:
 		switch(RM) {
-		case 0:	if(rmbit == 8) vcpuins.rrm = (t_vaddrcc)(&vcpu.al); else vcpuins.rrm = (t_vaddrcc)(&vcpu.ax); break;
-		case 1:	if(rmbit == 8) vcpuins.rrm = (t_vaddrcc)(&vcpu.cl); else vcpuins.rrm = (t_vaddrcc)(&vcpu.cx); break;
-		case 2:	if(rmbit == 8) vcpuins.rrm = (t_vaddrcc)(&vcpu.dl); else vcpuins.rrm = (t_vaddrcc)(&vcpu.dx); break;
-		case 3:	if(rmbit == 8) vcpuins.rrm = (t_vaddrcc)(&vcpu.bl); else vcpuins.rrm = (t_vaddrcc)(&vcpu.bx); break;
-		case 4:	if(rmbit == 8) vcpuins.rrm = (t_vaddrcc)(&vcpu.ah); else vcpuins.rrm = (t_vaddrcc)(&vcpu.sp); break;
-		case 5:	if(rmbit == 8) vcpuins.rrm = (t_vaddrcc)(&vcpu.ch); else vcpuins.rrm = (t_vaddrcc)(&vcpu.bp); break;
-		case 6:	if(rmbit == 8) vcpuins.rrm = (t_vaddrcc)(&vcpu.dh); else vcpuins.rrm = (t_vaddrcc)(&vcpu.si); break;
-		case 7:	if(rmbit == 8) vcpuins.rrm = (t_vaddrcc)(&vcpu.bh); else vcpuins.rrm = (t_vaddrcc)(&vcpu.di); break;
+		case 0:	if(rmbit == 8) vcpuins.rrm = GetRef(vcpu.al); else vcpuins.rrm = GetRef(vcpu.ax); break;
+		case 1:	if(rmbit == 8) vcpuins.rrm = GetRef(vcpu.cl); else vcpuins.rrm = GetRef(vcpu.cx); break;
+		case 2:	if(rmbit == 8) vcpuins.rrm = GetRef(vcpu.dl); else vcpuins.rrm = GetRef(vcpu.dx); break;
+		case 3:	if(rmbit == 8) vcpuins.rrm = GetRef(vcpu.bl); else vcpuins.rrm = GetRef(vcpu.bx); break;
+		case 4:	if(rmbit == 8) vcpuins.rrm = GetRef(vcpu.ah); else vcpuins.rrm = GetRef(vcpu.sp); break;
+		case 5:	if(rmbit == 8) vcpuins.rrm = GetRef(vcpu.ch); else vcpuins.rrm = GetRef(vcpu.bp); break;
+		case 6:	if(rmbit == 8) vcpuins.rrm = GetRef(vcpu.dh); else vcpuins.rrm = GetRef(vcpu.si); break;
+		case 7:	if(rmbit == 8) vcpuins.rrm = GetRef(vcpu.bh); else vcpuins.rrm = GetRef(vcpu.di); break;
 		default:CaseError("GetModRegRM::MOD3::RM");break;}
 		break;
 	default:CaseError("GetModRegRM::MOD");break;}
 	switch(regbit) {
-	case 0:		vcpuins.rr = REG;					break;
+	case 0:		vcpuins.cr = REG;					break;
 	case 4:
 		switch(REG) {
-		case 0:	vcpuins.rr = (t_vaddrcc)(&vcpu.es.selector);	break;
-		case 1:	vcpuins.rr = (t_vaddrcc)(&vcpu.cs.selector);	break;
-		case 2:	vcpuins.rr = (t_vaddrcc)(&vcpu.ss.selector);	break;
-		case 3:	vcpuins.rr = (t_vaddrcc)(&vcpu.ds.selector);	break;
+		case 0:	vcpuins.rr = GetRef(vcpu.es.selector);	break;
+		case 1:	vcpuins.rr = GetRef(vcpu.cs.selector);	break;
+		case 2:	vcpuins.rr = GetRef(vcpu.ss.selector);	break;
+		case 3:	vcpuins.rr = GetRef(vcpu.ds.selector);	break;
 		default:CaseError("GetModRegRM::regbit4::REG");break;}
 		break;
 	case 8:
 		switch(REG) {
-		case 0:	vcpuins.rr = (t_vaddrcc)(&vcpu.al);	break;
-		case 1:	vcpuins.rr = (t_vaddrcc)(&vcpu.cl);	break;
-		case 2:	vcpuins.rr = (t_vaddrcc)(&vcpu.dl);	break;
-		case 3:	vcpuins.rr = (t_vaddrcc)(&vcpu.bl);	break;
-		case 4:	vcpuins.rr = (t_vaddrcc)(&vcpu.ah);	break;
-		case 5:	vcpuins.rr = (t_vaddrcc)(&vcpu.ch);	break;
-		case 6:	vcpuins.rr = (t_vaddrcc)(&vcpu.dh);	break;
-		case 7:	vcpuins.rr = (t_vaddrcc)(&vcpu.bh);	break;
+		case 0:	vcpuins.rr = GetRef(vcpu.al);	break;
+		case 1:	vcpuins.rr = GetRef(vcpu.cl);	break;
+		case 2:	vcpuins.rr = GetRef(vcpu.dl);	break;
+		case 3:	vcpuins.rr = GetRef(vcpu.bl);	break;
+		case 4:	vcpuins.rr = GetRef(vcpu.ah);	break;
+		case 5:	vcpuins.rr = GetRef(vcpu.ch);	break;
+		case 6:	vcpuins.rr = GetRef(vcpu.dh);	break;
+		case 7:	vcpuins.rr = GetRef(vcpu.bh);	break;
 		default:CaseError("GetModRegRM::regbit8::REG");break;}
 		break;
 	case 16:
 		switch(REG) {
-		case 0: vcpuins.rr = (t_vaddrcc)(&vcpu.ax);	break;
-		case 1:	vcpuins.rr = (t_vaddrcc)(&vcpu.cx);	break;
-		case 2:	vcpuins.rr = (t_vaddrcc)(&vcpu.dx);	break;
-		case 3:	vcpuins.rr = (t_vaddrcc)(&vcpu.bx);	break;
-		case 4:	vcpuins.rr = (t_vaddrcc)(&vcpu.sp);	break;
-		case 5:	vcpuins.rr = (t_vaddrcc)(&vcpu.bp);	break;
-		case 6:	vcpuins.rr = (t_vaddrcc)(&vcpu.si);	break;
-		case 7: vcpuins.rr = (t_vaddrcc)(&vcpu.di);	break;
+		case 0: vcpuins.rr = GetRef(vcpu.ax);	break;
+		case 1:	vcpuins.rr = GetRef(vcpu.cx);	break;
+		case 2:	vcpuins.rr = GetRef(vcpu.dx);	break;
+		case 3:	vcpuins.rr = GetRef(vcpu.bx);	break;
+		case 4:	vcpuins.rr = GetRef(vcpu.sp);	break;
+		case 5:	vcpuins.rr = GetRef(vcpu.bp);	break;
+		case 6:	vcpuins.rr = GetRef(vcpu.si);	break;
+		case 7: vcpuins.rr = GetRef(vcpu.di);	break;
 		default:CaseError("GetModRegRM::regbit16::REG");break;}
 		break;
 	default:CaseError("GetModRegRM::regbit");break;}
@@ -321,17 +318,16 @@ static void GetModRegRMEA()
 		break;
 	default:CaseError("GetModRegRMEA::MOD");break;}
 	switch(REG) {
-	case 0: vcpuins.rr = (t_vaddrcc)(&vcpu.ax);	break;
-	case 1:	vcpuins.rr = (t_vaddrcc)(&vcpu.cx);	break;
-	case 2:	vcpuins.rr = (t_vaddrcc)(&vcpu.dx);	break;
-	case 3:	vcpuins.rr = (t_vaddrcc)(&vcpu.bx);	break;
-	case 4:	vcpuins.rr = (t_vaddrcc)(&vcpu.sp);	break;
-	case 5:	vcpuins.rr = (t_vaddrcc)(&vcpu.bp);	break;
-	case 6:	vcpuins.rr = (t_vaddrcc)(&vcpu.si);	break;
-	case 7: vcpuins.rr = (t_vaddrcc)(&vcpu.di);	break;
+	case 0: vcpuins.rr = GetRef(vcpu.ax);	break;
+	case 1:	vcpuins.rr = GetRef(vcpu.cx);	break;
+	case 2:	vcpuins.rr = GetRef(vcpu.dx);	break;
+	case 3:	vcpuins.rr = GetRef(vcpu.bx);	break;
+	case 4:	vcpuins.rr = GetRef(vcpu.sp);	break;
+	case 5:	vcpuins.rr = GetRef(vcpu.bp);	break;
+	case 6:	vcpuins.rr = GetRef(vcpu.si);	break;
+	case 7: vcpuins.rr = GetRef(vcpu.di);	break;
 	default:CaseError("GetModRegRMEA::REG");break;}
 }
-
 
 /* abstract instructions */
 static void INT(t_nubit8 intid);
@@ -1948,7 +1944,7 @@ static void INS_80()
 	vcpu.ip++;
 	GetModRegRM(0,8);
 	GetImm(8);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	ADD((void *)vcpuins.rrm,(void *)rimm,8);break;
 	case 1:	OR ((void *)vcpuins.rrm,(void *)rimm,8);break;
 	case 2:	ADC((void *)vcpuins.rrm,(void *)rimm,8);break;
@@ -1964,7 +1960,7 @@ static void INS_81()
 	vcpu.ip++;
 	GetModRegRM(0,16);
 	GetImm(16);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	ADD((void *)vcpuins.rrm,(void *)rimm,16);break;
 	case 1:	OR ((void *)vcpuins.rrm,(void *)rimm,16);break;
 	case 2:	ADC((void *)vcpuins.rrm,(void *)rimm,16);break;
@@ -1984,7 +1980,7 @@ static void INS_83()
 	vcpu.ip++;
 	GetModRegRM(0,16);
 	GetImm(8);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	ADD((void *)vcpuins.rrm,(void *)rimm,12);break;
 	case 1:	OR ((void *)vcpuins.rrm,(void *)rimm,12);break;
 	case 2:	ADC((void *)vcpuins.rrm,(void *)rimm,12);break;
@@ -2065,7 +2061,7 @@ static void POP_RM16()
 {
 	vcpu.ip++;
 	GetModRegRM(0,16);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:
 		POP((void *)vcpuins.rrm,16);
 		break;
@@ -2420,7 +2416,7 @@ static void INS_C0()
 	vcpu.ip++;
 	GetModRegRM(0,8);
 	GetImm(8);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	ROL((void *)vcpuins.rrm,(void *)rimm,8);break;
 	case 1:	ROR((void *)vcpuins.rrm,(void *)rimm,8);break;
 	case 2:	RCL((void *)vcpuins.rrm,(void *)rimm,8);break;
@@ -2436,7 +2432,7 @@ static void INS_C1()
 	vcpu.ip++;
 	GetModRegRM(0,16);
 	GetImm(8);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	ROL((void *)vcpuins.rrm,(void *)rimm,16);break;
 	case 1:	ROR((void *)vcpuins.rrm,(void *)rimm,16);break;
 	case 2:	RCL((void *)vcpuins.rrm,(void *)rimm,16);break;
@@ -2475,19 +2471,27 @@ static void LDS_R16_M16()
 	MOV((void *)vcpuins.rr,(void *)vcpuins.rrm,16);
 	MOV((void *)&vcpu.ds.selector,(void *)(vcpuins.rrm+2),16);
 }
-static void MOV_M8_I8()
+static void INS_C6()
 {
 	vcpu.ip++;
-	GetModRegRM(8,8);
+	GetModRegRM(0,8);
 	GetImm(8);
-	MOV((void *)vcpuins.rrm,(void *)rimm,8);
+	switch (vcpuins.cr) {
+	case 0: /* MOV_RM8_I8 */
+		MOV((void *)vcpuins.rrm,(void *)rimm,8);
+		break;
+	default: CaseError("INS_C6::cr");break;}
 }
-static void MOV_M16_I16()
+static void INS_C7()
 {
 	vcpu.ip++;
-	GetModRegRM(16,16);
+	GetModRegRM(0,16);
 	GetImm(16);
-	MOV((void *)vcpuins.rrm,(void *)rimm,16);
+	switch (vcpuins.cr) {
+	case 0: /* MOV_RM16_I16 */
+		MOV((void *)vcpuins.rrm,(void *)rimm,16);
+		break;
+	default: CaseError("INS_C7::cr");break;}
 }
 static void RETF_I16()
 {
@@ -2531,7 +2535,7 @@ static void INS_D0()
 {
 	vcpu.ip++;
 	GetModRegRM(0,8);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	ROL((void *)vcpuins.rrm,NULL,8);break;
 	case 1:	ROR((void *)vcpuins.rrm,NULL,8);break;
 	case 2:	RCL((void *)vcpuins.rrm,NULL,8);break;
@@ -2546,7 +2550,7 @@ static void INS_D1()
 {
 	vcpu.ip++;
 	GetModRegRM(0,16);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	ROL((void *)vcpuins.rrm,NULL,16);break;
 	case 1:	ROR((void *)vcpuins.rrm,NULL,16);break;
 	case 2:	RCL((void *)vcpuins.rrm,NULL,16);break;
@@ -2561,7 +2565,7 @@ static void INS_D2()
 {
 	vcpu.ip++;
 	GetModRegRM(0,8);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	ROL((void *)vcpuins.rrm,(void *)&vcpu.cl,8);break;
 	case 1:	ROR((void *)vcpuins.rrm,(void *)&vcpu.cl,8);break;
 	case 2:	RCL((void *)vcpuins.rrm,(void *)&vcpu.cl,8);break;
@@ -2576,7 +2580,7 @@ static void INS_D3()
 {
 	vcpu.ip++;
 	GetModRegRM(0,16);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	ROL((void *)vcpuins.rrm,(void *)&vcpu.cl,16);break;
 	case 1:	ROR((void *)vcpuins.rrm,(void *)&vcpu.cl,16);break;
 	case 2:	RCL((void *)vcpuins.rrm,(void *)&vcpu.cl,16);break;
@@ -2772,7 +2776,7 @@ static void INS_F6()
 {
 	vcpu.ip++;
 	GetModRegRM(0,8);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	GetImm(8);
 			TEST((void *)vcpuins.rrm,(void *)rimm,8);
 			break;
@@ -2788,7 +2792,7 @@ static void INS_F7()
 {
 	vcpu.ip++;
 	GetModRegRM(0,16);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	GetImm(16);
 			TEST((void *)vcpuins.rrm,(void *)rimm,16);
 			break;
@@ -2834,7 +2838,7 @@ static void INS_FE()
 {
 	vcpu.ip++;
 	GetModRegRM(0,8);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	INC((void *)vcpuins.rrm,8);	break;
 	case 1:	DEC((void *)vcpuins.rrm,8);	break;
 	default:CaseError("INS_FE::vcpuins.rr");break;}
@@ -2843,7 +2847,7 @@ static void INS_FF()
 {
 	vcpu.ip++;
 	GetModRegRM(0,16);
-	switch(vcpuins.rr) {
+	switch (vcpuins.cr) {
 	case 0:	INC((void *)vcpuins.rrm,16);	break;
 	case 1:	DEC((void *)vcpuins.rrm,16);	break;
 	case 2:	/* CALL_RM16 */
@@ -2888,12 +2892,13 @@ static void ClrPrefix()
 static void ExecIns()
 {
 	t_nubit8 opcode;
-	vcpurec.linear = (vcpu.cs.selector << 4) + vcpu.ip;
 	vcpurec.msize = 0;
-	vcpurec.opcode = vramRealQWord(vcpu.cs.selector, vcpu.ip);
 	vcpurec.rcpu = vcpu;
-	vcpurec.stack = vramRealQWord(vcpu.ss.selector, vcpu.sp);
-	vcpurec.svcextl = 0;
+	vcpurec.linear = (vcpu.cs.selector << 4) + vcpu.ip;
+	if (vcpuinsReadIns(vcpurec.linear, (t_vaddrcc)vcpurec.opcodes))
+		vcpurec.oplen = 0;
+	else
+		vcpurec.oplen = 15;
 	ClrPrefix();
 	do {
 		opcode = vramRealByte(vcpu.cs.selector, vcpu.ip);
@@ -2939,6 +2944,15 @@ static void QDX()
 	}
 }
 
+/* external interface */
+t_bool vcpuinsReadIns(t_nubit32 linear, t_vaddrcc rcode)
+{
+	t_nubit8 i;
+	t_nubit32 physical = linear;
+	for (i = 0;i < 15;++i)
+		d_nubit8(rcode + i) = vramByte(physical + i);
+	return 0;
+}
 void vcpuinsInit()
 {
 	memset(&vcpuins, 0x00, sizeof(t_cpuins));
@@ -3141,8 +3155,8 @@ void vcpuinsInit()
 	table[0xc3] = (t_faddrcc)RET;
 	table[0xc4] = (t_faddrcc)LES_R16_M16;
 	table[0xc5] = (t_faddrcc)LDS_R16_M16;
-	table[0xc6] = (t_faddrcc)MOV_M8_I8;
-	table[0xc7] = (t_faddrcc)MOV_M16_I16;
+	table[0xc6] = (t_faddrcc)INS_C6;
+	table[0xc7] = (t_faddrcc)INS_C7;
 	table[0xc8] = (t_faddrcc)UndefinedOpcode;
 	table[0xc9] = (t_faddrcc)UndefinedOpcode;
 	table[0xca] = (t_faddrcc)RETF_I16;
@@ -3207,6 +3221,7 @@ void vcpuinsReset()
 	vcpuins.rrm = vcpuins.rr = rimm = (t_vaddrcc)NULL;
 	vcpuins.opr1 = vcpuins.opr2 = vcpuins.result = vcpuins.bit = 0;
 	ClrPrefix();
+	vcpurec.svcextl = 0;
 }
 void vcpuinsRefresh()
 {

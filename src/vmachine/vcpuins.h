@@ -86,8 +86,8 @@ typedef struct {
 	t_cpu rcpu;
 	t_cpurec_memory mem[0x20];
 	t_nubit8 msize;
-	t_nubit64 opcode;
-	t_nubit64 stack;
+	t_nubit8 oplen;
+	t_nubit8 opcodes[15];
 	t_nubit8 svcextl;
 	t_nubit32 linear;
 	char dstmt[0x100];
@@ -115,6 +115,8 @@ typedef struct {
 
 extern t_cpuins vcpuins;
 extern t_cpurec vcpurec;
+
+t_bool vcpuinsReadIns(t_nubit32 linear, t_vaddrcc rcode);
 
 void vcpuinsInit();
 void vcpuinsReset();

@@ -1,9 +1,0 @@
-normal
- nc: cpl == dpl
- cf: cpl >= dpl
-call gate
- jmp
-  nc: cpl <= dplg, rpl <= dplg, cpl == dpls
-  cf: cpl <= dplg, rpl <= dplg, cpl >= dpls
- call
-  cf: cpl <= dplg, rpl <= dplg, cpl >= dpls
