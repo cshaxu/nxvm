@@ -5,8 +5,8 @@ CC = gcc
 CFLAGS = -g -O
 TARGET = a.out
 
-$(TARGET): console.o debug.o dosint.o main.o asm86.o vcpu.o vcpuins.o vmachine.o vmemory.o vbios.o vdisplay.o vapi.o win32app.o win32con.o
-	$(CC) -o $(TARGET) console.o debug.o dosint.o main.o asm86.o vcpu.o vcpuins.o vmachine.o vmemory.o vbios.o vdisplay.o vapi.o win32app.o win32con.o
+$(TARGET): console.o debug.o dosint.o main.o asm86.o vcpu.o vcpuins.o vmachine.o vmemory.o vapi.o win32app.o win32con.o
+	$(CC) -o $(TARGET) console.o debug.o dosint.o main.o asm86.o vcpu.o vcpuins.o vmachine.o vmemory.o vapi.o win32app.o win32con.o
 
 
 console.o: ./console.c ./vmachine/vmachine.h ./vmachine/vglobal.h ./vmachine/coption.h ./vmachine/vcpu.h ./vmachine/vmemory.h ./global.h ./debug.h ./console.h
@@ -36,12 +36,6 @@ vmachine.o: ./vmachine/vmachine.c ./vmachine/system/vapi.h ./vmachine/system/../
 vmemory.o: ./vmachine/vmemory.c ./vmachine/vmemory.h ./vmachine/vglobal.h ./vmachine/coption.h ./vmachine/system/vapi.h ./vmachine/system/../vglobal.h ./vmachine/system/../coption.h
 	$(CC) -c $(CFLAGS) ./vmachine/vmemory.c
 
-vbios.o: ./vmachine/exclude/vbios.c ./vmachine/exclude/vbios.h
-	$(CC) -c $(CFLAGS) ./vmachine/exclude/vbios.c
-
-vdisplay.o: ./vmachine/exclude/vdisplay.c ./vmachine/exclude/vdisplay.h
-	$(CC) -c $(CFLAGS) ./vmachine/exclude/vdisplay.c
-
 vapi.o: ./vmachine/system/vapi.c ./vmachine/system/../coption.h ./vmachine/system/vapi.h ./vmachine/system/../vglobal.h
 	$(CC) -c $(CFLAGS) ./vmachine/system/vapi.c
 
@@ -53,4 +47,4 @@ win32con.o: ./vmachine/system/win32con.c ./vmachine/system/win32con.h
 
 clean:
 	rm -f $(TARGET)
-	rm -f console.o debug.o dosint.o main.o asm86.o vcpu.o vcpuins.o vmachine.o vmemory.o vbios.o vdisplay.o vapi.o win32app.o win32con.o
+	rm -f console.o debug.o dosint.o main.o asm86.o vcpu.o vcpuins.o vmachine.o vmemory.o vapi.o win32app.o win32con.o

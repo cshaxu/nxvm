@@ -7,8 +7,10 @@
 
 // Type of system
 #define NVM_NONE 0
-#define NVM_WIN32CON 1
-#define NVM_WIN32APP 2
+#define NVM_LINUX_TERMINAL 1
+#define NVM_LINUX_APPLICATION_QT 2
+#define NVM_WIN32_CONSOLE 3
+#define NVM_WIN32_APPLICATION 4
 
 // Selector - For User's Information
 #define NVM_INTLEN 64

@@ -1,0 +1,12 @@
+console.c
+debug.c
+dosint.c
+main.c
+asm86/asm86.c
+vmachine/vcpu.c
+vmachine/vcpuins.c
+vmachine/vmachine.c
+vmachine/vmemory.c
+vmachine/system/vapi.c
+vmachine/system/win32app.c
+vmachine/system/win32con.c

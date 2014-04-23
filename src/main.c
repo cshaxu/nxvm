@@ -4,7 +4,7 @@
 	Type of systems: NONE, WIN32CON, WIN32APP
 */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0x003d]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0x003f]\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"
 
 /*
@@ -37,7 +37,7 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 #include "global.h"
 #include "console.h"
 
-#if NVM_SYSTEM == NVM_WIN32APP
+#if NVM_SYSTEM == NVM_WIN32_APPLICATION
 #include "windows.h"
 #pragma comment(linker, "/subsystem:\"console\" /entry:\"WinMainCRTStartup\"")
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
