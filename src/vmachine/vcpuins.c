@@ -592,7 +592,7 @@ static t_nubit64 _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8
 	t_nubit32 linear;
 	t_cpuins_physical physical;
 	t_nubit64 result;
-	//t_nubitcc i;
+	t_nubitcc i;
 	_cb("_kma_read_logical");
 	_chr(linear = _kma_linear_logical(rsreg, offset, byte, 0, vpl, force));
 	_chr(_kma_physical_linear(&physical, linear, byte, 0, vpl));
@@ -606,20 +606,20 @@ static t_nubit64 _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8
 		if (vcpuins.flagwr) {
 			if (vcpuins.wrlin >= vcpurec.mem[vcpurec.msize].linear &&
 				vcpuins.wrlin < vcpurec.mem[vcpurec.msize].linear + byte) {
-				vapiPrint("Watch point caught at L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", vcpurec.linear,
+				vapiPrint("L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", vcpurec.linear,
 					vcpurec.mem[vcpurec.msize].byte,
 					vcpurec.mem[vcpurec.msize].data,
 					vcpurec.mem[vcpurec.msize].linear);
 			}
 		}
-		/*for (i = 0;i < vcpurec.msize;++i) {
+		for (i = 0;i < vcpurec.msize;++i) {
 			if (vcpurec.mem[i].flagwrite == vcpurec.mem[vcpurec.msize].flagwrite &&
 				vcpurec.mem[i].linear == vcpurec.mem[vcpurec.msize].linear) {
 				_bb("mem(same)");
 				_impossible_r_;
 				_ce;
 			}
-		}*/
+		}
 		vcpurec.msize++;
 		if (vcpurec.msize == 0x20) _impossible_r_;
 		_be;
@@ -632,7 +632,7 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 da
 {
 	t_nubit32 linear;
 	t_cpuins_physical physical;
-	//t_nubitcc i;
+	int i;
 	_cb("_kma_write_logical");
 	_chk(linear = _kma_linear_logical(rsreg, offset, byte, 1, vpl, force));
 	_chk(_kma_physical_linear(&physical, linear, byte, 1, vpl));
@@ -646,20 +646,20 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit64 da
 		if (vcpuins.flagww) {
 			if (vcpuins.wwlin >= vcpurec.mem[vcpurec.msize].linear &&
 				vcpuins.wwlin < vcpurec.mem[vcpurec.msize].linear + byte) {
-				vapiPrint("Watch point caught at L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", vcpurec.linear,
+				vapiPrint("L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", vcpurec.linear,
 					vcpurec.mem[vcpurec.msize].byte,
 					vcpurec.mem[vcpurec.msize].data,
 					vcpurec.mem[vcpurec.msize].linear);
 			}
 		}
-		/*for (i = 0;i < vcpurec.msize;++i) {
+		for (i = 0;i < vcpurec.msize;++i) {
 			if (vcpurec.mem[i].flagwrite == vcpurec.mem[vcpurec.msize].flagwrite &&
 				vcpurec.mem[i].linear == vcpurec.mem[vcpurec.msize].linear) {
 				_bb("mem(same)");
 				_impossible_;
 				_ce;
 			}
-		}*/
+		}
 		vcpurec.msize++;
 		if (vcpurec.msize == 0x20) _impossible_;
 		_be;
