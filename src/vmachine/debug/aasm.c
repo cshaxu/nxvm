@@ -1165,6 +1165,7 @@ static t_aasm_oprinfo parsearg(t_string arg)
 static void parse()
 {
 	/* parse single statement */
+	char delim = 0;
 	t_nubitcc i = 0;
 	t_string aend;
 	aop = aopr1 = aopr2 = NULL;
@@ -1188,10 +1189,11 @@ static void parse()
 		if (*astmt) {
 			aopr1 = astmt;
 			while (*astmt && (*astmt != ',')) astmt++;
-			if (*astmt) {
-				aend = astmt - 1;
-				while (*aend && (*aend == ' ' || *aend == '\t')) aend--;
-				*(aend + 1) = 0;
+			delim = *astmt;
+			aend = astmt - 1;
+			while (*aend && (*aend == ' ' || *aend == '\t')) aend--;
+			*(aend + 1) = 0;
+			if (delim) {
 				astmt++;
 				while (*astmt && (*astmt == ' ' || *astmt == '\t')) astmt++;
 				if (*astmt) {
@@ -3505,7 +3507,7 @@ t_nubitcc aasm(const t_string stmt, t_nubit16 seg, t_nubit16 off)
 	}
 	if (error) {
 		len = 0;
-		vapiPrint("invalid instruction: '%s'\n",aop);
+		vapiPrint("invalid instruction: '%s %s,%s'\n",aop,aopr1,aopr2);
 	}
 	free(pool);
 	pool = NULL;

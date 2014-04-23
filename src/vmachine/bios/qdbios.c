@@ -133,7 +133,7 @@ static void vbiosLoadInt()
 	qdkeybReset();
 	/* qdcga init */
 	qdcgaReset();
-	/* reducing */
+	/* qddisk init: remaining int for hdd */
 	qddiskReset();
 }
 static void vbiosLoadPost()

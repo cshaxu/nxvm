@@ -34,8 +34,9 @@ sti                      \n"
 test dl, 80                 \n\
 jnz $(label_int_13_hdd)     \n\
 int 40                      \n\
-iret                        \n\
+jmp near $(label_int_13_end)\n\
 $(label_int_13_hdd):        \n\
+$(label_int_13_cmp_00):     \n\
 cmp ah, 00                  \n\
 jnz $(label_int_13_cmp_01)  \n\
 jmp near $(label_int_13_00) \n\
@@ -60,34 +61,67 @@ cmp ah, 15                  \n\
 jnz $(label_int_13_cmp_def) \n\
 jmp near $(label_int_13_15) \n\
 $(label_int_13_cmp_def):    \n\
+clc                         \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_00):         \n\
-;qdx a0 \n\
+; reset drive               \n\
+cmp dl, 80                  \n\
+jnz $(label_int_13_00_x)    \n\
+mov ah, 00                  \n\
+clc                         \n\
+jmp near $(label_int_13_end)\n\
+$(label_int_13_00_x):       \n\
+mov ah, 0c                  \n\
+stc                         \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_01):         \n\
-;qdx a1 \n\
+; get hdd status byte       \n\
+push bx                     \n\
+push ds                     \n\
+mov bx, 40                  \n\
+mov ds, bx                  \n\
+mov ah, [0074]              \n\
+pop ds                      \n\
+pop bx                      \n\
+clc                         \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_02):         \n\
-;qdx a2 \n\
+qdx a2 \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_03):         \n\
-;qdx a3 \n\
+qdx a3 \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_08):         \n\
-;qdx a8 \n\
+; get hdd parameters        \n\
+mov ch, 13 ; ncyl - 1       \n\
+mov cl, 3f ; (ncyl<<2)&0xc0 \n\
+           ; | nsector      \n\
+mov dh, 0f ; nhead - 1      \n\
+push ds                     \n\
+mov ax, 0040                \n\
+mov ds, ax                  \n\
+mov dl, [0075]              \n\
+pop ds                      \n\
+mov ah, 00                  \n\
+clc                         \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_15):         \n\
-;qdx b5 \n\
+; get drive type            \n\
+; count=(ncyl-1)*nhead*nsec \n\
+mov ax, 03                  \n\
+mov cx, 00 ; cx=count>>16   \n\
+mov dx, 4ad0 ;dx=count&ffff \n\
+clc                         \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_end):        \n\
-; set fdd status byte       \n\
+; set hdd status byte       \n\
 push bx                     \n\
 push ds                     \n\
 mov bx, 40                  \n\
@@ -141,6 +175,7 @@ cmp ah, 15                  \n\
 jnz $(label_int_40_cmp_def) \n\
 jmp near $(label_int_40_15) \n\
 $(label_int_40_cmp_def):    \n\
+clc                         \n\
 jmp near $(label_int_40_end)\n\
 \
 $(label_int_40_00):         \n\
@@ -164,6 +199,7 @@ mov ds, bx                  \n\
 mov ah, [0041]              \n\
 pop ds                      \n\
 pop bx                      \n\
+clc                         \n\
 jmp near $(label_int_40_end)\n\
 \
 $(label_int_40_02):         \n\
@@ -289,9 +325,7 @@ $(label_int_40_03_bad):     \n\
 mov ah, 04                  \n\
 stc                         \n\
 jmp near $(label_int_40_end)\n\
-$(label_int_40_03_work):    \n\
-\
-; HERE!!!! \n\
+$(label_int_40_03_work):         \n\
 ; set dma                        \n\
 push bx                          \n\
 push cx                          \n\
@@ -382,11 +416,10 @@ in  al, dx ; get stdo sec        \n\
 in  al, dx ; get stdo sec size   \n\
 mov ah, 00                       \n\
 clc                              \n\
-\
-jmp near $(label_int_40_end)\n\
+jmp near $(label_int_40_end)     \n\
 \
 $(label_int_40_08):         \n\
-;get parameter              \n\
+; get fdd parameters        \n\
 mov bx, 0004                \n\
 mov cx, 4f12                \n\
 mov dx, 0102                \n\
