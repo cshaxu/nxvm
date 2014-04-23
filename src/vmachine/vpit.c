@@ -15,13 +15,17 @@
 
 t_pit vpit;
 static clock_t t1,t2;
+//static int i;
 
 void vpitIntTick()
 {
 	t_double dt;
 	t2 = clock();
 	dt = (t_double)((t2-t1)*1e3/((t_double)CLOCKS_PER_SEC));
+	//i++;
 	if(dt >= VPIT_TICK) {
+		//vapiPrint("%lf,%d\n",dt,i);
+		//i = 0;
 		vpicSetIRQ(0x00);
 		//vapiPrint("%lf\n",dt);
 		t1 = t2;

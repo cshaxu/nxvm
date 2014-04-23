@@ -3138,10 +3138,10 @@ void vcpuinsExecInt()
 	if(GetFlag(VCPU_FLAG_IF) && vpicIsINTR()) {	
 		intr = vpicGetINTR();
 //#ifndef NXVM_DEBUG_VCPUINS
-		INT(intr);
+		//INT(intr);
 //#endif
-		vpicRespondINTR(intr);
-		//vapiPrint("m.isr=%x,s.isr=%x\n",vpic1.isr,vpic2.isr);
+		//if(intr == 0x08) vpic1.isr ^= 0x01;
+		vapiPrint("0x%x\n",intr);
 		//vapiPause();
 	}
 	if(GetFlag(VCPU_FLAG_TF)) INT(0x01);

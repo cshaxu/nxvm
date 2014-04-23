@@ -62,6 +62,7 @@ static void IO_Write_00x0(t_pic *vpic)
 				i=0;
 				while (!((vpic->isr)&(1<<i)) && (i < 8)) i++;
 				if(i < 8) vpic->isr ^= (1<<i);
+				if(vpic->slave && !vpic->isr) vpic1.isr ^= 0x04; 
 				break;
 			case 0x60:	// 011: Specific EOI Command
 				i = (vpic->ocw2)&0x07;	// Get L2,L1,L0
@@ -199,33 +200,52 @@ void vpicSetIRR(t_nubit16 irr)
 	vpic2.irr = irr>>8;
 }
 
+static t_nubit8 GetIntID(t_nubit8 reg)
+{
+	t_nubit8 id = 0;
+	while(!((reg>>id)&0x01) && (id < 0x08)) id++;
+	return id;
+}
 t_bool vpicIsINTR()
 {
+	t_nubit8 isid1,irid1,isid2,irid2;
 	/* Device INT Begin */
 	vpitIntTick();
 	/* Device INT End */
-	vpic2.isr = vpic2.irr&(~vpic2.imr);
-	if(!!vpic2.isr) vpic1.irr |= 0x04;
-	vpic1.isr = vpic1.irr&(~vpic1.imr);
-	return !!vpic1.isr;
+	if(vpic2.irr&(~vpic2.imr)) vpic1.irr |= 0x04;
+	irid1 = GetIntID(vpic1.irr&(~vpic1.imr));
+	isid1 = GetIntID(vpic1.isr);
+	//vapiPrint("irid1 = %d, isid1 = %d\n",irid1,isid1);
+	if(irid1 < isid1) return 1;
+	else if(irid1 == isid1 && irid1 == 2) {
+		irid2 = GetIntID(vpic2.irr&(~vpic2.imr));
+		isid2 = GetIntID(vpic2.isr);
+		if(irid2 < isid2) return 1;
+		else return 0;
+	} else return 0;
 }
 t_nubit8 vpicGetINTR()
 {
-	t_nubit8 i = 0;
-	while(!((vpic1.isr>>i)&0x01) && (i < 0x08)) i++;
-	if(i == 2) {
+	t_nubit8 irid1,irid2;
+	irid1 = GetIntID(vpic1.irr&(~vpic1.imr));
+	if(irid1 == 2) {
 		// IRQ2: IRQ8~IRQ15
-		i = 0;
-		vapiPrint("IsSlave!\n");
-		while(!((vpic2.isr>>i)&0x01) && (i < 0x08)) i++;
-		i |= vpic2.icw2;
+		vpic1.isr |= 0x04;
+		irid2 = GetIntID(vpic2.irr&(~vpic2.imr));
+		vpic2.isr |= 1<<irid2;
+		vpic2.irr |= 1<<irid2;
+		if(GetIntID(vpic2.irr&(~vpic2.imr)) == 0x08) vpic1.irr ^= 0x04;
+		irid2 |= vpic2.icw2;
+		return irid2;
 	} else {
 		// IRQ0~IRQ1, IRQ3~IRQ7
-		i |= vpic1.icw2;
+		vpic1.isr |= 1<<irid1;
+		vpic1.irr ^= 1<<irid1;
+		irid1 |= vpic1.icw2;
+		return irid1;
 	}
-	return i;
 }
-void vpicRespondINTR(t_nubit8 intr)
+/*void vpicRespondINTR()
 {
 	t_nubit8 i = 0;
 	while(!((vpic1.isr>>i)&0x01) && (i < 0x08)) i++;
@@ -244,7 +264,7 @@ void vpicRespondINTR(t_nubit8 intr)
 		vpic1.isr &= ~(1<<i);
 		vpic1.irr &= ~(1<<i);
 	}
-}
+}*/
 void vpicSetIRQ(t_nubit8 irqid)
 {
 	switch(irqid) {

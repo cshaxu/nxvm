@@ -29,7 +29,7 @@ void vpicSetIRR(t_nubit16 irr);
 
 t_bool vpicIsINTR();
 t_nubit8 vpicGetINTR();
-void vpicRespondINTR(t_nubit8 intr);
+//void vpicRespondINTR();
 void vpicSetIRQ(t_nubit8 irqid);
 
 void PICInit();

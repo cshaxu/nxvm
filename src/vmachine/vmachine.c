@@ -14,12 +14,13 @@ void NXVMInit()
 		PICInit();
 		CMOSInit();
 		PITInit();
-		DMAInit();
+		FDDInit();
+		FDCInit();
+		DMACInit();
 		vmachineinitflag = 1;
 	} else
 		vapiPrint("ERROR:\tNeko's x86 Virtual Machine is already initialized.\n");
 }
-
 void NXVMPowerOn()
 {
 	if(!vmachinerunflag) {
@@ -33,7 +34,6 @@ void NXVMPowerOn()
 	} else
 		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is already running.\n");
 }
-
 void NXVMRun()
 {
 	if(!vmachineinitflag || !vmachinerunflag)
@@ -42,11 +42,9 @@ void NXVMRun()
 		CPURun();
 	}
 }
-
 void NXVMPowerOff()
 {
 	if(vmachinerunflag) {
-		// Delete Screen Here
 		if(vmachineinitflag) NXVMTerm();
 		forceNone = 1;
 		vmachinerunflag = 0;
@@ -54,11 +52,12 @@ void NXVMPowerOff()
 	} else
 		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is already powered off.\n");
 }
-
 void NXVMTerm()
 {
 	if(vmachineinitflag) {
-		DMATerm();
+		DMACTerm();
+		FDCTerm();
+		FDDTerm();
 		PITTerm();
 		CMOSTerm();
 		PICTerm();

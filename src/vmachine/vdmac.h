@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-// Direct Memory Access
+// Direct Memory Access Controller: Intel 8237A
 
 #ifndef NXVM_VDMA_H
 #define NXVM_VDMA_H
@@ -12,7 +12,7 @@ typedef struct {
 	t_nubit16 base_wordcount;
 	t_nubit16 cur_address;
 	t_nubit16 cur_wordcount;
-	t_nubit8 mode;
+	t_nubit6 mode;
 	t_nubit8 page;
 } t_dmac_channel;
 
@@ -30,7 +30,7 @@ typedef struct {
 
 extern t_dmac vdmacmaster,vdmacslave;
 
-void DMAInit();
-void DMATerm();
+void DMACInit();
+void DMACTerm();
 
 #endif

@@ -16,8 +16,10 @@ typedef unsigned short t_nubit16;
 typedef signed short t_nsbit16;
 typedef unsigned long t_nubit32;
 typedef signed long t_nsbit32;
+
 typedef float t_float;
 typedef double t_double;
+typedef char t_string[0x100];
 
 #if NXVM_INTLEN == 32
 typedef unsigned long t_bool;
