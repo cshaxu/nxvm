@@ -10,6 +10,9 @@ static t_cpu oldbcpu, newbcpu;
 static t_bool flagbrec;
 static t_cpurec bcpurec;
 
+#define VCPUAPI_COMPARE 1
+#define VCPUAPI_RECORD  0
+
 t_nubit32 vcpuapiPrint(const t_string format, ...)
 {
 	t_nubit32 nWrittenBytes = 0;
@@ -395,14 +398,18 @@ void vcpuapiInit()
 	oldbcpu = vcpu;
 	newbcpu = vcpu;
 	memset(&bcpurec, 0x00, sizeof(t_cpurec));
-	//recordInit();
+#if VCPUAPI_RECORD == 1
+	recordInit();
+#endif
 #endif
 }
 void vcpuapiFinal()
 {
 #ifdef VGLOBAL_BOCHS
 	vcpuFinal();
-	//recordFinal();
+#if VCPUAPI_RECORD == 1
+	recordFinal();
+#endif
 #endif
 }
 void vcpuapiExecBefore()
@@ -414,51 +421,62 @@ void vcpuapiExecBefore()
 	bcpurec.msize = 0;
 	flagbrec = 0;
 
-	//if (bcpurec.linear == 0xa78f) {
+#if VCPUAPI_RECORD == 1
+	if (vcpuinsReadIns(bcpurec.linear, (t_vaddrcc)bcpurec.opcodes))
+		bcpurec.oplen = 15;
+	else
+		bcpurec.oplen = 0;
+#endif
+
+	if (bcpurec.linear == 0x7c00/*0xa78f*/) {
 		flagvalid = 1;
-		//vcpuapiPrint("NXVM and Bochs comparison starts here.\n");
-		//recordNow("d:/bx.log");
-	//}
+		vcpuapiPrint("NXVM and Bochs comparison starts here.\n");
+#if VCPUAPI_RECORD == 1
+		recordNow("d:/bx.log");
+#endif
+	}
 	/*if (bcpurec.linear == 0x2eab) {
 		flagvalid = 0;
 		vcpuapiPrint("NXVM and Bochs comparison stops here.\n");
 		BX_CPU_THIS_PTR magic_break = 1;
 	}*/
 	if (flagvalid) {
-		//recordExec(&bcpurec);
+#if VCPUAPI_RECORD == 1
+		recordExec(&bcpurec);
+#endif
+#if VCPUAPI_COMPARE == 1
 		vcpu = oldbcpu;
 		vcpuinsRefresh();
+#endif
 	}
-	//flagbrec = 1;
+#if VCPUAPI_RECORD == 1
+	flagbrec = 1;
+#endif
 #endif
 }
 void vcpuapiExecAfter()
 {
 #ifdef VGLOBAL_BOCHS
 	if (flagvalid) {
+#if VCPUAPI_COMPARE == 1
 		CopyBochsCpu(&newbcpu);
 		if (vcpuapiCheckDiff()) BX_CPU_THIS_PTR magic_break = 1;
+#endif
 	}
 #endif
 }
 
-void vcpuapiMemRec(t_nubit32 linear, t_nubit8 byte, void *data, t_bool write)
+void vcpuapiMemRec(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte, t_bool write)
 {
+	t_nubitcc i;
+	t_nubit64 cdata = 0;
 	if (flagbrec) {
 		bcpurec.mem[bcpurec.msize].byte = byte;
-		switch (byte) {
-		case 1: bcpurec.mem[bcpurec.msize].data = d_nubit8(data);break;
-		case 2: bcpurec.mem[bcpurec.msize].data = d_nubit16(data);break;
-		case 3: bcpurec.mem[bcpurec.msize].data = d_nubit32(data) & 0x00ffffff;break;
-		case 4: bcpurec.mem[bcpurec.msize].data = d_nubit32(data);break;
-		/*case 5: bcpurec.mem[bcpurec.msize].data = d_nubit64(data) & 0x000000ffffffffff;break;
-		case 6: bcpurec.mem[bcpurec.msize].data = d_nubit64(data) & 0x0000ffffffffffff;break;
-		case 7: bcpurec.mem[bcpurec.msize].data = d_nubit64(data) & 0x00ffffffffffffff;break;
-		case 8: bcpurec.mem[bcpurec.msize].data = d_nubit64(data);break;*/
-		default: bcpurec.mem[bcpurec.msize].data = d_nubit32(data);break;
-		}
-		bcpurec.mem[bcpurec.msize].flagwrite = write;
+		for (i = 0;i < byte;++i)
+			d_nubit8(GetRef(cdata) + i) = d_nubit8(rdata + i);
+		bcpurec.mem[bcpurec.msize].data = cdata;
 		bcpurec.mem[bcpurec.msize].linear = linear;
+		bcpurec.mem[bcpurec.msize].flagwrite = write;
 		bcpurec.msize++;
 	}
 }

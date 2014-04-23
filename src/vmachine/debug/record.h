@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-#include "stdio.h"
 #include "../vcpuins.h"
 
 #define RECORD_SIZE         0xffff             /* maximum record number */

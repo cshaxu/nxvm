@@ -6,13 +6,15 @@
 
 #include "record.h"
 
+#include "dasm32.h"
+
 #ifndef VGLOBAL_BOCHS
 #include "../vapi.h"
-#include "dasm32.h"
 #else
 #include "../vcpuapi.h"
 #define vapiPrint vcpuapiPrint
 #define FOPEN fopen
+#define SPRINTF sprintf
 #endif
 
 /* Record */
@@ -79,7 +81,7 @@ do { \
 	for (j = strlen(_restmt);j < 40;++j) \
 		fprintf(vrecord.fp, " "); \
 	for (j = 0;j < _rec.msize;++j) \
-		fprintf(vrecord.fp, "[%c:L%08x/%1d/%08x] ", \
+		fprintf(vrecord.fp, "[%c:L%08x/%1d/%016llx] ", \
 			_rec.mem[j].flagwrite ? 'W' : 'R', _rec.mem[j].linear, \
 			_rec.mem[j].byte, _rec.mem[j].data); \
 	fprintf(vrecord.fp, "\n");\

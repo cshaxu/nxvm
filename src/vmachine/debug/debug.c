@@ -499,25 +499,6 @@ static void rprintflags()
 }
 static void rprintregs()
 {
-/*
-	32-bit
-	vapiPrint( "EAX=%08X", _eax);
-	vapiPrint(" EBX=%08X", _ebx);
-	vapiPrint(" ECX=%08X", _ecx);
-	vapiPrint(" EDX=%08X", _edx);
-	vapiPrint("  SS=%04X", _ss);
-	vapiPrint( " CS=%04X", _cs);
-	vapiPrint( " DS=%04X", _ds);
-	vapiPrint("\nESP=%08X",_esp);
-	vapiPrint(" EBP=%08X", _ebp);
-	vapiPrint(" ESI=%08X", _esi);
-	vapiPrint(" EDI=%08X", _edi);
-	vapiPrint("  ES=%04X", _es);
-	vapiPrint( " FS=%04X", _fs);
-	vapiPrint( " GS=%04X", _gs);
-	vapiPrint("\nEIP=%08X", _ip);
-	vapiPrint("  \n");
-//*/
 	vapiPrint(  "AX=%04X", _ax);
 	vapiPrint("  BX=%04X", _bx);
 	vapiPrint("  CX=%04X", _cx);
@@ -535,6 +516,8 @@ static void rprintregs()
 	rprintflags();
 	vapiPrint("\n");
 	uprintins(_cs, _ip);
+	uasmSegRec = _cs;
+	uasmPtrRec = _ip;
 }
 static void rscanregs()
 {
@@ -962,7 +945,8 @@ static void xreg()
 	vapiPrint("%s ", _GetEFLAGS_PF ? "PF" : "pf");
 	vapiPrint("%s ", _GetEFLAGS_CF ? "CF" : "cf");
 	vapiPrint("\n");
-	xuprintins(vcpu.cs.base + vcpu.eip);
+	xulin = vcpu.cs.base + vcpu.eip;
+	xuprintins(xulin);
 }
 static void xsregseg(t_cpu_sreg *rsreg, const t_string label)
 {
@@ -1020,6 +1004,7 @@ static void xuprint(t_nubit32 linear, t_nubit8 count)
 	t_nubit8 i;
 	for (i = 0;i < count;++i) {
 		len = xuprintins(linear);
+		if (!len) break;
 		linear += len;
 	}
 	xulin = linear;

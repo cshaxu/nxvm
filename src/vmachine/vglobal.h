@@ -9,12 +9,10 @@
 extern "C" {
 #endif
 
-#include "stdint.h"
-
 #define VGLOBAL_VAR_WIN32 0
 #define VGLOBAL_VAR_LINUX 1
 
-/* COMPLIATION DEFINITIONS ***************************************************/
+/* COMPLIATION OPTIONS ***************************************************** */
 #if 1
 #define VGLOBAL_SIZE_INTEGER 64
 #else
@@ -25,8 +23,28 @@ extern "C" {
 #else
 #define VGLOBAL_PLATFORM VGLOBAL_VAR_LINUX
 #endif
+/* ************************************************************************* */
+
+/* TESTING OPTIONS ********************************************************* */
+#if VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32
 //#define VGLOBAL_BOCHS
-/*****************************************************************************/
+#endif
+/* ************************************************************************* */
+
+/* COMPATIBILITY DEFINITIONS *********************************************** */
+#if VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32
+typedef unsigned char     uint8_t;
+typedef unsigned short   uint16_t;
+typedef unsigned int     uint32_t;
+typedef   signed char      int8_t;
+typedef   signed short    int16_t;
+typedef   signed int      int32_t;
+typedef unsigned __int64 uint64_t;
+typedef   signed __int64  int64_t;
+#else
+#include "stdint.h"
+#endif
+/* ************************************************************************* */
 
 typedef char     *t_string;
 typedef uint8_t   t_nubit1;
@@ -149,6 +167,8 @@ typedef t_nubitcc t_faddrcc;
 #define BCD2Hex(x)  (((x) & 0x0f) + ((((x) & 0xf0) >> 4) * 10))
 
 #define ExecFun(faddr) (*(void (*)(void))(faddr))()
+
+#include "stdio.h"
 
 #ifdef __cplusplus
 }/*_EOCD_*/
