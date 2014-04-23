@@ -1,4 +1,4 @@
-/* This file is a part of NVMx86 project. */
+/* This file is a part of NXVM project. */
 
 /*
 test code

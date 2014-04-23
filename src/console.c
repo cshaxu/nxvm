@@ -1,4 +1,4 @@
-/* This file is a part of NVMx86 project. */
+/* This file is a part of NXVM project. */
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -57,7 +57,6 @@ void NSExec()
 		fprintf(stdout,"File '%s' is loaded to 0001:0100, length is %d bytes.\n\n",execmd,len);
 		fclose(load);
 		while(vcpu.ip < end && !cpuTermFlag) vcpuInsExec();
-		fprintf(stdout,"\n");
 	}
 }
 
@@ -68,19 +67,17 @@ void NSExit()
 
 void NSHelp()
 {
-	fprintf(stdout,"\nNVM Console\n");
-	fprintf(stdout,"===========\n");
+	fprintf(stdout,"NXVM Console Commands\n");
+	fprintf(stdout,"=====================\n");
 	fprintf(stdout,"DEBUG\t\tRuns Debug, a program testing and editing tool.\n");
 	fprintf(stdout,"EXEC\t\tRuns a binary of '.COM' format from host machine.\n");
-	fprintf(stdout,"EXIT\t\tQuits the NVM console (command interpreter).\n");
-	fprintf(stdout,"HELP\t\tProvides Help information for NVM console commands.\n\n");
-	fprintf(stdout,"NVM Operations\n");
-	fprintf(stdout,"============\n");
-	fprintf(stdout,"ON\t\tPowers on Neko's x86 Virtual Machine.\n");
-	//fprintf(stdout,"STATUS\t\tPrints the status of NVM.\n");
-	fprintf(stdout,"MEMORY\t\tAssigns the memory size of NVM.\n");
-	fprintf(stdout,"MEMORYTEST\tTests the memory size of NVM.\n\n");
-/*	fprintf(stdout,"NVM Operations\n");
+	fprintf(stdout,"EXIT\t\tQuits the NXVM console (command interpreter).\n");
+	fprintf(stdout,"HELP\t\tProvides Help information for NXVM console commands.\n\n");
+	fprintf(stdout,"POWON\t\tPowers on Neko's x86 Virtual Machine.\n");
+	//fprintf(stdout,"STATUS\t\tPrints the status of NXVM.\n");
+	fprintf(stdout,"MEMORY\t\tAssigns the memory size of NXVM.\n");
+	fprintf(stdout,"MEMORYTEST\tTests the memory size of NXVM.\n");
+/*	fprintf(stdout,"NXVM Operations\n");
 	fprintf(stdout,"==============\n");
 	fprintf(stdout,"OFF\t\tTurns off Neko's x86 Virtual Machine.\n");
 	fprintf(stdout,"RESET\t\tRestarts Neko's x86 Virtual Machine.\n");*/
@@ -124,21 +121,21 @@ void NSMemoryTest()
 	return;
 }
 
-void NSOn()
+void NSPowOn()
 {
-	if(initFlag) NVMTerm();
-	NVMPowerOn();
+	if(initFlag) NXVMTerm();
+	NXVMPowerOn();
 }
 /*void NSOff()
 {
-	NVMPowerOff();
-	if(!initFlag) NVMInit();
+	NXVMPowerOff();
+	if(!initFlag) NXVMInit();
 }
 void NSReset()
 {
 	if(runFlag) {
-		NVMPowerOff();
-		NVMPowerOn();
+		NXVMPowerOff();
+		NXVMPowerOn();
 	}
 }*/
 
@@ -146,8 +143,8 @@ void NSConsole()
 {
 	char cmdl[MAXLINE];
 	exitFlag = 0;
-	if(!initFlag) NVMInit();
-	fprintf(stdout,"\nPlease enter 'HELP' for information.\n\n");
+	if(!initFlag) NXVMInit();
+	fprintf(stdout,"Please enter 'HELP' for information.\n");
 	while(!exitFlag) {
 		fflush(stdin);
 		fprintf(stdout,"Console> ");
@@ -163,12 +160,12 @@ void NSConsole()
 		else if(!strcmp(cmdl,"memory")) NSMemory();
 		else if(!strcmp(cmdl,"memorytest")) NSMemoryTest();
 
-		else if(!strcmp(cmdl,"on")) NSOn();
+		else if(!strcmp(cmdl,"powon")) NSPowOn();
 		/*else if(!strcmp(cmdl,"off")) NSOff();
 		else if(!strcmp(cmdl,"reset")) NSReset();*/
 
 		else fprintf(stdout,"Illegal command '%s'.\n",cmdl);
 		fprintf(stdout,"\n");
 	}
-	if(initFlag) NVMTerm();
+	if(initFlag) NXVMTerm();
 }

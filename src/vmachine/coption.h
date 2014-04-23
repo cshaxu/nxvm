@@ -1,19 +1,19 @@
-/* This file is a part of NVMx86 project. */
+/* This file is a part of NXVM project. */
 
-#ifndef NVM_COPTION_H
-#define NVM_COPTION_H
+#ifndef NXVM_COPTION_H
+#define NXVM_COPTION_H
 
 // Length of integer: 16,32,64
 
 // Type of system
-#define NVM_NONE 0
-#define NVM_LINUX_TERMINAL 1
-#define NVM_LINUX_APPLICATION_QT 2
-#define NVM_WIN32_CONSOLE 3
-#define NVM_WIN32_APPLICATION 4
+#define NXVM_NONE 0
+#define NXVM_LINUX_TERMINAL 1
+#define NXVM_LINUX_APPLICATION_QT 2
+#define NXVM_WIN32_CONSOLE 3
+#define NXVM_WIN32_APPLICATION 4
 
 // Selector - For User's Information
-#define NVM_INTLEN 64
-#define NVM_SYSTEM NVM_NONE
+#define NXVM_INTLEN 64
+#define NXVM_SYSTEM NXVM_NONE
 
 #endif

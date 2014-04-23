@@ -1,7 +1,7 @@
-/* This file is a part of NVMx86 project. */
+/* This file is a part of NXVM project. */
 
-#ifndef NVM_VAPI_H
-#define NVM_VAPI_H
+#ifndef NXVM_VAPI_H
+#define NXVM_VAPI_H
 
 #include "../vglobal.h"
 extern int forceNone;	// use general output or system_related vdisplay

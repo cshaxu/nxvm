@@ -1,7 +1,7 @@
-/* This file is a part of NVMx86 project. */
+/* This file is a part of NXVM project. */
 
-#ifndef NVM_VMEMORY_H
-#define NVM_VMEMORY_H
+#ifndef NXVM_VMEMORY_H
+#define NXVM_VMEMORY_H
 
 #include "vglobal.h"
 

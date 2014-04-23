@@ -1,4 +1,4 @@
-/* This file is a part of NVMx86 project. */
+/* This file is a part of NXVM project. */
 
 #include "stdio.h"
 #include "stdarg.h"
@@ -8,16 +8,18 @@
 
 int forceNone = 1;
 
-#ifdef MSDOS
-// MSDOS PART
+#if NXVM_SYSTEM == NXVM_NONE
+// GENERAL
+#elif NXVM_SYSTEM == NXVM_LINUX_TERMINAL
+// LINUX TERMINAL
+#elif NXVM_SYSTEM == NXVM_LINUX_APPLICATION_QT
+// LINUX APPLICATION QT
+#elif NXVM_SYSTEM == NXVM_WIN32_CONSOLE
+// WIN32 CONSOLE
+#elif NXVM_SYSTEM == NXVM_WIN32_APPLICATION
+// WIN32 APPLICATION
 #else
-#ifdef WIN32CON
-// WIN32CON PART
-#else
-#ifdef WIN32APP
-// WIN32APP PART
-#endif
-#endif
+// FAIL TO COMPILE 
 #endif
 
 // General Part

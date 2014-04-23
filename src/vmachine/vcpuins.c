@@ -1,6 +1,6 @@
-/* This file is a part of NVMx86 project. */
+/* This file is a part of NXVM project. */
 
-#define NVM_DEBUG_VCPUINS
+#define NXVM_DEBUG_VCPUINS
 
 #include "stdio.h"
 
@@ -9,7 +9,7 @@
 #include "vcpuins.h"
 #include "system/vapi.h"
 
-#ifdef NVM_DEBUG_VCPUINS
+#ifdef NXVM_DEBUG_VCPUINS
 // NOTE: INT_I8() is modified for the INT test. Please correct it finally!
 // NOTE: Need to modify the INT processor! All INTs should call INT(t_nubit8 intid);
 #endif
@@ -83,7 +83,7 @@ static t_vaddrcc rm,r,imm;
 static enum {RT_NONE,RT_REPZ,RT_REPZNZ} reptype;
 static void CaseError(const char *str)
 {
-	nvmprint("The NVM CPU has encountered an internal case error: %s.\n",str);
+	nvmprint("The NXVM CPU has encountered an internal case error: %s.\n",str);
 	cpuTermFlag = 1;
 }
 
@@ -1260,7 +1260,7 @@ static void IDIV(void *src, t_nubit8 len)
 
 void OpError()
 {
-	nvmprint("The NVM CPU has encountered an illegal instruction.\nCS:");
+	nvmprint("The NXVM CPU has encountered an illegal instruction.\nCS:");
 	nvmprintword(vcpu.cs);
 	nvmprint(" IP:");
 	nvmprintword(vcpu.ip);
@@ -2693,7 +2693,7 @@ void INT3()
 	HardINT = 3;
 	//nvmprintaddr(vcpu.cs,vcpu.ip);nvmprint("  INT3\n");
 }
-#ifndef NVM_DEBUG_VCPUINS
+#ifndef NXVM_DEBUG_VCPUINS
 void INT_I8()
 {
 	t_nubit8 intid;

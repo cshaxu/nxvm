@@ -1,5 +1,5 @@
-/* This file is a part of NVMx86 project. */
+/* This file is a part of NXVM project. */
 
-#ifndef NVM_WIN32APP_H
-#define NVM_WIN32APP_H
+#ifndef NXVM_WIN32APP_H
+#define NXVM_WIN32APP_H
 #endif

@@ -1,7 +1,7 @@
-/* This file is a part of NVMx86 project. */
+/* This file is a part of NXVM project. */
 
-#ifndef NVM_VMACHINE_H
-#define NVM_VMACHINE_H
+#ifndef NXVM_VMACHINE_H
+#define NXVM_VMACHINE_H
 
 #include "vglobal.h"
 #include "vcpu.h"
@@ -10,10 +10,10 @@
 extern t_bool initFlag;
 extern t_bool runFlag;
 
-void NVMInit();
-void NVMPowerOn();
-void NVMRun();
-void NVMPowerOff();
-void NVMTerm();
+void NXVMInit();
+void NXVMPowerOn();
+void NXVMRun();
+void NXVMPowerOff();
+void NXVMTerm();
 
 #endif

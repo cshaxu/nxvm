@@ -1,7 +1,7 @@
-/* This file is a part of NVMx86 project. */
+/* This file is a part of NXVM project. */
 
-#ifndef NVM_VCPUINS_H
-#define NVM_VCPUINS_H
+#ifndef NXVM_VCPUINS_H
+#define NXVM_VCPUINS_H
 
 #include "vglobal.h"
 
