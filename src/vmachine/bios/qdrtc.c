@@ -185,8 +185,8 @@ void INT_08()
 	pop_ax;
 	_int(0x1c);
 	push_ax;
-	mov(_al, 0x20);
-	out(0x20, _al); /* send eoi command to vpic */
+//	mov(_al, 0x20);
+//	out(0x20, _al); /* send eoi command to vpic */
 	pop_ax;
 /*	vramVarDWord(0x0000, QDBIOS_ADDR_RTC_DAILY_COUNTER) += 1;
 	if (vramVarDWord(0x0000, QDBIOS_ADDR_RTC_DAILY_COUNTER) >= 0x1800b2) {
@@ -213,31 +213,39 @@ void INT_1A()
 void qdrtcReset()
 {
 	t_nubit8 hour,min,sec;
-	/*asmint(0x08) {
+	asmint(0x08) {
 		qdbiosMakeInt(
-			0x08, "\
-				  push ds ;\
-				  push ax ;\
-				  push dx ;\
-				  mov ds, 0 ;\
-				  add [046c], 1 ;\
-				  cmp [046c], 0 ;\
-!0				  jnz 0 ;\
-				  add [046e], 1 ;\
-#0				  cmp [046c], b2 ;\
-!0				  jnz 0 ; \
-				  cmp [046e], 18 ;\
-!1				  jnz 0 ; \
-				  mov [046c], 0 ;\
-				  mov [046e], 0 ;\
-				  mov [0470], 0 ;\
-#0				  nop ;\
-#1				  int 1c ;\
-			");
-	} else {*/
+			0x08, "               \
+			cli                 \n\
+			push ds             \n\
+			push ax             \n\
+			pushf               \n\
+			mov ax, 40          \n\
+			mov ds, ax          \n\
+			add word [006c], 1  \n\
+			adc word [006e], 0  \n\
+			cmp word [006c], b2 \n\
+			jnz $(label1)       \n\
+			cmp word [006e], 18 \n\
+			jnz $(label1)       \n\
+			mov word [006c], 0  \n\
+			mov word [006e], 0  \n\
+			mov word [0070], 1  \n\
+			$(label1):          \n\
+			popf                \n\
+			pop ax              \n\
+			pop ds              \n\
+			int 1c              \n\
+			push ax             \n\
+			mov al, 20          \n\
+			out 20, al          \n\
+			pop ax              \n\
+			sti                 \n\
+			iret                \n");
+	} else {
 		qdbiosInt[0x08] = (t_faddrcc)INT_08; /* hard rtc */
 		qdbiosMakeInt(0x08, "qdx 08\niret");
-	//}
+	}
 	qdbiosInt[0x1a] = (t_faddrcc)INT_1A; /* soft rtc */
 	qdbiosMakeInt(0x1a, "qdx 1a\niret");
 	/* load cmos data */

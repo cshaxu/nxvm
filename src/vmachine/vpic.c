@@ -140,7 +140,7 @@ static void IO_Write_00x0(t_pic *vpic)
 				vpic->ocw2 = vport.iobyte;
 				if (vpic->isr) {
 					id = GetIsrTopId(vpic);
-					//vapiPrint("EOI %d\n", id);
+					vapiPrint("EOI %d\n", id);
 					vpic->isr &= ~(1<<id);
 				}
 				break;

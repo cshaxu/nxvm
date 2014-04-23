@@ -3502,8 +3502,10 @@ t_nubitcc aasm(const t_string stmt, t_nubit16 seg, t_nubit16 off)
 		}
 		if (error) break;
 	}
-	if (error) len = 0;
-//	else labelRealizeDefList();
+	if (error) {
+		len = 0;
+		vapiPrint("invalid instruction: '%s'\n",aop);
+	}
 	return len;
 }
 

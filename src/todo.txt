@@ -1,2 +1,1 @@
-1. Rebuild hardware debugger
-2. Build BIOS INT service routines
+1. Build BIOS INT service routines
