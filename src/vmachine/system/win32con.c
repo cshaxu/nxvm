@@ -13,8 +13,8 @@ HANDLE hIn, hOut;
 static DWORD WINAPI ThreadDisplay(LPVOID lpParam)
 {
 	while (vapiCallBackMachineGetFlagRun()) {
-		vapiSleep(100);
 		w32cdispPaint();
+		vapiSleep(100);
 	}
 	return 0;
 }

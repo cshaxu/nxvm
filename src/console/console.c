@@ -32,63 +32,7 @@ static void parse(char *s)
 #include "../vmachine/vapi.h"
 void Test()
 {
-	INPUT_RECORD inRec;
-	DWORD ckeyState = 0;
-	DWORD res;
-	HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-	t_nubit16 ascii;
-	t_nubit16 vkey;
-	while(1) {
-		ReadConsoleInput(hIn,&inRec,1,(LPDWORD)(&res));
-		if (inRec.Event.KeyEvent.bKeyDown){
-			switch (inRec.EventType) {
-			case KEY_EVENT:
-				vapiPrint("Key Pressed: %c\n",inRec.Event.KeyEvent.uChar.AsciiChar);
-
-				ascii = inRec.Event.KeyEvent.wVirtualScanCode;
-				vkey = inRec.Event.KeyEvent.wVirtualKeyCode;
-				if (inRec.Event.KeyEvent.bKeyDown) {
-					switch (vkey) {
-					case VK_F1: vapiPrint("f1");break;
-					case VK_F2: vapiPrint("f2");break;
-					case VK_F3: vapiPrint("f3");break;
-					case VK_F4: vapiPrint("f4");break;
-					case VK_F5: vapiPrint("f5");break;
-					case VK_F6: vapiPrint("f6");break;
-					case VK_F7: vapiPrint("f7");break;
-					case VK_F8: vapiPrint("f8");break;
-					case VK_F9: vapiPrint("f9");break;
-					case VK_F10: vapiPrint("f10");break;
-					case VK_F11: vapiPrint("f11");break;
-					case VK_F12: vapiPrint("f12");break;
-					case VK_ESCAPE: vapiPrint("esc");break;
-					case VK_PRIOR: vapiPrint("pageup");break;
-					case VK_NEXT: vapiPrint("pagedn");break;
-					case VK_END: vapiPrint("end");break;
-					case VK_HOME: vapiPrint("home");break;
-					case VK_LEFT: vapiPrint("left");break;
-					case VK_UP: vapiPrint("right");break;
-					case VK_RIGHT: vapiPrint("up");break;
-					case VK_DOWN: vapiPrint("dn");break;
-							break;
-					default://剩下的字符可能是alt。。ctl与普通字符等，但是updateKBStatus会过滤掉普通字符
-						if (vkey >= 0x41 && vkey <= 0x41+'Z'-'A') {
-							if (vapiCallBackKeyboardGetAlt())
-								vapiPrint("%c", ascii & 0xff);
-							if (vapiCallBackKeyboardGetCtrl())
-								vapiPrint("%c", (ascii + vkey - 0x0041) & 0xff);
-							//如果不是按下ctrl，则是按下alt
-						}
-						break;
-					}
-				}
-
-				break;
-			default:
-				break;
-			}
-		}
-	}
+	qdbiosInit();
 }
 
 void Help()
@@ -237,7 +181,6 @@ void Info()
 
 void Mode()
 {
-	char str[MAXLINE];
 	if (!vmachine.flaginit || vmachine.flagrun) {
 		fprintf(stdout,"Cannot change display mode now.\n");
 		return;
