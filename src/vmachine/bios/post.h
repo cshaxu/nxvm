@@ -90,6 +90,11 @@ pushf                               \n\
 pop ax                              \n\
 test al, 01                         \n\
 jnz $(label_post_boot_fail)         \n\
+mov bx, 00                          \n\
+mov ds, bx                          \n\
+mov ax, [7dfe]                      \n\
+cmp ax, aa55                        \n\
+jnz $(label_post_boot_fail)         \n\
 jmp near $(label_post_boot_succ)    \n\
 \
 $(label_post_boot_fail):          \n\
@@ -147,13 +152,11 @@ test ax, 40                       \n\
 jnz $(label_post_boot_fail_loop)  \n\
 mov ah, 00                        \n\
 int 16                            \n\
-qdx ff  ; special stop            \n\
+qdx 00  ; special stop            \n\
 jmp near $(label_post_boot_fail)  \n\
 \
 $(label_post_boot_succ):  \n\
-mov ax, aa55              \n\
 ; start operating system  \n\
-xor ax, ax                \n\
 xor bx, bx                \n\
 mov cx, 01                \n\
 xor dx, dx                \n\

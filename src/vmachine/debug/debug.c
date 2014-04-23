@@ -838,7 +838,7 @@ static void init()
 	asmSegRec = uasmSegRec = vcpu.cs;
 	asmPtrRec = uasmPtrRec = vcpu.ip;
 	dumpSegRec = vcpu.ds;
-	dumpPtrRec = vcpu.ip;
+	dumpPtrRec = vcpu.ip / 0x10 * 0x10;
 /*	vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
 	vcpu.si = vcpu.di = vcpu.bp = 0x0000;
 	vcpu.sp = 0xffee;
