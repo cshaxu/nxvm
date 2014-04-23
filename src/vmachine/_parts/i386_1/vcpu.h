@@ -179,8 +179,8 @@ typedef struct {
 #define _SetSF    (SetBit(_eflags, VCPU_EFLAGS_SF))
 #define _SetTF    (SetBit(_eflags, VCPU_EFLAGS_TF))
 #define _SetIF    (SetBit(_eflags, VCPU_EFLAGS_IF))
-#define _SetEFLAGS_DF    (SetBit(_eflags, VCPU_EFLAGS_DF))
-#define _SetEFLAGS_OF    (SetBit(_eflags, VCPU_EFLAGS_OF))
+#define _SetDF    (SetBit(_eflags, VCPU_EFLAGS_DF))
+#define _SetOF    (SetBit(_eflags, VCPU_EFLAGS_OF))
 #define _SetIOPLL (SetBit(_eflags, VCPU_EFLAGS_IOPLL))
 #define _SetIOPLH (SetBit(_eflags, VCPU_EFLAGS_IOPLH))
 #define _SetIOPL  (SetBit(_eflags, VCPU_EFLAGS_IOPL)
@@ -196,9 +196,9 @@ typedef struct {
 #define _ClrEFLAGS_AF    (ClrBit(_eflags, VCPU_EFLAGS_AF))
 #define _ClrEFLAGS_ZF    (ClrBit(_eflags, VCPU_EFLAGS_ZF))
 #define _ClrSF    (ClrBit(_eflags, VCPU_EFLAGS_SF))
-#define _ClrEFLAGS_TF    (ClrBit(_eflags, VCPU_EFLAGS_TF))
-#define _ClrEFLAGS_IF    (ClrBit(_eflags, VCPU_EFLAGS_IF))
-#define _ClrEFLAGS_DF    (ClrBit(_eflags, VCPU_EFLAGS_DF))
+#define _ClrTF    (ClrBit(_eflags, VCPU_EFLAGS_TF))
+#define _ClrIF    (ClrBit(_eflags, VCPU_EFLAGS_IF))
+#define _ClrDF    (ClrBit(_eflags, VCPU_EFLAGS_DF))
 #define _ClrOF    (ClrBit(_eflags, VCPU_EFLAGS_OF))
 #define _ClrIOPLL (ClrBit(_eflags, VCPU_EFLAGS_IOPLL))
 #define _ClrIOPLH (ClrBit(_eflags, VCPU_EFLAGS_IOPLH))
@@ -217,13 +217,6 @@ typedef struct {
 #define _GetAF _GetEFLAGS_AF
 #define _SetAF _SetEFLAGS_AF
 #define _ClrAF _ClrEFLAGS_AF
-
-#define VCPU_CR0_PE     0x00000001
-#define VCPU_CR0_TS     0x00000008
-#define VCPU_CR0_PG     0x80000000
-#define _GetCR0_PE  (GetBit(vcpu.cr0, VCPU_CR0_PE))
-#define _GetCR0_PG  (GetBit(vcpu.cr0, VCPU_CR0_PG))
-#define _SetCR0_TS  (SetBit(vcpu.cr0, VCPU_CR0_TS))
 
 #define _MakePageFaultErrorCode(p,wr,us) ((p) | ((wr) << 1) | ((us) << 2))
 
@@ -362,6 +355,8 @@ typedef struct {
 #define VCPU_CR3_BASE   0xfffff000
 #define _GetCR3_BASE    (vcpu.cr3 & VCPU_CR3_BASE)
 
+#define _IsProtected (_GetCR0_PE && !_GetEFLAGS_VM)
+
 #define _LoadGDTR16(base,limit)  (vcpu.gdtr = ((t_nubit24)(base) << 16) | (t_nubit16)(limit))
 #define _LoadGDTR32(base,limit)  (vcpu.gdtr = ((t_nubit32)(base) << 16) | (t_nubit16)(limit))
 #define _LoadLDTR(selector)      (vcpu.ldtr = (t_nubit16)(selector))
@@ -383,7 +378,6 @@ typedef struct {
 #define _LoadTR6
 #define _LoadTR7
 
-#define _IsProtected (_GetCR0_PE && !_GetEFLAGS_VM)
 #define _GetCPL  (_GetCR0_PE ? (_GetEFLAGS_VM ? 3 : vcpu.cs.dpl) : 0)
 
 extern t_cpu vcpu;

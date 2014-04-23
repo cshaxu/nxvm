@@ -35,6 +35,8 @@ typedef enum {
 } t_cpuins_prefix_sreg;
 typedef t_bool t_cpuins_prefix;
 typedef struct {
+	t_vaddrcc rm, r, imm; /* marked for deletion */
+	
 	t_cpu_sreg oldcs, oldss;
 	t_nubit32 oldeip, oldesp;
 	t_bool    flaginsloop;
@@ -42,15 +44,14 @@ typedef struct {
 	t_nubitcc opr1, opr2, result, bit;
 	t_cpuins_type type;
 	t_cpuins_prefix_rep  prefix_rep;
+	t_cpuins_prefix_sreg prefix_sreg;
 	t_cpuins_prefix      prefix_lock;
 	t_cpuins_prefix      prefix_oprsize;
 	t_cpuins_prefix      prefix_addrsize;
-	t_cpu_sreg *roverds, *roverss;
 	t_nubit32 except, excode;
-	t_vaddrcc rimm, rrm, rr;
-	t_nubit32 pimm, prm;
-	t_nubit32 limm, lrm;
+	t_vaddrcc prm, pr, pimm;
 	t_bool    flagmem; /* if prm is in memory */
+	t_nubit32 lrm; /* linear address if prm is in memory*/
 } t_cpuins;
 
 #define VCPUINS_EXCEPT_GP 0x00000001 /* general protection */
@@ -60,7 +61,6 @@ typedef struct {
 #define VCPUINS_EXCEPT_UD 0x00000010 /* undefined opcode */
 #define VCPUINS_EXCEPT_BR 0x00000020 /* boundary check fail */
 #define VCPUINS_EXCEPT_TS 0x00000040 /* task state segment fail */
-#define VCPUINS_EXCEPT_CE 0x80000000 /* case error */
 
 extern t_cpuins vcpuins;
 

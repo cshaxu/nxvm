@@ -650,12 +650,12 @@ static void rscanregs()
 		vapiPrint(" -");
 		FGETS(s,MAXLINE,stdin);
 		lcase(s);
-		if(!STRCMP(s,"ov"))      _SetOF;
+		if(!STRCMP(s,"ov"))      _SetEFLAGS_OF;
 		else if(!STRCMP(s,"nv")) _ClrOF;
-		else if(!STRCMP(s,"dn")) _SetDF;
-		else if(!STRCMP(s,"up")) _ClrDF;
+		else if(!STRCMP(s,"dn")) _SetEFLAGS_DF;
+		else if(!STRCMP(s,"up")) _ClrEFLAGS_DF;
 		else if(!STRCMP(s,"ei")) _SetIF;
-		else if(!STRCMP(s,"di")) _ClrIF;
+		else if(!STRCMP(s,"di")) _ClrEFLAGS_IF;
 		else if(!STRCMP(s,"ng")) _SetSF;
 		else if(!STRCMP(s,"pl")) _ClrSF;
 		else if(!STRCMP(s,"zr")) _SetEFLAGS_ZF;
