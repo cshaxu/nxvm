@@ -21,3 +21,4 @@ for /f "delims=" %%i in ('dir /a:-d /b vmachine\debug\*.c') do (
 echo vmachine/debug/%%i>>"list.txt"
 )
 mmakfile.exe /l "list.txt" 1>"makefile"
+del /f "list.txt"

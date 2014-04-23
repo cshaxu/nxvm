@@ -25,7 +25,7 @@ extern "C" {
 #else
 #define VGLOBAL_PLATFORM VGLOBAL_VAR_LINUX
 #endif
-#define VGLOBAL_BOCHS
+//#define VGLOBAL_BOCHS
 /*****************************************************************************/
 
 typedef char     *t_string;
@@ -56,6 +56,8 @@ typedef t_nsbit32 t_nsbitcc;
 typedef t_nubit1  t_bool;
 typedef t_nubitcc t_vaddrcc;
 typedef t_nubitcc t_faddrcc;
+
+#define GetRef(n) ((t_vaddrcc)&(n))
 
 #define p_nubit1  (t_nubit1 *)
 #define p_nubit4  (t_nubit4 *)

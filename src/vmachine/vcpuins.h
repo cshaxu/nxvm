@@ -12,7 +12,8 @@ extern "C" {
 #include "vcpu.h"
 
 #define i386(n) if (1)
-#define VCPUINS_TRACE 1
+#define VCPUINS_TRACE 0
+#define VCPUINS_TRACE_DEBUG 0
 
 typedef enum {
 	ARITHTYPE_NULL,
@@ -43,9 +44,6 @@ typedef struct {
 	t_nubit32 offset;
 } t_cpuins_logical;
 typedef struct {
-	/* instruction dispatch */
-	t_faddrcc table[0x100], table_0f[0x100];
-
 	/* prefixes */
 	t_cpuins_prefix_rep  prefix_rep;
 	t_cpuins_prefix      prefix_lock;
