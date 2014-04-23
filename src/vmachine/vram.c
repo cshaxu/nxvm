@@ -31,7 +31,7 @@ void vramAlloc(t_nubitcc newsize)
 	if (newsize) {
 		vram.size = newsize;
 		vram.base = (t_vaddrcc)malloc(vram.size);
-		memset((void *)vram.base, 0x00, vram.size);
+		memset((void *)vram.base, 0xcd, vram.size);
 	}
 }
 void vramInit()

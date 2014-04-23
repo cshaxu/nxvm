@@ -87,7 +87,7 @@ void INT_10()
 }
 /* device test*/
 void INT_11()
-{vcpu.al = 0x61;}
+{vcpu.ax = 0x0061;}
 /* memory test*/
 void INT_12()
 {vcpu.ax = 0x027f;}
@@ -218,9 +218,6 @@ t_bool qdbiosExecInt(t_nubit8 intid)
 void qdbiosInit()
 {
 	t_nubit16 i;
-	qdfddInit();
-	qdrtcInit();
-
 /* build interrupt vector table */
 	for (i = 0x0000;i < 0x0100;++i) {
 		vramSetByte(0x0000, i*4 + 0x00, 0x00);
@@ -276,9 +273,12 @@ void qdbiosInit()
 	vramSetByte(0x0040, 0x0064, 0x03);
 	vramSetByte(0x0040, 0x0065, 0x29);
 	vramSetByte(0x0040, 0x0066, 0x30);
+/*
+	RTC Tick Count Storage
 	vramSetByte(0x0040, 0x006c, 0xf7);
 	vramSetByte(0x0040, 0x006d, 0xd6);
 	vramSetByte(0x0040, 0x006e, 0x0f);
+*/
 	vramSetByte(0x0040, 0x0074, 0x01);
 	vramSetByte(0x0040, 0x0076, 0xc0);
 	vramSetByte(0x0040, 0x0078, 0x14);
@@ -308,6 +308,11 @@ void qdbiosInit()
 	vramSetByte(0xf000, 0xe6fc, 0x00);
 	vramSetByte(0xf000, 0xe6fd, 0x00);
 	vramSetByte(0xf000, 0xe6fe, 0x00);
+
+/* device initialize */
+	qdfddInit();
+	qdrtcInit();
+
 /* load boot sector */
 	vapiInsertFloppyDisk("d:/msdos.img");
 	memcpy((void *)vramGetAddress(0x7c00), (void *)qdfdd.base, 0x200);

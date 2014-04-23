@@ -5,10 +5,10 @@
 #include "stdio.h"
 #include "../vmachine/vglobal.h"
 
-#define VLOG_COUNT_MAX 0x1000
+#define VLOG_COUNT_MAX 0x4000
 
 typedef struct {
-	FILE *logfile;
+	FILE *fp;
 	t_nubitcc line;
 } t_log;
 

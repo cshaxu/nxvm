@@ -9,6 +9,7 @@
 
 #ifdef VCPUINS_DEBUG
 #include "../system/vapi.h"
+#include "../system/vlog.h"
 #include "qdbios.h"
 /*
  * TODO: INT_I8() is modified for the INT test. Please correct it finally!
@@ -220,8 +221,7 @@ static void GetModRegRM(t_nubitcc regbit,t_nubitcc rmbit)
 		case 7:	rm = vramGetRealAddress(insDS,vcpu.bx);break;
 		default:CaseError("GetModRegRM::MOD1::RM");break;}
 /* vcpuins bug fix #3
-		rm += vramGetByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;
-		*/
+		rm += vramGetByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;*/
 		rm += (t_nsbit8)vramGetByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;
 		break;
 	case 2:
@@ -315,7 +315,9 @@ static void GetModRegRMEA()
 		case 6:	rm = vcpu.bp;break;
 		case 7:	rm = vcpu.bx;break;
 		default:CaseError("GetModRegRMEA::MOD1::RM");break;}
-		rm += vramGetByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;
+/* vcpuins bug fix #p
+		rm += vramGetByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;*/
+		rm += (t_nsbit8)vramGetByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;
 		break;
 	case 2:
 		switch(RM) {
@@ -568,9 +570,14 @@ static void CMP(void *op1, void *op2, t_nubit8 len)
 	case 8:
 		flglen = 8;
 		flginstype = CMP8;
+/* vcpuins bug fix #6
 		flgoperand1 = *(t_nubit8 *)op1;
-		flgoperand2 = *(t_nubit8 *)op2;
-		flgresult = (flgoperand1-flgoperand2)&0xff;
+		flgoperand2 = *(t_nubit8 *)op2;*/
+		flgoperand1 = (*(t_nubit8 *)op1) & 0xff;
+		flgoperand2 = (*(t_nubit8 *)op2) & 0xff;
+/* vcpuins bug fix #7
+		flgresult = (flgoperand1-flgoperand2)&0xff;*/
+		flgresult = ((t_nubit8)flgoperand1-(t_nsbit8)flgoperand2)&0xff;
 		break;
 	case 12:
 		flglen = 16;
@@ -582,9 +589,14 @@ static void CMP(void *op1, void *op2, t_nubit8 len)
 	case 16:
 		flglen = 16;
 		flginstype = CMP16;
+/* vcpuins bug fix #6
 		flgoperand1 = *(t_nubit16 *)op1;
-		flgoperand2 = *(t_nubit16 *)op2;
-		flgresult = (flgoperand1-flgoperand2)&0xffff;
+		flgoperand2 = *(t_nubit16 *)op2;*/
+		flgoperand1 = (*(t_nubit16 *)op1) & 0xffff;
+		flgoperand2 = (*(t_nubit16 *)op2) & 0xffff;
+/* vcpuins bug fix #7
+		flgresult = (flgoperand1-flgoperand2)&0xffff;*/
+		flgresult = ((t_nubit16)flgoperand1-(t_nsbit16)flgoperand2)&0xffff;
 		break;
 	default:CaseError("CMP::len");break;}
 	SetFlags(CMP_FLAG);
@@ -656,7 +668,9 @@ static void JCC(void *src, t_bool jflag,t_nubit8 len)
 	switch(len) {
 	case 8:
 		if(jflag)
-			vcpu.ip += U_SRC_8;;
+/* vcpuins bug fix #5
+			vcpu.ip += U_SRC_8;*/
+			vcpu.ip += S_SRC_8;
 		break;
 	default:CaseError("JCC::len");break;}
 }
@@ -841,7 +855,9 @@ static void SHL(void *dest, void *src, t_nubit8 len)
 			tempcount--;
 		}
 		if(count == 1) SetFlag(VCPU_FLAG_OF,MSB_DEST_8^GetFlag(VCPU_FLAG_CF));
-		else if(count != 0) {
+/* vcpuins bug fix #8
+		else if(count != 0) {*/
+		if(count != 0) {
 			flgresult = U_DEST_8;
 			SetFlags(SHL_FLAG);
 		}
@@ -854,7 +870,9 @@ static void SHL(void *dest, void *src, t_nubit8 len)
 			tempcount--;
 		}
 		if(count == 1) SetFlag(VCPU_FLAG_OF,MSB_DEST_16^GetFlag(VCPU_FLAG_CF));
-		else if(count != 0) {
+/* vcpuins bug fix #8
+		else if(count != 0) {*/
+		if(count != 0) {
 			flgresult = U_DEST_16;
 			SetFlags(SHL_FLAG);
 		}
@@ -877,7 +895,9 @@ static void SHR(void *dest, void *src, t_nubit8 len)
 			tempcount--;
 		}
 		if(count == 1) SetFlag(VCPU_FLAG_OF,!!(tempdest8&0x80));
-		else if(count != 0) {
+/* vcpuins bug fix #8
+		else if(count != 0) {*/
+		if(count != 0) {
 			flgresult = U_DEST_8;
 			SetFlags(SHR_FLAG);
 		}
@@ -891,7 +911,9 @@ static void SHR(void *dest, void *src, t_nubit8 len)
 			tempcount--;
 		}
 		if(count == 1) SetFlag(VCPU_FLAG_OF,!!(tempdest16&0x8000));
-		else if(count != 0) {
+/* vcpuins bug fix #8
+		else if(count != 0) {*/
+		if(count != 0) {
 			flgresult = U_DEST_16;
 			SetFlags(SHR_FLAG);
 		}
@@ -912,7 +934,9 @@ static void SAL(void *dest, void *src, t_nubit8 len)
 			tempcount--;
 		}
 		if(count == 1) SetFlag(VCPU_FLAG_OF,MSB_DEST_8^GetFlag(VCPU_FLAG_CF));
-		else if(count != 0) {
+/* vcpuins bug fix #8
+		else if(count != 0) {*/
+		if(count != 0) {
 			flgresult = U_DEST_8;
 			SetFlags(SAL_FLAG);
 		}
@@ -925,7 +949,9 @@ static void SAL(void *dest, void *src, t_nubit8 len)
 			tempcount--;
 		}
 		if(count == 1) SetFlag(VCPU_FLAG_OF,MSB_DEST_16^GetFlag(VCPU_FLAG_CF));
-		else if(count != 0) {
+/* vcpuins bug fix #8
+		else if(count != 0) {*/
+		if(count != 0) {
 			flgresult = U_DEST_16;
 			SetFlags(SAL_FLAG);
 		}
@@ -949,7 +975,9 @@ static void SAR(void *dest, void *src, t_nubit8 len)
 			tempcount--;
 		}
 		if(count == 1) SetFlag(VCPU_FLAG_OF,0);
-		else if(count != 0) {
+/* vcpuins bug fix #8
+		else if(count != 0) {*/
+		if(count != 0) {
 			flgresult = U_DEST_8;
 			SetFlags(SAR_FLAG);
 		}
@@ -964,32 +992,35 @@ static void SAR(void *dest, void *src, t_nubit8 len)
 			tempcount--;
 		}
 		if(count == 1) SetFlag(VCPU_FLAG_OF,0);
-		else if(count != 0) {
+/* vcpuins bug fix #8
+		else if(count != 0) {*/
+		if(count != 0) {
 			flgresult = U_DEST_16;
 			SetFlags(SAR_FLAG);
 		}
 		break;
 	default:CaseError("SAR::len");break;}
 }
-static void STRDIR(t_nubit8 len)
+static void STRDIR(t_nubit8 len, t_bool flagsi, t_bool flagdi)
 {
+/* vcpuins bug fix #10: add parameters flagsi, flagdi*/
 	switch(len) {
 	case 8:
 		if(GetFlag(VCPU_FLAG_DF)) {
-			vcpu.di--;
-			vcpu.si--;
+			if (flagdi) vcpu.di--;
+			if (flagsi) vcpu.si--;
 		} else {
-			vcpu.di++;
-			vcpu.si++;
+			if (flagdi) vcpu.di++;
+			if (flagsi) vcpu.si++;
 		}
 		break;
 	case 16:
 		if(GetFlag(VCPU_FLAG_DF)) {
-			vcpu.di -= 2;
-			vcpu.si -= 2;
+			if (flagdi) vcpu.di -= 2;
+			if (flagsi) vcpu.si -= 2;
 		} else {
-			vcpu.di += 2;
-			vcpu.si += 2;
+			if (flagdi) vcpu.di += 2;
+			if (flagsi) vcpu.si += 2;
 		}
 		break;
 	default:CaseError("STRDIR::len");break;}
@@ -999,14 +1030,14 @@ static void MOVS(t_nubit8 len)
 	switch(len) {
 	case 8:
 		vramSetByte(vcpu.es,vcpu.di,vramGetByte(insDS,vcpu.si));
-		STRDIR(8);
+		STRDIR(8,1,1);
 		/*if (eCPU.di+t<0xc0000 && eCPU.di+t>=0xa0000)
 		WriteVideoRam(eCPU.di+t-0xa0000);*/
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  MOVSB\n");
 		break;
 	case 16:
 		vramSetWord(vcpu.es,vcpu.di,vramGetWord(insDS,vcpu.si));
-		STRDIR(16);
+		STRDIR(16,1,1);
 		/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000)
 		{
 			for (i=0;i<tmpOpdSize;i++)
@@ -1027,7 +1058,7 @@ static void CMPS(t_nubit8 len)
 		flgoperand1 = vramGetByte(insDS,vcpu.si);
 		flgoperand2 = vramGetByte(vcpu.es,vcpu.di);
 		flgresult = (flgoperand1-flgoperand2)&0xff;
-		STRDIR(8);
+		STRDIR(8,1,1);
 		SetFlags(CMP_FLAG);
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  CMPSB\n");
 		break;
@@ -1037,7 +1068,7 @@ static void CMPS(t_nubit8 len)
 		flgoperand1 = vramGetWord(insDS,vcpu.si);
 		flgoperand2 = vramGetWord(vcpu.es,vcpu.di);
 		flgresult = (flgoperand1-flgoperand2)&0xffff;
-		STRDIR(16);
+		STRDIR(16,1,1);
 		SetFlags(CMP_FLAG);
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  CMPSW\n");
 		break;
@@ -1048,14 +1079,14 @@ static void STOS(t_nubit8 len)
 	switch(len) {
 	case 8:
 		vramSetByte(vcpu.es,vcpu.di,vcpu.al);
-		STRDIR(8);
+		STRDIR(8,0,1);
 		/*if (eCPU.di+t<0xc0000 && eCPU.di+t>=0xa0000)
 		WriteVideoRam(eCPU.di+t-0xa0000);*/
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  STOSB\n");
 		break;
 	case 16:
 		vramSetWord(vcpu.es,vcpu.di,vcpu.ax);
-		STRDIR(16);
+		STRDIR(16,0,1);
 		/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000)
 		{
 			for (i=0;i<tmpOpdSize;i++)
@@ -1072,12 +1103,12 @@ static void LODS(t_nubit8 len)
 	switch(len) {
 	case 8:
 		vcpu.al = vramGetByte(insDS,vcpu.si);
-		STRDIR(8);
+		STRDIR(8,1,0);
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  LODSB\n");
 		break;
 	case 16:
 		vcpu.ax = vramGetWord(insDS,vcpu.si);
-		STRDIR(16);
+		STRDIR(16,1,0);
 		// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  LODSW\n");
 		break;
 	default:CaseError("LODS::len");break;}
@@ -1091,7 +1122,7 @@ static void SCAS(t_nubit8 len)
 		flgoperand1 = vcpu.al;
 		flgoperand2 = vramGetByte(vcpu.es,vcpu.di);
 		flgresult = (flgoperand1-flgoperand2)&0xff;
-		STRDIR(8);
+		STRDIR(8,0,1);
 		SetFlags(CMP_FLAG);
 		break;
 	case 16:
@@ -1100,7 +1131,7 @@ static void SCAS(t_nubit8 len)
 		flgoperand1 = vcpu.ax;
 		flgoperand2 = vramGetWord(vcpu.es,vcpu.di);
 		flgresult = (flgoperand1-flgoperand2)&0xffff;
-		STRDIR(16);
+		STRDIR(16,0,1);
 		SetFlags(CMP_FLAG);
 		break;
 	default:CaseError("SCAS::len");break;}
@@ -2063,7 +2094,8 @@ void INS_81()
 	case 4:	AND((void *)rm,(void *)imm,16);break;
 	case 5:	SUB((void *)rm,(void *)imm,16);break;
 	case 6:	XOR((void *)rm,(void *)imm,16);break;
-	case 7:	CMP((void *)rm,(void *)imm,16);break;
+	case 7:	CMP((void *)rm,(void *)imm,16);
+	break;
 	default:CaseError("INS_81::r");break;}
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INS_81\n");
 }
@@ -2816,13 +2848,16 @@ void LOOPZ()
 void LOOP()
 {
 /* vcpuins bug fix #2
-	t_nubit8 rel8;*/
-	t_nsbit8 rel8;
+	t_nubit8 rel8;
 	vcpu.ip++;
 	GetImm(8);
 	rel8 = *(t_nubit8 *)imm;
 	vcpu.cx--;
-	if(vcpu.cx) vcpu.ip += rel8;
+	if(vcpu.cx) vcpu.ip += rel8;*/
+	vcpu.ip++;
+	GetImm(8);
+	vcpu.cx--;
+	if(vcpu.cx) vcpu.ip += *(t_nsbit8 *)imm;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  LOOP\n");
 }
 void JCXZ_REL8()
@@ -2873,14 +2908,18 @@ void CALL_REL16()
 	vcpu.ip++;
 	GetImm(16);
 	PUSH((void *)&vcpu.ip,16);
-	vcpu.ip += *(t_nubit16 *)imm;
+/* vcpuins bug fix #p
+	vcpu.ip += *(t_nubit16 *)imm;*/
+	vcpu.ip += *(t_nsbit16 *)imm;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  CALL_REL16\n");
 }
 void JMP_REL16()
 {
 	vcpu.ip++;
 	GetImm(16);
-	vcpu.ip += *(t_nubit16 *)imm;
+/* vcpuins bug fix #p
+	vcpu.ip += *(t_nubit16 *)imm;*/
+	vcpu.ip += *(t_nsbit16 *)imm;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  JMP_REL16\n");
 }
 void JMP_PTR16_16()
@@ -2899,7 +2938,9 @@ void JMP_REL8()
 {
 	vcpu.ip++;
 	GetImm(8);
-	vcpu.ip += *(t_nubit8 *)imm;
+/* vcpuins bug fix #9
+	vcpu.ip += *(t_nubit8 *)imm;*/
+	vcpu.ip += *(t_nsbit8 *)imm;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  JMP_REL8\n");
 }
 void IN_AL_DX()

@@ -1,5 +1,7 @@
 #include "stdlib.h"
-#include "time.h"
+#include "vcpuins.h"
+
+#include "../system/vapi.h"
 
 #include "vram.h"
 #include "vcpu.h"
@@ -12,7 +14,24 @@
 #define Hex2BCD(x)  ((((x) / 10) << 4) | ((x) % 10))
 #define BCD2Hex(x)  ((x) & 0x0f + (((x) & 0xf0) >> 4) * 10)
 
-static time_t qdrtc_time_start;
+t_rtc qdrtc;
+
+void IO_Write_0070()
+{
+	qdrtc.iobyte = vcpu.iobyte & 0x7f;
+}
+void IO_Read_0071()
+{
+	switch(qdrtc.iobyte) {
+	case 0x0b:
+		vcpu.iobyte = 0x02;
+		break;
+	default:
+		vcpu.iobyte = 0x00;
+		break;
+	}
+}
+
 void qdrtcGetTimeTickCount()
 {
 	vcpu.cx = vramWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 2);
@@ -35,10 +54,14 @@ void qdrtcGetCmosTime()
 		               QDRTC_TICK) / 1000;
 	t_nubit8 hour = (t_nubit8)(total / 3600);
 	t_nubit8 min  = (t_nubit8)((total - hour * 3600) / 60);
-	t_nubit8 sec  = (t_nubit8)(total - hour * 3600 - min * 60); 
-	vcpu.ch = Hex2BCD(hour);
-	vcpu.cl = Hex2BCD(min);
-	vcpu.dh = Hex2BCD(sec);
+	t_nubit8 sec  = (t_nubit8)(total - hour * 3600 - min * 60);
+/* for output log */
+	vcpu.ch = 0x08;
+	vcpu.cl = 0x15;
+	vcpu.dh = 0x30;
+//	vcpu.ch = Hex2BCD(hour);
+//	vcpu.cl = Hex2BCD(min);
+//	vcpu.dh = Hex2BCD(sec);
 	vcpu.dl = 0x00;
 	ClrBit(vcpu.flags, VCPU_FLAG_CF);
 }
@@ -53,7 +76,7 @@ void qdrtcSetCmosTime()
 }
 void qdrtcGetCmosDate()
 {
-	struct tm *t = gmtime(&qdrtc_time_start);
+	struct tm *t = gmtime(&qdrtc.start);
 	if(t->tm_year >= 100) {       /* tm_year starts from 1900 */
 		vcpu.ch = 0x20;                                 /* century: 20 (BCD) */
 		vcpu.cl = Hex2BCD(t->tm_year - 100);
@@ -67,7 +90,7 @@ void qdrtcGetCmosDate()
 }
 void qdrtcSetCmosDate()
 {
-	struct tm *t = gmtime(&qdrtc_time_start);
+	struct tm *t = gmtime(&qdrtc.start);
 	t->tm_year = BCD2Hex(vcpu.cl);
 	if(vcpu.ch == 0x20) t->tm_year += 100;	
 }
@@ -80,12 +103,18 @@ void qdrtcSetAlarmClock()
 void qdrtcInit()
 {
 	/* this is actually a part of bios initialization */
+t_float64 total;
+
 	struct tm *t;
-	t_nubit8 hour;
-	t_nubit8 min;
-	t_nubit8 sec;
-	qdrtc_time_start = time(NULL) + 3600 * (-8);
-	t = gmtime(&qdrtc_time_start);
+	t_nubitcc hour;
+	t_nubitcc min;
+	t_nubitcc sec;
+
+	vcpuinsInPort[0x0071]  = (t_faddrcc)IO_Read_0071;
+	vcpuinsOutPort[0x0070] = (t_faddrcc)IO_Write_0070;
+
+	qdrtc.start = time(NULL) + 3600 * (-7);
+	t = gmtime(&qdrtc.start);
 	hour = t->tm_hour;
 	min  = t->tm_min;
 	sec  = t->tm_sec;
