@@ -1,9 +1,9 @@
 /* This file is a part of NekoVMac project. */
 
-#include "selector.h"
 #include "stdio.h"
 #include "stdarg.h"
 
+#include "../coption.h"
 #include "vapi.h"
 
 int forceNone = 1;

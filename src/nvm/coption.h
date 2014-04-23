@@ -1,7 +1,10 @@
 /* This file is a part of NekoVMac project. */
 
-#ifndef NVM_SELECTOR_H
-#define NVM_SELECTOR_H
+#ifndef NVM_COPTION_H
+#define NVM_COPTION_H
+
+//#define CINT32
+#define CINT64
 
 //#define MSDOS
 #define WIN32CON

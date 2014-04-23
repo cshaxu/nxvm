@@ -4,7 +4,7 @@
 	Type of systems: NONE, MSDOS, WIN32CON, WIN32APP
 */
 
-#define PRODUCT "Neko's Virtual Machine [0x0035]\n\
+#define PRODUCT "Neko's Virtual Machine [0x0036]\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"
 
 /*
@@ -15,8 +15,15 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 	Module 0 - CONSOLE
 	Project Date:	With Project
 	Module I - ASM86
-	Project Date:	01/25/2012 - 02/05/2012
+	Project Date:
+		Stage 1: Asm		01/25/2012 - 01/31/2012
+		Stage 2: Disasm		02/01/2012 - 02/05/2012
 	Module II - VCPU
+	Project Date:
+		Stage 1: Code		02/06/2012 - Present
+		Stage 2: Verify		Not Started
+		Stage 3: Test		Not Started
+		Stage 4: Connect	Not Started (Console.Exec)
 	Module III - DOSINT
 	Module IV - VDEVICE
 	Module V - VAPI

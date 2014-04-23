@@ -106,15 +106,15 @@ void SetOF(t_bool flg)
 	else vcpu.flags &= ~OF;
 }
 
-t_nubit16 GetCF() {return (vcpu.flags&CF);}
-t_nubit16 GetPF() {return (vcpu.flags&PF);}
-t_nubit16 GetAF() {return (vcpu.flags&AF);}
-t_nubit16 GetZF() {return (vcpu.flags&ZF);}
-t_nubit16 GetSF() {return (vcpu.flags&SF);}
-t_nubit16 GetTF() {return (vcpu.flags&TF);}
-t_nubit16 GetIF() {return (vcpu.flags&IF);}
-t_nubit16 GetDF() {return (vcpu.flags&DF);}
-t_nubit16 GetOF() {return (vcpu.flags&OF);}
+#define GetCF (!!(vcpu.flags&CF))
+#define GetPF (!!(vcpu.flags&PF))
+#define GetAF (!!(vcpu.flags&AF))
+#define GetZF (!!(vcpu.flags&ZF))
+#define GetSF (!!(vcpu.flags&SF))
+#define GetTF (!!(vcpu.flags&TF))
+#define GetIF (!!(vcpu.flags&IF))
+#define GetDF (!!(vcpu.flags&DF))
+#define GetOF (!!(vcpu.flags&OF))
 
 void CalcCF()
 {
@@ -377,7 +377,7 @@ static void GetModRegRMEA()
 	default:break;}
 }
 
-static void ADD(void *dest, void *src, t_nubitcc len)
+static void ADD(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -406,7 +406,7 @@ static void ADD(void *dest, void *src, t_nubitcc len)
 	default:break;}
 	SetFlags(ADD_FLAG);
 }
-static void OR(void *dest, void *src, t_nubitcc len)
+static void OR(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -439,7 +439,7 @@ static void OR(void *dest, void *src, t_nubitcc len)
 	SetAF(0);
 	SetFlags(OR_FLAG);
 }
-static void ADC(void *dest, void *src, t_nubitcc len)
+static void ADC(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -447,7 +447,7 @@ static void ADC(void *dest, void *src, t_nubitcc len)
 		flginstype = ADC8;
 		flgoperand1 = DEST_8;
 		flgoperand2 = SRC_8;
-		flgresult = (flgoperand1+flgoperand2+!!GetCF())&0xff;
+		flgresult = (flgoperand1+flgoperand2+GetCF)&0xff;
 		DEST_8 = flgresult;
 		break;
 	case 12:
@@ -455,7 +455,7 @@ static void ADC(void *dest, void *src, t_nubitcc len)
 		flginstype = ADC16;
 		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
-		flgresult = (flgoperand1+flgoperand2+!!GetCF())&0xffff;
+		flgresult = (flgoperand1+flgoperand2+GetCF)&0xffff;
 		DEST_16 = flgresult;
 		break;
 	case 16:
@@ -463,13 +463,13 @@ static void ADC(void *dest, void *src, t_nubitcc len)
 		flginstype = ADC16;
 		flgoperand1 = DEST_16;
 		flgoperand2 = SRC_16;
-		flgresult = (flgoperand1+flgoperand2+!!GetCF())&0xffff;
+		flgresult = (flgoperand1+flgoperand2+GetCF)&0xffff;
 		DEST_16 = flgresult;
 		break;
 	default:break;}
 	SetFlags(ADC_FLAG);
 }
-static void SBB(void *dest, void *src, t_nubitcc len)
+static void SBB(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -477,7 +477,7 @@ static void SBB(void *dest, void *src, t_nubitcc len)
 		flginstype = SBB8;
 		flgoperand1 = DEST_8;
 		flgoperand2 = SRC_8;
-		flgresult = (flgoperand1-(flgoperand2+!!GetCF()))&0xff;
+		flgresult = (flgoperand1-(flgoperand2+GetCF))&0xff;
 		DEST_8 = flgresult;
 		break;
 	case 12:
@@ -485,7 +485,7 @@ static void SBB(void *dest, void *src, t_nubitcc len)
 		flginstype = SBB16;
 		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
-		flgresult = (flgoperand1-(flgoperand2+!!GetCF()))&0xffff;
+		flgresult = (flgoperand1-(flgoperand2+GetCF))&0xffff;
 		DEST_16 = flgresult;
 		break;
 	case 16:
@@ -493,13 +493,13 @@ static void SBB(void *dest, void *src, t_nubitcc len)
 		flginstype = SBB16;
 		flgoperand1 = DEST_16;
 		flgoperand2 = SRC_16;
-		flgresult = (flgoperand1-(flgoperand2+!!GetCF()))&0xffff;
+		flgresult = (flgoperand1-(flgoperand2+GetCF))&0xffff;
 		DEST_16 = flgresult;
 		break;
 	default:break;}
 	SetFlags(SBB_FLAG);
 }
-static void AND(void *dest, void *src, t_nubitcc len)
+static void AND(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -532,7 +532,7 @@ static void AND(void *dest, void *src, t_nubitcc len)
 	SetAF(0);
 	SetFlags(AND_FLAG);
 }
-static void SUB(void *dest, void *src, t_nubitcc len)
+static void SUB(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -562,7 +562,7 @@ static void SUB(void *dest, void *src, t_nubitcc len)
 	default:break;}
 	SetFlags(SUB_FLAG);
 }
-static void XOR(void *dest, void *src, t_nubitcc len)
+static void XOR(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -595,7 +595,7 @@ static void XOR(void *dest, void *src, t_nubitcc len)
 	SetAF(0);
 	SetFlags(XOR_FLAG);
 }
-static void CMP(void *op1, void *op2, t_nubitcc len)
+static void CMP(void *op1, void *op2, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -622,7 +622,7 @@ static void CMP(void *op1, void *op2, t_nubitcc len)
 	default:break;}
 	SetFlags(CMP_FLAG);
 }
-static void PUSH(void *src, t_nubitcc len)
+static void PUSH(void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 16:
@@ -631,7 +631,7 @@ static void PUSH(void *src, t_nubitcc len)
 		break;
 	default:break;}
 }
-static void POP(void *dest, t_nubitcc len)
+static void POP(void *dest, t_nubit8 len)
 {
 	switch(len) {
 	case 16:
@@ -640,7 +640,7 @@ static void POP(void *dest, t_nubitcc len)
 		break;
 	default:break;}
 }
-static void INC(void *dest, t_nubitcc len)
+static void INC(void *dest, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -662,7 +662,7 @@ static void INC(void *dest, t_nubitcc len)
 	default:break;}
 	SetFlags(INC_FLAG);
 }
-static void DEC(void *dest, t_nubitcc len)
+static void DEC(void *dest, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -684,7 +684,7 @@ static void DEC(void *dest, t_nubitcc len)
 	default:break;}
 	SetFlags(DEC_FLAG);
 }
-static void JCC(void *src, t_bool jflag,t_nubitcc len)
+static void JCC(void *src, t_bool jflag,t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -693,7 +693,7 @@ static void JCC(void *src, t_bool jflag,t_nubitcc len)
 		break;
 	default:break;}
 }
-static void TEST(void *dest, void *src, t_nubitcc len)
+static void TEST(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -716,7 +716,7 @@ static void TEST(void *dest, void *src, t_nubitcc len)
 	SetAF(0);
 	SetFlags(TEST_FLAG);
 }
-static void XCHG(void *dest, void *src, t_nubitcc len)
+static void XCHG(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -733,7 +733,7 @@ static void XCHG(void *dest, void *src, t_nubitcc len)
 		break;
 	default:break;}
 }
-static void MOV(void *dest, void *src, t_nubitcc len)
+static void MOV(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -744,10 +744,10 @@ static void MOV(void *dest, void *src, t_nubitcc len)
 		break;
 	default:break;}
 }
-static void ROL(void *dest, void *src, t_nubitcc len)
+static void ROL(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount;
-	t_nubit16 tempCF;
+	t_bool tempCF;
 	if(src) count = SRC_8;
 	else count = 1;
 	tempcount = count;
@@ -759,7 +759,7 @@ static void ROL(void *dest, void *src, t_nubitcc len)
 			tempcount--;
 		}
 		SetCF(LSB_DEST_8);
-		if(count == 1) SetOF(MSB_DEST_8^GetCF());
+		if(count == 1) SetOF(MSB_DEST_8^GetCF);
 		break;
 	case 16:
 		while(tempcount) {
@@ -768,14 +768,14 @@ static void ROL(void *dest, void *src, t_nubitcc len)
 			tempcount--;
 		}
 		SetCF(LSB_DEST_16);
-		if(count == 1) SetOF(MSB_DEST_16^GetCF());
+		if(count == 1) SetOF(MSB_DEST_16^GetCF);
 		break;
 	default:break;}
 }
-static void ROR(void *dest, void *src, t_nubitcc len)
+static void ROR(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount;
-	t_nubit16 tempCF;
+	t_bool tempCF;
 	if(src) count = SRC_8;
 	else count = 1;
 	tempcount = count;
@@ -802,10 +802,10 @@ static void ROR(void *dest, void *src, t_nubitcc len)
 		break;
 	default:break;}
 }
-static void RCL(void *dest, void *src, t_nubitcc len)
+static void RCL(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount;
-	t_nubit16 tempCF;
+	t_bool tempCF;
 	if(src) count = SRC_8;
 	else count = 1;
 	tempcount = count;
@@ -813,57 +813,56 @@ static void RCL(void *dest, void *src, t_nubitcc len)
 	case 8:
 		while(tempcount) {
 			tempCF = MSB_DEST_8;
-			DEST_8 = (DEST_8<<1)+!!GetCF();
+			DEST_8 = (DEST_8<<1)+GetCF;
 			SetCF(tempCF);
 			tempcount--;
 		}
-		if(count == 1) SetOF(MSB_DEST_8^GetCF());
+		if(count == 1) SetOF(MSB_DEST_8^GetCF);
 		break;
 	case 16:
 		while(tempcount) {
 			tempCF = MSB_DEST_16;
-			DEST_16 = (DEST_16<<1)+!!GetCF();
+			DEST_16 = (DEST_16<<1)+GetCF;
 			SetCF(tempCF);
 			tempcount--;
 		}
-		if(count == 1) SetOF(MSB_DEST_16^GetCF());
+		if(count == 1) SetOF(MSB_DEST_16^GetCF);
 		break;
 	default:break;}
 }
-static void RCR(void *dest, void *src, t_nubitcc len)
+static void RCR(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount;
-	t_nubit16 tempCF;
+	t_bool tempCF;
 	if(src) count = SRC_8;
 	else count = 1;
 	tempcount = count;
 	switch(len) {
 	case 8:
-		if(count == 1) SetOF(MSB_DEST_8^GetCF());
+		if(count == 1) SetOF(MSB_DEST_8^GetCF);
 		while(tempcount) {
 			tempCF = LSB_DEST_8;
 			DEST_8 >>= 1;
-			if(GetCF()) DEST_8 |= 0x80;
+			if(GetCF) DEST_8 |= 0x80;
 			SetCF(tempCF);
 			tempcount--;
 		}
 		break;
 	case 16:
-		if(count == 1) SetOF(MSB_DEST_16^GetCF());
+		if(count == 1) SetOF(MSB_DEST_16^GetCF);
 		while(tempcount) {
 			tempCF = LSB_DEST_16;
 			DEST_16 >>= 1;
-			if(GetCF()) DEST_16 |= 0x8000;
+			if(GetCF) DEST_16 |= 0x8000;
 			SetCF(tempCF);
 			tempcount--;
 		}
 		break;
 	default:break;}
 }
-static void SHL(void *dest, void *src, t_nubitcc len)
+static void SHL(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount;
-	t_nubit16 tempCF;
 	if(src) count = SRC_8;
 	else count = 1;
 	switch(len) {
@@ -874,7 +873,7 @@ static void SHL(void *dest, void *src, t_nubitcc len)
 			DEST_8 <<= 1;
 			tempcount--;
 		}
-		if(count == 1) SetOF(MSB_DEST_8^GetCF());
+		if(count == 1) SetOF(MSB_DEST_8^GetCF);
 		else if(count != 0) {
 			flgresult = DEST_8;
 			SetFlags(SHL_FLAG);
@@ -887,7 +886,7 @@ static void SHL(void *dest, void *src, t_nubitcc len)
 			DEST_16 <<= 1;
 			tempcount--;
 		}
-		if(count == 1) SetOF(MSB_DEST_16^GetCF());
+		if(count == 1) SetOF(MSB_DEST_16^GetCF);
 		else if(count != 0) {
 			flgresult = DEST_16;
 			SetFlags(SHL_FLAG);
@@ -895,10 +894,10 @@ static void SHL(void *dest, void *src, t_nubitcc len)
 		break;
 	default:break;}
 }
-static void SHR(void *dest, void *src, t_nubitcc len)
+static void SHR(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount,tempdest8;
-	t_nubit16 tempCF,tempdest16;
+	t_nubit16 tempdest16;
 	if(src) count = SRC_8;
 	else count = 1;
 	switch(len) {
@@ -932,10 +931,9 @@ static void SHR(void *dest, void *src, t_nubitcc len)
 		break;
 	default:break;}
 }
-static void SAL(void *dest, void *src, t_nubitcc len)
+static void SAL(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount;
-	t_nubit16 tempCF;
 	if(src) count = SRC_8;
 	else count = 1;
 	switch(len) {
@@ -946,7 +944,7 @@ static void SAL(void *dest, void *src, t_nubitcc len)
 			DEST_8 <<= 1;
 			tempcount--;
 		}
-		if(count == 1) SetOF(MSB_DEST_8^GetCF());
+		if(count == 1) SetOF(MSB_DEST_8^GetCF);
 		else if(count != 0) {
 			flgresult = DEST_8;
 			SetFlags(SAL_FLAG);
@@ -959,7 +957,7 @@ static void SAL(void *dest, void *src, t_nubitcc len)
 			DEST_16 <<= 1;
 			tempcount--;
 		}
-		if(count == 1) SetOF(MSB_DEST_16^GetCF());
+		if(count == 1) SetOF(MSB_DEST_16^GetCF);
 		else if(count != 0) {
 			flgresult = DEST_16;
 			SetFlags(SAL_FLAG);
@@ -967,10 +965,10 @@ static void SAL(void *dest, void *src, t_nubitcc len)
 		break;
 	default:break;}
 }
-static void SAR(void *dest, void *src, t_nubitcc len)
+static void SAR(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount,tempdest8;
-	t_nubit16 tempCF,tempdest16;
+	t_nubit16 tempdest16;
 	if(src) count = SRC_8;
 	else count = 1;
 	switch(len) {
@@ -1006,11 +1004,11 @@ static void SAR(void *dest, void *src, t_nubitcc len)
 		break;
 	default:break;}
 }
-static void STRDIR(t_nubitcc len)
+static void STRDIR(t_nubit8 len)
 {
 	switch(len) {
 	case 8:
-		if(GetDF()) {
+		if(GetDF) {
 			vcpu.di--;
 			vcpu.si--;
 		} else {
@@ -1019,7 +1017,7 @@ static void STRDIR(t_nubitcc len)
 		}
 		break;
 	case 16:
-		if(GetDF()) {
+		if(GetDF) {
 			vcpu.di -= 2;
 			vcpu.si -= 2;
 		} else {
@@ -1029,7 +1027,7 @@ static void STRDIR(t_nubitcc len)
 		break;
 	default:break;}
 }
-static void MOVS(t_nubitcc len)
+static void MOVS(t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -1053,7 +1051,7 @@ static void MOVS(t_nubitcc len)
 		break;
 	default:break;}
 }
-static void CMPS(t_nubitcc len)
+static void CMPS(t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -1078,7 +1076,7 @@ static void CMPS(t_nubitcc len)
 		break;
 	default:break;}
 }
-static void STOS(t_nubitcc len)
+static void STOS(t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -1102,7 +1100,7 @@ static void STOS(t_nubitcc len)
 		break;
 	default:break;}
 }
-static void LODS(t_nubitcc len)
+static void LODS(t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -1117,7 +1115,7 @@ static void LODS(t_nubitcc len)
 		break;
 	default:break;}
 }
-static void SCAS(t_nubitcc len)
+static void SCAS(t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -1137,6 +1135,39 @@ static void SCAS(t_nubitcc len)
 		flgresult = (flgoperand1-flgoperand2)&0xffff;
 		STRDIR(16);
 		SetFlags(CMP_FLAG);
+		break;
+	default:break;}
+}
+static void NOT(void *dest, t_nubit8 len)
+{
+	switch(len) {
+	case 8:	DEST_8 = ~DEST_8;break;
+	case 16:DEST_16 = ~DEST_16;break;
+	default:break;}
+}
+static void NEG(void *dest, t_nubit8 len)
+{
+	t_nubitcc zero = 0;
+	switch(len) {
+	case 8:	SUB((void *)&zero,(void *)dest,8);DEST_8 = (t_nubit8)zero;break;
+	case 16:SUB((void *)&zero,(void *)dest,16);DEST_16 = (t_nubit16)zero;break;
+	default:break;}
+}
+static void MUL(void *src, t_nubit8 len)
+{
+	t_nubit32 tempresult;
+	switch(len) {
+	case 8:
+		vcpu.ax = vcpu.al * SRC_8;
+		SetOF(!!vcpu.ah);
+		SetCF(!!vcpu.ah);
+		break;
+	case 16:
+		tempresult = vcpu.ax * SRC_16;
+		vcpu.dx = (tempresult>>16)&0xffff;
+		vcpu.ax = tempresult&0xffff;
+		SetOF(!!vcpu.dx);
+		SetCF(!!vcpu.dx);
 		break;
 	default:break;}
 }
@@ -1435,11 +1466,11 @@ void DAA()
 	t_nubit8 oldAL = vcpu.al;
 	t_nubit8 newAL = vcpu.al + 0x06;
 	vcpu.ip++;
-	if(((vcpu.al & 0x0f) > 0x09) || GetAF()) {
+	if(((vcpu.al & 0x0f) > 0x09) || GetAF) {
 		vcpu.al = newAL;
-		SetCF(GetCF() | ((newAL < oldAL) || (newAL < 0x06)));
+		SetCF(GetCF || ((newAL < oldAL) || (newAL < 0x06)));
 	} else SetAF(0);
-	if(((vcpu.al & 0xf0) > 0x90) || GetCF()) {
+	if(((vcpu.al & 0xf0) > 0x90) || GetCF) {
 		vcpu.al += 0x60;
 		SetCF(1);
 	} else SetCF(0);
@@ -1498,12 +1529,12 @@ void DAS()
 {
 	t_nubit8 oldAL = vcpu.al;
 	vcpu.ip++;
-	if(((vcpu.al & 0x0f) > 0x09) || GetAF()) {
+	if(((vcpu.al & 0x0f) > 0x09) || GetAF) {
 		vcpu.al -= 0x06;
-		SetCF(GetCF() | (oldAL < 0x06));
+		SetCF(GetCF || (oldAL < 0x06));
 		SetAF(1);
 	} else SetAF(0);
-	if((vcpu.al > 0x9f) || GetCF()) {
+	if((vcpu.al > 0x9f) || GetCF) {
 		vcpu.al -= 0x60;
 		SetCF(1);
 	} else SetCF(0);
@@ -1561,7 +1592,7 @@ void SS()
 void AAA()
 {
 	vcpu.ip++;
-	if(((vcpu.al&0x0f) > 0x09) || GetAF()) {
+	if(((vcpu.al&0x0f) > 0x09) || GetAF) {
 		vcpu.al += 0x06;
 		vcpu.ah += 0x01;
 		SetAF(1);
@@ -1625,7 +1656,7 @@ void DS()
 void AAS()
 {
 	vcpu.ip++;
-	if(((vcpu.al&0x0f) > 0x09) || GetAF()) {
+	if(((vcpu.al&0x0f) > 0x09) || GetAF) {
 		vcpu.al -= 0x06;
 		vcpu.ah += 0x01;
 		SetAF(1);
@@ -1839,111 +1870,111 @@ void JO()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,GetOF(),8);
+	JCC((void *)imm,GetOF,8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JO\n");
 }
 void JNO()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,!GetOF(),8);
+	JCC((void *)imm,!GetOF,8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JNO\n");
 }
 void JC()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,GetCF(),8);
+	JCC((void *)imm,GetCF,8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JC\n");
 }
 void JNC()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,!GetCF(),8);
+	JCC((void *)imm,!GetCF,8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JNC\n");
 }
 void JZ()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,GetZF(),8);
+	JCC((void *)imm,GetZF,8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JZ\n");
 }
 void JNZ()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,!GetZF(),8);
+	JCC((void *)imm,!GetZF,8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JNZ\n");
 }
 void JBE()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,(GetCF() || GetZF()),8);
+	JCC((void *)imm,(GetCF || GetZF),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JBE\n");
 }
 void JA()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,(!GetCF() && !GetZF()),8);
+	JCC((void *)imm,(!GetCF && !GetZF),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JA\n");
 }
 void JS()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,GetSF(),8);
+	JCC((void *)imm,GetSF,8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JS\n");
 }
 void JNS()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,!GetSF(),8);
+	JCC((void *)imm,!GetSF,8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JNS\n");
 }
 void JP()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,GetPF(),8);
+	JCC((void *)imm,GetPF,8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JP\n");
 }
 void JNP()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,!GetPF(),8);
+	JCC((void *)imm,!GetPF,8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JNP\n");
 }
 void JL()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,(GetSF() != GetOF()),8);
+	JCC((void *)imm,(GetSF != GetOF),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JL\n");
 }
 void JNL()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,(GetSF() == GetOF()),8);
+	JCC((void *)imm,(GetSF == GetOF),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JNL\n");
 }
 void JLE()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,((GetSF() != GetOF()) || GetZF()),8);
+	JCC((void *)imm,((GetSF != GetOF) || GetZF),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JLE\n");}
 void JG()
 {
 	vcpu.ip++;
 	GetImm(8);
-	JCC((void *)imm,((GetSF() == GetOF()) && !GetZF()),8);
+	JCC((void *)imm,((GetSF == GetOF) && !GetZF),8);
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  JG\n");}
 void INS_80()
 {
@@ -2247,7 +2278,7 @@ void CMPSB()
 			vcpuinsExecINT();
 			CMPS(8);
 			vcpu.cx--;
-			if((reptype == RT_REPZ && !GetZF()) || (reptype == RT_REPZNZ && GetZF())) break;
+			if((reptype == RT_REPZ && !GetZF) || (reptype == RT_REPZNZ && GetZF)) break;
 		}
 	}
 }
@@ -2260,7 +2291,7 @@ void CMPSW()
 			vcpuinsExecINT();
 			CMPS(16);
 			vcpu.cx--;
-			if((reptype == RT_REPZ && !GetZF()) || (reptype == RT_REPZNZ && GetZF())) break;
+			if((reptype == RT_REPZ && !GetZF) || (reptype == RT_REPZNZ && GetZF)) break;
 		}
 	}
 }
@@ -2335,7 +2366,7 @@ void SCASB()
 			vcpuinsExecINT();
 			SCAS(8);
 			vcpu.cx--;
-			if((reptype == RT_REPZ && !GetZF()) || (reptype == RT_REPZNZ && GetZF())) break;
+			if((reptype == RT_REPZ && !GetZF) || (reptype == RT_REPZNZ && GetZF)) break;
 		}
 	}
 }
@@ -2348,7 +2379,7 @@ void SCASW()
 			vcpuinsExecINT();
 			SCAS(16);
 			vcpu.cx--;
-			if((reptype == RT_REPZ && !GetZF()) || (reptype == RT_REPZNZ && GetZF())) break;
+			if((reptype == RT_REPZ && !GetZF) || (reptype == RT_REPZNZ && GetZF)) break;
 		}
 	}
 }
@@ -2585,7 +2616,7 @@ void INT_I8()
 void INTO()
 {
 	vcpu.ip++;
-	if(GetOF()) HardINT = 4;
+	if(GetOF) HardINT = 4;
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INTO\n");
 }
 void IRET()
@@ -2710,7 +2741,7 @@ void LOOPNZ()
 	GetImm(8);
 	rel8 = *(t_nubit8 *)imm;
 	vcpu.cx--;
-	if(vcpu.cx && !GetZF()) vcpu.ip += rel8;
+	if(vcpu.cx && !GetZF) vcpu.ip += rel8;
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LOOPNZ\n");
 }
 void LOOPZ()
@@ -2720,7 +2751,7 @@ void LOOPZ()
 	GetImm(8);
 	rel8 = *(t_nubit8 *)imm;
 	vcpu.cx--;
-	if(vcpu.cx && GetZF()) vcpu.ip += rel8;
+	if(vcpu.cx && GetZF) vcpu.ip += rel8;
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  LOOPZ\n");
 }
 void LOOP()
@@ -2870,11 +2901,29 @@ void HLT()
 	// Check external interrupt here
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  HLT\n");
 }
-// TODO
 void CMC()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CMC\n");}
+{
+	vcpu.ip++;
+	vcpu.flags ^= CF;
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  CMC\n");
+}
+
 void INS_F6()
-{nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_F6\n");}
+{
+	vcpu.ip++;
+	GetModRegRM(0,8);
+	switch(r) {
+	case 0:	GetImm(8);
+			TEST((void *)rm,(void *)imm,8);	break;
+	case 2:	NOT((void *)rm,8);	break;
+	case 3:	NEG((void *)rm,8);	break;
+	case 4:	MUL((void *)rm,8);	break;
+	case 5:	IMUL((void *)rm,8);	break;
+	case 6:	DIV((void *)rm,8);	break;
+	case 7:	IDIV((void *)rm,8);	break;
+	default:break;}
+	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_F6\n");
+}
 void INS_F7()
 {nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_F7\n");}
 void CLC()
@@ -2927,271 +2976,271 @@ void CPUInsInit()
 	HardINT = -1;
 	vcpuinsClearPrefix();
 	for(i = 0;i < 0x10000;++i) {
-		InTable[i] = IO_NOP;
-		OutTable[i] = IO_NOP;
+		InTable[i] = (t_faddrcc)IO_NOP;
+		OutTable[i] = (t_faddrcc)IO_NOP;
 	}
-	InsTable[0x00] = ADD_RM8_R8;
-	InsTable[0x01] = ADD_RM16_R16;
-	InsTable[0x02] = ADD_R8_RM8;
-	InsTable[0x03] = ADD_R16_RM16;
-	InsTable[0x04] = ADD_AL_I8;
-	InsTable[0x05] = ADD_AX_I16;
-	InsTable[0x06] = PUSH_ES;
-	InsTable[0x07] = POP_ES;
-	InsTable[0x08] = OR_RM8_R8;
-	InsTable[0x09] = OR_RM16_R16;
-	InsTable[0x0a] = OR_R8_RM8;
-	InsTable[0x0b] = OR_R16_RM16;
-	InsTable[0x0c] = OR_AL_I8;
-	InsTable[0x0d] = OR_AX_I16;
-	InsTable[0x0e] = PUSH_CS;
-	InsTable[0x0f] = POP_CS;
-	//InsTable[0x0f] = INS_0F;
-	InsTable[0x10] = ADC_RM8_R8;
-	InsTable[0x11] = ADC_RM16_R16;
-	InsTable[0x12] = ADC_R8_RM8;
-	InsTable[0x13] = ADC_R16_RM16;
-	InsTable[0x14] = ADC_AL_I8;
-	InsTable[0x15] = ADC_AX_I16;
-	InsTable[0x16] = PUSH_SS;
-	InsTable[0x17] = POP_SS;
-	InsTable[0x18] = SBB_RM8_R8;
-	InsTable[0x19] = SBB_RM16_R16;
-	InsTable[0x1a] = SBB_R8_RM8;
-	InsTable[0x1b] = SBB_R16_RM16;
-	InsTable[0x1c] = SBB_AL_I8;
-	InsTable[0x1d] = SBB_AX_I16;
-	InsTable[0x1e] = PUSH_DS;
-	InsTable[0x1f] = POP_DS;
-	InsTable[0x20] = AND_RM8_R8;
-	InsTable[0x21] = AND_RM16_R16;
-	InsTable[0x22] = AND_R8_RM8;
-	InsTable[0x23] = AND_R16_RM16;
-	InsTable[0x24] = AND_AL_I8;
-	InsTable[0x25] = AND_AX_I16;
-	InsTable[0x26] = ES;
-	InsTable[0x27] = DAA;
-	InsTable[0x28] = SUB_RM8_R8;
-	InsTable[0x29] = SUB_RM16_R16;
-	InsTable[0x2a] = SUB_R8_RM8;
-	InsTable[0x2b] = SUB_R16_RM16;
-	InsTable[0x2c] = SUB_AL_I8;
-	InsTable[0x2d] = SUB_AX_I16;
-	InsTable[0x2e] = CS;
-	InsTable[0x2f] = DAS;
-	InsTable[0x30] = XOR_RM8_R8;
-	InsTable[0x31] = XOR_RM16_R16;
-	InsTable[0x32] = XOR_R8_RM8;
-	InsTable[0x33] = XOR_R16_RM16;
-	InsTable[0x34] = XOR_AL_I8;
-	InsTable[0x35] = XOR_AX_I16;
-	InsTable[0x36] = SS;
-	InsTable[0x37] = AAA;
-	InsTable[0x38] = CMP_RM8_R8;
-	InsTable[0x39] = CMP_RM16_R16;
-	InsTable[0x3a] = CMP_R8_RM8;
-	InsTable[0x3b] = CMP_R16_RM16;
-	InsTable[0x3c] = CMP_AL_I8;
-	InsTable[0x3d] = CMP_AX_I16;
-	InsTable[0x3e] = DS;
-	InsTable[0x3f] = AAS;
-	InsTable[0x40] = INC_AX;
-	InsTable[0x41] = INC_CX;
-	InsTable[0x42] = INC_DX;
-	InsTable[0x43] = INC_BX;
-	InsTable[0x44] = INC_SP;
-	InsTable[0x45] = INC_BP;
-	InsTable[0x46] = INC_SI;
-	InsTable[0x47] = INC_DI;
-	InsTable[0x48] = DEC_AX;
-	InsTable[0x49] = DEC_CX;
-	InsTable[0x4a] = DEC_DX;
-	InsTable[0x4b] = DEC_BX;
-	InsTable[0x4c] = DEC_SP;
-	InsTable[0x4d] = DEC_BP;
-	InsTable[0x4e] = DEC_SI;
-	InsTable[0x4f] = DEC_DI;
-	InsTable[0x50] = PUSH_AX;
-	InsTable[0x51] = PUSH_CX;
-	InsTable[0x52] = PUSH_DX;
-	InsTable[0x53] = PUSH_BX;
-	InsTable[0x54] = PUSH_SP;
-	InsTable[0x55] = PUSH_BP;
-	InsTable[0x56] = PUSH_SI;
-	InsTable[0x57] = PUSH_DI;
-	InsTable[0x58] = POP_AX;
-	InsTable[0x59] = POP_CX;
-	InsTable[0x5a] = POP_DX;
-	InsTable[0x5b] = POP_BX;
-	InsTable[0x5c] = POP_SP;
-	InsTable[0x5d] = POP_BP;
-	InsTable[0x5e] = POP_SI;
-	InsTable[0x5f] = POP_DI;
-	InsTable[0x60] = OpError;
-	InsTable[0x61] = OpError;
-	InsTable[0x62] = OpError;
-	InsTable[0x63] = OpError;
-	InsTable[0x64] = OpError;
-	InsTable[0x65] = OpError;
-	InsTable[0x66] = OpError;
-	InsTable[0x67] = OpError;
-	InsTable[0x68] = OpError;
-	//InsTable[0x66] = OpdSize;
-	//InsTable[0x67] = AddrSize;
-	//InsTable[0x68] = PUSH_I16;
-	InsTable[0x69] = OpError;
-	InsTable[0x6a] = OpError;
-	InsTable[0x6b] = OpError;
-	InsTable[0x6c] = OpError;
-	InsTable[0x6d] = OpError;
-	InsTable[0x6e] = OpError;
-	InsTable[0x6f] = OpError;
-	InsTable[0x70] = JO;
-	InsTable[0x71] = JNO;
-	InsTable[0x72] = JC;
-	InsTable[0x73] = JNC;
-	InsTable[0x74] = JZ;
-	InsTable[0x75] = JNZ;
-	InsTable[0x76] = JBE;
-	InsTable[0x77] = JA;
-	InsTable[0x78] = JS;
-	InsTable[0x79] = JNS;
-	InsTable[0x7a] = JP;
-	InsTable[0x7b] = JNP;
-	InsTable[0x7c] = JL;
-	InsTable[0x7d] = JNL;
-	InsTable[0x7e] = JLE;
-	InsTable[0x7f] = JG;
-	InsTable[0x80] = INS_80;
-	InsTable[0x81] = INS_81;
-	InsTable[0x82] = INS_82;
-	InsTable[0x83] = INS_83;
-	InsTable[0x84] = TEST_RM8_R8;
-	InsTable[0x85] = TEST_RM16_R16;
-	InsTable[0x86] = XCHG_R8_RM8;
-	InsTable[0x87] = XCHG_R16_RM16;
-	InsTable[0x88] = MOV_RM8_R8;
-	InsTable[0x89] = MOV_RM16_R16;
-	InsTable[0x8a] = MOV_R8_RM8;
-	InsTable[0x8b] = MOV_R16_RM16;
-	InsTable[0x8c] = MOV_RM16_SEG;
-	InsTable[0x8d] = LEA_R16_M16;
-	InsTable[0x8e] = MOV_SEG_RM16;
-	InsTable[0x8f] = POP_RM16;
-	InsTable[0x90] = NOP;
-	InsTable[0x91] = XCHG_CX_AX;
-	InsTable[0x92] = XCHG_DX_AX;
-	InsTable[0x93] = XCHG_BX_AX;
-	InsTable[0x94] = XCHG_SP_AX;
-	InsTable[0x95] = XCHG_BP_AX;
-	InsTable[0x96] = XCHG_SI_AX;
-	InsTable[0x97] = XCHG_DI_AX;
-	InsTable[0x98] = CBW;
-	InsTable[0x99] = CWD;
-	InsTable[0x9a] = CALL_PTR16_16;
-	InsTable[0x9b] = WAIT;
-	InsTable[0x9c] = PUSHF;
-	InsTable[0x9d] = POPF;
-	InsTable[0x9e] = SAHF;
-	InsTable[0x9f] = LAHF;
-	InsTable[0xa0] = MOV_AL_M8;
-	InsTable[0xa1] = MOV_AX_M16;
-	InsTable[0xa2] = MOV_M8_AL;
-	InsTable[0xa3] = MOV_M16_AX;
-	InsTable[0xa4] = MOVSB;
-	InsTable[0xa5] = MOVSW;
-	InsTable[0xa6] = CMPSB;
-	InsTable[0xa7] = CMPSW;
-	InsTable[0xa8] = TEST_AL_I8;
-	InsTable[0xa9] = TEST_AX_I16;
-	InsTable[0xaa] = STOSB;
-	InsTable[0xab] = STOSW;
-	InsTable[0xac] = LODSB;
-	InsTable[0xad] = LODSW;
-	InsTable[0xae] = SCASB;
-	InsTable[0xaf] = SCASW;
-	InsTable[0xb0] = MOV_AL_I8;
-	InsTable[0xb1] = MOV_CL_I8;
-	InsTable[0xb2] = MOV_DL_I8;
-	InsTable[0xb3] = MOV_BL_I8;
-	InsTable[0xb4] = MOV_AH_I8;
-	InsTable[0xb5] = MOV_CH_I8;
-	InsTable[0xb6] = MOV_DH_I8;
-	InsTable[0xb7] = MOV_BH_I8;
-	InsTable[0xb8] = MOV_AX_I16;
-	InsTable[0xb9] = MOV_CX_I16;
-	InsTable[0xba] = MOV_DX_I16;
-	InsTable[0xbb] = MOV_BX_I16;
-	InsTable[0xbc] = MOV_SP_I16;
-	InsTable[0xbd] = MOV_BP_I16;
-	InsTable[0xbe] = MOV_SI_I16;
-	InsTable[0xbf] = MOV_DI_I16;
-	InsTable[0xc0] = OpError;
-	InsTable[0xc1] = OpError;
-	InsTable[0xc2] = RET_I8;
-	InsTable[0xc3] = RET;
-	InsTable[0xc4] = LES_R16_M16;
-	InsTable[0xc5] = LDS_R16_M16;
-	InsTable[0xc6] = MOV_M8_I8;
-	InsTable[0xc7] = MOV_M16_I16;
-	InsTable[0xc8] = OpError;
-	InsTable[0xc9] = OpError;
-	InsTable[0xca] = RETF_I16;
-	InsTable[0xcb] = RETF;
-	InsTable[0xcc] = INT3;
-	InsTable[0xcd] = INT_I8;
-	InsTable[0xce] = INTO;
-	InsTable[0xcf] = IRET;
-	InsTable[0xd0] = INS_D0;
-	InsTable[0xd1] = INS_D1;
-	InsTable[0xd2] = INS_D2;
-	InsTable[0xd3] = INS_D3;
-	InsTable[0xd4] = AAM;
-	InsTable[0xd5] = AAD;
-	InsTable[0xd6] = OpError;
-	InsTable[0xd7] = XLAT;
-	InsTable[0xd8] = OpError;
-	InsTable[0xd9] = OpError;
-	//InsTable[0xd9] = INS_D9;
-	InsTable[0xda] = OpError;
-	InsTable[0xdb] = OpError;
-	//InsTable[0xdb] = INS_DB;
-	InsTable[0xdc] = OpError;
-	InsTable[0xdd] = OpError;
-	InsTable[0xde] = OpError;
-	InsTable[0xdf] = OpError;
-	InsTable[0xe0] = LOOPNZ;
-	InsTable[0xe1] = LOOPZ;
-	InsTable[0xe2] = LOOP;
-	InsTable[0xe3] = JCXZ_REL8;
-	InsTable[0xe4] = IN_AL_I8;
-	InsTable[0xe5] = IN_AX_I8;
-	InsTable[0xe6] = OUT_I8_AL;
-	InsTable[0xe7] = OUT_I8_AX;
-	InsTable[0xe8] = CALL_REL16;
-	InsTable[0xe9] = JMP_REL16;
-	InsTable[0xea] = JMP_PTR16_16;
-	InsTable[0xeb] = JMP_REL8;
-	InsTable[0xec] = IN_AL_DX;
-	InsTable[0xed] = IN_AX_DX;
-	InsTable[0xee] = OUT_DX_AL;
-	InsTable[0xef] = OUT_DX_AX;
-	InsTable[0xf0] = LOCK;
-	InsTable[0xf1] = OpError;
-	InsTable[0xf2] = REPNZ;
-	InsTable[0xf3] = REP;
-	InsTable[0xf4] = HLT;
-	InsTable[0xf5] = CMC;
-	InsTable[0xf6] = INS_F6;
-	InsTable[0xf7] = INS_F7;
-	InsTable[0xf8] = CLC;
-	InsTable[0xf9] = STC;
-	InsTable[0xfa] = CLI;
-	InsTable[0xfb] = STI;
-	InsTable[0xfc] = CLD;
-	InsTable[0xfd] = STD;
-	InsTable[0xfe] = INS_FE;
-	InsTable[0xff] = INS_FF;
+	InsTable[0x00] = (t_faddrcc)ADD_RM8_R8;
+	InsTable[0x01] = (t_faddrcc)ADD_RM16_R16;
+	InsTable[0x02] = (t_faddrcc)ADD_R8_RM8;
+	InsTable[0x03] = (t_faddrcc)ADD_R16_RM16;
+	InsTable[0x04] = (t_faddrcc)ADD_AL_I8;
+	InsTable[0x05] = (t_faddrcc)ADD_AX_I16;
+	InsTable[0x06] = (t_faddrcc)PUSH_ES;
+	InsTable[0x07] = (t_faddrcc)POP_ES;
+	InsTable[0x08] = (t_faddrcc)OR_RM8_R8;
+	InsTable[0x09] = (t_faddrcc)OR_RM16_R16;
+	InsTable[0x0a] = (t_faddrcc)OR_R8_RM8;
+	InsTable[0x0b] = (t_faddrcc)OR_R16_RM16;
+	InsTable[0x0c] = (t_faddrcc)OR_AL_I8;
+	InsTable[0x0d] = (t_faddrcc)OR_AX_I16;
+	InsTable[0x0e] = (t_faddrcc)PUSH_CS;
+	InsTable[0x0f] = (t_faddrcc)POP_CS;
+	//InsTable[0x0f] = (t_faddrcc)INS_0F;
+	InsTable[0x10] = (t_faddrcc)ADC_RM8_R8;
+	InsTable[0x11] = (t_faddrcc)ADC_RM16_R16;
+	InsTable[0x12] = (t_faddrcc)ADC_R8_RM8;
+	InsTable[0x13] = (t_faddrcc)ADC_R16_RM16;
+	InsTable[0x14] = (t_faddrcc)ADC_AL_I8;
+	InsTable[0x15] = (t_faddrcc)ADC_AX_I16;
+	InsTable[0x16] = (t_faddrcc)PUSH_SS;
+	InsTable[0x17] = (t_faddrcc)POP_SS;
+	InsTable[0x18] = (t_faddrcc)SBB_RM8_R8;
+	InsTable[0x19] = (t_faddrcc)SBB_RM16_R16;
+	InsTable[0x1a] = (t_faddrcc)SBB_R8_RM8;
+	InsTable[0x1b] = (t_faddrcc)SBB_R16_RM16;
+	InsTable[0x1c] = (t_faddrcc)SBB_AL_I8;
+	InsTable[0x1d] = (t_faddrcc)SBB_AX_I16;
+	InsTable[0x1e] = (t_faddrcc)PUSH_DS;
+	InsTable[0x1f] = (t_faddrcc)POP_DS;
+	InsTable[0x20] = (t_faddrcc)AND_RM8_R8;
+	InsTable[0x21] = (t_faddrcc)AND_RM16_R16;
+	InsTable[0x22] = (t_faddrcc)AND_R8_RM8;
+	InsTable[0x23] = (t_faddrcc)AND_R16_RM16;
+	InsTable[0x24] = (t_faddrcc)AND_AL_I8;
+	InsTable[0x25] = (t_faddrcc)AND_AX_I16;
+	InsTable[0x26] = (t_faddrcc)ES;
+	InsTable[0x27] = (t_faddrcc)DAA;
+	InsTable[0x28] = (t_faddrcc)SUB_RM8_R8;
+	InsTable[0x29] = (t_faddrcc)SUB_RM16_R16;
+	InsTable[0x2a] = (t_faddrcc)SUB_R8_RM8;
+	InsTable[0x2b] = (t_faddrcc)SUB_R16_RM16;
+	InsTable[0x2c] = (t_faddrcc)SUB_AL_I8;
+	InsTable[0x2d] = (t_faddrcc)SUB_AX_I16;
+	InsTable[0x2e] = (t_faddrcc)CS;
+	InsTable[0x2f] = (t_faddrcc)DAS;
+	InsTable[0x30] = (t_faddrcc)XOR_RM8_R8;
+	InsTable[0x31] = (t_faddrcc)XOR_RM16_R16;
+	InsTable[0x32] = (t_faddrcc)XOR_R8_RM8;
+	InsTable[0x33] = (t_faddrcc)XOR_R16_RM16;
+	InsTable[0x34] = (t_faddrcc)XOR_AL_I8;
+	InsTable[0x35] = (t_faddrcc)XOR_AX_I16;
+	InsTable[0x36] = (t_faddrcc)SS;
+	InsTable[0x37] = (t_faddrcc)AAA;
+	InsTable[0x38] = (t_faddrcc)CMP_RM8_R8;
+	InsTable[0x39] = (t_faddrcc)CMP_RM16_R16;
+	InsTable[0x3a] = (t_faddrcc)CMP_R8_RM8;
+	InsTable[0x3b] = (t_faddrcc)CMP_R16_RM16;
+	InsTable[0x3c] = (t_faddrcc)CMP_AL_I8;
+	InsTable[0x3d] = (t_faddrcc)CMP_AX_I16;
+	InsTable[0x3e] = (t_faddrcc)DS;
+	InsTable[0x3f] = (t_faddrcc)AAS;
+	InsTable[0x40] = (t_faddrcc)INC_AX;
+	InsTable[0x41] = (t_faddrcc)INC_CX;
+	InsTable[0x42] = (t_faddrcc)INC_DX;
+	InsTable[0x43] = (t_faddrcc)INC_BX;
+	InsTable[0x44] = (t_faddrcc)INC_SP;
+	InsTable[0x45] = (t_faddrcc)INC_BP;
+	InsTable[0x46] = (t_faddrcc)INC_SI;
+	InsTable[0x47] = (t_faddrcc)INC_DI;
+	InsTable[0x48] = (t_faddrcc)DEC_AX;
+	InsTable[0x49] = (t_faddrcc)DEC_CX;
+	InsTable[0x4a] = (t_faddrcc)DEC_DX;
+	InsTable[0x4b] = (t_faddrcc)DEC_BX;
+	InsTable[0x4c] = (t_faddrcc)DEC_SP;
+	InsTable[0x4d] = (t_faddrcc)DEC_BP;
+	InsTable[0x4e] = (t_faddrcc)DEC_SI;
+	InsTable[0x4f] = (t_faddrcc)DEC_DI;
+	InsTable[0x50] = (t_faddrcc)PUSH_AX;
+	InsTable[0x51] = (t_faddrcc)PUSH_CX;
+	InsTable[0x52] = (t_faddrcc)PUSH_DX;
+	InsTable[0x53] = (t_faddrcc)PUSH_BX;
+	InsTable[0x54] = (t_faddrcc)PUSH_SP;
+	InsTable[0x55] = (t_faddrcc)PUSH_BP;
+	InsTable[0x56] = (t_faddrcc)PUSH_SI;
+	InsTable[0x57] = (t_faddrcc)PUSH_DI;
+	InsTable[0x58] = (t_faddrcc)POP_AX;
+	InsTable[0x59] = (t_faddrcc)POP_CX;
+	InsTable[0x5a] = (t_faddrcc)POP_DX;
+	InsTable[0x5b] = (t_faddrcc)POP_BX;
+	InsTable[0x5c] = (t_faddrcc)POP_SP;
+	InsTable[0x5d] = (t_faddrcc)POP_BP;
+	InsTable[0x5e] = (t_faddrcc)POP_SI;
+	InsTable[0x5f] = (t_faddrcc)POP_DI;
+	InsTable[0x60] = (t_faddrcc)OpError;
+	InsTable[0x61] = (t_faddrcc)OpError;
+	InsTable[0x62] = (t_faddrcc)OpError;
+	InsTable[0x63] = (t_faddrcc)OpError;
+	InsTable[0x64] = (t_faddrcc)OpError;
+	InsTable[0x65] = (t_faddrcc)OpError;
+	InsTable[0x66] = (t_faddrcc)OpError;
+	InsTable[0x67] = (t_faddrcc)OpError;
+	InsTable[0x68] = (t_faddrcc)OpError;
+	//InsTable[0x66] = (t_faddrcc)OpdSize;
+	//InsTable[0x67] = (t_faddrcc)AddrSize;
+	//InsTable[0x68] = (t_faddrcc)PUSH_I16;
+	InsTable[0x69] = (t_faddrcc)OpError;
+	InsTable[0x6a] = (t_faddrcc)OpError;
+	InsTable[0x6b] = (t_faddrcc)OpError;
+	InsTable[0x6c] = (t_faddrcc)OpError;
+	InsTable[0x6d] = (t_faddrcc)OpError;
+	InsTable[0x6e] = (t_faddrcc)OpError;
+	InsTable[0x6f] = (t_faddrcc)OpError;
+	InsTable[0x70] = (t_faddrcc)JO;
+	InsTable[0x71] = (t_faddrcc)JNO;
+	InsTable[0x72] = (t_faddrcc)JC;
+	InsTable[0x73] = (t_faddrcc)JNC;
+	InsTable[0x74] = (t_faddrcc)JZ;
+	InsTable[0x75] = (t_faddrcc)JNZ;
+	InsTable[0x76] = (t_faddrcc)JBE;
+	InsTable[0x77] = (t_faddrcc)JA;
+	InsTable[0x78] = (t_faddrcc)JS;
+	InsTable[0x79] = (t_faddrcc)JNS;
+	InsTable[0x7a] = (t_faddrcc)JP;
+	InsTable[0x7b] = (t_faddrcc)JNP;
+	InsTable[0x7c] = (t_faddrcc)JL;
+	InsTable[0x7d] = (t_faddrcc)JNL;
+	InsTable[0x7e] = (t_faddrcc)JLE;
+	InsTable[0x7f] = (t_faddrcc)JG;
+	InsTable[0x80] = (t_faddrcc)INS_80;
+	InsTable[0x81] = (t_faddrcc)INS_81;
+	InsTable[0x82] = (t_faddrcc)INS_82;
+	InsTable[0x83] = (t_faddrcc)INS_83;
+	InsTable[0x84] = (t_faddrcc)TEST_RM8_R8;
+	InsTable[0x85] = (t_faddrcc)TEST_RM16_R16;
+	InsTable[0x86] = (t_faddrcc)XCHG_R8_RM8;
+	InsTable[0x87] = (t_faddrcc)XCHG_R16_RM16;
+	InsTable[0x88] = (t_faddrcc)MOV_RM8_R8;
+	InsTable[0x89] = (t_faddrcc)MOV_RM16_R16;
+	InsTable[0x8a] = (t_faddrcc)MOV_R8_RM8;
+	InsTable[0x8b] = (t_faddrcc)MOV_R16_RM16;
+	InsTable[0x8c] = (t_faddrcc)MOV_RM16_SEG;
+	InsTable[0x8d] = (t_faddrcc)LEA_R16_M16;
+	InsTable[0x8e] = (t_faddrcc)MOV_SEG_RM16;
+	InsTable[0x8f] = (t_faddrcc)POP_RM16;
+	InsTable[0x90] = (t_faddrcc)NOP;
+	InsTable[0x91] = (t_faddrcc)XCHG_CX_AX;
+	InsTable[0x92] = (t_faddrcc)XCHG_DX_AX;
+	InsTable[0x93] = (t_faddrcc)XCHG_BX_AX;
+	InsTable[0x94] = (t_faddrcc)XCHG_SP_AX;
+	InsTable[0x95] = (t_faddrcc)XCHG_BP_AX;
+	InsTable[0x96] = (t_faddrcc)XCHG_SI_AX;
+	InsTable[0x97] = (t_faddrcc)XCHG_DI_AX;
+	InsTable[0x98] = (t_faddrcc)CBW;
+	InsTable[0x99] = (t_faddrcc)CWD;
+	InsTable[0x9a] = (t_faddrcc)CALL_PTR16_16;
+	InsTable[0x9b] = (t_faddrcc)WAIT;
+	InsTable[0x9c] = (t_faddrcc)PUSHF;
+	InsTable[0x9d] = (t_faddrcc)POPF;
+	InsTable[0x9e] = (t_faddrcc)SAHF;
+	InsTable[0x9f] = (t_faddrcc)LAHF;
+	InsTable[0xa0] = (t_faddrcc)MOV_AL_M8;
+	InsTable[0xa1] = (t_faddrcc)MOV_AX_M16;
+	InsTable[0xa2] = (t_faddrcc)MOV_M8_AL;
+	InsTable[0xa3] = (t_faddrcc)MOV_M16_AX;
+	InsTable[0xa4] = (t_faddrcc)MOVSB;
+	InsTable[0xa5] = (t_faddrcc)MOVSW;
+	InsTable[0xa6] = (t_faddrcc)CMPSB;
+	InsTable[0xa7] = (t_faddrcc)CMPSW;
+	InsTable[0xa8] = (t_faddrcc)TEST_AL_I8;
+	InsTable[0xa9] = (t_faddrcc)TEST_AX_I16;
+	InsTable[0xaa] = (t_faddrcc)STOSB;
+	InsTable[0xab] = (t_faddrcc)STOSW;
+	InsTable[0xac] = (t_faddrcc)LODSB;
+	InsTable[0xad] = (t_faddrcc)LODSW;
+	InsTable[0xae] = (t_faddrcc)SCASB;
+	InsTable[0xaf] = (t_faddrcc)SCASW;
+	InsTable[0xb0] = (t_faddrcc)MOV_AL_I8;
+	InsTable[0xb1] = (t_faddrcc)MOV_CL_I8;
+	InsTable[0xb2] = (t_faddrcc)MOV_DL_I8;
+	InsTable[0xb3] = (t_faddrcc)MOV_BL_I8;
+	InsTable[0xb4] = (t_faddrcc)MOV_AH_I8;
+	InsTable[0xb5] = (t_faddrcc)MOV_CH_I8;
+	InsTable[0xb6] = (t_faddrcc)MOV_DH_I8;
+	InsTable[0xb7] = (t_faddrcc)MOV_BH_I8;
+	InsTable[0xb8] = (t_faddrcc)MOV_AX_I16;
+	InsTable[0xb9] = (t_faddrcc)MOV_CX_I16;
+	InsTable[0xba] = (t_faddrcc)MOV_DX_I16;
+	InsTable[0xbb] = (t_faddrcc)MOV_BX_I16;
+	InsTable[0xbc] = (t_faddrcc)MOV_SP_I16;
+	InsTable[0xbd] = (t_faddrcc)MOV_BP_I16;
+	InsTable[0xbe] = (t_faddrcc)MOV_SI_I16;
+	InsTable[0xbf] = (t_faddrcc)MOV_DI_I16;
+	InsTable[0xc0] = (t_faddrcc)OpError;
+	InsTable[0xc1] = (t_faddrcc)OpError;
+	InsTable[0xc2] = (t_faddrcc)RET_I8;
+	InsTable[0xc3] = (t_faddrcc)RET;
+	InsTable[0xc4] = (t_faddrcc)LES_R16_M16;
+	InsTable[0xc5] = (t_faddrcc)LDS_R16_M16;
+	InsTable[0xc6] = (t_faddrcc)MOV_M8_I8;
+	InsTable[0xc7] = (t_faddrcc)MOV_M16_I16;
+	InsTable[0xc8] = (t_faddrcc)OpError;
+	InsTable[0xc9] = (t_faddrcc)OpError;
+	InsTable[0xca] = (t_faddrcc)RETF_I16;
+	InsTable[0xcb] = (t_faddrcc)RETF;
+	InsTable[0xcc] = (t_faddrcc)INT3;
+	InsTable[0xcd] = (t_faddrcc)INT_I8;
+	InsTable[0xce] = (t_faddrcc)INTO;
+	InsTable[0xcf] = (t_faddrcc)IRET;
+	InsTable[0xd0] = (t_faddrcc)INS_D0;
+	InsTable[0xd1] = (t_faddrcc)INS_D1;
+	InsTable[0xd2] = (t_faddrcc)INS_D2;
+	InsTable[0xd3] = (t_faddrcc)INS_D3;
+	InsTable[0xd4] = (t_faddrcc)AAM;
+	InsTable[0xd5] = (t_faddrcc)AAD;
+	InsTable[0xd6] = (t_faddrcc)OpError;
+	InsTable[0xd7] = (t_faddrcc)XLAT;
+	InsTable[0xd8] = (t_faddrcc)OpError;
+	InsTable[0xd9] = (t_faddrcc)OpError;
+	//InsTable[0xd9] = (t_faddrcc)INS_D9;
+	InsTable[0xda] = (t_faddrcc)OpError;
+	InsTable[0xdb] = (t_faddrcc)OpError;
+	//InsTable[0xdb] = (t_faddrcc)INS_DB;
+	InsTable[0xdc] = (t_faddrcc)OpError;
+	InsTable[0xdd] = (t_faddrcc)OpError;
+	InsTable[0xde] = (t_faddrcc)OpError;
+	InsTable[0xdf] = (t_faddrcc)OpError;
+	InsTable[0xe0] = (t_faddrcc)LOOPNZ;
+	InsTable[0xe1] = (t_faddrcc)LOOPZ;
+	InsTable[0xe2] = (t_faddrcc)LOOP;
+	InsTable[0xe3] = (t_faddrcc)JCXZ_REL8;
+	InsTable[0xe4] = (t_faddrcc)IN_AL_I8;
+	InsTable[0xe5] = (t_faddrcc)IN_AX_I8;
+	InsTable[0xe6] = (t_faddrcc)OUT_I8_AL;
+	InsTable[0xe7] = (t_faddrcc)OUT_I8_AX;
+	InsTable[0xe8] = (t_faddrcc)CALL_REL16;
+	InsTable[0xe9] = (t_faddrcc)JMP_REL16;
+	InsTable[0xea] = (t_faddrcc)JMP_PTR16_16;
+	InsTable[0xeb] = (t_faddrcc)JMP_REL8;
+	InsTable[0xec] = (t_faddrcc)IN_AL_DX;
+	InsTable[0xed] = (t_faddrcc)IN_AX_DX;
+	InsTable[0xee] = (t_faddrcc)OUT_DX_AL;
+	InsTable[0xef] = (t_faddrcc)OUT_DX_AX;
+	InsTable[0xf0] = (t_faddrcc)LOCK;
+	InsTable[0xf1] = (t_faddrcc)OpError;
+	InsTable[0xf2] = (t_faddrcc)REPNZ;
+	InsTable[0xf3] = (t_faddrcc)REP;
+	InsTable[0xf4] = (t_faddrcc)HLT;
+	InsTable[0xf5] = (t_faddrcc)CMC;
+	InsTable[0xf6] = (t_faddrcc)INS_F6;
+	InsTable[0xf7] = (t_faddrcc)INS_F7;
+	InsTable[0xf8] = (t_faddrcc)CLC;
+	InsTable[0xf9] = (t_faddrcc)STC;
+	InsTable[0xfa] = (t_faddrcc)CLI;
+	InsTable[0xfb] = (t_faddrcc)STI;
+	InsTable[0xfc] = (t_faddrcc)CLD;
+	InsTable[0xfd] = (t_faddrcc)STD;
+	InsTable[0xfe] = (t_faddrcc)INS_FE;
+	InsTable[0xff] = (t_faddrcc)INS_FF;
 }
 void CPUInsTerm()
 {}
