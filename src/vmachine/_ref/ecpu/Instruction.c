@@ -5,7 +5,7 @@
 // 作者：梁一信
 //////////////////////////////////////////////////////////////////////////
 
-#if (0)
+#if (1)
 
 #include "../vglobal.h"
 #include "../vapi.h"
@@ -3268,73 +3268,77 @@ void INS_F6()
 	oce>>=3;
 	toe8;
 	trm8=*rm8;
-	tc=d_nsbit8(eIMS);	
-	__asm push eCPU.flags
-	switch(oce)
-	{
-	case 0:			
+	tc=d_nsbit8(eIMS);
+	switch(oce) {
+	case 0:
+		__asm push eCPU.flags
 		__asm mov al,tc
 		__asm popf
 		__asm test trm8,al
+		__asm pushf
+		__asm pop eCPU.flags
+		evIP++;
 		break;
 	case 1:
 		OpcError();
 		break;
 	case 2:
+		__asm push eCPU.flags
 		__asm popf
-		__asm not trm8	
+		__asm not trm8
+		__asm pushf
+		__asm pop eCPU.flags
 		*rm8=trm8;
 		break;
-	case 3:		
+	case 3:
+		__asm push eCPU.flags
 		__asm popf
-		__asm neg trm8	
+		__asm neg trm8
+		__asm pushf
+		__asm pop eCPU.flags
 		*rm8=trm8;
 		break;
-	case 4:		
+	case 4:
+		__asm push eCPU.flags
 		__asm mov al,eCPU.al
 		__asm popf
-		__asm mul trm8	
+		__asm mul trm8
 		__asm mov eCPU.ax,ax
+		__asm pushf
+		__asm pop eCPU.flags
 		break;
-	case 5:		
+	case 5:
+		__asm push eCPU.flags
 		__asm mov al,eCPU.al
 		__asm popf
-		__asm imul trm8	
+		__asm imul trm8
 		__asm mov eCPU.ax,ax
+		__asm pushf
+		__asm pop eCPU.flags
 		break;
-	case 6:		
-		if (trm8!=0)			//这里只针对8086的
-		{		
+	case 6:
+		if (trm8!=0) {
+			__asm push eCPU.flags
 			__asm mov ax,eCPU.ax
 			__asm popf
-			__asm div trm8	
+			__asm div trm8
 			__asm mov eCPU.ax,ax
-		}
-		else
-		{
-			GlobINT|=1;
-		}
+			__asm pushf
+			__asm pop eCPU.flags
+		} else GlobINT|=1;
 		break;
-	case 7:		
-		if (trm8!=0)
-		{		
+	case 7:
+		if (trm8!=0) {
+			__asm push eCPU.flags
 			__asm mov ax,eCPU.ax
 			__asm popf
 			__asm idiv trm8	
 			__asm mov eCPU.ax,ax
-		}
-		else
-		{
-			GlobINT|=1;
-		}		
+			__asm pushf
+			__asm pop eCPU.flags
+		} else GlobINT|=1;
 		break;
 	}
-	__asm pushf
-	__asm pop eCPU.flags
-	//*rm8=trm8;			//这里不能这样写，因为有时候那个rm8正好就是mul的结果，一改回原来的trm8，结果就被覆盖了
-	//evIP++;
-	if (oce==0)			//只有oce==0带有立即数
-		evIP++;
 }
 void INS_F7()
 {

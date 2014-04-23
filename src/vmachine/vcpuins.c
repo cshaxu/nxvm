@@ -52,6 +52,8 @@ static t_nubit8 ub1,ub2,ub3;
 static t_nsbit8 sb1,sb2,sb3;
 static t_nubit16 uw1,uw2,uw3;
 static t_nsbit16 sw1,sw2,sw3;
+#define aipcheck if (acpu.ip > 0xfffa && vcpu.ip < 0x0005) {\
+	vapiPrint("ip overflow\n");} else
 #ifdef VCPUASM
 #define AFLAGS    (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
                    VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF | \
@@ -2468,11 +2470,13 @@ CHECKED CWD()
 void CALL_PTR16_16()
 {
 	t_nubit16 newcs,newip;
+	async;
 	vcpu.ip++;
 	GetImm(16);
 	newip = d_nubit16(vcpuins.imm);
 	GetImm(16);
 	newcs = d_nubit16(vcpuins.imm);
+	aipcheck;
 	PUSH((void *)&vcpu.cs,16);
 	PUSH((void *)&vcpu.ip,16);
 	vcpu.ip = newip;
@@ -2887,20 +2891,26 @@ void RETF()
 }
 void INT3()
 {
+	async;
 	vcpu.ip++;
+	aipcheck;
 	INT(0x03);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INT3\n");
 }
 void INT_I8()
 {
+	async;
 	vcpu.ip++;
 	GetImm(8);
+	aipcheck;
 	INT(d_nubit8(vcpuins.imm));
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INT_I8\n");
 }
 void INTO()
 {
+	async;
 	vcpu.ip++;
+	aipcheck;
 	if(GetBit(vcpu.flags, VCPU_FLAG_OF)) INT(0x04);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INTO\n");
 }
@@ -3074,6 +3084,7 @@ void IN_AL_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
+//	vapiPrint("IN: %02X\n",d_nubit8(vcpuins.imm));
 	ExecFun(vport.in[d_nubit8(vcpuins.imm)]);
 	vcpu.al = vport.iobyte;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AL_I8\n");
@@ -3090,6 +3101,7 @@ void OUT_I8_AL()
 {
 	vcpu.ip++;
 	GetImm(8);
+//	vapiPrint("OUT: %02X\n",d_nubit8(vcpuins.imm));
 	vport.iobyte = vcpu.al;
 	ExecFun(vport.out[d_nubit8(vcpuins.imm)]);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_I8_AL\n");
@@ -3105,9 +3117,11 @@ void OUT_I8_AX()
 void CALL_REL16()
 {
 	t_nsbit16 rel16;
+	async;
 	vcpu.ip++;
 	GetImm(16);
 	rel16 = d_nsbit16(vcpuins.imm);
+	aipcheck;
 	PUSH((void *)&vcpu.ip,16);
 /* vcpuins bug fix #12
 	vcpu.ip += d_nubit16(vcpuins.imm);*/
@@ -3151,6 +3165,7 @@ void JMP_REL8()
 void IN_AL_DX()
 {
 	vcpu.ip++;
+//	vapiPrint("IN: %04X\n",vcpu.dx);
 	ExecFun(vport.in[vcpu.dx]);
 	vcpu.al = vport.iobyte;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  IN_AL_DX\n");
@@ -3166,6 +3181,7 @@ void OUT_DX_AL()
 {
 	vcpu.ip++;
 	vport.iobyte = vcpu.al;
+//	vapiPrint("OUT: %04X\n",vcpu.dx);
 	ExecFun(vport.out[vcpu.dx]);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OUT_DX_AL\n");
 }
@@ -3288,8 +3304,10 @@ void INS_FE()
 }
 void INS_FF()
 {
+	async;
 	vcpu.ip++;
 	GetModRegRM(0,16);
+	aipcheck;
 	switch(vcpuins.r) {
 	case 0:	INC((void *)vcpuins.rm,16);	break;
 	case 1:	DEC((void *)vcpuins.rm,16);	break;

@@ -37,9 +37,14 @@ int CPUInit()
 int ExecIns()
 {
 	t_nubit8 opcode = d_nubit8(evIP+MemoryStart);
+	t_nubit8 op1 = d_nubit8(evIP+MemoryStart+1);
+	t_nubit8 op2 = d_nubit8(evIP+MemoryStart+2);
+	t_nubit8 op3 = d_nubit8(evIP+MemoryStart+3);
+	t_nubit8 op4 = d_nubit8(evIP+MemoryStart+4);
 //	t_faddrcc InsFucAddr = InsTable[opcode];
 //	vapiPrint("execins.1: %04X:%04X, INT=%1X\n",_cs,_ip,GetBit(_flags,VCPU_FLAG_IF));
-	evIP++;	
+	evIP++;
+
 	//InstructionCount++;
 	ExecFun(InsTable[opcode]);
 //	__asm call InsFucAddr;

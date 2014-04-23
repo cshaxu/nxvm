@@ -68,8 +68,8 @@ void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
 			else if (vapiCallBackKeyboardGetCtrl()) ascii += 0x2300;
 			vapiCallBackKeyboardRecvKeyPress(ascii);
 			break;
-		/*case VK_RETURN: // ENTER
-			vapiPrint("START!\n");
+		case VK_RETURN: // ENTER
+			/*vapiPrint("START!\n");
 			vmachine.flagrecord = 0x01;
 			vapiRecordStart();
 			break;*/
