@@ -12,6 +12,9 @@
 #include "bios/qdbios.h"
 #include "vcpuins.h"
 
+#include "debug/aasm.h"
+#include "debug/dasm.h"
+
 #define MOD ((modrm&0xc0)>>6)
 #define REG ((modrm&0x38)>>3)
 #define RM  ((modrm&0x07)>>0)
@@ -3790,6 +3793,25 @@ static void ClrPrefix()
 static void ExecIns()
 {
 	t_nubit8 opcode;
+	static t_nubitcc total = 0;
+	t_nubitcc i,lend, lena;
+	char fetch[0x50], result[0x50];
+	t_nubit8 ins[0x20];
+	total++;
+	lend = dasm(fetch, _cs, _ip, 0x00);
+	memcpy(ins, (void *)vramGetAddr(_cs, _ip), lend);
+	lena = aasm(fetch, _cs, _ip);
+	dasm(result, _cs, _ip, 0x00);
+	if (lena != lend || memcmp(ins, (void *)vramGetAddr(_cs, _ip), lend) || STRCMP(fetch,result)) {
+		vapiCallBackMachineStop();
+		vapiPrint("diff at #%d\t%04X:%04X\n", total, _cs, _ip);
+		for (i = 0;i < lend;++i) vapiPrint("%02X", ins[i]);
+		vapiPrint("\t%s", fetch);
+		for (i = 0;i < lena;++i) vapiPrint("%02X", vramVarByte(_cs, _ip+i));
+		vapiPrint("\t%s", result);
+		return;
+	}
+
 	bugfix(17) {
 		/* Note: in this case, if we use two prefixes, the second prefix
 		   will be discarded incorrectly */

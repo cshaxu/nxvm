@@ -1618,14 +1618,14 @@ static void AAM()
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "AAM");
-	SPRINTF(dopr, "%s", dimm);
+	if (strcmp(dimm, "0A")) SPRINTF(dopr, "%s", dimm);
 }
 static void AAD()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "AAD");
-	SPRINTF(dopr, "%s", dimm);
+	if (strcmp(dimm, "0A")) SPRINTF(dopr, "%s", dimm);
 }
 static void XLAT()
 {
@@ -1802,7 +1802,7 @@ static void INS_F7()
 	switch(rid) {
 	case 0:	GetImm(16);
 		SPRINTF(dop, "TEST");
-		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+		if (ismem) SPRINTF(dopr, "WORD PTR %s,%s", drm, dimm);
 		else       SPRINTF(dopr, "%s,%s", drm, dimm);
 		return;
 	case 2: SPRINTF(dop, "NOT");break;
@@ -2172,7 +2172,7 @@ static void exec(t_nubit8 opcode)
 	}
 }
 
-t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off, t_bool flagtip)
+t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off, t_nubit8 flagout)
 {
 	t_nubitcc i,l,len;
 	t_nubit8 opcode;
@@ -2196,19 +2196,23 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off, t_bool flagtip)
 		exec(opcode);
 		l = dvip - off;
 		len += l;
-		for (i = 0;i < l;++i) SPRINTF(dbin, "%s%02X", dbin, vramVarByte(seg, off+i));
-		SPRINTF(dstmt, "%04X:%04X %s", seg, off, dbin);
-		off = dvip;
-		for (i = strlen(dstmt);i < 24;++i) STRCAT(dstmt, " ");
+		if (flagout) {
+			for (i = 0;i < l;++i) SPRINTF(dbin, "%s%02X", dbin, vramVarByte(seg, off+i));
+			SPRINTF(dstmt, "%04X:%04X %s", seg, off, dbin);
+			for (i = strlen(dstmt);i < 24;++i) STRCAT(dstmt, " ");
+		} else dstmt[0] = 0;
 		STRCAT(dstmt, dop);
-		for (i = strlen(dstmt);i < 32;++i) STRCAT(dstmt, " ");
+		if (flagout) {
+			for (i = strlen(dstmt);i < 32;++i) STRCAT(dstmt, " ");
+		} else STRCAT(dstmt, "\t");
 		STRCAT(dstmt, dopr);
-		if (flagtip && dtip[0]) {
+		if (flagout == 2 && dtip[0]) {
 			for (i = strlen(dstmt);i < 64;++i) STRCAT(dstmt, " ");
 			STRCAT(dstmt, dtip);
 		}
 		STRCAT(dstmt, "\n");
 		STRCAT(stmt, dstmt);
+		off = dvip;
 	} while (IsPrefix(opcode));
 	return len;
 }

@@ -793,7 +793,7 @@ static t_aasm_oprinfo parsearg_mem()
 	else if (!bx && !si && !bp && !di && info.mod != MOD_M) {
 		info.mem = MEM_BP;
 		if (info.mod == MOD_M_DISP8) {
-			info.disp16 = (t_nubit16)info.disp8;
+			info.disp16 = ((t_nubit16)info.disp8) & 0x00ff;
 			info.mod = MOD_M;
 		} else if (info.mod == MOD_M_DISP16)
 			info.mod = MOD_M;
@@ -2042,81 +2042,97 @@ static void MOV_AL_I8()
 {
 	setbyte(0xb0);
 	avip++;
+	SetImm8(aopri2.imm8);
 }
 static void MOV_CL_I8()
 {
 	setbyte(0xb1);
 	avip++;
+	SetImm8(aopri2.imm8);
 }
 static void MOV_DL_I8()
 {
 	setbyte(0xb2);
 	avip++;
+	SetImm8(aopri2.imm8);
 }
 static void MOV_BL_I8()
 {
 	setbyte(0xb3);
 	avip++;
+	SetImm8(aopri2.imm8);
 }
 static void MOV_AH_I8()
 {
 	setbyte(0xb4);
 	avip++;
+	SetImm8(aopri2.imm8);
 }
 static void MOV_CH_I8()
 {
 	setbyte(0xb5);
 	avip++;
+	SetImm8(aopri2.imm8);
 }
 static void MOV_DH_I8()
 {
 	setbyte(0xb6);
 	avip++;
+	SetImm8(aopri2.imm8);
 }
 static void MOV_BH_I8()
 {
 	setbyte(0xb7);
 	avip++;
+	SetImm8(aopri2.imm8);
 }
 static void MOV_AX_I16()
 {
 	setbyte(0xb8);
 	avip++;
+	SetImm16(aopri2.imm16);
 }
 static void MOV_CX_I16()
 {
 	setbyte(0xb9);
 	avip++;
+	SetImm16(aopri2.imm16);
 }
 static void MOV_DX_I16()
 {
 	setbyte(0xba);
 	avip++;
+	SetImm16(aopri2.imm16);
 }
 static void MOV_BX_I16()
 {
 	setbyte(0xbb);
 	avip++;
+	SetImm16(aopri2.imm16);
 }
 static void MOV_SP_I16()
 {
 	setbyte(0xbc);
 	avip++;
+	SetImm16(aopri2.imm16);
 }
 static void MOV_BP_I16()
 {
 	setbyte(0xbd);
 	avip++;
+	SetImm16(aopri2.imm16);
 }
 static void MOV_SI_I16()
 {
 	setbyte(0xbe);
 	avip++;
+	SetImm16(aopri2.imm16);
 }
 static void MOV_DI_I16()
 {
 	setbyte(0xbf);
 	avip++;
+	SetImm16(aopri2.imm16);
 }
 static void RET_I16()
 {
@@ -2447,6 +2463,8 @@ static void ADD()
 {
 	if      (ARG_AL_I8)    ADD_AL_I8();
 	else if (ARG_AX_I16)   ADD_AX_I16();
+	else if (ARG_R8_RM8)   ADD_R8_RM8();
+	else if (ARG_R16_RM16) ADD_R16_RM16();
 	else if (ARG_RM8_I8)   INS_80(0x00);
 	else if (ARG_RM16_I8)  {
 		if (!aopri2.immn)
@@ -2466,197 +2484,195 @@ static void ADD()
 	} else if (ARG_RM16_I16) INS_81(0x00);
 	else if (ARG_RM8_R8)   ADD_RM8_R8();
 	else if (ARG_RM16_R16) ADD_RM16_R16();
-	else if (ARG_R8_RM8)   ADD_R8_RM8();
-	else if (ARG_R16_RM16) ADD_R16_RM16();
 	else error = 1;
 }
 static void OR()
 {
 	if      (ARG_AL_I8)    OR_AL_I8();
 	else if (ARG_AX_I16)   OR_AX_I16();
+	else if (ARG_R8_RM8)   OR_R8_RM8();
+	else if (ARG_R16_RM16) OR_R16_RM16();
 	else if (ARG_RM8_I8)   INS_80(0x01);
 	else if (ARG_RM16_I8)  {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x00);
-			} else INS_83(0x00);
+				INS_81(0x01);
+			} else INS_83(0x01);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x00);
+				INS_83(0x01);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x00);
+				INS_81(0x01);
 			}
 	} else if (ARG_RM16_I16) INS_81(0x01);
 	else if (ARG_RM8_R8)   OR_RM8_R8();
 	else if (ARG_RM16_R16) OR_RM16_R16();
-	else if (ARG_R8_RM8)   OR_R8_RM8();
-	else if (ARG_R16_RM16) OR_R16_RM16();
 	else error = 1;
 }
 static void ADC()
 {
 	if      (ARG_AL_I8)    ADC_AL_I8();
 	else if (ARG_AX_I16)   ADC_AX_I16();
+	else if (ARG_R8_RM8)   ADC_R8_RM8();
+	else if (ARG_R16_RM16) ADC_R16_RM16();
 	else if (ARG_RM8_I8)   INS_80(0x02);
 	else if (ARG_RM16_I8)  {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x00);
-			} else INS_83(0x00);
+				INS_81(0x02);
+			} else INS_83(0x02);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x00);
+				INS_83(0x02);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x00);
+				INS_81(0x02);
 			}
 	} else if (ARG_RM16_I16) INS_81(0x02);
 	else if (ARG_RM8_R8)   ADC_RM8_R8();
 	else if (ARG_RM16_R16) ADC_RM16_R16();
-	else if (ARG_R8_RM8)   ADC_R8_RM8();
-	else if (ARG_R16_RM16) ADC_R16_RM16();
 	else error = 1;
 }
 static void SBB()
 {
 	if      (ARG_AL_I8)    SBB_AL_I8();
 	else if (ARG_AX_I16)   SBB_AX_I16();
+	else if (ARG_R8_RM8)   SBB_R8_RM8();
+	else if (ARG_R16_RM16) SBB_R16_RM16();
 	else if (ARG_RM8_I8)   INS_80(0x03);
 	else if (ARG_RM16_I8)  {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x00);
-			} else INS_83(0x00);
+				INS_81(0x03);
+			} else INS_83(0x03);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x00);
+				INS_83(0x03);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x00);
+				INS_81(0x03);
 			}
 	} else if (ARG_RM16_I16) INS_81(0x03);
 	else if (ARG_RM8_R8)   SBB_RM8_R8();
 	else if (ARG_RM16_R16) SBB_RM16_R16();
-	else if (ARG_R8_RM8)   SBB_R8_RM8();
-	else if (ARG_R16_RM16) SBB_R16_RM16();
 	else error = 1;
 }
 static void AND()
 {
 	if      (ARG_AL_I8)    AND_AL_I8();
 	else if (ARG_AX_I16)   AND_AX_I16();
+	else if (ARG_R8_RM8)   AND_R8_RM8();
+	else if (ARG_R16_RM16) AND_R16_RM16();
 	else if (ARG_RM8_I8)   INS_80(0x04);
 	else if (ARG_RM16_I8)  {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x00);
-			} else INS_83(0x00);
+				INS_81(0x04);
+			} else INS_83(0x04);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x00);
+				INS_83(0x04);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x00);
+				INS_81(0x04);
 			}
 	} else if (ARG_RM16_I16) INS_81(0x04);
 	else if (ARG_RM8_R8)   AND_RM8_R8();
 	else if (ARG_RM16_R16) AND_RM16_R16();
-	else if (ARG_R8_RM8)   AND_R8_RM8();
-	else if (ARG_R16_RM16) AND_R16_RM16();
 	else error = 1;
 }
 static void SUB()
 {
 	if      (ARG_AL_I8)    SUB_AL_I8();
 	else if (ARG_AX_I16)   SUB_AX_I16();
+	else if (ARG_R8_RM8)   SUB_R8_RM8();
+	else if (ARG_R16_RM16) SUB_R16_RM16();
 	else if (ARG_RM8_I8)   INS_80(0x05);
 	else if (ARG_RM16_I8)  {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x00);
-			} else INS_83(0x00);
+				INS_81(0x05);
+			} else INS_83(0x05);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x00);
+				INS_83(0x05);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x00);
+				INS_81(0x05);
 			}
 	} else if (ARG_RM16_I16) INS_81(0x05);
 	else if (ARG_RM8_R8)   SUB_RM8_R8();
 	else if (ARG_RM16_R16) SUB_RM16_R16();
-	else if (ARG_R8_RM8)   SUB_R8_RM8();
-	else if (ARG_R16_RM16) SUB_R16_RM16();
 	else error = 1;
 }
 static void XOR()
 {
 	if      (ARG_AL_I8)    XOR_AL_I8();
 	else if (ARG_AX_I16)   XOR_AX_I16();
+	else if (ARG_R8_RM8)   XOR_R8_RM8();
+	else if (ARG_R16_RM16) XOR_R16_RM16();
 	else if (ARG_RM8_I8)   INS_80(0x06);
 	else if (ARG_RM16_I8)  {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x00);
-			} else INS_83(0x00);
+				INS_81(0x06);
+			} else INS_83(0x06);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x00);
+				INS_83(0x06);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x00);
+				INS_81(0x06);
 			}
 	} else if (ARG_RM16_I16) INS_81(0x06);
 	else if (ARG_RM8_R8)   XOR_RM8_R8();
 	else if (ARG_RM16_R16) XOR_RM16_R16();
-	else if (ARG_R8_RM8)   XOR_R8_RM8();
-	else if (ARG_R16_RM16) XOR_R16_RM16();
 	else error = 1;
 }
 static void CMP()
 {
 	if      (ARG_AL_I8)    CMP_AL_I8();
 	else if (ARG_AX_I16)   CMP_AX_I16();
+	else if (ARG_R8_RM8)   CMP_R8_RM8();
+	else if (ARG_R16_RM16) CMP_R16_RM16();
 	else if (ARG_RM8_I8)   INS_80(0x07);
 	else if (ARG_RM16_I8)  {
 		if (!aopri2.immn)
 			if (aopri2.imm8 > 0x7f) {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = aopri2.imm8;
-				INS_81(0x00);
-			} else INS_83(0x00);
+				INS_81(0x07);
+			} else INS_83(0x07);
 		else
 			if (aopri2.imm8 > 0x7f)
-				INS_83(0x00);
+				INS_83(0x07);
 			else {
 				aopri2.type = TYPE_I16;
 				aopri2.imm16 = 0xff00 | aopri2.imm8;
-				INS_81(0x00);
+				INS_81(0x07);
 			}
 	} else if (ARG_RM16_I16) INS_81(0x07);
 	else if (ARG_RM8_R8)   CMP_RM8_R8();
 	else if (ARG_RM16_R16) CMP_RM16_R16();
-	else if (ARG_R8_RM8)   CMP_R8_RM8();
-	else if (ARG_R16_RM16) CMP_R16_RM16();
 	else error = 1;
 }
 static void INC()
@@ -2721,6 +2737,7 @@ static void TEST()
 	else if (ARG_RM8_R8) TEST_RM8_R8();
 	else if (ARG_RM16_R16) TEST_RM16_R16();
 	else if (ARG_RM8_I8) INS_F6(0x00);
+	else if (ARG_RM16_I16) INS_F7(0x00);
 	else error = 1;
 }
 static void XCHG()
@@ -2759,12 +2776,12 @@ static void MOV()
 	else if (ARG_m8_AL) MOV_M8_AL();
 	else if (ARG_AX_m16) MOV_AX_M16();
 	else if (ARG_m16_AX) MOV_M16_AX();
-	else if (ARG_RM16_R16) MOV_RM16_R16();
 	else if (ARG_R8_RM8) MOV_R8_RM8();
 	else if (ARG_R16_RM16) MOV_R16_RM16();
+	else if (ARG_RM8_R8) MOV_RM8_R8();
+	else if (ARG_RM16_R16) MOV_RM16_R16();
 	else if (ARG_RM16_SEG) MOV_RM16_SEG();
 	else if (ARG_SEG_RM16) MOV_SEG_RM16();
-	else if (ARG_RM8_R8) MOV_RM8_R8();
 	else if (ARG_RM8_I8) MOV_M8_I8();
 	else if (ARG_RM16_I16) MOV_M16_I16();
 	else error = 1;
@@ -2977,6 +2994,7 @@ static void exec()
 	else if (!strcmp(aop, "pop")) POP();
 	else if (!strcmp(aop, "or" )) OR();
 	else if (!strcmp(aop, "adc")) ADC();
+	else if (!strcmp(aop, "sbb")) SBB();
 	else if (!strcmp(aop, "and")) AND();
 	else if (!strcmp(aop, "es:")) ES();
 	else if (!strcmp(aop, "daa")) DAA();

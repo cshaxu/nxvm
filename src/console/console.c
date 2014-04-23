@@ -334,6 +334,10 @@ static void Set()
 static void Device()
 {
 	if (narg < 2) GetHelp;
+	if (vmachine.flagrun) {
+		vapiPrint("Cannot change device now.\n");
+		return;
+	}
 	if (!strcmp(arg[1], "ram")) {
 		if (narg != 3) GetHelp;
 		vramAlloc(atoi(arg[2]));
@@ -353,7 +357,7 @@ static void Device()
 			vapiFloppyInsert(arg[3]);
 		} else if (!strcmp(arg[2], "remove")) {
 			if (narg < 4) arg[3] = NULL;
-			vapiFloppyRemove(arg[3]);			
+			vapiFloppyRemove(arg[3]);
 		} else GetHelp;
 	} else if(!strcmp(arg[1], "hdd")) {
 		if (narg < 3) GetHelp;
@@ -364,7 +368,7 @@ static void Device()
 			vapiHardDiskInsert(arg[3]);
 		} else if (!strcmp(arg[2], "disconnect")) {
 			if (narg < 4) arg[3] = NULL;
-			vapiHardDiskRemove(arg[3]);			
+			vapiHardDiskRemove(arg[3]);
 		} else GetHelp;
 	} else GetHelp;
 }
@@ -391,12 +395,14 @@ static void Nxvm()
 #include "../vmachine/debug/aasm.h"
 static void Test()
 {
-	if (aasm("add [bp+si-81],7f\n"
+	vmachine.flagmode = 1;
+	vmachineStart();
+/*	if (aasm("add [bp+si-81],7f\n"
 		"add [bp+si-7f],80\n"
 		"add [-ff99],81\n",
 		0, 0)) printf("succ\n");
 	else printf("fail\n");
-	debug();
+	debug();*/
 	//cs:\nss:\nds:\n mov ah,[1234]\n@label1:\n\nmov bx, [bp+si]\n\n\njmp @label1", 0, 0);
 }
 
@@ -414,11 +420,11 @@ static void exec()
 	else if(!strcmp(arg[0],"device")) Device();
 	else if(!strcmp(arg[0],"nxvm"))   Nxvm();
 	/* support for old commands */
-	else if(!strcmp(arg[0],"mode"))  {vmachine.flagmode = !vmachine.flagmode;}
-	else if(!strcmp(arg[0],"start")) {vmachineStart();}
-	else if(!strcmp(arg[0],"reset")) {vmachineReset();}
-	else if(!strcmp(arg[0],"stop"))  {vmachineStop();}
-	else if(!strcmp(arg[0],"resume")){vmachineResume();}
+	else if(!strcmp(arg[0],"mode"))  {if (!vmachine.flagrun) vmachine.flagmode = !vmachine.flagmode;}
+	else if(!strcmp(arg[0],"start"))  vmachineStart();
+	else if(!strcmp(arg[0],"reset"))  vmachineReset();
+	else if(!strcmp(arg[0],"stop"))   vmachineStop();
+	else if(!strcmp(arg[0],"resume")) vmachineResume();
 	else printc("Illegal command '%s'.\n",arg[0]);
 	printc("\n");
 }

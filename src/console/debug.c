@@ -567,7 +567,7 @@ static void rprintregs()
 	printd("   ");
 	rprintflags();
 	printd("\n");
-	dasm(str, _cs, _ip, 0x01);
+	dasm(str, _cs, _ip, 0x02);
 	uasmSegRec = _cs;
 	uasmPtrRec = _ip;
 	printd("%s", str);
@@ -791,7 +791,7 @@ static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 	if(start > end) end = 0xffff;
 	if ((t_nubit32)((segment<<4) + end) > 0xfffff) end = (0xfffff-(segment<<4));
 	while(start <= end) {
-		len = (t_nubit16)dasm(str, segment, start, 0x00);
+		len = (t_nubit16)dasm(str, segment, start, 0x01);
 		printd("%s", str);
 		start += len;
 		boundary = (t_nubit32)start + (t_nubit32)len;
