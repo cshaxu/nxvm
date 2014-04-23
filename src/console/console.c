@@ -263,9 +263,9 @@ static void Info()
 	if (narg != 1) GetHelp;
 	printc("NXVM Device Info\n");
 	printc("================\n");
-	printc("IBM PC/AT 16-bit\n");
+	printc("Machine:           IBM PC/AT\n");
 	printc("CPU:               Intel 8086+\n");
-	printc("RAM Size:          %d KB\n", vram.size >> 10);
+	printc("RAM Size:          %d MB\n", vram.size >> 20);
 	printc("Floppy Disk Drive: 3.5\", %.2f MB, %s\n",
 		vfddGetImageSize * 1. / 0xfa000,
 		vfdd.flagexist ? "inserted" : "not inserted");
@@ -408,7 +408,10 @@ static void Nxvm()
 
 #include "../vmachine/debug/aasm.h"
 static void Test()
-{}
+{
+	vmachine.flagmode = 0x01;
+	vmachineStart();
+}
 
 static void exec()
 {

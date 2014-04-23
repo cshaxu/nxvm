@@ -30,6 +30,8 @@ typedef struct {
 			t_bool ce; /* conforming or expand-down */
 			t_bool rw; /* readable or writable */
 			t_bool a;   /* accessed */
+		/* additional info */
+		t_bool flagstack;
 } t_cpu_segreg;
 typedef struct {
 	union {
@@ -207,6 +209,13 @@ typedef struct {
 #define _ClrVIF   (ClrBit(_eflags, VCPU_EFLAGS_VIF))
 #define _ClrVIP   (ClrBit(_eflags, VCPU_EFLAGS_VIP))
 #define _ClrID    (ClrBit(_eflags, VCPU_EFLAGS_ID))*/
+
+#define _GetCF _GetEFLAGS_CF
+#define _SetCF _SetEFLAGS_CF
+#define _ClrCF _ClrEFLAGS_CF
+#define _GetAF _GetEFLAGS_AF
+#define _SetAF _SetEFLAGS_AF
+#define _ClrAF _ClrEFLAGS_AF
 
 #define _MakePageFaultErrorCode(p,wr,us) ((p) | ((wr) << 1) | ((us) << 2))
 

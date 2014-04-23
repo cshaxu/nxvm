@@ -1,0 +1,78 @@
+Re: Question about CPU predefined interrupt and BIOS interrupt
+
+From: "robertwessel2@xxxxxxxxx" <spamtrap@xxxxxxxxxx>
+Date: 3 Jul 2006 21:47:05 -0700
+
+jfguo wrote:
+robertwessel2@xxxxxxxxx wrote:
+jfguo wrote:
+There are some predefined interrupts and exceptions in the processor,
+for example vector 9 for CoProcessor Segment Overrun.
+
+
+It stopped being that after the 386.
+
+
+But "INT
+0x09" is defined for the keyboard in the BIOS.
+I wondered whether the CoProcessor Segment Overrun handler or the
+keyboard service handler of BIOS is executed when I execute "INT
+0x09".
+
+
+Intel reserved the first 32 interrupt vector for their own use, but
+used only the first eight, IIRC, on the 8086/8. Unfortunately IBM used
+a bunch of vectors starting with 0x08 in the real mode BIOS on the
+first PC (for example, IRQ0-7 were mapped to Int 0x08-0x0f, and BIOS
+APIs started at Int 0x10). When Intel introduced the 286, it defined
+additional exceptions in the reserved range.
+
+In real mode this means you have to avoid generating any of the "new"
+exceptions (not that hard, most have to do the protected mode anyway),
+since you can't really tell what's happening.
+
+Thanks for the explanation. This has clarify some misconceptions of
+mine.
+But I still can't understand how to resolve the confilts of INT of BIOS
+and the
+predefinition of Intel. For example, the 0x10 is defined for
+Floating-Point Error
+in real-address mode. And as I know, the int 0x10 is for VGA in BIOS.
+How to avoid to use int 0x10 in BIOS?
+
+
+In protected mode, the OS will map the IRQs to a different location (by
+reprogramming the 8259, or, more likely the APIC), and it will avoid
+actually using the reserved interrupts for anything other than their
+Intel reserved purpose. The one exception being the v86 emulation for
+DOS sessions, but those are not the real interrupt vectors, so there's
+no conflict.
+
+Does this mean the BIOS services has no effects when the OS, for
+example Windows XP, is operating in protected mode? And the BIOS
+only functions in the booting of OS?
+
+
+In protected mode, the BIOS is mostly ignored, and OS's like Windows
+NT/2K/Xp and Linux essentially o not use the BIOS at all once past some
+point in the boot process. Certainly the real mode APIs are pretty
+much meaningless. While there are some exceptions where a BIOS can
+provide a protected mode API, these all use a different mechanism than
+the real mode INTs for invoking the BIOS function. Likewise, in some
+cases the BIOS can be run in virtual-x86 mode, and then the "INT"s that
+the BIOS sees are just the ones emulated by software, and have little
+relationship to the "real" interrupts.
+
+All of the conflicting exceptions/interrupts are generally not used, or
+must be disabled, in real mode.
+
+Int 0x10 is an interesting case. On the 8086/8087 any coprocessor
+exception had to be handled via the normal external interrupt mechanism
+(IOW, an 8087 exception generated a normal IRQ, just like any I/O
+device). If you leave (or set) the NE bit in CR0 to 0, instead of
+generating an Int 0x10, the CPU stops and asserts an external signal
+(FERR), and waits for an IRQ. You then need external hardware to
+generate an IRQ from FERR, but that's generally provided by the PC
+compatible chipset. Those two things together allow the simulation of
+the old 8087-exception-via-IRQ mechanism, and thus avoid the use of Int
+0x10 and the conflict with the BIOS.

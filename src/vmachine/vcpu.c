@@ -36,6 +36,7 @@ void vcpuReset()
 	vcpu.ss.rw = 0x01;
 	vcpu.ss.s = 0x01;
 	vcpu.ss.p = 0x01;
+	vcpu.ss.flagstack = 0x01;
 	vcpu.ds = vcpu.es = vcpu.fs = vcpu.gs = vcpu.ss;
 	_LoadIDTR16(0x000000, 0x03ff);
 	vcpuinsReset();

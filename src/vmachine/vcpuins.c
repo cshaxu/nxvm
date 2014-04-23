@@ -15,6 +15,9 @@
 #include "debug/aasm.h"
 #include "debug/dasm.h"
 
+#define trace(s) if (vcpuins.except) {vapiPrint("%s\n",(s));} else
+#define i386(n)  if (1)
+
 #define _GetModRM_MOD(modrm) (((modrm) & 0xc0) >> 6)
 #define _GetModRM_REG(modrm) (((modrm) & 0x38) >> 3)
 #define _GetModRM_RM(modrm)  (((modrm) & 0x07) >> 0)
@@ -80,15 +83,18 @@ static t_nubit32 _GetPhysicalFromLinear(t_nubit32 linear, t_nubit8 cpl, t_bool w
 		ppdtitem = vramAddr(_GetCR3_BASE + _GetLinear_DIR(linear) * 4);
 		if (!_GetPageEntry_P(d_nubit32(ppdtitem))) {
 			_SetExcept_PF(_MakePageFaultErrorCode(0, write, (cpl == 3)));
+			trace("GetPhysicalFromLinear::CR0_PE(1)::CR0_PG(1)::ppdtitem::PageEntry_P(0)");
 			return physical;
 		}
 		if (cpl == 0x03) {
 			if (!_GetPageEntry_US(d_nubit32(ppdtitem))) {
 				_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1));
+				trace("GetPhysicalFromLinear::CR0_PE(1)::CR0_PG(1)::cpl(3)::ppdtitem::PageEntry_US(0)");
 				return physical;
 			}
 			if (!_GetPageEntry_RW(d_nubit32(ppdtitem)) && write) {
 				_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1));
+				trace("GetPhysicalFromLinear::CR0_PE(1)::CR0_PG(1)::cpl(3)::ppdtitem::PageEntry_RW(0)::write(1)");
 				return physical;
 			}
 		}
@@ -96,15 +102,18 @@ static t_nubit32 _GetPhysicalFromLinear(t_nubit32 linear, t_nubit8 cpl, t_bool w
 		ppetitem = vramAddr(_GetPageEntry_BASE(d_nubit32(ppdtitem)) + _GetLinear_PAGE(linear) * 4);
 		if (!_GetPageEntry_P(d_nubit32(ppetitem))) {
 			_SetExcept_PF(_MakePageFaultErrorCode(0, write, (cpl == 3)));
+			trace("GetPhysicalFromLinear::CR0_PE(1)::CR0_PG(1)::ppetitem::PageEntry_P(0)");
 			return physical;
 		}
 		if (cpl == 0x03) {
 			if (!_GetPageEntry_US(d_nubit32(ppetitem))) {
 				_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1));
+				trace("GetPhysicalFromLinear::CR0_PE(1)::CR0_PG(1)::cpl(3)::ppetitem::PageEntry_US(0)");
 				return physical;
 			}
 			if (!_GetPageEntry_RW(d_nubit32(ppetitem)) && write) {
 				_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1));
+				trace("GetPhysicalFromLinear::CR0_PE(1)::CR0_PG(1)::cpl(3)::ppetitem::PageEntry_RW(0)::write(1)");
 				return physical;
 			}
 		}
@@ -121,9 +130,11 @@ static t_nubit64 _GetDescriptorFromGDT(t_nubit16 selector)
 	t_nubit32 linear = _GetGDTR_BASE + _GetSelector_OFFSET(selector), physical;
 	if (_GetSelector_OFFSET(selector) + 7 > _GetGDTR_LIMIT) {
 		_SetExcept_GP(selector);
+		trace("GetDescriptorFromLDT::gdtr.limit");
 		return descriptor;
 	}
 	physical = _GetPhysicalFromLinear(linear, 0x00, 0x00);
+	trace("GetDescriptorFromGDT::GetPhysicalFromLinear");
 	if (vcpuins.except) return descriptor;
 	descriptor = vramQWord(physical);
 	return descriptor;
@@ -135,9 +146,11 @@ static t_nubit64 _GetDescriptorFromLDT(t_nubit16 selector)
 	t_nubit32 linear = vcpu.ldtr.base + _GetSelector_OFFSET(selector), physical;
 	if (linear + 7 > vcpu.ldtr.limit) {
 		_SetExcept_GP(selector);
+		trace("GetDescriptorFromLDT::ldtr.limit");
 		return descriptor;
 	}
 	physical = _GetPhysicalFromLinear(linear, 0x00, 0x00);
+	trace("GetDescriptorFromLDT::GetPhysicalFromLinear");
 	if (vcpuins.except) return descriptor;
 	descriptor = vramQWord(physical);
 	return descriptor;
@@ -225,6 +238,7 @@ static t_nubit32 _GetPhysicalOfCS(t_nubit32 offset, t_nubit8 bit, t_bool write, 
 	if (!force && _GetCR0_PE && !_GetEFLAGS_VM) {
 		if (write || (!write && !vcpu.cs.rw)) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfCS::write(1)");
 			return 0x00000000;
 		}
 	}
@@ -232,18 +246,21 @@ static t_nubit32 _GetPhysicalOfCS(t_nubit32 offset, t_nubit8 bit, t_bool write, 
 	case 8:
 		if (linear > vcpu.cs.limit) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfCS::bit(8)");
 			return 0x00000000;
 		}
 		break;
 	case 16:
 		if (linear >= vcpu.cs.limit) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfCS::bit(16)");
 			return 0x00000000;
 		}
 		break;
 	case 32:
 		if (linear >= vcpu.cs.limit - 2) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfCS::bit(32)");
 			return 0x00000000;
 		}
 		break;
@@ -264,18 +281,21 @@ static t_nubit32 _GetPhysicalOfSS(t_nubit32 offset, t_nubit8 bit, t_bool write, 
 	case 8:
 		if (linear < lower || linear > upper) {
 			_SetExcept_SS(0);
+			trace("GetPhysicalOfSS::bit(8)");
 			return 0x00000000;
 		}
 		break;
 	case 16:
 		if (linear < lower || linear >= upper) {
 			_SetExcept_SS(0);
+			trace("GetPhysicalOfSS::bit(16)");
 			return 0x00000000;
 		}
 		break;
 	case 32:
 		if (linear < lower || linear >= upper - 2) {
 			_SetExcept_SS(0);
+			trace("GetPhysicalOfSS::bit(32)");
 			return 0x00000000;
 		}
 		break;
@@ -295,6 +315,7 @@ static t_nubit32 _GetPhysicalOfDS(t_nubit32 offset, t_nubit8 bit, t_bool write, 
 	if (!force && _GetCR0_PE && !_GetEFLAGS_VM) {
 		if (write && (vcpu.ds.cd || (!vcpu.ds.cd && !vcpu.ds.rw))) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfDS::write(1)");
 			return 0x00000000;
 		}
 	}
@@ -302,18 +323,21 @@ static t_nubit32 _GetPhysicalOfDS(t_nubit32 offset, t_nubit8 bit, t_bool write, 
 	case 8:
 		if (linear < lower || linear > upper) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfDS::bit(8)");
 			return 0x00000000;
 		}
 		break;
 	case 16:
 		if (linear < lower || linear >= upper) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfDS::bit(16)");
 			return 0x00000000;
 		}
 		break;
 	case 32:
 		if (linear < lower || linear >= upper - 2) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfDS::bit(32)");
 			return 0x00000000;
 		}
 		break;
@@ -333,6 +357,7 @@ static t_nubit32 _GetPhysicalOfES(t_nubit32 offset, t_nubit8 bit, t_bool write, 
 	if (!force && _GetCR0_PE && !_GetEFLAGS_VM) {
 		if (write && (vcpu.es.cd || (!vcpu.es.cd && !vcpu.es.rw))) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfES::write(1)");
 			return 0x00000000;
 		}
 	}
@@ -340,18 +365,21 @@ static t_nubit32 _GetPhysicalOfES(t_nubit32 offset, t_nubit8 bit, t_bool write, 
 	case 8:
 		if (linear < lower || linear > upper) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfES::bit(8)");
 			return 0x00000000;
 		}
 		break;
 	case 16:
 		if (linear < lower || linear >= upper) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfES::bit(16)");
 			return 0x00000000;
 		}
 		break;
 	case 32:
 		if (linear < lower || linear >= upper - 2) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfES::bit(32)");
 			return 0x00000000;
 		}
 		break;
@@ -371,6 +399,7 @@ static t_nubit32 _GetPhysicalOfFS(t_nubit32 offset, t_nubit8 bit, t_bool write, 
 	if (!force && _GetCR0_PE && !_GetEFLAGS_VM) {
 		if (write && (vcpu.fs.cd || (!vcpu.fs.cd && !vcpu.fs.rw))) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfFS::write(1)");
 			return 0x00000000;
 		}
 	}
@@ -378,18 +407,21 @@ static t_nubit32 _GetPhysicalOfFS(t_nubit32 offset, t_nubit8 bit, t_bool write, 
 	case 8:
 		if (linear < lower || linear > upper) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfFS::bit(8)");
 			return 0x00000000;
 		}
 		break;
 	case 16:
 		if (linear < lower || linear >= upper) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfFS::bit(16)");
 			return 0x00000000;
 		}
 		break;
 	case 32:
 		if (linear < lower || linear >= upper - 2) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfFS::bit(32)");
 			return 0x00000000;
 		}
 		break;
@@ -409,6 +441,7 @@ static t_nubit32 _GetPhysicalOfGS(t_nubit32 offset, t_nubit8 bit, t_bool write, 
 	if (!force && _GetCR0_PE && !_GetEFLAGS_VM) {
 		if (write && (vcpu.gs.cd || (!vcpu.gs.cd && !vcpu.gs.rw))) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfGS::write(1)");
 			return 0x00000000;
 		}
 	}
@@ -416,18 +449,21 @@ static t_nubit32 _GetPhysicalOfGS(t_nubit32 offset, t_nubit8 bit, t_bool write, 
 	case 8:
 		if (linear < lower || linear > upper) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfGS::bit(8)");
 			return 0x00000000;
 		}
 		break;
 	case 16:
 		if (linear < lower || linear >= upper) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfGS::bit(16)");
 			return 0x00000000;
 		}
 		break;
 	case 32:
 		if (linear < lower || linear >= upper - 2) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfGS::bit(32)");
 			return 0x00000000;
 		}
 		break;
@@ -447,25 +483,39 @@ static t_nubit32 _GetPhysicalOfOverrideSS(t_nubit32 offset, t_nubit8 bit, t_bool
 	if (!force && _GetCR0_PE && !_GetEFLAGS_VM) {
 		if (write && (vcpuins.overss.cd || (!vcpuins.overss.cd && !vcpuins.overss.rw))) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfOverrideSS::write(1)");
 			return 0x00000000;
 		}
 	}
 	switch (bit) {
 	case 8:
 		if (linear < lower || linear > upper) {
-			_SetExcept_SS(0);
+			if (vcpuins.overss.flagstack)
+				_SetExcept_SS(0);
+			else
+				_SetExcept_GP(0);
+			trace("GetPhysicalOfOverrideSS::bit(8)");
 			return 0x00000000;
 		}
 		break;
 	case 16:
 		if (linear < lower || linear >= upper) {
-			_SetExcept_SS(0);
+			if (vcpuins.overss.flagstack)
+				_SetExcept_SS(0);
+			else
+				_SetExcept_GP(0);
+			printf("linear=%x,lower=%x,upper=%x\n",linear,lower,upper);
+			trace("GetPhysicalOfOverrideSS::bit(16)");
 			return 0x00000000;
 		}
 		break;
 	case 32:
 		if (linear < lower || linear >= upper - 2) {
-			_SetExcept_SS(0);
+			if (vcpuins.overss.flagstack)
+				_SetExcept_SS(0);
+			else
+				_SetExcept_GP(0);
+			trace("GetPhysicalOfOverrideSS::bit(32)");
 			return 0x00000000;
 		}
 		break;
@@ -485,6 +535,7 @@ static t_nubit32 _GetPhysicalOfOverrideDS(t_nubit32 offset, t_nubit8 bit, t_bool
 	if (!force && _GetCR0_PE && !_GetEFLAGS_VM) {
 		if (write && (vcpuins.overds.cd || (!vcpuins.overds.cd && !vcpuins.overds.rw))) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfOverrideDS::write(1)");
 			return 0x00000000;
 		}
 	}
@@ -492,18 +543,21 @@ static t_nubit32 _GetPhysicalOfOverrideDS(t_nubit32 offset, t_nubit8 bit, t_bool
 	case 8:
 		if (linear < lower || linear > upper) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfOverrideDS::bit(8)");
 			return 0x00000000;
 		}
 		break;
 	case 16:
 		if (linear < lower || linear >= upper) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfOverrideDS::bit(16)");
 			return 0x00000000;
 		}
 		break;
 	case 32:
 		if (linear < lower || linear >= upper - 2) {
 			_SetExcept_GP(0);
+			trace("GetPhysicalOfOverrideDS::bit(32)");
 			return 0x00000000;
 		}
 		break;
@@ -518,6 +572,7 @@ static t_nubit32 _ReadCS(t_nubit32 offset, t_nubit8 bit, t_bool force)
 {
 	/* gp, pf */
 	t_nubit32 physical = _GetPhysicalOfCS(offset, bit, 0x00, force);
+	trace("ReadCS::GetPhysicalOfCS");
 	if (vcpuins.except) return 0x00000000;
 	switch (bit) {
 	case 8:  return vramByte(physical);
@@ -531,6 +586,7 @@ static t_nubit32 _ReadSS(t_nubit32 offset, t_nubit8 bit, t_bool force)
 {
 	/* ss, pf */
 	t_nubit32 physical = _GetPhysicalOfSS(offset, bit, 0x00, force);
+	trace("ReadSS::GetPhysicalOfSS");
 	if (vcpuins.except) return 0x00000000;
 	switch (bit) {
 	case 8:  return vramByte(physical);
@@ -544,6 +600,7 @@ static t_nubit32 _ReadDS(t_nubit32 offset, t_nubit8 bit, t_bool force)
 {
 	/* gp, pf */
 	t_nubit32 physical = _GetPhysicalOfDS(offset, bit, 0x00, force);
+	trace("ReadDS::GetPhysicalOfDS");
 	if (vcpuins.except) return 0x00000000;
 	switch (bit) {
 	case 8:  return vramByte(physical);
@@ -557,6 +614,7 @@ static t_nubit32 _ReadES(t_nubit32 offset, t_nubit8 bit, t_bool force)
 {
 	/* gp, pf */
 	t_nubit32 physical = _GetPhysicalOfES(offset, bit, 0x00, force);
+	trace("ReadES::GetPhysicalOfES");
 	if (vcpuins.except) return 0x00000000;
 	switch (bit) {
 	case 8:  return vramByte(physical);
@@ -570,6 +628,7 @@ static t_nubit32 _ReadFS(t_nubit32 offset, t_nubit8 bit, t_bool force)
 {
 	/* gp, pf */
 	t_nubit32 physical = _GetPhysicalOfFS(offset, bit, 0x00, force);
+	trace("ReadFS::GetPhysicalOfFS");
 	if (vcpuins.except) return 0x00000000;
 	switch (bit) {
 	case 8:  return vramByte(physical);
@@ -583,6 +642,7 @@ static t_nubit32 _ReadGS(t_nubit32 offset, t_nubit8 bit, t_bool force)
 {
 	/* gp, pf */
 	t_nubit32 physical = _GetPhysicalOfGS(offset, bit, 0x00, force);
+	trace("ReadGS::GetPhysicalOfGS");
 	if (vcpuins.except) return 0x00000000;
 	switch (bit) {
 	case 8:  return vramByte(physical);
@@ -596,6 +656,7 @@ static void _WriteCS(t_nubit32 offset, t_nubit8 bit, t_nubit32 data, t_bool forc
 {
 	/* gp, pf */
 	t_nubit32 physical = _GetPhysicalOfCS(offset, bit, 0x01, force);
+	trace("WriteCS::GetPhysicalOfCS");
 	if (vcpuins.except) return;
 	switch (bit) {
 	case 8:  vramByte(physical)  = (t_nubit8)data; break;
@@ -608,6 +669,7 @@ static void _WriteSS(t_nubit32 offset, t_nubit8 bit, t_nubit32 data, t_bool forc
 {
 	/* ss, pf */
 	t_nubit32 physical = _GetPhysicalOfSS(offset, bit, 0x01, force);
+	trace("WriteSS::GetPhysicalOfSS");
 	if (vcpuins.except) return;
 	switch (bit) {
 	case 8:  vramByte(physical)  = (t_nubit8)data; break;
@@ -620,6 +682,7 @@ static void _WriteDS(t_nubit32 offset, t_nubit8 bit, t_nubit32 data, t_bool forc
 {
 	/* gp, pf */
 	t_nubit32 physical = _GetPhysicalOfDS(offset, bit, 0x01, force);
+	trace("WriteDS::GetPhysicalOfDS");
 	if (vcpuins.except) return;
 	switch (bit) {
 	case 8:  vramByte(physical)  = (t_nubit8)data; break;
@@ -632,6 +695,7 @@ static void _WriteES(t_nubit32 offset, t_nubit8 bit, t_nubit32 data, t_bool forc
 {
 	/* gp, pf */
 	t_nubit32 physical = _GetPhysicalOfES(offset, bit, 0x01, force);
+	trace("WriteES::GetPhysicalOfES");
 	if (vcpuins.except) return;
 	switch (bit) {
 	case 8:  vramByte(physical)  = (t_nubit8)data; break;
@@ -644,6 +708,7 @@ static void _WriteFS(t_nubit32 offset, t_nubit8 bit, t_nubit32 data, t_bool forc
 {
 	/* gp, pf */
 	t_nubit32 physical = _GetPhysicalOfFS(offset, bit, 0x01, force);
+	trace("WriteFS::GetPhysicalOfFS");
 	if (vcpuins.except) return;
 	switch (bit) {
 	case 8:  vramByte(physical)  = (t_nubit8)data; break;
@@ -656,6 +721,7 @@ static void _WriteGS(t_nubit32 offset, t_nubit8 bit, t_nubit32 data, t_bool forc
 {
 	/* gp, pf */
 	t_nubit32 physical = _GetPhysicalOfGS(offset, bit, 0x01, force);
+	trace("WriteGS::GetPhysicalOfGS");
 	if (vcpuins.except) return;
 	switch (bit) {
 	case 8:  vramByte(physical)  = (t_nubit8)data; break;
@@ -722,6 +788,7 @@ static void CalcCF()
 		break;
 	case ADD8:
 	case ADD16:
+	case ADD32:
 		MakeBit(vcpu.eflags,VCPU_EFLAGS_CF,(vcpuins.result < vcpuins.opr1) || (vcpuins.result < vcpuins.opr2));
 		break;
 	case SBB8:
@@ -762,6 +829,7 @@ static void CalcOF()
 			(GetMSB16(vcpuins.opr1) == GetMSB16(vcpuins.opr2)) && (GetMSB16(vcpuins.opr1) != GetMSB16(vcpuins.result)));
 		break;
 	case ADC32:
+	case ADD32:
 		MakeBit(vcpu.eflags, VCPU_EFLAGS_OF,
 			(GetMSB32(vcpuins.opr1) == GetMSB32(vcpuins.opr2)) && (GetMSB32(vcpuins.opr1) != GetMSB32(vcpuins.result)));
 		break;
@@ -779,11 +847,11 @@ static void CalcOF()
 }
 static void CalcAF()
 {
-	MakeBit(vcpu.eflags,VCPU_EFLAGS_AF,((vcpuins.opr1^vcpuins.opr2)^vcpuins.result)&0x10);
+	MakeBit(vcpu.eflags, VCPU_EFLAGS_AF, ((vcpuins.opr1^vcpuins.opr2)^vcpuins.result) & 0x10);
 }
 static void CalcPF()
 {
-	t_nubit8 res8 = vcpuins.result & 0xff;
+	t_nubit8 res8 = GetMax8(vcpuins.result);
 	t_nubitcc count = 0;
 	while(res8)
 	{
@@ -794,18 +862,16 @@ static void CalcPF()
 }
 static void CalcZF()
 {
-	MakeBit(vcpu.eflags,VCPU_EFLAGS_ZF,!vcpuins.result);
+	MakeBit(vcpu.eflags, VCPU_EFLAGS_ZF, !vcpuins.result);
 }
 static void CalcSF()
 {
 	switch(vcpuins.bit) {
 	case 8: MakeBit(vcpu.eflags, VCPU_EFLAGS_SF, GetMSB8(vcpuins.result));break;
 	case 16:MakeBit(vcpu.eflags, VCPU_EFLAGS_SF, GetMSB16(vcpuins.result));break;
+	case 32:MakeBit(vcpu.eflags, VCPU_EFLAGS_SF, GetMSB32(vcpuins.result));break;
 	default:CaseError("CalcSF::vcpuins.bit");break;}
 }
-static void CalcTF() {}
-static void CalcIF() {}
-static void CalcDF() {}
 
 static void SetFlags(t_nubit16 flags)
 {
@@ -814,9 +880,6 @@ static void SetFlags(t_nubit16 flags)
 	if(flags & VCPU_EFLAGS_AF) CalcAF();
 	if(flags & VCPU_EFLAGS_ZF) CalcZF();
 	if(flags & VCPU_EFLAGS_SF) CalcSF();
-	if(flags & VCPU_EFLAGS_TF) CalcTF();
-	if(flags & VCPU_EFLAGS_IF) CalcIF();
-	if(flags & VCPU_EFLAGS_DF) CalcDF();
 	if(flags & VCPU_EFLAGS_OF) CalcOF();
 }
 static void GetMem()
@@ -1016,6 +1079,7 @@ static void _GetImm(t_nubit8 immbit)
 {
 	/* gp, pf */
 	t_nubit32 physical = _GetPhysicalOfCS(vcpu.eip, immbit, 0x00, 0x01);
+	trace("GetImm::GetPhysicalOfCS");
 	if (vcpuins.except) return;
 	vcpuins.pimm = vramAddr(physical);
 	switch (immbit) {
@@ -1033,55 +1097,69 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 	t_nubit32 disp32 = 0x00000000;
 	t_nubit8 modrm = (t_nubit8)_ReadCS(vcpu.eip++, 8, 0x01), sib = 0x00;
 	t_nubit32 physical = 0x00000000, sibindex = 0x00000000;
+	trace("GetModRegRM::ReadCS");
 	if (vcpuins.except) return;
 	vcpuins.prm = vcpuins.pr = (t_vaddrcc)NULL;
 	if (_GetAddressSize == 16) {
 		switch (_GetModRM_MOD(modrm)) {
 		case 0:
 			switch (_GetModRM_RM(modrm)) {
-			case 0: physical = _GetPhysicalOfOverrideDS(vcpu.bx+vcpu.si, rmbit, write, 0x00); break;
-			case 1: physical = _GetPhysicalOfOverrideDS(vcpu.bx+vcpu.di, rmbit, write, 0x00); break;
-			case 2: physical = _GetPhysicalOfOverrideSS(vcpu.bp+vcpu.si, rmbit, write, 0x00); break;
-			case 3: physical = _GetPhysicalOfOverrideSS(vcpu.bp+vcpu.di, rmbit, write, 0x00); break;
-			case 4: physical = _GetPhysicalOfOverrideDS(vcpu.si, rmbit, write, 0x00); break;
-			case 5: physical = _GetPhysicalOfOverrideDS(vcpu.di, rmbit, write, 0x00); break;
-			case 6: disp16 = (t_nubit16)_ReadCS(vcpu.eip, 16, 0x01); if (vcpuins.except) return; vcpu.eip += 2;
-				    physical = _GetPhysicalOfOverrideDS(disp16,  rmbit, write, 0x00); break;
-			case 7: physical = _GetPhysicalOfOverrideDS(vcpu.bx, rmbit, write, 0x00); break;
+			case 0: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.bx+vcpu.si), rmbit, write, 0x00); break;
+			case 1: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.bx+vcpu.di), rmbit, write, 0x00); break;
+			case 2: physical = _GetPhysicalOfOverrideSS(GetMax16(vcpu.bp+vcpu.si), rmbit, write, 0x00); break;
+			case 3: physical = _GetPhysicalOfOverrideSS(GetMax16(vcpu.bp+vcpu.di), rmbit, write, 0x00); break;
+			case 4: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.si), rmbit, write, 0x00); break;
+			case 5: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.di), rmbit, write, 0x00); break;
+			case 6:
+				disp16 = (t_nubit16)_ReadCS(vcpu.eip, 16, 0x01);
+				trace("GetModRegRM::AddressSize(16)::ModRM_MOD(0)::ModRM_RM(6)::ReadCS");
+				if (vcpuins.except) return;
+				vcpu.eip += 2;
+				physical = _GetPhysicalOfOverrideDS(GetMax16(disp16),  rmbit, write, 0x00); break;
+			case 7: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.bx), rmbit, write, 0x00); break;
 			default:CaseError("_GetModRegRM::AddressSize(16)::ModRM_MOD(0)::ModRM_RM");return;
 			}
+			trace("GetModRegRM::AddressSize(16)::ModRM_MOD(0)::GetPhysicalOfOverride__");
 			if (vcpuins.except) return;
 			vcpuins.prm = vramAddr(physical);
 			break;
 		case 1:
-			disp8 = (t_nsbit8)_ReadCS(vcpu.eip, 8, 0x01); if (vcpuins.except) return; vcpu.eip += 1;
+			disp8 = (t_nsbit8)_ReadCS(vcpu.eip, 8, 0x01);
+			trace("GetModRegRM::AddressSize(16)::ModRM_MOD(1)::ReadCS");
+			if (vcpuins.except) return;
+			vcpu.eip += 1;
 			switch (_GetModRM_RM(modrm)) {
-			case 0: physical = _GetPhysicalOfOverrideDS(vcpu.bx+vcpu.si+disp8, rmbit, write, 0x00); break;
-			case 1: physical = _GetPhysicalOfOverrideDS(vcpu.bx+vcpu.di+disp8, rmbit, write, 0x00); break;
-			case 2: physical = _GetPhysicalOfOverrideSS(vcpu.bp+vcpu.si+disp8, rmbit, write, 0x00); break;
-			case 3: physical = _GetPhysicalOfOverrideSS(vcpu.bp+vcpu.di+disp8, rmbit, write, 0x00); break;
-			case 4: physical = _GetPhysicalOfOverrideDS(vcpu.si+disp8, rmbit, write, 0x00); break;
-			case 5: physical = _GetPhysicalOfOverrideDS(vcpu.di+disp8, rmbit, write, 0x00); break;
-			case 6: physical = _GetPhysicalOfOverrideSS(vcpu.bp+disp8, rmbit, write, 0x00); break;
-			case 7: physical = _GetPhysicalOfOverrideDS(vcpu.bx+disp8, rmbit, write, 0x00); break;
+			case 0: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.bx+vcpu.si+disp8), rmbit, write, 0x00); break;
+			case 1: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.bx+vcpu.di+disp8), rmbit, write, 0x00); break;
+			case 2: physical = _GetPhysicalOfOverrideSS(GetMax16(vcpu.bp+vcpu.si+disp8), rmbit, write, 0x00); break;
+			case 3: physical = _GetPhysicalOfOverrideSS(GetMax16(vcpu.bp+vcpu.di+disp8), rmbit, write, 0x00); break;
+			case 4: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.si+disp8), rmbit, write, 0x00); break;
+			case 5: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.di+disp8), rmbit, write, 0x00); break;
+			case 6: physical = _GetPhysicalOfOverrideSS(GetMax16(vcpu.bp+disp8), rmbit, write, 0x00); break;
+			case 7: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.bx+disp8), rmbit, write, 0x00); break;
 			default:CaseError("_GetModRegRM::AddressSize(16)::ModRM_MOD(1)::ModRM_RM");return;
 			}
+			trace("GetModRegRM::AddressSize(16)::ModRM_MOD(1)::GetPhysicalOfOverride__");
 			if (vcpuins.except) return;
 			vcpuins.prm = vramAddr(physical);
 			break;
 		case 2:
-			disp16 = (t_nubit16)_ReadCS(vcpu.eip, 16, 0x01); if (vcpuins.except) return; vcpu.eip += 2;
+			disp16 = (t_nubit16)_ReadCS(vcpu.eip, 16, 0x01);
+			trace("GetModRegRM::AddressSize(16)::ModRM_MOD(2)::ReadCS");
+			if (vcpuins.except) return;
+			vcpu.eip += 2;
 			switch (_GetModRM_RM(modrm)) {
-			case 0: physical = _GetPhysicalOfOverrideDS(vcpu.bx+vcpu.si+disp16, rmbit, write, 0x00); break;
-			case 1: physical = _GetPhysicalOfOverrideDS(vcpu.bx+vcpu.di+disp16, rmbit, write, 0x00); break;
-			case 2: physical = _GetPhysicalOfOverrideSS(vcpu.bp+vcpu.si+disp16, rmbit, write, 0x00); break;
-			case 3: physical = _GetPhysicalOfOverrideSS(vcpu.bp+vcpu.di+disp16, rmbit, write, 0x00); break;
-			case 4: physical = _GetPhysicalOfOverrideDS(vcpu.si+disp16, rmbit, write, 0x00); break;
-			case 5: physical = _GetPhysicalOfOverrideDS(vcpu.di+disp16, rmbit, write, 0x00); break;
-			case 6: physical = _GetPhysicalOfOverrideSS(vcpu.bp+disp16, rmbit, write, 0x00); break;
-			case 7: physical = _GetPhysicalOfOverrideDS(vcpu.bx+disp16, rmbit, write, 0x00); break;
+			case 0: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.bx+vcpu.si+disp16), rmbit, write, 0x00); break;
+			case 1: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.bx+vcpu.di+disp16), rmbit, write, 0x00); break;
+			case 2: physical = _GetPhysicalOfOverrideSS(GetMax16(vcpu.bp+vcpu.si+disp16), rmbit, write, 0x00); break;
+			case 3: physical = _GetPhysicalOfOverrideSS(GetMax16(vcpu.bp+vcpu.di+disp16), rmbit, write, 0x00); break;
+			case 4: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.si+disp16), rmbit, write, 0x00); break;
+			case 5: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.di+disp16), rmbit, write, 0x00); break;
+			case 6: physical = _GetPhysicalOfOverrideSS(GetMax16(vcpu.bp+disp16), rmbit, write, 0x00); break;
+			case 7: physical = _GetPhysicalOfOverrideDS(GetMax16(vcpu.bx+disp16), rmbit, write, 0x00); break;
 			default:CaseError("_GetModRegRM::AddressSize(16)::ModRM_MOD(2)::ModRM_RM");return;
 			}
+			trace("GetModRegRM::AddressSize(16)::ModRM_MOD(2)::GetPhysicalOfOverride__");
 			if (vcpuins.except) return;
 			vcpuins.prm = vramAddr(physical);
 			break;
@@ -1093,7 +1171,10 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 		}
 	} else {
 		if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4) {
-			sib = (t_nubit8)_ReadCS(vcpu.eip, 8, 0x01); if (vcpuins.except) return; vcpu.eip += 1;
+			sib = (t_nubit8)_ReadCS(vcpu.eip, 8, 0x01);
+			trace("GetModRegRM::AddressSize(32)::ModRM_MOD(!3)::ModRM_RM(4)::ReadCS");
+			if (vcpuins.except) return;
+			vcpu.eip += 1;
 			switch (_GetSIB_Index(sib)) {
 			case 0: sibindex = vcpu.eax; break;
 			case 1: sibindex = vcpu.ecx; break;
@@ -1121,24 +1202,38 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 				case 2: physical = _GetPhysicalOfOverrideDS(vcpu.edx + sibindex, rmbit, write, 0x00); break;
 				case 3: physical = _GetPhysicalOfOverrideDS(vcpu.ebx + sibindex, rmbit, write, 0x00); break;
 				case 4: physical = _GetPhysicalOfOverrideSS(vcpu.esp + sibindex, rmbit, write, 0x00); break;
-				case 5: disp32 = (t_nubit32)_ReadCS(vcpu.eip, 32, 0x01); if (vcpuins.except) return; vcpu.eip += 4;
-					    physical = _GetPhysicalOfOverrideDS(disp32   + sibindex, rmbit, write, 0x00); break;
+				case 5:
+					disp32 = (t_nubit32)_ReadCS(vcpu.eip, 32, 0x01);
+					trace("GetModRegRM::AddressSize(32)::ModRM_MOD(0)::ModRM::RM(4)::SIB_Base(5)::ReadCS");
+					if (vcpuins.except) return;
+					vcpu.eip += 4;
+					physical = _GetPhysicalOfOverrideDS(disp32   + sibindex, rmbit, write, 0x00);
+					break;
 				case 6: physical = _GetPhysicalOfOverrideDS(vcpu.esi + sibindex, rmbit, write, 0x00); break;
 				case 7: physical = _GetPhysicalOfOverrideDS(vcpu.edi + sibindex, rmbit, write, 0x00); break;
 				default:CaseError("_GetModRegRM::AddressSize(32)::ModRM_MOD(0)::ModRM_RM(4)::SIB_Base");return;
 				}
 				break;
-			case 5: disp32 = (t_nubit32)_ReadCS(vcpu.eip, 32, 0x01); if (vcpuins.except) return; vcpu.eip += 4;
-				    physical = _GetPhysicalOfOverrideDS(disp32,   rmbit, write, 0x00); break;
+			case 5:
+				disp32 = (t_nubit32)_ReadCS(vcpu.eip, 32, 0x01);
+				trace("GetModRegRM::AddressSize(32)::ModRM_MOD(0)::ModRM::RM(5)::ReadCS");
+				if (vcpuins.except) return;
+				vcpu.eip += 4;
+				physical = _GetPhysicalOfOverrideDS(disp32,   rmbit, write, 0x00);
+				break;
 			case 6: physical = _GetPhysicalOfOverrideDS(vcpu.esi, rmbit, write, 0x00); break;
 			case 7: physical = _GetPhysicalOfOverrideDS(vcpu.edi, rmbit, write, 0x00); break;
 			default:CaseError("_GetModRegRM::AddressSize(32)::ModRM_MOD(0)::ModRM_RM");return;
 			}
+			trace("GetModRegRM::AddressSize(32)::ModRM_MOD(0)::GetPhysicalOfOverride__");
 			if (vcpuins.except) return;
 			vcpuins.prm = vramAddr(physical);
 			break;
 		case 1:
-			disp8 = (t_nsbit8)_ReadCS(vcpu.eip, 8, 0x01); if (vcpuins.except) return; vcpu.eip += 1;
+			disp8 = (t_nsbit8)_ReadCS(vcpu.eip, 8, 0x01);
+			trace("GetModRegRM::AddressSize(32)::ModRM_MOD(1)::ReadCS");
+			if (vcpuins.except) return;
+			vcpu.eip += 1;
 			switch (_GetModRM_RM(modrm)) {
 			case 0: physical = _GetPhysicalOfOverrideDS(vcpu.eax + disp8, rmbit, write, 0x00); break;
 			case 1: physical = _GetPhysicalOfOverrideDS(vcpu.ecx + disp8, rmbit, write, 0x00); break;
@@ -1162,11 +1257,15 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 			case 7: physical = _GetPhysicalOfOverrideDS(vcpu.edi + disp8, rmbit, write, 0x00); break;
 			default:CaseError("_GetModRegRM::AddressSize(32)::ModRM_MOD(1)::ModRM_RM");return;
 			}
+			trace("GetModRegRM::AddressSize(32)::ModRM_MOD(1)::GetPhysicalOfOverride__");
 			if (vcpuins.except) return;
 			vcpuins.prm = vramAddr(physical);
 			break;
 		case 2:
-			disp32 = (t_nubit32)_ReadCS(vcpu.eip, 32, 0x01); if (vcpuins.except) return; vcpu.eip += 4;
+			disp32 = (t_nubit32)_ReadCS(vcpu.eip, 32, 0x01);
+			trace("GetModRegRM::AddressSize(32)::ModRM_MOD(2)::ReadCS");
+			if (vcpuins.except) return;
+			vcpu.eip += 4;
 			switch (_GetModRM_RM(modrm)) {
 			case 0: physical = _GetPhysicalOfOverrideDS(vcpu.eax + disp32, rmbit, write, 0x00); break;
 			case 1: physical = _GetPhysicalOfOverrideDS(vcpu.ecx + disp32, rmbit, write, 0x00); break;
@@ -1190,6 +1289,7 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 			case 7: physical = _GetPhysicalOfOverrideDS(vcpu.edi + disp32, rmbit, write, 0x00); break;
 			default:CaseError("_GetModRegRM::AddressSize(32)::ModRM_MOD(2)::ModRM_RM");return;
 			}
+			trace("GetModRegRM::AddressSize(32)::ModRM_MOD(2)::GetPhysicalOfOverride__");
 			if (vcpuins.except) return;
 			vcpuins.prm = vramAddr(physical);
 			break;
@@ -1291,43 +1391,51 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 }
 
 static void INT(t_nubit8 intid);
-static ASMCMP ADD(void *dest, void *src, t_nubit8 len)
+static void ADD(void *dest, void *src, t_nubit8 len)
 {
-	asyncall
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
 		vcpuins.type = ADD8;
-		vcpuins.opr1 = d_nubit8(dest) & 0xff;
-		vcpuins.opr2 = d_nubit8(src) & 0xff;
-		vcpuins.result = (vcpuins.opr1+vcpuins.opr2) & 0xff;
+		vcpuins.opr1 = GetMax8(d_nubit8(dest));
+		vcpuins.opr2 = GetMax8(d_nubit8(src));
+		vcpuins.result = GetMax8(vcpuins.opr1 + vcpuins.opr2);
 		d_nubit8(dest) = (t_nubit8)vcpuins.result;
-		bugfix(6) break;
-		else ;
+		break;
 	case 12:
 		vcpuins.bit = 16;
 		vcpuins.type = ADD16;
-		vcpuins.opr1 = d_nubit16(dest) & 0xffff;
-		bugfix(22) vcpuins.opr2 = d_nsbit8(src) & 0xffff;
-		else vcpuins.opr2 = d_nsbit8(src); /* in this case opr2 could be 0xffffffff */
-		vcpuins.result = (vcpuins.opr1+vcpuins.opr2) & 0xffff;
+		vcpuins.opr1 = GetMax16(d_nubit16(dest));
+		vcpuins.opr2 = GetMax16(d_nsbit8(src));
+		vcpuins.result = GetMax16(vcpuins.opr1 + vcpuins.opr2);
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
 	case 16:
 		vcpuins.bit = 16;
 		vcpuins.type = ADD16;
-		vcpuins.opr1 = d_nubit16(dest) & 0xffff;
-		vcpuins.opr2 = d_nubit16(src) & 0xffff;
-		vcpuins.result = (vcpuins.opr1+vcpuins.opr2) & 0xffff;
+		vcpuins.opr1 = GetMax16(d_nubit16(dest));
+		vcpuins.opr2 = GetMax16(d_nubit16(src));
+		vcpuins.result = GetMax16(vcpuins.opr1 + vcpuins.opr2);
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
+		break;
+	case 20:
+		vcpuins.bit = 32;
+		vcpuins.type = ADD32;
+		vcpuins.opr1 = GetMax32(d_nubit32(dest));
+		vcpuins.opr2 = GetMax32(d_nsbit8(src));
+		vcpuins.result = GetMax32(vcpuins.opr1 + vcpuins.opr2);
+		d_nubit32(dest) = (t_nubit32)vcpuins.result;
+		break;
+	case 32:
+		vcpuins.bit = 32;
+		vcpuins.type = ADD32;
+		vcpuins.opr1 = GetMax32(d_nubit32(dest));
+		vcpuins.opr2 = GetMax32(d_nubit32(src));
+		vcpuins.result = GetMax32(vcpuins.opr1 + vcpuins.opr2);
+		d_nubit32(dest) = (t_nubit32)vcpuins.result;
 		break;
 	default:CaseError("ADD::len");break;}
 	SetFlags(ADD_FLAG);
-#define op add
-	aexecall
-#undef op
-	asregall
-	acheckall(AFLAGS1)
 }
 static ASMCMP OR(void *dest, void *src, t_nubit8 len)
 {
@@ -1376,7 +1484,7 @@ static void ADC(void *dest, void *src, t_nubit8 len)
 		vcpuins.type = ADC8;
 		vcpuins.opr1 = GetMax8(d_nubit8(dest));
 		vcpuins.opr2 = GetMax8(d_nubit8(src));
-		vcpuins.result = GetMax8(vcpuins.opr1+vcpuins.opr2+_GetEFLAGS_CF);
+		vcpuins.result = GetMax8(vcpuins.opr1 + vcpuins.opr2 + _GetEFLAGS_CF);
 		d_nubit8(dest) = (t_nubit8)vcpuins.result;
 		break;
 	case 12:
@@ -1384,7 +1492,7 @@ static void ADC(void *dest, void *src, t_nubit8 len)
 		vcpuins.type = ADC16;
 		vcpuins.opr1 = GetMax16(d_nubit16(dest));
 		vcpuins.opr2 = GetMax16(d_nsbit8(src));
-		vcpuins.result = GetMax16(vcpuins.opr1+vcpuins.opr2+_GetEFLAGS_CF);
+		vcpuins.result = GetMax16(vcpuins.opr1 + vcpuins.opr2 + _GetEFLAGS_CF);
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
 	case 16:
@@ -1392,15 +1500,23 @@ static void ADC(void *dest, void *src, t_nubit8 len)
 		vcpuins.type = ADC16;
 		vcpuins.opr1 = GetMax16(d_nubit16(dest));
 		vcpuins.opr2 = GetMax16(d_nubit16(src));
-		vcpuins.result = GetMax16(vcpuins.opr1+vcpuins.opr2+_GetEFLAGS_CF);
+		vcpuins.result = GetMax16(vcpuins.opr1 + vcpuins.opr2 + _GetEFLAGS_CF);
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
+		break;
+	case 20:
+		vcpuins.bit = 32;
+		vcpuins.type = ADC32;
+		vcpuins.opr1 = GetMax32(d_nubit32(dest));
+		vcpuins.opr2 = GetMax32(d_nsbit8(src));
+		vcpuins.result = GetMax32(vcpuins.opr1 + vcpuins.opr2 + _GetEFLAGS_CF);
+		d_nubit32(dest) = (t_nubit32)vcpuins.result;
 		break;
 	case 32:
 		vcpuins.bit = 32;
 		vcpuins.type = ADC32;
 		vcpuins.opr1 = GetMax32(d_nubit32(dest));
 		vcpuins.opr2 = GetMax32(d_nubit32(src));
-		vcpuins.result = GetMax32(vcpuins.opr1+vcpuins.opr2+_GetEFLAGS_CF);
+		vcpuins.result = GetMax32(vcpuins.opr1 + vcpuins.opr2 + _GetEFLAGS_CF);
 		d_nubit32(dest) = (t_nubit32)vcpuins.result;
 		break;
 	default:CaseError("ADC::len");break;}
@@ -1442,44 +1558,54 @@ static ASMCMP SBB(void *dest, void *src, t_nubit8 len)
 	asregall
 	acheckall(AFLAGS1)
 }
-static ASMCMP AND(void *dest, void *src, t_nubit8 len)
+static void AND(void *dest, void *src, t_nubit8 len)
 {
-	asyncall
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
 		//vcpuins.type = AND8;
-		vcpuins.opr1 = d_nubit8(dest) & 0xff;
-		vcpuins.opr2 = d_nubit8(src) & 0xff;
-		vcpuins.result = (vcpuins.opr1&vcpuins.opr2) & 0xff;
+		vcpuins.opr1 = GetMax8(d_nubit8(dest));
+		vcpuins.opr2 = GetMax8(d_nubit8(src));
+		vcpuins.result = GetMax8(vcpuins.opr1 & vcpuins.opr2);
 		d_nubit8(dest) = (t_nubit8)vcpuins.result;
 		break;
 	case 12:
 		vcpuins.bit = 16;
 		//vcpuins.type = AND16;
-		vcpuins.opr1 = d_nubit16(dest) & 0xffff;
-		vcpuins.opr2 = d_nsbit8(src) & 0xffff;
-		vcpuins.result = (vcpuins.opr1&vcpuins.opr2) & 0xffff;
+		vcpuins.opr1 = GetMax16(d_nubit16(dest));
+		vcpuins.opr2 = GetMax16(d_nsbit8(src));
+		vcpuins.result = GetMax16(vcpuins.opr1 & vcpuins.opr2);
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
 	case 16:
 		vcpuins.bit = 16;
 		//vcpuins.type = AND16;
-		vcpuins.opr1 = d_nubit16(dest) & 0xffff;
-		vcpuins.opr2 = d_nubit16(src) & 0xffff;
-		vcpuins.result = (vcpuins.opr1&vcpuins.opr2) & 0xffff;
+		vcpuins.opr1 = GetMax16(d_nubit16(dest));
+		vcpuins.opr2 = GetMax16(d_nubit16(src));
+		vcpuins.result = GetMax16(vcpuins.opr1 & vcpuins.opr2);
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
+		break;
+	case 20:
+		vcpuins.bit = 32;
+		//vcpuins.type = AND32;
+		vcpuins.opr1 = GetMax32(d_nubit32(dest));
+		vcpuins.opr2 = GetMax32(d_nsbit8(src));
+		vcpuins.result = GetMax32(vcpuins.opr1 & vcpuins.opr2);
+		d_nubit32(dest) = (t_nubit32)vcpuins.result;
+		break;
+	case 32:
+		vcpuins.bit = 32;
+		//vcpuins.type = AND32;
+		vcpuins.opr1 = GetMax32(d_nubit32(dest));
+		vcpuins.opr2 = GetMax32(d_nubit32(src));
+		vcpuins.result = GetMax32(vcpuins.opr1 & vcpuins.opr2);
+		d_nubit32(dest) = (t_nubit32)vcpuins.result;
 		break;
 	default:CaseError("AND::len");break;}
 	_ClrOF;
 	_ClrEFLAGS_CF;
 	_ClrEFLAGS_AF;
 	SetFlags(AND_FLAG);
-#define op and
-	aexecall
-#undef op
-	asregall
-	acheckall(AFLAGS1)
 }
 static void SUB(void *dest, void *src, t_nubit8 len)
 {
@@ -2560,40 +2686,99 @@ static void UndefinedOpcode()
 }
 static void ADD_RM8_R8()
 {
-	vcpu.eip++;
-	_GetModRegRM(8,8,0x01);
-	ADD((void *)vcpuins.prm,(void *)vcpuins.pr,8);
+	i386(0x00) {
+		vcpu.eip++;
+		_GetModRegRM(8, 8, 0x01);
+		trace("ADD_RM8_R8::GetModRegRM");
+		if (vcpuins.except) return;
+		ADD((void *)vcpuins.prm, (void *)vcpuins.pr, 8);
+	} else {
+		vcpu.ip++;
+		GetModRegRM(8,8);
+		ADD((void *)vcpuins.rm,(void *)vcpuins.r,8);
+	}
 }
-void ADD_RM16_R16()
+static void ADD_RM16_R16()
 {
-	vcpu.eip++;
-	_GetModRegRM(16,16, 0x01);
-	ADD((void *)vcpuins.prm,(void *)vcpuins.pr,16);
+	i386(0x01) {
+		vcpu.eip++;
+		_GetModRegRM(_GetOperandSize, _GetOperandSize, 0x01);
+		trace("ADD_RM16_R16::GetModRegRM");
+		if (vcpuins.except) return;
+		ADD((void *)vcpuins.prm, (void *)vcpuins.pr, _GetOperandSize);
+	} else {
+		vcpu.ip++;
+		GetModRegRM(16, 16);
+		ADD((void *)vcpuins.rm, (void *)vcpuins.r, 16);
+	}
 }
-void ADD_R8_RM8()
+static void ADD_R8_RM8()
 {
-	vcpu.eip++;
-	GetModRegRM(8,8);
-	ADD((void *)vcpuins.r,(void *)vcpuins.rm,8);
+	i386(0x02) {
+		vcpu.eip++;
+		_GetModRegRM(8, 8, 0x00);
+		trace("ADD_R8_RM8::GetModRegRM");
+		if (vcpuins.except) return;
+		ADD((void *)vcpuins.pr, (void *)vcpuins.prm, 8);
+	} else {
+		vcpu.ip++;
+		GetModRegRM(8, 8);
+		ADD((void *)vcpuins.r, (void *)vcpuins.rm, 8);
+	}
 }
-void ADD_R16_RM16()
+static void ADD_R16_RM16()
 {
-	vcpu.eip++;
-	GetModRegRM(16,16);
-	ADD((void *)vcpuins.r,(void *)vcpuins.rm,16);
+	i386(0x03) {
+		vcpu.eip++;
+		_GetModRegRM(_GetOperandSize, _GetOperandSize, 0x00);
+		trace("ADD_R16_RM16::GetModRegRM");
+		if (vcpuins.except) return;
+		ADD((void *)vcpuins.pr, (void *)vcpuins.prm, _GetOperandSize);
+	} else {
+		vcpu.ip++;
+		GetModRegRM(16, 16);
+		ADD((void *)vcpuins.r, (void *)vcpuins.rm, 16);
+	}
 }
-void ADD_AL_I8()
+static void ADD_AL_I8()
 {
-	vcpu.eip++;
-	GetImm(8);
-	ADD((void *)&vcpu.al,(void *)vcpuins.imm,8);
+	i386(0x04) {
+		vcpu.eip++;
+		_GetImm(8);
+		trace("ADD_AL_I8::GetImm(8)");
+		if (vcpuins.except) return;
+		ADD((void *)&vcpu.al, (void *)vcpuins.pimm, 8);
+	} else {
+		vcpu.ip++;
+		GetImm(8);
+		ADD((void *)&vcpu.al, (void *)vcpuins.imm, 8);
+	}
 }
-void ADD_AX_I16()
+static void ADD_AX_I16()
 {
-	vcpu.eip++;
-	GetImm(16);
-	ADD((void *)&vcpu.ax,(void *)vcpuins.imm,16);
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  ADD_AX_I16\n");
+	i386(0x05) {
+		vcpu.eip++;
+		switch (_GetOperandSize) {
+		case 16:
+			_GetImm(16);
+			trace("ADD_AX_I16::GetImm(16)");
+			if (vcpuins.except) return;
+			ADD((void *)&vcpu.ax, (void *)vcpuins.pimm, 16);
+			break;
+		case 32:
+			_GetImm(32);
+			trace("ADD_AX_I16::GetImm(32)");
+			if (vcpuins.except) return;
+			ADC((void *)&vcpu.eax, (void *)vcpuins.pimm, 32);
+			break;
+		default:
+			CaseError("ADC_AX_I16::OperandSize");return;
+		}
+	} else {
+		vcpu.ip++;
+		GetImm(16);
+		ADD((void *)&vcpu.ax, (void *)vcpuins.imm, 16);
+	}
 }
 void PUSH_ES()
 {
@@ -2661,60 +2846,100 @@ void INS_0F()
 {
 	UndefinedOpcode();
 }
-void ADC_RM8_R8()
+static void ADC_RM8_R8()
 {
-	vcpu.eip++;
-	GetModRegRM(8,8);
-	ADC((void *)vcpuins.rm,(void *)vcpuins.r,8);
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  ADC_RM8_R8\n");
+	i386(0x10) {
+		vcpu.eip++;
+		_GetModRegRM(8, 8, 0x01);
+		trace("ADC_RM8_R8::GetModRegRM");
+		if (vcpuins.except) return;
+		ADC((void *)vcpuins.prm, (void *)vcpuins.pr, 8);
+	} else {
+		vcpu.ip++;
+		GetModRegRM(8, 8);
+		ADC((void *)vcpuins.rm, (void *)vcpuins.r, 8); 
+	}
 }
-void ADC_RM16_R16()
+static void ADC_RM16_R16()
 {
-	vcpu.eip++;
-	GetModRegRM(16,16);
-	ADC((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  ADC_RM16_R16\n");
+	i386(0x11) {
+		vcpu.eip++;
+		_GetModRegRM(_GetOperandSize, _GetOperandSize, 0x01);
+		trace("ADC_RM16_R16::GetModRegRM");
+		if (vcpuins.except) return;
+		ADC((void *)vcpuins.prm, (void *)vcpuins.pr, _GetOperandSize);
+	} else {
+		vcpu.ip++;
+		GetModRegRM(16, 16);
+		ADC((void *)vcpuins.rm, (void *)vcpuins.r, 16);
+	}
 }
-void ADC_R8_RM8()
+static void ADC_R8_RM8()
 {
-	vcpu.eip++;
-	GetModRegRM(8,8);
-	ADC((void *)vcpuins.r,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  ADC_R8_RM8\n");
+	i386(0x12) {
+		vcpu.eip++;
+		_GetModRegRM(8, 8, 0x00);
+		trace("ADC_R8_RM8::GetModRegRM");
+		if (vcpuins.except) return;
+		ADC((void *)vcpuins.pr, (void *)vcpuins.prm, 8);
+	} else {
+		vcpu.ip++;
+		GetModRegRM(8, 8);
+		ADC((void *)vcpuins.r, (void *)vcpuins.rm, 8);
+	}
 }
-void ADC_R16_RM16()
+static void ADC_R16_RM16()
 {
-	vcpu.eip++;
-	GetModRegRM(16,16);
-	ADC((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  ADC_R16_RM16\n");
+	i386(0x13) {
+		vcpu.eip++;
+		_GetModRegRM(_GetOperandSize, _GetOperandSize, 0x00);
+		trace("ADC_R16_RM16::GetModRegRM");
+		if (vcpuins.except) return;
+		ADC((void *)vcpuins.pr, (void *)vcpuins.prm, _GetOperandSize);
+	} else {
+		vcpu.ip++;
+		GetModRegRM(16, 16);
+		ADC((void *)vcpuins.r, (void *)vcpuins.rm, 16);
+	}
 }
 static void ADC_AL_I8()
 {
-	// 0x14 0xib
-	vcpu.eip++;
-	_GetImm(8);
-	if (vcpuins.except) return;
-	ADC((void *)&vcpu.al, (void *)vcpuins.pimm, 8);
+	i386(0x14) {
+		vcpu.eip++;
+		_GetImm(8);
+		trace("ADC_AL_I8::GetImm(8)");
+		if (vcpuins.except) return;
+		ADC((void *)&vcpu.al, (void *)vcpuins.pimm, 8);
+	} else {
+		vcpu.ip++;
+		GetImm(8);
+		ADC((void *)&vcpu.al, (void *)vcpuins.imm, 8);
+	}
 }
 static void ADC_AX_I16()
 {
-	// 0x15 0xiw
-	// 0x15 0xid
-	vcpu.eip++;
-	switch (_GetOperandSize) {
-	case 16:
-		_GetImm(16);
-		if (vcpuins.except) return;
+	i386(0x15) {
+		vcpu.eip++;
+		switch (_GetOperandSize) {
+		case 16:
+			_GetImm(16);
+			trace("ADC_AX_I16::GetImm(16)");
+			if (vcpuins.except) return;
+			ADC((void *)&vcpu.ax, (void *)vcpuins.pimm, 16);
+			break;
+		case 32:
+			_GetImm(32);
+			trace("ADC_AX_I16::GetImm(32)");
+			if (vcpuins.except) return;
+			ADC((void *)&vcpu.eax, (void *)vcpuins.pimm, 32);
+			break;
+		default:
+			CaseError("ADC_AX_I16::OperandSize");return;
+		}
+	} else {
+		vcpu.ip++;
+		GetImm(16);
 		ADC((void *)&vcpu.ax, (void *)vcpuins.imm, 16);
-		break;
-	case 32:
-		_GetImm(32);
-		if (vcpuins.except) return;
-		ADC((void *)&vcpu.eax, (void *)vcpuins.imm, 32);
-		break;
-	default:
-		CaseError("ADC_AX_I16::OperandSize");return;
 	}
 }
 void PUSH_SS()
@@ -2779,47 +3004,101 @@ void POP_DS()
 	vcpu.eip++;
 	POP((void *)&vcpu.ds.selector,16);
 }
-void AND_RM8_R8()
+static void AND_RM8_R8()
 {
-	vcpu.eip++;
-	GetModRegRM(8,8);
-	AND((void *)vcpuins.rm,(void *)vcpuins.r,8);
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  AND_RM8_R8\n");
+	i386(0x20) {
+		vcpu.eip++;
+		_GetModRegRM(8, 8, 0x01);
+		trace("AND_RM8_R8::GetModRegRM");
+		if (vcpuins.except) return;
+		AND((void *)vcpuins.prm, (void *)vcpuins.pr, 8);
+	} else {
+		vcpu.ip++;
+		GetModRegRM(8,8);
+		AND((void *)vcpuins.rm, (void *)vcpuins.r, 8);
+	}
 }
-void AND_RM16_R16()
+static void AND_RM16_R16()
 {
-	vcpu.eip++;
-	GetModRegRM(16,16);
-	AND((void *)vcpuins.rm,(void *)vcpuins.r,16);
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  AND_RM16_R16\n");
+	i386(0x21) {
+		vcpu.eip++;
+		_GetModRegRM(_GetOperandSize, _GetOperandSize, 0x01);
+		trace("AND_RM16_R16::GetModRegRM");
+		if (vcpuins.except) return;
+		AND((void *)vcpuins.prm, (void *)vcpuins.pr, _GetOperandSize);
+	} else {
+		vcpu.ip++;
+		GetModRegRM(16, 16);
+		AND((void *)vcpuins.rm, (void *)vcpuins.r, 16);
+	}
 }
-void AND_R8_RM8()
+static void AND_R8_RM8()
 {
-	vcpu.eip++;
-	GetModRegRM(8,8);
-	AND((void *)vcpuins.r,(void *)vcpuins.rm,8);
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  AND_R8_RM8\n");
+	i386(0x22) {
+		vcpu.eip++;
+		_GetModRegRM(8, 8, 0x00);
+		trace("AND_R8_RM8::GetModRegRM");
+		if (vcpuins.except) return;
+		AND((void *)vcpuins.pr, (void *)vcpuins.prm, 8);
+	} else {
+		vcpu.ip++;
+		GetModRegRM(8, 8);
+		AND((void *)vcpuins.r, (void *)vcpuins.rm, 8);
+	}
 }
-void AND_R16_RM16()
+static void AND_R16_RM16()
 {
-	vcpu.eip++;
-	GetModRegRM(16,16);
-	AND((void *)vcpuins.r,(void *)vcpuins.rm,16);
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  AND_R16_RM16\n");
+	i386(0x23) {
+		vcpu.eip++;
+		_GetModRegRM(_GetOperandSize, _GetOperandSize, 0x00);
+		trace("AND_R16_RM16::GetModRegRM");
+		if (vcpuins.except) return;
+		AND((void *)vcpuins.pr, (void *)vcpuins.prm, _GetOperandSize);
+	} else {
+		vcpu.ip++;
+		GetModRegRM(16, 16);
+		AND((void *)vcpuins.r, (void *)vcpuins.rm, 16);
+	}
 }
-void AND_AL_I8()
+static void AND_AL_I8()
 {
-	vcpu.eip++;
-	GetImm(8);
-	AND((void *)&vcpu.al,(void *)vcpuins.imm,8);
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  AND_AL_I8\n");
+	i386(0x24) {
+		vcpu.eip++;
+		_GetImm(8);
+		trace("AND_AL_I8::GetImm(8)");
+		if (vcpuins.except) return;
+		AND((void *)&vcpu.al, (void *)vcpuins.pimm, 8);
+	} else {
+		vcpu.ip++;
+		GetImm(8);
+		AND((void *)&vcpu.al, (void *)vcpuins.imm, 8);
+	}
 }
-void AND_AX_I16()
+static void AND_AX_I16()
 {
-	vcpu.eip++;
-	GetImm(16);
-	AND((void *)&vcpu.ax,(void *)vcpuins.imm,16);
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  AND_AX_I16\n");
+	i386(0x25) {
+		vcpu.eip++;
+		switch (_GetOperandSize) {
+		case 16:
+			_GetImm(16);
+			trace("AND_AX_I16::GetImm(16)");
+			if (vcpuins.except) return;
+			AND((void *)&vcpu.ax, (void *)vcpuins.pimm, 16);
+			break;
+		case 32:
+			_GetImm(32);
+			trace("AND_AX_I16::GetImm(32)");
+			if (vcpuins.except) return;
+			AND((void *)&vcpu.eax, (void *)vcpuins.pimm, 32);
+			break;
+		default:
+			CaseError("ADC_AX_I16::OperandSize");return;
+		}
+	} else {
+		vcpu.ip++;
+		GetImm(16);
+		AND((void *)&vcpu.ax, (void *)vcpuins.imm, 16);
+	}
 }
 void ES()
 {
@@ -2975,8 +3254,11 @@ void SS()
 }
 static void AAA()
 {
-	// 0x37
-	vcpu.eip++;
+	i386(0x37) {
+		vcpu.eip++;
+	} else {
+		vcpu.ip++;
+	}
 	if(((vcpu.al & 0x0f) > 0x09) || _GetEFLAGS_AF) {
 		vcpu.al += 0x06;
 		vcpu.al &= 0x0f;
@@ -3038,8 +3320,11 @@ void DS()
 }
 static void AAS()
 {
-	// 0x3f
-	vcpu.eip++;
+	i386(0x3f) {
+		vcpu.eip++;
+	} else {
+		vcpu.ip++;
+	}
 	if(((vcpu.al & 0x0f) > 0x09) || _GetEFLAGS_AF) {
 		vcpu.al -= 0x06;
 		vcpu.al &= 0x0f;
@@ -3354,62 +3639,114 @@ void JG()
 		(_GetSF ==
 		_GetOF)), 8);
 }
-void INS_80()
+static void INS_80()
 {
-	vcpu.eip++;
-	_GetModRegRM(0, 8, 0x01);
-	if (vcpuins.except) return;
-	_GetImm(8);
-	if (vcpuins.except) return;
-	switch (vcpuins.pr) {
-	case 0: ADD((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
-	case 1: OR ((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
-	case 2: ADC((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
-	case 3: SBB((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
-	case 4: AND((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
-	case 5: SUB((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
-	case 6: XOR((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
-	case 7: CMP((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
-	default:CaseError("INS_80::vcpuins.r");break;}
+	i386(0x80) {
+		vcpu.eip++;
+		_GetModRegRM(0, 8, 0x01);
+		trace("INS_80::GetModRegRM");
+		if (vcpuins.except) return;
+		_GetImm(8);
+		trace("INS_80::GetImm(8)");
+		if (vcpuins.except) return;
+		switch (vcpuins.pr) {
+		case 0: ADD((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
+		case 1: OR ((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
+		case 2: ADC((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
+		case 3: SBB((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
+		case 4: AND((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
+		case 5: SUB((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
+		case 6: XOR((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
+		case 7: CMP((void *)vcpuins.prm, (void *)vcpuins.pimm, 8); break;
+		default:CaseError("INS_80::vcpuins.pr");break;}
+	} else {
+		vcpu.ip++;
+		GetModRegRM(0, 8);
+		GetImm(8);
+		switch (vcpuins.r) {
+		case 0: ADD((void *)vcpuins.rm, (void *)vcpuins.imm, 8); break;
+		case 1: OR ((void *)vcpuins.rm, (void *)vcpuins.imm, 8); break;
+		case 2: ADC((void *)vcpuins.rm, (void *)vcpuins.imm, 8); break;
+		case 3: SBB((void *)vcpuins.rm, (void *)vcpuins.imm, 8); break;
+		case 4: AND((void *)vcpuins.rm, (void *)vcpuins.imm, 8); break;
+		case 5: SUB((void *)vcpuins.rm, (void *)vcpuins.imm, 8); break;
+		case 6: XOR((void *)vcpuins.rm, (void *)vcpuins.imm, 8); break;
+		case 7: CMP((void *)vcpuins.rm, (void *)vcpuins.imm, 8); break;
+		default:CaseError("INS_80::vcpuins.r");break;}
+	}
 }
-void INS_81()
+static void INS_81()
 {
-	vcpu.eip++;
-	_GetModRegRM(0, _GetOperandSize, 0x01);
-	if (vcpuins.except) return;
-	_GetImm(_GetOperandSize);
-	if (vcpuins.except) return;
-	switch(vcpuins.pr) {
-	case 0: ADD((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
-	case 1: OR ((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
-	case 2: ADC((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
-	case 3: SBB((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
-	case 4: AND((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
-	case 5: SUB((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
-	case 6: XOR((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
-	case 7: CMP((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
-	default:CaseError("INS_81::vcpuins.r");break;}
+	i386(0x81) {
+		vcpu.eip++;
+		_GetModRegRM(0, _GetOperandSize, 0x01);
+		trace("INS_81::GetModRegRM");
+		if (vcpuins.except) return;
+		_GetImm(_GetOperandSize);
+		trace("INS_81::GetImm");
+		if (vcpuins.except) return;
+		switch(vcpuins.pr) {
+		case 0: ADD((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
+		case 1: OR ((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
+		case 2: ADC((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
+		case 3: SBB((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
+		case 4: AND((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
+		case 5: SUB((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
+		case 6: XOR((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
+		case 7: CMP((void *)vcpuins.prm, (void *)vcpuins.pimm, _GetOperandSize); break;
+		default:CaseError("INS_81::vcpuins.pr");break;}
+	} else {
+		vcpu.ip++;
+		GetModRegRM(0, 16);
+		GetImm(16);
+		switch(vcpuins.r) {
+		case 0: ADD((void *)vcpuins.rm, (void *)vcpuins.imm, 16); break;
+		case 1: OR ((void *)vcpuins.rm, (void *)vcpuins.imm, 16); break;
+		case 2: ADC((void *)vcpuins.rm, (void *)vcpuins.imm, 16); break;
+		case 3: SBB((void *)vcpuins.rm, (void *)vcpuins.imm, 16); break;
+		case 4: AND((void *)vcpuins.rm, (void *)vcpuins.imm, 16); break;
+		case 5: SUB((void *)vcpuins.rm, (void *)vcpuins.imm, 16); break;
+		case 6: XOR((void *)vcpuins.rm, (void *)vcpuins.imm, 16); break;
+		case 7: CMP((void *)vcpuins.rm, (void *)vcpuins.imm, 16); break;
+		default:CaseError("INS_81::vcpuins.r");break;}
+	}
 }
-void INS_82()
+static void INS_83()
 {
-	INS_80();
-}
-void INS_83()
-{
-	vcpu.eip++;
-	GetModRegRM(0,16);
-	GetImm(8);
-	switch(vcpuins.r) {
-	case 0:	ADD((void *)vcpuins.rm,(void *)vcpuins.imm,12);break;
-	case 1:	OR ((void *)vcpuins.rm,(void *)vcpuins.imm,12);break;
-	case 2:	ADC((void *)vcpuins.rm,(void *)vcpuins.imm,12);break;
-	case 3:	SBB((void *)vcpuins.rm,(void *)vcpuins.imm,12);break;
-	case 4:	AND((void *)vcpuins.rm,(void *)vcpuins.imm,12);break;
-	case 5:	SUB((void *)vcpuins.rm,(void *)vcpuins.imm,12);break;
-	case 6:	XOR((void *)vcpuins.rm,(void *)vcpuins.imm,12);break;
-	case 7:	CMP((void *)vcpuins.rm,(void *)vcpuins.imm,12);break;
-	default:CaseError("INS_83::vcpuins.r");break;}
-	// _vapiPrintAddr(vcpu.cs.selector,vcpu.eip);vapiPrint("  INS_83\n");
+	t_nubit8 len = (_GetOperandSize + 8) >> 1;
+	i386(0x83) {
+		vcpu.eip++;
+		_GetModRegRM(0, _GetOperandSize, 0x01);
+		trace("INS_83::GetModRegRM");
+		if (vcpuins.except) return;
+		_GetImm(8);
+		trace("INS_83::GetImm(8)");
+		if (vcpuins.except) return;
+		switch(vcpuins.pr) {
+		case 0: ADD((void *)vcpuins.prm, (void *)vcpuins.pimm, len); break;
+		case 1: OR ((void *)vcpuins.prm, (void *)vcpuins.pimm, len); break;
+		case 2: ADC((void *)vcpuins.prm, (void *)vcpuins.pimm, len); break;
+		case 3: SBB((void *)vcpuins.prm, (void *)vcpuins.pimm, len); break;
+		case 4: AND((void *)vcpuins.prm, (void *)vcpuins.pimm, len); break;
+		case 5: SUB((void *)vcpuins.prm, (void *)vcpuins.pimm, len); break;
+		case 6: XOR((void *)vcpuins.prm, (void *)vcpuins.pimm, len); break;
+		case 7: CMP((void *)vcpuins.prm, (void *)vcpuins.pimm, len); break;
+		default:CaseError("INS_83::vcpuins.pr");break;}
+	} else {
+		vcpu.ip++;
+		GetModRegRM(0, 16);
+		GetImm(8);
+		switch(vcpuins.r) {
+		case 0: ADD((void *)vcpuins.rm, (void *)vcpuins.imm, 12); break;
+		case 1: OR ((void *)vcpuins.rm, (void *)vcpuins.imm, 12); break;
+		case 2: ADC((void *)vcpuins.rm, (void *)vcpuins.imm, 12); break;
+		case 3: SBB((void *)vcpuins.rm, (void *)vcpuins.imm, 12); break;
+		case 4: AND((void *)vcpuins.rm, (void *)vcpuins.imm, 12); break;
+		case 5: SUB((void *)vcpuins.rm, (void *)vcpuins.imm, 12); break;
+		case 6: XOR((void *)vcpuins.rm, (void *)vcpuins.imm, 12); break;
+		case 7: CMP((void *)vcpuins.rm, (void *)vcpuins.imm, 12); break;
+		default:CaseError("INS_83::vcpuins.r");break;}
+	}
 }
 void TEST_RM8_R8()
 {
@@ -4050,10 +4387,17 @@ static void AAM()
 {
 	/* 0xd4 0x0a */
 	t_nubit8 base;
-	vcpu.eip++;
-	_GetImm(8);
-	if (vcpuins.except) return;
-	base = d_nubit8(vcpuins.pimm);
+	i386(0xd4) {
+		vcpu.eip++;
+		_GetImm(8);
+		trace("AAM::GetImm(8)");
+		if (vcpuins.except) return;
+		base = d_nubit8(vcpuins.pimm);
+	} else {
+		vcpu.ip++;
+		GetImm(8);
+		base = d_nubit8(vcpuins.imm);
+	}
 	if (base != 0x0a) {
 		_SetExcept_UD(0);
 		return;
@@ -4068,13 +4412,20 @@ static void AAD()
 {
 	// 0xd5 0x0a
 	t_nubit8 base;
-	vcpu.eip++;
-	_GetImm(8);
-	if (vcpuins.except) return;
-	base = d_nubit8(vcpuins.pimm);
-	if (base != 0x0a) {
-		_SetExcept_UD(0);
-		return;
+	i386(0xd5) {
+		vcpu.eip++;
+		_GetImm(8);
+		trace("AAD::GetImm(8)");
+		if (vcpuins.except) return;
+		base = d_nubit8(vcpuins.pimm);
+		if (base != 0x0a) {
+			_SetExcept_UD(0);
+			return;
+		}
+	} else {
+		vcpu.ip++;
+		GetImm(8);
+		base = d_nubit8(vcpuins.imm);
 	}
 	vcpu.al = (vcpu.al + (vcpu.ah * base)) & 0xff;
 	vcpu.ah = 0x00;
@@ -4434,9 +4785,12 @@ static void ExecInsInit()
 }
 static void ExecInsFinal()
 {
-	if (vcpuins.flaginsloop) {
+	if (vcpuins.flaginsloop || vcpuins.except) {
 		vcpu.cs = vcpuins.oldcs;
 		vcpu.eip  = vcpuins.oldeip;
+	}
+	if (vcpuins.except) {
+		vapiCallBackMachineStop();
 	}
 }
 static void ExecIns()
@@ -4634,7 +4988,7 @@ void vcpuinsInit()
 	vcpuins.table[0x7f] = (t_faddrcc)JG;
 	vcpuins.table[0x80] = (t_faddrcc)INS_80;
 	vcpuins.table[0x81] = (t_faddrcc)INS_81;
-	vcpuins.table[0x82] = (t_faddrcc)INS_82;
+	vcpuins.table[0x82] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table[0x83] = (t_faddrcc)INS_83;
 	vcpuins.table[0x84] = (t_faddrcc)TEST_RM8_R8;
 	vcpuins.table[0x85] = (t_faddrcc)TEST_RM16_R16;
