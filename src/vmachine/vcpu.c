@@ -19,30 +19,61 @@ void vcpuInit()
 	ecpuInit();
 #endif
 }
+
 void vcpuReset()
 {
 	memset(&vcpu, 0, sizeof(t_cpu));
 	vcpu.eip = 0x0000fff0;
 	vcpu.eflags = 0x00000002;
-	vcpu.cs.selector = 0xf000;
+
 	vcpu.cs.base = 0xffff0000;
+	vcpu.cs.dpl = 0x00;
 	vcpu.cs.limit = 0xffffffff;
-	vcpu.cs.cd = 0x01;
-	vcpu.cs.rw = 0x01;
-	vcpu.cs.s = 0x01;
-	vcpu.cs.p = 0x01;
+	vcpu.cs.seg.accessed = 1;
+	vcpu.cs.seg.exec.conform = 0;
+	vcpu.cs.seg.exec.defsize = 0;
+	vcpu.cs.seg.exec.readable = 1;
+	vcpu.cs.selector = 0xf000;
 	vcpu.cs.sregtype = SREG_CODE;
-	vcpu.ds.base = 0x00000000;
-	vcpu.ds.limit = 0x0000ffff;
-	vcpu.ds.rw = 0x01;
-	vcpu.ds.s = 0x01;
-	vcpu.ds.p = 0x01;
-	vcpu.ds.sregtype = SREG_DATA;
-	vcpu.ldtr = vcpu.tr = vcpu.ss = vcpu.gs = vcpu.fs = vcpu.es = vcpu.ds;
+
+	vcpu.ss.base = 0x00000000;
+	vcpu.ss.dpl = 0x00;
+	vcpu.ss.limit = 0x0000ffff;
+	vcpu.ss.seg.accessed = 1;
+	vcpu.ss.seg.data.big = 0;
+	vcpu.ss.seg.data.expdown = 0;
+	vcpu.ss.seg.data.writable = 1;
+	vcpu.ss.selector = 0x0000;
 	vcpu.ss.sregtype = SREG_STACK;
+
+	vcpu.ds.base = 0x00000000;
+	vcpu.ds.dpl = 0x00;
+	vcpu.ds.limit = 0x0000ffff;
+	vcpu.ds.seg.accessed = 1;
+	vcpu.ds.seg.data.big = 0;
+	vcpu.ds.seg.data.expdown = 0;
+	vcpu.ds.seg.data.writable = 1;
+	vcpu.ds.selector = 0x0000;
+	vcpu.ds.sregtype = SREG_DATA;
+	vcpu.gs = vcpu.fs = vcpu.es = vcpu.ds;
+
+	vcpu.ldtr.base = 0x00000000;
+	vcpu.ldtr.dpl = 0x00;
+	vcpu.ldtr.limit = 0x0000ffff;
+	vcpu.ldtr.selector = 0x0000;
 	vcpu.ldtr.sregtype = SREG_LDTR;
+	vcpu.ldtr.sys.type = 0x2;
+
+	vcpu.tr.base = 0x00000000;
+	vcpu.tr.dpl = 0x00;
+	vcpu.tr.limit = 0x0000ffff;
+	vcpu.tr.selector = 0x0000;
 	vcpu.tr.sregtype = SREG_TR;
+	vcpu.tr.sys.type = 0x1;
+
 	_LoadIDTR16(0x000000, 0x03ff);
+	_LoadGDTR32(0x00000000, 0xffff);
+
 	vcpuinsReset();
 }
 void vcpuRefresh()

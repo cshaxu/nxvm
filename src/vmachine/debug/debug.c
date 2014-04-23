@@ -474,18 +474,18 @@ static void rprintflags(t_nubit8 bit)
 		vapiPrint("VIF%c ",  _GetVIF ? '+' : '-');
 		vapiPrint("AC%c ",   _GetAC ? '+' : '-');*/
 		vapiPrint("VM%c ",   _GetEFLAGS_VM ? '+' : '-');
-		vapiPrint("RF%c ",   _GetRF ? '+' : '-');
-		vapiPrint("NT%c ",   _GetNT ? '+' : '-');
-		vapiPrint("IOPL=%1d ", _GetIOPL);
+		vapiPrint("RF%c ",   _GetEFLAGS_RF ? '+' : '-');
+		vapiPrint("NT%c ",   _GetEFLAGS_NT ? '+' : '-');
+		vapiPrint("IOPL=%1d ", _GetEFLAGS_IOPL);
 	}
-	vapiPrint("%s ", _GetOF ? "OV" : "NV");
-	vapiPrint("%s ", _GetDF ? "DN" : "UP");
-	vapiPrint("%s ", _GetIF ? "EI" : "DI");
-	vapiPrint("%s ", _GetTF ? "TR" : "DT");
-	vapiPrint("%s ", _GetSF ? "NG" : "PL");
-	vapiPrint("%s ", _GetZF ? "ZR" : "NZ");
+	vapiPrint("%s ", _GetEFLAGS_OF ? "OV" : "NV");
+	vapiPrint("%s ", _GetEFLAGS_DF ? "DN" : "UP");
+	vapiPrint("%s ", _GetEFLAGS_IF ? "EI" : "DI");
+	vapiPrint("%s ", _GetEFLAGS_TF ? "TR" : "DT");
+	vapiPrint("%s ", _GetEFLAGS_SF ? "NG" : "PL");
+	vapiPrint("%s ", _GetEFLAGS_ZF ? "ZR" : "NZ");
 	vapiPrint("%s ", _GetEFLAGS_AF ? "AC" : "NA");
-	vapiPrint("%s ", _GetPF ? "PE" : "PO");
+	vapiPrint("%s ", _GetEFLAGS_PF ? "PE" : "PO");
 	vapiPrint("%s ", _GetEFLAGS_CF ? "CY" : "NC");
 }
 static void rprintregs(t_nubit8 bit)
@@ -651,19 +651,19 @@ static void rscanregs()
 		FGETS(s,MAXLINE,stdin);
 		lcase(s);
 		if(!STRCMP(s,"ov"))      _SetEFLAGS_OF;
-		else if(!STRCMP(s,"nv")) _ClrOF;
+		else if(!STRCMP(s,"nv")) _ClrEFLAGS_OF;
 		else if(!STRCMP(s,"dn")) _SetEFLAGS_DF;
 		else if(!STRCMP(s,"up")) _ClrEFLAGS_DF;
-		else if(!STRCMP(s,"ei")) _SetIF;
+		else if(!STRCMP(s,"ei")) _SetEFLAGS_IF;
 		else if(!STRCMP(s,"di")) _ClrEFLAGS_IF;
-		else if(!STRCMP(s,"ng")) _SetSF;
-		else if(!STRCMP(s,"pl")) _ClrSF;
+		else if(!STRCMP(s,"ng")) _SetEFLAGS_SF;
+		else if(!STRCMP(s,"pl")) _ClrEFLAGS_SF;
 		else if(!STRCMP(s,"zr")) _SetEFLAGS_ZF;
 		else if(!STRCMP(s,"nz")) _ClrEFLAGS_ZF;
 		else if(!STRCMP(s,"ac")) _SetEFLAGS_AF;
 		else if(!STRCMP(s,"na")) _ClrEFLAGS_AF;
-		else if(!STRCMP(s,"pe")) _SetPF;
-		else if(!STRCMP(s,"po")) _ClrPF;
+		else if(!STRCMP(s,"pe")) _SetEFLAGS_PF;
+		else if(!STRCMP(s,"po")) _ClrEFLAGS_PF;
 		else if(!STRCMP(s,"cy")) _SetEFLAGS_CF;
 		else if(!STRCMP(s,"nc")) _ClrEFLAGS_CF;
 		else vapiPrint("bf Error\n");

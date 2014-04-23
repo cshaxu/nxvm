@@ -16,23 +16,30 @@ typedef enum {SREG_CODE, SREG_DATA, SREG_STACK, SREG_LDTR, SREG_TR} t_cpu_sreg_t
 typedef struct {
 	t_nubit16 selector;
 	/* invisible portion/descriptor part */
-		t_nubit32 base;
-		t_nubit32 limit;
-		t_nubit8  dpl; /* if segment is cs, this is cpl */
-		t_bool    g;
-		t_bool    p;
-		t_bool    s;
-		/* type attribute part */
-		/* for system segments */
-			t_nubit4 type; /* type id for system segments */
-		/* for application segments */
-		t_bool    db;
-			t_bool cd; /* code segment(1) or data segment(0) */
-			t_bool ce; /* conforming or expand-down */
-			t_bool rw; /* readable or writable */
-			t_bool a;   /* accessed */
-		/* additional info */
-		t_cpu_sreg_type sregtype;
+	t_cpu_sreg_type sregtype;
+	t_nubit32 base;
+	t_nubit32 limit;
+	t_nubit8  dpl; /* if segment is cs, this is cpl */
+	union {
+		struct {
+			t_bool accessed;
+			union {
+				struct {
+					t_bool defsize; /* 16-bit (0) or 32-bit (1) */
+					t_bool conform;
+					t_bool readable;
+				} exec;
+				struct {
+					t_bool big;
+					t_bool expdown;
+					t_bool writable;
+				} data;
+			};
+		} seg;
+		struct {
+			t_nubit4 type;
+		} sys;
+	};
 } t_cpu_sreg;
 typedef struct {
 	union {
@@ -149,67 +156,71 @@ typedef struct {
 #define VCPU_EFLAGS_NT    0x00004000
 #define VCPU_EFLAGS_RF    0x00010000
 #define VCPU_EFLAGS_VM    0x00020000
-/*#define VCPU_EFLAGS_AC    0x00040000
+/*
+#define VCPU_EFLAGS_AC    0x00040000
 #define VCPU_EFLAGS_VIF   0x00080000
 #define VCPU_EFLAGS_VIP   0x00100000
 #define VCPU_EFLAGS_ID    0x00200000*/
 #define _GetEFLAGS_CF    (GetBit(_eflags, VCPU_EFLAGS_CF))
-#define _GetPF    (GetBit(_eflags, VCPU_EFLAGS_PF))
+#define _GetEFLAGS_PF    (GetBit(_eflags, VCPU_EFLAGS_PF))
 #define _GetEFLAGS_AF    (GetBit(_eflags, VCPU_EFLAGS_AF))
-#define _GetZF    (GetBit(_eflags, VCPU_EFLAGS_ZF))
-#define _GetSF    (GetBit(_eflags, VCPU_EFLAGS_SF))
-#define _GetTF    (GetBit(_eflags, VCPU_EFLAGS_TF))
-#define _GetIF    (GetBit(_eflags, VCPU_EFLAGS_IF))
-#define _GetDF    (GetBit(_eflags, VCPU_EFLAGS_DF))
-#define _GetOF    (GetBit(_eflags, VCPU_EFLAGS_OF))
-#define _GetIOPLL (GetBit(_eflags, VCPU_EFLAGS_IOPLL))
-#define _GetIOPLH (GetBit(_eflags, VCPU_EFLAGS_IOPLH))
-#define _GetIOPL  ((_eflags & VCPU_EFLAGS_IOPL) >> 12)
-#define _GetNT    (GetBit(_eflags, VCPU_EFLAGS_NT))
-#define _GetRF    (GetBit(_eflags, VCPU_EFLAGS_RF))
+#define _GetEFLAGS_ZF    (GetBit(_eflags, VCPU_EFLAGS_ZF))
+#define _GetEFLAGS_SF    (GetBit(_eflags, VCPU_EFLAGS_SF))
+#define _GetEFLAGS_TF    (GetBit(_eflags, VCPU_EFLAGS_TF))
+#define _GetEFLAGS_IF    (GetBit(_eflags, VCPU_EFLAGS_IF))
+#define _GetEFLAGS_DF    (GetBit(_eflags, VCPU_EFLAGS_DF))
+#define _GetEFLAGS_OF    (GetBit(_eflags, VCPU_EFLAGS_OF))
+#define _GetEFLAGS_IOPLL (GetBit(_eflags, VCPU_EFLAGS_IOPLL))
+#define _GetEFLAGS_IOPLH (GetBit(_eflags, VCPU_EFLAGS_IOPLH))
+#define _GetEFLAGS_IOPL  ((_eflags & VCPU_EFLAGS_IOPL) >> 12)
+#define _GetEFLAGS_NT    (GetBit(_eflags, VCPU_EFLAGS_NT))
+#define _GetEFLAGS_RF    (GetBit(_eflags, VCPU_EFLAGS_RF))
 #define _GetEFLAGS_VM    (GetBit(_eflags, VCPU_EFLAGS_VM))
-/*#define _GetAC    (GetBit(_eflags, VCPU_EFLAGS_AC))
-#define _GetVIF   (GetBit(_eflags, VCPU_EFLAGS_VIF))
-#define _GetVIP   (GetBit(_eflags, VCPU_EFLAGS_VIP))
-#define _GetID    (GetBit(_eflags, VCPU_EFLAGS_ID))*/
+/*
+#define _GetEFLAGS_AC    (GetBit(_eflags, VCPU_EFLAGS_AC))
+#define _GetEFLAGS_VIF   (GetBit(_eflags, VCPU_EFLAGS_VIF))
+#define _GetEFLAGS_VIP   (GetBit(_eflags, VCPU_EFLAGS_VIP))
+#define _GetEFLAGS_ID    (GetBit(_eflags, VCPU_EFLAGS_ID))*/
 #define _SetEFLAGS_CF    (SetBit(_eflags, VCPU_EFLAGS_CF))
-#define _SetPF    (SetBit(_eflags, VCPU_EFLAGS_PF))
+#define _SetEFLAGS_PF    (SetBit(_eflags, VCPU_EFLAGS_PF))
 #define _SetEFLAGS_AF    (SetBit(_eflags, VCPU_EFLAGS_AF))
 #define _SetEFLAGS_ZF    (SetBit(_eflags, VCPU_EFLAGS_ZF))
-#define _SetSF    (SetBit(_eflags, VCPU_EFLAGS_SF))
-#define _SetTF    (SetBit(_eflags, VCPU_EFLAGS_TF))
-#define _SetIF    (SetBit(_eflags, VCPU_EFLAGS_IF))
+#define _SetEFLAGS_SF    (SetBit(_eflags, VCPU_EFLAGS_SF))
+#define _SetEFLAGS_TF    (SetBit(_eflags, VCPU_EFLAGS_TF))
+#define _SetEFLAGS_IF    (SetBit(_eflags, VCPU_EFLAGS_IF))
 #define _SetEFLAGS_DF    (SetBit(_eflags, VCPU_EFLAGS_DF))
 #define _SetEFLAGS_OF    (SetBit(_eflags, VCPU_EFLAGS_OF))
-#define _SetIOPLL (SetBit(_eflags, VCPU_EFLAGS_IOPLL))
-#define _SetIOPLH (SetBit(_eflags, VCPU_EFLAGS_IOPLH))
-#define _SetIOPL  (SetBit(_eflags, VCPU_EFLAGS_IOPL)
-#define _SetNT    (SetBit(_eflags, VCPU_EFLAGS_NT))
-#define _SetRF    (SetBit(_eflags, VCPU_EFLAGS_RF))
-#define _SetVM    (SetBit(_eflags, VCPU_EFLAGS_VM))
-/*#define _SetAC    (SetBit(_eflags, VCPU_EFLAGS_AC))
-#define _SetVIF   (SetBit(_eflags, VCPU_EFLAGS_VIF))
-#define _SetVIP   (SetBit(_eflags, VCPU_EFLAGS_VIP))
-#define _SetID    (SetBit(_eflags, VCPU_EFLAGS_ID))*/
+#define _SetEFLAGS_IOPLL (SetBit(_eflags, VCPU_EFLAGS_IOPLL))
+#define _SetEFLAGS_IOPLH (SetBit(_eflags, VCPU_EFLAGS_IOPLH))
+#define _SetEFLAGS_IOPL  (SetBit(_eflags, VCPU_EFLAGS_IOPL)
+#define _SetEFLAGS_NT    (SetBit(_eflags, VCPU_EFLAGS_NT))
+#define _SetEFLAGS_RF    (SetBit(_eflags, VCPU_EFLAGS_RF))
+#define _SetEFLAGS_VM    (SetBit(_eflags, VCPU_EFLAGS_VM))
+/*
+#define _SetEFLAGS_AC    (SetBit(_eflags, VCPU_EFLAGS_AC))
+#define _SetEFLAGS_VIF   (SetBit(_eflags, VCPU_EFLAGS_VIF))
+#define _SetEFLAGS_VIP   (SetBit(_eflags, VCPU_EFLAGS_VIP))
+#define _SetEFLAGS_ID    (SetBit(_eflags, VCPU_EFLAGS_ID))*/
 #define _ClrEFLAGS_CF    (ClrBit(_eflags, VCPU_EFLAGS_CF))
-#define _ClrPF    (ClrBit(_eflags, VCPU_EFLAGS_PF))
+#define _ClrEFLAGS_PF    (ClrBit(_eflags, VCPU_EFLAGS_PF))
 #define _ClrEFLAGS_AF    (ClrBit(_eflags, VCPU_EFLAGS_AF))
 #define _ClrEFLAGS_ZF    (ClrBit(_eflags, VCPU_EFLAGS_ZF))
-#define _ClrSF    (ClrBit(_eflags, VCPU_EFLAGS_SF))
+#define _ClrEFLAGS_SF    (ClrBit(_eflags, VCPU_EFLAGS_SF))
 #define _ClrEFLAGS_TF    (ClrBit(_eflags, VCPU_EFLAGS_TF))
 #define _ClrEFLAGS_IF    (ClrBit(_eflags, VCPU_EFLAGS_IF))
 #define _ClrEFLAGS_DF    (ClrBit(_eflags, VCPU_EFLAGS_DF))
-#define _ClrOF    (ClrBit(_eflags, VCPU_EFLAGS_OF))
-#define _ClrIOPLL (ClrBit(_eflags, VCPU_EFLAGS_IOPLL))
-#define _ClrIOPLH (ClrBit(_eflags, VCPU_EFLAGS_IOPLH))
-#define _ClrIOPL  (ClrBit(_eflags, VCPU_EFLAGS_IOPL)
-#define _ClrNT    (ClrBit(_eflags, VCPU_EFLAGS_NT))
-#define _ClrRF    (ClrBit(_eflags, VCPU_EFLAGS_RF))
-#define _ClrVM    (ClrBit(_eflags, VCPU_EFLAGS_VM))
-/*#define _ClrAC    (ClrBit(_eflags, VCPU_EFLAGS_AC))
-#define _ClrVIF   (ClrBit(_eflags, VCPU_EFLAGS_VIF))
-#define _ClrVIP   (ClrBit(_eflags, VCPU_EFLAGS_VIP))
-#define _ClrID    (ClrBit(_eflags, VCPU_EFLAGS_ID))*/
+#define _ClrEFLAGS_OF    (ClrBit(_eflags, VCPU_EFLAGS_OF))
+#define _ClrEFLAGS_IOPLL (ClrBit(_eflags, VCPU_EFLAGS_IOPLL))
+#define _ClrEFLAGS_IOPLH (ClrBit(_eflags, VCPU_EFLAGS_IOPLH))
+#define _ClrEFLAGS_IOPL  (ClrBit(_eflags, VCPU_EFLAGS_IOPL)
+#define _ClrEFLAGS_NT    (ClrBit(_eflags, VCPU_EFLAGS_NT))
+#define _ClrEFLAGS_RF    (ClrBit(_eflags, VCPU_EFLAGS_RF))
+#define _ClrEFLAGS_VM    (ClrBit(_eflags, VCPU_EFLAGS_VM))
+/*
+#define _ClrEFLAGS_AC    (ClrBit(_eflags, VCPU_EFLAGS_AC))
+#define _ClrEFLAGS_VIF   (ClrBit(_eflags, VCPU_EFLAGS_VIF))
+#define _ClrEFLAGS_VIP   (ClrBit(_eflags, VCPU_EFLAGS_VIP))
+#define _ClrEFLAGS_ID    (ClrBit(_eflags, VCPU_EFLAGS_ID))*/
 
 #define _GetCF _GetEFLAGS_CF
 #define _SetCF _SetEFLAGS_CF
@@ -357,7 +368,9 @@ typedef struct {
 #define VCPU_CR0_PG     0x80000000
 #define _GetCR0_PE  (GetBit(vcpu.cr0, VCPU_CR0_PE))
 #define _GetCR0_PG  (GetBit(vcpu.cr0, VCPU_CR0_PG))
+#define _GetCR0_TS  (GetBit(vcpu.cr0, VCPU_CR0_TS))
 #define _SetCR0_TS  (SetBit(vcpu.cr0, VCPU_CR0_TS))
+#define _ClrCR0_TS  (ClrBit(vcpu.cr0, VCPU_CR0_TS))
 
 #define VCPU_CR3_BASE   0xfffff000
 #define _GetCR3_BASE    (vcpu.cr3 & VCPU_CR3_BASE)

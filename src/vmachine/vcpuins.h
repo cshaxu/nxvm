@@ -38,8 +38,7 @@ typedef struct {
 	t_cpu_sreg oldcs, oldss;
 	t_nubit32 oldeip, oldesp;
 	t_bool    flaginsloop;
-	t_faddrcc table[0x100], table_0f[0x100];
-	t_nubitcc opr1, opr2, result, bit;
+	t_nubit32 opr1, opr2, result, bit;
 	t_cpuins_type type;
 	t_cpuins_prefix_rep  prefix_rep;
 	t_cpuins_prefix      prefix_lock;
@@ -47,9 +46,11 @@ typedef struct {
 	t_cpuins_prefix      prefix_addrsize;
 	t_cpu_sreg *roverds, *roverss;
 	t_nubit32 except, excode;
+	t_faddrcc table[0x100], table_0f[0x100];
 	t_vaddrcc rimm, rrm, rr;
 	t_nubit32 pimm, prm;
 	t_nubit32 limm, lrm;
+	t_nubit64 cimm, crm, cr;
 	t_bool    flagmem; /* if prm is in memory */
 } t_cpuins;
 
