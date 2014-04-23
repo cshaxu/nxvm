@@ -98,7 +98,7 @@ void qdvgaInit();
 void qdvgaFinal();
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

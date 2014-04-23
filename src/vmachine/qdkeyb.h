@@ -46,7 +46,7 @@ void qdkeybInit();
 void qdkeybFinal();
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

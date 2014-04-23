@@ -50,7 +50,7 @@ void vmachineInit();
 void vmachineFinal();
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

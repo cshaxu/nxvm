@@ -108,10 +108,10 @@ void qdkeybGetStatus()
 {
 	if (bufIsEmpty) {
 		vapiSleep(0);
-		SetBit(_flags, VCPU_FLAG_ZF);
+		SetZF;
 	} else {
 		_ax = vramVarWord(0x0000, bufptrHead);
-		ClrBit(_flags, VCPU_FLAG_ZF);
+		ClrZF;
 	}
 }
 void qdkeybGetShiftStatus()

@@ -10,7 +10,7 @@ extern "C" {
 void debug();
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

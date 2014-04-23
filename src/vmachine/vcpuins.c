@@ -537,24 +537,24 @@ static void CMP(void *op1, void *op2, t_nubit8 len)
 	case 8:
 		vcpuins.bit = 8;
 		vcpuins.type = CMP8;
-		vcpuins.opr1 = (*(t_nubit8 *)op1) & 0xff;
-		vcpuins.opr2 = (*(t_nsbit8 *)op2) & 0xff;
+		vcpuins.opr1 = d_nubit8(op1) & 0xff;
+		vcpuins.opr2 = d_nsbit8(op2) & 0xff;
 /* vcpuins bug fix #7
-		vcpuins.result = (vcpuins.opr1-vcpuins.opr2)&0xff;*/
+		vcpuins.result = (vcpuins.opr1-vcpuins.opr2)&0xff;*//*s->u*/
 		vcpuins.result = ((t_nubit8)vcpuins.opr1-(t_nsbit8)vcpuins.opr2)&0xff;
 		break;
 	case 12:
 		vcpuins.bit = 16;
 		vcpuins.type = CMP16;
-		vcpuins.opr1 = (*(t_nubit16 *)op1) & 0xffff;
-		vcpuins.opr2 = (*(t_nsbit8  *)op2) & 0xffff;
+		vcpuins.opr1 = d_nubit16(op1) & 0xffff;
+		vcpuins.opr2 = d_nsbit8(op2) & 0xffff;
 		vcpuins.result = ((t_nubit16)vcpuins.opr1-(t_nsbit8)vcpuins.opr2)&0xffff;
 		break;
 	case 16:
 		vcpuins.bit = 16;
 		vcpuins.type = CMP16;
-		vcpuins.opr1 = (*(t_nubit16 *)op1) & 0xffff;
-		vcpuins.opr2 = (*(t_nsbit16 *)op2) & 0xffff;
+		vcpuins.opr1 = d_nubit16(op1) & 0xffff;
+		vcpuins.opr2 = d_nsbit16(op2) & 0xffff;
 /* vcpuins bug fix #7
 		vcpuins.result = (vcpuins.opr1-vcpuins.opr2)&0xffff;*/
 		vcpuins.result = ((t_nubit16)vcpuins.opr1-(t_nsbit16)vcpuins.opr2)&0xffff;
@@ -2961,28 +2961,30 @@ void INS_DB()
 */
 void LOOPNZ()
 {
-	t_nubit8 rel8;
+	t_nsbit8 rel8;
 	vcpu.ip++;
 	GetImm(8);
-	rel8 = *(t_nubit8 *)vcpuins.imm;
+/* vcpuins bug fix #12 */
+	rel8 = d_nsbit8(vcpuins.imm);
 	vcpu.cx--;
 	if(vcpu.cx && !GetBit(vcpu.flags, VCPU_FLAG_ZF)) vcpu.ip += rel8;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  LOOPNZ\n");
 }
 void LOOPZ()
 {
-	t_nubit8 rel8;
+	t_nsbit8 rel8;
 	vcpu.ip++;
 	GetImm(8);
-	rel8 = *(t_nubit8 *)vcpuins.imm;
+/* vcpuins bug fix #12 */
+	rel8 = d_nsbit8(vcpuins.imm);
 	vcpu.cx--;
 	if(vcpu.cx && GetBit(vcpu.flags, VCPU_FLAG_ZF)) vcpu.ip += rel8;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  LOOPZ\n");
 }
 void LOOP()
 {
+	t_nsbit8 rel8;
 /* vcpuins bug fix #2
-	t_nubit8 rel8;
 	vcpu.ip++;
 	GetImm(8);
 	rel8 = *(t_nubit8 *)vcpuins.imm;
@@ -2990,8 +2992,10 @@ void LOOP()
 	if(vcpu.cx) vcpu.ip += rel8;*/
 	vcpu.ip++;
 	GetImm(8);
+/* vcpuins bug fix #12 */
+	rel8 = d_nsbit8(vcpuins.imm);
 	vcpu.cx--;
-	if(vcpu.cx) vcpu.ip += *(t_nsbit8 *)vcpuins.imm;
+	if(vcpu.cx) vcpu.ip += rel8;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  LOOP\n");
 }
 void JCXZ_REL8()
@@ -3039,21 +3043,25 @@ void OUT_I8_AX()
 }
 void CALL_REL16()
 {
+	t_nsbit16 rel16;
 	vcpu.ip++;
 	GetImm(16);
+	rel16 = d_nsbit16(vcpuins.imm);
 	PUSH((void *)&vcpu.ip,16);
-/* vcpuins bug fix #p
+/* vcpuins bug fix #12
 	vcpu.ip += *(t_nubit16 *)vcpuins.imm;*/
-	vcpu.ip += *(t_nsbit16 *)vcpuins.imm;
+	vcpu.ip += rel16;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  CALL_REL16\n");
 }
 void JMP_REL16()
 {
+	t_nsbit16 rel16;
 	vcpu.ip++;
 	GetImm(16);
+	rel16 = d_nsbit16(vcpuins.imm);
 /* vcpuins bug fix #p
 	vcpu.ip += *(t_nubit16 *)vcpuins.imm;*/
-	vcpu.ip += *(t_nsbit16 *)vcpuins.imm;
+	vcpu.ip += rel16;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  JMP_REL16\n");
 }
 void JMP_PTR16_16()
@@ -3070,11 +3078,13 @@ void JMP_PTR16_16()
 }
 void JMP_REL8()
 {
+	t_nsbit8 rel8;
 	vcpu.ip++;
 	GetImm(8);
+	rel8 = d_nsbit8(vcpuins.imm);
 /* vcpuins bug fix #9
 	vcpu.ip += *(t_nubit8 *)vcpuins.imm;*/
-	vcpu.ip += *(t_nsbit8 *)vcpuins.imm;
+	vcpu.ip += rel8;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  JMP_REL8\n");
 }
 void IN_AL_DX()

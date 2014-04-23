@@ -98,7 +98,7 @@ void vpicRefresh();
 void vpicFinal();
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

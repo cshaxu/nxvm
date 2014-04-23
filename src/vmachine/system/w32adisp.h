@@ -17,7 +17,7 @@ void w32adispInit();
 void w32adispFinal();
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

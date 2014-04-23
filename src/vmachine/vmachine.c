@@ -15,13 +15,13 @@ void vmachineStart() {vapiStartMachine();}
 void vapiCallBackMachineRun()
 {
 	if(vmachine.flaginit && !vmachine.flagrun) {
-		vapiRecordStart();
+		if (vmachine.flagrecord) vapiRecordStart();
 		vmachine.flagrun = 0x01;
 		while (vmachine.flagrun) {
 			vmachineRefresh();
-			if (vmachine.flagtrace) vmachine.flagrun = 0x00;
+			if (vmachine.flagtrace) vapiTrace();
 		}
-		vapiRecordEnd();
+		if (vmachine.flagrecord) vapiRecordEnd();
 	}
 }
 t_bool vapiCallBackMachineGetRunFlag()
@@ -35,7 +35,7 @@ void   vapiCallBackMachineSetRunFlag(t_bool flag)
 
 void vmachineRefresh()
 {
-	vapiRecordWrite();
+	if (vmachine.flagrecord) vapiRecordWrite();
 /*
 	vcmosRefresh();
 	vdispRefresh();
@@ -52,8 +52,10 @@ void vmachineRefresh()
 	vcpuRefresh();
 	vportRefresh();
 
-	vapiRecordWrite();
-	if (vmachine.flagrecord) ++vapirecord.count;
+	if (vmachine.flagrecord) {
+		vapiRecordWrite();
+		++vapirecord.count;
+	}
 
 	vmachine.flagrun = (vmachine.flagrun && (!vcpu.flagterm));
 }

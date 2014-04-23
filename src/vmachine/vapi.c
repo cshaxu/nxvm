@@ -44,9 +44,9 @@ void vapiPrintAddr(t_nubit16 segment, t_nubit16 offset)
 
 t_apirecord vapirecord;
 
-#define _expression "%d\tcs:ip=%x:%x opcode=%x %x %x %x %x %x %x %x \
+#define _expression "cs:ip=%x:%x opcode=%x %x %x %x %x %x %x %x \
 ax=%x bx=%x cx=%x dx=%x sp=%x bp=%x si=%x di=%x ds=%x es=%x ss=%x \
-of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x stack=%x\n"
+of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x\n"
 
 void vapiRecordSetFile(t_string fname)
 {
@@ -54,45 +54,33 @@ void vapiRecordSetFile(t_string fname)
 }
 void vapiRecordStart()
 {
-	if (!vmachine.flagrecord) return;
 	if (vapirecord.fptr) fclose(vapirecord.fptr);
 	vapirecord.count = 0;
 	vapirecord.fptr = fopen(vapirecord.fname,"w");
 }
 void vapiRecordWrite()
 {
-	if (!vmachine.flagrecord) return;
 	if ((!vapirecord.fptr)) return;
 	fprintf(vapirecord.fptr, _expression,
-		vapirecord.count, _cs, _ip,
+		_cs, _ip,
 		vramVarByte(_cs,_ip+0),vramVarByte(_cs,_ip+1),
 		vramVarByte(_cs,_ip+2),vramVarByte(_cs,_ip+3),
 		vramVarByte(_cs,_ip+4),vramVarByte(_cs,_ip+5),
 		vramVarByte(_cs,_ip+6),vramVarByte(_cs,_ip+7),
 		_ax,_bx,_cx,_dx,_sp,_bp,_si,_di,_ds,_es,_ss,
-		_of,_sf,_zf,_cf,_af,_pf,_df,_if,_tf,vramVarWord(_ss,_sp));
+		_of,_sf,_zf,_cf,_af,_pf,_df,_if,_tf);
 }
 void vapiRecordEnd()
 {
-	if (!vmachine.flagrecord) return;
 	if (vapirecord.fptr) fclose(vapirecord.fptr);
 	vapirecord.fptr = NULL;
 	vapirecord.count = 0;
 }
 
 /* Trace */
-#include "../console/debug.h"
 void vapiTrace()
 {
 	vmachine.flagrun = 0x00;
-//	debugPrintRegs();
-	////if (_cs == 0x94c6 && _ip == 0x0396) {
-	//if (_cs == 0x000f && _ip == 0x41fe) {
-	//	vapiRecordSetFile("d:/nxvm.log");
-	//	vmachine.flagrecord = 0x01;
-	//	vapiRecordStart();
-	//}
-	//if (vapirecord.count > 0xfffff) vmachine.flagrecord = 0x00;
 }
 
 /* Floppy Disk */

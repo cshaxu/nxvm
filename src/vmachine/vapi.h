@@ -79,7 +79,7 @@ t_nubit8 vapiCallBackDisplayGetCurrentChar(t_nubit8 x, t_nubit8 y);
 t_nubit8 vapiCallBackDisplayGetCurrentCharProp(t_nubit8 x, t_nubit8 y);
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

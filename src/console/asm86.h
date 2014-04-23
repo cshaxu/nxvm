@@ -7,8 +7,8 @@
 	Current Build:	0x002d (03/15/2012)
 */
 
-#ifndef NKASM86_ASM86_H
-#define NKASM86_ASM86_H
+#ifndef NXVM_ASM86_H
+#define NXVM_ASM86_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,7 +29,7 @@ int disassemble(char *dasmStmt,Operand *resOperand,
 	const void *locMemory,const unsigned short locSegment,const unsigned short locOffset);
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

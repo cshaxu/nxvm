@@ -32,7 +32,7 @@ void qdrtcInit();
 void qdrtcFinal();
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

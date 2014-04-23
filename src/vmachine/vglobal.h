@@ -88,7 +88,7 @@ typedef t_nubitcc t_faddrcc;
 #define ExecFun(faddr) (*(void (*)(void))(faddr))()
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

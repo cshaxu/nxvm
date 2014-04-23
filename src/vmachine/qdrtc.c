@@ -60,7 +60,7 @@ void qdrtcGetCmosTime()
 	_cl = Hex2BCD(min);
 	_dh = Hex2BCD(sec);
 	_dl = 0x00;
-	ClrBit(_flags, VCPU_FLAG_CF);
+	ClrCF;
 }
 void qdrtcSetCmosTime()
 {
@@ -69,7 +69,7 @@ void qdrtcSetCmosTime()
 	t_nubit8 sec  = BCD2Hex(_dh);
 	vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) = 
 		(t_nubit32)(((hour * 3600 + min * 60 + sec) * 1000) / QDRTC_TICK);
-	ClrBit(_flags, VCPU_FLAG_CF);
+	ClrCF;
 }
 void qdrtcGetCmosDate()
 {
@@ -83,7 +83,7 @@ void qdrtcGetCmosDate()
 	}
 	_dh = Hex2BCD(t->tm_mon + 1);
 	_dl = Hex2BCD(t->tm_mday);
-	ClrBit(_flags, VCPU_FLAG_CF);
+	ClrCF;
 }
 void qdrtcSetCmosDate()
 {
@@ -94,7 +94,7 @@ void qdrtcSetCmosDate()
 void qdrtcSetAlarmClock()
 {
 	/* return a fail to cpu */
-	SetBit(_flags, VCPU_FLAG_CF);
+	SetCF;
 }
 
 void vapiCallBackRtcUpdateTime()

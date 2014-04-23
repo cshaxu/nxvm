@@ -26,7 +26,7 @@ void vportRefresh();
 void vportFinal();
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

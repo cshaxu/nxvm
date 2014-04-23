@@ -14,7 +14,7 @@ void w32akeybMakeChar(WPARAM wParam, LPARAM lParam);
 void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam);
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

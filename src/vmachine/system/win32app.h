@@ -19,7 +19,7 @@ void win32appStartMachine();
 extern HWND hWnd;
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

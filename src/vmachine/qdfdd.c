@@ -19,10 +19,10 @@ void qdfddResetDrive()
 	if (_dl) {
 		/* only one drive */
 		_ah = 0x0c;
-		SetBit(_flags, VCPU_FLAG_CF);;
+		SetCF;
 	} else {
 		_ah = 0x00;
-		ClrBit(_flags, VCPU_FLAG_CF);;
+		ClrCF;
 	}
 	SetStatus;
 }
@@ -39,13 +39,13 @@ void qdfddReadSector()
 	if (drive || head > 1 || sector > 18 || cyl > 79) {
 		/* sector not found */
 		_ah = 0x04;
-		SetBit(_flags, VCPU_FLAG_CF);;
+		SetCF;
 		SetStatus;
 	} else {
 		memcpy((void *)vramGetAddr(_es,_bx),
 			(void *)qdfddGetAddress(cyl,head,sector), _al * 512);
 		_ah = 0x00;
-		ClrBit(_flags, VCPU_FLAG_CF);;
+		ClrCF;
 		SetStatus;
 	}
 }
@@ -58,13 +58,13 @@ void qdfddWriteSector()
 	if (drive || head > 1 || sector > 18 || cyl > 79) {
 		/* sector not found */
 		_ah = 0x04;
-		SetBit(_flags, VCPU_FLAG_CF);;
+		SetCF;
 		SetStatus;
 	} else {
 		memcpy((void *)qdfddGetAddress(cyl,head,sector),
 			(void *)vramGetAddr(_es,_bx), _al * 512);
 		_ah = 0x00;
-		ClrBit(_flags, VCPU_FLAG_CF);;
+		ClrCF;
 		SetStatus;
 	}
 }
@@ -72,10 +72,10 @@ void qdfddGetParameter()
 {
 	if (_dl == 0x80) {
 		_ah = 0x01;
-		SetBit(_flags, VCPU_FLAG_CF);
+		SetCF;
 		SetStatus;
-		ClrBit(_flags, VCPU_FLAG_PF);
-		ClrBit(_flags, VCPU_FLAG_IF);
+		ClrPF;
+		ClrIF;
 	} else {
 		_ah = 0x00;
 		_bl = 0x04;
@@ -83,7 +83,7 @@ void qdfddGetParameter()
 		_dx = 0x0102;
 		_di = vramVarWord(0x0000, 0x1e * 4);
 		_es = vramVarWord(0x0000, 0x1e * 4 + 2);
-		ClrBit(_flags, VCPU_FLAG_CF);
+		ClrCF;
 		SetStatus;
 	}
 }
@@ -92,13 +92,13 @@ void qdfddGetDriveType()
 	switch (_dl) {
 	case 0x00:
 	case 0x01:
-		ClrBit(_flags, VCPU_FLAG_CF);
+		ClrCF;
 		SetStatus;
 		_ah = 0x01;
 		break;
 	case 0x02:
 	case 0x03:
-		ClrBit(_flags, VCPU_FLAG_CF);
+		ClrCF;
 		SetStatus;
 		_ah = 0x00;
 		break;

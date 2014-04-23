@@ -46,7 +46,7 @@ void vcpuinsInit();
 void vcpuinsFinal();
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

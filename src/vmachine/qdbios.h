@@ -14,7 +14,7 @@ void qdbiosInit();
 void qdbiosFinal();
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

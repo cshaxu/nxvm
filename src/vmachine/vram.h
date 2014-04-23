@@ -29,7 +29,7 @@ void vramRefresh();
 void vramFinal();
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif

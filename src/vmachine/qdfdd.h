@@ -30,7 +30,7 @@ void qdfddInit();
 void qdfddFinal();
 
 #ifdef __cplusplus
-}
+}/*cends*/
 #endif
 
 #endif
