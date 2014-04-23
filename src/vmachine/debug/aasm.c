@@ -262,27 +262,29 @@ typedef enum {
 	TOKEN_AX,TOKEN_BX,TOKEN_CX,TOKEN_DX,
 	TOKEN_SP,TOKEN_BP,TOKEN_SI,TOKEN_DI,
 	TOKEN_CS,TOKEN_DS,TOKEN_ES,TOKEN_SS,
-	TOKEN_CHAR,TOKEN_STRING
+	TOKEN_CHAR,TOKEN_STRING,TOKEN_LABEL
 } t_aasm_token;
 
 static t_nubit8 tokimm8;
 static t_nubit16 tokimm16;
 static t_nsbit8 tokchar;
 static char tokstring[0x100];
+static char toklabel[0x100];
 #define tokch  (*tokptr)
 #define take(n) (flagend = 0x01, token = (n))
 static t_aasm_token gettoken(t_string str)
 {
 	static t_string tokptr = NULL;
 	t_nubitcc i;
-	t_string tokptrbak = tokptr;
 	t_bool flagend = 0x00;
 	t_aasm_token token = TOKEN_NULL;
 	t_aasm_scan_state state = STATE_START;
+	t_string tokptrbak;
 	tokimm8 = 0x00;
 	tokimm16 = 0x0000;
 	if (str) tokptr = str;
 	if (!tokptr) return token;
+	tokptrbak = tokptr;
 	do {
 		switch (state) {
 		case STATE_START:
@@ -313,12 +315,12 @@ static t_aasm_token gettoken(t_string str)
 			case 's': state = STATE_S;break;
 			case 'w': state = STATE_W;break;
 			case '\'':
-				if (*(tokptr+2) == '\'') {
+				if (*(tokptr + 2) == '\'') {
 					tokptr++;
 					tokchar = tokch;
 					tokptr++;
 					take(TOKEN_CHAR);
-				} else if (*(tokptr+1) == '\'') {
+				} else if (*(tokptr + 1) == '\'') {
 					tokptr++;
 					tokchar = 0x00;
 					take(TOKEN_CHAR);
@@ -342,6 +344,29 @@ static t_aasm_token gettoken(t_string str)
 				} else {
 					tokstring[i - 1] = 0x00;
 					take(TOKEN_STRING);
+				}
+				break;
+			case '$':
+				tokptr++;
+				if (tokch != '(') {
+					tokptr -= 2;
+					error = 1;
+					take(TOKEN_NULL);
+				} else {
+					toklabel[0] =toklabel[0xff] = 0x00;
+					i = 0;
+					do {
+						tokptr++;
+						toklabel[i++] = tokch;
+					} while (tokch && tokch != ')');
+					if (!tokch) {
+						tokptr = tokptrbak;
+						error = 1;
+						take(TOKEN_NULL);
+					} else {
+						toklabel[i - 1] = 0x00;
+						take(TOKEN_LABEL);
+					}
 				}
 				break;
 			case ' ':
@@ -745,7 +770,7 @@ static void matchtoken(t_aasm_token token)
 	if (gettoken(NULL) != token) error = 1;
 }
 
-/* assembly compiler: parser / grammar analyzer */
+/* assembly compiler: parser / grammar */
 static t_aasm_oprinfo parsearg_mem()
 {
 	t_aasm_token token;
@@ -1165,8 +1190,96 @@ static void parse()
 	if (error) vapiPrint("error2\n");
 }
 
+/* assembly compiler: analyzer / label table */
+typedef struct tag_t_aasm_label_ref_node {
+	t_aasm_oprptr ptr;
+	struct tag_t_aasm_label_ref_node *next;
+	t_nubit16 cs,ip;
+} t_aasm_label_ref_node;
+
+typedef struct tag_t_aasm_label_def_node {
+	char name[0x100];
+	struct tag_t_aasm_label_ref_node *ref;
+	struct tag_t_aasm_label_def_node *next;
+	t_nubit16 cs,ip;
+} t_aasm_label_def_node;
+
+static t_aasm_label_def_node *label_entry = NULL;
+
+static t_aasm_label_def_node *labelNewDefNode(t_string name, t_nubit16 pcs, t_nubit16 pip)
+{
+	t_aasm_label_def_node *p = (t_aasm_label_def_node *)malloc(sizeof(t_aasm_label_def_node));
+	STRCPY(p->name, name);
+	p->cs = pcs;
+	p->ip = pip;
+	p->next = NULL;
+	p->ref = NULL;
+	return p;
+}
+static t_aasm_label_ref_node *labelNewRefNode(t_aasm_oprptr pptr, t_nubit16 pcs, t_nubit16 pip)
+{
+	t_aasm_label_ref_node *p = (t_aasm_label_ref_node *)malloc(sizeof(t_aasm_label_ref_node));
+	p->ptr = pptr;
+	p->cs = pcs;
+	p->ip = pip;
+	p->next = NULL;
+	return p;
+}
+
+static void labelRemoveRefList(t_aasm_label_def_node *pdef)
+{
+	t_aasm_label_ref_node *p = NULL, *q = NULL;
+	if (!pdef) return;
+	p = pdef->ref;
+	while (p) {
+		q = p->next;
+		free(p);
+		p = q;
+	}
+}
+static void labelRemoveDefList()
+{
+	t_aasm_label_def_node *p = label_entry, *q = NULL;
+	if (!p) return;
+	while (p) {
+		q = p->next;
+		labelRemoveRefList(p);
+		free(p);
+		p = q;
+	}
+	label_entry = NULL;
+}
+
 #define setbyte(n) (vramVarByte(avcs, avip) = (t_nubit8)(n))
 #define setword(n) (vramVarWord(avcs, avip) = (t_nubit16)(n))
+
+static void LABEL()
+{
+	t_aasm_label_def_node *p = label_entry, *q = NULL;
+	t_aasm_token token;
+
+	token = gettoken(aop);
+	if (token == TOKEN_LABEL) {
+		while (p && !error) {
+			q = p;
+			if (!strcmp(p->name, toklabel)) {
+				p->cs = avcs;
+				p->ip = avip;
+				matchtoken(TOKEN_COLON);
+				setbyte(0x90);
+				avip++;
+				return;
+			}
+			p = p->next;
+		}
+		if (!q) label_entry = labelNewDefNode(toklabel, avcs, avip);
+		else q->next = labelNewDefNode(toklabel, avcs, avip);
+	}
+	printf("%04X,%04X,%s\n",label_entry->cs,label_entry->ip,label_entry->name);
+	matchtoken(TOKEN_COLON);
+	setbyte(0x90);
+	avip++;
+}
 
 static void SetImm8(t_nubit8 byte)
 {
@@ -3227,6 +3340,7 @@ static void exec()
 	else if (!strcmp(aop, "sti")) STI();
 	else if (!strcmp(aop, "cld")) CLD();
 	else if (!strcmp(aop, "std")) STD();
+	else if (aop[0] == '$') LABEL();
 	else error = 1;
 	if (error) printf("exec.error = %d\n",error);
 }
