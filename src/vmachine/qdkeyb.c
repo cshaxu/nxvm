@@ -7,6 +7,7 @@
 #include "vcpu.h"
 #include "vcpuins.h"
 
+#include "qdbios.h"
 #include "qdkeyb.h"
 
 #define bufptrHead (vramWord(0x0000,QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD))
@@ -40,6 +41,15 @@ void IO_Read_0064()
 {
 	vcpu.iobyte = 0x10;
 }
+void IO_Write_00BB()
+{
+	vapiPrint("fuck BB!\n");
+	INT_16();
+	if (GetBit(vcpu.flags, VCPU_FLAG_ZF))
+		vramWord(vcpu.ss,vcpu.sp) |=  VCPU_FLAG_ZF;
+	else
+		vramWord(vcpu.ss,vcpu.sp) &= ~VCPU_FLAG_ZF;
+}
 
 t_bool qdkeybRecvKeyPress(t_nubit16 ascii)
 {
@@ -69,6 +79,7 @@ void qdkeybGetShiftStatus()
 
 void qdkeybInit()
 {
+	vcpuinsOutPort[0x00bb] = (t_faddrcc)IO_Write_00BB;
 	vcpuinsInPort[0x0064] = (t_faddrcc)IO_Read_0064;
 }
 void qdkeybFinal()

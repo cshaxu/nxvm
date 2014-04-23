@@ -129,8 +129,7 @@ INT charHeight;
 void vapiDisplayInit()
 {
 	hdcWnd = GetDC(hWnd);
-	hdcBuf = hdcWnd;
-	//hdcBuf = CreateCompatibleDC(NULL);
+	hdcBuf = CreateCompatibleDC(NULL);
 	hBmpBuf = NULL;
 	clientHeight = 0;
 	clientWidth  = 0;
@@ -151,7 +150,8 @@ void vapiDisplayInit()
 	logFont.lfClipPrecision = 0;
 	logFont.lfQuality = 0;
 	logFont.lfPitchAndFamily = 0;
-	//lstrcpy(logFont.lfFaceName,L"FixedSys");
+	vapiDisplaySetScreen();
+	lstrcpy(logFont.lfFaceName,L"FixedSys");
 }
 void vapiDisplaySetScreen()
 {
@@ -243,8 +243,8 @@ void vapiDisplayPaint()
 			TextOut(hdcBuf, j * logFont.lfWidth, i * logFont.lfHeight,(LPWSTR)&unicodeChar, 1);
 		}
 	}
-	//BitBlt(hdcWnd, 0, 0, clientWidth, clientHeight, hdcBuf, 0, 0, SRCCOPY);
-	//DisplayFlashCursor();//闪烁光标
+	BitBlt(hdcWnd, 0, 0, clientWidth, clientHeight, hdcBuf, 0, 0, SRCCOPY);
+	DisplayFlashCursor();//闪烁光标
 }
 void vapiDisplayFinal()
 {}

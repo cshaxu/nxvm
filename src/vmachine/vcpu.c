@@ -15,6 +15,14 @@ t_cpu vcpu;
 void vcpuRefresh()
 {
 #ifdef VCPU_DEBUG
+	t_vaddrcc pal = (t_vaddrcc)(&vcpu.al);
+	t_vaddrcc pah = (t_vaddrcc)(&vcpu.ah);
+	t_vaddrcc pbl = (t_vaddrcc)(&vcpu.bl);
+	t_vaddrcc pbh = (t_vaddrcc)(&vcpu.bh);
+	t_vaddrcc pcl = (t_vaddrcc)(&vcpu.cl);
+	t_vaddrcc pch = (t_vaddrcc)(&vcpu.ch);
+	t_vaddrcc pdl = (t_vaddrcc)(&vcpu.dl);
+	t_vaddrcc pdh = (t_vaddrcc)(&vcpu.dh);
 	vlogExec();
 #endif
 	vcpuinsExecIns();

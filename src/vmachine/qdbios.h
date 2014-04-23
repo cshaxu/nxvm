@@ -3,6 +3,8 @@
 
 #include "vglobal.h"
 
+void INT_16();
+
 t_bool qdbiosExecInt(t_nubit8 intid);
 void qdbiosInit();
 void qdbiosFinal();

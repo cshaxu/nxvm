@@ -266,7 +266,6 @@ void qdvgaInit()
 	qdvgaVarCursorBottom = 0x07;
 	qdvgaVarCursorTop    = 0x06;
 	memset((void *)qdvgaGetTextMemAddr, 0x00, QDVGA_SIZE_TEXT_MEMORY);
-	// TODO: init screen: setScreen_Widht_Height(charWidth, charHeight, true);
 }
 void qdvgaFinal()
 {}
