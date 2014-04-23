@@ -73,13 +73,86 @@ out 43, al                                        \n\
 mov al, 12                                        \n\
 out 41, al ; initial count (0x12)                 \n"
 
-#define VBIOS_POST_BOOT "  \
-; start operating system \n\
-xor ax, ax               \n\
-xor bx, bx               \n\
-xor cx, cx               \n\
-xor dx, dx               \n\
-jmp 0000:7c00            \n"
+#define VBIOS_POST_BOOT "             \
+mov bx, 40                          \n\
+mov ds, bx                          \n\
+mov dl, [0100] ; select boot disk   \n\
+mov dh, 00     ; select head 0      \n\
+mov ch, 00     ; select cylender 0  \n\
+mov cl, 01     ; select sector 1    \n\
+mov bx, 00                          \n\
+mov es, bx     ; target es = 0000   \n\
+mov bx, 7c00   ; target bx = 7c00   \n\
+mov al, 01     ; read 1 sector      \n\
+mov ah, 02     ; command read       \n\
+int 13                              \n\
+pushf                               \n\
+pop ax                              \n\
+test al, 01                         \n\
+jnz $(label_post_boot_fail)         \n\
+jmp near $(label_post_boot_succ)    \n\
+\
+$(label_post_boot_fail):          \n\
+mov ah, 0e                        \n\
+mov bl, 0f                        \n\
+mov bh, 00                        \n\
+mov al, 49                        \n\
+int 10  ; display char 'I'        \n\
+mov al, 6e                        \n\
+int 10  ; display char 'n'        \n\
+mov al, 76                        \n\
+int 10  ; display char 'v'        \n\
+mov al, 61                        \n\
+int 10  ; display char 'a'        \n\
+mov al, 6c                        \n\
+int 10  ; display char 'l'        \n\
+mov al, 69                        \n\
+int 10  ; display char 'i'        \n\
+mov al, 64                        \n\
+int 10  ; display char 'd'        \n\
+mov al, 20                        \n\
+int 10  ; display char ' '        \n\
+mov al, 62                        \n\
+int 10  ; display char 'b'        \n\
+mov al, 6f                        \n\
+int 10  ; display char 'o'        \n\
+mov al, 6f                        \n\
+int 10  ; display char 'o'        \n\
+mov al, 74                        \n\
+int 10  ; display char 't'        \n\
+mov al, 20                        \n\
+int 10  ; display char ' '        \n\
+mov al, 64                        \n\
+int 10  ; display char 'd'        \n\
+mov al, 69                        \n\
+int 10  ; display char 'i'        \n\
+mov al, 73                        \n\
+int 10  ; display char 's'        \n\
+mov al, 6b                        \n\
+int 10  ; display char 'k'        \n\
+mov al, 0d                        \n\
+int 10  ; display new line        \n\
+mov al, 0a                        \n\
+int 10  ; display new line        \n\
+$(label_post_boot_fail_loop):     \n\
+mov ah, 11                        \n\
+int 16  ; get key press           \n\
+pushf   ; if any key pressed,     \n\
+pop ax  ; then stop nxvm          \n\
+test ax, 40                       \n\
+jnz $(label_post_boot_fail_loop)  \n\
+qdx ff  ; special stop            \n\
+jmp near $(label_post_boot_fail)  \n\
+\
+$(label_post_boot_succ):  \n\
+mov ax, aa55              \n\
+; start operating system  \n\
+xor ax, ax                \n\
+xor bx, bx                \n\
+mov cx, 01                \n\
+xor dx, dx                \n\
+mov sp, fffe              \n\
+jmp 0000:7c00             \n"
 
 #ifdef __cplusplus
 /*}_EOCD_*/

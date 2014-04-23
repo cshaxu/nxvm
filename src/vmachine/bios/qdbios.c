@@ -125,6 +125,8 @@ static void vbiosLoadInt()
 	qdbiosMakeInt(0x11, SOFT_MISC_INT_11);
 	qdbiosMakeInt(0x12, SOFT_MISC_INT_12);
 	qdbiosMakeInt(0x15, SOFT_MISC_INT_15);
+	/* load fdd int */
+	qdbiosMakeInt(0x0e, HARD_FDD_INT_0E);
 	/* qdkeyb init */
 	qdkeybReset();
 	/* qdcga init */
@@ -138,10 +140,10 @@ static void vbiosLoadPost()
 	SPRINTF(stmt, "jmp %04x:%04x", ics, iip);
 	aasm(stmt, 0xf000, 0xfff0);
 	iip += (t_nubit16)aasm(VBIOS_POST_VPIC,  ics, iip);
-	iip += (t_nubit16)aasm(VBIOS_POST_VCMOS, ics, iip);
 	iip += (t_nubit16)aasm(VBIOS_POST_VDMA,  ics, iip);
 	iip += (t_nubit16)aasm(VBIOS_POST_VFDC,  ics, iip);
 	iip += (t_nubit16)aasm(VBIOS_POST_VPIT,  ics, iip);
+	iip += (t_nubit16)aasm(VBIOS_POST_VCMOS, ics, iip);
 	iip += (t_nubit16)aasm(VBIOS_POST_QDRTC, ics, iip);
 	iip += (t_nubit16)aasm(VBIOS_POST_BOOT,  ics, iip);
 }

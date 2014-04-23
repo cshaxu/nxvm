@@ -176,9 +176,6 @@ void win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey)
 	UCHAR ascii = 0x00;
 	USHORT code = 0x0000;
 	switch(virtualKey) {
-	case VK_F9:
-		vapiCallBackMachineStop();
-		break;
 	case VK_CAPITAL:
 	case VK_NUMLOCK:
 	case VK_SCROLL:
@@ -210,6 +207,8 @@ void win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey)
 		code &= 0x00ff;
 		code |= ((USHORT)scanCode << 8);
 		break;
+	case VK_F9:
+		vapiCallBackMachineStop();
 	default:
 		if (vapiCallBackKeyboardGetFlag0Alt())
 			code = CodeMap[scanCode][7];

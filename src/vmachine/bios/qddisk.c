@@ -41,12 +41,12 @@ static t_nubit16 sax, sbx, scx, sdx;
 #define QDBIOS_VAR_VFDD  0
 #define QDBIOS_VAR_QDFDD 1
 /* debugging selectors */
-#define QDBIOS_FDD QDBIOS_VAR_VFDD
+#define QDBIOS_FDD QDBIOS_VAR_QDFDD
 
 #if (QDBIOS_FDD == QDBIOS_VAR_VFDD)
 static void INT_13_00_FDD_ResetDrive()
 {
-	if (cmp(_dl, 0x00) || cmp(_dl, 0x01)) {
+	if (cmp(_dl, 0x00)) {
 		mov(_ah, 0x00);
 		clc;
 	} else {
@@ -479,6 +479,7 @@ void INT_0E()
 	pop_dx;
 	pop_ax;
 }
+
 void INT_13()
 {
 	switch (_ah) {
@@ -494,29 +495,6 @@ void INT_13()
 
 void qddiskReset()
 {
-	qdbiosInt[0x0e] = (t_faddrcc)INT_0E; /* hard fdd */
 	qdbiosInt[0x13] = (t_faddrcc)INT_13; /* soft fdd */
-/* special: INT 0E */
-	qdbiosMakeInt(0x09, "qdx 0e\niret");
-/* special: INT 13 */
 	qdbiosMakeInt(0x13, "qdx 13\niret");
-	if (vramVarByte(0x0040, 0x0100) & 0x80) {
-		if (!vhdd.flagexist) {
-			vapiPrint("Insert boot disk and restart.\n");
-			return;
-		} else {
-			memcpy((void *)vramGetAddr(0x0000,0x7c00), (void *)vhdd.base, 0x200);
-			mov(_ax, 0xaa55);
-		}
-	} else {
-		if (!vfdd.flagexist) {
-			vapiPrint("Insert boot disk and restart.\n");
-			return;
-		} else {
-			memcpy((void *)vramGetAddr(0x0000,0x7c00), (void *)vfdd.base, 0x200);
-			mov(_ax, 0xaa55);
-		}
-	}
-	mov(_cx, 0x0001);
-	mov(_sp, 0xfffe);
 }
