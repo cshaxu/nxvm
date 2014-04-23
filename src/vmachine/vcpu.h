@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-/* Central Processing Unit: Intel 8086e (80386) */
+/* Central Processing Unit: Intel 8086+ (80386) */
 
 #ifndef NXVM_VCPU_H
 #define NXVM_VCPU_H
@@ -11,8 +11,13 @@
 
 #include "vglobal.h"
 
-#ifndef ECPUACT
-typedef enum {SREG_CODE, SREG_DATA, SREG_STACK, SREG_LDTR, SREG_TR} t_cpu_sreg_type;
+typedef enum {
+	SREG_CODE,
+	SREG_DATA,
+	SREG_STACK,
+	SREG_LDTR,
+	SREG_TR
+} t_cpu_sreg_type;
 typedef struct {
 	t_nubit16 selector;
 	/* invisible portion/descriptor part */
@@ -113,6 +118,7 @@ typedef struct {
 #define _esi    (vcpu.esi)
 #define _edi    (vcpu.edi)
 #define _eip    (vcpu.eip)
+#define _eflags (vcpu.eflags)
 #define _ax     (vcpu.ax)
 #define _bx     (vcpu.bx)
 #define _cx     (vcpu.cx)
@@ -129,6 +135,8 @@ typedef struct {
 #define _bp     (vcpu.bp)
 #define _si     (vcpu.si)
 #define _di     (vcpu.di)
+#define _ip     (vcpu.ip)
+#define _flags  (vcpu.flags)
 #define _ds     (vcpu.ds.selector)
 #define _cs     (vcpu.cs.selector)
 #define _ss     (vcpu.ss.selector)
@@ -136,7 +144,6 @@ typedef struct {
 #define _es     (vcpu.es.selector)
 #define _fs     (vcpu.fs.selector)
 #define _gs     (vcpu.gs.selector)
-#define _eflags (vcpu.eflags)
 #define _gdtr   (vcpu.gdtr)
 #define _idtr   (vcpu.idtr)
 #define _ldtr   (vcpu.ldtr)
@@ -480,11 +487,6 @@ typedef struct {
 #define _GetCPL  (_GetCR0_PE ? (_GetEFLAGS_VM ? 3 : vcpu.cs.dpl) : 0)
 
 extern t_cpu vcpu;
-#else
-#include "ecpu/ecpu.h"
-typedef t_ecpu t_cpu;
-#define vcpu ecpu
-#endif
 
 void vcpuInit();
 void vcpuReset();

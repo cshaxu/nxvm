@@ -25,37 +25,37 @@ static t_nubit16    dvcs, dvip;
 static void GetMem(t_nubitcc membit)
 {
 	switch (membit) {
-	case 8: SPRINTF(drm, "[%04X]", vramVarWord(dvcs,dvip));
-		    SPRINTF(dtip, "%s:%04X=%02X", dds, vramVarWord(dvcs,dvip), vramVarByte(dods,vramVarWord(dvcs,dvip)));
+	case 8: SPRINTF(drm, "[%04X]", vramRealWord(dvcs,dvip));
+		    SPRINTF(dtip, "%s:%04X=%02X", dds, vramRealWord(dvcs,dvip), vramRealByte(dods,vramRealWord(dvcs,dvip)));
 			break;
-	case 16:SPRINTF(drm, "[%04X]", vramVarWord(dvcs,dvip));
-		    SPRINTF(dtip, "%s:%04X=%04X", dds, vramVarWord(dvcs,dvip), vramVarWord(dods,vramVarWord(dvcs,dvip)));
+	case 16:SPRINTF(drm, "[%04X]", vramRealWord(dvcs,dvip));
+		    SPRINTF(dtip, "%s:%04X=%04X", dds, vramRealWord(dvcs,dvip), vramRealWord(dods,vramRealWord(dvcs,dvip)));
 			break;
 	default:SPRINTF(drm, "<ERROR:MEMBIT(%02X)>",membit);break;}
 	dvip += 2;
 }
 static void GetImm(t_nubitcc immbit)
 {
-	t_nsbit8 imm8 = (t_nsbit8)vramVarByte(dvcs, dvip);
-	t_nsbit16 imm16 = (t_nsbit16)vramVarWord(dvcs, dvip);
+	t_nsbit8 imm8 = (t_nsbit8)vramRealByte(dvcs, dvip);
+	t_nsbit16 imm16 = (t_nsbit16)vramRealWord(dvcs, dvip);
 	t_nsbit8 sign8 = (imm8 & 0x80) ? '-' : '+';
 	t_nubit8 immu8 = (imm8 & 0x80) ? ((~imm8) + 0x01) : imm8;
 	dimmoff8[0] = 0;
 	dimmoff16[0] = 0;
 	switch(immbit) {
-	case 8:  SPRINTF(dimm, "%02X", vramVarByte(dvcs,dvip)); dvip += 1;
+	case 8:  SPRINTF(dimm, "%02X", vramRealByte(dvcs,dvip)); dvip += 1;
 		     SPRINTF(dimmoff8,  "%04X", (t_nubit16)(dvip+imm8));
 		     SPRINTF(dimmsign,  "%c%02X", sign8, immu8);              break;
-	case 16: SPRINTF(dimm, "%04X", vramVarWord(dvcs,dvip)); dvip += 2;
+	case 16: SPRINTF(dimm, "%04X", vramRealWord(dvcs,dvip)); dvip += 2;
 		     SPRINTF(dimmoff16, "%04X", (t_nubit16)(dvip+imm16));                break;
-	case 32: SPRINTF(dimm, "%08X", vramVarDWord(dvcs,dvip));dvip += 4;break;
+	case 32: SPRINTF(dimm, "%08X", vramRealDWord(dvcs,dvip));dvip += 4;break;
 	default:SPRINTF(dimm, "<ERROR:IMMBIT(%02X)>",immbit);break;}
 }
 static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 {
 	t_nsbit8 disp8 = 0x00;
 	t_nubit16 disp16 = 0x0000;
-	t_nubit8 modrm = vramVarByte(dvcs, dvip++);
+	t_nubit8 modrm = vramRealByte(dvcs, dvip++);
 	t_nsbit8 sign;
 	t_nubit8 disp8u;
 	ismem = 0x01;
@@ -63,113 +63,113 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 	case 0:
 		switch(RM) {
 		case 0: SPRINTF(drm, "[BX+SI]");
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si), vramVarByte(dods,vcpu.bx+vcpu.si));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si), vramVarWord(dods,vcpu.bx+vcpu.si));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si), vramRealByte(dods,vcpu.bx+vcpu.si));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si), vramRealWord(dods,vcpu.bx+vcpu.si));
 			break;
 		case 1: SPRINTF(drm, "[BX+DI]");
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.di), vramVarByte(dods,vcpu.bx+vcpu.di));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.di), vramVarWord(dods,vcpu.bx+vcpu.di));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.di), vramRealByte(dods,vcpu.bx+vcpu.di));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.di), vramRealWord(dods,vcpu.bx+vcpu.di));
 			break;
 		case 2: SPRINTF(drm, "[BP+SI]");
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.si), vramVarByte(doss,vcpu.bp+vcpu.si));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.si), vramVarWord(doss,vcpu.bp+vcpu.si));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.si), vramRealByte(doss,vcpu.bp+vcpu.si));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.si), vramRealWord(doss,vcpu.bp+vcpu.si));
 			break;
 		case 3: SPRINTF(drm, "[BP+DI]");
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.di), vramVarByte(doss,vcpu.bp+vcpu.di));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.di), vramVarWord(doss,vcpu.bp+vcpu.di));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.di), vramRealByte(doss,vcpu.bp+vcpu.di));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.di), vramRealWord(doss,vcpu.bp+vcpu.di));
 			break;
 		case 4: SPRINTF(drm, "[SI]");
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.si), vramVarByte(dods,vcpu.si));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.si), vramVarWord(dods,vcpu.si));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.si), vramRealByte(dods,vcpu.si));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.si), vramRealWord(dods,vcpu.si));
 			break;
 		case 5: SPRINTF(drm, "[DI]");
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di), vramVarByte(dods,vcpu.di));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di), vramVarWord(dods,vcpu.di));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di), vramRealByte(dods,vcpu.di));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di), vramRealWord(dods,vcpu.di));
 			break;
-		case 6: disp16 = vramVarWord(dvcs, dvip); dvip += 2;
+		case 6: disp16 = vramRealWord(dvcs, dvip); dvip += 2;
 			    SPRINTF(drm, "[%04X]", disp16);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(disp16), vramVarByte(dods,disp16));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(disp16), vramVarWord(dods,disp16));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(disp16), vramRealByte(dods,disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(disp16), vramRealWord(dods,disp16));
 			break;
 		case 7: SPRINTF(drm, "[BX]");
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx), vramVarByte(dods,vcpu.bx));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx), vramVarWord(dods,vcpu.bx));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx), vramRealByte(dods,vcpu.bx));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx), vramRealWord(dods,vcpu.bx));
 			break;
 		default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X),RM(%02X)>", _GetModRM_MOD(modrm), RM);break;}
 		break;
 	case 1:
-		disp8 = (t_nsbit8)vramVarByte(dvcs, dvip);dvip += 1;
+		disp8 = (t_nsbit8)vramRealByte(dvcs, dvip);dvip += 1;
 		sign = (disp8 & 0x80) ? '-' : '+';
 		disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
 		switch(RM) {
 		case 0: SPRINTF(drm, "[BX+SI%c%02X]", sign, disp8u);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp8), vramVarByte(dods,vcpu.bx+vcpu.si+disp8));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp8), vramVarWord(dods,vcpu.bx+vcpu.si+disp8));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp8), vramRealByte(dods,vcpu.bx+vcpu.si+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp8), vramRealWord(dods,vcpu.bx+vcpu.si+disp8));
 			break;
 		case 1: SPRINTF(drm, "[BX+DI%c%02X]", sign, disp8u);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp8), vramVarByte(dods,vcpu.bx+vcpu.di+disp8));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp8), vramVarWord(dods,vcpu.bx+vcpu.di+disp8));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp8), vramRealByte(dods,vcpu.bx+vcpu.di+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp8), vramRealWord(dods,vcpu.bx+vcpu.di+disp8));
 			break;
 		case 2: SPRINTF(drm, "[BP+SI%c%02X]", sign, disp8u);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp8), vramVarByte(doss,vcpu.bp+vcpu.si+disp8));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp8), vramVarWord(doss,vcpu.bp+vcpu.si+disp8));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp8), vramRealByte(doss,vcpu.bp+vcpu.si+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp8), vramRealWord(doss,vcpu.bp+vcpu.si+disp8));
 			break;
 		case 3: SPRINTF(drm, "[BP+DI%c%02X]", sign, disp8u);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp8), vramVarByte(doss,vcpu.bp+vcpu.di+disp8));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp8), vramVarWord(doss,vcpu.bp+vcpu.di+disp8));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp8), vramRealByte(doss,vcpu.bp+vcpu.di+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp8), vramRealWord(doss,vcpu.bp+vcpu.di+disp8));
 			break;
 		case 4: SPRINTF(drm, "[SI%c%02X]", sign, disp8u);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.si+disp8), vramVarByte(dods,vcpu.si+disp8));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.si+disp8), vramVarWord(dods,vcpu.si+disp8));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.si+disp8), vramRealByte(dods,vcpu.si+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.si+disp8), vramRealWord(dods,vcpu.si+disp8));
 			break;
 		case 5: SPRINTF(drm, "[DI%c%02X]", sign, disp8u);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di+disp8), vramVarByte(dods,vcpu.di+disp8));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di+disp8), vramVarWord(dods,vcpu.di+disp8));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di+disp8), vramRealByte(dods,vcpu.di+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di+disp8), vramRealWord(dods,vcpu.di+disp8));
 			break;
 		case 6: SPRINTF(drm, "[BP%c%02X]", sign, disp8u);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+disp8), vramVarByte(doss,vcpu.bp+disp8));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+disp8), vramVarWord(doss,vcpu.bp+disp8));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+disp8), vramRealByte(doss,vcpu.bp+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+disp8), vramRealWord(doss,vcpu.bp+disp8));
 			break;
 		case 7: SPRINTF(drm, "[BX%c%02X]", sign, disp8u);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+disp8), vramVarByte(dods,vcpu.bx+disp8));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+disp8), vramVarWord(dods,vcpu.bx+disp8));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+disp8), vramRealByte(dods,vcpu.bx+disp8));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+disp8), vramRealWord(dods,vcpu.bx+disp8));
 			break;
 		default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X),RM(%02X)>", _GetModRM_MOD(modrm), RM);break;}
 		break;
 	case 2:
-		disp16 = vramVarWord(dvcs,dvip);dvip += 2;
+		disp16 = vramRealWord(dvcs,dvip);dvip += 2;
 		switch(RM) {
 		case 0: SPRINTF(drm, "[BX+SI+%04X]", disp16);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp16), vramVarByte(dods,vcpu.bx+vcpu.si+disp16));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp16), vramVarWord(dods,vcpu.bx+vcpu.si+disp16));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp16), vramRealByte(dods,vcpu.bx+vcpu.si+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp16), vramRealWord(dods,vcpu.bx+vcpu.si+disp16));
 			break;
 		case 1: SPRINTF(drm, "[BX+DI+%04X]", disp16);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp16), vramVarByte(dods,vcpu.bx+vcpu.di+disp16));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp16), vramVarWord(dods,vcpu.bx+vcpu.di+disp16));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp16), vramRealByte(dods,vcpu.bx+vcpu.di+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.di+disp16), vramRealWord(dods,vcpu.bx+vcpu.di+disp16));
 			break;
 		case 2: SPRINTF(drm, "[BP+SI+%04X]", disp16);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp16), vramVarByte(doss,vcpu.bp+vcpu.si+disp16));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp16), vramVarWord(doss,vcpu.bp+vcpu.si+disp16));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp16), vramRealByte(doss,vcpu.bp+vcpu.si+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.si+disp16), vramRealWord(doss,vcpu.bp+vcpu.si+disp16));
 			break;
 		case 3: SPRINTF(drm, "[BP+DI+%04X]", disp16);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp16), vramVarByte(doss,vcpu.bp+vcpu.di+disp16));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp16), vramVarWord(doss,vcpu.bp+vcpu.di+disp16));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp16), vramRealByte(doss,vcpu.bp+vcpu.di+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+vcpu.di+disp16), vramRealWord(doss,vcpu.bp+vcpu.di+disp16));
 			break;
 		case 4: SPRINTF(drm, "[SI+%04X]", disp16);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.si+disp16), vramVarByte(dods,vcpu.si+disp16));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.si+disp16), vramVarWord(dods,vcpu.si+disp16));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.si+disp16), vramRealByte(dods,vcpu.si+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.si+disp16), vramRealWord(dods,vcpu.si+disp16));
 			break;
 		case 5: SPRINTF(drm, "[DI+%04X]", disp16);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di+disp16), vramVarByte(dods,vcpu.di+disp16));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di+disp16), vramVarWord(dods,vcpu.di+disp16));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di+disp16), vramRealByte(dods,vcpu.di+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di+disp16), vramRealWord(dods,vcpu.di+disp16));
 			break;
 		case 6: SPRINTF(drm, "[BP+%04X]", disp16);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+disp16), vramVarByte(doss,vcpu.bp+disp16));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+disp16), vramVarWord(doss,vcpu.bp+disp16));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dss, (t_nubit16)(vcpu.bp+disp16), vramRealByte(doss,vcpu.bp+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dss, (t_nubit16)(vcpu.bp+disp16), vramRealWord(doss,vcpu.bp+disp16));
 			break;
 		case 7: SPRINTF(drm, "[BX+%04X]", disp16);
-			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+disp16), vramVarByte(dods,vcpu.bx+disp16));
-			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+disp16), vramVarWord(dods,vcpu.bx+disp16));
+			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+disp16), vramRealByte(dods,vcpu.bx+disp16));
+			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+disp16), vramRealWord(dods,vcpu.bx+disp16));
 			break;
 		default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X),RM(%02X)>", _GetModRM_MOD(modrm), RM);break;}
 		break;
@@ -226,7 +226,7 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 
 static void DB()
 {
-	t_nubit8 opcode = vramVarByte(dvcs, dvip);
+	t_nubit8 opcode = vramRealByte(dvcs, dvip);
 	dvip++;
 	SPRINTF(dop, "DB");
 	SPRINTF(dopr, "%02X", opcode);
@@ -495,8 +495,8 @@ static void ES()
 	SPRINTF(dop, "ES:");
 	SPRINTF(dds, "ES");
 	SPRINTF(dss, "ES");
-	dods = vcpu.es.selector;
-	doss = vcpu.es.selector;
+	dods = _es;
+	doss = _es;
 }
 static void DAA()
 {
@@ -551,8 +551,8 @@ static void CS()
 	SPRINTF(dop, "CS:");
 	SPRINTF(dds, "CS");
 	SPRINTF(dss, "CS");
-	dods = vcpu.cs.selector;
-	doss = vcpu.cs.selector;
+	dods = _cs;
+	doss = _cs;
 }
 static void DAS()
 {
@@ -607,8 +607,8 @@ static void SS()
 	SPRINTF(dop, "SS:");
 	SPRINTF(dds, "SS");
 	SPRINTF(dss, "SS");
-	dods = vcpu.ss.selector;
-	doss = vcpu.ss.selector;
+	dods = _ss;
+	doss = _ss;
 }
 static void AAA()
 {
@@ -663,8 +663,8 @@ static void DS()
 	SPRINTF(dop, "DS:");
 	SPRINTF(dds, "DS");
 	SPRINTF(dss, "DS");
-	dods = vcpu.ds.selector;
-	doss = vcpu.ds.selector;
+	dods = _ds;
+	doss = _ds;
 }
 static void AAS()
 {
@@ -1905,8 +1905,8 @@ static void ClrPrefix()
 {
 	SPRINTF(dds, "DS");
 	SPRINTF(dss, "SS");
-	dods = vcpu.ds.selector;
-	doss = vcpu.ss.selector;
+	dods = _ds;
+	doss = _ss;
 }
 
 static void exec(t_nubit8 opcode)
@@ -2192,12 +2192,12 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off, t_nubit8 flagout)
 		dimmoff8[0]  = 0;
 		dimmoff16[0] = 0;
 		dimmsign[0]  = 0;
-		opcode = vramVarByte(dvcs, dvip);
+		opcode = vramRealByte(dvcs, dvip);
 		exec(opcode);
 		l = dvip - off;
 		len += l;
 		if (flagout) {
-			for (i = 0;i < l;++i) SPRINTF(dbin, "%s%02X", dbin, vramVarByte(seg, off+i));
+			for (i = 0;i < l;++i) SPRINTF(dbin, "%s%02X", dbin, vramRealByte(seg, off+i));
 			SPRINTF(dstmt, "%04X:%04X %s", seg, off, dbin);
 			for (i = strlen(dstmt);i < 24;++i) STRCAT(dstmt, " ");
 		} else dstmt[0] = 0;

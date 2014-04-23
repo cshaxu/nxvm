@@ -9,8 +9,8 @@
 #include "qdbios.h"
 #include "qddisk.h"
 
-#define SetHddStatus (vramVarByte(0x0040, 0x0074) = _ah)
-#define GetHddStatus (vramVarByte(0x0040, 0x0074))
+#define SetHddStatus (vramRealByte(0x0040, 0x0074) = _ah)
+#define GetHddStatus (vramRealByte(0x0040, 0x0074))
 t_vaddrcc vhddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector)
 {
 	vhdd.cyl = cyl;
@@ -32,7 +32,7 @@ static void INT_13_02_HDD_ReadSector()
 		_ah = 0x04;
 		SetBit(_eflags, VCPU_EFLAGS_CF);
 	} else {
-		memcpy((void *)vramGetRealAddress(_es,_bx),
+		memcpy((void *)vramGetRealAddr(_es,_bx),
 			(void *)vhddGetAddress(cyl,head,sector), _al * vhdd.nbyte);
 		_ah = 0x00;
 		ClrBit(_eflags, VCPU_EFLAGS_CF);
@@ -51,7 +51,7 @@ static void INT_13_03_HDD_WriteSector()
 		SetBit(_eflags, VCPU_EFLAGS_CF);
 	} else {
 		memcpy((void *)vhddGetAddress(cyl,head,sector),
-			(void *)vramGetRealAddress(_es,_bx), _al * vhdd.nbyte);
+			(void *)vramGetRealAddr(_es,_bx), _al * vhdd.nbyte);
 		_ah = 0x00;
 		ClrBit(_eflags, VCPU_EFLAGS_CF);
 	}

@@ -10,8 +10,8 @@
 #include "qdbios.h"
 #include "qdkeyb.h"
 
-#define bufptrHead (vramVarWord(0x0000,QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD))
-#define bufptrTail (vramVarWord(0x0000,QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL))
+#define bufptrHead (vramRealWord(0x0000,QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD))
+#define bufptrTail (vramRealWord(0x0000,QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL))
 #define bufGetSize (QDKEYB_VBIOS_ADDR_KEYB_BUFFER_END - \
                     QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + 1)
 #define bufIsEmpty (bufptrHead == bufptrTail)
@@ -23,7 +23,7 @@
 static t_bool bufPush(t_nubit16 code)
 {
 	if (bufIsFull) return 1;
-	vramVarWord(0x0000, bufptrTail) = code;
+	vramRealWord(0x0000, bufptrTail) = code;
 	bufptrAdvance(bufptrTail);
 	return 0;
 }
@@ -31,13 +31,13 @@ static t_nubit16 bufPop()
 {
 	t_nubit16 res = 0;
 	if (bufIsEmpty) return res;
-	res = vramVarWord(0x0000, bufptrHead);
+	res = vramRealWord(0x0000, bufptrHead);
 	bufptrAdvance(bufptrHead);
 	return res;
 }
 static t_nubit16 bufPeek()
 {
-	return vramVarWord(0x0000, bufptrHead);
+	return vramRealWord(0x0000, bufptrHead);
 }
 
 t_bool vapiCallBackKeyboardGetFlag0CapsLock() {return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);}

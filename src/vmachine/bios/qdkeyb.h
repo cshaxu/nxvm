@@ -42,8 +42,8 @@ void qdkeybGetStatus();
 void qdkeybGetShiftStatus();
 void qdkeybBufferKey();
 
-#define qdkeybVarFlag0 (vramVarByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG0))
-#define qdkeybVarFlag1 (vramVarByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG1))
+#define qdkeybVarFlag0 (vramRealByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG0))
+#define qdkeybVarFlag1 (vramRealByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG1))
 
 void qdkeybReset();
 

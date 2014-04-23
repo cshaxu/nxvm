@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-// CPU Instruction Set: Intel 8086
+// Instruction Set of Virtual CPU
 
 #ifndef NXVM_VCPUINS_H
 #define NXVM_VCPUINS_H
@@ -9,7 +9,7 @@
 /*extern "C" {*/
 #endif
 
-#include "vglobal.h"
+#include "vcpu.h"
 
 typedef enum {
 	ADD8,ADD16,ADD32,

@@ -18,7 +18,7 @@ void vapiCallBackMachineRun()
 	if (vmachine.flagrecord) vapiRecordStart();
 	while (vmachine.flagrun) {
 		if (vmachine.flagbreak &&
-			vcpu.cs.selector == vmachine.breakcs && vcpu.eip == vmachine.breakip) {
+			_cs == vmachine.breakcs && _ip == vmachine.breakip) {
 			vmachineStop();
 			break;
 		}
@@ -45,22 +45,22 @@ static void vmachineAsmTest()
 	t_nubit8 ins[0x20];
 	total++;
 	lend = dasm(fetch, _cs, _eip, 0x00);
-	memcpy(ins, (void *)vramGetRealAddress(_cs, _eip), lend);
+	memcpy(ins, (void *)vramGetRealAddr(_cs, _eip), lend);
 	lena = aasm(fetch, _cs, _eip);
 	dasm(result, _cs, _eip, 0x00);
 	for (i = 0;i < 0x50;++i) {
 		if (fetch[i] == '\n') fetch[i] = ' ';
 		if (result[i] == '\n') result[i] = ' ';
 	}
-	if (lena != lend || memcmp(ins, (void *)vramGetRealAddress(_cs, _eip), lend) || STRCMP(fetch,result)) {
+	if (lena != lend || memcmp(ins, (void *)vramGetRealAddr(_cs, _eip), lend) || STRCMP(fetch,result)) {
 		vapiPrint("diff at #%d\t%04X:%04X\n", total, _cs, _eip);
 		for (i = 0;i < lend;++i) vapiPrint("%02X", ins[i]);
 		vapiPrint("\t%s\n", fetch);
-		for (i = 0;i < lena;++i) vapiPrint("%02X", vramVarByte(_cs, _eip+i));
+		for (i = 0;i < lena;++i) vapiPrint("%02X", vramRealByte(_cs, _eip+i));
 		vapiPrint("\t%s\n", result);
 		if (lena < lend) {
 			for (i = lena;i < lend;++i)
-				vramVarByte(_cs, _eip + i) = 0x90;
+				vramRealByte(_cs, _eip + i) = 0x90;
 		}
 	}
 }

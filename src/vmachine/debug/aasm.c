@@ -1258,11 +1258,11 @@ static void labelRealizeRef(t_aasm_label_def_node *pdef, t_aasm_label_ref_node *
 	//printf("ptr: %d, name: %s\n",pref->ptr,pdef->name);
 	switch (pref->ptr) {
 	case PTR_FAR:
-		vramVarWord(pref->cs, pref->ip + 0) = pdef->ip;
-		vramVarWord(pref->cs, pref->ip + 2) = pdef->cs;
+		vramRealWord(pref->cs, pref->ip + 0) = pdef->ip;
+		vramRealWord(pref->cs, pref->ip + 2) = pdef->cs;
 		break;
 	case PTR_NEAR:
-		vramVarWord(pref->cs, pref->ip + 0) = pdef->ip - pref->ip - 0x02;
+		vramRealWord(pref->cs, pref->ip + 0) = pdef->ip - pref->ip - 0x02;
 		break;
 	case PTR_SHORT:
 		lo = pref->ip - 0x0080 + 0x0001;
@@ -1277,7 +1277,7 @@ static void labelRealizeRef(t_aasm_label_def_node *pdef, t_aasm_label_ref_node *
 		else error = 1;
 		//printf("lo: %x, hi: %x, ta = %x, rel8 = %x\n",lo, hi, ta, rel8 & 0xff);
 		if (error) return;
-		vramVarByte(pref->cs, pref->ip + 0) = rel8;
+		vramRealByte(pref->cs, pref->ip + 0) = rel8;
 		break;
 	case PTR_NONE:
 	default:
@@ -1357,7 +1357,7 @@ static void labelStoreRef(t_string strlabel, t_aasm_oprptr ptrlabel)
 	} else if (p && (p->cs || p->ip)) {
 		//printf("ref real: '%s' at %04X:%04X\n", strlabel, avcs, avip);
 		labelRealizeRef(p, n);
-		//printf("result: %04X:%04X\n",vramVarWord(avcs, avip+2),vramVarWord(avcs, avip));
+		//printf("result: %04X:%04X\n",vramRealWord(avcs, avip+2),vramRealWord(avcs, avip));
 		free(n);
 		return;
 	}
@@ -1371,8 +1371,8 @@ static void labelStoreRef(t_string strlabel, t_aasm_oprptr ptrlabel)
 	//printf("ref saved: '%s' at %04X:%04X\n", strlabel, avcs, avip);
 }
 
-#define setbyte(n) (vramVarByte(avcs, avip) = (t_nubit8)(n))
-#define setword(n) (vramVarWord(avcs, avip) = (t_nubit16)(n))
+#define setbyte(n) (vramRealByte(avcs, avip) = (t_nubit8)(n))
+#define setword(n) (vramRealWord(avcs, avip) = (t_nubit16)(n))
 
 static void LABEL()
 {

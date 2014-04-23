@@ -7,7 +7,6 @@
 #include "vapi.h"
 #include "vport.h"
 #include "vram.h"
-#include "vcpu.h"
 #include "vpic.h"
 #include "bios/qdbios.h"
 #include "vcpuins.h"
@@ -17,10 +16,9 @@
 
 /*
  * no protected mode
- * no segmentation limit
+ * no task switch / gates
+ * no segmentation
  * no paging
- * no descriptor
- * no selector
  */
 
 #define i386(n) if (1)
@@ -481,7 +479,7 @@ tots _ksa_descriptor_gdt(t_nubit16 selector, t_bool write)
 		_chk(_SetExcept_GP(selector));
 		_be;
 	}
-	vcpuins.ldesc = _GetGDTR_Base + _GetSelector_Offset(selector);
+	vcpuins.ldesc = (t_nubit32)(_GetGDTR_Base + _GetSelector_Offset(selector));
 	_chk(vcpuins.pdesc = _kma_addr_physical_linear(vcpuins.ldesc, 8, write, 0, 1));
 	_chk(vcpuins.rdesc = _kma_ref_physical(vcpuins.pdesc));
 	_chk(vcpuins.cdesc = _kma_read_ref(vcpuins.rdesc, 8));
@@ -495,7 +493,7 @@ tots _ksa_descriptor_ldt(t_nubit16 selector, t_bool write)
 		_chk(_SetExcept_GP(selector));
 		_be;
 	}
-	if ((_GetSelector_Offset(selector) + 7) > _GetLDTR_Limit) {
+	if ((_GetSelector_Offset(selector) + 7) > (t_nubit16)_GetLDTR_Limit) {
 		_bb("Selector_Offset(>LDTR_Limit)");
 		_chk(_SetExcept_GP(selector));
 		_be;
@@ -682,12 +680,12 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 		_chk(_ksa_descriptor_gdt(selector, 1));
 		if (_IsDescTSSAvl(vcpuins.cdesc)) {
 			_bb("descriptor(!TSSAvl)");
-			_chk(_SetExcept_GP(vcpuins.cdesc));
+			_chk(_SetExcept_GP(selector));
 			_be;
 		}
 		if (!_IsDescPresent(vcpuins.cdesc)) {
 			_bb("descriptor(!P)");
-			_chk(_SetExcept_NP(vcpuins.cdesc));
+			_chk(_SetExcept_NP(selector));
 			_be;
 		}
 		_SetDescTSSBusy(d_nubit64(vcpuins.rdesc));
@@ -711,12 +709,12 @@ tots _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 		_chk(_ksa_descriptor_gdt(selector, 0));
 		if (!_IsDescLDT(vcpuins.cdesc)) {
 			_bb("descriptor(!LDT)");
-			_chk(_SetExcept_GP(vcpuins.cdesc));
+			_chk(_SetExcept_GP(selector));
 			_be;
 		}
 		if (!_IsDescPresent(vcpuins.cdesc)) {
 			_bb("descriptor(!P)");
-			_chk(_SetExcept_NP(vcpuins.cdesc));
+			_chk(_SetExcept_NP(selector));
 			_be;
 		}
 		rsreg->selector = selector;

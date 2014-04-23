@@ -28,18 +28,14 @@ extern t_ram vram;
 
 #define vramIsAddrInMem(addr) \
 	(((t_vaddrcc)(addr) >= vram.base) && ((t_vaddrcc)(addr) < (vram.base + vram.size)))
-#ifdef ECPUACT
-#define vramGetRealAddress(segment, offset)  (vram.base + \
-	((((segment) << 4) + (offset)) % vram.size))
-#else
-#define vramGetRealAddress(segment, offset)  (vram.base + \
+
+#define vramGetRealAddr(segment, offset)  (vram.base + \
 	(((((t_nubit16)(segment) << 4) + (t_nubit16)(offset)) & \
 	  (vram.flaga20 ? 0xffffffff : 0xffefffff)) % vram.size))
-#endif
 
-#define vramVarByte(segment, offset)  (d_nubit8(vramGetRealAddress(segment, offset)))
-#define vramVarWord(segment, offset)  (d_nubit16(vramGetRealAddress(segment, offset)))
-#define vramVarDWord(segment, offset) (d_nubit32(vramGetRealAddress(segment, offset)))
+#define vramRealByte(segment, offset)  (d_nubit8(vramGetRealAddr(segment, offset)))
+#define vramRealWord(segment, offset)  (d_nubit16(vramGetRealAddr(segment, offset)))
+#define vramRealDWord(segment, offset) (d_nubit32(vramGetRealAddr(segment, offset)))
 
 
 void vramAlloc(t_nubitcc newsize);

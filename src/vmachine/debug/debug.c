@@ -108,10 +108,10 @@ static void addrparse(t_nubit16 defseg,const t_string addr)
 		seg = defseg;
 		ptr = scannubit16(cseg);
 	} else {
-		if(!STRCMP(cseg,"cs")) seg = vcpu.cs.selector;
-		else if(!STRCMP(cseg,"ss")) seg = vcpu.ss.selector;
-		else if(!STRCMP(cseg,"ds")) seg = vcpu.ds.selector;
-		else if(!STRCMP(cseg,"es")) seg = vcpu.es.selector;
+		if(!STRCMP(cseg,"cs")) seg = _cs;
+		else if(!STRCMP(cseg,"ss")) seg = _ss;
+		else if(!STRCMP(cseg,"ds")) seg = _ds;
+		else if(!STRCMP(cseg,"es")) seg = _es;
 		else seg = scannubit16(cseg);
 		ptr = scannubit16(cptr);
 	}
@@ -160,7 +160,7 @@ static void a()
 	if(narg == 1) {
 		aconsole();
 	} else if(narg == 2) {
-		addrparse(vcpu.cs.selector,arg[1]);
+		addrparse(_cs, arg[1]);
 		if(errPos) return;
 		asmSegRec = seg;
 		asmPtrRec = ptr;
@@ -174,17 +174,17 @@ static void c()
 	t_nubit16 i,seg1,ptr1,range,seg2,ptr2;
 	if(narg != 4) seterr(narg-1);
 	else {
-		addrparse(vcpu.ds.selector,arg[1]);
+		addrparse(_ds,arg[1]);
 		seg1 = seg;
 		ptr1 = ptr;
-		addrparse(vcpu.ds.selector,arg[3]);
+		addrparse(_ds,arg[3]);
 		seg2 = seg;
 		ptr2 = ptr;
 		range = scannubit16(arg[2])-ptr1;
 		if(!errPos) {
 			for(i = 0;i <= range;++i) {
-				val1 = vramVarByte(seg1,ptr1+i);
-				val2 = vramVarByte(seg2,ptr2+i);
+				val1 = vramRealByte(seg1,ptr1+i);
+				val2 = vramRealByte(seg2,ptr2+i);
 				if(val1 != val2) {
 					addrprint(seg1,ptr1+i);
 					vapiPrint("  ");
@@ -214,7 +214,7 @@ static void dprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 			vapiPrint("  ");
 			c[i%0x10] = ' ';
 		} else {
-			c[i%0x10] = vramVarByte(segment,i);
+			c[i%0x10] = vramRealByte(segment,i);
 			vapiPrint("%02X",c[i%0x10] & 0xff);
 			t = c[i%0x10];
 			if((t >=1 && t <= 7) || t == ' ' ||
@@ -238,11 +238,11 @@ static void d()
 	t_nubit16 ptr2;
 	if(narg == 1) dprint(dumpSegRec,dumpPtrRec,dumpPtrRec+0x7f);
 	else if(narg == 2) {
-		addrparse(vcpu.ds.selector,arg[1]);
+		addrparse(_ds,arg[1]);
 		if(errPos) return;
 		dprint(seg,ptr,ptr+0x7f);
 	} else if(narg == 3) {
-		addrparse(vcpu.ds.selector,arg[1]);
+		addrparse(_ds,arg[1]);
 		ptr2 = scannubit16(arg[2]);
 		if(errPos) return;
 		if(ptr > ptr2) seterr(2);
@@ -252,27 +252,27 @@ static void d()
 // enter
 static void e()
 {
-	int i;
+	t_nubitcc i;
 	t_nubit8 val;
 	char s[MAXLINE];
 	if(narg == 1) seterr(0);
 	else if(narg == 2) {
-		addrparse(vcpu.ds.selector,arg[1]);
+		addrparse(_ds,arg[1]);
 		if(errPos) return;
 		addrprint(seg,ptr);
-		vapiPrint("%02X",vramVarByte(seg,ptr));
+		vapiPrint("%02X",vramRealByte(seg,ptr));
 		vapiPrint(".");
 		FGETS(s,MAXLINE,stdin);
 		lcase(s);//!!
 		val = scannubit8(s);//!!
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vramVarByte(seg,ptr) = val;
+			vramRealByte(seg,ptr) = val;
 	} else if(narg > 2) {
-		addrparse(vcpu.ds.selector,arg[1]);
+		addrparse(_ds,arg[1]);
 		if(errPos) return;
 		for(i = 2;i < narg;++i) {
 			val = scannubit8(arg[i]);//!!
-			if(!errPos) vramVarByte(seg,ptr) = val;
+			if(!errPos) vramRealByte(seg,ptr) = val;
 			else break;
 			ptr++;
 		}
@@ -286,14 +286,14 @@ static void f()
 	t_nubit16 i,j,end;
 	if(narg < 4) seterr(narg-1);
 	else {
-		addrparse(vcpu.ds.selector,arg[1]);
+		addrparse(_ds,arg[1]);
 		end = scannubit16(arg[2]);
 		if(end < ptr) seterr(2);
 		if(!errPos) {
 			nbyte = narg - 3;
 			for(i = ptr,j = 0;i <= end;++i,++j) {
 				val = scannubit8(arg[j%nbyte+3]);
-				if(!errPos) vramVarByte(seg,i) = val;
+				if(!errPos) vramRealByte(seg,i) = val;
 				else return;
 			}
 		}
@@ -304,12 +304,12 @@ static void rprintregs(t_nubit8 bit);
 /*static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 {
 	if(ptr1 < ptr2) {
-		vcpu.eip = ptr1;
+		_eip = ptr1;
 		while(ptr1 < ptr2 && vmachine.flagrun) {
 			vmachineRefresh();
-			ptr1 = vcpu.eip;
+			ptr1 = _eip;
 		}
-		//vcpu.eip = ptr2;
+		//_eip = ptr2;
 	}
 	if(!vmachine.flagrun) {
 		vapiPrint("\nProgram terminated\n");
@@ -329,22 +329,22 @@ static void g()
 	switch(narg) {
 	case 1:
 		vmachine.flagbreak = 0x00;
-	//	ptr1 = vcpu.eip;ptr2 = 0xffff;
+	//	ptr1 = _eip;ptr2 = 0xffff;
 		break;
 	case 2:
 		vmachine.flagbreak = 0x01;
-		addrparse(vcpu.cs.selector,arg[1]);
+		addrparse(_cs,arg[1]);
 		vmachine.breakcs = seg;
 		vmachine.breakip = ptr;
-	//	ptr1 = vcpu.eip;ptr2 = ptr;
+	//	ptr1 = _eip;ptr2 = ptr;
 		break;
 	case 3:
 		vmachine.flagbreak = 0x01;
-		addrparse(vcpu.cs.selector,arg[1]);
-		vcpu.cs.selector = seg;
-		vcpu.eip = ptr;
+		addrparse(_cs,arg[1]);
+		_cs = seg;
+		_eip = ptr;
 	//	ptr1 = ptr;
-		addrparse(vcpu.cs.selector,arg[2]);
+		addrparse(_cs,arg[2]);
 		vmachine.breakcs = seg;
 		vmachine.breakip = ptr;
 	//	ptr2 = ptr;
@@ -398,23 +398,23 @@ static void l()
 	else {
 		switch(narg) {
 		case 1:
-			seg = vcpu.cs.selector;
+			seg = _cs;
 			ptr = 0x100;
 			break;
 		case 2:
-			addrparse(vcpu.cs.selector,arg[1]);
+			addrparse(_cs,arg[1]);
 			break;
 		default:seterr(narg-1);break;}
 		if(!errPos) {
 			c = fgetc(load);
 			while(!feof(load)) {
-				vramVarByte(seg+i,ptr+len++) = c;
+				vramRealByte(seg+i,ptr+len++) = c;
 				i = len / 0x10000;
 				c = fgetc(load);
 			}
-			vcpu.cx = len&0xffff;
-			if(len > 0xffff) vcpu.bx = (len>>16);
-			else vcpu.bx = 0x0000;
+			_cx = len&0xffff;
+			if(len > 0xffff) _bx = (len>>16);
+			else _bx = 0x0000;
 		}
 		fclose(load);
 	}
@@ -426,20 +426,20 @@ static void m()
 	t_nubit16 seg1,ptr1,range,seg2,ptr2;
 	if(narg != 4) seterr(narg-1);
 	else {
-		addrparse(vcpu.ds.selector,arg[1]);
+		addrparse(_ds,arg[1]);
 		seg1 = seg;
 		ptr1 = ptr;
-		addrparse(vcpu.ds.selector,arg[3]);
+		addrparse(_ds,arg[3]);
 		seg2 = seg;
 		ptr2 = ptr;
 		range = scannubit16(arg[2])-ptr1;
 		if(!errPos) {
 			if(((seg1<<4)+ptr1) < ((seg2<<4)+ptr2)) {
 				for(i = range;i >= 0;--i)
-					vramVarByte(seg2,ptr2+i) = vramVarByte(seg1,ptr1+i);
+					vramRealByte(seg2,ptr2+i) = vramRealByte(seg1,ptr1+i);
 			} else if(((seg1<<4)+ptr1) > ((seg2<<4)+ptr2)) {
 				for(i = 0;i <= range;++i)
-					vramVarByte(seg2,ptr2+i) = vramVarByte(seg1,ptr1+i);
+					vramRealByte(seg2,ptr2+i) = vramRealByte(seg1,ptr1+i);
 			}
 		}
 	}
@@ -493,46 +493,46 @@ static void rprintregs(t_nubit8 bit)
 	char str[MAXLINE];
 	switch (bit) {
 	case 16:
-		vapiPrint(  "AX=%04X", vcpu.ax);
-		vapiPrint("  BX=%04X", vcpu.bx);
-		vapiPrint("  CX=%04X", vcpu.cx);
-		vapiPrint("  DX=%04X", vcpu.dx);
-		vapiPrint("  SP=%04X", vcpu.sp);
-		vapiPrint("  BP=%04X", vcpu.bp);
-		vapiPrint("  SI=%04X", vcpu.si);
-		vapiPrint("  DI=%04X", vcpu.di);
-		vapiPrint("\nDS=%04X", vcpu.ds.selector);
-		vapiPrint("  ES=%04X", vcpu.es.selector);
-		vapiPrint("  SS=%04X", vcpu.ss.selector);
-		vapiPrint("  CS=%04X", vcpu.cs.selector);
-		vapiPrint("  IP=%04X", vcpu.eip);
+		vapiPrint(  "AX=%04X", _ax);
+		vapiPrint("  BX=%04X", _bx);
+		vapiPrint("  CX=%04X", _cx);
+		vapiPrint("  DX=%04X", _dx);
+		vapiPrint("  SP=%04X", _sp);
+		vapiPrint("  BP=%04X", _bp);
+		vapiPrint("  SI=%04X", _si);
+		vapiPrint("  DI=%04X", _di);
+		vapiPrint("\nDS=%04X", _ds);
+		vapiPrint("  ES=%04X", _es);
+		vapiPrint("  SS=%04X", _ss);
+		vapiPrint("  CS=%04X", _cs);
+		vapiPrint("  IP=%04X", _ip);
 		vapiPrint("   ");
 		break;
 	case 32:
-		vapiPrint( "EAX=%08X", vcpu.eax);
-		vapiPrint(" EBX=%08X", vcpu.ebx);
-		vapiPrint(" ECX=%08X", vcpu.ecx);
-		vapiPrint(" EDX=%08X", vcpu.edx);
-		vapiPrint("  SS=%04X", vcpu.ss.selector);
-		vapiPrint( " CS=%04X", vcpu.cs.selector);
-		vapiPrint( " DS=%04X", vcpu.ds.selector);
-		vapiPrint("\nESP=%08X",vcpu.esp);
-		vapiPrint(" EBP=%08X", vcpu.ebp);
-		vapiPrint(" ESI=%08X", vcpu.esi);
-		vapiPrint(" EDI=%08X", vcpu.edi);
-		vapiPrint("  ES=%04X", vcpu.es.selector);
-		vapiPrint( " FS=%04X", vcpu.fs.selector);
-		vapiPrint( " GS=%04X", vcpu.gs.selector);
-		vapiPrint("\nEIP=%08X", vcpu.eip);
+		vapiPrint( "EAX=%08X", _eax);
+		vapiPrint(" EBX=%08X", _ebx);
+		vapiPrint(" ECX=%08X", _ecx);
+		vapiPrint(" EDX=%08X", _edx);
+		vapiPrint("  SS=%04X", _ss);
+		vapiPrint( " CS=%04X", _cs);
+		vapiPrint( " DS=%04X", _ds);
+		vapiPrint("\nESP=%08X",_esp);
+		vapiPrint(" EBP=%08X", _ebp);
+		vapiPrint(" ESI=%08X", _esi);
+		vapiPrint(" EDI=%08X", _edi);
+		vapiPrint("  ES=%04X", _es);
+		vapiPrint( " FS=%04X", _fs);
+		vapiPrint( " GS=%04X", _gs);
+		vapiPrint("\nEIP=%08X", _eip);
 		vapiPrint("  ");
 	default:
 		break;
 	}
 	rprintflags(bit);
 	vapiPrint("\n");
-	dasm(str, vcpu.cs.selector, vcpu.eip, 0x02);
-	uasmSegRec = vcpu.cs.selector;
-	uasmPtrRec = vcpu.eip;
+	dasm(str, _cs, _eip, 0x02);
+	uasmSegRec = _cs;
+	uasmPtrRec = _eip;
 	vapiPrint("%s", str);
 }
 static void rscanregs()
@@ -541,110 +541,110 @@ static void rscanregs()
 	char s[MAXLINE];
 	if(!STRCMP(arg[1],"ax")) {
 		vapiPrint("AX ");
-		vapiPrint("%04X",vcpu.ax);
+		vapiPrint("%04X",_ax);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.ax = t;
+			_ax = t;
 	} else if(!STRCMP(arg[1],"bx")) {
 		vapiPrint("BX ");
-		vapiPrint("%04X",vcpu.bx);
+		vapiPrint("%04X",_bx);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.bx = t;
+			_bx = t;
 	} else if(!STRCMP(arg[1],"cx")) {
 		vapiPrint("CX ");
-		vapiPrint("%04X",vcpu.cx);
+		vapiPrint("%04X",_cx);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.cx = t;
+			_cx = t;
 	} else if(!STRCMP(arg[1],"dx")) {
 		vapiPrint("DX ");
-		vapiPrint("%04X",vcpu.dx);
+		vapiPrint("%04X",_dx);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.dx = t;
+			_dx = t;
 	} else if(!STRCMP(arg[1],"bp")) {
 		vapiPrint("BP ");
-		vapiPrint("%04X",vcpu.bp);
+		vapiPrint("%04X",_bp);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.bp = t;
+			_bp = t;
 	} else if(!STRCMP(arg[1],"sp")) {
 		vapiPrint("SP ");
-		vapiPrint("%04X",vcpu.sp);
+		vapiPrint("%04X",_sp);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.sp = t;
+			_sp = t;
 	} else if(!STRCMP(arg[1],"si")) {
 		vapiPrint("SI ");
-		vapiPrint("%04X",vcpu.si);
+		vapiPrint("%04X",_si);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.si = t;
+			_si = t;
 	} else if(!STRCMP(arg[1],"di")) {
 		vapiPrint("DI ");
-		vapiPrint("%04X",vcpu.di);
+		vapiPrint("%04X",_di);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.di = t;
+			_di = t;
 	} else if(!STRCMP(arg[1],"ss")) {
 		vapiPrint("SS ");
-		vapiPrint("%04X",vcpu.ss.selector);
+		vapiPrint("%04X",_ss);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
-			vcpu.ss.selector = t;
+			_ss = t;
 		}
 	} else if(!STRCMP(arg[1],"cs")) {
 		vapiPrint("CS ");
-		vapiPrint("%04X",vcpu.cs.selector);
+		vapiPrint("%04X",_cs);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.cs.selector = t;
+			_cs = t;
 	} else if(!STRCMP(arg[1],"ds")) {
 		vapiPrint("DS ");
-		vapiPrint("%04X",vcpu.ds.selector);
+		vapiPrint("%04X",_ds);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
-			vcpu.ds.selector = t;
+			_ds = t;
 		}
 	} else if(!STRCMP(arg[1],"es")) {
 		vapiPrint("ES ");
-		vapiPrint("%04X",vcpu.es.selector);
+		vapiPrint("%04X",_es);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.es.selector = t;
+			_es = t;
 	} else if(!STRCMP(arg[1],"ip")) {
 		vapiPrint("IP ");
-		vapiPrint("%04X",vcpu.eip);
+		vapiPrint("%04X",_eip);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			vcpu.eip = t;
+			_eip = t;
 	} else if(!STRCMP(arg[1],"f")) {
 		rprintflags(16);
 		vapiPrint(" -");
@@ -685,17 +685,17 @@ static void s()
 	t_nubit16 p,pfront,start,end;
 	if(narg < 4) seterr(narg-1);
 	else {
-		addrparse(vcpu.ds.selector,arg[1]);
+		addrparse(_ds,arg[1]);
 		start = ptr;
 		end = scannubit16(arg[2]);
 		if(!errPos) {
 			p = start;
 			while(p <= end) {
-				if(vramVarByte(seg,p) == scannubit8(arg[3])) {
+				if(vramRealByte(seg,p) == scannubit8(arg[3])) {
 					pfront = p;
 					flag = 0x01;
 					for(i = 3;i < narg;++i) {
-						if(vramVarByte(seg,p) != scannubit8(arg[i])) {
+						if(vramRealByte(seg,p) != scannubit8(arg[i])) {
 							flag = 0x00;
 							p = pfront+1;
 							break;
@@ -726,9 +726,9 @@ static void t()
 		count = scannubit16(arg[1]);
 		break;
 	case 3:
-		addrparse(vcpu.cs.selector,arg[1]);
-		vcpu.cs.selector = seg;
-		vcpu.eip = ptr;
+		addrparse(_cs,arg[1]);
+		_cs = seg;
+		_eip = ptr;
 		count = scannubit16(arg[2]);
 		break;
 	default:seterr(narg-1);break;}
@@ -774,11 +774,11 @@ static void u()
 	t_nubit16 ptr2;
 	if(narg == 1) uprint(uasmSegRec,uasmPtrRec,uasmPtrRec+0x1f);
 	else if(narg == 2) {
-		addrparse(vcpu.cs.selector,arg[1]);
+		addrparse(_cs,arg[1]);
 		if(errPos) return;
 		uprint(seg,ptr,ptr+0x1f);
 	} else if(narg == 3) {
-		addrparse(vcpu.ds.selector,arg[1]);
+		addrparse(_ds,arg[1]);
 		ptr2 = scannubit16(arg[2]);
 		if(errPos) return;
 		if(ptr > ptr2) seterr(2);
@@ -805,28 +805,28 @@ static void v()
 static void w()
 {
 	t_nubit16 i = 0;
-	t_nubit32 len = (vcpu.bx<<16)+vcpu.cx;
+	t_nubit32 len = (_bx<<16)+_cx;
 	FILE *write;
 	if(!strlen(filename)) {vapiPrint("(W)rite error, no destination defined\n");return;}
 	else write= FOPEN(filename,"wb");
 	if(!write) vapiPrint("File not found\n");
 	else {
 		vapiPrint("Writing ");
-		vapiPrint("%04X",vcpu.bx);
-		vapiPrint("%04X",vcpu.cx);
+		vapiPrint("%04X",_bx);
+		vapiPrint("%04X",_cx);
 		vapiPrint(" bytes\n");
 		switch(narg) {
 		case 1:
-			seg = vcpu.cs.selector;
+			seg = _cs;
 			ptr = 0x100;
 			break;
 		case 2:
-			addrparse(vcpu.cs.selector,arg[1]);
+			addrparse(_cs,arg[1]);
 			break;
 		default:	seterr(narg-1);break;}
 		if(!errPos)
 			while(i < len)
-				fputc(vramVarByte(seg,ptr+i++),write);
+				fputc(vramRealByte(seg,ptr+i++),write);
 		fclose(write);
 	}
 }
@@ -867,16 +867,16 @@ static void help()
 static void init()
 {
 	filename[0] = '\0';
-	asmSegRec = uasmSegRec = vcpu.cs.selector;
-	asmPtrRec = uasmPtrRec = vcpu.eip;
-	dumpSegRec = vcpu.ds.selector;
-	dumpPtrRec = (t_nubit16)(vcpu.eip) / 0x10 * 0x10;
-/*	vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
-	vcpu.si = vcpu.di = vcpu.bp = 0x0000;
-	vcpu.sp = 0xffee;
-	vcpu.ds.selector = vcpu.es.selector = vcpu.ss.selector = vcpu.cs.selector =
+	asmSegRec = uasmSegRec = _cs;
+	asmPtrRec = uasmPtrRec = _eip;
+	dumpSegRec = _ds;
+	dumpPtrRec = (t_nubit16)(_eip) / 0x10 * 0x10;
+/*	_ax = _bx = _cx = _dx = 0x0000;
+	_si = _di = _bp = 0x0000;
+	_sp = 0xffee;
+	_ds = _es = _ss = _cs =
 		asmSegRec = dumpSegRec = uasmSegRec = 0x0001;
-	vcpu.eip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;*/
+	_eip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;*/
 }
 static void parse()
 {

@@ -298,12 +298,12 @@ void qdcgaGenerateChar()
 	if (_al == 0x30) {
 		switch (_bh) {
 		case 0x00:
-			_bp = vramVarWord(0x0000, 0x001f * 4 + 0);
-			_es = vramVarWord(0x0000, 0x001f * 4 + 2);
+			_bp = vramRealWord(0x0000, 0x001f * 4 + 0);
+			_es = vramRealWord(0x0000, 0x001f * 4 + 2);
 			break;
 		case 0x01:
-			_bp = vramVarWord(0x0000, 0x0043 * 4 + 0);
-			_es = vramVarWord(0x0000, 0x0043 * 4 + 2);
+			_bp = vramRealWord(0x0000, 0x0043 * 4 + 0);
+			_es = vramRealWord(0x0000, 0x0043 * 4 + 2);
 			break;
 		default:
 			break;
@@ -321,7 +321,7 @@ void qdcgaGetAdapterInfo()
 }
 void qdcgaDisplayStr()
 {
-	InsertString(vramGetRealAddress(_es, _bp), _cl, 0x00, 0x01, _bl, _bh,
+	InsertString(vramGetRealAddr(_es, _bp), _cl, 0x00, 0x01, _bl, _bh,
 		_dh,_dl);
 }
 

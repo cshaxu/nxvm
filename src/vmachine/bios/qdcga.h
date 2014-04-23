@@ -32,17 +32,17 @@
 #define QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S 0xb800
 
 #define qdcgaVarPageOffset \
-	(vramVarWord(0x0000, QDCGA_VBIOS_ADDR_VGA_PAGE_OFFSET))
+	(vramRealWord(0x0000, QDCGA_VBIOS_ADDR_VGA_PAGE_OFFSET))
 #define qdcgaVarRagenSize \
-	(vramVarWord(0x0000, QDCGA_VBIOS_ADDR_VGA_RAGEN_SIZE))
+	(vramRealWord(0x0000, QDCGA_VBIOS_ADDR_VGA_RAGEN_SIZE))
 #define qdcgaVarMode \
-	(vramVarByte(0x0000, QDCGA_VBIOS_ADDR_VGA_MODE))
+	(vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_MODE))
 #define qdcgaVarRowSize \
-	(vramVarWord(0x0000, QDCGA_VBIOS_ADDR_VGA_ROW_SIZE))
+	(vramRealWord(0x0000, QDCGA_VBIOS_ADDR_VGA_ROW_SIZE))
 #define qdcgaVarPageNum \
-	(vramVarByte(0x0000, QDCGA_VBIOS_ADDR_VGA_ACT_PAGE_NUM))
+	(vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_ACT_PAGE_NUM))
 #define qdcgaGetTextMemAddr \
-	(vramGetRealAddress(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, 0x0000))
+	(vramGetRealAddr(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, 0x0000))
 #define qdcgaGetPageSize \
 	(qdcgaVarRowSize * vvadp.colsize * 2)
 #define qdcgaGetTextMemAddrPage(page) \
@@ -51,10 +51,10 @@
 	(qdcgaGetTextMemAddrPage(qdcgaVarPageNum))
 
 #define qdcgaVarChar(page,x,y) \
-	(vramVarByte(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, \
+	(vramRealByte(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, \
 	          (page) * qdcgaGetPageSize + ((x) * qdcgaVarRowSize + (y)) * 2 + 0))
 #define qdcgaVarCharProp(page,x,y) \
-	(vramVarByte(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, \
+	(vramRealByte(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, \
 	          (page) * qdcgaGetPageSize + ((x) * qdcgaVarRowSize + (y)) * 2 + 1))
 #define qdcgaGetCharAddr(page,x,y) \
 	(qdcgaGetTextMemAddrPage(page) + ((x) * qdcgaVarRowSize + (y)) * 2 + 0)
@@ -62,13 +62,13 @@
 	(qdcgaGetTextMemAddrPage(page) + ((x) * qdcgaVarRowSize + (y)) * 2 + 1)
 
 #define qdcgaVarCursorPosCol(id) \
-	(vramVarByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 0))
+	(vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 0))
 #define qdcgaVarCursorPosRow(id) \
-	(vramVarByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 1))
+	(vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 1))
 #define qdcgaVarCursorBottom \
-	(vramVarByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_BOTTOM))
+	(vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_BOTTOM))
 #define qdcgaVarCursorTop \
-	(vramVarByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_TOP))
+	(vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_TOP))
 #define qdcgaGetCursorVisible \
 	(!(qdcgaVarCursorTop & 0x08))
 

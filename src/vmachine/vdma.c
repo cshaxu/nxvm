@@ -239,10 +239,10 @@ static void Transmission(t_dma *vdma, t_nubit8 id, t_bool word)
 	case 0x01:                                                      /* write */
 		if (vdma->channel[id].devread) ExecFun(vdma->channel[id].devread);
 		if (!word)
-			vramVarByte(((t_nubit16)vdma->channel[id].page << 12),
+			vramRealByte(((t_nubit16)vdma->channel[id].page << 12),
 			            vdma->channel[id].curraddr) = vlatch.byte;
 		else
-			vramVarWord(((t_nubit16)vdma->channel[id].page << 12),
+			vramRealWord(((t_nubit16)vdma->channel[id].page << 12),
 			            vdma->channel[id].curraddr << 1) = vlatch.word;
 		vdma->channel[id].currwc--;
 		if (GetAIDS(vdma,id)) DecreaseCurrAddr(vdma, id);
@@ -250,11 +250,11 @@ static void Transmission(t_dma *vdma, t_nubit8 id, t_bool word)
 		break;
 	case 0x02:                                                       /* read */
 		if (!word)
-			vlatch.byte = vramVarByte(
+			vlatch.byte = vramRealByte(
 			                 ((t_nubit16)vdma->channel[id].page << 12),
 			                 vdma->channel[id].curraddr);
 		else
-			vlatch.word = vramVarWord(
+			vlatch.word = vramRealWord(
 			                 ((t_nubit16)vdma->channel[id].page << 12),
 			                 (vdma->channel[id].curraddr << 1));
 		if (vdma->channel[id].devwrite) ExecFun(vdma->channel[id].devwrite);
@@ -277,10 +277,10 @@ static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
 	if (flagm2m) {
 		/* memory-to-memory */
 		while (vdma->channel[0x01].currwc != 0xffff && !vdma->flageop) {
-			vdma->temp = vramVarByte(
+			vdma->temp = vramRealByte(
 			             ((t_nubit16)vdma->channel[0x00].page << 16),
 			             vdma->channel[0x00].curraddr);
-			vramVarByte(((t_nubit16)vdma->channel[0x01].page << 16),
+			vramRealByte(((t_nubit16)vdma->channel[0x01].page << 16),
 			            vdma->channel[0x01].curraddr) = vdma->temp;
 			vdma->channel[0x01].currwc--;
 			if (GetAIDS(vdma,id)) {
