@@ -485,6 +485,16 @@ t_bool qdbiosExecInt(t_nubit8 intid)
 	default:     return 0x00;
 	}
 }
+
+void qdbiosRefresh()
+{
+	static rtctest = 0;
+	rtctest++;
+	if (rtctest == 0x10000) {
+		vapiCallBackRtcUpdateTime();
+		rtctest = 0;
+	}
+}
 void qdbiosInit()
 {
 	t_nubit16 i;

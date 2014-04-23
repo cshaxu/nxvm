@@ -3,12 +3,11 @@
 
 #include "../vglobal.h"
 #include "assert.h"
+#include "../vram.h"
 
-#define getMemData_byte(addr) vramVarByte(0,(addr))
-#define getMemData_word(addr) vramVarWord(0,(addr))
-#define writeMem_byte(addr, data) (vramVarByte(0,(addr)) = (data))
-#define writeMem_word(addr, data) (vramVarWord(0,(addr)) = (data))
-#define im(addr)  (((t_vaddrcc)(addr) >= vram.base) && ((t_vaddrcc)(addr) < (vram.base + vram.size)))
+#define CRAM 0
+#define VRAM 1
+#define CCPU_RAM CRAM
 
 #define MASK_00000000  0
 #define MASK_00000001  1
@@ -790,11 +789,13 @@ typedef struct {
 	t_nubit8  iobyte;
 	t_nubit16 sp,bp,si,di,ip,flags,cs,ds,es,ss,overds, overss;
 	t_bool flagnmi, flagignore;
+	t_nubitcc icount;
 } CentreProcessorUnit;
 
 extern CentreProcessorUnit ccpu;
 
 void ccpu_init();
+void ccpu_final();
 t_bool ccpu_getOF_Flag();
 t_bool ccpu_getDF_Flag();
 t_bool ccpu_getIF_Flag();
@@ -825,5 +826,24 @@ void ccpu_storeCaculate(const Method opMethod, const int bitLength,  const t_nub
 t_nubit16 ccpu_generateFLAG();
 void ccpu_setFLAG(const t_nubit16 flags);
 void ccpu_set_SF_ZF_AF_PF_CF_Flag(const t_nubit16 flags);
+
+#if CCPU_RAM == CRAM
+extern t_ram cram;
+#else
+#define cram vram
+#endif
+
+#define cramIsAddrInMem(addr) \
+	(((addr) >= cram.base) && ((addr) < (cram.base + cram.size)))
+#define cramGetAddr(segment, offset)  (cram.base + \
+	((((segment) << 4) + (offset)) % cram.size))
+#define cramVarByte(segment, offset)  (d_nubit8(cramGetAddr(segment, offset)))
+#define cramVarWord(segment, offset)  (d_nubit16(cramGetAddr(segment, offset)))
+#define cramVarDWord(segment, offset) (d_nubit32(cramGetAddr(segment, offset)))
+
+#define getMemData_byte(addr) cramVarByte(0,(addr))
+#define getMemData_word(addr) cramVarWord(0,(addr))
+#define writeMem_byte(addr, data) (cramVarByte(0,(addr)) = (data))
+#define writeMem_word(addr, data) (cramVarWord(0,(addr)) = (data))
 
 #endif

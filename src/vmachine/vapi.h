@@ -17,19 +17,15 @@ void vapiPrintAddr(t_nubit16 segment, t_nubit16 offset);
 
 #include "stdio.h"
 
-/*
-typedef struct {
-	int   count;
-	char  fname[0x100];
-	FILE *fptr;
-} t_apirecord;
+#define VAPI_RECORD_SIZE         0xffff             /* maximum record number */
+#define VAPI_RECORD_SELECT_FIRST 0x0000/* keep first (1) records or last (0) */
 
-extern t_apirecord vapirecord;*/
-#define VAPI_SIZE_RECORD  0xffff
 typedef struct {
-	t_cpu rec[VAPI_SIZE_RECORD];
+	t_cpu rec[VAPI_RECORD_SIZE];
 	t_nubitcc start, size;
 } t_apirecord;
+
+extern t_apirecord vapirecord;
 
 void vapiRecordDump(const t_string fname);
 void vapiRecordStart();

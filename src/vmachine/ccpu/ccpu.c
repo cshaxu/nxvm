@@ -1,13 +1,23 @@
+#include "stdlib.h"
 #include "memory.h"
 
 #include "ccpuapi.h"
 #include "../vapi.h"
+
+#if CCPU_RAM == CRAM
+t_ram cram;
+#endif
 
 CentreProcessorUnit ccpu;
 
 void ccpu_init()
 {
 	memset(&ccpu, 0x00, sizeof(CentreProcessorUnit));
+#if CCPU_RAM == CRAM
+	cram.size = vram.size;
+	cram.base = (t_vaddrcc)malloc(cram.size);
+	memcpy((void *)cram.base, (void *)vram.base, vram.size);
+#endif
 	ccpu.exeCodeBlock.exeMethodArray[0x00]=&ins_method_ADD_Eb_Gb;
 	ccpu.exeCodeBlock.exeMethodArray[0x01]=&ins_method_ADD_Ev_Gv;
 	ccpu.exeCodeBlock.exeMethodArray[0x02]=&ins_method_ADD_Gb_Eb;
@@ -266,6 +276,14 @@ void ccpu_init()
 	ccpu.exeCodeBlock.exeMethodArray[0xFD]=&ins_method_STD;
 	ccpu.exeCodeBlock.exeMethodArray[0xFE]=&ins_method_INC_Group4;
 	ccpu.exeCodeBlock.exeMethodArray[0xFF]=&ins_method_INC_Group5;
+}
+void ccpu_final()
+{
+#if CCPU_RAM == CRAM
+	if (cram.base) free((void *)(cram.base));
+	cram.base = (t_vaddrcc)NULL;
+	cram.size = 0x00;
+#endif
 }
 
 void ccpu_storeCaculate(const Method opMethod,
@@ -578,7 +596,7 @@ void ccpu_setPF_Flag_data8(const t_nubit8 data)
 }
 void ccpu_setPF_Flag_data16(const t_nubit16 data)
 {
-	ccpu_setPF_Flag_data8(data);
+	ccpu_setPF_Flag_data8((t_nubit8)data);
 }
 void ccpu_setCF_Flag_flag(const t_bool f)
 {

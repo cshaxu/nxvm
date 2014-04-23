@@ -47,6 +47,7 @@ void vmachineRefresh()
 	vkbcRefresh();
 	vpitRefresh();
 */
+	qdbiosRefresh();
 	vfddRefresh();
 	vfdcRefresh();
 	vdmaRefresh();
@@ -60,7 +61,6 @@ void vmachineInit()
 	memset(&vmachine, 0x00, sizeof(t_machine));
 	vportInit();
 	vramInit();
-	vcpuInit();
 	vpicInit();
 	vdmaInit();
 	vfdcInit();
@@ -68,6 +68,8 @@ void vmachineInit()
 #ifdef VMACHINE_DEBUG
 	qdbiosInit();
 #endif
+// temp
+	vcpuInit();
 /*
 	vpitInit();
 	vkbcInit();

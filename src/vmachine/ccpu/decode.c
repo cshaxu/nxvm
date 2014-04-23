@@ -23,8 +23,8 @@ static void  ClrPrefix()
 void decode_setExecuteMethod() {ccpu.exeCodeBlock.needExeMethod = ccpu.exeCodeBlock.exeMethodArray[*ccpu.deCodeBlock.pOpCode];}
 void decode_deCodeInstruction()
 {
-	t_nubit8 opcode = vramVarByte(ccpu.cs, ccpu.ip);
-	ccpu.deCodeBlock.pOpCode = p_nubit8(vramGetAddr(ccpu.cs, ccpu.ip));
+	t_nubit8 opcode = cramVarByte(ccpu.cs, ccpu.ip);
+	ccpu.deCodeBlock.pOpCode = p_nubit8(cramGetAddr(ccpu.cs, ccpu.ip));
 	decode_setExecuteMethod();
 	decode_deCodeInsStuff();
 	(*(ccpu.exeCodeBlock.needExeMethod))();
@@ -382,7 +382,7 @@ void * decode_deCodeEffectiveMemAddr(const t_nubit8 modRegRm, const void * pdisp
 		assert(0x00);
 		return 0;
 	}
-	return (void *)(p_nubit8(vramGetAddr(0,0)) + memAddr);
+	return (void *)(p_nubit8(cramGetAddr(0,0)) + memAddr);
 
 }
 void* decode_getRegAddr(const t_bool w, const t_nubit8 reg)

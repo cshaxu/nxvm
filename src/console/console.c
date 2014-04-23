@@ -5,6 +5,7 @@
 #include "string.h"
 
 #include "../vmachine/vmachine.h"
+#include "../vmachine/vapi.h"
 
 #include "asm86.h"
 #include "debug.h"
@@ -114,13 +115,32 @@ void Record()
 		fprintf(stdout,"Recorder turned on.\n");
 	}
 }
+#define _rec (vapirecord.rec[(i + vapirecord.start) % VAPI_RECORD_SIZE])
 void Dump()
 {
+	t_nubitcc i = 0;
+	Operand x;
+	FILE *fp;
 	char str[MAXLINE];
 	fprintf(stdout,"Dump File: ");
 	fgets(str, MAXLINE, stdin);
 	parse(str);
 	vmachineDumpRecordFile(str);
+	fprintf(stdout,"Instruction Dump File: ");
+	fgets(str, MAXLINE, stdin);
+	parse(str);
+	fp = fopen(str,"w");
+	if (!fp) {
+		fprintf(stdout,"ERORR:\tfailed to dump instruction.\n");
+		return;
+	}
+	while (i < vapirecord.size) {
+		disassemble(str, &x, (void *)vram.base, _rec.cs, _rec.ip);
+		fprintf(fp,"%04X:%04X\t%s\n",_rec.cs,_rec.ip,str);
+		_rec.cs;
+		++i;
+	}
+	fclose(fp);
 }
 
 void Floppy()

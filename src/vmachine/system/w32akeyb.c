@@ -5,6 +5,8 @@
 #include "win32app.h"
 #include "w32akeyb.h"
 
+#include "../vmachine.h"
+
 void w32akeybMakeStatus(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	vapiCallBackKeyboardClrFlag0();
@@ -66,6 +68,11 @@ void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
 			else if (vapiCallBackKeyboardGetCtrl()) ascii += 0x2300;
 			vapiCallBackKeyboardRecvKeyPress(ascii);
 			break;
+		/*case VK_RETURN: // ENTER
+			vapiPrint("START!\n");
+			vmachine.flagrecord = 0x01;
+			vapiRecordStart();
+			break;*/
 		case VK_ESCAPE://ESC
 		case VK_PRIOR://pageUP
 		case VK_NEXT://pageDown

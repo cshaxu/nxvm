@@ -419,13 +419,13 @@ void ins_method_XCHG_Eb_Gb()//0x86
 {
 	t_nubit8 tmp = d_nubit8(ccpu.deCodeBlock.preg);
 	d_nubit8(ccpu.deCodeBlock.preg) = d_nubit8(ccpu.deCodeBlock.prm);
-	if (!im(ccpu.deCodeBlock.prm)) d_nubit8(ccpu.deCodeBlock.prm)= tmp;
+	d_nubit8(ccpu.deCodeBlock.prm)= tmp;
 }
 void ins_method_XCHG_Ev_Gv()
 {
 	t_nubit16 tmp = d_nubit16(ccpu.deCodeBlock.preg);
 	d_nubit16(ccpu.deCodeBlock.preg) = d_nubit16(ccpu.deCodeBlock.prm);
-	if (!im(ccpu.deCodeBlock.prm)) d_nubit16(ccpu.deCodeBlock.prm)= tmp;
+	d_nubit16(ccpu.deCodeBlock.prm)= tmp;
 }
 
 void ins_method_NOP(){/* do nothing*/}
@@ -1208,7 +1208,7 @@ void ins_method_MOV_Ew_Sw()//tested
 
 void ins_method_LEA_Gv_M()
 {
-	d_nubit16(ccpu.deCodeBlock.preg) = (t_nubit16)((t_nubit8 *)(ccpu.deCodeBlock.prm) - p_nubit8(vramGetAddr(0,0)) - (ccpu.deCodeBlock.segData<<4));
+	d_nubit16(ccpu.deCodeBlock.preg) = (t_nubit16)((t_nubit8 *)(ccpu.deCodeBlock.prm) - p_nubit8(cramGetAddr(0,0)) - (ccpu.deCodeBlock.segData<<4));
 }
 
 void ins_method_MOV_Sw_Ew()//tested

@@ -4,11 +4,11 @@
 
 void ins_atomMethod_MOV_8bit(t_nubit32 logicAddr_des, const t_nubit8 data_src)
 {
-	d_nubit8(vramGetAddr(0, logicAddr_des)) = data_src;
+	d_nubit8(cramGetAddr(0, logicAddr_des)) = data_src;
 }
 void ins_atomMethod_MOV_16bit(t_nubit32 logicAddr_des, const t_nubit16 data_src)
 {
-	d_nubit16(vramGetAddr(0, logicAddr_des)) = data_src;
+	d_nubit16(cramGetAddr(0, logicAddr_des)) = data_src;
 }
 
 void ins_atomMethod_ADD_8bit(t_nubit8 *pdes, const t_nubit8 src)
@@ -18,7 +18,7 @@ void ins_atomMethod_ADD_8bit(t_nubit8 *pdes, const t_nubit8 src)
 	ccpu_storeCaculate(ADD_8bit, 8, 
 							operand1,  src, *pdes,
 							MASK_FLAG_METHOD_ADD);
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_ADD_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -27,7 +27,6 @@ void ins_atomMethod_ADD_16bit(t_nubit16 *pdes, const t_nubit16 src)
 	ccpu_storeCaculate(ADD_16bit, 16, 
 							operand1,  src, *pdes,
 							MASK_FLAG_METHOD_ADD);
-	if (im(pdes)) *pdes = operand1;
 }
 void ins_atomMethod_INC_8bit(t_nubit8 *pdes)
 {
@@ -36,7 +35,7 @@ void ins_atomMethod_INC_8bit(t_nubit8 *pdes)
 	ccpu_storeCaculate(ADD_8bit, 8,
 							operand1, 1, *pdes,
 							MASK_FLAG_METHOD_INC);
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_INC_16bit(t_nubit16 *pdes)
 {
@@ -45,7 +44,7 @@ void ins_atomMethod_INC_16bit(t_nubit16 *pdes)
 	ccpu_storeCaculate(ADD_16bit, 16,
 							operand1, 1, *pdes,
 							MASK_FLAG_METHOD_INC);
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_ADC_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
@@ -64,7 +63,7 @@ void ins_atomMethod_ADC_8bit(t_nubit8 *pdes, const t_nubit8 src)
 							operand1,  src, *pdes,//如果CF为假时候则相当于执行ADD操作
 							MASK_FLAG_METHOD_ADD);
 	}
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_ADC_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -83,7 +82,7 @@ void ins_atomMethod_ADC_16bit(t_nubit16 *pdes, const t_nubit16 src)
 							operand1,  src, *pdes,//如果CF为假时候则相当于执行ADD操作
 							MASK_FLAG_METHOD_ADD);
 	}
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_SUB_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
@@ -92,7 +91,7 @@ void ins_atomMethod_SUB_8bit(t_nubit8 *pdes, const t_nubit8 src)
 	ccpu_storeCaculate(SUB_8bit, 8, 
 							operand1,  src, *pdes,
 							MASK_FLAG_METHOD_SUB);
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_SUB_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -101,7 +100,7 @@ void ins_atomMethod_SUB_16bit(t_nubit16 *pdes, const t_nubit16 src)
 	ccpu_storeCaculate(SUB_16bit, 16, 
 							operand1,  src, *pdes,
 							MASK_FLAG_METHOD_SUB);
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_DEC_8bit(t_nubit8 *pdes)
 {
@@ -110,7 +109,7 @@ void ins_atomMethod_DEC_8bit(t_nubit8 *pdes)
 	ccpu_storeCaculate(SUB_8bit, 8,
 							operand1, 1, *pdes,
 							MASK_FLAG_METHOD_DEC);
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_DEC_16bit(t_nubit16 *pdes)
 {
@@ -119,7 +118,7 @@ void ins_atomMethod_DEC_16bit(t_nubit16 *pdes)
 	ccpu_storeCaculate(SUB_16bit, 16,
 							operand1, 1, *pdes,
 							MASK_FLAG_METHOD_DEC);
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_SBB_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
@@ -138,7 +137,7 @@ void ins_atomMethod_SBB_8bit(t_nubit8 *pdes, const t_nubit8 src)
 							operand1,  src, *pdes,//如果CF为假时候则相当于执行SUB操作
 							MASK_FLAG_METHOD_ADD);
 	}
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_SBB_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -157,7 +156,7 @@ void ins_atomMethod_SBB_16bit(t_nubit16 *pdes, const t_nubit16 src)
 							operand1,  src, *pdes,//如果CF为假时候则相当于执行SUB操作
 							MASK_FLAG_METHOD_ADD);
 	}
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_OR_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
@@ -169,7 +168,7 @@ void ins_atomMethod_OR_8bit(t_nubit8 *pdes, const t_nubit8 src)
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_OR_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -181,7 +180,7 @@ void ins_atomMethod_OR_16bit(t_nubit16 *pdes, const t_nubit16 src)
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_AND_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
@@ -193,7 +192,7 @@ void ins_atomMethod_AND_8bit(t_nubit8 *pdes, const t_nubit8 src)
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_AND_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -205,31 +204,31 @@ void ins_atomMethod_AND_16bit(t_nubit16 *pdes, const t_nubit16 src)
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
-	if (im(pdes)) *pdes = operand1;
+	
 }
 void ins_atomMethod_TEST_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
 	t_nubit8 operand1 = *pdes;
-	*pdes &= src;
+//	*pdes &= src;
 	ccpu_storeCaculate(AND_8bit, 8, 
-							operand1,  src, *pdes,
+							operand1,  src, (*pdes & src),
 							MASK_FLAG_METHOD_AND);
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
-	*pdes = operand1;
+	
 }
 void ins_atomMethod_TEST_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
 	t_nubit16 operand1 = *pdes;
-	*pdes &= src;
+//	*pdes &= src;
 	ccpu_storeCaculate(AND_16bit, 16, 
-							operand1,  src, *pdes,
+							operand1,  src, (*pdes & src),
 							MASK_FLAG_METHOD_AND);
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
-	*pdes = operand1;
+	
 }
 void ins_atomMethod_XOR_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
@@ -252,7 +251,7 @@ void ins_atomMethod_XOR_16bit(t_nubit16 *pdes, const t_nubit16 src)
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//根据debug得出的，虽然Intel的文档说是undefine
-	if (im(pdes)) *pdes = operand1;
+	
 
 }
 void ins_atomMethod_CMP_8bit(t_nubit8 des, const t_nubit8 src)

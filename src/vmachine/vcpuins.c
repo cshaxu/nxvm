@@ -3261,31 +3261,43 @@ static void ClrPrefix()
 	vcpuins.rep = RT_NONE;
 }
 
+#define CPU2 1
+
 void vcpuinsExecIns()
 {
 	t_nubit8 opcode = vramVarByte(vcpu.cs,vcpu.ip);
+#if CPU2 == 1
 	ccpuapiSyncRegs();
 	ccpuapiExecIns();
+#endif
 	ExecFun(vcpuins.table[opcode]);
 	if (!IsPrefix(opcode)) ClrPrefix();
+#if CPU2 == 1
 	if (ccpuapiHasDiff()) vmachine.flagrun = 0x00;
+#endif
 }
 void vcpuinsExecInt()
 {
 	/* hardware interrupt handeler */
 	t_nubit8 intr;
 	if(vcpu.flagnmi) {
+#if CPU2 == 1
 		ccpuapiExecInt(0x02);
+#endif
 		INT(0x02);
 	}
 	vcpu.flagnmi = 0x00;
 	if(GetBit(vcpu.flags, VCPU_FLAG_IF) && vpicScanINTR()) {
 		intr = vpicGetINTR();
+#if CPU2 == 1
 		ccpuapiExecInt(intr);
+#endif
 		INT(intr);
 	}
 	if(GetBit(vcpu.flags, VCPU_FLAG_TF)) {
+#if CPU2 == 1
 		ccpuapiExecInt(0x01);
+#endif
 		INT(0x01);
 	}
 }

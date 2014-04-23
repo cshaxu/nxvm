@@ -99,7 +99,6 @@ void qdrtcSetAlarmClock()
 
 void vapiCallBackRtcUpdateTime()
 {
-	if (!vmachine.flaginit) return;
 	vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) += 1;
 	if (vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) >= 0x1800b2) {
 		vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) = 0x00000000;

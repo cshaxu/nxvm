@@ -9,31 +9,48 @@
 
 t_bool ccpuapiHasDiff()
 {
+	t_nubitcc i;
 	t_bool flagdiff = 0x00;
-	if (ccpu.flagignore) return 0x00;
-	if (ccpu.ax != _ax) {vapiPrint("diff ax\n");flagdiff = 0x01;}
-	if (ccpu.bx != _bx) {vapiPrint("diff bx\n");flagdiff = 0x01;}
-	if (ccpu.cx != _cx) {vapiPrint("diff cx\n");flagdiff = 0x01;}
-	if (ccpu.dx != _dx) {vapiPrint("diff dx\n");flagdiff = 0x01;}
-	if (ccpu.sp != _sp) {vapiPrint("diff sp\n");flagdiff = 0x01;}
-	if (ccpu.bp != _bp) {vapiPrint("diff bp\n");flagdiff = 0x01;}
-	if (ccpu.si != _si) {vapiPrint("diff si\n");flagdiff = 0x01;}
-	if (ccpu.di != _di) {vapiPrint("diff di\n");flagdiff = 0x01;}
-	if (ccpu.ip != _ip) {vapiPrint("diff ip\n");flagdiff = 0x01;}
-	if (ccpu.cs != _cs) {vapiPrint("diff cs\n");flagdiff = 0x01;}
-	if (ccpu.ds != _ds) {vapiPrint("diff ds\n");flagdiff = 0x01;}
-	if (ccpu.es != _es) {vapiPrint("diff es\n");flagdiff = 0x01;}
-	if (ccpu.ss != _ss) {vapiPrint("diff ss\n");flagdiff = 0x01;}
-	if (ccpu.iobyte != vcpu.iobyte) {vapiPrint("diff iobyte\n");flagdiff = 0x01;}
-	if (ccpu_getAF_Flag() != _af) {vapiPrint("diff af\n");flagdiff = 0x01;}
-	if (ccpu_getCF_Flag() != _cf) {vapiPrint("diff cf\n");flagdiff = 0x01;}
-	if (ccpu_getDF_Flag() != _df) {vapiPrint("diff df\n");flagdiff = 0x01;}
-	if (ccpu_getIF_Flag() != _if) {vapiPrint("diff if\n");flagdiff = 0x01;}
-	if (ccpu_getOF_Flag() != _of) {vapiPrint("diff of\n");flagdiff = 0x01;}
-	if (ccpu_getPF_Flag() != _pf) {vapiPrint("diff pf\n");flagdiff = 0x01;}
-	if (ccpu_getSF_Flag() != _sf) {vapiPrint("diff sf\n");flagdiff = 0x01;}
-	if (ccpu_getTF_Flag() != _tf) {vapiPrint("diff tf\n");flagdiff = 0x01;}
-	if (ccpu_getZF_Flag() != _zf) {vapiPrint("diff zf\n");flagdiff = 0x01;}
+	if (!ccpu.flagignore) {
+		if (ccpu.ax != _ax) {vapiPrint("diff ax\n");flagdiff = 0x01;}
+		if (ccpu.bx != _bx) {vapiPrint("diff bx\n");flagdiff = 0x01;}
+		if (ccpu.cx != _cx) {vapiPrint("diff cx\n");flagdiff = 0x01;}
+		if (ccpu.dx != _dx) {vapiPrint("diff dx\n");flagdiff = 0x01;}
+		if (ccpu.sp != _sp) {vapiPrint("diff sp\n");flagdiff = 0x01;}
+		if (ccpu.bp != _bp) {vapiPrint("diff bp\n");flagdiff = 0x01;}
+		if (ccpu.si != _si) {vapiPrint("diff si\n");flagdiff = 0x01;}
+		if (ccpu.di != _di) {vapiPrint("diff di\n");flagdiff = 0x01;}
+		if (ccpu.ip != _ip) {vapiPrint("diff ip\n");flagdiff = 0x01;}
+		if (ccpu.cs != _cs) {vapiPrint("diff cs\n");flagdiff = 0x01;}
+		if (ccpu.ds != _ds) {vapiPrint("diff ds\n");flagdiff = 0x01;}
+		if (ccpu.es != _es) {vapiPrint("diff es\n");flagdiff = 0x01;}
+		if (ccpu.ss != _ss) {vapiPrint("diff ss\n");flagdiff = 0x01;}
+		if (ccpu.iobyte != vcpu.iobyte) {vapiPrint("diff iobyte\n");flagdiff = 0x01;}
+		if (ccpu_getAF_Flag() != _af) {vapiPrint("diff af\n");flagdiff = 0x01;}
+		if (ccpu_getCF_Flag() != _cf) {vapiPrint("diff cf\n");flagdiff = 0x01;}
+		if (ccpu_getDF_Flag() != _df) {vapiPrint("diff df\n");flagdiff = 0x01;}
+		if (ccpu_getIF_Flag() != _if) {vapiPrint("diff if\n");flagdiff = 0x01;}
+		if (ccpu_getOF_Flag() != _of) {vapiPrint("diff of\n");flagdiff = 0x01;}
+		if (ccpu_getPF_Flag() != _pf) {vapiPrint("diff pf\n");flagdiff = 0x01;}
+		if (ccpu_getSF_Flag() != _sf) {vapiPrint("diff sf\n");flagdiff = 0x01;}
+		if (ccpu_getTF_Flag() != _tf) {vapiPrint("diff tf\n");flagdiff = 0x01;}
+		if (ccpu_getZF_Flag() != _zf) {vapiPrint("diff zf\n");flagdiff = 0x01;}
+	} else {
+		memcpy((void *)cram.base, (void *)vram.base, vram.size);
+	}
+#if CCPU_RAM == CRAM
+	if (memcmp((void *)cram.base, (void *)vram.base, vram.size)) {
+		//if (cramVarByte(0,0x046c) + 1 == vramVarByte(0,0x46c)) return flagdiff;
+		vapiPrint("diff ram\n");flagdiff = 0x01;
+		for(i = 0;i < vram.size;++i)
+			if (cramVarByte(0,i) != vramVarByte(0,i))
+				vapiPrint("%08X C:%02X V:%02X\n",i,
+					cramVarByte(0,i),vramVarByte(0,i));
+		memcpy((void *)cram.base, (void *)vram.base, vram.size);
+	}
+#endif
+	if (flagdiff) vapiPrint("Above diff is #%d\n",ccpu.icount);
+//	if (ccpu.icount % 10000 == 0) vapiPrint("Current at #%d\n",ccpu.icount);
 	return flagdiff;
 }
 
@@ -138,6 +155,7 @@ void ccpuapiSyncRegs()
 void ccpuapiExecIns()
 {
 	decode_deCodeInstruction();
+	++ccpu.icount;
 }
 
 /* insert into vcpuinsExecInt() */
@@ -154,4 +172,4 @@ void ccpuapiInit()
 	ccpu.ip = 0xfff0;
 }
 /* insert into vcpuinsFinal() */
-void ccpuapiFinal() {}
+void ccpuapiFinal() {ccpu_final();}

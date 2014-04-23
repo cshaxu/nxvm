@@ -13,7 +13,7 @@ static HINSTANCE hInstance;
 static LPCWSTR szWindowClass = _T("nxvm");
 static LPCWSTR szTitle = _T("Neko's x86 Virtual Machine");
 #define TIMER_PAINT   0
-#define TIMER_RTC     1
+//#define TIMER_RTC     1
 static LRESULT CALLBACK WndProc(HWND w32aHWnd, UINT message,
                                 WPARAM wParam, LPARAM lParam)
 {
@@ -21,7 +21,7 @@ static LRESULT CALLBACK WndProc(HWND w32aHWnd, UINT message,
 	switch (message) {
 	case WM_CREATE:
 		SetTimer(w32aHWnd, TIMER_PAINT, 50, NULL);
-		SetTimer(w32aHWnd, TIMER_RTC,   55, NULL);
+		//SetTimer(w32aHWnd, TIMER_RTC,   55, NULL);
 		break;
 	case WM_DESTROY:
 		vapiCallBackMachineStop();
@@ -36,9 +36,9 @@ static LRESULT CALLBACK WndProc(HWND w32aHWnd, UINT message,
 		case TIMER_PAINT:
 			if (vapiCallBackMachineGetFlagRun()) w32adispPaint();
 			break;
-		case TIMER_RTC:
-			vapiCallBackRtcUpdateTime();
-			break;
+		//case TIMER_RTC:
+			//if (vapiCallBackMachineGetFlagRun()) vapiCallBackRtcUpdateTime();
+			//break;
 		default: break;
 		}
 		break;

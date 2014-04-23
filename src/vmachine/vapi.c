@@ -47,7 +47,7 @@ t_apirecord vapirecord;
 #define _expression "cs:ip=%x:%x opcode=%x %x %x %x %x %x %x %x \
 ax=%x bx=%x cx=%x dx=%x sp=%x bp=%x si=%x di=%x ds=%x es=%x ss=%x \
 of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x\n"
-#define _rec (vapirecord.rec[(i + vapirecord.start) % VAPI_SIZE_RECORD])
+#define _rec (vapirecord.rec[(i + vapirecord.start) % VAPI_RECORD_SIZE])
 #define _rec_of    (GetBit(_rec.flags, VCPU_FLAG_OF))
 #define _rec_sf    (GetBit(_rec.flags, VCPU_FLAG_SF))
 #define _rec_zf    (GetBit(_rec.flags, VCPU_FLAG_ZF))
@@ -93,9 +93,15 @@ void vapiRecordStart()
 }
 void vapiRecordExec()
 {
-	vapirecord.rec[(vapirecord.start + vapirecord.size) % VAPI_SIZE_RECORD]
+#if VAPI_RECORD_SELECT_FIRST == 1
+	if (vapirecord.size == VAPI_RECORD_SIZE) {
+		vmachine.flagrecord = 0x00;
+		return;
+	}
+#endif
+	vapirecord.rec[(vapirecord.start + vapirecord.size) % VAPI_RECORD_SIZE]
 		= vcpu;
-	if (vapirecord.size == VAPI_SIZE_RECORD)
+	if (vapirecord.size == VAPI_RECORD_SIZE)
 		vapirecord.start++;
 	else vapirecord.size++;
 }

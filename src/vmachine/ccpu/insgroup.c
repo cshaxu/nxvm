@@ -1,4 +1,5 @@
 
+#include "../vmachine.h"
 #include "ccpuapi.h"
 
 #define rotl(x,n) ((((x)<<(n))&(-(1<<(n))))|(((x)>>(sizeof(x)*8-(n)))&((1<<(n))-1)))
@@ -133,7 +134,7 @@ void ins_methodGroup_CMP_Ev_Iv()
 {
 /*	if ( (d_nsbit16(&ccpu.deCodeBlock.immData_16Bit)  == 0x5052)) {
 			FILE *fp = fopen("d:/temp2.log","w");
-			fprintf(fp,"%x\n", (t_nubit8 *)ccpu.deCodeBlock.prm - (t_nubit8 *)p_nubit8(vramGetAddr(0,0)) );
+			fprintf(fp,"%x\n", (t_nubit8 *)ccpu.deCodeBlock.prm - (t_nubit8 *)p_nubit8(cramGetAddr(0,0)) );
 			fclose(fp);
 	}*/
 	ins_atomMethod_CMP_16bit(d_nubit16(ccpu.deCodeBlock.prm), d_nsbit16(&ccpu.deCodeBlock.immData_16Bit));
@@ -338,7 +339,7 @@ void ins_methodGroup_RCR_Eb_1()
 }
 void ins_methodGroup_RCR_Ev_1()
 {
-	t_nubit16 oldEb = d_nubit16(ccpu.deCodeBlock.prm);
+	t_nubit16 oldEv = d_nubit16(ccpu.deCodeBlock.prm);
 	t_nubit16 tmpFlags = ccpu_generateFLAG();
 	t_bool newCF, oldCF = ccpu_getCF_Flag();
 	ins_methodGroup_SHR_Ev_1();
@@ -348,7 +349,7 @@ void ins_methodGroup_RCR_Ev_1()
 	{
 		d_nubit16(ccpu.deCodeBlock.prm) |= 0x8000;
 	}
-	ccpu_setOF_Flag_flag(isSignBitChange_data8(oldEb, d_nubit16(ccpu.deCodeBlock.prm)));
+	ccpu_setOF_Flag_flag(isSignBitChange_data16(oldEv, d_nubit16(ccpu.deCodeBlock.prm)));
 	ccpu_setCF_Flag_flag(newCF);
 	//ccpu_setSF_ZF_PF_byResult_data16(d_nubit16(ccpu.deCodeBlock.prm));
 }
@@ -388,6 +389,7 @@ void ins_methodGroup_SHL_Eb_1()
 	t_nubit8  oldEb  = d_nubit8(ccpu.deCodeBlock.prm);
 	t_bool old_sign = getSignByData_data8(oldEb);
 	ccpu_setCF_Flag_flag(old_sign);
+	
 	(d_nubit8(ccpu.deCodeBlock.prm)) <<= 1;
 
 	ccpu_setOF_Flag_flag(isSignBitChange_data8(oldEb, d_nubit8(ccpu.deCodeBlock.prm)));
