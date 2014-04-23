@@ -5,7 +5,7 @@
 
 #include "../vapi.h"
 #include "../vmachine.h"
-#include "../debug/aasm.h"
+#include "../debug/aasm32.h"
 
 #include "qdcga.h"
 #include "qdkeyb.h"
@@ -19,16 +19,23 @@
 t_faddrcc qdbiosInt[0x100];
 static t_nubit16 ics, iip;
 
+static t_nubit32 vbiosAsm(const t_strptr stmt, t_nubit16 seg, t_nubit16 off)
+{
+	t_nubit32 len;
+	t_nubit8 code[0x10000];
+	len = aasm32x(stmt, (t_vaddrcc)code);
+	memcpy((void *)vramGetRealAddr(seg, off), (void *)code, len);
+	return len;
+}
+
 void qdbiosMakeInt(t_nubit8 intid, t_strptr stmt)
 {
-	t_nubit16 len;
+	t_nubit32 len;
 	vramRealWord(0x0000, intid * 4 + 0) = iip;
 	vramRealWord(0x0000, intid * 4 + 2) = ics;
-	len = (t_nubit16)aasm(stmt, ics, iip);
+	len = vbiosAsm(stmt, ics, iip);
 	if (len) iip += len;
-	else {
-		vapiPrint("Critical internal error: invalid asm instruction.\n");
-	}
+	else vapiPrint("qdbios: invalid asm instruction.\n");
 }
 void qdbiosExecInt(t_nubit8 intid)
 {
@@ -116,7 +123,7 @@ static void vbiosLoadInt()
 		vramRealWord(0x0000, i * 4 + 0) = iip;
 		vramRealWord(0x0000, i * 4 + 2) = ics;
 	}
-	iip += (t_nubit16)aasm("iret", ics, iip);
+	iip += (t_nubit16)vbiosAsm("iret", ics, iip);
 	/* load rtc int */
 	qdbiosMakeInt(0x08, HARD_RTC_INT_08);
 	qdbiosMakeInt(0x1a, SOFT_RTC_INT_1A);
@@ -137,16 +144,16 @@ static void vbiosLoadInt()
 }
 static void vbiosLoadPost()
 {
-	char stmt[0x1000];
+	t_string stmt;
 	SPRINTF(stmt, "jmp %04x:%04x", ics, iip, 1);
-	aasm(stmt, 0xf000, 0xfff0);
-	iip += (t_nubit16)aasm(VBIOS_POST_VPIC,  ics, iip);
-	iip += (t_nubit16)aasm(VBIOS_POST_VDMA,  ics, iip);
-	iip += (t_nubit16)aasm(VBIOS_POST_VFDC,  ics, iip);
-	iip += (t_nubit16)aasm(VBIOS_POST_VPIT,  ics, iip);
-	iip += (t_nubit16)aasm(VBIOS_POST_VCMOS, ics, iip);
-	iip += (t_nubit16)aasm(VBIOS_POST_VRTC,  ics, iip);
-	iip += (t_nubit16)aasm(VBIOS_POST_BOOT,  ics, iip);
+	vbiosAsm(stmt, 0xf000, 0xfff0);
+	iip += (t_nubit16)vbiosAsm(VBIOS_POST_VPIC,  ics, iip);
+	iip += (t_nubit16)vbiosAsm(VBIOS_POST_VDMA,  ics, iip);
+	iip += (t_nubit16)vbiosAsm(VBIOS_POST_VFDC,  ics, iip);
+	iip += (t_nubit16)vbiosAsm(VBIOS_POST_VPIT,  ics, iip);
+	iip += (t_nubit16)vbiosAsm(VBIOS_POST_VCMOS, ics, iip);
+	iip += (t_nubit16)vbiosAsm(VBIOS_POST_VRTC,  ics, iip);
+	iip += (t_nubit16)vbiosAsm(VBIOS_POST_BOOT,  ics, iip);
 	/* hard disk param table */
 	vramRealWord(0x0000, 0x0104) = 0xe431;
 	vramRealWord(0x0000, 0x0106) = 0xf000;
@@ -163,6 +170,21 @@ static void vbiosLoadPost()
 	vramRealByte(0xf000, 0xe431 + 14) = (t_nubit8)vhdd.nsector;
 	vramRealByte(0xf000, 0xe431 + 15) = 0x00;
 }
+
+/*static void asmcmp(const t_strptr stmt, const t_strptr stmtx)
+{
+	t_nubit8 acode[0x10000];
+	t_nubit32 len, lenx;
+	t_nubit32 i;
+	len  = GetMax32(aasm(stmt, 0, 0));
+	lenx = aasm32x(stmtx, (t_vaddrcc)acode);
+	for (i = 0;i < 200 + 0 * (len > lenx ? len : lenx);++i) {
+		if (acode[i] != vramRealByte(0, i)) {
+			vapiPrint("%x: %02X, %02X\n", i, acode[i], vramRealByte(0, i));
+		}
+	}
+	vapiPrint("len=%d,lenx=%d\n",len,lenx);
+}*/
 
 void qdbiosReset()
 {

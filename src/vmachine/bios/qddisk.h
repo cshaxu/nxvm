@@ -34,7 +34,7 @@ qdx 03 ; leave isr \n\
 iret                     \n"
 
 #define SOFT_DISK_INT_13 "    \
-qdx 02 ; leave isr \n\
+qdx 02 ; leave isr          \n\
 test dl, 80                 \n\
 jnz $(label_int_13_hdd)     \n\
 int 40                      \n\
@@ -84,9 +84,9 @@ $(label_int_13_01):         \n\
 ; get hdd status byte       \n\
 push bx                     \n\
 push ds                     \n\
-mov bx, 40                  \n\
+mov bx, 0040                \n\
 mov ds, bx                  \n\
-mov ah, [0074]              \n\
+mov ah, ds:[0074]           \n\
 pop ds                      \n\
 pop bx                      \n\
 clc                         \n\
@@ -105,28 +105,28 @@ $(label_int_13_08):         \n\
 push ax                     \n\
 push bx                     \n\
 push ds                     \n\
-mov ax, 00                  \n\
+mov ax, 0000                \n\
 mov ds, ax                  \n\
-mov bx, [0104]              \n\
-mov ax, [0106]              \n\
+mov bx, ds:[0104]           \n\
+mov ax, ds:[0106]           \n\
 mov ds, ax                  \n\
-mov cx, [bx+00]             \n\
+mov cx, ds:[bx+00]          \n\
 dec cx          ; ncyl - 1  \n\
 xchg ch, cl                 \n\
-shl cl, 1                   \n\
-shl cl, 1                   \n\
-shl cl, 1                   \n\
-shl cl, 1                   \n\
-shl cl, 1                   \n\
-shl cl, 1                   \n\
-mov al, [bx+04] ; nsector   \n\
+shl cl, 01                  \n\
+shl cl, 01                  \n\
+shl cl, 01                  \n\
+shl cl, 01                  \n\
+shl cl, 01                  \n\
+shl cl, 01                  \n\
+mov al, ds:[bx+04] ; nsector\n\
 or  cl, al ; (ncyl>>2)&0xc0 \n\
            ; | nsector      \n\
-mov dh, [bx+02]             \n\
+mov dh, ds:[bx+02]          \n\
 dec dh          ; nhead - 1 \n\
 mov ax, 0040                \n\
 mov ds, ax                  \n\
-mov dl, [0075]              \n\
+mov dl, ds:[0075]           \n\
 pop ds                      \n\
 pop bx                      \n\
 pop ax                      \n\
@@ -139,15 +139,15 @@ $(label_int_13_15):         \n\
 ; count=(ncyl-1)*nhead*nsec \n\
 push bx                     \n\
 push ds                     \n\
-mov ax, 00                  \n\
+mov ax, 0000                \n\
 mov ds, ax                  \n\
-mov bx, [0104]              \n\
-mov ax, [0106]              \n\
+mov bx, ds:[0104]           \n\
+mov ax, ds:[0106]           \n\
 mov ds, ax                  \n\
-mov cx, [bx+00]             \n\
+mov cx, ds:[bx+00]          \n\
 dec cx          ; ncyl - 1  \n\
-mov al, [bx+04] ; nsector   \n\
-mov dh, [bx+02] ; nhead     \n\
+mov al, ds:[bx+04] ; nsector\n\
+mov dh, ds:[bx+02] ; nhead  \n\
 mov ah, 00                  \n\
 mul dh ; nhead * nsector    \n\
 mul cx ; total size         \n\
@@ -155,7 +155,7 @@ mov cx, dx ; size high 16   \n\
 mov dx, ax ; size low  16   \n\
 pop ds                      \n\
 pop bx                      \n\
-mov ax, 03                  \n\
+mov ax, 0003                \n\
 clc                         \n\
 jmp near $(label_int_13_end)\n\
 \
@@ -163,9 +163,9 @@ $(label_int_13_end):        \n\
 ; set hdd status byte       \n\
 push bx                     \n\
 push ds                     \n\
-mov bx, 40                  \n\
+mov bx, 0040                \n\
 mov ds, bx                  \n\
-mov [0074], ah              \n\
+mov ds:[0074], ah           \n\
 pop ds                      \n\
 pop bx                      \n\
 ; set/clear cf              \n\
@@ -173,19 +173,17 @@ push ax                     \n\
 push bx                     \n\
 pushf                       \n\
 pop ax                      \n\
-and ax, 01                  \n\
+and ax, 0001                \n\
 mov bx, sp                  \n\
-ss:                         \n\
-and word [bx+8], fffe       \n\
-ss:                         \n\
-or  word [bx+8], ax         \n\
+and word ss:[bx+08], fffe   \n\
+or  word ss:[bx+08], ax     \n\
 pop bx                      \n\
 pop ax                      \n\
-qdx 03 ; leave isr \n\
+qdx 03 ; leave isr          \n\
 iret                        \n"
 
 #define SOFT_DISK_INT_40 "    \
-qdx 02 ; enter isr \n\
+qdx 02 ; enter isr          \n\
 test dl, 80                 \n\
 jz $(label_int_40_fdd)      \n\
 mov ah, 01                  \n\
@@ -235,9 +233,9 @@ $(label_int_40_01):         \n\
 ; get fdd status byte       \n\
 push bx                     \n\
 push ds                     \n\
-mov bx, 40                  \n\
+mov bx, 0040                \n\
 mov ds, bx                  \n\
-mov ah, [0041]              \n\
+mov ah, ds:[0041]           \n\
 pop ds                      \n\
 pop bx                      \n\
 clc                         \n\
@@ -279,7 +277,7 @@ shl ax, 01                       \n\
 shl ax, 01                       \n\
 shl ax, 01                       \n\
 mov cx, bx                       \n\
-and cx, 0f                       \n\
+and cx, 000f                     \n\
 or  ax, cx ; calc base addr      \n\
 mov cl, 0c                       \n\
 shr dx, cl ; calc page register  \n\
@@ -387,7 +385,7 @@ shl ax, 01                       \n\
 shl ax, 01                       \n\
 shl ax, 01                       \n\
 mov cx, bx                       \n\
-and cx, 0f                       \n\
+and cx, 000f                     \n\
 or  ax, cx ; calc base addr      \n\
 mov cl, 0c                       \n\
 shr dx, cl ; calc page register  \n\
@@ -442,11 +440,11 @@ pop bx                           \n\
 ; vdma drq generated, wait       \n\
 sti                              \n\
 mov dx, 03f4                     \n\
-$(label_int_40_02_l2):           \n\
+$(label_int_40_03_l2):           \n\
 in  al, dx                       \n\
 and al, c0                       \n\
 cmp al, c0                       \n\
-jnz $(label_int_40_02_l2)        \n\
+jnz $(label_int_40_03_l2)        \n\
 mov dx, 03f5                     \n\
 in  al, dx ; get stdo st0        \n\
 in  al, dx ; get stdo st1        \n\
@@ -467,8 +465,8 @@ mov dx, 0102                \n\
 push ds                     \n\
 mov ax, 0000                \n\
 mov ds, ax                  \n\
-mov di, [0078]              \n\
-mov ax, [007a]              \n\
+mov di, ds:[0078]           \n\
+mov ax, ds:[007a]           \n\
 mov es, ax                  \n\
 pop ds                      \n\
 mov ax, 0000                \n\
@@ -489,9 +487,9 @@ $(label_int_40_end):        \n\
 ; set fdd status byte       \n\
 push bx                     \n\
 push ds                     \n\
-mov bx, 40                  \n\
+mov bx, 0040                \n\
 mov ds, bx                  \n\
-mov [0041], ah              \n\
+mov ds:[0041], ah           \n\
 pop ds                      \n\
 pop bx                      \n\
 ; set/clear cf              \n\
@@ -499,12 +497,10 @@ push ax                     \n\
 push bx                     \n\
 pushf                       \n\
 pop ax                      \n\
-and ax, 01                  \n\
+and ax, 0001                \n\
 mov bx, sp                  \n\
-ss:                         \n\
-and word [bx+8], fffe       \n\
-ss:                         \n\
-or  word [bx+8], ax         \n\
+and word ss:[bx+08], fffe   \n\
+or  word ss:[bx+08], ax     \n\
 pop bx                      \n\
 pop ax                      \n\
 qdx 03 ; leave isr \n\

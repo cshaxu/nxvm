@@ -420,16 +420,14 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define ARG_SHORT_I8s   (isSHORT(aopri1) && isI8s (aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_NEAR_I16s   (isNEAR (aopri1) && isI16s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_NEAR_I32s   (isNEAR (aopri1) && isI32s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
-#define ARG_PNONE_I16   (isPNONE(aopri1) && isI16u(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
-#define ARG_SHORT_I16   (isSHORT(aopri1) && isI16u(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
-#define ARG_NEAR_I16    (isNEAR (aopri1) && isI16u(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_FAR_I16_16  (isFAR  (aopri1) && isI16p(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_FAR_I16_32  (isFAR  (aopri1) && isI32p(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_PNONE_RM16s (isPNONE(aopri1) && isRM16s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_NEAR_RM16s  (isNEAR (aopri1) && isRM16s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_PNONE_RM32s (isPNONE(aopri1) && isRM32s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_NEAR_RM32s  (isNEAR (aopri1) && isRM32s(aopri1) && isNONE(aopri2) && isNONE(aopri3))
-#define ARG_FAR_M16_16  (isFAR  (aopri1) && isM32  (aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_FAR_M16_16  (isFAR  (aopri1) && isM16s (aopri1) && isNONE(aopri2) && isNONE(aopri3))
+#define ARG_FAR_M16_32  (isFAR  (aopri1) && isM32s (aopri1) && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_RM8_CL      (isRM8s (aopri1) && isCL   (aopri2) && isNONE(aopri3))
 #define ARG_RM16_CL     (isRM16s(aopri1) && isCL   (aopri2) && isNONE(aopri3))
 #define ARG_RM32_CL     (isRM32s(aopri1) && isCL   (aopri2) && isNONE(aopri3))
@@ -580,7 +578,7 @@ typedef enum {
 	TOKEN_ES,TOKEN_CS,TOKEN_SS,TOKEN_DS,TOKEN_FS,TOKEN_GS,
 	TOKEN_CR0,TOKEN_CR2,TOKEN_CR3,
 	TOKEN_DR0,TOKEN_DR1,TOKEN_DR2,TOKEN_DR3,TOKEN_DR6,TOKEN_DR7,
-	TOKEN_TR6,TOKEN_TR7
+	TOKEN_TR6,TOKEN_TR7,TOKEN_DOLLAR
 } t_aasm_token;
 /* token variables */
 static t_nubit8 tokimm8;
@@ -619,6 +617,7 @@ static t_aasm_token gettoken(t_strptr str)
 			case '+': take(TOKEN_PLUS);    break;
 			case '-': take(TOKEN_MINUS);   break;
 			case '*': take(TOKEN_TIMES);   break;
+			case '$': take(TOKEN_DOLLAR);  break;
 			case '0': tokimm = 0x0;toklen = 1;state = STATE_NUM1;break;
 			case '1': tokimm = 0x1;toklen = 1;state = STATE_NUM1;break;
 			case '2': tokimm = 0x2;toklen = 1;state = STATE_NUM1;break;
@@ -1999,8 +1998,8 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 			_chrf(info = parsearg_mem(token));
 			info.type = TYPE_M32;
 			_be;break;
-		case TOKEN_IMM16:
-		case TOKEN_IMM32: _bb("token(TOKEN_IMM16/TOKEN_IMM32)");
+		case TOKEN_PLUS:
+		case TOKEN_MINUS: _bb("token(TOKEN_PLUS/TOKEN_MINUS)");
 			_chrf(info = parsearg_imm(token));
 			if (info.type != TYPE_I16 && info.type != TYPE_I32) _serf_;
 			_be;break;
@@ -2036,7 +2035,7 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 			_be;break;
 		case TOKEN_IMM16: _bb("token(TOKEN_IMM16)");
 			_chrf(info = parsearg_imm(token));
-			if (info.type != TYPE_I16_16) _serf_;
+			if (info.type != TYPE_I16_16 && info.type != TYPE_I16_32) _serf_;
 			_be;break;
 		case TOKEN_ES:
 		case TOKEN_CS:
@@ -5424,15 +5423,15 @@ static void OUTS()
 static void JCC_REL(t_nubit8 opcode)
 {
 	_cb("JCC_REL");
-	if (ARG_I8s) {
+	if (ARG_PNONE_I8s || ARG_SHORT_I8s) {
 		_c_setbyte(opcode);
 		_c_imm8(aopri1.imm8);
-	} else if (ARG_I16s) {
+	} else if (ARG_PNONE_I16s || ARG_NEAR_I16s) {
 		_SetOperandSize(2);
 		INS_0F();
 		_c_setbyte(opcode + 0x10);
 		_c_imm16(aopri1.imm16);
-	} else if (ARG_I32s) {
+	} else if (ARG_PNONE_I32s || ARG_NEAR_I32s) {
 		_SetOperandSize(4);
 		INS_0F();
 		_c_setbyte(opcode + 0x10);
@@ -5569,6 +5568,7 @@ static void CALL()
 	else if (ARG_NEAR_RM16s || ARG_PNONE_RM16s) INS_FF(0x02, 2);
 	else if (ARG_NEAR_RM32s || ARG_PNONE_RM32s) INS_FF(0x02, 4);
 	else if (ARG_FAR_M16_16) INS_FF(0x03, 2);
+	else if (ARG_FAR_M16_32) INS_FF(0x03, 4);
 	else _se_;
 	_ce;
 }
@@ -5871,6 +5871,7 @@ static void JMP()
 	else if (ARG_NEAR_RM16s || ARG_PNONE_RM16s) INS_FF(0x04, 2);
 	else if (ARG_NEAR_RM32s || ARG_PNONE_RM32s) INS_FF(0x04, 4);
 	else if (ARG_FAR_M16_16) INS_FF(0x05, 2);
+	else if (ARG_FAR_M16_32) INS_FF(0x05, 4);
 	else _se_;
 	_ce;
 }
@@ -6412,8 +6413,10 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 		while (!is_end(*rstmt) && is_space(*rstmt)) rstmt++;
 		rop = rstmt;
 		while (!is_end(*rstmt) && !is_space(*rstmt)) rstmt++;
-		*rstmt = 0;
-		rstmt++;
+		if (!is_end(*rstmt)) {
+			*rstmt = 0;
+			rstmt++;
+		}
 		flagprefix = is_prefix();
 		if (flagprefix) exec();
 	} while (flagprefix && !flagerror);
@@ -6436,9 +6439,9 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 	len = 0;
 
 	if (flagerror) {
-		//vapiPrint("aasm32: bad instruction '%s'\n", stmt);
-		//vapiPrint("aasm32: [%s] [%s/%d] [%s/%d] [%s/%d]\n",
-		//	rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
+		vapiPrint("aasm32: bad instruction '%s'\n", stmt);
+		vapiPrint("aasm32: [%s] [%s/%d] [%s/%d] [%s/%d]\n",
+			rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
 	} else {
 		if (prefix_repz)  {d_nubit8(rcode + len) = 0xf3;len++;}
 		if (prefix_repnz) {d_nubit8(rcode + len) = 0xf2;len++;}
@@ -6472,12 +6475,297 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 /* extended routines - assemble a paragraph with jmp labels */
 typedef struct {
 	t_string stmt;
-	t_nubit8 code[15];
-	t_nubit8 len;
+	t_nubit32 stmt_id;
+	t_nubit8 code_array[15];
+	t_nubit8 code_len;
+	t_bool flag_is_label;
+	t_bool flag_has_label;
+	t_string label_str;
+	t_string op_str;
+	t_aasm_oprptr ptr;
 } t_aasm_instr;
+/* default operand size */
+#define _GetOperandSize (vcpu.cs.seg.exec.defsize ? 4 : 2)
+static void asmx_get_label(t_aasm_instr *rinstr)
+{
+	t_nubit8 i = 0, j = 0;
+	rinstr->label_str[0] = 0;
+	rinstr->flag_has_label = 0;
+	rinstr->flag_is_label = 0;
+	while (rinstr->stmt[i] && rinstr->stmt[i] != '$') i++;
+	if (rinstr->stmt[i] != '$') return;
+	i++;
+	if (rinstr->stmt[i] != '(') return;
+	i++;
+	while (rinstr->stmt[i] && rinstr->stmt[i] != ')')
+		rinstr->label_str[j++] = rinstr->stmt[i++];
+	rinstr->label_str[j] = 0;
+	if (rinstr->stmt[i] != ')') return;
+	rinstr->flag_has_label = 1;
+	if (rinstr->stmt[0] == '$' && rinstr->stmt[1] == '(' &&
+		rinstr->stmt[strlen(rinstr->stmt) - 1] == ':' &&
+		rinstr->stmt[strlen(rinstr->stmt) - 2] == ')')
+		rinstr->flag_is_label = 1;
+}
+static void asmx_parse_instr(t_aasm_instr *rinstr)
+{
+	t_nubit8 i;
+	t_strptr rstmt;
+	t_aasm_token token;
+	i = 0;
+	rinstr->code_len = 0;
+	while (!is_end(rinstr->stmt[i]) && !is_space(rinstr->stmt[i])) {
+		rinstr->op_str[i] = rinstr->stmt[i];
+		i++;
+	}
+	rinstr->op_str[i] = 0;
+	rstmt = rinstr->stmt + i;
+	if (is_end(*rstmt)) return;
+	token = gettoken(rstmt);
+	switch (token) {
+	case TOKEN_SHORT:
+		token = gettoken(NULL);
+		if (token == TOKEN_PTR) token = gettoken(NULL);
+		if (token != TOKEN_DOLLAR) return;
+		rinstr->ptr = PTR_SHORT;
+		break;
+	case TOKEN_NEAR:
+		token = gettoken(NULL);
+		if (token == TOKEN_PTR) token = gettoken(NULL);
+		if (token != TOKEN_DOLLAR) return;
+		rinstr->ptr = PTR_NEAR;
+		break;
+	case TOKEN_DOLLAR:
+		rinstr->ptr = PTR_NONE;
+		break;
+	default: return;}
+	if (!strcmp(rinstr->op_str,"loopne") || !strcmp(rinstr->op_str,"loopnz") || !strcmp(rinstr->op_str,"loope") ||
+		!strcmp(rinstr->op_str,"loopz")  || !strcmp(rinstr->op_str,"loop")   || !strcmp(rinstr->op_str,"jcxz")) {
+		switch (rinstr->ptr) {
+		case PTR_NONE:
+			rinstr->ptr = PTR_SHORT;
+		case PTR_SHORT:
+			rinstr->code_len = 1/*opcode*/ + 1/*rel_imm8*/;
+			break;
+		default: return;}
+	}
+	if (!strcmp(rinstr->op_str, "jo")  || !strcmp(rinstr->op_str, "jno") || !strcmp(rinstr->op_str, "jb" ) ||
+		!strcmp(rinstr->op_str, "jc" ) || !strcmp(rinstr->op_str,"jnae") || !strcmp(rinstr->op_str, "jae") ||
+		!strcmp(rinstr->op_str, "jnb") || !strcmp(rinstr->op_str, "jnc") || !strcmp(rinstr->op_str, "je" ) ||
+		!strcmp(rinstr->op_str, "jz" ) || !strcmp(rinstr->op_str, "jne") || !strcmp(rinstr->op_str, "jnz") ||
+		!strcmp(rinstr->op_str, "jbe") || !strcmp(rinstr->op_str, "jna") || !strcmp(rinstr->op_str, "ja" ) ||
+		!strcmp(rinstr->op_str,"jnbe") || !strcmp(rinstr->op_str, "js" ) || !strcmp(rinstr->op_str, "jns") ||
+		!strcmp(rinstr->op_str, "jp" ) || !strcmp(rinstr->op_str, "jpe") || !strcmp(rinstr->op_str, "jnp") ||
+		!strcmp(rinstr->op_str, "jpo") || !strcmp(rinstr->op_str, "jl" ) || !strcmp(rinstr->op_str,"jnge") ||
+		!strcmp(rinstr->op_str, "jge") || !strcmp(rinstr->op_str, "jnl") || !strcmp(rinstr->op_str, "jle") ||
+		!strcmp(rinstr->op_str, "jng") || !strcmp(rinstr->op_str, "jg" ) || !strcmp(rinstr->op_str,"jnle")) {
+		switch (rinstr->ptr) {
+		case PTR_NONE:
+			rinstr->ptr = PTR_SHORT;
+		case PTR_SHORT:
+			rinstr->code_len = 1/*opcode*/ + 1/*rel_imm8*/;
+			break;
+		case PTR_NEAR:
+			rinstr->code_len = 1/*0x0f*/ + 1/*opcode*/ + _GetOperandSize/*rel_immx*/;
+			break;
+		default: return;}
+	}
+	if (!strcmp(rinstr->op_str, "jmp")) {
+		switch (rinstr->ptr) {
+		case PTR_SHORT:
+			rinstr->code_len = 1/*opcode*/ + 1/*rel_imm8*/;
+			break;
+		case PTR_NONE:
+			rinstr->ptr = PTR_NEAR;
+		case PTR_NEAR:
+			rinstr->code_len = 1/*opcode*/ + _GetOperandSize/*rel_immx*/;
+			break;
+		default: return;}
+	}
+	if (!strcmp(rinstr->op_str, "call")) {
+		switch (rinstr->ptr) {
+		case PTR_NONE:
+			rinstr->ptr = PTR_NEAR;
+		case PTR_NEAR:
+			rinstr->code_len = 1/*opcode*/ + _GetOperandSize/*rel_immx*/;
+			break;
+		default: return;}
+	}
+}
 t_nubit32 aasm32x(const t_strptr stmt, t_vaddrcc rcode)
 {
+	t_nubit32 i, j, k;
+	t_nubit32 count;
 	t_nubit32 len;
+	t_nubit32 offset;
+	t_string imm;
+	t_aasm_instr *instr;
+	count = 1;
+	flagerror = 0;
+	for (i = 0;i < strlen(stmt);++i)
+		if (stmt[i] == '\n') count++;
+	instr = (t_aasm_instr *)malloc(count * sizeof(t_aasm_instr));
+	i = j = k = 0;
+	while (is_space(stmt[i])) i++;
+	while (1) {
+		if (is_end(stmt[i])) {
+			if (j) {
+				j--;
+				if (j) {
+					while (is_space(instr[k].stmt[j])) j--;
+					if (j) {
+						instr[k].stmt[j + 1] = 0;
+						lcase(instr[k].stmt);
+						instr[k].stmt_id = k;
+						j = 0;
+						k++;
+					}
+				}
+			}
+			while (stmt[i] && stmt[i] != '\n') i++;
+			if (!stmt[i]) break;
+			else if (stmt[i] == '\n') {
+				i++;
+				while (is_space(stmt[i])) i++;
+			}
+		} else {
+			instr[k].stmt[j] = stmt[i];
+			i++;
+			j++;
+		}
+	}
+	count = k;
+	for (i = 0;i < count;++i) {
+		memset(instr[i].code_array, 0x00, 15);
+		asmx_get_label(&instr[i]);
+		if (instr[i].flag_has_label) {
+			if (instr[i].flag_is_label) {
+				instr[i].code_array[0] = 0x90;
+				instr[i].code_len = 1;
+			} else
+				asmx_parse_instr(&instr[i]);
+		} else instr[i].code_len = aasm32(instr[i].stmt, (t_vaddrcc)instr[i].code_array);
+		if (flagerror) {
+			free(instr);
+			return 0;
+		}
+		if (!instr[i].code_len) {
+			flagerror = 1;
+			vapiPrint("bad instruction in first round:\n#%d: [%s], %x", instr[i].stmt_id, instr[i].stmt, instr[i].code_len);
+			if (instr[i].code_len) {
+				vapiPrint(", code: [");
+				for (j = 0;j < instr[i].code_len;++j)
+					vapiPrint("%02X", instr[i].code_array[j]);
+				vapiPrint("]");
+			}
+			if (instr[i].flag_has_label) {
+				vapiPrint(", label: [%s], is=%s",
+					instr[i].label_str,
+					instr[i].flag_is_label ? "yes" : "no");
+			}
+			vapiPrint("\n");
+		}	
+		if (flagerror) {
+			free(instr);
+			return 0;
+		}
+	}
+	/* i: label; j: instr to be materialized; k: size iterator */
+	for (i = 0;i < count;++i) {
+		if (!instr[i].flag_is_label) continue;
+		if (i) {
+			for (j = i - 1;j >= 0;--j) {
+				if (instr[j].flag_has_label && !strcmp(instr[j].label_str, instr[i].label_str)) {
+					if (instr[j].flag_is_label) {
+						flagerror = 1;
+						vapiPrint("aasm32x: duplicate label '%s'.\n", instr[i].label_str);
+					} else {
+						offset = 0;
+						//for (k = j + 1;k < i;++k) offset += instr[k].code_len;
+						for (k = j + 1;k <= i;++k) offset += instr[k].code_len;
+						STRCPY(instr[j].stmt, instr[j].op_str);
+						switch (instr[j].ptr) {
+						case PTR_SHORT:
+							STRCAT(instr[j].stmt, " short ");
+							if (offset < 0x80) SPRINTF(imm, "+%02x", GetMax8(offset));
+							else {flagerror = 1;vapiPrint("aasm32x: invalid short pointer 8+.\n");}
+							break;
+						case PTR_NEAR:
+							STRCAT(instr[j].stmt, " near ");
+							switch (_GetOperandSize) {
+							case 2:
+								if (offset < 0x8000) SPRINTF(imm, "+%04x", GetMax16(offset));
+								else {flagerror = 1;vapiPrint("aasm32x: invalid near pointer 16+.\n");}
+								break;
+							case 4:
+								if (offset < 0x80000000) SPRINTF(imm, "+%08X", GetMax32(offset));
+								else {flagerror = 1;vapiPrint("aasm32x: invalid near pointer 32+.\n");}
+								break;
+							default: break;}
+							break;
+						default: flagerror = 1;break;}
+						STRCAT(instr[j].stmt, imm);
+						aasm32(instr[j].stmt, (t_vaddrcc)instr[j].code_array);
+					}
+					if (flagerror) {
+						free(instr);
+						return 0;
+					}
+				}
+				if (!j) break;
+			}
+		}
+		if (i != count - 1) {
+			for (j = i + 1;j < count;++j) {
+				if (instr[j].flag_has_label && !strcmp(instr[j].label_str, instr[i].label_str)) {
+					if (instr[j].flag_is_label) {
+						flagerror = 1;
+						vapiPrint("aasm32x: duplicate label '%s'.\n", instr[i].label_str);
+					} else {
+						offset = 0;
+						for (k = i + 1;k < j + 1;++k) offset += instr[k].code_len;
+						STRCPY(instr[j].stmt, instr[j].op_str);
+						switch (instr[j].ptr) {
+						case PTR_SHORT:
+							STRCAT(instr[j].stmt, " short ");
+							if (offset < 0x80) SPRINTF(imm, "-%02x", GetMax8(offset));
+							else {flagerror = 1;vapiPrint("aasm32x: invalid short pointer 8-.\n");}
+							break;
+						case PTR_NEAR:
+							STRCAT(instr[j].stmt, " near ");
+							switch (_GetOperandSize) {
+							case 2:
+								if (offset < 0x8000) SPRINTF(imm, "-%04x", GetMax16(offset));
+								else {flagerror = 1;vapiPrint("aasm32x: invalid near pointer 16-.\n");}
+								break;
+							case 4:
+								if (offset < 0x80000000) SPRINTF(imm, "-%08x", GetMax32(offset));
+								else {flagerror = 1;vapiPrint("aasm32x: invalid near pointer 32-.\n");}
+								break;
+							default: break;}
+							break;
+						default: flagerror = 1;break;}
+						STRCAT(instr[j].stmt, imm);
+						aasm32(instr[j].stmt, (t_vaddrcc)instr[j].code_array);
+					}
+					if (flagerror) {
+						free(instr);
+						return 0;
+					}
+				}
+			}
+		}
+	}
 	len = 0;
+	for (i = 0;i < count;++i) {
+		/*vapiPrint("%04X: %s", len, instr[i].stmt);
+		for (j = GetMax32(strlen(instr[i].stmt));j < 50;++j) vapiPrint(" ");
+		vapiPrint("[");
+		for (j = 0;j < instr[i].code_len;++j) vapiPrint("%02X", instr[i].code_array[j]);
+		vapiPrint("]\n");*/
+		memcpy((void *)(rcode + len), instr[i].code_array, instr[i].code_len);
+		len += instr[i].code_len;
+	}
+	free(instr);
 	return len;
 }

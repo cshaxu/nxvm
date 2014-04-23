@@ -73,15 +73,76 @@ out 43, al                                        \n\
 mov al, 12                                        \n\
 out 41, al ; initial count (0x12)                 \n"
 
+#define VBIOS_POST_VRTC "      \
+mov ah, 02 ; ch,cl,dh         \n\
+int 1a     ; get cmos time    \n\
+\
+mov bh, ch ; convert ch       \n\
+and bh, 0f                    \n\
+shr ch, 01                    \n\
+shr ch, 01                    \n\
+shr ch, 01                    \n\
+shr ch, 01                    \n\
+mov al, ch                    \n\
+mov ch, 0a                    \n\
+mul ch                        \n\
+add bh, al                    \n\
+mov ch, bh ; ch is hex now    \n\
+\
+mov bh, cl ; convert cl       \n\
+and bh, 0f                    \n\
+shr cl, 01                    \n\
+shr cl, 01                    \n\
+shr cl, 01                    \n\
+shr cl, 01                    \n\
+mov al, cl                    \n\
+mov cl, 0a                    \n\
+mul cl                        \n\
+add bh, al                    \n\
+mov cl, bh ; cl is hex now    \n\
+\
+mov bh, dh ; convert dh       \n\
+and bh, 0f                    \n\
+shr dh, 01                    \n\
+shr dh, 01                    \n\
+shr dh, 01                    \n\
+shr dh, 01                    \n\
+mov al, dh                    \n\
+mov dh, 0a                    \n\
+mul dh                        \n\
+add bh, al                    \n\
+mov dh, bh ; dh is hex now    \n\
+\
+mov al, ch ; x = hour         \n\
+mov bl, 3c                    \n\
+mul bl     ; x *= 60          \n\
+mov ch, 00                    \n\
+add ax, cx ; x += min         \n\
+xor cx, cx                    \n\
+mov cl, dh                    \n\
+mov bx, 003c                  \n\
+mul bx     ; x *= 60          \n\
+add ax, cx ; x += second      \n\
+mov bx, 0040                  \n\
+mov ds, bx                    \n\
+mov cx, dx                    \n\
+mov bx, 0012                  \n\
+mul bx      ; x *= 18         \n\
+mov ds:[006c], ax             \n\
+mov ds:[006e], dx             \n\
+mov ax, cx                    \n\
+mul bx                        \n\
+add ds:[006e], ax             \n"
+
 #define VBIOS_POST_BOOT "             \
 $(label_post_boot_start):           \n\
-mov bx, 40                          \n\
+mov bx, 0040                        \n\
 mov ds, bx                          \n\
-mov dl, [0100] ; select boot disk   \n\
+mov dl, ds:[0100] ; select boot disk\n\
 mov dh, 00     ; select head 0      \n\
 mov ch, 00     ; select cylender 0  \n\
 mov cl, 01     ; select sector 1    \n\
-mov bx, 00                          \n\
+mov bx, 0000                        \n\
 mov es, bx     ; target es = 0000   \n\
 mov bx, 7c00   ; target bx = 7c00   \n\
 mov al, 01     ; read 1 sector      \n\
@@ -91,9 +152,9 @@ pushf                               \n\
 pop ax                              \n\
 test al, 01                         \n\
 jnz $(label_post_boot_fail)         \n\
-mov bx, 00                          \n\
+mov bx, 0000                        \n\
 mov ds, bx                          \n\
-mov ax, [7dfe]                      \n\
+mov ax, ds:[7dfe]                   \n\
 cmp ax, aa55                        \n\
 jnz $(label_post_boot_fail)         \n\
 jmp near $(label_post_boot_succ)    \n\
@@ -149,7 +210,7 @@ mov ah, 11                        \n\
 int 16  ; get key press           \n\
 pushf   ; if any key pressed,     \n\
 pop ax  ; then stop nxvm          \n\
-test ax, 40                       \n\
+test ax, 0040                     \n\
 jnz $(label_post_boot_fail_loop)  \n\
 mov ah, 00                        \n\
 int 16                            \n\
@@ -159,71 +220,10 @@ jmp near $(label_post_boot_start) \n\
 $(label_post_boot_succ):  \n\
 ; start operating system  \n\
 xor bx, bx                \n\
-mov cx, 01                \n\
+mov cx, 0001              \n\
 xor dx, dx                \n\
 mov sp, fffe              \n\
 jmp 0000:7c00             \n"
-
-#define VBIOS_POST_VRTC "      \
-mov ah, 02 ; ch,cl,dh         \n\
-int 1a     ; get cmos time    \n\
-\
-mov bh, ch ; convert ch       \n\
-and bh, 0f                    \n\
-shr ch, 1                     \n\
-shr ch, 1                     \n\
-shr ch, 1                     \n\
-shr ch, 1                     \n\
-mov al, ch                    \n\
-mov ch, 0a                    \n\
-mul ch                        \n\
-add bh, al                    \n\
-mov ch, bh ; ch is hex now    \n\
-\
-mov bh, cl ; convert cl       \n\
-and bh, 0f                    \n\
-shr cl, 1                     \n\
-shr cl, 1                     \n\
-shr cl, 1                     \n\
-shr cl, 1                     \n\
-mov al, cl                    \n\
-mov cl, 0a                    \n\
-mul cl                        \n\
-add bh, al                    \n\
-mov cl, bh ; cl is hex now    \n\
-\
-mov bh, dh ; convert dh       \n\
-and bh, 0f                    \n\
-shr dh, 1                     \n\
-shr dh, 1                     \n\
-shr dh, 1                     \n\
-shr dh, 1                     \n\
-mov al, dh                    \n\
-mov dh, 0a                    \n\
-mul dh                        \n\
-add bh, al                    \n\
-mov dh, bh ; dh is hex now    \n\
-\
-mov al, ch ; x = hour         \n\
-mov bl, 3c                    \n\
-mul bl     ; x *= 60          \n\
-mov ch, 00                    \n\
-add ax, cx ; x += min         \n\
-xor cx, cx                    \n\
-mov cl, dh                    \n\
-mov bx, 3c                    \n\
-mul bx     ; x *= 60          \n\
-add ax, cx ; x += second      \n\
-mov bx, 40                    \n\
-mov ds, bx                    \n\
-mov cx, dx                    \n\
-mov bx, 12                    \n\
-mul bx      ; x *= 18         \n\
-mov [006c], ax                \n\
-mov [006e], dx                \n\
-mov ax, cx                    \n\
-mul bx                        \n\
-add [006e], ax                \n"
 
 #ifdef __cplusplus
 }/*_EOCD_*/

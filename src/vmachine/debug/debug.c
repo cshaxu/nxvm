@@ -113,7 +113,6 @@ static void aconsole()
 	while(!flagexitasm) {
 		vapiPrint("%04X:%04X ", asmSegRec, asmPtrRec);
 		fflush(stdin);
-		vapiPrint("\b");
 		FGETS(cmdAsmBuff,MAXLINE,stdin);
 		lcase(cmdAsmBuff);
 		if(!strlen(cmdAsmBuff)) {
@@ -124,7 +123,13 @@ static void aconsole()
 		errAsmPos = 0;
 		len = aasm32(cmdAsmBuff, (t_vaddrcc)acode);
 		if(!len) errAsmPos = (t_nubitcc)strlen(cmdAsmBuff) + 9;
-		else asmPtrRec += len;
+		else {
+			if (vcpuinsWriteLinear((asmSegRec << 4) + asmPtrRec, (t_vaddrcc)acode, len)) {
+				vapiPrint("debug: fail to write to L%08X\n", (asmSegRec << 4) + asmPtrRec);
+				return;
+			}
+			asmPtrRec += len;
+		}
 		if(errAsmPos) {
 			for(i = 0;i < errAsmPos;++i) vapiPrint(" ");
 			vapiPrint("^ Error\n");
@@ -879,7 +884,7 @@ static void xaconsole(t_nubit32 linear)
 	t_nubitcc errAsmPos;
 	t_bool flagexitasm = 0;
 	while(!flagexitasm) {
-		vapiPrint("L%08X: ", linear);
+		vapiPrint("L%08X ", linear);
 		FGETS(astmt, MAXLINE, stdin);
 		fflush(stdin);
 		astmt[strlen(astmt) - 1] = 0;

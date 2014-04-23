@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0143]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0144]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -125,17 +125,17 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 04/21-05/23  updated debugger
  * 05/24-07/31  built 80386 cpu
  * 08/06-08/09  built dasm32
- * 08/10-08/13  built aasm32
+ * 08/10-08/15  built aasm32
  *
  * Milestones
- * 0x45 Console, 8086 CPU, 8086 Debugger
+ * 0x45 Console, 8086 CPU, Debug, Aasm, Dasm
  * 0x82 Basic Devices (QD Devices)
  * 0x90 Win32 Application
  * 0xbc Win32 Console
  * 0xbf Linux Console
  * 0xca New BIOS System
  * 0xcc New Console Commands
- * 0xdf New ASM/DASM/Debug System
+ * 0xdf Built New Aasm/Dasm/Debug System
  * 0xf2 Clean CPUINS; Hard Disk Installed
  * 0xf5 i386 Build Begin
  * 010d Bitmap Font Implemented
@@ -144,6 +144,8 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 012e Bochs Tester Constructed
  * 013a Built Dasm 32
  * 0140 Built Trace System
+ * 0143 Built Debug 32
+ * 0144 Built Aasm 32
  *
  * Format Unify:
  * construct aasm32

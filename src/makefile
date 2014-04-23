@@ -6,8 +6,8 @@ CFLAGS = -g -O
 TARGET = a.out
 LIBRARY = -lpthread -lncurses
 
-$(TARGET): main.o console.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qddisk.o qdkeyb.o aasm.o aasm32.o dasm32.o debug.o record.o
-	$(CC) -o $(TARGET) main.o console.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qddisk.o qdkeyb.o aasm.o aasm32.o dasm32.o debug.o record.o $(LIBRARY)
+$(TARGET): main.o console.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qddisk.o qdkeyb.o aasm32.o dasm32.o debug.o record.o
+	$(CC) -o $(TARGET) main.o console.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qddisk.o qdkeyb.o aasm32.o dasm32.o debug.o record.o $(LIBRARY)
 
 
 main.o: main.c console.h
@@ -43,7 +43,7 @@ vhdd.o: vmachine/vhdd.c vmachine/vdma.h vmachine/vglobal.h  vmachine/vhdd.h
 vkbc.o: vmachine/vkbc.c vmachine/vport.h vmachine/vglobal.h  vmachine/vkbc.h
 	$(CC) -c $(CFLAGS) vmachine/vkbc.c
 
-vmachine.o: vmachine/vmachine.c vmachine/debug/aasm.h vmachine/debug/aasm32.h vmachine/debug/dasm32.h vmachine/debug/record.h vmachine/debug/debug.h vmachine/vapi.h vmachine/vglobal.h  vmachine/vmachine.h vmachine/vport.h vmachine/vram.h vmachine/vcpu.h vmachine/vpic.h vmachine/vcmos.h vmachine/vdma.h vmachine/vfdc.h vmachine/vfdd.h vmachine/vhdd.h vmachine/vpit.h vmachine/vkbc.h vmachine/vvadp.h vmachine/bios/qdbios.h
+vmachine.o: vmachine/vmachine.c vmachine/debug/aasm32.h vmachine/debug/dasm32.h vmachine/debug/record.h vmachine/debug/debug.h vmachine/vapi.h vmachine/vglobal.h  vmachine/vmachine.h vmachine/vport.h vmachine/vram.h vmachine/vcpu.h vmachine/vpic.h vmachine/vcmos.h vmachine/vdma.h vmachine/vfdc.h vmachine/vfdd.h vmachine/vhdd.h vmachine/vpit.h vmachine/vkbc.h vmachine/vvadp.h vmachine/bios/qdbios.h
 	$(CC) -c $(CFLAGS) vmachine/vmachine.c
 
 vpic.o: vmachine/vpic.c vmachine/vapi.h vmachine/vglobal.h  vmachine/vport.h vmachine/vpic.h
@@ -76,16 +76,13 @@ qddisk.o: vmachine/bios/qddisk.c vmachine/bios/qdbios.h vmachine/bios/qddisk.h
 qdkeyb.o: vmachine/bios/qdkeyb.c vmachine/bios/qdbios.h vmachine/bios/qdkeyb.h
 	$(CC) -c $(CFLAGS) vmachine/bios/qdkeyb.c
 
-aasm.o: vmachine/debug/aasm.c vmachine/debug/debug.h vmachine/debug/aasm.h
-	$(CC) -c $(CFLAGS) vmachine/debug/aasm.c
-
 aasm32.o: vmachine/debug/aasm32.c vmachine/debug/debug.h vmachine/debug/aasm32.h
 	$(CC) -c $(CFLAGS) vmachine/debug/aasm32.c
 
 dasm32.o: vmachine/debug/dasm32.c vmachine/debug/debug.h vmachine/debug/dasm32.h
 	$(CC) -c $(CFLAGS) vmachine/debug/dasm32.c
 
-debug.o: vmachine/debug/debug.c vmachine/debug/aasm.h vmachine/debug/aasm32.h vmachine/debug/dasm32.h vmachine/debug/debug.h
+debug.o: vmachine/debug/debug.c vmachine/debug/aasm32.h vmachine/debug/dasm32.h vmachine/debug/debug.h
 	$(CC) -c $(CFLAGS) vmachine/debug/debug.c
 
 record.o: vmachine/debug/record.c vmachine/debug/record.h vmachine/debug/dasm32.h
@@ -93,4 +90,4 @@ record.o: vmachine/debug/record.c vmachine/debug/record.h vmachine/debug/dasm32.
 
 clean:
 	rm -f $(TARGET)
-	rm -f main.o console.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qddisk.o qdkeyb.o aasm.o aasm32.o dasm32.o debug.o record.o
+	rm -f main.o console.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qddisk.o qdkeyb.o aasm32.o dasm32.o debug.o record.o

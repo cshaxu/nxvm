@@ -7,23 +7,23 @@
 extern "C" {
 #endif
 
-#define HARD_RTC_INT_08 "                   \
+#define HARD_RTC_INT_08 "                  \
 qdx 02 ; enter isr \n\
 cli                                       \n\
 push ds                                   \n\
 push ax                                   \n\
 pushf                                     \n\
-mov ax, 40                                \n\
+mov ax, 0040                              \n\
 mov ds, ax                                \n\
-add word [006c], 1  ; increase tick count \n\
-adc word [006e], 0                        \n\
-cmp word [006c], b2 ; test rtc rollover   \n\
+add word ds:[006c], 01 ; increase tick count \n\
+adc word ds:[006e], 00                       \n\
+cmp word ds:[006c], 00b2 ; test rtc rollover \n\
 jnz $(label_int_08_1)                     \n\
-cmp word [006e], 18                       \n\
+cmp word ds:[006e], 0018                  \n\
 jnz $(label_int_08_1)                     \n\
-mov word [006c], 0  ; exec rtc rollover   \n\
-mov word [006e], 0                        \n\
-mov byte [0070], 1                        \n\
+mov word ds:[006c], 0000 ; exec rtc rollover \n\
+mov word ds:[006e], 0000                     \n\
+mov byte ds:[0070], 01                       \n\
 $(label_int_08_1):                        \n\
 popf                                      \n\
 pop ax                                    \n\
@@ -32,7 +32,7 @@ int 1c              ; call int 1c         \n\
 push ax                                   \n\
 push dx                                   \n\
 mov al, 20          ; send eoi command    \n\
-mov dx, 20                                \n\
+mov dx, 0020                              \n\
 out dx, al                                \n\
 pop dx                                    \n\
 pop ax                                    \n\
@@ -44,7 +44,7 @@ iret                                      \n"
 qdx 02 ; enter isr \n\
 push bx                \n\
 push ds                \n\
-mov bx, 40             \n\
+mov bx, 0040           \n\
 mov ds, bx             \n\
 \
 cmp ah, 00                         \n\
@@ -78,16 +78,16 @@ $(label_int_1a_cmp_def):           \n\
 jmp near $(label_int_1a_ret)       \n\
 \
 $(label_int_1a_get_tick):    ; get time tick count        \n\
-mov cx, [006e]                                            \n\
-mov dx, [006c]                                            \n\
-mov al, [0070]                                            \n\
-mov byte [0070], 00                                       \n\
+mov cx, ds:[006e]                                         \n\
+mov dx, ds:[006c]                                         \n\
+mov al, ds:[0070]                                         \n\
+mov byte ds:[0070], 00                                    \n\
 jmp near $(label_int_1a_ret)                              \n\
 \
 $(label_int_1a_set_tick):    ; set time tick count        \n\
-mov [006e], cx                                            \n\
-mov [006c], dx                                            \n\
-mov byte [0070], 00                                       \n\
+mov ds:[006e], cx                                         \n\
+mov ds:[006c], dx                                         \n\
+mov byte ds:[0070], 00                                    \n\
 jmp near $(label_int_1a_ret)                              \n\
 \
 $(label_int_1a_get_time):    ; get cmos time              \n\
@@ -186,11 +186,9 @@ $(label_int_1a_set_flag):        \n\
 pushf                            \n\
 pop ax                           \n\
 mov bx, sp                       \n\
-and ax, 01                       \n\
-ss:                              \n\
-and word [bx+08], fffe           \n\
-ss:                              \n\
-or  word [bx+08], ax             \n\
+and ax, 0001                     \n\
+and word ss:[bx+08], fffe        \n\
+or  word ss:[bx+08], ax          \n\
 \
 $(label_int_1a_ret): \n\
 pop ds               \n\

@@ -40,14 +40,12 @@ static t_api_trace_call trace;
 #define _impossible_   _chk(flagerror = 1)
 #define _impossible_r_ _chr(flagerror = 1)
 
-typedef char t_dasm_str[0x0100];
-
 typedef t_bool t_dasm_prefix;
 
 static t_bool        flagerror;
 static t_vaddrcc     drcode;
-static t_dasm_str    dstmt;
-static t_dasm_str    dop, dopr, drm, dr, dimm, dmovsreg, doverds, doverss, dimmoff8, dimmoff16, dimmsign;
+static t_string    dstmt;
+static t_string    dop, dopr, drm, dr, dimm, dmovsreg, doverds, doverss, dimmoff8, dimmoff16, dimmsign;
 static t_bool        flagmem, flaglock;
 static t_dasm_prefix prefix_oprsize, prefix_addrsize;
 static t_nubit8      cr;
@@ -162,7 +160,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 	t_nsbit8 disp8;
 	t_nubit16 disp16;
 	t_nubit32 disp32;
-	t_dasm_str dsibindex, dptr;
+	t_string dsibindex, dptr;
 	t_nubit8 modrm, sib;
 	t_nsbit8 sign;
 	t_nubit8 disp8u;
@@ -1611,7 +1609,7 @@ static void IMUL_R32_RM32_I8()
 }
 static void INSB()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("INSB");
 	_adv;
 	SPRINTF(dop, "INSB");
@@ -1624,7 +1622,7 @@ static void INSB()
 }
 static void INSW()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("INSW");
 	_adv;
 	switch (_GetOperandSize) {
@@ -1639,7 +1637,7 @@ static void INSW()
 }
 static void OUTSB()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("OUTSB");
 	_adv;
 	SPRINTF(dop, "OUTSB");
@@ -1652,7 +1650,7 @@ static void OUTSB()
 }
 static void OUTSW()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("OUTSW");
 	_adv;
 	switch (_GetOperandSize) {
@@ -1900,7 +1898,7 @@ static void INS_81()
 }
 static void INS_83()
 {
-	t_dasm_str dsimm;
+	t_string dsimm;
 	_cb("INS_83");
 	_adv;
 	_chk(_d_modrm(0, _GetOperandSize));
@@ -2306,7 +2304,7 @@ static void MOV_MOFFS32_EAX()
 }
 static void MOVSB()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("MOVS");
 	_adv;
 	SPRINTF(dop, "MOVSB");
@@ -2319,7 +2317,7 @@ static void MOVSB()
 }
 static void MOVSW()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("MOVSW");
 	_adv;
 	switch (_GetOperandSize) {
@@ -2334,7 +2332,7 @@ static void MOVSW()
 }
 static void CMPSB()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("CMPSB");
 	_adv;
 	SPRINTF(dop, "CMPSB");
@@ -2347,7 +2345,7 @@ static void CMPSB()
 }
 static void CMPSW()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("CMPSW");
 	_adv;
 	switch (_GetOperandSize) {
@@ -2383,7 +2381,7 @@ static void TEST_EAX_I32()
 }
 static void STOSB()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("STOSB");
 	_adv;
 	SPRINTF(dop, "STOSB");
@@ -2396,7 +2394,7 @@ static void STOSB()
 }
 static void STOSW()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("STOSW");
 	_adv;
 	switch (_GetOperandSize) {
@@ -2411,7 +2409,7 @@ static void STOSW()
 }
 static void LODSB()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("LODSB");
 	_adv;
 	SPRINTF(dop, "LODSB");
@@ -2424,7 +2422,7 @@ static void LODSB()
 }
 static void LODSW()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("LODSW");
 	_adv;
 	switch (_GetOperandSize) {
@@ -2439,7 +2437,7 @@ static void LODSW()
 }
 static void SCASB()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("SCASB");
 	_adv;
 	SPRINTF(dop, "SCASB");
@@ -2452,7 +2450,7 @@ static void SCASB()
 }
 static void SCASW()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("SCASW");
 	_adv;
 	switch (_GetOperandSize) {
@@ -2824,7 +2822,7 @@ static void INS_C7()
 }
 static void ENTER()
 {
-	t_dasm_str dframesize, dnestlevel;
+	t_string dframesize, dnestlevel;
 	_cb("ENTER");
 	_adv;
 	SPRINTF(dop, "ENTER");
@@ -3489,6 +3487,7 @@ static void INS_FE()
 }
 static void INS_FF()
 {
+	t_string dptr;
 	t_nubit8 oldiop;
 	t_nubit8 modrm;
 	_cb("INS_FF");
@@ -3518,13 +3517,17 @@ static void INS_FF()
 	case 3: /* CALL_M16_32 */
 		_bb("CALL_M16_32");
 		SPRINTF(dop, "CALL");
-		_chk(_d_modrm(0, _GetOperandSize + 2));
+		_chk(_d_modrm(9, _GetOperandSize + 2));
 		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
 			_be;
 		}
-		SPRINTF(dopr, "FAR %s", drm);
+		switch (_GetOperandSize) {
+		case 2: SPRINTF(dptr, "WORD PTR ");break;
+		case 4: SPRINTF(dptr, "DWORD PTR ");break;
+		default:_impossible_;break;}
+		SPRINTF(dopr, "FAR %s%s", dptr, drm);
 		_be;break;
 	case 4: /* JMP_RM32 */
 		_bb("JMP_RM32");
@@ -3535,13 +3538,17 @@ static void INS_FF()
 	case 5: /* JMP_M16_32 */
 		_bb("JMP_M16_32");
 		SPRINTF(dop, "JMP");
-		_chk(_d_modrm(0, _GetOperandSize + 2));
+		_chk(_d_modrm(9, _GetOperandSize + 2));
 		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
 			_be;
 		}
-		SPRINTF(dopr, "FAR %s", drm);
+		switch (_GetOperandSize) {
+		case 2: SPRINTF(dptr, "WORD PTR ");break;
+		case 4: SPRINTF(dptr, "DWORD PTR ");break;
+		default:_impossible_;break;}
+		SPRINTF(dopr, "FAR %s%s", dptr, drm);
 		_be;break;
 	case 6: /* PUSH_RM32 */
 		_bb("PUSH_RM32");
@@ -4310,7 +4317,7 @@ static void LGS_R32_M16_32()
 }
 static void MOVZX_R32_RM8()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("MOVZX_R32_RM8");
 	_adv;
 	SPRINTF(dop, "MOVZX");
@@ -4322,7 +4329,7 @@ static void MOVZX_R32_RM8()
 }
 static void MOVZX_R32_RM16()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("MOVZX_R32_RM16");
 	_adv;
 	SPRINTF(dop, "MOVZX");
@@ -4402,7 +4409,7 @@ static void BSR_R32_RM32()
 }
 static void MOVSX_R32_RM8()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("MOVSX_R32_RM8");
 	_adv;
 	SPRINTF(dop, "MOVSX");
@@ -4414,7 +4421,7 @@ static void MOVSX_R32_RM8()
 }
 static void MOVSX_R32_RM16()
 {
-	t_dasm_str dptr;
+	t_string dptr;
 	_cb("MOVSX_R32_RM16");
 	_adv;
 	SPRINTF(dop, "MOVSX");

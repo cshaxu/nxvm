@@ -8,32 +8,32 @@ extern "C" {
 #endif
 
 #define SOFT_MISC_INT_11 "\
-qdx 02 ; enter isr \n\
-; device test           \n\
-push ds                 \n\
-push bx                 \n\
-mov bx, 40              \n\
-mov ds, bx              \n\
-pop bx                  \n\
-mov ax, [0010]          \n\
-pop ds                  \n\
-qdx 03 ; leave isr \n\
-iret                    \n"
+qdx 02 ; enter isr       \n\
+; device test            \n\
+push ds                  \n\
+push bx                  \n\
+mov bx, 0040             \n\
+mov ds, bx               \n\
+pop bx                   \n\
+mov ax, ds:[0010]        \n\
+pop ds                   \n\
+qdx 03 ; leave isr       \n\
+iret                     \n"
 
 #define SOFT_MISC_INT_12 "\
-qdx 02 ; enter isr \n\
+qdx 02 ; enter isr      \n\
 ; memory test           \n\
 push ds                 \n\
 push bx                 \n\
-mov bx, 40              \n\
+mov bx, 0040            \n\
 mov ds, bx              \n\
 pop bx                  \n\
-mov ax, [0013]          \n\
+mov ax, ds:[0013]       \n\
 pop ds                  \n\
-qdx 03 ; leave isr \n\
+qdx 03 ; leave isr      \n\
 iret                    \n"
 
-#define SOFT_MISC_INT_15 "          \
+#define SOFT_MISC_INT_15 "         \
 qdx 02 ; enter isr \n\
 cmp ah, 24                        \n\
 jnz $(label_int_15_cmp_88)        \n\
@@ -57,7 +57,7 @@ $(label_int_15_24):               \n\
 cmp al, 03                        \n\
 jnz $(label_int_15_24_ret)        \n\
 mov ah, 00                        \n\
-mov bx, 03                        \n\
+mov bx, 0003                      \n\
 clc                               \n\
 jmp near $(label_int_15_set_flag) \n\
 $(label_int_15_24_ret):           \n\
@@ -89,17 +89,15 @@ push ax                   \n\
 push bx                   \n\
 pushf                     \n\
 pop ax                    \n\
-and ax, 01                \n\
+and ax, 0001              \n\
 mov bx, sp                \n\
-ss:                       \n\
-and word [bx+8], fffe     \n\
-ss:                       \n\
-or  word [bx+8], ax       \n\
+and word ss:[bx+08], fffe  \n\
+or  word ss:[bx+08], ax    \n\
 pop bx                    \n\
 pop ax                    \n\
 \
 $(label_int_15_ret): \n\
-qdx 03 ; leave isr \n\
+qdx 03 ; leave isr   \n\
 iret                 \n"
 
 #ifdef __cplusplus
