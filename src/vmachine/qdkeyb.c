@@ -119,13 +119,11 @@ void qdkeybGetStatus()
 }
 void qdkeybGetShiftStatus()
 {
-	_al = 0x20;
+	_al = qdkeybVarFlag0;
 }
 
 void qdkeybInit()
 {
-//	vport.out[0x00bb] = (t_faddrcc)IO_Write_00BB;
 	vport.in[0x0064] = (t_faddrcc)IO_Read_0064;
 }
-void qdkeybFinal()
-{}
+void qdkeybFinal() {}

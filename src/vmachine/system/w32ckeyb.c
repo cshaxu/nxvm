@@ -7,23 +7,59 @@
 
 static VOID w32ckeybMakeStatus()
 {
-	vapiCallBackKeyboardClrFlag0();
-	vapiCallBackKeyboardClrFlag1();
-	if (GetKeyState(VK_INSERT)  < 0) vapiCallBackKeyboardSetFlag1Insert();
-	if (GetKeyState(VK_CAPITAL) < 0) vapiCallBackKeyboardSetFlag1CapLck();
-	if (GetKeyState(VK_NUMLOCK) < 0) vapiCallBackKeyboardSetFlag1NumLck();
-	if (GetKeyState(VK_SCROLL)  < 0) vapiCallBackKeyboardSetFlag1ScrLck();
-	if (GetKeyState(VK_PAUSE)   < 0) vapiCallBackKeyboardSetFlag1Pause();
-	if (GetKeyState(VK_MENU)    < 0) vapiCallBackKeyboardSetFlag1LeftAlt();
-	if (GetKeyState(VK_CONTROL) < 0) vapiCallBackKeyboardSetFlag1LeftCtrl();
-	if (GetKeyState(VK_INSERT)  < 0) vapiCallBackKeyboardSetFlag0Insert();
-	if (GetKeyState(VK_CAPITAL) < 0) vapiCallBackKeyboardSetFlag0CapLck();
-	if (GetKeyState(VK_NUMLOCK) < 0) vapiCallBackKeyboardSetFlag0NumLck();
-	if (GetKeyState(VK_SCROLL)  < 0) vapiCallBackKeyboardSetFlag0ScrLck();
-	if (GetKeyState(VK_MENU)    < 0) vapiCallBackKeyboardSetFlag0Alt();
-	if (GetKeyState(VK_CONTROL) < 0) vapiCallBackKeyboardSetFlag0Ctrl();
-	if (GetKeyState(VK_LSHIFT)  < 0) vapiCallBackKeyboardSetFlag0LeftShift();
-	if (GetKeyState(VK_RSHIFT)  < 0) vapiCallBackKeyboardSetFlag0RightShift();
+	if (GetAsyncKeyState(VK_RSHIFT) & 0x8000)
+		vapiCallBackKeyboardSetFlag0RightShift();
+	else
+		vapiCallBackKeyboardClrFlag0RightShift();
+	if (GetAsyncKeyState(VK_LSHIFT) & 0x8000)
+		vapiCallBackKeyboardSetFlag0LeftShift();
+	else
+		vapiCallBackKeyboardClrFlag0LeftShift();
+	if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
+		vapiCallBackKeyboardSetFlag0Ctrl();
+	else
+		vapiCallBackKeyboardClrFlag0Ctrl();
+	if (GetAsyncKeyState(VK_MENU) & 0x8000)
+		vapiCallBackKeyboardSetFlag0Alt();
+	else
+		vapiCallBackKeyboardClrFlag0Alt();
+	if (GetAsyncKeyState(VK_SCROLL) & 0x8000)
+		vapiCallBackKeyboardSetFlag1ScrLck();
+	else
+		vapiCallBackKeyboardClrFlag1ScrLck();
+	if (GetAsyncKeyState(VK_NUMLOCK) & 0x8000)
+		vapiCallBackKeyboardSetFlag1NumLck();
+	else
+		vapiCallBackKeyboardClrFlag1NumLck();
+	if (GetAsyncKeyState(VK_CAPITAL) & 0x8000)
+		vapiCallBackKeyboardSetFlag1CapLck();
+	else
+		vapiCallBackKeyboardClrFlag1CapLck();
+	if (GetAsyncKeyState(VK_INSERT) & 0x8000)
+		vapiCallBackKeyboardSetFlag1Insert();
+	else
+		vapiCallBackKeyboardClrFlag1Insert();
+
+	if (GetKeyState(VK_SCROLL) & 0x0001)
+		vapiCallBackKeyboardSetFlag0ScrLck();
+	else
+		vapiCallBackKeyboardClrFlag0ScrLck();
+	if (GetKeyState(VK_NUMLOCK) & 0x0001)
+		vapiCallBackKeyboardSetFlag0NumLck();
+	else
+		vapiCallBackKeyboardClrFlag0NumLck();
+	if (GetKeyState(VK_CAPITAL) & 0x0001)
+		vapiCallBackKeyboardSetFlag0CapLck();
+	else
+		vapiCallBackKeyboardClrFlag0CapLck();
+	if (GetKeyState(VK_INSERT) & 0x0001)
+		vapiCallBackKeyboardSetFlag0Insert();
+	else
+		vapiCallBackKeyboardClrFlag0Insert();
+	if (GetKeyState(VK_PAUSE) & 0x0001)
+		vapiCallBackKeyboardSetFlag1Pause();
+	else
+		vapiCallBackKeyboardClrFlag1Pause();
 }
 static VOID w32ckeybMakeKey(INPUT_RECORD inRec)
 {

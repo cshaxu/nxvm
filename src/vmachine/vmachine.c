@@ -95,7 +95,7 @@ void vmachineInit()
 	vvadpInit();
 	vdispInit();
 */
-	vmachine.flagmode   = 0x01;
+	vmachine.flagmode   = 0x00;
 	vmachine.flagrecord = 0x01;
 	vmachine.flaginit   = 0x01;
 }
