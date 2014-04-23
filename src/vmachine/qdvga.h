@@ -26,18 +26,18 @@ extern "C" {
 #define QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM   0xb8000
 
 typedef struct {
-	t_nubitcc x;
-	t_nubitcc y;
+	t_nubit8 x;
+	t_nubit8 y;
 } t_vga_cursor;
 
 typedef struct {
-	t_bool    color;
-	t_nubit8  page;
-	t_nubit8  vgamode; // ?
-	t_nubitcc rowsize; // char per row, 0x044a
-	t_nubitcc colsize; // char per col
-	t_nubit8  cursortop;
-	t_nubit8  cursorbottom;
+	t_bool   color;
+	t_nubit8 page;
+	t_nubit8 vgamode; // ?
+	t_nubit8 rowsize; // char per row, 0x044a
+	t_nubit8 colsize; // char per col
+	t_nubit8 cursortop;
+	t_nubit8 cursorbottom;
 	t_vga_cursor cursor[QDVGA_COUNT_MAX_PAGE];
 } t_vga;
 

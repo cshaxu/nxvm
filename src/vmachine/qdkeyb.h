@@ -39,13 +39,8 @@ void qdkeybReadInput();
 void qdkeybGetStatus();
 void qdkeybGetShiftStatus();
 
-t_bool qdkeybRecvKeyPress(t_nubit16 ascii);
 #define qdkeybVarFlag0 (vramVarByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG0))
 #define qdkeybVarFlag1 (vramVarByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG1))
-#define qdkeybGetShift (GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT) || \
-                        GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT))
-#define qdkeybGetAlt   (GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT))
-#define qdkeybGetCtrl  (GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL))
 
 void qdkeybInit();
 void qdkeybFinal();

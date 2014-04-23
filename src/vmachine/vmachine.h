@@ -24,13 +24,26 @@ extern "C" {
 #include "vkbc.h"
 #include "vkeyb.h"*/
 
+#ifdef VMACHINE_DEBUG
+#include "qdbios.h"
+#include "qdfdd.h"
+#define vfdd qdfdd
+#endif
+
 typedef struct {
 	t_bool    flaginit;
 	t_bool    flagrun;
 	t_bool    flagtrace;
+	t_bool    flagrecord;
+	t_bool    flagdisplay;
 } t_machine;
 
 extern t_machine vmachine;
+
+void vmachineSetRecordFile(t_string fname);
+void vmachineInsertFloppy(t_string fname);
+void vmachineRemoveFloppy(t_string fname);
+void vmachineStart();
 
 void vmachineRefresh();
 void vmachineInit();

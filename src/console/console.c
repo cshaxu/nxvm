@@ -5,17 +5,9 @@
 #include "string.h"
 
 #include "../vmachine/vmachine.h"
-#include "../system/vapi.h"
 
 #include "debug.h"
 #include "console.h"
-
-#define CONSOLE_QDFDD
-
-#ifdef CONSOLE_QDFDD
-#include "../vmachine/qdfdd.h"
-#define vfdd qdfdd
-#endif
 
 #define MAXLINE 256
 static int exitFlag;
@@ -35,11 +27,8 @@ static void parse(char *s)
 }
 
 void Test()
-{
-	vmachine.flagrun = 0x01;
-	vapiStartDisplay();
-//	vapiDestroyDisplay();
-}
+{}
+
 void Help()
 {
 	fprintf(stdout,"NXVM Console Commands\n");
@@ -116,16 +105,16 @@ void Record()
 		fprintf(stdout,"Cannot change record status now.\n");
 		return;
 	}
-	if (vapirecord.flag) {
-		vapirecord.flag = 0x00;
-		vapiPrint("Recorder turned off.\n");
+	if (vmachine.flagrecord) {
+		vmachine.flagrecord = 0x00;
+		fprintf(stdout,"Recorder turned off.\n");
 	} else {
 		fprintf(stdout,"Record File: ");
 		fgets(str, MAXLINE, stdin);
 		parse(str);
-		vapirecord.flag = 0x01;
-		strcpy(vapirecord.fname, str);
-		vapiPrint("Recorder turned on.\n");
+		vmachine.flagrecord = 0x01;
+		vmachineSetRecordFile(str);
+		fprintf(stdout,"Recorder turned on.\n");
 	}
 }
 void Trace()
@@ -136,10 +125,10 @@ void Trace()
 	}
 	if (vmachine.flagtrace) {
 		vmachine.flagtrace = 0x00;
-		vapiPrint("Tracer turned off.\n");
+		fprintf(stdout,"Tracer turned off.\n");
 	} else {
 		vmachine.flagtrace = 0x01;
-		vapiPrint("Tracer turned on.\n");
+		fprintf(stdout,"Tracer turned on.\n");
 	}
 }
 
@@ -154,9 +143,9 @@ void Floppy()
 	fgets(str, MAXLINE, stdin);
 	parse(str);
 	if (!vfdd.flagexist)
-		vapiFloppyInsert(str);
+		vmachineInsertFloppy(str);
 	else
-		vapiFloppyRemove(str);
+		vmachineRemoveFloppy(str);
 }
 void Memory()
 {
@@ -197,8 +186,7 @@ void Start()
 {
 	if (!vmachine.flagrun) {
 		if (!vmachine.flaginit) vmachineInit();
-		vapiStartDisplay();
-		vapiStartKernel();
+		vmachineStart();
 	} else
 		fprintf(stdout, "Virtual machine is already running.\n");
 }
@@ -220,7 +208,6 @@ void console()
 	char cmdl[MAXLINE];
 	exitFlag = 0;
 	vmachineInit();
-	memset(&vapirecord, 0x00, sizeof(t_apirecord));
 	fprintf(stdout,"Please enter 'HELP' for information.\n");
 	while(!exitFlag) {
 		fflush(stdin);

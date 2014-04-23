@@ -1,7 +1,7 @@
 #include "stdlib.h"
 #include "vcpuins.h"
 
-#include "../system/vapi.h"
+#include "vapi.h"
 
 #include "vport.h"
 #include "vcpu.h"
@@ -35,18 +35,18 @@ void IO_Read_0071()
 
 void qdrtcGetTimeTickCount()
 {
-	vcpu.cx = vramVarWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 2);
-	vcpu.dx = vramVarWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 0);
+	_cx = vramVarWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 2);
+	_dx = vramVarWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 0);
 	if (vramVarByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) == 0x00)
-		vcpu.al = 0x00;
+		_al = 0x00;
 	else
-		vcpu.al = 0x01;
+		_al = 0x01;
 	vramVarByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) = 0x00;
 }
 void qdrtcSetTimeTickCount()
 {
-	vramVarWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 2) = vcpu.cx;
-	vramVarWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 0) = vcpu.dx;
+	vramVarWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 2) = _cx;
+	vramVarWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER + 0) = _dx;
 	vramVarByte(0x0000, QDRTC_VBIOS_ADDR_RTC_ROLLOVER) = 0x00;
 }
 void qdrtcGetCmosTime()
@@ -56,45 +56,45 @@ void qdrtcGetCmosTime()
 	t_nubit8 hour = (t_nubit8)(total / 3600);
 	t_nubit8 min  = (t_nubit8)((total - hour * 3600) / 60);
 	t_nubit8 sec  = (t_nubit8)(total - hour * 3600 - min * 60);
-	vcpu.ch = Hex2BCD(hour);
-	vcpu.cl = Hex2BCD(min);
-	vcpu.dh = Hex2BCD(sec);
-	vcpu.dl = 0x00;
-	ClrBit(vcpu.flags, VCPU_FLAG_CF);
+	_ch = Hex2BCD(hour);
+	_cl = Hex2BCD(min);
+	_dh = Hex2BCD(sec);
+	_dl = 0x00;
+	ClrBit(_flags, VCPU_FLAG_CF);
 }
 void qdrtcSetCmosTime()
 {
-	t_nubit8 hour = BCD2Hex(vcpu.ch);
-	t_nubit8 min  = BCD2Hex(vcpu.cl);
-	t_nubit8 sec  = BCD2Hex(vcpu.dh);
+	t_nubit8 hour = BCD2Hex(_ch);
+	t_nubit8 min  = BCD2Hex(_cl);
+	t_nubit8 sec  = BCD2Hex(_dh);
 	vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) = 
 		(t_nubit32)(((hour * 3600 + min * 60 + sec) * 1000) / QDRTC_TICK);
-	ClrBit(vcpu.flags, VCPU_FLAG_CF);
+	ClrBit(_flags, VCPU_FLAG_CF);
 }
 void qdrtcGetCmosDate()
 {
 	struct tm *t = gmtime(&qdrtc.start);
 	if(t->tm_year >= 100) {       /* tm_year starts from 1900 */
-		vcpu.ch = 0x20;                                 /* century: 20 (BCD) */
-		vcpu.cl = Hex2BCD(t->tm_year - 100);
+		_ch = 0x20;                                 /* century: 20 (BCD) */
+		_cl = Hex2BCD(t->tm_year - 100);
 	} else {
-		vcpu.ch = 0x19;
-		vcpu.cl = Hex2BCD(t->tm_year - 100);
+		_ch = 0x19;
+		_cl = Hex2BCD(t->tm_year - 100);
 	}
-	vcpu.dh = Hex2BCD(t->tm_mon + 1);
-	vcpu.dl = Hex2BCD(t->tm_mday);
-	ClrBit(vcpu.flags, VCPU_FLAG_CF);
+	_dh = Hex2BCD(t->tm_mon + 1);
+	_dl = Hex2BCD(t->tm_mday);
+	ClrBit(_flags, VCPU_FLAG_CF);
 }
 void qdrtcSetCmosDate()
 {
 	struct tm *t = gmtime(&qdrtc.start);
-	t->tm_year = BCD2Hex(vcpu.cl);
-	if(vcpu.ch == 0x20) t->tm_year += 100;	
+	t->tm_year = BCD2Hex(_cl);
+	if(_ch == 0x20) t->tm_year += 100;	
 }
 void qdrtcSetAlarmClock()
 {
 	/* return a fail to cpu */
-	SetBit(vcpu.flags, VCPU_FLAG_CF);
+	SetBit(_flags, VCPU_FLAG_CF);
 }
 
 void vapiCallBackRtcUpdateTime()

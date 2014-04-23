@@ -2,13 +2,16 @@
 
 #include "stdio.h"
 #include "stdarg.h"
+#include "string.h"
+#include "memory.h"
 
+#include "vmachine.h"
 #include "vapi.h"
 
 /* General Functions */
-int vapiPrint(const char *format, ...)
-{// prints string out of vdisplay, i.e. in a outside console
-	int nWrittenBytes = 0;
+t_nubit32 vapiPrint(const t_string format, ...)
+{
+	t_nubit32 nWrittenBytes = 0;
 	va_list arg_ptr;
 	va_start(arg_ptr, format);
 	nWrittenBytes = vfprintf(stdout, format,arg_ptr);
@@ -16,32 +19,28 @@ int vapiPrint(const char *format, ...)
 	va_end(arg_ptr);
 	return nWrittenBytes;
 }
-void vapiPrintByte(unsigned char n)
+void vapiPrintByte(t_nubit8 n)
 {
-	char c;
-	int i;
+	t_nsbit8 c, i;
 	for(i = 1;i >= 0;--i) {
 		c = ((n>>(i*4))&0x0f)+0x30;
 		if(c > 0x39) c += 0x07;
 		vapiPrint("%c",c);
 	}
 }
-void vapiPrintWord(unsigned short n)
+void vapiPrintWord(t_nubit16 n)
 {
-	char c;
-	int i;
+	t_nsbit8 c, i;
 	for(i = 3;i >= 0;--i) {
 		c = ((n>>(i*4))&0x0f)+0x30;
 		if(c > 0x39) c += 0x07;
 		vapiPrint("%c",c);
 	}
 }
-void vapiPrintAddr(unsigned short segment,unsigned short offset)
+void vapiPrintAddr(t_nubit16 segment, t_nubit16 offset)
 {vapiPrintWord(segment);vapiPrint(":");vapiPrintWord(offset);}
 
 /* Record */
-#include "../vmachine/vcpu.h"
-#include "../vmachine/vram.h"
 
 t_apirecord vapirecord;
 
@@ -49,20 +48,20 @@ t_apirecord vapirecord;
 ax=%x bx=%x cx=%x dx=%x sp=%x bp=%x si=%x di=%x ds=%x es=%x ss=%x \
 of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x stack=%x\n"
 
-void vapiRecordSetFile(const char *filename)
+void vapiRecordSetFile(t_string fname)
 {
-	strcpy(vapirecord.fname, filename);
+	strcpy(vapirecord.fname, fname);
 }
 void vapiRecordStart()
 {
-	if (!vapirecord.flag) return;
+	if (!vmachine.flagrecord) return;
 	if (vapirecord.fptr) fclose(vapirecord.fptr);
 	vapirecord.count = 0;
 	vapirecord.fptr = fopen(vapirecord.fname,"w");
 }
 void vapiRecordWrite()
 {
-	if (!vapirecord.flag) return;
+	if (!vmachine.flagrecord) return;
 	if ((!vapirecord.fptr)) return;
 	fprintf(vapirecord.fptr, _expression,
 		vapirecord.count, _cs, _ip,
@@ -75,31 +74,37 @@ void vapiRecordWrite()
 }
 void vapiRecordEnd()
 {
-	if (!vapirecord.flag) return;
+	if (!vmachine.flagrecord) return;
 	if (vapirecord.fptr) fclose(vapirecord.fptr);
 	vapirecord.fptr = NULL;
 	vapirecord.count = 0;
 }
 
 /* Trace */
-#include "../console/console.h"
-
+#include "../console/debug.h"
 void vapiTrace()
 {
-	vapiCallBackTrace();
+	vmachine.flagrun = 0x00;
+//	debugPrintRegs();
+	////if (_cs == 0x94c6 && _ip == 0x0396) {
+	//if (_cs == 0x000f && _ip == 0x41fe) {
+	//	vapiRecordSetFile("d:/nxvm.log");
+	//	vmachine.flagrecord = 0x01;
+	//	vapiRecordStart();
+	//}
+	//if (vapirecord.count > 0xfffff) vmachine.flagrecord = 0x00;
 }
 
 /* Floppy Disk */
-#include "../vmachine/qdfdd.h"
+#include "qdfdd.h"
 #define vfdd qdfdd
 
 void vapiFloppyInsert(const char *fname)
 {
-	size_t count;
+	t_nubitcc count;
 	FILE *image = fopen(fname, "rb");
 	if (image) {
-		count = fread((void *)vfdd.base, sizeof(unsigned char),
-		              0x00168000, image);
+		count = fread((void *)vfdd.base, sizeof(t_nubit8), 0x00168000, image);
 		vfdd.flagexist = 0x01;
 		fclose(image);
 		vapiPrint("Floppy disk inserted.\n");
@@ -108,13 +113,12 @@ void vapiFloppyInsert(const char *fname)
 }
 void vapiFloppyRemove(const char *fname)
 {
-	size_t count;
+	t_nubitcc count;
 	FILE *image;
 	image = fopen(fname, "wb");
 	if(image) {
 		if (!vfdd.flagro)
-			count = fwrite((void *)vfdd.base, sizeof(unsigned char),
-			               0x00168000, image);
+			count = fwrite((void *)vfdd.base, sizeof(t_nubit8), 0x00168000, image);
 		vfdd.flagexist = 0x00;
 		fclose(image);
 		vapiPrint("Floppy disk removed.\n");
@@ -123,11 +127,19 @@ void vapiFloppyRemove(const char *fname)
 }
 
 /* Platform Related */
-#include "win32app.h"
+#include "system/win32app.h"
 
-void vapiSleep(unsigned int milisec) {win32appSleep(milisec);}
+void vapiSleep(t_nubit32 milisec) {win32appSleep(milisec);}
 void vapiDisplaySetScreen() {win32appDisplaySetScreen();}
 void vapiDisplayPaint() {win32appDisplayPaint();}
 
-void vapiStartDisplay() {win32appStartDisplay();}
-void vapiStartKernel() {win32appStartKernel();}
+void vapiStartMachine() {win32appStartMachine();}
+
+void vapiInit()
+{
+	memset(&vapirecord, 0x00, sizeof(t_apirecord));
+}
+void vapiFinal()
+{
+	
+}

@@ -3,35 +3,36 @@
 #include "memory.h"
 
 #include "vmachine.h"
-#include "../system/vapi.h"
-
-#ifdef VMACHINE_DEBUG
-#include "qdbios.h"
-#endif
+#include "vapi.h"
 
 t_machine vmachine;
 
-void vapiCallBackMachineTrace()
-{
-//	debugPrintRegs();
-	//if (_cs == 0x94c6 && _ip == 0x0396) {
-	if (_cs == 0x000f && _ip == 0x41fe) {
-		vapiRecordSetFile("d:/nxvm.log");
-		vapirecord.flag = 0x01;
-		vapiRecordStart();
-	}
-	if (vapirecord.count > 0xfffff) vapirecord.flag = 0x00;
-}
+void vmachineSetRecordFile(t_string fname) {vapiRecordSetFile(fname);}
+void vmachineInsertFloppy(t_string fname) {vapiFloppyInsert(fname);}
+void vmachineRemoveFloppy(t_string fname) {vapiFloppyRemove(fname);}
+void vmachineStart() {vapiStartMachine();}
 
-void vapiCallBackMachineRunLoop()
+void vapiCallBackMachineRun()
 {
 	if(vmachine.flaginit && !vmachine.flagrun) {
 		vapiRecordStart();
 		vmachine.flagrun = 0x01;
-		while (vmachine.flagrun) vmachineRefresh();
+		while (vmachine.flagrun) {
+			vmachineRefresh();
+			if (vmachine.flagtrace) vmachine.flagrun = 0x00;
+		}
 		vapiRecordEnd();
 	}
 }
+t_bool vapiCallBackMachineGetRunFlag()
+{
+	return vmachine.flagrun;
+}
+void   vapiCallBackMachineSetRunFlag(t_bool flag)
+{
+	vmachine.flagrun = flag;
+}
+
 void vmachineRefresh()
 {
 	vapiRecordWrite();
@@ -52,10 +53,9 @@ void vmachineRefresh()
 	vportRefresh();
 
 	vapiRecordWrite();
-	if (vapirecord.flag) vapirecord.count++;
+	if (vmachine.flagrecord) ++vapirecord.count;
 
 	vmachine.flagrun = (vmachine.flagrun && (!vcpu.flagterm));
-	if (vmachine.flagtrace) vapiTrace();
 }
 void vmachineInit()
 {
@@ -74,7 +74,7 @@ void vmachineInit()
 	vfddInit();
 	vkbcInit();
 	vkeybInit();
-	vvgaInit();
+	vvadpInit();
 	vdispInit();
 	vcmosInit();
 */

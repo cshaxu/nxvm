@@ -8,7 +8,7 @@
 #include "vpic.h"
 
 #ifdef VPIC_DEBUG
-#include "../system/vapi.h"
+#include "vapi.h"
 #endif
 
 t_pic vpic1,vpic2;

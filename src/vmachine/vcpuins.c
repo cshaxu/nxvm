@@ -3,7 +3,7 @@
 #include "stdio.h"
 #include "memory.h"
 
-#include "../system/vapi.h"
+#include "vapi.h"
 
 #include "vport.h"
 #include "vcpu.h"

@@ -1,15 +1,12 @@
 /* This file is a part of NXVM project. */
 
-#include "../vmachine/vmachine.h"
-#include "../vmachine/qdrtc.h"
-
-#include "vapi.h"
+#include "../vapi.h"
 
 #include "w32adisp.h"
 #include "w32akeyb.h"
 #include "win32app.h"
 
-HWND hWnd;
+HWND hWnd = NULL;
 
 static HINSTANCE hInstance;
 static LPCWSTR szWindowClass = L"nxvm";
@@ -18,7 +15,8 @@ static DWORD ThreadIdDisplay;
 static DWORD ThreadIdKernel;
 #define TIMER_PAINT   0
 #define TIMER_RTC     1
-static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
+                                WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
 	INT wmId, wmEvent;
@@ -28,6 +26,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		SetTimer(hWnd, TIMER_RTC,   55, NULL);
 		break;
 	case WM_DESTROY:
+		vapiCallBackMachineSetRunFlag(0x00);
 		PostQuitMessage(0);
 		break;
 	case WM_COMMAND:
@@ -110,18 +109,19 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam)
 	if (!ThreadDisplayInitInstance(hInstance, 0)) return FALSE;
 
 	w32adispInit();
-	while (vmachine.flagrun && GetMessage(&msg, NULL, 0, 0)) {
+	while (GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+	vapiCallBackMachineSetRunFlag(0x00);
+	hWnd = NULL;
 	w32adispFinal();
-	vmachine.flagrun = 0x00;
 
 	return 0;
 }
 static DWORD WINAPI ThreadKernel(LPVOID lpParam)
 {
-	vapiCallBackMachineRunLoop();
+	vapiCallBackMachineRun();
 	return 0;
 }
 
@@ -131,11 +131,10 @@ void win32appSleep(DWORD milisec)
 }
 void win32appDisplaySetScreen() {w32adispSetScreen();}
 void win32appDisplayPaint() {w32adispPaint();}
-void win32appStartDisplay()
+void win32appStartMachine()
 {
-	CreateThread(NULL, 0, ThreadDisplay, NULL, 0, &ThreadIdDisplay);
-}
-void win32appStartKernel()
-{
-	CreateThread(NULL, 0, ThreadKernel, NULL, 0, &ThreadIdKernel);
+	if (!hWnd)
+		CreateThread(NULL, 0, ThreadDisplay, NULL, 0, &ThreadIdDisplay);
+	if (!vapiCallBackMachineGetRunFlag())
+		CreateThread(NULL, 0, ThreadKernel, NULL, 0, &ThreadIdKernel);
 }

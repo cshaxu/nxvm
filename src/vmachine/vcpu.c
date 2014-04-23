@@ -5,7 +5,7 @@
 #include "vcpuins.h"
 #include "vcpu.h"
 
-#include "../system/vapi.h"
+#include "vapi.h"
 
 t_cpu vcpu;
 

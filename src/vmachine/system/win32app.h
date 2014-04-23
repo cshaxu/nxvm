@@ -14,8 +14,7 @@ void win32appSleep(DWORD milisec);
 void win32appDisplaySetScreen();
 void win32appDisplayPaint();
 
-void win32appStartDisplay();
-void win32appStartKernel();
+void win32appStartMachine();
 
 extern HWND hWnd;
 

@@ -1,6 +1,6 @@
 #include "memory.h"
 
-#include "../system/vapi.h"
+#include "vapi.h"
 #include "vcpu.h"
 #include "vram.h"
 

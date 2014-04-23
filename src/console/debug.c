@@ -21,7 +21,6 @@ test code
 #include "string.h"
 
 #include "../vmachine/vmachine.h"
-#define memory vram.base
 
 #include "asm86.h"
 #include "debug.h"
@@ -141,18 +140,15 @@ static void addrprint(t_nubit16 segment,t_nubit16 pointer)
 }
 static void setbyte(t_nubit16 segment,t_nubit16 pointer,t_nubit8 value)
 {
-	*(t_nubit8 *)(memory+(segment<<4)+pointer) = value;
+	vramVarByte(segment, pointer) = value;
 }
 static t_nubit8 getbyte(t_nubit16 segment,t_nubit16 pointer)
 {
-	return (t_nubit8)(*(t_nubit8 *)(memory+(segment<<4)+pointer));
+	return vramVarByte(segment, pointer);
 }
 static t_nubit16 getword(t_nubit16 segment,t_nubit16 pointer)
 {
-	t_nubit16 p1,p2;
-	p1 = (*(t_nubit8 *)(memory+(segment<<4)+pointer));
-	p2 = (*(t_nubit8 *)(memory+(segment<<4)+pointer+1));
-	return (p1+(p2<<8));
+	return vramVarWord(segment, pointer);
 }
 static t_bool isprefix(t_nubit8 n)
 {
@@ -186,7 +182,7 @@ static void aconsole()
 		if(cmdAsmBuff[0] == ';' ) continue;
 		errAsmPos = 0;
 		len = assemble(cmdAsmBuff,_cs,
-			(void *)memory,asmSegRec,asmPtrRec);
+			(void *)vramGetAddr(0x0000,0x0000),asmSegRec,asmPtrRec);
 		if(!len) errAsmPos = strlen(cmdAsmBuff) + 9;
 		else asmPtrRec += len;
 		if(errAsmPos) {
@@ -799,7 +795,7 @@ static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 			printnubit16(start+pos);
 			fprintf(stdout," ");
 			len = disassemble(str,&operand,
-				(void *)memory,segment,start+pos);
+				(void *)vramGetAddr(0x0000,0x0000),segment,start+pos);
 			for(i = 0;i < len;++i)
 				printnubit8(getbyte(segment,start+pos+i));
 			pos += len;
@@ -1019,7 +1015,6 @@ static void exec()
 	}
 }
 
-void debugPrintRegs() {rprintregs();}
 void debug()
 {
 	int i;

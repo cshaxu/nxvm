@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-void debugPrintRegs();
 void debug();
 
 #ifdef __cplusplus

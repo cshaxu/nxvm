@@ -1,21 +1,8 @@
-#include "../system/vapi.h"
+#include "vapi.h"
 #include "vcpu.h"
 #include "qdvga.h"
 
 #include "memory.h"
-
-#define _ah (vcpu.ah)
-#define _al (vcpu.al)
-#define _bh (vcpu.bh)
-#define _bl (vcpu.bl)
-#define _ch (vcpu.ch)
-#define _cl (vcpu.cl)
-#define _dh (vcpu.dh)
-#define _dl (vcpu.dl)
-#define _ax (vcpu.ax)
-#define _bx (vcpu.bx)
-#define _cx (vcpu.cx)
-#define _dx (vcpu.dx)
 
 t_vga qdvga;
 
@@ -86,9 +73,26 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 	}
 }
 
+t_nubit8 vapiCallBackDisplayGetRowSize()
+{return qdvga.rowsize;}
+t_nubit8 vapiCallBackDisplayGetColSize()
+{return qdvga.colsize;}
+t_nubit8 vapiCallBackDisplayGetCursorTop()
+{return qdvga.cursortop;}
+t_nubit8 vapiCallBackDisplayGetCursorBottom()
+{return qdvga.cursorbottom;}
+t_nubit8 vapiCallBackDisplayGetCurrentCursorPosX()
+{return qdvga.cursor[qdvga.page].x;}
+t_nubit8 vapiCallBackDisplayGetCurrentCursorPosY()
+{return qdvga.cursor[qdvga.page].y;}
+t_nubit8 vapiCallBackDisplayGetCurrentChar(t_nubit8 x, t_nubit8 y)
+{return qdvgaVarChar(qdvga.page, x, y);}
+t_nubit8 vapiCallBackDisplayGetCurrentCharProp(t_nubit8 x, t_nubit8 y)
+{return qdvgaVarCharProp(qdvga.page, x, y);}
+
 void qdvgaSetDisplayMode()
 {
-	switch (vcpu.al) {
+	switch (_al) {
 	case 0x00:
 		qdvga.rowsize = 0x28; // 40
 		qdvga.colsize = 0x19; // 25
@@ -135,7 +139,7 @@ void qdvgaSetCursorPos()
 }
 void qdvgaGetCursorPos()
 {
-	if (vcpu.bh < QDVGA_COUNT_MAX_PAGE) {
+	if (_bh < QDVGA_COUNT_MAX_PAGE) {
 		_dh = qdvga.cursor[_bh].x;
 		_dl = qdvga.cursor[_bh].y;
 		_ch = qdvga.cursortop;
@@ -219,12 +223,12 @@ void qdvgaGenerateChar()
 	if (_al == 0x30) {
 		switch (_bh) {
 		case 0x00:
-			vcpu.bp = vramVarWord(0x0000, 0x001f * 4 + 0);
-			vcpu.es = vramVarWord(0x0000, 0x001f * 4 + 2);
+			_bp = vramVarWord(0x0000, 0x001f * 4 + 0);
+			_es = vramVarWord(0x0000, 0x001f * 4 + 2);
 			break;
 		case 0x01:
-			vcpu.bp = vramVarWord(0x0000, 0x0043 * 4 + 0);
-			vcpu.es = vramVarWord(0x0000, 0x0043 * 4 + 2);
+			_bp = vramVarWord(0x0000, 0x0043 * 4 + 0);
+			_es = vramVarWord(0x0000, 0x0043 * 4 + 2);
 			break;
 		default:
 			break;
@@ -240,7 +244,7 @@ void qdvgaGetAdapterInfo()
 }
 void qdvgaDisplayStr()
 {
-	InsertString(vramGetAddr(vcpu.es, vcpu.bp), _cl, 0x00, _bl, _bh,
+	InsertString(vramGetAddr(_es, _bp), _cl, 0x00, _bl, _bh,
 		_dh,_dl);
 }
 

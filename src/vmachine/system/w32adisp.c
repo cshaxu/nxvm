@@ -1,7 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#include "../vmachine/vmachine.h"
-#include "../vmachine/qdvga.h"
+#include "../vapi.h"
 
 #include "win32app.h"
 #include "w32adisp.h"
@@ -32,6 +31,8 @@ static INT flashCount;
 static INT flashInterval;
 static INT charWidth;
 static INT charHeight;
+static UCHAR sizeRow, sizeCol;
+static UCHAR cursorTop, cursorBottom;
 
 void w32adispIncFlash()
 {
@@ -64,16 +65,21 @@ void w32adispInit()
 //	lstrcpy(logFont.lfFaceName,L"");
 	w32adispSetScreen();
 }
+
 void w32adispSetScreen()
 {
 	RECT clientRect,windowRect;
 	LONG widthOffset, heightOffset;
+	sizeRow = vapiCallBackDisplayGetRowSize();
+	sizeCol = vapiCallBackDisplayGetColSize();
+	cursorTop = vapiCallBackDisplayGetCursorTop();
+	cursorBottom = vapiCallBackDisplayGetCursorBottom();
 	GetClientRect(hWnd,&clientRect);
 	GetWindowRect(hWnd,&windowRect);
 	widthOffset = windowRect.right - windowRect.left - clientRect.right;
 	heightOffset = windowRect.bottom - windowRect.top - clientRect.bottom;//获取窗口和客户区大小，以决定窗口大小，从而决定客户区大小
-	MoveWindow(hWnd, 0, 0, qdvga.rowsize * charWidth + widthOffset,
-		qdvga.colsize * charHeight + heightOffset, SWP_NOMOVE);
+	MoveWindow(hWnd, 0, 0, sizeRow * charWidth + widthOffset,
+		sizeCol * charHeight + heightOffset, SWP_NOMOVE);
 	GetClientRect(hWnd,&clientRect);
 	clientHeight = clientRect.bottom - clientRect.top;
 	clientWidth  = clientRect.right - clientRect.left;
@@ -111,17 +117,18 @@ static COLORREF CharProp2Color(UCHAR prop, BOOL font)
 	default:   return COLOR_BLACK;       break;
 	}
 }
+
 static VOID DisplayFlashCursor()
 {
-	UINT page = qdvga.page;
 	HPEN hPen;
 	INT x1_cursor, y1_cursor, x2_cursor, y2_cursor;
-	x1_cursor = qdvga.cursor[page].x * logFont.lfHeight +
-		qdvga.cursortop    + 8;
-	x2_cursor = qdvga.cursor[page].x * logFont.lfHeight +
-		qdvga.cursorbottom + 8;
-	y1_cursor = (qdvga.cursor[page].y + 0)* logFont.lfWidth;
-	y2_cursor = (qdvga.cursor[page].y + 1) * logFont.lfWidth;
+	x1_cursor = x2_cursor = 
+	x1_cursor = vapiCallBackDisplayGetCurrentCursorPosX() * logFont.lfHeight +
+		cursorTop    + 8;
+	x2_cursor = vapiCallBackDisplayGetCurrentCursorPosX() * logFont.lfHeight +
+		cursorBottom + 8;
+	y1_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 0)* logFont.lfWidth;
+	y2_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 1) * logFont.lfWidth;
 	if (flashCount % 10 < flashInterval) { //光标变白
 		hPen = (HPEN)CreatePen(PS_SOLID,2,RGB(255,255,255));
 		SelectObject(hdcWnd, hPen);
@@ -131,21 +138,22 @@ static VOID DisplayFlashCursor()
 			hdcBuf, y1_cursor, x1_cursor, SRCCOPY);
 	}
 }
+
 void w32adispPaint()
 {
-	UINT i, j;
+	UCHAR i, j;
 	HBRUSH hBrush;
 	WCHAR unicodeChar;
 	CHAR ansiChar;
 	UCHAR charProp;
 	hBrush = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	SelectObject(hdcBuf, hBrush);
-	Rectangle(hdcBuf, 0, 0, logFont.lfWidth * qdvga.rowsize, 
-		logFont.lfHeight * qdvga.colsize);
-	for(i = 0;i < qdvga.colsize;++i) {
-		for(j = 0;j < qdvga.rowsize;++j) {
-			ansiChar = qdvgaVarChar(qdvga.page, i, j);
-			charProp = qdvgaVarCharProp(qdvga.page, i, j);
+	Rectangle(hdcBuf, 0, 0, logFont.lfWidth * sizeRow, 
+		logFont.lfHeight * sizeCol);
+	for(i = 0;i < sizeCol;++i) {
+		for(j = 0;j < sizeRow;++j) {
+			ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
+			charProp = vapiCallBackDisplayGetCurrentCharProp(i, j);
 			if (!ansiChar) continue;
 			MultiByteToWideChar(437, 0, &ansiChar, 1, &unicodeChar, 1);
 			SetTextColor(hdcBuf, CharProp2Color(charProp, TRUE));
