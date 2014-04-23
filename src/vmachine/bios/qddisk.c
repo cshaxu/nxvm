@@ -9,18 +9,8 @@
 #include "qdbios.h"
 #include "qddisk.h"
 
-#define SetFddStatus (vramVarByte(0x0040, 0x0041) = _ah)
-#define GetFddStatus (vramVarByte(0x0040, 0x0041))
 #define SetHddStatus (vramVarByte(0x0040, 0x0074) = _ah)
 #define GetHddStatus (vramVarByte(0x0040, 0x0074))
-t_vaddrcc vfddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector)
-{
-	vfdd.cyl = cyl;
-	vfdd.head = head;
-	vfdd.sector = sector;
-	vfddSetPointer;
-	return vfdd.curr;
-}
 t_vaddrcc vhddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector)
 {
 	vhdd.cyl = cyl;
@@ -40,13 +30,11 @@ static void INT_13_02_HDD_ReadSector()
 		/* sector not found */
 		_ah = 0x04;
 		SetBit(_flags, VCPU_FLAG_CF);
-		SetHddStatus;
 	} else {
 		memcpy((void *)vramGetAddr(_es,_bx),
-			(void *)vhddGetAddress(cyl,head,sector), _al * 512);
+			(void *)vhddGetAddress(cyl,head,sector), _al * vhdd.nbyte);
 		_ah = 0x00;
 		ClrBit(_flags, VCPU_FLAG_CF);
-		SetHddStatus;
 	}
 }
 static void INT_13_03_HDD_WriteSector()
@@ -60,13 +48,11 @@ static void INT_13_03_HDD_WriteSector()
 		/* sector not found */
 		_ah = 0x04;
 		SetBit(_flags, VCPU_FLAG_CF);
-		SetHddStatus;
 	} else {
 		memcpy((void *)vhddGetAddress(cyl,head,sector),
-			(void *)vramGetAddr(_es,_bx), _al * 512);
+			(void *)vramGetAddr(_es,_bx), _al * vhdd.nbyte);
 		_ah = 0x00;
 		ClrBit(_flags, VCPU_FLAG_CF);
-		SetHddStatus;
 	}
 }
 

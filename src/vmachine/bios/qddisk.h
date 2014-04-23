@@ -106,9 +106,9 @@ mov ds, ax                  \n\
 mov bx, [0104]              \n\
 mov ax, [0106]              \n\
 mov ds, ax                  \n\
-mov ch, [bx+00]             \n\
-dec ch          ; ncyl - 1  \n\
-mov cl, [bx+01]             \n\
+mov cx, [bx+00]             \n\
+dec cx          ; ncyl - 1  \n\
+xchg ch, cl                 \n\
 shl cl, 1                   \n\
 shl cl, 1                   \n\
 shl cl, 1                   \n\

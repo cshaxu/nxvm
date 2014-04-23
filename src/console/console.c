@@ -210,7 +210,7 @@ static void Help()
 		} else if (!strcmp(arg[1], "device")) {
 			printc("Change nxvm devices\n");
 			printc("\n");
-			printc("DEVICE memory <size>\n");
+			printc("DEVICE ram <size>\n");
 			printc("  change memory size (KB)\n");
 			printc("DEVICE display [console | window]\n");
 			printc("  change display type\n");
@@ -269,8 +269,8 @@ static void Info()
 	if (narg != 1) GetHelp;
 	printc("NXVM Device Info\n");
 	printc("================\n");
-	printc("IBM PC/AT\n");
-	printc("CPU: Intel 8086, 16-bit\n");
+	printc("IBM PC/AT 16-bit\n");
+	printc("CPU:               Intel 8086\n");
 	printc("RAM Size:          %d KB\n", vram.size >> 10);
 	printc("Floppy Disk Drive: 3.5\", %.2f MB, %s\n",
 		vfddGetImageSize * 1. / 0xfa000,
@@ -289,14 +289,14 @@ static void Info()
 	printc("NXVM Debug Status\n");
 	printc("=================\n");
 	printc("Recorder:    %s\n", vmachine.flagrecord ? "On" : "Off");
-	printc("Trace:       %s\n", vmachine.flagtrace ? "On" : "Off");
+	printc("Trace:       %s\n", vmachine.tracecnt ? "On" : "Off");
 	printc("Break Point: ");
-	if (vmachine.flagtrace) printc("%04X:%04X\n",vmachine.breakcs,vmachine.breakip);
+	if (vmachine.flagbreak) printc("%04X:%04X\n",vmachine.breakcs,vmachine.breakip);
 	else printc("Off\n");
 	printc("\n");
 	printc("NXVM Running Status\n");
 	printc("===================\n");
-	printc("Running: %s\n",	vmachine.flagrun  ? "Yes" : "No");
+	printc("Running: %s\n", vmachine.flagrun  ? "Yes" : "No");
 }
 static void Debug()
 {

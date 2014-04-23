@@ -24,7 +24,10 @@ void vapiCallBackMachineRun()
 		}
 		if (vmachine.flagrecord) vapiRecordExec();
 		vmachineRefresh();
-		if (vmachine.flagtrace) vmachineStop();
+		if (vmachine.tracecnt) {
+			vmachine.tracecnt--;
+			if (!vmachine.tracecnt) vmachineStop();
+		}
 	}
 	if (vmachine.flagrecord) vapiRecordEnd();
 }

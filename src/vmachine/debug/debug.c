@@ -322,7 +322,7 @@ static void g()
 {
 //	t_nubit16 ptr1,ptr2;
 	if (vmachine.flagrun) {
-		vapiPrint("NXVM is running.\n");
+		vapiPrint("NXVM is already running.\n");
 		return;
 	}
 	switch(narg) {
@@ -693,15 +693,12 @@ static void t()
 	}
 	switch(narg) {
 	case 1:
-		vmachine.flagtrace = 0x01;
 		count = 1;
 		break;
 	case 2:
-		vmachine.flagtrace = 0x01;
 		count = scannubit16(arg[1]);
 		break;
 	case 3:
-		vmachine.flagtrace = 0x01;
 		addrparse(vcpu.cs,arg[1]);
 		vcpu.cs = seg;
 		vcpu.ip = ptr;
@@ -709,13 +706,21 @@ static void t()
 		break;
 	default:seterr(narg-1);break;}
 	if(errPos) return;
-	for(i = 0;i < count;++i) {
-		vmachineResume();
-		while (vmachine.flagrun) vapiSleep(1);
-		if (count < 0x0100 || i == count - 0x01)
+	if (count < 0x0100) {
+		for(i = 0;i < count;++i) {
+			vmachine.tracecnt = 0x01;
+			vmachineResume();
+			while (vmachine.flagrun) vapiSleep(10);
 			rprintregs();
+			if (i != count - 1) vapiPrint("\n");
+		}
+	} else {
+		vmachine.tracecnt = count;
+		vmachineResume();
+		while (vmachine.flagrun) vapiSleep(10);
+		rprintregs();
 	}
-	vmachine.flagtrace = 0x00;
+	vmachine.tracecnt = 0x00;
 //	gexec(ptr1,ptr2);
 }
 // unassemble

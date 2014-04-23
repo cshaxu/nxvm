@@ -70,33 +70,40 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 	t_bool move, t_nubit8 charprop, t_nubit8 page, t_nubit8 x, t_nubit8 y)
 {
 	t_nubitcc i;
+	t_bool tempmove = move;
 //	vapiPrint("%c", d_nubit8(string));
 	qdcgaVarCursorPosRow(page) = x;
 	qdcgaVarCursorPosCol(page) = y;
-	if (dup && count != 1) move = 0x01;
+	if (dup && count != 1) tempmove = 0x01;
+	//vapiPrint("x=%x,y=%x,move!\n",x,y);
 	for (i = 0;i < count;++i) {
 		switch (d_nubit8(string)) {
 		case 0x07: /* bell */
 			break;
 		case 0x08: /* backspace */
-			if (move) CursorBackward(page);
+			if (tempmove) CursorBackward(page);
 			break;
 		case 0x0a: /* new line */
-			if (move) CursorLineFeed(page);
+			if (tempmove) CursorLineFeed(page);
 			break;
 		case 0x0d:
-			if (move) CursorCarriageReturn(page);
+			if (tempmove) CursorCarriageReturn(page);
 			break;
 		default:
 			qdcgaVarChar(page, qdcgaVarCursorPosRow(page),
 				qdcgaVarCursorPosCol(page)) = d_nubit8(string);
 			qdcgaVarCharProp(page, qdcgaVarCursorPosRow(page),
 				qdcgaVarCursorPosCol(page)) = charprop;
-			if (move) CursorForward(page);
+			if (tempmove) CursorForward(page);
 			break;
 		}
 		if (!dup) string++;
 	}
+	if (!move) {
+		qdcgaVarCursorPosRow(page) = x;
+		qdcgaVarCursorPosCol(page) = y;
+	}
+	//vapiPrint("x=%x,y=%x,moved!\n",x,y);
 	//vapiDisplayPaint();
 }
 
@@ -324,7 +331,7 @@ void INT_10()
 	default:
 		count++;
 		vapiPrint("int 10, ax=%04x, bx=%04x, cx=%04x, dx=%04x, al='%c'\n", _ax, _bx, _cx, _dx, _al);
-		if (!(count % 100)) vapiCallBackMachineStop();
+		//if (!(count % 100)) vapiCallBackMachineStop();
 		break;
 	}*/
 	switch (_ah) {
