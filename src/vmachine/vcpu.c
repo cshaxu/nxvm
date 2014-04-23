@@ -20,7 +20,8 @@ void vcpuReset()
 	vcpu.eip = 0x0000fff0;
 	vcpu.eflags = 0x00000002;
 
-	vcpu.cs.base = 0xffff0000;
+	//vcpu.cs.base = 0xffff0000;
+	vcpu.cs.base = 0x000f0000;
 	vcpu.cs.dpl = 0x00;
 	vcpu.cs.limit = 0xffffffff;
 	vcpu.cs.seg.accessed = 1;

@@ -14,7 +14,7 @@
 #include "vglobal.h"
 #include "vport.h"
 #include "vram.h"
-#ifdef VGLOBAL_ECPU_ENABLED
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
 #include "ecpu/ecpu.h"
 #endif
 #include "vcpu.h"

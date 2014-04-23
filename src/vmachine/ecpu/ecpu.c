@@ -9,7 +9,7 @@
 #include "memory.h"
 
 #include "../vapi.h"
-#include "../vcpu.h"
+#include "../vcpuins.h"
 #include "../vpic.h"
 #include "ecpu.h"
 #include "ecpuins.h"
@@ -33,10 +33,12 @@ void ecpuapiSyncRegs()
 	ecpu.es = _es;
 	ecpu.ss = _ss;
 	ecpu.flags = _flags;
+	evIP = (ecpu.cs << 4) + ecpu.ip;
 }
 t_bool ecpuapiHasDiff()
 {
 	t_bool flagdiff = 0x00;
+	t_nubit16 mask = GetMax16(vcpuins.udf);
 	if (!ecpu.flagignore) {
 		if (ecpu.ax != _ax) {vapiPrint("diff ax\n");flagdiff = 0x01;}
 		if (ecpu.bx != _bx) {vapiPrint("diff bx\n");flagdiff = 0x01;}
@@ -51,7 +53,7 @@ t_bool ecpuapiHasDiff()
 		if (ecpu.ds != _ds) {vapiPrint("diff ds\n");flagdiff = 0x01;}
 		if (ecpu.es != _es) {vapiPrint("diff es\n");flagdiff = 0x01;}
 		if (ecpu.ss != _ss) {vapiPrint("diff ss\n");flagdiff = 0x01;}
-		if ((ecpu.flags & ~VCPU_EFLAGS_IF) != (_flags & ~VCPU_EFLAGS_IF)) {
+		if ((ecpu.flags & ~mask) != (_flags & ~mask)) {
 			vapiPrint("diff flags: E: %04X, V: %04X\n", ecpu.flags, _flags);
 			flagdiff = 0x01;
 		}
@@ -77,21 +79,21 @@ void ecpuapiPrintRegs()
 	vapiPrint("  IP=%04X", ecpu.ip);
 	vapiPrint("   ");
 	if(ecpu.flags & VCPU_EFLAGS_OF) vapiPrint("OV ");
-	else                           vapiPrint("NV ");
+	else                            vapiPrint("NV ");
 	if(ecpu.flags & VCPU_EFLAGS_DF) vapiPrint("DN ");
-	else                           vapiPrint("UP ");
+	else                            vapiPrint("UP ");
 	if(ecpu.flags & VCPU_EFLAGS_IF) vapiPrint("EI ");
-	else                           vapiPrint("DI ");
+	else                            vapiPrint("DI ");
 	if(ecpu.flags & VCPU_EFLAGS_SF) vapiPrint("NG ");
-	else                           vapiPrint("PL ");
+	else                            vapiPrint("PL ");
 	if(ecpu.flags & VCPU_EFLAGS_ZF) vapiPrint("ZR ");
-	else                           vapiPrint("NZ ");
+	else                            vapiPrint("NZ ");
 	if(ecpu.flags & VCPU_EFLAGS_AF) vapiPrint("AC ");
-	else                           vapiPrint("NA ");
+	else                            vapiPrint("NA ");
 	if(ecpu.flags & VCPU_EFLAGS_PF) vapiPrint("PE ");
-	else                           vapiPrint("PO ");
+	else                            vapiPrint("PO ");
 	if(ecpu.flags & VCPU_EFLAGS_CF) vapiPrint("CY ");
-	else                           vapiPrint("NC ");
+	else                            vapiPrint("NC ");
 	vapiPrint("\n");
 }
 

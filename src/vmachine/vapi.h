@@ -13,6 +13,10 @@
 #include "vglobal.h"
 #include "vcpu.h"
 
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
+#include "ecpu/ecpu.h"
+#endif
+
 char* STRCAT(char *_Dest, const char *_Source);
 char* STRCPY(char *_Dest, const char *_Source);
 char* STRTOK(char *_Str, const char *_Delim);
@@ -31,6 +35,9 @@ void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins);
 typedef struct {
 	struct {
 		t_cpu rcpu;
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
+		t_ecpu rcpu2;
+#endif
 		char stmt[0x20];
 	} rec[VAPI_RECORD_SIZE];
 	t_nubitcc start, size;

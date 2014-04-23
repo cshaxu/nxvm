@@ -80,7 +80,7 @@ void vmachineReset()
 {
 	vportReset();
 	vramReset();
-#ifdef VGLOBAL_ECPU_ENABLED
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
 	ecpuReset();
 #else
 	vcpuReset();
@@ -112,7 +112,7 @@ void vmachineRefresh()
 	vpitRefresh();
 	vpicRefresh();
 	vcmosRefresh();
-#ifdef VGLOBAL_ECPU_ENABLED
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
 	ecpuRefresh();
 #else
 	vcpuRefresh();
@@ -125,7 +125,7 @@ void vmachineInit()
 	memset(&vmachine, 0x00, sizeof(t_machine));
 	vportInit();
 	vramInit();
-#ifdef VGLOBAL_ECPU_ENABLED
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
 	ecpuInit();
 #else
 	vcpuInit();
@@ -156,7 +156,7 @@ void vmachineFinal()
 	vcmosFinal();
 	vpitFinal();
 	vpicFinal();
-#ifdef VGLOBAL_ECPU_ENABLED
+#if VGLOBAL_ECPU_MODE != TEST_VCPU
 	ecpuFinal();
 #else
 	vcpuFinal();

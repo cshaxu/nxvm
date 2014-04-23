@@ -22,8 +22,9 @@
 #define VGLOBAL_SIZE_INTEGER 32
 #define VGLOBAL_PLATFORM     VGLOBAL_VAR_WIN32
 #if ((VGLOBAL_SIZE_INTEGER == 32) && (VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32))
-#define VGLOBAL_ECPU_ENABLED
 #define VGLOBAL_ECPU_MODE  TEST_BOTH
+#else
+#define VGLOBAL_ECPU_MODE  TEST_VCPU
 #endif
 /*****************************************************************************/
 

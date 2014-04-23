@@ -456,7 +456,7 @@ static void rprintflags()
 	vapiPrint("%s ", _GetEFLAGS_OF ? "OV" : "NV");
 	vapiPrint("%s ", _GetEFLAGS_DF ? "DN" : "UP");
 	vapiPrint("%s ", _GetEFLAGS_IF ? "EI" : "DI");
-	vapiPrint("%s ", _GetEFLAGS_TF ? "TR" : "DT");
+	//vapiPrint("%s ", _GetEFLAGS_TF ? "TR" : "DT");
 	vapiPrint("%s ", _GetEFLAGS_SF ? "NG" : "PL");
 	vapiPrint("%s ", _GetEFLAGS_ZF ? "ZR" : "NZ");
 	vapiPrint("%s ", _GetEFLAGS_AF ? "AC" : "NA");
