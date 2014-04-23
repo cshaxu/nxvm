@@ -3843,11 +3843,11 @@ static void ExecIns()
 	bugfix(17) {
 		/* Note: in this case, if we use two prefixes, the second prefix
 		   will be discarded incorrectly */
+		ClrPrefix();
 		do {
 			opcode = vramVarByte(vcpu.cs, vcpu.ip);
 			ExecFun(vcpuins.table[opcode]);
 		} while (IsPrefix(opcode));
-		ClrPrefix();
 	} else {
 		bugfix(16) {
 			/* Note: in this bug, if an interrupt generated between

@@ -388,11 +388,13 @@ static void Nxvm()
 			printc("Virtual machine is already running.\n");
 	} else GetHelp;
 }
+
+#include "../vmachine/debug/dasm.h"
 static void Test()
 {
-	char x = 0x79;
-	char y = ~x + 1;
-	printf("%02X,%02X, %02X\n",x, y, x+y);
+	char str[0x100];
+	dasm(str, 0, 0);
+	printf("%s\n",str);
 }
 
 static void exec()
