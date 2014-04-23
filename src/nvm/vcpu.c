@@ -12,7 +12,11 @@ t_cpu vcpu;
 t_bool cpuTermFlag;
 
 void InsExec()
-{InsTable[*(t_nubit8 *)(memoryBase+(((t_vaddrcc)vcpu.cs)<<4)+vcpu.ip)]();}
+{
+	t_nubit8 opcode = *(t_nubit8 *)(memoryBase+SHL4(vcpu.cs)+vcpu.ip);
+	InsTable[opcode]();
+	if(!vcpuinsIsPrefix(opcode)) vcpuinsSB();
+}
 
 void CPUInit()
 {
