@@ -13,7 +13,7 @@ extern "C" {
 #define RECORD_SELECT_FIRST 0x0000/* keep first (1) records or last (0) */
 
 typedef struct {
-	t_cpurec rec[RECORD_SIZE];
+	t_cpu  recpu[RECORD_SIZE];
 	t_nubitcc start, size;
 	t_bool flagrecord; /* recorder is turned on */
 	t_bool flagready;
@@ -27,7 +27,7 @@ extern t_record vrecord;
 void recordNow(const t_strptr fname);
 void recordDump(const t_strptr fname);
 void recordInit();
-void recordExec(t_cpurec *rcpurec);
+void recordExec(t_cpu *rcpu);
 void recordRefresh();
 void recordFinal();
 

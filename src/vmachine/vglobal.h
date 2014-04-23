@@ -12,7 +12,7 @@ extern "C" {
 #define VGLOBAL_VAR_WIN32 0
 #define VGLOBAL_VAR_LINUX 1
 
-/* COMPLIATION OPTIONS ***************************************************** */
+/* COMPILING OPTIONS ******************************************************* */
 #if 1
 #define VGLOBAL_SIZE_INTEGER 64
 #else

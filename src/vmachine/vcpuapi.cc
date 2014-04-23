@@ -2,14 +2,14 @@
 
 #include "debug/record.h"
 
+#include "vapi.h"
 #include "vcpuapi.h"
 
-static t_cpu oldbcpu, newbcpu;
+static t_cpu bcpu, oldbcpu;
 static t_bool flagbrec;
-static t_cpurec bcpurec;
 
 #define VCPUAPI_COMPARE 1
-#define VCPUAPI_RECORD  0
+#define VCPUAPI_RECORD  1
 
 #ifdef VGLOBAL_BOCHS
 static t_bool flagvalid = 0;
@@ -19,8 +19,28 @@ static t_bool flagvalid = 0;
 
 void vapiCallBackMachineStop() {}
 void vapiSleep(t_nubit32 milisec) {}
-void vapiCallBackDebugPrintRegs(t_bool bit32) {vcpuapiPrintReg(&vcpu);}
 
+static void PrintReg(t_cpu *rcpu)
+{
+	t_cpu oldcpu = vcpu;
+	vcpu = *rcpu;
+	vapiCallBackCpuPrintReg();
+	vcpu = oldcpu;
+}
+static void PrintSreg(t_cpu *rcpu)
+{
+	t_cpu oldcpu = vcpu;
+	vcpu = *rcpu;
+	vapiCallBackCpuPrintSreg();
+	vcpu = oldcpu;
+}
+static void PrintCreg(t_cpu *rcpu)
+{
+	t_cpu oldcpu = vcpu;
+	vcpu = *rcpu;
+	vapiCallBackCpuPrintCreg();
+	vcpu = oldcpu;
+}
 static void LoadSreg(t_cpu_sreg *rsreg, bx_dbg_sreg_t *rbsreg)
 {
 	t_nubit64 cdesc;
@@ -112,147 +132,147 @@ static void CopyBochsCpu(t_cpu *rcpu)
 	rcpu->cr2 = GetMax32(BX_CPU_THIS_PTR cr2);
 	rcpu->cr3 = GetMax32(BX_CPU_THIS_PTR cr3);
 }
-static t_bool vcpuapiCheckDiff()
+static t_bool CheckDiff()
 {
 	t_nubitcc i;
 	t_bool flagdiff = 0x00;
-	t_nubit32 mask = vcpuins.udf;
+	t_nubit32 mask = VCPU_EFLAGS_RESERVED | vcpuins.udf;
 	if (!vcpu.flagignore) {
-		if (vcpu.cr0 != newbcpu.cr0) {vapiPrint("diff cr0\n");flagdiff = 0x01;}
-		if (vcpu.cr2 != newbcpu.cr2) {vapiPrint("diff cr2\n");flagdiff = 0x01;}
-		if (vcpu.cr3 != newbcpu.cr3) {vapiPrint("diff cr3\n");flagdiff = 0x01;}
-		if (vcpu.eax != newbcpu.eax) {vapiPrint("diff eax\n");flagdiff = 0x01;}
-		if (vcpu.ebx != newbcpu.ebx) {vapiPrint("diff ebx\n");flagdiff = 0x01;}
-		if (vcpu.ecx != newbcpu.ecx) {vapiPrint("diff ecx\n");flagdiff = 0x01;}
-		if (vcpu.edx != newbcpu.edx) {vapiPrint("diff edx\n");flagdiff = 0x01;}
-		if (vcpu.esp != newbcpu.esp) {vapiPrint("diff esp\n");flagdiff = 0x01;}
-		if (vcpu.ebp != newbcpu.ebp) {vapiPrint("diff ebp\n");flagdiff = 0x01;}
-		if (vcpu.esi != newbcpu.esi) {vapiPrint("diff esi\n");flagdiff = 0x01;}
-		if (vcpu.edi != newbcpu.edi) {vapiPrint("diff edi\n");flagdiff = 0x01;}
-		if (vcpu.eip != newbcpu.eip) {vapiPrint("diff eip\n");flagdiff = 0x01;}
-		if (vcpu.es.selector != newbcpu.es.selector ||
+		if (vcpu.cr0 != bcpu.cr0) {vapiPrint("diff cr0\n");flagdiff = 0x01;}
+		if (vcpu.cr2 != bcpu.cr2) {vapiPrint("diff cr2\n");flagdiff = 0x01;}
+		if (vcpu.cr3 != bcpu.cr3) {vapiPrint("diff cr3\n");flagdiff = 0x01;}
+		if (vcpu.eax != bcpu.eax) {vapiPrint("diff eax\n");flagdiff = 0x01;}
+		if (vcpu.ebx != bcpu.ebx) {vapiPrint("diff ebx\n");flagdiff = 0x01;}
+		if (vcpu.ecx != bcpu.ecx) {vapiPrint("diff ecx\n");flagdiff = 0x01;}
+		if (vcpu.edx != bcpu.edx) {vapiPrint("diff edx\n");flagdiff = 0x01;}
+		if (vcpu.esp != bcpu.esp) {vapiPrint("diff esp\n");flagdiff = 0x01;}
+		if (vcpu.ebp != bcpu.ebp) {vapiPrint("diff ebp\n");flagdiff = 0x01;}
+		if (vcpu.esi != bcpu.esi) {vapiPrint("diff esi\n");flagdiff = 0x01;}
+		if (vcpu.edi != bcpu.edi) {vapiPrint("diff edi\n");flagdiff = 0x01;}
+		if (vcpu.eip != bcpu.eip) {vapiPrint("diff eip\n");flagdiff = 0x01;}
+		if (vcpu.es.selector != bcpu.es.selector ||
 			(vcpu.es.flagvalid && (
-			vcpu.es.base != newbcpu.es.base ||
-			vcpu.es.limit != newbcpu.es.limit ||
-			vcpu.es.dpl != newbcpu.es.dpl))) {
+			vcpu.es.base != bcpu.es.base ||
+			vcpu.es.limit != bcpu.es.limit ||
+			vcpu.es.dpl != bcpu.es.dpl))) {
 				vapiPrint("diff es (V=%04X/%08X/%08X/%1X, B=%04X/%08X/%08X/%1X)\n",
 					vcpu.es.selector, vcpu.es.base, vcpu.es.limit, vcpu.es.dpl,
-					newbcpu.es.selector, newbcpu.es.base, newbcpu.es.limit, newbcpu.es.dpl);
+					bcpu.es.selector, bcpu.es.base, bcpu.es.limit, bcpu.es.dpl);
 				flagdiff = 0x01;
 		}
-		if (vcpu.cs.selector != newbcpu.cs.selector ||
-			vcpu.cs.base != newbcpu.cs.base ||
-			vcpu.cs.limit != newbcpu.cs.limit ||
-			vcpu.cs.dpl != newbcpu.cs.dpl) {
+		if (vcpu.cs.selector != bcpu.cs.selector ||
+			vcpu.cs.base != bcpu.cs.base ||
+			vcpu.cs.limit != bcpu.cs.limit ||
+			vcpu.cs.dpl != bcpu.cs.dpl) {
 				vapiPrint("diff cs (V=%04X/%08X/%08X/%1X, B=%04X/%08X/%08X/%1X)\n",
 					vcpu.cs.selector, vcpu.cs.base, vcpu.cs.limit, vcpu.cs.dpl,
-					newbcpu.cs.selector, newbcpu.cs.base, newbcpu.cs.limit, newbcpu.cs.dpl);
+					bcpu.cs.selector, bcpu.cs.base, bcpu.cs.limit, bcpu.cs.dpl);
 				flagdiff = 0x01;
 		}
-		if (vcpu.ss.selector != newbcpu.ss.selector ||
-			vcpu.ss.base != newbcpu.ss.base ||
-			vcpu.ss.limit != newbcpu.ss.limit ||
-			vcpu.ss.dpl != newbcpu.ss.dpl) {
+		if (vcpu.ss.selector != bcpu.ss.selector ||
+			vcpu.ss.base != bcpu.ss.base ||
+			vcpu.ss.limit != bcpu.ss.limit ||
+			vcpu.ss.dpl != bcpu.ss.dpl) {
 				vapiPrint("diff ss (V=%04X/%08X/%08X/%1X, B=%04X/%08X/%08X/%1X)\n",
 					vcpu.ss.selector, vcpu.ss.base, vcpu.ss.limit, vcpu.ss.dpl,
-					newbcpu.ss.selector, newbcpu.ss.base, newbcpu.ss.limit, newbcpu.ss.dpl);
+					bcpu.ss.selector, bcpu.ss.base, bcpu.ss.limit, bcpu.ss.dpl);
 				flagdiff = 0x01;
 		}
-		if (vcpu.ds.selector != newbcpu.ds.selector ||
+		if (vcpu.ds.selector != bcpu.ds.selector ||
 			(vcpu.ds.flagvalid && (
-			vcpu.ds.base != newbcpu.ds.base ||
-			vcpu.ds.limit != newbcpu.ds.limit ||
-			vcpu.ds.dpl != newbcpu.ds.dpl))) {
+			vcpu.ds.base != bcpu.ds.base ||
+			vcpu.ds.limit != bcpu.ds.limit ||
+			vcpu.ds.dpl != bcpu.ds.dpl))) {
 				vapiPrint("diff ds (V=%04X/%08X/%08X/%1X, B=%04X/%08X/%08X/%1X)\n",
 					vcpu.ds.selector, vcpu.ds.base, vcpu.ds.limit, vcpu.ds.dpl,
-					newbcpu.ds.selector, newbcpu.ds.base, newbcpu.ds.limit, newbcpu.ds.dpl);
+					bcpu.ds.selector, bcpu.ds.base, bcpu.ds.limit, bcpu.ds.dpl);
 				flagdiff = 0x01;
 		}
-		if (vcpu.fs.selector != newbcpu.fs.selector ||
+		if (vcpu.fs.selector != bcpu.fs.selector ||
 			(vcpu.fs.flagvalid && (
-			vcpu.fs.base != newbcpu.fs.base ||
-			vcpu.fs.limit != newbcpu.fs.limit ||
-			vcpu.fs.dpl != newbcpu.fs.dpl))) {
+			vcpu.fs.base != bcpu.fs.base ||
+			vcpu.fs.limit != bcpu.fs.limit ||
+			vcpu.fs.dpl != bcpu.fs.dpl))) {
 				vapiPrint("diff fs (V=%04X/%08X/%08X/%1X, B=%04X/%08X/%08X/%1X)\n",
 					vcpu.fs.selector, vcpu.fs.base, vcpu.fs.limit, vcpu.fs.dpl,
-					newbcpu.fs.selector, newbcpu.fs.base, newbcpu.fs.limit, newbcpu.fs.dpl);
+					bcpu.fs.selector, bcpu.fs.base, bcpu.fs.limit, bcpu.fs.dpl);
 				flagdiff = 0x01;
 		}
-		if (vcpu.gs.selector != newbcpu.gs.selector ||
+		if (vcpu.gs.selector != bcpu.gs.selector ||
 			(vcpu.gs.flagvalid && (
-			vcpu.gs.base != newbcpu.gs.base ||
-			vcpu.gs.limit != newbcpu.gs.limit ||
-			vcpu.gs.dpl != newbcpu.gs.dpl))) {
+			vcpu.gs.base != bcpu.gs.base ||
+			vcpu.gs.limit != bcpu.gs.limit ||
+			vcpu.gs.dpl != bcpu.gs.dpl))) {
 				vapiPrint("diff gs (V=%04X/%08X/%08X/%1X, B=%04X/%08X/%08X/%1X)\n",
 					vcpu.gs.selector, vcpu.gs.base, vcpu.gs.limit, vcpu.gs.dpl,
-					newbcpu.gs.selector, newbcpu.gs.base, newbcpu.gs.limit, newbcpu.gs.dpl);
+					bcpu.gs.selector, bcpu.gs.base, bcpu.gs.limit, bcpu.gs.dpl);
 				flagdiff = 0x01;
 		}
-		if (vcpu.tr.selector != newbcpu.tr.selector ||
-			vcpu.tr.base != newbcpu.tr.base ||
-			vcpu.tr.limit != newbcpu.tr.limit ||
-			vcpu.tr.dpl != newbcpu.tr.dpl) {
+		if (vcpu.tr.selector != bcpu.tr.selector ||
+			vcpu.tr.base != bcpu.tr.base ||
+			vcpu.tr.limit != bcpu.tr.limit ||
+			vcpu.tr.dpl != bcpu.tr.dpl) {
 				vapiPrint("diff tr (V=%04X/%08X/%08X/%1X, B=%04X/%08X/%08X/%1X)\n",
 					vcpu.tr.selector, vcpu.tr.base, vcpu.tr.limit, vcpu.tr.dpl,
-					newbcpu.tr.selector, newbcpu.tr.base, newbcpu.tr.limit, newbcpu.tr.dpl);
+					bcpu.tr.selector, bcpu.tr.base, bcpu.tr.limit, bcpu.tr.dpl);
 				flagdiff = 0x01;
 		}
-		if (vcpu.ldtr.selector != newbcpu.ldtr.selector ||
-			vcpu.ldtr.base != newbcpu.ldtr.base ||
-			vcpu.ldtr.limit != newbcpu.ldtr.limit ||
-			vcpu.ldtr.dpl != newbcpu.ldtr.dpl) {
+		if (vcpu.ldtr.selector != bcpu.ldtr.selector ||
+			vcpu.ldtr.base != bcpu.ldtr.base ||
+			vcpu.ldtr.limit != bcpu.ldtr.limit ||
+			vcpu.ldtr.dpl != bcpu.ldtr.dpl) {
 				vapiPrint("diff ldtr (V=%04X/%08X/%08X/%1X, B=%04X/%08X/%08X/%1X)\n",
 					vcpu.ldtr.selector, vcpu.ldtr.base, vcpu.ldtr.limit, vcpu.ldtr.dpl,
-					newbcpu.ldtr.selector, newbcpu.ldtr.base, newbcpu.ldtr.limit, newbcpu.ldtr.dpl);
+					bcpu.ldtr.selector, bcpu.ldtr.base, bcpu.ldtr.limit, bcpu.ldtr.dpl);
 				flagdiff = 0x01;
 		}
-		if (vcpu.gdtr.base != newbcpu.gdtr.base ||
-			vcpu.gdtr.limit != newbcpu.gdtr.limit) {
+		if (vcpu.gdtr.base != bcpu.gdtr.base ||
+			vcpu.gdtr.limit != bcpu.gdtr.limit) {
 				vapiPrint("diff gdtr (V=%08X/%08X, B=%08X/%08X)\n",
 					vcpu.gdtr.base, vcpu.gdtr.limit,
-					newbcpu.gdtr.base, newbcpu.gdtr.limit);
+					bcpu.gdtr.base, bcpu.gdtr.limit);
 				flagdiff = 1;
 		}
-		if (vcpu.idtr.base != newbcpu.idtr.base ||
-			vcpu.idtr.limit != newbcpu.idtr.limit) {
+		if (vcpu.idtr.base != bcpu.idtr.base ||
+			vcpu.idtr.limit != bcpu.idtr.limit) {
 				vapiPrint("diff idtr (V=%08X/%08X, B=%08X/%08X)\n",
 					vcpu.idtr.base, vcpu.idtr.limit,
-					newbcpu.idtr.base, newbcpu.idtr.limit);
+					bcpu.idtr.base, bcpu.idtr.limit);
 				flagdiff = 1;
 		}
-		if ((vcpu.eflags & ~mask) != (newbcpu.eflags & ~mask)) {
-			vapiPrint("diff flags: V=%08X, B=%08X\n", vcpu.eflags, newbcpu.eflags);
+		if ((vcpu.eflags & ~mask) != (bcpu.eflags & ~mask)) {
+			vapiPrint("diff flags: V=%08X, B=%08X\n", vcpu.eflags, bcpu.eflags);
 			flagdiff = 1;
 		}
 		if (vcpuins.except) flagdiff = 1;
 	}
 	if (flagdiff) {
 		vapiPrint("BEFORE EXECUTION:\n");
-		vcpuapiPrintReg(&oldbcpu);
-		vcpuapiPrintSreg(&oldbcpu);
-		vcpuapiPrintCreg(&oldbcpu);
+		PrintReg(&oldbcpu);
+		PrintSreg(&oldbcpu);
+		PrintCreg(&oldbcpu);
 		vapiPrint("---------------------------------------------------\n");
 		vapiPrint("AFTER EXECUTION:\n");
 		vapiPrint("CURRENT BCPU:\n");
-		for (i = 0;i < newbcpu.msize;++i) {
+		for (i = 0;i < bcpu.msize;++i) {
 			vapiPrint("[%c:L%08x/%1d/%08x]\n",
-				newbcpu.mem[i].flagwrite ? 'W' : 'R', newbcpu.mem[i].linear,
-				newbcpu.mem[i].byte, newbcpu.mem[i].data);
+				bcpu.mem[i].flagwrite ? 'W' : 'R', bcpu.mem[i].linear,
+				bcpu.mem[i].byte, bcpu.mem[i].data);
 		}
-		vcpuapiPrintReg(&newbcpu);
-		vcpuapiPrintSreg(&newbcpu);
-		vcpuapiPrintCreg(&newbcpu);
+		PrintReg(&bcpu);
+		PrintSreg(&bcpu);
+		PrintCreg(&bcpu);
 		vapiPrint("---------------------------------------------------\n");
 		vapiPrint("CURRENT VCPU:\n");
-		vapiPrint("[E:L%08X]\n", vcpurec.linear);
+		vapiPrint("[E:L%08X]\n", vcpu.linear);
 		for (i = 0;i < vcpu.msize;++i) {
 			vapiPrint("[%c:L%08x/%1d/%08x]\n",
 				vcpu.mem[i].flagwrite ? 'W' : 'R', vcpu.mem[i].linear,
 				vcpu.mem[i].byte, vcpu.mem[i].data);
 		}
-		vcpuapiPrintReg(&vcpu);
-		vcpuapiPrintSreg(&vcpu);
-		vcpuapiPrintCreg(&vcpu);
+		PrintReg(&vcpu);
+		PrintSreg(&vcpu);
+		PrintCreg(&vcpu);
 		vapiPrint("---------------------------------------------------\n");
 	}
 	return flagdiff;
@@ -283,64 +303,30 @@ void vcpuapiWritePhysical(t_nubit32 physical, t_vaddrcc rdata, t_nubit8 byte)
 	if (0) PrintPhysical(physical, rdata, byte, 1);
 }
 
-#else
-#include "vapi.h"
-#endif
-
-void vcpuapiPrintReg(t_cpu *rcpu)
-{
-	t_cpu oldcpu = vcpu;
-	vcpu = *rcpu;
-	vapiCallBackCpuPrintReg();
-	vcpu = oldcpu;
-}
-void vcpuapiPrintSreg(t_cpu *rcpu)
-{
-	t_cpu oldcpu = vcpu;
-	vcpu = *rcpu;
-	vapiCallBackCpuPrintSreg();
-	vcpu = oldcpu;
-}
-void vcpuapiPrintCreg(t_cpu *rcpu)
-{
-	t_cpu oldcpu = vcpu;
-	vcpu = *rcpu;
-	vapiCallBackCpuPrintCreg();
-	vcpu = oldcpu;
-}
-
 void vcpuapiInit()
 {
-#ifdef VGLOBAL_BOCHS
 	vcpuInit();
-	oldbcpu = vcpu;
-	newbcpu = vcpu;
-	memset(&bcpurec, 0x00, sizeof(t_cpurec));
-#endif
+	bcpu = vcpu;
 }
 void vcpuapiFinal()
 {
-#ifdef VGLOBAL_BOCHS
 	vcpuFinal();
-#endif
 }
 void vcpuapiExecBefore()
 {
-#ifdef VGLOBAL_BOCHS
-	CopyBochsCpu(&oldbcpu);
-	bcpurec.rcpu = oldbcpu;
-	bcpurec.linear = bcpurec.rcpu.cs.base + bcpurec.rcpu.eip;
-	newbcpu.msize = 0;
+	CopyBochsCpu(&bcpu); /* get init value */
+	bcpu.reccs = bcpu.cs.selector;
+	bcpu.receip = bcpu.eip;
+	bcpu.linear = bcpu.cs.base + bcpu.eip;
 	flagbrec = 0;
 
 #if VCPUAPI_RECORD == 1
-	if (vcpuinsReadLinear(bcpurec.linear, (t_vaddrcc)bcpurec.opcodes, 15))
-		bcpurec.oplen = 0;
-	else
-		bcpurec.oplen = 15;
+	if (vcpuinsReadLinear(bcpu.linear, (t_vaddrcc)bcpu.opcodes, 15))
+		bcpu.oplen = 0;
+	else bcpu.oplen = 15;
 #endif
 /* 0xa78f, 0x2eab */
-	if (bcpurec.linear == 0x7c00) {
+	if (bcpu.linear == 0x7c00) {
 		flagvalid = 1;
 		vapiPrint("NXVM and Bochs comparison starts here.\n");
 #if VCPUAPI_RECORD == 1
@@ -348,7 +334,7 @@ void vcpuapiExecBefore()
 		vrecord.size = 0;
 #endif
 	}
-	if (bcpurec.linear == 0x2eab) {
+	if (bcpu.linear == 0x2eab) {
 		flagvalid = 0;
 		vapiPrint("NXVM and Bochs comparison stops here.\n");
 		BX_CPU_THIS_PTR magic_break = 1;
@@ -357,42 +343,41 @@ void vcpuapiExecBefore()
 #endif
 	}
 	if (flagvalid) {
-#if VCPUAPI_RECORD == 1
-		recordExec(&bcpurec);
-#endif
+		vcpu = bcpu;
 #if VCPUAPI_COMPARE == 1
-		vcpu = oldbcpu;
 		vcpuinsRefresh();
 #endif
 	}
+	oldbcpu = bcpu;
+	bcpu.msize = 0;
 #if VCPUAPI_RECORD == 1
 	flagbrec = 1;
-#endif
 #endif
 }
 void vcpuapiExecAfter()
 {
-#ifdef VGLOBAL_BOCHS
 	if (flagvalid) {
+		CopyBochsCpu(&bcpu);
+#if VCPUAPI_RECORD == 1
+		recordExec(&bcpu);
+#endif
 #if VCPUAPI_COMPARE == 1
-		CopyBochsCpu(&newbcpu);
-		if (vcpuapiCheckDiff()) BX_CPU_THIS_PTR magic_break = 1;
+		if (CheckDiff()) BX_CPU_THIS_PTR magic_break = 1;
 #endif
 	}
-#endif
 }
-
 void vcpuapiMemRec(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte, t_bool write)
 {
 	t_nubitcc i;
 	t_nubit64 cdata = 0;
 	if (flagbrec) {
-		newbcpu.mem[newbcpu.msize].byte = byte;
+		bcpu.mem[bcpu.msize].byte = byte;
 		for (i = 0;i < byte;++i)
 			d_nubit8(GetRef(cdata) + i) = d_nubit8(rdata + i);
-		newbcpu.mem[newbcpu.msize].data = cdata;
-		newbcpu.mem[newbcpu.msize].linear = linear;
-		newbcpu.mem[newbcpu.msize].flagwrite = write;
-		newbcpu.msize++;
+		bcpu.mem[bcpu.msize].data = cdata;
+		bcpu.mem[bcpu.msize].linear = linear;
+		bcpu.mem[bcpu.msize].flagwrite = write;
+		bcpu.msize++;
 	}
 }
+#endif

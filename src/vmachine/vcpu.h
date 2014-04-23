@@ -62,6 +62,7 @@ typedef struct {
 } t_cpu_sreg;
 
 typedef struct {
+	/* general registers */
 	union {
 		union {
 			struct {t_nubit8 al,ah;};
@@ -114,17 +115,27 @@ typedef struct {
 		t_nubit16 flags;
 		t_nubit32 eflags;
 	};
-	t_cpu_sreg cs, ss, ds, es, fs, gs, ldtr, tr, gdtr, idtr;
-	t_nubit32 ldtrcr, trcr;
-	t_nubit32 cr0, cr1, cr2, cr3;
+	/* segment registers */
+	t_cpu_sreg es, cs, ss, ds, fs, gs;
+	t_cpu_sreg ldtr, tr, gdtr, idtr;
+	/* control registers */
+	t_nubit32 cr0, cr1, cr2, cr3, cr4, cr5, cr6, cr7;
 	t_nubit32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
-	t_nubit32 tr6, tr7;
-	t_bool flagignore;
-	t_bool flagmasknmi;
-	t_bool flagnmi, flaglock, flaghalt;
+	t_nubit32 tr0, tr1, tr2, tr3, tr4, tr5, tr6, tr7;
+	/* control flags */
+	t_bool flagmasknmi, flagnmi, flaghalt;
 
+	/* cpu recorder */
+	t_bool flagignore;
 	t_cpu_memory mem[0x20];
 	t_nubit8 msize;
+	t_nubit8 oplen;
+	t_nubit8 opcodes[15];
+	t_nubit8 svcextl;
+	t_nubit16 reccs;
+	t_nubit32 receip;
+	t_nubit32 linear;
+	t_string stmt;
 } t_cpu;
 
 extern t_cpu vcpu;

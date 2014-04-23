@@ -232,10 +232,16 @@ static void Device()
 			vfdd.flagexist = 1;
 		} else if (!strcmp(arg[2], "insert")) {
 			if (narg < 4) GetHelp;
-			vapiFloppyInsert(arg[3]);
+			if (vapiFloppyInsert(arg[3]))
+				vapiPrint("Floppy disk inserted.\n");
+			else
+				vapiPrint("Cannot read floppy disk from '%s'.\n", arg[3]);
 		} else if (!strcmp(arg[2], "remove")) {
 			if (narg < 4) arg[3] = NULL;
-			vapiFloppyRemove(arg[3]);
+			if (vapiFloppyRemove(arg[3]))
+				vapiPrint("Floppy disk removed.\n");
+			else
+				vapiPrint("Cannot write floppy disk to '%s'.\n", arg[3]);
 		} else GetHelp;
 	} else if(!strcmp(arg[1], "hdd")) {
 		if (narg < 3) GetHelp;
@@ -249,10 +255,16 @@ static void Device()
 			vhddAlloc();
 		} else if (!strcmp(arg[2], "connect")) {
 			if (narg < 4) GetHelp;
-			vapiHardDiskInsert(arg[3]);
+			if (vapiHardDiskInsert(arg[3]))
+				vapiPrint("Hard disk connected.\n");
+			else
+				vapiPrint("Cannot read hard disk from '%s'.\n", arg[3]);
 		} else if (!strcmp(arg[2], "disconnect")) {
 			if (narg < 4) arg[3] = NULL;
-			vapiHardDiskRemove(arg[3]);
+			if (vapiHardDiskRemove(arg[3]))
+				vapiPrint("Hard disk disconnected.\n");
+			else
+				vapiPrint("Cannot write hard disk from '%s'.\n", arg[3]);
 		} else GetHelp;
 	} else GetHelp;
 }
@@ -331,7 +343,7 @@ static void final()
 void console()
 {
 	init();
-	vapiPrint("Please enter 'HELP' for information.\n");
+	vapiPrint("\nPlease enter 'HELP' for information.\n\n");
 	while(!flagexit) {
 		vapiPrint("Console> ");
 		FGETS(strCmdBuff,MAXLINE,stdin);

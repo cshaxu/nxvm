@@ -55,7 +55,8 @@ typedef struct {
 	t_cpuins_logical mrm;
 	t_vaddrcc rrm, rr;
 	t_nubit64 crm, cr, cimm;
-	t_bool    flagmem; /* if rm is in memory */
+	t_bool flagmem; /* if rm is in memory */
+	t_bool flaglock;
 
 	/* arithmetic operands */
 	t_nubit64 opr1, opr2, result;
@@ -70,15 +71,6 @@ typedef struct {
 	t_bool flagwr, flagww, flagwe;
 	t_nubit32 wrlin, wwlin, welin;
 } t_cpuins;
-
-typedef struct {
-	t_cpu rcpu;
-	t_nubit8 oplen;
-	t_nubit8 opcodes[15];
-	t_nubit8 svcextl;
-	t_nubit32 linear;
-	char dstmt[0x100];
-} t_cpurec;
 
 #define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */
 #define VCPUINS_EXCEPT_DB  0x00000002 /* 01 - trap/fault: debug exception */
@@ -101,7 +93,6 @@ typedef struct {
 #define VCPUINS_EXCEPT_CE  0x80000000 /* 31 - internal case error */
 
 extern t_cpuins vcpuins;
-extern t_cpurec vcpurec;
 
 t_bool vcpuinsLoadSreg(t_cpu_sreg *rsreg, t_nubit16 selector);
 t_bool vcpuinsReadLinear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte);

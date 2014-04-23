@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-#include "time.h"
-#include "stdarg.h"
+#include <time.h>
+#include <stdarg.h>
 
 #include "vglobal.h"
 	
@@ -49,15 +49,14 @@ void lcase(char *s);
 t_nubit32 vapiPrint(const t_strptr format, ...);
 
 /* Device Operations */
-void vapiFloppyInsert(const t_strptr fname);
-void vapiFloppyRemove(const t_strptr fname);
-void vapiHardDiskInsert(const t_strptr fname);
-void vapiHardDiskRemove(const t_strptr fname);
-void vapiStartMachine();
-
+t_bool vapiFloppyInsert(const t_strptr fname);
+t_bool vapiFloppyRemove(const t_strptr fname);
+t_bool vapiHardDiskInsert(const t_strptr fname);
+t_bool vapiHardDiskRemove(const t_strptr fname);
 void vapiSleep(t_nubit32 milisec);
 void vapiDisplaySetScreen();
 void vapiDisplayPaint();
+void vapiStartMachine();
 
 /* Call Back Functions */
 void vapiCallBackMachineRun();

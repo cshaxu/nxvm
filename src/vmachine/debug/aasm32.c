@@ -1,8 +1,9 @@
 /* This file is a part of NXVM project. */
 
-#include "aasm32.h"
 #include "../vapi.h"
 #include "../vcpu.h"
+
+#include "aasm32.h"
 
 /* DEBUGGING OPTIONS ******************************************************* */
 #define AASM_TRACE 0

@@ -22,10 +22,10 @@ vapi.o: vmachine/vapi.c vmachine/vmachine.h vmachine/vglobal.h vmachine/vport.h 
 vcmos.o: vmachine/vcmos.c vmachine/vapi.h vmachine/vglobal.h vmachine/vport.h vmachine/vcpu.h vmachine/vcmos.h
 	$(CC) -c $(CFLAGS) vmachine/vcmos.c
 
-vcpu.o: vmachine/vcpu.c vmachine/vglobal.h vmachine/vapi.h vmachine/vcpu.h vmachine/vcpuins.h
+vcpu.o: vmachine/vcpu.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpuins.h vmachine/vcpu.h
 	$(CC) -c $(CFLAGS) vmachine/vcpu.c
 
-vcpuins.o: vmachine/vcpuins.c vmachine/vglobal.h vmachine/vapi.h vmachine/vport.h vmachine/vram.h vmachine/vpic.h vmachine/bios/qdbios.h vmachine/vcpu.h vmachine/vcpuins.h
+vcpuins.o: vmachine/vcpuins.c vmachine/vapi.h vmachine/vglobal.h vmachine/vport.h vmachine/vram.h vmachine/vpic.h vmachine/bios/qdbios.h vmachine/vcpu.h vmachine/vcpuins.h
 	$(CC) -c $(CFLAGS) vmachine/vcpuins.c
 
 vdma.o: vmachine/vdma.c vmachine/vapi.h vmachine/vglobal.h vmachine/vport.h vmachine/vram.h vmachine/vfdc.h vmachine/vdma.h

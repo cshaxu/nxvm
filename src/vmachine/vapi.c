@@ -157,9 +157,10 @@ t_nubit32 vapiPrint(const t_strptr format, ...)
 	return nWrittenBytes;
 }
 
+#ifndef VGLOBAL_BOCHS
 /* Disk */
 #include "vfdd.h"
-void vapiFloppyInsert(const t_strptr fname)
+t_bool vapiFloppyInsert(const t_strptr fname)
 {
 	t_nubitcc count;
 	FILE *image = FOPEN(fname, "rb");
@@ -167,11 +168,10 @@ void vapiFloppyInsert(const t_strptr fname)
 		count = fread((void *)vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
 		vfdd.flagexist = 1;
 		fclose(image);
-		vapiPrint("Floppy disk inserted.\n");
-	} else
-		vapiPrint("Cannot read floppy image from '%s'.\n", fname);
+		return 0;
+	} else return 1;
 }
-void vapiFloppyRemove(const t_strptr fname)
+t_bool vapiFloppyRemove(const t_strptr fname)
 {
 	t_nubitcc count;
 	FILE *image;
@@ -182,17 +182,14 @@ void vapiFloppyRemove(const t_strptr fname)
 				count = fwrite((void *)vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
 			vfdd.flagexist = 0;
 			fclose(image);
-		} else {
-			vapiPrint("Cannot write floppy image to '%s'.\n", fname);
-			return;
-		}
+		} else return 1;
 	}
 	vfdd.flagexist = 0;
 	memset((void *)vfdd.base, 0x00, vfddGetImageSize);
-	vapiPrint("Floppy disk removed.\n");
+	return 0;
 }
 #include "vhdd.h"
-void vapiHardDiskInsert(const t_strptr fname)
+t_bool vapiHardDiskInsert(const t_strptr fname)
 {
 	t_nubitcc count;
 	FILE *image = FOPEN(fname, "rb");
@@ -205,11 +202,10 @@ void vapiHardDiskInsert(const t_strptr fname)
 		count = fread((void *)vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
 		vhdd.flagexist = 1;
 		fclose(image);
-		vapiPrint("Hard disk connected.\n");
-	} else
-		vapiPrint("Cannot read hard disk image from '%s'.\n", fname);
+		return 0;
+	} else return 1;
 }
-void vapiHardDiskRemove(const t_strptr fname)
+t_bool vapiHardDiskRemove(const t_strptr fname)
 {
 	t_nubitcc count;
 	FILE *image;
@@ -220,14 +216,11 @@ void vapiHardDiskRemove(const t_strptr fname)
 				count = fwrite((void *)vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
 			vhdd.flagexist = 0;
 			fclose(image);
-		} else {
-			vapiPrint("Cannot write hard disk image to '%s'.\n", fname);
-			return;
-		}
+		} else return 1;
 	}
 	vhdd.flagexist = 0;
 	memset((void *)vhdd.base, 0x00, vhddGetImageSize);
-	vapiPrint("Hard disk removed.\n");
+	return 0;
 }
 
 /* Platform Related */
@@ -245,5 +238,4 @@ void vapiHardDiskRemove(const t_strptr fname)
 	void vapiStartMachine() {linuxStartMachine();}
 #endif
 
-void vapiInit() {}
-void vapiFinal() {}
+#endif

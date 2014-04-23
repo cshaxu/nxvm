@@ -1,8 +1,8 @@
 /* This file is a part of NXVM project. */
 
-#include "vglobal.h"
-#ifndef VGLOBAL_BOCHS
 #include "vapi.h"
+
+#ifndef VGLOBAL_BOCHS
 #include "vport.h"
 #include "vram.h"
 #include "vpic.h"
@@ -19,7 +19,6 @@
 /* ************************************************************************* */
 
 t_cpuins vcpuins;
-t_cpurec vcpurec;
 
 #define _______todo static void /* need to implement */
 
@@ -412,7 +411,7 @@ static void _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rda
 		if (vcpuins.flagwr) {
 			if (vcpuins.wrlin >= vcpu.mem[vcpu.msize].linear &&
 				vcpuins.wrlin < vcpu.mem[vcpu.msize].linear + byte) {
-				vapiPrint("Watch point caught at L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", vcpurec.linear,
+				vapiPrint("Watch point caught at L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", vcpu.linear,
 					vcpu.mem[vcpu.msize].byte,
 					vcpu.mem[vcpu.msize].data,
 					vcpu.mem[vcpu.msize].linear);
@@ -450,7 +449,7 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rd
 		if (vcpuins.flagww) {
 			if (vcpuins.wwlin >= vcpu.mem[vcpu.msize].linear &&
 				vcpuins.wwlin < vcpu.mem[vcpu.msize].linear + byte) {
-				vapiPrint("Watch point caught at L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", vcpurec.linear,
+				vapiPrint("Watch point caught at L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", vcpu.linear,
 					vcpu.mem[vcpu.msize].byte,
 					vcpu.mem[vcpu.msize].data,
 					vcpu.mem[vcpu.msize].linear);
@@ -1221,7 +1220,7 @@ static void _s_test_esp()
 	case 2: cesp = GetMax16(vcpu.esp);break;
 	case 4: cesp = GetMax32(vcpu.esp);break;
 	default:_impossible_;break;}
-	_chk(_m_test_logical(&vcpu.ss, cesp, 0x02, 0));
+	_chk(_m_test_logical(&vcpu.ss, cesp, 0x00, 0));
 	_ce;
 }
 
@@ -1675,7 +1674,7 @@ static void _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 {
 	_cb("_d_modrm");
 	_chk(_kdf_modrm(regbyte, rmbyte));
-	if (!vcpuins.flagmem && vcpu.flaglock) {
+	if (!vcpuins.flagmem && vcpuins.flaglock) {
 		_bb("flagmem(0),flaglock(1)");
 		_chk(_SetExcept_UD(0));
 		_be;
@@ -9277,13 +9276,13 @@ static void PREFIX_LOCK()
 		case 0x86: case 0x87: /* XCHG */
 		case 0xf6: case 0xf7: /* NOT, NEG */
 		case 0xfe: case 0xff: /* DEC, INC */
-			vcpu.flaglock = 1;
+			vcpuins.flaglock = 1;
 			break;
 		case 0x80: case 0x81: case 0x83:
 			_bb("opcode(0x80/0x81/0x83)");
 			_chk(_s_read_cs(ceip, GetRef(modrm), 1));
 			if (_GetModRM_REG(modrm) != 7)
-				vcpu.flaglock = 1;
+				vcpuins.flaglock = 1;
 			else {
 				_bb("ModRM_REG(7)");
 				_chk(_SetExcept_UD(0));
@@ -9298,7 +9297,7 @@ static void PREFIX_LOCK()
 			case 0xb3: /* BTR */
 			case 0xbb: /* BTC */
 			case 0xba:
-				vcpu.flaglock = 1;
+				vcpuins.flaglock = 1;
 				break;
 			default: _bb("opcode_0f");
 				_chk(_SetExcept_UD(0));
@@ -10346,7 +10345,7 @@ static void INS_0F_01()
 		case 4: base = GetMax32(vcpuins.crm);break;
 		default:_impossible_;break;}
 		_comment("LGDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
-			vcpurec.linear, base, limit);
+			vcpu.linear, base, limit);
 		_chk(_s_load_gdtr(base, limit, _GetOperandSize));
 		_be;break;
 	case 3: /* LIDT_M32_16 */
@@ -10366,7 +10365,7 @@ static void INS_0F_01()
 		case 4: base = GetMax32(vcpuins.crm);break;
 		default:_impossible_;break;}
 		_comment("LIDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
-			vcpurec.linear, base, limit);
+			vcpu.linear, base, limit);
 		_chk(_s_load_idtr(base, limit, _GetOperandSize));
 		_be;break;
 	case 4: /* SMSW_RM16 */
@@ -10584,9 +10583,9 @@ static void MOV_CR_R32()
 	}
 	_chk(_d_modrm_creg());
 	_chk(_m_write_ref(vcpuins.rr, GetRef(vcpuins.crm), 4));
-	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr0) _comment("MOV_CR_R32: executed at L%08X, CR0=%08X\n", vcpurec.linear, vcpu.cr0);
-	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr2) _comment("MOV_CR_R32: executed at L%08X, CR2=%08X\n", vcpurec.linear, vcpu.cr2);
-	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr3) _comment("MOV_CR_R32: executed at L%08X, CR3=%08X\n", vcpurec.linear, vcpu.cr3);
+	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr0) _comment("MOV_CR_R32: executed at L%08X, CR0=%08X\n", vcpu.linear, vcpu.cr0);
+	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr2) _comment("MOV_CR_R32: executed at L%08X, CR2=%08X\n", vcpu.linear, vcpu.cr2);
+	if (vcpuins.rr == (t_vaddrcc)&vcpu.cr3) _comment("MOV_CR_R32: executed at L%08X, CR3=%08X\n", vcpu.linear, vcpu.cr3);
 	_ce;
 }
 static void MOV_DR_R32()
@@ -11279,23 +11278,18 @@ static void MOVSX_R32_RM16()
 	_ce;
 }
 
-
-static void RecInit()
-{
-	vcpu.msize = 0;
-	vcpurec.rcpu = vcpu;
-	vcpurec.linear = vcpu.cs.base + vcpu.eip;
-	if (vcpuinsReadLinear(vcpurec.linear, (t_vaddrcc)vcpurec.opcodes, 15))
-		vcpurec.oplen = 0;
-	else
-		vcpurec.oplen = 15;
-}
-static void RecFinal()
-{}
 static void ExecInit()
 {
 	vcpu.flagignore = 0;
-	vcpu.flaglock = 0;
+	vcpu.msize = 0;
+	vcpu.reccs = vcpu.cs.selector;
+	vcpu.receip = vcpu.eip;
+	vcpu.linear = vcpu.cs.base + vcpu.eip;
+	if (vcpuinsReadLinear(vcpu.linear, (t_vaddrcc)vcpu.opcodes, 15))
+		vcpu.oplen = 0;
+	else vcpu.oplen = 15;
+
+	vcpuins.flaglock = 0;
 	vcpuins.oldcpu = vcpu;
 	vcpuins.roverds = &vcpu.ds;
 	vcpuins.roverss = &vcpu.ss;
@@ -11314,7 +11308,7 @@ static void ExecInit()
 	vcpuins.mrm.offset = 0x00000000;
 	vcpuins.except = 0x00000000;
 	vcpuins.excode = 0x00000000;
-#if DASM_TRACE == 1
+#if VCPUINS_TRACE == 1
 	vapiTraceInit(&trace);
 #endif
 }
@@ -11324,7 +11318,7 @@ static void ExecFinal()
 		vcpu.cs = vcpuins.oldcpu.cs;
 		vcpu.eip = vcpuins.oldcpu.eip;
 	}
-#if DASM_TRACE == 1
+#if VCPUINS_TRACE == 1
 	if (trace.cid && !vcpuins.except) _SetExcept_CE(trace.cid); 
 	vapiTraceFinal(&trace);
 #endif
@@ -11341,14 +11335,7 @@ static void ExecFinal()
 static void ExecIns()
 {
 	t_nubit8 opcode = 0;
-	t_nubit32 linear;
-	RecInit();
 	ExecInit();
-	linear = vcpu.cs.base + vcpu.eip;
-	if (vcpuins.flagwe && vcpuins.welin == linear) {
-		vapiPrint("Watch point caught at L%08x: EXECUTED\n", linear);
-		vapiCallBackCpuPrintReg();
-	}
 	do {
 		_cb("ExecIns");
 		_chb(_s_read_cs(vcpu.eip, GetRef(opcode), 1));
@@ -11357,8 +11344,12 @@ static void ExecIns()
 		_chb(_s_test_esp());
 		_ce;
 	} while (_kdf_check_prefix(opcode));
+	if (vcpuins.flagwe && vcpuins.welin == vcpu.linear) {
+		vapiPrint("Watch point caught at L%08x: EXECUTED\n", vcpu.linear);
+		vapiCallBackCpuPrintReg();
+		vapiCallBackMachineStop();
+	}
 	ExecFinal();
-	RecFinal();
 } 
 static void ExecInt()
 {
@@ -11417,10 +11408,10 @@ static void QDX()
 		vapiCallBackMachineReset();
 		break;
 	case 0x02:
-		vcpurec.svcextl++;
+		vcpu.svcextl++;
 		break;
 	case 0x03:
-		vcpurec.svcextl--;
+		vcpu.svcextl--;
 		break;
 	default: /* QDINT */
 		_bb("QDINT");
@@ -11477,7 +11468,6 @@ void vcpuinsInit()
 	vapiTraceInit(&trace);
 #endif
 	memset(&vcpuins, 0x00, sizeof(t_cpuins));
-	memset(&vcpurec, 0x00, sizeof(t_cpurec));
 	table[0x00] = (t_faddrcc)ADD_RM8_R8;
 	table[0x01] = (t_faddrcc)ADD_RM32_R32;
 	table[0x02] = (t_faddrcc)ADD_R8_RM8;
@@ -11994,7 +11984,9 @@ void vcpuinsInit()
 	table_0f[0xff] = (t_faddrcc)UndefinedOpcode;
 }
 void vcpuinsReset()
-{vcpurec.svcextl = 0;}
+{
+	vcpu.svcextl = 0;
+}
 void vcpuinsRefresh()
 {
 #ifndef VGLOBAL_BOCHS

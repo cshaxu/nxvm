@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.014c]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.014d]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -146,7 +146,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0140 Built Trace System
  * 0143 Built Debug 32
  * 0144 Built Aasm 32
- * 014c Rebuilt VMachine
+ * 014c Rebuilt vmachine.ch
  *
  * Format Unify:
  * new flag system: FLAG_X_X 0x0010, bit macros

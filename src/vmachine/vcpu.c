@@ -1,12 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#include "vglobal.h"
-
-#ifndef VGLOBAL_BOCHS
 #include "vapi.h"
-#else
-#include "vcpuapi.h"
-#endif
 
 #include "vcpuins.h"
 #include "vcpu.h"
