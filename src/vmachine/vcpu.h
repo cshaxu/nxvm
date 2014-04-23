@@ -47,7 +47,12 @@ typedef struct {
 	t_bool flagnmi;
 } t_cpu;
 
+#if DEBUGMODE != CCPU
 extern t_cpu vcpu;
+#else
+extern t_cpu ccpu;
+#define vcpu ccpu
+#endif
 
 void vcpuRefresh();
 void vcpuInit();

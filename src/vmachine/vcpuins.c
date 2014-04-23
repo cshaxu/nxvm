@@ -12,9 +12,7 @@
 #include "ccpu/ccpuapi.h"
 #include "qdbios.h"
 #include "qdvga.h"
-/*
- * TODO: INT() is modified for the INT test. Please correct it finally!
- */
+/* TODO: INT() is modified for the INT test. Please correct it finally! */
 #endif
 
 #define MOD ((modrm&0xc0)>>6)
@@ -571,6 +569,7 @@ static void PUSH(void *src, t_nubit8 len)
 	case 16:
 		vcpuins.bit = 16;
 		vcpu.sp -= 2;
+//		vapiPrint("V: PUSH %04X to %08X\n",data,((_ss<<4)+_sp));
 		vramVarWord(vcpu.ss,vcpu.sp) = data;
 		break;
 	default:CaseError("PUSH::len");break;}
@@ -1971,12 +1970,6 @@ void POP_DI()
 	POP((void *)&vcpu.di,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  POP_DI\n");
 }
-/*void OpdSize()
-{// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  OpdSize\n");}
-void AddrSize()
-{// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  AddrSize\n");}
-void PUSH_I16()
-{// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  PUSH_I16\n");}*/
 void JO()
 {
 	vcpu.ip++;
@@ -2826,8 +2819,7 @@ void AAD()
 	t_nubit8 base,tempAL,tempAH;
 	vcpu.ip++;
 	GetImm(8);
-// Note: always use 0x0a instead of real value.
-	base = 0x0a; //d_nubit8(vcpuins.imm);
+	base = d_nubit8(vcpuins.imm);
 	if(base == 0) INT(0x00);
 	else {
 		tempAL = vcpu.al;
@@ -2941,7 +2933,7 @@ void CALL_REL16()
 	t_nsbit16 rel16;
 	vcpu.ip++;
 	GetImm(16);
-	rel16 = d_nubit16(vcpuins.imm);
+	rel16 = d_nsbit16(vcpuins.imm);
 	PUSH((void *)&vcpu.ip,16);
 /* vcpuins bug fix #12
 	vcpu.ip += d_nubit16(vcpuins.imm);*/
@@ -3181,13 +3173,17 @@ static void ClrPrefix()
 void vcpuinsExecIns()
 {
 	t_nubit8 opcode = vramVarByte(vcpu.cs,vcpu.ip);
-#if CPU2 == 1
+#if (DEBUGMODE != VCPU && DEBUGMODE != CCPU)
 	ccpuapiSyncRegs();
+#endif
+#if DEBUGMODE != VCPU
 	ccpuapiExecIns();
 #endif
+#if DEBUGMODE != CCPU
 	ExecFun(vcpuins.table[opcode]);
 	if (!IsPrefix(opcode)) ClrPrefix();
-#if CPU2 == 1
+#endif
+#if (DEBUGMODE != VCPU && DEBUGMODE != CCPU)
 	if (ccpuapiHasDiff()) vmachine.flagrun = 0x00;
 #endif
 }
@@ -3196,29 +3192,36 @@ void vcpuinsExecInt()
 	/* hardware interrupt handeler */
 	t_nubit8 intr;
 	if(vcpu.flagnmi) {
-#if CPU2 == 1
+#if DEBUGMODE != VCPU
 		ccpuapiExecInt(0x02);
 #endif
+#if DEBUGMODE != CCPU
 		INT(0x02);
+#endif
 	}
 	vcpu.flagnmi = 0x00;
 	if(GetBit(vcpu.flags, VCPU_FLAG_IF) && vpicScanINTR()) {
 		intr = vpicGetINTR();
-#if CPU2 == 1
+#if DEBUGMODE != VCPU
 		ccpuapiExecInt(intr);
 #endif
+#if DEBUGMODE != CCPU
 		INT(intr);
+#endif
 	}
 	if(GetBit(vcpu.flags, VCPU_FLAG_TF)) {
-#if CPU2 == 1
+#if DEBUGMODE != VCPU
 		ccpuapiExecInt(0x01);
 #endif
+#if DEBUGMODE != CCPU
 		INT(0x01);
+#endif
 	}
 }
 
 void vcpuinsInit()
 {
+#if DEBUGMODE != CCPU
 	memset(&vcpuins, 0x00, sizeof(t_cpuins));
 	ClrPrefix();
 	vcpuins.table[0x00] = (t_faddrcc)ADD_RM8_R8;
@@ -3483,6 +3486,14 @@ void vcpuinsInit()
 	vcpuins.table[0xfd] = (t_faddrcc)STD;
 	vcpuins.table[0xfe] = (t_faddrcc)INS_FE;
 	vcpuins.table[0xff] = (t_faddrcc)INS_FF;
+#endif
+#if DEBUGMODE != VCPU
 	ccpuapiInit();
+#endif
 }
-void vcpuinsFinal() {ccpuapiFinal();}
+void vcpuinsFinal()
+{
+#if DEBUGMODE != VCPU
+	ccpuapiFinal();
+#endif
+}

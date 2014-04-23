@@ -93,6 +93,13 @@ typedef t_nubitcc t_faddrcc;
 
 #define ExecFun(faddr) (*(void (*)(void))(faddr))()
 
+#define VCPU 0
+#define CCPU 1
+#define BVRM 2 // BOTH CPU WITH VRAM ONLY
+#define BCRM 3 // BOTH CPU WITH CRAM ALSO
+
+#define DEBUGMODE CCPU
+
 #ifdef __cplusplus
 /*}_EOCD_*/
 #endif
