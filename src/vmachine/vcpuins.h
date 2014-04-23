@@ -35,14 +35,14 @@ typedef enum {
 } t_cpuins_prefix_sreg;
 typedef t_bool t_cpuins_prefix;
 typedef struct {
+	t_vaddrcc rm, r, imm; /* marked for deletion */
+	
+	t_cpu_sreg oldcs;
 	t_nubit32 oldeip;
 	t_bool    flaginsloop;
-	t_faddrcc table[0x100];
-	t_vaddrcc rm, r, imm;
+	t_faddrcc table[0x100], table_0f[0x100];
 	t_nubitcc opr1, opr2, result, bit;
 	t_cpuins_type type;
-
-	t_cpu_sreg oldcs;
 	t_cpuins_prefix_rep  prefix_rep;
 	t_cpuins_prefix_sreg prefix_sreg;
 	t_cpuins_prefix      prefix_lock;
@@ -50,6 +50,8 @@ typedef struct {
 	t_cpuins_prefix      prefix_addrsize;
 	t_nubit32 except, excode;
 	t_vaddrcc prm, pr, pimm;
+	t_bool    flagmem; /* if prm is in memory */
+	t_nubit32 lrm; /* linear address if prm is in memory*/
 } t_cpuins;
 
 #define VCPUINS_EXCEPT_GP 0x00000001 /* general protection */

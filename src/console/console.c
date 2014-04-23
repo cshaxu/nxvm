@@ -407,11 +407,33 @@ static void Nxvm()
 }
 
 #include "../vmachine/debug/aasm.h"
+
+typedef struct {
+	t_nubit32 x,y;
+} tt;
+
 static void Test()
 {
-	t_nubit16 a = 0xabcd;
-	t_nubit8 cpl = 0x02;
-	printf("%x\n", (a & ~0x03) | cpl);
+	/*t_nubit32 c = 0xffff0000;
+	tt a;
+	a.x = 0xff00f0f0;
+	a.y = 0xaaaaaaaa;
+	__asm {
+		pushfd
+		push eax
+		push ebx
+		mov eax, 0
+		mov ebx, -2
+		bt a.y, -2
+		pushfd
+		pop eax
+		mov c, eax
+		and c, 1
+		pop ebx
+		pop eax
+		popfd
+	}
+	printc("%d\n",c);*/
 }
 
 static void exec()
