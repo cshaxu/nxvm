@@ -260,7 +260,6 @@ static void Exit()
 {
 	if (narg != 1) GetHelp;
 	if (!vmachine.flagrun) {
-		vmachineFinal();
 		exitFlag = 1;
 	} else {
 		printc("Please stop NXVM before exit.\n");
@@ -368,7 +367,7 @@ static void Device()
 			if (narg < 4) arg[3] = NULL;
 			vapiHardDiskRemove(arg[3]);			
 		} else GetHelp;
-	}
+	} else GetHelp;
 }
 static void Nxvm()
 {

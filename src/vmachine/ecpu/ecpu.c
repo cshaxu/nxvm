@@ -14,6 +14,9 @@
 #include "ecpu.h"
 #include "ecpuins.h"
 
+
+#ifdef ECPUACT
+
 t_ecpu ecpu;
 
 void ecpuapiSyncRegs()
@@ -132,3 +135,5 @@ void ecpuRefresh()
 }
 
 void ecpuFinal() {ecpuinsFinal();}
+
+#endif

@@ -4,6 +4,8 @@
 #include "../vram.h"
 #include "ecpuins.h"
 
+#ifdef ECPUACT
+
 #define MemoryStart vram.base
 extern t_vaddrcc evIP;					//CS:IP所表示的线性地址，只供内部使用
 extern unsigned short tmpDs;				//ecpu.ds的一个副本。有时候会遇到ES之类的指令前缀，则修改这个副本。对内在的读写操作是以这个副本为准的，而不是ecpu.ds
@@ -166,5 +168,7 @@ void ecpuapiPrintRegs();
 void ecpuRefresh();
 void ecpuInit();
 void ecpuFinal();
+
+#endif
 
 #endif

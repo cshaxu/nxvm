@@ -1,5 +1,6 @@
 /* This file is a part of NXVM project. */
 
+#include "stdio.h"
 #include "stdlib.h"
 #include "memory.h"
 
@@ -64,9 +65,11 @@ void vhddInit()
 	vhdd.nsector = 63;
 	vhdd.nbyte   = 512;
 	vhdd.base    = (t_vaddrcc)malloc(vhddGetImageSize);
+	memset((void *)vhdd.base, 0x00, vhddGetImageSize);
 }
 void vhddReset() {}
 void vhddFinal()
 {
-	if (vhdd.base) free((void*)vhdd.base);
+	if (vhdd.base) free((void *)(vhdd.base));
+	vhdd.base = (t_vaddrcc)NULL;
 }

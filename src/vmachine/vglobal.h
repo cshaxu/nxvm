@@ -17,8 +17,10 @@
 /* COMPLIATION DEFINITIONS ***************************************************/
 #define VGLOBAL_SIZE_INTEGER 64
 #define VGLOBAL_PLATFORM     VGLOBAL_VAR_WIN32
+#if ((VGLOBAL_SIZE_INTEGER == 32) && (VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32))
 //#define VCPUASM
 //#define ECPUACT
+#endif
 /*****************************************************************************/
 
 typedef char     *t_string;

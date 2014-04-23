@@ -4,6 +4,8 @@
 
 #include "../vport.h"
 
+#ifdef ECPUACT
+
 // Eflags¼Ä´æÆ÷
 #define CF 0x0001
 #define PF 0x0004
@@ -47,5 +49,6 @@ void ecpuinsExecIns();
 void ecpuinsExecInt();
 void ecpuinsInit();
 void ecpuinsFinal();
+#endif
 
 #endif

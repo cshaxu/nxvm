@@ -5,6 +5,7 @@
 // 作者：梁一信
 //////////////////////////////////////////////////////////////////////////
 
+
 #include "stdio.h"
 #include "../vglobal.h"
 #include "../vpic.h"
@@ -14,6 +15,8 @@
 #include "../VCPUINS.H"
 #include "ecpuins.h"
 #include "ecpu.h"
+
+#ifdef ECPUACT
 
 t_vaddrcc Ins0FTable[0x100];
 
@@ -5497,3 +5500,5 @@ void ecpuinsInit()
 	Ins0FTable[0xFF]=(t_faddrcc)OpcError;
 }
 void ecpuinsFinal() {}
+
+#endif

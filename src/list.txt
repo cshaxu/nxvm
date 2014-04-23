@@ -12,6 +12,7 @@ vmachine/vcpuins.c
 vmachine/vdma.c
 vmachine/vfdc.c
 vmachine/vfdd.c
+vmachine/vhdd.c
 vmachine/vmachine.c
 vmachine/vpic.c
 vmachine/vpit.c

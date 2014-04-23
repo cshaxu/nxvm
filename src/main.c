@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xc8]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xc9]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*

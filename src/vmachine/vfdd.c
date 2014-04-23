@@ -1,8 +1,10 @@
 /* This file is a part of NXVM project. */
 
+#include "stdio.h"
 #include "stdlib.h"
 #include "memory.h"
 
+#include "vapi.h"
 #include "vdma.h"
 #include "vfdd.h"
 
@@ -67,9 +69,11 @@ void vfddInit()
 	vfdd.nsector = 0x0012;
 	vfdd.nbyte   = 0x0200;
 	vfdd.base    = (t_vaddrcc)malloc(vfddGetImageSize);
+	memset((void *)vfdd.base, 0x00, vfddGetImageSize);
 }
 void vfddReset() {}
 void vfddFinal()
 {
-	if (vfdd.base) free((void*)vfdd.base);
+	if (vfdd.base) free((void *)(vfdd.base));
+	vfdd.base = (t_vaddrcc)NULL;
 }

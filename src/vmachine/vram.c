@@ -29,5 +29,5 @@ void vramReset()
 void vramRefresh() {}
 void vramFinal()
 {
-	if (vram.base) free((void *)vram.base);
+	if (vram.base) free((void *)(vram.base));
 }

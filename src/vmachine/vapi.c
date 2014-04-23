@@ -99,7 +99,7 @@ void vapiFloppyInsert(const t_string fname)
 {
 	t_nubitcc count;
 	FILE *image = fopen(fname, "rb");
-	if (image) {
+	if (image && vfdd.base) {
 		count = fread((void *)vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
 		vfdd.flagexist = 0x01;
 		fclose(image);
@@ -132,7 +132,7 @@ void vapiHardDiskInsert(const t_string fname)
 {
 	t_nubitcc count;
 	FILE *image = fopen(fname, "rb");
-	if (image) {
+	if (image && vhdd.base) {
 		count = fread((void *)vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
 		vhdd.flagexist = 0x01;
 		fclose(image);

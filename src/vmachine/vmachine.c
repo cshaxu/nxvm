@@ -7,7 +7,6 @@
 
 t_machine vmachine;
 
-
 #define _expression "cs:ip=%x:%x opcode=%x %x %x %x %x %x %x %x \
 ax=%x bx=%x cx=%x dx=%x sp=%x bp=%x si=%x di=%x ds=%x es=%x ss=%x \
 of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x\n"
