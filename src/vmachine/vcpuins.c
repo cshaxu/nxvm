@@ -170,6 +170,7 @@ static void CaseError(t_string str)
 /* get physical from linear by paging */
 static t_nubit32 _kma_addr_physical_linear(t_nubit32 linear, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
 {
+	/* TODO: paging mechanism not implemented */
 	t_nubit32 physical = 0x00000000;
 	_cb("_kma_addr_physical_linear");
 	_chr(physical = linear);
@@ -179,6 +180,7 @@ static t_nubit32 _kma_addr_physical_linear(t_nubit32 linear, t_nubit8 byte, t_bo
 /* get linear from logical by segmentation */
 static t_nubit32 _kma_addr_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
 {
+	/* TODO: segmentation mechanism not implemented */
 	t_nubit32 linear = 0x00000000;
 	_cb("_kma_addr_linear_logical");
 	_chr(linear = ((rsreg->selector << 4) + GetMax16(offset)));
@@ -447,31 +449,76 @@ done _m_test_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool 
 
 /* segment accessing unit: _s_ */
 /* kernel segment accessing */
+static t_nubit64 _ksa_read_descriptor(t_nubit16 selector)
+{
+	/* TODO: fetch descriptor from DT */
+	_cb("_ksa_read_descriptor");
+	_comment("not implememted");
+	_ce;
+	return 0;
+}
 todo _ksa_load_seg(t_cpu_sreg *rsreg, t_nubit16 selector)
 {
+	/* TODO: segment loader not implemented */
+	t_nubit64 descriptor = 0x0000000000000000;
 	_cb("_ksa_load_seg");
-	rsreg->selector = selector;
-	rsreg->limit -= rsreg->base;
-	rsreg->base = (selector << 4);
-	rsreg->limit += rsreg->base;
+	switch (rsreg->sregtype) {
+	case SREG_CODE:
+	case SREG_DATA:
+	case SREG_STACK:
+		rsreg->selector = selector;
+		rsreg->limit -= rsreg->base;
+		rsreg->base = (selector << 4);
+		rsreg->limit += rsreg->base;
+		break;
+	case SREG_TR:
+		break;
+	case SREG_LDTR:
+		_bb("sregtype(SREG_LDTR)");
+		_chk(descriptor = _ksa_read_descriptor(selector));
+		if (!_IsDescLDT(descriptor)) {
+			_bb("descriptor(!LDT)");
+			_chk(_SetExcept_GP(selector));
+			_be;
+		}
+		if (!_IsDescPresent(descriptor)) {
+			_bb("descriptor(!P)");
+			_chk(_SetExcept_NP(selector));
+			_be;
+		}
+		rsreg->selector = selector;
+		rsreg->base = _GetDescSeg_Base(descriptor);
+		rsreg->dpl = _GetDesc_DPL(descriptor);
+		rsreg->limit = rsreg->base + \
+			(_IsDescSegGranularLarge(descriptor) ? \
+				(_GetDescSeg_Limit(descriptor) << 12 | 0x0fff) : \
+				(_GetDescSeg_Limit(descriptor)));
+		rsreg->sys.type = _GetDesc_Type(descriptor);
+		_be;break;
+	default:_impossible_;break;}
 	_ce;
 }
 /* regular segment accessing */
 /* 0 = succ, 1 = fail */
-static t_bool _s_check_selector(t_nubit16 selector) {
+static t_bool _s_check_selector(t_nubit16 selector)
+{
+	/* TODO: checks if selector is null or within DT limit */
 	_cb("_s_check_selector");
 	_comment("not implememted");
 	_ce;
 	return 1;
 }
-static t_nubit64 _s_read_descriptor(t_nubit16 selector) {
-	_cb("_s_check_selector");
-	_comment("not implememted");
+static t_nubit64 _s_read_descriptor(t_nubit16 selector)
+{
+	t_nubit64 descriptor = 0x0000000000000000;
+	_cb("_s_read_descriptor");
+	_chr(descriptor = _ksa_read_descriptor(selector));
 	_ce;
-	return 0;
+	return descriptor;
 }
 static t_nubit64 _s_read_idt(t_nubit8 intid)
 {
+	/* TODO: protected mode idt read not implemented */
 	t_nubit64 result = 0x0000000000000000;
 	t_vaddrcc ref = 0;
 	_cb("_s_read_idt");
@@ -510,8 +557,9 @@ static t_nubit64 _s_read_ss(t_nubit32 offset, t_nubit8 byte)
 	_ce;
 	return result;
 }
-tots _s_test_idt(t_nubit8 intid)
+todo _s_test_idt(t_nubit8 intid)
 {
+	/* TODO: protected mode idt limit check not implemented */
 	_cb("_s_test_idt");
 	if (!_GetCR0_PE) {
 		_bb("CR0_PE(0)");
@@ -529,13 +577,13 @@ tots _s_test_idt(t_nubit8 intid)
 	}
 	_ce;
 }
-tots _s_test_cs(t_nubit32 offset)
+done _s_test_cs(t_nubit32 offset)
 {
 	_cb("_s_test_cs");
 	_chk(_kma_addr_linear_logical(&vcpu.cs, offset, 0x01, 0, 0x00, 1));
 	_ce;
 }
-tots _s_test_ss_push(t_nubit8 byte)
+done _s_test_ss_push(t_nubit8 byte)
 {
 	t_nubit32 cesp = 0x00000000;
 	_cb("_s_test_ss_push");
@@ -553,7 +601,7 @@ tots _s_test_ss_push(t_nubit8 byte)
 	default:_impossible_;break;}
 	_ce;
 }
-tots _s_test_ss_pop(t_nubit8 byte)
+done _s_test_ss_pop(t_nubit8 byte)
 {
 	t_nubit32 cesp = 0x00000000;
 	_cb("_s_test_ss_pop");
@@ -567,20 +615,25 @@ tots _s_test_ss_pop(t_nubit8 byte)
 	default:_impossible_;break;}
 	_ce;
 }
-tots _s_load_cs(t_nubit16 newcs)
+done _s_load_ldtr(t_nubit16 selector)
+{
+	_cb("_s_load_ldtr");
+	_chk(_ksa_load_seg(&vcpu.ldtr, selector));
+	_ce;
+}
+done _s_load_cs(t_nubit16 newcs)
 {
 	_cb("_s_load_cs");
 	_chk(_ksa_load_seg(&vcpu.cs, newcs));
 	_ce;
 }
-tots _s_test_eip()
+done _s_test_eip()
 {
-	t_nubit32 ceip = 0x00000000;
 	_cb("_s_test_eip");
-	_chk(_kma_addr_linear_logical(&vcpu.cs, ceip, 0x01, 0, 0x00, 1));
+	_chk(_kma_addr_linear_logical(&vcpu.cs, vcpu.eip, 0x01, 0, 0x00, 1));
 	_ce;
 }
-tots _s_test_esp()
+done _s_test_esp()
 {
 	t_nubit32 cesp = 0x00000000;
 	_cb("_s_test_esp");
@@ -594,12 +647,13 @@ tots _s_test_esp()
 
 /* portid accessing unit */
 /* kernel portid accessing */
-tots _kpa_test_iomap(t_nubit16 portid, t_nubit8 byte)
+todo _kpa_test_iomap(t_nubit16 portid, t_nubit8 byte)
 {
+	/* TODO: iomap tester not implemented */
 	_cb("_kpa_test_iomap");
 	_ce;
 }
-tots _kpa_test_mode(t_nubit16 portid, t_nubit8 byte)
+done _kpa_test_mode(t_nubit16 portid, t_nubit8 byte)
 {
 	_cb("_p_test");
 	if (_GetCR0_PE && (_GetCPL > (t_nubit8)_GetEFLAGS_IOPL || _GetEFLAGS_VM)) {
@@ -627,7 +681,7 @@ static t_nubit32 _p_input(t_nubit16 portid, t_nubit8 byte)
 	_ce;
 	return result;
 }
-tots _p_output(t_nubit16 portid, t_nubit32 data, t_nubit8 byte)
+done _p_output(t_nubit16 portid, t_nubit32 data, t_nubit8 byte)
 {
 	_cb("_p_output");
 	_chk(_kpa_test_mode(portid, byte));
@@ -995,7 +1049,7 @@ done _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write)
 
 /* execution control unit: _e_ */
 /* kernel execution control */
-tots _kec_push(t_vaddrcc rsrc, t_nubit8 byte)
+done _kec_push(t_vaddrcc rsrc, t_nubit8 byte)
 {
 	t_nubit64 data = 0x0000000000000000;
 	_cb("_kec_push");
@@ -1050,7 +1104,7 @@ static t_nubit64 _kec_pop(t_nubit8 byte)
 	_ce;
 	return result;
 }
-tots _kec_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
+done _kec_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
 	t_cpu_sreg ccs = vcpu.cs;
 	t_nubit32 oldcs = vcpu.cs.selector;
@@ -1081,7 +1135,7 @@ tots _kec_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 	vcpu.eip = neweip;
 	_ce;
 }
-tots _kec_call_near(t_nubit32 neweip, t_nubit8 byte)
+done _kec_call_near(t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_kec_call_near");
 	switch (byte) {
@@ -1104,7 +1158,7 @@ tots _kec_call_near(t_nubit32 neweip, t_nubit8 byte)
 	_ce;
 }
 todo _kec_task_switch (t_nubit16 newtss);
-tots _kec_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
+done _kec_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
 	t_cpu_sreg ccs = vcpu.cs;
 	_cb("_kec_jmp_far");
@@ -1121,7 +1175,7 @@ tots _kec_jmp_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 	vcpu.eip = neweip;
 	_ce;
 }
-tots _kec_jmp_near(t_nubit32 neweip, t_nubit8 byte)
+done _kec_jmp_near(t_nubit32 neweip, t_nubit8 byte)
 {
 	_cb("_kec_jmp_near");
 	switch (byte) {
@@ -1144,8 +1198,8 @@ done _ser_call_far_real(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 }
 todo _ser_call_far_call_gate(t_nubit16 cgsel);
 todo _ser_call_far_task_gate(t_nubit16 tgsel);
-tots _ser_call_far_tss(t_nubit16 newtss);
-tots _ser_int_real(t_nubit8 intid)
+todo _ser_call_far_tss(t_nubit16 newtss);
+done _ser_int_real(t_nubit8 intid)
 {
 	t_nubit16 cip = 0x0000;
 	t_nubit32 vector = 0x00000000;
@@ -1164,7 +1218,7 @@ tots _ser_int_real(t_nubit8 intid)
 	_chk(_s_load_cs(GetMax16(vector >> 16)));
 	_ce;
 }
-tots _ser_iret_real(t_nubit8 byte)
+done _ser_iret_real(t_nubit8 byte)
 {
 	t_nubit32 tempEFLAGS = 0x00000000;
 	_cb("_ser_iret_real");
@@ -1202,6 +1256,14 @@ done _e_push(t_vaddrcc rsrc, t_nubit8 byte)
 	_cb("_e_push");
 	_chk(_kec_push(rsrc, byte));
 	_ce;
+}
+static t_nubit64 _e_pop(t_nubit8 byte)
+{
+	t_nubit64 result = 0x0000000000000000;
+	_cb("_e_pop");
+	_chr(result = _kec_pop(byte));
+	_ce;
+	return result;
 }
 todo _e_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
@@ -4126,7 +4188,7 @@ tots BOUND_R16_M16_16()
 		_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2, 0x00));
 		if (!vcpuins.flagmem) {
 			_bb("flagmem(0)");
-			_chk(_SetExcept_UD(0));
+			_chk(UndefinedOpcode());
 			_be;
 		}
 		switch (_GetOperandSize) {
@@ -4166,7 +4228,7 @@ tots ARPL_RM16_R16()
 			} else
 				_ClrEFLAGS_ZF;
 		} else
-			_chk(_SetExcept_UD(0));
+			_chk(UndefinedOpcode());
 	} else
 		UndefinedOpcode();
 	_ce;
@@ -5425,7 +5487,7 @@ done LES_R16_M16_16()
 		_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2, 0));
 		if (!vcpuins.flagmem) {
 			_bb("flagmem(0)");
-			_chk(_SetExcept_UD(0));
+			_chk(UndefinedOpcode());
 			_be;
 		}
 		switch (_GetOperandSize) {
@@ -5458,7 +5520,7 @@ done LDS_R16_M16_16()
 		_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2, 0));
 		if (!vcpuins.flagmem) {
 			_bb("flagmem(0)");
-			_chk(_SetExcept_UD(0));
+			_chk(UndefinedOpcode());
 			_be;
 		}
 		switch (_GetOperandSize) {
@@ -5578,6 +5640,37 @@ tots ENTER()
 		case 4: _bb("StackSize(4)");
 			vcpu.ebp = GetMax32(temp);
 			vcpu.esp = vcpu.ebp - size;
+			_be;break;
+		default:_impossible_;break;}
+	} else
+		UndefinedOpcode();
+	_ce;
+}
+tots LEAVE()
+{
+	_cb("LEAVE");
+	_newins_;
+	i386(0xc9) {
+		if (!_IsProtected && vcpu.ebp > 0x0000ffff) {
+			_bb("Protected(0),ebp(>0000ffff)");
+			_chk(_SetExcept_GP(0));
+			_be;
+		}
+		_chk(_m_test_logical(&vcpu.ss, vcpu.ebp, _GetOperandSize, 1));
+		switch (_GetStackSize) {
+		case 2: _bb("StackSize(2)");
+			vcpu.sp = vcpu.bp;
+			_be;break;
+		case 4: _bb("StackSize(4)");
+			vcpu.esp = vcpu.ebp;
+			_be;break;
+		default:_impossible_;break;}
+		switch (_GetOperandSize) {
+		case 2: _bb("OperandSize(2)");
+			_chk(vcpu.bp = (t_nubit16)_e_pop(2));
+			_be;break;
+		case 4: _bb("OperandSize(4)");
+			_chk(vcpu.ebp = (t_nubit32)_e_pop(4));
 			_be;break;
 		default:_impossible_;break;}
 	} else
@@ -6480,7 +6573,7 @@ void INS_FF()
 			_chk(_d_modrm(0, _GetOperandSize + 2, 0));
 			if (!vcpuins.flagmem) {
 				_bb("flagmem(0)");
-				_chk(_SetExcept_UD(0));
+				_chk(UndefinedOpcode());
 				_be;
 			}
 			switch (_GetOperandSize) {
@@ -6506,7 +6599,7 @@ void INS_FF()
 			_chk(_d_modrm(0, _GetOperandSize + 2, 0));
 			if (!vcpuins.flagmem) {
 				_bb("flagmem(0)");
-				_chk(_SetExcept_UD(0));
+				_chk(UndefinedOpcode());
 				_be;
 			}
 			switch (_GetOperandSize) {
@@ -6777,40 +6870,121 @@ tots CLTS()
 	_ce;
 }
 
+tots INS_0F_00()
+{
+	t_nubit8 modrm = 0x00;
+	_cb("INS_0F_00");
+	_newins_;
+	_adv;
+	_chk(modrm = (t_nubit8)_s_read_cs(vcpu.eip, 1));
+	switch (_GetModRM_REG(modrm)) {
+	case 0: _bb("ModRM_REG(0)");_chk(UndefinedOpcode());_be;break;
+	case 1: _bb("ModRM_REG(1)");_chk(UndefinedOpcode());_be;break;
+	case 2: /* LLDT_RM16 */
+		_bb("LLDT_RM16");
+		if (_GetCPL) {
+			_bb("CPL(!0)");
+			_chk(_SetExcept_GP(0));
+			_be;
+		}
+		_chk(_d_modrm(0, 2, 0));
+		_chk(_s_load_ldtr(GetMax16(vcpuins.crm)));
+		_be;break;
+	case 3: _bb("ModRM_REG(3)");_chk(UndefinedOpcode());_be;break;
+	case 4: _bb("ModRM_REG(4)");_chk(UndefinedOpcode());_be;break;
+	case 5: _bb("ModRM_REG(5)");_chk(UndefinedOpcode());_be;break;
+	case 6: _bb("ModRM_REG(6)");_chk(UndefinedOpcode());_be;break;
+	case 7: _bb("ModRM_REG(7)");_chk(UndefinedOpcode());_be;break;
+	default:_impossible_;break;}
+	_ce;
+}
+tots INS_0F_01()
+{
+	t_nubit8 modrm = 0x00;
+	_cb("INS_0F_01");
+	_newins_;
+	_adv;
+	_chk(modrm = (t_nubit8)_s_read_cs(vcpu.eip, 1));
+	switch (_GetModRM_REG(modrm)) {
+	case 0: _bb("ModRM_REG(0)");_chk(UndefinedOpcode());_be;break;
+	case 1: _bb("ModRM_REG(1)");_chk(UndefinedOpcode());_be;break;
+	case 2: /* LGDT_M16_32 */
+		_bb("LGDT_M16_32");
+		if (_GetCPL) {
+			_bb("CPL(!0)");
+			_chk(_SetExcept_GP(0));
+			_be;
+		}
+		_chk(_d_modrm(0, 6, 0));
+		if (!vcpuins.flagmem) {
+			_bb("flagmem(0)");
+			_chk(UndefinedOpcode());
+			_be;
+		}
+		switch (_GetOperandSize) {
+		case 2: vcpu.gdtr = GetMax48(vcpuins.crm) & 0x00ffffffffff;break;
+		case 4: vcpu.gdtr = GetMax48(vcpuins.crm);break;
+		default:_impossible_;break;}
+		_be;break;
+	case 3: /* LIDT_M16_32 */
+		_bb("LIDT_M16_32");
+		if (_GetCPL) {
+			_bb("CPL(!0)");
+			_chk(_SetExcept_GP(0));
+			_be;
+		}
+		_chk(_d_modrm(0, 6, 0));
+		if (!vcpuins.flagmem) {
+			_bb("flagmem(0)");
+			_chk(UndefinedOpcode());
+			_be;
+		}
+		switch (_GetOperandSize) {
+		case 2: vcpu.idtr = GetMax48(vcpuins.crm) & 0x00ffffffffff;break;
+		case 4: vcpu.idtr = GetMax48(vcpuins.crm);break;
+		default:_impossible_;break;}
+		_be;break;
+	case 4: _bb("ModRM_REG(4)");_chk(UndefinedOpcode());_be;break;
+	case 5: _bb("ModRM_REG(5)");_chk(UndefinedOpcode());_be;break;
+	case 6: _bb("ModRM_REG(6)");_chk(UndefinedOpcode());_be;break;
+	case 7: _bb("ModRM_REG(7)");_chk(UndefinedOpcode());_be;break;
+	default:_impossible_;break;}
+	_ce;
+}
 tots LAR()
 {
 	t_nubit16 selector = 0x0000;
 	t_nubit64 descriptor = 0x0000000000000000;
 	_cb("LAR");
 	_newins_;
+	_adv;
 	if (_IsProtected) {
 		_bb("Protected(1)");
-		_adv;
 		_chk(_d_modrm(_GetOperandSize, _GetOperandSize, 0));
 		selector = GetMax16(vcpuins.crm);
 		if (_s_check_selector(selector)) {
 			_ClrEFLAGS_ZF;
 		} else {
 			_chk(descriptor = _s_read_descriptor(selector));
-			if (_IsDescSeg(descriptor)) {
-				if (_IsDescSegCodeConforming(descriptor))
+			if (_IsDescUser(descriptor)) {
+				if (_IsDescCodeConform(descriptor))
 					_SetEFLAGS_ZF;
 				else {
-					if (_GetCPL > _GetSegDesc_DPL(descriptor) || _GetSelector_RPL(selector) > _GetSegDesc_DPL(descriptor))
+					if (_GetCPL > _GetDesc_DPL(descriptor) || _GetSelector_RPL(selector) > _GetDesc_DPL(descriptor))
 						_ClrEFLAGS_ZF;
 					else
 						_SetEFLAGS_ZF;
 				}
 			} else {
-				switch (_GetGateDesc_TYPE(descriptor)) {
-				case 0x1:
-				case 0x2:
-				case 0x3:
-				case 0x4:
-				case 0x5:
-				case 0x9:
-				case 0xb:
-				case 0xc:
+				switch (_GetDesc_Type(descriptor)) {
+				case VCPU_DESC_SYS_TYPE_TSS_16_AVL:
+				case VCPU_DESC_SYS_TYPE_LDT:
+				case VCPU_DESC_SYS_TYPE_TSS_16_BUSY:
+				case VCPU_DESC_SYS_TYPE_CALLGATE_16:
+				case VCPU_DESC_SYS_TYPE_TASKGATE:
+				case VCPU_DESC_SYS_TYPE_TSS_32_AVL:
+				case VCPU_DESC_SYS_TYPE_TSS_32_BUSY:
+				case VCPU_DESC_SYS_TYPE_CALLGATE_32:
 					_SetEFLAGS_ZF;
 					break;
 				default:
@@ -6831,7 +7005,7 @@ tots LAR()
 		_be;
 	} else {
 		_bb("Protected(0)");
-		_chk(_SetExcept_UD(0));
+		_chk(UndefinedOpcode());
 		_be;
 	}
 	_ce;
@@ -6854,67 +7028,75 @@ tots JNO_REL16()
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, !_GetEFLAGS_OF));
 	_ce;
 }
-done JC_REL16()
+tots JC_REL16()
 {
 	_cb("JC_REL16");
+	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, _GetEFLAGS_CF));
 	_ce;
 }
-done JNC_REL16()
+tots JNC_REL16()
 {
 	_cb("JNC_REL16");
+	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, !_GetEFLAGS_CF));
 	_ce;
 }
-done JZ_REL16()
+tots JZ_REL16()
 {
 	_cb("JZ_REL16");
+	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, _GetEFLAGS_ZF));
 	_ce;
 }
-done JNZ_REL16()
+tots JNZ_REL16()
 {
 	_cb("JNZ_REL16");
+	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, !_GetEFLAGS_ZF));
 	_ce;
 }
-done JNA_REL16()
+tots JNA_REL16()
 {
 	_cb("JNA_REL16");
+	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize,
 		(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
 	_ce;
 }
-done JA_REL16()
+tots JA_REL16()
 {
 	_cb("JA_REL16");
+	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize,
 		!(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
 	_ce;
 }
-done JS_REL16()
+tots JS_REL16()
 {
 	_cb("JS_REL16");
+	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, _GetEFLAGS_SF));
 	_ce;
 }
-done JNS_REL16()
+tots JNS_REL16()
 {
 	_cb("JNS_REL16");
+	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, !_GetEFLAGS_SF));
@@ -6938,34 +7120,38 @@ tots JNP_REL16()
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, !_GetEFLAGS_PF));
 	_ce;
 }
-done JL_REL16()
+tots JL_REL16()
 {
 	_cb("JL_REL16");
+	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
 	_ce;
 }
-done JNL_REL16()
+tots JNL_REL16()
 {
 	_cb("JNL_REL16");
+	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
 	_ce;
 }
-done JNG_REL16()
+tots JNG_REL16()
 {
 	_cb("JNG_REL16");
+	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize,
 			(_GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF))));
 	_ce;
 }
-done JG_REL16()
+tots JG_REL16()
 {
 	_cb("JG_REL16");
+	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
 	_chk(_e_jcc(vcpuins.rimm, _GetOperandSize,
@@ -7011,7 +7197,7 @@ tots LSS_R16_M16_16()
 	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2, 0));
 	if (!vcpuins.flagmem) {
 		_bb("flagmem(0)");
-		_chk(_SetExcept_UD(0));
+		_chk(UndefinedOpcode());
 		_be;
 	}
 	switch (_GetOperandSize) {
@@ -7046,7 +7232,7 @@ tots LFS_R16_M16_16()
 	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2, 0));
 	if (!vcpuins.flagmem) {
 		_bb("flagmem(0)");
-		_chk(_SetExcept_UD(0));
+		_chk(UndefinedOpcode());
 		_be;
 	}
 	switch (_GetOperandSize) {
@@ -7072,7 +7258,7 @@ tots LGS_R16_M16_16()
 	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2, 0));
 	if (!vcpuins.flagmem) {
 		_bb("flagmem(0)");
-		_chk(_SetExcept_UD(0));
+		_chk(UndefinedOpcode());
 		_be;
 	}
 	switch (_GetOperandSize) {
@@ -7481,7 +7667,7 @@ void vcpuinsInit()
 	vcpuins.table[0xc6] = (t_faddrcc)MOV_M8_I8;
 	vcpuins.table[0xc7] = (t_faddrcc)MOV_M16_I16;
 	vcpuins.table[0xc8] = (t_faddrcc)ENTER;
-	vcpuins.table[0xc9] = (t_faddrcc)UndefinedOpcode;
+	vcpuins.table[0xc9] = (t_faddrcc)LEAVE;
 	vcpuins.table[0xca] = (t_faddrcc)RETF_I16;
 	vcpuins.table[0xcb] = (t_faddrcc)RETF;
 	vcpuins.table[0xcc] = (t_faddrcc)INT3;
@@ -7539,7 +7725,7 @@ void vcpuinsInit()
 	vcpuins.table[0xfe] = (t_faddrcc)INS_FE;
 	vcpuins.table[0xff] = (t_faddrcc)INS_FF;
 	vcpuins.table_0f[0x00] = (t_faddrcc)UndefinedOpcode;
-	vcpuins.table_0f[0x01] = (t_faddrcc)UndefinedOpcode;
+	vcpuins.table_0f[0x01] = (t_faddrcc)INS_0F_01;
 	vcpuins.table_0f[0x02] = (t_faddrcc)LAR;
 	vcpuins.table_0f[0x03] = (t_faddrcc)UndefinedOpcode;
 	vcpuins.table_0f[0x04] = (t_faddrcc)UndefinedOpcode;

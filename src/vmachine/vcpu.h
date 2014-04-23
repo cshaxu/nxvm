@@ -269,41 +269,114 @@ typedef struct {
 #define _GetSelector_OFFSET(selector) (((selector) & VCPU_SELECTOR_IDX) >> 0)
 #define _IsSelectorNull(selector)     (!_GetSelector_TI(selector) && !_GetSelector_INDEX(selector))
 
-#define VCPU_SEGDESC_BASE_0  0x000000ffffff0000
-#define VCPU_SEGDESC_BASE_1  0xff00000000000000
-#define VCPU_SEGDESC_LIMIT_0 0x000000000000ffff
-#define VCPU_SEGDESC_LIMIT_1 0x000f000000000000
-#define VCPU_SEGDESC_TYPE_A  0x0000010000000000 /* descriptor type: accessed */
-#define VCPU_SEGDESC_TYPE_R  0x0000020000000000 /* descriptor type: readable    (code) */
-#define VCPU_SEGDESC_TYPE_W  0x0000020000000000 /* descriptor type: writable    (data) */
-#define VCPU_SEGDESC_TYPE_C  0x0000040000000000 /* descriptor type: conforming  (code) */
-#define VCPU_SEGDESC_TYPE_E  0x0000040000000000 /* descriptor type: expand-down (data) */
-#define VCPU_SEGDESC_TYPE_CD 0x0000080000000000 /* descriptor type: executable */
-#define VCPU_SEGDESC_TYPE    0x00000f0000000000 /* descriptor type */
-#define VCPU_SEGDESC_S       0x0000100000000000 /* descriptor system segment flag (sys=0, app=1) */
-#define VCPU_SEGDESC_DPL     0x0000600000000000 /* descriptor previlege level*/
-#define VCPU_SEGDESC_P       0x0000800000000000 /* segment present */
-#define VCPU_SEGDESC_AVL     0x0010000000000000 /* available for programmers */
-#define VCPU_SEGDESC_DB      0x0040000000000000 /* default size / b */
-#define VCPU_SEGDESC_G       0x0080000000000000 /* granularity */
-#define _GetSegDesc_BASE(descriptor) \
-	((((descriptor) & VCPU_SEGDESC_BASE_0) >> 16) | (((descriptor) & VCPU_SEGDESC_BASE_1) >> 32))
-#define _GetSegDesc_LIMIT(descriptor) \
-	((((descriptor) & VCPU_SEGDESC_LIMIT_0) >> 0) | (((descriptor) & VCPU_SEGDESC_LIMIT_1) >> 32))
-#define _GetSegDesc_TYPE(descriptor)    (((descriptor) & VCPU_SEGDESC_TYPE) >> 40)
-#define _GetSegDesc_TYPE_A(descriptor)  (GetBit((descriptor), VCPU_SEGDESC_TYPE_A)) /* accessed */
-#define _GetSegDesc_TYPE_R(descriptor)  (GetBit((descriptor), VCPU_SEGDESC_TYPE_R)) /* readable (code) */
-#define _GetSegDesc_TYPE_W(descriptor)  (GetBit((descriptor), VCPU_SEGDESC_TYPE_W)) /* writable (data) */
-#define _GetSegDesc_TYPE_C(descriptor)  (GetBit((descriptor), VCPU_SEGDESC_TYPE_C)) /* conforming (code) */
-#define _GetSegDesc_TYPE_E(descriptor)  (GetBit((descriptor), VCPU_SEGDESC_TYPE_E)) /* expand-down (data) */
-#define _GetSegDesc_TYPE_CD(descriptor) (GetBit((descriptor), VCPU_SEGDESC_TYPE_CD)) /* code segment descriptor */
-#define _GetSegDesc_S(descriptor)       (GetBit((descriptor), VCPU_SEGDESC_S)) /* segment descriptor */
-#define _GetSegDesc_DPL(descriptor)     (((descriptor) & VCPU_SEGDESC_DPL) >> 45)
-#define _GetSegDesc_P(descriptor)       (GetBit((descriptor), VCPU_SEGDESC_P))
-#define _GetSegDesc_AVL(descriptor)     (GetBit((descriptor), VCPU_SEGDESC_AVL))
-#define _GetSegDesc_DB(descriptor)      (GetBit((descriptor), VCPU_SEGDESC_DB))
-#define _GetSegDesc_G(descriptor)       (GetBit((descriptor), VCPU_SEGDESC_G))
-#define _MakeSegDesc(base,limit,type,s,dpl,p,avl,db,g) \
+/* DESCRIPTOR DEFITION I: General Part */
+#define VCPU_DESC_TYPE 0x00000f0000000000 /* descriptor type */
+#define VCPU_DESC_S    0x0000100000000000 /* system segment (0) or user segment (1) */
+#define VCPU_DESC_DPL  0x0000600000000000 /* descriptor previlege level */
+#define VCPU_DESC_P    0x0000800000000000 /* descriptor presence */
+
+ /* descriptor type */
+#define _GetDesc_Type(descriptor) (((descriptor) & VCPU_DESC_TYPE) >> 40)
+/* system segment (0) or user segment (1) */
+#define _GetDesc_S(descriptor)    (GetBit((descriptor), VCPU_DESC_S))
+/* descriptor previlege level */
+#define _GetDesc_DPL(descriptor)  (((descriptor) & VCPU_DESC_DPL) >> 45)
+/* descriptor presence */
+#define _GetDesc_P(descriptor)    (GetBit((descriptor), VCPU_DESC_P))
+
+#define _IsDescUser(descriptor)    (_GetDesc_S(descriptor))
+#define _IsDescSys(desciprtor)     (!_GetDesc_S(descriptor))
+#define _IsDescPresent(descriptor) (_GetDesc_P(descriptor))
+
+/* DESCRIPTOR DEFINITION II: System Gate Part */
+#define VCPU_DESC_SYS_TYPE_0 0x0000010000000000
+#define VCPU_DESC_SYS_TYPE_1 0x0000020000000000
+#define VCPU_DESC_SYS_TYPE_2 0x0000040000000000
+#define VCPU_DESC_SYS_TYPE_3 0x0000080000000000
+#define VCPU_DESC_GATE_TYPE_E VCPU_DESC_SYS_TYPE_3 /* 32-bit gate */
+#define VCPU_DESC_TSS_TYPE_B  VCPU_DESC_SYS_TYPE_1  /* busy tss */
+#define VCPU_DESC_TSS_TYPE_E  VCPU_DESC_GATE_TYPE_E /* 32-bit tss */
+#define VCPU_DESC_SYS_TYPE_TSS_16_AVL  0x01
+#define VCPU_DESC_SYS_TYPE_LDT         0x02
+#define VCPU_DESC_SYS_TYPE_TSS_16_BUSY 0x03
+#define VCPU_DESC_SYS_TYPE_CALLGATE_16 0x04
+#define VCPU_DESC_SYS_TYPE_TASKGATE    0x05
+#define VCPU_DESC_SYS_TYPE_INTGATE_16  0x06
+#define VCPU_DESC_SYS_TYPE_TRAPGATE_16 0x07
+#define VCPU_DESC_SYS_TYPE_TSS_32_AVL  0x09
+#define VCPU_DESC_SYS_TYPE_TSS_32_BUSY 0x0b
+#define VCPU_DESC_SYS_TYPE_CALLGATE_32 0x0c
+#define VCPU_DESC_SYS_TYPE_INTGATE_32  0x0e
+#define VCPU_DESC_SYS_TYPE_TRAPGATE_32 0x0f
+
+#define _IsDescLDT(descriptor)        (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_LDT))
+#define _IsDescTaskGate(descriptor)   (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TASKGATE))
+#define _IsDescTSS(descriptor)        (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x05) == 0x01))
+#define _IsDescTSSBusy(descriptor)    (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x07) == 0x03))
+#define _IsDescTSS32(descriptor)      (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x0d) == 0x09))
+#define _IsDescTSS16Avl(descriptor)   (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TSS_16_AVL))
+#define _IsDescTSS16Busy(descriptor)  (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TSS_16_BUSY))
+#define _IsDescTSS32Avl(descriptor)   (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TSS_32_AVL))
+#define _IsDescTSS32Busy(descriptor)  (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TSS_32_BUSY))
+#define _IsDescCallGate(descriptor)   (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x07) == 0x04))
+#define _IsDescCallGate16(descriptor) (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_CALLGATE_16))
+#define _IsDescCallGate32(descriptor) (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_CALLGATE_32))
+#define _IsDescIntGate(descriptor)    (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x07) == 0x06))
+#define _IsDescIntGate16(descriptor)  (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_INTGATE_16))
+#define _IsDescIntGate32(descriptor)  (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_INTGATE_32))
+#define _IsDescTrapGate(descriptor)   (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x07) == 0x07))
+#define _IsDescTrapGate16(descriptor) (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TRAPGATE_16))
+#define _IsDescTrapGate32(descriptor) (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TRAPGATE_32))
+
+/* DESCRIPTOR DEFINITION II: Segment Part */
+#define VCPU_DESC_SEG_LIMIT_0  0x000000000000ffff
+#define VCPU_DESC_SEG_LIMIT_1  0x000f000000000000
+#define VCPU_DESC_SEG_BASE_0   0x000000ffffff0000
+#define VCPU_DESC_SEG_BASE_1   0xff00000000000000
+#define VCPU_DESC_SEG_G        0x0080000000000000 /* granularity */
+#define VCPU_DESC_USER_AVL     0x0010000000000000 /* available for programmers */
+#define VCPU_DESC_USER_TYPE_A  0x0000010000000000 /* descriptor type: accessed (code/data) */
+#define VCPU_DESC_DATA_TYPE_W  0x0000020000000000 /* descriptor type: writable    (data) */
+#define VCPU_DESC_DATA_TYPE_E  0x0000040000000000 /* descriptor type: expand-down (data) */
+#define VCPU_DESC_CODE_TYPE_R  0x0000020000000000 /* descriptor type: readable    (code) */
+#define VCPU_DESC_CODE_TYPE_C  0x0000040000000000 /* descriptor type: conforming  (code) */
+#define VCPU_DESC_USER_TYPE_CD 0x0000080000000000 /* descriptor type: executable */
+#define VCPU_DESC_DATA_B       0x0040000000000000 /* big segment (data) */
+#define VCPU_DESC_CODE_D       0x0040000000000000 /* default size (code) */
+
+/* segment limit */
+#define _GetDescSeg_Limit(descriptor) \
+	((((descriptor) & VCPU_DESC_SEG_LIMIT_0) >> 0) | (((descriptor) & VCPU_DESC_SEG_LIMIT_1) >> 32))
+/* segment base */
+#define _GetDescSeg_Base(descriptor) \
+	((((descriptor) & VCPU_DESC_SEG_BASE_0) >> 16) | (((descriptor) & VCPU_DESC_SEG_BASE_1) >> 32))
+/* segment granularity */
+#define _GetDescSeg_G(descriptor)        (GetBit((descriptor), VCPU_DESC_SEG_G))
+
+#define _GetDescUser_Avl(descriptor)     (GetBit((descriptor), VCPU_DESC_USER_AVL))
+#define _GetDescUser_Type_A(descriptor)  (GetBit((descriptor), VCPU_DESC_USER_TYPE_A))
+#define _SetDescUser_Type_A(descriptor)  (SetBit((descriptor), VCPU_DESC_USER_TYPE_A))
+#define _GetDescData_Type_W(descriptor)  (GetBit((descriptor), VCPU_DESC_DATA_TYPE_W))
+#define _GetDescData_Type_E(descriptor)  (GetBit((descriptor), VCPU_DESC_DATA_TYPE_E))
+#define _GetDescCode_Type_R(descriptor)  (GetBit((descriptor), VCPU_DESC_CODE_TYPE_R))
+#define _GetDescCode_Type_C(descriptor)  (GetBit((descriptor), VCPU_DESC_CODE_TYPE_C))
+#define _GetDescUser_Type_CD(descriptor) (GetBit((descriptor), VCPU_DESC_USER_TYPE_CD))
+#define _GetDescData_B(descriptor)       (GetBit((descriptor), VCPU_DESC_DATA_B))
+#define _GetDescCode_D(descriptor)       (GetBit((descriptor), VCPU_DESC_CODE_D))
+
+#define _IsDescSegGranularLarge(descriptor)  (_GetDescSeg_G(descriptor))
+#define _IsDescUserAccessed(descriptor)      (_IsDescUser(descriptor) && _GetDescUser_Type_A(descriptor))
+#define _IsDescUserExecutable(descriptor)    (_IsDescUser(descriptor) && _GetDescUser_Type_CD(descriptor))
+#define _IsDescCode(descriptor)              (_IsDescUser(descriptor) && _IsDescUserExecutable(descriptor))
+#define _IsDescData(descriptor)              (_IsDescUser(descriptor) && !_IsDescUserExecutable(descriptor))
+#define _IsDescDataWritable(descriptor)      (_IsDescData(descriptor) && _GetDescData_Type_W(descriptor))
+#define _IsDescDataExpDown(descriptor)       (_IsDescData(descriptor) && _GetDescData_Type_E(descriptor))
+#define _IsDescCodeReadable(descriptor)      (_IsDescCode(descriptor) && _GetDescCode_Type_R(descriptor))
+#define _IsDescCodeConform(descriptor)       (_IsDescCode(descriptor) && _GetDescCode_Type_C(descriptor))
+#define _IsDescDataBig(descriptor)           (_IsDescData(descriptor) && _GetDescData_B(descriptor))
+#define _IsDescCode32(descriptor)            (_IsDescCode(descriptor) && _GetDescCode_D(descriptor))
+
+#define _MakeDescSeg(base,limit,type,s,dpl,p,avl,db,g) \
 	(((t_nubit64)((base)  & 0xff000000) << 32) | \
 	 ((t_nubit64)((g)     & 0x00000001) << 55) | \
 	 ((t_nubit64)((db)    & 0x00000001) << 54) | \
@@ -315,59 +388,46 @@ typedef struct {
 	 ((t_nubit64)((type)  & 0x0000000f) << 40) | \
 	 ((t_nubit64)((base)  & 0x00ffffff) << 16) | \
 	 ((t_nubit64)((limit) & 0x0000ffff) << 0 ))
-#define _SetSegDesc_TYPE_A(descriptor)  (SetBit((descriptor), VCPU_SEGDESC_TYPE_A))
 
-#define _IsDescSeg(descriptor)  (_GetSegDesc_S(descriptor))
-#define _IsDescGate(desciprtor) (!_GetSegDesc_S(descriptor))
-#define _IsDescSegCode(descriptor) (_IsDescSeg(descriptor) && _GetSegDesc_TYPE_CD(descriptor))
-#define _IsDescSegData(descriptor) (_IsDescSeg(descriptor) && !_GetSegDesc_TYPE_CD(descriptor))
-#define _IsDescSegCodeReadable(descriptor) (_IsDescSegCode(descriptor) && _GetSegDesc_TYPE_R(descriptor))
-#define _IsDescSegDataWritable(descriptor) (_IsDescSegData(descriptor) && _GetSegDesc_TYPE_W(descriptor))
-#define _IsDescSegCodeConforming(descriptor) (_IsDescSegCode(descriptor) && _GetSegDesc_TYPE_C(descriptor))
-#define _IsDescSegDataExpandDown(descriptor) (_IsDescSegData(descriptor) && _GetSegDesc_TYPE_E(descriptor))
+/* DESCRIPTOR DEFINITION III: System Part */
+#define VCPU_DESC_GATE_SELECTOR 0x00000000ffff0000
+#define VCPU_DESC_GATE_OFFSET_0 0x000000000000ffff
+#define VCPU_DESC_GATE_OFFSET_1 0xffff000000000000 /* offset of call/int/trap gate */
+#define VCPU_DESC_CALL_COUNT    0x0000001f00000000 /* parameter count of call gate */
 
-#define VCPU_GATEDESC_OFFSET_0 0x000000000000ffff
-#define VCPU_GATEDESC_OFFSET_1 0xffff000000000000
-#define VCPU_GATEDESC_SELECTOR 0x00000000ffff0000
-#define VCPU_GATEDESC_COUNT    0x0000001f00000000 /* parameter count for call gate */
-#define VCPU_GATEDESC_TYPE_32  0x0000080000000000 /* 32-bit gate or tss */
-#define _GetGateDesc_OFFSET(descriptor) \
-	(((descriptor) & VCPU_GATEDESC_OFFSET_0) | (((descriptor) & VCPU_GATEDESC_OFFSET_1) >> 32))
-#define _GetGateDesc_SELECTOR(descriptor) (((descriptor) & VCPU_GATEDESC_SELECTOR) >> 16)
-#define _GetGateDesc_COUNT(descriptor)    (((descriptor) & VCPU_GATEDESC_COUNT) >> 32)
-#define _GetGateDesc_TYPE _GetSegDesc_TYPE
-#define _GetGateDesc_TYPE_32(descriptor)  (GetBit((descriptor), VCPU_GATEDESC_TYPE_32))
-#define _GetGateDesc_S    _GetSegDesc_S
-#define _GetGateDesc_DPL  _GetSegDesc_DPL
-#define _GetGateDesc_P    _GetSegDesc_P
+#define _GetDescGate_Selector(descriptor) (((descriptor) & VCPU_DESC_GATE_SELECTOR) >> 16)
+#define _GetDescGate_Offset(descriptor) \
+	(((descriptor) & VCPU_DESC_GATE_OFFSET_0) | (((descriptor) & VCPU_DESC_GATE_OFFSET_1) >> 32))
+#define _GetDescCall_Count(descriptor)    (((descriptor) & VCPU_DESC_CALL_COUNT) >> 32)
 
+/*
 #define VCPU_TSSDESC_TYPE_B 0x0000020000000000
 #define _GetTssDesc_TYPE_B(descriptor) (GetBit((descriptor), VCPU_TSSDESC_TYPE_B))
 #define _SetTssDesc_TYPE_B(descriptor) (SetBit((descriptor), VCPU_TSSDESC_TYPE_B))
 #define _ClrTssDesc_TYPE_B(descriptor) (ClrBit((descriptor), VCPU_TSSDESC_TYPE_B))
-#define _GetTssDesc_TYPE    _GetSegDesc_TYPE
-#define _GetTssDesc_TYPE_32 _GetGateDesc_TYPE_32
-#define _GetTssDesc_BASE    _GetSegDesc_BASE
-#define _GetTssDesc_LIMIT   _GetSegDesc_LIMIT
-#define _GetTssDesc_S       _GetSegDesc_S
-#define _GetTssDesc_DPL     _GetSegDesc_DPL
-#define _GetTssDesc_P       _GetSegDesc_P
-#define _GetTssDesc_G       _GetSegDesc_G
+#define _GetTssDesc_TYPE    _GetDesc_TYPE
+#define _GetTssDesc_TYPE_32 _GetDesc_Type_32
+#define _GetTssDesc_BASE    _GetDescSeg_Base
+#define _GetTssDesc_LIMIT   _GetDescSeg_Limit
+#define _GetTssDesc_S       _GetDesc_S
+#define _GetTssDesc_DPL     _GetDesc_DPL
+#define _GetTssDesc_P       _GetDesc_P
+#define _GetTssDesc_G       _GetDescSeg_G
 
-#define _GetLdtDesc_TYPE    _GetSegDesc_TYPE
-#define _GetLdtDesc_BASE    _GetSegDesc_BASE
-#define _GetLdtDesc_LIMIT   _GetSegDesc_LIMIT
-#define _GetLdtDesc_S       _GetSegDesc_S
-#define _GetLdtDesc_DPL     _GetSegDesc_DPL
-#define _GetLdtDesc_P       _GetSegDesc_P
-#define _GetLdtDesc_G       _GetSegDesc_G
+#define _GetLdtDesc_TYPE    _GetDesc_Type
+#define _GetLdtDesc_BASE    _GetDescSeg_Base
+#define _GetLdtDesc_LIMIT   _GetDescSeg_Limit
+#define _GetLdtDesc_S       _GetDesc_S
+#define _GetLdtDesc_DPL     _GetDesc_DPL
+#define _GetLdtDesc_P       _GetDesc_P
+#define _GetLdtDesc_G       _GetDescSeg_G
 
 #define VCPU_GDTR_LIMIT 0x00000000ffff
 #define VCPU_GDTR_BASE  0xffffffff0000
 #define _GetGDTR_LIMIT ((vcpu.gdtr & VCPU_GDTR_LIMIT) >>  0)
 #define _GetGDTR_BASE  ((vcpu.gdtr & VCPU_GDTR_BASE)  >> 16)
 
-#define _GetLDTR_LIMIT (_GetSegDesc_LIMIT(vcpu.ldtr.descriptor))
+#define _GetLDTR_LIMIT (_GetDescSeg_Limit(vcpu.ldtr.descriptor))*/
 
 #define VCPU_IDTR_LIMIT 0x00000000ffff
 #define VCPU_IDTR_BASE  0xffffffff0000
@@ -386,11 +446,10 @@ typedef struct {
 #define _ClrCR0_TS  (ClrBit(vcpu.cr0, VCPU_CR0_TS))
 
 #define VCPU_CR3_BASE   0xfffff000
-#define _GetCR3_BASE    (vcpu.cr3 & VCPU_CR3_BASE)
+#define _GetCR3_Base    (vcpu.cr3 & VCPU_CR3_BASE)
 
 #define _LoadGDTR16(base,limit)  (vcpu.gdtr = ((t_nubit24)(base) << 16) | (t_nubit16)(limit))
 #define _LoadGDTR32(base,limit)  (vcpu.gdtr = ((t_nubit32)(base) << 16) | (t_nubit16)(limit))
-#define _LoadLDTR(selector)      (vcpu.ldtr = (t_nubit16)(selector))
 #define _LoadTR
 #define _LoadCR0
 #define _LoadCR1
