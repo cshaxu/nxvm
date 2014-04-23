@@ -115,7 +115,7 @@ void NSReset()
 	}
 }*/
 
-void NSConsole(int argc, char **argv)
+void NSConsole()
 {
 	char cmdl[MAXLINE];
 	exitFlag = 0;
@@ -131,7 +131,7 @@ void NSConsole(int argc, char **argv)
 		else if(!strcmp(cmdl,"exec")) NSExec();
 		else if(!strcmp(cmdl,"exit")) NSExit();
 		else if(!strcmp(cmdl,"help")) NSHelp();
-		else if(!strcmp(cmdl,"pwd")) fprintf(stdout,"%s\n",argv[0]);
+		//else if(!strcmp(cmdl,"pwd")) fprintf(stdout,"%s\n",argv[0]);
 
 		else if(!strcmp(cmdl,"memory")) NSMemory();
 		else if(!strcmp(cmdl,"memorytest")) NSMemoryTest();

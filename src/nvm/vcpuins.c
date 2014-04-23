@@ -386,14 +386,14 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_8;
 		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1+flgoperand2)&0xff;
-		DEST_8 = flgresult;
+		DEST_8 = (t_nubit8)flgresult;
 	case 12:
 		flglen = 16;
 		flginstype = ADD16;
 		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
 		flgresult = (flgoperand1+flgoperand2)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	case 16:
 		flglen = 16;
@@ -401,7 +401,7 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1+flgoperand2)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	default:break;}
 	SetFlags(ADD_FLAG);
@@ -415,7 +415,7 @@ static void OR(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_8;
 		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1|flgoperand2)&0xff;
-		DEST_8 = flgresult;
+		DEST_8 = (t_nubit8)flgresult;
 		break;
 	case 12:
 		flglen = 16;
@@ -423,7 +423,7 @@ static void OR(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
 		flgresult = (flgoperand1|flgoperand2)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	case 16:
 		flglen = 16;
@@ -431,7 +431,7 @@ static void OR(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1|flgoperand2)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	default:break;}
 	SetOF(0);
@@ -448,7 +448,7 @@ static void ADC(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_8;
 		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1+flgoperand2+GetCF)&0xff;
-		DEST_8 = flgresult;
+		DEST_8 = (t_nubit8)flgresult;
 		break;
 	case 12:
 		flglen = 16;
@@ -456,7 +456,7 @@ static void ADC(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
 		flgresult = (flgoperand1+flgoperand2+GetCF)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	case 16:
 		flglen = 16;
@@ -464,7 +464,7 @@ static void ADC(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1+flgoperand2+GetCF)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	default:break;}
 	SetFlags(ADC_FLAG);
@@ -478,7 +478,7 @@ static void SBB(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_8;
 		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1-(flgoperand2+GetCF))&0xff;
-		DEST_8 = flgresult;
+		DEST_8 = (t_nubit8)flgresult;
 		break;
 	case 12:
 		flglen = 16;
@@ -486,7 +486,7 @@ static void SBB(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
 		flgresult = (flgoperand1-(flgoperand2+GetCF))&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	case 16:
 		flglen = 16;
@@ -494,7 +494,7 @@ static void SBB(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1-(flgoperand2+GetCF))&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	default:break;}
 	SetFlags(SBB_FLAG);
@@ -508,7 +508,7 @@ static void AND(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_8;
 		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1&flgoperand2)&0xff;
-		DEST_8 = flgresult;
+		DEST_8 = (t_nubit8)flgresult;
 		break;
 	case 12:
 		flglen = 16;
@@ -516,7 +516,7 @@ static void AND(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
 		flgresult = (flgoperand1&flgoperand2)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	case 16:
 		flglen = 16;
@@ -524,7 +524,7 @@ static void AND(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1&flgoperand2)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	default:break;}
 	SetOF(0);
@@ -541,7 +541,7 @@ static void SUB(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_8;
 		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1-flgoperand2)&0xff;
-		DEST_8 = flgresult;
+		DEST_8 = (t_nubit8)flgresult;
 		break;
 	case 12:
 		flglen = 16;
@@ -549,7 +549,7 @@ static void SUB(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
 		flgresult = (flgoperand1-flgoperand2)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	case 16:
 		flglen = 16;
@@ -557,7 +557,7 @@ static void SUB(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1-flgoperand2)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	default:break;}
 	SetFlags(SUB_FLAG);
@@ -571,7 +571,7 @@ static void XOR(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_8;
 		flgoperand2 = SRC_8;
 		flgresult = (flgoperand1^flgoperand2)&0xff;
-		DEST_8 = flgresult;
+		DEST_8 = (t_nubit8)flgresult;
 		break;
 	case 12:
 		flglen = 16;
@@ -579,7 +579,7 @@ static void XOR(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = *(t_nsbit8 *)src;
 		flgresult = (flgoperand1^flgoperand2)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	case 16:
 		flglen = 16;
@@ -587,7 +587,7 @@ static void XOR(void *dest, void *src, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = SRC_16;
 		flgresult = (flgoperand1^flgoperand2)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	default:break;}
 	SetOF(0);
@@ -649,7 +649,7 @@ static void INC(void *dest, t_nubit8 len)
 		flgoperand1 = DEST_8;
 		flgoperand2 = 0x01;
 		flgresult = (flgoperand1+flgoperand2)&0xff;
-		DEST_8 = flgresult;
+		DEST_8 = (t_nubit8)flgresult;
 		break;
 	case 16:
 		flglen = 16;
@@ -657,7 +657,7 @@ static void INC(void *dest, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = 0x0001;
 		flgresult = (flgoperand1+flgoperand2)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	default:break;}
 	SetFlags(INC_FLAG);
@@ -671,7 +671,7 @@ static void DEC(void *dest, t_nubit8 len)
 		flgoperand1 = DEST_8;
 		flgoperand2 = 0x01;
 		flgresult = (flgoperand1-flgoperand2)&0xff;
-		DEST_8 = flgresult;
+		DEST_8 = (t_nubit8)flgresult;
 		break;
 	case 16:
 		flglen = 16;
@@ -679,7 +679,7 @@ static void DEC(void *dest, t_nubit8 len)
 		flgoperand1 = DEST_16;
 		flgoperand2 = 0x0001;
 		flgresult = (flgoperand1-flgoperand2)&0xffff;
-		DEST_16 = flgresult;
+		DEST_16 = (t_nubit16)flgresult;
 		break;
 	default:break;}
 	SetFlags(DEC_FLAG);
@@ -722,14 +722,14 @@ static void XCHG(void *dest, void *src, t_nubit8 len)
 	case 8:
 		flgoperand1 = DEST_8;
 		flgoperand2 = SRC_8;
-		DEST_8 = flgoperand2;
-		SRC_8 = flgoperand1;
+		DEST_8 = (t_nubit8)flgoperand2;
+		SRC_8 = (t_nubit8)flgoperand1;
 		break;
 	case 16:
 		flgoperand1 = DEST_16;
 		flgoperand2 = SRC_16;
-		DEST_16 = flgoperand2;
-		SRC_16 = flgoperand1;
+		DEST_16 = (t_nubit16)flgoperand2;
+		SRC_16 = (t_nubit16)flgoperand1;
 		break;
 	default:break;}
 }
@@ -755,7 +755,7 @@ static void ROL(void *dest, void *src, t_nubit8 len)
 	case 8:
 		while(tempcount) {
 			tempCF = MSB_DEST_8;
-			DEST_8 = (DEST_8<<1)+tempCF;
+			DEST_8 = (DEST_8<<1)+(t_nubit8)tempCF;
 			tempcount--;
 		}
 		SetCF(LSB_DEST_8);
@@ -764,7 +764,7 @@ static void ROL(void *dest, void *src, t_nubit8 len)
 	case 16:
 		while(tempcount) {
 			tempCF = MSB_DEST_16;
-			DEST_16 = (DEST_16<<1)+tempCF;
+			DEST_16 = (DEST_16<<1)+(t_nubit16)tempCF;
 			tempcount--;
 		}
 		SetCF(LSB_DEST_16);
@@ -2918,9 +2918,10 @@ void INS_F6()
 	case 2:	NOT((void *)rm,8);	break;
 	case 3:	NEG((void *)rm,8);	break;
 	case 4:	MUL((void *)rm,8);	break;
-	case 5:	IMUL((void *)rm,8);	break;
-	case 6:	DIV((void *)rm,8);	break;
-	case 7:	IDIV((void *)rm,8);	break;
+	// TODO HERE
+	//case 5:	IMUL((void *)rm,8);	break;
+	//case 6:	DIV((void *)rm,8);	break;
+	//case 7:	IDIV((void *)rm,8);	break;
 	default:break;}
 	nvmprintword(vcpu.cs);nvmprint(":");nvmprintword(vcpu.ip);nvmprint("  INS_F6\n");
 }
