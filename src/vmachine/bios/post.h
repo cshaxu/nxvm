@@ -4,7 +4,7 @@
 #define NXVM_POST_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #define VBIOS_POST_VPIC "     \
@@ -226,7 +226,7 @@ mul bx                        \n\
 add [006e], ax                \n"
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

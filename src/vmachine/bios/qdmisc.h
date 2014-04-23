@@ -4,7 +4,7 @@
 #define NXVM_QDMISC_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #define SOFT_MISC_INT_11 "\
@@ -103,7 +103,7 @@ qdx 03 ; leave isr \n\
 iret                 \n"
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

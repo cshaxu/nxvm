@@ -4,7 +4,7 @@
 #define NXVM_WIN32APP_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "windows.h"
@@ -17,7 +17,7 @@ VOID win32appStartMachine();
 extern HWND w32aHWnd;
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

@@ -4,7 +4,7 @@
 #define NXVM_QDCGA_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "../vvadp.h"
@@ -94,7 +94,7 @@ void INT_10();
 void qdcgaReset();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

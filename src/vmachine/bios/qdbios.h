@@ -4,7 +4,7 @@
 #define NXVM_QDBIOS_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "../vglobal.h"
@@ -16,7 +16,7 @@ void qdbiosExecInt(t_nubit8 intid);
 void qdbiosReset(); /* POST */
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

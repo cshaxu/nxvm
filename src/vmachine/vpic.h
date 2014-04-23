@@ -6,7 +6,7 @@
 #define NXVM_VPIC_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "vglobal.h"
@@ -100,7 +100,7 @@ void vpicRefresh();
 void vpicFinal();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

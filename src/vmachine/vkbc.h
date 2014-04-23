@@ -6,7 +6,7 @@
 #define NXVM_VKBC_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "vglobal.h"
@@ -19,7 +19,7 @@ void vkbcRefresh();
 void vkbcFinal();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

@@ -4,7 +4,7 @@
 #define NXVM_VAPI_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "stdio.h"
@@ -22,8 +22,6 @@ FILE* FOPEN(const char *_Filename, const char *_Mode);
 char* FGETS(char *_Buf, int _MaxCount, FILE *_File);
 
 t_nubit32 vapiPrint(const t_string format, ...);
-void vapiPrintByte(t_nubit8 n);
-void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins);
 
 #define VAPI_RECORD_SIZE         0xffff             /* maximum record number */
 #define VAPI_RECORD_SELECT_FIRST 0x0000/* keep first (1) records or last (0) */
@@ -122,7 +120,7 @@ t_nubit8  vapiCallBackDisplayGetCurrentChar(t_nubit8 x, t_nubit8 y);
 t_nubit8  vapiCallBackDisplayGetCurrentCharProp(t_nubit8 x, t_nubit8 y);
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

@@ -2490,7 +2490,7 @@ t_nubitcc dasmx(t_string stmt, t_nubit32 linear, t_nubit8 flagout)
 		}
 		STRCAT(dstmt, "\n");
 		STRCAT(stmt, dstmt);
-		linear += l;
+		linear = GetMax32(linear + l);
 		physical = diptr;
 	} while (IsPrefix(opcode));
 	return len;
@@ -2535,7 +2535,7 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off, t_nubit8 flagout)
 		}
 		STRCAT(dstmt, "\n");
 		STRCAT(stmt, dstmt);
-		off += l;
+		off = GetMax16(off + l);
 		physical = diptr;
 	} while (IsPrefix(opcode));
 	return len;

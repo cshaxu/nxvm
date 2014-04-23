@@ -6,7 +6,7 @@
 #define NXVM_VCPU_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "vglobal.h"
@@ -50,10 +50,6 @@ typedef struct {
 		} sys;
 	};
 } t_cpu_sreg;
-
-#if VGLOBAL_ECPU_MODE != TEST_VCPU
-#include "ecpu/ecpu.h"
-#endif
 
 typedef struct {
 	union {
@@ -113,15 +109,12 @@ typedef struct {
 	t_nubit32 cr0, cr1, cr2, cr3;
 	t_nubit32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
 	t_nubit32 tr6, tr7;
+	t_bool flagignore;
 	t_bool flagmasknmi;
 	t_bool flagnmi, flaglock, flaghalt;
 } t_cpu;
 
-#if VGLOBAL_ECPU_MODE != TEST_ECPU
 extern t_cpu vcpu;
-#else
-#define vcpu ecpu
-#endif
 
 #define VCPU_PAGESIZE      0x1000
 
@@ -467,7 +460,7 @@ void vcpuRefresh();
 void vcpuFinal();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

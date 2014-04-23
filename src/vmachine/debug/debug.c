@@ -972,12 +972,6 @@ static void xsreg()
 }
 static void xcreg()
 {
-#define _GetCR0_PE  (GetBit(vcpu.cr0, VCPU_CR0_PE))
-#define _GetCR0_MP  (GetBit(vcpu.cr0, VCPU_CR0_MP))
-#define _GetCR0_EM  (GetBit(vcpu.cr0, VCPU_CR0_EM))
-#define _GetCR0_TS  (GetBit(vcpu.cr0, VCPU_CR0_TS))
-#define _GetCR0_ET  (GetBit(vcpu.cr0, VCPU_CR0_ET))
-#define _GetCR0_PG  (GetBit(vcpu.cr0, VCPU_CR0_PG))
 	vapiPrint("CR0=%08X: %s %s %s %s %s %s\n", vcpu.cr0,
 		_GetCR0_PG ? "PG" : "pg",
 		_GetCR0_ET ? "ET" : "et",
@@ -991,10 +985,10 @@ static void xcreg()
 static void xuprint(t_nubit32 linear, t_nubit8 count)
 {
 	char str[MAXLINE];
-	t_nubitcc len = 0;
+	t_nubit32 len = 0;
 	t_nubit8 i;
 	for (i = 0;i < count;++i) {
-		len = dasmx(str, linear, 0x01);
+		len = GetMax32(dasmx(str, linear, 0x01));
 		vapiPrint("%s", str);
 		linear += len;
 	}
@@ -1090,6 +1084,7 @@ static void xg()
 		vmachine.breakcnt = 0;
 		vmachineResume();
 		while (vmachine.flagrun) vapiSleep(1);
+		vapiPrint("%d instructions executed before the break point.\n", vmachine.breakcnt);
 		xreg();
 	}
 	vmachine.flagbreakx = 0;

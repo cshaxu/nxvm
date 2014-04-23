@@ -115,6 +115,7 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam)
 static DWORD WINAPI ThreadKernel(LPVOID lpParam)
 {
 	vapiCallBackMachineRun();
+	w32adispPaint(TRUE);
 	ThreadIdKernel = 0;
 	return 0;
 }

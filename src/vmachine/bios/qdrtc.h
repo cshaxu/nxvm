@@ -4,7 +4,7 @@
 #define NXVM_QDRTC_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #define HARD_RTC_INT_08 "                   \
@@ -199,7 +199,7 @@ qdx 03 ; leave isr \n\
 iret                 \n"
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

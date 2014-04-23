@@ -6,7 +6,7 @@
 #define NXVM_VVADP_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "vglobal.h"
@@ -27,7 +27,7 @@ void vvadpRefresh();
 void vvadpFinal();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

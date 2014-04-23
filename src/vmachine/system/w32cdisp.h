@@ -4,7 +4,7 @@
 #define NXVM_W32CDISP_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "windows.h"
@@ -17,7 +17,7 @@ void w32cdispInit();
 void w32cdispFinal();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

@@ -1,5 +1,4 @@
-0. Refine i386: read/write control by removing references (rdesc, rimm, rr, rrm)
-1. Debug i386 32-bit Real Mode
+1. Debug i386
 2. Build asm/dasm/debug for i386
 3. Build exception handler (int service routines)
 4. Build VGA Graphics Mode

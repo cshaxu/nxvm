@@ -4,7 +4,7 @@
 #define NXVM_DEBUG_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "../vmachine.h"
@@ -19,7 +19,7 @@ t_nubit64 _dbgm_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte)
 void debug();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

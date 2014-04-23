@@ -2,25 +2,14 @@
 
 #include "memory.h"
 
-#include "vapi.h"
-
 #include "vcpuins.h"
 #include "vcpu.h"
 
-#if VGLOBAL_ECPU_MODE != TEST_VCPU
-#include "ecpu/ecpu.h"
-#endif
-
-#if VGLOBAL_ECPU_MODE != TEST_ECPU
 t_cpu vcpu;
-#endif
 
 void vcpuInit()
 {
 	vcpuinsInit();
-#if VGLOBAL_ECPU_MODE != TEST_VCPU
-	ecpuInit();
-#endif
 }
 void vcpuReset()
 {
@@ -29,7 +18,7 @@ void vcpuReset()
 	vcpu.eip = 0x0000fff0;
 	vcpu.eflags = 0x00000002;
 
-	vcpu.cs.base = 0x000f0000;
+	vcpu.cs.base = 0xffff0000;
 	vcpu.cs.dpl = 0x00;
 	vcpu.cs.limit = 0xffffffff;
 	vcpu.cs.seg.accessed = 1;
@@ -93,29 +82,12 @@ void vcpuReset()
 	vcpu.gdtr.flagvalid = 1;
 
 	vcpuinsReset();
-#if VGLOBAL_ECPU_MODE != TEST_VCPU
-	ecpuReset();
-#endif
 }
 void vcpuRefresh()
 {
-#if VGLOBAL_ECPU_MODE == TEST_BOTH
-	ecpuRefreshInit();
-#endif
-#if VGLOBAL_ECPU_MODE != TEST_VCPU
-	ecpuRefresh();
-#endif
-#if VGLOBAL_ECPU_MODE != TEST_ECPU
 	vcpuinsRefresh();
-#endif
-#if VGLOBAL_ECPU_MODE == TEST_BOTH
-	ecpuRefreshFinal();
-#endif
 }
 void vcpuFinal()
 {
-#if VGLOBAL_ECPU_MODE != TEST_VCPU
-	ecpuFinal();
-#endif
 	vcpuinsFinal();
 }

@@ -4,7 +4,7 @@
 #define NXVM_QDKEYB_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "../vram.h"
@@ -48,7 +48,7 @@ void qdkeybBufferKey();
 void qdkeybReset();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

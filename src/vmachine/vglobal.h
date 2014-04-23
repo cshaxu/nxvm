@@ -6,7 +6,7 @@
 #define NXVM_VGLOBAL_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "stdint.h"
@@ -14,19 +14,18 @@
 #define VGLOBAL_VAR_WIN32 0
 #define VGLOBAL_VAR_LINUX 1
 
-#define TEST_VCPU 0
-#define TEST_ECPU 1
-#define TEST_BOTH 2
-#define TEST_VECPU 3
-
 /* COMPLIATION DEFINITIONS ***************************************************/
+#if 1
 #define VGLOBAL_SIZE_INTEGER 64
-#define VGLOBAL_PLATFORM     VGLOBAL_VAR_WIN32
-#if ((VGLOBAL_SIZE_INTEGER == 32) && (VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32))
-#define VGLOBAL_ECPU_MODE  TEST_VCPU
 #else
-#define VGLOBAL_ECPU_MODE  TEST_VCPU
+#define VGLOBAL_SIZE_INTEGER 32
 #endif
+#ifdef WIN32
+#define VGLOBAL_PLATFORM VGLOBAL_VAR_WIN32
+#else
+#define VGLOBAL_PLATFORM VGLOBAL_VAR_LINUX
+#endif
+//#define VGLOBAL_BOCHS
 /*****************************************************************************/
 
 typedef char     *t_string;
@@ -150,7 +149,7 @@ typedef t_nubitcc t_faddrcc;
 #define ExecFun(faddr) (*(void (*)(void))(faddr))()
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

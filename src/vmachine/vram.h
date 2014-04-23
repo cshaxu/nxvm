@@ -6,7 +6,7 @@
 #define NXVM_VRAM_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "vglobal.h"
@@ -18,6 +18,8 @@ typedef struct {
 } t_ram;
 
 extern t_ram vram;
+
+#define vramSize vram.size
 
 #define vramWrapA20(offset) ((offset) & ((vram.flaga20) ? 0xffffffff : 0xffefffff))
 #define vramAddr(physical) (vram.base + (t_vaddrcc)(vramWrapA20(physical)))
@@ -47,7 +49,7 @@ void vramRefresh();
 void vramFinal();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

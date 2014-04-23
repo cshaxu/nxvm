@@ -4,15 +4,17 @@
 #include "stdlib.h"
 #include "memory.h"
 
+#include "vglobal.h"
+#ifndef VGLOBAL_BOCHS
 #include "vapi.h"
 #include "vport.h"
 #include "vram.h"
 #include "vpic.h"
 #include "bios/qdbios.h"
+#else
+#include "vcpuapi.h"
+#endif
 #include "vcpuins.h"
-
-#include "debug/aasm.h"
-#include "debug/dasm.h"
 
 /*
  * no protected mode
@@ -21,7 +23,7 @@
  * no paging
  */
 
-#define _olda_ _Arith_
+#define _a_ _Arith_
 #define _e_ _Execute_
 #define _s_ _Segment_
 #define _d_ _Decode_
@@ -249,16 +251,31 @@ static void _kma_write_ref(t_vaddrcc ref, t_nubit64 data, t_nubit8 byte)
 	_ce;
 }
 /* read content from physical */
+static t_nubit32 _kma_fix_physical(t_nubit32 phy)
+{
+	if (phy >= 0xfffe0000) phy &= 0x001fffff;
+	return phy;
+}
 static t_nubit64 _kma_read_physical(t_cpuins_physical *rphy)
 {
 	t_nubit64 result = 0x0000000000000000;
 	_cb("_kma_read_physical");
-	if (rphy->ph1 > vram.size) _impossible_r_;
+#ifndef VGLOBAL_BOCHS
+	rphy->ph1 = _kma_fix_physical(rphy->ph1);
+	rphy->ph2 = _kma_fix_physical(rphy->ph2);
+	if (rphy->ph1 > vramSize) _impossible_r_;
 	_chr(result = _kma_read_ref(vramAddr(rphy->ph1), rphy->pl1));
+#else
+	result = vcpuapiReadPhysical(rphy->ph1, rphy->pl1);
+#endif
 	if (_IsPaging && rphy->flag2) {
 		_bb("Paging(1),flag2(1)");
-		if (rphy->ph2 > vram.size) _impossible_r_;
+#ifndef VGLOBAL_BOCHS
+		if (rphy->ph2 > vramSize) _impossible_r_;
 		_chr(result |= (_kma_read_ref(vramAddr(rphy->ph2), rphy->pl2) << (rphy->pl1 * 8)));
+#else
+		result |= (vcpuapiReadPhysical(rphy->ph2, rphy->pl2) << (rphy->pl1 * 8));
+#endif
 		_be;
 	}
 	_ce;
@@ -268,12 +285,22 @@ static t_nubit64 _kma_read_physical(t_cpuins_physical *rphy)
 static void _kma_write_physical(t_cpuins_physical *rphy, t_nubit64 data)
 {
 	_cb("_kma_write_physical");
-	if (rphy->ph1 > vram.size) _impossible_;
+#ifndef VGLOBAL_BOCHS
+	rphy->ph1 = _kma_fix_physical(rphy->ph1);
+	rphy->ph2 = _kma_fix_physical(rphy->ph2);
+	if (rphy->ph1 > vramSize) _impossible_;
 	_chk(_kma_write_ref(vramAddr(rphy->ph1), data, rphy->pl1));
+#else
+	vcpuapiWritePhysical(rphy->ph1, data, rphy->pl1);
+#endif
 	if (_IsPaging && rphy->flag2) {
 		_bb("Paging(1),flag2(1)");
-		if (rphy->ph2 > vram.size) _impossible_;
+#ifndef VGLOBAL_BOCHS
+		if (rphy->ph2 > vramSize) _impossible_;
 		_chk(_kma_write_ref(vramAddr(rphy->ph2), (data >> (rphy->pl1 * 8)), rphy->pl2));
+#else
+		vcpuapiWritePhysical(rphy->ph2, (data >> (rphy->pl1 * 8)), rphy->pl2);
+#endif
 		_be;
 	}
 	_ce;
@@ -287,7 +314,7 @@ static void _kma_physical_linear(t_cpuins_physical *rphy, t_nubit32 linear, t_nu
 	_cb("_kma_physical_linear");
 	if (!_IsPaging) {
 		_bb("!Paging");
-		if (linear > 0xffffffef && linear > vram.size)
+		if (linear > 0xfffe0000 && linear > vramSize)
 			linear &= 0x001fffff;
 		rphy->flag2 = 0;
 		rphy->ph1 = linear;
@@ -298,7 +325,7 @@ static void _kma_physical_linear(t_cpuins_physical *rphy, t_nubit32 linear, t_nu
 	} else {
 		_bb("Paging");
 		rpde = vramAddr(_GetCR3_Base + _GetLinear_Dir(linear) * 4);
-		_chk(cpde = _kma_read_ref(rpde, 4));
+		_chk(cpde = GetMax32(_kma_read_ref(rpde, 4)));
 		if (!_IsPageEntryPresent(cpde)) {
 			_bb("!PageDirEntryPresent");
 			vcpu.cr2 = linear;
@@ -324,7 +351,7 @@ static void _kma_physical_linear(t_cpuins_physical *rphy, t_nubit32 linear, t_nu
 		_SetPageEntry_A(cpde);
 		_chk(_kma_write_ref(rpde, cpde, 4));
 		rpte = vramAddr(_GetPageEntry_Base(cpde) + _GetLinear_Page(linear) * 4);
-		_chk(cpte = _kma_read_ref(rpte, 4));
+		_chk(cpte = GetMax32(_kma_read_ref(rpte, 4)));
 		if (!_IsPageEntryPresent(cpte)) {
 			_bb("!PageTabEntryPresent");
 			vcpu.cr2 = linear;
@@ -350,7 +377,7 @@ static void _kma_physical_linear(t_cpuins_physical *rphy, t_nubit32 linear, t_nu
 		_SetPageEntry_A(cpte);
 		if (write) _SetPageEntry_D(cpte);
 		_chk(_kma_write_ref(rpte, cpte, 4));
-		if (_GetLinear_Offset(linear) > (_GetPageSize - byte)) {
+		if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
 			_bb("Linear_Offset(>PageSize)");
 			byte1 = _GetPageSize - _GetLinear_Offset(linear);
 			byte2 = byte - byte1;
@@ -616,7 +643,6 @@ static void _kma_test_access(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte,
 static void _kma_test_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force)
 {
 	t_nubit32 linear;
-	t_cpuins_physical physical;
 	_cb("_kma_test_logical");
 	_chk(linear = _kma_linear_logical(rsreg, offset, byte, write, vpl, force));
 	_ce;
@@ -627,11 +653,7 @@ static t_nubit64 _m_read_ref(t_vaddrcc ref, t_nubit8 byte)
 {
 	t_nubit64 result = 0x0000000000000000;
 	_cb("_m_read_ref");
-	if (vramIsAddrInMem(ref)) {
-		_bb("ref(im)");
-		//_chk(_SetExcept_CE(0));
-		_be;
-	}
+	if (vramIsAddrInMem(ref)) _impossible_r_;
 	_chr(result = _kma_read_ref(ref, byte));
 	_ce;
 	return result;
@@ -647,11 +669,7 @@ static t_nubit64 _m_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 b
 static void _m_write_ref(t_vaddrcc ref, t_nubit64 data, t_nubit8 byte)
 {
 	_cb("_m_write_ref");
-	if (vramIsAddrInMem(ref)) {
-		_bb("ref(im)");
-		//_chk(_SetExcept_CE(0));
-		_be;
-	}
+	if (vramIsAddrInMem(ref)) _impossible_;
 	_chk(_kma_write_ref(ref, data, byte));
 	_ce;
 }
@@ -1182,7 +1200,7 @@ done _s_test_cs(t_nubit32 offset)
 }
 done _s_test_ss_push(t_nubit8 byte)
 {
-	t_nubit64 cesp = 0x00000000;
+	t_nubit32 cesp = 0x00000000;
 	_cb("_s_test_ss_push");
 	switch (_GetStackSize) {
 	case 2: _bb("StackSize(2)");
@@ -1200,7 +1218,7 @@ done _s_test_ss_push(t_nubit8 byte)
 }
 done _s_test_ss_pop(t_nubit8 byte)
 {
-	t_nubit64 cesp = 0x00000000;
+	t_nubit32 cesp = 0x00000000;
 	_cb("_s_test_ss_pop");
 	switch (_GetStackSize) {
 	case 2: _bb("StackSize(2)");
@@ -1350,7 +1368,7 @@ done _s_test_eip()
 }
 done _s_test_esp()
 {
-	t_nubit64 cesp;
+	t_nubit32 cesp;
 	_cb("_s_test_esp");
 	switch (_GetStackSize) {
 	case 2: cesp = GetMax16(vcpu.esp);break;
@@ -1383,6 +1401,7 @@ static t_nubit32 _p_input(t_nubit16 portid, t_nubit8 byte)
 {
 	t_nubit32 result = 0x00000000;
 	_cb("_p_input");
+#ifndef VGLOBAL_BOCHS
 	_chr(_kpa_test_mode(portid, byte));
 	ExecFun(vport.in[portid]);
 	switch (byte) {
@@ -1408,12 +1427,16 @@ static t_nubit32 _p_input(t_nubit16 portid, t_nubit8 byte)
 		_chr(_SetExcept_CE(byte));
 		_be;break;
 	}
+#else
+	vcpu.flagignore = 1;
+#endif
 	_ce;
 	return result;
 }
 done _p_output(t_nubit16 portid, t_nubit32 data, t_nubit8 byte)
 {
 	_cb("_p_output");
+#ifndef VGLOBAL_BOCHS
 	_chk(_kpa_test_mode(portid, byte));
 	switch (byte) {
 	case 1:
@@ -1439,6 +1462,9 @@ done _p_output(t_nubit16 portid, t_nubit32 data, t_nubit8 byte)
 		_be;break;
 	}
 	ExecFun(vport.out[portid]);
+#else
+	vcpu.flagignore = 1;
+#endif
 	_ce;
 }
 
@@ -2360,7 +2386,7 @@ done _e_load_far(t_cpu_sreg *rsreg, t_vaddrcc rdest, t_nubit16 selector, t_nubit
 }
 done _e_loopcc(t_nsbit8 csrc, t_bool condition)
 {
-	t_nubit64 cecx = 0x00000000;
+	t_nubit32 cecx = 0x00000000;
 	t_nubit32 neweip = vcpu.eip;
 	_cb("_e_loopcc");
 	switch (_GetAddressSize) {
@@ -3727,7 +3753,7 @@ tots _p_ins(t_nubit8 byte)
 tots _p_outs(t_nubit8 byte)
 {
 	t_nubit32 data = 0x00000000;
-	t_nubit64 cesi = 0x00000000;
+	t_nubit32 cesi = 0x00000000;
 	_cb("_p_outs");
 	switch (_GetAddressSize) {
 	case 2: cesi = vcpu.si;break;
@@ -3770,7 +3796,7 @@ tots _p_outs(t_nubit8 byte)
 done _m_movs(t_nubit8 byte)
 {
 	t_nubit32 data = 0x00000000;
-	t_nubit64 cesi = 0x00000000, cedi = 0x00000000;
+	t_nubit32 cesi = 0x00000000, cedi = 0x00000000;
 	_cb("_m_movs");
 	switch (_GetAddressSize) {
 	case 2:
@@ -3812,7 +3838,7 @@ done _m_movs(t_nubit8 byte)
 }
 tots _m_stos(t_nubit8 byte)
 {
-	t_nubit64 cedi = 0x00000000;
+	t_nubit32 cedi = 0x00000000;
 	_cb("_m_stos");
 	switch (_GetAddressSize) {
 	case 2: cedi = vcpu.di;break;
@@ -3846,7 +3872,7 @@ tots _m_stos(t_nubit8 byte)
 }
 tots _m_lods(t_nubit8 byte)
 {
-	t_nubit64 cesi = 0x00000000;
+	t_nubit32 cesi = 0x00000000;
 	_cb("_m_lods");
 	switch (_GetAddressSize) {
 	case 2: cesi = vcpu.si; break;
@@ -3880,7 +3906,7 @@ tots _m_lods(t_nubit8 byte)
 }
 tots _a_cmps(t_nubit8 bit)
 {
-	t_nubit64 cesi = 0x00000000, cedi = 0x00000000;
+	t_nubit32 cesi = 0x00000000, cedi = 0x00000000;
 	_cb("_a_cmps");
 	switch (_GetAddressSize) {
 	case 2:
@@ -3927,7 +3953,7 @@ tots _a_cmps(t_nubit8 bit)
 }
 tots _a_scas(t_nubit8 bit)
 {
-	t_nubit64 cedi = 0x00000000;
+	t_nubit32 cedi = 0x00000000;
 	_cb("_a_scas");
 	switch (_GetAddressSize) {
 	case 2: cedi = vcpu.di;break;
@@ -5733,24 +5759,24 @@ tots POPA()
 		_adv;
 		switch (_GetOperandSize) {
 		case 2: _bb("OperandSize(2)");
-			_chk(vcpu.di = _e_pop(2));
-			_chk(vcpu.si = _e_pop(2));
-			_chk(vcpu.bp = _e_pop(2));
-			_chk(cesp    = _e_pop(2));
-			_chk(vcpu.bx = _e_pop(2));
-			_chk(vcpu.dx = _e_pop(2));
-			_chk(vcpu.cx = _e_pop(2));
-			_chk(vcpu.ax = _e_pop(2));
+			_chk(vcpu.di = GetMax16(_e_pop(2)));
+			_chk(vcpu.si = GetMax16(_e_pop(2)));
+			_chk(vcpu.bp = GetMax16(_e_pop(2)));
+			_chk(cesp    = GetMax16(_e_pop(2)));
+			_chk(vcpu.bx = GetMax16(_e_pop(2)));
+			_chk(vcpu.dx = GetMax16(_e_pop(2)));
+			_chk(vcpu.cx = GetMax16(_e_pop(2)));
+			_chk(vcpu.ax = GetMax16(_e_pop(2)));
 			_be;break;
 		case 4: _bb("OperandSize(4)");
-			_chk(vcpu.edi = _e_pop(4));
-			_chk(vcpu.esi = _e_pop(4));
-			_chk(vcpu.ebp = _e_pop(4));
-			_chk(cesp     = _e_pop(4));
-			_chk(vcpu.ebx = _e_pop(4));
-			_chk(vcpu.edx = _e_pop(4));
-			_chk(vcpu.ecx = _e_pop(4));
-			_chk(vcpu.eax = _e_pop(4));
+			_chk(vcpu.edi = GetMax32(_e_pop(4)));
+			_chk(vcpu.esi = GetMax32(_e_pop(4)));
+			_chk(vcpu.ebp = GetMax32(_e_pop(4)));
+			_chk(cesp     = GetMax32(_e_pop(4)));
+			_chk(vcpu.ebx = GetMax32(_e_pop(4)));
+			_chk(vcpu.edx = GetMax32(_e_pop(4)));
+			_chk(vcpu.ecx = GetMax32(_e_pop(4)));
+			_chk(vcpu.eax = GetMax32(_e_pop(4)));
 			_be;break;
 		default:_impossible_;break;}
 	} else
@@ -5759,7 +5785,6 @@ tots POPA()
 }
 tots BOUND_R16_M16_16()
 {
-	t_nubit64 data;
 	t_nsbit16 a16,l16,u16;
 	t_nsbit32 a32,l32,u32;
 	_cb("BOUND_R16_M16_16");
@@ -6005,7 +6030,7 @@ tots JO_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, _GetEFLAGS_OF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, _GetEFLAGS_OF));
 	_ce;
 }
 tots JNO_REL8()
@@ -6018,7 +6043,7 @@ tots JNO_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, !_GetEFLAGS_OF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, !_GetEFLAGS_OF));
 	_ce;
 }
 done JC_REL8()
@@ -6030,7 +6055,7 @@ done JC_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, _GetEFLAGS_CF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, _GetEFLAGS_CF));
 	_ce;
 }
 done JNC_REL8()
@@ -6042,7 +6067,7 @@ done JNC_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, !_GetEFLAGS_CF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, !_GetEFLAGS_CF));
 	_ce;
 }
 done JZ_REL8()
@@ -6054,7 +6079,7 @@ done JZ_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, _GetEFLAGS_ZF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, _GetEFLAGS_ZF));
 	_ce;
 }
 done JNZ_REL8()
@@ -6066,7 +6091,7 @@ done JNZ_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, !_GetEFLAGS_ZF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, !_GetEFLAGS_ZF));
 	_ce;
 }
 done JNA_REL8()
@@ -6078,7 +6103,7 @@ done JNA_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1,
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1,
 		(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
 	_ce;
 }
@@ -6091,7 +6116,7 @@ done JA_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1,
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1,
 		!(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
 	_ce;
 }
@@ -6104,7 +6129,7 @@ done JS_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, _GetEFLAGS_SF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, _GetEFLAGS_SF));
 	_ce;
 }
 done JNS_REL8()
@@ -6116,7 +6141,7 @@ done JNS_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, !_GetEFLAGS_SF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, !_GetEFLAGS_SF));
 	_ce;
 }
 tots JP_REL8()
@@ -6129,7 +6154,7 @@ tots JP_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, _GetEFLAGS_PF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, _GetEFLAGS_PF));
 	_ce;
 }
 tots JNP_REL8()
@@ -6142,7 +6167,7 @@ tots JNP_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, !_GetEFLAGS_PF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, !_GetEFLAGS_PF));
 	_ce;
 }
 done JL_REL8()
@@ -6154,7 +6179,7 @@ done JL_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
 	_ce;
 }
 done JNL_REL8()
@@ -6166,7 +6191,7 @@ done JNL_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
 	_ce;
 }
 done JNG_REL8()
@@ -6178,7 +6203,7 @@ done JNG_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1,
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1,
 		 (_GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF))));
 	_ce;
 }
@@ -6191,7 +6216,7 @@ done JG_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1,
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1,
 		(!_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF))));
 	_ce;
 }
@@ -6649,7 +6674,7 @@ done INS_8F()
 		switch (vcpuins.cr) {
 		case 0: /* POP_RM16 */
 			_bb("POP_RM16");
-			_chk(vcpuins.crm = _e_pop(2));
+			_chk(vcpuins.crm = GetMax16(_e_pop(2)));
 			_chk(_m_write_rm(vcpuins.crm, 2));
 			_be;break;
 		case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
@@ -6935,7 +6960,7 @@ todo WAIT()
 }
 done PUSHF()
 {
-	t_nubit64 ceflags;
+	t_nubit32 ceflags;
 	_cb("PUSHF");
 	i386(0x9c) {
 		_adv;
@@ -6967,7 +6992,7 @@ done PUSHF()
 done POPF()
 {
 	t_nubit32 mask = VCPU_EFLAGS_RESERVED;
-	t_nubit64 ceflags;
+	t_nubit32 ceflags;
 	_cb("POPF");
 	i386(0x9d) {
 		_adv;
@@ -7900,27 +7925,27 @@ tots INS_C0()
 		switch (vcpuins.cr) {
 		case 0: /* ROL_RM8_I8 */
 			_bb("ROL_RM8_I8");
-			_chk(_a_rol(vcpuins.crm, vcpuins.cimm, 8));
+			_chk(_a_rol(GetMax8(vcpuins.crm), GetMax8(vcpuins.cimm), 8));
 			_be;break;
 		case 1: /* ROR_RM8_I8 */
 			_bb("ROR_RM8_I8");
-			_chk(_a_ror(vcpuins.crm, vcpuins.cimm, 8));
+			_chk(_a_ror(GetMax8(vcpuins.crm), GetMax8(vcpuins.cimm), 8));
 			_be;break;
 		case 2: /* RCL_RM8_I8 */
 			_bb("RCL_RM8_I8");
-			_chk(_a_rcl(vcpuins.crm, vcpuins.cimm, 8));
+			_chk(_a_rcl(GetMax8(vcpuins.crm), GetMax8(vcpuins.cimm), 8));
 			_be;break;
 		case 3: /* RCR_RM8_I8 */
 			_bb("RCR_RM8_I8");
-			_chk(_a_rcr(vcpuins.crm, vcpuins.cimm, 8));
+			_chk(_a_rcr(GetMax8(vcpuins.crm), GetMax8(vcpuins.cimm), 8));
 			_be;break;
 		case 4: /* SHL_RM8_I8 */
 			_bb("SHL_RM8_I8");
-			_chk(_a_shl(vcpuins.crm, vcpuins.cimm, 8));
+			_chk(_a_shl(GetMax8(vcpuins.crm), GetMax8(vcpuins.cimm), 8));
 			_be;break;
 		case 5: /* SHR_RM8_I8 */
 			_bb("SHR_RM8_I8");
-			_chk(_a_shr(vcpuins.crm, vcpuins.cimm, 8));
+			_chk(_a_shr(GetMax8(vcpuins.crm), GetMax8(vcpuins.cimm), 8));
 			_be;break;
 		case 6: /* UndefinedOpcode */
 			_bb("vcpuins.cr(6)");
@@ -7928,7 +7953,7 @@ tots INS_C0()
 			_be;break;
 		case 7: /* SAR_RM8_I8 */
 			_bb("SAR_RM8_I8");
-			_chk(_a_sar(vcpuins.crm, vcpuins.cimm, 8));
+			_chk(_a_sar(GetMax8(vcpuins.crm), GetMax8(vcpuins.cimm), 8));
 			_be;break;
 		default:_impossible_;break;}
 		_chk(_m_write_rm(vcpuins.result, 1));
@@ -7948,27 +7973,27 @@ tots INS_C1()
 		switch (vcpuins.cr) {
 		case 0: /* ROL_RM32_I8 */
 			_bb("ROL_RM32_I8");
-			_chk(_a_rol(vcpuins.crm, vcpuins.cimm, _GetOperandSize * 8));
+			_chk(_a_rol(GetMax32(vcpuins.crm), GetMax8(vcpuins.cimm), _GetOperandSize * 8));
 			_be;break;
 		case 1: /* ROR_RM32_I8 */
 			_bb("ROR_RM32_I8");
-			_chk(_a_ror(vcpuins.crm, vcpuins.cimm, _GetOperandSize * 8));
+			_chk(_a_ror(GetMax32(vcpuins.crm), GetMax8(vcpuins.cimm), _GetOperandSize * 8));
 			_be;break;
 		case 2: /* RCL_RM32_I8 */
 			_bb("RCL_RM32_I8");
-			_chk(_a_rcl(vcpuins.crm, vcpuins.cimm, _GetOperandSize * 8));
+			_chk(_a_rcl(GetMax32(vcpuins.crm), GetMax8(vcpuins.cimm), _GetOperandSize * 8));
 			_be;break;
 		case 3: /* RCR_RM32_I8 */
 			_bb("RCR_RM32_I8");
-			_chk(_a_rcr(vcpuins.crm, vcpuins.cimm, _GetOperandSize * 8));
+			_chk(_a_rcr(GetMax32(vcpuins.crm), GetMax8(vcpuins.cimm), _GetOperandSize * 8));
 			_be;break;
 		case 4: /* SHL_RM32_I8 */
 			_bb("SHL_RM32_I8");
-			_chk(_a_shl(vcpuins.crm, vcpuins.cimm, _GetOperandSize * 8));
+			_chk(_a_shl(GetMax32(vcpuins.crm), GetMax8(vcpuins.cimm), _GetOperandSize * 8));
 			_be;break;
 		case 5: /* SHR_RM32_I8 */
 			_bb("SHR_RM32_I8");
-			_chk(_a_shr(vcpuins.crm, vcpuins.cimm, _GetOperandSize * 8));
+			_chk(_a_shr(GetMax32(vcpuins.crm), GetMax8(vcpuins.cimm), _GetOperandSize * 8));
 			_be;break;
 		case 6: /* UndefinedOpcode */
 			_bb("vcpuins.cr(6)");
@@ -7976,7 +8001,7 @@ tots INS_C1()
 			_be;break;
 		case 7: /* SAR_RM32_I8 */
 			_bb("SAR_RM32_I8");
-			_chk(_a_sar(vcpuins.crm, vcpuins.cimm, _GetOperandSize * 8));
+			_chk(_a_sar(GetMax32(vcpuins.crm), GetMax8(vcpuins.cimm), _GetOperandSize * 8));
 			_be;break;
 		default:_impossible_;break;}
 		_chk(_m_write_rm(vcpuins.result, _GetOperandSize));
@@ -8697,7 +8722,7 @@ done LOOP()
 }
 done JCXZ_REL8()
 {
-	t_nubit64 cecx = 0x00000000;
+	t_nubit32 cecx = 0x00000000;
 	_cb("JCXZ_REL8");
 	i386(0xe3) {
 		_adv;
@@ -8706,11 +8731,11 @@ done JCXZ_REL8()
 		case 2: cecx = vcpu.cx;break;
 		case 4: cecx = vcpu.ecx;break;
 		default:_impossible_;break;}
-		_chk(_e_jcc(vcpuins.cimm, 1, !cecx));
+		_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, !cecx));
 	} else {
 		vcpu.ip++;
 		_d_imm(1);
-		_e_jcc(vcpuins.cimm, 1, !vcpu.cx);
+		_e_jcc(GetMax32(vcpuins.cimm), 1, !vcpu.cx);
 	}
 	_ce;
 }
@@ -8819,11 +8844,11 @@ done JMP_REL32()
 	i386(0xe9) {
 		_adv;
 		_chk(_d_imm(_GetOperandSize));
-		_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, 1));
+		_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, 1));
 	} else {
 		vcpu.ip++;
 		_d_imm(2);
-		_e_jcc(vcpuins.cimm, 2, 1);
+		_e_jcc(GetMax32(vcpuins.cimm), 2, 1);
 	}
 	_ce;
 }
@@ -8869,7 +8894,7 @@ done JMP_REL8()
 		vcpu.ip++;
 	}
 	_chk(_d_imm(1));
-	_chk(_e_jcc(vcpuins.cimm, 1, 1));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), 1, 1));
 	_ce;
 }
 done IN_AL_DX()
@@ -8941,7 +8966,7 @@ tots PREFIX_LOCK()
 	t_nubit8 opcode = 0x00;
 	t_nubit8 modrm = 0x00;
 	t_nubit8 opcode_0f = 0x00;
-	t_nubit64 ceip = vcpu.eip;
+	t_nubit32 ceip = vcpu.eip;
 	_cb("PREFIX_LOCK");
 	_newins_;
 	i386(0xf0) {
@@ -10313,7 +10338,7 @@ tots JO_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, _GetEFLAGS_OF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, _GetEFLAGS_OF));
 	_ce;
 }
 tots JNO_REL32()
@@ -10322,7 +10347,7 @@ tots JNO_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, !_GetEFLAGS_OF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, !_GetEFLAGS_OF));
 	_ce;
 }
 tots JC_REL32()
@@ -10331,7 +10356,7 @@ tots JC_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, _GetEFLAGS_CF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, _GetEFLAGS_CF));
 	_ce;
 }
 tots JNC_REL32()
@@ -10340,7 +10365,7 @@ tots JNC_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, !_GetEFLAGS_CF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, !_GetEFLAGS_CF));
 	_ce;
 }
 tots JZ_REL32()
@@ -10349,7 +10374,7 @@ tots JZ_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, _GetEFLAGS_ZF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, _GetEFLAGS_ZF));
 	_ce;
 }
 tots JNZ_REL32()
@@ -10358,7 +10383,7 @@ tots JNZ_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, !_GetEFLAGS_ZF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, !_GetEFLAGS_ZF));
 	_ce;
 }
 tots JNA_REL32()
@@ -10367,7 +10392,7 @@ tots JNA_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize,
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize,
 		(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
 	_ce;
 }
@@ -10377,7 +10402,7 @@ tots JA_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize,
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize,
 		!(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
 	_ce;
 }
@@ -10387,7 +10412,7 @@ tots JS_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, _GetEFLAGS_SF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, _GetEFLAGS_SF));
 	_ce;
 }
 tots JNS_REL32()
@@ -10396,7 +10421,7 @@ tots JNS_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, !_GetEFLAGS_SF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, !_GetEFLAGS_SF));
 	_ce;
 }
 tots JP_REL32()
@@ -10405,7 +10430,7 @@ tots JP_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, _GetEFLAGS_PF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, _GetEFLAGS_PF));
 	_ce;
 }
 tots JNP_REL32()
@@ -10414,7 +10439,7 @@ tots JNP_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, !_GetEFLAGS_PF));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, !_GetEFLAGS_PF));
 	_ce;
 }
 tots JL_REL32()
@@ -10423,7 +10448,7 @@ tots JL_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
 	_ce;
 }
 tots JNL_REL32()
@@ -10432,7 +10457,7 @@ tots JNL_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
 	_ce;
 }
 tots JNG_REL32()
@@ -10441,7 +10466,7 @@ tots JNG_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize,
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize,
 			(_GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF))));
 	_ce;
 }
@@ -10451,7 +10476,7 @@ tots JG_REL32()
 	_newins_;
 	_adv;
 	_chk(_d_imm(_GetOperandSize));
-	_chk(_e_jcc(vcpuins.cimm, _GetOperandSize,
+	_chk(_e_jcc(GetMax32(vcpuins.cimm), _GetOperandSize,
 		(!_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF))));
 	_ce;
 }
@@ -10940,6 +10965,7 @@ static void RecFinal()
 }
 static void ExecInit()
 {
+	vcpu.flagignore = 0;
 	vcpu.flaglock = 0;
 	vcpuins.oldcpu = vcpu;
 	vcpuins.roverds = &vcpu.ds;
@@ -11004,6 +11030,7 @@ static void ExecIns()
 } 
 static void ExecInt()
 {
+#ifndef VGLOBAL_BOCHS
 	t_nubit8 intr = 0x00;
 	/* hardware interrupt handeler */
 	if (vcpuins.flagmaskint)
@@ -11029,10 +11056,12 @@ static void ExecInt()
 		_e_int_n(0x01, _GetOperandSize);
 		ExecFinal();
 	}
+#endif
 }
 
 done QDX()
 {
+#ifndef VGLOBAL_BOCHS
 	t_nubit32 eflags;
 	_cb("QDX");
 	_adv;
@@ -11070,6 +11099,7 @@ done QDX()
 		_be;break;
 	}
 	_ce;
+#endif
 }
 
 void vcpuinsInit()

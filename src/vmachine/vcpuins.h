@@ -6,7 +6,7 @@
 #define NXVM_VCPUINS_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "vcpu.h"
@@ -139,7 +139,7 @@ void vcpuinsRefresh();
 void vcpuinsFinal();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

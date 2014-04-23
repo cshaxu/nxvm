@@ -6,8 +6,8 @@
 #include "memory.h"
 
 #include "vmachine.h"
-#include "vapi.h"
 #include "debug/dasm.h"
+#include "vapi.h"
 
 /* Standard C Library */
 char* STRCAT(char *_Dest, const char *_Source)
@@ -44,10 +44,7 @@ t_nubit32 vapiPrint(const t_string format, ...)
 	fflush(stdout);
 	return nWrittenBytes;
 }
-void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins)
-{
-	vapiPrint("%04X:%04X  %s\n",segment,offset,ins);
-}
+
 
 /* Record */
 t_apirecord vapirecord;

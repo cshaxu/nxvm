@@ -4,7 +4,7 @@
 #define NXVM_QDDISK_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #define HARD_FDD_INT_0E "  \
@@ -513,7 +513,7 @@ iret                        \n"
 void qddiskReset();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

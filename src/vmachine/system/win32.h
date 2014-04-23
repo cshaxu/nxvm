@@ -4,7 +4,7 @@
 #define NXVM_WIN32_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "windows.h"
@@ -17,7 +17,7 @@ void win32DisplayPaint(BOOL window);
 void win32StartMachine(BOOL window);
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

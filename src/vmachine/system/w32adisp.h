@@ -4,7 +4,7 @@
 #define NXVM_W32ADISP_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #include "windows.h"
@@ -16,7 +16,7 @@ VOID w32adispInit();
 VOID w32adispFinal();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif

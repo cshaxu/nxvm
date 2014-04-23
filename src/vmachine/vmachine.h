@@ -6,7 +6,7 @@
 #define NXVM_VMACHINE_H
 
 #ifdef __cplusplus
-/*extern "C" {*/
+extern "C" {
 #endif
 
 #define VMACHINE_DEBUG
@@ -14,9 +14,6 @@
 #include "vglobal.h"
 #include "vport.h"
 #include "vram.h"
-#if VGLOBAL_ECPU_MODE != TEST_VCPU
-#include "ecpu/ecpu.h"
-#endif
 #include "vcpu.h"
 #include "vpic.h"
 #include "vcmos.h"
@@ -61,7 +58,7 @@ void vmachineInit();
 void vmachineFinal();
 
 #ifdef __cplusplus
-/*}_EOCD_*/
+}/*_EOCD_*/
 #endif
 
 #endif
