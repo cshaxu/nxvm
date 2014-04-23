@@ -74,6 +74,7 @@ mov al, 12                                        \n\
 out 41, al ; initial count (0x12)                 \n"
 
 #define VBIOS_POST_BOOT "             \
+$(label_post_boot_start):           \n\
 mov bx, 40                          \n\
 mov ds, bx                          \n\
 mov dl, [0100] ; select boot disk   \n\
@@ -153,7 +154,7 @@ jnz $(label_post_boot_fail_loop)  \n\
 mov ah, 00                        \n\
 int 16                            \n\
 qdx 00  ; special stop            \n\
-jmp near $(label_post_boot_fail)  \n\
+jmp near $(label_post_boot_start) \n\
 \
 $(label_post_boot_succ):  \n\
 ; start operating system  \n\

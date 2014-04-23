@@ -51,7 +51,7 @@ static void CursorNewLine(t_nubit8 page)
 	}
 }
 static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
-	t_nubit8 charprop, t_nubit8 page, t_nubit8 x, t_nubit8 y)
+	t_bool move, t_nubit8 charprop, t_nubit8 page, t_nubit8 x, t_nubit8 y)
 {
 	t_nubitcc i;
 //	vapiPrint("%c", d_nubit8(string));
@@ -62,10 +62,10 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 		case 0x07: /* bell */
 			break;
 		case 0x08: /* backspace */
-			CursorBackward(page);
+			if (move) CursorBackward(page);
 			break;
 		case 0x0a: /* new line */
-			CursorNewLine(page);
+			if (move) CursorNewLine(page);
 			break;
 		case 0x0d:
 			break;
@@ -74,7 +74,7 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 				qdcgaVarCursorPosCol(page)) = d_nubit8(string);
 			qdcgaVarCharProp(page, qdcgaVarCursorPosRow(page),
 				qdcgaVarCursorPosCol(page)) = charprop;
-			CursorForward(page);
+			if (move) CursorForward(page);
 			break;
 		}
 		if (!dup) string++;
@@ -191,9 +191,9 @@ void qdcgaScrollUp()
 {
 	t_nsbitcc i, j;
 	if (!_al) {
-		for (i = 0;i < vvadp.colsize;++i) {
-			for (j = 0;j < qdcgaVarRowSize;++j) {
-				qdcgaVarChar(qdcgaVarPageNum, i, j) = 0x20;
+		for (i = _ch;i <= _dh;++i) {
+			for (j = _cl;j <= _dl;++j) {
+				qdcgaVarChar(qdcgaVarPageNum, i, j) = ' ';
 				qdcgaVarCharProp(qdcgaVarPageNum, i, j) = _bh;
 			}
 		}
@@ -246,14 +246,19 @@ void qdcgaGetCharProp()
 	_al = qdcgaVarChar(_bh, qdcgaVarCursorPosRow(_bh), qdcgaVarCursorPosCol(_bh));
 	_ah = qdcgaVarCharProp(_bh, qdcgaVarCursorPosRow(_bh), qdcgaVarCursorPosCol(_bh));
 }
-void qdcgaDisplayCharProp()
+void qdcgaDisplayCharProp9()
 {
-	InsertString((t_vaddrcc)(&_al), _cx, 0x01, _bl, _bh,
+	InsertString((t_vaddrcc)(&_al), _cx, 0x01, 0x00, _bl, _bh,
+		qdcgaVarCursorPosRow(_bh), qdcgaVarCursorPosCol(_bh));
+}
+void qdcgaDisplayCharPropE()
+{
+	InsertString((t_vaddrcc)(&_al), 0x01, 0x01, 0x01, _bl, _bh,
 		qdcgaVarCursorPosRow(_bh), qdcgaVarCursorPosCol(_bh));
 }
 void qdcgaDisplayChar()
 {
-	InsertString((t_vaddrcc)(&_al), _cx, 0x01, 0x0f, _bh,
+	InsertString((t_vaddrcc)(&_al), _cx, 0x01, 0x01, 0x0f, _bh,
 		qdcgaVarCursorPosRow(_bh), qdcgaVarCursorPosCol(_bh));
 }
 void qdcgaGetAdapterStatus()
@@ -290,13 +295,22 @@ void qdcgaGetAdapterInfo()
 }
 void qdcgaDisplayStr()
 {
-	InsertString(vramGetAddr(_es, _bp), _cl, 0x00, _bl, _bh,
+	InsertString(vramGetAddr(_es, _bp), _cl, 0x00, 0x01, _bl, _bh,
 		_dh,_dl);
 }
 
 void INT_10()
 {
 	t_nubit16 tmpCX = _cx;
+	/*switch (_ah) {
+	case 0x02:
+	case 0x09:
+	case 0x0e:
+		break;
+	default:
+		vapiPrint("int 10, ax=%04x, bx=%04x, cx=%04x, dx=%04x, al='%c'\n", _ax, _bx, _cx, _dx, _al);
+		break;
+	}*/
 	switch (_ah) {
 	case 0x00:
 		qdcgaSetDisplayMode();
@@ -325,15 +339,13 @@ void INT_10()
 		qdcgaGetCharProp();
 		break;
 	case 0x09:
-		qdcgaDisplayCharProp();
+		qdcgaDisplayCharProp9();
 		break;
 	case 0x0a:
 		qdcgaDisplayChar();
 		break;
 	case 0x0e:
-		_cx = 0x01;
-		qdcgaDisplayCharProp();
-		_cx = tmpCX;
+		qdcgaDisplayCharPropE();
 		break;
 	case 0x0f:
 		qdcgaGetAdapterStatus();
