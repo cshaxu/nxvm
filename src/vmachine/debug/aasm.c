@@ -7,6 +7,7 @@
 
 #include "../vapi.h"
 #include "../vmachine.h"
+#include "debug.h"
 #include "aasm.h"
 
 typedef enum {

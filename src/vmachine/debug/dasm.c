@@ -6,6 +6,8 @@
 
 #include "../vapi.h"
 #include "../vmachine.h"
+#include "debug.h"
+#include "dasm.h"
 
 typedef char t_dasm_strl[0x0200];
 typedef char t_dasm_strs[0x0020];
@@ -16,7 +18,7 @@ static t_bool       ismem;
 static t_nubit8     rid;
 static t_nubit16    dods, doss;
 static t_vaddrcc    dvrm, dvr;
-static t_nubit16    dvcs, dvip;
+static t_nubit32    diptr; /* global physical address */
 
 #define _GetModRM_MOD(modrm) ((modrm&0xc0)>>6)
 #define _GetModRM_REG(modrm) ((modrm&0x38)>>3)
@@ -25,37 +27,37 @@ static t_nubit16    dvcs, dvip;
 static void GetMem(t_nubitcc membit)
 {
 	switch (membit) {
-	case 8: SPRINTF(drm, "[%04X]", vramRealWord(dvcs,dvip));
-		    SPRINTF(dtip, "%s:%04X=%02X", dds, vramRealWord(dvcs,dvip), vramRealByte(dods,vramRealWord(dvcs,dvip)));
+	case 8: SPRINTF(drm, "[%04X]", vramWord(diptr));
+		    SPRINTF(dtip, "%s:%04X=%02X", dds, vramWord(diptr), vramRealByte(dods,vramWord(diptr)));
 			break;
-	case 16:SPRINTF(drm, "[%04X]", vramRealWord(dvcs,dvip));
-		    SPRINTF(dtip, "%s:%04X=%04X", dds, vramRealWord(dvcs,dvip), vramRealWord(dods,vramRealWord(dvcs,dvip)));
+	case 16:SPRINTF(drm, "[%04X]", vramWord(diptr));
+		    SPRINTF(dtip, "%s:%04X=%04X", dds, vramWord(diptr), vramRealWord(dods,vramWord(diptr)));
 			break;
 	default:SPRINTF(drm, "<ERROR:MEMBIT(%02X)>",membit);break;}
-	dvip += 2;
+	diptr += 2;
 }
 static void GetImm(t_nubitcc immbit)
 {
-	t_nsbit8 imm8 = (t_nsbit8)vramRealByte(dvcs, dvip);
-	t_nsbit16 imm16 = (t_nsbit16)vramRealWord(dvcs, dvip);
+	t_nsbit8 imm8 = (t_nsbit8)vramByte(diptr);
+	t_nsbit16 imm16 = (t_nsbit16)vramWord(diptr);
 	t_nsbit8 sign8 = (imm8 & 0x80) ? '-' : '+';
 	t_nubit8 immu8 = (imm8 & 0x80) ? ((~imm8) + 0x01) : imm8;
 	dimmoff8[0] = 0;
 	dimmoff16[0] = 0;
 	switch(immbit) {
-	case 8:  SPRINTF(dimm, "%02X", vramRealByte(dvcs,dvip)); dvip += 1;
-		     SPRINTF(dimmoff8,  "%04X", (t_nubit16)(dvip+imm8));
+	case 8:  SPRINTF(dimm, "%02X", vramByte(diptr)); diptr += 1;
+		     SPRINTF(dimmoff8,  "%04X", (t_nubit16)(diptr+imm8));
 		     SPRINTF(dimmsign,  "%c%02X", sign8, immu8);              break;
-	case 16: SPRINTF(dimm, "%04X", vramRealWord(dvcs,dvip)); dvip += 2;
-		     SPRINTF(dimmoff16, "%04X", (t_nubit16)(dvip+imm16));                break;
-	case 32: SPRINTF(dimm, "%08X", vramRealDWord(dvcs,dvip));dvip += 4;break;
+	case 16: SPRINTF(dimm, "%04X", vramWord(diptr)); diptr += 2;
+		     SPRINTF(dimmoff16, "%04X", (t_nubit16)(diptr+imm16));                break;
+	case 32: SPRINTF(dimm, "%08X", vramDWord(diptr));diptr += 4;break;
 	default:SPRINTF(dimm, "<ERROR:IMMBIT(%02X)>",immbit);break;}
 }
 static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 {
 	t_nsbit8 disp8 = 0x00;
 	t_nubit16 disp16 = 0x0000;
-	t_nubit8 modrm = vramRealByte(dvcs, dvip++);
+	t_nubit8 modrm = vramByte(diptr++);
 	t_nsbit8 sign;
 	t_nubit8 disp8u;
 	ismem = 0x01;
@@ -86,7 +88,7 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.di), vramRealByte(dods,vcpu.di));
 			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.di), vramRealWord(dods,vcpu.di));
 			break;
-		case 6: disp16 = vramRealWord(dvcs, dvip); dvip += 2;
+		case 6: disp16 = vramWord(diptr); diptr += 2;
 			    SPRINTF(drm, "[%04X]", disp16);
 			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(disp16), vramRealByte(dods,disp16));
 			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(disp16), vramRealWord(dods,disp16));
@@ -98,7 +100,7 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 		default:SPRINTF(drm, "<ERROR:ModRM_MOD(%02X),ModRM_RM(%02X)>", _GetModRM_MOD(modrm), _GetModRM_RM(modrm));break;}
 		break;
 	case 1:
-		disp8 = (t_nsbit8)vramRealByte(dvcs, dvip);dvip += 1;
+		disp8 = (t_nsbit8)vramByte(diptr);diptr += 1;
 		sign = (disp8 & 0x80) ? '-' : '+';
 		disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
 		switch(_GetModRM_RM(modrm)) {
@@ -137,7 +139,7 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 		default:SPRINTF(drm, "<ERROR:ModRM_MOD(%02X),ModRM_RM(%02X)>", _GetModRM_MOD(modrm), _GetModRM_RM(modrm));break;}
 		break;
 	case 2:
-		disp16 = vramRealWord(dvcs,dvip);dvip += 2;
+		disp16 = vramWord(diptr);diptr += 2;
 		switch(_GetModRM_RM(modrm)) {
 		case 0: SPRINTF(drm, "[BX+SI+%04X]", disp16);
 			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp16), vramRealByte(dods,vcpu.bx+vcpu.si+disp16));
@@ -226,272 +228,272 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 
 static void UndefinedOpcode()
 {
-	t_nubit8 opcode = vramRealByte(dvcs, dvip);
-	dvip++;
+	t_nubit8 opcode = vramByte(diptr);
+	diptr++;
 	SPRINTF(dop, "DB");
 	SPRINTF(dopr, "%02X", opcode);
 }
 static void ADD_RM8_R8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "ADD");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void ADD_RM16_R16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "ADD");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void ADD_R8_RM8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "ADD");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void ADD_R16_RM16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "ADD");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void ADD_AL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "ADD");
 	SPRINTF(dopr, "AL,%s", dimm);
 }
 static void ADD_AX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "ADD");
 	SPRINTF(dopr, "AX,%s", dimm);
 }
 static void PUSH_ES()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSH");
 	SPRINTF(dopr, "ES");
 }
 static void POP_ES()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "ES");
 }
 static void OR_RM8_R8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "OR");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void OR_RM16_R16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "OR");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void OR_R8_RM8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "OR");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void OR_R16_RM16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "OR");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void OR_AL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "OR");
 	SPRINTF(dopr, "AL,%s", dimm);
 }
 static void OR_AX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "OR");
 	SPRINTF(dopr, "AX,%s", dimm);
 }
 static void PUSH_CS()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSH");
 	SPRINTF(dopr, "CS");
 }
 static void POP_CS()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "CS");
 }
 static void ADC_RM8_R8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "ADC");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void ADC_RM16_R16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "ADC");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void ADC_R8_RM8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "ADC");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void ADC_R16_RM16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "ADC");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void ADC_AL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "ADC");
 	SPRINTF(dopr, "AL,%s", dimm);
 }
 static void ADC_AX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "ADC");
 	SPRINTF(dopr, "AX,%s", dimm);
 }
 static void PUSH_SS()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSH");
 	SPRINTF(dopr, "SS");
 }
 static void POP_SS()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "SS");
 }
 static void SBB_RM8_R8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "SBB");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void SBB_RM16_R16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "SBB");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void SBB_R8_RM8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "SBB");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void SBB_R16_RM16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "SBB");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void SBB_AL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "SBB");
 	SPRINTF(dopr, "AL,%s", dimm);
 }
 static void SBB_AX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "SBB");
 	SPRINTF(dopr, "AX,%s", dimm);
 }
 static void PUSH_DS()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSH");
 	SPRINTF(dopr, "DS");
 }
 static void POP_DS()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "DS");
 }
 static void AND_RM8_R8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "AND");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void AND_RM16_R16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "AND");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void AND_R8_RM8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "AND");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void AND_R16_RM16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "AND");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void AND_AL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "AND");
 	SPRINTF(dopr, "AL,%s", dimm);
 }
 static void AND_AX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "AND");
 	SPRINTF(dopr, "AX,%s", dimm);
 }
 static void ES()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "ES:");
 	SPRINTF(dds, "ES");
 	SPRINTF(dss, "ES");
@@ -500,54 +502,54 @@ static void ES()
 }
 static void DAA()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "DAA");
 }
 static void SUB_RM8_R8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "SUB");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void SUB_RM16_R16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "SUB");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void SUB_R8_RM8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "SUB");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void SUB_R16_RM16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "SUB");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void SUB_AL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "SUB");
 	SPRINTF(dopr, "AL,%s", dimm);
 }
 static void SUB_AX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "SUB");
 	SPRINTF(dopr, "AX,%s", dimm);
 }
 static void CS()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "CS:");
 	SPRINTF(dds, "CS");
 	SPRINTF(dss, "CS");
@@ -556,54 +558,54 @@ static void CS()
 }
 static void DAS()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "DAS");
 }
 static void XOR_RM8_R8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "XOR");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void XOR_RM16_R16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "XOR");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void XOR_R8_RM8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "XOR");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void XOR_R16_RM16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "XOR");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void XOR_AL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "XOR");
 	SPRINTF(dopr, "AL,%s", dimm);
 }
 static void XOR_AX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "XOR");
 	SPRINTF(dopr, "AX,%s", dimm);
 }
 static void SS()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "SS:");
 	SPRINTF(dds, "SS");
 	SPRINTF(dss, "SS");
@@ -612,54 +614,54 @@ static void SS()
 }
 static void AAA()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "AAA");
 }
 static void CMP_RM8_R8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "CMP");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void CMP_RM16_R16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "CMP");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void CMP_R8_RM8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "CMP");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void CMP_R16_RM16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "CMP");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void CMP_AL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "CMP");
 	SPRINTF(dopr, "AL,%s", dimm);
 }
 static void CMP_AX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "CMP");
 	SPRINTF(dopr, "AX,%s", dimm);
 }
 static void DS()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "DS:");
 	SPRINTF(dds, "DS");
 	SPRINTF(dss, "DS");
@@ -668,316 +670,326 @@ static void DS()
 }
 static void AAS()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "AAS");
 }
 static void INC_AX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "INC");
 	SPRINTF(dopr, "AX");
 }
 static void INC_CX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "INC");
 	SPRINTF(dopr, "CX");
 }
 static void INC_DX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "INC");
 	SPRINTF(dopr, "DX");
 }
 static void INC_BX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "INC");
 	SPRINTF(dopr, "BX");
 }
 static void INC_SP()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "INC");
 	SPRINTF(dopr, "SP");
 }
 static void INC_BP()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "INC");
 	SPRINTF(dopr, "BP");
 }
 static void INC_SI()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "INC");
 	SPRINTF(dopr, "SI");
 }
 static void INC_DI()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "INC");
 	SPRINTF(dopr, "DI");
 }
 static void DEC_AX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "DEC");
 	SPRINTF(dopr, "AX");
 }
 static void DEC_CX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "DEC");
 	SPRINTF(dopr, "CX");
 }
 static void DEC_DX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "DEC");
 	SPRINTF(dopr, "DX");
 }
 static void DEC_BX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "DEC");
 	SPRINTF(dopr, "BX");
 }
 static void DEC_SP()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "DEC");
 	SPRINTF(dopr, "SP");
 }
 static void DEC_BP()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "DEC");
 	SPRINTF(dopr, "BP");
 }
 static void DEC_SI()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "DEC");
 	SPRINTF(dopr, "SI");
 }
 static void DEC_DI()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "DEC");
 	SPRINTF(dopr, "DI");
 }
 static void PUSH_AX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSH");
 	SPRINTF(dopr, "AX");
 }
 static void PUSH_CX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSH");
 	SPRINTF(dopr, "CX");
 }
 static void PUSH_DX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSH");
 	SPRINTF(dopr, "DX");
 }
 static void PUSH_BX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSH");
 	SPRINTF(dopr, "BX");
 }
 static void PUSH_SP()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSH");
 	SPRINTF(dopr, "SP");
 }
 static void PUSH_BP()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSH");
 	SPRINTF(dopr, "BP");
 }
 static void PUSH_SI()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSH");
 	SPRINTF(dopr, "SI");
 }
 static void PUSH_DI()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSH");
 	SPRINTF(dopr, "DI");
 }
 static void POP_AX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "AX");
 }
 static void POP_CX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "CX");
 }
 static void POP_DX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "DX");
 }
 static void POP_BX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "BX");
 }
 static void POP_SP()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "SP");
 }
 static void POP_BP()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "BP");
 }
 static void POP_SI()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "SI");
 }
 static void POP_DI()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "DI");
 }
+static void PREFIX_OprSize()
+{
+	diptr++;
+	SPRINTF(dop, "OPR+");
+}
+static void PREFIX_AddrSize()
+{
+	diptr++;
+	SPRINTF(dop, "ADR+");
+}
 static void JO()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JO");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JNO()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JNO");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JC()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JC");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JNC()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JNC");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JZ()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JZ");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JNZ()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JNZ");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JBE()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JBE");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JA()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JA");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JS()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JS");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JNS()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JNS");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JP()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JP");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JNP()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JNP");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JL()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JL");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JNL()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JNL");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JLE()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JLE");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JG()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JG");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void INS_80()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(0,8);
 	GetImm(8);
 	switch(rid) {
@@ -995,7 +1007,7 @@ static void INS_80()
 }
 static void INS_81()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(0,16);
 	GetImm(16);
 	switch(rid) {
@@ -1043,7 +1055,7 @@ static void INS_82()
 }
 static void INS_83()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(0,16);
 	GetImm(8);
 	switch(rid) {
@@ -1087,84 +1099,84 @@ static void INS_83()
 }
 static void TEST_RM8_R8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "TEST");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void TEST_RM16_R16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "TEST");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void XCHG_R8_RM8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "XCHG");
 	SPRINTF(dopr, "%s,%s",dr,drm);
 }
 static void XCHG_R16_RM16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "XCHG");
 	SPRINTF(dopr, "%s,%s",dr,drm);
 }
 static void MOV_RM8_R8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void MOV_RM16_R16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void MOV_R8_RM8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void MOV_R16_RM16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void MOV_RM16_SREG()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(4,16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 }
 static void LEA_R16_M16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "LEA");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void MOV_SREG_RM16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(4,16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void POP_RM16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(0,16);
 	SPRINTF(dop, "POP");
 	switch(rid) {
@@ -1173,64 +1185,64 @@ static void POP_RM16()
 }
 static void NOP()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "NOP");
 }
 static void XCHG_CX_AX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "XCHG");
 	SPRINTF(dopr, "CX,AX");
 }
 static void XCHG_DX_AX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "XCHG");
 	SPRINTF(dopr, "DX,AX");
 }
 static void XCHG_BX_AX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "XCHG");
 	SPRINTF(dopr, "BX,AX");
 }
 static void XCHG_SP_AX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "XCHG");
 	SPRINTF(dopr, "SP,AX");
 }
 static void XCHG_BP_AX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "XCHG");
 	SPRINTF(dopr, "BP,AX");
 }
 static void XCHG_SI_AX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "XCHG");
 	SPRINTF(dopr, "SI,AX");
 }
 static void XCHG_DI_AX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "XCHG");
 	SPRINTF(dopr, "DI,AX");
 }
 static void CBW()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "CBW");
 }
 static void CWD()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "CWD");
 }
 static void CALL_PTR16_16()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "CALL");
 	GetImm(16);
 	SPRINTF(dopr, ":%s", dimm);
@@ -1240,262 +1252,262 @@ static void CALL_PTR16_16()
 }
 static void WAIT()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "WAIT");
 }
 static void PUSHF()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "PUSHF");
 }
 static void POPF()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "POPF");
 }
 static void SAHF()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "SAHF");
 }
 static void LAHF()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "LAHF");
 }
 static void MOV_AL_M8()
 {
-	dvip++;
+	diptr++;
 	GetMem(8);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "AL,%s", drm);
 }
 static void MOV_AX_M16()
 {
-	dvip++;
+	diptr++;
 	GetMem(16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "AX,%s", drm);
 }
 static void MOV_M8_AL()
 {
-	dvip++;
+	diptr++;
 	GetMem(8);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "%s,AL", drm);
 }
 static void MOV_M16_AX()
 {
-	dvip++;
+	diptr++;
 	GetMem(16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "%s,AX", drm);
 }
 static void MOVSB()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "MOVSB");
 }
 static void MOVSW()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "MOVSW");
 }
 static void CMPSB()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "CMPSB");
 }
 static void CMPSW()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "CMPSW");
 }
 static void TEST_AL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "TEST");
 	SPRINTF(dopr, "AL,%s", dimm);
 }
 static void TEST_AX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "TEST");
 	SPRINTF(dopr, "AX,%s", dimm);
 }
 static void STOSB()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "STOSB");
 }
 static void STOSW()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "STOSW");
 }
 static void LODSB()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "LODSB");
 }
 static void LODSW()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "LODSW");
 }
 static void SCASB()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "SCASB");
 }
 static void SCASW()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "SCASW");
 }
 static void MOV_AL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "AL,%s", dimm);
 }
 static void MOV_CL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "CL,%s", dimm);
 }
 static void MOV_DL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "DL,%s", dimm);
 }
 static void MOV_BL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "BL,%s", dimm);
 }
 static void MOV_AH_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "AH,%s", dimm);
 }
 static void MOV_CH_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "CH,%s", dimm);
 }
 static void MOV_DH_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "DH,%s", dimm);
 }
 static void MOV_BH_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "BH,%s", dimm);
 }
 static void MOV_AX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "AX,%s", dimm);
 }
 static void MOV_CX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "CX,%s", dimm);
 }
 static void MOV_DX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "DX,%s", dimm);
 }
 static void MOV_BX_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "BX,%s", dimm);
 }
 static void MOV_SP_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "SP,%s", dimm);
 }
 static void MOV_BP_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "BP,%s", dimm);
 }
 static void MOV_SI_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "SI,%s", dimm);
 }
 static void MOV_DI_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "MOV");
 	SPRINTF(dopr, "DI,%s", dimm);
 }
 static void RET_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "RET");
 	SPRINTF(dopr, "%s", dimm);
 }
 static void RET()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "RET");
 }
 static void LES_R16_M16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "LES");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void LDS_R16_M16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	SPRINTF(dop, "LDS");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 }
 static void MOV_M8_I8()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(8,8);
 	GetImm(8);
 	SPRINTF(dop, "MOV");
@@ -1503,7 +1515,7 @@ static void MOV_M8_I8()
 }
 static void MOV_M16_I16()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(16,16);
 	GetImm(16);
 	SPRINTF(dop, "MOV");
@@ -1511,43 +1523,43 @@ static void MOV_M16_I16()
 }
 static void RETF_I16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "RETF");
 	SPRINTF(dopr, "%s", dimm);
 }
 static void RETF()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "RETF");
 }
 static void INT3()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "INT");
 	SPRINTF(dopr, "03");
 }
 static void INT_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "INT");
 	SPRINTF(dopr, "%s", dimm);
 }
 static void INTO()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "INT");
 	SPRINTF(dopr, "04");
 }
 static void IRET()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "IRET");
 }
 static void INS_D0()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(0,8);
 	switch(rid) {
 	case 0: SPRINTF(dop, "ROL");break;
@@ -1564,7 +1576,7 @@ static void INS_D0()
 }
 static void INS_D1()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(0,16);
 	switch(rid) {
 	case 0: SPRINTF(dop, "ROL");break;
@@ -1581,7 +1593,7 @@ static void INS_D1()
 }
 static void INS_D2()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(0,8);
 	switch(rid) {
 	case 0: SPRINTF(dop, "ROL");break;
@@ -1598,7 +1610,7 @@ static void INS_D2()
 }
 static void INS_D3()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(0,16);
 	switch(rid) {
 	case 0: SPRINTF(dop, "ROL");break;
@@ -1615,96 +1627,96 @@ static void INS_D3()
 }
 static void AAM()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "AAM");
 	if (strcmp(dimm, "0A")) SPRINTF(dopr, "%s", dimm);
 }
 static void AAD()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "AAD");
 	if (strcmp(dimm, "0A")) SPRINTF(dopr, "%s", dimm);
 }
 static void XLAT()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "XLAT");
 }
 static void LOOPNZ()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "LOOPNZ");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void LOOPZ()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "LOOPZ");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void LOOP()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "LOOP");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JCXZ_REL8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JCXZ");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void IN_AL_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "IN");
 	SPRINTF(dopr, "AL,%s", dimm);
 }
 static void IN_AX_I8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "IN");
 	SPRINTF(dopr, "AX,%s", dimm);
 }
 static void OUT_I8_AL()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "OUT");
 	SPRINTF(dopr, "%s,AL", dimm);
 }
 static void OUT_I8_AX()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "OUT");
 	SPRINTF(dopr, "%s,AX", dimm);
 }
 static void CALL_REL16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "CALL");
 	SPRINTF(dopr, "%s", dimmoff16);
 }
 static void JMP_REL16()
 {
-	dvip++;
+	diptr++;
 	GetImm(16);
 	SPRINTF(dop, "JMP");
 	SPRINTF(dopr, "%s", dimmoff16);
 }
 static void JMP_PTR16_16()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "JMP");
 	GetImm(16);
 	SPRINTF(dopr, ":%s", dimm);
@@ -1714,70 +1726,70 @@ static void JMP_PTR16_16()
 }
 static void JMP_REL8()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "JMP");
 	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void IN_AL_DX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "IN");
 	SPRINTF(dopr, "AL,DX");
 }
 static void IN_AX_DX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "IN");
 	SPRINTF(dopr, "AX,DX");
 }
 static void OUT_DX_AL()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "OUT");
 	SPRINTF(dopr, "DX,AL");
 }
 static void OUT_DX_AX()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "OUT");
 	SPRINTF(dopr, "DX,AX");
 }
 static void LOCK()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "LOCK");
 }
 static void QDX()
 {
-	dvip++;
+	diptr++;
 	GetImm(8);
 	SPRINTF(dop, "QDX");
 	SPRINTF(dopr, "%s", dimm);
 }
 static void REPNZ()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "REPNZ");
 }
 static void REP()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "REP");
 }
 static void HLT()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "HLT");
 }
 static void CMC()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "CMC");
 }
 static void INS_F6()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(0,8);
 	switch(rid) {
 	case 0:	GetImm(8);
@@ -1797,7 +1809,7 @@ static void INS_F6()
 }
 static void INS_F7()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(0,16);
 	switch(rid) {
 	case 0:	GetImm(16);
@@ -1817,37 +1829,37 @@ static void INS_F7()
 }
 static void CLC()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "CLC");
 }
 static void STC()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "STC");
 }
 static void CLI()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "CLI");
 }
 static void STI()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "STI");
 }
 static void CLD()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "CLD");
 }
 static void STD()
 {
-	dvip++;
+	diptr++;
 	SPRINTF(dop, "STD");
 }
 static void INS_FE()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(0,8);
 	switch(rid) {
 	case 0:	SPRINTF(dop, "INC");
@@ -1862,7 +1874,7 @@ static void INS_FE()
 }
 static void INS_FF()
 {
-	dvip++;
+	diptr++;
 	GetModRegRM(0,16);
 	switch(rid) {
 	case 0:	SPRINTF(dop, "INC");
@@ -1897,7 +1909,7 @@ static t_bool IsPrefix(t_nubit8 opcode)
 	case 0xf0: case 0xf2: case 0xf3:
 	case 0x2e: case 0x36: case 0x3e: case 0x26:
 	//case 0x64: case 0x65:
-	//case 0x66: case 0x67:
+	case 0x66: case 0x67:
 				return 0x01;break;
 	default:	return 0x00;break;
 	}
@@ -2015,8 +2027,8 @@ static void exec(t_nubit8 opcode)
 	case 0x63: UndefinedOpcode(); break;
 	case 0x64: UndefinedOpcode(); break;
 	case 0x65: UndefinedOpcode(); break;
-	case 0x66: UndefinedOpcode(); break;
-	case 0x67: UndefinedOpcode(); break;
+	case 0x66: PREFIX_OprSize();  break;
+	case 0x67: PREFIX_AddrSize(); break;
 	case 0x68: UndefinedOpcode(); break;
 	case 0x69: UndefinedOpcode(); break;
 	case 0x6a: UndefinedOpcode(); break;
@@ -2173,12 +2185,12 @@ static void exec(t_nubit8 opcode)
 	}
 }
 
-t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off, t_nubit8 flagout)
+t_nubitcc dasmx(t_string stmt, t_nubit32 linear, t_nubit8 flagout)
 {
 	t_nubitcc i,l,len;
 	t_nubit8 opcode;
-	dvcs  = seg;
-	dvip  = off;
+	t_nubit32 physical = GetMax32(_dbgm_addr_physical_linear(linear));
+	diptr = physical;
 	len     = 0;
 	stmt[0] = 0;
 	ClrPrefix();
@@ -2193,12 +2205,57 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off, t_nubit8 flagout)
 		dimmoff8[0]  = 0;
 		dimmoff16[0] = 0;
 		dimmsign[0]  = 0;
-		opcode = vramRealByte(dvcs, dvip);
+		opcode = vramByte(diptr);
 		exec(opcode);
-		l = dvip - off;
+		l = diptr - physical;
 		len += l;
 		if (flagout) {
-			for (i = 0;i < l;++i) SPRINTF(dbin, "%s%02X", dbin, vramRealByte(seg, off+i));
+			for (i = 0;i < l;++i) SPRINTF(dbin, "%s%02X", dbin, vramByte(physical + i));
+			SPRINTF(dstmt, "L%08X %s", linear, dbin);
+			for (i = strlen(dstmt);i < 24;++i) STRCAT(dstmt, " ");
+		} else dstmt[0] = 0;
+		STRCAT(dstmt, dop);
+		if (flagout) {
+			for (i = strlen(dstmt);i < 32;++i) STRCAT(dstmt, " ");
+		} else STRCAT(dstmt, "\t");
+		STRCAT(dstmt, dopr);
+		if (flagout == 2 && dtip[0]) {
+			for (i = strlen(dstmt);i < 64;++i) STRCAT(dstmt, " ");
+			STRCAT(dstmt, dtip);
+		}
+		STRCAT(dstmt, "\n");
+		STRCAT(stmt, dstmt);
+		linear += l;
+		physical = diptr;
+	} while (IsPrefix(opcode));
+	return len;
+}
+t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off, t_nubit8 flagout)
+{
+	t_nubitcc i,l,len;
+	t_nubit8 opcode;
+	t_nubit32 physical = (seg << 4) + off;
+	diptr = physical;
+	len     = 0;
+	stmt[0] = 0;
+	ClrPrefix();
+	do {
+		dop[0]       = 0;
+		dopr[0]      = 0;
+		dbin[0]      = 0;
+		dtip[0]      = 0;
+		drm[0]       = 0;
+		dr[0]        = 0;
+		dimm[0]      = 0;
+		dimmoff8[0]  = 0;
+		dimmoff16[0] = 0;
+		dimmsign[0]  = 0;
+		opcode = vramByte(diptr);
+		exec(opcode);
+		l = diptr - physical;
+		len += l;
+		if (flagout) {
+			for (i = 0;i < l;++i) SPRINTF(dbin, "%s%02X", dbin, vramByte(physical + i));
 			SPRINTF(dstmt, "%04X:%04X %s", seg, off, dbin);
 			for (i = strlen(dstmt);i < 24;++i) STRCAT(dstmt, " ");
 		} else dstmt[0] = 0;
@@ -2213,7 +2270,8 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off, t_nubit8 flagout)
 		}
 		STRCAT(dstmt, "\n");
 		STRCAT(stmt, dstmt);
-		off = dvip;
+		off += l;
+		physical = diptr;
 	} while (IsPrefix(opcode));
 	return len;
 }

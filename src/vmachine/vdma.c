@@ -239,24 +239,18 @@ static void Transmission(t_dma *vdma, t_nubit8 id, t_bool word)
 	case 0x01:                                                      /* write */
 		if (vdma->channel[id].devread) ExecFun(vdma->channel[id].devread);
 		if (!word)
-			vramRealByte(((t_nubit16)vdma->channel[id].page << 12),
-			            vdma->channel[id].curraddr) = vlatch.byte;
+			vramByte((vdma->channel[id].page << 16) + vdma->channel[id].curraddr) = vlatch.byte;
 		else
-			vramRealWord(((t_nubit16)vdma->channel[id].page << 12),
-			            vdma->channel[id].curraddr << 1) = vlatch.word;
+			vramWord((vdma->channel[id].page << 16) + (vdma->channel[id].curraddr << 1)) = vlatch.word;
 		vdma->channel[id].currwc--;
 		if (GetAIDS(vdma,id)) DecreaseCurrAddr(vdma, id);
 		else                  IncreaseCurrAddr(vdma, id);
 		break;
 	case 0x02:                                                       /* read */
 		if (!word)
-			vlatch.byte = vramRealByte(
-			                 ((t_nubit16)vdma->channel[id].page << 12),
-			                 vdma->channel[id].curraddr);
+			vlatch.byte = vramByte((vdma->channel[id].page << 16) + vdma->channel[id].curraddr);
 		else
-			vlatch.word = vramRealWord(
-			                 ((t_nubit16)vdma->channel[id].page << 12),
-			                 (vdma->channel[id].curraddr << 1));
+			vlatch.word = vramWord((vdma->channel[id].page << 16) + (vdma->channel[id].curraddr << 1));
 		if (vdma->channel[id].devwrite) ExecFun(vdma->channel[id].devwrite);
 		vdma->channel[id].currwc--;
 		if (GetAIDS(vdma,id)) DecreaseCurrAddr(vdma, id);
@@ -277,11 +271,8 @@ static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
 	if (flagm2m) {
 		/* memory-to-memory */
 		while (vdma->channel[0x01].currwc != 0xffff && !vdma->flageop) {
-			vdma->temp = vramRealByte(
-			             ((t_nubit16)vdma->channel[0x00].page << 16),
-			             vdma->channel[0x00].curraddr);
-			vramRealByte(((t_nubit16)vdma->channel[0x01].page << 16),
-			            vdma->channel[0x01].curraddr) = vdma->temp;
+			vdma->temp = vramByte((vdma->channel[0].page << 16) + vdma->channel[0].curraddr);
+			vramByte((vdma->channel[1].page << 16) + vdma->channel[1].curraddr) = vdma->temp;
 			vdma->channel[0x01].currwc--;
 			if (GetAIDS(vdma,id)) {
 				DecreaseCurrAddr(vdma, 0x01);

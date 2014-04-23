@@ -67,7 +67,7 @@ t_apirecord vapirecord;
 #define _rec_if    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_IF))
 #define _rec_ptr_last ((vapirecord.start + vapirecord.size) % VAPI_RECORD_SIZE)
 
-#define _expression "%scs:eip=%04x:%08x opcode=%02x %02x %02x %02x %02x %02x %02x %02x \
+#define _expression "%scs:eip=%04x:%08x(%08x) opcode=%02x %02x %02x %02x %02x %02x %02x %02x \
 ss:esp=%04x:%08x stack=%04x %04x %04x %04x \
 eax=%08x ebx=%08x ecx=%08x edx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \
 eflags=%08x %s %s %s %s %s %s %s %s %s \
@@ -104,7 +104,7 @@ void vapiRecordDump(const t_string fname)
 			if (_restmt[j] == '\n') _restmt[j] = ' ';
 		fprintf(vapirecord.fp, _expression,
 			_rec.flagisr ? "*" : "",
-			_recpu.cs.selector, _recpu.eip,
+			_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip, 
 			_rec.opcode[0], _rec.opcode[1], _rec.opcode[2], _rec.opcode[3],
 			_rec.opcode[4], _rec.opcode[5], _rec.opcode[6], _rec.opcode[7],
 			_recpu.ss.selector, _recpu.esp,
@@ -177,7 +177,7 @@ void vapiRecordExec()
 			if (_restmt[j] == '\n') _restmt[j] = ' ';
 		fprintf(vapirecord.fp, _expression,
 			_rec.flagisr ? "*" : "",
-			_recpu.cs.selector, _recpu.eip,
+			_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip, 
 			_rec.opcode[0], _rec.opcode[1], _rec.opcode[2], _rec.opcode[3],
 			_rec.opcode[4], _rec.opcode[5], _rec.opcode[6], _rec.opcode[7],
 			_recpu.ss.selector, _recpu.esp,

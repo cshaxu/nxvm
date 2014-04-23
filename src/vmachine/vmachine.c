@@ -4,6 +4,7 @@
 
 #include "debug/aasm.h"
 #include "debug/dasm.h"
+#include "debug/debug.h"
 #include "vapi.h"
 #include "vmachine.h"
 
@@ -13,23 +14,54 @@ t_machine vmachine;
 ax=%x bx=%x cx=%x dx=%x sp=%x bp=%x si=%x di=%x ds=%x es=%x ss=%x \
 of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x\n"
 
-void vapiCallBackMachineRun()
+static t_bool StopBeforeRefresh()
+{
+	if (vmachine.flagbreak && _cs == vmachine.breakcs && _ip == vmachine.breakip)
+		return 1;
+	if (vmachine.flagbreakx && (vcpu.cs.base + vcpu.eip == vmachine.breaklinear))
+		return 1;
+	return 0;
+}
+static t_bool StopAfterRefresh()
+{
+	if (vmachine.tracecnt) {
+		vmachine.tracecnt--;
+		if (!vmachine.tracecnt) return 1;
+	}
+	return 0;
+}
+static void DoBeforeRunLoop()
 {
 	if (vmachine.flagrecord) vapiRecordInit();
+}
+static void DoAfterRunLoop()
+{
+	if (vmachine.flagrecord) vapiRecordFinal();
+}
+static void DoBeforeRefresh()
+{
+	if (vmachine.flagrecord) vapiRecordExec();
+}
+static void DoAfterRefresh()
+{}
+
+void vapiCallBackMachineRun()
+{
+	DoBeforeRunLoop();
 	while (vmachine.flagrun) {
-		if (vmachine.flagbreak &&
-			_cs == vmachine.breakcs && _ip == vmachine.breakip) {
+		if (StopBeforeRefresh()) {
 			vmachineStop();
 			break;
 		}
-		if (vmachine.flagrecord) vapiRecordExec();
+		DoBeforeRefresh();
 		vmachineRefresh();
-		if (vmachine.tracecnt) {
-			vmachine.tracecnt--;
-			if (!vmachine.tracecnt) vmachineStop();
+		DoAfterRefresh();
+		if (StopAfterRefresh()) {
+			vmachineStop();
+			break;
 		}
 	}
-	if (vmachine.flagrecord) vapiRecordFinal();
+	DoAfterRunLoop();
 }
 t_nubit8 vapiCallBackMachineGetFlagRun() {return vmachine.flagrun;}
 void vapiCallBackMachineStart() {vmachineStart();}

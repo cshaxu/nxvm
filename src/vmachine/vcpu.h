@@ -458,15 +458,15 @@ extern t_cpu vcpu;
 #define VCPU_GDTR_BASE  0xffffffff0000
 #define _GetGDTR_Limit ((vcpu.gdtr & VCPU_GDTR_LIMIT) >>  0)
 #define _GetGDTR_Base  ((vcpu.gdtr & VCPU_GDTR_BASE)  >> 16)
-#define _LoadGDTR16(base,limit)  (vcpu.gdtr = (GetMax24(base) << 16) | (t_nubit16)(limit))
-#define _LoadGDTR32(base,limit)  (vcpu.gdtr = (GetMax32(base) << 16) | (t_nubit16)(limit))
+#define _LoadGDTR16(base,limit)  (vcpu.gdtr = ((t_nubit48)GetMax24(base) << 16) | (t_nubit16)(limit))
+#define _LoadGDTR32(base,limit)  (vcpu.gdtr = ((t_nubit48)GetMax32(base) << 16) | (t_nubit16)(limit))
 
 #define VCPU_IDTR_LIMIT 0x00000000ffff
 #define VCPU_IDTR_BASE  0xffffffff0000
 #define _GetIDTR_Limit (vcpu.idtr & VCPU_IDTR_LIMIT)
 #define _GetIDTR_Base  ((vcpu.idtr & VCPU_IDTR_BASE) >> 16)
-#define _LoadIDTR16(base,limit)  (vcpu.idtr = (GetMax24(base) << 16) | (t_nubit16)(limit))
-#define _LoadIDTR32(base,limit)  (vcpu.idtr = (GetMax32(base) << 16) | (t_nubit16)(limit))
+#define _LoadIDTR16(base,limit)  (vcpu.idtr = ((t_nubit48)GetMax24(base) << 16) | (t_nubit16)(limit))
+#define _LoadIDTR32(base,limit)  (vcpu.idtr = ((t_nubit48)GetMax32(base) << 16) | (t_nubit16)(limit))
 
 #define _GetLDTR_Limit (vcpu.ldtr.limit - vcpu.ldtr.base)
 #define _GetLDTR_Base  (vcpu.ldtr.base)

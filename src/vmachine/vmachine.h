@@ -40,9 +40,11 @@ typedef struct {
 	t_bool    flagmode;         /* mode flag: console (0) or application (1) */
 	t_bool    flagboot;             /* boot from floppy (0) or hard disk (1) */
 	t_bool    flagbreak;                    /* breakpoint set (1) or not (0) */
+	t_nubit16 breakcs, breakip;
 	t_bool    flagrecord;
 	t_nubitcc tracecnt;
-	t_nubit16 breakcs, breakip;
+	t_bool    flagbreakx;
+	t_nubit32 breaklinear;
 } t_machine;
 
 extern t_machine vmachine;

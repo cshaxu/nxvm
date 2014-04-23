@@ -21,7 +21,6 @@ test code
 #include "string.h"
 #include "stdarg.h"
 
-#include "../vmachine.h"
 #include "../vapi.h"
 
 #include "aasm.h"
@@ -699,8 +698,8 @@ static void s()
 // trace
 static void t()
 {
-	t_nubit32 i;
-	t_nubit32 count;
+	t_nubit16 i;
+	t_nubit16 count;
 	if (vmachine.flagrun) {
 		vapiPrint("NXVM is already running.\n");
 		return;
@@ -710,13 +709,13 @@ static void t()
 		count = 1;
 		break;
 	case 2:
-		count = scannubit32(arg[1]);
+		count = scannubit16(arg[1]);
 		break;
 	case 3:
 		addrparse(_cs,arg[1]);
 		_cs = seg;
 		_ip = ptr;
-		count = scannubit32(arg[2]);
+		count = scannubit16(arg[2]);
 		break;
 	default:seterr(narg-1);break;}
 	if(errPos) return;
@@ -820,6 +819,88 @@ static void w()
 /* DEBUG CMD END */
 
 /* EXTENDED DEBUG CMD BEGIN */
+
+t_nubit32 _dbgm_addr_physical_linear(t_nubit32 linear)
+{
+	/* paging not implemented */
+	return linear;
+}
+t_nubit32 _dbgm_addr_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset)
+{
+	return (rsreg->base + offset);
+}
+t_nubit32 _dbgm_addr_physical_logical(t_cpu_sreg *rsreg, t_nubit32 offset)
+{
+	/* paging not implemented */
+	return _dbgm_addr_physical_linear(_dbgm_addr_linear_logical(rsreg, offset));
+}
+t_nubit64 _dbgm_read_physical(t_nubit32 physical, t_nubit8 byte)
+{
+	switch (byte) {
+	case 1: return vramByte(physical);
+	case 2: return vramWord(physical);
+	case 4: return vramDWord(physical);
+	case 8: return vramQWord(physical);
+	default:return 0;
+	}
+}
+t_nubit64 _dbgm_read_linear(t_nubit32 linear, t_nubit8 byte)
+{
+	return _dbgm_read_physical(_dbgm_addr_physical_linear(linear), byte);
+}
+t_nubit64 _dbgm_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte)
+{
+	return _dbgm_read_physical(_dbgm_addr_physical_logical(rsreg, offset), byte);
+}
+
+t_nubit32 xdlin;
+t_nubit32 xulin;
+
+static void xdprint(t_nubit32 linear,t_nubit8 count)
+{
+	char t,c[0x11];
+	t_nubit32 i;
+	t_nubit32 start = linear;
+	t_nubit32 end = linear + count - 1;
+	c[0x10] = '\0';
+	for(i = start - (start % 0x10);i < end + 0x10 - (end % 0x10);++i) {
+		if (i % 0x10 == 0) vapiPrint("L%08X  ", i);
+		if (i < start || i > end) {
+			vapiPrint("  ");
+			c[i % 0x10] = ' ';
+		} else {
+			c[i % 0x10] = vramByte(i);
+			vapiPrint("%02X",c[i % 0x10] & 0xff);
+			t = c[i % 0x10];
+			if((t >=1 && t <= 7) || t == ' ' ||
+				(t >=11 && t <= 12) ||
+				(t >=14 && t <= 31) ||
+				(t >=33 && t <= 128)) ;
+			else c[i%0x10] = '.';
+		}
+		vapiPrint(" ");
+		if(i % 0x10 == 7 && i >= start && i < end) vapiPrint("\b-");
+		if((i + 1) % 0x10 == 0) {
+			vapiPrint("  %s\n",c);
+		}
+	}
+	xdlin = i;
+}
+static void xd()
+{
+	t_nubit8 count;
+	if(narg == 1) xdprint(xdlin, 0x80);
+	else if(narg == 2) {
+		xdlin = scannubit32(arg[1]);
+		if(errPos) return;
+		xdprint(xdlin, 0x80);
+	} else if(narg == 3) {
+		xdlin = scannubit32(arg[1]);
+		count = scannubit8(arg[2]);
+		if(errPos) return;
+		xdprint(xdlin, count);
+	} else seterr(3);
+}
 static void xreg()
 {
 	char str[MAXLINE];
@@ -848,7 +929,7 @@ static void xreg()
 	vapiPrint("%s ", _GetEFLAGS_PF ? "PF" : "pf");
 	vapiPrint("%s ", _GetEFLAGS_CF ? "CF" : "cf");
 	vapiPrint("\n");
-	dasm(str, _cs, _ip, 0x02);
+	dasmx(str, vcpu.cs.base + vcpu.eip, 0x02);
 	vapiPrint("%s", str);
 }
 static void xsregseg(t_cpu_sreg *rsreg, const t_string label)
@@ -882,7 +963,7 @@ static void xsreg()
 	xsregseg(&vcpu.ds, "DS");
 	xsregseg(&vcpu.fs, "FS");
 	xsregseg(&vcpu.gs, "GS");
-	xsregsys(&vcpu.tr, "TR");
+	xsregsys(&vcpu.tr, "TR  ");
 	xsregsys(&vcpu.ldtr, "LDTR");
 	vapiPrint("GDTR Base=%08X, Limit=%04X\n",
 		GetMax32(_GetGDTR_Base), GetMax16(_GetGDTR_Limit));
@@ -907,13 +988,110 @@ static void xcreg()
 	vapiPrint("CR2=PFLR=%08X\n", vcpu.cr2);
 	vapiPrint("CR3=PDBR=%08X\n", vcpu.cr3);
 }
+static void xuprint(t_nubit32 linear, t_nubit8 count)
+{
+	char str[MAXLINE];
+	t_nubitcc len = 0;
+	t_nubit8 i;
+	for (i = 0;i < count;++i) {
+		len = dasmx(str, linear, 0x01);
+		vapiPrint("%s", str);
+		linear += len;
+	}
+	xulin = linear;
+}
+static void xu()
+{
+	t_nubit8 count;
+	if(narg == 1) xuprint(xulin, 10);
+	else if(narg == 2) {
+		xulin = scannubit32(arg[1]);
+		if(errPos) return;
+		xuprint(xulin, 10);
+	} else if(narg == 3) {
+		xulin = scannubit32(arg[1]);
+		count = scannubit8(arg[2]);
+		if(errPos) return;
+		xuprint(xulin, count);
+	} else seterr(3);
+}
+static void xt()
+{
+	t_nubit32 i;
+	t_nubit32 count;
+	if (vmachine.flagrun) {
+		vapiPrint("NXVM is already running.\n");
+		return;
+	}
+	switch(narg) {
+	case 1:
+		count = 1;
+		break;
+	case 2:
+		count = scannubit32(arg[1]);
+		break;
+	default:seterr(narg-1);break;}
+	if(errPos) return;
+	if (count < 0x0100) {
+		for(i = 0;i < count;++i) {
+			vmachine.tracecnt = 0x01;
+			vmachineResume();
+			while (vmachine.flagrun) vapiSleep(10);
+			xreg();
+			if (i != count - 1) vapiPrint("\n");
+		}
+	} else {
+		vmachine.tracecnt = count;
+		vmachineResume();
+		while (vmachine.flagrun) vapiSleep(10);
+		xreg();
+	}
+	vmachine.tracecnt = 0x00;
+//	gexec(ptr1,ptr2);
+}
+static void xg()
+{
+	if (vmachine.flagrun) {
+		vapiPrint("NXVM is already running.\n");
+		return;
+	}
+	switch(narg) {
+	case 1:
+		vmachine.flagbreakx = 0;
+		break;
+	case 2:
+		vmachine.flagbreakx = 1;
+		vmachine.breaklinear = scannubit32(arg[1]);
+		printf("break at: %x\n", vmachine.breaklinear);
+		break;
+	default:seterr(narg-1);break;}
+	if(errPos) return;
+	vmachineResume();
+	while (vmachine.flagrun) vapiSleep(1);
+	vmachine.flagbreakx = 0;
+	xreg();
+}
+static void xr() {xreg();}
 static void x()
 {
-	if (!STRCMP(arg[1], "r"))         xreg();
-	else if (!STRCMP(arg[1], "reg"))  xreg();
-	else if (!STRCMP(arg[1], "sreg")) xsreg();
-	else if (!STRCMP(arg[1], "creg")) xcreg();
-	else seterr(0);
+	t_nubitcc i;
+	arg[narg] = arg[0];
+	for (i = 1;i < narg;++i) arg[i - 1] = arg[i];
+	arg[narg - 1] = arg[narg];
+	arg[narg] = NULL;
+	narg--;
+	     if (!STRCMP(arg[0], "d"))    xd();
+	else if (!STRCMP(arg[0], "g"))    xg();
+	else if (!STRCMP(arg[0], "r"))    xr();
+	else if (!STRCMP(arg[0], "t"))    xt();
+	else if (!STRCMP(arg[0], "u"))    xu();
+	else if (!STRCMP(arg[0], "reg"))  xreg();
+	else if (!STRCMP(arg[0], "sreg")) xsreg();
+	else if (!STRCMP(arg[0], "creg")) xcreg();
+	else {
+		arg[0] = arg[narg];
+		seterr(0);
+	}
 }
 /* EXTENDED DEBUG CMD END */
 
@@ -956,6 +1134,7 @@ static void init()
 	asmPtrRec = uasmPtrRec = _ip;
 	dumpSegRec = _ds;
 	dumpPtrRec = (t_nubit16)(_ip) / 0x10 * 0x10;
+	xulin = vcpu.cs.base + vcpu.eip;
 }
 static void parse()
 {
