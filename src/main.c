@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x4a]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x4b]\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"
 
 /*
@@ -23,7 +23,7 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 	Module III - VDEVICE
 		Stage 1: PIC(8259)	02/24/2012 - 02/26/2012
 		Stage 2: RTC(DS1302	03/02/2012 - 03/03/2012 // NEED TO IMPLEMENT CMOS SETTINGS @ CMOSInit()
-		Stage 3: PIT(8254)	03/03/2012 - 03/03/2012
+		Stage 3: PIT(8254)	03/03/2012 - 03/03/2012	// NEED TO IMPLEMENT IO FUNCTION
 		Stage ?: DMA(8237)	Not Started
 		Stage ?: Serial		Not Started
 		Stage ?: Floppy		Not Started

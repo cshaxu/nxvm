@@ -2,8 +2,8 @@
 
 // Random-access Memory
 
-#ifndef NXVM_VMEMORY_H
-#define NXVM_VMEMORY_H
+#ifndef NXVM_VRAM_H
+#define NXVM_VRAM_H
 
 #include "vglobal.h"
 

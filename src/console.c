@@ -49,7 +49,7 @@ void NSExec()
 		vcputermflag = 0;
 		c = fgetc(load);
 		while(!feof(load)) {
-			vramSetByte(vcpu.cs+i,vcpu.ip+len++,c);
+			vramSetByte(vcpu.cs+i,vcpu.ip+((len++)%0x10000),c);
 			i = len / 0x10000;
 			c = fgetc(load);
 		}

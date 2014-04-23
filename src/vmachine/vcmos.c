@@ -43,7 +43,7 @@
 
 t_nubit8 vcmosreg[0x40];
 
-static t_nubit8 index;
+static t_nubit8 idreg;
 
 static t_nubitcc GetNUM2BCD(t_nubitcc num)
 {
@@ -98,14 +98,14 @@ static void UpdateTime()
 
 void IO_Write_0070()
 {
-	index = vcpu.al;
+	idreg = vcpu.al;
 }
 void IO_Write_0071()
 {
 	t_nubitcc i;
 	t_nubit16 checksum = 0;
-	vcmosreg[index] = vcpu.al;
-	if((index > 0x0f) && (index < 0x2e))
+	vcmosreg[idreg] = vcpu.al;
+	if((idreg > 0x0f) && (idreg < 0x2e))
 		for(i = 0x10;i < 0x2e;++i)
 			checksum += vcmosreg[i];
 	vcmosreg[CMOS_CHECKSUM_LSB] = checksum&0xff;
@@ -114,12 +114,12 @@ void IO_Write_0071()
 void IO_Read_0071()
 {
 	UpdateTime();
-	vcpu.al = vcmosreg[index];
+	vcpu.al = vcmosreg[idreg];
 }
 
 void CMOSInit()
 {
-	index = 0x00;
+	idreg = 0x00;
 	memset(vcmosreg,0x00,0x40);
 
 	/*	Initialization of Registers Here..

@@ -1,5 +1,7 @@
 /* This file is a part of NXVM project. */
 
+// Not completely simulated.
+
 #include "memory.h"
 #include "time.h"
 
@@ -14,7 +16,6 @@
 typedef struct {
 	t_nubit8 mode0,mode1,mode2,rcw;
 	t_nubit16 count0,count1,count2;
-	t_bool state0,state1,state2;
 } t_pit;
 
 t_pit vpit;
@@ -27,25 +28,18 @@ void vpitIntTick()
 	dt = (t_double)((t2-t1)*1e3/((t_double)CLOCKS_PER_SEC));
 	if(dt >= VPIT_TICK) {
 		vpicSetIRQ(0x00);
-		vapiPrint("%lf\n",dt);
+		//vapiPrint("%lf\n",dt);
 		t1 = t2;
 	}
 }
 
-void IO_Read_0040()
-{vcpu.al = vpit.count0;}
-void IO_Read_0041()
-{vcpu.al = vpit.count1;}
-void IO_Read_0042()
-{vcpu.al = vpit.count2;}
-void IO_Read_0043()
-{}
-void IO_Write_0040()
-{vpit.count0 = vcpu.al;}
-void IO_Write_0041()
-{vpit.count1 = vcpu.al;}
-void IO_Write_0042()
-{vpit.count2 = vcpu.al;}
+void IO_Read_0040() {}
+void IO_Read_0041() {}
+void IO_Read_0042() {}
+void IO_Read_0043() {}
+void IO_Write_0040() {}
+void IO_Write_0041() {}
+void IO_Write_0042() {}
 void IO_Write_0043()
 {
 	switch(vcpu.al>>0x06) {

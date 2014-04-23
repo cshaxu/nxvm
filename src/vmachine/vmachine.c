@@ -14,6 +14,7 @@ void NXVMInit()
 		PICInit();
 		CMOSInit();
 		PITInit();
+		DMAInit();
 		vmachineinitflag = 1;
 	} else
 		vapiPrint("ERROR:\tNeko's x86 Virtual Machine is already initialized.\n");
@@ -57,6 +58,7 @@ void NXVMPowerOff()
 void NXVMTerm()
 {
 	if(vmachineinitflag) {
+		DMATerm();
 		PITTerm();
 		CMOSTerm();
 		PICTerm();

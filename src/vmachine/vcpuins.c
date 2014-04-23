@@ -3137,9 +3137,9 @@ void vcpuinsExecInt()
 #endif
 	if(GetFlag(VCPU_FLAG_IF) && vpicIsINTR()) {	
 		intr = vpicGetINTR();
-#ifndef NXVM_DEBUG_VCPUINS
+//#ifndef NXVM_DEBUG_VCPUINS
 		INT(intr);
-#endif
+//#endif
 		vpicRespondINTR(intr);
 		//vapiPrint("m.isr=%x,s.isr=%x\n",vpicmaster.isr,vpicslave.isr);
 		//vapiPause();

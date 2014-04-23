@@ -11,6 +11,7 @@
 #include "vpic.h"
 #include "vcmos.h"
 #include "vpit.h"
+#include "vdma.h"
 
 extern t_bool vmachineinitflag;
 extern t_bool vmachinerunflag;

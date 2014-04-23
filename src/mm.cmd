@@ -1,4 +1,6 @@
 @echo off
+ram Make Makefile
+ram By Neko, 2012. All rights reserved.
 cd.>list.txt
 for /f "delims=" %%i in ('dir /a:-d /b *.c') do (
 echo %%i>>list.txt
