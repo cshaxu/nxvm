@@ -12,6 +12,7 @@
 #ifdef NVM_DEBUG_VCPUINS
 #include "conio.h"
 // NOTE: INT_I8() is modified for the INT test. Please correct it finally!
+// NOTE: Need to modify the INT processor! All INTs should call INT(t_nubit8 intid);
 #endif
 
 #define MOD	((modrm&0xc0)>>6)

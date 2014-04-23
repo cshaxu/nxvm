@@ -89,14 +89,19 @@ void NSHelp()
 
 void NSMemory()
 {
+	t_nubit32 tempSize;
 	char str[MAXLINE];
 	if(runFlag) {fprintf(stdout,"Cannot modify memory size now.\n");return;}
 	fflush(stdin);
 	fprintf(stdout,"Size(KB): ");
 	fgets(str,MAXLINE,stdin);
-	memorySize = atoi(str);
-	if(memorySize > 0x400) {
-		memorySize <<= 0x0a;
+	tempSize = atoi(str);
+	if(tempSize > 0x400) {
+		memorySize = (tempSize<<0x0a);
+		MemoryTerm();
+		MemoryInit();
+	} else {
+		memorySize = (1024<<0x0a);
 		MemoryTerm();
 		MemoryInit();
 	}
