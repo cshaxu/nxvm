@@ -3658,7 +3658,6 @@ void INS_F6()
 	case 6:	DIV ((void *)vcpuins.rm,8);	break;
 	case 7:	IDIV((void *)vcpuins.rm,8);	break;
 	default:CaseError("INS_F6::vcpuins.r");break;}
-	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INS_F6\n");
 }
 void INS_F7()
 {

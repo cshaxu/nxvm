@@ -200,7 +200,7 @@ static void aconsole()
 		}
 		if(cmdAsmBuff[0] == ';' ) continue;
 		errAsmPos = 0;
-		len = aasm(cmdAsmBuff, asmSegRec, asmPtrRec);
+		len = (t_nubit16)aasm(cmdAsmBuff, asmSegRec, asmPtrRec);
 		/*len = assemble(cmdAsmBuff,_cs,
 			(void *)vramGetAddr(0x0000,0x0000),asmSegRec,asmPtrRec);*/
 		if(!len) errAsmPos = (int)strlen(cmdAsmBuff) + 9;

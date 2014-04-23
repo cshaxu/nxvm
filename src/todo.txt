@@ -1,3 +1,4 @@
-1. Build vmachine/debug/aasm.c, aasm.h as internal compiler
-2. Build vmachine/debug/debug.c, debug.h as hardware debugger
-3. Build BIOS INT service routines
+1. Test internal compiler (aasm + dasm)
+2. Build label tabel for aasm
+3. Rebuild hardware debugger
+4. Build BIOS INT service routines
