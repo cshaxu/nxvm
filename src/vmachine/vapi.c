@@ -47,35 +47,59 @@ t_apirecord vapirecord;
 #define _expression "cs:ip=%x:%x opcode=%x %x %x %x %x %x %x %x \
 ax=%x bx=%x cx=%x dx=%x sp=%x bp=%x si=%x di=%x ds=%x es=%x ss=%x \
 of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x\n"
+#define _rec (vapirecord.rec[(i + vapirecord.start) % VAPI_SIZE_RECORD])
+#define _rec_of    (GetBit(_rec.flags, VCPU_FLAG_OF))
+#define _rec_sf    (GetBit(_rec.flags, VCPU_FLAG_SF))
+#define _rec_zf    (GetBit(_rec.flags, VCPU_FLAG_ZF))
+#define _rec_cf    (GetBit(_rec.flags, VCPU_FLAG_CF))
+#define _rec_af    (GetBit(_rec.flags, VCPU_FLAG_AF))
+#define _rec_pf    (GetBit(_rec.flags, VCPU_FLAG_PF))
+#define _rec_df    (GetBit(_rec.flags, VCPU_FLAG_DF))
+#define _rec_tf    (GetBit(_rec.flags, VCPU_FLAG_TF))
+#define _rec_if    (GetBit(_rec.flags, VCPU_FLAG_IF))
 
-void vapiRecordSetFile(t_string fname)
+void vapiRecordDump(const t_string fname)
 {
-	strcpy(vapirecord.fname, fname);
+	t_nubitcc i = 0;
+	FILE *dump = fopen(fname, "w");
+	if (!dump) {
+		vapiPrint("ERROR:\tcannot write dump file.\n");
+		return;
+	}
+	if (!vapirecord.size) {
+		vapiPrint("ERROR:\tno record to dump.\n");
+		return;
+	}
+	while (i < vapirecord.size) {
+		fprintf(dump, _expression,
+			_rec.cs, _rec.ip,
+			vramVarByte(_rec.cs,_rec.ip+0),vramVarByte(_rec.cs,_rec.ip+1),
+			vramVarByte(_rec.cs,_rec.ip+2),vramVarByte(_rec.cs,_rec.ip+3),
+			vramVarByte(_rec.cs,_rec.ip+4),vramVarByte(_rec.cs,_rec.ip+5),
+			vramVarByte(_rec.cs,_rec.ip+6),vramVarByte(_rec.cs,_rec.ip+7),
+			_rec.ax,_rec.bx,_rec.cx,_rec.dx,
+			_rec.sp,_rec.bp,_rec.si,_rec.di,
+			_rec.ds,_rec.es,_rec.ss,
+			_rec_of,_rec_sf,_rec_zf,_rec_cf,
+			_rec_af,_rec_pf,_rec_df,_rec_if,_rec_tf);
+		++i;
+	}
+	fclose(dump);
 }
 void vapiRecordStart()
 {
-	if (vapirecord.fptr) fclose(vapirecord.fptr);
-	vapirecord.count = 0;
-	vapirecord.fptr = fopen(vapirecord.fname,"w");
+	vapirecord.start = 0;
+	vapirecord.size = 0;
 }
-void vapiRecordWrite()
+void vapiRecordExec()
 {
-	if ((!vapirecord.fptr)) return;
-	fprintf(vapirecord.fptr, _expression,
-		_cs, _ip,
-		vramVarByte(_cs,_ip+0),vramVarByte(_cs,_ip+1),
-		vramVarByte(_cs,_ip+2),vramVarByte(_cs,_ip+3),
-		vramVarByte(_cs,_ip+4),vramVarByte(_cs,_ip+5),
-		vramVarByte(_cs,_ip+6),vramVarByte(_cs,_ip+7),
-		_ax,_bx,_cx,_dx,_sp,_bp,_si,_di,_ds,_es,_ss,
-		_of,_sf,_zf,_cf,_af,_pf,_df,_if,_tf);
+	vapirecord.rec[(vapirecord.start + vapirecord.size) % VAPI_SIZE_RECORD]
+		= vcpu;
+	if (vapirecord.size == VAPI_SIZE_RECORD)
+		vapirecord.start++;
+	else vapirecord.size++;
 }
-void vapiRecordEnd()
-{
-	if (vapirecord.fptr) fclose(vapirecord.fptr);
-	vapirecord.fptr = NULL;
-	vapirecord.count = 0;
-}
+void vapiRecordEnd() {}
 
 /* Floppy Disk */
 #include "vfdd.h"

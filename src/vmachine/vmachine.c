@@ -7,7 +7,7 @@
 
 t_machine vmachine;
 
-void vmachineSetRecordFile(t_string fname) {vapiRecordSetFile(fname);}
+void vmachineDumpRecordFile(t_string fname) {vapiRecordDump(fname);}
 void vmachineInsertFloppy(t_string fname)  {vapiFloppyInsert(fname);}
 void vmachineRemoveFloppy(t_string fname)  {vapiFloppyRemove(fname);}
 
@@ -24,9 +24,8 @@ void vapiCallBackMachineRun()
 				vmachineStop();
 				break;
 			}
-			if (vmachine.flagrecord) {vapiRecordWrite();}
+			if (vmachine.flagrecord) vapiRecordExec();
 			vmachineRefresh();
-			if (vmachine.flagrecord) {vapiRecordWrite();++vapirecord.count;}
 			if (vmachine.flagtrace) vmachineStop();
 		}
 		if (vmachine.flagrecord) vapiRecordEnd();

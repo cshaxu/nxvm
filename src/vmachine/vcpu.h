@@ -45,7 +45,6 @@ typedef struct {
 	t_nubit16 cs,ds,es,ss;
 	t_nubit16 overds, overss;
 	t_bool flagnmi;
-	t_bool flagterm;
 } t_cpu;
 
 extern t_cpu vcpu;

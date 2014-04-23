@@ -40,7 +40,7 @@ typedef struct {
 
 extern t_machine vmachine;
 
-void vmachineSetRecordFile(t_string fname);
+void vmachineDumpRecordFile(t_string fname);
 void vmachineInsertFloppy(t_string fname);
 void vmachineRemoveFloppy(t_string fname);
 void vmachineStart();

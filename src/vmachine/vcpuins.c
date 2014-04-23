@@ -3022,7 +3022,7 @@ void CALL_REL16()
 	t_nsbit16 rel16;
 	vcpu.ip++;
 	GetImm(16);
-	rel16 = d_nsbit16(vcpuins.imm);
+	rel16 = d_nubit16(vcpuins.imm);
 	PUSH((void *)&vcpu.ip,16);
 /* vcpuins bug fix #12
 	vcpu.ip += d_nubit16(vcpuins.imm);*/

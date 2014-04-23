@@ -8,6 +8,7 @@
 #endif
 
 #include "vglobal.h"
+#include "vcpu.h"
 
 t_nubit32  vapiPrint(const t_string format, ...);
 void vapiPrintByte(t_nubit8 n);
@@ -16,17 +17,23 @@ void vapiPrintAddr(t_nubit16 segment, t_nubit16 offset);
 
 #include "stdio.h"
 
+/*
 typedef struct {
 	int   count;
 	char  fname[0x100];
 	FILE *fptr;
 } t_apirecord;
 
-extern t_apirecord vapirecord;
+extern t_apirecord vapirecord;*/
+#define VAPI_SIZE_RECORD  0xffff
+typedef struct {
+	t_cpu rec[VAPI_SIZE_RECORD];
+	t_nubitcc start, size;
+} t_apirecord;
 
-void vapiRecordSetFile(t_string fname);
+void vapiRecordDump(const t_string fname);
 void vapiRecordStart();
-void vapiRecordWrite();
+void vapiRecordExec();
 void vapiRecordEnd();
 
 void vapiFloppyInsert(const t_string fname);

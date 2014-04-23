@@ -85,7 +85,7 @@ void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
 				else if (vapiCallBackKeyboardGetAlt())
 					vapiCallBackKeyboardRecvKeyPress(ascii);
 				else if (vapiCallBackKeyboardGetCtrl())
-					vapiCallBackKeyboardRecvKeyPress(ascii + wParam - 0x0041);
+					vapiCallBackKeyboardRecvKeyPress(ascii + (UINT16)wParam - 0x0041);
 				else ; /* processed by MakeChar() */
 			}
 			break;

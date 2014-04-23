@@ -61,7 +61,7 @@ static void lcase(char *s)
 }
 static void seterr(int pos)
 {
-	errPos = arg[pos] - cmdCopy + (int)strlen(arg[pos]) + 1;
+	errPos = (int)(arg[pos] - cmdCopy + strlen(arg[pos]) + 1);
 }
 static t_nubit8 scannubit8(char *s)
 {

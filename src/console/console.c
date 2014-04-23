@@ -29,7 +29,6 @@ static void parse(char *s)
 
 #include "windows.h"
 
-#include "../vmachine/vapi.h"
 void Test()
 {
 	qdbiosInit();
@@ -44,7 +43,8 @@ void Help()
 
 	fprintf(stdout,"DEBUG   Execute virtual debugger\n");
 //	fprintf(stdout,"EXEC    Execute a binary file\n");
-	fprintf(stdout,"RECORD  Record cpu status for each instruction\n\n");
+	fprintf(stdout,"RECORD  Record cpu status for each instruction\n");
+	fprintf(stdout,"DUMP    Dump records into log file\n\n");
 //	fprintf(stdout,"TRACE   Trace cpu status for each instruction\n");
 	fprintf(stdout,"FLOPPY  Load a floppy disk from image file\n");
 	fprintf(stdout,"MEMORY  Assign the memory size\n");
@@ -62,10 +62,7 @@ void Exit()
 	}
 }
 
-void Debug()
-{
-	debug();
-}
+void Debug() {debug();}
 //void Exec()
 //{
 //	char execmd[MAXLINE];
@@ -105,7 +102,6 @@ void Debug()
 //}
 void Record()
 {
-	char str[MAXLINE];
 	if (!vmachine.flaginit || vmachine.flagrun) {
 		fprintf(stdout,"Cannot change record status now.\n");
 		return;
@@ -114,13 +110,17 @@ void Record()
 		vmachine.flagrecord = 0x00;
 		fprintf(stdout,"Recorder turned off.\n");
 	} else {
-		fprintf(stdout,"Record File: ");
-		fgets(str, MAXLINE, stdin);
-		parse(str);
 		vmachine.flagrecord = 0x01;
-		vmachineSetRecordFile(str);
 		fprintf(stdout,"Recorder turned on.\n");
 	}
+}
+void Dump()
+{
+	char str[MAXLINE];
+	fprintf(stdout,"Dump File: ");
+	fgets(str, MAXLINE, stdin);
+	parse(str);
+	vmachineDumpRecordFile(str);
 }
 
 void Floppy()
@@ -238,6 +238,7 @@ void console()
 		else if(!strcmp(cmdl,"debug"))  Debug();
 		//else if(!strcmp(cmdl,"exec"))   Exec();
 		else if(!strcmp(cmdl,"record")) Record();
+		else if(!strcmp(cmdl,"dump"))   Dump();
 
 		else if(!strcmp(cmdl,"floppy")) Floppy();
 		else if(!strcmp(cmdl,"memory")) Memory();
