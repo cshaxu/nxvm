@@ -300,8 +300,8 @@ void vpitRefresh()
 	}
 }
 #ifdef VPIT_DEBUG
-#define mov(n) (vcpu.al=n)
-#define out(n) FUNEXEC(vcpuinsOutPort[n])
+#define mov(n) (vcpu.al=(n))
+#define out(n) FUNEXEC(vcpuinsOutPort[(n)])
 #endif
 void vpitInit()
 {

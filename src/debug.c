@@ -399,7 +399,7 @@ static void h()
 static void i()
 {
 	t_nubit16 in;
-	t_nubit16 tempAL = cpu.al;
+	t_nubit8 tempAL = cpu.al;
 	if(narg != 2) seterr(narg-1);
 	else {
 		in = scannubit16(arg[1]);
@@ -483,7 +483,7 @@ static void n()
 static void o()
 {
 	t_nubit16 out;
-	t_nubit16 tempAL = cpu.al;
+	t_nubit8 tempAL = cpu.al;
 	if(narg != 3) seterr(narg-1);
 	else {
 		out = scannubit16(arg[1]);
@@ -883,7 +883,7 @@ static void u()
 // verbal
 static void v()
 {
-	int i;
+	unsigned int i;
 	char str[MAXLINE];
 	fprintf(stdout,":");
 	fgets(str,MAXLINE,stdin);

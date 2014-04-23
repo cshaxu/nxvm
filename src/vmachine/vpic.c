@@ -46,7 +46,7 @@ static t_nubit8 GetRegTopId(t_pic *vpic, t_nubit8 reg)
 	if (reg == 0x00) return 0x08;
 	reg = (reg<<(0x08 - (vpic->irx))) | (reg>>(vpic->irx));
 	while (!((reg>>id) & 0x01) && (id < 0x08)) id++;
-	return ((id + (vpic->irx)) % 0x08);
+	return (id + vpic->irx) % 0x08;
 }
 /*
  * GetRegTopId: Internal function
@@ -338,8 +338,8 @@ t_nubit8 vpicGetINTR()
 }
 
 #ifdef VPIC_DEBUG
-#define mov(n) (vcpu.al=n)
-#define out(n) FUNEXEC(vcpuinsOutPort[n])
+#define mov(n) (vcpu.al=(n))
+#define out(n) FUNEXEC(vcpuinsOutPort[(n)])
 #endif
 void vpicInit()
 {

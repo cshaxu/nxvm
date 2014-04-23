@@ -44,10 +44,6 @@ t_dma vdma1,vdma2;
 #define GetREQ(vdma,id)  (!!((vdma)->request & (0x01 << (id))))
 /* mask register bits */
 #define GetMASK(vdma,id) (!!((vdma)->mask    & (0x01 << (id))))
-/* actual request */
-#define GetRealREQ(vdma,id) \
-                         (!!(((vdma)->request & ~((vdma)->mask)) \
-                          & (0x01 << (id))))
 /* status register bits */
 #define GetTC(vdma,id)   (!!((vdma)->status  & (0x01 << (id))))
 #define GetRQ(vdma,id)   (!!((vdma)->status  & (0x10 << (id))))
@@ -70,12 +66,11 @@ static void IO_Read_CurrentWordCount(t_dma *vdma, t_nubitcc id)
 }
 static void IO_Read_Status(t_dma *vdma)
 {
-	vdma->status = (vdma->request << 4) | (vdma->status & 0x0f);
-	vcpu.al = vdma->status;
+	vcpu.al = (vdma->request << 4) | (vdma->status & 0x0f);
 	vdma->status = 0;
 }
 #define     IO_Read_Temp(vdma) (vcpu.al = (vdma)->temp)
-#define     IO_Read_Page(vdma, id) (vcpu.al = (vdma)->channel[id].page)
+#define     IO_Read_Page(vdma, id) (vcpu.al = (vdma)->channel[(id)].page)
 
 static void IO_Write_Address(t_dma *vdma, t_nubitcc id)
 {
@@ -111,12 +106,13 @@ static void IO_Write_Mask_Single(t_dma *vdma)
 		vdma->mask &= ~(1 << (vcpu.al & 0x03));
 }
 #define     IO_Write_Mode(vdma) \
-             ((vdma)->channel[vcpu.al & 0x03].mode = vcpu.al >> 2)
+            ((vdma)->channel[vcpu.al & 0x03].mode = vcpu.al >> 2)
 #define     IO_Write_Flipflop_Clear(vdma) ((vdma)->flagmsb = 0x00)
 #define     IO_Write_Reset(vdma) (vdmaReset(vdma))
 #define     IO_Write_Mask_Clear(vdma) ((vdma)->mask = 0x00)
 #define     IO_Write_Mask_All(vdma) ((vdma)->mask = vcpu.al & 0x0f)
-#define     IO_Write_Page(vdma, id)((vdma)->channel[id].page = vcpu.al)
+#define     IO_Write_Page(vdma, id, m) \
+            ((vdma)->channel[(id)].page = vcpu.al & (m))
 
 void IO_Read_0000()  {IO_Read_CurrentAddress   (&vdma1, 0);}
 void IO_Read_0001()  {IO_Read_CurrentWordCount (&vdma1, 0);}
@@ -155,14 +151,14 @@ void IO_Read_008A()  {IO_Read_Page             (&vdma2, 3);}
 void IO_Read_008B()  {IO_Read_Page             (&vdma2, 1);}
 void IO_Read_008F()  {IO_Read_Page             (&vdma2, 0);}
 
-void IO_Write_0081() {IO_Write_Page            (&vdma1, 2);}
-void IO_Write_0082() {IO_Write_Page            (&vdma1, 3);}
-void IO_Write_0083() {IO_Write_Page            (&vdma1, 1);}
-void IO_Write_0087() {IO_Write_Page            (&vdma1, 0);}
-void IO_Write_0089() {IO_Write_Page            (&vdma2, 2);}
-void IO_Write_008A() {IO_Write_Page            (&vdma2, 3);}
-void IO_Write_008B() {IO_Write_Page            (&vdma2, 1);}
-void IO_Write_008F() {IO_Write_Page            (&vdma2, 0);}
+void IO_Write_0081() {IO_Write_Page            (&vdma1, 2, 0xff);}
+void IO_Write_0082() {IO_Write_Page            (&vdma1, 3, 0xff);}
+void IO_Write_0083() {IO_Write_Page            (&vdma1, 1, 0xff);}
+void IO_Write_0087() {IO_Write_Page            (&vdma1, 0, 0xff);}
+void IO_Write_0089() {IO_Write_Page            (&vdma2, 2, 0xfe);}
+void IO_Write_008A() {IO_Write_Page            (&vdma2, 3, 0xfe);}
+void IO_Write_008B() {IO_Write_Page            (&vdma2, 1, 0xfe);}
+void IO_Write_008F() {IO_Write_Page            (&vdma2, 0, 0xfe);}
 
 void IO_Read_00C0()  {IO_Read_CurrentAddress   (&vdma2, 0);}
 void IO_Read_00C2()  {IO_Read_CurrentWordCount (&vdma2, 0);}
@@ -192,7 +188,15 @@ void IO_Write_00DA() {IO_Write_Reset           (&vdma2   );}
 void IO_Write_00DC() {IO_Write_Mask_Clear      (&vdma2   );}
 void IO_Write_00DE() {IO_Write_Mask_All        (&vdma2   );}
 
-static void Transmission(t_dma *vdma, t_nubit8 id)
+static t_nubit8 GetRegTopId(t_dma *vdma, t_nubit8 reg)
+{
+	t_nubit8 id = 0x00;
+	if (reg == 0x00) return 0x08;
+	reg = (reg << (0x04 - (vdma->drx))) | (reg >> (vdma->drx));
+	while (!((reg >> id) & 0x01) && (id < 0x04)) id++;
+	return (id + vdma->drx) % 0x04;
+}
+static void Transmission(t_dma *vdma, t_nubit8 id, t_bool word)
 {
 	switch (GetCS(vdma,id)) {
 	case 0x00: /* verify */
@@ -203,15 +207,25 @@ static void Transmission(t_dma *vdma, t_nubit8 id)
 		break;
 	case 0x01:                                                      /* write */
 		if (vdma->channel[id].devread) FUNEXEC(vdma->channel[id].devread);
-		vramSetByte(((t_nubit16)vdma->channel[id].page << 12),
-		            vdma->channel[id].curraddr, vdmalatch.byte);
+		if (!word)
+			vramSetByte(((t_nubit16)vdma->channel[id].page << 12),
+			            vdma->channel[id].curraddr, vdmalatch.byte);
+		else
+			vramSetWord(((t_nubit16)vdma->channel[id].page << 12),
+			            (vdma->channel[id].curraddr << 1), vdmalatch.word);
 		vdma->channel[id].currwc--;
 		if (GetAIDS(vdma,id)) vdma->channel[id].curraddr--;
 		else                  vdma->channel[id].curraddr++;
 		break;
 	case 0x02:                                                       /* read */
-		vdmalatch.byte = vramGetByte(((t_nubit16)vdma->channel[id].page << 12),
-		                             vdma->channel[id].curraddr);
+		if (!word)
+			vdmalatch.byte = vramGetByte(
+			                 ((t_nubit16)vdma->channel[id].page << 12),
+			                 vdma->channel[id].curraddr);
+		else
+			vdmalatch.word = vramGetWord(
+			                 ((t_nubit16)vdma->channel[id].page << 12),
+			                 (vdma->channel[id].curraddr << 1));
 		if (vdma->channel[id].devwrite) FUNEXEC(vdma->channel[id].devwrite);
 		vdma->channel[id].currwc--;
 		if (GetAIDS(vdma,id)) vdma->channel[id].curraddr--;
@@ -221,6 +235,45 @@ static void Transmission(t_dma *vdma, t_nubit8 id)
 		break;
 	default:
 		break;
+	}
+}
+static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
+{
+	if (GetM2M(vdma)) {
+		/* TODO: memory-to-memory transmission */
+	} else {
+		switch (GetM(vdma,id)) {                      /* select mode and command */
+		case 0x00:                                                     /* demand */
+			while (vdma->channel[id].currwc != 0xffff && !vdma->eop
+				   && GetREQ(vdma,id))
+				Transmission(vdma, id, word);
+			break;
+		case 0x01:                                                     /* single */
+			Transmission(vdma, id, word);
+			break;
+		case 0x02:                                                      /* block */
+			while (vdma->channel[id].currwc != 0xffff && !vdma->eop)
+				Transmission(vdma, id, word);
+			break;
+		case 0x03:                                                    /* cascade */
+			/* do nothing */
+			break;
+		default:
+			break;
+		}
+		if (vdma->channel[id].currwc == 0xffff) {
+			vdma->status |= 0x01 << id;                   /* set terminate count */
+			vdma->eop     = 0x01;
+		}
+		if (vdma->eop) {
+			if (GetAI(vdma,id)) {
+				vdma->channel[id].curraddr = vdma->channel[id].baseaddr;
+				vdma->channel[id].currwc = vdma->channel[id].basewc;
+				vdma->mask &= ~(0x01 << id);
+			} else
+				vdma->mask |= 0x01 << id;
+		}
+		vdma->eop = 0x00;
 	}
 }
 
@@ -246,61 +299,25 @@ void vdmaReset(t_dma *vdma)
 
 void vdmaRefresh()
 {
-	/* TODO: Do whatever necessary for DMA transmission */
 	t_nubit8 id;
 	t_nubit8 realdrq1, realdrq2;
-	/* get dma requests */
 	if (vdma1.request) vdma2.request |= 0x01;
 	else vdma2.request &= 0x0e;
 	realdrq1 = vdma1.request & ~(vdma1.mask);
 	realdrq2 = vdma2.request & ~(vdma2.mask);
-	/* get drq id of highest priority */
 	if (realdrq2 == 0x00) return;
-	id = 0x00;
-	realdrq2 = (realdrq2 << (0x04 - (vdma2.drx))) | (realdrq2 >> (vdma2.drx));
-	while (!((realdrq2 >> id) & 0x01) && (id < 0x04)) id++;
-	id = (id + vdma2.drx) % 0x04;
+	id = GetRegTopId(&vdma2, realdrq2);
 	if (id == 0x01) {
 		if (realdrq1 == 0x00) return;
-		id = 0x00;
-		realdrq1 = (realdrq1 << (0x04 - (vdma1.drx))) |
-		           (realdrq1 >> (vdma1.drx));
-		while (!((realdrq1 >> id) & 0x01) && (id < 0x04)) id++;
-		id = (id + vdma1.drx) % 0x04;
-		/* execute dreq from dma1 */
-		switch (GetM(&vdma1,id)) {                /* select mode and command */
-		case 0x00:                                                 /* demand */
-			while (vdma1.channel[id].currwc != 0xffff && !vdma1.eop
-			       && GetRealREQ(&vdma1,id))
-				Transmission(&vdma1, id);
-			break;
-		case 0x01:                                                 /* single */
-			Transmission(&vdma1, id);
-			break;
-		case 0x02:                                                  /* block */
-			while (vdma1.channel[id].currwc != 0xffff && !vdma1.eop)
-				Transmission(&vdma1, id);
-			break;
-		case 0x03:                                                /* cascade */
-			/* do nothing */
-			break;
-		default:
-			break;
-		}
-		if (vdma1.channel[id].currwc == 0xffff)
-			vdma1.status |= 0x01 << id;
-		if (GetAI(&vdma1,id)) {
-			if (GetM(&vdma1,id) == 0x00 && vdma1.channel[id].currwc != 0xffff) ;
-		/* TODO: Hang here */
-		} 
+		id = GetRegTopId(&vdma1, realdrq1);
+		Execute(&vdma1, id, 0x00);
 	} else {
-		/* execute dreq from dma2 */
+		Execute(&vdma2, id, 0x01);
 	}
-	/* finish dma transmission */
 }
 #ifdef VDMA_DEBUG
-#define mov(n) (vcpu.al=n)
-#define out(n) FUNEXEC(vcpuinsOutPort[n])
+#define mov(n) (vcpu.al=(n))
+#define out(n) FUNEXEC(vcpuinsOutPort[(n)])
 #endif
 void vdmaInit()
 {

@@ -34,33 +34,33 @@ static int chartohexdigit(char c)
 	else if(c >= 0x61 && c <= 0x66) return c-0x57;
 	else return -1;
 }
-#define isError(m)	(m.type == 0)
-#define isReg8(m)	(m.type == 1 && m.mod == 3)
-#define isReg16(m)	(m.type == 2 && m.mod == 3)
-#define isPtr16(m)	(m.type == 3 && m.mod == 3)
-#define isSeg16(m)	(m.type == 4 && m.mod == 3)
-#define isImm8(m)	(m.type == 5)
-#define isImm16(m)	(m.type == 6)
-#define isMem8(m)	(m.type == 7 && m.mod != 3)
-#define isMem16(m)	(m.type == 8 && m.mod != 3)
-#define isNull(m)	(m.type == 9)
-#define isNear(m)	(m.blFar  == 0)
-#define isFar(m)	(m.blFar  == 1)
+#define isError(m)	((m).type == 0)
+#define isReg8(m)	((m).type == 1 && (m).mod == 3)
+#define isReg16(m)	((m).type == 2 && (m).mod == 3)
+#define isPtr16(m)	((m).type == 3 && (m).mod == 3)
+#define isSeg16(m)	((m).type == 4 && (m).mod == 3)
+#define isImm8(m)	((m).type == 5)
+#define isImm16(m)	((m).type == 6)
+#define isMem8(m)	((m).type == 7 && (m).mod != 3)
+#define isMem16(m)	((m).type == 8 && (m).mod != 3)
+#define isNull(m)	((m).type == 9)
+#define isNear(m)	((m).blFar  == 0)
+#define isFar(m)	((m).blFar  == 1)
 #define isImm(m)	(isImm8 (m) || isImm16(m))
 #define isRM8(m)	(isReg8 (m) || isMem8 (m))
 #define isRM16(m)	(isReg16(m) || isPtr16(m) || isMem16(m))
 #define isR16(m)	(isReg16(m) || isPtr16(m))
 #define isRM(m)		(isRM8  (m) || isRM16(m))
-#define isAL(m)		(isReg8 (m) && m.rm == 0)
-#define isAX(m)		(isReg16(m) && m.rm == 0)
-#define isCL(m)		(isReg8 (m) && m.rm == 1)
-#define isCX(m)		(isReg16(m) && m.rm == 1)
-#define isDL(m)		(isReg8 (m) && m.rm == 2)
-#define isDX(m)		(isReg16(m) && m.rm == 2)
-#define isES(m)		(isSeg16(m) && m.rm == 0)
-#define isCS(m)		(isSeg16(m) && m.rm == 1)
-#define isSS(m)		(isSeg16(m) && m.rm == 2)
-#define isDS(m)		(isSeg16(m) && m.rm == 3)
+#define isAL(m)		(isReg8 (m) && (m).rm == 0)
+#define isAX(m)		(isReg16(m) && (m).rm == 0)
+#define isCL(m)		(isReg8 (m) && (m).rm == 1)
+#define isCX(m)		(isReg16(m) && (m).rm == 1)
+#define isDL(m)		(isReg8 (m) && (m).rm == 2)
+#define isDX(m)		(isReg16(m) && (m).rm == 2)
+#define isES(m)		(isSeg16(m) && (m).rm == 0)
+#define isCS(m)		(isSeg16(m) && (m).rm == 1)
+#define isSS(m)		(isSeg16(m) && (m).rm == 2)
+#define isDS(m)		(isSeg16(m) && (m).rm == 3)
 #define isALImm8	(isAL(m1) && isImm8(m2))
 #define isAXImm8	(isAX(m1) && isImm8(m2))
 #define isAXImm16	(isAX(m1) && isImm(m2))
@@ -70,10 +70,10 @@ static int chartohexdigit(char c)
 #define isRM16R16	(isRM16(m1) && isR16(m2))
 #define isR8RM8		(isReg8(m1) && isRM8(m2))
 #define isR16RM16	(isR16(m1) && isRM16(m2))
-#define isShort(ins,off,len) ((off+len < 0x0080 && ((ins < off+len+0x0080) || (ins >= (unsigned short)(off+len-0x0080)))) ||\
-	(off+len >= 0x0080 && off+len <= 0xff80 && ((ins >= off+len-0x0080) && (ins < off+len+0x0080))) ||\
-	(off+len > 0xff80 && ((ins < (unsigned short)(off+len+0x0080)) || (ins <= 0xffff && ins >= off+len-0x0080))))
-#define dispLen(m)	(((m.mod == 0 && m.rm == 6) || m.mod == 2)?2:((m.mod == 1)?1:0))
+#define isShort(ins,off,len) (((off)+(len) < 0x0080 && (((ins) < (off)+(len)+0x0080) || ((ins) >= (unsigned short)((off)+(len)-0x0080)))) ||\
+	((off)+(len) >= 0x0080 && (off)+(len) <= 0xff80 && (((ins) >= (off)+(len)-0x0080) && ((ins) < (off)+(len)+0x0080))) ||\
+	((off)+(len) > 0xff80 && (((ins) < (unsigned short)((off)+(len)+0x0080)) || ((ins) <= 0xffff && (ins) >= (off)+(len)-0x0080))))
+#define dispLen(m)	((((m).mod == 0 && (m).rm == 6) || (m).mod == 2)?2:(((m).mod == 1)?1:0))
 
 /*#define dumpArg {\
 	fprintf(stdout,"ARG REPORT:byte=%d,word=%d,blNear=%d,blFar=%d\n",byte,word,blNear,blFar);\
@@ -84,36 +84,36 @@ static int chartohexdigit(char c)
 
 #undef dumpArg*/
 
-#define aSetByte(n)	{*(loc+len++) = n;}
-#define aSetWord(n)	{*(loc+len++) = n;*(loc+len++) = (n>>8);}
+#define aSetByte(n)	{*(loc+len++) = (unsigned char)(n);}
+#define aSetWord(n)	{*(loc+len++) = (unsigned char)(n);*(loc+len++) = (unsigned char)((n)>>8);}
 #define aSetModRM(modrm,reg) {\
-	*(loc+len++) = (modrm.mod<<6) + (reg<<3) + (modrm.rm);\
+	*(loc+len++) = ((modrm).mod<<6) + ((reg)<<3) + ((modrm).rm);\
 	if(dispLen(modrm)) {\
-			*(loc+len++) = modrm.imm;\
-			if(dispLen(modrm) == 2) *(loc+len++) = (modrm.imm>>8);}}
+			*(loc+len++) = (unsigned char)((modrm).imm);\
+			if(dispLen(modrm) == 2) *(loc+len++) = (unsigned char)((modrm).imm>>8);}}
 #define aSINGLE(op)	aSetByte(op)
 #define aAACC(op) {	if(a1) len = 0; else {aSetByte(op)	aSetByte(0x0a)}}
 #define aGROUP1(reg,op,sign) {\
-	if(isALImm8) {					aSINGLE(0x04+op)					aSetByte(m2.imm)	}\
-	else if(isAXImm16) {			aSINGLE(0x05+op)					aSetWord(m2.imm)	}\
-	else if(isRM8Imm8) {			aSINGLE(0x80)	aSetModRM(m1,reg)	aSetByte(m2.imm)	}\
+	if(isALImm8) {					aSINGLE(0x04+(op))					aSetByte(m2.imm)	}\
+	else if(isAXImm16) {			aSINGLE(0x05+(op))					aSetWord(m2.imm)	}\
+	else if(isRM8Imm8) {			aSINGLE(0x80)	aSetModRM(m1,(reg))	aSetByte(m2.imm)	}\
 	else if(isRM16Imm)\
-	{	if(sign || m2.imm < 0xff80) {\
-									aSINGLE(0x81)	aSetModRM(m1,reg)	aSetWord(m2.imm)	}\
-		else {						aSINGLE(0x83)	aSetModRM(m1,reg)	aSetByte(m2.imm)	}}\
-	else if(isRM8R8) {				aSINGLE(0x00+op)	aSetModRM(m1,m2.rm)					}\
-	else if(isRM16R16) {			aSINGLE(0x01+op)	aSetModRM(m1,m2.rm)					}\
-	else if(isR8RM8) {				aSINGLE(0x02+op)	aSetModRM(m2,m1.rm)					}\
-	else if(isR16RM16) {			aSINGLE(0x03+op)	aSetModRM(m2,m1.rm)					}\
+	{	if((sign) || m2.imm < 0xff80) {\
+									aSINGLE(0x81)	aSetModRM(m1,(reg))	aSetWord(m2.imm)	}\
+		else {						aSINGLE(0x83)	aSetModRM(m1,(reg))	aSetByte(m2.imm)	}}\
+	else if(isRM8R8) {				aSINGLE(0x00+(op))	aSetModRM(m1,m2.rm)					}\
+	else if(isRM16R16) {			aSINGLE(0x01+(op))	aSetModRM(m1,m2.rm)					}\
+	else if(isR8RM8) {				aSINGLE(0x02+(op))	aSetModRM(m2,m1.rm)					}\
+	else if(isR16RM16) {			aSINGLE(0x03+(op))	aSetModRM(m2,m1.rm)					}\
 	else len = 0;}
 #define aGROUP2(reg) {\
-	if(isImm(m2)) m2.rm = reg;\
-	if(isRM8Imm8 && m2.imm == 1) {	aSINGLE(0xd0)	aSetModRM(m1,reg)					}\
-	else if(isRM8(m1) && isCL(m2)){	aSINGLE(0xd2)	aSetModRM(m1,reg)					}\
+	if(isImm(m2)) m2.rm = (reg);\
+	if(isRM8Imm8 && m2.imm == 1) {	aSINGLE(0xd0)	aSetModRM(m1,(reg))					}\
+	else if(isRM8(m1) && isCL(m2)){	aSINGLE(0xd2)	aSetModRM(m1,(reg))					}\
 	else if(isRM16(m1) && isImm8(m2) && m2.imm == 1)\
-	{								aSINGLE(0xd1)	aSetModRM(m1,reg)					}\
+	{								aSINGLE(0xd1)	aSetModRM(m1,(reg))					}\
 	else if(isRM16(m1) && isCL(m2))\
-	{								aSINGLE(0xd3)	aSetModRM(m1,reg)					}\
+	{								aSINGLE(0xd3)	aSetModRM(m1,(reg))					}\
 	else len = 0;}
 #define aGROUP3_TEST {\
 	if(isALImm8) {					aSINGLE(0xa8)						aSetByte(m2.imm)	}\
@@ -124,13 +124,13 @@ static int chartohexdigit(char c)
 	else if(isRM16R16) {			aSINGLE(0x85)	aSetModRM(m1,m2.rm)					}\
 	else len = 0;}
 #define aGROUP3(reg) {\
-	if(isRM8(m1)) {					aSINGLE(0xf6)	aSetModRM(m1,reg)					}\
-	else if(isRM16(m1)) {			aSINGLE(0xf7)	aSetModRM(m1,reg)					}\
+	if(isRM8(m1)) {					aSINGLE(0xf6)	aSetModRM(m1,(reg))					}\
+	else if(isRM16(m1)) {			aSINGLE(0xf7)	aSetModRM(m1,(reg))					}\
 	else len = 0;}
 #define aGROUP4(op,reg) {\
-	if(isR16(m1)) {					aSINGLE(op+m1.rm)									}\
-	else if(isRM8(m1)) {			aSINGLE(0xfe)	aSetModRM(m1,reg)					}\
-	else if(isRM16(m1)) {			aSINGLE(0xff)	aSetModRM(m1,reg)					}\
+	if(isR16(m1)) {					aSINGLE((op)+m1.rm)									}\
+	else if(isRM8(m1)) {			aSINGLE(0xfe)	aSetModRM(m1,(reg))					}\
+	else if(isRM16(m1)) {			aSINGLE(0xff)	aSetModRM(m1,(reg))					}\
 	else len = 0;}
 #define aGROUP5_CALL {\
 	if(isImm(m1) && isNull(m2))\
@@ -635,7 +635,7 @@ static int aDW(const char *dw,unsigned char *loc)
 		++i;
 	}
 	if(flag && i < 5) {
-		*(loc) = res;
+		*(loc) = (unsigned char)res;
 		*(loc+1) = (res>>8);
 	} else flag = 0;
 	return flag;
@@ -870,9 +870,9 @@ int assemble(const char *asmStmt,unsigned short locCS,
 #define setOperandSS	{resOperand->flag = 2;}
 #define setOperandDS	{resOperand->flag = 3;}
 #define setOperandNul	{resOperand->flag = 4;}
-#define dGetByte(n)	{n = *(loc+len++);}
-#define dGetWord(n)	{n = *(loc+len++);n += ((*(loc+len++))<<8);}
-#define dANY(str) {strcat(dasmStmt,str);}
+#define dGetByte(n)	{(n) = *(loc+len++);}
+#define dGetWord(n)	{(n) = *(loc+len++);(n) += ((*(loc+len++))<<8);}
+#define dANY(str) {strcat(dasmStmt,(str));}
 #define dCOMMA {dANY(",");}
 #define dS {\
 		switch(modrm.reg) {\
@@ -935,14 +935,14 @@ int assemble(const char *asmStmt,unsigned short locCS,
 		break;\
 	case 1:\
 		switch(modrm.rm) {\
-		case 0:	dANY("BX+SI+")	dStrCat8(dasmStmt,modrm.imm);break;\
-		case 1:	dANY("BX+DI+")	dStrCat8(dasmStmt,modrm.imm);break;\
-		case 2:	dANY("BP+SI+")	dStrCat8(dasmStmt,modrm.imm);break;\
-		case 3:	dANY("BP+DI+")	dStrCat8(dasmStmt,modrm.imm);break;\
-		case 4:	dANY("SI+")		dStrCat8(dasmStmt,modrm.imm);break;\
-		case 5:	dANY("DI+")		dStrCat8(dasmStmt,modrm.imm);break;\
-		case 6:	dANY("BP+")		dStrCat8(dasmStmt,modrm.imm);break;\
-		case 7:	dANY("BX+")		dStrCat8(dasmStmt,modrm.imm);break;\
+		case 0:	dANY("BX+SI+")	dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 1:	dANY("BX+DI+")	dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 2:	dANY("BP+SI+")	dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 3:	dANY("BP+DI+")	dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 4:	dANY("SI+")		dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 5:	dANY("DI+")		dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 6:	dANY("BP+")		dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
+		case 7:	dANY("BX+")		dStrCat8(dasmStmt,(unsigned char)modrm.imm);break;\
 		default:dANY("(ERROR:R/M)")	break;}\
 		break;\
 	case 2:\
@@ -991,7 +991,7 @@ int assemble(const char *asmStmt,unsigned short locCS,
 	if(modrm.mod < 3) dANY("]");}
 #define dImm(bit) {\
 	switch(bit) {\
-	case 8:	dGetByte(imm)	dStrCat8(dasmStmt,imm);break;\
+	case 8:	dGetByte(imm)	dStrCat8(dasmStmt,(unsigned char)imm);break;\
 	case 16:dGetWord(imm)	dStrCat16(dasmStmt,imm);break;\
 	default:dANY("(ERROR:IMM)")	break;}}
 #define dOff(bit) {\
@@ -1002,8 +1002,8 @@ int assemble(const char *asmStmt,unsigned short locCS,
 	dANY("]");}
 #define dSImm8 {\
 	dGetByte(imm)\
-	if(imm&0x80) {dANY("-")	dStrCat8(dasmStmt,(~imm)+1);}\
-	else {dANY("+")	dStrCat8(dasmStmt,imm);}}
+	if(imm&0x80) {dANY("-")	dStrCat8(dasmStmt,(unsigned char)((~imm)+1));}\
+	else {dANY("+")	dStrCat8(dasmStmt,(unsigned char)imm);}}
 #define dGetModRM {\
 	modrm.mod = *(loc+len++);\
 	modrm.rm = ((modrm.mod&0x07)>>0);\
@@ -1288,7 +1288,7 @@ static int dAAX(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char
 	setOperandNul
 	dGetByte(imm)
 	dANY(op)
-	if(imm != 0x0a) {dANY("\t")	dStrCat8(dasmStmt,imm);}
+	if(imm != 0x0a) {dANY("\t")	dStrCat8(dasmStmt,(unsigned char)imm);}
 	return len;
 }
 static int dJFar(char *dasmStmt,Operand *resOperand,unsigned char *loc,const char *op)
