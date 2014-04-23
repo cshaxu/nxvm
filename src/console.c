@@ -4,7 +4,7 @@
 #include "stdlib.h"
 #include "string.h"
 
-#include "nvm/vmachine.h"
+#include "vmachine/vmachine.h"
 
 #include "global.h"
 #include "debug.h"

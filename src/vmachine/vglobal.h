@@ -19,20 +19,15 @@ typedef signed int t_nsbitcc;
 typedef unsigned int t_vaddrcc;		// addr: variable, c compiler
 typedef unsigned int t_faddrcc;		// addr: function, c compiler
 #elif NVM_INTLEN == 64
-typedef unsigned __int64 t_bool;
-typedef unsigned __int64 t_nubitcc;
-typedef signed __int64 t_nsbitcc;
-typedef unsigned __int64 t_vaddrcc;	// addr: variable, c compiler
-typedef unsigned __int64 t_faddrcc;	// addr: function, c compiler
+typedef unsigned long long t_bool;
+typedef unsigned long long t_nubitcc;
+typedef signed long long t_nsbitcc;
+typedef unsigned long long t_vaddrcc;	// addr: variable, c compiler
+typedef unsigned long long t_faddrcc;	// addr: function, c compiler
 #else
 #endif
 
-#if NVM_CCOMPILER == NVM_MSVC
-#define FUNEXEC(faddr) (*(void (__cdecl *)(void))(faddr))()
-#else
 #define FUNEXEC(faddr) (*(void (*)(void))(faddr))()
-#endif
-
 #define SHL4(n) (((t_vaddrcc)n)<<4)
 
 #endif

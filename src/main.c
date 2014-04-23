@@ -33,7 +33,7 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 #include "stdlib.h"
 #include "string.h"
 
-#include "nvm/coption.h"
+#include "vmachine/coption.h"
 #include "global.h"
 #include "console.h"
 

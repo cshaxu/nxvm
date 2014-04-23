@@ -1208,7 +1208,6 @@ static int dGroup1(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigne
 static int dXCHG(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
 {
 	int len = 0;
-	unsigned char rn;
 	ModRM modrm;
 	setOperandNul
 	dANY("XCHG\t")

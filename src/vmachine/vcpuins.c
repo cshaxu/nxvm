@@ -10,7 +10,6 @@
 #include "system/vapi.h"
 
 #ifdef NVM_DEBUG_VCPUINS
-#include "conio.h"
 // NOTE: INT_I8() is modified for the INT test. Please correct it finally!
 // NOTE: Need to modify the INT processor! All INTs should call INT(t_nubit8 intid);
 #endif
@@ -2727,10 +2726,6 @@ void INT_I8()
 		switch(vcpu.ah) {
 		case 0x00:
 			cpuTermFlag = 1;
-			break;
-		case 0x01:
-			vcpu.al = getch();
-			nvmprint("%c",vcpu.al);
 			break;
 		case 0x02:
 			nvmprint("%c",vcpu.dl);

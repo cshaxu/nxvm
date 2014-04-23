@@ -20,8 +20,8 @@ test code
 #include "stdlib.h"
 #include "string.h"
 
-#include "nvm/vmachine.h"
-#include "nvm/vcpuins.h"
+#include "vmachine/vmachine.h"
+#include "vmachine/vcpuins.h"
 #define cpu vcpu
 #define memory memoryBase
 #define insptr insPtr
