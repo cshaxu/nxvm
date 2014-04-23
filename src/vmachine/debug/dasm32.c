@@ -3,7 +3,7 @@
 #include "stdlib.h"
 #include "string.h"
 
-#include "../vcpuins.h"
+#include "../vcpu.h"
 #include "dasm32.h"
 
 #ifdef VGLOBAL_BOCHS
@@ -1615,7 +1615,7 @@ static void INSB()
 	_cb("INSB");
 	_adv;
 	SPRINTF(dop, "INSB");
-	SPRINTF(dptr, "BYTE PTR");
+	SPRINTF(dptr, "BYTE PTR ");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI],DX");break;
 	case 4: SPRINTF(dopr, "ES:[EDI],DX");break;
@@ -1628,8 +1628,8 @@ static void INSW()
 	_cb("INSW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "INSW");SPRINTF(dptr, "WORD PTR");break;
-	case 4: SPRINTF(dop, "INSD");SPRINTF(dptr, "DWORD PTR");break;
+	case 2: SPRINTF(dop, "INSW");SPRINTF(dptr, "WORD PTR ");break;
+	case 4: SPRINTF(dop, "INSD");SPRINTF(dptr, "DWORD PTR ");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI],DX");break;
@@ -1643,7 +1643,7 @@ static void OUTSB()
 	_cb("OUTSB");
 	_adv;
 	SPRINTF(dop, "OUTSB");
-	SPRINTF(dptr, "BYTE PTR");
+	SPRINTF(dptr, "BYTE PTR ");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "DX,%s:[SI]", doverds);break;
 	case 4: SPRINTF(dopr, "DX,%s:[ESI]", doverds);break;
@@ -1656,8 +1656,8 @@ static void OUTSW()
 	_cb("OUTSW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "OUTSW");SPRINTF(dptr, "WORD PTR");break;
-	case 4: SPRINTF(dop, "OUTSD");SPRINTF(dptr, "DWORD PTR");break;
+	case 2: SPRINTF(dop, "OUTSW");SPRINTF(dptr, "WORD PTR ");break;
+	case 4: SPRINTF(dop, "OUTSD");SPRINTF(dptr, "DWORD PTR ");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "DX,%s:[SI]", doverds);break;
@@ -2310,7 +2310,7 @@ static void MOVSB()
 	_cb("MOVS");
 	_adv;
 	SPRINTF(dop, "MOVSB");
-	SPRINTF(dptr, "BYTE PTR");
+	SPRINTF(dptr, "BYTE PTR ");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI],%s:[SI]", doverds);break;
 	case 4: SPRINTF(dopr, "ES:[EDI],%s:[ESI]", doverds);break;
@@ -2323,8 +2323,8 @@ static void MOVSW()
 	_cb("MOVSW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "MOVSW");SPRINTF(dptr, "WORD PTR");break;
-	case 4: SPRINTF(dop, "MOVSD");SPRINTF(dptr, "DWORD PTR");break;
+	case 2: SPRINTF(dop, "MOVSW");SPRINTF(dptr, "WORD PTR ");break;
+	case 4: SPRINTF(dop, "MOVSD");SPRINTF(dptr, "DWORD PTR ");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI],%s:[SI]", doverds);break;
@@ -2338,7 +2338,7 @@ static void CMPSB()
 	_cb("CMPSB");
 	_adv;
 	SPRINTF(dop, "CMPSB");
-	SPRINTF(dptr, "BYTE PTR");
+	SPRINTF(dptr, "BYTE PTR ");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[SI],ES:[DI]", doverds);break;
 	case 4: SPRINTF(dopr, "%s:[ESI],ES:[EDI]", doverds);break;
@@ -2351,8 +2351,8 @@ static void CMPSW()
 	_cb("CMPSW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "CMPSW");SPRINTF(dptr, "WORD PTR");break;
-	case 4: SPRINTF(dop, "CMPSD");SPRINTF(dptr, "DWORD PTR");break;
+	case 2: SPRINTF(dop, "CMPSW");SPRINTF(dptr, "WORD PTR ");break;
+	case 4: SPRINTF(dop, "CMPSD");SPRINTF(dptr, "DWORD PTR ");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[SI],ES:[DI]", doverds);break;
@@ -2387,7 +2387,7 @@ static void STOSB()
 	_cb("STOSB");
 	_adv;
 	SPRINTF(dop, "STOSB");
-	SPRINTF(dptr, "BYTE PTR");
+	SPRINTF(dptr, "BYTE PTR ");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI]");break;
 	case 4: SPRINTF(dopr, "ES:[EDI]");break;
@@ -2400,8 +2400,8 @@ static void STOSW()
 	_cb("STOSW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "STOSW");SPRINTF(dptr, "WORD PTR");break;
-	case 4: SPRINTF(dop, "STOSD");SPRINTF(dptr, "DWORD PTR");break;
+	case 2: SPRINTF(dop, "STOSW");SPRINTF(dptr, "WORD PTR ");break;
+	case 4: SPRINTF(dop, "STOSD");SPRINTF(dptr, "DWORD PTR ");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI]");break;
@@ -2415,7 +2415,7 @@ static void LODSB()
 	_cb("LODSB");
 	_adv;
 	SPRINTF(dop, "LODSB");
-	SPRINTF(dptr, "BYTE PTR");
+	SPRINTF(dptr, "BYTE PTR ");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[SI]", doverds);break;
 	case 4: SPRINTF(dopr, "%s:[ESI]", doverds);break;
@@ -2428,8 +2428,8 @@ static void LODSW()
 	_cb("LODSW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "LODSW");SPRINTF(dptr, "WORD PTR");break;
-	case 4: SPRINTF(dop, "LODSD");SPRINTF(dptr, "DWORD PTR");break;
+	case 2: SPRINTF(dop, "LODSW");SPRINTF(dptr, "WORD PTR ");break;
+	case 4: SPRINTF(dop, "LODSD");SPRINTF(dptr, "DWORD PTR ");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[SI]", doverds);break;
@@ -2443,7 +2443,7 @@ static void SCASB()
 	_cb("SCASB");
 	_adv;
 	SPRINTF(dop, "SCASB");
-	SPRINTF(dptr, "BYTE PTR");
+	SPRINTF(dptr, "BYTE PTR ");
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI]");break;
 	case 4: SPRINTF(dopr, "ES:[EDI]");break;
@@ -2456,8 +2456,8 @@ static void SCASW()
 	_cb("SCASW");
 	_adv;
 	switch (_GetOperandSize) {
-	case 2: SPRINTF(dop, "SCASW");SPRINTF(dptr, "WORD PTR");break;
-	case 4: SPRINTF(dop, "SCASD");SPRINTF(dptr, "DWORD PTR");break;
+	case 2: SPRINTF(dop, "SCASW");SPRINTF(dptr, "WORD PTR ");break;
+	case 4: SPRINTF(dop, "SCASD");SPRINTF(dptr, "DWORD PTR ");break;
 	default:_impossible_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI]");break;
@@ -4308,6 +4308,30 @@ static void LGS_R32_M16_32()
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
+static void MOVZX_R32_RM8()
+{
+	t_dasm_str dptr;
+	_cb("MOVZX_R32_RM8");
+	_adv;
+	SPRINTF(dop, "MOVZX");
+	_chk(_d_modrm(_GetOperandSize, 1));
+	if (flagmem) SPRINTF(dptr, "BYTE PTR ");
+	else dptr[0] = 0;
+	SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
+	_ce;
+}
+static void MOVZX_R32_RM16()
+{
+	t_dasm_str dptr;
+	_cb("MOVZX_R32_RM16");
+	_adv;
+	SPRINTF(dop, "MOVZX");
+	_chk(_d_modrm(4, 2));
+	if (flagmem) SPRINTF(dptr, "WORD PTR ");
+	else dptr[0] = 0;
+	SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
+	_ce;
+}
 static void INS_0F_BA()
 {
 	t_nubit8 modrm, oldiop;
@@ -4376,40 +4400,28 @@ static void BSR_R32_RM32()
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
-static void MOVZX_R32_RM8()
-{
-	_cb("MOVZX_R32_RM8");
-	_adv;
-	SPRINTF(dop, "MOVZX");
-	_chk(_d_modrm(_GetOperandSize, 1));
-	SPRINTF(dopr, "%s,%s", dr, drm);
-	_ce;
-}
-static void MOVZX_R32_RM16()
-{
-	_cb("MOVZX_R32_RM16");
-	_adv;
-	SPRINTF(dop, "MOVZX");
-	_chk(_d_modrm(4, 2));
-	SPRINTF(dopr, "%s,%s", dr, drm);
-	_ce;
-}
 static void MOVSX_R32_RM8()
 {
+	t_dasm_str dptr;
 	_cb("MOVSX_R32_RM8");
 	_adv;
 	SPRINTF(dop, "MOVSX");
 	_chk(_d_modrm(_GetOperandSize, 1));
-	SPRINTF(dopr, "%s,%s", dr, drm);
+	if (flagmem) SPRINTF(dptr, "BYTE PTR ");
+	else dptr[0] = 0;
+	SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
 	_ce;
 }
 static void MOVSX_R32_RM16()
 {
+	t_dasm_str dptr;
 	_cb("MOVSX_R32_RM16");
 	_adv;
 	SPRINTF(dop, "MOVSX");
 	_chk(_d_modrm(4, 2));
-	SPRINTF(dopr, "%s,%s", dr, drm);
+	if (flagmem) SPRINTF(dptr, "WORD PTR ");
+	else dptr[0] = 0;
+	SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
 	_ce;
 }
 static void QDX()

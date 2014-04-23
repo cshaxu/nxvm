@@ -12,9 +12,9 @@ extern "C" {
 #include "vglobal.h"
 
 typedef enum {
-	SREG_CODE,
 	SREG_DATA,
 	SREG_STACK,
+	SREG_CODE,
 	SREG_LDTR,
 	SREG_TR,
 	SREG_GDTR,

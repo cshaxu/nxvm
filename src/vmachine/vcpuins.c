@@ -454,7 +454,7 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rd
 		if (vcpuins.flagww) {
 			if (vcpuins.wwlin >= vcpurec.mem[vcpurec.msize].linear &&
 				vcpuins.wwlin < vcpurec.mem[vcpurec.msize].linear + byte) {
-				vapiPrint("L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", vcpurec.linear,
+				vapiPrint("Watch point caught at L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", vcpurec.linear,
 					vcpurec.mem[vcpurec.msize].byte,
 					vcpurec.mem[vcpurec.msize].data,
 					vcpurec.mem[vcpurec.msize].linear);
@@ -10359,7 +10359,6 @@ static void LAR_R32_RM32()
 	t_nubit16 selector;
 	t_nubit64 descriptor;
 	_cb("LAR_R32_RM32");
-	_newins_;
 	_adv;
 	if (_IsProtected) {
 		_bb("Protected(1)");
@@ -10426,7 +10425,6 @@ static void LSL_R32_RM32()
 	t_nubit32 limit;
 	t_nubit64 descriptor;
 	_cb("LSL_R32_RM32");
-	_newins_;
 	_adv;
 	if (_IsProtected) {
 		_bb("Protected(1)");
@@ -11121,6 +11119,26 @@ static void LGS_R32_M16_32()
 	_chk(_e_load_far(&vcpu.gs, vcpuins.rr, selector, offset, _GetOperandSize));
 	_ce;
 }
+static void MOVZX_R32_RM8()
+{
+	_cb("MOVZX_R32_RM8");
+	_adv;
+	_chk(_d_modrm(_GetOperandSize, 1));
+	_chk(_m_read_rm(1));
+	vcpuins.crm = (t_nubit8)vcpuins.crm;
+	_chk(_m_write_ref(vcpuins.rr, GetRef(vcpuins.crm), _GetOperandSize));
+	_ce;
+}
+static void MOVZX_R32_RM16()
+{
+	_cb("MOVZX_R32_RM16");
+	_adv;
+	_chk(_d_modrm(4, 2));
+	_chk(_m_read_rm(2));
+	vcpuins.crm = (t_nubit16)vcpuins.crm;
+	_chk(_m_write_ref(vcpuins.rr, GetRef(vcpuins.crm), 4));
+	_ce;
+}
 static void INS_0F_BA()
 {
 	t_bool write = 0;
@@ -11199,26 +11217,6 @@ static void BSR_R32_RM32()
 		_chk(_m_write_ref(vcpuins.rr, GetRef(vcpuins.result), _GetOperandSize));
 		_be;
 	}
-	_ce;
-}
-static void MOVZX_R32_RM8()
-{
-	_cb("MOVZX_R32_RM8");
-	_adv;
-	_chk(_d_modrm(_GetOperandSize, 1));
-	_chk(_m_read_rm(1));
-	vcpuins.crm = (t_nubit8)vcpuins.crm;
-	_chk(_m_write_ref(vcpuins.rr, GetRef(vcpuins.crm), _GetOperandSize));
-	_ce;
-}
-static void MOVZX_R32_RM16()
-{
-	_cb("MOVZX_R32_RM16");
-	_adv;
-	_chk(_d_modrm(4, 2));
-	_chk(_m_read_rm(2));
-	vcpuins.crm = (t_nubit16)vcpuins.crm;
-	_chk(_m_write_ref(vcpuins.rr, GetRef(vcpuins.crm), 4));
 	_ce;
 }
 static void MOVSX_R32_RM8()
@@ -11310,7 +11308,7 @@ static void ExecIns()
 	ExecInit();
 	linear = vcpu.cs.base + vcpu.eip;
 	if (vcpuins.flagwe && vcpuins.welin == linear) {
-		vapiPrint("L%08x: EXECUTED\n", linear);
+		vapiPrint("Watch point caught at L%08x: EXECUTED\n", linear);
 		vapiCallBackDebugPrintRegs(1);
 	}
 	do {
@@ -11399,16 +11397,37 @@ static void QDX()
 }
 
 /* external interface */
-t_bool vcpuinsReadLinear(t_nubit32 linear, t_vaddrcc rcode, t_nubit8 byte)
+t_bool vcpuinsLoadSreg(t_cpu_sreg *rsreg, t_nubit16 selector)
 {
 	t_bool fail;
 	t_nubit32 oldexcept = vcpuins.except;
 	vcpuins.except = 0;
-	_kma_read_linear(linear, rcode, byte, 0x00, 1);
+	_ksa_load_sreg(rsreg, selector);
 	fail = !!vcpuins.except;
 	vcpuins.except = oldexcept;
 	return fail;
 }
+t_bool vcpuinsReadLinear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte)
+{
+	t_bool fail;
+	t_nubit32 oldexcept = vcpuins.except;
+	vcpuins.except = 0;
+	_kma_read_linear(linear, rdata, byte, 0x00, 1);
+	fail = !!vcpuins.except;
+	vcpuins.except = oldexcept;
+	return fail;
+}
+t_bool vcpuinsWriteLinear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte)
+{
+	t_bool fail;
+	t_nubit32 oldexcept = vcpuins.except;
+	vcpuins.except = 0;
+	_kma_write_linear(linear, rdata, byte, 0x00, 1);
+	fail = !!vcpuins.except;
+	vcpuins.except = oldexcept;
+	return fail;
+}
+
 void vcpuinsInit()
 {
 #if VCPUINS_TRACE == 1
