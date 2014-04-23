@@ -775,10 +775,7 @@ static void t()
 		break;
 	case 2:
 		vmachine.flagtrace = 0x01;
-		count = 1;
-		addrparse(_cs,arg[1]);
-		_cs = seg;
-		_ip = ptr;
+		count = scannubit16(arg[1]);
 		break;
 	case 3:
 		vmachine.flagtrace = 0x01;
@@ -792,7 +789,8 @@ static void t()
 	for(i = 0;i < count;++i) {
 		vmachineStart();
 		while (vmachine.flagrun) vapiSleep(1);
-		rprintregs();
+		if (count < 0x0100 || i == count - 0x01)
+			rprintregs();
 	}
 	vmachine.flagtrace = 0x00;
 //	gexec(ptr1,ptr2);
@@ -998,7 +996,7 @@ static void help()
 	fprintf(stdout,"quit\t\tQ\n");
 	fprintf(stdout,"register\tR [register]\n");
 	fprintf(stdout,"search\t\tS range list\n");
-	fprintf(stdout,"trace\t\tT [address] [value]\n");
+	fprintf(stdout,"trace\t\tT [[address] value]\n");
 	//fprintf(stdout,"trace\t\tT [=address] [value]\n");
 	fprintf(stdout,"unassemble\tU [range]\n");
 	fprintf(stdout,"verbal\t\tV\n");

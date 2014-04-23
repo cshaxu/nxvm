@@ -432,7 +432,7 @@ void ADD(void **Des, void **Src, int Len)
 		toe8;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit8 *)*Des+=*(t_nubit8 *)*Src;
+		d_nubit8(*Des)+=d_nubit8(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -440,7 +440,7 @@ void ADD(void **Des, void **Src, int Len)
 		toe16;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit16 *)*Des+=*(t_nubit16 *)*Src;
+		d_nubit16(*Des)+=d_nubit16(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -448,7 +448,7 @@ void ADD(void **Des, void **Src, int Len)
 		toe32;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit32 *)*Des+=*(t_nubit32 *)*Src;
+		d_nubit32(*Des)+=d_nubit32(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -492,7 +492,7 @@ void OR(void **Des, void **Src, int Len)
 		toe8;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit8 *)*Des|=*(t_nubit8 *)*Src;
+		d_nubit8(*Des)|=d_nubit8(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -500,7 +500,7 @@ void OR(void **Des, void **Src, int Len)
 		toe16;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit16 *)*Des|=*(t_nubit16 *)*Src;
+		d_nubit16(*Des)|=d_nubit16(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -508,7 +508,7 @@ void OR(void **Des, void **Src, int Len)
 		toe32;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit32 *)*Des|=*(t_nubit32 *)*Src;
+		d_nubit32(*Des)|=d_nubit32(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -522,8 +522,8 @@ void ADC(void **Des, void **Src, int Len)
 	{
 	case 1:
 		toe8;
-		t81=*(t_nubit8 *)*Des;
-		t82=*(t_nubit8 *)*Src;
+		t81=d_nubit8(*Des);
+		t82=d_nubit8(*Src);
 		__asm push eCPU.eflags
 		__asm popfd
 		__asm mov al,t81
@@ -531,12 +531,12 @@ void ADC(void **Des, void **Src, int Len)
 		__asm mov t81,al
 		__asm pushfd
 		__asm pop eCPU.eflags
-		*(t_nubit8 *)*Des=t81;
+		d_nubit8(*Des)=t81;
 		break;
 	case 2:
 		toe16;
-		t161=*(t_nubit16 *)*Des;
-		t162=*(t_nubit16 *)*Src;
+		t161=d_nubit16(*Des);
+		t162=d_nubit16(*Src);
 		__asm push eCPU.eflags
 		__asm popfd
 		__asm mov ax,t161
@@ -544,12 +544,12 @@ void ADC(void **Des, void **Src, int Len)
 		__asm mov t161,ax
 		__asm pushfd
 		__asm pop eCPU.eflags
-		*(t_nubit16 *)*Des=t161;
+		d_nubit16(*Des)=t161;
 		break;
 	case 4:
 		toe32;
-		t321=*(t_nubit32 *)*Des;
-		t322=*(t_nubit32 *)*Src;
+		t321=d_nubit32(*Des);
+		t322=d_nubit32(*Src);
 		__asm push eCPU.eflags
 		__asm popfd
 		__asm mov eax,t321
@@ -557,7 +557,7 @@ void ADC(void **Des, void **Src, int Len)
 		__asm mov t321,eax
 		__asm pushfd
 		__asm pop eCPU.eflags
-		*(t_nubit32 *)*Des=t321;
+		d_nubit32(*Des)=t321;
 		break;
 	}
 	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
@@ -569,8 +569,8 @@ void SBB(void **Des, void **Src, int Len)
 	{
 	case 1:
 		toe8;
-		t81=*(t_nubit8 *)*Des;
-		t82=*(t_nubit8 *)*Src;
+		t81=d_nubit8(*Des);
+		t82=d_nubit8(*Src);
 		__asm push eCPU.eflags
 		__asm popfd
 		__asm mov al,t81
@@ -578,12 +578,12 @@ void SBB(void **Des, void **Src, int Len)
 		__asm mov t81,al
 		__asm pushfd
 		__asm pop eCPU.eflags
-		*(t_nubit8 *)*Des=t81;
+		d_nubit8(*Des)=t81;
 		break;
 	case 2:
 		toe16;
-		t161=*(t_nubit16 *)*Des;
-		t162=*(t_nubit16 *)*Src;
+		t161=d_nubit16(*Des);
+		t162=d_nubit16(*Src);
 		__asm push eCPU.eflags
 		__asm popfd
 		__asm mov ax,t161
@@ -591,12 +591,12 @@ void SBB(void **Des, void **Src, int Len)
 		__asm mov t161,ax
 		__asm pushfd
 		__asm pop eCPU.eflags
-		*(t_nubit16 *)*Des=t161;
+		d_nubit16(*Des)=t161;
 		break;
 	case 4:
 		toe32;
-		t321=*(t_nubit32 *)*Des;
-		t322=*(t_nubit32 *)*Src;
+		t321=d_nubit32(*Des);
+		t322=d_nubit32(*Src);
 		__asm push eCPU.eflags
 		__asm popfd
 		__asm mov eax,t321
@@ -604,7 +604,7 @@ void SBB(void **Des, void **Src, int Len)
 		__asm mov t321,eax
 		__asm pushfd
 		__asm pop eCPU.eflags
-		*(t_nubit32 *)*Des=t321;
+		d_nubit32(*Des)=t321;
 		break;
 	}
 	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
@@ -618,7 +618,7 @@ void AND(void **Des, void **Src, int Len)
 		toe8;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit8 *)*Des&=*(t_nubit8 *)*Src;
+		d_nubit8(*Des)&=d_nubit8(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -626,7 +626,7 @@ void AND(void **Des, void **Src, int Len)
 		toe16;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit16 *)*Des&=*(t_nubit16 *)*Src;
+		d_nubit16(*Des)&=d_nubit16(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -634,7 +634,7 @@ void AND(void **Des, void **Src, int Len)
 		toe32;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit32 *)*Des&=*(t_nubit32 *)*Src;
+		d_nubit32(*Des)&=d_nubit32(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -650,7 +650,7 @@ void SUB(void **Des, void **Src, int Len)
 		toe8;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit8 *)*Des-=*(t_nubit8 *)*Src;
+		d_nubit8(*Des)-=d_nubit8(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -658,7 +658,7 @@ void SUB(void **Des, void **Src, int Len)
 		toe16;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit16 *)*Des-=*(t_nubit16 *)*Src;
+		d_nubit16(*Des)-=d_nubit16(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -666,7 +666,7 @@ void SUB(void **Des, void **Src, int Len)
 		toe32;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit32 *)*Des-=*(t_nubit32 *)*Src;
+		d_nubit32(*Des)-=d_nubit32(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -682,7 +682,7 @@ void XOR(void **Des, void **Src, int Len)
 		toe8;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit8 *)*Des^=*(t_nubit8 *)*Src;
+		d_nubit8(*Des)^=d_nubit8(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags
 		break;
@@ -690,7 +690,7 @@ void XOR(void **Des, void **Src, int Len)
 		toe16;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit16 *)*Des^=*(t_nubit16 *)*Src;
+		d_nubit16(*Des)^=d_nubit16(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -698,7 +698,7 @@ void XOR(void **Des, void **Src, int Len)
 		toe32;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit32 *)*Des^=*(t_nubit32 *)*Src;
+		d_nubit32(*Des)^=d_nubit32(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
 		break;
@@ -708,34 +708,43 @@ void XOR(void **Des, void **Src, int Len)
 void CMP(void **Des, void **Src, int Len)
 {
 	t_bool intf = GetBit(eCPU.flags, VCPU_FLAG_IF);
+	t_nubit8 opr11,opr12;
+	t_nubit16 opr21,opr22;
+	t_nubit32 opr41,opr42;
 	switch(Len)
 	{
 	case 1:
 		toe8;
+		opr11 = d_nubit8(*Des);
+		opr12 = d_nubit8(*Src);
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit8 *)*Des-=*(t_nubit8 *)*Src;
+		__asm push eax
+		__asm mov al, opr11
+		__asm cmp al, opr12
+		__asm pop eax
+//		d_nubit8(*Des)-=d_nubit8(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags			
-		*(t_nubit8 *)*Des+=*(t_nubit8 *)*Src;
+		d_nubit8(*Des)+=d_nubit8(*Src);
 		break;
 	case 2:
 		toe16;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit16 *)*Des-=*(t_nubit16 *)*Src;
+		d_nubit16(*Des)-=d_nubit16(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags
-		*(t_nubit16 *)*Des+=*(t_nubit16 *)*Src;
+		d_nubit16(*Des)+=d_nubit16(*Src);
 		break;
 	case 4:
 		toe32;
 		__asm push eCPU.eflags				//加操作只修改某些位，如果直接就pop eCPU.flags会把整个eCPU.flags都修改掉。
 		__asm popfd
-		*(t_nubit32 *)*Des-=*(t_nubit32 *)*Src;
+		d_nubit32(*Des)-=d_nubit32(*Src);
 		__asm pushfd
 		__asm pop eCPU.eflags
-		*(t_nubit32 *)*Des+=*(t_nubit32 *)*Src;
+		d_nubit32(*Des)+=d_nubit32(*Src);
 		break;
 	}
 	MakeBit(eCPU.flags, VCPU_FLAG_IF, intf);
@@ -799,7 +808,7 @@ void TEST(void **Des, void **Src, int Len)
 	{
 	case 1:
 		toe8;
-		t81=*(t_nubit8 *)*Des,t82=*(t_nubit8 *)*Src;
+		t81=d_nubit8(*Des),t82=d_nubit8(*Src);
 		__asm mov al,t82
 		__asm push eCPU.eflags
 		__asm popfd
@@ -809,7 +818,7 @@ void TEST(void **Des, void **Src, int Len)
 		break;
 	case 2:
 		toe16;
-		t161=*(t_nubit16 *)*Des,t162=*(t_nubit16 *)*Src;
+		t161=d_nubit16(*Des),t162=d_nubit16(*Src);
 		__asm mov ax,t162
 		__asm push eCPU.eflags
 		__asm popfd
@@ -819,7 +828,7 @@ void TEST(void **Des, void **Src, int Len)
 		break;
 	case 4:
 		toe32;
-		t321=*(t_nubit32 *)*Des,t322=*(t_nubit32 *)*Src;
+		t321=d_nubit32(*Des),t322=d_nubit32(*Src);
 		__asm mov eax,t322
 		__asm push eCPU.eflags
 		__asm popfd
@@ -879,7 +888,7 @@ void SHL(void *Des, t_nubit8 mb, int Len)
 	switch(Len)
 	{
 	case 1:
-		tSHLrm8=d_nubit8(Des);		
+		tSHLrm8=d_nubit8(Des);
 		__asm
 		{		
 			mov al,tSHLrm8
@@ -1302,7 +1311,7 @@ void CMP_AL_I8()
 {
 	t_nubit32 tevIP=evIP;
 	void *pa=&eCPU.al,*pb=(void *)(evIP+MemoryStart);
-	CMP((void **)&pa,(void **)&pb,1);	
+	CMP((void **)&pa,(void **)&pb,1);
 	evIP=tevIP+1;
 }
 void CMP_AX_I16()
@@ -3100,7 +3109,7 @@ void JCXZ_NEAR()
 void IN_AL_N()
 {
 	ExecFun(InTable[d_nubit8(eIMS)]);
-	eCPU.al = eCPU.iobyte;
+	eCPU.al = vport.iobyte;
 	evIP++;
 }
 void IN_AX_N()
@@ -3109,13 +3118,13 @@ void IN_AX_N()
 	int i;
 	for (i=0;i<tmpOpdSize;i++) {
 		ExecFun(InTable[d_nubit8(eIMS)+i]);
-		d_nubit8(&eCPU.al+i)=eCPU.iobyte;
+		d_nubit8(&eCPU.al+i)=vport.iobyte;
 	}
 	evIP++;
 }
 void OUT_N_AL()
 {
-	eCPU.iobyte = eCPU.al;
+	vport.iobyte = eCPU.al;
 	ExecFun(OutTable[d_nubit8(eIMS)]);
 	evIP++;
 }
@@ -3123,7 +3132,7 @@ void OUT_N_AX()
 {
 	int i;
 	for (i=0;i<tmpOpdSize;i++) {
-		eCPU.iobyte = d_nubit8(&eCPU.ax+i);
+		vport.iobyte = d_nubit8(&eCPU.ax+i);
 		ExecFun(OutTable[d_nubit8(eIMS)+i]);
 	}
 	evIP++;
@@ -3160,26 +3169,26 @@ void JMP_NEAR()			//立即数是一字节的
 void IN_AL_DX()
 {
 	ExecFun(InTable[eCPU.dx]);
-	eCPU.al = eCPU.iobyte;
+	eCPU.al = vport.iobyte;
 }
 void IN_AX_DX()
 {
 	int i;
 	for (i=0;i<tmpOpdSize;i++) {
 		ExecFun(InTable[eCPU.dx+i]);
-		d_nubit8(&eCPU.al+i)=eCPU.iobyte;
+		d_nubit8(&eCPU.al+i)=vport.iobyte;
 	}
 }
 void OUT_DX_AL()
 {
-	eCPU.iobyte = eCPU.al;
+	vport.iobyte = eCPU.al;
 	ExecFun(OutTable[eCPU.dx]);
 }
 void OUT_DX_AX()
 {
 	int i;
 	for (i=0;i<tmpOpdSize;i++) {
-		eCPU.iobyte = d_nubit8(&eCPU.al+i);
+		vport.iobyte = d_nubit8(&eCPU.al+i);
 		ExecFun(OutTable[eCPU.dx+i]);
 	}
 }

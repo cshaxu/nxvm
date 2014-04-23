@@ -21,7 +21,7 @@ void w32cdispInit()
 	GetConsoleScreenBufferInfo(hOut, &defaultBufInfo);
 //	defaultCodePage = GetConsoleCP();
 	charBuf = NULL;
-	vapiSleep(1000);
+//	vapiSleep(1000);
 	w32cdispSetScreen();
 }
 void w32cdispSetScreen()
