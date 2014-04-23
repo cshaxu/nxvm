@@ -32,14 +32,14 @@ static void parse(char *s)
 
 void Test()
 {
-	t_nubit32 eflags = 0x00000000;
+/*	t_nubit32 eflags = 0x00000000;
 	__asm push eflags
 	__asm popfd
 	__asm mov al, 0xff
 	__asm cmp al, 0xff
 	__asm pushfd
 	__asm pop eflags
-	vcpu.flags = (t_nubit16)(eflags & 0xffff);
+	vcpu.flags = (t_nubit16)(eflags & 0xffff);*/
 }
 
 void Help()

@@ -241,9 +241,9 @@ static int chartohexdigit(char c)
 	else if(isRM16(m1)) {			aSINGLE(0x8f)	aSetModRM(m1,0x00)					}\
 	else len = 0;\
 	if(!isNull(m2)) len = 0;}
-#define aQDX {\
+/*#define aQDX {\
 	if(isImm8(m1) && isNull(m2)) {	aSINGLE(0xd8)						aSetByte(m1.imm)}\
-	else len = 0;}
+	else len = 0;}*/
 #define aRET {\
 	if(isImm(m1)) {					aSINGLE(0xc2)						aSetWord(m1.imm)	}\
 	else 							aSINGLE(0xc3)										}
@@ -759,7 +759,7 @@ static int aOpCode(const char *op,const char *a1,const char *a2,
 	else if(!strcmp(op,"popf"))	aSINGLE(0x9d)
 	else if(!strcmp(op,"push"))	aGROUP5_PUSH
 	else if(!strcmp(op,"pushf"))aSINGLE(0x9c)
-	else if(!strcmp(op,"qdx"))  aQDX
+//	else if(!strcmp(op,"qdx"))  aQDX
 	else if(!strcmp(op,"rcl"))	aGROUP2(0x02)
 	else if(!strcmp(op,"rcr"))	aGROUP2(0x03)
 //	else if(!strcmp(op,"rep"))	PREFIX(0xf3)
@@ -1619,7 +1619,7 @@ int disassemble(char *dasmStmt,Operand *resOperand,
 	case 0xd5:	dEmitAA(dSOL,"AAD");			break;
 	case 0xd6:	dEmitDB;						break;
 	case 0xd7:	dEmitOP(dSOL,"XLAT");			break;
-	case 0xd8:	dEmitOI(dSOL,"QDX",8);			break;
+//	case 0xd8:	dEmitOI(dSOL,"QDX",8);			break;
 	case 0xd9:	dEmitDB;						break;
 	case 0xda:	dEmitDB;						break;
 	case 0xdb:	dEmitDB;						break;

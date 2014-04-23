@@ -52,7 +52,7 @@ t_cpuins vcpuins;
 #define NOTIMP void
 #define WRAPPER void
 
-#define ASMINS void
+#define ASMCMP void
 #define EXCEPT void
 
 static t_cpu acpu;
@@ -63,9 +63,17 @@ static t_nsbit16 sw1,sw2,sw3;
 #define aipcheck if (acpu.ip > 0xfffa && vcpu.ip < 0x0005) {\
 	vapiPrint("ip overflow\n");} else
 #ifdef VCPUASM
-#define AFLAGS    (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+
+#define AFLAGS0   (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF | \
+                   VCPU_FLAG_DF | VCPU_FLAG_TF | VCPU_FLAG_IF)
+#define AFLAGS1   (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
                    VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF | \
                    VCPU_FLAG_DF | VCPU_FLAG_TF)
+#define AFLAGS2   (VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF | \
+                   VCPU_FLAG_DF | VCPU_FLAG_TF)
+
 static void acpuPrintRegs(t_cpu *xcpu)
 {
 	if (xcpu == &vcpu) vapiPrint("VCPU REGISTERS\n");
@@ -102,7 +110,7 @@ static void acpuPrintRegs(t_cpu *xcpu)
 	else                           vapiPrint("NC ");
 	vapiPrint("\n");
 }
-static t_bool acpuCheck()
+static t_bool acpuCheck(t_nubit16 flags)
 {
 	t_bool flagdiff = 0x00;
 	if (acpu.ax != vcpu.ax)       {vapiPrint("diff ax\n");flagdiff = 0x01;}
@@ -118,7 +126,7 @@ static t_bool acpuCheck()
 	if (acpu.ds != vcpu.ds)       {vapiPrint("diff ds\n");flagdiff = 0x01;}
 	if (acpu.es != vcpu.es)       {vapiPrint("diff es\n");flagdiff = 0x01;}
 	if (acpu.ss != vcpu.ss)       {vapiPrint("diff ss\n");flagdiff = 0x01;}
-	if ((acpu.flags & AFLAGS) != (vcpu.flags & AFLAGS))
+	if ((acpu.flags & flags) != (vcpu.flags & flags))
 		                          {vapiPrint("diff fg\n");flagdiff = 0x01;}
 	if (flagdiff) {
 		acpuPrintRegs(&acpu);
@@ -129,7 +137,7 @@ static t_bool acpuCheck()
 }
 #define async    if(acpu = vcpu,1)
 #define aexec    __asm
-#define acheck   if(acpuCheck())
+#define acheck(f)   if(acpuCheck(f))
 #define async8   if(1) {\
 	acpu = vcpu;ub1 = d_nubit8(dest);ub2 = d_nubit8(src);} else
 #define async12  if(1) {\
@@ -141,13 +149,13 @@ static t_bool acpuCheck()
 #define asreg16  if(!vramIsAddrInMem(dest)) {\
 	d_nubit16((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = uw3;} else
 #define asreg12  asreg16
-#define acheck8  if(acpuCheck() || d_nubit8(dest) != ub3) {\
+#define acheck8(f)  if(acpuCheck(f) || d_nubit8(dest) != ub3) {\
 	vapiPrint("ub1=%02X,ub2=%02X,ub3=%02X,dest=%02X\n",\
 		ub1,ub2,ub3,d_nubit8(dest));} else
-#define acheck16 if(acpuCheck() || d_nubit16(dest) != uw3) {\
+#define acheck16(f) if(acpuCheck(f) || d_nubit16(dest) != uw3) {\
 	vapiPrint("uw1=%04X,uw2=%04X,uw3=%04X,dest=%04X\n",\
 		uw1,uw2,uw3,d_nubit16(dest));} else
-#define acheck12 acheck16
+#define acheck12(f) acheck16(f)
 #define aexec8  if(1) {\
 	__asm pushfd\
 	__asm push eax\
@@ -178,40 +186,135 @@ static t_bool acpuCheck()
 	case 12: async12;break;\
 	case 16: async16;break;}
 #define aexecall switch(len) {\
-	case 8:\
-		aexec8;\
-		asreg8;\
-		acheck8;\
-		break;\
-	case 12:\
-		aexec12;\
-		asreg12;\
-		acheck12;\
-		break;\
-	case 16:\
-		aexec16;\
-		asreg16;\
-		acheck16;\
-		break;\
-	}
+	case 8: aexec8; break;\
+	case 12:aexec12;break;\
+	case 16:aexec16;break;}
+#define asregall switch(len) {\
+	case 8: asreg8; break;\
+	case 12:asreg12;break;\
+	case 16:asreg16;break;}
+#define acheckall(f) switch(len) {\
+	case 8: acheck8(f); break;\
+	case 12:acheck12(f);break;\
+	case 16:acheck16(f);break;}
+
+#define aexec_csf if(1) {\
+	__asm pushfd\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm op\
+	__asm pushf\
+	__asm pop acpu.flags\
+	__asm popfd} else
+#define aexec_idc8 if(1) {\
+	__asm pushfd\
+	__asm push eax\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm mov al,ub1\
+	__asm op al\
+	__asm mov ub3,al\
+	__asm pushf\
+	__asm pop acpu.flags\
+	__asm pop eax\
+	__asm popfd} else
+#define aexec_idc16 if(1) {\
+	__asm pushfd\
+	__asm push eax\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm mov ax,uw1\
+	__asm op ax\
+	__asm mov uw3,ax\
+	__asm pushf\
+	__asm pop acpu.flags\
+	__asm pop eax\
+	__asm popfd} else
+#define aexec_srd8 if(1) {\
+	__asm pushfd\
+	__asm push eax\
+	__asm push ecx\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm mov al,ub1\
+	__asm mov cl,ub2\
+	__asm op al,cl\
+	__asm mov ub3,al\
+	__asm pushf\
+	__asm pop acpu.flags\
+	__asm pop ecx\
+	__asm pop eax\
+	__asm popfd} else
+#define aexec_srd16 if(1) {\
+	__asm pushfd\
+	__asm push eax\
+	__asm push ecx\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm mov ax,uw1\
+	__asm mov cl,ub2\
+	__asm op ax,cl\
+	__asm mov uw3,ax\
+	__asm pushf\
+	__asm pop acpu.flags\
+	__asm pop ecx\
+	__asm pop eax\
+	__asm popfd} else
+#define aexec_cax8 if(1) {\
+	__asm pushfd\
+	__asm push eax\
+	__asm mov al, acpu.al\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm op\
+	__asm pushf\
+	__asm pop acpu.flags\
+	__asm mov acpu.al, al\
+	__asm pop eax\
+	__asm popfd} else
+#define aexec_cax16 if(1) {\
+	__asm pushfd\
+	__asm push eax\
+	__asm push edx\
+	__asm mov ax, acpu.ax\
+	__asm mov dx, acpu.dx\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm op\
+	__asm pushf\
+	__asm pop acpu.flags\
+	__asm mov acpu.dx, dx\
+	__asm mov acpu.ax, ax\
+	__asm pop edx\
+	__asm pop eax\
+	__asm popfd} else
 #else
-#define async    if(0)
-#define aexec    __asm
-#define acheck   if(0)
-#define async8   if(0)
-#define async12  if(0)
-#define async16  if(0)
-#define asreg8   if(0)
-#define asreg12  if(0)
-#define asreg16  if(0)
-#define acheck8  if(0)
-#define acheck12 if(0)
-#define acheck16 if(0)
-#define aexec8   if(0)
-#define aexec12  if(0)
-#define aexec16  if(0)
+#define async     if(0)
+#define aexec     __asm
+#define acheck(f) if(0)
+#define async8    if(0)
+#define async12   if(0)
+#define async16   if(0)
+#define asreg8    if(0)
+#define asreg12   if(0)
+#define asreg16   if(0)
+#define acheck8(f)  if(0)
+#define acheck12(f) if(0)
+#define acheck16(f) if(0)
+#define aexec8    if(0)
+#define aexec12   if(0)
+#define aexec16   if(0)
 #define asyncall
 #define aexecall
+#define asregall
+#define acheckall(f)
+#define aexec_csf   if(0)
+#define aexec_idc8  if(0)
+#define aexec_idc16 if(0)
+#define aexec_srd8  if(0)
+#define aexec_srd16 if(0)
+#define aexec_cax8  if(0)
+#define aexec_cax16 if(0)
 #endif
 
 static void CaseError(const char *str)
@@ -514,7 +617,7 @@ static void GetModRegRMEA()
 }
 
 static void INT(t_nubit8 intid);
-static ASMINS ADD(void *dest, void *src, t_nubit8 len)
+static ASMCMP ADD(void *dest, void *src, t_nubit8 len)
 {
 	asyncall
 	switch(len) {
@@ -549,8 +652,10 @@ static ASMINS ADD(void *dest, void *src, t_nubit8 len)
 #define op add
 	aexecall
 #undef op
+	asregall
+	acheckall(AFLAGS1)
 }
-static ASMINS OR(void *dest, void *src, t_nubit8 len)
+static ASMCMP OR(void *dest, void *src, t_nubit8 len)
 {
 	asyncall
 	switch(len) {
@@ -586,8 +691,10 @@ static ASMINS OR(void *dest, void *src, t_nubit8 len)
 #define op or
 	aexecall
 #undef op
+	asregall
+	acheckall(AFLAGS1)
 }
-static ASMINS ADC(void *dest, void *src, t_nubit8 len)
+static ASMCMP ADC(void *dest, void *src, t_nubit8 len)
 {
 	asyncall
 	switch(len) {
@@ -620,8 +727,10 @@ static ASMINS ADC(void *dest, void *src, t_nubit8 len)
 #define op adc
 	aexecall
 #undef op
+	asregall
+	acheckall(AFLAGS1)
 }
-static ASMINS SBB(void *dest, void *src, t_nubit8 len)
+static ASMCMP SBB(void *dest, void *src, t_nubit8 len)
 {
 	asyncall
 	switch(len) {
@@ -654,8 +763,10 @@ static ASMINS SBB(void *dest, void *src, t_nubit8 len)
 #define op sbb
 	aexecall
 #undef op
+	asregall
+	acheckall(AFLAGS1)
 }
-static ASMINS AND(void *dest, void *src, t_nubit8 len)
+static ASMCMP AND(void *dest, void *src, t_nubit8 len)
 {
 	asyncall
 	switch(len) {
@@ -691,6 +802,8 @@ static ASMINS AND(void *dest, void *src, t_nubit8 len)
 #define op and
 	aexecall
 #undef op
+	asregall
+	acheckall(AFLAGS1)
 }
 static EXCEPT SUB(void *dest, void *src, t_nubit8 len)
 {
@@ -725,8 +838,10 @@ static EXCEPT SUB(void *dest, void *src, t_nubit8 len)
 //#define op sub
 //	aexecall
 //#undef op
+//	asregall
+//	acheckall(AFLAGS1)
 }
-static ASMINS XOR(void *dest, void *src, t_nubit8 len)
+static ASMCMP XOR(void *dest, void *src, t_nubit8 len)
 {
 	asyncall
 	switch(len) {
@@ -762,8 +877,10 @@ static ASMINS XOR(void *dest, void *src, t_nubit8 len)
 #define op xor
 	aexecall
 #undef op
+	asregall
+	acheckall(AFLAGS1)
 }
-static ASMINS CMP(void *dest, void *src, t_nubit8 len)
+static ASMCMP CMP(void *dest, void *src, t_nubit8 len)
 {
 	asyncall
 	switch(len) {
@@ -795,6 +912,8 @@ static ASMINS CMP(void *dest, void *src, t_nubit8 len)
 #define op cmp
 	aexecall
 #undef op
+	asregall
+	acheckall(AFLAGS1)
 }
 static void PUSH(void *src, t_nubit8 len)
 {
@@ -818,10 +937,14 @@ static void POP(void *dest, t_nubit8 len)
 		break;
 	default:CaseError("POP::len");break;}
 }
-static void INC(void *dest, t_nubit8 len)
+static ASMCMP INC(void *dest, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
+		async ub1 = d_nubit8(dest);
+#define op inc
+		aexec_idc8;
+#undef op
 		vcpuins.bit = 8;
 		vcpuins.type = ADD8;
 		vcpuins.opr1 = d_nubit8(dest) & 0xff;
@@ -830,6 +953,10 @@ static void INC(void *dest, t_nubit8 len)
 		d_nubit8(dest) = (t_nubit8)vcpuins.result;
 		break;
 	case 16:
+		async uw1 = d_nubit16(dest);
+#define op inc
+		aexec_idc16;
+#undef op
 		vcpuins.bit = 16;
 		vcpuins.type = ADD16;
 		vcpuins.opr1 = d_nubit16(dest) & 0xffff;
@@ -839,11 +966,17 @@ static void INC(void *dest, t_nubit8 len)
 		break;
 	default:CaseError("INC::len");break;}
 	SetFlags(INC_FLAG);
+	asregall
+	acheckall(AFLAGS1)
 }
-static void DEC(void *dest, t_nubit8 len)
+static ASMCMP DEC(void *dest, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
+		async ub1 = d_nubit8(dest);
+#define op dec
+		aexec_idc8;
+#undef op
 		vcpuins.bit = 8;
 		vcpuins.type = SUB8;
 		vcpuins.opr1 = d_nubit8(dest) & 0xff;
@@ -852,6 +985,10 @@ static void DEC(void *dest, t_nubit8 len)
 		d_nubit8(dest) = (t_nubit8)vcpuins.result;
 		break;
 	case 16:
+		async uw1 = d_nubit16(dest);
+#define op dec
+		aexec_idc16;
+#undef op
 		vcpuins.bit = 16;
 		vcpuins.type = SUB16;
 		vcpuins.opr1 = d_nubit16(dest) & 0xffff;
@@ -861,6 +998,8 @@ static void DEC(void *dest, t_nubit8 len)
 		break;
 	default:CaseError("DEC::len");break;}
 	SetFlags(DEC_FLAG);
+	asregall
+	acheckall(AFLAGS1)
 }
 static void JCC(void *src, t_bool flagj,t_nubit8 len)
 {
@@ -873,8 +1012,9 @@ static void JCC(void *src, t_bool flagj,t_nubit8 len)
 		break;
 	default:CaseError("JCC::len");break;}
 }
-static void TEST(void *dest, void *src, t_nubit8 len)
+static ASMCMP TEST(void *dest, void *src, t_nubit8 len)
 {
+	asyncall
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
@@ -895,6 +1035,10 @@ static void TEST(void *dest, void *src, t_nubit8 len)
 	ClrBit(vcpu.flags,VCPU_FLAG_CF);
 	ClrBit(vcpu.flags,VCPU_FLAG_AF);
 	SetFlags(TEST_FLAG);
+#define op test
+	aexecall
+#undef op
+	acheckall(AFLAGS1)
 }
 static void XCHG(void *dest, void *src, t_nubit8 len)
 {
@@ -917,24 +1061,6 @@ static void XCHG(void *dest, void *src, t_nubit8 len)
 }
 static void MOV(void *dest, void *src, t_nubit8 len)
 {
-/*	t_vaddrcc pd  = (t_vaddrcc)(dest);
-	t_vaddrcc ps  = (t_vaddrcc)(src);
-	t_vaddrcc pal = (t_vaddrcc)(&vcpu.al);
-	t_vaddrcc pah = (t_vaddrcc)(&vcpu.ah);
-	t_vaddrcc pbl = (t_vaddrcc)(&vcpu.bl);
-	t_vaddrcc pbh = (t_vaddrcc)(&vcpu.bh);
-	t_vaddrcc pcl = (t_vaddrcc)(&vcpu.cl);
-	t_vaddrcc pch = (t_vaddrcc)(&vcpu.ch);
-	t_vaddrcc pdl = (t_vaddrcc)(&vcpu.dl);
-	t_vaddrcc pdh = (t_vaddrcc)(&vcpu.dh);
-	t_vaddrcc pcs = (t_vaddrcc)(&vcpu.cs);
-	t_vaddrcc pds = (t_vaddrcc)(&vcpu.ds);
-	t_vaddrcc pes = (t_vaddrcc)(&vcpu.es);
-	t_vaddrcc pss = (t_vaddrcc)(&vcpu.ss);
-	t_vaddrcc psp = (t_vaddrcc)(&vcpu.sp);
-	t_vaddrcc pbp = (t_vaddrcc)(&vcpu.bp);
-	t_vaddrcc psi = (t_vaddrcc)(&vcpu.si);
-	t_vaddrcc pdi = (t_vaddrcc)(&vcpu.di);*/
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
@@ -946,7 +1072,7 @@ static void MOV(void *dest, void *src, t_nubit8 len)
 		break;
 	default:CaseError("MOV::len");break;}
 }
-static void ROL(void *dest, void *src, t_nubit8 len)
+static ASMCMP ROL(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount;
 	t_bool tempCF;
@@ -954,6 +1080,10 @@ static void ROL(void *dest, void *src, t_nubit8 len)
 	else count = 1;
 	switch(len) {
 	case 8:
+		async {
+			ub1 = d_nubit8(dest);
+			ub2 = count;
+		}
 		tempcount = (count & 0x1f) % 8;
 		vcpuins.bit = 8;
 		while(tempcount) {
@@ -963,8 +1093,15 @@ static void ROL(void *dest, void *src, t_nubit8 len)
 		}
 		MakeBit(vcpu.flags,VCPU_FLAG_CF,GetLSB(d_nubit8(dest), 8));
 		if(count == 1) MakeBit(vcpu.flags,VCPU_FLAG_OF,GetMSB(d_nubit8(dest), 8)^GetBit(vcpu.flags, VCPU_FLAG_CF));
+#define op rol
+		aexec_srd8;
+#undef op
 		break;
 	case 16:
+		async {
+			uw1 = d_nubit16(dest);
+			ub2 = count;
+		}
 		tempcount = (count & 0x1f) % 16;
 		vcpuins.bit = 16;
 		while(tempcount) {
@@ -974,10 +1111,15 @@ static void ROL(void *dest, void *src, t_nubit8 len)
 		}
 		MakeBit(vcpu.flags,VCPU_FLAG_CF,GetLSB(d_nubit16(dest), 16));
 		if(count == 1) MakeBit(vcpu.flags,VCPU_FLAG_OF,GetMSB(d_nubit16(dest), 16)^GetBit(vcpu.flags, VCPU_FLAG_CF));
+#define op rol
+		aexec_srd16;
+#undef op
 		break;
 	default:CaseError("ROL::len");break;}
+	asregall
+	acheckall((count == 1) ? AFLAGS1 : AFLAGS2)
 }
-static void ROR(void *dest, void *src, t_nubit8 len)
+static ASMCMP ROR(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount;
 	t_bool tempCF;
@@ -985,6 +1127,10 @@ static void ROR(void *dest, void *src, t_nubit8 len)
 	else count = 1;
 	switch(len) {
 	case 8:
+		async {
+			ub1 = d_nubit8(dest);
+			ub2 = count;
+		}
 		tempcount = (count & 0x1f) % 8;
 		vcpuins.bit = 8;
 		while(tempcount) {
@@ -995,8 +1141,15 @@ static void ROR(void *dest, void *src, t_nubit8 len)
 		}
 		MakeBit(vcpu.flags,VCPU_FLAG_CF,GetMSB(d_nubit8(dest), 8));
 		if(count == 1) MakeBit(vcpu.flags,VCPU_FLAG_OF,GetMSB(d_nubit8(dest), 8)^(!!(d_nubit8(dest)&0x40)));
+#define op ror
+		aexec_srd8;
+#undef op
 		break;
 	case 16:
+		async {
+			uw1 = d_nubit16(dest);
+			ub2 = count;
+		}
 		tempcount = (count & 0x1f) % 16;
 		vcpuins.bit = 16;
 		while(tempcount) {
@@ -1007,10 +1160,15 @@ static void ROR(void *dest, void *src, t_nubit8 len)
 		}
 		MakeBit(vcpu.flags,VCPU_FLAG_CF,GetMSB(d_nubit16(dest), 16));
 		if(count == 1) MakeBit(vcpu.flags,VCPU_FLAG_OF,GetMSB(d_nubit16(dest), 16)^(!!(d_nubit16(dest)&0x4000)));
+#define op ror
+		aexec_srd16;
+#undef op
 		break;
 	default:CaseError("ROR::len");break;}
+	asregall
+	acheckall((count == 1) ? AFLAGS1 : AFLAGS2)
 }
-static void RCL(void *dest, void *src, t_nubit8 len)
+static ASMCMP RCL(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount;
 	t_bool tempCF;
@@ -1018,6 +1176,10 @@ static void RCL(void *dest, void *src, t_nubit8 len)
 	else count = 1;
 	switch(len) {
 	case 8:
+		async {
+			ub1 = d_nubit8(dest);
+			ub2 = count;
+		}
 		tempcount = (count & 0x1f) % 9;
 		vcpuins.bit = 8;
 		while(tempcount) {
@@ -1027,8 +1189,15 @@ static void RCL(void *dest, void *src, t_nubit8 len)
 			tempcount--;
 		}
 		if(count == 1) MakeBit(vcpu.flags,VCPU_FLAG_OF,GetMSB(d_nubit8(dest), 8)^GetBit(vcpu.flags, VCPU_FLAG_CF));
+#define op rcl
+		aexec_srd8;
+#undef op
 		break;
 	case 16:
+		async {
+			uw1 = d_nubit16(dest);
+			ub2 = count;
+		}
 		tempcount = (count & 0x1f) % 17;
 		vcpuins.bit = 16;
 		while(tempcount) {
@@ -1038,10 +1207,15 @@ static void RCL(void *dest, void *src, t_nubit8 len)
 			tempcount--;
 		}
 		if(count == 1) MakeBit(vcpu.flags,VCPU_FLAG_OF,GetMSB(d_nubit16(dest), 16)^GetBit(vcpu.flags, VCPU_FLAG_CF));
+#define op rcl
+		aexec_srd16;
+#undef op
 		break;
 	default:CaseError("RCL::len");break;}
+	asregall
+	acheckall((count == 1) ? AFLAGS1 : AFLAGS2)
 }
-static void RCR(void *dest, void *src, t_nubit8 len)
+static ASMCMP RCR(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount;
 	t_bool tempCF;
@@ -1049,6 +1223,10 @@ static void RCR(void *dest, void *src, t_nubit8 len)
 	else count = 1;
 	switch(len) {
 	case 8:
+		async {
+			ub1 = d_nubit8(dest);
+			ub2 = count;
+		}
 		tempcount = (count & 0x1f) % 9;
 		vcpuins.bit = 8;
 		if(count == 1) MakeBit(vcpu.flags,VCPU_FLAG_OF,GetMSB(d_nubit8(dest), 8)^GetBit(vcpu.flags, VCPU_FLAG_CF));
@@ -1059,8 +1237,15 @@ static void RCR(void *dest, void *src, t_nubit8 len)
 			MakeBit(vcpu.flags,VCPU_FLAG_CF,tempCF);
 			tempcount--;
 		}
+#define op rcr
+		aexec_srd8;
+#undef op
 		break;
 	case 16:
+		async {
+			uw1 = d_nubit16(dest);
+			ub2 = count;
+		}
 		tempcount = (count & 0x1f) % 17;
 		vcpuins.bit = 16;
 		if(count == 1) MakeBit(vcpu.flags,VCPU_FLAG_OF,GetMSB(d_nubit16(dest), 16)^GetBit(vcpu.flags, VCPU_FLAG_CF));
@@ -1071,16 +1256,25 @@ static void RCR(void *dest, void *src, t_nubit8 len)
 			MakeBit(vcpu.flags,VCPU_FLAG_CF,tempCF);
 			tempcount--;
 		}
+#define op rcr
+		aexec_srd16;
+#undef op
 		break;
 	default:CaseError("RCR::len");break;}
+	asregall
+	acheckall((count == 1) ? AFLAGS1 : AFLAGS2)
 }
-static void SHL(void *dest, void *src, t_nubit8 len)
+static ASMCMP SHL(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount;
 	if(src) count = d_nubit8(src);
 	else count = 1;
 	switch(len) {
 	case 8:
+		async {
+			ub1 = d_nubit8(dest);
+			ub2 = count;
+		}
 		vcpuins.bit = 8;
 		tempcount = count&0x1f;
 		while(tempcount) {
@@ -1100,8 +1294,15 @@ static void SHL(void *dest, void *src, t_nubit8 len)
 				SetFlags(SHL_FLAG);
 			}
 		}
+#define op shl
+		aexec_srd8;
+#undef op
 		break;
 	case 16:
+		async {
+			uw1 = d_nubit16(dest);
+			ub2 = count;
+		}
 		vcpuins.bit = 16;
 		tempcount = count&0x1f;
 		while(tempcount) {
@@ -1121,10 +1322,16 @@ static void SHL(void *dest, void *src, t_nubit8 len)
 				SetFlags(SHL_FLAG);
 			}
 		}
+#define op shl
+		aexec_srd16;
+#undef op
 		break;
 	default:CaseError("SHL::len");break;}
+	if (count) ClrAF;
+	asregall
+	acheckall((count == 1) ? AFLAGS1 : AFLAGS2)
 }
-static void SHR(void *dest, void *src, t_nubit8 len)
+static ASMCMP SHR(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount,tempdest8;
 	t_nubit16 tempdest16;
@@ -1132,6 +1339,10 @@ static void SHR(void *dest, void *src, t_nubit8 len)
 	else count = 1;
 	switch(len) {
 	case 8:
+		async {
+			ub1 = d_nubit8(dest);
+			ub2 = count;
+		}
 		vcpuins.bit = 8;
 		tempcount = count&0x1f;
 		tempdest8 = d_nubit8(dest);
@@ -1152,8 +1363,15 @@ static void SHR(void *dest, void *src, t_nubit8 len)
 				SetFlags(SHR_FLAG);
 			}
 		}
+#define op shr
+		aexec_srd8;
+#undef op
 		break;
 	case 16:
+		async {
+			uw1 = d_nubit16(dest);
+			ub2 = count;
+		}
 		vcpuins.bit = 16;
 		tempcount = count&0x1f;
 		tempdest16 = d_nubit16(dest);
@@ -1174,16 +1392,26 @@ static void SHR(void *dest, void *src, t_nubit8 len)
 				SetFlags(SHR_FLAG);
 			}
 		}
+#define op shr
+		aexec_srd16;
+#undef op
 		break;
 	default:CaseError("SHR::len");break;}
+	if (count) ClrAF;
+	asregall
+	acheckall((count == 1) ? AFLAGS1 : AFLAGS2)
 }
-static void SAL(void *dest, void *src, t_nubit8 len)
+static ASMCMP SAL(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount;
 	if(src) count = d_nubit8(src);
 	else count = 1;
 	switch(len) {
 	case 8:
+		async {
+			ub1 = d_nubit8(dest);
+			ub2 = count;
+		}
 		vcpuins.bit = 8;
 		tempcount = count&0x1f;
 		while(tempcount) {
@@ -1203,8 +1431,15 @@ static void SAL(void *dest, void *src, t_nubit8 len)
 				SetFlags(SAL_FLAG);
 			}
 		}
+#define op sal
+		aexec_srd8;
+#undef op
 		break;
 	case 16:
+		async {
+			uw1 = d_nubit16(dest);
+			ub2 = count;
+		}
 		vcpuins.bit = 16;
 		tempcount = count&0x1f;
 		while(tempcount) {
@@ -1224,10 +1459,16 @@ static void SAL(void *dest, void *src, t_nubit8 len)
 				SetFlags(SAL_FLAG);
 			}
 		}
+#define op sal
+		aexec_srd16;
+#undef op
 		break;
 	default:CaseError("SAL::len");break;}
+	if (count) ClrAF;
+	asregall
+	acheckall((count == 1) ? AFLAGS1 : AFLAGS2)
 }
-static void SAR(void *dest, void *src, t_nubit8 len)
+static ASMCMP SAR(void *dest, void *src, t_nubit8 len)
 {
 	t_nubit8 count,tempcount,tempdest8;
 	t_nubit16 tempdest16;
@@ -1235,6 +1476,10 @@ static void SAR(void *dest, void *src, t_nubit8 len)
 	else count = 1;
 	switch(len) {
 	case 8:
+		async {
+			ub1 = d_nubit8(dest);
+			ub2 = count;
+		}
 		vcpuins.bit = 8;
 		tempcount = count&0x1f;
 		tempdest8 = d_nubit8(dest);
@@ -1256,8 +1501,15 @@ static void SAR(void *dest, void *src, t_nubit8 len)
 				SetFlags(SAR_FLAG);
 			}
 		}
+#define op sar
+		aexec_srd8;
+#undef op
 		break;
 	case 16:
+		async {
+			uw1 = d_nubit16(dest);
+			ub2 = count;
+		}
 		vcpuins.bit = 16;
 		tempcount = count&0x1f;
 		tempdest16 = d_nubit16(dest);
@@ -1279,8 +1531,14 @@ static void SAR(void *dest, void *src, t_nubit8 len)
 				SetFlags(SAR_FLAG);
 			}
 		}
+#define op sar
+		aexec_srd16;
+#undef op
 		break;
 	default:CaseError("SAR::len");break;}
+	if (count) ClrAF;
+	asregall
+	acheckall((count == 1) ? AFLAGS1 : AFLAGS2)
 }
 static void STRDIR(t_nubit8 len, t_bool flagsi, t_bool flagdi)
 {
@@ -1821,7 +2079,7 @@ DIFF ES()
 	vcpu.overds = vcpu.es;
 	vcpu.overss = vcpu.es;
 }
-ASMINS DAA()
+ASMCMP DAA()
 {
 	t_nubit8 oldAL = vcpu.al;
 	t_nubit8 newAL = vcpu.al + 0x06;
@@ -1842,20 +2100,10 @@ ASMINS DAA()
 		vcpuins.result = (t_nubitcc)vcpu.al;
 		SetFlags(DAA_FLAG);
 	} else ;
-	aexec {
-		pushfd
-		push eax
-		mov al, acpu.al
-		push acpu.flags
-		popf
-		daa
-		pushf
-		pop acpu.flags
-		mov acpu.al, al
-		pop eax
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-1,"DAA");
+#define op daa
+	aexec_cax8;
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"DAA");
 }
 WRAPPER SUB_RM8_R8()
 {
@@ -1905,7 +2153,7 @@ DIFF CS()
 	vcpu.overds = vcpu.cs;
 	vcpu.overss = vcpu.cs;
 }
-ASMINS DAS()
+ASMCMP DAS()
 {
 	t_nubit8 oldAL = vcpu.al;
 	vcpu.ip++;
@@ -1924,20 +2172,10 @@ ASMINS DAS()
 		vcpuins.result = (t_nubitcc)vcpu.al;
 		SetFlags(DAS_FLAG);
 	} else ;
-	aexec {
-		pushfd
-		push eax
-		mov al, acpu.al
-		push acpu.flags
-		popf
-		das
-		pushf
-		pop acpu.flags
-		mov acpu.al, al
-		pop eax
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-1,"DAS");
+#define op das
+	aexec_cax8;
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"DAS");
 }
 WRAPPER XOR_RM8_R8()
 {
@@ -1987,7 +2225,7 @@ DIFF SS()
 	vcpu.overds = vcpu.ss;
 	vcpu.overss = vcpu.ss;
 }
-ASMINS AAA()
+ASMCMP AAA()
 {
 	vcpu.ip++;
 	async;
@@ -2001,20 +2239,10 @@ ASMINS AAA()
 		ClrBit(vcpu.flags,VCPU_FLAG_CF);
 	}
 	vcpu.al &= 0x0f;
-	aexec {
-		pushfd
-		push eax
-		mov ax, acpu.ax
-		push acpu.flags
-		popf
-		aaa
-		pushf
-		pop acpu.flags
-		mov acpu.ax, ax
-		pop eax
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-1,"AAA");
+#define op aaa
+	aexec_cax16;
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"AAA");
 }
 WRAPPER CMP_RM8_R8()
 {
@@ -2064,7 +2292,7 @@ DIFF DS()
 	vcpu.overds = vcpu.ds;
 	vcpu.overss = vcpu.ds;
 }
-ASMINS AAS()
+ASMCMP AAS()
 {
 	vcpu.ip++;
 	async;
@@ -2078,112 +2306,102 @@ ASMINS AAS()
 		ClrBit(vcpu.flags,VCPU_FLAG_AF);
 	}
 	vcpu.al &= 0x0f;
-	aexec {
-		pushfd
-		push eax
-		mov ax, acpu.ax
-		push acpu.flags
-		popf
-		aas
-		pushf
-		pop acpu.flags
-		mov acpu.ax, ax
-		pop eax
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-1,"AAS");
+#define op aas
+	aexec_cax16;
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"AAS");
 }
-void INC_AX()
+WRAPPER INC_AX()
 {
 	vcpu.ip++;
 	INC((void *)&vcpu.ax,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INC_AX\n");
 }
-void INC_CX()
+WRAPPER INC_CX()
 {
 	vcpu.ip++;
 	INC((void *)&vcpu.cx,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INC_CX\n");
 }
-void INC_DX()
+WRAPPER INC_DX()
 {
 	vcpu.ip++;
 	INC((void *)&vcpu.dx,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INC_DX\n");
 }
-void INC_BX()
+WRAPPER INC_BX()
 {
 	vcpu.ip++;
 	INC((void *)&vcpu.bx,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INC_BX\n");
 }
-void INC_SP()
+WRAPPER INC_SP()
 {
 	vcpu.ip++;
 	INC((void *)&vcpu.sp,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INC_SP\n");
 }
-void INC_BP()
+WRAPPER INC_BP()
 {
 	vcpu.ip++;
 	INC((void *)&vcpu.bp,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INC_BP\n");
 }
-void INC_SI()
+WRAPPER INC_SI()
 {
 	vcpu.ip++;
 	INC((void *)&vcpu.si,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INC_SI\n");
 }
-void INC_DI()
+WRAPPER INC_DI()
 {
 	vcpu.ip++;
 	INC((void *)&vcpu.di,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INC_DI\n");
 }
-void DEC_AX()
+WRAPPER DEC_AX()
 {
 	vcpu.ip++;
 	DEC((void *)&vcpu.ax,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  DEC_AX\n");
 }
-void DEC_CX()
+WRAPPER DEC_CX()
 {
 	vcpu.ip++;
 	DEC((void *)&vcpu.cx,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  DEC_CX\n");
 }
-void DEC_DX()
+WRAPPER DEC_DX()
 {
 	vcpu.ip++;
 	DEC((void *)&vcpu.dx,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  DEC_DX\n");
 }
-void DEC_BX()
+WRAPPER DEC_BX()
 {
 	vcpu.ip++;
 	DEC((void *)&vcpu.bx,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  DEC_BX\n");
 }
-void DEC_SP()
+WRAPPER DEC_SP()
 {
 	vcpu.ip++;
 	DEC((void *)&vcpu.sp,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  DEC_SP\n");
 }
-void DEC_BP()
+WRAPPER DEC_BP()
 {
 	vcpu.ip++;
 	DEC((void *)&vcpu.bp,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  DEC_BP\n");
 }
-void DEC_SI()
+WRAPPER DEC_SI()
 {
 	vcpu.ip++;
 	DEC((void *)&vcpu.si,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  DEC_SI\n");
 }
-void DEC_DI()
+WRAPPER DEC_DI()
 {
 	vcpu.ip++;
 	DEC((void *)&vcpu.di,16);
@@ -2431,14 +2649,14 @@ void INS_83()
 	default:CaseError("INS_83::vcpuins.r");break;}
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INS_83\n");
 }
-void TEST_RM8_R8()
+WRAPPER TEST_RM8_R8()
 {
 	vcpu.ip++;
 	GetModRegRM(8,8);
 	TEST((void *)vcpuins.rm,(void *)vcpuins.r,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  TEST_RM8_R8\n");
 }
-void TEST_RM16_R16()
+WRAPPER TEST_RM16_R16()
 {
 	vcpu.ip++;
 	GetModRegRM(16,16);
@@ -2519,7 +2737,7 @@ void POP_RM16()
 		break;
 	default:CaseError("POP_RM16::vcpuins.r");break;}
 }
-void NOP()
+CHECKED NOP()
 {
 	vcpu.ip++;
 }
@@ -2565,51 +2783,26 @@ WRAPPER XCHG_DI_AX()
 	XCHG((void *)&vcpu.di,(void *)&vcpu.ax,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  XCHG_DI_AX\n");
 }
-ASMINS CBW()
+ASMCMP CBW()
 {
 	vcpu.ip++;
-	async
+	async;
 	vcpu.ax = (t_nsbit8)vcpu.al;
-	aexec {
-		pushfd
-		push eax
-		mov ax, acpu.ax
-		push acpu.flags
-		popf
-		cbw
-		pushf
-		pop acpu.flags
-		mov acpu.ax, ax
-		pop eax
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-1,"CBW");
+#define op cbw
+	aexec_cax16;
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"CBW");
 }
-ASMINS CWD()
+ASMCMP CWD()
 {
 	vcpu.ip++;
 	async;
 	if (vcpu.ax & 0x8000) vcpu.dx = 0xffff;
 	else vcpu.dx = 0x0000;
-	aexec {
-		pushfd
-		push eax
-		push edx
-		mov ax, acpu.ax
-		mov dx, acpu.dx
-		push acpu.flags
-		popf
-		cwd
-		pushf
-		pop acpu.flags
-		mov acpu.dx, dx
-		mov acpu.ax, ax
-		pop edx
-		pop eax
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-1,"CWD");
-	
+#define op cwd
+	aexec_cax16;
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"CWD");
 }
 void CALL_PTR16_16()
 {
@@ -2627,9 +2820,10 @@ void CALL_PTR16_16()
 	vcpu.cs = newcs;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  CALL_PTR16_16\n");
 }
-void WAIT()
+NOTIMP WAIT()
 {
 	vcpu.ip++;
+	/* not implemented */
 }
 CHECKED PUSHF()
 {
@@ -2732,14 +2926,14 @@ void CMPSW()
 		}
 	}
 }
-void TEST_AL_I8()
+WRAPPER TEST_AL_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
 	TEST((void *)&vcpu.al,(void *)vcpuins.imm,8);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  TEST_AL_I8\n");
 }
-void TEST_AX_I16()
+WRAPPER TEST_AX_I16()
 {
 	vcpu.ip++;
 	GetImm(16);
@@ -3131,7 +3325,7 @@ void INS_D3()
 	default:CaseError("INS_D3::vcpuins.r");break;}
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INS_D3\n");
 }
-ASMINS AAM()
+ASMCMP AAM()
 {
 	t_nubit8 base,tempAL;
 	vcpu.ip++;
@@ -3147,22 +3341,12 @@ ASMINS AAM()
 		vcpuins.result = vcpu.al & 0xff;
 		SetFlags(AAM_FLAG);
 	}
-	aexec {
-		pushfd
-		push eax
-		mov ax, acpu.ax
-		push acpu.flags
-		popf
-		aam
-		pushf
-		pop acpu.flags
-		mov acpu.ax, ax
-		pop eax
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-2,"AAM");
+#define op aam
+	aexec_cax16
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-2,"AAM");
 }
-ASMINS AAD()
+ASMCMP AAD()
 {
 	t_nubit8 base,tempAL,tempAH;
 	vcpu.ip++;
@@ -3179,20 +3363,10 @@ ASMINS AAD()
 		vcpuins.result = vcpu.al & 0xff;
 		SetFlags(AAD_FLAG);
 	}
-	aexec {
-		pushfd
-		push eax
-		mov ax, acpu.ax
-		push acpu.flags
-		popf
-		aad
-		pushf
-		pop acpu.flags
-		mov acpu.ax, ax
-		pop eax
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-2,"AAD");
+#define op aad
+	aexec_cax16
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-2,"AAD");
 }
 void XLAT()
 {
@@ -3371,27 +3545,20 @@ void REP()
 	vcpuins.rep = RT_REPZ;
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  REP\n");
 }
-void HLT()
+NOTIMP HLT()
 {
 	vcpu.ip++;
 	/* Not Implemented */
-	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  HLT\n");
 }
-ASMINS CMC()
+ASMCMP CMC()
 {
 	vcpu.ip++;
 	async;
 	vcpu.flags ^= VCPU_FLAG_CF;
-	aexec {
-		pushfd
-		push acpu.flags
-		popf
-		cmc
-		pushf
-		pop acpu.flags
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-1,"CMC");
+#define op cmc
+	aexec_csf
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"CMC");
 }
 void INS_F6()
 {
@@ -3427,37 +3594,25 @@ void INS_F7()
 	default:CaseError("INS_F7::vcpuins.r");break;}
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INS_F7\n");
 }
-ASMINS CLC()
+ASMCMP CLC()
 {
 	vcpu.ip++;
 	async;
 	ClrBit(vcpu.flags, VCPU_FLAG_CF);
-	aexec {
-		pushfd
-		push acpu.flags
-		popf
-		clc
-		pushf
-		pop acpu.flags
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-1,"CLC");
+#define op clc
+	aexec_csf
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"CLC");
 }
-ASMINS STC()
+ASMCMP STC()
 {
 	vcpu.ip++;
 	async;
 	SetBit(vcpu.flags, VCPU_FLAG_CF);
-	aexec {
-		pushfd
-		push acpu.flags
-		popf
-		stc
-		pushf
-		pop acpu.flags
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-1,"STC");
+#define op stc
+	aexec_csf
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"STC");
 }
 void CLI()
 {
@@ -3469,37 +3624,25 @@ void STI()
 	vcpu.ip++;
 	SetBit(vcpu.flags, VCPU_FLAG_IF);
 }
-ASMINS CLD()
+ASMCMP CLD()
 {
 	vcpu.ip++;
 	async;
 	ClrBit(vcpu.flags, VCPU_FLAG_DF);
-	aexec {
-		pushfd
-		push acpu.flags
-		popf
-		cld
-		pushf
-		pop acpu.flags
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-1,"CLD");
+#define op cld
+	aexec_csf
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"CLD");
 }
-ASMINS STD()
+ASMCMP STD()
 {
 	vcpu.ip++;
 	async;
 	SetBit(vcpu.flags,VCPU_FLAG_DF);
-	aexec {
-		pushfd
-		push acpu.flags
-		popf
-		std
-		pushf
-		pop acpu.flags
-		popfd
-	}
-	acheck vapiPrintIns(vcpu.cs,vcpu.ip-1,"STD");
+#define op STD
+	aexec_csf
+#undef op
+	acheck(AFLAGS1) vapiPrintIns(vcpu.cs,vcpu.ip-1,"STD");
 }
 void INS_FE()
 {
@@ -3609,6 +3752,13 @@ void QDX()
 {
 	vcpu.ip++;
 	GetImm(8);
+	if (d_nubit8(vcpuins.imm) == 0xff) {
+		vapiPrint("\nNXVM stopped at CS:%04X IP:%04X F1 FF\n",vcpu.cs,vcpu.ip);
+		vapiPrint("This happens because of the NXVM pause instruction.\n");
+		vapiPrint("Enter START to continue.\n");
+		vapiCallBackMachineStop();
+		return;
+	}
 	qdbiosExecInt(d_nubit8(vcpuins.imm));
 	MakeBit(vramVarWord(_ss,_sp + 4), VCPU_FLAG_ZF, GetBit(_flags, VCPU_FLAG_ZF));
 	MakeBit(vramVarWord(_ss,_sp + 4), VCPU_FLAG_CF, GetBit(_flags, VCPU_FLAG_CF));
@@ -3838,9 +3988,7 @@ void vcpuinsInit()
 	vcpuins.table[0xd5] = (t_faddrcc)AAD;
 	vcpuins.table[0xd6] = (t_faddrcc)OpError;
 	vcpuins.table[0xd7] = (t_faddrcc)XLAT;
-// FOR DEBUG USE
-	vcpuins.table[0xd8] = (t_faddrcc)QDX;
-//!	vcpuins.table[0xd8] = (t_faddrcc)OpError; !!!!!!
+	vcpuins.table[0xd8] = (t_faddrcc)OpError;
 	vcpuins.table[0xd9] = (t_faddrcc)OpError;
 	//vcpuins.table[0xd9] = (t_faddrcc)INS_D9;
 	vcpuins.table[0xda] = (t_faddrcc)OpError;
@@ -3867,7 +4015,7 @@ void vcpuinsInit()
 	vcpuins.table[0xee] = (t_faddrcc)OUT_DX_AL;
 	vcpuins.table[0xef] = (t_faddrcc)OUT_DX_AX;
 	vcpuins.table[0xf0] = (t_faddrcc)LOCK;
-	vcpuins.table[0xf1] = (t_faddrcc)OpError;
+	vcpuins.table[0xf1] = (t_faddrcc)QDX;
 	vcpuins.table[0xf2] = (t_faddrcc)REPNZ;
 	vcpuins.table[0xf3] = (t_faddrcc)REP;
 	vcpuins.table[0xf4] = (t_faddrcc)HLT;
