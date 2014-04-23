@@ -7,7 +7,7 @@
 
 #include "vglobal.h"
 
-#define VFDC_DEBUG
+/*#define VFDC_DEBUG*/
 
 typedef struct {
 	t_nubit8         dor;                         /* digital output register */
