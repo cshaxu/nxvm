@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0134]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0135]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -19,8 +19,9 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *
  * Modules:
  * 1-Console
- *   console/console.c
- *   console/console.h
+ *   main.c
+ *   console.c
+ *   console.h
  * 2-Debugger:
  *  a-Debugging Console
  *   vmachine/debug/debug.c
@@ -153,7 +154,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 #include "stdio.h"
 #include "stdlib.h"
 
-#include "console/console.h"
+#include "console.h"
 
 int main(int argc, char **argv)
 {

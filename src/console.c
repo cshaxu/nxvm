@@ -5,10 +5,10 @@
 #include "stdarg.h"
 #include "string.h"
 
-#include "../vmachine/vapi.h"
-#include "../vmachine/vmachine.h"
-#include "../vmachine/debug/debug.h"
-#include "../vmachine/debug/record.h"
+#include "vmachine/vapi.h"
+#include "vmachine/vmachine.h"
+#include "vmachine/debug/debug.h"
+#include "vmachine/debug/record.h"
 
 #include "console.h"
 
