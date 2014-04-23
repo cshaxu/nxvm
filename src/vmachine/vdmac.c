@@ -384,7 +384,7 @@ void IO_Write_008A()
 void IO_Write_008F()
 {vdmac2.channel[0].page = vcpu.al;}*/
 
-void DMACInit()
+void vdmacInit()
 {
 	memset(&vdmac1,0,sizeof(t_dmac));
 	memset(&vdmac2,0,sizeof(t_dmac));
@@ -458,4 +458,4 @@ void DMACInit()
 	//vcpuinsOutPort[0x008a] = (t_faddrcc)IO_Write_008A;
 	//vcpuinsOutPort[0x008f] = (t_faddrcc)IO_Write_008F;
 }
-void DMACTerm() {}
+void vdmacFinal() {}

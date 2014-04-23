@@ -18,10 +18,12 @@
 extern t_bool vmachineinitflag;
 extern t_bool vmachinerunflag;
 
-void NXVMInit();
-void NXVMPowerOn();
-void NXVMRun();
-void NXVMPowerOff();
-void NXVMTerm();
+void vmachineRefresh();
+
+void vmachineInit();
+void vmachinePowerOn();
+void vmachineRunLoop();
+void vmachinePowerOff();
+void vmachineFinal();
 
 #endif

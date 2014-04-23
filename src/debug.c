@@ -23,9 +23,7 @@ test code
 #include "vmachine/vmachine.h"
 #include "vmachine/vcpuins.h"
 #define cpu vcpu
-#define memory vrambase
-#define insptr insPtr
-#define cputerm vcputermflag
+#define memory vram.base
 
 #include "asm86/asm86.h"
 
@@ -348,16 +346,16 @@ static void f()
 static void rprintregs();
 static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 {
-	cputerm = 0;
+	vmachinerunflag = 1;
 	if(ptr1 < ptr2) {
 		cpu.ip = ptr1;
-		while(ptr1 < ptr2 && !cputerm) {
-			vcpuInsExec();
+		while(ptr1 < ptr2 && vmachinerunflag) {
+			vmachineRefresh();
 			ptr1 = cpu.ip;
 		}
 		//cpu.ip = ptr2;
 	}
-	if(cputerm) {
+	if(!vmachinerunflag) {
 		fprintf(stdout,"\nProgram terminated\n");
 	} else {
 		fprintf(stdout,"\n");

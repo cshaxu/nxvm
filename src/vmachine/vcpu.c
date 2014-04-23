@@ -7,29 +7,22 @@
 #include "vcpu.h"
 
 t_cpu vcpu;
-t_bool vcputermflag;
 
-void vcpuInsExec()
+void vcpuRefresh()
 {
 	vcpuinsExecIns();
 	vcpuinsExecInt();
-	//RefreshVideoRAM();
 }
 
-void CPUInit()
+void vcpuInit()
 {
 	memset(&vcpu, 0, sizeof(t_cpu));
 	vcpu.cs = 0xf000;
 	vcpu.ip = 0xfff0;
-	vcputermflag = 0;
-	CPUInsInit();
+	vcpuinsInit();
 }
-void CPURun()
+
+void vcpuFinal()
 {
-	vcputermflag = 0;
-	while (!vcputermflag) vcpuInsExec();
-}
-void CPUTerm()
-{
-	CPUInsTerm();
+	vcpuinsFinal();
 }

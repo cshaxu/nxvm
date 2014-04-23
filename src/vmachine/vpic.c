@@ -317,13 +317,7 @@ void     vpicSetIRQ(t_nubit8 irqid)
 t_bool   vpicScanINTR()
 {
 	t_bool intr1;
-	/* Device INT Begin */
-	vpitIntTick();                       /* interrupt request comes from PIT */
-	/* Device INT End */
-	if (vpic2.irr & (~vpic2.imr))      /* see if slave pic has requested int */
-		vpic1.irr |= 0x04;        /* pass the request into IR2 of master pic */
-	else
-		vpic1.irr &= 0xfb;                     /* remove IR2 from master pic */
+
 	intr1 = HasINTR(&vpic1);
 	if (intr1 && (GetIntrTopId(&vpic1) == 0x02) )
 			return HasINTR(&vpic2);
@@ -348,7 +342,7 @@ t_nubit8 vpicGetINTR()
 #define mov(n) (vcpu.al=n)
 #define out(n) FUNEXEC(vcpuinsOutPort[n])
 #endif
-void PICInit()
+void vpicInit()
 {
 	memset(&vpic1, 0x00, sizeof(t_pic));
 	memset(&vpic2, 0x00, sizeof(t_pic));
@@ -387,7 +381,14 @@ void PICInit()
 	out(0xa1);
 #endif
 }
-void PICTerm() {}
+void vpicRefresh()
+{
+	if (vpic2.irr & (~vpic2.imr))      /* see if slave pic has requested int */
+		vpic1.irr |= 0x04;        /* pass the request into IR2 of master pic */
+	else
+		vpic1.irr &= 0xfb;                     /* remove IR2 from master pic */
+}
+void vpicFinal() {}
 
 /*
 Test Case for regular IBM PC use

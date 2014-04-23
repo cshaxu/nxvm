@@ -16,7 +16,7 @@ void vcpuinsClearPrefix();
 void vcpuinsExecIns();
 void vcpuinsExecInt();
 
-void CPUInsInit();
-void CPUInsTerm();
+void vcpuinsInit();
+void vcpuinsFinal();
 
 #endif

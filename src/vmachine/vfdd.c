@@ -44,7 +44,7 @@ t_bool vfddWrite(t_nubit8 *cyl,t_nubit8 *head,t_nubit8 *sector,t_vaddrcc memloc,
 void vfddFormat(t_nubit8 fillbyte)
 {memset((void *)(vfdd.ptrbase),fillbyte,0x168000);}
 
-void FDDInit()
+void vfddInit()
 {
 	t_nubitcc count;
 	FILE *imgfile = fopen(vfdd.img,"rb");
@@ -59,7 +59,7 @@ void FDDInit()
 		// Floppy Disk Not Inserted
 	}
 }
-void FDDTerm()
+void vfddFinal()
 {
 	t_nubitcc count;
 	FILE *imgfile;

@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x58]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x5a]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -12,19 +12,15 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * Project Phases
  * 1. Read documents and list all necessary functionality
  * 2. Code the functions
- * 3. add comment for each I/O function, check logic
+ * 3. Add comment for each I/O function, check logic
  * 4. Create test functions and corresponding test case
  * 5. Perform unit tests
+ * 6. Read official document and PC.PDF, then check logic
  *
  * Module: Console
  *     Files:   main.c, global.h
  *     Files:   console.c, console.h
  *     Files:   dosint.c, dosint.h
- *     Phase 1:
- *     Phase 2:
- *     Phase 3:
- *     Phase 4:
- *     Phase 5:
  *
  * Module: Debugger
  * Component 1: debugger
@@ -34,6 +30,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 3:
  *     Phase 4:
  *     Phase 5:
+ *     Phase 6:
  * Component 2: asembler
  *     Files:   asm86.c, asm86.h
  *     Phase 1:
@@ -41,6 +38,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 3:
  *     Phase 4:
  *     Phase 5:
+ *     Phase 6:
  * Component 3: disassembler 
  *     Files:   asm86.c, asm86.h
  *     Phase 1:
@@ -48,6 +46,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 3:
  *     Phase 4:
  *     Phase 5:
+ *     Phase 6:
  *
  * Module: VMachine - Global
  * Component 1: types and definitions
@@ -57,6 +56,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 3:
  *     Phase 4:
  *     Phase 5:
+ *     Phase 6:
  * Component 2: chassis
  *     Files:   vmachine.c, vmachine.h
  *     Phase 1:
@@ -64,6 +64,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 3:
  *     Phase 4:
  *     Phase 5:
+ *     Phase 6:
  *
  * Module: VMachine - Kernel
  * Component 1: cpu (8086)
@@ -74,6 +75,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 3:
  *     Phase 4:
  *     Phase 5:
+ *     Phase 6:
  * Component 2: ram
  *     Files:   vram.c, vram.h
  *     Phase 1:
@@ -81,13 +83,15 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 3:
  *     Phase 4:
  *     Phase 5:
+ *     Phase 6:
  * Component 3: pic (8259)
  *     Files:   vpic.c, vpic.h
  *     Phase 1: 02/06/2012 - 02/12/2012
  *     Phase 2: 02/06/2012 - 02/12/2012
- *     Phase 3: 03/17/2013 - 03/19/2013
+ *     Phase 3: 03/17/2013 - 03/21/2013
  *     Phase 4: 03/20/2013 - 03/21/2013
  *     Phase 5: 03/21/2013 - 03/21/2013
+ *     Phase 6:
  *     Note:    OCW2, ICW4(AEOI) not tested
  * Component 4: pit (8254)
  *     Files:   vpit.c, vpit.h
@@ -96,6 +100,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 3:
  *     Phase 4:
  *     Phase 5:
+ *     Phase 6:
  *     Note:    I/O not yet implemented
  *
  * Module: VMachine - Storage
@@ -106,6 +111,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 3:
  *     Phase 4:
  *     Phase 5:
+ *     Phase 6:
  *     Note:    DMA is only used to store memory address and word count
  * Componenet 2: fdc (8272)
  *     Phase 1:
@@ -113,6 +119,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 3:
  *     Phase 4:
  *     Phase 5:
+ *     Phase 6:
  *     Note:    Transfers data between flp image and memory
  * Componenet 3: fdd
  *     Phase 1:
@@ -120,6 +127,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 3:
  *     Phase 4:
  *     Phase 5:
+ *     Phase 6:
  *     Note:    Load and unload floppy image file
  *
  * Module: VMachine - HCI
@@ -140,6 +148,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 3:
  *     Phase 4:
  *     Phase 5:
+ *     Phase 6:
  *     Note:    init regs; continue when creating BIOS
  * Component 2: bios
  *     Files:   vbios.asm

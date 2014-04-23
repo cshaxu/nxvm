@@ -38,15 +38,14 @@ typedef struct {
 	t_nubit16 cs,ds,es,ss;
 	t_nsbit16 itnlint;
 	t_bool nmi;
+	t_bool term;
 } t_cpu;
 
 extern t_cpu vcpu;
-extern t_bool vcputermflag;
 
-void vcpuInsExec();
+void vcpuRefresh();
 
-void CPUInit();
-void CPURun();
-void CPUTerm();
+void vcpuInit();
+void vcpuFinal();
 
 #endif

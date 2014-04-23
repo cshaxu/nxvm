@@ -22,7 +22,7 @@ extern t_fdd vfdd;
 t_bool vfddRead(t_nubit8 *cyl,t_nubit8 *head,t_nubit8 *sector,t_vaddrcc memloc,t_nubit8 count);	// From FDD To RAM, count sectors
 t_bool vfddWrite(t_nubit8 *cyl,t_nubit8 *head,t_nubit8 *sector,t_vaddrcc memloc,t_nubit8 count);	// From RAM To FDD, count sectors
 void vfddFormat(t_nubit8 fillbyte);
-void FDDInit();
-void FDDTerm();
+void vfddInit();
+void vfddFinal();
 
 #endif

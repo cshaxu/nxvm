@@ -6,63 +6,94 @@
 t_bool vmachineinitflag = 0;
 t_bool vmachinerunflag = 0;
 
-void NXVMInit()
+void vmachineRefresh()
+{
+/*
+	vcmosRefresh();
+	vdispRefresh();
+	vvadpRefresh();
+	vkeybRefresh();
+	vkbcRefresh();
+	vfdcRefresh();
+	vfddRefresh();
+	vdmacRefresh();
+*/
+	vpitIntTick();                       /* interrupt request comes from PIT */
+	vpitRefresh();
+	vpicRefresh();
+	vramRefresh();
+	vcpuRefresh();
+	vmachinerunflag = !vcpu.term;
+}
+
+void vmachineInit()
 {
 	if(!vmachineinitflag) {
-		CPUInit();
-		RAMInit();
-		PICInit();
-		CMOSInit();
-		PITInit();
-		FDDInit();
-		FDCInit();
-		DMACInit();
+		vcpuInit();
+		vramInit();
+		vpicInit();
+		vpitInit();
+		vdmacInit();
+		vfddInit();
+		vfdcInit();
+/*
+		vkbcInit();
+		vkeybInit();
+		vvadpInit();
+		vdispInit();
+*/
+		vcmosInit();
 		vmachineinitflag = 1;
 	} else
 		vapiPrint("ERROR:\tNeko's x86 Virtual Machine is already initialized.\n");
 }
-void NXVMPowerOn()
+void vmachinePowerOn()
 {
 	if(!vmachinerunflag) {
 		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is powered on.\n");
 		vmachinerunflag = 1;
 		forceNone = 0;
-		if(!vmachineinitflag) NXVMInit();
+		if(!vmachineinitflag) vmachineInit();
 		// Create Screen Here
-		NXVMRun();
-		if(vcputermflag) vmachinerunflag = 0;
+		vmachineRunLoop();
 	} else
 		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is already running.\n");
 }
-void NXVMRun()
+void vmachineRunLoop()
 {
 	if(!vmachineinitflag || !vmachinerunflag)
 		vapiPrint("ERROR:\tNeko's x86 Virtual Machine is not running.\n");
 	else {
-		CPURun();
+		while (vmachinerunflag) vmachineRefresh();
 	}
 }
-void NXVMPowerOff()
+void vmachinePowerOff()
 {
 	if(vmachinerunflag) {
-		if(vmachineinitflag) NXVMTerm();
+		if(vmachineinitflag) vmachineFinal();
 		forceNone = 1;
 		vmachinerunflag = 0;
 		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is terminated.\n");
 	} else
 		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is already powered off.\n");
 }
-void NXVMTerm()
+void vmachineFinal()
 {
 	if(vmachineinitflag) {
-		DMACTerm();
-		FDCTerm();
-		FDDTerm();
-		PITTerm();
-		CMOSTerm();
-		PICTerm();
-		RAMTerm();
-		CPUTerm();
+		vcmosFinal();
+/*
+		vkbcFinal();
+		vkeybFinal();
+		vvadpFinal();
+		vdispFinal();
+*/
+		vfdcFinal();
+		vfddFinal();
+		vdmacFinal();
+		vpitFinal();
+		vpicFinal();
+		vramFinal();
+		vcpuFinal();
 		vmachineinitflag = 0;
 	} else
 		vapiPrint("ERROR:\tNeko's x86 Virtual Machine is not initialized.\n");

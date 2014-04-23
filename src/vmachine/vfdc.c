@@ -198,7 +198,7 @@ void IO_Write_03F5()
 void IO_Write_03F7()
 {vfdc.ccr = vcpu.al;}
 
-void FDCInit()
+void vfdcInit()
 {
 	bcount = 0;
 	memset(&vfdc,0,sizeof(t_fdc));
@@ -211,4 +211,4 @@ void FDCInit()
 	vcpuinsOutPort[0x03f5] = (t_vaddrcc)IO_Write_03F5;
 	vcpuinsOutPort[0x03f7] = (t_vaddrcc)IO_Write_03F7;
 }
-void FDCTerm() {}
+void vfdcFinal() {}

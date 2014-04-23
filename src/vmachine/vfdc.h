@@ -27,7 +27,7 @@ typedef struct {
 
 extern t_fdc vfdc;
 
-void FDCInit();
-void FDCTerm();
+void vfdcInit();
+void vfdcFinal();
 
 #endif

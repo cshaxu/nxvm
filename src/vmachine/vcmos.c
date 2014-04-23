@@ -80,14 +80,18 @@ void IO_Write_0070()
 }
 void IO_Write_0071()
 {
-//	t_nubitcc i;
-//	t_nubit16 checksum = 0;
+/*
+	t_nubitcc i;
+	t_nubit16 checksum = 0;
+*/
 	vcmos.reg[vcmos.rid] = vcpu.al;
-/*	if((idreg > 0x0f) && (idreg < 0x2e))
+/*
+	if((idreg > 0x0f) && (idreg < 0x2e))
 		for(i = 0x10;i < 0x2e;++i)
 			checksum += vcmosreg[i];
 	vcmosreg[CMOS_CHECKSUM_LSB] = checksum&0xff;
-	vcmosreg[CMOS_CHECKSUM_MSB] = checksum>>8;*/
+	vcmosreg[CMOS_CHECKSUM_MSB] = checksum>>8;
+*/
 }
 void IO_Read_0071()
 {
@@ -95,19 +99,18 @@ void IO_Read_0071()
 	vcpu.al = vcmos.reg[vcmos.rid];
 }
 
-void CMOSInit()
+void vcmosInit()
 {
-	idreg = 0x00;
 	memset(&vcmos, 0x00, sizeof(t_cmos));
 
 #ifdef VCMOS_DEBUG
 	/*	Initialization of Registers Here..
 		To be implemented!! */
-	vcmosreg[CMOS_RTC_HOUR] = 0x80;
+	vcmos.reg[CMOS_RTC_HOUR] = 0x80;
 #endif
 
 	vcpuinsInPort[0x0071] = (t_faddrcc)IO_Read_0071;
 	vcpuinsOutPort[0x0070] = (t_faddrcc)IO_Write_0070;
 	vcpuinsOutPort[0x0071] = (t_faddrcc)IO_Write_0071;
 }
-void CMOSTerm() {}
+void vcmosFinal() {}

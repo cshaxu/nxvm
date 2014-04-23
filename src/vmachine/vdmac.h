@@ -30,7 +30,7 @@ typedef struct {
 
 extern t_dmac vdmac1,vdmac2;
 
-void DMACInit();
-void DMACTerm();
+void vdmacInit();
+void vdmacFinal();
 
 #endif

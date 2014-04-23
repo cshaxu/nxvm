@@ -74,17 +74,23 @@ t_bool vpicScanINTR();
  */
 t_nubit8 vpicGetINTR();
 /*
- * PICInit: Public interface for vmachine
+ * vpicInit: Public interface for vmachine
  * Initializes PIC
  * Sets zero for pic structs
  * Registers I/O ports for master and slave pics
  */
-void PICInit();
+void vpicInit();
 /*
- * PICTerm: Public interface for vmachine
+ * vpicRefresh: Public interface for vmachine
+ * Refreshes PIC
+ * If slave pic has irq, set master pic IRQ 2
+ */
+void vpicRefresh();
+/*
+ * vpicFinal: Public interface for vmachine
  * Terminates PIC
  * Frees any allocated memory
  */
-void PICTerm();
+void vpicFinal();
 
 #endif

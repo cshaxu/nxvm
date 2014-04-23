@@ -37,8 +37,8 @@
 #define AAM_FLAG	(VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
 #define AAD_FLAG	(VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
 
-#define GetFlag(flg) (!!(vcpu.flags&flg))
-#define SetFlag(flg,bl) ((!!(bl))?(vcpu.flags|=flg):(vcpu.flags&=~flg))
+#define GetFlag(flg) (!!(vcpu.flags&(flg)))
+#define SetFlag(flg,bl) ((!!(bl))?(vcpu.flags|=(flg)):(vcpu.flags&=~(flg)))
 
 #define U_DEST_8	(*(t_nubit8 *)dest)
 #define U_DEST_16	(*(t_nubit16 *)dest)
@@ -78,7 +78,7 @@ static enum {RT_NONE,RT_REPZ,RT_REPZNZ} reptype;
 static void CaseError(const char *str)
 {
 	vapiPrint("The NXVM CPU has encountered an internal case error: %s.\n",str);
-	vcputermflag = 1;
+	vcpu.term = 1;
 }
 
 static void CalcCF()
@@ -1232,7 +1232,7 @@ void OpError()
 	vapiPrint(" ");
 	vapiPrintByte(vramGetByte(vcpu.cs,vcpu.ip+4));
 	vapiPrint("\n");
-	vcputermflag = 1;
+	vcpu.term = 1;
 }
 void IO_NOP()
 {
@@ -3090,12 +3090,12 @@ static void _debug_dosint(t_nubit8 intid)
 	t_nubit8 c;
 	switch(intid) {
 	case 0x20:
-		vcputermflag = 1;
+		vcpu.term = 1;
 		break;
 	case 0x21:
 		switch(vcpu.ah) {
 		case 0x00:
-			vcputermflag = 1;
+			vcpu.term = 1;
 			break;
 		case 0x02:
 			vapiPrint("_DEBUG_DOSINT::intid0x02::\'%c\'\n",vcpu.dl);
@@ -3151,7 +3151,7 @@ void vcpuinsExecInt()
 	if(GetFlag(VCPU_FLAG_TF)) INT(0x01);
 }
 
-void CPUInsInit()
+void vcpuinsInit()
 {
 	int i;
 	vcpu.itnlint = -1;
@@ -3424,4 +3424,4 @@ void CPUInsInit()
 	vcpuinsInsSet[0xfe] = (t_faddrcc)INS_FE;
 	vcpuinsInsSet[0xff] = (t_faddrcc)INS_FF;
 }
-void CPUInsTerm() {}
+void vcpuinsFinal() {}
