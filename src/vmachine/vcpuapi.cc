@@ -10,8 +10,8 @@ static t_cpu oldbcpu, newbcpu;
 static t_bool flagbrec;
 static t_cpurec bcpurec;
 
-#define VCPUAPI_COMPARE 0
-#define VCPUAPI_RECORD  1
+#define VCPUAPI_COMPARE 1
+#define VCPUAPI_RECORD  0
 
 t_nubit32 vcpuapiPrint(const t_string format, ...)
 {
@@ -430,9 +430,9 @@ void vcpuapiExecBefore()
 #endif
 	}
 	if (bcpurec.linear == 0xa78f) {
-		flagvalid = 0;
+		/*flagvalid = 0;
 		vcpuapiPrint("NXVM and Bochs comparison stops here.\n");
-		BX_CPU_THIS_PTR magic_break = 1;
+		BX_CPU_THIS_PTR magic_break = 1;*/
 #if VCPUAPI_RECORD == 1
 		recordFinal();
 		recordDump("d:/bx.log");
