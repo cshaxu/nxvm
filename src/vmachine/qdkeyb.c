@@ -89,14 +89,14 @@ void IO_Read_0064()
 {
 	vcpu.iobyte = 0x10;
 }
-void IO_Write_00BB()
+/*void IO_Write_00BB()
 {
 	qdbiosExecInt(0x16);
 	if (GetBit(_flags, VCPU_FLAG_ZF))
 		vramVarWord(_ss,_sp + 4) |=  VCPU_FLAG_ZF;
 	else
 		vramVarWord(_ss,_sp + 4) &= ~VCPU_FLAG_ZF;
-}
+}*/
 
 void qdkeybReadInput()
 {
@@ -121,7 +121,7 @@ void qdkeybGetShiftStatus()
 
 void qdkeybInit()
 {
-	vport.out[0x00bb] = (t_faddrcc)IO_Write_00BB;
+//	vport.out[0x00bb] = (t_faddrcc)IO_Write_00BB;
 	vport.in[0x0064] = (t_faddrcc)IO_Read_0064;
 }
 void qdkeybFinal()

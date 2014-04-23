@@ -1268,9 +1268,6 @@ static void IDIV(void *src, t_nubit8 len)
 }
 static void INT(t_nubit8 intid)
 {
-#ifdef VCPUINS_DEBUG
-	if (qdbiosExecInt(intid)) return;
-#endif
 	PUSH((void *)&vcpu.flags,16);
 	ClrBit(vcpu.flags, (VCPU_FLAG_IF | VCPU_FLAG_TF));
 	PUSH((void *)&vcpu.cs,16);
@@ -3206,6 +3203,17 @@ void vcpuinsExecInt()
 	}
 }
 
+void QDX()
+{
+	vcpu.ip++;
+	GetImm(8);
+	qdbiosExecInt(d_nubit8(vcpuins.imm));
+	if (GetBit(_flags, VCPU_FLAG_ZF))
+		vramVarWord(_ss,_sp + 4) |=  VCPU_FLAG_ZF;
+	else
+		vramVarWord(_ss,_sp + 4) &= ~VCPU_FLAG_ZF;
+}
+
 void vcpuinsInit()
 {
 	memset(&vcpuins, 0x00, sizeof(t_cpuins));
@@ -3430,7 +3438,9 @@ void vcpuinsInit()
 	vcpuins.table[0xd5] = (t_faddrcc)AAD;
 	vcpuins.table[0xd6] = (t_faddrcc)OpError;
 	vcpuins.table[0xd7] = (t_faddrcc)XLAT;
-	vcpuins.table[0xd8] = (t_faddrcc)OpError;
+// FOR DEBUG USE
+	vcpuins.table[0xd8] = (t_faddrcc)QDX;
+//!	vcpuins.table[0xd8] = (t_faddrcc)OpError; !!!!!!
 	vcpuins.table[0xd9] = (t_faddrcc)OpError;
 	//vcpuins.table[0xd9] = (t_faddrcc)INS_D9;
 	vcpuins.table[0xda] = (t_faddrcc)OpError;

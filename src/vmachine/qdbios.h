@@ -7,7 +7,7 @@
 
 #include "vglobal.h"
 
-t_bool qdbiosExecInt(t_nubit8 intid);
+void qdbiosExecInt(t_nubit8 intid);
 void qdbiosRefresh();
 void qdbiosInit();
 void qdbiosFinal();
