@@ -2995,25 +2995,25 @@ WRAPPER MOV_M16_AX()
 	MOV((void *)vcpuins.rm,(void *)&vcpu.ax,16);
 	// _vapiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  MOV_M16_AX\n");
 }
-WRAPPER MOVSB()
+void MOVSB()
 {
 	vcpu.ip++;
 	if(vcpuins.rep == RT_NONE) MOVS(8);
 	else {
 		while(vcpu.cx) {
-			vcpuinsExecInt();
+			//vcpuinsExecInt();
 			MOVS(8);
 			vcpu.cx--;
 		}
 	}
 }
-WRAPPER MOVSW()
+void MOVSW()
 {
 	vcpu.ip++;
 	if(vcpuins.rep == RT_NONE) MOVS(16);
 	else {
 		while(vcpu.cx) {
-			vcpuinsExecInt();
+			//vcpuinsExecInt();
 			MOVS(16);
 			vcpu.cx--;
 		}
@@ -3025,7 +3025,7 @@ void CMPSB()
 	if(vcpuins.rep == RT_NONE) CMPS(8);
 	else {
 		while(vcpu.cx) {
-			vcpuinsExecInt();
+			//vcpuinsExecInt();
 			CMPS(8);
 			vcpu.cx--;
 			if((vcpuins.rep == RT_REPZ && !GetBit(vcpu.flags, VCPU_FLAG_ZF)) || (vcpuins.rep == RT_REPZNZ && GetBit(vcpu.flags, VCPU_FLAG_ZF))) break;
@@ -3038,7 +3038,7 @@ void CMPSW()
 	if(vcpuins.rep == RT_NONE) CMPS(16);
 	else {
 		while(vcpu.cx) {
-			vcpuinsExecInt();
+			//vcpuinsExecInt();
 			CMPS(16);
 			vcpu.cx--;
 			if((vcpuins.rep == RT_REPZ && !GetBit(vcpu.flags, VCPU_FLAG_ZF)) || (vcpuins.rep == RT_REPZNZ && GetBit(vcpu.flags, VCPU_FLAG_ZF))) break;
@@ -3065,7 +3065,7 @@ void STOSB()
 	if(vcpuins.rep == RT_NONE) STOS(8);
 	else {
 		while(vcpu.cx) {
-			vcpuinsExecInt();
+			//vcpuinsExecInt();
 			STOS(8);
 			vcpu.cx--;
 		}
@@ -3077,7 +3077,7 @@ void STOSW()
 	if(vcpuins.rep == RT_NONE) STOS(16);
 	else {
 		while(vcpu.cx) {
-			vcpuinsExecInt();
+			//vcpuinsExecInt();
 			STOS(16);
 			vcpu.cx--;
 		}
@@ -3089,7 +3089,7 @@ void LODSB()
 	if(vcpuins.rep == RT_NONE) LODS(8);
 	else {
 		while(vcpu.cx) {
-			vcpuinsExecInt();
+			//vcpuinsExecInt();
 			LODS(8);
 			vcpu.cx--;
 		}
@@ -3101,7 +3101,7 @@ void LODSW()
 	if(vcpuins.rep == RT_NONE) LODS(16);
 	else {
 		while(vcpu.cx) {
-			vcpuinsExecInt();
+			//vcpuinsExecInt();
 			LODS(16);
 			vcpu.cx--;
 		}
@@ -3113,7 +3113,7 @@ void SCASB()
 	if(vcpuins.rep == RT_NONE) SCAS(8);
 	else {
 		while(vcpu.cx) {
-			vcpuinsExecInt();
+			//vcpuinsExecInt();
 			SCAS(8);
 			vcpu.cx--;
 			if((vcpuins.rep == RT_REPZ && !GetBit(vcpu.flags, VCPU_FLAG_ZF)) || (vcpuins.rep == RT_REPZNZ && GetBit(vcpu.flags, VCPU_FLAG_ZF))) break;
@@ -3126,7 +3126,7 @@ void SCASW()
 	if(vcpuins.rep == RT_NONE) SCAS(16);
 	else {
 		while(vcpu.cx) {
-			vcpuinsExecInt();
+			//vcpuinsExecInt();
 			SCAS(16);
 			vcpu.cx--;
 			if((vcpuins.rep == RT_REPZ && !GetBit(vcpu.flags, VCPU_FLAG_ZF)) || (vcpuins.rep == RT_REPZNZ && GetBit(vcpu.flags, VCPU_FLAG_ZF))) break;

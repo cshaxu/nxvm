@@ -14,7 +14,6 @@
 #include "ecpuins.h"
 #include "ecpu.h"
 
-t_faddrcc InsTable[0x100];
 t_vaddrcc Ins0FTable[0x100];
 
 #define SAME static void
@@ -53,6 +52,26 @@ VOID SyncCSIP()
 VOID SyncEVIP()
 {
 	evIP = (ecpu.cs << 4) + ecpu.ip;
+}
+VOID PrintFlags(t_nubit16 flags)
+{
+	if(flags & VCPU_FLAG_OF) vapiPrint("OV ");
+	else                     vapiPrint("NV ");
+	if(flags & VCPU_FLAG_DF) vapiPrint("DN ");
+	else                     vapiPrint("UP ");
+	if(flags & VCPU_FLAG_IF) vapiPrint("EI ");
+	else                     vapiPrint("DI ");
+	if(flags & VCPU_FLAG_SF) vapiPrint("NG ");
+	else                     vapiPrint("PL ");
+	if(flags & VCPU_FLAG_ZF) vapiPrint("ZR ");
+	else                     vapiPrint("NZ ");
+	if(flags & VCPU_FLAG_AF) vapiPrint("AC ");
+	else                     vapiPrint("NA ");
+	if(flags & VCPU_FLAG_PF) vapiPrint("PE ");
+	else                     vapiPrint("PO ");
+	if(flags & VCPU_FLAG_CF) vapiPrint("CY ");
+	else                     vapiPrint("NC ");
+	vapiPrint("\n");
 }
 
 VOID LongCallNewIP(char OffsetByte)
@@ -834,6 +853,236 @@ static void OR(void *dest, void *src, t_nubit8 len)
 	ClrBit(ecpu.flags, VCPU_FLAG_AF);
 	SetFlags(OR_FLAG);
 }
+static void ADC(void *dest, void *src, t_nubit8 len)
+{
+	switch(len) {
+	case 8:
+		ecpuins.bit = 8;
+		ecpuins.type = ADC8;
+		ecpuins.opr1 = d_nubit8(dest) & 0xff;
+		ecpuins.opr2 = d_nubit8(src) & 0xff;
+		ecpuins.result = (ecpuins.opr1+ecpuins.opr2+GetBit(ecpu.flags, VCPU_FLAG_CF)) & 0xff;
+		d_nubit8(dest) = (t_nubit8)ecpuins.result;
+		break;
+	case 12:
+		ecpuins.bit = 16;
+		ecpuins.type = ADC16;
+		ecpuins.opr1 = d_nubit16(dest) & 0xffff;
+		ecpuins.opr2 = d_nsbit8(src) & 0xffff;
+		ecpuins.result = (ecpuins.opr1+ecpuins.opr2+GetBit(ecpu.flags, VCPU_FLAG_CF)) & 0xffff;
+		d_nubit16(dest) = (t_nubit16)ecpuins.result;
+		break;
+	case 16:
+		ecpuins.bit = 16;
+		ecpuins.type = ADC16;
+		ecpuins.opr1 = d_nubit16(dest) & 0xffff;
+		ecpuins.opr2 = d_nubit16(src) & 0xffff;
+		ecpuins.result = (ecpuins.opr1+ecpuins.opr2+GetBit(ecpu.flags, VCPU_FLAG_CF)) & 0xffff;
+		d_nubit16(dest) = (t_nubit16)ecpuins.result;
+		break;
+	default:CaseError("ADC::len");break;}
+	SetFlags(ADC_FLAG);
+}
+static void SBB(void *dest, void *src, t_nubit8 len)
+{
+	switch(len) {
+	case 8:
+		ecpuins.bit = 8;
+		ecpuins.type = SBB8;
+		ecpuins.opr1 = d_nubit8(dest) & 0xff;
+		ecpuins.opr2 = d_nubit8(src) & 0xff;
+		ecpuins.result = (ecpuins.opr1-(ecpuins.opr2+GetBit(ecpu.flags, VCPU_FLAG_CF))) & 0xff;
+		d_nubit8(dest) = (t_nubit8)ecpuins.result;
+		break;
+	case 12:
+		ecpuins.bit = 16;
+		ecpuins.type = SBB16;
+		ecpuins.opr1 = d_nubit16(dest) & 0xffff;
+		ecpuins.opr2 = d_nsbit8(src) & 0xffff;
+		ecpuins.result = (ecpuins.opr1-(ecpuins.opr2+GetBit(ecpu.flags, VCPU_FLAG_CF))) & 0xffff;
+		d_nubit16(dest) = (t_nubit16)ecpuins.result;
+		break;
+	case 16:
+		ecpuins.bit = 16;
+		ecpuins.type = SBB16;
+		ecpuins.opr1 = d_nubit16(dest) & 0xffff;
+		ecpuins.opr2 = d_nubit16(src) & 0xffff;
+		ecpuins.result = (ecpuins.opr1-(ecpuins.opr2+GetBit(ecpu.flags, VCPU_FLAG_CF))) & 0xffff;
+		d_nubit16(dest) = (t_nubit16)ecpuins.result;
+		break;
+	default:CaseError("SBB::len");break;}
+	SetFlags(SBB_FLAG);
+}
+static void AND(void *dest, void *src, t_nubit8 len)
+{
+	switch(len) {
+	case 8:
+		ecpuins.bit = 8;
+		//ecpuins.type = AND8;
+		ecpuins.opr1 = d_nubit8(dest) & 0xff;
+		ecpuins.opr2 = d_nubit8(src) & 0xff;
+		ecpuins.result = (ecpuins.opr1&ecpuins.opr2) & 0xff;
+		d_nubit8(dest) = (t_nubit8)ecpuins.result;
+		break;
+	case 12:
+		ecpuins.bit = 16;
+		//ecpuins.type = AND16;
+		ecpuins.opr1 = d_nubit16(dest) & 0xffff;
+		ecpuins.opr2 = d_nsbit8(src) & 0xffff;
+		ecpuins.result = (ecpuins.opr1&ecpuins.opr2) & 0xffff;
+		d_nubit16(dest) = (t_nubit16)ecpuins.result;
+		break;
+	case 16:
+		ecpuins.bit = 16;
+		//ecpuins.type = AND16;
+		ecpuins.opr1 = d_nubit16(dest) & 0xffff;
+		ecpuins.opr2 = d_nubit16(src) & 0xffff;
+		ecpuins.result = (ecpuins.opr1&ecpuins.opr2) & 0xffff;
+		d_nubit16(dest) = (t_nubit16)ecpuins.result;
+		break;
+	default:CaseError("AND::len");break;}
+	ClrBit(ecpu.flags,VCPU_FLAG_OF);
+	ClrBit(ecpu.flags,VCPU_FLAG_CF);
+	ClrBit(ecpu.flags,VCPU_FLAG_AF);
+	SetFlags(AND_FLAG);
+}
+static void STRDIR(t_nubit8 len, t_bool flagsi, t_bool flagdi)
+{
+	bugfix(10) {
+		/* add parameters flagsi, flagdi */
+	} else ;
+	switch(len) {
+	case 8:
+		ecpuins.bit = 8;
+		if(GetBit(ecpu.flags, VCPU_FLAG_DF)) {
+			if (flagdi) ecpu.di--;
+			if (flagsi) ecpu.si--;
+		} else {
+			if (flagdi) ecpu.di++;
+			if (flagsi) ecpu.si++;
+		}
+		break;
+	case 16:
+		ecpuins.bit = 16;
+		if(GetBit(ecpu.flags, VCPU_FLAG_DF)) {
+			if (flagdi) ecpu.di -= 2;
+			if (flagsi) ecpu.si -= 2;
+		} else {
+			if (flagdi) ecpu.di += 2;
+			if (flagsi) ecpu.si += 2;
+		}
+		break;
+	default:CaseError("STRDIR::len");break;}
+}
+static void MOVS(t_nubit8 len)
+{
+	switch(len) {
+	case 8:
+		ecpuins.bit = 8;
+		vramVarByte(ecpu.es,ecpu.di) = vramVarByte(ecpu.overds,ecpu.si);
+		STRDIR(8,1,1);
+		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  MOVSB\n");
+		break;
+	case 16:
+		ecpuins.bit = 16;
+		vramVarWord(ecpu.es,ecpu.di) = vramVarWord(ecpu.overds,ecpu.si);
+		STRDIR(16,1,1);
+		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  MOVSW\n");
+		break;
+	default:CaseError("MOVS::len");break;}
+	//qdcgaCheckVideoRam(vramGetAddr(ecpu.es, ecpu.di));
+}
+static void CMPS(t_nubit8 len)
+{
+	switch(len) {
+	case 8:
+		ecpuins.bit = 8;
+		ecpuins.type = CMP8;
+		ecpuins.opr1 = vramVarByte(ecpu.overds,ecpu.si);
+		ecpuins.opr2 = vramVarByte(ecpu.es,ecpu.di);
+		ecpuins.result = (ecpuins.opr1-ecpuins.opr2)&0xff;
+		STRDIR(8,1,1);
+		SetFlags(CMP_FLAG);
+		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  CMPSB\n");
+		break;
+	case 16:
+		ecpuins.bit = 16;
+		ecpuins.type = CMP16;
+		ecpuins.opr1 = vramVarWord(ecpu.overds,ecpu.si);
+		ecpuins.opr2 = vramVarWord(ecpu.es,ecpu.di);
+		ecpuins.result = (ecpuins.opr1-ecpuins.opr2)&0xffff;
+		STRDIR(16,1,1);
+		SetFlags(CMP_FLAG);
+		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  CMPSW\n");
+		break;
+	default:CaseError("CMPS::len");break;}
+}
+static void STOS(t_nubit8 len)
+{
+	switch(len) {
+	case 8:
+		ecpuins.bit = 8;
+		vramVarByte(ecpu.es,ecpu.di) = ecpu.al;
+		STRDIR(8,0,1);
+		/*if (eCPU.di+t<0xc0000 && eCPU.di+t>=0xa0000)
+		WriteVideoRam(eCPU.di+t-0xa0000);*/
+		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  STOSB\n");
+		break;
+	case 16:
+		ecpuins.bit = 16;
+		vramVarWord(ecpu.es,ecpu.di) = ecpu.ax;
+		STRDIR(16,0,1);
+		/*if (eCPU.di+((t2=eCPU.es,t2<<4))<0xc0000 && eCPU.di+((t2=eCPU.es,t2<<4))>=0xa0000)
+		{
+			for (i=0;i<tmpOpdSize;i++)
+			{
+				WriteVideoRam(eCPU.di+((t2=eCPU.es,t2<<4))-0xa0000+i);
+			}
+		}*/
+		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  STOSW\n");
+		break;
+	default:CaseError("STOS::len");break;}
+}
+static void LODS(t_nubit8 len)
+{
+	switch(len) {
+	case 8:
+		ecpuins.bit = 8;
+		ecpu.al = vramVarByte(ecpu.overds,ecpu.si);
+		STRDIR(8,1,0);
+		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  LODSB\n");
+		break;
+	case 16:
+		ecpuins.bit = 16;
+		ecpu.ax = vramVarWord(ecpu.overds,ecpu.si);
+		STRDIR(16,1,0);
+		// _vapiPrintAddr(ecpu.cs,ecpu.ip);vapiPrint("  LODSW\n");
+		break;
+	default:CaseError("LODS::len");break;}
+}
+static void SCAS(t_nubit8 len)
+{
+	switch(len) {
+	case 8:
+		ecpuins.bit = 8;
+		ecpuins.type = CMP8;
+		ecpuins.opr1 = ecpu.al;
+		ecpuins.opr2 = vramVarByte(ecpu.es,ecpu.di);
+		ecpuins.result = (ecpuins.opr1-ecpuins.opr2)&0xff;
+		STRDIR(8,0,1);
+		SetFlags(CMP_FLAG);
+		break;
+	case 16:
+		ecpuins.bit = 16;
+		ecpuins.type = CMP16;
+		ecpuins.opr1 = ecpu.ax;
+		ecpuins.opr2 = vramVarWord(ecpu.es,ecpu.di);
+		ecpuins.result = (ecpuins.opr1-ecpuins.opr2)&0xffff;
+		STRDIR(16,0,1);
+		SetFlags(CMP_FLAG);
+		break;
+	default:CaseError("SCAS::len");break;}
+}
 static void PUSH(void *src, t_nubit8 len)
 {
 	t_nubit16 data = d_nubit16(src);
@@ -990,7 +1239,7 @@ VOID _OR(void**Des, void**Src, int Len)
 	}
 	MakeBit(ecpu.flags, VCPU_FLAG_IF, intf);
 }
-VOID ADC(void**Des, void**Src, int Len)
+VOID _ADC(void**Des, void**Src, int Len)
 {
 	t_bool intf = GetBit(ecpu.flags, VCPU_FLAG_IF);
 	switch(Len)
@@ -1037,7 +1286,7 @@ VOID ADC(void**Des, void**Src, int Len)
 	}
 	MakeBit(ecpu.flags, VCPU_FLAG_IF, intf);
 }
-VOID SBB(void**Des, void**Src, int Len)
+VOID _SBB(void**Des, void**Src, int Len)
 {
 	t_bool intf = GetBit(ecpu.flags, VCPU_FLAG_IF);
 	switch(Len)
@@ -1084,7 +1333,7 @@ VOID SBB(void**Des, void**Src, int Len)
 	}
 	MakeBit(ecpu.flags, VCPU_FLAG_IF, intf);
 }
-VOID AND(void**Des, void**Src, int Len)
+VOID _AND(void**Des, void**Src, int Len)
 {
 	t_bool intf = GetBit(ecpu.flags, VCPU_FLAG_IF);
 	switch(Len)
@@ -1505,11 +1754,17 @@ SAME ADD_AX_I16()
 }
 SAME PUSH_ES()
 {
+	ci1;
+	ecpu.ip++;
 	PUSH(&ecpu.es,16);
+	ci2;
 }
 SAME POP_ES()
 {
+	ci1;
+	ecpu.ip++;
 	POP(&ecpu.es,16);
+	ci2;
 }
 SAME OR_RM8_R8()
 {
@@ -1561,129 +1816,216 @@ SAME OR_AX_I16()
 }
 SAME PUSH_CS()
 {
+	ci1;
+	ecpu.ip++;
 	PUSH(&ecpu.cs,16);
+	ci2;
 }
 // 0x10
-VOID ADC_RM8_R8()
+SAME ADC_RM8_R8()
 {
-	ADC((void**)&rm8,(void**)&r8,1);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(8,8);
+	ADC((void *)ecpuins.rm,(void *)ecpuins.r,8);
+	ci2;
 }
-VOID ADC_RM16_R16()
+SAME ADC_RM16_R16()
 {
-	ADC((void**)&rm16,(void**)&r16,tmpOpdSize);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(16,16);
+	ADC((void *)ecpuins.rm,(void *)ecpuins.r,16);
+	ci2;
 }
-VOID ADC_R8_RM8()
+SAME ADC_R8_RM8()
 {
-	ADC((void**)&r8,(void**)&rm8,1);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(8,8);
+	ADC((void *)ecpuins.r,(void *)ecpuins.rm,8);
+	ci2;
 }
-VOID ADC_R16_RM16()
+SAME ADC_R16_RM16()
 {
-	ADC((void**)&r16,(void**)&rm16,tmpOpdSize);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(16,16);
+	ADC((void *)ecpuins.r,(void *)ecpuins.rm,16);
+	ci2;
 }
-VOID ADC_AL_I8()
+SAME ADC_AL_I8()
 {
-	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.al,*pb=(void*)(vramGetAddr(0, evIP));
-	ADC((void**)&pa,(void**)&pb,1);	
-	evIP=tevIP+1;
+	ci1;
+	ecpu.ip++;
+	GetImm(8);
+	ADC((void *)&ecpu.al,(void *)ecpuins.imm,8);
+	ci2;
 }
-VOID ADC_AX_I16()
+SAME ADC_AX_I16()
 {
-	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.ax,*pb=(void*)(vramGetAddr(0, evIP));
-	ADC((void**)&pa,(void**)&pb,tmpOpdSize);
-	evIP=tevIP+tmpOpdSize;
+	ci1;
+	ecpu.ip++;
+	GetImm(16);
+	ADC((void *)&ecpu.al,(void *)ecpuins.imm,16);
+	ci2;
 }
-VOID PUSH_SS()
+SAME PUSH_SS()
 {
-	_PUSH(&ecpu.ss,tmpOpdSize);
+	ci1;
+	ecpu.ip++;
+	PUSH(&ecpu.ss,16);
+	ci2;
 }
-VOID POP_SS()
+SAME POP_SS()
 {
-	_POP(&ecpu.ss,tmpOpdSize);
+	ci1;
+	ecpu.ip++;
+	POP(&ecpu.ss,16);
+	ci2;
 }
-VOID SBB_RM8_R8()
+SAME SBB_RM8_R8()
 {
-	SBB((void**)&rm8,(void**)&r8,1);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(8,8);
+	SBB((void *)ecpuins.rm,(void *)ecpuins.r,8);
+	ci2;
 }
-VOID SBB_RM16_R16()
+SAME SBB_RM16_R16()
 {
-	SBB((void**)&rm16,(void**)&r16,tmpOpdSize);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(16,16);
+	SBB((void *)ecpuins.rm,(void *)ecpuins.r,16);
+	ci2;
 }
-VOID SBB_R8_RM8()
+SAME SBB_R8_RM8()
 {
-	SBB((void**)&r8,(void**)&rm8,1);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(8,8);
+	SBB((void *)ecpuins.r,(void *)ecpuins.rm,8);
+	ci2;
 }
-VOID SBB_R16_RM16()
+SAME SBB_R16_RM16()
 {
-	SBB((void**)&r16,(void**)&rm16,tmpOpdSize);
+	//t_nubit16 uw1,uw2,uw3,f = ecpu.flags;
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(16,16);
+	//uw1 = d_nubit16(ecpuins.r);
+	//uw2 = d_nubit16(ecpuins.rm);
+	//__asm {
+	//	pushfd
+	//	push eax
+	//	mov ax, uw1
+	//	push f
+	//	popf
+	//	sbb ax, uw2
+	//	pushf
+	//	pop f
+	//	mov uw3, ax
+	//	pop eax
+	//	popfd
+	//}
+//	d_nubit16(ecpuins.r) = uw3;
+//	_SBB((void **)&r16,(void **)&rm16,2);
+	SBB((void *)ecpuins.r,(void *)ecpuins.rm,16);
+	//if (d_nubit16(ecpuins.r) != uw3 || (f & ~VCPU_FLAG_IF) != (ecpu.flags & ~VCPU_FLAG_IF)) {
+	//	vapiPrint("uw1=%x,uw2=%x,uw3=%x,rm=%x,r=%x;f=%x,flags=%x\n",
+	//		uw1,uw2,uw3,d_nubit16(ecpuins.rm),d_nubit16(ecpuins.r),f,ecpu.flags);
+	//	PrintFlags(f);
+	//	PrintFlags(ecpu.flags);
+	//}
+	ci2;
 }
-VOID SBB_AL_I8()
+SAME SBB_AL_I8()
 {
-	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.al,*pb=(void*)(vramGetAddr(0, evIP));
-	SBB((void**)&pa,(void**)&pb,1);	
-	evIP=tevIP+1;
+	ci1;
+	ecpu.ip++;
+	GetImm(8);
+	SBB((void *)&ecpu.al,(void *)ecpuins.imm,8);
+	ci2;
 }
-VOID SBB_AX_I16()
+SAME SBB_AX_I16()
 {
-	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.ax,*pb=(void*)(vramGetAddr(0, evIP));
-	SBB((void**)&pa,(void**)&pb,tmpOpdSize);
-	evIP=tevIP+tmpOpdSize;
+	ci1;
+	ecpu.ip++;
+	GetImm(16);
+	SBB((void *)&ecpu.al,(void *)ecpuins.imm,16);
+	ci2;
 }
-VOID PUSH_DS()
+SAME PUSH_DS()
 {
-	_PUSH(&ecpu.ds,tmpOpdSize);
+	ci1;
+	ecpu.ip++;
+	PUSH(&ecpu.ds,16);
+	ci2;
 }
-VOID POP_DS()
+SAME POP_DS()
 {
-	_POP(&ecpu.ds,tmpOpdSize);
+	ci1;
+	ecpu.ip++;
+	POP(&ecpu.ds,16);
+	ci2;
 }
 // 0x20
-VOID AND_RM8_R8()
+SAME AND_RM8_R8()
 {
-	AND((void**)&rm8,(void**)&r8,1);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(8,8);
+	AND((void *)ecpuins.rm,(void *)ecpuins.r,8);
+	ci2;
 }
-VOID AND_RM16_R16()
+SAME AND_RM16_R16()
 {
-	AND((void**)&rm16,(void**)&r16,tmpOpdSize);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(16,16);
+	AND((void *)ecpuins.rm,(void *)ecpuins.r,16);
+	ci2;
 }
-VOID AND_R8_RM8()
+SAME AND_R8_RM8()
 {
-	AND((void**)&r8,(void**)&rm8,1);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(8,8);
+	AND((void *)ecpuins.r,(void *)ecpuins.rm,8);
+	ci2;
 }
-VOID AND_R16_RM16()
+SAME AND_R16_RM16()
 {
-	AND((void**)&r16,(void**)&rm16,tmpOpdSize);
+	ci1;
+	ecpu.ip++;
+	GetModRegRM(16,16);
+	AND((void *)ecpuins.r,(void *)ecpuins.rm,16);
+	ci2;
 }
-VOID AND_AL_I8()
+SAME AND_AL_I8()
 {
-	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.al,*pb=(void*)(vramGetAddr(0, evIP));
-	AND((void**)&pa,(void**)&pb,1);	
-	evIP=tevIP+1;
+	ci1;
+	ecpu.ip++;
+	GetImm(8);
+	AND((void *)&ecpu.al,(void *)ecpuins.imm,8);
+	ci2;
 }
-VOID AND_AX_I16()
+SAME AND_AX_I16()
 {
-	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.ax,*pb=(void*)(vramGetAddr(0, evIP));
-	AND((void**)&pa,(void**)&pb,tmpOpdSize);
-	evIP=tevIP+tmpOpdSize;
+	ci1;
+	ecpu.ip++;
+	GetImm(16);
+	AND((void *)&ecpu.al,(void *)ecpuins.imm,16);
+	ci2;
 }
 VOID ES()
 {
-// 	t_nubit16 tds=ecpu.ds;
-// 	t_nubit16 tes=ecpu.es;
-// 	ecpu.ds=ecpu.es;
-// 
 	ecpu.overds=ecpu.es;
 	ecpu.overss=ecpu.es;
-	ecpuinsExecIns();
-	ecpu.overds=ecpu.ds;
-	ecpu.overss=ecpu.ss;
-// 	if (ecpu.ds==tes)			//只有在下一条指令未改变DS的值的情况下，才能将DS值复原
-// 		ecpu.ds=tds;
+	//ecpuinsExecIns();
+	//ecpu.overds=ecpu.ds;
+	//ecpu.overss=ecpu.ss;
 }
 VOID DAA()
 {
@@ -1731,16 +2073,11 @@ VOID SUB_AX_I16()
 }
 VOID CS()
 {
-// 	t_nubit16 tds=ecpu.ds;
-// 	t_nubit16 tcs=ecpu.cs;
-// 	ecpu.ds=ecpu.cs;
 	ecpu.overds=ecpu.cs;
 	ecpu.overss=ecpu.cs;
-	ecpuinsExecIns();
-	ecpu.overds=ecpu.ds;
-	ecpu.overss=ecpu.ss;
-// 	if (ecpu.ds==tcs)			//只有在下一条指令未改变DS的值的情况下，才能将DS值复原
-// 		ecpu.ds=tds;
+	//ecpuinsExecIns();
+	//ecpu.overds=ecpu.ds;
+	//ecpu.overss=ecpu.ss;
 }
 VOID DAS()
 {
@@ -1789,16 +2126,11 @@ VOID XOR_AX_I16()
 }
 VOID SS()
 {
-// 	t_nubit16 tds=ecpu.ds;
-// 	t_nubit16 tss=ecpu.ss;
-// 	ecpu.ds=ecpu.ss;
 	ecpu.overds=ecpu.ss;
 	ecpu.overss=ecpu.ss;
-	ecpuinsExecIns();
-	ecpu.overds=ecpu.ds;
-	ecpu.overss=ecpu.ss;
-// 	if (ecpu.ds==tss)			//只有在下一条指令未改变DS的值的情况下，才能将DS值复原
-// 		ecpu.ds=tds;
+	//ecpuinsExecIns();
+	//ecpu.overds=ecpu.ds;
+	//ecpu.overss=ecpu.ss;
 }
 VOID AAA()
 {
@@ -1848,9 +2180,9 @@ VOID DS()
 {
 	ecpu.overds=ecpu.ds;
 	ecpu.overss=ecpu.ds;
-	ecpuinsExecIns();
-	ecpu.overds=ecpu.ds;
-	ecpu.overss=ecpu.ss;
+	//ecpuinsExecIns();
+	//ecpu.overds=ecpu.ds;
+	//ecpu.overss=ecpu.ss;
 }
 VOID AAS()
 {
@@ -2187,13 +2519,13 @@ VOID INS_81()	//这里是以81开头的指令的集。
 		_OR((void**)&rm16,(void**)&teIMS,tmpOpdSize);
 		break;
 	case 2:
-		ADC((void**)&rm16,(void**)&teIMS,tmpOpdSize);
+		_ADC((void**)&rm16,(void**)&teIMS,tmpOpdSize);
 		break;
 	case 3:		
-		SBB((void**)&rm16,(void**)&teIMS,tmpOpdSize);
+		_SBB((void**)&rm16,(void**)&teIMS,tmpOpdSize);
 		break;
 	case 4:		
-		AND((void**)&rm16,(void**)&teIMS,tmpOpdSize);
+		_AND((void**)&rm16,(void**)&teIMS,tmpOpdSize);
 		break;
 	case 5:		
 		SUB((void**)&rm16,(void**)&teIMS,tmpOpdSize);
@@ -2298,13 +2630,13 @@ VOID INS_83()	//这里是以83开头的指令的集。
 		_OR((void**)&rm16,(void**)&ptfg,tmpOpdSize);
 		break;
 	case 2:
-		ADC((void**)&rm16,(void**)&ptfg,tmpOpdSize);
+		_ADC((void**)&rm16,(void**)&ptfg,tmpOpdSize);
 		break;
 	case 3:		
-		SBB((void**)&rm16,(void**)&ptfg,tmpOpdSize);
+		_SBB((void**)&rm16,(void**)&ptfg,tmpOpdSize);
 		break;
 	case 4:		
-		AND((void**)&rm16,(void**)&ptfg,tmpOpdSize);
+		_AND((void**)&rm16,(void**)&ptfg,tmpOpdSize);
 		break;
 	case 5:		
 		SUB((void**)&rm16,(void**)&ptfg,tmpOpdSize);
@@ -2539,135 +2871,60 @@ VOID MOV_M16_AX()
 	}	
 	evIP+=tmpAddrSize;
 }
-VOID MOVSB()
-{	
-	t_nubit8 tgm;
-	if (tmpAddrSize==2)	
-		tgm=GetM8_16(ecpu.si);			//因为t是全局变量！在GetM8里已经改变了t的值！！！
-	else
-		tgm=GetM8_32(ecpu.esi);
-	(t=ecpu.es,t<<=4);
-	*((t_nubit8 *)(MemoryStart+ecpu.di+t))=tgm;
-//	if (ecpu.di+t<0xc0000 && ecpu.di+t>=0xa0000)
-//		WriteVideoRam(ecpu.di+t-0xa0000);
-	if (ecpu.flags & DF)	
-	{
-		SegOffDec(&(ecpu.ds),&(ecpu.si));
-		SegOffDec(&(ecpu.es),&(ecpu.di));
-	}
-	else
-	{
-		SegOffInc(&(ecpu.ds),&(ecpu.si));
-		SegOffInc(&(ecpu.es),&(ecpu.di));
-	}
-}
-VOID MOVSW()
-{
-	int i;
-	switch(tmpOpdSize)
-	{
-	case 2:
-		//全局变量t不可以在一个赋值式的两边同时使用
-		if (tmpAddrSize==2)
-			d_nubit16(ecpu.di+((t2=ecpu.es,t2<<4))+MemoryStart)=GetM16_16(ecpu.si);
-		else
-			d_nubit16(ecpu.edi+((t2=ecpu.es,t2<<4))+MemoryStart)=GetM16_32(ecpu.esi);
-		break;
-	case 4:
-		//全局变量t不可以在一个赋值式的两边同时使用
-		if (tmpAddrSize==2)
-			*(t_nubit32 *)(ecpu.di+((t2=ecpu.es,t2<<4))+MemoryStart)=GetM32_16(ecpu.si);
-		else
-			*(t_nubit32 *)(ecpu.edi+((t2=ecpu.es,t2<<4))+MemoryStart)=GetM32_32(ecpu.esi);
-		break;
-	}
 
-/*	if (ecpu.di+((t2=ecpu.es,t2<<4))<0xc0000 && ecpu.di+((t2=ecpu.es,t2<<4))>=0xa0000)
-	{
-		for (i=0;i<tmpOpdSize;i++)
-		{
-			WriteVideoRam(ecpu.di+((t2=ecpu.es,t2<<4))-0xa0000+i);
-		}
-	}*/
-	if (ecpu.flags & DF)	
-	{
-		for (i=0;i<tmpOpdSize;i++)
-		{
-			SegOffDec(&(ecpu.ds),&(ecpu.si));		
-			SegOffDec(&(ecpu.es),&(ecpu.di));
-		}
-	}
-	else
-	{
-		for (i=0;i<tmpOpdSize;i++)
-		{
-			SegOffInc(&(ecpu.ds),&(ecpu.si));
-			SegOffInc(&(ecpu.es),&(ecpu.di));
+SAME MOVSB()
+{
+	ecpu.ip++;
+	if(ecpuins.rep == RT_NONE) MOVS(8);
+	else {
+		while(ecpu.cx) {
+			//ecpuinsExecInt();
+			MOVS(8);
+			ecpu.cx--;
 		}
 	}
 }
-VOID CMPSB()
+SAME MOVSW()
 {
-	//这里的t居然和全局变量t重了！
-	//Release的时候，这里居然被编译器优化掉了。
-	t_nubit8 ta=GetM8_16(ecpu.si);
-	t_nubit8 tb;
-	if (tmpAddrSize==2)
-		tb=*(t_nubit8 *)(ecpu.di+((t2=ecpu.es,t2<<4))+MemoryStart);
-	else
-		tb=*(t_nubit8 *)(ecpu.edi+((t2=ecpu.es,t2<<4))+MemoryStart);
-	__asm push ecpu.flags
-	__asm popf
-	//t_nubit8 ta=(t_nubit8)(GetM8(ecpu.si)-*(t_nubit8 *)(ecpu.di+((t2=ecpu.es,t2<<4))+MemoryStart));
-	__asm mov al,ta
-	__asm cmp al,tb
-	__asm pushf
-	__asm pop ecpu.flags
-	if (ecpu.flags & DF)	
-	{
-		SegOffDec(&(ecpu.ds),&(ecpu.si));
-		SegOffDec(&(ecpu.es),&(ecpu.di));		//这里理解错了，si和di都应该要变的		
-	}
-	else
-	{
-		SegOffInc(&(ecpu.ds),&(ecpu.si));
-		SegOffInc(&(ecpu.es),&(ecpu.di));		
+	ecpu.ip++;
+	if(ecpuins.rep == RT_NONE) MOVS(16);
+	else {
+		while(ecpu.cx) {
+			//ecpuinsExecInt();
+			MOVS(16);
+			ecpu.cx--;
+		}
 	}
 }
-VOID CMPSW()
+SAME CMPSB()
 {
-	int i;
-	t_nubit32 tevIP=evIP;
-	void*ta;
-	void*tb;
-	if (tmpAddrSize==2)
-	{
-		ta=(void*)(ecpu.si+((t=ecpu.overds,t<<4))+MemoryStart);
-		tb=(void*)(ecpu.di+((t2=ecpu.es,t2<<4))+MemoryStart);
-	}
-	else
-	{
-		ta=(void*)(ecpu.esi+((t=ecpu.overds,t<<4))+MemoryStart);
-		tb=(void*)(ecpu.edi+((t2=ecpu.es,t2<<4))+MemoryStart);
-	}
-	CMP(&ta,&tb,tmpOpdSize);
-	evIP=tevIP;
-	if (ecpu.flags & DF)	
-	{
-		for (i=0;i<tmpOpdSize;i++)
-		{
-			SegOffDec(&(ecpu.ds),&(ecpu.si));
-			SegOffDec(&(ecpu.es),&(ecpu.di));
+	ci1;
+	ecpu.ip++;
+	if(ecpuins.rep == RT_NONE) CMPS(8);
+	else {
+		while(ecpu.cx) {
+			//ecpuinsExecInt();
+			CMPS(8);
+			ecpu.cx--;
+			if((ecpuins.rep == RT_REPZ && !GetBit(ecpu.flags, VCPU_FLAG_ZF)) || (ecpuins.rep == RT_REPZNZ && GetBit(ecpu.flags, VCPU_FLAG_ZF))) break;
 		}
 	}
-	else
-	{
-		for (i=0;i<tmpOpdSize;i++)
-		{
-			SegOffInc(&(ecpu.ds),&(ecpu.si));
-			SegOffInc(&(ecpu.es),&(ecpu.di));
+	ci2;
+}
+SAME CMPSW()
+{
+	ci1;
+	ecpu.ip++;
+	if(ecpuins.rep == RT_NONE) CMPS(16);
+	else {
+		while(ecpu.cx) {
+			//ecpuinsExecInt();
+			CMPS(16);
+			ecpu.cx--;
+			if((ecpuins.rep == RT_REPZ && !GetBit(ecpu.flags, VCPU_FLAG_ZF)) || (ecpuins.rep == RT_REPZNZ && GetBit(ecpu.flags, VCPU_FLAG_ZF))) break;
 		}
 	}
+	ci2;
 }
 VOID TEST_AL_I8()
 {
@@ -2683,148 +2940,94 @@ VOID TEST_AX_I16()
 	TEST((void**)&pa,(void**)&pb,tmpOpdSize);
 	evIP=tevIP+tmpOpdSize;
 }
-VOID STOSB()
-{
-	if (tmpAddrSize==2)
-		*(t_nubit8 *)(ecpu.di+((t=ecpu.es,t<<4))+MemoryStart)=ecpu.al;
-	else
-		*(t_nubit8 *)(ecpu.edi+((t=ecpu.es,t<<4))+MemoryStart)=ecpu.al;
-	if (ecpu.flags & DF)	
-	{
-		SegOffDec(&(ecpu.es),&(ecpu.di));
-	}
-	else
-	{
-		SegOffInc(&(ecpu.es),&(ecpu.di));
-	}
-}
-VOID STOSW()
-{
-	int i;
-	switch(tmpOpdSize)
-	{
-	case 2:
-		if (tmpAddrSize==2)
-			d_nubit16(ecpu.di+((t=ecpu.es,t<<4))+MemoryStart)=ecpu.ax;
-		else
-			d_nubit16(ecpu.edi+((t=ecpu.es,t<<4))+MemoryStart)=ecpu.ax;
-		break;
-	case 4:
-		if (tmpAddrSize==2)
-			*(t_nubit32 *)(ecpu.di+((t=ecpu.es,t<<4))+MemoryStart)=ecpu.eax;
-		else
-			*(t_nubit32 *)(ecpu.edi+((t=ecpu.es,t<<4))+MemoryStart)=ecpu.eax;
-		break;
-	}
-	if (ecpu.flags & DF)	
-	{
-		for (i=0;i<tmpOpdSize;i++)		
-			SegOffDec(&(ecpu.es),&(ecpu.di));				
-	}
-	else
-	{
-		for (i=0;i<tmpOpdSize;i++)		
-			SegOffInc(&(ecpu.es),&(ecpu.di));		
-	}
-}
-VOID LODSB()
-{
-	if (tmpAddrSize==2)
-		ecpu.al=GetM8_16(ecpu.si);
-	else
-		ecpu.al=GetM8_32(ecpu.esi);
-	if (ecpu.flags & DF)	
-	{
-		SegOffDec(&(ecpu.ds),&(ecpu.si));
-	}
-	else
-	{
-		SegOffInc(&(ecpu.ds),&(ecpu.si));
-	}
-}
-VOID LODSW()
-{
-	int i;
-	switch(tmpOpdSize)
-	{
-	case 2:
-		if (tmpAddrSize==2)
-			ecpu.ax=GetM16_16(ecpu.si);
-		else
-			ecpu.ax=GetM16_32(ecpu.esi);
-		break;
-	case 4:
-		if (tmpAddrSize==2)
-			ecpu.eax=GetM32_16(ecpu.si);
-		else
-			ecpu.eax=GetM32_32(ecpu.esi);
-		break;
-	}	
 
-	if (ecpu.flags & DF)	
-	{
-		for (i=0;i<tmpOpdSize;i++)
-			SegOffDec(&(ecpu.ds),&(ecpu.si));		
-	}
-	else
-	{
-		for (i=0;i<tmpOpdSize;i++)
-			SegOffInc(&(ecpu.ds),&(ecpu.si));		
-	}
-}
-VOID SCASB()
+SAME STOSB()
 {
-	t_nubit8 ta=ecpu.al;
-	t_nubit8 tb;
-	if (tmpAddrSize==2)
-		tb=d_nubit8(ecpu.di+((t=ecpu.es,t<<4))+MemoryStart);
-	else
-		tb=d_nubit8(ecpu.edi+((t=ecpu.es,t<<4))+MemoryStart);
-	__asm push ecpu.flags
-	__asm popf
-	//t_nubit8 ta=(t_nubit8)(ecpu.al-*(t_nubit8 *)(ecpu.di+((t=ecpu.es,t<<4))+MemoryStart));
-	__asm mov al,ta
-	__asm cmp al,tb
-	__asm pushf
-	__asm pop ecpu.flags	
-	if (ecpu.flags & DF)	
-	{
-		SegOffDec(&(ecpu.es),&(ecpu.di));
-	}
-	else
-	{
-		SegOffInc(&(ecpu.es),&(ecpu.di));
-	}
-}
-VOID SCASW()
-{
-	int i;
-	t_nubit32 tevIP=evIP;
-	void*ta=(void*)&ecpu.ax;
-	void*tb;
-	if (tmpAddrSize==2)
-		tb=(void*)(ecpu.di+((t2=ecpu.es,t2<<4))+MemoryStart);
-	else
-		tb=(void*)(ecpu.edi+((t2=ecpu.es,t2<<4))+MemoryStart);
-	CMP(&ta,&tb,tmpOpdSize);
-	evIP=tevIP;
-	if (ecpu.flags & DF)	
-	{
-		for (i=0;i<tmpOpdSize;i++)
-		{
-			SegOffDec(&(ecpu.es),&(ecpu.di));
+	ci1;
+	ecpu.ip++;
+	if(ecpuins.rep == RT_NONE) STOS(8);
+	else {
+		while(ecpu.cx) {
+			//ecpuinsExecInt();
+			STOS(8);
+			ecpu.cx--;
 		}
 	}
-	else
-	{
-		for (i=0;i<tmpOpdSize;i++)
-		{
-			SegOffInc(&(ecpu.es),&(ecpu.di));
+	ci2;
+}
+SAME STOSW()
+{
+	ci1;
+	ecpu.ip++;
+	if(ecpuins.rep == RT_NONE) STOS(16);
+	else {
+		while(ecpu.cx) {
+			//ecpuinsExecInt();
+			STOS(16);
+			ecpu.cx--;
 		}
 	}
-
+	ci2;
 }
-// 0xB0
+SAME LODSB()
+{
+	ci1;
+	ecpu.ip++;
+	if(ecpuins.rep == RT_NONE) LODS(8);
+	else {
+		while(ecpu.cx) {
+			//ecpuinsExecInt();
+			LODS(8);
+			ecpu.cx--;
+		}
+	}
+	ci2;
+}
+SAME LODSW()
+{
+	ci1;
+	ecpu.ip++;
+	if(ecpuins.rep == RT_NONE) LODS(16);
+	else {
+		while(ecpu.cx) {
+			//ecpuinsExecInt();
+			LODS(16);
+			ecpu.cx--;
+		}
+	}
+	ci2;
+}
+SAME SCASB()
+{
+	ci1;
+	ecpu.ip++;
+	if(ecpuins.rep == RT_NONE) SCAS(8);
+	else {
+		while(ecpu.cx) {
+			//ecpuinsExecInt();
+			SCAS(8);
+			ecpu.cx--;
+			if((ecpuins.rep == RT_REPZ && !GetBit(ecpu.flags, VCPU_FLAG_ZF)) || (ecpuins.rep == RT_REPZNZ && GetBit(ecpu.flags, VCPU_FLAG_ZF))) break;
+		}
+	}
+	ci2;
+}
+SAME SCASW()
+{
+	ci1;
+	ecpu.ip++;
+	if(ecpuins.rep == RT_NONE) SCAS(16);
+	else {
+		while(ecpu.cx) {
+			//ecpuinsExecInt();
+			SCAS(16);
+			ecpu.cx--;
+			if((ecpuins.rep == RT_REPZ && !GetBit(ecpu.flags, VCPU_FLAG_ZF)) || (ecpuins.rep == RT_REPZNZ && GetBit(ecpu.flags, VCPU_FLAG_ZF))) break;
+		}
+	}
+	ci2;
+}
+
 VOID MOV_AL_I8()
 {
 	MOV(&ecpu.al,(void*)eIMS,1);
@@ -3582,7 +3785,7 @@ VOID JCXZ_NEAR()
 SAME IN_AL_N()
 {
 #ifdef ECPUACT
-	ExecFun(InTable[d_nubit8(eIMS)]);
+	ExecFun(vport.in[d_nubit8(eIMS)]);
 	ecpu.al = vport.iobyte;
 #else
 	ecpu.flagignore = 0x01;
@@ -3592,7 +3795,7 @@ SAME IN_AL_N()
 SAME IN_AX_N()
 {
 #ifdef ECPUACT
-	ExecFun(InTable[d_nubit8(eIMS)]);
+	ExecFun(vport.in[d_nubit8(eIMS)]);
 	ecpu.ax = vport.ioword;
 #else
 	ecpu.flagignore = 0x01;
@@ -3603,7 +3806,7 @@ SAME OUT_N_AL()
 {
 #ifdef ECPUACT
 	vport.iobyte = ecpu.al;
-	ExecFun(OutTable[d_nubit8(eIMS)]);
+	ExecFun(vport.out[d_nubit8(eIMS)]);
 #else
 	ecpu.flagignore = 0x01;
 #endif
@@ -3613,7 +3816,7 @@ SAME OUT_N_AX()
 {
 #ifdef ECPUACT
 	vport.ioword = ecpu.ax;
-	ExecFun(OutTable[d_nubit8(eIMS)]);
+	ExecFun(vport.out[d_nubit8(eIMS)]);
 #else
 	ecpu.flagignore = 0x01;
 #endif
@@ -3687,51 +3890,21 @@ SAME OUT_DX_AX()
 
 // 0xF0
 SAME LOCK() {}
-VOID REPNE()
+
+SAME REPNE()
 {
-	t_nubit32 tevIP=evIP;
-	t_nubit8 nopc;
-	if (ecpu.cx==0)
-	{
-		nopc=d_nubit8(vramGetAddr(0, evIP));
-		if ((nopc&0xe7) == 0x26 || (nopc&0xfc) == 0x64 || (nopc&0xfc) == 0xf0)	//如果跟在REP指令之后的是CS、ES之类的指令，则再跳一字节
-		{
-			evIP++;
-			nopc=d_nubit8(vramGetAddr(0, evIP));
-		}
-		evIP++;
-	}
-	ecpu.flags &= (0xffff ^ ZF);		//ZF位置0
-	while (ecpu.cx>0 && !(ecpu.flags & ZF))
-	{
-		evIP=tevIP;
-		ecpuinsExecIns();
-		ecpu.cx--;
-	}
-	//evIP++;			//串操作指令都是一字节长的
+	// CMPS,SCAS
+	ci1;
+	ecpu.ip++;
+	ecpuins.rep = RT_REPZNZ;
+	ci2;
 }
-VOID REP()
+SAME REP()
 {
-	t_nubit32 tevIP=evIP;
-	t_nubit8 nopc;
-	ecpu.flags |= ZF;		//ZF位置1
-	if (ecpu.cx==0)
-	{
-		nopc=d_nubit8(vramGetAddr(0, evIP));		
-		while ((nopc&0xe7) == 0x26 || (nopc&0xfc) == 0x64 || (nopc&0xfc) == 0xf0)	//如果跟在REP指令之后的是指令前缀，则再跳一字节
-		{
-			evIP++;
-			nopc=d_nubit8(vramGetAddr(0, evIP));
-		}
-		evIP++;						//MOVSB之类的指令只有1字节长		
-	}
-	while (ecpu.cx>0 && (ecpu.flags & ZF))
-	{
-		evIP=tevIP;
-		ecpuinsExecIns();
-		ecpu.cx--;
-	}
-	//evIP++;			//串操作指令都是一字节长的
+	ci1;
+	ecpu.ip++;
+	ecpuins.rep = RT_REPZ;
+	ci2;
 }
 VOID HLT() {}
 VOID CMC() {ecpu.flags^=CF;}
@@ -4562,20 +4735,33 @@ VOID QDX()
 	evIP++;
 }
 
-void ecpuinsExecIns()
+static t_bool IsPrefix(t_nubit8 opcode)
 {
-	t_nubit8 opcode = d_nubit8(vramGetAddr(0, evIP));
-	t_nubit8 op1 = d_nubit8(vramGetAddr(0, evIP)+1);
-	t_nubit8 op2 = d_nubit8(vramGetAddr(0, evIP)+2);
-	t_nubit8 op3 = d_nubit8(vramGetAddr(0, evIP)+3);
-	t_nubit8 op4 = d_nubit8(vramGetAddr(0, evIP)+4);
-	evIP++;
-	ExecFun(InsTable[opcode]);
-	ecpu.ip=(evIP - (ecpu.cs << 4)) % 0x10000;
-	ecpu.overds=ecpu.ds;
-	ecpu.overss=ecpu.ss;
+	switch(opcode) {
+	case 0xf0: case 0xf2: case 0xf3:
+	case 0x2e: case 0x36: case 0x3e: case 0x26:
+				return 0x01;break;
+	default:	return 0x00;break;
+	}
+}
+static void ClrPrefix()
+{
+	ecpu.overds = ecpu.ds;
+	ecpu.overss = ecpu.ss;
+	ecpuins.rep = RT_NONE;
 }
 
+void ecpuinsExecIns()
+{
+	t_nubit8 opcode;
+	do {
+		opcode = vramVarByte(0, evIP);
+		evIP++;
+		ExecFun(ecpuins.table[opcode]);
+		ecpu.ip = (evIP - (ecpu.cs << 4)) % 0x10000;
+	} while (IsPrefix(opcode));
+	ClrPrefix();
+}
 void ecpuinsExecInt()
 {	
 	/* hardware interrupt handeler */
@@ -4596,262 +4782,262 @@ void ecpuinsExecInt()
 
 void ecpuinsInit()
 {
-	InsTable[0x00]=(t_faddrcc)ADD_RM8_R8;
-	InsTable[0x01]=(t_faddrcc)ADD_RM16_R16;
-	InsTable[0x02]=(t_faddrcc)ADD_R8_RM8;
-	InsTable[0x03]=(t_faddrcc)ADD_R16_RM16;
-	InsTable[0x04]=(t_faddrcc)ADD_AL_I8;
-	InsTable[0x05]=(t_faddrcc)ADD_AX_I16;
-	InsTable[0x06]=(t_faddrcc)PUSH_ES;
-	InsTable[0x07]=(t_faddrcc)POP_ES;
-	InsTable[0x08]=(t_faddrcc)OR_RM8_R8;
-	InsTable[0x09]=(t_faddrcc)OR_RM16_R16;
-	InsTable[0x0A]=(t_faddrcc)OR_R8_RM8;
-	InsTable[0x0B]=(t_faddrcc)OR_R16_RM16;
-	InsTable[0x0C]=(t_faddrcc)OR_AL_I8;
-	InsTable[0x0D]=(t_faddrcc)OR_AX_I16;
-	InsTable[0x0E]=(t_faddrcc)PUSH_CS;
-	InsTable[0x0F]=(t_faddrcc)INS_0F;
-	InsTable[0x10]=(t_faddrcc)ADC_RM8_R8;
-	InsTable[0x11]=(t_faddrcc)ADC_RM16_R16;
-	InsTable[0x12]=(t_faddrcc)ADC_R8_RM8;
-	InsTable[0x13]=(t_faddrcc)ADC_R16_RM16;
-	InsTable[0x14]=(t_faddrcc)ADC_AL_I8;
-	InsTable[0x15]=(t_faddrcc)ADC_AX_I16;
-	InsTable[0x16]=(t_faddrcc)PUSH_SS;
-	InsTable[0x17]=(t_faddrcc)POP_SS;
-	InsTable[0x18]=(t_faddrcc)SBB_RM8_R8;
-	InsTable[0x19]=(t_faddrcc)SBB_RM16_R16;
-	InsTable[0x1A]=(t_faddrcc)SBB_R8_RM8;
-	InsTable[0x1B]=(t_faddrcc)SBB_R16_RM16;
-	InsTable[0x1C]=(t_faddrcc)SBB_AL_I8;
-	InsTable[0x1D]=(t_faddrcc)SBB_AX_I16;
-	InsTable[0x1E]=(t_faddrcc)PUSH_DS;
-	InsTable[0x1F]=(t_faddrcc)POP_DS;
-	InsTable[0x20]=(t_faddrcc)AND_RM8_R8;
-	InsTable[0x21]=(t_faddrcc)AND_RM16_R16;
-	InsTable[0x22]=(t_faddrcc)AND_R8_RM8;
-	InsTable[0x23]=(t_faddrcc)AND_R16_RM16;
-	InsTable[0x24]=(t_faddrcc)AND_AL_I8;
-	InsTable[0x25]=(t_faddrcc)AND_AX_I16;
-	InsTable[0x26]=(t_faddrcc)ES;
-	InsTable[0x27]=(t_faddrcc)DAA;
-	InsTable[0x28]=(t_faddrcc)SUB_RM8_R8;
-	InsTable[0x29]=(t_faddrcc)SUB_RM16_R16;
-	InsTable[0x2A]=(t_faddrcc)SUB_R8_RM8;
-	InsTable[0x2B]=(t_faddrcc)SUB_R16_RM16;
-	InsTable[0x2C]=(t_faddrcc)SUB_AL_I8;
-	InsTable[0x2D]=(t_faddrcc)SUB_AX_I16;
-	InsTable[0x2E]=(t_faddrcc)CS;
-	InsTable[0x2F]=(t_faddrcc)DAS;
-	InsTable[0x30]=(t_faddrcc)XOR_RM8_R8;
-	InsTable[0x31]=(t_faddrcc)XOR_RM16_R16;
-	InsTable[0x32]=(t_faddrcc)XOR_R8_RM8;
-	InsTable[0x33]=(t_faddrcc)XOR_R16_RM16;
-	InsTable[0x34]=(t_faddrcc)XOR_AL_I8;
-	InsTable[0x35]=(t_faddrcc)XOR_AX_I16;
-	InsTable[0x36]=(t_faddrcc)SS;
-	InsTable[0x37]=(t_faddrcc)AAA;
-	InsTable[0x38]=(t_faddrcc)CMP_RM8_R8;
-	InsTable[0x39]=(t_faddrcc)CMP_RM16_R16;
-	InsTable[0x3A]=(t_faddrcc)CMP_R8_RM8;
-	InsTable[0x3B]=(t_faddrcc)CMP_R16_RM16;
-	InsTable[0x3C]=(t_faddrcc)CMP_AL_I8;
-	InsTable[0x3D]=(t_faddrcc)CMP_AX_I16;
-	InsTable[0x3E]=(t_faddrcc)DS;
-	InsTable[0x3F]=(t_faddrcc)AAS;
-	InsTable[0x40]=(t_faddrcc)INC_AX;
-	InsTable[0x41]=(t_faddrcc)INC_CX;
-	InsTable[0x42]=(t_faddrcc)INC_DX;
-	InsTable[0x43]=(t_faddrcc)INC_BX;
-	InsTable[0x44]=(t_faddrcc)INC_SP;
-	InsTable[0x45]=(t_faddrcc)INC_BP;
-	InsTable[0x46]=(t_faddrcc)INC_SI;
-	InsTable[0x47]=(t_faddrcc)INC_DI;
-	InsTable[0x48]=(t_faddrcc)DEC_AX;
-	InsTable[0x49]=(t_faddrcc)DEC_CX;
-	InsTable[0x4A]=(t_faddrcc)DEC_DX;
-	InsTable[0x4B]=(t_faddrcc)DEC_BX;
-	InsTable[0x4C]=(t_faddrcc)DEC_SP;
-	InsTable[0x4D]=(t_faddrcc)DEC_BP;
-	InsTable[0x4E]=(t_faddrcc)DEC_SI;
-	InsTable[0x4F]=(t_faddrcc)DEC_DI;
-	InsTable[0x50]=(t_faddrcc)PUSH_AX;
-	InsTable[0x51]=(t_faddrcc)PUSH_CX;
-	InsTable[0x52]=(t_faddrcc)PUSH_DX;
-	InsTable[0x53]=(t_faddrcc)PUSH_BX;
-	InsTable[0x54]=(t_faddrcc)PUSH_SP;
-	InsTable[0x55]=(t_faddrcc)PUSH_BP;
-	InsTable[0x56]=(t_faddrcc)PUSH_SI;
-	InsTable[0x57]=(t_faddrcc)PUSH_DI;
-	InsTable[0x58]=(t_faddrcc)POP_AX;
-	InsTable[0x59]=(t_faddrcc)POP_CX;
-	InsTable[0x5A]=(t_faddrcc)POP_DX;
-	InsTable[0x5B]=(t_faddrcc)POP_BX;
-	InsTable[0x5C]=(t_faddrcc)POP_SP;
-	InsTable[0x5D]=(t_faddrcc)POP_BP;
-	InsTable[0x5E]=(t_faddrcc)POP_SI;
-	InsTable[0x5F]=(t_faddrcc)POP_DI;
-	InsTable[0x60]=(t_faddrcc)OpcError;
-	InsTable[0x61]=(t_faddrcc)OpcError;
-	InsTable[0x62]=(t_faddrcc)OpcError;
-	InsTable[0x63]=(t_faddrcc)OpcError;
-	InsTable[0x64]=(t_faddrcc)OpcError;
-	InsTable[0x65]=(t_faddrcc)OpcError;
-	InsTable[0x66]=(t_faddrcc)OpdSize;
-	InsTable[0x67]=(t_faddrcc)AddrSize;
-	InsTable[0x68]=(t_faddrcc)PUSH_I16;
-	InsTable[0x69]=(t_faddrcc)OpcError;
-	InsTable[0x6A]=(t_faddrcc)OpcError;
-	InsTable[0x6B]=(t_faddrcc)OpcError;
-	InsTable[0x6C]=(t_faddrcc)OpcError;
-	InsTable[0x6D]=(t_faddrcc)OpcError;
-	InsTable[0x6E]=(t_faddrcc)OpcError;
-	InsTable[0x6F]=(t_faddrcc)OpcError;
-	InsTable[0x70]=(t_faddrcc)JO;
-	InsTable[0x71]=(t_faddrcc)JNO;
-	InsTable[0x72]=(t_faddrcc)JC;
-	InsTable[0x73]=(t_faddrcc)JNC;
-	InsTable[0x74]=(t_faddrcc)JZ;
-	InsTable[0x75]=(t_faddrcc)JNZ;
-	InsTable[0x76]=(t_faddrcc)JBE;
-	InsTable[0x77]=(t_faddrcc)JA;
-	InsTable[0x78]=(t_faddrcc)JS;
-	InsTable[0x79]=(t_faddrcc)JNS;
-	InsTable[0x7A]=(t_faddrcc)JP;
-	InsTable[0x7B]=(t_faddrcc)JNP;
-	InsTable[0x7C]=(t_faddrcc)JL;
-	InsTable[0x7D]=(t_faddrcc)JNL;
-	InsTable[0x7E]=(t_faddrcc)JLE;
-	InsTable[0x7F]=(t_faddrcc)JG;
-	InsTable[0x80]=(t_faddrcc)INS_80;
-	InsTable[0x81]=(t_faddrcc)INS_81;
-	InsTable[0x82]=(t_faddrcc)INS_82;
-	InsTable[0x83]=(t_faddrcc)INS_83;
-	InsTable[0x84]=(t_faddrcc)TEST_RM8_M8;
-	InsTable[0x85]=(t_faddrcc)TEST_RM16_M16;
-	InsTable[0x86]=(t_faddrcc)XCHG_R8_RM8;
-	InsTable[0x87]=(t_faddrcc)XCHG_R16_RM16;
-	InsTable[0x88]=(t_faddrcc)MOV_RM8_R8;
-	InsTable[0x89]=(t_faddrcc)MOV_RM16_R16;
-	InsTable[0x8A]=(t_faddrcc)MOV_R8_RM8;
-	InsTable[0x8B]=(t_faddrcc)MOV_R16_RM16;
-	InsTable[0x8C]=(t_faddrcc)MOV_RM_SEG;
-	InsTable[0x8D]=(t_faddrcc)LEA_R16_M16;
-	InsTable[0x8E]=(t_faddrcc)MOV_SEG_RM;
-	InsTable[0x8F]=(t_faddrcc)POP_RM16;
-	InsTable[0x90]=(t_faddrcc)NOP;
-	InsTable[0x91]=(t_faddrcc)XCHG_CX_AX;
-	InsTable[0x92]=(t_faddrcc)XCHG_DX_AX;
-	InsTable[0x93]=(t_faddrcc)XCHG_BX_AX;
-	InsTable[0x94]=(t_faddrcc)XCHG_SP_AX;
-	InsTable[0x95]=(t_faddrcc)XCHG_BP_AX;
-	InsTable[0x96]=(t_faddrcc)XCHG_SI_AX;
-	InsTable[0x97]=(t_faddrcc)XCHG_DI_AX;
-	InsTable[0x98]=(t_faddrcc)CBW;
-	InsTable[0x99]=(t_faddrcc)CWD;
-	InsTable[0x9A]=(t_faddrcc)CALL_FAR;
-	InsTable[0x9B]=(t_faddrcc)WAIT;
-	InsTable[0x9C]=(t_faddrcc)PUSHF;
-	InsTable[0x9D]=(t_faddrcc)POPF;
-	InsTable[0x9E]=(t_faddrcc)SAHF;
-	InsTable[0x9F]=(t_faddrcc)LAHF;
-	InsTable[0xA0]=(t_faddrcc)MOV_AL_M8;
-	InsTable[0xA1]=(t_faddrcc)MOV_AX_M16;
-	InsTable[0xA2]=(t_faddrcc)MOV_M8_AL;
-	InsTable[0xA3]=(t_faddrcc)MOV_M16_AX;
-	InsTable[0xA4]=(t_faddrcc)MOVSB;
-	InsTable[0xA5]=(t_faddrcc)MOVSW;
-	InsTable[0xA6]=(t_faddrcc)CMPSB;
-	InsTable[0xA7]=(t_faddrcc)CMPSW;
-	InsTable[0xA8]=(t_faddrcc)TEST_AL_I8;
-	InsTable[0xA9]=(t_faddrcc)TEST_AX_I16;
-	InsTable[0xAA]=(t_faddrcc)STOSB;
-	InsTable[0xAB]=(t_faddrcc)STOSW;
-	InsTable[0xAC]=(t_faddrcc)LODSB;
-	InsTable[0xAD]=(t_faddrcc)LODSW;
-	InsTable[0xAE]=(t_faddrcc)SCASB;
-	InsTable[0xAF]=(t_faddrcc)SCASW;
-	InsTable[0xB0]=(t_faddrcc)MOV_AL_I8;
-	InsTable[0xB1]=(t_faddrcc)MOV_CL_I8;
-	InsTable[0xB2]=(t_faddrcc)MOV_DL_I8;
-	InsTable[0xB3]=(t_faddrcc)MOV_BL_I8;
-	InsTable[0xB4]=(t_faddrcc)MOV_AH_I8;
-	InsTable[0xB5]=(t_faddrcc)MOV_CH_I8;
-	InsTable[0xB6]=(t_faddrcc)MOV_DH_I8;
-	InsTable[0xB7]=(t_faddrcc)MOV_BH_I8;
-	InsTable[0xB8]=(t_faddrcc)MOV_AX_I16;
-	InsTable[0xB9]=(t_faddrcc)MOV_CX_I16;
-	InsTable[0xBA]=(t_faddrcc)MOV_DX_I16;
-	InsTable[0xBB]=(t_faddrcc)MOV_BX_I16;
-	InsTable[0xBC]=(t_faddrcc)MOV_SP_I16;
-	InsTable[0xBD]=(t_faddrcc)MOV_BP_I16;
-	InsTable[0xBE]=(t_faddrcc)MOV_SI_I16;
-	InsTable[0xBF]=(t_faddrcc)MOV_DI_I16;
-	InsTable[0xC0]=(t_faddrcc)INS_C0;
-	InsTable[0xC1]=(t_faddrcc)INS_C1;
-	InsTable[0xC2]=(t_faddrcc)RET_I8;
-	InsTable[0xC3]=(t_faddrcc)RET_NEAR;
-	InsTable[0xC4]=(t_faddrcc)LES_R16_M16;
-	InsTable[0xC5]=(t_faddrcc)LDS_R16_M16;
-	InsTable[0xC6]=(t_faddrcc)MOV_M8_I8;
-	InsTable[0xC7]=(t_faddrcc)MOV_M16_I16;
-	InsTable[0xC8]=(t_faddrcc)OpcError;
-	InsTable[0xC9]=(t_faddrcc)OpcError;
-	InsTable[0xCA]=(t_faddrcc)RET_I16;
-	InsTable[0xCB]=(t_faddrcc)RET_FAR;
-	InsTable[0xCC]=(t_faddrcc)INT3;
-	InsTable[0xCD]=(t_faddrcc)INT_I8;
-	InsTable[0xCE]=(t_faddrcc)INTO;
-	InsTable[0xCF]=(t_faddrcc)IRET;
-	InsTable[0xD0]=(t_faddrcc)INS_D0;
-	InsTable[0xD1]=(t_faddrcc)INS_D1;
-	InsTable[0xD2]=(t_faddrcc)INS_D2;
-	InsTable[0xD3]=(t_faddrcc)INS_D3;
-	InsTable[0xD4]=(t_faddrcc)AAM;
-	InsTable[0xD5]=(t_faddrcc)AAD;
-	InsTable[0xD6]=(t_faddrcc)OpcError;
-	InsTable[0xD7]=(t_faddrcc)XLAT;
-	InsTable[0xD8]=(t_faddrcc)OpcError;
-	InsTable[0xD9]=(t_faddrcc)INS_D9;
-	InsTable[0xDA]=(t_faddrcc)OpcError;
-	InsTable[0xDB]=(t_faddrcc)INS_DB;
-	InsTable[0xDC]=(t_faddrcc)OpcError;
-	InsTable[0xDD]=(t_faddrcc)OpcError;
-	InsTable[0xDE]=(t_faddrcc)OpcError;
-	InsTable[0xDF]=(t_faddrcc)OpcError;
-	InsTable[0xE0]=(t_faddrcc)LOOPNE;
-	InsTable[0xE1]=(t_faddrcc)LOOPE;
-	InsTable[0xE2]=(t_faddrcc)LOOP_NEAR;
-	InsTable[0xE3]=(t_faddrcc)JCXZ_NEAR;
-	InsTable[0xE4]=(t_faddrcc)IN_AL_N;
-	InsTable[0xE5]=(t_faddrcc)IN_AX_N;
-	InsTable[0xE6]=(t_faddrcc)OUT_N_AL;
-	InsTable[0xE7]=(t_faddrcc)OUT_N_AX;
-	InsTable[0xE8]=(t_faddrcc)CALL_NEAR;
-	InsTable[0xE9]=(t_faddrcc)JMP_NEAR_LABEL;
-	InsTable[0xEA]=(t_faddrcc)JMP_FAR_LABEL;
-	InsTable[0xEB]=(t_faddrcc)JMP_NEAR;
-	InsTable[0xEC]=(t_faddrcc)IN_AL_DX;
-	InsTable[0xED]=(t_faddrcc)IN_AX_DX;
-	InsTable[0xEE]=(t_faddrcc)OUT_DX_AL;
-	InsTable[0xEF]=(t_faddrcc)OUT_DX_AX;
-	InsTable[0xF0]=(t_faddrcc)LOCK;
-	InsTable[0xF1]=(t_faddrcc)QDX;
-	InsTable[0xF2]=(t_faddrcc)REPNE;
-	InsTable[0xF3]=(t_faddrcc)REP;
-	InsTable[0xF4]=(t_faddrcc)HLT;
-	InsTable[0xF5]=(t_faddrcc)CMC;
-	InsTable[0xF6]=(t_faddrcc)INS_F6;
-	InsTable[0xF7]=(t_faddrcc)INS_F7;
-	InsTable[0xF8]=(t_faddrcc)CLC;
-	InsTable[0xF9]=(t_faddrcc)STC;
-	InsTable[0xFA]=(t_faddrcc)CLI;
-	InsTable[0xFB]=(t_faddrcc)STI;
-	InsTable[0xFC]=(t_faddrcc)CLD;
-	InsTable[0xFD]=(t_faddrcc)STD;
-	InsTable[0xFE]=(t_faddrcc)INS_FE;
-	InsTable[0xFF]=(t_faddrcc)INS_FF;
+	ecpuins.table[0x00]=(t_faddrcc)ADD_RM8_R8;
+	ecpuins.table[0x01]=(t_faddrcc)ADD_RM16_R16;
+	ecpuins.table[0x02]=(t_faddrcc)ADD_R8_RM8;
+	ecpuins.table[0x03]=(t_faddrcc)ADD_R16_RM16;
+	ecpuins.table[0x04]=(t_faddrcc)ADD_AL_I8;
+	ecpuins.table[0x05]=(t_faddrcc)ADD_AX_I16;
+	ecpuins.table[0x06]=(t_faddrcc)PUSH_ES;
+	ecpuins.table[0x07]=(t_faddrcc)POP_ES;
+	ecpuins.table[0x08]=(t_faddrcc)OR_RM8_R8;
+	ecpuins.table[0x09]=(t_faddrcc)OR_RM16_R16;
+	ecpuins.table[0x0A]=(t_faddrcc)OR_R8_RM8;
+	ecpuins.table[0x0B]=(t_faddrcc)OR_R16_RM16;
+	ecpuins.table[0x0C]=(t_faddrcc)OR_AL_I8;
+	ecpuins.table[0x0D]=(t_faddrcc)OR_AX_I16;
+	ecpuins.table[0x0E]=(t_faddrcc)PUSH_CS;
+	ecpuins.table[0x0F]=(t_faddrcc)INS_0F;
+	ecpuins.table[0x10]=(t_faddrcc)ADC_RM8_R8;
+	ecpuins.table[0x11]=(t_faddrcc)ADC_RM16_R16;
+	ecpuins.table[0x12]=(t_faddrcc)ADC_R8_RM8;
+	ecpuins.table[0x13]=(t_faddrcc)ADC_R16_RM16;
+	ecpuins.table[0x14]=(t_faddrcc)ADC_AL_I8;
+	ecpuins.table[0x15]=(t_faddrcc)ADC_AX_I16;
+	ecpuins.table[0x16]=(t_faddrcc)PUSH_SS;
+	ecpuins.table[0x17]=(t_faddrcc)POP_SS;
+	ecpuins.table[0x18]=(t_faddrcc)SBB_RM8_R8;
+	ecpuins.table[0x19]=(t_faddrcc)SBB_RM16_R16;
+	ecpuins.table[0x1A]=(t_faddrcc)SBB_R8_RM8;
+	ecpuins.table[0x1B]=(t_faddrcc)SBB_R16_RM16;
+	ecpuins.table[0x1C]=(t_faddrcc)SBB_AL_I8;
+	ecpuins.table[0x1D]=(t_faddrcc)SBB_AX_I16;
+	ecpuins.table[0x1E]=(t_faddrcc)PUSH_DS;
+	ecpuins.table[0x1F]=(t_faddrcc)POP_DS;
+	ecpuins.table[0x20]=(t_faddrcc)AND_RM8_R8;
+	ecpuins.table[0x21]=(t_faddrcc)AND_RM16_R16;
+	ecpuins.table[0x22]=(t_faddrcc)AND_R8_RM8;
+	ecpuins.table[0x23]=(t_faddrcc)AND_R16_RM16;
+	ecpuins.table[0x24]=(t_faddrcc)AND_AL_I8;
+	ecpuins.table[0x25]=(t_faddrcc)AND_AX_I16;
+	ecpuins.table[0x26]=(t_faddrcc)ES;
+	ecpuins.table[0x27]=(t_faddrcc)DAA;
+	ecpuins.table[0x28]=(t_faddrcc)SUB_RM8_R8;
+	ecpuins.table[0x29]=(t_faddrcc)SUB_RM16_R16;
+	ecpuins.table[0x2A]=(t_faddrcc)SUB_R8_RM8;
+	ecpuins.table[0x2B]=(t_faddrcc)SUB_R16_RM16;
+	ecpuins.table[0x2C]=(t_faddrcc)SUB_AL_I8;
+	ecpuins.table[0x2D]=(t_faddrcc)SUB_AX_I16;
+	ecpuins.table[0x2E]=(t_faddrcc)CS;
+	ecpuins.table[0x2F]=(t_faddrcc)DAS;
+	ecpuins.table[0x30]=(t_faddrcc)XOR_RM8_R8;
+	ecpuins.table[0x31]=(t_faddrcc)XOR_RM16_R16;
+	ecpuins.table[0x32]=(t_faddrcc)XOR_R8_RM8;
+	ecpuins.table[0x33]=(t_faddrcc)XOR_R16_RM16;
+	ecpuins.table[0x34]=(t_faddrcc)XOR_AL_I8;
+	ecpuins.table[0x35]=(t_faddrcc)XOR_AX_I16;
+	ecpuins.table[0x36]=(t_faddrcc)SS;
+	ecpuins.table[0x37]=(t_faddrcc)AAA;
+	ecpuins.table[0x38]=(t_faddrcc)CMP_RM8_R8;
+	ecpuins.table[0x39]=(t_faddrcc)CMP_RM16_R16;
+	ecpuins.table[0x3A]=(t_faddrcc)CMP_R8_RM8;
+	ecpuins.table[0x3B]=(t_faddrcc)CMP_R16_RM16;
+	ecpuins.table[0x3C]=(t_faddrcc)CMP_AL_I8;
+	ecpuins.table[0x3D]=(t_faddrcc)CMP_AX_I16;
+	ecpuins.table[0x3E]=(t_faddrcc)DS;
+	ecpuins.table[0x3F]=(t_faddrcc)AAS;
+	ecpuins.table[0x40]=(t_faddrcc)INC_AX;
+	ecpuins.table[0x41]=(t_faddrcc)INC_CX;
+	ecpuins.table[0x42]=(t_faddrcc)INC_DX;
+	ecpuins.table[0x43]=(t_faddrcc)INC_BX;
+	ecpuins.table[0x44]=(t_faddrcc)INC_SP;
+	ecpuins.table[0x45]=(t_faddrcc)INC_BP;
+	ecpuins.table[0x46]=(t_faddrcc)INC_SI;
+	ecpuins.table[0x47]=(t_faddrcc)INC_DI;
+	ecpuins.table[0x48]=(t_faddrcc)DEC_AX;
+	ecpuins.table[0x49]=(t_faddrcc)DEC_CX;
+	ecpuins.table[0x4A]=(t_faddrcc)DEC_DX;
+	ecpuins.table[0x4B]=(t_faddrcc)DEC_BX;
+	ecpuins.table[0x4C]=(t_faddrcc)DEC_SP;
+	ecpuins.table[0x4D]=(t_faddrcc)DEC_BP;
+	ecpuins.table[0x4E]=(t_faddrcc)DEC_SI;
+	ecpuins.table[0x4F]=(t_faddrcc)DEC_DI;
+	ecpuins.table[0x50]=(t_faddrcc)PUSH_AX;
+	ecpuins.table[0x51]=(t_faddrcc)PUSH_CX;
+	ecpuins.table[0x52]=(t_faddrcc)PUSH_DX;
+	ecpuins.table[0x53]=(t_faddrcc)PUSH_BX;
+	ecpuins.table[0x54]=(t_faddrcc)PUSH_SP;
+	ecpuins.table[0x55]=(t_faddrcc)PUSH_BP;
+	ecpuins.table[0x56]=(t_faddrcc)PUSH_SI;
+	ecpuins.table[0x57]=(t_faddrcc)PUSH_DI;
+	ecpuins.table[0x58]=(t_faddrcc)POP_AX;
+	ecpuins.table[0x59]=(t_faddrcc)POP_CX;
+	ecpuins.table[0x5A]=(t_faddrcc)POP_DX;
+	ecpuins.table[0x5B]=(t_faddrcc)POP_BX;
+	ecpuins.table[0x5C]=(t_faddrcc)POP_SP;
+	ecpuins.table[0x5D]=(t_faddrcc)POP_BP;
+	ecpuins.table[0x5E]=(t_faddrcc)POP_SI;
+	ecpuins.table[0x5F]=(t_faddrcc)POP_DI;
+	ecpuins.table[0x60]=(t_faddrcc)OpcError;
+	ecpuins.table[0x61]=(t_faddrcc)OpcError;
+	ecpuins.table[0x62]=(t_faddrcc)OpcError;
+	ecpuins.table[0x63]=(t_faddrcc)OpcError;
+	ecpuins.table[0x64]=(t_faddrcc)OpcError;
+	ecpuins.table[0x65]=(t_faddrcc)OpcError;
+	ecpuins.table[0x66]=(t_faddrcc)OpdSize;
+	ecpuins.table[0x67]=(t_faddrcc)AddrSize;
+	ecpuins.table[0x68]=(t_faddrcc)PUSH_I16;
+	ecpuins.table[0x69]=(t_faddrcc)OpcError;
+	ecpuins.table[0x6A]=(t_faddrcc)OpcError;
+	ecpuins.table[0x6B]=(t_faddrcc)OpcError;
+	ecpuins.table[0x6C]=(t_faddrcc)OpcError;
+	ecpuins.table[0x6D]=(t_faddrcc)OpcError;
+	ecpuins.table[0x6E]=(t_faddrcc)OpcError;
+	ecpuins.table[0x6F]=(t_faddrcc)OpcError;
+	ecpuins.table[0x70]=(t_faddrcc)JO;
+	ecpuins.table[0x71]=(t_faddrcc)JNO;
+	ecpuins.table[0x72]=(t_faddrcc)JC;
+	ecpuins.table[0x73]=(t_faddrcc)JNC;
+	ecpuins.table[0x74]=(t_faddrcc)JZ;
+	ecpuins.table[0x75]=(t_faddrcc)JNZ;
+	ecpuins.table[0x76]=(t_faddrcc)JBE;
+	ecpuins.table[0x77]=(t_faddrcc)JA;
+	ecpuins.table[0x78]=(t_faddrcc)JS;
+	ecpuins.table[0x79]=(t_faddrcc)JNS;
+	ecpuins.table[0x7A]=(t_faddrcc)JP;
+	ecpuins.table[0x7B]=(t_faddrcc)JNP;
+	ecpuins.table[0x7C]=(t_faddrcc)JL;
+	ecpuins.table[0x7D]=(t_faddrcc)JNL;
+	ecpuins.table[0x7E]=(t_faddrcc)JLE;
+	ecpuins.table[0x7F]=(t_faddrcc)JG;
+	ecpuins.table[0x80]=(t_faddrcc)INS_80;
+	ecpuins.table[0x81]=(t_faddrcc)INS_81;
+	ecpuins.table[0x82]=(t_faddrcc)INS_82;
+	ecpuins.table[0x83]=(t_faddrcc)INS_83;
+	ecpuins.table[0x84]=(t_faddrcc)TEST_RM8_M8;
+	ecpuins.table[0x85]=(t_faddrcc)TEST_RM16_M16;
+	ecpuins.table[0x86]=(t_faddrcc)XCHG_R8_RM8;
+	ecpuins.table[0x87]=(t_faddrcc)XCHG_R16_RM16;
+	ecpuins.table[0x88]=(t_faddrcc)MOV_RM8_R8;
+	ecpuins.table[0x89]=(t_faddrcc)MOV_RM16_R16;
+	ecpuins.table[0x8A]=(t_faddrcc)MOV_R8_RM8;
+	ecpuins.table[0x8B]=(t_faddrcc)MOV_R16_RM16;
+	ecpuins.table[0x8C]=(t_faddrcc)MOV_RM_SEG;
+	ecpuins.table[0x8D]=(t_faddrcc)LEA_R16_M16;
+	ecpuins.table[0x8E]=(t_faddrcc)MOV_SEG_RM;
+	ecpuins.table[0x8F]=(t_faddrcc)POP_RM16;
+	ecpuins.table[0x90]=(t_faddrcc)NOP;
+	ecpuins.table[0x91]=(t_faddrcc)XCHG_CX_AX;
+	ecpuins.table[0x92]=(t_faddrcc)XCHG_DX_AX;
+	ecpuins.table[0x93]=(t_faddrcc)XCHG_BX_AX;
+	ecpuins.table[0x94]=(t_faddrcc)XCHG_SP_AX;
+	ecpuins.table[0x95]=(t_faddrcc)XCHG_BP_AX;
+	ecpuins.table[0x96]=(t_faddrcc)XCHG_SI_AX;
+	ecpuins.table[0x97]=(t_faddrcc)XCHG_DI_AX;
+	ecpuins.table[0x98]=(t_faddrcc)CBW;
+	ecpuins.table[0x99]=(t_faddrcc)CWD;
+	ecpuins.table[0x9A]=(t_faddrcc)CALL_FAR;
+	ecpuins.table[0x9B]=(t_faddrcc)WAIT;
+	ecpuins.table[0x9C]=(t_faddrcc)PUSHF;
+	ecpuins.table[0x9D]=(t_faddrcc)POPF;
+	ecpuins.table[0x9E]=(t_faddrcc)SAHF;
+	ecpuins.table[0x9F]=(t_faddrcc)LAHF;
+	ecpuins.table[0xA0]=(t_faddrcc)MOV_AL_M8;
+	ecpuins.table[0xA1]=(t_faddrcc)MOV_AX_M16;
+	ecpuins.table[0xA2]=(t_faddrcc)MOV_M8_AL;
+	ecpuins.table[0xA3]=(t_faddrcc)MOV_M16_AX;
+	ecpuins.table[0xA4]=(t_faddrcc)MOVSB;
+	ecpuins.table[0xA5]=(t_faddrcc)MOVSW;
+	ecpuins.table[0xA6]=(t_faddrcc)CMPSB;
+	ecpuins.table[0xA7]=(t_faddrcc)CMPSW;
+	ecpuins.table[0xA8]=(t_faddrcc)TEST_AL_I8;
+	ecpuins.table[0xA9]=(t_faddrcc)TEST_AX_I16;
+	ecpuins.table[0xAA]=(t_faddrcc)STOSB;
+	ecpuins.table[0xAB]=(t_faddrcc)STOSW;
+	ecpuins.table[0xAC]=(t_faddrcc)LODSB;
+	ecpuins.table[0xAD]=(t_faddrcc)LODSW;
+	ecpuins.table[0xAE]=(t_faddrcc)SCASB;
+	ecpuins.table[0xAF]=(t_faddrcc)SCASW;
+	ecpuins.table[0xB0]=(t_faddrcc)MOV_AL_I8;
+	ecpuins.table[0xB1]=(t_faddrcc)MOV_CL_I8;
+	ecpuins.table[0xB2]=(t_faddrcc)MOV_DL_I8;
+	ecpuins.table[0xB3]=(t_faddrcc)MOV_BL_I8;
+	ecpuins.table[0xB4]=(t_faddrcc)MOV_AH_I8;
+	ecpuins.table[0xB5]=(t_faddrcc)MOV_CH_I8;
+	ecpuins.table[0xB6]=(t_faddrcc)MOV_DH_I8;
+	ecpuins.table[0xB7]=(t_faddrcc)MOV_BH_I8;
+	ecpuins.table[0xB8]=(t_faddrcc)MOV_AX_I16;
+	ecpuins.table[0xB9]=(t_faddrcc)MOV_CX_I16;
+	ecpuins.table[0xBA]=(t_faddrcc)MOV_DX_I16;
+	ecpuins.table[0xBB]=(t_faddrcc)MOV_BX_I16;
+	ecpuins.table[0xBC]=(t_faddrcc)MOV_SP_I16;
+	ecpuins.table[0xBD]=(t_faddrcc)MOV_BP_I16;
+	ecpuins.table[0xBE]=(t_faddrcc)MOV_SI_I16;
+	ecpuins.table[0xBF]=(t_faddrcc)MOV_DI_I16;
+	ecpuins.table[0xC0]=(t_faddrcc)INS_C0;
+	ecpuins.table[0xC1]=(t_faddrcc)INS_C1;
+	ecpuins.table[0xC2]=(t_faddrcc)RET_I8;
+	ecpuins.table[0xC3]=(t_faddrcc)RET_NEAR;
+	ecpuins.table[0xC4]=(t_faddrcc)LES_R16_M16;
+	ecpuins.table[0xC5]=(t_faddrcc)LDS_R16_M16;
+	ecpuins.table[0xC6]=(t_faddrcc)MOV_M8_I8;
+	ecpuins.table[0xC7]=(t_faddrcc)MOV_M16_I16;
+	ecpuins.table[0xC8]=(t_faddrcc)OpcError;
+	ecpuins.table[0xC9]=(t_faddrcc)OpcError;
+	ecpuins.table[0xCA]=(t_faddrcc)RET_I16;
+	ecpuins.table[0xCB]=(t_faddrcc)RET_FAR;
+	ecpuins.table[0xCC]=(t_faddrcc)INT3;
+	ecpuins.table[0xCD]=(t_faddrcc)INT_I8;
+	ecpuins.table[0xCE]=(t_faddrcc)INTO;
+	ecpuins.table[0xCF]=(t_faddrcc)IRET;
+	ecpuins.table[0xD0]=(t_faddrcc)INS_D0;
+	ecpuins.table[0xD1]=(t_faddrcc)INS_D1;
+	ecpuins.table[0xD2]=(t_faddrcc)INS_D2;
+	ecpuins.table[0xD3]=(t_faddrcc)INS_D3;
+	ecpuins.table[0xD4]=(t_faddrcc)AAM;
+	ecpuins.table[0xD5]=(t_faddrcc)AAD;
+	ecpuins.table[0xD6]=(t_faddrcc)OpcError;
+	ecpuins.table[0xD7]=(t_faddrcc)XLAT;
+	ecpuins.table[0xD8]=(t_faddrcc)OpcError;
+	ecpuins.table[0xD9]=(t_faddrcc)INS_D9;
+	ecpuins.table[0xDA]=(t_faddrcc)OpcError;
+	ecpuins.table[0xDB]=(t_faddrcc)INS_DB;
+	ecpuins.table[0xDC]=(t_faddrcc)OpcError;
+	ecpuins.table[0xDD]=(t_faddrcc)OpcError;
+	ecpuins.table[0xDE]=(t_faddrcc)OpcError;
+	ecpuins.table[0xDF]=(t_faddrcc)OpcError;
+	ecpuins.table[0xE0]=(t_faddrcc)LOOPNE;
+	ecpuins.table[0xE1]=(t_faddrcc)LOOPE;
+	ecpuins.table[0xE2]=(t_faddrcc)LOOP_NEAR;
+	ecpuins.table[0xE3]=(t_faddrcc)JCXZ_NEAR;
+	ecpuins.table[0xE4]=(t_faddrcc)IN_AL_N;
+	ecpuins.table[0xE5]=(t_faddrcc)IN_AX_N;
+	ecpuins.table[0xE6]=(t_faddrcc)OUT_N_AL;
+	ecpuins.table[0xE7]=(t_faddrcc)OUT_N_AX;
+	ecpuins.table[0xE8]=(t_faddrcc)CALL_NEAR;
+	ecpuins.table[0xE9]=(t_faddrcc)JMP_NEAR_LABEL;
+	ecpuins.table[0xEA]=(t_faddrcc)JMP_FAR_LABEL;
+	ecpuins.table[0xEB]=(t_faddrcc)JMP_NEAR;
+	ecpuins.table[0xEC]=(t_faddrcc)IN_AL_DX;
+	ecpuins.table[0xED]=(t_faddrcc)IN_AX_DX;
+	ecpuins.table[0xEE]=(t_faddrcc)OUT_DX_AL;
+	ecpuins.table[0xEF]=(t_faddrcc)OUT_DX_AX;
+	ecpuins.table[0xF0]=(t_faddrcc)LOCK;
+	ecpuins.table[0xF1]=(t_faddrcc)QDX;
+	ecpuins.table[0xF2]=(t_faddrcc)REPNE;
+	ecpuins.table[0xF3]=(t_faddrcc)REP;
+	ecpuins.table[0xF4]=(t_faddrcc)HLT;
+	ecpuins.table[0xF5]=(t_faddrcc)CMC;
+	ecpuins.table[0xF6]=(t_faddrcc)INS_F6;
+	ecpuins.table[0xF7]=(t_faddrcc)INS_F7;
+	ecpuins.table[0xF8]=(t_faddrcc)CLC;
+	ecpuins.table[0xF9]=(t_faddrcc)STC;
+	ecpuins.table[0xFA]=(t_faddrcc)CLI;
+	ecpuins.table[0xFB]=(t_faddrcc)STI;
+	ecpuins.table[0xFC]=(t_faddrcc)CLD;
+	ecpuins.table[0xFD]=(t_faddrcc)STD;
+	ecpuins.table[0xFE]=(t_faddrcc)INS_FE;
+	ecpuins.table[0xFF]=(t_faddrcc)INS_FF;
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 	Ins0FTable[0x00]=(t_faddrcc)OpcError;
