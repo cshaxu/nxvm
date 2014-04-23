@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xde]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0xdf]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -27,7 +27,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Files:   debug.c, debug.h
  *     Phase 1:
  *     Phase 2: 01/01/2012 - 01/24/2012
- *     Phase 3:
+ *     Phase 3: 04/21/2013 - 05/23/2013
  *     Phase 4:
  *     Phase 5:
  *     Phase 6:
@@ -35,7 +35,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Files:   (asm86) aasm.c, aasm.h
  *     Phase 1:
  *     Phase 2: 01/25/2012 - 01/31/2012
- *     Phase 3:
+ *     Phase 3: 04/21/2013 - 05/23/2013
  *     Phase 4:
  *     Phase 5:
  *     Phase 6:
@@ -43,7 +43,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Files:   (asm86) dasm.c, dasm.h
  *     Phase 1:
  *     Phase 2: 02/01/2012 - 02/05/2012
- *     Phase 3:
+ *     Phase 3: 04/21/2013 - 05/23/2013
  *     Phase 4:
  *     Phase 5:
  *     Phase 6:
@@ -202,6 +202,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0xbf Linux Console
  * 0xca New BIOS System
  * 0xcc New Console Commands
+ * 0xdf New ASM/DASM/Debug System
  *
  * Format Unify:
  * check all includes, macro names, flag names
@@ -210,7 +211,6 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * replace all constants with MACRO
  * all t_bool variable names start with "flag"
  * new flag system: FLAG_X_X 0x0010, bit macros
- * replace all (void *) with t_vaddrcc
  *
  */
 

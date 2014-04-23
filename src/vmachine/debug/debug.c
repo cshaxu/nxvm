@@ -21,21 +21,21 @@ test code
 #include "string.h"
 #include "stdarg.h"
 
-#include "../vmachine/vmachine.h"
-#include "../vmachine/vapi.h"
-#include "../vmachine/debug/aasm.h"
-#include "../vmachine/debug/dasm.h"
+#include "../vmachine.h"
+#include "../vapi.h"
 
+#include "aasm.h"
+#include "dasm.h"
 #include "debug.h"
 
 #define MAXLINE 256
 #define MAXNARG 256
 #define MAXNASMARG 4
 
-static int errPos;
-static int narg;
+static t_nubitcc errPos;
+static t_nubitcc narg;
 static char **arg;
-static int exitFlag;
+static t_bool exitFlag;
 static char cmdBuff[MAXLINE];
 static char cmdCopy[MAXLINE];
 static char filename[MAXLINE];
@@ -49,20 +49,10 @@ static t_nubit16 uasmPtrRec;
 
 static t_nubit16 seg;
 static t_nubit16 ptr;
-static t_nubit32 printd(const t_string format, ...)
+
+static void lcase(t_string s)
 {
-	t_nubit32 nWrittenBytes = 0;
-	va_list arg_ptr;
-	va_start(arg_ptr, format);
-	nWrittenBytes = vfprintf(stdout,format,arg_ptr);
-	//nWrittenBytes = vsprintf(stringBuffer,format,arg_ptr);
-	va_end(arg_ptr);
-	fflush(stdout);
-	return nWrittenBytes;
-}
-static void lcase(char *s)
-{
-	int i = 0;
+	t_nubitcc i = 0;
 	if(s[0] == '\'') return;
 	while(s[i] != '\0') {
 		if(s[i] == '\n') s[i] = '\0';
@@ -71,11 +61,11 @@ static void lcase(char *s)
 		i++;
 	}
 }
-static void seterr(int pos)
+static void seterr(t_nubitcc pos)
 {
-	errPos = (int)(arg[pos] - cmdCopy + strlen(arg[pos]) + 1);
+	errPos = (t_nubitcc)(arg[pos] - cmdCopy + strlen(arg[pos]) + 1);
 }
-static t_nubit8 scannubit8(char *s)
+static t_nubit8 scannubit8(t_string s)
 {
 	t_nubit8 ans = 0;
 	int i = 0;
@@ -91,7 +81,7 @@ static t_nubit8 scannubit8(char *s)
 	}
 	return ans;
 }
-static t_nubit16 scannubit16(char *s)
+static t_nubit16 scannubit16(t_string s)
 {
 	t_nubit16 ans = 0;
 	int i = 0;
@@ -106,31 +96,10 @@ static t_nubit16 scannubit16(char *s)
 	}
 	return ans;
 }
-static void printnubit8(t_nubit8 n)
+static void addrparse(t_nubit16 defseg,const t_string addr)
 {
-/*	char c;
-	int i;
-	for(i = 1;i >= 0;--i) {
-		c = ((n>>(i*4))&0x0f)+0x30;
-		if(c > 0x39) c += 0x07;
-		printd("%c",c);
-	}*/
-	printd("%02X",n);
-}
-static void printnubit16(t_nubit16 n)
-{
-/*	char c;
-	int i;
-	for(i = 3;i >= 0;--i) {
-		c = ((n>>(i*4))&0x0f)+0x30;
-		if(c > 0x39) c += 0x07;
-		printd("%c",c);
-	}*/
-	printd("%04X",n);
-}
-static void addrparse(t_nubit16 defseg,const char *addr)
-{
-	char *cseg,*cptr,ccopy[MAXLINE];
+	t_string cseg,cptr;
+	char ccopy[MAXLINE];
 	STRCPY(ccopy,addr);
 	cseg = STRTOK(ccopy,":");
 	cptr = STRTOK(NULL,"");
@@ -138,48 +107,35 @@ static void addrparse(t_nubit16 defseg,const char *addr)
 		seg = defseg;
 		ptr = scannubit16(cseg);
 	} else {
-		if(!STRCMP(cseg,"cs")) seg = _cs;
-		else if(!STRCMP(cseg,"ss")) seg = _ss;
-		else if(!STRCMP(cseg,"ds")) seg = _ds;
-		else if(!STRCMP(cseg,"es")) seg = _es;
+		if(!STRCMP(cseg,"cs")) seg = vcpu.cs;
+		else if(!STRCMP(cseg,"ss")) seg = vcpu.ss;
+		else if(!STRCMP(cseg,"ds")) seg = vcpu.ds;
+		else if(!STRCMP(cseg,"es")) seg = vcpu.es;
 		else seg = scannubit16(cseg);
 		ptr = scannubit16(cptr);
 	}
 }
 static void addrprint(t_nubit16 segment,t_nubit16 pointer)
 {	
-	printnubit16(segment);
-	printd(":");
-	printnubit16(pointer);
-	printd("  ");
-	/*fflush(stdout);*/
-}
-static void setbyte(t_nubit16 segment,t_nubit16 pointer,t_nubit8 value)
-{
-	vramVarByte(segment, pointer) = value;
-}
-static t_nubit8 getbyte(t_nubit16 segment,t_nubit16 pointer)
-{
-	return vramVarByte(segment, pointer);
-}
-static t_nubit16 getword(t_nubit16 segment,t_nubit16 pointer)
-{
-	return vramVarWord(segment, pointer);
+	vapiPrint("%04X",segment);
+	vapiPrint(":");
+	vapiPrint("%04X",pointer);
+	vapiPrint("  ");
 }
 
 /* DEBUG CMD BEGIN */
 // assemble
 static void aconsole()
 {
-	int i;
+	t_nubitcc i;
 	t_nubit16 len;
 	char cmdAsmBuff[MAXLINE];
-	int errAsmPos;
-	int exitAsmFlag = 0;
+	t_nubitcc errAsmPos;
+	t_bool exitAsmFlag = 0;
 	while(!exitAsmFlag) {
 		addrprint(asmSegRec,asmPtrRec);
 		fflush(stdin);
-		printd("\b");
+		vapiPrint("\b");
 		/*fflush(stdout);*/
 		FGETS(cmdAsmBuff,MAXLINE,stdin);
 		lcase(cmdAsmBuff);
@@ -190,15 +146,12 @@ static void aconsole()
 		if(cmdAsmBuff[0] == ';' ) continue;
 		errAsmPos = 0;
 		len = (t_nubit16)aasm(cmdAsmBuff, asmSegRec, asmPtrRec);
-		/*len = assemble(cmdAsmBuff,_cs,
-			(void *)vramGetAddr(0x0000,0x0000),asmSegRec,asmPtrRec);*/
-		if(!len) errAsmPos = (int)strlen(cmdAsmBuff) + 9;
+		if(!len) errAsmPos = (t_nubitcc)strlen(cmdAsmBuff) + 9;
 		else asmPtrRec += len;
 		if(errAsmPos) {
-			for(i = 0;i < errAsmPos;++i) printd(" ");
-			printd("^ Error\n");
+			for(i = 0;i < errAsmPos;++i) vapiPrint(" ");
+			vapiPrint("^ Error\n");
 		}
-		/*fflush(stdout);*/
 	}
 }
 static void a()
@@ -206,7 +159,7 @@ static void a()
 	if(narg == 1) {
 		aconsole();
 	} else if(narg == 2) {
-		addrparse(_cs,arg[1]);
+		addrparse(vcpu.cs,arg[1]);
 		if(errPos) return;
 		asmSegRec = seg;
 		asmPtrRec = ptr;
@@ -220,26 +173,26 @@ static void c()
 	t_nubit16 i,seg1,ptr1,range,seg2,ptr2;
 	if(narg != 4) seterr(narg-1);
 	else {
-		addrparse(_ds,arg[1]);
+		addrparse(vcpu.ds,arg[1]);
 		seg1 = seg;
 		ptr1 = ptr;
-		addrparse(_ds,arg[3]);
+		addrparse(vcpu.ds,arg[3]);
 		seg2 = seg;
 		ptr2 = ptr;
 		range = scannubit16(arg[2])-ptr1;
 		if(!errPos) {
 			for(i = 0;i <= range;++i) {
-				val1 = getbyte(seg1,ptr1+i);
-				val2 = getbyte(seg2,ptr2+i);
+				val1 = vramVarByte(seg1,ptr1+i);
+				val2 = vramVarByte(seg2,ptr2+i);
 				if(val1 != val2) {
-					addrprint(seg1,ptr1+1);
-					printd("  ");
-					printnubit8(val1);
-					printd("  ");
-					printnubit8(val2);
-					printd("  ");
-					addrprint(seg2,ptr2+1);
-					printd("\n");
+					addrprint(seg1,ptr1+i);
+					vapiPrint("  ");
+					vapiPrint("%02X",val1);
+					vapiPrint("  ");
+					vapiPrint("%02X",val2);
+					vapiPrint("  ");
+					addrprint(seg2,ptr2+i);
+					vapiPrint("\n");
 				}
 			}
 		}
@@ -257,11 +210,11 @@ static void dprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 	for(i = start-(start%0x10);i <= end+(0x10-end%0x10)-1;++i) {
 		if(i%0x10 == 0) addrprint(segment,i);
 		if(i < start || i > end) {
-			printd("  ");
+			vapiPrint("  ");
 			c[i%0x10] = ' ';
 		} else {
-			c[i%0x10] = getbyte(segment,i);
-			printnubit8(c[i%0x10]);
+			c[i%0x10] = vramVarByte(segment,i);
+			vapiPrint("%02X",c[i%0x10]);
 			t = c[i%0x10];
 			if((t >=1 && t <= 7) || t == ' ' ||
 				(t >=11 && t <= 12) ||
@@ -269,10 +222,10 @@ static void dprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 				(t >=33 && t <= 128)) ;
 			else c[i%0x10] = '.';
 		}
-		printd(" ");
-		if(i%0x10 == 7 && i >= start && i < end) printd("\b-");
+		vapiPrint(" ");
+		if(i%0x10 == 7 && i >= start && i < end) vapiPrint("\b-");
 		if((i+1)%0x10 == 0) {
-			printd("  %s\n",c);
+			vapiPrint("  %s\n",c);
 		}
 		if(i == 0xffff) break;
 	}
@@ -284,11 +237,11 @@ static void d()
 	t_nubit16 ptr2;
 	if(narg == 1) dprint(dumpSegRec,dumpPtrRec,dumpPtrRec+0x7f);
 	else if(narg == 2) {
-		addrparse(_ds,arg[1]);
+		addrparse(vcpu.ds,arg[1]);
 		if(errPos) return;
 		dprint(seg,ptr,ptr+0x7f);
 	} else if(narg == 3) {
-		addrparse(_ds,arg[1]);
+		addrparse(vcpu.ds,arg[1]);
 		ptr2 = scannubit16(arg[2]);
 		if(errPos) return;
 		if(ptr > ptr2) seterr(2);
@@ -303,23 +256,22 @@ static void e()
 	char s[MAXLINE];
 	if(narg == 1) seterr(0);
 	else if(narg == 2) {
-		addrparse(_ds,arg[1]);
+		addrparse(vcpu.ds,arg[1]);
 		if(errPos) return;
 		addrprint(seg,ptr);
-		printnubit8(getbyte(seg,ptr));
-		printd(".");
-		/*fflush(stdout);*/
+		vapiPrint("%02X",vramVarByte(seg,ptr));
+		vapiPrint(".");
 		FGETS(s,MAXLINE,stdin);
 		lcase(s);//!!
 		val = scannubit8(s);//!!
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			setbyte(seg,ptr,val);
+			vramVarByte(seg,ptr) = val;
 	} else if(narg > 2) {
-		addrparse(_ds,arg[1]);
+		addrparse(vcpu.ds,arg[1]);
 		if(errPos) return;
 		for(i = 2;i < narg;++i) {
 			val = scannubit8(arg[i]);//!!
-			if(!errPos) setbyte(seg,ptr,val);
+			if(!errPos) vramVarByte(seg,ptr) = val;
 			else break;
 			ptr++;
 		}
@@ -328,19 +280,19 @@ static void e()
 // fill
 static void f()
 {
-	int nbyte;
+	t_nubitcc nbyte;
 	t_nubit8 val;
 	t_nubit16 i,j,end;
 	if(narg < 4) seterr(narg-1);
 	else {
-		addrparse(_ds,arg[1]);
+		addrparse(vcpu.ds,arg[1]);
 		end = scannubit16(arg[2]);
 		if(end < ptr) seterr(2);
 		if(!errPos) {
 			nbyte = narg - 3;
 			for(i = ptr,j = 0;i <= end;++i,++j) {
 				val = scannubit8(arg[j%nbyte+3]);
-				if(!errPos) setbyte(seg,i,val);
+				if(!errPos) vramVarByte(seg,i) = val;
 				else return;
 			}
 		}
@@ -351,17 +303,17 @@ static void rprintregs();
 /*static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 {
 	if(ptr1 < ptr2) {
-		_ip = ptr1;
+		vcpu.ip = ptr1;
 		while(ptr1 < ptr2 && vmachine.flagrun) {
 			vmachineRefresh();
-			ptr1 = _ip;
+			ptr1 = vcpu.ip;
 		}
-		//_ip = ptr2;
+		//vcpu.ip = ptr2;
 	}
 	if(!vmachine.flagrun) {
-		printd("\nProgram terminated\n");
+		vapiPrint("\nProgram terminated\n");
 	} else {
-		printd("\n");
+		vapiPrint("\n");
 		rprintregs();
 	}
 	return;
@@ -370,28 +322,28 @@ static void g()
 {
 //	t_nubit16 ptr1,ptr2;
 	if (vmachine.flagrun) {
-		printd("NXVM is running.\n");
+		vapiPrint("NXVM is running.\n");
 		return;
 	}
 	switch(narg) {
 	case 1:
 		vmachine.flagbreak = 0x00;
-	//	ptr1 = _ip;ptr2 = 0xffff;
+	//	ptr1 = vcpu.ip;ptr2 = 0xffff;
 		break;
 	case 2:
 		vmachine.flagbreak = 0x01;
-		addrparse(_cs,arg[1]);
+		addrparse(vcpu.cs,arg[1]);
 		vmachine.breakcs = seg;
 		vmachine.breakip = ptr;
-	//	ptr1 = _ip;ptr2 = ptr;
+	//	ptr1 = vcpu.ip;ptr2 = ptr;
 		break;
 	case 3:
 		vmachine.flagbreak = 0x01;
-		addrparse(_cs,arg[1]);
-		_cs = seg;
-		_ip = ptr;
+		addrparse(vcpu.cs,arg[1]);
+		vcpu.cs = seg;
+		vcpu.ip = ptr;
 	//	ptr1 = ptr;
-		addrparse(_cs,arg[2]);
+		addrparse(vcpu.cs,arg[2]);
 		vmachine.breakcs = seg;
 		vmachine.breakip = ptr;
 	//	ptr2 = ptr;
@@ -413,10 +365,10 @@ static void h()
 		val1 = scannubit16(arg[1]);
 		val2 = scannubit16(arg[2]);
 		if(!errPos) {
-			printnubit16(val1+val2);
-			printd("  ");
-			printnubit16(val1-val2);
-			printd("\n");
+			vapiPrint("%04X",val1+val2);
+			vapiPrint("  ");
+			vapiPrint("%04X",val1-val2);
+			vapiPrint("\n");
 		}
 	}
 }
@@ -429,8 +381,8 @@ static void i()
 		in = scannubit16(arg[1]);
 		if(!errPos) {
 			ExecFun(vport.in[in]);
-			printnubit8(vport.iobyte);
-			printd("\n");
+			vapiPrint("%02X",vport.iobyte);
+			vapiPrint("\n");
 		}
 	}
 }
@@ -441,27 +393,27 @@ static void l()
 	t_nubit16 i = 0;
 	t_nubit32 len = 0;
 	FILE *load = FOPEN(filename,"rb");
-	if(!load) printd("File not found\n");
+	if(!load) vapiPrint("File not found\n");
 	else {
 		switch(narg) {
 		case 1:
-			seg = _cs;
+			seg = vcpu.cs;
 			ptr = 0x100;
 			break;
 		case 2:
-			addrparse(_cs,arg[1]);
+			addrparse(vcpu.cs,arg[1]);
 			break;
 		default:seterr(narg-1);break;}
 		if(!errPos) {
 			c = fgetc(load);
 			while(!feof(load)) {
-				setbyte(seg+i,ptr+len++,c);
+				vramVarByte(seg+i,ptr+len++) = c;
 				i = len / 0x10000;
 				c = fgetc(load);
 			}
-			_cx = len&0xffff;
-			if(len > 0xffff) _bx = (len>>16);
-			else _bx = 0x0000;
+			vcpu.cx = len&0xffff;
+			if(len > 0xffff) vcpu.bx = (len>>16);
+			else vcpu.bx = 0x0000;
 		}
 		fclose(load);
 	}
@@ -474,24 +426,20 @@ static void m()
 	t_nubit16 seg1,ptr1,range,seg2,ptr2;
 	if(narg != 4) seterr(narg-1);
 	else {
-		addrparse(_ds,arg[1]);
+		addrparse(vcpu.ds,arg[1]);
 		seg1 = seg;
 		ptr1 = ptr;
-		addrparse(_ds,arg[3]);
+		addrparse(vcpu.ds,arg[3]);
 		seg2 = seg;
 		ptr2 = ptr;
 		range = scannubit16(arg[2])-ptr1;
 		if(!errPos) {
 			if(((seg1<<4)+ptr1) < ((seg2<<4)+ptr2)) {
-				for(i = range;i >= 0;--i) {
-					val = getbyte(seg1,ptr1+i);
-					setbyte(seg2,ptr2+i,val);
-				}
+				for(i = range;i >= 0;--i)
+					vramVarByte(seg2,ptr2+i) = vramVarByte(seg1,ptr1+i);
 			} else if(((seg1<<4)+ptr1) > ((seg2<<4)+ptr2)) {
-				for(i = 0;i <= range;++i) {
-					val = getbyte(seg1,ptr1+i);
-					setbyte(seg2,ptr2+i,val);
-				}
+				for(i = 0;i <= range;++i)
+					vramVarByte(seg2,ptr2+i) = vramVarByte(seg1,ptr1+i);
 			}
 		}
 	}
@@ -520,160 +468,160 @@ static void q()
 static void uprint(t_nubit16,t_nubit16,t_nubit16);
 static void rprintflags()
 {
-	if(_flags & VCPU_FLAG_OF) printd("OV ");
-	else                      printd("NV ");
-	if(_flags & VCPU_FLAG_DF) printd("DN ");
-	else                      printd("UP ");
-	if(_flags & VCPU_FLAG_IF) printd("EI ");
-	else                      printd("DI ");
-	if(_flags & VCPU_FLAG_SF) printd("NG ");
-	else                      printd("PL ");
-	if(_flags & VCPU_FLAG_ZF) printd("ZR ");
-	else                      printd("NZ ");
-	if(_flags & VCPU_FLAG_AF) printd("AC ");
-	else                      printd("NA ");
-	if(_flags & VCPU_FLAG_PF) printd("PE ");
-	else                      printd("PO ");
-	if(_flags & VCPU_FLAG_CF) printd("CY ");
-	else                      printd("NC ");
+	if(vcpu.flags & VCPU_FLAG_OF) vapiPrint("OV ");
+	else                      vapiPrint("NV ");
+	if(vcpu.flags & VCPU_FLAG_DF) vapiPrint("DN ");
+	else                      vapiPrint("UP ");
+	if(vcpu.flags & VCPU_FLAG_IF) vapiPrint("EI ");
+	else                      vapiPrint("DI ");
+	if(vcpu.flags & VCPU_FLAG_SF) vapiPrint("NG ");
+	else                      vapiPrint("PL ");
+	if(vcpu.flags & VCPU_FLAG_ZF) vapiPrint("ZR ");
+	else                      vapiPrint("NZ ");
+	if(vcpu.flags & VCPU_FLAG_AF) vapiPrint("AC ");
+	else                      vapiPrint("NA ");
+	if(vcpu.flags & VCPU_FLAG_PF) vapiPrint("PE ");
+	else                      vapiPrint("PO ");
+	if(vcpu.flags & VCPU_FLAG_CF) vapiPrint("CY ");
+	else                      vapiPrint("NC ");
 }
 static void rprintregs()
 {
 	char str[MAXLINE];
-	printd(  "AX=%04X", _ax);
-	printd("  BX=%04X", _bx);
-	printd("  CX=%04X", _cx);
-	printd("  DX=%04X", _dx);
-	printd("  SP=%04X", _sp);
-	printd("  BP=%04X", _bp);
-	printd("  SI=%04X", _si);
-	printd("  DI=%04X", _di);
-	printd("\nDS=%04X", _ds);
-	printd("  ES=%04X", _es);
-	printd("  SS=%04X", _ss);
-	printd("  CS=%04X", _cs);
-	printd("  IP=%04X", _ip);
-	printd("   ");
+	vapiPrint(  "AX=%04X", vcpu.ax);
+	vapiPrint("  BX=%04X", vcpu.bx);
+	vapiPrint("  CX=%04X", vcpu.cx);
+	vapiPrint("  DX=%04X", vcpu.dx);
+	vapiPrint("  SP=%04X", vcpu.sp);
+	vapiPrint("  BP=%04X", vcpu.bp);
+	vapiPrint("  SI=%04X", vcpu.si);
+	vapiPrint("  DI=%04X", vcpu.di);
+	vapiPrint("\nDS=%04X", vcpu.ds);
+	vapiPrint("  ES=%04X", vcpu.es);
+	vapiPrint("  SS=%04X", vcpu.ss);
+	vapiPrint("  CS=%04X", vcpu.cs);
+	vapiPrint("  IP=%04X", vcpu.ip);
+	vapiPrint("   ");
 	rprintflags();
-	printd("\n");
-	dasm(str, _cs, _ip, 0x02);
-	uasmSegRec = _cs;
-	uasmPtrRec = _ip;
-	printd("%s", str);
+	vapiPrint("\n");
+	dasm(str, vcpu.cs, vcpu.ip, 0x02);
+	uasmSegRec = vcpu.cs;
+	uasmPtrRec = vcpu.ip;
+	vapiPrint("%s", str);
 }
 static void rscanregs()
 {
 	t_nubit16 t;
 	char s[MAXLINE];
 	if(!STRCMP(arg[1],"ax")) {
-		printd("AX ");
-		printnubit16(_ax);
-		printd("\n:");
+		vapiPrint("AX ");
+		vapiPrint("%04X",vcpu.ax);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			_ax = t;
+			vcpu.ax = t;
 	} else if(!STRCMP(arg[1],"bx")) {
-		printd("BX ");
-		printnubit16(_bx);
-		printd("\n:");
+		vapiPrint("BX ");
+		vapiPrint("%04X",vcpu.bx);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			_bx = t;
+			vcpu.bx = t;
 	} else if(!STRCMP(arg[1],"cx")) {
-		printd("CX ");
-		printnubit16(_cx);
-		printd("\n:");
+		vapiPrint("CX ");
+		vapiPrint("%04X",vcpu.cx);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			_cx = t;
+			vcpu.cx = t;
 	} else if(!STRCMP(arg[1],"dx")) {
-		printd("DX ");
-		printnubit16(_dx);
-		printd("\n:");
+		vapiPrint("DX ");
+		vapiPrint("%04X",vcpu.dx);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			_dx = t;
+			vcpu.dx = t;
 	} else if(!STRCMP(arg[1],"bp")) {
-		printd("BP ");
-		printnubit16(_bp);
-		printd("\n:");
+		vapiPrint("BP ");
+		vapiPrint("%04X",vcpu.bp);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			_bp = t;
+			vcpu.bp = t;
 	} else if(!STRCMP(arg[1],"sp")) {
-		printd("SP ");
-		printnubit16(_sp);
-		printd("\n:");
+		vapiPrint("SP ");
+		vapiPrint("%04X",vcpu.sp);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			_sp = t;
+			vcpu.sp = t;
 	} else if(!STRCMP(arg[1],"si")) {
-		printd("SI ");
-		printnubit16(_si);
-		printd("\n:");
+		vapiPrint("SI ");
+		vapiPrint("%04X",vcpu.si);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			_si = t;
+			vcpu.si = t;
 	} else if(!STRCMP(arg[1],"di")) {
-		printd("DI ");
-		printnubit16(_di);
-		printd("\n:");
+		vapiPrint("DI ");
+		vapiPrint("%04X",vcpu.di);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			_di = t;
+			vcpu.di = t;
 	} else if(!STRCMP(arg[1],"ss")) {
-		printd("SS ");
-		printnubit16(_ss);
-		printd("\n:");
+		vapiPrint("SS ");
+		vapiPrint("%04X",vcpu.ss);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
-			vcpu.overss = _ss = t;
+			vcpu.overss = vcpu.ss = t;
 		}
 	} else if(!STRCMP(arg[1],"cs")) {
-		printd("CS ");
-		printnubit16(_cs);
-		printd("\n:");
+		vapiPrint("CS ");
+		vapiPrint("%04X",vcpu.cs);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			_cs = t;
+			vcpu.cs = t;
 	} else if(!STRCMP(arg[1],"ds")) {
-		printd("DS ");
-		printnubit16(_ds);
-		printd("\n:");
+		vapiPrint("DS ");
+		vapiPrint("%04X",vcpu.ds);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos) {
-			vcpu.overds = _ds = t;
+			vcpu.overds = vcpu.ds = t;
 		}
 	} else if(!STRCMP(arg[1],"es")) {
-		printd("ES ");
-		printnubit16(_es);
-		printd("\n:");
+		vapiPrint("ES ");
+		vapiPrint("%04X",vcpu.es);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			_es = t;
+			vcpu.es = t;
 	} else if(!STRCMP(arg[1],"ip")) {
-		printd("IP ");
-		printnubit16(_ip);
-		printd("\n:");
+		vapiPrint("IP ");
+		vapiPrint("%04X",vcpu.ip);
+		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			_ip = t;
+			vcpu.ip = t;
 	} else if(!STRCMP(arg[1],"f")) {
 		rprintflags();
-		printd(" -");
+		vapiPrint(" -");
 		FGETS(s,MAXLINE,stdin);
 		lcase(s);
 		if(!STRCMP(s,"ov"))      SetOF;
@@ -692,8 +640,8 @@ static void rscanregs()
 		else if(!STRCMP(s,"po")) ClrPF;
 		else if(!STRCMP(s,"cy")) SetCF;
 		else if(!STRCMP(s,"nc")) ClrCF;
-		else printd("bf Error\n");
-	} else printd("br Error\n");
+		else vapiPrint("bf Error\n");
+	} else vapiPrint("br Error\n");
 }
 static void r()
 {
@@ -706,30 +654,30 @@ static void r()
 // search
 static void s()
 {
-	int i;
-	int flag;
+	t_nubitcc i;
+	t_bool flag = 0x00;
 	t_nubit16 p,pfront,start,end;
 	if(narg < 4) seterr(narg-1);
 	else {
-		addrparse(_ds,arg[1]);
+		addrparse(vcpu.ds,arg[1]);
 		start = ptr;
 		end = scannubit16(arg[2]);
 		if(!errPos) {
 			p = start;
 			while(p <= end) {
-				if(getbyte(seg,p) == scannubit8(arg[3])) {
+				if(vramVarByte(seg,p) == scannubit8(arg[3])) {
 					pfront = p;
-					flag = 1;
+					flag = 0x01;
 					for(i = 3;i < narg;++i) {
-						if(getbyte(seg,p) != scannubit8(arg[i])) {
-							flag = 0;
+						if(vramVarByte(seg,p) != scannubit8(arg[i])) {
+							flag = 0x00;
 							p = pfront+1;
 							break;
 						} else ++p;
 					}
 					if(flag) {
 						addrprint(seg,pfront);
-						printd("\n");
+						vapiPrint("\n");
 					}
 				} else ++p;
 			}
@@ -739,9 +687,9 @@ static void s()
 // trace
 static void t()
 {
-	unsigned short i, count;
+	t_nubitcc i, count;
 	if (vmachine.flagrun) {
-		printd("NXVM is running.\n");
+		vapiPrint("NXVM is already running.\n");
 		return;
 	}
 	switch(narg) {
@@ -755,9 +703,9 @@ static void t()
 		break;
 	case 3:
 		vmachine.flagtrace = 0x01;
-		addrparse(_cs,arg[1]);
-		_cs = seg;
-		_ip = ptr;
+		addrparse(vcpu.cs,arg[1]);
+		vcpu.cs = seg;
+		vcpu.ip = ptr;
 		count = scannubit16(arg[2]);
 		break;
 	default:seterr(narg-1);break;}
@@ -774,14 +722,14 @@ static void t()
 // unassemble
 static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 {
-	char str[MAXLINE], *stmt = NULL;
+	char str[MAXLINE];
 	t_nubit16 len = 0;
 	t_nubit32 boundary;
 	if(start > end) end = 0xffff;
 	if ((t_nubit32)((segment<<4) + end) > 0xfffff) end = (0xfffff-(segment<<4));
 	while(start <= end) {
 		len = (t_nubit16)dasm(str, segment, start, 0x01);
-		printd("%s", str);
+		vapiPrint("%s", str);
 		start += len;
 		boundary = (t_nubit32)start + (t_nubit32)len;
 		if (boundary > 0xffff) break;
@@ -795,11 +743,11 @@ static void u()
 	t_nubit16 ptr2;
 	if(narg == 1) uprint(uasmSegRec,uasmPtrRec,uasmPtrRec+0x1f);
 	else if(narg == 2) {
-		addrparse(_cs,arg[1]);
+		addrparse(vcpu.cs,arg[1]);
 		if(errPos) return;
 		uprint(seg,ptr,ptr+0x1f);
 	} else if(narg == 3) {
-		addrparse(_ds,arg[1]);
+		addrparse(vcpu.ds,arg[1]);
 		ptr2 = scannubit16(arg[2]);
 		if(errPos) return;
 		if(ptr > ptr2) seterr(2);
@@ -809,45 +757,45 @@ static void u()
 // verbal
 static void v()
 {
-	unsigned int i;
+	t_nubitcc i;
 	char str[MAXLINE];
-	printd(":");
+	vapiPrint(":");
 	FGETS(str,MAXLINE,stdin);
 	str[strlen(str)-1] = '\0';
 	for(i = 0;i < strlen(str);++i) {
-		printnubit8(str[i]);
-		if(!((i+1)%0x10)) printd("\n"); 
-		else if(!((i+1)%0x08)&&(str[i+1]!='\0')) printd("-");
-		else printd(" ");
+		vapiPrint("%02X",str[i]);
+		if(!((i+1)%0x10)) vapiPrint("\n"); 
+		else if(!((i+1)%0x08)&&(str[i+1]!='\0')) vapiPrint("-");
+		else vapiPrint(" ");
 	}
-	if(i%0x10) printd("\n");
+	if(i%0x10) vapiPrint("\n");
 }
 // write
 static void w()
 {
 	t_nubit16 i = 0;
-	t_nubit32 len = (_bx<<16)+_cx;
+	t_nubit32 len = (vcpu.bx<<16)+vcpu.cx;
 	FILE *write;
-	if(!strlen(filename)) {printd("(W)rite error, no destination defined\n");return;}
+	if(!strlen(filename)) {vapiPrint("(W)rite error, no destination defined\n");return;}
 	else write= FOPEN(filename,"wb");
-	if(!write) printd("File not found\n");
+	if(!write) vapiPrint("File not found\n");
 	else {
-		printd("Writing ");
-		printnubit16(_bx);
-		printnubit16(_cx);
-		printd(" bytes\n");
+		vapiPrint("Writing ");
+		vapiPrint("%04X",vcpu.bx);
+		vapiPrint("%04X",vcpu.cx);
+		vapiPrint(" bytes\n");
 		switch(narg) {
 		case 1:
-			seg = _cs;
+			seg = vcpu.cs;
 			ptr = 0x100;
 			break;
 		case 2:
-			addrparse(_cs,arg[1]);
+			addrparse(vcpu.cs,arg[1]);
 			break;
 		default:	seterr(narg-1);break;}
 		if(!errPos)
 			while(i < len)
-				fputc(getbyte(seg,ptr+i++),write);
+				fputc(vramVarByte(seg,ptr+i++),write);
 		fclose(write);
 	}
 }
@@ -855,49 +803,49 @@ static void w()
 
 static void help()
 {
-	printd("assemble\tA [address]\n");
-	printd("compare\t\tC range address\n");
-	printd("dump\t\tD [range]\n");
-	printd("enter\t\tE address [list]\n");
-	printd("fill\t\tF range list\n");
-	printd("go\t\tG [[address] breakpoint]\n");
-	//printd("go\t\tG [=address] [addresses]\n");
-	printd("hex\t\tH value1 value2\n");
-	printd("input\t\tI port\n");
-	printd("load\t\tL [address]\n");
-	//printd("load\t\tL [address] [drive] [firstsector] [number]\n");
-	printd("move\t\tM range address\n");
-	printd("name\t\tN [pathname]\n");
-	//printd("name\t\tN [pathname] [arglist]\n");
-	printd("output\t\tO port byte\n");
-//!	printd("proceed\t\tP [=address] [number]\n");
-	printd("quit\t\tQ\n");
-	printd("register\tR [register]\n");
-	printd("search\t\tS range list\n");
-	printd("trace\t\tT [[address] value]\n");
-	//printd("trace\t\tT [=address] [value]\n");
-	printd("unassemble\tU [range]\n");
-	printd("verbal\t\tV\n");
-	printd("write\t\tW [address]\n");
-	//printd("write\t\tW [address] [drive] [firstsector] [number]\n");
-	//printd("allocate expanded memory\tXA [#pages]\n");
-	//printd("deallocate expanded memory\tXD [handle]\n");
-	//printd("map expanded memory pages\tXM [Lpage] [Ppage] [handle]\n");
-	//printd("display expanded memory status\tXS\n");
+	vapiPrint("assemble\tA [address]\n");
+	vapiPrint("compare\t\tC range address\n");
+	vapiPrint("dump\t\tD [range]\n");
+	vapiPrint("enter\t\tE address [list]\n");
+	vapiPrint("fill\t\tF range list\n");
+	vapiPrint("go\t\tG [[address] breakpoint]\n");
+	//vapiPrint("go\t\tG [=address] [addresses]\n");
+	vapiPrint("hex\t\tH value1 value2\n");
+	vapiPrint("input\t\tI port\n");
+	vapiPrint("load\t\tL [address]\n");
+	//vapiPrint("load\t\tL [address] [drive] [firstsector] [number]\n");
+	vapiPrint("move\t\tM range address\n");
+	vapiPrint("name\t\tN [pathname]\n");
+	//vapiPrint("name\t\tN [pathname] [arglist]\n");
+	vapiPrint("output\t\tO port byte\n");
+//!	vapiPrint("proceed\t\tP [=address] [number]\n");
+	vapiPrint("quit\t\tQ\n");
+	vapiPrint("register\tR [register]\n");
+	vapiPrint("search\t\tS range list\n");
+	vapiPrint("trace\t\tT [[address] value]\n");
+	//vapiPrint("trace\t\tT [=address] [value]\n");
+	vapiPrint("unassemble\tU [range]\n");
+	vapiPrint("verbal\t\tV\n");
+	vapiPrint("write\t\tW [address]\n");
+	//vapiPrint("write\t\tW [address] [drive] [firstsector] [number]\n");
+	//vapiPrint("allocate expanded memory\tXA [#pages]\n");
+	//vapiPrint("deallocate expanded memory\tXD [handle]\n");
+	//vapiPrint("map expanded memory pages\tXM [Lpage] [Ppage] [handle]\n");
+	//vapiPrint("display expanded memory status\tXS\n");
 }
 static void init()
 {
 	filename[0] = '\0';
-	asmSegRec = uasmSegRec = _cs;
-	asmPtrRec = uasmPtrRec = _ip;
-	dumpSegRec = _ds;
-	dumpPtrRec = _ip;
-/*	_ax = _bx = _cx = _dx = 0x0000;
-	_si = _di = _bp = 0x0000;
-	_sp = 0xffee;
-	_ds = _es = _ss = _cs =
+	asmSegRec = uasmSegRec = vcpu.cs;
+	asmPtrRec = uasmPtrRec = vcpu.ip;
+	dumpSegRec = vcpu.ds;
+	dumpPtrRec = vcpu.ip;
+/*	vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
+	vcpu.si = vcpu.di = vcpu.bp = 0x0000;
+	vcpu.sp = 0xffee;
+	vcpu.ds = vcpu.es = vcpu.ss = vcpu.cs =
 		asmSegRec = dumpSegRec = uasmSegRec = 0x0001;
-	_ip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;*/
+	vcpu.ip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;*/
 }
 static void parse()
 {
@@ -953,19 +901,19 @@ static void exec()
 
 void debug()
 {
-	int i;
+	t_nubitcc i;
 	init();
 	arg = (char **)malloc(MAXNARG * sizeof(char *));
-	exitFlag = 0;
+	exitFlag = 0x00;
 	while(!exitFlag) {
 		fflush(stdin);
-		printd("-");
+		vapiPrint("-");
 		FGETS(cmdBuff,MAXLINE,stdin);
 		parse();
 		exec();
 		if(errPos) {
-			for(i = 0;i < errPos;++i) printd(" ");
-			printd("^ Error\n");
+			for(i = 0;i < errPos;++i) vapiPrint(" ");
+			vapiPrint("^ Error\n");
 		}
 	}
 	free(arg);

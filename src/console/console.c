@@ -7,8 +7,8 @@
 
 #include "../vmachine/vapi.h"
 #include "../vmachine/vmachine.h"
+#include "../vmachine/debug/debug.h"
 
-#include "debug.h"
 #include "console.h"
 
 ///*void Exec()
