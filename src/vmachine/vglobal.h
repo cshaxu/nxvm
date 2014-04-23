@@ -98,6 +98,7 @@ typedef t_nubitcc t_faddrcc;
 #define GetLSB(n, b) (GetBit((n), 1))
 #define Max8  0xff
 #define Max16 0xffff
+#define Max24 0x00ffffff
 #define Max32 0xffffffff
 #define Max48 0x0000ffffffffffff
 #define Max64 0xffffffffffffffff
@@ -108,6 +109,7 @@ typedef t_nubitcc t_faddrcc;
 #define MSB64 0x8000000000000000
 #define GetMax8(n)  ((t_nubit8 )((n) & Max8 ))
 #define GetMax16(n) ((t_nubit16)((n) & Max16))
+#define GetMax24(n) ((t_nubit24)((n) & Max24))
 #define GetMax32(n) ((t_nubit32)((n) & Max32))
 #define GetMax48(n) ((t_nubit48)((n) & Max48))
 #define GetMax64(n) ((t_nubit64)((n) & Max64))
