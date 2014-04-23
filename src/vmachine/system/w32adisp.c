@@ -403,7 +403,6 @@ void w32adispSetScreen()
 
 static VOID DisplayCursor()
 {
-	HDC hdcCursorFore, hdcCursorBack;
 	HBRUSH hBrush;
 	HGDIOBJ hOldGdiObj;
 	RECT rect;
@@ -430,13 +429,11 @@ static VOID DisplayCursor()
 
 void w32adispPaint(BOOL force)
 {
-	UCHAR i, j, c, k, l;
+	UCHAR i, j;
 	HBRUSH hBrush;
 	HGDIOBJ hOldGdiObj;
-	WCHAR unicodeChar;
 	USHORT ansiChar;
 	UCHAR charProp;
-	PAINTSTRUCT ps;
 	flashCount = (flashCount + 1) % 10;
 	if (force || vapiCallBackDisplayGetBufferChange() || vapiCallBackDisplayGetCursorChange()) {
 		hBrush = (HBRUSH)GetStockObject(BLACK_BRUSH);
@@ -448,8 +445,6 @@ void w32adispPaint(BOOL force)
 			for(j = 0;j < sizeRow;++j) {
 				ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
 				charProp = vapiCallBackDisplayGetCurrentCharProp(i, j) & 0x7f;
-				if (!ansiChar) continue;
-				SetBkMode(hdcBuf, OPAQUE);
 				BitBlt(hdcBuf, j * FONT_WIDTH, i * FONT_HEIGHT, FONT_WIDTH, FONT_HEIGHT,
 					hdcFont, ansiChar * FONT_WIDTH, charProp * FONT_HEIGHT, SRCCOPY);
 			}

@@ -87,14 +87,14 @@ void vapiRecordDump(const t_string fname)
 		for (j = 0;j < strlen(_restmt);++j)
 			if (_restmt[j] == '\n') _restmt[j] = ' ';
 		fprintf(dump, _expression,
-			_recpu.cs, _recpu.eip,
+			_recpu.cs.selector, _recpu.eip,
 			vramVarByte(_recpu.cs.selector,_recpu.eip+0),vramVarByte(_recpu.cs.selector,_recpu.eip+1),
 			vramVarByte(_recpu.cs.selector,_recpu.eip+2),vramVarByte(_recpu.cs.selector,_recpu.eip+3),
 			vramVarByte(_recpu.cs.selector,_recpu.eip+4),vramVarByte(_recpu.cs.selector,_recpu.eip+5),
 			vramVarByte(_recpu.cs.selector,_recpu.eip+6),vramVarByte(_recpu.cs.selector,_recpu.eip+7),
 			_recpu.ax,_recpu.bx,_recpu.cx,_recpu.dx,
 			_recpu.sp,_recpu.bp,_recpu.si,_recpu.di,
-			_recpu.ds,_recpu.es,_recpu.ss,
+			_recpu.ds.selector,_recpu.es.selector,_recpu.ss.selector,
 			_rec_of,_rec_sf,_rec_zf,_rec_cf,
 			_rec_af,_rec_pf,_rec_df,_rec_if,_rec_tf,_restmt);
 		++i;

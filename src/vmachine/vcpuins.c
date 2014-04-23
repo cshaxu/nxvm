@@ -463,7 +463,7 @@ static t_nubit64 _s_read_idt(t_nubit8 intid)
 			_chr(_SetExcept_GP(0));
 			_be;
 		}
-		_chr(ref = (t_vaddrcc)_m_ref_linear((_GetIDTR_BASE + intid * 4), 4, 0));
+		_chr(ref = (t_vaddrcc)_m_ref_linear(((t_nubit32)_GetIDTR_BASE + intid * 4), 4, 0));
 		_chr(result = GetMax32(_m_read_ref(ref, 4)));
 		_be;
 	} else {
@@ -5408,7 +5408,7 @@ todo INT_I8()
 	i386(0xcc) {
 		_adv;
 		_chk(_d_imm(1));
-		_chk(_e_int_n(vcpuins.cimm));
+		_chk(_e_int_n((t_nubit8)vcpuins.cimm));
 	} else {
 		vcpu.eip++;
 		GetImm(8);
@@ -5741,11 +5741,24 @@ void LOOP()
 	vcpu.cx--;
 	if(vcpu.cx) vcpu.eip += rel8;
 }
-void JCXZ_REL8()
+done JCXZ_REL8()
 {
-	vcpu.eip++;
-	GetImm(8);
-	JCC((void*)vcpuins.rimm,!vcpu.cx,8);
+	t_nubit32 cecx = 0x00000000;
+	_cb("JCXZ_REL8");
+	i386(0xe3) {
+		_adv;
+		_chk(_d_imm(1));
+		switch (_GetAddressSize) {
+		case 2:	cecx = vcpu.cx;break;
+		case 4: cecx = vcpu.ecx;break;
+		default:_impossible_;break;}
+		_chk(_e_jcc(vcpuins.rimm, 1, !cecx));
+	} else {
+		vcpu.eip++;
+		GetImm(8);
+		JCC((void*)vcpuins.rimm,!vcpu.cx,8);
+	}
+	_ce;
 }
 done IN_AL_I8()
 {

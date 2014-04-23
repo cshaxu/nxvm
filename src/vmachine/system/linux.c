@@ -184,7 +184,7 @@ void linuxDisplayPaint(unsigned char force)
 		for(i = 0;i < sizeCol;++i) {
 			for(j = 0;j < sizeRow;++j) {
 				c = vapiCallBackDisplayGetCurrentChar(i, j);
-				p = vapiCallBackDisplayGetCurrentCharProp(i, j);
+				p = vapiCallBackDisplayGetCurrentCharProp(i, j) & 0x7f;
 				c = Ascii2Print[c][1];      /* curses cannot print ext ascii */
 				move(i, j);
 				addch(c | COLOR_PAIR(GetColorFromProp(p)));

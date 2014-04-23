@@ -16,7 +16,7 @@
 
 /* COMPLIATION DEFINITIONS ***************************************************/
 #define VGLOBAL_SIZE_INTEGER 64
-#define VGLOBAL_PLATFORM     VGLOBAL_VAR_WIN32
+#define VGLOBAL_PLATFORM     VGLOBAL_VAR_LINUX
 #if ((VGLOBAL_SIZE_INTEGER == 32) && (VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32))
 //#define VCPUASM
 //#define ECPUACT
