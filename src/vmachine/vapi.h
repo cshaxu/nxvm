@@ -42,6 +42,7 @@ void vapiDisplayPaint();
 
 void vapiCallBackMachineRun();
 t_nubit8 vapiCallBackMachineGetFlagRun();
+void vapiCallBackMachineReset();
 void vapiCallBackMachineStop();
 
 void vapiCallBackKeyboardClrFlag0();

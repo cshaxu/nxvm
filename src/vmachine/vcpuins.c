@@ -3829,15 +3829,23 @@ void QDX()
 {
 	vcpu.ip++;
 	GetImm(8);
-	if (d_nubit8(vcpuins.imm) == 0xff) {
+	switch (d_nubit8(vcpuins.imm)) {
+	case 0xfe:
+		vapiPrint("\nNXVM reseted at CS:%04X IP:%04X by QDX FE\n",vcpu.cs,vcpu.ip);
+		vapiPrint("This happens because of the special reset instruction.\n");
+		vapiCallBackMachineReset();
+		break;
+	case 0xff:
 		vapiPrint("\nNXVM stopped at CS:%04X IP:%04X by QDX FF\n",vcpu.cs,vcpu.ip);
 		vapiPrint("This happens because of the special stop instruction.\n");
 		vapiCallBackMachineStop();
-		return;
+		break;
+	default:
+		qdbiosExecInt(d_nubit8(vcpuins.imm));
+		MakeBit(vramVarWord(_ss,_sp + 4), VCPU_FLAG_ZF, GetBit(_flags, VCPU_FLAG_ZF));
+		MakeBit(vramVarWord(_ss,_sp + 4), VCPU_FLAG_CF, GetBit(_flags, VCPU_FLAG_CF));
+		break;
 	}
-	qdbiosExecInt(d_nubit8(vcpuins.imm));
-	MakeBit(vramVarWord(_ss,_sp + 4), VCPU_FLAG_ZF, GetBit(_flags, VCPU_FLAG_ZF));
-	MakeBit(vramVarWord(_ss,_sp + 4), VCPU_FLAG_CF, GetBit(_flags, VCPU_FLAG_CF));
 }
 
 void vcpuinsInit()

@@ -389,12 +389,13 @@ static void Nxvm()
 	} else GetHelp;
 }
 
-#include "../vmachine/debug/dasm.h"
+#include "../vmachine/debug/aasm.h"
 static void Test()
 {
-	char str[0x100];
-	dasm(str, 0, 0, 1);
-	printf("%s",str);
+	if (aasm("aas", 0, 0)) printf("succ\n");
+	else printf("fail\n");
+	debug();
+	//cs:\nss:\nds:\n mov ah,[1234]\n@label1:\n\nmov bx, [bp+si]\n\n\njmp @label1", 0, 0);
 }
 
 static void exec()
@@ -410,6 +411,10 @@ static void exec()
 	else if(!strcmp(arg[0],"set"))    Set();
 	else if(!strcmp(arg[0],"device")) Device();
 	else if(!strcmp(arg[0],"nxvm"))   Nxvm();
+	else if(!strcmp(arg[0],"start")) {narg = 2;arg[1] = arg[0];Nxvm();}
+	else if(!strcmp(arg[0],"reset")) {narg = 2;arg[1] = arg[0];Nxvm();}
+	else if(!strcmp(arg[0],"stop"))  {narg = 2;arg[1] = arg[0];Nxvm();}
+	else if(!strcmp(arg[0],"resume")){narg = 2;arg[1] = arg[0];Nxvm();}
 	else printc("Illegal command '%s'.\n",arg[0]);
 	printc("\n");
 }
