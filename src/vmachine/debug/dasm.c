@@ -1,10 +1,10 @@
+/* This file is a part of NXVM project. */
+
 #include "stdio.h"
 #include "stdarg.h"
 #include "stdlib.h"
 #include "string.h"
-#include "memory.h"
 
-#include "../vglobal.h"
 #include "../vmachine.h"
 
 typedef char t_dasm_strl[0x0200];
@@ -12,7 +12,7 @@ typedef char t_dasm_strs[0x0020];
 typedef enum {PF_NONE, PF_CS, PF_DS, PF_SS, PF_ES, PF_REPZ, PF_REPNZ} t_dasm_prefix;
 
 static t_dasm_strl  dstmt;
-static t_dasm_strs  dbin, dop, dopr, dtip, drm, dr, dimm, dds, dss, dimmoff, dimmsign;
+static t_dasm_strs  dbin, dop, dopr, dtip, drm, dr, dimm, dds, dss, dimmoff8, dimmoff16, dimmsign;
 static t_bool       ismem;
 static t_nubit8     rid;
 static t_nubit16    dods, doss;
@@ -43,16 +43,32 @@ static int SPRINTF(char *_Dest, const char *_Format, ...)
 #define REG ((modrm&0x38)>>3)
 #define RM  ((modrm&0x07)>>0)
 
+static void GetMem(t_nubitcc membit)
+{
+	switch (membit) {
+	case 8: SPRINTF(drm, "[%04X]", vramVarWord(dvcs,dvip));
+		    SPRINTF(dtip, "%s:%04X=%02X", dds, vramVarWord(dvcs,dvip), vramVarByte(dods,vramVarWord(dvcs,dvip)));
+			break;
+	case 16:SPRINTF(drm, "[%04X]", vramVarWord(dvcs,dvip));
+		    SPRINTF(dtip, "%s:%04X=%04X", dds, vramVarWord(dvcs,dvip), vramVarWord(dods,vramVarWord(dvcs,dvip)));
+			break;
+	default:SPRINTF(drm, "<ERROR:MEMBIT(%02X)>",membit);break;}
+	dvip += 2;
+}
 static void GetImm(t_nubitcc immbit)
 {
-	t_nsbit8 imm = (t_nsbit8)vramVarByte(dvcs, dvip);
-	t_nsbit8 sign = (imm & 0x80) ? '-' : '+';
-	t_nubit8 immu = (imm & 0x80) ? ((~imm) + 0x01) : imm;
+	t_nsbit8 imm8 = (t_nsbit8)vramVarByte(dvcs, dvip);
+	t_nsbit16 imm16 = (t_nsbit16)vramVarWord(dvcs, dvip);
+	t_nsbit8 sign8 = (imm8 & 0x80) ? '-' : '+';
+	t_nubit8 immu8 = (imm8 & 0x80) ? ((~imm8) + 0x01) : imm8;
+	dimmoff8[0] = 0;
+	dimmoff16[0] = 0;
 	switch(immbit) {
 	case 8:  SPRINTF(dimm, "%02X", vramVarByte(dvcs,dvip)); dvip += 1;
-		     SPRINTF(dimmoff, "%04X", (dvip+imm));
-		     SPRINTF(dimmsign, "%c%02X", sign, immu);                 break;
-	case 16: SPRINTF(dimm, "%04X", vramVarWord(dvcs,dvip)); dvip += 2;break;
+		     SPRINTF(dimmoff8,  "%04X", (t_nubit16)(dvip+imm8));
+		     SPRINTF(dimmsign,  "%c%02X", sign8, immu8);              break;
+	case 16: SPRINTF(dimm, "%04X", vramVarWord(dvcs,dvip)); dvip += 2;
+		     SPRINTF(dimmoff16, "%04X", (t_nubit16)(dvip+imm16));                break;
 	case 32: SPRINTF(dimm, "%08X", vramVarDWord(dvcs,dvip));dvip += 4;break;
 	default:SPRINTF(dimm, "<ERROR:IMMBIT(%02X)>",immbit);break;}
 }
@@ -873,112 +889,112 @@ static void JO()
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JO");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JNO()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JNO");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JC()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JC");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JNC()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JNC");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JZ()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JZ");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JNZ()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JNZ");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JBE()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JBE");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JA()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JA");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JS()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JS");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JNS()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JNS");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JP()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JP");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JNP()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JNP");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JL()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JL");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JNL()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JNL");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JLE()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JLE");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void JG()
 {
 	dvip++;
 	GetImm(8);
 	SPRINTF(dop, "JG");
-	SPRINTF(dopr, "%s", dimmoff);
+	SPRINTF(dopr, "%s", dimmoff8);
 }
 static void INS_80()
 {
@@ -986,43 +1002,17 @@ static void INS_80()
 	GetModRegRM(0,8);
 	GetImm(8);
 	switch(rid) {
-	case 0: SPRINTF(dop, "ADD");
-		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
-		else       SPRINTF(dopr, "%s,%s", drm, dimm);
-		break;
-	case 1: SPRINTF(dop, "OR");
-		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
-		else       SPRINTF(dopr, "%s,%s", drm, dimm);
-		break;
-	case 2: SPRINTF(dop, "ADC");
-		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
-		else       SPRINTF(dopr, "%s,%s", drm, dimm);
-		break;
-	case 3: SPRINTF(dop, "SBB");
-		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
-		else       SPRINTF(dopr, "%s,%s", drm, dimm);
-		break;
-	case 4: SPRINTF(dop, "AND");
-		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
-		else       SPRINTF(dopr, "%s,%s", drm, dimm);
-		break;
-	case 5: SPRINTF(dop, "SUB");
-		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
-		else       SPRINTF(dopr, "%s,%s", drm, dimm);
-		break;
-	case 6: SPRINTF(dop, "XOR");
-		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
-		else       SPRINTF(dopr, "%s,%s", drm, dimm);
-		break;
-	case 7: SPRINTF(dop, "CMP");
-		if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
-		else       SPRINTF(dopr, "%s,%s", drm, dimm);
-		break;
-	default:
-		SPRINTF(dop, "INS_80");
-		SPRINTF(dopr, "<ERROR:REGID(%02X)>", rid);
-		break;
-	}
+	case 0: SPRINTF(dop, "ADD");break;
+	case 1: SPRINTF(dop, "OR"); break;
+	case 2: SPRINTF(dop, "ADC");break;
+	case 3: SPRINTF(dop, "SBB");break;
+	case 4: SPRINTF(dop, "AND");break;
+	case 5: SPRINTF(dop, "SUB");break;
+	case 6: SPRINTF(dop, "XOR");break;
+	case 7: SPRINTF(dop, "CMP");break;
+	default: SPRINTF(dop, "<ERROR:REGID(%02X)>", rid);return;}
+	if (ismem) SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+	else       SPRINTF(dopr, "%s,%s", drm, dimm);
 }
 static void INS_81()
 {
@@ -1116,6 +1106,640 @@ static void INS_83()
 		break;
 	}
 }
+static void TEST_RM8_R8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "TEST");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void TEST_RM16_R16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "TEST");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void XCHG_R8_RM8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "XCHG");
+	SPRINTF(dopr, "%s,%s",dr,drm);
+}
+static void XCHG_R16_RM16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "XCHG");
+	SPRINTF(dopr, "%s,%s",dr,drm);
+}
+static void MOV_RM8_R8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void MOV_RM16_R16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void MOV_R8_RM8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void MOV_R16_RM16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void MOV_RM16_SEG()
+{
+	dvip++;
+	GetModRegRM(4,16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "%s,%s", drm, dr);
+}
+static void LEA_R16_M16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "LEA");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void MOV_SEG_RM16()
+{
+	dvip++;
+	GetModRegRM(4,16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void POP_RM16()
+{
+	dvip++;
+	GetModRegRM(0,16);
+	SPRINTF(dop, "POP");
+	switch(rid) {
+	case 0: SPRINTF(dopr, "%s", drm); break;
+	default:SPRINTF(dopr, "<ERROR:REGID(%02X)>", rid);break;}
+}
+static void NOP()
+{
+	dvip++;
+	SPRINTF(dop, "NOP");
+}
+static void XCHG_CX_AX()
+{
+	dvip++;
+	SPRINTF(dop, "XCHG");
+	SPRINTF(dopr, "CX,AX");
+}
+static void XCHG_DX_AX()
+{
+	dvip++;
+	SPRINTF(dop, "XCHG");
+	SPRINTF(dopr, "DX,AX");
+}
+static void XCHG_BX_AX()
+{
+	dvip++;
+	SPRINTF(dop, "XCHG");
+	SPRINTF(dopr, "BX,AX");
+}
+static void XCHG_SP_AX()
+{
+	dvip++;
+	SPRINTF(dop, "XCHG");
+	SPRINTF(dopr, "SP,AX");
+}
+static void XCHG_BP_AX()
+{
+	dvip++;
+	SPRINTF(dop, "XCHG");
+	SPRINTF(dopr, "BP,AX");
+}
+static void XCHG_SI_AX()
+{
+	dvip++;
+	SPRINTF(dop, "XCHG");
+	SPRINTF(dopr, "SI,AX");
+}
+static void XCHG_DI_AX()
+{
+	dvip++;
+	SPRINTF(dop, "XCHG");
+	SPRINTF(dopr, "DI,AX");
+}
+static void CBW()
+{
+	dvip++;
+	SPRINTF(dop, "CBW");
+}
+static void CWD()
+{
+	dvip++;
+	SPRINTF(dop, "CWD");
+}
+static void CALL_PTR16_16()
+{
+	dvip++;
+	SPRINTF(dop, "CALL");
+	GetImm(16);
+	SPRINTF(dopr, ":%s", dimm);
+	GetImm(16);
+	STRCAT(dimm, dopr);
+	STRCPY(dopr, dimm);
+}
+static void WAIT()
+{
+	dvip++;
+	SPRINTF(dop, "WAIT");
+}
+static void PUSHF()
+{
+	dvip++;
+	SPRINTF(dop, "PUSHF");
+}
+static void POPF()
+{
+	dvip++;
+	SPRINTF(dop, "POPF");
+}
+static void SAHF()
+{
+	dvip++;
+	SPRINTF(dop, "SAHF");
+}
+static void LAHF()
+{
+	dvip++;
+	SPRINTF(dop, "LAHF");
+}
+static void MOV_AL_M8()
+{
+	dvip++;
+	GetMem(8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "AL,%s", drm);
+}
+static void MOV_AX_M16()
+{
+	dvip++;
+	GetMem(16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "AX,%s", drm);
+}
+static void MOV_M8_AL()
+{
+	dvip++;
+	GetMem(8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "%s,AL", drm);
+}
+static void MOV_M16_AX()
+{
+	dvip++;
+	GetMem(16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "%s,AX", drm);
+}
+static void MOVSB()
+{
+	dvip++;
+	SPRINTF(dop, "MOVSB");
+}
+static void MOVSW()
+{
+	dvip++;
+	SPRINTF(dop, "MOVSW");
+}
+static void CMPSB()
+{
+	dvip++;
+	SPRINTF(dop, "CMPSB");
+}
+static void CMPSW()
+{
+	dvip++;
+	SPRINTF(dop, "CMPSW");
+}
+static void TEST_AL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "TEST");
+	SPRINTF(dopr, "AL,%s", dimm);
+}
+static void TEST_AX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "TEST");
+	SPRINTF(dopr, "AX,%s", dimm);
+}
+static void STOSB()
+{
+	dvip++;
+	SPRINTF(dop, "STOSB");
+}
+static void STOSW()
+{
+	dvip++;
+	SPRINTF(dop, "STOSW");
+}
+static void LODSB()
+{
+	dvip++;
+	SPRINTF(dop, "LODSB");
+}
+static void LODSW()
+{
+	dvip++;
+	SPRINTF(dop, "LODSW");
+}
+static void SCASB()
+{
+	dvip++;
+	SPRINTF(dop, "SCASB");
+}
+static void SCASW()
+{
+	dvip++;
+	SPRINTF(dop, "SCASW");
+}
+static void MOV_AL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "AL,%s", dimm);
+}
+static void MOV_CL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "CL,%s", dimm);
+}
+static void MOV_DL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "DL,%s", dimm);
+}
+static void MOV_BL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "BL,%s", dimm);
+}
+static void MOV_AH_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "AH,%s", dimm);
+}
+static void MOV_CH_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "CH,%s", dimm);
+}
+static void MOV_DH_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "DH,%s", dimm);
+}
+static void MOV_BH_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "BH,%s", dimm);
+}
+static void MOV_AX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "AX,%s", dimm);
+}
+static void MOV_CX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "CX,%s", dimm);
+}
+static void MOV_DX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "DX,%s", dimm);
+}
+static void MOV_BX_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "BX,%s", dimm);
+}
+static void MOV_SP_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "SP,%s", dimm);
+}
+static void MOV_BP_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "BP,%s", dimm);
+}
+static void MOV_SI_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "SI,%s", dimm);
+}
+static void MOV_DI_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "DI,%s", dimm);
+}
+static void RET_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "RET");
+	SPRINTF(dopr, "%s", dimm);
+}
+static void RET()
+{
+	dvip++;
+	SPRINTF(dop, "RET");
+}
+static void LES_R16_M16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "LES");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void LDS_R16_M16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	SPRINTF(dop, "LDS");
+	SPRINTF(dopr, "%s,%s", dr, drm);
+}
+static void MOV_M8_I8()
+{
+	dvip++;
+	GetModRegRM(8,8);
+	GetImm(8);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "BYTE PTR %s,%s", drm, dimm);
+}
+static void MOV_M16_I16()
+{
+	dvip++;
+	GetModRegRM(16,16);
+	GetImm(16);
+	SPRINTF(dop, "MOV");
+	SPRINTF(dopr, "WORD PTR %s,%s", drm, dimm);
+}
+static void RETF_I16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "RETF");
+	SPRINTF(dopr, "%s", dimm);
+}
+static void RETF()
+{
+	dvip++;
+	SPRINTF(dop, "RETF");
+}
+static void INT3()
+{
+	dvip++;
+	SPRINTF(dop, "INT");
+	SPRINTF(dopr, "03");
+}
+static void INT_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "INT");
+	SPRINTF(dopr, "%s", dimm);
+}
+static void INTO()
+{
+	dvip++;
+	SPRINTF(dop, "INT");
+	SPRINTF(dopr, "04");
+}
+static void IRET()
+{
+	dvip++;
+	SPRINTF(dop, "IRET");
+}
+static void INS_D0()
+{
+	dvip++;
+	GetModRegRM(0,8);
+	switch(rid) {
+	case 0: SPRINTF(dop, "ROL");break;
+	case 1: SPRINTF(dop, "ROR");break;
+	case 2: SPRINTF(dop, "RCL");break;
+	case 3: SPRINTF(dop, "RCR");break;
+	case 4: SPRINTF(dop, "SHL");break;
+	case 5: SPRINTF(dop, "SHR");break;
+	case 6: SPRINTF(dop, "SAL");break;
+	case 7: SPRINTF(dop, "SAR");break;
+	default:SPRINTF(dop, "<ERROR:REGID(%02X)>", rid);return;}
+	if (ismem) SPRINTF(dopr, "BYTE PTR %s,1", drm);
+	else       SPRINTF(dopr, "%s,1", drm);
+}
+static void INS_D1()
+{
+	dvip++;
+	GetModRegRM(0,16);
+	switch(rid) {
+	case 0: SPRINTF(dop, "ROL");break;
+	case 1: SPRINTF(dop, "ROR");break;
+	case 2: SPRINTF(dop, "RCL");break;
+	case 3: SPRINTF(dop, "RCR");break;
+	case 4: SPRINTF(dop, "SHL");break;
+	case 5: SPRINTF(dop, "SHR");break;
+	case 6: SPRINTF(dop, "SAL");break;
+	case 7: SPRINTF(dop, "SAR");break;
+	default:SPRINTF(dop, "<ERROR:REGID(%02X)>", rid);return;}
+	if (ismem) SPRINTF(dopr, "WORD PTR %s,1", drm);
+	else       SPRINTF(dopr, "%s,1", drm);
+}
+static void INS_D2()
+{
+	dvip++;
+	GetModRegRM(0,8);
+	switch(rid) {
+	case 0: SPRINTF(dop, "ROL");break;
+	case 1: SPRINTF(dop, "ROR");break;
+	case 2: SPRINTF(dop, "RCL");break;
+	case 3: SPRINTF(dop, "RCR");break;
+	case 4: SPRINTF(dop, "SHL");break;
+	case 5: SPRINTF(dop, "SHR");break;
+	case 6: SPRINTF(dop, "SAL");break;
+	case 7: SPRINTF(dop, "SAR");break;
+	default:SPRINTF(dop, "<ERROR:REGID(%02X)>", rid);return;}
+	if (ismem) SPRINTF(dopr, "BYTE PTR %s,CL", drm);
+	else       SPRINTF(dopr, "%s,CL", drm);
+}
+static void INS_D3()
+{
+	dvip++;
+	GetModRegRM(0,16);
+	switch(rid) {
+	case 0: SPRINTF(dop, "ROL");break;
+	case 1: SPRINTF(dop, "ROR");break;
+	case 2: SPRINTF(dop, "RCL");break;
+	case 3: SPRINTF(dop, "RCR");break;
+	case 4: SPRINTF(dop, "SHL");break;
+	case 5: SPRINTF(dop, "SHR");break;
+	case 6: SPRINTF(dop, "SAL");break;
+	case 7: SPRINTF(dop, "SAR");break;
+	default:SPRINTF(dop, "<ERROR:REGID(%02X)>", rid);return;}
+	if (ismem) SPRINTF(dopr, "WORD PTR %s,CL", drm);
+	else       SPRINTF(dopr, "%s,CL", drm);
+}
+static void AAM()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "AAM");
+	SPRINTF(dopr, "%s", dimm);
+}
+static void AAD()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "AAD");
+	SPRINTF(dopr, "%s", dimm);
+}
+static void XLAT()
+{
+	dvip++;
+	SPRINTF(dop, "XLAT");
+}
+static void LOOPNZ()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "LOOPNZ");
+	SPRINTF(dopr, "%s", dimmoff8);
+}
+static void LOOPZ()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "LOOPZ");
+	SPRINTF(dopr, "%s", dimmoff8);
+}
+static void LOOP()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "LOOP");
+	SPRINTF(dopr, "%s", dimmoff8);
+}
+static void JCXZ_REL8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JCXZ");
+	SPRINTF(dopr, "%s", dimmoff8);
+}
+static void IN_AL_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "IN");
+	SPRINTF(dopr, "AL,%s", dimm);
+}
+static void IN_AX_I8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "IN");
+	SPRINTF(dopr, "AX,%s", dimm);
+}
+static void OUT_I8_AL()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "OUT");
+	SPRINTF(dopr, "%s,AL", dimm);
+}
+static void OUT_I8_AX()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "OUT");
+	SPRINTF(dopr, "%s,AX", dimm);
+}
+static void CALL_REL16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "CALL");
+	SPRINTF(dopr, "%s", dimmoff16);
+}
+static void JMP_REL16()
+{
+	dvip++;
+	GetImm(16);
+	SPRINTF(dop, "JMP");
+	SPRINTF(dopr, "%s", dimmoff16);
+}
+static void JMP_PTR16_16()
+{
+	dvip++;
+	SPRINTF(dop, "JMP");
+	GetImm(16);
+	SPRINTF(dopr, ":%s", dimm);
+	GetImm(16);
+	STRCAT(dimm, dopr);
+	STRCPY(dopr, dimm);
+}
+static void JMP_REL8()
+{
+	dvip++;
+	GetImm(8);
+	SPRINTF(dop, "JMP");
+	SPRINTF(dopr, "%s", dimmoff8);
+}
 
 static t_bool IsPrefix(t_nubit8 opcode)
 {
@@ -1144,10 +1768,16 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off)
 	stmt[0] = 0;
 	ClrPrefix();
 	do {
-		dop[0]  = 0;
-		dopr[0] = 0;
-		dbin[0] = 0;
-		dtip[0] = 0;
+		dop[0]       = 0;
+		dopr[0]      = 0;
+		dbin[0]      = 0;
+		dtip[0]      = 0;
+		drm[0]       = 0;
+		dr[0]        = 0;
+		dimm[0]      = 0;
+		dimmoff8[0]  = 0;
+		dimmoff16[0] = 0;
+		dimmsign[0]  = 0;
 		opcode = vramVarByte(dvcs, dvip);
 		switch (opcode) {
 		case 0x00: ADD_RM8_R8();   break;
@@ -1165,8 +1795,7 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off)
 		case 0x0c: OR_AL_I8();     break;
 		case 0x0d: OR_AX_I16();    break;
 		case 0x0e: PUSH_CS();      break;
-		case 0x0f: POP_CS();       break;
-		//case 0x0f: INS_0F();     break;
+		case 0x0f: POP_CS();       break; //case 0x0f: INS_0F();     break;
 		case 0x10: ADC_RM8_R8();   break;
 		case 0x11: ADC_RM16_R16(); break;
 		case 0x12: ADC_R8_RM8();   break;
@@ -1253,12 +1882,9 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off)
 		case 0x63: DB();           break;
 		case 0x64: DB();           break;
 		case 0x65: DB();           break;
-		case 0x66: DB();           break;
-		case 0x67: DB();           break;
-		case 0x68: DB();           break;
-		//case 0x66: OpdSize();    break;
-		//case 0x67: AddrSize();   break;
-		//case 0x68: PUSH_I16();   break;
+		case 0x66: DB();           break; //case 0x66: OpdSize();    break;
+		case 0x67: DB();           break; //case 0x67: AddrSize();   break;
+		case 0x68: DB();           break; //case 0x68: PUSH_I16();   break;
 		case 0x69: DB();           break;
 		case 0x6a: DB();           break;
 		case 0x6b: DB();           break;
@@ -1286,7 +1912,7 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off)
 		case 0x81: INS_81();       break;
 		case 0x82: INS_82();       break;
 		case 0x83: INS_83();       break;
-/*		case 0x84: TEST_RM8_R8();  break;
+		case 0x84: TEST_RM8_R8();  break;
 		case 0x85: TEST_RM16_R16();break;
 		case 0x86: XCHG_R8_RM8();  break;
 		case 0x87: XCHG_R16_RM16();break;
@@ -1306,93 +1932,91 @@ t_nubitcc dasm(t_string stmt, t_nubit16 seg, t_nubit16 off)
 		case 0x95: XCHG_BP_AX();   break;
 		case 0x96: XCHG_SI_AX();   break;
 		case 0x97: XCHG_DI_AX();   break;
-		case 0x98: CBW(); break;
-		case 0x99: CWD(); break;
+		case 0x98: CBW();          break;
+		case 0x99: CWD();          break;
 		case 0x9a: CALL_PTR16_16();break;
-		case 0x9b: WAIT(); break;
-		case 0x9c: PUSHF(); break;
-		case 0x9d: POPF(); break;
-		case 0x9e: SAHF(); break;
-		case 0x9f: LAHF(); break;
-		case 0xa0: MOV_AL_M8(); break;
-		case 0xa1: MOV_AX_M16(); break;
-		case 0xa2: MOV_M8_AL(); break;
-		case 0xa3: MOV_M16_AX(); break;
-		case 0xa4: MOVSB(); break;
-		case 0xa5: MOVSW(); break;
-		case 0xa6: CMPSB(); break;
-		case 0xa7: CMPSW(); break;
-		case 0xa8: TEST_AL_I8(); break;
-		case 0xa9: TEST_AX_I16(); break;
-		case 0xaa: STOSB(); break;
-		case 0xab: STOSW(); break;
-		case 0xac: LODSB(); break;
-		case 0xad: LODSW(); break;
-		case 0xae: SCASB(); break;
-		case 0xaf: SCASW(); break;
-		case 0xb0: MOV_AL_I8(); break;
-		case 0xb1: MOV_CL_I8(); break;
-		case 0xb2: MOV_DL_I8(); break;
-		case 0xb3: MOV_BL_I8(); break;
-		case 0xb4: MOV_AH_I8(); break;
-		case 0xb5: MOV_CH_I8(); break;
-		case 0xb6: MOV_DH_I8(); break;
-		case 0xb7: MOV_BH_I8(); break;
-		case 0xb8: MOV_AX_I16(); break;
-		case 0xb9: MOV_CX_I16(); break;
-		case 0xba: MOV_DX_I16(); break;
-		case 0xbb: MOV_BX_I16(); break;
-		case 0xbc: MOV_SP_I16(); break;
-		case 0xbd: MOV_BP_I16(); break;
-		case 0xbe: MOV_SI_I16(); break;
-		case 0xbf: MOV_DI_I16(); break;
+		case 0x9b: WAIT();         break;
+		case 0x9c: PUSHF();        break;
+		case 0x9d: POPF();         break;
+		case 0x9e: SAHF();         break;
+		case 0x9f: LAHF();         break;
+		case 0xa0: MOV_AL_M8();    break;
+		case 0xa1: MOV_AX_M16();   break;
+		case 0xa2: MOV_M8_AL();    break;
+		case 0xa3: MOV_M16_AX();   break;
+		case 0xa4: MOVSB();        break;
+		case 0xa5: MOVSW();        break;
+		case 0xa6: CMPSB();        break;
+		case 0xa7: CMPSW();        break;
+		case 0xa8: TEST_AL_I8();   break;
+		case 0xa9: TEST_AX_I16();  break;
+		case 0xaa: STOSB();        break;
+		case 0xab: STOSW();        break;
+		case 0xac: LODSB();        break;
+		case 0xad: LODSW();        break;
+		case 0xae: SCASB();        break;
+		case 0xaf: SCASW();        break;
+		case 0xb0: MOV_AL_I8();    break;
+		case 0xb1: MOV_CL_I8();    break;
+		case 0xb2: MOV_DL_I8();    break;
+		case 0xb3: MOV_BL_I8();    break;
+		case 0xb4: MOV_AH_I8();    break;
+		case 0xb5: MOV_CH_I8();    break;
+		case 0xb6: MOV_DH_I8();    break;
+		case 0xb7: MOV_BH_I8();    break;
+		case 0xb8: MOV_AX_I16();   break;
+		case 0xb9: MOV_CX_I16();   break;
+		case 0xba: MOV_DX_I16();   break;
+		case 0xbb: MOV_BX_I16();   break;
+		case 0xbc: MOV_SP_I16();   break;
+		case 0xbd: MOV_BP_I16();   break;
+		case 0xbe: MOV_SI_I16();   break;
+		case 0xbf: MOV_DI_I16();   break;
 		case 0xc0: DB();           break;
 		case 0xc1: DB();           break;
-		case 0xc2: RET_I16(); break;
-		case 0xc3: RET(); break;
-		case 0xc4: LES_R16_M16(); break;
-		case 0xc5: LDS_R16_M16(); break;
-		case 0xc6: MOV_M8_I8(); break;
-		case 0xc7: MOV_M16_I16(); break;
+		case 0xc2: RET_I16();      break;
+		case 0xc3: RET();          break;
+		case 0xc4: LES_R16_M16();  break;
+		case 0xc5: LDS_R16_M16();  break;
+		case 0xc6: MOV_M8_I8();    break;
+		case 0xc7: MOV_M16_I16();  break;
 		case 0xc8: DB();           break;
 		case 0xc9: DB();           break;
-		case 0xca: RETF_I16(); break;
-		case 0xcb: RETF(); break;
-		case 0xcc: INT3(); break;
-		case 0xcd: INT_I8(); break;
-		case 0xce: INTO(); break;
-		case 0xcf: IRET(); break;
-		case 0xd0: INS_D0(); break;
-		case 0xd1: INS_D1(); break;
-		case 0xd2: INS_D2(); break;
-		case 0xd3: INS_D3(); break;
-		case 0xd4: AAM(); break;
-		case 0xd5: AAD(); break;
+		case 0xca: RETF_I16();     break;
+		case 0xcb: RETF();         break;
+		case 0xcc: INT3();         break;
+		case 0xcd: INT_I8();       break;
+		case 0xce: INTO();         break;
+		case 0xcf: IRET();         break;
+		case 0xd0: INS_D0();       break;
+		case 0xd1: INS_D1();       break;
+		case 0xd2: INS_D2();       break;
+		case 0xd3: INS_D3();       break;
+		case 0xd4: AAM();          break;
+		case 0xd5: AAD();          break;
 		case 0xd6: DB();           break;
-		case 0xd7: XLAT(); break;
+		case 0xd7: XLAT();         break;
 		case 0xd8: DB();           break;
-		case 0xd9: DB();           break;
-		//case 0xd9: INS_D9(); break;
+		case 0xd9: DB();           break; //case 0xd9: INS_D9();     break;
 		case 0xda: DB();           break;
-		case 0xdb: DB();           break;
-		//case 0xdb: INS_DB(); break;
+		case 0xdb: DB();           break; //case 0xdb: INS_DB();     break;
 		case 0xdc: DB();           break;
 		case 0xdd: DB();           break;
 		case 0xde: DB();           break;
 		case 0xdf: DB();           break;
-		case 0xe0: LOOPNZ(); break;
-		case 0xe1: LOOPZ(); break;
-		case 0xe2: LOOP(); break;
-		case 0xe3: JCXZ_REL8(); break;
-		case 0xe4: IN_AL_I8(); break;
-		case 0xe5: IN_AX_I8(); break;
-		case 0xe6: OUT_I8_AL(); break;
-		case 0xe7: OUT_I8_AX(); break;
-		case 0xe8: CALL_REL16(); break;
-		case 0xe9: JMP_REL16(); break;
+		case 0xe0: LOOPNZ();       break;
+		case 0xe1: LOOPZ();        break;
+		case 0xe2: LOOP();         break;
+		case 0xe3: JCXZ_REL8();    break;
+		case 0xe4: IN_AL_I8();     break;
+		case 0xe5: IN_AX_I8();     break;
+		case 0xe6: OUT_I8_AL();    break;
+		case 0xe7: OUT_I8_AX();    break;
+		case 0xe8: CALL_REL16();   break;
+		case 0xe9: JMP_REL16();    break;
 		case 0xea: JMP_PTR16_16(); break;
-		case 0xeb: JMP_REL8(); break;
-		case 0xec: IN_AL_DX(); break;
+		case 0xeb: JMP_REL8();     break;
+/*		case 0xec: IN_AL_DX(); break;
 		case 0xed: IN_AX_DX(); break;
 		case 0xee: OUT_DX_AL(); break;
 		case 0xef: OUT_DX_AX(); break;

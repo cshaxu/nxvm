@@ -1,3 +1,4 @@
+/* This file is a part of NXVM project. */
 
 #ifndef NXVM_DASM_H
 #define NXVM_DASM_H
