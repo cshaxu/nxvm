@@ -39,7 +39,7 @@ typedef struct {
 extern t_cpu vcpu;
 extern t_bool cpuTermFlag;
 
-void InsExec();
+void vcpuInsExec();
 
 void CPUInit();
 void CPUTerm();

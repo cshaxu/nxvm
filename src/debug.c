@@ -342,7 +342,7 @@ static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 	if(ptr1 < ptr2) {
 		cpu.ip = ptr1;
 		while(ptr1 < ptr2 && !cputerm) {
-			InsExec();
+			vcpuInsExec();
 			ptr1 = cpu.ip;
 			//RefreshVideoRAM();
 			//ExecInt();

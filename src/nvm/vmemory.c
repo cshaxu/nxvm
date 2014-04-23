@@ -21,6 +21,8 @@ void vmemorySetWord(t_nubit16 segment,t_nubit16 offset,t_nubit16 value)
 {*(t_nubit16 *)(memoryBase+SHL4(segment)+offset) = value;}
 void vmemorySetDWord(t_nubit16 segment,t_nubit16 offset,t_nubit32 value)
 {*(t_nubit32 *)(memoryBase+SHL4(segment)+offset) = value;}
+t_vaddrcc vmemoryGetAddress(t_nubit16 segment,t_nubit16 offset)
+{return (memoryBase+SHL4(segment)+offset);}
 
 void MemoryInit()
 {

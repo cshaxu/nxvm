@@ -11,9 +11,9 @@
 t_cpu vcpu;
 t_bool cpuTermFlag;
 
-void InsExec()
+void vcpuInsExec()
 {
-	t_nubit8 opcode = *(t_nubit8 *)(memoryBase+SHL4(vcpu.cs)+vcpu.ip);
+	t_nubit8 opcode = vmemoryGetByte(vcpu.cs,vcpu.ip);
 	InsTable[opcode]();
 	if(!vcpuinsIsPrefix(opcode)) vcpuinsSB();
 }
