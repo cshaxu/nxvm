@@ -22,8 +22,8 @@ typedef enum {
 } t_aasm_oprtype;
 typedef enum {
 	MOD_M,
-	MOD_M_I8,
-	MOD_M_I16,
+	MOD_M_DISP8,
+	MOD_M_DISP16,
 	MOD_R
 } t_aasm_oprmod;
 typedef enum {
@@ -71,7 +71,7 @@ typedef struct {
 	t_aasm_oprtype  type;  // 0 = none, 1 = reg8, 2 = reg16, 3 = seg,
                            // 4 = imm8, 5 = imm16, 6 = mem, 7 = mem8, 8 = mem16
 	t_aasm_oprmod   mod;   // active when type = 1,2,3,6,7,8
-	                       // 0 = mem; 1 = mem+imm8; 2 = mem+imm16; 3 = reg
+	                       // 0 = mem; 1 = mem+disp8; 2 = mem+disp16; 3 = reg
 	t_aasm_oprmem   mem;   // active when mod = 0,1,2
                            // 0 = [BX+SI], 1 = [BX+DI], 2 = [BP+SI], 3 = [BP+DI],
                            // 4 = [SI], 5 = [DI], 6 = [BP], 7 = [BX]
@@ -84,7 +84,6 @@ typedef struct {
 	t_aasm_oprseg   seg;   // active when type = 3
                            //0 = ES, 1 = CS, 2 = SS, 3 = DS
 	t_nsbit8        imm8s;
-	t_nubit8        imm8u;
 	t_nubit16       imm16;
 	t_nsbit8        disp8;
 	t_nubit16       disp16;// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
@@ -108,6 +107,8 @@ static t_nubit16 avcs, avip;
 #define isNEAR(oprinf)  ((oprinf).isfar == PTR_NEAR)
 #define isFAR(oprinf)   ((oprinf).isfar == PTR_FAR)
 
+#define isRM8s(oprinf)  (isR8 (oprinf) || ((oprinf).type == TYPE_M8))
+#define isRM16s(oprinf) (isR16(oprinf) || ((oprinf).type == TYPE_M16))
 #define isRM8(oprinf)   (isR8 (oprinf) || isM8 (oprinf))
 #define isRM16(oprinf)  (isR16(oprinf) || isM16(oprinf))
 #define isRM(oprinf)    (isRM8(oprinf) || isRM16(oprinf))
@@ -132,57 +133,57 @@ static t_nubit16 avcs, avip;
 #define isSS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SEG_SS)
 #define isDS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SEG_DS)
 
-#define ARG_NONE        (isNONE(aopri1) && isNONE(aopri2))
-#define ARG_RM8_R8      (isRM8 (aopri1) && isR8  (aopri2))
-#define ARG_RM16_R16    (isRM16(aopri1) && isR16 (aopri2))
-#define ARG_R8_RM8      (isR8  (aopri1) && isRM8 (aopri2))
-#define ARG_R16_RM16    (isR16 (aopri1) && isRM16(aopri2))
-#define ARG_ES          (isES  (aopri1) && isNONE(aopri2))
-#define ARG_CS          (isCS  (aopri1) && isNONE(aopri2))
-#define ARG_SS          (isSS  (aopri1) && isNONE(aopri2))
-#define ARG_DS          (isDS  (aopri1) && isNONE(aopri2))
-#define ARG_AX          (isAX  (aopri1) && isNONE(aopri2))
-#define ARG_CX          (isCX  (aopri1) && isNONE(aopri2))
-#define ARG_DX          (isDX  (aopri1) && isNONE(aopri2))
-#define ARG_BX          (isBX  (aopri1) && isNONE(aopri2))
-#define ARG_SP          (isSP  (aopri1) && isNONE(aopri2))
-#define ARG_BP          (isBP  (aopri1) && isNONE(aopri2))
-#define ARG_SI          (isSI  (aopri1) && isNONE(aopri2))
-#define ARG_DI          (isDI  (aopri1) && isNONE(aopri2))
-#define ARG_AL_I8       (isAL  (aopri1) && isI8  (aopri2))
-#define ARG_CL_I8       (isCL  (aopri1) && isI8  (aopri2))
-#define ARG_DL_I8       (isDL  (aopri1) && isI8  (aopri2))
-#define ARG_BL_I8       (isBL  (aopri1) && isI8  (aopri2))
-#define ARG_AH_I8       (isAH  (aopri1) && isI8  (aopri2))
-#define ARG_CH_I8       (isCH  (aopri1) && isI8  (aopri2))
-#define ARG_DH_I8       (isDH  (aopri1) && isI8  (aopri2))
-#define ARG_BH_I8       (isBH  (aopri1) && isI8  (aopri2))
-#define ARG_AX_I16      (isAX  (aopri1) && isI16 (aopri2))
-#define ARG_CX_I16      (isCX  (aopri1) && isI16 (aopri2))
-#define ARG_DX_I16      (isDX  (aopri1) && isI16 (aopri2))
-#define ARG_BX_I16      (isBX  (aopri1) && isI16 (aopri2))
-#define ARG_SP_I16      (isSP  (aopri1) && isI16 (aopri2))
-#define ARG_BP_I16      (isBP  (aopri1) && isI16 (aopri2))
-#define ARG_SI_I16      (isSI  (aopri1) && isI16 (aopri2))
-#define ARG_DI_I16      (isDI  (aopri1) && isI16 (aopri2))
-#define ARG_I8          (isI8  (aopri1) && isNONE(aopri2))
-#define ARG_RM8_I8      (isRM8 (aopri1) && isI8  (aopri2))
-#define ARG_RM16_I16    (isRM16(aopri1) && isI16 (aopri2))
-#define ARG_RM16_I8     (isRM16(aopri1) && isI8  (aopri2))
-#define ARG_RM16_SEG    (isRM16(aopri1) && isSEG (aopri2))
-#define ARG_SEG_RM16    (isSEG (aopri1) && isRM16(aopri2))
-#define ARG_RM16        (isRM16(aopri1) && isNONE(aopri2))
-#define ARG_CX_AX       (isCX  (aopri1) && isAX  (aopri2))
-#define ARG_DX_AX       (isDX  (aopri1) && isAX  (aopri2))
-#define ARG_BX_AX       (isBX  (aopri1) && isAX  (aopri2))
-#define ARG_SP_AX       (isSP  (aopri1) && isAX  (aopri2))
-#define ARG_BP_AX       (isBP  (aopri1) && isAX  (aopri2))
-#define ARG_SI_AX       (isSI  (aopri1) && isAX  (aopri2))
-#define ARG_DI_AX       (isDI  (aopri1) && isAX  (aopri2))
-#define ARG_AL_M8       (isAL  (aopri1) && isM8  (aopri2))
-#define ARG_M8_AL       (isM8  (aopri1) && isAL  (aopri2))
-#define ARG_AX_M16      (isAX  (aopri1) && isM16 (aopri2))
-#define ARG_M16_AX      (isM16 (aopri1) && isAX  (aopri2))
+#define ARG_NONE        (isNONE (aopri1) && isNONE(aopri2))
+#define ARG_RM8_R8      (isRM8  (aopri1) && isR8  (aopri2))
+#define ARG_RM16_R16    (isRM16 (aopri1) && isR16 (aopri2))
+#define ARG_R8_RM8      (isR8   (aopri1) && isRM8 (aopri2))
+#define ARG_R16_RM16    (isR16  (aopri1) && isRM16(aopri2))
+#define ARG_ES          (isES   (aopri1) && isNONE(aopri2))
+#define ARG_CS          (isCS   (aopri1) && isNONE(aopri2))
+#define ARG_SS          (isSS   (aopri1) && isNONE(aopri2))
+#define ARG_DS          (isDS   (aopri1) && isNONE(aopri2))
+#define ARG_AX          (isAX   (aopri1) && isNONE(aopri2))
+#define ARG_CX          (isCX   (aopri1) && isNONE(aopri2))
+#define ARG_DX          (isDX   (aopri1) && isNONE(aopri2))
+#define ARG_BX          (isBX   (aopri1) && isNONE(aopri2))
+#define ARG_SP          (isSP   (aopri1) && isNONE(aopri2))
+#define ARG_BP          (isBP   (aopri1) && isNONE(aopri2))
+#define ARG_SI          (isSI   (aopri1) && isNONE(aopri2))
+#define ARG_DI          (isDI   (aopri1) && isNONE(aopri2))
+#define ARG_AL_I8       (isAL   (aopri1) && isI8  (aopri2))
+#define ARG_CL_I8       (isCL   (aopri1) && isI8  (aopri2))
+#define ARG_DL_I8       (isDL   (aopri1) && isI8  (aopri2))
+#define ARG_BL_I8       (isBL   (aopri1) && isI8  (aopri2))
+#define ARG_AH_I8       (isAH   (aopri1) && isI8  (aopri2))
+#define ARG_CH_I8       (isCH   (aopri1) && isI8  (aopri2))
+#define ARG_DH_I8       (isDH   (aopri1) && isI8  (aopri2))
+#define ARG_BH_I8       (isBH   (aopri1) && isI8  (aopri2))
+#define ARG_AX_I16      (isAX   (aopri1) && isI16 (aopri2))
+#define ARG_CX_I16      (isCX   (aopri1) && isI16 (aopri2))
+#define ARG_DX_I16      (isDX   (aopri1) && isI16 (aopri2))
+#define ARG_BX_I16      (isBX   (aopri1) && isI16 (aopri2))
+#define ARG_SP_I16      (isSP   (aopri1) && isI16 (aopri2))
+#define ARG_BP_I16      (isBP   (aopri1) && isI16 (aopri2))
+#define ARG_SI_I16      (isSI   (aopri1) && isI16 (aopri2))
+#define ARG_DI_I16      (isDI   (aopri1) && isI16 (aopri2))
+#define ARG_I8          (isI8   (aopri1) && isNONE(aopri2))
+#define ARG_RM8_I8      (isRM8s (aopri1) && isI8  (aopri2))
+#define ARG_RM16_I16    (isRM16s(aopri1) && isI16 (aopri2))
+#define ARG_RM16_I8     (isRM16s(aopri1) && isI8  (aopri2))
+#define ARG_RM16_SEG    (isRM16 (aopri1) && isSEG (aopri2))
+#define ARG_SEG_RM16    (isSEG  (aopri1) && isRM16(aopri2))
+#define ARG_RM16        (isRM16 (aopri1) && isNONE(aopri2))
+#define ARG_CX_AX       (isCX   (aopri1) && isAX  (aopri2))
+#define ARG_DX_AX       (isDX   (aopri1) && isAX  (aopri2))
+#define ARG_BX_AX       (isBX   (aopri1) && isAX  (aopri2))
+#define ARG_SP_AX       (isSP   (aopri1) && isAX  (aopri2))
+#define ARG_BP_AX       (isBP   (aopri1) && isAX  (aopri2))
+#define ARG_SI_AX       (isSI   (aopri1) && isAX  (aopri2))
+#define ARG_DI_AX       (isDI   (aopri1) && isAX  (aopri2))
+#define ARG_AL_M8       (isAL   (aopri1) && isM8  (aopri2))
+#define ARG_M8_AL       (isM8   (aopri1) && isAL  (aopri2))
+#define ARG_AX_M16      (isAX   (aopri1) && isM16 (aopri2))
+#define ARG_M16_AX      (isM16  (aopri1) && isAX  (aopri2))
 
 #define setbyte(n) (vramVarByte(avcs, avip) = (t_nubit8)(n))
 #define setword(n) (vramVarWord(avcs, avip) = (t_nubit16)(n))
@@ -215,7 +216,7 @@ static void SetModRegRM(t_aasm_oprinfo modrm, t_nubit8 reg)
 		case 7: break;
 		default:error = 1;break;}
 		break;
-	case MOD_M_I8:
+	case MOD_M_DISP8:
 		modregrm |= (t_nubit8)modrm.mem;
 		setbyte(modregrm); avip++;
 		setbyte(modrm.disp8); avip++;
@@ -230,7 +231,7 @@ static void SetModRegRM(t_aasm_oprinfo modrm, t_nubit8 reg)
 		case 7: break;
 		default:error = 1;break;}
 		break;
-	case MOD_M_I16:
+	case MOD_M_DISP16:
 		modregrm |= (t_nubit8)modrm.mem;
 		setbyte(modregrm); avip++;
 		setword(modrm.disp16); avip+= 2;
@@ -359,7 +360,7 @@ static void ADD_AL_I8()
 {
 	setbyte(0x04);
 	avip++;
-	SetImm8(aopri2.imm8u);
+	SetImm8(aopri2.imm8s);
 }
 static void ADD_AX_I16()
 {
@@ -372,7 +373,7 @@ static void INS_80(t_nubit8 rid)
 	setbyte(0x80);
 	avip++;
 	SetModRegRM(aopri1, rid);
-	SetImm8(aopri2.imm8u);
+	SetImm8(aopri2.imm8s);
 }
 static void INS_81(t_nubit8 rid)
 {
@@ -394,8 +395,8 @@ static void ADD()
 	if      (ARG_AL_I8)    ADD_AL_I8();
 	else if (ARG_AX_I16)   ADD_AX_I16();
 	else if (ARG_RM8_I8)   INS_80(0x00);
-	else if (ARG_RM16_I8)  INS_81(0x00);
-	else if (ARG_RM16_I16) INS_83(0x00);
+	else if (ARG_RM16_I8)  INS_83(0x00);
+	else if (ARG_RM16_I16) INS_81(0x00);
 	else if (ARG_RM8_R8)   ADD_RM8_R8();
 	else if (ARG_RM16_R16) ADD_RM16_R16();
 	else if (ARG_R8_RM8)   ADD_R8_RM8();
@@ -423,9 +424,6 @@ typedef enum {
 	STATE_NUM2,
 	STATE_NUM3
 } t_aasm_scan_state;
-/*typedef enum {
-	STATE_BYTE, STATE_BYTE_PTR,
-} t_aasm_parse_state;*/
 typedef enum {
 	TOKEN_NULL,TOKEN_END,
 	TOKEN_LSPAREN,TOKEN_RSPAREN,
@@ -440,11 +438,10 @@ typedef enum {
 	TOKEN_CS,TOKEN_DS,TOKEN_ES,TOKEN_SS
 } t_aasm_token;
 
-#define tokch  (*tokptr)
-#define take(n) (flagend = 0x01, token = (n))
-
 static t_nubit8 tokimm8;
 static t_nubit16 tokimm16;
+#define tokch  (*tokptr)
+#define take(n) (flagend = 0x01, token = (n))
 static t_aasm_token gettoken(t_string str)
 {
 	static t_string tokptr = NULL;
@@ -510,6 +507,7 @@ static t_aasm_token gettoken(t_string str)
 			case 'f': tokimm8 = (tokimm8 << 4) | 0x0f;state = STATE_NUM2;break;
 			default: tokptr--;take(TOKEN_IMM8);break;
 			}
+			break;
 		case STATE_NUM2:
 			tokimm16 = (t_nubit16)tokimm8;
 			switch (tokch) {
@@ -531,6 +529,7 @@ static t_aasm_token gettoken(t_string str)
 			case 'f': tokimm16 = (tokimm16 << 4) | 0x000f;state = STATE_NUM3;break;
 			default: tokptr--;take(TOKEN_IMM8);break;
 			}
+			break;
 		case STATE_NUM3:
 			switch (tokch) {
 			case '0': tokimm16 = (tokimm16 << 4) | 0x0000;break;
@@ -811,6 +810,10 @@ static t_aasm_token gettoken(t_string str)
 		}
 		tokptr++;
 	} while (!flagend);
+	if (token == TOKEN_IMM16 && !(tokimm16 & 0xff00)) {
+		token = TOKEN_IMM8;
+		tokimm8 = (t_nubit8)tokimm16;
+	}
 	return token;
 }
 static void printtoken(t_aasm_token token)
@@ -818,19 +821,19 @@ static void printtoken(t_aasm_token token)
 	switch (token) {
 	case TOKEN_NULL:    vapiPrint(" NULL ");break;
 	case TOKEN_END:     vapiPrint(" END ");break;
-	case TOKEN_LSPAREN: vapiPrint(" _[ ");break;
-	case TOKEN_RSPAREN: vapiPrint(" _] ");break;
-	case TOKEN_COLON:   vapiPrint(" _: ");break;
-	case TOKEN_PLUS:    vapiPrint(" _+ ");break;
-	case TOKEN_MINUS:   vapiPrint(" _- ");break;
+	case TOKEN_LSPAREN: vapiPrint(" .[ ");break;
+	case TOKEN_RSPAREN: vapiPrint(" ]. ");break;
+	case TOKEN_COLON:   vapiPrint(" .: ");break;
+	case TOKEN_PLUS:    vapiPrint(" .+ ");break;
+	case TOKEN_MINUS:   vapiPrint(" .- ");break;
 	case TOKEN_BYTE:    vapiPrint(" BYTE ");break;
 	case TOKEN_WORD:    vapiPrint(" WORD ");break;
 	case TOKEN_PTR:     vapiPrint(" PTR ");break;
 	case TOKEN_NEAR:    vapiPrint(" NEAR ");break;
 	case TOKEN_FAR:     vapiPrint(" FAR ");break;
 	case TOKEN_SHORT:   vapiPrint(" SHORT ");break;
-	case TOKEN_IMM8:    vapiPrint(" %02X_IMM8 ", tokimm8);break;
-	case TOKEN_IMM16:   vapiPrint(" %04X_IMM16 ", tokimm16);break;
+	case TOKEN_IMM8:    vapiPrint(" I8(%02X) ", tokimm8);break;
+	case TOKEN_IMM16:   vapiPrint(" I16(%04X) ", tokimm16);break;
 	case TOKEN_AH: vapiPrint(" AH ");break;
 	case TOKEN_BH: vapiPrint(" BH ");break;
 	case TOKEN_CH: vapiPrint(" CH ");break;
@@ -859,41 +862,160 @@ static void matchtoken(t_aasm_token token)
 {
 	if (gettoken(NULL) != token) error = 1;
 }
+
+/*
+typedef struct {
+	t_aasm_oprtype  type;  // 0 = none, 1 = reg8, 2 = reg16, 3 = seg,
+                           // 4 = imm8, 5 = imm16, 6 = mem, 7 = mem8, 8 = mem16
+	t_aasm_oprmod   mod;   // active when type = 1,2,3,6,7,8
+	                       // 0 = mem; 1 = mem+disp8; 2 = mem+disp16; 3 = reg
+	t_aasm_oprmem   mem;   // active when mod = 0,1,2
+                           // 0 = [BX+SI], 1 = [BX+DI], 2 = [BP+SI], 3 = [BP+DI],
+                           // 4 = [SI], 5 = [DI], 6 = [BP], 7 = [BX]
+	t_aasm_oprreg8  reg8;  // active when type = 1, mod = 3
+                           // 0 = AL, 1 = CL, 2 = DL, 3 = BL,
+                           // 4 = AH, 5 = CH, 6 = DH, 7 = BH
+	t_aasm_oprreg16 reg16; // active when type = 2, mod = 3
+                           // 0 = AX, 1 = CX, 2 = DX, 3 = BX,
+                           // 4 = SP, 5 = BP, 6 = SI, 7 = DI      
+	t_aasm_oprseg   seg;   // active when type = 3
+                           //0 = ES, 1 = CS, 2 = SS, 3 = DS
+	t_nsbit8        imm8s;
+	t_nubit8        imm8u;
+	t_nubit16       imm16;
+	t_nsbit8        disp8;
+	t_nubit16       disp16;// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
+	t_aasm_oprptr   isfar; // 0 = near; 1 = far
+} t_aasm_oprinfo;
+*/
 static t_aasm_oprinfo parsearg_mem()
 {
 	t_aasm_token token;
 	t_aasm_oprinfo info;
 	t_bool bx,bp,si,di,imm;
 	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
-	bx = bp = si = di = imm = 0x00;
-/*
-	MEM_BX_SI,
-	MEM_BX_DI,
-	MEM_BP_SI,
-	MEM_BP_DI,
-	MEM_SI,
-	MEM_DI,
-	MEM_BP,
-	MEM_BX
-*/
+	bx = bp = si = di = 0x00;
 	info.type = TYPE_M;
+	info.mod = MOD_M;
 	token = gettoken(NULL);
-	while (token != TOKEN_END || token != TOKEN_NULL) {
+	while (token != TOKEN_RSPAREN && !error) {
 		switch (token) {
 		case TOKEN_PLUS:break;
-		case TOKEN_BX:
-			if (bx) error = 1;
-			else bx = 1;
+		case TOKEN_MINUS:
+			token = gettoken(NULL);
+			switch (token) {
+			case TOKEN_IMM8:
+				if (info.mod != MOD_M) error = 1;
+				if (tokimm8 > 0x80) {
+					tokimm16 = (~((t_nubit16)tokimm8)) + 1;
+					info.disp16 = tokimm16;
+					info.mod = MOD_M_DISP16;
+				} else {
+					tokimm8 = (~tokimm8) + 1;
+					info.disp8 = tokimm8;
+					info.mod = MOD_M_DISP8;
+				}
+				break;
+			case TOKEN_IMM16:
+				if (info.mod != MOD_M) error = 1;
+				if (tokimm16 > 0xff80) {
+					tokimm8 = (t_nubit8)((~tokimm16) + 1);
+					info.disp8 = tokimm8;
+					info.mod = MOD_M_DISP8;
+				} else {
+					tokimm16 = (~tokimm16) + 1;
+					info.disp16 = tokimm16;
+					info.mod = MOD_M_DISP16;
+				}
+				break;
+			default: error = 1;break;
+			}
 			break;
-
+		case TOKEN_BX: if (bx) error = 1; else bx = 1; break;
+		case TOKEN_SI: if (si) error = 1; else si = 1; break;
+		case TOKEN_BP: if (bp) error = 1; else bp = 1; break;
+		case TOKEN_DI: if (di) error = 1; else di = 1; break;
+		case TOKEN_IMM8:
+			if (info.mod != MOD_M) error = 1;
+			info.disp8 = tokimm8;
+			info.mod = MOD_M_DISP8;
+			break;
+		case TOKEN_IMM16:
+			if (info.mod != MOD_M) error = 1;
+			if (tokimm16 < 0x0100 || tokimm16 > 0xff7f) {
+				info.mod = MOD_M_DISP8;
+				info.disp8 = (t_nubit8)tokimm16;
+			} else {
+				info.mod = MOD_M_DISP16;
+				info.disp16 = tokimm16;
+			}
+			break;
+		default: error = 1;break;
+		}
+		token = gettoken(NULL);
+	}
+	if (token != TOKEN_END || token != TOKEN_NULL)
+		info.type = TYPE_NONE;
+	     if ( bx &&  si && !bp && !di) info.mem = MEM_BX_SI;
+	else if ( bx && !si && !bp &&  di) info.mem = MEM_BX_DI;
+	else if (!bx &&  si &&  bp && !di) info.mem = MEM_BP_SI;
+	else if (!bx && !si &&  bp &&  di) info.mem = MEM_BP_DI;
+	else if ( bx && !si && !bp && !di) info.mem = MEM_BX;
+	else if (!bx &&  si && !bp && !di) info.mem = MEM_SI;
+	else if (!bx && !si &&  bp && !di) info.mem = MEM_BP;
+	else if (!bx && !si && !bp &&  di) info.mem = MEM_DI;
+	else if (!bx && !si && !bp && !di && info.mod != MOD_M) {
+		info.mem = MEM_BP;
+		if (info.mod == MOD_M_DISP8) {
+			info.disp16 = (t_nubit16)info.disp8;
+			info.mod = MOD_M;
 		}
 	}
+	else error = 1;
+	return info;
+}
+static t_aasm_oprinfo parsearg_imm(t_aasm_token token)
+{
+	t_bool neg = 0x00;
+	t_aasm_oprinfo info;
+	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
+	info.type = TYPE_NONE;
+	info.mod = MOD_M;
+	if (token == TOKEN_PLUS) token = gettoken(NULL);
+	else if (token == TOKEN_MINUS) {
+		neg = 0x01;
+		token = gettoken(NULL);
+	}
+	if (token == TOKEN_IMM8) {
+		if (!neg) {
+			if (tokimm8 > 0x7f) {
+				info.type = TYPE_I16;
+				info.imm16 = (t_nubit16)tokimm8;
+			} else {
+				info.type = TYPE_I8;
+				info.imm8s = tokimm8;
+			}
+		} else {
+			if (tokimm8 > 0x80) {
+				info.type = TYPE_I16;
+				info.imm16 = (~((t_nubit16)tokimm8)) + 1;
+			} else {
+				info.type = TYPE_I8;
+				info.imm8s = (~tokimm8) + 1;
+			}
+		}
+	} else if (token == TOKEN_IMM16) {
+		info.type = TYPE_I16;
+		if (!neg) info.imm16 = tokimm16;
+		else info.imm16 = (~tokimm16) + 1;
+	} else error = 1;
 	return info;
 }
 static t_aasm_oprinfo parsearg(t_string arg)
 {
 	t_aasm_token token;
 	t_aasm_oprinfo info;
+	vapiPrint("parsearg: \"%s\"\n", arg);
 	memset(&info, 0x00 ,sizeof(t_aasm_oprinfo));
 	token = gettoken(arg);
 	switch (token) {
@@ -905,6 +1027,112 @@ static t_aasm_oprinfo parsearg(t_string arg)
 		matchtoken(TOKEN_PTR);
 		matchtoken(TOKEN_LSPAREN);
 		info = parsearg_mem();
+		info.type = TYPE_M8;
+		break;
+	case TOKEN_WORD:
+		matchtoken(TOKEN_PTR);
+		matchtoken(TOKEN_LSPAREN);
+		info = parsearg_mem();
+		info.type = TYPE_M16;
+		break;
+	case TOKEN_LSPAREN:
+		info = parsearg_mem();
+		info.type = TYPE_M;
+		break;
+	case TOKEN_AL:
+		info.type = TYPE_R8;
+		info.mod = MOD_R;
+		info.reg8 = R8_AL;
+		break;
+	case TOKEN_CL:
+		info.type = TYPE_R8;
+		info.mod = MOD_R;
+		info.reg8 = R8_CL;
+		break;
+	case TOKEN_DL:
+		info.type = TYPE_R8;
+		info.mod = MOD_R;
+		info.reg8 = R8_DL;
+		break;
+	case TOKEN_BL:
+		info.type = TYPE_R8;
+		info.mod = MOD_R;
+		info.reg8 = R8_BL;
+		break;
+	case TOKEN_AH:
+		info.type = TYPE_R8;
+		info.mod = MOD_R;
+		info.reg8 = R8_AH;
+		break;
+	case TOKEN_CH:
+		info.type = TYPE_R8;
+		info.mod = MOD_R;
+		info.reg8 = R8_CH;
+		break;
+	case TOKEN_DH:
+		info.type = TYPE_R8;
+		info.mod = MOD_R;
+		info.reg8 = R8_DH;
+		break;
+	case TOKEN_BH:
+		info.type = TYPE_R8;
+		info.mod = MOD_R;
+		info.reg8 = R8_BH;
+		break;
+	case TOKEN_AX:
+		info.type = TYPE_R16;
+		info.mod = MOD_R;
+		info.reg16 = R16_AX;
+		break;
+	case TOKEN_CX:
+		info.type = TYPE_R16;
+		info.mod = MOD_R;
+		info.reg16 = R16_CX;
+		break;
+	case TOKEN_DX:
+		info.type = TYPE_R16;
+		info.mod = MOD_R;
+		info.reg16 = R16_DX;
+		break;
+	case TOKEN_BX:
+		info.type = TYPE_R16;
+		info.mod = MOD_R;
+		info.reg16 = R16_BX;
+		break;
+	case TOKEN_SP:
+		info.type = TYPE_R16;
+		info.mod = MOD_R;
+		info.reg16 = R16_SP;
+		break;
+	case TOKEN_BP:
+		info.type = TYPE_R16;
+		info.mod = MOD_R;
+		info.reg16 = R16_BP;
+		break;
+	case TOKEN_SI:
+		info.type = TYPE_R16;
+		info.mod = MOD_R;
+		info.reg16 = R16_SI;
+		break;
+	case TOKEN_DI:
+		info.type = TYPE_R16;
+		info.mod = MOD_R;
+		info.reg16 = R16_DI;
+		break;
+	case TOKEN_PLUS:
+	case TOKEN_MINUS:
+	case TOKEN_IMM8:
+	case TOKEN_IMM16:
+		info = parsearg_imm(token);
+		if (info.type == TYPE_I8)
+			info.imm16 = (t_nsbit8)info.imm8s;
+		vapiPrint("16=%d, imm8s=%x, imm16=%x\n",
+			info.type == TYPE_I16,
+			info.imm8s,info.imm16);
+		break;
+	default:
+		info.type = TYPE_NONE;
+		error = 1;
 		break;
 	}
 	return info;
@@ -953,6 +1181,7 @@ static void parse()
 	}
 	aopri1 = parsearg(aopr1);
 	aopri2 = parsearg(aopr2);
+	if (error) vapiPrint("error\n");
 }
 static void exec()
 {

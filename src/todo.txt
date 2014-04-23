@@ -1,3 +1,3 @@
-1. Build vmachine/debug/asm.c, asm.h as internal compiler
+1. Build vmachine/debug/aasm.c, aasm.h as internal compiler
 2. Build vmachine/debug/debug.c, debug.h as hardware debugger
 3. Build BIOS INT service routines
