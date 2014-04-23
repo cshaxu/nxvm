@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.013f]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0140]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -125,7 +125,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 04/21-05/23  updated debugger
  * 05/24-07/31  built 80386 cpu
  * 08/06-08/09  built dasm32
- * 08/10-.....  built aasm32
+ * 08/10-08/13  built aasm32
  *
  * Milestones
  * 0x45 Console, 8086 CPU, 8086 Debugger
@@ -139,15 +139,16 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0xf2 Clean CPUINS; Hard Disk Installed
  * 0xf5 i386 Build Begin
  * 010d Bitmap Font Implemented
- * 0118 i386 Build Milestone 1 (32-bit ins)
- * 0128 i386 Build Milestone 2 (MMU)
+ * 0118 i386 Milestone 1 (32-bit ins)
+ * 0128 i386 Milestone 2 (MMU)
  * 012e Bochs Tester Constructed
  * 013a Built Dasm 32
+ * 0140 Built Trace System
  *
  * Format Unify:
+ * construct aasm32
  * check all includes
  * reconstruct debug.ch (external interface)
- * construct aasm32
  * reconstruct t_cpu_sreg
  * check all macro names
  * replace all constants with MACRO

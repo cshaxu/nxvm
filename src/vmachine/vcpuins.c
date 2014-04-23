@@ -19,7 +19,6 @@
 /* DEBUGGING OPTIONS ******************************************************* */
 #define i386(n) if (1)
 #define VCPUINS_TRACE 0
-#define VCPUINS_TRACE_DEBUG 0
 /* ************************************************************************* */
 
 #define _______todo static void /* need to implement */
@@ -28,118 +27,26 @@ static t_bool flagignore;
 
 #if VCPUINS_TRACE == 1
 
-typedef struct {
-	char* blockstack[0x100];
-	t_nubit8 bid;
-	t_nubit8 cid;
-} t_cpuins_trace_block;
-typedef struct {
-	t_cpuins_trace_block callstack[0x100];
-	t_nubit8 cid;
-} t_cpuins_trace_call;
+static t_api_trace_call trace;
 
-static t_cpuins_trace_call trace;
-
-static void _Trace_Print_Call()
-{
-	t_nsbitcc i;
-	for (i = 0;i < trace.callstack[trace.cid - 1].bid;++i) {
-		vapiPrint("%s",trace.callstack[trace.cid - 1].blockstack[i]);
-		if (i != trace.callstack[trace.cid - 1].bid - 1) vapiPrint("::");
-	}
-	vapiPrint("\n");
-}
-static void _Trace_Init()
-{
-	trace.cid = 0x00;
-}
-static void _Trace_Release(t_bool flagprint)
-{
-	t_nsbitcc i, j;
-	for (i = trace.cid - 1;i >= 0;--i) {
-		trace.callstack[i];
-		if (flagprint) {
-			for (j = 0;j < trace.callstack[i].bid;++j) {
-				vapiPrint("%s",trace.callstack[i].blockstack[j]);
-				if (j != trace.callstack[i].bid - 1) vapiPrint("::");
-			}
-			vapiPrint("\n");
-		}
-	}
-	trace.cid = 0;
-}
-static void _Trace_Call_Begin(t_strptr s)
-{
-	if (vcpuins.except) _Trace_Release(1);
-	if (trace.cid == 0xff) return;
-#if VCPUINS_TRACE_DEBUG == 1
-	vapiPrint("enter call(%d): %s\n", trace.cid, s);
-#endif
-	trace.callstack[trace.cid].blockstack[0] = s;
-	trace.callstack[trace.cid].bid = 1;
-	trace.callstack[trace.cid].cid = trace.cid;
-	trace.cid++;
-}
-static void _Trace_Call_End()
-{
-	if (vcpuins.except) _Trace_Release(1);
-	if (!trace.cid) return;
-	trace.cid--;
-#if VCPUINS_TRACE_DEBUG == 1
-	vapiPrint("leave call(%d): %s\n", trace.cid, trace.callstack[trace.cid].blockstack[0]);
-#endif
-	if (trace.callstack[trace.cid].bid != 1 || trace.callstack[trace.cid].cid != trace.cid) {
-		vapiPrint("\nunbalanced call stack (call = %d, block = %d):\n",
-			trace.cid, trace.callstack[trace.cid].bid);
-		trace.cid++;
-		vcpuins.except |= 0xffffffff;
-	}
-}
-static void _Trace_Block_Begin(t_strptr s)
-{
-	if (vcpuins.except) _Trace_Release(1);
-	if (trace.callstack[trace.cid - 1].bid < 0xff) {
-#if VCPUINS_TRACE_DEBUG == 1
-		vapiPrint("enter block(%d): %s\n", trace.callstack[trace.cid - 1].bid, s);
-#endif
-		trace.callstack[trace.cid - 1].blockstack[trace.callstack[trace.cid - 1].bid++] = s;
-	} else {
-		vapiPrint("_Trace_Block_Begin(\"%s\")::failed", s);
-	}
-}
-static void _Trace_Block_End()
-{
-	if (vcpuins.except) _Trace_Release(1);
-	if (trace.callstack[trace.cid - 1].bid) {
-		trace.callstack[trace.cid - 1].bid--;
-#if VCPUINS_TRACE_DEBUG == 1
-		vapiPrint("leave block(%d): %s\n",
-			trace.callstack[trace.cid - 1].bid,
-			trace.callstack[trace.cid - 1].blockstack[trace.callstack[trace.cid - 1].bid]);
-#endif
-	} else {
-		vapiPrint("_Trace_Block_End()::failed");
-	}
-}
-
-#define _cb(s) _Trace_Call_Begin(s)
-#define _ce    _Trace_Call_End()
-#define _bb(s) _Trace_Block_Begin(s)
-#define _be    _Trace_Block_End()
-#define _chb(n) if (1) {(n);if (vcpuins.except) {_Trace_Release(1);break;}} else
-#define _chk(n) do {(n);if (vcpuins.except) {_Trace_Release(1);return;}} while (0)
-#define _chr(n) do {(n);if (vcpuins.except) {_Trace_Release(1);return 0;}} while (0)
+#define _cb(s) vapiTraceCallBegin(&trace, s)
+#define _ce    vapiTraceCallEnd(&trace)
+#define _bb(s) vapiTraceBlockBegin(&trace, s)
+#define _be    vapiTraceBlockEnd(&trace)
+#define _chb(n) if (1) {(n);if (vcpuins.except) {trace.flagerror = 1;vapiTraceFinal(&trace);break;   }} else
+#define _chk(n) do     {(n);if (vcpuins.except) {trace.flagerror = 1;vapiTraceFinal(&trace);return;  }} while (0)
+#define _chr(n) do     {(n);if (vcpuins.except) {trace.flagerror = 1;vapiTraceFinal(&trace);return 0;}} while (0)
 #else
 #define _cb(s)
 #define _ce
 #define _be
 #define _bb(s)
-#define _chb(n) if (1) {(n);if (vcpuins.except) break;} else
-#define _chk(n) do {(n);if (vcpuins.except) return;} while (0)
-#define _chr(n) do {(n);if (vcpuins.except) return 0;} while (0)
+#define _chb(n) if (1) {(n);if (vcpuins.except) break;   } else
+#define _chk(n) do     {(n);if (vcpuins.except) return;  } while (0)
+#define _chr(n) do     {(n);if (vcpuins.except) return 0;} while (0)
 #endif
 
-#define _newins_ //if (1) {vapiPrint("NEWINS: ");_Trace_Print_Call();} else
+#define _newins_ //if (1) {vapiPrint("NEWINS: ");vapiTracePrintCall();} else
 #define _comment vapiPrint
 
 t_cpurec vcpurec;
@@ -6133,8 +6040,8 @@ static void ARPL_RM16_R16()
 			vcpuins.cr = GetMax16(vcpuins.cr);
 			if (_GetSelector_RPL(vcpuins.crm) < _GetSelector_RPL(vcpuins.cr)) {
 				_SetEFLAGS_ZF;
-				/* ... */
-				vcpuins.result = GetMax16((vcpuins.crm & ~VCPU_SELECTOR_RPL) | (vcpuins.cr & VCPU_SELECTOR_RPL));
+				vcpuins.result = GetMax16((vcpuins.crm & ~VCPU_SELECTOR_RPL) |
+					(vcpuins.cr & VCPU_SELECTOR_RPL));
 				vcpuins.crm = vcpuins.result;_chk(_m_write_rm(2));
 			} else
 				_ClrEFLAGS_ZF;
@@ -11370,6 +11277,9 @@ static void ExecInit()
 	vcpuins.mrm.offset = 0x00000000;
 	vcpuins.except = 0x00000000;
 	vcpuins.excode = 0x00000000;
+#if DASM_TRACE == 1
+	vapiTraceInit(&trace);
+#endif
 }
 static void ExecFinal()
 {
@@ -11377,6 +11287,10 @@ static void ExecFinal()
 		vcpu.cs = vcpuins.oldcpu.cs;
 		vcpu.eip = vcpuins.oldcpu.eip;
 	}
+#if DASM_TRACE == 1
+	if (trace.cid && !vcpuins.except) _SetExcept_CE(trace.cid); 
+	vapiTraceFinal(&trace);
+#endif
 	if (vcpuins.except) {
 		vcpu = vcpuins.oldcpu;
 		if (GetBit(vcpuins.except, VCPUINS_EXCEPT_GP)) {
@@ -11387,14 +11301,6 @@ static void ExecFinal()
 		//if (!flagignore)
 			vapiCallBackMachineStop();
 	}
-#if VCPUINS_TRACE == 1
-	if (trace.cid) {
-		_comment("unbalanced call stack at final\n");
-		_Trace_Release(1);
-		vcpu = vcpuins.oldcpu;
-		vapiCallBackMachineStop();
-	}
-#endif
 }
 static void ExecIns()
 {
@@ -11506,7 +11412,7 @@ t_bool vcpuinsReadLinear(t_nubit32 linear, t_vaddrcc rcode, t_nubit8 byte)
 void vcpuinsInit()
 {
 #if VCPUINS_TRACE == 1
-	_Trace_Init();
+	vapiTraceInit(&trace);
 #endif
 	memset(&vcpuins, 0x00, sizeof(t_cpuins));
 	memset(&vcpurec, 0x00, sizeof(t_cpurec));
@@ -12040,9 +11946,4 @@ void vcpuinsRefresh()
 #endif
 	ExecInt();
 }
-void vcpuinsFinal()
-{
-#if VCPUINS_TRACE == 1
-	_Trace_Release(0);
-#endif
-}
+void vcpuinsFinal(){}

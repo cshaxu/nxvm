@@ -12,10 +12,39 @@
 #include "../vapi.h"
 #endif
 
+/* DEBUGGING OPTIONS ******************************************************* */
+#define DASM_TRACE 0
+/* ************************************************************************* */
+
+#if DASM_TRACE == 1
+
+static t_api_trace_call trace;
+
+#define _cb(s) vapiTraceCallBegin(&trace, s)
+#define _ce    vapiTraceCallEnd(&trace)
+#define _bb(s) vapiTraceBlockBegin(&trace, s)
+#define _be    vapiTraceBlockEnd(&trace)
+#define _chb(n) if (1) {(n);if (flagerror) {trace.flagerror = 1;vapiTraceFinal(&trace);break;   }} while (0)
+#define _chk(n) do     {(n);if (flagerror) {trace.flagerror = 1;vapiTraceFinal(&trace);return;  }} while (0)
+#define _chr(n) do     {(n);if (flagerror) {trace.flagerror = 1;vapiTraceFinal(&trace);return 0;}} while (0)
+#else
+#define _cb(s)
+#define _ce
+#define _be
+#define _bb(s)
+#define _chb(n) if (1) {(n);if (flagerror) break;   } while (0)
+#define _chk(n) do     {(n);if (flagerror) return;  } while (0)
+#define _chr(n) do     {(n);if (flagerror) return 0;} while (0)
+#endif
+
+#define _impossible_   _chk(flagerror = 1)
+#define _impossible_r_ _chr(flagerror = 1)
+
 typedef char t_dasm_str[0x0100];
 
 typedef t_bool t_dasm_prefix;
 
+static t_bool        flagerror;
 static t_vaddrcc     drcode;
 static t_dasm_str    dstmt;
 static t_dasm_str    dop, dopr, drm, dr, dimm, dmovsreg, doverds, doverss, dimmoff8, dimmoff16, dimmsign;
@@ -35,15 +64,6 @@ static t_faddrcc dtable[0x100], dtable_0f[0x100];
 /* address size of the source operand */
 #define _GetAddressSize ((vcpu.cs.seg.exec.defsize ^ prefix_addrsize) ? 4 : 2)
 
-#define _bb
-#define _be
-#define _cb
-#define _ce
-#define _chr(n) (n)
-#define _chk(n) (n)
-#define _chb(n) (n)
-#define _impossible_
-#define _impossible_r_
 #define _comment_
 #define _newins_
 
@@ -53,6 +73,7 @@ static void SPRINTFSI(char *str, t_nubit32 imm, t_nubit8 byte)
 	t_nubit8 i8u;
 	t_nubit16 i16u;
 	t_nubit32 i32u;
+	_cb("SPRINTFSI");
 	i8u = GetMax8(imm);
 	i16u = GetMax16(imm);
 	i32u = GetMax32(imm);
@@ -84,13 +105,14 @@ static void SPRINTFSI(char *str, t_nubit32 imm, t_nubit8 byte)
 		}
 		SPRINTF(str, "%c%08X", sign, i32u);
 		break;
-	default:_impossible_;break;
-	}
+	default:_impossible_;break;}
+	_ce;
 }
 
 /* kernel decoding function */
 static t_bool _kdf_check_prefix(t_nubit8 opcode)
 {
+	_cb("_kdf_check_prefix");
 	switch (opcode) {
 	case 0xf0:
 	case 0xf2:
@@ -99,19 +121,23 @@ static t_bool _kdf_check_prefix(t_nubit8 opcode)
 	case 0x36:
 	case 0x3e:
 	case 0x26:
+		_ce;
 		return 1;
 		break;
 	case 0x64:
 	case 0x65:
 	case 0x66:
 	case 0x67:
+		_ce;
 		return 1;
 		break;
 	default:
+		_ce;
 		return 0;
 		break;
 	}
-	return 0x00;
+	_ce;
+	return 0;
 }
 
 static void _kdf_skip(t_nubit8 byte)
@@ -444,7 +470,7 @@ static void _d_moffs(t_nubit8 byte)
 static void _d_modrm_sreg(t_nubit8 rmbyte)
 {
 	_cb("_d_modrm_sreg");
-	_chk(_kdf_modrm(9, rmbyte));
+	_chk(_kdf_modrm(0, rmbyte));
 	switch (cr) {
 	case 0: SPRINTF(dr, "ES");break;
 	case 1: SPRINTF(dr, "CS");break;
@@ -1119,12 +1145,8 @@ static void INC_EAX()
 	_adv;
 	SPRINTF(dop, "INC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "AX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EAX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "AX");break;
+	case 4: SPRINTF(dopr, "EAX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1134,12 +1156,8 @@ static void INC_ECX()
 	_adv;
 	SPRINTF(dop, "INC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "CX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "ECX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "CX");break;
+	case 4: SPRINTF(dopr, "ECX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1149,12 +1167,8 @@ static void INC_EDX()
 	_adv;
 	SPRINTF(dop, "INC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "DX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EDX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "DX");break;
+	case 4: SPRINTF(dopr, "EDX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1164,12 +1178,8 @@ static void INC_EBX()
 	_adv;
 	SPRINTF(dop, "INC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "BX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EBX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "BX");break;
+	case 4: SPRINTF(dopr, "EBX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1179,12 +1189,8 @@ static void INC_ESP()
 	_adv;
 	SPRINTF(dop, "INC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "SP");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "ESP");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "SP");break;
+	case 4: SPRINTF(dopr, "ESP");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1194,12 +1200,8 @@ static void INC_EBP()
 	_adv;
 	SPRINTF(dop, "INC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "BP");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EBP");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "BP");break;
+	case 4: SPRINTF(dopr, "EBP");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1209,12 +1211,8 @@ static void INC_ESI()
 	_adv;
 	SPRINTF(dop, "INC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "SI");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "ESI");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "SI");break;
+	case 4: SPRINTF(dopr, "ESI");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1224,12 +1222,8 @@ static void INC_EDI()
 	_adv;
 	SPRINTF(dop, "INC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "DI");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EDI");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "DI");break;
+	case 4: SPRINTF(dopr, "EDI");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1239,12 +1233,8 @@ static void DEC_EAX()
 	_adv;
 	SPRINTF(dop, "DEC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "AX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EAX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "AX");break;
+	case 4: SPRINTF(dopr, "EAX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1254,12 +1244,8 @@ static void DEC_ECX()
 	_adv;
 	SPRINTF(dop, "DEC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "CX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "ECX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "CX");break;
+	case 4: SPRINTF(dopr, "ECX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1269,12 +1255,8 @@ static void DEC_EDX()
 	_adv;
 	SPRINTF(dop, "DEC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "DX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EDX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "DX");break;
+	case 4: SPRINTF(dopr, "EDX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1284,12 +1266,8 @@ static void DEC_EBX()
 	_adv;
 	SPRINTF(dop, "DEC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "BX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EBX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "BX");break;
+	case 4: SPRINTF(dopr, "EBX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1299,12 +1277,8 @@ static void DEC_ESP()
 	_adv;
 	SPRINTF(dop, "DEC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "SP");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "ESP");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "SP");break;
+	case 4: SPRINTF(dopr, "ESP");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1314,12 +1288,8 @@ static void DEC_EBP()
 	_adv;
 	SPRINTF(dop, "DEC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "BP");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EBP");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "BP");break;
+	case 4: SPRINTF(dopr, "EBP");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1329,12 +1299,8 @@ static void DEC_ESI()
 	_adv;
 	SPRINTF(dop, "DEC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "SI");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "ESI");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "SI");break;
+	case 4: SPRINTF(dopr, "ESI");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1344,12 +1310,8 @@ static void DEC_EDI()
 	_adv;
 	SPRINTF(dop, "DEC");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "DI");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EDI");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "DI");break;
+	case 4: SPRINTF(dopr, "EDI");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1359,12 +1321,8 @@ static void PUSH_EAX()
 	_adv;
 	SPRINTF(dop, "PUSH");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "AX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EAX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "AX");break;
+	case 4: SPRINTF(dopr, "EAX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1374,12 +1332,8 @@ static void PUSH_ECX()
 	_adv;
 	SPRINTF(dop, "PUSH");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "CX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "ECX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "CX");break;
+	case 4: SPRINTF(dopr, "ECX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1389,12 +1343,8 @@ static void PUSH_EDX()
 	_adv;
 	SPRINTF(dop, "PUSH");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "DX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EDX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "DX");break;
+	case 4: SPRINTF(dopr, "EDX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1404,12 +1354,8 @@ static void PUSH_EBX()
 	_adv;
 	SPRINTF(dop, "PUSH");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "BX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EBX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "BX");break;
+	case 4: SPRINTF(dopr, "EBX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1419,12 +1365,8 @@ static void PUSH_ESP()
 	_adv;
 	SPRINTF(dop, "PUSH");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "SP");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "ESP");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "SP");break;
+	case 4: SPRINTF(dopr, "ESP");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1434,12 +1376,8 @@ static void PUSH_EBP()
 	_adv;
 	SPRINTF(dop, "PUSH");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "BP");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EBP");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "BP");break;
+	case 4: SPRINTF(dopr, "EBP");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1449,12 +1387,8 @@ static void PUSH_ESI()
 	_adv;
 	SPRINTF(dop, "PUSH");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "SI");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "ESI");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "SI");break;
+	case 4: SPRINTF(dopr, "ESI");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1464,28 +1398,19 @@ static void PUSH_EDI()
 	_adv;
 	SPRINTF(dop, "PUSH");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "DI");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EDI");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "DI");break;
+	case 4: SPRINTF(dopr, "EDI");break;
 	default:_impossible_;break;}
 	_ce;
 }
-
 static void POP_EAX()
 {
 	_cb("POP_EAX");
 	_adv;
 	SPRINTF(dop, "POP");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "AX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EAX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "AX");break;
+	case 4: SPRINTF(dopr, "EAX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1495,12 +1420,8 @@ static void POP_ECX()
 	_adv;
 	SPRINTF(dop, "POP");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "CX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "ECX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "CX");break;
+	case 4: SPRINTF(dopr, "ECX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1510,12 +1431,8 @@ static void POP_EDX()
 	_adv;
 	SPRINTF(dop, "POP");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "DX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EDX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "DX");break;
+	case 4: SPRINTF(dopr, "EDX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1525,12 +1442,8 @@ static void POP_EBX()
 	_adv;
 	SPRINTF(dop, "POP");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "BX");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EBX");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "BX");break;
+	case 4: SPRINTF(dopr, "EBX");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1540,12 +1453,8 @@ static void POP_ESP()
 	_adv;
 	SPRINTF(dop, "POP");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "SP");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "ESP");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "SP");break;
+	case 4: SPRINTF(dopr, "ESP");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1555,12 +1464,8 @@ static void POP_EBP()
 	_adv;
 	SPRINTF(dop, "POP");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "BP");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EBP");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "BP");break;
+	case 4: SPRINTF(dopr, "EBP");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1570,12 +1475,8 @@ static void POP_ESI()
 	_adv;
 	SPRINTF(dop, "POP");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "SI");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "ESI");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "SI");break;
+	case 4: SPRINTF(dopr, "ESI");break;
 	default:_impossible_;break;}
 	_ce;
 }
@@ -1585,28 +1486,31 @@ static void POP_EDI()
 	_adv;
 	SPRINTF(dop, "POP");
 	switch (_GetOperandSize) {
-	case 2: _bb("OperandSize(2)");
-		SPRINTF(dopr, "DI");break;
-		_be;break;
-	case 4: _bb("OperandSize(4)");
-		SPRINTF(dopr, "EDI");break;
-		_be;break;
+	case 2: SPRINTF(dopr, "DI");break;
+	case 4: SPRINTF(dopr, "EDI");break;
 	default:_impossible_;break;}
 	_ce;
 }
+
 
 static void PUSHA()
 {
 	_cb("PUSHA");
 	_adv;
-	SPRINTF(dop, "PUSHA");
+	switch (_GetOperandSize) {
+	case 2: SPRINTF(dop, "PUSHA");break;
+	case 4: SPRINTF(dop, "PUSHAD");break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void POPA()
 {
 	_cb("POPA");
 	_adv;
-	SPRINTF(dop, "POPA");
+	switch (_GetOperandSize) {
+	case 2: SPRINTF(dop, "POPA");break;
+	case 4: SPRINTF(dop, "POPAD");break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void BOUND_R16_M16_16()
@@ -2102,7 +2006,7 @@ static void MOV_R32_RM32()
 	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
-	SPRINTF(dopr, "%s,%s", dr, drm)
+	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
 static void MOV_RM16_SREG()
@@ -2111,7 +2015,7 @@ static void MOV_RM16_SREG()
 	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_modrm_sreg(2));
-	SPRINTF(dopr, "%s,%s", drm, dr)
+	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
 static void LEA_R16_M16()
@@ -2129,7 +2033,7 @@ static void MOV_SREG_RM16()
 	_adv;
 	SPRINTF(dop, "MOV");
 	_chk(_d_modrm_sreg(2));
-	SPRINTF(dopr, "%s,%s", dr, drm)
+	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
 static void INS_8F()
@@ -3743,7 +3647,10 @@ static void INS_0F_01()
 			SPRINTF(drm, "<ERROR>");
 			_be;
 		}
-		SPRINTF(dopr, "%s", drm);
+		switch (_GetOperandSize) {
+		case 2: SPRINTF(dopr, "WORD PTR %s", drm);break;
+		case 4: SPRINTF(dopr, "DWORD PTR %s", drm);break;
+		default:_impossible_;break;}
 		_be;break;
 	case 1: /* SIDT_M32_16 */
 		_bb("SIDT_M32_16");
@@ -3754,7 +3661,10 @@ static void INS_0F_01()
 			SPRINTF(drm, "<ERROR>");
 			_be;
 		}
-		SPRINTF(dopr, "%s", drm);
+		switch (_GetOperandSize) {
+		case 2: SPRINTF(dopr, "WORD PTR %s", drm);break;
+		case 4: SPRINTF(dopr, "DWORD PTR %s", drm);break;
+		default:_impossible_;break;}
 		_be;break;
 	case 2: /* LGDT_M32_16 */
 		_bb("LGDT_M32_16");
@@ -3779,7 +3689,10 @@ static void INS_0F_01()
 			SPRINTF(drm, "<ERROR>");
 			_be;
 		}
-		SPRINTF(dopr, "%s", drm);
+		switch (_GetOperandSize) {
+		case 2: SPRINTF(dopr, "WORD PTR %s", drm);break;
+		case 4: SPRINTF(dopr, "DWORD PTR %s", drm);break;
+		default:_impossible_;break;}
 		_be;break;
 	case 4: /* SMSW_RM16 */
 		_bb("SMSW_RM16");
@@ -4477,6 +4390,7 @@ static void QDX()
 	SPRINTF(dop, "QDX");
 	_chk(_d_imm(1));
 	SPRINTF(dopr, "%02X", GetMax8(cimm));
+	_ce;
 }
 
 static t_bool flaginit = 0;
@@ -4485,6 +4399,9 @@ t_nubit8 dasm32(t_strptr stmt, t_vaddrcc rcode)
 {
 	t_nubitcc i;
 	t_nubit8 opcode, oldiop;
+#if DASM_TRACE == 1
+	vapiTraceInit(&trace);
+#endif
 	if (!flaginit) {
 		dtable[0x00] = (t_faddrcc)ADD_RM8_R8;
 		dtable[0x01] = (t_faddrcc)ADD_RM32_R32;
@@ -5014,10 +4931,10 @@ t_nubit8 dasm32(t_strptr stmt, t_vaddrcc rcode)
 	SPRINTF(doverss, "SS");
 
 	do {
+		_cb("dasm32");
 		dop[0] = 0;
 		dopr[0] = 0;
 		dstmt[0] = 0;
-		_cb("ExecIns");
 		oldiop = iop;
 		_chb(opcode = GetMax8(_d_code(1)));
 		iop = oldiop;
@@ -5031,6 +4948,9 @@ t_nubit8 dasm32(t_strptr stmt, t_vaddrcc rcode)
 		}
 		_ce;
 	} while (_kdf_check_prefix(opcode));
-
+#if DASM_TRACE == 1
+	if (trace.flagerror) vapiCallBackMachineStop();
+	vapiTraceFinal(&trace);
+#endif
 	return iop;
 }

@@ -7,6 +7,109 @@
 #include "vmachine.h"
 #include "vapi.h"
 
+void vapiTracePrintCall(t_api_trace_call *rtrace, t_nubit8 cid)
+{
+	t_nubit8 i;
+	for (i = 0;i < rtrace->callstack[cid].bid;++i) {
+		vapiPrint("%s", rtrace->callstack[cid].blockstack[i]);
+		if (i != rtrace->callstack[cid].bid - 1) vapiPrint("::");
+	}
+	vapiPrint("\n");
+}
+void vapiTracePrintCallStack(t_api_trace_call *rtrace)
+{
+	t_nubit8 i;
+	if (rtrace->cid) {
+		for (i = rtrace->cid - 1;i > 0;--i) {
+			vapiTracePrintCall(rtrace, i);
+		}
+		vapiTracePrintCall(rtrace, 0);
+	}
+}
+void vapiTraceInit(t_api_trace_call *rtrace)
+{
+	rtrace->cid = 0x00;
+	rtrace->flagerror = 0;
+}
+void vapiTraceFinal(t_api_trace_call *rtrace)
+{
+	if (!rtrace->flagerror && rtrace->cid) {
+		vapiPrint("trace_final: call stack is not balanced. (stack: %d, call: %d, block: %d)\n",
+			rtrace->cid, rtrace->callstack[rtrace->cid].cid, rtrace->callstack[rtrace->cid].bid);
+		rtrace->flagerror = 1;
+	}
+	if (rtrace->flagerror)
+		vapiTracePrintCallStack(rtrace);
+	rtrace->cid = 0x00;
+	rtrace->flagerror = 0;
+}
+void vapiTraceCallBegin(t_api_trace_call *rtrace, t_strptr s)
+{
+	if (rtrace->flagerror) return;
+	if (rtrace->cid < 0xff) {
+	#if VAPI_TRACE_DEBUG == 1
+		vapiPrint("enter call(%d): %s\n", rtrace->cid, s);
+	#endif
+		rtrace->callstack[rtrace->cid].blockstack[0] = s;
+		rtrace->callstack[rtrace->cid].bid = 1;
+		rtrace->callstack[rtrace->cid].cid = rtrace->cid;
+		rtrace->cid++;
+	} else {
+		vapiPrint("trace_call_begin: call stack is full.\n");
+		rtrace->flagerror = 1;
+	}
+}
+void vapiTraceCallEnd(t_api_trace_call *rtrace)
+{
+	if (rtrace->flagerror) return;
+	if (rtrace->cid) {
+		rtrace->cid--;
+	#if VAPI_TRACE_DEBUG == 1
+		vapiPrint("leave call(%d): %s\n", rtrace->cid,
+			rtrace->callstack[rtrace->cid].blockstack[0]);
+	#endif
+		if (rtrace->callstack[rtrace->cid].bid != 1 ||
+			rtrace->callstack[rtrace->cid].cid != rtrace->cid) {
+			vapiPrint("trace_call_end: call stack is not balanced. (stack: %d, call: %d, block: %d)\n",
+				rtrace->cid, rtrace->callstack[rtrace->cid].cid, rtrace->callstack[rtrace->cid].bid);
+			rtrace->cid++;
+			rtrace->flagerror = 1;
+		}
+	} else {
+		vapiPrint("trace_call_end: call stack is empty.\n");
+		rtrace->flagerror = 1;
+	}
+}
+void vapiTraceBlockBegin(t_api_trace_call *rtrace, t_strptr s)
+{
+	if (rtrace->flagerror) return;
+	if (rtrace->callstack[rtrace->cid - 1].bid < 0xff) {
+#if VAPI_TRACE_DEBUG == 1
+		vapiPrint("enter block(%d): %s\n", rtrace->callstack[rtrace->cid - 1].bid, s);
+#endif
+		rtrace->callstack[rtrace->cid - 1].blockstack[rtrace->callstack[rtrace->cid - 1].bid++] = s;
+	} else {
+		vapiPrint("trace_block_begin: block stack is full.\n");
+		rtrace->flagerror = 1;
+	}
+}
+void vapiTraceBlockEnd(t_api_trace_call *rtrace)
+{
+	if (rtrace->flagerror) return;
+	if (rtrace->callstack[rtrace->cid - 1].bid) {
+		rtrace->callstack[rtrace->cid - 1].bid--;
+#if VAPI_TRACE_DEBUG == 1
+		vapiPrint("leave block(%d): %s\n",
+			rtrace->callstack[rtrace->cid - 1].bid,
+			rtrace->callstack[rtrace->cid - 1].blockstack[rtrace->callstack[rtrace->cid - 1].bid]);
+#endif
+	} else {
+		vapiPrint("trace_block_end: block stack is empty.\n");
+		rtrace->flagerror = 1;
+	}
+}
+
+
 /* Standard C Library */
 struct tm* LOCALTIME(const time_t *_Time)
 {

@@ -10,6 +10,39 @@
 #include "debug.h"
 #include "aasm.h"
 
+/* DEBUGGING OPTIONS ******************************************************* */
+#define AASM_TRACE 1
+/* ************************************************************************* */
+
+#if AASM_TRACE == 1
+
+static t_api_trace_call trace;
+
+#define _cb(s) vapiTraceCallBegin(&trace, s)
+#define _ce    vapiTraceCallEnd(&trace)
+#define _bb(s) vapiTraceBlockBegin(&trace, s)
+#define _be    vapiTraceBlockEnd(&trace)
+#define _chb(n) if (1) {(n);if (flagerror) {trace.flagerror = 1;vapiTraceFinal(&trace);break;   }} while (0)
+#define _chk(n) do     {(n);if (flagerror) {trace.flagerror = 1;vapiTraceFinal(&trace);return;  }} while (0)
+#define _chr(n) do     {(n);if (flagerror) {trace.flagerror = 1;vapiTraceFinal(&trace);return 0;}} while (0)
+#define _chrt(n) do    {(n);if (flagerror) {trace.flagerror = 1;vapiTraceFinal(&trace);return token;}} while (0)
+#define _chrf(n) do    {(n);if (flagerror) {trace.flagerror = 1;vapiTraceFinal(&trace);return info;}} while (0)
+#else
+#define _cb(s)
+#define _ce
+#define _be
+#define _bb(s)
+#define _chb(n) if (1) {(n);if (flagerror) break;   } while (0)
+#define _chk(n) do     {(n);if (flagerror) return;  } while (0)
+#define _chr(n) do     {(n);if (flagerror) return 0;} while (0)
+#endif
+
+/* set error */
+#define _se_  _chk(flagerror = 1)
+#define _ser_ _chr(flagerror = 1)
+#define _sert_ _chrt(flagerror = 1)
+#define _serf_ _chrf(flagerror = 1)
+
 /* operand size */
 #define _SetOperandSize(n) (flagopr = ((vcpu.cs.seg.exec.defsize ? 4 : 2) != (n)))
 /* address size of the source operand */
@@ -33,8 +66,7 @@ typedef enum {
 	TYPE_CREG,//
 	TYPE_DREG,//
 	TYPE_TREG,//
-	TYPE_I16_32,//
-	TYPE_I32_16//
+	TYPE_I16_32//
 } t_aasm_oprtype;
 typedef enum {
 	MOD_M,
@@ -163,11 +195,13 @@ typedef struct {
 	t_nubit16       disp16;// use as imm when type = 6; use by modrm as disp when mod = 0,1,2;
 	t_nubit32       disp32;// use as imm when type = 7; use by modrm as disp when mod = 0,1,2;
 	t_aasm_oprptr   ptr; // 0 = near; 1 = far
-	t_nubit16       pcs,pip;
+	t_nubit16       rcs;
+	t_nubit32       reip;
 	char            label[0x100];
 	t_bool flages, flagcs, flagss, flagds, flagfs, flaggs;
 } t_aasm_oprinfo;
 /* global variables */
+static t_bool flagoprg, flagaddrg;
 static t_bool flagopr, flagaddr;
 static t_bool flaglock, flagrepz, flagrepnz;
 static t_nubit8 acode[15];
@@ -176,7 +210,7 @@ static t_strptr rop, ropr1, ropr2, ropr3;
 static t_nubit16 avcs, avip;
 static t_strptr aop, aopr1, aopr2;
 static t_bool flagerror;
-static t_aasm_oprinfo aopri1, aopri2, aopri3;
+static t_aasm_oprinfo aoprig, aopri1, aopri2, aopri3;
 static t_aasm_oprinfo *rinfo = NULL;
 /* arg flag level 0 */
 #define isNONE(oprinf)  ((oprinf).type  == TYPE_NONE)
@@ -184,6 +218,7 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define isR16(oprinf)   ((oprinf).type  == TYPE_R16 && (oprinf).mod == MOD_R)
 #define isR32(oprinf)   ((oprinf).type  == TYPE_R32 && (oprinf).mod == MOD_R)
 #define isSREG(oprinf)  ((oprinf).type  == TYPE_SREG && (oprinf).mod == MOD_R)
+#define isCREG(oprinf)  ((oprinf).type  == TYPE_CREG)
 #define isI8(oprinf)    ((oprinf).type  == TYPE_I8)
 #define isI8u(oprinf)   (isI8(oprinf)   && !(oprinf).imms)
 #define isI8s(oprinf)   (isI8(oprinf)   && (oprinf).imms)
@@ -194,6 +229,7 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define isI32u(oprinf)  (isI32(oprinf)  && !(oprinf).imms)
 #define isI32s(oprinf)  (isI32(oprinf)  && (oprinf).imms)
 #define isI16p(oprinf)  ((oprinf).type  == TYPE_I16_16)
+#define isI32p(oprinf)  ((oprinf).type  == TYPE_I16_32)
 #define isM(oprinf)     (((oprinf).type == TYPE_M   || (oprinf).type == TYPE_M8   || \
                           (oprinf).type == TYPE_M16 || (oprinf).type == TYPE_M32) && (oprinf).mod != MOD_R)
 #define isM8(oprinf)    (((oprinf).type == TYPE_M   || (oprinf).type == TYPE_M8 ) && (oprinf).mod != MOD_R)
@@ -216,6 +252,9 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define isRM16(oprinf)  (isR16(oprinf) || isM16(oprinf))
 #define isRM32(oprinf)  (isR32(oprinf) || isM32(oprinf))
 #define isRM(oprinf)    (isRM8(oprinf) || isRM16(oprinf))
+#define isCR0(oprinf)   (isCREG(oprinf) && (oprinf).creg == CREG_CR0)
+#define isCR2(oprinf)   (isCREG(oprinf) && (oprinf).creg == CREG_CR2)
+#define isCR3(oprinf)   (isCREG(oprinf) && (oprinf).creg == CREG_CR3)
 #define isAL(oprinf)    (isR8 (oprinf) && (oprinf).reg8  == R8_AL)
 #define isCL(oprinf)    (isR8 (oprinf) && (oprinf).reg8  == R8_CL)
 #define isDL(oprinf)    (isR8 (oprinf) && (oprinf).reg8  == R8_DL)
@@ -279,9 +318,15 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define ARG_R8_RM8      (isR8   (aopri1) && isRM8 (aopri2)  && isNONE(aopri3))
 #define ARG_R16_RM16    (isR16  (aopri1) && isRM16(aopri2)  && isNONE(aopri3))
 #define ARG_R32_RM32    (isR32  (aopri1) && isRM32(aopri2)  && isNONE(aopri3))
-#define ARG_R16_RM8     (isR16 (aopri1)  && isRM8s(aopri2)  && isNONE(aopri3))
-#define ARG_R32_RM8     (isR32 (aopri1)  && isRM8s(aopri2)  && isNONE(aopri3))
-#define ARG_R32_RM16    (isR32 (aopri1)  && isRM16s(aopri2) && isNONE(aopri3))
+#define ARG_R16_RM8     (isR16  (aopri1) && isRM8s(aopri2)  && isNONE(aopri3))
+#define ARG_R32_RM8     (isR32  (aopri1) && isRM8s(aopri2)  && isNONE(aopri3))
+#define ARG_R32_RM16    (isR32  (aopri1) && isRM16s(aopri2) && isNONE(aopri3))
+#define ARG_CR0_R32     (isCR0  (aopri1) && isR32(aopri2)   && isNONE(aopri3))
+#define ARG_CR2_R32     (isCR2  (aopri1) && isR32(aopri2)   && isNONE(aopri3))
+#define ARG_CR3_R32     (isCR3  (aopri1) && isR32(aopri2)   && isNONE(aopri3))
+#define ARG_R32_CR0     (isR32  (aopri1) && isCR0(aopri2)   && isNONE(aopri3))
+#define ARG_R32_CR2     (isR32  (aopri1) && isCR2(aopri2)   && isNONE(aopri3))
+#define ARG_R32_CR3     (isR32  (aopri1) && isCR3(aopri2)   && isNONE(aopri3))
 #define ARG_ES          (isES   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
 #define ARG_CS          (isCS   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
 #define ARG_SS          (isSS   (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
@@ -339,7 +384,9 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define ARG_RM32_I8     (isRM32s(aopri1) && isI8  (aopri2)  && isNONE(aopri3))
 #define ARG_RM16_I8     (isRM16s(aopri1) && isI8  (aopri2)  && isNONE(aopri3))
 #define ARG_RM16_SREG   (isRM16 (aopri1) && isSREG (aopri2) && isNONE(aopri3))
+#define ARG_RM32_SREG   (isRM32 (aopri1) && isSREG (aopri2) && isNONE(aopri3))
 #define ARG_SREG_RM16   (isSREG  (aopri1) && isRM16(aopri2) && isNONE(aopri3))
+#define ARG_SREG_RM32   (isSREG  (aopri1) && isRM32(aopri2) && isNONE(aopri3))
 #define ARG_RM16        (isRM16 (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
 #define ARG_RM32        (isRM32 (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
 #define ARG_AX_AX       (isAX   (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
@@ -350,13 +397,22 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define ARG_BP_AX       (isBP   (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
 #define ARG_SI_AX       (isSI   (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
 #define ARG_DI_AX       (isDI   (aopri1) && isAX  (aopri2)  && isNONE(aopri3))
-#define ARG_AL_M8       (isAL   (aopri1) && isM8  (aopri2)  && (aopri2.mod == MOD_M && (aopri2.mem == MEM_BP || aopri2.mem == MEM_EBP)) && isNONE(aopri3))
-#define ARG_M8_AL       (isM8   (aopri1) && isAL  (aopri2)  && (aopri1.mod == MOD_M && (aopri1.mem == MEM_BP || aopri2.mem == MEM_EBP)) && isNONE(aopri3))
-#define ARG_AX_M16      (isAX   (aopri1) && isM16 (aopri2)  && (aopri2.mod == MOD_M && (aopri2.mem == MEM_BP || aopri2.mem == MEM_EBP)) && isNONE(aopri3))
-#define ARG_M16_AX      (isM16  (aopri1) && isAX  (aopri2)  && (aopri1.mod == MOD_M && (aopri1.mem == MEM_BP || aopri1.mem == MEM_EBP)) && isNONE(aopri3))
-#define ARG_EAX_M32     (isEAX  (aopri1) && isM32 (aopri2)  && (aopri2.mod == MOD_M && (aopri2.mem == MEM_BP || aopri2.mem == MEM_EBP)) && isNONE(aopri3))
-#define ARG_M32_EAX     (isM32  (aopri1) && isEAX (aopri2)  && (aopri1.mod == MOD_M && (aopri1.mem == MEM_BP || aopri1.mem == MEM_EBP)) && isNONE(aopri3))
+#define ARG_EAX_EAX     (isEAX  (aopri1) && isEAX (aopri2)  && isNONE(aopri3))
+#define ARG_ECX_EAX     (isECX  (aopri1) && isEAX (aopri2)  && isNONE(aopri3))
+#define ARG_EDX_EAX     (isEDX  (aopri1) && isEAX (aopri2)  && isNONE(aopri3))
+#define ARG_EBX_EAX     (isEBX  (aopri1) && isEAX (aopri2)  && isNONE(aopri3))
+#define ARG_ESP_EAX     (isESP  (aopri1) && isEAX (aopri2)  && isNONE(aopri3))
+#define ARG_EBP_EAX     (isEBP  (aopri1) && isEAX (aopri2)  && isNONE(aopri3))
+#define ARG_ESI_EAX     (isESI  (aopri1) && isEAX (aopri2)  && isNONE(aopri3))
+#define ARG_EDI_EAX     (isEDI  (aopri1) && isEAX (aopri2)  && isNONE(aopri3))
+#define ARG_AL_MOFFS8   (isAL   (aopri1) && isM8  (aopri2)  && (aopri2.mod == MOD_M && (aopri2.mem == MEM_BP || aopri2.mem == MEM_EBP)) && isNONE(aopri3))
+#define ARG_MOFFS8_AL   (isM8   (aopri1) && isAL  (aopri2)  && (aopri1.mod == MOD_M && (aopri1.mem == MEM_BP || aopri2.mem == MEM_EBP)) && isNONE(aopri3))
+#define ARG_AX_MOFFS16  (isAX   (aopri1) && isM16 (aopri2)  && (aopri2.mod == MOD_M && (aopri2.mem == MEM_BP || aopri2.mem == MEM_EBP)) && isNONE(aopri3))
+#define ARG_MOFFS16_AX  (isM16  (aopri1) && isAX  (aopri2)  && (aopri1.mod == MOD_M && (aopri1.mem == MEM_BP || aopri1.mem == MEM_EBP)) && isNONE(aopri3))
+#define ARG_EAX_MOFFS32 (isEAX  (aopri1) && isM32 (aopri2)  && (aopri2.mod == MOD_M && (aopri2.mem == MEM_BP || aopri2.mem == MEM_EBP)) && isNONE(aopri3))
+#define ARG_MOFFS32_EAX (isM32  (aopri1) && isEAX (aopri2)  && (aopri1.mod == MOD_M && (aopri1.mem == MEM_BP || aopri1.mem == MEM_EBP)) && isNONE(aopri3))
 #define ARG_R16_M16     (isR16  (aopri1) && isM16 (aopri2)  && isNONE(aopri3))
+#define ARG_R32_M32     (isR32  (aopri1) && isM32 (aopri2)  && isNONE(aopri3))
 #define ARG_I16u        (isI16u (aopri1) && isNONE(aopri2)  && isNONE(aopri3))
 #define ARG_PNONE_I8s   (isPNONE(aopri1) && isI8s (aopri1)  && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_PNONE_I16s  (isPNONE(aopri1) && isI16s(aopri1)  && isNONE(aopri2) && isNONE(aopri3))
@@ -377,6 +433,7 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define ARG_FAR_M16_16  (isFAR  (aopri1) && isM32  (aopri1) && isNONE(aopri2) && isNONE(aopri3))
 #define ARG_RM8_CL      (isRM8s (aopri1) && isCL   (aopri2) && isNONE(aopri3))
 #define ARG_RM16_CL     (isRM16s(aopri1) && isCL   (aopri2) && isNONE(aopri3))
+#define ARG_RM32_CL     (isRM32s(aopri1) && isCL   (aopri2) && isNONE(aopri3))
 #define ARG_AL_DX       (isAL   (aopri1) && isDX   (aopri2) && isNONE(aopri3))
 #define ARG_DX_AL       (isDX   (aopri1) && isAL   (aopri2) && isNONE(aopri3))
 #define ARG_AX_DX       (isAX   (aopri1) && isDX   (aopri2) && isNONE(aopri3))
@@ -417,6 +474,8 @@ static t_aasm_oprinfo *rinfo = NULL;
 #define ARG_ESEDI8          (isESEDI8 (aopri1) && isNONE  (aopri2)  && isNONE(aopri3))
 #define ARG_ESEDI16         (isESEDI16(aopri1) && isNONE  (aopri2)  && isNONE(aopri3))
 #define ARG_ESEDI32         (isESEDI32(aopri1) && isNONE  (aopri2)  && isNONE(aopri3))
+#define ARG_R16_RM16_I16    (isR16(aopri1)     && isRM16  (aopri2)  && isI16(aopri3))
+#define ARG_R32_RM32_I32    (isR32(aopri1)     && isRM32  (aopri2)  && isI32(aopri3))
 /* assembly compiler: lexical scanner */
 typedef enum {
 	STATE_START,
@@ -490,18 +549,22 @@ static t_aasm_token gettoken(t_strptr str)
 	t_aasm_token token = TOKEN_NULL;
 	t_aasm_scan_state state = STATE_START;
 	t_strptr tokptrbak;
+	_cb("gettoken");
 	tokimm8 = 0x00;
 	tokimm16 = 0x0000;
 	tokimm32 = 0x00000000;
 	if (str) tokptr = str;
-	if (!tokptr) return token;
+	if (!tokptr) {
+		_ce;
+		return token;
+	}
 	tokptrbak = tokptr;
 	do {
 		switch (state) {
-		case STATE_START:
+		case STATE_START: _bb("state(STATE_START)");
 			switch (tokch) {
-			case '[': take(TOKEN_LSPAREN);break;
-			case ']': take(TOKEN_RSPAREN);break;
+			case '[': take(TOKEN_LSPAREN); break;
+			case ']': take(TOKEN_RSPAREN); break;
 			case ':': take(TOKEN_COLON);   break;
 			case '+': take(TOKEN_PLUS);    break;
 			case '-': take(TOKEN_MINUS);   break;
@@ -527,7 +590,7 @@ static t_aasm_token gettoken(t_strptr str)
 			case 's': state = STATE_S;break;
 			case 't': state = STATE_T;break;
 			case 'w': state = STATE_W;break;
-			case '\'':
+			case '\'': _bb("tokch(\')");
 				if (*(tokptr + 2) == '\'') {
 					tokptr++;
 					tokchar = tokch;
@@ -539,11 +602,10 @@ static t_aasm_token gettoken(t_strptr str)
 					take(TOKEN_CHAR);
 				} else {
 					tokptr--;
-					flagerror = 1;
-					take(TOKEN_NULL);
+					_sert_;
 				}
-				break;
-			case '\"':
+				_be;break;
+			case '\"': _bb("tokch(\")");
 				tokstring[0] = tokstring[0xff] = 0x00;
 				i = 0;
 				do {
@@ -552,21 +614,19 @@ static t_aasm_token gettoken(t_strptr str)
 				} while (tokch && (tokch != '\"'));
 				if (!tokch) {
 					tokptr = tokptrbak;
-					flagerror = 1;
-					take(TOKEN_NULL);
+					_sert_;
 				} else {
 					tokstring[i - 1] = 0x00;
 					take(TOKEN_STRING);
 				}
-				break;
-			case '$':
+				_be;break;
+			case '$': _bb("tokch($)");
 				tokptr++;
 				if (tokch != '(') {
 					tokptr -= 2;
-					flagerror = 1;
-					take(TOKEN_NULL);
+					_sert_;
 				} else {
-					toklabel[0] =toklabel[0xff] = 0x00;
+					toklabel[0] = toklabel[0xff] = 0x00;
 					i = 0;
 					do {
 						tokptr++;
@@ -574,21 +634,20 @@ static t_aasm_token gettoken(t_strptr str)
 					} while (tokch && tokch != ')');
 					if (!tokch) {
 						tokptr = tokptrbak;
-						flagerror = 1;
-						take(TOKEN_NULL);
+						_sert_;
 					} else {
 						toklabel[i - 1] = 0x00;
 						take(TOKEN_LABEL);
 					}
 				}
-				break;
+				_be;break;
 			case ' ':
 			case '\t': break;
 			case '\0': tokptr--;take(TOKEN_END);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_NUM1:
+			_be;break;
+		case STATE_NUM1: _bb("state(STATE_NUM1)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
@@ -606,10 +665,10 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 2;state = STATE_NUM2;break;
 			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 2;state = STATE_NUM2;break;
 			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 2;state = STATE_NUM2;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_NUM2:
+			_be;break;
+		case STATE_NUM2: _bb("state(STATE_NUM2)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 3;state = STATE_NUM3;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 3;state = STATE_NUM3;break;
@@ -629,8 +688,8 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 3;state = STATE_NUM3;break;
 			default: tokptr--;tokimm8 = GetMax8(tokimm);take(TOKEN_IMM8);break;
 			}
-			break;
-		case STATE_NUM3:
+			_be;break;
+		case STATE_NUM3: _bb("state(STATE_NUM3)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 4;state = STATE_NUM4;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 4;state = STATE_NUM4;break;
@@ -648,10 +707,10 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 4;state = STATE_NUM4;break;
 			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 4;state = STATE_NUM4;break;
 			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 4;state = STATE_NUM4;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_NUM4:
+			_be;break;
+		case STATE_NUM4: _bb("state(STATE_NUM4)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 5;state = STATE_NUM5;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 5;state = STATE_NUM5;break;
@@ -671,8 +730,8 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 5;state = STATE_NUM5;break;
 			default: tokptr--;tokimm16 = GetMax16(tokimm);take(TOKEN_IMM16);break;
 			}
-			break;
-		case STATE_NUM5:
+			_be;break;
+		case STATE_NUM5: _bb("state(STATE_NUM5)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 6;state = STATE_NUM6;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 6;state = STATE_NUM6;break;
@@ -690,10 +749,10 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 6;state = STATE_NUM6;break;
 			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 6;state = STATE_NUM6;break;
 			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 6;state = STATE_NUM6;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_NUM6:
+			_be;break;
+		case STATE_NUM6: _bb("state(STATE_NUM6)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 7;state = STATE_NUM7;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 7;state = STATE_NUM7;break;
@@ -711,10 +770,10 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 7;state = STATE_NUM7;break;
 			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 7;state = STATE_NUM7;break;
 			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 7;state = STATE_NUM7;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_NUM7:
+			_be;break;
+		case STATE_NUM7: _bb("state(STATE_NUM7)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 8;state = STATE_NUM8;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 8;state = STATE_NUM8;break;
@@ -732,10 +791,10 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'd': tokimm = (tokimm << 4) | 0xd;toklen = 8;state = STATE_NUM8;break;
 			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 8;state = STATE_NUM8;break;
 			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 8;state = STATE_NUM8;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_NUM8:
+			_be;break;
+		case STATE_NUM8: _bb("state(STATE_NUM8)");
 			switch (tokch) {
 			case '0':
 			case '1':
@@ -753,12 +812,12 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'd':
 			case 'e':
 			case 'f':
-				tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+				tokptr--;_sert_;break;
 				break;
 			default: tokptr--;tokimm32 = GetMax32(tokimm);take(TOKEN_IMM32);break;
 			}
-			break;
-		case STATE_A:
+			_be;break;
+		case STATE_A: _bb("state(STATE_A)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
@@ -779,10 +838,10 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'x': take(TOKEN_AX);break;
 			case 'h': take(TOKEN_AH);break;
 			case 'l': take(TOKEN_AL);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_B:
+			_be;break;
+		case STATE_B: _bb("state(STATE_B)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
@@ -805,10 +864,10 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'l': take(TOKEN_BL);break;
 			case 'p': take(TOKEN_BP);break;
 			case 'y': state = STATE_BY;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_C:
+			_be;break;
+		case STATE_C: _bb("state(STATE_C)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
@@ -831,10 +890,10 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'l': take(TOKEN_CL);break;
 			case 'r': state = STATE_CR;break;
 			case 's': take(TOKEN_CS);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_D:
+			_be;break;
+		case STATE_D: _bb("state(STATE_D)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
@@ -859,10 +918,10 @@ static t_aasm_token gettoken(t_strptr str)
 			case 's': take(TOKEN_DS);break;
 			case 'i': take(TOKEN_DI);break;
 			case 'w': state = STATE_DW;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_E:
+			_be;break;
+		case STATE_E: _bb("state(STATE_E)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
@@ -881,10 +940,10 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 2;state = STATE_NUM2;break;
 			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 2;state = STATE_NUM2;break;
 			case 's': state = STATE_ES;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_F:
+			_be;break;
+		case STATE_F: _bb("state(STATE_F)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 2;state = STATE_NUM2;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 2;state = STATE_NUM2;break;
@@ -903,63 +962,63 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'e': tokimm = (tokimm << 4) | 0xe;toklen = 2;state = STATE_NUM2;break;
 			case 'f': tokimm = (tokimm << 4) | 0xf;toklen = 2;state = STATE_NUM2;break;
 			case 's': take(TOKEN_FS);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_G:
+			_be;break;
+		case STATE_G: _bb("state(STATE_G)");
 			switch (tokch) {
 			case 's': take(TOKEN_GS);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_N:
+			_be;break;
+		case STATE_N: _bb("state(STATE_N)");
 			switch (tokch) {
 			case 'e': state = STATE_NE;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_P:
+			_be;break;
+		case STATE_P: _bb("state(STATE_P)");
 			switch (tokch) {
 			case 't': state = STATE_PT;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_S:
+			_be;break;
+		case STATE_S: _bb("state(STATE_S)");
 			switch (tokch) {
 			case 'i': take(TOKEN_SI);break;
 			case 'p': take(TOKEN_SP);break;
 			case 's': take(TOKEN_SS);break;
 			case 'h': state = STATE_SH;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_T:
+			_be;break;
+		case STATE_T: _bb("state(STATE_T)");
 			switch (tokch) {
 			case 'r': state = STATE_TR;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_W:
+			_be;break;
+		case STATE_W: _bb("state(STATE_W)");
 			switch (tokch) {
 			case 'o': state = STATE_WO;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_BY:
+			_be;break;
+		case STATE_BY: _bb("state(STATE_BY)");
 			switch (tokch) {
 			case 't': state = STATE_BYT;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_CR:
+			_be;break;
+		case STATE_CR: _bb("state(STATE_CR)");
 			switch (tokch) {
 			case '0': take(TOKEN_CR0);break;
 			case '2': take(TOKEN_CR2);break;
 			case '3': take(TOKEN_CR3);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_DR:
+			_be;break;
+		case STATE_DR: _bb("state(STATE_DR)");
 			switch (tokch) {
 			case '0': take(TOKEN_DR0);break;
 			case '1': take(TOKEN_DR1);break;
@@ -967,49 +1026,49 @@ static t_aasm_token gettoken(t_strptr str)
 			case '3': take(TOKEN_DR3);break;
 			case '6': take(TOKEN_DR6);break;
 			case '7': take(TOKEN_DR7);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_DW:
+			_be;break;
+		case STATE_DW: _bb("state(STATE_DW)");
 			switch (tokch) {
 			case 'o': state = STATE_DWO;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_EA:
+			_be;break;
+		case STATE_EA: _bb("state(STATE_EA)");
 			switch (tokch) {
 			case 'x': take(TOKEN_EAX);break;
 			default: tokptr--;tokimm8 = GetMax8(tokimm);take(TOKEN_IMM8);break;
 			}
-			break;
-		case STATE_EB:
+			_be;break;
+		case STATE_EB: _bb("state(STATE_EB)");
 			switch (tokch) {
 			case 'p': take(TOKEN_EBP);break;
 			case 'x': take(TOKEN_EBX);break;
 			default: tokptr--;tokimm8 = GetMax8(tokimm);take(TOKEN_IMM8);break;
 			}
-			break;
-		case STATE_EC:
+			_be;break;
+		case STATE_EC: _bb("state(STATE_EC)");
 			switch (tokch) {
 			case 'x': take(TOKEN_ECX);break;
 			default: tokptr--;tokimm8 = GetMax8(tokimm);take(TOKEN_IMM8);break;
 			}
-			break;
-		case STATE_ED:
+			_be;break;
+		case STATE_ED: _bb("state(STATE_ED)");
 			switch (tokch) {
 			case 'i': take(TOKEN_EDI);break;
 			case 'x': take(TOKEN_EDX);break;
 			default: tokptr--;tokimm8 = GetMax8(tokimm);take(TOKEN_IMM8);break;
 			}
-			break;
-		case STATE_ES:
+			_be;break;
+		case STATE_ES: _bb("state(STATE_ES)");
 			switch (tokch) {
 			case 'i': take(TOKEN_ESI);break;
 			case 'p': take(TOKEN_ESP);break;
 			default: tokptr--;take(TOKEN_ES);break;
 			}
-			break;
-		case STATE_FA:
+			_be;break;
+		case STATE_FA: _bb("state(STATE_FA)");
 			switch (tokch) {
 			case '0': tokimm = (tokimm << 4) | 0x0;toklen = 3;state = STATE_NUM3;break;
 			case '1': tokimm = (tokimm << 4) | 0x1;toklen = 3;state = STATE_NUM3;break;
@@ -1030,84 +1089,87 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'r': take(TOKEN_FAR);break;
 			default: tokptr--;tokimm8 = GetMax8(tokimm);take(TOKEN_IMM8);break;
 			}
-			break;
-		case STATE_NE:
+			_be;break;
+		case STATE_NE: _bb("state(STATE_NE)");
 			switch (tokch) {
 			case 'a': state = STATE_NEA;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_PT:
+			_be;break;
+		case STATE_PT: _bb("state(STATE_PT)");
 			switch (tokch) {
 			case 'r': take(TOKEN_PTR);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_SH:
+			_be;break;
+		case STATE_SH: _bb("state(STATE_SH)");
 			switch (tokch) {
 			case 'o': state = STATE_SHO;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_TR:
+			_be;break;
+		case STATE_TR: _bb("state(STATE_TR)");
 			switch (tokch) {
 			case '6': take(TOKEN_TR6);break;
 			case '7': take(TOKEN_TR7);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_WO:
+			_be;break;
+		case STATE_WO: _bb("state(STATE_WO)");
 			switch (tokch) {
 			case 'r': state = STATE_WOR;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_BYT:
+			_be;break;
+		case STATE_BYT: _bb("state(STATE_BYT)");
 			switch (tokch) {
 			case 'e': take(TOKEN_BYTE);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_DWO:
+			_be;break;
+		case STATE_DWO: _bb("state(STATE_DWO)");
 			switch (tokch) {
 			case 'r': state = STATE_DWOR;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_NEA:
+			_be;break;
+		case STATE_NEA: _bb("state(STATE_NEA)");
 			switch (tokch) {
 			case 'r': take(TOKEN_NEAR);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_SHO:
+			_be;break;
+		case STATE_SHO: _bb("state(STATE_SHO)");
 			switch (tokch) {
 			case 'r': state = STATE_SHOR;break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_WOR:
+			_be;break;
+		case STATE_WOR: _bb("state(STATE_WOR)");
 			switch (tokch) {
 			case 'd': take(TOKEN_WORD);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_DWOR:
+			_be;break;
+		case STATE_DWOR: _bb("state(STATE_DWOR)");
 			switch (tokch) {
 			case 'd': take(TOKEN_DWORD);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		case STATE_SHOR:
+			_be;break;
+		case STATE_SHOR: _bb("state(STATE_SHOR)");
 			switch (tokch) {
 			case 't': take(TOKEN_SHORT);break;
-			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			default: tokptr--;_sert_;break;
 			}
-			break;
-		default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
+			_be;break;
+		default:  _bb("state(default)");
+			tokptr--;_sert_;
+			_be;break;
 		}
 		tokptr++;
 	} while (!flagend);
+	_ce;
 	return token;
 }
 static void printtoken(t_aasm_token token)
@@ -1154,7 +1216,9 @@ static void printtoken(t_aasm_token token)
 }
 static void matchtoken(t_aasm_token token)
 {
-	if (gettoken(NULL) != token) flagerror = 1;
+	_cb("matchtoken");
+	if (gettoken(NULL) != token) _se_;
+	_ce;
 }
 
 /* assembly compiler: parser / grammar */
@@ -1165,6 +1229,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 	t_bool bx,bp,si,di,neg;
 	t_bool eax,ecx,edx,ebx,esp,ebp,esi,edi;
 	t_bool ieax,iecx,iedx,iebx,iebp,iesi,iedi;
+	_cb("parsearg_mem");
 	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
 	bx = bp = si = di = neg = 0;
 	eax = ecx = edx = ebx = esp = ebp = esi = edi = 0;
@@ -1175,8 +1240,9 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 	info.sib.index = R32_ESP; //ESP for NULL Scale
 	info.sib.scale = 0;
 	oldtoken = token;
-	token = gettoken(NULL);
+	_chrf(token = gettoken(NULL));
 	if (token == TOKEN_COLON) {
+		_bb("token(TOKEN_COLON");
 		switch (oldtoken) {
 		case TOKEN_ES: info.flages = 1;break;
 		case TOKEN_CS: info.flagcs = 1;break;
@@ -1184,9 +1250,10 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 		case TOKEN_DS: info.flagds = 1;break;
 		case TOKEN_FS: info.flagfs = 1;break;
 		case TOKEN_GS: info.flaggs = 1;break;
-		default: flagerror = 1;break;
-		}
+		default: _serf_;break;}
+		_be;
 	} else if (token == TOKEN_NULL || token == TOKEN_END) {
+		_bb("token(TOKEN_NULL/TOKEN_END)");
 		switch (oldtoken) {
 		case TOKEN_ES: 
 			info.type = TYPE_SREG;
@@ -1218,251 +1285,308 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 			info.mod =  MOD_R;
 			info.sreg =  SREG_GS;
 			break;
-		default: flagerror = 1;break;
-		}
+		default: _serf_;break;}
+		_be;
+		_ce;
 		return info;
-	} else flagerror = 1;
-	matchtoken(TOKEN_LSPAREN);
-	token = gettoken(NULL);
-	while (token != TOKEN_RSPAREN && !flagerror) {
+	} else _serf_;
+	_chrf(matchtoken(TOKEN_LSPAREN));
+	_chrf(token = gettoken(NULL));
+	while (token != TOKEN_RSPAREN) {
 		switch (token) {
 		case TOKEN_PLUS:break;
-		case TOKEN_MINUS:
-			token = gettoken(NULL);
+		case TOKEN_MINUS: _bb("token(TOKEN_MINUS)");
+			_chrf(token = gettoken(NULL));
 			neg = 1;
 			switch (token) {
-			case TOKEN_IMM8:
-				if (info.mod != MOD_M) flagerror = 1;
-				if (tokimm8 > 0x80) flagerror = 1;
+			case TOKEN_IMM8: _bb("token(TOKEN_IMM8)");
+				if (info.mod != MOD_M) _serf_;
+				if (tokimm8 > 0x80) _serf_;
 				else {
 					tokimm8 = (~tokimm8) + 1;
 					info.disp8 = tokimm8;
 					info.mod = MOD_M_DISP8;
 				}
-				break;
-			case TOKEN_IMM16:
-				if (info.mod != MOD_M) flagerror = 1;
-				if (tokimm16 > 0xff80) flagerror = 1;
+				_be;break;
+			case TOKEN_IMM16: _bb("token(TOKEN_IMM16)");
+				if (info.mod != MOD_M) _serf_;
+				if (tokimm16 > 0xff80) _serf_;
 				else {
 					tokimm16 = (~tokimm16) + 1;
 					info.disp16 = tokimm16;
 					info.mod = MOD_M_DISP16;
 				}
-				break;
-			case TOKEN_IMM32:
-				if (info.mod != MOD_M) flagerror = 1;
-				if (tokimm32 > 0xffffff80) flagerror = 1;
+				_be;break;
+			case TOKEN_IMM32: _bb("token(TOKEN_IMM32)");
+				if (info.mod != MOD_M) _serf_;
+				if (tokimm32 > 0xffffff80) _serf_;
 				else {
 					tokimm32 = (~tokimm32) + 1;
 					info.disp32 = tokimm32;
 					info.mod = MOD_M_DISP32;
 				}
-				break;
-			default: flagerror = 1;break;
+				_be;break;
+			default: _serf_;break;
 			}
-			break;
-		case TOKEN_BX: if (bx) flagerror = 1; else bx = 1;break;
-		case TOKEN_SI: if (si) flagerror = 1; else si = 1;break;
-		case TOKEN_BP: if (bp) flagerror = 1; else bp = 1;break;
-		case TOKEN_DI: if (di) flagerror = 1; else di = 1;break;
-		case TOKEN_IMM8:
-			if (info.mod != MOD_M) flagerror = 1;
+			_be;break;
+		case TOKEN_BX: _bb("token(TOKEN_BX)");
+			if (bx) _serf_;
+			else bx = 1;
+			_be;break;
+		case TOKEN_SI: _bb("token(TOKEN_SI)");
+			if (si) _serf_;
+			else si = 1;
+			_be;break;
+		case TOKEN_BP: _bb("token(TOKEN_BP)");
+			if (bp) _serf_;
+			else bp = 1;
+			_be;break;
+		case TOKEN_DI: _bb("token(TOKEN_DI)");
+			if (di) _serf_;
+			else di = 1;
+			_be;break;
+		case TOKEN_IMM8: _bb("token(TOKEN_IMM8)");
+			if (info.mod != MOD_M) _serf_;
 			info.mod = MOD_M_DISP8;
 			info.disp8 = tokimm8;
-			break;
-		case TOKEN_IMM16:
-			if (info.mod != MOD_M) flagerror = 1;
+			_be;break;
+		case TOKEN_IMM16: _bb("token(TOKEN_IMM16)");
+			if (info.mod != MOD_M) _serf_;
 			info.mod = MOD_M_DISP16;
 			info.disp16 = tokimm16;
-			break;
-		case TOKEN_IMM32:
-			if (info.mod != MOD_M) flagerror = 1;
+			_be;break;
+		case TOKEN_IMM32: _bb("token(TOKEN_IMM32)");
+			if (info.mod != MOD_M) _serf_;
 			info.mod = MOD_M_DISP32;
 			info.disp32 = tokimm32;
-			break;
-		case TOKEN_EAX:
-			token = gettoken(NULL);
+			_be;break;
+		case TOKEN_EAX: _bb("token(TOKEN_EAX)");
+			_chrf(token = gettoken(NULL));
 			if (token == TOKEN_TIMES) {
-				if (ieax) flagerror = 1;
+				_bb("token(TOKEN_TIMES)");
+				if (ieax) _serf_;
 				else {
+					_bb("!ieax");
 					ieax = 1;
-					token = gettoken(NULL);
-					if (token != TOKEN_IMM8) flagerror = 1;
+					_chrf(token = gettoken(NULL));
+					if (token != TOKEN_IMM8) _serf_;
 					else {
 						info.sib.scale = tokimm8;
 						info.sib.index = R32_EAX;
 					}
+					_be;
 				}
+				_be;
 			} else {
-				if (eax) flagerror = 1;
+				_bb("token(TOKEN_!TIMES)");
+				if (eax) _serf_;
 				else {
 					eax = 1;
 					info.sib.base = R32_EAX;
 				}
+				_be;
 			}
-			continue;
+			_be;continue;
 			break;
-		case TOKEN_ECX:
-			token = gettoken(NULL);
+		case TOKEN_ECX: _bb("token(TOKEN_ECX)");
+			_chrf(token = gettoken(NULL));
 			if (token == TOKEN_TIMES) {
-				if (iecx) flagerror = 1;
+				_bb("token(TOKEN_TIMES)");
+				if (iecx) _serf_;
 				else {
+					_bb("!iecx");
 					iecx = 1;
-					token = gettoken(NULL);
-					if (token != TOKEN_IMM8) flagerror = 1;
+					_chrf(token = gettoken(NULL));
+					if (token != TOKEN_IMM8) _serf_;
 					else {
 						info.sib.scale = tokimm8;
 						info.sib.index = R32_ECX;
 					}
+					_be;
 				}
+				_be;
 			} else {
-				if (ecx) flagerror = 1;
+				_bb("token(!TOKEN_TIMES)");
+				if (ecx) _serf_;
 				else {
 					ecx = 1;
 					info.sib.base = R32_ECX;
 				}
+				_be;
 			}
-			continue;
+			_be;continue;
 			break;
-		case TOKEN_EDX:
-			token = gettoken(NULL);
+		case TOKEN_EDX: _bb("token(TOKEN_EDX)");
+			_chrf(token = gettoken(NULL));
 			if (token == TOKEN_TIMES) {
-				if (iedx) flagerror = 1;
+				_bb("token(TOKEN_TIMES)");
+				if (iedx) _serf_;
 				else {
+					_bb("!iedx");
 					iedx = 1;
-					token = gettoken(NULL);
-					if (token != TOKEN_IMM8) flagerror = 1;
+					_chrf(token = gettoken(NULL));
+					if (token != TOKEN_IMM8) _serf_;
 					else {
 						info.sib.scale = tokimm8;
 						info.sib.index = R32_EDX;
 					}
+					_be;
 				}
+				_be;
 			} else {
-				if (edx) flagerror = 1;
+				_bb("token(!TOKEN_TIMES)");
+				if (edx) _serf_;
 				else {
 					edx = 1;
 					info.sib.base = R32_EDX;
 				}
+				_be;
 			}
-			continue;
+			_be;continue;
 			break;
-		case TOKEN_EBX:
-			token = gettoken(NULL);
+		case TOKEN_EBX: _bb("token(TOKEN_EBX)");
+			_chrf(token = gettoken(NULL));
 			if (token == TOKEN_TIMES) {
-				if (iebx) flagerror = 1;
+				_bb("token(TOKEN_TIMES)");
+				if (iebx) _serf_;
 				else {
+					_bb("!iebx");
 					iebx = 1;
-					token = gettoken(NULL);
-					if (token != TOKEN_IMM8) flagerror = 1;
+					_chrf(token = gettoken(NULL));
+					if (token != TOKEN_IMM8) _serf_;
 					else {
 						info.sib.scale = tokimm8;
 						info.sib.index = R32_EBX;
 					}
+					_be;
 				}
+				_be;
 			} else {
-				if (ebx) flagerror = 1;
+				_bb("token(!TOKEN_TIMES)");
+				if (ebx) _serf_;
 				else {
 					ebx = 1;
 					info.sib.base = R32_EBX;
 				}
+				_be;
 			}
-			continue;
+			_be;continue;
 			break;
-		case TOKEN_ESP:
-			token = gettoken(NULL);
-			if (token == TOKEN_TIMES) flagerror = 1;
+		case TOKEN_ESP: _bb("token(TOKEN_ESP)");
+			_chrf(token = gettoken(NULL));
+			if (token == TOKEN_TIMES) _serf_;
 			else {
-				if (esp) flagerror = 1;
+				_bb("token(!TOKEN_TIMES)");
+				if (esp) _serf_;
 				else {
 					esp = 1;
 					info.sib.base = R32_ESP;
 				}
+				_be;
 			}
-			continue;
+			_be;continue;
 			break;
-		case TOKEN_EBP:
-			token = gettoken(NULL);
+		case TOKEN_EBP: _bb("token(TOKEN_EBP)");
+			_chrf(token = gettoken(NULL));
 			if (token == TOKEN_TIMES) {
-				if (iebp) flagerror = 1;
+				_bb("token(TOKEN_TIMES)");
+				if (iebp) _serf_;
 				else {
+					_bb("!iebp");
 					iebx = 1;
-					token = gettoken(NULL);
-					if (token != TOKEN_IMM8) flagerror = 1;
+					_chrf(token = gettoken(NULL));
+					if (token != TOKEN_IMM8) _serf_;
 					else {
 						info.sib.scale = tokimm8;
 						info.sib.index = R32_EBP;
 					}
+					_be;
 				}
+				_be;
 			} else {
-				if (ebp) flagerror = 1;
+				_bb("token(!TOKEN_TIMES)");
+				if (ebp) _serf_;
 				else {
 					ebp = 1;
 					info.sib.base = R32_EBP;
 				}
+				_be;
 			}
-			continue;
+			_be;continue;
 			break;
-		case TOKEN_ESI:
-			token = gettoken(NULL);
+		case TOKEN_ESI: _bb("token(TOKEN_ESI)");
+			_chrf(token = gettoken(NULL));
 			if (token == TOKEN_TIMES) {
-				if (iesi) flagerror = 1;
+				_bb("token(TOKEN_TIMES)");
+				if (iesi) _serf_;
 				else {
+					_bb("!iesi");
 					iesi = 1;
-					token = gettoken(NULL);
-					if (token != TOKEN_IMM8) flagerror = 1;
+					_chrf(token = gettoken(NULL));
+					if (token != TOKEN_IMM8) _serf_;
 					else {
 						info.sib.scale = tokimm8;
 						info.sib.index = R32_ESI;
 					}
+					_be;
 				}
+				_be;
 			} else {
-				if (esi) flagerror = 1;
+				_bb("token(!TOKEN_TIMES)");
+				if (esi) _serf_;
 				else {
 					esi = 1;
 					info.sib.base = R32_ESI;
 				}
+				_be;
 			}
-			continue;
+			_be;continue;
 			break;
-		case TOKEN_EDI:
-			token = gettoken(NULL);
+		case TOKEN_EDI: _bb("token(TOKEN_EDI)");
+			_chrf(token = gettoken(NULL));
 			if (token == TOKEN_TIMES) {
-				if (iedi) flagerror = 1;
+				_bb("token(TOKEN_TIMES)");
+				if (iedi) _serf_;
 				else {
+					_bb("!iedi");
 					iedi = 1;
-					token = gettoken(NULL);
-					if (token != TOKEN_IMM8) flagerror = 1;
+					_chrf(token = gettoken(NULL));
+					if (token != TOKEN_IMM8) _serf_;
 					else {
 						info.sib.scale = tokimm8;
 						info.sib.index = R32_EDI;
 					}
+					_be;
 				}
+				_be;
 			} else {
-				if (edi) flagerror = 1;
+				_bb("token(!TOKEN_TIMES)");
+				if (edi) _serf_;
 				else {
 					edi = 1;
 					info.sib.base = R32_EDI;
 				}
+				_be;
 			}
-			continue;
+			_be;continue;
 			break;
-		default: flagerror = 1;break;}
-		token = gettoken(NULL);
+		default: _serf_;break;}
+		_chrf(token = gettoken(NULL));
 	}
-	token = gettoken(NULL);
-	if (flagerror || token != TOKEN_END) {
-		info.type = TYPE_NONE;
-		printtoken(token);
-		return info;
-	}
+	_chrf(token = gettoken(NULL));
+	if (token != TOKEN_END) _serf_;
 
 	if (bx || bp || si || di || info.mod == MOD_M_DISP16) {
+		 _bb("16-bit Addressing");
 		if (!bx && !si && !bp && !di) {
+			_bb("[DISP16]");
 			info.mem = MEM_BP;
 			if (info.mod == MOD_M_DISP16)
 				info.mod = MOD_M;
-			else flagerror = 1;
+			else _serf_;
+			_be;
 		} else {
+			_bb("bx/bp/si/di");
 			if ( bx &&  si && !bp && !di) info.mem = MEM_BX_SI;
 			else if ( bx && !si && !bp &&  di) info.mem = MEM_BX_DI;
 			else if (!bx &&  si &&  bp && !di) info.mem = MEM_BP_SI;
@@ -1476,20 +1600,23 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 					info.disp8 = 0x00;
 				}
 			} else if (!bx && !si && !bp && di) info.mem = MEM_DI;
-			else flagerror = 1;
-			if (info.mod == MOD_M_DISP16) {
-				if (info.disp16 < 0x0080 || info.disp16 > 0xff7f) flagerror = 1;
-			}
+			else _serf_;
+			_be;
 		}
+		_be;
 	} else if (eax || ecx || edx || ebx || esp || ebp || esi || edi ||
 		ieax || iecx || iedx || iebx || iebp || iesi || iedi || info.mod == MOD_M_DISP32) {
+		 _bb("32-bit Addressing");
 		if (!eax && !ecx && !edx && !ebx && !esp && !ebp && !esi && !edi &&
 			!ieax && !iecx && !iedx && !iebx && !iebp && !iesi && !iedi) {
+			_bb("[DISP32]");
 			if (info.mod == MOD_M_DISP32) {
 				info.mem = MEM_EBP;
 				info.mod = MOD_M;
-			} else flagerror = 1;
+			} else _serf_;
+			_be;
 		} else {
+			_bb("eax/ecx/edx/ebx/esp/ebp/esi/edi/ieax/iecx/iedx/iebx/iebp/iesi/iedi");
 			if (esp || ieax || iecx || iedx || iebx || iebp || iesi || iedi) {
 				info.mem = MEM_SIB;
 			} else if (eax) info.mem = MEM_EAX;
@@ -1499,12 +1626,11 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 			else if (ebp) info.mem = MEM_EBP;
 			else if (esi) info.mem = MEM_ESI;
 			else if (edi) info.mem = MEM_EDI;
-			else flagerror = 1;
-			if (info.mod == MOD_M_DISP32) {
-				if (info.disp32 < 0x00000080 || info.disp32 > 0xffffff7f) flagerror = 1;
-			}
+			else _serf_;
+			_be;
 		}
-	} else flagerror = 1;
+		_be;
+	} else _serf_;
 	switch (info.mem) {
 	case MEM_BX_SI:
 	case MEM_BX_DI:
@@ -1540,26 +1666,30 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 		break;
 	}
 	info.type = TYPE_M;
+	_ce;
 	return info;
 }
 static t_aasm_oprinfo parsearg_imm(t_aasm_token token)
 {
 	t_aasm_oprinfo info;
+	_cb("parsearg_imm");
+
 	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
-	info.type = TYPE_NONE;
-	info.mod = MOD_M;
-	info.imms = 0;
-	info.immn = 0;
-	info.ptr = PTR_NONE;
+
 	if (token == TOKEN_PLUS) {
+		_bb("token(TOKEN_PLUS)");
 		info.imms = 1;
 		info.immn = 0;
-		token = gettoken(NULL);
+		_chrf(token = gettoken(NULL));
+		_be;
 	} else if (token == TOKEN_MINUS) {
+		_bb("token(TOKEN_MINUS)");
 		info.imms = 1;
 		info.immn = 1;
-		token = gettoken(NULL);
+		_chrf(token = gettoken(NULL));
+		_be;
 	}
+
 	if (token == TOKEN_IMM8) {
 		info.type = TYPE_I8;
 		if (!info.immn) info.imm8 = tokimm8;
@@ -1572,31 +1702,40 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token)
 		info.type = TYPE_I32;
 		if (!info.immn) info.imm32 = tokimm32;
 		else info.imm32 = (~tokimm32) + 1;
-	} else flagerror = 1;
+	} else _serf_;
 
-	token = gettoken(NULL);
-	if (!info.imms && token == TOKEN_COLON) {
-		if (info.type == TYPE_I16) info.pcs = info.imm16;
-		else flagerror = 1;
-		token = gettoken(NULL);
-		if (token == TOKEN_IMM16) info.pip = tokimm16;
-		else flagerror = 1;
-		info.type = TYPE_I16_16;
-	}
-
+	_chrf(token = gettoken(NULL));
+	if (token == TOKEN_COLON) {
+		_bb("token(!TOKEN_END)");
+		if (info.imms) _serf_;
+		if (info.type == TYPE_I16) info.rcs = info.imm16;
+		else {info.type = TYPE_NONE;_serf_;}
+		info.type = TYPE_NONE;
+		_chrf(token = gettoken(NULL));
+		if (token == TOKEN_IMM16) {
+			info.reip = tokimm16;
+			info.type = TYPE_I16_16;
+		} else if (token == TOKEN_IMM32) {
+			info.reip = tokimm32;
+			info.type = TYPE_I16_32;
+		} else _serf_;
+		_be;
+	} else if (token != TOKEN_END) _serf_;
+	_ce;
 	return info;
 }
 static t_aasm_oprinfo parsearg(t_strptr arg)
 {
 	t_aasm_token token;
 	t_aasm_oprinfo info;
-//	vapiPrint("parsearg: \"%s\"\n", arg);
+	_cb("parsearg");
 	memset(&info, 0x00 ,sizeof(t_aasm_oprinfo));
 	if (!arg || !arg[0]) {
 		info.type = TYPE_NONE;
+		_ce;
 		return info;
 	}
-	token = gettoken(arg);
+	_chrf(token = gettoken(arg));
 	switch (token) {
 	case TOKEN_LABEL:
 		info.type = TYPE_LABEL;
@@ -1609,26 +1748,26 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 	case TOKEN_END:
 		info.type = TYPE_NONE;
 		break;
-	case TOKEN_BYTE:
-		token = gettoken(NULL);
-		if (token == TOKEN_PTR) token = gettoken(NULL);
-		info = parsearg_mem(token);
+	case TOKEN_BYTE: _bb("token(TOKEN_BYTE)");
+		_chrf(token = gettoken(NULL));
+		if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+		_chrf(info = parsearg_mem(token));
 		info.type = TYPE_M8;
-		break;
-	case TOKEN_WORD:
-		token = gettoken(NULL);
-		if (token == TOKEN_PTR) token = gettoken(NULL);
-		info = parsearg_mem(token);
+		_be;break;
+	case TOKEN_WORD: _bb("token(TOKEN_WORD)");
+		_chrf(token = gettoken(NULL));
+		if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+		_chrf(info = parsearg_mem(token));
 		info.type = TYPE_M16;
 		info.ptr = PTR_NEAR;
-		break;
-	case TOKEN_DWORD:
-		token = gettoken(NULL);
-		if (token == TOKEN_PTR) token = gettoken(NULL);
-		info = parsearg_mem(token);
+		_be;break;
+	case TOKEN_DWORD: _bb("token(TOKEN_DWORD)");
+		_chrf(token = gettoken(NULL));
+		if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+		_chrf(info = parsearg_mem(token));
 		info.type = TYPE_M32;
 		info.ptr = PTR_FAR;
-		break;
+		_be;break;
 	case TOKEN_AL:
 		info.type = TYPE_R8;
 		info.mod = MOD_R;
@@ -1770,92 +1909,112 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 	case TOKEN_SS:
 	case TOKEN_DS:
 	case TOKEN_FS:
-	case TOKEN_GS:
-		info = parsearg_mem(token);
-		break;
+	case TOKEN_GS: _bb("token(TOKEN_SREGs)");
+		_chrf(info = parsearg_mem(token));
+		_be;break;
 	case TOKEN_PLUS:
 	case TOKEN_MINUS:
 	case TOKEN_IMM8:
 	case TOKEN_IMM16:
-	case TOKEN_IMM32:
-		info = parsearg_imm(token);
+	case TOKEN_IMM32: _bb("token(TOKEN_IMMs)");
+		_chrf(info = parsearg_imm(token));
 		if (info.type == TYPE_I16_16)
+			info.ptr = PTR_FAR;
+		else if (info.type == TYPE_I16_32)
 			info.ptr = PTR_FAR;
 		else
 			info.ptr = PTR_NONE;
-		break;
-	case TOKEN_SHORT:
-		token = gettoken(NULL);
-		if (token == TOKEN_PTR) token = gettoken(NULL);
+		_be;break;
+	case TOKEN_SHORT: _bb("token(TOKEN_SHORT)");
+		_chrf(token = gettoken(NULL));
+		if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
 		if (token == TOKEN_PLUS || token == TOKEN_MINUS) {
-			info = parsearg_imm(token);
-			if (info.type != TYPE_I8) flagerror = 1;
+			_bb("token(TOKEN_SIGNs)");
+			_chrf(info = parsearg_imm(token));
+			if (info.type != TYPE_I8) _serf_;
+			_be;
 		} else if (token == TOKEN_LABEL) {
 			info.type = TYPE_LABEL;
 			STRCPY(info.label, toklabel);
-		} else flagerror = 1;
+		} else _serf_;
 		info.ptr = PTR_SHORT;
-		break;
-	case TOKEN_NEAR:
-		token = gettoken(NULL);
-		if (token == TOKEN_PTR) token = gettoken(NULL);
-		if (token == TOKEN_WORD) {
-			token = gettoken(NULL);
-			if (token == TOKEN_PTR) token = gettoken(NULL);
-			if (token != TOKEN_LSPAREN) flagerror = 1;
-			info = parsearg_mem(token);
-			info.type = TYPE_M16;
-		} else if (token == TOKEN_IMM8 || token == TOKEN_IMM16) {
-			info = parsearg_imm(token);
-			if (info.type == TYPE_I8) {
-				info.imm16 = (t_nubit8)info.imm8;
-				info.type = TYPE_I16;
-			}
-			if (info.type != TYPE_I16) flagerror = 1;
-		} else if (token == TOKEN_LABEL) {
-			info.type = TYPE_LABEL;
-			STRCPY(info.label, toklabel);
-		} else flagerror = 1;
-		info.ptr = PTR_NEAR;
-		break;
-	case TOKEN_FAR:
-		token = gettoken(NULL);
-		if (token == TOKEN_PTR) token = gettoken(NULL);
+		_be;break;
+	case TOKEN_NEAR: _bb("token(TOKEN_NEAR)");
+		_chrf(token = gettoken(NULL));
+		if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
 		switch (token) {
 		case TOKEN_WORD:
-			token = gettoken(NULL);
-			if (token == TOKEN_PTR) token = gettoken(NULL);
-			info = parsearg_mem(token);
+			_bb("token(TOKEN_WORD)");
+			_chrf(token = gettoken(NULL));
+			if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+			_chrf(info = parsearg_mem(token));
 			info.type = TYPE_M16;
-			info.ptr = PTR_FAR;
-			break;
-		case TOKEN_DWORD:
-			token = gettoken(NULL);
-			if (token == TOKEN_PTR) token = gettoken(NULL);
-			info = parsearg_mem(token);
+			_be;break;
+		case TOKEN_DWORD: _bb("token(TOKEN_DWORD)");
+			_chrf(token = gettoken(NULL));
+			if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+			_chrf(info = parsearg_mem(token));
 			info.type = TYPE_M32;
-			info.ptr = PTR_FAR;
-			break;
+			_be;break;
 		case TOKEN_IMM16:
-			info = parsearg_imm(token);
-			if (info.type != TYPE_I16_16) flagerror = 1;
-			break;
+		case TOKEN_IMM32: _bb("token(TOKEN_IMM16/TOKEN_IMM32)");
+			_chrf(info = parsearg_imm(token));
+			if (info.type != TYPE_I16 && info.type != TYPE_I32) _serf_;
+			_be;break;
 		case TOKEN_LABEL:
 			info.type = TYPE_LABEL;
 			STRCPY(info.label, toklabel);
+			break;
 		case TOKEN_ES:
 		case TOKEN_CS:
 		case TOKEN_SS:
 		case TOKEN_DS:
 		case TOKEN_FS:
-		case TOKEN_GS:
-			info = parsearg_mem(token);
-			if (info.type != TYPE_M) flagerror = 1;
+		case TOKEN_GS: _bb("token(TOKEN_SREGs)");
+			_chrf(info = parsearg_mem(token));
+			if (info.type != TYPE_M) _serf_;
+			_be;break;
+		default: _serf_;break;}
+		info.ptr = PTR_NEAR;
+		_be;break;
+	case TOKEN_FAR: _bb("token(TOKEN_FAR)");
+		_chrf(token = gettoken(NULL));
+		if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+		switch (token) {
+		case TOKEN_WORD: _bb("token(TOKEN_WORD)");
+			_chrf(token = gettoken(NULL));
+			if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+			_chrf(info = parsearg_mem(token));
+			info.type = TYPE_M16;
+			info.ptr = PTR_FAR;
+			_be;break;
+		case TOKEN_DWORD: _bb("token(TOKEN_DWORD)");
+			_chrf(token = gettoken(NULL));
+			if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+			_chrf(info = parsearg_mem(token));
+			info.type = TYPE_M32;
+			info.ptr = PTR_FAR;
+			_be;break;
+		case TOKEN_IMM16: _bb("token(TOKEN_IMM16)");
+			_chrf(info = parsearg_imm(token));
+			if (info.type != TYPE_I16_16) _serf_;
+			_be;break;
+		case TOKEN_LABEL:
+			info.type = TYPE_LABEL;
+			STRCPY(info.label, toklabel);
 			break;
-		default:flagerror = 1;break;
-		}
+		case TOKEN_ES:
+		case TOKEN_CS:
+		case TOKEN_SS:
+		case TOKEN_DS:
+		case TOKEN_FS:
+		case TOKEN_GS: _bb("token(TOKEN_SREGs)");
+			_chrf(info = parsearg_mem(token));
+			if (info.type != TYPE_M) _serf_;
+			_be;break;
+		default: _serf_;break;}
 		info.ptr = PTR_FAR;
-		break;
+		_be;break;
 	case TOKEN_CR0: info.type = TYPE_CREG;info.creg = CREG_CR0;break;
 	case TOKEN_CR2: info.type = TYPE_CREG;info.creg = CREG_CR2;break;
 	case TOKEN_CR3: info.type = TYPE_CREG;info.creg = CREG_CR3;break;
@@ -1867,11 +2026,8 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 	case TOKEN_DR7: info.type = TYPE_DREG;info.dreg = DREG_DR7;break;
 	case TOKEN_TR6: info.type = TYPE_TREG;info.treg = TREG_TR6;break;
 	case TOKEN_TR7: info.type = TYPE_TREG;info.treg = TREG_TR7;break;
-	default:
-		info.type = TYPE_NONE;
-		flagerror = 1;
-		break;
-	}
+	default: _serf_;break;}
+	_ce;
 	return info;
 }
 /* assembly compiler: analyzer / label table */
@@ -1890,22 +2046,22 @@ typedef struct tag_t_aasm_label_def_node {
 
 static t_aasm_label_def_node *label_entry = NULL;
 
-static t_aasm_label_def_node *labelNewDefNode(t_strptr name, t_nubit16 pcs, t_nubit16 pip)
+static t_aasm_label_def_node *labelNewDefNode(t_strptr name, t_nubit16 pcs, t_nubit16 reip)
 {
 	t_aasm_label_def_node *p = (t_aasm_label_def_node *)malloc(sizeof(t_aasm_label_def_node));
 	STRCPY(p->name, name);
 	p->cs = pcs;
-	p->ip = pip;
+	p->ip = reip;
 	p->next = NULL;
 	p->ref = NULL;
 	return p;
 }
-static t_aasm_label_ref_node *labelNewRefNode(t_aasm_oprptr pptr, t_nubit16 pcs, t_nubit16 pip)
+static t_aasm_label_ref_node *labelNewRefNode(t_aasm_oprptr pptr, t_nubit16 pcs, t_nubit16 reip)
 {
 	t_aasm_label_ref_node *p = (t_aasm_label_ref_node *)malloc(sizeof(t_aasm_label_ref_node));
 	p->ptr = pptr;
 	p->cs = pcs;
-	p->ip = pip;
+	p->ip = reip;
 	p->next = NULL;
 	return p;
 }
@@ -2074,6 +2230,7 @@ static void _c_modrm(t_aasm_oprinfo modrm, t_nubit8 reg)
 {
 	t_nubit8 sibval;
 	t_nubit8 modregrm = (reg << 3);
+	_cb("_c_modrm");
 	switch (modrm.mem) {
 	case MEM_BX_SI:
 	case MEM_BX_DI:
@@ -2082,7 +2239,7 @@ static void _c_modrm(t_aasm_oprinfo modrm, t_nubit8 reg)
 	case MEM_SI:
 	case MEM_DI:
 	case MEM_BP:
-	case MEM_BX:
+	case MEM_BX: _bb("16-bit Addressing");
 		_SetAddressSize(2);
 		switch(modrm.mod) {
 		case MOD_M:
@@ -2105,7 +2262,7 @@ static void _c_modrm(t_aasm_oprinfo modrm, t_nubit8 reg)
 			setbyte(modregrm);
 			setword(modrm.disp16);
 			break;
-		case MOD_R:
+		case MOD_R: _bb("mod(MOD_R)");
 			modregrm |= (3 << 6);
 			switch (modrm.type) {
 			case TYPE_R8:
@@ -2120,10 +2277,10 @@ static void _c_modrm(t_aasm_oprinfo modrm, t_nubit8 reg)
 				modregrm |= (t_nubit8)modrm.reg32;
 				setbyte(modregrm);
 				break;
-			default:flagerror = 1;break;}
-			break;
-		default:flagerror = 1;break;}
-		break;
+			default: _se_;break;}
+			_be;break;
+		default: _se_;break;}
+		_be;break;
 	case MEM_EAX:
 	case MEM_ECX:
 	case MEM_EDX:
@@ -2131,7 +2288,7 @@ static void _c_modrm(t_aasm_oprinfo modrm, t_nubit8 reg)
 	case MEM_SIB:
 	case MEM_EBP:
 	case MEM_ESI:
-	case MEM_EDI:
+	case MEM_EDI: _bb("32-bit Addressing");
 		_SetAddressSize(4);
 		switch(modrm.mod) {
 		case MOD_M:
@@ -2197,7 +2354,7 @@ static void _c_modrm(t_aasm_oprinfo modrm, t_nubit8 reg)
 			default:break;}
 			setword(modrm.disp32);
 			break;
-		case MOD_R:
+		case MOD_R: _bb("mod(MOD_R)");
 			modregrm |= (3 << 6);
 			switch (modrm.type) {
 			case TYPE_R8:
@@ -2212,631 +2369,926 @@ static void _c_modrm(t_aasm_oprinfo modrm, t_nubit8 reg)
 				modregrm |= (t_nubit8)modrm.reg32;
 				setbyte(modregrm);
 				break;
-			default:flagerror = 1;break;}
-			break;
-		default:flagerror = 1;break;}
-		break;
-	default: flagerror = 1;break;}
+			default: _se_;break;}
+			_be;break;
+		default: _se_;break;}
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 
 static void ADD_RM8_R8()
 {
+	_cb("ADD_RM8_R8");
 	setbyte(0x00);
-	_c_modrm(aopri1, aopri2.reg8);
+	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_ce;
 }
 static void ADD_RM32_R32(t_nubit8 byte)
 {
+	_cb("ADD_RM32_R32");
 	_SetOperandSize(byte);
 	setbyte(0x01);
 	switch (byte) {
-	case 2: _c_modrm(aopri1, aopri2.reg16);break;
-	case 4: _c_modrm(aopri1, aopri2.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void ADD_R8_RM8()
 {
+	_cb("ADD_R8_RM8");
 	setbyte(0x02);
-	_c_modrm(aopri2, aopri1.reg8);
+	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_ce;
 }
 static void ADD_R32_RM32(t_nubit8 byte)
 {
+	_cb("ADD_R32_RM32");
 	_SetOperandSize(byte);
 	setbyte(0x03);
 	switch (byte) {
-	case 2: _c_modrm(aopri2, aopri1.reg16);break;
-	case 4: _c_modrm(aopri2, aopri1.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void ADD_AL_I8()
 {
+	_cb("ADD_AL_I8");
 	setbyte(0x04);
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void ADD_EAX_I32(t_nubit8 byte)
 {
+	_cb("ADD_EAX_I32");
 	_SetOperandSize(byte);
 	setbyte(0x05);
 	switch (byte) {
-	case 2: _c_imm16(aopri2.imm16);break;
-	case 4: _c_imm32(aopri2.imm32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void PUSH_ES()
 {
+	_cb("PUSH_ES");
 	setbyte(0x06);
-	avip++;
+	_ce;
 }
 static void POP_ES()
 {
+	_cb("POP_ES");
 	setbyte(0x07);
-	avip++;
+	_ce;
 }
 static void OR_RM8_R8()
 {
+	_cb("OR_RM8_R8");
 	setbyte(0x08);
-	avip++;
-	_c_modrm(aopri1, aopri2.reg8);
+	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_ce;
 }
 static void OR_RM32_R32(t_nubit8 byte)
 {
+	_cb("OR_RM32_R32");
 	_SetOperandSize(byte);
 	setbyte(0x09);
 	switch (byte) {
-	case 2: _c_modrm(aopri1, aopri2.reg16);break;
-	case 4: _c_modrm(aopri1, aopri2.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void OR_R8_RM8()
 {
+	_cb("OR_R8_RM8");
 	setbyte(0x0a);
-	avip++;
-	_c_modrm(aopri2, aopri1.reg8);
+	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_ce;
 }
 static void OR_R32_RM32(t_nubit8 byte)
 {
+	_cb("OR_R32_RM32");
 	_SetOperandSize(byte);
 	setbyte(0x0b);
 	switch (byte) {
-	case 2: _c_modrm(aopri2, aopri1.reg16);break;
-	case 4: _c_modrm(aopri2, aopri1.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void OR_AL_I8()
 {
+	_cb("OR_AL_I8");
 	setbyte(0x0c);
-	avip++;
 	_c_imm8(aopri2.imm8);
+	_ce;
 }
 static void OR_EAX_I32(t_nubit8 byte)
 {
+	_cb("OR_EAX_I32");
 	_SetOperandSize(byte);
 	setbyte(0x0d);
 	switch (byte) {
-	case 2: _c_imm16(aopri2.imm16);break;
-	case 4: _c_imm32(aopri2.imm32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void PUSH_CS()
 {
+	_cb("PUSH_CS");
 	setbyte(0x0e);
-	avip++;
+	_ce;
 }
 static void POP_CS()
 {
+	_cb("POP_CS");
 	setbyte(0x0f);
-	avip++;
+	_ce;
+}
+static void INS_0F()
+{
+	_cb("INS_0F");
+	setbyte(0x0f);
+	_ce;
 }
 static void ADC_RM8_R8()
 {
+	_cb("ADC_RM8_R8");
 	setbyte(0x10);
-	avip++;
-	_c_modrm(aopri1, aopri2.reg8);
+	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_ce;
 }
 static void ADC_RM32_R32(t_nubit8 byte)
 {
+	_cb("ADC_RM32_R32");
 	_SetOperandSize(byte);
 	setbyte(0x11);
 	switch (byte) {
-	case 2: _c_modrm(aopri1, aopri2.reg16);break;
-	case 4: _c_modrm(aopri1, aopri2.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void ADC_R8_RM8()
 {
+	_cb("ADC_R8_RM8");
 	setbyte(0x12);
-	avip++;
-	_c_modrm(aopri2, aopri1.reg8);
-}
-static void ADC_R16_RM16()
-{
-	setbyte(0x13);
-	avip++;
-	_c_modrm(aopri2, aopri1.reg16);
+	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_ce;
 }
 static void ADC_R32_RM32(t_nubit8 byte)
 {
+	_cb("ADC_R32_RM32");
 	_SetOperandSize(byte);
 	setbyte(0x13);
 	switch (byte) {
-	case 2: _c_modrm(aopri2, aopri1.reg16);break;
-	case 4: _c_modrm(aopri2, aopri1.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void ADC_AL_I8()
 {
+	_cb("ADC_AL_I8");
 	setbyte(0x14);
-	avip++;
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void ADC_EAX_I32(t_nubit8 byte)
 {
+	_cb("ADC_EAX_I32");
 	_SetOperandSize(byte);
 	setbyte(0x15);
 	switch (byte) {
-	case 2: _c_imm16(aopri2.imm16);break;
-	case 4: _c_imm32(aopri2.imm32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void PUSH_SS()
 {
+	_cb("PUSH_SS");
 	setbyte(0x16);
-	avip++;
+	_ce;
 }
 static void POP_SS()
 {
+	_cb("POP_SS");
 	setbyte(0x17);
-	avip++;
+	_ce;
 }
 static void SBB_RM8_R8()
 {
+	_cb("SBB_RM8_R8");
 	setbyte(0x18);
-	avip++;
-	_c_modrm(aopri1, aopri2.reg8);
+	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_ce;
 }
 static void SBB_RM32_R32(t_nubit8 byte)
 {
+	_cb("SBB_RM32_R32");
 	_SetOperandSize(byte);
 	setbyte(0x19);
 	switch (byte) {
-	case 2: _c_modrm(aopri1, aopri2.reg16);break;
-	case 4: _c_modrm(aopri1, aopri2.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void SBB_R8_RM8()
 {
+	_cb("SBB_R8_RM8");
 	setbyte(0x1a);
-	avip++;
-	_c_modrm(aopri2, aopri1.reg8);
+	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_ce;
 }
 static void SBB_R32_RM32(t_nubit8 byte)
 {
+	_cb("SBB_R32_RM32");
 	_SetOperandSize(byte);
 	setbyte(0x1b);
 	switch (byte) {
-	case 2: _c_modrm(aopri2, aopri1.reg16);break;
-	case 4: _c_modrm(aopri2, aopri1.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void SBB_AL_I8()
 {
+	_cb("SBB_AL_I8");
 	setbyte(0x1c);
-	avip++;
 	_c_imm8(aopri2.imm8);
+	_ce;
 }
 static void SBB_EAX_I32(t_nubit8 byte)
 {
+	_cb("SBB_EAX_I32");
 	_SetOperandSize(byte);
 	setbyte(0x1d);
 	switch (byte) {
-	case 2: _c_imm16(aopri2.imm16);break;
-	case 4: _c_imm32(aopri2.imm32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void PUSH_DS()
 {
+	_cb("PUSH_DS");
 	setbyte(0x1e);
-	avip++;
+	_ce;
 }
 static void POP_DS()
 {
+	_cb("POP_DS");
 	setbyte(0x1f);
-	avip++;
+	_ce;
 }
 static void AND_RM8_R8()
 {
+	_cb("AND_RM8_R8");
 	setbyte(0x20);
-	avip++;
-	_c_modrm(aopri1, aopri2.reg8);
+	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_ce;
 }
 static void AND_RM32_R32(t_nubit8 byte)
 {
+	_cb("AND_RM32_R32");
 	_SetOperandSize(byte);
 	setbyte(0x21);
 	switch (byte) {
-	case 2: _c_modrm(aopri1, aopri2.reg16);break;
-	case 4: _c_modrm(aopri1, aopri2.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void AND_R8_RM8()
 {
+	_cb("AND_R8_RM8");
 	setbyte(0x22);
-	avip++;
-	_c_modrm(aopri2, aopri1.reg8);
+	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_ce;
 }
 static void AND_R32_RM32(t_nubit8 byte)
 {
+	_cb("AND_R32_RM32");
 	_SetOperandSize(byte);
 	setbyte(0x23);
 	switch (byte) {
-	case 2: _c_modrm(aopri2, aopri1.reg16);break;
-	case 4: _c_modrm(aopri2, aopri1.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void AND_AL_I8()
 {
+	_cb("AND_AL_I8");
 	setbyte(0x24);
-	avip++;
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void AND_EAX_I32(t_nubit8 byte)
 {
+	_cb("AND_EAX_I32");
 	_SetOperandSize(byte);
 	setbyte(0x25);
 	switch (byte) {
-	case 2: _c_imm16(aopri2.imm16);break;
-	case 4: _c_imm32(aopri2.imm32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void ES()
+static void PREFIX_ES()
 {
-	if (ARG_NONE) {
-		setbyte(0x26);
-		avip++;
-	} else flagerror = 1;
+	_cb("PREFIX_ES");
+	if (ARG_NONE) aoprig.flages = 1;
+	else _se_;
+	_ce;
 }
 static void DAA()
 {
-	if (ARG_NONE) {
-		setbyte(0x27);
-		avip++;
-	} else flagerror = 1;
+	_cb("DAA");
+	if (ARG_NONE) setbyte(0x27);
+	else _se_;
+	_ce;
 }
 static void SUB_RM8_R8()
 {
+	_cb("SUB_RM8_R8");
 	setbyte(0x28);
-	avip++;
-	_c_modrm(aopri1, aopri2.reg8);
+	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_ce;
 }
 static void SUB_RM32_R32(t_nubit8 byte)
 {
+	_cb("SUB_RM32_R32");
 	_SetOperandSize(byte);
 	setbyte(0x29);
 	switch (byte) {
-	case 2: _c_modrm(aopri1, aopri2.reg16);break;
-	case 4: _c_modrm(aopri1, aopri2.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void SUB_R8_RM8()
 {
+	_cb("SUB_R8_RM8");
 	setbyte(0x2a);
-	avip++;
-	_c_modrm(aopri2, aopri1.reg8);
+	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_ce;
 }
 static void SUB_R32_RM32(t_nubit8 byte)
 {
+	_cb("SUB_R32_RM32");
 	_SetOperandSize(byte);
 	setbyte(0x2b);
 	switch (byte) {
-	case 2: _c_modrm(aopri2, aopri1.reg16);break;
-	case 4: _c_modrm(aopri2, aopri1.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void SUB_AL_I8()
 {
+	_cb("SUB_AL_I8");
 	setbyte(0x2c);
-	avip++;
 	_c_imm8(aopri2.imm8);
+	_ce;
 }
 static void SUB_EAX_I32(t_nubit8 byte)
 {
+	_cb("SUB_EAX_I32");
 	_SetOperandSize(byte);
 	setbyte(0x2d);
 	switch (byte) {
-	case 2: _c_imm16(aopri2.imm16);break;
-	case 4: _c_imm32(aopri2.imm32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void CS()
+static void PREFIX_CS()
 {
-	if (ARG_NONE) {
-		setbyte(0x2e);
-		avip++;
-	} else flagerror = 1;
+	_cb("PREFIX_CS");
+	if (ARG_NONE) aoprig.flagcs = 1;
+	else _se_;
+	_ce;
 }
 static void DAS()
 {
-	if (ARG_NONE) {
-		setbyte(0x2f);
-		avip++;
-	} else flagerror = 1;
+	_cb("DAS");
+	if (ARG_NONE) setbyte(0x2f);
+	else _se_;
+	_ce;
 }
 static void XOR_RM8_R8()
 {
+	_cb("XOR_RM8_R8");
 	setbyte(0x30);
-	avip++;
-	_c_modrm(aopri1, aopri2.reg8);
+	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_ce;
 }
 static void XOR_RM32_R32(t_nubit8 byte)
 {
+	_cb("XOR_RM32_R32");
 	_SetOperandSize(byte);
 	setbyte(0x31);
 	switch (byte) {
-	case 2: _c_modrm(aopri1, aopri2.reg16);break;
-	case 4: _c_modrm(aopri1, aopri2.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void XOR_R8_RM8()
 {
+	_cb("XOR_R8_RM8");
 	setbyte(0x32);
-	avip++;
-	_c_modrm(aopri2, aopri1.reg8);
+	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_ce;
 }
 static void XOR_R32_RM32(t_nubit8 byte)
 {
+	_cb("XOR_R32_RM32");
 	_SetOperandSize(byte);
 	setbyte(0x33);
 	switch (byte) {
-	case 2: _c_modrm(aopri2, aopri1.reg16);break;
-	case 4: _c_modrm(aopri2, aopri1.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void XOR_AL_I8()
 {
+	_cb("XOR_AL_I8");
 	setbyte(0x34);
-	avip++;
-	_c_imm8(aopri2.imm8);
+	_chk(_c_imm8(aopri2.imm8));
+	_ce;
 }
 static void XOR_EAX_I32(t_nubit8 byte)
 {
+	_cb("XOR_EAX_I32");
 	_SetOperandSize(byte);
 	setbyte(0x35);
 	switch (byte) {
-	case 2: _c_imm16(aopri2.imm16);break;
-	case 4: _c_imm32(aopri2.imm32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void SS()
+static void PREFIX_SS()
 {
-	if (ARG_NONE) {
-		setbyte(0x36);
-		avip++;
-	} else flagerror = 1;
+	_cb("PREFIX_SS");
+	if (ARG_NONE) aoprig.flagss = 1;
+	else _se_;
+	_ce;
 }
 static void AAA()
 {
-	if (ARG_NONE) {
-		setbyte(0x37);
-		avip++;
-	} else flagerror = 1;
+	_cb("AAA");
+	if (ARG_NONE) setbyte(0x37);
+	else _se_;
+	_ce;
 }
 static void CMP_RM8_R8()
 {
+	_cb("CMP_RM8_R8");
 	setbyte(0x38);
-	avip++;
-	_c_modrm(aopri1, aopri2.reg8);
+	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_ce;
 }
 static void CMP_RM32_R32(t_nubit8 byte)
 {
+	_cb("CMP_RM32_R32");
 	_SetOperandSize(byte);
 	setbyte(0x39);
 	switch (byte) {
-	case 2: _c_modrm(aopri1, aopri2.reg16);break;
-	case 4: _c_modrm(aopri1, aopri2.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void CMP_R8_RM8()
 {
+	_cb("CMP_R8_RM8");
 	setbyte(0x3a);
-	avip++;
-	_c_modrm(aopri2, aopri1.reg8);
+	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_ce;
 }
 static void CMP_R32_RM32(t_nubit8 byte)
 {
+	_cb("CMP_R32_RM32");
 	_SetOperandSize(byte);
 	setbyte(0x3b);
 	switch (byte) {
-	case 2: _c_modrm(aopri2, aopri1.reg16);break;
-	case 4: _c_modrm(aopri2, aopri1.reg32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
 static void CMP_AL_I8()
 {
+	_cb("CMP_AL_I8");
 	setbyte(0x3c);
-	avip++;
 	_c_imm8(aopri2.imm8);
+	_ce;
 }
 static void CMP_EAX_I32(t_nubit8 byte)
 {
+	_cb("CMP_EAX_I32");
 	_SetOperandSize(byte);
 	setbyte(0x3d);
 	switch (byte) {
-	case 2: _c_imm16(aopri2.imm16);break;
-	case 4: _c_imm32(aopri2.imm32);break;
-	default:flagerror = 1;break;}
+	case 2: _bb("byte(2)");
+		_chk(_c_imm16(aopri2.imm16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_imm32(aopri2.imm32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void DS()
+static void PREFIX_DS()
 {
-	if (ARG_NONE) {
-		setbyte(0x3e);
-		avip++;
-	} else flagerror = 1;
+	_cb("PREFIX_DS");
+	if (ARG_NONE) aoprig.flagds = 1;
+	else _se_;
+	_ce;
 }
 static void AAS()
 {
-	if (ARG_NONE) {
-		setbyte(0x3f);
-		avip++;
-	} else flagerror = 1;
+	_cb("AAS");
+	if (ARG_NONE) setbyte(0x3f);
+	else _se_;
+	_ce;
 }
-static void INC_AX()
+static void INC_EAX(t_nubit8 byte)
 {
+	_cb("INC_EAX");
+	_SetOperandSize(byte);
 	setbyte(0x40);
-	avip++;
+	_ce;
 }
-static void INC_CX()
+static void INC_ECX(t_nubit8 byte)
 {
+	_cb("INC_ECX");
+	_SetOperandSize(byte);
 	setbyte(0x41);
-	avip++;
+	_ce;
 }
-static void INC_DX()
+static void INC_EDX(t_nubit8 byte)
 {
+	_cb("INC_EDX");
+	_SetOperandSize(byte);
 	setbyte(0x42);
-	avip++;
+	_ce;
 }
-static void INC_BX()
+static void INC_EBX(t_nubit8 byte)
 {
+	_cb("INC_EBX");
+	_SetOperandSize(byte);
 	setbyte(0x43);
-	avip++;
+	_ce;
 }
-static void INC_SP()
+static void INC_ESP(t_nubit8 byte)
 {
+	_cb("INC_ESP");
+	_SetOperandSize(byte);
 	setbyte(0x44);
-	avip++;
+	_ce;
 }
-static void INC_BP()
+static void INC_EBP(t_nubit8 byte)
 {
+	_cb("INC_EBP");
+	_SetOperandSize(byte);
 	setbyte(0x45);
-	avip++;
+	_ce;
 }
-static void INC_SI()
+static void INC_ESI(t_nubit8 byte)
 {
+	_cb("INC_ESI");
+	_SetOperandSize(byte);
 	setbyte(0x46);
-	avip++;
+	_ce;
 }
-static void INC_DI()
+static void INC_EDI(t_nubit8 byte)
 {
+	_cb("INC_EDI");
+	_SetOperandSize(byte);
 	setbyte(0x47);
-	avip++;
+	_ce;
 }
-static void DEC_AX()
+static void DEC_EAX(t_nubit8 byte)
 {
+	_cb("DEC_EAX");
+	_SetOperandSize(byte);
 	setbyte(0x48);
-	avip++;
+	_ce;
 }
-static void DEC_CX()
+static void DEC_ECX(t_nubit8 byte)
 {
+	_cb("DEC_ECX");
+	_SetOperandSize(byte);
 	setbyte(0x49);
-	avip++;
+	_ce;
 }
-static void DEC_DX()
+static void DEC_EDX(t_nubit8 byte)
 {
+	_cb("DEC_EDX");
+	_SetOperandSize(byte);
 	setbyte(0x4a);
-	avip++;
+	_ce;
 }
-static void DEC_BX()
+static void DEC_EBX(t_nubit8 byte)
 {
+	_cb("DEC_EBX");
+	_SetOperandSize(byte);
 	setbyte(0x4b);
-	avip++;
+	_ce;
 }
-static void DEC_SP()
+static void DEC_ESP(t_nubit8 byte)
 {
+	_cb("DEC_ESP");
+	_SetOperandSize(byte);
 	setbyte(0x4c);
-	avip++;
+	_ce;
 }
-static void DEC_BP()
+static void DEC_EBP(t_nubit8 byte)
 {
+	_cb("DEC_EBP");
+	_SetOperandSize(byte);
 	setbyte(0x4d);
-	avip++;
+	_ce;
 }
-static void DEC_SI()
+static void DEC_ESI(t_nubit8 byte)
 {
+	_cb("DEC_ESI");
+	_SetOperandSize(byte);
 	setbyte(0x4e);
-	avip++;
+	_ce;
 }
-static void DEC_DI()
+static void DEC_EDI(t_nubit8 byte)
 {
+	_cb("DEC_EDI");
+	_SetOperandSize(byte);
 	setbyte(0x4f);
-	avip++;
+	_ce;
 }
 static void PUSH_EAX(t_nubit8 byte)
 {
+	_cb("PUSH_EAX");
 	_SetOperandSize(byte);
 	setbyte(0x50);
+	_ce;
 }
 static void PUSH_ECX(t_nubit8 byte)
 {
+	_cb("PUSH_ECX");
 	_SetOperandSize(byte);
 	setbyte(0x51);
+	_ce;
 }
 static void PUSH_EDX(t_nubit8 byte)
 {
+	_cb("PUSH_EDX");
 	_SetOperandSize(byte);
 	setbyte(0x52);
+	_ce;
 }
 static void PUSH_EBX(t_nubit8 byte)
 {
+	_cb("PUSH_EBX");
 	_SetOperandSize(byte);
 	setbyte(0x53);
+	_ce;
 }
 static void PUSH_ESP(t_nubit8 byte)
 {
+	_cb("PUSH_ESP");
 	_SetOperandSize(byte);
 	setbyte(0x54);
+	_ce;
 }
 static void PUSH_EBP(t_nubit8 byte)
 {
+	_cb("PUSH_EBP");
 	_SetOperandSize(byte);
 	setbyte(0x55);
+	_ce;
 }
 static void PUSH_ESI(t_nubit8 byte)
 {
+	_cb("PUSH_ESI");
 	_SetOperandSize(byte);
 	setbyte(0x56);
+	_ce;
 }
 static void PUSH_EDI(t_nubit8 byte)
 {
+	_cb("PUSH_EDI");
 	_SetOperandSize(byte);
 	setbyte(0x57);
+	_ce;
 }
 static void POP_EAX(t_nubit8 byte)
 {
+	_cb("POP_EAX");
 	_SetOperandSize(byte);
 	setbyte(0x58);
+	_ce;
 }
 static void POP_ECX(t_nubit8 byte)
 {
+	_cb("POP_ECX");
 	_SetOperandSize(byte);
 	setbyte(0x59);
+	_ce;
 }
 static void POP_EDX(t_nubit8 byte)
 {
+	_cb("POP_EDX");
 	_SetOperandSize(byte);
 	setbyte(0x5a);
+	_ce;
 }
 static void POP_EBX(t_nubit8 byte)
 {
+	_cb("POP_EBX");
 	_SetOperandSize(byte);
 	setbyte(0x5b);
+	_ce;
 }
 static void POP_ESP(t_nubit8 byte)
 {
+	_cb("POP_ESP");
 	_SetOperandSize(byte);
 	setbyte(0x5c);
+	_ce;
 }
 static void POP_EBP(t_nubit8 byte)
 {
+	_cb("POP_EBP");
 	_SetOperandSize(byte);
 	setbyte(0x5d);
+	_ce;
 }
 static void POP_ESI(t_nubit8 byte)
 {
+	_cb("POP_ESI");
 	_SetOperandSize(byte);
 	setbyte(0x5e);
+	_ce;
 }
 static void POP_EDI(t_nubit8 byte)
 {
+	_cb("POP_EDI");
 	_SetOperandSize(byte);
 	setbyte(0x5f);
+	_ce;
+}
+static void PUSHA(t_nubit8 byte)
+{
+	_cb("PUSHA");
+	_SetOperandSize(byte);
+	setbyte(0x60);
+	_ce;
+}
+static void POPA(t_nubit8 byte)
+{
+	_cb("POPA");
+	_SetOperandSize(byte);
+	setbyte(0x61);
+	_ce;
+}
+
+static void BOUND_R32_M32_32(t_nubit8 byte)
+{
+	_SetOperandSize(byte);
+	setbyte(0x62);
+	switch (byte) {
+	case 2: _c_modrm(aopri2, aopri1.reg16);break;
+	case 4: _c_modrm(aopri2, aopri1.reg32);break;
+	default: flagerror = 1;break;}
+}
+static void ARPL_RM16_R16()
+{
+	if (ARG_RM16_R16) {
+		setbyte(0x63);
+		_c_modrm(aopri1, aopri2.reg16);
+	} else flagerror = 1;
+}
+static void PREFIX_FS()
+{
+	if (ARG_NONE) aoprig.flagfs = 1;
+	else flagerror = 1;
+}
+static void PREFIX_GS()
+{
+	if (ARG_NONE) aoprig.flaggs = 1;
+	else flagerror = 1;
+}
+static void PREFIX_OprSize()
+{
+	if (ARG_NONE) flagoprg = 1;
+	else flagerror = 1;
+}
+static void PREFIX_AddrSize()
+{
+	if (ARG_NONE) flagaddrg = 1;
+	else flagerror = 1;
 }
 static void PUSH_I32(t_nubit8 byte)
 {
@@ -2847,10 +3299,89 @@ static void PUSH_I32(t_nubit8 byte)
 	case 4: _c_imm32(aopri1.imm32);break;
 	default:flagerror = 1;break;}
 }
+static void IMUL_R32_RM32_I32(t_nubit8 byte)
+{
+	_SetOperandSize(byte);
+	setbyte(0x69);
+	switch (byte) {
+	case 2:
+		_c_modrm(aopri2, aopri1.reg16);
+		_c_imm16(aopri3.imm16);
+		break;
+	case 4:
+		_c_modrm(aopri2, aopri1.reg32);
+		_c_imm32(aopri3.imm32);
+		break;
+	default: flagerror = 1;break;}
+}
 static void PUSH_I8()
 {
 	setbyte(0x6a);
 	_c_imm8(aopri1.imm8);
+}
+static void INSB()
+{
+	setbyte(0x6c);
+	rinfo = NULL;
+	if (ARG_ESDI8_DX) {
+		_SetAddressSize(2);
+	} else if (ARG_ESEDI8_DX) {
+		_SetAddressSize(4);
+	} else flagerror = 1;
+}
+static void INSW(t_nubit8 byte)
+{
+	setbyte(0x6d);
+	rinfo = NULL;
+	switch (byte) {
+	case 2:
+		if (ARG_ESDI16_DX) {
+			_SetAddressSize(2);
+		} else if (ARG_ESEDI16_DX) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	case 4:
+		if (ARG_ESDI32_DX) {
+			_SetAddressSize(2);
+		} else if (ARG_ESEDI32_DX) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	default:flagerror = 1;break;}
+}
+static void OUTSB()
+{
+	setbyte(0x6e);
+	rinfo = &aopri1;
+	if (rinfo->flagds) rinfo->flagds = 0;
+	if (ARG_DX_DSSI8) {
+		_SetAddressSize(2);
+	} else if (ARG_DSESI8) {
+		_SetAddressSize(4);
+	} else flagerror = 1;
+}
+static void OUTSW(t_nubit8 byte)
+{
+	setbyte(0x6f);
+	rinfo = &aopri1;
+	if (rinfo->flagds) rinfo->flagds = 0;
+	switch (byte) {
+	case 2:
+		if (ARG_DX_DSSI16) {
+			_SetAddressSize(2);
+		} else if (ARG_DX_DSESI16) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	case 4:
+		if (ARG_DX_DSSI32) {
+			_SetAddressSize(2);
+		} else if (ARG_DX_DSESI32) {
+			_SetAddressSize(4);
+		} else flagerror = 1;
+		break;
+	default:flagerror = 1;break;}
 }
 static void INS_80(t_nubit8 rid)
 {
@@ -2878,14 +3409,16 @@ static void INS_83(t_nubit8 rid, t_nubit8 byte)
 static void TEST_RM8_R8()
 {
 	setbyte(0x84);
-	avip++;
 	_c_modrm(aopri1, aopri2.reg8);
 }
-static void TEST_RM16_R16()
+static void TEST_RM32_R32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x85);
-	avip++;
-	_c_modrm(aopri1, aopri2.reg16);
+	switch (byte) {
+	case 2: _c_modrm(aopri1, aopri2.reg16);break;
+	case 4: _c_modrm(aopri1, aopri2.reg32);break;
+	default: flagerror = 1;break;}
 }
 static void XCHG_RM8_R8()
 {
@@ -2904,7 +3437,6 @@ static void XCHG_RM32_R32(t_nubit8 byte)
 static void MOV_RM8_R8()
 {
 	setbyte(0x88);
-	avip++;
 	_c_modrm(aopri1, aopri2.reg8);
 }
 static void MOV_RM32_R32(t_nubit8 byte)
@@ -2931,20 +3463,30 @@ static void MOV_R32_RM32(t_nubit8 byte)
 	case 4: _c_modrm(aopri2, aopri1.reg32);break;
 	default:flagerror = 1;break;}
 }
-static void MOV_RM16_SREG()
+static void MOV_RM16_SREG(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x8c);
-	avip++;
 	_c_modrm(aopri1, aopri2.sreg);
 }
-static void LEA_R16_M16()
+static void LEA_R32_M32(t_nubit8 byte)
 {
+	_cb("LEA_R32_M32");
+	_SetOperandSize(byte);
 	setbyte(0x8d);
-	avip++;
-	_c_modrm(aopri2, aopri1.reg16);
+	switch (byte) {
+	case 2: _bb("byte(2)");
+		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_be;break;
+	case 4: _bb("byte(4)");
+		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_be;break;
+	default: _se_;break;}
+	_ce;
 }
-static void MOV_SREG_RM16()
+static void MOV_SREG_RM16(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x8e);
 	_c_modrm(aopri2, aopri1.sreg);
 }
@@ -2956,50 +3498,48 @@ static void POP_RM32(t_nubit8 byte)
 }
 static void NOP()
 {
-	if (ARG_NONE) {
-		setbyte(0x90);
-		avip++;
-	} else flagerror = 1;
+	if (ARG_NONE) setbyte(0x90);
+	else flagerror = 1;
 }
-static void XCHG_AX_AX()
+static void XCHG_EAX_EAX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x90);
-	avip++;
 }
-static void XCHG_CX_AX()
+static void XCHG_ECX_EAX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x91);
-	avip++;
 }
-static void XCHG_DX_AX()
+static void XCHG_EDX_EAX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x92);
-	avip++;
 }
-static void XCHG_BX_AX()
+static void XCHG_EBX_EAX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x93);
-	avip++;
 }
-static void XCHG_SP_AX()
+static void XCHG_ESP_EAX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x94);
-	avip++;
 }
-static void XCHG_BP_AX()
+static void XCHG_EBP_EAX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x95);
-	avip++;
 }
-static void XCHG_SI_AX()
+static void XCHG_ESI_EAX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x96);
-	avip++;
 }
-static void XCHG_DI_AX()
+static void XCHG_EDI_EAX(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0x97);
-	avip++;
 }
 static void CBW()
 {
@@ -3023,8 +3563,8 @@ static void CALL_PTR16_16()
 		labelStoreRef(aopri1.label, PTR_FAR);
 		avip += 4;
 	} else {
-		_c_imm16(aopri1.pip);
-		_c_imm16(aopri1.pcs);
+		_c_imm16(aopri1.reip);
+		_c_imm16(aopri1.rcs);
 	}
 }
 static void WAIT()
@@ -3072,7 +3612,7 @@ static void MOV_EAX_MOFFS32(t_nubit8 byte)
 		_c_imm16(aopri2.disp16);
 	} else if (aopri2.mem == MEM_EBP) {
 		_SetAddressSize(4);
-		_c_imm16(aopri2.disp32);
+		_c_imm32(aopri2.disp32);
 	} else flagerror = 1;
 }
 static void MOV_MOFFS8_AL()
@@ -3095,7 +3635,7 @@ static void MOV_MOFFS32_EAX(t_nubit8 byte)
 		_c_imm16(aopri1.disp16);
 	} else if (aopri1.mem == MEM_EBP) {
 		_SetAddressSize(4);
-		_c_imm16(aopri1.disp32);
+		_c_imm32(aopri1.disp32);
 	} else flagerror = 1;
 }
 static void MOVSB()
@@ -3169,14 +3709,16 @@ static void CMPSW(t_nubit8 byte)
 static void TEST_AL_I8()
 {
 	setbyte(0xa8);
-	avip++;
 	_c_imm8(aopri2.imm8);
 }
-static void TEST_AX_I16()
+static void TEST_EAX_I32(t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0xa9);
-	avip++;
-	_c_imm16(aopri2.imm16);
+	switch (byte) {
+	case 2: _c_imm16(aopri2.imm16);break;
+	case 4: _c_imm32(aopri2.imm32);break;
+	default: flagerror = 1;break;}
 }
 static void STOSB()
 {
@@ -3403,19 +3945,21 @@ static void LDS_R16_M16()
 	avip++;
 	_c_modrm(aopri2, aopri1.reg16);
 }
-static void MOV_M8_I8()
+static void INS_C6(t_nubit8 rid)
 {
 	setbyte(0xc6);
-	avip++;
-	_c_modrm(aopri1, 0x00);
+	_c_modrm(aopri1, rid);
 	_c_imm8(aopri2.imm8);
 }
-static void MOV_M16_I16()
+static void INS_C7(t_nubit8 rid, t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0xc7);
-	avip++;
-	_c_modrm(aopri1, 0x00);
-	_c_imm16(aopri2.imm16);
+	_c_modrm(aopri1, rid);
+	switch (byte) {
+	case 2: _c_imm16(aopri2.imm16);break;
+	case 4: _c_imm32(aopri2.imm32);break;
+	default: flagerror = 1;break;}
 }
 static void RETF_I16()
 {
@@ -3467,10 +4011,10 @@ static void INS_D2(t_nubit8 rid)
 	avip++;
 	_c_modrm(aopri1, rid);
 }
-static void INS_D3(t_nubit8 rid)
+static void INS_D3(t_nubit8 rid, t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0xd3);
-	avip++;
 	_c_modrm(aopri1, rid);
 }
 static void AAM()
@@ -3541,8 +4085,8 @@ static void JMP_PTR16_16()
 		labelStoreRef(aopri1.label, PTR_FAR);
 		iop += 4;
 	} else {
-		_c_imm16(aopri1.pip);
-		_c_imm16(aopri1.pcs);
+		_c_imm16(aopri1.reip);
+		_c_imm16(aopri1.rcs);
 	}
 }
 static void IN_AL_DX()
@@ -3565,7 +4109,7 @@ static void OUT_DX_AX()
 	setbyte(0xef);
 	avip++;
 }
-static void LOCK()
+static void PREFIX_LOCK()
 {
 	if (ARG_NONE) {
 		setbyte(0xf0);
@@ -3580,11 +4124,11 @@ static void QDX()
 		_c_imm8(aopri1.imm8);
 	} else flagerror = 1;
 }
-static void REPNZ()
+static void PREFIX_REPNZ()
 {
 	flagrepnz = 1;
 }
-static void REPZ()
+static void PREFIX_REPZ()
 {
 	flagrepz = 1;
 }
@@ -3609,12 +4153,17 @@ static void INS_F6(t_nubit8 rid)
 	_c_modrm(aopri1, rid);
 	if (!rid) _c_imm8(aopri2.imm8);
 }
-static void INS_F7(t_nubit8 rid)
+static void INS_F7(t_nubit8 rid, t_nubit8 byte)
 {
+	_SetOperandSize(byte);
 	setbyte(0xf7);
-	avip++;
 	_c_modrm(aopri1, rid);
-	if (!rid) _c_imm16(aopri2.imm16);
+	if (!rid) {
+		switch (byte) {
+		case 2: _c_imm16(aopri2.imm16);break;
+		case 4: _c_imm32(aopri2.imm32);break;
+		default: flagerror = 1;break;}
+	}
 }
 static void CLC()
 {
@@ -3669,37 +4218,50 @@ static void INS_FF(t_nubit8 rid, t_nubit8 byte)
 	setbyte(0xff);
 	_c_modrm(aopri1, rid);
 }
+/* extended instructions */
+static void INS_0F_01(t_nubit8 rid, t_nubit8 byte)
+{
+	_SetOperandSize(byte);
+	INS_0F();
+	setbyte(0x01);
+	_c_modrm(aopri1, rid);
+}
+static void MOV_R32_CR(t_nubit8 crid)
+{
+	INS_0F();
+	setbyte(0x20);
+	_c_modrm(aopri1, crid);
+}
+static void MOV_CR_R32(t_nubit8 crid)
+{
+	INS_0F();
+	setbyte(0x22);
+	_c_modrm(aopri2, crid);
+}
 static void PUSH_FS()
 {
-	setbyte(0x0f);
+	INS_0F();
 	setbyte(0xa0);
 }
 static void POP_FS()
 {
-	setbyte(0x0f);
+	INS_0F();
 	setbyte(0xa1);
 }
 static void PUSH_GS()
 {
-	setbyte(0x0f);
+	INS_0F();
 	setbyte(0xa8);
 }
 static void POP_GS()
 {
-	setbyte(0x0f);
+	INS_0F();
 	setbyte(0xa9);
-}
-static void INS_0F_01(t_nubit8 rid, t_nubit8 byte)
-{
-	_SetOperandSize(byte);
-	setbyte(0x0f);
-	setbyte(0x01);
-	_c_modrm(aopri1, rid);
 }
 static void MOVZX_R32_RM8(t_nubit8 byte)
 {
 	_SetOperandSize(byte);
-	setbyte(0x0f);
+	INS_0F();
 	setbyte(0xb6);
 	switch (byte) {
 	case 2: _c_modrm(aopri2, aopri1.reg16);break;
@@ -3708,7 +4270,7 @@ static void MOVZX_R32_RM8(t_nubit8 byte)
 }
 static void MOVZX_R32_RM16()
 {
-	setbyte(0x0f);
+	INS_0F();
 	setbyte(0xb7);
 	_c_modrm(aopri2, aopri1.reg32);
 }
@@ -4150,14 +4712,22 @@ static void CMP()
 }
 static void INC()
 {
-	if      (ARG_AX) INC_AX();
-	else if (ARG_CX) INC_CX();
-	else if (ARG_DX) INC_DX();
-	else if (ARG_BX) INC_BX();
-	else if (ARG_SP) INC_SP();
-	else if (ARG_BP) INC_BP();
-	else if (ARG_SI) INC_SI();
-	else if (ARG_DI) INC_DI();
+	if      (ARG_AX) INC_EAX(2);
+	else if (ARG_CX) INC_ECX(2);
+	else if (ARG_DX) INC_EDX(2);
+	else if (ARG_BX) INC_EBX(2);
+	else if (ARG_SP) INC_ESP(2);
+	else if (ARG_BP) INC_EBP(2);
+	else if (ARG_SI) INC_ESI(2);
+	else if (ARG_DI) INC_EDI(2);
+	else if (ARG_EAX) INC_EAX(4);
+	else if (ARG_ECX) INC_ECX(4);
+	else if (ARG_EDX) INC_EDX(4);
+	else if (ARG_EBX) INC_EBX(4);
+	else if (ARG_ESP) INC_ESP(4);
+	else if (ARG_EBP) INC_EBP(4);
+	else if (ARG_ESI) INC_ESI(4);
+	else if (ARG_EDI) INC_EDI(4);
 	else if (ARG_RM8s) INS_FE(0x00);
 	else if (ARG_RM16s) INS_FF(0x00, 2);
 	else if (ARG_RM32s) INS_FF(0x00, 4);
@@ -4165,17 +4735,40 @@ static void INC()
 }
 static void DEC()
 {
-	if      (ARG_AX) DEC_AX();
-	else if (ARG_CX) DEC_CX();
-	else if (ARG_DX) DEC_DX();
-	else if (ARG_BX) DEC_BX();
-	else if (ARG_SP) DEC_SP();
-	else if (ARG_BP) DEC_BP();
-	else if (ARG_SI) DEC_SI();
-	else if (ARG_DI) DEC_DI();
+	if      (ARG_AX) DEC_EAX(2);
+	else if (ARG_CX) DEC_ECX(2);
+	else if (ARG_DX) DEC_EDX(2);
+	else if (ARG_BX) DEC_EBX(2);
+	else if (ARG_SP) DEC_ESP(2);
+	else if (ARG_BP) DEC_EBP(2);
+	else if (ARG_SI) DEC_ESI(2);
+	else if (ARG_DI) DEC_EDI(2);
+	else if (ARG_EAX) DEC_EAX(4);
+	else if (ARG_ECX) DEC_ECX(4);
+	else if (ARG_EDX) DEC_EDX(4);
+	else if (ARG_EBX) DEC_EBX(4);
+	else if (ARG_ESP) DEC_ESP(4);
+	else if (ARG_EBP) DEC_EBP(4);
+	else if (ARG_ESI) DEC_ESI(4);
+	else if (ARG_EDI) DEC_EDI(4);
 	else if (ARG_RM8s) INS_FE(0x01);
 	else if (ARG_RM16s) INS_FF(0x01, 2);
 	else if (ARG_RM32s) INS_FF(0x01, 4);
+	else flagerror = 1;
+}
+static void BOUND()
+{
+	if (ARG_R16_M16) BOUND_R32_M32_32(2);
+	else if (ARG_R32_M32) BOUND_R32_M32_32(4);
+	else flagerror = 1;
+}
+static void IMUL()
+{
+	if      (ARG_RM8s) INS_F6(0x05);
+	else if (ARG_RM16s) INS_F7(0x05, 2);
+	else if (ARG_RM32s) INS_F7(0x05, 4);
+	else if (ARG_R16_RM16_I16) IMUL_R32_RM32_I32(2);
+	else if (ARG_R32_RM32_I32) IMUL_R32_RM32_I32(4);
 	else flagerror = 1;
 }
 static void JCC_REL(t_nubit8 opcode)
@@ -4185,41 +4778,47 @@ static void JCC_REL(t_nubit8 opcode)
 		_c_imm8(aopri1.imm8);
 	} else if (ARG_I16s) {
 		_SetOperandSize(2);
-		setbyte(0x0f);
+		INS_0F();
 		setbyte(opcode + 0x10);
 		_c_imm16(aopri1.imm16);
 	} else if (ARG_I32s) {
 		_SetOperandSize(4);
-		setbyte(0x0f);
+		INS_0F();
 		setbyte(opcode + 0x10);
 		_c_imm16(aopri1.imm32);
-	} else if (ARG_PNONE_LABEL || ARG_SHORT_LABEL) {
-		setbyte(opcode);
-		avip++;
-		labelStoreRef(aopri1.label, PTR_SHORT);
-		avip++;
 	} else flagerror = 1;
 }
 static void TEST()
 {
 	if      (ARG_AL_I8) TEST_AL_I8();
-	else if (ARG_AX_I16) TEST_AX_I16();
+	else if (ARG_AX_I16) TEST_EAX_I32(2);
+	else if (ARG_EAX_I32) TEST_EAX_I32(4);
 	else if (ARG_RM8_R8) TEST_RM8_R8();
-	else if (ARG_RM16_R16) TEST_RM16_R16();
+	else if (ARG_RM16_R16) TEST_RM32_R32(2);
+	else if (ARG_RM32_R32) TEST_RM32_R32(4);
 	else if (ARG_RM8_I8) INS_F6(0x00);
-	else if (ARG_RM16_I16) INS_F7(0x00);
+	else if (ARG_RM16_I16) INS_F7(0x00, 2);
+	else if (ARG_RM32_I32) INS_F7(0x00, 4);
 	else flagerror = 1;
 }
 static void XCHG()
 {
-	if      (ARG_AX_AX) XCHG_AX_AX();
-	else if (ARG_CX_AX) XCHG_CX_AX();
-	else if (ARG_DX_AX) XCHG_DX_AX();
-	else if (ARG_BX_AX) XCHG_BX_AX();
-	else if (ARG_SP_AX) XCHG_SP_AX();
-	else if (ARG_BP_AX) XCHG_BP_AX();
-	else if (ARG_SI_AX) XCHG_SI_AX();
-	else if (ARG_DI_AX) XCHG_DI_AX();
+	if      (ARG_AX_AX) XCHG_EAX_EAX(2);
+	else if (ARG_CX_AX) XCHG_ECX_EAX(2);
+	else if (ARG_DX_AX) XCHG_EDX_EAX(2);
+	else if (ARG_BX_AX) XCHG_EBX_EAX(2);
+	else if (ARG_SP_AX) XCHG_ESP_EAX(2);
+	else if (ARG_BP_AX) XCHG_EBP_EAX(2);
+	else if (ARG_SI_AX) XCHG_ESI_EAX(2);
+	else if (ARG_DI_AX) XCHG_EDI_EAX(2);
+	else if (ARG_EAX_EAX) XCHG_EAX_EAX(4);
+	else if (ARG_ECX_EAX) XCHG_ECX_EAX(4);
+	else if (ARG_EDX_EAX) XCHG_EDX_EAX(4);
+	else if (ARG_EBX_EAX) XCHG_EBX_EAX(4);
+	else if (ARG_ESP_EAX) XCHG_ESP_EAX(4);
+	else if (ARG_EBP_EAX) XCHG_EBP_EAX(4);
+	else if (ARG_ESI_EAX) XCHG_ESI_EAX(4);
+	else if (ARG_EDI_EAX) XCHG_EDI_EAX(4);
 	else if (ARG_RM8_R8) XCHG_RM8_R8();
 	else if (ARG_RM16_R16) XCHG_RM32_R32(2);
 	else if (ARG_RM32_R32) XCHG_RM32_R32(4);
@@ -4227,14 +4826,14 @@ static void XCHG()
 }
 static void MOV()
 {
-	if      (ARG_AL_I8) MOV_AL_I8();
-	else if (ARG_CL_I8) MOV_CL_I8();
-	else if (ARG_DL_I8) MOV_DL_I8();
-	else if (ARG_BL_I8) MOV_BL_I8();
-	else if (ARG_AH_I8) MOV_AH_I8();
-	else if (ARG_CH_I8) MOV_CH_I8();
-	else if (ARG_DH_I8) MOV_DH_I8();
-	else if (ARG_BH_I8) MOV_BH_I8();
+	if      (ARG_AL_I8)  MOV_AL_I8();
+	else if (ARG_CL_I8)  MOV_CL_I8();
+	else if (ARG_DL_I8)  MOV_DL_I8();
+	else if (ARG_BL_I8)  MOV_BL_I8();
+	else if (ARG_AH_I8)  MOV_AH_I8();
+	else if (ARG_CH_I8)  MOV_CH_I8();
+	else if (ARG_DH_I8)  MOV_DH_I8();
+	else if (ARG_BH_I8)  MOV_BH_I8();
 	else if (ARG_AX_I16) MOV_AX_I16();
 	else if (ARG_CX_I16) MOV_CX_I16();
 	else if (ARG_DX_I16) MOV_DX_I16();
@@ -4243,28 +4842,40 @@ static void MOV()
 	else if (ARG_BP_I16) MOV_BP_I16();
 	else if (ARG_SI_I16) MOV_SI_I16();
 	else if (ARG_DI_I16) MOV_DI_I16();
-	else if (ARG_AL_M8) MOV_AL_MOFFS8();
-	else if (ARG_M8_AL) MOV_MOFFS8_AL();
-	else if (ARG_AX_M16) MOV_EAX_MOFFS32(2);
-	else if (ARG_M16_AX) MOV_MOFFS32_EAX(2);
-	else if (ARG_EAX_M32) MOV_EAX_MOFFS32(4);
-	else if (ARG_M32_EAX) MOV_MOFFS32_EAX(4);
-	else if (ARG_R8_RM8) MOV_R8_RM8();
+	else if (ARG_AL_MOFFS8)   MOV_AL_MOFFS8();
+	else if (ARG_MOFFS8_AL)   MOV_MOFFS8_AL();
+	else if (ARG_AX_MOFFS16)  MOV_EAX_MOFFS32(2);
+	else if (ARG_MOFFS16_AX)  MOV_MOFFS32_EAX(2);
+	else if (ARG_EAX_MOFFS32) MOV_EAX_MOFFS32(4);
+	else if (ARG_MOFFS32_EAX) MOV_MOFFS32_EAX(4);
+	else if (ARG_R8_RM8)   MOV_R8_RM8();
 	else if (ARG_R16_RM16) MOV_R32_RM32(2);
 	else if (ARG_R32_RM32) MOV_R32_RM32(4);
-	else if (ARG_RM8_R8) MOV_RM8_R8();
+	else if (ARG_RM8_R8)   MOV_RM8_R8();
 	else if (ARG_RM16_R16) MOV_RM32_R32(2);
 	else if (ARG_RM32_R32) MOV_RM32_R32(4);
-	else if (ARG_RM16_SREG) MOV_RM16_SREG();
-	else if (ARG_SREG_RM16) MOV_SREG_RM16();
-	else if (ARG_RM8_I8) MOV_M8_I8();
-	else if (ARG_RM16_I16) MOV_M16_I16();
+	else if (ARG_RM16_SREG) MOV_RM16_SREG(2);
+	else if (ARG_RM32_SREG) MOV_RM16_SREG(4);
+	else if (ARG_SREG_RM16) MOV_SREG_RM16(2);
+	else if (ARG_SREG_RM32) MOV_SREG_RM16(4);
+	else if (ARG_RM8_I8)   INS_C6(0x00);
+	else if (ARG_RM16_I16) INS_C7(0x00, 2);
+	else if (ARG_RM32_I32) INS_C7(0x00, 4);
+	else if (ARG_R32_CR0)  MOV_R32_CR(0);
+	else if (ARG_R32_CR2)  MOV_R32_CR(2);
+	else if (ARG_R32_CR3)  MOV_R32_CR(3);
+	else if (ARG_CR0_R32)  MOV_CR_R32(0);
+	else if (ARG_CR2_R32)  MOV_CR_R32(2);
+	else if (ARG_CR3_R32)  MOV_CR_R32(3);
 	else flagerror = 1;
 }
 static void LEA()
 {
-	if (ARG_R16_M16) LEA_R16_M16();
-	else flagerror = 1;
+	_cb("LEA");
+	if (ARG_R16_M16) LEA_R32_M32(2);
+	else if (ARG_R32_M32) LEA_R32_M32(4);
+	else _se_;
+	_ce;
 }
 static void CALL()
 {
@@ -4306,92 +4917,114 @@ static void INT()
 }
 static void ROL()
 {
-	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x00);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x00, 2);
-	else if (ARG_RM8_CL)  INS_D2(0x00);
-	else if (ARG_RM16_CL) INS_D3(0x00);
-	else if (ARG_RM8_I8)  INS_C0(0x00);
-	else if (ARG_RM16_I8) INS_C1(0x00, 2);
-	else if (ARG_RM32_I8) INS_C1(0x00, 4);
+	t_nubit8 rid = 0x00;
+	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
+	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
+	else if (ARG_RM8_CL)  INS_D2(rid);
+	else if (ARG_RM16_CL) INS_D3(rid, 2);
+	else if (ARG_RM32_CL) INS_D3(rid, 4);
+	else if (ARG_RM8_I8)  INS_C0(rid);
+	else if (ARG_RM16_I8) INS_C1(rid, 2);
+	else if (ARG_RM32_I8) INS_C1(rid, 4);
 	else flagerror = 1;
 }
 static void ROR()
 {
-	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x01);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x01, 2);
-	else if (ARG_RM8_CL)  INS_D2(0x01);
-	else if (ARG_RM16_CL) INS_D3(0x01);
-	else if (ARG_RM8_I8)  INS_C0(0x01);
-	else if (ARG_RM16_I8) INS_C1(0x01, 2);
-	else if (ARG_RM32_I8) INS_C1(0x01, 4);
+	t_nubit8 rid = 0x01;
+	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
+	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
+	else if (ARG_RM8_CL)  INS_D2(rid);
+	else if (ARG_RM16_CL) INS_D3(rid, 2);
+	else if (ARG_RM32_CL) INS_D3(rid, 4);
+	else if (ARG_RM8_I8)  INS_C0(rid);
+	else if (ARG_RM16_I8) INS_C1(rid, 2);
+	else if (ARG_RM32_I8) INS_C1(rid, 4);
 	else flagerror = 1;
 }
 static void RCL()
 {
-	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x02);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x02, 2);
-	else if (ARG_RM8_CL)  INS_D2(0x02);
-	else if (ARG_RM16_CL) INS_D3(0x02);
-	else if (ARG_RM8_I8)  INS_C0(0x02);
-	else if (ARG_RM16_I8) INS_C1(0x02, 2);
-	else if (ARG_RM32_I8) INS_C1(0x02, 4);
+	t_nubit8 rid = 0x02;
+	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
+	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
+	else if (ARG_RM8_CL)  INS_D2(rid);
+	else if (ARG_RM16_CL) INS_D3(rid, 2);
+	else if (ARG_RM32_CL) INS_D3(rid, 4);
+	else if (ARG_RM8_I8)  INS_C0(rid);
+	else if (ARG_RM16_I8) INS_C1(rid, 2);
+	else if (ARG_RM32_I8) INS_C1(rid, 4);
 	else flagerror = 1;
 }
 static void RCR()
 {
-	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x03);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x03, 2);
-	else if (ARG_RM8_CL)  INS_D2(0x03);
-	else if (ARG_RM16_CL) INS_D3(0x03);
-	else if (ARG_RM8_I8)  INS_C0(0x03);
-	else if (ARG_RM16_I8) INS_C1(0x03, 2);
-	else if (ARG_RM32_I8) INS_C1(0x03, 4);
+	t_nubit8 rid = 0x03;
+	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
+	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
+	else if (ARG_RM8_CL)  INS_D2(rid);
+	else if (ARG_RM16_CL) INS_D3(rid, 2);
+	else if (ARG_RM32_CL) INS_D3(rid, 4);
+	else if (ARG_RM8_I8)  INS_C0(rid);
+	else if (ARG_RM16_I8) INS_C1(rid, 2);
+	else if (ARG_RM32_I8) INS_C1(rid, 4);
 	else flagerror = 1;
 }
 static void SHL()
 {
-	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x04);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x04, 2);
-	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(0x04, 4);
-	else if (ARG_RM8_CL)  INS_D2(0x04);
-	else if (ARG_RM16_CL) INS_D3(0x04);
-	else if (ARG_RM8_I8)  INS_C0(0x04);
-	else if (ARG_RM16_I8) INS_C1(0x04, 2);
-	else if (ARG_RM32_I8) INS_C1(0x04, 4);
+	t_nubit8 rid = 0x04;
+	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
+	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
+	else if (ARG_RM8_CL)  INS_D2(rid);
+	else if (ARG_RM16_CL) INS_D3(rid, 2);
+	else if (ARG_RM32_CL) INS_D3(rid, 4);
+	else if (ARG_RM8_I8)  INS_C0(rid);
+	else if (ARG_RM16_I8) INS_C1(rid, 2);
+	else if (ARG_RM32_I8) INS_C1(rid, 4);
 	else flagerror = 1;
 }
 static void SHR()
 {
-	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x05);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x05, 2);
-	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(0x05, 4);
-	else if (ARG_RM8_CL)  INS_D2(0x05);
-	else if (ARG_RM16_CL) INS_D3(0x05);
-	else if (ARG_RM8_I8)  INS_C0(0x05);
-	else if (ARG_RM16_I8) INS_C1(0x05, 2);
-	else if (ARG_RM32_I8) INS_C1(0x05, 4);
+	t_nubit8 rid = 0x05;
+	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
+	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
+	else if (ARG_RM8_CL)  INS_D2(rid);
+	else if (ARG_RM16_CL) INS_D3(rid, 2);
+	else if (ARG_RM32_CL) INS_D3(rid, 4);
+	else if (ARG_RM8_I8)  INS_C0(rid);
+	else if (ARG_RM16_I8) INS_C1(rid, 2);
+	else if (ARG_RM32_I8) INS_C1(rid, 4);
 	else flagerror = 1;
 }
 static void SAL()
 {
-	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x04);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x04, 2);
-	else if (ARG_RM8_CL)  INS_D2(0x04);
-	else if (ARG_RM16_CL) INS_D3(0x04);
-	else if (ARG_RM8_I8)  INS_C0(0x04);
-	else if (ARG_RM16_I8) INS_C1(0x04, 2);
-	else if (ARG_RM32_I8) INS_C1(0x04, 4);
+	t_nubit8 rid = 0x04;
+	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
+	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
+	else if (ARG_RM8_CL)  INS_D2(rid);
+	else if (ARG_RM16_CL) INS_D3(rid, 2);
+	else if (ARG_RM32_CL) INS_D3(rid, 4);
+	else if (ARG_RM8_I8)  INS_C0(rid);
+	else if (ARG_RM16_I8) INS_C1(rid, 2);
+	else if (ARG_RM32_I8) INS_C1(rid, 4);
 	else flagerror = 1;
 }
 static void SAR()
 {
-	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(0x07);
-	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(0x07, 2);
-	else if (ARG_RM8_CL)  INS_D2(0x07);
-	else if (ARG_RM16_CL) INS_D3(0x07);
-	else if (ARG_RM8_I8)  INS_C0(0x07);
-	else if (ARG_RM16_I8) INS_C1(0x07, 2);
-	else if (ARG_RM32_I8) INS_C1(0x07, 4);
+	t_nubit8 rid = 0x07;
+	if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
+	else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
+	else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
+	else if (ARG_RM8_CL)  INS_D2(rid);
+	else if (ARG_RM16_CL) INS_D3(rid, 2);
+	else if (ARG_RM32_CL) INS_D3(rid, 4);
+	else if (ARG_RM8_I8)  INS_C0(rid);
+	else if (ARG_RM16_I8) INS_C1(rid, 2);
+	else if (ARG_RM32_I8) INS_C1(rid, 4);
 	else flagerror = 1;
 }
 static void LOOPCC(t_nubit8 opcode)
@@ -4417,32 +5050,37 @@ static void OUT()
 static void NOT()
 {
 	if      (ARG_RM8s) INS_F6(0x02);
-	else if (ARG_RM16s) INS_F7(0x02);
+	else if (ARG_RM16s) INS_F7(0x02, 2);
+	else if (ARG_RM32s) INS_F7(0x02, 4);
+	else flagerror = 1;
 }
 static void NEG()
 {
 	if      (ARG_RM8s) INS_F6(0x03);
-	else if (ARG_RM16s) INS_F7(0x03);
+	else if (ARG_RM16s) INS_F7(0x03, 2);
+	else if (ARG_RM32s) INS_F7(0x03, 4);
+	else flagerror = 1;
 }
 static void MUL()
 {
 	if      (ARG_RM8s) INS_F6(0x04);
-	else if (ARG_RM16s) INS_F7(0x04);
-}
-static void IMUL()
-{
-	if      (ARG_RM8s) INS_F6(0x05);
-	else if (ARG_RM16s) INS_F7(0x05);
+	else if (ARG_RM16s) INS_F7(0x04, 2);
+	else if (ARG_RM32s) INS_F7(0x04, 4);
+	else flagerror = 1;
 }
 static void DIV()
 {
 	if      (ARG_RM8s) INS_F6(0x06);
-	else if (ARG_RM16s) INS_F7(0x06);
+	else if (ARG_RM16s) INS_F7(0x06, 2);
+	else if (ARG_RM32s) INS_F7(0x06, 4);
+	else flagerror = 1;
 }
 static void IDIV()
 {
 	if      (ARG_RM8s) INS_F6(0x07);
-	else if (ARG_RM16s) INS_F7(0x07);
+	else if (ARG_RM16s) INS_F7(0x07, 2);
+	else if (ARG_RM32s) INS_F7(0x07, 4);
+	else flagerror = 1;
 }
 static void JMP()
 {
@@ -4556,7 +5194,8 @@ static void DW()
 static void exec()
 {
 	/* assemble single statement */
-	if (!rop || !rop[0]) return;
+	_cb("exec");
+	if (!rop || !rop[0]) {_ce;return;}
 	if      (!strcmp(rop, "db"))  DB();
 	else if (!strcmp(rop, "dw"))  DW();
 
@@ -4567,19 +5206,36 @@ static void exec()
 	else if (!strcmp(rop, "adc")) ADC();
 	else if (!strcmp(rop, "sbb")) SBB();
 	else if (!strcmp(rop, "and")) AND();
-	else if (!strcmp(rop, "es:")) ES();
+	else if (!strcmp(rop, "es:")) PREFIX_ES();
 	else if (!strcmp(rop, "daa")) DAA();
 	else if (!strcmp(rop, "sub")) SUB();
-	else if (!strcmp(rop, "cs:")) CS();
+	else if (!strcmp(rop, "cs:")) PREFIX_CS();
 	else if (!strcmp(rop, "das")) DAS();
 	else if (!strcmp(rop, "xor")) XOR();
-	else if (!strcmp(rop, "ss:")) SS();
+	else if (!strcmp(rop, "ss:")) PREFIX_SS();
 	else if (!strcmp(rop, "aaa")) AAA();
 	else if (!strcmp(rop, "cmp")) CMP();
-	else if (!strcmp(rop, "ds:")) DS();
+	else if (!strcmp(rop, "ds:")) PREFIX_DS();
 	else if (!strcmp(rop, "aas")) AAS();
 	else if (!strcmp(rop, "inc")) INC();
 	else if (!strcmp(rop, "dec")) DEC();
+	else if (!strcmp(rop, "pusha")) PUSHA(2);
+	else if (!strcmp(rop, "pushad")) PUSHA(4);
+	else if (!strcmp(rop, "popa")) POPA(2);
+	else if (!strcmp(rop, "popad")) POPA(4);
+	else if (!strcmp(rop, "bound")) BOUND();
+	else if (!strcmp(rop, "arpl")) ARPL_RM16_R16();
+	else if (!strcmp(rop, "fs:")) PREFIX_FS();
+	else if (!strcmp(rop, "gs:")) PREFIX_GS();
+	else if (!strcmp(rop, "op+:")) PREFIX_OprSize();
+	else if (!strcmp(rop, "az+:")) PREFIX_AddrSize();
+	else if (!strcmp(rop,"imul")) IMUL();
+	else if (!strcmp(rop,"insb")) INSB();
+	else if (!strcmp(rop,"insw")) INSW(2);
+	else if (!strcmp(rop,"insd")) INSW(4);
+	else if (!strcmp(rop,"outsb")) OUTSB();
+	else if (!strcmp(rop,"outsw")) OUTSW(2);
+	else if (!strcmp(rop,"outsd")) OUTSW(4);
 	else if (!strcmp(rop, "jo" )) JCC_REL(0x70);
 	else if (!strcmp(rop, "jno")) JCC_REL(0x71);
 	else if (!strcmp(rop, "jb" )) JCC_REL(0x72);
@@ -4665,19 +5321,18 @@ static void exec()
 	else if (!strcmp(rop, "in" )) IN();
 	else if (!strcmp(rop, "out")) OUT();
 	else if (!strcmp(rop, "jmp")) JMP();
-	else if (!strcmp(rop, "lock")) LOCK();
+	else if (!strcmp(rop, "lock")) PREFIX_LOCK();
 	else if (!strcmp(rop, "qdx")) QDX();
-	else if (!strcmp(rop,"repne:")) REPNZ();
-	else if (!strcmp(rop,"repnz:")) REPNZ();
-	else if (!strcmp(rop, "rep:")) REPZ();
-	else if (!strcmp(rop,"repe:")) REPZ();
-	else if (!strcmp(rop,"repz:")) REPZ();
+	else if (!strcmp(rop,"repne:")) PREFIX_REPNZ();
+	else if (!strcmp(rop,"repnz:")) PREFIX_REPNZ();
+	else if (!strcmp(rop, "rep:")) PREFIX_REPZ();
+	else if (!strcmp(rop,"repe:")) PREFIX_REPZ();
+	else if (!strcmp(rop,"repz:")) PREFIX_REPZ();
 	else if (!strcmp(rop, "hlt")) HLT();
 	else if (!strcmp(rop, "cmc")) CMC();
 	else if (!strcmp(rop, "not")) NOT();
 	else if (!strcmp(rop, "neg")) NEG();
 	else if (!strcmp(rop, "mul")) MUL();
-	else if (!strcmp(rop,"imul")) IMUL();
 	else if (!strcmp(rop, "div")) DIV();
 	else if (!strcmp(rop,"idiv")) IDIV();
 	else if (!strcmp(rop, "clc")) CLC();
@@ -4690,8 +5345,9 @@ static void exec()
 	else if (!strcmp(rop, "lgdt"))  LGDT();
 	else if (!strcmp(rop, "smsw"))  SMSW();
 	else if (!strcmp(rop, "movzx")) MOVZX();
-	else flagerror = 1;
-//	if (flagerror) printf("exec.flagerror = %d\n",flagerror);
+	else _se_;
+	_chk(0);
+	_ce;
 }
 
 
@@ -4738,13 +5394,18 @@ static t_strptr take_arg(t_strptr s)
 
 t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 {
-	char oldchar;
 	t_nubit8 len;
 	t_string astmt;
 	t_strptr rstmt;
 	t_bool flagprefix;
 
-	if (!stmt || !stmt[0] || stmt[0] == '\n') return 0;
+	if (!stmt || is_end(stmt[0])) return 0;
+
+#if AASM_TRACE == 1
+	vapiTraceInit(&trace);
+#endif
+
+	_cb("aasm32");
 
 	memcpy(astmt, stmt, MAXLINE);
 	rstmt = astmt;
@@ -4753,19 +5414,20 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 	flaglock = flagrepz = flagrepnz = 0;
 
 	iop = 0;
+	memset(&aoprig, 0x00, sizeof(t_aasm_oprinfo));
+	flagoprg = flagaddrg = 0;
 
 	/* process prefixes */
 	do {
 		while (!is_end(*rstmt) && is_space(*rstmt)) rstmt++;
 		rop = rstmt;
 		while (!is_end(*rstmt) && !is_space(*rstmt)) rstmt++;
-		oldchar = *rstmt;
 		*rstmt = 0;
 		rstmt++;
 		lcase(rop);
 		flagprefix = is_prefix();
 		if (flagprefix) exec();
-	} while (flagprefix);
+	} while (flagprefix && !flagerror);
 
 	/* process assembly statement */
 	if (!is_def_str()) lcase(rstmt);
@@ -4774,11 +5436,8 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 	ropr3 = take_arg(NULL);
 
 	aopri1 = parsearg(ropr1);
-	if (flagerror) vapiPrint("bad operand 1: '%s'\n", ropr1);
 	aopri2 = parsearg(ropr2);
-	if (flagerror) vapiPrint("bad operand 2: '%s'\n", ropr2);
 	aopri3 = parsearg(ropr3);
-	if (flagerror) vapiPrint("bad operand 3: '%s'\n", ropr3);
 
 	if (isM(aopri1)) rinfo = &aopri1;
 	else if (isM(aopri2)) rinfo = &aopri2;
@@ -4787,26 +5446,34 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 
 	exec();
 
-	//	vapiPrint("[%s] [%s/%d] [%s/%d] [%s/%d]\n", rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
 	if (flagerror) {
 		len = 0;
-		vapiPrint("bad instruction: '%s'\n", stmt);
-		vapiPrint("[%s] [%s/%d] [%s/%d] [%s/%d]\n", rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
+		vapiPrint("aasm32: bad instruction '%s'\n", stmt);
+		vapiPrint("aasm32: [%s] [%s/%d] [%s/%d] [%s/%d]\n",
+			rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
 	} else {
 		len = 0;
-		if (rinfo && rinfo->flages) {d_nubit8(rcode + len) = 0x26;len++;}
-		if (rinfo && rinfo->flagcs) {d_nubit8(rcode + len) = 0x2e;len++;}
-		if (rinfo && rinfo->flagss) {d_nubit8(rcode + len) = 0x36;len++;}
-		if (rinfo && rinfo->flagds) {d_nubit8(rcode + len) = 0x3e;len++;}
-		if (rinfo && rinfo->flagfs) {d_nubit8(rcode + len) = 0x64;len++;}
-		if (rinfo && rinfo->flaggs) {d_nubit8(rcode + len) = 0x65;len++;}
-		if (flaglock) {d_nubit8(rcode + len) = 0xf0;len++;}
+		if (flagrepz)  {d_nubit8(rcode + len) = 0xf3;len++;}
 		if (flagrepnz) {d_nubit8(rcode + len) = 0xf2;len++;}
-		if (flagrepz) {d_nubit8(rcode + len) = 0xf3;len++;}
-		if (flagaddr) {d_nubit8(rcode + len) = 0x67;len++;}
-		if (flagopr) {d_nubit8(rcode + len) = 0x66;len++;}
+		if (flaglock)  {d_nubit8(rcode + len) = 0xf0;len++;}
+		if ((rinfo && rinfo->flages) || aoprig.flages) {d_nubit8(rcode + len) = 0x26;len++;}
+		if ((rinfo && rinfo->flagcs) || aoprig.flagcs) {d_nubit8(rcode + len) = 0x2e;len++;}
+		if (flagaddr || flagaddrg) {d_nubit8(rcode + len) = 0x67;len++;}
+		if (flagopr || flagoprg) {d_nubit8(rcode + len) = 0x66;len++;}	
+		if ((rinfo && rinfo->flaggs) || aoprig.flaggs) {d_nubit8(rcode + len) = 0x65;len++;}
+		if ((rinfo && rinfo->flagfs) || aoprig.flagfs) {d_nubit8(rcode + len) = 0x64;len++;}
+		if ((rinfo && rinfo->flagds) || aoprig.flagds) {d_nubit8(rcode + len) = 0x3e;len++;}
+		if ((rinfo && rinfo->flagss) || aoprig.flagss) {d_nubit8(rcode + len) = 0x36;len++;}
 		memcpy((void *)(rcode + len), (void *)acode, iop);
 		len += iop;
 	}
+
+	_ce;
+
+#if AASM_TRACE == 1
+	if (trace.flagerror) vapiCallBackMachineStop();
+	vapiTraceFinal(&trace);
+#endif
+
 	return len;
 }

@@ -11,8 +11,31 @@ extern "C" {
 #include "stdarg.h"
 
 #include "vglobal.h"
+	
+typedef struct {
+	char* blockstack[0x100];
+	t_nubit8 bid;
+	t_nubit8 cid;
+} t_api_trace_block;
+typedef struct {
+	t_api_trace_block callstack[0x100];
+	t_nubit8 cid;
+	t_bool flagerror;
+} t_api_trace_call;
 
-struct tm*   LOCALTIME(const time_t *_Time);
+#define VAPI_TRACE_DEBUG 0
+
+void vapiTracePrintCall(t_api_trace_call *rtrace, t_nubit8 cid);
+void vapiTracePrintCallStack(t_api_trace_call *rtrace);
+void vapiTraceInit(t_api_trace_call *rtrace);
+void vapiTraceFinal(t_api_trace_call *rtrace);
+void vapiTraceCallBegin(t_api_trace_call *rtrace, t_strptr s);
+void vapiTraceCallEnd(t_api_trace_call *rtrace);
+void vapiTraceBlockBegin(t_api_trace_call *rtrace, t_strptr s);
+void vapiTraceBlockEnd(t_api_trace_call *rtrace);
+
+/* Standard C Library */
+struct tm* LOCALTIME(const time_t *_Time);
 char* STRCAT(char *_Dest, const char *_Source);
 char* STRCPY(char *_Dest, const char *_Source);
 char* STRTOK(char *_Str, const char *_Delim);
@@ -21,9 +44,11 @@ int   SPRINTF(char *_Dest, const char *_Format, ...);
 FILE* FOPEN(const char *_Filename, const char *_Mode);
 char* FGETS(char *_Buf, int _MaxCount, FILE *_File);
 
+/* Internal Library */
 void lcase(char *s);
 t_nubit32 vapiPrint(const t_strptr format, ...);
 
+/* Device Operations */
 void vapiFloppyInsert(const t_strptr fname);
 void vapiFloppyRemove(const t_strptr fname);
 void vapiHardDiskInsert(const t_strptr fname);
@@ -33,6 +58,8 @@ void vapiStartMachine();
 void vapiSleep(t_nubit32 milisec);
 void vapiDisplaySetScreen();
 void vapiDisplayPaint();
+
+/* Call Back Functions */
 
 void vapiCallBackDebugPrintRegs(t_bool flag32);
 

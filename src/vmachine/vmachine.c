@@ -2,7 +2,6 @@
 
 #include "memory.h"
 
-#include "debug/aasm.h"
 #include "debug/aasm32.h"
 #include "debug/dasm32.h"
 #include "debug/record.h"
@@ -80,7 +79,14 @@ static void vmachineAsmTest()
 	t_string dstr1, dstr2;
 	t_nubit8 ins1[15], ins2[15];
 	total++;
-	vcpuinsReadLinear((_cs << 4) + _ip, (t_vaddrcc)ins1, 15);
+	vcpuinsReadLinear(vcpu.cs.base + vcpu.eip, (t_vaddrcc)ins1, 15);
+	switch (d_nubit8(ins1)) {
+	case 0x88:
+	case 0x89:
+	case 0x8a:
+	case 0x8b:
+		return;
+	}
 	switch (d_nubit16(ins1)) {
 	case 0xac26:
 	case 0xac2e:
@@ -94,6 +100,7 @@ static void vmachineAsmTest()
 	case 0xd72e:
 	case 0xd73e:
 	case 0xd736:
+	case 0x9067:
 		return;
 	}
 	switch (d_nubit32(ins1)) {
@@ -105,8 +112,8 @@ static void vmachineAsmTest()
 	lend2 = dasm32(dstr2, (t_vaddrcc)ins2);
 	if (lena != lend1 || lena != lend2 || lend1 != lend2 ||
 		memcmp(ins1, ins2, lend1) || STRCMP(dstr1, dstr2)) {
-		vapiPrint("diff at #%d %04X:%04X, len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
-			total, _cs, _ip, lena, lend1, lend2, vcpu.cs.seg.exec.defsize ? 32 : 16);
+		vapiPrint("diff at #%d %04X:%08X(L%08X), len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
+			total, _cs, _eip, vcpu.cs.base + vcpu.eip, lena, lend1, lend2, vcpu.cs.seg.exec.defsize ? 32 : 16);
 		for (i = 0;i < lend1;++i) vapiPrint("%02X", ins1[i]);
 		vapiPrint("\t%s\n", dstr1);
 		for (i = 0;i < lend2;++i) vapiPrint("%02X", ins2[i]);
