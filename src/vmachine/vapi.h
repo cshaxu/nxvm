@@ -30,7 +30,11 @@ void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins);
 
 typedef struct {
 	struct {
+#if VGLOBAL_ECPU_MODE == TEST_ECPU
+		t_ecpu rcpu;
+#else
 		t_cpu rcpu;
+#endif
 		char stmt[0x20];
 	} rec[VAPI_RECORD_SIZE];
 	t_nubitcc start, size;

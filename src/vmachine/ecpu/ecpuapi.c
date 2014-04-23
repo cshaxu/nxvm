@@ -12,7 +12,9 @@
 
 t_ecpu ecpu;
 static t_ecpu ecpu2;
+#if VGLOBAL_ECPU_MODE != TEST_ECPU
 static t_cpu  vcpu2;
+#endif
 
 void ecpuapiSyncRegs()
 {
@@ -32,7 +34,9 @@ void ecpuapiSyncRegs()
 	ecpu.ss.selector = _ss;
 	ecpu.flags = _flags;
 	ecpu2 = ecpu;
+#if VGLOBAL_ECPU_MODE != TEST_ECPU
 	vcpu2 = vcpu;
+#endif
 }
 t_bool ecpuapiHasDiff()
 {
@@ -64,7 +68,9 @@ t_bool ecpuapiHasDiff()
 		ecpuapiPrintRegs();
 		vapiPrint("BEFORE EXECUTION:\nVCPU REGISTERS\n");
 		ecpu = ecpu2;
+#if VGLOBAL_ECPU_MODE != TEST_ECPU
 		vcpu = vcpu2;
+#endif
 		vapiCallBackDebugPrintRegs();
 		ecpuapiPrintRegs();
 	}

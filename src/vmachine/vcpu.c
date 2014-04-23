@@ -11,7 +11,9 @@
 #include "ecpu/ecpu.h"
 #endif
 
+#if VGLOBAL_ECPU_MODE != TEST_ECPU
 t_cpu vcpu;
+#endif
 
 void vcpuInit()
 {
