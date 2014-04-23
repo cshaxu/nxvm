@@ -133,15 +133,16 @@ void INT_15()
 		_es = 0xf000;
 		_bx = 0xe6f5;
 		_ah = 0x00;
+		// remember: all flags set in INT handler should be modified
 		ClrBit(_flags, VCPU_FLAG_CF);
+		/*ClrBit(vramVarWord(_ss, _sp + 4), VCPU_FLAG_CF);*/
 		break;
 	case 0x24:
 		if (_al == 0x03) {
-			/*ClrBit(vramVarWord(_ss, _sp + 4), VCPU_FLAG_CF);*/
-			// remember: all flags set in INT handler should be modified
 			ClrBit(_flags, VCPU_FLAG_CF);
-			_ah=0;
-			_bx=3;
+			/*ClrBit(vramVarWord(_ss, _sp + 4), VCPU_FLAG_CF);*/
+			_ah=0x00;
+			_bx=0x0003;
 		}
 		break;
 	case 0x88:
@@ -153,7 +154,8 @@ void INT_15()
 			_ax = MemorySize * 1024 - 256;
 		break;
 	case 0xd8:
-		SetBit(vramVarWord(_ss, _sp + 4), VCPU_FLAG_CF);
+		SetBit(_flags, VCPU_FLAG_CF);
+		/* SetBit(vramVarWord(_ss, _sp + 4), VCPU_FLAG_CF);*/
 		_ah=0x86;
 		break;
 	}

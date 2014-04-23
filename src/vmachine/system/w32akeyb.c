@@ -37,7 +37,7 @@ void w32akeybMakeStatus(UINT message, WPARAM wParam, LPARAM lParam)
 void w32akeybMakeChar(WPARAM wParam, LPARAM lParam)
 {
 	UINT16 ascii = (UINT16)(((lParam & 0xffff0000) >> 8) | wParam);
-	while(vapiCallBackKeyboardRecvKeyPress((UINT8)ascii)) win32appSleep(10);
+	while(vapiCallBackKeyboardRecvKeyPress(ascii)) win32appSleep(10);
 }
 void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -59,7 +59,7 @@ void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
 			if(vapiCallBackKeyboardGetShift())      ascii += 0x1900;
 			else if(vapiCallBackKeyboardGetAlt())   ascii += 0x2d00;
 			else if (vapiCallBackKeyboardGetCtrl()) ascii += 0x2300;
-			vapiCallBackKeyboardRecvKeyPress((UINT8)ascii);
+			vapiCallBackKeyboardRecvKeyPress(ascii);
 			break;
 		case VK_ESCAPE://ESC
 		case VK_PRIOR://pageUP
@@ -70,15 +70,15 @@ void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
 		case VK_UP:
 		case VK_RIGHT:
 		case VK_DOWN:
-			 vapiCallBackKeyboardRecvKeyPress((UINT8)ascii);
+			 vapiCallBackKeyboardRecvKeyPress(ascii);
 		     break;
 		default://剩下的字符可能是alt。。ctl与普通字符等，但是updateKBStatus会过滤掉普通字符
 			w32akeybMakeStatus(message, wParam, lParam);
 			if (wParam>= 0x41 && wParam<=0x41+'Z'-'A') {
 				if (vapiCallBackKeyboardGetAlt())
-					vapiCallBackKeyboardRecvKeyPress((UINT8)ascii);
+					vapiCallBackKeyboardRecvKeyPress(ascii);
 				if (vapiCallBackKeyboardGetCtrl())
-					vapiCallBackKeyboardRecvKeyPress(ascii + wParam - 0x41);
+					vapiCallBackKeyboardRecvKeyPress(ascii + wParam - 0x0041);
 				//如果不是按下ctrl，则是按下alt
 			}
 			break;

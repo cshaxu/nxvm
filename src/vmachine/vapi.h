@@ -9,7 +9,7 @@ extern "C" {
 
 #include "vglobal.h"
 
-t_nubit32  vapiPrint(const t_string, ...);
+t_nubit32  vapiPrint(const t_string format, ...);
 void vapiPrintByte(t_nubit8 n);
 void vapiPrintWord(t_nubit16 n);
 void vapiPrintAddr(t_nubit16 segment, t_nubit16 offset);
@@ -31,8 +31,8 @@ void vapiRecordEnd();
 
 void vapiTrace();
 
-void vapiFloppyInsert(t_string fname);
-void vapiFloppyRemove(t_string fname);
+void vapiFloppyInsert(const t_string fname);
+void vapiFloppyRemove(const t_string fname);
 void vapiStartMachine();
 
 void vapiSleep();
@@ -67,7 +67,7 @@ void vapiCallBackKeyboardSetFlag1Pause();
 void vapiCallBackKeyboardSetFlag1SysRq();
 void vapiCallBackKeyboardSetFlag1LeftAlt();
 void vapiCallBackKeyboardSetFlag1LeftCtrl();
-t_bool vapiCallBackKeyboardRecvKeyPress(t_nubit8 ascii);
+t_bool vapiCallBackKeyboardRecvKeyPress(t_nubit16 ascii);
 
 t_nubit8 vapiCallBackDisplayGetRowSize();
 t_nubit8 vapiCallBackDisplayGetColSize();

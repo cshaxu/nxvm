@@ -99,7 +99,7 @@ void vapiTrace()
 #include "qdfdd.h"
 #define vfdd qdfdd
 
-void vapiFloppyInsert(const char *fname)
+void vapiFloppyInsert(const t_string fname)
 {
 	t_nubitcc count;
 	FILE *image = fopen(fname, "rb");
@@ -111,7 +111,7 @@ void vapiFloppyInsert(const char *fname)
 	} else
 		vapiPrint("Cannot read floppy image from '%s'.\n", fname);
 }
-void vapiFloppyRemove(const char *fname)
+void vapiFloppyRemove(const t_string fname)
 {
 	t_nubitcc count;
 	FILE *image;
@@ -135,11 +135,5 @@ void vapiDisplayPaint() {win32appDisplayPaint();}
 
 void vapiStartMachine() {win32appStartMachine();}
 
-void vapiInit()
-{
-	memset(&vapirecord, 0x00, sizeof(t_apirecord));
-}
-void vapiFinal()
-{
-	
-}
+void vapiInit() {memset(&vapirecord, 0x00, sizeof(t_apirecord));}
+void vapiFinal() {}
