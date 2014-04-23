@@ -5,6 +5,7 @@
 #include "vcpuins.h"
 #include "vcpu.h"
 #include "vpic.h"
+#include "vkeyb.h"
 #include "vkbc.h"
 
 #define GetBit(a,b) (!!((a) &   (b)))
@@ -70,15 +71,6 @@ static t_nubit8 GetOutBuf()
 	ClrOBF;
 	return vkbc.outbuf;
 }
-static void SetFlagA20(t_bool flag)
-{
-	vkbc.flaga20 = flag;
-}
-static void SetFlagReset(t_bool flag)
-{
-	vkbc.flagreset = flag;
-	/*  */
-}
 
 #define GetInhibitStatus (                                                    \
 	GetBit(vkbc.control, VKBC_FLAG_CONTROL_INHIBIT_OVERRIDE) ? 0 :            \
@@ -120,76 +112,66 @@ void IO_Read_0064()
 }
 void IO_Write_0060()
 {
+	t_nubit8 cmdbyte = 0x00;
 	if (GetIBF) return;
+	if (GetCMD) cmdbyte = vkbc.inbuf;
+	SetInBuf(vcpu.iobyte);
 	if (GetCMD) {
-		switch (vkbc.inbuf) {
-		case 0x60: SetInBuf(vcpu.iobyte); vkbc.control   = GetInBuf(); return;
-		case 0x61: SetInBuf(vcpu.iobyte); vkbc.ram[0x01] = GetInBuf(); return;
-		case 0x62: SetInBuf(vcpu.iobyte); vkbc.ram[0x02] = GetInBuf(); return;
-		case 0x63: SetInBuf(vcpu.iobyte); vkbc.ram[0x03] = GetInBuf(); return;
-		case 0x64: SetInBuf(vcpu.iobyte); vkbc.ram[0x04] = GetInBuf(); return;
-		case 0x65: SetInBuf(vcpu.iobyte); vkbc.ram[0x05] = GetInBuf(); return;
-		case 0x66: SetInBuf(vcpu.iobyte); vkbc.ram[0x06] = GetInBuf(); return;
-		case 0x67: SetInBuf(vcpu.iobyte); vkbc.ram[0x07] = GetInBuf(); return;
-		case 0x68: SetInBuf(vcpu.iobyte); vkbc.ram[0x08] = GetInBuf(); return;
-		case 0x69: SetInBuf(vcpu.iobyte); vkbc.ram[0x09] = GetInBuf(); return;
-		case 0x6a: SetInBuf(vcpu.iobyte); vkbc.ram[0x0a] = GetInBuf(); return;
-		case 0x6b: SetInBuf(vcpu.iobyte); vkbc.ram[0x0b] = GetInBuf(); return;
-		case 0x6c: SetInBuf(vcpu.iobyte); vkbc.ram[0x0c] = GetInBuf(); return;
-		case 0x6d: SetInBuf(vcpu.iobyte); vkbc.ram[0x0d] = GetInBuf(); return;
-		case 0x6e: SetInBuf(vcpu.iobyte); vkbc.ram[0x0e] = GetInBuf(); return;
-		case 0x6f: SetInBuf(vcpu.iobyte); vkbc.ram[0x0f] = GetInBuf(); return;
-		case 0x70: SetInBuf(vcpu.iobyte); vkbc.ram[0x10] = GetInBuf(); return;
-		case 0x71: SetInBuf(vcpu.iobyte); vkbc.ram[0x11] = GetInBuf(); return;
-		case 0x72: SetInBuf(vcpu.iobyte); vkbc.ram[0x12] = GetInBuf(); return;
-		case 0x73: SetInBuf(vcpu.iobyte); vkbc.ram[0x13] = GetInBuf(); return;
-		case 0x74: SetInBuf(vcpu.iobyte); vkbc.ram[0x14] = GetInBuf(); return;
-		case 0x75: SetInBuf(vcpu.iobyte); vkbc.ram[0x15] = GetInBuf(); return;
-		case 0x76: SetInBuf(vcpu.iobyte); vkbc.ram[0x16] = GetInBuf(); return;
-		case 0x77: SetInBuf(vcpu.iobyte); vkbc.ram[0x17] = GetInBuf(); return;
-		case 0x78: SetInBuf(vcpu.iobyte); vkbc.ram[0x18] = GetInBuf(); return;
-		case 0x79: SetInBuf(vcpu.iobyte); vkbc.ram[0x19] = GetInBuf(); return;
-		case 0x7a: SetInBuf(vcpu.iobyte); vkbc.ram[0x1a] = GetInBuf(); return;
-		case 0x7b: SetInBuf(vcpu.iobyte); vkbc.ram[0x1b] = GetInBuf(); return;
-		case 0x7c: SetInBuf(vcpu.iobyte); vkbc.ram[0x1c] = GetInBuf(); return;
-		case 0x7d: SetInBuf(vcpu.iobyte); vkbc.ram[0x1d] = GetInBuf(); return;
-		case 0x7e: SetInBuf(vcpu.iobyte); vkbc.ram[0x1e] = GetInBuf(); return;
-		case 0x7f: SetInBuf(vcpu.iobyte); vkbc.ram[0x1f] = GetInBuf(); return;
-		case 0xa5: SetInBuf(vcpu.iobyte);                  GetInBuf();
-			                            /* NOTE: set password; not supported */
-			return;
-		case 0xa6: SetInBuf(vcpu.iobyte);                  GetInBuf();
-			                         /* NOTE: enable password; not supported */
-			return;
-		case 0xd1: SetInBuf(vcpu.iobyte);                  GetInBuf();
-			vkbc.flagdata  = !!(vcpu.iobyte & VKBC_FLAG_OUTPORT_DATA_LINE);
-			vkbc.flagclock = !!(vcpu.iobyte & VKBC_FLAG_OUTPORT_CLOCK_LINE);
+		ClrCMD;
+		switch (cmdbyte) {
+		case 0x60: vkbc.control   = GetInBuf(); break;
+		case 0x61: vkbc.ram[0x01] = GetInBuf(); break;
+		case 0x62: vkbc.ram[0x02] = GetInBuf(); break;
+		case 0x63: vkbc.ram[0x03] = GetInBuf(); break;
+		case 0x64: vkbc.ram[0x04] = GetInBuf(); break;
+		case 0x65: vkbc.ram[0x05] = GetInBuf(); break;
+		case 0x66: vkbc.ram[0x06] = GetInBuf(); break;
+		case 0x67: vkbc.ram[0x07] = GetInBuf(); break;
+		case 0x68: vkbc.ram[0x08] = GetInBuf(); break;
+		case 0x69: vkbc.ram[0x09] = GetInBuf(); break;
+		case 0x6a: vkbc.ram[0x0a] = GetInBuf(); break;
+		case 0x6b: vkbc.ram[0x0b] = GetInBuf(); break;
+		case 0x6c: vkbc.ram[0x0c] = GetInBuf(); break;
+		case 0x6d: vkbc.ram[0x0d] = GetInBuf(); break;
+		case 0x6e: vkbc.ram[0x0e] = GetInBuf(); break;
+		case 0x6f: vkbc.ram[0x0f] = GetInBuf(); break;
+		case 0x70: vkbc.ram[0x10] = GetInBuf(); break;
+		case 0x71: vkbc.ram[0x11] = GetInBuf(); break;
+		case 0x72: vkbc.ram[0x12] = GetInBuf(); break;
+		case 0x73: vkbc.ram[0x13] = GetInBuf(); break;
+		case 0x74: vkbc.ram[0x14] = GetInBuf(); break;
+		case 0x75: vkbc.ram[0x15] = GetInBuf(); break;
+		case 0x76: vkbc.ram[0x16] = GetInBuf(); break;
+		case 0x77: vkbc.ram[0x17] = GetInBuf(); break;
+		case 0x78: vkbc.ram[0x18] = GetInBuf(); break;
+		case 0x79: vkbc.ram[0x19] = GetInBuf(); break;
+		case 0x7a: vkbc.ram[0x1a] = GetInBuf(); break;
+		case 0x7b: vkbc.ram[0x1b] = GetInBuf(); break;
+		case 0x7c: vkbc.ram[0x1c] = GetInBuf(); break;
+		case 0x7d: vkbc.ram[0x1d] = GetInBuf(); break;
+		case 0x7e: vkbc.ram[0x1e] = GetInBuf(); break;
+		case 0x7f: vkbc.ram[0x1f] = GetInBuf(); break;
+		case 0xd1: vkbc.inbuf     = GetInBuf();
+			vkbc.flagdata  = !!(vkbc.inbuf & VKBC_FLAG_OUTPORT_DATA_LINE);
+			vkbc.flagclock = !!(vkbc.inbuf & VKBC_FLAG_OUTPORT_CLOCK_LINE);
 			      /* TODO: need to do something when data/clock line changes */
-			if (!!(vcpu.iobyte & VKBC_FLAG_OUTPORT_OUTBUF_FULL))
+			if (!!(vkbc.inbuf & VKBC_FLAG_OUTPORT_OUTBUF_FULL))
 				SetOutBuf(vkbc.outbuf);
-			vkbc.flaga20   = !!(vcpu.iobyte & VKBC_FLAG_OUTPORT_A20_LINE);
-			vkbc.flagreset = !!(vcpu.iobyte & VKBC_FLAG_OUTPORT_RESET);
-			return;
-		case 0xd2: SetInBuf(vcpu.iobyte);
+			vkbc.flaga20   = !!(vkbc.inbuf & VKBC_FLAG_OUTPORT_A20_LINE);
+			vkbc.flagreset = !!(vkbc.inbuf & VKBC_FLAG_OUTPORT_RESET);
+			break;
+		case 0xd2:
 			SetOutBuf(GetInBuf());                   /* TODO: need to verify */
-			return;
-		case 0xd3: SetInBuf(vcpu.iobyte);                  GetInBuf();
-			               /* NOTE: write mouse output buffer; not supported */
-			return;
-		case 0xd4: SetInBuf(vcpu.iobyte);                  GetInBuf();
-			                     /* NOTE: write data to mouse; not supported */
-			return;
-		default: break;
+			break;
+		default:                         /* invalid parameter, could be data */
+			break;
 		}
 	}
-	SetInBuf(vcpu.iobyte);
-	ClrCMD;
-	switch (GetInBuf()) {
-	default: break;
-	}
+	if (GetIBF) vkeybGetInput(GetInBuf());
 }
 void IO_Write_0064()
 {
+	if (GetIBF) return;
 	SetInBuf(vcpu.iobyte);
 	SetCMD;
 	switch (GetInBuf()) {                           /* TODO: need to verify  */
@@ -267,7 +249,7 @@ void IO_Write_0064()
 		SetBit(vkbc.control, VKBC_FLAG_CONTROL_PC_MODE); break;
 	case 0xa8:                                               /* enable mouse */
 		ClrBit(vkbc.control, VKBC_FLAG_CONTROL_PC_MODE); break;
-	case 0xa9: SetOutBuf(0x01); break;          /* test mouse port; disabled */
+	case 0xa9: SetOutBuf(0x01); break;    /* NOTE: test mouse port; disabled */
 	case 0xaa: SetOutBuf(0x55); break;          /* self test; keyboard is ok */
 	case 0xab: SetOutBuf(0x00); break;           /* interface test; no error */
 	case 0xac: break;                /* NOTE: diagnostic dump; not supported */
@@ -283,8 +265,8 @@ void IO_Write_0064()
 	case 0xd0: SetOBF; SetOutBuf(GetOutPort); break;/* ! read output port p2 */
 	case 0xd1: break;                                /* write output port p2 */
 	case 0xd2: break;                              /* write to output buffer */
-	case 0xd3: break;                        /* write to mouse output buffer */
-	case 0xd4: break;                                 /* write data to mouse */
+	case 0xd3: break;   /* NOTE: write to mouse output buffer; not supported */
+	case 0xd4: break;            /* NOTE: write data to mouse; not supported */
 	case 0xdd: vkbc.flaga20 = 0x00; break;               /* disable a20 line */
 	case 0xde: vkbc.flaga20 = 0x01; break;                /* enable a20 line */
 	case 0xe0:                                            /* read test input */
@@ -307,6 +289,11 @@ void IO_Write_0064()
 	case 0xff: break;                                          /* do nothing */
 	default:   break;                                     /* invalid command */
 	}
+}
+
+void vkbcSetOutBuf(t_nubit8 byte)
+{
+	SetOutBuf(byte);
 }
 
 void vkbcRefresh()
