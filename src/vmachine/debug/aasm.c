@@ -18,7 +18,9 @@ typedef enum {
 	TYPE_I16,
 	TYPE_M,
 	TYPE_M8,
-	TYPE_M16
+	TYPE_M16,
+	TYPE_M32,
+	TYPE_I16_16
 } t_aasm_oprtype;
 typedef enum {
 	MOD_M,
@@ -64,8 +66,8 @@ typedef enum {
 } t_aasm_oprseg;
 typedef enum {
 	PTR_NONE,
-	PTR_NEAR,
 	PTR_SHORT,
+	PTR_NEAR,
 	PTR_FAR
 } t_aasm_oprptr;
 
@@ -85,12 +87,14 @@ typedef struct {
                            // 4 = SP, 5 = BP, 6 = SI, 7 = DI      
 	t_aasm_oprseg   seg;   // active when type = 3
                            // 0 = ES, 1 = CS, 2 = SS, 3 = DS
-	t_bool          imms;  // if imm is signed (+/-)
-	t_nsbit8        imm8s;
+	t_bool          imms;  // if imm is signed
+	t_bool          immn;  // if imm is negative
+	t_nubit8        imm8;
 	t_nubit16       imm16;
 	t_nsbit8        disp8;
 	t_nubit16       disp16;// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
 	t_aasm_oprptr   ptr; // 0 = near; 1 = far
+	t_nubit16       pcs,pip;
 } t_aasm_oprinfo;
 
 static char pool[0x1000];
@@ -105,15 +109,24 @@ static t_nubit16 avcs, avip;
 #define isSEG(oprinf)   ((oprinf).type  == TYPE_SEG && (oprinf).mod == MOD_R)
 #define isI8(oprinf)    ((oprinf).type  == TYPE_I8)
 #define isI16(oprinf)   ((oprinf).type  == TYPE_I8  || (oprinf).type == TYPE_I16)
+#define isI16u(oprinf)  (isI16(oprinf)  && !(oprinf).imms)
+#define isI16p(oprinf)  ((oprinf).type  == TYPE_I16_16)
+#define isM(oprinf)     (((oprinf).type == TYPE_M   || (oprinf).type == TYPE_M8   || \
+                          (oprinf).type == TYPE_M16 || (oprinf).type == TYPE_M32) && (oprinf).mod != MOD_R)
 #define isM8(oprinf)    (((oprinf).type == TYPE_M   || (oprinf).type == TYPE_M8 ) && (oprinf).mod != MOD_R)
 #define isM16(oprinf)   (((oprinf).type == TYPE_M   || (oprinf).type == TYPE_M16) && (oprinf).mod != MOD_R)
+#define isM32(oprinf)   (((oprinf).type == TYPE_M   || (oprinf).type == TYPE_M32) && (oprinf).mod != MOD_R)
+#define isMs(oprinf)    ((oprinf).type  == TYPE_M   && (oprinf).mod != MOD_R)
+#define isM8s(oprinf)   ((oprinf).type  == TYPE_M8  && (oprinf).mod != MOD_R)
+#define isM16s(oprinf)  ((oprinf).type  == TYPE_M16 && (oprinf).mod != MOD_R)
+#define isM32s(oprinf)  ((oprinf).type  == TYPE_M32 && (oprinf).mod != MOD_R)
 #define isPNONE(oprinf) ((oprinf).ptr == PTR_NONE)
 #define isNEAR(oprinf)  ((oprinf).ptr == PTR_NEAR)
 #define isSHORT(oprinf) ((oprinf).ptr == PTR_SHORT)
 #define isFAR(oprinf)   ((oprinf).ptr == PTR_FAR)
 
-#define isRM8s(oprinf)  (isR8 (oprinf) || ((oprinf).type == TYPE_M8))
-#define isRM16s(oprinf) (isR16(oprinf) || ((oprinf).type == TYPE_M16))
+#define isRM8s(oprinf)  (isR8 (oprinf) || isM8s(oprinf))
+#define isRM16s(oprinf) (isR16(oprinf) || isM16s(oprinf))
 #define isRM8(oprinf)   (isR8 (oprinf) || isM8 (oprinf))
 #define isRM16(oprinf)  (isR16(oprinf) || isM16(oprinf))
 #define isRM(oprinf)    (isRM8(oprinf) || isRM16(oprinf))
@@ -188,17 +201,25 @@ static t_nubit16 avcs, avip;
 #define ARG_BP_AX       (isBP   (aopri1) && isAX  (aopri2))
 #define ARG_SI_AX       (isSI   (aopri1) && isAX  (aopri2))
 #define ARG_DI_AX       (isDI   (aopri1) && isAX  (aopri2))
-#define ARG_AL_M8       (isAL   (aopri1) && isM8  (aopri2))
-#define ARG_M8_AL       (isM8   (aopri1) && isAL  (aopri2))
-#define ARG_AX_M16      (isAX   (aopri1) && isM16 (aopri2))
-#define ARG_M16_AX      (isM16  (aopri1) && isAX  (aopri2))
+#define ARG_AL_m8       (isAL   (aopri1) && isM8  (aopri2) && (aopri2.mod == MOD_M && aopri2.mem == MEM_BP))
+#define ARG_m8_AL       (isM8   (aopri1) && isAL  (aopri2) && (aopri1.mod == MOD_M && aopri1.mem == MEM_BP))
+#define ARG_AX_m16      (isAX   (aopri1) && isM16 (aopri2) && (aopri2.mod == MOD_M && aopri2.mem == MEM_BP))
+#define ARG_m16_AX      (isM16  (aopri1) && isAX  (aopri2) && (aopri1.mod == MOD_M && aopri1.mem == MEM_BP))
 #define ARG_R16_M16     (isR16  (aopri1) && isM16 (aopri2))
+#define ARG_I16u        (isI16u (aopri1) && isNONE(aopri2))
+#define ARG_SHORT_I16   (isSHORT(aopri1) && isI16u(aopri1) && isNONE(aopri2))
+#define ARG_NEAR_I16    (isNEAR (aopri1) && isI16u(aopri1) && isNONE(aopri2))
+#define ARG_FAR_I16_16  (isFAR  (aopri1) && isI16p(aopri1) && isNONE(aopri2))
+#define ARG_NEAR_RM16   (isNEAR (aopri1) && isRM16(aopri1) && isNONE(aopri2))
+#define ARG_FAR_RM16    (isFAR  (aopri1) && isM32 (aopri1) && isNONE(aopri2))
 
 /* assembly compiler: lexical scanner */
 typedef enum {
 	STATE_START,
 	        STATE_BY,STATE_BYT, /* BYTE */
 	STATE_W,STATE_WO,STATE_WOR, /* WORD */
+	        STATE_DW,STATE_DWO, /* DWORD */
+	STATE_DWOR,
 	STATE_P,STATE_PT,           /* PTR */
 	STATE_N,STATE_NE,STATE_NEA, /* NEAR */
 	        STATE_FA,           /* FAR */
@@ -207,7 +228,7 @@ typedef enum {
 	STATE_A,                    /* AX, AH, AL, NUM */
 	STATE_B,                    /* BX, BH, BL, BP, NUM */
 	STATE_C,                    /* CX, CH, CL, CS, NUM */
-	STATE_D,                    /* DX, DH, DL, DS, DI, NUM */
+	STATE_D,                    /* DX, DH, DL, DS, DI, NUM, DWORD */
 	STATE_E,                    /* ES, NUM */
 	STATE_F,                    /* NUM, FAR */
 	STATE_S,                    /* SS, SP, SI, SHORT */
@@ -219,8 +240,8 @@ typedef enum {
 	TOKEN_NULL,TOKEN_END,
 	TOKEN_LSPAREN,TOKEN_RSPAREN,
 	TOKEN_COLON,TOKEN_PLUS,TOKEN_MINUS,
-	TOKEN_BYTE,TOKEN_WORD,TOKEN_PTR,
-	TOKEN_NEAR,TOKEN_FAR,TOKEN_SHORT,
+	TOKEN_BYTE,TOKEN_WORD,TOKEN_DWORD,
+	TOKEN_SHORT,TOKEN_NEAR,TOKEN_FAR,TOKEN_PTR,
 	TOKEN_IMM8,TOKEN_IMM16,
 	TOKEN_AH,TOKEN_BH,TOKEN_CH,TOKEN_DH,
 	TOKEN_AL,TOKEN_BL,TOKEN_CL,TOKEN_DL,
@@ -441,6 +462,7 @@ static t_aasm_token gettoken(t_string str)
 			case 'l': take(TOKEN_DL);break;
 			case 's': take(TOKEN_DS);break;
 			case 'i': take(TOKEN_DI);break;
+			case 'w': state = STATE_DW;break;
 			default: tokptr--;take(TOKEN_IMM8);break;
 			}
 			break;
@@ -520,6 +542,12 @@ static t_aasm_token gettoken(t_string str)
 			default: tokptr--;error = 1;take(TOKEN_NULL);break;
 			}
 			break;
+		case STATE_DW:
+			switch (tokch) {
+			case 'o': state = STATE_DWO;break;
+			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			}
+			break;
 		case STATE_FA:
 			tokimm16 = (t_nubit16)tokimm8;
 			switch (tokch) {
@@ -573,6 +601,12 @@ static t_aasm_token gettoken(t_string str)
 			default: tokptr--;error = 1;take(TOKEN_NULL);break;
 			}
 			break;
+		case STATE_DWO:
+			switch (tokch) {
+			case 'r': state = STATE_DWOR;break;
+			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			}
+			break;
 		case STATE_NEA:
 			switch (tokch) {
 			case 'r': take(TOKEN_NEAR);break;
@@ -588,6 +622,12 @@ static t_aasm_token gettoken(t_string str)
 		case STATE_WOR:
 			switch (tokch) {
 			case 'd': take(TOKEN_WORD);break;
+			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			}
+			break;
+		case STATE_DWOR:
+			switch (tokch) {
+			case 'd': take(TOKEN_DWORD);break;
 			default: tokptr--;error = 1;take(TOKEN_NULL);break;
 			}
 			break;
@@ -749,43 +789,48 @@ static t_aasm_oprinfo parsearg_mem()
 }
 static t_aasm_oprinfo parsearg_imm(t_aasm_token token)
 {
-	t_bool neg = 0x00;
 	t_aasm_oprinfo info;
 	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
 	info.type = TYPE_NONE;
 	info.mod = MOD_M;
 	info.imms = 0x00;
+	info.immn = 0x00;
+	info.ptr = PTR_NONE;
 	if (token == TOKEN_PLUS) {
 		info.imms = 0x01;
 		token = gettoken(NULL);
 	} else if (token == TOKEN_MINUS) {
 		info.imms = 0x01;
-		neg = 0x01;
+		info.immn = 0x01;
 		token = gettoken(NULL);
 	}
 	if (token == TOKEN_IMM8) {
-		if (!neg) {
-			if (tokimm8 > 0x7f) {
-				info.type = TYPE_I16;
-				info.imm16 = (t_nubit16)tokimm8;
-			} else {
-				info.type = TYPE_I8;
-				info.imm8s = tokimm8;
-			}
+		info.type = TYPE_I8;
+		if (!info.immn) {
+			info.imm16 = (t_nubit16)tokimm8;
+			info.imm8 = tokimm8;
 		} else {
-			if (tokimm8 > 0x80) {
-				info.type = TYPE_I16;
-				info.imm16 = (~((t_nubit16)tokimm8)) + 1;
-			} else {
-				info.type = TYPE_I8;
-				info.imm8s = (~tokimm8) + 1;
-			}
+			info.imm16 = (~((t_nubit16)tokimm8)) + 1;
+			info.imm8 = (~tokimm8) + 1;
 		}
 	} else if (token == TOKEN_IMM16) {
 		info.type = TYPE_I16;
-		if (!neg) info.imm16 = tokimm16;
+		if (!info.immn) info.imm16 = tokimm16;
 		else info.imm16 = (~tokimm16) + 1;
 	} else error = 1;
+
+	token = gettoken(NULL);
+	if (!info.imms && token == TOKEN_COLON) {
+		if (info.type == TYPE_I8) info.pcs = (t_nubit16)info.imm8;
+		else if (info.type == TYPE_I16) info.pcs = info.imm16;
+		else error = 1;
+		token = gettoken(NULL);
+		if (token == TOKEN_IMM8) info.pip = tokimm8;
+		else if (token == TOKEN_IMM16) info.pip = tokimm16;
+		else error = 1;
+		info.type = TYPE_I16_16;
+	}
+
 	return info;
 }
 static t_aasm_oprinfo parsearg(t_string arg)
@@ -805,20 +850,32 @@ static t_aasm_oprinfo parsearg(t_string arg)
 		info.type = TYPE_NONE;
 		break;
 	case TOKEN_BYTE:
-		matchtoken(TOKEN_PTR);
-		matchtoken(TOKEN_LSPAREN);
+		token = gettoken(NULL);
+		if (token == TOKEN_PTR) token = gettoken(NULL);
+		if (token != TOKEN_LSPAREN) error = 1;
 		info = parsearg_mem();
 		info.type = TYPE_M8;
 		break;
 	case TOKEN_WORD:
-		matchtoken(TOKEN_PTR);
-		matchtoken(TOKEN_LSPAREN);
+		token = gettoken(NULL);
+		if (token == TOKEN_PTR) token = gettoken(NULL);
+		if (token != TOKEN_LSPAREN) error = 1;
 		info = parsearg_mem();
 		info.type = TYPE_M16;
+		info.ptr = PTR_NEAR;
+		break;
+	case TOKEN_DWORD:
+		token = gettoken(NULL);
+		if (token == TOKEN_PTR) token = gettoken(NULL);
+		if (token != TOKEN_LSPAREN) error = 1;
+		info = parsearg_mem();
+		info.type = TYPE_M32;
+		info.ptr = PTR_FAR;
 		break;
 	case TOKEN_LSPAREN:
 		info = parsearg_mem();
 		info.type = TYPE_M;
+		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_AL:
 		info.type = TYPE_R8;
@@ -864,41 +921,49 @@ static t_aasm_oprinfo parsearg(t_string arg)
 		info.type = TYPE_R16;
 		info.mod = MOD_R;
 		info.reg16 = R16_AX;
+		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_CX:
 		info.type = TYPE_R16;
 		info.mod = MOD_R;
 		info.reg16 = R16_CX;
+		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_DX:
 		info.type = TYPE_R16;
 		info.mod = MOD_R;
 		info.reg16 = R16_DX;
+		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_BX:
 		info.type = TYPE_R16;
 		info.mod = MOD_R;
 		info.reg16 = R16_BX;
+		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_SP:
 		info.type = TYPE_R16;
 		info.mod = MOD_R;
 		info.reg16 = R16_SP;
+		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_BP:
 		info.type = TYPE_R16;
 		info.mod = MOD_R;
 		info.reg16 = R16_BP;
+		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_SI:
 		info.type = TYPE_R16;
 		info.mod = MOD_R;
 		info.reg16 = R16_SI;
+		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_DI:
 		info.type = TYPE_R16;
 		info.mod = MOD_R;
 		info.reg16 = R16_DI;
+		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_CS:
 		info.type = TYPE_SEG;
@@ -925,8 +990,72 @@ static t_aasm_oprinfo parsearg(t_string arg)
 	case TOKEN_IMM8:
 	case TOKEN_IMM16:
 		info = parsearg_imm(token);
-		if (info.type == TYPE_I8)
-			info.imm16 = (t_nsbit8)info.imm8s;
+		if (info.type == TYPE_I16_16)
+			info.ptr = PTR_FAR;
+		else
+			info.ptr = PTR_NONE;
+		break;
+	case TOKEN_SHORT:
+		token = gettoken(NULL);
+		if (token == TOKEN_PTR) token = gettoken(NULL);
+		if (token == TOKEN_IMM8 || token == TOKEN_IMM16) {
+			info = parsearg_imm(token);
+			if (info.type == TYPE_I8) {
+				info.imm16 = (t_nubit8)info.imm8;
+				info.type = TYPE_I16;
+			}
+			if (info.type != TYPE_I16) error = 1;
+		} else error = 1;
+		info.ptr = PTR_SHORT;
+		break;
+	case TOKEN_NEAR:
+		token = gettoken(NULL);
+		if (token == TOKEN_PTR) token = gettoken(NULL);
+		if (token == TOKEN_WORD) {
+			token = gettoken(NULL);
+			if (token == TOKEN_PTR) token = gettoken(NULL);
+			if (token != TOKEN_LSPAREN) error = 1;
+			info = parsearg_mem();
+			info.type = TYPE_M16;
+		} else if (token == TOKEN_LSPAREN) {
+			info = parsearg_mem();
+			info.type = TYPE_M16;
+		} else if (token == TOKEN_IMM8 || token == TOKEN_IMM16) {
+			info = parsearg_imm(token);
+			if (info.type == TYPE_I8) {
+				info.imm16 = (t_nubit8)info.imm8;
+				info.type = TYPE_I16;
+			}
+			if (info.type != TYPE_I16) error = 1;
+		} else error = 1;
+		info.ptr = PTR_NEAR;
+		break;
+	case TOKEN_FAR:
+		token = gettoken(NULL);
+		if (token == TOKEN_PTR) token = gettoken(NULL);
+		if (token == TOKEN_DWORD) {
+			token = gettoken(NULL);
+			if (token == TOKEN_PTR) token = gettoken(NULL);
+			if (token != TOKEN_LSPAREN) error = 1;
+			info = parsearg_mem();
+			info.type = TYPE_M32;
+		} else if (token == TOKEN_LSPAREN) {
+			info = parsearg_mem();
+			info.type = TYPE_M32;
+		} else if (token == TOKEN_IMM8 || token == TOKEN_IMM16) {
+			info = parsearg_imm(token);
+			if (info.type == TYPE_I8) {
+				info.type = TYPE_I16_16;
+				info.pcs  = avcs;
+				info.pip  = (t_nubit8)info.imm8;
+			} else if (info.type == TYPE_I16) {
+				info.type = TYPE_I16_16;
+				info.pcs = avcs;
+				info.pip = info.imm16;
+			} else if (info.type == TYPE_I16_16) {
+			} else error = 1;
+		} else error = 1;
+		info.ptr = PTR_FAR;
 		break;
 	default:
 		info.type = TYPE_NONE;
@@ -1107,7 +1236,7 @@ static void ADD_AL_I8()
 {
 	setbyte(0x04);
 	avip++;
-	SetImm8(aopri2.imm8s);
+	SetImm8(aopri2.imm8);
 }
 static void ADD_AX_I16()
 {
@@ -1153,7 +1282,7 @@ static void OR_AL_I8()
 {
 	setbyte(0x0c);
 	avip++;
-	SetImm8(aopri2.imm8s);
+	SetImm8(aopri2.imm8);
 }
 static void OR_AX_I16()
 {
@@ -1199,7 +1328,7 @@ static void ADC_AL_I8()
 {
 	setbyte(0x14);
 	avip++;
-	SetImm8(aopri2.imm8s);
+	SetImm8(aopri2.imm8);
 }
 static void ADC_AX_I16()
 {
@@ -1245,7 +1374,7 @@ static void SBB_AL_I8()
 {
 	setbyte(0x1c);
 	avip++;
-	SetImm8(aopri2.imm8s);
+	SetImm8(aopri2.imm8);
 }
 static void SBB_AX_I16()
 {
@@ -1291,7 +1420,7 @@ static void AND_AL_I8()
 {
 	setbyte(0x24);
 	avip++;
-	SetImm8(aopri2.imm8s);
+	SetImm8(aopri2.imm8);
 }
 static void AND_AX_I16()
 {
@@ -1341,7 +1470,7 @@ static void SUB_AL_I8()
 {
 	setbyte(0x2c);
 	avip++;
-	SetImm8(aopri2.imm8s);
+	SetImm8(aopri2.imm8);
 }
 static void SUB_AX_I16()
 {
@@ -1391,7 +1520,7 @@ static void XOR_AL_I8()
 {
 	setbyte(0x34);
 	avip++;
-	SetImm8(aopri2.imm8s);
+	SetImm8(aopri2.imm8);
 }
 static void XOR_AX_I16()
 {
@@ -1441,7 +1570,7 @@ static void CMP_AL_I8()
 {
 	setbyte(0x3c);
 	avip++;
-	SetImm8(aopri2.imm8s);
+	SetImm8(aopri2.imm8);
 }
 static void CMP_AX_I16()
 {
@@ -1628,7 +1757,7 @@ static void INS_80(t_nubit8 rid)
 	setbyte(0x80);
 	avip++;
 	SetModRegRM(aopri1, rid);
-	SetImm8(aopri2.imm8s);
+	SetImm8(aopri2.imm8);
 }
 static void INS_81(t_nubit8 rid)
 {
@@ -1642,7 +1771,7 @@ static void INS_83(t_nubit8 rid)
 	setbyte(0x83);
 	avip++;
 	SetModRegRM(aopri1, rid);
-	SetImm8(aopri2.imm8s);
+	SetImm8(aopri2.imm8);
 }
 static void TEST_RM8_R8()
 {
@@ -1777,6 +1906,242 @@ static void CWD()
 		avip++;
 	} else error = 1;
 }
+static void CALL_PTR16_16()
+{
+	setbyte(0x9a);
+	avip++;
+	SetImm16(aopri1.pip);
+	SetImm16(aopri1.pcs);
+}
+static void WAIT()
+{
+	setbyte(0x9b);
+	avip++;
+}
+static void PUSHF()
+{
+	setbyte(0x9c);
+	avip++;
+}
+static void POPF()
+{
+	setbyte(0x9d);
+	avip++;
+}
+static void SAHF()
+{
+	setbyte(0x9e);
+	avip++;
+}
+static void LAHF()
+{
+	setbyte(0x9f);
+	avip++;
+}
+static void MOV_AL_M8()
+{
+	setbyte(0xa0);
+	avip++;
+	SetImm16(aopri2.disp16);
+}
+static void MOV_AX_M16()
+{
+	setbyte(0xa1);
+	avip++;
+	SetImm16(aopri2.disp16);
+}
+static void MOV_M8_AL()
+{
+	setbyte(0xa2);
+	avip++;
+	SetImm16(aopri1.disp16);
+}
+static void MOV_M16_AX()
+{
+	setbyte(0xa3);
+	avip++;
+	SetImm16(aopri1.disp16);
+}
+static void MOVSB()
+{
+	setbyte(0xa4);
+	avip++;
+}
+static void MOVSW()
+{
+	setbyte(0xa5);
+	avip++;
+}
+static void CMPSB()
+{
+	setbyte(0xa6);
+	avip++;
+}
+static void CMPSW()
+{
+	setbyte(0xa7);
+	avip++;
+}
+static void TEST_AL_I8()
+{
+	setbyte(0xa8);
+	avip++;
+	SetImm8(aopri2.imm8);
+}
+static void TEST_AX_I16()
+{
+	setbyte(0xa9);
+	avip++;
+	SetImm16(aopri2.imm16);
+}
+static void STOSB()
+{
+	setbyte(0xaa);
+	avip++;
+}
+static void STOSW()
+{
+	setbyte(0xab);
+	avip++;
+}
+static void LODSB()
+{
+	setbyte(0xac);
+	avip++;
+}
+static void LODSW()
+{
+	setbyte(0xad);
+	avip++;
+}
+static void SCASB()
+{
+	setbyte(0xae);
+	avip++;
+}
+static void SCASW()
+{
+	setbyte(0xaf);
+	avip++;
+}
+static void MOV_AL_I8()
+{
+	setbyte(0xb0);
+	avip++;
+}
+static void MOV_CL_I8()
+{
+	setbyte(0xb1);
+	avip++;
+}
+static void MOV_DL_I8()
+{
+	setbyte(0xb2);
+	avip++;
+}
+static void MOV_BL_I8()
+{
+	setbyte(0xb3);
+	avip++;
+}
+static void MOV_AH_I8()
+{
+	setbyte(0xb4);
+	avip++;
+}
+static void MOV_CH_I8()
+{
+	setbyte(0xb5);
+	avip++;
+}
+static void MOV_DH_I8()
+{
+	setbyte(0xb6);
+	avip++;
+}
+static void MOV_BH_I8()
+{
+	setbyte(0xb7);
+	avip++;
+}
+static void MOV_AX_I16()
+{
+	setbyte(0xb8);
+	avip++;
+}
+static void MOV_CX_I16()
+{
+	setbyte(0xb9);
+	avip++;
+}
+static void MOV_DX_I16()
+{
+	setbyte(0xba);
+	avip++;
+}
+static void MOV_BX_I16()
+{
+	setbyte(0xbb);
+	avip++;
+}
+static void MOV_SP_I16()
+{
+	setbyte(0xbc);
+	avip++;
+}
+static void MOV_BP_I16()
+{
+	setbyte(0xbd);
+	avip++;
+}
+static void MOV_SI_I16()
+{
+	setbyte(0xbe);
+	avip++;
+}
+static void MOV_DI_I16()
+{
+	setbyte(0xbf);
+	avip++;
+}
+static void RET_I16()
+{
+	setbyte(0xc2);
+	avip++;
+	SetImm16(aopri1.imm16);
+}
+static void RET_()
+{
+	setbyte(0xc3);
+	avip++;
+}
+static void LES_R16_M16()
+{
+	setbyte(0xc4);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void LDS_R16_M16()
+{
+	setbyte(0xc5);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void MOV_M8_I8()
+{
+	setbyte(0xc6);
+	avip++;
+	SetModRegRM(aopri1, 0x00);
+	SetImm8(aopri2.imm8);
+}
+static void MOV_M16_I16()
+{
+	setbyte(0xc7);
+	avip++;
+	SetModRegRM(aopri1, 0x00);
+	SetImm16(aopri2.imm16);
+}
+
 
 static void AAM()
 {
@@ -1833,8 +2198,22 @@ static void ADD()
 	if      (ARG_AL_I8)    ADD_AL_I8();
 	else if (ARG_AX_I16)   ADD_AX_I16();
 	else if (ARG_RM8_I8)   INS_80(0x00);
-	else if (ARG_RM16_I8)  INS_83(0x00);
-	else if (ARG_RM16_I16) INS_81(0x00);
+	else if (ARG_RM16_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = aopri2.imm8;
+				INS_81(0x00);
+			} else INS_83(0x00);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(0x00);
+			else {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = 0xff00 | aopri2.imm8;
+				INS_81(0x00);
+			}
+	} else if (ARG_RM16_I16) INS_81(0x00);
 	else if (ARG_RM8_R8)   ADD_RM8_R8();
 	else if (ARG_RM16_R16) ADD_RM16_R16();
 	else if (ARG_R8_RM8)   ADD_R8_RM8();
@@ -1846,8 +2225,22 @@ static void OR()
 	if      (ARG_AL_I8)    OR_AL_I8();
 	else if (ARG_AX_I16)   OR_AX_I16();
 	else if (ARG_RM8_I8)   INS_80(0x01);
-	else if (ARG_RM16_I8)  INS_83(0x01);
-	else if (ARG_RM16_I16) INS_81(0x01);
+	else if (ARG_RM16_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = aopri2.imm8;
+				INS_81(0x00);
+			} else INS_83(0x00);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(0x00);
+			else {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = 0xff00 | aopri2.imm8;
+				INS_81(0x00);
+			}
+	} else if (ARG_RM16_I16) INS_81(0x01);
 	else if (ARG_RM8_R8)   OR_RM8_R8();
 	else if (ARG_RM16_R16) OR_RM16_R16();
 	else if (ARG_R8_RM8)   OR_R8_RM8();
@@ -1859,8 +2252,22 @@ static void ADC()
 	if      (ARG_AL_I8)    ADC_AL_I8();
 	else if (ARG_AX_I16)   ADC_AX_I16();
 	else if (ARG_RM8_I8)   INS_80(0x02);
-	else if (ARG_RM16_I8)  INS_83(0x02);
-	else if (ARG_RM16_I16) INS_81(0x02);
+	else if (ARG_RM16_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = aopri2.imm8;
+				INS_81(0x00);
+			} else INS_83(0x00);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(0x00);
+			else {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = 0xff00 | aopri2.imm8;
+				INS_81(0x00);
+			}
+	} else if (ARG_RM16_I16) INS_81(0x02);
 	else if (ARG_RM8_R8)   ADC_RM8_R8();
 	else if (ARG_RM16_R16) ADC_RM16_R16();
 	else if (ARG_R8_RM8)   ADC_R8_RM8();
@@ -1872,8 +2279,22 @@ static void SBB()
 	if      (ARG_AL_I8)    SBB_AL_I8();
 	else if (ARG_AX_I16)   SBB_AX_I16();
 	else if (ARG_RM8_I8)   INS_80(0x03);
-	else if (ARG_RM16_I8)  INS_83(0x03);
-	else if (ARG_RM16_I16) INS_81(0x03);
+	else if (ARG_RM16_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = aopri2.imm8;
+				INS_81(0x00);
+			} else INS_83(0x00);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(0x00);
+			else {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = 0xff00 | aopri2.imm8;
+				INS_81(0x00);
+			}
+	} else if (ARG_RM16_I16) INS_81(0x03);
 	else if (ARG_RM8_R8)   SBB_RM8_R8();
 	else if (ARG_RM16_R16) SBB_RM16_R16();
 	else if (ARG_R8_RM8)   SBB_R8_RM8();
@@ -1885,8 +2306,22 @@ static void AND()
 	if      (ARG_AL_I8)    AND_AL_I8();
 	else if (ARG_AX_I16)   AND_AX_I16();
 	else if (ARG_RM8_I8)   INS_80(0x04);
-	else if (ARG_RM16_I8)  INS_83(0x04);
-	else if (ARG_RM16_I16) INS_81(0x04);
+	else if (ARG_RM16_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = aopri2.imm8;
+				INS_81(0x00);
+			} else INS_83(0x00);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(0x00);
+			else {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = 0xff00 | aopri2.imm8;
+				INS_81(0x00);
+			}
+	} else if (ARG_RM16_I16) INS_81(0x04);
 	else if (ARG_RM8_R8)   AND_RM8_R8();
 	else if (ARG_RM16_R16) AND_RM16_R16();
 	else if (ARG_R8_RM8)   AND_R8_RM8();
@@ -1898,8 +2333,22 @@ static void SUB()
 	if      (ARG_AL_I8)    SUB_AL_I8();
 	else if (ARG_AX_I16)   SUB_AX_I16();
 	else if (ARG_RM8_I8)   INS_80(0x05);
-	else if (ARG_RM16_I8)  INS_83(0x05);
-	else if (ARG_RM16_I16) INS_81(0x05);
+	else if (ARG_RM16_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = aopri2.imm8;
+				INS_81(0x00);
+			} else INS_83(0x00);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(0x00);
+			else {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = 0xff00 | aopri2.imm8;
+				INS_81(0x00);
+			}
+	} else if (ARG_RM16_I16) INS_81(0x05);
 	else if (ARG_RM8_R8)   SUB_RM8_R8();
 	else if (ARG_RM16_R16) SUB_RM16_R16();
 	else if (ARG_R8_RM8)   SUB_R8_RM8();
@@ -1911,8 +2360,22 @@ static void XOR()
 	if      (ARG_AL_I8)    XOR_AL_I8();
 	else if (ARG_AX_I16)   XOR_AX_I16();
 	else if (ARG_RM8_I8)   INS_80(0x06);
-	else if (ARG_RM16_I8)  INS_83(0x06);
-	else if (ARG_RM16_I16) INS_81(0x06);
+	else if (ARG_RM16_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = aopri2.imm8;
+				INS_81(0x00);
+			} else INS_83(0x00);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(0x00);
+			else {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = 0xff00 | aopri2.imm8;
+				INS_81(0x00);
+			}
+	} else if (ARG_RM16_I16) INS_81(0x06);
 	else if (ARG_RM8_R8)   XOR_RM8_R8();
 	else if (ARG_RM16_R16) XOR_RM16_R16();
 	else if (ARG_R8_RM8)   XOR_R8_RM8();
@@ -1924,8 +2387,22 @@ static void CMP()
 	if      (ARG_AL_I8)    CMP_AL_I8();
 	else if (ARG_AX_I16)   CMP_AX_I16();
 	else if (ARG_RM8_I8)   INS_80(0x07);
-	else if (ARG_RM16_I8)  INS_83(0x07);
-	else if (ARG_RM16_I16) INS_81(0x07);
+	else if (ARG_RM16_I8)  {
+		if (!aopri2.immn)
+			if (aopri2.imm8 > 0x7f) {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = aopri2.imm8;
+				INS_81(0x00);
+			} else INS_83(0x00);
+		else
+			if (aopri2.imm8 > 0x7f)
+				INS_83(0x00);
+			else {
+				aopri2.type = TYPE_I16;
+				aopri2.imm16 = 0xff00 | aopri2.imm8;
+				INS_81(0x00);
+			}
+	} else if (ARG_RM16_I16) INS_81(0x07);
 	else if (ARG_RM8_R8)   CMP_RM8_R8();
 	else if (ARG_RM16_R16) CMP_RM16_R16();
 	else if (ARG_R8_RM8)   CMP_R8_RM8();
@@ -1960,10 +2437,10 @@ static void JCC(t_nubit8 opcode)
 {
 	t_nubit16 lo, hi, ta;
 	t_nsbit8 rel8;
-	if (ARG_I16 && !aopri1.imms) {
+	if (ARG_I16u) {
 		lo = avip - 0x0080 + 0x0002;
 		hi = avip + 0x007f + 0x0002;
-		if (isI8(aopri1)) ta = (t_nubit8)aopri1.imm8s & 0x00ff; 
+		if (isI8(aopri1) && !aopri1.imms) ta = aopri1.imm8 & 0x00ff; 
 		else if (isI16(aopri1)) ta = aopri1.imm16;
 		else error = 1;
 		if (avip < lo || avip > hi)
@@ -1985,7 +2462,9 @@ static void JCC(t_nubit8 opcode)
 }
 static void TEST()
 {
-	if      (ARG_RM8_R8)   TEST_RM8_R8();
+	if      (ARG_AL_I8) TEST_AL_I8();
+	else if (ARG_AX_I16) TEST_AX_I16();
+	else if (ARG_RM8_R8) TEST_RM8_R8();
 	else if (ARG_RM16_R16) TEST_RM16_R16();
 	else error = 1;
 }
@@ -2005,12 +2484,34 @@ static void XCHG()
 }
 static void MOV()
 {
-	if      (ARG_RM8_R8) MOV_RM8_R8();
+	if      (ARG_AL_I8) MOV_AL_I8();
+	else if (ARG_CL_I8) MOV_CL_I8();
+	else if (ARG_DL_I8) MOV_DL_I8();
+	else if (ARG_BL_I8) MOV_BL_I8();
+	else if (ARG_AH_I8) MOV_AH_I8();
+	else if (ARG_CH_I8) MOV_CH_I8();
+	else if (ARG_DH_I8) MOV_DH_I8();
+	else if (ARG_BH_I8) MOV_BH_I8();
+	else if (ARG_AX_I16) MOV_AX_I16();
+	else if (ARG_CX_I16) MOV_CX_I16();
+	else if (ARG_DX_I16) MOV_DX_I16();
+	else if (ARG_BX_I16) MOV_BX_I16();
+	else if (ARG_SP_I16) MOV_SP_I16();
+	else if (ARG_BP_I16) MOV_BP_I16();
+	else if (ARG_SI_I16) MOV_SI_I16();
+	else if (ARG_DI_I16) MOV_DI_I16();
+	else if (ARG_AL_m8) MOV_AL_M8();
+	else if (ARG_m8_AL) MOV_M8_AL();
+	else if (ARG_AX_m16) MOV_AX_M16();
+	else if (ARG_m16_AX) MOV_M16_AX();
 	else if (ARG_RM16_R16) MOV_RM16_R16();
 	else if (ARG_R8_RM8) MOV_R8_RM8();
 	else if (ARG_R16_RM16) MOV_R16_RM16();
 	else if (ARG_RM16_SEG) MOV_RM16_SEG();
 	else if (ARG_SEG_RM16) MOV_SEG_RM16();
+	else if (ARG_RM8_R8) MOV_RM8_R8();
+	else if (ARG_RM8_I8) MOV_M8_I8();
+	else if (ARG_RM16_I16) MOV_M16_I16();
 	else error = 1;
 }
 static void LEA()
@@ -2020,8 +2521,46 @@ static void LEA()
 }
 static void CALL()
 {
+	/*
+JMP I16 (REL8 or REL16)
+JMP [M/M16] (RM16)
+JMP [M32] (M16:16)
+JMP SHORT $(LABEL) (REL8)
+JMP SHORT I16 (REL8)
+JMP NEAR $(LABEL) (REL16)
+JMP NEAR I16 (REL16)
+JMP NEAR [M/M16] (RM16)
+JMP I16:16  (I16:16)
+JMP FAR $(LABEL) (I16:16)
+JMP FAR I16 (I16:16)
+JMP FAR [M/M32] (M16:16)
+JMP FAR I16:16 (I16:16)
+
+ARG_I16u, PNONE, SHORT, NEAR
+ARG_RM16, PNONE, NEAR
+ARG_M32, PNONE, FAR
+ARG_LABEL, SHORT, NEAR, FAR
+ARG_I16_16, PNONE, FAR
+*/
 	/* TODO */
-	error = 1;
+	if (ARG_FAR_I16_16) CALL_PTR16_16();
+	else error = 1;
+}
+static void RET()
+{
+	if (ARG_I16u) RET_I16();
+	else if (ARG_NONE) RET_();
+	else error = 1;
+}
+static void LES()
+{
+	if (ARG_R16_M16) LES_R16_M16();
+	else error = 1;
+}
+static void LDS()
+{
+	if (ARG_R16_M16) LDS_R16_M16();
+	else error = 1;
 }
 
 static void QDX()
@@ -2029,7 +2568,7 @@ static void QDX()
 	if (ARG_I8) {
 		setbyte(0xf1);
 		avip++;
-		SetImm8(aopri1.imm8s);
+		SetImm8(aopri1.imm8);
 	} else error = 1;
 }
 static void IRET()
@@ -2102,6 +2641,25 @@ static void exec()
 	else if (!strcmp(aop, "cbw")) CBW();
 	else if (!strcmp(aop, "cwd")) CWD();
 	else if (!strcmp(aop,"call")) CALL();
+	else if (!strcmp(aop,"wait")) WAIT();
+	else if (!strcmp(aop,"pushf")) PUSHF();
+	else if (!strcmp(aop,"popf")) POPF();
+	else if (!strcmp(aop,"sahf")) SAHF();
+	else if (!strcmp(aop,"lahf")) LAHF();
+	else if (!strcmp(aop,"movsb")) MOVSB();
+	else if (!strcmp(aop,"movsw")) MOVSW();
+	else if (!strcmp(aop,"cmpsb")) CMPSB();
+	else if (!strcmp(aop,"cmpsw")) CMPSW();
+	else if (!strcmp(aop,"stosb")) STOSB();
+	else if (!strcmp(aop,"stosw")) STOSW();
+	else if (!strcmp(aop,"lodsb")) LODSB();
+	else if (!strcmp(aop,"lodsw")) LODSW();
+	else if (!strcmp(aop,"scasb")) SCASB();
+	else if (!strcmp(aop,"scasw")) SCASW();
+	else if (!strcmp(aop, "ret")) RET();
+	else if (!strcmp(aop, "les")) LES();
+	else if (!strcmp(aop, "lds")) LDS();
+
 
 	else if (!strcmp(aop, "aam")) AAM();
 	else if (!strcmp(aop, "aad")) AAD();
@@ -2254,3 +2812,46 @@ t_nubitcc aasm(const t_string stmt, t_nubit16 seg, t_nubit16 off)
 	if (error) len = 0;
 	return len;
 }
+
+/*
+JMP I16 (REL8 or REL16)
+JMP [M/M16] (RM16)
+JMP [M32] (M16:16)
+JMP SHORT $(LABEL) (REL8)
+JMP SHORT I16 (REL8)
+JMP NEAR $(LABEL) (REL16)
+JMP NEAR I16 (REL16)
+JMP NEAR [M/M16] (RM16)
+JMP I16:16  (I16:16)
+JMP FAR $(LABEL) (I16:16)
+JMP FAR I16 (I16:16)
+JMP FAR [M/M32] (M16:16)
+JMP FAR I16:16 (I16:16)
+>>
+ARG_I16u, PNONE, SHORT, NEAR
+ARG_RM16, PNONE, NEAR
+ARG_M32, PNONE, FAR
+ARG_LABEL, SHORT, NEAR, FAR
+ARG_I16_16, PNONE, FAR
+
+CALL I16 (REL16)
+CALL [M/M16] (RM16)
+CALL [M32] (M16:16)
+CALL NEAR $(LABEL) (REL16)
+CALL NEAR I16 (REL16)
+CALL NEAR [M/M16] (RM16)
+CALL I16:16 (I16:16)
+CALL FAR $(LABEL) (REL16)
+CALL FAR I16 (I16:16)
+CALL FAR [M/M32] (M16:16)
+CALL FAR I16:16 (I16:16)
+
+>>
+ARG_I16u, PNONE, NEAR
+ARG_RM16, PNONE, NEAR
+ARG_M32, PNONE, FAR
+ARG_LABEL, NEAR, FAR
+ARG_I16_16, PNONE, FAR
+
+
+*/

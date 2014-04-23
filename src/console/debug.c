@@ -568,6 +568,8 @@ static void rprintregs()
 	rprintflags();
 	printd("\n");
 	dasm(str, _cs, _ip, 0x01);
+	uasmSegRec = _cs;
+	uasmPtrRec = _ip;
 	printd("%s", str);
 }
 static void rscanregs()
