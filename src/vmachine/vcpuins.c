@@ -16,16 +16,23 @@
 #define REG ((modrm&0x38)>>3)
 #define RM  ((modrm&0x07)>>0)
 
-#define ADD_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
+#define ADD_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
 #define	 OR_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
-#define ADC_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
-#define SBB_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
+#define ADC_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
+#define SBB_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
 #define AND_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
-#define SUB_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
+#define SUB_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
 #define XOR_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
-#define CMP_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
-#define INC_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_AF | VCPU_FLAG_PF)
-#define DEC_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_AF | VCPU_FLAG_PF)
+#define CMP_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
+#define INC_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_PF)
+#define DEC_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_PF)
 #define TEST_FLAG (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
 #define SHL_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
 #define SHR_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
@@ -36,44 +43,52 @@
 
 t_cpuins vcpuins;
 
+static t_cpu acpu;
+static t_nubit8 ub1,ub2,ub3;
+static t_nsbit8 sb1,sb2,sb3;
+static t_nubit16 uw1,uw2,uw3;
+static t_nsbit16 sw1,sw2,sw3;
 #ifdef VCPUASM
-t_cpu acpu;
-static void acpuPrintRegs()
+#define AFLAGS    (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF | \
+                   VCPU_FLAG_DF | VCPU_FLAG_TF)
+static void acpuPrintRegs(t_cpu *xcpu)
 {
-	vapiPrint("ACPU REGISTERS\n");
-	vapiPrint(  "AX=%04X", acpu.ax);
-	vapiPrint("  BX=%04X", acpu.bx);
-	vapiPrint("  CX=%04X", acpu.cx);
-	vapiPrint("  DX=%04X", acpu.dx);
-	vapiPrint("  SP=%04X", acpu.sp);
-	vapiPrint("  BP=%04X", acpu.bp);
-	vapiPrint("  SI=%04X", acpu.si);
-	vapiPrint("  DI=%04X", acpu.di);
-	vapiPrint("\nDS=%04X", acpu.ds);
-	vapiPrint("  ES=%04X", acpu.es);
-	vapiPrint("  SS=%04X", acpu.ss);
-	vapiPrint("  CS=%04X", acpu.cs);
-	vapiPrint("  IP=%04X", acpu.ip);
+	if (xcpu == &vcpu) vapiPrint("VCPU REGISTERS\n");
+	else               vapiPrint("ACPU REGISTERS\n");
+	vapiPrint(  "AX=%04X", xcpu->ax);
+	vapiPrint("  BX=%04X", xcpu->bx);
+	vapiPrint("  CX=%04X", xcpu->cx);
+	vapiPrint("  DX=%04X", xcpu->dx);
+	vapiPrint("  SP=%04X", xcpu->sp);
+	vapiPrint("  BP=%04X", xcpu->bp);
+	vapiPrint("  SI=%04X", xcpu->si);
+	vapiPrint("  DI=%04X", xcpu->di);
+	vapiPrint("\nDS=%04X", xcpu->ds);
+	vapiPrint("  ES=%04X", xcpu->es);
+	vapiPrint("  SS=%04X", xcpu->ss);
+	vapiPrint("  CS=%04X", xcpu->cs);
+	vapiPrint("  IP=%04X", xcpu->ip);
 	vapiPrint("   ");
-	if(acpu.flags & VCPU_FLAG_OF) vapiPrint("OV ");
-	else                      vapiPrint("NV ");
-	if(acpu.flags & VCPU_FLAG_DF) vapiPrint("DN ");
-	else                      vapiPrint("UP ");
-	if(acpu.flags & VCPU_FLAG_IF) vapiPrint("EI ");
-	else                      vapiPrint("DI ");
-	if(acpu.flags & VCPU_FLAG_SF) vapiPrint("NG ");
-	else                      vapiPrint("PL ");
-	if(acpu.flags & VCPU_FLAG_ZF) vapiPrint("ZR ");
-	else                      vapiPrint("NZ ");
-	if(acpu.flags & VCPU_FLAG_AF) vapiPrint("AC ");
-	else                      vapiPrint("NA ");
-	if(acpu.flags & VCPU_FLAG_PF) vapiPrint("PE ");
-	else                      vapiPrint("PO ");
-	if(acpu.flags & VCPU_FLAG_CF) vapiPrint("CY ");
-	else                      vapiPrint("NC ");
+	if(xcpu->flags & VCPU_FLAG_OF) vapiPrint("OV ");
+	else                           vapiPrint("NV ");
+	if(xcpu->flags & VCPU_FLAG_DF) vapiPrint("DN ");
+	else                           vapiPrint("UP ");
+	if(xcpu->flags & VCPU_FLAG_IF) vapiPrint("E_ ");
+	else                           vapiPrint("D_ ");
+	if(xcpu->flags & VCPU_FLAG_SF) vapiPrint("NG ");
+	else                           vapiPrint("PL ");
+	if(xcpu->flags & VCPU_FLAG_ZF) vapiPrint("ZR ");
+	else                           vapiPrint("NZ ");
+	if(xcpu->flags & VCPU_FLAG_AF) vapiPrint("AC ");
+	else                           vapiPrint("NA ");
+	if(xcpu->flags & VCPU_FLAG_PF) vapiPrint("PE ");
+	else                           vapiPrint("PO ");
+	if(xcpu->flags & VCPU_FLAG_CF) vapiPrint("CY ");
+	else                           vapiPrint("NC ");
 	vapiPrint("\n");
 }
-static void acpuCheck()
+static t_bool acpuCheck()
 {
 	t_bool flagdiff = 0x00;
 	if (acpu.ax != vcpu.ax)       {vapiPrint("diff ax\n");flagdiff = 0x01;}
@@ -89,19 +104,31 @@ static void acpuCheck()
 	if (acpu.ds != vcpu.ds)       {vapiPrint("diff ds\n");flagdiff = 0x01;}
 	if (acpu.es != vcpu.es)       {vapiPrint("diff es\n");flagdiff = 0x01;}
 	if (acpu.ss != vcpu.ss)       {vapiPrint("diff ss\n");flagdiff = 0x01;}
-	if (acpu.flags != vcpu.flags) {vapiPrint("diff fg\n");flagdiff = 0x01;}
+	if ((acpu.flags & AFLAGS) != (vcpu.flags & AFLAGS))
+		                          {vapiPrint("diff fg\n");flagdiff = 0x01;}
 	if (flagdiff) {
-		acpuPrintRegs();
+		acpuPrintRegs(&acpu);
+		acpuPrintRegs(&vcpu);
 		vapiCallBackMachineStop();
 	}
+	return flagdiff;
 }
-#define async (acpu = vcpu)
-#define aexec __asm
-#define achek acpuCheck();
+#define async  if(acpu = vcpu,1)
+#define aexec  __asm
+#define asregub(data) \
+	if(!vramIsAddrInMem(dest)) {d_nubit8((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = (data);}
+#define asregsb(data) \
+	if(!vramIsAddrInMem(dest)) {d_nsbit8((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = (data);}
+#define asreguw(data) \
+	if(!vramIsAddrInMem(dest)) {d_nubit16((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = (data);}
+#define asregsw(data) \
+	if(!vramIsAddrInMem(dest)) {d_nsbit16((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = (data);}
+#define acheck if(acpuCheck())
 #else
-#define async
-#define aexec
-#define achek
+#define async  if(0)
+#define aexec  __asm
+#define asreg(type, data)
+#define acheck if(0)
 #endif
 
 static void CaseError(const char *str)
@@ -378,6 +405,10 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
+		async {
+			ub1 = d_nubit8(dest);
+			ub2 = d_nubit8(src);
+		}
 		vcpuins.bit = 8;
 		vcpuins.type = ADD8;
 		vcpuins.opr1 = d_nubit8(dest);
@@ -387,6 +418,10 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 /* vcpuins bug fix #6 */
 		break;
 	case 12:
+		async {
+			uw1 = d_nubit16(dest);
+			uw2 = d_nsbit8(src);
+		}
 		vcpuins.bit = 16;
 		vcpuins.type = ADD16;
 		vcpuins.opr1 = d_nubit16(dest);
@@ -395,6 +430,10 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
 	case 16:
+		async {
+			uw1 = d_nubit16(dest);
+			uw2 = d_nubit16(src);
+		}
 		vcpuins.bit = 16;
 		vcpuins.type = ADD16;
 		vcpuins.opr1 = d_nubit16(dest);
@@ -404,6 +443,53 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 		break;
 	default:CaseError("ADD::len");break;}
 	SetFlags(ADD_FLAG);
+	switch(len) {
+	case 8:
+		aexec {
+			push acpu.flags
+			popf
+			mov al,ub1
+			add al,ub2
+			mov ub3,al
+			pushf
+			pop acpu.flags
+		}
+		asregub(ub3);
+		acheck {
+			vapiPrint("opr1=%02X, opr2=%02X, res=%02X\n",ub1,ub2,ub3);
+		}
+		break;
+	case 12:
+		aexec {
+			push acpu.flags
+			popf
+			mov ax,uw1
+			add ax,uw2
+			mov uw3,ax
+			pushf
+			pop acpu.flags
+		}
+		asreguw(uw3);
+		acheck {
+			vapiPrint("opr1=%02X, opr2=%02X, res=%02X\n",uw1,uw2,uw3);
+		}
+		break;
+	case 16:
+		aexec {
+			push acpu.flags
+			popf
+			mov ax,uw1
+			add ax,uw2
+			mov uw3,ax
+			pushf
+			pop acpu.flags
+		}
+		asreguw(uw3);
+		acheck {
+			vapiPrint("opr1=%04X, opr2=%04X, res=%04X\n",uw1,uw2,uw3);
+		}
+		break;
+	}
 }
 static void OR(void *dest, void *src, t_nubit8 len)
 {
