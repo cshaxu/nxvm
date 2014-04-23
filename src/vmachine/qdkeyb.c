@@ -91,20 +91,12 @@ void IO_Read_0064()
 {
 	vport.iobyte = 0x10;
 }
-/*void IO_Write_00BB()
-{
-	qdbiosExecInt(0x16);
-	if (GetBit(_flags, VCPU_FLAG_ZF))
-		vramVarWord(_ss,_sp + 4) |=  VCPU_FLAG_ZF;
-	else
-		vramVarWord(_ss,_sp + 4) &= ~VCPU_FLAG_ZF;
-}*/
 
 void qdkeybReadInput()
 {
 	/* TODO: this should have been working with INT 15 */
 	while (bufIsEmpty) vapiSleep(10);
-	if (bufIsEmpty) return;
+	//if (bufIsEmpty) return;
 	_ax = bufPop();
 	vpicSetIRQ(0x01);
 }
@@ -120,6 +112,10 @@ void qdkeybGetStatus()
 void qdkeybGetShiftStatus()
 {
 	_al = qdkeybVarFlag0;
+}
+void qdkeybBufferKey()
+{
+	_al = bufPush((_ch << 8) | _cl);
 }
 
 void qdkeybInit()

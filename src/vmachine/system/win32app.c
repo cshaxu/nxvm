@@ -4,7 +4,7 @@
 
 #include "tchar.h"
 #include "w32adisp.h"
-#include "w32akeyb.h"
+#include "win32.h"
 #include "win32app.h"
 
 HWND w32aHWnd = NULL;/* handler for window; if null, window is not yet ready */
@@ -19,6 +19,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
                                 WPARAM wParam, LPARAM lParam)
 {
 	INT wmId, wmEvent;
+	UCHAR scanCode, virtualKey;
 	switch (message) {
 	case WM_CREATE:
 		SetTimer(hWnd, TIMER_PAINT, 50, NULL);
@@ -41,21 +42,19 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
  	case WM_PAINT:
 		if (vapiCallBackMachineGetFlagRun()) w32adispPaint();
 		break;
-	case WM_SIZE:
-		break;
-	case WM_SIZING:
-		break;
-	/*case WM_CHAR:
-		w32akeybMakeChar(wParam, lParam);
-		break;*/
+	/*case WM_SIZE: break;
+	case WM_SIZING: break;
+	case WM_CHAR: win32KeyboardMakeChar(wParam, lParam);break;*/
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
+		scanCode = (UCHAR)((lParam >> 16) & 0x000000ff);
+		virtualKey = (UCHAR)(wParam & 0x000000ff);
+		win32KeyboardMakeKey(scanCode, virtualKey);
+		break;
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
-		w32akeybMakeKey(message, wParam, lParam);
-		break;
 	case WM_SETFOCUS:
-		w32akeybMakeStatus();
+		win32KeyboardMakeStatus();
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);

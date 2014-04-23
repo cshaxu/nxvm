@@ -129,53 +129,17 @@ void vapiFloppyRemove(const t_string fname)
 
 /* Platform Related */
 #if VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32
-	#include "system/win32con.h"
-	#include "system/win32app.h"
-	void vapiSleep(t_nubit32 milisec) {Sleep(milisec);}
-	void vapiDisplaySetScreen() {
-		if (!vmachine.flagmode)
-			win32conDisplaySetScreen();
-		else
-			win32appDisplaySetScreen();
-	}
-	void vapiDisplayPaint() {
-		if (!vmachine.flagmode)
-			win32conDisplayPaint();
-		else
-			win32appDisplayPaint();
-	}
-	void vapiStartMachine() {
-		if (!vmachine.flagmode)
-			win32conStartMachine();
-		else
-			win32appStartMachine();
-	}
+	#include "system/win32.h"
+	void vapiSleep(t_nubit32 milisec) {win32Sleep(milisec);}
+	void vapiDisplaySetScreen() {win32DisplaySetScreen(vmachine.flagmode);}
+	void vapiDisplayPaint() {win32DisplayPaint(vmachine.flagmode);}
+	void vapiStartMachine() {win32StartMachine(vmachine.flagmode);}
 #elif VGLOBAL_PLATFORM == VGLOBAL_VAR_LINUX
-	#include "system.h"
-	#include "system/linuxcon.h"
-	#include "system/linuxapp.h"
-	void vapiSleep(t_nubit32 milisec) {usleep(milisec);}
-	void vapiDisplaySetScreen() {
-		if (!vmachine.flagmode)
-			linuxconDisplaySetScreen();
-		else
-			linuxappDisplaySetScreen();
-		}
-	}
-	void vapiDisplayPaint() {
-		if (!vmachine.flagmode)
-			linuxconDisplayPaint();
-		else
-			linuxappDisplayPaint();
-		}
-	}
-	void vapiStartMachine() {
-		if (!vmachine.flagmode)
-			linuxconStartMachine();
-		else
-			linuxappStartMachine();
-		}
-	}
+	#include "system/linux.h"
+	void vapiSleep(t_nubit32 milisec) {linuxSleep(milisec);}
+	void vapiDisplaySetScreen() {linuxDisplaySetScreen();}
+	void vapiDisplayPaint() {linuxDisplayPaint();}
+	void vapiStartMachine() {linuxStartMachine();}
 #endif
 
 void vapiInit() {memset(&vapirecord, 0x00, sizeof(t_apirecord));}

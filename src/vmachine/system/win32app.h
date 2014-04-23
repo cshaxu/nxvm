@@ -1,7 +1,7 @@
 /* This file is a part of NXVM project. */
 
-#ifndef NXVM_W32AMAIN_H
-#define NXVM_W32AMAIN_H
+#ifndef NXVM_WIN32APP_H
+#define NXVM_WIN32APP_H
 
 #ifdef __cplusplus
 /*extern "C" {*/
@@ -9,10 +9,10 @@
 
 #include "windows.h"
 
-void win32appDisplaySetScreen();
-void win32appDisplayPaint();
+VOID win32appDisplaySetScreen();
+VOID win32appDisplayPaint();
 
-void win32appStartMachine();
+VOID win32appStartMachine();
 
 extern HWND w32aHWnd;
 

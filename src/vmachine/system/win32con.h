@@ -1,7 +1,7 @@
 /* This file is a part of NXVM project. */
 
-#ifndef NXVM_W32CMAIN_H
-#define NXVM_W32CMAIN_H
+#ifndef NXVM_WIN32CON_H
+#define NXVM_WIN32CON_H
 
 #ifdef __cplusplus
 /*extern "C" {*/
@@ -11,9 +11,10 @@
 
 extern HANDLE hIn, hOut;
 
-void win32conDisplaySetScreen();
-void win32conDisplayPaint();
-void win32conStartMachine();
+VOID w32ckeybProcess();
+VOID win32conDisplaySetScreen();
+VOID win32conDisplayPaint();
+VOID win32conStartMachine();
 
 #ifdef __cplusplus
 /*}_EOCD_*/

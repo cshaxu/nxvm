@@ -1,5 +1,6 @@
 /* This file is a part of NXVM project. */
 
+#include "stdio.h"
 #include "memory.h"
 
 #include "vapi.h"
@@ -13,6 +14,8 @@ t_pit vpit;
 #define GetRW(cw)  (((cw) & 0x30)>>0x04)
 #define GetM(cw)   (((cw) & 0x0e)>>0x01)
 #define GetBCD(cw) (((cw) & 0x01))
+
+void vpitIntSystemTimer() {vpicSetIRQ(0x00);}
 
 static void LoadInit(t_nubit8 id)
 {
@@ -193,8 +196,6 @@ void IO_Write_FF40() {vpitSetGate(vport.iobyte>>0x04,vport.iobyte&0x01);}
 void IO_Read_FF41() {vport.iobyte = 0xff;vpitRefresh();}
 #endif
 
-void vpitIntSystemTimer() {vpicSetIRQ(0x00);}
-
 void vpitSetGate(t_nubit8 id, t_bool gate)
 {
 	if (GetM(vpit.cw[id]) != 0x00)
@@ -276,6 +277,8 @@ void vpitRefresh()
 		}
 	}
 }
+
+#define vpitRefDRAM NULL
 
 void vpitInit()
 {

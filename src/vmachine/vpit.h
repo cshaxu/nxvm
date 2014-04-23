@@ -5,8 +5,6 @@
 #ifndef NXVM_VPIT_H
 #define NXVM_VPIT_H
 
-#include "stdio.h"
-
 #include "vglobal.h"
 
 #define VPIT_DEBUG
@@ -56,9 +54,6 @@ void IO_Read_FF40();                                       /* prnit all info */
 void IO_Write_FF40();                                            /* set gate */
 void IO_Read_FF41();                                              /* refresh */
 #endif
-
-void vpitIntSystemTimer();               /* generate system timer interrupts */
-#define vpitRefDRAM NULL                              /* dummy: refresh dram */
 
 void vpitSetGate(t_nubit8 id, t_bool gate);  /* set gate value and load init */
 void vpitRefresh();                                    /* act as a CLK pulse */

@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.2.0xbc]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.2.0xbe]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -193,6 +193,13 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Files:   vprinter.c, vprinter.h
  * Component 5: cdrom
  *     Files:   vcdrom.c, vcdrom.h
+ *
+ * Milestones
+ * 0x45	Console and 8086 CPU
+ * 0x82 Basic devices (QD Devices)
+ * 0x90 Win32 Application
+ * 0xbc Win32 Console
+ * 0x?? Linux Console
  *
  * Format Unify:
  * all boolean type should be t_bool, declared TRUE or FALSE

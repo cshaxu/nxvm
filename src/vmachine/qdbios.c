@@ -762,6 +762,9 @@ void INT_16()
 	case 0x02:
 		qdkeybGetShiftStatus();
 		break;
+	case 0x05:
+		qdkeybBufferKey();
+		break;
 	default:
 		break;
 	}

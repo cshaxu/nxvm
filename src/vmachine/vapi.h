@@ -14,7 +14,6 @@ t_nubit32  vapiPrint(const t_string format, ...);
 void vapiPrintByte(t_nubit8 n);
 void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins);
 
-#include "stdio.h"
 
 #define VAPI_RECORD_SIZE         0xffff             /* maximum record number */
 #define VAPI_RECORD_SELECT_FIRST 0x0000/* keep first (1) records or last (0) */

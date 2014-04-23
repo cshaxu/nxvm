@@ -28,8 +28,6 @@ static void parse(char *s)
 	}
 }
 
-#include "windows.h"
-
 void Test()
 {
 /*	t_nubit32 eflags = 0x00000000;
@@ -59,7 +57,7 @@ void Help()
 	fprintf(stdout,"INFO    Print all virtual machine settings\n\n");
 
 	fprintf(stdout,"START   Turn on virtual machine\n");
-	fprintf(stdout,"STOP    Turn off virtual machine; hotkey is F10\n");
+	fprintf(stdout,"STOP    Turn off virtual machine; hotkey is F11\n");
 	fprintf(stdout,"RESET   Restart virtual machine\n\n");
 }
 void Exit()
@@ -202,7 +200,7 @@ void Memory()
 }
 void Info()
 {
-	fprintf(stdout,"init = %d\nrun = %d\nrecord=%d\nbreak = %d\ntrace = %d\n\n",
+	fprintf(stdout,"init = %d\nrun = %d\nrecord=%d\nbreak = %d\ntrace = %d\n",
 		vmachine.flaginit,vmachine.flagrun,vmachine.flagrecord,vmachine.flagbreak,vmachine.flagtrace);
 }
 

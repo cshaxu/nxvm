@@ -4,6 +4,7 @@
 
 #include "tchar.h"
 
+#include "win32.h"
 #include "win32app.h"
 #include "w32adisp.h"
 
@@ -70,8 +71,6 @@ void w32adispSetScreen()
 	LONG widthOffset, heightOffset;
 	sizeRow = vapiCallBackDisplayGetRowSize();
 	sizeCol = vapiCallBackDisplayGetColSize();
-	cursorTop = vapiCallBackDisplayGetCursorTop();
-	cursorBottom = vapiCallBackDisplayGetCursorBottom();
 	GetClientRect(w32aHWnd,&clientRect);
 	GetWindowRect(w32aHWnd,&windowRect);
 	widthOffset = windowRect.right - windowRect.left - clientRect.right;
@@ -121,13 +120,15 @@ static VOID DisplayFlashCursor()
 	HPEN hPen;
 	INT x1_cursor, y1_cursor, x2_cursor, y2_cursor;
 	x1_cursor = x2_cursor =
-		vapiCallBackDisplayGetCurrentCursorPosX() * charHeight + charHeight / 2;
-	x1_cursor += cursorTop;// + 8;
-	x2_cursor += cursorBottom;// + 8;
+		vapiCallBackDisplayGetCurrentCursorPosX() * charHeight;// + charHeight / 2;
+	x1_cursor += (cursorTop % 8) * charHeight / 8;// + 8;
+	x2_cursor += (cursorBottom % 8) * charHeight / 8;// + 8;
 	y1_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 0) * charWidth;
 	y2_cursor = (vapiCallBackDisplayGetCurrentCursorPosY() + 1) * charWidth;
+	cursorTop = vapiCallBackDisplayGetCursorTop();
+	cursorBottom = vapiCallBackDisplayGetCursorBottom();
 	if ((flashCount % 10) < flashInterval) { //光标变白
-		hPen = (HPEN)CreatePen(PS_SOLID,2,RGB(255,255,255));
+		hPen = (HPEN)CreatePen(PS_SOLID,2,COLOR_WHITE);
 		SelectObject(hdcWnd, hPen);
 		Rectangle(hdcWnd, y1_cursor, x1_cursor, y2_cursor, x2_cursor);
 	} else { //光标消失。。即贴上背景图片。。

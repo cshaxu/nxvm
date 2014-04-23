@@ -9,12 +9,11 @@
 
 #include "windows.h"
 
-void w32adispIncFlash();
-void w32adispSetScreen();
-void w32adispPaint();
+VOID w32adispSetScreen();
+VOID w32adispPaint();
 
-void w32adispInit();
-void w32adispFinal();
+VOID w32adispInit();
+VOID w32adispFinal();
 
 #ifdef __cplusplus
 /*}_EOCD_*/

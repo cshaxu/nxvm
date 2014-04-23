@@ -2,10 +2,9 @@
 
 #include "../vapi.h"
 
+#include "win32con.h"
 #include "win32app.h"
-#include "w32akeyb.h"
-
-#include "../vmachine.h"
+#include "win32.h"
 
 static UCHAR CodeMap[][8]={
 //	SINGLE£¬ASCII£¬+SHIFT£¬ASCII£¬+CTRL£¬ASCII£¬+ALT£¬ASCII
@@ -101,19 +100,22 @@ static UCHAR CodeMap[][8]={
 };
 
 static UCHAR MoveKeyCode[][8] = {
-	{0x47, 0xE0, 0x47, 0xE0, 0x77, 0xE0, 0x97, 0x00},
-	{0x48, 0xE0, 0x48, 0xE0, 0x8D, 0xE0, 0x98, 0x00},
-	{0x49, 0xE0, 0x49, 0xE0, 0x84, 0xE0, 0x99, 0x00},
-	{0x4B, 0xE0, 0x4B, 0xE0, 0x73, 0xE0, 0x9B, 0x00},
-	{0x4D, 0xE0, 0x4D, 0xE0, 0x74, 0xE0, 0x9D, 0x00},
-	{0x4F, 0xE0, 0x4F, 0xE0, 0x75, 0xE0, 0x9F, 0x00},
-	{0x50, 0xE0, 0x50, 0xE0, 0x91, 0xE0, 0xA0, 0x00},
-	{0x51, 0xE0, 0x51, 0xE0, 0x76, 0xE0, 0xA1, 0x00},
-	{0x52, 0xE0, 0x52, 0xE0, 0x92, 0xE0, 0xA2, 0x00},
-	{0x53, 0xE0, 0x53, 0xE0, 0x93, 0xE0, 0xA3, 0x00}
+	{0x47, 0x00, 0x47, 0xE0, 0x77, 0xE0, 0x97, 0x00},
+	{0x48, 0x00, 0x48, 0xE0, 0x8D, 0xE0, 0x98, 0x00},
+	{0x49, 0x00, 0x49, 0xE0, 0x84, 0xE0, 0x99, 0x00},
+	{0x4A, 0x00, 0x4A, 0xE0, 0x00, 0xE0, 0x9A, 0x00},
+	{0x4B, 0x00, 0x4B, 0xE0, 0x73, 0xE0, 0x9B, 0x00},
+	{0x4C, 0x00, 0x4C, 0xE0, 0x00, 0xE0, 0x9C, 0x00},
+	{0x4D, 0x00, 0x4D, 0xE0, 0x74, 0xE0, 0x9D, 0x00},
+	{0x4E, 0x00, 0x4E, 0xE0, 0x00, 0xE0, 0x9E, 0x00},
+	{0x4F, 0x00, 0x4F, 0xE0, 0x75, 0xE0, 0x9F, 0x00},
+	{0x50, 0x00, 0x50, 0xE0, 0x91, 0xE0, 0xA0, 0x00},
+	{0x51, 0x00, 0x51, 0xE0, 0x76, 0xE0, 0xA1, 0x00},
+	{0x52, 0x00, 0x52, 0xE0, 0x92, 0xE0, 0xA2, 0x00},
+	{0x53, 0x00, 0x53, 0xE0, 0x93, 0xE0, 0xA3, 0x00}
 };
 
-void w32akeybMakeStatus()
+void win32KeyboardMakeStatus()
 {
 	if (GetAsyncKeyState(VK_RSHIFT) & 0x8000)
 		vapiCallBackKeyboardSetFlag0RightShift();
@@ -131,7 +133,7 @@ void w32akeybMakeStatus()
 		vapiCallBackKeyboardSetFlag0Alt();
 	else
 		vapiCallBackKeyboardClrFlag0Alt();
-	if (GetAsyncKeyState(VK_SCROLL) & 0x8000)
+/*	if (GetAsyncKeyState(VK_SCROLL) & 0x8000)
 		vapiCallBackKeyboardSetFlag1ScrLck();
 	else
 		vapiCallBackKeyboardClrFlag1ScrLck();
@@ -146,7 +148,7 @@ void w32akeybMakeStatus()
 	if (GetAsyncKeyState(VK_INSERT) & 0x8000)
 		vapiCallBackKeyboardSetFlag1Insert();
 	else
-		vapiCallBackKeyboardClrFlag1Insert();
+		vapiCallBackKeyboardClrFlag1Insert();*/
 
 	if (GetKeyState(VK_SCROLL) & 0x0001)
 		vapiCallBackKeyboardSetFlag0ScrLck();
@@ -169,99 +171,117 @@ void w32akeybMakeStatus()
 	else
 		vapiCallBackKeyboardClrFlag1Pause();
 }
-void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
+void win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey)
 {
 	UCHAR ascii = 0x00;
-	UCHAR scanCode = (UCHAR)((lParam >> 16) & 0x000000ff);
-	UCHAR virtualKey = (UCHAR)(wParam & 0x000000ff);
 	USHORT code = 0x0000;
-	switch (message) {
-	case WM_KEYDOWN:
-	case WM_SYSKEYDOWN:
-		switch(wParam) {
-		case VK_CAPITAL:
-		case VK_NUMLOCK:
-		case VK_SCROLL:
-		case VK_INSERT:
-		case VK_SHIFT:	
-		case VK_MENU:
-		case VK_CONTROL:
-		case VK_PAUSE:
-			w32akeybMakeStatus();
-			break;
-		case VK_UP:
-		case VK_DOWN:
-		case VK_LEFT:
-		case VK_RIGHT:	
-		case VK_HOME:
-		case VK_PRIOR:
-		case VK_DELETE:
-		case VK_END:
-		case VK_NEXT:
-			if (lParam & 0x01000000) {
-				if (vapiCallBackKeyboardGetFlag0Alt())
-					code = MoveKeyCode[scanCode - 0x47][7];
-				else if (vapiCallBackKeyboardGetFlag0Ctrl())
-					code = MoveKeyCode[scanCode - 0x47][5];
-				else if (vapiCallBackKeyboardGetFlag0Shift())
-					code = MoveKeyCode[scanCode - 0x47][3];
-				else
-					code = MoveKeyCode[scanCode - 0x47][1];
-				code |= ((USHORT)scanCode << 8);
-				vapiCallBackKeyboardRecvKeyPress(code);
-			}
-			break;
-		default:
-			if (vapiCallBackKeyboardGetFlag0Alt())
-				code = CodeMap[scanCode][7];
-			else if (vapiCallBackKeyboardGetFlag0Ctrl())
-				code = CodeMap[scanCode][5];
-			else if (vapiCallBackKeyboardGetFlag0Shift())
-				code = CodeMap[scanCode][3];
-			else {
-				if (wParam > 0x40 && wParam < 0x5b) {
-					/* Caps Lock Active */
-					if (vapiCallBackKeyboardGetFlag0CapsLock() ==
-						vapiCallBackKeyboardGetFlag0Shift())
-						code = CodeMap[scanCode][1];
-					else
-						code = CodeMap[scanCode][3];
-				} else if (scanCode > 0x46 && scanCode < 0x54) {
-					/* Num Lock Active */
-					if (virtualKey < 0x60)
-						/* Arrow Keys */
-						code = 0x00;
-					else {
-						if (vapiCallBackKeyboardGetFlag0NumLock() &&
-							vapiCallBackKeyboardGetFlag0Shift())
-							code = CodeMap[scanCode][3];
-						else
-							code = CodeMap[scanCode][1];
 
-					}
-				} else {
-					if (vapiCallBackKeyboardGetFlag0Shift())
+	switch(virtualKey) {
+	case VK_F11:
+		vapiCallBackMachineStop();
+		break;
+	case VK_CAPITAL:
+	case VK_NUMLOCK:
+	case VK_SCROLL:
+	case VK_INSERT:
+	case VK_SHIFT:	
+	case VK_MENU:
+	case VK_CONTROL:
+	case VK_PAUSE:
+		win32KeyboardMakeStatus();
+		code = ((USHORT)scanCode << 8);
+		vapiCallBackKeyboardRecvKeyPress(code);
+		break;
+	case VK_UP:
+	case VK_DOWN:
+	case VK_LEFT:
+	case VK_RIGHT:	
+	case VK_HOME:
+	case VK_DELETE:
+	case VK_END:
+	case VK_PRIOR:
+	case VK_NEXT:
+		if (vapiCallBackKeyboardGetFlag0Alt())
+			code = MoveKeyCode[scanCode - 0x47][7];
+		else if (vapiCallBackKeyboardGetFlag0Ctrl())
+			code = MoveKeyCode[scanCode - 0x47][5];
+		else if (vapiCallBackKeyboardGetFlag0Shift())
+			code = MoveKeyCode[scanCode - 0x47][3];
+		else
+			code = MoveKeyCode[scanCode - 0x47][1];
+		code &= 0x00ff;
+		code |= ((USHORT)scanCode << 8);
+		vapiCallBackKeyboardRecvKeyPress(code);
+		break;
+	default:
+		if (vapiCallBackKeyboardGetFlag0Alt())
+			code = CodeMap[scanCode][7];
+		else if (vapiCallBackKeyboardGetFlag0Ctrl())
+			code = CodeMap[scanCode][5];
+		else if (vapiCallBackKeyboardGetFlag0Shift())
+			code = CodeMap[scanCode][3];
+		else {
+			if (virtualKey > 0x40 && virtualKey < 0x5b) {
+				/* Caps Lock Active */
+				if (vapiCallBackKeyboardGetFlag0CapsLock() ==
+					vapiCallBackKeyboardGetFlag0Shift())
+					code = CodeMap[scanCode][1];
+				else
+					code = CodeMap[scanCode][3];
+			} else if (scanCode > 0x46 && scanCode < 0x54) {
+				/* Num Lock Active */
+				if (virtualKey < 0x60)
+					/* Arrow Keys */
+					code = 0x00;
+				else {
+					if (vapiCallBackKeyboardGetFlag0NumLock() &&
+						vapiCallBackKeyboardGetFlag0Shift())
 						code = CodeMap[scanCode][3];
 					else
 						code = CodeMap[scanCode][1];
+
 				}
+			} else {
+				if (vapiCallBackKeyboardGetFlag0Shift())
+					code = CodeMap[scanCode][3];
+				else
+					code = CodeMap[scanCode][1];
 			}
-			/* correct scanCode */
-			if (vapiCallBackKeyboardGetFlag0Alt())
-				scanCode = CodeMap[scanCode][6];
-			else if (vapiCallBackKeyboardGetFlag0Ctrl())
-				scanCode = CodeMap[scanCode][4];
-			else if (vapiCallBackKeyboardGetFlag0Shift())
-				scanCode = CodeMap[scanCode][2];
-			else
-				scanCode = CodeMap[scanCode][0];
-			code |= ((USHORT)scanCode << 8);
-			vapiCallBackKeyboardRecvKeyPress(code);
 		}
-		break;
-	case WM_KEYUP:
-	case WM_SYSKEYUP:
-		w32akeybMakeStatus();
-		break;
+		/* correct scanCode */
+		if (vapiCallBackKeyboardGetFlag0Alt())
+			scanCode = CodeMap[scanCode][6];
+		else if (vapiCallBackKeyboardGetFlag0Ctrl())
+			scanCode = CodeMap[scanCode][4];
+		else if (vapiCallBackKeyboardGetFlag0Shift())
+			scanCode = CodeMap[scanCode][2];
+		else
+			scanCode = CodeMap[scanCode][0];
+		code &= 0x00ff;
+		code |= ((USHORT)scanCode << 8);
+		vapiCallBackKeyboardRecvKeyPress(code);
 	}
+}
+
+void win32DisplaySetScreen(BOOL window)
+{
+	if (window)
+		win32appDisplaySetScreen();
+	else
+		win32conDisplaySetScreen();
+}
+void win32DisplayPaint(BOOL window)
+{
+	if (window)
+		win32appDisplayPaint();
+	else
+		win32conDisplayPaint();
+}
+
+void win32StartMachine(BOOL window)
+{
+	if (window)
+		win32appStartMachine();
+	else
+		win32conStartMachine();
 }

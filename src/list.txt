@@ -17,9 +17,4 @@ vmachine/vpic.c
 vmachine/vpit.c
 vmachine/vport.c
 vmachine/vram.c
-vmachine/system/w32adisp.c
-vmachine/system/w32akeyb.c
-vmachine/system/w32cdisp.c
-vmachine/system/w32ckeyb.c
-vmachine/system/win32app.c
-vmachine/system/win32con.c
+vmachine/system/linux.c

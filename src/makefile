@@ -5,8 +5,8 @@ CC = gcc
 CFLAGS = -g -O
 TARGET = a.out
 
-$(TARGET): main.o asm86.o console.o debug.o qdbios.o qdcga.o qdkeyb.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vmachine.o vpic.o vpit.o vport.o vram.o w32adisp.o w32akeyb.o w32cdisp.o w32ckeyb.o win32app.o win32con.o
-	$(CC) -o $(TARGET) main.o asm86.o console.o debug.o qdbios.o qdcga.o qdkeyb.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vmachine.o vpic.o vpit.o vport.o vram.o w32adisp.o w32akeyb.o w32cdisp.o w32ckeyb.o win32app.o win32con.o
+$(TARGET): main.o asm86.o console.o debug.o qdbios.o qdcga.o qdkeyb.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vmachine.o vpic.o vpit.o vport.o vram.o linux.o
+	$(CC) -o $(TARGET) main.o asm86.o console.o debug.o qdbios.o qdcga.o qdkeyb.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vmachine.o vpic.o vpit.o vport.o vram.o linux.o
 
 
 main.o: main.c console/console.h
@@ -30,7 +30,7 @@ qdcga.o: vmachine/qdcga.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vma
 qdkeyb.o: vmachine/qdkeyb.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/vport.h vmachine/vpic.h vmachine/qdbios.h vmachine/qdkeyb.h vmachine/vram.h
 	$(CC) -c $(CFLAGS) vmachine/qdkeyb.c
 
-vapi.o: vmachine/vapi.c vmachine/vmachine.h vmachine/vglobal.h vmachine/vport.h vmachine/vram.h vmachine/vcpu.h vmachine/vpic.h vmachine/vcmos.h vmachine/vdma.h vmachine/vfdc.h vmachine/vfdd.h vmachine/vpit.h vmachine/qdbios.h vmachine/vapi.h vmachine/system/win32con.h vmachine/system/win32app.h
+vapi.o: vmachine/vapi.c vmachine/vmachine.h vmachine/vglobal.h vmachine/vport.h vmachine/vram.h vmachine/vcpu.h vmachine/vpic.h vmachine/vcmos.h vmachine/vdma.h vmachine/vfdc.h vmachine/vfdd.h vmachine/vpit.h vmachine/qdbios.h vmachine/vapi.h vmachine/system/win32.h vmachine/system/win32con.h vmachine/system/win32app.h vmachine/system/linux.h
 	$(CC) -c $(CFLAGS) vmachine/vapi.c
 
 vcmos.o: vmachine/vcmos.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/vport.h vmachine/vcmos.h
@@ -66,24 +66,9 @@ vport.o: vmachine/vport.c vmachine/vport.h vmachine/vglobal.h
 vram.o: vmachine/vram.c vmachine/vram.h vmachine/vglobal.h
 	$(CC) -c $(CFLAGS) vmachine/vram.c
 
-w32adisp.o: vmachine/system/w32adisp.c vmachine/system/win32app.h vmachine/system/w32adisp.h
-	$(CC) -c $(CFLAGS) vmachine/system/w32adisp.c
-
-w32akeyb.o: vmachine/system/w32akeyb.c vmachine/system/win32app.h vmachine/system/w32akeyb.h
-	$(CC) -c $(CFLAGS) vmachine/system/w32akeyb.c
-
-w32cdisp.o: vmachine/system/w32cdisp.c vmachine/system/win32con.h vmachine/system/w32cdisp.h
-	$(CC) -c $(CFLAGS) vmachine/system/w32cdisp.c
-
-w32ckeyb.o: vmachine/system/w32ckeyb.c vmachine/system/win32con.h vmachine/system/w32ckeyb.h
-	$(CC) -c $(CFLAGS) vmachine/system/w32ckeyb.c
-
-win32app.o: vmachine/system/win32app.c vmachine/system/w32adisp.h vmachine/system/w32akeyb.h vmachine/system/win32app.h
-	$(CC) -c $(CFLAGS) vmachine/system/win32app.c
-
-win32con.o: vmachine/system/win32con.c vmachine/system/w32cdisp.h vmachine/system/w32ckeyb.h vmachine/system/win32con.h vmachine/system/win32app.h
-	$(CC) -c $(CFLAGS) vmachine/system/win32con.c
+linux.o: vmachine/system/linux.c vmachine/system/win32con.h vmachine/system/win32app.h vmachine/system/win32.h
+	$(CC) -c $(CFLAGS) vmachine/system/linux.c
 
 clean:
 	rm -f $(TARGET)
-	rm -f main.o asm86.o console.o debug.o qdbios.o qdcga.o qdkeyb.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vmachine.o vpic.o vpit.o vport.o vram.o w32adisp.o w32akeyb.o w32cdisp.o w32ckeyb.o win32app.o win32con.o
+	rm -f main.o asm86.o console.o debug.o qdbios.o qdcga.o qdkeyb.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vmachine.o vpic.o vpit.o vport.o vram.o linux.o
