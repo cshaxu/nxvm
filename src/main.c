@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0125]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0126]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -210,6 +210,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 0xf5 i386 Build Begin
  * 010d Bitmap Font Implemented
  * 0118 i386 Build Milestone I (32-bit ins)
+ * 0126 New Memory System I
  *
  * Format Unify:
  * check all includes, macro names, flag names
