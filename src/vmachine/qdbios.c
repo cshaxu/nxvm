@@ -40,13 +40,8 @@ static t_nubit16 sax, sbx, scx, sdx;
 #define inc(n)   ((n)++)
 #define dec(n)   ((n)--)
 
-#define ifddSetStatus (mov(mbp(0x0441), _ah))
-#define ifddGetStatus (mov(_ah, mbp(0x0441)))
-//t_vaddrcc ifddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector)
-//{return (vfdd.base + ((cyl * 2 + head) * 18 + (sector-1)) * 512);}
-void ifddResetDrive()
+static void INT_13_00_FDD_ResetDrive()
 {
-	// _ah = 0x00
 	if (cmp(_dl, 0x00)) {
 		mov(_ah, 0x00);
 		clc;
@@ -55,16 +50,14 @@ void ifddResetDrive()
 		mov(_ah, 0x0c);
 		stc;
 	}
-	ifddSetStatus;
+	mov(mbp(0x0441), _ah); /* set status*/
 }
-void ifddGetDiskStatus()
+static void INT_13_01_FDD_GetDiskStatus()
 {
-	// _ah = 0x01
-	ifddGetStatus;
+	mov(_ah, mbp(0x0441)); /* get status */
 }
-void ifddReadSector()
+static void INT_13_02_FDD_ReadSector()
 {
-	// _ah = 0x02
 /*	t_nubit8 drive  = _dl;
 	t_nubit8 head   = _dh;
 	t_nubit8 cyl    = _ch;
@@ -74,8 +67,9 @@ void ifddReadSector()
 		/* sector not found */
 		mov(_ah, 0x04);
 		stc;
-		ifddSetStatus;
 	} else {
+//t_vaddrcc ifddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector)
+//{return (vfdd.base + ((cyl * 2 + head) * 18 + (sector-1)) * 512);}
 //		memcpy((void *)vramGetAddr(_es,_bx),
 //			(void *)ifddGetAddress(cyl,head,sector), nsec * 512);
 		/* set dma */
@@ -132,25 +126,25 @@ void ifddReadSector()
 		out(0x03f5, 0x1b); /* set stdi gap length */
 		out(0x03f5, 0xff); /* set stdi customized sect size (0xff) */
 		/* now everything is ready; DRQ also generated. */
-		vdmaRefresh();
-		nop; /* wait until dma finish */
-		in(_al, 0x03f4); /* get msr */
-		and(_al, 0xc0);  /* get ready read status */
-		if (cmp(_al, 0xc0)) {
-			in(_al, 0x03f5); /* get stdo st0 */
-			in(_al, 0x03f5); /* get stdo st1 */
-			in(_al, 0x03f5); /* get stdo st2 */
-			in(_al, 0x03f5); /* get stdo cyl */
-			in(_al, 0x03f5); /* get stdo head */
-			in(_al, 0x03f5); /* get stdo sector */
-			in(_al, 0x03f5); /* get stdo sector size code */
-		}
+		do {
+			nop;
+			vdmaRefresh();
+			in(_al, 0x03f4); /* get msr */
+			and(_al, 0xc0);  /* get ready read status */
+		} while(!cmp(_al, 0xc0));
+		in(_al, 0x03f5); /* get stdo st0 */
+		in(_al, 0x03f5); /* get stdo st1 */
+		in(_al, 0x03f5); /* get stdo st2 */
+		in(_al, 0x03f5); /* get stdo cyl */
+		in(_al, 0x03f5); /* get stdo head */
+		in(_al, 0x03f5); /* get stdo sector */
+		in(_al, 0x03f5); /* get stdo sector size code */
 		mov(_ah, 0x00);
 		clc;
-		ifddSetStatus;
 	}
+	mov(mbp(0x0441), _ah); /* set status*/
 }
-void ifddWriteSector()
+static void INT_13_03_FDD_WriteSector()
 {
 /*	t_nubit8 drive  = _dl;
 	t_nubit8 head   = _dh;
@@ -160,8 +154,9 @@ void ifddWriteSector()
 		/* sector not found */
 		mov(_ah, 0x04);
 		stc;
-		ifddSetStatus;
 	} else {
+//t_vaddrcc ifddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector)
+//{return (vfdd.base + ((cyl * 2 + head) * 18 + (sector-1)) * 512);}
 //		memcpy((void *)ifddGetAddress(cyl,head,sector),
 //			(void *)vramGetAddr(_es,_bx), _al * 512);
 		/* set dma */
@@ -218,25 +213,25 @@ void ifddWriteSector()
 		out(0x03f5, 0x1b); /* set stdi gap length */
 		out(0x03f5, 0xff); /* set stdi customized sect size (0xff) */
 		/* now everything is ready; DRQ also generated. */
-		vdmaRefresh();
-		nop; /* wait until dma finish */
-		in(_al, 0x03f4); /* get msr */
-		and(_al, 0xc0);  /* get ready read status */
-		if (cmp(_al, 0xc0)) {
-			in(_al, 0x03f5); /* get stdo st0 */
-			in(_al, 0x03f5); /* get stdo st1 */
-			in(_al, 0x03f5); /* get stdo st2 */
-			in(_al, 0x03f5); /* get stdo cyl */
-			in(_al, 0x03f5); /* get stdo head */
-			in(_al, 0x03f5); /* get stdo sector */
-			in(_al, 0x03f5); /* get stdo sector size code */
-		}
+		do {
+			nop;
+			vdmaRefresh();
+			in(_al, 0x03f4); /* get msr */
+			and(_al, 0xc0);  /* get ready read status */
+		} while(!cmp(_al, 0xc0));
+		in(_al, 0x03f5); /* get stdo st0 */
+		in(_al, 0x03f5); /* get stdo st1 */
+		in(_al, 0x03f5); /* get stdo st2 */
+		in(_al, 0x03f5); /* get stdo cyl */
+		in(_al, 0x03f5); /* get stdo head */
+		in(_al, 0x03f5); /* get stdo sector */
+		in(_al, 0x03f5); /* get stdo sector size code */
 		mov(_ah, 0x00);
 		clc;
-		ifddSetStatus;
 	}
+	mov(mbp(0x0441), _ah); /* set status*/
 }
-void ifddGetParameter()
+static void INT_13_08_FDD_GetParameter()
 {
 	switch (_dl) {
 	case 0x00:
@@ -248,36 +243,34 @@ void ifddGetParameter()
 		mov(_di, mwp(0x1e * 4 + 0));
 		mov(_es, mwp(0x1e * 4 + 2));
 		clc;
-		ifddSetStatus;
 		break;
 	case 0x02:
 	case 0x03:
-		_ah = 0x01;
+		mov(_ah, 0x01);
 		stc;
-		ifddSetStatus;
 		clp;
 		cli;
-		break;		
+		break;
 	}
+	mov(mbp(0x0441), _ah); /* set status*/
 }
-void ifddGetDriveType()
+static void INT_13_15_FDD_GetDriveType()
 {
 	switch (_dl) {
 	case 0x00:
 	case 0x01:
 		mov(_ah, 0x01);
 		clc;
-		ifddSetStatus;
 		break;
 	case 0x02:
 	case 0x03:
 		mov(_ah, 0x00);
 		stc;
-		ifddSetStatus;
 		break;
 	default:
 		break;
 	}
+	mov(mbp(0x0441), _ah); /* set status*/
 }
 
 /* vga */
@@ -367,26 +360,13 @@ void INT_12()
 void INT_13()
 {
 	switch (_ah) {
-	case 0x00:
-		ifddResetDrive();
-		break;
-	case 0x01:
-		ifddGetDiskStatus();
-		break;
-	case 0x02:
-		ifddReadSector();
-		break;
-	case 0x03:
-		ifddWriteSector();
-		break;
-	case 0x08:
-		ifddGetParameter();
-		break;
-	case 0x15:
-		ifddGetDriveType();
-		break;
-	default:
-		break;
+	case 0x00: INT_13_00_FDD_ResetDrive();   break;
+	case 0x01: INT_13_01_FDD_GetDiskStatus();break;
+	case 0x02: INT_13_02_FDD_ReadSector();   break;
+	case 0x03: INT_13_03_FDD_WriteSector();  break;
+	case 0x08: INT_13_08_FDD_GetParameter(); break;
+	case 0x15: INT_13_15_FDD_GetDriveType(); break;
+	default:   break;
 	}
 }
 /* com ports */

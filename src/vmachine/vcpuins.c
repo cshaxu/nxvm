@@ -9,6 +9,7 @@
 #include "vcpuins.h"
 
 #ifdef VCPUINS_DEBUG
+#include "ccpu/ccpuapi.h"
 #include "qdbios.h"
 #include "qdvga.h"
 /*
@@ -2908,7 +2909,8 @@ void AAD()
 	t_nubit8 base,tempAL,tempAH;
 	vcpu.ip++;
 	GetImm(8);
-	base = d_nubit8(vcpuins.imm);
+// Note: always use 0x0a instead of real value.
+	base = 0x0a; //d_nubit8(vcpuins.imm);
 	if(base == 0) INT(0x00);
 	else {
 		tempAL = vcpu.al;
@@ -3259,30 +3261,33 @@ static void ClrPrefix()
 	vcpuins.rep = RT_NONE;
 }
 
-/*#include "qdvga.h"
-static t_bool IsVideoMem(t_vaddrcc addr)
-{
-	if ((addr >= vramGetAddr(0x0000, QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM)) &&
-		(addr < vramGetAddr(0x0000, (QDVGA_VBIOS_ADDR_CGA_DISPLAY_RAM +
-		QDVGA_SIZE_TEXT_MEMORY)))) return 0x01;
-	else return 0x00;
-}*/
-
 void vcpuinsExecIns()
 {
 	t_nubit8 opcode = vramVarByte(vcpu.cs,vcpu.ip);
-	vcpuins.rm = (t_vaddrcc)NULL;
+	ccpuapiSyncRegs();
+	ccpuapiExecIns();
 	ExecFun(vcpuins.table[opcode]);
 	if (!IsPrefix(opcode)) ClrPrefix();
-	//qdvgaCheckVideoRam(vcpuins.rm);
+	if (ccpuapiHasDiff()) vmachine.flagrun = 0x00;
 }
 void vcpuinsExecInt()
 {
 	/* hardware interrupt handeler */
-	if(vcpu.flagnmi) INT(0x02);
+	t_nubit8 intr;
+	if(vcpu.flagnmi) {
+		ccpuapiExecInt(0x02);
+		INT(0x02);
+	}
 	vcpu.flagnmi = 0x00;
-	if(GetBit(vcpu.flags, VCPU_FLAG_IF) && vpicScanINTR()) INT(vpicGetINTR());
-	if(GetBit(vcpu.flags, VCPU_FLAG_TF)) INT(0x01);
+	if(GetBit(vcpu.flags, VCPU_FLAG_IF) && vpicScanINTR()) {
+		intr = vpicGetINTR();
+		ccpuapiExecInt(intr);
+		INT(intr);
+	}
+	if(GetBit(vcpu.flags, VCPU_FLAG_TF)) {
+		ccpuapiExecInt(0x01);
+		INT(0x01);
+	}
 }
 
 void vcpuinsInit()
@@ -3551,5 +3556,6 @@ void vcpuinsInit()
 	vcpuins.table[0xfd] = (t_faddrcc)STD;
 	vcpuins.table[0xfe] = (t_faddrcc)INS_FE;
 	vcpuins.table[0xff] = (t_faddrcc)INS_FF;
+	ccpuapiInit();
 }
-void vcpuinsFinal() {}
+void vcpuinsFinal() {ccpuapiFinal();}

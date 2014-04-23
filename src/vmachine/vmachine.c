@@ -51,16 +51,16 @@ void vmachineRefresh()
 	vfdcRefresh();
 	vdmaRefresh();
 	vpicRefresh();
-	vramRefresh();
 	vcpuRefresh();
+	vramRefresh();
 	vportRefresh();
 }
 void vmachineInit()
 {
 	memset(&vmachine, 0x00, sizeof(t_machine));
 	vportInit();
-	vcpuInit();
 	vramInit();
+	vcpuInit();
 	vpicInit();
 	vdmaInit();
 	vfdcInit();
@@ -96,8 +96,8 @@ void vmachineFinal()
 	vfdcFinal();
 	vdmaFinal();
 	vpicFinal();
-	vramFinal();
 	vcpuFinal();
+	vramFinal();
 	vportFinal();
 	memset(&vmachine, 0x00, sizeof(t_machine));
 }

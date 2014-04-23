@@ -22,6 +22,7 @@ test code
 
 #include "../vmachine/vmachine.h"
 #include "../vmachine/vapi.h"
+#include "../vmachine/ccpu/ccpuapi.h"
 
 #include "asm86.h"
 #include "debug.h"
@@ -554,6 +555,7 @@ static void rprintflags()
 }
 static void rprintregs()
 {
+	ccpuapiDebugPrintRegs();
 	fprintf(stdout,"AX=");
 	printnubit16(_ax);
 	fprintf(stdout,"  BX=");

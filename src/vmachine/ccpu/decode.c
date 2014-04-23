@@ -1,12 +1,9 @@
 
-#include "../lcpuins.h"
-#include "CentreProcessorUnit.h"
+#include "../vapi.h"
 #include "../vmachine.h"
+#include "ccpuapi.h"
 
-#include<iostream>
-using namespace std;
-
-t_bool IsPrefix(t_nubit8 opcode)
+static t_bool IsPrefix(t_nubit8 opcode)
 {
 	switch(opcode) {
 	case 0xf0: case 0xf2: case 0xf3:
@@ -16,57 +13,27 @@ t_bool IsPrefix(t_nubit8 opcode)
 	default:	return 0x00;break;
 	}
 }
-void  ClrPrefix()
+static void  ClrPrefix()
 {
-	lcpu.deCodeBlock.prefix_SegmentOverrideOpCode = 0;//消除prefix的影响，防止影响下一条指令
-	lcpu.deCodeBlock.prefix_LockOpCode = 0;
-	lcpu.deCodeBlock.prefix_RepeatOpCode = 0;
+	ccpu.deCodeBlock.prefix_SegmentOverrideOpCode = 0;//消除prefix的影响，防止影响下一条指令
+	ccpu.deCodeBlock.prefix_LockOpCode = 0;
+	ccpu.deCodeBlock.prefix_RepeatOpCode = 0;
 }
-DeCodeBlock::DeCodeBlock(CentreProcessorUnit* pCPU)
-{
-	this->pCPU=pCPU;
-	this->pexeCodeBlock=&(pCPU->exeCodeBlock);
-}
-static int count =0;
-const unsigned int MIN_COUNT=0xffff*38;
-const unsigned int MAX_COUNT=MIN_COUNT+0xffff;
 
-
-void DeCodeBlock::refresh()
+void decode_setExecuteMethod() {ccpu.exeCodeBlock.needExeMethod = ccpu.exeCodeBlock.exeMethodArray[*ccpu.deCodeBlock.pOpCode];}
+void decode_deCodeInstruction()
 {
-	this->pOpCode = p_nubit8(vramGetAddr(_cs, _ip));
-	this->prefix_SegmentOverrideOpCode = 0;//消除prefix的影响，防止影响下一条指令
-	this->prefix_LockOpCode = 0;
-	this->prefix_RepeatOpCode = 0;
-	//34 位那些prefix暂时不处理
-}
-void DeCodeBlock::setExecuteMethod()
-{
-	pexeCodeBlock->setNeedExeMethod( pexeCodeBlock->exeMethodArray[*pOpCode] );
-}
-void DeCodeBlock::deCodeInstruction()
-{
-	//refresh();
-	t_nubit8 opcode = vramVarByte(lcpu.cs, lcpu.ip);
-	this->pOpCode = p_nubit8(vramGetAddr(lcpu.cs, lcpu.ip));
-
-	setExecuteMethod();//设定执行的指令
-	deCodeInsStuff();//翻译后续操作码
-	((*(this->pexeCodeBlock)).*(this->pexeCodeBlock->needExeMethod))();
-
+	t_nubit8 opcode = vramVarByte(ccpu.cs, ccpu.ip);
+	ccpu.deCodeBlock.pOpCode = p_nubit8(vramGetAddr(ccpu.cs, ccpu.ip));
+	decode_setExecuteMethod();
+	decode_deCodeInsStuff();
+	(*(ccpu.exeCodeBlock.needExeMethod))();
 	if(!IsPrefix(opcode)) ClrPrefix();
-
-//	if (GetBit(_flags, VCPU_FLAG_IF) && vpicScanINTR())
-//			this->pexeCodeBlock->atomMethod_INT(vpicGetINTR());	
-/* end point of record */
 }
-void DeCodeBlock::deCodeInsStuff()
+void decode_deCodeInsStuff()
 {
 	t_nubit8 tmpOpCode ;
-//LOOP_Decode:
-/*  start point of record */
-	switch(*pOpCode)
-	{
+	switch(*ccpu.deCodeBlock.pOpCode) {
 	case MASK_00110111://AAA
 	case MASK_00111111://AAS
 	case MASK_10011000://CBW
@@ -109,7 +76,6 @@ void DeCodeBlock::deCodeInsStuff()
 	case MASK_10010000://NOP
 	case MASK_11101110://OUT port=al, w=0
 	case MASK_11101111://OUT port=ax, w=1
-
 	case 0x50://PUSH AX
 	case 0x51://PUSH CX
 	case 0x52://PUSH DX
@@ -133,7 +99,6 @@ void DeCodeBlock::deCodeInsStuff()
 	case MASK_00001110://PUSH CS
 	case MASK_00010110://PUSH SS
 	case MASK_00011110://PUSH DS
-
 	//case MASK_11110010://REP ,z=0
 	//case MASK_11110011://REP ,z=1
 	case MASK_10011101://POPF
@@ -158,7 +123,7 @@ void DeCodeBlock::deCodeInsStuff()
 	case MASK_10010110://XCHG SI
 	case MASK_10010111://XCHG DI
 	case MASK_11010111://XLAT
-		this->deOpCode_singleDefine();
+		decode_deOpCode_singleDefine();
 		break;
 	case MASK_11010101://AAD
 	case MASK_11010100://AAM
@@ -170,7 +135,7 @@ void DeCodeBlock::deCodeInsStuff()
 	case MASK_11011101:
 	case MASK_11011110:
 	case MASK_11011111:
-		this->deOpCode_doubleDefine();
+		decode_deOpCode_doubleDefine();
 		break;
 	case MASK_00010000://ADC
 	case MASK_00010001:
@@ -211,13 +176,13 @@ void DeCodeBlock::deCodeInsStuff()
 	case MASK_00110001:
 	case MASK_00110010:
 	case MASK_00110011:
-		this->deOpCode_modRegRm();
+		decode_deOpCode_modRegRm();
 		break;
 	case MASK_11000100://LES
-		tmpOpCode = *pOpCode;
-		*pOpCode = MASK_11000101;//由于LES的opcode的最后w位是0，所以必须换成1，改成LDS
-		this->deOpCode_modRegRm();
-		*pOpCode = tmpOpCode;
+		tmpOpCode = *ccpu.deCodeBlock.pOpCode;
+		*ccpu.deCodeBlock.pOpCode = MASK_11000101;//由于LES的opcode的最后w位是0，所以必须换成1，改成LDS
+		decode_deOpCode_modRegRm();
+		*ccpu.deCodeBlock.pOpCode = tmpOpCode;
 		break;
 	case MASK_00010100://ADC
 	case MASK_00010101:
@@ -237,22 +202,22 @@ void DeCodeBlock::deCodeInsStuff()
 	case MASK_10101001:
 	case MASK_00110100://XOR
 	case MASK_00110101:
-		this->deOpCode_IMM();
+		decode_deOpCode_IMM();
 	    break;
 
 	case MASK_10000000://Immdiate group
 	case MASK_10000001:
 	case MASK_10000010:
 	case MASK_10000011:
-		this->deOpCode_IMMGroup();
+		decode_deOpCode_IMMGroup();
 		break;
 	
 	case MASK_11110110://group3
 	case MASK_11110111:
-		if(0 == (*(pOpCode +1)&MASK_00111000) )//TEST Ib/Iv
-			this->deOpCode_TEST_Ib_Iv();
+		if(0 == (*(ccpu.deCodeBlock.pOpCode +1)&MASK_00111000) )//TEST Ib/Iv
+			decode_deOpCode_TEST_Ib_Iv();
 		else
-			this->deOpCode_ModRM();
+			decode_deOpCode_ModRM();
 		break;
 	case MASK_11010000://group 2
 	case MASK_11010001:
@@ -260,7 +225,7 @@ void DeCodeBlock::deCodeInsStuff()
 	case MASK_11010011:
 	case MASK_11111110://group4
 	case MASK_11111111:
-		this->deOpCode_ModRM();
+		decode_deOpCode_ModRM();
 		break;
 	case MASK_11100100://IN port w=0
 	case MASK_11100101://IN port w=1
@@ -288,37 +253,37 @@ void DeCodeBlock::deCodeInsStuff()
 	case MASK_11100010://LOOP
 	case MASK_11100110://OUT port w=0
 	case MASK_11100111://OUT port w=1
-		this->deOpCode_contactData_8bit();
+		decode_deOpCode_contactData_8bit();
 		break;
 	case MASK_11101000://CALL---段内直接调用
 	case MASK_11101001://JMP--段内直接转移
 	case MASK_11000010://RET--带立即数的段内返回
 	case MASK_11001010://RET--带立即数的段间返回
-		this->deOpCode_contactData_16bit();
+		decode_deOpCode_contactData_16bit();
 		break;
 	case MASK_10011010://CALL--段间之间调用
 	case MASK_11101010://JMP--段间直接转移
-		this->deOpCode_contactData_32bit();
+		decode_deOpCode_contactData_32bit();
 		break;
 	case MASK_11000110://MOV--立即数到 存储器/寄存器
 	case MASK_11000111:
-		this->deOpCode_Mov_imm_rm();
+		decode_deOpCode_Mov_imm_rm();
 		break;
 	case MASK_10001110://MOV--存储器，寄存器
 	case MASK_10001100:
-		this->deOpCode_Mov_rm_seg();
+		decode_deOpCode_Mov_rm_seg();
 		break;
 	case MASK_10001000://MOV--
 	case MASK_10001001:
 	case MASK_10001010:
 	case MASK_10001011:
-		this->deOpCode_modRegRm();
+		decode_deOpCode_modRegRm();
 		break;
 	case MASK_10100000://MOV-- 累加器，存储器
 	case MASK_10100001:
 	case MASK_10100010:
 	case MASK_10100011:
-		this->deOpCode_Mov_mem_AX();
+		decode_deOpCode_Mov_mem_AX();
 		break;
 	case MASK_10110000://MOV--立即数到寄存器
 	case MASK_10110001:
@@ -336,7 +301,7 @@ void DeCodeBlock::deCodeInsStuff()
 	case MASK_10111101:
 	case MASK_10111110:
 	case MASK_10111111:
-		this->deOpCode_Mov_imm_reg();
+		decode_deOpCode_Mov_imm_reg();
 		break;
 	case 0xf0:
 	case 0xf2:
@@ -345,60 +310,56 @@ void DeCodeBlock::deCodeInsStuff()
 	case 0x36:
 	case 0x3e:
 	case 0x26:
-		this->deOpCode_singleDefine();
+		decode_deOpCode_singleDefine();
 		break;
 	default:
-		char _str[5];
-		sprintf(_str,"%X",*pOpCode);
-		showMessage("deCodeInsStuff Unhandle a OpCode " + string(_str));
-		assert(false);
+		vapiPrint("deCodeInsStuff Unhandle a OpCode %x\n", *ccpu.deCodeBlock.pOpCode);
+		assert(0x00);
 		break;
 	}
 }
-
-void   DeCodeBlock::init() {refresh();}
-void * DeCodeBlock::deCodeEffectiveMemAddr(const t_nubit8 modRegRm, const void * pdispData, int* pdispLength)
+void * decode_deCodeEffectiveMemAddr(const t_nubit8 modRegRm, const void * pdispData, int* pdispLength)
 {
-	*pdispLength = 0;
 	t_nubit32 memAddr = 0;
 	t_nubit8 mod = (modRegRm & MASK_11000000)>>6;
-	t_nubit16 tmpDS = getDefaultSegment_DS();
-	t_nubit16 tmpSS = getDefaultSegment_SS();
+	t_nubit16 tmpDS = decode_getDefaultSegment_DS();
+	t_nubit16 tmpSS = decode_getDefaultSegment_SS();
+	*pdispLength = 0;
 	switch(modRegRm & MASK_00000111)
 	{
 	case 0://RM=000
-		memAddr =   pCPU->bx + pCPU->si + ((segData = tmpDS) <<4 );
+		memAddr =   ccpu.bx + ccpu.si + ((ccpu.deCodeBlock.segData = tmpDS) <<4 );
 		break;
 	case 1://RM=001
-		memAddr =   pCPU->bx + pCPU->di + ((segData = tmpDS) <<4 );
+		memAddr =   ccpu.bx + ccpu.di + ((ccpu.deCodeBlock.segData = tmpDS) <<4 );
 		break;
 	case 2://RM=010
-		memAddr =   pCPU->bp + pCPU->si + ((segData = tmpSS) <<4);
+		memAddr =   ccpu.bp + ccpu.si + ((ccpu.deCodeBlock.segData = tmpSS) <<4);
 		break;
 	case 3://RM=011
-		memAddr =   pCPU->bp + pCPU->di + ((segData = tmpSS) <<4);
+		memAddr =   ccpu.bp + ccpu.di + ((ccpu.deCodeBlock.segData = tmpSS) <<4);
 		break;
 	case 4://RM=100
-		memAddr =   pCPU->si + ((segData = tmpDS) <<4);
+		memAddr =   ccpu.si + ((ccpu.deCodeBlock.segData = tmpDS) <<4);
 		break;
 	case 5://RM=101
-		memAddr =   pCPU->di + ((segData = tmpDS) <<4);
+		memAddr =   ccpu.di + ((ccpu.deCodeBlock.segData = tmpDS) <<4);
 		break;
 	case 6://RM=110
 		if( 0 == mod ) //MOD=00
 		{
-			memAddr = d_nubit16(pdispData) + ((segData = tmpDS) <<4);
+			memAddr = d_nubit16(pdispData) + ((ccpu.deCodeBlock.segData = tmpDS) <<4);
 			*pdispLength=2;
 		}
 		else
-			memAddr = pCPU->bp + ((segData = tmpSS) <<4);
+			memAddr = ccpu.bp + ((ccpu.deCodeBlock.segData = tmpSS) <<4);
 		break;
 	case 7://RM=111
-		memAddr =   pCPU->bx + ((segData = tmpDS) <<4);
+		memAddr =   ccpu.bx + ((ccpu.deCodeBlock.segData = tmpDS) <<4);
 		break;
 	default://谁知道呢，，，可能宇宙射线
-		showMessage("deCodeEffectiveMemAddr UnHandle the rm bits");
-		assert(false);
+		vapiPrint("deCodeEffectiveMemAddr UnHandle the rm bits");
+		assert(0x00);
 		return 0;
 	}
 	
@@ -407,7 +368,7 @@ void * DeCodeBlock::deCodeEffectiveMemAddr(const t_nubit8 modRegRm, const void *
 	case 0://MOD=00
 		break;
 	case 1://MOD=01
-		memAddr += *(t_nsbit8*)pdispData;
+		memAddr += d_nsbit8(pdispData);
 		*pdispLength = 1;
 		break;
 	case 2://MOD=10
@@ -415,37 +376,37 @@ void * DeCodeBlock::deCodeEffectiveMemAddr(const t_nubit8 modRegRm, const void *
 		*pdispLength = 2;
 		break;
 	case 3://MOD=11  取得的是reg的地址，直接返回即可
-		return (void *)getRegAddr(this->isWidth, (modRegRm & MASK_00000111) );
+		return (void *)decode_getRegAddr(ccpu.deCodeBlock.isWidth, (modRegRm & MASK_00000111) );
 	default:
-		showMessage("deCodeEffectiveMemAddr UnHandle the mod bits");
-		assert(false);
+		vapiPrint("deCodeEffectiveMemAddr UnHandle the mod bits");
+		assert(0x00);
 		return 0;
 	}
 	return (void *)(p_nubit8(vramGetAddr(0,0)) + memAddr);
 
 }
-void * DeCodeBlock::getRegAddr(const bool w, const t_nubit8 reg) const
+void* decode_getRegAddr(const t_bool w, const t_nubit8 reg)
 {// 表示是否是字
-	if(false==w)
+	if(0x00==w)
 	{
 		switch( reg)
 		{
 		case 0://REG=000
-			return (void *)(&pCPU->al);
+			return (void *)(&ccpu.al);
 		case 1://REG=001
-			return (void *)(&pCPU->cl);
+			return (void *)(&ccpu.cl);
 		case 2://REG=010
-			return (void *)(&pCPU->dl);
+			return (void *)(&ccpu.dl);
 		case 3://REG=011
-			return (void *)(&pCPU->bl);
+			return (void *)(&ccpu.bl);
 		case 4://REG=100
-			return (void *)(&pCPU->ah);
+			return (void *)(&ccpu.ah);
 		case 5://REG=101
-			return (void *)(&pCPU->ch);
+			return (void *)(&ccpu.ch);
 		case 6://REG=110
-			return (void *)(&pCPU->dh);
+			return (void *)(&ccpu.dh);
 		case 7://REG=111
-			return (void *)(&pCPU->bh);
+			return (void *)(&ccpu.bh);
 		default://谁知道呢。。哎
 			return NULL;
 		}
@@ -456,234 +417,226 @@ void * DeCodeBlock::getRegAddr(const bool w, const t_nubit8 reg) const
 		switch( reg)
 		{
 		case 0://REG=000
-			return (void *)(&pCPU->ax);
+			return (void *)(&ccpu.ax);
 		case 1://REG=001
-			return (void *)(&pCPU->cx);
+			return (void *)(&ccpu.cx);
 		case 2://REG=010
-			return (void *)(&pCPU->dx);
+			return (void *)(&ccpu.dx);
 		case 3://REG=011
-			return (void *)(&pCPU->bx);
+			return (void *)(&ccpu.bx);
 		case 4://REG=100
-			return (void *)(&pCPU->sp);
+			return (void *)(&ccpu.sp);
 		case 5://REG=101
-			return (void *)(&pCPU->bp);
+			return (void *)(&ccpu.bp);
 		case 6://REG=110
-			return (void *)(&pCPU->si);
+			return (void *)(&ccpu.si);
 		case 7://REG=111
-			return (void *)(&pCPU->di);
+			return (void *)(&ccpu.di);
 		default://谁知道呢。。哎
 			return NULL;
 		}
 
 	}
 }
-
-t_nubit16* DeCodeBlock::getSegAddr(const t_nubit8 sreg) const
+t_nubit16* decode_getSegAddr(const t_nubit8 sreg)
 {
 	switch( sreg )
 		{//2-Bit sreg2 Field
 		case 0://REG=00
-			return (t_nubit16*)(&pCPU->es);
+			return (t_nubit16*)(&ccpu.es);
 		case 1://REG=01
-			return (t_nubit16*)(&pCPU->cs);
+			return (t_nubit16*)(&ccpu.cs);
 		case 2://REG=10
-			return (t_nubit16*)(&pCPU->ss);
+			return (t_nubit16*)(&ccpu.ss);
 		case 3://REG=11
-			return (t_nubit16*)(&pCPU->ds);
+			return (t_nubit16*)(&ccpu.ds);
 		default://谁知道呢。。哎
 			return NULL;
 		}
 }
-
-void DeCodeBlock::deOpCode_singleDefine()
-{
-	this->pCPU->ip += sizeof(t_nubit8);
-}
-void DeCodeBlock::deOpCode_doubleDefine()
-{
-	this->pCPU->ip += sizeof(t_nubit16);
-}
-int  DeCodeBlock::deOpCode_modRegRm()
+void decode_deOpCode_singleDefine() {ccpu.ip += sizeof(t_nubit8);}
+void decode_deOpCode_doubleDefine() {ccpu.ip += sizeof(t_nubit16);}
+int  decode_deOpCode_modRegRm()
 {
 	int insDispLength = 0;
 	int insLength = OPCODE_WIDTH + MOD_REG_RM_LENGTH;
-	t_nubit8 * pModRegRm = pOpCode+OPCODE_WIDTH;
+	t_nubit8 * pModRegRm = ccpu.deCodeBlock.pOpCode+OPCODE_WIDTH;
 	t_nubit8 * pDisp = pModRegRm + MOD_REG_RM_LENGTH;
-	this->isWidth = !!(*pOpCode & MASK_00000001);
-	prm = deCodeEffectiveMemAddr(*pModRegRm,(void *)pDisp, &insDispLength );
-	preg = getRegAddr(isWidth, ((*pModRegRm)&MASK_00111000)>>3 );
+	ccpu.deCodeBlock.isWidth = !!(*ccpu.deCodeBlock.pOpCode & MASK_00000001);
+	ccpu.deCodeBlock.prm = decode_deCodeEffectiveMemAddr(*pModRegRm,(void *)pDisp, &insDispLength );
+	ccpu.deCodeBlock.preg = decode_getRegAddr(ccpu.deCodeBlock.isWidth, ((*pModRegRm)&MASK_00111000)>>3 );
 	insLength +=  insDispLength;
-	this->pCPU->ip +=  insLength ;//更新cpu中的ip，令其指向下一条指
+	ccpu.ip +=  insLength ;//更新cpu中的ip，令其指向下一条指
 	return insLength;
 }
-void DeCodeBlock::deOpCode_IMM()
+void decode_deOpCode_IMM()
 {
 	int insLength = OPCODE_WIDTH ;
-	t_nubit8 * pimmData = this->pOpCode + OPCODE_WIDTH;
-	bool w_width = !!((*pOpCode)&MASK_00000001);
+	t_nubit8 * pimmData = ccpu.deCodeBlock.pOpCode + OPCODE_WIDTH;
+	t_bool w_width = !!((*ccpu.deCodeBlock.pOpCode)&MASK_00000001);
 	if(w_width)
 	{
-		this->immData_16Bit = d_nubit16(pimmData);
+		ccpu.deCodeBlock.immData_16Bit = d_nubit16(pimmData);
 		insLength += 2;
 	}
 	else
 	{
-		this->immData_8Bit = *(pimmData);
+		ccpu.deCodeBlock.immData_8Bit = *(pimmData);
 		insLength++;
 	}
-	this->pCPU->ip += insLength ;//更新cpu中的ip，令其指向下一条指令
+	ccpu.ip += insLength ;//更新cpu中的ip，令其指向下一条指令
 
 }
-void DeCodeBlock::deOpCode_TEST_Ib_Iv()
+void decode_deOpCode_TEST_Ib_Iv()
 {
-	int insLength = this->deOpCode_modRegRm();//cpu.ip已经变化
+	int insLength = decode_deOpCode_modRegRm();//cpu.ip已经变化
 	//抄deOpCode_IMMGroup， 但是不检测s位
-	switch( (*pOpCode)&MASK_00000001 )
+	switch( (*ccpu.deCodeBlock.pOpCode)&MASK_00000001 )
 	{
 	case MASK_00000001:
-		this->immData_16Bit =  d_nubit16(pOpCode + insLength);
-		this->pCPU->ip += 2;
+		ccpu.deCodeBlock.immData_16Bit =  d_nubit16(ccpu.deCodeBlock.pOpCode + insLength);
+		ccpu.ip += 2;
 		break;
 	default:
-		this->immData_8Bit =  *(pOpCode + insLength);
-		this->pCPU->ip++;
+		ccpu.deCodeBlock.immData_8Bit =  *(ccpu.deCodeBlock.pOpCode + insLength);
+		ccpu.ip++;
 	}
-	this->nnn = (*(pOpCode + OPCODE_WIDTH) & MASK_00111000)>>3 ; //迟绑定，到执行的时候再确定到底该执行什么函数
+	ccpu.deCodeBlock.nnn = (*(ccpu.deCodeBlock.pOpCode + OPCODE_WIDTH) & MASK_00111000)>>3 ; //迟绑定，到执行的时候再确定到底该执行什么函数
 	
 	return ;
 }
-void DeCodeBlock::deOpCode_IMMGroup()
+void decode_deOpCode_IMMGroup()
 {//未完成品
 
-	int insLength = this->deOpCode_modRegRm();//cpu.ip已经变化
+	int insLength = decode_deOpCode_modRegRm();//cpu.ip已经变化
 	
-	switch( (*pOpCode)&MASK_00000011 )
+	switch( (*ccpu.deCodeBlock.pOpCode)&MASK_00000011 )
 	{//s位的处理
 	case MASK_00000001:
-		this->immData_16Bit =  d_nubit16(pOpCode + insLength);
-		this->pCPU->ip += 2;
+		ccpu.deCodeBlock.immData_16Bit =  d_nubit16(ccpu.deCodeBlock.pOpCode + insLength);
+		ccpu.ip += 2;
 		break;
 	case MASK_00000011:
-		this->immData_16Bit =  (t_nsbit16)(d_nsbit8(pOpCode + insLength));
-		this->pCPU->ip += 1;
+		ccpu.deCodeBlock.immData_16Bit =  (t_nsbit16)(d_nsbit8(ccpu.deCodeBlock.pOpCode + insLength));
+		ccpu.ip += 1;
 		break;
 	default:
-		this->immData_8Bit =  *(pOpCode + insLength);
-		this->pCPU->ip++;
+		ccpu.deCodeBlock.immData_8Bit =  *(ccpu.deCodeBlock.pOpCode + insLength);
+		ccpu.ip++;
 	}
-	this->nnn = (*(pOpCode + OPCODE_WIDTH) & MASK_00111000)>>3 ; //迟绑定，到执行的时候再确定到底该执行什么函数
+	ccpu.deCodeBlock.nnn = (*(ccpu.deCodeBlock.pOpCode + OPCODE_WIDTH) & MASK_00111000)>>3 ; //迟绑定，到执行的时候再确定到底该执行什么函数
 	
 	return ;
 
 }
-void DeCodeBlock::deOpCode_contactData_8bit()
+void decode_deOpCode_contactData_8bit()
 {
 	int insLength = OPCODE_WIDTH + sizeof(t_nubit8);
-	this->opContactData_8bit = d_nubit8(pOpCode + OPCODE_WIDTH);
-	this->pCPU->ip += insLength;
+	ccpu.deCodeBlock.opContactData_8bit = d_nubit8(ccpu.deCodeBlock.pOpCode + OPCODE_WIDTH);
+	ccpu.ip += insLength;
 	return;
 }
-void DeCodeBlock::deOpCode_contactData_16bit()
+void decode_deOpCode_contactData_16bit()
 {
 	int insLength = OPCODE_WIDTH + sizeof(t_nubit16);//已经确定指令长度
-	this->opContactData_16bit = d_nubit16(pOpCode + OPCODE_WIDTH);
-	this->pCPU->ip += insLength ;//更新cpu中的ip，令其指向下一条指令
+	ccpu.deCodeBlock.opContactData_16bit = d_nubit16(ccpu.deCodeBlock.pOpCode + OPCODE_WIDTH);
+	ccpu.ip += insLength ;//更新cpu中的ip，令其指向下一条指令
 	return ;
 }
-void DeCodeBlock::deOpCode_contactData_32bit()
+void decode_deOpCode_contactData_32bit()
 {
 	int insLength = OPCODE_WIDTH + sizeof(t_nubit32);//已经确定指令长度
-	this->opContactData_16bit = d_nubit16(pOpCode + OPCODE_WIDTH);
-	this->opContactData_16bitE = d_nubit16(pOpCode + OPCODE_WIDTH +sizeof(t_nubit16));
-	this->pCPU->ip += insLength ;//更新cpu中的ip，令其指向下一条指令
+	ccpu.deCodeBlock.opContactData_16bit = d_nubit16(ccpu.deCodeBlock.pOpCode + OPCODE_WIDTH);
+	ccpu.deCodeBlock.opContactData_16bitE = d_nubit16(ccpu.deCodeBlock.pOpCode + OPCODE_WIDTH +sizeof(t_nubit16));
+	ccpu.ip += insLength ;//更新cpu中的ip，令其指向下一条指令
 	return;
 }
-void DeCodeBlock::deOpCode_Mov_mem_AX()
+void decode_deOpCode_Mov_mem_AX()
 {
 	int insLength = OPCODE_WIDTH + sizeof(t_nubit16);//已经确定指令长度
 	int nothing=0;
-	this->isWidth = !!(*pOpCode & MASK_00000001);
-	this->prm = deCodeEffectiveMemAddr(MASK_00000110, pOpCode+OPCODE_WIDTH, &nothing );
-	this->pCPU->ip += insLength ;//更新cpu中的ip，令其指向下一条指令
+	ccpu.deCodeBlock.isWidth = !!(*ccpu.deCodeBlock.pOpCode & MASK_00000001);
+	ccpu.deCodeBlock.prm = decode_deCodeEffectiveMemAddr(MASK_00000110, ccpu.deCodeBlock.pOpCode+OPCODE_WIDTH, &nothing );
+	ccpu.ip += insLength ;//更新cpu中的ip，令其指向下一条指令
 	return ;
 
 }
-void DeCodeBlock::deOpCode_Mov_imm_rm()
+void decode_deOpCode_Mov_imm_rm()
 {
 
-	int insLength = this->deOpCode_modRegRm();//cpu.ip已经变化
+	int insLength = decode_deOpCode_modRegRm();//cpu.ip已经变化
 	
-	if(isWidth)
+	if(ccpu.deCodeBlock.isWidth)
 	{
-		this->immData_16Bit =  d_nubit16(pOpCode + insLength);
-		this->pCPU->ip += 2;
+		ccpu.deCodeBlock.immData_16Bit =  d_nubit16(ccpu.deCodeBlock.pOpCode + insLength);
+		ccpu.ip += 2;
 	}
 	else
 	{
-		this->immData_8Bit =  *(pOpCode + insLength);
-		this->pCPU->ip++;
+		ccpu.deCodeBlock.immData_8Bit =  *(ccpu.deCodeBlock.pOpCode + insLength);
+		ccpu.ip++;
 	}
 	return ;
 	
 }
-void DeCodeBlock::deOpCode_Mov_rm_seg()
+void decode_deOpCode_Mov_rm_seg()
 {
 	int insDispLength = 0;
 	int insLength = OPCODE_WIDTH + MOD_REG_RM_LENGTH;
-	t_nubit8 * pModRegRm = pOpCode+OPCODE_WIDTH;
+	t_nubit8 * pModRegRm = ccpu.deCodeBlock.pOpCode+OPCODE_WIDTH;
 	t_nubit8 * pDisp = pModRegRm + MOD_REG_RM_LENGTH;
-	this->isWidth = true; //一定要是真
-	prm = deCodeEffectiveMemAddr(*pModRegRm,(void *)pDisp, &insDispLength );
-	pseg = getSegAddr( ((*pModRegRm)&MASK_00011000)>>3 ); //segment...只需要两个bit就可以确定																//就这个和deOpCodeModRegRm（）不一
+	ccpu.deCodeBlock.isWidth = 0x01; //一定要是真
+	ccpu.deCodeBlock.prm = decode_deCodeEffectiveMemAddr(*pModRegRm,(void *)pDisp, &insDispLength );
+	ccpu.deCodeBlock.pseg = decode_getSegAddr( ((*pModRegRm)&MASK_00011000)>>3 ); //segment...只需要两个bit就可以确定																//就这个和deOpCodeModRegRm（）不一
 	insLength += insDispLength;
-	this->pCPU->ip += insLength ;//更新cpu中的ip，令其指向下一条指令
+	ccpu.ip += insLength ;//更新cpu中的ip，令其指向下一条指令
 }
-void DeCodeBlock::deOpCode_Mov_imm_reg()
+void decode_deOpCode_Mov_imm_reg()
 { //reg 是哪个会在执行时候确定
 	int insLength = OPCODE_WIDTH + sizeof(t_nubit8); //至少有这么多
-	this->isWidth = !!((*pOpCode) & MASK_00001000);
-	if(isWidth)
+	ccpu.deCodeBlock.isWidth = !!((*ccpu.deCodeBlock.pOpCode) & MASK_00001000);
+	if(ccpu.deCodeBlock.isWidth)
 	{
-		this->immData_16Bit = d_nubit16(pOpCode + OPCODE_WIDTH);
+		ccpu.deCodeBlock.immData_16Bit = d_nubit16(ccpu.deCodeBlock.pOpCode + OPCODE_WIDTH);
 		insLength++;
 	}
 	else
 	{
-		this->immData_8Bit = d_nubit8(pOpCode + OPCODE_WIDTH);
+		ccpu.deCodeBlock.immData_8Bit = d_nubit8(ccpu.deCodeBlock.pOpCode + OPCODE_WIDTH);
 	}
-	this->pCPU->ip += insLength ;//更新cpu中的ip，令其指向下一条指针
+	ccpu.ip += insLength ;//更新cpu中的ip，令其指向下一条指针
 }
-void DeCodeBlock::deOpCode_ModRM()
+void decode_deOpCode_ModRM()
 {
-	int insLength = this->deOpCode_modRegRm();//cpu.ip已经变化
-	this->nnn = (*(pOpCode + OPCODE_WIDTH) & MASK_00111000)>>3 ; //迟绑定，到执行的时候再确定到底该执行什么函数
+	int insLength = decode_deOpCode_modRegRm();//cpu.ip已经变化
+	ccpu.deCodeBlock.nnn = (*(ccpu.deCodeBlock.pOpCode + OPCODE_WIDTH) & MASK_00111000)>>3 ; //迟绑定，到执行的时候再确定到底该执行什么函数
 	return ;
 }
-t_nubit16 DeCodeBlock::getDefaultSegment_DS()
+t_nubit16 decode_getDefaultSegment_DS()
 {
-	switch(this->prefix_SegmentOverrideOpCode)
+	switch(ccpu.deCodeBlock.prefix_SegmentOverrideOpCode)
 	{
 	case CS_SEGMENT_OVERRIDE_PREFIX:
-		return pCPU->cs;
+		return ccpu.cs;
 	case SS_SEGMENT_OVERRIDE_PREFIX:
-		return pCPU->ss;
+		return ccpu.ss;
 	case ES_SEGMENT_OVERRIDE_PREFIX:
-		return pCPU->es;
+		return ccpu.es;
 	default:
-		return pCPU->ds;
+		return ccpu.ds;
 	}
 }
-t_nubit16 DeCodeBlock::getDefaultSegment_SS()
+t_nubit16 decode_getDefaultSegment_SS()
 {
-	switch(this->prefix_SegmentOverrideOpCode)
+	switch(ccpu.deCodeBlock.prefix_SegmentOverrideOpCode)
 	{
 	case CS_SEGMENT_OVERRIDE_PREFIX:
-		return pCPU->cs;
+		return ccpu.cs;
 	case DS_SEGMENT_OVERRIDE_PREFIX:
-		return pCPU->ds;
+		return ccpu.ds;
 	case ES_SEGMENT_OVERRIDE_PREFIX:
-		return pCPU->es;
+		return ccpu.es;
 	default:
-		return pCPU->ss;
+		return ccpu.ss;
 	}
 }
