@@ -96,6 +96,21 @@ static t_nubit16 scannubit16(t_string s)
 	}
 	return ans;
 }
+static t_nubit32 scannubit32(t_string s)
+{
+	t_nubit32 ans = 0;
+	int i = 0;
+	lcase(s);
+	while(s[i] != '\0' && s[i] != '\n') {
+		if(i > 7) {seterr(narg-1);break;}
+		ans <<= 4;
+		if(s[i] > 0x2f && s[i] < 0x3a) ans += s[i] - 0x30;
+		else if(s[i] > 0x60 && s[i] < 0x67) ans += s[i] - 0x57;
+		else seterr(narg-1);
+		++i;
+	}
+	return ans;
+}
 static void addrparse(t_nubit16 defseg,const t_string addr)
 {
 	t_string cseg,cptr;
@@ -466,20 +481,6 @@ static void rprintflags()
 static void rprintregs()
 {
 	char str[MAXLINE];
-	vapiPrint(  "AX=%04X", _ax);
-	vapiPrint("  BX=%04X", _bx);
-	vapiPrint("  CX=%04X", _cx);
-	vapiPrint("  DX=%04X", _dx);
-	vapiPrint("  SP=%04X", _sp);
-	vapiPrint("  BP=%04X", _bp);
-	vapiPrint("  SI=%04X", _si);
-	vapiPrint("  DI=%04X", _di);
-	vapiPrint("\nDS=%04X", _ds);
-	vapiPrint("  ES=%04X", _es);
-	vapiPrint("  SS=%04X", _ss);
-	vapiPrint("  CS=%04X", _cs);
-	vapiPrint("  IP=%04X", _ip);
-	vapiPrint("   ");
 /*
 	32-bit
 	vapiPrint( "EAX=%08X", _eax);
@@ -497,8 +498,22 @@ static void rprintregs()
 	vapiPrint( " FS=%04X", _fs);
 	vapiPrint( " GS=%04X", _gs);
 	vapiPrint("\nEIP=%08X", _ip);
-	vapiPrint("  ");
-*/
+	vapiPrint("  \n");
+//*/
+	vapiPrint(  "AX=%04X", _ax);
+	vapiPrint("  BX=%04X", _bx);
+	vapiPrint("  CX=%04X", _cx);
+	vapiPrint("  DX=%04X", _dx);
+	vapiPrint("  SP=%04X", _sp);
+	vapiPrint("  BP=%04X", _bp);
+	vapiPrint("  SI=%04X", _si);
+	vapiPrint("  DI=%04X", _di);
+	vapiPrint("\nDS=%04X", _ds);
+	vapiPrint("  ES=%04X", _es);
+	vapiPrint("  SS=%04X", _ss);
+	vapiPrint("  CS=%04X", _cs);
+	vapiPrint("  IP=%04X", _ip);
+	vapiPrint("   ");
 	rprintflags();
 	vapiPrint("\n");
 	dasm(str, _cs, _ip, 0x02);
@@ -684,7 +699,8 @@ static void s()
 // trace
 static void t()
 {
-	t_nubitcc i, count;
+	t_nubit32 i;
+	t_nubit32 count;
 	if (vmachine.flagrun) {
 		vapiPrint("NXVM is already running.\n");
 		return;
@@ -694,13 +710,13 @@ static void t()
 		count = 1;
 		break;
 	case 2:
-		count = scannubit16(arg[1]);
+		count = scannubit32(arg[1]);
 		break;
 	case 3:
 		addrparse(_cs,arg[1]);
 		_cs = seg;
 		_ip = ptr;
-		count = scannubit16(arg[2]);
+		count = scannubit32(arg[2]);
 		break;
 	default:seterr(narg-1);break;}
 	if(errPos) return;

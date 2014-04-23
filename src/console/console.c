@@ -297,6 +297,7 @@ static void Nxvm()
 
 static void Test()
 {
+	vmachine.flagboot = 1;
 	vmachine.flagmode = 1;
 	vmachine.flagrecord = 1;
 	vmachineReset();

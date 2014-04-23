@@ -50,12 +50,9 @@ void vapiPrintIns(t_nubit16 segment, t_nubit16 offset, t_string ins)
 }
 
 /* Record */
-
+#include "vcpuins.h"
 t_apirecord vapirecord;
 
-#define _expression "cs:ip=%04x:%04x opcode=%02x %02x %02x %02x %02x %02x %02x %02x \
-ax=%04x bx=%04x cx=%04x dx=%04x sp=%04x bp=%04x si=%04x di=%04x ds=%04x es=%04x ss=%04x \
-flags=%04x of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x %s\n"
 #define _rec (vapirecord.rec[(i + vapirecord.start) % VAPI_RECORD_SIZE])
 #define _recpu     (_rec.rcpu)
 #define _restmt    (_rec.stmt)
@@ -69,18 +66,12 @@ flags=%04x of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x %s\n"
 #define _rec_tf    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_TF))
 #define _rec_if    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_IF))
 #define _rec_ptr_last ((vapirecord.start + vapirecord.size) % VAPI_RECORD_SIZE)
-#if VGLOBAL_ECPU_MODE != TEST_VCPU
-#define _recpu2     (_rec.rcpu2)
-#define _rec_of2    (GetBit(_rec.rcpu2.eflags, VCPU_EFLAGS_OF))
-#define _rec_sf2    (GetBit(_rec.rcpu2.eflags, VCPU_EFLAGS_SF))
-#define _rec_zf2    (GetBit(_rec.rcpu2.eflags, VCPU_EFLAGS_ZF))
-#define _rec_cf2    (GetBit(_rec.rcpu2.eflags, VCPU_EFLAGS_CF))
-#define _rec_af2    (GetBit(_rec.rcpu2.eflags, VCPU_EFLAGS_AF))
-#define _rec_pf2    (GetBit(_rec.rcpu2.eflags, VCPU_EFLAGS_PF))
-#define _rec_df2    (GetBit(_rec.rcpu2.eflags, VCPU_EFLAGS_DF))
-#define _rec_tf2    (GetBit(_rec.rcpu2.eflags, VCPU_EFLAGS_TF))
-#define _rec_if2    (GetBit(_rec.rcpu2.eflags, VCPU_EFLAGS_IF))
-#endif
+
+#define _expression "cs:eip=%04x:%08x opcode=%02x %02x %02x %02x %02x %02x %02x %02x \
+ss:esp=%04x:%08x stack=%04x %04x %04x %04x \
+eax=%08x ebx=%08x ecx=%08x edx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x\
+flags=%04x %s %s zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x \
+linear=%08x bit=%02d opr1=%08x opr2=%08x result=%016llx %s\n"
 
 void vapiRecordDump(const t_string fname)
 {
@@ -99,16 +90,26 @@ void vapiRecordDump(const t_string fname)
 		for (j = 0;j < strlen(_restmt);++j)
 			if (_restmt[j] == '\n') _restmt[j] = ' ';
 		fprintf(dump, _expression,
-			_recpu.cs.selector, _recpu.ip,
-			vramRealByte(_recpu.cs.selector,_recpu.ip+0),vramRealByte(_recpu.cs.selector,_recpu.ip+1),
-			vramRealByte(_recpu.cs.selector,_recpu.ip+2),vramRealByte(_recpu.cs.selector,_recpu.ip+3),
-			vramRealByte(_recpu.cs.selector,_recpu.ip+4),vramRealByte(_recpu.cs.selector,_recpu.ip+5),
-			vramRealByte(_recpu.cs.selector,_recpu.ip+6),vramRealByte(_recpu.cs.selector,_recpu.ip+7),
-			_recpu.ax,_recpu.bx,_recpu.cx,_recpu.dx,
-			_recpu.sp,_recpu.bp,_recpu.si,_recpu.di,
-			_recpu.ds.selector,_recpu.es.selector,_recpu.ss.selector,
-			_recpu.flags, _rec_of,_rec_sf,_rec_zf,_rec_cf,
-			_rec_af,_rec_pf,_rec_df,_rec_if,_rec_tf,_restmt);
+			_recpu.cs.selector, _recpu.eip,
+			_rec.opcode[0], _rec.opcode[1], _rec.opcode[2], _rec.opcode[3],
+			_rec.opcode[4], _rec.opcode[5], _rec.opcode[6], _rec.opcode[7],
+			_recpu.ss.selector, _recpu.esp,
+			_rec.stack[0], _rec.stack[1], _rec.stack[2], _rec.stack[3],
+			_recpu.eax,_recpu.ebx,_recpu.ecx,_recpu.edx,
+			_recpu.ebp,_recpu.esi,_recpu.edi,
+			_recpu.ds.selector,_recpu.es.selector,
+			_recpu.fs.selector,_recpu.gs.selector,
+			_recpu.flags,
+			_rec_of ? "OF" : "of",
+			_rec_sf ? "SF" : "sf",
+			_rec_zf ? "ZF" : "zf",
+			_rec_cf ? "CF" : "cf",
+			_rec_af ? "AF" : "af",
+			_rec_pf ? "PF" : "pf",
+			_rec_df ? "DF" : "df",
+			_rec_if ? "IF" : "if",
+			_rec_tf ? "TF" : "tf",
+			_rec.linear,_rec.bit,_rec.opr1,_rec.opr2,_rec.result,_restmt);
 		++i;
 	}
 	vapiPrint("Record dumped to '%s'.\n", fname);
@@ -121,14 +122,27 @@ void vapiRecordStart()
 }
 void vapiRecordExec()
 {
+	t_nubitcc i;
 #if VAPI_RECORD_SELECT_FIRST == 1
 	if (vapirecord.size == VAPI_RECORD_SIZE) {
 		vmachine.flagrecord = 0x00;
 		return;
 	}
 #endif
+	if (vcpu.flaghalt) return;
 	vapirecord.rec[_rec_ptr_last].rcpu = vcpu;
 	dasm(vapirecord.rec[_rec_ptr_last].stmt, _cs, _ip, 0x00);
+	for (i = 0;i < 8;++i)
+		vapirecord.rec[_rec_ptr_last].opcode[i] = vramRealByte(_cs, _eip + i);
+	for (i = 0;i < 4;++i)
+		vapirecord.rec[_rec_ptr_last].stack[i] = vramRealWord(_ss, _esp + (i * 2));
+
+	vapirecord.rec[_rec_ptr_last].bit = vcpuins.bit;
+	vapirecord.rec[_rec_ptr_last].opr1 = vcpuins.opr1;
+	vapirecord.rec[_rec_ptr_last].opr2 = vcpuins.opr2;
+	vapirecord.rec[_rec_ptr_last].result = vcpuins.result;
+	vapirecord.rec[_rec_ptr_last].linear = vcpuins.lrm;
+
 	if (vapirecord.size == VAPI_RECORD_SIZE) vapirecord.start++;
 	else vapirecord.size++;
 }

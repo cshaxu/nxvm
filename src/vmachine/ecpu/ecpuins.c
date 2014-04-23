@@ -80,6 +80,8 @@ static t_nsbit16 swa,swb,swc;
 static t_nubit32 uda,udb,udc;
 static t_nsbit32 sda,sdb,sdc;
 
+#if ((VGLOBAL_SIZE_INTEGER == 32) && (VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32))
+
 #define arith1                                        \
 do {                                                  \
 	switch (bit) {                                     \
@@ -407,6 +409,15 @@ do { \
 	ecpu.eflags = (efres & ~ECPUINS_FLAGS_MASKED) | (ecpu.eflags & ECPUINS_FLAGS_MASKED); \
 } while (0)
 
+#else
+
+#define arith1
+#define arith2
+#define shift
+#define arithax
+#define adjustax
+
+#endif
 
 static void CaseError(const char *str)
 {
@@ -1000,9 +1011,19 @@ DONEASM POP(t_vaddrcc rdest, t_nubit8 byte)
 		break;
 	default:CaseError("POP::byte");break;}
 }
-DONEASM JCC(t_vaddrcc rsrc, t_bool condition)
+DONEASM JCC(t_vaddrcc rsrc, t_nubit8 byte, t_bool condition)
 {
-	if (condition) ecpu.eip += d_nsbit8(rsrc);
+	if (condition) {
+		switch (byte) {
+		case 1: ecpu.eip += d_nsbit8(rsrc);break;
+		case 2: ecpu.eip += d_nsbit16(rsrc);break;
+		case 4: ecpu.eip += d_nsbit32(rsrc);break;
+		default:CaseError("JCC::byte");break;}
+		switch (_GetOperandSize) {
+		case 2: ecpu.eip = GetMax16(ecpu.eip);break;
+		case 4: ecpu.eip = GetMax32(ecpu.eip);break;
+		}
+	}
 }
 DONEASM LOOPCC(t_vaddrcc rsrc, t_bool condition)
 {
@@ -1701,95 +1722,95 @@ DONEASM JO_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, GetBit(ecpu.flags, VCPU_EFLAGS_OF));
+	JCC(ecpuins.rimm, 1, GetBit(ecpu.flags, VCPU_EFLAGS_OF));
 }
 DONEASM JNO_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, !GetBit(ecpu.flags, VCPU_EFLAGS_OF));
+	JCC(ecpuins.rimm, 1, !GetBit(ecpu.flags, VCPU_EFLAGS_OF));
 }
 DONEASM JC_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, GetBit(ecpu.flags, VCPU_EFLAGS_CF));
+	JCC(ecpuins.rimm, 1, GetBit(ecpu.flags, VCPU_EFLAGS_CF));
 }
 DONEASM JNC_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, !GetBit(ecpu.flags, VCPU_EFLAGS_CF));
+	JCC(ecpuins.rimm, 1, !GetBit(ecpu.flags, VCPU_EFLAGS_CF));
 }
 DONEASM JZ_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, GetBit(ecpu.flags, VCPU_EFLAGS_ZF));
+	JCC(ecpuins.rimm, 1, GetBit(ecpu.flags, VCPU_EFLAGS_ZF));
 }
 DONEASM JNZ_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, !GetBit(ecpu.flags, VCPU_EFLAGS_ZF));
+	JCC(ecpuins.rimm, 1, !GetBit(ecpu.flags, VCPU_EFLAGS_ZF));
 }
 DONEASM JBE_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, (GetBit(ecpu.flags, VCPU_EFLAGS_CF) ||
+	JCC(ecpuins.rimm, 1, (GetBit(ecpu.flags, VCPU_EFLAGS_CF) ||
 		GetBit(ecpu.flags, VCPU_EFLAGS_ZF)));
 }
 DONEASM JA_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, (!GetBit(ecpu.flags, VCPU_EFLAGS_CF) &&
+	JCC(ecpuins.rimm, 1, (!GetBit(ecpu.flags, VCPU_EFLAGS_CF) &&
 		!GetBit(ecpu.flags, VCPU_EFLAGS_ZF)));
 }
 DONEASM JS_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, GetBit(ecpu.flags, VCPU_EFLAGS_SF));
+	JCC(ecpuins.rimm, 1, GetBit(ecpu.flags, VCPU_EFLAGS_SF));
 }
 DONEASM JNS_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, !GetBit(ecpu.flags, VCPU_EFLAGS_SF));
+	JCC(ecpuins.rimm, 1, !GetBit(ecpu.flags, VCPU_EFLAGS_SF));
 }
 DONEASM JP_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, GetBit(ecpu.flags, VCPU_EFLAGS_PF));
+	JCC(ecpuins.rimm, 1, GetBit(ecpu.flags, VCPU_EFLAGS_PF));
 }
 DONEASM JNP_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, !GetBit(ecpu.flags, VCPU_EFLAGS_PF));
+	JCC(ecpuins.rimm, 1, !GetBit(ecpu.flags, VCPU_EFLAGS_PF));
 }
 DONEASM JL_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, (GetBit(ecpu.flags, VCPU_EFLAGS_SF) !=
+	JCC(ecpuins.rimm, 1, (GetBit(ecpu.flags, VCPU_EFLAGS_SF) !=
 		GetBit(ecpu.flags, VCPU_EFLAGS_OF)));
 }
 DONEASM JNL_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, (GetBit(ecpu.flags, VCPU_EFLAGS_SF) ==
+	JCC(ecpuins.rimm, 1, (GetBit(ecpu.flags, VCPU_EFLAGS_SF) ==
 		GetBit(ecpu.flags, VCPU_EFLAGS_OF)));
 }
 DONEASM JLE_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, (GetBit(ecpu.flags, VCPU_EFLAGS_ZF) ||
+	JCC(ecpuins.rimm, 1, (GetBit(ecpu.flags, VCPU_EFLAGS_ZF) ||
 		(GetBit(ecpu.flags, VCPU_EFLAGS_SF) !=
 		GetBit(ecpu.flags, VCPU_EFLAGS_OF))));
 }
@@ -1797,7 +1818,7 @@ DONEASM JG_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, (!GetBit(ecpu.flags, VCPU_EFLAGS_ZF) &&
+	JCC(ecpuins.rimm, 1, (!GetBit(ecpu.flags, VCPU_EFLAGS_ZF) &&
 		(GetBit(ecpu.flags, VCPU_EFLAGS_SF) ==
 		GetBit(ecpu.flags, VCPU_EFLAGS_OF))));
 }
@@ -2665,7 +2686,7 @@ DONEASM JCXZ_REL8()
 	case 2: cecx = GetMax16(cecx);break;
 	case 4: cecx = GetMax32(cecx);break;
 	}
-	JCC(ecpuins.rimm,!cecx);
+	JCC(ecpuins.rimm, 1, !cecx);
 }
 DONEASM IN_AL_I8()
 {
@@ -2762,7 +2783,7 @@ DONEASM JMP_REL8()
 {
 	ecpu.eip++;
 	GetImm(1);
-	JCC(ecpuins.rimm, 1);
+	JCC(ecpuins.rimm, 1, 1);
 }
 DONEASM IN_AL_DX()
 {
@@ -2967,6 +2988,58 @@ DONEASM INS_FF()
 		PUSH(ecpuins.rrm, _GetOperandSize);
 		break;
 	default:UndefinedOpcode();break;}
+}
+
+DONEASM INS_0F_01()
+{
+	ecpu.eip++;
+	GetModRegRM(0, 2);
+	switch (ecpuins.cr) {
+	case 4:
+		d_nubit16(ecpuins.rrm) = GetMax16(ecpu.cr0);
+		break;
+	default: UndefinedOpcode();break;
+	}
+}
+DONEASM JC_REL16()
+{
+	ecpu.eip++;
+	GetImm(_GetOperandSize);
+	JCC(ecpuins.rimm, _GetOperandSize, GetBit(ecpu.eflags, VCPU_EFLAGS_CF));
+}
+DONEASM JZ_REL16()
+{
+	ecpu.eip++;
+	GetImm(_GetOperandSize);
+	JCC(ecpuins.rimm, _GetOperandSize, GetBit(ecpu.eflags, VCPU_EFLAGS_ZF));
+}
+DONEASM JNZ_REL16()
+{
+	ecpu.eip++;
+	GetImm(_GetOperandSize);
+	JCC(ecpuins.rimm, _GetOperandSize, !GetBit(ecpu.eflags, VCPU_EFLAGS_ZF));
+}
+DONEASM JA_REL16()
+{
+	ecpu.eip++;
+	GetImm(_GetOperandSize);
+	JCC(ecpuins.rimm, _GetOperandSize,
+		!(GetBit(ecpu.eflags, VCPU_EFLAGS_CF) || GetBit(ecpu.eflags, VCPU_EFLAGS_ZF)));
+}
+DONEASM MOVZX_R16_RM8()
+{
+	ecpu.eip++;
+	GetModRegRM(_GetOperandSize, 1);
+	switch (_GetOperandSize) {
+	case 2: d_nubit16(ecpuins.rr) = d_nubit8(ecpuins.rrm);break;
+	case 4: d_nubit32(ecpuins.rr) = d_nubit8(ecpuins.rrm);break;
+	}
+}
+DONEASM MOVZX_R32_RM16()
+{
+	ecpu.eip++;
+	GetModRegRM(4, 2);
+	d_nubit32(ecpuins.rr) = d_nubit16(ecpuins.rrm);
 }
 
 static t_bool IsPrefix(t_nubit8 opcode)
@@ -3258,8 +3331,8 @@ void ecpuinsInit()
 	ecpuins.table[0xbd] = (t_faddrcc)MOV_BP_I16;
 	ecpuins.table[0xbe] = (t_faddrcc)MOV_SI_I16;
 	ecpuins.table[0xbf] = (t_faddrcc)MOV_DI_I16;
-	ecpuins.table[0xc0] = (t_faddrcc)UndefinedOpcode;//INS_C0;
-	ecpuins.table[0xc1] = (t_faddrcc)UndefinedOpcode;//INS_C1;
+	ecpuins.table[0xc0] = (t_faddrcc)INS_C0;//
+	ecpuins.table[0xc1] = (t_faddrcc)INS_C1;//
 	ecpuins.table[0xc2] = (t_faddrcc)RET_I16;
 	ecpuins.table[0xc3] = (t_faddrcc)RET;
 	ecpuins.table[0xc4] = (t_faddrcc)LES_R16_M16;
@@ -3323,7 +3396,7 @@ void ecpuinsInit()
 	ecpuins.table[0xfe] = (t_faddrcc)INS_FE;
 	ecpuins.table[0xff] = (t_faddrcc)INS_FF;
 	ecpuins.table_0f[0x00] = (t_faddrcc)UndefinedOpcode;
-	ecpuins.table_0f[0x01] = (t_faddrcc)UndefinedOpcode;//INS_0F_01;
+	ecpuins.table_0f[0x01] = (t_faddrcc)INS_0F_01;
 	ecpuins.table_0f[0x02] = (t_faddrcc)UndefinedOpcode;
 	ecpuins.table_0f[0x03] = (t_faddrcc)UndefinedOpcode;
 	ecpuins.table_0f[0x04] = (t_faddrcc)UndefinedOpcode;
@@ -3452,12 +3525,12 @@ void ecpuinsInit()
 	ecpuins.table_0f[0x7f] = (t_faddrcc)UndefinedOpcode;
 	ecpuins.table_0f[0x80] = (t_faddrcc)UndefinedOpcode;
 	ecpuins.table_0f[0x81] = (t_faddrcc)UndefinedOpcode;
-	ecpuins.table_0f[0x82] = (t_faddrcc)UndefinedOpcode;//JC_REL16;
+	ecpuins.table_0f[0x82] = (t_faddrcc)JC_REL16;//
 	ecpuins.table_0f[0x83] = (t_faddrcc)UndefinedOpcode;
-	ecpuins.table_0f[0x84] = (t_faddrcc)UndefinedOpcode;//JZ_REL16;
-	ecpuins.table_0f[0x85] = (t_faddrcc)UndefinedOpcode;//JNZ_REL16;
+	ecpuins.table_0f[0x84] = (t_faddrcc)JZ_REL16;//
+	ecpuins.table_0f[0x85] = (t_faddrcc)JNZ_REL16;//
 	ecpuins.table_0f[0x86] = (t_faddrcc)UndefinedOpcode;
-	ecpuins.table_0f[0x87] = (t_faddrcc)UndefinedOpcode;//JA_REL16;
+	ecpuins.table_0f[0x87] = (t_faddrcc)JA_REL16;//
 	ecpuins.table_0f[0x88] = (t_faddrcc)UndefinedOpcode;
 	ecpuins.table_0f[0x89] = (t_faddrcc)UndefinedOpcode;
 	ecpuins.table_0f[0x8a] = (t_faddrcc)UndefinedOpcode;
@@ -3504,8 +3577,8 @@ void ecpuinsInit()
 	ecpuins.table_0f[0xb3] = (t_faddrcc)UndefinedOpcode;
 	ecpuins.table_0f[0xb4] = (t_faddrcc)UndefinedOpcode;
 	ecpuins.table_0f[0xb5] = (t_faddrcc)UndefinedOpcode;
-	ecpuins.table_0f[0xb6] = (t_faddrcc)UndefinedOpcode;//MOVZX_R16_RM8;
-	ecpuins.table_0f[0xb7] = (t_faddrcc)UndefinedOpcode;//MOVZX_R32_RM16;
+	ecpuins.table_0f[0xb6] = (t_faddrcc)MOVZX_R16_RM8;//
+	ecpuins.table_0f[0xb7] = (t_faddrcc)MOVZX_R32_RM16;//
 	ecpuins.table_0f[0xb8] = (t_faddrcc)UndefinedOpcode;
 	ecpuins.table_0f[0xb9] = (t_faddrcc)UndefinedOpcode;
 	ecpuins.table_0f[0xba] = (t_faddrcc)UndefinedOpcode;

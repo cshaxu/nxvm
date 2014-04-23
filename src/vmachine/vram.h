@@ -36,6 +36,8 @@ extern t_ram vram;
 #define vramRealWord(segment, offset)  (d_nubit16(vramGetRealAddr(segment, offset)))
 #define vramRealDWord(segment, offset) (d_nubit32(vramGetRealAddr(segment, offset)))
 
+void IO_Read_0092();
+void IO_Write_0092();
 
 void vramAlloc(t_nubitcc newsize);
 void vramInit();

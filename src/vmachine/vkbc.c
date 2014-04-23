@@ -1,5 +1,7 @@
 /* This file is a part of NXVM project. */
 
+#include "memory.h"
+
 #include "vport.h"
 #include "vkbc.h"
 

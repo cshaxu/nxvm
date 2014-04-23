@@ -863,6 +863,16 @@ static void POP_DI()
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "DI");
 }
+static void OprSize()
+{
+	dvip++;
+	SPRINTF(dop, "OPR");
+}
+static void AddrSize()
+{
+	dvip++;
+	SPRINTF(dop, "ADDR");
+}
 static void JO()
 {
 	dvip++;
@@ -1896,7 +1906,8 @@ static t_bool IsPrefix(t_nubit8 opcode)
 	switch(opcode) {
 	case 0xf0: case 0xf2: case 0xf3:
 	case 0x2e: case 0x36: case 0x3e: case 0x26:
-	//case 0x64: case 0x65: case 0x66: case 0x67:
+	//case 0x64: case 0x65:
+	case 0x66: case 0x67:
 				return 0x01;break;
 	default:	return 0x00;break;
 	}
@@ -2014,8 +2025,8 @@ static void exec(t_nubit8 opcode)
 	case 0x63: DB();           break;
 	case 0x64: DB();           break;
 	case 0x65: DB();           break;
-	case 0x66: DB();           break; //case 0x66: OpdSize();    break;
-	case 0x67: DB();           break; //case 0x67: AddrSize();   break;
+	case 0x66: OprSize();      break; //
+	case 0x67: AddrSize();     break; //
 	case 0x68: DB();           break; //case 0x68: PUSH_I16();   break;
 	case 0x69: DB();           break;
 	case 0x6a: DB();           break;

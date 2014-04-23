@@ -35,6 +35,12 @@ typedef struct {
 #else
 		t_cpu rcpu;
 #endif
+		t_nubit8 opcode[8];
+		t_nubit16 stack[4];
+		t_nubit32 linear;
+		t_nubit8  bit;
+		t_nubit32 opr1, opr2;
+		t_nubit64 result;
 		char stmt[0x20];
 	} rec[VAPI_RECORD_SIZE];
 	t_nubitcc start, size;
