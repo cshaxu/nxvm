@@ -43,8 +43,7 @@
 
 t_cpuins vcpuins;
 
-static t_cpu acpu;
-
+/*static t_cpu acpu;
 static t_nubit8 ub1,ub2,ub3;
 static t_nsbit8 sb1,sb2,sb3;
 static t_nubit16 uw1,uw2,uw3;
@@ -117,15 +116,17 @@ static t_bool acpuCheck()
 #define async    if(acpu = vcpu,1)
 #define aexec    __asm
 #define acheck   if(acpuCheck())
-#define async8   if(acpu = vcpu, ub1 = d_nubit8(dest),  ub2 = d_nubit8(src),  1)
-#define async12  if(acpu = vcpu, uw1 = d_nubit16(dest), uw2 = d_nsbit8(src),  1)
-#define async16  if(acpu = vcpu, uw1 = d_nubit16(dest), uw2 = d_nubit16(src), 1)
+#define async8   if(1) {\
+	acpu = vcpu;ub1 = d_nubit8(dest);ub2 = d_nubit8(src);} else
+#define async12  if(1) {\
+	acpu = vcpu;uw1 = d_nubit16(dest);uw2 = d_nsbit8(src);} else
+#define async16  if(1) {\
+	acpu = vcpu;uw1 = d_nubit16(dest);uw2 = d_nubit16(src);} else
 #define asreg8   if(!vramIsAddrInMem(dest)) {\
 	d_nubit8((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = ub3;} else
-#define asreg12  if(!vramIsAddrInMem(dest)) {\
-	d_nubit16((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = uw3;} else
 #define asreg16  if(!vramIsAddrInMem(dest)) {\
 	d_nubit16((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = uw3;} else
+#define asreg12  asreg16
 #define acheck8  if(acpuCheck() || d_nubit8(dest) != ub3) {\
 	vapiPrint("ub1=%02X,ub2=%02X,ub3=%02X,dest=%02X\n",\
 		ub1,ub2,ub3,d_nubit8(dest));} else
@@ -134,22 +135,47 @@ static t_bool acpuCheck()
 		uw1,uw2,uw3,d_nubit16(dest));} else
 #define acheck12 acheck16
 #define aexec8  if(1) {\
+	__asm push ax\
 	__asm push acpu.flags\
 	__asm popf\
 	__asm mov al,ub1\
 	__asm op  al,ub2\
 	__asm mov ub3,al\
 	__asm pushf\
-	__asm pop acpu.flags} else
+	__asm pop acpu.flags\
+	__asm pop ax} else
 #define aexec16  if(1) {\
+	__asm push ax\
 	__asm push acpu.flags\
 	__asm popf\
 	__asm mov ax,uw1\
 	__asm op  ax,uw2\
 	__asm mov uw3,ax\
 	__asm pushf\
-	__asm pop acpu.flags} else
+	__asm pop acpu.flags\
+	__asm pop ax} else
 #define aexec12 aexec16
+#define asyncall switch(len) {\
+	case 8:  async8; break;\
+	case 12: async12;break;\
+	case 16: async16;break;}
+#define aexecall switch(len) {\
+	case 8:\
+		aexec8;\
+		asreg8;\
+		acheck8;\
+		break;\
+	case 12:\
+		aexec12;\
+		asreg12;\
+		acheck12;\
+		break;\
+	case 16:\
+		aexec16;\
+		asreg16;\
+		acheck16;\
+		break;\
+	}
 #else
 #define async    if(0)
 #define aexec    __asm
@@ -166,7 +192,9 @@ static t_bool acpuCheck()
 #define aexec8   if(0)
 #define aexec12  if(0)
 #define aexec16  if(0)
-#endif
+#define asyncall
+#define aexecall
+#endif*/
 
 static void CaseError(const char *str)
 {
@@ -440,9 +468,9 @@ static void GetModRegRMEA()
 static void INT(t_nubit8 intid);
 static void ADD(void *dest, void *src, t_nubit8 len)
 {
+//	asyncall
 	switch(len) {
 	case 8:
-		async8;
 		vcpuins.bit = 8;
 		vcpuins.type = ADD8;
 		vcpuins.opr1 = d_nubit8(dest);
@@ -452,7 +480,6 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 /* vcpuins bug fix #6 */
 		break;
 	case 12:
-		async12;
 		vcpuins.bit = 16;
 		vcpuins.type = ADD16;
 		vcpuins.opr1 = d_nubit16(dest);
@@ -461,7 +488,6 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
 	case 16:
-		async16;
 		vcpuins.bit = 16;
 		vcpuins.type = ADD16;
 		vcpuins.opr1 = d_nubit16(dest);
@@ -471,28 +497,13 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 		break;
 	default:CaseError("ADD::len");break;}
 	SetFlags(ADD_FLAG);
-#define op add
-	switch(len) {
-	case 8:
-		aexec8;
-		asreg8;
-		acheck8;
-		break;
-	case 12:
-		aexec12;
-		asreg12;
-		acheck12;
-		break;
-	case 16:
-		aexec16;
-		asreg16;
-		acheck16;
-		break;
-	}
-#undef op
+//#define op add
+//	aexecall
+//#undef op
 }
 static void OR(void *dest, void *src, t_nubit8 len)
 {
+//	asyncall
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
@@ -523,9 +534,13 @@ static void OR(void *dest, void *src, t_nubit8 len)
 	ClrBit(vcpu.flags, VCPU_FLAG_CF);
 	ClrBit(vcpu.flags, VCPU_FLAG_AF);
 	SetFlags(OR_FLAG);
+//#define op or
+//	aexecall
+//#undef op
 }
 static void ADC(void *dest, void *src, t_nubit8 len)
 {
+//	asyncall
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
@@ -553,9 +568,13 @@ static void ADC(void *dest, void *src, t_nubit8 len)
 		break;
 	default:CaseError("ADC::len");break;}
 	SetFlags(ADC_FLAG);
+//#define op adc
+//	aexecall
+//#undef op
 }
 static void SBB(void *dest, void *src, t_nubit8 len)
 {
+//	asyncall
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
@@ -583,9 +602,13 @@ static void SBB(void *dest, void *src, t_nubit8 len)
 		break;
 	default:CaseError("SBB::len");break;}
 	SetFlags(SBB_FLAG);
+//#define op sbb
+//	aexecall
+//#undef op
 }
 static void AND(void *dest, void *src, t_nubit8 len)
 {
+//	asyncall
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
@@ -616,9 +639,13 @@ static void AND(void *dest, void *src, t_nubit8 len)
 	ClrBit(vcpu.flags,VCPU_FLAG_CF);
 	ClrBit(vcpu.flags,VCPU_FLAG_AF);
 	SetFlags(AND_FLAG);
+//#define op and
+//	aexecall
+//#undef op
 }
 static void SUB(void *dest, void *src, t_nubit8 len)
 {
+//	asyncall
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
@@ -646,9 +673,13 @@ static void SUB(void *dest, void *src, t_nubit8 len)
 		break;
 	default:CaseError("SUB::len");break;}
 	SetFlags(SUB_FLAG);
+//#define op sub
+//	aexecall
+//#undef op
 }
 static void XOR(void *dest, void *src, t_nubit8 len)
 {
+//	asyncall
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
@@ -679,16 +710,19 @@ static void XOR(void *dest, void *src, t_nubit8 len)
 	ClrBit(vcpu.flags,VCPU_FLAG_CF);
 	ClrBit(vcpu.flags,VCPU_FLAG_AF);
 	SetFlags(XOR_FLAG);
+//#define op xor
+//	aexecall
+//#undef op
 }
-static void CMP(void *op1, void *op2, t_nubit8 len)
+static void CMP(void *dest, void *src, t_nubit8 len)
 {
-/* vcpuins debug: TODO: still need to check */
+//	asyncall
 	switch(len) {
 	case 8:
 		vcpuins.bit = 8;
 		vcpuins.type = CMP8;
-		vcpuins.opr1 = d_nubit8(op1) & 0xff;
-		vcpuins.opr2 = d_nsbit8(op2) & 0xff;
+		vcpuins.opr1 = d_nubit8(dest) & 0xff;
+		vcpuins.opr2 = d_nsbit8(src) & 0xff;
 /* vcpuins bug fix #7
 		vcpuins.result = (vcpuins.opr1-vcpuins.opr2)&0xff;*//*s->u*/
 		vcpuins.result = ((t_nubit8)vcpuins.opr1-(t_nsbit8)vcpuins.opr2)&0xff;
@@ -696,21 +730,24 @@ static void CMP(void *op1, void *op2, t_nubit8 len)
 	case 12:
 		vcpuins.bit = 16;
 		vcpuins.type = CMP16;
-		vcpuins.opr1 = d_nubit16(op1) & 0xffff;
-		vcpuins.opr2 = d_nsbit8(op2) & 0xffff;
+		vcpuins.opr1 = d_nubit16(dest) & 0xffff;
+		vcpuins.opr2 = d_nsbit8(src) & 0xffff;
 		vcpuins.result = ((t_nubit16)vcpuins.opr1-(t_nsbit8)vcpuins.opr2)&0xffff;
 		break;
 	case 16:
 		vcpuins.bit = 16;
 		vcpuins.type = CMP16;
-		vcpuins.opr1 = d_nubit16(op1) & 0xffff;
-		vcpuins.opr2 = d_nsbit16(op2) & 0xffff;
+		vcpuins.opr1 = d_nubit16(dest) & 0xffff;
+		vcpuins.opr2 = d_nsbit16(src) & 0xffff;
 /* vcpuins bug fix #7
 		vcpuins.result = (vcpuins.opr1-vcpuins.opr2)&0xffff;*/
 		vcpuins.result = ((t_nubit16)vcpuins.opr1-(t_nsbit16)vcpuins.opr2)&0xffff;
 		break;
 	default:CaseError("CMP::len");break;}
 	SetFlags(CMP_FLAG);
+//#define op cmp
+//	aexecall
+//#undef op
 }
 static void PUSH(void *src, t_nubit8 len)
 {
