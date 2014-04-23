@@ -35,6 +35,10 @@ static t_nubit16 bufPop()
 	bufptrAdvance(bufptrHead);
 	return res;
 }
+static t_nubit16 bufPeek()
+{
+	return vramVarWord(0x0000, bufptrHead);
+}
 
 t_bool vapiCallBackKeyboardGetFlag0CapsLock() {return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);}
 t_bool vapiCallBackKeyboardGetFlag0NumLock()  {return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_NUMLCK);}
@@ -83,7 +87,6 @@ void vapiCallBackKeyboardClrFlag1LeftCtrl() {ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1
 void vapiCallBackKeyboardRecvKeyPress(t_nubit16 code)
 {
 //	while(bufPush(code)) vapiSleep(1);
-//	vapiPrint("{ascii: 0x%02x, scan: 0x%02x},\n",(code & 0xff), (code >> 8));
 	bufPush(code);
 	vpicSetIRQ(0x01);
 }
@@ -97,16 +100,25 @@ void qdkeybReadInput()
 {
 	/* TODO: this should have been working with INT 15 */
 	while (bufIsEmpty) vapiSleep(10);
-	//if (bufIsEmpty) return;
 	_ax = bufPop();
 	vpicSetIRQ(0x01);
 }
 void qdkeybGetStatus()
 {
+	t_nubit16 x = bufPeek();
 	if (bufIsEmpty) {
 		SetZF;
 	} else {
-		_ax = vramVarWord(0x0000, bufptrHead);
+		switch (x) {
+		case 0x1d00:
+		case 0x2a00:
+		case 0x3800:
+			_ax = 0x0000;
+			break;
+		default:
+			_ax = x;
+			break;
+		}
 		ClrZF;
 	}
 }

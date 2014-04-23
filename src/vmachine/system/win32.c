@@ -175,7 +175,6 @@ void win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey)
 {
 	UCHAR ascii = 0x00;
 	USHORT code = 0x0000;
-
 	switch(virtualKey) {
 	case VK_F9:
 		vapiCallBackMachineStop();

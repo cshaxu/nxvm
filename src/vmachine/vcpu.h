@@ -47,6 +47,7 @@ typedef struct {
 
 extern t_cpu vcpu;
 #else
+#include "ecpu/ecpu.h"
 typedef t_ecpu t_cpu;
 #define vcpu ecpu
 #endif

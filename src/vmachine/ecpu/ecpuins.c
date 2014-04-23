@@ -5,6 +5,7 @@
 // 作者：梁一信
 //////////////////////////////////////////////////////////////////////////
 
+#include "stdio.h"
 #include "../vglobal.h"
 #include "../vpic.h"
 #include "../vapi.h"
@@ -1084,7 +1085,7 @@ static void MOVS(t_nubit8 len)
 	default:CaseError("MOVS::len");break;}
 	//qdcgaCheckVideoRam(vramGetAddr(ecpu.es, ecpu.di));
 }
-static void _CMPS(t_nubit8 len)
+static void CMPS(t_nubit8 len)
 {
 	switch(len) {
 	case 8:
@@ -3099,11 +3100,11 @@ SAME _CMPSB()
 {
 	ci1;
 	ecpu.ip++;
-	if(ecpuins.rep == RT_NONE) _CMPS(8);
+	if(ecpuins.rep == RT_NONE) CMPS(8);
 	else {
 		while(ecpu.cx) {
 			//ecpuinsExecInt();
-			_CMPS(8);
+			CMPS(8);
 			ecpu.cx--;
 			if((ecpuins.rep == RT_REPZ && !GetBit(ecpu.flags, VCPU_FLAG_ZF)) || (ecpuins.rep == RT_REPZNZ && GetBit(ecpu.flags, VCPU_FLAG_ZF))) break;
 		}
@@ -3114,11 +3115,11 @@ SAME _CMPSW()
 {
 	ci1;
 	ecpu.ip++;
-	if(ecpuins.rep == RT_NONE) _CMPS(16);
+	if(ecpuins.rep == RT_NONE) CMPS(16);
 	else {
 		while(ecpu.cx) {
 			//ecpuinsExecInt();
-			_CMPS(16);
+			CMPS(16);
 			ecpu.cx--;
 			if((ecpuins.rep == RT_REPZ && !GetBit(ecpu.flags, VCPU_FLAG_ZF)) || (ecpuins.rep == RT_REPZNZ && GetBit(ecpu.flags, VCPU_FLAG_ZF))) break;
 		}
