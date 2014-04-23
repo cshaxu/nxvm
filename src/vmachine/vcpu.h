@@ -242,12 +242,12 @@ extern t_cpu vcpu;
 #define _ClrEFLAGS_VIP   (ClrBit(vcpu.eflags, VCPU_EFLAGS_VIP))
 #define _ClrEFLAGS_ID    (ClrBit(vcpu.eflags, VCPU_EFLAGS_ID))*/
 
-#define _GetCF _GetEFLAGS_CF
-#define _SetCF _SetEFLAGS_CF
-#define _ClrCF _ClrEFLAGS_CF
-#define _GetAF _GetEFLAGS_AF
-#define _SetAF _SetEFLAGS_AF
-#define _ClrAF _ClrEFLAGS_AF
+#define _GetModRM_MOD(modrm) (((modrm) & 0xc0) >> 6)
+#define _GetModRM_REG(modrm) (((modrm) & 0x38) >> 3)
+#define _GetModRM_RM(modrm)  (((modrm) & 0x07) >> 0)
+#define _GetSIB_SS(sib)      (((sib) & 0xc0) >> 6)
+#define _GetSIB_Index(sib)   (((sib) & 0x38) >> 3)
+#define _GetSIB_Base(sib)    (((sib) & 0x07) >> 0)
 
 #define VCPU_CR0_PE     0x00000001
 #define VCPU_CR0_TS     0x00000008

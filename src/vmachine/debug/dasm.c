@@ -20,10 +20,6 @@ static t_nubit16    dods, doss;
 static t_vaddrcc    dvrm, dvr;
 static t_nubit32    diptr; /* global physical address */
 
-#define _GetModRM_MOD(modrm) ((modrm&0xc0)>>6)
-#define _GetModRM_REG(modrm) ((modrm&0x38)>>3)
-#define _GetModRM_RM(modrm)  ((modrm&0x07)>>0)
-
 static void GetMem(t_nubitcc membit)
 {
 	switch (membit) {

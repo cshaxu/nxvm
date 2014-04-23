@@ -279,47 +279,30 @@ static t_bool vcpuapiCheckDiff()
 	}
 	return flagdiff;
 }
-static void PrintPhysical(t_nubit32 phy, t_nubit64 data, t_nubit8 byte, t_bool write)
+static void PrintPhysical(t_nubit32 physical, t_vaddrcc rdata, t_nubit8 byte, t_bool write)
 {
-	vcpuapiPrint("%s phy=%08x, data=", write ? "write" : "read", phy);
+	vcpuapiPrint("%s phy=%08x, data=", write ? "write" : "read", physical);
 	switch (byte) {
-	case 1:
-		vcpuapiPrint("%02x", GetMax8(data));
-		break;
-	case 2:
-		vcpuapiPrint("%04x", GetMax16(data));
-		break;
-	case 3:
-		vcpuapiPrint("%08x", GetMax24(data));
-		break;
-	case 4:
-		vcpuapiPrint("%08x", GetMax32(data));
-		break;
-	case 6:
-		vcpuapiPrint("%016llx", GetMax48(data));
-		break;
-	case 8:
-		vcpuapiPrint("%016llx", GetMax64(data));
-		break;
-	default:
-		vcpuapiPrint("invalid");
-		break;
-	}
+	case 1: vcpuapiPrint("%02x",    d_nubit8(rdata)); break;
+	case 2: vcpuapiPrint("%04x",    d_nubit16(rdata));break;
+	case 3: vcpuapiPrint("%08x",    d_nubit24(rdata));break;
+	case 4: vcpuapiPrint("%08x",    d_nubit32(rdata));break;
+	case 6: vcpuapiPrint("%016llx", d_nubit48(rdata));break;
+	case 8: vcpuapiPrint("%016llx", d_nubit64(rdata));break;
+	default:vcpuapiPrint("invalid");break;}
 	vcpuapiPrint(", byte=%01x\n", byte);
 }
-t_nubit64 vcpuapiReadPhysical(t_nubit32 phy, t_nubit8 byte)
+void vcpuapiReadPhysical(t_nubit32 physical, t_vaddrcc rdata, t_nubit8 byte)
 {
-	t_nubit64 data;
-	BX_CPU_THIS_PTR access_read_physical(phy, byte, &data);
-	//BX_MEM(0)->readPhysicalPage(BX_CPU(0), phy,byte, &data);
-	if (0) PrintPhysical(phy, data, byte, 0);
-	return data;
+	BX_CPU_THIS_PTR access_read_physical(physical, byte, (void *)rdata);
+	//BX_MEM(0)->readPhysicalPage(BX_CPU(0), physical,byte, (void *)rdata);
+	if (0) PrintPhysical(physical, rdata, byte, 0);
 }
-void vcpuapiWritePhysical(t_nubit32 phy, t_nubit64 data, t_nubit8 byte)
+void vcpuapiWritePhysical(t_nubit32 physical, t_vaddrcc rdata, t_nubit8 byte)
 {
-	//BX_CPU_THIS_PTR access_write_physical(phy, byte, &data);
-	//BX_MEM(0)->writePhysicalPage(BX_CPU(0), phy, byte, &data);
-	if (0) PrintPhysical(phy, data, byte, 1);
+	//BX_CPU_THIS_PTR access_write_physical(physical, byte, (void *)rdata);
+	//BX_MEM(0)->writePhysicalPage(BX_CPU(0), physical, byte, (void *)rdata);
+	if (0) PrintPhysical(physical, rdata, byte, 1);
 }
 
 #else

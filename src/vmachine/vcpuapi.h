@@ -21,8 +21,8 @@ void vapiSleep(t_nubit32 milisec);
 void vapiCallBackDebugPrintRegs(t_bool bit32);
 #define vramIsAddrInMem(ref) 0
 void vcpuapiLoadSreg(t_cpu_sreg *rsreg, t_nubit32 lo, t_nubit32 hi);
-t_nubit64 vcpuapiReadPhysical(t_nubit32 phy, t_nubit8 byte);
-void vcpuapiWritePhysical(t_nubit32 phy, t_nubit64 data, t_nubit8 byte);
+void vcpuapiReadPhysical(t_nubit32 physical, t_vaddrcc rdata, t_nubit8 byte);
+void vcpuapiWritePhysical(t_nubit32 physical, t_vaddrcc rdata, t_nubit8 byte);
 #endif
 
 t_nubit32 vcpuapiPrint(const t_string format, ...);
