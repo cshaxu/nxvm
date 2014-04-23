@@ -69,6 +69,10 @@ void Exec()
 	t_nubit8 c;
 	t_nubit16 i = 0,end;
 	t_nubit32 len = 0;
+	if (!vmachine.flaginit || vmachine.flagrun) {
+		fprintf(stdout,"Cannot execute binary file now.\n");
+		return;
+	}
 	fprintf(stdout,".COM File: ");
 	fgets(execmd,MAXLINE,stdin);
 	parse(execmd);
@@ -99,6 +103,10 @@ void Exec()
 void Floppy()
 {
 	char str[MAXLINE];
+	if (!vmachine.flaginit || vmachine.flagrun) {
+		fprintf(stdout,"Cannot change floppy disk now.\n");
+		return;
+	}
 	fprintf(stdout,"Floppy Image File: ");
 	fgets(str, MAXLINE, stdin);
 	parse(str);

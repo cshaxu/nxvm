@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x73]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.2.0x74]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -216,18 +216,17 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 #include "global.h"
 #include "console.h"
 
-/*
+
 int main(int argc, char **argv)
 {
 	fprintf(stdout,"%s\n",PRODUCT);
-	NSConsole();
+	console();
     return 0;
 }
-*/
-#include "windows.h"
+
+/*#include "windows.h"
 
 #pragma comment(linker, "/subsystem:\"console\" /entry:\"WinMainCRTStartup\"") 
-
 
 int WINAPI WinMain(
 	HINSTANCE hInstance,
@@ -238,7 +237,7 @@ int WINAPI WinMain(
 	fprintf(stdout,"%s\n",PRODUCT);
 	console();
 	return 0;
-}
+}*/
 
 /**********************************************
  * COMMENTS

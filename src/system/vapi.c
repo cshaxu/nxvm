@@ -141,8 +141,6 @@ static DWORD WINAPI Kernel(LPVOID lpParam)
 }
 void vapiCreateDisplay()
 {
-	/*MessageBox(NULL,"Neko's x86 Virtual Machine WIN32APP Edition",
-	            "WinMain",MB_OK);*/
 	CreateThread(NULL, 0, Display, NULL, 0, &DisplayThreadId);
 }
 
