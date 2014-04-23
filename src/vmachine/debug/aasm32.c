@@ -9,7 +9,7 @@
 #include "../vapi.h"
 
 /* DEBUGGING OPTIONS ******************************************************* */
-#define AASM_TRACE 1
+#define AASM_TRACE 0
 /* ************************************************************************* */
 
 #if AASM_TRACE == 1
@@ -4169,9 +4169,10 @@ static void INTO()
 	_c_setbyte(0xcd);
 	_ce;
 }
-static void IRET()
+static void IRET(t_nubit8 byte)
 {
 	_cb("IRET");
+	_SetOperandSize(byte);
 	_c_setbyte(0xcf);
 	_ce;
 }
@@ -6255,7 +6256,8 @@ static void exec()
 	else if (!strcmp(rop,"retf")) RETF();
 	else if (!strcmp(rop, "int")) INT();
 	else if (!strcmp(rop,"into")) INTO();
-	else if (!strcmp(rop,"iret")) IRET();
+	else if (!strcmp(rop,"iret"))  IRET(2);
+	else if (!strcmp(rop,"iretd")) IRET(4);
 	else if (!strcmp(rop, "rol")) ROL();
 	else if (!strcmp(rop, "ror")) ROR();
 	else if (!strcmp(rop, "rcl")) RCL();
@@ -6389,8 +6391,6 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 	vapiTraceInit(&trace);
 #endif
 
-	_cb("aasm32");
-
 	memcpy(astmt, stmt, MAXLINE);
 	lcase(astmt);
 	rstmt = astmt;
@@ -6438,11 +6438,7 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 	exec();
 	len = 0;
 
-	if (flagerror) {
-		vapiPrint("aasm32: bad instruction '%s'\n", stmt);
-		vapiPrint("aasm32: [%s] [%s/%d] [%s/%d] [%s/%d]\n",
-			rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
-	} else {
+	if (!flagerror) {
 		if (prefix_repz)  {d_nubit8(rcode + len) = 0xf3;len++;}
 		if (prefix_repnz) {d_nubit8(rcode + len) = 0xf2;len++;}
 		if (prefix_lock)  {d_nubit8(rcode + len) = 0xf0;len++;}
@@ -6456,9 +6452,13 @@ t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
 		if (prefix_oprsize || prefix_oprsizeg) {d_nubit8(rcode + len) = 0x66;len++;}	
 		memcpy((void *)(rcode + len), (void *)acode, iop);
 		len += iop;
+	} else {
+#if AASM_TRACE == 1
+		vapiPrint("aasm32: bad instruction '%s'\n", stmt);
+		vapiPrint("aasm32: [%s] [%s/%d] [%s/%d] [%s/%d]\n",
+			rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
+#endif
 	}
-
-	_ce;
 
 #if AASM_TRACE == 1
 	if (trace.cid) {

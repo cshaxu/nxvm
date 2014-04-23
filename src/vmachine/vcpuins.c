@@ -1332,14 +1332,12 @@ static void _kdf_skip(t_nubit8 byte)
 	_chk(vcpu.eip += byte);
 	_ce;
 }
-static t_nubit64 _kdf_code(t_nubit8 byte)
+static void _kdf_code(t_vaddrcc rdata, t_nubit8 byte)
 {
-	t_nubit64 result;
 	_cb("_kdf_code");
-	_chr(_s_read_cs(vcpu.eip, GetRef(result), byte));
-	_chr(_kdf_skip(byte));
+	_chk(_s_read_cs(vcpu.eip, rdata, byte));
+	_chk(_kdf_skip(byte));
 	_ce;
-	return result;
 }
 static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 {
@@ -1349,7 +1347,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 	t_nubit32 sibindex;
 	t_nubit8 modrm, sib;
 	_cb("_kdf_modrm");
-	_chk(modrm = GetMax8(_kdf_code(1)));
+	_chk(_kdf_code(GetRef(modrm), 1));
 	vcpuins.flagmem = 1;
 	vcpuins.mrm.rsreg = NULL;
 	vcpuins.mrm.offset = 0;
@@ -1367,14 +1365,14 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 			case 4: vcpuins.mrm.offset = GetMax16(vcpu.si); vcpuins.mrm.rsreg = vcpuins.roverds;break;
 			case 5: vcpuins.mrm.offset = GetMax16(vcpu.di); vcpuins.mrm.rsreg = vcpuins.roverds;break;
 			case 6: _bb("ModRM_RM(6)");
-				_chk(disp16 = GetMax16(_kdf_code(2)));
+				_chk(_kdf_code(GetRef(disp16), 2));
 				vcpuins.mrm.offset = GetMax16(disp16); vcpuins.mrm.rsreg = vcpuins.roverds;
 				_be;break;
 			case 7: vcpuins.mrm.offset = GetMax16(vcpu.bx); vcpuins.mrm.rsreg = vcpuins.roverds;break;
 			default:_impossible_;break;}
 			_be;break;
 		case 1: _bb("ModRM_MOD(1)");
-			_chk(disp8 = (t_nsbit8)GetMax8(_kdf_code(1)));
+			_chk(_kdf_code(GetRef(disp8), 1));
 			switch (_GetModRM_RM(modrm)) {
 			case 0: vcpuins.mrm.offset = GetMax16(vcpu.bx + vcpu.si + disp8); vcpuins.mrm.rsreg = vcpuins.roverds;break;
 			case 1: vcpuins.mrm.offset = GetMax16(vcpu.bx + vcpu.di + disp8); vcpuins.mrm.rsreg = vcpuins.roverds;break;
@@ -1387,7 +1385,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 			default:_impossible_;break;}
 			_be;break;
 		case 2: _bb("ModRM_MOD(2)");
-			_chk(disp16 = GetMax16(_kdf_code(2)));
+			_chk(_kdf_code(GetRef(disp16), 2));
 			switch (_GetModRM_RM(modrm)) {
 			case 0: vcpuins.mrm.offset = GetMax16(vcpu.bx + vcpu.si + disp16); vcpuins.mrm.rsreg = vcpuins.roverds;break;
 			case 1: vcpuins.mrm.offset = GetMax16(vcpu.bx + vcpu.di + disp16); vcpuins.mrm.rsreg = vcpuins.roverds;break;
@@ -1409,7 +1407,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 	case 4: _bb("AddressSize(4)");
 		if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4) {
 			_bb("ModRM_MOD(!3),ModRM_RM(4)");
-			_chk(sib = GetMax8(_kdf_code(1)));
+			_chk(_kdf_code(GetRef(sib), 1));
 			switch (_GetSIB_Index(sib)) {
 			case 0: sibindex = vcpu.eax;   break;
 			case 1: sibindex = vcpu.ecx;   break;
@@ -1440,7 +1438,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 				case 3: vcpuins.mrm.offset = vcpu.ebx + sibindex; vcpuins.mrm.rsreg = vcpuins.roverds;break;
 				case 4: vcpuins.mrm.offset = vcpu.esp + sibindex; vcpuins.mrm.rsreg = vcpuins.roverss;break;
 				case 5: _bb("SIB_Base(5)");
-					_chk(disp32 = GetMax32(_kdf_code(4)));
+					_chk(_kdf_code(GetRef(disp32), 4));
 					vcpuins.mrm.offset = disp32 + sibindex; vcpuins.mrm.rsreg = vcpuins.roverds; 
 					_be;break;
 				case 6: vcpuins.mrm.offset = vcpu.esi + sibindex; vcpuins.mrm.rsreg = vcpuins.roverds;break;
@@ -1448,7 +1446,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 				default:_impossible_;break;}
 				_be;break;
 			case 5: _bb("ModRM_RM(5)");
-				_chk(disp32 = GetMax32(_kdf_code(4)));
+				_chk(_kdf_code(GetRef(disp32), 4));
 				vcpuins.mrm.offset = disp32; vcpuins.mrm.rsreg = vcpuins.roverds;
 				_be;break;
 			case 6: vcpuins.mrm.offset = vcpu.esi; vcpuins.mrm.rsreg = vcpuins.roverds;break;
@@ -1456,7 +1454,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 			default:_impossible_;break;}
 			_be;break;
 		case 1: _bb("ModRM_MOD(1)");
-			_chk(disp8 = (t_nsbit8)GetMax8(_kdf_code(1)));
+			_chk(_kdf_code(GetRef(disp8), 1));
 			switch (_GetModRM_RM(modrm)) {
 			case 0: vcpuins.mrm.offset = vcpu.eax + disp8; vcpuins.mrm.rsreg = vcpuins.roverds;break;
 			case 1: vcpuins.mrm.offset = vcpu.ecx + disp8; vcpuins.mrm.rsreg = vcpuins.roverds;break;
@@ -1480,7 +1478,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 			default:_impossible_;break;}
 			_be;break;
 		case 2: _bb("ModRM_MOD(2)");
-			_chk(disp32 = GetMax32(_kdf_code(4)));
+			_chk(_kdf_code(GetRef(disp32), 4));
 			switch (_GetModRM_RM(modrm)) {
 			case 0: vcpuins.mrm.offset = vcpu.eax + disp32; vcpuins.mrm.rsreg = vcpuins.roverds;break;
 			case 1: vcpuins.mrm.offset = vcpu.ecx + disp32; vcpuins.mrm.rsreg = vcpuins.roverds;break;
@@ -1616,20 +1614,17 @@ static void _d_skip(t_nubit8 byte)
 	_chk(_kdf_skip(byte));
 	_ce;
 }
-static t_nubit64 _d_code(t_nubit8 byte)
+static void _d_code(t_vaddrcc rdata, t_nubit8 byte)
 {
-	t_nubit64 result;
 	_cb("_d_code");
-	_chr(result = _kdf_code(byte));
+	_chk(_kdf_code(rdata, byte));
 	_ce;
-	return result;
 }
 static void _d_imm(t_nubit8 byte)
 {
-	t_nubit8 i;
 	_cb("_d_imm");
-	_chk(vcpuins.cimm = _d_code(byte));
-	for (i = byte;i < 8;++i) d_nubit8(GetRef(vcpuins.cimm) + i) = 0x00;
+	vcpuins.cimm = 0;
+	_chk(_d_code(GetRef(vcpuins.cimm), byte));
 	_ce;
 }
 static void _d_moffs(t_nubit8 byte)
@@ -1637,12 +1632,13 @@ static void _d_moffs(t_nubit8 byte)
 	_cb("_d_moffs");
 	vcpuins.flagmem = 1;
 	vcpuins.mrm.rsreg = vcpuins.roverds;
+	vcpuins.mrm.offset = 0;
 	switch (_GetAddressSize) {
 	case 2: _bb("AddressSize(2)");
-		_chk(vcpuins.mrm.offset = GetMax16(_d_code(2)));
+		_chk(_d_code(GetRef(vcpuins.mrm.offset), 2));
 		_be;break;
 	case 4: _bb("AddressSize(4)");
-		_chk(vcpuins.mrm.offset = GetMax32(_d_code(4)));
+		_chk(_d_code(GetRef(vcpuins.mrm.offset), 4));
 		_be;break;
 	default:_impossible_;break;}
 	_ce;
@@ -1690,18 +1686,18 @@ static void _d_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 
 /* execution control unit: _e_ */
 /* kernel execution control */
-static void _kec_push(t_nubit64 data, t_nubit8 byte)
+static void _kec_push(t_vaddrcc rdata, t_nubit8 byte)
 {
 	_cb("_kec_push");
 	_chk(_s_test_ss_push(byte));
 	switch (_GetStackSize) {
 	case 2: _bb("StackSize(2)");
 		vcpu.sp -= byte;
-		_chk(_s_write_ss(vcpu.sp, GetRef(data), byte));
+		_chk(_s_write_ss(vcpu.sp, rdata, byte));
 		_be;break;
 	case 4: _bb("StackSize(4)");
 		vcpu.esp -= byte;
-		_chk(_s_write_ss(vcpu.esp, GetRef(data), byte));
+		_chk(_s_write_ss(vcpu.esp, rdata, byte));
 		_be;break;
 	default:_impossible_;break;}
 	_ce;
@@ -1725,6 +1721,7 @@ static t_nubit64 _kec_pop(t_nubit8 byte)
 }
 static void _kec_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
+	t_nubit32 oldcs = vcpu.cs.selector;
 	t_cpu_sreg ccs = vcpu.cs;
 	_cb("_kec_call_far");
 	switch (byte) {
@@ -1733,16 +1730,16 @@ static void _kec_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 		neweip = GetMax16(neweip);
 		_chk(_ksa_load_sreg(&ccs, newcs));
 		_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
-		_chk(_kec_push(vcpu.cs.selector, 2));
-		_chk(_kec_push(vcpu.ip, 2));
+		_chk(_kec_push(GetRef(oldcs), 2));
+		_chk(_kec_push(GetRef(vcpu.ip), 2));
 		_be;break;
 	case 4: _bb("byte(4)");
 		_chk(_s_test_ss_push(8));
 		neweip = GetMax32(neweip);
 		_chk(_ksa_load_sreg(&ccs, newcs));
 		_chk(_kma_test_logical(&ccs, neweip, 0x01, 0, 0x00, 1));
-		_chk(_kec_push(vcpu.cs.selector, 4));
-		_chk(_kec_push(vcpu.eip, 4));
+		_chk(_kec_push(GetRef(oldcs), 4));
+		_chk(_kec_push(GetRef(vcpu.eip), 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(byte));
@@ -1759,12 +1756,12 @@ static void _kec_call_near(t_nubit32 neweip, t_nubit8 byte)
 	case 2: _bb("byte(2)");
 		neweip = GetMax16(neweip);
 		_chk(_s_test_cs(neweip, 0x01));
-		_chk(_kec_push(vcpu.ip, 2));
+		_chk(_kec_push(GetRef(vcpu.ip), 2));
 		_be;break;
 	case 4: _bb("byte(4)");
 		neweip = GetMax32(neweip);
 		_chk(_s_test_cs(neweip, 0x01));
-		_chk(_kec_push(vcpu.eip, 4));
+		_chk(_kec_push(GetRef(vcpu.eip), 4));
 		_be;break;
 	default: _bb("bit");
 		_chk(_SetExcept_CE(byte));
@@ -1933,6 +1930,7 @@ static void _ser_int_real(t_nubit8 intid, t_nubit8 byte)
 {
 	t_nubit16 cip;
 	t_nubit32 vector;
+	t_nubit32 oldcs = vcpu.cs.selector;
 	_cb("_ser_int_real");
 	if (_IsProtected) _impossible_;
 	if (GetMax16(intid * 4 + 3) > GetMax16(vcpu.idtr.limit)) {
@@ -1943,19 +1941,19 @@ static void _ser_int_real(t_nubit8 intid, t_nubit8 byte)
 	switch (byte) {
 	case 2: _bb("byte(2)");
 		_chk(_s_test_ss_push(6));
-		_chk(_kec_push(vcpu.flags, 2));
+		_chk(_kec_push(GetRef(vcpu.flags), 2));
 		_ClrEFLAGS_IF;
 		_ClrEFLAGS_TF;
-		_chk(_kec_push(vcpu.cs.selector, 2));
-		_chk(_kec_push(vcpu.ip, 2));
+		_chk(_kec_push(GetRef(oldcs), 2));
+		_chk(_kec_push(GetRef(vcpu.ip), 2));
 		_be;break;
 	case 4: _bb("byte(4)");
 		_chk(_s_test_ss_push(12));
-		_chk(_kec_push(vcpu.eflags, 4));
+		_chk(_kec_push(GetRef(vcpu.eflags), 4));
 		_ClrEFLAGS_IF;
 		_ClrEFLAGS_TF;
-		_chk(_kec_push(vcpu.cs.selector, 4));
-		_chk(_kec_push(vcpu.eip, 4));
+		_chk(_kec_push(GetRef(oldcs), 4));
+		_chk(_kec_push(GetRef(vcpu.eip), 4));
 		_be;break;
 	default: _bb("byte");
 		_chk(_SetExcept_CE(byte));
@@ -1972,6 +1970,7 @@ _______todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 {
 	t_nubit16 oldss;
 	t_nubit32 oldeflags, oldesp, newesp = 0;
+	t_nubit32 xs_sel;
 	t_nubit16 newcs, newss = 0;
 	t_nubit64 cs_desc, ss_desc, gate_desc;
 	_cb("_ser_int_protected");
@@ -2125,15 +2124,15 @@ _______todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext)
 				vcpu.esp = newesp;
 				if (_IsDescSys32(gate_desc)) {
 					_bb("DescSys32(gate)");
-					_chk(_kec_push(vcpu.gs.selector, 4));
-					_chk(_kec_push(vcpu.fs.selector, 4));
-					_chk(_kec_push(vcpu.ds.selector, 4));
-					_chk(_kec_push(vcpu.es.selector, 4));
-					_chk(_kec_push(oldss, 4));
-					_chk(_kec_push(oldesp, 4));
-					_chk(_kec_push(oldeflags, 4));
-					_chk(_kec_push(vcpu.cs.selector, 4));
-					_chk(_kec_push(vcpu.eip, 4));
+					xs_sel = vcpu.gs.selector;_chk(_kec_push(GetRef(xs_sel), 4));
+					xs_sel = vcpu.fs.selector;_chk(_kec_push(GetRef(xs_sel), 4));
+					xs_sel = vcpu.ds.selector;_chk(_kec_push(GetRef(xs_sel), 4));
+					xs_sel = vcpu.es.selector;_chk(_kec_push(GetRef(xs_sel), 4));
+					xs_sel = oldss;_chk(_kec_push(GetRef(xs_sel), 4));
+					_chk(_kec_push(GetRef(oldesp), 4));
+					_chk(_kec_push(GetRef(oldeflags), 4));
+					xs_sel = vcpu.cs.selector;_chk(_kec_push(GetRef(xs_sel), 4));
+					_chk(_kec_push(GetRef(vcpu.eip), 4));
 					_chk(_s_load_gs(0x0000));
 					_chk(_s_load_fs(0x0000));
 					_chk(_s_load_ds(0x0000));
@@ -2267,7 +2266,7 @@ _______todo _ser_jmp_far_tss(t_nubit16 newcs)
 static void _e_push(t_nubit64 data, t_nubit8 byte)
 {
 	_cb("_e_push");
-	_chk(_kec_push(data, byte));
+	_chk(_kec_push(GetRef(data), byte));
 	_ce;
 }
 static t_nubit64 _e_pop(t_nubit8 byte)
@@ -2278,7 +2277,7 @@ static t_nubit64 _e_pop(t_nubit8 byte)
 	_ce;
 	return result;
 }
-_______todo _e_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
+static void _e_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 {
 	t_nubit64 descriptor;
 	_cb("_e_call_far");
@@ -2289,7 +2288,7 @@ _______todo _e_call_far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte)
 	} else {
 		_bb("Protected");
 		if (_IsSelectorNull(newcs)) {
-			_bb("selector(null)");
+			_bb("newcs(null)");
 			_chk(_SetExcept_GP(0));
 			_be;
 		}
@@ -2913,8 +2912,7 @@ static void _kas_move_index(t_nubit8 byte, t_bool flagsi, t_bool flagdi)
 	_ce;
 }
 
-#define _kac_arith1(funflag, \
-	type8, expr8, type16, expr16, type32, expr32) \
+#define _kac_arith1(funflag, type8, expr8, type16, expr16, type32, expr32) \
 do { \
 	switch (bit) { \
 	case 8: \
@@ -2941,7 +2939,6 @@ do { \
 	} \
 	_chk(_kaf_set_flags(funflag)); \
 } while (0)
-
 #define _kac_arith2(funflag, type8, expr8, type12, expr12, type16, expr16, \
 	type20, expr20, type32, expr32) \
 do { \
@@ -2987,7 +2984,6 @@ do { \
 	} \
 	_chk(_kaf_set_flags(funflag)); \
 } while (0)
-
 static void _a_add(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit)
 {
 	_cb("_a_add");
@@ -4224,7 +4220,6 @@ static void _a_scas(t_nubit8 bit)
 }
 
 #define _adv _chk(_d_skip(1))
-
 static void UndefinedOpcode()
 {
 	_cb("UndefinedOpcode");
@@ -8615,7 +8610,7 @@ static void INTO()
 	}
 	_ce;
 }
-_______todo IRET()
+static void IRET()
 {
 	_cb("IRET");
 	i386(0xcf) {

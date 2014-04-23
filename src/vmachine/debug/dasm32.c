@@ -144,16 +144,14 @@ static void _kdf_skip(t_nubit8 byte)
 	_chk(iop += byte);
 	_ce;
 }
-static t_nubit64 _kdf_code(t_nubit8 byte)
+static void _kdf_code(t_vaddrcc rdata, t_nubit8 byte)
 {
 	t_nubit8 i;
-	t_nubit64 result = 0;
 	_cb("_kdf_code");
 	for (i = 0;i < byte;++i)
-		d_nubit8(GetRef(result) + i) = d_nubit8(drcode + iop + i);
-	_chr(_kdf_skip(byte));
+		d_nubit8(rdata + i) = d_nubit8(drcode + iop + i);
+	_chk(_kdf_skip(byte));
 	_ce;
-	return result;
 }
 static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 {
@@ -165,7 +163,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 	t_nsbit8 sign;
 	t_nubit8 disp8u;
 	_cb("_kdf_modrm");
-	_chk(modrm = (t_nubit8)_kdf_code(1));
+	_chk(_kdf_code(GetRef(modrm), 1));
 	flagmem = 1;
 	drm[0] = dr[0] = dsibindex[0] = 0;
 	switch (rmbyte) {
@@ -185,7 +183,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 			case 4: SPRINTF(drm, "%s:[SI]",    doverds);break;
 			case 5: SPRINTF(drm, "%s:[DI]",    doverds);break;
 			case 6: _bb("ModRM_RM(6)");
-				_chk(disp16 = (t_nubit16)_kdf_code(2));
+				_chk(_kdf_code(GetRef(disp16), 2));
 				SPRINTF(drm, "%s:[%04X]", doverds, disp16);
 				_be;break;
 			case 7: SPRINTF(drm, "%s:[BX]", doverds);break;
@@ -193,7 +191,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 			
 			_be;break;
 		case 1: _bb("ModRM_MOD(1)");
-			_chk(disp8 = (t_nsbit8)_kdf_code(1));
+			_chk(_kdf_code(GetRef(disp8), 1));
 			sign = (disp8 & 0x80) ? '-' : '+';
 			disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
 			switch (_GetModRM_RM(modrm)) {
@@ -208,7 +206,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 			default:_impossible_;break;}
 			_be;break;
 		case 2: _bb("ModRM_MOD(2)");
-			_chk(disp16 = (t_nubit16)_kdf_code(2));
+			_chk(_kdf_code(GetRef(disp16), 2));
 			switch (_GetModRM_RM(modrm)) {
 			case 0: SPRINTF(drm, "%s:[BX+SI+%04X]", doverds, disp16);break;
 			case 1: SPRINTF(drm, "%s:[BX+DI+%04X]", doverds, disp16);break;
@@ -230,7 +228,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 	case 4: _bb("AddressSize(4)");
 		if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4) {
 			_bb("ModRM_MOD(!3),ModRM_RM(4)");
-			_chk(sib = (t_nubit8)_kdf_code(1));
+			_chk(_kdf_code(GetRef(sib), 1));
 			switch (_GetSIB_Index(sib)) {
 			case 0: SPRINTF(dsibindex, "+EAX*%02X", (1 << _GetSIB_SS(sib)));break;
 			case 1: SPRINTF(dsibindex, "+ECX*%02X", (1 << _GetSIB_SS(sib)));break;
@@ -259,7 +257,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 				case 3: SPRINTF(drm, "%s:[EBX%s]", doverds, dsibindex);break;
 				case 4: SPRINTF(drm, "%s:[ESP%s]", doverss, dsibindex);break;
 				case 5: _bb("SIB_Base(5)");
-					_chk(disp32 = (t_nubit32)_kdf_code(4));
+					_chk(_kdf_code(GetRef(disp32), 4));
 					SPRINTF(drm, "%s:[%08X%s]", doverds, disp32, dsibindex);
 					_be;break;
 				case 6: SPRINTF(drm, "%s:[ESI%s]", doverds, dsibindex);break;
@@ -267,7 +265,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 				default:_impossible_;break;}
 				_be;break;
 			case 5: _bb("ModRM_RM(5)");
-				_chk(disp32 = (t_nubit32)_kdf_code(4));
+				_chk(_kdf_code(GetRef(disp32), 4));
 				SPRINTF(drm, "%s:[%08X]", doverds, disp32);
 				_be;break;
 			case 6: SPRINTF(drm, "%s:[ESI]", doverds);break;
@@ -275,7 +273,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 			default:_impossible_;break;}
 			_be;break;
 		case 1: _bb("ModRM_MOD(1)");
-			_chk(disp8 = (t_nsbit8)_kdf_code(1));
+			_chk(_kdf_code(GetRef(disp8), 1));
 			sign = (disp8 & 0x80) ? '-' : '+';
 			disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
 			switch (_GetModRM_RM(modrm)) {
@@ -301,7 +299,7 @@ static void _kdf_modrm(t_nubit8 regbyte, t_nubit8 rmbyte)
 			default:_impossible_;break;}
 			_be;break;
 		case 2: _bb("ModRM_MOD(2)");
-			_chk(disp32 = (t_nubit32)_kdf_code(4));
+			_chk(_kdf_code(GetRef(disp32), 4));
 			switch (_GetModRM_RM(modrm)) {
 			case 0: SPRINTF(drm, "%s:[EAX+%08X]", doverds, disp32);break;
 			case 1: SPRINTF(drm, "%s:[ECX+%08X]", doverds, disp32);break;
@@ -434,32 +432,31 @@ static void _d_skip(t_nubit8 byte)
 	_chk(_kdf_skip(byte));
 	_ce;
 }
-static t_nubit64 _d_code(t_nubit8 byte)
+static void _d_code(t_vaddrcc rdata, t_nubit8 byte)
 {
-	t_nubit64 result;
 	_cb("_d_code");
-	_chr(result = _kdf_code(byte));
+	_chk(_kdf_code(rdata, byte));
 	_ce;
-	return result;
 }
 static void _d_imm(t_nubit8 byte)
 {
 	_cb("_d_imm");
-	_chk(cimm = _d_code(byte));
+	cimm = 0;
+	_chk(_d_code(GetRef(cimm), byte));
 	_ce;
 }
 static void _d_moffs(t_nubit8 byte)
 {
-	t_nubit32 offset;
+	t_nubit32 offset = 0;
 	_cb("_d_moffs");
 	flagmem = 1;
 	switch (_GetAddressSize) {
 	case 2: _bb("AddressSize(2)");
-		_chk(offset = GetMax16(_d_code(2)));
+		_chk(_d_code(GetRef(offset), 2));
 		SPRINTF(drm, "%s:[%04X]", doverds, GetMax16(offset));
 		_be;break;
 	case 4: _bb("AddressSize(4)");
-		_chk(offset = GetMax32(_d_code(4)));
+		_chk(_d_code(GetRef(offset), 4));
 		SPRINTF(drm, "%s:[%08X]", doverds, GetMax32(offset));
 		_be;break;
 	default:_impossible_;break;}
@@ -666,7 +663,7 @@ static void INS_0F()
 	_cb("INS_0F");
 	_adv;
 	oldiop = iop;
-	_chk(opcode = GetMax8(_d_code(1)));
+	_chk(_d_code(GetRef(opcode), 1));
 	iop = oldiop;
 	_chk(ExecFun(dtable_0f[opcode]));
 	_ce;
@@ -2883,7 +2880,10 @@ static void IRET()
 {
 	_cb("IRET");
 	_adv;
-	SPRINTF(dop, "IRET");
+	switch (_GetOperandSize) {
+	case 2: SPRINTF(dop, "IRET");break;
+	case 4: SPRINTF(dop, "IRETD");break;
+	default:_impossible_;break;}
 	_ce;
 }
 static void INS_D0()
@@ -3493,7 +3493,7 @@ static void INS_FF()
 	_cb("INS_FF");
 	_adv;
 	oldiop = iop;
-	_chk(modrm = GetMax8(_d_code(1)));
+	_chk(_d_code(GetRef(modrm), 1));
 	iop = oldiop;
 	switch (_GetModRM_REG(modrm)) {
 	case 0: /* INC_RM32 */
@@ -3621,7 +3621,7 @@ static void INS_0F_00()
 	_cb("INS_0F_00");
 	_adv;
 	oldiop = iop;
-	_chk(modrm = GetMax8(_d_code(1)));
+	_chk(_d_code(GetRef(modrm), 1));
 	iop = oldiop;
 	switch (_GetModRM_REG(modrm)) {
 	case 0: /* SLDT_RM16 */
@@ -3671,7 +3671,7 @@ static void INS_0F_01()
 	_cb("INS_0F_01");
 	_adv;
 	oldiop = iop;
-	_chk(modrm = GetMax8(_d_code(1)));
+	_chk(_d_code(GetRef(modrm), 1));
 	iop = oldiop;
 	switch (_GetModRM_REG(modrm)) {
 	case 0: /* SGDT_M32_16 */
@@ -4345,7 +4345,7 @@ static void INS_0F_BA()
 	_cb("INS_0F_BA");
 	_adv;
 	oldiop = iop;
-	_chk(modrm = GetMax8(_d_code(1)));
+	_chk(_d_code(GetRef(modrm), 1));
 	iop = oldiop;
 	_chk(_d_modrm(0, _GetOperandSize));
 	switch (cr) {
@@ -4984,7 +4984,7 @@ t_nubit8 dasm32(t_strptr stmt, t_vaddrcc rcode)
 		dopr[0] = 0;
 		dstmt[0] = 0;
 		oldiop = iop;
-		_chb(opcode = GetMax8(_d_code(1)));
+		_chb(_d_code(GetRef(opcode), 1));
 		iop = oldiop;
 		_chb(ExecFun(dtable[opcode]));
 		if (strlen(dop)) {
