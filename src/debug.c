@@ -347,12 +347,12 @@ static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 			//RefreshVideoRAM();
 			//ExecInt();
 		}
+		cpu.ip = ptr2;
 	} else fprintf(stdout,"\n");
 	if(cputerm) fprintf(stdout,"Program terminated\n");
 	else {
 		rprintregs();
 	}
-	cpu.ip = ptr2;
 	return;
 }
 static void g()

@@ -4,7 +4,7 @@
 	Type of systems: NONE, MSDOS, WIN32CON, WIN32APP
 */
 
-#define PRODUCT "Neko's Virtual Machine [0x002f]\n\
+#define PRODUCT "Neko's Virtual Machine [0x0031]\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"
 
 /*
