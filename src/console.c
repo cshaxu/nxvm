@@ -95,7 +95,7 @@ static void Help()
 			break;
 		} else if (!strcmp(arg[1], "nxvm")) {
 			vapiPrint("Change virtual machine status\n");
-			vapiPrint("\nNXVM [start | reset | stop | continue]\n");
+			vapiPrint("\nNXVM [start | reset | stop | resume]\n");
 			vapiPrint("  start:    start virtual machine\n");
 			vapiPrint("  reset:    reset all device and restart machine\n");
 			vapiPrint("  stop:     stop virtual machine\n");
