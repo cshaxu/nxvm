@@ -11,7 +11,6 @@ t_cpu vcpu;
 
 void vcpuRefresh()
 {
-
 	vcpuinsExecIns();
 	vcpuinsExecInt();
 }

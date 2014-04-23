@@ -49,6 +49,10 @@ t_apirecord vapirecord;
 ax=%x bx=%x cx=%x dx=%x sp=%x bp=%x si=%x di=%x ds=%x es=%x ss=%x \
 of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x stack=%x\n"
 
+void vapiRecordSetFile(const char *filename)
+{
+	strcpy(vapirecord.fname, filename);
+}
 void vapiRecordStart()
 {
 	if (!vapirecord.flag) return;
@@ -82,7 +86,7 @@ void vapiRecordEnd()
 
 void vapiTrace()
 {
-	vapiCallBackByTrace();
+	vapiCallBackTrace();
 }
 
 /* Floppy Disk */

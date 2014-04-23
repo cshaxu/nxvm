@@ -34,7 +34,6 @@ extern t_machine vmachine;
 
 void vmachineRefresh();
 void vmachineInit();
-void vmachineRunLoop();
 void vmachineFinal();
 
 #ifdef __cplusplus

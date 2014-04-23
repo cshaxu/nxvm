@@ -1,7 +1,7 @@
 /* This file is a part of NXVM project. */
 
-#ifndef NXVM_VAPI_H
-#define NXVM_VAPI_H
+#ifndef NXVM_W32ADISP_H
+#define NXVM_W32ADISP_H
 
 #ifdef __cplusplus
 extern "C" {

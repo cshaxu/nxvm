@@ -14,9 +14,6 @@ void vapiPrintAddr(unsigned short segment,unsigned short offset);
 
 #include "stdio.h"
 
-#undef  VLOG_DEBUG
-#define VLOG_COUNT_MAX 0xffff
-
 typedef struct {
 	char  flag;
 	int   count;
@@ -26,9 +23,11 @@ typedef struct {
 
 extern t_apirecord vapirecord;
 
+void vapiRecordSetFile(const char *filename);
 void vapiRecordStart();
 void vapiRecordWrite();
 void vapiRecordEnd();
+
 void vapiTrace();
 
 void vapiFloppyInsert(const char *fname);
@@ -39,6 +38,10 @@ void vapiDisplaySetScreen();
 void vapiDisplayPaint();
 void vapiStartDisplay();
 void vapiStartKernel();
+
+void vapiCallBackMachineTrace();
+void vapiCallBackMachineRunLoop();
+void vapiCallBackRtcUpdateTime();
 
 #ifdef __cplusplus
 }

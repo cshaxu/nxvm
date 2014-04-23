@@ -97,7 +97,7 @@ void qdrtcSetAlarmClock()
 	SetBit(vcpu.flags, VCPU_FLAG_CF);
 }
 
-void qdrtcUpdateTime()
+void vapiCallBackRtcUpdateTime()
 {
 	vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) += 1;
 	if (vramVarDWord(0x0000, QDRTC_VBIOS_ADDR_RTC_DAILY_COUNTER) >= 0x1800b2) {

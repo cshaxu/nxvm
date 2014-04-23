@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-void vapiCallBackByTrace();
 void console();
 
 #ifdef __cplusplus

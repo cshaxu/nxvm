@@ -13,8 +13,8 @@
 /* vga */
 void INT_10()
 {
-	t_nubit16 tmpCX = vcpu.cx;
-	switch (vcpu.ah) {
+	t_nubit16 tmpCX = _cx;
+	switch (_ah) {
 	case 0x00:
 		qdvgaSetDisplayMode();
 		break;
@@ -57,9 +57,9 @@ void INT_10()
 		//qdvgaGetPixel();
 		break;
 	case 0x0e:
-		vcpu.cx = 0x01;
+		_cx = 0x01;
 		qdvgaDisplayCharProp();
-		vcpu.cx = tmpCX;
+		_cx = tmpCX;
 		break;
 	case 0x0f:
 		qdvgaGetAdapterStatus();
@@ -70,17 +70,17 @@ void INT_10()
 		qdvgaGenerateChar();
 		break;
 	case 0x12:
-		if (vcpu.bl == 0x10)
+		if (_bl == 0x10)
 			qdvgaGetAdapterInfo();
 		break;
 	case 0x13:
 		qdvgaDisplayStr();
 		break;
 	case 0x1a:
-		if (vcpu.al == 0x00) {
-			vcpu.al = 0x1a;
-			vcpu.bh = 0x00;
-			vcpu.bl = 0x08;
+		if (_al == 0x00) {
+			_al = 0x1a;
+			_bh = 0x00;
+			_bl = 0x08;
 		}
 		break;
 	default:
@@ -90,14 +90,14 @@ void INT_10()
 }
 /* device test*/
 void INT_11()
-{vcpu.ax = 0x0061;}
+{_ax = 0x0061;}
 /* memory test*/
 void INT_12()
-{vcpu.ax = 0x027f;}
+{_ax = 0x027f;}
 /* fdd */
 void INT_13()
 {
-	switch (vcpu.ah) {
+	switch (_ah) {
 	case 0x00:
 		qdfddResetDrive();
 		break;
@@ -127,41 +127,41 @@ void INT_14()
 void INT_15()
 {
 	int MemorySize = 1;
-	switch (vcpu.ah)
+	switch (_ah)
 	{
 	case 0xc0:
-		vcpu.es = 0xf000;
-		vcpu.bx = 0xe6f5;
-		vcpu.ah = 0x00;
-		ClrBit(vcpu.flags, VCPU_FLAG_CF);
+		_es = 0xf000;
+		_bx = 0xe6f5;
+		_ah = 0x00;
+		ClrBit(_flags, VCPU_FLAG_CF);
 		break;
 	case 0x24:
-		if (vcpu.al == 0x03) {
-			/*ClrBit(vramVarWord(vcpu.ss, vcpu.sp + 4), VCPU_FLAG_CF);*/
+		if (_al == 0x03) {
+			/*ClrBit(vramVarWord(_ss, _sp + 4), VCPU_FLAG_CF);*/
 			// remember: all flags set in INT handler should be modified
-			ClrBit(vcpu.flags, VCPU_FLAG_CF);
-			vcpu.ah=0;
-			vcpu.bx=3;
+			ClrBit(_flags, VCPU_FLAG_CF);
+			_ah=0;
+			_bx=3;
 		}
 		break;
 	case 0x88:
-		ClrBit(vcpu.flags, VCPU_FLAG_CF);
-		/*ClrBit(vramVarWord(vcpu.ss, vcpu.sp + 4), VCPU_FLAG_CF);*/
+		ClrBit(_flags, VCPU_FLAG_CF);
+		/*ClrBit(vramVarWord(_ss, _sp + 4), VCPU_FLAG_CF);*/
 		if (MemorySize > 16)		
-			vcpu.ax = 0x3c00;					
+			_ax = 0x3c00;					
 		else		
-			vcpu.ax = MemorySize * 1024 - 256;
+			_ax = MemorySize * 1024 - 256;
 		break;
 	case 0xd8:
-		SetBit(vramVarWord(vcpu.ss, vcpu.sp + 4), VCPU_FLAG_CF);
-		vcpu.ah=0x86;
+		SetBit(vramVarWord(_ss, _sp + 4), VCPU_FLAG_CF);
+		_ah=0x86;
 		break;
 	}
 }
 /* keyb */
 void INT_16()
 {
-	switch (vcpu.ah) {
+	switch (_ah) {
 	case 0x00:
 	case 0x10:
 		qdkeybReadInput();
@@ -183,7 +183,7 @@ void INT_17()
 /* rtc */
 void INT_1A()
 {
-	switch(vcpu.ah) {
+	switch(_ah) {
 	case 0x00:
 		qdrtcGetTimeTickCount();
 		break;

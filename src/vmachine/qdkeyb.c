@@ -59,7 +59,7 @@ void qdkeybReadInput()
 {
 	if (bufIsEmpty) return;
 	vcpu.ax = bufPop();
-	//vpicSetIRQ(0x01);
+	vpicSetIRQ(0x01);
 }
 void qdkeybGetStatus()
 {

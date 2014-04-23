@@ -11,7 +11,19 @@
 
 t_machine vmachine;
 
-void vmachineRunLoop()
+void vapiCallBackMachineTrace()
+{
+//	debugPrintRegs();
+	//if (_cs == 0x94c6 && _ip == 0x0396) {
+	if (_cs == 0x000f && _ip == 0x41fe) {
+		vapiRecordSetFile("d:/nxvm.log");
+		vapirecord.flag = 0x01;
+		vapiRecordStart();
+	}
+	if (vapirecord.count > 0xfffff) vapirecord.flag = 0x00;
+}
+
+void vapiCallBackMachineRunLoop()
 {
 	if(vmachine.flaginit && !vmachine.flagrun) {
 		vapiRecordStart();

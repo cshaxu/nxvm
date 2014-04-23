@@ -3,6 +3,8 @@
 #include "../vmachine/vmachine.h"
 #include "../vmachine/qdrtc.h"
 
+#include "vapi.h"
+
 #include "w32adisp.h"
 #include "w32akeyb.h"
 #include "win32app.h"
@@ -39,7 +41,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 			w32adispPaint();
 			break;
 		case TIMER_RTC:
-			qdrtcUpdateTime();
+			vapiCallBackRtcUpdateTime();
 			break;
 		default: break;
 		}
@@ -70,7 +72,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
    }
    return 0;
 }
-static ATOM ThreadDisplayRegisterClass()
+static ATOM ThreadDisplayRegisterClass(HINSTANCE hInstance)
 {
 	WNDCLASSEX wcex;
 	wcex.cbSize = sizeof(WNDCLASSEX); 
@@ -81,7 +83,7 @@ static ATOM ThreadDisplayRegisterClass()
 	wcex.hInstance		= hInstance;
 	wcex.hIcon			= NULL;
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= (HBRUSH)(8);//(COLOR_WINDOW+1);
+	wcex.hbrBackground	= (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wcex.lpszMenuName	= NULL;
 	wcex.lpszClassName	= szWindowClass;
 	wcex.hIconSm		= NULL;
@@ -99,12 +101,14 @@ static BOOL ThreadDisplayInitInstance(HINSTANCE hInstance, int nCmdShow)
 	UpdateWindow(hWnd);
 	return TRUE;
 }
+
 static DWORD WINAPI ThreadDisplay(LPVOID lpParam)
 {
 	MSG msg;
 	hInstance = GetModuleHandle(NULL);
-	ThreadDisplayRegisterClass();
-	ThreadDisplayInitInstance(hInstance, 0);
+	ThreadDisplayRegisterClass(hInstance);
+	if (!ThreadDisplayInitInstance(hInstance, 0)) return FALSE;
+
 	w32adispInit();
 	while (vmachine.flagrun && GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg);
@@ -112,11 +116,12 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam)
 	}
 	w32adispFinal();
 	vmachine.flagrun = 0x00;
+
 	return 0;
 }
 static DWORD WINAPI ThreadKernel(LPVOID lpParam)
 {
-	vmachineRunLoop();
+	vapiCallBackMachineRunLoop();
 	return 0;
 }
 

@@ -253,14 +253,3 @@ void console()
 	}
 	if(vmachine.flaginit) vmachineFinal();
 }
-
-void vapiCallBackByTrace()
-{
-//	debugPrintRegs();
-	if (_cs == 0x94c6 && _ip == 0x0396) {
-		strcpy(vapirecord.fname, "d:/nxvm.log");
-		vapirecord.flag = 0x01;
-		vapiRecordStart();
-	}
-	if (vapirecord.count > 0xfffff) vapirecord.flag = 0x00;
-}
