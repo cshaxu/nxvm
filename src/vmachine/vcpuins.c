@@ -6,9 +6,10 @@
 #include "vram.h"
 #include "vcpuins.h"
 #include "vpic.h"
-#include "../system/vapi.h"
 
 #ifdef VCPUINS_DEBUG
+#include "../system/vapi.h"
+#include "qdbios.h"
 /*
  * TODO: INT_I8() is modified for the INT test. Please correct it finally!
  * TODO: Need to modify the INT's! All INTs should call INT(t_nubit8 intid);
@@ -60,11 +61,11 @@ static enum {
 	//OR8,OR16,
 	ADC8,ADC16,
 	SBB8,SBB16,
-	//AND8,AND16,
+	/*AND8,AND16,*/
 	SUB8,SUB16,
-	//XOR8,XOR16,
+	/*XOR8,XOR16,*/
 	CMP8,CMP16
-	//TEST8,TEST16
+	/*TEST8,TEST16*/
 } flginstype;
 
 t_faddrcc vcpuinsInPort[0x10000];	
@@ -78,7 +79,7 @@ static enum {RT_NONE,RT_REPZ,RT_REPZNZ} reptype;
 static void CaseError(const char *str)
 {
 	vapiPrint("The NXVM CPU has encountered an internal case error: %s.\n",str);
-	vcpu.term = 1;
+	vcpu.flagterm = 1;
 }
 
 static void CalcCF()
@@ -173,7 +174,7 @@ static void SetFlags(t_nubit16 flags)
 }
 static void GetMem()
 {
-	// returns rm
+	/* returns rm */
 	rm = vramGetRealAddress(insDS,vramGetWord(vcpu.cs,vcpu.ip));
 	vcpu.ip += 2;
 }
@@ -337,6 +338,7 @@ static void GetModRegRMEA()
 	default:CaseError("GetModRegRMEA::REG");break;}
 }
 
+static void INT(t_nubit8 intid);
 static void ADD(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
@@ -1166,7 +1168,7 @@ static void DIV(void *src, t_nubit8 len)
 	switch(len) {
 	case 8:
 		if(U_SRC_8 == 0) {
-			vcpu.itnlint = 0;
+			INT(0x00);
 		} else {
 			vcpu.al = (t_nubit8)(tempAX / U_SRC_8);
 			vcpu.ah = (t_nubit8)(tempAX % U_SRC_8);
@@ -1174,7 +1176,7 @@ static void DIV(void *src, t_nubit8 len)
 		break;
 	case 16:
 		if(U_SRC_16 == 0) {
-			vcpu.itnlint = 0;
+			INT(0x00);
 		} else {
 			vcpu.ax = (t_nubit16)(tempDXAX / U_SRC_16);
 			vcpu.dx = (t_nubit16)(tempDXAX % U_SRC_16);
@@ -1189,7 +1191,7 @@ static void IDIV(void *src, t_nubit8 len)
 	switch(len) {
 	case 8:
 		if(U_SRC_8 == 0) {
-			vcpu.itnlint = 0;
+			INT(0x00);
 		} else {
 			vcpu.al = (t_nubit8)(tempAX / S_SRC_8);
 			vcpu.ah = (t_nubit8)(tempAX % S_SRC_8);
@@ -1197,7 +1199,7 @@ static void IDIV(void *src, t_nubit8 len)
 		break;
 	case 16:
 		if(U_SRC_16 == 0) {
-			vcpu.itnlint = 0;
+			INT(0x00);
 		} else {
 			vcpu.ax = (t_nubit16)(tempDXAX / S_SRC_16);
 			vcpu.dx = (t_nubit16)(tempDXAX % S_SRC_16);
@@ -1207,6 +1209,9 @@ static void IDIV(void *src, t_nubit8 len)
 }
 static void INT(t_nubit8 intid)
 {
+#ifdef VCPUINS_DEBUG
+	if (qdbiosExecInt(intid)) return;
+#endif
 	PUSH((void *)&vcpu.flags,16);
 	SetFlag((VCPU_FLAG_IF|VCPU_FLAG_TF|VCPU_FLAG_AF),0);
 	PUSH((void *)&vcpu.cs,16);
@@ -1217,24 +1222,22 @@ static void INT(t_nubit8 intid)
 
 void OpError()
 {
-#ifdef VCPU_DEBUG
 	vapiPrint("The NXVM CPU has encountered an illegal instruction.\nCS:");
 	vapiPrintWord(vcpu.cs);
 	vapiPrint(" IP:");
-	apiPrintWord(vcpu.ip);
+	vapiPrintWord(vcpu.ip);
 	vapiPrint(" OP:");
 	vapiPrintByte(vramGetByte(vcpu.cs,vcpu.ip+0));
 	vapiPrint(" ");
-	apiPrintByte(vramGetByte(vcpu.cs,vcpu.ip+1));
+	vapiPrintByte(vramGetByte(vcpu.cs,vcpu.ip+1));
 	vapiPrint(" ");
-	apiPrintByte(vramGetByte(vcpu.cs,vcpu.ip+2));
+	vapiPrintByte(vramGetByte(vcpu.cs,vcpu.ip+2));
 	vapiPrint(" ");
-	apiPrintByte(vramGetByte(vcpu.cs,vcpu.ip+3));
+	vapiPrintByte(vramGetByte(vcpu.cs,vcpu.ip+3));
 	vapiPrint(" ");
-	apiPrintByte(vramGetByte(vcpu.cs,vcpu.ip+4));
+	vapiPrintByte(vramGetByte(vcpu.cs,vcpu.ip+4));
 	vapiPrint("\n");
-#endif
-	vcpu.term = 1;
+	vcpu.flagterm = 0x01;
 }
 void IO_NOP()
 {
@@ -2649,20 +2652,20 @@ void RETF()
 void INT3()
 {
 	vcpu.ip++;
-	vcpu.itnlint = 3;
+	INT(0x03);
 	//apiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INT3\n");
 }
 void INT_I8()
 {
 	vcpu.ip++;
 	GetImm(8);
-	vcpu.itnlint = *(t_nubit8 *)imm;
+	INT(*(t_nubit8 *)imm);
 	//apiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INT_I8\n");
 }
 void INTO()
 {
 	vcpu.ip++;
-	if(GetFlag(VCPU_FLAG_OF)) vcpu.itnlint = 4;
+	if(GetFlag(VCPU_FLAG_OF)) INT(0x04);
 	//apiPrintAddr(vcpu.cs,vcpu.ip);vapiPrint("  INTO\n");
 }
 void IRET()
@@ -2742,7 +2745,7 @@ void AAM()
 	vcpu.ip++;
 	GetImm(8);
 	base = *(t_nubit8 *)imm;
-	if(base == 0) vcpu.itnlint = 0;
+	if(base == 0) INT(0x00);
 	else {
 		tempAL = vcpu.al;
 		vcpu.ah = tempAL/base;
@@ -2758,7 +2761,7 @@ void AAD()
 	vcpu.ip++;
 	GetImm(8);
 	base = *(t_nubit8 *)imm;
-	if(base == 0) vcpu.itnlint = 0;
+	if(base == 0) INT(0x00);
 	else {
 		tempAL = vcpu.al;
 		tempAH = vcpu.ah;
@@ -3071,8 +3074,8 @@ t_bool vcpuinsIsPrefix(t_nubit8 opcode)
 	case 0xf0: case 0xf2: case 0xf3:
 	case 0x2e: case 0x36: case 0x3e: case 0x26:
 	//case 0x64: case 0x65: case 0x66: case 0x67:
-				return 1;break;
-	default:	return 0;break;
+				return 0x01;break;
+	default:	return 0x00;break;
 	}
 }
 void vcpuinsClearPrefix()
@@ -3080,36 +3083,6 @@ void vcpuinsClearPrefix()
 	insDS = vcpu.ds;
 	insSS = vcpu.ss;
 	reptype = RT_NONE;
-}
-
-static void _debug_dosint(t_nubit8 intid)
-{// MSDOS INT FOR TEST
-	t_nubit16 i;
-	t_nubit8 c;
-	switch(intid) {
-	case 0x20:
-		vcpu.term = 1;
-		break;
-	case 0x21:
-		switch(vcpu.ah) {
-		case 0x00:
-			vcpu.term = 1;
-			break;
-		case 0x02:
-			vapiPrint("_DEBUG_DOSINT::intid0x02::\'%c\'\n",vcpu.dl);
-			break;
-		case 0x09:
-			i = 0x0000;
-			vapiPrint("_DEBUG_DOSINT::intid0x09::\"");
-			while((c = vramGetByte(vcpu.ds,vcpu.dx+i)) != '$' && i < 0x0100) {
-				i++;
-				vapiPrint("%c",c);
-			}
-			vapiPrint("\"\n");
-			break;
-		default:CaseError("_DEBUG_DOSINT::intid0x21::vcpu.ah");break;}
-		break;
-	default:CaseError("_DEBUG_DOSINT::intid");break;}
 }
 
 void vcpuinsExecIns()
@@ -3120,40 +3093,16 @@ void vcpuinsExecIns()
 }
 void vcpuinsExecInt()
 {
-	t_nubit8 intr;
-	if(vcpu.itnlint != -1) {
-#ifdef VCPUINS_DEBUG
-		if(vcpu.itnlint >= 0x20 && vcpu.itnlint <= 0x3f)
-			_debug_dosint((t_nubit8)vcpu.itnlint);
-		else
-#endif
-		INT((t_nubit8)vcpu.itnlint);
-	}
-	vcpu.itnlint = -1;
-	if(vcpu.nmi) INT(0x02);
-	vcpu.nmi = 0;
-#ifdef VCPUINS_DEBUG
-	/* this is to enable VCPU_FLAG_IF and check the hardware generated interrupts */
-	STI();
-	vcpu.ip--;
-#endif
-	if(GetFlag(VCPU_FLAG_IF) && vpicScanINTR()) {
-		intr = vpicGetINTR();
-#ifndef VCPUINS_DEBUG
-		INT(intr);
-#else
-		vapiPrint("VCPUINSEXECINT::0x%x\n",intr);
-		if(intr == 0x08) vpic1.isr ^= 0x01;
-#endif
-	}
+	/* hardware interrupt handeler */
+	if(vcpu.flagnmi) INT(0x02);
+	vcpu.flagnmi = 0x00;
+	if(GetFlag(VCPU_FLAG_IF) && vpicScanINTR()) INT(vpicGetINTR());
 	if(GetFlag(VCPU_FLAG_TF)) INT(0x01);
 }
 
 void vcpuinsInit()
 {
 	int i;
-	vcpu.itnlint = -1;
-	vcpu.nmi = 0;
 	vcpuinsClearPrefix();
 	for(i = 0;i < 0x10000;++i) {
 		vcpuinsInPort[i]  = (t_faddrcc)IO_NOP;

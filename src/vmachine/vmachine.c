@@ -3,6 +3,9 @@
 #include "memory.h"
 
 #include "vmachine.h"
+#ifdef VMACHINE_DEBUG
+#include "qdbios.h"
+#endif
 
 t_machine vmachine;
 
@@ -14,24 +17,23 @@ void vmachineRunLoop()
 		vmachineFinal();
 	}
 }
-
 void vmachineRefresh()
 {
 /*
 	vcmosRefresh();
 	vdispRefresh();
 	vvadpRefresh();
-*/
 	vkeybRefresh();
 	vkbcRefresh();
 	vfddRefresh();
 	vfdcRefresh();
 	vdmaRefresh();
 	vpitRefresh();
+*/
 	vpicRefresh();
 	vramRefresh();
 	vcpuRefresh();
-	if (vmachine.flagrun) vmachine.flagrun = !vcpu.term;
+	vmachine.flagrun = (vmachine.flagrun && (!vcpu.flagterm));
 }
 void vmachineInit()
 {
@@ -39,32 +41,38 @@ void vmachineInit()
 	vcpuInit();
 	vramInit();
 	vpicInit();
+#ifdef VMACHINE_DEBUG
+	qdbiosInit();
+#endif
+/*
 	vpitInit();
 	vdmaInit();
 	vfdcInit();
 	vfddInit();
 	vkbcInit();
 	vkeybInit();
-/*
 	vvgaInit();
 	vdispInit();
-*/
 	vcmosInit();
+*/
 	vmachine.flaginit = 0x01;
 }
 void vmachineFinal()
 {
-	vcmosFinal();
 /*
+	vcmosFinal();
 	vkbcFinal();
 	vkeybFinal();
 	vvadpFinal();
 	vdispFinal();
-*/
 	vfddFinal();
 	vfdcFinal();
 	vdmaFinal();
 	vpitFinal();
+*/
+#ifdef VMACHINE_DEBUG
+	qdbiosFinal();
+#endif
 	vpicFinal();
 	vramFinal();
 	vcpuFinal();

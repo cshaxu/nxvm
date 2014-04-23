@@ -2,11 +2,20 @@
 
 #include "stdio.h"
 #include "stdarg.h"
+#include "windows.h"
 
-#include "vapi.h"
 #include "../vmachine/vmachine.h"
 
-#include "windows.h"
+#include "vapi.h"
+
+#define VAPI_QDFDD
+
+#ifdef VAPI_QDFDD
+#include "../vmachine/qdfdd.h"
+#define vfdd qdfdd
+#else
+#include "../vmachine/vfdd.h"
+#endif
 
 /* Console Print */
 int vapiPrint(const char *format, ...)
@@ -91,8 +100,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
    }
    return 0;
 }
-
-ATOM MyRegisterClass()
+static ATOM MyRegisterClass()
 {
 	WNDCLASSEX wcex;
 	wcex.cbSize = sizeof(WNDCLASSEX); 
@@ -109,7 +117,7 @@ ATOM MyRegisterClass()
 	wcex.hIconSm		= NULL;
 	return RegisterClassEx(&wcex);
 }
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+static BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	DWORD dwStyle = WS_THICKFRAME | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
 		            WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
@@ -121,7 +129,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	UpdateWindow(hWnd);
 	return TRUE;
 }
-static DWORD WINAPI Display(LPVOID lpParam)
+static DWORD WINAPI DisplayThread(LPVOID lpParam)
 {
 	MSG msg;
 	hInstance = GetModuleHandle(NULL);
@@ -134,19 +142,20 @@ static DWORD WINAPI Display(LPVOID lpParam)
 	vmachine.flagrun = 0x00;
 	return 0;
 }
-static DWORD WINAPI Kernel(LPVOID lpParam)
+static DWORD WINAPI KernelThread(LPVOID lpParam)
 {
 	vmachineRunLoop();
 	return 0;
 }
+void vapiDisplayPaint()
+{}
 void vapiCreateDisplay()
 {
-	CreateThread(NULL, 0, Display, NULL, 0, &DisplayThreadId);
+	CreateThread(NULL, 0, DisplayThread, NULL, 0, &DisplayThreadId);
 }
-
 void vapiCreateKernel()
 {
-	CreateThread(NULL, 0, Kernel, NULL, 0, &KernelThreadId);
+	CreateThread(NULL, 0, KernelThread, NULL, 0, &KernelThreadId);
 }
 
 /* Floppy Disk Drive Operations */
@@ -157,11 +166,8 @@ void vapiInsertFloppyDisk(const char *fname)
 	if (image) {
 		count = fread((void *)vfdd.base, sizeof(unsigned char),
 		              0x00168000, image);
-		/* vfddFormat(0xf6); */
 		vfdd.flagexist = 0x01;
 		fclose(image);
-		/* vapiPrint("Disk image loaded to %lx\n",vfdd.base); */
-		/* TODO: do other changes to vfdd, vfdc */
 		vapiPrint("Floppy disk inserted.\n");
 	} else
 		vapiPrint("Cannot read floppy image from '%s'.\n", fname);
@@ -170,7 +176,6 @@ void vapiRemoveFloppyDisk(const char *fname)
 {
 	size_t count;
 	FILE *image;
-	/* TODO: assert(vfdd.base) */
 	image = fopen(fname, "wb");
 	if(image) {
 		if (!vfdd.flagro)

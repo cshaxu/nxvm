@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.2.0x76]\n\
+#define PRODUCT "Quick & Dirty Virtual Machine [0.2.0x78]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -207,6 +207,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * replace all constants with MACRO
  * all t_bool variable names start with "flag"
  * new flag system: FLAG_X_X 0x0010, bit macros
+ * replace all (void *) with t_vaddrcc
  */
 
 #include "stdio.h"

@@ -246,8 +246,8 @@ static void dprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 {
 	char t,c[0x11];
 	t_nubit16 i;
-	if(start > end) return;
-	if(((segment<<4)+end) > 0xfffff) return; 
+	if(start > end) end = 0xffff;
+	if(((segment<<4)+end) > 0xfffff) end = (0xfffff - (segment << 4));
 	c[0x10] = '\0';
 	if(end < start) end = 0xffff;
 	for(i = start-(start%0x10);i <= end+(0x10-end%0x10)-1;++i) {
@@ -783,13 +783,15 @@ static t_nubit16 uoffset(Operand opr)
 static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 {
 	char str[MAXLINE],*op = NULL, *stmt = NULL;
-	int pos = 0,len = 0;
+	t_nubit16 pos = 0,len = 0;
 	int i,prefixflag;
 	t_nubit16 offset;
+	t_nubit32 boundary;
 	Operand operand;
 	operand.flag = 4;
 	operand.seg = 0x00;
-	if(start > end) return;
+	if(start > end) end = 0xffff;
+	if ((segment<<4) + end < 0xfffff) end = (0xfffff-(segment<<4));
 	while(start <= end) {
 		pos = 0;
 		prefixflag = 0;
@@ -855,6 +857,8 @@ static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 			fprintf(stdout,"\n");
 		}
 		start += pos;
+		boundary = (t_nubit32)start + (t_nubit32)pos;
+		if (boundary > 0xffff) break;
 	}
 	uasmSegRec = segment;
 	uasmPtrRec = start;

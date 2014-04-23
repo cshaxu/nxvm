@@ -102,6 +102,7 @@ void Exec()
 
 void Floppy()
 {
+/*
 	char str[MAXLINE];
 	if (!vmachine.flaginit || vmachine.flagrun) {
 		fprintf(stdout,"Cannot change floppy disk now.\n");
@@ -114,6 +115,7 @@ void Floppy()
 		vapiInsertFloppyDisk(str);
 	else
 		vapiRemoveFloppyDisk(str);
+*/
 }
 void Memory()
 {
@@ -168,8 +170,8 @@ void Stop()
 }
 void Reset()
 {
-	if (vmachine.flaginit && vmachine.flagrun)
-		vkbc.flagreset = 0x01;
+/*	if (vmachine.flaginit && vmachine.flagrun)
+		vkbc.flagreset = 0x01;*/
 }
 
 void console()

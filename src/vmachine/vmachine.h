@@ -5,17 +5,19 @@
 #ifndef NXVM_VMACHINE_H
 #define NXVM_VMACHINE_H
 
+#define VMACHINE_DEBUG
+
 #include "vglobal.h"
 #include "vcpu.h"
 #include "vram.h"
 #include "vpic.h"
-#include "vpit.h"
+/*#include "vpit.h"
 #include "vcmos.h"
 #include "vdma.h"
 #include "vfdc.h"
 #include "vfdd.h"
 #include "vkbc.h"
-#include "vkeyb.h"
+#include "vkeyb.h"*/
 
 typedef struct {
 	t_bool flaginit;

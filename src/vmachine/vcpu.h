@@ -37,9 +37,8 @@ typedef struct {
 	t_nubit8  iobyte;                               /* for i/o communication */
 	t_nubit16 sp,bp,si,di,ip,flags;
 	t_nubit16 cs,ds,es,ss;
-	t_nsbit16 itnlint;
-	t_bool nmi;
-	t_bool term;
+	t_bool flagnmi;
+	t_bool flagterm;
 } t_cpu;
 
 extern t_cpu vcpu;

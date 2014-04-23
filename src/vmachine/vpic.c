@@ -2,12 +2,14 @@
 
 #include "memory.h"
 
-#include "../system/vapi.h"
 #include "vglobal.h"
 #include "vcpu.h"
 #include "vcpuins.h"
-#include "vpit.h"
 #include "vpic.h"
+
+#ifdef VPIC_DEBUG
+#include "../system/vapi.h"
+#endif
 
 t_pic vpic1,vpic2;
 

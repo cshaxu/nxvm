@@ -9,9 +9,8 @@ void vapiPrintWord(unsigned short n);
 void vapiPrintAddr(unsigned short segment,unsigned short offset);
 void vapiPause();
 
+void vapiDisplayPaint();
 void vapiCreateDisplay();
-void vapiDestroyDisplay();
-
 void vapiCreateKernel();
 
 void vapiInsertFloppyDisk(const char *fname);
