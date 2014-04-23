@@ -11,10 +11,6 @@ extern "C" {
 
 #include "vcpu.h"
 
-#define i386(n) if (1)
-#define VCPUINS_TRACE 0
-#define VCPUINS_TRACE_DEBUG 0
-
 typedef enum {
 	ARITHTYPE_NULL,
 	ADD8,ADD16,ADD32,

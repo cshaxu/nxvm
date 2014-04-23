@@ -12,9 +12,6 @@
 #include "../vapi.h"
 #else
 #include "../vcpuapi.h"
-#define vapiPrint vcpuapiPrint
-#define FOPEN fopen
-#define SPRINTF sprintf
 #endif
 
 /* Record */

@@ -300,7 +300,7 @@ static COLORREF CharProp2Color(UCHAR prop, BOOL fore)
 {
 	UCHAR byte;
 	if (fore) byte = (prop & 0x0f);                            /* fore color */
-	else      byte = ((prop & 0x70) >> 4);                     /* back color */
+	else      byte = ((prop & 0xf0) >> 4);                     /* back color */
 	switch (byte) {
 	case 0x00: return COLOR_BLACK;       break;
 	case 0x01: return COLOR_BLUE;        break;
@@ -325,10 +325,10 @@ static COLORREF CharProp2Color(UCHAR prop, BOOL fore)
 #define FONT_WIDTH  8
 #define FONT_HEIGHT 16
 #define FONT_NCHAR  256
-#define FONT_NCOLOR 128
+#define FONT_NCOLOR 256//128
 static HDC hdcFont;
 static HBITMAP hBmpFont;
-static BOOL bFontCharExist[256][128];
+static BOOL bFontCharExist[FONT_NCHAR][FONT_NCOLOR];
 
 static VOID CreateBitmapFontChar(UCHAR ch, UCHAR prop)
 {
@@ -340,7 +340,7 @@ static VOID CreateBitmapFontChar(UCHAR ch, UCHAR prop)
 	hdcChar = CreateCompatibleDC(NULL);
 	hBmpChar = CreateCompatibleBitmap(hdcWnd, FONT_WIDTH, FONT_HEIGHT);
 	hOldGdiObj = SelectObject(hdcChar, hBmpChar);
-	prop &= 0x7f;
+	//prop &= 0x7f;
 	fc = CharProp2Color(prop, TRUE);
 	bc = CharProp2Color(prop, FALSE);
 	for (i = 0;i < FONT_HEIGHT;++i) {
@@ -431,7 +431,7 @@ void w32adispPaint(BOOL force)
 		for(i = 0;i < sizeCol;++i) {
 			for(j = 0;j < sizeRow;++j) {
 				ch = vapiCallBackDisplayGetCurrentChar(i, j);
-				prop = vapiCallBackDisplayGetCurrentCharProp(i, j) & 0x7f;
+				prop = vapiCallBackDisplayGetCurrentCharProp(i, j);// & 0x7f;
 				if (!bFontCharExist[ch][prop]) CreateBitmapFontChar(ch, prop);
 				BitBlt(hdcBuf, j * FONT_WIDTH, i * FONT_HEIGHT, FONT_WIDTH, FONT_HEIGHT,
 					hdcFont, ch * FONT_WIDTH, prop * FONT_HEIGHT, SRCCOPY);

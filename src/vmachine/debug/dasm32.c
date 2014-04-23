@@ -5,8 +5,13 @@
 #include "string.h"
 
 #include "../vcpuins.h"
-#include "../vapi.h"
 #include "dasm32.h"
+
+#ifdef VGLOBAL_BOCHS
+#include "../vcpuapi.h"
+#else
+#include "../vapi.h"
+#endif
 
 typedef char t_dasm_str[0x0100];
 
@@ -98,8 +103,7 @@ static t_bool _kdf_check_prefix(t_nubit8 opcode)
 	case 0x65:
 	case 0x66:
 	case 0x67:
-		i386(opcode) return 1;
-		else return 0;
+		return 1;
 		break;
 	default:
 		return 0;

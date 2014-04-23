@@ -17,6 +17,12 @@
 #endif
 #include "vcpuins.h"
 
+/* DEBUGGING OPTIONS ******************************************************* */
+#define i386(n) if (1)
+#define VCPUINS_TRACE 0
+#define VCPUINS_TRACE_DEBUG 0
+/* ************************************************************************* */
+
 #define _______todo static void /* need to implement */
 
 static t_bool flagignore;
@@ -1955,8 +1961,6 @@ _______todo _ser_call_far_cs_conf(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 by
 	if (!_IsDescCodeConform(descriptor)) _impossible_;
 	if (_GetDesc_DPL(descriptor) > _GetCPL) {
 		_bb("DPL(>CPL)");
-		_comment("sel=%04X, desc=%016llX\n", newcs, descriptor);
-		_comment("dpl=%01X, cpl=%01X\n", _GetDesc_DPL(descriptor), _GetCPL);
 		_chk(_SetExcept_GP(newcs));
 		_be;
 	}
@@ -3589,9 +3593,9 @@ static void _a_rol(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 		while (count) {
 			flagcf = !!GetMSB8(vcpuins.result);
 			vcpuins.result = GetMax8(vcpuins.result << 1) | flagcf;
+			MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, !!GetLSB8(vcpuins.result));
 			count--;
 		}
-		MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, !!GetLSB8(vcpuins.result));
 		if(vcpuins.opr2 == 1)
 			MakeBit(vcpu.eflags, VCPU_EFLAGS_OF,
 				((!!GetMSB8(vcpuins.result)) ^ _GetEFLAGS_CF));
@@ -3607,9 +3611,9 @@ static void _a_rol(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 		while (count) {
 			flagcf = !!GetMSB16(vcpuins.result);
 			vcpuins.result = GetMax16(vcpuins.result << 1) | flagcf;
+			MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, !!GetLSB16(vcpuins.result));
 			count--;
 		}
-		MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, !!GetLSB16(vcpuins.result));
 		if(vcpuins.opr2 == 1)
 			MakeBit(vcpu.eflags, VCPU_EFLAGS_OF,
 				((!!GetMSB16(vcpuins.result)) ^ _GetEFLAGS_CF));
@@ -3625,9 +3629,9 @@ static void _a_rol(t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit)
 		while (count) {
 			flagcf = !!GetMSB32(vcpuins.result);
 			vcpuins.result = GetMax32(vcpuins.result << 1) | flagcf;
+			MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, !!GetLSB32(vcpuins.result));
 			count--;
 		}
-		MakeBit(vcpu.eflags, VCPU_EFLAGS_CF, !!GetLSB32(vcpuins.result));
 		if(vcpuins.opr2 == 1)
 			MakeBit(vcpu.eflags, VCPU_EFLAGS_OF,
 				((!!GetMSB32(vcpuins.result)) ^ _GetEFLAGS_CF));
@@ -6085,7 +6089,6 @@ static void BOUND_R16_M16_16()
 	t_nsbit16 a16,l16,u16;
 	t_nsbit32 a32,l32,u32;
 	_cb("BOUND_R16_M16_16");
-	_newins_;
 	i386(0x62) {
 		_adv;
 		_chk(_d_modrm(_GetOperandSize, _GetOperandSize * 2));
@@ -6123,7 +6126,6 @@ static void BOUND_R16_M16_16()
 static void ARPL_RM16_R16()
 {
 	_cb("ARPL_RM16_R16");
-	_newins_;
 	i386(0x63) {
 		if (_IsProtected) {
 			_adv;
@@ -6146,7 +6148,6 @@ static void ARPL_RM16_R16()
 static void PREFIX_FS()
 {
 	_cb("PREFIX_FS");
-	_newins_;
 	i386(0x64) {
 		_adv;
 		vcpuins.roverds = &vcpu.fs;
@@ -6158,7 +6159,6 @@ static void PREFIX_FS()
 static void PREFIX_GS()
 {
 	_cb("PREFIX_GS");
-	_newins_;
 	i386(0x65) {
 		_adv;
 		vcpuins.roverds = &vcpu.gs;
@@ -6190,7 +6190,6 @@ static void PREFIX_AddrSize()
 static void PUSH_I32()
 {
 	_cb("PUSH_I32");
-	_newins_;
 	i386(0x68) {
 		_adv;
 		_chk(_d_imm(_GetOperandSize));
@@ -6202,7 +6201,6 @@ static void PUSH_I32()
 static void IMUL_R32_RM32_I32()
 {
 	_cb("IMUL_R32_RM32_I32");
-	_newins_;
 	i386(0x69) {
 		_adv;
 		_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
@@ -6217,7 +6215,6 @@ static void IMUL_R32_RM32_I32()
 static void PUSH_I8()
 {
 	_cb("PUSH_I8");
-	_newins_;
 	i386(0x6a) {
 		_adv;
 		_chk(_d_imm(1));
@@ -6229,7 +6226,6 @@ static void PUSH_I8()
 static void IMUL_R32_RM32_I8()
 {
 	_cb("IMUL_R32_RM32_I8");
-	_newins_;
 	i386(0x6b) {
 		_adv;
 		_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
@@ -6392,7 +6388,6 @@ static void OUTSW()
 static void JO_REL8()
 {
 	_cb("JO_REL8");
-	_newins_;
 	i386(0x70) {
 		_adv;
 	} else {
@@ -6405,7 +6400,6 @@ static void JO_REL8()
 static void JNO_REL8()
 {
 	_cb("JNO_REL8");
-	_newins_;
 	i386(0x71) {
 		_adv;
 	} else {
@@ -8545,7 +8539,6 @@ static void ENTER()
 	t_nubit16 size = 0x0000;
 	t_nubit8 level = 0x00;
 	_cb("ENTER");
-	_newins_;
 	i386(0xc8) {
 		_adv;
 		_chk(_d_imm(2));
@@ -8556,18 +8549,15 @@ static void ENTER()
 		switch (_GetStackSize) {
 		case 2: _bb("StackSize(2)");
 			_chk(_e_push(vcpu.bp, 2));
-			_comment("ENTER: fetch sp after pushing bp");
 			temp = vcpu.sp;
 			_be;break;
 		case 4: _bb("StackSize(4)");
 			_chk(_e_push(vcpu.ebp, 4));
-			_comment("ENTER: fetch esp after pushing ebp");
 			temp = vcpu.esp;
 			_be;break;
 		default:_impossible_;break;}
 		if (level) {
 			_bb("level(!0)");
-			_comment("ENTER: this instruction is too inefficient and error-prone.");
 			for (i = 0;i < level;++i) {
 				_bb("for");
 				switch (_GetOperandSize) {
@@ -8629,8 +8619,8 @@ static void ENTER()
 static void LEAVE()
 {
 	_cb("LEAVE");
-	_newins_;
 	i386(0xc9) {
+		_adv;
 		if (!_IsProtected && vcpu.ebp > 0x0000ffff) {
 			_bb("Protected(0),ebp(>0000ffff)");
 			_chk(_SetExcept_GP(0));

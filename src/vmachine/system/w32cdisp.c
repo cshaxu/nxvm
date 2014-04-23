@@ -55,7 +55,7 @@ void w32cdispPaint(BOOL force)
 		for(i = 0;i < sizeCol;++i) {
 			for(j = 0;j < sizeRow;++j) {
 				ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
-				charProp = vapiCallBackDisplayGetCurrentCharProp(i, j) & 0x7f;
+				charProp = vapiCallBackDisplayGetCurrentCharProp(i, j);// & 0x7f;
 				//if (!ansiChar) continue;
 				MultiByteToWideChar(437, 0, (LPCSTR)(&ansiChar), 1, (LPWSTR)(&unicodeChar), 1);
 				charBuf[i * sizeRow + j].Char.UnicodeChar = unicodeChar;
