@@ -8,6 +8,7 @@
 #endif
 
 #define HARD_FDD_INT_0E "  \
+qdx 02 ; enter isr \n\
 cli                      \n\
 push ax                  \n\
 push dx                  \n\
@@ -28,9 +29,12 @@ mov al, 20               \n\
 out 20, al ; eoi cmd     \n\
 pop dx                   \n\
 pop ax                   \n\
-sti                      \n"
+sti                      \n\
+qdx 03 ; leave isr \n\
+iret                     \n"
 
 #define SOFT_DISK_INT_13 "    \
+qdx 02 ; leave isr \n\
 test dl, 80                 \n\
 jnz $(label_int_13_hdd)     \n\
 int 40                      \n\
@@ -177,9 +181,11 @@ ss:                         \n\
 or  word [bx+8], ax         \n\
 pop bx                      \n\
 pop ax                      \n\
+qdx 03 ; leave isr \n\
 iret                        \n"
 
 #define SOFT_DISK_INT_40 "    \
+qdx 02 ; enter isr \n\
 test dl, 80                 \n\
 jz $(label_int_40_fdd)      \n\
 mov ah, 01                  \n\
@@ -501,6 +507,7 @@ ss:                         \n\
 or  word [bx+8], ax         \n\
 pop bx                      \n\
 pop ax                      \n\
+qdx 03 ; leave isr \n\
 iret                        \n"
 
 void qddiskReset();

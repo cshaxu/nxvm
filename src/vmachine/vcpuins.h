@@ -56,19 +56,22 @@ typedef struct {
 	t_bool    flagmss; /* if rm is in stack segment */
 	t_bool    flagmaskint; /* if int is disabled once */
 	t_bool    flagrespondint; /* if intr is responded in one Refresh */
+	t_nubit8  isrs; /* if inside int serv rout */
 	t_nubit32 udf; /* undefined eflags bits */
 } t_cpuins;
 
-#define VCPUINS_EXCEPT_GP 0x00000001 /* general protection */
-#define VCPUINS_EXCEPT_NP 0x00000002 /* segment not present */
-#define VCPUINS_EXCEPT_PF 0x00000004 /* page fault */
-#define VCPUINS_EXCEPT_SS 0x00000008 /* stack segment fault */
-#define VCPUINS_EXCEPT_UD 0x00000010 /* undefined opcode */
-#define VCPUINS_EXCEPT_BR 0x00000020 /* boundary check fail */
-#define VCPUINS_EXCEPT_TS 0x00000040 /* task state segment fail */
-#define VCPUINS_EXCEPT_DE 0x00000080 /* divide error */
-#define VCPUINS_EXCEPT_NM 0x00000100 /* numerical error */
-#define VCPUINS_EXCEPT_CE 0x80000000 /* case error */
+#define VCPUINS_EXCEPT_DE 0x00000001 /* 00 - divide error */
+#define VCPUINS_EXCEPT_BR 0x00000020 /* 05 - boundary check fail */
+#define VCPUINS_EXCEPT_UD 0x00000040 /* 06 - invalid opcode */
+#define VCPUINS_EXCEPT_NM 0x00000080 /* 07 - coprocessor not available */
+#define VCPUINS_EXCEPT_DF 0x00000100 /* 08 - double fault */
+#define VCPUINS_EXCEPT_TS 0x00000400 /* 10 - task state segment fail */
+#define VCPUINS_EXCEPT_NP 0x00000800 /* 11 - segment not present */
+#define VCPUINS_EXCEPT_SS 0x00001000 /* 12 - stack segment fault */
+#define VCPUINS_EXCEPT_GP 0x00002000 /* 13 - general protection */
+#define VCPUINS_EXCEPT_PF 0x00004000 /* 14 - page fault */
+
+#define VCPUINS_EXCEPT_CE 0x80000000 /* 31 - internal case error */
 
 extern t_cpuins vcpuins;
 

@@ -45,7 +45,7 @@ void vcpuReset()
 	vcpu.ss.dpl = 0x00;
 	vcpu.ss.limit = 0x0000ffff;
 	vcpu.ss.seg.accessed = 1;
-	vcpu.cs.seg.executable = 0;
+	vcpu.ss.seg.executable = 0;
 	vcpu.ss.seg.data.big = 0;
 	vcpu.ss.seg.data.expdown = 0;
 	vcpu.ss.seg.data.writable = 1;
@@ -54,9 +54,9 @@ void vcpuReset()
 
 	vcpu.ds.base = 0x00000000;
 	vcpu.ds.dpl = 0x00;
-	vcpu.ds.limit = 0xffffffff;//0x0000ffff; // TEST ONLY
+	vcpu.ds.limit = 0x0000ffff;
 	vcpu.ds.seg.accessed = 1;
-	vcpu.cs.seg.executable = 0;
+	vcpu.ss.seg.executable = 0;
 	vcpu.ds.seg.data.big = 0;
 	vcpu.ds.seg.data.expdown = 0;
 	vcpu.ds.seg.data.writable = 1;

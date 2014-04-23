@@ -1,6 +1,6 @@
 1. Debug i386 32-bit Real Mode
-   exception for int 0x0d (#GP):
-     break bochs at 0xa6c4 or see int vector 0x34
+   exception for int 0x0d (#GP): (0000:a78f)
+     break bochs at 0xa6c4 or see int vector 0000:0034
 2. Build asm/dasm/debug for i386
 3. Build exception handler (int service routines)
 4. Build VGA Graphics Mode

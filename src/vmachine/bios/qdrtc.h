@@ -8,6 +8,7 @@
 #endif
 
 #define HARD_RTC_INT_08 "                   \
+qdx 02 ; enter isr \n\
 cli                                       \n\
 push ds                                   \n\
 push ax                                   \n\
@@ -36,9 +37,11 @@ out dx, al                                \n\
 pop dx                                    \n\
 pop ax                                    \n\
 sti                                       \n\
+qdx 03 ; leave isr \n\
 iret                                      \n"
 
 #define SOFT_RTC_INT_1A "\
+qdx 02 ; enter isr \n\
 push bx                \n\
 push ds                \n\
 mov bx, 40             \n\
@@ -192,68 +195,8 @@ or  word [bx+08], ax             \n\
 $(label_int_1a_ret): \n\
 pop ds               \n\
 pop bx               \n\
+qdx 03 ; leave isr \n\
 iret                 \n"
-
-#define VBIOS_POST_QDRTC "      \
-mov ah, 02 ; ch,cl,dh         \n\
-int 1a     ; get cmos time    \n\
-\
-mov bh, ch ; convert ch       \n\
-and bh, 0f                    \n\
-shr ch, 1                     \n\
-shr ch, 1                     \n\
-shr ch, 1                     \n\
-shr ch, 1                     \n\
-mov al, ch                    \n\
-mov ch, 0a                    \n\
-mul ch                        \n\
-add bh, al                    \n\
-mov ch, bh ; ch is hex now    \n\
-\
-mov bh, cl ; convert cl       \n\
-and bh, 0f                    \n\
-shr cl, 1                     \n\
-shr cl, 1                     \n\
-shr cl, 1                     \n\
-shr cl, 1                     \n\
-mov al, cl                    \n\
-mov cl, 0a                    \n\
-mul cl                        \n\
-add bh, al                    \n\
-mov cl, bh ; cl is hex now    \n\
-\
-mov bh, dh ; convert dh       \n\
-and bh, 0f                    \n\
-shr dh, 1                     \n\
-shr dh, 1                     \n\
-shr dh, 1                     \n\
-shr dh, 1                     \n\
-mov al, dh                    \n\
-mov dh, 0a                    \n\
-mul dh                        \n\
-add bh, al                    \n\
-mov dh, bh ; dh is hex now    \n\
-\
-mov al, ch ; x = hour         \n\
-mov bl, 3c                    \n\
-mul bl     ; x *= 60          \n\
-mov ch, 00                    \n\
-add ax, cx ; x += min         \n\
-xor cx, cx                    \n\
-mov cl, dh                    \n\
-mov bx, 3c                    \n\
-mul bx     ; x *= 60          \n\
-add ax, cx ; x += second      \n\
-mov bx, 40                    \n\
-mov ds, bx                    \n\
-mov cx, dx                    \n\
-mov bx, 12                    \n\
-mul bx      ; x *= 18         \n\
-mov [006c], ax                \n\
-mov [006e], dx                \n\
-mov ax, cx                    \n\
-mul bx                        \n\
-add [006e], ax                \n"
 
 #ifdef __cplusplus
 /*}_EOCD_*/

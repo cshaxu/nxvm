@@ -472,11 +472,19 @@ extern t_cpu vcpu;
 #define _GetLDTR_Base  (vcpu.ldtr.base)
 
 #define VCPU_CR0_PE     0x00000001
+#define VCPU_CR0_MP     0x00000002
+#define VCPU_CR0_EM     0x00000004
 #define VCPU_CR0_TS     0x00000008
+#define VCPU_CR0_ET     0x00000010
 #define VCPU_CR0_PG     0x80000000
+
 #define _GetCR0_PE  (GetBit(vcpu.cr0, VCPU_CR0_PE))
-#define _GetCR0_PG  (GetBit(vcpu.cr0, VCPU_CR0_PG))
+#define _GetCR0_MP  (GetBit(vcpu.cr0, VCPU_CR0_MP))
+#define _GetCR0_EM  (GetBit(vcpu.cr0, VCPU_CR0_EM))
 #define _GetCR0_TS  (GetBit(vcpu.cr0, VCPU_CR0_TS))
+#define _GetCR0_ET  (GetBit(vcpu.cr0, VCPU_CR0_ET))
+#define _GetCR0_PG  (GetBit(vcpu.cr0, VCPU_CR0_PG))
+
 #define _SetCR0_TS  (SetBit(vcpu.cr0, VCPU_CR0_TS))
 #define _ClrCR0_TS  (ClrBit(vcpu.cr0, VCPU_CR0_TS))
 

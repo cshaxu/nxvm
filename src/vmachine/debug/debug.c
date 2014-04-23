@@ -819,6 +819,104 @@ static void w()
 }
 /* DEBUG CMD END */
 
+/* EXTENDED DEBUG CMD BEGIN */
+static void xreg()
+{
+	char str[MAXLINE];
+	vapiPrint( "EAX=%08X", _eax);
+	vapiPrint(" EBX=%08X", _ebx);
+	vapiPrint(" ECX=%08X", _ecx);
+	vapiPrint(" EDX=%08X", _edx);
+	vapiPrint("\nESP=%08X",_esp);
+	vapiPrint(" EBP=%08X", _ebp);
+	vapiPrint(" ESI=%08X", _esi);
+	vapiPrint(" EDI=%08X", _edi);
+	vapiPrint("\nEIP=%08X", _ip);
+	vapiPrint(" EFL=%08X", _eflags);
+	vapiPrint(": ");
+	vapiPrint("%s ", _GetEFLAGS_VM ? "VM" : "vm");
+	vapiPrint("%s ", _GetEFLAGS_RF ? "RF" : "rf");
+	vapiPrint("%s ", _GetEFLAGS_NT ? "NT" : "nt");
+	vapiPrint("IOPL=%01X ", _GetEFLAGS_IOPL);
+	vapiPrint("%s ", _GetEFLAGS_OF ? "OF" : "of");
+	vapiPrint("%s ", _GetEFLAGS_DF ? "DF" : "df");
+	vapiPrint("%s ", _GetEFLAGS_IF ? "IF" : "if");
+	vapiPrint("%s ", _GetEFLAGS_TF ? "TF" : "tf");
+	vapiPrint("%s ", _GetEFLAGS_SF ? "SF" : "sf");
+	vapiPrint("%s ", _GetEFLAGS_ZF ? "ZF" : "zf");
+	vapiPrint("%s ", _GetEFLAGS_AF ? "AF" : "af");
+	vapiPrint("%s ", _GetEFLAGS_PF ? "PF" : "pf");
+	vapiPrint("%s ", _GetEFLAGS_CF ? "CF" : "cf");
+	vapiPrint("\n");
+	dasm(str, _cs, _ip, 0x02);
+	vapiPrint("%s", str);
+}
+static void xsregseg(t_cpu_sreg *rsreg, const t_string label)
+{
+	vapiPrint("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, %s, ", label,
+		rsreg->selector, rsreg->base, rsreg->limit,
+		rsreg->dpl, rsreg->seg.accessed ? "A" : "a");
+	if (rsreg->seg.executable) {
+		vapiPrint("Code, %s, %s, %s\n",
+			rsreg->seg.exec.conform ? "C" : "c",
+			rsreg->seg.exec.readable ? "Rw" : "rw",
+			rsreg->seg.exec.defsize ? "32" : "16");
+	} else {
+		vapiPrint("Data, %s, %s, %s\n",
+			rsreg->seg.data.expdown ? "E" : "e",
+			rsreg->seg.data.writable ? "RW" : "Rw",
+			rsreg->seg.data.big ? "BIG" : "big");
+	} 
+}
+static void xsregsys(t_cpu_sreg *rsreg, const t_string label)
+{
+	vapiPrint("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, Type=%04X\n", label,
+		rsreg->selector, rsreg->base, rsreg->limit,
+		rsreg->dpl, rsreg->sys.type);
+}
+static void xsreg()
+{
+	xsregseg(&vcpu.es, "ES");
+	xsregseg(&vcpu.cs, "CS");
+	xsregseg(&vcpu.ss, "SS");
+	xsregseg(&vcpu.ds, "DS");
+	xsregseg(&vcpu.fs, "FS");
+	xsregseg(&vcpu.gs, "GS");
+	xsregsys(&vcpu.tr, "TR");
+	xsregsys(&vcpu.ldtr, "LDTR");
+	vapiPrint("GDTR Base=%08X, Limit=%04X\n",
+		GetMax32(_GetGDTR_Base), GetMax16(_GetGDTR_Limit));
+	vapiPrint("IDTR Base=%08X, Limit=%04X\n",
+		GetMax32(_GetIDTR_Base), GetMax16(_GetIDTR_Limit));
+}
+static void xcreg()
+{
+#define _GetCR0_PE  (GetBit(vcpu.cr0, VCPU_CR0_PE))
+#define _GetCR0_MP  (GetBit(vcpu.cr0, VCPU_CR0_MP))
+#define _GetCR0_EM  (GetBit(vcpu.cr0, VCPU_CR0_EM))
+#define _GetCR0_TS  (GetBit(vcpu.cr0, VCPU_CR0_TS))
+#define _GetCR0_ET  (GetBit(vcpu.cr0, VCPU_CR0_ET))
+#define _GetCR0_PG  (GetBit(vcpu.cr0, VCPU_CR0_PG))
+	vapiPrint("CR0=%08X: %s %s %s %s %s %s\n", vcpu.cr0,
+		_GetCR0_PG ? "PG" : "pg",
+		_GetCR0_ET ? "ET" : "et",
+		_GetCR0_TS ? "TS" : "ts",
+		_GetCR0_EM ? "EM" : "em",
+		_GetCR0_MP ? "MP" : "mp",
+		_GetCR0_PE ? "PE" : "pe");
+	vapiPrint("CR2=PFLR=%08X\n", vcpu.cr2);
+	vapiPrint("CR3=PDBR=%08X\n", vcpu.cr3);
+}
+static void x()
+{
+	if (!STRCMP(arg[1], "r"))         xreg();
+	else if (!STRCMP(arg[1], "reg"))  xreg();
+	else if (!STRCMP(arg[1], "sreg")) xsreg();
+	else if (!STRCMP(arg[1], "creg")) xcreg();
+	else seterr(0);
+}
+/* EXTENDED DEBUG CMD END */
+
 static void help()
 {
 	vapiPrint("assemble\tA [address]\n");
@@ -905,6 +1003,7 @@ static void exec()
 	case 'u':	u();break;
 	case 'v':	v();break;
 	case 'w':	w();break;
+	case 'x':	x();break;
 	default:
 		seterr(0);
 		break;

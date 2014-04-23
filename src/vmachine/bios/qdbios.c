@@ -139,14 +139,14 @@ static void vbiosLoadInt()
 static void vbiosLoadPost()
 {
 	char stmt[0x1000];
-	SPRINTF(stmt, "jmp %04x:%04x", ics, iip);
+	SPRINTF(stmt, "jmp %04x:%04x", ics, iip, 1);
 	aasm(stmt, 0xf000, 0xfff0);
 	iip += (t_nubit16)aasm(VBIOS_POST_VPIC,  ics, iip);
 	iip += (t_nubit16)aasm(VBIOS_POST_VDMA,  ics, iip);
 	iip += (t_nubit16)aasm(VBIOS_POST_VFDC,  ics, iip);
 	iip += (t_nubit16)aasm(VBIOS_POST_VPIT,  ics, iip);
 	iip += (t_nubit16)aasm(VBIOS_POST_VCMOS, ics, iip);
-	iip += (t_nubit16)aasm(VBIOS_POST_QDRTC, ics, iip);
+	iip += (t_nubit16)aasm(VBIOS_POST_VRTC,  ics, iip);
 	iip += (t_nubit16)aasm(VBIOS_POST_BOOT,  ics, iip);
 	/* hard disk param table */
 	vramRealWord(0x0000, 0x0104) = 0xe431;

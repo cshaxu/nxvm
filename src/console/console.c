@@ -93,9 +93,13 @@ static void Help()
 			printc("Launch NXVM hardware debugger\n");
 			printc("\nDEBUG\n");
 			break;
+		} else if (!strcmp(arg[1], "debug32")) {
+			printc("Launch NXVM 32-bit hardware debugger\n");
+			printc("\nDEBUG\n");
+			break;
 		} else if (!strcmp(arg[1], "record")) {
 			printc("Record cpu status in each iteration for futher dumping\n");
-			printc("\nRECORD [on | off | dump <file>]\n");
+			printc("\nRECORD [on | off | dump <file> | now <file>]\n");
 			break;
 		} else if (!strcmp(arg[1], "set")) {
 			printc("Change BIOS settings\n");
@@ -206,14 +210,25 @@ static void Record()
 		return;
 	}
 	if (!strcmp(arg[1], "on")) {
-		vmachine.flagrecord = 0x01;
+		vmachine.flagrecord = 1;
+		vapirecord.flagnow = 0;
+		if (vapirecord.fp) fclose(vapirecord.fp);
 		printc("Recorder turned on.\n");
 	} else if (!strcmp(arg[1], "off")) {
-		vmachine.flagrecord = 0x00;
+		vmachine.flagrecord = 0;
+		vapirecord.flagnow = 0;
+		if (vapirecord.fp) fclose(vapirecord.fp);
 		printc("Recorder turned off.\n");
 	} else if (!strcmp(arg[1], "dump")) {
 		if (narg < 3) GetHelp;
 		vapiRecordDump(arg[2]);
+		vapirecord.flagnow = 0;
+		if (vapirecord.fp) fclose(vapirecord.fp);
+	} else if (!strcmp(arg[1], "now")) {
+		if (narg < 3) GetHelp;
+		vmachine.flagrecord = 1;
+		vapirecord.flagnow = 1;
+		vapiRecordNow(arg[2]);
 	} else GetHelp;
 }
 static void Set()
@@ -299,7 +314,6 @@ static void Test()
 {
 	vmachine.flagboot = 1;
 	vmachine.flagmode = 1;
-	vmachine.flagrecord = 1;
 	vmachineReset();
 	debug();
 }
@@ -307,22 +321,21 @@ static void Test()
 static void exec()
 {
 	if (!arg[0] || !strlen(arg[0])) return;
-	else if(!strcmp(arg[0],"test"))   Test();
-	else if(!strcmp(arg[0],"help"))   Help();
-	else if(!strcmp(arg[0],"exit"))   Exit();
-	else if(!strcmp(arg[0],"info"))   Info();
-	else if(!strcmp(arg[0],"debug"))  Debug();
-	else if(!strcmp(arg[0],"record")) Record();
-	else if(!strcmp(arg[0],"set"))    Set();
-	else if(!strcmp(arg[0],"device")) Device();
-	else if(!strcmp(arg[0],"nxvm"))   Nxvm();
+	else if(!strcmp(arg[0],"test"))    Test();
+	else if(!strcmp(arg[0],"help"))    Help();
+	else if(!strcmp(arg[0],"exit"))    Exit();
+	else if(!strcmp(arg[0],"info"))    Info();
+	else if(!strcmp(arg[0],"debug"))   Debug();
+	else if(!strcmp(arg[0],"record"))  Record();
+	else if(!strcmp(arg[0],"set"))     Set();
+	else if(!strcmp(arg[0],"device"))  Device();
+	else if(!strcmp(arg[0],"nxvm"))    Nxvm();
 	/* support for convenient commands */
 	else if(!strcmp(arg[0],"mode"))  {if (!vmachine.flagrun) vmachine.flagmode = !vmachine.flagmode;}
 	else if(!strcmp(arg[0],"start"))  vmachineStart();
 	else if(!strcmp(arg[0],"reset"))  vmachineReset();
 	else if(!strcmp(arg[0],"stop"))   vmachineStop();
 	else if(!strcmp(arg[0],"resume")) vmachineResume();
-	//else if(!strcmp(arg[0],"debug32")) debug(32);
 	else printc("Illegal command '%s'.\n",arg[0]);
 	printc("\n");
 }

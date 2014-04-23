@@ -8,6 +8,7 @@
 #endif
 
 #define SOFT_MISC_INT_11 "\
+qdx 02 ; enter isr \n\
 ; device test           \n\
 push ds                 \n\
 push bx                 \n\
@@ -16,9 +17,11 @@ mov ds, bx              \n\
 pop bx                  \n\
 mov ax, [0010]          \n\
 pop ds                  \n\
+qdx 03 ; leave isr \n\
 iret                    \n"
 
 #define SOFT_MISC_INT_12 "\
+qdx 02 ; enter isr \n\
 ; memory test           \n\
 push ds                 \n\
 push bx                 \n\
@@ -27,9 +30,11 @@ mov ds, bx              \n\
 pop bx                  \n\
 mov ax, [0013]          \n\
 pop ds                  \n\
+qdx 03 ; leave isr \n\
 iret                    \n"
 
 #define SOFT_MISC_INT_15 "          \
+qdx 02 ; enter isr \n\
 cmp ah, 24                        \n\
 jnz $(label_int_15_cmp_88)        \n\
 jmp near $(label_int_15_24)       \n\
@@ -61,7 +66,7 @@ jmp near $(label_int_15_ret)      \n\
 $(label_int_15_88):               \n\
 mov ax, 0800 ; 2048 KB            \n\
 ; if memory size > 16 M, ret 3c00 \n\
-sub ax, 300                       \n\
+sub ax, 0400                      \n\
 clc                               \n\
 jmp near $(label_int_15_set_flag) \n\
 \
@@ -94,6 +99,7 @@ pop bx                    \n\
 pop ax                    \n\
 \
 $(label_int_15_ret): \n\
+qdx 03 ; leave isr \n\
 iret                 \n"
 
 #ifdef __cplusplus

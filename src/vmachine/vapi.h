@@ -41,17 +41,22 @@ typedef struct {
 		t_nubit8  bit;
 		t_nubit32 opr1, opr2;
 		t_nubit64 result;
+		t_bool    flagisr;
 		char stmt[0x20];
 	} rec[VAPI_RECORD_SIZE];
 	t_nubitcc start, size;
+	t_bool    flagnow; /* record now! */
+	char fn[0x100];
+	FILE *fp;
 } t_apirecord;
 
 extern t_apirecord vapirecord;
 
+void vapiRecordNow(const t_string fname);
 void vapiRecordDump(const t_string fname);
-void vapiRecordStart();
+void vapiRecordInit();
 void vapiRecordExec();
-void vapiRecordEnd();
+void vapiRecordFinal();
 
 void vapiFloppyInsert(const t_string fname);
 void vapiFloppyRemove(const t_string fname);

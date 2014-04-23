@@ -15,7 +15,7 @@ of=%1x sf=%1x zf=%1x cf=%1x af=%1x pf=%1x df=%1x if=%1x tf=%1x\n"
 
 void vapiCallBackMachineRun()
 {
-	if (vmachine.flagrecord) vapiRecordStart();
+	if (vmachine.flagrecord) vapiRecordInit();
 	while (vmachine.flagrun) {
 		if (vmachine.flagbreak &&
 			_cs == vmachine.breakcs && _ip == vmachine.breakip) {
@@ -29,7 +29,7 @@ void vapiCallBackMachineRun()
 			if (!vmachine.tracecnt) vmachineStop();
 		}
 	}
-	if (vmachine.flagrecord) vapiRecordEnd();
+	if (vmachine.flagrecord) vapiRecordFinal();
 }
 t_nubit8 vapiCallBackMachineGetFlagRun() {return vmachine.flagrun;}
 void vapiCallBackMachineStart() {vmachineStart();}

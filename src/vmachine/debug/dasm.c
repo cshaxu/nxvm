@@ -19,8 +19,8 @@ static t_vaddrcc    dvrm, dvr;
 static t_nubit16    dvcs, dvip;
 
 #define _GetModRM_MOD(modrm) ((modrm&0xc0)>>6)
-#define REG ((modrm&0x38)>>3)
-#define RM  ((modrm&0x07)>>0)
+#define _GetModRM_REG(modrm) ((modrm&0x38)>>3)
+#define _GetModRM_RM(modrm)  ((modrm&0x07)>>0)
 
 static void GetMem(t_nubitcc membit)
 {
@@ -61,7 +61,7 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 	ismem = 0x01;
 	switch(_GetModRM_MOD(modrm)) {
 	case 0:
-		switch(RM) {
+		switch(_GetModRM_RM(modrm)) {
 		case 0: SPRINTF(drm, "[BX+SI]");
 			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si), vramRealByte(dods,vcpu.bx+vcpu.si));
 			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si), vramRealWord(dods,vcpu.bx+vcpu.si));
@@ -95,13 +95,13 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx), vramRealByte(dods,vcpu.bx));
 			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx), vramRealWord(dods,vcpu.bx));
 			break;
-		default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X),RM(%02X)>", _GetModRM_MOD(modrm), RM);break;}
+		default:SPRINTF(drm, "<ERROR:ModRM_MOD(%02X),ModRM_RM(%02X)>", _GetModRM_MOD(modrm), _GetModRM_RM(modrm));break;}
 		break;
 	case 1:
 		disp8 = (t_nsbit8)vramRealByte(dvcs, dvip);dvip += 1;
 		sign = (disp8 & 0x80) ? '-' : '+';
 		disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
-		switch(RM) {
+		switch(_GetModRM_RM(modrm)) {
 		case 0: SPRINTF(drm, "[BX+SI%c%02X]", sign, disp8u);
 			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp8), vramRealByte(dods,vcpu.bx+vcpu.si+disp8));
 			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp8), vramRealWord(dods,vcpu.bx+vcpu.si+disp8));
@@ -134,11 +134,11 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+disp8), vramRealByte(dods,vcpu.bx+disp8));
 			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+disp8), vramRealWord(dods,vcpu.bx+disp8));
 			break;
-		default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X),RM(%02X)>", _GetModRM_MOD(modrm), RM);break;}
+		default:SPRINTF(drm, "<ERROR:ModRM_MOD(%02X),ModRM_RM(%02X)>", _GetModRM_MOD(modrm), _GetModRM_RM(modrm));break;}
 		break;
 	case 2:
 		disp16 = vramRealWord(dvcs,dvip);dvip += 2;
-		switch(RM) {
+		switch(_GetModRM_RM(modrm)) {
 		case 0: SPRINTF(drm, "[BX+SI+%04X]", disp16);
 			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp16), vramRealByte(dods,vcpu.bx+vcpu.si+disp16));
 			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+vcpu.si+disp16), vramRealWord(dods,vcpu.bx+vcpu.si+disp16));
@@ -171,11 +171,11 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 			if (rmbit == 8)       SPRINTF(dtip, "%s:%04X=%02X", dds, (t_nubit16)(vcpu.bx+disp16), vramRealByte(dods,vcpu.bx+disp16));
 			else if (rmbit == 16) SPRINTF(dtip, "%s:%04X=%04X", dds, (t_nubit16)(vcpu.bx+disp16), vramRealWord(dods,vcpu.bx+disp16));
 			break;
-		default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X),RM(%02X)>", _GetModRM_MOD(modrm), RM);break;}
+		default:SPRINTF(drm, "<ERROR:ModRM_MOD(%02X),ModRM_RM(%02X)>", _GetModRM_MOD(modrm), _GetModRM_RM(modrm));break;}
 		break;
 	case 3:
 		ismem = 0x00;
-		switch(RM) {
+		switch(_GetModRM_RM(modrm)) {
 		case 0: if(rmbit == 8) SPRINTF(drm, "AL"); else SPRINTF(drm, "AX");break;
 		case 1: if(rmbit == 8) SPRINTF(drm, "CL"); else SPRINTF(drm, "CX");break;
 		case 2: if(rmbit == 8) SPRINTF(drm, "DL"); else SPRINTF(drm, "DX");break;
@@ -184,21 +184,21 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 		case 5: if(rmbit == 8) SPRINTF(drm, "CH"); else SPRINTF(drm, "BP");break;
 		case 6: if(rmbit == 8) SPRINTF(drm, "DH"); else SPRINTF(drm, "SI");break;
 		case 7: if(rmbit == 8) SPRINTF(drm, "BH"); else SPRINTF(drm, "DI");break;
-		default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X),RM(%02X)>", _GetModRM_MOD(modrm), RM);break;}
+		default:SPRINTF(drm, "<ERROR:ModRM_MOD(%02X),ModRM_RM(%02X)>", _GetModRM_MOD(modrm), _GetModRM_RM(modrm));break;}
 		break;
-	default:SPRINTF(drm, "<ERROR:_GetModRM_MOD(modrm)(%02X)>", _GetModRM_MOD(modrm));break;}
+	default:SPRINTF(drm, "<ERROR:ModRM_MOD(modrm)(%02X)>", _GetModRM_MOD(modrm));break;}
 	switch(regbit) {
-	case 0: rid = REG;break;
+	case 0: rid = _GetModRM_REG(modrm);break;
 	case 4:
-		switch(REG) {
+		switch(_GetModRM_REG(modrm)) {
 		case 0: SPRINTF(dr, "ES");break;
 		case 1: SPRINTF(dr, "CS");break;
 		case 2: SPRINTF(dr, "SS");break;
 		case 3: SPRINTF(dr, "DS");break;
-		default:SPRINTF(dr, "<ERROR:REGBIT(%02X),REG(%02X)>", regbit, REG);break;}
+		default:SPRINTF(dr, "<ERROR:REGBIT(%02X),ModRM_REG(%02X)>", regbit, _GetModRM_REG(modrm));break;}
 		break;
 	case 8:
-		switch(REG) {
+		switch(_GetModRM_REG(modrm)) {
 		case 0: SPRINTF(dr, "AL");break;
 		case 1: SPRINTF(dr, "CL");break;
 		case 2: SPRINTF(dr, "DL");break;
@@ -207,10 +207,10 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 		case 5: SPRINTF(dr, "CH");break;
 		case 6: SPRINTF(dr, "DH");break;
 		case 7: SPRINTF(dr, "BH");break;
-		default:SPRINTF(dr, "<ERROR:REGBIT(%02X),REG(%02X)>", regbit, REG);break;}
+		default:SPRINTF(dr, "<ERROR:REGBIT(%02X),ModRM_REG(%02X)>", regbit, _GetModRM_REG(modrm));break;}
 		break;
 	case 16:
-		switch(REG) {
+		switch(_GetModRM_REG(modrm)) {
 		case 0: SPRINTF(dr, "AX");break;
 		case 1: SPRINTF(dr, "CX");break;
 		case 2: SPRINTF(dr, "DX");break;
@@ -219,12 +219,12 @@ static void GetModRegRM(t_nubit8 regbit,t_nubit8 rmbit)
 		case 5: SPRINTF(dr, "BP");break;
 		case 6: SPRINTF(dr, "SI");break;
 		case 7: SPRINTF(dr, "DI");break;
-		default:SPRINTF(dr, "<ERROR:REGBIT(%02X),REG(%02X)>", regbit, REG);break;}
+		default:SPRINTF(dr, "<ERROR:REGBIT(%02X),ModRM_REG(%02X)>", regbit, _GetModRM_REG(modrm));break;}
 		break;
 	default:SPRINTF(dr, "<ERROR:REGBIT(%02X)>", regbit);break;}
 }
 
-static void DB()
+static void UndefinedOpcode()
 {
 	t_nubit8 opcode = vramRealByte(dvcs, dvip);
 	dvip++;
@@ -862,16 +862,6 @@ static void POP_DI()
 	dvip++;
 	SPRINTF(dop, "POP");
 	SPRINTF(dopr, "DI");
-}
-static void OprSize()
-{
-	dvip++;
-	SPRINTF(dop, "OPR");
-}
-static void AddrSize()
-{
-	dvip++;
-	SPRINTF(dop, "ADDR");
 }
 static void JO()
 {
@@ -1907,7 +1897,7 @@ static t_bool IsPrefix(t_nubit8 opcode)
 	case 0xf0: case 0xf2: case 0xf3:
 	case 0x2e: case 0x36: case 0x3e: case 0x26:
 	//case 0x64: case 0x65:
-	case 0x66: case 0x67:
+	//case 0x66: case 0x67:
 				return 0x01;break;
 	default:	return 0x00;break;
 	}
@@ -1924,9 +1914,9 @@ static void exec(t_nubit8 opcode)
 {
 	switch (opcode) {
 	case 0x00: ADD_RM8_R8();   break;
-	case 0x01: ADD_RM16_R16();break;
+	case 0x01: ADD_RM16_R16(); break;
 	case 0x02: ADD_R8_RM8();   break;
-	case 0x03: ADD_R16_RM16();break;
+	case 0x03: ADD_R16_RM16(); break;
 	case 0x04: ADD_AL_I8();    break;
 	case 0x05: ADD_AX_I16();   break;
 	case 0x06: PUSH_ES();      break;
@@ -1940,49 +1930,49 @@ static void exec(t_nubit8 opcode)
 	case 0x0e: PUSH_CS();      break;
 	case 0x0f: POP_CS();       break; //case 0x0f: INS_0F();     break;
 	case 0x10: ADC_RM8_R8();   break;
-	case 0x11: ADC_RM16_R16();break;
+	case 0x11: ADC_RM16_R16(); break;
 	case 0x12: ADC_R8_RM8();   break;
-	case 0x13: ADC_R16_RM16();break;
+	case 0x13: ADC_R16_RM16(); break;
 	case 0x14: ADC_AL_I8();    break;
 	case 0x15: ADC_AX_I16();   break;
 	case 0x16: PUSH_SS();      break;
 	case 0x17: POP_SS();       break;
 	case 0x18: SBB_RM8_R8();   break;
-	case 0x19: SBB_RM16_R16();break;
+	case 0x19: SBB_RM16_R16(); break;
 	case 0x1a: SBB_R8_RM8();   break;
-	case 0x1b: SBB_R16_RM16();break;
+	case 0x1b: SBB_R16_RM16(); break;
 	case 0x1c: SBB_AL_I8();    break;
 	case 0x1d: SBB_AX_I16();   break;
 	case 0x1e: PUSH_DS();      break;
 	case 0x1f: POP_DS();       break;
 	case 0x20: AND_RM8_R8();   break;
-	case 0x21: AND_RM16_R16();break;
+	case 0x21: AND_RM16_R16(); break;
 	case 0x22: AND_R8_RM8();   break;
-	case 0x23: AND_R16_RM16();break;
+	case 0x23: AND_R16_RM16(); break;
 	case 0x24: AND_AL_I8();    break;
 	case 0x25: AND_AX_I16();   break;
 	case 0x26: ES();           break;
 	case 0x27: DAA();          break;
 	case 0x28: SUB_RM8_R8();   break;
-	case 0x29: SUB_RM16_R16();break;
+	case 0x29: SUB_RM16_R16(); break;
 	case 0x2a: SUB_R8_RM8();   break;
-	case 0x2b: SUB_R16_RM16();break;
+	case 0x2b: SUB_R16_RM16(); break;
 	case 0x2c: SUB_AL_I8();    break;
 	case 0x2d: SUB_AX_I16();   break;
 	case 0x2e: CS();           break;
 	case 0x2f: DAS();          break;
 	case 0x30: XOR_RM8_R8();   break;
-	case 0x31: XOR_RM16_R16();break;
+	case 0x31: XOR_RM16_R16(); break;
 	case 0x32: XOR_R8_RM8();   break;
-	case 0x33: XOR_R16_RM16();break;
+	case 0x33: XOR_R16_RM16(); break;
 	case 0x34: XOR_AL_I8();    break;
 	case 0x35: XOR_AX_I16();   break;
 	case 0x36: SS();           break;
 	case 0x37: AAA();          break;
 	case 0x38: CMP_RM8_R8();   break;
-	case 0x39: CMP_RM16_R16();break;
+	case 0x39: CMP_RM16_R16(); break;
 	case 0x3a: CMP_R8_RM8();   break;
-	case 0x3b: CMP_R16_RM16();break;
+	case 0x3b: CMP_R16_RM16(); break;
 	case 0x3c: CMP_AL_I8();    break;
 	case 0x3d: CMP_AX_I16();   break;
 	case 0x3e: DS();           break;
@@ -2019,22 +2009,22 @@ static void exec(t_nubit8 opcode)
 	case 0x5d: POP_BP();       break;
 	case 0x5e: POP_SI();       break;
 	case 0x5f: POP_DI();       break;
-	case 0x60: DB();           break;
-	case 0x61: DB();           break;
-	case 0x62: DB();           break;
-	case 0x63: DB();           break;
-	case 0x64: DB();           break;
-	case 0x65: DB();           break;
-	case 0x66: OprSize();      break; //
-	case 0x67: AddrSize();     break; //
-	case 0x68: DB();           break; //case 0x68: PUSH_I16();   break;
-	case 0x69: DB();           break;
-	case 0x6a: DB();           break;
-	case 0x6b: DB();           break;
-	case 0x6c: DB();           break;
-	case 0x6d: DB();           break;
-	case 0x6e: DB();           break;
-	case 0x6f: DB();           break;
+	case 0x60: UndefinedOpcode(); break;
+	case 0x61: UndefinedOpcode(); break;
+	case 0x62: UndefinedOpcode(); break;
+	case 0x63: UndefinedOpcode(); break;
+	case 0x64: UndefinedOpcode(); break;
+	case 0x65: UndefinedOpcode(); break;
+	case 0x66: UndefinedOpcode(); break;
+	case 0x67: UndefinedOpcode(); break;
+	case 0x68: UndefinedOpcode(); break;
+	case 0x69: UndefinedOpcode(); break;
+	case 0x6a: UndefinedOpcode(); break;
+	case 0x6b: UndefinedOpcode(); break;
+	case 0x6c: UndefinedOpcode(); break;
+	case 0x6d: UndefinedOpcode(); break;
+	case 0x6e: UndefinedOpcode(); break;
+	case 0x6f: UndefinedOpcode(); break;
 	case 0x70: JO();           break;
 	case 0x71: JNO();          break;
 	case 0x72: JC();           break;
@@ -2060,9 +2050,9 @@ static void exec(t_nubit8 opcode)
 	case 0x86: XCHG_R8_RM8();  break;
 	case 0x87: XCHG_R16_RM16();break;
 	case 0x88: MOV_RM8_R8();   break;
-	case 0x89: MOV_RM16_R16();break;
+	case 0x89: MOV_RM16_R16(); break;
 	case 0x8a: MOV_R8_RM8();   break;
-	case 0x8b: MOV_R16_RM16();break;
+	case 0x8b: MOV_R16_RM16(); break;
 	case 0x8c: MOV_RM16_SREG();break;
 	case 0x8d: LEA_R16_M16();  break;
 	case 0x8e: MOV_SREG_RM16();break;
@@ -2115,16 +2105,16 @@ static void exec(t_nubit8 opcode)
 	case 0xbd: MOV_BP_I16();   break;
 	case 0xbe: MOV_SI_I16();   break;
 	case 0xbf: MOV_DI_I16();   break;
-	case 0xc0: DB();           break;
-	case 0xc1: DB();           break;
+	case 0xc0: UndefinedOpcode(); break;
+	case 0xc1: UndefinedOpcode(); break;
 	case 0xc2: RET_I16();      break;
 	case 0xc3: RET();          break;
 	case 0xc4: LES_R16_M16();  break;
 	case 0xc5: LDS_R16_M16();  break;
 	case 0xc6: MOV_M8_I8();    break;
 	case 0xc7: MOV_M16_I16();  break;
-	case 0xc8: DB();           break;
-	case 0xc9: DB();           break;
+	case 0xc8: UndefinedOpcode(); break;
+	case 0xc9: UndefinedOpcode(); break;
 	case 0xca: RETF_I16();     break;
 	case 0xcb: RETF();         break;
 	case 0xcc: INT3();         break;
@@ -2137,16 +2127,16 @@ static void exec(t_nubit8 opcode)
 	case 0xd3: INS_D3();       break;
 	case 0xd4: AAM();          break;
 	case 0xd5: AAD();          break;
-	case 0xd6: DB();           break;
+	case 0xd6: UndefinedOpcode(); break;
 	case 0xd7: XLAT();         break;
-	case 0xd8: DB();           break;
-	case 0xd9: DB();           break; //case 0xd9: INS_D9();     break;
-	case 0xda: DB();           break;
-	case 0xdb: DB();           break; //case 0xdb: INS_DB();     break;
-	case 0xdc: DB();           break;
-	case 0xdd: DB();           break;
-	case 0xde: DB();           break;
-	case 0xdf: DB();           break;
+	case 0xd8: UndefinedOpcode(); break;
+	case 0xd9: UndefinedOpcode(); break; //case 0xd9: INS_D9();     break;
+	case 0xda: UndefinedOpcode(); break;
+	case 0xdb: UndefinedOpcode(); break; //case 0xdb: INS_UndefinedOpcode();     break;
+	case 0xdc: UndefinedOpcode(); break;
+	case 0xdd: UndefinedOpcode(); break;
+	case 0xde: UndefinedOpcode(); break;
+	case 0xdf: UndefinedOpcode(); break;
 	case 0xe0: LOOPNZ();       break;
 	case 0xe1: LOOPZ();        break;
 	case 0xe2: LOOP();         break;
@@ -2157,7 +2147,7 @@ static void exec(t_nubit8 opcode)
 	case 0xe7: OUT_I8_AX();    break;
 	case 0xe8: CALL_REL16();   break;
 	case 0xe9: JMP_REL16();    break;
-	case 0xea: JMP_PTR16_16();break;
+	case 0xea: JMP_PTR16_16(); break;
 	case 0xeb: JMP_REL8();     break;
 	case 0xec: IN_AL_DX();     break;
 	case 0xed: IN_AX_DX();     break;
@@ -2179,7 +2169,7 @@ static void exec(t_nubit8 opcode)
 	case 0xfd: STD();          break;
 	case 0xfe: INS_FE();       break;
 	case 0xff: INS_FF();       break;
-	default:   DB();           break;
+	default:   UndefinedOpcode(); break;
 	}
 }
 
