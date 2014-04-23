@@ -65,7 +65,7 @@ static void CursorLineFeed(t_nubit8 page)
 		       0x00, 2 * qdcgaVarRowSize);//最后一行置零
 	}
 }
-static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
+static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool flagdup,
 	t_bool move, t_nubit8 charprop, t_nubit8 page, t_nubit8 x, t_nubit8 y)
 {
 	t_nubitcc i;
@@ -94,7 +94,7 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 			CursorForward(page);
 			break;
 		}
-		if (!dup) string++;
+		if (!flagdup) string++;
 	}
 	if (!move) {
 		qdcgaVarCursorPosRow(page) = x;
@@ -119,15 +119,15 @@ t_bool vapiCallBackDisplayGetCursorChange()
 		vvadp.oldcurposy = qdcgaVarCursorPosCol(qdcgaVarPageNum);
 		vvadp.oldcurtop  = qdcgaVarCursorTop;
 		vvadp.oldcurbottom = qdcgaVarCursorBottom;
-		return 0x01;
-	} else return 0x00;
+		return 1;
+	} else return 0;
 }
 t_bool vapiCallBackDisplayGetBufferChange()
 {
 	if (memcmp((void *)vvadp.bufcomp, (void *)qdcgaGetTextMemAddr, qdcgaVarRagenSize)) {
 		memcpy((void *)vvadp.bufcomp, (void *)qdcgaGetTextMemAddr, qdcgaVarRagenSize);
-		return 0x01;
-	} else return 0x00;
+		return 1;
+	} else return 0;
 }
 t_nubit16 vapiCallBackDisplayGetRowSize()
 {return qdcgaVarRowSize;}
@@ -156,27 +156,27 @@ void qdcgaSetDisplayMode()
 	switch (_al) {
 	case 0x00:
 		qdcgaVarRowSize = 0x28; // 40
-		vvadp.colsize = 0x19; // 25
-		vvadp.color   = 0x00;
+		vvadp.colsize   = 0x19; // 25
+		vvadp.flagcolor = 0;
 		vapiDisplaySetScreen();
 		break;
 	case 0x01:
 		qdcgaVarRowSize = 0x28; // 40
-		vvadp.colsize = 0x19; // 25
-		vvadp.color   = 0x01;
+		vvadp.colsize   = 0x19; // 25
+		vvadp.flagcolor = 1;
 		vapiDisplaySetScreen();
 		break;
 	case 0x02:
 	case 0x07:
 		qdcgaVarRowSize = 0x50; // 80
-		vvadp.colsize = 0x19; // 25
-		vvadp.color   = 0x00;
+		vvadp.colsize   = 0x19; // 25
+		vvadp.flagcolor = 0;
 		vapiDisplaySetScreen();
 		break;
 	case 0x03:
 		qdcgaVarRowSize = 0x50; // 80
-		vvadp.colsize = 0x19; // 25
-		vvadp.color   = 0x01;
+		vvadp.colsize   = 0x19; // 25
+		vvadp.flagcolor = 1;
 		vapiDisplaySetScreen();
 		break;
 	default:
@@ -401,7 +401,7 @@ void qdcgaReset()
 {
 	qdbiosInt[0x10] = (t_faddrcc)INT_10; /* soft cga*/
 	qdbiosMakeInt(0x10, "qdx 10\niret");
-	vvadp.color   = 0x01;
+	vvadp.flagcolor = 1;
 	qdcgaVarRowSize = 0x50; // 80
 	vvadp.colsize = 0x19; // 25
 	qdcgaVarPageNum = 0x00;

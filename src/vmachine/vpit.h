@@ -55,7 +55,7 @@ void IO_Write_FF40();                                            /* set gate */
 void IO_Read_FF41();                                              /* refresh */
 #endif
 
-void vpitSetGate(t_nubit8 id, t_bool gate);  /* set gate value and load init */
+void vpitSetGate(t_nubit8 id, t_bool flaggate);  /* set gate value and load init */
 void vpitInit();
 void vpitReset();
 void vpitRefresh();                                    /* act as a CLK pulse */

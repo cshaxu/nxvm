@@ -1,7 +1,6 @@
 /* This file is a part of NXVM project. */
 
 #include "memory.h"
-#include "time.h"
 
 #include "vapi.h"
 
@@ -19,7 +18,7 @@ void IO_Write_0070()
 }
 void IO_Write_0071()
 {
-	t_nubitcc i;
+	t_nubit8 i;
 	t_nubit16 checksum = 0x00;
 	vcmos.reg[vcmos.rid] = vport.iobyte;
 	if((vcmos.rid > 0x0f) && (vcmos.rid < 0x2e))
@@ -51,7 +50,7 @@ void vcmosRefresh()
 	tcurr = time(NULL);
 	if (tcurr == tprev) return;
 	else tprev = tcurr;
-	ptm = localtime(&tcurr);
+	ptm = LOCALTIME(&tcurr);
 
 	century = (t_nubit8)(19 + ptm->tm_year / 100);
 	year    = (t_nubit8)(ptm->tm_year % 100);

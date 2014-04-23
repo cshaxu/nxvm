@@ -55,8 +55,8 @@ static t_bool HasINTR(t_pic *vpic)
 	t_nubit8 isid;                    /* top in service int id in master pic */
 	irid = GetIntrTopId(vpic);
 	isid = GetIsrTopId(vpic);
-	if (irid == 0x08) return 0x00;
-	if (isid == 0x08) return 0x01;
+	if (irid == 0x08) return 0;
+	if (isid == 0x08) return 1;
 	if (irid < vpic->irx) irid += 0x08;
 	if (isid < vpic->irx) isid += 0x08;
 	if (GetSFNM(vpic)) return irid <= isid;
@@ -106,10 +106,10 @@ static void IO_Read_00x0(t_pic *vpic)
  */
 static void IO_Write_00x0(t_pic *vpic)
 {
-	t_nubitcc id;
+	t_nubit8 id;
 	if (vport.iobyte & 0x10) {                                     /* ICW1 (D4=1) */
 		vpic->icw1 = vport.iobyte;
-		vpic->flaginit = ICW2;
+		vpic->status = ICW2;
 		if (GetIC4(vpic)) ;                                   /* D0=1, IC4=1 */
 		else vpic->icw4 = 0x00;                               /* D0=0, IC4=0 */
 		if (GetSNGL(vpic)) ;                         /* D1=1, SNGL=1, ICW3=0 */
@@ -193,20 +193,20 @@ static void IO_Read_00x1(t_pic *vpic)
  */
 static void IO_Write_00x1(t_pic *vpic)
 {
-	switch (vpic->flaginit) {
+	switch (vpic->status) {
 	case ICW2:
 		vpic->icw2 = vport.iobyte & (~0x07);
 		if (!((vpic->icw1) & 0x02))             /* ICW1.D1=0, SNGL=0, ICW3=1 */
-			vpic->flaginit = ICW3;
+			vpic->status = ICW3;
 		else if (vpic->icw1 & 0x01)                      /* ICW1.D0=1, IC4=1 */
-			vpic->flaginit = ICW4;
+			vpic->status = ICW4;
 		else
-			vpic->flaginit = OCW1;
+			vpic->status = OCW1;
 		break;
 	case ICW3:
 		vpic->icw3 = vport.iobyte;
-		if ((vpic->icw1) & 0x01) vpic->flaginit = ICW4;      /* ICW1.D0=1, IC4=1 */
-		else vpic->flaginit = OCW1;
+		if ((vpic->icw1) & 0x01) vpic->status = ICW4;      /* ICW1.D0=1, IC4=1 */
+		else vpic->status = OCW1;
 		break;
 	case ICW4:
 		vpic->icw4 = vport.iobyte & 0x1f;
@@ -220,7 +220,7 @@ static void IO_Write_00x1(t_pic *vpic)
 		} else ;                                        /* BUF=0, Non-buffer */
 		if ((vpic->icw4) & 0x10) ;      /* SFNM=1, Special Fully Nested Mode */
 		else ;                      /* SFNM=0, Non-special Fully Nested Mode */
-		vpic->flaginit = OCW1;
+		vpic->status = OCW1;
 		break;
 	case OCW1:
 		vpic->ocw1 = vport.iobyte;
@@ -248,7 +248,7 @@ void IO_Read_FF20()
 
 	vapiPrint("INFO PIC 1\n==========\n");
 	vapiPrint("Init Status = %d, IRX = %x\n",
-		vpic1.flaginit, vpic1.irx);
+		vpic1.status, vpic1.irx);
 	vapiPrint("IRR = %x, ISR = %x, IMR = %x, intr = %x\n",
 		vpic1.irr, vpic1.isr, vpic1.imr, vpic1.irr & (~vpic1.imr));
 	vapiPrint("ICW1 = %x, LTIM = %d, SNGL = %d, IC4 = %d\n",
@@ -268,7 +268,7 @@ void IO_Read_FF20()
 
 	vapiPrint("INFO PIC 2\n==========\n");
 	vapiPrint("Init Status = %d, IRX = %x\n",
-		vpic2.flaginit, vpic2.irx);
+		vpic2.status, vpic2.irx);
 	vapiPrint("IRR = %x, ISR = %x, IMR = %x, intr = %x\n",
 		vpic2.irr, vpic2.isr, vpic2.imr, vpic2.irr & (~vpic2.imr));
 	vapiPrint("ICW1 = %x, LTIM = %d, SNGL = %d, IC4 = %d\n",
@@ -312,13 +312,13 @@ void vpicSetIRQ(t_nubit8 irqid)
 	case 0x0f:	vpic2.irr |= 0x80;vpic1.irr |= 0x04;break;
 	default:break;}
 }
-t_bool   vpicScanINTR()
+t_bool vpicScanINTR()
 {
-	t_bool intr1;
-	intr1 = HasINTR(&vpic1);
-	if (intr1 && (GetIntrTopId(&vpic1) == 0x02) )
-			return HasINTR(&vpic2);
-	return intr1;
+	t_bool flagintr;
+	flagintr = HasINTR(&vpic1);
+	if (flagintr && (GetIntrTopId(&vpic1) == 0x02) )
+			flagintr = HasINTR(&vpic2);
+	return flagintr;
 }
 t_nubit8 vpicPeekINTR()
 {
@@ -367,7 +367,7 @@ void vpicReset()
 {
 	memset(&vpic1, 0x00, sizeof(t_pic));
 	memset(&vpic2, 0x00, sizeof(t_pic));
-	vpic1.flaginit = vpic2.flaginit = ICW1;
+	vpic1.status = vpic2.status = ICW1;
 	vpic1.ocw3 = vpic2.ocw3 = 0x02;
 }
 void vpicRefresh()

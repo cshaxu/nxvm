@@ -5,6 +5,6 @@
 
 #include "../vglobal.h"
 
-t_nubitcc aasm(const t_string stmt, t_nubit16 seg, t_nubit16 off);
+t_nubitcc aasm(const t_strptr stmt, t_nubit16 seg, t_nubit16 off);
 
 #endif

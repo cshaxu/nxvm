@@ -5,16 +5,20 @@
 #ifndef NXVM_VCMOS_H
 #define NXVM_VCMOS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "vglobal.h"
 
 #define VCMOS_DEBUG
 
 #define VCMOS_RTC_SECOND         0x00
-#define VCMOS_RTC_SECOND_ALAR_R16_RM16M   0x01
+#define VCMOS_RTC_SECOND_ALARM   0x01
 #define VCMOS_RTC_MINUTE         0x02
-#define VCMOS_RTC_MINUTE_ALAR_R16_RM16M   0x03
+#define VCMOS_RTC_MINUTE_ALARM   0x03
 #define VCMOS_RTC_HOUR           0x04
-#define VCMOS_RTC_HOUR_ALAR_R16_RM16M     0x05
+#define VCMOS_RTC_HOUR_ALARM     0x05
 #define VCMOS_RTC_DAY_WEEK       0x06
 #define VCMOS_RTC_DAY_MONTH      0x07
 #define VCMOS_RTC_MONTH          0x08
@@ -52,5 +56,9 @@ void vcmosInit();
 void vcmosReset();
 void vcmosRefresh();
 void vcmosFinal();
+
+#ifdef __cplusplus
+}/*_EOCD_*/
+#endif
 
 #endif

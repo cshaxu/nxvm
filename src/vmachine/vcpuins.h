@@ -112,7 +112,7 @@ typedef struct {
 extern t_cpuins vcpuins;
 extern t_cpurec vcpurec;
 
-t_bool vcpuinsReadIns(t_nubit32 linear, t_vaddrcc rcode);
+t_bool vcpuinsReadLinear(t_nubit32 linear, t_vaddrcc rcode, t_nubit8 byte);
 
 void vcpuinsInit();
 void vcpuinsReset();

@@ -20,7 +20,7 @@ t_fdc vfdc;
 #define CMD_SEEK               0x0f  /* ! seek (both(?)) heads to cylinder X */
 #define CMD_VERSION            0x10     /* ! used during initialization once */
 
-#define CMD_PERPENDICULAR_R16_RM16_MODE 0x12
+#define CMD_PERPENDICULAR_MODE 0x12
                                   /* ! used during initialization once maybe */
 #define CMD_CONFIGURE          0x13           /* ! set controller parameters */
 #define CMD_LOCK               0x14
@@ -149,7 +149,7 @@ static void ExecCmdRecalibrate()
 	vfdc.st0   |= 0x20;
 	if (GetENRQ(vfdc.dor)) {
 		vpicSetIRQ(0x06);
-		vfdc.flagintr = 0x01;
+		vfdc.flagintr = 1;
 	}
 	SetMSRReadyWrite;
 }
@@ -158,7 +158,7 @@ static void ExecCmdSenseInterrupt()
 	if (vfdc.flagintr) {
 		vfdc.ret[0]    = vfdc.st0;
 		vfdc.ret[1]    = (t_nubit8)vfdd.cyl;
-		vfdc.flagintr  = 0x00;
+		vfdc.flagintr  = 0;
 	} else vfdc.ret[0] = vfdc.st0 = VFDC_RET_ERROR;
 	SetMSRReadyRead;
 }
@@ -172,7 +172,7 @@ static void ExecCmdSeek()
 	vfdc.st0   |= 0x20;
 	if (GetENRQ(vfdc.dor)) {
 		vpicSetIRQ(0x06);
-		vfdc.flagintr = 0x01;
+		vfdc.flagintr = 1;
 	}
 	SetMSRReadyWrite;
 }
@@ -212,7 +212,7 @@ static void ExecCmdFormatTrack()
 	vfdc.ret[6] = 0x00;
 	if (GetENRQ(vfdc.dor)) {
 		vpicSetIRQ(0x06);
-		vfdc.flagintr = 0x01;
+		vfdc.flagintr = 1;
 	}
 	SetMSRReadyRead;
 }
@@ -384,7 +384,7 @@ void vfdcTransFinal()
 	vfdc.ret[6] = GetBPSC(vfdd.nbyte);
 	if (GetENRQ(vfdc.dor)) {
 		vpicSetIRQ(0x06);
-		vfdc.flagintr = 0x01;
+		vfdc.flagintr = 1;
 	}
 	SetMSRReadyRead;
 }
@@ -403,7 +403,7 @@ void vfdcReset()
 #ifdef VFDC_DEBUG
 void IO_Read_F3F0()
 {
-	t_nubitcc i;
+	t_nubit8 i;
 	vapiPrint("FDC INFO\n========\n");
 	vapiPrint("msr = %x, dir = %x, dor = %x, ccr = %x, dr = %x\n",
 		vfdc.msr,vfdc.dir,vfdc.dor,vfdc.ccr,vfdc.dr);

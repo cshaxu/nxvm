@@ -1,6 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
 
@@ -84,7 +83,7 @@ do { \
 	fprintf(vrecord.fp, "\n");\
 } while (0)
 
-void recordNow(const t_string fname)
+void recordNow(const t_strptr fname)
 {
 	vrecord.flagnow = 1;
 	if (!fname) {
@@ -97,7 +96,7 @@ void recordNow(const t_string fname)
 		return;
 	}
 }
-void recordDump(const t_string fname)
+void recordDump(const t_strptr fname)
 {
 	t_cpu oldcpu;
 	t_nubitcc i = 0, j;
@@ -142,7 +141,7 @@ void recordExec(t_cpurec *rcpurec)
 	t_nubitcc i, j;
 #if RECORD_SELECT_FIRST == 1
 	if (vrecord.size == RECORD_SIZE) {
-		vmachine.flagrecord = 0x00;
+		vmachine.flagrecord = 0;
 		return;
 	}
 #endif

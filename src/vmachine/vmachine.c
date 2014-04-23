@@ -3,6 +3,7 @@
 #include "memory.h"
 
 #include "debug/aasm.h"
+#include "debug/aasm32.h"
 #include "debug/dasm32.h"
 #include "debug/record.h"
 #include "debug/debug.h"
@@ -75,28 +76,23 @@ void vapiCallBackMachineStop() {vmachineStop();}
 static void vmachineAsmTest()
 {
 	static t_nubitcc total = 0;
-	t_nubitcc i,lend, lena;
-	char fetch[0x50], result[0x50];
-	t_nubit8 ins[0x20];
+	t_nubit8 i, lend1, lend2, lena;
+	t_string dstr1, dstr2;
+	t_nubit8 ins1[15], ins2[15];
 	total++;
-	vcpuinsReadIns((_cs << 4) + _ip, (t_vaddrcc)ins);
-	lend = dasm32(fetch, (t_vaddrcc)ins);
-	lena = aasm(fetch, _cs, _ip);
-	dasm32(result, (t_vaddrcc)ins);
-	for (i = 0;i < 0x50;++i) {
-		if (fetch[i] == '\n') fetch[i] = ' ';
-		if (result[i] == '\n') result[i] = ' ';
-	}
-	if (lena != lend || memcmp(ins, (void *)vramGetRealAddr(_cs, _ip), lend) || STRCMP(fetch,result)) {
-		vapiPrint("diff at #%d\t%04X:%04X\n", total, _cs, _ip);
-		for (i = 0;i < lend;++i) vapiPrint("%02X", ins[i]);
-		vapiPrint("\t%s\n", fetch);
-		for (i = 0;i < lena;++i) vapiPrint("%02X", vramRealByte(_cs, _ip+i));
-		vapiPrint("\t%s\n", result);
-		if (lena < lend) {
-			for (i = lena;i < lend;++i)
-				vramRealByte(_cs, _ip + i) = 0x90;
-		}
+	vcpuinsReadLinear((_cs << 4) + _ip, (t_vaddrcc)ins1, 15);
+	lend1 = dasm32(dstr1, (t_vaddrcc)ins1);
+	lena  = aasm32(dstr1, (t_vaddrcc)ins2);
+	lend2 = dasm32(dstr2, (t_vaddrcc)ins2);
+	if (lena != lend1 || lena != lend2 || lend1 != lend2 ||
+		memcmp(ins1, ins2, lend1) || STRCMP(dstr1, dstr2)) {
+		vapiPrint("diff at #%d %04X:%04X, len(a=%x,d1=%x,d2=%x)\n",
+			total, _cs, _ip, lena, lend1, lend2);
+		for (i = 0;i < lend1;++i) vapiPrint("%02X", ins1[i]);
+		vapiPrint("\t%s\n", dstr1);
+		for (i = 0;i < lend2;++i) vapiPrint("%02X", ins2[i]);
+		vapiPrint("\t%s\n", dstr2);
+		vmachineStop();
 	}
 }
 
@@ -107,7 +103,7 @@ void vmachineStart()
 }
 void vmachineResume() {
 	if (vmachine.flagrun) return;
-	vmachine.flagrun = 0x01;
+	vmachine.flagrun = 1;
 	vapiStartMachine();
 }
 void vmachineStop()  {vmachine.flagrun = 0;}
@@ -166,7 +162,7 @@ void vmachineInit()
 	//vkeybInit();
 	vvadpInit();
 	//vdispInit();
-	//vmachine.flagmode = 0x01;
+	//vmachine.flagmode = 1;
 }
 void vmachineFinal()
 {

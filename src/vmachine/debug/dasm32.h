@@ -5,6 +5,6 @@
 
 #include "../vcpu.h"
 
-t_nubit8 dasm32(t_string stmt, t_vaddrcc rcode);
+t_nubit8 dasm32(t_strptr stmt, t_vaddrcc rcode);
 
 #endif

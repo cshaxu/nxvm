@@ -16,29 +16,25 @@ test code
 	cmp	bx,ax
 */
 
-#include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-#include "stdarg.h"
 
 #include "../vapi.h"
+#include "../vmachine.h"
 #include "../vcpuins.h"
 
 #include "aasm.h"
 #include "dasm32.h"
 #include "debug.h"
 
-#define MAXLINE 256
 #define MAXNARG 256
 #define MAXNASMARG 4
 
 static t_nubitcc errPos;
-static t_nubitcc narg;
+static t_nubit8 narg;
 static char **arg;
-static t_bool exitFlag;
-static char cmdBuff[MAXLINE];
-static char cmdCopy[MAXLINE];
-static char filename[MAXLINE];
+static t_bool flagexit;
+static t_string cmdBuff, cmdCopy, filename;
 
 static t_nubit16 dumpSegRec;
 static t_nubit16 dumpPtrRec;
@@ -51,22 +47,11 @@ static t_nubit8  ucode[15];
 static t_nubit16 seg;
 static t_nubit16 ptr;
 
-static void lcase(t_string s)
-{
-	t_nubitcc i = 0;
-	if(s[0] == '\'') return;
-	while(s[i] != '\0') {
-		if(s[i] == '\n') s[i] = '\0';
-		else if(s[i] > 0x40 && s[i] < 0x5b)
-			s[i] += 0x20;
-		i++;
-	}
-}
 static void seterr(t_nubitcc pos)
 {
 	errPos = (t_nubitcc)(arg[pos] - cmdCopy + strlen(arg[pos]) + 1);
 }
-static t_nubit8 scannubit8(t_string s)
+static t_nubit8 scannubit8(t_strptr s)
 {
 	t_nubit8 ans = 0;
 	int i = 0;
@@ -82,7 +67,7 @@ static t_nubit8 scannubit8(t_string s)
 	}
 	return ans;
 }
-static t_nubit16 scannubit16(t_string s)
+static t_nubit16 scannubit16(t_strptr s)
 {
 	t_nubit16 ans = 0;
 	int i = 0;
@@ -97,7 +82,7 @@ static t_nubit16 scannubit16(t_string s)
 	}
 	return ans;
 }
-static t_nubit32 scannubit32(t_string s)
+static t_nubit32 scannubit32(t_strptr s)
 {
 	t_nubit32 ans = 0;
 	int i = 0;
@@ -112,9 +97,9 @@ static t_nubit32 scannubit32(t_string s)
 	}
 	return ans;
 }
-static void addrparse(t_nubit16 defseg,const t_string addr)
+static void addrparse(t_nubit16 defseg,const t_strptr addr)
 {
-	t_string cseg,cptr;
+	t_strptr cseg,cptr;
 	char ccopy[MAXLINE];
 	STRCPY(ccopy,addr);
 	cseg = STRTOK(ccopy,":");
@@ -147,16 +132,15 @@ static void aconsole()
 	t_nubit16 len;
 	char cmdAsmBuff[MAXLINE];
 	t_nubitcc errAsmPos;
-	t_bool exitAsmFlag = 0;
-	while(!exitAsmFlag) {
+	t_bool flagexitasm = 0;
+	while(!flagexitasm) {
 		addrprint(asmSegRec,asmPtrRec);
 		fflush(stdin);
 		vapiPrint("\b");
-		/*fflush(stdout);*/
 		FGETS(cmdAsmBuff,MAXLINE,stdin);
 		lcase(cmdAsmBuff);
 		if(!strlen(cmdAsmBuff)) {
-			exitAsmFlag = 1;
+			flagexitasm = 1;
 			continue;
 		}
 		if(cmdAsmBuff[0] == ';' ) continue;
@@ -267,8 +251,7 @@ static void d()
 // enter
 static void e()
 {
-	t_nubitcc i;
-	t_nubit8 val;
+	t_nubit8 i, val;
 	char s[MAXLINE];
 	if(narg == 1) seterr(0);
 	else if(narg == 2) {
@@ -296,7 +279,7 @@ static void e()
 // fill
 static void f()
 {
-	t_nubitcc nbyte;
+	t_nubit8 nbyte;
 	t_nubit8 val;
 	t_nubit16 i,j,end;
 	if(narg < 4) seterr(narg-1);
@@ -324,16 +307,16 @@ static void g()
 	}
 	switch(narg) {
 	case 1:
-		vmachine.flagbreak = 0x00;
+		vmachine.flagbreak = 0;
 		break;
 	case 2:
-		vmachine.flagbreak = 0x01;
+		vmachine.flagbreak = 1;
 		addrparse(_cs,arg[1]);
 		vmachine.breakcs = seg;
 		vmachine.breakip = ptr;
 		break;
 	case 3:
-		vmachine.flagbreak = 0x01;
+		vmachine.flagbreak = 1;
 		addrparse(_cs,arg[1]);
 		_cs = seg;
 		_ip = ptr;
@@ -345,7 +328,7 @@ static void g()
 	if(errPos) return;
 	vmachineResume();
 	while (vmachine.flagrun) vapiSleep(1);
-	vmachine.flagbreak = 0x00;
+	vmachine.flagbreak = 0;
 	rprintregs();
 }
 // hex
@@ -454,14 +437,14 @@ static void o()
 }
 // quit
 static void q()
-{exitFlag = 1;}
+{flagexit = 1;}
 // register
 static t_nubit8 uprintins(t_nubit16 seg, t_nubit16 off)
 {
 	t_nubitcc i;
 	t_nubit8 len;
 	char str[MAXLINE], stmt[MAXLINE], sbin[MAXLINE];
-	if (vcpuinsReadIns((seg << 4) + off, (t_vaddrcc)ucode)) {
+	if (vcpuinsReadLinear((seg << 4) + off, (t_vaddrcc)ucode, 15)) {
 		len = 0;
 		SPRINTF(str, "%04X:%04X <ERROR>", seg, off);
 	} else {
@@ -664,9 +647,10 @@ static void r()
 // search
 static void s()
 {
-	t_nubitcc i;
-	t_bool flag = 0x00;
+	t_nubit8 i;
+	t_bool flagfound = 0;
 	t_nubit16 p,pfront,start,end;
+	t_nubit8 cstart;
 	if(narg < 4) seterr(narg-1);
 	else {
 		addrparse(_ds,arg[1]);
@@ -674,18 +658,19 @@ static void s()
 		end = scannubit16(arg[2]);
 		if(!errPos) {
 			p = start;
+			cstart = scannubit8(arg[3]);
 			while(p <= end) {
-				if(vramRealByte(seg,p) == scannubit8(arg[3])) {
+				if(vramRealByte(seg,p) == cstart) {
 					pfront = p;
-					flag = 0x01;
+					flagfound = 1;
 					for(i = 3;i < narg;++i) {
 						if(vramRealByte(seg,p) != scannubit8(arg[i])) {
-							flag = 0x00;
+							flagfound = 0;
 							p = pfront+1;
 							break;
 						} else ++p;
 					}
-					if(flag) {
+					if(flagfound) {
 						addrprint(seg,pfront);
 						vapiPrint("\n");
 					}
@@ -816,73 +801,42 @@ static void w()
 /* DEBUG CMD END */
 
 /* EXTENDED DEBUG CMD BEGIN */
-
-t_nubit32 _dbgm_addr_physical_linear(t_nubit32 linear)
-{
-	/* paging not implemented */
-	if (linear > 0xfffe0000) linear &= 0x001fffff;
-	return linear;
-}
-t_nubit32 _dbgm_addr_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset)
-{
-	return (rsreg->base + offset);
-}
-t_nubit32 _dbgm_addr_physical_logical(t_cpu_sreg *rsreg, t_nubit32 offset)
-{
-	/* paging not implemented */
-	return _dbgm_addr_physical_linear(_dbgm_addr_linear_logical(rsreg, offset));
-}
-t_nubit64 _dbgm_read_physical(t_nubit32 physical, t_nubit8 byte)
-{
-	switch (byte) {
-	case 1: return vramByte(physical);
-	case 2: return vramWord(physical);
-	case 4: return vramDWord(physical);
-	case 8: return vramQWord(physical);
-	default:return 0;
-	}
-}
-t_nubit64 _dbgm_read_linear(t_nubit32 linear, t_nubit8 byte)
-{
-	return _dbgm_read_physical(_dbgm_addr_physical_linear(linear), byte);
-}
-t_nubit64 _dbgm_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_nubit8 byte)
-{
-	return _dbgm_read_physical(_dbgm_addr_physical_logical(rsreg, offset), byte);
-}
-
 t_nubit32 xdlin;
 t_nubit32 xulin;
 
 static void xdprint(t_nubit32 linear,t_nubit8 count)
 {
 	char t,c[0x11];
-	t_nubit32 i;
+	t_nubit32 ilinear;
 	t_nubit32 start = linear;
 	t_nubit32 end = linear + count - 1;
 	c[0x10] = '\0';
-	for(i = start - (start % 0x10);i < end + 0x10 - (end % 0x10);++i) {
-		if (i % 0x10 == 0) vapiPrint("L%08X  ", i);
-		if (i < start || i > end) {
+	for(ilinear = start - (start % 0x10);ilinear < end + 0x10 - (end % 0x10);++ilinear) {
+		if (ilinear % 0x10 == 0) vapiPrint("L%08X  ", ilinear);
+		if (ilinear < start || ilinear > end) {
 			vapiPrint("  ");
-			c[i % 0x10] = ' ';
+			c[ilinear % 0x10] = ' ';
 		} else {
-			c[i % 0x10] = vramByte(i);
-			vapiPrint("%02X",c[i % 0x10] & 0xff);
-			t = c[i % 0x10];
-			if((t >=1 && t <= 7) || t == ' ' ||
-				(t >=11 && t <= 12) ||
-				(t >=14 && t <= 31) ||
-				(t >=33 && t <= 128)) ;
-			else c[i%0x10] = '.';
+			if (vcpuinsReadLinear(ilinear, GetRef(c[ilinear % 0x10]), 1)) {
+				vapiPrint("<ERROR>\n");
+				return;
+			} else {
+				vapiPrint("%02X",c[ilinear % 0x10] & 0xff);
+				t = c[ilinear % 0x10];
+				if((t >=1 && t <= 7) || t == ' ' ||
+					(t >=11 && t <= 12) ||
+					(t >=14 && t <= 31) ||
+					(t >=33 && t <= 128)) ;
+				else c[ilinear%0x10] = '.';
+			}
 		}
 		vapiPrint(" ");
-		if(i % 0x10 == 7 && i >= start && i < end) vapiPrint("\b-");
-		if((i + 1) % 0x10 == 0) {
+		if(ilinear % 0x10 == 7 && ilinear >= start && ilinear < end) vapiPrint("\b-");
+		if((ilinear + 1) % 0x10 == 0) {
 			vapiPrint("  %s\n",c);
 		}
 	}
-	xdlin = i;
+	xdlin = ilinear;
 }
 static void xd()
 {
@@ -904,7 +858,7 @@ static t_nubit8 xuprintins(t_nubit32 linear)
 	t_nubitcc i;
 	t_nubit8 len;
 	char str[MAXLINE], stmt[MAXLINE], sbin[MAXLINE];
-	if (vcpuinsReadIns(linear, (t_vaddrcc)ucode)) {
+	if (vcpuinsReadLinear(linear, (t_vaddrcc)ucode, 15)) {
 		len = 0;
 		SPRINTF(str, "L%08X <ERROR>", linear);
 	} else {
@@ -948,7 +902,7 @@ static void xreg()
 	xulin = vcpu.cs.base + vcpu.eip;
 	xuprintins(xulin);
 }
-static void xsregseg(t_cpu_sreg *rsreg, const t_string label)
+static void xsregseg(t_cpu_sreg *rsreg, const t_strptr label)
 {
 	vapiPrint("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, %s, ", label,
 		rsreg->selector, rsreg->base, rsreg->limit,
@@ -965,7 +919,7 @@ static void xsregseg(t_cpu_sreg *rsreg, const t_string label)
 			rsreg->seg.data.big ? "BIG" : "big");
 	} 
 }
-static void xsregsys(t_cpu_sreg *rsreg, const t_string label)
+static void xsregsys(t_cpu_sreg *rsreg, const t_strptr label)
 {
 	vapiPrint("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, Type=%04X\n", label,
 		rsreg->selector, rsreg->base, rsreg->limit,
@@ -1157,7 +1111,7 @@ static void xw()
 }
 static void x()
 {
-	t_nubitcc i;
+	t_nubit8 i;
 	arg[narg] = arg[0];
 	for (i = 1;i < narg;++i) arg[i - 1] = arg[i];
 	arg[narg - 1] = arg[narg];
@@ -1273,14 +1227,14 @@ static void exec()
 	}
 }
 
-void vapiCallBackDebugPrintRegs(t_bool bit32) {if (bit32) xreg(); else rprintregs();}
+void vapiCallBackDebugPrintRegs(t_bool flag32) {if (flag32) xreg(); else rprintregs();}
 void debug()
 {
 	t_nubitcc i;
 	init();
 	arg = (char **)malloc(MAXNARG * sizeof(char *));
-	exitFlag = 0x00;
-	while(!exitFlag) {
+	flagexit = 0;
+	while(!flagexit) {
 		fflush(stdin);
 		vapiPrint("-");
 		FGETS(cmdBuff,MAXLINE,stdin);

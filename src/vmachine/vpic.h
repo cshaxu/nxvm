@@ -13,7 +13,7 @@ extern "C" {
 
 #define VPIC_DEBUG
 
-typedef enum {ICW1,ICW2,ICW3,ICW4,OCW1} t_pic_status_init;
+typedef enum {ICW1,ICW2,ICW3,ICW4,OCW1} t_pic_init_status;
 
 #define ocw1 imr
 typedef struct {
@@ -21,7 +21,7 @@ typedef struct {
 	t_nubit8          imr;                        /* Interrupt Mask Register */
 	t_nubit8          isr;                            /* In Service Register */
 	t_nubit8          icw1,icw2,icw3,icw4,ocw2,ocw3;        /* command words */
-	t_pic_status_init flaginit;                     /* initialization status */
+	t_pic_init_status status;                       /* initialization status */
 	t_nubit8          irx;                          /* current highest ir id */
 } t_pic;
 

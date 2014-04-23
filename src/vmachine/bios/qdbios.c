@@ -1,6 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "stdio.h"
 #include "memory.h"
 #include "time.h"
 
@@ -20,7 +19,7 @@
 t_faddrcc qdbiosInt[0x100];
 static t_nubit16 ics, iip;
 
-void qdbiosMakeInt(t_nubit8 intid, t_string stmt)
+void qdbiosMakeInt(t_nubit8 intid, t_strptr stmt)
 {
 	t_nubit16 len;
 	vramRealWord(0x0000, intid * 4 + 0) = iip;

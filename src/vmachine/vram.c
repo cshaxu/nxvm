@@ -1,6 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "stdio.h"
 #include "stdlib.h"
 #include "memory.h"
 

@@ -1,6 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "stdio.h"
 #include "memory.h"
 
 #include "vapi.h"
@@ -21,7 +20,7 @@ static void LoadInit(t_nubit8 id)
 {
 	if (vpit.flagwrite[id] == VPIT_STATUS_RW_READY) {
 		vpit.count[id] = vpit.init[id];
-		vpit.flagready[id] = 0x01;
+		vpit.flagready[id] = 1;
 	}
 }
 static void Decrease(t_nubit8 id)
@@ -45,7 +44,7 @@ static void IO_Read_004x(t_nubit8 id)
 		if (vpit.flagread[id] == VPIT_STATUS_RW_MSB) {
 			vport.iobyte = (t_nubit8)(vpit.latch[id]>>0x08);
 			vpit.flagread[id] = VPIT_STATUS_RW_READY;
-			vpit.flaglatch[id] = 0x00;
+			vpit.flaglatch[id] = 0;
 		} else {
 			vport.iobyte = (t_nubit8)(vpit.latch[id] & 0xff);
 			vpit.flagread[id] = VPIT_STATUS_RW_MSB;
@@ -138,28 +137,28 @@ void IO_Write_0043()
 		vpit.cw[id] = vport.iobyte;
 		/* TODO: implement read-back functionalities */
 	} else {
-		vpit.flaglatch[id] = 0x00;      /* unlatch when counter is re-programmed */
+		vpit.flaglatch[id] = 0;      /* unlatch when counter is re-programmed */
 		switch (GetRW(vport.iobyte)) {
 		case 0x00:                                              /* latch command */
-			vpit.flaglatch[id] = 0x01;
+			vpit.flaglatch[id] = 1;
 			vpit.latch[id] = vpit.count[id];
 			vpit.flagread[id] = VPIT_STATUS_RW_LSB;
 			break;
 		case 0x01:                                                        /* LSB */
 			vpit.cw[id] = vport.iobyte;
-			vpit.flagready[id] = 0x00;
+			vpit.flagready[id] = 0;
 			vpit.flagread[id] = VPIT_STATUS_RW_LSB;
 			vpit.flagwrite[id] = VPIT_STATUS_RW_LSB;
 			break;
 		case 0x02:                                                        /* MSB */
 			vpit.cw[id] = vport.iobyte;
-			vpit.flagready[id] = 0x00;
+			vpit.flagready[id] = 0;
 			vpit.flagread[id] = VPIT_STATUS_RW_MSB;
 			vpit.flagwrite[id] = VPIT_STATUS_RW_MSB;
 			break;
 		case 0x03:                                                     /* 16-bit */
 			vpit.cw[id] = vport.iobyte;
-			vpit.flagready[id] = 0x00;
+			vpit.flagready[id] = 0;
 			vpit.flagread[id] = VPIT_STATUS_RW_LSB;
 			vpit.flagwrite[id] = VPIT_STATUS_RW_LSB;
 			break;
@@ -196,12 +195,12 @@ void IO_Write_FF40() {vpitSetGate(vport.iobyte>>0x04,vport.iobyte&0x01);}
 void IO_Read_FF41() {vport.iobyte = 0xff;vpitRefresh();}
 #endif
 
-void vpitSetGate(t_nubit8 id, t_bool gate)
+void vpitSetGate(t_nubit8 id, t_bool flaggate)
 {
-	if (GetM(vpit.cw[id]) != 0x00)
-		if (vpit.flaggate[id] == 0x00 && gate == 0x01)
+	if (GetM(vpit.cw[id]) != 0)
+		if (vpit.flaggate[id] == 0 && flaggate == 1)
 			LoadInit(id);
-	vpit.flaggate[id] = gate;
+	vpit.flaggate[id] = flaggate;
 }
 
 #define vpitRefDRAM NULL
@@ -209,7 +208,7 @@ void vpitSetGate(t_nubit8 id, t_bool gate)
 void vpitInit()
 {
 	memset(&vpit,0,sizeof(t_pit));
-	vpit.flaggate[0] = vpit.flaggate[1] = 0x01;
+	vpit.flaggate[0] = vpit.flaggate[1] = 1;
 	                               /* GATE for counter 0 and 1 are connected */
 	vpit.out[0] = (t_faddrcc)vpitIntSystemTimer;
 	vpit.out[1] = (t_faddrcc)vpitRefDRAM;
@@ -220,7 +219,7 @@ void vpitInit()
 	vport.out[0x0041] = (t_faddrcc)IO_Write_0041;
 	vport.out[0x0042] = (t_faddrcc)IO_Write_0042;
 	vport.out[0x0043] = (t_faddrcc)IO_Write_0043;
-	vpit.flaggate[0] = vpit.flaggate[1] = 0x01;
+	vpit.flaggate[0] = vpit.flaggate[1] = 1;
 #ifdef VPIT_DEBUG
 	vport.in[0xff40] = (t_faddrcc)IO_Read_FF40;
 	vport.out[0xff40] = (t_faddrcc)IO_Write_FF40;
@@ -229,11 +228,11 @@ void vpitInit()
 }
 void vpitReset()
 {
-	t_nubitcc i;
+	t_nubit8 i;
 	for(i = 0;i < 3;++i) {
 		vpit.cw[i] = 0x00;
 		vpit.init[i] = vpit.count[i] = vpit.latch[i] = 0x0000;
-		vpit.flagready[i] = vpit.flaglatch[i] = 0x01;
+		vpit.flagready[i] = vpit.flaglatch[i] = 1;
 		vpit.flagread[i] = vpit.flagwrite[i] = VPIT_STATUS_RW_READY;
 	}
 	vpit.cw[3] = 0x00;
@@ -249,7 +248,7 @@ void vpitRefresh()
 					Decrease(i);
 					if (vpit.count[i] == 0x00) {
 						if (vpit.out[i]) ExecFun(vpit.out[i]);
-						vpit.flagready[i] = 0x00;
+						vpit.flagready[i] = 0;
 					}
 				}
 			}
@@ -259,7 +258,7 @@ void vpitRefresh()
 				Decrease(i);
 				if (vpit.count[i] == 0x00) {
 					if (vpit.out[i]) ExecFun(vpit.out[i]);
-					vpit.flagready[i] = 0x00;
+					vpit.flagready[i] = 0;
 				}
 			}
 			break;
@@ -293,7 +292,7 @@ void vpitRefresh()
 					Decrease(i);
 					if (vpit.count[i] == 0x00) {
 						if (vpit.out[i]) ExecFun(vpit.out[i]);
-						vpit.flagready[i] = 0x00;
+						vpit.flagready[i] = 0;
 					}
 				}
 			}
@@ -303,7 +302,7 @@ void vpitRefresh()
 				Decrease(i);
 				if (vpit.count[i] == 0x00) {
 					if (vpit.out[i]) ExecFun(vpit.out[i]);
-					vpit.flagready[i] = 0x00;
+					vpit.flagready[i] = 0;
 				}
 			}
 			break;

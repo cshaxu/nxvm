@@ -1,6 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "stdio.h"
 #include "stdarg.h"
 #include "string.h"
 #include "memory.h"
@@ -9,6 +8,10 @@
 #include "vapi.h"
 
 /* Standard C Library */
+struct tm* LOCALTIME(const time_t *_Time)
+{
+	return localtime(_Time);
+}
 char* STRCAT(char *_Dest, const char *_Source)
 {return strcat(_Dest, _Source);}
 char* STRCPY(char *_Dest, const char *_Source)
@@ -32,7 +35,18 @@ char* FGETS(char *_Buf, int _MaxCount, FILE *_File)
 {return fgets(_Buf, _MaxCount, _File);}
 
 /* General Functions */
-t_nubit32 vapiPrint(const t_string format, ...)
+void lcase(char *s)
+{
+	int i = 0;
+	if(s[0] == '\'') return;
+	while(s[i] != '\0') {
+		if(s[i] == '\n') s[i] = '\0';
+		else if(s[i] > 0x40 && s[i] < 0x5b)
+			s[i] += 0x20;
+		i++;
+	}
+}
+t_nubit32 vapiPrint(const t_strptr format, ...)
 {
 	t_nubit32 nWrittenBytes = 0;
 	va_list arg_ptr;
@@ -46,7 +60,7 @@ t_nubit32 vapiPrint(const t_string format, ...)
 
 /* Disk */
 #include "vfdd.h"
-void vapiFloppyInsert(const t_string fname)
+void vapiFloppyInsert(const t_strptr fname)
 {
 	t_nubitcc count;
 	FILE *image = FOPEN(fname, "rb");
@@ -58,7 +72,7 @@ void vapiFloppyInsert(const t_string fname)
 	} else
 		vapiPrint("Cannot read floppy image from '%s'.\n", fname);
 }
-void vapiFloppyRemove(const t_string fname)
+void vapiFloppyRemove(const t_strptr fname)
 {
 	t_nubitcc count;
 	FILE *image;
@@ -67,7 +81,7 @@ void vapiFloppyRemove(const t_string fname)
 		if(image) {
 			if (!vfdd.flagro)
 				count = fwrite((void *)vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
-			vfdd.flagexist = 0x00;
+			vfdd.flagexist = 0;
 			fclose(image);
 		} else {
 			vapiPrint("Cannot write floppy image to '%s'.\n", fname);
@@ -79,7 +93,7 @@ void vapiFloppyRemove(const t_string fname)
 	vapiPrint("Floppy disk removed.\n");
 }
 #include "vhdd.h"
-void vapiHardDiskInsert(const t_string fname)
+void vapiHardDiskInsert(const t_strptr fname)
 {
 	t_nubitcc count;
 	FILE *image = FOPEN(fname, "rb");
@@ -96,7 +110,7 @@ void vapiHardDiskInsert(const t_string fname)
 	} else
 		vapiPrint("Cannot read hard disk image from '%s'.\n", fname);
 }
-void vapiHardDiskRemove(const t_string fname)
+void vapiHardDiskRemove(const t_strptr fname)
 {
 	t_nubitcc count;
 	FILE *image;
@@ -112,7 +126,7 @@ void vapiHardDiskRemove(const t_string fname)
 			return;
 		}
 	}
-	vhdd.flagexist = 0x00;
+	vhdd.flagexist = 0;
 	memset((void *)vhdd.base, 0x00, vhddGetImageSize);
 	vapiPrint("Hard disk removed.\n");
 }

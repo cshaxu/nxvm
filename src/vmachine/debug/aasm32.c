@@ -1,17 +1,29 @@
 /* This file is a part of NXVM project. */
 
+#include "stdarg.h"
 #include "stdlib.h"
 #include "string.h"
 
 #include "../vapi.h"
-#include "../vram.h"
+#include "../vmachine.h"
+#include "debug.h"
 #include "aasm.h"
+
+static t_bool flagopr, flagaddr;
+static t_bool flages, flagcs, flagss, flagds, flagfs, flaggs;
+static t_bool flaglock, flagrepz, flagrepnz;
+static t_nubit8 acode[15];
+static t_nubit8 iop;
+static t_strptr rop, ropr1, ropr2, ropr3;
+
+static t_nubit16 avcs, avip;
+static t_strptr aop, aopr1, aopr2;
 
 typedef enum {
 	TYPE_NONE,
 	TYPE_R8,
 	TYPE_R16,
-	TYPE_SEG,
+	TYPE_SREG,
 	TYPE_I8,
 	TYPE_I16,
 	TYPE_M,
@@ -19,13 +31,21 @@ typedef enum {
 	TYPE_M16,
 	TYPE_M32,
 	TYPE_I16_16,
-	TYPE_LABEL
+	TYPE_LABEL,
+	TYPE_R32,//
+	TYPE_CREG,//
+	TYPE_DREG,//
+	TYPE_TREG,//
+	TYPE_I32,//
+	TYPE_I16_32,//
+	TYPE_I32_16//
 } t_aasm_oprtype;
 typedef enum {
 	MOD_M,
 	MOD_M_DISP8,
 	MOD_M_DISP16,
-	MOD_R
+	MOD_R,
+	MOD_M_DISP32//
 } t_aasm_oprmod;
 typedef enum {
 	MEM_BX_SI,
@@ -58,10 +78,22 @@ typedef enum {
 	R16_DI
 } t_aasm_oprreg16;
 typedef enum {
-	SEG_ES,
-	SEG_CS,
-	SEG_SS,
-	SEG_DS
+	R32_EAX,
+	R32_ECX,
+	R32_EDX,
+	R32_EBX,
+	R32_ESP,
+	R32_EBP,
+	R32_ESI,
+	R32_EDI
+} t_aasm_oprreg32;//
+typedef enum {
+	SREG_ES,
+	SREG_CS,
+	SREG_SS,
+	SREG_DS,
+	SREG_FS,//
+	SREG_GS//
 } t_aasm_oprseg;
 typedef enum {
 	PTR_NONE,
@@ -97,16 +129,13 @@ typedef struct {
 	char            label[0x100];
 } t_aasm_oprinfo;
 
-static t_strptr pool;
-static t_bool error;
-static t_aasm_oprinfo aopri1, aopri2;
-static t_strptr astmt, aop, aopr1, aopr2;
-static t_nubit16 avcs, avip;
+static t_bool flagerror;
+static t_aasm_oprinfo aopri1, aopri2, aopri3;
 
 #define isNONE(oprinf)  ((oprinf).type  == TYPE_NONE)
 #define isR8(oprinf)    ((oprinf).type  == TYPE_R8  && (oprinf).mod == MOD_R)
 #define isR16(oprinf)   ((oprinf).type  == TYPE_R16 && (oprinf).mod == MOD_R)
-#define isSEG(oprinf)   ((oprinf).type  == TYPE_SEG && (oprinf).mod == MOD_R)
+#define isSEG(oprinf)   ((oprinf).type  == TYPE_SREG && (oprinf).mod == MOD_R)
 #define isI8(oprinf)    ((oprinf).type  == TYPE_I8)
 #define isI8u(oprinf)   (isI8(oprinf)   && !(oprinf).imms)
 #define isI16(oprinf)   ((oprinf).type  == TYPE_I8  || (oprinf).type == TYPE_I16)
@@ -148,10 +177,10 @@ static t_nubit16 avcs, avip;
 #define isBP(oprinf)    (isR16(oprinf) && (oprinf).reg16 == R16_BP)
 #define isSI(oprinf)    (isR16(oprinf) && (oprinf).reg16 == R16_SI)
 #define isDI(oprinf)    (isR16(oprinf) && (oprinf).reg16 == R16_DI)
-#define isES(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SEG_ES)
-#define isCS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SEG_CS)
-#define isSS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SEG_SS)
-#define isDS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SEG_DS)
+#define isES(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SREG_ES)
+#define isCS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SREG_CS)
+#define isSS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SREG_SS)
+#define isDS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SREG_DS)
 
 #define ARG_NONE        (isNONE (aopri1) && isNONE(aopri2))
 #define ARG_RM8s        (isRM8s (aopri1) && isNONE(aopri2))
@@ -198,7 +227,7 @@ static t_nubit16 avcs, avip;
 #define ARG_RM16_I16    (isRM16s(aopri1) && isI16 (aopri2))
 #define ARG_RM16_I8     (isRM16s(aopri1) && isI8  (aopri2))
 #define ARG_RM16_SEG    (isRM16 (aopri1) && isSEG (aopri2))
-#define ARG_SEG_RM16    (isSEG  (aopri1) && isRM16(aopri2))
+#define ARG_SREG_RM16    (isSEG  (aopri1) && isRM16(aopri2))
 #define ARG_RM16        (isRM16 (aopri1) && isNONE(aopri2))
 #define ARG_AX_AX       (isAX   (aopri1) && isAX  (aopri2))
 #define ARG_CX_AX       (isCX   (aopri1) && isAX  (aopri2))
@@ -330,7 +359,7 @@ static t_aasm_token gettoken(t_strptr str)
 					take(TOKEN_CHAR);
 				} else {
 					tokptr--;
-					error = 1;
+					flagerror = 1;
 					take(TOKEN_NULL);
 				}
 				break;
@@ -343,7 +372,7 @@ static t_aasm_token gettoken(t_strptr str)
 				} while (tokch && (tokch != '\"'));
 				if (!tokch) {
 					tokptr = tokptrbak;
-					error = 1;
+					flagerror = 1;
 					take(TOKEN_NULL);
 				} else {
 					tokstring[i - 1] = 0x00;
@@ -354,7 +383,7 @@ static t_aasm_token gettoken(t_strptr str)
 				tokptr++;
 				if (tokch != '(') {
 					tokptr -= 2;
-					error = 1;
+					flagerror = 1;
 					take(TOKEN_NULL);
 				} else {
 					toklabel[0] =toklabel[0xff] = 0x00;
@@ -365,7 +394,7 @@ static t_aasm_token gettoken(t_strptr str)
 					} while (tokch && tokch != ')');
 					if (!tokch) {
 						tokptr = tokptrbak;
-						error = 1;
+						flagerror = 1;
 						take(TOKEN_NULL);
 					} else {
 						toklabel[i - 1] = 0x00;
@@ -376,7 +405,7 @@ static t_aasm_token gettoken(t_strptr str)
 			case ' ':
 			case '\t': break;
 			case '\0': tokptr--;take(TOKEN_END);break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_NUM1:
@@ -592,13 +621,13 @@ static t_aasm_token gettoken(t_strptr str)
 		case STATE_N:
 			switch (tokch) {
 			case 'e': state = STATE_NE;break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_P:
 			switch (tokch) {
 			case 't': state = STATE_PT;break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_S:
@@ -607,25 +636,25 @@ static t_aasm_token gettoken(t_strptr str)
 			case 'p': take(TOKEN_SP);break;
 			case 's': take(TOKEN_SS);break;
 			case 'h': state = STATE_SH;break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_W:
 			switch (tokch) {
 			case 'o': state = STATE_WO;break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_BY:
 			switch (tokch) {
 			case 't': state = STATE_BYT;break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_DW:
 			switch (tokch) {
 			case 'o': state = STATE_DWO;break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_FA:
@@ -654,70 +683,70 @@ static t_aasm_token gettoken(t_strptr str)
 		case STATE_NE:
 			switch (tokch) {
 			case 'a': state = STATE_NEA;break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_PT:
 			switch (tokch) {
 			case 'r': take(TOKEN_PTR);break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_SH:
 			switch (tokch) {
 			case 'o': state = STATE_SHO;break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_WO:
 			switch (tokch) {
 			case 'r': state = STATE_WOR;break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_BYT:
 			switch (tokch) {
 			case 'e': take(TOKEN_BYTE);break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_DWO:
 			switch (tokch) {
 			case 'r': state = STATE_DWOR;break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_NEA:
 			switch (tokch) {
 			case 'r': take(TOKEN_NEAR);break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_SHO:
 			switch (tokch) {
 			case 'r': state = STATE_SHOR;break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_WOR:
 			switch (tokch) {
 			case 'd': take(TOKEN_WORD);break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_DWOR:
 			switch (tokch) {
 			case 'd': take(TOKEN_DWORD);break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
 		case STATE_SHOR:
 			switch (tokch) {
 			case 't': take(TOKEN_SHORT);break;
-			default: tokptr--;error = 1;take(TOKEN_NULL);break;
+			default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 			}
 			break;
-		default: tokptr--;error = 1;take(TOKEN_NULL);break;
+		default: tokptr--;flagerror = 1;take(TOKEN_NULL);break;
 		}
 		tokptr++;
 	} while (!flagend);
@@ -771,7 +800,7 @@ static void printtoken(t_aasm_token token)
 }
 static void matchtoken(t_aasm_token token)
 {
-	if (gettoken(NULL) != token) error = 1;
+	if (gettoken(NULL) != token) flagerror = 1;
 }
 
 /* assembly compiler: parser / grammar */
@@ -785,7 +814,7 @@ static t_aasm_oprinfo parsearg_mem()
 	info.type = TYPE_M;
 	info.mod = MOD_M;
 	token = gettoken(NULL);
-	while (token != TOKEN_RSPAREN && !error) {
+	while (token != TOKEN_RSPAREN && !flagerror) {
 		switch (token) {
 		case TOKEN_PLUS:break;
 		case TOKEN_MINUS:
@@ -793,7 +822,7 @@ static t_aasm_oprinfo parsearg_mem()
 			neg = 0x01;
 			switch (token) {
 			case TOKEN_IMM8:
-				if (info.mod != MOD_M) error = 1;
+				if (info.mod != MOD_M) flagerror = 1;
 				if (tokimm8 > 0x80) {
 					tokimm16 = (~((t_nubit16)tokimm8)) + 1;
 					info.disp16 = tokimm16;
@@ -805,7 +834,7 @@ static t_aasm_oprinfo parsearg_mem()
 				}
 				break;
 			case TOKEN_IMM16:
-				if (info.mod != MOD_M) error = 1;
+				if (info.mod != MOD_M) flagerror = 1;
 				if (tokimm16 > 0xff80) {
 					tokimm8 = (t_nubit8)((~tokimm16) + 1);
 					info.disp8 = tokimm8;
@@ -816,24 +845,24 @@ static t_aasm_oprinfo parsearg_mem()
 					info.mod = MOD_M_DISP16;
 				}
 				break;
-			default: error = 1;break;
+			default: flagerror = 1;break;
 			}
 			break;
-		case TOKEN_BX: if (bx) error = 1; else bx = 1;break;
-		case TOKEN_SI: if (si) error = 1; else si = 1;break;
-		case TOKEN_BP: if (bp) error = 1; else bp = 1;break;
-		case TOKEN_DI: if (di) error = 1; else di = 1;break;
+		case TOKEN_BX: if (bx) flagerror = 1; else bx = 1;break;
+		case TOKEN_SI: if (si) flagerror = 1; else si = 1;break;
+		case TOKEN_BP: if (bp) flagerror = 1; else bp = 1;break;
+		case TOKEN_DI: if (di) flagerror = 1; else di = 1;break;
 		case TOKEN_IMM8:
-			if (info.mod != MOD_M) error = 1;
+			if (info.mod != MOD_M) flagerror = 1;
 			info.mod = MOD_M_DISP16;
 			info.disp16 = tokimm8;
 			break;
 		case TOKEN_IMM16:
-			if (info.mod != MOD_M) error = 1;
+			if (info.mod != MOD_M) flagerror = 1;
 			info.mod = MOD_M_DISP16;
 			info.disp16 = tokimm16;
 			break;
-		default: error = 1;break;
+		default: flagerror = 1;break;
 		}
 		token = gettoken(NULL);
 	}
@@ -846,7 +875,7 @@ static t_aasm_oprinfo parsearg_mem()
 			info.mod = MOD_M;
 		} else if (info.mod == MOD_M_DISP16)
 			info.mod = MOD_M;
-		else error = 1;
+		else flagerror = 1;
 	} else {
 		if ( bx &&  si && !bp && !di) info.mem = MEM_BX_SI;
 		else if ( bx && !si && !bp &&  di) info.mem = MEM_BX_DI;
@@ -859,7 +888,7 @@ static t_aasm_oprinfo parsearg_mem()
 				info.mod = MOD_M_DISP8;
 				info.disp8 = 0x00; }}
 		else if (!bx && !si && !bp &&  di) info.mem = MEM_DI;
-		else error = 1;
+		else flagerror = 1;
 		if (info.mod == MOD_M_DISP16 && (info.disp16 < 0x0080 || info.disp16 > 0xff7f)) {
 			info.mod = MOD_M_DISP8;
 			info.disp8 = (t_nubit8)info.disp16;
@@ -897,17 +926,17 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token)
 		info.type = TYPE_I16;
 		if (!info.immn) info.imm16 = tokimm16;
 		else info.imm16 = (~tokimm16) + 1;
-	} else error = 1;
+	} else flagerror = 1;
 
 	token = gettoken(NULL);
 	if (!info.imms && token == TOKEN_COLON) {
 		if (info.type == TYPE_I8) info.pcs = (t_nubit16)info.imm8;
 		else if (info.type == TYPE_I16) info.pcs = info.imm16;
-		else error = 1;
+		else flagerror = 1;
 		token = gettoken(NULL);
 		if (token == TOKEN_IMM8) info.pip = tokimm8;
 		else if (token == TOKEN_IMM16) info.pip = tokimm16;
-		else error = 1;
+		else flagerror = 1;
 		info.type = TYPE_I16_16;
 	}
 
@@ -939,14 +968,14 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 	case TOKEN_BYTE:
 		token = gettoken(NULL);
 		if (token == TOKEN_PTR) token = gettoken(NULL);
-		if (token != TOKEN_LSPAREN) error = 1;
+		if (token != TOKEN_LSPAREN) flagerror = 1;
 		info = parsearg_mem();
 		info.type = TYPE_M8;
 		break;
 	case TOKEN_WORD:
 		token = gettoken(NULL);
 		if (token == TOKEN_PTR) token = gettoken(NULL);
-		if (token != TOKEN_LSPAREN) error = 1;
+		if (token != TOKEN_LSPAREN) flagerror = 1;
 		info = parsearg_mem();
 		info.type = TYPE_M16;
 		info.ptr = PTR_NEAR;
@@ -954,7 +983,7 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 	case TOKEN_DWORD:
 		token = gettoken(NULL);
 		if (token == TOKEN_PTR) token = gettoken(NULL);
-		if (token != TOKEN_LSPAREN) error = 1;
+		if (token != TOKEN_LSPAREN) flagerror = 1;
 		info = parsearg_mem();
 		info.type = TYPE_M32;
 		info.ptr = PTR_FAR;
@@ -1053,24 +1082,24 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_CS:
-		info.type = TYPE_SEG;
+		info.type = TYPE_SREG;
 		info.mod = MOD_R;
-		info.seg = SEG_CS;
+		info.seg = SREG_CS;
 		break;
 	case TOKEN_DS:
-		info.type = TYPE_SEG;
+		info.type = TYPE_SREG;
 		info.mod = MOD_R;
-		info.seg = SEG_DS;
+		info.seg = SREG_DS;
 		break;
 	case TOKEN_ES:
-		info.type = TYPE_SEG;
+		info.type = TYPE_SREG;
 		info.mod = MOD_R;
-		info.seg = SEG_ES;
+		info.seg = SREG_ES;
 		break;
 	case TOKEN_SS:
-		info.type = TYPE_SEG;
+		info.type = TYPE_SREG;
 		info.mod = MOD_R;
-		info.seg = SEG_SS;
+		info.seg = SREG_SS;
 		break;
 	case TOKEN_PLUS:
 	case TOKEN_MINUS:
@@ -1091,11 +1120,11 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 				info.imm16 = (t_nubit8)info.imm8;
 				info.type = TYPE_I16;
 			}
-			if (info.type != TYPE_I16) error = 1;
+			if (info.type != TYPE_I16) flagerror = 1;
 		} else if (token == TOKEN_LABEL) {
 			info.type = TYPE_LABEL;
 			STRCPY(info.label, toklabel);
-		} else error = 1;
+		} else flagerror = 1;
 		info.ptr = PTR_SHORT;
 		break;
 	case TOKEN_NEAR:
@@ -1104,7 +1133,7 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 		if (token == TOKEN_WORD) {
 			token = gettoken(NULL);
 			if (token == TOKEN_PTR) token = gettoken(NULL);
-			if (token != TOKEN_LSPAREN) error = 1;
+			if (token != TOKEN_LSPAREN) flagerror = 1;
 			info = parsearg_mem();
 			info.type = TYPE_M16;
 		} else if (token == TOKEN_LSPAREN) {
@@ -1116,11 +1145,11 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 				info.imm16 = (t_nubit8)info.imm8;
 				info.type = TYPE_I16;
 			}
-			if (info.type != TYPE_I16) error = 1;
+			if (info.type != TYPE_I16) flagerror = 1;
 		} else if (token == TOKEN_LABEL) {
 			info.type = TYPE_LABEL;
 			STRCPY(info.label, toklabel);
-		} else error = 1;
+		} else flagerror = 1;
 		info.ptr = PTR_NEAR;
 		break;
 	case TOKEN_FAR:
@@ -1129,7 +1158,7 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 		if (token == TOKEN_DWORD) {
 			token = gettoken(NULL);
 			if (token == TOKEN_PTR) token = gettoken(NULL);
-			if (token != TOKEN_LSPAREN) error = 1;
+			if (token != TOKEN_LSPAREN) flagerror = 1;
 			info = parsearg_mem();
 			info.type = TYPE_M32;
 		} else if (token == TOKEN_LSPAREN) {
@@ -1146,70 +1175,20 @@ static t_aasm_oprinfo parsearg(t_strptr arg)
 				info.pcs = avcs;
 				info.pip = info.imm16;
 			} else if (info.type == TYPE_I16_16) {
-			} else error = 1;
+			} else flagerror = 1;
 		} else if (token == TOKEN_LABEL) {
 			info.type = TYPE_LABEL;
 			STRCPY(info.label, toklabel);
-		} else error = 1;
+		} else flagerror = 1;
 		info.ptr = PTR_FAR;
 		break;
 	default:
 		info.type = TYPE_NONE;
-		error = 1;
+		flagerror = 1;
 		break;
 	}
 	return info;
 }
-static void parse()
-{
-	/* parse single statement */
-	char delim = 0;
-	t_nubitcc i = 0;
-	t_strptr aend;
-	aop = aopr1 = aopr2 = NULL;
-	while(astmt[i] != '\0') {
-		if (astmt[i] == ';') {
-			astmt[i] = 0;
-			break;
-		}
-		if(astmt[i] > 0x40 && astmt[i] < 0x5b) astmt[i] += 0x20;
-		++i;
-	}
-
-	while (*astmt && (*astmt == ' ' || *astmt == '\t')) astmt++;
-	aop = astmt;
-
-	while (*astmt && (*astmt != ' ' && *astmt != '\t')) astmt++;
-	if (*astmt) {
-		*astmt = 0;
-		astmt++;
-		while (*astmt && (*astmt == ' ' || *astmt == '\t')) astmt++;
-		if (*astmt) {
-			aopr1 = astmt;
-			while (*astmt && (*astmt != ',')) astmt++;
-			delim = *astmt;
-			aend = astmt - 1;
-			while (*aend && (*aend == ' ' || *aend == '\t')) aend--;
-			*(aend + 1) = 0;
-			if (delim) {
-				astmt++;
-				while (*astmt && (*astmt == ' ' || *astmt == '\t')) astmt++;
-				if (*astmt) {
-					aopr2 = astmt;
-					while (*astmt) astmt++;
-					aend = astmt - 1;
-					while (*aend && (*aend == ' ' || *aend == '\t')) aend--;
-					*(aend + 1) = 0;
-				}
-			}
-		}
-	}
-	aopri1 = parsearg(aopr1);
-//	if (error) vapiPrint("error1\n");
-	aopri2 = parsearg(aopr2);
-//	if (error) vapiPrint("error2\n");
-}
-
 /* assembly compiler: analyzer / label table */
 typedef struct tag_t_aasm_label_ref_node {
 	t_aasm_oprptr ptr;
@@ -1250,8 +1229,8 @@ static void labelRealizeRef(t_aasm_label_def_node *pdef, t_aasm_label_ref_node *
 {
 	t_nubit16 lo, hi, ta;
 	t_nsbit8 rel8;
-	if (!pdef || !pref) error = 1;
-	if (error) return;
+	if (!pdef || !pref) flagerror = 1;
+	if (flagerror) return;
 	//printf("realize: target %04X:%04X current %04X:%04X\n",pdef->cs,pdef->ip,pref->cs,pref->ip);
 	//printf("ptr: %d, name: %s\n",pref->ptr,pdef->name);
 	switch (pref->ptr) {
@@ -1269,17 +1248,17 @@ static void labelRealizeRef(t_aasm_label_def_node *pdef, t_aasm_label_ref_node *
 		if (pref->ip < lo || pref->ip > hi)
 			if (ta <= hi || ta >= lo)
 				rel8 = ta - pref->ip - 0x0001;
-			else error = 1;
+			else flagerror = 1;
 		else if (ta <= hi && ta >= lo)
 			rel8 = ta - pref->ip - 0x0001;
-		else error = 1;
+		else flagerror = 1;
 		//printf("lo: %x, hi: %x, ta = %x, rel8 = %x\n",lo, hi, ta, rel8 & 0xff);
-		if (error) return;
+		if (flagerror) return;
 		vramRealByte(pref->cs, pref->ip + 0) = rel8;
 		break;
 	case PTR_NONE:
 	default:
-		error = 1;
+		flagerror = 1;
 		break;
 	}
 }
@@ -1320,7 +1299,7 @@ static void labelStoreDef(t_strptr strlabel)
 {
 	t_bool flagfound = 0;
 	t_aasm_label_def_node *p = label_entry, *q = NULL;
-	while (p && !error) {
+	while (p && !flagerror) {
 		q = p;
 		if (!strcmp(p->name, strlabel)) {
 			if (p->cs || p->ip) labelRemoveRefList(p);
@@ -1333,7 +1312,7 @@ static void labelStoreDef(t_strptr strlabel)
 		}
 		p = p->next;
 	}
-	if (flagfound || error) return;
+	if (flagfound || flagerror) return;
 	if (!q) label_entry = labelNewDefNode(strlabel, avcs, avip);
 	else q->next = labelNewDefNode(strlabel, avcs, avip);
 	//printf("def saved: '%s' at %04X:%04X\n", strlabel, avcs, avip);
@@ -1342,14 +1321,14 @@ static void labelStoreRef(t_strptr strlabel, t_aasm_oprptr ptrlabel)
 {
 	t_aasm_label_def_node *p = label_entry;
 	t_aasm_label_ref_node *r = NULL, *s = NULL, *n = NULL;
-	while (p && strcmp(p->name, strlabel) && !error)
+	while (p && strcmp(p->name, strlabel) && !flagerror)
 		p = p->next;
-	if (error) return;
+	if (flagerror) return;
 	n = labelNewRefNode(ptrlabel, avcs, avip);
 	if (!p) {
 		labelStoreDef(strlabel);
 		p = label_entry;
-		while (p && strcmp(p->name, strlabel) && !error)
+		while (p && strcmp(p->name, strlabel) && !flagerror)
 			p = p->next;
 		p->cs = p->ip = 0x0000;
 	} else if (p && (p->cs || p->ip)) {
@@ -1369,8 +1348,8 @@ static void labelStoreRef(t_strptr strlabel, t_aasm_oprptr ptrlabel)
 	//printf("ref saved: '%s' at %04X:%04X\n", strlabel, avcs, avip);
 }
 
-#define setbyte(n) (vramRealByte(avcs, avip) = (t_nubit8)(n))
-#define setword(n) (vramRealWord(avcs, avip) = (t_nubit16)(n))
+#define setbyte(n) (d_nubit8(acode + iop) = (t_nubit8)(n), iop += 1)
+#define setword(n) (d_nubit16(acode + iop) = (t_nubit16)(n), iop += 2)
 
 static void LABEL()
 {
@@ -1385,12 +1364,10 @@ static void LABEL()
 static void SetImm8(t_nubit8 byte)
 {
 	setbyte(byte);
-	avip += 1;
 }
 static void SetImm16(t_nubit16 word)
 {
 	setword(word);
-	avip += 2;
 }
 static void SetModRegRM(t_aasm_oprinfo modrm, t_nubit8 reg)
 {
@@ -1408,7 +1385,7 @@ static void SetModRegRM(t_aasm_oprinfo modrm, t_nubit8 reg)
 		case 5: break;
 		case 6: setword(modrm.disp16);avip += 2;break;
 		case 7: break;
-		default:error = 1;break;}
+		default:flagerror = 1;break;}
 		break;
 	case MOD_M_DISP8:
 		modregrm |= (t_nubit8)modrm.mem;
@@ -1423,7 +1400,7 @@ static void SetModRegRM(t_aasm_oprinfo modrm, t_nubit8 reg)
 		case 5: break;
 		case 6: break;
 		case 7: break;
-		default:error = 1;break;}
+		default:flagerror = 1;break;}
 		break;
 	case MOD_M_DISP16:
 		modregrm |= (t_nubit8)modrm.mem;
@@ -1438,7 +1415,7 @@ static void SetModRegRM(t_aasm_oprinfo modrm, t_nubit8 reg)
 		case 5: break;
 		case 6: break;
 		case 7: break;
-		default:error = 1;break;}
+		default:flagerror = 1;break;}
 		break;
 	case 3:
 		switch (modrm.type) {
@@ -1454,7 +1431,7 @@ static void SetModRegRM(t_aasm_oprinfo modrm, t_nubit8 reg)
 			case 5: break;
 			case 6: break;
 			case 7: break;
-			default:error = 1;break;}
+			default:flagerror = 1;break;}
 			break;
 		case TYPE_R16:
 			modregrm |= (t_nubit8)modrm.reg16;
@@ -1468,11 +1445,11 @@ static void SetModRegRM(t_aasm_oprinfo modrm, t_nubit8 reg)
 			case 5: break;
 			case 6: break;
 			case 7: break;
-			default:error = 1;break;}
+			default:flagerror = 1;break;}
 			break;
 		}
 		break;
-	default:error = 1;break;}
+	default:flagerror = 1;break;}
 }
 
 static void ADD_RM8_R8()
@@ -1700,14 +1677,14 @@ static void ES()
 	if (ARG_NONE) {
 		setbyte(0x26);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void DAA()
 {
 	if (ARG_NONE) {
 		setbyte(0x27);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void SUB_RM8_R8()
 {
@@ -1750,14 +1727,14 @@ static void CS()
 	if (ARG_NONE) {
 		setbyte(0x2e);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void DAS()
 {
 	if (ARG_NONE) {
 		setbyte(0x2f);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void XOR_RM8_R8()
 {
@@ -1800,14 +1777,14 @@ static void SS()
 	if (ARG_NONE) {
 		setbyte(0x36);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void AAA()
 {
 	if (ARG_NONE) {
 		setbyte(0x37);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void CMP_RM8_R8()
 {
@@ -1850,14 +1827,14 @@ static void DS()
 	if (ARG_NONE) {
 		setbyte(0x3e);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void AAS()
 {
 	if (ARG_NONE) {
 		setbyte(0x3f);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void INC_AX()
 {
@@ -2117,7 +2094,7 @@ static void NOP()
 	if (ARG_NONE) {
 		setbyte(0x90);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void XCHG_AX_AX()
 {
@@ -2164,14 +2141,14 @@ static void CBW()
 	if (ARG_NONE) {
 		setbyte(0x98);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void CWD()
 {
 	if (ARG_NONE) {
 		setbyte(0x99);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void CALL_PTR16_16()
 {
@@ -2299,7 +2276,6 @@ static void SCASW()
 static void MOV_AL_I8()
 {
 	setbyte(0xb0);
-	avip++;
 	SetImm8(aopri2.imm8);
 }
 static void MOV_CL_I8()
@@ -2491,7 +2467,7 @@ static void AAM()
 		setbyte(0xd4);
 		avip++;
 		SetImm8(0x0a);
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void AAD()
 {
@@ -2499,14 +2475,14 @@ static void AAD()
 		setbyte(0xd5);
 		avip++;
 		SetImm8(0x0a);
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void XLAT()
 {
 	if (ARG_NONE) {
 		setbyte(0xd7);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void IN_AL_I8()
 {
@@ -2553,10 +2529,9 @@ static void JMP_REL16()
 static void JMP_PTR16_16()
 {
 	setbyte(0xea);
-	avip++;
 	if (ARG_FAR_LABEL) {
 		labelStoreRef(aopri1.label, PTR_FAR);
-		avip += 4;
+		iop += 4;
 	} else {
 		SetImm16(aopri1.pip);
 		SetImm16(aopri1.pcs);
@@ -2587,7 +2562,7 @@ static void LOCK()
 	if (ARG_NONE) {
 		setbyte(0xf0);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void QDX()
 {
@@ -2595,35 +2570,35 @@ static void QDX()
 		setbyte(0xf1);
 		avip++;
 		SetImm8(aopri1.imm8);
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void REPNZ()
 {
 	if (ARG_NONE) {
 		setbyte(0xf2);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void REP()
 {
 	if (ARG_NONE) {
 		setbyte(0xf3);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void HLT()
 {
 	if (ARG_NONE) {
 		setbyte(0xf4);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void CMC()
 {
 	if (ARG_NONE) {
 		setbyte(0xf5);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void INS_F6(t_nubit8 rid)
 {
@@ -2644,42 +2619,42 @@ static void CLC()
 	if (ARG_NONE) {
 		setbyte(0xf8);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void STC()
 {
 	if (ARG_NONE) {
 		setbyte(0xf9);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void CLI()
 {
 	if (ARG_NONE) {
 		setbyte(0xfa);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void STI()
 {
 	if (ARG_NONE) {
 		setbyte(0xfb);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void CLD()
 {
 	if (ARG_NONE) {
 		setbyte(0xfc);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void STD()
 {
 	if (ARG_NONE) {
 		setbyte(0xfd);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void INS_FE(t_nubit8 rid)
 {
@@ -2709,7 +2684,7 @@ static void PUSH()
 	else if (ARG_SI) PUSH_SI();
 	else if (ARG_DI) PUSH_DI();
 	else if (ARG_RM16) INS_FF(0x06);
-	else error = 1;
+	else flagerror = 1;
 }
 static void POP()
 {
@@ -2726,7 +2701,7 @@ static void POP()
 	else if (ARG_SI) POP_SI();
 	else if (ARG_DI) POP_DI();
 	else if (ARG_RM16) POP_RM16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void ADD()
 {
@@ -2753,7 +2728,7 @@ static void ADD()
 	} else if (ARG_RM16_I16) INS_81(0x00);
 	else if (ARG_RM8_R8)   ADD_RM8_R8();
 	else if (ARG_RM16_R16) ADD_RM16_R16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void OR()
 {
@@ -2780,7 +2755,7 @@ static void OR()
 	} else if (ARG_RM16_I16) INS_81(0x01);
 	else if (ARG_RM8_R8)   OR_RM8_R8();
 	else if (ARG_RM16_R16) OR_RM16_R16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void ADC()
 {
@@ -2807,7 +2782,7 @@ static void ADC()
 	} else if (ARG_RM16_I16) INS_81(0x02);
 	else if (ARG_RM8_R8)   ADC_RM8_R8();
 	else if (ARG_RM16_R16) ADC_RM16_R16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void SBB()
 {
@@ -2834,7 +2809,7 @@ static void SBB()
 	} else if (ARG_RM16_I16) INS_81(0x03);
 	else if (ARG_RM8_R8)   SBB_RM8_R8();
 	else if (ARG_RM16_R16) SBB_RM16_R16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void AND()
 {
@@ -2861,7 +2836,7 @@ static void AND()
 	} else if (ARG_RM16_I16) INS_81(0x04);
 	else if (ARG_RM8_R8)   AND_RM8_R8();
 	else if (ARG_RM16_R16) AND_RM16_R16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void SUB()
 {
@@ -2888,7 +2863,7 @@ static void SUB()
 	} else if (ARG_RM16_I16) INS_81(0x05);
 	else if (ARG_RM8_R8)   SUB_RM8_R8();
 	else if (ARG_RM16_R16) SUB_RM16_R16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void XOR()
 {
@@ -2915,7 +2890,7 @@ static void XOR()
 	} else if (ARG_RM16_I16) INS_81(0x06);
 	else if (ARG_RM8_R8)   XOR_RM8_R8();
 	else if (ARG_RM16_R16) XOR_RM16_R16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void CMP()
 {
@@ -2942,7 +2917,7 @@ static void CMP()
 	} else if (ARG_RM16_I16) INS_81(0x07);
 	else if (ARG_RM8_R8)   CMP_RM8_R8();
 	else if (ARG_RM16_R16) CMP_RM16_R16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void INC()
 {
@@ -2956,7 +2931,7 @@ static void INC()
 	else if (ARG_DI) INC_DI();
 	else if (ARG_RM8s) INS_FE(0x00);
 	else if (ARG_RM16s) INS_FF(0x00);
-	else error = 1;
+	else flagerror = 1;
 }
 static void DEC()
 {
@@ -2970,7 +2945,7 @@ static void DEC()
 	else if (ARG_DI) DEC_DI();
 	else if (ARG_RM8s) INS_FE(0x01);
 	else if (ARG_RM16s) INS_FF(0x01);
-	else error = 1;
+	else flagerror = 1;
 }
 static void JCC(t_nubit8 opcode)
 {
@@ -2981,15 +2956,15 @@ static void JCC(t_nubit8 opcode)
 		hi = avip + 0x007f + 0x0002;
 		if (isI8(aopri1)) ta = aopri1.imm8 & 0x00ff; 
 		else if (isI16(aopri1)) ta = aopri1.imm16;
-		else error = 1;
+		else flagerror = 1;
 		if (avip < lo || avip > hi)
 			if (ta <= hi || ta >= lo)
 				rel8 = ta - avip - 0x0002;
-			else error = 1;
+			else flagerror = 1;
 		else if (ta <= hi && ta >= lo)
 			rel8 = ta - avip - 0x0002;
-		else error = 1;
-		if (error) return;
+		else flagerror = 1;
+		if (flagerror) return;
 		setbyte(opcode);
 		avip++;
 		SetImm8(rel8);
@@ -2998,7 +2973,7 @@ static void JCC(t_nubit8 opcode)
 		avip++;
 		labelStoreRef(aopri1.label, PTR_SHORT);
 		avip++;
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void TEST()
 {
@@ -3008,7 +2983,7 @@ static void TEST()
 	else if (ARG_RM16_R16) TEST_RM16_R16();
 	else if (ARG_RM8_I8) INS_F6(0x00);
 	else if (ARG_RM16_I16) INS_F7(0x00);
-	else error = 1;
+	else flagerror = 1;
 }
 static void XCHG()
 {
@@ -3022,7 +2997,7 @@ static void XCHG()
 	else if (ARG_DI_AX) XCHG_DI_AX();
 	else if (ARG_R8_RM8) XCHG_R8_RM8();
 	else if (ARG_R16_RM16) XCHG_R16_RM16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void MOV()
 {
@@ -3051,15 +3026,15 @@ static void MOV()
 	else if (ARG_RM8_R8) MOV_RM8_R8();
 	else if (ARG_RM16_R16) MOV_RM16_R16();
 	else if (ARG_RM16_SEG) MOV_RM16_SREG();
-	else if (ARG_SEG_RM16) MOV_SREG_RM16();
+	else if (ARG_SREG_RM16) MOV_SREG_RM16();
 	else if (ARG_RM8_I8) MOV_M8_I8();
 	else if (ARG_RM16_I16) MOV_M16_I16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void LEA()
 {
 	if (ARG_R16_M16) LEA_R16_M16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void CALL()
 {
@@ -3067,36 +3042,36 @@ static void CALL()
 	else if ((ARG_I16u && !isSHORT(aopri1)) || ARG_NEAR_LABEL) CALL_REL16();
 	else if (ARG_NEAR_RM16) INS_FF(0x02);
 	else if (ARG_FAR_M16_16) INS_FF(0x03);
-	else error = 1;
+	else flagerror = 1;
 }
 static void RET()
 {
 	if (ARG_I16u) RET_I16();
 	else if (ARG_NONE) RET_();
-	else error = 1;
+	else flagerror = 1;
 }
 static void LES()
 {
 	if (ARG_R16_M16) LES_R16_M16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void LDS()
 {
 	if (ARG_R16_M16) LDS_R16_M16();
-	else error = 1;
+	else flagerror = 1;
 }
 static void RETF()
 {
 	if      (ARG_I16u) RETF_I16();
 	else if (ARG_NONE) RETF_();
-	else error = 1;
+	else flagerror = 1;
 }
 static void INT()
 {
 	if (ARG_I8) {
 		if (aopri1.imm8 == 0x03) INT3();
 		else INT_I8();
-	} else error = 1;
+	} else flagerror = 1;
 }
 static void ROL()
 {
@@ -3164,7 +3139,7 @@ static void IN()
 	else if (ARG_AX_I8u) IN_AX_I8();
 	else if (ARG_AL_DX)  IN_AL_DX();
 	else if (ARG_AX_DX)  IN_AX_DX();
-	else error = 1;
+	else flagerror = 1;
 }
 static void OUT()
 {
@@ -3172,7 +3147,7 @@ static void OUT()
 	else if (ARG_I8u_AX) OUT_I8_AX();
 	else if (ARG_DX_AL)  OUT_DX_AL();
 	else if (ARG_DX_AX)  OUT_DX_AX();
-	else error = 1;
+	else flagerror = 1;
 }
 static void NOT()
 {
@@ -3215,7 +3190,7 @@ static void JMP()
 		hi = avip + 0x007f + 0x0002;
 		if (isI8(aopri1)) ta = aopri1.imm8 & 0x00ff; 
 		else if (isI16(aopri1)) ta = aopri1.imm16;
-		else error = 1;
+		else flagerror = 1;
 		if (avip < lo || avip > hi)
 			if (ta <= hi || ta >= lo)
 				JCC(0xeb);
@@ -3226,7 +3201,7 @@ static void JMP()
 	}
 	else if (ARG_NEAR_RM16) INS_FF(0x04);
 	else if (ARG_FAR_M16_16) INS_FF(0x05);
-	else error = 1;
+	else flagerror = 1;
 
 }
 
@@ -3243,7 +3218,7 @@ static void DB()
 			token = gettoken(NULL);
 			if (token == TOKEN_IMM8)
 				setbyte((~tokimm8) + 1);
-			else error = 1;
+			else flagerror = 1;
 			avip += 1;
 			break;
 		case TOKEN_IMM8:
@@ -3266,11 +3241,11 @@ static void DB()
 			break;
 		case TOKEN_IMM16:
 		default:
-			error = 1;
+			flagerror = 1;
 			break;
 		}
 		token = gettoken(NULL);
-	} while (!error);
+	} while (!flagerror);
 }
 static void DW()
 {
@@ -3286,7 +3261,7 @@ static void DW()
 				setword((~((t_nubit16)tokimm8)) + 1);
 			else if (token == TOKEN_IMM16)
 				setword((~tokimm16) + 1);
-			else error = 1;
+			else flagerror = 1;
 			avip += 2;
 			break;
 		case TOKEN_IMM8:
@@ -3302,255 +3277,253 @@ static void DW()
 			return;
 			break;
 		default:
-			error = 1;
+			flagerror = 1;
 			break;
 		}
 		token = gettoken(NULL);
-	} while (!error);
+	} while (!flagerror);
 }
 
 static void exec()
 {
 	/* assemble single statement */
-	if (!aop || !aop[0]) return;
-	if      (!strcmp(aop, "db"))  DB();
-	else if (!strcmp(aop, "dw"))  DW();
+	if (!rop || !rop[0]) return;
+	if      (!strcmp(rop, "db"))  DB();
+	else if (!strcmp(rop, "dw"))  DW();
 
-	else if (!strcmp(aop, "add")) ADD();
-	else if (!strcmp(aop,"push")) PUSH();
-	else if (!strcmp(aop, "pop")) POP();
-	else if (!strcmp(aop, "or" )) OR();
-	else if (!strcmp(aop, "adc")) ADC();
-	else if (!strcmp(aop, "sbb")) SBB();
-	else if (!strcmp(aop, "and")) AND();
-	else if (!strcmp(aop, "es:")) ES();
-	else if (!strcmp(aop, "daa")) DAA();
-	else if (!strcmp(aop, "sub")) SUB();
-	else if (!strcmp(aop, "cs:")) CS();
-	else if (!strcmp(aop, "das")) DAS();
-	else if (!strcmp(aop, "xor")) XOR();
-	else if (!strcmp(aop, "ss:")) SS();
-	else if (!strcmp(aop, "aaa")) AAA();
-	else if (!strcmp(aop, "cmp")) CMP();
-	else if (!strcmp(aop, "ds:")) DS();
-	else if (!strcmp(aop, "aas")) AAS();
-	else if (!strcmp(aop, "inc")) INC();
-	else if (!strcmp(aop, "dec")) DEC();
-	else if (!strcmp(aop, "jo" )) JCC(0x70);
-	else if (!strcmp(aop, "jno")) JCC(0x71);
-	else if (!strcmp(aop, "jb" )) JCC(0x72);
-	else if (!strcmp(aop, "jc" )) JCC(0x72);
-	else if (!strcmp(aop,"jnae")) JCC(0x72);
-	else if (!strcmp(aop, "jae")) JCC(0x73);
-	else if (!strcmp(aop, "jnb")) JCC(0x73);
-	else if (!strcmp(aop, "jnc")) JCC(0x73);
-	else if (!strcmp(aop, "je" )) JCC(0x74);
-	else if (!strcmp(aop, "jz" )) JCC(0x74);
-	else if (!strcmp(aop, "jne")) JCC(0x75);
-	else if (!strcmp(aop, "jnz")) JCC(0x75);
-	else if (!strcmp(aop, "jbe")) JCC(0x76);
-	else if (!strcmp(aop, "jna")) JCC(0x76);
-	else if (!strcmp(aop, "ja" )) JCC(0x77);
-	else if (!strcmp(aop,"jnbe")) JCC(0x77);
-	else if (!strcmp(aop, "js" )) JCC(0x78);
-	else if (!strcmp(aop, "jns")) JCC(0x79);
-	else if (!strcmp(aop, "jp" )) JCC(0x7a);
-	else if (!strcmp(aop, "jpe")) JCC(0x7a);
-	else if (!strcmp(aop, "jnp")) JCC(0x7b);
-	else if (!strcmp(aop, "jpo")) JCC(0x7b);
-	else if (!strcmp(aop, "jl" )) JCC(0x7c);
-	else if (!strcmp(aop,"jnge")) JCC(0x7c);
-	else if (!strcmp(aop, "jge")) JCC(0x7d);
-	else if (!strcmp(aop, "jnl")) JCC(0x7d);
-	else if (!strcmp(aop, "jle")) JCC(0x7e);
-	else if (!strcmp(aop, "jng")) JCC(0x7e);
-	else if (!strcmp(aop, "jg" )) JCC(0x7f);
-	else if (!strcmp(aop,"jnle")) JCC(0x7f);
-	else if (!strcmp(aop,"test")) TEST();
-	else if (!strcmp(aop,"xchg")) XCHG();
-	else if (!strcmp(aop, "mov")) MOV();
-	else if (!strcmp(aop, "lea")) LEA();
-	else if (!strcmp(aop, "nop")) NOP();
-	else if (!strcmp(aop, "cbw")) CBW();
-	else if (!strcmp(aop, "cwd")) CWD();
-	else if (!strcmp(aop,"call")) CALL();
-	else if (!strcmp(aop,"wait")) WAIT();
-	else if (!strcmp(aop,"pushf")) PUSHF();
-	else if (!strcmp(aop,"popf")) POPF();
-	else if (!strcmp(aop,"sahf")) SAHF();
-	else if (!strcmp(aop,"lahf")) LAHF();
-	else if (!strcmp(aop,"movsb")) MOVSB();
-	else if (!strcmp(aop,"movsw")) MOVSW();
-	else if (!strcmp(aop,"cmpsb")) CMPSB();
-	else if (!strcmp(aop,"cmpsw")) CMPSW();
-	else if (!strcmp(aop,"stosb")) STOSB();
-	else if (!strcmp(aop,"stosw")) STOSW();
-	else if (!strcmp(aop,"lodsb")) LODSB();
-	else if (!strcmp(aop,"lodsw")) LODSW();
-	else if (!strcmp(aop,"scasb")) SCASB();
-	else if (!strcmp(aop,"scasw")) SCASW();
-	else if (!strcmp(aop, "ret")) RET();
-	else if (!strcmp(aop, "les")) LES();
-	else if (!strcmp(aop, "lds")) LDS();
-	else if (!strcmp(aop,"retf")) RETF();
-	else if (!strcmp(aop, "int")) INT();
-	else if (!strcmp(aop,"into")) INTO();
-	else if (!strcmp(aop,"iret")) IRET();
-	else if (!strcmp(aop, "rol")) ROL();
-	else if (!strcmp(aop, "ror")) ROR();
-	else if (!strcmp(aop, "rcl")) RCL();
-	else if (!strcmp(aop, "rcr")) RCR();
-	else if (!strcmp(aop, "shl")) SHL();
-	else if (!strcmp(aop, "shr")) SHR();
-	else if (!strcmp(aop, "sal")) SAL();
-	else if (!strcmp(aop, "sar")) SAR();
-	else if (!strcmp(aop, "aam")) AAM();
-	else if (!strcmp(aop, "aad")) AAD();
-	else if (!strcmp(aop,"xlat")) XLAT();
-	else if (!strcmp(aop,"loopne")) LOOPCC(0xe0);
-	else if (!strcmp(aop,"loopnz")) LOOPCC(0xe0);
-	else if (!strcmp(aop,"loope")) LOOPCC(0xe1);
-	else if (!strcmp(aop,"loopz")) LOOPCC(0xe1);
-	else if (!strcmp(aop,"loop")) LOOPCC(0xe2);
-	else if (!strcmp(aop,"jcxz")) JCC(0xe3);
-	else if (!strcmp(aop, "in" )) IN();
-	else if (!strcmp(aop, "out")) OUT();
-	else if (!strcmp(aop, "jmp")) JMP();
-	else if (!strcmp(aop, "lock")) LOCK();
-	else if (!strcmp(aop, "qdx")) QDX();
-	else if (!strcmp(aop,"repnz")) REPNZ();
-	else if (!strcmp(aop, "rep")) REP();
-	else if (!strcmp(aop,"repe")) REP();
-	else if (!strcmp(aop,"repz")) REP();
-	else if (!strcmp(aop, "hlt")) HLT();
-	else if (!strcmp(aop, "cmc")) CMC();
-	else if (!strcmp(aop, "not")) NOT();
-	else if (!strcmp(aop, "neg")) NEG();
-	else if (!strcmp(aop, "mul")) MUL();
-	else if (!strcmp(aop,"imul")) IMUL();
-	else if (!strcmp(aop, "div")) DIV();
-	else if (!strcmp(aop,"idiv")) IDIV();
-	else if (!strcmp(aop, "clc")) CLC();
-	else if (!strcmp(aop, "stc")) STC();
-	else if (!strcmp(aop, "cli")) CLI();
-	else if (!strcmp(aop, "sti")) STI();
-	else if (!strcmp(aop, "cld")) CLD();
-	else if (!strcmp(aop, "std")) STD();
-	else if (aop[0] == '$') LABEL();
-	else error = 1;
-//	if (error) printf("exec.error = %d\n",error);
+	else if (!strcmp(rop, "add")) ADD();
+	else if (!strcmp(rop,"push")) PUSH();
+	else if (!strcmp(rop, "pop")) POP();
+	else if (!strcmp(rop, "or" )) OR();
+	else if (!strcmp(rop, "adc")) ADC();
+	else if (!strcmp(rop, "sbb")) SBB();
+	else if (!strcmp(rop, "and")) AND();
+	else if (!strcmp(rop, "es:")) ES();
+	else if (!strcmp(rop, "daa")) DAA();
+	else if (!strcmp(rop, "sub")) SUB();
+	else if (!strcmp(rop, "cs:")) CS();
+	else if (!strcmp(rop, "das")) DAS();
+	else if (!strcmp(rop, "xor")) XOR();
+	else if (!strcmp(rop, "ss:")) SS();
+	else if (!strcmp(rop, "aaa")) AAA();
+	else if (!strcmp(rop, "cmp")) CMP();
+	else if (!strcmp(rop, "ds:")) DS();
+	else if (!strcmp(rop, "aas")) AAS();
+	else if (!strcmp(rop, "inc")) INC();
+	else if (!strcmp(rop, "dec")) DEC();
+	else if (!strcmp(rop, "jo" )) JCC(0x70);
+	else if (!strcmp(rop, "jno")) JCC(0x71);
+	else if (!strcmp(rop, "jb" )) JCC(0x72);
+	else if (!strcmp(rop, "jc" )) JCC(0x72);
+	else if (!strcmp(rop,"jnae")) JCC(0x72);
+	else if (!strcmp(rop, "jae")) JCC(0x73);
+	else if (!strcmp(rop, "jnb")) JCC(0x73);
+	else if (!strcmp(rop, "jnc")) JCC(0x73);
+	else if (!strcmp(rop, "je" )) JCC(0x74);
+	else if (!strcmp(rop, "jz" )) JCC(0x74);
+	else if (!strcmp(rop, "jne")) JCC(0x75);
+	else if (!strcmp(rop, "jnz")) JCC(0x75);
+	else if (!strcmp(rop, "jbe")) JCC(0x76);
+	else if (!strcmp(rop, "jna")) JCC(0x76);
+	else if (!strcmp(rop, "ja" )) JCC(0x77);
+	else if (!strcmp(rop,"jnbe")) JCC(0x77);
+	else if (!strcmp(rop, "js" )) JCC(0x78);
+	else if (!strcmp(rop, "jns")) JCC(0x79);
+	else if (!strcmp(rop, "jp" )) JCC(0x7a);
+	else if (!strcmp(rop, "jpe")) JCC(0x7a);
+	else if (!strcmp(rop, "jnp")) JCC(0x7b);
+	else if (!strcmp(rop, "jpo")) JCC(0x7b);
+	else if (!strcmp(rop, "jl" )) JCC(0x7c);
+	else if (!strcmp(rop,"jnge")) JCC(0x7c);
+	else if (!strcmp(rop, "jge")) JCC(0x7d);
+	else if (!strcmp(rop, "jnl")) JCC(0x7d);
+	else if (!strcmp(rop, "jle")) JCC(0x7e);
+	else if (!strcmp(rop, "jng")) JCC(0x7e);
+	else if (!strcmp(rop, "jg" )) JCC(0x7f);
+	else if (!strcmp(rop,"jnle")) JCC(0x7f);
+	else if (!strcmp(rop,"test")) TEST();
+	else if (!strcmp(rop,"xchg")) XCHG();
+	else if (!strcmp(rop, "mov")) MOV();
+	else if (!strcmp(rop, "lea")) LEA();
+	else if (!strcmp(rop, "nop")) NOP();
+	else if (!strcmp(rop, "cbw")) CBW();
+	else if (!strcmp(rop, "cwd")) CWD();
+	else if (!strcmp(rop,"call")) CALL();
+	else if (!strcmp(rop,"wait")) WAIT();
+	else if (!strcmp(rop,"pushf")) PUSHF();
+	else if (!strcmp(rop,"popf")) POPF();
+	else if (!strcmp(rop,"sahf")) SAHF();
+	else if (!strcmp(rop,"lahf")) LAHF();
+	else if (!strcmp(rop,"movsb")) MOVSB();
+	else if (!strcmp(rop,"movsw")) MOVSW();
+	else if (!strcmp(rop,"cmpsb")) CMPSB();
+	else if (!strcmp(rop,"cmpsw")) CMPSW();
+	else if (!strcmp(rop,"stosb")) STOSB();
+	else if (!strcmp(rop,"stosw")) STOSW();
+	else if (!strcmp(rop,"lodsb")) LODSB();
+	else if (!strcmp(rop,"lodsw")) LODSW();
+	else if (!strcmp(rop,"scasb")) SCASB();
+	else if (!strcmp(rop,"scasw")) SCASW();
+	else if (!strcmp(rop, "ret")) RET();
+	else if (!strcmp(rop, "les")) LES();
+	else if (!strcmp(rop, "lds")) LDS();
+	else if (!strcmp(rop,"retf")) RETF();
+	else if (!strcmp(rop, "int")) INT();
+	else if (!strcmp(rop,"into")) INTO();
+	else if (!strcmp(rop,"iret")) IRET();
+	else if (!strcmp(rop, "rol")) ROL();
+	else if (!strcmp(rop, "ror")) ROR();
+	else if (!strcmp(rop, "rcl")) RCL();
+	else if (!strcmp(rop, "rcr")) RCR();
+	else if (!strcmp(rop, "shl")) SHL();
+	else if (!strcmp(rop, "shr")) SHR();
+	else if (!strcmp(rop, "sal")) SAL();
+	else if (!strcmp(rop, "sar")) SAR();
+	else if (!strcmp(rop, "aam")) AAM();
+	else if (!strcmp(rop, "aad")) AAD();
+	else if (!strcmp(rop,"xlat")) XLAT();
+	else if (!strcmp(rop,"loopne")) LOOPCC(0xe0);
+	else if (!strcmp(rop,"loopnz")) LOOPCC(0xe0);
+	else if (!strcmp(rop,"loope")) LOOPCC(0xe1);
+	else if (!strcmp(rop,"loopz")) LOOPCC(0xe1);
+	else if (!strcmp(rop,"loop")) LOOPCC(0xe2);
+	else if (!strcmp(rop,"jcxz")) JCC(0xe3);
+	else if (!strcmp(rop, "in" )) IN();
+	else if (!strcmp(rop, "out")) OUT();
+	else if (!strcmp(rop, "jmp")) JMP();
+	else if (!strcmp(rop, "lock")) LOCK();
+	else if (!strcmp(rop, "qdx")) QDX();
+	else if (!strcmp(rop,"repnz")) REPNZ();
+	else if (!strcmp(rop, "rep")) REP();
+	else if (!strcmp(rop,"repe")) REP();
+	else if (!strcmp(rop,"repz")) REP();
+	else if (!strcmp(rop, "hlt")) HLT();
+	else if (!strcmp(rop, "cmc")) CMC();
+	else if (!strcmp(rop, "not")) NOT();
+	else if (!strcmp(rop, "neg")) NEG();
+	else if (!strcmp(rop, "mul")) MUL();
+	else if (!strcmp(rop,"imul")) IMUL();
+	else if (!strcmp(rop, "div")) DIV();
+	else if (!strcmp(rop,"idiv")) IDIV();
+	else if (!strcmp(rop, "clc")) CLC();
+	else if (!strcmp(rop, "stc")) STC();
+	else if (!strcmp(rop, "cli")) CLI();
+	else if (!strcmp(rop, "sti")) STI();
+	else if (!strcmp(rop, "cld")) CLD();
+	else if (!strcmp(rop, "std")) STD();
+	else if (rop[0] == '$') LABEL();
+	else flagerror = 1;
+//	if (flagerror) printf("exec.flagerror = %d\n",flagerror);
 }
 
-/* op opr1,opr2 ;comment \n op opr1,opr2 ;end\n */
-static t_bool isprefix(t_strptr op)
+
+static t_bool is_end(char c)
 {
-	if (!strcmp(op, "es:") || !strcmp(op, "ds:") ||
-		!strcmp(op, "cs:") || !strcmp(op, "ss:") ||
-		!strcmp(op, "lock") || !strcmp(op, "rep") ||
-		!strcmp(op, "repne") || !strcmp(op, "repnz") ||
-		!strcmp(op, "repe") || !strcmp(op, "repz")) return 0x01;
-	return 0x00;
+	return (!c || c == '\n' || c == ';');
 }
-t_nubitcc aasm(const t_strptr stmt, t_nubit16 seg, t_nubit16 off)
+static t_bool is_space(char c)
 {
-	t_nsbit8 oldchar;
-	t_bool prefix;
-	t_nubitcc i, slen, l, len;
-	if (!stmt || !stmt[0]) return 0;
-	pool = (char *)malloc(strlen(stmt) + 2);
-	STRCPY(pool, stmt);
-	astmt = pool;
-	slen = strlen(pool);
-	if (pool[slen - 1] != '\n') {
-		pool[slen] = '\n';
-		pool[slen + 1] = 0;
-	}
+	return (c == ' ' || c == '\t');
+}
+static t_bool is_prefix()
+{
+	if (!strcmp(rop, "es:") || !strcmp(rop, "cs:") ||
+		!strcmp(rop, "ss:") || !strcmp(rop, "ds:") ||
+		!strcmp(rop, "fs:") || !strcmp(rop, "gs:") ||
+		!strcmp(rop, "lock:") || !strcmp(rop, "rep:") ||
+		!strcmp(rop, "repne:") || !strcmp(rop, "repnz:") ||
+		!strcmp(rop, "repe:") || !strcmp(rop, "repz:")) return 1;
+	return 0;
+}
+static t_bool is_def_str()
+{
+	if (!strcmp(rop, "db")) return 1;
+	return 0;
+}
+static t_strptr take_arg(t_strptr s)
+{
+	static t_strptr rstart = NULL;
+	t_strptr rend, rresult;
+	if (s) rstart = s;
+	if (!rstart) return NULL;
+	while (!is_end(*rstart) && is_space(*rstart)) rstart++;
+	if (*rstart == ',' || is_end(*rstart)) return NULL;
+	rresult = rstart;
+	while (!is_end(*rstart) && (*rstart) != ',') rstart++;
+	rend = rstart - 1;
+	if (is_end(*rstart)) rstart = NULL;
+	else rstart++;
+	while (!is_end(*rend) && is_space(*rend)) rend--;
+	*(rend + 1) = 0;
+	return rresult;
+}
+
+t_nubit8 aasm32(const t_strptr stmt, t_vaddrcc rcode)
+{
+	char oldchar;
+	t_nubit8 len;
+	t_string astmt;
+	t_strptr rstmt;
+	t_bool flagprefix;
+
+	if (!stmt || !stmt[0] || stmt[0] == '\n') return 0;
+
+	memcpy(astmt, stmt, MAXLINE);
+	rstmt = astmt;
+
+	flages = flagcs = flagss = flagds = flagfs = flaggs = 0;
+	flaglock = flagrepz = flagrepnz = 0;
+
+	iop = 0;
+
+	/* process prefixes */
 	do {
-		prefix = 0x00;
-		while (*astmt != '\n' && *astmt != ';' && (*astmt == ' ' || *astmt == '\t')) astmt++;
-		aop = astmt;
-		while (*astmt != '\n' && *astmt != ';' && (*astmt != ' ' && *astmt != '\t')) astmt++;
-		oldchar = *astmt;
-		*astmt = 0;
-		prefix = isprefix(aop);
-		switch (oldchar) {
-		case ';' :
-		case '\n': *astmt = oldchar;break;
-		case ' ' :
-		case '\t':
-			if (prefix) *astmt = '\n';
-			else *astmt = ' ';
-			break;
-		}
-		astmt++;
-	} while (prefix);
+		while (!is_end(*rstmt) && is_space(*rstmt)) rstmt++;
+		rop = rstmt;
+		while (!is_end(*rstmt) && !is_space(*rstmt)) rstmt++;
+		oldchar = *rstmt;
+		*rstmt = 0;
+		rstmt++;
+		lcase(rop);
+		flagprefix = is_prefix();
+		if (flagprefix) exec();
+		if (flagerror) break;
+	} while (flagprefix);
 
-	slen = strlen(pool);
-	len = 0;
-	error = 0;
-	avcs = seg;
-	avip = off;
-	astmt = pool;
-	for (i = 0;i < slen;++i) {
-		if (pool[i] == '\n') {
-			pool[i] = 0;
-			parse();
-			exec();
-			l = avip - off;
-			len += l;
-			off = avip;
-			astmt = pool + i + 1;
-		}
-		if (error) break;
-	}
-	if (error) {
+	/* process assembly statement */
+	if (!is_def_str()) lcase(rstmt);
+	ropr1 = take_arg(rstmt);
+	ropr2 = take_arg(NULL);
+	ropr3 = take_arg(NULL);
+
+	aopri1 = parsearg(ropr1);
+	if (flagerror) vapiPrint("bad operand 1: '%s'\n", ropr1);
+	aopri2 = parsearg(ropr2);
+	if (flagerror) vapiPrint("bad operand 2: '%s'\n", ropr2);
+	aopri3 = parsearg(ropr3);
+	if (flagerror) vapiPrint("bad operand 3: '%s'\n", ropr3);
+
+	exec();
+
+	if (flagerror) {
 		len = 0;
-//		vapiPrint("invalid instruction: '%s %s,%s'\n",aop,aopr1,aopr2);
+		vapiPrint("bad instruction: '%s'\n", stmt);
+		vapiPrint("[%s] [%s] [%s] [%s]\n", rop, ropr1, ropr2, ropr3);
+	} else {
+		len = 0;
+		if (flages) {d_nubit8(rcode + len) = 0x26;len++;}
+		if (flagcs) {d_nubit8(rcode + len) = 0x2e;len++;}
+		if (flagss) {d_nubit8(rcode + len) = 0x36;len++;}
+		if (flagds) {d_nubit8(rcode + len) = 0x3e;len++;}
+		if (flagfs) {d_nubit8(rcode + len) = 0x64;len++;}
+		if (flaggs) {d_nubit8(rcode + len) = 0x65;len++;}
+		if (flagopr) {d_nubit8(rcode + len) = 0x66;len++;}
+		if (flagaddr) {d_nubit8(rcode + len) = 0x67;len++;}
+		if (flaglock) {d_nubit8(rcode + len) = 0xf0;len++;}
+		if (flagrepnz) {d_nubit8(rcode + len) = 0xf2;len++;}
+		if (flagrepz) {d_nubit8(rcode + len) = 0xf3;len++;}
+		memcpy((void *)(rcode + len), (void *)acode, iop);
+		len += iop;
 	}
-	free(pool);
-	pool = NULL;
 	return len;
 }
-
-/*
-JMP I16 (REL8 or REL16)
-JMP [M/M16] (RM16)
-JMP [M32] (M16:16)
-JMP SHORT $(LABEL) (REL8)
-JMP SHORT I16 (REL8)
-JMP NEAR $(LABEL) (REL16)
-JMP NEAR I16 (REL16)
-JMP NEAR [M/M16] (RM16)
-JMP I16:16  (I16:16)
-JMP FAR $(LABEL) (I16:16)
-JMP FAR I16 (I16:16)
-JMP FAR [M/M32] (M16:16)
-JMP FAR I16:16 (I16:16)
->>
-ARG_I16u, PNONE, SHORT, NEAR
-ARG_RM16, PNONE, NEAR
-ARG_M32, PNONE, FAR
-ARG_LABEL, SHORT, NEAR, FAR
-ARG_I16_16, PNONE, FAR
-
-CALL I16 (REL16)
-CALL [M/M16] (RM16)
-CALL [M32] (M16:16)
-CALL NEAR $(LABEL) (REL16)
-CALL NEAR I16 (REL16)
-CALL NEAR [M/M16] (RM16)
-CALL I16:16 (I16:16)
-CALL FAR $(LABEL) (REL16)
-CALL FAR I16 (I16:16)
-CALL FAR [M/M32] (M16:16)
-CALL FAR I16:16 (I16:16)
-
->>
-ARG_I16u, PNONE, NEAR
-ARG_RM16, PNONE, NEAR
-ARG_M32, PNONE, FAR
-ARG_LABEL, NEAR, FAR
-ARG_I16_16, PNONE, FAR
-
-
-*/

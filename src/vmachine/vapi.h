@@ -7,11 +7,12 @@
 extern "C" {
 #endif
 
-#include "stdio.h"
+#include "time.h"
 #include "stdarg.h"
 
 #include "vglobal.h"
 
+struct tm*   LOCALTIME(const time_t *_Time);
 char* STRCAT(char *_Dest, const char *_Source);
 char* STRCPY(char *_Dest, const char *_Source);
 char* STRTOK(char *_Str, const char *_Delim);
@@ -20,19 +21,20 @@ int   SPRINTF(char *_Dest, const char *_Format, ...);
 FILE* FOPEN(const char *_Filename, const char *_Mode);
 char* FGETS(char *_Buf, int _MaxCount, FILE *_File);
 
-t_nubit32 vapiPrint(const t_string format, ...);
+void lcase(char *s);
+t_nubit32 vapiPrint(const t_strptr format, ...);
 
-void vapiFloppyInsert(const t_string fname);
-void vapiFloppyRemove(const t_string fname);
-void vapiHardDiskInsert(const t_string fname);
-void vapiHardDiskRemove(const t_string fname);
+void vapiFloppyInsert(const t_strptr fname);
+void vapiFloppyRemove(const t_strptr fname);
+void vapiHardDiskInsert(const t_strptr fname);
+void vapiHardDiskRemove(const t_strptr fname);
 void vapiStartMachine();
 
 void vapiSleep(t_nubit32 milisec);
 void vapiDisplaySetScreen();
 void vapiDisplayPaint();
 
-void vapiCallBackDebugPrintRegs(t_bool bit32);
+void vapiCallBackDebugPrintRegs(t_bool flag32);
 
 void vapiCallBackMachineRun();
 t_nubit8 vapiCallBackMachineGetFlagRun();

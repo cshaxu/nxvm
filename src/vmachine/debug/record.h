@@ -22,8 +22,8 @@ typedef struct {
 
 extern t_record vrecord;
 
-void recordNow(const t_string fname);
-void recordDump(const t_string fname);
+void recordNow(const t_strptr fname);
+void recordDump(const t_strptr fname);
 void recordInit();
 void recordExec(t_cpurec *rcpurec);
 void recordFinal();

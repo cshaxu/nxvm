@@ -1,6 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "stdio.h"
 #include "stdlib.h"
 #include "memory.h"
 
@@ -54,12 +53,12 @@ static void _Trace_Init()
 {
 	trace.cid = 0x00;
 }
-static void _Trace_Release(t_bool print)
+static void _Trace_Release(t_bool flagprint)
 {
 	t_nsbitcc i, j;
 	for (i = trace.cid - 1;i >= 0;--i) {
 		trace.callstack[i];
-		if (print) {
+		if (flagprint) {
 			for (j = 0;j < trace.callstack[i].bid;++j) {
 				vapiPrint("%s",trace.callstack[i].blockstack[j]);
 				if (j != trace.callstack[i].bid - 1) vapiPrint("::");
@@ -69,7 +68,7 @@ static void _Trace_Release(t_bool print)
 	}
 	trace.cid = 0;
 }
-static void _Trace_Call_Begin(t_string s)
+static void _Trace_Call_Begin(t_strptr s)
 {
 	if (vcpuins.except) _Trace_Release(1);
 	if (trace.cid == 0xff) return;
@@ -96,7 +95,7 @@ static void _Trace_Call_End()
 		vcpuins.except |= 0xffffffff;
 	}
 }
-static void _Trace_Block_Begin(t_string s)
+static void _Trace_Block_Begin(t_strptr s)
 {
 	if (vcpuins.except) _Trace_Release(1);
 	if (trace.callstack[trace.cid - 1].bid < 0xff) {
@@ -495,7 +494,7 @@ static void _kma_write_linear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte, 
 /* read content from logical */
 static void _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte, t_nubit8 vpl, t_bool force)
 {
-//	t_nubitcc i;
+//	t_nubit8 i;
 	t_nubit32 linear;
 	_cb("_kma_read_logical");
 	_chk(linear = _kma_linear_logical(rsreg, offset, byte, 0, vpl, force));
@@ -533,7 +532,7 @@ static void _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rda
 /* write content to logical */
 static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte, t_nubit8 vpl, t_bool force)
 {
-//	t_nubitcc i;
+//	t_nubit8 i;
 	t_nubit32 linear;
 	_cb("_kma_write_logical");
 	_chk(linear = _kma_linear_logical(rsreg, offset, byte, 1, vpl, force));
@@ -1720,7 +1719,7 @@ static t_nubit64 _d_code(t_nubit8 byte)
 }
 static void _d_imm(t_nubit8 byte)
 {
-	t_nubitcc i;
+	t_nubit8 i;
 	_cb("_d_imm");
 	_chk(vcpuins.cimm = _d_code(byte));
 	for (i = byte;i < 8;++i) d_nubit8(GetRef(vcpuins.cimm) + i) = 0x00;
@@ -7554,7 +7553,7 @@ static void MOVSB()
 				_m_movs(1);
 				vcpu.cx--;
 			}
-			if (vcpu.cx) vcpuins.flaginsloop = 0x01;
+			if (vcpu.cx) vcpuins.flaginsloop = 1;
 		}
 	}
 	_ce;
@@ -7600,7 +7599,7 @@ static void MOVSW()
 				_m_movs(2);
 				vcpu.cx--;
 			}
-			if (vcpu.cx) vcpuins.flaginsloop = 0x01;
+			if (vcpu.cx) vcpuins.flaginsloop = 1;
 		}
 	}
 	_ce;
@@ -7655,7 +7654,7 @@ static void CMPSB()
 			if (vcpu.cx &&
 				!(vcpuins.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
 				!(vcpuins.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-				 vcpuins.flaginsloop = 0x01;
+				 vcpuins.flaginsloop = 1;
 		}
 	}
 	_ce;
@@ -7710,7 +7709,7 @@ static void CMPSW()
 			if (vcpu.cx &&
 				!(vcpuins.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
 				!(vcpuins.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-				 vcpuins.flaginsloop = 0x01;
+				 vcpuins.flaginsloop = 1;
 		}
 	}
 	_ce;
@@ -7791,7 +7790,7 @@ static void STOSB()
 				_m_stos(1);
 				vcpu.cx--;
 			}
-			if (vcpu.cx) vcpuins.flaginsloop = 0x01;
+			if (vcpu.cx) vcpuins.flaginsloop = 1;
 		}
 	}
 	_ce;
@@ -7837,7 +7836,7 @@ static void STOSW()
 				_m_stos(2);
 				vcpu.cx--;
 			}
-			if (vcpu.cx) vcpuins.flaginsloop = 0x01;
+			if (vcpu.cx) vcpuins.flaginsloop = 1;
 		}
 	}
 	_ce;
@@ -7883,7 +7882,7 @@ static void LODSB()
 				_m_lods(1);
 				vcpu.cx--;
 			}
-			if (vcpu.cx) vcpuins.flaginsloop = 0x01;
+			if (vcpu.cx) vcpuins.flaginsloop = 1;
 		}
 	}
 	_ce;
@@ -7929,7 +7928,7 @@ static void LODSW()
 				_m_lods(2);
 				vcpu.cx--;
 			}
-			if (vcpu.cx) vcpuins.flaginsloop = 0x01;
+			if (vcpu.cx) vcpuins.flaginsloop = 1;
 		}
 	}
 	_ce;
@@ -7984,7 +7983,7 @@ static void SCASB()
 			if (vcpu.cx &&
 				!(vcpuins.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
 				!(vcpuins.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-				 vcpuins.flaginsloop = 0x01;
+				 vcpuins.flaginsloop = 1;
 		}
 	}
 	_ce;
@@ -8039,7 +8038,7 @@ static void SCASW()
 			if (vcpu.cx &&
 				!(vcpuins.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
 				!(vcpuins.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-				 vcpuins.flaginsloop = 0x01;
+				 vcpuins.flaginsloop = 1;
 		}
 	}
 	_ce;
@@ -11342,7 +11341,7 @@ static void RecInit()
 	vcpurec.msize = 0;
 	vcpurec.rcpu = vcpu;
 	vcpurec.linear = vcpu.cs.base + vcpu.eip;
-	if (vcpuinsReadIns(vcpurec.linear, (t_vaddrcc)vcpurec.opcodes))
+	if (vcpuinsReadLinear(vcpurec.linear, (t_vaddrcc)vcpurec.opcodes, 15))
 		vcpurec.oplen = 0;
 	else
 		vcpurec.oplen = 15;
@@ -11494,12 +11493,12 @@ static void QDX()
 }
 
 /* external interface */
-t_bool vcpuinsReadIns(t_nubit32 linear, t_vaddrcc rcode)
+t_bool vcpuinsReadLinear(t_nubit32 linear, t_vaddrcc rcode, t_nubit8 byte)
 {
 	t_bool fail;
 	t_nubit32 oldexcept = vcpuins.except;
 	vcpuins.except = 0;
-	_kma_read_linear(linear, rcode, 15, 0x00, 1);
+	_kma_read_linear(linear, rcode, byte, 0x00, 1);
 	fail = !!vcpuins.except;
 	vcpuins.except = oldexcept;
 	return fail;

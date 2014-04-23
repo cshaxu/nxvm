@@ -51,15 +51,15 @@ t_dma vdma1,vdma2;
 
 static void Reset(t_dma *vdma)
 {
-	t_nubitcc i;
+	t_nubit8 i;
 	vdma->command = 0x00;
 	vdma->status  = 0x00;
 	vdma->mask    = 0x0f;
 	vdma->request = 0x00;
 	vdma->temp    = 0x00;
-	vdma->flagmsb = 0x00;
+	vdma->flagmsb = 0;
 	vdma->drx     = 0x00;
-	vdma->flageop = 0x00;
+	vdma->flageop = 0;
 	vdma->isr     = 0x00;
 	for(i = 0;i < 4;++i) {
 		vdma->channel[i].baseaddr = vdma->channel[i].curraddr = 0x0000;
@@ -69,21 +69,21 @@ static void Reset(t_dma *vdma)
 	}
 }
 
-static void IO_Read_CurrentAddress(t_dma *vdma, t_nubitcc id)
+static void IO_Read_CurrentAddress(t_dma *vdma, t_nubit8 id)
 {
 	if(!vdma->flagmsb)
 		vport.iobyte = (t_nubit8)(vdma->channel[id].curraddr & 0x00ff);
 	else
 		vport.iobyte = (t_nubit8)(vdma->channel[id].curraddr >> 8);
-	vdma->flagmsb = 0x01 - vdma->flagmsb;
+	vdma->flagmsb = !vdma->flagmsb;
 }
-static void IO_Read_CurrentWordCount(t_dma *vdma, t_nubitcc id)
+static void IO_Read_CurrentWordCount(t_dma *vdma, t_nubit8 id)
 {
 	if(!vdma->flagmsb)
 		vport.iobyte = (t_nubit8)(vdma->channel[id].currwc & 0x00ff);
 	else
 		vport.iobyte = (t_nubit8)(vdma->channel[id].currwc >> 8);
-	vdma->flagmsb = 0x01 - vdma->flagmsb;
+	vdma->flagmsb = !vdma->flagmsb;
 }
 static void IO_Read_Status(t_dma *vdma)
 {
@@ -93,23 +93,23 @@ static void IO_Read_Status(t_dma *vdma)
 #define     IO_Read_Temp(vdma) (vport.iobyte = (vdma)->temp)
 #define     IO_Read_Page(vdma, id) (vport.iobyte = (vdma)->channel[(id)].page)
 
-static void IO_Write_Address(t_dma *vdma, t_nubitcc id)
+static void IO_Write_Address(t_dma *vdma, t_nubit8 id)
 {
 	if(!vdma->flagmsb)
 		vdma->channel[id].baseaddr  = (t_nubit16)vport.iobyte;
 	else
 		vdma->channel[id].baseaddr |= (t_nubit16)(vport.iobyte << 8);
 	vdma->channel[id].curraddr = vdma->channel[id].baseaddr;
-	vdma->flagmsb = 0x01 - vdma->flagmsb;
+	vdma->flagmsb = !vdma->flagmsb;
 }
-static void IO_Write_WordCount(t_dma *vdma, t_nubitcc id)
+static void IO_Write_WordCount(t_dma *vdma, t_nubit8 id)
 {
 	if(!vdma->flagmsb)
 		vdma->channel[id].basewc  = (t_nubit16)vport.iobyte;
 	else
 		vdma->channel[id].basewc |= (t_nubit16)(vport.iobyte << 8);
 	vdma->channel[id].currwc = vdma->channel[id].basewc;
-	vdma->flagmsb = 0x01 - vdma->flagmsb;
+	vdma->flagmsb = !vdma->flagmsb;
 }
 #define     IO_Write_Command(vdma) ((vdma)->command = vport.iobyte)
 static void IO_Write_Request(t_dma *vdma)
@@ -128,7 +128,7 @@ static void IO_Write_Mask_Single(t_dma *vdma)
 }
 #define     IO_Write_Mode(vdma) \
             ((vdma)->channel[vport.iobyte & 0x03].mode = vport.iobyte >> 2)
-#define     IO_Write_Flipflop_Clear(vdma) ((vdma)->flagmsb = 0x00)
+#define     IO_Write_Flipflop_Clear(vdma) ((vdma)->flagmsb = 0)
 #define     IO_Write_Reset(vdma) (Reset(vdma))
 #define     IO_Write_Mask_Clear(vdma) ((vdma)->mask = 0x00)
 #define     IO_Write_Mask_All(vdma) ((vdma)->mask = vport.iobyte & 0x0f)
@@ -227,7 +227,7 @@ static void DecreaseCurrAddr(t_dma *vdma, t_nubit8 id)
 	vdma->channel[id].curraddr--;
 	if (vdma->channel[id].curraddr == 0xffff) vdma->channel[id].page--;
 }
-static void Transmission(t_dma *vdma, t_nubit8 id, t_bool word)
+static void Transmission(t_dma *vdma, t_nubit8 id, t_bool flagword)
 {
 	switch (GetCS(vdma,id)) {
 	case 0x00: /* verify */
@@ -238,7 +238,7 @@ static void Transmission(t_dma *vdma, t_nubit8 id, t_bool word)
 		break;
 	case 0x01:                                                      /* write */
 		if (vdma->channel[id].devread) ExecFun(vdma->channel[id].devread);
-		if (!word)
+		if (!flagword)
 			vramByte((vdma->channel[id].page << 16) + vdma->channel[id].curraddr) = vlatch.byte;
 		else
 			vramWord((vdma->channel[id].page << 16) + (vdma->channel[id].curraddr << 1)) = vlatch.word;
@@ -247,7 +247,7 @@ static void Transmission(t_dma *vdma, t_nubit8 id, t_bool word)
 		else                  IncreaseCurrAddr(vdma, id);
 		break;
 	case 0x02:                                                       /* read */
-		if (!word)
+		if (!flagword)
 			vlatch.byte = vramByte((vdma->channel[id].page << 16) + vdma->channel[id].curraddr);
 		else
 			vlatch.word = vramWord((vdma->channel[id].page << 16) + (vdma->channel[id].curraddr << 1));
@@ -262,7 +262,7 @@ static void Transmission(t_dma *vdma, t_nubit8 id, t_bool word)
 		break;
 	}
 }
-static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
+static void Execute(t_dma *vdma, t_nubit8 id, t_bool flagword)
 {
 	t_bool flagm2m = ((id == 0x00) && (vdma->request & 0x01) && GetM2M(vdma));
 	vdma->status  &= ~(0x10 << id);
@@ -286,32 +286,32 @@ static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
 		}
 		if (vdma->channel[0x01].currwc == 0xffff) {
 			vdma->status |= 0x01;
-			vdma->flageop = 0x01;
+			vdma->flageop = 1;
 		}
 	} else {
 		switch (GetM(vdma,id)) {                  /* select mode and command */
 		case 0x00:                                                 /* demand */
 			while (vdma->channel[id].currwc != 0xffff && !vdma->flageop
 					&& GetDRQ(vdma,id))
-				Transmission(vdma, id, word);
+				Transmission(vdma, id, flagword);
 			break;
 		case 0x01:                                                 /* single */
-			Transmission(vdma, id, word);
+			Transmission(vdma, id, flagword);
 			break;
 		case 0x02:                                                  /* block */
 			while (vdma->channel[id].currwc != 0xffff && !vdma->flageop)
-				Transmission(vdma, id, word);
+				Transmission(vdma, id, flagword);
 			break;
 		case 0x03:                                                /* cascade */
 			/* do nothing */
-			vdma->flageop = 0x01;
+			vdma->flageop = 1;
 			break;
 		default:
 			break;
 		}
 		if (vdma->channel[id].currwc == 0xffff) {
 			vdma->status |= 0x01 << id;                   /* set terminate count */
-			vdma->flageop     = 0x01;
+			vdma->flageop     = 1;
 		}
 	}
 	if (vdma->flageop) {
@@ -325,7 +325,7 @@ static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
 		} else
 			vdma->mask |= 0x01 << id;
 	}
-	vdma->flageop = 0x00;
+	vdma->flageop = 0;
 }
 
 void vdmaSetDRQ(t_nubit8 dreqid)
@@ -347,7 +347,7 @@ void vdmaSetDRQ(t_nubit8 dreqid)
 #ifdef VDMA_DEBUG
 void IO_Read_FF00() /* print all info of dma */
 {
-	t_nubitcc i;
+	t_nubit8 i;
 	vport.iobyte = 0xff;
 	vapiPrint("DMA 1 Info\n==========\n");
 	vapiPrint("Command = %x, status = %x, mask = %x\n",

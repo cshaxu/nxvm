@@ -12,7 +12,7 @@ extern "C" {
 #include "vglobal.h"
 
 typedef struct {
-	t_bool    color;
+	t_bool    flagcolor;
 	t_nubit8  colsize; // char per col
 	t_vaddrcc bufcomp;
 	t_nubit8  oldcurposx,oldcurposy;

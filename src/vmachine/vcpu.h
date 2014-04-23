@@ -116,7 +116,7 @@ typedef struct {
 
 extern t_cpu vcpu;
 
-#define VCPU_PAGESIZE      0x1000
+#define VCPU_PAGESIZE 0x1000
 
 #define _eax    (vcpu.eax)
 #define _ebx    (vcpu.ebx)

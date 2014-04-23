@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.013c]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.013d]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -125,6 +125,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 04/21-05/23  updated debugger
  * 05/24-07/31  built 80386 cpu
  * 08/06-08/09  built dasm32
+ * 08/10-.....  built aasm32
  *
  * Milestones
  * 0x45 Console, 8086 CPU, 8086 Debugger
@@ -144,17 +145,17 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 013a Built Dasm 32
  *
  * Format Unify:
- * check all includes, macro names, flag names
- * check all null pointer: use NULL instead of 0
- * use assert
+ * check all includes
+ * reconstruct debug.ch (external interface)
+ * construct aasm32
+ * reconstruct t_cpu_sreg
+ * check all macro names
  * replace all constants with MACRO
- * all t_bool variable names start with "flag"
  * new flag system: FLAG_X_X 0x0010, bit macros
  *
  */
 
 #include "stdio.h"
-#include "stdlib.h"
 
 #include "console.h"
 

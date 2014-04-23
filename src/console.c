@@ -1,8 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#include "stdio.h"
 #include "stdlib.h"
-#include "stdarg.h"
 #include "string.h"
 
 #include "vmachine/vapi.h"
@@ -12,42 +10,14 @@
 
 #include "console.h"
 
-#define MAXLINE 256
 #define MAXNARG 256
 #define MAXNASMARG 4
 
 static int narg;
 static char **arg;
-static int exitFlag;
-static char cmdBuff[MAXLINE];
-static char cmdCopy[MAXLINE];
-static t_nubit32 printc(const t_string format, ...)
-{
-	t_nubit32 nWrittenBytes = 0;
-	va_list arg_ptr;
-	va_start(arg_ptr, format);
-	nWrittenBytes = vfprintf(stdout,format,arg_ptr);
-	//nWrittenBytes = vsprintf(stringBuffer,format,arg_ptr);
-	va_end(arg_ptr);
-	fflush(stdout);
-	return nWrittenBytes;
-}
-static void cgets(char *_Buf, int _MaxCount, FILE *_File)
-{
-	FGETS(_Buf,_MaxCount,_File);
-	fflush(stdin);
-}
-static void lcase(char *s)
-{
-	int i = 0;
-	if(s[0] == '\'') return;
-	while(s[i] != '\0') {
-		if(s[i] == '\n') s[i] = '\0';
-		else if(s[i] > 0x40 && s[i] < 0x5b)
-			s[i] += 0x20;
-		i++;
-	}
-}
+static t_bool   flagexit;
+static t_string cmdBuff, cmdCopy;
+
 static void parse()
 {
 	STRCPY(cmdCopy,cmdBuff);
@@ -76,82 +46,82 @@ static void Help()
 	switch (narg) {
 	case 2:
 		if (!strcmp(arg[1], "help")) {
-			printc("Show help info\n");
-			printc("\nHELP\n");
-			printc("  show menu of all commands\n");
-			printc("\nHELP [command]\n");
-			printc("  show help info for command\n");
+			vapiPrint("Show help info\n");
+			vapiPrint("\nHELP\n");
+			vapiPrint("  show menu of all commands\n");
+			vapiPrint("\nHELP [command]\n");
+			vapiPrint("  show help info for command\n");
 			break;
 		} else if (!strcmp(arg[1], "exit")) {
-			printc("Quit the console\n");
-			printc("\nEXIT\n");
+			vapiPrint("Quit the console\n");
+			vapiPrint("\nEXIT\n");
 			break;
 		} else if (!strcmp(arg[1], "info")) {
-			printc("List all NXVM info\n");
-			printc("\nINFO\n");
+			vapiPrint("List all NXVM info\n");
+			vapiPrint("\nINFO\n");
 			break;
 		} else if (!strcmp(arg[1], "debug")) {
-			printc("Launch NXVM hardware debugger\n");
-			printc("\nDEBUG\n");
+			vapiPrint("Launch NXVM hardware debugger\n");
+			vapiPrint("\nDEBUG\n");
 			break;
 		} else if (!strcmp(arg[1], "debug32")) {
-			printc("Launch NXVM 32-bit hardware debugger\n");
-			printc("\nDEBUG\n");
+			vapiPrint("Launch NXVM 32-bit hardware debugger\n");
+			vapiPrint("\nDEBUG\n");
 			break;
 		} else if (!strcmp(arg[1], "record")) {
-			printc("Record cpu status in each iteration for futher dumping\n");
-			printc("\nRECORD [on | off | dump <file> | now <file>]\n");
+			vapiPrint("Record cpu status in each iteration for futher dumping\n");
+			vapiPrint("\nRECORD [on | off | dump <file> | now <file>]\n");
 			break;
 		} else if (!strcmp(arg[1], "set")) {
-			printc("Change BIOS settings\n");
-			printc("\nSET <item> <value>\n");
-			printc("  available items and values\n");
-			printc("  boot   fdd, hdd\n");
+			vapiPrint("Change BIOS settings\n");
+			vapiPrint("\nSET <item> <value>\n");
+			vapiPrint("  available items and values\n");
+			vapiPrint("  boot   fdd, hdd\n");
 			break;
 		} else if (!strcmp(arg[1], "device")) {
-			printc("Change NXVM devices\n");
-			printc("\nDEVICE ram <size>\n");
-			printc("  change memory size (KB)\n");
-			printc("\nDEVICE display [console | window]\n");
-			printc("  change display type\n");
-			printc("\nDEVICE fdd [create | insert <file>| remove <file>]\n");
-			printc("  change floppy drive status:\n");
-			printc("  create: discard current floppy image\n");
-			printc("          and create a new one\n");
-			printc("  insert: load floppy image from file\n");
-			printc("  remove: remove floppy image and dump to file\n");
-			printc("\nDEVICE hdd [create [cyl <num>]| connect <file>| disconnect <file>]\n");
-			printc("  change hard disk drive status:\n");
-			printc("  create:     discard current hard disk image\n");
-			printc("              and create a new one of n cyls\n");
-			printc("  connect:    load hard disk image from file\n");
-			printc("  disconnect: remove hard disk image and dump to file\n");
+			vapiPrint("Change NXVM devices\n");
+			vapiPrint("\nDEVICE ram <size>\n");
+			vapiPrint("  change memory size (KB)\n");
+			vapiPrint("\nDEVICE display [console | window]\n");
+			vapiPrint("  change display type\n");
+			vapiPrint("\nDEVICE fdd [create | insert <file>| remove <file>]\n");
+			vapiPrint("  change floppy drive status:\n");
+			vapiPrint("  create: discard current floppy image\n");
+			vapiPrint("          and create a new one\n");
+			vapiPrint("  insert: load floppy image from file\n");
+			vapiPrint("  remove: remove floppy image and dump to file\n");
+			vapiPrint("\nDEVICE hdd [create [cyl <num>]| connect <file>| disconnect <file>]\n");
+			vapiPrint("  change hard disk drive status:\n");
+			vapiPrint("  create:     discard current hard disk image\n");
+			vapiPrint("              and create a new one of n cyls\n");
+			vapiPrint("  connect:    load hard disk image from file\n");
+			vapiPrint("  disconnect: remove hard disk image and dump to file\n");
 			break;
 		} else if (!strcmp(arg[1], "nxvm")) {
-			printc("Change virtual machine status\n");
-			printc("\nNXVM [start | reset | stop | continue]\n");
-			printc("  start:    start virtual machine\n");
-			printc("  reset:    reset all device and restart machine\n");
-			printc("  stop:     stop virtual machine\n");
-			printc("  resume:   resume virtual macine\n");
+			vapiPrint("Change virtual machine status\n");
+			vapiPrint("\nNXVM [start | reset | stop | continue]\n");
+			vapiPrint("  start:    start virtual machine\n");
+			vapiPrint("  reset:    reset all device and restart machine\n");
+			vapiPrint("  stop:     stop virtual machine\n");
+			vapiPrint("  resume:   resume virtual macine\n");
 			break;
 		} else ;
 	case 1:
 	default:
-		printc("NXVM Console Commands\n");
-		printc("=====================\n");
-		printc("HELP    Show help info\n");
-		printc("EXIT    Quit the console\n");
-		printc("INFO    List all NXVM info\n");
-		printc("\n");
-		printc("DEBUG   Launch NXVM hardware debugger\n");
-		printc("RECORD  Record cpu status for each instruction\n");
-		printc("\n");
-		printc("SET     Change BIOS settings\n");
-		printc("DEVICE  Change hardware parts\n");
-		printc("NXVM    Change virtual machine status\n");
-		printc("\n");
-		printc("For command usage, type 'HELP <command>'.\n");
+		vapiPrint("NXVM Console Commands\n");
+		vapiPrint("=====================\n");
+		vapiPrint("HELP    Show help info\n");
+		vapiPrint("EXIT    Quit the console\n");
+		vapiPrint("INFO    List all NXVM info\n");
+		vapiPrint("\n");
+		vapiPrint("DEBUG   Launch NXVM hardware debugger\n");
+		vapiPrint("RECORD  Record cpu status for each instruction\n");
+		vapiPrint("\n");
+		vapiPrint("SET     Change BIOS settings\n");
+		vapiPrint("DEVICE  Change hardware parts\n");
+		vapiPrint("NXVM    Change virtual machine status\n");
+		vapiPrint("\n");
+		vapiPrint("For command usage, type 'HELP <command>'.\n");
 		break;
 	}
 }
@@ -159,44 +129,44 @@ static void Exit()
 {
 	if (narg != 1) GetHelp;
 	if (!vmachine.flagrun) {
-		exitFlag = 1;
+		flagexit = 1;
 	} else {
-		printc("Please stop NXVM before exit.\n");
+		vapiPrint("Please stop NXVM before exit.\n");
 	}
 }
 static void Info()
 {
 	if (narg != 1) GetHelp;
-	printc("NXVM Device Info\n");
-	printc("================\n");
-	printc("Machine:           IBM PC/AT\n");
-	printc("CPU:               Intel 8086+\n");
-	printc("RAM Size:          %d MB\n", vram.size >> 20);
-	printc("Floppy Disk Drive: 3.5\", %.2f MB, %s\n",
+	vapiPrint("NXVM Device Info\n");
+	vapiPrint("================\n");
+	vapiPrint("Machine:           IBM PC/AT\n");
+	vapiPrint("CPU:               Intel 8086+\n");
+	vapiPrint("RAM Size:          %d MB\n", vram.size >> 20);
+	vapiPrint("Floppy Disk Drive: 3.5\", %.2f MB, %s\n",
 		vfddGetImageSize * 1. / 0xfa000,
 		vfdd.flagexist ? "inserted" : "not inserted");
-	printc("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n",
+	vapiPrint("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n",
 		vhdd.ncyl, vhddGetImageSize * 1. / 0x100000,
 		vhdd.flagexist ? "connected" : "disconnected");
-	printc("Display Type:      ");
-	if (vmachine.flagmode) printc("Window\n");
-	else printc("Console\n");
-	printc("\n");
-	printc("NXVM BIOS Settings\n");
-	printc("==================\n");
-	printc("Boot Disk: %s\n", vmachine.flagboot ? "Hard Drive" : "Floppy");
-	printc("\n");
-	printc("NXVM Debug Status\n");
-	printc("=================\n");
-	printc("Recorder:    %s\n", vmachine.flagrecord ? "On" : "Off");
-	printc("Trace:       %s\n", vmachine.tracecnt ? "On" : "Off");
-	printc("Break Point: ");
-	if (vmachine.flagbreak) printc("%04X:%04X\n",vmachine.breakcs,vmachine.breakip);
-	else printc("Off\n");
-	printc("\n");
-	printc("NXVM Running Status\n");
-	printc("===================\n");
-	printc("Running: %s\n", vmachine.flagrun  ? "Yes" : "No");
+	vapiPrint("Display Type:      ");
+	if (vmachine.flagmode) vapiPrint("Window\n");
+	else vapiPrint("Console\n");
+	vapiPrint("\n");
+	vapiPrint("NXVM BIOS Settings\n");
+	vapiPrint("==================\n");
+	vapiPrint("Boot Disk: %s\n", vmachine.flagboot ? "Hard Drive" : "Floppy");
+	vapiPrint("\n");
+	vapiPrint("NXVM Debug Status\n");
+	vapiPrint("=================\n");
+	vapiPrint("Recorder:    %s\n", vmachine.flagrecord ? "On" : "Off");
+	vapiPrint("Trace:       %s\n", vmachine.tracecnt ? "On" : "Off");
+	vapiPrint("Break Point: ");
+	if (vmachine.flagbreak) vapiPrint("%04X:%04X\n",vmachine.breakcs,vmachine.breakip);
+	else vapiPrint("Off\n");
+	vapiPrint("\n");
+	vapiPrint("NXVM Running Status\n");
+	vapiPrint("===================\n");
+	vapiPrint("Running: %s\n", vmachine.flagrun  ? "Yes" : "No");
 }
 static void Debug()
 {
@@ -207,7 +177,7 @@ static void Record()
 {
 	if (narg < 2) GetHelp;
 	if (vmachine.flagrun) {
-		printc("Cannot change record status or dump record now.\n");
+		vapiPrint("Cannot change record status or dump record now.\n");
 		return;
 	}
 	if (!strcmp(arg[1], "on")) {
@@ -237,9 +207,9 @@ static void Set()
 	if (!strcmp(arg[1], "boot")) {
 		if (narg != 3) GetHelp;
 		if (!strcmp(arg[2], "fdd"))
-			vmachine.flagboot = 0x00;
+			vmachine.flagboot = 0;
 		else if(!strcmp(arg[2], "hdd"))
-			vmachine.flagboot = 0x01;
+			vmachine.flagboot = 1;
 		else GetHelp;
 	} else GetHelp;
 }
@@ -256,14 +226,14 @@ static void Device()
 	} else if(!strcmp(arg[1], "display")) {
 		if (narg != 3) GetHelp;
 		if (!strcmp(arg[2], "console"))
-			vmachine.flagmode = 0x00;
+			vmachine.flagmode = 0;
 		else if (!strcmp(arg[2], "window"))
-			vmachine.flagmode = 0x01;
+			vmachine.flagmode = 1;
 		else GetHelp;
 	} else if(!strcmp(arg[1], "fdd")) {
 		if (narg < 3) GetHelp;
 		if (!strcmp(arg[2], "create")) {
-			vfdd.flagexist = 0x01;
+			vfdd.flagexist = 1;
 		} else if (!strcmp(arg[2], "insert")) {
 			if (narg < 4) GetHelp;
 			vapiFloppyInsert(arg[3]);
@@ -274,7 +244,7 @@ static void Device()
 	} else if(!strcmp(arg[1], "hdd")) {
 		if (narg < 3) GetHelp;
 		if (!strcmp(arg[2], "create")) {
-			vhdd.flagexist = 0x01;
+			vhdd.flagexist = 1;
 			if (narg > 3) {
 				if (narg == 5 && !strcmp(arg[3], "cyl")) {
 					vhdd.ncyl = atoi(arg[4]);
@@ -297,7 +267,7 @@ static void Nxvm()
 		if (!vmachine.flagrun) {
 			vmachineStart();
 		} else
-			printc("Virtual machine is already running.\n");
+			vapiPrint("Virtual machine is already running.\n");
 	} else if (!strcmp(arg[1], "reset")) {
 		vapiCallBackMachineReset();
 	} else if (!strcmp(arg[1], "stop")) {
@@ -306,7 +276,7 @@ static void Nxvm()
 		if (!vmachine.flagrun)
 			vmachineResume();
 		else
-			printc("Virtual machine is already running.\n");
+			vapiPrint("Virtual machine is already running.\n");
 	} else GetHelp;
 }
 
@@ -336,13 +306,13 @@ static void exec()
 	else if(!strcmp(arg[0],"reset"))  vapiCallBackMachineReset();
 	else if(!strcmp(arg[0],"stop"))   vmachineStop();
 	else if(!strcmp(arg[0],"resume")) vmachineResume();
-	else printc("Illegal command '%s'.\n",arg[0]);
-	printc("\n");
+	else vapiPrint("Illegal command '%s'.\n",arg[0]);
+	vapiPrint("\n");
 }
 static void init()
 {
 	arg = (char **)malloc(MAXNARG * sizeof(char *));
-	exitFlag = 0x00;
+	flagexit = 0;
 	vmachineInit();
 	if (!vfdd.flagexist) vapiFloppyInsert("fd.img");
 	if (!vhdd.flagexist) vapiHardDiskInsert("hd.img");
@@ -365,10 +335,10 @@ static void final()
 void console()
 {
 	init();
-	printc("Please enter 'HELP' for information.\n");
-	while(!exitFlag) {
-		printc("Console> ");
-		cgets(cmdBuff,MAXLINE,stdin);
+	vapiPrint("Please enter 'HELP' for information.\n");
+	while(!flagexit) {
+		vapiPrint("Console> ");
+		FGETS(cmdBuff,MAXLINE,stdin);
 		parse();
 		exec();
 	}

@@ -1,6 +1,5 @@
 /* This file is a part of NXVM project. */
 
-#include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
 
@@ -15,13 +14,16 @@
 
 typedef char t_dasm_str[0x0100];
 
-static t_vaddrcc   drcode;
-static t_dasm_str  dstmt;
-static t_dasm_str  dop, dopr, drm, dr, dimm, dmovsreg, doverds, doverss, dimmoff8, dimmoff16, dimmsign;
-static t_bool      flagmem, flaglock, prefix_oprsize, prefix_addrsize;
-static t_nubit8    cr;
-static t_nubit64   cimm;
-static t_nubit8    iop;
+typedef t_bool t_dasm_prefix;
+
+static t_vaddrcc     drcode;
+static t_dasm_str    dstmt;
+static t_dasm_str    dop, dopr, drm, dr, dimm, dmovsreg, doverds, doverss, dimmoff8, dimmoff16, dimmsign;
+static t_bool        flagmem, flaglock;
+static t_dasm_prefix prefix_oprsize, prefix_addrsize;
+static t_nubit8      cr;
+static t_nubit64     cimm;
+static t_nubit8      iop;
 
 /* instruction dispatch */
 static t_faddrcc dtable[0x100], dtable_0f[0x100];
@@ -120,7 +122,7 @@ static void _kdf_skip(t_nubit8 byte)
 }
 static t_nubit64 _kdf_code(t_nubit8 byte)
 {
-	t_nubitcc i;
+	t_nubit8 i;
 	t_nubit64 result = 0;
 	_cb("_kdf_code");
 	for (i = 0;i < byte;++i)
@@ -4431,7 +4433,7 @@ static void QDX()
 
 static t_bool flaginit = 0;
 
-t_nubit8 dasm32(t_string stmt, t_vaddrcc rcode)
+t_nubit8 dasm32(t_strptr stmt, t_vaddrcc rcode)
 {
 	t_nubitcc i;
 	t_nubit8 opcode, oldiop;
@@ -4955,10 +4957,10 @@ t_nubit8 dasm32(t_string stmt, t_vaddrcc rcode)
 	drcode = rcode;
 	iop = 0;
 
-	flagmem = 0x00;
-	flaglock = 0x00;
-	prefix_oprsize = 0x00;
-	prefix_addrsize = 0x00;
+	flagmem = 0;
+	flaglock = 0;
+	prefix_oprsize = 0;
+	prefix_addrsize = 0;
 
 	SPRINTF(doverds, "DS");
 	SPRINTF(doverss, "SS");

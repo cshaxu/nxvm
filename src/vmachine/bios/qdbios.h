@@ -11,7 +11,7 @@ extern "C" {
 
 extern t_faddrcc qdbiosInt[0x100];
 
-void qdbiosMakeInt(t_nubit8 intid, t_string stmt);
+void qdbiosMakeInt(t_nubit8 intid, t_strptr stmt);
 void qdbiosExecInt(t_nubit8 intid);
 void qdbiosReset(); /* POST */
 

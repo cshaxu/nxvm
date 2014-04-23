@@ -46,7 +46,10 @@ typedef   signed __int64  int64_t;
 #endif
 /* ************************************************************************* */
 
-typedef char     *t_string;
+#define MAXLINE   0x100
+
+typedef char      t_string[MAXLINE];
+typedef char     *t_strptr;
 typedef uint8_t   t_nubit1;
 typedef uint8_t   t_nubit4;
 typedef uint8_t   t_nubit6;
