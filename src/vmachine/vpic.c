@@ -320,6 +320,18 @@ t_bool   vpicScanINTR()
 			return HasINTR(&vpic2);
 	return intr1;
 }
+t_nubit8 vpicPeekINTR()
+{
+	t_nubit8 irid1;                    /* top requested int id in master pic */
+	t_nubit8 irid2;                     /* top requested int id in slave pic */
+	irid1 = GetIntrTopId(&vpic1);
+	if (irid1 == 0x02) {      /* if IR2 has int request, then test slave pic */
+		irid2 = GetIntrTopId(&vpic2);
+		                        /* find the final int id based on slave ICW2 */
+		return (irid2 | vpic2.icw2);
+	} else                     /* find the final int id based on master ICW2 */
+		return (irid1 | vpic1.icw2);
+}
 t_nubit8 vpicGetINTR()
 {
 	t_nubit8 irid1;                    /* top requested int id in master pic */

@@ -91,7 +91,7 @@ static void Help()
 			break;
 		} else if (!strcmp(arg[1], "debug")) {
 			printc("Launch NXVM hardware debugger\n");
-			printc("\nDEBUG [16 | 32]\n");
+			printc("\nDEBUG\n");
 			break;
 		} else if (!strcmp(arg[1], "record")) {
 			printc("Record cpu status in each iteration for futher dumping\n");
@@ -195,20 +195,8 @@ static void Info()
 }
 static void Debug()
 {
-	t_nubit8 bit = 16;
-	switch (narg) {
-	case 0x01:
-		debug(bit);
-		break;
-	case 0x02:
-		bit = atoi(arg[1]);
-		if (bit != 16 && bit != 32) GetHelp;
-		debug(atoi(arg[1]));
-		break;
-	default:
-		GetHelp;
-		break;
-	}
+	if (narg != 1) GetHelp;
+	debug();
 }
 static void Record()
 {
@@ -308,7 +296,11 @@ static void Nxvm()
 }
 
 static void Test()
-{}
+{
+	vmachine.flagmode = 1;
+	vmachineReset();
+	debug();
+}
 
 static void exec()
 {
@@ -328,7 +320,7 @@ static void exec()
 	else if(!strcmp(arg[0],"reset"))  vmachineReset();
 	else if(!strcmp(arg[0],"stop"))   vmachineStop();
 	else if(!strcmp(arg[0],"resume")) vmachineResume();
-	else if(!strcmp(arg[0],"debug32")) debug(32);
+	//else if(!strcmp(arg[0],"debug32")) debug(32);
 	else printc("Illegal command '%s'.\n",arg[0]);
 	printc("\n");
 }

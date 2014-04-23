@@ -76,6 +76,7 @@ t_bool vpicScanINTR();
  * Returns the id of int request with highest priority
  * Called by CPU, who is responding to this interrupt
  */
+t_nubit8 vpicPeekINTR();
 t_nubit8 vpicGetINTR();
 /*
  * vpicInit: Public interface for vmachine

@@ -14,12 +14,16 @@
 #define VGLOBAL_VAR_WIN32 0
 #define VGLOBAL_VAR_LINUX 1
 
+#define TEST_VCPU 0
+#define TEST_ECPU 1
+#define TEST_BOTH 2
+
 /* COMPLIATION DEFINITIONS ***************************************************/
-#define VGLOBAL_SIZE_INTEGER 64
+#define VGLOBAL_SIZE_INTEGER 32
 #define VGLOBAL_PLATFORM     VGLOBAL_VAR_WIN32
 #if ((VGLOBAL_SIZE_INTEGER == 32) && (VGLOBAL_PLATFORM == VGLOBAL_VAR_WIN32))
-//#define VCPUASM
-//#define ECPUACT
+#define VGLOBAL_ECPU_ENABLED
+#define VGLOBAL_ECPU_MODE  TEST_BOTH
 #endif
 /*****************************************************************************/
 

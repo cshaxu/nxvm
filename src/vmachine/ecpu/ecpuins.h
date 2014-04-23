@@ -43,8 +43,7 @@
 #define IntMC 0x40000
 #define IntXF 0x80000
 
-void ecpuinsExecIns();
-void ecpuinsExecInt();
+void ecpuinsRefresh();
 void ecpuinsInit();
 void ecpuinsFinal();
 

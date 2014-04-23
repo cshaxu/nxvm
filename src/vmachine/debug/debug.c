@@ -32,7 +32,6 @@ test code
 #define MAXNARG 256
 #define MAXNASMARG 4
 
-static t_nubit8 dbgbit;
 static t_nubitcc errPos;
 static t_nubitcc narg;
 static char **arg;
@@ -300,28 +299,9 @@ static void f()
 	}
 }
 // go
-static void rprintregs(t_nubit8 bit);
-/*static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
-{
-	if(ptr1 < ptr2) {
-		_eip = ptr1;
-		while(ptr1 < ptr2 && vmachine.flagrun) {
-			vmachineRefresh();
-			ptr1 = _eip;
-		}
-		//_eip = ptr2;
-	}
-	if(!vmachine.flagrun) {
-		vapiPrint("\nProgram terminated\n");
-	} else {
-		vapiPrint("\n");
-		rprintregs();
-	}
-	return;
-}*/
+static void rprintregs();
 static void g()
 {
-//	t_nubit16 ptr1,ptr2;
 	if (vmachine.flagrun) {
 		vapiPrint("NXVM is already running.\n");
 		return;
@@ -329,33 +309,28 @@ static void g()
 	switch(narg) {
 	case 1:
 		vmachine.flagbreak = 0x00;
-	//	ptr1 = _eip;ptr2 = 0xffff;
 		break;
 	case 2:
 		vmachine.flagbreak = 0x01;
 		addrparse(_cs,arg[1]);
 		vmachine.breakcs = seg;
 		vmachine.breakip = ptr;
-	//	ptr1 = _eip;ptr2 = ptr;
 		break;
 	case 3:
 		vmachine.flagbreak = 0x01;
 		addrparse(_cs,arg[1]);
 		_cs = seg;
-		_eip = ptr;
-	//	ptr1 = ptr;
+		_ip = ptr;
 		addrparse(_cs,arg[2]);
 		vmachine.breakcs = seg;
 		vmachine.breakip = ptr;
-	//	ptr2 = ptr;
 		break;
 	default:seterr(narg-1);break;}
 	if(errPos) return;
 	vmachineResume();
 	while (vmachine.flagrun) vapiSleep(1);
 	vmachine.flagbreak = 0x00;
-	rprintregs(16);
-//	gexec(ptr1,ptr2);
+	rprintregs();
 }
 // hex
 static void h()
@@ -466,18 +441,18 @@ static void q()
 {exitFlag = 1;}
 // register
 static void uprint(t_nubit16,t_nubit16,t_nubit16);
-static void rprintflags(t_nubit8 bit)
+static void rprintflags()
 {
-	if (bit == 32) {
-		/*vapiPrint("ID%c ",   _GetID ? '+' : '-');
+	/*if (bit == 32) {
+		vapiPrint("ID%c ",   _GetID ? '+' : '-');
 		vapiPrint("VIP%c ",  _GetVIP ? '+' : '-');
 		vapiPrint("VIF%c ",  _GetVIF ? '+' : '-');
-		vapiPrint("AC%c ",   _GetAC ? '+' : '-');*/
+		vapiPrint("AC%c ",   _GetAC ? '+' : '-');
 		vapiPrint("VM%c ",   _GetEFLAGS_VM ? '+' : '-');
 		vapiPrint("RF%c ",   _GetEFLAGS_RF ? '+' : '-');
 		vapiPrint("NT%c ",   _GetEFLAGS_NT ? '+' : '-');
 		vapiPrint("IOPL=%1d ", _GetEFLAGS_IOPL);
-	}
+	}*/
 	vapiPrint("%s ", _GetEFLAGS_OF ? "OV" : "NV");
 	vapiPrint("%s ", _GetEFLAGS_DF ? "DN" : "UP");
 	vapiPrint("%s ", _GetEFLAGS_IF ? "EI" : "DI");
@@ -488,51 +463,47 @@ static void rprintflags(t_nubit8 bit)
 	vapiPrint("%s ", _GetEFLAGS_PF ? "PE" : "PO");
 	vapiPrint("%s ", _GetEFLAGS_CF ? "CY" : "NC");
 }
-static void rprintregs(t_nubit8 bit)
+static void rprintregs()
 {
 	char str[MAXLINE];
-	switch (bit) {
-	case 16:
-		vapiPrint(  "AX=%04X", _ax);
-		vapiPrint("  BX=%04X", _bx);
-		vapiPrint("  CX=%04X", _cx);
-		vapiPrint("  DX=%04X", _dx);
-		vapiPrint("  SP=%04X", _sp);
-		vapiPrint("  BP=%04X", _bp);
-		vapiPrint("  SI=%04X", _si);
-		vapiPrint("  DI=%04X", _di);
-		vapiPrint("\nDS=%04X", _ds);
-		vapiPrint("  ES=%04X", _es);
-		vapiPrint("  SS=%04X", _ss);
-		vapiPrint("  CS=%04X", _cs);
-		vapiPrint("  IP=%04X", _ip);
-		vapiPrint("   ");
-		break;
-	case 32:
-		vapiPrint( "EAX=%08X", _eax);
-		vapiPrint(" EBX=%08X", _ebx);
-		vapiPrint(" ECX=%08X", _ecx);
-		vapiPrint(" EDX=%08X", _edx);
-		vapiPrint("  SS=%04X", _ss);
-		vapiPrint( " CS=%04X", _cs);
-		vapiPrint( " DS=%04X", _ds);
-		vapiPrint("\nESP=%08X",_esp);
-		vapiPrint(" EBP=%08X", _ebp);
-		vapiPrint(" ESI=%08X", _esi);
-		vapiPrint(" EDI=%08X", _edi);
-		vapiPrint("  ES=%04X", _es);
-		vapiPrint( " FS=%04X", _fs);
-		vapiPrint( " GS=%04X", _gs);
-		vapiPrint("\nEIP=%08X", _eip);
-		vapiPrint("  ");
-	default:
-		break;
-	}
-	rprintflags(bit);
+	vapiPrint(  "AX=%04X", _ax);
+	vapiPrint("  BX=%04X", _bx);
+	vapiPrint("  CX=%04X", _cx);
+	vapiPrint("  DX=%04X", _dx);
+	vapiPrint("  SP=%04X", _sp);
+	vapiPrint("  BP=%04X", _bp);
+	vapiPrint("  SI=%04X", _si);
+	vapiPrint("  DI=%04X", _di);
+	vapiPrint("\nDS=%04X", _ds);
+	vapiPrint("  ES=%04X", _es);
+	vapiPrint("  SS=%04X", _ss);
+	vapiPrint("  CS=%04X", _cs);
+	vapiPrint("  IP=%04X", _ip);
+	vapiPrint("   ");
+/*
+	32-bit
+	vapiPrint( "EAX=%08X", _eax);
+	vapiPrint(" EBX=%08X", _ebx);
+	vapiPrint(" ECX=%08X", _ecx);
+	vapiPrint(" EDX=%08X", _edx);
+	vapiPrint("  SS=%04X", _ss);
+	vapiPrint( " CS=%04X", _cs);
+	vapiPrint( " DS=%04X", _ds);
+	vapiPrint("\nESP=%08X",_esp);
+	vapiPrint(" EBP=%08X", _ebp);
+	vapiPrint(" ESI=%08X", _esi);
+	vapiPrint(" EDI=%08X", _edi);
+	vapiPrint("  ES=%04X", _es);
+	vapiPrint( " FS=%04X", _fs);
+	vapiPrint( " GS=%04X", _gs);
+	vapiPrint("\nEIP=%08X", _ip);
+	vapiPrint("  ");
+*/
+	rprintflags();
 	vapiPrint("\n");
-	dasm(str, _cs, _eip, 0x02);
+	dasm(str, _cs, _ip, 0x02);
 	uasmSegRec = _cs;
-	uasmPtrRec = _eip;
+	uasmPtrRec = _ip;
 	vapiPrint("%s", str);
 }
 static void rscanregs()
@@ -639,14 +610,14 @@ static void rscanregs()
 			_es = t;
 	} else if(!STRCMP(arg[1],"ip")) {
 		vapiPrint("IP ");
-		vapiPrint("%04X",_eip);
+		vapiPrint("%04X",_ip);
 		vapiPrint("\n:");
 		FGETS(s,MAXLINE,stdin);
 		t = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
-			_eip = t;
+			_ip = t;
 	} else if(!STRCMP(arg[1],"f")) {
-		rprintflags(16);
+		rprintflags();
 		vapiPrint(" -");
 		FGETS(s,MAXLINE,stdin);
 		lcase(s);
@@ -672,7 +643,7 @@ static void rscanregs()
 static void r()
 {
 	if(narg == 1) {
-		rprintregs(dbgbit);
+		rprintregs();
 	} else if(narg == 2) {
 		rscanregs();
 	} else seterr(2);
@@ -728,7 +699,7 @@ static void t()
 	case 3:
 		addrparse(_cs,arg[1]);
 		_cs = seg;
-		_eip = ptr;
+		_ip = ptr;
 		count = scannubit16(arg[2]);
 		break;
 	default:seterr(narg-1);break;}
@@ -738,14 +709,14 @@ static void t()
 			vmachine.tracecnt = 0x01;
 			vmachineResume();
 			while (vmachine.flagrun) vapiSleep(10);
-			rprintregs(16);
+			rprintregs();
 			if (i != count - 1) vapiPrint("\n");
 		}
 	} else {
 		vmachine.tracecnt = count;
 		vmachineResume();
 		while (vmachine.flagrun) vapiSleep(10);
-		rprintregs(16);
+		rprintregs();
 	}
 	vmachine.tracecnt = 0x00;
 //	gexec(ptr1,ptr2);
@@ -868,15 +839,9 @@ static void init()
 {
 	filename[0] = '\0';
 	asmSegRec = uasmSegRec = _cs;
-	asmPtrRec = uasmPtrRec = _eip;
+	asmPtrRec = uasmPtrRec = _ip;
 	dumpSegRec = _ds;
-	dumpPtrRec = (t_nubit16)(_eip) / 0x10 * 0x10;
-/*	_ax = _bx = _cx = _dx = 0x0000;
-	_si = _di = _bp = 0x0000;
-	_sp = 0xffee;
-	_ds = _es = _ss = _cs =
-		asmSegRec = dumpSegRec = uasmSegRec = 0x0001;
-	_eip = asmPtrRec = dumpPtrRec = uasmPtrRec = 0x0100;*/
+	dumpPtrRec = (t_nubit16)(_ip) / 0x10 * 0x10;
 }
 static void parse()
 {
@@ -930,11 +895,10 @@ static void exec()
 	}
 }
 
-void vapiCallBackDebugPrintRegs(t_nubit8 bit) {rprintregs(bit);}
-void debug(t_nubit8 bit)
+void vapiCallBackDebugPrintRegs(t_nubit8 bit) {rprintregs();}
+void debug()
 {
 	t_nubitcc i;
-	dbgbit = bit;
 	init();
 	arg = (char **)malloc(MAXNARG * sizeof(char *));
 	exitFlag = 0x00;

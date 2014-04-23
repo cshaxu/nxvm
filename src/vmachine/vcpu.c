@@ -16,6 +16,7 @@ void vcpuInit()
 void vcpuReset()
 {
 	memset(&vcpu, 0, sizeof(t_cpu));
+
 	vcpu.eip = 0x0000fff0;
 	vcpu.eflags = 0x00000002;
 
@@ -75,15 +76,7 @@ void vcpuReset()
 void vcpuRefresh()
 {
 	vcpuinsRefresh();
-//	ecpuRefresh();
-//	ecpuapiSyncRegs();
-//	ecpuinsRefresh();
-//	if (ecpuapiHasDiff()) {
-//		vapiCallBackMachineStop();
-//		return;
-//	}
 }
-
 void vcpuFinal()
 {
 	vcpuinsFinal();

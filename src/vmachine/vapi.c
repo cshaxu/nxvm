@@ -87,7 +87,7 @@ void vapiRecordDump(const t_string fname)
 		for (j = 0;j < strlen(_restmt);++j)
 			if (_restmt[j] == '\n') _restmt[j] = ' ';
 		fprintf(dump, _expression,
-			_recpu.cs.selector, _recpu.eip,
+			_recpu.cs.selector, _recpu.ip,
 			vramRealByte(_recpu.cs.selector,_recpu.eip+0),vramRealByte(_recpu.cs.selector,_recpu.eip+1),
 			vramRealByte(_recpu.cs.selector,_recpu.eip+2),vramRealByte(_recpu.cs.selector,_recpu.eip+3),
 			vramRealByte(_recpu.cs.selector,_recpu.eip+4),vramRealByte(_recpu.cs.selector,_recpu.eip+5),
@@ -116,7 +116,7 @@ void vapiRecordExec()
 	}
 #endif
 	vapirecord.rec[_rec_ptr_last].rcpu = vcpu;
-	dasm(vapirecord.rec[_rec_ptr_last].stmt, _cs, _eip, 0x00);
+	dasm(vapirecord.rec[_rec_ptr_last].stmt, _cs, _ip, 0x00);
 	if (vapirecord.size == VAPI_RECORD_SIZE) vapirecord.start++;
 	else vapirecord.size++;
 }

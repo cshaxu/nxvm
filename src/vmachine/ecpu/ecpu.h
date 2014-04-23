@@ -163,8 +163,9 @@ t_bool ecpuapiScanINTR();
 t_nubit8 ecpuapiGetINTR();
 void ecpuapiPrintRegs();
 
-void ecpuRefresh();
 void ecpuInit();
+void ecpuReset();
+void ecpuRefresh();
 void ecpuFinal();
 
 #endif

@@ -7,7 +7,7 @@
 /*extern "C" {*/
 #endif
 
-void debug(t_nubit8 bit);
+void debug();
 
 #ifdef __cplusplus
 /*}_EOCD_*/

@@ -18,7 +18,7 @@ t_ecpu ecpu;
 
 void ecpuapiSyncRegs()
 {
-	ecpu.flagignore = 0x00;
+	ecpu.flagignore = 0;
 	ecpu.ax = _ax;
 	ecpu.bx = _bx;
 	ecpu.cx = _cx;
@@ -33,13 +33,11 @@ void ecpuapiSyncRegs()
 	ecpu.es = _es;
 	ecpu.ss = _ss;
 	ecpu.flags = _flags;
-	//evIP = (ecpu.cs << 4) + ecpu.ip;
 }
 t_bool ecpuapiHasDiff()
 {
 	t_bool flagdiff = 0x00;
 	if (!ecpu.flagignore) {
-		ecpu.flags &= ~0x02;
 		if (ecpu.ax != _ax) {vapiPrint("diff ax\n");flagdiff = 0x01;}
 		if (ecpu.bx != _bx) {vapiPrint("diff bx\n");flagdiff = 0x01;}
 		if (ecpu.cx != _cx) {vapiPrint("diff cx\n");flagdiff = 0x01;}
@@ -61,25 +59,6 @@ t_bool ecpuapiHasDiff()
 	if (flagdiff) ecpuapiPrintRegs();
 	return flagdiff;
 }
-
-t_bool ecpuapiScanINTR()
-{
-#ifdef ECPUACT
-	return vpicScanINTR();
-#else
-	if (ecpu.intrid == 0xff) return 0x00;
-	else return 0x01;
-#endif
-}
-t_nubit8 ecpuapiGetINTR()
-{
-#ifdef ECPUACT
-	return vpicGetINTR();
-#else
-	return ecpu.intrid;
-#endif
-}
-
 void ecpuapiPrintRegs()
 {
 	vapiPrint("ECPU REGISTERS\n");
@@ -116,19 +95,71 @@ void ecpuapiPrintRegs()
 	vapiPrint("\n");
 }
 
+t_bool ecpuapiScanINTR()
+{
+	return vpicScanINTR();
+}
+t_nubit8 ecpuapiGetINTR()
+{
+#if (VGLOBAL_ECPU_MODE == TEST_ECPU)
+	return vpicGetINTR();
+#else
+	return vpicPeekINTR();
+#endif
+}
+
 void ecpuInit()
 {
+#if (VGLOBAL_ECPU_MODE == TEST_VCPU)
+	vcpuInit();
+#elif (VGLOBAL_ECPU_MODE == TEST_ECPU)
+	ecpuinsInit();
+	vport.in[0xffff] = (t_faddrcc)ecpuapiPrintRegs;
+#else
+	ecpuinsInit();
+	vcpuInit();
+	vport.in[0xffff] = (t_faddrcc)ecpuapiPrintRegs;
+#endif
+}
+void ecpuReset()
+{
+#if (VGLOBAL_ECPU_MODE == TEST_VCPU)
+	vcpuReset();
+#elif (VGLOBAL_ECPU_MODE == TEST_ECPU)
 	memset(&ecpu,0,sizeof(t_ecpu));
 	ecpu.cs = 0xf000;
 	ecpu.ip = 0xfff0;
 	evIP = (ecpu.cs << 4) + ecpu.ip;
-	ecpuinsInit();
+#else
+	vcpuReset();
+	memset(&ecpu,0,sizeof(t_ecpu));
+	ecpu.cs = 0xf000;
+	ecpu.ip = 0xfff0;
+	evIP = (ecpu.cs << 4) + ecpu.ip;
+#endif
 }
-
 void ecpuRefresh()
 {
-	ecpuinsExecIns();
-	ecpuinsExecInt();
+#if (VGLOBAL_ECPU_MODE == TEST_VCPU)
+	vcpuRefresh();
+#elif (VGLOBAL_ECPU_MODE == TEST_ECPU)
+	ecpuinsRefresh();
+#else
+	ecpuapiSyncRegs();
+	ecpuinsRefresh();
+	vcpuRefresh();
+	if (ecpuapiHasDiff())
+		vapiCallBackMachineStop();
+#endif
 }
-
-void ecpuFinal() {ecpuinsFinal();}
+void ecpuFinal()
+{
+#if (VGLOBAL_ECPU_MODE == TEST_VCPU)
+	vcpuFinal();
+#elif (VGLOBAL_ECPU_MODE == TEST_ECPU)
+	ecpuinsFinal();
+#else
+	vcpuFinal();
+	ecpuinsFinal();
+#endif
+}
