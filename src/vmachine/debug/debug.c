@@ -22,6 +22,7 @@ test code
 #include "stdarg.h"
 
 #include "../vapi.h"
+#include "../vcpuins.h"
 
 #include "aasm.h"
 #include "dasm.h"
@@ -823,6 +824,7 @@ static void w()
 t_nubit32 _dbgm_addr_physical_linear(t_nubit32 linear)
 {
 	/* paging not implemented */
+	if (linear > 0xfffe0000) linear &= 0x001fffff;
 	return linear;
 }
 t_nubit32 _dbgm_addr_linear_logical(t_cpu_sreg *rsreg, t_nubit32 offset)
@@ -1096,7 +1098,7 @@ static void xw()
 	case 1:
 		if (vcpuins.flagwr) vapiPrint("Watch-read point: Lin=%08x\n", vcpuins.wrlin);
 		if (vcpuins.flagww) vapiPrint("Watch-write point: Lin=%08x\n", vcpuins.wwlin);
-		if (vcpuins.flagwe) vapiPrint("Watch-exec point: Lin=%08x\n", vcpuins.wwlin);
+		if (vcpuins.flagwe) vapiPrint("Watch-exec point: Lin=%08x\n", vcpuins.welin);
 		break;
 	case 2:
 		switch (arg[1][0]) {

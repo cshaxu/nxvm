@@ -11,7 +11,6 @@ extern "C" {
 #include "stdarg.h"
 
 #include "vglobal.h"
-#include "vcpuins.h"
 
 char* STRCAT(char *_Dest, const char *_Source);
 char* STRCPY(char *_Dest, const char *_Source);
@@ -22,25 +21,6 @@ FILE* FOPEN(const char *_Filename, const char *_Mode);
 char* FGETS(char *_Buf, int _MaxCount, FILE *_File);
 
 t_nubit32 vapiPrint(const t_string format, ...);
-
-#define VAPI_RECORD_SIZE         0xffff             /* maximum record number */
-#define VAPI_RECORD_SELECT_FIRST 0x0000/* keep first (1) records or last (0) */
-
-typedef struct {
-	t_cpurec rec[VAPI_RECORD_SIZE];
-	t_nubitcc start, size;
-	t_bool flagnow; /* record now! */
-	char fn[0x100];
-	FILE *fp;
-} t_apirecord;
-
-extern t_apirecord vapirecord;
-
-void vapiRecordNow(const t_string fname);
-void vapiRecordDump(const t_string fname);
-void vapiRecordInit();
-void vapiRecordExec();
-void vapiRecordFinal();
 
 void vapiFloppyInsert(const t_string fname);
 void vapiFloppyRemove(const t_string fname);

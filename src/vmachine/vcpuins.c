@@ -13,6 +13,7 @@
 #include "bios/qdbios.h"
 #else
 #include "vcpuapi.h"
+#define vapiPrint vcpuapiPrint
 #endif
 #include "vcpuins.h"
 

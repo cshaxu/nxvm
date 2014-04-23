@@ -6,7 +6,6 @@
 #include "memory.h"
 
 #include "vmachine.h"
-#include "debug/dasm.h"
 #include "vapi.h"
 
 /* Standard C Library */
@@ -46,154 +45,6 @@ t_nubit32 vapiPrint(const t_string format, ...)
 }
 
 
-/* Record */
-t_apirecord vapirecord;
-
-#define _rec (vapirecord.rec[(i + vapirecord.start) % VAPI_RECORD_SIZE])
-#define _recpu     (_rec.rcpu)
-#define _restmt    (_rec.stmt)
-#define _rec_of    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_OF))
-#define _rec_sf    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_SF))
-#define _rec_zf    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_ZF))
-#define _rec_cf    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_CF))
-#define _rec_af    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_AF))
-#define _rec_pf    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_PF))
-#define _rec_df    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_DF))
-#define _rec_tf    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_TF))
-#define _rec_if    (GetBit(_rec.rcpu.eflags, VCPU_EFLAGS_IF))
-#define _rec_ptr_last ((vapirecord.start + vapirecord.size) % VAPI_RECORD_SIZE)
-
-#define _expression "%scs:eip=%04x:%08x(L%08x) opcode=%02x %02x %02x %02x %02x %02x %02x %02x \
-ss:esp=%04x:%08x(L%08x) stack=%04x %04x %04x %04x \
-eax=%08x ecx=%08x edx=%08x ebx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \
-eflags=%08x %s %s %s %s %s %s %s %s %s \
- | \
-bit=%02d opr1=%08x opr2=%08x result=%08x cs:eip=%04x:%08x(L%08x) %s"
-#define _printexp \
-do { \
-	fprintf(vapirecord.fp, _expression, \
-	_rec.svcextl ? "* " : "", \
-	_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip, \
-	GetMax8(_rec.opcode >> 0), GetMax8(_rec.opcode >> 8), \
-	GetMax8(_rec.opcode >> 16), GetMax8(_rec.opcode >> 24), \
-	GetMax8(_rec.opcode >> 32), GetMax8(_rec.opcode >> 40), \
-	GetMax8(_rec.opcode >> 48), GetMax8(_rec.opcode >> 56), \
-	_recpu.ss.selector, _recpu.esp, _recpu.ss.base + _recpu.esp, \
-	GetMax16(_rec.opcode >> 0), GetMax16(_rec.opcode >> 16), \
-	GetMax16(_rec.opcode >> 32), GetMax16(_rec.opcode >> 48), \
-	_recpu.eax,_recpu.ecx,_recpu.edx,_recpu.ebx, \
-	_recpu.ebp,_recpu.esi,_recpu.edi, \
-	_recpu.ds.selector,_recpu.es.selector, \
-	_recpu.fs.selector,_recpu.gs.selector, \
-	_recpu.eflags, \
-	_rec_of ? "OF" : "of", \
-	_rec_sf ? "SF" : "sf", \
-	_rec_zf ? "ZF" : "zf", \
-	_rec_cf ? "CF" : "cf", \
-	_rec_af ? "AF" : "af", \
-	_rec_pf ? "PF" : "pf", \
-	_rec_df ? "DF" : "df", \
-	_rec_if ? "IF" : "if", \
-	_rec_tf ? "TF" : "tf", \
-	_rec.abit,_rec.a1,_rec.a2,_rec.a3, \
-	_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip, _restmt); \
-	for (j = strlen(_restmt);j < 0x21;++j) \
-		fprintf(vapirecord.fp, " "); \
-	for (j = 0;j < _rec.msize;++j) \
-		fprintf(vapirecord.fp, "[%c:L%08x/%1d/%08x] ", \
-			_rec.mem[j].flagwrite ? 'W' : 'R', _rec.mem[j].linear, \
-			_rec.mem[j].byte, _rec.mem[j].data); \
-	fprintf(vapirecord.fp, "\n"); \
-} while (0)
-
-void vapiRecordNow(const t_string fname)
-{
-	vapirecord.flagnow = 1;
-	if (!fname) {
-		vapiPrint("ERROR:\tinvalid file name.\n");
-		return;
-	}
-	vapirecord.fp = fopen(fname, "w");
-	if (!vapirecord.fp) {
-		vapiPrint("ERROR:\tcannot write dump file.\n");
-		return;
-	}
-}
-void vapiRecordDump(const t_string fname)
-{
-	t_nubitcc i = 0, j;
-	if (vapirecord.fp) fclose(vapirecord.fp);
-	vapirecord.fp = FOPEN(fname, "w");
-	if (!vapirecord.fp) {
-		vapiPrint("ERROR:\tcannot write dump file.\n");
-		return;
-	}
-	if (!vapirecord.size) {
-		vapiPrint("ERROR:\tno record to dump.\n");
-		return;
-	}
-	while (i < vapirecord.size) {
-		for (j = 0;j < strlen(_restmt);++j)
-			if (_restmt[j] == '\n') _restmt[j] = ' ';
-		_printexp;
-		++i;
-	}
-	vapiPrint("Record dumped to '%s'.\n", fname);
-	fclose(vapirecord.fp);
-}
-void vapiRecordInit()
-{
-	vapirecord.start = 0;
-	vapirecord.size = 0;
-	if (vapirecord.flagnow) {
-		if (!vapirecord.fp) {
-			vapiPrint("ERROR:\tcannot write dump file.\n");
-		} else {
-			vapiPrint("Record dumping began.\n");
-		}
-	} else {
-		if (vapirecord.fp) fclose(vapirecord.fp);
-		vapirecord.fp = NULL;
-		vapiPrint("Record began.\n");
-	}
-}
-void vapiRecordExec()
-{
-	t_nubitcc i, j;
-#if VAPI_RECORD_SELECT_FIRST == 1
-	if (vapirecord.size == VAPI_RECORD_SIZE) {
-		vmachine.flagrecord = 0x00;
-		return;
-	}
-#endif
-	if (vcpu.flaghalt) return;
-	//if (vcpurec.linear == vapirecord.rec[(vapirecord.start + vapirecord.size - 1) % VAPI_RECORD_SIZE].linear) return;
-
-	vapirecord.rec[_rec_ptr_last] = vcpurec;
-	dasm(vapirecord.rec[_rec_ptr_last].stmt, vcpurec.rcpu.cs.selector, vcpurec.rcpu.ip, 0x00);
-
-	if (vapirecord.flagnow) {
-		i = vapirecord.size;
-		for (j = 0;j < strlen(_restmt);++j)
-			if (_restmt[j] == '\n') _restmt[j] = ' ';
-		_printexp;
-	}
-	if (vapirecord.size == VAPI_RECORD_SIZE)
-		vapirecord.start++;
-	else
-		vapirecord.size++;
-}
-void vapiRecordFinal()
-{
-	if (vapirecord.flagnow && vapirecord.fp) {
-		fclose(vapirecord.fp);
-		vapiPrint("Record dumping ended.\n");
-	} else {
-		vapiPrint("Record ended.\n");
-	}
-	vapirecord.flagnow = 0;
-	vapirecord.fp = NULL;
-}
 
 /* Disk */
 #include "vfdd.h"
@@ -283,5 +134,5 @@ void vapiHardDiskRemove(const t_string fname)
 	void vapiStartMachine() {linuxStartMachine();}
 #endif
 
-void vapiInit() {memset(&vapirecord, 0x00, sizeof(t_apirecord));}
+void vapiInit() {}
 void vapiFinal() {}

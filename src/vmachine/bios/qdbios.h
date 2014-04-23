@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "../vglobal.h"
+#include "../vcpu.h"
 
 extern t_faddrcc qdbiosInt[0x100];
 

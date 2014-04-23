@@ -8,6 +8,7 @@
 #include "../vmachine/vapi.h"
 #include "../vmachine/vmachine.h"
 #include "../vmachine/debug/debug.h"
+#include "../vmachine/debug/record.h"
 
 #include "console.h"
 
@@ -211,23 +212,23 @@ static void Record()
 	}
 	if (!strcmp(arg[1], "on")) {
 		vmachine.flagrecord = 1;
-		vapirecord.flagnow = 0;
-		if (vapirecord.fp) fclose(vapirecord.fp);
+		vrecord.flagnow = 0;
+		if (vrecord.fp) fclose(vrecord.fp);
 	} else if (!strcmp(arg[1], "off")) {
 		vmachine.flagrecord = 0;
-		vapirecord.flagnow = 0;
-		if (vapirecord.fp) fclose(vapirecord.fp);
+		vrecord.flagnow = 0;
+		if (vrecord.fp) fclose(vrecord.fp);
 	} else if (!strcmp(arg[1], "dump")) {
 		if (narg < 3) GetHelp;
-		vapiRecordDump(arg[2]);
-		vapirecord.flagnow = 0;
+		recordDump(arg[2]);
+		vrecord.flagnow = 0;
 		vmachine.flagrecord = 0;
-		if (vapirecord.fp) fclose(vapirecord.fp);
+		if (vrecord.fp) fclose(vrecord.fp);
 	} else if (!strcmp(arg[1], "now")) {
 		if (narg < 3) GetHelp;
 		vmachine.flagrecord = 1;
-		vapirecord.flagnow = 1;
-		vapiRecordNow(arg[2]);
+		vrecord.flagnow = 1;
+		recordNow(arg[2]);
 	} else GetHelp;
 }
 static void Set()

@@ -38,6 +38,7 @@ void vramInit()
 void vramReset()
 {
 	memset((void *)vram.base, 0x00, vram.size);
+	vram.flaga20 = 0;
 }
 void vramRefresh() {}
 void vramFinal()

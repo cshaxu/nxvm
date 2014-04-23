@@ -58,6 +58,7 @@ void BX_CPU_C::cpu_loop(void)
 #endif
 
   if (setjmp(BX_CPU_THIS_PTR jmp_buf_env)) {
+
     // can get here only from exception function or VMEXIT
     BX_CPU_THIS_PTR icount++;
     BX_SYNC_TIME_IF_SINGLE_PROCESSOR(0);
@@ -84,6 +85,8 @@ void BX_CPU_C::cpu_loop(void)
   BX_CPU_THIS_PTR speculative_rsp = 0;
   BX_CPU_THIS_PTR EXT = 0;
 
+  vcpuapiInit();
+
   while (1) {
 
     // check on events which occurred for previous instructions (traps)
@@ -91,6 +94,7 @@ void BX_CPU_C::cpu_loop(void)
     if (BX_CPU_THIS_PTR async_event) {
       if (handleAsyncEvent()) {
         // If request to return to caller ASAP.
+		vcpuapiFinal();
         return;
       }
     }
@@ -117,8 +121,6 @@ void BX_CPU_C::cpu_loop(void)
 
     bxInstruction_c *last = i + (entry->tlen);
 
-	vcpuapiInit();
-
     for(;;) {
 
 #if BX_DEBUGGER
@@ -144,7 +146,7 @@ void BX_CPU_C::cpu_loop(void)
 
       // note instructions generating exceptions never reach this point
 #if BX_DEBUGGER || BX_GDBSTUB
-      if (dbg_instruction_epilog()) return;
+	  if (dbg_instruction_epilog()) {vcpuapiFinal();return;}
 #endif
 
       if (BX_CPU_THIS_PTR async_event) break;
@@ -155,13 +157,15 @@ void BX_CPU_C::cpu_loop(void)
         last = i + (entry->tlen);
       }
     }
-	vcpuapiFinal();
 #endif
 
     // clear stop trace magic indication that probably was set by repeat or branch32/64
     BX_CPU_THIS_PTR async_event &= ~BX_ASYNC_EVENT_STOP_TRACE;
 
   }  // while (1)
+
+  vcpuapiFinal();
+
 }
 
 #if BX_SUPPORT_SMP
