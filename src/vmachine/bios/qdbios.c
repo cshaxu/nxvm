@@ -18,17 +18,12 @@
 t_faddrcc qdbiosInt[0x100];
 static t_nubit16 ics, iip;
 
-void qdbiosSetInt(t_nubit8 intid, t_nubit16 intcs, t_nubit16 intip)
-{
-	vramVarWord(0x0000, intid * 4 + 0) = intip;
-	vramVarWord(0x0000, intid * 4 + 2) = intcs;
-}
-
 void qdbiosMakeInt(t_nubit8 intid, t_string stmt)
 {
-	t_nubitcc len;
-	qdbiosSetInt(intid, ics, iip);
-	len = aasm(stmt, ics, iip);
+	t_nubit16 len;
+	vramVarWord(0x0000, intid * 4 + 0) = iip;
+	vramVarWord(0x0000, intid * 4 + 2) = ics;
+	len = (t_nubit16)aasm(stmt, ics, iip);
 	if (len) iip += len;
 	else {
 		vapiPrint("Critical internal error: invalid asm instruction.\n");
@@ -40,19 +35,76 @@ void qdbiosExecInt(t_nubit8 intid)
 	if (qdbiosInt[intid]) ExecFun(qdbiosInt[intid]);
 }
 
-#define out(a,b) (vport.iobyte = (b), ExecFun(vport.out[(a)]))
-void qdbiosReset()
+#define VBIOS_POST_ROUTINE "  \
+\
+; init vpic1                \n\
+mov al, 11 ; icw1 0001 0001 \n\
+out 20, al                  \n\
+mov al, 08 ; icw2 0000 1000 \n\
+out 21, al                  \n\
+mov al, 04 ; icw3 0000 0100 \n\
+out 21, al                  \n\
+mov al, 11 ; icw4 0001 0001 \n\
+out 21, al                  \n\
+\
+; init vpic2                \n\
+mov al, 11 ; icw1 0001 0001 \n\
+out a0, al                  \n\
+mov al, 70 ; icw2 0111 0000 \n\
+out a1, al                  \n\
+mov al, 02 ; icw3 0000 0010 \n\
+out a1, al                  \n\
+mov al, 01 ; icw4 0000 0001 \n\
+out a1, al                  \n\
+\
+; init vcmos                \n\
+mov al, 0b ; select reg b   \n\
+out 70, al                  \n\
+mov al, 01 ; 24 hour mode   \n\
+out 71, al                  \n\
+\
+; init vdma                 \n\
+mov al, 00                  \n\
+out 08, al ;                \n\
+out d0, al ;                \n\
+mov al, c0                  \n\
+out d6, al ;                \n\
+\
+; init vfdc                 \n\
+mov al, 00                  \n\
+mov dx, 03f2                \n\
+out dx, al                  \n\
+mov al, 0c                  \n\
+mov dx, 03f2                \n\
+out dx, al                  \n\
+mov al, 03                  \n\
+mov dx, 03f5                \n\
+out dx, al ; cmd specify    \n\
+mov al, af                  \n\
+mov dx, 03f5                \n\
+out dx, al                  \n\
+mov al, 02                  \n\
+mov dx, 03f5                \n\
+out dx, al                  \n\
+\
+; init vpit                                       \n\
+mov al, 36 ; 0011 0110 mode = 3, counter = 0, 16b \n\
+out 43, al                                        \n\
+mov al, 00                                        \n\
+out 40, al ; initial count (0x10000)              \n\
+out 40, al                                        \n\
+mov al, 54 ; 0101 0100 mode = 2, counter = 1, LSB \n\
+out 43, al                                        \n\
+mov al, 12                                        \n\
+out 41, al ; initial count (0x12)                 \n\
+\
+; start operating system    \n\
+xor ax, ax                  \n\
+xor dx, dx                  \n\
+jmp 0000:7c00               \n"
+
+static void vbiosLoadData()
 {
-	t_nubit16 i;
-	for (i = 0x0000;i < 0x0100;++i) {
-		qdbiosInt[i] = (t_faddrcc)NULL;
-		qdbiosSetInt((t_nubit8)i, 0xf000, 0x0000);
-	}
-/* build general int service routine */
-	ics = 0xf000;
-	iip = 0x0000;
-	iip += aasm("iret", ics, iip);
-/* bios data area */
 	memset((void *)vramGetAddr(0x0040,0x0000), 0x00, 0x100);
 	vramVarByte(0x0040, 0x0000) = 0xf8;
 	vramVarByte(0x0040, 0x0001) = 0x03;
@@ -111,7 +163,9 @@ void qdbiosReset()
 	vramVarByte(0x0040, 0x00a9) = 0x5d;
 	vramVarByte(0x0040, 0x00ab) = 0xc0;
 	vramVarByte(0x0040, 0x0100) = vmachine.flagboot ? 0x80 : 0x00; /* boot disk */
-/* bios rom info area */
+}
+static void vbiosLoadRomInfo()
+{
 	vramVarWord(0xf000, 0xe6f5) = 0x0008;
 	vramVarByte(0xf000, 0xe6f7) = 0xfc;
 	vramVarByte(0xf000, 0xe6f8) = 0x00;
@@ -121,41 +175,16 @@ void qdbiosReset()
 	vramVarByte(0xf000, 0xe6fc) = 0x00;
 	vramVarByte(0xf000, 0xe6fd) = 0x00;
 	vramVarByte(0xf000, 0xe6fe) = 0x00;
-/* first cpu instruction */
-	vramVarByte(0xf000, 0xfff0) = 0xea;
-	vramVarWord(0xf000, 0xfff1) = 0x7c00;
-	vramVarWord(0xf000, 0xfff3) = 0x0000;
-
-/* device initialize */
-/* vpic init */
-	out(0x20, 0x11);                                      /* ICW1: 0001 0001 */
-	out(0x21, 0x08);                                      /* ICW2: 0000 1000 */
-	out(0x21, 0x04);                                      /* ICW3: 0000 0100 */
-	out(0x21, 0x11);                                      /* ICW4: 0001 0001 */
-	out(0xa0, 0x11);                                      /* ICW1: 0001 0001 */
-	out(0xa1, 0x70);                                      /* ICW2: 0111 0000 */
-	out(0xa1, 0x02);                                      /* ICW3: 0000 0010 */
-	out(0xa1, 0x01);                                      /* ICW4: 0000 0001 */
-/* vcmos init */
-	out(0x70, VCMOS_RTC_REG_B);
-	out(0x71, 0x02);
-/* vdma init */
-	out(0x08, 0x00);
-	out(0xd0, 0x00);
-	out(0xd6, 0xc0);
-/* vfdc init */
-	out(0x03f2, 0x00);
-	out(0x03f2, 0x0c);
-	out(0x03f5, 0x03);                               /* send specify command */
-	out(0x03f5, 0xaf);
-	out(0x03f5, 0x02);
-/* vpit init*/
-	out(0x43, 0x36);                 /* al=0011 0110: Mode=3, Counter=0, 16b */
-	out(0x40, 0x00);
-	out(0x40, 0x00);
-	out(0x43, 0x54);                 /* al=0101 0100: Mode=2, Counter=1, LSB */
-	out(0x41, 0x12);
-	
+}
+static void vbiosLoadInt()
+{
+	t_nubit16 i;
+	for (i = 0x0000;i < 0x0100;++i) {
+		qdbiosInt[i] = (t_faddrcc)NULL;
+		vramVarWord(0x0000, i * 4 + 0) = iip;
+		vramVarWord(0x0000, i * 4 + 2) = ics;
+	}
+	iip += (t_nubit16)aasm("iret", ics, iip);
 	/* qdkeyb init */
 	qdkeybReset();
 	/* qdcga init */
@@ -166,4 +195,25 @@ void qdbiosReset()
 	qdmiscReset();
 	/* load cmos data */
 	qdrtcReset();
+}
+static void vbiosLoadPost()
+{
+	char stmt[0x1000];
+	SPRINTF(stmt, "jmp %04x:%04x", ics, iip);
+	aasm(stmt, 0xf000, 0xfff0);
+	iip += (t_nubit16)aasm(VBIOS_POST_ROUTINE, ics, iip);
+}
+
+void qdbiosReset()
+{
+	ics = 0xf000;
+	iip = 0x0000;
+/* bios data area */
+	vbiosLoadData();
+/* bios rom info area */
+	vbiosLoadRomInfo();
+/* bios interrupt services */
+	vbiosLoadInt();
+/* bios init/post program */
+	vbiosLoadPost();
 }

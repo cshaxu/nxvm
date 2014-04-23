@@ -6,35 +6,6 @@
 
 #include "qdbios.h"
 
-static t_nubit16 sax, sbx, scx, sdx;
-#define push_ax  (sax = _ax)
-#define push_bx  (sbx = _bx)
-#define push_cx  (scx = _cx)
-#define push_dx  (sdx = _dx)
-#define pop_ax   (_ax = sax)
-#define pop_bx   (_bx = sbx)
-#define pop_cx   (_cx = scx)
-#define pop_dx   (_dx = sdx)
-#define add(a,b) ((a) += (b))
-#define and(a,b) ((a) &= (b))
-#define or(a,b)  ((a) |= (b))
-#define cmp(a,b) ((a) == (b))
-#define mov(a,b) ((a) = (b))
-#define in(a,b)  (ExecFun(vport.in[(b)]), (a) = vport.iobyte)
-#define out(a,b) (vport.iobyte = (b), ExecFun(vport.out[(a)]))
-#define shl(a,b) ((a) <<= (b))
-#define shr(a,b) ((a) >>= (b))
-#define stc      (SetCF)
-#define clc      (ClrCF)
-#define clp      (ClrPF)
-#define cli      (ClrIF)
-#define mbp(n)   (vramVarByte(0x0000, (n)))
-#define mwp(n)   (vramVarWord(0x0000, (n)))
-#define nop
-#define inc(n)   ((n)++)
-#define dec(n)   ((n)--)
-#define _int(n)
-
 #define QDBIOS_VAR_VCMOS 0
 #define QDBIOS_VAR_QDRTC 1
 #define QDBIOS_RTC QDBIOS_VAR_VCMOS
@@ -43,36 +14,36 @@ static t_nubit16 sax, sbx, scx, sdx;
 #define QDBIOS_ADDR_RTC_DAILY_COUNTER 0x046c
 #define QDBIOS_ADDR_RTC_ROLLOVER      0x0470
 
-#define INT_08_ASM "; hardward interrupt                  \n\
-cli                                                       \n\
-push ds                                                   \n\
-push ax                                                   \n\
-pushf                                                     \n\
-mov ax, 40                                                \n\
-mov ds, ax                                                \n\
-add word [006c], 1  ; increase tick count                 \n\
-adc word [006e], 0                                        \n\
-cmp word [006c], b2 ; test rtc rollover                   \n\
-jnz $(label_int_08_1)                                     \n\
-cmp word [006e], 18                                       \n\
-jnz $(label_int_08_1)                                     \n\
-mov word [006c], 0  ; exec rtc rollover                   \n\
-mov word [006e], 0                                        \n\
-mov byte [0070], 1                                        \n\
-$(label_int_08_1):                                        \n\
-popf                                                      \n\
-pop ax                                                    \n\
-pop ds                                                    \n\
-int 1c              ; call int 1c                         \n\
-push ax                                                   \n\
-push dx                                                   \n\
-mov al, 20          ; send eoi command                    \n\
-mov dx, 20                                                \n\
-out dx, al                                                \n\
-pop dx                                                    \n\
-pop ax                                                    \n\
-sti                                                       \n\
-iret                                                      \n"
+#define INT_08_ASM "; hardward interrupt  \n\
+cli                                       \n\
+push ds                                   \n\
+push ax                                   \n\
+pushf                                     \n\
+mov ax, 40                                \n\
+mov ds, ax                                \n\
+add word [006c], 1  ; increase tick count \n\
+adc word [006e], 0                        \n\
+cmp word [006c], b2 ; test rtc rollover   \n\
+jnz $(label_int_08_1)                     \n\
+cmp word [006e], 18                       \n\
+jnz $(label_int_08_1)                     \n\
+mov word [006c], 0  ; exec rtc rollover   \n\
+mov word [006e], 0                        \n\
+mov byte [0070], 1                        \n\
+$(label_int_08_1):                        \n\
+popf                                      \n\
+pop ax                                    \n\
+pop ds                                    \n\
+int 1c              ; call int 1c         \n\
+push ax                                   \n\
+push dx                                   \n\
+mov al, 20          ; send eoi command    \n\
+mov dx, 20                                \n\
+out dx, al                                \n\
+pop dx                                    \n\
+pop ax                                    \n\
+sti                                       \n\
+iret                                      \n"
 
 #define INT_1A_ASM "\
 push bx           \n\
@@ -211,27 +182,27 @@ out 71, al                                                \n\
 clc                                                       \n\
 jmp near $(label_int_1a_set_flag)                         \n\
 \
-$(label_int_1a_set_alarm):   ; set alarm clock            \n\
-stc                          ; return a fail              \n\
-jmp near $(label_int_1a_set_flag)                         \n\
+$(label_int_1a_set_alarm):   ; set alarm clock \n\
+stc                          ; return a fail   \n\
+jmp near $(label_int_1a_set_flag)              \n\
 \
-$(label_int_1a_set_flag):         \n\
-pushf                             \n\
-pop ax                            \n\
-mov bx, sp                        \n\
-test ax, 0001                     \n\
-jnz $(label_int_1a_set_flag_stc)  \n\
-ss:                               \n\
-and word [bx+08], fffe            \n\
-jmp short $(label_int_1a_ret)     \n\
-$(label_int_1a_set_flag_stc):     \n\
-ss:                               \n\
-or  word [bx+08], 0001            \n\
+$(label_int_1a_set_flag):        \n\
+pushf                            \n\
+pop ax                           \n\
+mov bx, sp                       \n\
+test ax, 0001                    \n\
+jnz $(label_int_1a_set_flag_stc) \n\
+ss:                              \n\
+and word [bx+08], fffe           \n\
+jmp short $(label_int_1a_ret)    \n\
+$(label_int_1a_set_flag_stc):    \n\
+ss:                              \n\
+or  word [bx+08], 0001           \n\
 \
-$(label_int_1a_ret):              \n\
-pop ds                            \n\
-pop bx                            \n\
-iret                              \n"
+$(label_int_1a_ret): \n\
+pop ds               \n\
+pop bx               \n\
+iret                 \n"
 
 void qdrtcReset()
 {

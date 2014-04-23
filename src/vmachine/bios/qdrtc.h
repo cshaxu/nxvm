@@ -7,9 +7,6 @@
 /*extern "C" {*/
 #endif
 
-void INT_08(); /* replaced with asm */
-void INT_1A();
-
 void qdrtcReset();
 
 #ifdef __cplusplus

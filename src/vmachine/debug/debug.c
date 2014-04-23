@@ -422,7 +422,6 @@ static void l()
 static void m()
 {
 	int i;
-	t_nubit8 val;
 	t_nubit16 seg1,ptr1,range,seg2,ptr2;
 	if(narg != 4) seterr(narg-1);
 	else {
