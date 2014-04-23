@@ -3837,14 +3837,14 @@ void QDX()
 	case 0xff:
 		vapiPrint("\nNXVM STOP at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
 			vcpu.cs,vcpu.ip,d_nubit8(vcpuins.imm));
-		vapiPrint("This happens because of the nxvm special instruction.\n");
+		vapiPrint("This happens because of the special instruction.\n");
 		vapiCallBackMachineStop();
 		break;
 	case 0x01:
 	case 0xfe:
 		vapiPrint("\nNXVM RESET at CS:%04X IP:%04X INS:QDX IMM:%02X\n",
 			vcpu.cs,vcpu.ip,d_nubit8(vcpuins.imm));
-		vapiPrint("This happens because of the nxvm special instruction.\n");
+		vapiPrint("This happens because of the special instruction.\n");
 		vapiCallBackMachineReset();
 		break;
 	default:

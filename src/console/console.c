@@ -174,61 +174,55 @@ static void Help()
 	case 2:
 		if (!strcmp(arg[1], "help")) {
 			printc("Show help info\n");
-			printc("\n");
-			printc("HELP\n");
+			printc("\nHELP\n");
 			printc("  show menu of all commands\n");
-			printc("HELP [command]\n");
+			printc("\nHELP [command]\n");
 			printc("  show help info for command\n");
 			break;
 		} else if (!strcmp(arg[1], "exit")) {
 			printc("Quit the console\n");
-			printc("\n");
-			printc("EXIT\n");
+			printc("\nEXIT\n");
 			break;
 		} else if (!strcmp(arg[1], "info")) {
 			printc("List all NXVM info\n");
-			printc("\n");
-			printc("INFO\n");
+			printc("\nINFO\n");
 			break;
 		} else if (!strcmp(arg[1], "debug")) {
 			printc("Launch NXVM hardware debugger\n");
-			printc("\n");
-			printc("DEBUG\n");
+			printc("\nDEBUG\n");
 			break;
 		} else if (!strcmp(arg[1], "record")) {
 			printc("Record cpu status in each iteration for futher dumping\n");
-			printc("\n");
-			printc("RECORD [on | off | dump <file>]\n");
+			printc("\nRECORD [on | off | dump <file>]\n");
 			break;
 		} else if (!strcmp(arg[1], "set")) {
 			printc("Change BIOS settings\n");
-			printc("\n");
-			printc("SET <item> <value>\n");
+			printc("\nSET <item> <value>\n");
 			printc("  available items and values\n");
 			printc("  boot   fdd, hdd\n");
 			break;
 		} else if (!strcmp(arg[1], "device")) {
-			printc("Change nxvm devices\n");
-			printc("\n");
-			printc("DEVICE ram <size>\n");
+			printc("Change NXVM devices\n");
+			printc("\nDEVICE ram <size>\n");
 			printc("  change memory size (KB)\n");
-			printc("DEVICE display [console | window]\n");
+			printc("\nDEVICE display [console | window]\n");
 			printc("  change display type\n");
-			printc("DEVICE fdd [create | insert <file>| remove <file>]");
+			printc("\nDEVICE fdd [create | insert <file>| remove <file>]\n");
 			printc("  change floppy drive status:\n");
-			printc("  create: discard previous floppy image and create a new one\n");
+			printc("  create: discard current floppy image\n");
+			printc("          and create a new one\n");
 			printc("  insert: load floppy image from file\n");
 			printc("  remove: remove floppy image and dump to file\n");
-			printc("DEVICE hdd [create [cyl <num>]| connect <file>| disconnect <file>]\n");
+			printc("\nDEVICE hdd [create [cyl <num>]| connect <file>| disconnect <file>]\n");
 			printc("  change hard disk drive status:\n");
-			printc("  create:     discard previous hard disk image and create a new one of n cyls\n");
+			printc("  create:     discard current hard disk image\n");
+			printc("              and create a new one of n cyls\n");
 			printc("  connect:    load hard disk image from file\n");
 			printc("  disconnect: remove hard disk image and dump to file\n");
 			break;
 		} else if (!strcmp(arg[1], "nxvm")) {
 			printc("Change virtual machine status\n");
-			printc("\n");
-			printc("NXVM [start | reset | stop | continue]\n");
+			printc("\nNXVM [start | reset | stop | continue]\n");
 			printc("  start:    start virtual machine\n");
 			printc("  reset:    reset all device and restart machine\n");
 			printc("  stop:     stop virtual machine\n");
