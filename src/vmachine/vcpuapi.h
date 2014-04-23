@@ -34,6 +34,7 @@ void vcpuapiInit();
 void vcpuapiFinal();
 void vcpuapiExecBefore();
 void vcpuapiExecAfter();
+void vcpuapiMemRec(t_nubit32 phy, t_nubit8 byte, void *data, t_bool write);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

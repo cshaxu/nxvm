@@ -42,8 +42,8 @@ eflags=%08x %s %s %s %s %s %s %s %s %s %s %s %s \
 | cs:eip=%04x:%08x(L%08x) %s"
 #define _printexp \
 do { \
-/*	fprintf(vrecord.fp, "%04x:%08x(L%08x)\n", _recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip);*/\
-	fprintf(vrecord.fp, _expression, \
+	fprintf(vrecord.fp, "%04x:%08x(L%08x)\n", _recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip);\
+/*	fprintf(vrecord.fp, _expression, \
 	_rec.svcextl ? "* " : "", \
 	_recpu.cs.selector, _recpu.eip, _recpu.cs.base + _recpu.eip, \
 	GetMax8(_rec.opcode >> 0), GetMax8(_rec.opcode >> 8), \
@@ -77,7 +77,7 @@ do { \
 		fprintf(vrecord.fp, "[%c:L%08x/%1d/%08x] ", \
 			_rec.mem[j].flagwrite ? 'W' : 'R', _rec.mem[j].linear, \
 			_rec.mem[j].byte, _rec.mem[j].data); \
-	fprintf(vrecord.fp, "\n");\
+	fprintf(vrecord.fp, "\n");*/\
 } while (0)
 
 void recordNow(const t_string fname)
@@ -131,7 +131,7 @@ void recordInit()
 		vapiPrint("Record began.\n");
 	}
 }
-void recordExec()
+void recordExec(t_cpurec *rcpurec)
 {
 	t_nubitcc i, j;
 #if RECORD_SELECT_FIRST == 1
@@ -140,14 +140,14 @@ void recordExec()
 		return;
 	}
 #endif
-	if (vcpu.flaghalt) return;
-	if (vcpurec.linear == vrecord.rec[(vrecord.start + vrecord.size - 1) % RECORD_SIZE].linear) return;
-	vrecord.rec[_rec_ptr_last] = vcpurec;
+	if (rcpurec->rcpu.flaghalt) return;
+	if (rcpurec->linear == vrecord.rec[(vrecord.start + vrecord.size - 1) % RECORD_SIZE].linear) return;
 #ifndef VGLOBAL_BOCHS
-	dasm(vrecord.rec[_rec_ptr_last].dstmt, vcpurec.rcpu.cs.selector, vcpurec.rcpu.ip, 0x00);
+	dasm(rcpurec->dstmt, rcpurec->rcpu.cs.selector, rcpurec->rcpu.ip, 0x00);
 #else
-	vrecord.rec[_rec_ptr_last].dstmt[0] = 0;
+	rcpurec->dstmt[0] = 0;
 #endif
+	vrecord.rec[_rec_ptr_last] = (*rcpurec);
 	if (vrecord.flagnow) {
 		i = vrecord.size;
 		for (j = 0;j < strlen(_restmt);++j)

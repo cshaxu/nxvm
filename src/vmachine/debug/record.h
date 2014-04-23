@@ -26,7 +26,7 @@ extern t_record vrecord;
 void recordNow(const t_string fname);
 void recordDump(const t_string fname);
 void recordInit();
-void recordExec();
+void recordExec(t_cpurec *rcpurec);
 void recordFinal();
 
 #ifdef __cplusplus

@@ -1015,9 +1015,8 @@ static void xtprintmem()
 {
 	t_nubit32 i;
 	for (i = 0;i < vcpurec.msize;++i) {
-		vapiPrint("%s: Lin=%08x, Phy=%08x, Data=%08x, Bytes=%1x\n",
+		vapiPrint("%s: Lin=%08x, Data=%08x, Bytes=%1x\n",
 			vcpurec.mem[i].flagwrite ? "Write" : "Read",
-			vcpurec.mem[i].linear, vcpurec.mem[i].physical,
 			vcpurec.mem[i].data, vcpurec.mem[i].byte);
 	}
 }

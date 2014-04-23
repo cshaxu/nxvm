@@ -7,6 +7,8 @@
 #include "vcpuins.h"
 
 static t_cpu oldbcpu, newbcpu;
+static t_bool flagbrec;
+static t_cpurec bcpurec;
 
 t_nubit32 vcpuapiPrint(const t_string format, ...)
 {
@@ -123,7 +125,7 @@ static void CopyBochsCpu(t_cpu *rcpu)
 }
 static t_bool vcpuapiCheckDiff()
 {
-	t_nubitcc i;
+	t_nubitcc i, j;
 	t_bool flagdiff = 0x00;
 	t_nubit32 mask = vcpuins.udf;
 	if (!vcpu.flagignore) {
@@ -220,18 +222,29 @@ static t_bool vcpuapiCheckDiff()
 				vcpuapiPrint("diff gdtr (V=%08X/%08X, B=%08X/%08X)\n",
 					vcpu.gdtr.base, vcpu.gdtr.limit,
 					newbcpu.gdtr.base, newbcpu.gdtr.limit);
-				flagdiff = 0x01;
+				flagdiff = 1;
 		}
 		if (vcpu.idtr.base != newbcpu.idtr.base ||
 			vcpu.idtr.limit != newbcpu.idtr.limit) {
 				vcpuapiPrint("diff idtr (V=%08X/%08X, B=%08X/%08X)\n",
 					vcpu.idtr.base, vcpu.idtr.limit,
 					newbcpu.idtr.base, newbcpu.idtr.limit);
-				flagdiff = 0x01;
+				flagdiff = 1;
 		}
 		if ((vcpu.eflags & ~mask) != (newbcpu.eflags & ~mask)) {
 			vcpuapiPrint("diff flags: V=%08X, B=%08X\n", vcpu.eflags, newbcpu.eflags);
-			flagdiff = 0x01;
+			flagdiff = 1;
+		}
+		for (i = 0;i < vcpurec.msize;++i) {
+			for (j = 0;j < bcpurec.msize;++j) {
+				if (vcpurec.mem[i].flagwrite == bcpurec.mem[j].flagwrite &&
+					vcpurec.mem[i].linear == bcpurec.mem[j].linear) {
+					if (vcpurec.mem[i].byte != bcpurec.mem[j].byte ||
+						vcpurec.mem[i].data != bcpurec.mem[j].data) {
+						flagdiff = 1;
+					}
+				}
+			}
 		}
 	}
 	if (flagdiff) {
@@ -241,6 +254,12 @@ static t_bool vcpuapiCheckDiff()
 		vcpuapiPrintCreg(&oldbcpu);
 		vcpuapiPrint("---------------------------------------------------\n");
 		vcpuapiPrint("AFTER EXECUTION:\n");
+		vcpuapiPrint("CURRENT BCPU:\n");
+		for (i = 0;i < bcpurec.msize;++i) {
+			vcpuapiPrint("[%c:L%08x/%1d/%08x]\n",
+				bcpurec.mem[i].flagwrite ? 'W' : 'R', bcpurec.mem[i].linear,
+				bcpurec.mem[i].byte, vcpurec.mem[i].data);
+		}
 		vcpuapiPrintReg(&newbcpu);
 		vcpuapiPrintSreg(&newbcpu);
 		vcpuapiPrintCreg(&newbcpu);
@@ -388,44 +407,74 @@ void vcpuapiPrintCreg(t_cpu *rcpu)
 void vcpuapiInit()
 {
 #ifdef VGLOBAL_BOCHS
-	flagvalid = 1;
 	vcpuInit();
 	oldbcpu = vcpu;
 	newbcpu = vcpu;
+	memset(&bcpurec, 0x00, sizeof(t_cpurec));
+	recordInit();
 #endif
 }
 void vcpuapiFinal()
 {
 #ifdef VGLOBAL_BOCHS
 	vcpuFinal();
+	recordFinal();
 #endif
 }
 void vcpuapiExecBefore()
 {
 #ifdef VGLOBAL_BOCHS
 	CopyBochsCpu(&oldbcpu);
-	if (oldbcpu.cs.base + oldbcpu.eip == 0xa78f) {
+	bcpurec.rcpu = oldbcpu;
+	bcpurec.linear = bcpurec.rcpu.cs.base + bcpurec.rcpu.eip;
+	bcpurec.msize = 0;
+	flagbrec = 0;
+
+	if (bcpurec.linear == 0xa78f) {
 		flagvalid = 1;
 		vcpuapiPrint("NXVM and Bochs comparison starts here.\n");
+		recordNow("d:/bx.log");
 	}
-	if (oldbcpu.cs.base + oldbcpu.eip == 0x2eab) {
+	if (bcpurec.linear == 0x2eab) {
 		flagvalid = 0;
 		vcpuapiPrint("NXVM and Bochs comparison stops here.\n");
 		BX_CPU_THIS_PTR magic_break = 1;
 	}
 	if (flagvalid) {
-		vcpu = oldbcpu;
-		vcpurec.linear = vcpu.cs.base + vcpu.eip;
-		vcpuinsRefresh();
+		recordExec(&bcpurec);
+		/*vcpu = oldbcpu;
+		vcpuinsRefresh();*/
 	}
+	flagbrec = 1;
 #endif
 }
 void vcpuapiExecAfter()
 {
 #ifdef VGLOBAL_BOCHS
 	if (flagvalid) {
-		CopyBochsCpu(&newbcpu);
-		if (vcpuapiCheckDiff()) BX_CPU_THIS_PTR magic_break = 1;
+		/*CopyBochsCpu(&newbcpu);
+		if (vcpuapiCheckDiff()) BX_CPU_THIS_PTR magic_break = 1;*/
 	}
 #endif
+}
+
+void vcpuapiMemRec(t_nubit32 linear, t_nubit8 byte, void *data, t_bool write)
+{
+	if (flagbrec) {
+		bcpurec.mem[bcpurec.msize].byte = byte;
+		switch (byte) {
+		case 1: bcpurec.mem[bcpurec.msize].data = d_nubit8(data);break;
+		case 2: bcpurec.mem[bcpurec.msize].data = d_nubit16(data);break;
+		case 3: bcpurec.mem[bcpurec.msize].data = d_nubit32(data) & 0x00ffffff;break;
+		case 4: bcpurec.mem[bcpurec.msize].data = d_nubit32(data);break;
+		/*case 5: bcpurec.mem[bcpurec.msize].data = d_nubit64(data) & 0x000000ffffffffff;break;
+		case 6: bcpurec.mem[bcpurec.msize].data = d_nubit64(data) & 0x0000ffffffffffff;break;
+		case 7: bcpurec.mem[bcpurec.msize].data = d_nubit64(data) & 0x00ffffffffffffff;break;
+		case 8: bcpurec.mem[bcpurec.msize].data = d_nubit64(data);break;*/
+		default: bcpurec.mem[bcpurec.msize].data = d_nubit32(data);break;
+		}
+		bcpurec.mem[bcpurec.msize].flagwrite = write;
+		bcpurec.mem[bcpurec.msize].linear = linear;
+		bcpurec.msize++;
+	}
 }

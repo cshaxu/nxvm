@@ -39,7 +39,7 @@ static void DoAfterRunLoop()
 static void DoBeforeRefresh() {}
 static void DoAfterRefresh()
 {
-	if (vmachine.flagrecord) recordExec();
+	if (vmachine.flagrecord) recordExec(&vcpurec);
 	vmachine.breakcnt++;
 }
 

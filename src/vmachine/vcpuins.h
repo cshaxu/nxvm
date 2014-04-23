@@ -94,8 +94,7 @@ typedef struct {
 	t_bool flagwrite;
 	t_nubit32 byte;
 	t_nubit32 linear;
-	t_nubit32 physical;
-	t_nubit32 data;
+	t_nubit64 data;
 } t_cpurec_memory;
 
 typedef struct {
@@ -111,9 +110,9 @@ typedef struct {
 
 #define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */
 #define VCPUINS_EXCEPT_DB  0x00000002 /* 01 - trap/fault: debug exception */
-#define VCPUINS_EXCEPT_NMI 0x00000004 /* 02 - n/a: non-maskable interrupt */
-#define VCPUINS_EXCEPT_BP  0x00000008 /* 03 - trap: break point */
-#define VCPUINS_EXCEPT_OF  0x00000010 /* 04 - trap: overflow exception */
+#define VCPUINS_EXCEPT_NMI 0x00000004 /* 02 - n/a:   non-maskable interrupt */
+#define VCPUINS_EXCEPT_BP  0x00000008 /* 03 - trap:  break point */
+#define VCPUINS_EXCEPT_OF  0x00000010 /* 04 - trap:  overflow exception */
 #define VCPUINS_EXCEPT_BR  0x00000020 /* 05 - fault: boundary check fail */
 #define VCPUINS_EXCEPT_UD  0x00000040 /* 06 - fault: invalid opcode */
 #define VCPUINS_EXCEPT_NM  0x00000080 /* 07 - fault: coprocessor not available */
@@ -124,7 +123,7 @@ typedef struct {
 #define VCPUINS_EXCEPT_SS  0x00001000 /* 12 - fault: stack segment fault */
 #define VCPUINS_EXCEPT_GP  0x00002000 /* 13 - fault: general protection */
 #define VCPUINS_EXCEPT_PF  0x00004000 /* 14 - fault: page fault */
-#define VCPUINS_EXCEPT_15  0x00008000 /* 15 - n/a: reserved */
+#define VCPUINS_EXCEPT_15  0x00008000 /* 15 - n/a:   reserved */
 #define VCPUINS_EXCEPT_MF  0x00010000 /* 16 - fault: x87 fpu floating point error */
 
 #define VCPUINS_EXCEPT_CE  0x80000000 /* 31 - internal case error */
