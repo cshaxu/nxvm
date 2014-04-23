@@ -12,9 +12,6 @@
 #include "qdbios.h"
 #include "vcpuins.h"
 
-#include "ecpu/ecpu.h"
-#include "ecpu/ecpuins.h"
-
 #define MOD ((modrm&0xc0)>>6)
 #define REG ((modrm&0x38)>>3)
 #define RM  ((modrm&0x07)>>0)
@@ -692,7 +689,7 @@ static ASMCMP ADD(void *dest, void *src, t_nubit8 len)
 		vcpuins.type = ADD16;
 		vcpuins.opr1 = d_nubit16(dest) & 0xffff;
 		bugfix(22) vcpuins.opr2 = d_nsbit8(src) & 0xffff;
-		else vcpuins.opr2 = d_nsbit8(src) & 0xffff; /* in this case opr2 could be 0xffffffff */
+		else vcpuins.opr2 = d_nsbit8(src); /* in this case opr2 could be 0xffffffff */
 		vcpuins.result = (vcpuins.opr1+vcpuins.opr2) & 0xffff;
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
@@ -1796,7 +1793,6 @@ static ASMCMP MUL(void *src, t_nubit8 len)
 #define op mul
 		aexec_mdx8;
 #undef op
-		acheck(VCPU_FLAG_OF | VCPU_FLAG_CF) vapiPrintIns(vcpu.cs,vcpu.ip,"+MUL");
 		break;
 	case 16:
 		async uw2 = d_nubit16(src);
@@ -1809,10 +1805,9 @@ static ASMCMP MUL(void *src, t_nubit8 len)
 #define op mul
 		aexec_mdx16;
 #undef op
-		acheck(VCPU_FLAG_OF | VCPU_FLAG_CF) vapiPrintIns(vcpu.cs,vcpu.ip,"+MUL");
 		break;
 	default:CaseError("MUL::len");break;}
-
+	acheck(VCPU_FLAG_OF | VCPU_FLAG_CF) vapiPrintIns(vcpu.cs,vcpu.ip,"+MUL");
 }
 static ASMCMP IMUL(void *src, t_nubit8 len)
 {
@@ -3854,24 +3849,17 @@ void vcpuinsExecIns()
 			if (!IsPrefix(opcode)) ClrPrefix();
 		}
 	}
-//	ecpuinsExecIns();
 }
 void vcpuinsExecInt()
 {
 	/* hardware interrupt handeler */
-	t_nubit8 intr;
-	if(vcpu.flagnmi) {
-		INT(0x02);
-	}
+	if(vcpu.flagnmi) INT(0x02);
 	vcpu.flagnmi = 0x00;
-	if(GetBit(vcpu.flags, VCPU_FLAG_IF) && vpicScanINTR()) {
-		intr = vpicGetINTR();
-		INT(intr);
-//		ecpuinsExecInt();
-	}
-	if(GetBit(vcpu.flags, VCPU_FLAG_TF)) {
-		INT(0x01);
-	}
+
+	if(GetBit(vcpu.flags, VCPU_FLAG_IF) && vpicScanINTR())
+		INT(vpicGetINTR());
+
+	if(GetBit(vcpu.flags, VCPU_FLAG_TF)) INT(0x01);
 }
 
 void QDX()
@@ -3892,7 +3880,6 @@ void QDX()
 
 void vcpuinsInit()
 {
-	ecpuInit();
 	memset(&vcpuins, 0x00, sizeof(t_cpuins));
 	ClrPrefix();
 	vcpuins.table[0x00] = (t_faddrcc)ADD_RM8_R8;
@@ -4158,4 +4145,4 @@ void vcpuinsInit()
 	vcpuins.table[0xfe] = (t_faddrcc)INS_FE;
 	vcpuins.table[0xff] = (t_faddrcc)INS_FF;
 }
-void vcpuinsFinal() {ecpuFinal();}
+void vcpuinsFinal() {}

@@ -1,54 +1,60 @@
-//////////////////////////////////////////////////////////////////////////
-// Ãû³Æ£ºInstruction.cpp
-// ¹¦ÄÜ£ºÄ£Äâ8086Ö¸Áî¼¯
-// ÈÕÆÚ£º2008Äê4ÔÂ20ÈÕ
-// ×÷Õß£ºÁºÒ»ĞÅ
+ï»¿//////////////////////////////////////////////////////////////////////////
+// åç§°ï¼šInstruction.cpp
+// åŠŸèƒ½ï¼šæ¨¡æ‹Ÿ8086æŒ‡ä»¤é›†
+// æ—¥æœŸï¼š2008å¹´4æœˆ20æ—¥
+// ä½œè€…ï¼šæ¢ä¸€ä¿¡
 //////////////////////////////////////////////////////////////////////////
 
 #include "../vglobal.h"
 #include "../vpic.h"
 #include "../vapi.h"
 #include "../qdbios.h"
+#include "../VCPU.H"
+#include "../VCPUINS.H"
 #include "ecpuins.h"
 #include "ecpu.h"
 
 t_faddrcc InsTable[0x100];
 t_vaddrcc Ins0FTable[0x100];
 
-#define eIMS (evIP+MemoryStart)
-#define EvSP (t=ecpu.ss,(t<<4)+ecpu.sp)
-#define evSI (t=tmpDs,(t<<4)+ecpu.si)
-#define evDI (t=ecpu.es,(t<<4)+ecpu.di)
+#define SAME static void
+
+#define eIMS (vramGetAddr(0, evIP))
 #define toe8 (TranslateOpcExt(0,(char **)&r8,(char **)&rm8))
 #define toe16 (TranslateOpcExt(1,(char **)&r16,(char **)&rm16))
 #define toe32 (TranslateOpcExt(1,(char **)&r32,(char **)&rm32))
 
-const t_nubit16 Glbffff=0xffff;		//µ±Ñ°Ö·³¬¹ı0xfffffµÄÊ±ºò£¬·µ»ØµÄÊÇÒ»¸ö¿ÉÒÔÁî³ÌĞòResetµÄµØÖ·
-t_nubit16 GlbZero=0x0;			//ÓĞĞ©Ñ°Ö·ÓÃµ½Á½¸öÆ«ÒÆ¼Ä´æÆ÷£»ÓĞĞ©Ñ°Ö·Ö»ÓÃµ½Ò»¸öÆ«ÒÆ¼Ä´æÆ÷£¬ÁíÍâÒ»¸öÖ¸ÏòÕâÀï¡£
+const t_nubit16 Glbffff=0xffff;		//å½“å¯»å€è¶…è¿‡0xfffffçš„æ—¶å€™ï¼Œè¿”å›çš„æ˜¯ä¸€ä¸ªå¯ä»¥ä»¤ç¨‹åºResetçš„åœ°å€
+t_nubit16 GlbZero=0x0;			//æœ‰äº›å¯»å€ç”¨åˆ°ä¸¤ä¸ªåç§»å¯„å­˜å™¨ï¼›æœ‰äº›å¯»å€åªç”¨åˆ°ä¸€ä¸ªåç§»å¯„å­˜å™¨ï¼Œå¦å¤–ä¸€ä¸ªæŒ‡å‘è¿™é‡Œã€‚
 
-t_vaddrcc evIP;			//evIP¶ÁÖ¸ÁîÊ±µÄÖ¸Õë
-t_nubitcc GlobINT;		//ËùÓĞ·ÇINTÖ¸Áî²úÉúµÄÖĞ¶Ï
+t_vaddrcc evIP;			//evIPè¯»æŒ‡ä»¤æ—¶çš„æŒ‡é’ˆ
 
-
-t_nubit16 *rm16,*r16;			//½âÊÍÑ°Ö·×Ö½ÚµÄÊ±ºòÓÃ
+t_nubit16 *rm16,*r16;			//è§£é‡Šå¯»å€å­—èŠ‚çš„æ—¶å€™ç”¨
 t_nubit32 *rm32,*r32;
 t_nubit8 *rm8,*r8;				//
-t_nubit16 t161,t162;			//¿ÉÒÔËæ±ãÊ¹ÓÃµÄ
+t_nubit16 t161,t162;			//å¯ä»¥éšä¾¿ä½¿ç”¨çš„
 t_nubit32 t321,t322;				//
 t_nubit8 t81,t82;				//
 
 t_nubit32 t,t2,t3;				//
 
-t_nubit16 tmpDs;				//ÕâÊÇ´æ´¢Æ÷Ñ°Ö·Ê±µÄ¶Î¼Ä´æÆ÷£¬¾ø´ó¶àÊıÇé¿öÏÂµÈÓÚDS£¬Óöµ½CS¡¢ES¡¢SSÖ¸ÁîÊ±ÔÚÒ»ÌõÖ¸ÁîµÄÊ±¼äÏÂ×÷³öĞŞ¸Ä
-t_nubit16 tmpSs;				//
+t_nubit16 tmpOpdSize=2;			//Operand Sizeï¼Œç”±æè¿°ç¬¦é‡Œçš„Dä½å’ŒOpdSizeå‰ç¼€å…±åŒå†³å®šï¼Œåˆå§‹å€¼ä¸º2
+t_nubit16 tmpAddrSize=2;			//Address Sizeï¼Œç”±æè¿°ç¬¦é‡Œçš„Dä½å’ŒAddrSizeå‰ç¼€å…±åŒå†³å®šï¼Œåˆå§‹å€¼ä¸º2
 
-t_nubit16 tmpOpdSize=2;			//Operand Size£¬ÓÉÃèÊö·ûÀïµÄDÎ»ºÍOpdSizeÇ°×º¹²Í¬¾ö¶¨£¬³õÊ¼ÖµÎª2
-t_nubit16 tmpAddrSize=2;			//Address Size£¬ÓÉÃèÊö·ûÀïµÄDÎ»ºÍAddrSizeÇ°×º¹²Í¬¾ö¶¨£¬³õÊ¼ÖµÎª2
+t_cpuins ecpuins;
 
 #define VOID static void
+VOID SyncCSIP()
+{
+	t_vaddrcc tevip = evIP - (ecpu.cs << 4);
+	ecpu.cs += tevip / 0x10000;
+	ecpu.ip  = tevip % 0x10000;
+}
+VOID SyncEVIP()
+{
+	evIP = (ecpu.cs << 4) + ecpu.ip;
+}
 
-//ÔÚÖ´ĞĞÃ¿Ò»ÌõÖ¸ÁîÖ®Ç°£¬evIPÒªµÈÓÚcs:ip¡£
-//Ö´ĞĞÍêÒ»ÌõÖ¸ÁîÖ®ºó£¬ÔÙ°´evIPĞŞ¸Äcs:ip¡£
 VOID LongCallNewIP(char OffsetByte)
 {
 	t_nubit32 tcs=ecpu.cs;
@@ -69,52 +75,52 @@ VOID SegOffDec(t_nubit16 *seg, t_nubit16 *off)
 }
 t_nubit8 GetM8_16(t_nubit16 off)
 {
-	if (off+(t=tmpDs,t<<4)<=0xfffff)
-		return *(t_nubit8 *)(off+(t=tmpDs,t<<4)+MemoryStart);
+	if (off+(t=ecpu.overds,t<<4)<=0xfffff)
+		return *(t_nubit8 *)(off+(t=ecpu.overds,t<<4)+MemoryStart);
 	else
 		return 0xff;
 }
 t_nubit8 GetM8_32(t_nubit32 off)
 {
-	return *(t_nubit8 *)(off+(t=tmpDs,t<<4)+MemoryStart);
+	return *(t_nubit8 *)(off+(t=ecpu.overds,t<<4)+MemoryStart);
 }
 t_nubit16 GetM16_16(t_nubit16 off)
 {
-	if (off+(t=tmpDs,t<<4)<=0xfffff)
-		return *(t_nubit16 *)(off+(t=tmpDs,t<<4)+MemoryStart);
+	if (off+(t=ecpu.overds,t<<4)<=0xfffff)
+		return d_nubit16(off+(t=ecpu.overds,t<<4)+MemoryStart);
 	else
 		return 0xffff;
 }
 t_nubit16 GetM16_32(t_nubit32 off)
 {	
-	return *(t_nubit16 *)(off+(t=tmpDs,t<<4)+MemoryStart);
+	return d_nubit16(off+(t=ecpu.overds,t<<4)+MemoryStart);
 }
 t_nubit32 GetM32_16(t_nubit16 off)
 {
-	if (off+(t=tmpDs,t<<4)<=0xfffff)
-		return *(t_nubit32 *)(off+(t=tmpDs,t<<4)+MemoryStart);
+	if (off+(t=ecpu.overds,t<<4)<=0xfffff)
+		return *(t_nubit32 *)(off+(t=ecpu.overds,t<<4)+MemoryStart);
 	else
 		return 0xffffffff;
 }
 t_nubit32 GetM32_32(t_nubit32 off)
 {
-	return *(t_nubit32 *)(off+(t=tmpDs,t<<4)+MemoryStart);
+	return *(t_nubit32 *)(off+(t=ecpu.overds,t<<4)+MemoryStart);
 }
 VOID SetM8(t_nubit16 off, t_nubit8 val)
 {
-	if (off+(t=tmpDs,t<<4))
-		*(t_nubit8 *)(off+(t=tmpDs,t<<4)+MemoryStart)=val;
+	if (off+(t=ecpu.overds,t<<4))
+		*(t_nubit8 *)(off+(t=ecpu.overds,t<<4)+MemoryStart)=val;
 
 }
 VOID SetM16(t_nubit16 off, t_nubit16 val)
 {
-	if (off+(t=tmpDs,t<<4))
-		*(t_nubit16 *)(off+(t=tmpDs,t<<4)+MemoryStart)=val;
+	if (off+(t=ecpu.overds,t<<4))
+		d_nubit16(off+(t=ecpu.overds,t<<4)+MemoryStart)=val;
 }
 VOID SetM32(t_nubit16 off, t_nubit32 val)
 {
-	if (off+(t=tmpDs,t<<4))
-		*(t_nubit32 *)(off+(t=tmpDs,t<<4)+MemoryStart)=val;
+	if (off+(t=ecpu.overds,t<<4))
+		*(t_nubit32 *)(off+(t=ecpu.overds,t<<4)+MemoryStart)=val;
 }
 VOID *FindRegAddr(t_bool w,char reg)
 {
@@ -185,11 +191,11 @@ t_nubit32 FindRemAddr(char rem , t_nubit16 **off1, t_nubit16 **off2)
 {
 	t_nubit32 ret;
 	t_nubit32 tds, tes, tss;
-	tds=tmpDs;
+	tds=ecpu.overds;
 	tds<<=4;
 	tes=ecpu.es;
 	tes<<=4;
-	tss=tmpSs;
+	tss=ecpu.overss;
 	tss<<=4;
 	if (tmpAddrSize==2)
 	{
@@ -287,14 +293,14 @@ t_nubit32 FindRemAddr(char rem , t_nubit16 **off1, t_nubit16 **off2)
 VOID TranslateOpcExt(t_bool w,char** rg,char** rm)
 {
 	t_nubit16 *off1,*off2;
-	t_nubit32 tds=tmpDs;
+	t_nubit32 tds=ecpu.overds;
 	t_nubit8 mod, reg, rem;
 	tds<<=4;
-	mod=*(char*)(evIP+MemoryStart) & 0xc0;
+	mod=d_nsbit8(vramGetAddr(0, evIP)) & 0xc0;
 	mod>>=6;
-	reg=*(char*)(evIP+MemoryStart) & 0x38;
+	reg=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	reg>>=3;
-	rem=*(char*)(evIP+MemoryStart) & 0x07;
+	rem=d_nsbit8(vramGetAddr(0, evIP)) & 0x07;
 
 	*rg=(char *)FindRegAddr(w,reg);
 
@@ -322,17 +328,17 @@ VOID TranslateOpcExt(t_bool w,char** rg,char** rm)
 		*rm=(char *)FindRemAddr(rem,&off1,&off2);
 		evIP++;		
 		if (tmpAddrSize==2)
-			*rm+=(*off1+*off2+*(char *)(evIP+MemoryStart))-(*off1+*off2);		//¶ÔÆ«ÒÆ¼Ä´æÆ÷Òç³öµÄ´¦Àí£¬¶ÔÒ»×Ö½ÚµÄÆ«ÒÆÊÇ½øĞĞ·ûºÅÀ©Õ¹µÄ£¬ÓÃ´ø·ûºÅcharĞ§¹ûÒ»Ñù
+			*rm+=(*off1+*off2+d_nsbit8(vramGetAddr(0, evIP)))-(*off1+*off2);		//å¯¹åç§»å¯„å­˜å™¨æº¢å‡ºçš„å¤„ç†ï¼Œå¯¹ä¸€å­—èŠ‚çš„åç§»æ˜¯è¿›è¡Œç¬¦å·æ‰©å±•çš„ï¼Œç”¨å¸¦ç¬¦å·charæ•ˆæœä¸€æ ·
 		else
-			*rm+=(*(t_nubit32 *)off1+*(t_nubit32 *)off2+*(char *)(evIP+MemoryStart))-(*(t_nubit32 *)off1+*(t_nubit32 *)off2);		//¶ÔÆ«ÒÆ¼Ä´æÆ÷Òç³öµÄ´¦Àí£¬¶ÔÒ»×Ö½ÚµÄÆ«ÒÆÊÇ½øĞĞ·ûºÅÀ©Õ¹µÄ£¬ÓÃ´ø·ûºÅcharĞ§¹ûÒ»Ñù
+			*rm+=(*(t_nubit32 *)off1+*(t_nubit32 *)off2+d_nsbit8(vramGetAddr(0, evIP)))-(*(t_nubit32 *)off1+*(t_nubit32 *)off2);		//å¯¹åç§»å¯„å­˜å™¨æº¢å‡ºçš„å¤„ç†ï¼Œå¯¹ä¸€å­—èŠ‚çš„åç§»æ˜¯è¿›è¡Œç¬¦å·æ‰©å±•çš„ï¼Œç”¨å¸¦ç¬¦å·charæ•ˆæœä¸€æ ·
 		break;
 	case 2:
 		*rm=(char *)FindRemAddr(rem,&off1,&off2);
 		evIP++;		
 		if (tmpAddrSize==2)
-			*rm+=(t_nubit16)(*off1+*off2+*(t_nubit16 *)(evIP+MemoryStart))-(*off1+*off2);			//Bochs°Ñ1094:59aeÉÏµÄ2BÆ«ÒÆ½âÊÍ³ÉÎŞ·ûºÅÊı
+			*rm+=(t_nubit16)(*off1+*off2+d_nubit16(vramGetAddr(0, evIP)))-(*off1+*off2);			//BochsæŠŠ1094:59aeä¸Šçš„2Båç§»è§£é‡Šæˆæ— ç¬¦å·æ•°
 		else
-			*rm+=(t_nubit16)(*(t_nubit32 *)off1+*(t_nubit32 *)off2+*(t_nubit16 *)(evIP+MemoryStart))-(*(t_nubit32 *)off1+*(t_nubit32 *)off2);			//Bochs°Ñ1094:59aeÉÏµÄ2BÆ«ÒÆ½âÊÍ³ÉÎŞ·ûºÅÊı
+			*rm+=(t_nubit16)(*(t_nubit32 *)off1+*(t_nubit32 *)off2+d_nubit16(vramGetAddr(0, evIP)))-(*(t_nubit32 *)off1+*(t_nubit32 *)off2);			//BochsæŠŠ1094:59aeä¸Šçš„2Båç§»è§£é‡Šæˆæ— ç¬¦å·æ•°
 		evIP++;
 		break;
 	case 3:
@@ -348,15 +354,15 @@ VOID TranslateOpcExtSeg(t_bool w,char** rg,char** rm)
 	t_nubit16 *off1,*off2;
 	t_nubit32 tds;
 	t_nubit8 mod,reg,rem;
-	w=0x01;				//ÓëSegÓĞ¹ØµÄ²Ù×÷£¬wÖ»ÓĞÊÇ1
-	tds=tmpDs;
+	w=0x01;				//ä¸Segæœ‰å…³çš„æ“ä½œï¼Œwåªæœ‰æ˜¯1
+	tds=ecpu.overds;
 	tds<<=4;
 
-	mod=*(char*)(evIP+MemoryStart) & 0xc0;
+	mod=d_nsbit8(vramGetAddr(0, evIP)) & 0xc0;
 	mod>>=6;
-	reg=*(char*)(evIP+MemoryStart) & 0x38;
+	reg=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	reg>>=3;
-	rem=*(char*)(evIP+MemoryStart) & 0x07;
+	rem=d_nsbit8(vramGetAddr(0, evIP)) & 0x07;
 
 	*rg=(char *)FindSegAddr(w,reg);
 
@@ -384,17 +390,17 @@ VOID TranslateOpcExtSeg(t_bool w,char** rg,char** rm)
 		*rm=(char *)FindRemAddr(rem,&off1,&off2);
 		evIP++;		
 		if (tmpAddrSize==2)
-			*rm+=(*off1+*off2+*(char *)(evIP+MemoryStart))-(*off1+*off2);		//¶ÔÆ«ÒÆ¼Ä´æÆ÷Òç³öµÄ´¦Àí
+			*rm+=(*off1+*off2+d_nsbit8(vramGetAddr(0, evIP)))-(*off1+*off2);		//å¯¹åç§»å¯„å­˜å™¨æº¢å‡ºçš„å¤„ç†
 		else
-			*rm+=(*(t_nubit32 *)off1+*(t_nubit32 *)off2+*(char *)(evIP+MemoryStart))-(*(t_nubit32 *)off1+*(t_nubit32 *)off2);		//¶ÔÆ«ÒÆ¼Ä´æÆ÷Òç³öµÄ´¦Àí
+			*rm+=(*(t_nubit32 *)off1+*(t_nubit32 *)off2+d_nsbit8(vramGetAddr(0, evIP)))-(*(t_nubit32 *)off1+*(t_nubit32 *)off2);		//å¯¹åç§»å¯„å­˜å™¨æº¢å‡ºçš„å¤„ç†
 		break;
 	case 2:
 		*rm=(char *)FindRemAddr(rem,&off1,&off2);
 		evIP++;	
 		if (tmpAddrSize==2)
-			*rm+=(t_nubit16)(*off1+*off2+*(t_nubit16 *)(evIP+MemoryStart))-(*off1+*off2);	
+			*rm+=(t_nubit16)(*off1+*off2+d_nubit16(vramGetAddr(0, evIP)))-(*off1+*off2);	
 		else
-			*rm+=(t_nubit16)(*(t_nubit32 *)off1+*(t_nubit32 *)off2+*(t_nubit16 *)(evIP+MemoryStart))-(*(t_nubit32 *)off1+*(t_nubit32 *)off2);	
+			*rm+=(t_nubit16)(*(t_nubit32 *)off1+*(t_nubit32 *)off2+d_nubit16(vramGetAddr(0, evIP)))-(*(t_nubit32 *)off1+*(t_nubit32 *)off2);	
 		evIP++;
 		break;
 	case 3:
@@ -412,62 +418,486 @@ t_bool Bit(void*BitBase, int BitOffset)
 	BitBase=(void*)tmp;
 	return (*(t_nubit8 *)BitBase>>(BitOffset%8))&1;
 }
-// ¶Áµ½µÄ×Ö½ÚÎ´±àÂëÖ¸Áî
+// è¯»åˆ°çš„å­—èŠ‚æœªç¼–ç æŒ‡ä»¤
 VOID OpcError()
 {
-	t_nubit8 *pc=(t_nubit8 *)MemoryStart+evIP-1;
+	t_nubit8 *pc=(t_nubit8 *)vramGetAddr(0, evIP)-1;
 	vapiPrint("An unkown instruction [ %2x %2x %2x %2x %2x %2x ] was read at [ %4xh:%4xh ], easyVM only support 8086 instruction set in this version. easyVM will be terminated.",*(pc),*(pc+1),*(pc+2),*(pc+3),*(pc+4),*(pc+5),ecpu.cs,ecpu.ip);
 	vapiCallBackMachineStop();
 }
 
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-// ¸ß¶È³éÏó²¿·Ö
+t_nubit8 ub1,ub2,ub3;
+t_nubit16 uw1,uw2,uw3;
+t_nubit32 udw1,udw2,udw3;
 
-VOID ADD(void**Des, void**Src, int Len)
+#ifdef ECPUACT
+#define im(addr) 0x00
+#else
+#define im(addr) vramIsAddrInMem(addr)
+#endif
+
+#define bugfix(n) if(1)
+
+#define MOD ((modrm&0xc0)>>6)
+#define REG ((modrm&0x38)>>3)
+#define RM  ((modrm&0x07)>>0)
+
+#define ADD_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
+#define	 OR_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
+#define ADC_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
+#define SBB_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
+#define AND_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
+#define SUB_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
+#define XOR_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
+#define CMP_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_CF | VCPU_FLAG_PF)
+#define INC_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_PF)
+#define DEC_FLAG  (VCPU_FLAG_OF | VCPU_FLAG_SF | VCPU_FLAG_ZF | \
+                   VCPU_FLAG_AF | VCPU_FLAG_PF)
+#define TEST_FLAG (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
+#define SHL_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
+#define SHR_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
+#define SAL_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
+#define SAR_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
+#define AAM_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
+#define AAD_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
+#define DAA_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
+#define DAS_FLAG  (VCPU_FLAG_SF | VCPU_FLAG_ZF | VCPU_FLAG_PF)
+
+
+static void CaseError(const char *str)
+{
+	vapiPrint("The NXVM ECPU has encountered an internal case error: %s.\n",str);
+	vapiCallBackMachineStop();
+}
+static void CalcCF()
+{
+	switch(ecpuins.type) {
+	case ADD8:
+	case ADD16:
+		MakeBit(ecpu.flags,VCPU_FLAG_CF,(ecpuins.result < ecpuins.opr1) || (ecpuins.result < ecpuins.opr2));
+		break;
+	case ADC8:
+		bugfix(21)
+			MakeBit(ecpu.flags, VCPU_FLAG_CF, (
+				(GetBit(ecpu.flags, VCPU_FLAG_CF) && ecpuins.opr2 == 0xff) ?
+				1 : ((ecpuins.result < ecpuins.opr1) || (ecpuins.result < ecpuins.opr2))));
+		else
+			bugfix(1) MakeBit(ecpu.flags,VCPU_FLAG_CF,ecpuins.result < ecpuins.opr1);
+			else MakeBit(ecpu.flags,VCPU_FLAG_CF,ecpuins.result <= ecpuins.opr1);
+		break;
+	case ADC16:
+		bugfix(21)
+			MakeBit(ecpu.flags, VCPU_FLAG_CF, (
+				(GetBit(ecpu.flags, VCPU_FLAG_CF) && ecpuins.opr2 == 0xffff) ?
+				1 : ((ecpuins.result < ecpuins.opr1) || (ecpuins.result < ecpuins.opr2))));
+		else
+			bugfix(1) MakeBit(ecpu.flags,VCPU_FLAG_CF,ecpuins.result < ecpuins.opr1);
+			else MakeBit(ecpu.flags,VCPU_FLAG_CF,ecpuins.result <= ecpuins.opr1);
+		break;
+	case SBB8:
+		bugfix(20)
+			MakeBit(ecpu.flags, VCPU_FLAG_CF, (ecpuins.opr1 < ecpuins.result) ||
+				(GetBit(ecpu.flags, VCPU_FLAG_CF) && (ecpuins.opr2 == 0xff)));
+		else
+			MakeBit(ecpu.flags, VCPU_FLAG_CF, (ecpuins.opr1 < ecpuins.result) ||
+				(ecpuins.opr2 == 0xff));
+		break;
+	case SBB16:
+		bugfix(20)
+			MakeBit(ecpu.flags, VCPU_FLAG_CF, (ecpuins.opr1 < ecpuins.result) ||
+				(GetBit(ecpu.flags, VCPU_FLAG_CF) && (ecpuins.opr2 == 0xffff)));
+		else
+			MakeBit(ecpu.flags, VCPU_FLAG_CF, (ecpuins.opr1 < ecpuins.result) ||
+				(ecpuins.opr2 == 0xffff));
+		break;
+	case SUB8:
+	case SUB16:
+	case CMP8:
+	case CMP16:
+		MakeBit(ecpu.flags,VCPU_FLAG_CF,ecpuins.opr1 < ecpuins.opr2);
+		break;
+	default:CaseError("CalcCF::ecpuins.type");break;}
+}
+static void CalcOF()
+{
+	switch(ecpuins.type) {
+	case ADD8:
+	case ADC8:
+		MakeBit(ecpu.flags,VCPU_FLAG_OF,((ecpuins.opr1&0x0080) == (ecpuins.opr2&0x0080)) && ((ecpuins.opr1&0x0080) != (ecpuins.result&0x0080)));
+		break;
+	case ADD16:
+	case ADC16:
+		MakeBit(ecpu.flags,VCPU_FLAG_OF,((ecpuins.opr1&0x8000) == (ecpuins.opr2&0x8000)) && ((ecpuins.opr1&0x8000) != (ecpuins.result&0x8000)));
+		break;
+	case SBB8:
+	case SUB8:
+	case CMP8:
+		MakeBit(ecpu.flags,VCPU_FLAG_OF,((ecpuins.opr1&0x0080) != (ecpuins.opr2&0x0080)) && ((ecpuins.opr2&0x0080) == (ecpuins.result&0x0080)));
+		break;
+	case SBB16:
+	case SUB16:
+	case CMP16:
+		MakeBit(ecpu.flags,VCPU_FLAG_OF,((ecpuins.opr1&0x8000) != (ecpuins.opr2&0x8000)) && ((ecpuins.opr2&0x8000) == (ecpuins.result&0x8000)));
+		break;
+	default:CaseError("CalcOF::ecpuins.type");break;}
+}
+static void CalcAF()
+{
+	MakeBit(ecpu.flags,VCPU_FLAG_AF,((ecpuins.opr1^ecpuins.opr2)^ecpuins.result)&0x10);
+}
+static void CalcPF()
+{
+	t_nubit8 res8 = ecpuins.result & 0xff;
+	t_nubitcc count = 0;
+	while(res8)
+	{
+		res8 &= res8-1; 
+		count++;
+	}
+	MakeBit(ecpu.flags,VCPU_FLAG_PF,!(count&0x01));
+}
+static void CalcZF()
+{
+	MakeBit(ecpu.flags,VCPU_FLAG_ZF,!ecpuins.result);
+}
+static void CalcSF()
+{
+	switch(ecpuins.bit) {
+	case 8:	MakeBit(ecpu.flags,VCPU_FLAG_SF,!!(ecpuins.result&0x80));break;
+	case 16:MakeBit(ecpu.flags,VCPU_FLAG_SF,!!(ecpuins.result&0x8000));break;
+	default:CaseError("CalcSF::ecpuins.bit");break;}
+}
+static void CalcTF() {}
+static void CalcIF() {}
+static void CalcDF() {}
+
+static void SetFlags(t_nubit16 flags)
+{
+	if(flags & VCPU_FLAG_CF) CalcCF();
+	if(flags & VCPU_FLAG_PF) CalcPF();
+	if(flags & VCPU_FLAG_AF) CalcAF();
+	if(flags & VCPU_FLAG_ZF) CalcZF();
+	if(flags & VCPU_FLAG_SF) CalcSF();
+	if(flags & VCPU_FLAG_TF) CalcTF();
+	if(flags & VCPU_FLAG_IF) CalcIF();
+	if(flags & VCPU_FLAG_DF) CalcDF();
+	if(flags & VCPU_FLAG_OF) CalcOF();
+}
+static void GetMem()
+{
+	/* returns ecpuins.rm */
+	ecpuins.rm = vramGetAddr(ecpu.overds,vramVarWord(ecpu.cs,ecpu.ip));
+	ecpu.ip += 2;
+}
+static void GetImm(t_nubitcc immbit)
+{
+	// returns ecpuins.imm
+	ecpuins.imm = vramGetAddr(ecpu.cs,ecpu.ip);
+	switch(immbit) {
+	case 8:		ecpu.ip += 1;break;
+	case 16:	ecpu.ip += 2;break;
+	case 32:	ecpu.ip += 4;break;
+	default:CaseError("GetImm::immbit");break;}
+}
+static void GetModRegRM(t_nubitcc regbit,t_nubitcc rmbit)
+{
+	// returns ecpuins.rm and ecpuins.r
+	t_nubit8 modrm = vramVarByte(ecpu.cs,ecpu.ip++);
+	ecpuins.rm = ecpuins.r = (t_vaddrcc)NULL;
+	switch(MOD) {
+	case 0:
+		switch(RM) {
+		case 0:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.bx+ecpu.si);break;
+		case 1:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.bx+ecpu.di);break;
+		case 2:	ecpuins.rm = vramGetAddr(ecpu.overss,ecpu.bp+ecpu.si);break;
+		case 3:	ecpuins.rm = vramGetAddr(ecpu.overss,ecpu.bp+ecpu.di);break;
+		case 4:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.si);break;
+		case 5:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.di);break;
+		case 6:	ecpuins.rm = vramGetAddr(ecpu.overds,vramVarWord(ecpu.cs,ecpu.ip));ecpu.ip += 2;break;
+		case 7:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.bx);break;
+		default:CaseError("GetModRegRM::MOD0::RM");break;}
+		break;
+	case 1:
+		switch(RM) {
+		case 0:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.bx+ecpu.si);break;
+		case 1:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.bx+ecpu.di);break;
+		case 2:	ecpuins.rm = vramGetAddr(ecpu.overss,ecpu.bp+ecpu.si);break;
+		case 3:	ecpuins.rm = vramGetAddr(ecpu.overss,ecpu.bp+ecpu.di);break;
+		case 4:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.si);break;
+		case 5:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.di);break;
+		case 6:	ecpuins.rm = vramGetAddr(ecpu.overss,ecpu.bp);break;
+		case 7:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.bx);break;
+		default:CaseError("GetModRegRM::MOD1::RM");break;}
+		bugfix(3) {
+			ecpuins.rm += (t_nsbit8)vramVarByte(ecpu.cs,ecpu.ip);
+			ecpu.ip += 1;
+		} else {
+			ecpuins.rm += vramVarByte(ecpu.cs,ecpu.ip);
+			ecpu.ip += 1;
+		}
+		break;
+	case 2:
+		switch(RM) {
+		case 0:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.bx+ecpu.si);break;
+		case 1:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.bx+ecpu.di);break;
+		case 2:	ecpuins.rm = vramGetAddr(ecpu.overss,ecpu.bp+ecpu.si);break;
+		case 3:	ecpuins.rm = vramGetAddr(ecpu.overss,ecpu.bp+ecpu.di);break;
+		case 4:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.si);break;
+		case 5:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.di);break;
+		case 6:	ecpuins.rm = vramGetAddr(ecpu.overss,ecpu.bp);break;
+		case 7:	ecpuins.rm = vramGetAddr(ecpu.overds,ecpu.bx);break;
+		default:CaseError("GetModRegRM::MOD2::RM");break;}
+		ecpuins.rm += vramVarWord(ecpu.cs,ecpu.ip);ecpu.ip += 2;
+		break;
+	case 3:
+		switch(RM) {
+		case 0:	if(rmbit == 8) ecpuins.rm = (t_vaddrcc)(&ecpu.al); else ecpuins.rm = (t_vaddrcc)(&ecpu.ax); break;
+		case 1:	if(rmbit == 8) ecpuins.rm = (t_vaddrcc)(&ecpu.cl); else ecpuins.rm = (t_vaddrcc)(&ecpu.cx); break;
+		case 2:	if(rmbit == 8) ecpuins.rm = (t_vaddrcc)(&ecpu.dl); else ecpuins.rm = (t_vaddrcc)(&ecpu.dx); break;
+		case 3:	if(rmbit == 8) ecpuins.rm = (t_vaddrcc)(&ecpu.bl); else ecpuins.rm = (t_vaddrcc)(&ecpu.bx); break;
+		case 4:	if(rmbit == 8) ecpuins.rm = (t_vaddrcc)(&ecpu.ah); else ecpuins.rm = (t_vaddrcc)(&ecpu.sp); break;
+		case 5:	if(rmbit == 8) ecpuins.rm = (t_vaddrcc)(&ecpu.ch); else ecpuins.rm = (t_vaddrcc)(&ecpu.bp); break;
+		case 6:	if(rmbit == 8) ecpuins.rm = (t_vaddrcc)(&ecpu.dh); else ecpuins.rm = (t_vaddrcc)(&ecpu.si); break;
+		case 7:	if(rmbit == 8) ecpuins.rm = (t_vaddrcc)(&ecpu.bh); else ecpuins.rm = (t_vaddrcc)(&ecpu.di); break;
+		default:CaseError("GetModRegRM::MOD3::RM");break;}
+		break;
+	default:CaseError("GetModRegRM::MOD");break;}
+	switch(regbit) {
+	case 0:		ecpuins.r = REG;					break;
+	case 4:
+		switch(REG) {
+		case 0:	ecpuins.r = (t_vaddrcc)(&ecpu.es);	break;
+		case 1:	ecpuins.r = (t_vaddrcc)(&ecpu.cs);	break;
+		case 2:	ecpuins.r = (t_vaddrcc)(&ecpu.ss);	break;
+		case 3:	ecpuins.r = (t_vaddrcc)(&ecpu.ds);	break;
+		default:CaseError("GetModRegRM::regbit4::REG");break;}
+		break;
+	case 8:
+		switch(REG) {
+		case 0:	ecpuins.r = (t_vaddrcc)(&ecpu.al);	break;
+		case 1:	ecpuins.r = (t_vaddrcc)(&ecpu.cl);	break;
+		case 2:	ecpuins.r = (t_vaddrcc)(&ecpu.dl);	break;
+		case 3:	ecpuins.r = (t_vaddrcc)(&ecpu.bl);	break;
+		case 4:	ecpuins.r = (t_vaddrcc)(&ecpu.ah);	break;
+		case 5:	ecpuins.r = (t_vaddrcc)(&ecpu.ch);	break;
+		case 6:	ecpuins.r = (t_vaddrcc)(&ecpu.dh);	break;
+		case 7:	ecpuins.r = (t_vaddrcc)(&ecpu.bh);	break;
+		default:CaseError("GetModRegRM::regbit8::REG");break;}
+		break;
+	case 16:
+		switch(REG) {
+		case 0: ecpuins.r = (t_vaddrcc)(&ecpu.ax);	break;
+		case 1:	ecpuins.r = (t_vaddrcc)(&ecpu.cx);	break;
+		case 2:	ecpuins.r = (t_vaddrcc)(&ecpu.dx);	break;
+		case 3:	ecpuins.r = (t_vaddrcc)(&ecpu.bx);	break;
+		case 4:	ecpuins.r = (t_vaddrcc)(&ecpu.sp);	break;
+		case 5:	ecpuins.r = (t_vaddrcc)(&ecpu.bp);	break;
+		case 6:	ecpuins.r = (t_vaddrcc)(&ecpu.si);	break;
+		case 7: ecpuins.r = (t_vaddrcc)(&ecpu.di);	break;
+		default:CaseError("GetModRegRM::regbit16::REG");break;}
+		break;
+	default:CaseError("GetModRegRM::regbit");break;}
+}
+static void GetModRegRMEA()
+{
+	t_nubit8 modrm = vramVarByte(ecpu.cs,ecpu.ip++);
+	ecpuins.rm = ecpuins.r = (t_vaddrcc)NULL;
+	switch(MOD) {
+	case 0:
+		switch(RM) {
+		case 0:	ecpuins.rm = ecpu.bx+ecpu.si;break;
+		case 1:	ecpuins.rm = ecpu.bx+ecpu.di;break;
+		case 2:	ecpuins.rm = ecpu.bp+ecpu.si;break;
+		case 3:	ecpuins.rm = ecpu.bp+ecpu.di;break;
+		case 4:	ecpuins.rm = ecpu.si;break;
+		case 5:	ecpuins.rm = ecpu.di;break;
+		case 6:	ecpuins.rm = vramVarWord(ecpu.cs,ecpu.ip);ecpu.ip += 2;break;
+		case 7:	ecpuins.rm = ecpu.bx;break;
+		default:CaseError("GetModRegRMEA::MOD0::RM");break;}
+		break;
+	case 1:
+		switch(RM) {
+		case 0:	ecpuins.rm = ecpu.bx+ecpu.si;break;
+		case 1:	ecpuins.rm = ecpu.bx+ecpu.di;break;
+		case 2:	ecpuins.rm = ecpu.bp+ecpu.si;break;
+		case 3:	ecpuins.rm = ecpu.bp+ecpu.di;break;
+		case 4:	ecpuins.rm = ecpu.si;break;
+		case 5:	ecpuins.rm = ecpu.di;break;
+		case 6:	ecpuins.rm = ecpu.bp;break;
+		case 7:	ecpuins.rm = ecpu.bx;break;
+		default:CaseError("GetModRegRMEA::MOD1::RM");break;}
+		bugfix(3) {
+			ecpuins.rm += (t_nsbit8)vramVarByte(ecpu.cs,ecpu.ip);
+			ecpu.ip += 1;
+		} else {
+			ecpuins.rm += vramVarByte(ecpu.cs,ecpu.ip);
+			ecpu.ip += 1;
+		}
+		break;
+	case 2:
+		switch(RM) {
+		case 0:	ecpuins.rm = ecpu.bx+ecpu.si;break;
+		case 1:	ecpuins.rm = ecpu.bx+ecpu.di;break;
+		case 2:	ecpuins.rm = ecpu.bp+ecpu.si;break;
+		case 3:	ecpuins.rm = ecpu.bp+ecpu.di;break;
+		case 4:	ecpuins.rm = ecpu.si;break;
+		case 5:	ecpuins.rm = ecpu.di;break;
+		case 6:
+			bugfix(14) ecpuins.rm = ecpu.bp;
+			else ecpuins.rm = vramGetAddr(ecpu.overss,ecpu.bp);
+			break;
+		case 7:	ecpuins.rm = ecpu.bx;break;
+		default:CaseError("GetModRegRMEA::MOD2::RM");break;}
+		ecpuins.rm += vramVarWord(ecpu.cs,ecpu.ip);ecpu.ip += 2;
+		break;
+	default:CaseError("GetModRegRMEA::MOD");break;}
+	switch(REG) {
+	case 0: ecpuins.r = (t_vaddrcc)(&ecpu.ax);	break;
+	case 1:	ecpuins.r = (t_vaddrcc)(&ecpu.cx);	break;
+	case 2:	ecpuins.r = (t_vaddrcc)(&ecpu.dx);	break;
+	case 3:	ecpuins.r = (t_vaddrcc)(&ecpu.bx);	break;
+	case 4:	ecpuins.r = (t_vaddrcc)(&ecpu.sp);	break;
+	case 5:	ecpuins.r = (t_vaddrcc)(&ecpu.bp);	break;
+	case 6:	ecpuins.r = (t_vaddrcc)(&ecpu.si);	break;
+	case 7: ecpuins.r = (t_vaddrcc)(&ecpu.di);	break;
+	default:CaseError("GetModRegRMEA::REG");break;}
+}
+
+static void ADD(void *dest, void *src, int len)
+{
+	switch(len) {
+	case 8:
+		ecpuins.bit = 8;
+		ecpuins.type = ADD8;
+		ecpuins.opr1 = d_nubit8(dest) & 0xff;
+		ecpuins.opr2 = d_nubit8(src) & 0xff;
+		ecpuins.result = (ecpuins.opr1+ecpuins.opr2) & 0xff;
+		d_nubit8(dest) = (t_nubit8)ecpuins.result;
+		bugfix(6) break;
+		else ;
+	case 12:
+		ecpuins.bit = 16;
+		ecpuins.type = ADD16;
+		ecpuins.opr1 = d_nubit16(dest) & 0xffff;
+		bugfix(22) ecpuins.opr2 = d_nsbit8(src) & 0xffff;
+		else ecpuins.opr2 = d_nsbit8(src); /* in this case opr2 could be 0xffffffff */
+		ecpuins.result = (ecpuins.opr1+ecpuins.opr2) & 0xffff;
+		d_nubit16(dest) = (t_nubit16)ecpuins.result;
+		break;
+	case 16:
+		ecpuins.bit = 16;
+		ecpuins.type = ADD16;
+		ecpuins.opr1 = d_nubit16(dest) & 0xffff;
+		ecpuins.opr2 = d_nubit16(src) & 0xffff;
+		ecpuins.result = (ecpuins.opr1+ecpuins.opr2) & 0xffff;
+		d_nubit16(dest) = (t_nubit16)ecpuins.result;
+		break;
+	default:CaseError("ADD::len");break;}
+	SetFlags(ADD_FLAG);
+}
+static void PUSH(void *src, t_nubit8 len)
+{
+	t_nubit16 data = d_nubit16(src);
+	switch(len) {
+	case 16:
+		ecpuins.bit = 16;
+		ecpu.sp -= 2;
+		bugfix(13) vramVarWord(ecpu.ss,ecpu.sp) = data;
+		else vramVarWord(ecpu.ss,ecpu.sp) = d_nubit16(src);
+		break;
+	default:CaseError("PUSH::len");break;}
+}
+static void INT(t_nubit8 intid)
+{
+	PUSH((void *)&ecpu.flags,16);
+	ClrBit(ecpu.flags, (VCPU_FLAG_IF | VCPU_FLAG_TF));
+	PUSH((void *)&ecpu.cs,16);
+	PUSH((void *)&ecpu.ip,16);
+	ecpu.ip = vramVarWord(0x0000,intid*4+0);
+	ecpu.cs = vramVarWord(0x0000,intid*4+2);
+	evIP = (ecpu.cs << 4) + ecpu.ip;
+}
+VOID _ADD(void**Des, void**Src, int Len)
 {
 	t_bool intf = GetBit(ecpu.flags, VCPU_FLAG_IF);
-	switch(Len)
-	{
+	switch(Len) {
 	case 1:
 		toe8;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
-		__asm popfd
-		d_nubit8(*Des)+=d_nubit8(*Src);
-		__asm pushfd
-		__asm pop ecpu.eflags			
+		ub1 = d_nubit8(*Des);
+		ub2 = d_nubit8(*Src);
+		__asm {
+			pushfd
+			push eax
+			mov al, ub1
+			push ecpu.flags
+			popf
+			add al, ub2
+			pushf
+			pop ecpu.flags
+			mov ub3, al
+			pop eax
+			popfd
+		}
+		if (!im((t_vaddrcc)*Des)) d_nubit8(*Des) = ub3;
 		break;
 	case 2:
 		toe16;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
-		__asm popfd
-		d_nubit16(*Des)+=d_nubit16(*Src);
-		__asm pushfd
-		__asm pop ecpu.eflags			
+		uw1 = d_nubit16(*Des);
+		uw2 = d_nubit16(*Src);
+		__asm {
+			pushfd
+			push eax
+			mov ax, uw1
+			push ecpu.flags
+			popf
+			add ax, uw2
+			pushf
+			pop ecpu.flags
+			mov uw3, ax
+			pop eax
+			popfd
+		}
+		if (!im((t_vaddrcc)*Des)) d_nubit16(*Des) = uw3;
 		break;
 	case 4:
 		toe32;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
-		__asm popfd
-		d_nubit32(*Des)+=d_nubit32(*Src);
-		__asm pushfd
-		__asm pop ecpu.eflags			
+		udw1 = d_nubit32(*Des);
+		udw2 = d_nubit32(*Src);
+		__asm {
+			pushfd
+			push eax
+			mov eax, udw1
+			push ecpu.flags
+			popf
+			add eax, udw2
+			pushf
+			pop ecpu.flags
+			mov udw3, eax
+			pop eax
+			popfd
+		}
+		if (!im((t_vaddrcc)*Des)) d_nubit32(*Des) = udw3;
 		break;
 	}
 	MakeBit(ecpu.flags, VCPU_FLAG_IF, intf);
 }
-VOID PUSH(void*Src,int Len)
+VOID _PUSH(void*Src,int Len)
 {
 	switch(Len)
 	{
 	case 2:
 		ecpu.sp-=2;
-		*(t_nubit16*)( EvSP +MemoryStart)=*(t_nubit16 *)Src;
+		d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=d_nubit16(Src);
 		break;
 	case 4:
 		ecpu.sp-=4;
-		*(t_nubit32*)( EvSP +MemoryStart)=*(t_nubit32 *)Src;
+		d_nubit32(vramGetAddr(ecpu.ss, ecpu.sp))=d_nubit32(Src);
 		break;
 	}
 }
@@ -476,11 +906,11 @@ VOID POP(void*Des, int Len)
 	switch(Len)
 	{
 	case 2:
-		d_nubit16(Des)=*(t_nubit16*)(EvSP+MemoryStart);
+		d_nubit16(Des)=d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp));
 		ecpu.sp+=2;
 		break;
 	case 4:
-		d_nubit32(Des)=*(t_nubit32*)(EvSP+MemoryStart);
+		d_nubit32(Des)=d_nubit32(vramGetAddr(ecpu.ss, ecpu.sp));
 		ecpu.sp+=4;
 		break;
 	}
@@ -492,7 +922,7 @@ VOID OR(void**Des, void**Src, int Len)
 	{
 	case 1:
 		toe8;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		__asm push ecpu.eflags				//åŠ æ“ä½œåªä¿®æ”¹æŸäº›ä½ï¼Œå¦‚æœç›´æ¥å°±pop ecpu.flagsä¼šæŠŠæ•´ä¸ªecpu.flagséƒ½ä¿®æ”¹æ‰ã€‚
 		__asm popfd
 		d_nubit8(*Des)|=d_nubit8(*Src);
 		__asm pushfd
@@ -500,7 +930,7 @@ VOID OR(void**Des, void**Src, int Len)
 		break;
 	case 2:
 		toe16;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		__asm push ecpu.eflags				//åŠ æ“ä½œåªä¿®æ”¹æŸäº›ä½ï¼Œå¦‚æœç›´æ¥å°±pop ecpu.flagsä¼šæŠŠæ•´ä¸ªecpu.flagséƒ½ä¿®æ”¹æ‰ã€‚
 		__asm popfd
 		d_nubit16(*Des)|=d_nubit16(*Src);
 		__asm pushfd
@@ -508,7 +938,7 @@ VOID OR(void**Des, void**Src, int Len)
 		break;
 	case 4:
 		toe32;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		__asm push ecpu.eflags				//åŠ æ“ä½œåªä¿®æ”¹æŸäº›ä½ï¼Œå¦‚æœç›´æ¥å°±pop ecpu.flagsä¼šæŠŠæ•´ä¸ªecpu.flagséƒ½ä¿®æ”¹æ‰ã€‚
 		__asm popfd
 		d_nubit32(*Des)|=d_nubit32(*Src);
 		__asm pushfd
@@ -618,7 +1048,7 @@ VOID AND(void**Des, void**Src, int Len)
 	{
 	case 1:
 		toe8;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		__asm push ecpu.eflags				//åŠ æ“ä½œåªä¿®æ”¹æŸäº›ä½ï¼Œå¦‚æœç›´æ¥å°±pop ecpu.flagsä¼šæŠŠæ•´ä¸ªecpu.flagséƒ½ä¿®æ”¹æ‰ã€‚
 		__asm popfd
 		d_nubit8(*Des)&=d_nubit8(*Src);
 		__asm pushfd
@@ -626,7 +1056,7 @@ VOID AND(void**Des, void**Src, int Len)
 		break;
 	case 2:
 		toe16;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		__asm push ecpu.eflags				//åŠ æ“ä½œåªä¿®æ”¹æŸäº›ä½ï¼Œå¦‚æœç›´æ¥å°±pop ecpu.flagsä¼šæŠŠæ•´ä¸ªecpu.flagséƒ½ä¿®æ”¹æ‰ã€‚
 		__asm popfd
 		d_nubit16(*Des)&=d_nubit16(*Src);
 		__asm pushfd
@@ -634,7 +1064,7 @@ VOID AND(void**Des, void**Src, int Len)
 		break;
 	case 4:
 		toe32;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		__asm push ecpu.eflags				//åŠ æ“ä½œåªä¿®æ”¹æŸäº›ä½ï¼Œå¦‚æœç›´æ¥å°±pop ecpu.flagsä¼šæŠŠæ•´ä¸ªecpu.flagséƒ½ä¿®æ”¹æ‰ã€‚
 		__asm popfd
 		d_nubit32(*Des)&=d_nubit32(*Src);
 		__asm pushfd
@@ -650,7 +1080,7 @@ VOID SUB(void**Des, void**Src, int Len)
 	{
 	case 1:
 		toe8;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		__asm push ecpu.eflags				//åŠ æ“ä½œåªä¿®æ”¹æŸäº›ä½ï¼Œå¦‚æœç›´æ¥å°±pop ecpu.flagsä¼šæŠŠæ•´ä¸ªecpu.flagséƒ½ä¿®æ”¹æ‰ã€‚
 		__asm popfd
 		d_nubit8(*Des)-=d_nubit8(*Src);
 		__asm pushfd
@@ -658,7 +1088,7 @@ VOID SUB(void**Des, void**Src, int Len)
 		break;
 	case 2:
 		toe16;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		__asm push ecpu.eflags				//åŠ æ“ä½œåªä¿®æ”¹æŸäº›ä½ï¼Œå¦‚æœç›´æ¥å°±pop ecpu.flagsä¼šæŠŠæ•´ä¸ªecpu.flagséƒ½ä¿®æ”¹æ‰ã€‚
 		__asm popfd
 		d_nubit16(*Des)-=d_nubit16(*Src);
 		__asm pushfd
@@ -666,7 +1096,7 @@ VOID SUB(void**Des, void**Src, int Len)
 		break;
 	case 4:
 		toe32;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		__asm push ecpu.eflags				//åŠ æ“ä½œåªä¿®æ”¹æŸäº›ä½ï¼Œå¦‚æœç›´æ¥å°±pop ecpu.flagsä¼šæŠŠæ•´ä¸ªecpu.flagséƒ½ä¿®æ”¹æ‰ã€‚
 		__asm popfd
 		d_nubit32(*Des)-=d_nubit32(*Src);
 		__asm pushfd
@@ -682,7 +1112,7 @@ VOID XOR(void**Des, void**Src, int Len)
 	{
 	case 1:
 		toe8;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		__asm push ecpu.eflags				//åŠ æ“ä½œåªä¿®æ”¹æŸäº›ä½ï¼Œå¦‚æœç›´æ¥å°±pop ecpu.flagsä¼šæŠŠæ•´ä¸ªecpu.flagséƒ½ä¿®æ”¹æ‰ã€‚
 		__asm popfd
 		d_nubit8(*Des)^=d_nubit8(*Src);
 		__asm pushfd
@@ -690,7 +1120,7 @@ VOID XOR(void**Des, void**Src, int Len)
 		break;
 	case 2:
 		toe16;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		__asm push ecpu.eflags				//åŠ æ“ä½œåªä¿®æ”¹æŸäº›ä½ï¼Œå¦‚æœç›´æ¥å°±pop ecpu.flagsä¼šæŠŠæ•´ä¸ªecpu.flagséƒ½ä¿®æ”¹æ‰ã€‚
 		__asm popfd
 		d_nubit16(*Des)^=d_nubit16(*Src);
 		__asm pushfd
@@ -698,7 +1128,7 @@ VOID XOR(void**Des, void**Src, int Len)
 		break;
 	case 4:
 		toe32;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		__asm push ecpu.eflags				//åŠ æ“ä½œåªä¿®æ”¹æŸäº›ä½ï¼Œå¦‚æœç›´æ¥å°±pop ecpu.flagsä¼šæŠŠæ•´ä¸ªecpu.flagséƒ½ä¿®æ”¹æ‰ã€‚
 		__asm popfd
 		d_nubit32(*Des)^=d_nubit32(*Src);
 		__asm pushfd
@@ -713,38 +1143,51 @@ VOID CMP(void**Des, void**Src, int Len)
 	t_nubit8 opr11,opr12;
 	t_nubit16 opr21,opr22;
 	t_nubit32 opr41,opr42;
-	switch(Len)
-	{
+	switch(Len) {
 	case 1:
 		toe8;
 		opr11 = d_nubit8(*Des);
 		opr12 = d_nubit8(*Src);
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
-		__asm popfd
+		__asm pushfd
+		__asm push eax
+		__asm push ecpu.flags				//Â¼Ã“Â²Ã™Ã—Ã·Ã–Â»ÃÃÂ¸Ã„Ã„Â³ÃÂ©ÃÂ»Â£Â¬ÃˆÃ§Â¹Ã»Ã–Â±Â½Ã“Â¾Ãpop ecpu.flagsÂ»Ã¡Â°Ã‘Ã•Ã»Â¸Ã¶ecpu.flagsÂ¶Â¼ÃÃÂ¸Ã„ÂµÃ´Â¡Â£
+		__asm popf
 		__asm mov al, opr11
 		__asm cmp al, opr12
-//		d_nubit8(*Des)-=d_nubit8(*Src);
-		__asm pushfd
-		__asm pop ecpu.eflags
-//		d_nubit8(*Des)+=d_nubit8(*Src);
+		__asm pushf
+		__asm pop ecpu.flags
+		__asm pop eax
+		__asm popfd
 		break;
 	case 2:
 		toe16;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
-		__asm popfd
-		d_nubit16(*Des)-=d_nubit16(*Src);
+		opr21 = d_nubit16(*Des);
+		opr22 = d_nubit16(*Src);
 		__asm pushfd
-		__asm pop ecpu.eflags
-		d_nubit16(*Des)+=d_nubit16(*Src);
+		__asm push eax
+		__asm push ecpu.flags				//Â¼Ã“Â²Ã™Ã—Ã·Ã–Â»ÃÃÂ¸Ã„Ã„Â³ÃÂ©ÃÂ»Â£Â¬ÃˆÃ§Â¹Ã»Ã–Â±Â½Ã“Â¾Ãpop ecpu.flagsÂ»Ã¡Â°Ã‘Ã•Ã»Â¸Ã¶ecpu.flagsÂ¶Â¼ÃÃÂ¸Ã„ÂµÃ´Â¡Â£
+		__asm popf
+		__asm mov ax, opr21
+		__asm cmp ax, opr22
+		__asm pushf
+		__asm pop ecpu.flags
+		__asm pop eax
+		__asm popfd
 		break;
 	case 4:
 		toe32;
-		__asm push ecpu.eflags				//¼Ó²Ù×÷Ö»ĞŞ¸ÄÄ³Ğ©Î»£¬Èç¹ûÖ±½Ó¾Ípop ecpu.flags»á°ÑÕû¸öecpu.flags¶¼ĞŞ¸Äµô¡£
+		opr41 = d_nubit32(*Des);
+		opr42 = d_nubit32(*Src);
+		__asm pushfd
+		__asm push eax
+		__asm push ecpu.eflags				//Â¼Ã“Â²Ã™Ã—Ã·Ã–Â»ÃÃÂ¸Ã„Ã„Â³ÃÂ©ÃÂ»Â£Â¬ÃˆÃ§Â¹Ã»Ã–Â±Â½Ã“Â¾Ãpop ecpu.flagsÂ»Ã¡Â°Ã‘Ã•Ã»Â¸Ã¶ecpu.flagsÂ¶Â¼ÃÃÂ¸Ã„ÂµÃ´Â¡Â£
 		__asm popfd
-		d_nubit32(*Des)-=d_nubit32(*Src);
+		__asm mov eax, opr41
+		__asm cmp eax, opr42
 		__asm pushfd
 		__asm pop ecpu.eflags
-		d_nubit32(*Des)+=d_nubit32(*Src);
+		__asm pop eax
+		__asm popfd
 		break;
 	}
 	MakeBit(ecpu.flags, VCPU_FLAG_IF, intf);
@@ -812,7 +1255,7 @@ VOID TEST(void**Des, void**Src, int Len)
 		__asm mov al,t82
 		__asm push ecpu.eflags
 		__asm popfd
-		__asm test t81,al			//ÕâÀïÕâÑù×ö£¬ÆäÊµÊÇÒòÎªÎÒ²»È·ÇĞÖªµÀtestµÄĞĞÎª¡­¡­
+		__asm test t81,al			//è¿™é‡Œè¿™æ ·åšï¼Œå…¶å®æ˜¯å› ä¸ºæˆ‘ä¸ç¡®åˆ‡çŸ¥é“testçš„è¡Œä¸ºâ€¦â€¦
 		__asm pushfd
 		__asm pop ecpu.eflags
 		break;
@@ -822,7 +1265,7 @@ VOID TEST(void**Des, void**Src, int Len)
 		__asm mov ax,t162
 		__asm push ecpu.eflags
 		__asm popfd
-		__asm test t161,ax			//ÕâÀïÕâÑù×ö£¬ÆäÊµÊÇÒòÎªÎÒ²»È·ÇĞÖªµÀtestµÄĞĞÎª¡­¡­
+		__asm test t161,ax			//è¿™é‡Œè¿™æ ·åšï¼Œå…¶å®æ˜¯å› ä¸ºæˆ‘ä¸ç¡®åˆ‡çŸ¥é“testçš„è¡Œä¸ºâ€¦â€¦
 		__asm pushfd
 		__asm pop ecpu.eflags
 		break;
@@ -832,7 +1275,7 @@ VOID TEST(void**Des, void**Src, int Len)
 		__asm mov eax,t322
 		__asm push ecpu.eflags
 		__asm popfd
-		__asm test t321,eax			//ÕâÀïÕâÑù×ö£¬ÆäÊµÊÇÒòÎªÎÒ²»È·ÇĞÖªµÀtestµÄĞĞÎª¡­¡­
+		__asm test t321,eax			//è¿™é‡Œè¿™æ ·åšï¼Œå…¶å®æ˜¯å› ä¸ºæˆ‘ä¸ç¡®åˆ‡çŸ¥é“testçš„è¡Œä¸ºâ€¦â€¦
 		__asm pushfd
 		__asm pop ecpu.eflags
 		break;
@@ -851,13 +1294,13 @@ VOID XCHG(void*Des, void*Src, int Len)
 		break;
 	case 2:
 		t161=d_nubit16(Des);
-		d_nubit16(Des)=*(t_nubit16 *)Src;
-		*(t_nubit16 *)Src=t161;
+		d_nubit16(Des)=d_nubit16(Src);
+		d_nubit16(Src)=t161;
 		break;
 	case 4:
 		t321=d_nubit32(Des);
-		d_nubit32(Des)=*(t_nubit32 *)Src;
-		*(t_nubit32 *)Src=t321;
+		d_nubit32(Des)=d_nubit32(Src);
+		d_nubit32(Src)=t321;
 		break;
 	}
 	MakeBit(ecpu.flags, VCPU_FLAG_IF, intf);
@@ -871,10 +1314,10 @@ VOID MOV(void*Des, void*Src, int Len)
 		d_nubit8(Des)=d_nubit8(Src);
 		break;
 	case 2:
-		d_nubit16(Des)=*(t_nubit16 *)Src;
+		d_nubit16(Des)=d_nubit16(Src);
 		break;
 	case 4:
-		d_nubit32(Des)=*(t_nubit32 *)Src;
+		d_nubit32(Des)=d_nubit32(Src);
 		break;
 	}
 	MakeBit(ecpu.flags, VCPU_FLAG_IF, intf);
@@ -946,7 +1389,7 @@ VOID Jcc(int Len)
 }
 VOID JCC(char code, t_bool J)
 {
-	if (*(char *)(eIMS-1)==code)
+	if (d_nsbit8(eIMS-1)==code)
 	{
 		if (J)
 		{
@@ -964,44 +1407,48 @@ VOID JCC(char code, t_bool J)
 	}
 }
 VOID JMP_NEAR();
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
+
+#define ci1 if(1) {SyncCSIP();ecpu.ip--;} else
+#define ci2 SyncEVIP()
 
 // 0x00
-VOID ADD_RM8_R8()
+SAME ADD_RM8_R8()
 {
-	ADD((void**)&rm8,(void**)&r8,1);
+	toe8;
+	ADD((void *)rm8, (void *)r8, 8);
 }
-VOID ADD_RM16_R16()
+SAME ADD_RM16_R16()
 {
-	ADD((void**)&rm16,(void**)&r16,tmpOpdSize);
+	toe16;
+	ADD((void *)rm16,(void *)r16,16);
 }
-VOID ADD_R8_RM8()
+SAME ADD_R8_RM8()
 {
-	ADD((void**)&r8,(void**)&rm8,1);
+	toe8;
+	ADD((void *)r8,(void *)rm8,8);
 }
-VOID ADD_R16_RM16()
+SAME ADD_R16_RM16()
 {
-	ADD((void**)&r16,(void**)&rm16,tmpOpdSize);
+	toe16;
+	ADD((void *)r16,(void *)rm16,16);
 }
-VOID ADD_AL_I8()
+SAME ADD_AL_I8()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.al,*pb=(void*)(evIP+MemoryStart);
-	ADD((void**)&pa,(void**)&pb,1);	
+	toe8;
+	ADD((void *)&ecpu.al,(void *)(vramGetAddr(0, tevIP)),8);
 	evIP=tevIP+1;
 }
-VOID ADD_AX_I16()
+SAME ADD_AX_I16()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.ax,*pb=(void*)(evIP+MemoryStart);
-	ADD((void**)&pa,(void**)&pb,tmpOpdSize);
-	evIP=tevIP+tmpOpdSize;
+	toe16;
+	ADD((void *)&ecpu.ax,(void *)(vramGetAddr(0, tevIP)),16);
+	evIP=tevIP+2;
 }
-VOID PUSH_ES()
+SAME PUSH_ES()
 {
-	PUSH(&ecpu.es,tmpOpdSize);
+	PUSH(&ecpu.es,16);
 }
 VOID POP_ES()
 {
@@ -1026,20 +1473,20 @@ VOID OR_R16_RM16()
 VOID OR_AL_I8()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.al,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.al,*pb=(void*)(vramGetAddr(0, evIP));
 	OR((void**)&pa,(void**)&pb,1);	
 	evIP=tevIP+1;
 }
 VOID OR_AX_I16()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.ax,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.ax,*pb=(void*)(vramGetAddr(0, evIP));
 	OR((void**)&pa,(void**)&pb,tmpOpdSize);
 	evIP=tevIP+tmpOpdSize;
 }
 VOID PUSH_CS()
 {
-	PUSH(&ecpu.cs,tmpOpdSize);
+	_PUSH(&ecpu.cs,tmpOpdSize);
 }
 // 0x10
 VOID ADC_RM8_R8()
@@ -1061,20 +1508,20 @@ VOID ADC_R16_RM16()
 VOID ADC_AL_I8()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.al,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.al,*pb=(void*)(vramGetAddr(0, evIP));
 	ADC((void**)&pa,(void**)&pb,1);	
 	evIP=tevIP+1;
 }
 VOID ADC_AX_I16()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.ax,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.ax,*pb=(void*)(vramGetAddr(0, evIP));
 	ADC((void**)&pa,(void**)&pb,tmpOpdSize);
 	evIP=tevIP+tmpOpdSize;
 }
 VOID PUSH_SS()
 {
-	PUSH(&ecpu.ss,tmpOpdSize);
+	_PUSH(&ecpu.ss,tmpOpdSize);
 }
 VOID POP_SS()
 {
@@ -1099,20 +1546,20 @@ VOID SBB_R16_RM16()
 VOID SBB_AL_I8()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.al,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.al,*pb=(void*)(vramGetAddr(0, evIP));
 	SBB((void**)&pa,(void**)&pb,1);	
 	evIP=tevIP+1;
 }
 VOID SBB_AX_I16()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.ax,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.ax,*pb=(void*)(vramGetAddr(0, evIP));
 	SBB((void**)&pa,(void**)&pb,tmpOpdSize);
 	evIP=tevIP+tmpOpdSize;
 }
 VOID PUSH_DS()
 {
-	PUSH(&ecpu.ds,tmpOpdSize);
+	_PUSH(&ecpu.ds,tmpOpdSize);
 }
 VOID POP_DS()
 {
@@ -1138,14 +1585,14 @@ VOID AND_R16_RM16()
 VOID AND_AL_I8()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.al,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.al,*pb=(void*)(vramGetAddr(0, evIP));
 	AND((void**)&pa,(void**)&pb,1);	
 	evIP=tevIP+1;
 }
 VOID AND_AX_I16()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.ax,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.ax,*pb=(void*)(vramGetAddr(0, evIP));
 	AND((void**)&pa,(void**)&pb,tmpOpdSize);
 	evIP=tevIP+tmpOpdSize;
 }
@@ -1155,12 +1602,12 @@ VOID ES()
 // 	t_nubit16 tes=ecpu.es;
 // 	ecpu.ds=ecpu.es;
 // 
-	tmpDs=ecpu.es;
-	tmpSs=ecpu.es;
+	ecpu.overds=ecpu.es;
+	ecpu.overss=ecpu.es;
 	ecpuinsExecIns();
-	tmpDs=ecpu.ds;
-	tmpSs=ecpu.ss;
-// 	if (ecpu.ds==tes)			//Ö»ÓĞÔÚÏÂÒ»ÌõÖ¸ÁîÎ´¸Ä±äDSµÄÖµµÄÇé¿öÏÂ£¬²ÅÄÜ½«DSÖµ¸´Ô­
+	ecpu.overds=ecpu.ds;
+	ecpu.overss=ecpu.ss;
+// 	if (ecpu.ds==tes)			//åªæœ‰åœ¨ä¸‹ä¸€æ¡æŒ‡ä»¤æœªæ”¹å˜DSçš„å€¼çš„æƒ…å†µä¸‹ï¼Œæ‰èƒ½å°†DSå€¼å¤åŸ
 // 		ecpu.ds=tds;
 }
 VOID DAA()
@@ -1196,14 +1643,14 @@ VOID SUB_R16_RM16()
 VOID SUB_AL_I8()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.al,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.al,*pb=(void*)(vramGetAddr(0, evIP));
 	SUB((void**)&pa,(void**)&pb,1);	
 	evIP=tevIP+1;
 }
 VOID SUB_AX_I16()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.ax,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.ax,*pb=(void*)(vramGetAddr(0, evIP));
 	SUB((void**)&pa,(void**)&pb,tmpOpdSize);
 	evIP=tevIP+tmpOpdSize;
 }
@@ -1212,12 +1659,12 @@ VOID CS()
 // 	t_nubit16 tds=ecpu.ds;
 // 	t_nubit16 tcs=ecpu.cs;
 // 	ecpu.ds=ecpu.cs;
-	tmpDs=ecpu.cs;
-	tmpSs=ecpu.cs;
+	ecpu.overds=ecpu.cs;
+	ecpu.overss=ecpu.cs;
 	ecpuinsExecIns();
-	tmpDs=ecpu.ds;
-	tmpSs=ecpu.ss;
-// 	if (ecpu.ds==tcs)			//Ö»ÓĞÔÚÏÂÒ»ÌõÖ¸ÁîÎ´¸Ä±äDSµÄÖµµÄÇé¿öÏÂ£¬²ÅÄÜ½«DSÖµ¸´Ô­
+	ecpu.overds=ecpu.ds;
+	ecpu.overss=ecpu.ss;
+// 	if (ecpu.ds==tcs)			//åªæœ‰åœ¨ä¸‹ä¸€æ¡æŒ‡ä»¤æœªæ”¹å˜DSçš„å€¼çš„æƒ…å†µä¸‹ï¼Œæ‰èƒ½å°†DSå€¼å¤åŸ
 // 		ecpu.ds=tds;
 }
 VOID DAS()
@@ -1254,14 +1701,14 @@ VOID XOR_R16_RM16()
 VOID XOR_AL_I8()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.al,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.al,*pb=(void*)(vramGetAddr(0, evIP));
 	XOR((void**)&pa,(void**)&pb,1);	
 	evIP=tevIP+1;
 }
 VOID XOR_AX_I16()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.ax,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.ax,*pb=(void*)(vramGetAddr(0, evIP));
 	XOR((void**)&pa,(void**)&pb,tmpOpdSize);
 	evIP=tevIP+tmpOpdSize;
 }
@@ -1270,12 +1717,12 @@ VOID SS()
 // 	t_nubit16 tds=ecpu.ds;
 // 	t_nubit16 tss=ecpu.ss;
 // 	ecpu.ds=ecpu.ss;
-	tmpDs=ecpu.ss;
-	tmpSs=ecpu.ss;
+	ecpu.overds=ecpu.ss;
+	ecpu.overss=ecpu.ss;
 	ecpuinsExecIns();
-	tmpDs=ecpu.ds;
-	tmpSs=ecpu.ss;
-// 	if (ecpu.ds==tss)			//Ö»ÓĞÔÚÏÂÒ»ÌõÖ¸ÁîÎ´¸Ä±äDSµÄÖµµÄÇé¿öÏÂ£¬²ÅÄÜ½«DSÖµ¸´Ô­
+	ecpu.overds=ecpu.ds;
+	ecpu.overss=ecpu.ss;
+// 	if (ecpu.ds==tss)			//åªæœ‰åœ¨ä¸‹ä¸€æ¡æŒ‡ä»¤æœªæ”¹å˜DSçš„å€¼çš„æƒ…å†µä¸‹ï¼Œæ‰èƒ½å°†DSå€¼å¤åŸ
 // 		ecpu.ds=tds;
 }
 VOID AAA()
@@ -1311,24 +1758,24 @@ VOID CMP_R16_RM16()
 VOID CMP_AL_I8()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.al,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.al,*pb=(void*)(vramGetAddr(0, evIP));
 	CMP((void**)&pa,(void**)&pb,1);
 	evIP=tevIP+1;
 }
 VOID CMP_AX_I16()
 {
 	t_nubit32 tevIP=evIP;
-	void*pa=&ecpu.ax,*pb=(void*)(evIP+MemoryStart);
+	void*pa=&ecpu.ax,*pb=(void*)(vramGetAddr(0, evIP));
 	CMP((void**)&pa,(void**)&pb,tmpOpdSize);
 	evIP=tevIP+tmpOpdSize;
 }
 VOID DS()
 {
-	tmpDs=ecpu.ds;
-	tmpSs=ecpu.ds;
+	ecpu.overds=ecpu.ds;
+	ecpu.overss=ecpu.ds;
 	ecpuinsExecIns();
-	tmpDs=ecpu.ds;
-	tmpSs=ecpu.ss;
+	ecpu.overds=ecpu.ds;
+	ecpu.overss=ecpu.ss;
 }
 VOID AAS()
 {
@@ -1412,36 +1859,36 @@ VOID DEC_DI()
 // 0x50
 VOID PUSH_AX()
 {
-	PUSH(&ecpu.ax,tmpOpdSize);
+	_PUSH(&ecpu.ax,tmpOpdSize);
 }
 VOID PUSH_CX()
 {
-	PUSH(&ecpu.cx,tmpOpdSize);
+	_PUSH(&ecpu.cx,tmpOpdSize);
 }
 VOID PUSH_DX()
 {
-	PUSH(&ecpu.dx,tmpOpdSize);
+	_PUSH(&ecpu.dx,tmpOpdSize);
 }
 VOID PUSH_BX()
 {
-	PUSH(&ecpu.bx,tmpOpdSize);
+	_PUSH(&ecpu.bx,tmpOpdSize);
 }
 VOID PUSH_SP()
 {
 	t_nubit16 tsp=ecpu.sp;
-	PUSH(&tsp,tmpOpdSize);			//²»ÄÜPUSHĞŞ¸ÄÖ®ºóµÄÖµ
+	_PUSH(&tsp,tmpOpdSize);			//ä¸èƒ½PUSHä¿®æ”¹ä¹‹åçš„å€¼
 }
 VOID PUSH_BP()
 {
-	PUSH(&ecpu.bp,tmpOpdSize);
+	_PUSH(&ecpu.bp,tmpOpdSize);
 }
 VOID PUSH_SI()
 {
-	PUSH(&ecpu.si,tmpOpdSize);
+	_PUSH(&ecpu.si,tmpOpdSize);
 }
 VOID PUSH_DI()
 {
-	PUSH(&ecpu.di,tmpOpdSize);
+	_PUSH(&ecpu.di,tmpOpdSize);
 }
 VOID POP_AX()
 {
@@ -1462,7 +1909,7 @@ VOID POP_BX()
 VOID POP_SP()
 {
 	POP(&ecpu.sp,tmpOpdSize);
-	ecpu.sp-=tmpOpdSize;				//POP()ÀïÊÇÏÈ¸³Öµºó¼ÓµÄ£¬ËùÒÔÕâÀïÒª¼õ»ØÈ¥
+	ecpu.sp-=tmpOpdSize;				//POP()é‡Œæ˜¯å…ˆèµ‹å€¼ååŠ çš„ï¼Œæ‰€ä»¥è¿™é‡Œè¦å‡å›å»
 }
 VOID POP_BP()
 {
@@ -1503,7 +1950,7 @@ VOID AddrSize()
 }
 VOID PUSH_I16()
 {	
-	PUSH((void*)eIMS,tmpOpdSize);
+	_PUSH((void*)eIMS,tmpOpdSize);
 	evIP+=tmpOpdSize;
 }
 // 0x70
@@ -1572,9 +2019,9 @@ VOID JG()
 	JCC(0x7F,((ecpu.flags & SF) == (ecpu.flags & OF)) && !(ecpu.flags & ZF));
 }
 // 0x80
-VOID INS_80()	//ÕâÀïÊÇÒÔ80¿ªÍ·µÄÖ¸ÁîµÄ¼¯¡£
+VOID INS_80()	//è¿™é‡Œæ˜¯ä»¥80å¼€å¤´çš„æŒ‡ä»¤çš„é›†ã€‚
 {
-	char oce=d_nsbit8(evIP+MemoryStart) & 0x38;
+	char oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	oce>>=3;
 	toe8;
 	switch(oce) {
@@ -1593,7 +2040,7 @@ VOID INS_80()	//ÕâÀïÊÇÒÔ80¿ªÍ·µÄÖ¸ÁîµÄ¼¯¡£
 		t82=d_nsbit8(eIMS);
 		__asm push ecpu.flags
 		__asm popf
-		//*rm8+=(d_nsbit8(eIMS)+((ecpu.flags & CF)!=0));	//ÔÚVC6Àï£¬Âß¼­Öµ¡°Õæ¡±£½1
+		//*rm8+=(d_nsbit8(eIMS)+((ecpu.flags & CF)!=0));	//åœ¨VC6é‡Œï¼Œé€»è¾‘å€¼â€œçœŸâ€ï¼1
 		__asm mov al,t81
 		__asm adc al,t82
 		__asm mov t81,al
@@ -1644,14 +2091,14 @@ VOID INS_80()	//ÕâÀïÊÇÒÔ80¿ªÍ·µÄÖ¸ÁîµÄ¼¯¡£
 	//	*rm8+=d_nsbit8(eIMS);
 	evIP++;
 }
-VOID INS_81()	//ÕâÀïÊÇÒÔ81¿ªÍ·µÄÖ¸ÁîµÄ¼¯¡£
+VOID INS_81()	//è¿™é‡Œæ˜¯ä»¥81å¼€å¤´çš„æŒ‡ä»¤çš„é›†ã€‚
 {
-	char oce=*(char*)(evIP+MemoryStart) & 0x38;
+	char oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	t_nubit32 tevIP, teIMS;
 	oce>>=3;
-	// ÕâÀïÏÈ±£´æIP£¬ÔÙtoe16£¬ÔÙeIMS£¬È»ºóÓÖ»Ö¸´IP
-	// ÕâÑù×öÊÇÒòÎª£¬ÕâÌõÖ¸Áî¸úÔÚOpcodeºóÃæµÄ¾ÍÊÇÑ°Ö·£¬È»ºó²ÅÊÇeIMSÁ¢¼´Êı¡£µ«ÊÇÏÂÃæ8¸ö²Ù×÷ÀïÃæ¾ÍÓĞtoe16£¬ËùÒÔÓÖÒª°ÑIP»Ö¸´µ½toe16Ö®Ç°¡£
-	// ÆäÊµÏÂÃæ8¸ö²Ù×÷ÀïÃæÊÇ²»Ó¦¸ÃÓĞtoe16µÄ£¬²»¹ıÒÑ¾­Ğ´ÁËºÜ¶à£¬¸ÄÆğÀ´Ì«Âé·³£¬¾Í²»¸ÄÁË¡£
+	// è¿™é‡Œå…ˆä¿å­˜IPï¼Œå†toe16ï¼Œå†eIMSï¼Œç„¶ååˆæ¢å¤IP
+	// è¿™æ ·åšæ˜¯å› ä¸ºï¼Œè¿™æ¡æŒ‡ä»¤è·Ÿåœ¨Opcodeåé¢çš„å°±æ˜¯å¯»å€ï¼Œç„¶åæ‰æ˜¯eIMSç«‹å³æ•°ã€‚ä½†æ˜¯ä¸‹é¢8ä¸ªæ“ä½œé‡Œé¢å°±æœ‰toe16ï¼Œæ‰€ä»¥åˆè¦æŠŠIPæ¢å¤åˆ°toe16ä¹‹å‰ã€‚
+	// å…¶å®ä¸‹é¢8ä¸ªæ“ä½œé‡Œé¢æ˜¯ä¸åº”è¯¥æœ‰toe16çš„ï¼Œä¸è¿‡å·²ç»å†™äº†å¾ˆå¤šï¼Œæ”¹èµ·æ¥å¤ªéº»çƒ¦ï¼Œå°±ä¸æ”¹äº†ã€‚
 	tevIP=evIP;
 	toe16;
 	teIMS=eIMS;
@@ -1659,7 +2106,7 @@ VOID INS_81()	//ÕâÀïÊÇÒÔ81¿ªÍ·µÄÖ¸ÁîµÄ¼¯¡£
 	switch(oce)
 	{
 	case 0:
-		ADD((void**)&rm16,(void**)&teIMS,tmpOpdSize);
+		_ADD((void**)&rm16,(void**)&teIMS,tmpOpdSize);
 		break;
 	case 1:
 		OR((void**)&rm16,(void**)&teIMS,tmpOpdSize);
@@ -1685,21 +2132,21 @@ VOID INS_81()	//ÕâÀïÊÇÒÔ81¿ªÍ·µÄÖ¸ÁîµÄ¼¯¡£
 	}
 	evIP+=tmpOpdSize;
 }
-VOID INS_82()	//ÕâÀïÊÇÒÔ82¿ªÍ·µÄÖ¸ÁîµÄ¼¯¡£
+VOID INS_82()	//è¿™é‡Œæ˜¯ä»¥82å¼€å¤´çš„æŒ‡ä»¤çš„é›†ã€‚
 {
-	char oce=*(char*)(evIP+MemoryStart) & 0x38;
+	char oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	t_nubit16 tfg;
 	oce>>=3;
 	toe8;
-	tfg=d_nsbit8(eIMS);			//Õâ¸öÇ¿ÖÆ×ª»»¾ÍÊÇ°´·ûºÅÀ©Õ¹Íê³ÉµÄ
-// 	if (tfg & 0x0080)		//·ûºÅÀ©Õ¹
+	tfg=d_nsbit8(eIMS);			//è¿™ä¸ªå¼ºåˆ¶è½¬æ¢å°±æ˜¯æŒ‰ç¬¦å·æ‰©å±•å®Œæˆçš„
+// 	if (tfg & 0x0080)		//ç¬¦å·æ‰©å±•
 // 		tfg+=0xff00;
 	switch(oce)
 	{
-	case 0:		
+	case 0:
 		__asm push ecpu.flags
 		__asm popf
-		*rm8+=tfg;	
+		*rm8+=tfg;
 		break;
 	case 1:
 		__asm push ecpu.flags
@@ -1711,7 +2158,7 @@ VOID INS_82()	//ÕâÀïÊÇÒÔ82¿ªÍ·µÄÖ¸ÁîµÄ¼¯¡£
 		t82=(t_nubit8)tfg;
 		__asm push ecpu.flags
 		__asm popf
-		//*rm8+=(tfg+((ecpu.flags & CF)!=0));	//ÔÚVC6Àï£¬Âß¼­Öµ¡°Õæ¡±£½1
+		//*rm8+=(tfg+((ecpu.flags & CF)!=0));	//åœ¨VC6é‡Œï¼Œé€»è¾‘å€¼â€œçœŸâ€ï¼1
 		__asm mov al,t81
 		__asm adc al,t82
 		__asm mov t81,al
@@ -1755,22 +2202,22 @@ VOID INS_82()	//ÕâÀïÊÇÒÔ82¿ªÍ·µÄÖ¸ÁîµÄ¼¯¡£
 		*rm8+=tfg;
 	evIP++;
 }
-VOID INS_83()	//ÕâÀïÊÇÒÔ83¿ªÍ·µÄÖ¸ÁîµÄ¼¯¡£
+VOID INS_83()	//è¿™é‡Œæ˜¯ä»¥83å¼€å¤´çš„æŒ‡ä»¤çš„é›†ã€‚
 {
-	char oce=*(char*)(evIP+MemoryStart) & 0x38;
+	char oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	t_nubit32 tevIP;
 	t_nubit16 tfg;
 	t_nubit32 ptfg;
 	oce>>=3;
 	tevIP=evIP;
 	toe16;
-	tfg=d_nsbit8(eIMS);			//Õâ¸öÇ¿ÖÆ×ª»»±¾Éí¾ÍÊÇ·ûºÅÀ©Õ¹µÄ
+	tfg=d_nsbit8(eIMS);			//è¿™ä¸ªå¼ºåˆ¶è½¬æ¢æœ¬èº«å°±æ˜¯ç¬¦å·æ‰©å±•çš„
 	ptfg=(t_nubit32)&tfg;
 	evIP=tevIP;
 	switch(oce)
 	{
 	case 0:		
-		ADD((void**)&rm16,(void**)&ptfg,tmpOpdSize);
+		_ADD((void**)&rm16,(void**)&ptfg,tmpOpdSize);
 		break;
 	case 1:
 		OR((void**)&rm16,(void**)&ptfg,tmpOpdSize);
@@ -1843,9 +2290,9 @@ VOID MOV_RM_SEG()
 VOID LEA_R16_M16()
 {
 	t_nubit8 mod, rem;
-	mod=*(char*)(evIP+MemoryStart) & 0xc0;
+	mod=d_nsbit8(vramGetAddr(0, evIP)) & 0xc0;
 	mod>>=6;
-	rem=*(char*)(evIP+MemoryStart) & 0x07;
+	rem=d_nsbit8(vramGetAddr(0, evIP)) & 0x07;
 	toe16;
 	switch(rem)
 	{
@@ -1854,17 +2301,17 @@ VOID LEA_R16_M16()
 	case 4:
 	case 5:
 	case 7:
-		*r16=(t_nubit16)((t_nubit32)rm16-MemoryStart-(t=tmpDs,t<<4));
+		*r16=(t_nubit16)((t_nubit32)rm16-MemoryStart-(t=ecpu.overds,t<<4));
 		break;
 	case 2:
 	case 3:	
-		*r16=(t_nubit16)((t_nubit32)rm16-MemoryStart-(t=tmpSs,t<<4));
+		*r16=(t_nubit16)((t_nubit32)rm16-MemoryStart-(t=ecpu.overss,t<<4));
 		break;
 	case 6:
 		if (mod==0)		
-			*r16=(t_nubit16)((t_nubit32)rm16-MemoryStart-(t=tmpDs,t<<4));
+			*r16=(t_nubit16)((t_nubit32)rm16-MemoryStart-(t=ecpu.overds,t<<4));
 		else
-			*r16=(t_nubit16)((t_nubit32)rm16-MemoryStart-(t=tmpSs,t<<4));
+			*r16=(t_nubit16)((t_nubit32)rm16-MemoryStart-(t=ecpu.overss,t<<4));
 		break;
 	default:
 		return ;
@@ -1946,12 +2393,12 @@ VOID CWD()
 }
 VOID CALL_FAR()
 {
-	LongCallNewIP(4);			//Õâ¸öÖ¸Áîºó´ø4¸ö×Ö½ÚµÄÊı¾İ
+	LongCallNewIP(4);			//è¿™ä¸ªæŒ‡ä»¤åå¸¦4ä¸ªå­—èŠ‚çš„æ•°æ®
 
 	ecpu.sp-=2;
-	*(t_nubit16*)( EvSP +MemoryStart)=ecpu.cs;
+	d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=ecpu.cs;
 	ecpu.sp-=2;
-	*(t_nubit16*)( EvSP +MemoryStart)=ecpu.ip;
+	d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=ecpu.ip;
 	ecpu.ip=d_nubit16(eIMS);
 	evIP+=2;
 	ecpu.cs=d_nubit16(eIMS);
@@ -1963,7 +2410,7 @@ VOID WAIT()
 }
 VOID PUSHF()
 {
-	PUSH(&ecpu.flags,tmpOpdSize);
+	_PUSH(&ecpu.flags,tmpOpdSize);
 }
 VOID POPF()
 {
@@ -2021,7 +2468,7 @@ VOID MOVSB()
 {	
 	t_nubit8 tgm;
 	if (tmpAddrSize==2)	
-		tgm=GetM8_16(ecpu.si);			//ÒòÎªtÊÇÈ«¾Ö±äÁ¿£¡ÔÚGetM8ÀïÒÑ¾­¸Ä±äÁËtµÄÖµ£¡£¡£¡
+		tgm=GetM8_16(ecpu.si);			//å› ä¸ºtæ˜¯å…¨å±€å˜é‡ï¼åœ¨GetM8é‡Œå·²ç»æ”¹å˜äº†tçš„å€¼ï¼ï¼ï¼
 	else
 		tgm=GetM8_32(ecpu.esi);
 	(t=ecpu.es,t<<=4);
@@ -2045,14 +2492,14 @@ VOID MOVSW()
 	switch(tmpOpdSize)
 	{
 	case 2:
-		//È«¾Ö±äÁ¿t²»¿ÉÒÔÔÚÒ»¸ö¸³ÖµÊ½µÄÁ½±ßÍ¬Ê±Ê¹ÓÃ
+		//å…¨å±€å˜é‡tä¸å¯ä»¥åœ¨ä¸€ä¸ªèµ‹å€¼å¼çš„ä¸¤è¾¹åŒæ—¶ä½¿ç”¨
 		if (tmpAddrSize==2)
-			*(t_nubit16 *)(ecpu.di+((t2=ecpu.es,t2<<4))+MemoryStart)=GetM16_16(ecpu.si);
+			d_nubit16(ecpu.di+((t2=ecpu.es,t2<<4))+MemoryStart)=GetM16_16(ecpu.si);
 		else
-			*(t_nubit16 *)(ecpu.edi+((t2=ecpu.es,t2<<4))+MemoryStart)=GetM16_32(ecpu.esi);
+			d_nubit16(ecpu.edi+((t2=ecpu.es,t2<<4))+MemoryStart)=GetM16_32(ecpu.esi);
 		break;
 	case 4:
-		//È«¾Ö±äÁ¿t²»¿ÉÒÔÔÚÒ»¸ö¸³ÖµÊ½µÄÁ½±ßÍ¬Ê±Ê¹ÓÃ
+		//å…¨å±€å˜é‡tä¸å¯ä»¥åœ¨ä¸€ä¸ªèµ‹å€¼å¼çš„ä¸¤è¾¹åŒæ—¶ä½¿ç”¨
 		if (tmpAddrSize==2)
 			*(t_nubit32 *)(ecpu.di+((t2=ecpu.es,t2<<4))+MemoryStart)=GetM32_16(ecpu.si);
 		else
@@ -2086,8 +2533,8 @@ VOID MOVSW()
 }
 VOID CMPSB()
 {
-	//ÕâÀïµÄt¾ÓÈ»ºÍÈ«¾Ö±äÁ¿tÖØÁË£¡
-	//ReleaseµÄÊ±ºò£¬ÕâÀï¾ÓÈ»±»±àÒëÆ÷ÓÅ»¯µôÁË¡£
+	//è¿™é‡Œçš„tå±…ç„¶å’Œå…¨å±€å˜é‡té‡äº†ï¼
+	//Releaseçš„æ—¶å€™ï¼Œè¿™é‡Œå±…ç„¶è¢«ç¼–è¯‘å™¨ä¼˜åŒ–æ‰äº†ã€‚
 	t_nubit8 ta=GetM8_16(ecpu.si);
 	t_nubit8 tb;
 	if (tmpAddrSize==2)
@@ -2104,7 +2551,7 @@ VOID CMPSB()
 	if (ecpu.flags & DF)	
 	{
 		SegOffDec(&(ecpu.ds),&(ecpu.si));
-		SegOffDec(&(ecpu.es),&(ecpu.di));		//ÕâÀïÀí½â´íÁË£¬siºÍdi¶¼Ó¦¸ÃÒª±äµÄ		
+		SegOffDec(&(ecpu.es),&(ecpu.di));		//è¿™é‡Œç†è§£é”™äº†ï¼Œsiå’Œdiéƒ½åº”è¯¥è¦å˜çš„		
 	}
 	else
 	{
@@ -2120,12 +2567,12 @@ VOID CMPSW()
 	void*tb;
 	if (tmpAddrSize==2)
 	{
-		ta=(void*)(ecpu.si+((t=tmpDs,t<<4))+MemoryStart);
+		ta=(void*)(ecpu.si+((t=ecpu.overds,t<<4))+MemoryStart);
 		tb=(void*)(ecpu.di+((t2=ecpu.es,t2<<4))+MemoryStart);
 	}
 	else
 	{
-		ta=(void*)(ecpu.esi+((t=tmpDs,t<<4))+MemoryStart);
+		ta=(void*)(ecpu.esi+((t=ecpu.overds,t<<4))+MemoryStart);
 		tb=(void*)(ecpu.edi+((t2=ecpu.es,t2<<4))+MemoryStart);
 	}
 	CMP(&ta,&tb,tmpOpdSize);
@@ -2183,9 +2630,9 @@ VOID STOSW()
 	{
 	case 2:
 		if (tmpAddrSize==2)
-			*(t_nubit16 *)(ecpu.di+((t=ecpu.es,t<<4))+MemoryStart)=ecpu.ax;
+			d_nubit16(ecpu.di+((t=ecpu.es,t<<4))+MemoryStart)=ecpu.ax;
 		else
-			*(t_nubit16 *)(ecpu.edi+((t=ecpu.es,t<<4))+MemoryStart)=ecpu.ax;
+			d_nubit16(ecpu.edi+((t=ecpu.es,t<<4))+MemoryStart)=ecpu.ax;
 		break;
 	case 4:
 		if (tmpAddrSize==2)
@@ -2388,7 +2835,7 @@ VOID INS_C0()
 {
 	t_nubit8 t,teIMS;
 	t_nubit16 teIMS16;
-	char oce=*(char*)(evIP+MemoryStart) & 0x38;
+	char oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	oce>>=3;
 	toe8;
 	t=*rm8;
@@ -2399,8 +2846,8 @@ VOID INS_C0()
 	switch(oce)
 	{
 	case 0:	
-		__asm popf				//ÒòÎªswitchÓï¾ä»á¸Ä±äeflagsµÄÖµ£¬ËùÒÔ²»ÄÜ°ÑÕâ¾äÌáµ½switchÖ®Íâ¡£
-		__asm pop ecx			//ÒòÎªpush teIMSµÄÊ±ºòÑ¹ÁË4¸ö×Ö½Ú£¬ËùÒÔÕâÀïÒ²ÒªÓÃpop ecxµ¯4¸ö×Ö½Ú
+		__asm popf				//å› ä¸ºswitchè¯­å¥ä¼šæ”¹å˜eflagsçš„å€¼ï¼Œæ‰€ä»¥ä¸èƒ½æŠŠè¿™å¥æåˆ°switchä¹‹å¤–ã€‚
+		__asm pop ecx			//å› ä¸ºpush teIMSçš„æ—¶å€™å‹äº†4ä¸ªå­—èŠ‚ï¼Œæ‰€ä»¥è¿™é‡Œä¹Ÿè¦ç”¨pop ecxå¼¹4ä¸ªå­—èŠ‚
 		__asm rol t,cl
 		break;
 	case 1:
@@ -2447,13 +2894,13 @@ VOID INS_C1()
 	t_nubit16 t, teIMS16;
 	t_nubit32 t2;
 	t_nubit8 teIMS;
-	char oce=*(char*)(evIP+MemoryStart) & 0x38;
+	char oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	oce>>=3;
 	switch (tmpOpdSize)
 	{
 	case 2:	
 		toe16;
-		teIMS=*(t_nubit8 *)eIMS;
+		teIMS=d_nubit8(eIMS);
 		t=*rm16;
 		teIMS16 = teIMS;
 		__asm push teIMS16
@@ -2505,7 +2952,7 @@ VOID INS_C1()
 		break;
 	case 4:	
 		toe32;
-		teIMS=*(t_nubit8 *)eIMS;
+		teIMS=d_nubit8(eIMS);
 		teIMS16 = teIMS;
 		t2=*rm32;
 		__asm push teIMS16
@@ -2562,7 +3009,7 @@ VOID SHL_RM8_I8()
 {
 	t_nubit8 teIMS;
 	toe8;	
-	teIMS=*(t_nubit8 *)eIMS;
+	teIMS=d_nubit8(eIMS);
 	SHL(rm8,teIMS,1);
 	evIP++;
 }
@@ -2576,14 +3023,14 @@ VOID SHL_RM16_I8()
 }
 VOID RET_I8()
 {
-	ecpu.ip=*(t_nubit16*)(EvSP+MemoryStart);
+	ecpu.ip=d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp));
 	ecpu.sp+=2;	
 	ecpu.sp+=*(t_nubit16*)eIMS;
 	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
 }
 VOID RET_NEAR()
 {
-	ecpu.ip=*(t_nubit16*)(EvSP+MemoryStart);
+	ecpu.ip=d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp));
 	ecpu.sp+=2;		
 	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
 }
@@ -2594,12 +3041,12 @@ VOID LES_R16_M16()
 	case 2:
 		toe16;
 		*r16=*rm16;
-		ecpu.es=*(t_nubit16 *)(rm16+1);
+		ecpu.es=d_nubit16(rm16+1);
 		break;
 	case 4:
 		toe32;
 		*r32=*rm32;
-		ecpu.es=*(t_nubit16 *)(rm32+1);
+		ecpu.es=d_nubit16(rm32+1);
 		break;
 	}
 }
@@ -2610,12 +3057,12 @@ VOID LDS_R16_M16()
 	case 2:
 		toe16;	
 		*r16=*rm16;
-		ecpu.ds=*(t_nubit16 *)(rm16+1);		//ÒòÎªrm16±¾À´¾ÍÊÇË«×Ö½ÚµÄ£¬ËùÒÔÕâÀï+1¼´¿ÉÇóµÃÏÂÒ»Ë«×Ö½Ú
+		ecpu.ds=d_nubit16(rm16+1);		//å› ä¸ºrm16æœ¬æ¥å°±æ˜¯åŒå­—èŠ‚çš„ï¼Œæ‰€ä»¥è¿™é‡Œ+1å³å¯æ±‚å¾—ä¸‹ä¸€åŒå­—èŠ‚
 		break;
 	case 4:
 		toe32;	
 		*r32=*rm32;
-		ecpu.ds=*(t_nubit16 *)(rm32+1);		//ÒòÎªrm16±¾À´¾ÍÊÇË«×Ö½ÚµÄ£¬ËùÒÔÕâÀï+1¼´¿ÉÇóµÃÏÂÒ»Ë«×Ö½Ú
+		ecpu.ds=d_nubit16(rm32+1);		//å› ä¸ºrm16æœ¬æ¥å°±æ˜¯åŒå­—èŠ‚çš„ï¼Œæ‰€ä»¥è¿™é‡Œ+1å³å¯æ±‚å¾—ä¸‹ä¸€åŒå­—èŠ‚
 		break;
 	}
 }
@@ -2633,64 +3080,37 @@ VOID MOV_M16_I16()
 }
 VOID RET_I16()
 {
-	ecpu.ip=*(t_nubit16*)(EvSP+MemoryStart);
+	ecpu.ip=d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp));
 	ecpu.sp+=2;	
-	ecpu.cs=*(t_nubit16*)(EvSP+MemoryStart);
+	ecpu.cs=d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp));
 	ecpu.sp+=2;	
 	ecpu.sp+=*(t_nubit16*)eIMS;
 	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
 }
 VOID RET_FAR()
 {
-	ecpu.ip=*(t_nubit16*)(EvSP+MemoryStart);
+	ecpu.ip=d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp));
 	ecpu.sp+=2;		
-	ecpu.cs=*(t_nubit16*)(EvSP+MemoryStart);
+	ecpu.cs=d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp));
 	ecpu.sp+=2;		
 	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
 }
-VOID INT3()
+SAME INT3() {INT(0x03);}
+SAME INT_I8()
 {
-	GlobINT|=0x8;
-}
-VOID INT_I8()
-{
+	t_nubit8 id;
 	LongCallNewIP(1);
-	ecpu.sp-=2;
-	*(t_nubit16*)( EvSP +MemoryStart)=ecpu.flags;
-	ecpu.flags&=~IF;
-	ecpu.flags&=~TF;
-	ecpu.flags&=~AF;
-	ecpu.sp-=2;
-	*(t_nubit16*)( EvSP +MemoryStart)=ecpu.cs;				//ÏÈÑ¹CS£¬ÔÙÑ¹IP£¬¶øÇÒÊÇÒªÑ¹CALLÖ¸ÁîÖ®ºóµÄIP
-	ecpu.sp-=2;
-	*(t_nubit16*)( EvSP +MemoryStart)=ecpu.ip;
-	ecpu.ip=*(t_nubit16 *)((*(t_nubit8 *)eIMS)*4+MemoryStart);	
-	ecpu.cs=*(t_nubit16 *)((*(t_nubit8 *)eIMS)*4+2+MemoryStart);
-	
-	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
+	id = d_nubit8(eIMS);
+	INT(id);
 }
-VOID INTO()
+SAME INTO() {if (GetBit(ecpu.flags, VCPU_FLAG_OF)) INT(0x04);}
+VOID IRET()					//åœ¨å®æ¨¡å¼ä¸‹ï¼Œiretå’Œret faræ˜¯ä¸€æ ·çš„ï¼Œè¿™é‡Œå¯ä»¥ç›´æ¥è°ƒç”¨RET_FAR()çš„ï¼Œä¸è¿‡ä¸ºäº†ä»¥åæ‰©å±•ç€æƒ³å°±ä¸è¿™æ ·åšã€‚
 {
-	if (ecpu.flags&OF)
-	{
-		GlobINT|=0x10;
-	}
-// 	ecpu.sp-=2;
-// 	*(t_nubit16*)( EvSP +MemoryStart)=ecpu.cs;
-// 	ecpu.sp-=2;
-// 	*(t_nubit16*)( EvSP +MemoryStart)=ecpu.ip;
-// 	ecpu.ip=(4)*4+MemoryStart;
-// 	evIP+=2;
-// 	ecpu.cs=0;
-// 	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;	
-}
-VOID IRET()					//ÔÚÊµÄ£Ê½ÏÂ£¬iretºÍret farÊÇÒ»ÑùµÄ£¬ÕâÀï¿ÉÒÔÖ±½Óµ÷ÓÃRET_FAR()µÄ£¬²»¹ıÎªÁËÒÔºóÀ©Õ¹×ÅÏë¾Í²»ÕâÑù×ö¡£
-{
-	ecpu.ip=*(t_nubit16*)(EvSP+MemoryStart);
+	ecpu.ip=d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp));
 	ecpu.sp+=2;		
-	ecpu.cs=*(t_nubit16*)(EvSP+MemoryStart);
+	ecpu.cs=d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp));
 	ecpu.sp+=2;		
-	ecpu.flags=*(t_nubit16*)(EvSP+MemoryStart);
+	ecpu.flags=d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp));
 	ecpu.sp+=2;		
 	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;	
 }
@@ -2698,7 +3118,7 @@ VOID IRET()					//ÔÚÊµÄ£Ê½ÏÂ£¬iretºÍret farÊÇÒ»ÑùµÄ£¬ÕâÀï¿ÉÒÔÖ±½Óµ÷ÓÃRET_FAR()µÄ
 VOID INS_D0()
 {
 	t_nubit8 t;
-	char oce=*(char*)(evIP+MemoryStart) & 0x38;
+	char oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	oce>>=3;
 	toe8;
 	t=*rm8;
@@ -2706,7 +3126,7 @@ VOID INS_D0()
 	switch(oce)
 	{
 	case 0:	
-		__asm popf				//ÒòÎªswitchÓï¾ä»á¸Ä±äeflagsµÄÖµ£¬ËùÒÔ²»ÄÜ°ÑÕâ¾äÌáµ½switchÖ®Íâ¡£
+		__asm popf				//å› ä¸ºswitchè¯­å¥ä¼šæ”¹å˜eflagsçš„å€¼ï¼Œæ‰€ä»¥ä¸èƒ½æŠŠè¿™å¥æåˆ°switchä¹‹å¤–ã€‚
 		__asm rol t,1
 		break;
 	case 1:
@@ -2745,7 +3165,7 @@ VOID INS_D1()
 {
 	t_nubit16 t;
 	t_nubit32 t2;
-	char oce=*(char*)(evIP+MemoryStart) & 0x38;
+	char oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	oce>>=3;
 	switch (tmpOpdSize)
 	{
@@ -2838,7 +3258,7 @@ VOID INS_D1()
 VOID INS_D2()
 {
 	t_nubit8 t;
-	char oce=*(char*)(evIP+MemoryStart) & 0x38;
+	char oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	oce>>=3;
 	toe8;
 	t=*rm8;
@@ -2887,7 +3307,7 @@ VOID INS_D3()
 	char oce;
 	t_nubit16 t;
 	t_nubit32 t2;
-	oce=*(char*)(evIP+MemoryStart) & 0x38;
+	oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	oce>>=3;
 	switch(tmpOpdSize)
 	{
@@ -2897,7 +3317,7 @@ VOID INS_D3()
 		switch(oce)
 		{
 		case 0:	
-			__asm mov cl,ecpu.cl;				//switch/caseÓĞ¿ÉÄÜÒªÓÃµ½cl£¬ËùÒÔ²»ÄÜ°ÑÕâÁ½ĞĞÌáÈ¡³öÈ¥
+			__asm mov cl,ecpu.cl;				//switch/caseæœ‰å¯èƒ½è¦ç”¨åˆ°clï¼Œæ‰€ä»¥ä¸èƒ½æŠŠè¿™ä¸¤è¡Œæå–å‡ºå»
 			__asm push ecpu.flags;
 			__asm popf
 			__asm rol t,cl
@@ -3003,13 +3423,11 @@ VOID INS_D3()
 		break;
 	}
 }
-
-// Ö»ÊµÏÖÁËÒÔ10Îª»ùÊıµÄÇé¿ö£¬Í¬AAD
 VOID AAM()
 {
 	t_bool intf = GetBit(ecpu.flags, VCPU_FLAG_IF);
-	if ((*(t_nubit8 *)eIMS)==0)
-		GlobINT|=IntDE;
+	if ((d_nubit8(eIMS))==0)
+		INT(0x00);
 	else
 	__asm
 	{
@@ -3021,13 +3439,8 @@ VOID AAM()
 		pop ecpu.flags
 		mov ecpu.ax,ax
 	}
-	evIP++;			//aamµÄ±àÂëÊÇD4 0A
+	evIP++;			//aamçš„ç¼–ç æ˜¯D4 0A
 }
-
-// ÏÂÃæÒı×ÔIntel¿ª·¢ÕßÊÖ²á¡£ÕâÀïµÄaadÖ»ÊµÏÖÁËÒÔ10Îª»ùÊıµÄÇé¿ö¡£¼´Ö»ÊµÏÖÁË D5 0A
-// The generalized version of this instruction allows adjustment of two unpacked digits of any
-// number base (refer to the "Operation" section below), by setting the imm8 byte to the selected
-// number base (for example, 08H for octal, 0AH for decimal, or 0CH for base 12 numbers).
 VOID AAD()
 {
 	t_bool intf = GetBit(ecpu.flags, VCPU_FLAG_IF);
@@ -3041,7 +3454,7 @@ VOID AAD()
 		pop ecpu.flags
 		mov ecpu.ax,ax
 	}
-	evIP++;			//aadµÄ±àÂëÊÇD5 0A
+	evIP++;			//aadçš„ç¼–ç æ˜¯D5 0A
 }
 VOID ESC_9()
 {
@@ -3051,40 +3464,14 @@ VOID XLAT()
 {
 	ecpu.al=GetM8_16((t_nubit16)(ecpu.bx+ecpu.al));
 }
-VOID ESC_0()
-{
-	GlobINT|=0x80;
-}
-VOID ESC_1()
-{	
-	GlobINT|=0x80;
-	toe16;				//ÕâÀï´¿´âÊÇÎªÁËĞŞ¸ÄevIP
-}
-VOID ESC_2()
-{
-	GlobINT|=0x80;
-}
-VOID ESC_3()
-{	
-	GlobINT|=0x80;
-	evIP++;
-}
-VOID ESC_4()
-{
-	GlobINT|=0x80;
-}
-VOID ESC_5()
-{
-	GlobINT|=0x80;
-}
-VOID ESC_6()
-{
-	GlobINT|=0x80;
-}
-VOID ESC_7()
-{
-	GlobINT|=0x80;
-}
+VOID ESC_0() {INT(0x07);}
+VOID ESC_1() {toe16;INT(0x07);}
+VOID ESC_2() {INT(0x07);}
+VOID ESC_3() {INT(0x07);evIP++;}
+VOID ESC_4() {INT(0x07);}
+VOID ESC_5() {INT(0x07);}
+VOID ESC_6() {INT(0x07);}
+VOID ESC_7() {INT(0x07);}
 // 0xE0
 VOID LOOPNE()
 {
@@ -3117,47 +3504,56 @@ VOID JCXZ_NEAR()
 	else
 		evIP++;
 }
-VOID IN_AL_N()
+SAME IN_AL_N()
 {
+#ifdef ECPUACT
 	ExecFun(InTable[d_nubit8(eIMS)]);
 	ecpu.al = vport.iobyte;
+#else
+	ecpu.flagignore = 0x01;
+#endif
 	evIP++;
 }
-VOID IN_AX_N()
+SAME IN_AX_N()
 {
-	// in ax,n »òÕß in eax,n ÊÇÁ¬ĞøµØ¶Á¶Ë¿Ú¡£InTableÀïµÄº¯Êı¶¼ÊÇÖ±½ÓĞŞ¸Äecpu.alµÄ£¬×îºÃ°ÑÃ¿¸öecpu.al¶¼±£´æÆğÀ´£¬ÔÙÒ»´Î¹ı¸³¸øecpu.ax»òecpu.eax
-	int i;
-	for (i=0;i<tmpOpdSize;i++) {
-		ExecFun(InTable[d_nubit8(eIMS)+i]);
-		d_nubit8(&ecpu.al+i)=vport.iobyte;
-	}
+#ifdef ECPUACT
+	ExecFun(InTable[d_nubit8(eIMS)]);
+	ecpu.ax = vport.ioword;
+#else
+	ecpu.flagignore = 0x01;
+#endif
 	evIP++;
 }
-VOID OUT_N_AL()
+SAME OUT_N_AL()
 {
+#ifdef ECPUACT
 	vport.iobyte = ecpu.al;
 	ExecFun(OutTable[d_nubit8(eIMS)]);
+#else
+	ecpu.flagignore = 0x01;
+#endif
 	evIP++;
 }
-VOID OUT_N_AX()
+SAME OUT_N_AX()
 {
-	int i;
-	for (i=0;i<tmpOpdSize;i++) {
-		vport.iobyte = d_nubit8(&ecpu.ax+i);
-		ExecFun(OutTable[d_nubit8(eIMS)+i]);
-	}
+#ifdef ECPUACT
+	vport.ioword = ecpu.ax;
+	ExecFun(OutTable[d_nubit8(eIMS)]);
+#else
+	ecpu.flagignore = 0x01;
+#endif
 	evIP++;
 }
 VOID CALL_NEAR()
 {
 	LongCallNewIP(2);
 
-	ecpu.sp-=2;										//¶ÎÄÚCALL£¬CS²»Ñ¹Õ»
-	*(t_nubit16*)( EvSP +MemoryStart)=ecpu.ip;
+	ecpu.sp-=2;										//æ®µå†…CALLï¼ŒCSä¸å‹æ ˆ
+	d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=ecpu.ip;
 	ecpu.ip+=(d_nubit16(eIMS));
 	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
 }
-VOID JMP_NEAR_LABEL()	//Á¢¼´ÊıÊÇÁ½×Ö½ÚµÄ
+VOID JMP_NEAR_LABEL()	//ç«‹å³æ•°æ˜¯ä¸¤å­—èŠ‚çš„
 {
 	LongCallNewIP(2);
 	ecpu.ip+=(d_nubit16(eIMS));
@@ -3171,81 +3567,88 @@ VOID JMP_FAR_LABEL()
 	ecpu.cs=d_nubit16(eIMS);
 	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;	
 }
-VOID JMP_NEAR()			//Á¢¼´ÊıÊÇÒ»×Ö½ÚµÄ
+VOID JMP_NEAR()			//ç«‹å³æ•°æ˜¯ä¸€å­—èŠ‚çš„
 {	
 	LongCallNewIP(1);
 	ecpu.ip+=(d_nsbit8(eIMS));
 	evIP=((t=ecpu.cs,t<<4))+ecpu.ip;	
 }
-VOID IN_AL_DX()
+SAME IN_AL_DX()
 {
-	ExecFun(InTable[ecpu.dx]);
+#ifdef ECPUACT
+	ExecFun(vport.in[ecpu.dx]);
 	ecpu.al = vport.iobyte;
+#else
+	ecpu.flagignore = 0x01;
+#endif
 }
-VOID IN_AX_DX()
+SAME IN_AX_DX()
 {
-	int i;
-	for (i=0;i<tmpOpdSize;i++) {
-		ExecFun(InTable[ecpu.dx+i]);
-		d_nubit8(&ecpu.al+i)=vport.iobyte;
-	}
+#ifdef ECPUACT
+	ExecFun(vport.in[ecpu.dx]);
+	ecpu.ax = vport.ioword;
+#else
+	ecpu.flagignore = 0x01;
+#endif
 }
-VOID OUT_DX_AL()
+SAME OUT_DX_AL()
 {
+#ifdef ECPUACT
 	vport.iobyte = ecpu.al;
-	ExecFun(OutTable[ecpu.dx]);
+	ExecFun(vport.out[ecpu.dx]);
+#else
+	ecpu.flagignore = 0x01;
+#endif
 }
-VOID OUT_DX_AX()
+SAME OUT_DX_AX()
 {
-	int i;
-	for (i=0;i<tmpOpdSize;i++) {
-		vport.iobyte = d_nubit8(&ecpu.al+i);
-		ExecFun(OutTable[ecpu.dx+i]);
-	}
+#ifdef ECPUACT
+	vport.ioword = ecpu.ax;
+	ExecFun(vport.out[ecpu.dx]);
+#else
+	ecpu.flagignore = 0x01;
+#endif
 }
 
 // 0xF0
-VOID LOCK()
-{
-	__asm nop;
-}
+SAME LOCK() {}
 VOID REPNE()
 {
 	t_nubit32 tevIP=evIP;
 	t_nubit8 nopc;
 	if (ecpu.cx==0)
 	{
-		nopc=d_nubit8(MemoryStart+evIP);
-		if ((nopc&0xe7) == 0x26 || (nopc&0xfc) == 0x64 || (nopc&0xfc) == 0xf0)	//Èç¹û¸úÔÚREPÖ¸ÁîÖ®ºóµÄÊÇCS¡¢ESÖ®ÀàµÄÖ¸Áî£¬ÔòÔÙÌøÒ»×Ö½Ú
+		nopc=d_nubit8(vramGetAddr(0, evIP));
+		if ((nopc&0xe7) == 0x26 || (nopc&0xfc) == 0x64 || (nopc&0xfc) == 0xf0)	//å¦‚æœè·Ÿåœ¨REPæŒ‡ä»¤ä¹‹åçš„æ˜¯CSã€ESä¹‹ç±»çš„æŒ‡ä»¤ï¼Œåˆ™å†è·³ä¸€å­—èŠ‚
 		{
 			evIP++;
-			nopc=d_nubit8(MemoryStart+evIP);
+			nopc=d_nubit8(vramGetAddr(0, evIP));
 		}
 		evIP++;
 	}
-	ecpu.flags &= (0xffff ^ ZF);		//ZFÎ»ÖÃ0
+	ecpu.flags &= (0xffff ^ ZF);		//ZFä½ç½®0
 	while (ecpu.cx>0 && !(ecpu.flags & ZF))
 	{
 		evIP=tevIP;
 		ecpuinsExecIns();
 		ecpu.cx--;
 	}
-	//evIP++;			//´®²Ù×÷Ö¸Áî¶¼ÊÇÒ»×Ö½Ú³¤µÄ
+	//evIP++;			//ä¸²æ“ä½œæŒ‡ä»¤éƒ½æ˜¯ä¸€å­—èŠ‚é•¿çš„
 }
 VOID REP()
 {
 	t_nubit32 tevIP=evIP;
 	t_nubit8 nopc;
-	ecpu.flags |= ZF;		//ZFÎ»ÖÃ1
+	ecpu.flags |= ZF;		//ZFä½ç½®1
 	if (ecpu.cx==0)
 	{
-		nopc=d_nubit8(MemoryStart+evIP);		
-		while ((nopc&0xe7) == 0x26 || (nopc&0xfc) == 0x64 || (nopc&0xfc) == 0xf0)	//Èç¹û¸úÔÚREPÖ¸ÁîÖ®ºóµÄÊÇÖ¸ÁîÇ°×º£¬ÔòÔÙÌøÒ»×Ö½Ú
+		nopc=d_nubit8(vramGetAddr(0, evIP));		
+		while ((nopc&0xe7) == 0x26 || (nopc&0xfc) == 0x64 || (nopc&0xfc) == 0xf0)	//å¦‚æœè·Ÿåœ¨REPæŒ‡ä»¤ä¹‹åçš„æ˜¯æŒ‡ä»¤å‰ç¼€ï¼Œåˆ™å†è·³ä¸€å­—èŠ‚
 		{
 			evIP++;
-			nopc=d_nubit8(MemoryStart+evIP);
+			nopc=d_nubit8(vramGetAddr(0, evIP));
 		}
-		evIP++;						//MOVSBÖ®ÀàµÄÖ¸ÁîÖ»ÓĞ1×Ö½Ú³¤		
+		evIP++;						//MOVSBä¹‹ç±»çš„æŒ‡ä»¤åªæœ‰1å­—èŠ‚é•¿		
 	}
 	while (ecpu.cx>0 && (ecpu.flags & ZF))
 	{
@@ -3253,23 +3656,14 @@ VOID REP()
 		ecpuinsExecIns();
 		ecpu.cx--;
 	}
-	//evIP++;			//´®²Ù×÷Ö¸Áî¶¼ÊÇÒ»×Ö½Ú³¤µÄ
+	//evIP++;			//ä¸²æ“ä½œæŒ‡ä»¤éƒ½æ˜¯ä¸€å­—èŠ‚é•¿çš„
 }
-VOID HLT()
-{
-	while (0)	//ÕâÀïÒª¼ì²éÊÇ·ñÓĞÍâ²¿ÖĞ¶Ï
-	{
-		__asm nop
-	}
-}
-VOID CMC()
-{
-	ecpu.flags^=CF;
-}
+VOID HLT() {}
+VOID CMC() {ecpu.flags^=CF;}
 VOID INS_F6()
 {
 	char oce,trm8,tc;
-	oce=*(char*)(evIP+MemoryStart) & 0x38;
+	oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	oce>>=3;
 	toe8;
 	trm8=*rm8;
@@ -3348,7 +3742,7 @@ VOID INS_F6()
 				pop eax
 				popfd
 			}
-		else GlobINT |= 0x01;
+		else INT(0x00);
 		break;
 	case 7:
 		if (trm8)
@@ -3365,13 +3759,13 @@ VOID INS_F6()
 				pop eax
 				popfd
 			}
-		else GlobINT |= 0x01;
+		else INT(0x00);
 		break;
 	}
 }
 VOID INS_F7()
 {
-	char oce=*(char*)(evIP+MemoryStart) & 0x38;
+	char oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	short tc;
 	short trm16;
 	int tc2;
@@ -3397,7 +3791,7 @@ VOID INS_F7()
 		case 2:
 			__asm popf
 			__asm not trm16	
-			*rm16=trm16;			//ÕâÁ½¸ö¶¼ÊÇÒª¸Ä±ätrm16µÄÖµµÄ
+			*rm16=trm16;			//è¿™ä¸¤ä¸ªéƒ½æ˜¯è¦æ”¹å˜trm16çš„å€¼çš„
 			break;
 		case 3:		
 			__asm popf
@@ -3419,7 +3813,7 @@ VOID INS_F7()
 			__asm mov ecpu.dx,dx
 			break;
 		case 6:		
-			if (trm16!=0)			//ÕâÀïÖ»Õë¶Ô8086µÄ
+			if (trm16!=0)			//è¿™é‡Œåªé’ˆå¯¹8086çš„
 			{		
 				__asm mov ax,ecpu.ax
 				__asm mov dx,ecpu.dx
@@ -3430,7 +3824,7 @@ VOID INS_F7()
 			}
 			else
 			{
-				GlobINT|=1;
+				INT(0x00);
 			}
 			break;
 		case 7:		
@@ -3445,13 +3839,13 @@ VOID INS_F7()
 			}
 			else
 			{
-				GlobINT|=1;
+				INT(0x00);
 			}
 			break;
 		}
-		__asm pushf				//ÕâÀïÒ»¶¨Òª¾¡¿ì°ÑFlags¸ã³öÀ´£¬ÒÔÃâÔËËãÍêºó±»ĞŞ¸Ä
+		__asm pushf				//è¿™é‡Œä¸€å®šè¦å°½å¿«æŠŠFlagsæå‡ºæ¥ï¼Œä»¥å…è¿ç®—å®Œåè¢«ä¿®æ”¹
 		__asm pop ecpu.flags
-		//*rm16=trm16;				//ÕâÀï²»ÄÜÕâÑùĞ´£¬ÒòÎªÓĞÊ±ºòÄÇ¸örm16ÕıºÃ¾ÍÊÇdivµÄ½á¹û£¬Ò»¸Ä»ØÔ­À´µÄtrm16£¬½á¹û¾Í±»¸²¸ÇÁË
+		//*rm16=trm16;				//è¿™é‡Œä¸èƒ½è¿™æ ·å†™ï¼Œå› ä¸ºæœ‰æ—¶å€™é‚£ä¸ªrm16æ­£å¥½å°±æ˜¯divçš„ç»“æœï¼Œä¸€æ”¹å›åŸæ¥çš„trm16ï¼Œç»“æœå°±è¢«è¦†ç›–äº†
 		//evIP++;
 		if (oce==0)
 			evIP+=tmpOpdSize;
@@ -3474,30 +3868,30 @@ VOID INS_F7()
 		case 2:
 			__asm popfd
 			__asm not trm32	
-			*rm32=trm32;			//ÕâÁ½¸ö¶¼ÊÇÒª¸Ä±ätrm16µÄÖµµÄ
+			*rm32=trm32;			//è¿™ä¸¤ä¸ªéƒ½æ˜¯è¦æ”¹å˜trm16çš„å€¼çš„
 			break;
-		case 3:		
+		case 3:
 			__asm popfd
 			__asm neg trm32	
 			*rm32=trm32;
 			break;
-		case 4:		
+		case 4:
 			__asm mov eax,ecpu.eax
 			__asm popfd
 			__asm mul trm32	
 			__asm mov ecpu.eax,eax
 			__asm mov ecpu.edx,edx
 			break;
-		case 5:		
+		case 5:
 			__asm mov eax,ecpu.eax
 			__asm popfd
 			__asm imul trm32	
 			__asm mov ecpu.eax,eax
 			__asm mov ecpu.edx,edx
 			break;
-		case 6:		
-			if (trm32!=0)			//ÕâÀïÖ»Õë¶Ô8086µÄ
-			{		
+		case 6:
+			if (trm32!=0)			//è¿™é‡Œåªé’ˆå¯¹8086çš„
+			{
 				__asm mov eax,ecpu.eax
 				__asm mov edx,ecpu.edx
 				__asm popfd
@@ -3507,12 +3901,12 @@ VOID INS_F7()
 			}
 			else
 			{
-				GlobINT|=1;
+				INT(0x00);
 			}
 			break;
-		case 7:		
+		case 7:
 			if (trm32!=0)
-			{		
+			{
 				__asm mov eax,ecpu.eax
 				__asm mov edx,ecpu.edx
 				__asm popfd
@@ -3522,11 +3916,11 @@ VOID INS_F7()
 			}
 			else
 			{
-				GlobINT|=1;
+				INT(0x00);
 			}
 			break;
 		}
-		__asm pushfd				//ÕâÀïÒ»¶¨Òª¾¡¿ì°ÑFlags¸ã³öÀ´£¬ÒÔÃâÔËËãÍêºó±»ĞŞ¸Ä
+		__asm pushfd				//è¿™é‡Œä¸€å®šè¦å°½å¿«æŠŠFlagsæå‡ºæ¥ï¼Œä»¥å…è¿ç®—å®Œåè¢«ä¿®æ”¹
 		__asm pop ecpu.eflags
 		if (oce==0)
 			evIP+=tmpOpdSize;
@@ -3560,12 +3954,12 @@ VOID STD()
 VOID INS_FE()
 {	t_nubit8 trm8;
 	char oce,mod,rem;
-	oce=*(char*)(evIP+MemoryStart) & 0x38;
+	oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	oce>>=3;
-	mod=*(char*)(evIP+MemoryStart) & 0xc0;
+	mod=d_nsbit8(vramGetAddr(0, evIP)) & 0xc0;
 	mod>>=6;
 	mod&=0x3;
-	rem=*(char*)(evIP+MemoryStart) & 0x07;
+	rem=d_nsbit8(vramGetAddr(0, evIP)) & 0x07;
 	if (oce>=2 && oce<=5)
 	{	if (mod==0 && rem!=6)
 			LongCallNewIP(1);
@@ -3578,20 +3972,20 @@ VOID INS_FE()
 	}
 	toe8;
 	trm8=*rm8;
-	//__asm push ecpu.flags			//ÏÂÃæ²¢²»ÊÇÃ¿ÌõÖ¸Áî¶¼ĞŞ¸Ä±êÖ¾Î»£¬ËùÒÔÏÈ°ÑÔ­À´µÄ±£´æÆğÀ´¡£
+	//__asm push ecpu.flags			//ä¸‹é¢å¹¶ä¸æ˜¯æ¯æ¡æŒ‡ä»¤éƒ½ä¿®æ”¹æ ‡å¿—ä½ï¼Œæ‰€ä»¥å…ˆæŠŠåŸæ¥çš„ä¿å­˜èµ·æ¥ã€‚
 	switch(oce)
 	{
 	case 0:		
-		__asm push ecpu.flags			//ÏÂÃæ²¢²»ÊÇÃ¿ÌõÖ¸Áî¶¼ĞŞ¸Ä±êÖ¾Î»£¬ËùÒÔÏÈ°ÑÔ­À´µÄ±£´æÆğÀ´¡£
+		__asm push ecpu.flags			//ä¸‹é¢å¹¶ä¸æ˜¯æ¯æ¡æŒ‡ä»¤éƒ½ä¿®æ”¹æ ‡å¿—ä½ï¼Œæ‰€ä»¥å…ˆæŠŠåŸæ¥çš„ä¿å­˜èµ·æ¥ã€‚
 		__asm popf
 		//(*rm8)++;	
-		__asm inc trm8				//++»á±»±àÒë³Éadd£¬ºÍincËùĞŞ¸ÄµÄ±êÖ¾Î»²»Ò»Ñù
+		__asm inc trm8				//++ä¼šè¢«ç¼–è¯‘æˆaddï¼Œå’Œincæ‰€ä¿®æ”¹çš„æ ‡å¿—ä½ä¸ä¸€æ ·
 		__asm pushf
 		__asm pop ecpu.flags
 		*rm8=trm8;
 		break;
 	case 1:
-		__asm push ecpu.flags			//ÏÂÃæ²¢²»ÊÇÃ¿ÌõÖ¸Áî¶¼ĞŞ¸Ä±êÖ¾Î»£¬ËùÒÔÏÈ°ÑÔ­À´µÄ±£´æÆğÀ´¡£
+		__asm push ecpu.flags			//ä¸‹é¢å¹¶ä¸æ˜¯æ¯æ¡æŒ‡ä»¤éƒ½ä¿®æ”¹æ ‡å¿—ä½ï¼Œæ‰€ä»¥å…ˆæŠŠåŸæ¥çš„ä¿å­˜èµ·æ¥ã€‚
 		__asm popf
 		//(*rm8)--;
 		__asm dec trm8
@@ -3602,13 +3996,13 @@ VOID INS_FE()
 	case 2:
 		//__asm popf
 		ecpu.sp-=2;
-		*(t_nubit16*)( EvSP +MemoryStart)=ecpu.ip;
+		d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=ecpu.ip;
 		JMP_NEAR_LABEL();		
 		break;
 	case 3:		
 		//__asm popf
 		ecpu.sp-=2;
-		*(t_nubit16*)( EvSP +MemoryStart)=ecpu.ip;
+		d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=ecpu.ip;
 		ecpu.ip=*rm8;
 		ecpu.cs=*(rm8+1);
 		evIP+=2;		
@@ -3629,7 +4023,7 @@ VOID INS_FE()
 	case 6:		
 		//__asm popf
 		ecpu.sp-=2;
-		*(t_nubit16*)( EvSP +MemoryStart)=(t_nubit16)*rm8;
+		d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=(t_nubit16)*rm8;
 		break;
 	case 7:		
 		OpcError();					
@@ -3642,12 +4036,12 @@ VOID INS_FF()
 	t_nubit16 trm16;
 	t_nubit32 trm32;
 	char oce,mod,rem;
-	oce=*(char*)(evIP+MemoryStart) & 0x38;
+	oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	oce>>=3;
-	mod=*(char*)(evIP+MemoryStart) & 0xc0;
+	mod=d_nsbit8(vramGetAddr(0, evIP)) & 0xc0;
 	mod>>=6;
 	mod&=0x3;
-	rem=*(char*)(evIP+MemoryStart) & 0x07;
+	rem=d_nsbit8(vramGetAddr(0, evIP)) & 0x07;
 	if (oce>=2 && oce<=5)
 	{	
 		if (mod==0 && rem!=6)
@@ -3676,7 +4070,7 @@ VOID INS_FF()
 		switch (tmpOpdSize)
 		{
 		case 2:
-			__asm push ecpu.flags			//ÏÂÃæ²¢²»ÊÇÃ¿ÌõÖ¸Áî¶¼ĞŞ¸Ä±êÖ¾Î»£¬ËùÒÔÏÈ°ÑÔ­À´µÄ±£´æÆğÀ´¡£
+			__asm push ecpu.flags			//ä¸‹é¢å¹¶ä¸æ˜¯æ¯æ¡æŒ‡ä»¤éƒ½ä¿®æ”¹æ ‡å¿—ä½ï¼Œæ‰€ä»¥å…ˆæŠŠåŸæ¥çš„ä¿å­˜èµ·æ¥ã€‚
 			__asm popf
 			//(*rm16)++;	
 			__asm inc trm16
@@ -3685,7 +4079,7 @@ VOID INS_FF()
 			*rm16=trm16;
 			break;
 		case 4:
-			__asm push ecpu.eflags			//ÏÂÃæ²¢²»ÊÇÃ¿ÌõÖ¸Áî¶¼ĞŞ¸Ä±êÖ¾Î»£¬ËùÒÔÏÈ°ÑÔ­À´µÄ±£´æÆğÀ´¡£
+			__asm push ecpu.eflags			//ä¸‹é¢å¹¶ä¸æ˜¯æ¯æ¡æŒ‡ä»¤éƒ½ä¿®æ”¹æ ‡å¿—ä½ï¼Œæ‰€ä»¥å…ˆæŠŠåŸæ¥çš„ä¿å­˜èµ·æ¥ã€‚
 			__asm popfd
 			//(*rm16)++;	
 			__asm inc trm32
@@ -3699,7 +4093,7 @@ VOID INS_FF()
 		switch (tmpOpdSize)
 		{
 		case 2:
-			__asm push ecpu.flags			//ÏÂÃæ²¢²»ÊÇÃ¿ÌõÖ¸Áî¶¼ĞŞ¸Ä±êÖ¾Î»£¬ËùÒÔÏÈ°ÑÔ­À´µÄ±£´æÆğÀ´¡£
+			__asm push ecpu.flags			//ä¸‹é¢å¹¶ä¸æ˜¯æ¯æ¡æŒ‡ä»¤éƒ½ä¿®æ”¹æ ‡å¿—ä½ï¼Œæ‰€ä»¥å…ˆæŠŠåŸæ¥çš„ä¿å­˜èµ·æ¥ã€‚
 			__asm popf
 			//(*rm16)--;
 			__asm dec trm16
@@ -3708,7 +4102,7 @@ VOID INS_FF()
 			*rm16=trm16;
 			break;
 		case 4:
-			__asm push ecpu.eflags			//ÏÂÃæ²¢²»ÊÇÃ¿ÌõÖ¸Áî¶¼ĞŞ¸Ä±êÖ¾Î»£¬ËùÒÔÏÈ°ÑÔ­À´µÄ±£´æÆğÀ´¡£
+			__asm push ecpu.eflags			//ä¸‹é¢å¹¶ä¸æ˜¯æ¯æ¡æŒ‡ä»¤éƒ½ä¿®æ”¹æ ‡å¿—ä½ï¼Œæ‰€ä»¥å…ˆæŠŠåŸæ¥çš„ä¿å­˜èµ·æ¥ã€‚
 			__asm popfd
 			//(*rm16)--;
 			__asm dec trm32
@@ -3723,13 +4117,13 @@ VOID INS_FF()
 		{
 		case 2:
 			ecpu.sp-=2;
-			*(t_nubit16*)( EvSP +MemoryStart)=ecpu.ip;
+			d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=ecpu.ip;
 			ecpu.ip=*rm16;
 			evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
 			break;
 		case 4:
 			ecpu.sp-=2;
-			*(t_nubit16*)( EvSP +MemoryStart)=ecpu.ip;
+			d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=ecpu.ip;
 			ecpu.ip=*rm32;
 			evIP=((t=ecpu.cs,t<<4))+ecpu.ip;
 			break;
@@ -3740,9 +4134,9 @@ VOID INS_FF()
 		{
 		case 2:
 			ecpu.sp-=2;
-			*(t_nubit16*)( EvSP +MemoryStart)=ecpu.cs;
+			d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=ecpu.cs;
 			ecpu.sp-=2;
-			*(t_nubit16*)( EvSP +MemoryStart)=ecpu.ip;
+			d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=ecpu.ip;
 			ecpu.ip=*rm16;
 			ecpu.cs=*(rm16+1);
 			evIP+=2;
@@ -3750,9 +4144,9 @@ VOID INS_FF()
 			break;
 		case 4:
 			ecpu.sp-=2;
-			*(t_nubit16*)( EvSP +MemoryStart)=ecpu.cs;
+			d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=ecpu.cs;
 			ecpu.sp-=2;
-			*(t_nubit16*)( EvSP +MemoryStart)=ecpu.ip;
+			d_nubit16(vramGetAddr(ecpu.ss, ecpu.sp))=ecpu.ip;
 			ecpu.ip=*rm32;
 			ecpu.cs=*(rm32+1);
 			evIP+=tmpOpdSize;
@@ -3796,10 +4190,10 @@ VOID INS_FF()
 		switch (tmpOpdSize)
 		{
 		case 2:
-			PUSH(rm16,tmpOpdSize);
+			_PUSH(rm16,tmpOpdSize);
 			break;
 		case 4:
-			PUSH(rm32,tmpOpdSize);
+			_PUSH(rm32,tmpOpdSize);
 			break;
 		}		
 		break;
@@ -3812,22 +4206,22 @@ VOID INS_FF()
 }
 VOID INS_0F()
 {
-	t_nubit8 OpC=*(t_nubit8 *)(evIP+MemoryStart);
+	t_nubit8 OpC=*(t_nubit8 *)(vramGetAddr(0, evIP));
 	t_nubit32 tcs,InsFucAddr;
 	evIP++;
 	InsFucAddr=Ins0FTable[OpC];
 	__asm call InsFucAddr;
 	tcs=ecpu.cs;
 	ecpu.ip=(evIP - (tcs << 4)) % 0x10000;
-	tmpDs=ecpu.ds;
-	tmpSs=ecpu.ss;
+	ecpu.overds=ecpu.ds;
+	ecpu.overss=ecpu.ss;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// ÏÂÃæÕâ²¿·ÖÊÇ0F¿ªÍ·µÄÖ¸Áî
+// ä¸‹é¢è¿™éƒ¨åˆ†æ˜¯0Få¼€å¤´çš„æŒ‡ä»¤
 VOID ADDPS()
 {
-	t_nubit8 a=*(t_nubit8 *)(evIP+MemoryStart);
+	t_nubit8 a=*(t_nubit8 *)(vramGetAddr(0, evIP));
 	t_nubit8 b=a&0x7;
 	int i;
 	a>>=4;a&=0x7;
@@ -3843,7 +4237,7 @@ VOID ADDPS()
 }
 VOID ADDSS()
 {
-	t_nubit8 a=*(t_nubit8 *)(evIP+MemoryStart);
+	t_nubit8 a=*(t_nubit8 *)(vramGetAddr(0, evIP));
 	t_nubit8 b=a&0x7;
 	a>>=4;a&=0x7;
 	__asm push ecpu.eflags;
@@ -3855,7 +4249,7 @@ VOID ADDSS()
 }
 VOID ANDNPS()
 {
-	t_nubit8 a=*(t_nubit8 *)(evIP+MemoryStart);
+	t_nubit8 a=*(t_nubit8 *)(vramGetAddr(0, evIP));
 	t_nubit8 b=a&0x7;
 	int i;
 	a>>=4;a&=0x7;
@@ -3872,7 +4266,7 @@ VOID ANDNPS()
 }
 VOID ANDPS()
 {
-	t_nubit8 a=*(t_nubit8 *)(evIP+MemoryStart);
+	t_nubit8 a=*(t_nubit8 *)(vramGetAddr(0, evIP));
 	t_nubit8 b=a&0x7;
 	int i;
 	a>>=4;a&=0x7;
@@ -3995,7 +4389,7 @@ VOID FINIT()
 VOID INS_D9()
 {
 	char oce,mod,rem;
-	t_nubit8 OpC=*(t_nubit8 *)(evIP+MemoryStart);
+	t_nubit8 OpC=*(t_nubit8 *)(vramGetAddr(0, evIP));
 	//evIP++;
 	if (OpC<0xc0)
 	{
@@ -4019,7 +4413,7 @@ VOID INS_D9()
 }
 VOID INS_DB()
 {
-	t_nubit8 OpC=*(t_nubit8 *)(evIP+MemoryStart);
+	t_nubit8 OpC=*(t_nubit8 *)(vramGetAddr(0, evIP));
 	evIP++;
 	switch(OpC)
 	{
@@ -4049,7 +4443,7 @@ VOID POP_FS()
 }
 VOID INS_0F01()
 {
-	char oce=*(char*)(evIP+MemoryStart) & 0x38;
+	char oce=d_nsbit8(vramGetAddr(0, evIP)) & 0x38;
 	oce>>=3;
 	toe16;
 	switch(oce)
@@ -4083,94 +4477,45 @@ VOID INS_0F01()
 // SPECIAL
 VOID QDX()
 {
+#ifdef ECPUACT
 	qdbiosExecInt(d_nubit8(eIMS));
 	MakeBit(vramVarWord(_ss,_sp + 4), VCPU_FLAG_ZF, GetBit(_flags, VCPU_FLAG_ZF));
 	MakeBit(vramVarWord(_ss,_sp + 4), VCPU_FLAG_CF, GetBit(_flags, VCPU_FLAG_CF));
+#else
+	ecpu.flagignore = 0x01;
+#endif
 	evIP++;
 }
 
-// yinX£º	ÓÃÕâÃ´±¿µÄ·½·¨ÊÇÎªÁËÈÃÒÔºóĞŞ¸ÄÄ³ÌõÖ¸ÁîµÄÊ±ºò¸üÁé»î
-// Â·ÈË¼×£º	ÕæµÄ»á¸üÁé»îÂğ£¿
-// yinX£º	¡­¡­ -_-!
-
-//////////////////////////////////////////////////////////////////////////
-// Ç°ÍùÄ³¸öÖĞ¶Ï·şÎñ³ÌĞò
-VOID GoInt(int r)
-{
-	//LongCallNewIP(1);;					//ÒòÎªExcInsÀïÃæÊÇÏÈÖ´ĞĞÖ¸ÁîÔÙĞŞ¸ÄCS:IPµÄ£¬ËùÒÔÔËĞĞµ½ÕâÀïµÄCS:IPÊÇÎ´±»Ö´ĞĞµÄ£¬ËùÒÔ²»ÓÃÔÙLongCallNewIPÁË¡£
-	t_vaddrcc t;
-//	vapiPrint("goint.1: %04X:%04X, INT=%1X\n",_cs,_ip,GetBit(_flags,VCPU_FLAG_IF));
-	ecpu.sp -= 2;
-	d_nubit16(EvSP + MemoryStart) = ecpu.flags;
-	ecpu.flags &= ~IF;
-	ecpu.flags &= ~TF;
-	ecpu.flags &= ~AF;
-	ecpu.sp -= 2;
-	d_nubit16(EvSP + MemoryStart) = ecpu.cs;				//ÏÈÑ¹CS£¬ÔÙÑ¹IP£¬¶øÇÒÊÇÒªÑ¹CALLÖ¸ÁîÖ®ºóµÄIP
-	ecpu.sp -= 2;
-	d_nubit16(EvSP + MemoryStart) = ecpu.ip;
-	ecpu.ip = d_nubit16((r) * 4 + MemoryStart + 0);
-	ecpu.cs = d_nubit16((r) * 4 + MemoryStart + 2);
-	evIP = (ecpu.cs << 4) + ecpu.ip;
-//	vapiPrint("goint.2: %04X:%04X, INT=%1X\n",_cs,_ip,GetBit(_flags,VCPU_FLAG_IF));
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Ö´ĞĞevIPËùÖ¸ÏòµÄÄÇÒ»ÌõÖ¸Áî
 void ecpuinsExecIns()
 {
-	t_nubit8 opcode = d_nubit8(evIP+MemoryStart);
-	t_nubit8 op1 = d_nubit8(evIP+MemoryStart+1);
-	t_nubit8 op2 = d_nubit8(evIP+MemoryStart+2);
-	t_nubit8 op3 = d_nubit8(evIP+MemoryStart+3);
-	t_nubit8 op4 = d_nubit8(evIP+MemoryStart+4);
-//	t_faddrcc InsFucAddr = InsTable[opcode];
-//	vapiPrint("execins.1: %04X:%04X, INT=%1X\n",_cs,_ip,GetBit(_flags,VCPU_FLAG_IF));
+	t_nubit8 opcode = d_nubit8(vramGetAddr(0, evIP));
+	t_nubit8 op1 = d_nubit8(vramGetAddr(0, evIP)+1);
+	t_nubit8 op2 = d_nubit8(vramGetAddr(0, evIP)+2);
+	t_nubit8 op3 = d_nubit8(vramGetAddr(0, evIP)+3);
+	t_nubit8 op4 = d_nubit8(vramGetAddr(0, evIP)+4);
 	evIP++;
-
-	//InstructionCount++;
 	ExecFun(InsTable[opcode]);
-//	__asm call InsFucAddr;
 	ecpu.ip=(evIP - (ecpu.cs << 4)) % 0x10000;
-	tmpDs=ecpu.ds;
-	tmpSs=ecpu.ss;
-//	vapiPrint("execins.2: %04X:%04X, INT=%1X\n",_cs,_ip,GetBit(_flags,VCPU_FLAG_IF));
+	ecpu.overds=ecpu.ds;
+	ecpu.overss=ecpu.ss;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// ¼ì²éÊÇ·ñÓĞÖĞ¶ÏÇëÇó£¬²¢ÇÒ×÷³öÏàÓ¦´¦Àí
 void ecpuinsExecInt()
 {	
-	char intR;
-	unsigned int tmpGlobINT;
-	unsigned int IntNo;
-
-	if (ecpu.flags&TF) {
-		GlobINT|=0x2;
-		ecpu.flags&=~TF;
+	/* hardware interrupt handeler */
+	t_nubit8 intr;
+	if(ecpu.flagnmi) {
+		INT(0x02);
 	}
-	tmpGlobINT=GlobINT;
-	IntNo=0;
-	while (!(tmpGlobINT&1) && IntNo<8) {		//ËùÓĞÉÙÓÚ7µÄÖĞ¶Ï£¨¼´²»Á¬½Óµ½8259ÉÏµÄÖĞ¶Ï£©
-		IntNo++;
-	}
+	ecpu.flagnmi = 0x00;
 
-	if (IntNo==2) {
-		GoInt(2);							//²»¿ÉÆÁ±ÎÖĞ¶Ï
-		GlobINT &= ~0x2;
-		return;
+	if(GetBit(ecpu.flags, VCPU_FLAG_IF) && ecpuapiScanINTR()) {
+		intr = ecpuapiGetINTR();
+		INT(intr);
 	}
-
-	if (ecpu.flags & IF) {	
-		if (IntNo < 8) {
-			GoInt(IntNo);
-			GlobINT&=~(unsigned int)(1<<IntNo);
-			return;
-		}
-		if (vpicScanINTR()) {
-			intR=vpicGetINTR();
-			GoInt(intR);
-		}
+	if(GetBit(ecpu.flags, VCPU_FLAG_TF)) {
+		INT(0x01);
 	}
 }
 

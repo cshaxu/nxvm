@@ -2,6 +2,7 @@
 #define NXVM_ECPU_H
 
 #include "../vram.h"
+#include "ecpuins.h"
 
 #define MemoryStart vram.base
 extern unsigned int evIP;					//CS:IP所表示的线性地址，只供内部使用
@@ -113,7 +114,7 @@ typedef struct {
 	{
 		unsigned short flags;
 		unsigned int eflags;
-	};	
+	};
 	unsigned short cs;
 	unsigned short ds;
 	unsigned short es;
@@ -148,12 +149,19 @@ typedef struct {
 			unsigned int ip[4];
 		};
 	}xmm[8];
-	t_nubit8 iobyte;
+	t_bool flagignore;
+	t_nubit8 intrid;
 	t_bool flagnmi;
 	t_nubit16 overss,overds;
 } t_ecpu;
 
 extern t_ecpu ecpu;
+
+void ecpuapiSyncRegs();
+t_bool ecpuapiHasDiff();
+t_bool ecpuapiScanINTR();
+t_nubit8 ecpuapiGetINTR();
+void ecpuapiPrintRegs();
 
 void ecpuRefresh();
 void ecpuInit();

@@ -23,6 +23,7 @@
 #define VCPU_FLAG_DF 0x0400
 #define VCPU_FLAG_OF 0x0800
 
+#ifndef ECPUACT
 typedef struct {
 	union {
 		struct {t_nubit8 al,ah;};
@@ -47,6 +48,10 @@ typedef struct {
 } t_cpu;
 
 extern t_cpu vcpu;
+#else
+typedef t_ecpu t_cpu;
+#define vcpu ecpu
+#endif
 
 void vcpuRefresh();
 void vcpuInit();

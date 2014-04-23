@@ -8,8 +8,7 @@
 #define OutTable vport.out
 
 extern t_faddrcc InsTable[0x100];
-extern t_nubitcc GlobINT;
-extern t_vaddrcc evIP;	//evIP永远指向将要读的那个字节
+//extern t_vaddrcc evIP;	//evIP永远指向将要读的那个字节
 
 // Eflags寄存器
 #define CF 0x0001

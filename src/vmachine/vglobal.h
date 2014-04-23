@@ -18,6 +18,7 @@
 #define VGLOBAL_SIZE_INTEGER 32
 #define VGLOBAL_PLATFORM     VGLOBAL_VAR_WIN32
 #define VCPUASM
+#define ECPUACT
 /*****************************************************************************/
 
 typedef char     *t_string;
