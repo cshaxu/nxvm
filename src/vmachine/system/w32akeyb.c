@@ -73,6 +73,8 @@ void w32akeybMakeKey(UINT message, WPARAM wParam, LPARAM lParam)
 			vmachine.flagrecord = 0x01;
 			vapiRecordStart();
 			break;*/
+		case VK_BACK:
+		case VK_DELETE:
 		case VK_ESCAPE://ESC
 		case VK_PRIOR://pageUP
 		case VK_NEXT://pageDown

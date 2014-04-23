@@ -4,13 +4,17 @@
 
 #include "../vapi.h"
 #include "../vmachine.h"
-
+#include "../vcpuins.h"
 #include "ccpuapi.h"
 
 t_bool ccpuapiHasDiff()
 {
+	t_nubit16 s1,s2;
 	t_nubitcc i;
 	t_bool flagdiff = 0x00;
+#if CCPU_RAM == CRAM
+	if (ccpu.icount % 10000 == 0) vapiPrint("at #%d\n",ccpu.icount);
+#endif
 	if (!ccpu.flagignore) {
 		if (ccpu.ax != _ax) {vapiPrint("diff ax\n");flagdiff = 0x01;}
 		if (ccpu.bx != _bx) {vapiPrint("diff bx\n");flagdiff = 0x01;}
@@ -35,12 +39,20 @@ t_bool ccpuapiHasDiff()
 		if (ccpu_getSF_Flag() != _sf) {vapiPrint("diff sf\n");flagdiff = 0x01;}
 		if (ccpu_getTF_Flag() != _tf) {vapiPrint("diff tf\n");flagdiff = 0x01;}
 		if (ccpu_getZF_Flag() != _zf) {vapiPrint("diff zf\n");flagdiff = 0x01;}
+		s1 = vramVarWord(_ss,_sp);
+		s2 = cramVarWord(ccpu.ss, ccpu.sp);
+		if (s1 != s2) {
+			vapiPrint("diff stack: 1=%04X, 2=%04X\n",s1,s2);
+			flagdiff = 0x01;
+		}
 	} else {
+#if CCPU_RAM == CRAM
 		memcpy((void *)cram.base, (void *)vram.base, vram.size);
+#endif
 	}
 #if CCPU_RAM == CRAM
+	if (ccpu.icount < 20000000) return flagdiff;
 	if (memcmp((void *)cram.base, (void *)vram.base, vram.size)) {
-		//if (cramVarByte(0,0x046c) + 1 == vramVarByte(0,0x46c)) return flagdiff;
 		vapiPrint("diff ram\n");flagdiff = 0x01;
 		for(i = 0;i < vram.size;++i)
 			if (cramVarByte(0,i) != vramVarByte(0,i))
@@ -49,8 +61,7 @@ t_bool ccpuapiHasDiff()
 		memcpy((void *)cram.base, (void *)vram.base, vram.size);
 	}
 #endif
-	if (flagdiff) vapiPrint("Above diff is #%d\n",ccpu.icount);
-//	if (ccpu.icount % 10000 == 0) vapiPrint("Current at #%d\n",ccpu.icount);
+	if (flagdiff) vapiPrint("this diff happens at #%d\n",ccpu.icount);
 	return flagdiff;
 }
 
@@ -149,6 +160,13 @@ void ccpuapiSyncRegs()
 	ccpu_setSF_Flag_flag(_sf);
 	ccpu_setTF_Flag_flag(_tf);
 	ccpu_setZF_Flag_flag(_zf);
+#if CCPU_RAM == CRAM
+	if (!ccpu.icount)
+		memcpy((void *)cram.base, (void *)vram.base, vram.size);
+	else {
+		memcpy((void *)(cram.base+0x0400), (void *)(vram.base+0x0400), 0x0100);
+	}
+#endif
 }
 
 /* insert into vcpuinsExecIns() */

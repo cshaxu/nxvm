@@ -1,14 +1,21 @@
 
 #include "../vmachine.h"
+#include "../vapi.h"
 #include "ccpuapi.h"
 
 void ins_atomMethod_MOV_8bit(t_nubit32 logicAddr_des, const t_nubit8 data_src)
 {
-	d_nubit8(cramGetAddr(0, logicAddr_des)) = data_src;
+#if CCPU_RAM == VRAM
+	if (im(vramGetAddr(0, logicAddr_des))) return;
+#endif
+	d_nubit8(vramGetAddr(0, logicAddr_des)) = data_src;
 }
 void ins_atomMethod_MOV_16bit(t_nubit32 logicAddr_des, const t_nubit16 data_src)
 {
-	d_nubit16(cramGetAddr(0, logicAddr_des)) = data_src;
+#if CCPU_RAM == VRAM
+	if (im(vramGetAddr(0, logicAddr_des))) return;
+#endif
+	d_nubit16(vramGetAddr(0, logicAddr_des)) = data_src;
 }
 
 void ins_atomMethod_ADD_8bit(t_nubit8 *pdes, const t_nubit8 src)
@@ -18,7 +25,9 @@ void ins_atomMethod_ADD_8bit(t_nubit8 *pdes, const t_nubit8 src)
 	ccpu_storeCaculate(ADD_8bit, 8, 
 							operand1,  src, *pdes,
 							MASK_FLAG_METHOD_ADD);
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_ADD_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -27,6 +36,9 @@ void ins_atomMethod_ADD_16bit(t_nubit16 *pdes, const t_nubit16 src)
 	ccpu_storeCaculate(ADD_16bit, 16, 
 							operand1,  src, *pdes,
 							MASK_FLAG_METHOD_ADD);
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_INC_8bit(t_nubit8 *pdes)
 {
@@ -35,7 +47,9 @@ void ins_atomMethod_INC_8bit(t_nubit8 *pdes)
 	ccpu_storeCaculate(ADD_8bit, 8,
 							operand1, 1, *pdes,
 							MASK_FLAG_METHOD_INC);
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_INC_16bit(t_nubit16 *pdes)
 {
@@ -44,7 +58,9 @@ void ins_atomMethod_INC_16bit(t_nubit16 *pdes)
 	ccpu_storeCaculate(ADD_16bit, 16,
 							operand1, 1, *pdes,
 							MASK_FLAG_METHOD_INC);
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_ADC_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
@@ -63,7 +79,9 @@ void ins_atomMethod_ADC_8bit(t_nubit8 *pdes, const t_nubit8 src)
 							operand1,  src, *pdes,//如果CF为假时候则相当于执行ADD操作
 							MASK_FLAG_METHOD_ADD);
 	}
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_ADC_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -82,7 +100,9 @@ void ins_atomMethod_ADC_16bit(t_nubit16 *pdes, const t_nubit16 src)
 							operand1,  src, *pdes,//如果CF为假时候则相当于执行ADD操作
 							MASK_FLAG_METHOD_ADD);
 	}
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_SUB_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
@@ -91,7 +111,9 @@ void ins_atomMethod_SUB_8bit(t_nubit8 *pdes, const t_nubit8 src)
 	ccpu_storeCaculate(SUB_8bit, 8, 
 							operand1,  src, *pdes,
 							MASK_FLAG_METHOD_SUB);
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_SUB_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -100,7 +122,9 @@ void ins_atomMethod_SUB_16bit(t_nubit16 *pdes, const t_nubit16 src)
 	ccpu_storeCaculate(SUB_16bit, 16, 
 							operand1,  src, *pdes,
 							MASK_FLAG_METHOD_SUB);
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_DEC_8bit(t_nubit8 *pdes)
 {
@@ -109,7 +133,9 @@ void ins_atomMethod_DEC_8bit(t_nubit8 *pdes)
 	ccpu_storeCaculate(SUB_8bit, 8,
 							operand1, 1, *pdes,
 							MASK_FLAG_METHOD_DEC);
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_DEC_16bit(t_nubit16 *pdes)
 {
@@ -118,7 +144,9 @@ void ins_atomMethod_DEC_16bit(t_nubit16 *pdes)
 	ccpu_storeCaculate(SUB_16bit, 16,
 							operand1, 1, *pdes,
 							MASK_FLAG_METHOD_DEC);
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_SBB_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
@@ -137,7 +165,9 @@ void ins_atomMethod_SBB_8bit(t_nubit8 *pdes, const t_nubit8 src)
 							operand1,  src, *pdes,//如果CF为假时候则相当于执行SUB操作
 							MASK_FLAG_METHOD_ADD);
 	}
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_SBB_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -152,11 +182,14 @@ void ins_atomMethod_SBB_16bit(t_nubit16 *pdes, const t_nubit16 src)
 	else
 	{
 		*pdes -= src;
-		ccpu_storeCaculate(SUB_16bit, 16, 
+/* NEKO DEBUG: SUB_16bit -> SBB_16bit*/
+		ccpu_storeCaculate(SBB_16bit, 16, 
 							operand1,  src, *pdes,//如果CF为假时候则相当于执行SUB操作
 							MASK_FLAG_METHOD_ADD);
 	}
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_OR_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
@@ -168,7 +201,9 @@ void ins_atomMethod_OR_8bit(t_nubit8 *pdes, const t_nubit8 src)
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_OR_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -180,7 +215,9 @@ void ins_atomMethod_OR_16bit(t_nubit16 *pdes, const t_nubit16 src)
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_AND_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
@@ -192,7 +229,9 @@ void ins_atomMethod_AND_8bit(t_nubit8 *pdes, const t_nubit8 src)
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_AND_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -204,31 +243,29 @@ void ins_atomMethod_AND_16bit(t_nubit16 *pdes, const t_nubit16 src)
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
-	
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_TEST_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
 	t_nubit8 operand1 = *pdes;
-//	*pdes &= src;
 	ccpu_storeCaculate(AND_8bit, 8, 
 							operand1,  src, (*pdes & src),
 							MASK_FLAG_METHOD_AND);
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
-	
 }
 void ins_atomMethod_TEST_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
 	t_nubit16 operand1 = *pdes;
-//	*pdes &= src;
 	ccpu_storeCaculate(AND_16bit, 16, 
 							operand1,  src, (*pdes & src),
 							MASK_FLAG_METHOD_AND);
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
-	
 }
 void ins_atomMethod_XOR_8bit(t_nubit8 *pdes, const t_nubit8 src)
 {
@@ -240,6 +277,9 @@ void ins_atomMethod_XOR_8bit(t_nubit8 *pdes, const t_nubit8 src)
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//Intel中说是不影响，但是debug中会影响
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_XOR_16bit(t_nubit16 *pdes, const t_nubit16 src)
 {
@@ -251,8 +291,9 @@ void ins_atomMethod_XOR_16bit(t_nubit16 *pdes, const t_nubit16 src)
 	ccpu_setOF_Flag_flag(0x00);
 	ccpu_setCF_Flag_flag(0x00);
 	ccpu_setAF_Flag_flag(0x00);//根据debug得出的，虽然Intel的文档说是undefine
-	
-
+#if CCPU_RAM == VRAM
+	if (im(pdes)) *pdes = operand1;
+#endif
 }
 void ins_atomMethod_CMP_8bit(t_nubit8 des, const t_nubit8 src)
 {
@@ -287,24 +328,32 @@ void ins_atomMethod_CMPSW()
 void ins_atomMethod_MOVSB()
 {
 	t_nubit8 data = getMemData_byte(ccpu.si + (decode_getDefaultSegment_DS() <<4));
+#if CCPU_RAM == CRAM
 	writeMem_byte(ccpu.di + (ccpu.es<<4), data);
+#endif
 	ins_self_string_affect_DI_SI(dataType_U1); //串操作对DI， SI修改
 }
 void ins_atomMethod_MOVSW()
 {
 	t_nubit16 data = getMemData_word(ccpu.si + (decode_getDefaultSegment_DS() <<4));
+#if CCPU_RAM == CRAM
 	writeMem_word(ccpu.di + (ccpu.es<<4), data);
+#endif
 	ins_self_string_affect_DI_SI(dataType_U2);//串操作对DI， SI修改
 }
 
 void ins_atomMethod_STOSB()
 {
+#if CCPU_RAM == CRAM
 	writeMem_byte(ccpu.di + (ccpu.es<<4), ccpu.al);
+#endif
 	ins_self_string_affect_DI(dataType_U1);//串操作对DI修改
 }
 void ins_atomMethod_STOSW()
 {
+#if CCPU_RAM == CRAM
 	writeMem_word(ccpu.di + (ccpu.es<<4), ccpu.ax);
+#endif
 	ins_self_string_affect_DI(dataType_U2);//串操作对DI修改
 }
 void ins_atomMethod_LODSB()
@@ -327,24 +376,19 @@ void ins_atomMethod_SCASW()
 	ins_atomMethod_CMP_16bit(ccpu.ax, getMemData_word(ccpu.di + (ccpu.es<<4)));
 	ins_self_string_affect_DI(dataType_U2);//串操作对DI， SI修改
 }
-void ins_atomMethod_INS() //80x86没有这个指令
-{
-	//need finish
-}
-void ins_atomMethod_OUTS()//80x86没有这个指令
-{
-	//need finish
-}
+void ins_atomMethod_INS() {}
+void ins_atomMethod_OUTS() {}
 
 void ins_atomMethod_shortJMP()
 {
-	
-		ccpu.ip += (t_nsbit8)(ccpu.deCodeBlock.opContactData_8bit);
+	ccpu.ip += (t_nsbit8)(ccpu.deCodeBlock.opContactData_8bit);
 }
 void ins_atomMethod_PUSH(const t_nubit16 data)
 {
 	ccpu.sp -= 2;
+#if CCPU_RAM == CRAM
 	writeMem_word((ccpu.sp + ((ccpu.ss)<<4)), data);
+#endif
 }
 t_nubit16   ins_atomMethod_POP()
 {
@@ -354,6 +398,7 @@ t_nubit16   ins_atomMethod_POP()
 }
 void ins_atomMethod_INT(const t_nubit8 INT_num)
 {
+	if (INT_num == 0x16) vapiPrint("...");
 	ins_atomMethod_PUSH(ccpu_generateFLAG());//FLAGS入栈	
 	ins_atomMethod_PUSH(ccpu.cs);
 	ins_atomMethod_PUSH(ccpu.ip);

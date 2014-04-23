@@ -379,14 +379,14 @@ t_bool ccpu_getOF_Flag()
 		break;
 	default:
 		vapiPrint("OF flags lazy comput wrong");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		break;
 	}
 		return 0x00;
 }
 t_bool ccpu_getDF_Flag()
 {
-	//assert(0x00);简单运算，都会没有什么函数会难为它的~~
+	//vapiCallBackMachineStop();;简单运算，都会没有什么函数会难为它的~~
 	if( !(ccpu.needCaculateFlag_mask & MASK_FLAG_DF) )
 		return ccpu.DF_Flag;
 	ccpu.needCaculateFlag_mask &= ~(MASK_FLAG_DF) ;
@@ -394,7 +394,7 @@ t_bool ccpu_getDF_Flag()
 }
 t_bool ccpu_getIF_Flag()
 {
-	//assert(0x00);简单运算，都会没有什么函数会难为它的~~
+	//vapiCallBackMachineStop();;简单运算，都会没有什么函数会难为它的~~
 	if( !(ccpu.needCaculateFlag_mask & MASK_FLAG_IF) )
 		return ccpu.IF_Flag;
 	ccpu.needCaculateFlag_mask &= ~(MASK_FLAG_IF) ;
@@ -402,7 +402,7 @@ t_bool ccpu_getIF_Flag()
 }
 t_bool ccpu_getTF_Flag()
 {
-	//assert(0x00);简单运算，都会没有什么函数会难为它的~~
+	//vapiCallBackMachineStop();;简单运算，都会没有什么函数会难为它的~~
 	if( !(ccpu.needCaculateFlag_mask & MASK_FLAG_TF) )
 		return ccpu.TF_Flag;
 	ccpu.needCaculateFlag_mask &= ~(MASK_FLAG_TF) ;
@@ -423,7 +423,7 @@ t_bool ccpu_getSF_Flag()
 		break;
 	default:
 		vapiPrint("when comput SF flags , found the bitLength out of handle ");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		break;
 	}
 	return ccpu.SF_Flag;
@@ -460,7 +460,7 @@ t_bool ccpu_getAF_Flag()
 		break;
 	default:
 		vapiPrint("when comput AF flags , found the bitLength out of handle");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		break;
 	}
 	return ccpu.AF_Flag;
@@ -514,7 +514,7 @@ t_bool ccpu_getCF_Flag()
 		break;
 	default:
 		vapiPrint("when comput CF flags , found the bitLength out of handle");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		break;
 	}
 	return ccpu.CF_Flag;

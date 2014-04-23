@@ -36,7 +36,7 @@ void win32conStartMachine()
 	CreateThread(NULL, 0, ThreadDisplay, NULL, 0, &ThreadIdDisplay);
 	CreateThread(NULL, 0, ThreadKernel, NULL, 0, &ThreadIdKernel);
 	while (vapiCallBackMachineGetFlagRun()) {
-		vapiSleep(55);
+		vapiSleep(20);
 //		vapiCallBackRtcUpdateTime();
 		w32ckeybProcess();
 	}

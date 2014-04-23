@@ -314,7 +314,8 @@ void decode_deCodeInsStuff()
 		break;
 	default:
 		vapiPrint("deCodeInsStuff Unhandle a OpCode %x\n", *ccpu.deCodeBlock.pOpCode);
-		assert(0x00);
+		vapiCallBackMachineStop();
+		//vapiCallBackMachineStop();;
 		break;
 	}
 }
@@ -359,7 +360,7 @@ void * decode_deCodeEffectiveMemAddr(const t_nubit8 modRegRm, const void * pdisp
 		break;
 	default://谁知道呢，，，可能宇宙射线
 		vapiPrint("deCodeEffectiveMemAddr UnHandle the rm bits");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		return 0;
 	}
 	
@@ -379,7 +380,7 @@ void * decode_deCodeEffectiveMemAddr(const t_nubit8 modRegRm, const void * pdisp
 		return (void *)decode_getRegAddr(ccpu.deCodeBlock.isWidth, (modRegRm & MASK_00000111) );
 	default:
 		vapiPrint("deCodeEffectiveMemAddr UnHandle the mod bits");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		return 0;
 	}
 	return (void *)(p_nubit8(cramGetAddr(0,0)) + memAddr);

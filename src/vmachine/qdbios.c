@@ -488,7 +488,7 @@ t_bool qdbiosExecInt(t_nubit8 intid)
 
 void qdbiosRefresh()
 {
-	static rtctest = 0;
+	static int rtctest = 0;
 	rtctest++;
 	if (rtctest == 0x10000) {
 		vapiCallBackRtcUpdateTime();

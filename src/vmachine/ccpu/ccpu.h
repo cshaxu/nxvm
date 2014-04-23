@@ -7,7 +7,9 @@
 
 #define CRAM 0
 #define VRAM 1
-#define CCPU_RAM CRAM
+
+#define CPU2 0
+#define CCPU_RAM VRAM
 
 #define MASK_00000000  0
 #define MASK_00000001  1
@@ -841,6 +843,7 @@ extern t_ram cram;
 #define cramVarWord(segment, offset)  (d_nubit16(cramGetAddr(segment, offset)))
 #define cramVarDWord(segment, offset) (d_nubit32(cramGetAddr(segment, offset)))
 
+#define im(n) cramIsAddrInMem((t_vaddrcc)(n))
 #define getMemData_byte(addr) cramVarByte(0,(addr))
 #define getMemData_word(addr) cramVarWord(0,(addr))
 #define writeMem_byte(addr, data) (cramVarByte(0,(addr)) = (data))

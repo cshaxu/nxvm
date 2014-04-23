@@ -55,7 +55,7 @@ static VOID w32ckeybMakeKey(INPUT_RECORD inRec)
 			else if (vapiCallBackKeyboardGetCtrl()) ascii += 0x2300;
 			vapiCallBackKeyboardRecvKeyPress(ascii);
 			break;
-		case VK_ESCAPE://ESC
+		/*case VK_ESCAPE://ESC
 		case VK_BACK:  // BACKSPACE
 		case VK_PRIOR: //PageUP
 		case VK_NEXT: //pageDown
@@ -68,7 +68,7 @@ static VOID w32ckeybMakeKey(INPUT_RECORD inRec)
 		case VK_RETURN:
 			vapiCallBackKeyboardRecvKeyPress(ascii |
 				inRec.Event.KeyEvent.uChar.AsciiChar);
-			break;
+			break;*/
 		default://剩下的字符可能是alt。。ctl与普通字符等，但是updateKBStatus会过滤掉普通字符
 			w32ckeybMakeStatus();
 			if (vapiCallBackKeyboardGetAlt())

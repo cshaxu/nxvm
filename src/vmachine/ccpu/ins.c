@@ -36,7 +36,6 @@ void ins_method_POP_ES()
 	ccpu.es = ins_atomMethod_POP();
 }
 
-
 void ins_method_ADC_Eb_Gb()
 {
 	ins_atomMethod_ADC_8bit(p_nubit8(ccpu.deCodeBlock.prm), d_nubit8(ccpu.deCodeBlock.preg));
@@ -419,12 +418,18 @@ void ins_method_XCHG_Eb_Gb()//0x86
 {
 	t_nubit8 tmp = d_nubit8(ccpu.deCodeBlock.preg);
 	d_nubit8(ccpu.deCodeBlock.preg) = d_nubit8(ccpu.deCodeBlock.prm);
+#if CCPU_RAM == VRAM
+	if (im(ccpu.deCodeBlock.prm)) return;
+#endif
 	d_nubit8(ccpu.deCodeBlock.prm)= tmp;
 }
 void ins_method_XCHG_Ev_Gv()
 {
 	t_nubit16 tmp = d_nubit16(ccpu.deCodeBlock.preg);
 	d_nubit16(ccpu.deCodeBlock.preg) = d_nubit16(ccpu.deCodeBlock.prm);
+#if CCPU_RAM == VRAM
+	if (im(ccpu.deCodeBlock.prm)) return;
+#endif
 	d_nubit16(ccpu.deCodeBlock.prm)= tmp;
 }
 
@@ -483,10 +488,16 @@ void ins_method_MOV_eAX_Ov()//tested
 }
 void ins_method_MOV_Ob_AL()//tested
 {
+#if CCPU_RAM == VRAM
+	if (im(ccpu.deCodeBlock.prm)) return;
+#endif
 	d_nubit8(ccpu.deCodeBlock.prm) = ccpu.al;
 }
 void ins_method_MOV_Ov_eAX()//tested
 {
+#if CCPU_RAM == VRAM
+	if (im(ccpu.deCodeBlock.prm)) return;
+#endif
 	d_nubit16(ccpu.deCodeBlock.prm) = ccpu.ax;
 }
 
@@ -600,10 +611,16 @@ void ins_method_LDS_Gv_Mp()
 
 void ins_method_MOV_Eb_Ib()//tested
 {
+#if CCPU_RAM == VRAM
+	if (im(ccpu.deCodeBlock.prm)) return;
+#endif
 	d_nubit8(ccpu.deCodeBlock.prm) = ccpu.deCodeBlock.immData_8Bit;
 }
 void ins_method_MOV_Ev_Iv()//tested
 {
+#if CCPU_RAM == VRAM
+	if (im(ccpu.deCodeBlock.prm)) return;
+#endif
 	d_nubit16(ccpu.deCodeBlock.prm) = ccpu.deCodeBlock.immData_16Bit;
 }
 
@@ -631,7 +648,7 @@ void ins_method_ShiftGroup2_Eb_1()
 		break;
 	case 6://nnn=110
 		vapiPrint("ins_method_ShiftGroup2_Eb_1 UnHandle the nnn bits");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		return;
 	case 7://nnn=111
 		ins_methodGroup_SAR_Eb_1();
@@ -662,7 +679,7 @@ void ins_method_ShiftGroup2_Ev_1()
 		break;
 	case 6://nnn=110
 		vapiPrint("ins_method_ShiftGroup2_Ev_1 UnHandle the nnn bits");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		return;
 	case 7://nnn=111
 		ins_methodGroup_SAR_Ev_1();
@@ -693,7 +710,7 @@ void ins_method_ShiftGroup2_Eb_CL()
 		break;
 	case 6://nnn=110
 		vapiPrint("ins_method_ShiftGroup2_Eb_CL UnHandle the nnn bits");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		return;
 	case 7://nnn=111
 		ins_methodGroup_SAR_Eb_CL();
@@ -724,7 +741,7 @@ void ins_method_ShiftGroup2_Ev_CL()
 		break;
 	case 6://nnn=110
 		vapiPrint("ins_method_ShiftGroup2_Ev_CL UnHandle the nnn bits");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		return;
 	case 7://nnn=111
 		ins_methodGroup_SAR_Ev_CL();
@@ -819,7 +836,7 @@ void ins_method_UnaryGroup_Eb()
 		break;
 	case 1://nnn=001
 		vapiPrint("ins_method_UnaryGroup_Eb UnHandle the nnn bits");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		break;
 	case 2://nnn=010
 		ins_methodGroup_NOT_8bit();
@@ -850,7 +867,7 @@ void ins_method_UnaryGroup_Ev()
 		break;
 	case 1://nnn=001
 		vapiPrint("ins_method_UnaryGroup_Ev UnHandle the nnn bits");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		break;
 	case 2://nnn=010
 		ins_methodGroup_NOT_16bit();
@@ -1187,14 +1204,21 @@ void ins_method_ShortJumpCondition_JNLE()
 
 void ins_method_MOV_Eb_Gb()//tested
 {
+#if CCPU_RAM == VRAM
+	if (im(ccpu.deCodeBlock.prm)) return;
+#endif
 	d_nubit8(ccpu.deCodeBlock.prm) = d_nubit8(ccpu.deCodeBlock.preg);
 }
 void ins_method_MOV_Ev_Gv()//tested
 {
+#if CCPU_RAM == VRAM
+	if (im(ccpu.deCodeBlock.prm)) return;
+#endif
 	d_nubit16(ccpu.deCodeBlock.prm) = d_nubit16(ccpu.deCodeBlock.preg);
 }
 void ins_method_MOV_Gb_Eb()//tested
 {
+//	vapiPrint("MOV_Gb_Eb, %X\n",(t_vaddrcc)ccpu.deCodeBlock.prm);
 	d_nubit8(ccpu.deCodeBlock.preg) = d_nubit8(ccpu.deCodeBlock.prm);
 }
 void ins_method_MOV_Gv_Ev()//tested
@@ -1203,12 +1227,15 @@ void ins_method_MOV_Gv_Ev()//tested
 }
 void ins_method_MOV_Ew_Sw()//tested
 {
+#if CCPU_RAM == VRAM
+	if (im(ccpu.deCodeBlock.prm)) return;
+#endif
 	d_nubit16(ccpu.deCodeBlock.prm) = d_nubit16(ccpu.deCodeBlock.pseg);
 }
 
 void ins_method_LEA_Gv_M()
 {
-	d_nubit16(ccpu.deCodeBlock.preg) = (t_nubit16)((t_nubit8 *)(ccpu.deCodeBlock.prm) - p_nubit8(cramGetAddr(0,0)) - (ccpu.deCodeBlock.segData<<4));
+	d_nubit16(ccpu.deCodeBlock.preg) = (t_nubit16)(p_nubit8(ccpu.deCodeBlock.prm) - p_nubit8(cramGetAddr(0,0)) - (ccpu.deCodeBlock.segData<<4));
 }
 
 void ins_method_MOV_Sw_Ew()//tested
@@ -1217,7 +1244,12 @@ void ins_method_MOV_Sw_Ew()//tested
 }
 void ins_method_POP_Ev()
 {
-	d_nubit16(ccpu.deCodeBlock.prm) = ins_atomMethod_POP();
+	t_nubit16 tmp;
+	tmp = ins_atomMethod_POP();
+#if CCPU_RAM == VRAM
+	if (im(ccpu.deCodeBlock.prm)) return;
+#endif
+	d_nubit16(ccpu.deCodeBlock.prm) = tmp;
 }
 
 void ins_method_CBW()//0x98
@@ -1265,6 +1297,7 @@ void ins_method_SAHF()//0x9e
 }
 void ins_method_LAHF()
 {
+//	vapiPrint("2:LAHF:%4X\n",ccpu_generateFLAG());
 	ccpu.ah = (t_nubit8)ccpu_generateFLAG();
 }
 
@@ -1409,10 +1442,10 @@ void ins_method_INT_Ib()
 	t_nubit8 intid = ccpu.deCodeBlock.opContactData_8bit;
 // NEKOLOG
 	switch (intid) {
+	case 0x16:
 	case 0x10:
 	case 0x13:
 	case 0x15:
-	case 0x16:
 	case 0x1a:
 	case 0x11:
 	case 0x12:
@@ -1501,7 +1534,7 @@ void ins_method_INC_Group4()
 		break;
 	default:
 		vapiPrint("ins_method_INC_Group4 UnHandle the nnn bits");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		break;
 	}
 }
@@ -1532,7 +1565,7 @@ void ins_method_INC_Group5()
 		return;
 	case 7://nnn=111
 		vapiPrint("ins_method_INC_Group5 UnHandle the nnn bits");
-		assert(0x00);
+		vapiCallBackMachineStop();;
 		break;
 	}
 }

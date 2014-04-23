@@ -61,6 +61,7 @@ void vmachineInit()
 	memset(&vmachine, 0x00, sizeof(t_machine));
 	vportInit();
 	vramInit();
+	vcpuInit();
 	vpicInit();
 	vdmaInit();
 	vfdcInit();
@@ -69,7 +70,6 @@ void vmachineInit()
 	qdbiosInit();
 #endif
 // temp
-	vcpuInit();
 /*
 	vpitInit();
 	vkbcInit();
@@ -78,8 +78,9 @@ void vmachineInit()
 	vdispInit();
 	vcmosInit();
 */
-	vmachine.flagmode = 0x01;
-	vmachine.flaginit = 0x01;
+	vmachine.flagrecord = 0x01;
+	vmachine.flagmode   = 0x01;
+	vmachine.flaginit   = 0x01;
 }
 void vmachineFinal()
 {
