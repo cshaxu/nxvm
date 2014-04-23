@@ -299,7 +299,7 @@ void PICInit()
 	out(0xa1);
 	mov(0x02);	// ICW3: 0000 0010
 	out(0xa1);
-	mov(0x01);	// ICW4: 0000 0001 (Why not 0000 00101 for Master??)
+	mov(0x01);	// ICW4: 0000 0001
 	out(0xa1);
 	// Initialization Ends
 }

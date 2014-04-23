@@ -250,6 +250,7 @@ static void dprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 	char t,c[0x11];
 	t_nubit16 i;
 	if(start > end) return;
+	if(((segment<<4)+end) > 0xfffff) return; 
 	c[0x10] = '\0';
 	if(end < start) end = 0xffff;
 	for(i = start-(start%0x10);i <= end+(0x10-end%0x10)-1;++i) {

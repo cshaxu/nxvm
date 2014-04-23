@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x52]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x54]\n\
 Copyright (c) 2012 Neko. All rights reserved.\n"
 
 /*
@@ -9,40 +9,37 @@ Copyright (c) 2012 Neko. All rights reserved.\n"
 	Start:		01/25/2012
 	End:		(null)
 	Module 0 - CONSOLE
-	Project Date:	With Project
+		With Project
 	Module I - ASM86
-	Project Date:
 		Stage 1: Asm		01/25/2012 - 01/31/2012
 		Stage 2: Disasm		02/01/2012 - 02/05/2012
-	Module II - VCPU: Intel 8086 Instruction Set
-	Project Date:
-		Stage 1: Code		02/06/2012 - 02/12/2012
-		Stage 2: Verify		Not Started
-		Stage 3: Test		Not Started
-		Stage 4: Connect	02/12/2012 - 02/12/2012
-	Module III - VDEVICE
-		Stage 1: PIC(8259)	02/24/2012 - 03/08/2012
-		Stage 2: RTC(DS1302	03/02/2012 - Present // 未在CMOSInit()中对CMOS寄存器初始化
-		Stage 3: PIT(8254)	03/03/2012 - Present.	// IO端口没有实现，对于BIOS和MSDOS也没有必要实现
-		Stage 4: DMAC(8237)	03/03/2012 - Present.	// 仅实现了IO端口，但DMA传送功能没有实现
-		Stage 5: FDC(8272)	03/07/2012 - Present.	// 需要实现IO端口，以及和DMA的交互
+	Module II - VM_KERNEL
+		Stage 1: CPU		02/06/2012 - 02/12/2012
+		Stage 2: PIC(8259)	02/24/2012 - 03/08/2012
+		Stage 3: RTC(DS1302	03/02/2012 - Present.	// TODO: 在CMOSInit()中对CMOS寄存器初始化
+		Stage 4: PIT(8254)	03/03/2012 - Present.	// IO not implemented.
+	Module III - VM_STORAGE
+		Stage 1: DMAC(8237)	03/03/2012 - Present.	// DMA is only used to store memory address and word count
+		Stage 2: FDDrive)	03/08/2012 - 03/18/2012	// Load and unload floppy image file
+		Stage 3: FDC(8272)	03/07/2012 - 03/18/2012	// Transfers data between flp image and memory.
+	Module IV - VM_INPUT
 		Stage ?: KEYB		Not Started
+	Module V - VM_OUTPUT
 		Stage ?: VGA		Not Started
 		Stage ?: Monitor	Not Started
-
+	Module VI - VM_BIOS
 		Stage ?: BIOS		Not Started BIOS Service via I/O
 		Stage ?: BIOS		Not Started BIOS INT Routine via ASM
-
+	Module VII - VAPI
+		Stage 1: NONE		Not Started
+		Stage 2: W32CON		Not Started
+		Stage 3: W32APP		Not Started
+	Module VIII - DOSINT
+	Other:
 		Stage ?: Serial		Not Started
 		Stage ?: Printer	Not Started
 		Stage ?: HDD		Not Started
 		Stage ?: CDROM		Not Started
-
-	Module IV - VAPI
-		Stage 1: NONE		Not Started
-		Stage 2: W32CON		Not Started
-		Stage 3: W32APP		Not Started
-	Module V - DOSINT
 */
 
 #include "stdio.h"

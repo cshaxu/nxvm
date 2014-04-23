@@ -21,7 +21,9 @@ void vramSetWord(t_nubit16 segment,t_nubit16 offset,t_nubit16 value)
 {*(t_nubit16 *)(vrambase+SHL4(segment)+offset) = value;}
 void vramSetDWord(t_nubit16 segment,t_nubit16 offset,t_nubit32 value)
 {*(t_nubit32 *)(vrambase+SHL4(segment)+offset) = value;}
-t_vaddrcc vramGetAddress(t_nubit16 segment,t_nubit16 offset)
+t_vaddrcc vramGetAddress(t_vaddrcc immloc)
+{return (vrambase+immloc);}
+t_vaddrcc vramGetRealAddress(t_nubit16 segment,t_nubit16 offset)
 {return (vrambase+SHL4(segment)+offset);}
 
 void RAMInit()

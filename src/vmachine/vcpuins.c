@@ -174,13 +174,13 @@ static void SetFlags(t_nubit16 flags)
 static void GetMem()
 {
 	// returns rm
-	rm = vramGetAddress(insDS,vramGetWord(vcpu.cs,vcpu.ip));
+	rm = vramGetRealAddress(insDS,vramGetWord(vcpu.cs,vcpu.ip));
 	vcpu.ip += 2;
 }
 static void GetImm(t_nubitcc immbit)
 {
 	// returns imm
-	imm = vramGetAddress(vcpu.cs,vcpu.ip);
+	imm = vramGetRealAddress(vcpu.cs,vcpu.ip);
 	switch(immbit) {
 	case 8:		vcpu.ip += 1;break;
 	case 16:	vcpu.ip += 2;break;
@@ -195,39 +195,39 @@ static void GetModRegRM(t_nubitcc regbit,t_nubitcc rmbit)
 	switch(MOD) {
 	case 0:
 		switch(RM) {
-		case 0:	rm = vramGetAddress(insDS,vcpu.bx+vcpu.si);break;
-		case 1:	rm = vramGetAddress(insDS,vcpu.bx+vcpu.di);break;
-		case 2:	rm = vramGetAddress(insSS,vcpu.bp+vcpu.si);break;
-		case 3:	rm = vramGetAddress(insSS,vcpu.bp+vcpu.di);break;
-		case 4:	rm = vramGetAddress(insDS,vcpu.si);break;
-		case 5:	rm = vramGetAddress(insDS,vcpu.di);break;
-		case 6:	rm = vramGetAddress(insDS,vramGetWord(vcpu.cs,vcpu.ip));vcpu.ip += 2;break;
-		case 7:	rm = vramGetAddress(insDS,vcpu.bx);break;
+		case 0:	rm = vramGetRealAddress(insDS,vcpu.bx+vcpu.si);break;
+		case 1:	rm = vramGetRealAddress(insDS,vcpu.bx+vcpu.di);break;
+		case 2:	rm = vramGetRealAddress(insSS,vcpu.bp+vcpu.si);break;
+		case 3:	rm = vramGetRealAddress(insSS,vcpu.bp+vcpu.di);break;
+		case 4:	rm = vramGetRealAddress(insDS,vcpu.si);break;
+		case 5:	rm = vramGetRealAddress(insDS,vcpu.di);break;
+		case 6:	rm = vramGetRealAddress(insDS,vramGetWord(vcpu.cs,vcpu.ip));vcpu.ip += 2;break;
+		case 7:	rm = vramGetRealAddress(insDS,vcpu.bx);break;
 		default:CaseError("GetModRegRM::MOD0::RM");break;}
 		break;
 	case 1:
 		switch(RM) {
-		case 0:	rm = vramGetAddress(insDS,vcpu.bx+vcpu.si);break;
-		case 1:	rm = vramGetAddress(insDS,vcpu.bx+vcpu.di);break;
-		case 2:	rm = vramGetAddress(insSS,vcpu.bp+vcpu.si);break;
-		case 3:	rm = vramGetAddress(insSS,vcpu.bp+vcpu.di);break;
-		case 4:	rm = vramGetAddress(insDS,vcpu.si);break;
-		case 5:	rm = vramGetAddress(insDS,vcpu.di);break;
-		case 6:	rm = vramGetAddress(insSS,vcpu.bp);break;
-		case 7:	rm = vramGetAddress(insDS,vcpu.bx);break;
+		case 0:	rm = vramGetRealAddress(insDS,vcpu.bx+vcpu.si);break;
+		case 1:	rm = vramGetRealAddress(insDS,vcpu.bx+vcpu.di);break;
+		case 2:	rm = vramGetRealAddress(insSS,vcpu.bp+vcpu.si);break;
+		case 3:	rm = vramGetRealAddress(insSS,vcpu.bp+vcpu.di);break;
+		case 4:	rm = vramGetRealAddress(insDS,vcpu.si);break;
+		case 5:	rm = vramGetRealAddress(insDS,vcpu.di);break;
+		case 6:	rm = vramGetRealAddress(insSS,vcpu.bp);break;
+		case 7:	rm = vramGetRealAddress(insDS,vcpu.bx);break;
 		default:CaseError("GetModRegRM::MOD1::RM");break;}
 		rm += vramGetByte(vcpu.cs,vcpu.ip);vcpu.ip += 1;
 		break;
 	case 2:
 		switch(RM) {
-		case 0:	rm = vramGetAddress(insDS,vcpu.bx+vcpu.si);break;
-		case 1:	rm = vramGetAddress(insDS,vcpu.bx+vcpu.di);break;
-		case 2:	rm = vramGetAddress(insSS,vcpu.bp+vcpu.si);break;
-		case 3:	rm = vramGetAddress(insSS,vcpu.bp+vcpu.di);break;
-		case 4:	rm = vramGetAddress(insDS,vcpu.si);break;
-		case 5:	rm = vramGetAddress(insDS,vcpu.di);break;
-		case 6:	rm = vramGetAddress(insSS,vcpu.bp);break;
-		case 7:	rm = vramGetAddress(insDS,vcpu.bx);break;
+		case 0:	rm = vramGetRealAddress(insDS,vcpu.bx+vcpu.si);break;
+		case 1:	rm = vramGetRealAddress(insDS,vcpu.bx+vcpu.di);break;
+		case 2:	rm = vramGetRealAddress(insSS,vcpu.bp+vcpu.si);break;
+		case 3:	rm = vramGetRealAddress(insSS,vcpu.bp+vcpu.di);break;
+		case 4:	rm = vramGetRealAddress(insDS,vcpu.si);break;
+		case 5:	rm = vramGetRealAddress(insDS,vcpu.di);break;
+		case 6:	rm = vramGetRealAddress(insSS,vcpu.bp);break;
+		case 7:	rm = vramGetRealAddress(insDS,vcpu.bx);break;
 		default:CaseError("GetModRegRM::MOD2::RM");break;}
 		rm += vramGetWord(vcpu.cs,vcpu.ip);vcpu.ip += 2;
 		break;
@@ -319,7 +319,7 @@ static void GetModRegRMEA()
 		case 3:	rm = vcpu.bp+vcpu.di;break;
 		case 4:	rm = vcpu.si;break;
 		case 5:	rm = vcpu.di;break;
-		case 6:	rm = vramGetAddress(insSS,vcpu.bp);break;
+		case 6:	rm = vramGetRealAddress(insSS,vcpu.bp);break;
 		case 7:	rm = vcpu.bx;break;
 		default:CaseError("GetModRegRMEA::MOD2::RM");break;}
 		rm += vramGetWord(vcpu.cs,vcpu.ip);vcpu.ip += 2;

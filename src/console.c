@@ -26,6 +26,19 @@ static void parse(char *s)
 	}
 }
 
+void NSTest()
+{
+	t_nubit8 cyl,head,sector;
+	FDDInit();
+	cyl = head = 0;
+	sector = 1;
+	//printf("%lx\n",vramGetAddress(0));
+	vfddWrite(&cyl,&head,&sector,vramGetAddress(0),2);
+	//cyl = head = sector = 0;
+	//vfddWrite(&cyl,&head,&sector,vramGetAddress(0),36);
+	FDDTerm();
+}
+
 void NSExec()
 {
 	char execmd[MAXLINE];
@@ -156,6 +169,7 @@ void NSConsole()
 		fgets(cmdl,MAXLINE,stdin);
 		parse(cmdl);
 		if(!strlen(cmdl)) continue;
+		else if(!strcmp(cmdl,"test")) NSTest();
 		else if(!strcmp(cmdl,"debug")) NSDebug();
 		else if(!strcmp(cmdl,"exec")) NSExec();
 		else if(!strcmp(cmdl,"exit")) NSExit();
