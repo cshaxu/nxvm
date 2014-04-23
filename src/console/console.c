@@ -189,7 +189,7 @@ static void Help()
 			break;
 		} else if (!strcmp(arg[1], "debug")) {
 			printc("Launch NXVM hardware debugger\n");
-			printc("\nDEBUG\n");
+			printc("\nDEBUG [16 | 32]\n");
 			break;
 		} else if (!strcmp(arg[1], "record")) {
 			printc("Record cpu status in each iteration for futher dumping\n");
@@ -294,8 +294,20 @@ static void Info()
 }
 static void Debug()
 {
-	if (narg != 1) GetHelp;
-	debug();
+	t_nubit8 bit = 16;
+	switch (narg) {
+	case 0x01:
+		debug(bit);
+		break;
+	case 0x02:
+		bit = atoi(arg[1]);
+		if (bit != 16 && bit != 32) GetHelp;
+		debug(atoi(arg[1]));
+		break;
+	default:
+		GetHelp;
+		break;
+	}
 }
 static void Record()
 {

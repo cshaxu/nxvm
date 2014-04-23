@@ -321,7 +321,7 @@ void qdcgaGetAdapterInfo()
 }
 void qdcgaDisplayStr()
 {
-	InsertString(vramGetAddr(_es, _bp), _cl, 0x00, 0x01, _bl, _bh,
+	InsertString(vramGetRealAddress(_es, _bp), _cl, 0x00, 0x01, _bl, _bh,
 		_dh,_dl);
 }
 

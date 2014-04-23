@@ -45,14 +45,14 @@ static void vmachineAsmTest()
 	t_nubit8 ins[0x20];
 	total++;
 	lend = dasm(fetch, _cs, _eip, 0x00);
-	memcpy(ins, (void *)vramGetAddr(_cs, _eip), lend);
+	memcpy(ins, (void *)vramGetRealAddress(_cs, _eip), lend);
 	lena = aasm(fetch, _cs, _eip);
 	dasm(result, _cs, _eip, 0x00);
 	for (i = 0;i < 0x50;++i) {
 		if (fetch[i] == '\n') fetch[i] = ' ';
 		if (result[i] == '\n') result[i] = ' ';
 	}
-	if (lena != lend || memcmp(ins, (void *)vramGetAddr(_cs, _eip), lend) || STRCMP(fetch,result)) {
+	if (lena != lend || memcmp(ins, (void *)vramGetRealAddress(_cs, _eip), lend) || STRCMP(fetch,result)) {
 		vapiPrint("diff at #%d\t%04X:%04X\n", total, _cs, _eip);
 		for (i = 0;i < lend;++i) vapiPrint("%02X", ins[i]);
 		vapiPrint("\t%s\n", fetch);

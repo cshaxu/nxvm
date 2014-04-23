@@ -11,15 +11,15 @@
 
 #include "vglobal.h"
 
-#define VCPU_FLAG_CF 0x0001
-#define VCPU_FLAG_PF 0x0004
-#define VCPU_FLAG_AF 0x0010
-#define VCPU_FLAG_ZF 0x0040
-#define VCPU_FLAG_SF 0x0080
-#define VCPU_FLAG_TF 0x0100
-#define VCPU_FLAG_IF 0x0200
-#define VCPU_FLAG_DF 0x0400
-#define VCPU_FLAG_OF 0x0800
+#define VCPU_EFLAGS_CF 0x0001
+#define VCPU_EFLAGS_PF 0x0004
+#define VCPU_EFLAGS_AF 0x0010
+#define VCPU_EFLAGS_ZF 0x0040
+#define VCPU_EFLAGS_SF 0x0080
+#define VCPU_EFLAGS_TF 0x0100
+#define VCPU_EFLAGS_IF 0x0200
+#define VCPU_EFLAGS_DF 0x0400
+#define VCPU_EFLAGS_OF 0x0800
 
 #ifndef ECPUACT
 typedef struct {
@@ -107,33 +107,33 @@ void vcpuFinal();
 #define _es    (vcpu.es)
 #define _ss    (vcpu.ss)
 #define _eflags (vcpu.eflags)
-#define _of    (GetBit(_eflags, VCPU_FLAG_OF))
-#define _sf    (GetBit(_eflags, VCPU_FLAG_SF))
-#define _zf    (GetBit(_eflags, VCPU_FLAG_ZF))
-#define _cf    (GetBit(_eflags, VCPU_FLAG_CF))
-#define _af    (GetBit(_eflags, VCPU_FLAG_AF))
-#define _pf    (GetBit(_eflags, VCPU_FLAG_PF))
-#define _df    (GetBit(_eflags, VCPU_FLAG_DF))
-#define _tf    (GetBit(_eflags, VCPU_FLAG_TF))
-#define _if    (GetBit(_eflags, VCPU_FLAG_IF))
-#define SetOF  (SetBit(_eflags, VCPU_FLAG_OF))
-#define SetSF  (SetBit(_eflags, VCPU_FLAG_SF))
-#define SetZF  (SetBit(_eflags, VCPU_FLAG_ZF))
-#define SetCF  (SetBit(_eflags, VCPU_FLAG_CF))
-#define SetAF  (SetBit(_eflags, VCPU_FLAG_AF))
-#define SetPF  (SetBit(_eflags, VCPU_FLAG_PF))
-#define SetDF  (SetBit(_eflags, VCPU_FLAG_DF))
-#define SetTF  (SetBit(_eflags, VCPU_FLAG_TF))
-#define SetIF  (SetBit(_eflags, VCPU_FLAG_IF))
-#define ClrOF  (ClrBit(_eflags, VCPU_FLAG_OF))
-#define ClrSF  (ClrBit(_eflags, VCPU_FLAG_SF))
-#define ClrZF  (ClrBit(_eflags, VCPU_FLAG_ZF))
-#define ClrCF  (ClrBit(_eflags, VCPU_FLAG_CF))
-#define ClrAF  (ClrBit(_eflags, VCPU_FLAG_AF))
-#define ClrPF  (ClrBit(_eflags, VCPU_FLAG_PF))
-#define ClrDF  (ClrBit(_eflags, VCPU_FLAG_DF))
-#define ClrTF  (ClrBit(_eflags, VCPU_FLAG_TF))
-#define ClrIF  (ClrBit(_eflags, VCPU_FLAG_IF))
+#define _of    (GetBit(_eflags, VCPU_EFLAGS_OF))
+#define _sf    (GetBit(_eflags, VCPU_EFLAGS_SF))
+#define _zf    (GetBit(_eflags, VCPU_EFLAGS_ZF))
+#define _cf    (GetBit(_eflags, VCPU_EFLAGS_CF))
+#define _af    (GetBit(_eflags, VCPU_EFLAGS_AF))
+#define _pf    (GetBit(_eflags, VCPU_EFLAGS_PF))
+#define _df    (GetBit(_eflags, VCPU_EFLAGS_DF))
+#define _tf    (GetBit(_eflags, VCPU_EFLAGS_TF))
+#define _if    (GetBit(_eflags, VCPU_EFLAGS_IF))
+#define SetOF  (SetBit(_eflags, VCPU_EFLAGS_OF))
+#define SetSF  (SetBit(_eflags, VCPU_EFLAGS_SF))
+#define SetZF  (SetBit(_eflags, VCPU_EFLAGS_ZF))
+#define SetCF  (SetBit(_eflags, VCPU_EFLAGS_CF))
+#define SetAF  (SetBit(_eflags, VCPU_EFLAGS_AF))
+#define SetPF  (SetBit(_eflags, VCPU_EFLAGS_PF))
+#define SetDF  (SetBit(_eflags, VCPU_EFLAGS_DF))
+#define SetTF  (SetBit(_eflags, VCPU_EFLAGS_TF))
+#define SetIF  (SetBit(_eflags, VCPU_EFLAGS_IF))
+#define ClrOF  (ClrBit(_eflags, VCPU_EFLAGS_OF))
+#define ClrSF  (ClrBit(_eflags, VCPU_EFLAGS_SF))
+#define ClrZF  (ClrBit(_eflags, VCPU_EFLAGS_ZF))
+#define ClrCF  (ClrBit(_eflags, VCPU_EFLAGS_CF))
+#define ClrAF  (ClrBit(_eflags, VCPU_EFLAGS_AF))
+#define ClrPF  (ClrBit(_eflags, VCPU_EFLAGS_PF))
+#define ClrDF  (ClrBit(_eflags, VCPU_EFLAGS_DF))
+#define ClrTF  (ClrBit(_eflags, VCPU_EFLAGS_TF))
+#define ClrIF  (ClrBit(_eflags, VCPU_EFLAGS_IF))
 
 #ifdef __cplusplus
 /*}_EOCD_*/

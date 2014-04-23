@@ -30,12 +30,12 @@ static void INT_13_02_HDD_ReadSector()
 		/* sector not found */
 		vapiCallBackMachineStop();
 		_ah = 0x04;
-		SetBit(_eflags, VCPU_FLAG_CF);
+		SetBit(_eflags, VCPU_EFLAGS_CF);
 	} else {
-		memcpy((void *)vramGetAddr(_es,_bx),
+		memcpy((void *)vramGetRealAddress(_es,_bx),
 			(void *)vhddGetAddress(cyl,head,sector), _al * vhdd.nbyte);
 		_ah = 0x00;
-		ClrBit(_eflags, VCPU_FLAG_CF);
+		ClrBit(_eflags, VCPU_EFLAGS_CF);
 	}
 }
 static void INT_13_03_HDD_WriteSector()
@@ -48,12 +48,12 @@ static void INT_13_03_HDD_WriteSector()
 	if (drive || !sector || head >= vhdd.nhead || sector > vhdd.nsector || cyl >= vhdd.ncyl) {
 		/* sector not found */
 		_ah = 0x04;
-		SetBit(_eflags, VCPU_FLAG_CF);
+		SetBit(_eflags, VCPU_EFLAGS_CF);
 	} else {
 		memcpy((void *)vhddGetAddress(cyl,head,sector),
-			(void *)vramGetAddr(_es,_bx), _al * vhdd.nbyte);
+			(void *)vramGetRealAddress(_es,_bx), _al * vhdd.nbyte);
 		_ah = 0x00;
-		ClrBit(_eflags, VCPU_FLAG_CF);
+		ClrBit(_eflags, VCPU_EFLAGS_CF);
 	}
 }
 

@@ -42,7 +42,7 @@
 #define qdcgaVarPageNum \
 	(vramVarByte(0x0000, QDCGA_VBIOS_ADDR_VGA_ACT_PAGE_NUM))
 #define qdcgaGetTextMemAddr \
-	(vramGetAddr(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, 0x0000))
+	(vramGetRealAddress(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, 0x0000))
 #define qdcgaGetPageSize \
 	(qdcgaVarRowSize * vvadp.colsize * 2)
 #define qdcgaGetTextMemAddrPage(page) \

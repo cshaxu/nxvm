@@ -32,6 +32,7 @@ test code
 #define MAXNARG 256
 #define MAXNASMARG 4
 
+static t_nubit8 dbgbit;
 static t_nubitcc errPos;
 static t_nubitcc narg;
 static char **arg;
@@ -299,7 +300,7 @@ static void f()
 	}
 }
 // go
-static void rprintregs();
+static void rprintregs(t_nubit8 bit);
 /*static void gexec(t_nubit16 ptr1,t_nubit16 ptr2)
 {
 	if(ptr1 < ptr2) {
@@ -353,7 +354,7 @@ static void g()
 	vmachineResume();
 	while (vmachine.flagrun) vapiSleep(1);
 	vmachine.flagbreak = 0x00;
-	rprintregs();
+	rprintregs(16);
 //	gexec(ptr1,ptr2);
 }
 // hex
@@ -465,43 +466,66 @@ static void q()
 {exitFlag = 1;}
 // register
 static void uprint(t_nubit16,t_nubit16,t_nubit16);
-static void rprintflags()
+static void rprintflags(t_nubit8 bit)
 {
-	if(vcpu.eflags & VCPU_FLAG_OF) vapiPrint("OV ");
+	if(vcpu.eflags & VCPU_EFLAGS_OF) vapiPrint("OV ");
 	else                      vapiPrint("NV ");
-	if(vcpu.eflags & VCPU_FLAG_DF) vapiPrint("DN ");
+	if(vcpu.eflags & VCPU_EFLAGS_DF) vapiPrint("DN ");
 	else                      vapiPrint("UP ");
-	if(vcpu.eflags & VCPU_FLAG_IF) vapiPrint("EI ");
+	if(vcpu.eflags & VCPU_EFLAGS_IF) vapiPrint("EI ");
 	else                      vapiPrint("DI ");
-	if(vcpu.eflags & VCPU_FLAG_SF) vapiPrint("NG ");
+	if(vcpu.eflags & VCPU_EFLAGS_SF) vapiPrint("NG ");
 	else                      vapiPrint("PL ");
-	if(vcpu.eflags & VCPU_FLAG_ZF) vapiPrint("ZR ");
+	if(vcpu.eflags & VCPU_EFLAGS_ZF) vapiPrint("ZR ");
 	else                      vapiPrint("NZ ");
-	if(vcpu.eflags & VCPU_FLAG_AF) vapiPrint("AC ");
+	if(vcpu.eflags & VCPU_EFLAGS_AF) vapiPrint("AC ");
 	else                      vapiPrint("NA ");
-	if(vcpu.eflags & VCPU_FLAG_PF) vapiPrint("PE ");
+	if(vcpu.eflags & VCPU_EFLAGS_PF) vapiPrint("PE ");
 	else                      vapiPrint("PO ");
-	if(vcpu.eflags & VCPU_FLAG_CF) vapiPrint("CY ");
+	if(vcpu.eflags & VCPU_EFLAGS_CF) vapiPrint("CY ");
 	else                      vapiPrint("NC ");
 }
-static void rprintregs()
+static void rprintregs(t_nubit8 bit)
 {
 	char str[MAXLINE];
-	vapiPrint(  "AX=%04X", vcpu.ax);
-	vapiPrint("  BX=%04X", vcpu.bx);
-	vapiPrint("  CX=%04X", vcpu.cx);
-	vapiPrint("  DX=%04X", vcpu.dx);
-	vapiPrint("  SP=%04X", vcpu.sp);
-	vapiPrint("  BP=%04X", vcpu.bp);
-	vapiPrint("  SI=%04X", vcpu.si);
-	vapiPrint("  DI=%04X", vcpu.di);
-	vapiPrint("\nDS=%04X", vcpu.ds);
-	vapiPrint("  ES=%04X", vcpu.es);
-	vapiPrint("  SS=%04X", vcpu.ss);
-	vapiPrint("  CS=%04X", vcpu.cs);
-	vapiPrint("  IP=%04X", vcpu.eip);
-	vapiPrint("   ");
-	rprintflags();
+	switch (bit) {
+	case 16:
+		vapiPrint(  "AX=%04X", vcpu.ax);
+		vapiPrint("  BX=%04X", vcpu.bx);
+		vapiPrint("  CX=%04X", vcpu.cx);
+		vapiPrint("  DX=%04X", vcpu.dx);
+		vapiPrint("  SP=%04X", vcpu.sp);
+		vapiPrint("  BP=%04X", vcpu.bp);
+		vapiPrint("  SI=%04X", vcpu.si);
+		vapiPrint("  DI=%04X", vcpu.di);
+		vapiPrint("\nDS=%04X", vcpu.ds);
+		vapiPrint("  ES=%04X", vcpu.es);
+		vapiPrint("  SS=%04X", vcpu.ss);
+		vapiPrint("  CS=%04X", vcpu.cs);
+		vapiPrint("  IP=%04X", vcpu.eip);
+		vapiPrint("   ");
+		break;
+	case 32:
+		vapiPrint( "EAX=%08X", vcpu.eax);
+		vapiPrint(" EBX=%08X", vcpu.ebx);
+		vapiPrint(" ECX=%08X", vcpu.ecx);
+		vapiPrint(" EDX=%08X", vcpu.edx);
+		vapiPrint(" ESP=%08X", vcpu.esp);
+		vapiPrint(" EBP=%08X", vcpu.ebp);
+		vapiPrint("\nESI=%08X",vcpu.esi);
+		vapiPrint(" EDI=%08X",vcpu.edi);
+		vapiPrint( " DS=%04X", vcpu.ds);
+		vapiPrint("  ES=%04X", vcpu.es);
+		vapiPrint("  FS=%04X", vcpu.fs);
+		vapiPrint("  GS=%04X", vcpu.gs);
+		vapiPrint("  SS=%04X", vcpu.ss);
+		vapiPrint("  CS=%04X", vcpu.cs);
+		vapiPrint("\nEIP=%08X", vcpu.eip);
+		vapiPrint("   ");
+	default:
+		break;
+	}
+	rprintflags(bit);
 	vapiPrint("\n");
 	dasm(str, vcpu.cs, vcpu.eip, 0x02);
 	uasmSegRec = vcpu.cs;
@@ -619,7 +643,7 @@ static void rscanregs()
 		if(s[0] != '\0' && s[0] != '\n' && !errPos)
 			vcpu.eip = t;
 	} else if(!STRCMP(arg[1],"f")) {
-		rprintflags();
+		rprintflags(16);
 		vapiPrint(" -");
 		FGETS(s,MAXLINE,stdin);
 		lcase(s);
@@ -645,7 +669,7 @@ static void rscanregs()
 static void r()
 {
 	if(narg == 1) {
-		rprintregs();
+		rprintregs(dbgbit);
 	} else if(narg == 2) {
 		rscanregs();
 	} else seterr(2);
@@ -711,14 +735,14 @@ static void t()
 			vmachine.tracecnt = 0x01;
 			vmachineResume();
 			while (vmachine.flagrun) vapiSleep(10);
-			rprintregs();
+			rprintregs(16);
 			if (i != count - 1) vapiPrint("\n");
 		}
 	} else {
 		vmachine.tracecnt = count;
 		vmachineResume();
 		while (vmachine.flagrun) vapiSleep(10);
-		rprintregs();
+		rprintregs(16);
 	}
 	vmachine.tracecnt = 0x00;
 //	gexec(ptr1,ptr2);
@@ -843,7 +867,7 @@ static void init()
 	asmSegRec = uasmSegRec = vcpu.cs;
 	asmPtrRec = uasmPtrRec = vcpu.eip;
 	dumpSegRec = vcpu.ds;
-	dumpPtrRec = vcpu.eip / 0x10 * 0x10;
+	dumpPtrRec = (t_nubit16)(vcpu.eip) / 0x10 * 0x10;
 /*	vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
 	vcpu.si = vcpu.di = vcpu.bp = 0x0000;
 	vcpu.sp = 0xffee;
@@ -903,10 +927,11 @@ static void exec()
 	}
 }
 
-void vapiCallBackDebugPrintRegs() {rprintregs();}
-void debug()
+void vapiCallBackDebugPrintRegs(t_nubit8 bit) {rprintregs(bit);}
+void debug(t_nubit8 bit)
 {
 	t_nubitcc i;
+	dbgbit = bit;
 	init();
 	arg = (char **)malloc(MAXNARG * sizeof(char *));
 	exitFlag = 0x00;
