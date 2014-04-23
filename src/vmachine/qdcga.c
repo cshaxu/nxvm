@@ -70,8 +70,10 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 		case 0x0d:
 			break;
 		default:
-			qdcgaVarChar(page, x, y)     = d_nubit8(string);
-			qdcgaVarCharProp(page, x, y) = charprop;
+			qdcgaVarChar(page, qdcgaVarCursorPosRow(page),
+				qdcgaVarCursorPosCol(page)) = d_nubit8(string);
+			qdcgaVarCharProp(page, qdcgaVarCursorPosRow(page),
+				qdcgaVarCursorPosCol(page)) = charprop;
 			CursorForward(page);
 			break;
 		}

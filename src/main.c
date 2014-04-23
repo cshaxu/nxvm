@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.2.0xba]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.2.0xbb]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -74,9 +74,8 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 2: 02/06/2012 - 02/12/2012
  *     Phase 3:
  *     Phase 4:
- *     Phase 5:
+ *     Phase 5: 04/14/2013 - 05/05/2013
  *     Phase 6:
- *     Debug:   04/14/2013 - 04/20/2013
  *     Note:    tested by msdos 6.22
  * Component 2: ram
  *     Files:   vram.c, vram.h
@@ -145,7 +144,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 5:
  *     Phase 6:
  *     Note:    not fully implemented
- *              not tested
+ *              simply tested
  * Component 2: keyb
  *     Files:   vkeyb.c, vkeyb.h
  *     Phase 1: 04/09/2013-04/11/2013
