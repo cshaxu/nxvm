@@ -18,7 +18,7 @@ typedef struct {
 						// 0 = AX/AL, 1 = CX/CL, 2 = DX/DL, 3 = BX/CL,
 						// 4 = SP/AH, 5 = BP/CH, 6 = SI/DH, 7 = DI/BH
 	unsigned short imm;	// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
-	unsigned char far;	// 0 = near; 1 = far; 2 = N/A;
+	unsigned char blFar;	// 0 = blNear; 1 = blFar; 2 = N/A;
 } ModRM;
 static int ishexdigit(char c)
 {
@@ -44,8 +44,8 @@ static int chartohexdigit(char c)
 #define isMem8(m)	(m.type == 7 && m.mod != 3)
 #define isMem16(m)	(m.type == 8 && m.mod != 3)
 #define isNull(m)	(m.type == 9)
-#define isNear(m)	(m.far  == 0)
-#define isFar(m)	(m.far  == 1)
+#define isNear(m)	(m.blFar  == 0)
+#define isFar(m)	(m.blFar  == 1)
 #define isImm(m)	(isImm8 (m) || isImm16(m))
 #define isRM8(m)	(isReg8 (m) || isMem8 (m))
 #define isRM16(m)	(isReg16(m) || isPtr16(m) || isMem16(m))
@@ -76,7 +76,7 @@ static int chartohexdigit(char c)
 #define dispLen(m)	(((m.mod == 0 && m.rm == 6) || m.mod == 2)?2:((m.mod == 1)?1:0))
 
 /*#define dumpArg {\
-	fprintf(stdout,"ARG REPORT:byte=%d,word=%d,near=%d,far=%d\n",byte,word,near,far);\
+	fprintf(stdout,"ARG REPORT:byte=%d,word=%d,blNear=%d,blFar=%d\n",byte,word,blNear,blFar);\
 	fprintf(stdout,"ax=%d,bx=%d,cx=%d,dx=%d,sp=%d,bp=%d,si=%d,di=%d\n",ax,bx,cx,dx,sp,bp,si,di);\
 	fprintf(stdout,"ah=%d,al=%d,bh=%d,bl=%d,ch=%d,cl=%d,dh=%d,dl=%d\n",ah,al,bh,bl,ch,cl,dh,dl);\
 	fprintf(stdout,"cs=%d,ds=%d,es=%d,ss=%d,imm8=%d,nsum=%x,nnsum=%d\nsparen=%d\n",cs,ds,es,ss,imm8,nsum,nnsum,sparen);\
@@ -257,12 +257,12 @@ static ModRM aArgParse(const char *s)
 	int ah,al,bh,bl,ch,cl,dh,dl;int bx8;
 	int ax,cx,dx,bx,sp,bp,si,di;int bx16;int bp16;
 	int imm8,sign; // sign = {0,plus},{1,minus}
-	int byte,word,near,far;
+	int byte,word,blNear,blFar;
 	a.type = 9;
 	a.mod = 4;
 	a.rm = 8;
 	a.imm = 0;
-	a.far = 0;
+	a.blFar = 0;
 	if(!s) return a;
 	n = nn = nsum = nnsum = 0;
 	p = f = 0;
@@ -271,7 +271,7 @@ static ModRM aArgParse(const char *s)
 	ah = al = bh = bl = ch = cl = dh = dl = 0;
 	ax = cx = dx = bx = sp = bp = si = di = 0;
 	imm8 = sign = 0;
-	byte = word = near = far = 0;
+	byte = word = blNear = blFar = 0;
 	state = START;
 	while(!f) {
 		switch(state) {
@@ -431,8 +431,8 @@ static ModRM aArgParse(const char *s)
 			state = START;
 			if(ishexdigit(s[p])) {
 				if(s[p] == 'a' && s[p+1] == 'r') {
-					if(far || near || byte || word) f = 1;
-					else far = 1;
+					if(blFar || blNear || byte || word) f = 1;
+					else blFar = 1;
 					p++;
 				} else {
 					n = (0xf<<4)+chartohexdigit(s[p]);
@@ -451,8 +451,8 @@ static ModRM aArgParse(const char *s)
 		case N1:
 			state = START;
 			if(s[p] == 'e' && s[p+1] == 'a' && s[p+2] == 'r') {
-				if(far || near || byte || word) f = 1;
-				else near = 1;
+				if(blFar || blNear || byte || word) f = 1;
+				else blNear = 1;
 				p += 2;
 			} else f = 1;
 			break;
@@ -464,7 +464,7 @@ static ModRM aArgParse(const char *s)
 			case 's': ss = 1;break;
 			default: 
 				if(s[p] == 'h' && s[p+1] == 'o' && s[p+2] == 'r' && s[p+3] == 't') {
-					if(far || near || byte || word) f = 1;
+					if(blFar || blNear || byte || word) f = 1;
 					p += 3;
 				} else f = 1;
 				break;
@@ -525,9 +525,9 @@ static ModRM aArgParse(const char *s)
 		ch == 1 || cl == 1 || dh == 1 || dl == 1) bx8 = 1;
 	else bx8 = 0;
 	a.imm = nsum;
-	if(far && !near) a.far = 1;
-	else if(!far && near) a.far = 0;
-	else if(!far && !near) a.far = 2;
+	if(blFar && !blNear) a.blFar = 1;
+	else if(!blFar && blNear) a.blFar = 0;
+	else if(!blFar && !blNear) a.blFar = 2;
 	else f = 1;
 	if(sparen) {
 		// type -> mod -> rm
@@ -1261,7 +1261,7 @@ static int dOPImm(char *dasmStmt,Operand *resOperand,unsigned char *loc,const ch
 static int dGroup2(char *dasmStmt,Operand *resOperand,unsigned char *loc,unsigned char op)
 {	// op = 0xd0,0xd1,0xd2,0xd3
 	int len = 0;
-	unsigned short imm;
+	//unsigned short imm;
 	ModRM modrm;
 	dGetModRM
 	switch(modrm.reg) {

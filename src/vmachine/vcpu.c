@@ -6,14 +6,16 @@
 #include "vmemory.h"
 #include "vcpu.h"
 
+//#include "vpic.h"
+
 t_cpu vcpu;
 t_bool cpuTermFlag;
 
 void vcpuInsExec()
 {
 	vcpuinsExecIns();
-	//RefreshVideoRAM();
 	vcpuinsExecINT();
+	//RefreshVideoRAM();
 }
 
 void CPUInit()
@@ -26,6 +28,10 @@ void CPUInit()
 }
 void CPURun()
 {
+	//8259A Test
+	//masterpic.irr = 0x40;
+	//slavepic.irr = 0x10;
+	//vcpu.flags |= IF;
 	while(!cpuTermFlag) vcpuInsExec();
 }
 void CPUTerm()

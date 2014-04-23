@@ -9,5 +9,6 @@ int nvmprint(const char *, ...);
 void nvmprintbyte(t_nubit8 n);
 void nvmprintword(t_nubit16 n);
 void nvmprintaddr(t_nubit16 segment,t_nubit16 offset);
+void nvmpause();
 
 #endif

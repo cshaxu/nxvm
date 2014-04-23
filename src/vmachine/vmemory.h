@@ -1,5 +1,7 @@
 /* This file is a part of NXVM project. */
 
+// Random-access Memory
+
 #ifndef NXVM_VMEMORY_H
 #define NXVM_VMEMORY_H
 

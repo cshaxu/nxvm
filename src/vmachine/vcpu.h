@@ -1,5 +1,7 @@
 /* This file is a part of NXVM project. */
 
+// Central Processing Unit: Intel 8086
+
 #ifndef NXVM_VCPU_H
 #define NXVM_VCPU_H
 
@@ -34,6 +36,8 @@ typedef struct {
 	};
 	t_nubit16 sp,bp,si,di,ip,flags;
 	t_nubit16 cs,ds,es,ss;
+	t_nsbit16 itnlint;
+	t_bool nmi;
 } t_cpu;
 
 extern t_cpu vcpu;
@@ -42,6 +46,7 @@ extern t_bool cpuTermFlag;
 void vcpuInsExec();
 
 void CPUInit();
+void CPURun();
 void CPUTerm();
 
 #endif

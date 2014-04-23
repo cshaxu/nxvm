@@ -53,6 +53,11 @@ void nvmprintword(t_nubit16 n)
 		nvmprint("%c",c);
 	}
 }
-
 void nvmprintaddr(t_nubit16 segment,t_nubit16 offset)
 {nvmprintword(segment);nvmprint(":");nvmprintword(offset);}
+void nvmpause()
+{
+	fflush(stdin);
+	nvmprint("Press ENTER to continue . . .\n");
+	getchar();
+}
