@@ -25,17 +25,22 @@ typedef struct {
 
 	t_vaddrcc base;                                /* pointer to disk in ram */
 	t_vaddrcc curr;                               /* pointer to current byte */
-	t_nubitcc count;                             /* count of remaining bytes */
+	t_nubitcc count;                             /* number of transfer bytes */
 } t_fdd;
 
 extern t_fdd vfdd;
+
+#define vfddSetCURR (vfdd.base +                                              \
+                     ((vfdd.cyl * VFDD_NHEAD + vfdd.head) * vfdd.nsector +    \
+                      (vfdd.sector - 0x01) * vfdd.nbyte))
 
 t_bool vfddRead(t_nubit8 *cyl,t_nubit8 *head,t_nubit8 *sector,t_vaddrcc memloc,t_nubit8 count);	// From FDD To RAM, count sectors
 t_bool vfddWrite(t_nubit8 *cyl,t_nubit8 *head,t_nubit8 *sector,t_vaddrcc memloc,t_nubit8 count);	// From RAM To FDD, count sectors
 
 
 
-void vfddFormat(t_nubit8 fillbyte);
+void vfddFormatTrack(t_nubit8 fillbyte);
+
 void vfddInit();
 void vfddFinal();
 

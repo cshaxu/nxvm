@@ -9,39 +9,47 @@ t_fdd vfdd;
 
 t_bool vfddRead(t_nubit8 *cyl,t_nubit8 *head,t_nubit8 *sector,t_vaddrcc memloc,t_nubit8 count)
 {
-	if((*cyl >= VFDD_CYLINDERS) || (*head >= VFDD_HEADS) || ((*sector < 0x01) && (*sector > VFDD_SECTORS)))
+	if((*cyl >= VFDD_NCYL) || (*head >= VFDD_NHEAD) || ((*sector < 0x01) && (*sector > vfdd.nsector)))
 		return 1;
 
 	memcpy((void *)memloc,
-		(void *)(vfdd.base+(((*cyl)*VFDD_HEADS+(*head))*VFDD_SECTORS+(*sector)-1)*VFDD_BYTES),
-		count*VFDD_BYTES);
+		(void *)(vfdd.base+(((*cyl)*VFDD_NHEAD+(*head))*vfdd.nsector+(*sector)-1)*vfdd.nbyte),
+		count*vfdd.nbyte);
 
-	*cyl = (*cyl+count/(VFDD_HEADS*VFDD_SECTORS))%VFDD_CYLINDERS;
-	count %= VFDD_HEADS*VFDD_SECTORS;
-	*head = (*head+count/(VFDD_SECTORS))%VFDD_HEADS;
-	count %= VFDD_SECTORS;
-	*sector = (*sector+count)%VFDD_SECTORS;
+	*cyl = (*cyl+count/(VFDD_NHEAD*vfdd.nsector))%VFDD_NCYL;
+	count %= VFDD_NHEAD*vfdd.nsector;
+	*head = (*head+count/(vfdd.nsector))%VFDD_NHEAD;
+	count %= vfdd.nsector;
+	*sector = (*sector+count)%vfdd.nsector;
 	return 0;
 }
 t_bool vfddWrite(t_nubit8 *cyl,t_nubit8 *head,t_nubit8 *sector,t_vaddrcc memloc,t_nubit8 count)
 {
-	if((*cyl >= VFDD_CYLINDERS) || (*head >= VFDD_HEADS) || ((*sector < 0x01) && (*sector > VFDD_SECTORS)))
+	if((*cyl >= VFDD_NCYL) || (*head >= VFDD_NHEAD) || ((*sector < 0x01) && (*sector > vfdd.nsector)))
 		return 1;
 
-	memcpy((void *)(vfdd.base+(((*cyl)*VFDD_HEADS+(*head))*VFDD_SECTORS+(*sector)-1)*VFDD_BYTES),
+	memcpy((void *)(vfdd.base+(((*cyl)*VFDD_NHEAD+(*head))*vfdd.nsector+(*sector)-1)*vfdd.nbyte),
 		(void *)memloc,
-		count*VFDD_BYTES);
+		count*vfdd.nbyte);
 
-	*cyl = (*cyl+count/(VFDD_HEADS*VFDD_SECTORS))%VFDD_CYLINDERS;
-	count %= VFDD_HEADS*VFDD_SECTORS;
-	*head = (*head+count/(VFDD_SECTORS))%VFDD_HEADS;
-	count %= VFDD_SECTORS;
-	*sector = (*sector+count)%VFDD_SECTORS;
+	*cyl = (*cyl+count/(VFDD_NHEAD*vfdd.nsector))%VFDD_NCYL;
+	count %= VFDD_NHEAD*vfdd.nsector;
+	*head = (*head+count/(vfdd.nsector))%VFDD_NHEAD;
+	count %= vfdd.nsector;
+	*sector = (*sector+count)%vfdd.nsector;
 	return 0;
 }
-void vfddFormat(t_nubit8 fillbyte)
+
+void vfddFormatTrack(t_nubit8 fillbyte)
 {
-	memset((void *)(vfdd.base), fillbyte, 0x168000);
+	vfdd.head   = 0x00;
+	vfdd.sector = 0x01;
+	vfdd.curr   = vfddSetCURR;
+	memset((void *)(vfdd.curr), fillbyte, vfdd.nsector * vfdd.nbyte);
+	vfdd.head   = 0x01;
+	vfdd.sector = 0x01;
+	vfdd.curr   = vfddSetCURR;
+	memset((void *)(vfdd.curr), fillbyte, vfdd.nsector * vfdd.nbyte);
 }
 
 void vfddInit()

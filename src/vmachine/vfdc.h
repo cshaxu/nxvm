@@ -22,6 +22,7 @@ typedef struct {
 	t_nubit8         srt;                                  /* step rate time */
 	t_bool           flagndma;             /* 0 = dma mode; 1 = non-dma mode */
 	t_bool           flagintr;                  /* 0 = no intr; 1 = has intr */
+	t_bool           flagis;                               /* 1 = in service */
 
 	t_fdc_status_cmd flagcmd;
 	t_fdc_status_ret flagret;
@@ -39,6 +40,16 @@ void IO_Write_03F2();                       /* write digital output register */
 void IO_Write_03F5();                             /* write standard commands */
 void IO_Write_03F7();
 
+#define vfdcPIORead   vfdcTransRead
+#define vfdcDMARead   vfdcTransRead
+#define vfdcPIOWrite  vfdcTransWrite
+#define vfdcDMAWrite  vfdcTransWrite
+#define vfdcPIOFinish vfdcTransFinish
+#define vfdcDMAFinish vfdcTransFinish
+void vfdcTransRead();
+void vfdcTransWrite();
+void vfdcTransInit();
+void vfdcTransFinal();
 void vfdcRefresh();
 void vfdcInit();
 void vfdcFinal();
