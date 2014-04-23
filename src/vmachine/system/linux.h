@@ -7,23 +7,18 @@
 /*extern "C" {*/
 #endif
 
-#include "../vapi.h"
-
-#if VGLOBAL_PLATFORM == VGLOBAL_VAR_LINUX
-
-#include "unistd.h"
-
-#define linuxSleep(milisec) usleep((milisec) * 1000)
+void linuxSleep(int milisec);
 void linuxKeyboardMakeStatus();
 void linuxKeyboardMakeKey(int keyvalue);
+void linuxKeyboardProcess();
+void linuxDisplayInit();
+void linuxDisplayFinal();
 void linuxDisplaySetScreen();
-void linuxDisplayPaint();
+void linuxDisplayPaint(unsigned char force);
 void linuxStartMachine();
 
 #ifdef __cplusplus
 /*}_EOCD_*/
-#endif
-
 #endif
 
 #endif

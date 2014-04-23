@@ -4,10 +4,10 @@
 CC = gcc
 CFLAGS = -g -O
 TARGET = a.out
+LIBRARY = -lpthread -lncurses
 
 $(TARGET): main.o asm86.o console.o debug.o qdbios.o qdcga.o qdkeyb.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vmachine.o vpic.o vpit.o vport.o vram.o linux.o
-	$(CC) -o $(TARGET) main.o asm86.o console.o debug.o qdbios.o qdcga.o qdkeyb.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vmachine.o vpic.o vpit.o vport.o vram.o linux.o
-
+	$(CC) -o $(TARGET) main.o asm86.o console.o debug.o qdbios.o qdcga.o qdkeyb.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vmachine.o vpic.o vpit.o vport.o vram.o linux.o $(LIBRARY)
 
 main.o: main.c console/console.h
 	$(CC) -c $(CFLAGS) main.c
@@ -30,7 +30,7 @@ qdcga.o: vmachine/qdcga.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vma
 qdkeyb.o: vmachine/qdkeyb.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/vport.h vmachine/vpic.h vmachine/qdbios.h vmachine/qdkeyb.h vmachine/vram.h
 	$(CC) -c $(CFLAGS) vmachine/qdkeyb.c
 
-vapi.o: vmachine/vapi.c vmachine/vmachine.h vmachine/vglobal.h vmachine/vport.h vmachine/vram.h vmachine/vcpu.h vmachine/vpic.h vmachine/vcmos.h vmachine/vdma.h vmachine/vfdc.h vmachine/vfdd.h vmachine/vpit.h vmachine/qdbios.h vmachine/vapi.h vmachine/system/win32.h vmachine/system/win32con.h vmachine/system/win32app.h vmachine/system/linux.h
+vapi.o: vmachine/vapi.c vmachine/vmachine.h vmachine/vglobal.h vmachine/vport.h vmachine/vram.h vmachine/vcpu.h vmachine/vpic.h vmachine/vcmos.h vmachine/vdma.h vmachine/vfdc.h vmachine/vfdd.h vmachine/vpit.h vmachine/qdbios.h vmachine/vapi.h vmachine/system/linux.h
 	$(CC) -c $(CFLAGS) vmachine/vapi.c
 
 vcmos.o: vmachine/vcmos.c vmachine/vapi.h vmachine/vglobal.h vmachine/vcpu.h vmachine/vport.h vmachine/vcmos.h
@@ -66,8 +66,8 @@ vport.o: vmachine/vport.c vmachine/vport.h vmachine/vglobal.h
 vram.o: vmachine/vram.c vmachine/vram.h vmachine/vglobal.h
 	$(CC) -c $(CFLAGS) vmachine/vram.c
 
-linux.o: vmachine/system/linux.c vmachine/system/win32con.h vmachine/system/win32app.h vmachine/system/win32.h
-	$(CC) -c $(CFLAGS) vmachine/system/linux.c
+linux.o: vmachine/system/linux.c
+	$(CC) -c $(CFLAGS) vmachine/system/linux.c $(LIBRARY)
 
 clean:
 	rm -f $(TARGET)

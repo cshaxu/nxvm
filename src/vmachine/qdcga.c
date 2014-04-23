@@ -55,6 +55,7 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 	t_nubit8 charprop, t_nubit8 page, t_nubit8 x, t_nubit8 y)
 {
 	t_nubitcc i;
+//	vapiPrint("%c", d_nubit8(string));
 	qdcgaVarCursorPosRow(page) = x;
 	qdcgaVarCursorPosCol(page) = y;
 	for (i = 0;i < count;++i) {
@@ -84,12 +85,16 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool dup,
 
 t_bool vapiCallBackDisplayGetCursorVisible()
 {return qdcgaGetCursorVisible;}
-t_bool vapiCallBackDisplayGetCursorPosChange()
+t_bool vapiCallBackDisplayGetCursorChange()
 {
-	if (qdcga.curcompx != qdcgaVarCursorPosRow(qdcgaVarPageNum) ||
-		qdcga.curcompy != qdcgaVarCursorPosCol(qdcgaVarPageNum)) {
-		qdcga.curcompx = qdcgaVarCursorPosRow(qdcgaVarPageNum);
-		qdcga.curcompy = qdcgaVarCursorPosCol(qdcgaVarPageNum);
+	if (qdcga.oldcurposx != qdcgaVarCursorPosRow(qdcgaVarPageNum) ||
+		qdcga.oldcurposy != qdcgaVarCursorPosCol(qdcgaVarPageNum) ||
+		qdcga.oldcurtop  != qdcgaVarCursorTop ||
+		qdcga.oldcurbottom != qdcgaVarCursorBottom) {
+		qdcga.oldcurposx = qdcgaVarCursorPosRow(qdcgaVarPageNum);
+		qdcga.oldcurposy = qdcgaVarCursorPosCol(qdcgaVarPageNum);
+		qdcga.oldcurtop  = qdcgaVarCursorTop;
+		qdcga.oldcurbottom = qdcgaVarCursorBottom;
 		return 0x01;
 	} else return 0x00;
 }
@@ -195,22 +200,6 @@ void qdcgaSetDisplayPage()
 void qdcgaScrollUp()
 {
 	t_nsbitcc i, j;
-/*	if (!_al) {
-		ClearTextMemory();
-		return;
-	}
-	for (i = 0x00;i < _dh - _ch - _al + 1;++i)
-		memcpy((void *)qdcgaGetCharAddr(qdcgaVarPageNum, (_ch + i), _cl),
-		       (void *)qdcgaGetCharAddr(qdcgaVarPageNum, (_ch + i + _al), _cl),
-		       (_dl - _cl + 1) * 2);*/
-/*	for(i = 0x00;i < _dh - _ch - _al + 1;++i) {
-		// TODO: a bug.
-		for(j = 0x00;j < _dl - _cl + 1;++j) {
-			qdcgaVarChar(qdcgaVarPageNum, (_ch + i + _al), _cl) = ' ';
-			qdcgaVarCharProp(qdcgaVarPageNum, (_ch + i + _al), _cl) = _bh;
-			//bh决定了空白行的属性
-		}
-	}*/
 	if (!_al) {
 		for (i = 0;i < qdcga.colsize;++i) {
 			for (j = 0;j < qdcgaVarRowSize;++j) {
@@ -225,15 +214,12 @@ void qdcgaScrollUp()
 					qdcgaVarChar(qdcgaVarPageNum, (i + _ch + _al), j);
 				qdcgaVarCharProp(qdcgaVarPageNum, (i + _ch), j) =
 					qdcgaVarCharProp(qdcgaVarPageNum, (i + _ch + _al), j);
-//				*(short *)(MemoryStart+TextMemory+((i+_ch)*qdcgaVarRowSize+j)*2)=*(short *)(MemoryStart+TextMemory+((i+_ch+_al)*qdcgaVarRowSize+j)*2);
 			}
 		}
 		for (i = 0;i < _al;++i) {
 			for (j = _cl;j <= _dl;++j) {
 				qdcgaVarChar(0, (i + _dh - _al + 1), j) = ' ';
 				qdcgaVarCharProp(0, (i + _dh - _al + 1), j) = _bh;
-//				*(char *)(MemoryStart+TextMemory+((i+_dh-_al+1)*qdcgaVarRowSize+j)*2)=' ';
-//				*(char *)(MemoryStart+TextMemory+((i+_dh-_al+1)*qdcgaVarRowSize+j)*2+1)=_bh;
 			}
 		}
 	}
@@ -241,22 +227,6 @@ void qdcgaScrollUp()
 void qdcgaScrollDown()
 {
 	t_nsbitcc i, j;
-/*	if (!_al) {
-		ClearTextMemory();
-		return;
-	}
-	for (i = 0x00;i < _dh - _ch - _al + 1;++i)
-		memcpy((void *)qdcgaGetCharAddr(qdcgaVarPageNum, (_ch + i + _al), _cl),
-		       (void *)qdcgaGetCharAddr(qdcgaVarPageNum, (_ch + i), _cl),
-		       (_dl - _cl + 1) * 2);*/
-/*	for(i = 0x00;i < _dh - _ch - _al + 1;++i) {
-		// TODO: a bug.
-		for(j = 0x00;j < _dl - _cl + 1;++j) {
-			qdcgaVarChar(qdcgaVarPageNum, (_ch + i), _cl) = ' ';
-			qdcgaVarCharProp(qdcgaVarPageNum, (_ch + i), _cl) = _bh;
-			//bh决定了空白行的属性
-		}
-	}*/
 	if (!_al) {
 		for (i = 0;i < qdcga.colsize;++i) {
 			for (j = 0;j < qdcgaVarRowSize;++j) {
@@ -353,7 +323,8 @@ void qdcgaInit()
 	qdcgaVarCursorBottom    = 0x07;
 	memset((void *)qdcgaGetTextMemAddr, 0x00, QDCGA_SIZE_TEXT_MEMORY);
 	qdcga.bufcomp = (t_vaddrcc)malloc(qdcgaVarRagenSize);
-	qdcga.curcompx = qdcga.curcompy = 0x00;
+	qdcga.oldcurposx = qdcga.oldcurposy = 0x00;
+	qdcga.oldcurtop  = qdcga.oldcurbottom = 0x00;
 }
 void qdcgaFinal()
 {}

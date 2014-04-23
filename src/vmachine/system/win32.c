@@ -133,7 +133,7 @@ void win32KeyboardMakeStatus()
 		vapiCallBackKeyboardSetFlag0Alt();
 	else
 		vapiCallBackKeyboardClrFlag0Alt();
-/*	if (GetAsyncKeyState(VK_SCROLL) & 0x8000)
+	if (GetAsyncKeyState(VK_SCROLL) & 0x8000)
 		vapiCallBackKeyboardSetFlag1ScrLck();
 	else
 		vapiCallBackKeyboardClrFlag1ScrLck();
@@ -148,7 +148,7 @@ void win32KeyboardMakeStatus()
 	if (GetAsyncKeyState(VK_INSERT) & 0x8000)
 		vapiCallBackKeyboardSetFlag1Insert();
 	else
-		vapiCallBackKeyboardClrFlag1Insert();*/
+		vapiCallBackKeyboardClrFlag1Insert();
 
 	if (GetKeyState(VK_SCROLL) & 0x0001)
 		vapiCallBackKeyboardSetFlag0ScrLck();
@@ -177,25 +177,24 @@ void win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey)
 	USHORT code = 0x0000;
 
 	switch(virtualKey) {
-	case VK_F11:
+	case VK_F9:
 		vapiCallBackMachineStop();
 		break;
 	case VK_CAPITAL:
 	case VK_NUMLOCK:
 	case VK_SCROLL:
 	case VK_INSERT:
-	case VK_SHIFT:	
+	case VK_SHIFT:
 	case VK_MENU:
 	case VK_CONTROL:
 	case VK_PAUSE:
 		win32KeyboardMakeStatus();
 		code = ((USHORT)scanCode << 8);
-		vapiCallBackKeyboardRecvKeyPress(code);
 		break;
 	case VK_UP:
 	case VK_DOWN:
 	case VK_LEFT:
-	case VK_RIGHT:	
+	case VK_RIGHT:
 	case VK_HOME:
 	case VK_DELETE:
 	case VK_END:
@@ -211,7 +210,6 @@ void win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey)
 			code = MoveKeyCode[scanCode - 0x47][1];
 		code &= 0x00ff;
 		code |= ((USHORT)scanCode << 8);
-		vapiCallBackKeyboardRecvKeyPress(code);
 		break;
 	default:
 		if (vapiCallBackKeyboardGetFlag0Alt())
@@ -259,8 +257,9 @@ void win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey)
 			scanCode = CodeMap[scanCode][0];
 		code &= 0x00ff;
 		code |= ((USHORT)scanCode << 8);
-		vapiCallBackKeyboardRecvKeyPress(code);
+		break;
 	}
+	vapiCallBackKeyboardRecvKeyPress(code);
 }
 
 void win32DisplaySetScreen(BOOL window)

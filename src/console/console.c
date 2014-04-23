@@ -48,17 +48,17 @@ void Help()
 	fprintf(stdout,"EXIT    Quit the console\n\n");
 
 	fprintf(stdout,"DEBUG   Execute virtual debugger\n");
-//	fprintf(stdout,"EXEC    Execute a binary file\n");
+/*	fprintf(stdout,"EXEC    Execute a binary file\n");*/
 	fprintf(stdout,"RECORD  Record cpu status for each instruction\n");
 	fprintf(stdout,"DUMP    Dump records into log file\n\n");
-//	fprintf(stdout,"TRACE   Trace cpu status for each instruction\n");
+/*	fprintf(stdout,"TRACE   Trace cpu status for each instruction\n");*/
 	fprintf(stdout,"FLOPPY  Load a floppy disk from image file\n");
 	fprintf(stdout,"MEMORY  Assign the memory size\n");
 	fprintf(stdout,"INFO    Print all virtual machine settings\n\n");
 
 	fprintf(stdout,"START   Turn on virtual machine\n");
-	fprintf(stdout,"STOP    Turn off virtual machine; hotkey is F11\n");
-	fprintf(stdout,"RESET   Restart virtual machine\n\n");
+	fprintf(stdout,"STOP    Turn off virtual machine; hotkey is F9\n");
+	fprintf(stdout,"RESET   Restart virtual machine\n");
 }
 void Exit()
 {
@@ -69,43 +69,42 @@ void Exit()
 }
 
 void Debug() {debug();}
-//void Exec()
-//{
-//	char execmd[MAXLINE];
-//	FILE *load;
-//	t_nubit8 c;
-//	t_nubit16 i = 0,end;
-//	t_nubit32 len = 0;
-//	if (!vmachine.flaginit || vmachine.flagrun) {
-//		fprintf(stdout,"Cannot execute binary file now.\n");
-//		return;
-//	}
-//	fprintf(stdout,".COM File: ");
-//	fgets(execmd,MAXLINE,stdin);
-//	parse(execmd);
-//	if(!strlen(execmd)) return;
-//	load = FOPEN(execmd,"rb");
-//	if(!load) {
-//		fprintf(stdout,"File not found\n");
-//		return;
-//	} else {
-//		vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
-//		vcpu.si = vcpu.di = vcpu.bp = 0x0000;
-//		vcpu.sp = 0xffee;	vcpu.ip = 0x0100;
-//		vcpu.ds = vcpu.es = vcpu.ss = vcpu.cs = 0x0001;
-//		vmachine.flagrun = 1;
-//		c = fgetc(load);
-//		while(!feof(load)) {
-//			vramVarByte(vcpu.cs+i,vcpu.ip+((len++)%0x10000)) = c;
-//			i = len / 0x10000;
-//			c = fgetc(load);
-//		}
-//		end = vcpu.ip+len;
-//		//fprintf(stdout,"File '%s' is loaded to 0001:0100, length is %d bytes.\n",execmd,len);
-//		fclose(load);
-//		while(vcpu.ip < end && vmachine.flagrun) vmachineRefresh();
-//	}
-//}
+/*void Exec()
+{
+	char execmd[MAXLINE];
+	FILE *load;
+	t_nubit8 c;
+	t_nubit16 i = 0,end;
+	t_nubit32 len = 0;
+	if (!vmachine.flaginit || vmachine.flagrun) {
+		fprintf(stdout,"Cannot execute binary file now.\n");
+		return;
+	}
+	fprintf(stdout,".COM File: ");
+	fgets(execmd,MAXLINE,stdin);
+	parse(execmd);
+	if(!strlen(execmd)) return;
+	load = FOPEN(execmd,"rb");
+	if(!load) {
+		fprintf(stdout,"File not found\n");
+		return;
+	} else {
+		vcpu.ax = vcpu.bx = vcpu.cx = vcpu.dx = 0x0000;
+		vcpu.si = vcpu.di = vcpu.bp = 0x0000;
+		vcpu.sp = 0xffee;	vcpu.ip = 0x0100;
+		vcpu.ds = vcpu.es = vcpu.ss = vcpu.cs = 0x0001;
+		vmachine.flagrun = 1;
+		c = fgetc(load);
+		while(!feof(load)) {
+			vramVarByte(vcpu.cs+i,vcpu.ip+((len++)%0x10000)) = c;
+			i = len / 0x10000;
+			c = fgetc(load);
+		}
+		end = vcpu.ip+len;
+		fclose(load);
+		while(vcpu.ip < end && vmachine.flagrun) vmachineRefresh();
+	}
+}*/
 void Record()
 {
 	if (!vmachine.flaginit || vmachine.flagrun) {
@@ -249,10 +248,13 @@ void console()
 	exitFlag = 0;
 	vmachineInit();
 	fprintf(stdout,"Please enter 'HELP' for information.\n");
+
 	while(!exitFlag) {
 		fflush(stdin);
 		fprintf(stdout,"Console> ");
+		fflush(stdout);
 		fgets(cmdl,MAXLINE,stdin);
+		fflush(stdin);
 		parse(cmdl);
 		if(!strlen(cmdl)) continue;
 
@@ -261,7 +263,7 @@ void console()
 		else if(!strcmp(cmdl,"exit"))   Exit();
 
 		else if(!strcmp(cmdl,"debug"))  Debug();
-		//else if(!strcmp(cmdl,"exec"))   Exec();
+/*		else if(!strcmp(cmdl,"exec"))   Exec();*/
 		else if(!strcmp(cmdl,"record")) Record();
 		else if(!strcmp(cmdl,"dump"))   Dump();
 
@@ -275,9 +277,10 @@ void console()
 		else if(!strcmp(cmdl,"reset"))  Reset();
 
 		else fprintf(stdout,"Illegal command '%s'.\n",cmdl);
-
+		
 		fflush(stdin);
 		fprintf(stdout,"\n");
+		fflush(stdout);
 	}
 	if(vmachine.flaginit) vmachineFinal();
 }

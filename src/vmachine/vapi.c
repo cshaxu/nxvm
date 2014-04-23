@@ -138,7 +138,7 @@ void vapiFloppyRemove(const t_string fname)
 	#include "system/linux.h"
 	void vapiSleep(t_nubit32 milisec) {linuxSleep(milisec);}
 	void vapiDisplaySetScreen() {linuxDisplaySetScreen();}
-	void vapiDisplayPaint() {linuxDisplayPaint();}
+	void vapiDisplayPaint() {linuxDisplayPaint(0x01);}
 	void vapiStartMachine() {linuxStartMachine();}
 #endif
 

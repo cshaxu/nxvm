@@ -89,7 +89,7 @@ t_bool vapiCallBackKeyboardGetFlag0Ctrl();
 void vapiCallBackKeyboardRecvKeyPress(t_nubit16 code);
 
 t_bool vapiCallBackDisplayGetCursorVisible();
-t_bool vapiCallBackDisplayGetCursorPosChange();
+t_bool vapiCallBackDisplayGetCursorChange();
 t_bool vapiCallBackDisplayGetBufferChange();
 t_nubit16 vapiCallBackDisplayGetRowSize();
 t_nubit16 vapiCallBackDisplayGetColSize();

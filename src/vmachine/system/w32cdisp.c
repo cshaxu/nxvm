@@ -59,6 +59,7 @@ void w32cdispPaint(BOOL force)
 			for(j = 0;j < sizeRow;++j) {
 				ansiChar = vapiCallBackDisplayGetCurrentChar(i, j);
 				charProp = vapiCallBackDisplayGetCurrentCharProp(i, j);
+				//if (!ansiChar) continue;
 				MultiByteToWideChar(437, 0, (LPCSTR)(&ansiChar), 1, (LPWSTR)(&unicodeChar), 1);
 				charBuf[i * sizeRow + j].Char.UnicodeChar = unicodeChar;
 				charBuf[i * sizeRow + j].Attributes = charProp;
@@ -75,11 +76,11 @@ void w32cdispPaint(BOOL force)
 		WriteConsoleOutput(hOut, charBuf,
 			coordBufSize, coordBufStart, &srctWriteRect);
 	}
-	if (force || vapiCallBackDisplayGetCursorPosChange()) {
+	if (force || vapiCallBackDisplayGetCursorChange()) {
 		GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&curInfo));
 		curInfo.bVisible = vapiCallBackDisplayGetCursorVisible();
-		curInfo.dwSize = (DWORD)((vapiCallBackDisplayGetCursorBottom() -
-			vapiCallBackDisplayGetCursorTop() + 1) * 100. / 8.);
+		curInfo.dwSize = (DWORD)(((vapiCallBackDisplayGetCursorBottom() -
+			vapiCallBackDisplayGetCursorTop()) % 8 + 1) * 100. / 8.);
 		SetConsoleCursorInfo(hOut, &curInfo);
 		curPos.X = vapiCallBackDisplayGetCurrentCursorPosY();
 		curPos.Y = vapiCallBackDisplayGetCurrentCursorPosX();

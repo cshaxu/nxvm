@@ -9,9 +9,6 @@
 
 #include "windows.h"
 
-#include "win32con.h"
-#include "win32app.h"
-
 #define win32Sleep Sleep
 void win32KeyboardMakeStatus();
 void win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey);

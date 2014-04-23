@@ -83,6 +83,7 @@ void vapiCallBackKeyboardClrFlag1LeftCtrl() {ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1
 void vapiCallBackKeyboardRecvKeyPress(t_nubit16 code)
 {
 //	while(bufPush(code)) vapiSleep(1);
+//	vapiPrint("{0x%02x, 0x%02x},\n",(code & 0xff), (code >> 8));
 	bufPush(code);
 	vpicSetIRQ(0x01);
 }
