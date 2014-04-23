@@ -125,3 +125,40 @@ void qdkeybBufferKey()
 {
 	_al = bufPush((_ch << 8) | _cl);
 }
+
+void INT_09()
+{
+	vport.iobyte = 0x20;
+	ExecFun(vport.out[0x20]);
+}
+void INT_16()
+{
+	switch (_ah) {
+	case 0x00:
+	case 0x10:
+		qdkeybReadInput();
+		break;
+	case 0x01:
+	case 0x11:
+		qdkeybGetStatus();
+		break;
+	case 0x02:
+		qdkeybGetShiftStatus();
+		break;
+	case 0x05:
+		qdkeybBufferKey();
+		break;
+	default:
+		break;
+	}
+}
+
+void qdkeybReset()
+{
+	qdbiosInt[0x09] = (t_faddrcc)INT_09; /* hard keyb */
+	qdbiosInt[0x16] = (t_faddrcc)INT_16; /* soft keyb */
+/* special: INT 09 */
+	qdbiosMakeInt(0x09, "qdx 09;iret");
+/* special: INT 16 */
+	qdbiosMakeInt(0x16, "qdx 16;iret");
+}

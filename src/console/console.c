@@ -388,10 +388,22 @@ static void Nxvm()
 			printc("Virtual machine is already running.\n");
 	} else GetHelp;
 }
+static void Test()
+{
+	char str[0x1000];
+	char *p;
+	strcpy(str, "a;b;c;d;e;f");
+	p = strtok(str, ";");
+	while (p) {
+		printf("<%s>\n",p);
+		p = strtok(NULL, ";");
+	}
+}
 
 static void exec()
 {
 	if (!arg[0] || !strlen(arg[0])) return;
+	else if(!strcmp(arg[0],"test"))   Test();
 	else if(!strcmp(arg[0],"help"))   Help();
 	else if(!strcmp(arg[0],"exit"))   Exit();
 	else if(!strcmp(arg[0],"info"))   Info();

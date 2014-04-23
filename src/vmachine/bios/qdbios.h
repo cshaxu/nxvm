@@ -9,21 +9,15 @@
 
 #include "../vglobal.h"
 
-void INT_08();
-void INT_09();
-void INT_0E();
-void INT_10();
-void INT_11();
-void INT_12();
-void INT_13();
-void INT_14();
-void INT_15();
-void INT_16();
-void INT_17();
-void INT_1A();
+extern t_faddrcc qdbiosInt[0x100];
 
+void qdbiosSetInt(t_nubit8 intid, t_nubit16 intcs, t_nubit16 intip);
+void qdbiosAsmInt(t_string stmt);
+void qdbiosMakeInt(t_nubit8 intid, t_string stmt);
 void qdbiosExecInt(t_nubit8 intid);
 void qdbiosReset(); /* POST */
+
+#define asmint(n) if (1)
 
 #ifdef __cplusplus
 /*}_EOCD_*/

@@ -20,4 +20,7 @@ vmachine/vvadp.c
 vmachine/system/linux.c
 vmachine/bios/qdbios.c
 vmachine/bios/qdcga.c
+vmachine/bios/qddisk.c
 vmachine/bios/qdkeyb.c
+vmachine/bios/qdmisc.c
+vmachine/bios/qdrtc.c

@@ -3879,8 +3879,8 @@ void QDX()
 	vcpu.ip++;
 	GetImm(8);
 	if (d_nubit8(vcpuins.imm) == 0xff) {
-		vapiPrint("\nNXVM stopped at CS:%04X IP:%04X F1 FF\n",vcpu.cs,vcpu.ip);
-		vapiPrint("This happens because of the NXVM stop instruction.\n");
+		vapiPrint("\nNXVM stopped at CS:%04X IP:%04X by QDX FF\n",vcpu.cs,vcpu.ip);
+		vapiPrint("This happens because of the special stop instruction.\n");
 		vapiCallBackMachineStop();
 		return;
 	}

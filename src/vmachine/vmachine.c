@@ -102,6 +102,7 @@ void vmachineInit()
 	//vkeybInit();
 	vvadpInit();
 	//vdispInit();
+	//vmachine.flagmode = 0x01;
 }
 void vmachineFinal()
 {

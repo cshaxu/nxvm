@@ -6,9 +6,8 @@ CFLAGS = -g -O
 TARGET = a.out
 LIBRARY = -lpthread -lncurses
 
-$(TARGET): main.o asm86.o console.o debug.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qdkeyb.o
-	$(CC) -o $(TARGET) main.o asm86.o console.o debug.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qdkeyb.o $(LIBRARY)
-
+$(TARGET): main.o asm86.o console.o debug.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qddisk.o qdkeyb.o qdmisc.o qdrtc.o
+	$(CC) -o $(TARGET) main.o asm86.o console.o debug.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qddisk.o qdkeyb.o qdmisc.o qdrtc.o $(LIBRARY)
 
 main.o: main.c console/console.h
 	$(CC) -c $(CFLAGS) main.c
@@ -70,15 +69,24 @@ vvadp.o: vmachine/vvadp.c vmachine/vport.h vmachine/vglobal.h vmachine/vvadp.h
 linux.o: vmachine/system/linux.c vmachine/system/linux.h
 	$(CC) -c $(CFLAGS) vmachine/system/linux.c $(LIBRARY)
 
-qdbios.o: vmachine/bios/qdbios.c vmachine/bios/qdcga.h vmachine/bios/qdkeyb.h vmachine/bios/qdbios.h
+qdbios.o: vmachine/bios/qdbios.c vmachine/bios/qdcga.h vmachine/bios/qdkeyb.h vmachine/bios/qddisk.h vmachine/bios/qdrtc.h vmachine/bios/qdmisc.h vmachine/bios/qdbios.h vmachine/../console/asm86.h
 	$(CC) -c $(CFLAGS) vmachine/bios/qdbios.c
 
-qdcga.o: vmachine/bios/qdcga.c vmachine/bios/qdcga.h
+qdcga.o: vmachine/bios/qdcga.c vmachine/bios/qdbios.h vmachine/bios/qdcga.h
 	$(CC) -c $(CFLAGS) vmachine/bios/qdcga.c
+
+qddisk.o: vmachine/bios/qddisk.c vmachine/bios/qdbios.h vmachine/bios/qddisk.h
+	$(CC) -c $(CFLAGS) vmachine/bios/qddisk.c
 
 qdkeyb.o: vmachine/bios/qdkeyb.c vmachine/bios/qdbios.h vmachine/bios/qdkeyb.h
 	$(CC) -c $(CFLAGS) vmachine/bios/qdkeyb.c
 
+qdmisc.o: vmachine/bios/qdmisc.c vmachine/bios/qdbios.h vmachine/bios/qdmisc.h
+	$(CC) -c $(CFLAGS) vmachine/bios/qdmisc.c
+
+qdrtc.o: vmachine/bios/qdrtc.c vmachine/bios/qdbios.h vmachine/bios/qddisk.h
+	$(CC) -c $(CFLAGS) vmachine/bios/qdrtc.c
+
 clean:
 	rm -f $(TARGET)
-	rm -f main.o asm86.o console.o debug.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qdkeyb.o
+	rm -f main.o asm86.o console.o debug.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qddisk.o qdkeyb.o qdmisc.o qdrtc.o

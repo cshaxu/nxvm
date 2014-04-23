@@ -7,7 +7,6 @@
 /*extern "C" {*/
 #endif
 
-#include "../vglobal.h"
 #include "../vvadp.h"
 #include "../vram.h"
 
@@ -89,8 +88,10 @@ void qdcgaGetAdapterStatus();
 void qdcgaGenerateChar();
 void qdcgaGetAdapterInfo();
 void qdcgaDisplayStr();
-void qdcgaInit();
-void qdcgaFinal();
+
+void INT_10();
+
+void qdcgaReset();
 
 #ifdef __cplusplus
 /*}_EOCD_*/

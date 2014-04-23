@@ -6,6 +6,7 @@
 #include "../vapi.h"
 #include "../vcpu.h"
 
+#include "qdbios.h"
 #include "qdcga.h"
 
 t_nubit32 qdcgaModeBufSize[0x14] = {
@@ -291,4 +292,90 @@ void qdcgaDisplayStr()
 {
 	InsertString(vramGetAddr(_es, _bp), _cl, 0x00, _bl, _bh,
 		_dh,_dl);
+}
+
+void INT_10()
+{
+	t_nubit16 tmpCX = _cx;
+	switch (_ah) {
+	case 0x00:
+		qdcgaSetDisplayMode();
+		break;
+	case 0x01:
+		qdcgaSetCursorShape();
+		break;
+	case 0x02:
+		qdcgaSetCursorPos();
+		break;
+	case 0x03:
+		qdcgaGetCursorPos();
+		break;
+	case 0x04:
+		break;
+	case 0x05:
+		qdcgaSetDisplayPage();
+		break;
+	case 0x06:
+		qdcgaScrollUp();
+		break;
+	case 0x07:
+		qdcgaScrollDown();
+		break;
+	case 0x08:
+		qdcgaGetCharProp();
+		break;
+	case 0x09:
+		qdcgaDisplayCharProp();
+		break;
+	case 0x0a:
+		qdcgaDisplayChar();
+		break;
+	case 0x0e:
+		_cx = 0x01;
+		qdcgaDisplayCharProp();
+		_cx = tmpCX;
+		break;
+	case 0x0f:
+		qdcgaGetAdapterStatus();
+		break;
+	case 0x10:
+		break;
+	case 0x11:
+		qdcgaGenerateChar();
+		break;
+	case 0x12:
+		if (_bl == 0x10)
+			qdcgaGetAdapterInfo();
+		break;
+	case 0x13:
+		qdcgaDisplayStr();
+		break;
+	case 0x1a:
+		if (_al == 0x00) {
+			_al = 0x1a;
+			_bh = 0x00;
+			_bl = 0x08;
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void qdcgaReset()
+{
+	qdbiosInt[0x10] = (t_faddrcc)INT_10; /* soft cga*/
+	qdbiosMakeInt(0x10, "qdx 10;iret");
+	vvadp.color   = 0x01;
+	qdcgaVarRowSize = 0x50; // 80
+	vvadp.colsize = 0x19; // 25
+	qdcgaVarPageNum = 0x00;
+	qdcgaVarMode = 0x03;
+	qdcgaVarRagenSize = qdcgaModeBufSize[qdcgaVarMode];
+	qdcgaVarCursorPosRow(0) = 0x05;
+	qdcgaVarCursorPosCol(0) = 0x00;
+	qdcgaVarCursorTop       = 0x06;
+	qdcgaVarCursorBottom    = 0x07;
+	vvadp.oldcurposx = vvadp.oldcurposy = 0x00;
+	vvadp.oldcurtop  = vvadp.oldcurbottom = 0x00;
 }

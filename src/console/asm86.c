@@ -25,8 +25,8 @@ char* STRCAT(char *_Dest, const char *_Source)
 {return strcat(_Dest, _Source);}
 char* STRCPY(char *_Dest, const char *_Source)
 {return strcpy(_Dest, _Source);}
-char* STRTOK(char *_Dest, const char *_Source)
-{return strtok(_Dest, _Source);}
+char* STRTOK(char *_Str, const char *_Delim)
+{return strtok(_Str, _Delim);}
 FILE* FOPEN(const char *_Filename, const char *_Mode)
 {return fopen(_Filename, _Mode);}
 int STRCMP(const char *_Str1, const char *_Str2)
@@ -241,9 +241,9 @@ static int chartohexdigit(char c)
 	else if(isRM16(m1)) {			aSINGLE(0x8f)	aSetModRM(m1,0x00)					}\
 	else len = 0;\
 	if(!isNull(m2)) len = 0;}
-/*#define aQDX {\
-	if(isImm8(m1) && isNull(m2)) {	aSINGLE(0xd8)						aSetByte(m1.imm)}\
-	else len = 0;}*/
+#define aQDX {\
+	if(isImm8(m1) && isNull(m2)) {	aSINGLE(0xf1)						aSetByte(m1.imm)}\
+	else len = 0;}
 #define aRET {\
 	if(isImm(m1)) {					aSINGLE(0xc2)						aSetWord(m1.imm)	}\
 	else 							aSINGLE(0xc3)										}
@@ -614,7 +614,7 @@ static int aPrefix(const char *s,unsigned char *loc)
 {
 	if(!s) return 0;
 	if(!strcmp(s,"lock")) *loc = 0xf0;
-	else if(!strcmp(s,"REPNZ") || !strcmp(s,"repnz"))
+	else if(!strcmp(s,"repnz"))
 		*loc = 0xf2;
 	else if(!strcmp(s,"rep") || !strcmp(s,"repe") || !strcmp(s,"repz"))
 		*loc = 0xf3;
@@ -759,7 +759,7 @@ static int aOpCode(const char *op,const char *a1,const char *a2,
 	else if(!strcmp(op,"popf"))	aSINGLE(0x9d)
 	else if(!strcmp(op,"push"))	aGROUP5_PUSH
 	else if(!strcmp(op,"pushf"))aSINGLE(0x9c)
-//	else if(!strcmp(op,"qdx"))  aQDX
+	else if(!strcmp(op,"qdx"))  aQDX
 	else if(!strcmp(op,"rcl"))	aGROUP2(0x02)
 	else if(!strcmp(op,"rcr"))	aGROUP2(0x03)
 //	else if(!strcmp(op,"rep"))	PREFIX(0xf3)
@@ -807,7 +807,7 @@ int assemble(const char *asmStmt,unsigned short locCS,
 	unsigned char *loc = (unsigned char *)(((unsigned char *)locMemory)+(locSegment<<4)+locOffset);
 	int len = 0,flag;
 	char copy[0x100];
-	char *prefix = NULL;
+	char *prefix = NULL, *p;
 	char *db = NULL;
 	char *dw = NULL;
 	char *opcode = NULL;
@@ -1619,7 +1619,7 @@ int disassemble(char *dasmStmt,Operand *resOperand,
 	case 0xd5:	dEmitAA(dSOL,"AAD");			break;
 	case 0xd6:	dEmitDB;						break;
 	case 0xd7:	dEmitOP(dSOL,"XLAT");			break;
-//	case 0xd8:	dEmitOI(dSOL,"QDX",8);			break;
+	case 0xd8:	dEmitDB;						break;
 	case 0xd9:	dEmitDB;						break;
 	case 0xda:	dEmitDB;						break;
 	case 0xdb:	dEmitDB;						break;
@@ -1644,7 +1644,7 @@ int disassemble(char *dasmStmt,Operand *resOperand,
 	case 0xee:	dEmitOP(dSOL,"OUT\tDX,AL");		break;
 	case 0xef:	dEmitOP(dSOL,"OUT\tDX,AX");		break;
 	case 0xf0:	dEmitPR(dSOL,"LOCK");			break;
-	case 0xf1:	dEmitDB;						break;
+	case 0xf1:	dEmitOI(dSOL,"QDX",8);			break;
 	case 0xf2:	dEmitPR(dSOL,"REPNZ");			break;
 	case 0xf3:	dEmitPR(dSOL,"REPZ");			break;
 	case 0xf4:	dEmitOP(dSOL,"HLT");			break;

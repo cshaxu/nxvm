@@ -7,7 +7,6 @@
 /*extern "C" {*/
 #endif
 
-#include "../vglobal.h"
 #include "../vram.h"
 
 #define QDKEYB_VBIOS_ADDR_KEYB_FLAG0         0x0417
@@ -35,7 +34,8 @@
 #define QDKEYB_FLAG1_D_LALT    0x02
 #define QDKEYB_FLAG1_D_LCTRL   0x01
 
-void IO_Read_0064();
+void INT_09();
+void INT_16();
 
 void qdkeybReadInput();
 void qdkeybGetStatus();
@@ -44,6 +44,8 @@ void qdkeybBufferKey();
 
 #define qdkeybVarFlag0 (vramVarByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG0))
 #define qdkeybVarFlag1 (vramVarByte(0x0000,QDKEYB_VBIOS_ADDR_KEYB_FLAG1))
+
+void qdkeybReset();
 
 #ifdef __cplusplus
 /*}_EOCD_*/
