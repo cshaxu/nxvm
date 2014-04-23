@@ -67,7 +67,11 @@ void vmachineStart()
 	vmachineReset();
 	vmachineResume();
 }
-void vmachineResume() {vmachine.flagrun = 0x01;vapiStartMachine();}
+void vmachineResume() {
+	if (vmachine.flagrun) return;
+	vmachine.flagrun = 0x01;
+	vapiStartMachine();
+}
 void vmachineStop()  {vmachine.flagrun = 0x00;}
 void vmachineReset()
 {

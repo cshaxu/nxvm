@@ -67,7 +67,7 @@ void vhddInit()
 {
 	memset(&vhdd, 0x00, sizeof(t_hdd));
 	vhdd.ncyl    = 0;
-	vhdd.nhead   = 16;
+	vhdd.nhead   = 40;
 	vhdd.nsector = 63;
 	vhdd.nbyte   = 512;
 	vhdd.base    = (t_vaddrcc)NULL;
