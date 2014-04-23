@@ -73,29 +73,25 @@ mov ah, 00                        \n\
 clc                               \n\
 jmp near $(label_int_15_set_flag) \n\
 \
-$(label_int_15_d8):              \n\
-mov ah, 86                       \n\
-stc                              \n\
-jmp near $(label_int_15_set_flag)\n\
+$(label_int_15_d8):               \n\
+mov ah, 86                        \n\
+stc                               \n\
+jmp near $(label_int_15_set_flag) \n\
 \
-$(label_int_15_set_flag):        \n\
-push ax                          \n\
-push bx                          \n\
-pushf                            \n\
-pop ax                           \n\
-mov bx, sp                       \n\
-test ax, 0001                    \n\
-jnz $(label_int_15_set_flag_stc) \n\
-ss:                              \n\
-and word [bx+08], fffe           \n\
-pop bx                           \n\
-pop ax                           \n\
-jmp short $(label_int_15_ret)    \n\
-$(label_int_15_set_flag_stc):    \n\
-ss:                              \n\
-or  word [bx+08], 0001           \n\
-pop bx                           \n\
-pop ax                           \n\
+$(label_int_15_set_flag): \n\
+; set/clear cf            \n\
+push ax                   \n\
+push bx                   \n\
+pushf                     \n\
+pop ax                    \n\
+and ax, 01                \n\
+mov bx, sp                \n\
+ss:                       \n\
+and word [bx+8], fffe     \n\
+ss:                       \n\
+or  word [bx+8], ax       \n\
+pop bx                    \n\
+pop ax                    \n\
 \
 $(label_int_15_ret): \n\
 iret                 \n"

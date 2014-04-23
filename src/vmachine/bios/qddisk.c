@@ -41,25 +41,29 @@ static t_nubit16 sax, sbx, scx, sdx;
 #define QDBIOS_VAR_VFDD  0
 #define QDBIOS_VAR_QDFDD 1
 /* debugging selectors */
-#define QDBIOS_FDD QDBIOS_VAR_QDFDD
+#define QDBIOS_FDD QDBIOS_VAR_VFDD
+
+static void INT_0E()
+{
+	push_ax;
+	push_dx;
+	in(_al, 0x03f4); /* get msr */
+	and(_al, 0xc0);  /* get ready write status */
+	if(cmp(_al, 0x80)) {
+		mov(_dx, 0x03f5);
+		mov(_al, 0x08);
+		out(_dx, _al); /* send senseint command */ 
+		in (_al, _dx); /* read senseint ret st0: 0x20 */
+		in (_al, _dx); /* read senseint ret cyl: 0x00 */
+	}
+	/* FDC 3F5 4A to check id; not needed for vm */
+	mov(_al, 0x20);
+	out(0x20, _al); /* send eoi command to vpic */
+	pop_dx;
+	pop_ax;
+}
 
 #if (QDBIOS_FDD == QDBIOS_VAR_VFDD)
-static void INT_13_00_FDD_ResetDrive()
-{
-	if (cmp(_dl, 0x00)) {
-		mov(_ah, 0x00);
-		clc;
-	} else {
-		/* only one drive */
-		mov(_ah, 0x0c);
-		stc;
-	}
-	mov(mbp(0x0441), _ah); /* set status*/
-}
-static void INT_13_01_FDD_GetDiskStatus()
-{
-	mov(_ah, mbp(0x0441)); /* get status */
-}
 static void INT_13_02_FDD_ReadSector()
 {
 /*	t_nubit8 drive  = _dl;
@@ -255,8 +259,6 @@ static void INT_13_08_FDD_GetParameter()
 	if (_dl == 0x80) {
 		mov(_ah, 0x01);
 		stc;
-		clp;
-		cli;
 	} else {
 		mov(_ah, 0x00);
 		mov(_bl, 0x04);
@@ -279,7 +281,7 @@ static void INT_13_15_FDD_GetDriveType()
 	case 0x02:
 	case 0x03:
 		mov(_ah, 0x00);
-		stc;
+		clc;
 		break;
 	default:
 		break;
@@ -460,41 +462,10 @@ static void INT_13_15_FDD_GetDriveType()
 }
 #endif
 
-void INT_0E()
-{
-	push_ax;
-	push_dx;
-	in(_al, 0x03f4); /* get msr */
-	and(_al, 0xc0);  /* get ready write status */
-	if(cmp(_al, 0x80)) {
-		mov(_dx, 0x03f5);
-		mov(_al, 0x08);
-		out(_dx, _al); /* send senseint command */ 
-		in (_al, _dx); /* read senseint ret st0: 0x20 */
-		in (_al, _dx); /* read senseint ret cyl: 0x00 */
-	}
-	/* FDC 3F5 4A to check id; not needed for vm */
-	mov(_al, 0x20);
-	out(0x20, _al); /* send eoi command to vpic */
-	pop_dx;
-	pop_ax;
-}
-
-void INT_13()
-{
-	switch (_ah) {
-	case 0x00: INT_13_00_FDD_ResetDrive();   break;
-	case 0x01: INT_13_01_FDD_GetDiskStatus();break;
-	case 0x02: INT_13_02_FDD_ReadSector();   break;
-	case 0x03: INT_13_03_FDD_WriteSector();  break;
-	case 0x08: INT_13_08_FDD_GetParameter(); break;
-	case 0x15: INT_13_15_FDD_GetDriveType(); break;
-	default:   break;
-	}
-}
-
 void qddiskReset()
 {
-	qdbiosInt[0x13] = (t_faddrcc)INT_13; /* soft fdd */
-	qdbiosMakeInt(0x13, "qdx 13\niret");
+	qdbiosInt[0xa2] = (t_faddrcc)INT_13_02_FDD_ReadSector;
+	qdbiosInt[0xa3] = (t_faddrcc)INT_13_03_FDD_WriteSector;
+	qdbiosInt[0xa8] = (t_faddrcc)INT_13_08_FDD_GetParameter;
+	qdbiosInt[0xb5] = (t_faddrcc)INT_13_15_FDD_GetDriveType;
 }

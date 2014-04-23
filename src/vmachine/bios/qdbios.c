@@ -125,13 +125,15 @@ static void vbiosLoadInt()
 	qdbiosMakeInt(0x11, SOFT_MISC_INT_11);
 	qdbiosMakeInt(0x12, SOFT_MISC_INT_12);
 	qdbiosMakeInt(0x15, SOFT_MISC_INT_15);
-	/* load fdd int */
+	/* load disk int */
 	qdbiosMakeInt(0x0e, HARD_FDD_INT_0E);
+	qdbiosMakeInt(0x13, SOFT_DISK_INT_13);
+	qdbiosMakeInt(0x13, SOFT_DISK_INT_40);
 	/* qdkeyb init */
 	qdkeybReset();
 	/* qdcga init */
 	qdcgaReset();
-	/* load boot sector */
+	/* reducing */
 	qddiskReset();
 }
 static void vbiosLoadPost()

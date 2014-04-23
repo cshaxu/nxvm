@@ -69,9 +69,9 @@ jnz $(label_int_1a_cmp_06)         \n\
 jmp near $(label_int_1a_set_date)  \n\
 $(label_int_1a_cmp_06):            \n\
 cmp ah, 06                         \n\
-jnz $(label_int_1a_cmp_07)         \n\
+jnz $(label_int_1a_cmp_def)        \n\
 jmp near $(label_int_1a_set_alarm) \n\
-$(label_int_1a_cmp_07):            \n\
+$(label_int_1a_cmp_def):           \n\
 jmp near $(label_int_1a_ret)       \n\
 \
 $(label_int_1a_get_tick):    ; get time tick count        \n\
@@ -183,14 +183,11 @@ $(label_int_1a_set_flag):        \n\
 pushf                            \n\
 pop ax                           \n\
 mov bx, sp                       \n\
-test ax, 0001                    \n\
-jnz $(label_int_1a_set_flag_stc) \n\
+and ax, 01                       \n\
 ss:                              \n\
 and word [bx+08], fffe           \n\
-jmp short $(label_int_1a_ret)    \n\
-$(label_int_1a_set_flag_stc):    \n\
 ss:                              \n\
-or  word [bx+08], 0001           \n\
+or  word [bx+08], ax             \n\
 \
 $(label_int_1a_ret): \n\
 pop ds               \n\

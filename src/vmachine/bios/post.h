@@ -93,6 +93,10 @@ jnz $(label_post_boot_fail)         \n\
 jmp near $(label_post_boot_succ)    \n\
 \
 $(label_post_boot_fail):          \n\
+mov ah, 02                        \n\
+mov dh, 05                        \n\
+mov dl, 00                        \n\
+int 10  ; set cursor position     \n\
 mov ah, 0e                        \n\
 mov bl, 0f                        \n\
 mov bh, 00                        \n\
@@ -141,6 +145,8 @@ pushf   ; if any key pressed,     \n\
 pop ax  ; then stop nxvm          \n\
 test ax, 40                       \n\
 jnz $(label_post_boot_fail_loop)  \n\
+mov ah, 00                        \n\
+int 16                            \n\
 qdx ff  ; special stop            \n\
 jmp near $(label_post_boot_fail)  \n\
 \
