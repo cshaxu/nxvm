@@ -1003,9 +1003,8 @@ int assemble(const char *asmStmt,unsigned short locCS,
 	dANY("]");}
 #define dSImm8 {\
 	dGetByte(imm)\
-	if((unsigned char)imm < 0x80) dANY("+")\
-	else dANY("-")\
-	dStrCat8(dasmStmt,imm);}
+	if(imm&0x80) {dANY("-")	dStrCat8(dasmStmt,(~imm)+1);}\
+	else {dANY("+")	dStrCat8(dasmStmt,imm);}}
 #define dGetModRM {\
 	modrm.mod = *(loc+len++);\
 	modrm.rm = ((modrm.mod&0x07)>>0);\
@@ -1611,7 +1610,7 @@ int disassemble(char *dasmStmt,Operand *resOperand,
 	case 0xe6:	dEmitRI(dSOL,"OUT",I8_AL);		break;
 	case 0xe7:	dEmitRI(dSOL,"OUT",I8_AX);		break;
 	case 0xe8:	dEmitJR(dSOL,"CALL",locOffset,16);break;
-	case 0xe9:	dEmitJR(dSOL,"JML",locOffset,16);break;
+	case 0xe9:	dEmitJR(dSOL,"JMP",locOffset,16);break;
 	case 0xea:	dEmitJF(dSOL,"JMP");			break;
 	case 0xeb:	dEmitJR(dSOL,"JMP",locOffset,8);break;
 	case 0xec:	dEmitOP(dSOL,"IN\tAL,DX");		break;

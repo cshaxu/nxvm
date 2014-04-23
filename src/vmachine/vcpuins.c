@@ -559,7 +559,7 @@ static void SUB(void *dest, void *src, t_nubit8 len)
 		flglen = 16;
 		flginstype = SUB16;
 		flgoperand1 = U_DEST_16;
-		flgoperand2 = *(t_nsbit8 *)src;
+		flgoperand2 = S_SRC_8;
 		flgresult = (flgoperand1-flgoperand2)&0xffff;
 		U_DEST_16 = (t_nubit16)flgresult;
 		break;
