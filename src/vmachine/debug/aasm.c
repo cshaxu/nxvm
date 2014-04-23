@@ -63,7 +63,9 @@ typedef enum {
 	SEG_DS
 } t_aasm_oprseg;
 typedef enum {
+	PTR_NONE,
 	PTR_NEAR,
+	PTR_SHORT,
 	PTR_FAR
 } t_aasm_oprptr;
 
@@ -83,11 +85,12 @@ typedef struct {
                            // 4 = SP, 5 = BP, 6 = SI, 7 = DI      
 	t_aasm_oprseg   seg;   // active when type = 3
                            // 0 = ES, 1 = CS, 2 = SS, 3 = DS
+	t_bool          imms;  // if imm is signed (+/-)
 	t_nsbit8        imm8s;
 	t_nubit16       imm16;
 	t_nsbit8        disp8;
 	t_nubit16       disp16;// use as imm when type = 5,6; use by modrm as disp when mod = 0(rm = 6),1,2;
-	t_aasm_oprptr   isfar; // 0 = near; 1 = far
+	t_aasm_oprptr   ptr; // 0 = near; 1 = far
 } t_aasm_oprinfo;
 
 static char pool[0x1000];
@@ -104,8 +107,10 @@ static t_nubit16 avcs, avip;
 #define isI16(oprinf)   ((oprinf).type  == TYPE_I8  || (oprinf).type == TYPE_I16)
 #define isM8(oprinf)    (((oprinf).type == TYPE_M   || (oprinf).type == TYPE_M8 ) && (oprinf).mod != MOD_R)
 #define isM16(oprinf)   (((oprinf).type == TYPE_M   || (oprinf).type == TYPE_M16) && (oprinf).mod != MOD_R)
-#define isNEAR(oprinf)  ((oprinf).isfar == PTR_NEAR)
-#define isFAR(oprinf)   ((oprinf).isfar == PTR_FAR)
+#define isPNONE(oprinf) ((oprinf).ptr == PTR_NONE)
+#define isNEAR(oprinf)  ((oprinf).ptr == PTR_NEAR)
+#define isSHORT(oprinf) ((oprinf).ptr == PTR_SHORT)
+#define isFAR(oprinf)   ((oprinf).ptr == PTR_FAR)
 
 #define isRM8s(oprinf)  (isR8 (oprinf) || ((oprinf).type == TYPE_M8))
 #define isRM16s(oprinf) (isR16(oprinf) || ((oprinf).type == TYPE_M16))
@@ -134,6 +139,7 @@ static t_nubit16 avcs, avip;
 #define isDS(oprinf)    (isSEG(oprinf) && (oprinf).seg   == SEG_DS)
 
 #define ARG_NONE        (isNONE (aopri1) && isNONE(aopri2))
+#define ARG_LABEL       (0)
 #define ARG_RM8_R8      (isRM8  (aopri1) && isR8  (aopri2))
 #define ARG_RM16_R16    (isRM16 (aopri1) && isR16 (aopri2))
 #define ARG_R8_RM8      (isR8   (aopri1) && isRM8 (aopri2))
@@ -167,12 +173,14 @@ static t_nubit16 avcs, avip;
 #define ARG_SI_I16      (isSI   (aopri1) && isI16 (aopri2))
 #define ARG_DI_I16      (isDI   (aopri1) && isI16 (aopri2))
 #define ARG_I8          (isI8   (aopri1) && isNONE(aopri2))
+#define ARG_I16         (isI16  (aopri1) && isNONE(aopri2))
 #define ARG_RM8_I8      (isRM8s (aopri1) && isI8  (aopri2))
 #define ARG_RM16_I16    (isRM16s(aopri1) && isI16 (aopri2))
 #define ARG_RM16_I8     (isRM16s(aopri1) && isI8  (aopri2))
 #define ARG_RM16_SEG    (isRM16 (aopri1) && isSEG (aopri2))
 #define ARG_SEG_RM16    (isSEG  (aopri1) && isRM16(aopri2))
 #define ARG_RM16        (isRM16 (aopri1) && isNONE(aopri2))
+#define ARG_AX_AX       (isAX   (aopri1) && isAX  (aopri2))
 #define ARG_CX_AX       (isCX   (aopri1) && isAX  (aopri2))
 #define ARG_DX_AX       (isDX   (aopri1) && isAX  (aopri2))
 #define ARG_BX_AX       (isBX   (aopri1) && isAX  (aopri2))
@@ -184,6 +192,7 @@ static t_nubit16 avcs, avip;
 #define ARG_M8_AL       (isM8   (aopri1) && isAL  (aopri2))
 #define ARG_AX_M16      (isAX   (aopri1) && isM16 (aopri2))
 #define ARG_M16_AX      (isM16  (aopri1) && isAX  (aopri2))
+#define ARG_R16_M16     (isR16  (aopri1) && isM16 (aopri2))
 
 /* assembly compiler: lexical scanner */
 typedef enum {
@@ -650,7 +659,7 @@ static t_aasm_oprinfo parsearg_mem()
 {
 	t_aasm_token token;
 	t_aasm_oprinfo info;
-	t_bool bx,bp,si,di,imm;
+	t_bool bx,bp,si,di;
 	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
 	bx = bp = si = di = 0x00;
 	info.type = TYPE_M;
@@ -720,14 +729,20 @@ static t_aasm_oprinfo parsearg_mem()
 	else if (!bx && !si &&  bp &&  di) info.mem = MEM_BP_DI;
 	else if ( bx && !si && !bp && !di) info.mem = MEM_BX;
 	else if (!bx &&  si && !bp && !di) info.mem = MEM_SI;
-	else if (!bx && !si &&  bp && !di) info.mem = MEM_BP;
-	else if (!bx && !si && !bp &&  di) info.mem = MEM_DI;
+	else if (!bx && !si &&  bp && !di) {
+		info.mem = MEM_BP;
+		if (info.mod == MOD_M) {
+			info.mod = MOD_M_DISP8;
+			info.disp8 = 0x00;
+		}
+	} else if (!bx && !si && !bp &&  di) info.mem = MEM_DI;
 	else if (!bx && !si && !bp && !di && info.mod != MOD_M) {
 		info.mem = MEM_BP;
 		if (info.mod == MOD_M_DISP8) {
 			info.disp16 = (t_nubit16)info.disp8;
 			info.mod = MOD_M;
-		}
+		} else if (info.mod == MOD_M_DISP16)
+			info.mod = MOD_M;
 	}
 	else error = 1;
 	return info;
@@ -739,8 +754,12 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token)
 	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
 	info.type = TYPE_NONE;
 	info.mod = MOD_M;
-	if (token == TOKEN_PLUS) token = gettoken(NULL);
-	else if (token == TOKEN_MINUS) {
+	info.imms = 0x00;
+	if (token == TOKEN_PLUS) {
+		info.imms = 0x01;
+		token = gettoken(NULL);
+	} else if (token == TOKEN_MINUS) {
+		info.imms = 0x01;
 		neg = 0x01;
 		token = gettoken(NULL);
 	}
@@ -1444,7 +1463,166 @@ static void AAS()
 		avip++;
 	} else error = 1;
 }
-
+static void INC_AX()
+{
+	setbyte(0x40);
+	avip++;
+}
+static void INC_CX()
+{
+	setbyte(0x41);
+	avip++;
+}
+static void INC_DX()
+{
+	setbyte(0x42);
+	avip++;
+}
+static void INC_BX()
+{
+	setbyte(0x43);
+	avip++;
+}
+static void INC_SP()
+{
+	setbyte(0x44);
+	avip++;
+}
+static void INC_BP()
+{
+	setbyte(0x45);
+	avip++;
+}
+static void INC_SI()
+{
+	setbyte(0x46);
+	avip++;
+}
+static void INC_DI()
+{
+	setbyte(0x47);
+	avip++;
+}
+static void DEC_AX()
+{
+	setbyte(0x48);
+	avip++;
+}
+static void DEC_CX()
+{
+	setbyte(0x49);
+	avip++;
+}
+static void DEC_DX()
+{
+	setbyte(0x4a);
+	avip++;
+}
+static void DEC_BX()
+{
+	setbyte(0x4b);
+	avip++;
+}
+static void DEC_SP()
+{
+	setbyte(0x4c);
+	avip++;
+}
+static void DEC_BP()
+{
+	setbyte(0x4d);
+	avip++;
+}
+static void DEC_SI()
+{
+	setbyte(0x4e);
+	avip++;
+}
+static void DEC_DI()
+{
+	setbyte(0x4f);
+	avip++;
+}
+static void PUSH_AX()
+{
+	setbyte(0x50);
+	avip++;
+}
+static void PUSH_CX()
+{
+	setbyte(0x51);
+	avip++;
+}
+static void PUSH_DX()
+{
+	setbyte(0x52);
+	avip++;
+}
+static void PUSH_BX()
+{
+	setbyte(0x53);
+	avip++;
+}
+static void PUSH_SP()
+{
+	setbyte(0x54);
+	avip++;
+}
+static void PUSH_BP()
+{
+	setbyte(0x55);
+	avip++;
+}
+static void PUSH_SI()
+{
+	setbyte(0x56);
+	avip++;
+}
+static void PUSH_DI()
+{
+	setbyte(0x57);
+	avip++;
+}
+static void POP_AX()
+{
+	setbyte(0x58);
+	avip++;
+}
+static void POP_CX()
+{
+	setbyte(0x59);
+	avip++;
+}
+static void POP_DX()
+{
+	setbyte(0x5a);
+	avip++;
+}
+static void POP_BX()
+{
+	setbyte(0x5b);
+	avip++;
+}
+static void POP_SP()
+{
+	setbyte(0x5c);
+	avip++;
+}
+static void POP_BP()
+{
+	setbyte(0x5d);
+	avip++;
+}
+static void POP_SI()
+{
+	setbyte(0x5e);
+	avip++;
+}
+static void POP_DI()
+{
+	setbyte(0x5f);
+	avip++;
+}
 static void INS_80(t_nubit8 rid)
 {
 	setbyte(0x80);
@@ -1466,6 +1644,140 @@ static void INS_83(t_nubit8 rid)
 	SetModRegRM(aopri1, rid);
 	SetImm8(aopri2.imm8s);
 }
+static void TEST_RM8_R8()
+{
+	setbyte(0x84);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg8);
+}
+static void TEST_RM16_R16()
+{
+	setbyte(0x85);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg16);
+}
+static void XCHG_R8_RM8()
+{
+	setbyte(0x86);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg8);
+}
+static void XCHG_R16_RM16()
+{
+	setbyte(0x87);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void MOV_RM8_R8()
+{
+	setbyte(0x88);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg8);
+}
+static void MOV_RM16_R16()
+{
+	setbyte(0x89);
+	avip++;
+	SetModRegRM(aopri1, aopri2.reg16);
+}
+static void MOV_R8_RM8()
+{
+	setbyte(0x8a);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg8);
+}
+static void MOV_R16_RM16()
+{
+	setbyte(0x8b);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void MOV_RM16_SEG()
+{
+	setbyte(0x8c);
+	avip++;
+	SetModRegRM(aopri1, aopri2.seg);
+}
+static void LEA_R16_M16()
+{
+	setbyte(0x8d);
+	avip++;
+	SetModRegRM(aopri2, aopri1.reg16);
+}
+static void MOV_SEG_RM16()
+{
+	setbyte(0x8e);
+	avip++;
+	SetModRegRM(aopri2, aopri1.seg);
+}
+static void POP_RM16()
+{
+	setbyte(0x8f);
+	avip++;
+	SetModRegRM(aopri1, 0x00);
+}
+static void NOP()
+{
+	if (ARG_NONE) {
+		setbyte(0x90);
+		avip++;
+	} else error = 1;
+}
+static void XCHG_AX_AX()
+{
+	setbyte(0x90);
+	avip++;
+}
+static void XCHG_CX_AX()
+{
+	setbyte(0x91);
+	avip++;
+}
+static void XCHG_DX_AX()
+{
+	setbyte(0x92);
+	avip++;
+}
+static void XCHG_BX_AX()
+{
+	setbyte(0x93);
+	avip++;
+}
+static void XCHG_SP_AX()
+{
+	setbyte(0x94);
+	avip++;
+}
+static void XCHG_BP_AX()
+{
+	setbyte(0x95);
+	avip++;
+}
+static void XCHG_SI_AX()
+{
+	setbyte(0x96);
+	avip++;
+}
+static void XCHG_DI_AX()
+{
+	setbyte(0x97);
+	avip++;
+}
+static void CBW()
+{
+	if (ARG_NONE) {
+		setbyte(0x98);
+		avip++;
+	} else error = 1;
+}
+static void CWD()
+{
+	if (ARG_NONE) {
+		setbyte(0x99);
+		avip++;
+	} else error = 1;
+}
+
 static void AAM()
 {
 	if (ARG_NONE) {
@@ -1485,17 +1797,36 @@ static void AAD()
 
 static void PUSH()
 {
-	     if (ARG_ES) PUSH_ES();
+	if      (ARG_ES) PUSH_ES();
 	else if (ARG_CS) PUSH_CS();
 	else if (ARG_SS) PUSH_SS();
 	else if (ARG_DS) PUSH_DS();
+	else if (ARG_AX) PUSH_AX();
+	else if (ARG_CX) PUSH_CX();
+	else if (ARG_DX) PUSH_DX();
+	else if (ARG_BX) PUSH_BX();
+	else if (ARG_SP) PUSH_SP();
+	else if (ARG_BP) PUSH_BP();
+	else if (ARG_SI) PUSH_SI();
+	else if (ARG_DI) PUSH_DI();
+	else error = 1;
 }
 static void POP()
 {
-	     if (ARG_ES) POP_ES();
+	if      (ARG_ES) POP_ES();
 	else if (ARG_CS) POP_CS();
 	else if (ARG_SS) POP_SS();
 	else if (ARG_DS) POP_DS();
+	else if (ARG_AX) POP_AX();
+	else if (ARG_CX) POP_CX();
+	else if (ARG_DX) POP_DX();
+	else if (ARG_BX) POP_BX();
+	else if (ARG_SP) POP_SP();
+	else if (ARG_BP) POP_BP();
+	else if (ARG_SI) POP_SI();
+	else if (ARG_DI) POP_DI();
+	else if (ARG_RM16) POP_RM16();
+	else error = 1;
 }
 static void ADD()
 {
@@ -1601,6 +1932,97 @@ static void CMP()
 	else if (ARG_R16_RM16) CMP_R16_RM16();
 	else error = 1;
 }
+static void INC()
+{
+	if      (ARG_AX) INC_AX();
+	else if (ARG_CX) INC_CX();
+	else if (ARG_DX) INC_DX();
+	else if (ARG_BX) INC_BX();
+	else if (ARG_SP) INC_SP();
+	else if (ARG_BP) INC_BP();
+	else if (ARG_SI) INC_SI();
+	else if (ARG_DI) INC_DI();
+	else error = 1;
+}
+static void DEC()
+{
+	if      (ARG_AX) DEC_AX();
+	else if (ARG_CX) DEC_CX();
+	else if (ARG_DX) DEC_DX();
+	else if (ARG_BX) DEC_BX();
+	else if (ARG_SP) DEC_SP();
+	else if (ARG_BP) DEC_BP();
+	else if (ARG_SI) DEC_SI();
+	else if (ARG_DI) DEC_DI();
+	else error = 1;
+}
+static void JCC(t_nubit8 opcode)
+{
+	t_nubit16 lo, hi, ta;
+	t_nsbit8 rel8;
+	if (ARG_I16 && !aopri1.imms) {
+		lo = avip - 0x0080 + 0x0002;
+		hi = avip + 0x007f + 0x0002;
+		if (isI8(aopri1)) ta = (t_nubit8)aopri1.imm8s & 0x00ff; 
+		else if (isI16(aopri1)) ta = aopri1.imm16;
+		else error = 1;
+		if (avip < lo || avip > hi)
+			if (ta <= hi || ta >= lo)
+				rel8 = ta - avip - 0x0002;
+			else error = 1;
+		else if (ta <= hi && ta >= lo)
+			rel8 = ta - avip - 0x0002;
+		else error = 1;
+		if (error) return;
+		setbyte(opcode);
+		avip++;
+		SetImm8(rel8);
+	} else if (ARG_LABEL) {
+		;
+	}
+	else
+		error = 1;
+}
+static void TEST()
+{
+	if      (ARG_RM8_R8)   TEST_RM8_R8();
+	else if (ARG_RM16_R16) TEST_RM16_R16();
+	else error = 1;
+}
+static void XCHG()
+{
+	if      (ARG_AX_AX) XCHG_AX_AX();
+	else if (ARG_CX_AX) XCHG_CX_AX();
+	else if (ARG_DX_AX) XCHG_DX_AX();
+	else if (ARG_BX_AX) XCHG_BX_AX();
+	else if (ARG_SP_AX) XCHG_SP_AX();
+	else if (ARG_BP_AX) XCHG_BP_AX();
+	else if (ARG_SI_AX) XCHG_SI_AX();
+	else if (ARG_DI_AX) XCHG_DI_AX();
+	else if (ARG_R8_RM8) XCHG_R8_RM8();
+	else if (ARG_R16_RM16) XCHG_R16_RM16();
+	else error = 1;
+}
+static void MOV()
+{
+	if      (ARG_RM8_R8) MOV_RM8_R8();
+	else if (ARG_RM16_R16) MOV_RM16_R16();
+	else if (ARG_R8_RM8) MOV_R8_RM8();
+	else if (ARG_R16_RM16) MOV_R16_RM16();
+	else if (ARG_RM16_SEG) MOV_RM16_SEG();
+	else if (ARG_SEG_RM16) MOV_SEG_RM16();
+	else error = 1;
+}
+static void LEA()
+{
+	if (ARG_R16_M16) LEA_R16_M16();
+	else error = 1;
+}
+static void CALL()
+{
+	/* TODO */
+	error = 1;
+}
 
 static void QDX()
 {
@@ -1623,91 +2045,92 @@ static void exec()
 	if      (!strcmp(aop, "db"))   ;
 	else if (!strcmp(aop, "dw"))   ;
 
-	else if (!strcmp(aop, "add"))  ADD();
-	else if (!strcmp(aop, "push")) PUSH();
-	else if (!strcmp(aop, "pop"))  POP();
-	else if (!strcmp(aop, "or"))   OR();
-	else if (!strcmp(aop, "adc"))  ADC();
-	else if (!strcmp(aop, "and"))  AND();
-	else if (!strcmp(aop, "es:"))  ES();
-	else if (!strcmp(aop, "daa"))  DAA();
-	else if (!strcmp(aop, "sub"))  SUB();
-	else if (!strcmp(aop, "cs:"))  CS();
-	else if (!strcmp(aop, "das"))  DAS();
-	else if (!strcmp(aop, "xor"))  XOR();
-	else if (!strcmp(aop, "ss:"))  SS();
-	else if (!strcmp(aop, "aaa"))  AAA();
-	else if (!strcmp(aop, "cmp"))  CMP();
-	else if (!strcmp(aop, "ds:"))  DS();
-	else if (!strcmp(aop, "aas"))  AAS();
-	
-	else if (!strcmp(aop, "aam"))  AAM();
-	else if (!strcmp(aop, "aad"))  AAD();
+	else if (!strcmp(aop, "add")) ADD();
+	else if (!strcmp(aop,"push")) PUSH();
+	else if (!strcmp(aop, "pop")) POP();
+	else if (!strcmp(aop, "or" )) OR();
+	else if (!strcmp(aop, "adc")) ADC();
+	else if (!strcmp(aop, "and")) AND();
+	else if (!strcmp(aop, "es:")) ES();
+	else if (!strcmp(aop, "daa")) DAA();
+	else if (!strcmp(aop, "sub")) SUB();
+	else if (!strcmp(aop, "cs:")) CS();
+	else if (!strcmp(aop, "das")) DAS();
+	else if (!strcmp(aop, "xor")) XOR();
+	else if (!strcmp(aop, "ss:")) SS();
+	else if (!strcmp(aop, "aaa")) AAA();
+	else if (!strcmp(aop, "cmp")) CMP();
+	else if (!strcmp(aop, "ds:")) DS();
+	else if (!strcmp(aop, "aas")) AAS();
+	else if (!strcmp(aop, "inc")) INC();
+	else if (!strcmp(aop, "dec")) DEC();
+	else if (!strcmp(aop, "jo" )) JCC(0x70);
+	else if (!strcmp(aop, "jno")) JCC(0x71);
+	else if (!strcmp(aop, "jb" )) JCC(0x72);
+	else if (!strcmp(aop, "jc" )) JCC(0x72);
+	else if (!strcmp(aop,"jnae")) JCC(0x72);
+	else if (!strcmp(aop, "jae")) JCC(0x73);
+	else if (!strcmp(aop, "jnb")) JCC(0x73);
+	else if (!strcmp(aop, "jnc")) JCC(0x73);
+	else if (!strcmp(aop, "je" )) JCC(0x74);
+	else if (!strcmp(aop, "jz" )) JCC(0x74);
+	else if (!strcmp(aop, "jne")) JCC(0x75);
+	else if (!strcmp(aop, "jnz")) JCC(0x75);
+	else if (!strcmp(aop, "jbe")) JCC(0x76);
+	else if (!strcmp(aop, "jna")) JCC(0x76);
+	else if (!strcmp(aop, "ja" )) JCC(0x77);
+	else if (!strcmp(aop,"jnbe")) JCC(0x77);
+	else if (!strcmp(aop, "js" )) JCC(0x78);
+	else if (!strcmp(aop, "jns")) JCC(0x79);
+	else if (!strcmp(aop, "jp" )) JCC(0x7a);
+	else if (!strcmp(aop, "jpe")) JCC(0x7a);
+	else if (!strcmp(aop, "jnp")) JCC(0x7b);
+	else if (!strcmp(aop, "jpo")) JCC(0x7b);
+	else if (!strcmp(aop, "jl" )) JCC(0x7c);
+	else if (!strcmp(aop,"jnge")) JCC(0x7c);
+	else if (!strcmp(aop, "jge")) JCC(0x7d);
+	else if (!strcmp(aop, "jnl")) JCC(0x7d);
+	else if (!strcmp(aop, "jle")) JCC(0x7e);
+	else if (!strcmp(aop, "jng")) JCC(0x7e);
+	else if (!strcmp(aop, "jg" )) JCC(0x7f);
+	else if (!strcmp(aop,"jnle")) JCC(0x7f);
+	else if (!strcmp(aop,"test")) TEST();
+	else if (!strcmp(aop,"xchg")) XCHG();
+	else if (!strcmp(aop, "mov")) MOV();
+	else if (!strcmp(aop, "lea")) LEA();
+	else if (!strcmp(aop, "nop")) NOP();
+	else if (!strcmp(aop, "cbw")) CBW();
+	else if (!strcmp(aop, "cwd")) CWD();
+	else if (!strcmp(aop,"call")) CALL();
 
-	else if (!strcmp(aop, "qdx"))  QDX();
-	else if (!strcmp(aop, "iret")) IRET();
-/*	else if(!strcmp(aop,"adc"))	aGROUP1(0x02,0x10,0)
-	else if(!strcmp(aop,"add"))	aGROUP1(0x00,0x00,0)
-	else if(!strcmp(aop,"and"))	aGROUP1(0x04,0x20,1)
+	else if (!strcmp(aop, "aam")) AAM();
+	else if (!strcmp(aop, "aad")) AAD();
+
+	else if (!strcmp(aop, "qdx")) QDX();
+	else if (!strcmp(aop,"iret")) IRET();/*
 	else if(!strcmp(aop,"call")) aGROUP5_CALL
 	else if(!strcmp(aop,"cbw"))	aSINGLE(0x98)
 	else if(!strcmp(aop,"clc"))	aSINGLE(0xf8)
 	else if(!strcmp(aop,"cld"))	aSINGLE(0xfc)
 	else if(!strcmp(aop,"cli"))	aSINGLE(0xfa)
 	else if(!strcmp(aop,"cmc"))	aSINGLE(0xf5)
-	else if(!strcmp(aop,"cmp"))	aGROUP1(0x07,0x38,0)
 	else if(!strcmp(aop,"cmpsb"))aSINGLE(0xa6)
 	else if(!strcmp(aop,"cmpsw"))aSINGLE(0xa7)
 	else if(!strcmp(aop,"cwd"))	aSINGLE(0x99)
 	else if(!strcmp(aop,"daa"))	aSINGLE(0x27)
 	else if(!strcmp(aop,"das"))	aSINGLE(0x2f)
-	else if(!strcmp(aop,"dec"))	aGROUP4(0x48,0x01)
 	else if(!strcmp(aop,"div"))	aGROUP3(0x06)
 //	else if(!strcmp(aop,"esc"))	ESCAPE
 	else if(!strcmp(aop,"hlt"))	aSINGLE(0xf4)
 	else if(!strcmp(aop,"idiv"))	aGROUP3(0x07)
 	else if(!strcmp(aop,"imul"))	aGROUP3(0x05)
 	else if(!strcmp(aop,"in"))	aIN
-	else if(!strcmp(aop,"inc"))	aGROUP4(0x40,0x00)
 	else if(!strcmp(aop,"int"))	aINT
 //	else if(!strcmp(aop,"intr+"))INTR
 	else if(!strcmp(aop,"into"))	aSINGLE(0xce)
 	else if(!strcmp(aop,"iret"))	aSINGLE(0xcf)
-	else if(!strcmp(aop,"ja")
-		|| !strcmp(aop,"jnbe"))	aJCC(0x77)
-	else if(!strcmp(aop,"jae")
-		|| !strcmp(aop,"jnb"))	aJCC(0x73)
-	else if(!strcmp(aop,"jb")
-		|| !strcmp(aop,"jnae"))	aJCC(0x72)
-	else if(!strcmp(aop,"jbe")
-		|| !strcmp(aop,"jna"))	aJCC(0x76)
-	else if(!strcmp(aop,"jc"))	aJCC(0x72)
-	else if(!strcmp(aop,"jcxz"))	aJCC(0xe3)
-	else if(!strcmp(aop,"je")
-		|| !strcmp(aop,"jz"))	aJCC(0x74)
-	else if(!strcmp(aop,"jg")
-		|| !strcmp(aop,"jnle"))	aJCC(0x7f)
-	else if(!strcmp(aop,"jge")
-		|| !strcmp(aop,"jnl"))	aJCC(0x7d)
-	else if(!strcmp(aop,"jl")
-		|| !strcmp(aop,"jnge"))	aJCC(0x7c)
-	else if(!strcmp(aop,"jle")
-		|| !strcmp(aop,"jng"))	aJCC(0x7e)
-	else if(!strcmp(aop,"jmp"))	aGROUP5_JMP
-	else if(!strcmp(aop,"jnc"))	aJCC(0x73)
-	else if(!strcmp(aop,"jne")
-		|| !strcmp(aop,"jnz"))	aJCC(0x75)
-	else if(!strcmp(aop,"jno"))	aJCC(0x71)
-	else if(!strcmp(aop,"jnp")
-		|| !strcmp(aop,"jpo"))	aJCC(0x7b)
-	else if(!strcmp(aop,"jns"))	aJCC(0x79)
-	else if(!strcmp(aop,"jo"))	aJCC(0x70)
-	else if(!strcmp(aop,"jp")
-		|| !strcmp(aop,"jpe"))	aJCC(0x7a)
-	else if(!strcmp(aop,"js"))	aJCC(0x78)
 	else if(!strcmp(aop,"lahf"))	aSINGLE(0x9f)
 	else if(!strcmp(aop,"lds"))	aLEA(0xc5)
-	else if(!strcmp(aop,"lea"))	aLEA(0x8d)
 	else if(!strcmp(aop,"les"))	aLEA(0xc4)
 //	else if(!strcmp(aop,"lock"))	PREFIX(0xf0)
 	else if(!strcmp(aop,"lodsb"))aSINGLE(0xac)
@@ -1718,7 +2141,6 @@ static void exec()
 	else if(!strcmp(aop,"loaopne")
 		|| !strcmp(aop,"loaopnz"))aLOOPCC(0xe0)
 //	else if(!strcmp(aop,"nmi+"))	NMI+
-	else if(!strcmp(aop,"mov"))	aMOV
 	else if(!strcmp(aop,"movsb"))aSINGLE(0xa4)
 	else if(!strcmp(aop,"movsw"))aSINGLE(0xa5)
 	else if(!strcmp(aop,"mul"))	aGROUP3(0x04)
@@ -1747,7 +2169,6 @@ static void exec()
 	else if(!strcmp(aop,"sal")
 		|| !strcmp(aop,"shl"))	aGROUP2(0x04)
 	else if(!strcmp(aop,"sar"))	aGROUP2(0x07)
-	else if(!strcmp(aop,"sbb"))	aGROUP1(0x03,0x18,0)
 	else if(!strcmp(aop,"scasb"))aSINGLE(0xae)
 	else if(!strcmp(aop,"scasw"))aSINGLE(0xaf)
 //	else if(!strcmp(aop,"segment+"))	SEGMENT+
@@ -1763,7 +2184,6 @@ static void exec()
 	else if(!strcmp(aop,"wait"))	aSINGLE(0x9b)
 	else if(!strcmp(aop,"xchg"))	aXCHG
 	else if(!strcmp(aop,"xlat"))	aSINGLE(0xd7)
-	else if(!strcmp(aop,"xor"))	aGROUP1(0x06,0x30,1)
 	else ;//*/
 	if (error) printf("exec.error = %d\n",error);
 }
