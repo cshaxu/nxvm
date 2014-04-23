@@ -261,16 +261,21 @@ typedef enum {
 	TOKEN_AL,TOKEN_BL,TOKEN_CL,TOKEN_DL,
 	TOKEN_AX,TOKEN_BX,TOKEN_CX,TOKEN_DX,
 	TOKEN_SP,TOKEN_BP,TOKEN_SI,TOKEN_DI,
-	TOKEN_CS,TOKEN_DS,TOKEN_ES,TOKEN_SS
+	TOKEN_CS,TOKEN_DS,TOKEN_ES,TOKEN_SS,
+	TOKEN_CHAR,TOKEN_STRING
 } t_aasm_token;
 
 static t_nubit8 tokimm8;
 static t_nubit16 tokimm16;
+static t_nsbit8 tokchar;
+static char tokstring[0x100];
 #define tokch  (*tokptr)
 #define take(n) (flagend = 0x01, token = (n))
 static t_aasm_token gettoken(t_string str)
 {
 	static t_string tokptr = NULL;
+	t_nubitcc i;
+	t_string tokptrbak = tokptr;
 	t_bool flagend = 0x00;
 	t_aasm_token token = TOKEN_NULL;
 	t_aasm_scan_state state = STATE_START;
@@ -307,6 +312,38 @@ static t_aasm_token gettoken(t_string str)
 			case 'p': state = STATE_P;break;
 			case 's': state = STATE_S;break;
 			case 'w': state = STATE_W;break;
+			case '\'':
+				if (*(tokptr+2) == '\'') {
+					tokptr++;
+					tokchar = tokch;
+					tokptr++;
+					take(TOKEN_CHAR);
+				} else if (*(tokptr+1) == '\'') {
+					tokptr++;
+					tokchar = 0x00;
+					take(TOKEN_CHAR);
+				} else {
+					tokptr--;
+					error = 1;
+					take(TOKEN_NULL);
+				}
+				break;
+			case '\"':
+				tokstring[0] = tokstring[0xff] = 0x00;
+				i = 0;
+				do {
+					tokptr++;
+					tokstring[i++] = tokch;
+				} while (tokch && (tokch != '\"'));
+				if (!tokch) {
+					tokptr = tokptrbak;
+					error = 1;
+					take(TOKEN_NULL);
+				} else {
+					tokstring[i - 1] = 0x00;
+					take(TOKEN_STRING);
+				}
+				break;
 			case ' ':
 			case '\t': break;
 			case '\0': tokptr--;take(TOKEN_END);break;
@@ -713,9 +750,9 @@ static t_aasm_oprinfo parsearg_mem()
 {
 	t_aasm_token token;
 	t_aasm_oprinfo info;
-	t_bool bx,bp,si,di;
+	t_bool bx,bp,si,di,neg;
 	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
-	bx = bp = si = di = 0x00;
+	bx = bp = si = di = neg = 0x00;
 	info.type = TYPE_M;
 	info.mod = MOD_M;
 	token = gettoken(NULL);
@@ -724,6 +761,7 @@ static t_aasm_oprinfo parsearg_mem()
 		case TOKEN_PLUS:break;
 		case TOKEN_MINUS:
 			token = gettoken(NULL);
+			neg = 0x01;
 			switch (token) {
 			case TOKEN_IMM8:
 				if (info.mod != MOD_M) error = 1;
@@ -758,47 +796,46 @@ static t_aasm_oprinfo parsearg_mem()
 		case TOKEN_DI: if (di) error = 1; else di = 1; break;
 		case TOKEN_IMM8:
 			if (info.mod != MOD_M) error = 1;
-			info.disp8 = tokimm8;
-			info.mod = MOD_M_DISP8;
+			info.mod = MOD_M_DISP16;
+			info.disp16 = tokimm8;
 			break;
 		case TOKEN_IMM16:
 			if (info.mod != MOD_M) error = 1;
-			if (tokimm16 < 0x0100 || tokimm16 > 0xff7f) {
-				info.mod = MOD_M_DISP8;
-				info.disp8 = (t_nubit8)tokimm16;
-			} else {
-				info.mod = MOD_M_DISP16;
-				info.disp16 = tokimm16;
-			}
+			info.mod = MOD_M_DISP16;
+			info.disp16 = tokimm16;
 			break;
 		default: error = 1;break;
 		}
 		token = gettoken(NULL);
 	}
-	if (token != TOKEN_END || token != TOKEN_NULL)
-		info.type = TYPE_NONE;
-	     if ( bx &&  si && !bp && !di) info.mem = MEM_BX_SI;
-	else if ( bx && !si && !bp &&  di) info.mem = MEM_BX_DI;
-	else if (!bx &&  si &&  bp && !di) info.mem = MEM_BP_SI;
-	else if (!bx && !si &&  bp &&  di) info.mem = MEM_BP_DI;
-	else if ( bx && !si && !bp && !di) info.mem = MEM_BX;
-	else if (!bx &&  si && !bp && !di) info.mem = MEM_SI;
-	else if (!bx && !si &&  bp && !di) {
-		info.mem = MEM_BP;
-		if (info.mod == MOD_M) {
-			info.mod = MOD_M_DISP8;
-			info.disp8 = 0x00;
-		}
-	} else if (!bx && !si && !bp &&  di) info.mem = MEM_DI;
-	else if (!bx && !si && !bp && !di && info.mod != MOD_M) {
+	if (token != TOKEN_END || token != TOKEN_NULL) info.type = TYPE_NONE;
+
+	if (!bx && !si && !bp && !di && info.mod != MOD_M) {
 		info.mem = MEM_BP;
 		if (info.mod == MOD_M_DISP8) {
 			info.disp16 = ((t_nubit16)info.disp8) & 0x00ff;
 			info.mod = MOD_M;
 		} else if (info.mod == MOD_M_DISP16)
 			info.mod = MOD_M;
+		else error = 1;
+	} else {
+		if ( bx &&  si && !bp && !di) info.mem = MEM_BX_SI;
+		else if ( bx && !si && !bp &&  di) info.mem = MEM_BX_DI;
+		else if (!bx &&  si &&  bp && !di) info.mem = MEM_BP_SI;
+		else if (!bx && !si &&  bp &&  di) info.mem = MEM_BP_DI;
+		else if ( bx && !si && !bp && !di) info.mem = MEM_BX;
+		else if (!bx &&  si && !bp && !di) info.mem = MEM_SI;
+		else if (!bx && !si &&  bp && !di) {info.mem = MEM_BP;
+			if (info.mod == MOD_M) {
+				info.mod = MOD_M_DISP8;
+				info.disp8 = 0x00; }}
+		else if (!bx && !si && !bp &&  di) info.mem = MEM_DI;
+		else error = 1;
+		if (info.mod == MOD_M_DISP16 && (info.disp16 < 0x0080 || info.disp16 > 0xff7f)) {
+			info.mod = MOD_M_DISP8;
+			info.disp8 = (t_nubit8)info.disp16;
+		}
 	}
-	else error = 1;
 	return info;
 }
 static t_aasm_oprinfo parsearg_imm(t_aasm_token token)
@@ -859,6 +896,8 @@ static t_aasm_oprinfo parsearg(t_string arg)
 	}
 	token = gettoken(arg);
 	switch (token) {
+	case TOKEN_CHAR:
+	case TOKEN_STRING:
 	case TOKEN_NULL:
 	case TOKEN_END:
 		info.type = TYPE_NONE;
@@ -2982,12 +3021,91 @@ static void JMP()
 
 }
 
+static void DB()
+{
+	t_nubitcc i;
+	t_aasm_token token;
+	token = gettoken(aopr1);
+	do {
+		switch (token) {
+		case TOKEN_PLUS:
+			break;
+		case TOKEN_MINUS:
+			token = gettoken(NULL);
+			if (token == TOKEN_IMM8)
+				setbyte((~tokimm8) + 1);
+			else error = 1;
+			avip += 1;
+			break;
+		case TOKEN_IMM8:
+			setbyte(tokimm8);
+			avip += 1;
+			break;
+		case TOKEN_CHAR:
+			setbyte(tokchar);
+			avip += 1;
+			break;
+		case TOKEN_STRING:
+			for (i = 0;i < strlen(tokstring);++i) {
+				setbyte(tokstring[i]);
+				avip += 1;
+			}
+			break;
+		case TOKEN_NULL:
+		case TOKEN_END:
+			return;
+			break;
+		case TOKEN_IMM16:
+		default:
+			error = 1;
+			break;
+		}
+		token = gettoken(NULL);
+	} while (!error);
+}
+static void DW()
+{
+	t_aasm_token token;
+	token = gettoken(aopr1);
+	do {
+		switch (token) {
+		case TOKEN_PLUS:
+			break;
+		case TOKEN_MINUS:
+			token = gettoken(NULL);
+			if (token == TOKEN_IMM8)
+				setword((~((t_nubit16)tokimm8)) + 1);
+			else if (token == TOKEN_IMM16)
+				setword((~tokimm16) + 1);
+			else error = 1;
+			avip += 2;
+			break;
+		case TOKEN_IMM8:
+			setword(tokimm8);
+			avip += 2;
+			break;
+		case TOKEN_IMM16:
+			setword(tokimm16);
+			avip += 2;
+			break;
+		case TOKEN_NULL:
+		case TOKEN_END:
+			return;
+			break;
+		default:
+			error = 1;
+			break;
+		}
+		token = gettoken(NULL);
+	} while (!error);
+}
+
 static void exec()
 {
 	/* assemble single statement */
 	if (!aop || !aop[0]) return;
-	if      (!strcmp(aop, "db"))  ;
-	else if (!strcmp(aop, "dw"))  ;
+	if      (!strcmp(aop, "db"))  DB();
+	else if (!strcmp(aop, "dw"))  DW();
 
 	else if (!strcmp(aop, "add")) ADD();
 	else if (!strcmp(aop,"push")) PUSH();

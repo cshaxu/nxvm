@@ -1,5 +1,3 @@
-1. Test internal compiler (aasm + dasm)
-2. Build DB/DW instructions
-3. Build label tabel for aasm
-4. Rebuild hardware debugger
-5. Build BIOS INT service routines
+1. Build label tabel for aasm
+2. Rebuild hardware debugger
+3. Build BIOS INT service routines
