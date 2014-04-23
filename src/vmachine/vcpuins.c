@@ -44,6 +44,7 @@
 t_cpuins vcpuins;
 
 static t_cpu acpu;
+
 static t_nubit8 ub1,ub2,ub3;
 static t_nsbit8 sb1,sb2,sb3;
 static t_nubit16 uw1,uw2,uw3;
@@ -113,22 +114,58 @@ static t_bool acpuCheck()
 	}
 	return flagdiff;
 }
-#define async  if(acpu = vcpu,1)
-#define aexec  __asm
-#define asregub(data) \
-	if(!vramIsAddrInMem(dest)) {d_nubit8((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = (data);}
-#define asregsb(data) \
-	if(!vramIsAddrInMem(dest)) {d_nsbit8((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = (data);}
-#define asreguw(data) \
-	if(!vramIsAddrInMem(dest)) {d_nubit16((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = (data);}
-#define asregsw(data) \
-	if(!vramIsAddrInMem(dest)) {d_nsbit16((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = (data);}
-#define acheck if(acpuCheck())
+#define async    if(acpu = vcpu,1)
+#define aexec    __asm
+#define acheck   if(acpuCheck())
+#define async8   if(acpu = vcpu, ub1 = d_nubit8(dest),  ub2 = d_nubit8(src),  1)
+#define async12  if(acpu = vcpu, uw1 = d_nubit16(dest), uw2 = d_nsbit8(src),  1)
+#define async16  if(acpu = vcpu, uw1 = d_nubit16(dest), uw2 = d_nubit16(src), 1)
+#define asreg8   if(!vramIsAddrInMem(dest)) {\
+	d_nubit8((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = ub3;} else
+#define asreg12  if(!vramIsAddrInMem(dest)) {\
+	d_nubit16((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = uw3;} else
+#define asreg16  if(!vramIsAddrInMem(dest)) {\
+	d_nubit16((t_vaddrcc)dest - (t_vaddrcc)&vcpu + (t_vaddrcc)&acpu) = uw3;} else
+#define acheck8  if(acpuCheck() || d_nubit8(dest) != ub3) {\
+	vapiPrint("ub1=%02X,ub2=%02X,ub3=%02X,dest=%02X\n",\
+		ub1,ub2,ub3,d_nubit8(dest));} else
+#define acheck16 if(acpuCheck() || d_nubit16(dest) != uw3) {\
+	vapiPrint("uw1=%04X,uw2=%04X,uw3=%04X,dest=%04X\n",\
+		uw1,uw2,uw3,d_nubit16(dest));} else
+#define acheck12 acheck16
+#define aexec8  if(1) {\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm mov al,ub1\
+	__asm op  al,ub2\
+	__asm mov ub3,al\
+	__asm pushf\
+	__asm pop acpu.flags} else
+#define aexec16  if(1) {\
+	__asm push acpu.flags\
+	__asm popf\
+	__asm mov ax,uw1\
+	__asm op  ax,uw2\
+	__asm mov uw3,ax\
+	__asm pushf\
+	__asm pop acpu.flags} else
+#define aexec12 aexec16
 #else
-#define async  if(0)
-#define aexec  __asm
-#define asreg(type, data)
-#define acheck if(0)
+#define async    if(0)
+#define aexec    __asm
+#define acheck   if(0)
+#define async8   if(0)
+#define async12  if(0)
+#define async16  if(0)
+#define asreg8   if(0)
+#define asreg12  if(0)
+#define asreg16  if(0)
+#define acheck8  if(0)
+#define acheck12 if(0)
+#define acheck16 if(0)
+#define aexec8   if(0)
+#define aexec12  if(0)
+#define aexec16  if(0)
 #endif
 
 static void CaseError(const char *str)
@@ -405,10 +442,7 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 {
 	switch(len) {
 	case 8:
-		async {
-			ub1 = d_nubit8(dest);
-			ub2 = d_nubit8(src);
-		}
+		async8;
 		vcpuins.bit = 8;
 		vcpuins.type = ADD8;
 		vcpuins.opr1 = d_nubit8(dest);
@@ -418,10 +452,7 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 /* vcpuins bug fix #6 */
 		break;
 	case 12:
-		async {
-			uw1 = d_nubit16(dest);
-			uw2 = d_nsbit8(src);
-		}
+		async12;
 		vcpuins.bit = 16;
 		vcpuins.type = ADD16;
 		vcpuins.opr1 = d_nubit16(dest);
@@ -430,10 +461,7 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 		d_nubit16(dest) = (t_nubit16)vcpuins.result;
 		break;
 	case 16:
-		async {
-			uw1 = d_nubit16(dest);
-			uw2 = d_nubit16(src);
-		}
+		async16;
 		vcpuins.bit = 16;
 		vcpuins.type = ADD16;
 		vcpuins.opr1 = d_nubit16(dest);
@@ -443,53 +471,25 @@ static void ADD(void *dest, void *src, t_nubit8 len)
 		break;
 	default:CaseError("ADD::len");break;}
 	SetFlags(ADD_FLAG);
+#define op add
 	switch(len) {
 	case 8:
-		aexec {
-			push acpu.flags
-			popf
-			mov al,ub1
-			add al,ub2
-			mov ub3,al
-			pushf
-			pop acpu.flags
-		}
-		asregub(ub3);
-		acheck {
-			vapiPrint("opr1=%02X, opr2=%02X, res=%02X\n",ub1,ub2,ub3);
-		}
+		aexec8;
+		asreg8;
+		acheck8;
 		break;
 	case 12:
-		aexec {
-			push acpu.flags
-			popf
-			mov ax,uw1
-			add ax,uw2
-			mov uw3,ax
-			pushf
-			pop acpu.flags
-		}
-		asreguw(uw3);
-		acheck {
-			vapiPrint("opr1=%02X, opr2=%02X, res=%02X\n",uw1,uw2,uw3);
-		}
+		aexec12;
+		asreg12;
+		acheck12;
 		break;
 	case 16:
-		aexec {
-			push acpu.flags
-			popf
-			mov ax,uw1
-			add ax,uw2
-			mov uw3,ax
-			pushf
-			pop acpu.flags
-		}
-		asreguw(uw3);
-		acheck {
-			vapiPrint("opr1=%04X, opr2=%04X, res=%04X\n",uw1,uw2,uw3);
-		}
+		aexec16;
+		asreg16;
+		acheck16;
 		break;
 	}
+#undef op
 }
 static void OR(void *dest, void *src, t_nubit8 len)
 {
@@ -3308,7 +3308,7 @@ static void ClrPrefix()
 
 void vcpuinsExecIns()
 {
-	t_nubit8 opcode = vramVarByte(vcpu.cs, vcpu.ip);
+	t_nubit8 opcode;
 /* vcpuins bug fix #16
 	Note: in this bug, if an interrupt generated between
 	prefix and operation, the prefix may not be deployed
@@ -3321,9 +3321,11 @@ void vcpuinsExecIns()
 	opcode = vramVarByte(vcpu.cs, vcpu.ip);
 	ExecFun(vcpuins.table[opcode]);
 	ClrPrefix();*/
-	ExecFun(vcpuins.table[opcode]);
-	if (!IsPrefix(opcode)) ClrPrefix();
-	else vcpuinsExecIns();
+	do {
+		opcode = vramVarByte(vcpu.cs, vcpu.ip);
+		ExecFun(vcpuins.table[opcode]);
+	} while (IsPrefix(opcode));
+	ClrPrefix();
 }
 void vcpuinsExecInt()
 {
