@@ -8,6 +8,7 @@ void vapiPrintByte(unsigned char n);
 void vapiPrintWord(unsigned short n);
 void vapiPrintAddr(unsigned short segment,unsigned short offset);
 void vapiPause();
+void vapiSleep(unsigned int milisec);
 
 void vapiDisplayPaint();
 void vapiCreateDisplay();

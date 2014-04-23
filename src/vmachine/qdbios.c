@@ -10,7 +10,7 @@
 #include "qdrtc.h"
 #include "qdbios.h"
 
-// vga
+/* vga */
 void INT_10()
 {
 	switch (vcpu.ah) {
@@ -18,7 +18,7 @@ void INT_10()
 		qdvgaSetDisplayMode();
 		break;
 	case 0x01:
-		qdvgaSetCursorType();
+		qdvgaSetCursorShape();
 		break;
 	case 0x02:
 		qdvgaSetCursorPos();
@@ -47,13 +47,13 @@ void INT_10()
 		qdvgaDisplayChar();
 		break;
 	case 0x0b:
-		qdvgaSetPalette();
+		//qdvgaSetPalette();
 		break;
 	case 0x0c:
-		qdvgaDisplayPixel();
+		//qdvgaDisplayPixel();
 		break;
 	case 0x0d:
-		qdvgaGetPixel();
+		//qdvgaGetPixel();
 		break;
 	case 0x0e:
 		qdvgaDisplayCharProp(0x01);
@@ -155,7 +155,7 @@ void INT_15()
 		break;
 	}
 }
-// keyb
+/* keyb */
 void INT_16()
 {
 	switch (vcpu.ah) {
@@ -168,7 +168,7 @@ void INT_16()
 		qdkeybGetStatus();
 		break;
 	case 0x02:
-		qdkeybGetShift();
+		qdkeybGetShiftStatus();
 		break;
 	default:
 		break;
@@ -329,6 +329,7 @@ void qdbiosInit()
 	qdfddInit();
 	qdrtcInit();
 	qdkeybInit();
+	qdvgaInit();
 
 /* load boot sector */
 	vapiInsertFloppyDisk("d:/msdos.img");
@@ -339,6 +340,7 @@ void qdbiosInit()
 }
 void qdbiosFinal()
 {
+	qdvgaFinal();
 	qdkeybFinal();
 	qdrtcFinal();
 	qdfddFinal();
