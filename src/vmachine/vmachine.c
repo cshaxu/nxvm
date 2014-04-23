@@ -3,37 +3,40 @@
 #include "system/vapi.h"
 #include "vmachine.h"
 
-t_bool initFlag = 0;
-t_bool runFlag = 0;
+t_bool vmachineinitflag = 0;
+t_bool vmachinerunflag = 0;
 
 void NXVMInit()
 {
-	if(!initFlag) {
+	if(!vmachineinitflag) {
 		CPUInit();
-		MemoryInit();
+		RAMInit();
 		PICInit();
-		initFlag = 1;
+		CMOSInit();
+		PITInit();
+		vmachineinitflag = 1;
 	} else
-		nvmprint("ERROR:\tNeko's x86 Virtual Machine is already initialized.\n");
+		vapiPrint("ERROR:\tNeko's x86 Virtual Machine is already initialized.\n");
 }
 
 void NXVMPowerOn()
 {
-	if(!runFlag) {
-		nvmprint("NXVM:\tNeko's x86 Virtual Machine is powered on.\n");
-		runFlag = 1;
+	if(!vmachinerunflag) {
+		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is powered on.\n");
+		vmachinerunflag = 1;
 		forceNone = 0;
-		if(!initFlag) NXVMInit();
+		if(!vmachineinitflag) NXVMInit();
 		// Create Screen Here
 		NXVMRun();
+		if(vcputermflag) vmachinerunflag = 0;
 	} else
-		nvmprint("NXVM:\tNeko's x86 Virtual Machine is already running.\n");
+		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is already running.\n");
 }
 
 void NXVMRun()
 {
-	if(!initFlag || !runFlag)
-		nvmprint("ERROR:\tNeko's x86 Virtual Machine is not running.\n");
+	if(!vmachineinitflag || !vmachinerunflag)
+		vapiPrint("ERROR:\tNeko's x86 Virtual Machine is not running.\n");
 	else {
 		CPURun();
 	}
@@ -41,23 +44,25 @@ void NXVMRun()
 
 void NXVMPowerOff()
 {
-	if(runFlag) {
+	if(vmachinerunflag) {
 		// Delete Screen Here
-		if(initFlag) NXVMTerm();
+		if(vmachineinitflag) NXVMTerm();
 		forceNone = 1;
-		runFlag = 0;
-		nvmprint("NXVM:\tNeko's x86 Virtual Machine is terminated.\n");
+		vmachinerunflag = 0;
+		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is terminated.\n");
 	} else
-		nvmprint("NXVM:\tNeko's x86 Virtual Machine is already powered off.\n");
+		vapiPrint("NXVM:\tNeko's x86 Virtual Machine is already powered off.\n");
 }
 
 void NXVMTerm()
 {
-	if(initFlag) {
+	if(vmachineinitflag) {
+		PITTerm();
+		CMOSTerm();
 		PICTerm();
-		MemoryTerm();
+		RAMTerm();
 		CPUTerm();
-		initFlag = 0;
+		vmachineinitflag = 0;
 	} else
-		nvmprint("ERROR:\tNeko's x86 Virtual Machine is not initialized.\n");
+		vapiPrint("ERROR:\tNeko's x86 Virtual Machine is not initialized.\n");
 }

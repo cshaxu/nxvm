@@ -19,24 +19,7 @@ typedef struct {
 	t_bool slave;
 } t_pic;
 
-/*
-typedef struct {
-	union {
-		struct {t_nubit8 irr0,irr1;};
-		t_nubit16 irr;
-	};	// Interrupt Request Register
-	union {
-		struct {t_nubit8 imr0,imr1;};
-		t_nubit16 imr;
-	};	// Interrupt Mask Register
-	union {
-		struct {t_nubit8 isr0,isr1;};
-		t_nubit16 isr;
-	};	// In Service Register
-} t_pic;
-*/
-
-extern t_pic masterpic,slavepic; // 0x08; 
+extern t_pic vpicmaster,vpicslave; // 0x08; 
 
 t_nubit16 vpicGetIMR();
 t_nubit16 vpicGetISR();
@@ -48,6 +31,7 @@ void vpicSetIRR(t_nubit16 irr);
 t_bool vpicIsINTR();
 t_nubit8 vpicGetINTR();
 void vpicRespondINTR(t_nubit8 intr);
+void vpicSetIRQ(t_nubit8 irqid);
 
 void PICInit();
 void PICTerm();

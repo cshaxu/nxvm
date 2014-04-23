@@ -46,17 +46,17 @@ void NSExec()
 		vcpu.si = vcpu.di = vcpu.bp = 0x0000;
 		vcpu.sp = 0xffee;	vcpu.ip = 0x0100;
 		vcpu.ds = vcpu.es = vcpu.ss = vcpu.cs = 0x0001;
-		cpuTermFlag = 0;
+		vcputermflag = 0;
 		c = fgetc(load);
 		while(!feof(load)) {
-			vmemorySetByte(vcpu.cs+i,vcpu.ip+len++,c);
+			vramSetByte(vcpu.cs+i,vcpu.ip+len++,c);
 			i = len / 0x10000;
 			c = fgetc(load);
 		}
 		end = vcpu.ip+len;
 		//fprintf(stdout,"File '%s' is loaded to 0001:0100, length is %d bytes.\n",execmd,len);
 		fclose(load);
-		while(vcpu.ip < end && !cpuTermFlag) vcpuInsExec();
+		while(vcpu.ip < end && !vcputermflag) vcpuInsExec();
 	}
 }
 
@@ -88,30 +88,30 @@ void NSMemory()
 {
 	t_nubit32 tempSize;
 	char str[MAXLINE];
-	if(runFlag) {fprintf(stdout,"Cannot modify memory size now.\n");return;}
+	if(vmachinerunflag) {fprintf(stdout,"Cannot modify memory size now.\n");return;}
 	fflush(stdin);
 	fprintf(stdout,"Size(KB): ");
 	fgets(str,MAXLINE,stdin);
 	tempSize = atoi(str);
 	if(tempSize > 0x400) {
-		memorySize = (tempSize<<0x0a);
-		MemoryTerm();
-		MemoryInit();
+		vramsize = (tempSize<<0x0a);
+		RAMTerm();
+		RAMInit();
 	} else {
-		memorySize = (1024<<0x0a);
-		MemoryTerm();
-		MemoryInit();
+		vramsize = (1024<<0x0a);
+		RAMTerm();
+		RAMInit();
 	}
 }
 void NSMemoryTest()
 {
 	t_bool testFlag = 0;
 	t_nubit32 i;
-	if(runFlag || !initFlag) {fprintf(stdout,"Cannot perform memory test now.\n");return;}
-	for(i = 0;i < memorySize;++i)
+	if(vmachinerunflag || !vmachineinitflag) {fprintf(stdout,"Cannot perform memory test now.\n");return;}
+	for(i = 0;i < vramsize;++i)
 	{
 		if(i % 1024 == 0) fprintf(stdout,"\rMemory Testing : %dK",i/1024);
-		if(*(t_nubit8 *)(memoryBase+i) != 0) {
+		if(*(t_nubit8 *)(vrambase+i) != 0) {
 			fprintf(stdout,"\nMemory test failed.\n");
 			testFlag = 1;
 			break;
@@ -123,17 +123,17 @@ void NSMemoryTest()
 
 void NSPowOn()
 {
-	if(initFlag) NXVMTerm();
+	if(vmachineinitflag) NXVMTerm();
 	NXVMPowerOn();
 }
 /*void NSOff()
 {
 	NXVMPowerOff();
-	if(!initFlag) NXVMInit();
+	if(!vmachineinitflag) NXVMInit();
 }
 void NSReset()
 {
-	if(runFlag) {
+	if(vmachinerunflag) {
 		NXVMPowerOff();
 		NXVMPowerOn();
 	}
@@ -143,7 +143,7 @@ void NSConsole()
 {
 	char cmdl[MAXLINE];
 	exitFlag = 0;
-	if(!initFlag) NXVMInit();
+	if(!vmachineinitflag) NXVMInit();
 	fprintf(stdout,"Please enter 'HELP' for information.\n");
 	while(!exitFlag) {
 		fflush(stdin);
@@ -167,5 +167,5 @@ void NSConsole()
 		else fprintf(stdout,"Illegal command '%s'.\n",cmdl);
 		fprintf(stdout,"\n");
 	}
-	if(initFlag) NXVMTerm();
+	if(vmachineinitflag) NXVMTerm();
 }

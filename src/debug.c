@@ -23,9 +23,9 @@ test code
 #include "vmachine/vmachine.h"
 #include "vmachine/vcpuins.h"
 #define cpu vcpu
-#define memory memoryBase
+#define memory vrambase
 #define insptr insPtr
-#define cputerm cpuTermFlag
+#define cputerm vcputermflag
 
 #include "asm86/asm86.h"
 
@@ -396,6 +396,22 @@ static void h()
 		}
 	}
 }
+// input
+static void i()
+{
+	t_nubit16 in;
+	t_nubit16 tempAL = cpu.al;
+	if(narg != 2) seterr(narg-1);
+	else {
+		in = scannubit16(arg[1]);
+		if(!errPos) {
+			FUNEXEC(vcpuinsInPort[in]);
+			printnubit8(cpu.al);
+			fprintf(stdout,"\n");
+		}
+	}
+	cpu.al = tempAL;
+}
 // load
 static void l()
 {
@@ -464,48 +480,64 @@ static void n()
 	if(narg != 2) seterr(narg-1);
 	else strcpy(filename,arg[1]);
 }
+// output
+static void o()
+{
+	t_nubit16 out;
+	t_nubit16 tempAL = cpu.al;
+	if(narg != 3) seterr(narg-1);
+	else {
+		out = scannubit16(arg[1]);
+		cpu.al = scannubit8(arg[2]);
+		if(!errPos) FUNEXEC(vcpuinsOutPort[out]);
+	}
+	cpu.al = tempAL;
+}
+// quit
+static void q()
+{exitFlag = 1;}
 // register
 static void uprint(t_nubit16,t_nubit16,t_nubit16);
 static void rprintflags()
 {
 	t_nubit16 test;
-	test = cpu.flags & OF;
-	if(test == OF)
+	test = cpu.flags & VCPU_FLAG_OF;
+	if(test == VCPU_FLAG_OF)
 		fprintf(stdout,"OV ");
 	else
 		fprintf(stdout,"NV ");
-	test = cpu.flags & DF;
-	if(test == DF)
+	test = cpu.flags & VCPU_FLAG_DF;
+	if(test == VCPU_FLAG_DF)
 		fprintf(stdout,"DN ");
 	else
 		fprintf(stdout,"UP ");
-	test = cpu.flags & IF;
-	if(test == IF)
+	test = cpu.flags & VCPU_FLAG_IF;
+	if(test == VCPU_FLAG_IF)
 		fprintf(stdout,"EI ");
 	else
 		fprintf(stdout,"DI ");
-	test = cpu.flags & SF;
-	if(test == SF)
+	test = cpu.flags & VCPU_FLAG_SF;
+	if(test == VCPU_FLAG_SF)
 		fprintf(stdout,"NG ");
 	else
 		fprintf(stdout,"PL ");
-	test = cpu.flags & ZF;
-	if(test == ZF)
+	test = cpu.flags & VCPU_FLAG_ZF;
+	if(test == VCPU_FLAG_ZF)
 		fprintf(stdout,"ZR ");
 	else
 		fprintf(stdout,"NZ ");
-	test = cpu.flags & AF;
-	if(test == AF)
+	test = cpu.flags & VCPU_FLAG_AF;
+	if(test == VCPU_FLAG_AF)
 		fprintf(stdout,"AC ");
 	else
 		fprintf(stdout,"NA ");
-	test = cpu.flags & PF;
-	if(test == PF)
+	test = cpu.flags & VCPU_FLAG_PF;
+	if(test == VCPU_FLAG_PF)
 		fprintf(stdout,"PE ");
 	else
 		fprintf(stdout,"PO ");
-	test = cpu.flags & CF;
-	if(test == CF)
+	test = cpu.flags & VCPU_FLAG_CF;
+	if(test == VCPU_FLAG_CF)
 		fprintf(stdout,"CY ");
 	else
 		fprintf(stdout,"NC ");
@@ -660,22 +692,22 @@ static void rscanregs()
 		fprintf(stdout," -");
 		fgets(s,MAXLINE,stdin);
 		lcase(s);
-		if(!strcmp(s,"ov")) cpu.flags |= OF;
-		else if(!strcmp(s,"nv")) cpu.flags &= ~OF;
-		else if(!strcmp(s,"dn")) cpu.flags |= DF;
-		else if(!strcmp(s,"up")) cpu.flags &= ~DF;
-		else if(!strcmp(s,"ei")) cpu.flags |= IF;
-		else if(!strcmp(s,"di")) cpu.flags &= ~IF;
-		else if(!strcmp(s,"ng")) cpu.flags |= SF;
-		else if(!strcmp(s,"pl")) cpu.flags &= ~SF;
-		else if(!strcmp(s,"zr")) cpu.flags |= ZF;
-		else if(!strcmp(s,"nz")) cpu.flags &= ~ZF;
-		else if(!strcmp(s,"ac")) cpu.flags |= AF;
-		else if(!strcmp(s,"na")) cpu.flags &= ~AF;
-		else if(!strcmp(s,"pe")) cpu.flags |= PF;
-		else if(!strcmp(s,"po")) cpu.flags &= ~PF;
-		else if(!strcmp(s,"cy")) cpu.flags |= CF;
-		else if(!strcmp(s,"nc")) cpu.flags &= ~CF;
+		if(!strcmp(s,"ov")) cpu.flags |= VCPU_FLAG_OF;
+		else if(!strcmp(s,"nv")) cpu.flags &= ~VCPU_FLAG_OF;
+		else if(!strcmp(s,"dn")) cpu.flags |= VCPU_FLAG_DF;
+		else if(!strcmp(s,"up")) cpu.flags &= ~VCPU_FLAG_DF;
+		else if(!strcmp(s,"ei")) cpu.flags |= VCPU_FLAG_IF;
+		else if(!strcmp(s,"di")) cpu.flags &= ~VCPU_FLAG_IF;
+		else if(!strcmp(s,"ng")) cpu.flags |= VCPU_FLAG_SF;
+		else if(!strcmp(s,"pl")) cpu.flags &= ~VCPU_FLAG_SF;
+		else if(!strcmp(s,"zr")) cpu.flags |= VCPU_FLAG_ZF;
+		else if(!strcmp(s,"nz")) cpu.flags &= ~VCPU_FLAG_ZF;
+		else if(!strcmp(s,"ac")) cpu.flags |= VCPU_FLAG_AF;
+		else if(!strcmp(s,"na")) cpu.flags &= ~VCPU_FLAG_AF;
+		else if(!strcmp(s,"pe")) cpu.flags |= VCPU_FLAG_PF;
+		else if(!strcmp(s,"po")) cpu.flags &= ~VCPU_FLAG_PF;
+		else if(!strcmp(s,"cy")) cpu.flags |= VCPU_FLAG_CF;
+		else if(!strcmp(s,"nc")) cpu.flags &= ~VCPU_FLAG_CF;
 		else fprintf(stdout,"bf Error\n");
 	} else fprintf(stdout,"br Error\n");
 }
@@ -720,9 +752,6 @@ static void s()
 		}
 	}
 }
-// quit
-static void q()
-{exitFlag = 1;}
 // unassemble
 static t_nubit16 uoffset(Operand opr)
 {
@@ -909,13 +938,13 @@ static void help()
 	fprintf(stdout,"go\t\tG [[address] breakpoint]\n");
 	//fprintf(stdout,"go\t\tG [=address] [addresses]\n");
 	fprintf(stdout,"hex\t\tH value1 value2\n");
-//!	fprintf(stdout,"input\t\tI port\n");
+	fprintf(stdout,"input\t\tI port\n");
 	fprintf(stdout,"load\t\tL [address]\n");
 	//fprintf(stdout,"load\t\tL [address] [drive] [firstsector] [number]\n");
 	fprintf(stdout,"move\t\tM range address\n");
 	fprintf(stdout,"name\t\tN [pathname]\n");
 	//fprintf(stdout,"name\t\tN [pathname] [arglist]\n");
-//!	fprintf(stdout,"output\t\tO port byte\n");
+	fprintf(stdout,"output\t\tO port byte\n");
 //!	fprintf(stdout,"proceed\t\tP [=address] [number]\n");
 	fprintf(stdout,"quit\t\tQ\n");
 	fprintf(stdout,"register\tR [register]\n");
@@ -974,11 +1003,13 @@ static void exec()
 	case 'd':	d();break;
 	case 'e':	e();break;
 	case 'f':	f();break;
-	case 'h':	h();break;
 	case 'g':	g();break;
+	case 'h':	h();break;
+	case 'i':	i();break;
 	case 'l':	l();break;
 	case 'm':	m();break;
 	case 'n':	n();break;
+	case 'o':	o();break;
 	case 'q':	q();break;
 	case 'r':	r();break;
 	case 's':	s();break;

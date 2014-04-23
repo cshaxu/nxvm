@@ -7,15 +7,15 @@
 
 #include "vglobal.h"
 
-#define CF 0x0001
-#define PF 0x0004
-#define AF 0x0010
-#define ZF 0x0040
-#define SF 0x0080
-#define TF 0x0100
-#define IF 0x0200
-#define DF 0x0400
-#define OF 0x0800
+#define VCPU_FLAG_CF 0x0001
+#define VCPU_FLAG_PF 0x0004
+#define VCPU_FLAG_AF 0x0010
+#define VCPU_FLAG_ZF 0x0040
+#define VCPU_FLAG_SF 0x0080
+#define VCPU_FLAG_TF 0x0100
+#define VCPU_FLAG_IF 0x0200
+#define VCPU_FLAG_DF 0x0400
+#define VCPU_FLAG_OF 0x0800
 
 typedef struct {
 	union {
@@ -41,7 +41,7 @@ typedef struct {
 } t_cpu;
 
 extern t_cpu vcpu;
-extern t_bool cpuTermFlag;
+extern t_bool vcputermflag;
 
 void vcpuInsExec();
 

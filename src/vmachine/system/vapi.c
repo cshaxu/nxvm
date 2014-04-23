@@ -12,7 +12,7 @@ int forceNone = 1;
 // GENERAL
 #elif NXVM_SYSTEM == NXVM_LINUX_TERMINAL
 // LINUX TERMINAL
-#elif NXVM_SYSTEM == NXVM_LINUX_APPLICATION_QT
+#elif NXVM_SYSTEM == NXVM_LINUX_APPLICATION
 // LINUX APPLICATION QT
 #elif NXVM_SYSTEM == NXVM_WIN32_CONSOLE
 // WIN32 CONSOLE
@@ -22,8 +22,8 @@ int forceNone = 1;
 // FAIL TO COMPILE 
 #endif
 
-// General Part
-int nvmprint(const char *format, ...)
+// General Part: Print StdOut
+int vapiPrint(const char *format, ...)
 {// prints string out of vdisplay, i.e. in a outside console
 	int nWrittenBytes = 0;
 	va_list arg_ptr;
@@ -33,31 +33,31 @@ int nvmprint(const char *format, ...)
 	va_end(arg_ptr);
 	return nWrittenBytes;
 }
-void nvmprintbyte(t_nubit8 n)
+void vapiPrintByte(t_nubit8 n)
 {
 	char c;
 	int i;
 	for(i = 1;i >= 0;--i) {
 		c = ((n>>(i*4))&0x0f)+0x30;
 		if(c > 0x39) c += 0x27;
-		nvmprint("%c",c);
+		vapiPrint("%c",c);
 	}
 }
-void nvmprintword(t_nubit16 n)
+void vapiPrintWord(t_nubit16 n)
 {
 	char c;
 	int i;
 	for(i = 3;i >= 0;--i) {
 		c = ((n>>(i*4))&0x0f)+0x30;
 		if(c > 0x39) c += 0x27;
-		nvmprint("%c",c);
+		vapiPrint("%c",c);
 	}
 }
-void nvmprintaddr(t_nubit16 segment,t_nubit16 offset)
-{nvmprintword(segment);nvmprint(":");nvmprintword(offset);}
-void nvmpause()
+void vapiPrintAddr(t_nubit16 segment,t_nubit16 offset)
+{vapiPrintWord(segment);vapiPrint(":");vapiPrintWord(offset);}
+void vapiPause()
 {
 	fflush(stdin);
-	nvmprint("Press ENTER to continue . . .\n");
+	vapiPrint("Press ENTER to continue . . .\n");
 	getchar();
 }

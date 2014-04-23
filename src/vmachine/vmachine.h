@@ -7,11 +7,13 @@
 
 #include "vglobal.h"
 #include "vcpu.h"
-#include "vmemory.h"
+#include "vram.h"
 #include "vpic.h"
+#include "vcmos.h"
+#include "vpit.h"
 
-extern t_bool initFlag;
-extern t_bool runFlag;
+extern t_bool vmachineinitflag;
+extern t_bool vmachinerunflag;
 
 void NXVMInit();
 void NXVMPowerOn();
