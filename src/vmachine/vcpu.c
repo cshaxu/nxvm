@@ -38,8 +38,10 @@ void vcpuReset()
 	vcpu.ds.s = 0x01;
 	vcpu.ds.p = 0x01;
 	vcpu.ds.sregtype = SREG_DATA;
-	vcpu.ss = vcpu.gs = vcpu.fs = vcpu.es = vcpu.ds;
+	vcpu.ldtr = vcpu.tr = vcpu.ss = vcpu.gs = vcpu.fs = vcpu.es = vcpu.ds;
 	vcpu.ss.sregtype = SREG_STACK;
+	vcpu.ldtr.sregtype = SREG_LDTR;
+	vcpu.tr.sregtype = SREG_TR;
 	_LoadIDTR16(0x000000, 0x03ff);
 	vcpuinsReset();
 }

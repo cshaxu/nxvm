@@ -17,7 +17,7 @@
 
 #define _CheckExcept(s) if (vcpuins.except) {vapiPrint("%s\n",(s));return;} else
 #define _CheckExceptRet(s) if (vcpuins.except) {vapiPrint("%s\n",(s));return 0;} else
-#define i386(n)  if (1)
+#define i386(n)  if (0)
 
 #define _GetModRM_MOD(modrm) (((modrm) & 0xc0) >> 6)
 #define _GetModRM_REG(modrm) (((modrm) & 0x38) >> 3)
@@ -76,6 +76,7 @@ static void CaseError(const char *str)
 #define _SetExcept_UD(n) (vapiPrint("#UD(%x)\n",n), SetBit(vcpuins.except, VCPUINS_EXCEPT_UD), vcpuins.excode = (n))
 #define _SetExcept_NP(n) (vapiPrint("#NP(%x)\n",n), SetBit(vcpuins.except, VCPUINS_EXCEPT_NP), vcpuins.excode = (n))
 #define _SetExcept_BR(n) (vapiPrint("#BR(%x)\n",n), SetBit(vcpuins.except, VCPUINS_EXCEPT_BR), vcpuins.excode = (n))
+#define _SetExcept_TS(n) (vapiPrint("#TS(%x)\n",n), SetBit(vcpuins.except, VCPUINS_EXCEPT_TS), vcpuins.excode = (n))
 
 /* paging mechanism */
 static t_nubit32 _GetPhysicalFromLinear(t_nubit32 linear, t_nubit8 cpl, t_bool write)
@@ -83,43 +84,42 @@ static t_nubit32 _GetPhysicalFromLinear(t_nubit32 linear, t_nubit8 cpl, t_bool w
 	/* possible exception: pf */
 	t_nubit32 physical = linear;
 	t_vaddrcc ppdtitem, ppetitem; /* page table entries */
-	_CheckExceptRet("_GetPhysicalFromLinear");
 	if (_GetCR0_PE && _GetCR0_PG) {
 		ppdtitem = vramAddr(_GetCR3_BASE + _GetLinear_DIR(linear) * 4);
 		if (!_GetPageEntry_P(d_nubit32(ppdtitem))) {
 			_SetExcept_PF(_MakePageFaultErrorCode(0, write, (cpl == 3)));
+			vcpu.cr2 = linear;
 			_CheckExceptRet("_GetPhysicalFromLinear::CR0_PE(1)::CR0_PG(1)::ppdtitem::PageEntry_P(0)");
-			return physical;
 		}
 		if (cpl == 0x03) {
 			if (!_GetPageEntry_US(d_nubit32(ppdtitem))) {
 				_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1));
+				vcpu.cr2 = linear;
 				_CheckExceptRet("_GetPhysicalFromLinear::CR0_PE(1)::CR0_PG(1)::cpl(3)::ppdtitem::PageEntry_US(0)");
-				return physical;
 			}
 			if (!_GetPageEntry_RW(d_nubit32(ppdtitem)) && write) {
 				_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1));
+				vcpu.cr2 = linear;
 				_CheckExceptRet("_GetPhysicalFromLinear::CR0_PE(1)::CR0_PG(1)::cpl(3)::ppdtitem::PageEntry_RW(0)::write(1)");
-				return physical;
 			}
 		}
 		_SetPageEntry_A(d_nubit32(ppdtitem));
 		ppetitem = vramAddr(_GetPageEntry_BASE(d_nubit32(ppdtitem)) + _GetLinear_PAGE(linear) * 4);
 		if (!_GetPageEntry_P(d_nubit32(ppetitem))) {
 			_SetExcept_PF(_MakePageFaultErrorCode(0, write, (cpl == 3)));
+			vcpu.cr2 = linear;
 			_CheckExceptRet("_GetPhysicalFromLinear::CR0_PE(1)::CR0_PG(1)::ppetitem::PageEntry_P(0)");
-			return physical;
 		}
 		if (cpl == 0x03) {
 			if (!_GetPageEntry_US(d_nubit32(ppetitem))) {
 				_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1));
+				vcpu.cr2 = linear;
 				_CheckExceptRet("_GetPhysicalFromLinear::CR0_PE(1)::CR0_PG(1)::cpl(3)::ppetitem::PageEntry_US(0)");
-				return physical;
 			}
 			if (!_GetPageEntry_RW(d_nubit32(ppetitem)) && write) {
 				_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1));
+				vcpu.cr2 = linear;
 				_CheckExceptRet("_GetPhysicalFromLinear::CR0_PE(1)::CR0_PG(1)::cpl(3)::ppetitem::PageEntry_RW(0)::write(1)");
-				return physical;
 			}
 		}
 		_SetPageEntry_A(d_nubit32(ppetitem));
@@ -130,184 +130,176 @@ static t_nubit32 _GetPhysicalFromLinear(t_nubit32 linear, t_nubit8 cpl, t_bool w
 }
 
 /* read descriptor table */
-static t_nubit64 _GetDescriptorFromGDT(t_nubit16 selector)
+static t_nubit64 _GetPhysicalOfDescriptorFromGDT(t_nubit16 selector)
 {
 	/* possible exception: gp/limit; pf/lost */
-	t_nubit64 descriptor = 0x0000000000000000;
 	t_nubit32 linear = _GetGDTR_BASE + _GetSelector_OFFSET(selector);
 	t_nubit32 physical = 0x00000000;
-	_CheckExceptRet("_GetDescriptorFromGDT");
 	if (_GetSelector_OFFSET(selector) + 7 > _GetGDTR_LIMIT) {
 		_SetExcept_GP(selector);
 		_CheckExceptRet("_GetDescriptorFromLDT::gdtr.limit");
-		return descriptor;
+		return physical;
 	}
 	physical = _GetPhysicalFromLinear(linear, 0x00, 0x01);
-	_CheckExceptRet("_GetDescriptorFromGDT::GetPhysicalFromLinear");
-	if (_GetSegDesc_S(descriptor)) _SetSegDesc_TYPE_A(vramQWord(physical));
-	descriptor = vramQWord(physical);
-	return descriptor;
+	_CheckExceptRet("_GetPhysicalOfDescriptorFromGDT::GetPhysicalFromLinear");
+	return physical;
 }
-static t_nubit64 _GetDescriptorFromLDT(t_nubit16 selector)
+static t_nubit64 _GetPhysicalOfDescriptorFromLDT(t_nubit16 selector)
 {
 	/* possible exception: gp/limit; pf/lost */
 	t_nubit64 descriptor = 0x0000000000000000;
 	t_nubit32 linear = vcpu.ldtr.base + _GetSelector_OFFSET(selector);
 	t_nubit32 physical = 0x00000000;
-	_CheckExceptRet("_GetDescriptorFromLDT");
 	if (linear + 7 > vcpu.ldtr.limit) {
 		_SetExcept_GP(selector);
 		_CheckExceptRet("_GetDescriptorFromLDT::ldtr.limit");
 		return descriptor;
 	}
 	physical = _GetPhysicalFromLinear(linear, 0x00, 0x01);
-	_CheckExceptRet("_GetDescriptorFromLDT::GetPhysicalFromLinear");
+	_CheckExceptRet("_GetPhysicalOfDescriptorFromLDT::GetPhysicalFromLinear");
+	return physical;
+}
+static t_nubit64 _GetPhysicalOfDescriptor(t_nubit16 selector)
+{
+	/* possible exception: gp/limit; pf/lost */
+	t_nubit32 physical = 0x00000000;
+	if (_IsProtected) {
+		if (_GetSelector_TI(selector)) {
+			physical = _GetPhysicalOfDescriptorFromLDT(selector);
+			_CheckExceptRet("_GetPhysicalOfDescriptor::Protected::Selector_TI(1)::_GetPhysicalOfDescriptorFromLDT");
+		} else {
+			if (_GetSelector_INDEX(selector)) {
+				physical = _GetPhysicalOfDescriptorFromGDT(selector);
+				_CheckExceptRet("_GetPhysicalOfDescriptor::Protected::Selector_TI(0)::_GetPhysicalOfDescriptorFromGDT");
+			} else {
+				_SetExcept_GP(0);
+				_CheckExceptRet("_GetPhysicalOfDescriptor::Protected::selector(null)");
+			}
+		}
+		return physical;
+	} else
+		CaseError("_GetDescriptor::CR0_PE(0)/EFLAGS_VM(1)");
+	return physical;
+}
+static t_nubit64 _GetDescriptor(t_nubit16 selector)
+{
+	t_nubit64 descriptor = 0x0000000000000000;
+	t_nubit32 physical = _GetPhysicalOfDescriptor(selector);
+	_CheckExceptRet("_GetDescriptor::_GetPhysicalOfDescriptor");
 	if (_GetSegDesc_S(descriptor)) _SetSegDesc_TYPE_A(vramQWord(physical));
 	descriptor = vramQWord(physical);
 	return descriptor;
 }
-static t_nubit64 _GetDescriptor(t_nubit16 selector)
-{
-	/* possible exception: gp/limit; pf/lost */
-	t_nubit64 descriptor = 0x0000000000000000;
-	_CheckExceptRet("_GetDescriptor");
-	if (_GetCR0_PE && !_GetEFLAGS_VM) {
-		if (_GetSelector_TI(selector)) {
-			descriptor = _GetDescriptorFromLDT(selector);
-			_CheckExceptRet("_GetDescriptor::PROTECTED::Selector_TI(1)::_GetDescriptorFromLDT");
-		} else {
-			if (_GetSelector_INDEX(selector)) {
-				descriptor = _GetDescriptorFromGDT(selector);
-				_CheckExceptRet("_GetDescriptor::PROTECTED::Selector_TI(0)::_GetDescriptorFromGDT");
-			} else {
-				_SetExcept_GP(0);
-				_CheckExceptRet("GetDescriptor::PROTECTED::selector(null)");
-			}
-		}
-	} else
-		CaseError("_GetDescriptor::CR0_PE(0)/EFLAGS_VM(1)");
-	return descriptor;
-}
+#define _CheckDescriptorTable _GetDescriptor
 
 /* segmentation machanism */
-static t_nubit32 _GetLinearFromLogical(t_cpu_sreg *psreg, t_nubit32 offset, t_nubit8 bit, t_bool write, t_bool force)
+static t_bool _IsTssDesc(t_nubit64 descriptor)
+{
+	switch (_GetGateDesc_TYPE(descriptor)) {
+	case 0x01: /* 16 tss available */
+	case 0x03: /* 16 tss busy */
+	case 0x09: /* 32 tss available */
+	case 0x0b: /* 32 tss busy */
+		return 0x01;
+	default:
+		return 0x00;
+	}
+	return 0x00;
+}
+static t_bool _IsLdtDesc(t_nubit64 descriptor)
+{
+	switch (_GetGateDesc_TYPE(descriptor)) {
+	case 0x02: /* ldt */
+		return 0x01;
+	default:
+		return 0x00;
+	}
+	return 0x00;
+}
+static t_nubit32 _GetLinearFromLogical(t_cpu_sreg *psreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_bool force)
 {
 	/* gp, ss, pf */
+	t_bool exceed = 0x00;
 	t_nubit32 linear = psreg->base + offset;
-	t_nubit32 upper = (!psreg->cd && psreg->ce) ? (psreg->db ? 0xffffffff : 0x0000ffff) : psreg->limit;
-	t_nubit32 lower = (!psreg->cd && psreg->ce) ? (psreg->limit + 1) : 0x00000000;
+	t_nubit32 upper = (psreg->s && !psreg->cd && psreg->ce) ? (psreg->db ? 0xffffffff : 0x0000ffff) : psreg->limit;
+	t_nubit32 lower = (psreg->s && !psreg->cd && psreg->ce) ? (psreg->limit + 1) : 0x00000000;
 	_CheckExceptRet("_GetLinearFromLogical");
-	if (_GetCR0_PE && !_GetEFLAGS_VM) {
+	if (_IsProtected) {
 		switch (psreg->sregtype) {
 		case SREG_CODE:
-			if (_IsSelectorNull(psreg->selector) || !psreg->cd) {
-				CaseError("_GetLinearFromLogical::PROTECTED::sregtype(SREG_CODE)");
+			if (_IsSelectorNull(psreg->selector) || !psreg->cd || !psreg->p || !psreg->s) {
+				CaseError("_GetLinearFromLogical::Protected::sregtype(SREG_CODE)");
 				return 0x00000000;
 			}
 			if (!force && (write || !psreg->rw)) {
 				_SetExcept_GP(0);
-				_CheckExceptRet("_GetLinearFromLogical::PROTECTED::sregtype(SREG_CODE)");
+				_CheckExceptRet("_GetLinearFromLogical::Protected::sregtype(SREG_CODE)");
 			}
 			break;
 		case SREG_DATA:
 			if (_IsSelectorNull(psreg->selector)) {
 				_SetExcept_GP(0);
-				_CheckExceptRet("_GetLinearFromLogical::PROTECTED::sregtype(SREG_DATA)::selector(null)");
+				_CheckExceptRet("_GetLinearFromLogical::Protected::sregtype(SREG_DATA)::selector(null)");
 			}
 			if (psreg->cd && !psreg->rw) { // cd=1,rw=0
-				CaseError("_GetLinearFromLogical::PROTECTED::sregtype(SREG_DATA)::cd(1)::rw(0)");
+				CaseError("_GetLinearFromLogical::Protected::sregtype(SREG_DATA)::cd(1)::rw(0)");
 				return 0x00000000;
 			}
 			if (!force && write && (psreg->cd || !psreg->rw)) {
 				_SetExcept_GP(0);
-				_CheckExceptRet("_GetLinearFromLogical::PROTECTED::sregtype(SREG_DATA)::write(1)");
+				_CheckExceptRet("_GetLinearFromLogical::Protected::sregtype(SREG_DATA)::write(1)");
 			}
 			break;
 		case SREG_STACK:
-			if (_IsSelectorNull(psreg->selector) || psreg->cd || !psreg->rw) {
-				CaseError("_GetLinearFromLogical::PROTECTED::sregtype(SREG_STACK)");
+			if (_IsSelectorNull(psreg->selector) || psreg->cd || !psreg->rw || !psreg->p || !psreg->s) {
+				CaseError("_GetLinearFromLogical::Protected::sregtype(SREG_STACK)");
 				return 0x00000000;
 			}
 			break;
+		case SREG_TR:
+			if (_GetSelector_TI(psreg->selector) || !psreg->p || psreg->s) {
+				CaseError("_GetLinearFromLogical::Protected::sregtype(SREG_TR)");
+				return 0x00000000;
+			}
+			break;
+		case SREG_LDTR:
 		default:
-			CaseError("_GetLinearFromLogical::PROTECTED::sregtype");
+			CaseError("_GetLinearFromLogical::Protected::sregtype");
 			return 0x00000000;
 		}
 	}
-	switch (bit) {
-	case 8:
-		if (linear < lower || linear > upper) {
-			if (psreg->sregtype == SREG_STACK)
-				_SetExcept_SS(0);
-			else
-				_SetExcept_GP(0);
-			_CheckExceptRet("_GetLinearFromLogical::bit(8)");
+	if (linear < lower || linear >= upper - (byte - 2)) {
+		switch (psreg->type) {
+		case SREG_STACK: _SetExcept_SS(0);break;
+		case SREG_TR: _SetExcept_TS(psreg->selector);break;
+		default: _SetExcept_GP(0);break;
 		}
-		break;
-	case 16:
-		if (linear < lower || linear >= upper) {
-			if (psreg->sregtype == SREG_STACK)
-				_SetExcept_SS(0);
-			else
-				_SetExcept_GP(0);
-			_CheckExceptRet("_GetLinearFromLogical::bit(16)");
-		}
-		break;
-	case 32:
-		if (linear < lower || linear >= upper - 2) {
-			if (psreg->sregtype == SREG_STACK)
-				_SetExcept_SS(0);
-			else
-				_SetExcept_GP(0);
-			_CheckExceptRet("_GetLinearFromLogical::bit(32)");
-		}
-		break;
-	case 48:
-		if (linear < lower || linear >= upper - 4) {
-			if (psreg->sregtype == SREG_STACK)
-				_SetExcept_SS(0);
-			else
-				_SetExcept_GP(0);
-			_CheckExceptRet("_GetLinearFromLogical::bit(48)");
-		}
-		break;
-	case 64:
-		if (linear < lower || linear >= upper - 6) {
-			if (psreg->sregtype == SREG_STACK)
-				_SetExcept_SS(0);
-			else
-				_SetExcept_GP(0);
-			_CheckExceptRet("_GetLinearFromLogical::bit(64)");
-		}
-		break;
-	default:
-		CaseError("_GetLinearFromLogical::bit");
-		return 0x00000000;
+		_CheckExceptRet("_GetLinearFromLogical::linear(<lower/>upper)");
 	}
 	return linear;
 }
-#define _GetPhysicalFromLogical(psreg, offset, bit, write, force) \
-	_GetPhysicalFromLinear(_GetLinearFromLogical((psreg), (offset), (bit), (write), (force)), ((force) ? 0 : _GetCPL), (write))
+#define _GetPhysicalFromLogical(psreg, offset, byte, write, force) \
+	_GetPhysicalFromLinear(_GetLinearFromLogical((psreg), (offset), (byte), (write), (force)), ((force) ? 0 : _GetCPL), (write))
 #define _GetPhysicalOfSegment _GetPhysicalFromLogical
-#define _CheckSegment(psreg, offset, bit, write) _GetPhysicalOfSegment((psreg), (offset), (bit), (write), 0x00);
+#define _CheckSegment(psreg, offset, byte, write) _GetPhysicalOfSegment((psreg), (offset), (byte), (write), 0x00);
 static void _LoadSegment(t_cpu_sreg *psreg, t_nubit16 selector)
 {
 	/* TODO: need to be verified when constructing segment loaders */
 	t_nubit64 descriptor = 0x0000000000000000;
 	/* this does not check for priority level */
-	if (_GetCR0_PE && !_GetEFLAGS_VM) {
+	if (_IsProtected) {
 		if (!_IsSelectorNull(selector)) {
 			descriptor = _GetDescriptor(selector);
-			_CheckExcept("_LoadSegment::PROTECTED::selector(!null)::_GetDescriptor");
+			_CheckExcept("_LoadSegment::Protected::selector(!null)::_GetDescriptor");
 			switch (psreg->sregtype) {
 			case SREG_CODE:
 				if (!_GetSegDesc_S(descriptor) || !_GetSegDesc_TYPE_CD(descriptor)) {
 					_SetExcept_GP(selector);
-					_CheckExcept("_LoadSegment::PROTECTED::selector(!null)::sregtype(SREG_CODE)::SegDesc_TYPE_CD(0)/SegDesc_S(0)/SegDesc_P(0)");
+					_CheckExcept("_LoadSegment::Protected::selector(!null)::sregtype(SREG_CODE)::SegDesc_TYPE_CD(0)/SegDesc_S(0)/SegDesc_P(0)");
 				}
 				if (!_GetSegDesc_P(descriptor)) {
 					_SetExcept_NP(selector);
-					_CheckExcept("_LoadSegment::PROTECTED::selector(!null)::sregtype(SREG_CODE)::SegDesc_P(0)");
+					_CheckExcept("_LoadSegment::Protected::selector(!null)::sregtype(SREG_CODE)::SegDesc_P(0)");
 				}
 				psreg->a     = _GetSegDesc_TYPE_A(descriptor);
 				psreg->base  = _GetSegDesc_BASE(descriptor);
@@ -325,15 +317,15 @@ static void _LoadSegment(t_cpu_sreg *psreg, t_nubit16 selector)
 			case SREG_STACK:
 				if (_GetCPL != _GetSelector_RPL(selector) || _GetCPL != _GetSegDesc_DPL(descriptor)) {
 					_SetExcept_GP(selector);
-					_CheckExcept("_LoadSegment::PROTECTED::selector(!null)::sregtype(SREG_STACK)::?PL");
+					_CheckExcept("_LoadSegment::Protected::selector(!null)::sregtype(SREG_STACK)::?PL");
 				}
 				if (!_GetSegDesc_S(descriptor) || _GetSegDesc_TYPE_CD(descriptor) || !_GetSegDesc_TYPE_W(descriptor)) {
 					_SetExcept_GP(selector);
-					_CheckExcept("_LoadSegment::PROTECTED::selector(!null)::sregtype(SREG_STACK)::SegDesc_S(0)/SegDesc_TYPE_CD(1)/SegDesc_TYPE_W(0)");
+					_CheckExcept("_LoadSegment::Protected::selector(!null)::sregtype(SREG_STACK)::SegDesc_S(0)/SegDesc_TYPE_CD(1)/SegDesc_TYPE_W(0)");
 				}
 				if (!_GetSegDesc_P(descriptor)) {
 					_SetExcept_SS(selector);
-					_CheckExcept("_LoadSegment::PROTECTED::selector(!null)::sregtype(SREG_STACK)::SegDesc_P(0)");
+					_CheckExcept("_LoadSegment::Protected::selector(!null)::sregtype(SREG_STACK)::SegDesc_P(0)");
 				}
 				psreg->a     = _GetSegDesc_TYPE_A(descriptor);
 				psreg->base  = _GetSegDesc_BASE(descriptor);
@@ -352,16 +344,16 @@ static void _LoadSegment(t_cpu_sreg *psreg, t_nubit16 selector)
 				if (!_GetSegDesc_TYPE_CD(descriptor) || !_GetSegDesc_TYPE_C(descriptor)) {
 					if (_GetSelector_RPL(selector) > _GetSegDesc_DPL(descriptor) && _GetCPL > _GetSegDesc_DPL(descriptor)) {
 					_SetExcept_GP(selector);
-					_CheckExcept("_LoadSegment::PROTECTED::selector(!null)::sregtype(SREG_DATA)::?PL");
+					_CheckExcept("_LoadSegment::Protected::selector(!null)::sregtype(SREG_DATA)::?PL");
 					}
 				}
 				if (!_GetSegDesc_S(descriptor) || (_GetSegDesc_TYPE_CD(descriptor) && !_GetSegDesc_TYPE_R(descriptor))) {
 					_SetExcept_GP(selector);
-					_CheckExcept("_LoadSegment::PROTECTED::selector(!null)::sregtype(SREG_DATA)::...");
+					_CheckExcept("_LoadSegment::Protected::selector(!null)::sregtype(SREG_DATA)::...");
 				}
 				if (!_GetSegDesc_P(descriptor)) {
 					_SetExcept_NP(selector);
-					_CheckExcept("_LoadSegment::PROTECTED::selector(!null)::sregtype(SREG_DATA)::SegDesc_P(0)");
+					_CheckExcept("_LoadSegment::Protected::selector(!null)::sregtype(SREG_DATA)::SegDesc_P(0)");
 				}
 				psreg->a     = _GetSegDesc_TYPE_A(descriptor);
 				psreg->base  = _GetSegDesc_BASE(descriptor);
@@ -376,6 +368,41 @@ static void _LoadSegment(t_cpu_sreg *psreg, t_nubit16 selector)
 				psreg->s     = _GetSegDesc_S(descriptor);
 				psreg->selector = selector;
 				break;
+			case SREG_TR:
+				if (_GetTssDesc_S(descriptor) || !_IsTssDesc(descriptor)) {
+					_SetExcept_GP(selector);
+					_CheckExcept("_LoadSegment::Protected::selector(!null)::sregtype(SREG_TR)::descriptor(S)");
+				}
+				if (!_GetTssDesc_P(descriptor)) {
+					_SetExcept_NP(selector);
+					_CheckExcept("_LoadSegment::Protected::selector(!null)::sregtype(SREG_TR)::descriptor(!P)");
+				}
+				psreg->base  = _GetTssDesc_BASE(descriptor);
+				psreg->dpl   = _GetTssDesc_DPL(descriptor);
+				psreg->g     = _GetTssDesc_G(descriptor);
+				psreg->limit = psreg->base + (psreg->g ? ((_GetTssDesc_LIMIT(descriptor) << 12) | 0x0fff) : _GetTssDesc_LIMIT(descriptor));
+				psreg->p     = _GetTssDesc_P(descriptor);
+				psreg->type  = _GetTssDesc_TYPE(descriptor);
+				psreg->s     = _GetSegDesc_S(descriptor);
+				psreg->selector = selector;
+				break;
+			case SREG_LDTR:
+				if (_GetTssDesc_S(descriptor) || !_IsLdtDesc(descriptor)) {
+					_SetExcept_GP(selector);
+					_CheckExcept("_LoadSegment::Protected::selector(!null)::sregtype(SREG_LDTR)::descriptor(S)");
+				}
+				if (!_GetTssDesc_P(descriptor)) {
+					_SetExcept_NP(selector);
+					_CheckExcept("_LoadSegment::Protected::selector(!null)::sregtype(SREG_LDTR)::descriptor(!P)");
+				}
+				psreg->base  = _GetLdtDesc_BASE(descriptor);
+				psreg->dpl   = _GetLdtDesc_DPL(descriptor);
+				psreg->g     = _GetLdtDesc_G(descriptor);
+				psreg->limit = psreg->base + (psreg->g ? ((_GetLdtDesc_LIMIT(descriptor) << 12) | 0x0fff) : _GetLdtDesc_LIMIT(descriptor));
+				psreg->p     = _GetLdtDesc_P(descriptor);
+				psreg->type  = _GetLdtDesc_TYPE(descriptor);
+				psreg->s     = _GetLdtDesc_S(descriptor);
+				psreg->selector = selector;
 			default:
 				break;
 			}
@@ -387,10 +414,10 @@ static void _LoadSegment(t_cpu_sreg *psreg, t_nubit16 selector)
 			case SREG_CODE:
 			case SREG_STACK:
 				_SetExcept_GP(0);
-				_CheckExcept("_LoadSegment::PROTECTED::selector(null)::sregtype(SREG_CODE/SREG_STACK)");
+				_CheckExcept("_LoadSegment::Protected::selector(null)::sregtype(SREG_CODE/SREG_STACK)");
 				break;
 			default:
-				CaseError("_LoadSegment::PROTECTED::selector(null)::sregtype");
+				CaseError("_LoadSegment::Protected::selector(null)::sregtype");
 				return;
 			}
 		}
@@ -400,6 +427,21 @@ static void _LoadSegment(t_cpu_sreg *psreg, t_nubit16 selector)
 		psreg->base = (selector << 4);
 		psreg->limit += psreg->base;
 	}
+}
+static t_nubit32 _GetCode(t_nubit32 offset, t_nubit8 byte)
+{
+	/* gp, pf */
+	t_nubit32 physical = _GetPhysicalOfSegment(&vcpu.cs, offset, byte, 0x00, 0x01);
+	_CheckExceptRet("_GetCode::_GetPhysicalOfSegment");
+	switch (byte) {
+	case 1: return vramByte(physical);
+	case 2: return vramWord(physical);
+	case 4: return vramDWord(physical);
+	case 6: return GetMax48(vramQWord(physical));
+	case 8: return vramQWord(physical);
+	default: CaseError("_GetCode::byte");return 0x00000000;
+	}
+	return 0x00000000;
 }
 
 /* fetch instructions */
@@ -433,25 +475,10 @@ static t_cpu_sreg *_GetPtrOverrideSS()
 	}
 	return pss;
 }
-static t_nubit32 _GetCode(t_nubit32 offset, t_nubit8 bit)
-{
-	/* gp, pf */
-	t_nubit32 physical = _GetPhysicalOfSegment(&vcpu.cs, offset, bit, 0x00, 0x01);
-	_CheckExceptRet("_GetCode::_GetPhysicalOfSegment");
-	switch (bit) {
-	case 8:  return vramByte(physical);
-	case 16: return vramWord(physical);
-	case 32: return vramDWord(physical);
-	case 48: return GetMax48(vramQWord(physical));
-	case 64: return vramQWord(physical);
-	default: CaseError("_GetCode::bit");return 0x00000000;
-	}
-	return 0x00000000;
-}
 static void _GetImm(t_nubit8 immbit)
 {
 	/* gp, pf */
-	t_nubit32 physical = _GetPhysicalOfSegment(&vcpu.cs, vcpu.eip, immbit, 0x00, 0x01);
+	t_nubit32 physical = _GetPhysicalOfSegment(&vcpu.cs, vcpu.eip, (immbit >> 3), 0x00, 0x01);
 	_CheckExcept("_GetImm::_GetPhysicalOfSegment");
 	vcpuins.pimm = vramAddr(physical);
 	switch (immbit) {
@@ -470,7 +497,9 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 	t_nubit32 disp32 = 0x00000000;
 	t_nubit32 physical = 0x00000000, sibindex = 0x00000000;
 	t_cpu_sreg *pds = _GetPtrOverrideDS(), *pss = _GetPtrOverrideSS();
-	t_nubit8 modrm = (t_nubit8)_GetCode(vcpu.eip++, 8), sib = 0x00;
+	t_nubit8 modrm = (t_nubit8)_GetCode(vcpu.eip++, 1), sib = 0x00;
+	t_nubit8 rmbyte = (rmbit >> 3);
+	t_nubit8 regbyte = (regbit >> 3);
 	_CheckExcept("_GetModRegRM::_GetCode");
 	vcpuins.prm = vcpuins.pr = (t_vaddrcc)NULL;
 	vcpuins.lrm = 0x00000000;
@@ -479,18 +508,18 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 		switch (_GetModRM_MOD(modrm)) {
 		case 0:
 			switch (_GetModRM_RM(modrm)) {
-			case 0: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+vcpu.si), rmbit, write, 0x00); break;
-			case 1: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+vcpu.di), rmbit, write, 0x00); break;
-			case 2: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+vcpu.si), rmbit, write, 0x00); break;
-			case 3: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+vcpu.di), rmbit, write, 0x00); break;
-			case 4: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.si), rmbit, write, 0x00); break;
-			case 5: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.di), rmbit, write, 0x00); break;
+			case 0: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+vcpu.si), rmbyte, write, 0x00); break;
+			case 1: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+vcpu.di), rmbyte, write, 0x00); break;
+			case 2: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+vcpu.si), rmbyte, write, 0x00); break;
+			case 3: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+vcpu.di), rmbyte, write, 0x00); break;
+			case 4: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.si), rmbyte, write, 0x00); break;
+			case 5: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.di), rmbyte, write, 0x00); break;
 			case 6:
-				disp16 = (t_nubit16)_GetCode(vcpu.eip, 16);
+				disp16 = (t_nubit16)_GetCode(vcpu.eip, 2);
 				_CheckExcept("_GetModRegRM::AddressSize(16)::ModRM_MOD(0)::ModRM_RM(6)::_GetCode");
 				vcpu.eip += 2;
-				vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(disp16),  rmbit, write, 0x00); break;
-			case 7: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx), rmbit, write, 0x00); break;
+				vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(disp16),  rmbyte, write, 0x00); break;
+			case 7: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx), rmbyte, write, 0x00); break;
 			default:CaseError("_GetModRegRM::AddressSize(16)::ModRM_MOD(0)::ModRM_RM");return;
 			}
 			_CheckExcept("_GetModRegRM::AddressSize(16)::ModRM_MOD(0)::_GetLinearFromLogical");
@@ -499,18 +528,18 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 			vcpuins.prm = vramAddr(physical);
 			break;
 		case 1:
-			disp8 = (t_nsbit8)_GetCode(vcpu.eip, 8);
+			disp8 = (t_nsbit8)_GetCode(vcpu.eip, 1);
 			_CheckExcept("_GetModRegRM::AddressSize(16)::ModRM_MOD(1)::_GetCode");
 			vcpu.eip += 1;
 			switch (_GetModRM_RM(modrm)) {
-			case 0: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+vcpu.si+disp8), rmbit, write, 0x00); break;
-			case 1: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+vcpu.di+disp8), rmbit, write, 0x00); break;
-			case 2: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+vcpu.si+disp8), rmbit, write, 0x00); break;
-			case 3: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+vcpu.di+disp8), rmbit, write, 0x00); break;
-			case 4: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.si+disp8), rmbit, write, 0x00); break;
-			case 5: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.di+disp8), rmbit, write, 0x00); break;
-			case 6: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+disp8), rmbit, write, 0x00); break;
-			case 7: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+disp8), rmbit, write, 0x00); break;
+			case 0: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+vcpu.si+disp8), rmbyte, write, 0x00); break;
+			case 1: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+vcpu.di+disp8), rmbyte, write, 0x00); break;
+			case 2: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+vcpu.si+disp8), rmbyte, write, 0x00); break;
+			case 3: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+vcpu.di+disp8), rmbyte, write, 0x00); break;
+			case 4: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.si+disp8), rmbyte, write, 0x00); break;
+			case 5: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.di+disp8), rmbyte, write, 0x00); break;
+			case 6: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+disp8), rmbyte, write, 0x00); break;
+			case 7: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+disp8), rmbyte, write, 0x00); break;
 			default:CaseError("_GetModRegRM::AddressSize(16)::ModRM_MOD(1)::ModRM_RM");return;
 			}
 			_CheckExcept("_GetModRegRM::AddressSize(16)::ModRM_MOD(1)::_GetLinearFromLogical");
@@ -519,18 +548,18 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 			vcpuins.prm = vramAddr(physical);
 			break;
 		case 2:
-			disp16 = (t_nubit16)_GetCode(vcpu.eip, 16);
+			disp16 = (t_nubit16)_GetCode(vcpu.eip, 2);
 			_CheckExcept("_GetModRegRM::AddressSize(16)::ModRM_MOD(2)::_GetCode");
 			vcpu.eip += 2;
 			switch (_GetModRM_RM(modrm)) {
-			case 0: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+vcpu.si+disp16), rmbit, write, 0x00); break;
-			case 1: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+vcpu.di+disp16), rmbit, write, 0x00); break;
-			case 2: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+vcpu.si+disp16), rmbit, write, 0x00); break;
-			case 3: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+vcpu.di+disp16), rmbit, write, 0x00); break;
-			case 4: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.si+disp16), rmbit, write, 0x00); break;
-			case 5: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.di+disp16), rmbit, write, 0x00); break;
-			case 6: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+disp16), rmbit, write, 0x00); break;
-			case 7: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+disp16), rmbit, write, 0x00); break;
+			case 0: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+vcpu.si+disp16), rmbyte, write, 0x00); break;
+			case 1: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+vcpu.di+disp16), rmbyte, write, 0x00); break;
+			case 2: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+vcpu.si+disp16), rmbyte, write, 0x00); break;
+			case 3: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+vcpu.di+disp16), rmbyte, write, 0x00); break;
+			case 4: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.si+disp16), rmbyte, write, 0x00); break;
+			case 5: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.di+disp16), rmbyte, write, 0x00); break;
+			case 6: vcpuins.lrm = _GetLinearFromLogical(pss, GetMax16(vcpu.bp+disp16), rmbyte, write, 0x00); break;
+			case 7: vcpuins.lrm = _GetLinearFromLogical(pds, GetMax16(vcpu.bx+disp16), rmbyte, write, 0x00); break;
 			default:CaseError("_GetModRegRM::AddressSize(16)::ModRM_MOD(2)::ModRM_RM");return;
 			}
 			_CheckExcept("_GetModRegRM::AddressSize(16)::ModRM_MOD(2)::_GetLinearFromLogical");
@@ -546,7 +575,7 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 		}
 	} else {
 		if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4) {
-			sib = (t_nubit8)_GetCode(vcpu.eip, 8);
+			sib = (t_nubit8)_GetCode(vcpu.eip, 1);
 			_CheckExcept("_GetModRegRM::AddressSize(32)::ModRM_MOD(!3)::ModRM_RM(4)::_GetCode");
 			vcpu.eip += 1;
 			switch (_GetSIB_Index(sib)) {
@@ -565,36 +594,36 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 		switch (_GetModRM_MOD(modrm)) {
 		case 0:
 			switch (_GetModRM_RM(modrm)) {
-			case 0: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.eax, rmbit, write, 0x00); break;
-			case 1: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ecx, rmbit, write, 0x00); break;
-			case 2: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edx, rmbit, write, 0x00); break;
-			case 3: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ebx, rmbit, write, 0x00); break;
+			case 0: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.eax, rmbyte, write, 0x00); break;
+			case 1: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ecx, rmbyte, write, 0x00); break;
+			case 2: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edx, rmbyte, write, 0x00); break;
+			case 3: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ebx, rmbyte, write, 0x00); break;
 			case 4:
 				switch (_GetSIB_Base(sib)) {
-				case 0: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.eax + sibindex, rmbit, write, 0x00); break;
-				case 1: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ecx + sibindex, rmbit, write, 0x00); break;
-				case 2: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edx + sibindex, rmbit, write, 0x00); break;
-				case 3: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ebx + sibindex, rmbit, write, 0x00); break;
-				case 4: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.esp + sibindex, rmbit, write, 0x00); break;
+				case 0: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.eax + sibindex, rmbyte, write, 0x00); break;
+				case 1: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ecx + sibindex, rmbyte, write, 0x00); break;
+				case 2: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edx + sibindex, rmbyte, write, 0x00); break;
+				case 3: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ebx + sibindex, rmbyte, write, 0x00); break;
+				case 4: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.esp + sibindex, rmbyte, write, 0x00); break;
 				case 5:
-					disp32 = (t_nubit32)_GetCode(vcpu.eip, 32);
+					disp32 = (t_nubit32)_GetCode(vcpu.eip, 4);
 					_CheckExcept("_GetModRegRM::AddressSize(32)::ModRM_MOD(0)::ModRM::RM(4)::SIB_Base(5)::_GetCode");
 					vcpu.eip += 4;
-					vcpuins.lrm = _GetLinearFromLogical(pds, disp32 + sibindex, rmbit, write, 0x00);
+					vcpuins.lrm = _GetLinearFromLogical(pds, disp32 + sibindex, rmbyte, write, 0x00);
 					break;
-				case 6: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.esi + sibindex, rmbit, write, 0x00); break;
-				case 7: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edi + sibindex, rmbit, write, 0x00); break;
+				case 6: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.esi + sibindex, rmbyte, write, 0x00); break;
+				case 7: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edi + sibindex, rmbyte, write, 0x00); break;
 				default:CaseError("_GetModRegRM::AddressSize(32)::ModRM_MOD(0)::ModRM_RM(4)::SIB_Base");return;
 				}
 				break;
 			case 5:
-				disp32 = (t_nubit32)_GetCode(vcpu.eip, 32);
+				disp32 = (t_nubit32)_GetCode(vcpu.eip, 4);
 				_CheckExcept("_GetModRegRM::AddressSize(32)::ModRM_MOD(0)::ModRM::RM(5)::_GetCode");
 				vcpu.eip += 4;
-				vcpuins.lrm = _GetLinearFromLogical(pds, disp32,   rmbit, write, 0x00);
+				vcpuins.lrm = _GetLinearFromLogical(pds, disp32,   rmbyte, write, 0x00);
 				break;
-			case 6: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.esi, rmbit, write, 0x00); break;
-			case 7: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edi, rmbit, write, 0x00); break;
+			case 6: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.esi, rmbyte, write, 0x00); break;
+			case 7: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edi, rmbyte, write, 0x00); break;
 			default:CaseError("_GetModRegRM::AddressSize(32)::ModRM_MOD(0)::ModRM_RM");return;
 			}
 			_CheckExcept("_GetModRegRM::AddressSize(32)::ModRM_MOD(0)::_GetLinearFromLogical");
@@ -603,30 +632,30 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 			vcpuins.prm = vramAddr(physical);
 			break;
 		case 1:
-			disp8 = (t_nsbit8)_GetCode(vcpu.eip, 8);
+			disp8 = (t_nsbit8)_GetCode(vcpu.eip, 1);
 			_CheckExcept("_GetModRegRM::AddressSize(32)::ModRM_MOD(1)::_GetCode");
 			vcpu.eip += 1;
 			switch (_GetModRM_RM(modrm)) {
-			case 0: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.eax + disp8, rmbit, write, 0x00); break;
-			case 1: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ecx + disp8, rmbit, write, 0x00); break;
-			case 2: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edx + disp8, rmbit, write, 0x00); break;
-			case 3: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ebx + disp8, rmbit, write, 0x00); break;
+			case 0: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.eax + disp8, rmbyte, write, 0x00); break;
+			case 1: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ecx + disp8, rmbyte, write, 0x00); break;
+			case 2: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edx + disp8, rmbyte, write, 0x00); break;
+			case 3: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ebx + disp8, rmbyte, write, 0x00); break;
 			case 4:
 				switch (_GetSIB_Base(sib)) {
-				case 0: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.eax + sibindex + disp8, rmbit, write, 0x00); break;
-				case 1: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ecx + sibindex + disp8, rmbit, write, 0x00); break;
-				case 2: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edx + sibindex + disp8, rmbit, write, 0x00); break;
-				case 3: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ebx + sibindex + disp8, rmbit, write, 0x00); break;
-				case 4: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.esp + sibindex + disp8, rmbit, write, 0x00); break;
-				case 5: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.ebp + sibindex + disp8, rmbit, write, 0x00); break;
-				case 6: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.esi + sibindex + disp8, rmbit, write, 0x00); break;
-				case 7: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edi + sibindex + disp8, rmbit, write, 0x00); break;
+				case 0: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.eax + sibindex + disp8, rmbyte, write, 0x00); break;
+				case 1: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ecx + sibindex + disp8, rmbyte, write, 0x00); break;
+				case 2: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edx + sibindex + disp8, rmbyte, write, 0x00); break;
+				case 3: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ebx + sibindex + disp8, rmbyte, write, 0x00); break;
+				case 4: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.esp + sibindex + disp8, rmbyte, write, 0x00); break;
+				case 5: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.ebp + sibindex + disp8, rmbyte, write, 0x00); break;
+				case 6: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.esi + sibindex + disp8, rmbyte, write, 0x00); break;
+				case 7: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edi + sibindex + disp8, rmbyte, write, 0x00); break;
 				default:CaseError("_GetModRegRM::AddressSize(32)::ModRM_MOD(1)::ModRM_RM(4)::SIB_Base");return;
 				}
 				break;
-			case 5: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.ebp + disp8, rmbit, write, 0x00); break;
-			case 6: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.esi + disp8, rmbit, write, 0x00); break;
-			case 7: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edi + disp8, rmbit, write, 0x00); break;
+			case 5: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.ebp + disp8, rmbyte, write, 0x00); break;
+			case 6: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.esi + disp8, rmbyte, write, 0x00); break;
+			case 7: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edi + disp8, rmbyte, write, 0x00); break;
 			default:CaseError("_GetModRegRM::AddressSize(32)::ModRM_MOD(1)::ModRM_RM");return;
 			}
 			_CheckExcept("_GetModRegRM::AddressSize(32)::ModRM_MOD(1)::_GetLinearFromLogical");
@@ -636,30 +665,30 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 			vcpuins.prm = vramAddr(physical);
 			break;
 		case 2:
-			disp32 = (t_nubit32)_GetCode(vcpu.eip, 32);
+			disp32 = (t_nubit32)_GetCode(vcpu.eip, 4);
 			_CheckExcept("_GetModRegRM::AddressSize(32)::ModRM_MOD(2)::_GetCode");
 			vcpu.eip += 4;
 			switch (_GetModRM_RM(modrm)) {
-			case 0: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.eax + disp32, rmbit, write, 0x00); break;
-			case 1: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ecx + disp32, rmbit, write, 0x00); break;
-			case 2: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edx + disp32, rmbit, write, 0x00); break;
-			case 3: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ebx + disp32, rmbit, write, 0x00); break;
+			case 0: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.eax + disp32, rmbyte, write, 0x00); break;
+			case 1: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ecx + disp32, rmbyte, write, 0x00); break;
+			case 2: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edx + disp32, rmbyte, write, 0x00); break;
+			case 3: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ebx + disp32, rmbyte, write, 0x00); break;
 			case 4:
 				switch (_GetSIB_Base(sib)) {
-				case 0: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.eax + sibindex + disp32, rmbit, write, 0x00); break;
-				case 1: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ecx + sibindex + disp32, rmbit, write, 0x00); break;
-				case 2: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edx + sibindex + disp32, rmbit, write, 0x00); break;
-				case 3: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ebx + sibindex + disp32, rmbit, write, 0x00); break;
-				case 4: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.esp + sibindex + disp32, rmbit, write, 0x00); break;
-				case 5: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.ebp + sibindex + disp32, rmbit, write, 0x00); break;
-				case 6: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.esi + sibindex + disp32, rmbit, write, 0x00); break;
-				case 7: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edi + sibindex + disp32, rmbit, write, 0x00); break;
+				case 0: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.eax + sibindex + disp32, rmbyte, write, 0x00); break;
+				case 1: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ecx + sibindex + disp32, rmbyte, write, 0x00); break;
+				case 2: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edx + sibindex + disp32, rmbyte, write, 0x00); break;
+				case 3: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.ebx + sibindex + disp32, rmbyte, write, 0x00); break;
+				case 4: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.esp + sibindex + disp32, rmbyte, write, 0x00); break;
+				case 5: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.ebp + sibindex + disp32, rmbyte, write, 0x00); break;
+				case 6: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.esi + sibindex + disp32, rmbyte, write, 0x00); break;
+				case 7: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edi + sibindex + disp32, rmbyte, write, 0x00); break;
 				default:CaseError("_GetModRegRM::AddressSize(32)::ModRM_MOD(2)::ModRM_RM(4)::SIB_Base");return;
 				}
 				break;
-			case 5: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.ebp + disp32, rmbit, write, 0x00); break;
-			case 6: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.esi + disp32, rmbit, write, 0x00); break;
-			case 7: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edi + disp32, rmbit, write, 0x00); break;
+			case 5: vcpuins.lrm = _GetLinearFromLogical(pss, vcpu.ebp + disp32, rmbyte, write, 0x00); break;
+			case 6: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.esi + disp32, rmbyte, write, 0x00); break;
+			case 7: vcpuins.lrm = _GetLinearFromLogical(pds, vcpu.edi + disp32, rmbyte, write, 0x00); break;
 			default:CaseError("_GetModRegRM::AddressSize(32)::ModRM_MOD(2)::ModRM_RM");return;
 			}
 			_CheckExcept("_GetModRegRM::AddressSize(32)::ModRM_MOD(2)::_GetLinearFromLogical");
@@ -676,8 +705,8 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 	}
 	if (_GetModRM_MOD(modrm) == 3) {
 		vcpuins.flagmem = 0x00;
-		switch (rmbit) {
-		case 8:
+		switch (rmbyte) {
+		case 1:
 			switch(_GetModRM_RM(modrm)) {
 			case 0: vcpuins.prm = (t_vaddrcc)(&vcpu.al);break;
 			case 1: vcpuins.prm = (t_vaddrcc)(&vcpu.cl);break;
@@ -687,9 +716,9 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 			case 5: vcpuins.prm = (t_vaddrcc)(&vcpu.ch);break;
 			case 6: vcpuins.prm = (t_vaddrcc)(&vcpu.dh);break;
 			case 7: vcpuins.prm = (t_vaddrcc)(&vcpu.bh);break;
-			default:CaseError("_GetModRegRM::ModRM_MOD(3)::rmbit(8)::ModRM_RM");return;}
+			default:CaseError("_GetModRegRM::ModRM_MOD(3)::rmbyte(1)::ModRM_RM");return;}
 			break;
-		case 16:
+		case 2:
 			switch(_GetModRM_RM(modrm)) {
 			case 0: vcpuins.prm = (t_vaddrcc)(&vcpu.ax);break;
 			case 1: vcpuins.prm = (t_vaddrcc)(&vcpu.cx);break;
@@ -699,9 +728,9 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 			case 5: vcpuins.prm = (t_vaddrcc)(&vcpu.bp);break;
 			case 6: vcpuins.prm = (t_vaddrcc)(&vcpu.si);break;
 			case 7: vcpuins.prm = (t_vaddrcc)(&vcpu.di);break;
-			default:CaseError("_GetModRegRM::ModRM_MOD(3)::rmbit(16)::ModRM_RM");return;}
+			default:CaseError("_GetModRegRM::ModRM_MOD(3)::rmbyte(2)::ModRM_RM");return;}
 			break;
-		case 32:
+		case 4:
 			switch(_GetModRM_RM(modrm)) {
 			case 0: vcpuins.prm = (t_vaddrcc)(&vcpu.eax);break;
 			case 1: vcpuins.prm = (t_vaddrcc)(&vcpu.ecx);break;
@@ -711,25 +740,25 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 			case 5: vcpuins.prm = (t_vaddrcc)(&vcpu.ebp);break;
 			case 6: vcpuins.prm = (t_vaddrcc)(&vcpu.esi);break;
 			case 7: vcpuins.prm = (t_vaddrcc)(&vcpu.edi);break;
-			default:CaseError("_GetModRegRM::ModRM_MOD(3)::rmbit(32)::ModRM_RM");return;}
+			default:CaseError("_GetModRegRM::ModRM_MOD(3)::rmbyte(4)::ModRM_RM");return;}
 			break;
-		case 48:
-			CaseError("_GetModRegRM::ModRM_MOD(3)::rmbit(48)");
+		case 6:
+			CaseError("_GetModRegRM::ModRM_MOD(3)::rmbyte(6)");
 			return;
-		case 64:
-			CaseError("_GetModRegRM::ModRM_MOD(3)::rmbit(64)");
+		case 8:
+			CaseError("_GetModRegRM::ModRM_MOD(3)::rmbyte(8)");
 			return;
 		default:
-			CaseError("GetModRegRM::ModRM_MOD(3)::rmbit");
+			CaseError("GetModRegRM::ModRM_MOD(3)::rmbyte");
 			return;
 		}
 	}
-	switch (regbit) {
+	switch (regbyte) {
 	case 0:
 		/* reg is operation or segment */
 		vcpuins.pr = _GetModRM_REG(modrm);
 		break;
-	case 8:
+	case 1:
 		switch(_GetModRM_REG(modrm)) {
 		case 0: vcpuins.pr = (t_vaddrcc)(&vcpu.al);break;
 		case 1: vcpuins.pr = (t_vaddrcc)(&vcpu.cl);break;
@@ -739,9 +768,9 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 		case 5: vcpuins.pr = (t_vaddrcc)(&vcpu.ch);break;
 		case 6: vcpuins.pr = (t_vaddrcc)(&vcpu.dh);break;
 		case 7: vcpuins.pr = (t_vaddrcc)(&vcpu.bh);break;
-		default:CaseError("_GetModRegRM::regbit(8)::ModRM_REG");return;}
+		default:CaseError("_GetModRegRM::regbyte(1)::ModRM_REG");return;}
 		break;
-	case 16:
+	case 2:
 		switch(_GetModRM_REG(modrm)) {
 		case 0: vcpuins.pr = (t_vaddrcc)(&vcpu.ax);break;
 		case 1: vcpuins.pr = (t_vaddrcc)(&vcpu.cx);break;
@@ -751,9 +780,9 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 		case 5: vcpuins.pr = (t_vaddrcc)(&vcpu.bp);break;
 		case 6: vcpuins.pr = (t_vaddrcc)(&vcpu.si);break;
 		case 7: vcpuins.pr = (t_vaddrcc)(&vcpu.di);break;
-		default:CaseError("_GetModRegRM::regbit(16)::ModRM_REG");return;}
+		default:CaseError("_GetModRegRM::regbyte(2)::ModRM_REG");return;}
 		break;
-	case 32:
+	case 4:
 		switch(_GetModRM_REG(modrm)) {
 		case 0: vcpuins.pr = (t_vaddrcc)(&vcpu.eax);break;
 		case 1: vcpuins.pr = (t_vaddrcc)(&vcpu.ecx);break;
@@ -763,10 +792,10 @@ static void _GetModRegRM(t_nubit8 regbit, t_nubit8 rmbit, t_bool write)
 		case 5: vcpuins.pr = (t_vaddrcc)(&vcpu.ebp);break;
 		case 6: vcpuins.pr = (t_vaddrcc)(&vcpu.esi);break;
 		case 7: vcpuins.pr = (t_vaddrcc)(&vcpu.edi);break;
-		default:CaseError("_GetModRegRM::regbit(32)::ModRM_REG");return;}
+		default:CaseError("_GetModRegRM::regbyte(4)::ModRM_REG");return;}
 		break;
 	default:
-		CaseError("GetModRegRM::regbit");
+		CaseError("GetModRegRM::regbyte");
 		return;
 	}
 }
@@ -949,7 +978,7 @@ static void GetModRegRM(t_nubitcc regbit,t_nubitcc rmbit)
 	t_nubit8 modrm = 0x00;
 	t_cpu_sreg *overds = _GetPtrOverrideDS();
 	t_cpu_sreg *overss = _GetPtrOverrideSS();
-	modrm = (t_nubit8)_GetCode(vcpu.eip++, 8);
+	modrm = (t_nubit8)_GetCode(vcpu.eip++, 1);
 	vcpuins.rm = vcpuins.r = (t_vaddrcc)NULL;
 	switch(_GetModRM_MOD(modrm)) {
 	case 0:
@@ -1138,7 +1167,7 @@ DONE _Push(t_vaddrcc psrc, t_nubit8 bit)
 			return;
 		}
 		data16 = d_nubit16(psrc);
-		physical = _GetPhysicalOfSegment(&vcpu.ss, vcpu.esp - 2, 16, 0x01, 0x00);
+		physical = _GetPhysicalOfSegment(&vcpu.ss, vcpu.esp - 2, 2, 0x01, 0x00);
 		_CheckExcept("_Push::bit(16)::_GetPhysicalOfSegment");
 		vcpu.esp -= 2;
 		vramWord(physical) = data16;
@@ -1150,103 +1179,620 @@ DONE _Push(t_vaddrcc psrc, t_nubit8 bit)
 			return;
 		}
 		data32 = d_nubit32(psrc);
-		physical = _GetPhysicalOfSegment(&vcpu.ss, vcpu.esp - 4, 32, 0x01, 0x00);
+		physical = _GetPhysicalOfSegment(&vcpu.ss, vcpu.esp - 4, 4, 0x01, 0x00);
 		_CheckExcept("_Push::bit(32)::_GetPhysicalOfSegment");
 		vcpu.esp -= 4;
 		vramDWord(physical) = data32;
 		break;
 	default:CaseError("_Push::bit");break;}
 }
-DONE _Call_Near(t_nubit32 neweip, t_nubit8 bit)
+DONE _Call_IP(t_nubit32 neweip, t_nubit8 bit)
 {
 	switch (bit) {
 	case 16:
 		_Push((t_vaddrcc)&vcpu.ip, 16);
-		_CheckExcept("_Call_Near::bit(16)::_Push");
+		_CheckExcept("_Call_IP::bit(16)::_Push");
 		vcpu.eip = GetMax16(neweip);
 		break;
 	case 32:
 		_Push((t_vaddrcc)&vcpu.eip, 32);
-		_CheckExcept("_Call_Near::bit(32)::_Push");
+		_CheckExcept("_Call_IP::bit(32)::_Push");
 		vcpu.eip = GetMax32(neweip);
 		break;
 	default:
-		CaseError("_Call_Near::bit");
+		CaseError("_Call_IP::bit");
 		return;
 	}
 }
-DONE _Call_Far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 bit)
+DONE _Call_CS_IP(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 bit)
 {
 	t_nubit32 oldcs = vcpu.cs.selector;
+	switch (bit) {
+	case 16:
+		_CheckSegment(&vcpu.ss, vcpu.esp - 4, 4, 0x01);
+		_CheckExcept("_Call_CS_IP::bit(16)::_CheckSegment(ss)");
+		_CheckSegment(&vcpu.cs, vcpu.eip, 1, 0x00);
+		_CheckExcept("_Call_CS_IP::bit(16)::_CheckSegment(cs.old)");
+		_Push((t_vaddrcc)&oldcs, 16);
+		_CheckExcept("_Call_CS_IP::bit(16)::_Push(cs)");
+		_Push((t_vaddrcc)&vcpu.ip, 16);
+		_CheckExcept("_Call_CS_IP::bit(16)::_Push(ip)");
+		_LoadSegment(&vcpu.cs, newcs);
+		_CheckExcept("_Call_CS_IP::bit(16)::_LoadSegment(cs)");
+		vcpu.eip = GetMax16(neweip);
+		_CheckSegment(&vcpu.cs, vcpu.eip, 1, 0x00);
+		_CheckExcept("_Call_CS_IP::bit(16)::_CheckSegment(cs.new)");
+		break;
+	case 32:
+		_CheckSegment(&vcpu.ss, vcpu.esp - 8, 8, 0x01);
+		_CheckExcept("_Call_CS_IP::bit(32)::_CheckSegment(ss)");
+		_CheckSegment(&vcpu.cs, vcpu.eip, 1, 0x00);
+		_CheckExcept("_Call_CS_IP::bit(32)::_CheckSegment(cs.old)");
+		_Push((t_vaddrcc)&oldcs, 32);
+		_CheckExcept("_Call_CS_IP::bit(32)::_Push(cs)");
+		_Push((t_vaddrcc)&vcpu.eip, 32);
+		_CheckExcept("_Call_CS_IP::bit(32)::_Push(eip)");
+		_LoadSegment(&vcpu.cs, newcs);
+		_CheckExcept("_Call_CS_IP::bit(32)::_LoadSegment(cs)");
+		vcpu.eip = GetMax32(neweip);
+		_CheckSegment(&vcpu.cs, vcpu.eip, 1, 0x00);
+		_CheckExcept("_Call_CS_IP::bit(32)::_CheckSegment(cs.new)");
+		break;
+	default:
+		CaseError("_Call_CS_IP::bit");
+		return;
+	}
+}
+#define TSS32_OFFSET_LINK   0x00
+#define TSS32_OFFSET_ESP0   0x04
+#define TSS32_OFFSET_SS0    0x08
+#define TSS32_OFFSET_ESP1   0x0c
+#define TSS32_OFFSET_SS1    0x10
+#define TSS32_OFFSET_ESP2   0x14
+#define TSS32_OFFSET_SS2    0x18
+#define TSS32_OFFSET_CR3    0x1c
+#define TSS32_OFFSET_EIP    0x20
+#define TSS32_OFFSET_EFLAGS 0x24
+#define TSS32_OFFSET_EAX    0x28
+#define TSS32_OFFSET_ECX    0x2C
+#define TSS32_OFFSET_EDX    0x30
+#define TSS32_OFFSET_EBX    0x34
+#define TSS32_OFFSET_ESP    0x38
+#define TSS32_OFFSET_EBP    0x3c
+#define TSS32_OFFSET_ESI    0x40
+#define TSS32_OFFSET_EDI    0x44
+#define TSS32_OFFSET_ES     0x48
+#define TSS32_OFFSET_CS     0x4c
+#define TSS32_OFFSET_SS     0x50
+#define TSS32_OFFSET_DS     0x54
+#define TSS32_OFFSET_FS     0x58
+#define TSS32_OFFSET_GS     0x5c
+#define TSS32_OFFSET_LDT    0x60
+#define TSS32_OFFSET_T      0x64
+#define TSS32_OFFSET_IOMAP  0x66
+
+#define TSS16_OFFSET_LINK  0x00
+#define TSS16_OFFSET_SP0   0x02
+#define TSS16_OFFSET_SS0   0x04
+#define TSS16_OFFSET_SP1   0x06
+#define TSS16_OFFSET_SS1   0x08
+#define TSS16_OFFSET_SP2   0x0a
+#define TSS16_OFFSET_SS2   0x0c
+#define TSS16_OFFSET_IP    0x0e
+#define TSS16_OFFSET_FLAGS 0x10
+#define TSS16_OFFSET_AX    0x12
+#define TSS16_OFFSET_CX    0x14
+#define TSS16_OFFSET_DX    0x16
+#define TSS16_OFFSET_BX    0x18
+#define TSS16_OFFSET_SP    0x1a
+#define TSS16_OFFSET_BP    0x1c
+#define TSS16_OFFSET_SI    0x1e
+#define TSS16_OFFSET_DI    0x20
+#define TSS16_OFFSET_ES    0x22
+#define TSS16_OFFSET_CS    0x24
+#define TSS16_OFFSET_SS    0x26
+#define TSS16_OFFSET_DS    0x28
+#define TSS16_OFFSET_LDT   0x2a
+
+/* WARNING: BAD CODE QUALITY */
+static void _SwitchTask_SaveTSS()
+{
+	t_nubit64 physical = 0x0000000000000000;
+	if (vcpu.tr.type & 0x80) {
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EIP, 4, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, eip)");
+		vramDWord(physical) = vcpu.eip;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EFLAGS, 4, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, eflags)");
+		vramDWord(physical) = vcpu.eflags;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EAX, 4, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, eax)");
+		vramDWord(physical) = vcpu.eax;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_ECX, 4, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, ecx)");
+		vramDWord(physical) = vcpu.ecx;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EDX, 4, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, edx)");
+		vramDWord(physical) = vcpu.edx;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EBX, 4, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, ebx)");
+		vramDWord(physical) = vcpu.ebx;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_ESP, 4, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, esp)");
+		vramDWord(physical) = vcpu.esp;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EBP, 4, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, ebp)");
+		vramDWord(physical) = vcpu.ebp;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_ESI, 4, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, esi)");
+		vramDWord(physical) = vcpu.esi;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EDI, 4, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, edi)");
+		vramDWord(physical) = vcpu.edi;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_ES, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, es)");
+		vramWord(physical) = vcpu.es.selector;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_CS, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, cs)");
+		vramWord(physical) = vcpu.cs.selector;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_SS, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, ss)");
+		vramWord(physical) = vcpu.ss.selector;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_DS, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, ds)");
+		vramWord(physical) = vcpu.ds.selector;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_FS, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, fs)");
+		vramWord(physical) = vcpu.fs.selector;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_GS, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(32)::_GetPhysicalOfSegment(tr.old, gs)");
+		vramWord(physical) = vcpu.gs.selector;
+	} else {
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_IP, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, ip)");
+		vramWord(physical) = vcpu.ip;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_FLAGS, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, flags)");
+		vramWord(physical) = vcpu.flags;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_AX, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, ax)");
+		vramWord(physical) = vcpu.ax;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_CX, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, cx)");
+		vramWord(physical) = vcpu.cx;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_DX, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, dx)");
+		vramWord(physical) = vcpu.dx;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_BX, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, bx)");
+		vramWord(physical) = vcpu.bx;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_SP, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, sp)");
+		vramWord(physical) = vcpu.sp;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_BP, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, bp)");
+		vramWord(physical) = vcpu.bp;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_SI, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, si)");
+		vramWord(physical) = vcpu.si;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_DI, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, di)");
+		vramWord(physical) = vcpu.di;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_ES, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, es)");
+		vramWord(physical) = vcpu.es.selector;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_CS, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, cs)");
+		vramWord(physical) = vcpu.cs.selector;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_SS, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, ss)");
+		vramWord(physical) = vcpu.ss.selector;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_DS, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask_SaveTSS::type(16)::_GetPhysicalOfSegment(tr.old, ds)");
+		vramWord(physical) = vcpu.ds.selector;
+	}
+}
+/* WARNING: BAD CODE QUALITY */
+static void _SwitchTask_LoadTSS()
+{
+	t_nubit64 physical = 0x0000000000000000;
+	if (vcpu.tr.type & 0x80) {
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_LDT, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, ldt)");
+		_LoadSegment(&vcpu.ldtr, vramWord(physical));
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_LoadSegment(ldtr.new)");
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EIP, 4, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, eip)");
+		vcpu.eip = vramDWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EFLAGS, 4, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, eflags)");
+		vcpu.eflags = vramDWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EAX, 4, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, eax)");
+		vcpu.eax = vramDWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_ECX, 4, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, ecx)");
+		vcpu.ecx = vramDWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EDX, 4, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, edx)");
+		vcpu.edx = vramDWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EBX, 4, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, ebx)");
+		vcpu.ebx = vramDWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_ESP, 4, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, esp)");
+		vcpu.esp = vramDWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EBP, 4, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, ebp)");
+		vcpu.ebp = vramDWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_ESI, 4, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, esi)");
+		vcpu.esi = vramDWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_EDI, 4, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, edi)");
+		vcpu.edi = vramDWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_ES, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, es)");
+		_LoadSegment(&vcpu.es, vramWord(physical));
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_LoadSegment(es.new)");
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_CS, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, cs)");
+		_LoadSegment(&vcpu.cs, vramWord(physical));
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_LoadSegment(cs.new)");
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_SS, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, ss)");
+		_LoadSegment(&vcpu.ss, vramWord(physical));
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_LoadSegment(ss.new)");
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_DS, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, ds)");
+		_LoadSegment(&vcpu.ds, vramWord(physical));
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_LoadSegment(ds.new)");
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_FS, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, fs)");
+		_LoadSegment(&vcpu.fs, vramWord(physical));
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_LoadSegment(fs.new)");
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_GS, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, gs)");
+		_LoadSegment(&vcpu.gs, vramWord(physical));
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_LoadSegment(gs.new)");
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_CR3, 4, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(32)::_GetPhysicalOfSegment(tr.new, cr3)");
+		vcpu.cr3 = vramDWord(physical);
+	} else {
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_IP, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, eip)");
+		vcpu.eip = vramWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_FLAGS, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, eflags)");
+		vcpu.flags = vramWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_AX, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, eax)");
+		vcpu.ax = vramWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_CX, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, ecx)");
+		vcpu.cx = vramWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_DX, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, edx)");
+		vcpu.dx = vramWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_BX, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, ebx)");
+		vcpu.bx = vramWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_SP, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, esp)");
+		vcpu.sp = vramWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_BP, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, ebp)");
+		vcpu.bp = vramWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_SI, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, esi)");
+		vcpu.si = vramWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_DI, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, edi)");
+		vcpu.di = vramWord(physical);
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_ES, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, es)");
+		_LoadSegment(&vcpu.es, vramWord(physical));
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_LoadSegment(es.new)");
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_CS, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, cs)");
+		_LoadSegment(&vcpu.cs, vramWord(physical));
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_LoadSegment(cs.new)");
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_SS, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, ss)");
+		_LoadSegment(&vcpu.ss, vramWord(physical));
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_LoadSegment(ss.new)");
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS16_OFFSET_DS, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_GetPhysicalOfSegment(tr.new, ds)");
+		_LoadSegment(&vcpu.ds, vramWord(physical));
+		_CheckExcept("_SwitchTask_LoadTSS::type(16)::_LoadSegment(ds.new)");
+	}
+}
+
+/* WARNING: BAD CODE QUALITY */
+static void _SwitchTask(t_nubit16 newtss, t_bool enter, t_bool nesting)
+{
+	/* enter(0) nest(?) iret; enter(1) nest(1) call/int; enter(1) nest(0) jmp */
+	t_bool tss32 = 0x00;
+	t_nubit32 pdescnew = 0x00000000, pdescold = 0x00000000, physical = 0x00000000;
+	t_nubit64 tssdesc = 0x0000000000000000;
+	t_nubit16 oldtss = vcpu.tr.selector;
+	if (!_IsProtected) {
+		CaseError("_SwitchTask::REAL/V86");
+		return;
+	}
+	pdescold = _GetPhysicalOfDescriptor(vcpu.tr.selector);
+	_CheckExcept("_SwitchTask::_GetPhysicalOfDescriptor(tr.selector)");
+	if (!enter) {
+		physical = _GetPhysicalOfSegment(&vcpu.tr, 0, 2, 0x00, 0x00);
+		_CheckExcept("_SwitchTask::enter(0)::_GetPhysicalOfSegment(tr)");
+		newtss = vramWord(physical);
+	}
+	if (_IsSelectorNull(newtss) || _GetSelector_TI(newtss)) {
+		_SetExcept_GP(newtss);
+		_CheckExcept("_SwitchTask::newtss(null/TI)");
+	}
+	pdescnew = _GetPhysicalOfDescriptor(newtss);
+	_CheckExcept("_SwitchTask::_GetPhysicalOfDescriptor(newtss)");
+	tssdesc = vramQWord(pdescnew);
+	tss32 = _GetTssDesc_TYPE_32(tssdesc);
+	/* step 3. check if the new tss is present */
+	if (!_GetTssDesc_P(tssdesc)) {
+		_SetExcept_NP(newtss);
+		_CheckExcept("_SwitchTask::tssdesc(!P)");
+	}
+	/* step 3. check the tss limit */
+	if ((tss32 && _GetTssDesc_LIMIT(tssdesc) < 0x67) ||
+		(!tss32 && _GetTssDesc_LIMIT(tssdesc) < 0x2c)) {
+		_SetExcept_TS(newtss);
+		_CheckExcept("_SwitchTask::tssdesc(>LIMIT)");
+	}
+	/* step 4. check the new task is available or busy */
+	if ((enter && _GetTssDesc_TYPE_B(tssdesc)) ||
+		(!enter && !_GetTssDesc_TYPE_B(tssdesc))) {
+		_SetExcept_GP(newtss);
+		_CheckExcept("_SwitchTask::tssdesc(B/!B)");
+	}
+	/* step 5. check oldtss, newtss and all segments used are paged */
+	/* TODO */
+	/* step 6. set or clear busy flag in descriptor */
+	if (!enter || !nesting) _ClrTssDesc_TYPE_B(vramQWord(pdescold));
+	/* step 7. clear nt flag for iret */
+	if (!enter) _ClrNT;
+	/* step 8. save current registers */
+	_SwitchTask_SaveTSS();
+	/* step 10. set busy flag */
+	if (enter) _SetTssDesc_TYPE_B(vramQWord(pdescnew));
+	/* step 11. load tr */
+	_LoadSegment(&vcpu.tr, newtss);
+	_CheckExcept("_SwitchTask::_LoadSegment(newtss)");
+	/* step 12. load tss state */
+	_SwitchTask_LoadTSS();
+	/* step 9 (moved here): set nt for nesting */
+	if (enter && nesting) {
+		_SetNT;
+		physical = _GetPhysicalOfSegment(&vcpu.tr, TSS32_OFFSET_LINK, 2, 0x01, 0x00);
+		_CheckExcept("_SwitchTask::_GetPhysicalOfSegment(tr.new, link)");
+		vramWord(physical) = oldtss;
+	}
+	/* step 13. finish task switch */
+	_CheckSegment(&vcpu.cs, vcpu.eip, 1, 0x00);
+	_CheckExcept("_SwitchTask::_CheckSegment(cs.new)");
+	_SetCR0_TS;
+}
+
+DONE _Call_Far_Protected_Task_State_Segment(t_nubit16 tsssel)
+{
+	t_nubit64 tssdesc = _GetDescriptor(tsssel);
+	_CheckExcept("_Call_Far_Protected_Task_State_Segment::_GetDescriptor");
+	if (_GetTssDesc_DPL(tssdesc) < _GetCPL ||
+		_GetTssDesc_DPL(tssdesc) < _GetSelector_RPL(tsssel)) {
+		_SetExcept_GP(tsssel);
+		_CheckExcept("_Call_Far_Protected_Task_State_Segmenttssdesc(?PL)");
+	}
+	_SwitchTask(tsssel, 0x01, 0x01);
+	_CheckExcept("_Call_Far_Protected_Task_State_Segment::_SwitchTask");
+}
+DONE _Call_Far_Protected_Task_Gate(t_nubit16 tgsel)
+{
+	t_nubit32 tsssel = 0x00000000;
+	t_nubit64 tgdesc = _GetDescriptor(tgsel);
+	_CheckExcept("_Call_Far_Protected_Task_Gate::_GetDescriptor");
+	if (_GetGateDesc_DPL(tgdesc) < _GetCPL ||
+		_GetGateDesc_DPL(tgdesc) < _GetSelector_RPL(tgsel)) {
+		_SetExcept_GP(tgsel);
+		_CheckExcept("_Call_Far_Protected_Task_Gate::tgdesc(?PL)");
+	}
+	if (!_GetGateDesc_P(tgdesc)) {
+		_SetExcept_NP(tgsel);
+		_CheckExcept("_Call_Far_Protected_Task_Gate::tgdesc(!P)");
+	}
+	tsssel = _GetGateDesc_SELECTOR(tgdesc);
+	_SwitchTask(tsssel, 0x01, 0x01);
+	_CheckExcept("_Call_Far_Protected_Task_Gate::_SwitchTask");
+}
+/* WARNING: WORST CODE QUALITY */
+static void _Call_Far_Protected_Call_Gate(t_nubit16 cgsel)
+{
+	t_nubitcc i;
+	t_nubit32 oldcs = vcpu.cs.selector, oldss = 0x00000000;
 	t_nubit64 csdesc = 0x0000000000000000, gatedesc = 0x0000000000000000;
-	t_nubit16 cssel = newcs, gatesel = newcs;
-	if (_GetCR0_PE && !_GetEFLAGS_VM) {
-		csdesc = gatedesc = _GetDescriptor(newcs);
-		_CheckExcept("_Call_Far::PROTECTED::cssel(null)");
-		if (_GetSegDesc_S(csdesc)) {
-			/* conforming or nonconforming code segment */
-			if (!_GetSegDesc_TYPE_CD(csdesc)) {
-				_SetExcept_GP(cssel);
-				_CheckExcept("_Call_Far::PROTECTED::DATA_SEGMENT");
+	t_nubit64 ssdesc = 0x0000000000000000, tssdesc = 0x0000000000000000;
+	t_nubit32 physical = 0x00000000;
+	t_nubit16 newss = 0x0000, newcs = 0x0000;
+	t_nubit32 newesp = 0x00000000, oldesp = 0x00000000, oldeip = 0x00000000, neweip = 0x00000000;
+	t_nubit32 param[31];
+	t_nubit8  paramcount;
+	if (_GetGateDesc_DPL(gatedesc) < _GetCPL || _GetGateDesc_DPL(gatedesc) < _GetSelector_RPL(cgsel)) {
+		_SetExcept_GP(cgsel);
+		_CheckExcept("_Call_Far_Protected_Call_Gate::gatedesc(?PL)");
+	}
+	if (!_GetGateDesc_P(gatedesc)) {
+		_SetExcept_NP(cgsel);
+		_CheckExcept("_Call_Far_Protected_Call_Gate::gatedesc(!P)");
+	}
+	newcs = _GetGateDesc_SELECTOR(gatedesc);
+	neweip = _GetGateDesc_OFFSET(gatedesc);
+	if (_IsSelectorNull(newcs)) {
+		_SetExcept_GP(0);
+		_CheckExcept("_Call_Far_Protected_Call_Gate::cssel(null)");
+	}
+	csdesc = _GetDescriptor(newcs);
+	_CheckExcept("_Call_Far_Protected_Call_Gate::_GetDescriptor");
+	if (!_GetSegDesc_S(csdesc) || !_GetSegDesc_TYPE_CD(csdesc) || _GetSegDesc_DPL(csdesc) > _GetCPL) {
+		_SetExcept_GP(newcs);
+		_CheckExcept("_Call_Far_Protected_Call_Gate::csdesc(!S/!CD/?PL)");
+	}
+	if (!_GetSegDesc_P(csdesc)) {
+		_SetExcept_NP(newcs);
+		_CheckExcept("_Call_Far_Protected_Call_Gate::csdesc(!P)");
+	}
+	if (!_GetSegDesc_TYPE_C(csdesc) && _GetSegDesc_DPL(csdesc) < _GetCPL) {
+		/* more-privilege */
+		if (vcpu.tr.type & 0x08) {
+			/* current tss is 32-bit */
+			physical = _GetPhysicalOfSegment(&vcpu.tr, _GetSegDesc_DPL(csdesc) * 8 + 4, 8, 0x00, 0x00);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE(32)::_GetPhysicalOfSegment(tss)");
+			newesp = vramDWord(physical);
+			newss  = vramWord(physical + 4);
+		} else {
+			/* current tss is 16-bit */
+			physical = _GetPhysicalOfSegment(&vcpu.tr, _GetSegDesc_DPL(csdesc) * 4 + 2, 4, 0x00, 0x00);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE(16)::_GetPhysicalOfSegment(tss)");
+			newesp = vramWord(physical);
+			newss  = vramWord(physical + 2);
+		}
+		if (_IsSelectorNull(newss)) {
+			_SetExcept_TS(newss);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::newss(null)");
+		}
+		ssdesc = _GetDescriptor(newss);
+		_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::_GetDescriptor(ss)");
+		if (_GetSelector_RPL(newss) != _GetSegDesc_DPL(csdesc) || \
+			_GetSegDesc_DPL(ssdesc) != _GetSegDesc_DPL(csdesc) || \
+			!_GetSegDesc_S(ssdesc) || _GetSegDesc_TYPE_CD(ssdesc) || !_GetSegDesc_TYPE_W(ssdesc)) {
+			_SetExcept_TS(newss);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::newss(...)/ssdesc(...)");
+		}
+		if (!_GetSegDesc_P(ssdesc)) {
+			_SetExcept_SS(newss);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::ssdesc(!P)");
+		}
+		if (_GetGateDesc_TYPE(gatedesc) & 0x08) {
+			/* 32-bit call gate */
+			paramcount = _GetGateDesc_COUNT(gatedesc);
+			for (i = 0;i < paramcount;++i) {
+				physical = _GetPhysicalOfSegment(&vcpu.ss, vcpu.esp + (i * 4), 4, 0x00, 0x00);
+				_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::CALL_GATE(32)::_GetPhysicalOfSegment(param)");
+				param[i] = vramDWord(physical);
 			}
-			if (_GetSegDesc_TYPE_C(csdesc)) {
-				/* conforming code segment */
-				if (_GetSegDesc_DPL(csdesc) > _GetCPL) {
-					_SetExcept_GP(cssel);
-					_CheckExcept("_Call_Far::PROTECTED::Descriptor_S(1)::Descriptor_TYPE_C(1)::?PL");
-				}
-			} else {
-				/* nonconforming code segment */
-				if (_GetSelector_RPL(cssel) > _GetCPL || _GetSegDesc_DPL(csdesc) != _GetCPL) {
-					_SetExcept_GP(cssel);
-					_CheckExcept("_Call_Far::PROTECTED::Descriptor_S(1)::Descriptor_TYPE_C(0)::?PL");
-				}
-			}
-			if (!_GetSegDesc_P(csdesc)) {
-				_SetExcept_NP(cssel);
-				_CheckExcept("_Call_Far::PROTECTED::Descriptor_S(1)::Descriptor_P(0)");
+			oldss = vcpu.ss.selector;
+			oldesp = vcpu.esp;
+			oldcs = vcpu.cs.selector;
+			oldeip = vcpu.eip;
+			_LoadSegment(&vcpu.ss, newss);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::CALL_GATE(32)::_LoadSegment(ss)");
+			vcpu.esp = newesp;
+			_CheckSegment(&vcpu.ss, vcpu.esp - (paramcount * 4 + 16), (paramcount * 4 + 16), 0x01);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::CALL_GATE(32)::_CheckSegment(ss)");
+			_Push((t_vaddrcc)&oldss, 32);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::CALL_GATE(32)::_Push(oldss)");
+			_Push((t_vaddrcc)&oldesp, 32);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::CALL_GATE(32)::_Push(oldesp)");
+			for (i = paramcount - 1;i >= 0;--i) {
+				_Push((t_vaddrcc)(&param[i]), 32);
+				_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::CALL_GATE(32)::_Push(param)");
 			}
 		} else {
+			/* 16-bit call gate */
+			paramcount = _GetGateDesc_COUNT(gatedesc);
+			for (i = 0;i < paramcount;++i) {
+				physical = _GetPhysicalOfSegment(&vcpu.ss, vcpu.esp + (i * 2), 2, 0x00, 0x00);
+				_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::CALL_GATE(16)::_GetPhysicalOfSegment(param)");
+				param[i] = vramDWord(physical);
+			}
+			oldss = vcpu.ss.selector;
+			oldesp = vcpu.esp;
+			oldcs = vcpu.cs.selector;
+			oldeip = vcpu.eip;
+			_LoadSegment(&vcpu.ss, newss);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::CALL_GATE(16)::_LoadSegment(ss)");
+			vcpu.esp = newesp;
+			_CheckSegment(&vcpu.ss, vcpu.esp - (paramcount * 2 + 8), (paramcount * 2 + 8), 0x01);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::CALL_GATE(16)::_CheckSegment(ss)");
+			_Push((t_vaddrcc)&oldss, 16);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::CALL_GATE(16)::_Push(oldss)");
+			_Push((t_vaddrcc)&oldesp, 16);
+			_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::CALL_GATE(16)::_Push(oldesp)");
+			for (i = paramcount - 1;i >= 0;--i) {
+				_Push((t_vaddrcc)(&param[i]), 16);
+				_CheckExcept("_Call_Far_Call_Gate::Protected::CALL_GATE::MORE_PRIVILEGE::CALL_GATE(16)::_Push(param)");
+			}
+		}
+	} else {
+		/* same privilege */
+	}
+	_Call_CS_IP(newcs, neweip, (_GetGateDesc_TYPE(gatedesc) & 0x08) ? 32 : 16);
+	_CheckExcept("_Call_Far_Code_Segment::_SwitchCSIP");
+}
+DONE _Call_Far_Protected_Code_Segment(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 bit)
+{
+	t_nubit64 csdesc = _GetDescriptor(newcs);
+	_CheckExcept("_Call_Far_Protected_Code_Segment::_GetDescriptor");
+	if (!_GetSegDesc_TYPE_CD(csdesc)) {
+		_SetExcept_GP(newcs);
+		_CheckExcept("_Call_Far_Protected_Code_Segment::DATA_SEGMENT");
+	}
+	if (_GetSegDesc_TYPE_C(csdesc)) {
+		/* conforming code segment */
+		if (_GetSegDesc_DPL(csdesc) > _GetCPL) {
+			_SetExcept_GP(newcs);
+			_CheckExcept("_Call_Far_Protected_Code_Segment::csdesc(TYPE_C)::?PL");
+		}
+	} else {
+		/* nonconforming code segment */
+		if (_GetSelector_RPL(newcs) > _GetCPL || _GetSegDesc_DPL(csdesc) != _GetCPL) {
+			_SetExcept_GP(newcs);
+			_CheckExcept("_Call_Far_Protected_Code_Segment::csdesc(!TYPE_C)::?PL");
+		}
+	}
+	if (!_GetSegDesc_P(csdesc)) {
+		_SetExcept_NP(newcs);
+		_CheckExcept("_Call_Far_Protected_Code_Segment::csdesc(!P)");
+	}
+	_Call_CS_IP(newcs, neweip, bit);
+	_CheckExcept("_Call_Far_Protected_Code_Segment::_Call_CS_IP");
+}
+
+#define _Call_Near _Call_IP
+
+DONE _Call_Far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 bit)
+{
+	t_nubit64 descriptor = 0x0000000000000000;
+	if (_IsProtected) {
+		descriptor = _GetDescriptor(newcs);
+		_CheckExcept("_Call_Far::Protected::_GetDescriptor");
+		if (_GetSegDesc_S(descriptor)) {
+			/* conforming or nonconforming code segment */
+			_Call_Far_Protected_Code_Segment(newcs, neweip, bit);
+			_CheckExcept("_Call_Far::Protected::_Call_Far_Protected_Code_Segment");
+		} else {
 			/* call gate, task gate or task state segment */
-			switch (_GetGateDesc_TYPE(gatedesc)) {
+			switch (_GetGateDesc_TYPE(descriptor)) {
 			case 0x01: /* 16 tss available*/
 			case 0x03: /* 16 tss busy*/
 			case 0x09: /* 32 tss available*/
 			case 0x0b: /* 32 tss busy*/
+				_Call_Far_Protected_Task_State_Segment(newcs);
+				_CheckExcept("_Call_Far::Protected::_Call_Far_Protected_Task_State_Segment");
 				break;
 			case 0x04: /* 16 call gate */
 			case 0x0c: /* 32 call gate */
-				if (_GetGateDesc_DPL(gatedesc) < _GetCPL || _GetGateDesc_DPL(gatedesc) < _GetSelector_RPL(gatesel)) {
-					_SetExcept_GP(gatesel);
-					_CheckExcept("_Call_Far::PROTECTED::CALL_GATE::gatedesc(?PL)");
-				}
-				if (!_GetGateDesc_P(gatedesc)) {
-					_SetExcept_NP(gatesel);
-					_CheckExcept("_Call_Far::PROTECTED::CALL_GATE::gatedesc(!P)");
-				}
-				cssel = _GetGateDesc_SELECTOR(gatedesc);
-				if (_IsSelectorNull(cssel)) {
-					_SetExcept_GP(0);
-					_CheckExcept("_Call_Far::PROTECTED::CALL_GATE::cssel(null)");
-				}
-				csdesc = _GetDescriptor(cssel);
-				_CheckExcept("_Call_Far::PROTECTED::CALL_GATE::_GetDescriptor");
-				if (!_GetSegDesc_S(csdesc) || !_GetSegDesc_TYPE_CD(csdesc) || _GetSegDesc_DPL(csdesc) > _GetCPL) {
-					_SetExcept_GP(cssel);
-					_CheckExcept("_Call_Far::PROTECTED::CALL_GATE::csdesc(!S/!CD/?PL)");
-				}
-				if (!_GetSegDesc_P(csdesc)) {
-					_SetExcept_NP(cssel);
-					_CheckExcept("_Call_Far::PROTECTED::CALL_GATE::csdesc(!P)");
-				}
-				if (!_GetSegDesc_TYPE_C(csdesc) && _GetSegDesc_DPL(csdesc) < _GetCPL) {
-					/* more-privilege */
-					//////// TODO /////////////
-				} else {
-					/* same privilege */
-				}
+				_Call_Far_Protected_Call_Gate(newcs);
+				_CheckExcept("_Call_Far::Protected::_Call_Far_Protected_Call_Gate");
 				break;
 			case 0x05: /* task gate */
+				_Call_Far_Protected_Task_Gate(newcs);
+				_CheckExcept("_Call_Far::Protected::_Call_Far_Protected_Task_Gate");
 				break;
 			case 0x02: /* ldt */
 			case 0x06: /* 16 interrupt gate */
@@ -1259,45 +1805,13 @@ DONE _Call_Far(t_nubit16 newcs, t_nubit32 neweip, t_nubit8 bit)
 			case 0x0d: /* reserved */
 			default:
 				_SetExcept_GP(newcs);
-				_CheckExcept("_Call_Far::PROTECTED::Descriptor_S(0)::Descriptor_TYPE");
-				break;
+				_CheckExcept("_Call_Far::Protected::GateDesc_TYPE");
+				return;
 			}
 		}
-	}
-	switch (bit) {
-	case 16:
-		_CheckSegment(&vcpu.ss, vcpu.esp - 4, 32, 0x01);
-		_CheckExcept("_Call_Far::bit(16)::_CheckSegment(ss)");
-		_CheckSegment(&vcpu.cs, vcpu.eip, 8, 0x00);
-		_CheckExcept("_Call_Far::bit(16)::_CheckSegment(cs/old)");
-		_Push((t_vaddrcc)&oldcs, 16);
-		_CheckExcept("_Call_Far::bit(16)::_Push(cs)");
-		_Push((t_vaddrcc)&vcpu.ip, 16);
-		_CheckExcept("_Call_Far::bit(16)::_Push(ip)");
-		_LoadSegment(&vcpu.cs, newcs);
-		_CheckExcept("_Call_Far::bit(16)::_LoadSegment(cs)");
-		vcpu.eip = GetMax16(neweip);
-		_CheckSegment(&vcpu.cs, vcpu.eip, 8, 0x00);
-		_CheckExcept("_Call_Far::bit(16)::_CheckSegment(cs/new)");
-		break;
-	case 32:
-		_CheckSegment(&vcpu.ss, vcpu.esp - 6, 48, 0x01);
-		_CheckExcept("_Call_Far::bit(32)::_CheckSegment(ss)");
-		_CheckSegment(&vcpu.cs, vcpu.eip, 8, 0x00);
-		_CheckExcept("_Call_Far::bit(32)::_CheckSegment(cs/old)");
-		_Push((t_vaddrcc)&oldcs, 32);
-		_CheckExcept("_Call_Far::bit(32)::_Push(cs)");
-		_Push((t_vaddrcc)&vcpu.eip, 32);
-		_CheckExcept("_Call_Far::bit(32)::_Push(eip)");
-		_LoadSegment(&vcpu.cs, newcs);
-		_CheckExcept("_Call_Far::bit(32)::_LoadSegment(cs)");
-		vcpu.eip = GetMax32(neweip);
-		_CheckSegment(&vcpu.cs, vcpu.eip, 8, 0x00);
-		_CheckExcept("_Call_Far::bit(32)::_CheckSegment(cs/new)");
-		break;
-	default:
-		CaseError("_Call_Far::bit");
-		return;
+	} else {
+		_Call_CS_IP(newcs, neweip, bit);
+		_CheckExcept("_Call_Far::REAL/V86::_Call_CS_IP");
 	}
 }
 
@@ -2597,9 +3111,9 @@ DONE UndefinedOpcode()
 	if (!_GetCR0_PE) {
 		vapiPrint("The NXVM CPU has encountered an illegal instruction.\n");
 		vapiPrint("CS:%04X IP:%04X OP:%02X %02X %02X %02X\n",
-			vcpu.cs.selector, vcpu.eip, _GetCode(vcpu.eip+0, 8),
-			_GetCode(vcpu.eip+1, 8), _GetCode(vcpu.eip+2, 8),
-			_GetCode(vcpu.eip+3, 8), _GetCode(vcpu.eip+4, 8));
+			vcpu.cs.selector, vcpu.eip, _GetCode(vcpu.eip+0, 1),
+			_GetCode(vcpu.eip+1, 1), _GetCode(vcpu.eip+2, 1),
+			_GetCode(vcpu.eip+3, 1), _GetCode(vcpu.eip+4, 1));
 		vapiCallBackMachineStop();
 	}
 	_SetExcept_UD(0);
@@ -2611,7 +3125,6 @@ DONE ADD_RM8_R8()
 		vcpu.eip++;
 		_GetModRegRM(8, 8, 0x01);
 		_CheckExcept("ADD_RM8_R8::GetModRegRM");
-
 		ADD(vcpuins.prm, vcpuins.pr, 8);
 	} else {
 		vcpu.ip++;
@@ -2625,7 +3138,6 @@ DONE ADD_RM16_R16()
 		vcpu.eip++;
 		_GetModRegRM(_GetOperandSize, _GetOperandSize, 0x01);
 		_CheckExcept("ADD_RM16_R16::GetModRegRM");
-
 		ADD(vcpuins.prm, vcpuins.pr, _GetOperandSize);
 	} else {
 		vcpu.ip++;
@@ -2639,7 +3151,6 @@ DONE ADD_R8_RM8()
 		vcpu.eip++;
 		_GetModRegRM(8, 8, 0x00);
 		_CheckExcept("ADD_R8_RM8::GetModRegRM");
-
 		ADD(vcpuins.pr, vcpuins.prm, 8);
 	} else {
 		vcpu.ip++;
@@ -2653,7 +3164,6 @@ DONE ADD_R16_RM16()
 		vcpu.eip++;
 		_GetModRegRM(_GetOperandSize, _GetOperandSize, 0x00);
 		_CheckExcept("ADD_R16_RM16::GetModRegRM");
-
 		ADD(vcpuins.pr, vcpuins.prm, _GetOperandSize);
 	} else {
 		vcpu.ip++;
@@ -2667,7 +3177,6 @@ DONE ADD_AL_I8()
 		vcpu.eip++;
 		_GetImm(8);
 		_CheckExcept("ADD_AL_I8::GetImm(8)");
-
 		ADD((t_vaddrcc)&vcpu.al, vcpuins.pimm, 8);
 	} else {
 		vcpu.ip++;
@@ -2683,13 +3192,11 @@ DONE ADD_AX_I16()
 		case 16:
 			_GetImm(16);
 			_CheckExcept("ADD_AX_I16::GetImm(16)");
-
 			ADD((t_vaddrcc)&vcpu.ax, vcpuins.pimm, 16);
 			break;
 		case 32:
 			_GetImm(32);
 			_CheckExcept("ADD_AX_I16::GetImm(32)");
-
 			ADC((t_vaddrcc)&vcpu.eax, vcpuins.pimm, 32);
 			break;
 		default:
@@ -2768,9 +3275,8 @@ DONE INS_0F()
 	t_nubit8 opcode;
 	i386(0x0f) {
 		vcpu.eip++;
-		opcode = (t_nubit8)_GetCode(vcpu.eip, 8);
+		opcode = (t_nubit8)_GetCode(vcpu.eip, 1);
 		_CheckExcept("INS_0F::_GetCode");
-
 		ExecFun(vcpuins.table_0f[opcode]);
 	} else
 		POP_CS();
@@ -2781,7 +3287,6 @@ DONE ADC_RM8_R8()
 		vcpu.eip++;
 		_GetModRegRM(8, 8, 0x01);
 		_CheckExcept("ADC_RM8_R8::GetModRegRM");
-
 		ADC(vcpuins.prm, vcpuins.pr, 8);
 	} else {
 		vcpu.ip++;
@@ -3485,7 +3990,7 @@ DONE ARPL_RM16_R16()
 {
 	t_nubit8 drpl, srpl;
 	i386(0x63) {
-		if (_GetCR0_PE && !_GetEFLAGS_VM) {
+		if (_IsProtected) {
 			vcpu.eip++;
 			_GetModRegRM(16, 16, 0x01);
 			_CheckExcept("ARPL_RM16_R16::GetModRegRM");
@@ -4765,7 +5270,7 @@ void INS_FF()
 	t_nubit32 neweip = 0x00000000;
 	i386(0xff) {
 		vcpu.eip++;
-		modrm = (t_nubit8)_GetCode(vcpu.eip, 8);
+		modrm = (t_nubit8)_GetCode(vcpu.eip, 1);
 		_CheckExcept("INS_FF::_GetCode");
 		switch (_GetModRM_REG(modrm)) {
 		case 2: _GetModRegRM(0, _GetOperandSize, 0x00);break;
@@ -5005,7 +5510,7 @@ TODO INS_0F_BA()
 	t_nubit8 modrm = 0x00;
 	i386(0x0fba) {
 		vcpu.eip++;
-		modrm = (t_nubit8)_GetCode(vcpu.eip, 8);
+		modrm = (t_nubit8)_GetCode(vcpu.eip, 1);
 		_CheckExcept("INS_0F_BA::_GetCode");
 		if (_GetModRM_REG(modrm) == 4)
 			_GetInfoForBTcc(0, _GetOperandSize, 0x00);
@@ -5176,7 +5681,7 @@ static void ExecIns()
 	ExecInsInit();
 //	if (vcpu.eip > 0xffff) vapiPrint("here!\n");
 	do {
-		opcode = (t_nubit8)_GetCode(vcpu.eip, 8);
+		opcode = (t_nubit8)_GetCode(vcpu.eip, 1);
 		_CheckExcept("ExecIns::_GetCode");
 		if (vcpuins.except) break;
 		ExecFun(vcpuins.table[opcode]);

@@ -60,6 +60,7 @@ typedef struct {
 #define VCPUINS_EXCEPT_SS 0x00000008 /* stack segment fault */
 #define VCPUINS_EXCEPT_UD 0x00000010 /* undefined opcode */
 #define VCPUINS_EXCEPT_BR 0x00000020 /* boundary check fail */
+#define VCPUINS_EXCEPT_TS 0x00000040 /* task state segment fail */
 
 extern t_cpuins vcpuins;
 
