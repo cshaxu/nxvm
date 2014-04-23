@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x63]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.1.0x64]\n\
 Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 /*
@@ -113,8 +113,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *     Phase 4: 03/25/2013 - 03/28/2013
  *     Phase 5:
  *     Phase 6:
- *     Note:    m2m not implemented
- *              simply tested
+ *     Note:    simply tested
  * Componenet 6: fdc (8272)
  *     Phase 1:
  *     Phase 2: 03/07/2012 - 03/18/2012

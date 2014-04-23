@@ -1,8 +1,5 @@
 /* This file is a part of NXVM project. */
 
-// channel is not completely implemented:
-// it is only used to store the memory address and word count.
-
 #include "memory.h"
 
 #include "system/vapi.h"
@@ -242,32 +239,56 @@ static void Transmission(t_dma *vdma, t_nubit8 id, t_bool word)
 }
 static void Execute(t_dma *vdma, t_nubit8 id, t_bool word)
 {
-	vdma->request &= ~(0x01 << id);
+	t_bool flagm2m = (id == 0x00) && (vdma->request & 0x01) && GetM2M(vdma);
 	vdma->status  &= ~(0x10 << id);
+	vdma->request &= ~(0x01 << id);
 	if (GetR(vdma)) vdma->drx = (id + 1) % 4;
-	switch (GetM(vdma,id)) {                      /* select mode and command */
-	case 0x00:                                                     /* demand */
-		while (vdma->channel[id].currwc != 0xffff && !vdma->eop
-				&& GetDRQ(vdma,id))
+	if (flagm2m) {
+		/* memory-to-memory */
+		while (vdma->channel[0x01].currwc != 0xffff && !vdma->eop) {
+			vdma->temp = vramGetByte(
+			             ((t_nubit16)vdma->channel[0x00].page << 12),
+			             vdma->channel[0x00].curraddr);
+			vramSetByte(((t_nubit16)vdma->channel[0x01].page << 12),
+			            vdma->channel[0x01].curraddr, vdma->temp);
+			vdma->channel[0x01].currwc--;
+			if (GetAIDS(vdma,id)) {
+				vdma->channel[0x01].curraddr--;
+				if (!GetC0AD(vdma)) vdma->channel[0x00].curraddr--;
+			} else {
+				vdma->channel[0x01].curraddr++;
+				if (!GetC0AD(vdma)) vdma->channel[0x00].curraddr++;
+			}
+		}
+		if (vdma->channel[0x01].currwc == 0xffff) {
+			vdma->status |= 0x01;
+			vdma->eop     = 0x01;
+		}
+	} else {
+		switch (GetM(vdma,id)) {                  /* select mode and command */
+		case 0x00:                                                 /* demand */
+			while (vdma->channel[id].currwc != 0xffff && !vdma->eop
+					&& GetDRQ(vdma,id))
+				Transmission(vdma, id, word);
+			break;
+		case 0x01:                                                 /* single */
 			Transmission(vdma, id, word);
-		break;
-	case 0x01:                                                     /* single */
-		Transmission(vdma, id, word);
-		break;
-	case 0x02:                                                      /* block */
-		while (vdma->channel[id].currwc != 0xffff && !vdma->eop)
-			Transmission(vdma, id, word);
-		break;
-	case 0x03:                                                    /* cascade */
-		/* do nothing */
-		vdma->eop = 0x01;
-		break;
-	default:
-		break;
-	}
-	if (vdma->channel[id].currwc == 0xffff) {
-		vdma->status |= 0x01 << id;                   /* set terminate count */
-		vdma->eop     = 0x01;
+			break;
+		case 0x02:                                                  /* block */
+			while (vdma->channel[id].currwc != 0xffff && !vdma->eop)
+				Transmission(vdma, id, word);
+			break;
+		case 0x03:                                                /* cascade */
+			/* do nothing */
+			vdma->eop = 0x01;
+			break;
+		default:
+			break;
+		}
+		if (vdma->channel[id].currwc == 0xffff) {
+			vdma->status |= 0x01 << id;                   /* set terminate count */
+			vdma->eop     = 0x01;
+		}
 	}
 	if (vdma->eop) {
 		vdma->isr = 0x00;
@@ -316,7 +337,6 @@ void vdmaRefresh()
 	t_nubit8 realdrq1, realdrq2;
 	if (GetCTRL(&vdma2)) return;
 	if (GetIS(&vdma2)) {
-
 		if (GetISR(&vdma2) != 0x00) Execute(&vdma2, GetISR(&vdma2), 0x01);
 		else if (GetIS(&vdma1))     Execute(&vdma1, GetISR(&vdma1), 0x00);
 		if (!GetIS(&vdma1)) vdma2.isr = 0x00;
@@ -499,4 +519,22 @@ o0a 2
 off01 2
 off02 0
 d6020
+
+off00 0
+e6020 ab
+o08 03
+o0b 00
+o03 5
+o03 0
+od4 0
+o0a 0
+o00 30
+o00 60
+o02 30
+o02 80
+o09 04
+od2 04
+off02 0
+d6020
+d8020
 */

@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-/* Direct Memory Access Controller: Intel 8237A */
+/* Direct Memory Access Controller: Intel 8237A (Master+Slave) */
 
 #ifndef NXVM_VDMA_H
 #define NXVM_VDMA_H
