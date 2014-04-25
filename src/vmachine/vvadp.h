@@ -1,6 +1,4 @@
-/* This file is a part of NXVM project. */
-
-/* Video Adapter: not implemented yet */
+/* Copyright 2012-2014 Neko. */
 
 #ifndef NXVM_VVADP_H
 #define NXVM_VVADP_H
@@ -15,18 +13,15 @@ extern "C" {
 
 typedef struct {
 	t_bool    flagcolor;
-	t_nubit8  colsize; // char per col
+	t_nubit8  colsize; /* char per column */
 	t_vaddrcc bufcomp;
-	t_nubit8  oldcurposx,oldcurposy;
+	t_nubit8  oldcurposx, oldcurposy;
 	t_nubit8  oldcurtop, oldcurbottom;
 } t_vadp;
 
 extern t_vadp vvadp;
 
-void vvadpInit();
-void vvadpReset();
-void vvadpRefresh();
-void vvadpFinal();
+void vvadpRegister();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

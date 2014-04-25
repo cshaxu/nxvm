@@ -6590,7 +6590,7 @@ static void asmx_parse_instr(t_aasm_instr *rinstr)
 }
 t_nubit32 aasm32x(const t_strptr stmt, t_vaddrcc rcode)
 {
-	t_nubit32 i, j, k;
+	t_nsbitcc i, j, k;
 	t_nubit32 count;
 	t_nubit32 len;
 	t_nubit32 offset;
@@ -6598,7 +6598,7 @@ t_nubit32 aasm32x(const t_strptr stmt, t_vaddrcc rcode)
 	t_aasm_instr *instr;
 	count = 1;
 	flagerror = 0;
-	for (i = 0;i < strlen(stmt);++i)
+	for (i = 0;i < (t_nsbitcc) strlen(stmt);++i)
 		if (stmt[i] == '\n') count++;
 	instr = (t_aasm_instr *)malloc(count * sizeof(t_aasm_instr));
 	i = j = k = 0;
@@ -6612,7 +6612,7 @@ t_nubit32 aasm32x(const t_strptr stmt, t_vaddrcc rcode)
 					if (j) {
 						instr[k].stmt[j + 1] = 0;
 						lcase(instr[k].stmt);
-						instr[k].stmt_id = k;
+						instr[k].stmt_id = (t_nubit32) k;
 						j = 0;
 						k++;
 					}
@@ -6630,7 +6630,7 @@ t_nubit32 aasm32x(const t_strptr stmt, t_vaddrcc rcode)
 			j++;
 		}
 	}
-	count = k;
+	count = (t_nubit32) k;
 	for (i = 0;i < count;++i) {
 		memset(instr[i].code_array, 0x00, 15);
 		asmx_get_label(&instr[i]);

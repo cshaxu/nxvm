@@ -64,11 +64,6 @@ void vapiCallBackMachineRun();
 void vapiCallBackMachineStop();
 void vapiCallBackMachineReset();
 
-void vapiCallBackCpuPrintSreg();
-void vapiCallBackCpuPrintCreg();
-void vapiCallBackCpuPrintReg();
-void vapiCallBackCpuPrintMem();
-
 void vapiCallBackKeyboardClrFlag0();
 void vapiCallBackKeyboardClrFlag1();
 

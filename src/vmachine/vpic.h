@@ -1,6 +1,4 @@
-/* This file is a part of NXVM project. */
-
-/* Programmable Interrupt Controller: Intel 8259A (Master+Slave) */
+/* Copyright 2012-2014 Neko. */
 
 #ifndef NXVM_VPIC_H
 #define NXVM_VPIC_H
@@ -11,23 +9,21 @@ extern "C" {
 
 #include "vglobal.h"
 
-#define VPIC_DEBUG
-
 #define NXVM_DEVICE_PIC "Intel 8259A"
 
-typedef enum {ICW1,ICW2,ICW3,ICW4,OCW1} t_pic_init_status;
+typedef enum {ICW1, ICW2, ICW3, ICW4, OCW1} t_pic_init_status;
 
 #define ocw1 imr
 typedef struct {
-	t_nubit8          irr;                     /* Interrupt Request Register */
-	t_nubit8          imr;                        /* Interrupt Mask Register */
-	t_nubit8          isr;                            /* In Service Register */
-	t_nubit8          icw1,icw2,icw3,icw4,ocw2,ocw3;        /* command words */
-	t_pic_init_status status;                       /* initialization status */
-	t_nubit8          irx;                          /* current highest ir id */
+	t_nubit8 irr;  /* Interrupt Request Register */
+	t_nubit8 imr;  /* Interrupt Mask Register */
+	t_nubit8 isr;  /* In Service Register */
+	t_nubit8 icw1, icw2, icw3, icw4, ocw2, ocw3; /* command words */
+	t_pic_init_status status; /* initialization status */
+	t_nubit8 irx; /* current highest ir id */
 } t_pic;
 
-extern t_pic vpic1,vpic2;
+extern t_pic vpic1, vpic2;
 
 /*
  * ICW1: x  | x    | x   | 1    | LTIM | x   | SNGL | IC4
@@ -41,65 +37,36 @@ extern t_pic vpic1,vpic2;
  * POLL: I  | x    | x   | x    | x    | W2  | W1   | W0
  */
 
-/*
- * Wrappers for IO_*_00x0
- * Reference: vpic.c
- */
-void IO_Read_0020();            /* PIC1 provide POLL, IRR, ISR based on OCW3 */
-void IO_Read_0021();                                     /* PIC1 provide IMR */
-void IO_Read_00A0();            /* PIC2 provide POLL, IRR, ISR based on OCW3 */
-void IO_Read_00A1();                                     /* PIC2 provide IMR */
-void IO_Write_0020();                           /* PIC1 get ICW1, OCW2, OCW3 */
-void IO_Write_0021();          /* PIC1 get ICW2, ICW3, ICW4, OCW1 after ICW1 */
-void IO_Write_00A0();                           /* PIC2 get ICW1, OCW2, OCW3 */
-void IO_Write_00A1();          /* PIC2 get ICW2, ICW3, ICW4, OCW1 after ICW1 */
-/* Test I/O Ports */
-#ifdef VPIC_DEBUG
-void IO_Read_FF20();                /* Print all variables for pic1 and pic2 */
-void IO_Read_FF21();                                    /* Test vpicScanINTR */
-void IO_Read_FF22();                                     /* Test vpicGetINTR */
-void IO_Write_FF20();                                     /* Test vpicSetIRQ */
-#endif
+/* Get flags from ICWs */
+#define VPIC_GetLTIM(vpic) (!!((vpic)->icw1 & 0x08))
+#define VPIC_GetSNGL(vpic) (!!((vpic)->icw1 & 0x02))
+#define VPIC_GetIC4(vpic)  (!!((vpic)->icw1 & 0x01))
+#define VPIC_GetSFNM(vpic) (!!((vpic)->icw4 & 0x10))
+#define VPIC_GetBUF(vpic)  (!!((vpic)->icw4 & 0x08))
+#define VPIC_GetMS(vpic)   (!!((vpic)->icw4 & 0x04))
+#define VPIC_GetAEOI(vpic) (!!((vpic)->icw4 & 0x02))
+#define VPIC_GetuPM(vpic)  (!!((vpic)->icw4 & 0x01))
+#define VPIC_GetR(vpic)    (!!((vpic)->ocw2 & 0x80))
+#define VPIC_GetSL(vpic)   (!!((vpic)->ocw2 & 0x40))
+#define VPIC_GetEOI(vpic)  (!!((vpic)->ocw2 & 0x20))
+#define VPIC_GetESMM(vpic) (!!((vpic)->ocw3 & 0x40))
+#define VPIC_GetSMM(vpic)  (!!((vpic)->ocw3 & 0x20))
+#define VPIC_GetP(vpic)    (!!((vpic)->ocw3 & 0x04))
+#define VPIC_GetRR(vpic)   (!!((vpic)->ocw3 & 0x02))
+#define VPIC_GetRIS(vpic)  (!!((vpic)->ocw3 & 0x01))
 
-/*
- * vpicSetIRQ
- * Puts int request into IRR
- * Called by int request sender of devices, e.g. vpitIntTick
- */
+/* Get id of highest priority interrupts in different registers */
+#define VPIC_GetIntrTopId(vpic) (GetRegTopId((vpic), ((vpic)->irr & (~(vpic)->imr))))
+#define VPIC_GetIsrTopId(vpic)  (GetRegTopId((vpic), (vpic)->isr))
+#define VPIC_GetIrrTopId(vpic)  (GetRegTopId((vpic), (vpic)->irr))
+#define VPIC_GetImrTopId(vpic)  (GetRegTopId((vpic), (vpic)->imr))
+
 void vpicSetIRQ(t_nubit8 irqid);
-/*
- * vpicScanINTR
- * Returns true if system has a valid INTR
- * Called by CPU
- */
 t_bool vpicScanINTR();
-/*
- * vpicGetINTR
- * Returns the id of int request with highest priority
- * Called by CPU, who is responding to this interrupt
- */
 t_nubit8 vpicPeekINTR();
 t_nubit8 vpicGetINTR();
-/*
- * vpicInit: Public interface for vmachine
- * Initializes PIC
- * Sets zero for pic structs
- * Registers I/O ports for master and slave pics
- */
-void vpicInit();
-/*
- * vpicRefresh: Public interface for vmachine
- * Refreshes PIC
- * If slave pic has irq, set master pic IRQ 2
- */
-void vpicReset();
-void vpicRefresh();
-/*
- * vpicFinal: Public interface for vmachine
- * Terminates PIC
- * Frees any allocated memory
- */
-void vpicFinal();
+
+void vpicRegister();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

@@ -1,6 +1,4 @@
-/* This file is a part of NXVM project. */
-
-/* Keyboard Controller: not implemented yet */
+/* Copyright 2012-2014 Neko. */
 
 #ifndef NXVM_VKBC_H
 #define NXVM_VKBC_H
@@ -13,12 +11,7 @@ extern "C" {
 
 #define NXVM_DEVICE_KBC "Unknown"
 
-void IO_Read_0064();
-
-void vkbcInit();
-void vkbcReset();
-void vkbcRefresh();
-void vkbcFinal();
+void vkbcRegister();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

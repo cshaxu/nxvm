@@ -1,6 +1,9 @@
 /* This file is a part of NXVM project. */
 
 #include "../vapi.h"
+#include "../vport.h"
+#include "../vcpu.h"
+#include "../vpic.h"
 #include "../vmachine.h"
 
 #include "qdbios.h"
@@ -151,8 +154,8 @@ void INT_16()
 
 void qdkeybReset()
 {
-	qdbiosInt[0x09] = (t_faddrcc)INT_09; /* hard keyb */
-	qdbiosInt[0x16] = (t_faddrcc)INT_16; /* soft keyb */
+	qdbiosInt[0x09] = (t_faddrcc) INT_09; /* hard keyb */
+	qdbiosInt[0x16] = (t_faddrcc) INT_16; /* soft keyb */
 /* special: INT 09 */
 	qdbiosMakeInt(0x09, "qdx 09\niret");
 /* special: INT 16 */

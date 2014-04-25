@@ -13,5 +13,5 @@
 
 # Executables
 # *.exe
-# *.out
-# *.app
+*.out
+*.app

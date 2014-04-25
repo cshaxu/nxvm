@@ -1,6 +1,9 @@
-/* This file is a part of NXVM project. */
+/* Copyright 2012-2014 Neko. */
+
+/* QDBIOS implements quick & dirty bios loader */
 
 #include "../vapi.h"
+#include "../vhdd.h"
 #include "../vmachine.h"
 #include "../debug/aasm32.h"
 
@@ -17,27 +20,30 @@
 t_faddrcc qdbiosInt[0x100];
 static t_nubit16 ics, iip;
 
-static t_nubit32 vbiosAsm(const t_strptr stmt, t_nubit16 seg, t_nubit16 off)
-{
+static t_nubit32 vbiosAsm(const t_strptr stmt, t_nubit16 seg, t_nubit16 off) {
 	t_nubit32 len;
 	t_nubit8 code[0x10000];
-	len = aasm32x(stmt, (t_vaddrcc)code);
-	memcpy((void *)vramGetRealAddr(seg, off), (void *)code, len);
+	len = aasm32x(stmt, (t_vaddrcc) code);
+	memcpy((void *) vramGetRealAddr(seg, off), (void *) code, len);
 	return len;
 }
 
-void qdbiosMakeInt(t_nubit8 intid, t_strptr stmt)
-{
+void qdbiosMakeInt(t_nubit8 intid, t_strptr stmt) {
 	t_nubit32 len;
 	vramRealWord(0x0000, intid * 4 + 0) = iip;
 	vramRealWord(0x0000, intid * 4 + 2) = ics;
 	len = vbiosAsm(stmt, ics, iip);
-	if (len) iip += len;
-	else vapiPrint("qdbios: invalid asm instruction.\n");
+	if (len) {
+		iip += len;
+	} else {
+		vapiPrint("qdbios: invalid asm instruction.\n");
+	}
 }
-void qdbiosExecInt(t_nubit8 intid)
-{
-	if (qdbiosInt[intid]) ExecFun(qdbiosInt[intid]);
+
+void qdbiosExecInt(t_nubit8 intid) {
+	if (qdbiosInt[intid]) {
+		ExecFun(qdbiosInt[intid]);
+	}
 }
 
 static void vbiosLoadData()
@@ -117,7 +123,7 @@ static void vbiosLoadInt()
 {
 	t_nubit16 i;
 	for (i = 0x0000;i < 0x0100;++i) {
-		qdbiosInt[i] = (t_faddrcc)NULL;
+		qdbiosInt[i] = (t_faddrcc) NULL;
 		vramRealWord(0x0000, i * 4 + 0) = iip;
 		vramRealWord(0x0000, i * 4 + 2) = ics;
 	}
@@ -169,8 +175,10 @@ static void vbiosLoadPost()
 	vramRealByte(0xf000, 0xe431 + 15) = 0x00;
 }
 
-void qdbiosReset()
-{
+static void init() {}
+
+/* Loads bios to ram */
+static void reset() {
 	ics = 0xf000;
 	iip = 0x0000;
 /* bios data area */
@@ -181,4 +189,16 @@ void qdbiosReset()
 	vbiosLoadInt();
 /* bios init/post program */
 	vbiosLoadPost();
+}
+
+static void refresh() {}
+
+static void final() {}
+
+void qdbiosRegister() {
+	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
+	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
+	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
+	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
+	vmachine.numDevices++;
 }

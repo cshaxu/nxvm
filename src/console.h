@@ -1,4 +1,4 @@
-/* This file is a part of NXVM project. */
+/* Copyright 2012-2014 Neko. */
 
 #ifndef NXVM_CONSOLE_H
 #define NXVM_CONSOLE_H
@@ -7,7 +7,8 @@
 extern "C" {
 #endif
 
-void console();
+/* Entry point of NXVM console */
+void consoleMain();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

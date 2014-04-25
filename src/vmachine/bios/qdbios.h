@@ -1,4 +1,4 @@
-/* This file is a part of NXVM project. */
+/* Copyright 2012-2014 Neko. */
 
 #ifndef NXVM_QDBIOS_H
 #define NXVM_QDBIOS_H
@@ -11,7 +11,8 @@ extern t_faddrcc qdbiosInt[0x100];
 
 void qdbiosMakeInt(t_nubit8 intid, t_strptr stmt);
 void qdbiosExecInt(t_nubit8 intid);
-void qdbiosReset(); /* POST */
+
+void qdbiosRegister();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

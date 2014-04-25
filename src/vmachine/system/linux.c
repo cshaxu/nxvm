@@ -72,6 +72,7 @@ static unsigned char ReverseColor(unsigned char value)
 	case 0x0e: return COLOR_YELLOW;      break;
 	case 0x0f: return COLOR_WHITE;       break;*/
 	}
+	return COLOR_BLACK;
 }
 static unsigned char CharProp2Color(unsigned char value)
 {
@@ -94,6 +95,7 @@ static unsigned char CharProp2Color(unsigned char value)
 	case 0x0e: return COLOR_YELLOW;      break;
 	case 0x0f: return COLOR_WHITE;       break;*/
 	}
+	return COLOR_BLACK;
 }
 static unsigned char GetColorFromProp(unsigned char prop)
 {

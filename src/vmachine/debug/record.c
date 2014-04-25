@@ -1,4 +1,6 @@
-/* This file is a part of NXVM project. */
+/* Copyright 2012-2014 Neko. */
+
+/* RECORD implements cpu instruction recorder. */
 
 #include "../vapi.h"
 
@@ -61,7 +63,7 @@ do { \
 	if (_recpu.oplen) { \
 		t_cpu oldcpu = vcpu; \
 		vcpu = _recpu; \
-		_recpu.oplen = dasm32(_recpu.stmt, (t_vaddrcc)_recpu.opcodes); \
+		_recpu.oplen = dasm32(_recpu.stmt, (t_vaddrcc) _recpu.opcodes); \
 		vcpu = oldcpu; \
 		for (j = 0;j < _recpu.oplen;++j) \
 			fprintf(vrecord.fp, "%02X", _recpu.opcodes[j]); \
@@ -79,8 +81,7 @@ do { \
 	fprintf(vrecord.fp, "\n");\
 } while (0)
 
-void recordNow(const t_strptr fname)
-{
+void recordNow(const t_strptr fname) {
 	vrecord.flagnow = 1;
 	if (!fname) {
 		vapiPrint("ERROR:\tinvalid file name.\n");
@@ -92,10 +93,12 @@ void recordNow(const t_strptr fname)
 		return;
 	}
 }
-void recordDump(const t_strptr fname)
-{
+
+void recordDump(const t_strptr fname) {
 	t_nubitcc i = 0, j;
-	if (vrecord.fp) fclose(vrecord.fp);
+	if (vrecord.fp) {
+		fclose(vrecord.fp);
+	}
 	vrecord.fp = FOPEN(fname, "w");
 	if (!vrecord.fp) {
 		vapiPrint("ERROR:\tcannot write dump file.\n");
@@ -106,16 +109,19 @@ void recordDump(const t_strptr fname)
 		return;
 	}
 	while (i < vrecord.size) {
-		for (j = 0;j < strlen(_recpu.stmt);++j)
-			if (_recpu.stmt[j] == '\n') _recpu.stmt[j] = ' ';
+		for (j = 0;j < strlen(_recpu.stmt);++j) {
+			if (_recpu.stmt[j] == '\n') {
+				_recpu.stmt[j] = ' ';
+			}
+		}
 		_printexp;
 		++i;
 	}
 	vapiPrint("Record dumped to '%s'.\n", fname);
 	fclose(vrecord.fp);
 }
-void recordExec(t_cpu *rcpu)
-{
+
+void recordExec(t_cpu *rcpu) {
 	t_nubitcc i, j;
 #if RECORD_SELECT_FIRST == 1
 	if (vrecord.size == RECORD_SIZE) {
@@ -123,31 +129,42 @@ void recordExec(t_cpu *rcpu)
 		return;
 	}
 #endif
-	if (rcpu->flaghalt) return;
-	if (rcpu->linear == vrecord.recpu[(vrecord.start + vrecord.size - 1) % RECORD_SIZE].linear) return;
+	if (rcpu->flaghalt) {
+		return;
+	}
+	if (rcpu->linear == vrecord.recpu[(vrecord.start + vrecord.size - 1) % RECORD_SIZE].linear) {
+		return;
+	}
 
 	vrecord.recpu[_rec_ptr_last] = (*rcpu);
 
 	if (vrecord.flagnow) {
 		i = vrecord.size;
-		for (j = 0;j < strlen(_recpu.stmt);++j)
-			if (_recpu.stmt[j] == '\n') _recpu.stmt[j] = ' ';
+		for (j = 0;j < strlen(_recpu.stmt);++j) {
+			if (_recpu.stmt[j] == '\n') {
+				_recpu.stmt[j] = ' ';
+			}
+		}
 		_printexp;
 	}
-	if (vrecord.size == RECORD_SIZE)
+	if (vrecord.size == RECORD_SIZE) {
 		vrecord.start++;
-	else
+	} else {
 		vrecord.size++;
+	}
 }
 
-void recordInit()
-{
+static void init() {
 	memset(&vrecord, 0x00, sizeof(t_record));
 }
+
+static void reset() {}
+
+static void refresh() {
 #ifndef VGLOBAL_BOCHS
-void recordRefresh()
-{
-	if (!vrecord.flagrecord) return;
+	if (!vrecord.flagrecord) {
+		return;
+	}
 	if (!vrecord.flagready) {
 		/* prepare the recorder */
 		vrecord.start = 0;
@@ -184,6 +201,15 @@ void recordRefresh()
 			vrecord.flagready = 0;
 		}
 	}
-}
 #endif
-void recordFinal() {}
+}
+
+static void final() {}
+
+void recordRegister() {
+	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
+	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
+	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
+	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
+	vmachine.numDevices++;
+}

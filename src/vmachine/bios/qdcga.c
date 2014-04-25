@@ -1,6 +1,7 @@
 /* This file is a part of NXVM project. */
 
 #include "../vapi.h"
+#include "../vcpu.h"
 #include "../vmachine.h"
 
 #include "qdbios.h"
@@ -397,7 +398,7 @@ void INT_10()
 
 void qdcgaReset()
 {
-	qdbiosInt[0x10] = (t_faddrcc)INT_10; /* soft cga*/
+	qdbiosInt[0x10] = (t_faddrcc) INT_10; /* soft cga*/
 	qdbiosMakeInt(0x10, "qdx 10\niret");
 	vvadp.flagcolor = 1;
 	qdcgaVarRowSize = 0x50; // 80

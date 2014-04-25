@@ -1,106 +1,19 @@
-/* This file is a part of NXVM project. */
+/* Copyright 2012-2014 Neko. */
+
+/* VCPU defines the Central Processing Unit. */
 
 #include "vapi.h"
-
+#include "vmachine.h"
 #include "vcpuins.h"
 #include "vcpu.h"
 
 t_cpu vcpu;
 
-static void print_sreg_seg(t_cpu_sreg *rsreg, const t_strptr label)
-{
-	vapiPrint("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, %s, ", label,
-		rsreg->selector, rsreg->base, rsreg->limit,
-		rsreg->dpl, rsreg->seg.accessed ? "A" : "a");
-	if (rsreg->seg.executable) {
-		vapiPrint("Code, %s, %s, %s\n",
-			rsreg->seg.exec.conform ? "C" : "c",
-			rsreg->seg.exec.readable ? "Rw" : "rw",
-			rsreg->seg.exec.defsize ? "32" : "16");
-	} else {
-		vapiPrint("Data, %s, %s, %s\n",
-			rsreg->seg.data.expdown ? "E" : "e",
-			rsreg->seg.data.writable ? "RW" : "Rw",
-			rsreg->seg.data.big ? "BIG" : "big");
-	} 
-}
-static void print_sreg_sys(t_cpu_sreg *rsreg, const t_strptr label)
-{
-	vapiPrint("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, Type=%04X\n", label,
-		rsreg->selector, rsreg->base, rsreg->limit,
-		rsreg->dpl, rsreg->sys.type);
-}
-void vapiCallBackCpuPrintSreg()
-{
-	print_sreg_seg(&vcpu.es, "ES");
-	print_sreg_seg(&vcpu.cs, "CS");
-	print_sreg_seg(&vcpu.ss, "SS");
-	print_sreg_seg(&vcpu.ds, "DS");
-	print_sreg_seg(&vcpu.fs, "FS");
-	print_sreg_seg(&vcpu.gs, "GS");
-	print_sreg_sys(&vcpu.tr, "TR  ");
-	print_sreg_sys(&vcpu.ldtr, "LDTR");
-	vapiPrint("GDTR Base=%08X, Limit=%04X\n",
-		_gdtr.base, _gdtr.limit);
-	vapiPrint("IDTR Base=%08X, Limit=%04X\n",
-		_idtr.base, _idtr.limit);
-}
-void vapiCallBackCpuPrintCreg()
-{
-	vapiPrint("CR0=%08X: %s %s %s %s %s %s\n", vcpu.cr0,
-		_GetCR0_PG ? "PG" : "pg",
-		_GetCR0_ET ? "ET" : "et",
-		_GetCR0_TS ? "TS" : "ts",
-		_GetCR0_EM ? "EM" : "em",
-		_GetCR0_MP ? "MP" : "mp",
-		_GetCR0_PE ? "PE" : "pe");
-	vapiPrint("CR2=PFLR=%08X\n", vcpu.cr2);
-	vapiPrint("CR3=PDBR=%08X\n", vcpu.cr3);
-}
-void vapiCallBackCpuPrintReg()
-{
-	vapiPrint( "EAX=%08X", vcpu.eax);
-	vapiPrint(" EBX=%08X", vcpu.ebx);
-	vapiPrint(" ECX=%08X", vcpu.ecx);
-	vapiPrint(" EDX=%08X", vcpu.edx);
-	vapiPrint("\nESP=%08X",vcpu.esp);
-	vapiPrint(" EBP=%08X", vcpu.ebp);
-	vapiPrint(" ESI=%08X", vcpu.esi);
-	vapiPrint(" EDI=%08X", vcpu.edi);
-	vapiPrint("\nEIP=%08X",vcpu.eip);
-	vapiPrint(" EFL=%08X", vcpu.eflags);
-	vapiPrint(": ");
-	vapiPrint("%s ", _GetEFLAGS_VM ? "VM" : "vm");
-	vapiPrint("%s ", _GetEFLAGS_RF ? "RF" : "rf");
-	vapiPrint("%s ", _GetEFLAGS_NT ? "NT" : "nt");
-	vapiPrint("IOPL=%01X ", _GetEFLAGS_IOPL);
-	vapiPrint("%s ", _GetEFLAGS_OF ? "OF" : "of");
-	vapiPrint("%s ", _GetEFLAGS_DF ? "DF" : "df");
-	vapiPrint("%s ", _GetEFLAGS_IF ? "IF" : "if");
-	vapiPrint("%s ", _GetEFLAGS_TF ? "TF" : "tf");
-	vapiPrint("%s ", _GetEFLAGS_SF ? "SF" : "sf");
-	vapiPrint("%s ", _GetEFLAGS_ZF ? "ZF" : "zf");
-	vapiPrint("%s ", _GetEFLAGS_AF ? "AF" : "af");
-	vapiPrint("%s ", _GetEFLAGS_PF ? "PF" : "pf");
-	vapiPrint("%s ", _GetEFLAGS_CF ? "CF" : "cf");
-	vapiPrint("\n");
-}
-
-void vapiCallBackCpuPrintMem()
-{
-	t_nubit8 i;
-	for (i = 0;i < vcpu.msize;++i) {
-		vapiPrint("%s: Lin=%08x, Data=%08x, Bytes=%1x\n",
-			vcpu.mem[i].flagwrite ? "Write" : "Read",
-			vcpu.mem[i].linear, vcpu.mem[i].data, vcpu.mem[i].byte);
-	}
-}
-void vcpuInit()
-{
+static void init() {
 	vcpuinsInit();
 }
-void vcpuReset()
-{
+
+static void reset() {
 	memset(&vcpu, 0, sizeof(t_cpu));
 
 	vcpu.eip = 0x0000fff0;
@@ -171,11 +84,19 @@ void vcpuReset()
 
 	vcpuinsReset();
 }
-void vcpuRefresh()
-{
+
+static void refresh() {
 	vcpuinsRefresh();
 }
-void vcpuFinal()
-{
+
+static void final() {
 	vcpuinsFinal();
+}
+
+void vcpuRegister() {
+	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
+	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
+	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
+	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
+	vmachine.numDevices++;
 }

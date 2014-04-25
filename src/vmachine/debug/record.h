@@ -1,4 +1,4 @@
-/* This file is a part of NXVM project. */
+/* Copyright 2012-2014 Neko. */
 
 #ifndef NXVM_RECORD_H
 #define NXVM_RECORD_H
@@ -9,8 +9,8 @@ extern "C" {
 
 #include "../vcpuins.h"
 
-#define RECORD_SIZE         0xffff             /* maximum record number */
-#define RECORD_SELECT_FIRST 0x0000/* keep first (1) records or last (0) */
+#define RECORD_SIZE         0xffff /* maximum record number */
+#define RECORD_SELECT_FIRST 0x0000 /* keep first (1) records or last (0) */
 
 typedef struct {
 	t_cpu  recpu[RECORD_SIZE];
@@ -26,10 +26,10 @@ extern t_record vrecord;
 
 void recordNow(const t_strptr fname);
 void recordDump(const t_strptr fname);
-void recordInit();
+
 void recordExec(t_cpu *rcpu);
-void recordRefresh();
-void recordFinal();
+
+void recordRegister();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

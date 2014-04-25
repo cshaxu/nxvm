@@ -1,4 +1,4 @@
-/* This file is a part of NXVM project. */
+/* Copyright 2012-2014 Neko. */
 
 #ifndef NXVM_DEBUG_H
 #define NXVM_DEBUG_H
@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 typedef struct {
-	t_bool    flagbreak;                    /* breakpoint set (1) or not (0) */
+	t_bool    flagbreak; /* breakpoint set (1) or not (0) */
 	t_bool    flagbreakx;
 	t_nubitcc breakcnt;
 	t_nubit16 breakcs, breakip;
@@ -18,11 +18,9 @@ typedef struct {
 
 extern t_debug vdebug;
 
-void debugInit();
-void debugRefresh();
-void debugFinal();
+void debugRegister();
 
-void debug();
+void debugMain();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

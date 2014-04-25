@@ -1,6 +1,4 @@
-/* This file is a part of NXVM project. */
-
-/* Central Processing Unit: Intel 8086+ (80386) */
+/* Copyright 2012-2014 Neko. */
 
 #ifndef NXVM_VCPU_H
 #define NXVM_VCPU_H
@@ -483,10 +481,7 @@ extern t_cpu vcpu;
 #define _GetCPL  (_GetCR0_PE ? (_GetEFLAGS_VM ? 3 : vcpu.cs.dpl) : 0)
 #define _MakeCPL(cpl) (vcpu.cs.dpl = (cpl))
 
-void vcpuInit();
-void vcpuReset();
-void vcpuRefresh();
-void vcpuFinal();
+void vcpuRegister();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

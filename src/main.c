@@ -1,13 +1,13 @@
-/* This file is a part of NXVM project. */
+/* Copyright 2012-2014 Neko. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0150]\n\
-Copyright (c) 2012-2013 Neko. All rights reserved.\n"
+#define PRODUCT "Neko's x86 Virtual Machine [0.3.0151]\n\
+Copyright (c) 2012-2014 Neko.\n"
 
 /*
- * Developer: Xu Ha
- * Email:     cshaxu@gatech.edu
- * Start:     01/25/2012
- * End:       (null)
+ * Author:     Xu Ha
+ * Email:      cshaxu@gatech.edu
+ * Repository: https://github.com/cshaxu/nxvm
+ * Start:      01/25/2012
  *
  * Project Phases
  * 1. Read documents and list all necessary functionality
@@ -100,7 +100,7 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  *  n-CMOS and BIOS
  *   vmachine/vcmos.c
  *   vmachine/vcmos.h
- *   vmachine/bios/*.*
+ *   vmachine/bios/
  *  z-additional
  *    serial:   vseri.c,    vseri.h
  *    parallel: vpara.c,    vpara.h
@@ -126,6 +126,9 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
  * 05/24-07/31  built 80386 cpu
  * 08/06-08/09  built dasm32
  * 08/10-08/15  built aasm32
+ *
+ * NXVM in the year 2014
+ * 04/24-present format/refactor entire code base
  *
  * Milestones
  * 0x45 Console, 8086 CPU, Debug, Aasm, Dasm
@@ -157,10 +160,9 @@ Copyright (c) 2012-2013 Neko. All rights reserved.\n"
 
 #include "console.h"
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	fprintf(stdout, "%s\n", PRODUCT);
 	fprintf(stdout, "Built on %s at %s.\n", __DATE__, __TIME__);
-	console();
+	consoleMain();
 	return 0;
 }

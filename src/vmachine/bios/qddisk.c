@@ -1,6 +1,9 @@
 /* This file is a part of NXVM project. */
 
 #include "../vapi.h"
+#include "../vcpu.h"
+#include "../vram.h"
+#include "../vhdd.h"
 #include "../vmachine.h"
 
 #include "qdbios.h"
@@ -56,6 +59,6 @@ static void INT_13_03_HDD_WriteSector()
 
 void qddiskReset()
 {
-	qdbiosInt[0xa2] = (t_faddrcc)INT_13_02_HDD_ReadSector;
-	qdbiosInt[0xa3] = (t_faddrcc)INT_13_03_HDD_WriteSector;
+	qdbiosInt[0xa2] = (t_faddrcc) INT_13_02_HDD_ReadSector;
+	qdbiosInt[0xa3] = (t_faddrcc) INT_13_03_HDD_WriteSector;
 }

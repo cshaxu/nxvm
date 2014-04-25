@@ -89,5 +89,8 @@ record.o: vmachine/debug/record.c vmachine/debug/record.h vmachine/debug/dasm32.
 	$(CC) -c $(CFLAGS) vmachine/debug/record.c
 
 clean:
+	rm -f *.o
+
+clean-all:
 	rm -f $(TARGET)
-	rm -f console.o main.o vapi.o vcmos.o vcpu.o vcpuins.o vdma.o vfdc.o vfdd.o vhdd.o vkbc.o vmachine.o vpic.o vpit.o vport.o vram.o vvadp.o linux.o qdbios.o qdcga.o qddisk.o qdkeyb.o aasm32.o dasm32.o debug.o record.o
+	rm -f *.o

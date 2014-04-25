@@ -1,6 +1,4 @@
-/* This file is a part of NXVM project. */
-
-/* In/Out Ports */
+/* Copyright 2012-2014 Neko. */
 
 #ifndef NXVM_VPORT_H
 #define NXVM_VPORT_H
@@ -25,13 +23,7 @@ typedef struct {
 
 extern t_port vport;
 
-void IO_Read_VOID();
-void IO_Write_VOID();
-
-void vportInit();
-void vportReset();
-void vportRefresh();
-void vportFinal();
+void vportRegister();
 
 #ifdef __cplusplus
 }/*_EOCD_*/
