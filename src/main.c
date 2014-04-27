@@ -1,6 +1,6 @@
 /* Copyright 2012-2014 Neko. */
 
-#define PRODUCT "Neko's x86 Virtual Machine [0.3.0151]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.4.0152]\n\
 Copyright (c) 2012-2014 Neko.\n"
 
 /*
@@ -150,19 +150,19 @@ Copyright (c) 2012-2014 Neko.\n"
  * 0143 Built Debug 32
  * 0144 Built Aasm 32
  * 014c Rebuilt vmachine.ch
+ * 0152 Architecture Refactor: Split
  *
  * Format Unify:
  * new flag system: FLAG_X_X 0x0010, bit macros
  *
  */
 
-#include <stdio.h>
-
+#include "utils.h"
 #include "console.h"
 
 int main(int argc, char **argv) {
-	fprintf(stdout, "%s\n", PRODUCT);
-	fprintf(stdout, "Built on %s at %s.\n", __DATE__, __TIME__);
+	utilsPrint("%s\n", PRODUCT);
+	utilsPrint("Built on %s at %s.\n", __DATE__, __TIME__);
 	consoleMain();
 	return 0;
 }
