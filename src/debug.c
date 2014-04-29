@@ -1,20 +1,16 @@
 /* This file is a part of NXVM project. */
 
-#include "../../utils.h"
-#include "../vport.h"
-#include "../vcpu.h"
-#include "../vcpuins.h"
-#include "../vram.h"
-#include "../vmachine.h"
+#include "utils.h"
+#include "machine.h"
 
-#include "../device.h"
-#include "../../machine.h"
+#include "device/vport.h"
+#include "device/vcpu.h"
+#include "device/vcpuins.h"
+#include "device/vram.h"
+#include "device/vdebug.h"
+#include "device/device.h"
 
-#include "aasm32.h"
-#include "dasm32.h"
 #include "debug.h"
-
-t_debug vdebug;
 
 #define DEBUG_MAXNARG 256
 #define DEBUG_MAXNASMARG 4
@@ -126,7 +122,7 @@ static void aconsole()
 		}
 		if(cmdAsmBuff[0] == ';' ) continue;
 		errAsmPos = 0;
-		len = aasm32(cmdAsmBuff, (t_vaddrcc)acode);
+		len = utilsAasm32(cmdAsmBuff, acode, vcpu.cs.seg.exec.defsize);
 		if(!len) errAsmPos = (t_nubitcc)strlen(cmdAsmBuff) + 9;
 		else {
 			if (vcpuinsWriteLinear((asmSegRec << 4) + asmPtrRec, (t_vaddrcc)acode, len)) {
@@ -434,7 +430,7 @@ static t_nubit8 uprintins(t_nubit16 seg, t_nubit16 off)
 		len = 0;
 		SPRINTF(str, "%04X:%04X <ERROR>", seg, off);
 	} else {
-		len = dasm32(stmt, (t_vaddrcc)ucode);
+		len = utilsDasm32(stmt, ucode, vcpu.cs.seg.exec.defsize);
 		sbin[0] = 0;
 		for (i = 0;i < len;++i) SPRINTF(sbin, "%s%02X", sbin, GetMax8(ucode[i]));
 		SPRINTF(str, "%04X:%04X %s", seg, off, sbin);
@@ -795,7 +791,7 @@ static t_nubit8 xuprintins(t_nubit32 linear)
 		len = 0;
 		SPRINTF(str, "L%08X <ERROR>", linear);
 	} else {
-		len = dasm32(stmt, (t_vaddrcc)ucode);
+		len = utilsDasm32(stmt, ucode, vcpu.cs.seg.exec.defsize);
 		sbin[0] = 0;
 		for (i = 0;i < len;++i) SPRINTF(sbin, "%s%02X", sbin, GetMax8(ucode[i]));
 		SPRINTF(str, "L%08X %s ", linear, sbin);
@@ -830,7 +826,7 @@ static void xaconsole(t_nubit32 linear)
 			continue;
 		}
 		errAsmPos = 0;
-		len = aasm32(astmt, (t_vaddrcc)acode);
+		len = utilsAasm32(astmt, acode, vcpu.cs.seg.exec.defsize);
 		if(!len) errAsmPos = (t_nubitcc)strlen(astmt) + 9;
 		else {
 			if (vcpuinsWriteLinear(linear, (t_vaddrcc)acode, len)) {
@@ -1512,107 +1508,6 @@ static void exec() {
 	}
 }
 
-static void xasmTest() {
-	static t_nubitcc total = 0;
-	t_bool flagtextonly = 0; /* don't stop vmachine if true */
-	t_nubit8 i, lend1, lend2, lena;
-	t_string dstr1, dstr2;
-	t_nubit8 ins1[15], ins2[15];
-	total++;
-	vcpuinsReadLinear(vcpu.cs.base + vcpu.eip, (t_vaddrcc) ins1, 15);
-/*	ins1[0] = 0x67;
-	ins1[1] = 0xc6;
-	ins1[2] = 0x44;
-	ins1[3] = 0xf2;
-	ins1[4] = 0x05;
-	ins1[5] = 0x8e;
-	ins1[6] = 0x00;*/
-	switch (d_nubit8(ins1)) {
-	case 0x88: case 0x89: case 0x8a: case 0x8b:
-	case 0x00: case 0x01: case 0x02: case 0x03:
-	case 0x08: case 0x09: case 0x0a: case 0x0b:
-	case 0x10: case 0x11: case 0x12: case 0x13:
-	case 0x18: case 0x19: case 0x1a: case 0x1b:
-	case 0x20: case 0x21: case 0x22: case 0x23:
-	case 0x28: case 0x29: case 0x2a: case 0x2b:
-	case 0x30: case 0x31: case 0x32: case 0x33:
-	case 0x38: case 0x39: case 0x3a: case 0x3b:
-		flagtextonly = 1;
-		break;
-	}
-	switch (d_nubit8(ins1+1)) {
-	case 0x90:
-		flagtextonly = 1;
-		break;
-	}
-	switch (d_nubit16(ins1)) {
-	case 0x2e66:
-		flagtextonly = 1;
-		break;
-	}
-	switch (GetMax24(d_nubit24(ins1))) {
-	case 0xb70f66:
-		flagtextonly = 1;
-		break;
-	}
-	switch (GetMax24(d_nubit24(ins1+1))) {
-	case 0xb70f66:
-		flagtextonly = 1;
-		break;
-	}
-	switch (d_nubit32(ins1)) {
-	}
-	lend1 = dasm32(dstr1, (t_vaddrcc)ins1);
-	lena  = aasm32(dstr1, (t_vaddrcc)ins2);
-	lend2 = dasm32(dstr2, (t_vaddrcc)ins2);
-	if ((!flagtextonly && (lena != lend1 || lena != lend2 || lend1 != lend2 ||
-		memcmp(ins1, ins2, lend1))) || STRCMP(dstr1, dstr2)) {
-		utilsPrint("diff at #%d %04X:%08X(L%08X), len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
-			total, _cs, _eip, vcpu.cs.base + vcpu.eip, lena, lend1, lend2, vcpu.cs.seg.exec.defsize ? 32 : 16);
-		for (i = 0;i < lend1;++i) {
-			utilsPrint("%02X", ins1[i]);
-		}
-		utilsPrint("\t%s\n", dstr1);
-		for (i = 0;i < lend2;++i) {
-			utilsPrint("%02X", ins2[i]);
-		}
-		utilsPrint("\t%s\n", dstr2);
-		machineStop();
-	}
-}
-
-static void init() {
-	memset(&vdebug, 0x00, sizeof(t_debug));
-}
-
-static void reset() {}
-
-static void refresh() {
-	vdebug.breakcnt++;
-	if (vdebug.breakcnt && (
-		(vdebug.flagbreak && _cs == vdebug.breakcs && _ip == vdebug.breakip) ||
-		(vdebug.flagbreakx && (vcpu.cs.base + vcpu.eip == vdebug.breaklinear)))) {
-		machineStop();
-	}
-	if (vdebug.tracecnt) {
-		vdebug.tracecnt--;
-		if (!vdebug.tracecnt) {
-			machineStop();
-		}
-	}
-//	xasmTest();
-}
-
-static void final() {}
-
-void debugRegister() {
-	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
-	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
-	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
-	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
-	vmachine.numDevices++;
-}
-
 void debugMain() {
 	t_nubitcc i;
 	strFileName[0] = '\0';
@@ -1637,4 +1532,26 @@ void debugMain() {
 		}
 	}
 	free(arg);
+}
+
+/* recorder */
+void debugRecordStart(const t_strptr fileName) {
+	if (vdebug.recordFile) {
+		fclose(vdebug.recordFile);
+	}
+	vdebug.recordFile = FOPEN(fileName, "w");
+	if (!vdebug.recordFile) {
+		utilsPrint("ERROR:\tcannot write dump file.\n");
+	} else {
+		utilsPrint("Record started.\n");
+	}
+}
+void debugRecordStop() {
+	if (!vdebug.recordFile) {
+		utilsPrint("ERROR:\trecorder not turned on.\n");
+	} else {
+		utilsPrint("Record finished.\n");
+		fclose(vdebug.recordFile);
+		vdebug.recordFile = (FILE *) NULL;
+	}
 }

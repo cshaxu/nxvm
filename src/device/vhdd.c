@@ -2,14 +2,54 @@
 
 /* VHDD implements Hard Disk Drive: 10 MBytes, cyl = 20, head = 16, sector = 63 */
 
-#include "vmachine.h"
+#include "../utils.h"
+
 #include "vdma.h"
+
+#include "vmachine.h"
 #include "vhdd.h"
 
 t_hdd vhdd;
 
 #define IsTrackEnd (vhdd.sector >= (vhdd.nsector + 1))
 #define IsCylEnd   (vhdd.head == (vhdd.nhead - 1) && IsTrackEnd)
+
+t_bool deviceConnectHardDiskInsert(const t_strptr fname) {
+	t_nubitcc count;
+	FILE *image = FOPEN(fname, "rb");
+	if (image) {
+		fseek(image, 0, SEEK_END);
+		count = ftell(image);
+		vhdd.ncyl = (t_nubit16)(count / vhdd.nhead / vhdd.nsector / vhdd.nbyte);
+		fseek(image, 0, SEEK_SET);
+		vhddAlloc();
+		count = fread((void *) vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
+		vhdd.flagexist = 1;
+		fclose(image);
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
+t_bool deviceConnectHardDiskRemove(const t_strptr fname) {
+	t_nubitcc count;
+	FILE *image;
+	if (fname) {
+		image = FOPEN(fname, "wb");
+		if(image) {
+			if (!vhdd.flagro)
+				count = fwrite((void *) vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
+			vhdd.flagexist = 0;
+			fclose(image);
+		} else {
+			return 1;
+		}
+	}
+	vhdd.flagexist = 0;
+	memset((void *) vhdd.base, 0x00, vhddGetImageSize);
+	return 0;
+}
 
 void vhddTransRead() {
 	if (IsCylEnd) {

@@ -47,6 +47,11 @@ void utilsSleep(unsigned int milisec);
 void utilsLowerStr(char *s);
 int utilsPrint(const char *format, ...);
 
+/* NXVM Assembler Library */
+unsigned char utilsAasm32(const char *stmt, unsigned char *rcode, unsigned char flag32);
+unsigned int utilsAasm32x(const char *stmt, unsigned char *rcode, unsigned char flag32);
+unsigned char utilsDasm32(char *stmt, unsigned char *rcode, unsigned char flag32);
+
 #ifdef __cplusplus
 }/*_EOCD_*/
 #endif

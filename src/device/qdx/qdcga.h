@@ -74,6 +74,7 @@ extern "C" {
 
 extern t_nubit32 qdcgaModeBufSize[0x14];
 
+void qdcgaInit();
 void qdcgaReset();
 
 #ifdef __cplusplus

@@ -11,15 +11,14 @@
 #include "device/vcpu.h"
 #include "device/vfdd.h"
 #include "device/vhdd.h"
+#include "device/vdebug.h"
 #include "device/vmachine.h"
-
-#include "device/debug/debug.h"
-#include "device/debug/record.h"
 
 #include "device/device.h"
 #include "platform/platform.h"
-
 #include "machine.h"
+
+#include "debug.h"
 #include "console.h"
 
 #define CONSOLE_MAXNARG 256
@@ -87,7 +86,9 @@ static void doHelp() {
 			break;
 		} else if (!strcmp(args[1], "record")) {
 			utilsPrint("Record cpu status in each iteration for futher dumping\n");
-			utilsPrint("\nRECORD on | off | (dump <file>) | (now <file>)\n");
+			utilsPrint("\nRECORD start <file> | stop\n");
+			utilsPrint("  start: open output file for record writes\n");
+			utilsPrint("  stop:  close output file to finish recording\n");
 			break;
 		} else if (!strcmp(args[1], "set")) {
 			utilsPrint("Change BIOS settings\n");
@@ -187,11 +188,11 @@ static void doInfo() {
 	utilsPrint("\n");
 	utilsPrint("NXVM BIOS Settings\n");
 	utilsPrint("==================\n");
-	utilsPrint("Boot Disk: %s\n", device.flagBoot ? "Hard Drive" : "Floppy");
+	utilsPrint("Boot Disk: %s\n", deviceConnectBiosGetBoot() ? "Hard Drive" : "Floppy");
 	utilsPrint("\n");
 	utilsPrint("NXVM Debug Status\n");
 	utilsPrint("=================\n");
-	utilsPrint("Recorder:    %s\n", vrecord.flagrecord ? (vrecord.flagnow ? "Now" : "On") : "Off");
+	utilsPrint("Recorder:    %s\n", vdebug.recordFile ? "On" : "Off");
 	utilsPrint("Trace:       %s\n", vdebug.tracecnt ? "On" : "Off");
 	utilsPrint("Break Point: ");
 	if (vdebug.flagbreak) {
@@ -224,35 +225,13 @@ static void doRecord() {
 		utilsPrint("Cannot change record status or dump record now.\n");
 		return;
 	}
-	if (!strcmp(args[1], "on")) {
-		vrecord.flagrecord = 1;
-		vrecord.flagnow = 0;
-		if (vrecord.fp) {
-			fclose(vrecord.fp);
-		}
-	} else if (!strcmp(args[1], "off")) {
-		vrecord.flagrecord = 0;
-		vrecord.flagnow = 0;
-		if (vrecord.fp) {
-			fclose(vrecord.fp);
-		}
-	} else if (!strcmp(args[1], "dump")) {
-		if (narg < 3) {
+	if (!strcmp(args[1], "start")) {
+		if (narg != 3) {
 			GetHelp;
 		}
-		recordDump(args[2]);
-		vrecord.flagnow = 0;
-		vrecord.flagrecord = 0;
-		if (vrecord.fp) {
-			fclose(vrecord.fp);
-		}
-	} else if (!strcmp(args[1], "now")) {
-		if (narg < 3) {
-			GetHelp;
-		}
-		vrecord.flagrecord = 1;
-		vrecord.flagnow = 1;
-		recordNow(args[2]);
+		debugRecordStart(args[2]);
+	} else if (!strcmp(args[1], "stop")) {
+		debugRecordStop();
 	} else {
 		GetHelp;
 	}
@@ -268,9 +247,9 @@ static void doSet() {
 			GetHelp;
 		}
 		if (!strcmp(args[2], "fdd")) {
-			device.flagBoot = 0;
+			deviceConnectBiosSetBoot(0);
 		} else if(!strcmp(args[2], "hdd")) {
-			device.flagBoot = 1;
+			deviceConnectBiosSetBoot(1);
 		} else {
 			GetHelp;
 		}
@@ -377,8 +356,6 @@ static void doDevice() {
 
 /* Tests NXVM: reset and start debugger */
 static void doTest() {
-	device.flagBoot = 1;
-	platform.flagMode = 1;
 	deviceReset();
 	debugMain();
 }

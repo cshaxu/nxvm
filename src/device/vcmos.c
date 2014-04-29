@@ -4,10 +4,11 @@
 
 #include "../utils.h"
 
-#include "vmachine.h"
-#include "vport.h"
 #include "vcpu.h"
+
 #include "vbios.h"
+#include "vport.h"
+#include "vmachine.h"
 #include "vcmos.h"
 
 t_cmos vcmos;

@@ -3,14 +3,11 @@
 #include "../utils.h"
 #include "device.h"
 
-#ifndef GLOBAL_BOCHS
 #include "vport.h"
 #include "vram.h"
 #include "vpic.h"
 #include "qdx/qdx.h"
-#else
-#include "vcpuapi.h"
-#endif
+
 #include "vcpuins.h"
 
 /* DEBUGGING OPTIONS ******************************************************* */

@@ -6,7 +6,6 @@
 #include "../vport.h"
 #include "../vcpu.h"
 #include "../vpic.h"
-#include "../vmachine.h"
 
 #include "qdx.h"
 #include "qdkeyb.h"
@@ -154,7 +153,7 @@ static void INT_16() {
 	}
 }
 
-void qdkeybReset() {
+void qdkeybInit() {
 	qdxTable[0x09] = (t_faddrcc) INT_09; /* hard keyb */
 	qdxTable[0x16] = (t_faddrcc) INT_16; /* soft keyb */
 }

@@ -5,7 +5,6 @@
 #include "../vcpu.h"
 #include "../vram.h"
 #include "../vhdd.h"
-#include "../vmachine.h"
 
 #include "qdx.h"
 #include "qddisk.h"
@@ -57,7 +56,7 @@ static void INT_13_03_HDD_WriteSector() {
 	}
 }
 
-void qddiskReset() {
+void qddiskInit() {
 	qdxTable[0xa2] = (t_faddrcc) INT_13_02_HDD_ReadSector;
 	qdxTable[0xa3] = (t_faddrcc) INT_13_03_HDD_WriteSector;
 }

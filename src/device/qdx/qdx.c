@@ -18,17 +18,18 @@ void qdxExecInt(t_nubit8 intid) {
 	}
 }
 
-static void init() {}
-
-/* Loads bios to ram */
-static void reset() {
+static void init() {
 	t_nubit16 i;
 	for (i = 0x0000;i < 0x0100;++i) {
 		qdxTable[i] = (t_faddrcc) NULL;
 	}
-	qdkeybReset();
+	qdkeybInit();
+	qdcgaInit();
+	qddiskInit();
+}
+
+static void reset() {
 	qdcgaReset();
-	qddiskReset();
 }
 
 static void refresh() {}

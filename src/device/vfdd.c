@@ -2,8 +2,11 @@
 
 /* VFDD implements Floppy Disk Drive: 3.5" 1.44MB. */
 
-#include "vmachine.h"
+#include "../utils.h"
+
 #include "vdma.h"
+
+#include "vmachine.h"
 #include "vfdd.h"
 
 t_fdd vfdd;
@@ -11,6 +14,38 @@ t_fdd vfdd;
 #define IsTrackEnd (vfdd.sector >= (vfdd.nsector + 1))
 #define IsCylHalf  (vfdd.head == 0x00 && IsTrackEnd)
 #define IsCylEnd   (vfdd.head == 0x01 && IsTrackEnd)
+
+t_bool deviceConnectFloppyInsert(const t_strptr fname) {
+	t_nubitcc count;
+	FILE *image = FOPEN(fname, "rb");
+	if (image && vfdd.base) {
+		count = fread((void *) vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
+		vfdd.flagexist = 1;
+		fclose(image);
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
+t_bool deviceConnectFloppyRemove(const t_strptr fname) {
+	t_nubitcc count;
+	FILE *image;
+	if (fname) {
+		image = FOPEN(fname, "wb");
+		if(image) {
+			if (!vfdd.flagro)
+				count = fwrite((void *) vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
+			vfdd.flagexist = 0;
+			fclose(image);
+		} else {
+			return 1;
+		}
+	}
+	vfdd.flagexist = 0;
+	memset((void *) vfdd.base, 0x00, vfddGetImageSize);
+	return 0;
+}
 
 void vfddTransRead() {
 	if (IsCylEnd) {

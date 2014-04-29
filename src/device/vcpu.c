@@ -2,8 +2,9 @@
 
 /* VCPU defines the Central Processing Unit. */
 
-#include "vmachine.h"
 #include "vcpuins.h"
+
+#include "vmachine.h"
 #include "vcpu.h"
 
 t_cpu vcpu;

@@ -2,8 +2,8 @@
 
 /* VRAM is the random accessing memory module.  */
 
-#include "vmachine.h"
 #include "vport.h"
+#include "vmachine.h"
 #include "vram.h"
 
 t_ram vram;

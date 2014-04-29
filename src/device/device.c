@@ -7,80 +7,18 @@
 
 #include "../utils.h"
 
-#include "vfdd.h"
-#include "vhdd.h"
-/* Disk Drive Operations */
-t_bool deviceConnectFloppyInsert(const t_strptr fname) {
-	t_nubitcc count;
-	FILE *image = FOPEN(fname, "rb");
-	if (image && vfdd.base) {
-		count = fread((void *) vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
-		vfdd.flagexist = 1;
-		fclose(image);
-		return 0;
-	} else {
-		return 1;
-	}
-}
-t_bool deviceConnectFloppyRemove(const t_strptr fname) {
-	t_nubitcc count;
-	FILE *image;
-	if (fname) {
-		image = FOPEN(fname, "wb");
-		if(image) {
-			if (!vfdd.flagro)
-				count = fwrite((void *) vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
-			vfdd.flagexist = 0;
-			fclose(image);
-		} else {
-			return 1;
-		}
-	}
-	vfdd.flagexist = 0;
-	memset((void *) vfdd.base, 0x00, vfddGetImageSize);
-	return 0;
-}
-t_bool deviceConnectHardDiskInsert(const t_strptr fname) {
-	t_nubitcc count;
-	FILE *image = FOPEN(fname, "rb");
-	if (image) {
-		fseek(image, 0, SEEK_END);
-		count = ftell(image);
-		vhdd.ncyl = (t_nubit16)(count / vhdd.nhead / vhdd.nsector / vhdd.nbyte);
-		fseek(image, 0, SEEK_SET);
-		vhddAlloc();
-		count = fread((void *) vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
-		vhdd.flagexist = 1;
-		fclose(image);
-		return 0;
-	} else {
-		return 1;
-	}
-}
-t_bool deviceConnectHardDiskRemove(const t_strptr fname) {
-	t_nubitcc count;
-	FILE *image;
-	if (fname) {
-		image = FOPEN(fname, "wb");
-		if(image) {
-			if (!vhdd.flagro)
-				count = fwrite((void *) vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
-			vhdd.flagexist = 0;
-			fclose(image);
-		} else {
-			return 1;
-		}
-	}
-	vhdd.flagexist = 0;
-	memset((void *) vhdd.base, 0x00, vhddGetImageSize);
-	return 0;
-}
-
 #include "vcpu.h"
 #include "vpic.h"
 #include "vpit.h"
 #include "vdma.h"
 #include "vfdc.h"
+#include "vfdd.h"
+
+#include "vmachine.h"
+#include "device.h"
+
+t_device device;
+
 /* Prints device status. */
 /* Prints user segment registers (ES, CS, SS, DS, FS, GS) */
 static void print_sreg_seg(t_cpu_sreg *rsreg, const t_strptr label) {
@@ -304,11 +242,6 @@ void devicePrintFdc() {
 		vfdd.base,vfdd.curr,vfdd.count);
 }
 
-#include "vmachine.h"
-#include "device.h"
-
-t_device device;
-
 /* Starts device thread */
 void deviceStart() {
 	device.flagRun = 1;
@@ -341,7 +274,6 @@ void deviceStop()  {
 void deviceInit() {
 	memset(&device, 0x00, sizeof(t_device));
 	vmachineInit();
-	device.flagBoot = 0;
 }
 
 /* Finalizes devices */

@@ -2,8 +2,8 @@
 
 /* MACHINE controls machine status. */
 
-#include "platform/platform.h"
 #include "device/device.h"
+#include "platform/platform.h"
 
 #include "machine.h"
 

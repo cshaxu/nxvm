@@ -37,7 +37,7 @@ extern "C" {
 #define qdkeybVarFlag0 (vramRealByte(0x0000, QDKEYB_VBIOS_ADDR_KEYB_FLAG0))
 #define qdkeybVarFlag1 (vramRealByte(0x0000, QDKEYB_VBIOS_ADDR_KEYB_FLAG1))
 
-void qdkeybReset();
+void qdkeybInit();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

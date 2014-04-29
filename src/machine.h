@@ -7,8 +7,6 @@
 extern "C" {
 #endif
 
-#include "global.h"
-
 void machineStart();
 void machineReset();
 void machineStop();

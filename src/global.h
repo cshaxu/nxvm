@@ -25,18 +25,33 @@ extern "C" {
 #endif
 /* ************************************************************************* */
 
-/* TESTING OPTIONS ********************************************************* */
-#if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
-//#define GLOBAL_BOCHS
-#endif
-/* ************************************************************************* */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <memory.h>
 #include <time.h>
+
+/* COMPATIBILITY DEFINITIONS *********************************************** */
+#if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
+typedef unsigned char    uint8_t;
+typedef unsigned short   uint16_t;
+typedef unsigned int     uint32_t;
+typedef unsigned __int64 uint64_t;
+typedef   signed char    int8_t;
+typedef   signed short   int16_t;
+typedef   signed int     int32_t;
+typedef   signed __int64 int64_t;
+#else
+#include <stdint.h>
+#endif
+/* ************************************************************************* */
+
+/* TESTING OPTIONS ********************************************************* */
+#if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
+//#define GLOBAL_BOCHS
+#endif
+/* ************************************************************************* */
 
 #ifdef __cplusplus
 }/*_EOCD_*/

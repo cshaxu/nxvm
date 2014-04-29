@@ -2,8 +2,8 @@
 
 /* VHDC is Hard Disk Driver Controller, not yet implemented. */
 
-#include "vmachine.h"
 #include "vbios.h"
+#include "vmachine.h"
 #include "vhdc.h"
 
 static void init() {

@@ -2,8 +2,7 @@
 
 /* VMACHINE is the hub that assembles all devices. */
 
-#include "debug/record.h"
-#include "debug/debug.h"
+#include "vdebug.h"
 #include "vport.h"
 #include "vram.h"
 #include "vcpu.h"
@@ -26,8 +25,7 @@ t_machine vmachine;
 
 /* Registers all devices */
 static void doRegister() {
-	recordRegister();
-	debugRegister();
+	vdebugRegister();
 	vportRegister();
 	vramRegister();
 	vcpuRegister();

@@ -2,7 +2,10 @@
 
 /* UTILS implements code tracer and all utility functions. */
 
+#include "xasm32/aasm32.h"
+#include "xasm32/dasm32.h"
 #include "platform/platform.h"
+
 #include "utils.h"
 
 void utilsTracePrintCall(t_utils_trace_call *rtrace, int cid) {
@@ -152,4 +155,13 @@ int utilsPrint(const char *format, ...) {
 	va_end(arg_ptr);
 	fflush(stdout);
 	return nWrittenBytes;
+}
+unsigned char utilsAasm32(const char *stmt, unsigned char *rcode, unsigned char flag32) {
+	return aasm32(stmt, rcode, flag32);
+}
+unsigned int utilsAasm32x(const char *stmt, unsigned char *rcode, unsigned char flag32) {
+	return aasm32x(stmt, rcode, flag32);
+}
+unsigned char utilsDasm32(char *stmt, unsigned char *rcode, unsigned char flag32) {
+	return dasm32(stmt, rcode, flag32);
 }

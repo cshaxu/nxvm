@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-void qddiskReset();
+void qddiskInit();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

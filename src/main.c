@@ -1,6 +1,4 @@
-/* Copyright 2012-2014 Neko. */
-
-#define PRODUCT "Neko's x86 Virtual Machine [0.4.0152]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.4.0153]\n\
 Copyright (c) 2012-2014 Neko.\n"
 
 /*
@@ -150,11 +148,7 @@ Copyright (c) 2012-2014 Neko.\n"
  * 0143 Built Debug 32
  * 0144 Built Aasm 32
  * 014c Rebuilt vmachine.ch
- * 0152 Architecture Refactor: Split
- *
- * Format Unify:
- * new flag system: FLAG_X_X 0x0010, bit macros
- *
+ * 0153 Refactored Architecture
  */
 
 #include "utils.h"

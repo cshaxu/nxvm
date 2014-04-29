@@ -13,12 +13,15 @@ typedef struct {
 	t_bool flagFlip;  /* flag flips when device thread is created  */
 	t_bool flagRun;   /* device thread is running (1) or not (0) */
 	t_bool flagReset; /* reset command is issued or not */
-	t_bool flagBoot;  /* boot from floppy (0) or hard disk (1) */
 } t_device;
 
 extern t_device device;
 
 /* Connection Functions Invoked By Other Modules */
+
+/* Bios Settings */
+void deviceConnectBiosSetBoot(t_bool flagHdd);
+t_bool deviceConnectBiosGetBoot();
 
 /* Disk Drive Operations */
 t_bool deviceConnectFloppyInsert(const t_strptr fname);

@@ -5,9 +5,9 @@
  * two Intel 8259A chips, one master and one slave.
  */
 
-#include "vmachine.h"
-#include "vport.h"
 #include "vbios.h"
+#include "vport.h"
+#include "vmachine.h"
 #include "vpic.h"
 
 t_pic vpic1, vpic2;

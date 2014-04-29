@@ -4,7 +4,6 @@
 
 #include "../../platform/platform.h"
 #include "../vcpu.h"
-#include "../vmachine.h"
 
 #include "qdx.h"
 #include "qdcga.h"
@@ -389,9 +388,11 @@ static void INT_10() {
 	}
 }
 
-void qdcgaReset() {
+void qdcgaInit() {
 	qdxTable[0x10] = (t_faddrcc) INT_10; /* soft cga*/
+}
 
+void qdcgaReset() {
 	/* 80 x 25 */
 	qdcgaVarRowSize = 0x50;
 	vvadp.colsize = 0x19;

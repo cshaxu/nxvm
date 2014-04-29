@@ -3,21 +3,25 @@
 /* VBIOS loads bios data, interrupt routines and post routines for all devices. */
 
 #include "../utils.h"
-#include "debug/aasm32.h"
 
 #include "vram.h"
-#include "vmachine.h"
+#include "vhdd.h"
 
+#include "vmachine.h"
 #include "vbios.h"
 
 t_bios vbios;
 
+static t_bool flagBoot;
 static t_nubit16 ics, iip;
+
+void deviceConnectBiosSetBoot(t_bool flagHdd) {flagBoot = flagHdd;}
+t_bool deviceConnectBiosGetBoot() {return flagBoot;}
 
 static t_nubit32 assemble(const t_strptr stmt, t_nubit16 seg, t_nubit16 off) {
 	t_nubit32 len;
 	t_nubit8 code[0x10000];
-	len = aasm32x(stmt, (t_vaddrcc) code);
+	len = utilsAasm32x(stmt, code, 0);
 	if (!len) {
 		utilsPrint("vbios: invalid x86 assembly instruction.\n");
 	}
@@ -25,8 +29,6 @@ static t_nubit32 assemble(const t_strptr stmt, t_nubit16 seg, t_nubit16 off) {
 	return len;
 }
 
-#include "device.h"
-#include "vhdd.h"
 static void biosLoadData() {
 	memset((void *) vramGetRealAddr(0x0040, 0x0000), 0x00, 0x100);
 	vramRealByte(0x0040, 0x0000) = 0xf8;
@@ -85,7 +87,7 @@ static void biosLoadData() {
 	vramRealByte(0x0040, 0x00a8) = 0x3a;
 	vramRealByte(0x0040, 0x00a9) = 0x5d;
 	vramRealByte(0x0040, 0x00ab) = 0xc0;
-	vramRealByte(0x0040, 0x0100) = device.flagBoot ? 0x80 : 0x00; /* boot disk */
+	vramRealByte(0x0040, 0x0100) = flagBoot ? 0x80 : 0x00; /* boot disk */
 }
 
 static void biosLoadRomInfo() {
