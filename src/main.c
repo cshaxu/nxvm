@@ -1,4 +1,4 @@
-#define PRODUCT "Neko's x86 Virtual Machine [0.4.0153]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.4.0154]\n\
 Copyright (c) 2012-2014 Neko.\n"
 
 /*
@@ -149,6 +149,7 @@ Copyright (c) 2012-2014 Neko.\n"
  * 0144 Built Aasm 32
  * 014c Rebuilt vmachine.ch
  * 0153 Refactored Architecture
+ * 0154 Built AutoMake System
  */
 
 #include "utils.h"

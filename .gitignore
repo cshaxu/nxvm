@@ -15,3 +15,16 @@
 # *.exe
 *.out
 *.app
+
+# AutoMake Directories
+/autom4te.cache
+.deps
+.dirstamp
+
+# AutoMake Makefiles
+/Makefile
+/config.h
+/config.h.in~
+/config.status
+/config.log
+/stamp-h1
