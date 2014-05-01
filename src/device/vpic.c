@@ -5,6 +5,8 @@
  * two Intel 8259A chips, one master and one slave.
  */
 
+#include "../utils.h"
+
 #include "vbios.h"
 #include "vport.h"
 #include "vmachine.h"
@@ -403,8 +405,8 @@ static void init() {
 }
 
 static void reset() {
-	memset(&vpic1, 0x00, sizeof(t_pic));
-	memset(&vpic2, 0x00, sizeof(t_pic));
+	MEMSET(&vpic1, 0x00, sizeof(t_pic));
+	MEMSET(&vpic2, 0x00, sizeof(t_pic));
 	vpic1.status = vpic2.status = ICW1;
 	vpic1.ocw3 = vpic2.ocw3 = 0x02;
 }
@@ -422,12 +424,49 @@ static void refresh() {
 
 static void final() {}
 
-void vpicRegister() {
-	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
-	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
-	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
-	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
-	vmachine.numDevices++;
+void vpicRegister() {vmachineAddMe;}
+
+/* Print PIC status */
+void devicePrintPic() {
+	PRINTF("INFO PIC 1\n==========\n");
+	PRINTF("Init Status = %d, IRX = %x\n",
+		vpic1.status, vpic1.irx);
+	PRINTF("IRR = %x, ISR = %x, IMR = %x, intr = %x\n",
+		vpic1.irr, vpic1.isr, vpic1.imr, vpic1.irr & (~vpic1.imr));
+	PRINTF("ICW1 = %x, LTIM = %d, SNGL = %d, IC4 = %d\n",
+		vpic1.icw1, VPIC_GetLTIM(&vpic1), VPIC_GetSNGL(&vpic1), VPIC_GetIC4(&vpic1));
+	PRINTF("ICW2 = %x\n",vpic1.icw2);
+	PRINTF("ICW3 = %x\n", vpic1.icw3);
+	PRINTF("ICW4 = %x, SFNM = %d, BUF = %d, M/S = %d, AEOI = %d, uPM = %d\n",
+		vpic1.icw4, VPIC_GetSFNM(&vpic1), VPIC_GetBUF(&vpic1), VPIC_GetMS(&vpic1),
+		VPIC_GetAEOI(&vpic1), VPIC_GetuPM(&vpic1));
+	PRINTF("OCW1 = %x\n", vpic1.ocw1);
+	PRINTF("OCW2 = %x, R = %d, SL = %d, EOI = %d, L = %d\n",
+		vpic1.ocw2, VPIC_GetR(&vpic1), VPIC_GetSL(&vpic1), VPIC_GetEOI(&vpic1),
+		vpic1.ocw2 & 0x07);
+	PRINTF("OCW3 = %x, ESMM = %d, SMM = %d, P = %d, RR = %d, RIS = %d\n",
+		vpic1.ocw3, VPIC_GetESMM(&vpic1), VPIC_GetSMM(&vpic1),
+		VPIC_GetP(&vpic1), VPIC_GetRR(&vpic1), VPIC_GetRIS(&vpic1));
+
+	PRINTF("INFO PIC 2\n==========\n");
+	PRINTF("Init Status = %d, IRX = %x\n",
+		vpic2.status, vpic2.irx);
+	PRINTF("IRR = %x, ISR = %x, IMR = %x, intr = %x\n",
+		vpic2.irr, vpic2.isr, vpic2.imr, vpic2.irr & (~vpic2.imr));
+	PRINTF("ICW1 = %x, LTIM = %d, SNGL = %d, IC4 = %d\n",
+		vpic2.icw1, VPIC_GetLTIM(&vpic2), VPIC_GetSNGL(&vpic2), VPIC_GetIC4(&vpic2));
+	PRINTF("ICW2 = %x\n",vpic2.icw2);
+	PRINTF("ICW3 = %x\n", vpic2.icw3);
+	PRINTF("ICW4 = %x, SFNM = %d, BUF = %d, M/S = %d, AEOI = %d, uPM = %d\n",
+		vpic2.icw4, VPIC_GetSFNM(&vpic2), VPIC_GetBUF(&vpic2), VPIC_GetMS(&vpic2),
+		VPIC_GetAEOI(&vpic2), VPIC_GetuPM(&vpic2));
+	PRINTF("OCW1 = %x\n", vpic2.ocw1);
+	PRINTF("OCW2 = %x, R = %d, SL = %d, EOI = %d, L = %d\n",
+		vpic2.ocw2, VPIC_GetR(&vpic2), VPIC_GetSL(&vpic2), VPIC_GetEOI(&vpic2),
+		vpic2.ocw2 & 0x07);
+	PRINTF("OCW3 = %x, ESMM = %d, SMM = %d, P = %d, RR = %d, RIS = %d\n",
+		vpic2.ocw3, VPIC_GetESMM(&vpic2), VPIC_GetSMM(&vpic2),
+		VPIC_GetP(&vpic2), VPIC_GetRR(&vpic2), VPIC_GetRIS(&vpic2));
 }
 
 /*

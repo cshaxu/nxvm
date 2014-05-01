@@ -70,23 +70,21 @@ static void xasmTest() {
 	lend2 = utilsDasm32(dstr2, ins2, vcpu.cs.seg.exec.defsize);
 	if ((!flagtextonly && (lena != lend1 || lena != lend2 || lend1 != lend2 ||
                            memcmp(ins1, ins2, lend1))) || STRCMP(dstr1, dstr2)) {
-		utilsPrint("diff at #%d %04X:%08X(L%08X), len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
+		PRINTF("diff at #%d %04X:%08X(L%08X), len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
                    total, _cs, _eip, vcpu.cs.base + vcpu.eip, lena, lend1, lend2, vcpu.cs.seg.exec.defsize ? 32 : 16);
 		for (i = 0;i < lend1;++i) {
-			utilsPrint("%02X", ins1[i]);
+			PRINTF("%02X", ins1[i]);
 		}
-		utilsPrint("\t%s\n", dstr1);
+		PRINTF("\t%s\n", dstr1);
 		for (i = 0;i < lend2;++i) {
-			utilsPrint("%02X", ins2[i]);
+			PRINTF("%02X", ins2[i]);
 		}
-		utilsPrint("\t%s\n", dstr2);
+		PRINTF("\t%s\n", dstr2);
 		deviceStop();
 	}
 }
 
-static void init() {
-	memset(&vdebug, 0x00, sizeof(t_debug));
-}
+static void init() {MEMSET(&vdebug, 0x00, sizeof(t_debug));}
 
 static void reset() {}
 
@@ -111,7 +109,7 @@ static void refresh() {
 	/* dump cpu status before execution */
 	if (vdebug.recordFile) {	
 		int i;
-		fprintf(vdebug.recordFile, _expression,
+		FPRINTF(vdebug.recordFile, _expression,
 		vcpu.svcextl ? "* " : "",
 		_cs, _eip, vcpu.cs.base + _eip,
 		_ss, _esp, vcpu.ss.base + _esp,
@@ -145,35 +143,42 @@ static void refresh() {
 
 		/* print opcode, at least print 8 bytes */
 		for (i = 0;i < vcpu.oplen;++i) {
-			fprintf(vdebug.recordFile, "%02X", vcpu.opcodes[i]);
+			FPRINTF(vdebug.recordFile, "%02X", vcpu.opcodes[i]);
 		}
 		for (i = vcpu.oplen;i < 8;++i) {
-			fprintf(vdebug.recordFile, "  ");
+			FPRINTF(vdebug.recordFile, "  ");
 		}
 
 		/* print assembly, at least 40 char in length */
-		fprintf(vdebug.recordFile, "%s ", vcpu.stmt);
+		FPRINTF(vdebug.recordFile, "%s ", vcpu.stmt);
 		for (i = (int) strlen(vcpu.stmt);i < 40;++i) {
-			fprintf(vdebug.recordFile, " ");
+			FPRINTF(vdebug.recordFile, " ");
 		}
 
 		/* print memory usage */
 		for (i = 0;i < vcpu.msize;++i) {
-			fprintf(vdebug.recordFile, "[%c:L%08x/%1d/%016llx] ",
+			FPRINTF(vdebug.recordFile, "[%c:L%08x/%1d/%016llx] ",
 				vcpu.mem[i].flagwrite ? 'W' : 'R', vcpu.mem[i].linear,
 				vcpu.mem[i].byte, vcpu.mem[i].data);
 		}
 
-		fprintf(vdebug.recordFile, "\n");
+		FPRINTF(vdebug.recordFile, "\n");
 	}
 }
 
 static void final() {}
 
-void vdebugRegister() {
-	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
-	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
-	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
-	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
-	vmachine.numDevices++;
+void vdebugRegister() {vmachineAddMe;}
+
+void devicePrintDebug() {
+	PRINTF("Recorder:    %s\n", vdebug.recordFile ? "On" : "Off");
+	PRINTF("Trace:       %s\n", vdebug.tracecnt ? "On" : "Off");
+	PRINTF("Break Point: ");
+	if (vdebug.flagbreak) {
+		PRINTF("%04X:%04X\n", vdebug.breakcs,vdebug.breakip);
+	} else if (vdebug.flagbreakx) {
+		PRINTF("L%08X\n", vdebug.breaklinear);
+	} else {
+		PRINTF("Off\n");
+	}
 }

@@ -2,6 +2,8 @@
 
 /* QDCGA implements quick and dirty video control routines. */
 
+#include "../../utils.h"
+
 #include "../../platform/platform.h"
 #include "../vcpu.h"
 
@@ -15,7 +17,7 @@ t_nubit32 qdcgaModeBufSize[0x14] = {
 	28000, 224000, 38400, 153600, 64000};
 
 static void ClearTextMemory() {
-	memset((void*) qdcgaGetTextMemAddrPageCur, 0x00, qdcgaGetPageSize);
+	MEMSET((void*) qdcgaGetTextMemAddrPageCur, 0x00, qdcgaGetPageSize);
 }
 
 static void CursorBackward(t_nubit8 page) {
@@ -42,11 +44,11 @@ static void CursorNewLine(t_nubit8 page) {
 		qdcgaVarCursorPosRow(page)++;
 	} else {
 		/* move up video memory content */
-		memcpy((void *) qdcgaGetCharAddr(page, 0, 0),
+		MEMCPY((void *) qdcgaGetCharAddr(page, 0, 0),
 		       (void *) qdcgaGetCharAddr(page, 1, 0),
 		       qdcgaGetPageSize - 2 * qdcgaVarRowSize);
 		/* zero the last line */
-		memset((void *) qdcgaGetCharAddr(page + 1, -1, 0),
+		MEMSET((void *) qdcgaGetCharAddr(page + 1, -1, 0),
 		       0x00, 2 * qdcgaVarRowSize);
 	}
 }
@@ -60,11 +62,11 @@ static void CursorLineFeed(t_nubit8 page) {
 		qdcgaVarCursorPosRow(page)++;
 	} else {
 		/* move up video memory content */
-		memcpy((void *) qdcgaGetCharAddr(page, 0, 0),
+		MEMCPY((void *) qdcgaGetCharAddr(page, 0, 0),
 		       (void *) qdcgaGetCharAddr(page, 1, 0),
 		       qdcgaGetPageSize - 2 * qdcgaVarRowSize);
 		/* zero the last line */
-		memset((void *) qdcgaGetCharAddr(page + 1, -1, 0),
+		MEMSET((void *) qdcgaGetCharAddr(page + 1, -1, 0),
 		       0x00, 2 * qdcgaVarRowSize);
 	}
 }
@@ -128,7 +130,7 @@ t_bool deviceConnectDisplayGetCursorChange() {
 }
 t_bool deviceConnectDisplayGetBufferChange() {
 	if (memcmp((void *) vvadp.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize)) {
-		memcpy((void *) vvadp.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
+		MEMCPY((void *) vvadp.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
 		return 1;
 	} else {
 		return 0;
@@ -183,7 +185,7 @@ static void qdcgaSetDisplayMode() {
 		break;
 	}
 	qdcgaVarRagenSize = qdcgaModeBufSize[qdcgaVarMode];
-	memcpy((void *) vvadp.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
+	MEMCPY((void *) vvadp.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
 	ClearTextMemory();
 }
 

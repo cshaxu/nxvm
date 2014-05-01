@@ -2,7 +2,8 @@
 
 /* PLATFORM is the hub that connects all platform-specific modules */
 
-#include "../global.h"
+#include "../utils.h"
+
 #include "platform.h"
 
 t_platform platform;
@@ -22,7 +23,7 @@ t_platform platform;
 #endif
 
 void platformInit() {
-	memset(&platform, 0x00, sizeof(t_platform));
+	MEMSET(&platform, 0x00, sizeof(t_platform));
 	platform.flagMode = 0;
 }
 

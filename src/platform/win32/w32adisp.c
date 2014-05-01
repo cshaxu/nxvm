@@ -326,7 +326,7 @@ static COLORREF CharProp2Color(UCHAR prop, BOOL fore) {
 #define FONT_WIDTH  8
 #define FONT_HEIGHT 16
 #define FONT_NCHAR  256
-#define FONT_NCOLOR 256//128
+#define FONT_NCOLOR 256 /* 128 */
 static HDC hdcFont;
 static HBITMAP hBmpFont;
 static BOOL bFontCharExist[FONT_NCHAR][FONT_NCOLOR];
@@ -407,7 +407,7 @@ static VOID DisplayCursor() {
 	RECT rect;
 	INT x1_cursor, y1_cursor, x2_cursor, y2_cursor;
 	x1_cursor = x2_cursor =
-		deviceConnectDisplayGetCurrentCursorPosX() * FONT_HEIGHT;// + FONT_HEIGHT / 2;
+		deviceConnectDisplayGetCurrentCursorPosX() * FONT_HEIGHT; /* + FONT_HEIGHT / 2 */;
 	cursorTop = deviceConnectDisplayGetCursorTop();
 	cursorBottom = deviceConnectDisplayGetCursorBottom();
 	x1_cursor += (cursorTop % 8) * FONT_HEIGHT / 8;

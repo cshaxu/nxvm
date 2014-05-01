@@ -55,32 +55,35 @@ MS-DOS Editor in Linux Terminal
 
 Compiling
 ---------
-The compiling options are defined in `src/vmachine/vglobal.h`, to specify 32/64 bit compilation. It also has a macro to specify the platform WIN32/LINUX. In most cases, user doesn't need to change anything there.
+The compiling options are defined in `src/global.h`, to specify 32/64 bit compilation. It also has a macro to specify the platform WIN32/LINUX. In most cases, user doesn't need to change anything there.
 
 ### Windows
 IDE is MS Visual Studio 2008 or higher.  
-Create an empty Win32 Console project and add all `.c` and `.h` files in the folders `src/` and `src/vmachine/`.  
-Then remove the following files:  
-- src/vmachine/vcpuapi.h  
-- src/vmachine/vcpuapi.cc  
-- src/vmachine/vcpuins_i8086.c  
-- src/vmachine/system/linux.h  
-- src/vmachine/system/linux.c  
+Create an empty Win32 Console project and add all `.c` and `.h` files from the folders:  
+- src  
+- src/device  
+- src/device/qdx  
+- src/platform  
+- src/platform/win32  
+- src/xasm32  
 
 
 ### Linux
-`makefile` is provided in `src/`, and could be compiled by `make` command.  
-Before compiling, you need to install ncurses and pthread libraries.
+1. Install `ncurses` and `pthread` if they do not exist.  
+2. Change directory to NXVM project folder.  
+3. Type `./configure` to check libraries and generate makefile.  
+4. Type `make` to build NXVM. Output binary is `nxvm` in project folder.  
+5. Type `./nxvm` to run NXVM.  
 
 
 Quick Start
 -----------
-1. Prepare for a 1.44MB floppy disk image file as the startup disk  
-2. Start NXVM and type `help` for available commands  
-3. Type `device fdd insert <filename>` to load the floppy disk image file into NXVM floppy drive  
-4. Type `mode` to switch display mode(Win32 Console/Win32 App Window)  
-5. Type `info` to learn about emulator status  
-6. Type `start` to start machine  
+1. Prepare for a 1.44MB floppy disk image file as the startup disk.  
+2. Start NXVM and type `help` for available commands.  
+3. Type `device fdd insert <filename>` to load the floppy disk image file into NXVM floppy drive.  
+4. Type `mode` to switch display mode(Win32 Console/Win32 App Window).  
+5. Type `info` to learn about emulator status.  
+6. Type `start` to start machine.  
 7. Type `stop` under Win32 App Window mode, or press `F9` at anytime to stop emulation.  
 8. The emulation can be resumed by `resume` command in NXVM console.  
 
@@ -100,9 +103,9 @@ Emulator Status Info
 
 
 ### Emulator Itself
-- Platform-related Components (src/vmachine/system/*.ch)  
-- Basic I/O System (src/vmacheine/bios/*.ch)  
-- Hardware Emulation Modules (src/vmachine/v*.ch)  
+- Platform-related Components (src/platform/)  
+- Basic I/O System (src/device/vbios.ch)  
+- Hardware Emulation Modules (src/device/vmachine.ch)  
 
 
 The emulator is divided into 3 parts: Hardware Emulation, BIOS and Platform-related Part.
@@ -117,7 +120,7 @@ Platform-related Part basically provides keyboard and display, and it is designe
 NXVM is NOT just an emulator. It does more than simply emulating a PC. Users may debug an operating system in NXVM using debugger.
 
 
-##### Debugger Console (src/vmachine/debug/debug.ch)
+##### Debugger Console (src/debug.ch, src/device/vdebug.ch)
 The debugger is used to test and debug the guest operating system running inside NXVM.
 
 
@@ -131,13 +134,9 @@ NXVM Internal Debugger
 ![NXVM Internal Debugger](img/debugger_w32c.jpg)  
 
 
-##### Recorder (src/vmachine/debug/record.ch)
-The recorder provides various modes to dump CPU register values and read/write operations at each CPU instruction.
-
-
 ##### Assembler/Disassembler
-- i386 Assembler (src/vmachine/debug/aasm32.ch)  
-- i386 Disassembler (src/vmachine/debug/dasm32.ch)  
+- i386 Assembler (src/xasm32/aasm32.ch)  
+- i386 Disassembler (src/xasm32/dasm32.ch)  
 
 
 The emulator includes an integral assembler and disassembler. They translates Assembly codes from/to machine codes. All Intel-format x86 instructions are supported.  

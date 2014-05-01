@@ -43,7 +43,7 @@ static void io_read_0071() {
 static void refresh();
 
 static void init() {
-	memset(&vcmos, 0x00, sizeof(t_cmos));
+	MEMSET(&vcmos, 0x00, sizeof(t_cmos));
 	vport.in[0x0071] = (t_faddrcc) io_read_0071;
 	vport.out[0x0070] = (t_faddrcc) io_write_0070;
 	vport.out[0x0071] = (t_faddrcc) io_write_0071;
@@ -90,10 +90,4 @@ static void refresh() {
 
 static void final() {}
 
-void vcmosRegister() {
-	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
-	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
-	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
-	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
-	vmachine.numDevices++;
-}
+void vcmosRegister() {vmachineAddMe;}

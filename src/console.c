@@ -7,13 +7,6 @@
 
 #include "utils.h"
 
-#include "device/vram.h"
-#include "device/vcpu.h"
-#include "device/vfdd.h"
-#include "device/vhdd.h"
-#include "device/vdebug.h"
-#include "device/vmachine.h"
-
 #include "device/device.h"
 #include "platform/platform.h"
 #include "machine.h"
@@ -62,96 +55,96 @@ static void doHelp() {
 	switch (narg) {
 	case 2:
 		if (!strcmp(args[1], "help")) {
-			utilsPrint("Show help info\n");
-			utilsPrint("\nHELP\n");
-			utilsPrint("  show menu of all commands\n");
-			utilsPrint("\nHELP <command>\n");
-			utilsPrint("  show help info for command\n");
+			PRINTF("Show help info\n");
+			PRINTF("\nHELP\n");
+			PRINTF("  show menu of all commands\n");
+			PRINTF("\nHELP <command>\n");
+			PRINTF("  show help info for command\n");
 			break;
 		} else if (!strcmp(args[1], "exit")) {
-			utilsPrint("Quit the console\n");
-			utilsPrint("\nEXIT\n");
+			PRINTF("Quit the console\n");
+			PRINTF("\nEXIT\n");
 			break;
 		} else if (!strcmp(args[1], "info")) {
-			utilsPrint("List virtual machine status\n");
-			utilsPrint("\nINFO\n");
+			PRINTF("List virtual machine status\n");
+			PRINTF("\nINFO\n");
 			break;
 		} else if (!strcmp(args[1], "debug")) {
-			utilsPrint("Launch NXVM hardware debugger\n");
-			utilsPrint("\nDEBUG\n");
+			PRINTF("Launch NXVM hardware debugger\n");
+			PRINTF("\nDEBUG\n");
 			break;
 		} else if (!strcmp(args[1], "debug32")) {
-			utilsPrint("Launch NXVM 32-bit hardware debugger\n");
-			utilsPrint("\nDEBUG\n");
+			PRINTF("Launch NXVM 32-bit hardware debugger\n");
+			PRINTF("\nDEBUG\n");
 			break;
 		} else if (!strcmp(args[1], "record")) {
-			utilsPrint("Record cpu status in each iteration for futher dumping\n");
-			utilsPrint("\nRECORD start <file> | stop\n");
-			utilsPrint("  start: open output file for record writes\n");
-			utilsPrint("  stop:  close output file to finish recording\n");
+			PRINTF("Record cpu status in each iteration for futher dumping\n");
+			PRINTF("\nRECORD start <file> | stop\n");
+			PRINTF("  start: open output file for record writes\n");
+			PRINTF("  stop:  close output file to finish recording\n");
 			break;
 		} else if (!strcmp(args[1], "set")) {
-			utilsPrint("Change BIOS settings\n");
-			utilsPrint("\nSET <item> <value>\n");
-			utilsPrint("  available items and values\n");
-			utilsPrint("  boot   fdd, hdd\n");
+			PRINTF("Change BIOS settings\n");
+			PRINTF("\nSET <item> <value>\n");
+			PRINTF("  available items and values\n");
+			PRINTF("  boot   fdd, hdd\n");
 			break;
 		} else if (!strcmp(args[1], "device")) {
-			utilsPrint("Change NXVM devices\n");
-			utilsPrint("\nDEVICE ram <size>\n");
-			utilsPrint("  change memory size (KB)\n");
-			utilsPrint("\nDEVICE display console | window\n");
-			utilsPrint("  change display type\n");
-			utilsPrint("\nDEVICE fdd create | (insert <file>) | (remove <file>)\n");
-			utilsPrint("  change floppy drive status:\n");
-			utilsPrint("  create: discard current floppy image\n");
-			utilsPrint("          and create a new one\n");
-			utilsPrint("  insert: load floppy image from file\n");
-			utilsPrint("  remove: remove floppy image and dump to file\n");
-			utilsPrint("\nDEVICE hdd (create [cyl <num>]) | (connect <file>) | (disconnect <file>)\n");
-			utilsPrint("  change hard disk drive status:\n");
-			utilsPrint("  create:     discard current hard disk image\n");
-			utilsPrint("              and create a new one of n cyls\n");
-			utilsPrint("  connect:    load hard disk image from file\n");
-			utilsPrint("  disconnect: remove hard disk image and dump to file\n");
+			PRINTF("Change NXVM devices\n");
+			PRINTF("\nDEVICE ram <size>\n");
+			PRINTF("  change memory size (KB)\n");
+			PRINTF("\nDEVICE display console | window\n");
+			PRINTF("  change display type\n");
+			PRINTF("\nDEVICE fdd create | (insert <file>) | (remove <file>)\n");
+			PRINTF("  change floppy drive status:\n");
+			PRINTF("  create: discard current floppy image\n");
+			PRINTF("          and create a new one\n");
+			PRINTF("  insert: load floppy image from file\n");
+			PRINTF("  remove: remove floppy image and dump to file\n");
+			PRINTF("\nDEVICE hdd (create [cyl <num>]) | (connect <file>) | (disconnect <file>)\n");
+			PRINTF("  change hard disk drive status:\n");
+			PRINTF("  create:     discard current hard disk image\n");
+			PRINTF("              and create a new one of n cyls\n");
+			PRINTF("  connect:    load hard disk image from file\n");
+			PRINTF("  disconnect: remove hard disk image and dump to file\n");
 			break;
 		} else if (!strcmp(args[1], "start")) {
-			utilsPrint("Start virtual machine\n");
-			utilsPrint("\nSTART\n");
+			PRINTF("Start virtual machine\n");
+			PRINTF("\nSTART\n");
 			break;
 		} else if (!strcmp(args[1], "reset")) {
-			utilsPrint("Reset virtual machine\n");
-			utilsPrint("\nRESET\n");
+			PRINTF("Reset virtual machine\n");
+			PRINTF("\nRESET\n");
 			break;
 		} else if (!strcmp(args[1], "stop")) {
-			utilsPrint("Stop virtual machine\n");
-			utilsPrint("\nSTOP\n");
+			PRINTF("Stop virtual machine\n");
+			PRINTF("\nSTOP\n");
 			break;
 		} else if (!strcmp(args[1], "resume")) {
-			utilsPrint("Resume virtual machine\n");
-			utilsPrint("\nRESUME\n");
+			PRINTF("Resume virtual machine\n");
+			PRINTF("\nRESUME\n");
 			break;
 		}
 	case 1:
 	default:
-		utilsPrint("NXVM Console Commands\n");
-		utilsPrint("=====================\n");
-		utilsPrint("HELP    Show help info\n");
-		utilsPrint("EXIT    Quit the console\n");
-		utilsPrint("INFO    List all NXVM info\n");
-		utilsPrint("\n");
-		utilsPrint("DEBUG   Launch NXVM hardware debugger\n");
-		utilsPrint("RECORD  Record cpu status for each instruction\n");
-		utilsPrint("\n");
-		utilsPrint("SET     Change BIOS settings\n");
-		utilsPrint("DEVICE  Change hardware parts\n");
-		utilsPrint("\n");
-		utilsPrint("START   Start virtual machine\n");
-		utilsPrint("RESET   Reset virtual machine\n");
-		utilsPrint("STOP    Stop virtual machine\n");
-		utilsPrint("RESUME  Resume virtual machine\n");
-		utilsPrint("\n");
-		utilsPrint("For command usage, type 'HELP <command>'.\n");
+		PRINTF("NXVM Console Commands\n");
+		PRINTF("=====================\n");
+		PRINTF("HELP    Show help info\n");
+		PRINTF("EXIT    Quit the console\n");
+		PRINTF("INFO    List all NXVM info\n");
+		PRINTF("\n");
+		PRINTF("DEBUG   Launch NXVM hardware debugger\n");
+		PRINTF("RECORD  Record cpu status for each instruction\n");
+		PRINTF("\n");
+		PRINTF("SET     Change BIOS settings\n");
+		PRINTF("DEVICE  Change hardware parts\n");
+		PRINTF("\n");
+		PRINTF("START   Start virtual machine\n");
+		PRINTF("RESET   Reset virtual machine\n");
+		PRINTF("STOP    Stop virtual machine\n");
+		PRINTF("RESUME  Resume virtual machine\n");
+		PRINTF("\n");
+		PRINTF("For command usage, type 'HELP <command>'.\n");
 		break;
 	}
 }
@@ -164,7 +157,7 @@ static void doExit() {
 	if (!device.flagRun) {
 		flagExit = 1;
 	} else {
-		utilsPrint("Please stop NXVM before exit.\n");
+		PRINTF("Please stop NXVM before exit.\n");
 	}
 }
 
@@ -173,39 +166,25 @@ static void doInfo() {
 	if (narg != 1) {
 		GetHelp;
 	}
-	utilsPrint("NXVM Device Info\n");
-	utilsPrint("================\n");
-	utilsPrint("Machine:           %s\n", NXVM_DEVICE_MACHINE);
-	utilsPrint("CPU:               %s\n", NXVM_DEVICE_CPU);
-	utilsPrint("RAM Size:          %d MB\n", vram.size >> 20);
-	utilsPrint("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
-		vfddGetImageSize * 1. / 0xfa000,
-		vfdd.flagexist ? "inserted" : "not inserted");
-	utilsPrint("Hard Disk Drive:   %s, %.2f MB, %s\n", NXVM_DEVICE_HDD,
-		vhddGetImageSize * 1. / 0x100000,
-		vhdd.flagexist ? "connected" : "disconnected");
-	utilsPrint("Display Type:      %s\n", platform.flagMode ? "Window" : "Console");
-	utilsPrint("\n");
-	utilsPrint("NXVM BIOS Settings\n");
-	utilsPrint("==================\n");
-	utilsPrint("Boot Disk: %s\n", deviceConnectBiosGetBoot() ? "Hard Drive" : "Floppy");
-	utilsPrint("\n");
-	utilsPrint("NXVM Debug Status\n");
-	utilsPrint("=================\n");
-	utilsPrint("Recorder:    %s\n", vdebug.recordFile ? "On" : "Off");
-	utilsPrint("Trace:       %s\n", vdebug.tracecnt ? "On" : "Off");
-	utilsPrint("Break Point: ");
-	if (vdebug.flagbreak) {
-		utilsPrint("%04X:%04X\n", vdebug.breakcs,vdebug.breakip);
-	} else if (vdebug.flagbreakx) {
-		utilsPrint("L%08X\n", vdebug.breaklinear);
-	} else {
-		utilsPrint("Off\n");
-	}
-	utilsPrint("\n");
-	utilsPrint("NXVM Running Status\n");
-	utilsPrint("===================\n");
-	utilsPrint("Running: %s\n", device.flagRun  ? "Yes" : "No");
+	PRINTF("NXVM Device Info\n");
+	PRINTF("================\n");
+	devicePrintMachine();
+	PRINTF("\n");
+	PRINTF("NXVM Platform Info\n");
+	PRINTF("==================\n");
+	PRINTF("Display Type: %s\n", platform.flagMode ? "Window" : "Console");
+	PRINTF("\n");
+	PRINTF("NXVM BIOS Settings\n");
+	PRINTF("==================\n");
+	devicePrintBios();
+	PRINTF("\n");
+	PRINTF("NXVM Debug Status\n");
+	PRINTF("=================\n");
+	devicePrintDebug();
+	PRINTF("\n");
+	PRINTF("NXVM Running Status\n");
+	PRINTF("===================\n");
+	PRINTF("Running: %s\n", device.flagRun  ? "Yes" : "No");
 }
 
 /* Starts internal debugger */
@@ -222,7 +201,7 @@ static void doRecord() {
 		GetHelp;
 	}
 	if (device.flagRun) {
-		utilsPrint("Cannot change record status or dump record now.\n");
+		PRINTF("Cannot change record status or dump record now.\n");
 		return;
 	}
 	if (!strcmp(args[1], "start")) {
@@ -264,14 +243,14 @@ static void doDevice() {
 		GetHelp;
 	}
 	if (device.flagRun) {
-		utilsPrint("Cannot change device now.\n");
+		PRINTF("Cannot change device now.\n");
 		return;
 	}
 	if (!strcmp(args[1], "ram")) {
 		if (narg != 3) {
 			GetHelp;
 		}
-		vramAlloc(atoi(args[2]) << 10);
+		deviceConnectRamAllocate(atoi(args[2]) << 10);
 	} else if(!strcmp(args[1], "display")) {
 		if (narg != 3) {
 			GetHelp;
@@ -288,25 +267,25 @@ static void doDevice() {
 			GetHelp;
 		}
 		if (!strcmp(args[2], "create")) {
-			vfdd.flagexist = 1;
-			utilsPrint("Floppy disk created.\n");
+			deviceConnectFloppyCreate();
+			PRINTF("Floppy disk created.\n");
 		} else if (!strcmp(args[2], "insert")) {
 			if (narg < 4) {
 				GetHelp;
 			}
 			if (!deviceConnectFloppyInsert(args[3])) {
-				utilsPrint("Floppy disk inserted.\n");
+				PRINTF("Floppy disk inserted.\n");
 			} else {
-				utilsPrint("Cannot read floppy disk from '%s'.\n", args[3]);
+				PRINTF("Cannot read floppy disk from '%s'.\n", args[3]);
 			}
 		} else if (!strcmp(args[2], "remove")) {
 			if (narg < 4) {
 				args[3] = NULL;
 			}
 			if (!deviceConnectFloppyRemove(args[3])) {
-				utilsPrint("Floppy disk removed.\n");
+				PRINTF("Floppy disk removed.\n");
 			} else {
-				utilsPrint("Cannot write floppy disk to '%s'.\n", args[3]);
+				PRINTF("Cannot write floppy disk to '%s'.\n", args[3]);
 			}
 		} else {
 			GetHelp;
@@ -316,35 +295,37 @@ static void doDevice() {
 			GetHelp;
 		}
 		if (!strcmp(args[2], "create")) {
-			vhdd.flagexist = 1;
 			if (narg > 3) {
 				if (narg == 5 && !strcmp(args[3], "cyl")) {
-					vhdd.ncyl = atoi(args[4]);
+					if (atoi(args[4])) {
+						deviceConnectHardDiskCreate(atoi(args[4]));
+					} else {
+						GetHelp;
+					}
 				} else {
 					GetHelp;
 				}
 			} else {
-				vhdd.ncyl = 20;
+				deviceConnectHardDiskCreate(20);
 			}
-			vhddAlloc();
-			utilsPrint("Hard disk created.\n");
+			PRINTF("Hard disk created.\n");
 		} else if (!strcmp(args[2], "connect")) {
 			if (narg < 4) {
 				GetHelp;
 			}
 			if (!deviceConnectHardDiskInsert(args[3])) {
-				utilsPrint("Hard disk connected.\n");
+				PRINTF("Hard disk connected.\n");
 			} else {
-				utilsPrint("Cannot read hard disk from '%s'.\n", args[3]);
+				PRINTF("Cannot read hard disk from '%s'.\n", args[3]);
 			}
 		} else if (!strcmp(args[2], "disconnect")) {
 			if (narg < 4) {
 				args[3] = NULL;
 			}
 			if (!deviceConnectHardDiskRemove(args[3])) {
-				utilsPrint("Hard disk disconnected.\n");
+				PRINTF("Hard disk disconnected.\n");
 			} else {
-				utilsPrint("Cannot write hard disk to '%s'.\n", args[3]);
+				PRINTF("Cannot write hard disk to '%s'.\n", args[3]);
 			}
 		} else {
 			GetHelp;
@@ -393,14 +374,14 @@ static void execute() {
 	} else if (!strcmp(args[0], "resume")) {
 		machineResume();
 	} else {
-		utilsPrint("Illegal command '%s'.\n",args[0]);
+		PRINTF("Illegal command '%s'.\n",args[0]);
 	}
-	utilsPrint("\n");
+	PRINTF("\n");
 }
 
 /* Initializes console */
 static void consoleInit() {
-	args = (char **) malloc(CONSOLE_MAXNARG * sizeof(char *));
+	args = (char **) MALLOC(CONSOLE_MAXNARG * sizeof(char *));
 	flagExit = 0;
 	machineInit();
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
@@ -414,16 +395,16 @@ static void consoleInit() {
 static void consoleFinal() {
 	machineFinal();
 	if (args) {
-		free(args);
+		FREE((void *) args);
 	}
 }
 
 /* Entry point of NXVM console */
 void consoleMain() {
 	consoleInit();
-	utilsPrint("\nPlease enter 'HELP' for information.\n\n");
+	PRINTF("\nPlease enter 'HELP' for information.\n\n");
 	while (!flagExit) {
-		utilsPrint("Console> ");
+		PRINTF("Console> ");
 		FGETS(strCmdBuff, MAXLINE, stdin);
 		parse();
 		execute();

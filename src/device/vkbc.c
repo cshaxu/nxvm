@@ -21,10 +21,4 @@ static void refresh() {}
 
 static void final() {}
 
-void vkbcRegister() {
-	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
-	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
-	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
-	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
-	vmachine.numDevices++;
-}
+void vkbcRegister() {vmachineAddMe;}

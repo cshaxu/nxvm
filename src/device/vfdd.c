@@ -19,9 +19,9 @@ t_bool deviceConnectFloppyInsert(const t_strptr fname) {
 	t_nubitcc count;
 	FILE *image = FOPEN(fname, "rb");
 	if (image && vfdd.base) {
-		count = fread((void *) vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
+		count = FREAD((void *) vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
 		vfdd.flagexist = 1;
-		fclose(image);
+		FCLOSE(image);
 		return 0;
 	} else {
 		return 1;
@@ -35,15 +35,15 @@ t_bool deviceConnectFloppyRemove(const t_strptr fname) {
 		image = FOPEN(fname, "wb");
 		if(image) {
 			if (!vfdd.flagro)
-				count = fwrite((void *) vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
+				count = FWRITE((void *) vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
 			vfdd.flagexist = 0;
-			fclose(image);
+			FCLOSE(image);
 		} else {
 			return 1;
 		}
 	}
 	vfdd.flagexist = 0;
-	memset((void *) vfdd.base, 0x00, vfddGetImageSize);
+	MEMSET((void *) vfdd.base, 0x00, vfddGetImageSize);
 	return 0;
 }
 
@@ -88,22 +88,22 @@ void vfddFormatTrack(t_nubit8 fillbyte) {
 	vfdd.head   = 0x00;
 	vfdd.sector = 0x01;
 	vfddSetPointer;
-	memset((void *) vfdd.curr, fillbyte, vfdd.nsector * vfdd.nbyte);
+	MEMSET((void *) vfdd.curr, fillbyte, vfdd.nsector * vfdd.nbyte);
 	vfdd.head   = 0x01;
 	vfdd.sector = 0x01;
 	vfddSetPointer;
-	memset((void *) vfdd.curr, fillbyte, vfdd.nsector * vfdd.nbyte);
+	MEMSET((void *) vfdd.curr, fillbyte, vfdd.nsector * vfdd.nbyte);
 	vfdd.sector = vfdd.nsector;
 }
 
 static void init() {
-	memset(&vfdd, 0x00, sizeof(t_fdd));
+	MEMSET(&vfdd, 0x00, sizeof(t_fdd));
 	vfdd.ncyl    = 0x0050;
 	vfdd.nhead   = 0x0002;
 	vfdd.nsector = 0x0012;
 	vfdd.nbyte   = 0x0200;
-	vfdd.base    = (t_vaddrcc) malloc(vfddGetImageSize);
-	memset((void *) vfdd.base, 0x00, vfddGetImageSize);
+	vfdd.base    = (t_vaddrcc) MALLOC(vfddGetImageSize);
+	MEMSET((void *) vfdd.base, 0x00, vfddGetImageSize);
 }
 
 static void reset() {}
@@ -112,15 +112,11 @@ static void refresh() {}
 
 static void final() {
 	if (vfdd.base) {
-		free((void *) vfdd.base);
+		FREE((void *) vfdd.base);
 	}
 	vfdd.base = (t_vaddrcc) NULL;
 }
 
-void vfddRegister() {
-	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
-	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
-	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
-	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
-	vmachine.numDevices++;
-}
+void vfddRegister() {vmachineAddMe;}
+
+void deviceConnectFloppyCreate() {vfdd.flagexist = 1;}

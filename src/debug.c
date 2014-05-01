@@ -1,14 +1,17 @@
 /* This file is a part of NXVM project. */
 
+/* DEBUG is the debug console, which is highly coupled with device components. */
+
 #include "utils.h"
-#include "machine.h"
 
 #include "device/vport.h"
 #include "device/vcpu.h"
 #include "device/vcpuins.h"
 #include "device/vram.h"
 #include "device/vdebug.h"
+
 #include "device/device.h"
+#include "machine.h"
 
 #include "debug.h"
 
@@ -112,7 +115,7 @@ static void aconsole()
 	t_nubitcc errAsmPos;
 	t_bool flagexitasm = 0;
 	while(!flagexitasm) {
-		utilsPrint("%04X:%04X ", asmSegRec, asmPtrRec);
+		PRINTF("%04X:%04X ", asmSegRec, asmPtrRec);
 		fflush(stdin);
 		FGETS(cmdAsmBuff,MAXLINE,stdin);
 		utilsLowerStr(cmdAsmBuff);
@@ -126,14 +129,14 @@ static void aconsole()
 		if(!len) errAsmPos = (t_nubitcc)strlen(cmdAsmBuff) + 9;
 		else {
 			if (vcpuinsWriteLinear((asmSegRec << 4) + asmPtrRec, (t_vaddrcc)acode, len)) {
-				utilsPrint("debug: fail to write to L%08X\n", (asmSegRec << 4) + asmPtrRec);
+				PRINTF("debug: fail to write to L%08X\n", (asmSegRec << 4) + asmPtrRec);
 				return;
 			}
 			asmPtrRec += len;
 		}
 		if(errAsmPos) {
-			for(i = 0;i < errAsmPos;++i) utilsPrint(" ");
-			utilsPrint("^ Error\n");
+			for(i = 0;i < errAsmPos;++i) PRINTF(" ");
+			PRINTF("^ Error\n");
 		}
 	}
 }
@@ -168,9 +171,9 @@ static void c()
 				val1 = vramRealByte(seg1,ptr1+i);
 				val2 = vramRealByte(seg2,ptr2+i);
 				if(val1 != val2) {
-					utilsPrint("%04X:%04X  ", seg1, ptr1 + i);
-					utilsPrint("%02X  %02X", val1, val2);
-					utilsPrint("  %04X:%04X\n", seg2, ptr2 + i);
+					PRINTF("%04X:%04X  ", seg1, ptr1 + i);
+					PRINTF("%02X  %02X", val1, val2);
+					PRINTF("  %04X:%04X\n", seg2, ptr2 + i);
 				}
 			}
 		}
@@ -186,13 +189,13 @@ static void dprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 	c[0x10] = '\0';
 	if(end < start) end = 0xffff;
 	for(i = start-(start%0x10);i <= end+(0x10-end%0x10)-1;++i) {
-		if(i%0x10 == 0) utilsPrint("%04X:%04X  ", segment, i);
+		if(i%0x10 == 0) PRINTF("%04X:%04X  ", segment, i);
 		if(i < start || i > end) {
-			utilsPrint("  ");
+			PRINTF("  ");
 			c[i%0x10] = ' ';
 		} else {
 			c[i%0x10] = vramRealByte(segment,i);
-			utilsPrint("%02X",c[i%0x10] & 0xff);
+			PRINTF("%02X",c[i%0x10] & 0xff);
 			t = c[i%0x10];
 			if((t >=1 && t <= 7) || t == ' ' ||
 				(t >=11 && t <= 12) ||
@@ -200,10 +203,10 @@ static void dprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
 				(t >=33)) ;
 			else c[i%0x10] = '.';
 		}
-		utilsPrint(" ");
-		if(i%0x10 == 7 && i >= start && i < end) utilsPrint("\b-");
+		PRINTF(" ");
+		if(i%0x10 == 7 && i >= start && i < end) PRINTF("\b-");
 		if((i+1)%0x10 == 0) {
-			utilsPrint("  %s\n",c);
+			PRINTF("  %s\n",c);
 		}
 		if(i == 0xffff) break;
 	}
@@ -235,19 +238,19 @@ static void e()
 	else if(narg == 2) {
 		addrparse(vcpu.ds.selector,arg[1]);
 		if(nErrPos) return;
-		utilsPrint("%04X:%04X  ", seg, ptr);
-		utilsPrint("%02X",vramRealByte(seg,ptr));
-		utilsPrint(".");
+		PRINTF("%04X:%04X  ", seg, ptr);
+		PRINTF("%02X",vramRealByte(seg,ptr));
+		PRINTF(".");
 		FGETS(s,MAXLINE,stdin);
-		utilsLowerStr(s);//!!
-		val = scannubit8(s);//!!
+		utilsLowerStr(s); /* MARK */
+		val = scannubit8(s); /* MARK */
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			vramRealByte(seg,ptr) = val;
 	} else if(narg > 2) {
 		addrparse(vcpu.ds.selector,arg[1]);
 		if(nErrPos) return;
 		for(i = 2;i < narg;++i) {
-			val = scannubit8(arg[i]);//!!
+			val = scannubit8(arg[i]); /* MARK */
 			if(!nErrPos) vramRealByte(seg,ptr) = val;
 			else break;
 			ptr++;
@@ -280,7 +283,7 @@ static void rprintregs();
 static void g()
 {
 	if (device.flagRun) {
-		utilsPrint("NXVM is already running.\n");
+		PRINTF("NXVM is already running.\n");
 		return;
 	}
 	switch(narg) {
@@ -297,7 +300,7 @@ static void g()
 		vdebug.flagbreak = 1;
 		addrparse(vcpu.cs.selector,arg[1]);
 		if (vcpuinsLoadSreg(&vcpu.cs, seg)) {
-			utilsPrint("debug: fail to load cs from %04X\n", seg);
+			PRINTF("debug: fail to load cs from %04X\n", seg);
 			return;
 		}
 		_ip = ptr;
@@ -321,10 +324,10 @@ static void h()
 		val1 = scannubit16(arg[1]);
 		val2 = scannubit16(arg[2]);
 		if(!nErrPos) {
-			utilsPrint("%04X",GetMax16(val1+val2));
-			utilsPrint("  ");
-			utilsPrint("%04X",GetMax16(val1-val2));
-			utilsPrint("\n");
+			PRINTF("%04X",GetMax16(val1+val2));
+			PRINTF("  ");
+			PRINTF("%04X",GetMax16(val1-val2));
+			PRINTF("\n");
 		}
 	}
 }
@@ -337,7 +340,7 @@ static void i()
 		in = scannubit16(arg[1]);
 		if (nErrPos) return;
 		ExecFun(vport.in[in]);
-		utilsPrint("%08X\n", vport.iodword);
+		PRINTF("%08X\n", vport.iodword);
 	}
 }
 /* load */
@@ -347,7 +350,7 @@ static void l()
 	t_nubit16 i = 0;
 	t_nubit32 len = 0;
 	FILE *load = FOPEN(strFileName,"rb");
-	if(!load) utilsPrint("File not found\n");
+	if(!load) PRINTF("File not found\n");
 	else {
 		switch(narg) {
 		case 1:
@@ -369,7 +372,7 @@ static void l()
 			if(len > 0xffff) _bx = (len>>16);
 			else _bx = 0x0000;
 		}
-		fclose(load);
+		FCLOSE(load);
 	}
 }
 /* move */
@@ -437,38 +440,38 @@ static t_nubit8 uprintins(t_nubit16 seg, t_nubit16 off)
 		for (i = strlen(str);i < 24;++i) STRCAT(str, " ");
 		STRCAT(str, stmt);
 	}
-	utilsPrint("%s\n", str);
+	PRINTF("%s\n", str);
 	return len;
 }
 static void rprintflags()
 {
-	utilsPrint("%s ", _GetEFLAGS_OF ? "OV" : "NV");
-	utilsPrint("%s ", _GetEFLAGS_DF ? "DN" : "UP");
-	utilsPrint("%s ", _GetEFLAGS_IF ? "EI" : "DI");
-	utilsPrint("%s ", _GetEFLAGS_SF ? "NG" : "PL");
-	utilsPrint("%s ", _GetEFLAGS_ZF ? "ZR" : "NZ");
-	utilsPrint("%s ", _GetEFLAGS_AF ? "AC" : "NA");
-	utilsPrint("%s ", _GetEFLAGS_PF ? "PE" : "PO");
-	utilsPrint("%s ", _GetEFLAGS_CF ? "CY" : "NC");
+	PRINTF("%s ", _GetEFLAGS_OF ? "OV" : "NV");
+	PRINTF("%s ", _GetEFLAGS_DF ? "DN" : "UP");
+	PRINTF("%s ", _GetEFLAGS_IF ? "EI" : "DI");
+	PRINTF("%s ", _GetEFLAGS_SF ? "NG" : "PL");
+	PRINTF("%s ", _GetEFLAGS_ZF ? "ZR" : "NZ");
+	PRINTF("%s ", _GetEFLAGS_AF ? "AC" : "NA");
+	PRINTF("%s ", _GetEFLAGS_PF ? "PE" : "PO");
+	PRINTF("%s ", _GetEFLAGS_CF ? "CY" : "NC");
 }
 static void rprintregs()
 {
-	utilsPrint(  "AX=%04X", _ax);
-	utilsPrint("  BX=%04X", _bx);
-	utilsPrint("  CX=%04X", _cx);
-	utilsPrint("  DX=%04X", _dx);
-	utilsPrint("  SP=%04X", _sp);
-	utilsPrint("  BP=%04X", _bp);
-	utilsPrint("  SI=%04X", _si);
-	utilsPrint("  DI=%04X", _di);
-	utilsPrint("\nDS=%04X", vcpu.ds.selector);
-	utilsPrint("  ES=%04X", vcpu.es.selector);
-	utilsPrint("  SS=%04X", vcpu.ss.selector);
-	utilsPrint("  CS=%04X", vcpu.cs.selector);
-	utilsPrint("  IP=%04X", _ip);
-	utilsPrint("   ");
+	PRINTF(  "AX=%04X", _ax);
+	PRINTF("  BX=%04X", _bx);
+	PRINTF("  CX=%04X", _cx);
+	PRINTF("  DX=%04X", _dx);
+	PRINTF("  SP=%04X", _sp);
+	PRINTF("  BP=%04X", _bp);
+	PRINTF("  SI=%04X", _si);
+	PRINTF("  DI=%04X", _di);
+	PRINTF("\nDS=%04X", vcpu.ds.selector);
+	PRINTF("  ES=%04X", vcpu.es.selector);
+	PRINTF("  SS=%04X", vcpu.ss.selector);
+	PRINTF("  CS=%04X", vcpu.cs.selector);
+	PRINTF("  IP=%04X", _ip);
+	PRINTF("   ");
 	rprintflags();
-	utilsPrint("\n");
+	PRINTF("\n");
 	uprintins(vcpu.cs.selector, _ip);
 	uasmSegRec = vcpu.cs.selector;
 	uasmPtrRec = _ip;
@@ -478,116 +481,116 @@ static void rscanregs()
 	t_nubit16 value;
 	char s[MAXLINE];
 	if(!STRCMP(arg[1],"ax")) {
-		utilsPrint("AX ");
-		utilsPrint("%04X",_ax);
-		utilsPrint("\n:");
+		PRINTF("AX ");
+		PRINTF("%04X",_ax);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_ax = value;
 	} else if(!STRCMP(arg[1],"bx")) {
-		utilsPrint("BX ");
-		utilsPrint("%04X",_bx);
-		utilsPrint("\n:");
+		PRINTF("BX ");
+		PRINTF("%04X",_bx);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_bx = value;
 	} else if(!STRCMP(arg[1],"cx")) {
-		utilsPrint("CX ");
-		utilsPrint("%04X",_cx);
-		utilsPrint("\n:");
+		PRINTF("CX ");
+		PRINTF("%04X",_cx);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_cx = value;
 	} else if(!STRCMP(arg[1],"dx")) {
-		utilsPrint("DX ");
-		utilsPrint("%04X",_dx);
-		utilsPrint("\n:");
+		PRINTF("DX ");
+		PRINTF("%04X",_dx);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_dx = value;
 	} else if(!STRCMP(arg[1],"bp")) {
-		utilsPrint("BP ");
-		utilsPrint("%04X",_bp);
-		utilsPrint("\n:");
+		PRINTF("BP ");
+		PRINTF("%04X",_bp);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_bp = value;
 	} else if(!STRCMP(arg[1],"sp")) {
-		utilsPrint("SP ");
-		utilsPrint("%04X",_sp);
-		utilsPrint("\n:");
+		PRINTF("SP ");
+		PRINTF("%04X",_sp);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_sp = value;
 	} else if(!STRCMP(arg[1],"si")) {
-		utilsPrint("SI ");
-		utilsPrint("%04X",_si);
-		utilsPrint("\n:");
+		PRINTF("SI ");
+		PRINTF("%04X",_si);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_si = value;
 	} else if(!STRCMP(arg[1],"di")) {
-		utilsPrint("DI ");
-		utilsPrint("%04X",_di);
-		utilsPrint("\n:");
+		PRINTF("DI ");
+		PRINTF("%04X",_di);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_di = value;
 	} else if(!STRCMP(arg[1],"ss")) {
-		utilsPrint("SS ");
-		utilsPrint("%04X",vcpu.ss.selector);
-		utilsPrint("\n:");
+		PRINTF("SS ");
+		PRINTF("%04X",vcpu.ss.selector);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.ss, GetMax16(value)))
-				utilsPrint("debug: fail to load ss from %04X\n", GetMax16(value));
+				PRINTF("debug: fail to load ss from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1],"cs")) {
-		utilsPrint("CS ");
-		utilsPrint("%04X",vcpu.cs.selector);
-		utilsPrint("\n:");
+		PRINTF("CS ");
+		PRINTF("%04X",vcpu.cs.selector);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.cs, GetMax16(value)))
-				utilsPrint("debug: fail to load cs from %04X\n", GetMax16(value));
+				PRINTF("debug: fail to load cs from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1],"ds")) {
-		utilsPrint("DS ");
-		utilsPrint("%04X",vcpu.ds.selector);
-		utilsPrint("\n:");
+		PRINTF("DS ");
+		PRINTF("%04X",vcpu.ds.selector);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.ds, GetMax16(value)))
-				utilsPrint("debug: fail to load ds from %04X\n", GetMax16(value));
+				PRINTF("debug: fail to load ds from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1],"es")) {
-		utilsPrint("ES ");
-		utilsPrint("%04X",vcpu.es.selector);
-		utilsPrint("\n:");
+		PRINTF("ES ");
+		PRINTF("%04X",vcpu.es.selector);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.es, GetMax16(value)))
-				utilsPrint("debug: fail to load es from %04X\n", GetMax16(value));
+				PRINTF("debug: fail to load es from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1],"ip")) {
-		utilsPrint("IP ");
-		utilsPrint("%04X",_ip);
-		utilsPrint("\n:");
+		PRINTF("IP ");
+		PRINTF("%04X",_ip);
+		PRINTF("\n:");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_ip = value;
 	} else if(!STRCMP(arg[1],"f")) {
 		rprintflags();
-		utilsPrint(" -");
+		PRINTF(" -");
 		FGETS(s,MAXLINE,stdin);
 		utilsLowerStr(s);
 		if(!STRCMP(s,"ov"))      _SetEFLAGS_OF;
@@ -606,8 +609,8 @@ static void rscanregs()
 		else if(!STRCMP(s,"po")) _ClrEFLAGS_PF;
 		else if(!STRCMP(s,"cy")) _SetEFLAGS_CF;
 		else if(!STRCMP(s,"nc")) _ClrEFLAGS_CF;
-		else utilsPrint("bf Error\n");
-	} else utilsPrint("br Error\n");
+		else PRINTF("bf Error\n");
+	} else PRINTF("br Error\n");
 }
 static void r()
 {
@@ -644,8 +647,8 @@ static void s()
 						} else ++p;
 					}
 					if(flagfound) {
-						utilsPrint("%04X:%04X  ", seg, pfront);
-						utilsPrint("\n");
+						PRINTF("%04X:%04X  ", seg, pfront);
+						PRINTF("\n");
 					}
 				} else ++p;
 			}
@@ -658,7 +661,7 @@ static void t()
 	t_nubit16 i;
 	t_nubit16 count;
 	if (device.flagRun) {
-		utilsPrint("NXVM is already running.\n");
+		PRINTF("NXVM is already running.\n");
 		return;
 	}
 	switch(narg) {
@@ -671,7 +674,7 @@ static void t()
 	case 3:
 		addrparse(vcpu.cs.selector,arg[1]);
 		if (vcpuinsLoadSreg(&vcpu.cs, seg)) {
-			utilsPrint("debug: fail to load cs from %04X\n", seg);
+			PRINTF("debug: fail to load cs from %04X\n", seg);
 			return;
 		}
 		_ip = ptr;
@@ -685,7 +688,7 @@ static void t()
 			machineResume();
 			while (device.flagRun) utilsSleep(10);
 			rprintregs();
-			if (i != count - 1) utilsPrint("\n");
+			if (i != count - 1) PRINTF("\n");
 		}
 	} else {
 		vdebug.tracecnt = count;
@@ -694,7 +697,7 @@ static void t()
 		rprintregs();
 	}
 	vdebug.tracecnt = 0x00;
-//	gexec(ptr1,ptr2);
+	/* gexec(ptr1,ptr2); */
 }
 /* unassemble */
 static void uprint(t_nubit16 segment,t_nubit16 start,t_nubit16 end)
@@ -734,16 +737,16 @@ static void v()
 {
 	t_nubitcc i;
 	char str[MAXLINE];
-	utilsPrint(":");
+	PRINTF(":");
 	FGETS(str,MAXLINE,stdin);
 	str[strlen(str)-1] = '\0';
 	for(i = 0;i < strlen(str);++i) {
-		utilsPrint("%02X",str[i]);
-		if(!((i+1)%0x10)) utilsPrint("\n"); 
-		else if(!((i+1)%0x08)&&(str[i+1]!='\0')) utilsPrint("-");
-		else utilsPrint(" ");
+		PRINTF("%02X",str[i]);
+		if(!((i+1)%0x10)) PRINTF("\n"); 
+		else if(!((i+1)%0x08)&&(str[i+1]!='\0')) PRINTF("-");
+		else PRINTF(" ");
 	}
-	if(i%0x10) utilsPrint("\n");
+	if(i%0x10) PRINTF("\n");
 }
 /* write */
 static void w()
@@ -751,14 +754,14 @@ static void w()
 	t_nubit16 i = 0;
 	t_nubit32 len = (_bx<<16)+_cx;
 	FILE *write;
-	if(!strlen(strFileName)) {utilsPrint("(W)rite error, no destination defined\n");return;}
+	if(!strlen(strFileName)) {PRINTF("(W)rite error, no destination defined\n");return;}
 	else write= FOPEN(strFileName,"wb");
-	if(!write) utilsPrint("File not found\n");
+	if(!write) PRINTF("File not found\n");
 	else {
-		utilsPrint("Writing ");
-		utilsPrint("%04X",_bx);
-		utilsPrint("%04X",_cx);
-		utilsPrint(" bytes\n");
+		PRINTF("Writing ");
+		PRINTF("%04X",_bx);
+		PRINTF("%04X",_cx);
+		PRINTF(" bytes\n");
 		switch(narg) {
 		case 1:
 			seg = vcpu.cs.selector;
@@ -771,7 +774,7 @@ static void w()
 		if(!nErrPos)
 			while(i < len)
 				fputc(vramRealByte(seg,ptr+i++),write);
-		fclose(write);
+		FCLOSE(write);
 	}
 }
 /* DEBUG CMD END */
@@ -798,7 +801,7 @@ static t_nubit8 xuprintins(t_nubit32 linear)
 		for (i = strlen(str);i < 24;++i) STRCAT(str, " ");
 		STRCAT(str, stmt);
 	}
-	utilsPrint("%s\n", str);
+	PRINTF("%s\n", str);
 	return len;
 }
 static void xrprintreg()
@@ -817,7 +820,7 @@ static void xaconsole(t_nubit32 linear)
 	t_nubitcc errAsmPos;
 	t_bool flagexitasm = 0;
 	while(!flagexitasm) {
-		utilsPrint("L%08X ", linear);
+		PRINTF("L%08X ", linear);
 		FGETS(astmt, MAXLINE, stdin);
 		fflush(stdin);
 		astmt[strlen(astmt) - 1] = 0;
@@ -830,14 +833,14 @@ static void xaconsole(t_nubit32 linear)
 		if(!len) errAsmPos = (t_nubitcc)strlen(astmt) + 9;
 		else {
 			if (vcpuinsWriteLinear(linear, (t_vaddrcc)acode, len)) {
-				utilsPrint("debug: fail to write to L%08X\n", linear);
+				PRINTF("debug: fail to write to L%08X\n", linear);
 				return;
 			}
 			linear += len;
 		}
 		if(errAsmPos) {
-			for(i = 0;i < errAsmPos;++i) utilsPrint(" ");
-			utilsPrint("^ Error\n");
+			for(i = 0;i < errAsmPos;++i) PRINTF(" ");
+			PRINTF("^ Error\n");
 		}
 	}
 	xalin = linear;
@@ -869,15 +872,15 @@ static void xc()
 		if (!count) return;
 		for (i = 0;i < count;++i) {
 			if (vcpuinsReadLinear(lin1 + i, GetRef(val1), 1)) {
-				utilsPrint("debug: fail to read from L%08X.\n", lin1 + i);
+				PRINTF("debug: fail to read from L%08X.\n", lin1 + i);
 				return;
 			}
 			if (vcpuinsReadLinear(lin2 + i, GetRef(val2), 1)) {
-				utilsPrint("debug: fail to read from L%08X.\n", lin2 + i);
+				PRINTF("debug: fail to read from L%08X.\n", lin2 + i);
 				return;
 			}
 			if(val1 != val2)
-				utilsPrint("L%08X  %02X  %02X  L%08X\n",
+				PRINTF("L%08X  %02X  %02X  L%08X\n",
 					lin1 + i, val1, val2, lin2 + i);
 		}
 	}
@@ -893,16 +896,16 @@ static void xdprint(t_nubit32 linear,t_nubit32 count)
 	if (!count) return;
 	if (end < start) end = 0xffffffff;
 	for(ilinear = start - (start % 0x10);ilinear <= end + 0x0f - (end % 0x10);++ilinear) {
-		if (ilinear % 0x10 == 0) utilsPrint("L%08X  ", ilinear);
+		if (ilinear % 0x10 == 0) PRINTF("L%08X  ", ilinear);
 		if (ilinear < start || ilinear > end) {
-			utilsPrint("  ");
+			PRINTF("  ");
 			c[ilinear % 0x10] = ' ';
 		} else {
 			if (vcpuinsReadLinear(ilinear, GetRef(c[ilinear % 0x10]), 1)) {
-				utilsPrint("debug: fail to read from L%08X\n", ilinear);
+				PRINTF("debug: fail to read from L%08X\n", ilinear);
 				return;
 			} else {
-				utilsPrint("%02X",c[ilinear % 0x10] & 0xff);
+				PRINTF("%02X",c[ilinear % 0x10] & 0xff);
 				t = c[ilinear % 0x10];
 				if((t >=1 && t <= 7) || t == ' ' ||
 					(t >=11 && t <= 12) ||
@@ -911,10 +914,10 @@ static void xdprint(t_nubit32 linear,t_nubit32 count)
 				else c[ilinear%0x10] = '.';
 			}
 		}
-		utilsPrint(" ");
-		if(ilinear % 0x10 == 7 && ilinear >= start && ilinear < end) utilsPrint("\b-");
+		PRINTF(" ");
+		if(ilinear % 0x10 == 7 && ilinear >= start && ilinear < end) PRINTF("\b-");
 		if((ilinear + 1) % 0x10 == 0) {
-			utilsPrint("  %s\n",c);
+			PRINTF("  %s\n",c);
 		}
 		if (ilinear == 0xffffffff) break;
 	}
@@ -946,17 +949,17 @@ static void xe()
 		linear = scannubit32(arg[1]);
 		if(nErrPos) return;
 		if (vcpuinsReadLinear(linear, GetRef(val), 1)) {
-			utilsPrint("debug: fail to read from L%08X.\n", linear);
+			PRINTF("debug: fail to read from L%08X.\n", linear);
 			return;
 		}
-		utilsPrint("L%08X  %02X.", linear, val);
+		PRINTF("L%08X  %02X.", linear, val);
 		FGETS(s,MAXLINE,stdin);
 		utilsLowerStr(s);
 		val = scannubit8(s);
 		if(nErrPos) return;
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsWriteLinear(linear, GetRef(val), 1))
-				utilsPrint("debug: fail to write to L%08X.\n", linear);
+				PRINTF("debug: fail to write to L%08X.\n", linear);
 	} else if(narg > 2) {
 		linear = scannubit32(arg[1]);
 		if(nErrPos) return;
@@ -964,7 +967,7 @@ static void xe()
 			val = scannubit8(arg[i]);
 			if(!nErrPos) {
 				if (vcpuinsWriteLinear(linear, GetRef(val), 1)) {
-					utilsPrint("debug: fail to write to L%08X.\n", linear);
+					PRINTF("debug: fail to write to L%08X.\n", linear);
 					return;
 				}
 			} else break;
@@ -991,7 +994,7 @@ static void xf()
 			val = scannubit8(arg[j % bcount + 3]);
 			if (nErrPos) return;
 			if (vcpuinsWriteLinear(linear + i, GetRef(val), 1)) {
-				utilsPrint("debug: fail to write to L%08X.\n", linear + i);
+				PRINTF("debug: fail to write to L%08X.\n", linear + i);
 				return;
 			}
 		}
@@ -1003,7 +1006,7 @@ static void xg()
 	t_nubit32 i;
 	t_nubit32 count = 0;
 	if (device.flagRun) {
-		utilsPrint("NXVM is already running.\n");
+		PRINTF("NXVM is already running.\n");
 		return;
 	}
 	switch(narg) {
@@ -1027,7 +1030,7 @@ static void xg()
 		vdebug.breakcnt = 0;
 		machineResume();
 		while (device.flagRun) utilsSleep(1);
-		utilsPrint("%d instructions executed before the break point.\n", vdebug.breakcnt);
+		PRINTF("%d instructions executed before the break point.\n", vdebug.breakcnt);
 		xrprintreg();
 	}
 	vdebug.flagbreakx = 0;
@@ -1047,11 +1050,11 @@ static void xm()
 		if (nErrPos) return;
 		for (i = 0;i < count;++i) {
 			if (vcpuinsReadLinear(lin1 + i, GetRef(val), 1)) {
-				utilsPrint("debug: fail to read from L%08X.\n", lin1 + i);
+				PRINTF("debug: fail to read from L%08X.\n", lin1 + i);
 				return;
 			}
 			if (vcpuinsWriteLinear(lin2 + i, GetRef(val), 1)) {
-				utilsPrint("debug: fail to write to L%08X.\n", lin2 + i);
+				PRINTF("debug: fail to write to L%08X.\n", lin2 + i);
 				return;
 			}
 		}
@@ -1077,11 +1080,11 @@ static void xs()
 		}
 		for (i = 0;i < count;++i) {
 			if (vcpuinsReadLinear(linear + i, (t_vaddrcc)mem, bcount)) {
-				utilsPrint("debug: fail to read from L%08X.\n", linear + i);
+				PRINTF("debug: fail to read from L%08X.\n", linear + i);
 				return;
 			}
 			if (!memcmp(mem, line, bcount)) {
-				utilsPrint("L%08X\n", linear + i);
+				PRINTF("L%08X\n", linear + i);
 			}
 		}
 	}
@@ -1092,7 +1095,7 @@ static void xt()
 	t_nubit32 i;
 	t_nubit32 count;
 	if (device.flagRun) {
-		utilsPrint("NXVM is already running.\n");
+		PRINTF("NXVM is already running.\n");
 		return;
 	}
 	switch(narg) {
@@ -1111,7 +1114,7 @@ static void xt()
 			while (device.flagRun) utilsSleep(10);
 			devicePrintCpuMem();
 			xrprintreg();
-			if (i != count - 1) utilsPrint("\n");
+			if (i != count - 1) PRINTF("\n");
 		}
 	} else {
 		vdebug.tracecnt = count;
@@ -1121,7 +1124,7 @@ static void xt()
 		xrprintreg();
 	}
 	vdebug.tracecnt = 0x00;
-//	gexec(ptr1,ptr2);
+	/* gexec(ptr1,ptr2); */
 }
 /* register */
 static void xrscanreg()
@@ -1129,158 +1132,158 @@ static void xrscanreg()
 	t_nubit32 value;
 	t_string s;
 	if(!STRCMP(arg[1], "eax")) {
-		utilsPrint("EAX ");
-		utilsPrint("%08X", _eax);
-		utilsPrint("\n:");
+		PRINTF("EAX ");
+		PRINTF("%08X", _eax);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_eax = value;
 	} else if(!STRCMP(arg[1], "ecx")) {
-		utilsPrint("ECX ");
-		utilsPrint("%08X", _ecx);
-		utilsPrint("\n:");
+		PRINTF("ECX ");
+		PRINTF("%08X", _ecx);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_ecx = value;
 	} else if(!STRCMP(arg[1], "edx")) {
-		utilsPrint("EDX ");
-		utilsPrint("%08X", _edx);
-		utilsPrint("\n:");
+		PRINTF("EDX ");
+		PRINTF("%08X", _edx);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_edx = value;
 	} else if(!STRCMP(arg[1], "ebx")) {
-		utilsPrint("EBX ");
-		utilsPrint("%08X", _ebx);
-		utilsPrint("\n:");
+		PRINTF("EBX ");
+		PRINTF("%08X", _ebx);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_ebx = value;
 	} else if(!STRCMP(arg[1], "esp")) {
-		utilsPrint("ESP ");
-		utilsPrint("%08X", vcpu.esp);
-		utilsPrint("\n:");
+		PRINTF("ESP ");
+		PRINTF("%08X", vcpu.esp);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			vcpu.esp = value;
 	} else if(!STRCMP(arg[1], "ebp")) {
-		utilsPrint("EBP ");
-		utilsPrint("%08X", _ebp);
-		utilsPrint("\n:");
+		PRINTF("EBP ");
+		PRINTF("%08X", _ebp);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_ebp = value;
 	} else if(!STRCMP(arg[1], "esi")) {
-		utilsPrint("ESI ");
-		utilsPrint("%08X", vcpu.esi);
-		utilsPrint("\n:");
+		PRINTF("ESI ");
+		PRINTF("%08X", vcpu.esi);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			vcpu.esi = value;
 	} else if(!STRCMP(arg[1], "edi")) {
-		utilsPrint("EDI ");
-		utilsPrint("%08X", _edi);
-		utilsPrint("\n:");
+		PRINTF("EDI ");
+		PRINTF("%08X", _edi);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_edi = value;
 	} else if(!STRCMP(arg[1], "eip")) {
-		utilsPrint("EIP ");
-		utilsPrint("%08X", _eip);
-		utilsPrint("\n:");
+		PRINTF("EIP ");
+		PRINTF("%08X", _eip);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_eip = value;
 	} else if(!STRCMP(arg[1], "eflags")) {
-		utilsPrint("EFLAGS ");
-		utilsPrint("%08X", _eflags);
-		utilsPrint("\n:");
+		PRINTF("EFLAGS ");
+		PRINTF("%08X", _eflags);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			_eflags = value;
 	} else if(!STRCMP(arg[1], "es")) {
 		devicePrintCpuSreg();
-		utilsPrint(":");
+		PRINTF(":");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.es, GetMax16(value)))
-				utilsPrint("debug: fail to load es from %04X\n", GetMax16(value));
+				PRINTF("debug: fail to load es from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "cs")) {
 		devicePrintCpuSreg();
-		utilsPrint(":");
+		PRINTF(":");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.cs, GetMax16(value)))
-				utilsPrint("debug: fail to load cs from %04X\n", GetMax16(value));
+				PRINTF("debug: fail to load cs from %04X\n", GetMax16(value));
 	}  else if(!STRCMP(arg[1], "ss")) {
 		devicePrintCpuSreg();
-		utilsPrint(":");
+		PRINTF(":");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			if (vcpuinsLoadSreg(&vcpu.ss, GetMax16(value)))
-				utilsPrint("debug: fail to load ss from %04X\n", GetMax16(value));
+				PRINTF("debug: fail to load ss from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "ds")) {
 		devicePrintCpuSreg();
-		utilsPrint(":");
+		PRINTF(":");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos) 
 			if (vcpuinsLoadSreg(&vcpu.ds, GetMax16(value)))
-				utilsPrint("debug: fail to load ds from %04X\n", GetMax16(value));
+				PRINTF("debug: fail to load ds from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "fs")) {
 		devicePrintCpuSreg();
-		utilsPrint(":");
+		PRINTF(":");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos) 
 			if (vcpuinsLoadSreg(&vcpu.fs, GetMax16(value)))
-				utilsPrint("debug: fail to load fs from %04X\n", GetMax16(value));
+				PRINTF("debug: fail to load fs from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "gs")) {
 		devicePrintCpuSreg();
-		utilsPrint(":");
+		PRINTF(":");
 		FGETS(s,MAXLINE,stdin);
 		value = scannubit16(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos) 
 			if (vcpuinsLoadSreg(&vcpu.gs, GetMax16(value)))
-				utilsPrint("debug: fail to load gs from %04X\n", GetMax16(value));
+				PRINTF("debug: fail to load gs from %04X\n", GetMax16(value));
 	} else if(!STRCMP(arg[1], "cr0")) {
-		utilsPrint("CR0 ");
-		utilsPrint("%08X", vcpu.cr1);
-		utilsPrint("\n:");
+		PRINTF("CR0 ");
+		PRINTF("%08X", vcpu.cr1);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			vcpu.cr0 = value;
 	} else if(!STRCMP(arg[1], "cr2")) {
-		utilsPrint("CR2 ");
-		utilsPrint("%08X", vcpu.cr2);
-		utilsPrint("\n:");
+		PRINTF("CR2 ");
+		PRINTF("%08X", vcpu.cr2);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			vcpu.cr2 = value;
 	} else if(!STRCMP(arg[1], "cr3")) {
-		utilsPrint("CR3 ");
-		utilsPrint("%08X", vcpu.cr3);
-		utilsPrint("\n:");
+		PRINTF("CR3 ");
+		PRINTF("%08X", vcpu.cr3);
+		PRINTF("\n:");
 		FGETS(s, MAXLINE, stdin);
 		value = scannubit32(s);
 		if(s[0] != '\0' && s[0] != '\n' && !nErrPos)
 			vcpu.cr3 = value;
-	} else utilsPrint("br Error\n");
+	} else PRINTF("br Error\n");
 }
 static void xr()
 {
@@ -1322,29 +1325,29 @@ static void xw()
 {
 	switch(narg) {
 	case 1:
-		if (vcpuins.flagwr) utilsPrint("Watch-read point: Lin=%08x\n", vcpuins.wrlin);
-		if (vcpuins.flagww) utilsPrint("Watch-write point: Lin=%08x\n", vcpuins.wwlin);
-		if (vcpuins.flagwe) utilsPrint("Watch-exec point: Lin=%08x\n", vcpuins.welin);
+		if (vcpuins.flagwr) PRINTF("Watch-read point: Lin=%08x\n", vcpuins.wrlin);
+		if (vcpuins.flagww) PRINTF("Watch-write point: Lin=%08x\n", vcpuins.wwlin);
+		if (vcpuins.flagwe) PRINTF("Watch-exec point: Lin=%08x\n", vcpuins.welin);
 		break;
 	case 2:
 		switch (arg[1][0]) {
 		case 'r':
 			vcpuins.flagwr = 0;
-			utilsPrint("Watch-read point removed.\n");
+			PRINTF("Watch-read point removed.\n");
 			break;
 		case 'w':
 			vcpuins.flagww = 0;
-			utilsPrint("Watch-write point removed.\n");
+			PRINTF("Watch-write point removed.\n");
 			break;
 		case 'e':
 			vcpuins.flagwe = 0;
-			utilsPrint("Watch-exec point removed.\n");
+			PRINTF("Watch-exec point removed.\n");
 			break;
 		case 'u':
 			vcpuins.flagwr = 0;
 			vcpuins.flagww = 0;
 			vcpuins.flagwe = 0;
-			utilsPrint("All watch points removed.\n");
+			PRINTF("All watch points removed.\n");
 			break;
 		default: seterr(1);break;}
 		break;
@@ -1371,21 +1374,21 @@ static void xw()
 }
 static void xhelp()
 {
-	utilsPrint("assemble        XA [address]\n");
-	utilsPrint("compare         XC addr1 addr2 count_byte\n");
-	utilsPrint("dump            XD [address [count_byte]]\n");
-	utilsPrint("enter           XE address [byte_list]\n");
-	utilsPrint("fill            XF address count_byte byte_list\n");
-	utilsPrint("go              XG [address [count_instr]]\n");
-	utilsPrint("move            XM addr1 addr2 count_byte\n");
-	utilsPrint("register        XR [register]\n");
-	utilsPrint("  regular         XREG\n");
-	utilsPrint("  segment         XSREG\n");
-	utilsPrint("  control         XCREG\n");
-	utilsPrint("search          XS address count_byte byte_list\n");
-	utilsPrint("trace           XT [count_instr]\n");
-	utilsPrint("unassemble      XU [address [count_instr]]\n");
-	utilsPrint("watch           XW r/w/e address\n");
+	PRINTF("assemble        XA [address]\n");
+	PRINTF("compare         XC addr1 addr2 count_byte\n");
+	PRINTF("dump            XD [address [count_byte]]\n");
+	PRINTF("enter           XE address [byte_list]\n");
+	PRINTF("fill            XF address count_byte byte_list\n");
+	PRINTF("go              XG [address [count_instr]]\n");
+	PRINTF("move            XM addr1 addr2 count_byte\n");
+	PRINTF("register        XR [register]\n");
+	PRINTF("  regular         XREG\n");
+	PRINTF("  segment         XSREG\n");
+	PRINTF("  control         XCREG\n");
+	PRINTF("search          XS address count_byte byte_list\n");
+	PRINTF("trace           XT [count_instr]\n");
+	PRINTF("unassemble      XU [address [count_instr]]\n");
+	PRINTF("watch           XW r/w/e address\n");
 }
 static void x()
 {
@@ -1420,36 +1423,36 @@ static void x()
 
 /* main routines */
 static void help() {
-	utilsPrint("assemble        A [address]\n");
-	utilsPrint("compare         C range address\n");
-	utilsPrint("dump            D [range]\n");
-	utilsPrint("enter           E address [list]\n");
-	utilsPrint("fill            F range list\n");
-	utilsPrint("go              G [[address] breakpoint]\n");
-	/* utilsPrint("go              G [=address] [addresses]\n"); */
-	utilsPrint("hex             H value1 value2\n");
-	utilsPrint("input           I port\n");
-	utilsPrint("load            L [address]\n");
-	/* utilsPrint("load            L [address] [drive] [firstsector] [number]\n"); */
-	utilsPrint("move            M range address\n");
-	utilsPrint("name            N pathname\n");
-	/* utilsPrint("name            N [pathname] [arglist]\n"); */
-	utilsPrint("output          O port byte\n");
-	/* !utilsPrint("proceed           P [nx=address] [number]\n"); */
-	utilsPrint("quit            Q \n");
-	utilsPrint("register        R [register]\n");
-	utilsPrint("search          S range list\n");
-	utilsPrint("trace           T [[address] value]\n");
-	/* utilsPrint("trace           T [=address] [value]\n"); */
-	utilsPrint("unassemble      U [range]\n");
-	utilsPrint("verbal          V \n");
-	utilsPrint("write           W [address]\n");
-	utilsPrint("debug32         X?\n");
-	/* utilsPrint("write           W [address] [drive] [firstsector] [number]\n"); */
-	/* utilsPrint("allocate expanded memory        XA [#pages]\n"); */
-	/* utilsPrint("deallocate expanded memory      XD [handle]\n"); */
-	/* utilsPrint("map expanded memory pages       XM [Lpage] [Ppage] [handle]\n"); */
-	/* utilsPrint("display expanded memory status  XS\n"); */
+	PRINTF("assemble        A [address]\n");
+	PRINTF("compare         C range address\n");
+	PRINTF("dump            D [range]\n");
+	PRINTF("enter           E address [list]\n");
+	PRINTF("fill            F range list\n");
+	PRINTF("go              G [[address] breakpoint]\n");
+	/* PRINTF("go              G [=address] [addresses]\n"); */
+	PRINTF("hex             H value1 value2\n");
+	PRINTF("input           I port\n");
+	PRINTF("load            L [address]\n");
+	/* PRINTF("load            L [address] [drive] [firstsector] [number]\n"); */
+	PRINTF("move            M range address\n");
+	PRINTF("name            N pathname\n");
+	/* PRINTF("name            N [pathname] [arglist]\n"); */
+	PRINTF("output          O port byte\n");
+	/* !PRINTF("proceed           P [nx=address] [number]\n"); */
+	PRINTF("quit            Q \n");
+	PRINTF("register        R [register]\n");
+	PRINTF("search          S range list\n");
+	PRINTF("trace           T [[address] value]\n");
+	/* PRINTF("trace           T [=address] [value]\n"); */
+	PRINTF("unassemble      U [range]\n");
+	PRINTF("verbal          V \n");
+	PRINTF("write           W [address]\n");
+	PRINTF("debug32         X?\n");
+	/* PRINTF("write           W [address] [drive] [firstsector] [number]\n"); */
+	/* PRINTF("allocate expanded memory        XA [#pages]\n"); */
+	/* PRINTF("deallocate expanded memory      XD [handle]\n"); */
+	/* PRINTF("map expanded memory pages       XM [Lpage] [Ppage] [handle]\n"); */
+	/* PRINTF("display expanded memory status  XS\n"); */
 }
 
 static void parse() {
@@ -1518,40 +1521,40 @@ void debugMain() {
 	xalin = 0;
 	xdlin = 0;
 	xulin = vcpu.cs.base + _eip;
-	arg = (char **)malloc(DEBUG_MAXNARG * sizeof(char *));
+	arg = (char **)MALLOC(DEBUG_MAXNARG * sizeof(char *));
 	flagexit = 0;
 	while (!flagexit) {
 		fflush(stdin);
-		utilsPrint("-");
+		PRINTF("-");
 		FGETS(strCmdBuff,MAXLINE,stdin);
 		parse();
 		exec();
 		if (nErrPos) {
-			for (i = 0;i < nErrPos;++i) utilsPrint(" ");
-			utilsPrint("^ Error\n");
+			for (i = 0;i < nErrPos;++i) PRINTF(" ");
+			PRINTF("^ Error\n");
 		}
 	}
-	free(arg);
+	FREE((void *) arg);
 }
 
 /* recorder */
 void debugRecordStart(const t_strptr fileName) {
 	if (vdebug.recordFile) {
-		fclose(vdebug.recordFile);
+		FCLOSE(vdebug.recordFile);
 	}
 	vdebug.recordFile = FOPEN(fileName, "w");
 	if (!vdebug.recordFile) {
-		utilsPrint("ERROR:\tcannot write dump file.\n");
+		PRINTF("ERROR:\tcannot write dump file.\n");
 	} else {
-		utilsPrint("Record started.\n");
+		PRINTF("Record started.\n");
 	}
 }
 void debugRecordStop() {
 	if (!vdebug.recordFile) {
-		utilsPrint("ERROR:\trecorder not turned on.\n");
+		PRINTF("ERROR:\trecorder not turned on.\n");
 	} else {
-		utilsPrint("Record finished.\n");
-		fclose(vdebug.recordFile);
+		PRINTF("Record finished.\n");
+		FCLOSE(vdebug.recordFile);
 		vdebug.recordFile = (FILE *) NULL;
 	}
 }

@@ -23,14 +23,14 @@ static t_nubit32 assemble(const t_strptr stmt, t_nubit16 seg, t_nubit16 off) {
 	t_nubit8 code[0x10000];
 	len = utilsAasm32x(stmt, code, 0);
 	if (!len) {
-		utilsPrint("vbios: invalid x86 assembly instruction.\n");
+		PRINTF("vbios: invalid x86 assembly instruction.\n");
 	}
-	memcpy((void *) vramGetRealAddr(seg, off), (void *) code, len);
+	MEMCPY((void *) vramGetRealAddr(seg, off), (void *) code, len);
 	return len;
 }
 
 static void biosLoadData() {
-	memset((void *) vramGetRealAddr(0x0040, 0x0000), 0x00, 0x100);
+	MEMSET((void *) vramGetRealAddr(0x0040, 0x0000), 0x00, 0x100);
 	vramRealByte(0x0040, 0x0000) = 0xf8;
 	vramRealByte(0x0040, 0x0001) = 0x03;
 	vramRealByte(0x0040, 0x0008) = 0x78;
@@ -146,16 +146,12 @@ static void biosLoadAdditional() {
 	vramRealByte(0xf000, 0xe431 + 15) = 0x00;
 }
 
-void vbiosAddPost(t_strptr stmt) {
-	vbios.postTable[vbios.numPosts++] = stmt;
-}
+void vbiosAddPost(t_strptr stmt) {vbios.postTable[vbios.numPosts++] = stmt;}
 
-void vbiosAddInt(t_strptr stmt, t_nubit8 intid) {
-	vbios.intTable[intid] = stmt;
-}
+void vbiosAddInt(t_strptr stmt, t_nubit8 intid) {vbios.intTable[intid] = stmt;}
 
 static void init() {
-	memset(&vbios, 0x00, sizeof(t_bios));
+	MEMSET(&vbios, 0x00, sizeof(t_bios));
 	vbiosAddInt(VBIOS_INT_SOFT_MISC_11, 0x11);
 	vbiosAddInt(VBIOS_INT_SOFT_MISC_12, 0x12);
 	vbiosAddInt(VBIOS_INT_SOFT_MISC_15, 0x15);
@@ -177,10 +173,8 @@ static void refresh() {}
 
 static void final() {}
 
-void vbiosRegister() {
-	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
-	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
-	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
-	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
-	vmachine.numDevices++;
+void vbiosRegister() {vmachineAddMe;}
+
+void devicePrintBios() {
+	PRINTF("Boot Disk: %s\n", deviceConnectBiosGetBoot() ? "Hard Drive" : "Floppy");
 }

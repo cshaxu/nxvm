@@ -23,6 +23,11 @@ typedef struct {
 
 extern t_machine vmachine;
 
+#define vmachineAddMe vmachineAddDevice((t_faddrcc) init, \
+	(t_faddrcc) reset, (t_faddrcc) refresh, (t_faddrcc) final)
+
+void vmachineAddDevice(t_faddrcc fpInit, t_faddrcc fpReset, t_faddrcc fpRefresh, t_faddrcc fpFinal);
+
 void vmachineInit();
 void vmachineReset();
 void vmachineRefresh();

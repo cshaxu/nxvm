@@ -2,6 +2,8 @@
 
 /* W32CDISP provides win32 console output interface. */
 
+#include "../../utils.h"
+
 #include "../../device/device.h"
 
 #include "win32con.h"
@@ -36,9 +38,9 @@ VOID w32cdispSetScreen() {
 	srctWriteRect.Left = 0;
 	srctWriteRect.Right = sizeRow - 1;
 	if (charBuf) {
-		free(charBuf);
+		FREE((void *) charBuf);
 	}
-	charBuf = (PCHAR_INFO) malloc(sizeCol * sizeRow * sizeof(CHAR_INFO));
+	charBuf = (PCHAR_INFO) MALLOC(sizeCol * sizeRow * sizeof(CHAR_INFO));
 	/* SetConsoleCursorInfo(hOut, &curInfo); */
 	SetConsoleOutputCP(437);
 	SetConsoleScreenBufferSize(hOut, coordBufSize);
@@ -81,7 +83,7 @@ VOID w32cdispPaint(BOOL force) {
 
 VOID w32cdispFinal() {
 	if (charBuf) {
-		free((void *) charBuf);
+		FREE((void *) charBuf);
 	}
 	charBuf = NULL;
 	SetConsoleCursorInfo(hOut, &defaultCurInfo);

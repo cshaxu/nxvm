@@ -2,6 +2,8 @@
 
 /* QDDISK implements quick and dirty hard drive control routines. */
 
+#include "../../utils.h"
+
 #include "../vcpu.h"
 #include "../vram.h"
 #include "../vhdd.h"
@@ -31,7 +33,7 @@ static void INT_13_02_HDD_ReadSector() {
 		_ah = 0x04;
 		SetBit(_eflags, VCPU_EFLAGS_CF);
 	} else {
-		memcpy((void *) vramGetRealAddr(_es,_bx),
+		MEMCPY((void *) vramGetRealAddr(_es,_bx),
 			(void *) vhddGetAddress(cyl,head,sector), _al * vhdd.nbyte);
 		_ah = 0x00;
 		ClrBit(_eflags, VCPU_EFLAGS_CF);
@@ -49,7 +51,7 @@ static void INT_13_03_HDD_WriteSector() {
 		_ah = 0x04;
 		SetBit(_eflags, VCPU_EFLAGS_CF);
 	} else {
-		memcpy((void *) vhddGetAddress(cyl,head,sector),
+		MEMCPY((void *) vhddGetAddress(cyl,head,sector),
 			(void *) vramGetRealAddr(_es,_bx), _al * vhdd.nbyte);
 		_ah = 0x00;
 		ClrBit(_eflags, VCPU_EFLAGS_CF);

@@ -5001,7 +5001,7 @@ unsigned char dasm32(char *stmt, unsigned char *rcode, unsigned char flag32) {
 	} while (_kdf_check_prefix(opcode));
 #if DASM_TRACE == 1
 	if (trace.cid || trace.flagerror) {
-		utilsPrint("dasm32: bad machine code.\n");
+		PRINTF("dasm32: bad machine code.\n");
 	}
 	utilsTraceFinal(&trace);
 #endif

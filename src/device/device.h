@@ -23,9 +23,14 @@ extern t_device device;
 void deviceConnectBiosSetBoot(t_bool flagHdd);
 t_bool deviceConnectBiosGetBoot();
 
+/* RAM Operations */
+void deviceConnectRamAllocate(t_nubitcc newsize);
+
 /* Disk Drive Operations */
+void deviceConnectFloppyCreate();
 t_bool deviceConnectFloppyInsert(const t_strptr fname);
 t_bool deviceConnectFloppyRemove(const t_strptr fname);
+void deviceConnectHardDiskCreate(t_nubit16 ncyl);
 t_bool deviceConnectHardDiskInsert(const t_strptr fname);
 t_bool deviceConnectHardDiskRemove(const t_strptr fname);
 
@@ -98,6 +103,9 @@ void devicePrintPic();
 void devicePrintPit();
 void devicePrintDma();
 void devicePrintFdc();
+void devicePrintBios();
+void devicePrintDebug();
+void devicePrintMachine();
 
 /* Device Thread Controller */
 void deviceStart();

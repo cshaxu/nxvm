@@ -14,6 +14,21 @@ t_hdd vhdd;
 #define IsTrackEnd (vhdd.sector >= (vhdd.nsector + 1))
 #define IsCylEnd   (vhdd.head == (vhdd.nhead - 1) && IsTrackEnd)
 
+/* allocates space for hard disk */
+static void allocate() {
+	if (vhdd.base) {
+		FREE((void *) vhdd.base);
+	}
+	vhdd.base = (t_vaddrcc) MALLOC(vhddGetImageSize);
+	MEMSET((void *) vhdd.base, 0x00, vhddGetImageSize);
+}
+
+void deviceConnectHardDiskCreate(t_nubit16 ncyl) {
+	vhdd.ncyl = ncyl;
+	allocate();
+	vhdd.flagexist = 1;
+}
+
 t_bool deviceConnectHardDiskInsert(const t_strptr fname) {
 	t_nubitcc count;
 	FILE *image = FOPEN(fname, "rb");
@@ -22,10 +37,10 @@ t_bool deviceConnectHardDiskInsert(const t_strptr fname) {
 		count = ftell(image);
 		vhdd.ncyl = (t_nubit16)(count / vhdd.nhead / vhdd.nsector / vhdd.nbyte);
 		fseek(image, 0, SEEK_SET);
-		vhddAlloc();
-		count = fread((void *) vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
+		allocate();
+		count = FREAD((void *) vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
 		vhdd.flagexist = 1;
-		fclose(image);
+		FCLOSE(image);
 		return 0;
 	} else {
 		return 1;
@@ -39,15 +54,15 @@ t_bool deviceConnectHardDiskRemove(const t_strptr fname) {
 		image = FOPEN(fname, "wb");
 		if(image) {
 			if (!vhdd.flagro)
-				count = fwrite((void *) vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
+				count = FWRITE((void *) vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
 			vhdd.flagexist = 0;
-			fclose(image);
+			FCLOSE(image);
 		} else {
 			return 1;
 		}
 	}
 	vhdd.flagexist = 0;
-	memset((void *) vhdd.base, 0x00, vhddGetImageSize);
+	MEMSET((void *) vhdd.base, 0x00, vhddGetImageSize);
 	return 0;
 }
 
@@ -94,21 +109,13 @@ void vhddFormatTrack(t_nubit8 fillbyte) {
 		vhdd.head = i;
 		vhdd.sector = 0x01;
 		vhddSetPointer;
-		memset((void *) vhdd.curr, fillbyte, vhdd.nsector * vhdd.nbyte);
+		MEMSET((void *) vhdd.curr, fillbyte, vhdd.nsector * vhdd.nbyte);
 		vhdd.sector = vhdd.nsector;
 	}
 }
 
-void vhddAlloc() {
-	if (vhdd.base) {
-		free((void *) vhdd.base);
-	}
-	vhdd.base = (t_vaddrcc) malloc(vhddGetImageSize);
-	memset((void *) vhdd.base, 0x00, vhddGetImageSize);
-}
-
 static void init() {
-	memset(&vhdd, 0x00, sizeof(t_hdd));
+	MEMSET(&vhdd, 0x00, sizeof(t_hdd));
 	vhdd.ncyl    = 0;
 	vhdd.nhead   = 16;
 	vhdd.nsector = 63;
@@ -122,15 +129,9 @@ static void refresh() {}
 
 static void final() {
 	if (vhdd.base) {
-		free((void *) vhdd.base);
+		FREE((void *) vhdd.base);
 	}
 	vhdd.base = (t_vaddrcc) NULL;
 }
 
-void vhddRegister() {
-	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
-	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
-	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
-	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
-	vmachine.numDevices++;
-}
+void vhddRegister() {vmachineAddMe;}

@@ -2,6 +2,8 @@
 
 /* VDMA implements two chips of Direct Memory Access Controller: Intel 8237A (Master+Slave). */
 
+#include "../utils.h"
+
 #include "vram.h"
 #include "vfdc.h"
 
@@ -345,8 +347,8 @@ void vdmaSetDRQ(t_nubit8 dreqid) {
 }
 
 static void init() {
-	memset(&vdma1, 0x00, sizeof(t_dma));
-	memset(&vdma2, 0x00, sizeof(t_dma));
+	MEMSET(&vdma1, 0x00, sizeof(t_dma));
+	MEMSET(&vdma2, 0x00, sizeof(t_dma));
 
 	/* connect device io functions with dma channels */
 	vdma1.channel[2].devread  = (t_faddrcc) vfdcDMARead;
@@ -429,7 +431,7 @@ static void init() {
     vbiosAddPost(VDMA_POST);
 }
 static void reset() {
-	memset(&vlatch, 0x00, sizeof(t_latch));
+	MEMSET(&vlatch, 0x00, sizeof(t_latch));
 	doReset(&vdma1);
 	doReset(&vdma2);
 }
@@ -484,13 +486,44 @@ static void refresh() {
 }
 static void final() {}
 
-void vdmaRegister() {
-	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
-	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
-	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
-	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
-	vmachine.numDevices++;
+void vdmaRegister() {vmachineAddMe;}
+
+/* Print DMA status */
+void devicePrintDma() {
+	t_nubit8 i;
+	PRINTF("DMA 1 Info\n==========\n");
+	PRINTF("Command = %x, status = %x, mask = %x\n",
+	          vdma1.command, vdma1.status, vdma1.mask);
+	PRINTF("request = %x, temp = %x, flagmsb = %x\n",
+	          vdma1.request, vdma1.temp, vdma1.flagmsb);
+	PRINTF("drx = %x, flageop = %x, isr = %x\n",
+	          vdma1.drx, vdma1.flageop, vdma1.isr);
+	for (i = 0;i < 4;++i) {
+		PRINTF("Channel %d: baseaddr = %x, basewc = %x, curraddr = %x, currwc = %x\n",
+		          i, vdma1.channel[i].baseaddr, vdma1.channel[i].basewc,
+		          vdma1.channel[i].curraddr, vdma1.channel[i].currwc);
+		PRINTF("Channel %d: mode = %x, page = %x, devread = %x, devwrite = %x\n",
+		          i, vdma1.channel[i].mode, vdma1.channel[i].page,
+		          vdma1.channel[i].devread, vdma1.channel[i].devwrite);
+	}
+	PRINTF("\nDMA 2 Info\n==========\n");
+	PRINTF("Command = %x, status = %x, mask = %x\n",
+	          vdma2.command, vdma2.status, vdma2.mask);
+	PRINTF("request = %x, temp = %x, flagmsb = %x\n",
+	          vdma2.request, vdma2.temp, vdma2.flagmsb);
+	PRINTF("drx = %x, flageop = %x, isr = %x\n",
+	          vdma2.drx, vdma2.flageop, vdma2.isr);
+	for (i = 0;i < 4;++i) {
+		PRINTF("Channel %d: baseaddr = %x, basewc = %x, curraddr = %x, currwc = %x\n",
+		          i, vdma2.channel[i].baseaddr, vdma2.channel[i].basewc,
+		          vdma2.channel[i].curraddr, vdma2.channel[i].currwc);
+		PRINTF("Channel %d: mode = %x, page = %x, devread = %x, devwrite = %x\n",
+		          i, vdma2.channel[i].mode, vdma2.channel[i].page,
+		          vdma2.channel[i].devread, vdma2.channel[i].devwrite);
+	}
+	PRINTF("\nLatch: byte = %x, word = %x\n", vlatch.byte, vlatch.word);
 }
+
 /*
 debug
 FOR FDC READ/WRITE

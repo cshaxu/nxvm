@@ -4,8 +4,8 @@
 
 #include <unistd.h>
 
-#include "linux.h"
 #include "linuxcon.h"
+#include "linux.h"
 
 void linuxSleep(unsigned int milisec) {usleep((milisec) * 1000);}
 

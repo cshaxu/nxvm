@@ -34,18 +34,30 @@ void utilsTraceBlockEnd(t_utils_trace_call *rtrace);
 
 /* Standard C Library */
 struct tm* LOCALTIME(const time_t *_Time);
+
 char* STRCAT(char *_Dest, const char *_Source);
 char* STRCPY(char *_Dest, const char *_Source);
 char* STRTOK(char *_Str, const char *_Delim);
 int   STRCMP(const char *_Str1, const char *_Str2);
+
+int   PRINTF(const char *format, ...);
+int   FPRINTF(FILE *_File, const char *_Format, ...);
 int   SPRINTF(char *_Dest, const char *_Format, ...);
-FILE* FOPEN(const char *_Filename, const char *_Mode);
-char* FGETS(char *_Buf, int _MaxCount, FILE *_File);
+
+FILE*  FOPEN(const char *_Filename, const char *_Mode);
+int    FCLOSE(FILE *_File);
+size_t FREAD(void *_DstBuf, size_t _ElementSize, size_t _Count, FILE *_File);
+size_t FWRITE(void *_Str, size_t _Size, size_t _Count, FILE *_File);
+char*  FGETS(char *_Buf, int _MaxCount, FILE *_File);
+
+void* MALLOC(size_t _Size);
+void  FREE(void *_Memory);
+void* MEMSET(void *_Dst, int _Val, size_t _Size);
+void* MEMCPY(void *_Dst, const void *_Src, size_t _Size);
 
 /* NXVM Library */
 void utilsSleep(unsigned int milisec);
 void utilsLowerStr(char *s);
-int utilsPrint(const char *format, ...);
 
 /* NXVM Assembler Library */
 unsigned char utilsAasm32(const char *stmt, unsigned char *rcode, unsigned char flag32);

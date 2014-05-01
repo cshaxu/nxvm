@@ -2,6 +2,8 @@
 
 /* VPIT implements Programmable Interval Timer Intel 8254. */
 
+#include "../utils.h"
+
 #include "vpic.h"
 
 #include "vbios.h"
@@ -195,7 +197,7 @@ void vpitSetGate(t_nubit8 id, t_bool flaggate) {
 
 #define vpitRefDRAM NULL
 static void init() {
-	memset(&vpit,0,sizeof(t_pit));
+	MEMSET(&vpit,0,sizeof(t_pit));
 	/* GATE for counter 0 and 1 are connected */
 	vpit.flaggate[0] = vpit.flaggate[1] = 1;
 	vpit.out[0] = (t_faddrcc) vpitIntSystemTimer;
@@ -311,10 +313,25 @@ static void refresh() {
 
 static void final() {}
 
-void vpitRegister() {
-	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
-	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
-	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
-	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
-	vmachine.numDevices++;
+void vpitRegister() {vmachineAddMe;}
+
+/* Print PIT status */
+void devicePrintPit() {
+	t_nubit8 id;
+	for (id = 0;id < 3;++id) {
+		PRINTF("PIT INFO %d\n========\n",id);
+		PRINTF("Control Word = %x, SC = %d, RW = %d, Mode = %d, BCD=%d\n",
+			vpit.cw[id], VPIT_GetSC(vpit.cw[id]), VPIT_GetRW(vpit.cw[id]),
+			VPIT_GetM(vpit.cw[id]), VPIT_GetBCD(vpit.cw[id]));
+		PRINTF("Init = %x, Count = %x, Latch = %x\n",
+			vpit.init[id], vpit.count[id], vpit.latch[id]);
+		PRINTF("Flags: ready = %d, latch = %d, read = %d, write = %d, gate = %d, out = %x\n",
+			vpit.flagready[id], vpit.flaglatch[id], vpit.flagread[id],
+			vpit.flagwrite[id], vpit.flaggate[id], vpit.out[id]);
+	}
+	id = 3;
+	PRINTF("PIT INFO %d (read-back)\n========\n",id);
+	PRINTF("Control Word = %x, SC = %d, RW = %d, Mode = %d, BCD=%d\n",
+	vpit.cw[id], VPIT_GetSC(vpit.cw[id]), VPIT_GetRW(vpit.cw[id]),
+		VPIT_GetM(vpit.cw[id]), VPIT_GetBCD(vpit.cw[id]));
 }

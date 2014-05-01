@@ -22,9 +22,10 @@
 .dirstamp
 
 # AutoMake Makefiles
+/nxvm
+/config.h.in~
 /Makefile
 /config.h
-/config.h.in~
 /config.status
 /config.log
 /stamp-h1

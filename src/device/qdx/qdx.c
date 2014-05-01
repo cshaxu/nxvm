@@ -2,12 +2,11 @@
 
 /* QDX implements quick and dirty instruction loader */
 
-#include "../vmachine.h"
-
 #include "qdcga.h"
 #include "qdkeyb.h"
 #include "qddisk.h"
 
+#include "../vmachine.h"
 #include "qdx.h"
 
 t_faddrcc qdxTable[0x100];
@@ -28,18 +27,10 @@ static void init() {
 	qddiskInit();
 }
 
-static void reset() {
-	qdcgaReset();
-}
+static void reset() {qdcgaReset();}
 
 static void refresh() {}
 
 static void final() {}
 
-void qdxRegister() {
-	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
-	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
-	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
-	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
-	vmachine.numDevices++;
-}
+void qdxRegister() {vmachineAddMe;}

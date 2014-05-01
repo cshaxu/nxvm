@@ -1171,66 +1171,66 @@ static t_aasm_token gettoken(char *str)
 static void printtoken(t_aasm_token token)
 {
 	switch (token) {
-	case TOKEN_NULL:    utilsPrint(" NULL "); break;
-	case TOKEN_END:     utilsPrint(" END ");  break;
-	case TOKEN_LSPAREN: utilsPrint(" [[ ");   break;
-	case TOKEN_RSPAREN: utilsPrint(" ]] ");   break;
-	case TOKEN_COLON:   utilsPrint(" :: ");   break;
-	case TOKEN_PLUS:    utilsPrint(" ++ ");   break;
-	case TOKEN_MINUS:   utilsPrint(" -- ");   break;
-	case TOKEN_TIMES:   utilsPrint(" ** ");   break;
-	case TOKEN_BYTE:    utilsPrint(" BYTE "); break;
-	case TOKEN_WORD:    utilsPrint(" WORD "); break;
-	case TOKEN_DWORD:   utilsPrint(" DWORD ");break;
-	case TOKEN_PTR:     utilsPrint(" PTR ");  break;
-	case TOKEN_NEAR:    utilsPrint(" NEAR "); break;
-	case TOKEN_FAR:     utilsPrint(" FAR ");  break;
-	case TOKEN_SHORT:   utilsPrint(" SHORT ");break;
-	case TOKEN_IMM8:    utilsPrint(" I8(%02X) ",  tokimm8);break;
-	case TOKEN_IMM16:   utilsPrint(" I16(%04X) ", tokimm16);break;
-	case TOKEN_IMM32:   utilsPrint(" I32(%08X) ", tokimm32);break;
-	case TOKEN_AH: utilsPrint(" AH ");break;
-	case TOKEN_BH: utilsPrint(" BH ");break;
-	case TOKEN_CH: utilsPrint(" CH ");break;
-	case TOKEN_DH: utilsPrint(" DH ");break;
-	case TOKEN_AL: utilsPrint(" AL ");break;
-	case TOKEN_BL: utilsPrint(" BL ");break;
-	case TOKEN_CL: utilsPrint(" CL ");break;
-	case TOKEN_DL: utilsPrint(" DL ");break;
-	case TOKEN_AX: utilsPrint(" AX ");break;
-	case TOKEN_BX: utilsPrint(" BX ");break;
-	case TOKEN_CX: utilsPrint(" CX ");break;
-	case TOKEN_DX: utilsPrint(" DX ");break;
-	case TOKEN_SP: utilsPrint(" SP ");break;
-	case TOKEN_BP: utilsPrint(" BP ");break;
-	case TOKEN_SI: utilsPrint(" SI ");break;
-	case TOKEN_DI: utilsPrint(" DI ");break;
-	case TOKEN_ES: utilsPrint(" ES ");break;
-	case TOKEN_CS: utilsPrint(" CS ");break;
-	case TOKEN_SS: utilsPrint(" SS ");break;
-	case TOKEN_DS: utilsPrint(" DS ");break;
-	case TOKEN_FS: utilsPrint(" FS ");break;
-	case TOKEN_GS: utilsPrint(" GS ");break;
-	case TOKEN_EAX: utilsPrint(" EAX ");break;
-	case TOKEN_EBX: utilsPrint(" EBX ");break;
-	case TOKEN_ECX: utilsPrint(" ECX ");break;
-	case TOKEN_EDX: utilsPrint(" EDX ");break;
-	case TOKEN_ESP: utilsPrint(" ESP ");break;
-	case TOKEN_EBP: utilsPrint(" EBP ");break;
-	case TOKEN_ESI: utilsPrint(" ESI ");break;
-	case TOKEN_EDI: utilsPrint(" EDI ");break;
-	case TOKEN_CR0: utilsPrint(" CR0 ");break;
-	case TOKEN_CR2: utilsPrint(" CR2 ");break;
-	case TOKEN_CR3: utilsPrint(" CR3 ");break;
-	case TOKEN_DR0: utilsPrint(" DR0 ");break;
-	case TOKEN_DR1: utilsPrint(" DR1 ");break;
-	case TOKEN_DR2: utilsPrint(" DR2 ");break;
-	case TOKEN_DR3: utilsPrint(" DR3 ");break;
-	case TOKEN_DR6: utilsPrint(" DR6 ");break;
-	case TOKEN_DR7: utilsPrint(" DR7 ");break;
-	case TOKEN_TR6: utilsPrint(" TR6 ");break;
-	case TOKEN_TR7: utilsPrint(" TR7 ");break;
-	default: utilsPrint(" <ERROR> ");break;
+	case TOKEN_NULL:    PRINTF(" NULL "); break;
+	case TOKEN_END:     PRINTF(" END ");  break;
+	case TOKEN_LSPAREN: PRINTF(" [[ ");   break;
+	case TOKEN_RSPAREN: PRINTF(" ]] ");   break;
+	case TOKEN_COLON:   PRINTF(" :: ");   break;
+	case TOKEN_PLUS:    PRINTF(" ++ ");   break;
+	case TOKEN_MINUS:   PRINTF(" -- ");   break;
+	case TOKEN_TIMES:   PRINTF(" ** ");   break;
+	case TOKEN_BYTE:    PRINTF(" BYTE "); break;
+	case TOKEN_WORD:    PRINTF(" WORD "); break;
+	case TOKEN_DWORD:   PRINTF(" DWORD ");break;
+	case TOKEN_PTR:     PRINTF(" PTR ");  break;
+	case TOKEN_NEAR:    PRINTF(" NEAR "); break;
+	case TOKEN_FAR:     PRINTF(" FAR ");  break;
+	case TOKEN_SHORT:   PRINTF(" SHORT ");break;
+	case TOKEN_IMM8:    PRINTF(" I8(%02X) ",  tokimm8);break;
+	case TOKEN_IMM16:   PRINTF(" I16(%04X) ", tokimm16);break;
+	case TOKEN_IMM32:   PRINTF(" I32(%08X) ", tokimm32);break;
+	case TOKEN_AH: PRINTF(" AH ");break;
+	case TOKEN_BH: PRINTF(" BH ");break;
+	case TOKEN_CH: PRINTF(" CH ");break;
+	case TOKEN_DH: PRINTF(" DH ");break;
+	case TOKEN_AL: PRINTF(" AL ");break;
+	case TOKEN_BL: PRINTF(" BL ");break;
+	case TOKEN_CL: PRINTF(" CL ");break;
+	case TOKEN_DL: PRINTF(" DL ");break;
+	case TOKEN_AX: PRINTF(" AX ");break;
+	case TOKEN_BX: PRINTF(" BX ");break;
+	case TOKEN_CX: PRINTF(" CX ");break;
+	case TOKEN_DX: PRINTF(" DX ");break;
+	case TOKEN_SP: PRINTF(" SP ");break;
+	case TOKEN_BP: PRINTF(" BP ");break;
+	case TOKEN_SI: PRINTF(" SI ");break;
+	case TOKEN_DI: PRINTF(" DI ");break;
+	case TOKEN_ES: PRINTF(" ES ");break;
+	case TOKEN_CS: PRINTF(" CS ");break;
+	case TOKEN_SS: PRINTF(" SS ");break;
+	case TOKEN_DS: PRINTF(" DS ");break;
+	case TOKEN_FS: PRINTF(" FS ");break;
+	case TOKEN_GS: PRINTF(" GS ");break;
+	case TOKEN_EAX: PRINTF(" EAX ");break;
+	case TOKEN_EBX: PRINTF(" EBX ");break;
+	case TOKEN_ECX: PRINTF(" ECX ");break;
+	case TOKEN_EDX: PRINTF(" EDX ");break;
+	case TOKEN_ESP: PRINTF(" ESP ");break;
+	case TOKEN_EBP: PRINTF(" EBP ");break;
+	case TOKEN_ESI: PRINTF(" ESI ");break;
+	case TOKEN_EDI: PRINTF(" EDI ");break;
+	case TOKEN_CR0: PRINTF(" CR0 ");break;
+	case TOKEN_CR2: PRINTF(" CR2 ");break;
+	case TOKEN_CR3: PRINTF(" CR3 ");break;
+	case TOKEN_DR0: PRINTF(" DR0 ");break;
+	case TOKEN_DR1: PRINTF(" DR1 ");break;
+	case TOKEN_DR2: PRINTF(" DR2 ");break;
+	case TOKEN_DR3: PRINTF(" DR3 ");break;
+	case TOKEN_DR6: PRINTF(" DR6 ");break;
+	case TOKEN_DR7: PRINTF(" DR7 ");break;
+	case TOKEN_TR6: PRINTF(" TR6 ");break;
+	case TOKEN_TR7: PRINTF(" TR7 ");break;
+	default: PRINTF(" <ERROR> ");break;
 		break;
 	}
 }
@@ -1250,7 +1250,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token)
 	unsigned char eax,ecx,edx,ebx,esp,ebp,esi,edi;
 	unsigned char ieax,iecx,iedx,iebx,iebp,iesi,iedi;
 	_cb("parsearg_mem");
-	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
+	MEMSET(&info, 0x00, sizeof(t_aasm_oprinfo));
 	bx = bp = si = di = neg = al = 0;
 	eax = ecx = edx = ebx = esp = ebp = esi = edi = 0;
 	ieax = iecx = iedx = iebx = iebp = iesi = iedi = 0;
@@ -1723,7 +1723,7 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token)
 	t_aasm_oprinfo info;
 	_cb("parsearg_imm");
 
-	memset(&info, 0x00, sizeof(t_aasm_oprinfo));
+	MEMSET(&info, 0x00, sizeof(t_aasm_oprinfo));
 
 	if (token == TOKEN_PLUS) {
 		_bb("token(TOKEN_PLUS)");
@@ -1778,7 +1778,7 @@ static t_aasm_oprinfo parsearg(char *arg)
 	t_aasm_token token;
 	t_aasm_oprinfo info;
 	_cb("parsearg");
-	memset(&info, 0x00 ,sizeof(t_aasm_oprinfo));
+	MEMSET(&info, 0x00 ,sizeof(t_aasm_oprinfo));
 	if (!arg || !arg[0]) {
 		info.type = TYPE_NONE;
 		_ce;
@@ -6396,7 +6396,7 @@ unsigned char aasm32(const char *stmt, unsigned char *rcode, unsigned char flag3
 	utilsTraceInit(&trace);
 #endif
 
-	memcpy(astmt, stmt, 0x100);
+	MEMCPY(astmt, stmt, 0x100);
 	utilsLowerStr(astmt);
 	rstmt = astmt;
 
@@ -6407,10 +6407,10 @@ unsigned char aasm32(const char *stmt, unsigned char *rcode, unsigned char flag3
 	flagerror = 0;
 
 	iop = 0;
-	memset(&aopri1, 0x00, sizeof(t_aasm_oprinfo));
-	memset(&aopri2, 0x00, sizeof(t_aasm_oprinfo));
-	memset(&aopri3, 0x00, sizeof(t_aasm_oprinfo));
-	memset(&aoprig, 0x00, sizeof(t_aasm_oprinfo));
+	MEMSET(&aopri1, 0x00, sizeof(t_aasm_oprinfo));
+	MEMSET(&aopri2, 0x00, sizeof(t_aasm_oprinfo));
+	MEMSET(&aopri3, 0x00, sizeof(t_aasm_oprinfo));
+	MEMSET(&aoprig, 0x00, sizeof(t_aasm_oprinfo));
 	prefix_oprsizeg = prefix_addrsizeg = 0;
 
 	rop = ropr1 = ropr2 = ropr3 = NULL;
@@ -6468,19 +6468,19 @@ unsigned char aasm32(const char *stmt, unsigned char *rcode, unsigned char flag3
 		if ((rinfo && rinfo->flaggs) || aoprig.flaggs) {(*(rcode + len)) = 0x65;len++;}
 		if (prefix_addrsize || prefix_addrsizeg) {(*(rcode + len)) = 0x67;len++;}
 		if (prefix_oprsize || prefix_oprsizeg) {(*(rcode + len)) = 0x66;len++;}	
-		memcpy((void *)(rcode + len), (void *) acode, iop);
+		MEMCPY((void *)(rcode + len), (void *) acode, iop);
 		len += iop;
 	} else {
 #if AASM_TRACE == 1
-		utilsPrint("aasm32: bad instruction '%s'\n", stmt);
-		utilsPrint("aasm32: [%s] [%s/%d] [%s/%d] [%s/%d]\n",
+		PRINTF("aasm32: bad instruction '%s'\n", stmt);
+		PRINTF("aasm32: [%s] [%s/%d] [%s/%d] [%s/%d]\n",
 			rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
 #endif
 	}
 
 #if AASM_TRACE == 1
 	if (trace.cid || trace.flagerror) {
-		utilsPrint("aasm32: bad instruction '%s'\n", stmt);
+		PRINTF("aasm32: bad instruction '%s'\n", stmt);
 	}
 	utilsTraceFinal(&trace);
 #endif
@@ -6649,7 +6649,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 			count++;
 		}
 	}
-	instr = (t_aasm_instr *) malloc(count * sizeof(t_aasm_instr));
+	instr = (t_aasm_instr *) MALLOC(count * sizeof(t_aasm_instr));
 	i = j = k = 0;
 	while (is_space(stmt[i])) {
 		i++;
@@ -6690,7 +6690,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 	}
 	count = k;
 	for (i = 0;i < count;++i) {
-		memset(instr[i].code_array, 0x00, 15);
+		MEMSET(instr[i].code_array, 0x00, 15);
 		asmx_get_label(&instr[i]);
 		if (instr[i].flag_has_label) {
 			if (instr[i].flag_is_label) {
@@ -6703,28 +6703,28 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 			instr[i].code_len = aasm32(instr[i].stmt, instr[i].code_array, flag32);
 		}
 		if (flagerror) {
-			free(instr);
+			FREE((void *) instr);
 			return 0;
 		}
 		if (!instr[i].code_len) {
 			flagerror = 1;
-			utilsPrint("bad instruction in first round:\n#%d: [%s], %x", instr[i].stmt_id, instr[i].stmt, instr[i].code_len);
+			PRINTF("bad instruction in first round:\n#%d: [%s], %x", instr[i].stmt_id, instr[i].stmt, instr[i].code_len);
 			if (instr[i].code_len) {
-				utilsPrint(", code: [");
+				PRINTF(", code: [");
 				for (j = 0;j < instr[i].code_len;++j) {
-					utilsPrint("%02X", instr[i].code_array[j]);
+					PRINTF("%02X", instr[i].code_array[j]);
 				}
-				utilsPrint("]");
+				PRINTF("]");
 			}
 			if (instr[i].flag_has_label) {
-				utilsPrint(", label: [%s], is=%s",
+				PRINTF(", label: [%s], is=%s",
 					instr[i].label_str,
 					instr[i].flag_is_label ? "yes" : "no");
 			}
-			utilsPrint("\n");
+			PRINTF("\n");
 		}	
 		if (flagerror) {
-			free(instr);
+			FREE((void *) instr);
 			return 0;
 		}
 	}
@@ -6738,7 +6738,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 				if (instr[j].flag_has_label && !strcmp(instr[j].label_str, instr[i].label_str)) {
 					if (instr[j].flag_is_label) {
 						flagerror = 1;
-						utilsPrint("aasm32x: duplicate label '%s'.\n", instr[i].label_str);
+						PRINTF("aasm32x: duplicate label '%s'.\n", instr[i].label_str);
 					} else {
 						offset = 0;
 						/* for (k = j + 1;k < i;++k) {
@@ -6755,7 +6755,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 								SPRINTF(imm, "+%02x", (unsigned char) offset);
 							} else {
 								flagerror = 1;
-								utilsPrint("aasm32x: invalid short pointer 8+.\n");
+								PRINTF("aasm32x: invalid short pointer 8+.\n");
 							}
 							break;
 						case PTR_NEAR:
@@ -6766,7 +6766,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 									SPRINTF(imm, "+%04x", (unsigned short) offset);
 								} else {
 									flagerror = 1;
-									utilsPrint("aasm32x: invalid near pointer 16+.\n");
+									PRINTF("aasm32x: invalid near pointer 16+.\n");
 								}
 								break;
 							case 4:
@@ -6774,7 +6774,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 									SPRINTF(imm, "+%08x", (unsigned int) offset);
 								} else {
 									flagerror = 1;
-									utilsPrint("aasm32x: invalid near pointer 32+.\n");
+									PRINTF("aasm32x: invalid near pointer 32+.\n");
 								}
 								break;
 							default:
@@ -6789,7 +6789,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 						aasm32(instr[j].stmt, instr[j].code_array, flag32);
 					}
 					if (flagerror) {
-						free(instr);
+						FREE((void *) instr);
 						return 0;
 					}
 				}
@@ -6801,7 +6801,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 				if (instr[j].flag_has_label && !strcmp(instr[j].label_str, instr[i].label_str)) {
 					if (instr[j].flag_is_label) {
 						flagerror = 1;
-						utilsPrint("aasm32x: duplicated label '%s'.\n", instr[i].label_str);
+						PRINTF("aasm32x: duplicated label '%s'.\n", instr[i].label_str);
 					} else {
 						offset = 0;
 						for (k = i + 1;k < j + 1;++k) {
@@ -6815,7 +6815,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 								SPRINTF(imm, "-%02x", (unsigned char) offset);
 							} else {
 								flagerror = 1;
-								utilsPrint("aasm32x: invalid short pointer 8-.\n");
+								PRINTF("aasm32x: invalid short pointer 8-.\n");
 							}
 							break;
 						case PTR_NEAR:
@@ -6826,7 +6826,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 									SPRINTF(imm, "-%04x", (unsigned short) offset);
 								} else {
 									flagerror = 1;
-									utilsPrint("aasm32x: invalid near pointer 16-.\n");
+									PRINTF("aasm32x: invalid near pointer 16-.\n");
 								}
 								break;
 							case 4:
@@ -6834,7 +6834,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 									SPRINTF(imm, "-%08x", (unsigned int) offset);
 								} else {
 									flagerror = 1;
-									utilsPrint("aasm32x: invalid near pointer 32-.\n");
+									PRINTF("aasm32x: invalid near pointer 32-.\n");
 								}
 								break;
 							default:
@@ -6849,7 +6849,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 						aasm32(instr[j].stmt, instr[j].code_array, flag32);
 					}
 					if (flagerror) {
-						free(instr);
+						FREE((void *) instr);
 						return 0;
 					}
 				}
@@ -6858,14 +6858,14 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 	}
 	len = 0;
 	for (i = 0;i < count;++i) {
-		/*utilsPrint("%04X: %s", len, instr[i].stmt);
-		for (j = (int) strlen(instr[i].stmt);j < 50;++j) utilsPrint(" ");
-		utilsPrint("[");
-		for (j = 0;j < instr[i].code_len;++j) utilsPrint("%02X", instr[i].code_array[j]);
-		utilsPrint("]\n");*/
-		memcpy((void *)(rcode + len), instr[i].code_array, instr[i].code_len);
+		/*PRINTF("%04X: %s", len, instr[i].stmt);
+		for (j = (int) strlen(instr[i].stmt);j < 50;++j) PRINTF(" ");
+		PRINTF("[");
+		for (j = 0;j < instr[i].code_len;++j) PRINTF("%02X", instr[i].code_array[j]);
+		PRINTF("]\n");*/
+		MEMCPY((void *)(rcode + len), instr[i].code_array, instr[i].code_len);
 		len += instr[i].code_len;
 	}
-	free(instr);
+	FREE(instr);
 	return len;
 }

@@ -86,7 +86,9 @@ void deviceConnectKeyboardClrFlag1LeftAlt()  {ClrBit(qdkeybVarFlag1, QDKEYB_FLAG
 void deviceConnectKeyboardClrFlag1LeftCtrl() {ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LCTRL);}
 
 void deviceConnectKeyboardRecvKeyPress(t_nubit16 code) {
-//	while(bufPush(code)) utilsSleep(1);
+	/* while(bufPush(code)) {
+		utilsSleep(1);
+	} */
 	bufPush(code);
 	vpicSetIRQ(0x01);
 }

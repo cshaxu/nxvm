@@ -18,7 +18,7 @@ static HINSTANCE hInstance = NULL;
 static LPCSTR szWindowClass = _T("nxvm");
 static LPCSTR szTitle = _T("Neko's x86 Virtual Machine");
 #define TIMER_PAINT   0
-//#define TIMER_RTC     1
+/* #define TIMER_RTC     1 */
 
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 	WPARAM wParam, LPARAM lParam) {

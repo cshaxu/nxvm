@@ -2,6 +2,8 @@
 
 /* VMACHINE is the hub that assembles all devices. */
 
+#include "../utils.h"
+
 #include "vdebug.h"
 #include "vport.h"
 #include "vram.h"
@@ -23,7 +25,7 @@
 
 t_machine vmachine;
 
-/* Registers all devices */
+/* Ask all devices to register */
 static void doRegister() {
 	vdebugRegister();
 	vportRegister();
@@ -43,10 +45,20 @@ static void doRegister() {
 	qdxRegister();
 }
 
+/* Device call this function to register itself */
+void vmachineAddDevice(t_faddrcc fpInit, t_faddrcc fpReset, t_faddrcc fpRefresh,
+	t_faddrcc fpFinal) {
+	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = fpInit;
+	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = fpReset;
+	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = fpRefresh;
+	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = fpFinal;
+	vmachine.numDevices++;
+}
+
 /* Initializes all devices, allocates space */
 void vmachineInit() {
 	t_nubitcc i;
-	memset(&vmachine, 0x00, sizeof(t_machine));
+	MEMSET(&vmachine, 0x00, sizeof(t_machine));
 	doRegister();
 	for (i = 0;i < vmachine.numDevices;++i) {
 		ExecFun(vmachine.deviceTable[VMACHINE_DEVICE_INIT][i]);
@@ -75,4 +87,17 @@ void vmachineFinal() {
 	for (i = 0;i < vmachine.numDevices;++i) {
 		ExecFun(vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices - i - 1]);
 	}
+}
+
+/* Print machine info */
+void devicePrintMachine() {
+	PRINTF("Machine:           %s\n", NXVM_DEVICE_MACHINE);
+	PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
+	PRINTF("RAM Size:          %d MB\n", vram.size >> 20);
+	PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
+		vfddGetImageSize * 1. / 0xfa000,
+		vfdd.flagexist ? "inserted" : "not inserted");
+	PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n", vhdd.ncyl,
+		vhddGetImageSize * 1. / 0x100000,
+		vhdd.flagexist ? "connected" : "disconnected");
 }

@@ -2,6 +2,8 @@
 
 /* VFDC implements Floppy Driver Controller: Intel 8272A. */
 
+#include "../utils.h"
+
 #include "vdma.h"
 #include "vfdd.h"
 #include "vpic.h"
@@ -42,7 +44,7 @@ t_fdc vfdc;
 /* Resets FDC but keeps CCR */
 static void doReset() {
 	t_nubit8 ccr = vfdc.ccr;
-	memset(&vfdc, 0, sizeof(t_fdc));
+	MEMSET(&vfdc, 0, sizeof(t_fdc));
 	vfdc.ccr = ccr;
 }
 
@@ -468,7 +470,7 @@ void vfdcTransFinal() {
 }
 
 static void init() {
-	memset(&vfdc, 0, sizeof(t_fdc));
+	MEMSET(&vfdc, 0, sizeof(t_fdc));
 	vfdc.ccr = 0x02;
 	vport.in[0x03f4] = (t_faddrcc) io_read_03F4;
 	vport.in[0x03f5] = (t_faddrcc) io_read_03F5;
@@ -483,9 +485,7 @@ static void init() {
 	vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x40);
 }
 
-static void reset() {
-	doReset();
-}
+static void reset() {doReset();}
 
 static void refresh() {
 	if (!vfdd.flagexist) {
@@ -497,13 +497,37 @@ static void refresh() {
 
 static void final() {}
 
-void vfdcRegister() {
-	vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = (t_faddrcc) init;
-	vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = (t_faddrcc) reset;
-	vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = (t_faddrcc) refresh;
-	vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = (t_faddrcc) final;
-	vmachine.numDevices++;
+void vfdcRegister() {vmachineAddMe;}
+
+/* Prints FDC status */
+void devicePrintFdc() {
+	t_nubit8 i;
+	PRINTF("FDC INFO\n========\n");
+	PRINTF("msr = %x, dir = %x, dor = %x, ccr = %x, dr = %x\n",
+		vfdc.msr,vfdc.dir,vfdc.dor,vfdc.ccr,vfdc.dr);
+	PRINTF("hut = %x, hlt = %x, srt = %x, Non-DMA = %x, INTR = %x\n",
+		vfdc.hut,vfdc.hlt,vfdc.srt,vfdc.flagndma,vfdc.flagintr);
+	PRINTF("rwid = %x, st0 = %x, st1 = %x, st2 = %x, st3 = %x\n",
+		vfdc.rwid,vfdc.st0,vfdc.st1,vfdc.st2,vfdc.st3);
+	for (i = 0;i < 9;++i) {
+		PRINTF("cmd[%d] = %x, ", i,vfdc.cmd[i]);
+	}
+	PRINTF("\n");
+	for (i = 0;i < 7;++i) {
+		PRINTF("ret[%d] = %x, ", i,vfdc.ret[i]);
+	}
+	PRINTF("\n");
+	PRINTF("FDD INFO\n========\n");
+	PRINTF("cyl = %x, head = %x, sector = %x\n",
+		vfdd.cyl,vfdd.head,vfdd.sector);
+	PRINTF("nsector = %x, nbyte = %x, gaplen = %x\n",
+		vfdd.nsector,vfdd.nbyte,vfdd.gaplen);
+	PRINTF("ReadOnly = %x, Exist = %x\n",
+		vfdd.flagro,vfdd.flagexist);
+	PRINTF("base = %x, curr = %x, count = %x\n",
+		vfdd.base,vfdd.curr,vfdd.count);
 }
+
 /*
 FOR FDD READ
 of3f1 00  refresh

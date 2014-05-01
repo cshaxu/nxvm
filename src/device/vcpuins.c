@@ -41,8 +41,8 @@ static t_utils_trace_call trace;
 #define _chr(n) do     {(n);if (vcpuins.except) return 0;} while (0)
 #endif
 
-#define _newins_ //if (1) {utilsPrint("NEWINS: ");utilsTracePrintCall();} else
-#define _comment utilsPrint
+#define _newins_ //if (1) {PRINTF("NEWINS: ");utilsTracePrintCall();} else
+#define _comment PRINTF
 
 /* instruction dispatch */
 static t_faddrcc table[0x100], table_0f[0x100];
@@ -54,17 +54,17 @@ static t_faddrcc table[0x100], table_0f[0x100];
 /* address size of the source operand */
 #define _GetAddressSize ((vcpu.cs.seg.exec.defsize ^ vcpuins.prefix_addrsize) ? 4 : 2)
 /* if opcode indicates a prefix */
-#define _SetExcept_DE(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_DE), vcpuins.excode = (n), utilsPrint("#DE(%x) - divide error\n",    (n)))
-#define _SetExcept_PF(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_PF), vcpuins.excode = (n), utilsPrint("#PF(%x) - page fault\n",      (n)))
-#define _SetExcept_GP(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_GP), vcpuins.excode = (n), utilsPrint("#GP(%x) - general protect\n", (n)))
-#define _SetExcept_SS(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_SS), vcpuins.excode = (n), utilsPrint("#SS(%x) - stack segment\n",   (n)))
-#define _SetExcept_UD(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_UD), vcpuins.excode = (n), utilsPrint("#UD(%x) - undefined\n",       (n)))
-#define _SetExcept_NP(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_NP), vcpuins.excode = (n), utilsPrint("#NP(%x) - not present\n",     (n)))
-#define _SetExcept_BR(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_BR), vcpuins.excode = (n), utilsPrint("#BR(%x) - boundary\n",        (n)))
-#define _SetExcept_TS(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_TS), vcpuins.excode = (n), utilsPrint("#TS(%x) - task state\n",      (n)))
-#define _SetExcept_NM(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_NM), vcpuins.excode = (n), utilsPrint("#NM(%x) - divide error\n",    (n)))
+#define _SetExcept_DE(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_DE), vcpuins.excode = (n), PRINTF("#DE(%x) - divide error\n",    (n)))
+#define _SetExcept_PF(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_PF), vcpuins.excode = (n), PRINTF("#PF(%x) - page fault\n",      (n)))
+#define _SetExcept_GP(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_GP), vcpuins.excode = (n), PRINTF("#GP(%x) - general protect\n", (n)))
+#define _SetExcept_SS(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_SS), vcpuins.excode = (n), PRINTF("#SS(%x) - stack segment\n",   (n)))
+#define _SetExcept_UD(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_UD), vcpuins.excode = (n), PRINTF("#UD(%x) - undefined\n",       (n)))
+#define _SetExcept_NP(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_NP), vcpuins.excode = (n), PRINTF("#NP(%x) - not present\n",     (n)))
+#define _SetExcept_BR(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_BR), vcpuins.excode = (n), PRINTF("#BR(%x) - boundary\n",        (n)))
+#define _SetExcept_TS(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_TS), vcpuins.excode = (n), PRINTF("#TS(%x) - task state\n",      (n)))
+#define _SetExcept_NM(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_NM), vcpuins.excode = (n), PRINTF("#NM(%x) - divide error\n",    (n)))
 
-#define _SetExcept_CE(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_CE), vcpuins.excode = (n), utilsPrint("#CE(%x) - internal case error\n", (n)), deviceStop())
+#define _SetExcept_CE(n) (SetBit(vcpuins.except, VCPUINS_EXCEPT_CE), vcpuins.excode = (n), PRINTF("#CE(%x) - internal case error\n", (n)), deviceStop())
 #define _impossible_     _chk(_SetExcept_CE(0xffffffff))
 #define _impossible_r_   _chr(_SetExcept_CE(0xffffffff))
 
@@ -409,7 +409,7 @@ static void _kma_read_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rda
 		if (vcpuins.flagwr) {
 			if (vcpuins.wrlin >= vcpu.mem[vcpu.msize].linear &&
 				vcpuins.wrlin < vcpu.mem[vcpu.msize].linear + byte) {
-				utilsPrint("Watch point caught at L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", vcpu.linear,
+				PRINTF("Watch point caught at L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", vcpu.linear,
 					vcpu.mem[vcpu.msize].byte,
 					vcpu.mem[vcpu.msize].data,
 					vcpu.mem[vcpu.msize].linear);
@@ -447,7 +447,7 @@ static void _kma_write_logical(t_cpu_sreg *rsreg, t_nubit32 offset, t_vaddrcc rd
 		if (vcpuins.flagww) {
 			if (vcpuins.wwlin >= vcpu.mem[vcpu.msize].linear &&
 				vcpuins.wwlin < vcpu.mem[vcpu.msize].linear + byte) {
-				utilsPrint("Watch point caught at L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", vcpu.linear,
+				PRINTF("Watch point caught at L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", vcpu.linear,
 					vcpu.mem[vcpu.msize].byte,
 					vcpu.mem[vcpu.msize].data,
 					vcpu.mem[vcpu.msize].linear);
@@ -4219,7 +4219,7 @@ static void UndefinedOpcode()
 	_cb("UndefinedOpcode");
 	vcpu = vcpuins.oldcpu;
 	if (!_GetCR0_PE) {
-		utilsPrint("The NXVM CPU has encountered an illegal instruction at L%08X.\n", vcpu.cs.base + vcpu.eip);
+		PRINTF("The NXVM CPU has encountered an illegal instruction at L%08X.\n", vcpu.cs.base + vcpu.eip);
 		deviceStop();
 	}
 	_chk(_SetExcept_UD(0));
@@ -11343,7 +11343,7 @@ static void ExecIns()
 		_ce;
 	} while (_kdf_check_prefix(opcode));
 	if (vcpuins.flagwe && vcpuins.welin == vcpu.linear) {
-		utilsPrint("Watch point caught at L%08x: EXECUTED\n", vcpu.linear);
+		PRINTF("Watch point caught at L%08x: EXECUTED\n", vcpu.linear);
 		/* printCpuReg(); */
 		deviceStop();
 	}
@@ -11393,16 +11393,16 @@ static void QDX()
 	switch (GetMax8(vcpuins.cimm)) {
 	case 0x00:
 	case 0xff: /* STOP */
-		utilsPrint("\nNXVM CPU STOP at CS:%04X IP:%08X INS:QDX IMM:%02X\n",
+		PRINTF("\nNXVM CPU STOP at CS:%04X IP:%08X INS:QDX IMM:%02X\n",
 			vcpu.cs.selector,vcpu.eip, GetMax8(vcpuins.cimm));
-		utilsPrint("This happens because of the special instruction.\n");
+		PRINTF("This happens because of the special instruction.\n");
 		deviceStop();
 		break;
 	case 0x01:
 	case 0xfe: /* RESET */
-		utilsPrint("\nNXVM CPU RESET at CS:%04X IP:%08X INS:QDX IMM:%02X\n",
+		PRINTF("\nNXVM CPU RESET at CS:%04X IP:%08X INS:QDX IMM:%02X\n",
 			vcpu.cs.selector,vcpu.eip, GetMax8(vcpuins.cimm));
-		utilsPrint("This happens because of the special instruction.\n");
+		PRINTF("This happens because of the special instruction.\n");
 		deviceReset();
 		break;
 	case 0x02:
@@ -11465,7 +11465,7 @@ void vcpuinsInit()
 #if VCPUINS_TRACE == 1
 	utilsTraceInit(&trace);
 #endif
-	memset(&vcpuins, 0x00, sizeof(t_cpuins));
+	MEMSET(&vcpuins, 0x00, sizeof(t_cpuins));
 	table[0x00] = (t_faddrcc) ADD_RM8_R8;
 	table[0x01] = (t_faddrcc) ADD_RM32_R32;
 	table[0x02] = (t_faddrcc) ADD_R8_RM8;

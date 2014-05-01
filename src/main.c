@@ -1,4 +1,4 @@
-#define PRODUCT "Neko's x86 Virtual Machine [0.4.0154]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.4.0155]\n\
 Copyright (c) 2012-2014 Neko.\n"
 
 /*
@@ -156,8 +156,8 @@ Copyright (c) 2012-2014 Neko.\n"
 #include "console.h"
 
 int main(int argc, char **argv) {
-	utilsPrint("%s\n", PRODUCT);
-	utilsPrint("Built on %s at %s.\n", __DATE__, __TIME__);
+	PRINTF("%s\n", PRODUCT);
+	PRINTF("Built on %s at %s.\n", __DATE__, __TIME__);
 	consoleMain();
 	return 0;
 }
