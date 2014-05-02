@@ -18,8 +18,7 @@ typedef enum {
 } t_pit_status_rw;
 
 typedef struct {
-	t_nubit8 cw[4]; /* control words[0-2] for counter 0-2,
-	                 * and cw[3] is read-back command */
+	t_nubit8 cw[4]; /* control words[0-2] for counter 0-2, and cw[3] is read-back command */
 
 	t_nubit16 init[3];  /* initial counts */
 	t_nubit16 count[3]; /* counter[0-2] */
@@ -39,13 +38,34 @@ extern t_pit vpit;
 /*
  * Ctrl Word   SC1 | SC0 | RW1   | RW0    | M2   | M1   | M0   | BCD
  * Latch Cmd   SC1 | SC0 | 0     | 0      | x    | x    | x    | x  
- * Read-back   1   | 1   | COUNT | STATUS | CNT2 | CNT1 | CNT0 | 0  
- * Stus Byte   OUT | NC  | RW1   | RW0    | M2   | M1   | M9   | BCD
+ * Read-back   I   | I   | COUNT | STATUS | CNT2 | CNT1 | CNT0 | 0  
+ * Stus Byte   OUT | NC  | RW1   | RW0    | M2   | M1   | M0   | BCD
  */
-#define VPIT_GetSC(cw)  (((cw) & 0xc0)>>0x06)
-#define VPIT_GetRW(cw)  (((cw) & 0x30)>>0x04)
-#define VPIT_GetM(cw)   (((cw) & 0x0e)>>0x01)
-#define VPIT_GetBCD(cw) (((cw) & 0x01))
+
+/* control word bits */
+#define VPIT_CW_BCD 0x01 /* bcd(1) or binary(0) counter */
+#define VPIT_CW_M   0x0e /* counter mode bits */
+#define VPIT_CW_RW  0x30 /* read/write/latch format bits */
+#define VPIT_CW_SC  0xc0 /* counter select bits or read-back command */
+#define VPIT_GetCW_SC(cw)  (((cw) & VPIT_CW_SC) >> 6)
+#define VPIT_GetCW_RW(cw)  (((cw) & VPIT_CW_RW) >> 4)
+#define VPIT_GetCW_M(cw)   (((cw) & VPIT_CW_M)  >> 1)
+
+/* latch command bits */
+#define VPIT_LC_SC 0xc0 /* counter select bits */
+
+/* read-back bits */
+#define VPIT_RB_CNT(id) (1 << ((id) + 1))
+#define VPIT_RB_CNTS    0x0e /* select counters indivisually */
+#define VPIT_RB_STATUS  0x10 /* latch status of selected counters*/
+#define VPIT_RB_COUNT   0x20 /* latch count of selected counters */
+
+/* status byte bits */
+#define VPIT_SB_BCD 0x01 /* bcd(1) or binary(0) counter */
+#define VPIT_SB_M   0x0e /* counter mode bits */
+#define VPIT_SB_RW  0x30 /* read/write/latch format bits */
+#define VPIT_SB_NC  0x40 /* null count (1) or count available (0) */
+#define VPIT_SB_OUT 0x80 /* state of out pin high(1) or low(0) */
 
 void vpitSetGate(t_nubit8 id, t_bool flaggate);
 

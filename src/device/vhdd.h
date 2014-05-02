@@ -9,7 +9,7 @@ extern "C" {
 
 #include "vglobal.h"
 
-#define NXVM_DEVICE_HDD "20 cylinders"
+#define NXVM_DEVICE_HDD "Unknown Hard Disk Drive"
 
 typedef struct {
 	t_nubit16 cyl;     /* vfdc.C; cylinder id (0 to 79) */
@@ -31,6 +31,8 @@ typedef struct {
 
 extern t_hdd vhdd;
 
+#define VHDD_BYTE_PER_MB 1048576
+
 #define vhddSetPointer (vhdd.curr = vhdd.base +                                \
                         ((vhdd.cyl * vhdd.nhead + vhdd.head) * vhdd.nsector +  \
                         (vhdd.sector - 0x01)) * vhdd.nbyte)
@@ -39,8 +41,6 @@ extern t_hdd vhdd;
 void vhddTransRead();
 void vhddTransWrite();
 void vhddFormatTrack(t_nubit8 fillbyte);
-
-void vhddAlloc();
 
 void vhddRegister();
 

@@ -9,7 +9,7 @@ extern "C" {
 
 #include "vglobal.h"
 
-#define NXVM_DEVICE_PORT "Unknown"
+#define NXVM_DEVICE_PORT "Unknown I/O Port"
 
 typedef struct {
 	t_faddrcc in[0x10000];

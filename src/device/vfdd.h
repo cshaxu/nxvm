@@ -9,7 +9,7 @@ extern "C" {
 
 #include "vglobal.h"
 
-#define NXVM_DEVICE_FDD "3.5\""
+#define NXVM_DEVICE_FDD "3.5\" Floppy Disk Drive"
 
 typedef struct {
 	t_nubit16 cyl;    /* vfdc.C; cylinder id (0 to 79) */
@@ -30,6 +30,8 @@ typedef struct {
 } t_fdd;
 
 extern t_fdd vfdd;
+
+#define VFDD_BYTE_PER_MB 1024000
 
 #define vfddSetPointer (vfdd.curr = vfdd.base +                               \
                         ((vfdd.cyl * vfdd.nhead + vfdd.head) * vfdd.nsector + \

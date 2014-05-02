@@ -27,39 +27,115 @@ typedef struct {
 	t_nubit8 rwid; /* io port command/result rw id */
 	t_nubit8 cmd[9];
 	t_nubit8 ret[7];
-	t_nubit8 st0,st1,st2,st3; /* state registers */
+	t_nubit8 st0, st1, st2, st3; /* state registers */
 } t_fdc;
 
 extern t_fdc vfdc;
 
-/* Command Bytes */
-//#define VFDC_Get_A0(cbyte)  /* Address Line 0 */
-//#define VFDC_Get_C(cbyte)   /* Cylinder Number (0-79) */
-//#define VFDC_Get_D(cbyte)   /* Data */
-//#define VFDC_Get_DB(cbyte)  /* Data Bus (D7-D0) */
-//#define VFDC_Get_DTL(cbyte) /* Data Length */
-//#define VFDC_Get_EOT(cbyte) /* End Of Track */
-//#define VFDC_Get_GPL(cbyte) /* Gap Length */
-//#define VFDC_Get_H(cbyte)   /* Head Address (0-1) */
-//#define VFDC_Get_MFM(cbyte) /* fm or mfm mode */
-//#define VFDC_Get_MT(cbyte)  /* multi-track */
-//#define VFDC_Get_N(cbyte)   /* number */
-//#define VFDC_Get_NCN(cbyte) /* new cylinder number */
-//#define VFDC_Get_R(cbyte)   /* record */
-//#define VFDC_Get_RW(cbyte)  /* read/write signal */
-//#define VFDC_Get_SC(cbyte)  /* sector */
-//#define VFDC_Get_SK(cbyte)  /* skip */
-//#define VFDC_Get_STP(cbyte) /* step */
-#define VFDC_GetENRQ(cbyte) ((cbyte) & 0x08)     /* enable dma and intr */
-#define VFDC_GetDS(cbyte)   ((cbyte) & 0x03)     /* drive select (ds0,ds1) */
-#define VFDC_GetHUT(cbyte)  ((cbyte) & 0x0f)     /* head unload time */
-#define VFDC_GetSRT(cbyte)  ((cbyte) >> 4)       /* step rate time */
-#define VFDC_GetHLT(cbyte)  ((cbyte) >> 1)       /* head load time */
-#define VFDC_GetNDMA(cbyte) ((cbyte) & 0x01)     /* non-dma mode */
-#define VFDC_GetHDS(cbyte)  (!!((cbyte) & 0x04)) /* head select (0 or 1) */
-#define VFDC_GetBPS(cbyte)  (0x0080 << (cbyte))  /* bytes per sector */
+/*
+ * MSR: RQM | DIO | NDM | CB  | D3B | D2B | D1B | D0B
+ * DIR: DC  | -   | -   | -   | -   | -   | -   | HD
+ * DOR: ME3 | ME2 | ME1 | ME0 | -   | RST | DS1 | DS0
+ * CCR: -   | -   | -   | -   | -   | -   | DRC | -
+ * DR:  ?
+ * ST0: ?
+ * ST1: ?
+ * ST2: ?
+ * ST3: ?
+ */
+
+/* main status register bits */
+#define VFDC_MSR_DB(id) (1 << (id)) /* fdd #id is in seek mode */
+#define VFDC_MSR_CB  0x10 /* a read or write command is in process */
+#define VFDC_MSR_NDM 0x20 /* non-dma mode in process */
+#define VFDC_MSR_DIO 0x40 /* data read-by(1) or write-to(0) processor */
+#define VFDC_MSR_RQM 0x80 /* request for master */
+#define VFDC_MSR_ReadyRead    (VFDC_MSR_RQM | VFDC_MSR_DIO)
+#define VFDC_MSR_ReadyWrite   (VFDC_MSR_RQM)
+#define VFDC_MSR_ProcessRead  (VFDC_MSR_ReadyRead  | VFDC_MSR_CB)
+#define VFDC_MSR_ProcessWrite (VFDC_MSR_ReadyWrite | VFDC_MSR_CB)
+
+/* digital input register bits */
+#define VFDC_DIR_HD 0x01 /* high density select */
+#define VFDC_DIR_DC 0x80 /* diskette change */
+
+/* digital output register bits */
+#define VFDC_DOR_ME(id) (1 << ((id) + 4)) /* motor engine enable */
+#define VFDC_DOR_DS   0x03 /* drive select */
+#define VFDC_DOR_NRS  0x04 /* fdc enable(1) or hold(0) fdc at reset */
+#define VFDC_DOR_ENRQ 0x08 /* dma and i/o interface enabled */
+
+/* configuration control register bits */
+#define VFDC_CCR_DRC 0x02 /* 0=500000 bps, 1=250000 bps */
+
+/* status register 0 bits */
+#define VFDC_ST0_DS       0x03 /* drive select */
+#define VFDC_ST0_SEEK_END 0x20
+
+/* status register 2 bits */
+#define VFDC_ST2_SCAN_MATCH    0x04
+#define VFDC_ST2_SCAN_MISMATCH 0x08
+
+/* status register 3 bit */
+#define VFDC_ST3_DS 0x03 /* drive select */
+
+/* fdc command specify bytes */
+#define VFDC_CMD_Specify1_HUT 0x0f /* head unload time */
+#define VFDC_CMD_Specify1_SRT 0xf0 /* step rate time */
+#define VFDC_CMD_Specify2_HLT 0xfe /* head load time */
+#define VFDC_CMD_Specify2_ND  0x01 /* non-dma */
+#define VFDC_GetCMD_Specify1_HUT(cb) ((cb) & VFDC_CMD_Specify1_HUT)
+#define VFDC_GetCMD_Specify1_SRT(cb) (((cb) & VFDC_CMD_Specify1_SRT) >> 4)
+#define VFDC_GetCMD_Specify2_HLT(cb) (((cb) & VFDC_CMD_Specify2_HLT) >> 1)
+
+/* fdc command sense-drive-status bytes */
+#define VFDC_CMD_SenseDriveStatus1_HD 0x04 /* head select 1 or 0 */
+#define VFDC_CMD_SenseDriveStatus1_US 0x03 /* us? */
+
+/* fdc command seek bytes */
+#define VFDC_CMD_Seek1_HD 0x04 /* head select 1 or 0 */
+#define VFDC_CMD_Seek1_US 0x03 /* us? */
+
+/* fdc command read-id bytes */
+#define VFDC_CMD_ReadId0_MF 0x40 /* mf? */
+#define VFDC_CMD_ReadId1_HD 0x04 /* head select 1 or 0 */
+#define VFDC_CMD_ReadId1_US 0x03 /* us? */
+
+/* fdc command format-track bytes */
+#define VFDC_CMD_FormatTrack0_MF 0x40 /* mf? */
+#define VFDC_CMD_FormatTrack1_HD 0x04 /* head select 1 or 0 */
+#define VFDC_CMD_FormatTrack1_US 0x03 /* us? */
+
+/* convert byte per sector from or to bps type  */
+#define VFDC_GetBPS(cb) (0x0080 << (cb))  /* convert bps type to bps */
+t_nubit8 VFDC_GetBPSC(t_nubit16 cb); /* convert bps to bps type */
+
+/* #define VFDC_Get_A0(cbyte)  * Address Line 0 */
+/* #define VFDC_Get_C(cbyte)   * Cylinder Number (0-79) */
+/* #define VFDC_Get_D(cbyte)   * Data */
+/* #define VFDC_Get_DB(cbyte)  * Data Bus (D7-D0) */
+/* #define VFDC_Get_DTL(cbyte) * Data Length */
+/* #define VFDC_Get_EOT(cbyte) * End Of Track */
+/* #define VFDC_Get_GPL(cbyte) * Gap Length */
+/* #define VFDC_Get_H(cbyte)   * Head Address (0-1) */
+/* #define VFDC_Get_MFM(cbyte) * fm or mfm mode */
+/* #define VFDC_Get_MT(cbyte)  * multi-track */
+/* #define VFDC_Get_N(cbyte)   * number */
+/* #define VFDC_Get_NCN(cbyte) * new cylinder number */
+/* #define VFDC_Get_R(cbyte)   * record */
+/* #define VFDC_Get_RW(cbyte)  * read/write signal */
+/* #define VFDC_Get_SC(cbyte)  * sector */
+/* #define VFDC_Get_SK(cbyte)  * skip */
+/* #define VFDC_Get_STP(cbyte) * step */
+/* #define VFDC_GetENRQ(cbyte) ((cbyte) & 0x08) * enable dma and intr */
+/* #define VFDC_GetDS(cbyte)   ((cbyte) & 0x03) * drive select (ds0,ds1) */
+/* #define VFDC_GetHUT(cbyte)  ((cbyte) & 0x0f) * head unload time */
+/* #define VFDC_GetSRT(cbyte)  ((cbyte) >> 4)   * step rate time */
+/* #define VFDC_GetHLT(cbyte)  ((cbyte) >> 1)   * head load time */
+/* #define VFDC_GetNDMA(cbyte) ((cbyte) & 0x01) * non-dma mode */
+/* #define VFDC_GetHDS(cbyte)  (!!((cbyte) & 0x04)) * head select (0 or 1) */
+/* #define VFDC_GetBPS(cbyte)  (0x0080 << (cbyte))  * bytes per sector */
 /* sector size code */
-t_nubit8 VFDC_GetBPSC(t_nubit16 cbyte);
 
 #define vfdcPIORead   vfdcTransRead
 #define vfdcDMARead   vfdcTransRead

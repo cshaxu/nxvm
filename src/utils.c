@@ -127,7 +127,7 @@ int PRINTF(const char *_Format, ...) {
 	va_start(arg_ptr, _Format);
 	nWrittenBytes = vfprintf(stdout, _Format, arg_ptr);
 	va_end(arg_ptr);
-	/* fflush(stdout); */
+	fflush(stdout);
 	return nWrittenBytes;
 }
 int FPRINTF(FILE *_File, const char *_Format, ...) {
@@ -157,6 +157,7 @@ void* MALLOC(size_t _Size) {return malloc(_Size);}
 void  FREE(void *_Memory) {free(_Memory);}
 void* MEMSET(void *_Dst, int _Val, size_t _Size) {return memset(_Dst, _Val, _Size);}
 void* MEMCPY(void *_Dst, const void *_Src, size_t _Size) {return memcpy(_Dst, _Src, _Size);}
+int   MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size) {return memcmp(_Buf1, _Buf2, _Size);}
 
 /* General Functions */
 void utilsSleep(unsigned int milisec) {platformSleep(milisec);}
@@ -174,6 +175,8 @@ void utilsLowerStr(char *s) {
 		i++;
 	}
 }
+
+/* NXVM Assembler Library */
 unsigned char utilsAasm32(const char *stmt, unsigned char *rcode, unsigned char flag32) {
 	return aasm32(stmt, rcode, flag32);
 }

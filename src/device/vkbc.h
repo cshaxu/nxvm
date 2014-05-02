@@ -11,6 +11,8 @@ extern "C" {
 
 #define NXVM_DEVICE_KBC "Intel 8042"
 
+#define VKBC_STATUS_KE 0x10 /* keyboard enabled(1) or not(0) */
+
 void vkbcRegister();
 
 #ifdef __cplusplus

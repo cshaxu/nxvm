@@ -58,7 +58,7 @@ void vmachineAddDevice(t_faddrcc fpInit, t_faddrcc fpReset, t_faddrcc fpRefresh,
 /* Initializes all devices, allocates space */
 void vmachineInit() {
 	t_nubitcc i;
-	MEMSET(&vmachine, 0x00, sizeof(t_machine));
+	MEMSET(&vmachine, Zero8, sizeof(t_machine));
 	doRegister();
 	for (i = 0;i < vmachine.numDevices;++i) {
 		ExecFun(vmachine.deviceTable[VMACHINE_DEVICE_INIT][i]);
@@ -95,9 +95,9 @@ void devicePrintMachine() {
 	PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
 	PRINTF("RAM Size:          %d MB\n", vram.size >> 20);
 	PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
-		vfddGetImageSize * 1. / 0xfa000,
+		vfddGetImageSize * 1. / VFDD_BYTE_PER_MB,
 		vfdd.flagexist ? "inserted" : "not inserted");
 	PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n", vhdd.ncyl,
-		vhddGetImageSize * 1. / 0x100000,
+		vhddGetImageSize * 1. / VHDD_BYTE_PER_MB,
 		vhdd.flagexist ? "connected" : "disconnected");
 }

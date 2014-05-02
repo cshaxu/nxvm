@@ -15,89 +15,83 @@
 t_latch vlatch;
 t_dma vdma1, vdma2;
 
-static void doReset(t_dma *vdma) {
+static void doReset(t_dma *rdma) {
 	t_nubit8 i;
-	vdma->command = 0x00;
-	vdma->status  = 0x00;
-	vdma->mask    = 0x0f;
-	vdma->request = 0x00;
-	vdma->temp    = 0x00;
-	vdma->flagmsb = 0;
-	vdma->drx     = 0x00;
-	vdma->flageop = 0;
-	vdma->isr     = 0x00;
+	rdma->command = Zero8;
+	rdma->status  = Zero8;
+	rdma->mask    = VDMA_MASK_VALID;
+	rdma->request = Zero8;
+	rdma->temp    = Zero8;
+	rdma->flagmsb = False;
+	rdma->drx     = Zero8;
+	rdma->flageop = False;
+	rdma->isr     = Zero8;
 	for (i = 0;i < 4;++i) {
-		vdma->channel[i].baseaddr = vdma->channel[i].curraddr = 0x0000;
-		vdma->channel[i].basewc   = vdma->channel[i].currwc = 0x0000;
-		vdma->channel[i].mode = 0x0000;
-		vdma->channel[i].page = 0x00;
+		rdma->channel[i].baseaddr = rdma->channel[i].curraddr = Zero16;
+		rdma->channel[i].basewc   = rdma->channel[i].currwc = Zero16;
+		rdma->channel[i].mode = Zero16;
+		rdma->channel[i].page = Zero8;
 	}
 }
 
-static void io_read_CurrentAddress(t_dma *vdma, t_nubit8 id) {
-	if (!vdma->flagmsb) {
-		vport.iobyte = (t_nubit8)(vdma->channel[id].curraddr & 0x00ff);
+static void io_read_CurrentAddress(t_dma *rdma, t_nubit8 id) {
+	if (!rdma->flagmsb) {
+		vport.iobyte = GetMax8(rdma->channel[id].curraddr);
 	} else {
-		vport.iobyte = (t_nubit8)(vdma->channel[id].curraddr >> 8);
+		vport.iobyte = GetMax8(rdma->channel[id].curraddr >> 8);
 	}
-	vdma->flagmsb = !vdma->flagmsb;
+	rdma->flagmsb = !rdma->flagmsb;
 }
-static void io_read_CurrentWordCount(t_dma *vdma, t_nubit8 id) {
-	if (!vdma->flagmsb) {
-		vport.iobyte = (t_nubit8)(vdma->channel[id].currwc & 0x00ff);
+static void io_read_CurrentWordCount(t_dma *rdma, t_nubit8 id) {
+	if (!rdma->flagmsb) {
+		vport.iobyte = GetMax8(rdma->channel[id].currwc);
 	} else {
-		vport.iobyte = (t_nubit8)(vdma->channel[id].currwc >> 8);
+		vport.iobyte = GetMax8(rdma->channel[id].currwc >> 8);
 	}
-	vdma->flagmsb = !vdma->flagmsb;
+	rdma->flagmsb = !rdma->flagmsb;
 }
-static void io_read_Status(t_dma *vdma) {
-	vport.iobyte = vdma->status;
-	vdma->status &= 0xf0;
+static void io_read_Status(t_dma *rdma) {
+	vport.iobyte = rdma->status;
+    ClrBit(rdma->status, VDMA_STATUS_TCS);
 }
-#define     io_read_Temp(vdma) (vport.iobyte = (vdma)->temp)
-#define     io_read_Page(vdma, id) (vport.iobyte = (vdma)->channel[(id)].page)
+#define     io_read_Temp(rdma) (vport.iobyte = (rdma)->temp)
+#define     io_read_Page(rdma, id) (vport.iobyte = (rdma)->channel[(id)].page)
 
-static void io_write_Address(t_dma *vdma, t_nubit8 id) {
-	if (!vdma->flagmsb) {
-		vdma->channel[id].baseaddr  = (t_nubit16)vport.iobyte;
+static void io_write_Address(t_dma *rdma, t_nubit8 id) {
+	if (!rdma->flagmsb) {
+		rdma->channel[id].baseaddr  = (t_nubit16)vport.iobyte;
 	} else {
-		vdma->channel[id].baseaddr |= (t_nubit16)(vport.iobyte << 8);
+		rdma->channel[id].baseaddr |= (t_nubit16)(vport.iobyte << 8);
 	}
-	vdma->channel[id].curraddr = vdma->channel[id].baseaddr;
-	vdma->flagmsb = !vdma->flagmsb;
+	rdma->channel[id].curraddr = rdma->channel[id].baseaddr;
+	rdma->flagmsb = !rdma->flagmsb;
 }
-static void io_write_WordCount(t_dma *vdma, t_nubit8 id) {
-	if (!vdma->flagmsb) {
-		vdma->channel[id].basewc  = (t_nubit16)vport.iobyte;
+static void io_write_WordCount(t_dma *rdma, t_nubit8 id) {
+	if (!rdma->flagmsb) {
+		rdma->channel[id].basewc  = (t_nubit16)vport.iobyte;
 	} else {
-		vdma->channel[id].basewc |= (t_nubit16)(vport.iobyte << 8);
+		rdma->channel[id].basewc |= (t_nubit16)(vport.iobyte << 8);
 	}
-	vdma->channel[id].currwc = vdma->channel[id].basewc;
-	vdma->flagmsb = !vdma->flagmsb;
+	rdma->channel[id].currwc = rdma->channel[id].basewc;
+	rdma->flagmsb = !rdma->flagmsb;
 }
-#define     io_write_Command(vdma) ((vdma)->command = vport.iobyte)
-static void io_write_Request(t_dma *vdma) {
-	if (vport.iobyte & 0x04) {
-		vdma->request |= 1 << (vport.iobyte & 0x03);
-	} else {
-		vdma->request &= ~(1 << (vport.iobyte & 0x03));
-	}
+#define     io_write_Command(rdma) ((rdma)->command = vport.iobyte)
+static void io_write_Request_Single(t_dma *rdma) {
+	MakeBit(rdma->request, VDMA_REQUEST_DRQ(VDMA_GetREQSC_CS(vport.iobyte)),
+		GetBit(vport.iobyte, VDMA_REQSC_SR));
 }
-static void io_write_Mask_Single(t_dma *vdma) {
-	if (vport.iobyte & 0x04) {
-		vdma->mask |= 1 << (vport.iobyte & 0x03);
-	} else {
-		vdma->mask &= ~(1 << (vport.iobyte & 0x03));
-	}
+static void io_write_Mask_Single(t_dma *rdma) {
+	MakeBit(rdma->mask, VDMA_MASK_DRQ(VDMA_GetMASKSC_CS(vport.iobyte)),
+		GetBit(vport.iobyte, VDMA_MASKSC_SM));
 }
-#define     io_write_Mode(vdma) \
-            ((vdma)->channel[vport.iobyte & 0x03].mode = vport.iobyte >> 2)
-#define     io_write_Flipflop_Clear(vdma) ((vdma)->flagmsb = 0)
-#define     io_write_Reset(vdma) (doReset(vdma))
-#define     io_write_Mask_Clear(vdma) ((vdma)->mask = 0x00)
-#define     io_write_Mask_All(vdma) ((vdma)->mask = vport.iobyte & 0x0f)
-#define     io_write_Page(vdma, id, m) \
-            ((vdma)->channel[(id)].page = vport.iobyte & (m))
+#define     io_write_Mode(rdma) \
+            ((rdma)->channel[VDMA_GetMODE_CS(vport.iobyte)].mode = vport.iobyte)
+#define     io_write_Flipflop_Clear(rdma) ((rdma)->flagmsb = False)
+#define     io_write_Reset(rdma) (doReset(rdma))
+#define     io_write_Mask_Clear(rdma) ((rdma)->mask = Zero8)
+#define     io_write_Mask_All(rdma) ((rdma)->mask = vport.iobyte & VDMA_MASKAC_VALID)
+#define     io_write_Page(rdma, id, m) \
+            ((rdma)->channel[(id)].page = vport.iobyte & (m))
 
 static void io_read_0000()  {io_read_CurrentAddress   (&vdma1, 0);}
 static void io_read_0001()  {io_read_CurrentWordCount (&vdma1, 0);}
@@ -119,7 +113,7 @@ static void io_write_0005() {io_write_WordCount       (&vdma1, 2);}
 static void io_write_0006() {io_write_Address         (&vdma1, 3);}
 static void io_write_0007() {io_write_WordCount       (&vdma1, 3);}
 static void io_write_0008() {io_write_Command         (&vdma1   );}
-static void io_write_0009() {io_write_Request         (&vdma1   );}
+static void io_write_0009() {io_write_Request_Single  (&vdma1   );}
 static void io_write_000A() {io_write_Mask_Single     (&vdma1   );}
 static void io_write_000B() {io_write_Mode            (&vdma1   );}
 static void io_write_000C() {io_write_Flipflop_Clear  (&vdma1   );}
@@ -136,10 +130,10 @@ static void io_read_008A()  {io_read_Page             (&vdma2, 3);}
 static void io_read_008B()  {io_read_Page             (&vdma2, 1);}
 static void io_read_008F()  {io_read_Page             (&vdma2, 0);}
 
-static void io_write_0081() {io_write_Page            (&vdma1, 2, 0xff);}
-static void io_write_0082() {io_write_Page            (&vdma1, 3, 0xff);}
-static void io_write_0083() {io_write_Page            (&vdma1, 1, 0xff);}
-static void io_write_0087() {io_write_Page            (&vdma1, 0, 0xff);}
+static void io_write_0081() {io_write_Page            (&vdma1, 2, Max8);}
+static void io_write_0082() {io_write_Page            (&vdma1, 3, Max8);}
+static void io_write_0083() {io_write_Page            (&vdma1, 1, Max8);}
+static void io_write_0087() {io_write_Page            (&vdma1, 0, Max8);}
 static void io_write_0089() {io_write_Page            (&vdma2, 2, 0xfe);}
 static void io_write_008A() {io_write_Page            (&vdma2, 3, 0xfe);}
 static void io_write_008B() {io_write_Page            (&vdma2, 1, 0xfe);}
@@ -165,7 +159,7 @@ static void io_write_00CA() {io_write_WordCount       (&vdma2, 2);}
 static void io_write_00CC() {io_write_Address         (&vdma2, 3);}
 static void io_write_00CE() {io_write_WordCount       (&vdma2, 3);}
 static void io_write_00D0() {io_write_Command         (&vdma2   );}
-static void io_write_00D2() {io_write_Request         (&vdma2   );}
+static void io_write_00D2() {io_write_Request_Single  (&vdma2   );}
 static void io_write_00D4() {io_write_Mask_Single     (&vdma2   );}
 static void io_write_00D6() {io_write_Mode            (&vdma2   );}
 static void io_write_00D8() {io_write_Flipflop_Clear  (&vdma2   );}
@@ -173,73 +167,73 @@ static void io_write_00DA() {io_write_Reset           (&vdma2   );}
 static void io_write_00DC() {io_write_Mask_Clear      (&vdma2   );}
 static void io_write_00DE() {io_write_Mask_All        (&vdma2   );}
 
-static t_nubit8 GetRegTopId(t_dma *vdma, t_nubit8 reg) {
-	t_nubit8 id = 0x00;
-	if (reg == 0x00) {
+static t_nubit8 GetRegTopId(t_dma *rdma, t_nubit8 reg) {
+	t_nubit8 id = Zero8;
+	if (reg == Zero8) {
 		return 0x08;
 	}
-	reg = (reg << (0x04 - (vdma->drx))) | (reg >> (vdma->drx));
-	while (!((reg >> id) & 0x01) && (id < 0x04)) {
+	reg = (reg << (4 - (rdma->drx))) | (reg >> (rdma->drx));
+	while ((id < 4) && !GetMax1(reg >> id)) {
 		id++;
 	}
-	return (id + vdma->drx) % 0x04;
+	return (id + rdma->drx) % 4;
 }
-static void IncreaseCurrAddr(t_dma *vdma, t_nubit8 id) {
-	vdma->channel[id].curraddr++;
-	if (vdma->channel[id].curraddr == 0x0000) {
-		vdma->channel[id].page++;
+static void IncreaseCurrAddr(t_dma *rdma, t_nubit8 id) {
+	rdma->channel[id].curraddr++;
+	if (rdma->channel[id].curraddr == Zero16) {
+		rdma->channel[id].page++;
 	}
 }
-static void DecreaseCurrAddr(t_dma *vdma, t_nubit8 id) {
-	vdma->channel[id].curraddr--;
-	if (vdma->channel[id].curraddr == 0xffff) {
-		vdma->channel[id].page--;
+static void DecreaseCurrAddr(t_dma *rdma, t_nubit8 id) {
+	rdma->channel[id].curraddr--;
+	if (rdma->channel[id].curraddr == Max16) {
+		rdma->channel[id].page--;
 	}
 }
-static void Transmission(t_dma *vdma, t_nubit8 id, t_bool flagword) {
-	switch (VDMA_GetCS(vdma,id)) {
+static void Transmission(t_dma *rdma, t_nubit8 id, t_bool flagword) {
+	switch (VDMA_GetMODE_TT(rdma->channel[id].mode)) {
 	case 0x00:
 		/* verify */
 		/* do nothing */
-		vdma->channel[id].currwc--;
-		if (VDMA_GetAIDS(vdma,id)) {
-			DecreaseCurrAddr(vdma, id);
+		rdma->channel[id].currwc--;
+		if (GetBit(rdma->channel[id].mode, VDMA_MODE_AIDS)) {
+			DecreaseCurrAddr(rdma, id);
 		} else {
-			IncreaseCurrAddr(vdma, id);
+			IncreaseCurrAddr(rdma, id);
 		}
 		break;
 	case 0x01:
 		/* write */
-		if (vdma->channel[id].devread) {
-			ExecFun(vdma->channel[id].devread);
+		if (rdma->channel[id].devread) {
+			ExecFun(rdma->channel[id].devread);
 		}
 		if (!flagword) {
-			vramByte((vdma->channel[id].page << 16) + vdma->channel[id].curraddr) = vlatch.byte;
+			vramByte((rdma->channel[id].page << 16) + rdma->channel[id].curraddr) = vlatch.byte;
 		} else {
-			vramWord((vdma->channel[id].page << 16) + (vdma->channel[id].curraddr << 1)) = vlatch.word;
+			vramWord((rdma->channel[id].page << 16) + (rdma->channel[id].curraddr << 1)) = vlatch.word;
 		}
-		vdma->channel[id].currwc--;
-		if (VDMA_GetAIDS(vdma,id)) {
-			DecreaseCurrAddr(vdma, id);
+		rdma->channel[id].currwc--;
+		if (GetBit(rdma->channel[id].mode, VDMA_MODE_AIDS)) {
+			DecreaseCurrAddr(rdma, id);
 		} else {
-			IncreaseCurrAddr(vdma, id);
+			IncreaseCurrAddr(rdma, id);
 		}
 		break;
 	case 0x02:
 		/* read */
 		if (!flagword) {
-			vlatch.byte = vramByte((vdma->channel[id].page << 16) + vdma->channel[id].curraddr);
+			vlatch.byte = vramByte((rdma->channel[id].page << 16) + rdma->channel[id].curraddr);
 		} else {
-			vlatch.word = vramWord((vdma->channel[id].page << 16) + (vdma->channel[id].curraddr << 1));
+			vlatch.word = vramWord((rdma->channel[id].page << 16) + (rdma->channel[id].curraddr << 1));
 		}
-		if (vdma->channel[id].devwrite) {
-			ExecFun(vdma->channel[id].devwrite);
+		if (rdma->channel[id].devwrite) {
+			ExecFun(rdma->channel[id].devwrite);
 		}
-		vdma->channel[id].currwc--;
-		if (VDMA_GetAIDS(vdma,id)) {
-			DecreaseCurrAddr(vdma, id);
+		rdma->channel[id].currwc--;
+		if (GetBit(rdma->channel[id].mode, VDMA_MODE_AIDS)) {
+			DecreaseCurrAddr(rdma, id);
 		} else {
-			IncreaseCurrAddr(vdma, id);
+			IncreaseCurrAddr(rdma, id);
 		}
 		break;
 	case 0x03:
@@ -249,106 +243,108 @@ static void Transmission(t_dma *vdma, t_nubit8 id, t_bool flagword) {
 		break;
 	}
 }
-static void Execute(t_dma *vdma, t_nubit8 id, t_bool flagword) {
-	t_bool flagm2m = ((id == 0x00) && (vdma->request & 0x01) && VDMA_GetM2M(vdma));
-	vdma->status  &= ~(0x10 << id);
-	vdma->request &= ~(0x01 << id);
-	if (VDMA_GetR(vdma)) {
-		vdma->drx = (id + 1) % 4;
+static void Execute(t_dma *rdma, t_nubit8 id, t_bool flagword) {
+	t_bool flagm2m = ((id == 0) &&
+		VDMA_GetREQUEST_DRQ(rdma->request, 1) &&
+		GetBit(rdma->command, VDMA_COMMAND_M2M));
+    ClrBit(rdma->status, VDMA_STATUS_DRQ(id));
+    ClrBit(rdma->request, VDMA_REQUEST_DRQ(id));
+	if (GetBit(rdma->command, VDMA_COMMAND_R)) {
+		rdma->drx = (id + 1) % 4;
 	}
 	if (flagm2m) {
 		/* memory-to-memory */
-		while (vdma->channel[0x01].currwc != 0xffff && !vdma->flageop) {
-			vdma->temp = vramByte((vdma->channel[0].page << 16) + vdma->channel[0].curraddr);
-			vramByte((vdma->channel[1].page << 16) + vdma->channel[1].curraddr) = vdma->temp;
-			vdma->channel[0x01].currwc--;
-			if (VDMA_GetAIDS(vdma,id)) {
-				DecreaseCurrAddr(vdma, 0x01);
-				if (!VDMA_GetC0AD(vdma)) {
-					DecreaseCurrAddr(vdma, 0x00);
+		while (rdma->channel[0x01].currwc != 0xffff && !rdma->flageop) {
+			rdma->temp = vramByte((rdma->channel[0].page << 16) + rdma->channel[0].curraddr);
+			vramByte((rdma->channel[1].page << 16) + rdma->channel[1].curraddr) = rdma->temp;
+			rdma->channel[1].currwc--;
+			if (GetBit(rdma->channel[id].mode, VDMA_MODE_AIDS)) {
+				DecreaseCurrAddr(rdma, 1);
+				if (!GetBit(rdma->command, VDMA_COMMAND_C0AD)) {
+					DecreaseCurrAddr(rdma, 0);
 				}
 			} else{
-				IncreaseCurrAddr(vdma, 0x01);
-				if (!VDMA_GetC0AD(vdma)) {
-					IncreaseCurrAddr(vdma, 0x00);
+				IncreaseCurrAddr(rdma, 1);
+				if (!GetBit(rdma->command, VDMA_COMMAND_C0AD)) {
+					IncreaseCurrAddr(rdma, 0);
 				}
 			}
 		}
-		if (vdma->channel[0x01].currwc == 0xffff) {
-			vdma->status |= 0x01;
-			vdma->flageop = 1;
+		if (rdma->channel[0x01].currwc == Max16) {
+            SetBit(rdma->status, VDMA_STATUS_TC(0));
+			rdma->flageop = True;
 		}
 	} else {
 		/* select mode and command */
-		switch (VDMA_GetM(vdma,id)) {
+		switch (VDMA_GetMODE_M(rdma->channel[id].mode)) {
 		case 0x00:
 			/* demand */
-			while (vdma->channel[id].currwc != 0xffff && !vdma->flageop
-				&& VDMA_GetDRQ(vdma,id)) {
-				Transmission(vdma, id, flagword);
+			while (rdma->channel[id].currwc != Max16 && !rdma->flageop
+				&& VDMA_GetSTATUS_DRQ(rdma->status, id)) {
+				Transmission(rdma, id, flagword);
 			}
 			break;
 		case 0x01:
 			/* single */
-			Transmission(vdma, id, flagword);
+			Transmission(rdma, id, flagword);
 			break;
 		case 0x02:
 			/* block */
-			while (vdma->channel[id].currwc != 0xffff && !vdma->flageop) {
-				Transmission(vdma, id, flagword);
+			while (rdma->channel[id].currwc != Max16 && !rdma->flageop) {
+				Transmission(rdma, id, flagword);
 			}
 			break;
 		case 0x03:
 			/* cascade */
 			/* do nothing */
-			vdma->flageop = 1;
+			rdma->flageop = True;
 			break;
 		default:
 			break;
 		}
-		if (vdma->channel[id].currwc == 0xffff) {
-			vdma->status |= 0x01 << id; /* set terminate count */
-			vdma->flageop = 1;
+		if (rdma->channel[id].currwc == Max16) {
+            SetBit(rdma->status, VDMA_STATUS_TC(id)); /* set termination count */
+			rdma->flageop = True;
 		}
 	}
-	if (vdma->flageop) {
-		vdma->isr = 0x00;
-		if (vdma->channel[id].devfinal) {
-			ExecFun(vdma->channel[id].devfinal);
+	if (rdma->flageop) {
+		rdma->isr = Zero8;
+		if (rdma->channel[id].devfinal) {
+			ExecFun(rdma->channel[id].devfinal);
 		}
-		if (VDMA_GetAI(vdma,id)) {
-			vdma->channel[id].curraddr = vdma->channel[id].baseaddr;
-			vdma->channel[id].currwc = vdma->channel[id].basewc;
-			vdma->mask &= ~(0x01 << id);
+		if (GetBit(rdma->channel[id].mode, VDMA_MODE_AI)) {
+			rdma->channel[id].curraddr = rdma->channel[id].baseaddr;
+			rdma->channel[id].currwc = rdma->channel[id].basewc;
+			ClrBit(rdma->mask, VDMA_MASK_DRQ(id));
 		} else {
-			vdma->mask |= 0x01 << id;
+			SetBit(rdma->mask, VDMA_MASK_DRQ(id));
 		}
 	}
-	vdma->flageop = 0;
+	rdma->flageop = False;
 }
 
 void vdmaSetDRQ(t_nubit8 dreqid) {
 	switch (dreqid) {
-	case 0x00: vdma1.status |= 0x10;break;
-	case 0x01: vdma1.status |= 0x20;break;
-	case 0x02: vdma1.status |= 0x40;break;
-	case 0x03: vdma1.status |= 0x80;break;
-/*	case 0x04: vdma2.status |= 0x10;break;*/
-	case 0x05: vdma2.status |= 0x20;break;
-	case 0x06: vdma2.status |= 0x40;break;
-	case 0x07: vdma2.status |= 0x80;break;
+	case 0: SetBit(vdma1.status, VDMA_STATUS_DRQ(0)); break;
+	case 1: SetBit(vdma1.status, VDMA_STATUS_DRQ(1)); break;
+	case 2: SetBit(vdma1.status, VDMA_STATUS_DRQ(2)); break;
+	case 3: SetBit(vdma1.status, VDMA_STATUS_DRQ(3)); break;
+	/* case 4: SetBit(vdma2.status, VDMA_STATUS_DRQ(0)); break; */
+	case 5: SetBit(vdma2.status, VDMA_STATUS_DRQ(1)); break;
+	case 6: SetBit(vdma2.status, VDMA_STATUS_DRQ(2)); break;
+	case 7: SetBit(vdma2.status, VDMA_STATUS_DRQ(3)); break;
 	default: break;
 	}
-	if (vdma1.status >> 4) {
-		vdma2.status |=  0x10;
+	if (vdma1.status & VDMA_STATUS_DRQS) {
+        SetBit(vdma2.status, VDMA_STATUS_DRQ(0));
 	} else {
-		vdma2.status &= ~0x10;
+        ClrBit(vdma2.status, VDMA_STATUS_DRQ(0));
 	}
 }
 
 static void init() {
-	MEMSET(&vdma1, 0x00, sizeof(t_dma));
-	MEMSET(&vdma2, 0x00, sizeof(t_dma));
+	MEMSET(&vdma1, Zero8, sizeof(t_dma));
+	MEMSET(&vdma2, Zero8, sizeof(t_dma));
 
 	/* connect device io functions with dma channels */
 	vdma1.channel[2].devread  = (t_faddrcc) vfdcDMARead;
@@ -431,56 +427,56 @@ static void init() {
     vbiosAddPost(VDMA_POST);
 }
 static void reset() {
-	MEMSET(&vlatch, 0x00, sizeof(t_latch));
+	MEMSET(&vlatch, Zero8, sizeof(t_latch));
 	doReset(&vdma1);
 	doReset(&vdma2);
 }
 static void refresh() {
 	t_nubit8 id;
 	t_nubit8 realdrq1, realdrq2;
-	if (VDMA_GetCTRL(&vdma2)) {
+	if (GetBit(vdma2.command, VDMA_COMMAND_CTRL)) {
 		return;
 	}
-	if (VDMA_GetIS(&vdma2)) {
-		if (VDMA_GetISR(&vdma2) != 0x00) {
-			Execute(&vdma2, VDMA_GetISR(&vdma2), 0x01);
-		} else if (VDMA_GetIS(&vdma1)) {
-			Execute(&vdma1, VDMA_GetISR(&vdma1), 0x00);
+	if (GetBit(vdma2.isr, VDMA_ISR_IS)) {
+		if (VDMA_GetISR_ISR(vdma2.isr)) {
+			Execute(&vdma2, VDMA_GetISR_ISR(vdma2.isr), True);
+		} else if (GetBit(vdma1.isr, VDMA_ISR_IS)) {
+			Execute(&vdma1, VDMA_GetISR_ISR(vdma1.isr), False);
 		}
-		if (!VDMA_GetIS(&vdma1)) {
-			vdma2.isr = 0x00;
+		if (!GetBit(vdma1.isr, VDMA_ISR_IS)) {
+			vdma2.isr = Zero8;
 		}
 	}
-	if (!VDMA_GetIS(&vdma2)) {
-		realdrq2 = vdma2.request | ((vdma2.status >> 4) & ~vdma2.mask);
-		if (realdrq2 == 0x00) {
+	if (!GetBit(vdma2.isr, VDMA_ISR_IS)) {
+		realdrq2 = vdma2.request | (VDMA_GetSTATUS_DRQS(vdma2.status) & ~vdma2.mask);
+		if (realdrq2 == Zero8) {
 			return;
 		}
 		id = GetRegTopId(&vdma2, realdrq2);
-		if (id == 0x00) {
-			if (VDMA_GetCTRL(&vdma1)) {
+		if (id == 0) {
+			if (GetBit(vdma1.command, VDMA_COMMAND_CTRL)) {
 				return;
 			}
-			realdrq1 = vdma1.request | ((vdma1.status >> 4) & ~vdma1.mask);
-			if (realdrq1 == 0x00) {
+			realdrq1 = vdma1.request | (VDMA_GetSTATUS_DRQS(vdma1.status) & ~vdma1.mask);
+			if (realdrq1 == Zero8) {
 				return;
 			}
 			id = GetRegTopId(&vdma1, realdrq1);
-			vdma2.isr = 0x01;
-			vdma1.isr = (id << 4) | 0x01;
-			Execute(&vdma1, id, 0x00);
-			if (!VDMA_GetIS(&vdma1)) {
-				vdma2.isr = 0x00;
+            VDMA_SetISR(vdma2.isr, 0);
+            VDMA_SetISR(vdma1.isr, id);
+			Execute(&vdma1, id, False);
+			if (!GetBit(vdma1.isr, VDMA_ISR_IS)) {
+				vdma2.isr = Zero8;
 			}
-			if (!(vdma1.status >> 4)) {
-				vdma2.status &= ~0x10;
+			if (!VDMA_GetSTATUS_DRQS(vdma1.status)) {
+                ClrBit(vdma2.status, VDMA_STATUS_DRQ(0));
 			}
 			if (!vdma1.request) {
-				vdma2.request &= ~0x01;
+                ClrBit(vdma2.request, VDMA_REQUEST_DRQ(0));
 			}
 		} else {
-			vdma2.isr = (id << 4) | 0x01;
-			Execute(&vdma2, id, 0x01);
+            VDMA_SetISR(vdma2.isr, id);
+			Execute(&vdma2, id, True);
 		}
 	}
 }
@@ -488,40 +484,30 @@ static void final() {}
 
 void vdmaRegister() {vmachineAddMe;}
 
+static void printDma(t_dma *rdma) {
+	t_nubit8 i;
+	PRINTF("Command = %x, status = %x, mask = %x\n",
+	          rdma->command, rdma->status, rdma->mask);
+	PRINTF("request = %x, temp = %x, flagmsb = %x\n",
+	          rdma->request, rdma->temp, rdma->flagmsb);
+	PRINTF("drx = %x, flageop = %x, isr = %x\n",
+	          rdma->drx, rdma->flageop, rdma->isr);
+	for (i = 0;i < 4;++i) {
+		PRINTF("Channel %d: baseaddr = %x, basewc = %x, curraddr = %x, currwc = %x\n",
+		          i, rdma->channel[i].baseaddr, rdma->channel[i].basewc,
+		          rdma->channel[i].curraddr, rdma->channel[i].currwc);
+		PRINTF("Channel %d: mode = %x, page = %x, devread = %x, devwrite = %x\n",
+		          i, rdma->channel[i].mode, rdma->channel[i].page,
+		          rdma->channel[i].devread, rdma->channel[i].devwrite);
+	}
+}
+
 /* Print DMA status */
 void devicePrintDma() {
-	t_nubit8 i;
 	PRINTF("DMA 1 Info\n==========\n");
-	PRINTF("Command = %x, status = %x, mask = %x\n",
-	          vdma1.command, vdma1.status, vdma1.mask);
-	PRINTF("request = %x, temp = %x, flagmsb = %x\n",
-	          vdma1.request, vdma1.temp, vdma1.flagmsb);
-	PRINTF("drx = %x, flageop = %x, isr = %x\n",
-	          vdma1.drx, vdma1.flageop, vdma1.isr);
-	for (i = 0;i < 4;++i) {
-		PRINTF("Channel %d: baseaddr = %x, basewc = %x, curraddr = %x, currwc = %x\n",
-		          i, vdma1.channel[i].baseaddr, vdma1.channel[i].basewc,
-		          vdma1.channel[i].curraddr, vdma1.channel[i].currwc);
-		PRINTF("Channel %d: mode = %x, page = %x, devread = %x, devwrite = %x\n",
-		          i, vdma1.channel[i].mode, vdma1.channel[i].page,
-		          vdma1.channel[i].devread, vdma1.channel[i].devwrite);
-	}
+	printDma(&vdma1);
 	PRINTF("\nDMA 2 Info\n==========\n");
-	PRINTF("Command = %x, status = %x, mask = %x\n",
-	          vdma2.command, vdma2.status, vdma2.mask);
-	PRINTF("request = %x, temp = %x, flagmsb = %x\n",
-	          vdma2.request, vdma2.temp, vdma2.flagmsb);
-	PRINTF("drx = %x, flageop = %x, isr = %x\n",
-	          vdma2.drx, vdma2.flageop, vdma2.isr);
-	for (i = 0;i < 4;++i) {
-		PRINTF("Channel %d: baseaddr = %x, basewc = %x, curraddr = %x, currwc = %x\n",
-		          i, vdma2.channel[i].baseaddr, vdma2.channel[i].basewc,
-		          vdma2.channel[i].curraddr, vdma2.channel[i].currwc);
-		PRINTF("Channel %d: mode = %x, page = %x, devread = %x, devwrite = %x\n",
-		          i, vdma2.channel[i].mode, vdma2.channel[i].page,
-		          vdma2.channel[i].devread, vdma2.channel[i].devwrite);
-	}
-	PRINTF("\nLatch: byte = %x, word = %x\n", vlatch.byte, vlatch.word);
+	printDma(&vdma2);
 }
 
 /*

@@ -29,3 +29,6 @@
 /config.status
 /config.log
 /stamp-h1
+
+# System Trash
+.DS_Store

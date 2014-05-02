@@ -14,12 +14,12 @@ t_device device;
 
 /* Starts device thread */
 void deviceStart() {
-	device.flagRun = 1;
-	device.flagFlip = 1 - device.flagFlip;
+	device.flagRun = True;
+	device.flagFlip = True - device.flagFlip;
 	while (device.flagRun) {
 		if (device.flagReset) {
 			vmachineReset();
-			device.flagReset = 0;
+			device.flagReset = False;
 		}
 		vmachineRefresh();
 	}
@@ -28,19 +28,19 @@ void deviceStart() {
 /* Issues resetting signal to device thread */
 void deviceReset() {
 	if (device.flagRun) {
-		device.flagReset = 1;
+		device.flagReset = True;
 	} else {
 		vmachineReset();
-		device.flagReset = 0;
+		device.flagReset = False;
 	}
 }
 
 /* Issues stopping signal to device thread */
-void deviceStop()  {device.flagRun = 0;}
+void deviceStop()  {device.flagRun = False;}
 
 /* Initializes devices */
 void deviceInit() {
-	MEMSET(&device, 0x00, sizeof(t_device));
+	MEMSET(&device, Zero8, sizeof(t_device));
 	vmachineInit();
 }
 

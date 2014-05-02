@@ -12,8 +12,7 @@
 t_vadp vvadp;
 
 static void init() {
-	MEMSET(&vvadp, 0x00, sizeof(t_vadp));
-	vvadp.bufcomp = (t_vaddrcc) MALLOC(0x00040000);
+	MEMSET(&vvadp, Zero8, sizeof(t_vadp));
     vbiosAddInt("qdx 10\niret", 0x10);
 }
 
@@ -21,11 +20,6 @@ static void reset() {}
 
 static void refresh() {}
 
-static void final() {
-	if (vvadp.bufcomp) {
-		FREE((void *) vvadp.bufcomp);
-	}
-	vvadp.bufcomp = (t_vaddrcc) NULL;
-}
+static void final() {}
 
 void vvadpRegister() {vmachineAddMe;}

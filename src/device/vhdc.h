@@ -9,7 +9,7 @@ extern "C" {
 
 #include "vglobal.h"
 
-#define NXVM_DEVICE_HDC "Unknown"
+#define NXVM_DEVICE_HDC "Unknown Hard Drive Controller"
 
 void vhdcRegister();
 

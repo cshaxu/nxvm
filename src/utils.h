@@ -54,6 +54,7 @@ void* MALLOC(size_t _Size);
 void  FREE(void *_Memory);
 void* MEMSET(void *_Dst, int _Val, size_t _Size);
 void* MEMCPY(void *_Dst, const void *_Src, size_t _Size);
+int   MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size);
 
 /* NXVM Library */
 void utilsSleep(unsigned int milisec);

@@ -20,30 +20,30 @@ static void allocate() {
 		FREE((void *) vhdd.base);
 	}
 	vhdd.base = (t_vaddrcc) MALLOC(vhddGetImageSize);
-	MEMSET((void *) vhdd.base, 0x00, vhddGetImageSize);
+	MEMSET((void *) vhdd.base, Zero8, vhddGetImageSize);
 }
 
 void deviceConnectHardDiskCreate(t_nubit16 ncyl) {
 	vhdd.ncyl = ncyl;
 	allocate();
-	vhdd.flagexist = 1;
+	vhdd.flagexist = True;
 }
 
 t_bool deviceConnectHardDiskInsert(const t_strptr fname) {
 	t_nubitcc count;
 	FILE *image = FOPEN(fname, "rb");
 	if (image) {
-		fseek(image, 0, SEEK_END);
+		fseek(image, Zero32, SEEK_END);
 		count = ftell(image);
 		vhdd.ncyl = (t_nubit16)(count / vhdd.nhead / vhdd.nsector / vhdd.nbyte);
-		fseek(image, 0, SEEK_SET);
+		fseek(image, Zero32, SEEK_SET);
 		allocate();
 		count = FREAD((void *) vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
-		vhdd.flagexist = 1;
+		vhdd.flagexist = True;
 		FCLOSE(image);
-		return 0;
+		return False;
 	} else {
-		return 1;
+		return True;
 	}
 }
 
@@ -55,15 +55,15 @@ t_bool deviceConnectHardDiskRemove(const t_strptr fname) {
 		if(image) {
 			if (!vhdd.flagro)
 				count = FWRITE((void *) vhdd.base, sizeof(t_nubit8), vhddGetImageSize, image);
-			vhdd.flagexist = 0;
+			vhdd.flagexist = False;
 			FCLOSE(image);
 		} else {
-			return 1;
+			return True;
 		}
 	}
-	vhdd.flagexist = 0;
-	MEMSET((void *) vhdd.base, 0x00, vhddGetImageSize);
-	return 0;
+	vhdd.flagexist = False;
+	MEMSET((void *) vhdd.base, Zero8, vhddGetImageSize);
+	return False;
 }
 
 void vhddTransRead() {
@@ -76,7 +76,7 @@ void vhddTransRead() {
 	if (!(vhdd.count % vhdd.nbyte)) {
 		vhdd.sector++;
 		if (IsTrackEnd) {
-			vhdd.sector = 0x01;
+			vhdd.sector = 1;
 			vhdd.head++;
 		}
 		vhddSetPointer;
@@ -93,7 +93,7 @@ void vhddTransWrite() {
 	if (!(vhdd.count % vhdd.nbyte)) {
 		vhdd.sector++;
 		if (IsTrackEnd) {
-			vhdd.sector = 0x01;
+			vhdd.sector = 1;
 			vhdd.head++;
 		}
 		vhddSetPointer;
@@ -107,7 +107,7 @@ void vhddFormatTrack(t_nubit8 fillbyte) {
 	}
 	for (i = 0;i < vhdd.nhead;++i) {
 		vhdd.head = i;
-		vhdd.sector = 0x01;
+		vhdd.sector = 1;
 		vhddSetPointer;
 		MEMSET((void *) vhdd.curr, fillbyte, vhdd.nsector * vhdd.nbyte);
 		vhdd.sector = vhdd.nsector;
@@ -115,7 +115,7 @@ void vhddFormatTrack(t_nubit8 fillbyte) {
 }
 
 static void init() {
-	MEMSET(&vhdd, 0x00, sizeof(t_hdd));
+	MEMSET(&vhdd, Zero8, sizeof(t_hdd));
 	vhdd.ncyl    = 0;
 	vhdd.nhead   = 16;
 	vhdd.nsector = 63;

@@ -129,7 +129,7 @@ t_bool deviceConnectDisplayGetCursorChange() {
 	}
 }
 t_bool deviceConnectDisplayGetBufferChange() {
-	if (memcmp((void *) vvadp.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize)) {
+	if (MEMCMP((void *) vvadp.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize)) {
 		MEMCPY((void *) vvadp.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
 		return 1;
 	} else {

@@ -17,7 +17,7 @@ t_debug vdebug;
 
 static void xasmTest() {
 	static t_nubitcc total = 0;
-	t_bool flagtextonly = 0; /* don't stop vmachine if true */
+	t_bool flagtextonly = False; /* don't stop vmachine if true */
 	t_nubit8 i, lend1, lend2, lena;
 	t_string dstr1, dstr2;
 	t_nubit8 ins1[15], ins2[15];
@@ -40,27 +40,27 @@ static void xasmTest() {
         case 0x28: case 0x29: case 0x2a: case 0x2b:
         case 0x30: case 0x31: case 0x32: case 0x33:
         case 0x38: case 0x39: case 0x3a: case 0x3b:
-            flagtextonly = 1;
+            flagtextonly = True;
             break;
 	}
 	switch (d_nubit8(ins1+1)) {
         case 0x90:
-            flagtextonly = 1;
+            flagtextonly = True;
             break;
 	}
 	switch (d_nubit16(ins1)) {
         case 0x2e66:
-            flagtextonly = 1;
+            flagtextonly = True;
             break;
 	}
 	switch (GetMax24(d_nubit24(ins1))) {
         case 0xb70f66:
-            flagtextonly = 1;
+            flagtextonly = True;
             break;
 	}
 	switch (GetMax24(d_nubit24(ins1+1))) {
         case 0xb70f66:
-            flagtextonly = 1;
+            flagtextonly = True;
             break;
 	}
 	switch (d_nubit32(ins1)) {
@@ -69,7 +69,7 @@ static void xasmTest() {
 	lena  = utilsAasm32(dstr1, ins2, vcpu.cs.seg.exec.defsize);
 	lend2 = utilsDasm32(dstr2, ins2, vcpu.cs.seg.exec.defsize);
 	if ((!flagtextonly && (lena != lend1 || lena != lend2 || lend1 != lend2 ||
-                           memcmp(ins1, ins2, lend1))) || STRCMP(dstr1, dstr2)) {
+                           MEMCMP(ins1, ins2, lend1))) || STRCMP(dstr1, dstr2)) {
 		PRINTF("diff at #%d %04X:%08X(L%08X), len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
                    total, _cs, _eip, vcpu.cs.base + vcpu.eip, lena, lend1, lend2, vcpu.cs.seg.exec.defsize ? 32 : 16);
 		for (i = 0;i < lend1;++i) {
@@ -84,7 +84,7 @@ static void xasmTest() {
 	}
 }
 
-static void init() {MEMSET(&vdebug, 0x00, sizeof(t_debug));}
+static void init() {MEMSET(&vdebug, Zero8, sizeof(t_debug));}
 
 static void reset() {}
 

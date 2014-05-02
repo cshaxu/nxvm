@@ -9,6 +9,8 @@ extern "C" {
 
 #include "vglobal.h"
 
+#define NXVM_DEVICE_DEBUG "Unknown Hardware Debugger"
+
 typedef struct {
 	t_bool    flagbreak; /* breakpoint set (1) or not (0) */
 	t_bool    flagbreakx;

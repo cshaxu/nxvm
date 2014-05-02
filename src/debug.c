@@ -1083,7 +1083,7 @@ static void xs()
 				PRINTF("debug: fail to read from L%08X.\n", linear + i);
 				return;
 			}
-			if (!memcmp(mem, line, bcount)) {
+			if (!MEMCMP(mem, line, bcount)) {
 				PRINTF("L%08X\n", linear + i);
 			}
 		}

@@ -17,23 +17,23 @@ static void io_write_0070() {
 	vcmos.rid = vport.iobyte; /* select reg id */
 	if (GetMSB8(vcmos.rid)) {
 		/* if MSB=1, disable NMI */
-		vcpu.flagmasknmi = 1;
+		vcpu.flagmasknmi = True;
 	} else {
-		vcpu.flagmasknmi = 0;
+		vcpu.flagmasknmi = False;
 	}
 }
 
 static void io_write_0071() {
 	t_nubit8 i;
-	t_nubit16 checksum = 0x00;
+	t_nubit16 checksum = Zero16;
 	vcmos.reg[vcmos.rid] = vport.iobyte;
-	if ((vcmos.rid > 0x0f) && (vcmos.rid < 0x2e)) {
-		for (i = 0x10;i < 0x2e;++i) {
+	if ((vcmos.rid >= VCMOS_TYPE_DISK_FLOPPY) && (vcmos.rid < VCMOS_CHECKSUM_MSB)) {
+		for (i = VCMOS_TYPE_DISK_FLOPPY;i < VCMOS_CHECKSUM_MSB;++i) {
 			checksum += vcmos.reg[i];
 		}
 	}
-	vcmos.reg[VCMOS_CHECKSUM_LSB] = (t_nubit8)(checksum & 0xff);
-	vcmos.reg[VCMOS_CHECKSUM_MSB] = (t_nubit8)(checksum >> 8);
+	vcmos.reg[VCMOS_CHECKSUM_LSB] = GetMax8(checksum);
+	vcmos.reg[VCMOS_CHECKSUM_MSB] = GetMax8(checksum >> 8);
 }
 
 static void io_read_0071() {
@@ -43,7 +43,7 @@ static void io_read_0071() {
 static void refresh();
 
 static void init() {
-	MEMSET(&vcmos, 0x00, sizeof(t_cmos));
+	MEMSET(&vcmos, Zero8, sizeof(t_cmos));
 	vport.in[0x0071] = (t_faddrcc) io_read_0071;
 	vport.out[0x0070] = (t_faddrcc) io_write_0070;
 	vport.out[0x0071] = (t_faddrcc) io_write_0071;
@@ -69,14 +69,14 @@ static void refresh() {
 	}
 	ptm = LOCALTIME(&tcurr);
 
-	century = (t_nubit8)(19 + ptm->tm_year / 100);
-	year    = (t_nubit8)(ptm->tm_year % 100);
-	month   = (t_nubit8)(ptm->tm_mon + 0x01);
-	mday    = (t_nubit8)(ptm->tm_mday);
-	wday    = (t_nubit8)(ptm->tm_wday + 0x01);
-	hour    = (t_nubit8)(ptm->tm_hour);
-	min     = (t_nubit8)(ptm->tm_min);
-	sec     = (t_nubit8)(ptm->tm_sec);
+	century = GetMax8(19 + ptm->tm_year / 100);
+	year    = GetMax8(ptm->tm_year % 100);
+	month   = GetMax8(ptm->tm_mon + 1);
+	mday    = GetMax8(ptm->tm_mday);
+	wday    = GetMax8(ptm->tm_wday + 1);
+	hour    = GetMax8(ptm->tm_hour);
+	min     = GetMax8(ptm->tm_min);
+	sec     = GetMax8(ptm->tm_sec);
 
 	vcmos.reg[VCMOS_RTC_SECOND]    = Hex2BCD(sec);
 	vcmos.reg[VCMOS_RTC_MINUTE]    = Hex2BCD(min);

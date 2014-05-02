@@ -264,21 +264,27 @@ extern t_cpu vcpu;
 #define _ClrEFLAGS_VIP   (ClrBit(vcpu.eflags, VCPU_EFLAGS_VIP))
 #define _ClrEFLAGS_ID    (ClrBit(vcpu.eflags, VCPU_EFLAGS_ID))*/
 
-#define _GetModRM_MOD(modrm) (((modrm) & 0xc0) >> 6)
-#define _GetModRM_REG(modrm) (((modrm) & 0x38) >> 3)
-#define _GetModRM_RM(modrm)  (((modrm) & 0x07) >> 0)
-#define _GetSIB_SS(sib)      (((sib) & 0xc0) >> 6)
-#define _GetSIB_Index(sib)   (((sib) & 0x38) >> 3)
-#define _GetSIB_Base(sib)    (((sib) & 0x07) >> 0)
+#define VCPU_ModRM_MOD 0xc0
+#define VCPU_ModRM_REG 0x38
+#define VCPU_ModRM_RM  0x07
+#define VCPU_SIB_SS    0xc0
+#define VCPU_SIB_Index 0x38
+#define VCPU_SIB_Base  0x07
+#define _GetModRM_MOD(cmodrm) (((cmodrm) & VCPU_ModRM_MOD) >> 6)
+#define _GetModRM_REG(cmodrm) (((cmodrm) & VCPU_ModRM_REG) >> 3)
+#define _GetModRM_RM(cmodrm)  (((cmodrm) & VCPU_ModRM_RM)  >> 0)
+#define _GetSIB_SS(csib)      (((csib) & VCPU_SIB_SS)      >> 6)
+#define _GetSIB_Index(csib)   (((csib) & VCPU_SIB_Index)   >> 3)
+#define _GetSIB_Base(csib)    (((csib) & VCPU_SIB_Base)    >> 0)
 
-#define VCPU_CR0_PE     0x00000001
-#define VCPU_CR0_TS     0x00000008
-#define VCPU_CR0_PG     0x80000000
-#define _GetCR0_PE  (GetBit(vcpu.cr0, VCPU_CR0_PE))
-#define _GetCR0_PG  (GetBit(vcpu.cr0, VCPU_CR0_PG))
-#define _SetCR0_TS  (SetBit(vcpu.cr0, VCPU_CR0_TS))
+#define VCPU_CR0_PE 0x00000001
+#define VCPU_CR0_TS 0x00000008
+#define VCPU_CR0_PG 0x80000000
+#define _GetCR0_PE (GetBit(vcpu.cr0, VCPU_CR0_PE))
+#define _GetCR0_PG (GetBit(vcpu.cr0, VCPU_CR0_PG))
+#define _SetCR0_TS (SetBit(vcpu.cr0, VCPU_CR0_TS))
 
-#define _MakePageFaultErrorCode(p,wr,us) ((p) | ((wr) << 1) | ((us) << 2))
+#define _MakePageFaultErrorCode(p, wr, us) ((p) | ((wr) << 1) | ((us) << 2))
 
 #define VCPU_LINEAR_DIR    0xffc00000
 #define VCPU_LINEAR_PAGE   0x003ff000
@@ -287,7 +293,7 @@ extern t_cpu vcpu;
 #define _GetLinear_Page(linear)   (((linear) & VCPU_LINEAR_PAGE)   >> 12)
 #define _GetLinear_Offset(linear) (((linear) & VCPU_LINEAR_OFFSET) >>  0)
 
-#define VCPU_PGENTRY_BASE  0xfffff000
+#define VCPU_PGENTRY_BASE  0xfffff000 /* base address of page entry */
 #define VCPU_PGENTRY_D     0x00000040 /* dirty */
 #define VCPU_PGENTRY_A     0x00000020 /* accessed */
 #define VCPU_PGENTRY_US    0x00000004 /* user/supervisor */
@@ -432,7 +438,7 @@ extern t_cpu vcpu;
 #define _IsDescDataBig(descriptor)           (_IsDescData(descriptor) && _GetDescData_B(descriptor))
 #define _IsDescCode32(descriptor)            (_IsDescCode(descriptor) && _GetDescCode_D(descriptor))
 
-#define _MakeDescSeg(base,limit,type,s,dpl,p,avl,db,g) \
+#define _MakeDescSeg(base, limit, type, s, dpl, p, avl, db, g) \
 	(((t_nubit64)((base)  & 0xff000000) << 32) | \
 	 ((t_nubit64)((g)     & 0x00000001) << 55) | \
 	 ((t_nubit64)((db)    & 0x00000001) << 54) | \
@@ -443,7 +449,7 @@ extern t_cpu vcpu;
 	 ((t_nubit64)((s)     & 0x00000001) << 44) | \
 	 ((t_nubit64)((type)  & 0x0000000f) << 40) | \
 	 ((t_nubit64)((base)  & 0x00ffffff) << 16) | \
-	 ((t_nubit64)((limit) & 0x0000ffff) << 0 ))
+	 ((t_nubit64)((limit) & 0x0000ffff) << 0))
 
 /* DESCRIPTOR DEFINITION III: System Part */
 #define VCPU_DESC_GATE_SELECTOR 0x00000000ffff0000
@@ -456,22 +462,20 @@ extern t_cpu vcpu;
 	(((descriptor) & VCPU_DESC_GATE_OFFSET_0) | (((descriptor) & VCPU_DESC_GATE_OFFSET_1) >> 32))
 #define _GetDescCall_Count(descriptor)    (((descriptor) & VCPU_DESC_CALL_COUNT) >> 32)
 
-#define VCPU_CR0_PE     0x00000001
-#define VCPU_CR0_MP     0x00000002
-#define VCPU_CR0_EM     0x00000004
-#define VCPU_CR0_TS     0x00000008
-#define VCPU_CR0_ET     0x00000010
-#define VCPU_CR0_PG     0x80000000
-
-#define _GetCR0_PE  (GetBit(vcpu.cr0, VCPU_CR0_PE))
-#define _GetCR0_MP  (GetBit(vcpu.cr0, VCPU_CR0_MP))
-#define _GetCR0_EM  (GetBit(vcpu.cr0, VCPU_CR0_EM))
-#define _GetCR0_TS  (GetBit(vcpu.cr0, VCPU_CR0_TS))
-#define _GetCR0_ET  (GetBit(vcpu.cr0, VCPU_CR0_ET))
-#define _GetCR0_PG  (GetBit(vcpu.cr0, VCPU_CR0_PG))
-
-#define _SetCR0_TS  (SetBit(vcpu.cr0, VCPU_CR0_TS))
-#define _ClrCR0_TS  (ClrBit(vcpu.cr0, VCPU_CR0_TS))
+#define VCPU_CR0_PE 0x00000001
+#define VCPU_CR0_MP 0x00000002
+#define VCPU_CR0_EM 0x00000004
+#define VCPU_CR0_TS 0x00000008
+#define VCPU_CR0_ET 0x00000010
+#define VCPU_CR0_PG 0x80000000
+#define _GetCR0_PE (GetBit(vcpu.cr0, VCPU_CR0_PE))
+#define _GetCR0_MP (GetBit(vcpu.cr0, VCPU_CR0_MP))
+#define _GetCR0_EM (GetBit(vcpu.cr0, VCPU_CR0_EM))
+#define _GetCR0_TS (GetBit(vcpu.cr0, VCPU_CR0_TS))
+#define _GetCR0_ET (GetBit(vcpu.cr0, VCPU_CR0_ET))
+#define _GetCR0_PG (GetBit(vcpu.cr0, VCPU_CR0_PG))
+#define _SetCR0_TS (SetBit(vcpu.cr0, VCPU_CR0_TS))
+#define _ClrCR0_TS (ClrBit(vcpu.cr0, VCPU_CR0_TS))
 
 #define VCPU_CR3_BASE   0xfffff000
 #define _GetCR3_Base    (vcpu.cr3 & VCPU_CR3_BASE)

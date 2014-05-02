@@ -12,19 +12,19 @@
 t_fdd vfdd;
 
 #define IsTrackEnd (vfdd.sector >= (vfdd.nsector + 1))
-#define IsCylHalf  (vfdd.head == 0x00 && IsTrackEnd)
-#define IsCylEnd   (vfdd.head == 0x01 && IsTrackEnd)
+#define IsCylHalf  (vfdd.head == 0 && IsTrackEnd)
+#define IsCylEnd   (vfdd.head == 1 && IsTrackEnd)
 
 t_bool deviceConnectFloppyInsert(const t_strptr fname) {
 	t_nubitcc count;
 	FILE *image = FOPEN(fname, "rb");
 	if (image && vfdd.base) {
 		count = FREAD((void *) vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
-		vfdd.flagexist = 1;
+		vfdd.flagexist = True;
 		FCLOSE(image);
-		return 0;
+		return False;
 	} else {
-		return 1;
+		return True;
 	}
 }
 
@@ -36,15 +36,15 @@ t_bool deviceConnectFloppyRemove(const t_strptr fname) {
 		if(image) {
 			if (!vfdd.flagro)
 				count = FWRITE((void *) vfdd.base, sizeof(t_nubit8), vfddGetImageSize, image);
-			vfdd.flagexist = 0;
+			vfdd.flagexist = False;
 			FCLOSE(image);
 		} else {
-			return 1;
+			return True;
 		}
 	}
-	vfdd.flagexist = 0;
-	MEMSET((void *) vfdd.base, 0x00, vfddGetImageSize);
-	return 0;
+	vfdd.flagexist = False;
+	MEMSET((void *) vfdd.base, Zero8, vfddGetImageSize);
+	return False;
 }
 
 void vfddTransRead() {
@@ -57,8 +57,8 @@ void vfddTransRead() {
 	if (!(vfdd.count % vfdd.nbyte)) {
 		vfdd.sector++;
 		if (IsCylHalf) {
-			vfdd.sector = 0x01;
-			vfdd.head   = 0x01;
+			vfdd.sector = 1;
+			vfdd.head   = 1;
 		}
 		vfddSetPointer;
 	}
@@ -74,8 +74,8 @@ void vfddTransWrite() {
 	if (!(vfdd.count % vfdd.nbyte)) {
 		vfdd.sector++;
 		if (IsCylHalf) {
-			vfdd.sector = 0x01;
-			vfdd.head   = 0x01;
+			vfdd.sector = 1;
+			vfdd.head   = 1;
 		}
 		vfddSetPointer;
 	}
@@ -85,25 +85,25 @@ void vfddFormatTrack(t_nubit8 fillbyte) {
 	if (vfdd.cyl >= vfdd.ncyl) {
 		return;
 	}
-	vfdd.head   = 0x00;
-	vfdd.sector = 0x01;
+	vfdd.head   = 0;
+	vfdd.sector = 1;
 	vfddSetPointer;
 	MEMSET((void *) vfdd.curr, fillbyte, vfdd.nsector * vfdd.nbyte);
-	vfdd.head   = 0x01;
-	vfdd.sector = 0x01;
+	vfdd.head   = 1;
+	vfdd.sector = 1;
 	vfddSetPointer;
 	MEMSET((void *) vfdd.curr, fillbyte, vfdd.nsector * vfdd.nbyte);
 	vfdd.sector = vfdd.nsector;
 }
 
 static void init() {
-	MEMSET(&vfdd, 0x00, sizeof(t_fdd));
+	MEMSET(&vfdd, Zero8, sizeof(t_fdd));
 	vfdd.ncyl    = 0x0050;
 	vfdd.nhead   = 0x0002;
 	vfdd.nsector = 0x0012;
 	vfdd.nbyte   = 0x0200;
 	vfdd.base    = (t_vaddrcc) MALLOC(vfddGetImageSize);
-	MEMSET((void *) vfdd.base, 0x00, vfddGetImageSize);
+	MEMSET((void *) vfdd.base, Zero8, vfddGetImageSize);
 }
 
 static void reset() {}
@@ -119,4 +119,4 @@ static void final() {
 
 void vfddRegister() {vmachineAddMe;}
 
-void deviceConnectFloppyCreate() {vfdd.flagexist = 1;}
+void deviceConnectFloppyCreate() {vfdd.flagexist = True;}

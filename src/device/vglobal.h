@@ -17,7 +17,6 @@ typedef char      t_string[MAXLINE];
 typedef char     *t_strptr;
 typedef uint8_t   t_nubit1;
 typedef uint8_t   t_nubit4;
-typedef uint8_t   t_nubit6;
 typedef uint8_t   t_nubit8;
 typedef int8_t    t_nsbit8;
 typedef uint16_t  t_nubit16;
@@ -47,7 +46,6 @@ typedef t_nubitcc t_faddrcc;
 
 #define p_nubit1  (t_nubit1 *)
 #define p_nubit4  (t_nubit4 *)
-#define p_nubit6  (t_nubit6 *)
 #define p_nubit8  (t_nubit8 *)
 #define p_nsbit8  (t_nsbit8 *)
 #define p_nubit16 (t_nubit16 *)
@@ -68,7 +66,6 @@ typedef t_nubitcc t_faddrcc;
 
 #define d_nubit1(n)  (*(t_nubit1 *)(n))
 #define d_nubit4(n)  (*(t_nubit4 *)(n))
-#define d_nubit6(n)  (*(t_nubit6 *)(n))
 #define d_nubit8(n)  (*(t_nubit8 *)(n))
 #define d_nsbit8(n)  (*(t_nsbit8 *)(n))
 #define d_nubit16(n) (*(t_nubit16 *)(n))
@@ -90,9 +87,19 @@ typedef t_nubitcc t_faddrcc;
 #define GetBit(s, f) (!!((s) & (f)))
 #define SetBit(d, s) ((d) |= (s))
 #define ClrBit(d, s) ((d) &= ~(s))
-#define MakeBit(d, s, f)  ((f) ? SetBit((d), (s)) : ClrBit((d), (s)))
+#define MakeBit(d, s, f) ((f) ? SetBit((d), (s)) : ClrBit((d), (s)))
 #define GetMSB(n, b) (GetBit((n), (1 << ((b) - 1))))
 #define GetLSB(n, b) (GetBit((n), 1))
+#define False  0x00
+#define True   0x01
+#define Zero1  0x00
+#define Zero4  0x00
+#define Zero8  0x00
+#define Zero16 0x0000
+#define Zero32 0x00000000
+#define Zero64 0x0000000000000000
+#define Max1  0x01
+#define Max4  0x0f
 #define Max8  0xff
 #define Max16 0xffff
 #define Max24 0x00ffffff
@@ -109,6 +116,8 @@ typedef t_nubitcc t_faddrcc;
 #define MSB48 0x0000800000000000
 #define MSB63 0x4000000000000000
 #define MSB64 0x8000000000000000
+#define GetMax1(n)  ((t_nubit1 )(n) & Max1 )
+#define GetMax4(n)  ((t_nubit4 )(n) & Max4 )
 #define GetMax8(n)  ((t_nubit8 )(n) & Max8 )
 #define GetMax16(n) ((t_nubit16)(n) & Max16)
 #define GetMax24(n) ((t_nubit24)(n) & Max24)

@@ -44,13 +44,13 @@ t_fdc vfdc;
 /* Resets FDC but keeps CCR */
 static void doReset() {
 	t_nubit8 ccr = vfdc.ccr;
-	MEMSET(&vfdc, 0, sizeof(t_fdc));
+	MEMSET(&vfdc, Zero8, sizeof(t_fdc));
 	vfdc.ccr = ccr;
 }
 
 /* sector size code */
-t_nubit8 VFDC_GetBPSC(t_nubit16 cbyte) {
-	switch (cbyte) {
+t_nubit8 VFDC_GetBPSC(t_nubit16 cb) {
+	switch (cb) {
 	case 0x0080: return 0x00;
 	case 0x0100: return 0x01;
 	case 0x0200: return 0x02;
@@ -64,71 +64,71 @@ t_nubit8 VFDC_GetBPSC(t_nubit16 cbyte) {
 }
 
 #define IsRet(retl, count) (vfdc.cmd[0] == (retl) && vfdc.flagret == (count))
-#define SetST0 (vfdc.st0 = (0x00                    << 7) |                   \
-                           (0x00                    << 6) |                   \
-                           (0x00                    << 5) |                   \
-                           ((vfdd.cyl >= vfdd.ncyl) << 4) |                   \
-                           (0x00                    << 3) |                   \
-                           (vfdd.head               << 2) |                   \
-                           (VFDC_GetDS(vfdc.cmd[1])      << 0))
-#define SetST1 (vfdc.st1 = ((vfdd.sector >= (vfdd.nsector + 1)) << 7) |       \
-                           (0x00                    << 6) |                   \
-                           (0x00                    << 5) |                   \
-                           (0x00                    << 4) |                   \
-                           (0x00                    << 3) |                   \
-                           ((vfdd.cyl >= vfdd.ncyl) << 2) |                   \
-                           (0x00                    << 1) |                   \
-                           (0x00                    << 0))
-#define SetST2 (vfdc.st2 = (0x00                    << 7) |                   \
-                           (0x00                    << 6) |                   \
-                           (0x00                    << 5) |                   \
-                           ((vfdd.cyl >= vfdd.ncyl) << 4) |                   \
-                           (0x00                    << 3) |                   \
-                           (0x00                    << 2) |                   \
-                           (0x00                    << 1) |                   \
-                           (0x00                    << 0))
-#define SetST3 (vfdc.st3 = (0x00                    << 7) |                   \
-                           (vfdd.flagro             << 6) |                   \
-                           (0x01                    << 5) |                   \
-                           ((!vfdd.cyl)             << 4) |                   \
-                           (0x01                    << 3) |                   \
-                           (vfdd.head               << 2) |                   \
-                           (VFDC_GetDS(vfdc.cmd[1])      << 0))
-#define SetMSRReadyRead  (vfdc.msr = 0xc0, vfdc.rwid = 0x00)
-#define SetMSRReadyWrite (vfdc.msr = 0x80, vfdc.rwid = 0x00)
-#define SetMSRProcRead   (vfdc.msr = 0xd0)
-#define SetMSRProcWrite  (vfdc.msr = 0x90)
-#define SetMSRExecCmd    (vfdc.msr = 0x20)
+#define SetST0 (vfdc.st0 = (0x00      << 7) | \
+                           (0x00      << 6) | \
+                           (0x00      << 5) | \
+                           ((vfdd.cyl >= vfdd.ncyl) << 4) | \
+                           (0x00      << 3) | \
+                           (vfdd.head << 2) | \
+                           ((vfdc.cmd[1] & VFDC_ST0_DS) << 0))
+#define SetST1 (vfdc.st1 = ((vfdd.sector >= (vfdd.nsector + 1)) << 7) | \
+                           (0x00 << 6) | \
+                           (0x00 << 5) | \
+                           (0x00 << 4) | \
+                           (0x00 << 3) | \
+                           ((vfdd.cyl >= vfdd.ncyl) << 2) | \
+                           (0x00 << 1) | \
+                           (0x00 << 0))
+#define SetST2 (vfdc.st2 = (0x00 << 7) | \
+                           (0x00 << 6) | \
+                           (0x00 << 5) | \
+                           ((vfdd.cyl >= vfdd.ncyl) << 4) | \
+                           (0x00 << 3) | \
+                           (0x00 << 2) | \
+                           (0x00 << 1) | \
+                           (0x00 << 0))
+#define SetST3 (vfdc.st3 = (0x00        << 7) | \
+                           (vfdd.flagro << 6) | \
+                           (0x01        << 5) | \
+                           ((!vfdd.cyl) << 4) | \
+                           (0x01        << 3) | \
+                           (vfdd.head   << 2) | \
+                           ((vfdc.cmd[1] & VFDC_ST3_DS) << 0))
+#define SetMSRReadyRead  (vfdc.msr = VFDC_MSR_ReadyRead, vfdc.rwid = 0)
+#define SetMSRReadyWrite (vfdc.msr = VFDC_MSR_ReadyWrite, vfdc.rwid = 0)
+#define SetMSRProcRead   (vfdc.msr = VFDC_MSR_ProcessRead)
+#define SetMSRProcWrite  (vfdc.msr = VFDC_MSR_ProcessWrite)
+#define SetMSRExecCmd    (vfdc.msr = VFDC_MSR_NDM)
 
-#define GetMSRReadyRead  ((vfdc.msr & 0xc0) == 0xc0)
-#define GetMSRReadyWrite ((vfdc.msr & 0xc0) == 0x80)
-#define GetMSRProcRW     (!!(vfdc.msr & 0x10))
-#define GetMSRExecCmd    (!!(vfdc.msr & 0x20))
+#define GetMSRReadyRead  ((vfdc.msr & 0xc0) == VFDC_MSR_ReadyRead)
+#define GetMSRReadyWrite ((vfdc.msr & 0xc0) == VFDC_MSR_ReadyWrite)
+#define GetMSRProcRW     (GetBit(vfdc.msr, VFDC_MSR_CB))
+#define GetMSRExecCmd    (GetBit(vfdc.msr, VFDC_MSR_NDM))
 
 static void ExecCmdSpecify() {
-	vfdc.hut      = VFDC_GetHUT (vfdc.cmd[1]);
-	vfdc.srt      = VFDC_GetSRT (vfdc.cmd[1]);
-	vfdc.hlt      = VFDC_GetHLT (vfdc.cmd[2]);
-	vfdc.flagndma = VFDC_GetNDMA(vfdc.cmd[2]);
+	vfdc.hut      = VFDC_GetCMD_Specify1_HUT(vfdc.cmd[1]);
+	vfdc.srt      = VFDC_GetCMD_Specify1_SRT(vfdc.cmd[1]);
+	vfdc.hlt      = VFDC_GetCMD_Specify2_HLT(vfdc.cmd[2]);
+	vfdc.flagndma = GetBit(vfdc.cmd[2], VFDC_CMD_Specify2_ND);
 	SetMSRReadyWrite;
 }
 static void ExecCmdSenseDriveStatus() {
-	vfdd.head = VFDC_GetHDS(vfdc.cmd[1]);
+	vfdd.head = GetBit(vfdc.cmd[1], VFDC_CMD_SenseDriveStatus1_HD);
 	vfddSetPointer;
 	SetST3;
 	vfdc.ret[0] = vfdc.st3;
 	SetMSRReadyRead;
 }
 static void ExecCmdRecalibrate() {
-	vfdd.cyl    = 0x00;
-	vfdd.head   = 0x00;
-	vfdd.sector = 0x01;
+	vfdd.cyl    = 0;
+	vfdd.head   = 0;
+	vfdd.sector = 1;
 	vfddSetPointer;
 	SetST0;
-	vfdc.st0 |= 0x20;
-	if (VFDC_GetENRQ(vfdc.dor)) {
+	SetBit(vfdc.st0, VFDC_ST0_SEEK_END);
+	if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
 		vpicSetIRQ(0x06);
-		vfdc.flagintr = 1;
+		vfdc.flagintr = True;
 	}
 	SetMSRReadyWrite;
 }
@@ -136,38 +136,38 @@ static void ExecCmdSenseInterrupt() {
 	if (vfdc.flagintr) {
 		vfdc.ret[0] = vfdc.st0;
 		vfdc.ret[1] = (t_nubit8)vfdd.cyl;
-		vfdc.flagintr = 0;
+		vfdc.flagintr = False;
 	} else {
 		vfdc.ret[0] = vfdc.st0 = VFDC_RET_ERROR;
 	}
 	SetMSRReadyRead;
 }
 static void ExecCmdSeek() {
-	vfdd.head = VFDC_GetHDS(vfdc.cmd[1]);
+	vfdd.head = GetBit(vfdc.cmd[1], VFDC_CMD_Seek1_HD);
 	vfdd.cyl  = vfdc.cmd[2];
-	vfdd.sector = 0x01;
+	vfdd.sector = 1;
 	vfddSetPointer;
 	SetST0;
-	vfdc.st0 |= 0x20;
-	if (VFDC_GetENRQ(vfdc.dor)) {
+	SetBit(vfdc.st0, VFDC_ST0_SEEK_END);
+	if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
 		vpicSetIRQ(0x06);
-		vfdc.flagintr = 1;
+		vfdc.flagintr = True;
 	}
 	SetMSRReadyWrite;
 }
 #define     ExecCmdReadTrack        vfdcTransInit
 static void ExecCmdReadID() {
-	vfdd.head = VFDC_GetHDS(vfdc.cmd[1]);
-	vfdd.sector = 0x01;
+	vfdd.head = GetBit(vfdc.cmd[1], VFDC_CMD_ReadId1_HD);
+	vfdd.sector = 1;
 	vfddSetPointer;
-	vfdc.dr = 0x00; /* data register: sector id info */
+	vfdc.dr = Zero8; /* data register: sector id info */
 	vfdcTransFinal();
 }
 static void ExecCmdFormatTrack() {
 	/* NOTE: simplified procedure; dma not used */
 	t_nubit8 fillbyte;
 	/* load parameters*/
-	vfdd.head    = VFDC_GetHDS(vfdc.cmd[1]);
+	vfdd.head    = GetBit(vfdc.cmd[1], VFDC_CMD_FormatTrack1_HD);
 	vfdd.sector  = 0x01;
 	vfdd.nbyte   = VFDC_GetBPS(vfdc.cmd[2]);
 	vfdd.nsector = vfdc.cmd[3];
@@ -183,13 +183,13 @@ static void ExecCmdFormatTrack() {
 	vfdc.ret[0] = vfdc.st0;
 	vfdc.ret[1] = vfdc.st1;
 	vfdc.ret[2] = vfdc.st2;
-	vfdc.ret[3] = 0x00;
-	vfdc.ret[4] = 0x00;
-	vfdc.ret[5] = 0x00;
-	vfdc.ret[6] = 0x00;
-	if (VFDC_GetENRQ(vfdc.dor)) {
+	vfdc.ret[3] = Zero8;
+	vfdc.ret[4] = Zero8;
+	vfdc.ret[5] = Zero8;
+	vfdc.ret[6] = Zero8;
+	if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
 		vpicSetIRQ(0x06);
-		vfdc.flagintr = 1;
+		vfdc.flagintr = True;
 	}
 	SetMSRReadyRead;
 }
@@ -204,13 +204,14 @@ static void ExecCmdScanEqual() {
 	SetST0;
 	SetST1;
 	SetST2;
-	vfdc.st2 |= 0x04; /* assume all data match; otherwise use 0x08 */
+	/* assume all data match */
+	SetBit(vfdc.st2, VFDC_ST2_SCAN_MATCH);
 	vfdc.ret[0] = vfdc.st0;
 	vfdc.ret[1] = vfdc.st1;
 	vfdc.ret[2] = vfdc.st2;
-	vfdc.ret[3] = (t_nubit8)vfdd.cyl;
-	vfdc.ret[4] = (t_nubit8)vfdd.head;
-	vfdc.ret[5] = (t_nubit8)vfdd.sector; /* NOTE: eot not changed */
+	vfdc.ret[3] = GetMax8(vfdd.cyl);
+	vfdc.ret[4] = GetMax8(vfdd.head);
+	vfdc.ret[5] = GetMax8(vfdd.sector); /* NOTE: eot not changed */
 	vfdc.ret[6] = VFDC_GetBPSC(vfdd.nbyte);
 	SetMSRReadyRead;
 }
@@ -321,11 +322,11 @@ static void io_read_03F7() {
 
 /* write digital output register */
 static void io_write_03F2() {
-	if (!(vfdc.dor & 0x04) && (vport.iobyte & 0x04)) {
+	if (!GetBit(vfdc.dor, VFDC_DOR_NRS) && GetBit(vport.iobyte, VFDC_DOR_NRS)) {
 		SetMSRReadyWrite;
 	}
 	vfdc.dor = vport.iobyte;
-	if (!(vfdc.dor & 0x04)) {
+	if (!GetBit(vfdc.dor, VFDC_DOR_NRS)) {
 		doReset();
 	}
 }
@@ -442,11 +443,11 @@ void vfdcTransInit() {
 	if (!vfdc.cmd[5]) {
 		vfdd.nbyte = vfdc.cmd[8];
 	}
-	vfdd.count     = 0x00;
+	vfdd.count     = Zero16;
 	vfddSetPointer;
 	/* send trans request */
-	if (!vfdc.flagndma && VFDC_GetENRQ(vfdc.dor)) {
-		vdmaSetDRQ(0x02);
+	if (!vfdc.flagndma && GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
+		vdmaSetDRQ(2);
 	}
 	SetMSRExecCmd;
 }
@@ -458,20 +459,20 @@ void vfdcTransFinal() {
 	vfdc.ret[0] = vfdc.st0;
 	vfdc.ret[1] = vfdc.st1;
 	vfdc.ret[2] = vfdc.st2;
-	vfdc.ret[3] = (t_nubit8)vfdd.cyl;
-	vfdc.ret[4] = (t_nubit8)vfdd.head;
-	vfdc.ret[5] = (t_nubit8)vfdd.sector;
+	vfdc.ret[3] = GetMax8(vfdd.cyl);
+	vfdc.ret[4] = GetMax8(vfdd.head);
+	vfdc.ret[5] = GetMax8(vfdd.sector);
 	vfdc.ret[6] = VFDC_GetBPSC(vfdd.nbyte);
-	if (VFDC_GetENRQ(vfdc.dor)) {
+	if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
 		vpicSetIRQ(0x06);
-		vfdc.flagintr = 1;
+		vfdc.flagintr = True;
 	}
 	SetMSRReadyRead;
 }
 
 static void init() {
-	MEMSET(&vfdc, 0, sizeof(t_fdc));
-	vfdc.ccr = 0x02;
+	MEMSET(&vfdc, Zero8, sizeof(t_fdc));
+	vfdc.ccr = VFDC_CCR_DRC;
 	vport.in[0x03f4] = (t_faddrcc) io_read_03F4;
 	vport.in[0x03f5] = (t_faddrcc) io_read_03F5;
 	vport.in[0x03f7] = (t_faddrcc) io_read_03F7;
@@ -489,9 +490,9 @@ static void reset() {doReset();}
 
 static void refresh() {
 	if (!vfdd.flagexist) {
-		vfdc.dir |= 0x80;
+		SetBit(vfdc.dir, VFDC_DIR_DC);
 	} else {
-		vfdc.dir &= 0x7f;
+		ClrBit(vfdc.dir, VFDC_DIR_DC);
 	}
 }
 

@@ -16,7 +16,7 @@ static void io_write_void() {}
 /* VPORT has to be initialized before all other devices */
 static void init() {
 	t_nsbitcc i;
-	MEMSET(&vport, 0x00, sizeof(t_port));
+	MEMSET(&vport, Zero8, sizeof(t_port));
 	for (i = 0;i < 0x10000;++i) {
 		vport.in[i] = (t_faddrcc) io_read_void;
 		vport.out[i] = (t_faddrcc) io_write_void;
@@ -24,9 +24,9 @@ static void init() {
 }
 
 static void reset() {
-	vport.iobyte = 0x00;
-	vport.ioword = 0x0000;
-	vport.iodword = 0x00000000;
+	vport.iobyte = Zero8;
+	vport.ioword = Zero16;
+	vport.iodword = Zero32;
 }
 
 static void refresh() {}

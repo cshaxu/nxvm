@@ -19,40 +19,50 @@ t_pic vpic1, vpic2;
  * Returns id of highest priority interrupt
  * Returns 0x08 if reg is null
  */
-static t_nubit8 GetRegTopId(t_pic *vpic, t_nubit8 reg) {
-	t_nubit8 id = 0x00;
-	if (reg == 0x00) {
+static t_nubit8 GetRegTopId(t_pic *rpic, t_nubit8 reg) {
+	t_nubit8 id = 0;
+	if (reg == Zero8) {
 		return 0x08;
 	}
-	reg = (reg<<(0x08 - (vpic->irx))) | (reg>>(vpic->irx));
-	while (!((reg>>id) & 0x01) && (id < 0x08)) {
+	reg = (reg << (8 - (rpic->irx))) | (reg>> (rpic->irx));
+	while ((id < VPIC_MAX_IRQ_COUNT) && !GetMax1(reg >> id)) {
 		id++;
 	}
-	return (id + vpic->irx) % 0x08;
+	return (id + rpic->irx) % VPIC_MAX_IRQ_COUNT;
 }
 
 /*
  * GetRegTopId: Internal function
  * Returns flag of higher priority interrupt
  */
-static t_bool HasINTR(t_pic *vpic) {
+static t_bool HasINTR(t_pic *rpic) {
 	t_nubit8 irid; /* top requested int id in master pic */
 	t_nubit8 isid; /* top in service int id in master pic */
-	irid = VPIC_GetIntrTopId(vpic);
-	isid = VPIC_GetIsrTopId(vpic);
+	irid = VPIC_GetIntrTopId(rpic);
+	isid = VPIC_GetIsrTopId(rpic);
 	if (irid == 0x08) {
-		return 0;
+		/* no interrupt to pick up */
+		return False;
 	}
 	if (isid == 0x08) {
-		return 1;
+		/* no interrupt in service */
+		return True;
 	}
-	if (irid < vpic->irx) {
-		irid += 0x08;
+	/*
+	 * if irid and isid are on the same side of top priority int
+	 * request id, do regular comparison; otherwise order them.
+	 * for example, if irid < irx, that means irid's priority is lower
+	 * than irx, and we need to add VPIC_MAX_IRQ_COUNT to it to ensure
+	 * that it's priority is lower than irx in following comparison 
+	 * (irid < isid) or (irid <= isid).
+	 */
+	if (irid < rpic->irx) {
+		irid += VPIC_MAX_IRQ_COUNT;
 	}
-	if (isid < vpic->irx) {
-		isid += 0x08;
+	if (isid < rpic->irx) {
+		isid += VPIC_MAX_IRQ_COUNT;
 	}
-	if (VPIC_GetSFNM(vpic)) {
+	if (GetBit(rpic->icw4, VPIC_ICW4_SFNM)) {
 		return irid <= isid;
 	} else {
 		return irid < isid;
@@ -63,15 +73,15 @@ static t_bool HasINTR(t_pic *vpic) {
  * RespondINTR: Internal function
  * Adds INTR to IRR and removes it from ISR
  */
-static void RespondINTR(t_pic *vpic, t_nubit8 id) {
-	vpic->isr |= 1<<id;    /* put int into ISR */
-	vpic->irr &= ~(1<<id); /* remove int from  IRR */
-	if (VPIC_GetAEOI(vpic)) {
+static void RespondINTR(t_pic *rpic, t_nubit8 id) {
+	SetBit(rpic->isr, VPIC_ISR_IRQ(id)); /* put int into ISR */
+	ClrBit(rpic->irr, VPIC_IRR_IRQ(id)); /* remove int from  IRR */
+	if (GetBit(rpic->icw4, VPIC_ICW4_AEOI)) {
 		/* Auto EOI Mode */
-		vpic->isr &= ~(1<<id);
-		if (VPIC_GetR(vpic)) {
+		ClrBit(rpic->isr, VPIC_ISR_IRQ(id));
+		if (GetBit(rpic->ocw2, VPIC_OCW2_R)) {
 			/* Rotate Mode */
-			vpic->irx = (id + 0x01) % 0x08;
+			rpic->irx = (id + 1) % VPIC_MAX_IRQ_COUNT;
 		}
 	}
 }
@@ -82,22 +92,25 @@ static void RespondINTR(t_pic *vpic, t_nubit8 id) {
  * Reference: 16-32.PDF, Page 192
  * Reference: PC.PDF, Page 950
  */
-static void io_read_00x0(t_pic *vpic) {
-	if (VPIC_GetP(vpic)) {
+static void io_read_00x0(t_pic *rpic) {
+	if (GetBit(rpic->ocw3, VPIC_OCW3_P)) {
 		/* P=1 (Poll Command) */
-		vport.iobyte = 0x80 | VPIC_GetIntrTopId(vpic);
-		if (vport.iobyte == 0x88) {
-			vport.iobyte = 0x00;
+		if (VPIC_GetIntrTopId(rpic) == 0x08) {
+			/* set all bits to 0 if there's no interrupt in queue */
+			vport.iobyte = Zero8;
+		} else {
+			/* set highest bit to 1 if there's an interrupt in queue */
+			vport.iobyte = VPIC_POLL_I | VPIC_GetIntrTopId(rpic);
 		}
 	} else {
-		switch (vpic->ocw3&0x03) {
+		switch (rpic->ocw3 & (VPIC_OCW3_RR | VPIC_OCW3_RIS)) {
 		case 0x02:
 			/* RR=1, RIS=0, Read IRR */
-			vport.iobyte = vpic->irr;
+			vport.iobyte = rpic->irr;
 			break;
 		case 0x03:
 			/* RR=1, RIS=1, Read ISR */
-			vport.iobyte = vpic->isr;
+			vport.iobyte = rpic->isr;
 			break;
 		default:
 			/* RR=0, No Operation */
@@ -112,58 +125,58 @@ static void io_read_00x0(t_pic *vpic) {
  * Reference: 16-32.PDF, Page 184
  * Reference: PC.PDF, Page 950
  */
-static void io_write_00x0(t_pic *vpic) {
+static void io_write_00x0(t_pic *rpic) {
 	t_nubit8 id;
-	if (vport.iobyte & 0x10) {
+	if (GetBit(vport.iobyte, VPIC_ICW1_I)) {
 		/* ICW1 (D4=1) */
-		vpic->icw1 = vport.iobyte;
-		vpic->status = ICW2;
-		if (VPIC_GetIC4(vpic)) {
+		rpic->icw1 = vport.iobyte;
+		rpic->status = ICW2;
+		if (GetBit(rpic->icw1, VPIC_ICW1_IC4)) {
 			/* D0=1, IC4=1 */
 		} else {
 			/* D0=0, IC4=0 */
-			vpic->icw4 = 0x00;
+			rpic->icw4 = Zero8;
 		}
-		if (VPIC_GetSNGL(vpic)) {
+		if (GetBit(rpic->icw1, VPIC_ICW1_SNGL)) {
 			/* D1=1, SNGL=1, ICW3=0 */
 		} else {
 			/* D1=0, SNGL=0, ICW3=1 */
 		}
-		if (VPIC_GetLTIM(vpic)) {
+		if (GetBit(rpic->icw1, VPIC_ICW1_LTIM)) {
 			/* D3=1, LTIM=1, Level Triggered Mode */
 		} else {
 			/* D3=0, LTIM=0, Edge  Triggered Mode */
 		}
 	} else {
 		/* OCWs (D4=0) */
-		if (vport.iobyte & 0x08) {
+		if (GetBit(vport.iobyte, VPIC_OCW3_I)) {
 			/* OCW3 (D3=1) */
-			if (vport.iobyte & 0x40) {
+			if (GetBit(vport.iobyte, VPIC_OCW3_ESMM)) {
 				/* ESMM=1: Enable Special Mask Mode */
-				vpic->ocw3 = vport.iobyte;
-				if (VPIC_GetSMM(vpic)) {
+				rpic->ocw3 = vport.iobyte;
+				if (GetBit(rpic->ocw3, VPIC_OCW3_SMM)) {
 					/* SMM=1: Set Special Mask Mode */
 				} else {
 					/* SMM=0: Clear Sepcial Mask Mode */
 				}
 			} else {
 				/* ESMM=0: Keep SMM */
-				vpic->ocw3 = (vpic->ocw3 & 0x20) | (vport.iobyte & 0xdf);
+				rpic->ocw3 = (rpic->ocw3 & VPIC_OCW3_SMM) | (vport.iobyte & ~VPIC_OCW3_SMM);
 			}
 		} else {
 			/* OCW2 (D3=0) */
-			switch (vport.iobyte & 0xe0) {
+			switch (vport.iobyte & (VPIC_OCW2_EOI | VPIC_OCW2_SL | VPIC_OCW2_R)) {
 				/* D7=R, D6=SL, D5=EOI(End Of Interrupt) */
 			case 0x80:
 				/* 100: Set (Rotate Priorities in Auto EOI Mode) */
-				if (VPIC_GetAEOI(vpic)) {
-					vpic->ocw2 = vport.iobyte;
+				if (GetBit(rpic->icw4, VPIC_ICW4_AEOI)) {
+					rpic->ocw2 = vport.iobyte;
 				}
 				break;
 			case 0x00:
 				/* 000: Clear (Rotate Priorities in Auto EOI Mode) */
-				if (VPIC_GetAEOI(vpic)) {
-					vpic->ocw2 = vport.iobyte;
+				if (GetBit(rpic->icw4, VPIC_ICW4_AEOI)) {
+					rpic->ocw2 = vport.iobyte;
 				}
 				/* Bug in easyVM (0x00 ?= 0x20) */
 				break;
@@ -171,44 +184,44 @@ static void io_write_00x0(t_pic *vpic) {
 				/* 001: Non-specific EOI Command */
 				/* Set bit of highest priority interrupt in ISR to 0,
 				 IR0 > IR1 > IR2(IR8 > ... > IR15) > IR3 > ... > IR7 */
-				vpic->ocw2 = vport.iobyte;
-				if (vpic->isr) {
-					id = VPIC_GetIsrTopId(vpic);
-					vpic->isr &= ~(1<<id);
+				rpic->ocw2 = vport.iobyte;
+				if (rpic->isr) {
+					id = VPIC_GetIsrTopId(rpic);
+					ClrBit(rpic->isr, VPIC_ISR_IRQ(id));
 				}
 				break;
 			case 0x60:
 				/* 011: Specific EOI Command */
-				vpic->ocw2 = vport.iobyte;
-				if (vpic->isr) {
+				rpic->ocw2 = vport.iobyte;
+				if (rpic->isr) {
 					/* Get L2,L1,L0 */
-					id = vpic->ocw2 & 0x07;
-					vpic->isr &= ~(1<<id);
+					id = rpic->ocw2 & VPIC_OCW2_L;
+					ClrBit(rpic->isr, VPIC_ISR_IRQ(id));
 				}
-				/* Bug in easyVM: "isr &= (1<<i)" */
+				/* Bug in easyVM: "isr &= (1 << i)" */
 				break;
 			case 0xa0:
 				/* 101: Rotate Priorities on Non-specific EOI */
-				vpic->ocw2 = vport.iobyte;
-				if (vpic->isr) {
-					id = VPIC_GetIsrTopId(vpic);
-					vpic->isr &= ~(1<<id);
-					vpic->irx = (id + 0x01) % 0x08;
+				rpic->ocw2 = vport.iobyte;
+				if (rpic->isr) {
+					id = VPIC_GetIsrTopId(rpic);
+					ClrBit(rpic->isr, VPIC_ISR_IRQ(id));
+					rpic->irx = (id + 1) % VPIC_MAX_IRQ_COUNT;
 				}
 				break;
-			case 0xe0: 
+			case 0xe0:
 				/* 111: Rotate Priority on Specific EOI Command */
-				vpic->ocw2 = vport.iobyte;
-				if (vpic->isr) {
-					id = VPIC_GetIsrTopId(vpic);
-					vpic->isr &= ~(1<<id);
-					vpic->irx = ((vpic->ocw2 & 0x07) + 0x01) % 0x08;
+				rpic->ocw2 = vport.iobyte;
+				if (rpic->isr) {
+					id = VPIC_GetIsrTopId(rpic);
+					ClrBit(rpic->isr, VPIC_ISR_IRQ(id));
+					rpic->irx = ((rpic->ocw2 & VPIC_OCW2_L) + 1) % VPIC_MAX_IRQ_COUNT;
 				}
 				break;
 			case 0xc0:
 				/* 110: Set Priority (does not reset current ISR bit) */
-				vpic->ocw2 = vport.iobyte;
-				vpic->irx = ((vpic->ocw2 & 0x07) + 0x01) % 0x08;
+				rpic->ocw2 = vport.iobyte;
+				rpic->irx = (VPIC_GetOCW2_L(rpic->ocw2) + 1) % VPIC_MAX_IRQ_COUNT;
 				break;
 			case 0x40:
 				/* 010: No Operation */
@@ -225,52 +238,51 @@ static void io_write_00x0(t_pic *vpic) {
  * PIC provide IMR
  * Reference: 16-32.PDF, Page 184
  */
-static void io_read_00x1(t_pic *vpic) {
-	vport.iobyte = vpic->imr;
-}
+static void io_read_00x1(t_pic *rpic) {vport.iobyte = rpic->imr;}
 
 /*
  * io_write_00x1
  * PIC get ICW2, ICW3, ICW4, OCW1 after ICW1
  */
-static void io_write_00x1(t_pic *vpic) {
-	switch (vpic->status) {
+static void io_write_00x1(t_pic *rpic) {
+	switch (rpic->status) {
 	case ICW2:
-		vpic->icw2 = vport.iobyte & (~0x07);
-		if (!((vpic->icw1) & 0x02)) {
-			/* ICW1.D1=0, SNGL=0, ICW3=1 */
-			vpic->status = ICW3;
-		} else if (vpic->icw1 & 0x01) {
-			/* ICW1.D0=1, IC4=1 */
-			vpic->status = ICW4;
+		rpic->icw2 = vport.iobyte & VPIC_ICW2_VALID;
+		if (!GetBit(rpic->icw1, VPIC_ICW1_SNGL)) {
+			/* ICW1.SNGL=0, ICW3=1 */
+			rpic->status = ICW3;
+		} else if (GetBit(rpic->icw1, VPIC_ICW1_IC4)) {
+			/* ICW1.SNGL=1, IC4=1 */
+			rpic->status = ICW4;
 		} else {
-			vpic->status = OCW1;
+			/* ICW1.SNGL=1, IC4=0 */
+			rpic->status = OCW1;
 		}
 		break;
 	case ICW3:
-		vpic->icw3 = vport.iobyte;
-		if ((vpic->icw1) & 0x01) {
-			/* ICW1.D0=1, IC4=1 */
-			vpic->status = ICW4;
+		rpic->icw3 = vport.iobyte;
+		if (GetBit(rpic->icw1, VPIC_ICW1_IC4)) {
+			/* ICW1.IC4=1 */
+			rpic->status = ICW4;
 		} else {
-			vpic->status = OCW1;
+			rpic->status = OCW1;
 		}
 		break;
 	case ICW4:
-		vpic->icw4 = vport.iobyte & 0x1f;
-		if ((vpic->icw4) & 0x01) {
-			/*uPM=1, 16-bit 80x86 */
+		rpic->icw4 = vport.iobyte & VPIC_ICW4_VALID;
+		if (GetBit(rpic->icw4, VPIC_ICW4_uPM)) {
+			/* uPM=1, 16-bit 80x86 */
 		} else {
 			/* uPM=0, 8-bit 8080/8085 */
 		}
-		if ((vpic->icw4) & 0x02) {
+		if (GetBit(rpic->icw4, VPIC_ICW4_AEOI)) {
 			/* AEOI=1, Automatic End of Interrupt */
 		} else {
 			/* AEOI=0, Non-automatic End of Interrupt */
 		}
-		if ((vpic->icw4) & 0x08) {
+		if (GetBit(rpic->icw4, VPIC_ICW4_BUF)) {
 			/* BUF=1, Buffer */
-			if ((vpic->icw4) & 0x04) {
+			if (GetBit(rpic->icw4, VPIC_ICW4_MS)) {
 				/* M/S=1, Master 8259A */
 			} else {
 				/* M/S=0, Slave 8259A */
@@ -278,17 +290,17 @@ static void io_write_00x1(t_pic *vpic) {
 		} else {
 			/* BUF=0, Non-buffer */
 		}
-		if ((vpic->icw4) & 0x10) {
+		if (GetBit(rpic->icw4, VPIC_ICW4_SFNM)) {
 			/* SFNM=1, Special Fully Nested Mode */
 		} else {
 			/* SFNM=0, Non-special Fully Nested Mode */
 		}
-		vpic->status = OCW1;
+		rpic->status = OCW1;
 		break;
 	case OCW1:
-		vpic->ocw1 = vport.iobyte;
-		if (VPIC_GetSMM(vpic)) {
-			vpic->isr &= ~(vpic->imr);
+		rpic->ocw1 = vport.iobyte;
+		if (GetBit(rpic->ocw3, VPIC_OCW3_SMM)) {
+			rpic->isr &= ~(rpic->imr);
 		}
 		break;
 	default:
@@ -320,22 +332,15 @@ static void io_write_00A1() {io_write_00x1(&vpic2);}
  */
 void vpicSetIRQ(t_nubit8 irqid) {
 	switch(irqid) {
-	case 0x00:	vpic1.irr |= 0x01; break;
-	case 0x01:	vpic1.irr |= 0x02; break;
-/*	case 0x02:	vpic1.irr |= 0x04; break; */
-	case 0x03:	vpic1.irr |= 0x08; break;
-	case 0x04:	vpic1.irr |= 0x10; break;
-	case 0x05:	vpic1.irr |= 0x20; break;
-	case 0x06:	vpic1.irr |= 0x40; break;
-	case 0x07:	vpic1.irr |= 0x80; break;
-	case 0x08:	vpic2.irr |= 0x01; vpic1.irr |= 0x04; break;
-	case 0x09:	vpic2.irr |= 0x02; vpic1.irr |= 0x04; break;
-	case 0x0a:	vpic2.irr |= 0x04; vpic1.irr |= 0x04; break;
-	case 0x0b:	vpic2.irr |= 0x08; vpic1.irr |= 0x04; break;
-	case 0x0c:	vpic2.irr |= 0x10; vpic1.irr |= 0x04; break;
-	case 0x0d:	vpic2.irr |= 0x20; vpic1.irr |= 0x04; break;
-	case 0x0e:	vpic2.irr |= 0x40; vpic1.irr |= 0x04; break;
-	case 0x0f:	vpic2.irr |= 0x80; vpic1.irr |= 0x04; break;
+	case 0x00: case 0x01: /* case 0x02: */ case 0x03:
+	case 0x04: case 0x05: case 0x06: case 0x07:
+		SetBit(vpic1.irr, VPIC_IRR_IRQ(irqid));
+		break;
+	case 0x08: case 0x09: case 0x0a: case 0x0b:
+	case 0x0c: case 0x0d: case 0x0e: case 0x0f:
+		SetBit(vpic1.irr, VPIC_IRR_IRQ(0x02));
+		SetBit(vpic2.irr, VPIC_IRR_IRQ(irqid - 0x08));
+		break;
 	default: break;
 	}
 }
@@ -348,8 +353,9 @@ void vpicSetIRQ(t_nubit8 irqid) {
 t_bool vpicScanINTR() {
 	t_bool flagintr;
 	flagintr = HasINTR(&vpic1);
-	if (flagintr && (VPIC_GetIntrTopId(&vpic1) == 0x02)) {
-			flagintr = HasINTR(&vpic2);
+	if (flagintr && (VPIC_GetIntrTopId(&vpic1) == 2)) {
+		/* check slave pic */
+		flagintr = HasINTR(&vpic2);
 	}
 	return flagintr;
 }
@@ -359,7 +365,7 @@ t_nubit8 vpicPeekINTR() {
 	t_nubit8 irid1; /* top requested int id in master pic */
 	t_nubit8 irid2; /* top requested int id in slave pic */
 	irid1 = VPIC_GetIntrTopId(&vpic1);
-	if (irid1 == 0x02) {
+	if (irid1 == 2) {
 		/* if IR2 has int request, then test slave pic */
 		irid2 = VPIC_GetIntrTopId(&vpic2);
 		/* find the final int id based on slave ICW2 */
@@ -380,7 +386,7 @@ t_nubit8 vpicGetINTR() {
 	t_nubit8 irid2; /* top requested int id in slave pic */
 	irid1 = VPIC_GetIntrTopId(&vpic1);
 	RespondINTR(&vpic1, irid1);
-	if (irid1 == 0x02) {
+	if (irid1 == 2) {
 		/* if IR2 has int request, then test slave pic */
 		irid2 = VPIC_GetIntrTopId(&vpic2);
 		RespondINTR(&vpic2, irid2);
@@ -405,20 +411,20 @@ static void init() {
 }
 
 static void reset() {
-	MEMSET(&vpic1, 0x00, sizeof(t_pic));
-	MEMSET(&vpic2, 0x00, sizeof(t_pic));
+	MEMSET(&vpic1, Zero8, sizeof(t_pic));
+	MEMSET(&vpic2, Zero8, sizeof(t_pic));
 	vpic1.status = vpic2.status = ICW1;
-	vpic1.ocw3 = vpic2.ocw3 = 0x02;
+	vpic1.ocw3 = vpic2.ocw3 = VPIC_OCW3_RR;
 }
 
 static void refresh() {
 	if (vpic2.irr & (~vpic2.imr)) {
 		/* if slave pic has requested int, then
 		 * pass the request into IR2 of master pic */
-		vpic1.irr |= 0x04;        
+		SetBit(vpic1.irr, VPIC_IRR_IRQ(2));
 	} else {
 		/* remove IR2 from master pic */
-		vpic1.irr &= 0xfb;
+		ClrBit(vpic1.irr, VPIC_IRR_IRQ(2));
 	}
 }
 
@@ -426,47 +432,36 @@ static void final() {}
 
 void vpicRegister() {vmachineAddMe;}
 
+static void printPic(t_pic *rpic) {
+	PRINTF("Init Status = %d, IRX = %x\n",
+		rpic->status, rpic->irx);
+	PRINTF("IRR = %x, ISR = %x, IMR = %x, intr = %x\n",
+		rpic->irr, rpic->isr, rpic->imr, rpic->irr & (~rpic->imr));
+	PRINTF("ICW1 = %x, LTIM = %d, SNGL = %d, IC4 = %d\n",
+		rpic->icw1, GetBit(rpic->icw1, VPIC_ICW1_LTIM), GetBit(rpic->icw1, VPIC_ICW1_SNGL),
+		GetBit(rpic->icw1, VPIC_ICW1_IC4));
+	PRINTF("ICW2 = %x\n",rpic->icw2);
+	PRINTF("ICW3 = %x\n", rpic->icw3);
+	PRINTF("ICW4 = %x, SFNM = %d, BUF = %d, M/S = %d, AEOI = %d, uPM = %d\n",
+		rpic->icw4, GetBit(rpic->icw4, VPIC_ICW4_SFNM), GetBit(rpic->icw4, VPIC_ICW4_BUF),
+		GetBit(rpic->icw4, VPIC_ICW4_MS), GetBit(rpic->icw4, VPIC_ICW4_AEOI),
+		GetBit(rpic->icw4, VPIC_ICW4_uPM));
+	PRINTF("OCW1 = %x\n", rpic->ocw1);
+	PRINTF("OCW2 = %x, R = %d, SL = %d, EOI = %d, L = %d\n",
+		rpic->ocw2, GetBit(rpic->ocw2, VPIC_OCW2_R), GetBit(rpic->ocw2, VPIC_OCW2_SL),
+		GetBit(rpic->ocw2, VPIC_OCW2_EOI), rpic->ocw2 & VPIC_OCW2_L);
+	PRINTF("OCW3 = %x, ESMM = %d, SMM = %d, P = %d, RR = %d, RIS = %d\n",
+		rpic->ocw3, GetBit(rpic->ocw3, VPIC_OCW3_ESMM), GetBit(rpic->ocw3, VPIC_OCW3_SMM),
+		GetBit(rpic->ocw3, VPIC_OCW3_P), GetBit(rpic->ocw3, VPIC_OCW3_RR),
+		GetBit(rpic->ocw3, VPIC_OCW3_RIS));
+}
+
 /* Print PIC status */
 void devicePrintPic() {
 	PRINTF("INFO PIC 1\n==========\n");
-	PRINTF("Init Status = %d, IRX = %x\n",
-		vpic1.status, vpic1.irx);
-	PRINTF("IRR = %x, ISR = %x, IMR = %x, intr = %x\n",
-		vpic1.irr, vpic1.isr, vpic1.imr, vpic1.irr & (~vpic1.imr));
-	PRINTF("ICW1 = %x, LTIM = %d, SNGL = %d, IC4 = %d\n",
-		vpic1.icw1, VPIC_GetLTIM(&vpic1), VPIC_GetSNGL(&vpic1), VPIC_GetIC4(&vpic1));
-	PRINTF("ICW2 = %x\n",vpic1.icw2);
-	PRINTF("ICW3 = %x\n", vpic1.icw3);
-	PRINTF("ICW4 = %x, SFNM = %d, BUF = %d, M/S = %d, AEOI = %d, uPM = %d\n",
-		vpic1.icw4, VPIC_GetSFNM(&vpic1), VPIC_GetBUF(&vpic1), VPIC_GetMS(&vpic1),
-		VPIC_GetAEOI(&vpic1), VPIC_GetuPM(&vpic1));
-	PRINTF("OCW1 = %x\n", vpic1.ocw1);
-	PRINTF("OCW2 = %x, R = %d, SL = %d, EOI = %d, L = %d\n",
-		vpic1.ocw2, VPIC_GetR(&vpic1), VPIC_GetSL(&vpic1), VPIC_GetEOI(&vpic1),
-		vpic1.ocw2 & 0x07);
-	PRINTF("OCW3 = %x, ESMM = %d, SMM = %d, P = %d, RR = %d, RIS = %d\n",
-		vpic1.ocw3, VPIC_GetESMM(&vpic1), VPIC_GetSMM(&vpic1),
-		VPIC_GetP(&vpic1), VPIC_GetRR(&vpic1), VPIC_GetRIS(&vpic1));
-
+	printPic(&vpic1);
 	PRINTF("INFO PIC 2\n==========\n");
-	PRINTF("Init Status = %d, IRX = %x\n",
-		vpic2.status, vpic2.irx);
-	PRINTF("IRR = %x, ISR = %x, IMR = %x, intr = %x\n",
-		vpic2.irr, vpic2.isr, vpic2.imr, vpic2.irr & (~vpic2.imr));
-	PRINTF("ICW1 = %x, LTIM = %d, SNGL = %d, IC4 = %d\n",
-		vpic2.icw1, VPIC_GetLTIM(&vpic2), VPIC_GetSNGL(&vpic2), VPIC_GetIC4(&vpic2));
-	PRINTF("ICW2 = %x\n",vpic2.icw2);
-	PRINTF("ICW3 = %x\n", vpic2.icw3);
-	PRINTF("ICW4 = %x, SFNM = %d, BUF = %d, M/S = %d, AEOI = %d, uPM = %d\n",
-		vpic2.icw4, VPIC_GetSFNM(&vpic2), VPIC_GetBUF(&vpic2), VPIC_GetMS(&vpic2),
-		VPIC_GetAEOI(&vpic2), VPIC_GetuPM(&vpic2));
-	PRINTF("OCW1 = %x\n", vpic2.ocw1);
-	PRINTF("OCW2 = %x, R = %d, SL = %d, EOI = %d, L = %d\n",
-		vpic2.ocw2, VPIC_GetR(&vpic2), VPIC_GetSL(&vpic2), VPIC_GetEOI(&vpic2),
-		vpic2.ocw2 & 0x07);
-	PRINTF("OCW3 = %x, ESMM = %d, SMM = %d, P = %d, RR = %d, RIS = %d\n",
-		vpic2.ocw3, VPIC_GetESMM(&vpic2), VPIC_GetSMM(&vpic2),
-		VPIC_GetP(&vpic2), VPIC_GetRR(&vpic2), VPIC_GetRIS(&vpic2));
+	printPic(&vpic2);
 }
 
 /*
