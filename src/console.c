@@ -16,8 +16,8 @@
 
 #define CONSOLE_MAXNARG 256
 
-static int narg;
-static char **args;
+static int numArgs;
+static char **argArray;
 static t_bool flagExit;
 static t_string strCmdBuff;
 
@@ -25,20 +25,20 @@ static t_string strCmdBuff;
  * Parses command-line input.
  *
  * strCmdBuff [IN]  String buffer of command-line input
- * narg       [OUT] Number of argsuments
- * args        [OUT] Array of argsuments
+ * numArgs       [OUT] Number of argArrayuments
+ * argArray        [OUT] Array of argArrayuments
  */
 static void parse() {
-	narg = 0;
-	args[narg] = STRTOK(strCmdBuff, " \t\n\r\f");
-	if (!args[narg]) {
+	numArgs = 0;
+	argArray[numArgs] = STRTOK(strCmdBuff, " \t\n\r\f");
+	if (!argArray[numArgs]) {
 		return;
 	}
-	utilsLowerStr(args[narg++]);
-	while(narg < CONSOLE_MAXNARG) {
-		args[narg] = STRTOK(NULL, " \t\n\r\f");
-		if (args[narg]) {
-			utilsLowerStr(args[narg++]);
+	utilsLowerStr(argArray[numArgs++]);
+	while(numArgs < CONSOLE_MAXNARG) {
+		argArray[numArgs] = STRTOK(NULL, " \t\n\r\f");
+		if (argArray[numArgs]) {
+			utilsLowerStr(argArray[numArgs++]);
 		} else {
 			break;
 		}
@@ -48,48 +48,48 @@ static void parse() {
 /* Prints help commands. */
 #define GetHelp if (1) {doHelp();return;} else
 static void doHelp() {
-	if (strcmp(args[0], "help")) {
-		narg = 2;
-		args[1] = args[0];
+	if (strcmp(argArray[0], "help")) {
+		numArgs = 2;
+		argArray[1] = argArray[0];
 	}
-	switch (narg) {
+	switch (numArgs) {
 	case 2:
-		if (!strcmp(args[1], "help")) {
+		if (!strcmp(argArray[1], "help")) {
 			PRINTF("Show help info\n");
 			PRINTF("\nHELP\n");
 			PRINTF("  show menu of all commands\n");
 			PRINTF("\nHELP <command>\n");
 			PRINTF("  show help info for command\n");
 			break;
-		} else if (!strcmp(args[1], "exit")) {
+		} else if (!strcmp(argArray[1], "exit")) {
 			PRINTF("Quit the console\n");
 			PRINTF("\nEXIT\n");
 			break;
-		} else if (!strcmp(args[1], "info")) {
+		} else if (!strcmp(argArray[1], "info")) {
 			PRINTF("List virtual machine status\n");
 			PRINTF("\nINFO\n");
 			break;
-		} else if (!strcmp(args[1], "debug")) {
+		} else if (!strcmp(argArray[1], "debug")) {
 			PRINTF("Launch NXVM hardware debugger\n");
 			PRINTF("\nDEBUG\n");
 			break;
-		} else if (!strcmp(args[1], "debug32")) {
+		} else if (!strcmp(argArray[1], "debug32")) {
 			PRINTF("Launch NXVM 32-bit hardware debugger\n");
 			PRINTF("\nDEBUG\n");
 			break;
-		} else if (!strcmp(args[1], "record")) {
+		} else if (!strcmp(argArray[1], "record")) {
 			PRINTF("Record cpu status in each iteration for futher dumping\n");
 			PRINTF("\nRECORD start <file> | stop\n");
 			PRINTF("  start: open output file for record writes\n");
 			PRINTF("  stop:  close output file to finish recording\n");
 			break;
-		} else if (!strcmp(args[1], "set")) {
+		} else if (!strcmp(argArray[1], "set")) {
 			PRINTF("Change BIOS settings\n");
 			PRINTF("\nSET <item> <value>\n");
 			PRINTF("  available items and values\n");
 			PRINTF("  boot   fdd, hdd\n");
 			break;
-		} else if (!strcmp(args[1], "device")) {
+		} else if (!strcmp(argArray[1], "device")) {
 			PRINTF("Change NXVM devices\n");
 			PRINTF("\nDEVICE ram <size>\n");
 			PRINTF("  change memory size (KB)\n");
@@ -108,19 +108,19 @@ static void doHelp() {
 			PRINTF("  connect:    load hard disk image from file\n");
 			PRINTF("  disconnect: remove hard disk image and dump to file\n");
 			break;
-		} else if (!strcmp(args[1], "start")) {
+		} else if (!strcmp(argArray[1], "start")) {
 			PRINTF("Start virtual machine\n");
 			PRINTF("\nSTART\n");
 			break;
-		} else if (!strcmp(args[1], "reset")) {
+		} else if (!strcmp(argArray[1], "reset")) {
 			PRINTF("Reset virtual machine\n");
 			PRINTF("\nRESET\n");
 			break;
-		} else if (!strcmp(args[1], "stop")) {
+		} else if (!strcmp(argArray[1], "stop")) {
 			PRINTF("Stop virtual machine\n");
 			PRINTF("\nSTOP\n");
 			break;
-		} else if (!strcmp(args[1], "resume")) {
+		} else if (!strcmp(argArray[1], "resume")) {
 			PRINTF("Resume virtual machine\n");
 			PRINTF("\nRESUME\n");
 			break;
@@ -151,7 +151,7 @@ static void doHelp() {
 
 /* Quits NXVM. */
 static void doExit() {
-	if (narg != 1) {
+	if (numArgs != 1) {
 		GetHelp;
 	}
 	if (!device.flagRun) {
@@ -163,7 +163,7 @@ static void doExit() {
 
 /* Prints virtual machine status */
 static void doInfo() {
-	if (narg != 1) {
+	if (numArgs != 1) {
 		GetHelp;
 	}
 	PRINTF("NXVM Device Info\n");
@@ -189,7 +189,7 @@ static void doInfo() {
 
 /* Starts internal debugger */
 static void doDebug() {
-	if (narg != 1) {
+	if (numArgs != 1) {
 		GetHelp;
 	}
 	debugMain();
@@ -197,19 +197,19 @@ static void doDebug() {
 
 /* Executes cpu instruction recorder */
 static void doRecord() {
-	if (narg < 2) {
+	if (numArgs < 2) {
 		GetHelp;
 	}
 	if (device.flagRun) {
 		PRINTF("Cannot change record status or dump record now.\n");
 		return;
 	}
-	if (!strcmp(args[1], "start")) {
-		if (narg != 3) {
+	if (!strcmp(argArray[1], "start")) {
+		if (numArgs != 3) {
 			GetHelp;
 		}
-		debugRecordStart(args[2]);
-	} else if (!strcmp(args[1], "stop")) {
+		debugRecordStart(argArray[2]);
+	} else if (!strcmp(argArray[1], "stop")) {
 		debugRecordStop();
 	} else {
 		GetHelp;
@@ -218,16 +218,16 @@ static void doRecord() {
 
 /* Sets BIOS settings */
 static void doSet() {
-	if (narg < 2) {
+	if (numArgs < 2) {
 		GetHelp;
 	}
-	if (!strcmp(args[1], "boot")) {
-		if (narg != 3) {
+	if (!strcmp(argArray[1], "boot")) {
+		if (numArgs != 3) {
 			GetHelp;
 		}
-		if (!strcmp(args[2], "fdd")) {
+		if (!strcmp(argArray[2], "fdd")) {
 			deviceConnectBiosSetBoot(0);
-		} else if(!strcmp(args[2], "hdd")) {
+		} else if(!strcmp(argArray[2], "hdd")) {
 			deviceConnectBiosSetBoot(1);
 		} else {
 			GetHelp;
@@ -239,66 +239,66 @@ static void doSet() {
 
 /* Set hardware connections */
 static void doDevice() {
-	if (narg < 2) {
+	if (numArgs < 2) {
 		GetHelp;
 	}
 	if (device.flagRun) {
 		PRINTF("Cannot change device now.\n");
 		return;
 	}
-	if (!strcmp(args[1], "ram")) {
-		if (narg != 3) {
+	if (!strcmp(argArray[1], "ram")) {
+		if (numArgs != 3) {
 			GetHelp;
 		}
-		deviceConnectRamAllocate(atoi(args[2]) << 10);
-	} else if(!strcmp(args[1], "display")) {
-		if (narg != 3) {
+		deviceConnectRamAllocate(atoi(argArray[2]) << 10);
+	} else if(!strcmp(argArray[1], "display")) {
+		if (numArgs != 3) {
 			GetHelp;
 		}
-		if (!strcmp(args[2], "console")) {
+		if (!strcmp(argArray[2], "console")) {
 			platform.flagMode = 0;
-		} else if (!strcmp(args[2], "window")) {
+		} else if (!strcmp(argArray[2], "window")) {
 			platform.flagMode = 1;
 		} else {
 			GetHelp;
 		}
-	} else if(!strcmp(args[1], "fdd")) {
-		if (narg < 3) {
+	} else if(!strcmp(argArray[1], "fdd")) {
+		if (numArgs < 3) {
 			GetHelp;
 		}
-		if (!strcmp(args[2], "create")) {
+		if (!strcmp(argArray[2], "create")) {
 			deviceConnectFloppyCreate();
 			PRINTF("Floppy disk created.\n");
-		} else if (!strcmp(args[2], "insert")) {
-			if (narg < 4) {
+		} else if (!strcmp(argArray[2], "insert")) {
+			if (numArgs < 4) {
 				GetHelp;
 			}
-			if (!deviceConnectFloppyInsert(args[3])) {
+			if (!deviceConnectFloppyInsert(argArray[3])) {
 				PRINTF("Floppy disk inserted.\n");
 			} else {
-				PRINTF("Cannot read floppy disk from '%s'.\n", args[3]);
+				PRINTF("Cannot read floppy disk from '%s'.\n", argArray[3]);
 			}
-		} else if (!strcmp(args[2], "remove")) {
-			if (narg < 4) {
-				args[3] = NULL;
+		} else if (!strcmp(argArray[2], "remove")) {
+			if (numArgs < 4) {
+				argArray[3] = NULL;
 			}
-			if (!deviceConnectFloppyRemove(args[3])) {
+			if (!deviceConnectFloppyRemove(argArray[3])) {
 				PRINTF("Floppy disk removed.\n");
 			} else {
-				PRINTF("Cannot write floppy disk to '%s'.\n", args[3]);
+				PRINTF("Cannot write floppy disk to '%s'.\n", argArray[3]);
 			}
 		} else {
 			GetHelp;
 		}
-	} else if(!strcmp(args[1], "hdd")) {
-		if (narg < 3) {
+	} else if(!strcmp(argArray[1], "hdd")) {
+		if (numArgs < 3) {
 			GetHelp;
 		}
-		if (!strcmp(args[2], "create")) {
-			if (narg > 3) {
-				if (narg == 5 && !strcmp(args[3], "cyl")) {
-					if (atoi(args[4])) {
-						deviceConnectHardDiskCreate(atoi(args[4]));
+		if (!strcmp(argArray[2], "create")) {
+			if (numArgs > 3) {
+				if (numArgs == 5 && !strcmp(argArray[3], "cyl")) {
+					if (atoi(argArray[4])) {
+						deviceConnectHardDiskCreate(atoi(argArray[4]));
 					} else {
 						GetHelp;
 					}
@@ -309,23 +309,23 @@ static void doDevice() {
 				deviceConnectHardDiskCreate(20);
 			}
 			PRINTF("Hard disk created.\n");
-		} else if (!strcmp(args[2], "connect")) {
-			if (narg < 4) {
+		} else if (!strcmp(argArray[2], "connect")) {
+			if (numArgs < 4) {
 				GetHelp;
 			}
-			if (!deviceConnectHardDiskInsert(args[3])) {
+			if (!deviceConnectHardDiskInsert(argArray[3])) {
 				PRINTF("Hard disk connected.\n");
 			} else {
-				PRINTF("Cannot read hard disk from '%s'.\n", args[3]);
+				PRINTF("Cannot read hard disk from '%s'.\n", argArray[3]);
 			}
-		} else if (!strcmp(args[2], "disconnect")) {
-			if (narg < 4) {
-				args[3] = NULL;
+		} else if (!strcmp(argArray[2], "disconnect")) {
+			if (numArgs < 4) {
+				argArray[3] = NULL;
 			}
-			if (!deviceConnectHardDiskRemove(args[3])) {
+			if (!deviceConnectHardDiskRemove(argArray[3])) {
 				PRINTF("Hard disk disconnected.\n");
 			} else {
-				PRINTF("Cannot write hard disk to '%s'.\n", args[3]);
+				PRINTF("Cannot write hard disk to '%s'.\n", argArray[3]);
 			}
 		} else {
 			GetHelp;
@@ -343,59 +343,61 @@ static void doTest() {
 
 /* Executes commands */
 static void execute() {
-	if (!args[0] || !strlen(args[0])) {
+	if (!argArray[0] || !strlen(argArray[0])) {
 		return;
-	} else if (!strcmp(args[0], "test")) {
+	} else if (!strcmp(argArray[0], "test")) {
 		doTest();
-	} else if (!strcmp(args[0], "help")) {
+	} else if (!strcmp(argArray[0], "help")) {
 		doHelp();
-	} else if (!strcmp(args[0], "exit")) {
+	} else if (!strcmp(argArray[0], "exit")) {
 		doExit();
-	} else if (!strcmp(args[0], "info")) {
+	} else if (!strcmp(argArray[0], "info")) {
 		doInfo();
-	} else if (!strcmp(args[0], "debug")) {
+	} else if (!strcmp(argArray[0], "debug")) {
 		doDebug();
-	} else if (!strcmp(args[0], "record")) {
+	} else if (!strcmp(argArray[0], "record")) {
 		doRecord();
-	} else if (!strcmp(args[0], "set")) {
+	} else if (!strcmp(argArray[0], "set")) {
 		doSet();
-	} else if (!strcmp(args[0], "device")) {
+	} else if (!strcmp(argArray[0], "device")) {
 		doDevice();
-	} else if(!strcmp(args[0], "mode")) {
+	} else if(!strcmp(argArray[0], "mode")) {
 		if (!device.flagRun) {
 			platform.flagMode = !platform.flagMode;
 		}
-	} else if (!strcmp(args[0], "start")) {
+	} else if (!strcmp(argArray[0], "start")) {
 		machineStart();
-	} else if (!strcmp(args[0], "reset")) {
+	} else if (!strcmp(argArray[0], "reset")) {
 		machineReset();
-	} else if (!strcmp(args[0], "stop")) {
+	} else if (!strcmp(argArray[0], "stop")) {
 		machineStop();
-	} else if (!strcmp(args[0], "resume")) {
+	} else if (!strcmp(argArray[0], "resume")) {
 		machineResume();
 	} else {
-		PRINTF("Illegal command '%s'.\n",args[0]);
+		PRINTF("Illegal command '%s'.\n",argArray[0]);
 	}
 	PRINTF("\n");
 }
 
 /* Initializes console */
 static void consoleInit() {
-	args = (char **) MALLOC(CONSOLE_MAXNARG * sizeof(char *));
+	argArray = (char **) MALLOC(CONSOLE_MAXNARG * sizeof(char *));
 	flagExit = 0;
 	machineInit();
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
 	deviceConnectFloppyInsert("d:/fd.img");
+	deviceConnectHardDiskInsert("d:/hd.img");
 #else
 	deviceConnectFloppyInsert("/Users/xha/fd.img");
+	deviceConnectHardDiskInsert("/Users/xha/hd.img");
 #endif
 }
 
 /* Finalizes console */
 static void consoleFinal() {
 	machineFinal();
-	if (args) {
-		FREE((void *) args);
+	if (argArray) {
+		FREE((void *) argArray);
 	}
 }
 

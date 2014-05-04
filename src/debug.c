@@ -288,16 +288,16 @@ static void g()
 	}
 	switch(narg) {
 	case 1:
-		vdebug.flagbreak = 0;
+		vdebug.flagBreak = 0;
 		break;
 	case 2:
-		vdebug.flagbreak = 1;
+		vdebug.flagBreak = 1;
 		addrparse(vcpu.cs.selector,arg[1]);
-		vdebug.breakcs = seg;
-		vdebug.breakip = ptr;
+		vdebug.breakCS = seg;
+		vdebug.breakIP = ptr;
 		break;
 	case 3:
-		vdebug.flagbreak = 1;
+		vdebug.flagBreak = 1;
 		addrparse(vcpu.cs.selector,arg[1]);
 		if (vcpuinsLoadSreg(&vcpu.cs, seg)) {
 			PRINTF("debug: fail to load cs from %04X\n", seg);
@@ -305,14 +305,14 @@ static void g()
 		}
 		_ip = ptr;
 		addrparse(vcpu.cs.selector,arg[2]);
-		vdebug.breakcs = seg;
-		vdebug.breakip = ptr;
+		vdebug.breakCS = seg;
+		vdebug.breakIP = ptr;
 		break;
 	default:seterr(narg-1);break;}
 	if(nErrPos) return;
 	machineResume();
 	while (device.flagRun) utilsSleep(1);
-	vdebug.flagbreak = 0;
+	vdebug.flagBreak = 0;
 	rprintregs();
 }
 /* hex */
@@ -340,7 +340,7 @@ static void i()
 		in = scannubit16(arg[1]);
 		if (nErrPos) return;
 		ExecFun(vport.in[in]);
-		PRINTF("%08X\n", vport.iodword);
+		PRINTF("%08X\n", vport.ioDWord);
 	}
 }
 /* load */
@@ -414,7 +414,7 @@ static void o()
 	else {
 		out = scannubit16(arg[1]);
 		if (nErrPos) return;
-		vport.iodword = scannubit32(arg[2]);
+		vport.ioDWord = scannubit32(arg[2]);
 		if (nErrPos) return;
 		ExecFun(vport.out[out]);
 	}
@@ -684,19 +684,19 @@ static void t()
 	if(nErrPos) return;
 	if (count < 0x0100) {
 		for(i = 0;i < count;++i) {
-			vdebug.tracecnt = 0x01;
+			vdebug.traceCount = 0x01;
 			machineResume();
 			while (device.flagRun) utilsSleep(10);
 			rprintregs();
 			if (i != count - 1) PRINTF("\n");
 		}
 	} else {
-		vdebug.tracecnt = count;
+		vdebug.traceCount = count;
 		machineResume();
 		while (device.flagRun) utilsSleep(10);
 		rprintregs();
 	}
-	vdebug.tracecnt = 0x00;
+	vdebug.traceCount = 0x00;
 	/* gexec(ptr1,ptr2); */
 }
 /* unassemble */
@@ -1011,29 +1011,29 @@ static void xg()
 	}
 	switch(narg) {
 	case 1:
-		vdebug.flagbreakx = 0;
+		vdebug.flagBreak32 = 0;
 		count = 1;
 		break;
 	case 2:
-		vdebug.flagbreakx = 1;
-		vdebug.breaklinear = scannubit32(arg[1]);
+		vdebug.flagBreak32 = 1;
+		vdebug.breakLinear = scannubit32(arg[1]);
 		count = 1;
 		break;
 	case 3:
-		vdebug.flagbreakx = 1;
-		vdebug.breaklinear = scannubit32(arg[1]);
+		vdebug.flagBreak32 = 1;
+		vdebug.breakLinear = scannubit32(arg[1]);
 		count = scannubit32(arg[2]);
 		break;
 	default:seterr(narg-1);break;}
 	if(nErrPos) return;
 	for (i = 0;i < count;++i) {
-		vdebug.breakcnt = 0;
+		vdebug.breakCount = 0;
 		machineResume();
 		while (device.flagRun) utilsSleep(1);
-		PRINTF("%d instructions executed before the break point.\n", vdebug.breakcnt);
+		PRINTF("%d instructions executed before the break point.\n", vdebug.breakCount);
 		xrprintreg();
 	}
-	vdebug.flagbreakx = 0;
+	vdebug.flagBreak32 = 0;
 }
 /* move */
 static void xm()
@@ -1109,7 +1109,7 @@ static void xt()
 	if(nErrPos) return;
 	if (count < 0x0100) {
 		for(i = 0;i < count;++i) {
-			vdebug.tracecnt = 0x01;
+			vdebug.traceCount = 0x01;
 			machineResume();
 			while (device.flagRun) utilsSleep(10);
 			devicePrintCpuMem();
@@ -1117,13 +1117,13 @@ static void xt()
 			if (i != count - 1) PRINTF("\n");
 		}
 	} else {
-		vdebug.tracecnt = count;
+		vdebug.traceCount = count;
 		machineResume();
 		while (device.flagRun) utilsSleep(10);
 		devicePrintCpuMem();
 		xrprintreg();
 	}
-	vdebug.tracecnt = 0x00;
+	vdebug.traceCount = 0x00;
 	/* gexec(ptr1,ptr2); */
 }
 /* register */

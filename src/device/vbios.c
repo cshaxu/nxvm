@@ -61,7 +61,7 @@ static void biosLoadData() {
 	vramRealByte(Zero16, VBIOS_ADDR_VGA_MODE_REGISTER) = 0x29;
 	vramRealByte(Zero16, VBIOS_ADDR_VGA_COLOR_PALETTE) = 0x30;
 	vramRealByte(Zero16, VBIOS_ADDR_HDD_LST_OP_STATUS) = 0x01;
-	vramRealByte(Zero16, VBIOS_ADDR_HDD_NUMBER) = vhdd.flagexist ? 0x01 : Zero8; /* number of hard disks */
+	vramRealByte(Zero16, VBIOS_ADDR_HDD_NUMBER) = vhdd.flagDiskExist ? 0x01 : Zero8; /* number of hard disks */
 	vramRealByte(Zero16, VBIOS_ADDR_HDD_CONTROL)        = 0xc0;
 	vramRealByte(Zero16, VBIOS_ADDR_PARA_TIMEOUT_LPT1)  = 0x14;
 	vramRealByte(Zero16, VBIOS_ADDR_SERI_TIMEOUT_COM1)  = 0x0a;
@@ -82,16 +82,15 @@ static void biosLoadData() {
 }
 
 static void biosLoadRomInfo() {
-	/* TODO: convert address constants to flag */
-	vramRealWord(VBIOS_ADDR_START_SEG, 0xe6f5) = 0x0008;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe6f7) = 0xfc;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe6f8) = Zero8;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe6f9) = 0x01;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe6fa) = 0xb4;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe6fb) = 0x40;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe6fc) = Zero8;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe6fd) = Zero8;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe6fe) = Zero8;
+	vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 0) = 0x0008;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 2) = 0xfc;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 3) = Zero8;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 4) = 0x01;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 5) = 0xb4;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 6) = 0x40;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 7) = Zero8;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 8) = Zero8;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 9) = Zero8;
 }
 
 static void biosLoadInt() {
@@ -114,7 +113,7 @@ static void biosLoadPost() {
 	t_string stmt;
 	SPRINTF(stmt, "jmp %04x:%04x", ics, iip);
 	assemble(stmt, VBIOS_ADDR_POST_SEG, VBIOS_ADDR_POST_OFF);
-	for (i = 0;i < vbios.numPosts;++i) {
+	for (i = 0;i < vbios.postCount;++i) {
 		iip += (t_nubit16) assemble(vbios.postTable[i], ics, iip);
 	}
     iip += (t_nubit16) assemble(VBIOS_POST_BOOT, ics, iip);
@@ -122,24 +121,23 @@ static void biosLoadPost() {
 
 static void biosLoadAdditional() {
 	/* hard disk param table */
-	/* TODO: convert address constants to flag */
-	vramRealWord(Zero16, 0x0104) = 0xe431;
-	vramRealWord(Zero16, 0x0106) = 0xf000;
-	vramRealWord(VBIOS_ADDR_START_SEG, 0xe431 +  0) = vhdd.ncyl;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe431 +  2) = GetMax8(vhdd.nhead);
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe431 +  3) = 0xa0;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe431 +  4) = GetMax8(vhdd.nsector);
-	vramRealWord(VBIOS_ADDR_START_SEG, 0xe431 +  5) = Max16;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe431 +  7) = Zero8;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe431 +  8) = 0x08;
-	vramRealWord(VBIOS_ADDR_START_SEG, 0xe431 +  9) = vhdd.ncyl;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe431 + 11) = GetMax8(vhdd.nhead);
-	vramRealWord(VBIOS_ADDR_START_SEG, 0xe431 + 12) = Zero16;
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe431 + 14) = GetMax8(vhdd.nsector);
-	vramRealByte(VBIOS_ADDR_START_SEG, 0xe431 + 15) = Zero8;
+	vramRealWord(Zero16, VBIOS_ADDR_HDD_PARAM_OFFSET) = VBIOS_ADDR_HDD_PARAM;
+	vramRealWord(Zero16, VBIOS_ADDR_HDD_PARAM_SEGMENT) = VBIOS_ADDR_START_SEG;
+	vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  0) = vhdd.ncyl;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  2) = GetMax8(vhdd.nhead);
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  3) = 0xa0;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  4) = GetMax8(vhdd.nsector);
+	vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  5) = Max16;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  7) = Zero8;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  8) = 0x08;
+	vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  9) = vhdd.ncyl;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 11) = GetMax8(vhdd.nhead);
+	vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 12) = Zero16;
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 14) = GetMax8(vhdd.nsector);
+	vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 15) = Zero8;
 }
 
-void vbiosAddPost(t_strptr stmt) {vbios.postTable[vbios.numPosts++] = stmt;}
+void vbiosAddPost(t_strptr stmt) {vbios.postTable[vbios.postCount++] = stmt;}
 
 void vbiosAddInt(t_strptr stmt, t_nubit8 intid) {vbios.intTable[intid] = stmt;}
 

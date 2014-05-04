@@ -7,7 +7,7 @@
 #include "vmachine.h"
 #include "vkbc.h"
 
-void io_read_0064() {vport.iobyte = VKBC_STATUS_KE;}
+void io_read_0064() {vport.ioByte = VKBC_STATUS_KE;}
 
 static void init() {
 	vport.in[0x0064] = (t_faddrcc) io_read_0064;

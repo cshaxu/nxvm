@@ -19,7 +19,7 @@ static t_vaddrcc vhddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector) {
 	vhdd.head = head;
 	vhdd.sector = sector;
 	vhddSetPointer;
-	return vhdd.curr;
+	return vhdd.pCurrByte;
 }
 
 static void INT_13_02_HDD_ReadSector() {

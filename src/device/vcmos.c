@@ -14,8 +14,8 @@
 t_cmos vcmos;
 
 static void io_write_0070() {
-	vcmos.rid = vport.iobyte; /* select reg id */
-	if (GetMSB8(vcmos.rid)) {
+	vcmos.regId = vport.ioByte; /* select reg id */
+	if (GetMSB8(vcmos.regId)) {
 		/* if MSB=1, disable NMI */
 		vcpu.flagmasknmi = True;
 	} else {
@@ -26,8 +26,8 @@ static void io_write_0070() {
 static void io_write_0071() {
 	t_nubit8 i;
 	t_nubit16 checksum = Zero16;
-	vcmos.reg[vcmos.rid] = vport.iobyte;
-	if ((vcmos.rid >= VCMOS_TYPE_DISK_FLOPPY) && (vcmos.rid < VCMOS_CHECKSUM_MSB)) {
+	vcmos.reg[vcmos.regId] = vport.ioByte;
+	if ((vcmos.regId >= VCMOS_TYPE_DISK_FLOPPY) && (vcmos.regId < VCMOS_CHECKSUM_MSB)) {
 		for (i = VCMOS_TYPE_DISK_FLOPPY;i < VCMOS_CHECKSUM_MSB;++i) {
 			checksum += vcmos.reg[i];
 		}
@@ -37,7 +37,7 @@ static void io_write_0071() {
 }
 
 static void io_read_0071() {
-	vport.iobyte = vcmos.reg[vcmos.rid];
+	vport.ioByte = vcmos.reg[vcmos.regId];
 }
 
 static void refresh();
@@ -56,18 +56,18 @@ static void init() {
 static void reset() {}
 
 static void refresh() {
-	static time_t tprev = 0;
-	time_t tcurr;
+	static time_t tPrev = 0;
+	time_t tCurr;
 	struct tm *ptm;
 	t_nubit8 century, year, month, mday, wday, hour, min, sec;
 
-	tcurr = time(NULL);
-	if (tcurr == tprev) {
+	tCurr = time(NULL);
+	if (tCurr == tPrev) {
 		return;
 	} else {
-		tprev = tcurr;
+		tPrev = tCurr;
 	}
-	ptm = LOCALTIME(&tcurr);
+	ptm = LOCALTIME(&tCurr);
 
 	century = GetMax8(19 + ptm->tm_year / 100);
 	year    = GetMax8(ptm->tm_year % 100);

@@ -12,8 +12,8 @@ extern "C" {
 #define NXVM_DEVICE_RAM "Unknown Random-access Memory"
 
 typedef struct {
-	t_bool flaga20; /* 0 = disable, 1 = enable */
-	t_vaddrcc base; /* memory base address is 20 bit */
+	t_bool flagA20; /* 0 = disable, 1 = enable */
+	t_vaddrcc pBase; /* memory base address is 20 bit */
 	t_nubitcc size; /* memory size in byte */
 } t_ram;
 
@@ -24,8 +24,8 @@ extern t_ram vram;
 
 #define vramSize vram.size
 
-#define vramWrapA20(offset) ((offset) & (vram.flaga20 ? Max32 : ~VRAM_BIT_A20))
-#define vramAddr(physical)  (vram.base + (t_vaddrcc)(vramWrapA20(physical)))
+#define vramWrapA20(offset) ((offset) & (vram.flagA20 ? Max32 : ~VRAM_BIT_A20))
+#define vramAddr(physical)  (vram.pBase + (t_vaddrcc)(vramWrapA20(physical)))
 #define vramByte(physical)  (d_nubit8(vramAddr(physical)))
 #define vramWord(physical)  (d_nubit16(vramAddr(physical)))
 #define vramDWord(physical) (d_nubit32(vramAddr(physical)))
@@ -33,8 +33,8 @@ extern t_ram vram;
 
 /* macros below are designed for real-addressing mode */
 #define vramIsAddrInMem(ref) \
-	(((t_vaddrcc)(ref) >= vram.base) && ((t_vaddrcc)(ref) < (vram.base + vram.size)))
-#define vramGetRealAddr(segment, offset) (vram.base + \
+	(((t_vaddrcc)(ref) >= vram.pBase) && ((t_vaddrcc)(ref) < (vram.pBase + vram.size)))
+#define vramGetRealAddr(segment, offset) (vram.pBase + \
 	(vramWrapA20((GetMax16(segment) << 4) + GetMax16(offset)) % vram.size))
 
 #define vramRealByte(segment, offset)  (d_nubit8(vramGetRealAddr(segment, offset)))

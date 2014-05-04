@@ -12,12 +12,11 @@ extern "C" {
 #define NXVM_DEVICE_DEBUG "Unknown Hardware Debugger"
 
 typedef struct {
-	t_bool    flagbreak; /* breakpoint set (1) or not (0) */
-	t_bool    flagbreakx;
-	t_nubitcc breakcnt;
-	t_nubit16 breakcs, breakip;
-	t_nubit32 breaklinear;
-	t_nubitcc tracecnt;
+	t_bool flagBreak; /* breakpoint set (1) or not (0) */
+	t_bool flagBreak32;
+	t_nubitcc breakCount, traceCount;
+	t_nubit16 breakCS, breakIP;
+	t_nubit32 breakLinear;
 	FILE *recordFile; /* pointer to dump file */
 } t_debug;
 

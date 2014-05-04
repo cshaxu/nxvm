@@ -15,7 +15,7 @@ t_device device;
 /* Starts device thread */
 void deviceStart() {
 	device.flagRun = True;
-	device.flagFlip = True - device.flagFlip;
+	device.flagFlip = !device.flagFlip;
 	while (device.flagRun) {
 		if (device.flagReset) {
 			vmachineReset();

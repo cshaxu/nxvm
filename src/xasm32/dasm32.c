@@ -4,38 +4,16 @@
 
 #include "dasm32.h"
 
-/* DEBUGGING OPTIONS ******************************************************* */
-#define DASM_TRACE 0
-/* ************************************************************************* */
+#define UTILS_TRACE_VAR    trace
+#define UTILS_TRACE_ERROR  flagError
+#define UTILS_TRACE_SETERR (flagError = 1)
 
-#if DASM_TRACE == 1
-
-static t_utils_trace_call trace;
-
-#define _cb(s) utilsTraceCallBegin(&trace, s)
-#define _ce    utilsTraceCallEnd(&trace)
-#define _bb(s) utilsTraceBlockBegin(&trace, s)
-#define _be    utilsTraceBlockEnd(&trace)
-#define _chb(n) if (1) {(n);if (flagerror) {trace.flagerror = 1;utilsTraceFinal(&trace);break;   }} while (0)
-#define _chk(n) do     {(n);if (flagerror) {trace.flagerror = 1;utilsTraceFinal(&trace);return;  }} while (0)
-#define _chr(n) do     {(n);if (flagerror) {trace.flagerror = 1;utilsTraceFinal(&trace);return 0;}} while (0)
-#else
-#define _cb(s)
-#define _ce
-#define _be
-#define _bb(s)
-#define _chb(n) if (1) {(n);if (flagerror) break;   } while (0)
-#define _chk(n) do     {(n);if (flagerror) return;  } while (0)
-#define _chr(n) do     {(n);if (flagerror) return 0;} while (0)
-#endif
-
-#define _impossible_   _chk(flagerror = 1)
-#define _impossible_r_ _chr(flagerror = 1)
+static t_utils_trace UTILS_TRACE_VAR;
 
 typedef unsigned char t_dasm_prefix;
 
 static unsigned char defsize; /* default size passed in */
-static unsigned char flagerror;
+static unsigned char flagError;
 static unsigned char *drcode;
 static char dstmt[0x100];
 static char dop[0x100], dopr[0x100], drm[0x100], dr[0x100], dimm[0x100];
@@ -105,7 +83,7 @@ static void SPRINTFSI(char *str, unsigned int imm, unsigned char byte)
 		}
 		SPRINTF(str, "%c%08X", sign, i32u);
 		break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 
@@ -143,7 +121,7 @@ static unsigned char _kdf_check_prefix(unsigned char opcode)
 static void _kdf_skip(unsigned char byte)
 {
 	_cb("_kdf_skip");
-	_chk(iop += byte);
+	_chr(iop += byte);
 	_ce;
 }
 static void _kdf_code(unsigned char *rdata, unsigned char byte)
@@ -152,7 +130,7 @@ static void _kdf_code(unsigned char *rdata, unsigned char byte)
 	_cb("_kdf_code");
 	for (i = 0;i < byte;++i)
 		*(rdata + i) = *(drcode + iop + i);
-	_chk(_kdf_skip(byte));
+	_chr(_kdf_skip(byte));
 	_ce;
 }
 static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
@@ -165,7 +143,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 	char sign;
 	unsigned char disp8u;
 	_cb("_kdf_modrm");
-	_chk(_kdf_code(&modrm, 1));
+	_chr(_kdf_code(&modrm, 1));
 	flagmem = 1;
 	drm[0] = dr[0] = dsibindex[0] = 0;
 	switch (rmbyte) {
@@ -185,15 +163,15 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 			case 4: SPRINTF(drm, "%s:[SI]",    doverds);break;
 			case 5: SPRINTF(drm, "%s:[DI]",    doverds);break;
 			case 6: _bb("ModRM_RM(6)");
-				_chk(_kdf_code((unsigned char *)(&disp16), 2));
+				_chr(_kdf_code((unsigned char *)(&disp16), 2));
 				SPRINTF(drm, "%s:[%04X]", doverds, disp16);
 				_be;break;
 			case 7: SPRINTF(drm, "%s:[BX]", doverds);break;
-			default:_impossible_;break;}
+			default:_impossible_r_;break;}
 			
 			_be;break;
 		case 1: _bb("ModRM_MOD(1)");
-			_chk(_kdf_code((unsigned char *)(&disp8), 1));
+			_chr(_kdf_code((unsigned char *)(&disp8), 1));
 			sign = (disp8 & 0x80) ? '-' : '+';
 			disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
 			switch (_GetModRM_RM(modrm)) {
@@ -205,10 +183,10 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 			case 5: SPRINTF(drm, "%s:[DI%c%02X]",    doverds, sign, disp8u);break;
 			case 6: SPRINTF(drm, "%s:[BP%c%02X]",    doverss, sign, disp8u);break;
 			case 7: SPRINTF(drm, "%s:[BX%c%02X]",    doverds, sign, disp8u);break;
-			default:_impossible_;break;}
+			default:_impossible_r_;break;}
 			_be;break;
 		case 2: _bb("ModRM_MOD(2)");
-			_chk(_kdf_code((unsigned char *)(&disp16), 2));
+			_chr(_kdf_code((unsigned char *)(&disp16), 2));
 			switch (_GetModRM_RM(modrm)) {
 			case 0: SPRINTF(drm, "%s:[BX+SI+%04X]", doverds, disp16);break;
 			case 1: SPRINTF(drm, "%s:[BX+DI+%04X]", doverds, disp16);break;
@@ -218,19 +196,19 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 			case 5: SPRINTF(drm, "%s:[DI+%04X]",    doverds, disp16);break;
 			case 6: SPRINTF(drm, "%s:[BP+%04X]",    doverss, disp16);break;
 			case 7: SPRINTF(drm, "%s:[BX+%04X]",    doverds, disp16);break;
-			default:_impossible_;break;}
+			default:_impossible_r_;break;}
 			_be;break;
 		case 3:
 			break;
 		default:
-			_impossible_;
+			_impossible_r_;
 			break;
 		}
 		_be;break;
 	case 4: _bb("AddressSize(4)");
 		if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4) {
 			_bb("ModRM_MOD(!3),ModRM_RM(4)");
-			_chk(_kdf_code((unsigned char *)(&sib), 1));
+			_chr(_kdf_code((unsigned char *)(&sib), 1));
 			switch (_GetSIB_Index(sib)) {
 			case 0: SPRINTF(dsibindex, "+EAX*%02X", (1 << _GetSIB_SS(sib)));break;
 			case 1: SPRINTF(dsibindex, "+ECX*%02X", (1 << _GetSIB_SS(sib)));break;
@@ -240,7 +218,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 			case 5: SPRINTF(dsibindex, "+EBP*%02X", (1 << _GetSIB_SS(sib)));break;
 			case 6: SPRINTF(dsibindex, "+ESI*%02X", (1 << _GetSIB_SS(sib)));break;
 			case 7: SPRINTF(dsibindex, "+EDI*%02X", (1 << _GetSIB_SS(sib)));break;
-			default:_impossible_;break;}
+			default:_impossible_r_;break;}
 		}
 		switch (_GetModRM_MOD(modrm)) {
 		case 0:
@@ -259,23 +237,23 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 				case 3: SPRINTF(drm, "%s:[EBX%s]", doverds, dsibindex);break;
 				case 4: SPRINTF(drm, "%s:[ESP%s]", doverss, dsibindex);break;
 				case 5: _bb("SIB_Base(5)");
-					_chk(_kdf_code((unsigned char *)(&disp32), 4));
+					_chr(_kdf_code((unsigned char *)(&disp32), 4));
 					SPRINTF(drm, "%s:[%08X%s]", doverds, disp32, dsibindex);
 					_be;break;
 				case 6: SPRINTF(drm, "%s:[ESI%s]", doverds, dsibindex);break;
 				case 7: SPRINTF(drm, "%s:[EDI%s]", doverds, dsibindex);break;
-				default:_impossible_;break;}
+				default:_impossible_r_;break;}
 				_be;break;
 			case 5: _bb("ModRM_RM(5)");
-				_chk(_kdf_code((unsigned char *)(&disp32), 4));
+				_chr(_kdf_code((unsigned char *)(&disp32), 4));
 				SPRINTF(drm, "%s:[%08X]", doverds, disp32);
 				_be;break;
 			case 6: SPRINTF(drm, "%s:[ESI]", doverds);break;
 			case 7: SPRINTF(drm, "%s:[EDI]", doverds);break;
-			default:_impossible_;break;}
+			default:_impossible_r_;break;}
 			_be;break;
 		case 1: _bb("ModRM_MOD(1)");
-			_chk(_kdf_code((unsigned char *)(&disp8), 1));
+			_chr(_kdf_code((unsigned char *)(&disp8), 1));
 			sign = (disp8 & 0x80) ? '-' : '+';
 			disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
 			switch (_GetModRM_RM(modrm)) {
@@ -293,15 +271,15 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 				case 5: SPRINTF(drm, "%s:[EBP%s%c%02X]", doverss, dsibindex, sign, disp8u);break;
 				case 6: SPRINTF(drm, "%s:[ESI%s%c%02X]", doverds, dsibindex, sign, disp8u);break;
 				case 7: SPRINTF(drm, "%s:[EDI%s%c%02X]", doverds, dsibindex, sign, disp8u);break;
-				default:_impossible_;break;}
+				default:_impossible_r_;break;}
 				_be;break;
 			case 5: SPRINTF(drm, "%s:[EBP%c%02X]", doverss, sign, disp8u);break;
 			case 6: SPRINTF(drm, "%s:[ESI%c%02X]", doverds, sign, disp8u);break;
 			case 7: SPRINTF(drm, "%s:[EDI%c%02X]", doverds, sign, disp8u);break;
-			default:_impossible_;break;}
+			default:_impossible_r_;break;}
 			_be;break;
 		case 2: _bb("ModRM_MOD(2)");
-			_chk(_kdf_code((unsigned char *)(&disp32), 4));
+			_chr(_kdf_code((unsigned char *)(&disp32), 4));
 			switch (_GetModRM_RM(modrm)) {
 			case 0: SPRINTF(drm, "%s:[EAX+%08X]", doverds, disp32);break;
 			case 1: SPRINTF(drm, "%s:[ECX+%08X]", doverds, disp32);break;
@@ -317,22 +295,22 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 				case 5: SPRINTF(drm, "%s:[EBP%s+%08X]", doverss, dsibindex, disp32);break;
 				case 6: SPRINTF(drm, "%s:[ESI%s+%08X]", doverds, dsibindex, disp32);break;
 				case 7: SPRINTF(drm, "%s:[EDI%s+%08X]", doverds, dsibindex, disp32);break;
-				default:_impossible_;break;}
+				default:_impossible_r_;break;}
 				_be;break;
 			case 5: SPRINTF(drm, "%s:[EBP+%08X]", doverss, disp32);break;
 			case 6: SPRINTF(drm, "%s:[ESI+%08X]", doverds, disp32);break;
 			case 7: SPRINTF(drm, "%s:[EDI+%08X]", doverds, disp32);break;
-			default:_impossible_;break;}
+			default:_impossible_r_;break;}
 			_be;break;
 		case 3:
 			break;
 		default:
-			_impossible_;
+			_impossible_r_;
 			break;
 		}
 		_be;break;
 	default:
-		_impossible_;
+		_impossible_r_;
 		break;
 	}
 	if (_GetModRM_MOD(modrm) == 3) {
@@ -349,7 +327,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 			case 5: SPRINTF(drm, "CH");break;
 			case 6: SPRINTF(drm, "DH");break;
 			case 7: SPRINTF(drm, "BH");break;
-			default:_impossible_;break;}
+			default:_impossible_r_;break;}
 			break;
 		case 2:
 			switch (_GetModRM_RM(modrm)) {
@@ -361,7 +339,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 			case 5: SPRINTF(drm, "BP");break;
 			case 6: SPRINTF(drm, "SI");break;
 			case 7: SPRINTF(drm, "DI");break;
-			default:_impossible_;break;}
+			default:_impossible_r_;break;}
 			break;
 		case 4:
 			switch (_GetModRM_RM(modrm)) {
@@ -373,9 +351,9 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 			case 5: SPRINTF(drm, "EBP");break;
 			case 6: SPRINTF(drm, "ESI");break;
 			case 7: SPRINTF(drm, "EDI");break;
-			default:_impossible_;break;}
+			default:_impossible_r_;break;}
 			break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		_be;
 	}
 	switch (regbyte) {
@@ -398,7 +376,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 		case 5: SPRINTF(dr, "CH");break;
 		case 6: SPRINTF(dr, "DH");break;
 		case 7: SPRINTF(dr, "BH");break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		break;
 	case 2:
 		switch (_GetModRM_REG(modrm)) {
@@ -410,7 +388,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 		case 5: SPRINTF(dr, "BP");break;
 		case 6: SPRINTF(dr, "SI");break;
 		case 7: SPRINTF(dr, "DI");break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		break;
 	case 4:
 		switch (_GetModRM_REG(modrm)) {
@@ -422,29 +400,29 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte)
 		case 5: SPRINTF(dr, "EBP");break;
 		case 6: SPRINTF(dr, "ESI");break;
 		case 7: SPRINTF(dr, "EDI");break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		break;
-	default: _impossible_;break;
+	default: _impossible_r_;break;
 	}
 	_ce;
 }
 static void _d_skip(unsigned char byte)
 {
 	_cb("_d_skip");
-	_chk(_kdf_skip(byte));
+	_chr(_kdf_skip(byte));
 	_ce;
 }
 static void _d_code(unsigned char *rdata, unsigned char byte)
 {
 	_cb("_d_code");
-	_chk(_kdf_code(rdata, byte));
+	_chr(_kdf_code(rdata, byte));
 	_ce;
 }
 static void _d_imm(unsigned char byte)
 {
 	_cb("_d_imm");
 	cimm = 0;
-	_chk(_d_code((unsigned char *)(&cimm), byte));
+	_chr(_d_code((unsigned char *)(&cimm), byte));
 	_ce;
 }
 static void _d_moffs(unsigned char byte)
@@ -454,20 +432,20 @@ static void _d_moffs(unsigned char byte)
 	flagmem = 1;
 	switch (_GetAddressSize) {
 	case 2: _bb("AddressSize(2)");
-		_chk(_d_code((unsigned char *)(&offset), 2));
+		_chr(_d_code((unsigned char *)(&offset), 2));
 		SPRINTF(drm, "%s:[%04X]", doverds, (unsigned short)(offset));
 		_be;break;
 	case 4: _bb("AddressSize(4)");
-		_chk(_d_code((unsigned char *)(&offset), 4));
+		_chr(_d_code((unsigned char *)(&offset), 4));
 		SPRINTF(drm, "%s:[%08X]", doverds, (unsigned int)(offset));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void _d_modrm_sreg(unsigned char rmbyte)
 {
 	_cb("_d_modrm_sreg");
-	_chk(_kdf_modrm(0, rmbyte));
+	_chr(_kdf_modrm(0, rmbyte));
 	switch (cr) {
 	case 0: SPRINTF(dr, "ES");break;
 	case 1: SPRINTF(dr, "CS");break;
@@ -484,7 +462,7 @@ static void _d_modrm_sreg(unsigned char rmbyte)
 static void _d_modrm(unsigned char regbyte, unsigned char rmbyte)
 {
 	_cb("_d_modrm");
-	_chk(_kdf_modrm(regbyte, rmbyte));
+	_chr(_kdf_modrm(regbyte, rmbyte));
 	if (!flagmem && flaglock) {
 		_bb("flagmem(0),flaglock(1)");
 		SPRINTF(drm, "<ERROR>");
@@ -493,7 +471,7 @@ static void _d_modrm(unsigned char regbyte, unsigned char rmbyte)
 	_ce;
 }
 
-#define _adv _chk(_d_skip(1))
+#define _adv _chr(_d_skip(1))
 
 static void UndefinedOpcode()
 {
@@ -505,7 +483,7 @@ static void ADD_RM8_R8()
 {
 	_cb("ADD_RM8_R8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "ADD");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -514,7 +492,7 @@ static void ADD_RM32_R32()
 {
 	_cb("ADD_RM32_R32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "ADD");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -523,7 +501,7 @@ static void ADD_R8_RM8()
 {
 	_cb("ADD_R8_RM8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "ADD");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -532,7 +510,7 @@ static void ADD_R32_RM32()
 {
 	_cb("ADD_R32_RM32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "ADD");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -541,7 +519,7 @@ static void ADD_AL_I8()
 {
 	_cb("ADD_AL_I8");
 	_adv;
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dop, "ADD");
 	SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
 	_ce;
@@ -553,14 +531,14 @@ static void ADD_EAX_I32()
 	SPRINTF(dop, "ADD");
 	switch (_GetOperandSize) {
 	case 2: _bb("OperandSize(2)");
-		_chk(_d_imm(2));
+		_chr(_d_imm(2));
 		SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
 		_be;break;
 	case 4: _bb("OperandSize(4)");
-		_chk(_d_imm(4));
+		_chr(_d_imm(4));
 		SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PUSH_ES()
@@ -583,7 +561,7 @@ static void OR_RM8_R8()
 {
 	_cb("OR_RM8_R8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "OR");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -592,7 +570,7 @@ static void OR_RM32_R32()
 {
 	_cb("OR_RM32_R32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "OR");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -601,7 +579,7 @@ static void OR_R8_RM8()
 {
 	_cb("OR_R8_RM8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "OR");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -610,7 +588,7 @@ static void OR_R32_RM32()
 {
 	_cb("OR_R32_RM32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "OR");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -619,7 +597,7 @@ static void OR_AL_I8()
 {
 	_cb("OR_AL_I8");
 	_adv;
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dop, "OR");
 	SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
 	_ce;
@@ -631,14 +609,14 @@ static void OR_EAX_I32()
 	SPRINTF(dop, "OR");
 	switch (_GetOperandSize) {
 	case 2: _bb("OperandSize(2)");
-		_chk(_d_imm(2));
+		_chr(_d_imm(2));
 		SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
 		_be;break;
 	case 4: _bb("OperandSize(4)");
-		_chk(_d_imm(4));
+		_chr(_d_imm(4));
 		SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 
@@ -665,16 +643,16 @@ static void INS_0F()
 	_cb("INS_0F");
 	_adv;
 	oldiop = iop;
-	_chk(_d_code((unsigned char *)(&opcode), 1));
+	_chr(_d_code((unsigned char *)(&opcode), 1));
 	iop = oldiop;
-    _chk((*(dtable_0f[opcode]))());
+    _chr((*(dtable_0f[opcode]))());
 	_ce;
 }
 static void ADC_RM8_R8()
 {
 	_cb("ADC_RM8_R8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "ADC");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -683,7 +661,7 @@ static void ADC_RM32_R32()
 {
 	_cb("ADC_RM32_R32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "ADC");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -692,7 +670,7 @@ static void ADC_R8_RM8()
 {
 	_cb("ADC_R8_RM8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "ADC");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -701,7 +679,7 @@ static void ADC_R32_RM32()
 {
 	_cb("ADC_R32_RM32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "ADC");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -710,7 +688,7 @@ static void ADC_AL_I8()
 {
 	_cb("ADC_AL_I8");
 	_adv;
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dop, "ADC");
 	SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
 	_ce;
@@ -722,14 +700,14 @@ static void ADC_EAX_I32()
 	SPRINTF(dop, "ADC");
 	switch (_GetOperandSize) {
 	case 2: _bb("OperandSize(2)");
-		_chk(_d_imm(2));
+		_chr(_d_imm(2));
 		SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
 		_be;break;
 	case 4: _bb("OperandSize(4)");
-		_chk(_d_imm(4));
+		_chr(_d_imm(4));
 		SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 
@@ -753,7 +731,7 @@ static void SBB_RM8_R8()
 {
 	_cb("SBB_RM8_R8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "SBB");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -762,7 +740,7 @@ static void SBB_RM32_R32()
 {
 	_cb("SBB_RM32_R32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "SBB");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -771,7 +749,7 @@ static void SBB_R8_RM8()
 {
 	_cb("SBB_R8_RM8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "SBB");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -780,7 +758,7 @@ static void SBB_R32_RM32()
 {
 	_cb("SBB_R32_RM32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "SBB");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -789,7 +767,7 @@ static void SBB_AL_I8()
 {
 	_cb("SBB_AL_I8");
 	_adv;
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dop, "SBB");
 	SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
 	_ce;
@@ -801,14 +779,14 @@ static void SBB_EAX_I32()
 	SPRINTF(dop, "SBB");
 	switch (_GetOperandSize) {
 	case 2: _bb("OperandSize(2)");
-		_chk(_d_imm(2));
+		_chr(_d_imm(2));
 		SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
 		_be;break;
 	case 4: _bb("OperandSize(4)");
-		_chk(_d_imm(4));
+		_chr(_d_imm(4));
 		SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 
@@ -832,7 +810,7 @@ static void AND_RM8_R8()
 {
 	_cb("AND_RM8_R8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "AND");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -841,7 +819,7 @@ static void AND_RM32_R32()
 {
 	_cb("AND_RM32_R32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "AND");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -850,7 +828,7 @@ static void AND_R8_RM8()
 {
 	_cb("AND_R8_RM8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "AND");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -859,7 +837,7 @@ static void AND_R32_RM32()
 {
 	_cb("AND_R32_RM32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "AND");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -868,7 +846,7 @@ static void AND_AL_I8()
 {
 	_cb("AND_AL_I8");
 	_adv;
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dop, "AND");
 	SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
 	_ce;
@@ -880,14 +858,14 @@ static void AND_EAX_I32()
 	SPRINTF(dop, "AND");
 	switch (_GetOperandSize) {
 	case 2: _bb("OperandSize(2)");
-		_chk(_d_imm(2));
+		_chr(_d_imm(2));
 		SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
 		_be;break;
 	case 4: _bb("OperandSize(4)");
-		_chk(_d_imm(4));
+		_chr(_d_imm(4));
 		SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PREFIX_ES()
@@ -909,7 +887,7 @@ static void SUB_RM8_R8()
 {
 	_cb("SUB_RM8_R8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "SUB");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -918,7 +896,7 @@ static void SUB_RM32_R32()
 {
 	_cb("SUB_RM32_R32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "SUB");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -927,7 +905,7 @@ static void SUB_R8_RM8()
 {
 	_cb("SUB_R8_RM8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "SUB");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -936,7 +914,7 @@ static void SUB_R32_RM32()
 {
 	_cb("SUB_R32_RM32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "SUB");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -945,7 +923,7 @@ static void SUB_AL_I8()
 {
 	_cb("SUB_AL_I8");
 	_adv;
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dop, "SUB");
 	SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
 	_ce;
@@ -957,14 +935,14 @@ static void SUB_EAX_I32()
 	SPRINTF(dop, "SUB");
 	switch (_GetOperandSize) {
 	case 2: _bb("OperandSize(2)");
-		_chk(_d_imm(2));
+		_chr(_d_imm(2));
 		SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
 		_be;break;
 	case 4: _bb("OperandSize(4)");
-		_chk(_d_imm(4));
+		_chr(_d_imm(4));
 		SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PREFIX_CS()
@@ -986,7 +964,7 @@ static void XOR_RM8_R8()
 {
 	_cb("XOR_RM8_R8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "XOR");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -995,7 +973,7 @@ static void XOR_RM32_R32()
 {
 	_cb("XOR_RM32_R32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "XOR");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -1004,7 +982,7 @@ static void XOR_R8_RM8()
 {
 	_cb("XOR_R8_RM8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "XOR");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -1013,7 +991,7 @@ static void XOR_R32_RM32()
 {
 	_cb("XOR_R32_RM32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "XOR");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -1022,7 +1000,7 @@ static void XOR_AL_I8()
 {
 	_cb("XOR_AL_I8");
 	_adv;
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dop, "XOR");
 	SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
 	_ce;
@@ -1034,14 +1012,14 @@ static void XOR_EAX_I32()
 	SPRINTF(dop, "XOR");
 	switch (_GetOperandSize) {
 	case 2: _bb("OperandSize(2)");
-		_chk(_d_imm(2));
+		_chr(_d_imm(2));
 		SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
 		_be;break;
 	case 4: _bb("OperandSize(4)");
-		_chk(_d_imm(4));
+		_chr(_d_imm(4));
 		SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PREFIX_SS()
@@ -1063,7 +1041,7 @@ static void CMP_RM8_R8()
 {
 	_cb("CMP_RM8_R8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "CMP");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -1072,7 +1050,7 @@ static void CMP_RM32_R32()
 {
 	_cb("CMP_RM32_R32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "CMP");
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
@@ -1081,7 +1059,7 @@ static void CMP_R8_RM8()
 {
 	_cb("CMP_R8_RM8");
 	_adv;
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dop, "CMP");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -1090,7 +1068,7 @@ static void CMP_R32_RM32()
 {
 	_cb("CMP_R32_RM32");
 	_adv;
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dop, "CMP");
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
@@ -1099,7 +1077,7 @@ static void CMP_AL_I8()
 {
 	_cb("CMP_AL_I8");
 	_adv;
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dop, "CMP");
 	SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
 	_ce;
@@ -1111,14 +1089,14 @@ static void CMP_EAX_I32()
 	SPRINTF(dop, "CMP");
 	switch (_GetOperandSize) {
 	case 2: _bb("OperandSize(2)");
-		_chk(_d_imm(2));
+		_chr(_d_imm(2));
 		SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
 		_be;break;
 	case 4: _bb("OperandSize(4)");
-		_chk(_d_imm(4));
+		_chr(_d_imm(4));
 		SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PREFIX_DS()
@@ -1144,7 +1122,7 @@ static void INC_EAX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "AX");break;
 	case 4: SPRINTF(dopr, "EAX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INC_ECX()
@@ -1155,7 +1133,7 @@ static void INC_ECX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "CX");break;
 	case 4: SPRINTF(dopr, "ECX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INC_EDX()
@@ -1166,7 +1144,7 @@ static void INC_EDX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "DX");break;
 	case 4: SPRINTF(dopr, "EDX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INC_EBX()
@@ -1177,7 +1155,7 @@ static void INC_EBX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "BX");break;
 	case 4: SPRINTF(dopr, "EBX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INC_ESP()
@@ -1188,7 +1166,7 @@ static void INC_ESP()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "SP");break;
 	case 4: SPRINTF(dopr, "ESP");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INC_EBP()
@@ -1199,7 +1177,7 @@ static void INC_EBP()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "BP");break;
 	case 4: SPRINTF(dopr, "EBP");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INC_ESI()
@@ -1210,7 +1188,7 @@ static void INC_ESI()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "SI");break;
 	case 4: SPRINTF(dopr, "ESI");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INC_EDI()
@@ -1221,7 +1199,7 @@ static void INC_EDI()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "DI");break;
 	case 4: SPRINTF(dopr, "EDI");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void DEC_EAX()
@@ -1232,7 +1210,7 @@ static void DEC_EAX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "AX");break;
 	case 4: SPRINTF(dopr, "EAX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void DEC_ECX()
@@ -1243,7 +1221,7 @@ static void DEC_ECX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "CX");break;
 	case 4: SPRINTF(dopr, "ECX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void DEC_EDX()
@@ -1254,7 +1232,7 @@ static void DEC_EDX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "DX");break;
 	case 4: SPRINTF(dopr, "EDX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void DEC_EBX()
@@ -1265,7 +1243,7 @@ static void DEC_EBX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "BX");break;
 	case 4: SPRINTF(dopr, "EBX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void DEC_ESP()
@@ -1276,7 +1254,7 @@ static void DEC_ESP()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "SP");break;
 	case 4: SPRINTF(dopr, "ESP");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void DEC_EBP()
@@ -1287,7 +1265,7 @@ static void DEC_EBP()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "BP");break;
 	case 4: SPRINTF(dopr, "EBP");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void DEC_ESI()
@@ -1298,7 +1276,7 @@ static void DEC_ESI()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "SI");break;
 	case 4: SPRINTF(dopr, "ESI");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void DEC_EDI()
@@ -1309,7 +1287,7 @@ static void DEC_EDI()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "DI");break;
 	case 4: SPRINTF(dopr, "EDI");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PUSH_EAX()
@@ -1320,7 +1298,7 @@ static void PUSH_EAX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "AX");break;
 	case 4: SPRINTF(dopr, "EAX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PUSH_ECX()
@@ -1331,7 +1309,7 @@ static void PUSH_ECX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "CX");break;
 	case 4: SPRINTF(dopr, "ECX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PUSH_EDX()
@@ -1342,7 +1320,7 @@ static void PUSH_EDX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "DX");break;
 	case 4: SPRINTF(dopr, "EDX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PUSH_EBX()
@@ -1353,7 +1331,7 @@ static void PUSH_EBX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "BX");break;
 	case 4: SPRINTF(dopr, "EBX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PUSH_ESP()
@@ -1364,7 +1342,7 @@ static void PUSH_ESP()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "SP");break;
 	case 4: SPRINTF(dopr, "ESP");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PUSH_EBP()
@@ -1375,7 +1353,7 @@ static void PUSH_EBP()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "BP");break;
 	case 4: SPRINTF(dopr, "EBP");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PUSH_ESI()
@@ -1386,7 +1364,7 @@ static void PUSH_ESI()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "SI");break;
 	case 4: SPRINTF(dopr, "ESI");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PUSH_EDI()
@@ -1397,7 +1375,7 @@ static void PUSH_EDI()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "DI");break;
 	case 4: SPRINTF(dopr, "EDI");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void POP_EAX()
@@ -1408,7 +1386,7 @@ static void POP_EAX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "AX");break;
 	case 4: SPRINTF(dopr, "EAX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void POP_ECX()
@@ -1419,7 +1397,7 @@ static void POP_ECX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "CX");break;
 	case 4: SPRINTF(dopr, "ECX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void POP_EDX()
@@ -1430,7 +1408,7 @@ static void POP_EDX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "DX");break;
 	case 4: SPRINTF(dopr, "EDX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void POP_EBX()
@@ -1441,7 +1419,7 @@ static void POP_EBX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "BX");break;
 	case 4: SPRINTF(dopr, "EBX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void POP_ESP()
@@ -1452,7 +1430,7 @@ static void POP_ESP()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "SP");break;
 	case 4: SPRINTF(dopr, "ESP");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void POP_EBP()
@@ -1463,7 +1441,7 @@ static void POP_EBP()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "BP");break;
 	case 4: SPRINTF(dopr, "EBP");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void POP_ESI()
@@ -1474,7 +1452,7 @@ static void POP_ESI()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "SI");break;
 	case 4: SPRINTF(dopr, "ESI");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void POP_EDI()
@@ -1485,7 +1463,7 @@ static void POP_EDI()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "DI");break;
 	case 4: SPRINTF(dopr, "EDI");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 
@@ -1497,7 +1475,7 @@ static void PUSHA()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "PUSHA");break;
 	case 4: SPRINTF(dop, "PUSHAD");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void POPA()
@@ -1507,7 +1485,7 @@ static void POPA()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "POPA");break;
 	case 4: SPRINTF(dop, "POPAD");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void BOUND_R16_M16_16()
@@ -1515,7 +1493,7 @@ static void BOUND_R16_M16_16()
 	_cb("BOUND_R16_M16_16");
 	_adv;
 	SPRINTF(dop, "BOUND");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize * 2));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize * 2));
 	if (!flagmem) {
 		SPRINTF(dopr, "<ERROR>");
 	} else {
@@ -1528,7 +1506,7 @@ static void ARPL_RM16_R16()
 	_cb("ARPL_RM16_R16");
 	_adv;
 	SPRINTF(dop, "ARPL");
-	_chk(_d_modrm(2, 2));
+	_chr(_d_modrm(2, 2));
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -1567,11 +1545,11 @@ static void PUSH_I32()
 	_cb("PUSH_I32");
 	_adv;
 	SPRINTF(dop, "PUSH");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "%04X", (unsigned short)(cimm));break;
 	case 4: SPRINTF(dopr, "%08X", (unsigned int)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void IMUL_R32_RM32_I32()
@@ -1579,12 +1557,12 @@ static void IMUL_R32_RM32_I32()
 	_cb("IMUL_R32_RM32_I32");
 	_adv;
 	SPRINTF(dop, "IMUL");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "%s,%s,%04X", dr, drm, (unsigned short)(cimm));break;
 	case 4: SPRINTF(dopr, "%s,%s,%08X", dr, drm, (unsigned int)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PUSH_I8()
@@ -1592,7 +1570,7 @@ static void PUSH_I8()
 	_cb("PUSH_I8");
 	_adv;
 	SPRINTF(dop, "PUSH");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -1601,8 +1579,8 @@ static void IMUL_R32_RM32_I8()
 	_cb("IMUL_R32_RM32_I8");
 	_adv;
 	SPRINTF(dop, "IMUL");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
-	_chk(_d_imm(1));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "%s,%s,%02X", dr, drm, (unsigned char)(cimm));
 	_ce;
 }
@@ -1616,7 +1594,7 @@ static void INSB()
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI],DX");break;
 	case 4: SPRINTF(dopr, "ES:[EDI],DX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INSW()
@@ -1627,11 +1605,11 @@ static void INSW()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "INSW");SPRINTF(dptr, "WORD PTR ");break;
 	case 4: SPRINTF(dop, "INSD");SPRINTF(dptr, "DWORD PTR ");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI],DX");break;
 	case 4: SPRINTF(dopr, "ES:[EDI],DX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void OUTSB()
@@ -1644,7 +1622,7 @@ static void OUTSB()
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "DX,%s:[SI]", doverds);break;
 	case 4: SPRINTF(dopr, "DX,%s:[ESI]", doverds);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void OUTSW()
@@ -1655,11 +1633,11 @@ static void OUTSW()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "OUTSW");SPRINTF(dptr, "WORD PTR ");break;
 	case 4: SPRINTF(dop, "OUTSD");SPRINTF(dptr, "DWORD PTR ");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "DX,%s:[SI]", doverds);break;
 	case 4: SPRINTF(dopr, "DX,%s:[ESI]", doverds);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JO_REL8()
@@ -1667,7 +1645,7 @@ static void JO_REL8()
 	_cb("JO_REL8");
 	_adv;
 	SPRINTF(dop, "JO");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1676,7 +1654,7 @@ static void JNO_REL8()
 	_cb("JNO_REL8");
 	_adv;
 	SPRINTF(dop, "JNO");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1685,7 +1663,7 @@ static void JC_REL8()
 	_cb("JC_REL8");
 	_adv;
 	SPRINTF(dop, "JC");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1694,7 +1672,7 @@ static void JNC_REL8()
 	_cb("JNC_REL8");
 	_adv;
 	SPRINTF(dop, "JNC");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1703,7 +1681,7 @@ static void JZ_REL8()
 	_cb("JZ_REL8");
 	_adv;
 	SPRINTF(dop, "JZ");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1712,7 +1690,7 @@ static void JNZ_REL8()
 	_cb("JNZ_REL8");
 	_adv;
 	SPRINTF(dop, "JNZ");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1721,7 +1699,7 @@ static void JNA_REL8()
 	_cb("JNA_REL8");
 	_adv;
 	SPRINTF(dop, "JNA");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1730,7 +1708,7 @@ static void JA_REL8()
 	_cb("JA_REL8");
 	_adv;
 	SPRINTF(dop, "JA");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1739,7 +1717,7 @@ static void JS_REL8()
 	_cb("JS_REL8");
 	_adv;
 	SPRINTF(dop, "JS");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1748,7 +1726,7 @@ static void JNS_REL8()
 	_cb("JNS_REL8");
 	_adv;
 	SPRINTF(dop, "JNS");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1757,7 +1735,7 @@ static void JP_REL8()
 	_cb("JP_REL8");
 	_adv;
 	SPRINTF(dop, "JP");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1766,7 +1744,7 @@ static void JNP_REL8()
 	_cb("JNP_REL8");
 	_adv;
 	SPRINTF(dop, "JNP");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1775,7 +1753,7 @@ static void JL_REL8()
 	_cb("JL_REL8");
 	_adv;
 	SPRINTF(dop, "JL");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1784,7 +1762,7 @@ static void JNL_REL8()
 	_cb("JNL_REL8");
 	_adv;
 	SPRINTF(dop, "JNL");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1793,7 +1771,7 @@ static void JNG_REL8()
 	_cb("JNG_REL8");
 	_adv;
 	SPRINTF(dop, "JNG");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1802,7 +1780,7 @@ static void JG_REL8()
 	_cb("JG_REL8");
 	_adv;
 	SPRINTF(dop, "JG");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -1810,8 +1788,8 @@ static void INS_80()
 {
 	_cb("INS_80");
 	_adv;
-	_chk(_d_modrm(0, 1));
-	_chk(_d_imm(1));
+	_chr(_d_modrm(0, 1));
+	_chr(_d_imm(1));
 	switch (cr) {
 	case 0: /* ADD_RM8_I8 */
 		_bb("ADD_RM8_I8");
@@ -1845,7 +1823,7 @@ static void INS_80()
 		_bb("CMP_RM8_I8");
 		SPRINTF(dop, "CMP");
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
 	_ce;
 }
@@ -1853,8 +1831,8 @@ static void INS_81()
 {
 	_cb("INS_81");
 	_adv;
-	_chk(_d_modrm(0, _GetOperandSize));
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_modrm(0, _GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (cr) {
 	case 0: /* ADD_RM32_I32 */
 		_bb("ADD_RM32_I32");
@@ -1888,11 +1866,11 @@ static void INS_81()
 		_bb("CMP_RM32_I32");
 		SPRINTF(dop, "CMP");
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "%s,%04X", drm, (unsigned short)(cimm));break;
 	case 4: SPRINTF(dopr, "%s,%08X", drm, (unsigned int)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INS_83()
@@ -1900,8 +1878,8 @@ static void INS_83()
 	char dsimm[0x100];
 	_cb("INS_83");
 	_adv;
-	_chk(_d_modrm(0, _GetOperandSize));
-	_chk(_d_imm(1));
+	_chr(_d_modrm(0, _GetOperandSize));
+	_chr(_d_imm(1));
 	switch (cr) {
 	case 0: /* ADD_RM32_I8 */
 		_bb("ADD_RM32_I8");
@@ -1935,7 +1913,7 @@ static void INS_83()
 		_bb("CMP_RM32_I8");
 		SPRINTF(dop, "CMP");
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	SPRINTFSI(dsimm, (unsigned char)(cimm), 1);
 	SPRINTF(dopr, "%s,%s", drm, dsimm);
 	_ce;
@@ -1945,7 +1923,7 @@ static void TEST_RM8_R8()
 	_cb("TEST_RM8_R8");
 	_adv;
 	SPRINTF(dop, "TEST");
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -1954,7 +1932,7 @@ static void TEST_RM32_R32()
 	_cb("TEST_RM32_R32");
 	_adv;
 	SPRINTF(dop, "TEST");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -1963,7 +1941,7 @@ static void XCHG_RM8_R8()
 	_cb("XCHG_RM8_R8");
 	_adv;
 	SPRINTF(dop, "XCHG");
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -1972,7 +1950,7 @@ static void XCHG_RM32_R32()
 	_cb("XCHG_RM32_R32");
 	_adv;
 	SPRINTF(dop, "XCHG");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -1981,7 +1959,7 @@ static void MOV_RM8_R8()
 	_cb("MOV_RM8_R8");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -1990,7 +1968,7 @@ static void MOV_RM32_R32()
 	_cb("MOV_RM32_R32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -1999,7 +1977,7 @@ static void MOV_R8_RM8()
 	_cb("MOV_R8_RM8");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_modrm(1, 1));
+	_chr(_d_modrm(1, 1));
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -2008,7 +1986,7 @@ static void MOV_R32_RM32()
 	_cb("MOV_R32_RM32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -2017,7 +1995,7 @@ static void MOV_RM16_SREG()
 	_cb("MOV_RM16_SREG");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_modrm_sreg(2));
+	_chr(_d_modrm_sreg(2));
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -2026,7 +2004,7 @@ static void LEA_R32_M32()
 	_cb("LEA_R32_M32");
 	_adv;
 	SPRINTF(dop, "LEA");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -2035,7 +2013,7 @@ static void MOV_SREG_RM16()
 	_cb("MOV_SREG_RM16");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_modrm_sreg(2));
+	_chr(_d_modrm_sreg(2));
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -2043,24 +2021,24 @@ static void INS_8F()
 {
 	_cb("INS_8F");
 	_adv;
-	_chk(_d_modrm(9, _GetOperandSize));
+	_chr(_d_modrm(9, _GetOperandSize));
 	switch (cr) {
 	case 0: /* POP_RM32 */
 		_bb("POP_RM32");
 		switch (_GetOperandSize) {
 		case 2: SPRINTF(dop, "POP");break;
 		case 4: SPRINTF(dop, "POPD");break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
-	case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
-	case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
-	case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
-	case 4: _bb("cr(4)");_chk(UndefinedOpcode());_be;break;
-	case 5: _bb("cr(5)");_chk(UndefinedOpcode());_be;break;
-	case 6: _bb("cr(6)");_chk(UndefinedOpcode());_be;break;
-	case 7: _bb("cr(7)");_chk(UndefinedOpcode());_be;break;
-	default:_impossible_;break;}
+	case 1: _bb("cr(1)");_chr(UndefinedOpcode());_be;break;
+	case 2: _bb("cr(2)");_chr(UndefinedOpcode());_be;break;
+	case 3: _bb("cr(3)");_chr(UndefinedOpcode());_be;break;
+	case 4: _bb("cr(4)");_chr(UndefinedOpcode());_be;break;
+	case 5: _bb("cr(5)");_chr(UndefinedOpcode());_be;break;
+	case 6: _bb("cr(6)");_chr(UndefinedOpcode());_be;break;
+	case 7: _bb("cr(7)");_chr(UndefinedOpcode());_be;break;
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void NOP()
@@ -2082,7 +2060,7 @@ static void XCHG_ECX_EAX()
 	case 4: _bb("OperandSize(4)");
 		SPRINTF(dopr, "ECX,EAX");
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void XCHG_EDX_EAX()
@@ -2097,7 +2075,7 @@ static void XCHG_EDX_EAX()
 	case 4: _bb("OperandSize(4)");
 		SPRINTF(dopr, "EDX,EAX");
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void XCHG_EBX_EAX()
@@ -2112,7 +2090,7 @@ static void XCHG_EBX_EAX()
 	case 4: _bb("OperandSize(4)");
 		SPRINTF(dopr, "EBX,EAX");
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void XCHG_ESP_EAX()
@@ -2127,7 +2105,7 @@ static void XCHG_ESP_EAX()
 	case 4: _bb("OperandSize(4)");
 		SPRINTF(dopr, "ESP,EAX");
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void XCHG_EBP_EAX()
@@ -2142,7 +2120,7 @@ static void XCHG_EBP_EAX()
 	case 4: _bb("OperandSize(4)");
 		SPRINTF(dopr, "EBP,EAX");
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void XCHG_ESI_EAX()
@@ -2157,7 +2135,7 @@ static void XCHG_ESI_EAX()
 	case 4: _bb("OperandSize(4)");
 		SPRINTF(dopr, "ESI,EAX");
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void XCHG_EDI_EAX()
@@ -2172,7 +2150,7 @@ static void XCHG_EDI_EAX()
 	case 4: _bb("OperandSize(4)");
 		SPRINTF(dopr, "EDI,EAX");
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void CBW()
@@ -2182,7 +2160,7 @@ static void CBW()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "CBW");break;
 	case 4: SPRINTF(dop, "CWDE");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void CWD()
@@ -2192,7 +2170,7 @@ static void CWD()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "CWD");break;
 	case 4: SPRINTF(dop, "CDQ");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void CALL_PTR16_32()
@@ -2204,18 +2182,18 @@ static void CALL_PTR16_32()
 	SPRINTF(dop, "CALL");
 	switch (_GetOperandSize) {
 	case 2: _bb("OperandSize(2)");
-		_chk(_d_imm(4));
+		_chr(_d_imm(4));
 		neweip = (unsigned short)(cimm);
 		newcs = (unsigned short)(cimm >> 16);
 		SPRINTF(dopr, "%04X:%04X", newcs, (unsigned short)(neweip));
 		_be;break;
 	case 4: _bb("OperandSize(4)");
-		_chk(_d_imm(8));
+		_chr(_d_imm(8));
 		neweip = (unsigned int)(cimm);
 		newcs = (unsigned short)(cimm >> 32);
 		SPRINTF(dopr, "%04X:%08X", newcs, (unsigned int)(neweip));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void WAIT()
@@ -2232,7 +2210,7 @@ static void PUSHF()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "PUSHF");break;
 	case 4: SPRINTF(dop, "PUSHFD");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void POPF()
@@ -2242,7 +2220,7 @@ static void POPF()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "POPF");break;
 	case 4: SPRINTF(dop, "POPFD");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void SAHF()
@@ -2264,7 +2242,7 @@ static void MOV_AL_MOFFS8()
 	_cb("MOV_AL_MOFFS8");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_moffs(1));
+	_chr(_d_moffs(1));
 	SPRINTF(dopr, "AL,%s", drm);
 	_ce;
 }
@@ -2273,11 +2251,11 @@ static void MOV_EAX_MOFFS32()
 	_cb("MOV_EAX_MOFFS32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_moffs(_GetOperandSize));
+	_chr(_d_moffs(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "AX,%s", drm);break;
 	case 4: SPRINTF(dopr, "EAX,%s", drm);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void MOV_MOFFS8_AL()
@@ -2285,7 +2263,7 @@ static void MOV_MOFFS8_AL()
 	_cb("MOV_MOFFS8_AL");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_moffs(1));
+	_chr(_d_moffs(1));
 	SPRINTF(dopr, "%s,AL", drm);
 	_ce;
 }
@@ -2294,11 +2272,11 @@ static void MOV_MOFFS32_EAX()
 	_cb("MOV_MOFFS32_EAX");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_moffs(_GetOperandSize));
+	_chr(_d_moffs(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "%s,AX", drm);break;
 	case 4: SPRINTF(dopr, "%s,EAX", drm);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void MOVSB()
@@ -2311,7 +2289,7 @@ static void MOVSB()
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI],%s:[SI]", doverds);break;
 	case 4: SPRINTF(dopr, "ES:[EDI],%s:[ESI]", doverds);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void MOVSW()
@@ -2322,11 +2300,11 @@ static void MOVSW()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "MOVSW");SPRINTF(dptr, "WORD PTR ");break;
 	case 4: SPRINTF(dop, "MOVSD");SPRINTF(dptr, "DWORD PTR ");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI],%s:[SI]", doverds);break;
 	case 4: SPRINTF(dopr, "ES:[EDI],%s:[ESI]", doverds);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void CMPSB()
@@ -2339,7 +2317,7 @@ static void CMPSB()
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[SI],ES:[DI]", doverds);break;
 	case 4: SPRINTF(dopr, "%s:[ESI],ES:[EDI]", doverds);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void CMPSW()
@@ -2350,11 +2328,11 @@ static void CMPSW()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "CMPSW");SPRINTF(dptr, "WORD PTR ");break;
 	case 4: SPRINTF(dop, "CMPSD");SPRINTF(dptr, "DWORD PTR ");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[SI],ES:[DI]", doverds);break;
 	case 4: SPRINTF(dopr, "%s:[ESI],ES:[EDI]", doverds);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void TEST_AL_I8()
@@ -2362,7 +2340,7 @@ static void TEST_AL_I8()
 	_cb("TEST_AL_I8");
 	_adv;
 	SPRINTF(dop, "TEST");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -2371,11 +2349,11 @@ static void TEST_EAX_I32()
 	_cb("TEST_EAX_I32");
 	_adv;
 	SPRINTF(dop, "TEST");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));break;
 	case 4: SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void STOSB()
@@ -2388,7 +2366,7 @@ static void STOSB()
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI]");break;
 	case 4: SPRINTF(dopr, "ES:[EDI]");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void STOSW()
@@ -2399,11 +2377,11 @@ static void STOSW()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "STOSW");SPRINTF(dptr, "WORD PTR ");break;
 	case 4: SPRINTF(dop, "STOSD");SPRINTF(dptr, "DWORD PTR ");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI]");break;
 	case 4: SPRINTF(dopr, "ES:[EDI]");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void LODSB()
@@ -2416,7 +2394,7 @@ static void LODSB()
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[SI]", doverds);break;
 	case 4: SPRINTF(dopr, "%s:[ESI]", doverds);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void LODSW()
@@ -2427,11 +2405,11 @@ static void LODSW()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "LODSW");SPRINTF(dptr, "WORD PTR ");break;
 	case 4: SPRINTF(dop, "LODSD");SPRINTF(dptr, "DWORD PTR ");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[SI]", doverds);break;
 	case 4: SPRINTF(dopr, "%s:[ESI]", doverds);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void SCASB()
@@ -2444,7 +2422,7 @@ static void SCASB()
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI]");break;
 	case 4: SPRINTF(dopr, "ES:[EDI]");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void SCASW()
@@ -2455,11 +2433,11 @@ static void SCASW()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "SCASW");SPRINTF(dptr, "WORD PTR ");break;
 	case 4: SPRINTF(dop, "SCASD");SPRINTF(dptr, "DWORD PTR ");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "ES:[DI]");break;
 	case 4: SPRINTF(dopr, "ES:[EDI]");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void MOV_AL_I8()
@@ -2467,7 +2445,7 @@ static void MOV_AL_I8()
 	_cb("MOV_AL_I8");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -2476,7 +2454,7 @@ static void MOV_CL_I8()
 	_cb("MOV_CL_I8");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "CL,%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -2485,7 +2463,7 @@ static void MOV_DL_I8()
 	_cb("MOV_DL_I8");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "DL,%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -2494,7 +2472,7 @@ static void MOV_BL_I8()
 	_cb("MOV_BL_I8");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "BL,%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -2503,7 +2481,7 @@ static void MOV_AH_I8()
 	_cb("MOV_AH_I8");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "AH,%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -2512,7 +2490,7 @@ static void MOV_CH_I8()
 	_cb("MOV_CH_I8");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "CH,%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -2521,7 +2499,7 @@ static void MOV_DH_I8()
 	_cb("MOV_DH_I8");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "DH,%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -2530,7 +2508,7 @@ static void MOV_BH_I8()
 	_cb("MOV_BH_I8");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "BH,%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -2539,11 +2517,11 @@ static void MOV_EAX_I32()
 	_cb("MOV_EAX_I32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));break;
 	case 4: SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void MOV_ECX_I32()
@@ -2551,11 +2529,11 @@ static void MOV_ECX_I32()
 	_cb("MOV_ECX_I32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "CX,%04X", (unsigned short)(cimm));break;
 	case 4: SPRINTF(dopr, "ECX,%08X", (unsigned int)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void MOV_EDX_I32()
@@ -2563,11 +2541,11 @@ static void MOV_EDX_I32()
 	_cb("MOV_EDX_I32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "DX,%04X", (unsigned short)(cimm));break;
 	case 4: SPRINTF(dopr, "EDX,%08X", (unsigned int)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void MOV_EBX_I32()
@@ -2575,11 +2553,11 @@ static void MOV_EBX_I32()
 	_cb("MOV_EBX_I32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "BX,%04X", (unsigned short)(cimm));break;
 	case 4: SPRINTF(dopr, "EBX,%08X", (unsigned int)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void MOV_ESP_I32()
@@ -2587,11 +2565,11 @@ static void MOV_ESP_I32()
 	_cb("MOV_ESP_I32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "SP,%04X", (unsigned short)(cimm));break;
 	case 4: SPRINTF(dopr, "ESP,%08X", (unsigned int)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void MOV_EBP_I32()
@@ -2599,11 +2577,11 @@ static void MOV_EBP_I32()
 	_cb("MOV_EBP_I32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "BP,%04X", (unsigned short)(cimm));break;
 	case 4: SPRINTF(dopr, "EBP,%08X", (unsigned int)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void MOV_ESI_I32()
@@ -2611,11 +2589,11 @@ static void MOV_ESI_I32()
 	_cb("MOV_ESI_I32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "SI,%04X", (unsigned short)(cimm));break;
 	case 4: SPRINTF(dopr, "ESI,%08X", (unsigned int)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void MOV_EDI_I32()
@@ -2623,19 +2601,19 @@ static void MOV_EDI_I32()
 	_cb("MOV_EDI_I32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "DI,%04X", (unsigned short)(cimm));break;
 	case 4: SPRINTF(dopr, "EDI,%08X", (unsigned int)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INS_C0()
 {
 	_cb("INS_C0");
 	_adv;
-	_chk(_d_modrm(0, 1));
-	_chk(_d_imm(1));
+	_chr(_d_modrm(0, 1));
+	_chr(_d_imm(1));
 	switch (cr) {
 	case 0: /* ROL_RM8_I8 */
 		_bb("ROL_RM8_I8");
@@ -2669,22 +2647,22 @@ static void INS_C0()
 		_be;break;
 	case 6: /* UndefinedOpcode */
 		_bb("cr(6)");
-		_chk(UndefinedOpcode());
+		_chr(UndefinedOpcode());
 		_be;break;
 	case 7: /* SAR_RM8_I8 */
 		_bb("SAR_RM8_I8");
 		SPRINTF(dop, "SAR");
 		SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INS_C1()
 {
 	_cb("INS_C1");
 	_adv;
-	_chk(_d_modrm(0, _GetOperandSize));
-	_chk(_d_imm(1));
+	_chr(_d_modrm(0, _GetOperandSize));
+	_chr(_d_imm(1));
 	switch (cr) {
 	case 0: /* ROL_RM32_I8 */
 		_bb("ROL_RM32_I8");
@@ -2718,14 +2696,14 @@ static void INS_C1()
 		_be;break;
 	case 6: /* UndefinedOpcode */
 		_bb("cr(6)");
-		_chk(UndefinedOpcode());
+		_chr(UndefinedOpcode());
 		_be;break;
 	case 7: /* SAR_RM32_I8 */
 		_bb("SAR_RM32_I8");
 		SPRINTF(dop, "SAR");
 		SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void RET_I16()
@@ -2733,7 +2711,7 @@ static void RET_I16()
 	_cb("RET_I16");
 	_adv;
 	SPRINTF(dop, "RET");
-	_chk(_d_imm(2));
+	_chr(_d_imm(2));
 	SPRINTF(dopr, "%04X", (unsigned short)(cimm));
 	_ce;
 }
@@ -2749,7 +2727,7 @@ static void LES_R32_M16_32()
 	_cb("LES_R32_M16_32");
 	_adv;
 	SPRINTF(dop, "LES");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
 	if (!flagmem) {
 		_bb("flagmem(0)");
 		SPRINTF(drm, "<ERROR>");
@@ -2763,7 +2741,7 @@ static void LDS_R32_M16_32()
 	_cb("LDS_R32_M16_32");
 	_adv;
 	SPRINTF(dop, "LDS");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
 	if (!flagmem) {
 		_bb("flagmem(0)");
 		SPRINTF(drm, "<ERROR>");
@@ -2776,47 +2754,47 @@ static void INS_C6()
 {
 	_cb("INS_C6");
 	_adv;
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	switch (cr) {
 	case 0: /* MOV_RM8_I8 */
 		_bb("MOV_RM8_I8");
 		SPRINTF(dop, "MOV");
-		_chk(_d_imm(1));
+		_chr(_d_imm(1));
 		SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
 		_be;break;
-	case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
-	case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
-	case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
-	case 4: _bb("cr(4)");_chk(UndefinedOpcode());_be;break;
-	case 5: _bb("cr(5)");_chk(UndefinedOpcode());_be;break;
-	case 6: _bb("cr(6)");_chk(UndefinedOpcode());_be;break;
-	case 7: _bb("cr(7)");_chk(UndefinedOpcode());_be;break;
-	default:_impossible_;break;}
+	case 1: _bb("cr(1)");_chr(UndefinedOpcode());_be;break;
+	case 2: _bb("cr(2)");_chr(UndefinedOpcode());_be;break;
+	case 3: _bb("cr(3)");_chr(UndefinedOpcode());_be;break;
+	case 4: _bb("cr(4)");_chr(UndefinedOpcode());_be;break;
+	case 5: _bb("cr(5)");_chr(UndefinedOpcode());_be;break;
+	case 6: _bb("cr(6)");_chr(UndefinedOpcode());_be;break;
+	case 7: _bb("cr(7)");_chr(UndefinedOpcode());_be;break;
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INS_C7()
 {
 	_cb("INS_C7");
 	_adv;
-	_chk(_d_modrm(0, _GetOperandSize));
+	_chr(_d_modrm(0, _GetOperandSize));
 	switch (cr) {
 	case 0: /* MOV_RM32_I32 */
 		_bb("MOV_RM32_I32");
 		SPRINTF(dop, "MOV");
-		_chk(_d_imm(_GetOperandSize));
+		_chr(_d_imm(_GetOperandSize));
 		switch (_GetOperandSize) {
 		case 2: SPRINTF(dopr, "%s,%04X", drm, (unsigned short)(cimm));break;
 		case 4: SPRINTF(dopr, "%s,%08X", drm, (unsigned int)(cimm));break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		_be;break;
-	case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
-	case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
-	case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
-	case 4: _bb("cr(4)");_chk(UndefinedOpcode());_be;break;
-	case 5: _bb("cr(5)");_chk(UndefinedOpcode());_be;break;
-	case 6: _bb("cr(6)");_chk(UndefinedOpcode());_be;break;
-	case 7: _bb("cr(7)");_chk(UndefinedOpcode());_be;break;
-	default:_impossible_;break;}
+	case 1: _bb("cr(1)");_chr(UndefinedOpcode());_be;break;
+	case 2: _bb("cr(2)");_chr(UndefinedOpcode());_be;break;
+	case 3: _bb("cr(3)");_chr(UndefinedOpcode());_be;break;
+	case 4: _bb("cr(4)");_chr(UndefinedOpcode());_be;break;
+	case 5: _bb("cr(5)");_chr(UndefinedOpcode());_be;break;
+	case 6: _bb("cr(6)");_chr(UndefinedOpcode());_be;break;
+	case 7: _bb("cr(7)");_chr(UndefinedOpcode());_be;break;
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void ENTER()
@@ -2825,9 +2803,9 @@ static void ENTER()
 	_cb("ENTER");
 	_adv;
 	SPRINTF(dop, "ENTER");
-	_chk(_d_imm(2));
+	_chr(_d_imm(2));
 	SPRINTF(dframesize, "%04X", (unsigned short)(cimm));
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dnestlevel, "%02X", (unsigned char)(cimm));
 	SPRINTF(dopr, "%s,%s", dframesize, dnestlevel);
 	_ce;
@@ -2844,7 +2822,7 @@ static void RETF_I16()
 	_cb("RETF_I16");
 	_adv;
 	SPRINTF(dop, "RETF");
-	_chk(_d_imm(2));
+	_chr(_d_imm(2));
 	SPRINTF(dopr, "%04X", (unsigned short)(cimm));
 	_ce;
 }
@@ -2867,7 +2845,7 @@ static void INT_I8()
 	_cb("INT_I8");
 	_adv;
 	SPRINTF(dop, "INT");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -2885,14 +2863,14 @@ static void IRET()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dop, "IRET");break;
 	case 4: SPRINTF(dop, "IRETD");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INS_D0()
 {
 	_cb("INS_D0");
 	_adv;
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	switch (cr) {
 	case 0: /* ROL_RM8 */
 		_bb("ROL_RM8");
@@ -2926,21 +2904,21 @@ static void INS_D0()
 		_be;break;
 	case 6: /* UndefinedOpcode */
 		_bb("cr(6)");
-		_chk(UndefinedOpcode());
+		_chr(UndefinedOpcode());
 		_be;break;
 	case 7: /* SAR_RM8 */
 		_bb("SAR_RM8");
 		SPRINTF(dop, "SAR");
 		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INS_D1()
 {
 	_cb("INS_D1");
 	_adv;
-	_chk(_d_modrm(0, _GetOperandSize));
+	_chr(_d_modrm(0, _GetOperandSize));
 	switch (cr) {
 	case 0: /* ROL_RM32 */
 		_bb("ROL_RM32");
@@ -2974,21 +2952,21 @@ static void INS_D1()
 		_be;break;
 	case 6: /* UndefinedOpcode */
 		_bb("cr(6)");
-		_chk(UndefinedOpcode());
+		_chr(UndefinedOpcode());
 		_be;break;
 	case 7: /* SAR_RM32 */
 		_bb("SAR_RM32");
 		SPRINTF(dop, "SAR");
 		SPRINTF(dopr, "%s,01", drm);
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INS_D2()
 {
 	_cb("INS_D2");
 	_adv;
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	switch (cr) {
 	case 0: /* ROL_RM8_CL */
 		_bb("ROL_RM8_CL");
@@ -3022,21 +3000,21 @@ static void INS_D2()
 		_be;break;
 	case 6: /* UndefinedOpcode */
 		_bb("cr(6)");
-		_chk(UndefinedOpcode());
+		_chr(UndefinedOpcode());
 		_be;break;
 	case 7: /* SAR_RM8_CL */
 		_bb("SAR_RM8_CL");
 		SPRINTF(dop, "SAR");
 		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INS_D3()
 {
 	_cb("INS_D3");
 	_adv;
-	_chk(_d_modrm(0, _GetOperandSize));
+	_chr(_d_modrm(0, _GetOperandSize));
 	switch (cr) {
 	case 0: /* ROL_RM32_CL */
 		_bb("ROL_RM32_CL");
@@ -3070,14 +3048,14 @@ static void INS_D3()
 		_be;break;
 	case 6: /* UndefinedOpcode */
 		_bb("cr(6)");
-		_chk(UndefinedOpcode());
+		_chr(UndefinedOpcode());
 		_be;break;
 	case 7: /* SAR_RM32_CL */
 		_bb("SAR_RM32_CL");
 		SPRINTF(dop, "SAR");
 		SPRINTF(dopr, "%s,CL", drm);
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void AAM()
@@ -3085,7 +3063,7 @@ static void AAM()
 	_cb("AAM");
 	_adv;
 	SPRINTF(dop, "AAM");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	if ((unsigned char)(cimm) != 0x0a) SPRINTF(dopr, "%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -3094,7 +3072,7 @@ static void AAD()
 	_cb("AAD");
 	_adv;
 	SPRINTF(dop, "AAD");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	if ((unsigned char)(cimm) != 0x0a) SPRINTF(dopr, "%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -3106,7 +3084,7 @@ static void XLAT()
 	switch (_GetAddressSize) {
 	case 2: SPRINTF(dopr, "%s:[BX+AL]", doverds);break;
 	case 4: SPRINTF(dopr, "%s:[EBX+AL]", doverds);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void LOOPNZ_REL8()
@@ -3114,7 +3092,7 @@ static void LOOPNZ_REL8()
 	_cb("LOOPNZ_REL8");
 	_adv;
 	SPRINTF(dop, "LOOPNZ");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -3123,7 +3101,7 @@ static void LOOPZ_REL8()
 	_cb("LOOPZ_REL8");
 	_adv;
 	SPRINTF(dop, "LOOPZ");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -3132,7 +3110,7 @@ static void LOOP_REL8()
 	_cb("LOOP_REL8");
 	_adv;
 	SPRINTF(dop, "LOOP");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -3141,7 +3119,7 @@ static void JCXZ_REL8()
 	_cb("JCXZ_REL8");
 	_adv;
 	SPRINTF(dop, "JCXZ");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -3150,7 +3128,7 @@ static void IN_AL_I8()
 	_cb("IN_AL_I8");
 	_adv;
 	SPRINTF(dop, "IN");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -3159,11 +3137,11 @@ static void IN_EAX_I8()
 	_cb("IN_EAX_I8");
 	_adv;
 	SPRINTF(dop, "IN");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "AX,%02X", (unsigned char)(cimm));break;
 	case 4: SPRINTF(dopr, "EAX,%02X", (unsigned char)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void OUT_I8_AL()
@@ -3171,7 +3149,7 @@ static void OUT_I8_AL()
 	_cb("OUT_I8_AL");
 	_adv;
 	SPRINTF(dop, "OUT");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "%02X,AL", (unsigned char)(cimm));
 	_ce;
 }
@@ -3180,11 +3158,11 @@ static void OUT_I8_EAX()
 	_cb("OUT_I8_EAX");
 	_adv;
 	SPRINTF(dop, "OUT");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "%02X,AX", (unsigned char)(cimm));break;
 	case 4: SPRINTF(dopr, "%02X,EAX", (unsigned char)(cimm));break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void CALL_REL32()
@@ -3192,11 +3170,11 @@ static void CALL_REL32()
 	_cb("CALL_REL32");
 	_adv;
 	SPRINTF(dop, "CALL");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JMP_REL32()
@@ -3204,11 +3182,11 @@ static void JMP_REL32()
 	_cb("JMP_REL32");
 	_adv;
 	SPRINTF(dop, "JMP");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JMP_PTR16_32()
@@ -3220,21 +3198,21 @@ static void JMP_PTR16_32()
 	SPRINTF(dop, "JMP");
 	switch (_GetOperandSize) {
 	case 2: _bb("OperandSize(2)");
-		_chk(_d_imm(2));
+		_chr(_d_imm(2));
 		neweip = (unsigned short)(cimm);
-		_chk(_d_imm(2));
+		_chr(_d_imm(2));
 		newcs = (unsigned short)(cimm);
 		SPRINTF(dopr, "%04X:%04X", newcs, (unsigned short)(neweip));
 		_be;break;
 	case 4: _bb("OperandSize(4)");
 		_newins_;
-		_chk(_d_imm(4));
+		_chr(_d_imm(4));
 		neweip = (unsigned int)(cimm);
-		_chk(_d_imm(2));
+		_chr(_d_imm(2));
 		newcs = (unsigned short)(cimm);
 		SPRINTF(dopr, "%04X:%08X", newcs, (unsigned int)(neweip));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JMP_REL8()
@@ -3242,7 +3220,7 @@ static void JMP_REL8()
 	_cb("JMP_REL8");
 	_adv;
 	SPRINTF(dop, "JMP");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTFSI(dopr, (unsigned char)(cimm), 1);
 	_ce;
 }
@@ -3262,7 +3240,7 @@ static void IN_EAX_DX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "AX,DX");break;
 	case 4: SPRINTF(dopr, "EAX,DX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void OUT_DX_AL()
@@ -3281,7 +3259,7 @@ static void OUT_DX_EAX()
 	switch (_GetOperandSize) {
 	case 2: SPRINTF(dopr, "DX,AX");break;
 	case 4: SPRINTF(dopr, "DX,EAX");break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void PREFIX_LOCK()
@@ -3323,17 +3301,17 @@ static void INS_F6()
 {
 	_cb("INS_F6");
 	_adv;
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	switch (cr) {
 	case 0: /* TEST_RM8_I8 */
 		_bb("TEST_RM8_I8");
 		SPRINTF(dop, "TEST");
-		_chk(_d_imm(1));
+		_chr(_d_imm(1));
 		SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
 		_be;break;
 	case 1: /* UndefinedOpcode */
 		_bb("ModRM_REG(1)");
-		_chk(UndefinedOpcode());
+		_chr(UndefinedOpcode());
 		_be;break;
 	case 2: /* NOT_RM8 */
 		_bb("NOT_RM8");
@@ -3365,27 +3343,27 @@ static void INS_F6()
 		SPRINTF(dop, "IDIV");
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INS_F7()
 {
 	_cb("INS_F7");
 	_adv;
-	_chk(_d_modrm(0, _GetOperandSize));
+	_chr(_d_modrm(0, _GetOperandSize));
 	switch (cr) {
 	case 0: /* TEST_RM32_I32 */
 		_bb("TEST_RM32_I32");
 		SPRINTF(dop, "TEST");
-		_chk(_d_imm(_GetOperandSize));
+		_chr(_d_imm(_GetOperandSize));
 		switch (_GetOperandSize) {
 		case 2: SPRINTF(dopr, "%s,%04X", drm, (unsigned short)(cimm));break;
 		case 4: SPRINTF(dopr, "%s,%08X", drm, (unsigned int)(cimm));break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		_be;break;
 	case 1: /* UndefinedOpcode */
 		_bb("ModRM_REG(1)");
-		_chk(UndefinedOpcode());
+		_chr(UndefinedOpcode());
 		_be;break;
 	case 2: /* NOT_RM32 */
 		_bb("NOT_RM32");
@@ -3417,7 +3395,7 @@ static void INS_F7()
 		SPRINTF(dop, "IDIV");
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void CLC()
@@ -3466,7 +3444,7 @@ static void INS_FE()
 {
 	_cb("INS_FE");
 	_adv;
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	switch (cr) {
 	case 0: /* INC_RM8 */
 		_bb("INC_RM8");
@@ -3478,13 +3456,13 @@ static void INS_FE()
 		SPRINTF(dop, "DEC");
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
-	case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
-	case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
-	case 4: _bb("cr(4)");_chk(UndefinedOpcode());_be;break;
-	case 5: _bb("cr(5)");_chk(UndefinedOpcode());_be;break;
-	case 6: _bb("cr(6)");_chk(UndefinedOpcode());_be;break;
-	case 7: _bb("cr(7)");_chk(UndefinedOpcode());_be;break;
-	default:_impossible_;break;}
+	case 2: _bb("cr(2)");_chr(UndefinedOpcode());_be;break;
+	case 3: _bb("cr(3)");_chr(UndefinedOpcode());_be;break;
+	case 4: _bb("cr(4)");_chr(UndefinedOpcode());_be;break;
+	case 5: _bb("cr(5)");_chr(UndefinedOpcode());_be;break;
+	case 6: _bb("cr(6)");_chr(UndefinedOpcode());_be;break;
+	case 7: _bb("cr(7)");_chr(UndefinedOpcode());_be;break;
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INS_FF()
@@ -3495,31 +3473,31 @@ static void INS_FF()
 	_cb("INS_FF");
 	_adv;
 	oldiop = iop;
-	_chk(_d_code((unsigned char *)(&modrm), 1));
+	_chr(_d_code((unsigned char *)(&modrm), 1));
 	iop = oldiop;
 	switch (_GetModRM_REG(modrm)) {
 	case 0: /* INC_RM32 */
 		_bb("INC_RM32");
 		SPRINTF(dop, "INC");
-		_chk(_d_modrm(0, _GetOperandSize));
+		_chr(_d_modrm(0, _GetOperandSize));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 1: /* DEC_RM32 */
 		_bb("DEC_RM32");
 		SPRINTF(dop, "DEC");
-		_chk(_d_modrm(0, _GetOperandSize));
+		_chr(_d_modrm(0, _GetOperandSize));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 2: /* CALL_RM32 */
 		_bb("CALL_RM32");
 		SPRINTF(dop, "CALL");
-		_chk(_d_modrm(0, _GetOperandSize));
+		_chr(_d_modrm(0, _GetOperandSize));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 3: /* CALL_M16_32 */
 		_bb("CALL_M16_32");
 		SPRINTF(dop, "CALL");
-		_chk(_d_modrm(9, _GetOperandSize + 2));
+		_chr(_d_modrm(9, _GetOperandSize + 2));
 		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
@@ -3528,19 +3506,19 @@ static void INS_FF()
 		switch (_GetOperandSize) {
 		case 2: SPRINTF(dptr, "WORD PTR ");break;
 		case 4: SPRINTF(dptr, "DWORD PTR ");break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		SPRINTF(dopr, "FAR %s%s", dptr, drm);
 		_be;break;
 	case 4: /* JMP_RM32 */
 		_bb("JMP_RM32");
 		SPRINTF(dop, "JMP");
-		_chk(_d_modrm(0, _GetOperandSize));
+		_chr(_d_modrm(0, _GetOperandSize));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 5: /* JMP_M16_32 */
 		_bb("JMP_M16_32");
 		SPRINTF(dop, "JMP");
-		_chk(_d_modrm(9, _GetOperandSize + 2));
+		_chr(_d_modrm(9, _GetOperandSize + 2));
 		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
@@ -3549,27 +3527,27 @@ static void INS_FF()
 		switch (_GetOperandSize) {
 		case 2: SPRINTF(dptr, "WORD PTR ");break;
 		case 4: SPRINTF(dptr, "DWORD PTR ");break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		SPRINTF(dopr, "FAR %s%s", dptr, drm);
 		_be;break;
 	case 6: /* PUSH_RM32 */
 		_bb("PUSH_RM32");
 		SPRINTF(dop, "PUSH");
-		_chk(_d_modrm(0, _GetOperandSize));
+		_chr(_d_modrm(0, _GetOperandSize));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 7: /* UndefinedOpcode */
 		_bb("ModRM_REG(7)");
-		_chk(UndefinedOpcode());
+		_chr(UndefinedOpcode());
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 
 static void _d_modrm_creg()
 {
 	_cb("_d_modrm_creg");
-	_chk(_kdf_modrm(9, 4));
+	_chr(_kdf_modrm(9, 4));
 	if (flagmem) {
 		_bb("flagmem(1)");
 		SPRINTF(drm, "<ERROR>");
@@ -3585,7 +3563,7 @@ static void _d_modrm_creg()
 static void _d_modrm_dreg()
 {
 	_cb("_d_modrm_dreg");
-	_chk(_kdf_modrm(9, 4));
+	_chr(_kdf_modrm(9, 4));
 	if (flagmem) {
 		_bb("flagmem(1)");
 		SPRINTF(drm, "<ERROR>");
@@ -3604,7 +3582,7 @@ static void _d_modrm_dreg()
 static void _d_modrm_treg()
 {
 	_cb("_d_modrm_treg");
-	_chk(_kdf_modrm(9, 4));
+	_chr(_kdf_modrm(9, 4));
 	if (flagmem) {
 		_bb("flagmem(1)");
 		SPRINTF(drm, "<ERROR>");
@@ -3623,48 +3601,48 @@ static void INS_0F_00()
 	_cb("INS_0F_00");
 	_adv;
 	oldiop = iop;
-	_chk(_d_code((unsigned char *)(&modrm), 1));
+	_chr(_d_code((unsigned char *)(&modrm), 1));
 	iop = oldiop;
 	switch (_GetModRM_REG(modrm)) {
 	case 0: /* SLDT_RM16 */
 		_bb("SLDT_RM16");
 		SPRINTF(dop, "SLDT");
-		_chk(_d_modrm(0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
+		_chr(_d_modrm(0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 1: /* STR_RM16 */
 		_bb("STR_RM16");
 		SPRINTF(dop, "STR");
-		_chk(_d_modrm(0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
+		_chr(_d_modrm(0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 2: /* LLDT_RM16 */
 		_bb("LLDT_RM16");
 		SPRINTF(dop, "LLDT");
-		_chk(_d_modrm(0, 2));
+		_chr(_d_modrm(0, 2));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 3: /* LTR_RM16 */
 		_bb("LTR_RM16");
 		SPRINTF(dop, "LTR");
-		_chk(_d_modrm(0, 2));
+		_chr(_d_modrm(0, 2));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 4: /* VERR_RM16 */
 		_bb("VERR_RM16");
 		SPRINTF(dop, "VERR");
-		_chk(_d_modrm(0, 2));
+		_chr(_d_modrm(0, 2));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
 	case 5: /* VERW_RM16 */
 		_bb("VERW_RM16");
 		SPRINTF(dop, "VERW");
-		_chk(_d_modrm(0, 2));
+		_chr(_d_modrm(0, 2));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
-	case 6: _bb("ModRM_REG(6)");_chk(UndefinedOpcode());_be;break;
-	case 7: _bb("ModRM_REG(7)");_chk(UndefinedOpcode());_be;break;
-	default:_impossible_;break;}
+	case 6: _bb("ModRM_REG(6)");_chr(UndefinedOpcode());_be;break;
+	case 7: _bb("ModRM_REG(7)");_chr(UndefinedOpcode());_be;break;
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void INS_0F_01()
@@ -3673,13 +3651,13 @@ static void INS_0F_01()
 	_cb("INS_0F_01");
 	_adv;
 	oldiop = iop;
-	_chk(_d_code((unsigned char *)(&modrm), 1));
+	_chr(_d_code((unsigned char *)(&modrm), 1));
 	iop = oldiop;
 	switch (_GetModRM_REG(modrm)) {
 	case 0: /* SGDT_M32_16 */
 		_bb("SGDT_M32_16");
 		SPRINTF(dop, "SGDT");
-		_chk(_d_modrm(0, 6));
+		_chr(_d_modrm(0, 6));
 		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
@@ -3688,12 +3666,12 @@ static void INS_0F_01()
 		switch (_GetOperandSize) {
 		case 2: SPRINTF(dopr, "WORD PTR %s", drm);break;
 		case 4: SPRINTF(dopr, "DWORD PTR %s", drm);break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		_be;break;
 	case 1: /* SIDT_M32_16 */
 		_bb("SIDT_M32_16");
 		SPRINTF(dop, "SIDT");
-		_chk(_d_modrm(0, 6));
+		_chr(_d_modrm(0, 6));
 		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
@@ -3702,12 +3680,12 @@ static void INS_0F_01()
 		switch (_GetOperandSize) {
 		case 2: SPRINTF(dopr, "WORD PTR %s", drm);break;
 		case 4: SPRINTF(dopr, "DWORD PTR %s", drm);break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		_be;break;
 	case 2: /* LGDT_M32_16 */
 		_bb("LGDT_M32_16");
 		SPRINTF(dop, "LGDT");
-		_chk(_d_modrm(0, 6));
+		_chr(_d_modrm(0, 6));
 		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
@@ -3716,12 +3694,12 @@ static void INS_0F_01()
 		switch (_GetOperandSize) {
 		case 2: SPRINTF(dopr, "WORD PTR %s", drm);break;
 		case 4: SPRINTF(dopr, "DWORD PTR %s", drm);break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		_be;break;
 	case 3: /* LIDT_M32_16 */
 		_bb("LIDT_M32_16");
 		SPRINTF(dop, "LIDT");
-		_chk(_d_modrm(0, 6));
+		_chr(_d_modrm(0, 6));
 		if (!flagmem) {
 			_bb("flagmem(0)");
 			SPRINTF(drm, "<ERROR>");
@@ -3730,23 +3708,23 @@ static void INS_0F_01()
 		switch (_GetOperandSize) {
 		case 2: SPRINTF(dopr, "WORD PTR %s", drm);break;
 		case 4: SPRINTF(dopr, "DWORD PTR %s", drm);break;
-		default:_impossible_;break;}
+		default:_impossible_r_;break;}
 		_be;break;
 	case 4: /* SMSW_RM16 */
 		_bb("SMSW_RM16");
 		SPRINTF(dop, "SMSW");
-		_chk(_d_modrm(0, ((_GetModRM_MOD(modrm) == 3) ? _GetOperandSize : 2)));
+		_chr(_d_modrm(0, ((_GetModRM_MOD(modrm) == 3) ? _GetOperandSize : 2)));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
-	case 5: _bb("ModRM_REG(5)");_chk(UndefinedOpcode());_be;break;
+	case 5: _bb("ModRM_REG(5)");_chr(UndefinedOpcode());_be;break;
 	case 6: /* LMSW_RM16 */
 		_bb("LMSW_RM16");
 		SPRINTF(dop, "LMSW");
-		_chk(_d_modrm(0, 2));
+		_chr(_d_modrm(0, 2));
 		SPRINTF(dopr, "%s", drm);
 		_be;break;
-	case 7: _bb("ModRM_REG(7)");_chk(UndefinedOpcode());_be;break;
-	default:_impossible_;break;}
+	case 7: _bb("ModRM_REG(7)");_chr(UndefinedOpcode());_be;break;
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void LAR_R32_RM32()
@@ -3754,7 +3732,7 @@ static void LAR_R32_RM32()
 	_cb("LAR_R32_RM32");
 	_adv;
 	SPRINTF(dop, "LAR");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -3763,7 +3741,7 @@ static void LSL_R32_RM32()
 	_cb("LSL_R32_RM32");
 	_adv;
 	SPRINTF(dop, "LSL");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -3780,7 +3758,7 @@ static void MOV_R32_CR()
 	_cb("MOV_R32_CR");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_modrm_creg());
+	_chr(_d_modrm_creg());
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -3789,7 +3767,7 @@ static void MOV_R32_DR()
 	_cb("MOV_R32_DR");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_modrm_dreg());
+	_chr(_d_modrm_dreg());
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -3798,7 +3776,7 @@ static void MOV_CR_R32()
 	_cb("MOV_CR_R32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_modrm_creg());
+	_chr(_d_modrm_creg());
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -3807,7 +3785,7 @@ static void MOV_DR_R32()
 	_cb("MOV_DR_R32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_modrm_dreg());
+	_chr(_d_modrm_dreg());
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -3816,7 +3794,7 @@ static void MOV_R32_TR()
 	_cb("MOV_R32_TR");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_modrm_treg());
+	_chr(_d_modrm_treg());
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -3825,7 +3803,7 @@ static void MOV_TR_R32()
 	_cb("MOV_TR_R32");
 	_adv;
 	SPRINTF(dop, "MOV");
-	_chk(_d_modrm_treg());
+	_chr(_d_modrm_treg());
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -3836,11 +3814,11 @@ static void JO_REL32()
 	_cb("JO_REL32");
 	_adv;
 	SPRINTF(dop, "JO");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JNO_REL32()
@@ -3848,11 +3826,11 @@ static void JNO_REL32()
 	_cb("JNO_REL32");
 	_adv;
 	SPRINTF(dop, "JNO");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JC_REL32()
@@ -3860,11 +3838,11 @@ static void JC_REL32()
 	_cb("JC_REL32");
 	_adv;
 	SPRINTF(dop, "JC");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JNC_REL32()
@@ -3872,11 +3850,11 @@ static void JNC_REL32()
 	_cb("JNC_REL32");
 	_adv;
 	SPRINTF(dop, "JNC");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JZ_REL32()
@@ -3884,11 +3862,11 @@ static void JZ_REL32()
 	_cb("JZ_REL32");
 	_adv;
 	SPRINTF(dop, "JZ");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JNZ_REL32()
@@ -3896,11 +3874,11 @@ static void JNZ_REL32()
 	_cb("JNZ_REL32");
 	_adv;
 	SPRINTF(dop, "JNZ");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JNA_REL32()
@@ -3908,11 +3886,11 @@ static void JNA_REL32()
 	_cb("JNA_REL32");
 	_adv;
 	SPRINTF(dop, "JNA");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JA_REL32()
@@ -3920,11 +3898,11 @@ static void JA_REL32()
 	_cb("JA_REL32");
 	_adv;
 	SPRINTF(dop, "JA");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JS_REL32()
@@ -3932,11 +3910,11 @@ static void JS_REL32()
 	_cb("JS_REL32");
 	_adv;
 	SPRINTF(dop, "JS");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JNS_REL32()
@@ -3944,11 +3922,11 @@ static void JNS_REL32()
 	_cb("JNS_REL32");
 	_adv;
 	SPRINTF(dop, "JNS");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JP_REL32()
@@ -3956,11 +3934,11 @@ static void JP_REL32()
 	_cb("JP_REL32");
 	_adv;
 	SPRINTF(dop, "JP");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JNP_REL32()
@@ -3968,11 +3946,11 @@ static void JNP_REL32()
 	_cb("JNP_REL32");
 	_adv;
 	SPRINTF(dop, "JNP");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JL_REL32()
@@ -3980,11 +3958,11 @@ static void JL_REL32()
 	_cb("JL_REL32");
 	_adv;
 	SPRINTF(dop, "JL");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JNL_REL32()
@@ -3992,11 +3970,11 @@ static void JNL_REL32()
 	_cb("JNL_REL32");
 	_adv;
 	SPRINTF(dop, "JNL");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JNG_REL32()
@@ -4004,11 +3982,11 @@ static void JNG_REL32()
 	_cb("JNG_REL32");
 	_adv;
 	SPRINTF(dop, "JNG");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void JG_REL32()
@@ -4016,11 +3994,11 @@ static void JG_REL32()
 	_cb("JG_REL32");
 	_adv;
 	SPRINTF(dop, "JG");
-	_chk(_d_imm(_GetOperandSize));
+	_chr(_d_imm(_GetOperandSize));
 	switch (_GetOperandSize) {
 	case 2: SPRINTFSI(dopr, (unsigned short)(cimm), 2);break;
 	case 4: SPRINTFSI(dopr, (unsigned int)(cimm), 4);break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void SETO_RM8()
@@ -4028,7 +4006,7 @@ static void SETO_RM8()
 	_cb("SETO_RM8");
 	_adv;
 	SPRINTF(dop, "SETO");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4037,7 +4015,7 @@ static void SETNO_RM8()
 	_cb("SETO_RM8");
 	_adv;
 	SPRINTF(dop, "SETNO");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4046,7 +4024,7 @@ static void SETC_RM8()
 	_cb("SETC_RM8");
 	_adv;
 	SPRINTF(dop, "SETC");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4055,7 +4033,7 @@ static void SETNC_RM8()
 	_cb("SETNC_RM8");
 	_adv;
 	SPRINTF(dop, "SETNC");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4064,7 +4042,7 @@ static void SETZ_RM8()
 	_cb("SETZ_RM8");
 	_adv;
 	SPRINTF(dop, "SETZ");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4073,7 +4051,7 @@ static void SETNZ_RM8()
 	_cb("SETNZ_RM8");
 	_adv;
 	SPRINTF(dop, "SETNZ");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4082,7 +4060,7 @@ static void SETNA_RM8()
 	_cb("SETNA_RM8");
 	_adv;
 	SPRINTF(dop, "SETNA");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4091,7 +4069,7 @@ static void SETA_RM8()
 	_cb("SETA_RM8");
 	_adv;
 	SPRINTF(dop, "SETA");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4100,7 +4078,7 @@ static void SETS_RM8()
 	_cb("SETS_RM8");
 	_adv;
 	SPRINTF(dop, "SETS");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4109,7 +4087,7 @@ static void SETNS_RM8()
 	_cb("SETNS_RM8");
 	_adv;
 	SPRINTF(dop, "SETNS");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4118,7 +4096,7 @@ static void SETP_RM8()
 	_cb("SETP_RM8");
 	_adv;
 	SPRINTF(dop, "SETP");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4127,7 +4105,7 @@ static void SETNP_RM8()
 	_cb("SETNP_RM8");
 	_adv;
 	SPRINTF(dop, "SETNP");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4136,7 +4114,7 @@ static void SETL_RM8()
 	_cb("SETL_RM8");
 	_adv;
 	SPRINTF(dop, "SETL");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4145,7 +4123,7 @@ static void SETNL_RM8()
 	_cb("SETNL_RM8");
 	_adv;
 	SPRINTF(dop, "SETNL");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4154,7 +4132,7 @@ static void SETNG_RM8()
 	_cb("SETNG_RM8");
 	_adv;
 	SPRINTF(dop, "SETNG");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4163,7 +4141,7 @@ static void SETG_RM8()
 	_cb("SETG_RM8");
 	_adv;
 	SPRINTF(dop, "SETG");
-	_chk(_d_modrm(0, 1));
+	_chr(_d_modrm(0, 1));
 	SPRINTF(dopr, "%s", drm);
 	_ce;
 }
@@ -4189,7 +4167,7 @@ static void BT_RM32_R32()
 	_cb("BT_RM32_R32");
 	_adv;
 	SPRINTF(dop, "BT");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -4198,8 +4176,8 @@ static void SHLD_RM32_R32_I8()
 	_cb("SHLD_RM32_R32_I8");
 	_adv;
 	SPRINTF(dop, "SHLD");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
-	_chk(_d_imm(1));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "%s,%s,%02X", drm, dr, (unsigned char)(cimm));
 	_ce;
 }
@@ -4208,7 +4186,7 @@ static void SHLD_RM32_R32_CL()
 	_cb("SHLD_RM32_R32_CL");
 	_adv;
 	SPRINTF(dop, "SHLD");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s,CL", drm, dr);
 	_ce;
 }
@@ -4234,7 +4212,7 @@ static void BTS_RM32_R32()
 	_cb("BTS_RM32_R32");
 	_adv;
 	SPRINTF(dop, "BTS");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -4243,8 +4221,8 @@ static void SHRD_RM32_R32_I8()
 	_cb("SHRD_RM32_R32_I8");
 	_adv;
 	SPRINTF(dop, "SHRD");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
-	_chk(_d_imm(1));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "%s,%s,%02X", drm, dr, (unsigned char)(cimm));
 	_ce;
 }
@@ -4253,7 +4231,7 @@ static void SHRD_RM32_R32_CL()
 	_cb("SHRD_RM32_R32_CL");
 	_adv;
 	SPRINTF(dop, "SHRD");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s,CL", drm, dr);
 	_ce;
 }
@@ -4262,7 +4240,7 @@ static void IMUL_R32_RM32()
 	_cb("IMUL_R32_RM32");
 	_adv;
 	SPRINTF(dop, "IMUL");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -4271,7 +4249,7 @@ static void LSS_R32_M16_32()
 	_cb("LSS_R32_M16_32");
 	_adv;
 	SPRINTF(dop, "LSS");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
 	if (!flagmem) {
 		_bb("flagmem(0)");
 		SPRINTF(drm, "<ERROR>");
@@ -4285,7 +4263,7 @@ static void BTR_RM32_R32()
 	_cb("BTR_RM32_R32");
 	_adv;
 	SPRINTF(dop, "BTR");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -4294,7 +4272,7 @@ static void LFS_R32_M16_32()
 	_cb("LFS_R32_M16_32");
 	_adv;
 	SPRINTF(dop, "LFS");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
 	if (!flagmem) {
 		_bb("flagmem(0)");
 		SPRINTF(drm, "<ERROR>");
@@ -4308,7 +4286,7 @@ static void LGS_R32_M16_32()
 	_cb("LGS_R32_M16_32");
 	_adv;
 	SPRINTF(dop, "LGS");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
 	if (!flagmem) {
 		_bb("flagmem(0)");
 		SPRINTF(drm, "<ERROR>");
@@ -4323,7 +4301,7 @@ static void MOVZX_R32_RM8()
 	_cb("MOVZX_R32_RM8");
 	_adv;
 	SPRINTF(dop, "MOVZX");
-	_chk(_d_modrm(_GetOperandSize, 1));
+	_chr(_d_modrm(_GetOperandSize, 1));
 	if (flagmem) SPRINTF(dptr, "BYTE PTR ");
 	else dptr[0] = 0;
 	SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
@@ -4335,7 +4313,7 @@ static void MOVZX_R32_RM16()
 	_cb("MOVZX_R32_RM16");
 	_adv;
 	SPRINTF(dop, "MOVZX");
-	_chk(_d_modrm(4, 2));
+	_chr(_d_modrm(4, 2));
 	if (flagmem) SPRINTF(dptr, "WORD PTR ");
 	else dptr[0] = 0;
 	SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
@@ -4347,39 +4325,39 @@ static void INS_0F_BA()
 	_cb("INS_0F_BA");
 	_adv;
 	oldiop = iop;
-	_chk(_d_code((unsigned char *)(&modrm), 1));
+	_chr(_d_code((unsigned char *)(&modrm), 1));
 	iop = oldiop;
-	_chk(_d_modrm(0, _GetOperandSize));
+	_chr(_d_modrm(0, _GetOperandSize));
 	switch (cr) {
-	case 0: _bb("cr(0)");_chk(UndefinedOpcode());_be;break;
-	case 1: _bb("cr(1)");_chk(UndefinedOpcode());_be;break;
-	case 2: _bb("cr(2)");_chk(UndefinedOpcode());_be;break;
-	case 3: _bb("cr(3)");_chk(UndefinedOpcode());_be;break;
+	case 0: _bb("cr(0)");_chr(UndefinedOpcode());_be;break;
+	case 1: _bb("cr(1)");_chr(UndefinedOpcode());_be;break;
+	case 2: _bb("cr(2)");_chr(UndefinedOpcode());_be;break;
+	case 3: _bb("cr(3)");_chr(UndefinedOpcode());_be;break;
 	case 4: /* BT_RM32_I8 */
 		_bb("BT_RM32_I8");
 		SPRINTF(dop, "BT");
-		_chk(_d_imm(1));
+		_chr(_d_imm(1));
 		SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
 		_be;break;
 	case 5: /* BTS_RM32_I8 */
 		_bb("BTS_RM32_I8");
 		SPRINTF(dop, "BTS");
-		_chk(_d_imm(1));
+		_chr(_d_imm(1));
 		SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
 		_be;break;
 	case 6: /* BTR_RM32_I8 */
 		_bb("BTR_RM32_I8");
 		SPRINTF(dop, "BTR");
-		_chk(_d_imm(1));
+		_chr(_d_imm(1));
 		SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
 		_be;break;
 	case 7: /* BTC_RM32_I8 */
 		_bb("BTC_RM32_I8");
 		SPRINTF(dop, "BTC");
-		_chk(_d_imm(1));
+		_chr(_d_imm(1));
 		SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
 		_be;break;
-	default:_impossible_;break;}
+	default:_impossible_r_;break;}
 	_ce;
 }
 static void BTC_RM32_R32()
@@ -4387,7 +4365,7 @@ static void BTC_RM32_R32()
 	_cb("BTC_RM32_R32");
 	_adv;
 	SPRINTF(dop, "BTC");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", drm, dr);
 	_ce;
 }
@@ -4396,7 +4374,7 @@ static void BSF_R32_RM32()
 	_cb("BSF_R32_RM32");
 	_adv;
 	SPRINTF(dop, "BSF");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -4405,7 +4383,7 @@ static void BSR_R32_RM32()
 	_cb("BSR_R32_RM32");
 	_adv;
 	SPRINTF(dop, "BSR");
-	_chk(_d_modrm(_GetOperandSize, _GetOperandSize));
+	_chr(_d_modrm(_GetOperandSize, _GetOperandSize));
 	SPRINTF(dopr, "%s,%s", dr, drm);
 	_ce;
 }
@@ -4415,7 +4393,7 @@ static void MOVSX_R32_RM8()
 	_cb("MOVSX_R32_RM8");
 	_adv;
 	SPRINTF(dop, "MOVSX");
-	_chk(_d_modrm(_GetOperandSize, 1));
+	_chr(_d_modrm(_GetOperandSize, 1));
 	if (flagmem) SPRINTF(dptr, "BYTE PTR ");
 	else dptr[0] = 0;
 	SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
@@ -4427,7 +4405,7 @@ static void MOVSX_R32_RM16()
 	_cb("MOVSX_R32_RM16");
 	_adv;
 	SPRINTF(dop, "MOVSX");
-	_chk(_d_modrm(4, 2));
+	_chr(_d_modrm(4, 2));
 	if (flagmem) SPRINTF(dptr, "WORD PTR ");
 	else dptr[0] = 0;
 	SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
@@ -4438,7 +4416,7 @@ static void QDX()
 	_cb("QDX");
 	_adv;
 	SPRINTF(dop, "QDX");
-	_chk(_d_imm(1));
+	_chr(_d_imm(1));
 	SPRINTF(dopr, "%02X", (unsigned char)(cimm));
 	_ce;
 }
@@ -5000,7 +4978,7 @@ unsigned char dasm32(char *stmt, unsigned char *rcode, unsigned char flag32) {
 		_ce;
 	} while (_kdf_check_prefix(opcode));
 #if DASM_TRACE == 1
-	if (trace.cid || trace.flagerror) {
+	if (trace.callCount || trace.flagError) {
 		PRINTF("dasm32: bad machine code.\n");
 	}
 	utilsTraceFinal(&trace);

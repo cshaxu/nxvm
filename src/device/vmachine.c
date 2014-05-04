@@ -96,8 +96,8 @@ void devicePrintMachine() {
 	PRINTF("RAM Size:          %d MB\n", vram.size >> 20);
 	PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
 		vfddGetImageSize * 1. / VFDD_BYTE_PER_MB,
-		vfdd.flagexist ? "inserted" : "not inserted");
+		vfdd.flagDiskExist ? "inserted" : "not inserted");
 	PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n", vhdd.ncyl,
 		vhddGetImageSize * 1. / VHDD_BYTE_PER_MB,
-		vhdd.flagexist ? "connected" : "disconnected");
+		vhdd.flagDiskExist ? "connected" : "disconnected");
 }

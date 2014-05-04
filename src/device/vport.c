@@ -17,16 +17,16 @@ static void io_write_void() {}
 static void init() {
 	t_nsbitcc i;
 	MEMSET(&vport, Zero8, sizeof(t_port));
-	for (i = 0;i < 0x10000;++i) {
+	for (i = 0;i < VPORT_MAX_PORT_COUNT;++i) {
 		vport.in[i] = (t_faddrcc) io_read_void;
 		vport.out[i] = (t_faddrcc) io_write_void;
 	}
 }
 
 static void reset() {
-	vport.iobyte = Zero8;
-	vport.ioword = Zero16;
-	vport.iodword = Zero32;
+	vport.ioByte = Zero8;
+	vport.ioWord = Zero16;
+	vport.ioDWord = Zero32;
 }
 
 static void refresh() {}

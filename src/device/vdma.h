@@ -13,28 +13,30 @@ extern "C" {
 
 typedef t_nubit8 t_page;
 
+#define VDMA_CHANNEL_COUNT 4
+
 typedef struct {
-	t_nubit16 baseaddr; /* base address */
-	t_nubit16 basewc;   /* base word count */
-	t_nubit16 curraddr; /* current address */
-	t_nubit16 currwc;   /* current word count */
-	t_nubit8  mode;     /* mode register */
-	t_page    page;     /* page register */
-	t_faddrcc devread;  /* get data from device to latch */
-	t_faddrcc devwrite; /* write data to device from latch */
-	t_faddrcc devfinal; /* send eop signal to device */
+	t_nubit16 baseAddr;  /* base address */
+	t_nubit16 baseCount; /* base word count */
+	t_nubit16 currAddr;  /* current address */
+	t_nubit16 currCount; /* current word count */
+	t_nubit8  mode;      /* mode register */
+	t_page    page;      /* page register */
+	t_faddrcc fpReadDevice;  /* get data from device to latch */
+	t_faddrcc fpWriteDevice; /* write data to device from latch */
+	t_faddrcc fpCloseDevice; /* send eop signal to device */
 } t_dma_channel;
 
 typedef struct {
-	t_dma_channel channel[4];
-	t_nubit8      command;
-	t_nubit8      status;
-	t_nubit8      mask;
-	t_nubit8      request;
-	t_nubit8      temp;
-	t_bool        flagmsb; /* flip-flop for msb/lsb */
+	t_dma_channel channel[VDMA_CHANNEL_COUNT];
+	t_nubit8      command; /* command register */
+	t_nubit8      status;  /* status register */
+	t_nubit8      mask;    /* mask register */
+	t_nubit8      request; /* request register */
+	t_nubit8      temp;    /* temporary register */
 	t_nubit8      drx;     /* dreq id of highest priority */
-	t_bool        flageop; /* end of process */
+	t_bool        flagMSB; /* flip-flop for msb/lsb */
+	t_bool        flagEOP; /* end of process */
     
     /* id of request in service in D5-D4, flag of in service in D0 */
 	t_nubit8      isr;
@@ -133,7 +135,7 @@ extern t_dma vdma1, vdma2;
 #define VDMA_GetISR_ISR(cisr) (((cisr) & VDMA_ISR_ISR) >> 4)
 #define VDMA_SetISR(cisr, id) ((cisr) = (VDMA_ISR_IS | ((id) << 4)))
 
-void vdmaSetDRQ(t_nubit8 dreqid);
+void vdmaSetDRQ(t_nubit8 drqId);
 
 void vdmaRegister();
 

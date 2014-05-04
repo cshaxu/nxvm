@@ -101,7 +101,7 @@ extern t_pic vpic1, vpic2;
 #define VPIC_GetIrrTopId(rpic)  (GetRegTopId((rpic), (rpic)->irr))
 #define VPIC_GetImrTopId(rpic)  (GetRegTopId((rpic), (rpic)->imr))
 
-void vpicSetIRQ(t_nubit8 irqid);
+void vpicSetIRQ(t_nubit8 irqId);
 t_bool vpicScanINTR();
 t_nubit8 vpicPeekINTR();
 t_nubit8 vpicGetINTR();

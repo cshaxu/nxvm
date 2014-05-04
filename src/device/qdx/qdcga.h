@@ -44,7 +44,7 @@ extern "C" {
 #define qdcgaGetTextMemAddr \
 	(vramGetRealAddr(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, 0x0000))
 #define qdcgaGetPageSize \
-	(qdcgaVarRowSize * vvadp.colsize * 2)
+	(qdcgaVarRowSize * vvadp.colSize * 2)
 #define qdcgaGetTextMemAddrPage(page) \
 	(qdcgaGetTextMemAddr + (page) * qdcgaGetPageSize)
 #define qdcgaGetTextMemAddrPageCur \

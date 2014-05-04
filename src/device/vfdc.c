@@ -88,14 +88,14 @@ t_nubit8 VFDC_GetBPSC(t_nubit16 cb) {
                            (0x00 << 1) | \
                            (0x00 << 0))
 #define SetST3 (vfdc.st3 = (0x00        << 7) | \
-                           (vfdd.flagro << 6) | \
+                           (vfdd.flagReadOnly << 6) | \
                            (0x01        << 5) | \
                            ((!vfdd.cyl) << 4) | \
                            (0x01        << 3) | \
                            (vfdd.head   << 2) | \
                            ((vfdc.cmd[1] & VFDC_ST3_DS) << 0))
-#define SetMSRReadyRead  (vfdc.msr = VFDC_MSR_ReadyRead, vfdc.rwid = 0)
-#define SetMSRReadyWrite (vfdc.msr = VFDC_MSR_ReadyWrite, vfdc.rwid = 0)
+#define SetMSRReadyRead  (vfdc.msr = VFDC_MSR_ReadyRead, vfdc.rwCount = 0)
+#define SetMSRReadyWrite (vfdc.msr = VFDC_MSR_ReadyWrite, vfdc.rwCount = 0)
 #define SetMSRProcRead   (vfdc.msr = VFDC_MSR_ProcessRead)
 #define SetMSRProcWrite  (vfdc.msr = VFDC_MSR_ProcessWrite)
 #define SetMSRExecCmd    (vfdc.msr = VFDC_MSR_NDM)
@@ -109,7 +109,7 @@ static void ExecCmdSpecify() {
 	vfdc.hut      = VFDC_GetCMD_Specify1_HUT(vfdc.cmd[1]);
 	vfdc.srt      = VFDC_GetCMD_Specify1_SRT(vfdc.cmd[1]);
 	vfdc.hlt      = VFDC_GetCMD_Specify2_HLT(vfdc.cmd[2]);
-	vfdc.flagndma = GetBit(vfdc.cmd[2], VFDC_CMD_Specify2_ND);
+	vfdc.flagNDMA = GetBit(vfdc.cmd[2], VFDC_CMD_Specify2_ND);
 	SetMSRReadyWrite;
 }
 static void ExecCmdSenseDriveStatus() {
@@ -128,15 +128,15 @@ static void ExecCmdRecalibrate() {
 	SetBit(vfdc.st0, VFDC_ST0_SEEK_END);
 	if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
 		vpicSetIRQ(0x06);
-		vfdc.flagintr = True;
+		vfdc.flagINTR = True;
 	}
 	SetMSRReadyWrite;
 }
 static void ExecCmdSenseInterrupt() {
-	if (vfdc.flagintr) {
+	if (vfdc.flagINTR) {
 		vfdc.ret[0] = vfdc.st0;
 		vfdc.ret[1] = (t_nubit8)vfdd.cyl;
-		vfdc.flagintr = False;
+		vfdc.flagINTR = False;
 	} else {
 		vfdc.ret[0] = vfdc.st0 = VFDC_RET_ERROR;
 	}
@@ -151,7 +151,7 @@ static void ExecCmdSeek() {
 	SetBit(vfdc.st0, VFDC_ST0_SEEK_END);
 	if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
 		vpicSetIRQ(0x06);
-		vfdc.flagintr = True;
+		vfdc.flagINTR = True;
 	}
 	SetMSRReadyWrite;
 }
@@ -165,17 +165,17 @@ static void ExecCmdReadID() {
 }
 static void ExecCmdFormatTrack() {
 	/* NOTE: simplified procedure; dma not used */
-	t_nubit8 fillbyte;
+	t_nubit8 fillByte;
 	/* load parameters*/
 	vfdd.head    = GetBit(vfdc.cmd[1], VFDC_CMD_FormatTrack1_HD);
 	vfdd.sector  = 0x01;
 	vfdd.nbyte   = VFDC_GetBPS(vfdc.cmd[2]);
 	vfdd.nsector = vfdc.cmd[3];
-	vfdd.gaplen  = vfdc.cmd[4];
-	fillbyte     = vfdc.cmd[5];
+	vfdd.gpl     = vfdc.cmd[4];
+	fillByte     = vfdc.cmd[5];
 	vfddSetPointer;
 	/* execute format track*/
-	vfddFormatTrack(fillbyte);
+	vfddFormatTrack(fillByte);
 	/* finish transaction */
 	SetST0;
 	SetST1;
@@ -189,7 +189,7 @@ static void ExecCmdFormatTrack() {
 	vfdc.ret[6] = Zero8;
 	if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
 		vpicSetIRQ(0x06);
-		vfdc.flagintr = True;
+		vfdc.flagINTR = True;
 	}
 	SetMSRReadyRead;
 }
@@ -222,7 +222,7 @@ static void ExecCmdError() {
 
 /* read main status register */
 static void io_read_03F4() {
-	vport.iobyte = vfdc.msr;
+	vport.ioByte = vfdc.msr;
 }
 /* read standard results */
 static void io_read_03F5() {
@@ -231,85 +231,85 @@ static void io_read_03F5() {
 	} else {
 		SetMSRProcRead;
 	}
-	vport.iobyte = vfdc.ret[vfdc.rwid++];
+	vport.ioByte = vfdc.ret[vfdc.rwCount++];
 	switch (vfdc.cmd[0]) {
 	case CMD_SPECIFY:
-		if (vfdc.rwid >= 0) {
+		if (vfdc.rwCount >= 0) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_SENSE_DRIVE_STATUS:
-		if (vfdc.rwid >= 1) {
+		if (vfdc.rwCount >= 1) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_RECALIBRATE:
-		if (vfdc.rwid >= 0) {
+		if (vfdc.rwCount >= 0) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_SENSE_INTERRUPT:
-		if (vfdc.rwid >= 2) {
+		if (vfdc.rwCount >= 2) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_SEEK:
-		if (vfdc.rwid >= 0) {
+		if (vfdc.rwCount >= 0) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_READ_TRACK:
-		if (vfdc.rwid >= 7) {
+		if (vfdc.rwCount >= 7) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_READ_ID:
-		if (vfdc.rwid >= 7) {
+		if (vfdc.rwCount >= 7) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_FORMAT_TRACK:
-		if (vfdc.rwid >= 7) {
+		if (vfdc.rwCount >= 7) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_WRITE_DATA:
-		if (vfdc.rwid >= 7) {
+		if (vfdc.rwCount >= 7) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_READ_DATA_ALL:
-		if (vfdc.rwid >= 7) {
+		if (vfdc.rwCount >= 7) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_WRITE_DELETED_DATA:
-		if (vfdc.rwid >= 7) {
+		if (vfdc.rwCount >= 7) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_READ_DELETED_DATA:
-		if (vfdc.rwid >= 7) {
+		if (vfdc.rwCount >= 7) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_SCAN_EQUAL_ALL:
-		if (vfdc.rwid >= 7) {
+		if (vfdc.rwCount >= 7) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_READ_DATA:
-		if (vfdc.rwid >= 7) {
+		if (vfdc.rwCount >= 7) {
 			SetMSRReadyWrite;
 		}
 		break;
 	case CMD_SCAN_EQUAL:
-		if (vfdc.rwid >= 7) {
+		if (vfdc.rwCount >= 7) {
 			SetMSRReadyWrite;
 		}
 		break;
 	default: 
-		if (vfdc.rwid >= 1) {
+		if (vfdc.rwCount >= 1) {
 			SetMSRReadyWrite;
 		}
 		break;
@@ -317,15 +317,15 @@ static void io_read_03F5() {
 }
 /* read digital input register */
 static void io_read_03F7() {
-	vport.iobyte = vfdc.dir;
+	vport.ioByte = vfdc.dir;
 }
 
 /* write digital output register */
 static void io_write_03F2() {
-	if (!GetBit(vfdc.dor, VFDC_DOR_NRS) && GetBit(vport.iobyte, VFDC_DOR_NRS)) {
+	if (!GetBit(vfdc.dor, VFDC_DOR_NRS) && GetBit(vport.ioByte, VFDC_DOR_NRS)) {
 		SetMSRReadyWrite;
 	}
-	vfdc.dor = vport.iobyte;
+	vfdc.dor = vport.ioByte;
 	if (!GetBit(vfdc.dor, VFDC_DOR_NRS)) {
 		doReset();
 	}
@@ -337,80 +337,80 @@ static void io_write_03F5() {
 	} else {
 		SetMSRProcWrite;
 	}
-	vfdc.cmd[vfdc.rwid++] = vport.iobyte;
+	vfdc.cmd[vfdc.rwCount++] = vport.ioByte;
 	switch (vfdc.cmd[0]) {
 	case CMD_SPECIFY:
-		if (vfdc.rwid == 3) {
+		if (vfdc.rwCount == 3) {
 			ExecCmdSpecify();
 		}
 		break;
 	case CMD_SENSE_DRIVE_STATUS:
-		if (vfdc.rwid == 2) {
+		if (vfdc.rwCount == 2) {
 			ExecCmdSenseDriveStatus();
 		}
 		break;
 	case CMD_RECALIBRATE:
-		if (vfdc.rwid == 2) {
+		if (vfdc.rwCount == 2) {
 			ExecCmdRecalibrate();
 		}
 		break;
 	case CMD_SENSE_INTERRUPT:
-		if (vfdc.rwid == 1) {
+		if (vfdc.rwCount == 1) {
 			ExecCmdSenseInterrupt();
 		}
 		break;
 	case CMD_SEEK:
-		if (vfdc.rwid == 3) {
+		if (vfdc.rwCount == 3) {
 			ExecCmdSeek();
 		}
 		break;
 	case CMD_READ_TRACK:
-		if (vfdc.rwid == 9) {
+		if (vfdc.rwCount == 9) {
 			ExecCmdReadTrack();
 		}
 		break;
 	case CMD_READ_ID:
-		if (vfdc.rwid == 2) {
+		if (vfdc.rwCount == 2) {
 			ExecCmdReadID();
 		}
 		break;
 	case CMD_FORMAT_TRACK:
-		if (vfdc.rwid == 6) {
+		if (vfdc.rwCount == 6) {
 			ExecCmdFormatTrack();
 		}
 		break;
 	case CMD_WRITE_DATA:
-		if (vfdc.rwid == 9) {
+		if (vfdc.rwCount == 9) {
 			ExecCmdWriteData();
 		}
 		break;
 	case CMD_READ_DATA_ALL:
-		if (vfdc.rwid == 9) {
+		if (vfdc.rwCount == 9) {
 			ExecCmdReadDataAll();
 		}
 		break;
 	case CMD_WRITE_DELETED_DATA:
-		if (vfdc.rwid == 9) {
+		if (vfdc.rwCount == 9) {
 			ExecCmdWriteDeletedData();
 		}
 		break;
 	case CMD_READ_DELETED_DATA:
-		if (vfdc.rwid == 9) {
+		if (vfdc.rwCount == 9) {
 			ExecCmdReadDeletedData();
 		}
 		break;
 	case CMD_SCAN_EQUAL_ALL:
-		if (vfdc.rwid == 9) {
+		if (vfdc.rwCount == 9) {
 			ExecCmdScanEqualAll();
 		}
 		break;
 	case CMD_READ_DATA:
-		if (vfdc.rwid == 9) {
+		if (vfdc.rwCount == 9) {
 			ExecCmdReadData();
 		}
 		break;
 	case CMD_SCAN_EQUAL:
-		if (vfdc.rwid == 9) {
+		if (vfdc.rwCount == 9) {
 			ExecCmdScanEqual();
 		}
 		break;
@@ -420,7 +420,7 @@ static void io_write_03F5() {
 	}
 }
 static void io_write_03F7() {
-	vfdc.ccr = vport.iobyte;
+	vfdc.ccr = vport.ioByte;
 }
 
 void vfdcTransRead() {
@@ -439,14 +439,14 @@ void vfdcTransInit() {
 	vfdd.sector    = vfdc.cmd[4];
 	vfdd.nbyte     = VFDC_GetBPS(vfdc.cmd[5]);
 	vfdd.nsector   = vfdc.cmd[6];
-	vfdd.gaplen    = vfdc.cmd[7];
+	vfdd.gpl       = vfdc.cmd[7];
 	if (!vfdc.cmd[5]) {
 		vfdd.nbyte = vfdc.cmd[8];
 	}
-	vfdd.count     = Zero16;
+	vfdd.transCount = Zero16;
 	vfddSetPointer;
 	/* send trans request */
-	if (!vfdc.flagndma && GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
+	if (!vfdc.flagNDMA && GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
 		vdmaSetDRQ(2);
 	}
 	SetMSRExecCmd;
@@ -465,7 +465,7 @@ void vfdcTransFinal() {
 	vfdc.ret[6] = VFDC_GetBPSC(vfdd.nbyte);
 	if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
 		vpicSetIRQ(0x06);
-		vfdc.flagintr = True;
+		vfdc.flagINTR = True;
 	}
 	SetMSRReadyRead;
 }
@@ -489,7 +489,7 @@ static void init() {
 static void reset() {doReset();}
 
 static void refresh() {
-	if (!vfdd.flagexist) {
+	if (!vfdd.flagDiskExist) {
 		SetBit(vfdc.dir, VFDC_DIR_DC);
 	} else {
 		ClrBit(vfdc.dir, VFDC_DIR_DC);
@@ -507,26 +507,17 @@ void devicePrintFdc() {
 	PRINTF("msr = %x, dir = %x, dor = %x, ccr = %x, dr = %x\n",
 		vfdc.msr,vfdc.dir,vfdc.dor,vfdc.ccr,vfdc.dr);
 	PRINTF("hut = %x, hlt = %x, srt = %x, Non-DMA = %x, INTR = %x\n",
-		vfdc.hut,vfdc.hlt,vfdc.srt,vfdc.flagndma,vfdc.flagintr);
-	PRINTF("rwid = %x, st0 = %x, st1 = %x, st2 = %x, st3 = %x\n",
-		vfdc.rwid,vfdc.st0,vfdc.st1,vfdc.st2,vfdc.st3);
+		vfdc.hut,vfdc.hlt,vfdc.srt,vfdc.flagNDMA,vfdc.flagINTR);
+	PRINTF("rwCount = %x, st0 = %x, st1 = %x, st2 = %x, st3 = %x\n",
+		vfdc.rwCount,vfdc.st0,vfdc.st1,vfdc.st2,vfdc.st3);
 	for (i = 0;i < 9;++i) {
-		PRINTF("cmd[%d] = %x, ", i,vfdc.cmd[i]);
+		PRINTF("cmd[%d] = %x, ", i, vfdc.cmd[i]);
 	}
 	PRINTF("\n");
 	for (i = 0;i < 7;++i) {
-		PRINTF("ret[%d] = %x, ", i,vfdc.ret[i]);
+		PRINTF("ret[%d] = %x, ", i, vfdc.ret[i]);
 	}
 	PRINTF("\n");
-	PRINTF("FDD INFO\n========\n");
-	PRINTF("cyl = %x, head = %x, sector = %x\n",
-		vfdd.cyl,vfdd.head,vfdd.sector);
-	PRINTF("nsector = %x, nbyte = %x, gaplen = %x\n",
-		vfdd.nsector,vfdd.nbyte,vfdd.gaplen);
-	PRINTF("ReadOnly = %x, Exist = %x\n",
-		vfdd.flagro,vfdd.flagexist);
-	PRINTF("base = %x, curr = %x, count = %x\n",
-		vfdd.base,vfdd.curr,vfdd.count);
 }
 
 /*
@@ -535,9 +526,9 @@ of3f1 00  refresh
 o03f5 0f  seek command
 o03f5 00  drv 0 head 0
 o03f5 00  cyl 0
-if3f0     show status: flagintr=1,ReadyWrite
+if3f0     show status: flagINTR=1,ReadyWrite
 o03f5 08  sense interrupt
-if3f0     show status: flagintr=0,ReadyRead
+if3f0     show status: flagINTR=0,ReadyRead
 i03f5     show st0: 0x20
 i03f5     show cyl: 0x00
 if3f0     show status: ReadyWrite
@@ -557,9 +548,9 @@ of3f1 00  refresh
 o03f5 0f  seek command
 o03f5 00  drv 0 head 0
 o03f5 00  cyl 0
-if3f0     show status: flagintr=1,ReadyWrite
+if3f0     show status: flagINTR=1,ReadyWrite
 o03f5 08  sense interrupt
-if3f0     show status: flagintr=0,ReadyRead
+if3f0     show status: flagINTR=0,ReadyRead
 i03f5     show st0: 0x20
 i03f5     show cyl: 0x01
 if3f0     show status: ReadyWrite

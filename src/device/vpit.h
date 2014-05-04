@@ -24,11 +24,12 @@ typedef struct {
 	t_nubit16 count[3]; /* counter[0-2] */
 	t_nubit16 latch[3]; /* latch counts */
 
-	t_bool flagready[3]; /* flag of ready */
-	t_bool flaglatch[3]; /* flag of latch status */
-	t_bool flaggate[3];  /* enable or disable counter */
-	t_pit_status_rw flagread[3];  /* flag of low byte read */
-	t_pit_status_rw flagwrite[3]; /* flag of low byte write */
+	t_bool flagReady[3]; /* flag of ready */
+	t_bool flagLatch[3]; /* flag of latch status */
+	t_bool flagGate[3];  /* enable or disable counter */
+
+	t_pit_status_rw flagRead[3];  /* flag of low byte read */
+	t_pit_status_rw flagWrite[3]; /* flag of low byte write */
 
 	t_faddrcc out[3]; /* action when out signal is valid */
 } t_pit;
@@ -67,7 +68,7 @@ extern t_pit vpit;
 #define VPIT_SB_NC  0x40 /* null count (1) or count available (0) */
 #define VPIT_SB_OUT 0x80 /* state of out pin high(1) or low(0) */
 
-void vpitSetGate(t_nubit8 id, t_bool flaggate);
+void vpitSetGate(t_nubit8 id, t_bool flagGate);
 
 void vpitRegister();
 

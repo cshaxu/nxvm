@@ -46,7 +46,7 @@ VOID w32cdispSetScreen() {
 	SetConsoleScreenBufferSize(hOut, coordBufSize);
 }
 
-VOID w32cdispPaint(BOOL force) {
+VOID w32cdispPaint(BOOL flagForce) {
 	UCHAR ansiChar;
 	WCHAR unicodeChar;
 	WORD  charProp;
@@ -56,7 +56,7 @@ VOID w32cdispPaint(BOOL force) {
 	if (!charBuf) {
 		return;
 	}
-	if (force || deviceConnectDisplayGetBufferChange()) {
+	if (flagForce || deviceConnectDisplayGetBufferChange()) {
 		for(i = 0;i < sizeCol;++i) {
 			for(j = 0;j < sizeRow;++j) {
 				ansiChar = deviceConnectDisplayGetCurrentChar(i, j);
@@ -69,7 +69,7 @@ VOID w32cdispPaint(BOOL force) {
 		}
 		WriteConsoleOutput(hOut, charBuf, coordBufSize, coordBufStart, &srctWriteRect);
 	}
-	if (force || deviceConnectDisplayGetCursorChange()) {
+	if (flagForce || deviceConnectDisplayGetCursorChange()) {
 		GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&curInfo));
 		curInfo.bVisible = deviceConnectDisplayGetCursorVisible();
 		curInfo.dwSize = (DWORD)(((deviceConnectDisplayGetCursorBottom() -

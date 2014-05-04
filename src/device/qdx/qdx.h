@@ -9,8 +9,7 @@ extern "C" {
 
 extern t_faddrcc qdxTable[0x100];
 
-void qdxMakeInt(t_nubit8 intid, t_strptr stmt);
-void qdxExecInt(t_nubit8 intid);
+void qdxExecInt(t_nubit8 intId);
 
 void qdxRegister();
 

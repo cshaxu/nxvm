@@ -16,10 +16,10 @@
 t_debug vdebug;
 
 static void xasmTest() {
-	static t_nubitcc total = 0;
-	t_bool flagtextonly = False; /* don't stop vmachine if true */
-	t_nubit8 i, lend1, lend2, lena;
-	t_string dstr1, dstr2;
+	static t_nubitcc total = 0; /* total number of instructions tested */
+	t_bool flagStop = True; /* stop vmachine if comparison fails */
+	t_nubit8 i, lenDasm1, lenDasm2, lenAasm;
+	t_string strDasm1, strDasm2;
 	t_nubit8 ins1[15], ins2[15];
 	total++;
 	vcpuinsReadLinear(vcpu.cs.base + vcpu.eip, (t_vaddrcc) ins1, 15);
@@ -40,46 +40,46 @@ static void xasmTest() {
         case 0x28: case 0x29: case 0x2a: case 0x2b:
         case 0x30: case 0x31: case 0x32: case 0x33:
         case 0x38: case 0x39: case 0x3a: case 0x3b:
-            flagtextonly = True;
+            flagStop = True;
             break;
 	}
 	switch (d_nubit8(ins1+1)) {
         case 0x90:
-            flagtextonly = True;
+            flagStop = True;
             break;
 	}
 	switch (d_nubit16(ins1)) {
         case 0x2e66:
-            flagtextonly = True;
+            flagStop = True;
             break;
 	}
 	switch (GetMax24(d_nubit24(ins1))) {
         case 0xb70f66:
-            flagtextonly = True;
+            flagStop = True;
             break;
 	}
 	switch (GetMax24(d_nubit24(ins1+1))) {
         case 0xb70f66:
-            flagtextonly = True;
+            flagStop = True;
             break;
 	}
 	switch (d_nubit32(ins1)) {
 	}
-	lend1 = utilsDasm32(dstr1, ins1, vcpu.cs.seg.exec.defsize);
-	lena  = utilsAasm32(dstr1, ins2, vcpu.cs.seg.exec.defsize);
-	lend2 = utilsDasm32(dstr2, ins2, vcpu.cs.seg.exec.defsize);
-	if ((!flagtextonly && (lena != lend1 || lena != lend2 || lend1 != lend2 ||
-                           MEMCMP(ins1, ins2, lend1))) || STRCMP(dstr1, dstr2)) {
+	lenDasm1 = utilsDasm32(strDasm1, ins1, vcpu.cs.seg.exec.defsize);
+	lenAasm  = utilsAasm32(strDasm1, ins2, vcpu.cs.seg.exec.defsize);
+	lenDasm2 = utilsDasm32(strDasm2, ins2, vcpu.cs.seg.exec.defsize);
+	if ((!flagStop && (lenAasm != lenDasm1 || lenAasm != lenDasm2 || lenDasm1 != lenDasm2 ||
+		MEMCMP(ins1, ins2, lenDasm1))) || STRCMP(strDasm1, strDasm2)) {
 		PRINTF("diff at #%d %04X:%08X(L%08X), len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
-                   total, _cs, _eip, vcpu.cs.base + vcpu.eip, lena, lend1, lend2, vcpu.cs.seg.exec.defsize ? 32 : 16);
-		for (i = 0;i < lend1;++i) {
+                   total, _cs, _eip, vcpu.cs.base + vcpu.eip, lenAasm, lenDasm1, lenDasm2, vcpu.cs.seg.exec.defsize ? 32 : 16);
+		for (i = 0;i < lenDasm1;++i) {
 			PRINTF("%02X", ins1[i]);
 		}
-		PRINTF("\t%s\n", dstr1);
-		for (i = 0;i < lend2;++i) {
+		PRINTF("\t%s\n", strDasm1);
+		for (i = 0;i < lenDasm2;++i) {
 			PRINTF("%02X", ins2[i]);
 		}
-		PRINTF("\t%s\n", dstr2);
+		PRINTF("\t%s\n", strDasm2);
 		deviceStop();
 	}
 }
@@ -93,15 +93,15 @@ eax=%08x ecx=%08x edx=%08x ebx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x f
 eflags=%08x %s %s %s %s %s %s %s %s %s %s %s %s | cs:eip=%04x:%08x(L%08x)"
 
 static void refresh() {
-	vdebug.breakcnt++;
-	if (vdebug.breakcnt && (
-		(vdebug.flagbreak && _cs == vdebug.breakcs && _ip == vdebug.breakip) ||
-		(vdebug.flagbreakx && (vcpu.cs.base + vcpu.eip == vdebug.breaklinear)))) {
+	vdebug.breakCount++;
+	if (vdebug.breakCount && (
+		(vdebug.flagBreak && _cs == vdebug.breakCS && _ip == vdebug.breakIP) ||
+		(vdebug.flagBreak32 && (vcpu.cs.base + vcpu.eip == vdebug.breakLinear)))) {
 		deviceStop();
 	}
-	if (vdebug.tracecnt) {
-		vdebug.tracecnt--;
-		if (!vdebug.tracecnt) {
+	if (vdebug.traceCount) {
+		vdebug.traceCount--;
+		if (!vdebug.traceCount) {
 			deviceStop();
 		}
 	}
@@ -172,12 +172,12 @@ void vdebugRegister() {vmachineAddMe;}
 
 void devicePrintDebug() {
 	PRINTF("Recorder:    %s\n", vdebug.recordFile ? "On" : "Off");
-	PRINTF("Trace:       %s\n", vdebug.tracecnt ? "On" : "Off");
+	PRINTF("Trace:       %s\n", vdebug.traceCount ? "On" : "Off");
 	PRINTF("Break Point: ");
-	if (vdebug.flagbreak) {
-		PRINTF("%04X:%04X\n", vdebug.breakcs,vdebug.breakip);
-	} else if (vdebug.flagbreakx) {
-		PRINTF("L%08X\n", vdebug.breaklinear);
+	if (vdebug.flagBreak) {
+		PRINTF("%04X:%04X\n", vdebug.breakCS,vdebug.breakIP);
+	} else if (vdebug.flagBreak32) {
+		PRINTF("L%08X\n", vdebug.breakLinear);
 	} else {
 		PRINTF("Off\n");
 	}

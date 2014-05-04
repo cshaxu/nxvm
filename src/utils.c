@@ -8,108 +8,104 @@
 
 #include "utils.h"
 
-void utilsTracePrintCall(t_utils_trace_call *rtrace, int cid) {
+void utilsTracePrintCall(t_utils_trace_call *rtracecall) {
 	int i;
-	for (i = 0;i < rtrace->callstack[cid].bid;++i) {
-		PRINTF("%s", rtrace->callstack[cid].blockstack[i]);
-		if (i != rtrace->callstack[cid].bid - 1) {
-			PRINTF("::");
-		}
+	PRINTF("%s", rtracecall->callName);
+	for (i = 0;i < rtracecall->blockCount;++i) {
+		PRINTF("::%s", rtracecall->blockStack[i]);
 	}
 	PRINTF("\n");
 }
-void utilsTracePrintCallStack(t_utils_trace_call *rtrace) {
+void utilsTracePrintTrace(t_utils_trace *rtrace) {
 	int i;
-	if (rtrace->cid) {
-		for (i = rtrace->cid - 1;i > 0;--i) {
-			utilsTracePrintCall(rtrace, i);
+	if (rtrace->callCount) {
+		for (i = rtrace->callCount - 1;i >= 0;--i) {
+			utilsTracePrintCall(&(rtrace->callStack[i]));
 		}
-		utilsTracePrintCall(rtrace, 0);
 	}
 }
-void utilsTraceInit(t_utils_trace_call *rtrace) {
-	rtrace->cid = 0x00;
-	rtrace->flagerror = 0;
+void utilsTraceInit(t_utils_trace *rtrace) {
+	rtrace->callCount = 0;
+	rtrace->flagError = 0;
 }
-void utilsTraceFinal(t_utils_trace_call *rtrace) {
-	if (!rtrace->flagerror && rtrace->cid) {
-		PRINTF("trace_final: call stack is not balanced. (stack: %d, call: %d, block: %d)\n",
-			rtrace->cid, rtrace->callstack[rtrace->cid].cid, rtrace->callstack[rtrace->cid].bid);
-		rtrace->flagerror = 1;
+void utilsTraceFinal(t_utils_trace *rtrace) {
+	if (!rtrace->flagError && rtrace->callCount) {
+		PRINTF("trace_final: call stack is not balanced. (call: %d, block: %d)\n",
+			rtrace->callCount, rtrace->callStack[rtrace->callCount].blockCount);
+		rtrace->flagError = 1;
 	}
-	if (rtrace->flagerror) {
-		utilsTracePrintCallStack(rtrace);
+	if (rtrace->flagError) {
+		utilsTracePrintTrace(rtrace);
 	}
-	rtrace->cid = 0x00;
-	rtrace->flagerror = 0;
+	rtrace->callCount = 0;
+	rtrace->flagError = 0;
 }
-void utilsTraceCallBegin(t_utils_trace_call *rtrace, char *s) {
-	if (rtrace->flagerror) {
+void utilsTraceCallBegin(t_utils_trace *rtrace, char *callName) {
+	if (rtrace->flagError) {
 		return;
 	}
-	if (rtrace->cid < 0xff) {
+	if (rtrace->callCount < UTILS_TRACE_MAX_STACK) {
 	#if UTILS_TRACE_DEBUG == 1
-		PRINTF("enter call(%d): %s\n", rtrace->cid, s);
+		PRINTF("enter call(%d): %s\n", rtrace->callCount, callName);
 	#endif
-		rtrace->callstack[rtrace->cid].blockstack[0] = s;
-		rtrace->callstack[rtrace->cid].bid = 1;
-		rtrace->callstack[rtrace->cid].cid = rtrace->cid;
-		rtrace->cid++;
+		rtrace->callStack[rtrace->callCount].callName = callName;
+		rtrace->callStack[rtrace->callCount].blockCount = 0;
+		rtrace->callCount++;
 	} else {
 		PRINTF("trace_call_begin: call stack is full.\n");
-		rtrace->flagerror = 1;
+		rtrace->flagError = 1;
 	}
 }
-void utilsTraceCallEnd(t_utils_trace_call *rtrace) {
-	if (rtrace->flagerror) {
+void utilsTraceCallEnd(t_utils_trace *rtrace) {
+	if (rtrace->flagError) {
 		return;
 	}
-	if (rtrace->cid) {
-		rtrace->cid--;
+	if (rtrace->callCount) {
+		rtrace->callCount--;
 	#if UTILS_TRACE_DEBUG == 1
-		PRINTF("leave call(%d): %s\n", rtrace->cid,
-			rtrace->callstack[rtrace->cid].blockstack[0]);
+		PRINTF("leave call(%d): %s\n", rtrace->callCount,
+			rtrace->callStack[rtrace->callCount].callName);
 	#endif
-		if (rtrace->callstack[rtrace->cid].bid != 1 ||
-			rtrace->callstack[rtrace->cid].cid != rtrace->cid) {
-			PRINTF("trace_call_end: call stack is not balanced. (stack: %d, call: %d, block: %d)\n",
-				rtrace->cid, rtrace->callstack[rtrace->cid].cid, rtrace->callstack[rtrace->cid].bid);
-			rtrace->cid++;
-			rtrace->flagerror = 1;
+		if (rtrace->callStack[rtrace->callCount].blockCount != 0) {
+			PRINTF("trace_call_end: call stack is not balanced. (call: %d, block: %d)\n",
+				rtrace->callCount, rtrace->callStack[rtrace->callCount].blockCount);
+			rtrace->callCount++;
+			rtrace->flagError = 1;
 		}
 	} else {
 		PRINTF("trace_call_end: call stack is empty.\n");
-		rtrace->flagerror = 1;
+		rtrace->flagError = 1;
 	}
 }
-void utilsTraceBlockBegin(t_utils_trace_call *rtrace, char *s) {
-	if (rtrace->flagerror) {
+void utilsTraceBlockBegin(t_utils_trace *rtrace, char *blockName) {
+	if (rtrace->flagError) {
 		return;
 	}
-	if (rtrace->callstack[rtrace->cid - 1].bid < 0xff) {
+	if (rtrace->callStack[rtrace->callCount - 1].blockCount < UTILS_TRACE_MAX_STACK) {
 #if UTILS_TRACE_DEBUG == 1
-		PRINTF("enter block(%d): %s\n", rtrace->callstack[rtrace->cid - 1].bid, s);
+		PRINTF("enter block(%d): %s\n", rtrace->callStack[rtrace->callCount - 1].blockCount, blockName);
 #endif
-		rtrace->callstack[rtrace->cid - 1].blockstack[rtrace->callstack[rtrace->cid - 1].bid++] = s;
+		rtrace->callStack[rtrace->callCount - 1].
+			blockStack[rtrace->callStack[rtrace->callCount - 1].blockCount++] = blockName;
 	} else {
 		PRINTF("trace_block_begin: block stack is full.\n");
-		rtrace->flagerror = 1;
+		rtrace->flagError = 1;
 	}
 }
-void utilsTraceBlockEnd(t_utils_trace_call *rtrace) {
-	if (rtrace->flagerror) {
+void utilsTraceBlockEnd(t_utils_trace *rtrace) {
+	if (rtrace->flagError) {
 		return;
 	}
-	if (rtrace->callstack[rtrace->cid - 1].bid) {
-		rtrace->callstack[rtrace->cid - 1].bid--;
+	if (rtrace->callStack[rtrace->callCount - 1].blockCount) {
+		rtrace->callStack[rtrace->callCount - 1].blockCount--;
 #if UTILS_TRACE_DEBUG == 1
 		PRINTF("leave block(%d): %s\n",
-			rtrace->callstack[rtrace->cid - 1].bid,
-			rtrace->callstack[rtrace->cid - 1].blockstack[rtrace->callstack[rtrace->cid - 1].bid]);
+			rtrace->callStack[rtrace->callCount - 1].blockCount,
+			rtrace->callStack[rtrace->callCount - 1].blockStack[rtrace->callStack[rtrace->callCount - 1].blockCount]);
 #endif
 	} else {
 		PRINTF("trace_block_end: block stack is empty.\n");
-		rtrace->flagerror = 1;
+		rtrace->flagError = 1;
 	}
 }
 
@@ -161,16 +157,16 @@ int   MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size) {return memcmp(
 
 /* General Functions */
 void utilsSleep(unsigned int milisec) {platformSleep(milisec);}
-void utilsLowerStr(char *s) {
+void utilsLowerStr(char *str) {
 	int i = 0;
-	if (s[0] == '\'') {
+	if (str[0] == '\'') {
 		return;
 	}
-	while(s[i] != '\0') {
-		if (s[i] == '\n') {
-			s[i] = '\0';
-		} else if (s[i] > 0x40 && s[i] < 0x5b) {
-			s[i] += 0x20;
+	while(str[i] != '\0') {
+		if (str[i] == '\n') {
+			str[i] = '\0';
+		} else if (str[i] > 0x40 && str[i] < 0x5b) {
+			str[i] += 0x20;
 		}
 		i++;
 	}

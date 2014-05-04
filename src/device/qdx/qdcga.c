@@ -32,7 +32,7 @@ static void CursorBackward(t_nubit8 page) {
 static void CursorForward(t_nubit8 page) {
 	if(qdcgaVarCursorPosCol(page) < qdcgaVarRowSize -1) {
 		qdcgaVarCursorPosCol(page)++;
-	} else if(qdcgaVarCursorPosRow(page) < vvadp.colsize -1) {
+	} else if(qdcgaVarCursorPosRow(page) < vvadp.colSize -1) {
 		qdcgaVarCursorPosCol(page) = 0;
 		qdcgaVarCursorPosRow(page)++;
 	}
@@ -40,7 +40,7 @@ static void CursorForward(t_nubit8 page) {
 
 static void CursorNewLine(t_nubit8 page) {
 	qdcgaVarCursorPosCol(page) = 0;
-	if (qdcgaVarCursorPosRow(page) < vvadp.colsize - 1) {
+	if (qdcgaVarCursorPosRow(page) < vvadp.colSize - 1) {
 		qdcgaVarCursorPosRow(page)++;
 	} else {
 		/* move up video memory content */
@@ -58,7 +58,7 @@ static void CursorCarriageReturn(t_nubit8 page) {
 }
 
 static void CursorLineFeed(t_nubit8 page) {
-	if (qdcgaVarCursorPosRow(page) < vvadp.colsize - 1) {
+	if (qdcgaVarCursorPosRow(page) < vvadp.colSize - 1) {
 		qdcgaVarCursorPosRow(page)++;
 	} else {
 		/* move up video memory content */
@@ -115,14 +115,14 @@ t_bool deviceConnectDisplayGetCursorVisible() {
 	return (qdcgaVarCursorTop < qdcgaVarCursorBottom);
 }
 t_bool deviceConnectDisplayGetCursorChange() {
-	if (vvadp.oldcurposx != qdcgaVarCursorPosRow(qdcgaVarPageNum) ||
-		vvadp.oldcurposy != qdcgaVarCursorPosCol(qdcgaVarPageNum) ||
-		vvadp.oldcurtop  != qdcgaVarCursorTop ||
-		vvadp.oldcurbottom != qdcgaVarCursorBottom) {
-		vvadp.oldcurposx = qdcgaVarCursorPosRow(qdcgaVarPageNum);
-		vvadp.oldcurposy = qdcgaVarCursorPosCol(qdcgaVarPageNum);
-		vvadp.oldcurtop  = qdcgaVarCursorTop;
-		vvadp.oldcurbottom = qdcgaVarCursorBottom;
+	if (vvadp.oldCurPosX != qdcgaVarCursorPosRow(qdcgaVarPageNum) ||
+		vvadp.oldCurPosY != qdcgaVarCursorPosCol(qdcgaVarPageNum) ||
+		vvadp.oldCurTop  != qdcgaVarCursorTop ||
+		vvadp.oldCurBottom != qdcgaVarCursorBottom) {
+		vvadp.oldCurPosX = qdcgaVarCursorPosRow(qdcgaVarPageNum);
+		vvadp.oldCurPosY = qdcgaVarCursorPosCol(qdcgaVarPageNum);
+		vvadp.oldCurTop  = qdcgaVarCursorTop;
+		vvadp.oldCurBottom = qdcgaVarCursorBottom;
 		return 1;
 	} else {
 		return 0;
@@ -137,7 +137,7 @@ t_bool deviceConnectDisplayGetBufferChange() {
 	}
 }
 t_nubit16 deviceConnectDisplayGetRowSize() {return qdcgaVarRowSize;}
-t_nubit16 deviceConnectDisplayGetColSize() {return vvadp.colsize;}
+t_nubit16 deviceConnectDisplayGetColSize() {return vvadp.colSize;}
 t_nubit8 deviceConnectDisplayGetCursorTop() {return qdcgaVarCursorTop;}
 t_nubit8 deviceConnectDisplayGetCursorBottom() {return qdcgaVarCursorBottom;}
 t_nubit8 deviceConnectDisplayGetCurrentCursorPosX() {return qdcgaVarCursorPosRow(qdcgaVarPageNum);}
@@ -155,30 +155,30 @@ static void qdcgaSetDisplayMode() {
 	case 0x00:
 		/* 40 x 25 */
 		qdcgaVarRowSize = 0x28;
-		vvadp.colsize   = 0x19;
-		vvadp.flagcolor = 0;
+		vvadp.colSize   = 0x19;
+		vvadp.flagColor = 0;
 		platformDisplaySetScreen();
 		break;
 	case 0x01:
 		/* 40 x 25 */
 		qdcgaVarRowSize = 0x28;
-		vvadp.colsize   = 0x19;
-		vvadp.flagcolor = 1;
+		vvadp.colSize   = 0x19;
+		vvadp.flagColor = 1;
 		platformDisplaySetScreen();
 		break;
 	case 0x02:
 	case 0x07:
 		/* 80 x 25 */
 		qdcgaVarRowSize = 0x50;
-		vvadp.colsize   = 0x19;
-		vvadp.flagcolor = 0;
+		vvadp.colSize   = 0x19;
+		vvadp.flagColor = 0;
 		platformDisplaySetScreen();
 		break;
 	case 0x03:
 		/* 80 x 25 */
 		qdcgaVarRowSize = 0x50;
-		vvadp.colsize   = 0x19;
-		vvadp.flagcolor = 1;
+		vvadp.colSize   = 0x19;
+		vvadp.flagColor = 1;
 		platformDisplaySetScreen();
 		break;
 	default:
@@ -245,7 +245,7 @@ static void qdcgaScrollUp() {
 static void qdcgaScrollDown() {
 	t_nsbitcc i, j;
 	if (!_al) {
-		for (i = 0;i < vvadp.colsize;++i) {
+		for (i = 0;i < vvadp.colSize;++i) {
 			for (j = 0;j < qdcgaVarRowSize;++j) {
 				qdcgaVarChar(qdcgaVarPageNum, i, j) = 0x20;
 				qdcgaVarCharProp(qdcgaVarPageNum, i, j) = _bh;
@@ -310,7 +310,7 @@ static void qdcgaGenerateChar() {
 			break;
 		}
 		_cx = 0x0010;
-		_dl = vvadp.colsize - 0x01;
+		_dl = vvadp.colSize - 0x01;
 	}
 }
 
@@ -397,8 +397,8 @@ void qdcgaInit() {
 void qdcgaReset() {
 	/* 80 x 25 */
 	qdcgaVarRowSize = 0x50;
-	vvadp.colsize = 0x19;
-	vvadp.flagcolor = 1;
+	vvadp.colSize = 0x19;
+	vvadp.flagColor = 1;
 
 	qdcgaVarPageNum = 0x00;
 	qdcgaVarMode = 0x03;
@@ -407,6 +407,6 @@ void qdcgaReset() {
 	qdcgaVarCursorPosCol(0) = 0x00;
 	qdcgaVarCursorTop       = 0x06;
 	qdcgaVarCursorBottom    = 0x07;
-	vvadp.oldcurposx = vvadp.oldcurposy = 0x00;
-	vvadp.oldcurtop  = vvadp.oldcurbottom = 0x00;
+	vvadp.oldCurPosX = vvadp.oldCurPosY = 0x00;
+	vvadp.oldCurTop  = vvadp.oldCurBottom = 0x00;
 }

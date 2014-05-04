@@ -11,6 +11,13 @@ extern "C" {
 
 #define NXVM_DEVICE_CMOS "DS1302"
 
+typedef struct {
+	t_nubit8 reg[0x80]; /* cmos registers */
+	t_nubit8 regId; /* id of specified cmos register*/
+} t_cmos;
+
+extern t_cmos vcmos;
+
 #define VCMOS_RTC_SECOND       0x00
 #define VCMOS_RTC_SECOND_ALARM 0x01
 #define VCMOS_RTC_MINUTE       0x02
@@ -42,13 +49,6 @@ extern "C" {
 #define VCMOS_EXTMEM1MB_MSB    0x31
 #define VCMOS_RTC_CENTURY      0x32
 #define VCMOS_FLAGS_INFO       0x33
-
-typedef struct {
-	t_nubit8 reg[0x80]; /* cmos registers */
-	t_nubit8 rid; /* id of specified cmos register*/
-} t_cmos;
-
-extern t_cmos vcmos;
 
 void vcmosRegister();
 

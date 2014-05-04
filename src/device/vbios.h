@@ -12,7 +12,7 @@ extern "C" {
 #define NXVM_DEVICE_BIOS "Unknown BIOS"
 
 typedef struct {
-	t_nubitcc numPosts;         /* number of POST routines */
+	t_nubitcc postCount;         /* number of POST routines */
 	t_strptr  postTable[0x100]; /* table of POST routine string pointers */
 	t_strptr  intTable[0x100];  /* table of INT routine string pointers, null if not defined */
 } t_bios;
@@ -24,6 +24,11 @@ extern t_bios vbios;
 #define VBIOS_ADDR_POST_SEG  VBIOS_ADDR_START_SEG
 #define VBIOS_ADDR_POST_OFF  0xfff0
 
+#define VBIOS_ADDR_ROM_INFO  0xe6f5 /* bios rom info offset */
+#define VBIOS_ADDR_HDD_PARAM 0xe431 /* hard disk parameter table offset */
+
+#define VBIOS_ADDR_HDD_PARAM_OFFSET   0x0104
+#define VBIOS_ADDR_HDD_PARAM_SEGMENT  0x0106
 #define VBIOS_ADDR_SERI_PORT_COM1     0x0400
 #define VBIOS_ADDR_SERI_PORT_COM2     0x0402
 #define VBIOS_ADDR_SERI_PORT_COM3     0x0404

@@ -275,24 +275,24 @@ VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
 	deviceConnectKeyboardRecvKeyPress(code);
 }
 
-VOID win32DisplaySetScreen(BOOL window) {
-	if (window) {
+VOID win32DisplaySetScreen(BOOL flagWindow) {
+	if (flagWindow) {
 		win32appDisplaySetScreen();
 	} else {
 		win32conDisplaySetScreen();
 	}
 }
 
-VOID win32DisplayPaint(BOOL window) {
-	if (window) {
+VOID win32DisplayPaint(BOOL flagWindow) {
+	if (flagWindow) {
 		win32appDisplayPaint();
 	} else {
 		win32conDisplayPaint();
 	}
 }
 
-VOID win32StartMachine(BOOL window) {
-	if (window) {
+VOID win32StartMachine(BOOL flagWindow) {
+	if (flagWindow) {
 		win32appStartMachine();
 	} else {
 		win32conStartMachine();

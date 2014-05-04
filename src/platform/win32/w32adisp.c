@@ -295,9 +295,9 @@ static INT FONT_HEIGHT;
 static USHORT sizeRow, sizeCol;
 static UCHAR cursorTop, cursorBottom;
 
-static COLORREF CharProp2Color(UCHAR prop, BOOL fore) {
+static COLORREF CharProp2Color(UCHAR prop, BOOL flagForeColor) {
 	UCHAR byte;
-	if (fore) {
+	if (flagForeColor) {
 		byte = (prop & 0x0f); /* fore color */
 	} else {
 		byte = ((prop & 0xf0) >> 4);  /* back color */
@@ -425,10 +425,10 @@ static VOID DisplayCursor() {
 	DeleteObject(hBrush);
 }
 
-VOID w32adispPaint(BOOL force) {
+VOID w32adispPaint(BOOL flagForce) {
 	UCHAR i, j, ch, prop;
 	flashCount = (flashCount + 1) % 10;
-	if (force || deviceConnectDisplayGetBufferChange() || deviceConnectDisplayGetCursorChange()) {
+	if (flagForce || deviceConnectDisplayGetBufferChange() || deviceConnectDisplayGetCursorChange()) {
 		for(i = 0;i < sizeCol;++i) {
 			for(j = 0;j < sizeRow;++j) {
 				ch = deviceConnectDisplayGetCurrentChar(i, j);

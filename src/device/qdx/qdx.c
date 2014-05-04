@@ -11,15 +11,15 @@
 
 t_faddrcc qdxTable[0x100];
 
-void qdxExecInt(t_nubit8 intid) {
-	if (qdxTable[intid]) {
-		ExecFun(qdxTable[intid]);
+void qdxExecInt(t_nubit8 intId) {
+	if (qdxTable[intId]) {
+		ExecFun(qdxTable[intId]);
 	}
 }
 
 static void init() {
-	t_nubit16 i;
-	for (i = 0x0000;i < 0x0100;++i) {
+	int i;
+	for (i = 0;i < 0x100;++i) {
 		qdxTable[i] = (t_faddrcc) NULL;
 	}
 	qdkeybInit();

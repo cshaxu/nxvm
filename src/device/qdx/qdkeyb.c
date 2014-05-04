@@ -130,7 +130,7 @@ static void qdkeybBufferKey() {
 }
 
 static void INT_09() {
-	vport.iobyte = 0x20;
+	vport.ioByte = 0x20;
 	ExecFun(vport.out[0x20]);
 }
 

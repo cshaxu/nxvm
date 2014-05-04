@@ -10,7 +10,7 @@ extern "C" {
 #include <windows.h>
 
 VOID w32cdispSetScreen();
-VOID w32cdispPaint(BOOL force);
+VOID w32cdispPaint(BOOL flagForce);
 
 VOID w32cdispInit();
 VOID w32cdispFinal();

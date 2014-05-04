@@ -21,10 +21,10 @@ typedef struct {
 	t_nubit4 hut; /* head unload time */
 	t_nubit4 hlt; /* head load time */
 	t_nubit8 srt; /* step rate time */
-	t_bool flagndma; /* 0 = dma mode; 1 = non-dma mode */
-	t_bool flagintr; /* 0 = no intr; 1 = has intr */
+	t_bool flagNDMA; /* 0 = dma mode; 1 = non-dma mode */
+	t_bool flagINTR; /* 0 = no intr; 1 = has intr */
 
-	t_nubit8 rwid; /* io port command/result rw id */
+	t_nubit8 rwCount; /* count of io port command/result rw times */
 	t_nubit8 cmd[9];
 	t_nubit8 ret[7];
 	t_nubit8 st0, st1, st2, st3; /* state registers */

@@ -28,11 +28,11 @@ void deviceConnectRamAllocate(t_nubitcc newsize);
 
 /* Disk Drive Operations */
 void deviceConnectFloppyCreate();
-t_bool deviceConnectFloppyInsert(const t_strptr fname);
-t_bool deviceConnectFloppyRemove(const t_strptr fname);
+t_bool deviceConnectFloppyInsert(const t_strptr fileName);
+t_bool deviceConnectFloppyRemove(const t_strptr fileName);
 void deviceConnectHardDiskCreate(t_nubit16 ncyl);
-t_bool deviceConnectHardDiskInsert(const t_strptr fname);
-t_bool deviceConnectHardDiskRemove(const t_strptr fname);
+t_bool deviceConnectHardDiskInsert(const t_strptr fileName);
+t_bool deviceConnectHardDiskRemove(const t_strptr fileName);
 
 /* Keyboard Operations */
 void deviceConnectKeyboardClrFlag0();
@@ -103,6 +103,7 @@ void devicePrintPic();
 void devicePrintPit();
 void devicePrintDma();
 void devicePrintFdc();
+void devicePrintFdd();
 void devicePrintBios();
 void devicePrintDebug();
 void devicePrintMachine();

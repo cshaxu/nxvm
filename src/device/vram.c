@@ -14,17 +14,17 @@ t_ram vram;
 static void allocate(t_nubitcc newsize) {
 	if (newsize) {
 		vram.size = newsize;
-		if (vram.base) {
-			FREE((void *) vram.base);
+		if (vram.pBase) {
+			FREE((void *) vram.pBase);
 		}
-		vram.base = (t_vaddrcc) MALLOC(vram.size);
-		MEMSET((void *) vram.base, Zero8, vram.size);
+		vram.pBase = (t_vaddrcc) MALLOC(vram.size);
+		MEMSET((void *) vram.pBase, Zero8, vram.size);
 	}
 }
 
-static void io_read_0092() {vport.iobyte = vram.flaga20 ? VRAM_FLAG_A20 : Zero8;}
+static void io_read_0092() {vport.ioByte = vram.flagA20 ? VRAM_FLAG_A20 : Zero8;}
 
-static void io_write_0092() {vram.flaga20 = GetBit(vport.iobyte, VRAM_FLAG_A20);}
+static void io_write_0092() {vram.flagA20 = GetBit(vport.ioByte, VRAM_FLAG_A20);}
 
 static void init() {
 	MEMSET(&vram, Zero8, sizeof(t_ram));
@@ -35,15 +35,15 @@ static void init() {
 }
 
 static void reset() {
-	MEMSET((void *) vram.base, Zero8, vram.size);
-	vram.flaga20 = False;
+	MEMSET((void *) vram.pBase, Zero8, vram.size);
+	vram.flagA20 = False;
 }
 
 static void refresh() {}
 
 static void final() {
-	if (vram.base) {
-		FREE((void *) vram.base);
+	if (vram.pBase) {
+		FREE((void *) vram.pBase);
 	}
 }
 

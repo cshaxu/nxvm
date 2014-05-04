@@ -1,4 +1,4 @@
-#define PRODUCT "Neko's x86 Virtual Machine [0.4.0156]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.4.0157]\n\
 Copyright (c) 2012-2014 Neko.\n"
 
 /*
@@ -150,6 +150,15 @@ Copyright (c) 2012-2014 Neko.\n"
  * 014c Rebuilt vmachine.ch
  * 0153 Refactored Architecture
  * 0154 Built AutoMake System
+ *
+ * TODO
+ * 1- rename variables
+ * 2- repair flags
+ * 3- replace constants
+ * @debug.c, aasm32.c, dasm32.c
+ * @vcpu.ch, vcpuins.ch
+ * @qdcga.ch, qddisk.ch, qdkeyb.ch
+ *
  */
 
 #include "utils.h"

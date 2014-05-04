@@ -13,9 +13,9 @@ VOID win32KeyboardMakeStatus();
 VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey);
 
 #define win32Sleep Sleep
-VOID win32DisplaySetScreen(BOOL window);
-VOID win32DisplayPaint(BOOL window);
-VOID win32StartMachine(BOOL window);
+VOID win32DisplaySetScreen(BOOL flagWindow);
+VOID win32DisplayPaint(BOOL flagWindow);
+VOID win32StartMachine(BOOL flagWindow);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

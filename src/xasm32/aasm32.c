@@ -4,40 +4,35 @@
 
 #include "aasm32.h"
 
-/* DEBUGGING OPTIONS ******************************************************* */
-#define AASM_TRACE 0
-/* ************************************************************************* */
+#define UTILS_TRACE_VAR   trace
+#define UTILS_TRACE_ERROR flagError
 
-#if AASM_TRACE == 1
+static t_utils_trace UTILS_TRACE_VAR;
 
-static t_utils_trace_call trace;
-
-#define _cb(s) utilsTraceCallBegin(&trace, s)
-#define _ce    utilsTraceCallEnd(&trace)
-#define _bb(s) utilsTraceBlockBegin(&trace, s)
-#define _be    utilsTraceBlockEnd(&trace)
-#define _chb(n)  if (1) {(n);if (flagerror) {trace.flagerror = 1;utilsTraceFinal(&trace);break;   }} while (0)
-#define _chk(n)  do     {(n);if (flagerror) {trace.flagerror = 1;utilsTraceFinal(&trace);return;  }} while (0)
-#define _chr(n)  do     {(n);if (flagerror) {trace.flagerror = 1;utilsTraceFinal(&trace);return 0;}} while (0)
-#define _chrt(n) do     {(n);if (flagerror) {trace.flagerror = 1;utilsTraceFinal(&trace);return token;}} while (0)
-#define _chrf(n) do     {(n);if (flagerror) {trace.flagerror = 1;utilsTraceFinal(&trace);return info;}} while (0)
+#if UTILS_TRACE_ENABLED == 1
+#define _chrf(n) \
+	do { \
+		(n); \
+		if (UTILS_TRACE_ERROR) { \
+			(UTILS_TRACE_VAR).flagError = 1; \
+			utilsTraceFinal(&(UTILS_TRACE_VAR)); \
+			return info; \
+		} \
+	} while (0)
 #else
-#define _cb(s)
-#define _ce
-#define _be
-#define _bb(s)
-#define _chb(n)  if (1) {(n);if (flagerror) break;   } while (0)
-#define _chk(n)  do     {(n);if (flagerror) return;  } while (0)
-#define _chr(n)  do     {(n);if (flagerror) return 0;} while (0)
-#define _chrt(n) do     {(n);if (flagerror) return token;} while (0)
-#define _chrf(n) do     {(n);if (flagerror) return info;} while (0)
+#define _chrf(n) \
+	do { \
+		(n); \
+		if (UTILS_TRACE_ERROR) { \
+			return info; \
+		} \
+	} while (0)
 #endif
 
-/* set error */
-#define _se_  _chk(flagerror = 1)
-#define _ser_ _chr(flagerror = 1)
-#define _sert_ _chrt(flagerror = 1)
-#define _serf_ _chrf(flagerror = 1)
+/* set error and return */
+#define _ser_  do {flagError = 1; return;} while (0)
+#define _sert_ do {flagError = 1; return token;} while (0)
+#define _serf_ do {flagError = 1; return info;} while (0)
 
 /* operand size */
 #define _SetOperandSize(n) (prefix_oprsize = (n) ? ((defsize ? 4 : 2) != (n)) : 0)
@@ -160,7 +155,7 @@ static unsigned char iop;
 static char *rop, *ropr1, *ropr2, *ropr3;
 static unsigned short avcs, avip;
 static char *aop, *aopr1, *aopr2;
-static unsigned char flagerror;
+static unsigned char flagError;
 static t_aasm_oprinfo aoprig, aopri1, aopri2, aopri3;
 static t_aasm_oprinfo *rinfo = NULL;
 /* arg flag level 0 */
@@ -1237,7 +1232,7 @@ static void printtoken(t_aasm_token token)
 static void matchtoken(t_aasm_token token)
 {
 	_cb("matchtoken");
-	if (gettoken(NULL) != token) _se_;
+	if (gettoken(NULL) != token) _ser_;
 	_ce;
 }
 
@@ -2077,19 +2072,19 @@ static void _c_setdword(unsigned int dword) {
 static void _c_imm8(unsigned char byte)
 {
 	_cb("_c_imm8");
-	_chk(_c_setbyte(byte));
+	_chr(_c_setbyte(byte));
 	_ce;
 }
 static void _c_imm16(unsigned short word)
 {
 	_cb("_c_imm16");
-	_chk(_c_setword(word));
+	_chr(_c_setword(word));
 	_ce;
 }
 static void _c_imm32(unsigned int dword)
 {
 	_cb("_c_imm32");
-	_chk(_c_setdword(dword));
+	_chr(_c_setdword(dword));
 	_ce;
 }
 static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg)
@@ -2145,9 +2140,9 @@ static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg)
 				modrmval |= (unsigned char)rminfo.reg32;
 				_c_setbyte(modrmval);
 				break;
-			default: _se_;break;}
+			default: _ser_;break;}
 			_be;break;
-		default: _se_;break;}
+		default: _ser_;break;}
 		_be;break;
 	case MEM_EAX:
 	case MEM_ECX:
@@ -2173,7 +2168,7 @@ static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg)
 				case 2: rminfo.sib.scale = 1;break;
 				case 4: rminfo.sib.scale = 2;break;
 				case 8: rminfo.sib.scale = 3;break;
-				default: _se_;break;}
+				default: _ser_;break;}
 				sibval |= (rminfo.sib.scale << 6);
 				_c_setbyte(sibval);
 				switch (rminfo.sib.base) {
@@ -2197,7 +2192,7 @@ static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg)
 				case 2: rminfo.sib.scale = 1;break;
 				case 4: rminfo.sib.scale = 2;break;
 				case 8: rminfo.sib.scale = 3;break;
-				default: _se_;break;}
+				default: _ser_;break;}
 				sibval |= (rminfo.sib.scale << 6);
 				_c_setbyte(sibval);
 				break;
@@ -2218,7 +2213,7 @@ static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg)
 				case 2: rminfo.sib.scale = 1;break;
 				case 4: rminfo.sib.scale = 2;break;
 				case 8: rminfo.sib.scale = 3;break;
-				default: _se_;break;}
+				default: _ser_;break;}
 				sibval |= (rminfo.sib.scale << 6);
 				_c_setbyte(sibval);
 				break;
@@ -2240,11 +2235,11 @@ static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg)
 				modrmval |= (unsigned char)rminfo.reg32;
 				_c_setbyte(modrmval);
 				break;
-			default: _se_;break;}
+			default: _ser_;break;}
 			_be;break;
-		default: _se_;break;}
+		default: _ser_;break;}
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 
@@ -2253,7 +2248,7 @@ static void ADD_RM8_R8()
 {
 	_cb("ADD_RM8_R8");
 	_c_setbyte(0x00);
-	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_chr(_c_modrm(aopri1, aopri2.reg8));
 	_ce;
 }
 static void ADD_RM32_R32(unsigned char byte)
@@ -2263,19 +2258,19 @@ static void ADD_RM32_R32(unsigned char byte)
 	_c_setbyte(0x01);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_chr(_c_modrm(aopri1, aopri2.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_chr(_c_modrm(aopri1, aopri2.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void ADD_R8_RM8()
 {
 	_cb("ADD_R8_RM8");
 	_c_setbyte(0x02);
-	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_chr(_c_modrm(aopri2, aopri1.reg8));
 	_ce;
 }
 static void ADD_R32_RM32(unsigned char byte)
@@ -2285,19 +2280,19 @@ static void ADD_R32_RM32(unsigned char byte)
 	_c_setbyte(0x03);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void ADD_AL_I8()
 {
 	_cb("ADD_AL_I8");
 	_c_setbyte(0x04);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void ADD_EAX_I32(unsigned char byte)
@@ -2307,12 +2302,12 @@ static void ADD_EAX_I32(unsigned char byte)
 	_c_setbyte(0x05);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void PUSH_ES()
@@ -2331,7 +2326,7 @@ static void OR_RM8_R8()
 {
 	_cb("OR_RM8_R8");
 	_c_setbyte(0x08);
-	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_chr(_c_modrm(aopri1, aopri2.reg8));
 	_ce;
 }
 static void OR_RM32_R32(unsigned char byte)
@@ -2341,19 +2336,19 @@ static void OR_RM32_R32(unsigned char byte)
 	_c_setbyte(0x09);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_chr(_c_modrm(aopri1, aopri2.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_chr(_c_modrm(aopri1, aopri2.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void OR_R8_RM8()
 {
 	_cb("OR_R8_RM8");
 	_c_setbyte(0x0a);
-	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_chr(_c_modrm(aopri2, aopri1.reg8));
 	_ce;
 }
 static void OR_R32_RM32(unsigned char byte)
@@ -2363,12 +2358,12 @@ static void OR_R32_RM32(unsigned char byte)
 	_c_setbyte(0x0b);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void OR_AL_I8()
@@ -2385,12 +2380,12 @@ static void OR_EAX_I32(unsigned char byte)
 	_c_setbyte(0x0d);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void PUSH_CS()
@@ -2415,7 +2410,7 @@ static void ADC_RM8_R8()
 {
 	_cb("ADC_RM8_R8");
 	_c_setbyte(0x10);
-	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_chr(_c_modrm(aopri1, aopri2.reg8));
 	_ce;
 }
 static void ADC_RM32_R32(unsigned char byte)
@@ -2425,19 +2420,19 @@ static void ADC_RM32_R32(unsigned char byte)
 	_c_setbyte(0x11);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_chr(_c_modrm(aopri1, aopri2.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_chr(_c_modrm(aopri1, aopri2.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void ADC_R8_RM8()
 {
 	_cb("ADC_R8_RM8");
 	_c_setbyte(0x12);
-	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_chr(_c_modrm(aopri2, aopri1.reg8));
 	_ce;
 }
 static void ADC_R32_RM32(unsigned char byte)
@@ -2447,19 +2442,19 @@ static void ADC_R32_RM32(unsigned char byte)
 	_c_setbyte(0x13);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void ADC_AL_I8()
 {
 	_cb("ADC_AL_I8");
 	_c_setbyte(0x14);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void ADC_EAX_I32(unsigned char byte)
@@ -2469,12 +2464,12 @@ static void ADC_EAX_I32(unsigned char byte)
 	_c_setbyte(0x15);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void PUSH_SS()
@@ -2493,7 +2488,7 @@ static void SBB_RM8_R8()
 {
 	_cb("SBB_RM8_R8");
 	_c_setbyte(0x18);
-	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_chr(_c_modrm(aopri1, aopri2.reg8));
 	_ce;
 }
 static void SBB_RM32_R32(unsigned char byte)
@@ -2503,19 +2498,19 @@ static void SBB_RM32_R32(unsigned char byte)
 	_c_setbyte(0x19);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_chr(_c_modrm(aopri1, aopri2.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_chr(_c_modrm(aopri1, aopri2.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void SBB_R8_RM8()
 {
 	_cb("SBB_R8_RM8");
 	_c_setbyte(0x1a);
-	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_chr(_c_modrm(aopri2, aopri1.reg8));
 	_ce;
 }
 static void SBB_R32_RM32(unsigned char byte)
@@ -2525,12 +2520,12 @@ static void SBB_R32_RM32(unsigned char byte)
 	_c_setbyte(0x1b);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void SBB_AL_I8()
@@ -2547,12 +2542,12 @@ static void SBB_EAX_I32(unsigned char byte)
 	_c_setbyte(0x1d);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void PUSH_DS()
@@ -2571,7 +2566,7 @@ static void AND_RM8_R8()
 {
 	_cb("AND_RM8_R8");
 	_c_setbyte(0x20);
-	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_chr(_c_modrm(aopri1, aopri2.reg8));
 	_ce;
 }
 static void AND_RM32_R32(unsigned char byte)
@@ -2581,19 +2576,19 @@ static void AND_RM32_R32(unsigned char byte)
 	_c_setbyte(0x21);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_chr(_c_modrm(aopri1, aopri2.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_chr(_c_modrm(aopri1, aopri2.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void AND_R8_RM8()
 {
 	_cb("AND_R8_RM8");
 	_c_setbyte(0x22);
-	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_chr(_c_modrm(aopri2, aopri1.reg8));
 	_ce;
 }
 static void AND_R32_RM32(unsigned char byte)
@@ -2603,19 +2598,19 @@ static void AND_R32_RM32(unsigned char byte)
 	_c_setbyte(0x23);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void AND_AL_I8()
 {
 	_cb("AND_AL_I8");
 	_c_setbyte(0x24);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void AND_EAX_I32(unsigned char byte)
@@ -2625,33 +2620,33 @@ static void AND_EAX_I32(unsigned char byte)
 	_c_setbyte(0x25);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void PREFIX_ES()
 {
 	_cb("PREFIX_ES");
 	if (ARG_NONE) aoprig.flages = 1;
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void DAA()
 {
 	_cb("DAA");
 	if (ARG_NONE) _c_setbyte(0x27);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SUB_RM8_R8()
 {
 	_cb("SUB_RM8_R8");
 	_c_setbyte(0x28);
-	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_chr(_c_modrm(aopri1, aopri2.reg8));
 	_ce;
 }
 static void SUB_RM32_R32(unsigned char byte)
@@ -2661,19 +2656,19 @@ static void SUB_RM32_R32(unsigned char byte)
 	_c_setbyte(0x29);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_chr(_c_modrm(aopri1, aopri2.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_chr(_c_modrm(aopri1, aopri2.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void SUB_R8_RM8()
 {
 	_cb("SUB_R8_RM8");
 	_c_setbyte(0x2a);
-	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_chr(_c_modrm(aopri2, aopri1.reg8));
 	_ce;
 }
 static void SUB_R32_RM32(unsigned char byte)
@@ -2683,12 +2678,12 @@ static void SUB_R32_RM32(unsigned char byte)
 	_c_setbyte(0x2b);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void SUB_AL_I8()
@@ -2705,33 +2700,33 @@ static void SUB_EAX_I32(unsigned char byte)
 	_c_setbyte(0x2d);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void PREFIX_CS()
 {
 	_cb("PREFIX_CS");
 	if (ARG_NONE) aoprig.flagcs = 1;
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void DAS()
 {
 	_cb("DAS");
 	if (ARG_NONE) _c_setbyte(0x2f);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void XOR_RM8_R8()
 {
 	_cb("XOR_RM8_R8");
 	_c_setbyte(0x30);
-	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_chr(_c_modrm(aopri1, aopri2.reg8));
 	_ce;
 }
 static void XOR_RM32_R32(unsigned char byte)
@@ -2741,19 +2736,19 @@ static void XOR_RM32_R32(unsigned char byte)
 	_c_setbyte(0x31);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_chr(_c_modrm(aopri1, aopri2.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_chr(_c_modrm(aopri1, aopri2.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void XOR_R8_RM8()
 {
 	_cb("XOR_R8_RM8");
 	_c_setbyte(0x32);
-	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_chr(_c_modrm(aopri2, aopri1.reg8));
 	_ce;
 }
 static void XOR_R32_RM32(unsigned char byte)
@@ -2763,19 +2758,19 @@ static void XOR_R32_RM32(unsigned char byte)
 	_c_setbyte(0x33);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void XOR_AL_I8()
 {
 	_cb("XOR_AL_I8");
 	_c_setbyte(0x34);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void XOR_EAX_I32(unsigned char byte)
@@ -2785,33 +2780,33 @@ static void XOR_EAX_I32(unsigned char byte)
 	_c_setbyte(0x35);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void PREFIX_SS()
 {
 	_cb("PREFIX_SS");
 	if (ARG_NONE) aoprig.flagss = 1;
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void AAA()
 {
 	_cb("AAA");
 	if (ARG_NONE) _c_setbyte(0x37);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void CMP_RM8_R8()
 {
 	_cb("CMP_RM8_R8");
 	_c_setbyte(0x38);
-	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_chr(_c_modrm(aopri1, aopri2.reg8));
 	_ce;
 }
 static void CMP_RM32_R32(unsigned char byte)
@@ -2821,19 +2816,19 @@ static void CMP_RM32_R32(unsigned char byte)
 	_c_setbyte(0x39);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_chr(_c_modrm(aopri1, aopri2.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_chr(_c_modrm(aopri1, aopri2.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void CMP_R8_RM8()
 {
 	_cb("CMP_R8_RM8");
 	_c_setbyte(0x3a);
-	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_chr(_c_modrm(aopri2, aopri1.reg8));
 	_ce;
 }
 static void CMP_R32_RM32(unsigned char byte)
@@ -2843,12 +2838,12 @@ static void CMP_R32_RM32(unsigned char byte)
 	_c_setbyte(0x3b);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void CMP_AL_I8()
@@ -2865,26 +2860,26 @@ static void CMP_EAX_I32(unsigned char byte)
 	_c_setbyte(0x3d);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void PREFIX_DS()
 {
 	_cb("PREFIX_DS");
 	if (ARG_NONE) aoprig.flagds = 1;
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void AAS()
 {
 	_cb("AAS");
 	if (ARG_NONE) _c_setbyte(0x3f);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void INC_EAX(unsigned char byte)
@@ -3133,12 +3128,12 @@ static void BOUND_R32_M32_32(unsigned char byte)
 	_c_setbyte(0x62);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void ARPL_RM16_R16()
@@ -3147,37 +3142,37 @@ static void ARPL_RM16_R16()
 	if (ARG_RM16_R16) {
 		_bb("ARG_RM16_R16");
 		_c_setbyte(0x63);
-		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_chr(_c_modrm(aopri1, aopri2.reg16));
 		_be;
-	} else _se_;
+	} else _ser_;
 	_ce;
 }
 static void PREFIX_FS()
 {
 	_cb("PREFIX_FS");
 	if (ARG_NONE) aoprig.flagfs = 1;
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void PREFIX_GS()
 {
 	_cb("PREFIX_GS");
 	if (ARG_NONE) aoprig.flaggs = 1;
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void PREFIX_OprSize()
 {
 	_cb("PREFIX_OprSize");
 	if (ARG_NONE) prefix_oprsizeg = 1;
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void PREFIX_AddrSize()
 {
 	_cb("PREFIX_AddrSize");
 	if (ARG_NONE) prefix_addrsizeg = 1;
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void PUSH_I32(unsigned char byte)
@@ -3187,12 +3182,12 @@ static void PUSH_I32(unsigned char byte)
 	_c_setbyte(0x68);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri1.imm16));
+		_chr(_c_imm16(aopri1.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri1.imm32));
+		_chr(_c_imm32(aopri1.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void IMUL_R32_RM32_I32(unsigned char byte)
@@ -3202,21 +3197,21 @@ static void IMUL_R32_RM32_I32(unsigned char byte)
 	_c_setbyte(0x69);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
-		_chk(_c_imm16(aopri3.imm16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_imm16(aopri3.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
-		_chk(_c_imm32(aopri3.imm32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_imm32(aopri3.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;;
 }
 static void PUSH_I8()
 {
 	_cb("PUSH_I8");
 	_c_setbyte(0x6a);
-	_chk(_c_imm8(aopri1.imm8));
+	_chr(_c_imm8(aopri1.imm8));
 	_ce;
 }
 static void IMUL_R32_RM32_I8(unsigned char byte)
@@ -3226,14 +3221,14 @@ static void IMUL_R32_RM32_I8(unsigned char byte)
 	_c_setbyte(0x6b);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
-		_chk(_c_imm8(aopri3.imm8));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_imm8(aopri3.imm8));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
-		_chk(_c_imm8(aopri3.imm8));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_imm8(aopri3.imm8));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;;
 }
 static void INSB()
@@ -3244,7 +3239,7 @@ static void INSB()
 	if (ARG_NONE) ;
 	else if (ARG_ESDI8_DX) _SetAddressSize(2);
 	else if (ARG_ESEDI8_DX) _SetAddressSize(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void INSW(unsigned char byte)
@@ -3258,15 +3253,15 @@ static void INSW(unsigned char byte)
 		if (ARG_NONE) ;
 		else if (ARG_ESDI16_DX) _SetAddressSize(2);
 		else if (ARG_ESEDI16_DX) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
 	case 4: _bb("byte(4)");
 		if (ARG_NONE) ;
 		else if (ARG_ESDI32_DX) _SetAddressSize(2);
 		else if (ARG_ESEDI32_DX) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void OUTSB()
@@ -3278,7 +3273,7 @@ static void OUTSB()
 	if (ARG_NONE) rinfo = NULL;
 	else if (ARG_DX_DSSI8) _SetAddressSize(2);
 	else if (ARG_DSESI8) _SetAddressSize(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void OUTSW(unsigned char byte)
@@ -3293,23 +3288,23 @@ static void OUTSW(unsigned char byte)
 		if (ARG_NONE) rinfo = NULL;
 		else if (ARG_DX_DSSI16) _SetAddressSize(2);
 		else if (ARG_DX_DSESI16) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
 	case 4: _bb("byte(4)");
 		if (ARG_NONE) rinfo = NULL;
 		else if (ARG_DX_DSSI32) _SetAddressSize(2);
 		else if (ARG_DX_DSESI32) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void INS_80(unsigned char rid)
 {
 	_cb("INS_80");
 	_c_setbyte(0x80);
-	_chk(_c_modrm(aopri1, rid));
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_modrm(aopri1, rid));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void INS_81(unsigned char rid, unsigned char byte)
@@ -3317,15 +3312,15 @@ static void INS_81(unsigned char rid, unsigned char byte)
 	_cb("INS_81");
 	_SetOperandSize(byte);
 	_c_setbyte(0x81);
-	_chk(_c_modrm(aopri1, rid));
+	_chr(_c_modrm(aopri1, rid));
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void INS_83(unsigned char rid, unsigned char byte)
@@ -3333,15 +3328,15 @@ static void INS_83(unsigned char rid, unsigned char byte)
 	_cb("INS_83");
 	_SetOperandSize(byte);
 	_c_setbyte(0x83);
-	_chk(_c_modrm(aopri1, rid));
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_modrm(aopri1, rid));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void TEST_RM8_R8()
 {
 	_cb("TEST_RM8_R8");
 	_c_setbyte(0x84);
-	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_chr(_c_modrm(aopri1, aopri2.reg8));
 	_ce;
 }
 static void TEST_RM32_R32(unsigned char byte)
@@ -3351,19 +3346,19 @@ static void TEST_RM32_R32(unsigned char byte)
 	_c_setbyte(0x85);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_chr(_c_modrm(aopri1, aopri2.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_chr(_c_modrm(aopri1, aopri2.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void XCHG_RM8_R8()
 {
 	_cb("XCHG_RM8_R8");
 	_c_setbyte(0x86);
-	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_chr(_c_modrm(aopri1, aopri2.reg8));
 	_ce;
 }
 static void XCHG_RM32_R32(unsigned char byte)
@@ -3373,19 +3368,19 @@ static void XCHG_RM32_R32(unsigned char byte)
 	_c_setbyte(0x87);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_chr(_c_modrm(aopri1, aopri2.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_chr(_c_modrm(aopri1, aopri2.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOV_RM8_R8()
 {
 	_cb("MOV_RM8_R8");
 	_c_setbyte(0x88);
-	_chk(_c_modrm(aopri1, aopri2.reg8));
+	_chr(_c_modrm(aopri1, aopri2.reg8));
 	_ce;
 }
 static void MOV_RM32_R32(unsigned char byte)
@@ -3395,19 +3390,19 @@ static void MOV_RM32_R32(unsigned char byte)
 	_c_setbyte(0x89);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri1, aopri2.reg16));
+		_chr(_c_modrm(aopri1, aopri2.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri1, aopri2.reg32));
+		_chr(_c_modrm(aopri1, aopri2.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOV_R8_RM8()
 {
 	_cb("MOV_RM8_R8");
 	_c_setbyte(0x8a);
-	_chk(_c_modrm(aopri2, aopri1.reg8));
+	_chr(_c_modrm(aopri2, aopri1.reg8));
 	_ce;
 }
 static void MOV_R32_RM32(unsigned char byte)
@@ -3417,12 +3412,12 @@ static void MOV_R32_RM32(unsigned char byte)
 	_c_setbyte(0x8b);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOV_RM16_SREG(unsigned char byte)
@@ -3430,7 +3425,7 @@ static void MOV_RM16_SREG(unsigned char byte)
 	_cb("MOV_RM16_SREG");
 	_SetOperandSize(byte);
 	_c_setbyte(0x8c);
-	_chk(_c_modrm(aopri1, aopri2.sreg));
+	_chr(_c_modrm(aopri1, aopri2.sreg));
 	_ce;
 }
 static void LEA_R32_M32(unsigned char byte)
@@ -3440,12 +3435,12 @@ static void LEA_R32_M32(unsigned char byte)
 	_c_setbyte(0x8d);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOV_SREG_RM16(unsigned char byte)
@@ -3453,7 +3448,7 @@ static void MOV_SREG_RM16(unsigned char byte)
 	_cb("MOV_SREG_RM16");
 	_SetOperandSize(byte);
 	_c_setbyte(0x8e);
-	_chk(_c_modrm(aopri2, aopri1.sreg));
+	_chr(_c_modrm(aopri2, aopri1.sreg));
 	_ce;
 }
 static void INS_8F(unsigned char rid, unsigned char byte)
@@ -3461,14 +3456,14 @@ static void INS_8F(unsigned char rid, unsigned char byte)
 	_cb("INS_8F");
 	_SetOperandSize(byte);
 	_c_setbyte(0x8f);
-	_chk(_c_modrm(aopri1, rid));
+	_chr(_c_modrm(aopri1, rid));
 	_ce;
 }
 static void NOP()
 {
 	_cb("NOP");
 	if (ARG_NONE) _c_setbyte(0x90);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void XCHG_EAX_EAX(unsigned char byte)
@@ -3532,7 +3527,7 @@ static void CBW(unsigned char byte)
 	_cb("CBW");
 	_SetOperandSize(byte);
 	if (ARG_NONE) _c_setbyte(0x98);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void CWD(unsigned char byte)
@@ -3540,7 +3535,7 @@ static void CWD(unsigned char byte)
 	_cb("CWD");
 	_SetOperandSize(byte);
 	if (ARG_NONE) _c_setbyte(0x99);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void CALL_PTR16_32(unsigned char byte)
@@ -3550,13 +3545,13 @@ static void CALL_PTR16_32(unsigned char byte)
 	_c_setbyte(0x9a);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16((unsigned short) aopri1.reip));
+		_chr(_c_imm16((unsigned short) aopri1.reip));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32((unsigned int) aopri1.reip));
+		_chr(_c_imm32((unsigned int) aopri1.reip));
 		_be;break;
-	default: _se_;break;}
-	_chk(_c_imm16(aopri1.rcs));
+	default: _ser_;break;}
+	_chr(_c_imm16(aopri1.rcs));
 	_ce;
 }
 static void WAIT()
@@ -3598,14 +3593,14 @@ static void MOV_AL_MOFFS8()
 	if (aopri2.mem == MEM_BP) {
 		_bb("16-bit Addressing");
 		_SetAddressSize(2);
-		_chk(_c_imm16(aopri2.disp16));
+		_chr(_c_imm16(aopri2.disp16));
 		_be;
 	} else if (aopri2.mem == MEM_EBP) {
 		_bb("32-bit Addressing");
 		_SetAddressSize(4);
-		_chk(_c_imm16(aopri2.disp32));
+		_chr(_c_imm16(aopri2.disp32));
 		_be;
-	} else _se_;
+	} else _ser_;
 	_ce;
 }
 static void MOV_EAX_MOFFS32(unsigned char byte)
@@ -3616,14 +3611,14 @@ static void MOV_EAX_MOFFS32(unsigned char byte)
 	if (aopri2.mem == MEM_BP) {
 		_bb("16-bit Addressing");
 		_SetAddressSize(2);
-		_chk(_c_imm16(aopri2.disp16));
+		_chr(_c_imm16(aopri2.disp16));
 		_be;
 	} else if (aopri2.mem == MEM_EBP) {
 		_bb("32-bit Addressing");
 		_SetAddressSize(4);
-		_chk(_c_imm32(aopri2.disp32));
+		_chr(_c_imm32(aopri2.disp32));
 		_be;
-	} else _se_;
+	} else _ser_;
 	_ce;
 }
 static void MOV_MOFFS8_AL()
@@ -3633,14 +3628,14 @@ static void MOV_MOFFS8_AL()
 	if (aopri1.mem == MEM_BP) {
 		_bb("16-bit Addressing");
 		_SetAddressSize(2);
-		_chk(_c_imm16(aopri1.disp16));
+		_chr(_c_imm16(aopri1.disp16));
 		_be;
 	} else if (aopri1.mem == MEM_EBP) {
 		_bb("32-bit Addressing");
 		_SetAddressSize(4);
-		_chk(_c_imm16(aopri1.disp32));
+		_chr(_c_imm16(aopri1.disp32));
 		_be;
-	} else _se_;
+	} else _ser_;
 	_ce;
 }
 static void MOV_MOFFS32_EAX(unsigned char byte)
@@ -3651,14 +3646,14 @@ static void MOV_MOFFS32_EAX(unsigned char byte)
 	if (aopri1.mem == MEM_BP) {
 		_bb("16-bit Addressing");
 		_SetAddressSize(2);
-		_chk(_c_imm16(aopri1.disp16));
+		_chr(_c_imm16(aopri1.disp16));
 		_be;
 	} else if (aopri1.mem == MEM_EBP) {
 		_bb("32-bit Addressing");
 		_SetAddressSize(4);
-		_chk(_c_imm32(aopri1.disp32));
+		_chr(_c_imm32(aopri1.disp32));
 		_be;
-	} else _se_;
+	} else _ser_;
 	_ce;
 }
 static void MOVSB()
@@ -3670,7 +3665,7 @@ static void MOVSB()
 	if (ARG_NONE) rinfo = NULL;
 	else if (ARG_ESDI8_DSSI8) _SetAddressSize(2);
 	else if (ARG_ESEDI8_DSESI8) _SetAddressSize(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void MOVSW(unsigned char byte)
@@ -3685,15 +3680,15 @@ static void MOVSW(unsigned char byte)
 		if (ARG_NONE) rinfo = NULL;
 		else if (ARG_ESDI16_DSSI16) _SetAddressSize(2);
 		else if (ARG_ESEDI16_DSESI16) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
 	case 4: _bb("byte(4)");
 		if (ARG_NONE) rinfo = NULL;
 		else if (ARG_ESDI32_DSSI32) _SetAddressSize(2);
 		else if (ARG_ESEDI32_DSESI32) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void CMPSB()
@@ -3705,7 +3700,7 @@ static void CMPSB()
 	if (ARG_NONE) rinfo = NULL;
 	else if (ARG_DSSI8_ESDI8) _SetAddressSize(2);
 	else if (ARG_DSESI8_ESEDI8) _SetAddressSize(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void CMPSW(unsigned char byte)
@@ -3720,22 +3715,22 @@ static void CMPSW(unsigned char byte)
 		if (ARG_NONE) rinfo = NULL;
 		else if (ARG_DSSI16_ESDI16) _SetAddressSize(2);
 		else if (ARG_DSESI16_ESEDI16) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
 	case 4: _bb("byte(4)");
 		if (ARG_NONE) rinfo = NULL;
 		else if (ARG_DSSI32_ESDI32) _SetAddressSize(2);
 		else if (ARG_DSESI32_ESEDI32) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void TEST_AL_I8()
 {
 	_cb("TEST_AL_I8");
 	_c_setbyte(0xa8);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void TEST_EAX_I32(unsigned char byte)
@@ -3745,12 +3740,12 @@ static void TEST_EAX_I32(unsigned char byte)
 	_c_setbyte(0xa9);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void STOSB()
@@ -3761,7 +3756,7 @@ static void STOSB()
 	if (ARG_NONE) ;
 	else if (ARG_ESDI8) _SetAddressSize(2);
 	else if (ARG_ESEDI8) _SetAddressSize(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void STOSW(unsigned char byte)
@@ -3775,15 +3770,15 @@ static void STOSW(unsigned char byte)
 		if (ARG_NONE) ;
 		else if (ARG_ESDI16) _SetAddressSize(2);
 		else if (ARG_ESEDI16) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
 	case 4: _bb("byte(4)");
 		if (ARG_NONE) ;
 		else if (ARG_ESDI32) _SetAddressSize(2);
 		else if (ARG_ESEDI32) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void LODSB()
@@ -3795,7 +3790,7 @@ static void LODSB()
 	if (ARG_NONE) rinfo = NULL;
 	else if (ARG_DSSI8) _SetAddressSize(2);
 	else if (ARG_DSESI8) _SetAddressSize(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LODSW(unsigned char byte)
@@ -3810,15 +3805,15 @@ static void LODSW(unsigned char byte)
 		if (ARG_NONE) rinfo = NULL;
 		else if (ARG_DSSI16) _SetAddressSize(2);
 		else if (ARG_DSESI16) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
 	case 4: _bb("byte(4)");
 		if (ARG_NONE) rinfo = NULL;
 		else if (ARG_DSSI32) _SetAddressSize(2);
 		else if (ARG_DSESI32) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void SCASB()
@@ -3829,7 +3824,7 @@ static void SCASB()
 	if (ARG_NONE) ;
 	else if (ARG_ESDI8) _SetAddressSize(2);
 	else if (ARG_ESEDI8) _SetAddressSize(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SCASW(unsigned char byte)
@@ -3843,71 +3838,71 @@ static void SCASW(unsigned char byte)
 		if (ARG_NONE) ;
 		else if (ARG_ESDI16) _SetAddressSize(2);
 		else if (ARG_ESEDI16) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
 	case 4: _bb("byte(4)");
 		if (ARG_NONE) ;
 		else if (ARG_ESDI32) _SetAddressSize(2);
 		else if (ARG_ESEDI32) _SetAddressSize(4);
-		else _se_;
+		else _ser_;
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOV_AL_I8()
 {
 	_cb("MOV_AL_I8");
 	_c_setbyte(0xb0);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void MOV_CL_I8()
 {
 	_cb("MOV_CL_I8");
 	_c_setbyte(0xb1);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void MOV_DL_I8()
 {
 	_cb("MOV_DL_I8");
 	_c_setbyte(0xb2);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void MOV_BL_I8()
 {
 	_cb("MOV_BL_I8");
 	_c_setbyte(0xb3);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void MOV_AH_I8()
 {
 	_cb("MOV_AH_I8");
 	_c_setbyte(0xb4);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void MOV_CH_I8()
 {
 	_cb("MOV_CH_I8");
 	_c_setbyte(0xb5);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void MOV_DH_I8()
 {
 	_cb("MOV_DH_I8");
 	_c_setbyte(0xb6);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void MOV_BH_I8()
 {
 	_cb("MOV_BH_I8");
 	_c_setbyte(0xb7);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void MOV_EAX_I32(unsigned char byte)
@@ -3917,12 +3912,12 @@ static void MOV_EAX_I32(unsigned char byte)
 	_c_setbyte(0xb8);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOV_ECX_I32(unsigned char byte)
@@ -3932,12 +3927,12 @@ static void MOV_ECX_I32(unsigned char byte)
 	_c_setbyte(0xb9);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOV_EDX_I32(unsigned char byte)
@@ -3947,12 +3942,12 @@ static void MOV_EDX_I32(unsigned char byte)
 	_c_setbyte(0xba);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOV_EBX_I32(unsigned char byte)
@@ -3962,12 +3957,12 @@ static void MOV_EBX_I32(unsigned char byte)
 	_c_setbyte(0xbb);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOV_ESP_I32(unsigned char byte)
@@ -3977,12 +3972,12 @@ static void MOV_ESP_I32(unsigned char byte)
 	_c_setbyte(0xbc);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOV_EBP_I32(unsigned char byte)
@@ -3992,12 +3987,12 @@ static void MOV_EBP_I32(unsigned char byte)
 	_c_setbyte(0xbd);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOV_ESI_I32(unsigned char byte)
@@ -4007,12 +4002,12 @@ static void MOV_ESI_I32(unsigned char byte)
 	_c_setbyte(0xbe);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOV_EDI_I32(unsigned char byte)
@@ -4022,20 +4017,20 @@ static void MOV_EDI_I32(unsigned char byte)
 	_c_setbyte(0xbf);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void INS_C0(unsigned char rid)
 {
 	_cb("INS_C0");
 	_c_setbyte(0xc0);
-	_chk(_c_modrm(aopri1, rid));
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_modrm(aopri1, rid));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void INS_C1(unsigned char rid, unsigned char byte)
@@ -4043,15 +4038,15 @@ static void INS_C1(unsigned char rid, unsigned char byte)
 	_cb("INS_C1");
 	_SetOperandSize(byte);
 	_c_setbyte(0xc1);
-	_chk(_c_modrm(aopri1, rid));
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_modrm(aopri1, rid));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void RET_I16()
 {
 	_cb("RET_I16");
 	_c_setbyte(0xc2);
-	_chk(_c_imm16(aopri1.imm16));
+	_chr(_c_imm16(aopri1.imm16));
 	_ce;
 }
 static void RET_()
@@ -4067,12 +4062,12 @@ static void LES_R32_M16_32(unsigned char byte)
 	_c_setbyte(0xc4);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void LDS_R32_M16_32(unsigned char byte)
@@ -4081,20 +4076,20 @@ static void LDS_R32_M16_32(unsigned char byte)
 	_c_setbyte(0xc5);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void INS_C6(unsigned char rid)
 {
 	_cb("INS_C6");
 	_c_setbyte(0xc6);
-	_chk(_c_modrm(aopri1, rid));
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_modrm(aopri1, rid));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void INS_C7(unsigned char rid, unsigned char byte)
@@ -4102,15 +4097,15 @@ static void INS_C7(unsigned char rid, unsigned char byte)
 	_cb("INS_C7");
 	_SetOperandSize(byte);
 	_c_setbyte(0xc7);
-	_chk(_c_modrm(aopri1, rid));
+	_chr(_c_modrm(aopri1, rid));
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri2.imm16));
+		_chr(_c_imm16(aopri2.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri2.imm32));
+		_chr(_c_imm32(aopri2.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void ENTER()
@@ -4119,24 +4114,24 @@ static void ENTER()
 	if (ARG_I16_I8) {
 		_bb("ARG_I16_I8");
 		_c_setbyte(0xc8);
-		_chk(_c_imm16(aopri1.imm16));
-		_chk(_c_imm8(aopri2.imm8));
+		_chr(_c_imm16(aopri1.imm16));
+		_chr(_c_imm8(aopri2.imm8));
 		_be;
-	} else _se_;
+	} else _ser_;
 	_ce;
 }
 static void LEAVE()
 {
 	_cb("LEAVE");
 	if (ARG_NONE) _c_setbyte(0xc9);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void RETF_I16()
 {
 	_cb("RETF_I16");
 	_c_setbyte(0xca);
-	_chk(_c_imm16(aopri1.imm16));
+	_chr(_c_imm16(aopri1.imm16));
 	_ce;
 }
 static void RETF_()
@@ -4155,7 +4150,7 @@ static void INT_I8()
 {
 	_cb("INT_I8");
 	_c_setbyte(0xcd);
-	_chk(_c_imm8(aopri1.imm8));
+	_chr(_c_imm8(aopri1.imm8));
 	_ce;
 }
 static void INTO()
@@ -4175,7 +4170,7 @@ static void INS_D0(unsigned char rid)
 {
 	_cb("INS_DO");
 	_c_setbyte(0xd0);
-	_chk(_c_modrm(aopri1, rid));
+	_chr(_c_modrm(aopri1, rid));
 	_ce;
 }
 static void INS_D1(unsigned char rid, unsigned char byte)
@@ -4183,14 +4178,14 @@ static void INS_D1(unsigned char rid, unsigned char byte)
 	_cb("INS_D1");
 	_SetOperandSize(byte);
 	_c_setbyte(0xd1);
-	_chk(_c_modrm(aopri1, rid));
+	_chr(_c_modrm(aopri1, rid));
 	_ce;
 }
 static void INS_D2(unsigned char rid)
 {
 	_cb("INS_D2");
 	_c_setbyte(0xd2);
-	_chk(_c_modrm(aopri1, rid));
+	_chr(_c_modrm(aopri1, rid));
 	_ce;
 }
 static void INS_D3(unsigned char rid, unsigned char byte)
@@ -4198,7 +4193,7 @@ static void INS_D3(unsigned char rid, unsigned char byte)
 	_cb("INS_D3");
 	_SetOperandSize(byte);
 	_c_setbyte(0xd3);
-	_chk(_c_modrm(aopri1, rid));
+	_chr(_c_modrm(aopri1, rid));
 	_ce;
 }
 static void AAM()
@@ -4207,14 +4202,14 @@ static void AAM()
 	if (ARG_NONE) {
 		_bb("ARG_NONE");
 		_c_setbyte(0xd4);
-		_chk(_c_imm8(0x0a));
+		_chr(_c_imm8(0x0a));
 		_be;
 	} else if (ARG_I8) {
 		_bb("ARG_I8");
 		_c_setbyte(0xd4);
-		_chk(_c_imm8(aopri1.imm8));
+		_chr(_c_imm8(aopri1.imm8));
 		_be;
-	} else _se_;
+	} else _ser_;
 	_ce;
 }
 static void AAD()
@@ -4223,14 +4218,14 @@ static void AAD()
 	if (ARG_NONE) {
 		_bb("ARG_NONE");
 		_c_setbyte(0xd5);
-		_chk(_c_imm8(0x0a));
+		_chr(_c_imm8(0x0a));
 		_be;
 	} else if (ARG_I8) {
 		_bb("ARG_I8");
 		_c_setbyte(0xd5);
-		_chk(_c_imm8(aopri1.imm8));
+		_chr(_c_imm8(aopri1.imm8));
 		_be;
-	} else _se_;
+	} else _ser_;
 	_ce;
 }
 static void XLATB()
@@ -4243,14 +4238,14 @@ static void XLATB()
 		_SetAddressSize(2);
 	} else if (ARG_DSEBXAL8) {
 		_SetAddressSize(4);
-	} else _se_;
+	} else _ser_;
 	_ce;
 }
 static void IN_AL_I8()
 {
 	_cb("IN_AL_I8");
 	_c_setbyte(0xe4);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void IN_EAX_I8(unsigned char byte)
@@ -4258,21 +4253,21 @@ static void IN_EAX_I8(unsigned char byte)
 	_cb("IN_AL_I8");
 	_SetOperandSize(byte);
 	_c_setbyte(0xe5);
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void OUT_I8_AL()
 {
 	_cb("OUT_I8_AL");
 	_c_setbyte(0xe6);
-	_chk(_c_imm8(aopri1.imm8));
+	_chr(_c_imm8(aopri1.imm8));
 	_ce;
 }
 static void OUT_I8_EAX(unsigned char byte)
 {
 	_cb("OUT_I8_EAX");
 	_c_setbyte(0xe7);
-	_chk(_c_imm8(aopri1.imm8));
+	_chr(_c_imm8(aopri1.imm8));
 	_ce;
 }
 static void CALL_REL32(unsigned char byte)
@@ -4282,12 +4277,12 @@ static void CALL_REL32(unsigned char byte)
 	_c_setbyte(0xe8);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri1.imm16));
+		_chr(_c_imm16(aopri1.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri1.imm32));
+		_chr(_c_imm32(aopri1.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void JMP_REL32(unsigned char byte)
@@ -4297,12 +4292,12 @@ static void JMP_REL32(unsigned char byte)
 	_c_setbyte(0xe9);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16(aopri1.imm16));
+		_chr(_c_imm16(aopri1.imm16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32(aopri1.imm32));
+		_chr(_c_imm32(aopri1.imm32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void JMP_PTR16_32(unsigned char byte)
@@ -4312,13 +4307,13 @@ static void JMP_PTR16_32(unsigned char byte)
 	_c_setbyte(0xea);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_imm16((unsigned short) aopri1.reip));
+		_chr(_c_imm16((unsigned short) aopri1.reip));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_imm32((unsigned int) aopri1.reip));
+		_chr(_c_imm32((unsigned int) aopri1.reip));
 		_be;break;
-	default: _se_;break;}
-	_chk(_c_imm16(aopri1.rcs));
+	default: _ser_;break;}
+	_chr(_c_imm16(aopri1.rcs));
 	_ce;
 }
 static void IN_AL_DX()
@@ -4351,7 +4346,7 @@ static void PREFIX_LOCK()
 {
 	_cb("PREFIX_LOCK");
 	if (ARG_NONE) prefix_lock = 1;
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void QDX()
@@ -4359,44 +4354,44 @@ static void QDX()
 	_cb("PREFIX_LOCK");
 	if (ARG_I8) {
 		_c_setbyte(0xf1);
-		_chk(_c_imm8(aopri1.imm8));
-	} else _se_;
+		_chr(_c_imm8(aopri1.imm8));
+	} else _ser_;
 	_ce;
 }
 static void PREFIX_REPNZ()
 {
 	_cb("PREFIX_REPNZ");
 	if (ARG_NONE) prefix_repnz = 1;
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void PREFIX_REPZ()
 {
 	_cb("PREFIX_REPZ");
 	if (ARG_NONE) prefix_repz = 1;
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void HLT()
 {
 	_cb("HLT");
 	if (ARG_NONE) _c_setbyte(0xf4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void CMC()
 {
 	_cb("CMC");
 	if (ARG_NONE) _c_setbyte(0xf5);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void INS_F6(unsigned char rid)
 {
 	_cb("INS_F6");
 	_c_setbyte(0xf6);
-	_chk(_c_modrm(aopri1, rid));
-	if (!rid) _chk(_c_imm8(aopri2.imm8));
+	_chr(_c_modrm(aopri1, rid));
+	if (!rid) _chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void INS_F7(unsigned char rid, unsigned char byte)
@@ -4404,17 +4399,17 @@ static void INS_F7(unsigned char rid, unsigned char byte)
 	_cb("INS_F7");
 	_SetOperandSize(byte);
 	_c_setbyte(0xf7);
-	_chk(_c_modrm(aopri1, rid));
+	_chr(_c_modrm(aopri1, rid));
 	if (!rid) {
 		_bb("!rid");
 		switch (byte) {
 		case 2: _bb("byte(2)");
-			_chk(_c_imm16(aopri2.imm16));
+			_chr(_c_imm16(aopri2.imm16));
 			_be;break;
 		case 4: _bb("byte(4)");
-			_chk(_c_imm32(aopri2.imm32));
+			_chr(_c_imm32(aopri2.imm32));
 			_be;break;
-		default: _se_;break;}
+		default: _ser_;break;}
 		_be;
 	}
 	_ce;
@@ -4423,49 +4418,49 @@ static void CLC()
 {
 	_cb("CLC");
 	if (ARG_NONE) _c_setbyte(0xf8);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void STC()
 {
 	_cb("STC");
 	if (ARG_NONE) _c_setbyte(0xf9);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void CLI()
 {
 	_cb("CLI");
 	if (ARG_NONE) _c_setbyte(0xfa);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void STI()
 {
 	_cb("STI");
 	if (ARG_NONE) _c_setbyte(0xfb);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void CLD()
 {
 	_cb("CLD");
 	if (ARG_NONE) _c_setbyte(0xfc);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void STD()
 {
 	_cb("STD");
 	if (ARG_NONE) _c_setbyte(0xfd);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void INS_FE(unsigned char rid)
 {
 	_cb("INS_FE");
 	_c_setbyte(0xfe);
-	_chk(_c_modrm(aopri1, rid));
+	_chr(_c_modrm(aopri1, rid));
 	_ce;
 }
 static void INS_FF(unsigned char rid, unsigned char byte)
@@ -4473,7 +4468,7 @@ static void INS_FF(unsigned char rid, unsigned char byte)
 	_cb("INS_FF");
 	_SetOperandSize(byte);
 	_c_setbyte(0xff);
-	_chk(_c_modrm(aopri1, rid));
+	_chr(_c_modrm(aopri1, rid));
 	_ce;
 }
 /* concrete extended instructions */
@@ -4483,7 +4478,7 @@ static void INS_0F_00(unsigned char rid, unsigned char byte)
 	_SetOperandSize(byte);
 	INS_0F();
 	_c_setbyte(0x00);
-	_chk(_c_modrm(aopri1, rid));
+	_chr(_c_modrm(aopri1, rid));
 	_ce;
 }
 static void INS_0F_01(unsigned char rid, unsigned char byte)
@@ -4492,7 +4487,7 @@ static void INS_0F_01(unsigned char rid, unsigned char byte)
 	_SetOperandSize(byte);
 	INS_0F();
 	_c_setbyte(0x01);
-	_chk(_c_modrm(aopri1, rid));
+	_chr(_c_modrm(aopri1, rid));
 	_ce;
 }
 static void LAR_R32_RM32(unsigned char byte)
@@ -4503,12 +4498,12 @@ static void LAR_R32_RM32(unsigned char byte)
 	_c_setbyte(0x02);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void LSL_R32_RM32(unsigned char byte)
@@ -4519,12 +4514,12 @@ static void LSL_R32_RM32(unsigned char byte)
 	_c_setbyte(0x03);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void CLTS()
@@ -4539,7 +4534,7 @@ static void MOV_R32_CR(unsigned char crid)
 	_cb("MOV_R32_CR");
 	INS_0F();
 	_c_setbyte(0x20);
-	_chk(_c_modrm(aopri1, crid));
+	_chr(_c_modrm(aopri1, crid));
 	_ce;
 }
 static void MOV_R32_DR(unsigned char drid)
@@ -4547,7 +4542,7 @@ static void MOV_R32_DR(unsigned char drid)
 	_cb("MOV_R32_DR");
 	INS_0F();
 	_c_setbyte(0x21);
-	_chk(_c_modrm(aopri1, drid));
+	_chr(_c_modrm(aopri1, drid));
 	_ce;
 }
 static void MOV_CR_R32(unsigned char crid)
@@ -4555,7 +4550,7 @@ static void MOV_CR_R32(unsigned char crid)
 	_cb("MOV_CR_R32");
 	INS_0F();
 	_c_setbyte(0x22);
-	_chk(_c_modrm(aopri2, crid));
+	_chr(_c_modrm(aopri2, crid));
 	_ce;
 }
 static void MOV_DR_R32(unsigned char drid)
@@ -4563,7 +4558,7 @@ static void MOV_DR_R32(unsigned char drid)
 	_cb("MOV_DR_R32");
 	INS_0F();
 	_c_setbyte(0x23);
-	_chk(_c_modrm(aopri2, drid));
+	_chr(_c_modrm(aopri2, drid));
 	_ce;
 }
 static void MOV_R32_TR(unsigned char trid)
@@ -4571,7 +4566,7 @@ static void MOV_R32_TR(unsigned char trid)
 	_cb("MOV_R32_TR");
 	INS_0F();
 	_c_setbyte(0x24);
-	_chk(_c_modrm(aopri1, trid));
+	_chr(_c_modrm(aopri1, trid));
 	_ce;
 }
 static void MOV_TR_R32(unsigned char trid)
@@ -4579,7 +4574,7 @@ static void MOV_TR_R32(unsigned char trid)
 	_cb("MOV_TR_R32");
 	INS_0F();
 	_c_setbyte(0x26);
-	_chk(_c_modrm(aopri2, trid));
+	_chr(_c_modrm(aopri2, trid));
 	_ce;
 }
 static void SETCC_RM8(unsigned char opcode)
@@ -4588,8 +4583,8 @@ static void SETCC_RM8(unsigned char opcode)
 	if (ARG_RM8) {
 		INS_0F();
 		_c_setbyte(opcode);
-		_chk(_c_modrm(aopri1, 0));
-	} else _se_;
+		_chr(_c_modrm(aopri1, 0));
+	} else _ser_;
 	_ce;
 }
 static void PUSH_FS()
@@ -4613,9 +4608,9 @@ static void BT_RM32_R32(unsigned char byte)
 	INS_0F();
 	_c_setbyte(0xa3);
 	switch (byte) {
-	case 2: _chk(_c_modrm(aopri1, aopri2.reg16));break;
-	case 4: _chk(_c_modrm(aopri1, aopri2.reg32));break;
-	default: _se_;break;}
+	case 2: _chr(_c_modrm(aopri1, aopri2.reg16));break;
+	case 4: _chr(_c_modrm(aopri1, aopri2.reg32));break;
+	default: _ser_;break;}
 	_ce;
 }
 static void SHLD_RM32_R32_I8(unsigned char byte)
@@ -4625,10 +4620,10 @@ static void SHLD_RM32_R32_I8(unsigned char byte)
 	INS_0F();
 	_c_setbyte(0xa4);
 	switch (byte) {
-	case 2: _chk(_c_modrm(aopri1, aopri2.reg16));break;
-	case 4: _chk(_c_modrm(aopri1, aopri2.reg32));break;
-	default: _se_;break;}
-	_chk(_c_imm8(aopri3.imm8));
+	case 2: _chr(_c_modrm(aopri1, aopri2.reg16));break;
+	case 4: _chr(_c_modrm(aopri1, aopri2.reg32));break;
+	default: _ser_;break;}
+	_chr(_c_imm8(aopri3.imm8));
 	_ce;
 }
 static void SHLD_RM32_R32_CL(unsigned char byte)
@@ -4638,9 +4633,9 @@ static void SHLD_RM32_R32_CL(unsigned char byte)
 	INS_0F();
 	_c_setbyte(0xa5);
 	switch (byte) {
-	case 2: _chk(_c_modrm(aopri1, aopri2.reg16));break;
-	case 4: _chk(_c_modrm(aopri1, aopri2.reg32));break;
-	default: _se_;break;}
+	case 2: _chr(_c_modrm(aopri1, aopri2.reg16));break;
+	case 4: _chr(_c_modrm(aopri1, aopri2.reg32));break;
+	default: _ser_;break;}
 	_ce;
 }
 static void PUSH_GS()
@@ -4664,9 +4659,9 @@ static void BTS_RM32_R32(unsigned char byte)
 	INS_0F();
 	_c_setbyte(0xab);
 	switch (byte) {
-	case 2: _chk(_c_modrm(aopri1, aopri2.reg16));break;
-	case 4: _chk(_c_modrm(aopri1, aopri2.reg32));break;
-	default: _se_;break;}
+	case 2: _chr(_c_modrm(aopri1, aopri2.reg16));break;
+	case 4: _chr(_c_modrm(aopri1, aopri2.reg32));break;
+	default: _ser_;break;}
 	_ce;
 }
 static void SHRD_RM32_R32_I8(unsigned char byte)
@@ -4676,10 +4671,10 @@ static void SHRD_RM32_R32_I8(unsigned char byte)
 	INS_0F();
 	_c_setbyte(0xac);
 	switch (byte) {
-	case 2: _chk(_c_modrm(aopri1, aopri2.reg16));break;
-	case 4: _chk(_c_modrm(aopri1, aopri2.reg32));break;
-	default: _se_;break;}
-	_chk(_c_imm8(aopri3.imm8));
+	case 2: _chr(_c_modrm(aopri1, aopri2.reg16));break;
+	case 4: _chr(_c_modrm(aopri1, aopri2.reg32));break;
+	default: _ser_;break;}
+	_chr(_c_imm8(aopri3.imm8));
 	_ce;
 }
 static void SHRD_RM32_R32_CL(unsigned char byte)
@@ -4689,9 +4684,9 @@ static void SHRD_RM32_R32_CL(unsigned char byte)
 	INS_0F();
 	_c_setbyte(0xad);
 	switch (byte) {
-	case 2: _chk(_c_modrm(aopri1, aopri2.reg16));break;
-	case 4: _chk(_c_modrm(aopri1, aopri2.reg32));break;
-	default: _se_;break;}
+	case 2: _chr(_c_modrm(aopri1, aopri2.reg16));break;
+	case 4: _chr(_c_modrm(aopri1, aopri2.reg32));break;
+	default: _ser_;break;}
 	_ce;
 }
 static void IMUL_R32_RM32(unsigned char byte)
@@ -4701,9 +4696,9 @@ static void IMUL_R32_RM32(unsigned char byte)
 	INS_0F();
 	_c_setbyte(0xab);
 	switch (byte) {
-	case 2: _chk(_c_modrm(aopri2, aopri1.reg16));break;
-	case 4: _chk(_c_modrm(aopri2, aopri1.reg32));break;
-	default: _se_;break;}
+	case 2: _chr(_c_modrm(aopri2, aopri1.reg16));break;
+	case 4: _chr(_c_modrm(aopri2, aopri1.reg32));break;
+	default: _ser_;break;}
 	_ce;
 }
 static void LSS_R32_M16_32(unsigned char byte)
@@ -4714,12 +4709,12 @@ static void LSS_R32_M16_32(unsigned char byte)
 	_c_setbyte(0xb2);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void BTR_RM32_R32(unsigned char byte)
@@ -4729,9 +4724,9 @@ static void BTR_RM32_R32(unsigned char byte)
 	INS_0F();
 	_c_setbyte(0xb3);
 	switch (byte) {
-	case 2: _chk(_c_modrm(aopri1, aopri2.reg16));break;
-	case 4: _chk(_c_modrm(aopri1, aopri2.reg32));break;
-	default: _se_;break;}
+	case 2: _chr(_c_modrm(aopri1, aopri2.reg16));break;
+	case 4: _chr(_c_modrm(aopri1, aopri2.reg32));break;
+	default: _ser_;break;}
 	_ce;
 }
 static void LFS_R32_M16_32(unsigned char byte)
@@ -4742,12 +4737,12 @@ static void LFS_R32_M16_32(unsigned char byte)
 	_c_setbyte(0xb4);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void LGS_R32_M16_32(unsigned char byte)
@@ -4758,12 +4753,12 @@ static void LGS_R32_M16_32(unsigned char byte)
 	_c_setbyte(0xb5);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOVZX_R32_RM8(unsigned char byte)
@@ -4774,12 +4769,12 @@ static void MOVZX_R32_RM8(unsigned char byte)
 	_c_setbyte(0xb6);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOVZX_R32_RM16()
@@ -4787,7 +4782,7 @@ static void MOVZX_R32_RM16()
 	_cb("MOVZX_R32_RM16");
 	INS_0F();
 	_c_setbyte(0xb7);
-	_chk(_c_modrm(aopri2, aopri1.reg32));
+	_chr(_c_modrm(aopri2, aopri1.reg32));
 	_ce;
 }
 static void INS_0F_BA(unsigned char rid, unsigned char byte)
@@ -4796,8 +4791,8 @@ static void INS_0F_BA(unsigned char rid, unsigned char byte)
 	_SetOperandSize(byte);
 	INS_0F();
 	_c_setbyte(0xba);
-	_chk(_c_modrm(aopri1, rid));
-	_chk(_c_imm8(aopri2.imm8));
+	_chr(_c_modrm(aopri1, rid));
+	_chr(_c_imm8(aopri2.imm8));
 	_ce;
 }
 static void BTC_RM32_R32(unsigned char byte)
@@ -4807,9 +4802,9 @@ static void BTC_RM32_R32(unsigned char byte)
 	INS_0F();
 	_c_setbyte(0xbb);
 	switch (byte) {
-	case 2: _chk(_c_modrm(aopri1, aopri2.reg16));break;
-	case 4: _chk(_c_modrm(aopri1, aopri2.reg32));break;
-	default: _se_;break;}
+	case 2: _chr(_c_modrm(aopri1, aopri2.reg16));break;
+	case 4: _chr(_c_modrm(aopri1, aopri2.reg32));break;
+	default: _ser_;break;}
 	_ce;
 }
 static void BSF_R32_RM32(unsigned char byte)
@@ -4820,12 +4815,12 @@ static void BSF_R32_RM32(unsigned char byte)
 	_c_setbyte(0xbc);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void BSR_R32_RM32(unsigned char byte)
@@ -4836,12 +4831,12 @@ static void BSR_R32_RM32(unsigned char byte)
 	_c_setbyte(0xbd);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOVSX_R32_RM8(unsigned char byte)
@@ -4852,12 +4847,12 @@ static void MOVSX_R32_RM8(unsigned char byte)
 	_c_setbyte(0xbe);
 	switch (byte) {
 	case 2: _bb("byte(2)");
-		_chk(_c_modrm(aopri2, aopri1.reg16));
+		_chr(_c_modrm(aopri2, aopri1.reg16));
 		_be;break;
 	case 4: _bb("byte(4)");
-		_chk(_c_modrm(aopri2, aopri1.reg32));
+		_chr(_c_modrm(aopri2, aopri1.reg32));
 		_be;break;
-	default: _se_;break;}
+	default: _ser_;break;}
 	_ce;
 }
 static void MOVSX_R32_RM16()
@@ -4865,7 +4860,7 @@ static void MOVSX_R32_RM16()
 	_cb("MOVSX_R32_RM16");
 	INS_0F();
 	_c_setbyte(0xbf);
-	_chk(_c_modrm(aopri2, aopri1.reg32));
+	_chr(_c_modrm(aopri2, aopri1.reg32));
 	_ce;
 }
 
@@ -4900,7 +4895,7 @@ static void PUSH()
 	else if (ARG_I8)  PUSH_I8();
 	else if (ARG_I16) PUSH_I32(2);
 	else if (ARG_I32) PUSH_I32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void POP()
@@ -4930,7 +4925,7 @@ static void POP()
 	else if (ARG_EDI) POP_EDI(4);
 	else if (ARG_RM16) INS_8F(0x00, 2);
 	else if (ARG_RM32) INS_8F(0x00, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void ADD()
@@ -4979,7 +4974,7 @@ static void ADD()
 	else if (ARG_RM8_R8)   ADD_RM8_R8();
 	else if (ARG_RM16_R16) ADD_RM32_R32(2);
 	else if (ARG_RM32_R32) ADD_RM32_R32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void OR()
@@ -5028,7 +5023,7 @@ static void OR()
 	else if (ARG_RM8_R8)   OR_RM8_R8();
 	else if (ARG_RM16_R16) OR_RM32_R32(2);
 	else if (ARG_RM32_R32) OR_RM32_R32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void ADC()
@@ -5077,7 +5072,7 @@ static void ADC()
 	else if (ARG_RM8_R8)   ADC_RM8_R8();
 	else if (ARG_RM16_R16) ADC_RM32_R32(2);
 	else if (ARG_RM32_R32) ADC_RM32_R32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SBB()
@@ -5126,7 +5121,7 @@ static void SBB()
 	else if (ARG_RM8_R8)   SBB_RM8_R8();
 	else if (ARG_RM16_R16) SBB_RM32_R32(2);
 	else if (ARG_RM32_R32) SBB_RM32_R32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void AND()
@@ -5175,7 +5170,7 @@ static void AND()
 	else if (ARG_RM8_R8)   AND_RM8_R8();
 	else if (ARG_RM16_R16) AND_RM32_R32(2);
 	else if (ARG_RM32_R32) AND_RM32_R32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SUB()
@@ -5224,7 +5219,7 @@ static void SUB()
 	else if (ARG_RM8_R8)   SUB_RM8_R8();
 	else if (ARG_RM16_R16) SUB_RM32_R32(2);
 	else if (ARG_RM32_R32) SUB_RM32_R32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void XOR()
@@ -5273,7 +5268,7 @@ static void XOR()
 	else if (ARG_RM8_R8)   XOR_RM8_R8();
 	else if (ARG_RM16_R16) XOR_RM32_R32(2);
 	else if (ARG_RM32_R32) XOR_RM32_R32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void CMP()
@@ -5322,7 +5317,7 @@ static void CMP()
 	else if (ARG_RM8_R8)   CMP_RM8_R8();
 	else if (ARG_RM16_R16) CMP_RM32_R32(2);
 	else if (ARG_RM32_R32) CMP_RM32_R32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void INC()
@@ -5347,7 +5342,7 @@ static void INC()
 	else if (ARG_RM8s) INS_FE(0x00);
 	else if (ARG_RM16s) INS_FF(0x00, 2);
 	else if (ARG_RM32s) INS_FF(0x00, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void DEC()
@@ -5372,7 +5367,7 @@ static void DEC()
 	else if (ARG_RM8s) INS_FE(0x01);
 	else if (ARG_RM16s) INS_FF(0x01, 2);
 	else if (ARG_RM32s) INS_FF(0x01, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void BOUND()
@@ -5380,7 +5375,7 @@ static void BOUND()
 	_cb("BOUND");
 	if (ARG_R16_M16) BOUND_R32_M32_32(2);
 	else if (ARG_R32_M32) BOUND_R32_M32_32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void IMUL()
@@ -5395,7 +5390,7 @@ static void IMUL()
 	else if (ARG_R32_RM32_I8)  IMUL_R32_RM32_I8(4);
 	else if (ARG_R16_RM16_I16) IMUL_R32_RM32_I32(2);
 	else if (ARG_R32_RM32_I32) IMUL_R32_RM32_I32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void INS()
@@ -5404,7 +5399,7 @@ static void INS()
 	if (ARG_ESDI8s_DX || ARG_ESEDI8s_DX) INSB();
 	else if (ARG_ESDI16s_DX || ARG_ESEDI16s_DX) INSW(2);
 	else if (ARG_ESDI32s_DX || ARG_ESEDI32s_DX) INSW(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void OUTS()
@@ -5413,7 +5408,7 @@ static void OUTS()
 	if (ARG_DX_DSSI8s || ARG_DX_DSESI8s) OUTSB();
 	else if (ARG_DX_DSSI16s || ARG_DX_DSESI16s) OUTSW(2);
 	else if (ARG_DX_DSSI32s || ARG_DX_DSESI32s) OUTSW(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void JCC_REL(unsigned char opcode)
@@ -5432,7 +5427,7 @@ static void JCC_REL(unsigned char opcode)
 		INS_0F();
 		_c_setbyte(opcode + 0x10);
 		_c_imm16(aopri1.imm32);
-	} else _se_;
+	} else _ser_;
 	_ce;
 }
 static void TEST()
@@ -5447,7 +5442,7 @@ static void TEST()
 	else if (ARG_RM8_I8) INS_F6(0x00);
 	else if (ARG_RM16_I16) INS_F7(0x00, 2);
 	else if (ARG_RM32_I32) INS_F7(0x00, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void XCHG()
@@ -5472,7 +5467,7 @@ static void XCHG()
 	else if (ARG_RM8_R8) XCHG_RM8_R8();
 	else if (ARG_RM16_R16) XCHG_RM32_R32(2);
 	else if (ARG_RM32_R32) XCHG_RM32_R32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void MOV()
@@ -5543,7 +5538,7 @@ static void MOV()
 	else if (ARG_R32_DR7)  MOV_R32_TR(7);
 	else if (ARG_TR6_R32)  MOV_TR_R32(6);
 	else if (ARG_TR7_R32)  MOV_TR_R32(7);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LEA()
@@ -5551,7 +5546,7 @@ static void LEA()
 	_cb("LEA");
 	if (ARG_R16_M16) LEA_R32_M32(2);
 	else if (ARG_R32_M32) LEA_R32_M32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void CALL()
@@ -5565,7 +5560,7 @@ static void CALL()
 	else if (ARG_NEAR_RM32s || ARG_PNONE_RM32s) INS_FF(0x02, 4);
 	else if (ARG_FAR_M16_16) INS_FF(0x03, 2);
 	else if (ARG_FAR_M16_32) INS_FF(0x03, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void MOVS()
@@ -5574,7 +5569,7 @@ static void MOVS()
 	if (ARG_ESDI8s_DSSI8s || ARG_ESEDI8s_DSESI8s) MOVSB();
 	else if (ARG_ESDI16s_DSSI16s || ARG_ESEDI16s_DSESI16s) MOVSW(2);
 	else if (ARG_ESDI32s_DSSI32s || ARG_ESEDI32s_DSESI32s) MOVSW(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void CMPS()
@@ -5583,7 +5578,7 @@ static void CMPS()
 	if (ARG_DSSI8s_ESDI8s || ARG_DSESI8s_ESEDI8s) CMPSB();
 	else if (ARG_DSSI16s_ESDI16s || ARG_DSESI16s_ESEDI16s) CMPSW(2);
 	else if (ARG_DSSI32s_ESDI32s || ARG_DSESI32s_ESEDI32s) CMPSW(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void STOS()
@@ -5592,7 +5587,7 @@ static void STOS()
 	if (ARG_ESDI8s || ARG_ESEDI8s) STOSB();
 	else if (ARG_ESDI16s || ARG_ESEDI16s) STOSW(2);
 	else if (ARG_ESDI32s || ARG_ESEDI32s) STOSW(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LODS()
@@ -5601,7 +5596,7 @@ static void LODS()
 	if (ARG_DSSI8s || ARG_DSESI8s) LODSB();
 	else if (ARG_DSSI16s || ARG_DSESI16s) LODSW(2);
 	else if (ARG_DSSI32s || ARG_DSESI32s) LODSW(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SCAS()
@@ -5610,7 +5605,7 @@ static void SCAS()
 	if (ARG_ESDI8s || ARG_ESEDI8s) SCASB();
 	else if (ARG_ESDI16s || ARG_ESEDI16s) SCASW(2);
 	else if (ARG_ESDI32s || ARG_ESEDI32s) SCASW(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void RET()
@@ -5618,7 +5613,7 @@ static void RET()
 	_cb("RET");
 	if (ARG_I16u) RET_I16();
 	else if (ARG_NONE) RET_();
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LES()
@@ -5626,7 +5621,7 @@ static void LES()
 	_cb("LES");
 	if (ARG_R16_M16) LES_R32_M16_32(2);
 	else if (ARG_R32_M32) LES_R32_M16_32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LDS()
@@ -5634,7 +5629,7 @@ static void LDS()
 	_cb("LDS");
 	if (ARG_R16_M16) LDS_R32_M16_32(2);
 	else if (ARG_R32_M32) LDS_R32_M16_32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void RETF()
@@ -5642,21 +5637,21 @@ static void RETF()
 	_cb("RETF");
 	if      (ARG_I16u) RETF_I16();
 	else if (ARG_NONE) RETF_();
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void INT()
 {
 	_cb("INT");
 	if (ARG_I8) INT_I8();
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void XLAT()
 {
 	_cb("XLAT");
 	if (ARG_DSBXAL8 || ARG_DSEBXAL8) XLATB();
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void ROL()
@@ -5672,7 +5667,7 @@ static void ROL()
 	else if (ARG_RM8_I8)  INS_C0(rid);
 	else if (ARG_RM16_I8) INS_C1(rid, 2);
 	else if (ARG_RM32_I8) INS_C1(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void ROR()
@@ -5688,7 +5683,7 @@ static void ROR()
 	else if (ARG_RM8_I8)  INS_C0(rid);
 	else if (ARG_RM16_I8) INS_C1(rid, 2);
 	else if (ARG_RM32_I8) INS_C1(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void RCL()
@@ -5704,7 +5699,7 @@ static void RCL()
 	else if (ARG_RM8_I8)  INS_C0(rid);
 	else if (ARG_RM16_I8) INS_C1(rid, 2);
 	else if (ARG_RM32_I8) INS_C1(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void RCR()
@@ -5720,7 +5715,7 @@ static void RCR()
 	else if (ARG_RM8_I8)  INS_C0(rid);
 	else if (ARG_RM16_I8) INS_C1(rid, 2);
 	else if (ARG_RM32_I8) INS_C1(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SHL()
@@ -5736,7 +5731,7 @@ static void SHL()
 	else if (ARG_RM8_I8)  INS_C0(rid);
 	else if (ARG_RM16_I8) INS_C1(rid, 2);
 	else if (ARG_RM32_I8) INS_C1(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SHR()
@@ -5752,7 +5747,7 @@ static void SHR()
 	else if (ARG_RM8_I8)  INS_C0(rid);
 	else if (ARG_RM16_I8) INS_C1(rid, 2);
 	else if (ARG_RM32_I8) INS_C1(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SAL()
@@ -5768,7 +5763,7 @@ static void SAL()
 	else if (ARG_RM8_I8)  INS_C0(rid);
 	else if (ARG_RM16_I8) INS_C1(rid, 2);
 	else if (ARG_RM32_I8) INS_C1(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SAR()
@@ -5784,7 +5779,7 @@ static void SAR()
 	else if (ARG_RM8_I8)  INS_C0(rid);
 	else if (ARG_RM16_I8) INS_C1(rid, 2);
 	else if (ARG_RM32_I8) INS_C1(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void IN()
@@ -5796,7 +5791,7 @@ static void IN()
 	else if (ARG_AL_DX)   IN_AL_DX();
 	else if (ARG_AX_DX)   IN_EAX_DX(2);
 	else if (ARG_EAX_DX)  IN_EAX_DX(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void OUT()
@@ -5808,7 +5803,7 @@ static void OUT()
 	else if (ARG_DX_AL)   OUT_DX_AL();
 	else if (ARG_DX_AX)   OUT_DX_EAX(2);
 	else if (ARG_DX_EAX)  OUT_DX_EAX(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void NOT()
@@ -5817,7 +5812,7 @@ static void NOT()
 	if      (ARG_RM8s) INS_F6(0x02);
 	else if (ARG_RM16s) INS_F7(0x02, 2);
 	else if (ARG_RM32s) INS_F7(0x02, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void NEG()
@@ -5826,7 +5821,7 @@ static void NEG()
 	if      (ARG_RM8s) INS_F6(0x03);
 	else if (ARG_RM16s) INS_F7(0x03, 2);
 	else if (ARG_RM32s) INS_F7(0x03, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void MUL()
@@ -5835,7 +5830,7 @@ static void MUL()
 	if      (ARG_RM8s) INS_F6(0x04);
 	else if (ARG_RM16s) INS_F7(0x04, 2);
 	else if (ARG_RM32s) INS_F7(0x04, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void DIV()
@@ -5844,7 +5839,7 @@ static void DIV()
 	if      (ARG_RM8s) INS_F6(0x06);
 	else if (ARG_RM16s) INS_F7(0x06, 2);
 	else if (ARG_RM32s) INS_F7(0x06, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void IDIV()
@@ -5853,7 +5848,7 @@ static void IDIV()
 	if      (ARG_RM8s) INS_F6(0x07);
 	else if (ARG_RM16s) INS_F7(0x07, 2);
 	else if (ARG_RM32s) INS_F7(0x07, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void JMP()
@@ -5868,7 +5863,7 @@ static void JMP()
 	else if (ARG_NEAR_RM32s || ARG_PNONE_RM32s) INS_FF(0x04, 4);
 	else if (ARG_FAR_M16_16) INS_FF(0x05, 2);
 	else if (ARG_FAR_M16_32) INS_FF(0x05, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 /* abstract extended instructions */
@@ -5878,7 +5873,7 @@ static void SLDT()
 	_cb("SLDT");
 	if (ARG_RM16) INS_0F_00(rid, 2);
 	else if (ARG_R32) INS_0F_00(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void STR()
@@ -5887,7 +5882,7 @@ static void STR()
 	_cb("STR");
 	if (ARG_RM16) INS_0F_00(rid, 2);
 	else if (ARG_R32) INS_0F_00(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LLDT()
@@ -5895,7 +5890,7 @@ static void LLDT()
 	unsigned char rid = 0x02;
 	_cb("LLDT");
 	if (ARG_RM16) INS_0F_00(rid, 0);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LTR()
@@ -5903,7 +5898,7 @@ static void LTR()
 	unsigned char rid = 0x03;
 	_cb("LTR");
 	if (ARG_RM16) INS_0F_00(rid, 0);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void VERR()
@@ -5911,7 +5906,7 @@ static void VERR()
 	unsigned char rid = 0x04;
 	_cb("VERR");
 	if (ARG_RM16) INS_0F_00(rid, 0);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void VERW()
@@ -5919,7 +5914,7 @@ static void VERW()
 	unsigned char rid = 0x05;
 	_cb("VERW");
 	if (ARG_RM16) INS_0F_00(rid, 0);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SGDT()
@@ -5928,7 +5923,7 @@ static void SGDT()
 	_cb("SGDT");
 	if (ARG_M16s) INS_0F_01(rid, 2);
 	else if (ARG_M32s) INS_0F_01(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SIDT()
@@ -5937,7 +5932,7 @@ static void SIDT()
 	_cb("SIDT");
 	if (ARG_M16s) INS_0F_01(rid, 2);
 	else if (ARG_M32s) INS_0F_01(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LGDT()
@@ -5946,7 +5941,7 @@ static void LGDT()
 	_cb("SIDT");
 	if (ARG_M16s) INS_0F_01(rid, 2);
 	else if (ARG_M32) INS_0F_01(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LIDT()
@@ -5955,7 +5950,7 @@ static void LIDT()
 	_cb("LIDT");
 	if (ARG_M16s) INS_0F_01(rid, 2);
 	else if (ARG_M32) INS_0F_01(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SMSW()
@@ -5964,7 +5959,7 @@ static void SMSW()
 	_cb("SMSW");
 	if (ARG_RM16) INS_0F_01(rid, 2);
 	else if (ARG_R32) INS_0F_01(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LMSW()
@@ -5972,7 +5967,7 @@ static void LMSW()
 	unsigned char rid = 0x06;
 	_cb("LMSW");
 	if (ARG_RM16) INS_0F_01(rid, 0);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LAR()
@@ -5980,7 +5975,7 @@ static void LAR()
 	_cb("LAR");
 	if (ARG_R16_RM16) LAR_R32_RM32(2);
 	else if (ARG_R32_RM32) LAR_R32_RM32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LSL()
@@ -5988,7 +5983,7 @@ static void LSL()
 	_cb("LSL");
 	if (ARG_R16_RM16) LSL_R32_RM32(2);
 	else if (ARG_R32_RM32) LSL_R32_RM32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void BT()
@@ -5999,7 +5994,7 @@ static void BT()
 	else if (ARG_RM32_R32) BT_RM32_R32(4);
 	else if (ARG_RM16_I8) INS_0F_BA(rid, 2);
 	else if (ARG_RM32_I8) INS_0F_BA(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SHLD()
@@ -6009,7 +6004,7 @@ static void SHLD()
 	if (ARG_RM16_R16_CL) SHLD_RM32_R32_CL(2);
 	else if (ARG_RM32_R32_I8) SHLD_RM32_R32_I8(4);
 	else if (ARG_RM32_R32_CL) SHLD_RM32_R32_CL(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void BTS()
@@ -6020,7 +6015,7 @@ static void BTS()
 	else if (ARG_RM32_R32) BTS_RM32_R32(4);
 	else if (ARG_RM16_I8) INS_0F_BA(rid, 2);
 	else if (ARG_RM32_I8) INS_0F_BA(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void SHRD()
@@ -6030,7 +6025,7 @@ static void SHRD()
 	if (ARG_RM16_R16_CL) SHRD_RM32_R32_CL(2);
 	else if (ARG_RM32_R32_I8) SHRD_RM32_R32_I8(4);
 	else if (ARG_RM32_R32_CL) SHRD_RM32_R32_CL(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LSS()
@@ -6038,7 +6033,7 @@ static void LSS()
 	_cb("LSS");
 	if (ARG_R16_M16) LSS_R32_M16_32(2);
 	else if (ARG_R32_M32) LSS_R32_M16_32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void BTR()
@@ -6049,7 +6044,7 @@ static void BTR()
 	else if (ARG_RM32_R32) BTR_RM32_R32(4);
 	else if (ARG_RM16_I8) INS_0F_BA(rid, 2);
 	else if (ARG_RM32_I8) INS_0F_BA(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LFS()
@@ -6057,7 +6052,7 @@ static void LFS()
 	_cb("LFS");
 	if (ARG_R16_M16) LFS_R32_M16_32(2);
 	else if (ARG_R32_M32) LFS_R32_M16_32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void LGS()
@@ -6065,7 +6060,7 @@ static void LGS()
 	_cb("LGS");
 	if (ARG_R16_M16) LGS_R32_M16_32(2);
 	else if (ARG_R32_M32) LGS_R32_M16_32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void MOVZX()
@@ -6074,7 +6069,7 @@ static void MOVZX()
 	if (ARG_R16_RM8s) MOVZX_R32_RM8(2);
 	else if (ARG_R32_RM8s) MOVZX_R32_RM8(4);
 	else if (ARG_R32_RM16s) MOVZX_R32_RM16();
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void BTC()
@@ -6085,7 +6080,7 @@ static void BTC()
 	else if (ARG_RM32_R32) BTC_RM32_R32(4);
 	else if (ARG_RM16_I8) INS_0F_BA(rid, 2);
 	else if (ARG_RM32_I8) INS_0F_BA(rid, 4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void BSF()
@@ -6093,7 +6088,7 @@ static void BSF()
 	_cb("BSF");
 	if (ARG_R16_RM16) BSF_R32_RM32(2);
 	else if (ARG_R32_RM32) BSF_R32_RM32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void BSR()
@@ -6101,7 +6096,7 @@ static void BSR()
 	_cb("BSR");
 	if (ARG_R16_RM16) BSR_R32_RM32(2);
 	else if (ARG_R32_RM32) BSR_R32_RM32(4);
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static void MOVSX()
@@ -6110,7 +6105,7 @@ static void MOVSX()
 	if (ARG_R16_RM8s) MOVSX_R32_RM8(2);
 	else if (ARG_R32_RM8s) MOVSX_R32_RM8(4);
 	else if (ARG_R32_RM16s) MOVSX_R32_RM16();
-	else _se_;
+	else _ser_;
 	_ce;
 }
 
@@ -6348,7 +6343,7 @@ static void exec() {
 	else if (!strcmp(rop, "bsr"))   BSR();
 	else if (!strcmp(rop, "movsx")) MOVSX();
 	else if (!strcmp(rop, "qdx"))   QDX();
-	else _se_;
+	else _ser_;
 	_ce;
 }
 static char *take_arg(char *s) {
@@ -6404,7 +6399,7 @@ unsigned char aasm32(const char *stmt, unsigned char *rcode, unsigned char flag3
 
 	prefix_oprsize = prefix_addrsize = 0;
 	prefix_lock = prefix_repz = prefix_repnz = 0;
-	flagerror = 0;
+	flagError = 0;
 
 	iop = 0;
 	MEMSET(&aopri1, 0x00, sizeof(t_aasm_oprinfo));
@@ -6432,7 +6427,7 @@ unsigned char aasm32(const char *stmt, unsigned char *rcode, unsigned char flag3
 		if (flagprefix) {
 			exec();
 		}
-	} while (flagprefix && !flagerror);
+	} while (flagprefix && !flagError);
 
 	/* process assembly statement */
 	ropr1 = take_arg(rstmt);
@@ -6456,7 +6451,7 @@ unsigned char aasm32(const char *stmt, unsigned char *rcode, unsigned char flag3
 	exec();
 	len = 0;
 
-	if (!flagerror) {
+	if (!flagError) {
 		if (prefix_repz)  {(*(rcode + len)) = 0xf3;len++;}
 		if (prefix_repnz) {(*(rcode + len)) = 0xf2;len++;}
 		if (prefix_lock)  {(*(rcode + len)) = 0xf0;len++;}
@@ -6479,7 +6474,7 @@ unsigned char aasm32(const char *stmt, unsigned char *rcode, unsigned char flag3
 	}
 
 #if AASM_TRACE == 1
-	if (trace.cid || trace.flagerror) {
+	if (trace.callCount || trace.flagError) {
 		PRINTF("aasm32: bad instruction '%s'\n", stmt);
 	}
 	utilsTraceFinal(&trace);
@@ -6643,7 +6638,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 	char imm[0x100];
 	t_aasm_instr *instr;
 	count = 1;
-	flagerror = 0;
+	flagError = 0;
 	for (i = 0;i < (int) strlen(stmt);++i) {
 		if (stmt[i] == '\n') {
 			count++;
@@ -6702,12 +6697,12 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 		} else {
 			instr[i].code_len = aasm32(instr[i].stmt, instr[i].code_array, flag32);
 		}
-		if (flagerror) {
+		if (flagError) {
 			FREE((void *) instr);
 			return 0;
 		}
 		if (!instr[i].code_len) {
-			flagerror = 1;
+			flagError = 1;
 			PRINTF("bad instruction in first round:\n#%d: [%s], %x", instr[i].stmt_id, instr[i].stmt, instr[i].code_len);
 			if (instr[i].code_len) {
 				PRINTF(", code: [");
@@ -6723,7 +6718,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 			}
 			PRINTF("\n");
 		}	
-		if (flagerror) {
+		if (flagError) {
 			FREE((void *) instr);
 			return 0;
 		}
@@ -6737,7 +6732,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 			for (j = i - 1;j >= 0;--j) {
 				if (instr[j].flag_has_label && !strcmp(instr[j].label_str, instr[i].label_str)) {
 					if (instr[j].flag_is_label) {
-						flagerror = 1;
+						flagError = 1;
 						PRINTF("aasm32x: duplicate label '%s'.\n", instr[i].label_str);
 					} else {
 						offset = 0;
@@ -6754,7 +6749,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 							if (offset < 0x80) {
 								SPRINTF(imm, "+%02x", (unsigned char) offset);
 							} else {
-								flagerror = 1;
+								flagError = 1;
 								PRINTF("aasm32x: invalid short pointer 8+.\n");
 							}
 							break;
@@ -6765,7 +6760,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 								if (offset < 0x8000) {
 									SPRINTF(imm, "+%04x", (unsigned short) offset);
 								} else {
-									flagerror = 1;
+									flagError = 1;
 									PRINTF("aasm32x: invalid near pointer 16+.\n");
 								}
 								break;
@@ -6773,7 +6768,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 								if (offset < 0x80000000) {
 									SPRINTF(imm, "+%08x", (unsigned int) offset);
 								} else {
-									flagerror = 1;
+									flagError = 1;
 									PRINTF("aasm32x: invalid near pointer 32+.\n");
 								}
 								break;
@@ -6782,13 +6777,13 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 							}
 							break;
 						default:
-							flagerror = 1;
+							flagError = 1;
 							break;
 						}
 						STRCAT(instr[j].stmt, imm);
 						aasm32(instr[j].stmt, instr[j].code_array, flag32);
 					}
-					if (flagerror) {
+					if (flagError) {
 						FREE((void *) instr);
 						return 0;
 					}
@@ -6800,7 +6795,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 			for (j = i + 1;j < count;++j) {
 				if (instr[j].flag_has_label && !strcmp(instr[j].label_str, instr[i].label_str)) {
 					if (instr[j].flag_is_label) {
-						flagerror = 1;
+						flagError = 1;
 						PRINTF("aasm32x: duplicated label '%s'.\n", instr[i].label_str);
 					} else {
 						offset = 0;
@@ -6814,7 +6809,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 							if (offset < 0x80) {
 								SPRINTF(imm, "-%02x", (unsigned char) offset);
 							} else {
-								flagerror = 1;
+								flagError = 1;
 								PRINTF("aasm32x: invalid short pointer 8-.\n");
 							}
 							break;
@@ -6825,7 +6820,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 								if (offset < 0x8000) {
 									SPRINTF(imm, "-%04x", (unsigned short) offset);
 								} else {
-									flagerror = 1;
+									flagError = 1;
 									PRINTF("aasm32x: invalid near pointer 16-.\n");
 								}
 								break;
@@ -6833,7 +6828,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 								if (offset < 0x80000000) {
 									SPRINTF(imm, "-%08x", (unsigned int) offset);
 								} else {
-									flagerror = 1;
+									flagError = 1;
 									PRINTF("aasm32x: invalid near pointer 32-.\n");
 								}
 								break;
@@ -6842,13 +6837,13 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
 							}
 							break;
 						default:
-							flagerror = 1;
+							flagError = 1;
 							break;
 						}
 						STRCAT(instr[j].stmt, imm);
 						aasm32(instr[j].stmt, instr[j].code_array, flag32);
 					}
-					if (flagerror) {
+					if (flagError) {
 						FREE((void *) instr);
 						return 0;
 					}

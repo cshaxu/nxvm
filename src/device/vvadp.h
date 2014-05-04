@@ -12,11 +12,11 @@ extern "C" {
 #define NXVM_DEVICE_VADP "Unknown Video Adapter"
 
 typedef struct {
-	t_bool    flagcolor;
-	t_nubit8  colsize; /* char per column */
+	t_bool    flagColor;
+	t_nubit8  colSize; /* char per column */
 	t_vaddrcc bufcomp[0x00040000]; /* buffer for video memory comparison */
-	t_nubit8  oldcurposx, oldcurposy;
-	t_nubit8  oldcurtop, oldcurbottom;
+	t_nubit8  oldCurPosX, oldCurPosY;
+	t_nubit8  oldCurTop, oldCurBottom;
 } t_vadp;
 
 extern t_vadp vvadp;

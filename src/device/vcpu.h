@@ -11,6 +11,8 @@ extern "C" {
 
 #define NXVM_DEVICE_CPU "Intel 8086+"
 
+/* TODO: change variable names */
+
 typedef enum {
 	SREG_DATA,
 	SREG_STACK,
