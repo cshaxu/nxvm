@@ -21,6 +21,10 @@ typedef struct {
     t_nubit8 icw1, icw2, icw3, icw4, ocw2, ocw3; /* command words */
     t_pic_init_status status; /* initialization status */
     t_nubit8 irx; /* id of current top potential ir */
+} t_pic_data;
+
+typedef struct {
+    t_pic_data data;
 } t_pic;
 
 extern t_pic vpic1, vpic2;
@@ -96,17 +100,21 @@ extern t_pic vpic1, vpic2;
 #define VPIC_POLL_I 0x80 /* must be 1 for poll command */
 
 /* Get id of highest priority interrupts in different registers */
-#define VPIC_GetIntrTopId(rpic) (GetRegTopId((rpic), ((rpic)->irr & (~((rpic)->imr)))))
-#define VPIC_GetIsrTopId(rpic)  (GetRegTopId((rpic), (rpic)->isr))
-#define VPIC_GetIrrTopId(rpic)  (GetRegTopId((rpic), (rpic)->irr))
-#define VPIC_GetImrTopId(rpic)  (GetRegTopId((rpic), (rpic)->imr))
+#define VPIC_GetIntrTopId(rpic) (GetRegTopId((rpic), \
+    ((rpic)->data.irr & (~((rpic)->data.imr)))))
+#define VPIC_GetIsrTopId(rpic)  (GetRegTopId((rpic), (rpic)->data.isr))
+#define VPIC_GetIrrTopId(rpic)  (GetRegTopId((rpic), (rpic)->data.irr))
+#define VPIC_GetImrTopId(rpic)  (GetRegTopId((rpic), (rpic)->data.imr))
 
 void vpicSetIRQ(t_nubit8 irqId);
 t_bool vpicScanINTR();
 t_nubit8 vpicPeekINTR();
 t_nubit8 vpicGetINTR();
 
-void vpicRegister();
+void vpicInit();
+void vpicReset();
+void vpicRefresh();
+void vpicFinal();
 
 #define VPIC_POST "           \
 ; init vpic1                \n\

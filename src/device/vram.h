@@ -13,8 +13,16 @@ extern "C" {
 
 typedef struct {
     t_bool flagA20; /* 0 = disable, 1 = enable */
+} t_ram_data;
+
+typedef struct {
     t_vaddrcc pBase; /* memory base address is 20 bit */
     t_nubitcc size; /* memory size in byte */
+} t_ram_connect;
+
+typedef struct {
+    t_ram_data data;
+    t_ram_connect connect;
 } t_ram;
 
 extern t_ram vram;
@@ -22,27 +30,24 @@ extern t_ram vram;
 #define VRAM_BIT_A20  0x00100000
 #define VRAM_FLAG_A20 0x02
 
-#define vramSize vram.size
+#define VRAM_WrapA20(offset)   ((offset) & (vram.data.flagA20 ? Max32 : ~VRAM_BIT_A20))
+#define VRAM_GetAddr(physical) (vram.connect.pBase + (t_vaddrcc)(VRAM_WrapA20(physical)))
 
-#define vramWrapA20(offset) ((offset) & (vram.flagA20 ? Max32 : ~VRAM_BIT_A20))
-#define vramAddr(physical)  (vram.pBase + (t_vaddrcc)(vramWrapA20(physical)))
-#define vramByte(physical)  (d_nubit8(vramAddr(physical)))
-#define vramWord(physical)  (d_nubit16(vramAddr(physical)))
-#define vramDWord(physical) (d_nubit32(vramAddr(physical)))
-#define vramQWord(physical) (d_nubit64(vramAddr(physical)))
-
-/* macros below are designed for real-addressing mode */
-#define vramIsAddrInMem(ref) \
-    (((t_vaddrcc)(ref) >= vram.pBase) && ((t_vaddrcc)(ref) < (vram.pBase + vram.size)))
-#define vramGetRealAddr(segment, offset) (vram.pBase + \
-    (vramWrapA20((GetMax16(segment) << 4) + GetMax16(offset)) % vram.size))
+/* macros below are defined for real-addressing mode */
+#define vramGetRealAddr(segment, offset) (vram.connect.pBase + \
+    (VRAM_WrapA20((GetMax16(segment) << 4) + GetMax16(offset)) % vram.connect.size))
 
 #define vramRealByte(segment, offset)  (d_nubit8(vramGetRealAddr(segment, offset)))
 #define vramRealWord(segment, offset)  (d_nubit16(vramGetRealAddr(segment, offset)))
 #define vramRealDWord(segment, offset) (d_nubit32(vramGetRealAddr(segment, offset)))
-#define vramRealQWord(segment, offset) (d_nubit64(vramGetRealAddr(segment, offset)))
 
-void vramRegister();
+void vramReadPhysical(t_nubit32 physical, t_vaddrcc rdest, t_nubitcc size);
+void vramWritePhysical(t_nubit32 physical, t_vaddrcc rsrc, t_nubitcc size);
+
+void vramInit();
+void vramReset();
+void vramRefresh();
+void vramFinal();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

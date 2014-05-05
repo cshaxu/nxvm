@@ -6,20 +6,19 @@
 
 #include "vdma.h"
 
-#include "vmachine.h"
 #include "vfdd.h"
 
 t_fdd vfdd;
 
-#define IsTrackEnd (vfdd.sector >= (vfdd.nsector + 1))
-#define IsCylHalf  (vfdd.head == 0 && IsTrackEnd)
-#define IsCylEnd   (vfdd.head == 1 && IsTrackEnd)
+#define IsTrackEnd (vfdd.data.sector >= (vfdd.data.nsector + 1))
+#define IsCylHalf  (vfdd.data.head == 0 && IsTrackEnd)
+#define IsCylEnd   (vfdd.data.head == 1 && IsTrackEnd)
 
 t_bool deviceConnectFloppyInsert(const t_strptr fileName) {
     FILE *fpImage = FOPEN(fileName, "rb");
-    if (fpImage && vfdd.pImgBase) {
-        FREAD((void *) vfdd.pImgBase, sizeof(t_nubit8), vfddGetImageSize, fpImage);
-        vfdd.flagDiskExist = True;
+    if (fpImage && vfdd.connect.pImgBase) {
+        FREAD((void *) vfdd.connect.pImgBase, sizeof(t_nubit8), vfddGetImageSize, fpImage);
+        vfdd.connect.flagDiskExist = True;
         FCLOSE(fpImage);
         return False;
     } else {
@@ -32,17 +31,17 @@ t_bool deviceConnectFloppyRemove(const t_strptr fileName) {
     if (fileName) {
         fpImage = FOPEN(fileName, "wb");
         if (fpImage) {
-            if (!vfdd.flagReadOnly) {
-                FWRITE((void *) vfdd.pImgBase, sizeof(t_nubit8), vfddGetImageSize, fpImage);
+            if (!vfdd.connect.flagReadOnly) {
+                FWRITE((void *) vfdd.connect.pImgBase, sizeof(t_nubit8), vfddGetImageSize, fpImage);
             }
-            vfdd.flagDiskExist = False;
+            vfdd.connect.flagDiskExist = False;
             FCLOSE(fpImage);
         } else {
             return True;
         }
     }
-    vfdd.flagDiskExist = False;
-    MEMSET((void *) vfdd.pImgBase, Zero8, vfddGetImageSize);
+    vfdd.connect.flagDiskExist = False;
+    MEMSET((void *) vfdd.connect.pImgBase, Zero8, vfddGetImageSize);
     return False;
 }
 
@@ -50,14 +49,14 @@ void vfddTransRead() {
     if (IsCylEnd) {
         return;
     }
-    vlatch.byte = d_nubit8(vfdd.pCurrByte);
-    vfdd.pCurrByte++;
-    vfdd.transCount++;
-    if (!(vfdd.transCount % vfdd.nbyte)) {
-        vfdd.sector++;
+    vlatch.data.byte = d_nubit8(vfdd.connect.pCurrByte);
+    vfdd.connect.pCurrByte++;
+    vfdd.connect.transCount++;
+    if (!(vfdd.connect.transCount % vfdd.data.nbyte)) {
+        vfdd.data.sector++;
         if (IsCylHalf) {
-            vfdd.sector = 1;
-            vfdd.head   = 1;
+            vfdd.data.sector = 1;
+            vfdd.data.head   = 1;
         }
         vfddSetPointer;
     }
@@ -67,71 +66,74 @@ void vfddTransWrite() {
     if (IsCylEnd) {
         return;
     }
-    d_nubit8(vfdd.pCurrByte) = vlatch.byte;
-    vfdd.pCurrByte++;
-    vfdd.transCount++;
-    if (!(vfdd.transCount % vfdd.nbyte)) {
-        vfdd.sector++;
+    d_nubit8(vfdd.connect.pCurrByte) = vlatch.data.byte;
+    vfdd.connect.pCurrByte++;
+    vfdd.connect.transCount++;
+    if (!(vfdd.connect.transCount % vfdd.data.nbyte)) {
+        vfdd.data.sector++;
         if (IsCylHalf) {
-            vfdd.sector = 1;
-            vfdd.head   = 1;
+            vfdd.data.sector = 1;
+            vfdd.data.head   = 1;
         }
         vfddSetPointer;
     }
 }
 
 void vfddFormatTrack(t_nubit8 fillByte) {
-    if (vfdd.cyl >= vfdd.ncyl) {
+    if (vfdd.data.cyl >= vfdd.data.ncyl) {
         return;
     }
-    vfdd.head   = 0;
-    vfdd.sector = 1;
+    vfdd.data.head   = 0;
+    vfdd.data.sector = 1;
     vfddSetPointer;
-    MEMSET((void *) vfdd.pCurrByte, fillByte, vfdd.nsector * vfdd.nbyte);
-    vfdd.head   = 1;
-    vfdd.sector = 1;
+    MEMSET((void *) vfdd.connect.pCurrByte, fillByte, vfdd.data.nsector * vfdd.data.nbyte);
+    vfdd.data.head   = 1;
+    vfdd.data.sector = 1;
     vfddSetPointer;
-    MEMSET((void *) vfdd.pCurrByte, fillByte, vfdd.nsector * vfdd.nbyte);
-    vfdd.sector = vfdd.nsector;
+    MEMSET((void *) vfdd.connect.pCurrByte, fillByte, vfdd.data.nsector * vfdd.data.nbyte);
+    vfdd.data.sector = vfdd.data.nsector;
 }
 
-static void init() {
-    MEMSET(&vfdd, Zero8, sizeof(t_fdd));
-    vfdd.ncyl    = 0x0050;
-    vfdd.nhead   = 0x0002;
-    vfdd.nsector = 0x0012;
-    vfdd.nbyte   = 0x0200;
-    vfdd.pImgBase    = (t_vaddrcc) MALLOC(vfddGetImageSize);
-    MEMSET((void *) vfdd.pImgBase, Zero8, vfddGetImageSize);
+void vfddInit() {
+    MEMSET((void *)(&vfdd), Zero8, sizeof(t_fdd));
+    vfdd.data.ncyl    = 0x0050;
+    vfdd.data.nhead   = 0x0002;
+    vfdd.data.nsector = 0x0012;
+    vfdd.data.nbyte   = 0x0200;
+    vfdd.connect.pImgBase = (t_vaddrcc) MALLOC(vfddGetImageSize);
+    MEMSET((void *) vfdd.connect.pImgBase, Zero8, vfddGetImageSize);
 }
 
-static void reset() {}
+void vfddReset() {
+    MEMSET((void *)(&vfdd.data), Zero8, sizeof(t_fdd_data));
+    vfdd.data.ncyl    = 0x0050;
+    vfdd.data.nhead   = 0x0002;
+    vfdd.data.nsector = 0x0012;
+    vfdd.data.nbyte   = 0x0200;
+}
 
-static void refresh() {}
+void vfddRefresh() {}
 
-static void final() {
-    if (vfdd.pImgBase) {
-        FREE((void *) vfdd.pImgBase);
+void vfddFinal() {
+    if (vfdd.connect.pImgBase) {
+        FREE((void *) vfdd.connect.pImgBase);
     }
-    vfdd.pImgBase = (t_vaddrcc) NULL;
-}
-
-void vfddRegister() {
-    vmachineAddMe;
+    vfdd.connect.pImgBase = (t_vaddrcc) NULL;
 }
 
 void deviceConnectFloppyCreate() {
-    vfdd.flagDiskExist = True;
+    vfdd.connect.flagDiskExist = True;
 }
 
 void devicePrintFdd() {
     PRINTF("FDD INFO\n========\n");
-    PRINTF("cyl = %x, head = %x, sector = %x\n",
-           vfdd.cyl, vfdd.head, vfdd.sector);
-    PRINTF("nsector = %x, nbyte = %x, gpl = %x\n",
-           vfdd.nsector, vfdd.nbyte, vfdd.gpl);
+    PRINTF("cyl = %x, head = %x, sector = %x, gpl = %x\n",
+           vfdd.data.cyl, vfdd.data.head, vfdd.data.sector, vfdd.data.gpl);
+    PRINTF("nsector = %x, nbyte = %x, ncyl = %x, nhead = %x\n",
+           vfdd.data.nsector, vfdd.data.nbyte, vfdd.data.ncyl,
+           vfdd.data.nhead);
     PRINTF("ReadOnly = %x, Exist = %x\n",
-           vfdd.flagReadOnly, vfdd.flagDiskExist);
+           vfdd.connect.flagReadOnly, vfdd.connect.flagDiskExist);
     PRINTF("base = %x, curr = %x, count = %x\n",
-           vfdd.pImgBase, vfdd.pCurrByte, vfdd.transCount);
+           vfdd.connect.pImgBase, vfdd.connect.pCurrByte, vfdd.connect.transCount);
 }

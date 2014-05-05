@@ -2709,7 +2709,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
     unsigned char eax,ecx,edx,ebx,esp,ebp,esi,edi;
     unsigned char ieax,iecx,iedx,iebx,iebp,iesi,iedi;
     _cb("parsearg_mem");
-    MEMSET(&info, 0x00, sizeof(t_aasm_oprinfo));
+    MEMSET((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
     bx = bp = si = di = neg = al = 0;
     eax = ecx = edx = ebx = esp = ebp = esi = edi = 0;
     ieax = iecx = iedx = iebx = iebp = iesi = iedi = 0;
@@ -3248,7 +3248,7 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
     t_aasm_oprinfo info;
     _cb("parsearg_imm");
 
-    MEMSET(&info, 0x00, sizeof(t_aasm_oprinfo));
+    MEMSET((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
 
     if (token == TOKEN_PLUS) {
         _bb("token(TOKEN_PLUS)");
@@ -3305,7 +3305,7 @@ static t_aasm_oprinfo parsearg(char *arg) {
     t_aasm_token token;
     t_aasm_oprinfo info;
     _cb("parsearg");
-    MEMSET(&info, 0x00 ,sizeof(t_aasm_oprinfo));
+    MEMSET((void *)(&info), 0x00 ,sizeof(t_aasm_oprinfo));
     if (!arg || !arg[0]) {
         info.type = TYPE_NONE;
         _ce;
@@ -8252,7 +8252,7 @@ unsigned char aasm32(const char *stmt, unsigned char *rcode, unsigned char flag3
     utilsTraceInit(&trace);
 #endif
 
-    MEMCPY(astmt, stmt, 0x100);
+    MEMCPY((void *) astmt, (void *) stmt, 0x100);
     utilsLowerStr(astmt);
     rstmt = astmt;
 
@@ -8263,10 +8263,10 @@ unsigned char aasm32(const char *stmt, unsigned char *rcode, unsigned char flag3
     flagError = 0;
 
     iop = 0;
-    MEMSET(&aopri1, 0x00, sizeof(t_aasm_oprinfo));
-    MEMSET(&aopri2, 0x00, sizeof(t_aasm_oprinfo));
-    MEMSET(&aopri3, 0x00, sizeof(t_aasm_oprinfo));
-    MEMSET(&aoprig, 0x00, sizeof(t_aasm_oprinfo));
+    MEMSET((void *)(&aopri1), 0x00, sizeof(t_aasm_oprinfo));
+    MEMSET((void *)(&aopri2), 0x00, sizeof(t_aasm_oprinfo));
+    MEMSET((void *)(&aopri3), 0x00, sizeof(t_aasm_oprinfo));
+    MEMSET((void *)(&aoprig), 0x00, sizeof(t_aasm_oprinfo));
     prefix_oprsizeg = prefix_addrsizeg = 0;
 
     rop = ropr1 = ropr2 = ropr3 = NULL;
@@ -8579,7 +8579,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
     }
     count = k;
     for (i = 0; i < count; ++i) {
-        MEMSET(instr[i].code_array, 0x00, 15);
+        MEMSET((void *) instr[i].code_array, 0x00, 15);
         asmx_get_label(&instr[i]);
         if (instr[i].flag_has_label) {
             if (instr[i].flag_is_label) {
@@ -8752,9 +8752,9 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
         PRINTF("[");
         for (j = 0;j < instr[i].code_len;++j) PRINTF("%02X", instr[i].code_array[j]);
         PRINTF("]\n");*/
-        MEMCPY((void *)(rcode + len), instr[i].code_array, instr[i].code_len);
+        MEMCPY((void *)(rcode + len), (void *) instr[i].code_array, instr[i].code_len);
         len += instr[i].code_len;
     }
-    FREE(instr);
+    FREE((void *) instr);
     return len;
 }

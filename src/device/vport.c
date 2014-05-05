@@ -4,35 +4,31 @@
 
 #include "../utils.h"
 
-#include "vmachine.h"
 #include "vport.h"
 
 t_port vport;
 
-/* Empty IO ports */
-static void io_read_void() {}
-static void io_write_void() {}
-
-/* VPORT has to be initialized before all other devices */
-static void init() {
-    t_nsbitcc i;
-    MEMSET(&vport, Zero8, sizeof(t_port));
-    for (i = 0; i < VPORT_MAX_PORT_COUNT; ++i) {
-        vport.in[i] = (t_faddrcc) io_read_void;
-        vport.out[i] = (t_faddrcc) io_write_void;
-    }
+void vportInit() {
+    MEMSET((void *)(&vport), Zero8, sizeof(t_port));
 }
 
-static void reset() {
-    vport.ioByte = Zero8;
-    vport.ioWord = Zero16;
-    vport.ioDWord = Zero32;
+void vportReset() {
+    MEMSET((void *)(&vport.data), Zero8, sizeof(t_port_data));
 }
 
-static void refresh() {}
+void vportRefresh() {}
 
-static void final() {}
+void vportFinal() {}
 
-void vportRegister() {
-    vmachineAddMe;
+void vportAddRead(t_nubit16 portId, t_faddrcc fpIn) {
+    vport.connect.fpIn[portId] = fpIn;
+}
+void vportAddWrite(t_nubit16 portId, t_faddrcc fpOut) {
+    vport.connect.fpOut[portId] = fpOut;
+}
+void vportExecRead(t_nubit16 portId) {
+    ExecFun(vport.connect.fpIn[portId]);
+}
+void vportExecWrite(t_nubit16 portId) {
+    ExecFun(vport.connect.fpOut[portId]);
 }

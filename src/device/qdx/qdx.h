@@ -11,7 +11,10 @@ extern t_faddrcc qdxTable[0x100];
 
 void qdxExecInt(t_nubit8 intId);
 
-void qdxRegister();
+void qdxInit();
+void qdxReset();
+void qdxRefresh();
+void qdxFinal();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

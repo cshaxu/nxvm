@@ -9,10 +9,10 @@
 #include "vram.h"
 #include "vcpu.h"
 #include "vbios.h"
-#include "vpic.h"
 #include "vpit.h"
-#include "vcmos.h"
 #include "vdma.h"
+#include "vpic.h"
+#include "vcmos.h"
 #include "vfdc.h"
 #include "vfdd.h"
 #include "vhdc.h"
@@ -23,81 +23,170 @@
 
 #include "vmachine.h"
 
-t_machine vmachine;
-
-/* Ask all devices to register */
-static void doRegister() {
-    vdebugRegister();
-    vportRegister();
-    vramRegister();
-    vcpuRegister();
-    vbiosRegister();
-    vpicRegister();
-    vpitRegister();
-    vcmosRegister();
-    vdmaRegister();
-    vfdcRegister();
-    vfddRegister();
-    vhdcRegister();
-    vhddRegister();
-    vkbcRegister();
-    vvadpRegister();
-    qdxRegister();
-}
-
-/* Device call this function to register itself */
-void vmachineAddDevice(t_faddrcc fpInit, t_faddrcc fpReset, t_faddrcc fpRefresh,
-                       t_faddrcc fpFinal) {
-    vmachine.deviceTable[VMACHINE_DEVICE_INIT][vmachine.numDevices] = fpInit;
-    vmachine.deviceTable[VMACHINE_DEVICE_RESET][vmachine.numDevices] = fpReset;
-    vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices] = fpRefresh;
-    vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices] = fpFinal;
-    vmachine.numDevices++;
-}
+#define _empty_
+#define _vdebug_
+#define _vport_
+#define _vram_
+#define _vcpu_
+#define _vbios_
+#define _vpit_
+#define _vdma_
+#define _vpic_
+#define _vcmos_
+#define _vfdc_
+#define _vfdd_
+#define _vhdc_
+#define _vhdd_
+#define _vkbc_
+#define _vvadp_
+#define _qdx_
 
 /* Initializes all devices, allocates space */
 void vmachineInit() {
-    t_nubitcc i;
-    MEMSET(&vmachine, Zero8, sizeof(t_machine));
-    doRegister();
-    for (i = 0; i < vmachine.numDevices; ++i) {
-        ExecFun(vmachine.deviceTable[VMACHINE_DEVICE_INIT][i]);
-    }
+    vcpuInit();
+    vdebugInit();
+    vfddInit();
+    vhddInit();
+    vbiosInit();
+    vvadpInit();
+    _vbios_
+    vportInit();
+    vcmosInit();
+    _vbios_;
+    _vport_
+    vkbcInit();
+    _vbios_;
+    _vport_
+    vdmaInit();
+    _vbios_;
+    _vport_
+    vfdcInit();
+    _vbios_;
+    _vport_;
+    _vdma_
+    vhdcInit();
+    _vbios_;
+    _vport_;
+    _vdma_;
+    _vfdc_
+    vpitInit();
+    _vbios_;
+    _vport_;
+    vpicInit();
+    _vbios_;
+    _vport_;
+    _vpic_
+    vramInit();
+    _vbios_;
+    _vport_;
+    _vpit_
+    qdxInit();
+    _vbios_;
+    _vcpu_;
+    _vram_
 }
 
 /* Resets all devices to initial values */
 void vmachineReset() {
-    t_nubitcc i;
-    for (i = 0; i < vmachine.numDevices; ++i) {
-        ExecFun(vmachine.deviceTable[VMACHINE_DEVICE_RESET][i]);
-    }
+    vdebugReset();
+    _empty_
+    vhdcReset();
+    _empty_
+    vkbcReset();
+    _empty_
+
+    vcmosReset();
+    vcpuReset();
+    vdmaReset();
+    vfdcReset();
+    vfddReset();
+    vhddReset();
+    vpicReset();
+    vpitReset();
+    vportReset();
+    vvadpReset();
+    vramReset();
+    vbiosReset();
+    _vram_
+    qdxReset();
+    _vram_
 }
 
 /* Executes all devices in one loop */
 void vmachineRefresh() {
-    t_nubitcc i;
-    for (i = 0; i < vmachine.numDevices; ++i) {
-        ExecFun(vmachine.deviceTable[VMACHINE_DEVICE_REFRESH][vmachine.numDevices - i - 1]);
-    }
+    qdxRefresh();
+    _empty_
+    vbiosRefresh();
+    _empty_
+    vfddRefresh();
+    _empty_
+    vhdcRefresh();
+    _empty_
+    vhddRefresh();
+    _empty_
+    vkbcRefresh();
+    _empty_
+    vportRefresh();
+    _empty_
+    vvadpRefresh();
+    _empty_
+    vramRefresh();
+    _empty_
+
+    vdebugRefresh();
+    vcmosRefresh();
+    vfdcRefresh();
+    vdmaRefresh();
+    _vfdc_
+    vpicRefresh();
+    vpitRefresh();
+    _vpic_
+    vcpuRefresh();
+    _vpic_
 }
 
 /* Finalize all devices, deallocates space */
 void vmachineFinal() {
-    t_nubitcc i;
-    for (i = 0; i < vmachine.numDevices; ++i) {
-        ExecFun(vmachine.deviceTable[VMACHINE_DEVICE_FINAL][vmachine.numDevices - i - 1]);
-    }
+    qdxFinal();
+    _empty_
+    vbiosFinal();
+    _empty_
+    vcmosFinal();
+    _empty_
+    vdebugFinal();
+    _empty_
+    vdmaFinal();
+    _empty_
+    vfdcFinal();
+    _empty_
+    vhdcFinal();
+    _empty_
+    vkbcFinal();
+    _empty_
+    vpicFinal();
+    _empty_
+    vpitFinal();
+    _empty_
+    vportFinal();
+    _empty_
+    vvadpFinal();
+    _empty_
+
+    vcpuFinal();
+    vfddFinal();
+    vhddFinal();
+    vramFinal();
 }
 
 /* Print machine info */
 void devicePrintMachine() {
     PRINTF("Machine:           %s\n", NXVM_DEVICE_MACHINE);
     PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
-    PRINTF("RAM Size:          %d MB\n", vram.size >> 20);
+    PRINTF("RAM Size:          %d MB\n", vram.connect.size >> 20);
     PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
            vfddGetImageSize * 1. / VFDD_BYTE_PER_MB,
-           vfdd.flagDiskExist ? "inserted" : "not inserted");
-    PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n", vhdd.ncyl,
+           vfdd.connect.flagDiskExist ? "inserted" : "not inserted");
+    PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n", vhdd.data.ncyl,
            vhddGetImageSize * 1. / VHDD_BYTE_PER_MB,
-           vhdd.flagDiskExist ? "connected" : "disconnected");
+           vhdd.connect.flagDiskExist ? "connected" : "disconnected");
 }

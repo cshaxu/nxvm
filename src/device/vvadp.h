@@ -17,11 +17,18 @@ typedef struct {
     t_vaddrcc bufcomp[0x00040000]; /* buffer for video memory comparison */
     t_nubit8  oldCurPosX, oldCurPosY;
     t_nubit8  oldCurTop, oldCurBottom;
+} t_vadp_data;
+
+typedef struct {
+    t_vadp_data data;
 } t_vadp;
 
 extern t_vadp vvadp;
 
-void vvadpRegister();
+void vvadpInit();
+void vvadpReset();
+void vvadpRefresh();
+void vvadpFinal();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

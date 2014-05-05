@@ -42,7 +42,7 @@ void deviceStop()  {
 
 /* Initializes devices */
 void deviceInit() {
-    MEMSET(&device, Zero8, sizeof(t_device));
+    MEMSET((void *)(&device), Zero8, sizeof(t_device));
     vmachineInit();
 }
 

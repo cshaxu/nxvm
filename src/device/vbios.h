@@ -12,9 +12,14 @@ extern "C" {
 #define NXVM_DEVICE_BIOS "Unknown BIOS"
 
 typedef struct {
-    t_nubitcc postCount;         /* number of POST routines */
+    t_nubitcc postCount; /* number of POST routines */
     t_strptr  postTable[0x100]; /* table of POST routine string pointers */
     t_strptr  intTable[0x100];  /* table of INT routine string pointers, null if not defined */
+} t_bios_connect;
+
+/* bios connections */
+typedef struct {
+    t_bios_connect connect;
 } t_bios;
 
 extern t_bios vbios;
@@ -138,7 +143,10 @@ extern t_bios vbios;
 void vbiosAddPost(t_strptr stmt);
 void vbiosAddInt(t_strptr stmt, t_nubit8 intid);
 
-void vbiosRegister();
+void vbiosInit();
+void vbiosReset();
+void vbiosRefresh();
+void vbiosFinal();
 
 #define VBIOS_POST_BOOT "             \
 $(label_post_boot_start):           \n\
@@ -232,7 +240,6 @@ mov sp, fffe              \n\
 jmp 0000:7c00             \n"
 
 #define VBIOS_INT_SOFT_MISC_11 "\
-qdx 02 ; enter isr       \n\
 ; device test            \n\
 push ds                  \n\
 push bx                  \n\
@@ -241,11 +248,9 @@ mov ds, bx               \n\
 pop bx                   \n\
 mov ax, ds:[0010]        \n\
 pop ds                   \n\
-qdx 03 ; leave isr       \n\
 iret                     \n"
 
 #define VBIOS_INT_SOFT_MISC_12 "\
-qdx 02 ; enter isr      \n\
 ; memory test           \n\
 push ds                 \n\
 push bx                 \n\
@@ -254,11 +259,9 @@ mov ds, bx              \n\
 pop bx                  \n\
 mov ax, ds:[0013]       \n\
 pop ds                  \n\
-qdx 03 ; leave isr      \n\
 iret                    \n"
 
 #define VBIOS_INT_SOFT_MISC_15 "    \
-qdx 02 ; enter isr \n\
 cmp ah, 24                        \n\
 jnz $(label_int_15_cmp_88)        \n\
 jmp near $(label_int_15_24)       \n\
@@ -321,7 +324,6 @@ pop bx                    \n\
 pop ax                    \n\
 \
 $(label_int_15_ret): \n\
-qdx 03 ; leave isr   \n\
 iret                 \n"
 
 #ifdef __cplusplus

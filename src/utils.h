@@ -9,11 +9,6 @@ extern "C" {
 
 #include "global.h"
 
-/* DEBUGGING OPTIONS ******************************* */
-#define UTILS_TRACE_ENABLED 0 /* enable trancer */
-#define UTILS_TRACE_DEBUG   0 /* debug tracer itself */
-/* ************************************************* */
-
 /* Code Tracer */
 #define UTILS_TRACE_MAX_STACK 0x100
 typedef struct {
@@ -27,8 +22,7 @@ typedef struct {
     int flagError;
 } t_utils_trace;
 
-void utilsTracePrintCall(t_utils_trace_call *rtracecall);
-void utilsTracePrintTrace(t_utils_trace *rtrace);
+void utilsTracePrint(t_utils_trace *rtrace);
 void utilsTraceInit(t_utils_trace *rtrace);
 void utilsTraceFinal(t_utils_trace *rtrace);
 void utilsTraceCallBegin(t_utils_trace *rtrace, char *callName);

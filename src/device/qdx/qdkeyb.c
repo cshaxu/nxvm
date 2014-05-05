@@ -210,8 +210,8 @@ static void qdkeybBufferKey() {
 }
 
 static void INT_09() {
-    vport.ioByte = 0x20;
-    ExecFun(vport.out[0x20]);
+    vport.data.ioByte = 0x20;
+    vportExecWrite(0x20);
 }
 
 static void INT_16() {

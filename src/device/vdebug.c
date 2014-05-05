@@ -10,7 +10,6 @@
 
 #include "vcpuins.h"
 
-#include "vmachine.h"
 #include "vdebug.h"
 
 t_debug vdebug;
@@ -22,7 +21,7 @@ static void xasmTest() {
     t_string strDasm1, strDasm2;
     t_nubit8 ins1[15], ins2[15];
     total++;
-    vcpuinsReadLinear(vcpu.cs.base + vcpu.eip, (t_vaddrcc) ins1, 15);
+    vcpuinsReadLinear(vcpu.data.cs.base + vcpu.data.eip, (t_vaddrcc) ins1, 15);
     /* ins1[0] = 0x67;
     ins1[1] = 0xc6;
     ins1[2] = 0x44;
@@ -92,13 +91,13 @@ static void xasmTest() {
     }
     switch (d_nubit32(ins1)) {
     }
-    lenDasm1 = utilsDasm32(strDasm1, ins1, vcpu.cs.seg.exec.defsize);
-    lenAasm  = utilsAasm32(strDasm1, ins2, vcpu.cs.seg.exec.defsize);
-    lenDasm2 = utilsDasm32(strDasm2, ins2, vcpu.cs.seg.exec.defsize);
+    lenDasm1 = utilsDasm32(strDasm1, ins1, vcpu.data.cs.seg.exec.defsize);
+    lenAasm  = utilsAasm32(strDasm1, ins2, vcpu.data.cs.seg.exec.defsize);
+    lenDasm2 = utilsDasm32(strDasm2, ins2, vcpu.data.cs.seg.exec.defsize);
     if ((!flagStop && (lenAasm != lenDasm1 || lenAasm != lenDasm2 || lenDasm1 != lenDasm2 ||
-                       MEMCMP(ins1, ins2, lenDasm1))) || STRCMP(strDasm1, strDasm2)) {
+                       MEMCMP((void *) ins1, (void *) ins2, lenDasm1))) || STRCMP(strDasm1, strDasm2)) {
         PRINTF("diff at #%d %04X:%08X(L%08X), len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
-               total, _cs, _eip, vcpu.cs.base + vcpu.eip, lenAasm, lenDasm1, lenDasm2, vcpu.cs.seg.exec.defsize ? 32 : 16);
+               total, _cs, _eip, vcpu.data.cs.base + vcpu.data.eip, lenAasm, lenDasm1, lenDasm2, vcpu.data.cs.seg.exec.defsize ? 32 : 16);
         for (i = 0; i < lenDasm1; ++i) {
             PRINTF("%02X", ins1[i]);
         }
@@ -111,37 +110,37 @@ static void xasmTest() {
     }
 }
 
-static void init() {
-    MEMSET(&vdebug, Zero8, sizeof(t_debug));
+void vdebugInit() {
+    MEMSET((void *)(&vdebug), Zero8, sizeof(t_debug));
 }
 
-static void reset() {}
+void vdebugReset() {}
 
-#define _expression "%scs:eip=%04x:%08x(L%08x) ss:esp=%04x:%08x(L%08x) \
+#define _expression "cs:eip=%04x:%08x(L%08x) ss:esp=%04x:%08x(L%08x) \
 eax=%08x ecx=%08x edx=%08x ebx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \
 eflags=%08x %s %s %s %s %s %s %s %s %s %s %s %s | cs:eip=%04x:%08x(L%08x)"
 
-static void refresh() {
-    vdebug.breakCount++;
-    if (vdebug.breakCount && (
-                (vdebug.flagBreak && _cs == vdebug.breakCS && _ip == vdebug.breakIP) ||
-                (vdebug.flagBreak32 && (vcpu.cs.base + vcpu.eip == vdebug.breakLinear)))) {
+void vdebugRefresh() {
+    t_string stmt;
+    vdebug.connect.breakCount++;
+    if (vdebug.connect.breakCount && (
+                (vdebug.connect.flagBreak && _cs == vdebug.connect.breakCS && _ip == vdebug.connect.breakIP) ||
+                (vdebug.connect.flagBreak32 && (vcpu.data.cs.base + vcpu.data.eip == vdebug.connect.breakLinear)))) {
         deviceStop();
     }
-    if (vdebug.traceCount) {
-        vdebug.traceCount--;
-        if (!vdebug.traceCount) {
+    if (vdebug.connect.traceCount) {
+        vdebug.connect.traceCount--;
+        if (!vdebug.connect.traceCount) {
             deviceStop();
         }
     }
     /* TODO: xasmTest(); */
     /* dump cpu status before execution */
-    if (vdebug.recordFile) {
+    if (vdebug.connect.recordFile) {
         int i;
-        FPRINTF(vdebug.recordFile, _expression,
-                vcpu.svcextl ? "* " : "",
-                _cs, _eip, vcpu.cs.base + _eip,
-                _ss, _esp, vcpu.ss.base + _esp,
+        FPRINTF(vdebug.connect.recordFile, _expression,
+                _cs, _eip, vcpu.data.cs.base + _eip,
+                _ss, _esp, vcpu.data.ss.base + _esp,
                 _eax, _ecx, _edx, _ebx, _ebp, _esi, _edi,
                 _ds, _es, _fs, _gs, _eflags,
                 _GetEFLAGS_OF ? "OF" : "of",
@@ -156,59 +155,55 @@ static void refresh() {
                 _GetEFLAGS_VM ? "VM" : "vm",
                 _GetEFLAGS_RF ? "RF" : "rf",
                 _GetEFLAGS_NT ? "NT" : "nt",
-                vcpu.reccs, vcpu.receip, vcpu.linear);
+                vcpuins.data.reccs, vcpuins.data.receip, vcpuins.data.linear);
 
         /* disassemble opcode */
-        if (vcpu.oplen) {
-            vcpu.oplen = utilsDasm32(vcpu.stmt, vcpu.opcodes, vcpu.cs.seg.exec.defsize);
-            for (i = 0; i < strlen(vcpu.stmt); ++i) {
-                if (vcpu.stmt[i] == '\n') {
-                    vcpu.stmt[i] = ' ';
+        if (vcpuins.data.oplen) {
+            vcpuins.data.oplen = utilsDasm32(stmt, vcpuins.data.opcodes, vcpu.data.cs.seg.exec.defsize);
+            for (i = 0; i < strlen(stmt); ++i) {
+                if (stmt[i] == '\n') {
+                    stmt[i] = ' ';
                 }
             }
         } else {
-            SPRINTF(vcpu.stmt, "<ERROR>");
+            SPRINTF(stmt, "<ERROR>");
         }
 
         /* print opcode, at least print 8 bytes */
-        for (i = 0; i < vcpu.oplen; ++i) {
-            FPRINTF(vdebug.recordFile, "%02X", vcpu.opcodes[i]);
+        for (i = 0; i < vcpuins.data.oplen; ++i) {
+            FPRINTF(vdebug.connect.recordFile, "%02X", vcpuins.data.opcodes[i]);
         }
-        for (i = vcpu.oplen; i < 8; ++i) {
-            FPRINTF(vdebug.recordFile, "  ");
+        for (i = vcpuins.data.oplen; i < 8; ++i) {
+            FPRINTF(vdebug.connect.recordFile, "  ");
         }
 
         /* print assembly, at least 40 char in length */
-        FPRINTF(vdebug.recordFile, "%s ", vcpu.stmt);
-        for (i = (int) strlen(vcpu.stmt); i < 40; ++i) {
-            FPRINTF(vdebug.recordFile, " ");
+        FPRINTF(vdebug.connect.recordFile, "%s ", stmt);
+        for (i = (int) strlen(stmt); i < 40; ++i) {
+            FPRINTF(vdebug.connect.recordFile, " ");
         }
 
         /* print memory usage */
-        for (i = 0; i < vcpu.msize; ++i) {
-            FPRINTF(vdebug.recordFile, "[%c:L%08x/%1d/%016llx] ",
-                    vcpu.mem[i].flagwrite ? 'W' : 'R', vcpu.mem[i].linear,
-                    vcpu.mem[i].byte, vcpu.mem[i].data);
+        for (i = 0; i < vcpuins.data.msize; ++i) {
+            FPRINTF(vdebug.connect.recordFile, "[%c:L%08x/%1d/%016llx] ",
+                    vcpuins.data.mem[i].flagWrite ? 'W' : 'R', vcpuins.data.mem[i].linear,
+                    vcpuins.data.mem[i].byte, vcpuins.data.mem[i].data);
         }
 
-        FPRINTF(vdebug.recordFile, "\n");
+        FPRINTF(vdebug.connect.recordFile, "\n");
     }
 }
 
-static void final() {}
-
-void vdebugRegister() {
-    vmachineAddMe;
-}
+void vdebugFinal() {}
 
 void devicePrintDebug() {
-    PRINTF("Recorder:    %s\n", vdebug.recordFile ? "On" : "Off");
-    PRINTF("Trace:       %s\n", vdebug.traceCount ? "On" : "Off");
+    PRINTF("Recorder:    %s\n", vdebug.connect.recordFile ? "On" : "Off");
+    PRINTF("Trace:       %s\n", vdebug.connect.traceCount ? "On" : "Off");
     PRINTF("Break Point: ");
-    if (vdebug.flagBreak) {
-        PRINTF("%04X:%04X\n", vdebug.breakCS,vdebug.breakIP);
-    } else if (vdebug.flagBreak32) {
-        PRINTF("L%08X\n", vdebug.breakLinear);
+    if (vdebug.connect.flagBreak) {
+        PRINTF("%04X:%04X\n", vdebug.connect.breakCS,vdebug.connect.breakIP);
+    } else if (vdebug.connect.flagBreak32) {
+        PRINTF("L%08X\n", vdebug.connect.breakLinear);
     } else {
         PRINTF("Off\n");
     }

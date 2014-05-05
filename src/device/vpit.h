@@ -15,10 +15,11 @@ typedef enum {
     VPIT_STATUS_RW_READY,
     VPIT_STATUS_RW_LSB,
     VPIT_STATUS_RW_MSB
-} t_pit_status_rw;
+} t_pit_data_status_rw;
 
 typedef struct {
-    t_nubit8 cw[4]; /* control words[0-2] for counter 0-2, and cw[3] is read-back command */
+    /* control words[0-2] for counter 0-2, and cw[3] is read-back command */
+    t_nubit8 cw[4];
 
     t_nubit16 init[3];  /* initial counts */
     t_nubit16 count[3]; /* counter[0-2] */
@@ -26,12 +27,19 @@ typedef struct {
 
     t_bool flagReady[3]; /* flag of ready */
     t_bool flagLatch[3]; /* flag of latch status */
+
+    t_pit_data_status_rw flagRead[3];  /* flag of low byte read */
+    t_pit_data_status_rw flagWrite[3]; /* flag of low byte write */
+} t_pit_data;
+
+typedef struct {
     t_bool flagGate[3];  /* enable or disable counter */
+    t_faddrcc fpOut[3]; /* action when out signal is valid */
+} t_pit_connect;
 
-    t_pit_status_rw flagRead[3];  /* flag of low byte read */
-    t_pit_status_rw flagWrite[3]; /* flag of low byte write */
-
-    t_faddrcc out[3]; /* action when out signal is valid */
+typedef struct {
+    t_pit_data data;
+    t_pit_connect connect;
 } t_pit;
 
 extern t_pit vpit;
@@ -70,7 +78,13 @@ extern t_pit vpit;
 
 void vpitSetGate(t_nubit8 id, t_bool flagGate);
 
-void vpitRegister();
+#define vpitAddMe(id) vpitAddDevice((id), (t_faddrcc) pitOut);
+void vpitAddDevice(int id, t_faddrcc fpOut);
+
+void vpitInit();
+void vpitReset();
+void vpitRefresh();
+void vpitFinal();
 
 #define VPIT_POST "                                 \
 ; init vpit                                       \n\

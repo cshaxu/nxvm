@@ -42,7 +42,7 @@ typedef t_nubit1  t_bool;
 typedef t_nubitcc t_vaddrcc;
 typedef t_nubitcc t_faddrcc;
 
-#define GetRef(n) ((t_vaddrcc)&(n))
+#define GetRef(n) ((t_vaddrcc)(&(n)))
 
 #define p_nubit1  (t_nubit1 *)
 #define p_nubit4  (t_nubit4 *)
@@ -116,6 +116,15 @@ typedef t_nubitcc t_faddrcc;
 #define MSB48 0x0000800000000000
 #define MSB63 0x4000000000000000
 #define MSB64 0x8000000000000000
+#if GLOBAL_SIZE_INTEGER == 64
+#define ZeroCC Zero64
+#define MaxCC  Max64
+#define MSBCC  MSB64
+#else
+#define ZeroCC Zero32
+#define MaxCC  Max32
+#define MSBCC  MSB32
+#endif
 #define GetMax1(n)  ((t_nubit1 )(n) & Max1 )
 #define GetMax4(n)  ((t_nubit4 )(n) & Max4 )
 #define GetMax8(n)  ((t_nubit8 )(n) & Max8 )
@@ -124,6 +133,7 @@ typedef t_nubitcc t_faddrcc;
 #define GetMax32(n) ((t_nubit32)(n) & Max32)
 #define GetMax48(n) ((t_nubit48)(n) & Max48)
 #define GetMax64(n) ((t_nubit64)(n) & Max64)
+#define GetMaxCC(n) ((t_nubitcc)(n) & MaxCC)
 #define GetMSB7(n)  ((t_nubit8 )(n) & MSB7 )
 #define GetMSB8(n)  ((t_nubit8 )(n) & MSB8 )
 #define GetMSB15(n) ((t_nubit16)(n) & MSB15)
@@ -134,16 +144,18 @@ typedef t_nubitcc t_faddrcc;
 #define GetMSB48(n) ((t_nubit48)(n) & MSB48)
 #define GetMSB63(n) ((t_nubit64)(n) & MSB63)
 #define GetMSB64(n) ((t_nubit64)(n) & MSB64)
+#define GetMSBCC(n) ((t_nubitcc)(n) & MSBCC)
 #define GetLSB8(n)  ((t_nubit8 )(n) & 1)
 #define GetLSB16(n) ((t_nubit16)(n) & 1)
 #define GetLSB32(n) ((t_nubit32)(n) & 1)
 #define GetLSB48(n) ((t_nubit48)(n) & 1)
 #define GetLSB64(n) ((t_nubit64)(n) & 1)
+#define GetLSBCC(n) ((t_nubitcc)(n) & 1)
 
 #define Hex2BCD(x)  ((((x) / 10) << 4) | ((x) % 10))
 #define BCD2Hex(x)  (((x) & 0x0f) + ((((x) & 0xf0) >> 4) * 10))
 
-#define ExecFun(faddr) (*(void (*)(void))(faddr))()
+#define ExecFun(faddr) ((faddr) ? ((*(void (*)(void))(faddr))()) : 0)
 
 #ifdef __cplusplus
 }/*_EOCD_*/

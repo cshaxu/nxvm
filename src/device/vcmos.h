@@ -13,7 +13,15 @@ extern "C" {
 
 typedef struct {
     t_nubit8 reg[0x80]; /* cmos registers */
+} t_cmos_connect;
+
+typedef struct {
     t_nubit8 regId; /* id of specified cmos register*/
+} t_cmos_data;
+
+typedef struct {
+    t_cmos_data data;
+    t_cmos_connect connect;
 } t_cmos;
 
 extern t_cmos vcmos;
@@ -50,7 +58,10 @@ extern t_cmos vcmos;
 #define VCMOS_RTC_CENTURY      0x32
 #define VCMOS_FLAGS_INFO       0x33
 
-void vcmosRegister();
+void vcmosInit();
+void vcmosReset();
+void vcmosRefresh();
+void vcmosFinal();
 
 #define VCMOS_POST "            \
 ; init vcmos                  \n\
@@ -121,7 +132,6 @@ mul bx                        \n\
 add ds:[006e], ax             \n"
 
 #define VCMOS_INT_HARD_RTC_08 "             \
-qdx 02 ; enter isr \n\
 cli                                       \n\
 push ds                                   \n\
 push ax                                   \n\
@@ -150,11 +160,9 @@ out dx, al                                \n\
 pop dx                                    \n\
 pop ax                                    \n\
 sti                                       \n\
-qdx 03 ; leave isr \n\
 iret                                      \n"
 
 #define VCMOS_INT_SOFT_RTC_1A "\
-qdx 02 ; enter isr \n\
 push bx                \n\
 push ds                \n\
 mov bx, 0040           \n\
@@ -306,7 +314,6 @@ or  word ss:[bx+08], ax          \n\
 $(label_int_1a_ret): \n\
 pop ds               \n\
 pop bx               \n\
-qdx 03 ; leave isr \n\
 iret                 \n"
 
 #ifdef __cplusplus

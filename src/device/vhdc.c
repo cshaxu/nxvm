@@ -3,19 +3,14 @@
 /* VHDC is Hard Disk Driver Controller, not yet implemented. */
 
 #include "vbios.h"
-#include "vmachine.h"
 #include "vhdc.h"
 
-static void init() {
+void vhdcInit() {
     vbiosAddInt(VHDC_INT_SOFT_HDD_13, 0x13);
 }
 
-static void reset() {}
+void vhdcReset() {}
 
-static void refresh() {}
+void vhdcRefresh() {}
 
-static void final() {}
-
-void vhdcRegister() {
-    vmachineAddMe;
-}
+void vhdcFinal() {}

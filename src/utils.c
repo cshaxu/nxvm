@@ -8,7 +8,7 @@
 
 #include "utils.h"
 
-void utilsTracePrintCall(t_utils_trace_call *rtracecall) {
+static void printTraceCall(t_utils_trace_call *rtracecall) {
     int i;
     PRINTF("%s", rtracecall->callName);
     for (i = 0; i < rtracecall->blockCount; ++i) {
@@ -16,11 +16,11 @@ void utilsTracePrintCall(t_utils_trace_call *rtracecall) {
     }
     PRINTF("\n");
 }
-void utilsTracePrintTrace(t_utils_trace *rtrace) {
+void utilsTracePrint(t_utils_trace *rtrace) {
     int i;
     if (rtrace->callCount) {
         for (i = rtrace->callCount - 1; i >= 0; --i) {
-            utilsTracePrintCall(&(rtrace->callStack[i]));
+            printTraceCall(&(rtrace->callStack[i]));
         }
     }
 }
@@ -35,7 +35,7 @@ void utilsTraceFinal(t_utils_trace *rtrace) {
         rtrace->flagError = 1;
     }
     if (rtrace->flagError) {
-        utilsTracePrintTrace(rtrace);
+        utilsTracePrint(rtrace);
     }
     rtrace->callCount = 0;
     rtrace->flagError = 0;

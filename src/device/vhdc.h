@@ -11,10 +11,12 @@ extern "C" {
 
 #define NXVM_DEVICE_HDC "Unknown Hard Drive Controller"
 
-void vhdcRegister();
+void vhdcInit();
+void vhdcReset();
+void vhdcRefresh();
+void vhdcFinal();
 
 #define VHDC_INT_SOFT_HDD_13 "\
-qdx 02 ; leave isr          \n\
 test dl, 80                 \n\
 jnz $(label_int_13_hdd)     \n\
 int 40                      \n\
@@ -159,7 +161,6 @@ and word ss:[bx+08], fffe   \n\
 or  word ss:[bx+08], ax     \n\
 pop bx                      \n\
 pop ax                      \n\
-qdx 03 ; leave isr          \n\
 iret                        \n"
 
 #ifdef __cplusplus

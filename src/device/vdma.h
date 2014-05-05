@@ -16,35 +16,48 @@ typedef t_nubit8 t_page;
 #define VDMA_CHANNEL_COUNT 4
 
 typedef struct {
-    t_nubit16 baseAddr;  /* base address */
-    t_nubit16 baseCount; /* base word count */
-    t_nubit16 currAddr;  /* current address */
-    t_nubit16 currCount; /* current word count */
-    t_nubit8  mode;      /* mode register */
-    t_page    page;      /* page register */
-    t_faddrcc fpReadDevice;  /* get data from device to latch */
-    t_faddrcc fpWriteDevice; /* write data to device from latch */
-    t_faddrcc fpCloseDevice; /* send eop signal to device */
-} t_dma_channel;
 
-typedef struct {
-    t_dma_channel channel[VDMA_CHANNEL_COUNT];
-    t_nubit8      command; /* command register */
-    t_nubit8      status;  /* status register */
-    t_nubit8      mask;    /* mask register */
-    t_nubit8      request; /* request register */
-    t_nubit8      temp;    /* temporary register */
-    t_nubit8      drx;     /* dreq id of highest priority */
-    t_bool        flagMSB; /* flip-flop for msb/lsb */
-    t_bool        flagEOP; /* end of process */
+    t_nubit16 baseAddr[VDMA_CHANNEL_COUNT];  /* base address */
+    t_nubit16 baseCount[VDMA_CHANNEL_COUNT]; /* base word count */
+    t_nubit16 currAddr[VDMA_CHANNEL_COUNT];  /* current address */
+    t_nubit16 currCount[VDMA_CHANNEL_COUNT]; /* current word count */
+    t_nubit8  mode[VDMA_CHANNEL_COUNT];      /* mode register */
+    t_page    page[VDMA_CHANNEL_COUNT];      /* page register */
+
+    t_nubit8 command; /* command register */
+    t_nubit8 status;  /* status register */
+    t_nubit8 mask;    /* mask register */
+    t_nubit8 request; /* request register */
+    t_nubit8 temp;    /* temporary register */
+    t_nubit8 drx;     /* dreq id of highest priority */
+    t_bool   flagMSB; /* flip-flop for msb/lsb */
+    t_bool   flagEOP; /* end of process */
 
     /* id of request in service in D5-D4, flag of in service in D0 */
-    t_nubit8      isr;
+    t_nubit8 isr;
+} t_dma_data;
+
+typedef struct {
+    /* get data from device to latch */
+    t_faddrcc fpReadDevice[VDMA_CHANNEL_COUNT];
+    /* write data to device from latch */
+    t_faddrcc fpWriteDevice[VDMA_CHANNEL_COUNT];
+    /* send eop signal to device */
+    t_faddrcc fpCloseDevice[VDMA_CHANNEL_COUNT];
+} t_dma_connect;
+
+typedef struct {
+    t_dma_data data;
+    t_dma_connect connect;
 } t_dma;
 
 typedef union {
     t_nubit8  byte;
     t_nubit16 word;
+} t_latch_data;
+
+typedef struct {
+    t_latch_data data;
 } t_latch;
 
 extern t_latch vlatch;
@@ -137,7 +150,16 @@ extern t_dma vdma1, vdma2;
 
 void vdmaSetDRQ(t_nubit8 drqId);
 
-void vdmaRegister();
+#define vdmaAddMe(drqId) vdmaAddDevice((drqId), (t_faddrcc) dmaReadMe, \
+    (t_faddrcc) dmaWriteMe, (t_faddrcc) dmaCloseMe)
+
+void vdmaAddDevice(t_nubit8 drqId, t_faddrcc fpReadDevice,
+                   t_faddrcc fpWriteDevice, t_faddrcc fpCloseDevice);
+
+void vdmaInit();
+void vdmaReset();
+void vdmaRefresh();
+void vdmaFinal();
 
 #define VDMA_POST "\
 ; init vdma      \n\

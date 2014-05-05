@@ -28,6 +28,10 @@ typedef struct {
     t_nubit8 cmd[9];
     t_nubit8 ret[7];
     t_nubit8 st0, st1, st2, st3; /* state registers */
+} t_fdc_data;
+
+typedef struct {
+    t_fdc_data data;
 } t_fdc;
 
 extern t_fdc vfdc;
@@ -137,19 +141,10 @@ t_nubit8 VFDC_GetBPSC(t_nubit16 cb); /* convert bps to bps type */
 /* #define VFDC_GetBPS(cbyte)  (0x0080 << (cbyte))  * bytes per sector */
 /* sector size code */
 
-#define vfdcPIORead   vfdcTransRead
-#define vfdcDMARead   vfdcTransRead
-#define vfdcPIOWrite  vfdcTransWrite
-#define vfdcDMAWrite  vfdcTransWrite
-#define vfdcPIOFinal  vfdcTransFinal
-#define vfdcDMAFinal  vfdcTransFinal
-
-void vfdcTransRead();
-void vfdcTransWrite();
-void vfdcTransInit();
-void vfdcTransFinal();
-
-void vfdcRegister();
+void vfdcInit();
+void vfdcReset();
+void vfdcRefresh();
+void vfdcFinal();
 
 #define VFDC_POST "           \
 ; init vfdc                 \n\
@@ -170,7 +165,6 @@ mov dx, 03f5                \n\
 out dx, al                  \n"
 
 #define VFDC_INT_HARD_FDD_0E "  \
-qdx 02 ; enter isr \n\
 cli                      \n\
 push ax                  \n\
 push dx                  \n\
@@ -192,11 +186,9 @@ out 20, al ; eoi cmd     \n\
 pop dx                   \n\
 pop ax                   \n\
 sti                      \n\
-qdx 03 ; leave isr \n\
 iret                     \n"
 
 #define VFDC_INT_SOFT_FDD_40 "\
-qdx 02 ; enter isr          \n\
 test dl, 80                 \n\
 jz $(label_int_40_fdd)      \n\
 mov ah, 01                  \n\
@@ -516,7 +508,6 @@ and word ss:[bx+08], fffe   \n\
 or  word ss:[bx+08], ax     \n\
 pop bx                      \n\
 pop ax                      \n\
-qdx 03 ; leave isr \n\
 iret                        \n"
 
 #ifdef __cplusplus

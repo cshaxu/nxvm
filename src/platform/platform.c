@@ -39,7 +39,7 @@ void platformStart() {
 #endif
 
 void platformInit() {
-    MEMSET(&platform, 0x00, sizeof(t_platform));
+    MEMSET((void *)(&platform), 0x00, sizeof(t_platform));
     platform.flagMode = 0;
 }
 

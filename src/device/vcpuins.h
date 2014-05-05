@@ -22,60 +22,90 @@ typedef enum {
     XOR8,XOR16,XOR32,
     CMP8,CMP16,CMP32,
     TEST8,TEST16,TEST32
-} t_cpuins_arithtype;
+} t_cpuins_data_arithtype;
 
 typedef enum {
     PREFIX_REP_NONE,
     PREFIX_REP_REPZ,
     PREFIX_REP_REPZNZ
-} t_cpuins_prefix_rep;
+} t_cpuins_data_prefix_rep;
 
 typedef enum {
     PREFIX_SREG_NONE,
     PREFIX_SREG_CS, PREFIX_SREG_SS,
     PREFIX_SREG_DS, PREFIX_SREG_ES,
     PREFIX_SREG_FS, PREFIX_SREG_GS
-} t_cpuins_prefix_sreg;
+} t_cpuins_data_prefix_sreg;
 
-typedef t_bool t_cpuins_prefix;
+typedef t_bool t_cpuins_data_prefix;
 
 typedef struct {
-    t_cpu_sreg *rsreg;
+    t_cpu_data_sreg *rsreg;
     t_nubit32 offset;
-} t_cpuins_logical;
+} t_cpuins_data_logical;
+
+typedef struct {
+    t_bool flagWrite;
+    t_nubit32 byte;
+    t_nubit32 linear;
+    t_nubit64 data;
+} t_cpuins_data_memory;
 
 typedef struct {
     /* prefixes */
-    t_cpuins_prefix_rep  prefix_rep;
-    t_cpuins_prefix      prefix_oprsize;
-    t_cpuins_prefix      prefix_addrsize;
-    t_cpu_sreg *roverds, *roverss, *rmovsreg;
+    t_cpuins_data_prefix_rep  prefix_rep;
+    t_cpuins_data_prefix      prefix_oprsize;
+    t_cpuins_data_prefix      prefix_addrsize;
+    t_cpu_data_sreg *roverds, *roverss, *rmovsreg;
 
     /* execution control */
-    t_cpu oldcpu;
-    t_bool flaginsloop;
-    t_bool flagmaskint; /* if int is disabled once */
+    t_cpu  oldcpu;
+    t_bool flagInsLoop;
+    t_bool flagMaskInt; /* if int is disabled once */
 
     /* memory management */
-    t_cpuins_logical mrm;
+    t_cpuins_data_logical mrm;
     t_vaddrcc rrm, rr;
     t_nubit64 crm, cr, cimm;
-    t_bool flagmem; /* if rm is in memory */
-    t_bool flaglock;
+    t_bool flagMem; /* if rm is in memory */
+    t_bool flagLock;
 
     /* arithmetic operands */
     t_nubit64 opr1, opr2, result;
     t_nubit32 bit;
-    t_cpuins_arithtype type;
+    t_cpuins_data_arithtype type;
     t_nubit32 udf; /* undefined eflags bits */
 
     /* exception handler */
     t_nubit32 except, excode;
 
     /* debugger */
-    t_bool flagwr, flagww, flagwe;
-    t_nubit32 wrlin, wwlin, welin;
+    t_nubit32 linear;
+    t_bool flagWR, flagWW, flagWE;
+    t_nubit32 wrLinear, wwLinear, weLinear;
+
+    /* cpu recorder */
+    t_bool flagIgnore;
+    t_cpuins_data_memory mem[0x20];
+    t_nubit8 msize;
+    t_nubit8 oplen;
+    t_nubit8 opcodes[15];
+    t_nubit16 reccs;
+    t_nubit32 receip;
+} t_cpuins_data;
+
+typedef struct {
+    /* instruction dispatch */
+    t_faddrcc insTable[0x100];
+    t_faddrcc insTable_0f[0x100];
+} t_cpuins_connect;
+
+typedef struct {
+    t_cpuins_data data;
+    t_cpuins_connect connect;
 } t_cpuins;
+
+extern t_cpuins vcpuins;
 
 #define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */
 #define VCPUINS_EXCEPT_DB  0x00000002 /* 01 - trap/fault: debug exception */
@@ -97,9 +127,7 @@ typedef struct {
 
 #define VCPUINS_EXCEPT_CE  0x80000000 /* 31 - internal case error */
 
-extern t_cpuins vcpuins;
-
-t_bool vcpuinsLoadSreg(t_cpu_sreg *rsreg, t_nubit16 selector);
+t_bool vcpuinsLoadSreg(t_cpu_data_sreg *rsreg, t_nubit16 selector);
 t_bool vcpuinsReadLinear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte);
 t_bool vcpuinsWriteLinear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte);
 

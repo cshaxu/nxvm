@@ -13,7 +13,10 @@ extern "C" {
 
 #define VKBC_STATUS_KE 0x10 /* keyboard enabled(1) or not(0) */
 
-void vkbcRegister();
+void vkbcInit();
+void vkbcReset();
+void vkbcRefresh();
+void vkbcFinal();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

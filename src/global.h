@@ -12,7 +12,7 @@ extern "C" {
 #define GLOBAL_VAR_WIN32 0
 #define GLOBAL_VAR_LINUX 1
 
-/* COMPILING OPTIONS ******************************************************* */
+/* COMPILING OPTIONS ******************************* */
 #if 1
 #define GLOBAL_SIZE_INTEGER 64
 #else
@@ -23,7 +23,12 @@ extern "C" {
 #else
 #define GLOBAL_PLATFORM GLOBAL_VAR_LINUX
 #endif
-/* ************************************************************************* */
+/* ************************************************* */
+
+/* DEBUGGING OPTIONS ******************************* */
+#define UTILS_TRACE_ENABLED 0 /* enable trancer */
+#define UTILS_TRACE_DEBUG   0 /* debug tracer itself */
+/* ************************************************* */
 
 #include <stdio.h>
 #include <stdlib.h>

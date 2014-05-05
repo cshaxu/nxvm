@@ -18,7 +18,7 @@ t_nubit32 qdcgaModeBufSize[0x14] = {
 };
 
 static void ClearTextMemory() {
-    MEMSET((void*) qdcgaGetTextMemAddrPageCur, 0x00, qdcgaGetPageSize);
+    MEMSET((void *) qdcgaGetTextMemAddrPageCur, 0x00, qdcgaGetPageSize);
 }
 
 static void CursorBackward(t_nubit8 page) {
@@ -33,7 +33,7 @@ static void CursorBackward(t_nubit8 page) {
 static void CursorForward(t_nubit8 page) {
     if (qdcgaVarCursorPosCol(page) < qdcgaVarRowSize -1) {
         qdcgaVarCursorPosCol(page)++;
-    } else if (qdcgaVarCursorPosRow(page) < vvadp.colSize -1) {
+    } else if (qdcgaVarCursorPosRow(page) < vvadp.data.colSize -1) {
         qdcgaVarCursorPosCol(page) = 0;
         qdcgaVarCursorPosRow(page)++;
     }
@@ -41,7 +41,7 @@ static void CursorForward(t_nubit8 page) {
 
 static void CursorNewLine(t_nubit8 page) {
     qdcgaVarCursorPosCol(page) = 0;
-    if (qdcgaVarCursorPosRow(page) < vvadp.colSize - 1) {
+    if (qdcgaVarCursorPosRow(page) < vvadp.data.colSize - 1) {
         qdcgaVarCursorPosRow(page)++;
     } else {
         /* move up video memory content */
@@ -59,7 +59,7 @@ static void CursorCarriageReturn(t_nubit8 page) {
 }
 
 static void CursorLineFeed(t_nubit8 page) {
-    if (qdcgaVarCursorPosRow(page) < vvadp.colSize - 1) {
+    if (qdcgaVarCursorPosRow(page) < vvadp.data.colSize - 1) {
         qdcgaVarCursorPosRow(page)++;
     } else {
         /* move up video memory content */
@@ -116,22 +116,22 @@ t_bool deviceConnectDisplayGetCursorVisible() {
     return (qdcgaVarCursorTop < qdcgaVarCursorBottom);
 }
 t_bool deviceConnectDisplayGetCursorChange() {
-    if (vvadp.oldCurPosX != qdcgaVarCursorPosRow(qdcgaVarPageNum) ||
-            vvadp.oldCurPosY != qdcgaVarCursorPosCol(qdcgaVarPageNum) ||
-            vvadp.oldCurTop  != qdcgaVarCursorTop ||
-            vvadp.oldCurBottom != qdcgaVarCursorBottom) {
-        vvadp.oldCurPosX = qdcgaVarCursorPosRow(qdcgaVarPageNum);
-        vvadp.oldCurPosY = qdcgaVarCursorPosCol(qdcgaVarPageNum);
-        vvadp.oldCurTop  = qdcgaVarCursorTop;
-        vvadp.oldCurBottom = qdcgaVarCursorBottom;
+    if (vvadp.data.oldCurPosX != qdcgaVarCursorPosRow(qdcgaVarPageNum) ||
+            vvadp.data.oldCurPosY != qdcgaVarCursorPosCol(qdcgaVarPageNum) ||
+            vvadp.data.oldCurTop  != qdcgaVarCursorTop ||
+            vvadp.data.oldCurBottom != qdcgaVarCursorBottom) {
+        vvadp.data.oldCurPosX = qdcgaVarCursorPosRow(qdcgaVarPageNum);
+        vvadp.data.oldCurPosY = qdcgaVarCursorPosCol(qdcgaVarPageNum);
+        vvadp.data.oldCurTop  = qdcgaVarCursorTop;
+        vvadp.data.oldCurBottom = qdcgaVarCursorBottom;
         return 1;
     } else {
         return 0;
     }
 }
 t_bool deviceConnectDisplayGetBufferChange() {
-    if (MEMCMP((void *) vvadp.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize)) {
-        MEMCPY((void *) vvadp.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
+    if (MEMCMP((void *) vvadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize)) {
+        MEMCPY((void *) vvadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
         return 1;
     } else {
         return 0;
@@ -141,7 +141,7 @@ t_nubit16 deviceConnectDisplayGetRowSize() {
     return qdcgaVarRowSize;
 }
 t_nubit16 deviceConnectDisplayGetColSize() {
-    return vvadp.colSize;
+    return vvadp.data.colSize;
 }
 t_nubit8 deviceConnectDisplayGetCursorTop() {
     return qdcgaVarCursorTop;
@@ -172,37 +172,37 @@ static void qdcgaSetDisplayMode() {
     case 0x00:
         /* 40 x 25 */
         qdcgaVarRowSize = 0x28;
-        vvadp.colSize   = 0x19;
-        vvadp.flagColor = 0;
+        vvadp.data.colSize   = 0x19;
+        vvadp.data.flagColor = 0;
         platformDisplaySetScreen();
         break;
     case 0x01:
         /* 40 x 25 */
         qdcgaVarRowSize = 0x28;
-        vvadp.colSize   = 0x19;
-        vvadp.flagColor = 1;
+        vvadp.data.colSize   = 0x19;
+        vvadp.data.flagColor = 1;
         platformDisplaySetScreen();
         break;
     case 0x02:
     case 0x07:
         /* 80 x 25 */
         qdcgaVarRowSize = 0x50;
-        vvadp.colSize   = 0x19;
-        vvadp.flagColor = 0;
+        vvadp.data.colSize   = 0x19;
+        vvadp.data.flagColor = 0;
         platformDisplaySetScreen();
         break;
     case 0x03:
         /* 80 x 25 */
         qdcgaVarRowSize = 0x50;
-        vvadp.colSize   = 0x19;
-        vvadp.flagColor = 1;
+        vvadp.data.colSize   = 0x19;
+        vvadp.data.flagColor = 1;
         platformDisplaySetScreen();
         break;
     default:
         break;
     }
     qdcgaVarRagenSize = qdcgaModeBufSize[qdcgaVarMode];
-    MEMCPY((void *) vvadp.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
+    MEMCPY((void *) vvadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
     ClearTextMemory();
 }
 
@@ -262,7 +262,7 @@ static void qdcgaScrollUp() {
 static void qdcgaScrollDown() {
     t_nsbitcc i, j;
     if (!_al) {
-        for (i = 0; i < vvadp.colSize; ++i) {
+        for (i = 0; i < vvadp.data.colSize; ++i) {
             for (j = 0; j < qdcgaVarRowSize; ++j) {
                 qdcgaVarChar(qdcgaVarPageNum, i, j) = 0x20;
                 qdcgaVarCharProp(qdcgaVarPageNum, i, j) = _bh;
@@ -327,7 +327,7 @@ static void qdcgaGenerateChar() {
             break;
         }
         _cx = 0x0010;
-        _dl = vvadp.colSize - 0x01;
+        _dl = vvadp.data.colSize - 0x01;
     }
 }
 
@@ -414,8 +414,8 @@ void qdcgaInit() {
 void qdcgaReset() {
     /* 80 x 25 */
     qdcgaVarRowSize = 0x50;
-    vvadp.colSize = 0x19;
-    vvadp.flagColor = 1;
+    vvadp.data.colSize = 0x19;
+    vvadp.data.flagColor = 1;
 
     qdcgaVarPageNum = 0x00;
     qdcgaVarMode = 0x03;
@@ -424,6 +424,6 @@ void qdcgaReset() {
     qdcgaVarCursorPosCol(0) = 0x00;
     qdcgaVarCursorTop       = 0x06;
     qdcgaVarCursorBottom    = 0x07;
-    vvadp.oldCurPosX = vvadp.oldCurPosY = 0x00;
-    vvadp.oldCurTop  = vvadp.oldCurBottom = 0x00;
+    vvadp.data.oldCurPosX = vvadp.data.oldCurPosY = 0x00;
+    vvadp.data.oldCurTop  = vvadp.data.oldCurBottom = 0x00;
 }

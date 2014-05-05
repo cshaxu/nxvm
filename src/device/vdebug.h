@@ -18,11 +18,18 @@ typedef struct {
     t_nubit16 breakCS, breakIP;
     t_nubit32 breakLinear;
     FILE *recordFile; /* pointer to dump file */
+} t_debug_connect;
+
+typedef struct {
+    t_debug_connect connect;
 } t_debug;
 
 extern t_debug vdebug;
 
-void vdebugRegister();
+void vdebugInit();
+void vdebugReset();
+void vdebugRefresh();
+void vdebugFinal();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

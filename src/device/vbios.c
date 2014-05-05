@@ -7,11 +7,11 @@
 #include "vram.h"
 #include "vhdd.h"
 
-#include "vmachine.h"
 #include "vbios.h"
 
 t_bios vbios;
 
+/* internal variable */
 static t_bool flagBoot;
 static t_nubit16 ics, iip;
 
@@ -65,7 +65,7 @@ static void biosLoadData() {
     vramRealByte(Zero16, VBIOS_ADDR_VGA_MODE_REGISTER) = 0x29;
     vramRealByte(Zero16, VBIOS_ADDR_VGA_COLOR_PALETTE) = 0x30;
     vramRealByte(Zero16, VBIOS_ADDR_HDD_LST_OP_STATUS) = 0x01;
-    vramRealByte(Zero16, VBIOS_ADDR_HDD_NUMBER) = vhdd.flagDiskExist ? 0x01 : Zero8; /* number of hard disks */
+    vramRealByte(Zero16, VBIOS_ADDR_HDD_NUMBER) = vhdd.connect.flagDiskExist ? 0x01 : Zero8; /* number of hard disks */
     vramRealByte(Zero16, VBIOS_ADDR_HDD_CONTROL)        = 0xc0;
     vramRealByte(Zero16, VBIOS_ADDR_PARA_TIMEOUT_LPT1)  = 0x14;
     vramRealByte(Zero16, VBIOS_ADDR_SERI_TIMEOUT_COM1)  = 0x0a;
@@ -101,10 +101,10 @@ static void biosLoadInt() {
     t_nubit16 i;
     iip += (t_nubit16) assemble("iret", VBIOS_ADDR_START_SEG, VBIOS_ADDR_START_OFF);
     for (i = 0; i < 0x100; ++i) {
-        if (vbios.intTable[i]) {
+        if (vbios.connect.intTable[i]) {
             vramRealWord(Zero16, i * 4 + 0) = iip;
             vramRealWord(Zero16, i * 4 + 2) = ics;
-            iip += (t_nubit16) assemble(vbios.intTable[i], ics, iip);
+            iip += (t_nubit16) assemble(vbios.connect.intTable[i], ics, iip);
         } else {
             vramRealWord(Zero16, i * 4 + 0) = VBIOS_ADDR_START_OFF;
             vramRealWord(Zero16, i * 4 + 2) = VBIOS_ADDR_START_SEG;
@@ -117,8 +117,8 @@ static void biosLoadPost() {
     t_string stmt;
     SPRINTF(stmt, "jmp %04x:%04x", ics, iip);
     assemble(stmt, VBIOS_ADDR_POST_SEG, VBIOS_ADDR_POST_OFF);
-    for (i = 0; i < vbios.postCount; ++i) {
-        iip += (t_nubit16) assemble(vbios.postTable[i], ics, iip);
+    for (i = 0; i < vbios.connect.postCount; ++i) {
+        iip += (t_nubit16) assemble(vbios.connect.postTable[i], ics, iip);
     }
     iip += (t_nubit16) assemble(VBIOS_POST_BOOT, ics, iip);
 }
@@ -127,37 +127,39 @@ static void biosLoadAdditional() {
     /* hard disk param table */
     vramRealWord(Zero16, VBIOS_ADDR_HDD_PARAM_OFFSET) = VBIOS_ADDR_HDD_PARAM;
     vramRealWord(Zero16, VBIOS_ADDR_HDD_PARAM_SEGMENT) = VBIOS_ADDR_START_SEG;
-    vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  0) = vhdd.ncyl;
-    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  2) = GetMax8(vhdd.nhead);
+    vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  0) = vhdd.data.ncyl;
+    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  2) = GetMax8(vhdd.data.nhead);
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  3) = 0xa0;
-    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  4) = GetMax8(vhdd.nsector);
+    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  4) = GetMax8(vhdd.data.nsector);
     vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  5) = Max16;
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  7) = Zero8;
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  8) = 0x08;
-    vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  9) = vhdd.ncyl;
-    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 11) = GetMax8(vhdd.nhead);
+    vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  9) = vhdd.data.ncyl;
+    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 11) = GetMax8(vhdd.data.nhead);
     vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 12) = Zero16;
-    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 14) = GetMax8(vhdd.nsector);
+    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 14) = GetMax8(vhdd.data.nsector);
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 15) = Zero8;
 }
 
 void vbiosAddPost(t_strptr stmt) {
-    vbios.postTable[vbios.postCount++] = stmt;
+    vbios.connect.postTable[vbios.connect.postCount++] = stmt;
 }
 
 void vbiosAddInt(t_strptr stmt, t_nubit8 intid) {
-    vbios.intTable[intid] = stmt;
+    vbios.connect.intTable[intid] = stmt;
 }
 
-static void init() {
-    MEMSET(&vbios, Zero8, sizeof(t_bios));
+void vbiosInit() {
+    MEMSET((void *)(&vbios), Zero8, sizeof(t_bios));
+    flagBoot = False;
+    ics = iip = Zero16;
     vbiosAddInt(VBIOS_INT_SOFT_MISC_11, 0x11);
     vbiosAddInt(VBIOS_INT_SOFT_MISC_12, 0x12);
     vbiosAddInt(VBIOS_INT_SOFT_MISC_15, 0x15);
 }
 
 /* Loads bios to ram */
-static void reset() {
+void vbiosReset() {
     /* bios area starts at f000:0000 */
     ics = VBIOS_ADDR_START_SEG;
     iip = VBIOS_ADDR_START_OFF;
@@ -168,13 +170,9 @@ static void reset() {
     biosLoadAdditional(); /* additional bios data */
 }
 
-static void refresh() {}
+void vbiosRefresh() {}
 
-static void final() {}
-
-void vbiosRegister() {
-    vmachineAddMe;
-}
+void vbiosFinal() {}
 
 void devicePrintBios() {
     PRINTF("Boot Disk: %s\n", deviceConnectBiosGetBoot() ? "Hard Drive" : "Floppy");
