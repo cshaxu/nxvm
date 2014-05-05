@@ -15,22 +15,24 @@ static void io_write_void() {}
 
 /* VPORT has to be initialized before all other devices */
 static void init() {
-	t_nsbitcc i;
-	MEMSET(&vport, Zero8, sizeof(t_port));
-	for (i = 0;i < VPORT_MAX_PORT_COUNT;++i) {
-		vport.in[i] = (t_faddrcc) io_read_void;
-		vport.out[i] = (t_faddrcc) io_write_void;
-	}
+    t_nsbitcc i;
+    MEMSET(&vport, Zero8, sizeof(t_port));
+    for (i = 0; i < VPORT_MAX_PORT_COUNT; ++i) {
+        vport.in[i] = (t_faddrcc) io_read_void;
+        vport.out[i] = (t_faddrcc) io_write_void;
+    }
 }
 
 static void reset() {
-	vport.ioByte = Zero8;
-	vport.ioWord = Zero16;
-	vport.ioDWord = Zero32;
+    vport.ioByte = Zero8;
+    vport.ioWord = Zero16;
+    vport.ioDWord = Zero32;
 }
 
 static void refresh() {}
 
 static void final() {}
 
-void vportRegister() {vmachineAddMe;}
+void vportRegister() {
+    vmachineAddMe;
+}

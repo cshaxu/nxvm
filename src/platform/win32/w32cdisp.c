@@ -19,75 +19,75 @@ static CONSOLE_SCREEN_BUFFER_INFO defaultBufInfo;
 static UCHAR bufComp[0x1000];
 
 VOID w32cdispInit() {
-	/* GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&defaultCurInfo)); */
-	GetConsoleScreenBufferInfo(hOut, &defaultBufInfo);
-	defaultCodePage = GetConsoleCP();
-	charBuf = NULL;
-	w32cdispSetScreen();
+    /* GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&defaultCurInfo)); */
+    GetConsoleScreenBufferInfo(hOut, &defaultBufInfo);
+    defaultCodePage = GetConsoleCP();
+    charBuf = NULL;
+    w32cdispSetScreen();
 }
 
 VOID w32cdispSetScreen() {
-	sizeCol = deviceConnectDisplayGetColSize();
-	sizeRow = deviceConnectDisplayGetRowSize();
-	coordBufSize.X = sizeRow; /* number of cols */
-	coordBufSize.Y = sizeCol; /* number of rows */
-	coordBufStart.X = 0; 
-	coordBufStart.Y = 0; 
-	srctWriteRect.Top = 0;
-	srctWriteRect.Bottom = sizeCol - 1;
-	srctWriteRect.Left = 0;
-	srctWriteRect.Right = sizeRow - 1;
-	if (charBuf) {
-		FREE((void *) charBuf);
-	}
-	charBuf = (PCHAR_INFO) MALLOC(sizeCol * sizeRow * sizeof(CHAR_INFO));
-	/* SetConsoleCursorInfo(hOut, &curInfo); */
-	SetConsoleOutputCP(437);
-	SetConsoleScreenBufferSize(hOut, coordBufSize);
+    sizeCol = deviceConnectDisplayGetColSize();
+    sizeRow = deviceConnectDisplayGetRowSize();
+    coordBufSize.X = sizeRow; /* number of cols */
+    coordBufSize.Y = sizeCol; /* number of rows */
+    coordBufStart.X = 0;
+    coordBufStart.Y = 0;
+    srctWriteRect.Top = 0;
+    srctWriteRect.Bottom = sizeCol - 1;
+    srctWriteRect.Left = 0;
+    srctWriteRect.Right = sizeRow - 1;
+    if (charBuf) {
+        FREE((void *) charBuf);
+    }
+    charBuf = (PCHAR_INFO) MALLOC(sizeCol * sizeRow * sizeof(CHAR_INFO));
+    /* SetConsoleCursorInfo(hOut, &curInfo); */
+    SetConsoleOutputCP(437);
+    SetConsoleScreenBufferSize(hOut, coordBufSize);
 }
 
 VOID w32cdispPaint(BOOL flagForce) {
-	UCHAR ansiChar;
-	WCHAR unicodeChar;
-	WORD  charProp;
-	UCHAR i, j;
-	COORD curPos;
-	CONSOLE_CURSOR_INFO curInfo;
-	if (!charBuf) {
-		return;
-	}
-	if (flagForce || deviceConnectDisplayGetBufferChange()) {
-		for(i = 0;i < sizeCol;++i) {
-			for(j = 0;j < sizeRow;++j) {
-				ansiChar = deviceConnectDisplayGetCurrentChar(i, j);
-				charProp = deviceConnectDisplayGetCurrentCharProp(i, j); /* & 0x7f; */
-				/* if (!ansiChar) continue; */
-				MultiByteToWideChar(437, 0, (LPCSTR)(&ansiChar), 1, (LPWSTR)(&unicodeChar), 1);
-				charBuf[i * sizeRow + j].Char.UnicodeChar = unicodeChar;
-				charBuf[i * sizeRow + j].Attributes = charProp;
-			}
-		}
-		WriteConsoleOutput(hOut, charBuf, coordBufSize, coordBufStart, &srctWriteRect);
-	}
-	if (flagForce || deviceConnectDisplayGetCursorChange()) {
-		GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&curInfo));
-		curInfo.bVisible = deviceConnectDisplayGetCursorVisible();
-		curInfo.dwSize = (DWORD)(((deviceConnectDisplayGetCursorBottom() -
-			deviceConnectDisplayGetCursorTop()) % 8 + 1) * 100. / 8.);
-		SetConsoleCursorInfo(hOut, &curInfo);
-		curPos.X = deviceConnectDisplayGetCurrentCursorPosY();
-		curPos.Y = deviceConnectDisplayGetCurrentCursorPosX();
-		SetConsoleCursorPosition(hOut,curPos);
-	}
+    UCHAR ansiChar;
+    WCHAR unicodeChar;
+    WORD  charProp;
+    UCHAR i, j;
+    COORD curPos;
+    CONSOLE_CURSOR_INFO curInfo;
+    if (!charBuf) {
+        return;
+    }
+    if (flagForce || deviceConnectDisplayGetBufferChange()) {
+        for (i = 0; i < sizeCol; ++i) {
+            for (j = 0; j < sizeRow; ++j) {
+                ansiChar = deviceConnectDisplayGetCurrentChar(i, j);
+                charProp = deviceConnectDisplayGetCurrentCharProp(i, j); /* & 0x7f; */
+                /* if (!ansiChar) continue; */
+                MultiByteToWideChar(437, 0, (LPCSTR)(&ansiChar), 1, (LPWSTR)(&unicodeChar), 1);
+                charBuf[i * sizeRow + j].Char.UnicodeChar = unicodeChar;
+                charBuf[i * sizeRow + j].Attributes = charProp;
+            }
+        }
+        WriteConsoleOutput(hOut, charBuf, coordBufSize, coordBufStart, &srctWriteRect);
+    }
+    if (flagForce || deviceConnectDisplayGetCursorChange()) {
+        GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&curInfo));
+        curInfo.bVisible = deviceConnectDisplayGetCursorVisible();
+        curInfo.dwSize = (DWORD)(((deviceConnectDisplayGetCursorBottom() -
+                                   deviceConnectDisplayGetCursorTop()) % 8 + 1) * 100. / 8.);
+        SetConsoleCursorInfo(hOut, &curInfo);
+        curPos.X = deviceConnectDisplayGetCurrentCursorPosY();
+        curPos.Y = deviceConnectDisplayGetCurrentCursorPosX();
+        SetConsoleCursorPosition(hOut,curPos);
+    }
 }
 
 VOID w32cdispFinal() {
-	if (charBuf) {
-		FREE((void *) charBuf);
-	}
-	charBuf = NULL;
-	SetConsoleCursorInfo(hOut, &defaultCurInfo);
-	SetConsoleOutputCP(defaultCodePage);
-	SetConsoleScreenBufferSize(hOut, defaultBufInfo.dwSize);
-	hOut = INVALID_HANDLE_VALUE;
+    if (charBuf) {
+        FREE((void *) charBuf);
+    }
+    charBuf = NULL;
+    SetConsoleCursorInfo(hOut, &defaultCurInfo);
+    SetConsoleOutputCP(defaultCodePage);
+    SetConsoleScreenBufferSize(hOut, defaultBufInfo.dwSize);
+    hOut = INVALID_HANDLE_VALUE;
 }

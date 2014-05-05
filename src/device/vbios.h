@@ -12,9 +12,9 @@ extern "C" {
 #define NXVM_DEVICE_BIOS "Unknown BIOS"
 
 typedef struct {
-	t_nubitcc postCount;         /* number of POST routines */
-	t_strptr  postTable[0x100]; /* table of POST routine string pointers */
-	t_strptr  intTable[0x100];  /* table of INT routine string pointers, null if not defined */
+    t_nubitcc postCount;         /* number of POST routines */
+    t_strptr  postTable[0x100]; /* table of POST routine string pointers */
+    t_strptr  intTable[0x100];  /* table of INT routine string pointers, null if not defined */
 } t_bios;
 
 extern t_bios vbios;

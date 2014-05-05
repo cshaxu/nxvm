@@ -12,35 +12,35 @@ extern "C" {
 #define NXVM_DEVICE_PIT "Intel 8254"
 
 typedef enum {
-	VPIT_STATUS_RW_READY,
-	VPIT_STATUS_RW_LSB,
-	VPIT_STATUS_RW_MSB
+    VPIT_STATUS_RW_READY,
+    VPIT_STATUS_RW_LSB,
+    VPIT_STATUS_RW_MSB
 } t_pit_status_rw;
 
 typedef struct {
-	t_nubit8 cw[4]; /* control words[0-2] for counter 0-2, and cw[3] is read-back command */
+    t_nubit8 cw[4]; /* control words[0-2] for counter 0-2, and cw[3] is read-back command */
 
-	t_nubit16 init[3];  /* initial counts */
-	t_nubit16 count[3]; /* counter[0-2] */
-	t_nubit16 latch[3]; /* latch counts */
+    t_nubit16 init[3];  /* initial counts */
+    t_nubit16 count[3]; /* counter[0-2] */
+    t_nubit16 latch[3]; /* latch counts */
 
-	t_bool flagReady[3]; /* flag of ready */
-	t_bool flagLatch[3]; /* flag of latch status */
-	t_bool flagGate[3];  /* enable or disable counter */
+    t_bool flagReady[3]; /* flag of ready */
+    t_bool flagLatch[3]; /* flag of latch status */
+    t_bool flagGate[3];  /* enable or disable counter */
 
-	t_pit_status_rw flagRead[3];  /* flag of low byte read */
-	t_pit_status_rw flagWrite[3]; /* flag of low byte write */
+    t_pit_status_rw flagRead[3];  /* flag of low byte read */
+    t_pit_status_rw flagWrite[3]; /* flag of low byte write */
 
-	t_faddrcc out[3]; /* action when out signal is valid */
+    t_faddrcc out[3]; /* action when out signal is valid */
 } t_pit;
 
 extern t_pit vpit;
 
 /*
- * Ctrl Word   SC1 | SC0 | RW1   | RW0    | M2   | M1   | M0   | BCD
- * Latch Cmd   SC1 | SC0 | 0     | 0      | x    | x    | x    | x  
- * Read-back   I   | I   | COUNT | STATUS | CNT2 | CNT1 | CNT0 | 0  
- * Stus Byte   OUT | NC  | RW1   | RW0    | M2   | M1   | M0   | BCD
+ * Ctrl Word: SC1 | SC0 | RW1   | RW0    | M2   | M1   | M0   | BCD
+ * Latch Cmd: SC1 | SC0 | 0     | 0      | x    | x    | x    | x
+ * Read-back: I   | I   | COUNT | STATUS | CNT2 | CNT1 | CNT0 | 0
+ * Stus Byte: OUT | NC  | RW1   | RW0    | M2   | M1   | M0   | BCD
  */
 
 /* control word bits */

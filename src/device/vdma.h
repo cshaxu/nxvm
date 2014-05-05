@@ -16,35 +16,35 @@ typedef t_nubit8 t_page;
 #define VDMA_CHANNEL_COUNT 4
 
 typedef struct {
-	t_nubit16 baseAddr;  /* base address */
-	t_nubit16 baseCount; /* base word count */
-	t_nubit16 currAddr;  /* current address */
-	t_nubit16 currCount; /* current word count */
-	t_nubit8  mode;      /* mode register */
-	t_page    page;      /* page register */
-	t_faddrcc fpReadDevice;  /* get data from device to latch */
-	t_faddrcc fpWriteDevice; /* write data to device from latch */
-	t_faddrcc fpCloseDevice; /* send eop signal to device */
+    t_nubit16 baseAddr;  /* base address */
+    t_nubit16 baseCount; /* base word count */
+    t_nubit16 currAddr;  /* current address */
+    t_nubit16 currCount; /* current word count */
+    t_nubit8  mode;      /* mode register */
+    t_page    page;      /* page register */
+    t_faddrcc fpReadDevice;  /* get data from device to latch */
+    t_faddrcc fpWriteDevice; /* write data to device from latch */
+    t_faddrcc fpCloseDevice; /* send eop signal to device */
 } t_dma_channel;
 
 typedef struct {
-	t_dma_channel channel[VDMA_CHANNEL_COUNT];
-	t_nubit8      command; /* command register */
-	t_nubit8      status;  /* status register */
-	t_nubit8      mask;    /* mask register */
-	t_nubit8      request; /* request register */
-	t_nubit8      temp;    /* temporary register */
-	t_nubit8      drx;     /* dreq id of highest priority */
-	t_bool        flagMSB; /* flip-flop for msb/lsb */
-	t_bool        flagEOP; /* end of process */
-    
+    t_dma_channel channel[VDMA_CHANNEL_COUNT];
+    t_nubit8      command; /* command register */
+    t_nubit8      status;  /* status register */
+    t_nubit8      mask;    /* mask register */
+    t_nubit8      request; /* request register */
+    t_nubit8      temp;    /* temporary register */
+    t_nubit8      drx;     /* dreq id of highest priority */
+    t_bool        flagMSB; /* flip-flop for msb/lsb */
+    t_bool        flagEOP; /* end of process */
+
     /* id of request in service in D5-D4, flag of in service in D0 */
-	t_nubit8      isr;
+    t_nubit8      isr;
 } t_dma;
 
 typedef union {
-	t_nubit8  byte;
-	t_nubit16 word;
+    t_nubit8  byte;
+    t_nubit16 word;
 } t_latch;
 
 extern t_latch vlatch;
@@ -61,7 +61,7 @@ extern t_dma vdma1, vdma2;
  * STATUS: DRQ3 | DRQ2 | DRQ1 | DRQ0 | TC3  | TC2  | TC1  | TC0
  * ~ISR:   x    | x    | ISR1 | ISR0 | x    | x    | x    | IS
  */
-    
+
 /* command register bits */
 #define VDMA_COMMAND_M2M    0x01 /* memory to memory */
 #define VDMA_COMMAND_C0AD   0x02 /* channel 0 address hold */

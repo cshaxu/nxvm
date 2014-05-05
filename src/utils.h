@@ -17,14 +17,14 @@ extern "C" {
 /* Code Tracer */
 #define UTILS_TRACE_MAX_STACK 0x100
 typedef struct {
-	char* blockStack[UTILS_TRACE_MAX_STACK];
-	int blockCount;
-	char *callName;
+    char* blockStack[UTILS_TRACE_MAX_STACK];
+    int blockCount;
+    char *callName;
 } t_utils_trace_call;
 typedef struct {
-	t_utils_trace_call callStack[UTILS_TRACE_MAX_STACK];
-	int callCount;
-	int flagError;
+    t_utils_trace_call callStack[UTILS_TRACE_MAX_STACK];
+    int callCount;
+    int flagError;
 } t_utils_trace;
 
 void utilsTracePrintCall(t_utils_trace_call *rtracecall);
@@ -46,58 +46,58 @@ void utilsTraceBlockEnd(t_utils_trace *rtrace);
 #define _ce utilsTraceCallEnd(&(UTILS_TRACE_VAR))
 #define _be utilsTraceBlockEnd(&(UTILS_TRACE_VAR))
 #define _chb(n) \
-	if (1) { \
-		(n); \
-		if (UTILS_TRACE_ERROR) { \
-			(UTILS_TRACE_VAR).flagError = 1; \
-			utilsTraceFinal(&(UTILS_TRACE_VAR)); \
-			break; \
-		} \
-	} else
+    if (1) { \
+        (n); \
+        if (UTILS_TRACE_ERROR) { \
+            (UTILS_TRACE_VAR).flagError = 1; \
+            utilsTraceFinal(&(UTILS_TRACE_VAR)); \
+            break; \
+        } \
+    } else
 #define _chr(n) \
-	do { \
-		(n); \
-		if (UTILS_TRACE_ERROR) { \
-			(UTILS_TRACE_VAR).flagError = 1; \
-			utilsTraceFinal(&(UTILS_TRACE_VAR)); \
-			return; \
-		} \
-	} while (0)
+    do { \
+        (n); \
+        if (UTILS_TRACE_ERROR) { \
+            (UTILS_TRACE_VAR).flagError = 1; \
+            utilsTraceFinal(&(UTILS_TRACE_VAR)); \
+            return; \
+        } \
+    } while (0)
 #define _chrz(n) \
-	do { \
-		(n); \
-		if (UTILS_TRACE_ERROR) { \
-			(UTILS_TRACE_VAR).flagError = 1; \
-			utilsTraceFinal(&(UTILS_TRACE_VAR)); \
-			return 0; \
-		} \
-	} while (0)
+    do { \
+        (n); \
+        if (UTILS_TRACE_ERROR) { \
+            (UTILS_TRACE_VAR).flagError = 1; \
+            utilsTraceFinal(&(UTILS_TRACE_VAR)); \
+            return 0; \
+        } \
+    } while (0)
 #else
 #define _cb(callName)
 #define _bb(blockName)
 #define _ce
 #define _be
 #define _chb(n) \
-	if (1) { \
-		(n); \
-		if (UTILS_TRACE_ERROR) { \
-			break; \
-		} \
-	} else
+    if (1) { \
+        (n); \
+        if (UTILS_TRACE_ERROR) { \
+            break; \
+        } \
+    } else
 #define _chr(n) \
-	do { \
-		(n); \
-		if (UTILS_TRACE_ERROR) { \
-			return; \
-		} \
-	} while (0)
+    do { \
+        (n); \
+        if (UTILS_TRACE_ERROR) { \
+            return; \
+        } \
+    } while (0)
 #define _chrz(n) \
-	do { \
-		(n); \
-		if (UTILS_TRACE_ERROR) { \
-			return 0; \
-		} \
-	} while (0)
+    do { \
+        (n); \
+        if (UTILS_TRACE_ERROR) { \
+            return 0; \
+        } \
+    } while (0)
 #endif
 
 #define _impossible_b_  _chb(UTILS_TRACE_SETERR);

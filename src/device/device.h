@@ -10,9 +10,9 @@ extern "C" {
 #include "vglobal.h"
 
 typedef struct {
-	t_bool flagFlip;  /* flag flips when device thread is created  */
-	t_bool flagRun;   /* device thread is running (1) or not (0) */
-	t_bool flagReset; /* reset command is issued or not */
+    t_bool flagFlip;  /* flag flips when device thread is created  */
+    t_bool flagRun;   /* device thread is running (1) or not (0) */
+    t_bool flagReset; /* reset command is issued or not */
 } t_device;
 
 extern t_device device;

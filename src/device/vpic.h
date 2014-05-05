@@ -15,12 +15,12 @@ typedef enum {ICW1, ICW2, ICW3, ICW4, OCW1} t_pic_init_status;
 
 #define ocw1 imr
 typedef struct {
-	t_nubit8 irr;  /* Interrupt Request Register */
-	t_nubit8 imr;  /* Interrupt Mask Register */
-	t_nubit8 isr;  /* In Service Register */
-	t_nubit8 icw1, icw2, icw3, icw4, ocw2, ocw3; /* command words */
-	t_pic_init_status status; /* initialization status */
-	t_nubit8 irx; /* id of current top potential ir */
+    t_nubit8 irr;  /* Interrupt Request Register */
+    t_nubit8 imr;  /* Interrupt Mask Register */
+    t_nubit8 isr;  /* In Service Register */
+    t_nubit8 icw1, icw2, icw3, icw4, ocw2, ocw3; /* command words */
+    t_pic_init_status status; /* initialization status */
+    t_nubit8 irx; /* id of current top potential ir */
 } t_pic;
 
 extern t_pic vpic1, vpic2;

@@ -14,13 +14,13 @@ extern "C" {
 #define VPORT_MAX_PORT_COUNT 0x10000
 
 typedef struct {
-	t_faddrcc in[VPORT_MAX_PORT_COUNT];
-	t_faddrcc out[VPORT_MAX_PORT_COUNT];
-	union {
-		t_nubit8  ioByte;
-		t_nubit16 ioWord;
-		t_nubit32 ioDWord;
-	};
+    t_faddrcc in[VPORT_MAX_PORT_COUNT];
+    t_faddrcc out[VPORT_MAX_PORT_COUNT];
+    union {
+        t_nubit8  ioByte;
+        t_nubit16 ioWord;
+        t_nubit32 ioDWord;
+    };
 } t_port;
 
 extern t_port vport;

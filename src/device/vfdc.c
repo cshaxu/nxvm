@@ -43,24 +43,33 @@ t_fdc vfdc;
 
 /* Resets FDC but keeps CCR */
 static void doReset() {
-	t_nubit8 ccr = vfdc.ccr;
-	MEMSET(&vfdc, Zero8, sizeof(t_fdc));
-	vfdc.ccr = ccr;
+    t_nubit8 ccr = vfdc.ccr;
+    MEMSET(&vfdc, Zero8, sizeof(t_fdc));
+    vfdc.ccr = ccr;
 }
 
 /* sector size code */
 t_nubit8 VFDC_GetBPSC(t_nubit16 cb) {
-	switch (cb) {
-	case 0x0080: return 0x00;
-	case 0x0100: return 0x01;
-	case 0x0200: return 0x02;
-	case 0x0400: return 0x03;
-	case 0x0800: return 0x04;
-	case 0x1000: return 0x05;
-	case 0x2000: return 0x06;
-	case 0x4000: return 0x07;
-	default:     return 0x00;
-	}
+    switch (cb) {
+    case 0x0080:
+        return 0x00;
+    case 0x0100:
+        return 0x01;
+    case 0x0200:
+        return 0x02;
+    case 0x0400:
+        return 0x03;
+    case 0x0800:
+        return 0x04;
+    case 0x1000:
+        return 0x05;
+    case 0x2000:
+        return 0x06;
+    case 0x4000:
+        return 0x07;
+    default:
+        return 0x00;
+    }
 }
 
 #define IsRet(retl, count) (vfdc.cmd[0] == (retl) && vfdc.flagret == (count))
@@ -106,92 +115,92 @@ t_nubit8 VFDC_GetBPSC(t_nubit16 cb) {
 #define GetMSRExecCmd    (GetBit(vfdc.msr, VFDC_MSR_NDM))
 
 static void ExecCmdSpecify() {
-	vfdc.hut      = VFDC_GetCMD_Specify1_HUT(vfdc.cmd[1]);
-	vfdc.srt      = VFDC_GetCMD_Specify1_SRT(vfdc.cmd[1]);
-	vfdc.hlt      = VFDC_GetCMD_Specify2_HLT(vfdc.cmd[2]);
-	vfdc.flagNDMA = GetBit(vfdc.cmd[2], VFDC_CMD_Specify2_ND);
-	SetMSRReadyWrite;
+    vfdc.hut      = VFDC_GetCMD_Specify1_HUT(vfdc.cmd[1]);
+    vfdc.srt      = VFDC_GetCMD_Specify1_SRT(vfdc.cmd[1]);
+    vfdc.hlt      = VFDC_GetCMD_Specify2_HLT(vfdc.cmd[2]);
+    vfdc.flagNDMA = GetBit(vfdc.cmd[2], VFDC_CMD_Specify2_ND);
+    SetMSRReadyWrite;
 }
 static void ExecCmdSenseDriveStatus() {
-	vfdd.head = GetBit(vfdc.cmd[1], VFDC_CMD_SenseDriveStatus1_HD);
-	vfddSetPointer;
-	SetST3;
-	vfdc.ret[0] = vfdc.st3;
-	SetMSRReadyRead;
+    vfdd.head = GetBit(vfdc.cmd[1], VFDC_CMD_SenseDriveStatus1_HD);
+    vfddSetPointer;
+    SetST3;
+    vfdc.ret[0] = vfdc.st3;
+    SetMSRReadyRead;
 }
 static void ExecCmdRecalibrate() {
-	vfdd.cyl    = 0;
-	vfdd.head   = 0;
-	vfdd.sector = 1;
-	vfddSetPointer;
-	SetST0;
-	SetBit(vfdc.st0, VFDC_ST0_SEEK_END);
-	if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
-		vpicSetIRQ(0x06);
-		vfdc.flagINTR = True;
-	}
-	SetMSRReadyWrite;
+    vfdd.cyl    = 0;
+    vfdd.head   = 0;
+    vfdd.sector = 1;
+    vfddSetPointer;
+    SetST0;
+    SetBit(vfdc.st0, VFDC_ST0_SEEK_END);
+    if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
+        vpicSetIRQ(0x06);
+        vfdc.flagINTR = True;
+    }
+    SetMSRReadyWrite;
 }
 static void ExecCmdSenseInterrupt() {
-	if (vfdc.flagINTR) {
-		vfdc.ret[0] = vfdc.st0;
-		vfdc.ret[1] = (t_nubit8)vfdd.cyl;
-		vfdc.flagINTR = False;
-	} else {
-		vfdc.ret[0] = vfdc.st0 = VFDC_RET_ERROR;
-	}
-	SetMSRReadyRead;
+    if (vfdc.flagINTR) {
+        vfdc.ret[0] = vfdc.st0;
+        vfdc.ret[1] = (t_nubit8)vfdd.cyl;
+        vfdc.flagINTR = False;
+    } else {
+        vfdc.ret[0] = vfdc.st0 = VFDC_RET_ERROR;
+    }
+    SetMSRReadyRead;
 }
 static void ExecCmdSeek() {
-	vfdd.head = GetBit(vfdc.cmd[1], VFDC_CMD_Seek1_HD);
-	vfdd.cyl  = vfdc.cmd[2];
-	vfdd.sector = 1;
-	vfddSetPointer;
-	SetST0;
-	SetBit(vfdc.st0, VFDC_ST0_SEEK_END);
-	if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
-		vpicSetIRQ(0x06);
-		vfdc.flagINTR = True;
-	}
-	SetMSRReadyWrite;
+    vfdd.head = GetBit(vfdc.cmd[1], VFDC_CMD_Seek1_HD);
+    vfdd.cyl  = vfdc.cmd[2];
+    vfdd.sector = 1;
+    vfddSetPointer;
+    SetST0;
+    SetBit(vfdc.st0, VFDC_ST0_SEEK_END);
+    if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
+        vpicSetIRQ(0x06);
+        vfdc.flagINTR = True;
+    }
+    SetMSRReadyWrite;
 }
 #define     ExecCmdReadTrack        vfdcTransInit
 static void ExecCmdReadID() {
-	vfdd.head = GetBit(vfdc.cmd[1], VFDC_CMD_ReadId1_HD);
-	vfdd.sector = 1;
-	vfddSetPointer;
-	vfdc.dr = Zero8; /* data register: sector id info */
-	vfdcTransFinal();
+    vfdd.head = GetBit(vfdc.cmd[1], VFDC_CMD_ReadId1_HD);
+    vfdd.sector = 1;
+    vfddSetPointer;
+    vfdc.dr = Zero8; /* data register: sector id info */
+    vfdcTransFinal();
 }
 static void ExecCmdFormatTrack() {
-	/* NOTE: simplified procedure; dma not used */
-	t_nubit8 fillByte;
-	/* load parameters*/
-	vfdd.head    = GetBit(vfdc.cmd[1], VFDC_CMD_FormatTrack1_HD);
-	vfdd.sector  = 0x01;
-	vfdd.nbyte   = VFDC_GetBPS(vfdc.cmd[2]);
-	vfdd.nsector = vfdc.cmd[3];
-	vfdd.gpl     = vfdc.cmd[4];
-	fillByte     = vfdc.cmd[5];
-	vfddSetPointer;
-	/* execute format track*/
-	vfddFormatTrack(fillByte);
-	/* finish transaction */
-	SetST0;
-	SetST1;
-	SetST2;
-	vfdc.ret[0] = vfdc.st0;
-	vfdc.ret[1] = vfdc.st1;
-	vfdc.ret[2] = vfdc.st2;
-	vfdc.ret[3] = Zero8;
-	vfdc.ret[4] = Zero8;
-	vfdc.ret[5] = Zero8;
-	vfdc.ret[6] = Zero8;
-	if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
-		vpicSetIRQ(0x06);
-		vfdc.flagINTR = True;
-	}
-	SetMSRReadyRead;
+    /* NOTE: simplified procedure; dma not used */
+    t_nubit8 fillByte;
+    /* load parameters*/
+    vfdd.head    = GetBit(vfdc.cmd[1], VFDC_CMD_FormatTrack1_HD);
+    vfdd.sector  = 0x01;
+    vfdd.nbyte   = VFDC_GetBPS(vfdc.cmd[2]);
+    vfdd.nsector = vfdc.cmd[3];
+    vfdd.gpl     = vfdc.cmd[4];
+    fillByte     = vfdc.cmd[5];
+    vfddSetPointer;
+    /* execute format track*/
+    vfddFormatTrack(fillByte);
+    /* finish transaction */
+    SetST0;
+    SetST1;
+    SetST2;
+    vfdc.ret[0] = vfdc.st0;
+    vfdc.ret[1] = vfdc.st1;
+    vfdc.ret[2] = vfdc.st2;
+    vfdc.ret[3] = Zero8;
+    vfdc.ret[4] = Zero8;
+    vfdc.ret[5] = Zero8;
+    vfdc.ret[6] = Zero8;
+    if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
+        vpicSetIRQ(0x06);
+        vfdc.flagINTR = True;
+    }
+    SetMSRReadyRead;
 }
 #define     ExecCmdWriteData        vfdcTransInit
 #define     ExecCmdReadDataAll      vfdcTransInit
@@ -200,324 +209,328 @@ static void ExecCmdFormatTrack() {
 #define     ExecCmdScanEqualAll     ExecCmdScanEqual
 #define     ExecCmdReadData         vfdcTransInit
 static void ExecCmdScanEqual() {
-	/* NOTE: not fully implemented; lack of reference */
-	SetST0;
-	SetST1;
-	SetST2;
-	/* assume all data match */
-	SetBit(vfdc.st2, VFDC_ST2_SCAN_MATCH);
-	vfdc.ret[0] = vfdc.st0;
-	vfdc.ret[1] = vfdc.st1;
-	vfdc.ret[2] = vfdc.st2;
-	vfdc.ret[3] = GetMax8(vfdd.cyl);
-	vfdc.ret[4] = GetMax8(vfdd.head);
-	vfdc.ret[5] = GetMax8(vfdd.sector); /* NOTE: eot not changed */
-	vfdc.ret[6] = VFDC_GetBPSC(vfdd.nbyte);
-	SetMSRReadyRead;
+    /* NOTE: not fully implemented; lack of reference */
+    SetST0;
+    SetST1;
+    SetST2;
+    /* assume all data match */
+    SetBit(vfdc.st2, VFDC_ST2_SCAN_MATCH);
+    vfdc.ret[0] = vfdc.st0;
+    vfdc.ret[1] = vfdc.st1;
+    vfdc.ret[2] = vfdc.st2;
+    vfdc.ret[3] = GetMax8(vfdd.cyl);
+    vfdc.ret[4] = GetMax8(vfdd.head);
+    vfdc.ret[5] = GetMax8(vfdd.sector); /* NOTE: eot not changed */
+    vfdc.ret[6] = VFDC_GetBPSC(vfdd.nbyte);
+    SetMSRReadyRead;
 }
 static void ExecCmdError() {
-	vfdc.ret[0] = VFDC_RET_ERROR;
-	SetMSRReadyRead;
+    vfdc.ret[0] = VFDC_RET_ERROR;
+    SetMSRReadyRead;
 }
 
 /* read main status register */
 static void io_read_03F4() {
-	vport.ioByte = vfdc.msr;
+    vport.ioByte = vfdc.msr;
 }
 /* read standard results */
 static void io_read_03F5() {
-	if (!GetMSRReadyRead) {
-		return;
-	} else {
-		SetMSRProcRead;
-	}
-	vport.ioByte = vfdc.ret[vfdc.rwCount++];
-	switch (vfdc.cmd[0]) {
-	case CMD_SPECIFY:
-		if (vfdc.rwCount >= 0) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_SENSE_DRIVE_STATUS:
-		if (vfdc.rwCount >= 1) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_RECALIBRATE:
-		if (vfdc.rwCount >= 0) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_SENSE_INTERRUPT:
-		if (vfdc.rwCount >= 2) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_SEEK:
-		if (vfdc.rwCount >= 0) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_READ_TRACK:
-		if (vfdc.rwCount >= 7) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_READ_ID:
-		if (vfdc.rwCount >= 7) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_FORMAT_TRACK:
-		if (vfdc.rwCount >= 7) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_WRITE_DATA:
-		if (vfdc.rwCount >= 7) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_READ_DATA_ALL:
-		if (vfdc.rwCount >= 7) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_WRITE_DELETED_DATA:
-		if (vfdc.rwCount >= 7) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_READ_DELETED_DATA:
-		if (vfdc.rwCount >= 7) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_SCAN_EQUAL_ALL:
-		if (vfdc.rwCount >= 7) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_READ_DATA:
-		if (vfdc.rwCount >= 7) {
-			SetMSRReadyWrite;
-		}
-		break;
-	case CMD_SCAN_EQUAL:
-		if (vfdc.rwCount >= 7) {
-			SetMSRReadyWrite;
-		}
-		break;
-	default: 
-		if (vfdc.rwCount >= 1) {
-			SetMSRReadyWrite;
-		}
-		break;
-	}
+    if (!GetMSRReadyRead) {
+        return;
+    } else {
+        SetMSRProcRead;
+    }
+    vport.ioByte = vfdc.ret[vfdc.rwCount++];
+    switch (vfdc.cmd[0]) {
+    case CMD_SPECIFY:
+        if (vfdc.rwCount >= 0) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_SENSE_DRIVE_STATUS:
+        if (vfdc.rwCount >= 1) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_RECALIBRATE:
+        if (vfdc.rwCount >= 0) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_SENSE_INTERRUPT:
+        if (vfdc.rwCount >= 2) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_SEEK:
+        if (vfdc.rwCount >= 0) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_READ_TRACK:
+        if (vfdc.rwCount >= 7) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_READ_ID:
+        if (vfdc.rwCount >= 7) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_FORMAT_TRACK:
+        if (vfdc.rwCount >= 7) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_WRITE_DATA:
+        if (vfdc.rwCount >= 7) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_READ_DATA_ALL:
+        if (vfdc.rwCount >= 7) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_WRITE_DELETED_DATA:
+        if (vfdc.rwCount >= 7) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_READ_DELETED_DATA:
+        if (vfdc.rwCount >= 7) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_SCAN_EQUAL_ALL:
+        if (vfdc.rwCount >= 7) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_READ_DATA:
+        if (vfdc.rwCount >= 7) {
+            SetMSRReadyWrite;
+        }
+        break;
+    case CMD_SCAN_EQUAL:
+        if (vfdc.rwCount >= 7) {
+            SetMSRReadyWrite;
+        }
+        break;
+    default:
+        if (vfdc.rwCount >= 1) {
+            SetMSRReadyWrite;
+        }
+        break;
+    }
 }
 /* read digital input register */
 static void io_read_03F7() {
-	vport.ioByte = vfdc.dir;
+    vport.ioByte = vfdc.dir;
 }
 
 /* write digital output register */
 static void io_write_03F2() {
-	if (!GetBit(vfdc.dor, VFDC_DOR_NRS) && GetBit(vport.ioByte, VFDC_DOR_NRS)) {
-		SetMSRReadyWrite;
-	}
-	vfdc.dor = vport.ioByte;
-	if (!GetBit(vfdc.dor, VFDC_DOR_NRS)) {
-		doReset();
-	}
+    if (!GetBit(vfdc.dor, VFDC_DOR_NRS) && GetBit(vport.ioByte, VFDC_DOR_NRS)) {
+        SetMSRReadyWrite;
+    }
+    vfdc.dor = vport.ioByte;
+    if (!GetBit(vfdc.dor, VFDC_DOR_NRS)) {
+        doReset();
+    }
 }
 /* write standard commands */
 static void io_write_03F5() {
-	if (!GetMSRReadyWrite) {
-		return;
-	} else {
-		SetMSRProcWrite;
-	}
-	vfdc.cmd[vfdc.rwCount++] = vport.ioByte;
-	switch (vfdc.cmd[0]) {
-	case CMD_SPECIFY:
-		if (vfdc.rwCount == 3) {
-			ExecCmdSpecify();
-		}
-		break;
-	case CMD_SENSE_DRIVE_STATUS:
-		if (vfdc.rwCount == 2) {
-			ExecCmdSenseDriveStatus();
-		}
-		break;
-	case CMD_RECALIBRATE:
-		if (vfdc.rwCount == 2) {
-			ExecCmdRecalibrate();
-		}
-		break;
-	case CMD_SENSE_INTERRUPT:
-		if (vfdc.rwCount == 1) {
-			ExecCmdSenseInterrupt();
-		}
-		break;
-	case CMD_SEEK:
-		if (vfdc.rwCount == 3) {
-			ExecCmdSeek();
-		}
-		break;
-	case CMD_READ_TRACK:
-		if (vfdc.rwCount == 9) {
-			ExecCmdReadTrack();
-		}
-		break;
-	case CMD_READ_ID:
-		if (vfdc.rwCount == 2) {
-			ExecCmdReadID();
-		}
-		break;
-	case CMD_FORMAT_TRACK:
-		if (vfdc.rwCount == 6) {
-			ExecCmdFormatTrack();
-		}
-		break;
-	case CMD_WRITE_DATA:
-		if (vfdc.rwCount == 9) {
-			ExecCmdWriteData();
-		}
-		break;
-	case CMD_READ_DATA_ALL:
-		if (vfdc.rwCount == 9) {
-			ExecCmdReadDataAll();
-		}
-		break;
-	case CMD_WRITE_DELETED_DATA:
-		if (vfdc.rwCount == 9) {
-			ExecCmdWriteDeletedData();
-		}
-		break;
-	case CMD_READ_DELETED_DATA:
-		if (vfdc.rwCount == 9) {
-			ExecCmdReadDeletedData();
-		}
-		break;
-	case CMD_SCAN_EQUAL_ALL:
-		if (vfdc.rwCount == 9) {
-			ExecCmdScanEqualAll();
-		}
-		break;
-	case CMD_READ_DATA:
-		if (vfdc.rwCount == 9) {
-			ExecCmdReadData();
-		}
-		break;
-	case CMD_SCAN_EQUAL:
-		if (vfdc.rwCount == 9) {
-			ExecCmdScanEqual();
-		}
-		break;
-	default:
-		ExecCmdError();
-		break;
-	}
+    if (!GetMSRReadyWrite) {
+        return;
+    } else {
+        SetMSRProcWrite;
+    }
+    vfdc.cmd[vfdc.rwCount++] = vport.ioByte;
+    switch (vfdc.cmd[0]) {
+    case CMD_SPECIFY:
+        if (vfdc.rwCount == 3) {
+            ExecCmdSpecify();
+        }
+        break;
+    case CMD_SENSE_DRIVE_STATUS:
+        if (vfdc.rwCount == 2) {
+            ExecCmdSenseDriveStatus();
+        }
+        break;
+    case CMD_RECALIBRATE:
+        if (vfdc.rwCount == 2) {
+            ExecCmdRecalibrate();
+        }
+        break;
+    case CMD_SENSE_INTERRUPT:
+        if (vfdc.rwCount == 1) {
+            ExecCmdSenseInterrupt();
+        }
+        break;
+    case CMD_SEEK:
+        if (vfdc.rwCount == 3) {
+            ExecCmdSeek();
+        }
+        break;
+    case CMD_READ_TRACK:
+        if (vfdc.rwCount == 9) {
+            ExecCmdReadTrack();
+        }
+        break;
+    case CMD_READ_ID:
+        if (vfdc.rwCount == 2) {
+            ExecCmdReadID();
+        }
+        break;
+    case CMD_FORMAT_TRACK:
+        if (vfdc.rwCount == 6) {
+            ExecCmdFormatTrack();
+        }
+        break;
+    case CMD_WRITE_DATA:
+        if (vfdc.rwCount == 9) {
+            ExecCmdWriteData();
+        }
+        break;
+    case CMD_READ_DATA_ALL:
+        if (vfdc.rwCount == 9) {
+            ExecCmdReadDataAll();
+        }
+        break;
+    case CMD_WRITE_DELETED_DATA:
+        if (vfdc.rwCount == 9) {
+            ExecCmdWriteDeletedData();
+        }
+        break;
+    case CMD_READ_DELETED_DATA:
+        if (vfdc.rwCount == 9) {
+            ExecCmdReadDeletedData();
+        }
+        break;
+    case CMD_SCAN_EQUAL_ALL:
+        if (vfdc.rwCount == 9) {
+            ExecCmdScanEqualAll();
+        }
+        break;
+    case CMD_READ_DATA:
+        if (vfdc.rwCount == 9) {
+            ExecCmdReadData();
+        }
+        break;
+    case CMD_SCAN_EQUAL:
+        if (vfdc.rwCount == 9) {
+            ExecCmdScanEqual();
+        }
+        break;
+    default:
+        ExecCmdError();
+        break;
+    }
 }
 static void io_write_03F7() {
-	vfdc.ccr = vport.ioByte;
+    vfdc.ccr = vport.ioByte;
 }
 
 void vfdcTransRead() {
-	/* NOTE: being called by DMA/PIO */
-	vfddTransRead();
+    /* NOTE: being called by DMA/PIO */
+    vfddTransRead();
 }
 void vfdcTransWrite() {
-	/* NOTE: being called by DMA/PIO */
-	vfddTransWrite();
+    /* NOTE: being called by DMA/PIO */
+    vfddTransWrite();
 }
 void vfdcTransInit() {
-	/* NOTE: being called internally in vfdc */
-	/* read parameters */
-	vfdd.cyl       = vfdc.cmd[2];
-	vfdd.head      = vfdc.cmd[3];
-	vfdd.sector    = vfdc.cmd[4];
-	vfdd.nbyte     = VFDC_GetBPS(vfdc.cmd[5]);
-	vfdd.nsector   = vfdc.cmd[6];
-	vfdd.gpl       = vfdc.cmd[7];
-	if (!vfdc.cmd[5]) {
-		vfdd.nbyte = vfdc.cmd[8];
-	}
-	vfdd.transCount = Zero16;
-	vfddSetPointer;
-	/* send trans request */
-	if (!vfdc.flagNDMA && GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
-		vdmaSetDRQ(2);
-	}
-	SetMSRExecCmd;
+    /* NOTE: being called internally in vfdc */
+    /* read parameters */
+    vfdd.cyl       = vfdc.cmd[2];
+    vfdd.head      = vfdc.cmd[3];
+    vfdd.sector    = vfdc.cmd[4];
+    vfdd.nbyte     = VFDC_GetBPS(vfdc.cmd[5]);
+    vfdd.nsector   = vfdc.cmd[6];
+    vfdd.gpl       = vfdc.cmd[7];
+    if (!vfdc.cmd[5]) {
+        vfdd.nbyte = vfdc.cmd[8];
+    }
+    vfdd.transCount = Zero16;
+    vfddSetPointer;
+    /* send trans request */
+    if (!vfdc.flagNDMA && GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
+        vdmaSetDRQ(2);
+    }
+    SetMSRExecCmd;
 }
 void vfdcTransFinal() {
-	/* NOTE: being called by DMA/PIO */
-	SetST0;
-	SetST1;
-	SetST2;
-	vfdc.ret[0] = vfdc.st0;
-	vfdc.ret[1] = vfdc.st1;
-	vfdc.ret[2] = vfdc.st2;
-	vfdc.ret[3] = GetMax8(vfdd.cyl);
-	vfdc.ret[4] = GetMax8(vfdd.head);
-	vfdc.ret[5] = GetMax8(vfdd.sector);
-	vfdc.ret[6] = VFDC_GetBPSC(vfdd.nbyte);
-	if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
-		vpicSetIRQ(0x06);
-		vfdc.flagINTR = True;
-	}
-	SetMSRReadyRead;
+    /* NOTE: being called by DMA/PIO */
+    SetST0;
+    SetST1;
+    SetST2;
+    vfdc.ret[0] = vfdc.st0;
+    vfdc.ret[1] = vfdc.st1;
+    vfdc.ret[2] = vfdc.st2;
+    vfdc.ret[3] = GetMax8(vfdd.cyl);
+    vfdc.ret[4] = GetMax8(vfdd.head);
+    vfdc.ret[5] = GetMax8(vfdd.sector);
+    vfdc.ret[6] = VFDC_GetBPSC(vfdd.nbyte);
+    if (GetBit(vfdc.dor, VFDC_DOR_ENRQ)) {
+        vpicSetIRQ(0x06);
+        vfdc.flagINTR = True;
+    }
+    SetMSRReadyRead;
 }
 
 static void init() {
-	MEMSET(&vfdc, Zero8, sizeof(t_fdc));
-	vfdc.ccr = VFDC_CCR_DRC;
-	vport.in[0x03f4] = (t_faddrcc) io_read_03F4;
-	vport.in[0x03f5] = (t_faddrcc) io_read_03F5;
-	vport.in[0x03f7] = (t_faddrcc) io_read_03F7;
-	vport.out[0x03f2] = (t_faddrcc) io_write_03F2;
-	vport.out[0x03f5] = (t_faddrcc) io_write_03F5;
-	vport.out[0x03f7] = (t_faddrcc) io_write_03F7;
-    
+    MEMSET(&vfdc, Zero8, sizeof(t_fdc));
+    vfdc.ccr = VFDC_CCR_DRC;
+    vport.in[0x03f4] = (t_faddrcc) io_read_03F4;
+    vport.in[0x03f5] = (t_faddrcc) io_read_03F5;
+    vport.in[0x03f7] = (t_faddrcc) io_read_03F7;
+    vport.out[0x03f2] = (t_faddrcc) io_write_03F2;
+    vport.out[0x03f5] = (t_faddrcc) io_write_03F5;
+    vport.out[0x03f7] = (t_faddrcc) io_write_03F7;
+
     vbiosAddPost(VFDC_POST);
-	vbiosAddInt(VFDC_INT_HARD_FDD_0E, 0x0e);
-	vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x13); /* overridden by VHDC_INT_SOFT_HDD_13 */
-	vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x40);
+    vbiosAddInt(VFDC_INT_HARD_FDD_0E, 0x0e);
+    vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x13); /* overridden by VHDC_INT_SOFT_HDD_13 */
+    vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x40);
 }
 
-static void reset() {doReset();}
+static void reset() {
+    doReset();
+}
 
 static void refresh() {
-	if (!vfdd.flagDiskExist) {
-		SetBit(vfdc.dir, VFDC_DIR_DC);
-	} else {
-		ClrBit(vfdc.dir, VFDC_DIR_DC);
-	}
+    if (!vfdd.flagDiskExist) {
+        SetBit(vfdc.dir, VFDC_DIR_DC);
+    } else {
+        ClrBit(vfdc.dir, VFDC_DIR_DC);
+    }
 }
 
 static void final() {}
 
-void vfdcRegister() {vmachineAddMe;}
+void vfdcRegister() {
+    vmachineAddMe;
+}
 
 /* Prints FDC status */
 void devicePrintFdc() {
-	t_nubit8 i;
-	PRINTF("FDC INFO\n========\n");
-	PRINTF("msr = %x, dir = %x, dor = %x, ccr = %x, dr = %x\n",
-		vfdc.msr,vfdc.dir,vfdc.dor,vfdc.ccr,vfdc.dr);
-	PRINTF("hut = %x, hlt = %x, srt = %x, Non-DMA = %x, INTR = %x\n",
-		vfdc.hut,vfdc.hlt,vfdc.srt,vfdc.flagNDMA,vfdc.flagINTR);
-	PRINTF("rwCount = %x, st0 = %x, st1 = %x, st2 = %x, st3 = %x\n",
-		vfdc.rwCount,vfdc.st0,vfdc.st1,vfdc.st2,vfdc.st3);
-	for (i = 0;i < 9;++i) {
-		PRINTF("cmd[%d] = %x, ", i, vfdc.cmd[i]);
-	}
-	PRINTF("\n");
-	for (i = 0;i < 7;++i) {
-		PRINTF("ret[%d] = %x, ", i, vfdc.ret[i]);
-	}
-	PRINTF("\n");
+    t_nubit8 i;
+    PRINTF("FDC INFO\n========\n");
+    PRINTF("msr = %x, dir = %x, dor = %x, ccr = %x, dr = %x\n",
+           vfdc.msr,vfdc.dir,vfdc.dor,vfdc.ccr,vfdc.dr);
+    PRINTF("hut = %x, hlt = %x, srt = %x, Non-DMA = %x, INTR = %x\n",
+           vfdc.hut,vfdc.hlt,vfdc.srt,vfdc.flagNDMA,vfdc.flagINTR);
+    PRINTF("rwCount = %x, st0 = %x, st1 = %x, st2 = %x, st3 = %x\n",
+           vfdc.rwCount,vfdc.st0,vfdc.st1,vfdc.st2,vfdc.st3);
+    for (i = 0; i < 9; ++i) {
+        PRINTF("cmd[%d] = %x, ", i, vfdc.cmd[i]);
+    }
+    PRINTF("\n");
+    for (i = 0; i < 7; ++i) {
+        PRINTF("ret[%d] = %x, ", i, vfdc.ret[i]);
+    }
+    PRINTF("\n");
 }
 
 /*

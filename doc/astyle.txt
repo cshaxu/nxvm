@@ -1,0 +1,12 @@
+ASTYLE INSTRUCTION
+==================
+
+1. Microsoft Visual Studio 2012
+Menu -> Tools -> External Tools -> Add
+Title = Astyle
+Command = C:\Program Files (x86)\Astyle\bin\astyle.exe
+Arguments = -A2 --pad-header -N $(ItemDir)$(ItemFileName)$(ItemExt)
+Check "Use Output Window"
+
+2. Command-line usage:
+astyle.exe -A2 --pad-header -N <src-file>

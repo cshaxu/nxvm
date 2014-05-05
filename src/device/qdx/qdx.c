@@ -12,25 +12,29 @@
 t_faddrcc qdxTable[0x100];
 
 void qdxExecInt(t_nubit8 intId) {
-	if (qdxTable[intId]) {
-		ExecFun(qdxTable[intId]);
-	}
+    if (qdxTable[intId]) {
+        ExecFun(qdxTable[intId]);
+    }
 }
 
 static void init() {
-	int i;
-	for (i = 0;i < 0x100;++i) {
-		qdxTable[i] = (t_faddrcc) NULL;
-	}
-	qdkeybInit();
-	qdcgaInit();
-	qddiskInit();
+    int i;
+    for (i = 0; i < 0x100; ++i) {
+        qdxTable[i] = (t_faddrcc) NULL;
+    }
+    qdkeybInit();
+    qdcgaInit();
+    qddiskInit();
 }
 
-static void reset() {qdcgaReset();}
+static void reset() {
+    qdcgaReset();
+}
 
 static void refresh() {}
 
 static void final() {}
 
-void qdxRegister() {vmachineAddMe;}
+void qdxRegister() {
+    vmachineAddMe;
+}

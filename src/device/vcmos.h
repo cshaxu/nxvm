@@ -12,8 +12,8 @@ extern "C" {
 #define NXVM_DEVICE_CMOS "DS1302"
 
 typedef struct {
-	t_nubit8 reg[0x80]; /* cmos registers */
-	t_nubit8 regId; /* id of specified cmos register*/
+    t_nubit8 reg[0x80]; /* cmos registers */
+    t_nubit8 regId; /* id of specified cmos register*/
 } t_cmos;
 
 extern t_cmos vcmos;

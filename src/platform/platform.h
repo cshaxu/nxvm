@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 typedef struct {
-	unsigned char flagMode;  /* true if runs in window, otherwise in console */
+    unsigned char flagMode;  /* true if runs in window, otherwise in console */
 } t_platform;
 
 extern t_platform platform;

@@ -7,135 +7,143 @@
 extern "C" {
 #endif
 
-#include "vglobal.h"	
+#include "vglobal.h"
 
 #define NXVM_DEVICE_CPU "Intel 8086+"
 
 /* TODO: change variable names */
 
 typedef enum {
-	SREG_DATA,
-	SREG_STACK,
-	SREG_CODE,
-	SREG_LDTR,
-	SREG_TR,
-	SREG_GDTR,
-	SREG_IDTR
+    SREG_DATA,
+    SREG_STACK,
+    SREG_CODE,
+    SREG_LDTR,
+    SREG_TR,
+    SREG_GDTR,
+    SREG_IDTR
 } t_cpu_sreg_type;
 
 typedef struct {
-	t_bool flagwrite;
-	t_nubit32 byte;
-	t_nubit32 linear;
-	t_nubit64 data;
+    t_bool flagwrite;
+    t_nubit32 byte;
+    t_nubit32 linear;
+    t_nubit64 data;
 } t_cpu_memory;
 
 typedef struct {
-	t_bool flagvalid;
-	t_nubit16 selector;
-	/* invisible portion/descriptor part */
-	t_cpu_sreg_type sregtype;
-	t_nubit32 base;
-	t_nubit32 limit;
-	t_nubit4  dpl; /* if segment is cs, this is cpl */
-	union {
-		struct {
-			t_bool executable;
-			t_bool accessed;
-			union {
-				struct {
-					t_bool defsize; /* 16-bit (0) or 32-bit (1) */
-					t_bool conform;
-					t_bool readable;
-				} exec;
-				struct {
-					t_bool big;
-					t_bool expdown;
-					t_bool writable;
-				} data;
-			};
-		} seg;
-		struct {
-			t_nubit4 type;
-		} sys;
-	};
+    t_bool flagvalid;
+    t_nubit16 selector;
+    /* invisible portion/descriptor part */
+    t_cpu_sreg_type sregtype;
+    t_nubit32 base;
+    t_nubit32 limit;
+    t_nubit4  dpl; /* if segment is cs, this is cpl */
+    union {
+        struct {
+            t_bool executable;
+            t_bool accessed;
+            union {
+                struct {
+                    t_bool defsize; /* 16-bit (0) or 32-bit (1) */
+                    t_bool conform;
+                    t_bool readable;
+                } exec;
+                struct {
+                    t_bool big;
+                    t_bool expdown;
+                    t_bool writable;
+                } data;
+            };
+        } seg;
+        struct {
+            t_nubit4 type;
+        } sys;
+    };
 } t_cpu_sreg;
 
 typedef struct {
-	/* general registers */
-	union {
-		union {
-			struct {t_nubit8 al,ah;};
-			t_nubit16 ax;
-		};
-		t_nubit32 eax;
-	};
-	union {
-		union {
-			struct {t_nubit8 bl,bh;};
-			t_nubit16 bx;
-		};
-		t_nubit32 ebx;
-	};
-	union {
-		union {
-			struct {t_nubit8 cl,ch;};
-			t_nubit16 cx;
-		};
-		t_nubit32 ecx;
-	};
-	union {
-		union {
-			struct {t_nubit8 dl,dh;};
-			t_nubit16 dx;
-		};
-		t_nubit32 edx;
-	};
-	union {
-		t_nubit16 sp;
-		t_nubit32 esp;
-	};
-	union {
-		t_nubit16 bp;
-		t_nubit32 ebp;
-	};
-	union {
-		t_nubit16 si;
-		t_nubit32 esi;
-	};
-	union {
-		t_nubit16 di;
-		t_nubit32 edi;
-	};
-	union {
-		t_nubit16 ip;
-		t_nubit32 eip;
-	};
-	union {
-		t_nubit16 flags;
-		t_nubit32 eflags;
-	};
-	/* segment registers */
-	t_cpu_sreg es, cs, ss, ds, fs, gs;
-	t_cpu_sreg ldtr, tr, gdtr, idtr;
-	/* control registers */
-	t_nubit32 cr0, cr1, cr2, cr3, cr4, cr5, cr6, cr7;
-	t_nubit32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
-	t_nubit32 tr0, tr1, tr2, tr3, tr4, tr5, tr6, tr7;
-	/* control flags */
-	t_bool flagmasknmi, flagnmi, flaghalt;
+    /* general registers */
+    union {
+        union {
+            struct {
+                t_nubit8 al,ah;
+            };
+            t_nubit16 ax;
+        };
+        t_nubit32 eax;
+    };
+    union {
+        union {
+            struct {
+                t_nubit8 bl,bh;
+            };
+            t_nubit16 bx;
+        };
+        t_nubit32 ebx;
+    };
+    union {
+        union {
+            struct {
+                t_nubit8 cl,ch;
+            };
+            t_nubit16 cx;
+        };
+        t_nubit32 ecx;
+    };
+    union {
+        union {
+            struct {
+                t_nubit8 dl,dh;
+            };
+            t_nubit16 dx;
+        };
+        t_nubit32 edx;
+    };
+    union {
+        t_nubit16 sp;
+        t_nubit32 esp;
+    };
+    union {
+        t_nubit16 bp;
+        t_nubit32 ebp;
+    };
+    union {
+        t_nubit16 si;
+        t_nubit32 esi;
+    };
+    union {
+        t_nubit16 di;
+        t_nubit32 edi;
+    };
+    union {
+        t_nubit16 ip;
+        t_nubit32 eip;
+    };
+    union {
+        t_nubit16 flags;
+        t_nubit32 eflags;
+    };
+    /* segment registers */
+    t_cpu_sreg es, cs, ss, ds, fs, gs;
+    t_cpu_sreg ldtr, tr, gdtr, idtr;
+    /* control registers */
+    t_nubit32 cr0, cr1, cr2, cr3, cr4, cr5, cr6, cr7;
+    t_nubit32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
+    t_nubit32 tr0, tr1, tr2, tr3, tr4, tr5, tr6, tr7;
+    /* control flags */
+    t_bool flagmasknmi, flagnmi, flaghalt;
 
-	/* cpu recorder */
-	t_bool flagignore;
-	t_cpu_memory mem[0x20];
-	t_nubit8 msize;
-	t_nubit8 oplen;
-	t_nubit8 opcodes[15];
-	t_nubit8 svcextl;
-	t_nubit16 reccs;
-	t_nubit32 receip;
-	t_nubit32 linear;
-	t_string stmt;
+    /* cpu recorder */
+    t_bool flagignore;
+    t_cpu_memory mem[0x20];
+    t_nubit8 msize;
+    t_nubit8 oplen;
+    t_nubit8 opcodes[15];
+    t_nubit8 svcextl;
+    t_nubit16 reccs;
+    t_nubit32 receip;
+    t_nubit32 linear;
+    t_string stmt;
 } t_cpu;
 
 extern t_cpu vcpu;
@@ -328,7 +336,7 @@ extern t_cpu vcpu;
 #define VCPU_DESC_DPL  0x0000600000000000 /* descriptor previlege level */
 #define VCPU_DESC_P    0x0000800000000000 /* descriptor presence */
 
- /* descriptor type */
+/* descriptor type */
 #define _GetDesc_Type(descriptor) (((descriptor) & VCPU_DESC_TYPE) >> 40)
 /* system segment (0) or user segment (1) */
 #define _GetDesc_S(descriptor)    (GetBit((descriptor), VCPU_DESC_S))
@@ -408,10 +416,10 @@ extern t_cpu vcpu;
 
 /* segment limit */
 #define _GetDescSeg_Limit(descriptor) \
-	((((descriptor) & VCPU_DESC_SEG_LIMIT_0) >> 0) | (((descriptor) & VCPU_DESC_SEG_LIMIT_1) >> 32))
+    ((((descriptor) & VCPU_DESC_SEG_LIMIT_0) >> 0) | (((descriptor) & VCPU_DESC_SEG_LIMIT_1) >> 32))
 /* segment base */
 #define _GetDescSeg_Base(descriptor) \
-	((((descriptor) & VCPU_DESC_SEG_BASE_0) >> 16) | (((descriptor) & VCPU_DESC_SEG_BASE_1) >> 32))
+    ((((descriptor) & VCPU_DESC_SEG_BASE_0) >> 16) | (((descriptor) & VCPU_DESC_SEG_BASE_1) >> 32))
 /* segment granularity */
 #define _GetDescSeg_G(descriptor)        (GetBit((descriptor), VCPU_DESC_SEG_G))
 
@@ -441,17 +449,17 @@ extern t_cpu vcpu;
 #define _IsDescCode32(descriptor)            (_IsDescCode(descriptor) && _GetDescCode_D(descriptor))
 
 #define _MakeDescSeg(base, limit, type, s, dpl, p, avl, db, g) \
-	(((t_nubit64)((base)  & 0xff000000) << 32) | \
-	 ((t_nubit64)((g)     & 0x00000001) << 55) | \
-	 ((t_nubit64)((db)    & 0x00000001) << 54) | \
-	 ((t_nubit64)((avl)   & 0x00000001) << 52) | \
-	 ((t_nubit64)((limit) & 0x000f0000) << 32) | \
-	 ((t_nubit64)((p)     & 0x00000001) << 47) | \
-	 ((t_nubit64)((dpl)   & 0x00000003) << 45) | \
-	 ((t_nubit64)((s)     & 0x00000001) << 44) | \
-	 ((t_nubit64)((type)  & 0x0000000f) << 40) | \
-	 ((t_nubit64)((base)  & 0x00ffffff) << 16) | \
-	 ((t_nubit64)((limit) & 0x0000ffff) << 0))
+    (((t_nubit64)((base)  & 0xff000000) << 32) | \
+     ((t_nubit64)((g)     & 0x00000001) << 55) | \
+     ((t_nubit64)((db)    & 0x00000001) << 54) | \
+     ((t_nubit64)((avl)   & 0x00000001) << 52) | \
+     ((t_nubit64)((limit) & 0x000f0000) << 32) | \
+     ((t_nubit64)((p)     & 0x00000001) << 47) | \
+     ((t_nubit64)((dpl)   & 0x00000003) << 45) | \
+     ((t_nubit64)((s)     & 0x00000001) << 44) | \
+     ((t_nubit64)((type)  & 0x0000000f) << 40) | \
+     ((t_nubit64)((base)  & 0x00ffffff) << 16) | \
+     ((t_nubit64)((limit) & 0x0000ffff) << 0))
 
 /* DESCRIPTOR DEFINITION III: System Part */
 #define VCPU_DESC_GATE_SELECTOR 0x00000000ffff0000
@@ -461,7 +469,7 @@ extern t_cpu vcpu;
 
 #define _GetDescGate_Selector(descriptor) (((descriptor) & VCPU_DESC_GATE_SELECTOR) >> 16)
 #define _GetDescGate_Offset(descriptor) \
-	(((descriptor) & VCPU_DESC_GATE_OFFSET_0) | (((descriptor) & VCPU_DESC_GATE_OFFSET_1) >> 32))
+    (((descriptor) & VCPU_DESC_GATE_OFFSET_0) | (((descriptor) & VCPU_DESC_GATE_OFFSET_1) >> 32))
 #define _GetDescCall_Count(descriptor)    (((descriptor) & VCPU_DESC_CALL_COUNT) >> 32)
 
 #define VCPU_CR0_PE 0x00000001

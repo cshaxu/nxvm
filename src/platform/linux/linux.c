@@ -7,25 +7,27 @@
 #include "linuxcon.h"
 #include "linux.h"
 
-void linuxSleep(unsigned int milisec) {usleep((milisec) * 1000);}
+void linuxSleep(unsigned int milisec) {
+    usleep((milisec) * 1000);
+}
 
 void linuxDisplaySetScreen(unsigned char window) {
-	if (window) {
-	} else {
-		lnxcDisplaySetScreen();
-	}
+    if (window) {
+    } else {
+        lnxcDisplaySetScreen();
+    }
 }
 
 void linuxDisplayPaint(unsigned char window) {
-	if (window) {
-	} else {
-		lnxcDisplayPaint();
-	}
+    if (window) {
+    } else {
+        lnxcDisplayPaint();
+    }
 }
 
 void linuxStartMachine(unsigned char window) {
-	if (window) {
-	} else {
-		lnxcStartMachine();
-	}
+    if (window) {
+    } else {
+        lnxcStartMachine();
+    }
 }

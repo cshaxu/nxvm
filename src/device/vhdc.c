@@ -6,7 +6,9 @@
 #include "vmachine.h"
 #include "vhdc.h"
 
-static void init() {vbiosAddInt(VHDC_INT_SOFT_HDD_13, 0x13);}
+static void init() {
+    vbiosAddInt(VHDC_INT_SOFT_HDD_13, 0x13);
+}
 
 static void reset() {}
 
@@ -14,4 +16,6 @@ static void refresh() {}
 
 static void final() {}
 
-void vhdcRegister() {vmachineAddMe;}
+void vhdcRegister() {
+    vmachineAddMe;
+}

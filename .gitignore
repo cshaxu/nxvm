@@ -30,5 +30,8 @@
 /config.log
 /stamp-h1
 
-# System Trash
+# Astyle Trash
+*.orig
+
+# Mac OS X Trash
 .DS_Store

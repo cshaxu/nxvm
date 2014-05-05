@@ -12,8 +12,8 @@ extern "C" {
 #include "vglobal.h"
 
 typedef struct {
-	t_faddrcc deviceTable[4][0x100]; /* device init/reset/refresh/final functions */
-	t_nubitcc numDevices; /* numebr of registered devices */
+    t_faddrcc deviceTable[4][0x100]; /* device init/reset/refresh/final functions */
+    t_nubitcc numDevices; /* numebr of registered devices */
 } t_machine;
 
 extern t_machine vmachine;
@@ -24,7 +24,7 @@ extern t_machine vmachine;
 #define VMACHINE_DEVICE_FINAL   3
 
 #define vmachineAddMe vmachineAddDevice((t_faddrcc) init, \
-	(t_faddrcc) reset, (t_faddrcc) refresh, (t_faddrcc) final)
+    (t_faddrcc) reset, (t_faddrcc) refresh, (t_faddrcc) final)
 
 void vmachineAddDevice(t_faddrcc fpInit, t_faddrcc fpReset, t_faddrcc fpRefresh, t_faddrcc fpFinal);
 

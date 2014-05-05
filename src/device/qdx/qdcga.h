@@ -32,45 +32,45 @@ extern "C" {
 #define QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S 0xb800
 
 #define qdcgaVarPageOffset \
-	(vramRealWord(0x0000, QDCGA_VBIOS_ADDR_VGA_PAGE_OFFSET))
+    (vramRealWord(0x0000, QDCGA_VBIOS_ADDR_VGA_PAGE_OFFSET))
 #define qdcgaVarRagenSize \
-	(vramRealWord(0x0000, QDCGA_VBIOS_ADDR_VGA_RAGEN_SIZE))
+    (vramRealWord(0x0000, QDCGA_VBIOS_ADDR_VGA_RAGEN_SIZE))
 #define qdcgaVarMode \
-	(vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_MODE))
+    (vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_MODE))
 #define qdcgaVarRowSize \
-	(vramRealWord(0x0000, QDCGA_VBIOS_ADDR_VGA_ROW_SIZE))
+    (vramRealWord(0x0000, QDCGA_VBIOS_ADDR_VGA_ROW_SIZE))
 #define qdcgaVarPageNum \
-	(vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_ACT_PAGE_NUM))
+    (vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_ACT_PAGE_NUM))
 #define qdcgaGetTextMemAddr \
-	(vramGetRealAddr(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, 0x0000))
+    (vramGetRealAddr(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, 0x0000))
 #define qdcgaGetPageSize \
-	(qdcgaVarRowSize * vvadp.colSize * 2)
+    (qdcgaVarRowSize * vvadp.colSize * 2)
 #define qdcgaGetTextMemAddrPage(page) \
-	(qdcgaGetTextMemAddr + (page) * qdcgaGetPageSize)
+    (qdcgaGetTextMemAddr + (page) * qdcgaGetPageSize)
 #define qdcgaGetTextMemAddrPageCur \
-	(qdcgaGetTextMemAddrPage(qdcgaVarPageNum))
+    (qdcgaGetTextMemAddrPage(qdcgaVarPageNum))
 
 #define qdcgaVarChar(page,x,y) \
-	(vramRealByte(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, \
-	          (page) * qdcgaGetPageSize + ((x) * qdcgaVarRowSize + (y)) * 2 + 0))
+    (vramRealByte(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, \
+              (page) * qdcgaGetPageSize + ((x) * qdcgaVarRowSize + (y)) * 2 + 0))
 #define qdcgaVarCharProp(page,x,y) \
-	(vramRealByte(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, \
-	          (page) * qdcgaGetPageSize + ((x) * qdcgaVarRowSize + (y)) * 2 + 1))
+    (vramRealByte(QDCGA_VBIOS_ADDR_CGA_DISPLAY_RAM_S, \
+              (page) * qdcgaGetPageSize + ((x) * qdcgaVarRowSize + (y)) * 2 + 1))
 #define qdcgaGetCharAddr(page,x,y) \
-	(qdcgaGetTextMemAddrPage(page) + ((x) * qdcgaVarRowSize + (y)) * 2 + 0)
+    (qdcgaGetTextMemAddrPage(page) + ((x) * qdcgaVarRowSize + (y)) * 2 + 0)
 #define qdcgaGetCharPropAddr(page,x,y) \
-	(qdcgaGetTextMemAddrPage(page) + ((x) * qdcgaVarRowSize + (y)) * 2 + 1)
+    (qdcgaGetTextMemAddrPage(page) + ((x) * qdcgaVarRowSize + (y)) * 2 + 1)
 
 #define qdcgaVarCursorPosCol(id) \
-	(vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 0))
+    (vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 0))
 #define qdcgaVarCursorPosRow(id) \
-	(vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 1))
+    (vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_P0 + (id) * 2 + 1))
 #define qdcgaVarCursorBottom \
-	(vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_BOTTOM))
+    (vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_BOTTOM))
 #define qdcgaVarCursorTop \
-	(vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_TOP))
+    (vramRealByte(0x0000, QDCGA_VBIOS_ADDR_VGA_CURSOR_TOP))
 #define qdcgaGetCursorVisible \
-	(!(qdcgaVarCursorTop & 0x08))
+    (!(qdcgaVarCursorTop & 0x08))
 
 extern t_nubit32 qdcgaModeBufSize[0x14];
 

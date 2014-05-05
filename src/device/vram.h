@@ -12,9 +12,9 @@ extern "C" {
 #define NXVM_DEVICE_RAM "Unknown Random-access Memory"
 
 typedef struct {
-	t_bool flagA20; /* 0 = disable, 1 = enable */
-	t_vaddrcc pBase; /* memory base address is 20 bit */
-	t_nubitcc size; /* memory size in byte */
+    t_bool flagA20; /* 0 = disable, 1 = enable */
+    t_vaddrcc pBase; /* memory base address is 20 bit */
+    t_nubitcc size; /* memory size in byte */
 } t_ram;
 
 extern t_ram vram;
@@ -33,9 +33,9 @@ extern t_ram vram;
 
 /* macros below are designed for real-addressing mode */
 #define vramIsAddrInMem(ref) \
-	(((t_vaddrcc)(ref) >= vram.pBase) && ((t_vaddrcc)(ref) < (vram.pBase + vram.size)))
+    (((t_vaddrcc)(ref) >= vram.pBase) && ((t_vaddrcc)(ref) < (vram.pBase + vram.size)))
 #define vramGetRealAddr(segment, offset) (vram.pBase + \
-	(vramWrapA20((GetMax16(segment) << 4) + GetMax16(offset)) % vram.size))
+    (vramWrapA20((GetMax16(segment) << 4) + GetMax16(offset)) % vram.size))
 
 #define vramRealByte(segment, offset)  (d_nubit8(vramGetRealAddr(segment, offset)))
 #define vramRealWord(segment, offset)  (d_nubit16(vramGetRealAddr(segment, offset)))

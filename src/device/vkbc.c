@@ -7,10 +7,12 @@
 #include "vmachine.h"
 #include "vkbc.h"
 
-void io_read_0064() {vport.ioByte = VKBC_STATUS_KE;}
+void io_read_0064() {
+    vport.ioByte = VKBC_STATUS_KE;
+}
 
 static void init() {
-	vport.in[0x0064] = (t_faddrcc) io_read_0064;
+    vport.in[0x0064] = (t_faddrcc) io_read_0064;
     vbiosAddInt("qdx 09\niret", 0x09);
     vbiosAddInt("qdx 16\niret", 0x16);
 }
@@ -21,4 +23,6 @@ static void refresh() {}
 
 static void final() {}
 
-void vkbcRegister() {vmachineAddMe;}
+void vkbcRegister() {
+    vmachineAddMe;
+}

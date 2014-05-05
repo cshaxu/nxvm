@@ -16,111 +16,111 @@ t_hdd vhdd;
 
 /* allocates space for hard disk */
 static void allocate() {
-	if (vhdd.pImgBase) {
-		FREE((void *) vhdd.pImgBase);
-	}
-	vhdd.pImgBase = (t_vaddrcc) MALLOC(vhddGetImageSize);
-	MEMSET((void *) vhdd.pImgBase, Zero8, vhddGetImageSize);
+    if (vhdd.pImgBase) {
+        FREE((void *) vhdd.pImgBase);
+    }
+    vhdd.pImgBase = (t_vaddrcc) MALLOC(vhddGetImageSize);
+    MEMSET((void *) vhdd.pImgBase, Zero8, vhddGetImageSize);
 }
 
 void deviceConnectHardDiskCreate(t_nubit16 ncyl) {
-	vhdd.ncyl = ncyl;
-	allocate();
-	vhdd.flagDiskExist = True;
+    vhdd.ncyl = ncyl;
+    allocate();
+    vhdd.flagDiskExist = True;
 }
 
 t_bool deviceConnectHardDiskInsert(const t_strptr fname) {
-	t_nubitcc count;
-	FILE *image = FOPEN(fname, "rb");
-	if (image) {
-		fseek(image, Zero32, SEEK_END);
-		count = ftell(image);
-		vhdd.ncyl = (t_nubit16)(count / vhdd.nhead / vhdd.nsector / vhdd.nbyte);
-		fseek(image, Zero32, SEEK_SET);
-		allocate();
-		count = FREAD((void *) vhdd.pImgBase, sizeof(t_nubit8), vhddGetImageSize, image);
-		vhdd.flagDiskExist = True;
-		FCLOSE(image);
-		return False;
-	} else {
-		return True;
-	}
+    t_nubitcc count;
+    FILE *image = FOPEN(fname, "rb");
+    if (image) {
+        fseek(image, Zero32, SEEK_END);
+        count = ftell(image);
+        vhdd.ncyl = (t_nubit16)(count / vhdd.nhead / vhdd.nsector / vhdd.nbyte);
+        fseek(image, Zero32, SEEK_SET);
+        allocate();
+        count = FREAD((void *) vhdd.pImgBase, sizeof(t_nubit8), vhddGetImageSize, image);
+        vhdd.flagDiskExist = True;
+        FCLOSE(image);
+        return False;
+    } else {
+        return True;
+    }
 }
 
 t_bool deviceConnectHardDiskRemove(const t_strptr fname) {
-	t_nubitcc count;
-	FILE *image;
-	if (fname) {
-		image = FOPEN(fname, "wb");
-		if(image) {
-			if (!vhdd.flagReadOnly)
-				count = FWRITE((void *) vhdd.pImgBase, sizeof(t_nubit8), vhddGetImageSize, image);
-			vhdd.flagDiskExist = False;
-			FCLOSE(image);
-		} else {
-			return True;
-		}
-	}
-	vhdd.flagDiskExist = False;
-	MEMSET((void *) vhdd.pImgBase, Zero8, vhddGetImageSize);
-	return False;
+    t_nubitcc count;
+    FILE *image;
+    if (fname) {
+        image = FOPEN(fname, "wb");
+        if (image) {
+            if (!vhdd.flagReadOnly)
+                count = FWRITE((void *) vhdd.pImgBase, sizeof(t_nubit8), vhddGetImageSize, image);
+            vhdd.flagDiskExist = False;
+            FCLOSE(image);
+        } else {
+            return True;
+        }
+    }
+    vhdd.flagDiskExist = False;
+    MEMSET((void *) vhdd.pImgBase, Zero8, vhddGetImageSize);
+    return False;
 }
 
 void vhddTransRead() {
-	if (IsCylEnd) {
-		return;
-	}
-	vlatch.byte = d_nubit8(vhdd.pCurrByte);
-	vhdd.pCurrByte++;
-	vhdd.transCount++;
-	if (!(vhdd.transCount % vhdd.nbyte)) {
-		vhdd.sector++;
-		if (IsTrackEnd) {
-			vhdd.sector = 1;
-			vhdd.head++;
-		}
-		vhddSetPointer;
-	}
+    if (IsCylEnd) {
+        return;
+    }
+    vlatch.byte = d_nubit8(vhdd.pCurrByte);
+    vhdd.pCurrByte++;
+    vhdd.transCount++;
+    if (!(vhdd.transCount % vhdd.nbyte)) {
+        vhdd.sector++;
+        if (IsTrackEnd) {
+            vhdd.sector = 1;
+            vhdd.head++;
+        }
+        vhddSetPointer;
+    }
 }
 
 void vhddTransWrite() {
-	if (IsCylEnd) {
-		return;
-	}
-	d_nubit8(vhdd.pCurrByte) = vlatch.byte;
-	vhdd.pCurrByte++;
-	vhdd.transCount++;
-	if (!(vhdd.transCount % vhdd.nbyte)) {
-		vhdd.sector++;
-		if (IsTrackEnd) {
-			vhdd.sector = 1;
-			vhdd.head++;
-		}
-		vhddSetPointer;
-	}
+    if (IsCylEnd) {
+        return;
+    }
+    d_nubit8(vhdd.pCurrByte) = vlatch.byte;
+    vhdd.pCurrByte++;
+    vhdd.transCount++;
+    if (!(vhdd.transCount % vhdd.nbyte)) {
+        vhdd.sector++;
+        if (IsTrackEnd) {
+            vhdd.sector = 1;
+            vhdd.head++;
+        }
+        vhddSetPointer;
+    }
 }
 
 void vhddFormatTrack(t_nubit8 fillbyte) {
-	t_nubit8 i;
-	if (vhdd.cyl >= vhdd.ncyl) {
-		return;
-	}
-	for (i = 0;i < vhdd.nhead;++i) {
-		vhdd.head = i;
-		vhdd.sector = 1;
-		vhddSetPointer;
-		MEMSET((void *) vhdd.pCurrByte, fillbyte, vhdd.nsector * vhdd.nbyte);
-		vhdd.sector = vhdd.nsector;
-	}
+    t_nubit8 i;
+    if (vhdd.cyl >= vhdd.ncyl) {
+        return;
+    }
+    for (i = 0; i < vhdd.nhead; ++i) {
+        vhdd.head = i;
+        vhdd.sector = 1;
+        vhddSetPointer;
+        MEMSET((void *) vhdd.pCurrByte, fillbyte, vhdd.nsector * vhdd.nbyte);
+        vhdd.sector = vhdd.nsector;
+    }
 }
 
 static void init() {
-	MEMSET(&vhdd, Zero8, sizeof(t_hdd));
-	vhdd.ncyl     = 0;
-	vhdd.nhead    = 16;
-	vhdd.nsector  = 63;
-	vhdd.nbyte    = 512;
-	vhdd.pImgBase = (t_vaddrcc) NULL;
+    MEMSET(&vhdd, Zero8, sizeof(t_hdd));
+    vhdd.ncyl     = 0;
+    vhdd.nhead    = 16;
+    vhdd.nsector  = 63;
+    vhdd.nbyte    = 512;
+    vhdd.pImgBase = (t_vaddrcc) NULL;
 }
 
 static void reset() {}
@@ -128,10 +128,12 @@ static void reset() {}
 static void refresh() {}
 
 static void final() {
-	if (vhdd.pImgBase) {
-		FREE((void *) vhdd.pImgBase);
-	}
-	vhdd.pImgBase = (t_vaddrcc) NULL;
+    if (vhdd.pImgBase) {
+        FREE((void *) vhdd.pImgBase);
+    }
+    vhdd.pImgBase = (t_vaddrcc) NULL;
 }
 
-void vhddRegister() {vmachineAddMe;}
+void vhddRegister() {
+    vmachineAddMe;
+}

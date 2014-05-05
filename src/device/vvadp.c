@@ -12,7 +12,7 @@
 t_vadp vvadp;
 
 static void init() {
-	MEMSET(&vvadp, Zero8, sizeof(t_vadp));
+    MEMSET(&vvadp, Zero8, sizeof(t_vadp));
     vbiosAddInt("qdx 10\niret", 0x10);
 }
 
@@ -22,4 +22,6 @@ static void refresh() {}
 
 static void final() {}
 
-void vvadpRegister() {vmachineAddMe;}
+void vvadpRegister() {
+    vmachineAddMe;
+}

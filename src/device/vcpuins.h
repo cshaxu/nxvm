@@ -12,69 +12,69 @@ extern "C" {
 #include "vcpu.h"
 
 typedef enum {
-	ARITHTYPE_NULL,
-	ADD8,ADD16,ADD32,
-	OR8,OR16,OR32,
-	ADC8,ADC16,ADC32,
-	SBB8,SBB16,SBB32,
-	AND8,AND16,AND32,
-	SUB8,SUB16,SUB32,
-	XOR8,XOR16,XOR32,
-	CMP8,CMP16,CMP32,
-	TEST8,TEST16,TEST32
+    ARITHTYPE_NULL,
+    ADD8,ADD16,ADD32,
+    OR8,OR16,OR32,
+    ADC8,ADC16,ADC32,
+    SBB8,SBB16,SBB32,
+    AND8,AND16,AND32,
+    SUB8,SUB16,SUB32,
+    XOR8,XOR16,XOR32,
+    CMP8,CMP16,CMP32,
+    TEST8,TEST16,TEST32
 } t_cpuins_arithtype;
 
 typedef enum {
-	PREFIX_REP_NONE,
-	PREFIX_REP_REPZ,
-	PREFIX_REP_REPZNZ
+    PREFIX_REP_NONE,
+    PREFIX_REP_REPZ,
+    PREFIX_REP_REPZNZ
 } t_cpuins_prefix_rep;
 
 typedef enum {
-	PREFIX_SREG_NONE,
-	PREFIX_SREG_CS, PREFIX_SREG_SS,
-	PREFIX_SREG_DS, PREFIX_SREG_ES,
-	PREFIX_SREG_FS, PREFIX_SREG_GS
+    PREFIX_SREG_NONE,
+    PREFIX_SREG_CS, PREFIX_SREG_SS,
+    PREFIX_SREG_DS, PREFIX_SREG_ES,
+    PREFIX_SREG_FS, PREFIX_SREG_GS
 } t_cpuins_prefix_sreg;
 
 typedef t_bool t_cpuins_prefix;
 
 typedef struct {
-	t_cpu_sreg *rsreg;
-	t_nubit32 offset;
+    t_cpu_sreg *rsreg;
+    t_nubit32 offset;
 } t_cpuins_logical;
 
 typedef struct {
-	/* prefixes */
-	t_cpuins_prefix_rep  prefix_rep;
-	t_cpuins_prefix      prefix_oprsize;
-	t_cpuins_prefix      prefix_addrsize;
-	t_cpu_sreg *roverds, *roverss, *rmovsreg;
+    /* prefixes */
+    t_cpuins_prefix_rep  prefix_rep;
+    t_cpuins_prefix      prefix_oprsize;
+    t_cpuins_prefix      prefix_addrsize;
+    t_cpu_sreg *roverds, *roverss, *rmovsreg;
 
-	/* execution control */
-	t_cpu oldcpu;
-	t_bool flaginsloop;
-	t_bool flagmaskint; /* if int is disabled once */
+    /* execution control */
+    t_cpu oldcpu;
+    t_bool flaginsloop;
+    t_bool flagmaskint; /* if int is disabled once */
 
-	/* memory management */
-	t_cpuins_logical mrm;
-	t_vaddrcc rrm, rr;
-	t_nubit64 crm, cr, cimm;
-	t_bool flagmem; /* if rm is in memory */
-	t_bool flaglock;
+    /* memory management */
+    t_cpuins_logical mrm;
+    t_vaddrcc rrm, rr;
+    t_nubit64 crm, cr, cimm;
+    t_bool flagmem; /* if rm is in memory */
+    t_bool flaglock;
 
-	/* arithmetic operands */
-	t_nubit64 opr1, opr2, result;
-	t_nubit32 bit;
-	t_cpuins_arithtype type;
-	t_nubit32 udf; /* undefined eflags bits */
+    /* arithmetic operands */
+    t_nubit64 opr1, opr2, result;
+    t_nubit32 bit;
+    t_cpuins_arithtype type;
+    t_nubit32 udf; /* undefined eflags bits */
 
-	/* exception handler */
-	t_nubit32 except, excode;
+    /* exception handler */
+    t_nubit32 except, excode;
 
-	/* debugger */
-	t_bool flagwr, flagww, flagwe;
-	t_nubit32 wrlin, wwlin, welin;
+    /* debugger */
+    t_bool flagwr, flagww, flagwe;
+    t_nubit32 wrlin, wwlin, welin;
 } t_cpuins;
 
 #define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */

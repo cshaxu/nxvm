@@ -8,22 +8,28 @@
 #include "machine.h"
 
 void machineStart() {
-	machineReset();
-	machineResume();
+    machineReset();
+    machineResume();
 }
 
-void machineReset() {deviceReset();}
+void machineReset() {
+    deviceReset();
+}
 
-void machineStop() {deviceStop();}
+void machineStop() {
+    deviceStop();
+}
 
-void machineResume() {platformStart();}
+void machineResume() {
+    platformStart();
+}
 
 void machineInit() {
-	platformInit();
-	deviceInit();
+    platformInit();
+    deviceInit();
 }
 
 void machineFinal() {
-	deviceFinal();
-	platformFinal();
+    deviceFinal();
+    platformFinal();
 }
