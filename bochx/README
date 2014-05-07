@@ -1,0 +1,37 @@
+BOCHX: BOCHs - nXvm Connector that helps NXVM CPU Verification
+
+1- Test if Bochx is compatible with current NXVM:
+ a- In bochsapi.cc, set BOCHSAPI_BOCHS to False.
+ b- Make binary with the makefile in this folder.
+ c- Resolve any compilation warnings and/or errors.
+
+2- Test NXVM CPU by connecting with Bochs:
+ a- In bochsapi.cc, set BOCHSAPI_BOCHS to True.
+ b- In bochsapi.h, set BOCHSAPI_BOCHS_BIOS to correct bochs path.
+ c- Extract bochs-2.6 project files to folder bochs-2.6/.
+    Do NOT replace existing Bochs source files in this folder.
+    The existing Bochs source files are modified to fit Bochx.
+      bochs-2.6/bochs.h
+      bochs-2.6/config.cc 
+      bochs-2.6/cpu/cpu.cc
+      bochs-2.6/cpu/paging.cc
+ d- Add Bochx files to Bochs project:
+      bochsapi.cc
+      bochsapi.h
+      nxvmapi.c
+ e- Add NXVM files to Bochs project:
+      ../src/utils.h
+      ../src/global.h
+      ../src/device/device.h
+      ../src/device/vcpu.c
+      ../src/device/vcpu.h
+      ../src/device/vcpuins.c
+      ../src/device/vcpuins.h
+      ../src/device/vglobal.h
+      ../src/device/vpic.h
+      ../src/device/vram.h
+      ../src/device/vport.h
+ f- In bochsapi.cc, set BOCHSAPI_LINEAR_START to the linear address,
+    from which the cpu status comparison starts.
+ g- In bochsapi.cc, set BOCHSAPI_LINEAR_END to the linear address,
+    at which the CPU status comparison stops.

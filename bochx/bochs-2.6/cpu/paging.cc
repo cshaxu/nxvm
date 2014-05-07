@@ -1849,7 +1849,7 @@ void BX_CPU_C::access_write_linear(bx_address laddr, unsigned len, unsigned curr
 {
   Bit32u pageOffset = PAGE_OFFSET(laddr);
   
-  vcpuapiMemRec(laddr, (t_vaddrcc)data, (t_nubit8)len, 1);
+  bochsApiRecordRam(laddr, (t_vaddrcc) data, (t_nubit8) len, 1);
 
   /* check for reference across multiple pages */
   if ((pageOffset + len) <= 4096) {
@@ -1973,7 +1973,7 @@ void BX_CPU_C::access_read_linear(bx_address laddr, unsigned len, unsigned curr_
     hwbreakpoint_match(laddr2, BX_CPU_THIS_PTR address_xlation.len2, xlate_rw);
 #endif
   }
-  vcpuapiMemRec(laddr, (t_vaddrcc)data, (t_nubit8)len, 0);
+  bochsApiRecordRam(laddr, (t_vaddrcc) data, (t_nubit8) len, 0);
 }
 
 void BX_CPU_C::access_write_physical(bx_phy_address paddr, unsigned len, void *data)

@@ -1,1 +1,81 @@
-For NXVM introduction, please see README.md.
+Project Phases
+1. Read documents and list all necessary functionality
+2. Code the functions
+3. Add comment for each I/O function, check logic
+4. Create test functions and corresponding test case
+5. Perform unit tests
+6. Read official document and PC.PDF, then check logic
+
+Modules:
+0- Version and Settings
+  main.c
+  global.h
+1- Console
+  console.ch
+2- Debugger
+  debug.ch
+3- Assembler and Disassembler for Intel 80386
+  xasm32/aasm32.ch
+  xasm32/dasm32.ch
+4- Machine Controller
+  machine.ch
+5- Platform Related Module - Human-Computer Interface
+ a- Platform Selector
+  platform/platform.ch
+ b- Linux Platform Module
+  platform/linux.ch
+ c- Win32 Platform Module
+  platform/win32.ch
+  .- Win32 Console Module
+  platform/win32con.ch
+  platform/w32cdisp.ch
+  :- Win32 Window Module
+  platform/win32app.ch
+  platform/w32adisp.ch
+6- Virtual Machine Devices
+ a- Type Definitions
+  device/vglobal.h
+ b- Device Thread Controller
+  device/device.ch
+ c- Device Registry
+  device/vmachine.ch
+ d- Input/Output Ports
+  device/vport.ch
+ e- BIOS
+  device/vbios.ch
+ f- Random Accessing Memory
+  device/vram.ch
+ g- Center Processing Unit (Intel 8086+)
+  device/vcpu.ch
+  device/vcpuins.ch
+ h- Programmable Interrupt Controller (8259)
+  device/vpic.ch
+  NOTE: fully tested, except for OCW2, ICW4(AEOI)
+ i- Programmable Internal Timer (8254)
+  device/vpit.ch
+  NOTE: not fully implemented (read-back command); not fully tested
+ j- Direct Memory Accessing Controller (8237)
+  device/vdma.ch
+ k- Floppy Drive Controller (8272)
+  device/vfdc.ch
+  device/vfdd.ch
+ l- Hard Disk Driver
+  device/vhdc.ch
+  device/vhdd.ch
+  qdx/qddisk.ch
+  NOTE: Quick And Dirty
+ m- Keyboard Controller
+  device/vkbc.ch
+  qdx/qdkeyb.ch
+  NOTE: Quick And Dirty
+ n- Video Adapter
+  device/vvadp.ch
+  qdx/qdcga.ch
+  NOTE: Quick And Dirty
+ o- CMOS
+  device/vcmos.ch
+ z- additional
+   serial:   vseri.c,    vseri.h
+   parallel: vpara.c,    vpara.h
+   printer:  vprinter.c, vprinter.h
+   cdrom:    vcdrom.c,   vcdrom.h

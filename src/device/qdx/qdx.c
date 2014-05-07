@@ -15,15 +15,15 @@
 t_faddrcc qdxTable[0x100];
 
 static void QDX() {
-	t_nubit8 cmdId;
+    t_nubit8 cmdId;
     t_nubit16 flags;
-	vcpu.data.eip++;
-	if (vcpuinsReadLinear(vcpu.data.cs.base + vcpu.data.eip, GetRef(cmdId), 1)) {
-		PRINTF("Cannot read data from L%08X.\n", vcpu.data.cs.base + vcpu.data.eip);
-		deviceStop();
-	} else {
-		vcpu.data.eip++;
-	}
+    vcpu.data.eip++;
+    if (vcpuinsReadLinear(vcpu.data.cs.base + vcpu.data.eip, GetRef(cmdId), 1)) {
+        PRINTF("Cannot read data from L%08X.\n", vcpu.data.cs.base + vcpu.data.eip);
+        deviceStop();
+    } else {
+        vcpu.data.eip++;
+    }
     switch (cmdId) {
     case 0x00:
     case 0xff: /* STOP */
@@ -42,18 +42,18 @@ static void QDX() {
     default: /* QDINT */
         ExecFun(qdxTable[cmdId]);
         if (vcpuins.data.cimm < 0x80) {
-			/* all interrupt handlers taken over have intId less than 0x80 */
-			/* set flags after executing of qdx interrupt handlers */
-			if (vcpuinsReadLinear(vcpu.data.ss.base + vcpu.data.sp + 4, GetRef(flags), 2)) {
-				PRINTF("Cannot read data from L%08X.\n", vcpu.data.ss.base + vcpu.data.sp + 4);
-				deviceStop();
-			}
+            /* all interrupt handlers taken over have intId less than 0x80 */
+            /* set flags after executing of qdx interrupt handlers */
+            if (vcpuinsReadLinear(vcpu.data.ss.base + vcpu.data.sp + 4, GetRef(flags), 2)) {
+                PRINTF("Cannot read data from L%08X.\n", vcpu.data.ss.base + vcpu.data.sp + 4);
+                deviceStop();
+            }
             MakeBit(flags, VCPU_EFLAGS_ZF, _GetEFLAGS_ZF);
             MakeBit(flags, VCPU_EFLAGS_CF, _GetEFLAGS_CF);
             if (vcpuinsWriteLinear(vcpu.data.ss.base + vcpu.data.sp + 4, GetRef(flags), 2)) {
-				PRINTF("Cannot write data to L%08X.\n", vcpu.data.ss.base + vcpu.data.sp + 4);
-				deviceStop();
-			}
+                PRINTF("Cannot write data to L%08X.\n", vcpu.data.ss.base + vcpu.data.sp + 4);
+                deviceStop();
+            }
         }
         break;
     }

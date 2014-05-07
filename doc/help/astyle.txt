@@ -9,4 +9,5 @@ Arguments = -A2 --pad-header -N $(ItemDir)$(ItemFileName)$(ItemExt)
 Check "Use Output Window"
 
 2. Command-line usage:
-astyle.exe -A2 --pad-header -N <src-file>
+astyle -A2 --pad-header -r -N "*.c"
+astyle -A2 --pad-header -r -N "*.h"

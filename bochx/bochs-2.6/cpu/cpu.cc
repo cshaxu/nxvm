@@ -83,7 +83,7 @@ void BX_CPU_C::cpu_loop(void)
   BX_CPU_THIS_PTR speculative_rsp = 0;
   BX_CPU_THIS_PTR EXT = 0;
 
-  vcpuapiInit();
+  bochsApiInit();
 
   while (1) {
 
@@ -92,7 +92,7 @@ void BX_CPU_C::cpu_loop(void)
     if (BX_CPU_THIS_PTR async_event) {
       if (handleAsyncEvent()) {
         // If request to return to caller ASAP.
-		vcpuapiFinal();
+		bochsApiFinal();
         return;
       }
     }
@@ -129,13 +129,13 @@ void BX_CPU_C::cpu_loop(void)
       // want to allow changing of the instruction inside instrumentation callback
       BX_INSTR_BEFORE_EXECUTION(BX_CPU_ID, i);
 
-	  vcpuapiExecBefore();
+	  bochsApiExecBefore();
 
       RIP += i->ilen();
       BX_CPU_CALL_METHOD(i->execute, (i)); // might iterate repeat instruction
       BX_CPU_THIS_PTR prev_rip = RIP; // commit new RIP
 
-	  vcpuapiExecAfter();
+	  bochsApiExecAfter();
 
       BX_INSTR_AFTER_EXECUTION(BX_CPU_ID, i);
       BX_CPU_THIS_PTR icount++;
@@ -144,7 +144,7 @@ void BX_CPU_C::cpu_loop(void)
 
       // note instructions generating exceptions never reach this point
 #if BX_DEBUGGER || BX_GDBSTUB
-	  if (dbg_instruction_epilog()) {vcpuapiFinal();return;}
+	  if (dbg_instruction_epilog()) {bochsApiFinal();return;}
 #endif
 
       if (BX_CPU_THIS_PTR async_event) break;
@@ -162,7 +162,7 @@ void BX_CPU_C::cpu_loop(void)
 
   }  // while (1)
 
-  vcpuapiFinal();
+  bochsApiFinal();
 
 }
 

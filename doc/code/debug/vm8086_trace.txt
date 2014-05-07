@@ -1,0 +1,71 @@
+(0)
+current bad ip: 0x2eab
+watch value: gdtr.base (0x139380, bad=0x139780)
+value is loaded from 0x343c, hence watch 0x343e
+
+(1)
+current bad ip: 0x17854, R: 0x5ca8 W: 0x343c
+
+(2)
+WRITE TO 00005caa: 00009780 at L000178e8
+
+(3)
+The Generation of 0x00139780:
+cs:eip=0f5e:00005a13(L00014ff3)
+opr1=00138f80 opr2=00000800 result=00139780 ADR+   OPR+   ADD  BX,[BP+08]    [R:L0001548c/4/00000800] 
+xx.log@60217
+
+Now: try to figure out why not 138b80 but 138f80
+note: xg, then xg 14ff3x3, then record on, then xg 14ff3
+Found bad ip: 0x14fee, ecx is de000 not dec00
+
+(4) at 0x1a139, mov eax, 1000(2844)
+at 0x1b5f8, ecx decreased by 1000. it should be 400 only
+
+(5) bochs write 0x1526c for 0x0400 at 0x14fa5(2929)!
+upto:  at 0x1a139, mov eax, 1000(2844)
+
+(6) bochs write 0x1526c for 0x0400 at 0x14fa5(2929)!
+upto:  at 0x14912, mov ecx, eax (2899)
+
+**NEW BUG: EBX=120000/121000, write to 15250/15270 at 14f9b
+(6.1) when esi = 0x5c44, turn record on.
+      at its 0x1a139, trace.
+......
+1a14d, why ax ends with 0x67 not 0x65
+
+(6.2) 1a1fc: EAX should become 0xff???, not 0xe1???
+  here is a loop between each instruction 0x1a1fc.
+  my program exits at 0x1e067, but bochs ends at 0xff067.
+  after the loop, the program goes to 0x14ff3.
+  what's the difference??
+(6.3) look at ins 0x1a0fe, then single step exec in bochs
+   found that at 0x1a0fe, eax=0xe1, ecx is wrong: 0x0e not 0x01
+   since this ecx is read at 0x1a0f3 from 0x123e2 by MOVZX as 0xe    but in bochs, at mem 0x123e2, it should be 0x01. let's trace.
+ this 0xe was written at 0x13d3d, bl is 0xe
+(6.4) test case save point
+test
+xg
+xw w 123e2
+xg 13d3d
+q/record on/debug
+**set up watch point and do:
+xg 13d3d
+q/record dump d:\x.log
+
+** RESET
+(1) bad ip: 0xf4128, write the GDT
+
+==========================================
+80386-note
+
+1.CPU ResetºóÑ°Ö·
+http://www.oldlinux.org/oldlinux/archiver/?tid-148.html
+
+2.
+http://bbs.csdn.net/topics/90489738
+
+PMODE->REAL
+http://blog.sina.com.cn/s/blog_56d3e4470100x720.html
+http://blog.csdn.net/sunacmer/article/details/5310280
+http://myjfm.blogbus.com/logs/58307816.html

@@ -1,3 +1,10 @@
+# Bochs project files
+/bochx/bochs-2.6/
+!/bochx/bochs-2.6/bochs.h
+!/bochx/bochs-2.6/config.cc
+!/bochx/bochs-2.6/cpu/cpu.cc
+!/bochx/bochs-2.6/cpu/paging.cc
+
 # Object files
 *.o
 
@@ -12,17 +19,17 @@
 *.dylib
 
 # Executables
-# *.exe
 *.out
 *.app
+/nxvm
+bochx/bochx
 
-# AutoMake Directories
-/autom4te.cache
-.deps
+# Automake directories
+/autom4te.cache/
+.deps/
 .dirstamp
 
-# AutoMake Makefiles
-/nxvm
+# Automake makefiles
 /config.h.in~
 /Makefile
 /config.h
@@ -30,8 +37,8 @@
 /config.log
 /stamp-h1
 
-# Astyle Trash
+# Astyle trash
 *.orig
 
-# Mac OS X Trash
+# Mac OS X trash
 .DS_Store

@@ -1,0 +1,45 @@
+NXVM in the year 2012
+01/01-02/05  built debugger
+02/06-02/12  built i8086 cpu
+02/06-02/12  built pic
+03/02-04/01  built cmos
+03/03-04/01  built pit, dma
+03/07-03/18  built fdc, fdd
+
+NXVM in the year 2013
+03/03-04/01  built pit, cont
+03/17-03/21  built pic, cont
+03/25-03/28  built dma, cont
+04/03-04/06  built fdd, cont
+04/07-04/11  built kbc, qdkeyb
+04/14-05/05  debugged i8086 cpu
+04/21-05/23  updated debugger
+05/24-07/31  built 80386 cpu
+08/06-08/09  built dasm32
+08/10-08/15  built aasm32
+
+NXVM in the year 2014
+04/24-present format/refactor entire code base
+
+Milestones
+0x45 Console, 8086 CPU, Debug, Aasm, Dasm
+0x82 Basic Devices (QD Devices)
+0x90 Win32 Application
+0xbc Win32 Console
+0xbf Linux Console
+0xca New BIOS System
+0xcc New Console Commands
+0xdf Rebuilt Aasm/Dasm/Debug System
+0xf2 Clean CPUINS; Hard Disk Installed
+0xf5 i386 Build Begin
+010d Bitmap Font Implemented
+0118 i386 Milestone 1 (32-bit ins)
+0128 i386 Milestone 2 (MMU)
+012e Bochs Tester Constructed
+013a Built Dasm 32
+0140 Built Trace System
+0143 Built Debug 32
+0144 Built Aasm 32
+014c Rebuilt vmachine.ch
+0153 Refactored Architecture
+0154 Built AutoMake System

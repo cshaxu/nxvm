@@ -1,0 +1,15 @@
+TODO - Coding Conventions
+1- rename variables
+2- repair flags
+3- replace constants
+@debug.c, aasm32.c, dasm32.c
+@vcpu.ch, vcpuins.ch
+@qdcga.ch, qddisk.ch, qdkeyb.ch
+
+TODO - Implementation and Improvement
+1- Debug CPU: Cannot enter Virtual 8086 Mode.
+   See "ntrace.txt".
+   Refer to Bochs BIOS implementations.
+2- Build Exception Handler
+3- Build VGA Graphics Mode
+4- Build BIOS Service Routine System

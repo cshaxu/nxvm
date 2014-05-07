@@ -1750,7 +1750,7 @@ static const char *get_builtin_variable(const char *varname)
     if (!strcmp(varname, "BXSHARE")) {
 #ifdef WIN32
 		if (1) {
-			  strcpy(data, "d:/bochs-2.6/bios");
+			  strcpy(data, BOCHSAPI_BOCHS_BIOS);
 			  return data;
 		} else {
 			  wsprintf(keyname, "Software\\Bochs %s", VER_STRING);
