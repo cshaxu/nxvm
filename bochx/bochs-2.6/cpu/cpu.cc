@@ -56,7 +56,6 @@ void BX_CPU_C::cpu_loop(void)
 #endif
 
   if (setjmp(BX_CPU_THIS_PTR jmp_buf_env)) {
-
     // can get here only from exception function or VMEXIT
     BX_CPU_THIS_PTR icount++;
     BX_SYNC_TIME_IF_SINGLE_PROCESSOR(0);
@@ -84,7 +83,6 @@ void BX_CPU_C::cpu_loop(void)
   BX_CPU_THIS_PTR EXT = 0;
 
   bochsApiInit();
-
   while (1) {
 
     // check on events which occurred for previous instructions (traps)
@@ -128,15 +126,11 @@ void BX_CPU_C::cpu_loop(void)
 
       // want to allow changing of the instruction inside instrumentation callback
       BX_INSTR_BEFORE_EXECUTION(BX_CPU_ID, i);
-
 	  bochsApiExecBefore();
-
       RIP += i->ilen();
       BX_CPU_CALL_METHOD(i->execute, (i)); // might iterate repeat instruction
       BX_CPU_THIS_PTR prev_rip = RIP; // commit new RIP
-
 	  bochsApiExecAfter();
-
       BX_INSTR_AFTER_EXECUTION(BX_CPU_ID, i);
       BX_CPU_THIS_PTR icount++;
 
@@ -161,9 +155,7 @@ void BX_CPU_C::cpu_loop(void)
     BX_CPU_THIS_PTR async_event &= ~BX_ASYNC_EVENT_STOP_TRACE;
 
   }  // while (1)
-
   bochsApiFinal();
-
 }
 
 #if BX_SUPPORT_SMP

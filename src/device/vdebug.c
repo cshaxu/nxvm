@@ -137,7 +137,7 @@ void vdebugRefresh() {
     /* TODO: xasmTest(); */
     /* dump cpu status before execution */
     if (vdebug.connect.recordFile) {
-        int i;
+        t_nubitcc i;
         FPRINTF(vdebug.connect.recordFile, _expression,
                 _cs, _eip, vcpu.data.cs.base + _eip,
                 _ss, _esp, vcpu.data.ss.base + _esp,

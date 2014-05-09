@@ -2,8 +2,13 @@
 /bochx/bochs-2.6/
 !/bochx/bochs-2.6/bochs.h
 !/bochx/bochs-2.6/config.cc
+!/bochx/bochs-2.6/config.h
 !/bochx/bochs-2.6/cpu/cpu.cc
+!/bochx/bochs-2.6/cpu/data_xfer16.cc
+!/bochx/bochs-2.6/cpu/init.cc
 !/bochx/bochs-2.6/cpu/paging.cc
+!/bochx/bochs-2.6/vs2008/bochs.vcproj
+!/bochx/bochs-2.6/vs2008/cpu.vcproj
 
 # Object files
 *.o

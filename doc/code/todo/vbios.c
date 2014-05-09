@@ -27,8 +27,8 @@
 #define VBIOS_ADDR_ROM_DATE           0xffff5
 #define VBIOS_ADDR_ROM_MACHINE_ID     0xffffe
 
-void vbiosInit()
-{}
+void vbiosInit() {
+}
 
-void vbiosFinal()
-{}
+void vbiosFinal() {
+}

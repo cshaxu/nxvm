@@ -1,4 +1,4 @@
-#define PRODUCT "Neko's x86 Virtual Machine [0.4.015a]\n\
+#define PRODUCT "Neko's x86 Virtual Machine [0.4.015b]\n\
 Copyright (c) 2012-2014 Neko.\n"
 
 /*

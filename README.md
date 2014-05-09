@@ -16,11 +16,11 @@ Therefore it supports the operating systems based on x86, such as MS-DOS.
 
 
 MS-DOS running in HMA  
-![MS-DOS running in HMA](img/msdos_hma_w32c.jpg)  
+![MS-DOS running in HMA](doc/image/msdos_hma_w32c.jpg)  
 
 
 NXVM Running on ARM Platform (Microsoft Surface RT 8.0)  
-![NXVM Running on ARM Platform (Microsoft Surface RT 8.0)](img/nxvm_on_surface_rt_arm.jpg)  
+![NXVM Running on ARM Platform (Microsoft Surface RT 8.0)](doc/image/nxvm_on_surface_rt_arm.jpg)  
 
 
 Platform
@@ -31,7 +31,7 @@ In the previous mode, the keyboard and display are emulated using Win32 Console 
 
 
 MS-DOS running in Win32 Console  
-![MS-DOS running in Win32 Console](img/msdos_w32c.jpg) 
+![MS-DOS running in Win32 Console](doc/image/msdos_w32c.jpg)  
 
 
 The Win32 App Window mode is preferred for two reasons:  
@@ -40,17 +40,17 @@ The Win32 App Window mode is preferred for two reasons:
 
 
 Win32 App Window Mode with Bitmap Font  
-![Win32 App Window Mode](img/edit_w32a.jpg)    
-![Win32 App Window Mode](img/pv12_w32a.jpg)  
+![Win32 App Window Mode](doc/image/edit_w32a.jpg)  
+![Win32 App Window Mode](doc/image/pv12_w32a.jpg)  
 
 ### Linux
 The emulator runs in a terminal window of at least 80x25 size. It works like Win32 Console mode. It has some known issues which are not yet fixed.  
 
 
 MS-DOS running in Linux Terminal  
-![MS-DOS running in Linux Terminal](img/msdos_linux.jpg)  
+![MS-DOS running in Linux Terminal](doc/image/msdos_linux.jpg)  
 MS-DOS Editor in Linux Terminal  
-![MS-DOS Editor in Linux Terminal](img/edit_linux.jpg)  
+![MS-DOS Editor in Linux Terminal](doc/image/edit_linux.jpg)  
 
 
 Compiling
@@ -111,7 +111,7 @@ VM console provides a command-line interface which accepts user input and provid
 
 
 Emulator Status Info  
-![Emulator Status Info](img/vminfo_w32c.jpg)  
+![Emulator Status Info](doc/image/vminfo_w32c.jpg)  
 
 
 ### Emulator Itself
@@ -143,7 +143,7 @@ NXVM has both 16-bit and 32-bit debugger support. The command usage of 16-bit de
 
 
 NXVM Internal Debugger  
-![NXVM Internal Debugger](img/debugger_w32c.jpg)  
+![NXVM Internal Debugger](doc/image/debugger_w32c.jpg)  
 
 
 ##### Assembler/Disassembler
@@ -161,19 +161,19 @@ Some legacy MS-DOS applications are supported in NXVM.
 
 
 Turbo C 2.0  
-![Turbo C 2.0](img/tc2_w32c.jpg)  
+![Turbo C 2.0](doc/image/tc2_w32c.jpg)  
 MS-DOS Defrag  
-![MS-DOS Defrag](img/defrag_w32c.jpg)  
+![MS-DOS Defrag](doc/image/defrag_w32c.jpg)  
 MS-DOS Editor for Windows 95 (32-bit Instructions Applied)  
-![MS-DOS Editor for Windows 95](img/edit95_w32c.jpg)  
+![MS-DOS Editor for Windows 95](doc/image/edit95_w32c.jpg)  
 MS-DOS Anti Virus  
-![MS-DOS Anti Virus](img/msav_w32c.jpg)  
+![MS-DOS Anti Virus](doc/image/msav_w32c.jpg)  
 Type Tutor (TT)  
-![Type Tutor](img/tt_start_w32c.jpg)  
-![Type Tutor](img/tt_exec_w32c.jpg)  
+![Type Tutor](doc/image/tt_start_w32c.jpg)  
+![Type Tutor](doc/image/tt_exec_w32c.jpg)  
 Tetris (NYET)  
-![Tetris](img/nyet_start_w32c.jpg)  
-![Tetris](img/nyet_exec_w32c.jpg)  
+![Tetris](doc/image/nyet_start_w32c.jpg)  
+![Tetris](doc/image/nyet_exec_w32c.jpg)  
 
 
 References

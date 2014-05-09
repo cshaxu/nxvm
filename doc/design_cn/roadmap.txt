@@ -1,0 +1,161 @@
+汇总：设计列表
+Dev Code	Description [Type/Expected Version/Release Version]
+1.NCC		NCC [Released/0.1/Beta_0.1.0086] 能够编译C-代码的编译器
+2.NXVM-1	NXVM-1 [Released/0.1.003E] 虚拟的8086处理器
+3.NXVM-4	NXVM-1 + BASIC DEVICE IO + PLATFORM [Release/0.4/*] 模拟基本外设并能够执行MSDOS的完整虚拟机
+4.NXVM-6	NXVM-4 + FULL DEVICE IO [Release/0.6/*] 完整模拟外设端口的虚拟机
+5.NXVM-8	NXVM-6 + 80386 [Release/0.8/*] 实现32位CPU能执行Windows3.2的虚拟机
+6.NXVM-A	NXVM-8 + INTEGRATION [Release/1.0/*] 可自举的虚拟机
+A.NINUX-L	[Release/0.5/*] 引导和简单交互的32位linux内核操作系统
+B.NINUX-H	NINUX-L + MEMORY + FILESYSTEM [Release/1.0/*] 包含内存管理和文件系统的32位操作系统
+C.NKVDM		NXVM-M x NKDOS-H [Release/0.5/*] CONSOLE相当于MSDOS命令解释器的虚拟机/带参数执行16位MSDOS应用程序
+
+学习1	编译原理基础学习
+教材	编译原理及实践
+	汇编语言知识复习
+
+设计1	Neko's C- Compiler (NCC)
+目标	1.设计C-语言
+	2.实现基本编译流程
+	3.输出8086汇编代码
+
+学习2	8086汇编指令
+教材	OpCode系列文章
+	COM文件格式
+参考	IBM-PC汇编语言程序设计(第二版)
+	easyvm
+	liuyond8086+CPU虚拟机文档
+	SVM虚拟机毕业设计
+	
+设计2	Neko's Virtual Machine (NXVM-0x45)
+目标	CMD环境；
+	虚拟机	nvm = vcpu+vmemory
+	外壳	console = general+debug(use asm86)+exec
+
+学习3	虚拟机主体架构
+参考	easyvm
+	LightMachine
+
+设计3	Neko's Virtual Machine (NXVM-0x82)
+目标	1.基于CMD，在NekoVM-T基础上实现；
+	2.实现IO接口和各类外设(屏幕/键盘仅基于Win32Con)；
+	3.能读取磁盘镜像并启动本机；
+	4.能够执行MSDOS6.22引导程序并进入系统
+	5.所实现的外部设备的IO端口仅需满足MSDOS运行要求
+计划	0.资料整理
+	0.1.列出所有虚拟设备
+	0.2.查阅资料，列出相应设备的所有IO接口及输入输出信息，控制命令等
+	0.3.根据相应设备的相应接口信息，查阅相关功能实现方法
+	1.白盒测试
+	1.1.代码检查
+	1.2.增加代码注释 - IO功能
+		恢复暂停项目的任务计划 (草稿1)
+		PIC: 代码检查和IO功能注释1d
+		PIT: 代码检查和IO功能注释1d
+		FDC+FDD: 代码检查和IO功能注释1d
+		KBC+KBD: 代码编写和IO功能注释3d
+		显示管理: 代码编写和IO功能注释3d
+		BIOS中断: 代码编写3d，功能测试1d
+		综合任务: 代码整合1w，代码检查3w，功能测试1w
+	1.3.在Debug中核实相应的接口的可用性和正确性
+	2.功能实现
+	2.1.控制台键盘实现(CONSOLE输入接口)+控制台屏幕实现(CONSOLE输出接口)
+	2.2.控制台中键盘功能的实现;
+	2.3.控制台中屏幕功能的实现;
+	2.4.CMOS寄存器完整实现;
+	2.5.BIOS接口及BIOS功能的实现(1);
+		实现BIOS中断，中断调用端口操作时对所用代码进行测试
+	3.完整的代码浏览;
+	4.操作系统运行测试
+
+学习4	计算机外设基础知识
+教材	编程卓越之道  第一卷：深入理解计算机 (第12章IO)
+	PC技术内幕
+	计算机组成原理
+	虚拟机的设计及实现
+参考	easyVM源码
+	LightMachine源码
+	微机原理与接口技术
+	16-32位微机原理、汇编语言及接口技术（第2版）
+
+设计4	Neko's Virtual Machine (NXVM-0xbc)
+目标	在NekoVM-0x82的基础上：
+	1.完整设备端口功能；
+	2.对应模块测试
+	3.相应BIOS中断代码调整
+	4.实现基于Win32App的操作界面;
+	5.文本模式
+
+学习5   32位操作系统的设计与开发
+教材    自己动手写操作系统
+        Skelix
+        Windows核心编程
+        Windows内核编程
+
+设计5   Neko's 32-bit Operating System (NX32)
+目标    在 NXVM 上运行的32位操作系统
+	保护模式下各基本功能
+
+学习6	32位处理器80386和32位操作系统
+教材	x86-x64指令编码内幕(AMD-Intel)
+	天书夜读<第4部分>
+	IA-32 Intel Architecture Software Developer's Manual Volume 2_Instruction Set Reference
+	AMD64 Architecture Programmer's Manual Volume 3_General Purpose and System Instructions
+	Intel 80386 Manual
+	Win32汇编语言程序设计
+
+设计6	Neko's Virtual Machine (NXVM-8)
+目标	实现80386指令集和显卡图形模式；补充外设端口；能运行Windows 3.2
+
+学习7	32位保护模式进阶；32位环境下的设备
+
+设计7	Neko's x86 Virtual Machine (NXVM-A)
+目标	能运行 Windows 95
+
+
+学习A	操作系统基础
+教材	现代操作系统
+	自己动手写操作系统
+参考	MSDOS百科全书
+	DOS引导扇区代码详解
+
+设计A	Neko's DOS (NKDOS-L)
+目标	1.一个非常简单的16位操作系统，能在NekoVM上跑；
+	2.实现NXVM可执行环境(DOS中断)
+	3.是一个debugger
+知识	操作系统基础知识
+
+学习B	MSDOS操作系统
+教材	MSDOS百科全书
+	MS-DOS操作系统结构分析系列教材之一_BIO结构分析教程
+	MS-DOS操作系统结构分析系列教材之二_COMMAND结构分析教程
+	MS-DOS操作系统结构分析系列教材之三_DOS内核结构分析教程
+参考	未公开的DOS核心技术
+	FreeDOS源代码
+
+设计B	Neko's DOS (NKDOS-H)
+目标	基本实现MS-DOS的公开的中断调用，能运行大部分MS-DOS应用程序。
+知识	DOS源码，DOS原理，DOS中断；参考FreeDOS
+
+学习C	DOS虚拟机的实现
+教材	PC技术内幕
+	编程卓越之道  第一卷：深入理解计算机
+	MSDOS百科全书
+	未公开的DOS核心技术
+参考	PE文件的装载过程
+	计算机组成原理
+	easyVM源码
+	LightMachine源码
+
+设计c	Neko's Virtual DOS Machine (NKVDM)
+目标	1.基于NekoVM-M和NKDOS-H，合成软硬件两部分功能进行实现，功能相似于32位WINNT中的NTVDM
+	2.读取可执行文件载入模拟内存——模拟8086直接读取内存中指令并执行，能直接运行16位DOS应用程序。
+	3.相当于CPU+DOS的结合体。
+	4.直接使用主机的文件系统
+知识	DOS可执行文件的机理，DOS中断和OpCode，计算机组成原理，操作系统原理；参考easyVM
+
+** ADVANCED **
+虚拟机-系统与进程的通用平台
+	介绍了各类型虚拟机，以及各虚拟机的更深入讲解
+天书夜读
+	Windows内核编程
