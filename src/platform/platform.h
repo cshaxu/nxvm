@@ -7,8 +7,10 @@
 extern "C" {
 #endif
 
+#include "../global.h"
+
 typedef struct {
-    unsigned char flagMode;  /* true if runs in window, otherwise in console */
+    int flagMode;  /* true if runs in window, otherwise in console */
 } t_platform;
 
 extern t_platform platform;
@@ -16,7 +18,7 @@ extern t_platform platform;
 /* Device Operations */
 void platformDisplaySetScreen();
 void platformDisplayPaint();
-void platformSleep(unsigned int milisec);
+void platformSleep(uint32_t milisec);
 
 void platformStart();
 

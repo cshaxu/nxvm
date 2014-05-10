@@ -10,8 +10,8 @@
 #include "qdx.h"
 #include "qdkeyb.h"
 
-#define bufptrHead (vramRealWord(0x0000, QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD))
-#define bufptrTail (vramRealWord(0x0000, QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL))
+#define bufptrHead (vramRealWord(Zero16, QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD))
+#define bufptrTail (vramRealWord(Zero16, QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL))
 #define bufGetSize (QDKEYB_VBIOS_ADDR_KEYB_BUFFER_END - \
                     QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + 1)
 #define bufIsEmpty (bufptrHead == bufptrTail)
@@ -22,47 +22,108 @@
 
 static t_bool bufPush(t_nubit16 code) {
     if (bufIsFull) {
-        return 1;
+        return True;
     }
-    vramRealWord(0x0000, bufptrTail) = code;
+    vramRealWord(Zero16, bufptrTail) = code;
     bufptrAdvance(bufptrTail);
-    return 0;
+    return False;
 }
-
 static t_nubit16 bufPop() {
     t_nubit16 res = 0;
     if (bufIsEmpty) {
         return res;
     }
-    res = vramRealWord(0x0000, bufptrHead);
+    res = vramRealWord(Zero16, bufptrHead);
     bufptrAdvance(bufptrHead);
     return res;
 }
-
 static t_nubit16 bufPeek() {
-    return vramRealWord(0x0000, bufptrHead);
+    return vramRealWord(Zero16, bufptrHead);
 }
 
-t_bool deviceConnectKeyboardGetFlag0CapsLock() {
+static void qdkeybReadInput() {
+    /* TODO: this should have been working with INT 15 */
+    while (bufIsEmpty) {
+        utilsSleep(10);
+    }
+    vcpu.data.ax = bufPop();
+    vpicSetIRQ(0x01);
+}
+static void qdkeybGetStatus() {
+    t_nubit16 x = bufPeek();
+    if (bufIsEmpty) {
+        _SetEFLAGS_ZF;
+    } else {
+        switch (x) {
+        case 0x1d00:
+        case 0x2a00:
+        case 0x3800:
+            vcpu.data.ax = Zero16;
+            break;
+        default:
+            vcpu.data.ax = x;
+            break;
+        }
+        _ClrEFLAGS_ZF;
+    }
+}
+static void qdkeybGetShiftStatus() {
+    vcpu.data.al = qdkeybVarFlag0;
+}
+static void qdkeybBufferKey() {
+    vcpu.data.al = bufPush((vcpu.data.ch << 8) | vcpu.data.cl);
+}
+
+static void INT_09() {
+    vport.data.ioByte = 0x20;
+    vportExecWrite(0x20);
+}
+static void INT_16() {
+    switch (vcpu.data.ah) {
+    case 0x00:
+    case 0x10:
+        qdkeybReadInput();
+        break;
+    case 0x01:
+    case 0x11:
+        qdkeybGetStatus();
+        break;
+    case 0x02:
+        qdkeybGetShiftStatus();
+        break;
+    case 0x05:
+        qdkeybBufferKey();
+        break;
+    default:
+        break;
+    }
+}
+
+void qdkeybInit() {
+    qdxTable[0x09] = (t_faddrcc) INT_09; /* hard keyb */
+    qdxTable[0x16] = (t_faddrcc) INT_16; /* soft keyb */
+}
+
+int deviceConnectKeyboardGetFlag0CapsLock() {
     return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);
 }
-t_bool deviceConnectKeyboardGetFlag0NumLock()  {
+int deviceConnectKeyboardGetFlag0NumLock()  {
     return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_NUMLCK);
 }
-t_bool deviceConnectKeyboardGetFlag0Shift() {
+int deviceConnectKeyboardGetFlag0Shift() {
     return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT) || GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT);
 }
-t_bool deviceConnectKeyboardGetFlag0Alt()  {
+int deviceConnectKeyboardGetFlag0Alt()  {
     return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT);
 }
-t_bool deviceConnectKeyboardGetFlag0Ctrl() {
+int deviceConnectKeyboardGetFlag0Ctrl() {
     return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL);
 }
 void deviceConnectKeyboardClrFlag0() {
-    qdkeybVarFlag0 = 0x00;
+    qdkeybVarFlag0 = Zero8;
 }
 void deviceConnectKeyboardClrFlag1() {
-    qdkeybVarFlag1 = 0x00;
+    qdkeybVarFlag1 = Zero8;
 }
 
 void deviceConnectKeyboardSetFlag0Insert()     {
@@ -165,77 +226,10 @@ void deviceConnectKeyboardClrFlag1LeftCtrl() {
     ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LCTRL);
 }
 
-void deviceConnectKeyboardRecvKeyPress(t_nubit16 code) {
+void deviceConnectKeyboardRecvKeyPress(uint16_t code) {
     /* while(bufPush(code)) {
         utilsSleep(1);
     } */
     bufPush(code);
     vpicSetIRQ(0x01);
-}
-
-static void qdkeybReadInput() {
-    /* TODO: this should have been working with INT 15 */
-    while (bufIsEmpty) {
-        utilsSleep(10);
-    }
-    _ax = bufPop();
-    vpicSetIRQ(0x01);
-}
-
-static void qdkeybGetStatus() {
-    t_nubit16 x = bufPeek();
-    if (bufIsEmpty) {
-        _SetEFLAGS_ZF;
-    } else {
-        switch (x) {
-        case 0x1d00:
-        case 0x2a00:
-        case 0x3800:
-            _ax = 0x0000;
-            break;
-        default:
-            _ax = x;
-            break;
-        }
-        _ClrEFLAGS_ZF;
-    }
-}
-
-static void qdkeybGetShiftStatus() {
-    _al = qdkeybVarFlag0;
-}
-
-static void qdkeybBufferKey() {
-    _al = bufPush((_ch << 8) | _cl);
-}
-
-static void INT_09() {
-    vport.data.ioByte = 0x20;
-    vportExecWrite(0x20);
-}
-
-static void INT_16() {
-    switch (_ah) {
-    case 0x00:
-    case 0x10:
-        qdkeybReadInput();
-        break;
-    case 0x01:
-    case 0x11:
-        qdkeybGetStatus();
-        break;
-    case 0x02:
-        qdkeybGetShiftStatus();
-        break;
-    case 0x05:
-        qdkeybBufferKey();
-        break;
-    default:
-        break;
-    }
-}
-
-void qdkeybInit() {
-    qdxTable[0x09] = (t_faddrcc) INT_09; /* hard keyb */
-    qdxTable[0x16] = (t_faddrcc) INT_16; /* soft keyb */
 }

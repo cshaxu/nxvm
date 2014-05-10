@@ -22,49 +22,6 @@ static void allocate() {
     MEMSET((void *) vhdd.connect.pImgBase, Zero8, vhddGetImageSize);
 }
 
-void deviceConnectHardDiskCreate(t_nubit16 ncyl) {
-    vhdd.data.ncyl = ncyl;
-    allocate();
-    vhdd.connect.flagDiskExist = True;
-}
-
-t_bool deviceConnectHardDiskInsert(const t_strptr fname) {
-    t_nubitcc count;
-    FILE *image = FOPEN(fname, "rb");
-    if (image) {
-        fseek(image, Zero32, SEEK_END);
-        count = ftell(image);
-        vhdd.data.ncyl = (t_nubit16)(count / vhdd.data.nhead / vhdd.data.nsector / vhdd.data.nbyte);
-        fseek(image, Zero32, SEEK_SET);
-        allocate();
-        count = FREAD((void *) vhdd.connect.pImgBase, sizeof(t_nubit8), vhddGetImageSize, image);
-        vhdd.connect.flagDiskExist = True;
-        FCLOSE(image);
-        return False;
-    } else {
-        return True;
-    }
-}
-
-t_bool deviceConnectHardDiskRemove(const t_strptr fname) {
-    t_nubitcc count;
-    FILE *image;
-    if (fname) {
-        image = FOPEN(fname, "wb");
-        if (image) {
-            if (!vhdd.connect.flagReadOnly)
-                count = FWRITE((void *) vhdd.connect.pImgBase, sizeof(t_nubit8), vhddGetImageSize, image);
-            vhdd.connect.flagDiskExist = False;
-            FCLOSE(image);
-        } else {
-            return True;
-        }
-    }
-    vhdd.connect.flagDiskExist = False;
-    MEMSET((void *) vhdd.connect.pImgBase, Zero8, vhddGetImageSize);
-    return False;
-}
-
 void vhddTransRead() {
     if (IsCylEnd) {
         return;
@@ -81,7 +38,6 @@ void vhddTransRead() {
         vhddSetPointer;
     }
 }
-
 void vhddTransWrite() {
     if (IsCylEnd) {
         return;
@@ -98,14 +54,13 @@ void vhddTransWrite() {
         vhddSetPointer;
     }
 }
-
 void vhddFormatTrack(t_nubit8 fillbyte) {
-    t_nubit8 i;
+    t_nubitcc i;
     if (vhdd.data.cyl >= vhdd.data.ncyl) {
         return;
     }
     for (i = 0; i < vhdd.data.nhead; ++i) {
-        vhdd.data.head = i;
+        vhdd.data.head = GetMax16(i);
         vhdd.data.sector = 1;
         vhddSetPointer;
         MEMSET((void *) vhdd.connect.pCurrByte, fillbyte, vhdd.data.nsector * vhdd.data.nbyte);
@@ -121,7 +76,6 @@ void vhddInit() {
     vhdd.data.nbyte    = 512;
     vhdd.connect.pImgBase = (t_vaddrcc) NULL;
 }
-
 void vhddReset() {
     t_nubit16 oldNumCyl = vhdd.data.ncyl;
     MEMSET((void *)(&vhdd.data), Zero8, sizeof(t_hdd_data));
@@ -130,12 +84,51 @@ void vhddReset() {
     vhdd.data.nsector  = 63;
     vhdd.data.nbyte    = 512;
 }
-
 void vhddRefresh() {}
-
 void vhddFinal() {
     if (vhdd.connect.pImgBase) {
         FREE((void *) vhdd.connect.pImgBase);
     }
     vhdd.connect.pImgBase = (t_vaddrcc) NULL;
+}
+
+void deviceConnectHardDiskCreate(uint16_t ncyl) {
+    vhdd.data.ncyl = ncyl;
+    allocate();
+    vhdd.connect.flagDiskExist = True;
+}
+int deviceConnectHardDiskInsert(const char *fileName) {
+    t_nubitcc count;
+    FILE *image = FOPEN(fileName, "rb");
+    if (image) {
+        fseek(image, Zero32, SEEK_END);
+        count = ftell(image);
+        vhdd.data.ncyl = (t_nubit16)(count / vhdd.data.nhead / vhdd.data.nsector / vhdd.data.nbyte);
+        fseek(image, Zero32, SEEK_SET);
+        allocate();
+        count = FREAD((void *) vhdd.connect.pImgBase, sizeof(t_nubit8), vhddGetImageSize, image);
+        vhdd.connect.flagDiskExist = True;
+        FCLOSE(image);
+        return False;
+    } else {
+        return True;
+    }
+}
+int deviceConnectHardDiskRemove(const char *fileName) {
+    t_nubitcc count;
+    FILE *image;
+    if (fileName) {
+        image = FOPEN(fileName, "wb");
+        if (image) {
+            if (!vhdd.connect.flagReadOnly)
+                count = FWRITE((void *) vhdd.connect.pImgBase, sizeof(t_nubit8), vhddGetImageSize, image);
+            vhdd.connect.flagDiskExist = False;
+            FCLOSE(image);
+        } else {
+            return True;
+        }
+    }
+    vhdd.connect.flagDiskExist = False;
+    MEMSET((void *) vhdd.connect.pImgBase, Zero8, vhddGetImageSize);
+    return False;
 }

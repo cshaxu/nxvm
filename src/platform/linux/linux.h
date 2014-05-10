@@ -7,10 +7,12 @@
 /*extern "C" {*/
 #endif
 
-void linuxSleep(unsigned int milisec);
-void linuxDisplaySetScreen(unsigned char window);
-void linuxDisplayPaint(unsigned char window);
-void linuxStartMachine(unsigned char window);
+#include "../../global.h"
+
+void linuxSleep(uint32_t milisec);
+void linuxDisplaySetScreen(int window);
+void linuxDisplayPaint(int window);
+void linuxStartMachine(int window);
 
 #ifdef __cplusplus
 /*}_EOCD_*/

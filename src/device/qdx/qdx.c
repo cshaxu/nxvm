@@ -57,11 +57,11 @@ static void QDX() {
         }
         break;
     }
-    vcpuins.data.flagIgnore = 1;
+    vcpuins.data.flagIgnore = True;
 }
 
 void qdxInit() {
-    int i;
+    t_nubitcc i;
     for (i = 0; i < 0x100; ++i) {
         qdxTable[i] = (t_faddrcc) NULL;
     }

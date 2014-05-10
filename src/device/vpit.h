@@ -79,7 +79,7 @@ extern t_pit vpit;
 void vpitSetGate(t_nubit8 id, t_bool flagGate);
 
 #define vpitAddMe(id) vpitAddDevice((id), (t_faddrcc) pitOut);
-void vpitAddDevice(int id, t_faddrcc fpOut);
+void vpitAddDevice(t_nubit8 id, t_faddrcc fpOut);
 
 void vpitInit();
 void vpitReset();

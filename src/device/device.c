@@ -7,7 +7,9 @@
 
 #include "../utils.h"
 
+#include "vdebug.h"
 #include "vmachine.h"
+
 #include "device.h"
 
 t_device device;
@@ -18,8 +20,13 @@ void deviceStart() {
     device.flagFlip = !device.flagFlip;
     while (device.flagRun) {
         if (device.flagReset) {
+            vdebugReset();
             vmachineReset();
             device.flagReset = False;
+        }
+        vdebugRefresh();
+        if (!device.flagRun) {
+            break;
         }
         vmachineRefresh();
     }
@@ -30,6 +37,7 @@ void deviceReset() {
     if (device.flagRun) {
         device.flagReset = True;
     } else {
+        vdebugReset();
         vmachineReset();
         device.flagReset = False;
     }
@@ -43,10 +51,17 @@ void deviceStop()  {
 /* Initializes devices */
 void deviceInit() {
     MEMSET((void *)(&device), Zero8, sizeof(t_device));
+    vdebugInit();
     vmachineInit();
 }
 
 /* Finalizes devices */
 void deviceFinal() {
+    vdebugFinal();
     vmachineFinal();
+}
+
+void devicePrintStatus() {
+    PRINTF("Recording: %s\n", vdebug.connect.recordFile ? "Yes" : "No");
+    PRINTF("Running:   %s\n", device.flagRun  ? "Yes" : "No");
 }

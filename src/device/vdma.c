@@ -288,7 +288,7 @@ static void io_write_00DE() {
 }
 
 static t_nubit8 GetRegTopId(t_dma *rdma, t_nubit8 reg) {
-    t_nubit8 id = Zero8;
+    t_nubit8 id = 0;
     if (reg == Zero8) {
         return 0x08;
     }
@@ -466,7 +466,6 @@ void vdmaSetDRQ(t_nubit8 drqId) {
         ClrBit(vdma2.data.status, VDMA_STATUS_DRQ(0));
     }
 }
-
 void vdmaAddDevice(t_nubit8 drqId, t_faddrcc fpReadDevice,
                    t_faddrcc fpWriteDevice, t_faddrcc fpCloseDevice) {
     switch (drqId) {
@@ -571,13 +570,11 @@ void vdmaInit() {
 
     vbiosAddPost(VDMA_POST);
 }
-
 void vdmaReset() {
     MEMSET((void *)(&vlatch.data), Zero8, sizeof(t_latch_data));
     doReset(&vdma1);
     doReset(&vdma2);
 }
-
 void vdmaRefresh() {
     t_nubit8 id;
     t_nubit8 realDRQ1, realDRQ2;
@@ -627,11 +624,10 @@ void vdmaRefresh() {
         }
     }
 }
-
 void vdmaFinal() {}
 
 static void printDma(t_dma *rdma) {
-    t_nubit8 i;
+    t_nubitcc i;
     PRINTF("Command = %x, status = %x, mask = %x\n",
            rdma->data.command, rdma->data.status, rdma->data.mask);
     PRINTF("request = %x, temp = %x, flagMSB = %x\n",

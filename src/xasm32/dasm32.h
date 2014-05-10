@@ -7,7 +7,9 @@
 extern "C" {
 #endif
 
-unsigned char dasm32(char *stmt, unsigned char *rcode, unsigned char flag32);
+#include "../global.h"
+
+uint8_t dasm32(char *stmt, uint8_t *rcode, int flag32);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

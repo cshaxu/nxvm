@@ -9,7 +9,7 @@
 #include "utils.h"
 
 static void printTraceCall(t_utils_trace_call *rtracecall) {
-    int i;
+    size_t i;
     PRINTF("%s", rtracecall->callName);
     for (i = 0; i < rtracecall->blockCount; ++i) {
         PRINTF("::%s", rtracecall->blockStack[i]);
@@ -17,10 +17,10 @@ static void printTraceCall(t_utils_trace_call *rtracecall) {
     PRINTF("\n");
 }
 void utilsTracePrint(t_utils_trace *rtrace) {
-    int i;
+    size_t i;
     if (rtrace->callCount) {
-        for (i = rtrace->callCount - 1; i >= 0; --i) {
-            printTraceCall(&(rtrace->callStack[i]));
+        for (i = 0; i < rtrace->callCount; ++i) {
+            printTraceCall(&(rtrace->callStack[rtrace->callCount - 1 - i]));
         }
     }
 }
@@ -186,11 +186,11 @@ int   MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size) {
 }
 
 /* General Functions */
-void utilsSleep(unsigned int milisec) {
+void utilsSleep(uint32_t milisec) {
     platformSleep(milisec);
 }
 void utilsLowerStr(char *str) {
-    int i = 0;
+    size_t i = 0;
     if (str[0] == '\'') {
         return;
     }
@@ -205,12 +205,12 @@ void utilsLowerStr(char *str) {
 }
 
 /* NXVM Assembler Library */
-unsigned char utilsAasm32(const char *stmt, unsigned char *rcode, unsigned char flag32) {
+uint8_t utilsAasm32(const char *stmt, uint8_t *rcode, int flag32) {
     return aasm32(stmt, rcode, flag32);
 }
-unsigned int utilsAasm32x(const char *stmt, unsigned char *rcode, unsigned char flag32) {
+uint32_t utilsAasm32x(const char *stmt, uint8_t *rcode, int flag32) {
     return aasm32x(stmt, rcode, flag32);
 }
-unsigned char utilsDasm32(char *stmt, unsigned char *rcode, unsigned char flag32) {
+uint8_t utilsDasm32(char *stmt, uint8_t *rcode, int flag32) {
     return dasm32(stmt, rcode, flag32);
 }

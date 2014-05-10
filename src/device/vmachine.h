@@ -7,9 +7,9 @@
 extern "C" {
 #endif
 
-#define NXVM_DEVICE_MACHINE "IBM PC/AT"
-
 #include "vglobal.h"
+
+#define NXVM_DEVICE_MACHINE "IBM PC/AT"
 
 void vmachineInit();
 void vmachineReset();

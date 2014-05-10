@@ -14,11 +14,8 @@ void vvadpInit() {
     MEMSET((void *)(&vvadp), Zero8, sizeof(t_vadp));
     vbiosAddInt("qdx 10\niret", 0x10);
 }
-
 void vvadpReset() {
     MEMSET((void *)(&vvadp.data), Zero8, sizeof(t_vadp_data));
 }
-
 void vvadpRefresh() {}
-
 void vvadpFinal() {}

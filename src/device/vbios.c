@@ -15,21 +15,27 @@ t_bios vbios;
 static t_bool flagBoot;
 static t_nubit16 ics, iip;
 
-void deviceConnectBiosSetBoot(t_bool flagHdd) {
-    flagBoot = flagHdd;
-}
-t_bool deviceConnectBiosGetBoot() {
-    return flagBoot;
-}
-
 static t_nubit32 assemble(const t_strptr stmt, t_nubit16 seg, t_nubit16 off) {
-    t_nubit32 len;
-    t_nubit8 code[0x10000];
+    t_nubit32 len = 0;
+    t_nubit8 *code = NULL;
+    t_nubitcc i;
+    t_nubitcc insCount = 0; /* the number of instructions to be assembled */
+    for (i = 0; i < strlen(stmt); ++i) {
+        if (stmt[i] == '\n') {
+            insCount++;
+        }
+    }
+    if (strlen(stmt)) insCount++;
+    /* 15 is the maximum length of each instruction */
+    code = p_nubit8(MALLOC(15 * insCount * sizeof(t_nubit8)));
     len = utilsAasm32x(stmt, code, False);
     if (!len) {
         PRINTF("vbios: invalid x86 assembly instruction.\n");
     }
     MEMCPY((void *) vramGetRealAddr(seg, off), (void *) code, len);
+    if (code) {
+        FREE((void *) code);
+    }
     return len;
 }
 
@@ -84,7 +90,6 @@ static void biosLoadData() {
     vramRealDWord(Zero16, VBIOS_ADDR_VGA_VIDEO_TAB_PTR) = 0xc0005d3a;
     vramRealByte(Zero16, VBIOS_ADDR_POST_WORK_AREA) = flagBoot ? 0x80 : Zero8; /* boot disk */
 }
-
 static void biosLoadRomInfo() {
     vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 0) = 0x0008;
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 2) = 0xfc;
@@ -96,9 +101,8 @@ static void biosLoadRomInfo() {
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 8) = Zero8;
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 9) = Zero8;
 }
-
 static void biosLoadInt() {
-    t_nubit16 i;
+    t_nubitcc i;
     iip += (t_nubit16) assemble("iret", VBIOS_ADDR_START_SEG, VBIOS_ADDR_START_OFF);
     for (i = 0; i < 0x100; ++i) {
         if (vbios.connect.intTable[i]) {
@@ -111,7 +115,6 @@ static void biosLoadInt() {
         }
     }
 }
-
 static void biosLoadPost() {
     t_nubitcc i;
     t_string stmt;
@@ -122,7 +125,6 @@ static void biosLoadPost() {
     }
     iip += (t_nubit16) assemble(VBIOS_POST_BOOT, ics, iip);
 }
-
 static void biosLoadAdditional() {
     /* hard disk param table */
     vramRealWord(Zero16, VBIOS_ADDR_HDD_PARAM_OFFSET) = VBIOS_ADDR_HDD_PARAM;
@@ -144,11 +146,9 @@ static void biosLoadAdditional() {
 void vbiosAddPost(t_strptr stmt) {
     vbios.connect.postTable[vbios.connect.postCount++] = stmt;
 }
-
 void vbiosAddInt(t_strptr stmt, t_nubit8 intid) {
     vbios.connect.intTable[intid] = stmt;
 }
-
 void vbiosInit() {
     MEMSET((void *)(&vbios), Zero8, sizeof(t_bios));
     flagBoot = False;
@@ -169,11 +169,15 @@ void vbiosReset() {
     biosLoadPost();       /* bios init/post routines */
     biosLoadAdditional(); /* additional bios data */
 }
-
 void vbiosRefresh() {}
-
 void vbiosFinal() {}
-
 void devicePrintBios() {
-    PRINTF("Boot Disk: %s\n", deviceConnectBiosGetBoot() ? "Hard Drive" : "Floppy");
+    PRINTF("Boot Disk: %s\n", flagBoot ? "Hard Drive" : "Floppy");
+}
+
+void deviceConnectBiosSetBoot(int flagHdd) {
+    flagBoot = flagHdd;
+}
+int deviceConnectBiosGetBoot() {
+    return flagBoot;
 }

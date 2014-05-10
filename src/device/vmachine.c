@@ -4,7 +4,6 @@
 
 #include "../utils.h"
 
-#include "vdebug.h"
 #include "vport.h"
 #include "vram.h"
 #include "vcpu.h"
@@ -44,7 +43,6 @@
 /* Initializes all devices, allocates space */
 void vmachineInit() {
     vcpuInit();
-    vdebugInit();
     vfddInit();
     vhddInit();
     vbiosInit();
@@ -52,44 +50,26 @@ void vmachineInit() {
     _vbios_
     vportInit();
     vcmosInit();
-    _vbios_;
-    _vport_
+    _vbios_ _vport_
     vkbcInit();
-    _vbios_;
-    _vport_
+    _vbios_ _vport_
     vdmaInit();
-    _vbios_;
-    _vport_
+    _vbios_ _vport_
     vfdcInit();
-    _vbios_;
-    _vport_;
-    _vdma_
+    _vbios_ _vport_ _vdma_
     vhdcInit();
-    _vbios_;
-    _vport_;
-    _vdma_;
-    _vfdc_
+    _vbios_ _vport_ _vdma_ _vfdc_
     vpitInit();
-    _vbios_;
-    _vport_;
+    _vbios_ _vport_
     vpicInit();
-    _vbios_;
-    _vport_;
-    _vpic_
+    _vbios_ _vport_ _vpic_
     vramInit();
-    _vbios_;
-    _vport_;
-    _vpit_
+    _vbios_ _vport_ _vpit_
     qdxInit();
-    _vbios_;
-    _vcpu_;
-    _vram_
+    _vbios_ _vcpu_ _vram_
 }
-
 /* Resets all devices to initial values */
 void vmachineReset() {
-    vdebugReset();
-    _empty_
     vhdcReset();
     _empty_
     vkbcReset();
@@ -111,7 +91,6 @@ void vmachineReset() {
     qdxReset();
     _vram_
 }
-
 /* Executes all devices in one loop */
 void vmachineRefresh() {
     qdxRefresh();
@@ -133,7 +112,6 @@ void vmachineRefresh() {
     vramRefresh();
     _empty_
 
-    vdebugRefresh();
     vcmosRefresh();
     vfdcRefresh();
     vdmaRefresh();
@@ -144,7 +122,6 @@ void vmachineRefresh() {
     vcpuRefresh();
     _vpic_
 }
-
 /* Finalize all devices, deallocates space */
 void vmachineFinal() {
     qdxFinal();
@@ -152,8 +129,6 @@ void vmachineFinal() {
     vbiosFinal();
     _empty_
     vcmosFinal();
-    _empty_
-    vdebugFinal();
     _empty_
     vdmaFinal();
     _empty_
@@ -177,7 +152,6 @@ void vmachineFinal() {
     vhddFinal();
     vramFinal();
 }
-
 /* Print machine info */
 void devicePrintMachine() {
     PRINTF("Machine:           %s\n", NXVM_DEVICE_MACHINE);

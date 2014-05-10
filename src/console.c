@@ -16,10 +16,10 @@
 
 #define CONSOLE_MAXNARG 256
 
-static int numArgs;
+static size_t numArgs;
 static char **argArray;
-static t_bool flagExit;
-static t_string strCmdBuff;
+static int flagExit;
+static char strCmdBuff[0x100];
 
 /*
  * Parses command-line input.
@@ -178,13 +178,9 @@ static void doInfo() {
     PRINTF("==================\n");
     devicePrintBios();
     PRINTF("\n");
-    PRINTF("NXVM Debug Status\n");
-    PRINTF("=================\n");
-    devicePrintDebug();
-    PRINTF("\n");
-    PRINTF("NXVM Running Status\n");
-    PRINTF("===================\n");
-    PRINTF("Running: %s\n", device.flagRun  ? "Yes" : "No");
+    PRINTF("NXVM Device Status\n");
+    PRINTF("==================\n");
+    devicePrintStatus();
 }
 
 /* Starts internal debugger */
@@ -208,9 +204,9 @@ static void doRecord() {
         if (numArgs != 3) {
             GetHelp;
         }
-        debugRecordStart(argArray[2]);
+        deviceConnectDebugRecordStart(argArray[2]);
     } else if (!strcmp(argArray[1], "stop")) {
-        debugRecordStop();
+        deviceConnectDebugRecordStop();
     } else {
         GetHelp;
     }
@@ -407,7 +403,7 @@ void consoleMain() {
     PRINTF("\nPlease enter 'HELP' for information.\n\n");
     while (!flagExit) {
         PRINTF("Console> ");
-        FGETS(strCmdBuff, MAXLINE, stdin);
+        FGETS(strCmdBuff, 0x100, stdin);
         parse();
         execute();
     }

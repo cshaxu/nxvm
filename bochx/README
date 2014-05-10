@@ -8,9 +8,10 @@ BOCHX: BOCHs - nXvm Connector that helps NXVM CPU Verification
 2- Test NXVM CPU by connecting with Bochs:
  a- In bochsapi.cc, set BOCHSAPI_BOCHS to True.
  b- In bochsapi.h, set BOCHSAPI_BOCHS_BIOS to correct bochs path.
- c- Extract bochs-2.6 project files to folder bochs-2.6/.
-    Do NOT replace existing Bochs source files in this folder.
-    The existing Bochs source files are modified to fit Bochx.
+ c- Download bochs-2.6-msvc-src.zip from Bochs Project Homepage.
+ d- Extract bochs-2.6-msvc-src.zip to folder bochs-2.6/.
+ e- Extract patch-bochs-2.6-msvc-src.zip to folder bochs-2.6/,
+    and replace the following files:
       bochs-2.6/bochs.h
       bochs-2.6/config.cc 
       bochs-2.6/config.h
@@ -20,11 +21,12 @@ BOCHX: BOCHs - nXvm Connector that helps NXVM CPU Verification
       bochs-2.6/cpu/paging.cc
       bochs-2.6/vs2008/bochs.vcproj
       bochs-2.6/vs2008/cpu.vcproj
- d- Add Bochx files to Bochs project:
+    These files are modified to fit Bochx and NXVM.
+ f- Add Bochx files to MSVC Bochs project:
       bochsapi.cc
       bochsapi.h
       nxvmapi.c
- e- Add NXVM files to Bochs project:
+ g- Add NXVM files to MSVC Bochs project:
       ../src/utils.h
       ../src/global.h
       ../src/device/device.h
@@ -36,7 +38,9 @@ BOCHX: BOCHs - nXvm Connector that helps NXVM CPU Verification
       ../src/device/vpic.h
       ../src/device/vram.h
       ../src/device/vport.h
- f- In bochsapi.cc, set BOCHSAPI_LINEAR_START to the linear address,
+ h- In bochsapi.cc, set BOCHSAPI_LINEAR_START to the linear address,
     from which the cpu status comparison starts.
- g- In bochsapi.cc, set BOCHSAPI_LINEAR_END to the linear address,
+ i- In bochsapi.cc, set BOCHSAPI_LINEAR_END to the linear address,
     at which the CPU status comparison stops.
+ j- In MS VC 2008, compile the project using Release/Win32 platform.
+ k- Set the startup disk image and boot disk, and run tests.

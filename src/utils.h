@@ -13,12 +13,12 @@ extern "C" {
 #define UTILS_TRACE_MAX_STACK 0x100
 typedef struct {
     char* blockStack[UTILS_TRACE_MAX_STACK];
-    int blockCount;
+    size_t blockCount;
     char *callName;
 } t_utils_trace_call;
 typedef struct {
     t_utils_trace_call callStack[UTILS_TRACE_MAX_STACK];
-    int callCount;
+    size_t callCount;
     int flagError;
 } t_utils_trace;
 
@@ -123,13 +123,13 @@ void* MEMCPY(void *_Dst, const void *_Src, size_t _Size);
 int   MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size);
 
 /* NXVM Library */
-void utilsSleep(unsigned int milisec);
+void utilsSleep(uint32_t milisec);
 void utilsLowerStr(char *str);
 
 /* NXVM Assembler Library */
-unsigned char utilsAasm32(const char *stmt, unsigned char *rcode, unsigned char flag32);
-unsigned int utilsAasm32x(const char *stmt, unsigned char *rcode, unsigned char flag32);
-unsigned char utilsDasm32(char *stmt, unsigned char *rcode, unsigned char flag32);
+uint8_t utilsAasm32(const char *stmt, uint8_t *rcode, int flag32);
+uint32_t utilsAasm32x(const char *stmt, uint8_t *rcode, int flag32);
+uint8_t utilsDasm32(char *stmt, uint8_t *rcode, int flag32);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

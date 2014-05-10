@@ -15,9 +15,6 @@ void vkbcInit() {
     vbiosAddInt("qdx 09\niret", 0x09);
     vbiosAddInt("qdx 16\niret", 0x16);
 }
-
 void vkbcReset() {}
-
 void vkbcRefresh() {}
-
 void vkbcFinal() {}

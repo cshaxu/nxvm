@@ -23,7 +23,7 @@
 #define COLOR_LIGHTGRAY    0x0f
 
 static void lnxcdispInit() {
-    int i,j;
+    size_t i, j;
     initscr();
     raw();
     nodelay(stdscr, TRUE);
@@ -44,7 +44,7 @@ static void lnxcdispFinal() {
     endwin();
 }
 
-static unsigned char ReverseColor(unsigned char value) {
+static uint8_t ReverseColor(uint8_t value) {
     value &= 0x07;
     switch (value) {
     case COLOR_BLACK:
@@ -83,7 +83,7 @@ static unsigned char ReverseColor(unsigned char value) {
     return COLOR_BLACK;
 }
 
-static unsigned char CharProp2Color(unsigned char value) {
+static uint8_t CharProp2Color(uint8_t value) {
     value &= 0x07;
     switch (value) {
     case 0x00:
@@ -122,8 +122,8 @@ static unsigned char CharProp2Color(unsigned char value) {
     return COLOR_BLACK;
 }
 
-static unsigned char GetColorFromProp(unsigned char prop) {
-    unsigned char fore0, back0, fore1, back1;
+static uint8_t GetColorFromProp(uint8_t prop) {
+    uint8_t fore0, back0, fore1, back1;
     fore0 = prop & 0x0f;
     back0 = ((prop & 0x70) >> 4);
     fore1 = CharProp2Color(fore0);
@@ -134,7 +134,7 @@ static unsigned char GetColorFromProp(unsigned char prop) {
     return (fore1 * 8 + back1);
 }
 
-static unsigned char Ascii2Print[][2] = {
+static uint8_t Ascii2Print[][2] = {
     {0x00, ' ' }, {0x01, '*' }, {0x02, '*' }, {0x03, '*' },
     {0x04, '*' }, {0x05, '*' }, {0x06, '*' }, {0x07, 0x07},
     {0x08, 0x08}, {0x09, 0x09}, {0x0a, 0x0a}, {0x0b, 0x0b},
@@ -201,12 +201,13 @@ static unsigned char Ascii2Print[][2] = {
     {0xfc, 'n'}, {0xfd, '2'}, {0xfe, '#'}, {0xff, ' '}
 };
 
-static void lnxcdispPaint(unsigned char force) {
-    unsigned char ref,p,c;
+static void lnxcdispPaint(uint8_t force) {
+    int ref;
+    uint8_t p, c;
     int i, j, sizeRow, sizeCol, curX, curY;
     sizeRow = GetMin(COLS, deviceConnectDisplayGetRowSize());
     sizeCol = GetMin(LINES, deviceConnectDisplayGetColSize());
-    ref = 0x00;
+    ref = 0;
     if (force || deviceConnectDisplayGetBufferChange()) {
         clear();
         for (i = 0; i < sizeCol; ++i) {
@@ -218,7 +219,7 @@ static void lnxcdispPaint(unsigned char force) {
                 addch(c | COLOR_PAIR(GetColorFromProp(p)));
             }
         }
-        ref = 0x01;
+        ref = 1;
     }
     if (force || deviceConnectDisplayGetCursorChange()) {
         curX = deviceConnectDisplayGetCurrentCursorPosX();
@@ -229,7 +230,7 @@ static void lnxcdispPaint(unsigned char force) {
         } else {
             move(0, 0);
         }
-        ref = 0x01;
+        ref = 1;
     }
     if (ref) {
         refresh();
@@ -238,9 +239,9 @@ static void lnxcdispPaint(unsigned char force) {
 
 static void *ThreadDisplay(void *arg) {
     lnxcdispInit();
-    lnxcdispPaint(0x01);
+    lnxcdispPaint(1);
     while (device.flagRun) {
-        lnxcdispPaint(0x00);
+        lnxcdispPaint(0);
         utilsSleep(100);
     }
     lnxcdispFinal();
@@ -252,7 +253,7 @@ static void *ThreadKernel(void *arg) {
     return 0;
 }
 
-static unsigned char Ascii2ScanCode[][2] = {
+static uint8_t Ascii2ScanCode[][2] = {
     {0x00, ZERO}, {0x01, ZERO}, {0x02, ZERO}, {0x03, ZERO},
     {0x04, ZERO}, {0x05, ZERO}, {0x06, ZERO}, {0x07, ZERO},
     {0x08, 0x0e}, {0x09, 0x0f}, {0x0a, ZERO}, {0x0b, ZERO},
@@ -432,7 +433,7 @@ void lnxcStartMachine() {
     int oldDeviceFlip = device.flagFlip;
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
-    pthread_create(&ThreadIdKernel,  &attr, ThreadKernel,  NULL);
+    pthread_create(&ThreadIdKernel,  &attr, ThreadKernel, NULL);
     while (oldDeviceFlip == device.flagFlip) {
         utilsSleep(100);
     }

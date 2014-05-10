@@ -19,7 +19,6 @@ static void LoadInit(t_nubit8 id) {
         vpit.data.flagReady[id] = True;
     }
 }
-
 /* Decreases count */
 static void Decrease(t_nubit8 id) {
     vpit.data.count[id]--;
@@ -76,7 +75,6 @@ static void io_read_004x(t_nubit8 id) {
         }
     }
 }
-
 static void io_write_004x(t_nubit8 id) {
     switch (VPIT_GetCW_RW(vpit.data.cw[id])) {
     case 0x00:
@@ -210,6 +208,11 @@ void vpitSetGate(t_nubit8 id, t_bool flagGate) {
     }
     vpit.connect.flagGate[id] = flagGate;
 }
+void vpitAddDevice(t_nubit8 id, t_faddrcc fpOut) {
+    vpit.connect.fpOut[id] = fpOut;
+    /* GATE tells if counter is connected */
+    vpit.connect.flagGate[id] = True;
+}
 
 void vpitInit() {
     MEMSET((void *)(&vpit), Zero8, sizeof(t_pit));
@@ -222,24 +225,22 @@ void vpitInit() {
     vportAddWrite(0x0043, (t_faddrcc) io_write_0043);
     vbiosAddPost(VPIT_POST);
 }
-
 void vpitReset() {
-    t_nubit8 i;
+    t_nubitcc i;
     MEMSET((void *)(&vpit.data), Zero8, sizeof(t_pit_data));
     for (i = 0; i < 3; ++i) {
         vpit.data.flagReady[i] = vpit.data.flagLatch[i] = True;
         vpit.data.flagRead[i] = vpit.data.flagWrite[i] = VPIT_STATUS_RW_READY;
     }
 }
-
 void vpitRefresh() {
-    t_nubit8 i;
+    t_nubitcc i;
     for (i = 0; i < 3; ++i) {
         switch (VPIT_GetCW_M(vpit.data.cw[i])) {
         case 0x00:
             if (vpit.data.flagReady[i]) {
                 if (vpit.connect.flagGate[i]) {
-                    Decrease(i);
+                    Decrease(GetMax8(i));
                     if (vpit.data.count[i] == Zero16) {
                         ExecFun(vpit.connect.fpOut[i]);
                         vpit.data.flagReady[i] = False;
@@ -249,7 +250,7 @@ void vpitRefresh() {
             break;
         case 0x01:
             if (vpit.data.flagReady[i]) {
-                Decrease(i);
+                Decrease(GetMax8(i));
                 if (vpit.data.count[i] == Zero16) {
                     ExecFun(vpit.connect.fpOut[i]);
                     vpit.data.flagReady[i] = False;
@@ -260,10 +261,10 @@ void vpitRefresh() {
         case 0x06:
             if (vpit.data.flagReady[i]) {
                 if (vpit.connect.flagGate[i]) {
-                    Decrease(i);
+                    Decrease(GetMax8(i));
                     if (vpit.data.count[i] == 0x0001) {
                         ExecFun(vpit.connect.fpOut[i]);
-                        LoadInit(i);
+                        LoadInit(GetMax8(i));
                     }
                 }
             }
@@ -272,10 +273,10 @@ void vpitRefresh() {
         case 0x07:
             if (vpit.data.flagReady[i]) {
                 if (vpit.connect.flagGate[i]) {
-                    Decrease(i);
+                    Decrease(GetMax8(i));
                     if (vpit.data.count[i] == Zero16) {
                         ExecFun(vpit.connect.fpOut[i]);
-                        LoadInit(i);
+                        LoadInit(GetMax8(i));
                     }
                 }
             }
@@ -283,7 +284,7 @@ void vpitRefresh() {
         case 0x04:
             if (vpit.data.flagReady[i]) {
                 if (vpit.connect.flagGate[i]) {
-                    Decrease(i);
+                    Decrease(GetMax8(i));
                     if (vpit.data.count[i] == Zero16) {
                         ExecFun(vpit.connect.fpOut[i]);
                         vpit.data.flagReady[i] = False;
@@ -293,7 +294,7 @@ void vpitRefresh() {
             break;
         case 0x05:
             if (vpit.data.flagReady[i]) {
-                Decrease(i);
+                Decrease(GetMax8(i));
                 if (vpit.data.count[i] == Zero16) {
                     ExecFun(vpit.connect.fpOut[i]);
                     vpit.data.flagReady[i] = False;
@@ -305,14 +306,7 @@ void vpitRefresh() {
         }
     }
 }
-
 void vpitFinal() {}
-
-void vpitAddDevice(int id, t_faddrcc fpOut) {
-    vpit.connect.fpOut[id] = fpOut;
-    /* GATE tells if counter is connected */
-    vpit.connect.flagGate[id] = True;
-}
 
 /* Print PIT status */
 void devicePrintPit() {

@@ -11,7 +11,7 @@
 #include "qdx.h"
 #include "qddisk.h"
 
-#define SetHddStatus (vramRealByte(0x0040, 0x0074) = _ah)
+#define SetHddStatus (vramRealByte(0x0040, 0x0074) = vcpu.data.ah)
 #define GetHddStatus (vramRealByte(0x0040, 0x0074))
 
 static t_vaddrcc vhddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector) {
@@ -23,38 +23,38 @@ static t_vaddrcc vhddGetAddress(t_nubit8 cyl, t_nubit8 head, t_nubit8 sector) {
 }
 
 static void INT_13_02_HDD_ReadSector() {
-    t_nubit8 drive  = _dl;
-    t_nubit8 head   = _dh;
-    t_nubit8 cyl    = _ch | ((_cl & 0xc0) << 8);
-    t_nubit8 sector = _cl & 0x3f;
+    t_nubit8 drive  = vcpu.data.dl;
+    t_nubit8 head   = vcpu.data.dh;
+    t_nubit8 cyl    = vcpu.data.ch | ((vcpu.data.cl & 0xc0) << 8);
+    t_nubit8 sector = vcpu.data.cl & 0x3f;
     drive &= 0x7f;
     if (drive || !sector || head >= vhdd.data.nhead || sector > vhdd.data.nsector || cyl >= vhdd.data.ncyl) {
         /* sector not found */
-        _ah = 0x04;
-        SetBit(_eflags, VCPU_EFLAGS_CF);
+        vcpu.data.ah = 0x04;
+        SetBit(vcpu.data.eflags, VCPU_EFLAGS_CF);
     } else {
-        MEMCPY((void *) vramGetRealAddr(_es,_bx),
-               (void *) vhddGetAddress(cyl,head,sector), _al * vhdd.data.nbyte);
-        _ah = 0x00;
-        ClrBit(_eflags, VCPU_EFLAGS_CF);
+        MEMCPY((void *) vramGetRealAddr(vcpu.data.es.selector,vcpu.data.bx),
+               (void *) vhddGetAddress(cyl,head,sector), vcpu.data.al * vhdd.data.nbyte);
+        vcpu.data.ah = 0x00;
+        ClrBit(vcpu.data.eflags, VCPU_EFLAGS_CF);
     }
 }
 
 static void INT_13_03_HDD_WriteSector() {
-    t_nubit8 drive  = _dl;
-    t_nubit8 head   = _dh;
-    t_nubit8 cyl    = _ch | ((_cl & 0xc0) << 8);
-    t_nubit8 sector = _cl & 0x3f;
+    t_nubit8 drive  = vcpu.data.dl;
+    t_nubit8 head   = vcpu.data.dh;
+    t_nubit8 cyl    = vcpu.data.ch | ((vcpu.data.cl & 0xc0) << 8);
+    t_nubit8 sector = vcpu.data.cl & 0x3f;
     drive &= 0x7f;
     if (drive || !sector || head >= vhdd.data.nhead || sector > vhdd.data.nsector || cyl >= vhdd.data.ncyl) {
         /* sector not found */
-        _ah = 0x04;
-        SetBit(_eflags, VCPU_EFLAGS_CF);
+        vcpu.data.ah = 0x04;
+        SetBit(vcpu.data.eflags, VCPU_EFLAGS_CF);
     } else {
         MEMCPY((void *) vhddGetAddress(cyl,head,sector),
-               (void *) vramGetRealAddr(_es,_bx), _al * vhdd.data.nbyte);
-        _ah = 0x00;
-        ClrBit(_eflags, VCPU_EFLAGS_CF);
+               (void *) vramGetRealAddr(vcpu.data.es.selector,vcpu.data.bx), vcpu.data.al * vhdd.data.nbyte);
+        vcpu.data.ah = 0x00;
+        ClrBit(vcpu.data.eflags, VCPU_EFLAGS_CF);
     }
 }
 

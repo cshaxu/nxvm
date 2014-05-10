@@ -28,7 +28,7 @@ void* MEMSET(void *_Dst, int _Val, size_t _Size) {
 void* MEMCPY(void *_Dst, const void *_Src, size_t _Size) {
     return memcpy(_Dst, _Src, _Size);
 }
-void utilsSleep(unsigned int milisec) {}
+void utilsSleep(uint32_t milisec) {}
 
 /* device */
 void deviceStop() {

@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#include "../vglobal.h"
+
 extern t_faddrcc qdxTable[0x100];
 
 void qdxExecInt(t_nubit8 intId);

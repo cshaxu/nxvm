@@ -13,7 +13,6 @@ t_cpu vcpu;
 void vcpuInit() {
     vcpuinsInit();
 }
-
 void vcpuReset() {
     MEMSET((void *)(&vcpu), Zero8, sizeof(t_cpu));
 
@@ -85,13 +84,294 @@ void vcpuReset() {
 
     vcpuinsReset();
 }
-
 void vcpuRefresh() {
     vcpuinsRefresh();
 }
-
 void vcpuFinal() {
     vcpuinsFinal();
+}
+
+int deviceConnectCpuReadLinear(uint32_t linear, void *rdest, uint8_t size) {
+    return vcpuinsReadLinear(linear, (t_vaddrcc) rdest, size);
+}
+int deviceConnectCpuWriteLinear(uint32_t linear, void *rsrc, uint8_t size) {
+    return vcpuinsWriteLinear(linear, (t_vaddrcc) rsrc, size);
+}
+int deviceConnectCpuLoadES(uint16_t selector) {
+    return vcpuinsLoadSreg(&vcpu.data.es, selector);
+}
+int deviceConnectCpuLoadCS(uint16_t selector) {
+    return vcpuinsLoadSreg(&vcpu.data.cs, selector);
+}
+int deviceConnectCpuLoadSS(uint16_t selector) {
+    return vcpuinsLoadSreg(&vcpu.data.ss, selector);
+}
+int deviceConnectCpuLoadDS(uint16_t selector) {
+    return vcpuinsLoadSreg(&vcpu.data.ds, selector);
+}
+int deviceConnectCpuLoadFS(uint16_t selector) {
+    return vcpuinsLoadSreg(&vcpu.data.fs, selector);
+}
+int deviceConnectCpuLoadGS(uint16_t selector) {
+    return vcpuinsLoadSreg(&vcpu.data.gs, selector);
+}
+void deviceConnectCpuSetWR(uint32_t linear) {
+    vcpuins.data.wrLinear = linear;
+    vcpuins.data.flagWR = True;
+}
+void deviceConnectCpuSetWW(uint32_t linear) {
+    vcpuins.data.wwLinear = linear;
+    vcpuins.data.flagWW = True;
+}
+void deviceConnectCpuSetWE(uint32_t linear) {
+    vcpuins.data.weLinear = linear;
+    vcpuins.data.flagWE = True;
+}
+void deviceConnectCpuClearWR() {
+    vcpuins.data.flagWR = False;
+}
+void deviceConnectCpuClearWW() {
+    vcpuins.data.flagWW = False;
+}
+void deviceConnectCpuClearWE() {
+    vcpuins.data.flagWE = False;
+}
+
+int deviceConnectCpuGetCsDefSize() {
+    return vcpu.data.cs.seg.exec.defsize;
+}
+uint32_t deviceConnectCpuGetCsBase() {
+    return vcpu.data.cs.base;
+}
+
+int deviceConnectCpuGetCF() {
+    return _GetEFLAGS_CF;
+}
+int deviceConnectCpuGetPF() {
+    return _GetEFLAGS_PF;
+}
+int deviceConnectCpuGetAF() {
+    return _GetEFLAGS_AF;
+}
+int deviceConnectCpuGetZF() {
+    return _GetEFLAGS_ZF;
+}
+int deviceConnectCpuGetSF() {
+    return _GetEFLAGS_SF;
+}
+int deviceConnectCpuGetTF() {
+    return _GetEFLAGS_TF;
+}
+int deviceConnectCpuGetIF() {
+    return _GetEFLAGS_IF;
+}
+int deviceConnectCpuGetDF() {
+    return _GetEFLAGS_DF;
+}
+int deviceConnectCpuGetOF() {
+    return _GetEFLAGS_OF;
+}
+int deviceConnectCpuGetNT() {
+    return _GetEFLAGS_NT;
+}
+int deviceConnectCpuGetRF() {
+    return _GetEFLAGS_RF;
+}
+int deviceConnectCpuGetVM() {
+    return _GetEFLAGS_VM;
+}
+
+void deviceConnectCpuSetCF() {
+    _SetEFLAGS_CF;
+}
+void deviceConnectCpuSetPF() {
+    _SetEFLAGS_PF;
+}
+void deviceConnectCpuSetAF() {
+    _SetEFLAGS_AF;
+}
+void deviceConnectCpuSetZF() {
+    _SetEFLAGS_ZF;
+}
+void deviceConnectCpuSetSF() {
+    _SetEFLAGS_SF;
+}
+void deviceConnectCpuSetTF() {
+    _SetEFLAGS_TF;
+}
+void deviceConnectCpuSetIF() {
+    _SetEFLAGS_IF;
+}
+void deviceConnectCpuSetDF() {
+    _SetEFLAGS_DF;
+}
+void deviceConnectCpuSetOF() {
+    _SetEFLAGS_OF;
+}
+void deviceConnectCpuSetNT() {
+    _SetEFLAGS_NT;
+}
+void deviceConnectCpuSetRF() {
+    _SetEFLAGS_RF;
+}
+void deviceConnectCpuSetVM() {
+    _SetEFLAGS_VM;
+}
+
+void deviceConnectCpuClearCF() {
+    _ClrEFLAGS_CF;
+}
+void deviceConnectCpuClearPF() {
+    _ClrEFLAGS_PF;
+}
+void deviceConnectCpuClearAF() {
+    _ClrEFLAGS_AF;
+}
+void deviceConnectCpuClearZF() {
+    _ClrEFLAGS_ZF;
+}
+void deviceConnectCpuClearSF() {
+    _ClrEFLAGS_SF;
+}
+void deviceConnectCpuClearTF() {
+    _ClrEFLAGS_TF;
+}
+void deviceConnectCpuClearIF() {
+    _ClrEFLAGS_IF;
+}
+void deviceConnectCpuClearDF() {
+    _ClrEFLAGS_DF;
+}
+void deviceConnectCpuClearOF() {
+    _ClrEFLAGS_OF;
+}
+void deviceConnectCpuClearNT() {
+    _ClrEFLAGS_NT;
+}
+void deviceConnectCpuClearRF() {
+    _ClrEFLAGS_RF;
+}
+void deviceConnectCpuClearVM() {
+    _ClrEFLAGS_VM;
+}
+
+void *deviceConnectCpuGetRefEAX() {
+    return (void *)(&vcpu.data.eax);
+}
+void *deviceConnectCpuGetRefECX() {
+    return (void *)(&vcpu.data.ecx);
+}
+void *deviceConnectCpuGetRefEDX() {
+    return (void *)(&vcpu.data.edx);
+}
+void *deviceConnectCpuGetRefEBX() {
+    return (void *)(&vcpu.data.ebx);
+}
+void *deviceConnectCpuGetRefESP() {
+    return (void *)(&vcpu.data.esp);
+}
+void *deviceConnectCpuGetRefEBP() {
+    return (void *)(&vcpu.data.ebp);
+}
+void *deviceConnectCpuGetRefESI() {
+    return (void *)(&vcpu.data.esi);
+}
+void *deviceConnectCpuGetRefEDI() {
+    return (void *)(&vcpu.data.edi);
+}
+void *deviceConnectCpuGetRefEFLAGS() {
+    return (void *)(&vcpu.data.eflags);
+}
+void *deviceConnectCpuGetRefEIP() {
+    return (void *)(&vcpu.data.eip);
+}
+void *deviceConnectCpuGetRefCR(t_nubit8 crId) {
+    switch (crId) {
+    case 0:
+        return (void *)(&vcpu.data.cr0);
+    case 1:
+        return (void *)(&vcpu.data.cr1);
+    case 2:
+        return (void *)(&vcpu.data.cr2);
+    case 3:
+        return (void *)(&vcpu.data.cr3);
+    }
+    return (void *) NULL;
+}
+
+void *deviceConnectCpuGetRefAX() {
+    return (void *)(&vcpu.data.ax);
+}
+void *deviceConnectCpuGetRefCX() {
+    return (void *)(&vcpu.data.cx);
+}
+void *deviceConnectCpuGetRefDX() {
+    return (void *)(&vcpu.data.dx);
+}
+void *deviceConnectCpuGetRefBX() {
+    return (void *)(&vcpu.data.bx);
+}
+void *deviceConnectCpuGetRefSP() {
+    return (void *)(&vcpu.data.sp);
+}
+void *deviceConnectCpuGetRefBP() {
+    return (void *)(&vcpu.data.bp);
+}
+void *deviceConnectCpuGetRefSI() {
+    return (void *)(&vcpu.data.si);
+}
+void *deviceConnectCpuGetRefDI() {
+    return (void *)(&vcpu.data.di);
+}
+void *deviceConnectCpuGetRefFLAGS() {
+    return (void *)(&vcpu.data.flags);
+}
+void *deviceConnectCpuGetRefIP() {
+    return (void *)(&vcpu.data.ip);
+}
+
+void *deviceConnectCpuGetRefAH() {
+    return (void *)(&vcpu.data.ah);
+}
+void *deviceConnectCpuGetRefCH() {
+    return (void *)(&vcpu.data.ch);
+}
+void *deviceConnectCpuGetRefDH() {
+    return (void *)(&vcpu.data.dh);
+}
+void *deviceConnectCpuGetRefBH() {
+    return (void *)(&vcpu.data.bh);
+}
+void *deviceConnectCpuGetRefAL() {
+    return (void *)(&vcpu.data.al);
+}
+void *deviceConnectCpuGetRefCL() {
+    return (void *)(&vcpu.data.cl);
+}
+void *deviceConnectCpuGetRefDL() {
+    return (void *)(&vcpu.data.dl);
+}
+void *deviceConnectCpuGetRefBL() {
+    return (void *)(&vcpu.data.bl);
+}
+
+void *deviceConnectCpuGetRefES() {
+    return (void *)(&vcpu.data.es.selector);
+}
+void *deviceConnectCpuGetRefCS() {
+    return (void *)(&vcpu.data.cs.selector);
+}
+void *deviceConnectCpuGetRefSS() {
+    return (void *)(&vcpu.data.ss.selector);
+}
+void *deviceConnectCpuGetRefDS() {
+    return (void *)(&vcpu.data.ds.selector);
+}
+void *deviceConnectCpuGetRefFS() {
+    return (void *)(&vcpu.data.fs.selector);
+}
+void *deviceConnectCpuGetRefGS() {
+    return (void *)(&vcpu.data.gs.selector);
 }
 
 /* Prints user segment registers (ES, CS, SS, DS, FS, GS) */
@@ -111,14 +391,12 @@ static void print_sreg_seg(t_cpu_data_sreg *rsreg, const t_strptr label) {
                rsreg->seg.data.big ? "BIG" : "big");
     }
 }
-
 /* Prints system segment registers (TR, LDTR) */
 static void print_sreg_sys(t_cpu_data_sreg *rsreg, const t_strptr label) {
     PRINTF("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, Type=%04X\n", label,
            rsreg->selector, rsreg->base, rsreg->limit,
            rsreg->dpl, rsreg->sys.type);
 }
-
 /* Prints segment registers */
 void devicePrintCpuSreg() {
     print_sreg_seg(&vcpu.data.es, "ES");
@@ -130,11 +408,10 @@ void devicePrintCpuSreg() {
     print_sreg_sys(&vcpu.data.tr, "TR  ");
     print_sreg_sys(&vcpu.data.ldtr, "LDTR");
     PRINTF("GDTR Base=%08X, Limit=%04X\n",
-           _gdtr.base, _gdtr.limit);
+           vcpu.data.gdtr.base, vcpu.data.gdtr.limit);
     PRINTF("IDTR Base=%08X, Limit=%04X\n",
-           _idtr.base, _idtr.limit);
+           vcpu.data.idtr.base, vcpu.data.idtr.limit);
 }
-
 /* Prints control registers */
 void devicePrintCpuCreg() {
     PRINTF("CR0=%08X: %s %s %s %s %s %s\n", vcpu.data.cr0,
@@ -147,7 +424,6 @@ void devicePrintCpuCreg() {
     PRINTF("CR2=PFLR=%08X\n", vcpu.data.cr2);
     PRINTF("CR3=PDBR=%08X\n", vcpu.data.cr3);
 }
-
 /* Prints regular registers */
 void devicePrintCpuReg() {
     PRINTF( "EAX=%08X", vcpu.data.eax);
@@ -176,13 +452,23 @@ void devicePrintCpuReg() {
     PRINTF("%s ", _GetEFLAGS_CF ? "CF" : "cf");
     PRINTF("\n");
 }
-
 /* Prints active memory info */
 void devicePrintCpuMem() {
-    t_nsbitcc i;
+    t_nubitcc i;
     for (i = 0; i < vcpuins.data.msize; ++i) {
         PRINTF("%s: Lin=%08x, Data=%08x, Bytes=%1x\n",
                vcpuins.data.mem[i].flagWrite ? "Write" : "Read",
                vcpuins.data.mem[i].linear, vcpuins.data.mem[i].data, vcpuins.data.mem[i].byte);
+    }
+}
+void devicePrintCpuWatch() {
+    if (vcpuins.data.flagWR) {
+        PRINTF("Watch-read point: Lin=%08x\n", vcpuins.data.wrLinear);
+    }
+    if (vcpuins.data.flagWW) {
+        PRINTF("Watch-write point: Lin=%08x\n", vcpuins.data.wwLinear);
+    }
+    if (vcpuins.data.flagWE) {
+        PRINTF("Watch-exec point: Lin=%08x\n", vcpuins.data.weLinear);
     }
 }

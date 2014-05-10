@@ -104,7 +104,7 @@ typedef enum {
 typedef struct {
     t_aasm_oprreg32 base;
     t_aasm_oprreg32 index;
-    unsigned char scale;
+    uint8_t scale;
 } t_aasm_oprsib;
 typedef struct {
     t_aasm_oprtype  type;
@@ -128,34 +128,34 @@ typedef struct {
     t_aasm_oprcreg  creg;
     t_aasm_oprdreg  dreg;
     t_aasm_oprtreg  treg;
-    unsigned char   imms;  /* if imm is signed */
-    unsigned char   immn;  /* if imm is negative */
-    unsigned char   imm8;
-    unsigned short  imm16;
-    unsigned int    imm32;
+    uint8_t   imms;  /* if imm is signed */
+    uint8_t   immn;  /* if imm is negative */
+    uint8_t   imm8;
+    uint16_t  imm16;
+    uint32_t    imm32;
     char            disp8;
-    unsigned short  disp16; /* use as imm when type = 6; use by modrm as disp when mod = 0,1,2; */
-    unsigned int    disp32; /* use as imm when type = 7; use by modrm as disp when mod = 0,1,2; */
+    uint16_t  disp16; /* use as imm when type = 6; use by modrm as disp when mod = 0,1,2; */
+    uint32_t    disp32; /* use as imm when type = 7; use by modrm as disp when mod = 0,1,2; */
     t_aasm_oprptr   ptr; /* 0 = near; 1 = far */
-    unsigned short   rcs;
-    unsigned int       reip;
+    uint16_t   rcs;
+    uint32_t       reip;
     char            label[0x100];
-    unsigned char flages, flagcs, flagss, flagds, flagfs, flaggs;
+    uint8_t flages, flagcs, flagss, flagds, flagfs, flaggs;
 } t_aasm_oprinfo;
 /* global variables */
 
-typedef unsigned char t_aasm_prefix;
+typedef uint8_t t_aasm_prefix;
 
-static unsigned char defsize; /* default size passed in */
+static uint8_t defsize; /* default size passed in */
 static t_aasm_prefix prefix_oprsizeg, prefix_addrsizeg;
 static t_aasm_prefix prefix_oprsize, prefix_addrsize;
 static t_aasm_prefix prefix_lock, prefix_repz, prefix_repnz;
-static unsigned char acode[15];
-static unsigned char iop;
+static uint8_t acode[15];
+static uint8_t iop;
 static char *rop, *ropr1, *ropr2, *ropr3;
-static unsigned short avcs, avip;
+static uint16_t avcs, avip;
 static char *aop, *aopr1, *aopr2;
-static unsigned char flagError;
+static uint8_t flagError;
 static t_aasm_oprinfo aoprig, aopri1, aopri2, aopri3;
 static t_aasm_oprinfo *rinfo = NULL;
 /* arg flag level 0 */
@@ -573,18 +573,18 @@ typedef enum {
     TOKEN_TR6,TOKEN_TR7,TOKEN_DOLLAR
 } t_aasm_token;
 /* token variables */
-static unsigned char tokimm8;
-static unsigned short tokimm16;
-static unsigned int tokimm32;
+static uint8_t tokimm8;
+static uint16_t tokimm16;
+static uint32_t tokimm32;
 static char tokchar;
 static char tokstring[0x100], toklabel[0x100];
 #define tokch  (*tokptr)
 #define take(n) (flagend = 1, token = (n))
 static t_aasm_token gettoken(char *str) {
     static char *tokptr = NULL;
-    unsigned char toklen = 0;
-    unsigned int tokimm = 0;
-    unsigned char flagend = 0;
+    uint8_t toklen = 0;
+    uint32_t tokimm = 0;
+    uint8_t flagend = 0;
     t_aasm_token token = TOKEN_NULL;
     t_aasm_scan_state state = STATE_START;
     char *tokptrbak;
@@ -913,7 +913,7 @@ static t_aasm_token gettoken(char *str) {
                 break;
             default:
                 tokptr--;
-                tokimm8 = (unsigned char) tokimm;
+                tokimm8 = (uint8_t) tokimm;
                 take(TOKEN_IMM8);
                 break;
             }
@@ -1094,7 +1094,7 @@ static t_aasm_token gettoken(char *str) {
                 break;
             default:
                 tokptr--;
-                tokimm16 = (unsigned short) tokimm;
+                tokimm16 = (uint16_t) tokimm;
                 take(TOKEN_IMM16);
                 break;
             }
@@ -1395,7 +1395,7 @@ static t_aasm_token gettoken(char *str) {
                 break;
             default:
                 tokptr--;
-                tokimm32 = (unsigned int) tokimm;
+                tokimm32 = (uint32_t) tokimm;
                 take(TOKEN_IMM32);
                 break;
             }
@@ -2175,7 +2175,7 @@ static t_aasm_token gettoken(char *str) {
                 break;
             default:
                 tokptr--;
-                tokimm8 = (unsigned char) tokimm;
+                tokimm8 = (uint8_t) tokimm;
                 take(TOKEN_IMM8);
                 break;
             }
@@ -2192,7 +2192,7 @@ static t_aasm_token gettoken(char *str) {
                 break;
             default:
                 tokptr--;
-                tokimm8 = (unsigned char) tokimm;
+                tokimm8 = (uint8_t) tokimm;
                 take(TOKEN_IMM8);
                 break;
             }
@@ -2206,7 +2206,7 @@ static t_aasm_token gettoken(char *str) {
                 break;
             default:
                 tokptr--;
-                tokimm8 = (unsigned char) tokimm;
+                tokimm8 = (uint8_t) tokimm;
                 take(TOKEN_IMM8);
                 break;
             }
@@ -2223,7 +2223,7 @@ static t_aasm_token gettoken(char *str) {
                 break;
             default:
                 tokptr--;
-                tokimm8 = (unsigned char) tokimm;
+                tokimm8 = (uint8_t) tokimm;
                 take(TOKEN_IMM8);
                 break;
             }
@@ -2333,7 +2333,7 @@ static t_aasm_token gettoken(char *str) {
                 break;
             default:
                 tokptr--;
-                tokimm8 = (unsigned char) tokimm;
+                tokimm8 = (uint8_t) tokimm;
                 take(TOKEN_IMM8);
                 break;
             }
@@ -2704,10 +2704,10 @@ static void matchtoken(t_aasm_token token) {
 /* assembly compiler: parser / grammar */
 static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
     t_aasm_oprinfo info;
-    unsigned char oldtoken;
-    unsigned char bx,bp,si,di,neg,al;
-    unsigned char eax,ecx,edx,ebx,esp,ebp,esi,edi;
-    unsigned char ieax,iecx,iedx,iebx,iebp,iesi,iedi;
+    uint8_t oldtoken;
+    uint8_t bx,bp,si,di,neg,al;
+    uint8_t eax,ecx,edx,ebx,esp,ebp,esi,edi;
+    uint8_t ieax,iecx,iedx,iebx,iebp,iesi,iedi;
     _cb("parsearg_mem");
     MEMSET((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
     bx = bp = si = di = neg = al = 0;
@@ -3662,36 +3662,36 @@ static t_aasm_oprinfo parsearg(char *arg) {
     return info;
 }
 /* assembly compiler: code generator */
-static void _c_setbyte(unsigned char byte) {
-    (*(unsigned char *)(acode + iop)) = byte;
+static void _c_setbyte(uint8_t byte) {
+    (*(uint8_t *)(acode + iop)) = byte;
     iop += 1;
 }
-static void _c_setword(unsigned short word) {
-    (*(unsigned short *)(acode + iop)) = word;
+static void _c_setword(uint16_t word) {
+    (*(uint16_t *)(acode + iop)) = word;
     iop += 2;
 }
-static void _c_setdword(unsigned int dword) {
-    (*(unsigned int *)(acode + iop)) = dword;
+static void _c_setdword(uint32_t dword) {
+    (*(uint32_t *)(acode + iop)) = dword;
     iop += 4;
 }
-static void _c_imm8(unsigned char byte) {
+static void _c_imm8(uint8_t byte) {
     _cb("_c_imm8");
     _chr(_c_setbyte(byte));
     _ce;
 }
-static void _c_imm16(unsigned short word) {
+static void _c_imm16(uint16_t word) {
     _cb("_c_imm16");
     _chr(_c_setword(word));
     _ce;
 }
-static void _c_imm32(unsigned int dword) {
+static void _c_imm32(uint32_t dword) {
     _cb("_c_imm32");
     _chr(_c_setdword(dword));
     _ce;
 }
-static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg) {
-    unsigned char sibval;
-    unsigned char modrmval = (reg << 3);
+static void _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
+    uint8_t sibval;
+    uint8_t modrmval = (reg << 3);
 
     _cb("_c_rminfo");
 
@@ -3709,7 +3709,7 @@ static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg) {
         switch (rminfo.mod) {
         case MOD_M:
             modrmval |= (0 << 6);
-            modrmval |= (unsigned char)rminfo.mem;
+            modrmval |= (uint8_t)rminfo.mem;
             _c_setbyte(modrmval);
             switch (rminfo.mem) {
             case MEM_BP:
@@ -3721,13 +3721,13 @@ static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg) {
             break;
         case MOD_M_DISP8:
             modrmval |= (1 << 6);
-            modrmval |= (unsigned char)rminfo.mem;
+            modrmval |= (uint8_t)rminfo.mem;
             _c_setbyte(modrmval);
             _c_setbyte(rminfo.disp8);
             break;
         case MOD_M_DISP16:
             modrmval |= (2 << 6);
-            modrmval |= (unsigned char)rminfo.mem;
+            modrmval |= (uint8_t)rminfo.mem;
             _c_setbyte(modrmval);
             _c_setword(rminfo.disp16);
             break;
@@ -3736,15 +3736,15 @@ static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg) {
             modrmval |= (3 << 6);
             switch (rminfo.type) {
             case TYPE_R8:
-                modrmval |= (unsigned char)rminfo.reg8;
+                modrmval |= (uint8_t)rminfo.reg8;
                 _c_setbyte(modrmval);
                 break;
             case TYPE_R16:
-                modrmval |= (unsigned char)rminfo.reg16;
+                modrmval |= (uint8_t)rminfo.reg16;
                 _c_setbyte(modrmval);
                 break;
             case TYPE_R32:
-                modrmval |= (unsigned char)rminfo.reg32;
+                modrmval |= (uint8_t)rminfo.reg32;
                 _c_setbyte(modrmval);
                 break;
             default:
@@ -3772,12 +3772,12 @@ static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg) {
         switch (rminfo.mod) {
         case MOD_M:
             modrmval |= (0 << 6);
-            modrmval |= (unsigned char)rminfo.mem & 0x07;
+            modrmval |= (uint8_t)rminfo.mem & 0x07;
             _c_setbyte(modrmval);
             switch (rminfo.mem) {
             case MEM_SIB:
-                sibval = (unsigned char)rminfo.sib.base;
-                sibval |= ((unsigned char)rminfo.sib.index << 3);
+                sibval = (uint8_t)rminfo.sib.base;
+                sibval |= ((uint8_t)rminfo.sib.index << 3);
                 switch (rminfo.sib.scale) {
                 case 0:
                     rminfo.sib.scale = 0;
@@ -3817,12 +3817,12 @@ static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg) {
             break;
         case MOD_M_DISP8:
             modrmval |= (1 << 6);
-            modrmval |= (unsigned char)rminfo.mem & 0x07;
+            modrmval |= (uint8_t)rminfo.mem & 0x07;
             _c_setbyte(modrmval);
             switch (rminfo.mem) {
             case MEM_SIB:
-                sibval = (unsigned char)rminfo.sib.base;
-                sibval |= ((unsigned char)rminfo.sib.index << 3);
+                sibval = (uint8_t)rminfo.sib.base;
+                sibval |= ((uint8_t)rminfo.sib.index << 3);
                 switch (rminfo.sib.scale) {
                 case 0:
                     rminfo.sib.scale = 0;
@@ -3853,12 +3853,12 @@ static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg) {
             break;
         case MOD_M_DISP32:
             modrmval |= (2 << 6);
-            modrmval |= (unsigned char)rminfo.mem & 0x07;
+            modrmval |= (uint8_t)rminfo.mem & 0x07;
             _c_setbyte(modrmval);
             switch (rminfo.mem) {
             case MEM_SIB:
-                sibval = (unsigned char)rminfo.sib.base;
-                sibval |= ((unsigned char)rminfo.sib.index << 3);
+                sibval = (uint8_t)rminfo.sib.base;
+                sibval |= ((uint8_t)rminfo.sib.index << 3);
                 switch (rminfo.sib.scale) {
                 case 0:
                     rminfo.sib.scale = 0;
@@ -3892,15 +3892,15 @@ static void _c_modrm(t_aasm_oprinfo rminfo, unsigned char reg) {
             modrmval |= (3 << 6);
             switch (rminfo.type) {
             case TYPE_R8:
-                modrmval |= (unsigned char)rminfo.reg8;
+                modrmval |= (uint8_t)rminfo.reg8;
                 _c_setbyte(modrmval);
                 break;
             case TYPE_R16:
-                modrmval |= (unsigned char)rminfo.reg16;
+                modrmval |= (uint8_t)rminfo.reg16;
                 _c_setbyte(modrmval);
                 break;
             case TYPE_R32:
-                modrmval |= (unsigned char)rminfo.reg32;
+                modrmval |= (uint8_t)rminfo.reg32;
                 _c_setbyte(modrmval);
                 break;
             default:
@@ -3929,7 +3929,7 @@ static void ADD_RM8_R8() {
     _chr(_c_modrm(aopri1, aopri2.reg8));
     _ce;
 }
-static void ADD_RM32_R32(unsigned char byte) {
+static void ADD_RM32_R32(uint8_t byte) {
     _cb("ADD_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x01);
@@ -3956,7 +3956,7 @@ static void ADD_R8_RM8() {
     _chr(_c_modrm(aopri2, aopri1.reg8));
     _ce;
 }
-static void ADD_R32_RM32(unsigned char byte) {
+static void ADD_R32_RM32(uint8_t byte) {
     _cb("ADD_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x03);
@@ -3983,7 +3983,7 @@ static void ADD_AL_I8() {
     _chr(_c_imm8(aopri2.imm8));
     _ce;
 }
-static void ADD_EAX_I32(unsigned char byte) {
+static void ADD_EAX_I32(uint8_t byte) {
     _cb("ADD_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x05);
@@ -4020,7 +4020,7 @@ static void OR_RM8_R8() {
     _chr(_c_modrm(aopri1, aopri2.reg8));
     _ce;
 }
-static void OR_RM32_R32(unsigned char byte) {
+static void OR_RM32_R32(uint8_t byte) {
     _cb("OR_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x09);
@@ -4047,7 +4047,7 @@ static void OR_R8_RM8() {
     _chr(_c_modrm(aopri2, aopri1.reg8));
     _ce;
 }
-static void OR_R32_RM32(unsigned char byte) {
+static void OR_R32_RM32(uint8_t byte) {
     _cb("OR_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x0b);
@@ -4074,7 +4074,7 @@ static void OR_AL_I8() {
     _c_imm8(aopri2.imm8);
     _ce;
 }
-static void OR_EAX_I32(unsigned char byte) {
+static void OR_EAX_I32(uint8_t byte) {
     _cb("OR_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x0d);
@@ -4116,7 +4116,7 @@ static void ADC_RM8_R8() {
     _chr(_c_modrm(aopri1, aopri2.reg8));
     _ce;
 }
-static void ADC_RM32_R32(unsigned char byte) {
+static void ADC_RM32_R32(uint8_t byte) {
     _cb("ADC_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x11);
@@ -4143,7 +4143,7 @@ static void ADC_R8_RM8() {
     _chr(_c_modrm(aopri2, aopri1.reg8));
     _ce;
 }
-static void ADC_R32_RM32(unsigned char byte) {
+static void ADC_R32_RM32(uint8_t byte) {
     _cb("ADC_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x13);
@@ -4170,7 +4170,7 @@ static void ADC_AL_I8() {
     _chr(_c_imm8(aopri2.imm8));
     _ce;
 }
-static void ADC_EAX_I32(unsigned char byte) {
+static void ADC_EAX_I32(uint8_t byte) {
     _cb("ADC_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x15);
@@ -4207,7 +4207,7 @@ static void SBB_RM8_R8() {
     _chr(_c_modrm(aopri1, aopri2.reg8));
     _ce;
 }
-static void SBB_RM32_R32(unsigned char byte) {
+static void SBB_RM32_R32(uint8_t byte) {
     _cb("SBB_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x19);
@@ -4234,7 +4234,7 @@ static void SBB_R8_RM8() {
     _chr(_c_modrm(aopri2, aopri1.reg8));
     _ce;
 }
-static void SBB_R32_RM32(unsigned char byte) {
+static void SBB_R32_RM32(uint8_t byte) {
     _cb("SBB_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x1b);
@@ -4261,7 +4261,7 @@ static void SBB_AL_I8() {
     _c_imm8(aopri2.imm8);
     _ce;
 }
-static void SBB_EAX_I32(unsigned char byte) {
+static void SBB_EAX_I32(uint8_t byte) {
     _cb("SBB_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x1d);
@@ -4298,7 +4298,7 @@ static void AND_RM8_R8() {
     _chr(_c_modrm(aopri1, aopri2.reg8));
     _ce;
 }
-static void AND_RM32_R32(unsigned char byte) {
+static void AND_RM32_R32(uint8_t byte) {
     _cb("AND_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x21);
@@ -4325,7 +4325,7 @@ static void AND_R8_RM8() {
     _chr(_c_modrm(aopri2, aopri1.reg8));
     _ce;
 }
-static void AND_R32_RM32(unsigned char byte) {
+static void AND_R32_RM32(uint8_t byte) {
     _cb("AND_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x23);
@@ -4352,7 +4352,7 @@ static void AND_AL_I8() {
     _chr(_c_imm8(aopri2.imm8));
     _ce;
 }
-static void AND_EAX_I32(unsigned char byte) {
+static void AND_EAX_I32(uint8_t byte) {
     _cb("AND_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x25);
@@ -4391,7 +4391,7 @@ static void SUB_RM8_R8() {
     _chr(_c_modrm(aopri1, aopri2.reg8));
     _ce;
 }
-static void SUB_RM32_R32(unsigned char byte) {
+static void SUB_RM32_R32(uint8_t byte) {
     _cb("SUB_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x29);
@@ -4418,7 +4418,7 @@ static void SUB_R8_RM8() {
     _chr(_c_modrm(aopri2, aopri1.reg8));
     _ce;
 }
-static void SUB_R32_RM32(unsigned char byte) {
+static void SUB_R32_RM32(uint8_t byte) {
     _cb("SUB_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x2b);
@@ -4445,7 +4445,7 @@ static void SUB_AL_I8() {
     _c_imm8(aopri2.imm8);
     _ce;
 }
-static void SUB_EAX_I32(unsigned char byte) {
+static void SUB_EAX_I32(uint8_t byte) {
     _cb("SUB_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x2d);
@@ -4484,7 +4484,7 @@ static void XOR_RM8_R8() {
     _chr(_c_modrm(aopri1, aopri2.reg8));
     _ce;
 }
-static void XOR_RM32_R32(unsigned char byte) {
+static void XOR_RM32_R32(uint8_t byte) {
     _cb("XOR_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x31);
@@ -4511,7 +4511,7 @@ static void XOR_R8_RM8() {
     _chr(_c_modrm(aopri2, aopri1.reg8));
     _ce;
 }
-static void XOR_R32_RM32(unsigned char byte) {
+static void XOR_R32_RM32(uint8_t byte) {
     _cb("XOR_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x33);
@@ -4538,7 +4538,7 @@ static void XOR_AL_I8() {
     _chr(_c_imm8(aopri2.imm8));
     _ce;
 }
-static void XOR_EAX_I32(unsigned char byte) {
+static void XOR_EAX_I32(uint8_t byte) {
     _cb("XOR_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x35);
@@ -4577,7 +4577,7 @@ static void CMP_RM8_R8() {
     _chr(_c_modrm(aopri1, aopri2.reg8));
     _ce;
 }
-static void CMP_RM32_R32(unsigned char byte) {
+static void CMP_RM32_R32(uint8_t byte) {
     _cb("CMP_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x39);
@@ -4604,7 +4604,7 @@ static void CMP_R8_RM8() {
     _chr(_c_modrm(aopri2, aopri1.reg8));
     _ce;
 }
-static void CMP_R32_RM32(unsigned char byte) {
+static void CMP_R32_RM32(uint8_t byte) {
     _cb("CMP_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x3b);
@@ -4631,7 +4631,7 @@ static void CMP_AL_I8() {
     _c_imm8(aopri2.imm8);
     _ce;
 }
-static void CMP_EAX_I32(unsigned char byte) {
+static void CMP_EAX_I32(uint8_t byte) {
     _cb("CMP_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x3d);
@@ -4664,212 +4664,212 @@ static void AAS() {
     else _ser_;
     _ce;
 }
-static void INC_EAX(unsigned char byte) {
+static void INC_EAX(uint8_t byte) {
     _cb("INC_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x40);
     _ce;
 }
-static void INC_ECX(unsigned char byte) {
+static void INC_ECX(uint8_t byte) {
     _cb("INC_ECX");
     _SetOperandSize(byte);
     _c_setbyte(0x41);
     _ce;
 }
-static void INC_EDX(unsigned char byte) {
+static void INC_EDX(uint8_t byte) {
     _cb("INC_EDX");
     _SetOperandSize(byte);
     _c_setbyte(0x42);
     _ce;
 }
-static void INC_EBX(unsigned char byte) {
+static void INC_EBX(uint8_t byte) {
     _cb("INC_EBX");
     _SetOperandSize(byte);
     _c_setbyte(0x43);
     _ce;
 }
-static void INC_ESP(unsigned char byte) {
+static void INC_ESP(uint8_t byte) {
     _cb("INC_ESP");
     _SetOperandSize(byte);
     _c_setbyte(0x44);
     _ce;
 }
-static void INC_EBP(unsigned char byte) {
+static void INC_EBP(uint8_t byte) {
     _cb("INC_EBP");
     _SetOperandSize(byte);
     _c_setbyte(0x45);
     _ce;
 }
-static void INC_ESI(unsigned char byte) {
+static void INC_ESI(uint8_t byte) {
     _cb("INC_ESI");
     _SetOperandSize(byte);
     _c_setbyte(0x46);
     _ce;
 }
-static void INC_EDI(unsigned char byte) {
+static void INC_EDI(uint8_t byte) {
     _cb("INC_EDI");
     _SetOperandSize(byte);
     _c_setbyte(0x47);
     _ce;
 }
-static void DEC_EAX(unsigned char byte) {
+static void DEC_EAX(uint8_t byte) {
     _cb("DEC_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x48);
     _ce;
 }
-static void DEC_ECX(unsigned char byte) {
+static void DEC_ECX(uint8_t byte) {
     _cb("DEC_ECX");
     _SetOperandSize(byte);
     _c_setbyte(0x49);
     _ce;
 }
-static void DEC_EDX(unsigned char byte) {
+static void DEC_EDX(uint8_t byte) {
     _cb("DEC_EDX");
     _SetOperandSize(byte);
     _c_setbyte(0x4a);
     _ce;
 }
-static void DEC_EBX(unsigned char byte) {
+static void DEC_EBX(uint8_t byte) {
     _cb("DEC_EBX");
     _SetOperandSize(byte);
     _c_setbyte(0x4b);
     _ce;
 }
-static void DEC_ESP(unsigned char byte) {
+static void DEC_ESP(uint8_t byte) {
     _cb("DEC_ESP");
     _SetOperandSize(byte);
     _c_setbyte(0x4c);
     _ce;
 }
-static void DEC_EBP(unsigned char byte) {
+static void DEC_EBP(uint8_t byte) {
     _cb("DEC_EBP");
     _SetOperandSize(byte);
     _c_setbyte(0x4d);
     _ce;
 }
-static void DEC_ESI(unsigned char byte) {
+static void DEC_ESI(uint8_t byte) {
     _cb("DEC_ESI");
     _SetOperandSize(byte);
     _c_setbyte(0x4e);
     _ce;
 }
-static void DEC_EDI(unsigned char byte) {
+static void DEC_EDI(uint8_t byte) {
     _cb("DEC_EDI");
     _SetOperandSize(byte);
     _c_setbyte(0x4f);
     _ce;
 }
-static void PUSH_EAX(unsigned char byte) {
+static void PUSH_EAX(uint8_t byte) {
     _cb("PUSH_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x50);
     _ce;
 }
-static void PUSH_ECX(unsigned char byte) {
+static void PUSH_ECX(uint8_t byte) {
     _cb("PUSH_ECX");
     _SetOperandSize(byte);
     _c_setbyte(0x51);
     _ce;
 }
-static void PUSH_EDX(unsigned char byte) {
+static void PUSH_EDX(uint8_t byte) {
     _cb("PUSH_EDX");
     _SetOperandSize(byte);
     _c_setbyte(0x52);
     _ce;
 }
-static void PUSH_EBX(unsigned char byte) {
+static void PUSH_EBX(uint8_t byte) {
     _cb("PUSH_EBX");
     _SetOperandSize(byte);
     _c_setbyte(0x53);
     _ce;
 }
-static void PUSH_ESP(unsigned char byte) {
+static void PUSH_ESP(uint8_t byte) {
     _cb("PUSH_ESP");
     _SetOperandSize(byte);
     _c_setbyte(0x54);
     _ce;
 }
-static void PUSH_EBP(unsigned char byte) {
+static void PUSH_EBP(uint8_t byte) {
     _cb("PUSH_EBP");
     _SetOperandSize(byte);
     _c_setbyte(0x55);
     _ce;
 }
-static void PUSH_ESI(unsigned char byte) {
+static void PUSH_ESI(uint8_t byte) {
     _cb("PUSH_ESI");
     _SetOperandSize(byte);
     _c_setbyte(0x56);
     _ce;
 }
-static void PUSH_EDI(unsigned char byte) {
+static void PUSH_EDI(uint8_t byte) {
     _cb("PUSH_EDI");
     _SetOperandSize(byte);
     _c_setbyte(0x57);
     _ce;
 }
-static void POP_EAX(unsigned char byte) {
+static void POP_EAX(uint8_t byte) {
     _cb("POP_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x58);
     _ce;
 }
-static void POP_ECX(unsigned char byte) {
+static void POP_ECX(uint8_t byte) {
     _cb("POP_ECX");
     _SetOperandSize(byte);
     _c_setbyte(0x59);
     _ce;
 }
-static void POP_EDX(unsigned char byte) {
+static void POP_EDX(uint8_t byte) {
     _cb("POP_EDX");
     _SetOperandSize(byte);
     _c_setbyte(0x5a);
     _ce;
 }
-static void POP_EBX(unsigned char byte) {
+static void POP_EBX(uint8_t byte) {
     _cb("POP_EBX");
     _SetOperandSize(byte);
     _c_setbyte(0x5b);
     _ce;
 }
-static void POP_ESP(unsigned char byte) {
+static void POP_ESP(uint8_t byte) {
     _cb("POP_ESP");
     _SetOperandSize(byte);
     _c_setbyte(0x5c);
     _ce;
 }
-static void POP_EBP(unsigned char byte) {
+static void POP_EBP(uint8_t byte) {
     _cb("POP_EBP");
     _SetOperandSize(byte);
     _c_setbyte(0x5d);
     _ce;
 }
-static void POP_ESI(unsigned char byte) {
+static void POP_ESI(uint8_t byte) {
     _cb("POP_ESI");
     _SetOperandSize(byte);
     _c_setbyte(0x5e);
     _ce;
 }
-static void POP_EDI(unsigned char byte) {
+static void POP_EDI(uint8_t byte) {
     _cb("POP_EDI");
     _SetOperandSize(byte);
     _c_setbyte(0x5f);
     _ce;
 }
-static void PUSHA(unsigned char byte) {
+static void PUSHA(uint8_t byte) {
     _cb("PUSHA");
     _SetOperandSize(byte);
     _c_setbyte(0x60);
     _ce;
 }
-static void POPA(unsigned char byte) {
+static void POPA(uint8_t byte) {
     _cb("POPA");
     _SetOperandSize(byte);
     _c_setbyte(0x61);
     _ce;
 }
 
-static void BOUND_R32_M32_32(unsigned char byte) {
+static void BOUND_R32_M32_32(uint8_t byte) {
     _cb("BOUND_R32_M32_32");
     _SetOperandSize(byte);
     _c_setbyte(0x62);
@@ -4924,7 +4924,7 @@ static void PREFIX_AddrSize() {
     else _ser_;
     _ce;
 }
-static void PUSH_I32(unsigned char byte) {
+static void PUSH_I32(uint8_t byte) {
     _cb("PUSH_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x68);
@@ -4945,7 +4945,7 @@ static void PUSH_I32(unsigned char byte) {
     }
     _ce;
 }
-static void IMUL_R32_RM32_I32(unsigned char byte) {
+static void IMUL_R32_RM32_I32(uint8_t byte) {
     _cb("IMUL_R32_RM32_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x69);
@@ -4974,7 +4974,7 @@ static void PUSH_I8() {
     _chr(_c_imm8(aopri1.imm8));
     _ce;
 }
-static void IMUL_R32_RM32_I8(unsigned char byte) {
+static void IMUL_R32_RM32_I8(uint8_t byte) {
     _cb("IMUL_R32_RM32_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x6b);
@@ -5007,7 +5007,7 @@ static void INSB() {
     else _ser_;
     _ce;
 }
-static void INSW(unsigned char byte) {
+static void INSW(uint8_t byte) {
     _cb("INSW");
     _SetOperandSize(byte);
     _c_setbyte(0x6d);
@@ -5046,7 +5046,7 @@ static void OUTSB() {
     else _ser_;
     _ce;
 }
-static void OUTSW(unsigned char byte) {
+static void OUTSW(uint8_t byte) {
     _cb("OUTSW");
     _SetOperandSize(byte);
     _c_setbyte(0x6f);
@@ -5075,14 +5075,14 @@ static void OUTSW(unsigned char byte) {
     }
     _ce;
 }
-static void INS_80(unsigned char rid) {
+static void INS_80(uint8_t rid) {
     _cb("INS_80");
     _c_setbyte(0x80);
     _chr(_c_modrm(aopri1, rid));
     _chr(_c_imm8(aopri2.imm8));
     _ce;
 }
-static void INS_81(unsigned char rid, unsigned char byte) {
+static void INS_81(uint8_t rid, uint8_t byte) {
     _cb("INS_81");
     _SetOperandSize(byte);
     _c_setbyte(0x81);
@@ -5104,7 +5104,7 @@ static void INS_81(unsigned char rid, unsigned char byte) {
     }
     _ce;
 }
-static void INS_83(unsigned char rid, unsigned char byte) {
+static void INS_83(uint8_t rid, uint8_t byte) {
     _cb("INS_83");
     _SetOperandSize(byte);
     _c_setbyte(0x83);
@@ -5118,7 +5118,7 @@ static void TEST_RM8_R8() {
     _chr(_c_modrm(aopri1, aopri2.reg8));
     _ce;
 }
-static void TEST_RM32_R32(unsigned char byte) {
+static void TEST_RM32_R32(uint8_t byte) {
     _cb("TEST_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x85);
@@ -5145,7 +5145,7 @@ static void XCHG_RM8_R8() {
     _chr(_c_modrm(aopri1, aopri2.reg8));
     _ce;
 }
-static void XCHG_RM32_R32(unsigned char byte) {
+static void XCHG_RM32_R32(uint8_t byte) {
     _cb("XCHG_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x87);
@@ -5172,7 +5172,7 @@ static void MOV_RM8_R8() {
     _chr(_c_modrm(aopri1, aopri2.reg8));
     _ce;
 }
-static void MOV_RM32_R32(unsigned char byte) {
+static void MOV_RM32_R32(uint8_t byte) {
     _cb("MOV_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x89);
@@ -5199,7 +5199,7 @@ static void MOV_R8_RM8() {
     _chr(_c_modrm(aopri2, aopri1.reg8));
     _ce;
 }
-static void MOV_R32_RM32(unsigned char byte) {
+static void MOV_R32_RM32(uint8_t byte) {
     _cb("MOV_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x8b);
@@ -5220,14 +5220,14 @@ static void MOV_R32_RM32(unsigned char byte) {
     }
     _ce;
 }
-static void MOV_RM16_SREG(unsigned char byte) {
+static void MOV_RM16_SREG(uint8_t byte) {
     _cb("MOV_RM16_SREG");
     _SetOperandSize(byte);
     _c_setbyte(0x8c);
     _chr(_c_modrm(aopri1, aopri2.sreg));
     _ce;
 }
-static void LEA_R32_M32(unsigned char byte) {
+static void LEA_R32_M32(uint8_t byte) {
     _cb("LEA_R32_M32");
     _SetOperandSize(byte);
     _c_setbyte(0x8d);
@@ -5248,14 +5248,14 @@ static void LEA_R32_M32(unsigned char byte) {
     }
     _ce;
 }
-static void MOV_SREG_RM16(unsigned char byte) {
+static void MOV_SREG_RM16(uint8_t byte) {
     _cb("MOV_SREG_RM16");
     _SetOperandSize(byte);
     _c_setbyte(0x8e);
     _chr(_c_modrm(aopri2, aopri1.sreg));
     _ce;
 }
-static void INS_8F(unsigned char rid, unsigned char byte) {
+static void INS_8F(uint8_t rid, uint8_t byte) {
     _cb("INS_8F");
     _SetOperandSize(byte);
     _c_setbyte(0x8f);
@@ -5268,81 +5268,81 @@ static void NOP() {
     else _ser_;
     _ce;
 }
-static void XCHG_EAX_EAX(unsigned char byte) {
+static void XCHG_EAX_EAX(uint8_t byte) {
     _cb("XCHG_EAX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x90);
     _ce;
 }
-static void XCHG_ECX_EAX(unsigned char byte) {
+static void XCHG_ECX_EAX(uint8_t byte) {
     _cb("XCHG_ECX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x91);
     _ce;
 }
-static void XCHG_EDX_EAX(unsigned char byte) {
+static void XCHG_EDX_EAX(uint8_t byte) {
     _cb("XCHG_EDX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x92);
     _ce;
 }
-static void XCHG_EBX_EAX(unsigned char byte) {
+static void XCHG_EBX_EAX(uint8_t byte) {
     _cb("XCHG_EBX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x93);
     _ce;
 }
-static void XCHG_ESP_EAX(unsigned char byte) {
+static void XCHG_ESP_EAX(uint8_t byte) {
     _cb("XCHG_ESP_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x94);
     _ce;
 }
-static void XCHG_EBP_EAX(unsigned char byte) {
+static void XCHG_EBP_EAX(uint8_t byte) {
     _cb("XCHG_EBP_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x95);
     _ce;
 }
-static void XCHG_ESI_EAX(unsigned char byte) {
+static void XCHG_ESI_EAX(uint8_t byte) {
     _cb("XCHG_ESI_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x96);
     _ce;
 }
-static void XCHG_EDI_EAX(unsigned char byte) {
+static void XCHG_EDI_EAX(uint8_t byte) {
     _cb("XCHG_EDI_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x97);
     _ce;
 }
-static void CBW(unsigned char byte) {
+static void CBW(uint8_t byte) {
     _cb("CBW");
     _SetOperandSize(byte);
     if (ARG_NONE) _c_setbyte(0x98);
     else _ser_;
     _ce;
 }
-static void CWD(unsigned char byte) {
+static void CWD(uint8_t byte) {
     _cb("CWD");
     _SetOperandSize(byte);
     if (ARG_NONE) _c_setbyte(0x99);
     else _ser_;
     _ce;
 }
-static void CALL_PTR16_32(unsigned char byte) {
+static void CALL_PTR16_32(uint8_t byte) {
     _cb("CALL_PTR16_32");
     _SetOperandSize(byte);
     _c_setbyte(0x9a);
     switch (byte) {
     case 2:
         _bb("byte(2)");
-        _chr(_c_imm16((unsigned short) aopri1.reip));
+        _chr(_c_imm16((uint16_t) aopri1.reip));
         _be;
         break;
     case 4:
         _bb("byte(4)");
-        _chr(_c_imm32((unsigned int) aopri1.reip));
+        _chr(_c_imm32((uint32_t) aopri1.reip));
         _be;
         break;
     default:
@@ -5357,13 +5357,13 @@ static void WAIT() {
     _c_setbyte(0x9b);
     _ce;
 }
-static void PUSHF(unsigned char byte) {
+static void PUSHF(uint8_t byte) {
     _cb("PUSHF");
     _SetOperandSize(byte);
     _c_setbyte(0x9c);
     _ce;
 }
-static void POPF(unsigned char byte) {
+static void POPF(uint8_t byte) {
     _cb("POPF");
     _SetOperandSize(byte);
     _c_setbyte(0x9d);
@@ -5395,7 +5395,7 @@ static void MOV_AL_MOFFS8() {
     } else _ser_;
     _ce;
 }
-static void MOV_EAX_MOFFS32(unsigned char byte) {
+static void MOV_EAX_MOFFS32(uint8_t byte) {
     _cb("MOV_EAX_MOFFS32");
     _SetOperandSize(byte);
     _c_setbyte(0xa1);
@@ -5428,7 +5428,7 @@ static void MOV_MOFFS8_AL() {
     } else _ser_;
     _ce;
 }
-static void MOV_MOFFS32_EAX(unsigned char byte) {
+static void MOV_MOFFS32_EAX(uint8_t byte) {
     _cb("MOV_MOFFS32_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0xa3);
@@ -5456,7 +5456,7 @@ static void MOVSB() {
     else _ser_;
     _ce;
 }
-static void MOVSW(unsigned char byte) {
+static void MOVSW(uint8_t byte) {
     _cb("MOVSW");
     _SetOperandSize(byte);
     _c_setbyte(0xa5);
@@ -5496,7 +5496,7 @@ static void CMPSB() {
     else _ser_;
     _ce;
 }
-static void CMPSW(unsigned char byte) {
+static void CMPSW(uint8_t byte) {
     _cb("CMPSW");
     _SetOperandSize(byte);
     _c_setbyte(0xa7);
@@ -5531,7 +5531,7 @@ static void TEST_AL_I8() {
     _chr(_c_imm8(aopri2.imm8));
     _ce;
 }
-static void TEST_EAX_I32(unsigned char byte) {
+static void TEST_EAX_I32(uint8_t byte) {
     _cb("TEST_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xa9);
@@ -5562,7 +5562,7 @@ static void STOSB() {
     else _ser_;
     _ce;
 }
-static void STOSW(unsigned char byte) {
+static void STOSW(uint8_t byte) {
     _cb("STOSW");
     _SetOperandSize(byte);
     _c_setbyte(0xab);
@@ -5601,7 +5601,7 @@ static void LODSB() {
     else _ser_;
     _ce;
 }
-static void LODSW(unsigned char byte) {
+static void LODSW(uint8_t byte) {
     _cb("LODSW");
     _SetOperandSize(byte);
     _c_setbyte(0xad);
@@ -5640,7 +5640,7 @@ static void SCASB() {
     else _ser_;
     _ce;
 }
-static void SCASW(unsigned char byte) {
+static void SCASW(uint8_t byte) {
     _cb("SCASW");
     _SetOperandSize(byte);
     _c_setbyte(0xaf);
@@ -5716,7 +5716,7 @@ static void MOV_BH_I8() {
     _chr(_c_imm8(aopri2.imm8));
     _ce;
 }
-static void MOV_EAX_I32(unsigned char byte) {
+static void MOV_EAX_I32(uint8_t byte) {
     _cb("MOV_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xb8);
@@ -5737,7 +5737,7 @@ static void MOV_EAX_I32(unsigned char byte) {
     }
     _ce;
 }
-static void MOV_ECX_I32(unsigned char byte) {
+static void MOV_ECX_I32(uint8_t byte) {
     _cb("MOV_ECX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xb9);
@@ -5758,7 +5758,7 @@ static void MOV_ECX_I32(unsigned char byte) {
     }
     _ce;
 }
-static void MOV_EDX_I32(unsigned char byte) {
+static void MOV_EDX_I32(uint8_t byte) {
     _cb("MOV_EDX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xba);
@@ -5779,7 +5779,7 @@ static void MOV_EDX_I32(unsigned char byte) {
     }
     _ce;
 }
-static void MOV_EBX_I32(unsigned char byte) {
+static void MOV_EBX_I32(uint8_t byte) {
     _cb("MOV_EBX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbb);
@@ -5800,7 +5800,7 @@ static void MOV_EBX_I32(unsigned char byte) {
     }
     _ce;
 }
-static void MOV_ESP_I32(unsigned char byte) {
+static void MOV_ESP_I32(uint8_t byte) {
     _cb("MOV_ESP_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbc);
@@ -5821,7 +5821,7 @@ static void MOV_ESP_I32(unsigned char byte) {
     }
     _ce;
 }
-static void MOV_EBP_I32(unsigned char byte) {
+static void MOV_EBP_I32(uint8_t byte) {
     _cb("MOV_EBP_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbd);
@@ -5842,7 +5842,7 @@ static void MOV_EBP_I32(unsigned char byte) {
     }
     _ce;
 }
-static void MOV_ESI_I32(unsigned char byte) {
+static void MOV_ESI_I32(uint8_t byte) {
     _cb("MOV_ESI_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbe);
@@ -5863,7 +5863,7 @@ static void MOV_ESI_I32(unsigned char byte) {
     }
     _ce;
 }
-static void MOV_EDI_I32(unsigned char byte) {
+static void MOV_EDI_I32(uint8_t byte) {
     _cb("MOV_EDI_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbf);
@@ -5884,14 +5884,14 @@ static void MOV_EDI_I32(unsigned char byte) {
     }
     _ce;
 }
-static void INS_C0(unsigned char rid) {
+static void INS_C0(uint8_t rid) {
     _cb("INS_C0");
     _c_setbyte(0xc0);
     _chr(_c_modrm(aopri1, rid));
     _chr(_c_imm8(aopri2.imm8));
     _ce;
 }
-static void INS_C1(unsigned char rid, unsigned char byte) {
+static void INS_C1(uint8_t rid, uint8_t byte) {
     _cb("INS_C1");
     _SetOperandSize(byte);
     _c_setbyte(0xc1);
@@ -5910,7 +5910,7 @@ static void RET_() {
     _c_setbyte(0xc3);
     _ce;
 }
-static void LES_R32_M16_32(unsigned char byte) {
+static void LES_R32_M16_32(uint8_t byte) {
     _cb("LES_R32_M16_32");
     _SetOperandSize(byte);
     _c_setbyte(0xc4);
@@ -5931,7 +5931,7 @@ static void LES_R32_M16_32(unsigned char byte) {
     }
     _ce;
 }
-static void LDS_R32_M16_32(unsigned char byte) {
+static void LDS_R32_M16_32(uint8_t byte) {
     _cb("LDS_R32_M16_32");
     _c_setbyte(0xc5);
     switch (byte) {
@@ -5951,14 +5951,14 @@ static void LDS_R32_M16_32(unsigned char byte) {
     }
     _ce;
 }
-static void INS_C6(unsigned char rid) {
+static void INS_C6(uint8_t rid) {
     _cb("INS_C6");
     _c_setbyte(0xc6);
     _chr(_c_modrm(aopri1, rid));
     _chr(_c_imm8(aopri2.imm8));
     _ce;
 }
-static void INS_C7(unsigned char rid, unsigned char byte) {
+static void INS_C7(uint8_t rid, uint8_t byte) {
     _cb("INS_C7");
     _SetOperandSize(byte);
     _c_setbyte(0xc7);
@@ -6024,32 +6024,32 @@ static void INTO() {
     _c_setbyte(0xcd);
     _ce;
 }
-static void IRET(unsigned char byte) {
+static void IRET(uint8_t byte) {
     _cb("IRET");
     _SetOperandSize(byte);
     _c_setbyte(0xcf);
     _ce;
 }
-static void INS_D0(unsigned char rid) {
+static void INS_D0(uint8_t rid) {
     _cb("INS_DO");
     _c_setbyte(0xd0);
     _chr(_c_modrm(aopri1, rid));
     _ce;
 }
-static void INS_D1(unsigned char rid, unsigned char byte) {
+static void INS_D1(uint8_t rid, uint8_t byte) {
     _cb("INS_D1");
     _SetOperandSize(byte);
     _c_setbyte(0xd1);
     _chr(_c_modrm(aopri1, rid));
     _ce;
 }
-static void INS_D2(unsigned char rid) {
+static void INS_D2(uint8_t rid) {
     _cb("INS_D2");
     _c_setbyte(0xd2);
     _chr(_c_modrm(aopri1, rid));
     _ce;
 }
-static void INS_D3(unsigned char rid, unsigned char byte) {
+static void INS_D3(uint8_t rid, uint8_t byte) {
     _cb("INS_D3");
     _SetOperandSize(byte);
     _c_setbyte(0xd3);
@@ -6104,7 +6104,7 @@ static void IN_AL_I8() {
     _chr(_c_imm8(aopri2.imm8));
     _ce;
 }
-static void IN_EAX_I8(unsigned char byte) {
+static void IN_EAX_I8(uint8_t byte) {
     _cb("IN_AL_I8");
     _SetOperandSize(byte);
     _c_setbyte(0xe5);
@@ -6117,13 +6117,13 @@ static void OUT_I8_AL() {
     _chr(_c_imm8(aopri1.imm8));
     _ce;
 }
-static void OUT_I8_EAX(unsigned char byte) {
+static void OUT_I8_EAX(uint8_t byte) {
     _cb("OUT_I8_EAX");
     _c_setbyte(0xe7);
     _chr(_c_imm8(aopri1.imm8));
     _ce;
 }
-static void CALL_REL32(unsigned char byte) {
+static void CALL_REL32(uint8_t byte) {
     _cb("CALL_REL32");
     _SetOperandSize(byte);
     _c_setbyte(0xe8);
@@ -6144,7 +6144,7 @@ static void CALL_REL32(unsigned char byte) {
     }
     _ce;
 }
-static void JMP_REL32(unsigned char byte) {
+static void JMP_REL32(uint8_t byte) {
     _cb("JMP_REL32");
     _SetOperandSize(byte);
     _c_setbyte(0xe9);
@@ -6165,19 +6165,19 @@ static void JMP_REL32(unsigned char byte) {
     }
     _ce;
 }
-static void JMP_PTR16_32(unsigned char byte) {
+static void JMP_PTR16_32(uint8_t byte) {
     _cb("JMP_PTR16_32");
     _SetOperandSize(byte);
     _c_setbyte(0xea);
     switch (byte) {
     case 2:
         _bb("byte(2)");
-        _chr(_c_imm16((unsigned short) aopri1.reip));
+        _chr(_c_imm16((uint16_t) aopri1.reip));
         _be;
         break;
     case 4:
         _bb("byte(4)");
-        _chr(_c_imm32((unsigned int) aopri1.reip));
+        _chr(_c_imm32((uint32_t) aopri1.reip));
         _be;
         break;
     default:
@@ -6192,7 +6192,7 @@ static void IN_AL_DX() {
     _c_setbyte(0xec);
     _ce;
 }
-static void IN_EAX_DX(unsigned char byte) {
+static void IN_EAX_DX(uint8_t byte) {
     _cb("IN_EAX_DX");
     _SetOperandSize(byte);
     _c_setbyte(0xed);
@@ -6203,7 +6203,7 @@ static void OUT_DX_AL() {
     _c_setbyte(0xee);
     _ce;
 }
-static void OUT_DX_EAX(unsigned char byte) {
+static void OUT_DX_EAX(uint8_t byte) {
     _cb("OUT_DX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0xef);
@@ -6247,14 +6247,14 @@ static void CMC() {
     else _ser_;
     _ce;
 }
-static void INS_F6(unsigned char rid) {
+static void INS_F6(uint8_t rid) {
     _cb("INS_F6");
     _c_setbyte(0xf6);
     _chr(_c_modrm(aopri1, rid));
     if (!rid) _chr(_c_imm8(aopri2.imm8));
     _ce;
 }
-static void INS_F7(unsigned char rid, unsigned char byte) {
+static void INS_F7(uint8_t rid, uint8_t byte) {
     _cb("INS_F7");
     _SetOperandSize(byte);
     _c_setbyte(0xf7);
@@ -6316,13 +6316,13 @@ static void STD() {
     else _ser_;
     _ce;
 }
-static void INS_FE(unsigned char rid) {
+static void INS_FE(uint8_t rid) {
     _cb("INS_FE");
     _c_setbyte(0xfe);
     _chr(_c_modrm(aopri1, rid));
     _ce;
 }
-static void INS_FF(unsigned char rid, unsigned char byte) {
+static void INS_FF(uint8_t rid, uint8_t byte) {
     _cb("INS_FF");
     _SetOperandSize(byte);
     _c_setbyte(0xff);
@@ -6330,7 +6330,7 @@ static void INS_FF(unsigned char rid, unsigned char byte) {
     _ce;
 }
 /* concrete extended instructions */
-static void INS_0F_00(unsigned char rid, unsigned char byte) {
+static void INS_0F_00(uint8_t rid, uint8_t byte) {
     _cb("INS_0F_00");
     _SetOperandSize(byte);
     INS_0F();
@@ -6338,7 +6338,7 @@ static void INS_0F_00(unsigned char rid, unsigned char byte) {
     _chr(_c_modrm(aopri1, rid));
     _ce;
 }
-static void INS_0F_01(unsigned char rid, unsigned char byte) {
+static void INS_0F_01(uint8_t rid, uint8_t byte) {
     _cb("INS_0F_01");
     _SetOperandSize(byte);
     INS_0F();
@@ -6346,7 +6346,7 @@ static void INS_0F_01(unsigned char rid, unsigned char byte) {
     _chr(_c_modrm(aopri1, rid));
     _ce;
 }
-static void LAR_R32_RM32(unsigned char byte) {
+static void LAR_R32_RM32(uint8_t byte) {
     _cb("LAR_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6368,7 +6368,7 @@ static void LAR_R32_RM32(unsigned char byte) {
     }
     _ce;
 }
-static void LSL_R32_RM32(unsigned char byte) {
+static void LSL_R32_RM32(uint8_t byte) {
     _cb("LSL_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6396,49 +6396,49 @@ static void CLTS() {
     _c_setbyte(0x06);
     _ce;
 }
-static void MOV_R32_CR(unsigned char crid) {
+static void MOV_R32_CR(uint8_t crid) {
     _cb("MOV_R32_CR");
     INS_0F();
     _c_setbyte(0x20);
     _chr(_c_modrm(aopri1, crid));
     _ce;
 }
-static void MOV_R32_DR(unsigned char drid) {
+static void MOV_R32_DR(uint8_t drid) {
     _cb("MOV_R32_DR");
     INS_0F();
     _c_setbyte(0x21);
     _chr(_c_modrm(aopri1, drid));
     _ce;
 }
-static void MOV_CR_R32(unsigned char crid) {
+static void MOV_CR_R32(uint8_t crid) {
     _cb("MOV_CR_R32");
     INS_0F();
     _c_setbyte(0x22);
     _chr(_c_modrm(aopri2, crid));
     _ce;
 }
-static void MOV_DR_R32(unsigned char drid) {
+static void MOV_DR_R32(uint8_t drid) {
     _cb("MOV_DR_R32");
     INS_0F();
     _c_setbyte(0x23);
     _chr(_c_modrm(aopri2, drid));
     _ce;
 }
-static void MOV_R32_TR(unsigned char trid) {
+static void MOV_R32_TR(uint8_t trid) {
     _cb("MOV_R32_TR");
     INS_0F();
     _c_setbyte(0x24);
     _chr(_c_modrm(aopri1, trid));
     _ce;
 }
-static void MOV_TR_R32(unsigned char trid) {
+static void MOV_TR_R32(uint8_t trid) {
     _cb("MOV_TR_R32");
     INS_0F();
     _c_setbyte(0x26);
     _chr(_c_modrm(aopri2, trid));
     _ce;
 }
-static void SETCC_RM8(unsigned char opcode) {
+static void SETCC_RM8(uint8_t opcode) {
     _cb("SETCC_RM8");
     if (ARG_RM8) {
         INS_0F();
@@ -6459,7 +6459,7 @@ static void POP_FS() {
     _c_setbyte(0xa1);
     _ce;
 }
-static void BT_RM32_R32(unsigned char byte) {
+static void BT_RM32_R32(uint8_t byte) {
     _cb("BT_RM32_R32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6477,7 +6477,7 @@ static void BT_RM32_R32(unsigned char byte) {
     }
     _ce;
 }
-static void SHLD_RM32_R32_I8(unsigned char byte) {
+static void SHLD_RM32_R32_I8(uint8_t byte) {
     _cb("SHLD_RM32_R32_I8");
     _SetOperandSize(byte);
     INS_0F();
@@ -6496,7 +6496,7 @@ static void SHLD_RM32_R32_I8(unsigned char byte) {
     _chr(_c_imm8(aopri3.imm8));
     _ce;
 }
-static void SHLD_RM32_R32_CL(unsigned char byte) {
+static void SHLD_RM32_R32_CL(uint8_t byte) {
     _cb("SHLD_RM32_R32_CL");
     _SetOperandSize(byte);
     INS_0F();
@@ -6526,7 +6526,7 @@ static void POP_GS() {
     _c_setbyte(0xa9);
     _ce;
 }
-static void BTS_RM32_R32(unsigned char byte) {
+static void BTS_RM32_R32(uint8_t byte) {
     _cb("BTS_RM32_R32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6544,7 +6544,7 @@ static void BTS_RM32_R32(unsigned char byte) {
     }
     _ce;
 }
-static void SHRD_RM32_R32_I8(unsigned char byte) {
+static void SHRD_RM32_R32_I8(uint8_t byte) {
     _cb("SHRD_RM32_R32_I8");
     _SetOperandSize(byte);
     INS_0F();
@@ -6563,7 +6563,7 @@ static void SHRD_RM32_R32_I8(unsigned char byte) {
     _chr(_c_imm8(aopri3.imm8));
     _ce;
 }
-static void SHRD_RM32_R32_CL(unsigned char byte) {
+static void SHRD_RM32_R32_CL(uint8_t byte) {
     _cb("SHRD_RM32_R32_CL");
     _SetOperandSize(byte);
     INS_0F();
@@ -6581,7 +6581,7 @@ static void SHRD_RM32_R32_CL(unsigned char byte) {
     }
     _ce;
 }
-static void IMUL_R32_RM32(unsigned char byte) {
+static void IMUL_R32_RM32(uint8_t byte) {
     _cb("IMUL_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6599,7 +6599,7 @@ static void IMUL_R32_RM32(unsigned char byte) {
     }
     _ce;
 }
-static void LSS_R32_M16_32(unsigned char byte) {
+static void LSS_R32_M16_32(uint8_t byte) {
     _cb("LSS_R32_M16_32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6621,7 +6621,7 @@ static void LSS_R32_M16_32(unsigned char byte) {
     }
     _ce;
 }
-static void BTR_RM32_R32(unsigned char byte) {
+static void BTR_RM32_R32(uint8_t byte) {
     _cb("BTR_RM32_R32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6639,7 +6639,7 @@ static void BTR_RM32_R32(unsigned char byte) {
     }
     _ce;
 }
-static void LFS_R32_M16_32(unsigned char byte) {
+static void LFS_R32_M16_32(uint8_t byte) {
     _cb("LFS_R32_M16_32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6661,7 +6661,7 @@ static void LFS_R32_M16_32(unsigned char byte) {
     }
     _ce;
 }
-static void LGS_R32_M16_32(unsigned char byte) {
+static void LGS_R32_M16_32(uint8_t byte) {
     _cb("LGS_R32_M16_32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6683,7 +6683,7 @@ static void LGS_R32_M16_32(unsigned char byte) {
     }
     _ce;
 }
-static void MOVZX_R32_RM8(unsigned char byte) {
+static void MOVZX_R32_RM8(uint8_t byte) {
     _cb("MOVZX_R32_RM8");
     _SetOperandSize(byte);
     INS_0F();
@@ -6712,7 +6712,7 @@ static void MOVZX_R32_RM16() {
     _chr(_c_modrm(aopri2, aopri1.reg32));
     _ce;
 }
-static void INS_0F_BA(unsigned char rid, unsigned char byte) {
+static void INS_0F_BA(uint8_t rid, uint8_t byte) {
     _cb("INS_0F_BA");
     _SetOperandSize(byte);
     INS_0F();
@@ -6721,7 +6721,7 @@ static void INS_0F_BA(unsigned char rid, unsigned char byte) {
     _chr(_c_imm8(aopri2.imm8));
     _ce;
 }
-static void BTC_RM32_R32(unsigned char byte) {
+static void BTC_RM32_R32(uint8_t byte) {
     _cb("BTC_RM32_R32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6739,7 +6739,7 @@ static void BTC_RM32_R32(unsigned char byte) {
     }
     _ce;
 }
-static void BSF_R32_RM32(unsigned char byte) {
+static void BSF_R32_RM32(uint8_t byte) {
     _cb("BSF_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6761,7 +6761,7 @@ static void BSF_R32_RM32(unsigned char byte) {
     }
     _ce;
 }
-static void BSR_R32_RM32(unsigned char byte) {
+static void BSR_R32_RM32(uint8_t byte) {
     _cb("BSR_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6783,7 +6783,7 @@ static void BSR_R32_RM32(unsigned char byte) {
     }
     _ce;
 }
-static void MOVSX_R32_RM8(unsigned char byte) {
+static void MOVSX_R32_RM8(uint8_t byte) {
     _cb("MOVSX_R32_RM8");
     _SetOperandSize(byte);
     INS_0F();
@@ -6876,7 +6876,7 @@ static void POP() {
     _ce;
 }
 static void ADD() {
-    unsigned char rid = 0x00;
+    uint8_t rid = 0x00;
     _cb("ADD");
     if      (ARG_AL_I8)    ADD_AL_I8();
     else if (ARG_AX_I16)   ADD_EAX_I32(2);
@@ -6922,7 +6922,7 @@ static void ADD() {
     _ce;
 }
 static void OR() {
-    unsigned char rid = 0x01;
+    uint8_t rid = 0x01;
     _cb("OR");
     if      (ARG_AL_I8)    OR_AL_I8();
     else if (ARG_AX_I16)   OR_EAX_I32(2);
@@ -6968,7 +6968,7 @@ static void OR() {
     _ce;
 }
 static void ADC() {
-    unsigned char rid = 0x02;
+    uint8_t rid = 0x02;
     _cb("ADC");
     if      (ARG_AL_I8)    ADC_AL_I8();
     else if (ARG_AX_I16)   ADC_EAX_I32(2);
@@ -7014,7 +7014,7 @@ static void ADC() {
     _ce;
 }
 static void SBB() {
-    unsigned char rid = 0x03;
+    uint8_t rid = 0x03;
     _cb("SBB");
     if      (ARG_AL_I8)    SBB_AL_I8();
     else if (ARG_AX_I16)   SBB_EAX_I32(2);
@@ -7060,7 +7060,7 @@ static void SBB() {
     _ce;
 }
 static void AND() {
-    unsigned char rid = 0x04;
+    uint8_t rid = 0x04;
     _cb("AND");
     if      (ARG_AL_I8)    AND_AL_I8();
     else if (ARG_AX_I16)   AND_EAX_I32(2);
@@ -7106,7 +7106,7 @@ static void AND() {
     _ce;
 }
 static void SUB() {
-    unsigned char rid = 0x05;
+    uint8_t rid = 0x05;
     _cb("SUB");
     if      (ARG_AL_I8)    SUB_AL_I8();
     else if (ARG_AX_I16)   SUB_EAX_I32(2);
@@ -7152,7 +7152,7 @@ static void SUB() {
     _ce;
 }
 static void XOR() {
-    unsigned char rid = 0x06;
+    uint8_t rid = 0x06;
     _cb("XOR");
     if      (ARG_AL_I8)    XOR_AL_I8();
     else if (ARG_AX_I16)   XOR_EAX_I32(2);
@@ -7198,7 +7198,7 @@ static void XOR() {
     _ce;
 }
 static void CMP() {
-    unsigned char rid = 0x07;
+    uint8_t rid = 0x07;
     _cb("CMP");
     if      (ARG_AL_I8)    CMP_AL_I8();
     else if (ARG_AX_I16)   CMP_EAX_I32(2);
@@ -7328,7 +7328,7 @@ static void OUTS() {
     else _ser_;
     _ce;
 }
-static void JCC_REL(unsigned char opcode) {
+static void JCC_REL(uint8_t opcode) {
     _cb("JCC_REL");
     if (ARG_PNONE_I8s || ARG_SHORT_I8s) {
         _c_setbyte(opcode);
@@ -7555,7 +7555,7 @@ static void XLAT() {
     _ce;
 }
 static void ROL() {
-    unsigned char rid = 0x00;
+    uint8_t rid = 0x00;
     _cb("ROL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
@@ -7570,7 +7570,7 @@ static void ROL() {
     _ce;
 }
 static void ROR() {
-    unsigned char rid = 0x01;
+    uint8_t rid = 0x01;
     _cb("ROR");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
@@ -7585,7 +7585,7 @@ static void ROR() {
     _ce;
 }
 static void RCL() {
-    unsigned char rid = 0x02;
+    uint8_t rid = 0x02;
     _cb("RCL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
@@ -7600,7 +7600,7 @@ static void RCL() {
     _ce;
 }
 static void RCR() {
-    unsigned char rid = 0x03;
+    uint8_t rid = 0x03;
     _cb("IN");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
@@ -7615,7 +7615,7 @@ static void RCR() {
     _ce;
 }
 static void SHL() {
-    unsigned char rid = 0x04;
+    uint8_t rid = 0x04;
     _cb("SHL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
@@ -7630,7 +7630,7 @@ static void SHL() {
     _ce;
 }
 static void SHR() {
-    unsigned char rid = 0x05;
+    uint8_t rid = 0x05;
     _cb("SHR");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
@@ -7645,7 +7645,7 @@ static void SHR() {
     _ce;
 }
 static void SAL() {
-    unsigned char rid = 0x04;
+    uint8_t rid = 0x04;
     _cb("SAL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
@@ -7660,7 +7660,7 @@ static void SAL() {
     _ce;
 }
 static void SAR() {
-    unsigned char rid = 0x07;
+    uint8_t rid = 0x07;
     _cb("SAR");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
@@ -7752,7 +7752,7 @@ static void JMP() {
 }
 /* abstract extended instructions */
 static void SLDT() {
-    unsigned char rid = 0x00;
+    uint8_t rid = 0x00;
     _cb("SLDT");
     if (ARG_RM16) INS_0F_00(rid, 2);
     else if (ARG_R32) INS_0F_00(rid, 4);
@@ -7760,7 +7760,7 @@ static void SLDT() {
     _ce;
 }
 static void STR() {
-    unsigned char rid = 0x01;
+    uint8_t rid = 0x01;
     _cb("STR");
     if (ARG_RM16) INS_0F_00(rid, 2);
     else if (ARG_R32) INS_0F_00(rid, 4);
@@ -7768,35 +7768,35 @@ static void STR() {
     _ce;
 }
 static void LLDT() {
-    unsigned char rid = 0x02;
+    uint8_t rid = 0x02;
     _cb("LLDT");
     if (ARG_RM16) INS_0F_00(rid, 0);
     else _ser_;
     _ce;
 }
 static void LTR() {
-    unsigned char rid = 0x03;
+    uint8_t rid = 0x03;
     _cb("LTR");
     if (ARG_RM16) INS_0F_00(rid, 0);
     else _ser_;
     _ce;
 }
 static void VERR() {
-    unsigned char rid = 0x04;
+    uint8_t rid = 0x04;
     _cb("VERR");
     if (ARG_RM16) INS_0F_00(rid, 0);
     else _ser_;
     _ce;
 }
 static void VERW() {
-    unsigned char rid = 0x05;
+    uint8_t rid = 0x05;
     _cb("VERW");
     if (ARG_RM16) INS_0F_00(rid, 0);
     else _ser_;
     _ce;
 }
 static void SGDT() {
-    unsigned char rid = 0x00;
+    uint8_t rid = 0x00;
     _cb("SGDT");
     if (ARG_M16s) INS_0F_01(rid, 2);
     else if (ARG_M32s) INS_0F_01(rid, 4);
@@ -7804,7 +7804,7 @@ static void SGDT() {
     _ce;
 }
 static void SIDT() {
-    unsigned char rid = 0x01;
+    uint8_t rid = 0x01;
     _cb("SIDT");
     if (ARG_M16s) INS_0F_01(rid, 2);
     else if (ARG_M32s) INS_0F_01(rid, 4);
@@ -7812,7 +7812,7 @@ static void SIDT() {
     _ce;
 }
 static void LGDT() {
-    unsigned char rid = 0x02;
+    uint8_t rid = 0x02;
     _cb("SIDT");
     if (ARG_M16s) INS_0F_01(rid, 2);
     else if (ARG_M32) INS_0F_01(rid, 4);
@@ -7820,7 +7820,7 @@ static void LGDT() {
     _ce;
 }
 static void LIDT() {
-    unsigned char rid = 0x03;
+    uint8_t rid = 0x03;
     _cb("LIDT");
     if (ARG_M16s) INS_0F_01(rid, 2);
     else if (ARG_M32) INS_0F_01(rid, 4);
@@ -7828,7 +7828,7 @@ static void LIDT() {
     _ce;
 }
 static void SMSW() {
-    unsigned char rid = 0x04;
+    uint8_t rid = 0x04;
     _cb("SMSW");
     if (ARG_RM16) INS_0F_01(rid, 2);
     else if (ARG_R32) INS_0F_01(rid, 4);
@@ -7836,7 +7836,7 @@ static void SMSW() {
     _ce;
 }
 static void LMSW() {
-    unsigned char rid = 0x06;
+    uint8_t rid = 0x06;
     _cb("LMSW");
     if (ARG_RM16) INS_0F_01(rid, 0);
     else _ser_;
@@ -7857,7 +7857,7 @@ static void LSL() {
     _ce;
 }
 static void BT() {
-    unsigned char rid = 0x04;
+    uint8_t rid = 0x04;
     _cb("BT");
     if (ARG_RM16_R16) BT_RM32_R32(2);
     else if (ARG_RM32_R32) BT_RM32_R32(4);
@@ -7876,7 +7876,7 @@ static void SHLD() {
     _ce;
 }
 static void BTS() {
-    unsigned char rid = 0x05;
+    uint8_t rid = 0x05;
     _cb("BTS");
     if (ARG_RM16_R16) BTS_RM32_R32(2);
     else if (ARG_RM32_R32) BTS_RM32_R32(4);
@@ -7902,7 +7902,7 @@ static void LSS() {
     _ce;
 }
 static void BTR() {
-    unsigned char rid = 0x06;
+    uint8_t rid = 0x06;
     _cb("BTR");
     if (ARG_RM16_R16) BTR_RM32_R32(2);
     else if (ARG_RM32_R32) BTR_RM32_R32(4);
@@ -7934,7 +7934,7 @@ static void MOVZX() {
     _ce;
 }
 static void BTC() {
-    unsigned char rid = 0x07;
+    uint8_t rid = 0x07;
     _cb("BTC");
     if (ARG_RM16_R16) BTC_RM32_R32(2);
     else if (ARG_RM32_R32) BTC_RM32_R32(4);
@@ -7967,13 +7967,13 @@ static void MOVSX() {
 }
 
 /* main routines */
-static unsigned char is_end(char c) {
+static int is_end(char c) {
     return (!c || c == '\n' || c == ';');
 }
-static unsigned char is_space(char c) {
+static int is_space(char c) {
     return (c == ' ' || c == '\t');
 }
-static unsigned char is_prefix() {
+static int is_prefix() {
     if (!strcmp(rop, "es:") || !strcmp(rop, "cs:") ||
             !strcmp(rop, "ss:") || !strcmp(rop, "ds:") ||
             !strcmp(rop, "fs:") || !strcmp(rop, "gs:") ||
@@ -8238,11 +8238,11 @@ static char *take_arg(char *s) {
     *(rend + 1) = 0;
     return rresult;
 }
-unsigned char aasm32(const char *stmt, unsigned char *rcode, unsigned char flag32) {
-    unsigned char len;
+uint8_t aasm32(const char *stmt, uint8_t *rcode, int flag32) {
+    uint8_t len;
     char astmt[0x100];
     char *rstmt;
-    unsigned char flagprefix;
+    uint8_t flagprefix;
 
     if (!stmt || is_end(stmt[0])) {
         return 0;
@@ -8380,11 +8380,11 @@ unsigned char aasm32(const char *stmt, unsigned char *rcode, unsigned char flag3
 /* extended routines - assemble a paragraph with call/jmp labels */
 typedef struct {
     char stmt[0x100];
-    unsigned int stmt_id;
-    unsigned char code_array[15];
-    unsigned char code_len;
-    unsigned char flag_is_label;
-    unsigned char flag_has_label;
+    uint32_t stmt_id;
+    uint8_t code_array[15];
+    uint8_t code_len;
+    uint8_t flag_is_label;
+    uint8_t flag_has_label;
     char label_str[0x100];
     char op_str[0x100];
     t_aasm_oprptr ptr;
@@ -8392,7 +8392,7 @@ typedef struct {
 /* default operand size */
 #define _GetOperandSize (defsize ? 4 : 2)
 static void asmx_get_label(t_aasm_instr *rinstr) {
-    unsigned char i = 0, j = 0;
+    size_t i = 0, j = 0;
     rinstr->label_str[0] = 0;
     rinstr->flag_has_label = 0;
     rinstr->flag_is_label = 0;
@@ -8422,7 +8422,7 @@ static void asmx_get_label(t_aasm_instr *rinstr) {
     }
 }
 static void asmx_parse_instr(t_aasm_instr *rinstr) {
-    unsigned char i;
+    size_t i;
     char *rstmt;
     t_aasm_token token;
     i = 0;
@@ -8525,15 +8525,15 @@ static void asmx_parse_instr(t_aasm_instr *rinstr) {
         }
     }
 }
-unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag32) {
-    int i, j, k, count;
-    unsigned int len;
-    unsigned int offset;
+uint32_t aasm32x(const char *stmt, uint8_t *rcode, int flag32) {
+    int32_t i, j, k, count;
+    uint32_t len;
+    uint32_t offset;
     char imm[0x100];
     t_aasm_instr *instr;
     count = 1;
     flagError = 0;
-    for (i = 0; i < (int) strlen(stmt); ++i) {
+    for (i = 0; i < (int32_t) strlen(stmt); ++i) {
         if (stmt[i] == '\n') {
             count++;
         }
@@ -8554,7 +8554,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
                     if (j) {
                         instr[k].stmt[j + 1] = 0;
                         utilsLowerStr(instr[k].stmt);
-                        instr[k].stmt_id = (unsigned int) k;
+                        instr[k].stmt_id = (uint32_t) k;
                         j = 0;
                         k++;
                     }
@@ -8641,7 +8641,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
                         case PTR_SHORT:
                             STRCAT(instr[j].stmt, " short ");
                             if (offset < 0x80) {
-                                SPRINTF(imm, "+%02x", (unsigned char) offset);
+                                SPRINTF(imm, "+%02x", (uint8_t) offset);
                             } else {
                                 flagError = 1;
                                 PRINTF("aasm32x: invalid short pointer 8+.\n");
@@ -8652,7 +8652,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
                             switch (_GetOperandSize) {
                             case 2:
                                 if (offset < 0x8000) {
-                                    SPRINTF(imm, "+%04x", (unsigned short) offset);
+                                    SPRINTF(imm, "+%04x", (uint16_t) offset);
                                 } else {
                                     flagError = 1;
                                     PRINTF("aasm32x: invalid near pointer 16+.\n");
@@ -8660,7 +8660,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
                                 break;
                             case 4:
                                 if (offset < 0x80000000) {
-                                    SPRINTF(imm, "+%08x", (unsigned int) offset);
+                                    SPRINTF(imm, "+%08x", (uint32_t) offset);
                                 } else {
                                     flagError = 1;
                                     PRINTF("aasm32x: invalid near pointer 32+.\n");
@@ -8701,7 +8701,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
                         case PTR_SHORT:
                             STRCAT(instr[j].stmt, " short ");
                             if (offset < 0x80) {
-                                SPRINTF(imm, "-%02x", (unsigned char) offset);
+                                SPRINTF(imm, "-%02x", (uint8_t) offset);
                             } else {
                                 flagError = 1;
                                 PRINTF("aasm32x: invalid short pointer 8-.\n");
@@ -8712,7 +8712,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
                             switch (_GetOperandSize) {
                             case 2:
                                 if (offset < 0x8000) {
-                                    SPRINTF(imm, "-%04x", (unsigned short) offset);
+                                    SPRINTF(imm, "-%04x", (uint16_t) offset);
                                 } else {
                                     flagError = 1;
                                     PRINTF("aasm32x: invalid near pointer 16-.\n");
@@ -8720,7 +8720,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
                                 break;
                             case 4:
                                 if (offset < 0x80000000) {
-                                    SPRINTF(imm, "-%08x", (unsigned int) offset);
+                                    SPRINTF(imm, "-%08x", (uint32_t) offset);
                                 } else {
                                     flagError = 1;
                                     PRINTF("aasm32x: invalid near pointer 32-.\n");
@@ -8748,7 +8748,7 @@ unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag3
     len = 0;
     for (i = 0; i < count; ++i) {
         /*PRINTF("%04X: %s", len, instr[i].stmt);
-        for (j = (int) strlen(instr[i].stmt);j < 50;++j) PRINTF(" ");
+        for (j = (int32_t) strlen(instr[i].stmt);j < 50;++j) PRINTF(" ");
         PRINTF("[");
         for (j = 0;j < instr[i].code_len;++j) PRINTF("%02X", instr[i].code_array[j]);
         PRINTF("]\n");*/

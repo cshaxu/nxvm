@@ -10,20 +10,20 @@
 
 static t_utils_trace UTILS_TRACE_VAR;
 
-typedef unsigned char t_dasm_prefix;
+typedef uint8_t t_dasm_prefix;
 
-static unsigned char defsize; /* default size passed in */
-static unsigned char flagError;
-static unsigned char *drcode;
+static uint8_t defsize; /* default size passed in */
+static uint8_t flagError;
+static uint8_t *drcode;
 static char dstmt[0x100];
 static char dop[0x100], dopr[0x100], drm[0x100], dr[0x100], dimm[0x100];
 static char dmovsreg[0x100], doverds[0x100], doverss[0x100];
 static char dimmoff8[0x100], dimmoff16[0x100], dimmsign[0x100];
-static unsigned char flagmem, flaglock;
+static uint8_t flagmem, flaglock;
 static t_dasm_prefix prefix_oprsize, prefix_addrsize;
-static unsigned char cr;
+static uint8_t cr;
 static uint64_t cimm;
-static unsigned char iop;
+static uint8_t iop;
 
 /* instruction dispatch */
 static void (*dtable[0x100])(),(*dtable_0f[0x100])();
@@ -45,18 +45,18 @@ static void (*dtable[0x100])(),(*dtable_0f[0x100])();
 #define _comment_
 #define _newins_
 
-static void SPRINTFSI(char *str, unsigned int imm, unsigned char byte) {
+static void SPRINTFSI(char *str, uint32_t imm, uint8_t byte) {
     char sign;
-    unsigned char i8u;
-    unsigned short i16u;
-    unsigned int i32u;
+    uint8_t i8u;
+    uint16_t i16u;
+    uint32_t i32u;
     _cb("SPRINTFSI");
-    i8u = (unsigned char)(imm);
-    i16u = (unsigned short)(imm);
-    i32u = (unsigned int)(imm);
+    i8u = (uint8_t)(imm);
+    i16u = (uint16_t)(imm);
+    i32u = (uint32_t)(imm);
     switch (byte) {
     case 1:
-        if ((unsigned char)(imm & 0x80)) {
+        if ((uint8_t)(imm & 0x80)) {
             sign = '-';
             i8u = ((~i8u) + 0x01);
         } else {
@@ -65,7 +65,7 @@ static void SPRINTFSI(char *str, unsigned int imm, unsigned char byte) {
         SPRINTF(str, "%c%02X", sign, i8u);
         break;
     case 2:
-        if ((unsigned short)(imm & 0x8000)) {
+        if ((uint16_t)(imm & 0x8000)) {
             sign = '-';
             i16u = ((~i16u) + 0x01);
         } else {
@@ -74,7 +74,7 @@ static void SPRINTFSI(char *str, unsigned int imm, unsigned char byte) {
         SPRINTF(str, "%c%04X", sign, i16u);
         break;
     case 4:
-        if ((unsigned int)(imm & 0x80000000)) {
+        if ((uint32_t)(imm & 0x80000000)) {
             sign = '-';
             i32u = ((~i32u) + 0x01);
         } else {
@@ -90,7 +90,7 @@ static void SPRINTFSI(char *str, unsigned int imm, unsigned char byte) {
 }
 
 /* kernel decoding function */
-static unsigned char _kdf_check_prefix(unsigned char opcode) {
+static uint8_t _kdf_check_prefix(uint8_t opcode) {
     _cb("_kdf_check_prefix");
     switch (opcode) {
     case 0xf0:
@@ -119,27 +119,27 @@ static unsigned char _kdf_check_prefix(unsigned char opcode) {
     return 0;
 }
 
-static void _kdf_skip(unsigned char byte) {
+static void _kdf_skip(uint8_t byte) {
     _cb("_kdf_skip");
     _chr(iop += byte);
     _ce;
 }
-static void _kdf_code(unsigned char *rdata, unsigned char byte) {
-    unsigned char i;
+static void _kdf_code(uint8_t *rdata, uint8_t byte) {
+    size_t i;
     _cb("_kdf_code");
     for (i = 0; i < byte; ++i)
         *(rdata + i) = *(drcode + iop + i);
     _chr(_kdf_skip(byte));
     _ce;
 }
-static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte) {
+static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
     char disp8;
-    unsigned short disp16;
-    unsigned int disp32;
+    uint16_t disp16;
+    uint32_t disp32;
     char dsibindex[0x100], dptr[0x100];
-    unsigned char modrm, sib;
+    uint8_t modrm, sib;
     char sign;
-    unsigned char disp8u;
+    uint8_t disp8u;
     _cb("_kdf_modrm");
     _chr(_kdf_code(&modrm, 1));
     flagmem = 1;
@@ -185,7 +185,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte) {
                 break;
             case 6:
                 _bb("ModRM_RM(6)");
-                _chr(_kdf_code((unsigned char *)(&disp16), 2));
+                _chr(_kdf_code((uint8_t *)(&disp16), 2));
                 SPRINTF(drm, "%s:[%04X]", doverds, disp16);
                 _be;
                 break;
@@ -201,7 +201,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte) {
             break;
         case 1:
             _bb("ModRM_MOD(1)");
-            _chr(_kdf_code((unsigned char *)(&disp8), 1));
+            _chr(_kdf_code((uint8_t *)(&disp8), 1));
             sign = (disp8 & 0x80) ? '-' : '+';
             disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
             switch (_GetModRM_RM(modrm)) {
@@ -237,7 +237,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte) {
             break;
         case 2:
             _bb("ModRM_MOD(2)");
-            _chr(_kdf_code((unsigned char *)(&disp16), 2));
+            _chr(_kdf_code((uint8_t *)(&disp16), 2));
             switch (_GetModRM_RM(modrm)) {
             case 0:
                 SPRINTF(drm, "%s:[BX+SI+%04X]", doverds, disp16);
@@ -281,7 +281,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte) {
         _bb("AddressSize(4)");
         if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4) {
             _bb("ModRM_MOD(!3),ModRM_RM(4)");
-            _chr(_kdf_code((unsigned char *)(&sib), 1));
+            _chr(_kdf_code((uint8_t *)(&sib), 1));
             switch (_GetSIB_Index(sib)) {
             case 0:
                 SPRINTF(dsibindex, "+EAX*%02X", (1 << _GetSIB_SS(sib)));
@@ -347,7 +347,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte) {
                     break;
                 case 5:
                     _bb("SIB_Base(5)");
-                    _chr(_kdf_code((unsigned char *)(&disp32), 4));
+                    _chr(_kdf_code((uint8_t *)(&disp32), 4));
                     SPRINTF(drm, "%s:[%08X%s]", doverds, disp32, dsibindex);
                     _be;
                     break;
@@ -365,7 +365,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte) {
                 break;
             case 5:
                 _bb("ModRM_RM(5)");
-                _chr(_kdf_code((unsigned char *)(&disp32), 4));
+                _chr(_kdf_code((uint8_t *)(&disp32), 4));
                 SPRINTF(drm, "%s:[%08X]", doverds, disp32);
                 _be;
                 break;
@@ -383,7 +383,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte) {
             break;
         case 1:
             _bb("ModRM_MOD(1)");
-            _chr(_kdf_code((unsigned char *)(&disp8), 1));
+            _chr(_kdf_code((uint8_t *)(&disp8), 1));
             sign = (disp8 & 0x80) ? '-' : '+';
             disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
             switch (_GetModRM_RM(modrm)) {
@@ -449,7 +449,7 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte) {
             break;
         case 2:
             _bb("ModRM_MOD(2)");
-            _chr(_kdf_code((unsigned char *)(&disp32), 4));
+            _chr(_kdf_code((uint8_t *)(&disp32), 4));
             switch (_GetModRM_RM(modrm)) {
             case 0:
                 SPRINTF(drm, "%s:[EAX+%08X]", doverds, disp32);
@@ -735,37 +735,37 @@ static void _kdf_modrm(unsigned char regbyte, unsigned char rmbyte) {
     }
     _ce;
 }
-static void _d_skip(unsigned char byte) {
+static void _d_skip(uint8_t byte) {
     _cb("_d_skip");
     _chr(_kdf_skip(byte));
     _ce;
 }
-static void _d_code(unsigned char *rdata, unsigned char byte) {
+static void _d_code(uint8_t *rdata, uint8_t byte) {
     _cb("_d_code");
     _chr(_kdf_code(rdata, byte));
     _ce;
 }
-static void _d_imm(unsigned char byte) {
+static void _d_imm(uint8_t byte) {
     _cb("_d_imm");
     cimm = 0;
-    _chr(_d_code((unsigned char *)(&cimm), byte));
+    _chr(_d_code((uint8_t *)(&cimm), byte));
     _ce;
 }
-static void _d_moffs(unsigned char byte) {
-    unsigned int offset = 0;
+static void _d_moffs(uint8_t byte) {
+    uint32_t offset = 0;
     _cb("_d_moffs");
     flagmem = 1;
     switch (_GetAddressSize) {
     case 2:
         _bb("AddressSize(2)");
-        _chr(_d_code((unsigned char *)(&offset), 2));
-        SPRINTF(drm, "%s:[%04X]", doverds, (unsigned short)(offset));
+        _chr(_d_code((uint8_t *)(&offset), 2));
+        SPRINTF(drm, "%s:[%04X]", doverds, (uint16_t)(offset));
         _be;
         break;
     case 4:
         _bb("AddressSize(4)");
-        _chr(_d_code((unsigned char *)(&offset), 4));
-        SPRINTF(drm, "%s:[%08X]", doverds, (unsigned int)(offset));
+        _chr(_d_code((uint8_t *)(&offset), 4));
+        SPRINTF(drm, "%s:[%08X]", doverds, (uint32_t)(offset));
         _be;
         break;
     default:
@@ -774,7 +774,7 @@ static void _d_moffs(unsigned char byte) {
     }
     _ce;
 }
-static void _d_modrm_sreg(unsigned char rmbyte) {
+static void _d_modrm_sreg(uint8_t rmbyte) {
     _cb("_d_modrm_sreg");
     _chr(_kdf_modrm(0, rmbyte));
     switch (cr) {
@@ -804,7 +804,7 @@ static void _d_modrm_sreg(unsigned char rmbyte) {
     }
     _ce;
 }
-static void _d_modrm(unsigned char regbyte, unsigned char rmbyte) {
+static void _d_modrm(uint8_t regbyte, uint8_t rmbyte) {
     _cb("_d_modrm");
     _chr(_kdf_modrm(regbyte, rmbyte));
     if (!flagmem && flaglock) {
@@ -859,7 +859,7 @@ static void ADD_AL_I8() {
     _adv;
     _chr(_d_imm(1));
     SPRINTF(dop, "ADD");
-    SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void ADD_EAX_I32() {
@@ -870,13 +870,13 @@ static void ADD_EAX_I32() {
     case 2:
         _bb("OperandSize(2)");
         _chr(_d_imm(2));
-        SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
         _be;
         break;
     case 4:
         _bb("OperandSize(4)");
         _chr(_d_imm(4));
-        SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         _be;
         break;
     default:
@@ -936,7 +936,7 @@ static void OR_AL_I8() {
     _adv;
     _chr(_d_imm(1));
     SPRINTF(dop, "OR");
-    SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void OR_EAX_I32() {
@@ -947,13 +947,13 @@ static void OR_EAX_I32() {
     case 2:
         _bb("OperandSize(2)");
         _chr(_d_imm(2));
-        SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
         _be;
         break;
     case 4:
         _bb("OperandSize(4)");
         _chr(_d_imm(4));
-        SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         _be;
         break;
     default:
@@ -978,12 +978,12 @@ static void POP_CS() {
     _ce;
 }
 static void INS_0F() {
-    unsigned char oldiop;
-    unsigned char opcode;
+    uint8_t oldiop;
+    uint8_t opcode;
     _cb("INS_0F");
     _adv;
     oldiop = iop;
-    _chr(_d_code((unsigned char *)(&opcode), 1));
+    _chr(_d_code((uint8_t *)(&opcode), 1));
     iop = oldiop;
     _chr((*(dtable_0f[opcode]))());
     _ce;
@@ -1025,7 +1025,7 @@ static void ADC_AL_I8() {
     _adv;
     _chr(_d_imm(1));
     SPRINTF(dop, "ADC");
-    SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void ADC_EAX_I32() {
@@ -1036,13 +1036,13 @@ static void ADC_EAX_I32() {
     case 2:
         _bb("OperandSize(2)");
         _chr(_d_imm(2));
-        SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
         _be;
         break;
     case 4:
         _bb("OperandSize(4)");
         _chr(_d_imm(4));
-        SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         _be;
         break;
     default:
@@ -1103,7 +1103,7 @@ static void SBB_AL_I8() {
     _adv;
     _chr(_d_imm(1));
     SPRINTF(dop, "SBB");
-    SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void SBB_EAX_I32() {
@@ -1114,13 +1114,13 @@ static void SBB_EAX_I32() {
     case 2:
         _bb("OperandSize(2)");
         _chr(_d_imm(2));
-        SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
         _be;
         break;
     case 4:
         _bb("OperandSize(4)");
         _chr(_d_imm(4));
-        SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         _be;
         break;
     default:
@@ -1181,7 +1181,7 @@ static void AND_AL_I8() {
     _adv;
     _chr(_d_imm(1));
     SPRINTF(dop, "AND");
-    SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void AND_EAX_I32() {
@@ -1192,13 +1192,13 @@ static void AND_EAX_I32() {
     case 2:
         _bb("OperandSize(2)");
         _chr(_d_imm(2));
-        SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
         _be;
         break;
     case 4:
         _bb("OperandSize(4)");
         _chr(_d_imm(4));
-        SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         _be;
         break;
     default:
@@ -1257,7 +1257,7 @@ static void SUB_AL_I8() {
     _adv;
     _chr(_d_imm(1));
     SPRINTF(dop, "SUB");
-    SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void SUB_EAX_I32() {
@@ -1268,13 +1268,13 @@ static void SUB_EAX_I32() {
     case 2:
         _bb("OperandSize(2)");
         _chr(_d_imm(2));
-        SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
         _be;
         break;
     case 4:
         _bb("OperandSize(4)");
         _chr(_d_imm(4));
-        SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         _be;
         break;
     default:
@@ -1333,7 +1333,7 @@ static void XOR_AL_I8() {
     _adv;
     _chr(_d_imm(1));
     SPRINTF(dop, "XOR");
-    SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void XOR_EAX_I32() {
@@ -1344,13 +1344,13 @@ static void XOR_EAX_I32() {
     case 2:
         _bb("OperandSize(2)");
         _chr(_d_imm(2));
-        SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
         _be;
         break;
     case 4:
         _bb("OperandSize(4)");
         _chr(_d_imm(4));
-        SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         _be;
         break;
     default:
@@ -1409,7 +1409,7 @@ static void CMP_AL_I8() {
     _adv;
     _chr(_d_imm(1));
     SPRINTF(dop, "CMP");
-    SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void CMP_EAX_I32() {
@@ -1420,13 +1420,13 @@ static void CMP_EAX_I32() {
     case 2:
         _bb("OperandSize(2)");
         _chr(_d_imm(2));
-        SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
         _be;
         break;
     case 4:
         _bb("OperandSize(4)");
         _chr(_d_imm(4));
-        SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         _be;
         break;
     default:
@@ -2079,10 +2079,10 @@ static void PUSH_I32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "%04X", (uint16_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "%08X", (uint32_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -2098,10 +2098,10 @@ static void IMUL_R32_RM32_I32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "%s,%s,%04X", dr, drm, (unsigned short)(cimm));
+        SPRINTF(dopr, "%s,%s,%04X", dr, drm, (uint16_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "%s,%s,%08X", dr, drm, (unsigned int)(cimm));
+        SPRINTF(dopr, "%s,%s,%08X", dr, drm, (uint32_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -2114,7 +2114,7 @@ static void PUSH_I8() {
     _adv;
     SPRINTF(dop, "PUSH");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "%02X", (uint8_t)(cimm));
     _ce;
 }
 static void IMUL_R32_RM32_I8() {
@@ -2123,7 +2123,7 @@ static void IMUL_R32_RM32_I8() {
     SPRINTF(dop, "IMUL");
     _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
     _chr(_d_imm(1));
-    SPRINTF(dopr, "%s,%s,%02X", dr, drm, (unsigned char)(cimm));
+    SPRINTF(dopr, "%s,%s,%02X", dr, drm, (uint8_t)(cimm));
     _ce;
 }
 static void INSB() {
@@ -2229,7 +2229,7 @@ static void JO_REL8() {
     _adv;
     SPRINTF(dop, "JO");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JNO_REL8() {
@@ -2237,7 +2237,7 @@ static void JNO_REL8() {
     _adv;
     SPRINTF(dop, "JNO");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JC_REL8() {
@@ -2245,7 +2245,7 @@ static void JC_REL8() {
     _adv;
     SPRINTF(dop, "JC");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JNC_REL8() {
@@ -2253,7 +2253,7 @@ static void JNC_REL8() {
     _adv;
     SPRINTF(dop, "JNC");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JZ_REL8() {
@@ -2261,7 +2261,7 @@ static void JZ_REL8() {
     _adv;
     SPRINTF(dop, "JZ");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JNZ_REL8() {
@@ -2269,7 +2269,7 @@ static void JNZ_REL8() {
     _adv;
     SPRINTF(dop, "JNZ");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JNA_REL8() {
@@ -2277,7 +2277,7 @@ static void JNA_REL8() {
     _adv;
     SPRINTF(dop, "JNA");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JA_REL8() {
@@ -2285,7 +2285,7 @@ static void JA_REL8() {
     _adv;
     SPRINTF(dop, "JA");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JS_REL8() {
@@ -2293,7 +2293,7 @@ static void JS_REL8() {
     _adv;
     SPRINTF(dop, "JS");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JNS_REL8() {
@@ -2301,7 +2301,7 @@ static void JNS_REL8() {
     _adv;
     SPRINTF(dop, "JNS");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JP_REL8() {
@@ -2309,7 +2309,7 @@ static void JP_REL8() {
     _adv;
     SPRINTF(dop, "JP");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JNP_REL8() {
@@ -2317,7 +2317,7 @@ static void JNP_REL8() {
     _adv;
     SPRINTF(dop, "JNP");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JL_REL8() {
@@ -2325,7 +2325,7 @@ static void JL_REL8() {
     _adv;
     SPRINTF(dop, "JL");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JNL_REL8() {
@@ -2333,7 +2333,7 @@ static void JNL_REL8() {
     _adv;
     SPRINTF(dop, "JNL");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JNG_REL8() {
@@ -2341,7 +2341,7 @@ static void JNG_REL8() {
     _adv;
     SPRINTF(dop, "JNG");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JG_REL8() {
@@ -2349,7 +2349,7 @@ static void JG_REL8() {
     _adv;
     SPRINTF(dop, "JG");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void INS_80() {
@@ -2402,7 +2402,7 @@ static void INS_80() {
         _impossible_r_;
         break;
     }
-    SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+    SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
     _ce;
 }
 static void INS_81() {
@@ -2457,10 +2457,10 @@ static void INS_81() {
     }
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "%s,%04X", drm, (unsigned short)(cimm));
+        SPRINTF(dopr, "%s,%04X", drm, (uint16_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "%s,%08X", drm, (unsigned int)(cimm));
+        SPRINTF(dopr, "%s,%08X", drm, (uint32_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -2519,7 +2519,7 @@ static void INS_83() {
         _impossible_r_;
         break;
     }
-    SPRINTFSI(dsimm, (unsigned char)(cimm), 1);
+    SPRINTFSI(dsimm, (uint8_t)(cimm), 1);
     SPRINTF(dopr, "%s,%s", drm, dsimm);
     _ce;
 }
@@ -2859,8 +2859,8 @@ static void CWD() {
     _ce;
 }
 static void CALL_PTR16_32() {
-    unsigned short newcs;
-    unsigned int neweip;
+    uint16_t newcs;
+    uint32_t neweip;
     _cb("CALL_PTR16_32");
     _adv;
     SPRINTF(dop, "CALL");
@@ -2868,17 +2868,17 @@ static void CALL_PTR16_32() {
     case 2:
         _bb("OperandSize(2)");
         _chr(_d_imm(4));
-        neweip = (unsigned short)(cimm);
-        newcs = (unsigned short)(cimm >> 16);
-        SPRINTF(dopr, "%04X:%04X", newcs, (unsigned short)(neweip));
+        neweip = (uint16_t)(cimm);
+        newcs = (uint16_t)(cimm >> 16);
+        SPRINTF(dopr, "%04X:%04X", newcs, (uint16_t)(neweip));
         _be;
         break;
     case 4:
         _bb("OperandSize(4)");
         _chr(_d_imm(8));
-        neweip = (unsigned int)(cimm);
-        newcs = (unsigned short)(cimm >> 32);
-        SPRINTF(dopr, "%04X:%08X", newcs, (unsigned int)(neweip));
+        neweip = (uint32_t)(cimm);
+        newcs = (uint16_t)(cimm >> 32);
+        SPRINTF(dopr, "%04X:%08X", newcs, (uint32_t)(neweip));
         _be;
         break;
     default:
@@ -3092,7 +3092,7 @@ static void TEST_AL_I8() {
     _adv;
     SPRINTF(dop, "TEST");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void TEST_EAX_I32() {
@@ -3102,10 +3102,10 @@ static void TEST_EAX_I32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -3265,7 +3265,7 @@ static void MOV_AL_I8() {
     _adv;
     SPRINTF(dop, "MOV");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void MOV_CL_I8() {
@@ -3273,7 +3273,7 @@ static void MOV_CL_I8() {
     _adv;
     SPRINTF(dop, "MOV");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "CL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "CL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void MOV_DL_I8() {
@@ -3281,7 +3281,7 @@ static void MOV_DL_I8() {
     _adv;
     SPRINTF(dop, "MOV");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "DL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "DL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void MOV_BL_I8() {
@@ -3289,7 +3289,7 @@ static void MOV_BL_I8() {
     _adv;
     SPRINTF(dop, "MOV");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "BL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "BL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void MOV_AH_I8() {
@@ -3297,7 +3297,7 @@ static void MOV_AH_I8() {
     _adv;
     SPRINTF(dop, "MOV");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "AH,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "AH,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void MOV_CH_I8() {
@@ -3305,7 +3305,7 @@ static void MOV_CH_I8() {
     _adv;
     SPRINTF(dop, "MOV");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "CH,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "CH,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void MOV_DH_I8() {
@@ -3313,7 +3313,7 @@ static void MOV_DH_I8() {
     _adv;
     SPRINTF(dop, "MOV");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "DH,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "DH,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void MOV_BH_I8() {
@@ -3321,7 +3321,7 @@ static void MOV_BH_I8() {
     _adv;
     SPRINTF(dop, "MOV");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "BH,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "BH,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void MOV_EAX_I32() {
@@ -3331,10 +3331,10 @@ static void MOV_EAX_I32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "AX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "EAX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -3349,10 +3349,10 @@ static void MOV_ECX_I32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "CX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "CX,%04X", (uint16_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "ECX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "ECX,%08X", (uint32_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -3367,10 +3367,10 @@ static void MOV_EDX_I32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "DX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "DX,%04X", (uint16_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "EDX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EDX,%08X", (uint32_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -3385,10 +3385,10 @@ static void MOV_EBX_I32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "BX,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "BX,%04X", (uint16_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "EBX,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EBX,%08X", (uint32_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -3403,10 +3403,10 @@ static void MOV_ESP_I32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "SP,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "SP,%04X", (uint16_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "ESP,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "ESP,%08X", (uint32_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -3421,10 +3421,10 @@ static void MOV_EBP_I32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "BP,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "BP,%04X", (uint16_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "EBP,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EBP,%08X", (uint32_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -3439,10 +3439,10 @@ static void MOV_ESI_I32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "SI,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "SI,%04X", (uint16_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "ESI,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "ESI,%08X", (uint32_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -3457,10 +3457,10 @@ static void MOV_EDI_I32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "DI,%04X", (unsigned short)(cimm));
+        SPRINTF(dopr, "DI,%04X", (uint16_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "EDI,%08X", (unsigned int)(cimm));
+        SPRINTF(dopr, "EDI,%08X", (uint32_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -3477,37 +3477,37 @@ static void INS_C0() {
     case 0: /* ROL_RM8_I8 */
         _bb("ROL_RM8_I8");
         SPRINTF(dop, "ROL");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 1: /* ROR_RM8_I8 */
         _bb("ROR_RM8_I8");
         SPRINTF(dop, "ROL");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 2: /* RCL_RM8_I8 */
         _bb("RCL_RM8_I8");
         SPRINTF(dop, "RCL");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 3: /* RCR_RM8_I8 */
         _bb("RCR_RM8_I8");
         SPRINTF(dop, "RCR");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 4: /* SHL_RM8_I8 */
         _bb("SHL_RM8_I8");
         SPRINTF(dop, "SHL");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 5: /* SHR_RM8_I8 */
         _bb("SHR_RM8_I8");
         SPRINTF(dop, "SHR");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 6: /* UndefinedOpcode */
@@ -3518,7 +3518,7 @@ static void INS_C0() {
     case 7: /* SAR_RM8_I8 */
         _bb("SAR_RM8_I8");
         SPRINTF(dop, "SAR");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     default:
@@ -3536,37 +3536,37 @@ static void INS_C1() {
     case 0: /* ROL_RM32_I8 */
         _bb("ROL_RM32_I8");
         SPRINTF(dop, "ROL");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 1: /* ROR_RM32_I8 */
         _bb("ROR_RM32_I8");
         SPRINTF(dop, "ROR");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 2: /* RCL_RM32_I8 */
         _bb("RCL_RM32_I8");
         SPRINTF(dop, "RCL");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 3: /* RCR_RM32_I8 */
         _bb("RCR_RM32_I8");
         SPRINTF(dop, "RCR");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 4: /* SHL_RM32_I8 */
         _bb("SHL_RM32_I8");
         SPRINTF(dop, "SHL");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 5: /* SHR_RM32_I8 */
         _bb("SHR_RM32_I8");
         SPRINTF(dop, "SHR");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 6: /* UndefinedOpcode */
@@ -3577,7 +3577,7 @@ static void INS_C1() {
     case 7: /* SAR_RM32_I8 */
         _bb("SAR_RM32_I8");
         SPRINTF(dop, "SAR");
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     default:
@@ -3591,7 +3591,7 @@ static void RET_I16() {
     _adv;
     SPRINTF(dop, "RET");
     _chr(_d_imm(2));
-    SPRINTF(dopr, "%04X", (unsigned short)(cimm));
+    SPRINTF(dopr, "%04X", (uint16_t)(cimm));
     _ce;
 }
 static void RET() {
@@ -3635,7 +3635,7 @@ static void INS_C6() {
         _bb("MOV_RM8_I8");
         SPRINTF(dop, "MOV");
         _chr(_d_imm(1));
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 1:
@@ -3690,10 +3690,10 @@ static void INS_C7() {
         _chr(_d_imm(_GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            SPRINTF(dopr, "%s,%04X", drm, (unsigned short)(cimm));
+            SPRINTF(dopr, "%s,%04X", drm, (uint16_t)(cimm));
             break;
         case 4:
-            SPRINTF(dopr, "%s,%08X", drm, (unsigned int)(cimm));
+            SPRINTF(dopr, "%s,%08X", drm, (uint32_t)(cimm));
             break;
         default:
             _impossible_r_;
@@ -3748,9 +3748,9 @@ static void ENTER() {
     _adv;
     SPRINTF(dop, "ENTER");
     _chr(_d_imm(2));
-    SPRINTF(dframesize, "%04X", (unsigned short)(cimm));
+    SPRINTF(dframesize, "%04X", (uint16_t)(cimm));
     _chr(_d_imm(1));
-    SPRINTF(dnestlevel, "%02X", (unsigned char)(cimm));
+    SPRINTF(dnestlevel, "%02X", (uint8_t)(cimm));
     SPRINTF(dopr, "%s,%s", dframesize, dnestlevel);
     _ce;
 }
@@ -3765,7 +3765,7 @@ static void RETF_I16() {
     _adv;
     SPRINTF(dop, "RETF");
     _chr(_d_imm(2));
-    SPRINTF(dopr, "%04X", (unsigned short)(cimm));
+    SPRINTF(dopr, "%04X", (uint16_t)(cimm));
     _ce;
 }
 static void RETF() {
@@ -3785,7 +3785,7 @@ static void INT_I8() {
     _adv;
     SPRINTF(dop, "INT");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "%02X", (uint8_t)(cimm));
     _ce;
 }
 static void INTO() {
@@ -4047,7 +4047,7 @@ static void AAM() {
     _adv;
     SPRINTF(dop, "AAM");
     _chr(_d_imm(1));
-    if ((unsigned char)(cimm) != 0x0a) SPRINTF(dopr, "%02X", (unsigned char)(cimm));
+    if ((uint8_t)(cimm) != 0x0a) SPRINTF(dopr, "%02X", (uint8_t)(cimm));
     _ce;
 }
 static void AAD() {
@@ -4055,7 +4055,7 @@ static void AAD() {
     _adv;
     SPRINTF(dop, "AAD");
     _chr(_d_imm(1));
-    if ((unsigned char)(cimm) != 0x0a) SPRINTF(dopr, "%02X", (unsigned char)(cimm));
+    if ((uint8_t)(cimm) != 0x0a) SPRINTF(dopr, "%02X", (uint8_t)(cimm));
     _ce;
 }
 static void XLAT() {
@@ -4080,7 +4080,7 @@ static void LOOPNZ_REL8() {
     _adv;
     SPRINTF(dop, "LOOPNZ");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void LOOPZ_REL8() {
@@ -4088,7 +4088,7 @@ static void LOOPZ_REL8() {
     _adv;
     SPRINTF(dop, "LOOPZ");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void LOOP_REL8() {
@@ -4096,7 +4096,7 @@ static void LOOP_REL8() {
     _adv;
     SPRINTF(dop, "LOOP");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void JCXZ_REL8() {
@@ -4104,7 +4104,7 @@ static void JCXZ_REL8() {
     _adv;
     SPRINTF(dop, "JCXZ");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void IN_AL_I8() {
@@ -4112,7 +4112,7 @@ static void IN_AL_I8() {
     _adv;
     SPRINTF(dop, "IN");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "AL,%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
     _ce;
 }
 static void IN_EAX_I8() {
@@ -4122,10 +4122,10 @@ static void IN_EAX_I8() {
     _chr(_d_imm(1));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "AX,%02X", (unsigned char)(cimm));
+        SPRINTF(dopr, "AX,%02X", (uint8_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "EAX,%02X", (unsigned char)(cimm));
+        SPRINTF(dopr, "EAX,%02X", (uint8_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -4138,7 +4138,7 @@ static void OUT_I8_AL() {
     _adv;
     SPRINTF(dop, "OUT");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "%02X,AL", (unsigned char)(cimm));
+    SPRINTF(dopr, "%02X,AL", (uint8_t)(cimm));
     _ce;
 }
 static void OUT_I8_EAX() {
@@ -4148,10 +4148,10 @@ static void OUT_I8_EAX() {
     _chr(_d_imm(1));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTF(dopr, "%02X,AX", (unsigned char)(cimm));
+        SPRINTF(dopr, "%02X,AX", (uint8_t)(cimm));
         break;
     case 4:
-        SPRINTF(dopr, "%02X,EAX", (unsigned char)(cimm));
+        SPRINTF(dopr, "%02X,EAX", (uint8_t)(cimm));
         break;
     default:
         _impossible_r_;
@@ -4166,10 +4166,10 @@ static void CALL_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -4184,10 +4184,10 @@ static void JMP_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -4196,8 +4196,8 @@ static void JMP_REL32() {
     _ce;
 }
 static void JMP_PTR16_32() {
-    unsigned short newcs;
-    unsigned int neweip;
+    uint16_t newcs;
+    uint32_t neweip;
     _cb("JMP_PTR16_32");
     _adv;
     SPRINTF(dop, "JMP");
@@ -4205,20 +4205,20 @@ static void JMP_PTR16_32() {
     case 2:
         _bb("OperandSize(2)");
         _chr(_d_imm(2));
-        neweip = (unsigned short)(cimm);
+        neweip = (uint16_t)(cimm);
         _chr(_d_imm(2));
-        newcs = (unsigned short)(cimm);
-        SPRINTF(dopr, "%04X:%04X", newcs, (unsigned short)(neweip));
+        newcs = (uint16_t)(cimm);
+        SPRINTF(dopr, "%04X:%04X", newcs, (uint16_t)(neweip));
         _be;
         break;
     case 4:
         _bb("OperandSize(4)");
         _newins_;
         _chr(_d_imm(4));
-        neweip = (unsigned int)(cimm);
+        neweip = (uint32_t)(cimm);
         _chr(_d_imm(2));
-        newcs = (unsigned short)(cimm);
-        SPRINTF(dopr, "%04X:%08X", newcs, (unsigned int)(neweip));
+        newcs = (uint16_t)(cimm);
+        SPRINTF(dopr, "%04X:%08X", newcs, (uint32_t)(neweip));
         _be;
         break;
     default:
@@ -4232,7 +4232,7 @@ static void JMP_REL8() {
     _adv;
     SPRINTF(dop, "JMP");
     _chr(_d_imm(1));
-    SPRINTFSI(dopr, (unsigned char)(cimm), 1);
+    SPRINTFSI(dopr, (uint8_t)(cimm), 1);
     _ce;
 }
 static void IN_AL_DX() {
@@ -4322,7 +4322,7 @@ static void INS_F6() {
         _bb("TEST_RM8_I8");
         SPRINTF(dop, "TEST");
         _chr(_d_imm(1));
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 1: /* UndefinedOpcode */
@@ -4383,10 +4383,10 @@ static void INS_F7() {
         _chr(_d_imm(_GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            SPRINTF(dopr, "%s,%04X", drm, (unsigned short)(cimm));
+            SPRINTF(dopr, "%s,%04X", drm, (uint16_t)(cimm));
             break;
         case 4:
-            SPRINTF(dopr, "%s,%08X", drm, (unsigned int)(cimm));
+            SPRINTF(dopr, "%s,%08X", drm, (uint32_t)(cimm));
             break;
         default:
             _impossible_r_;
@@ -4532,12 +4532,12 @@ static void INS_FE() {
 }
 static void INS_FF() {
     char dptr[0x100];
-    unsigned char oldiop;
-    unsigned char modrm;
+    uint8_t oldiop;
+    uint8_t modrm;
     _cb("INS_FF");
     _adv;
     oldiop = iop;
-    _chr(_d_code((unsigned char *)(&modrm), 1));
+    _chr(_d_code((uint8_t *)(&modrm), 1));
     iop = oldiop;
     switch (_GetModRM_REG(modrm)) {
     case 0: /* INC_RM32 */
@@ -4713,11 +4713,11 @@ static void _d_modrm_treg() {
 }
 
 static void INS_0F_00() {
-    unsigned char modrm, oldiop;
+    uint8_t modrm, oldiop;
     _cb("INS_0F_00");
     _adv;
     oldiop = iop;
-    _chr(_d_code((unsigned char *)(&modrm), 1));
+    _chr(_d_code((uint8_t *)(&modrm), 1));
     iop = oldiop;
     switch (_GetModRM_REG(modrm)) {
     case 0: /* SLDT_RM16 */
@@ -4779,11 +4779,11 @@ static void INS_0F_00() {
     _ce;
 }
 static void INS_0F_01() {
-    unsigned char modrm, oldiop;
+    uint8_t modrm, oldiop;
     _cb("INS_0F_01");
     _adv;
     oldiop = iop;
-    _chr(_d_code((unsigned char *)(&modrm), 1));
+    _chr(_d_code((uint8_t *)(&modrm), 1));
     iop = oldiop;
     switch (_GetModRM_REG(modrm)) {
     case 0: /* SGDT_M32_16 */
@@ -4984,10 +4984,10 @@ static void JO_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5002,10 +5002,10 @@ static void JNO_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5020,10 +5020,10 @@ static void JC_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5038,10 +5038,10 @@ static void JNC_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5056,10 +5056,10 @@ static void JZ_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5074,10 +5074,10 @@ static void JNZ_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5092,10 +5092,10 @@ static void JNA_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5110,10 +5110,10 @@ static void JA_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5128,10 +5128,10 @@ static void JS_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5146,10 +5146,10 @@ static void JNS_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5164,10 +5164,10 @@ static void JP_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5182,10 +5182,10 @@ static void JNP_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5200,10 +5200,10 @@ static void JL_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5218,10 +5218,10 @@ static void JNL_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5236,10 +5236,10 @@ static void JNG_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5254,10 +5254,10 @@ static void JG_REL32() {
     _chr(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        SPRINTFSI(dopr, (unsigned short)(cimm), 2);
+        SPRINTFSI(dopr, (uint16_t)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dopr, (unsigned int)(cimm), 4);
+        SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
         _impossible_r_;
@@ -5422,7 +5422,7 @@ static void SHLD_RM32_R32_I8() {
     SPRINTF(dop, "SHLD");
     _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
     _chr(_d_imm(1));
-    SPRINTF(dopr, "%s,%s,%02X", drm, dr, (unsigned char)(cimm));
+    SPRINTF(dopr, "%s,%s,%02X", drm, dr, (uint8_t)(cimm));
     _ce;
 }
 static void SHLD_RM32_R32_CL() {
@@ -5462,7 +5462,7 @@ static void SHRD_RM32_R32_I8() {
     SPRINTF(dop, "SHRD");
     _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
     _chr(_d_imm(1));
-    SPRINTF(dopr, "%s,%s,%02X", drm, dr, (unsigned char)(cimm));
+    SPRINTF(dopr, "%s,%s,%02X", drm, dr, (uint8_t)(cimm));
     _ce;
 }
 static void SHRD_RM32_R32_CL() {
@@ -5551,11 +5551,11 @@ static void MOVZX_R32_RM16() {
     _ce;
 }
 static void INS_0F_BA() {
-    unsigned char modrm, oldiop;
+    uint8_t modrm, oldiop;
     _cb("INS_0F_BA");
     _adv;
     oldiop = iop;
-    _chr(_d_code((unsigned char *)(&modrm), 1));
+    _chr(_d_code((uint8_t *)(&modrm), 1));
     iop = oldiop;
     _chr(_d_modrm(0, _GetOperandSize));
     switch (cr) {
@@ -5583,28 +5583,28 @@ static void INS_0F_BA() {
         _bb("BT_RM32_I8");
         SPRINTF(dop, "BT");
         _chr(_d_imm(1));
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 5: /* BTS_RM32_I8 */
         _bb("BTS_RM32_I8");
         SPRINTF(dop, "BTS");
         _chr(_d_imm(1));
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 6: /* BTR_RM32_I8 */
         _bb("BTR_RM32_I8");
         SPRINTF(dop, "BTR");
         _chr(_d_imm(1));
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     case 7: /* BTC_RM32_I8 */
         _bb("BTC_RM32_I8");
         SPRINTF(dop, "BTC");
         _chr(_d_imm(1));
-        SPRINTF(dopr, "%s,%02X", drm, (unsigned char)(cimm));
+        SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
         _be;
         break;
     default:
@@ -5664,15 +5664,15 @@ static void QDX() {
     _adv;
     SPRINTF(dop, "QDX");
     _chr(_d_imm(1));
-    SPRINTF(dopr, "%02X", (unsigned char)(cimm));
+    SPRINTF(dopr, "%02X", (uint8_t)(cimm));
     _ce;
 }
 
-static unsigned char flaginit = 0;
+static uint8_t flaginit = 0;
 
-unsigned char dasm32(char *stmt, unsigned char *rcode, unsigned char flag32) {
-    int i;
-    unsigned char opcode, oldiop;
+uint8_t dasm32(char *stmt, uint8_t *rcode, int flag32) {
+    size_t i;
+    uint8_t opcode, oldiop;
 #if DASM_TRACE == 1
     utilsTraceInit(&trace);
 #endif
@@ -6212,13 +6212,13 @@ unsigned char dasm32(char *stmt, unsigned char *rcode, unsigned char flag32) {
         dopr[0] = 0;
         dstmt[0] = 0;
         oldiop = iop;
-        _chb(_d_code((unsigned char *)(&opcode), 1));
+        _chb(_d_code((uint8_t *)(&opcode), 1));
         iop = oldiop;
         _chb((*(dtable[opcode]))());
         if (strlen(dop)) {
             STRCAT(dop, " ");
             STRCPY(dstmt, dop);
-            for (i = (int) strlen(dop); i < 8; ++i) STRCAT(dstmt, " ");
+            for (i = strlen(dop); i < 8; ++i) STRCAT(dstmt, " ");
             STRCAT(dstmt, dopr);
             STRCAT(stmt, dstmt);
         }

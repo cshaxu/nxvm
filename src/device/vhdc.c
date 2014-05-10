@@ -8,9 +8,6 @@
 void vhdcInit() {
     vbiosAddInt(VHDC_INT_SOFT_HDD_13, 0x13);
 }
-
 void vhdcReset() {}
-
 void vhdcRefresh() {}
-
 void vhdcFinal() {}

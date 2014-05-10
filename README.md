@@ -59,24 +59,20 @@ The compiling options are defined in `src/global.h`, to specify 32/64 bit compil
 
 ### Windows
 For Visual Studio 2008 or higher:  
-Create an empty Win32 Console project and add all `.c` and `.h` files from the folders:  
-- src  
-- src/device  
-- src/device/qdx  
-- src/platform  
-- src/platform/win32  
-- src/xasm32  
+1. Create an empty Win32 Console project.  
+2. Add all `.c` and `.h` files from `src/`, and remove the folder `src/platform/linux/`.  
+3. Compile the project under platform Release and x64.  
 
 
 For MinGW:  
 1. In `global.h`, replace `#ifdef _WIN32` with `#ifdef _WIN32_DISABLED`.  
-2. Install MinGW.  
-3. Download PDCurses 3.4 (pdc34dllw.zip, Win32 DLL for console w/ Unicode) from Sourceforge.com.  
-4. Add files to %MINGW_HOME%:  
-- pdcurses.lib -> %MINGW_HOME%/lib/ncurses.lib  
-- cursors.h -> %MINGW_HOME%/include/cursors.h  
-- panels.h -> %MINGW_HOME%/include/panels.h  
-- pdcures.dll -> %MINGW_HOME%/bin/pdcures.dll  
+2. Install MinGW to `%MINGW_HOME%`.  
+3. Download PDCurses 3.4 (`pdc34dllw.zip`, Win32 DLL for console w/ Unicode) from Sourceforge.com.  
+4. Add files to `%MINGW_HOME%`:  
+   pdcurses.lib -> %MINGW_HOME%/lib/ncurses.lib  
+   cursors.h -> %MINGW_HOME%/include/cursors.h  
+   panels.h -> %MINGW_HOME%/include/panels.h  
+   pdcures.dll -> %MINGW_HOME%/bin/pdcures.dll  
 5. Run `mingw32-make`.  
 
 
@@ -85,7 +81,6 @@ For MinGW:
 2. Change directory to NXVM project folder.  
 3. Type `./configure` to check libraries and generate makefile.  
 4. Type `make` to build NXVM. Output binary is `nxvm` in project folder.  
-5. Type `./nxvm` to run NXVM.  
 
 
 Quick Start

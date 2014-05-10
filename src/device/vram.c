@@ -21,13 +21,21 @@ static void allocate(t_nubitcc newsize) {
         MEMSET((void *) vram.connect.pBase, Zero8, vram.connect.size);
     }
 }
-
 static void io_read_0092() {
     vport.data.ioByte = vram.data.flagA20 ? VRAM_FLAG_A20 : Zero8;
 }
-
 static void io_write_0092() {
     vram.data.flagA20 = GetBit(vport.data.ioByte, VRAM_FLAG_A20);
+}
+
+void vramReadPhysical(t_nubit32 physical, t_vaddrcc rdest, t_nubitcc byte) {
+    if (physical >= vram.connect.size && physical >= 0xfffe0000) {
+        physical &= 0x001fffff;
+    }
+    MEMCPY((void *) rdest, (void *) VRAM_GetAddr(physical), byte);
+}
+void vramWritePhysical(t_nubit32 physical, t_vaddrcc rsrc, t_nubitcc byte) {
+    MEMCPY((void *) VRAM_GetAddr(physical), (void *) rsrc, byte);
 }
 
 #define pitOut ((t_faddrcc) NULL)
@@ -39,31 +47,23 @@ void vramInit() {
     /* 16 MB */
     allocate(1 << 24);
 }
-
 void vramReset() {
     MEMSET((void *)(&vram.data), Zero8, sizeof(t_ram_data));
     MEMSET((void *) vram.connect.pBase, Zero8, vram.connect.size);
 }
-
 void vramRefresh() {}
-
 void vramFinal() {
     if (vram.connect.pBase) {
         FREE((void *) vram.connect.pBase);
     }
 }
 
-void vramReadPhysical(t_nubit32 physical, t_vaddrcc rdest, t_nubitcc byte) {
-    if (physical >= vram.connect.size && physical >= 0xfffe0000) {
-        physical &= 0x001fffff;
-    }
-    MEMCPY((void *) rdest, (void *) VRAM_GetAddr(physical), byte);
-}
-
-void vramWritePhysical(t_nubit32 physical, t_vaddrcc rsrc, t_nubitcc byte) {
-    MEMCPY((void *) VRAM_GetAddr(physical), (void *) rsrc, byte);
-}
-
-void deviceConnectRamAllocate(t_nubitcc newsize) {
+void deviceConnectRamAllocate(size_t newsize) {
     allocate(newsize);
+}
+void deviceConnectRamRealRead(uint16_t seg, uint16_t off, void *rdest, size_t size) {
+    MEMCPY(rdest, (void *) vramGetRealAddr(seg, off), size);
+}
+void deviceConnectRamRealWrite(uint16_t seg, uint16_t off, void *rsrc, size_t size) {
+    MEMCPY((void *) vramGetRealAddr(seg, off), rsrc, size);
 }

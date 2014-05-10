@@ -14,37 +14,6 @@ t_fdd vfdd;
 #define IsCylHalf  (vfdd.data.head == 0 && IsTrackEnd)
 #define IsCylEnd   (vfdd.data.head == 1 && IsTrackEnd)
 
-t_bool deviceConnectFloppyInsert(const t_strptr fileName) {
-    FILE *fpImage = FOPEN(fileName, "rb");
-    if (fpImage && vfdd.connect.pImgBase) {
-        FREAD((void *) vfdd.connect.pImgBase, sizeof(t_nubit8), vfddGetImageSize, fpImage);
-        vfdd.connect.flagDiskExist = True;
-        FCLOSE(fpImage);
-        return False;
-    } else {
-        return True;
-    }
-}
-
-t_bool deviceConnectFloppyRemove(const t_strptr fileName) {
-    FILE *fpImage;
-    if (fileName) {
-        fpImage = FOPEN(fileName, "wb");
-        if (fpImage) {
-            if (!vfdd.connect.flagReadOnly) {
-                FWRITE((void *) vfdd.connect.pImgBase, sizeof(t_nubit8), vfddGetImageSize, fpImage);
-            }
-            vfdd.connect.flagDiskExist = False;
-            FCLOSE(fpImage);
-        } else {
-            return True;
-        }
-    }
-    vfdd.connect.flagDiskExist = False;
-    MEMSET((void *) vfdd.connect.pImgBase, Zero8, vfddGetImageSize);
-    return False;
-}
-
 void vfddTransRead() {
     if (IsCylEnd) {
         return;
@@ -61,7 +30,6 @@ void vfddTransRead() {
         vfddSetPointer;
     }
 }
-
 void vfddTransWrite() {
     if (IsCylEnd) {
         return;
@@ -78,7 +46,6 @@ void vfddTransWrite() {
         vfddSetPointer;
     }
 }
-
 void vfddFormatTrack(t_nubit8 fillByte) {
     if (vfdd.data.cyl >= vfdd.data.ncyl) {
         return;
@@ -103,7 +70,6 @@ void vfddInit() {
     vfdd.connect.pImgBase = (t_vaddrcc) MALLOC(vfddGetImageSize);
     MEMSET((void *) vfdd.connect.pImgBase, Zero8, vfddGetImageSize);
 }
-
 void vfddReset() {
     MEMSET((void *)(&vfdd.data), Zero8, sizeof(t_fdd_data));
     vfdd.data.ncyl    = 0x0050;
@@ -111,9 +77,7 @@ void vfddReset() {
     vfdd.data.nsector = 0x0012;
     vfdd.data.nbyte   = 0x0200;
 }
-
 void vfddRefresh() {}
-
 void vfddFinal() {
     if (vfdd.connect.pImgBase) {
         FREE((void *) vfdd.connect.pImgBase);
@@ -123,6 +87,35 @@ void vfddFinal() {
 
 void deviceConnectFloppyCreate() {
     vfdd.connect.flagDiskExist = True;
+}
+int deviceConnectFloppyInsert(const char *fileName) {
+    FILE *fpImage = FOPEN(fileName, "rb");
+    if (fpImage && vfdd.connect.pImgBase) {
+        FREAD((void *) vfdd.connect.pImgBase, sizeof(t_nubit8), vfddGetImageSize, fpImage);
+        vfdd.connect.flagDiskExist = True;
+        FCLOSE(fpImage);
+        return False;
+    } else {
+        return True;
+    }
+}
+int deviceConnectFloppyRemove(const char *fileName) {
+    FILE *fpImage;
+    if (fileName) {
+        fpImage = FOPEN(fileName, "wb");
+        if (fpImage) {
+            if (!vfdd.connect.flagReadOnly) {
+                FWRITE((void *) vfdd.connect.pImgBase, sizeof(t_nubit8), vfddGetImageSize, fpImage);
+            }
+            vfdd.connect.flagDiskExist = False;
+            FCLOSE(fpImage);
+        } else {
+            return True;
+        }
+    }
+    vfdd.connect.flagDiskExist = False;
+    MEMSET((void *) vfdd.connect.pImgBase, Zero8, vfddGetImageSize);
+    return False;
 }
 
 void devicePrintFdd() {

@@ -71,14 +71,14 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
-    return 0;
+    return (LRESULT) NULL;
 }
 
 static ATOM ThreadDisplayRegisterClass(HINSTANCE hInstance) {
     WNDCLASSEX wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style            = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = (WNDPROC)WndProc;
+    wcex.lpfnWndProc    = (WNDPROC) WndProc;
     wcex.cbClsExtra        = 0;
     wcex.cbWndExtra        = 0;
     wcex.hInstance        = hInstance;
@@ -91,7 +91,7 @@ static ATOM ThreadDisplayRegisterClass(HINSTANCE hInstance) {
     return RegisterClassEx(&wcex);
 }
 
-static BOOL ThreadDisplayInitInstance(HINSTANCE hInstance, int nCmdShow) {
+static BOOL ThreadDisplayInitInstance(HINSTANCE hInstance, INT nCmdShow) {
     DWORD dwStyle = WS_THICKFRAME | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
                     WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
     w32aHWnd = CreateWindow(szWindowClass, szTitle, dwStyle, CW_USEDEFAULT,

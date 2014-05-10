@@ -8,8 +8,6 @@ extern "C" {
 #endif
 
 void debugMain();
-void debugRecordStart(const t_strptr fileName);
-void debugRecordStop();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

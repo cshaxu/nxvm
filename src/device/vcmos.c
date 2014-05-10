@@ -21,9 +21,8 @@ static void io_write_0070() {
         vcpu.data.flagMaskNMI = False;
     }
 }
-
 static void io_write_0071() {
-    t_nubit8 i;
+    t_nubitcc i;
     t_nubit16 checksum = Zero16;
     vcmos.connect.reg[vcmos.data.regId] = vport.data.ioByte;
     if ((vcmos.data.regId >= VCMOS_TYPE_DISK_FLOPPY) && (vcmos.data.regId < VCMOS_CHECKSUM_MSB)) {
@@ -34,7 +33,6 @@ static void io_write_0071() {
     vcmos.connect.reg[VCMOS_CHECKSUM_LSB] = GetMax8(checksum);
     vcmos.connect.reg[VCMOS_CHECKSUM_MSB] = GetMax8(checksum >> 8);
 }
-
 static void io_read_0071() {
     vport.data.ioByte = vcmos.connect.reg[vcmos.data.regId];
 }
@@ -50,11 +48,9 @@ void vcmosInit() {
     vcmosReset();
     vcmosRefresh();
 }
-
 void vcmosReset() {
     MEMSET((void *)(&vcmos.data), Zero8, sizeof(t_cmos_data));
 }
-
 void vcmosRefresh() {
     static time_t tPrev = 0;
     time_t tCurr;
@@ -87,5 +83,4 @@ void vcmosRefresh() {
     vcmos.connect.reg[VCMOS_RTC_YEAR]      = Hex2BCD(year);
     vcmos.connect.reg[VCMOS_RTC_CENTURY]   = Hex2BCD(century);
 }
-
 void vcmosFinal() {}

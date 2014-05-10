@@ -10,7 +10,7 @@ t_platform platform;
 
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
 #include "win32/win32.h"
-void platformSleep(unsigned int milisec) {
+void platformSleep(uint32_t milisec) {
     win32Sleep(milisec);
 }
 void platformDisplaySetScreen() {
@@ -24,7 +24,7 @@ void platformStart() {
 }
 #elif GLOBAL_PLATFORM == GLOBAL_VAR_LINUX
 #include "linux/linux.h"
-void platformSleep(unsigned int milisec) {
+void platformSleep(uint32_t milisec) {
     linuxSleep(milisec);
 }
 void platformDisplaySetScreen() {

@@ -327,9 +327,9 @@ static void _kma_write_linear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte, 
         _bb("Linear_Offset(>PageSize)");
         byte1 = _GetPageSize - _GetLinear_Offset(linear);
         byte2 = byte - byte1;
-        _chr(phy1 = _kma_physical_linear(linear        , byte1, 1, vpl));
+        _chr(phy1 = _kma_physical_linear(linear, byte1, 1, vpl));
         _chr(phy2 = _kma_physical_linear(linear + byte1, byte2, 1, vpl));
-        _chr(_kma_write_physical(phy1, rdata        , byte1));
+        _chr(_kma_write_physical(phy1, rdata, byte1));
         _chr(_kma_write_physical(phy2, rdata + byte1, byte2));
         _be;
     } else {
@@ -343,7 +343,7 @@ static void _kma_write_linear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte, 
 }
 /* read content from logical */
 static void _kma_read_logical(t_cpu_data_sreg *rsreg, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte, t_nubit8 vpl, t_bool force) {
-    /* t_nubit8 i; */
+    /* t_nubitcc i; */
     t_nubit32 linear;
     _cb("_kma_read_logical");
     _chr(linear = _kma_linear_logical(rsreg, offset, byte, 0, vpl, force));
@@ -364,14 +364,14 @@ static void _kma_read_logical(t_cpu_data_sreg *rsreg, t_nubit32 offset, t_vaddrc
                        vcpuins.data.mem[vcpuins.data.msize].linear);
             }
         }
-        /*for (i = 0;i < vcpuins.data.msize;++i) {
+        /* for (i = 0;i < vcpuins.data.msize;++i) {
             if (vcpuins.data.mem[i].flagWrite == vcpuins.data.mem[vcpuins.data.msize].flagWrite &&
                 vcpuins.data.mem[i].linear == vcpuins.data.mem[vcpuins.data.msize].linear) {
                 _bb("mem(same)");
                 _impossible_rz_;
                 _ce;
             }
-        }*/
+        } */
         vcpuins.data.msize++;
         if (vcpuins.data.msize == 0x20) _impossible_r_;
         _be;
@@ -380,7 +380,7 @@ static void _kma_read_logical(t_cpu_data_sreg *rsreg, t_nubit32 offset, t_vaddrc
 }
 /* write content to logical */
 static void _kma_write_logical(t_cpu_data_sreg *rsreg, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte, t_nubit8 vpl, t_bool force) {
-    /* t_nubit8 i; */
+    /* t_nubitcc i; */
     t_nubit32 linear;
     _cb("_kma_write_logical");
     _chr(linear = _kma_linear_logical(rsreg, offset, byte, 1, vpl, force));
@@ -401,14 +401,14 @@ static void _kma_write_logical(t_cpu_data_sreg *rsreg, t_nubit32 offset, t_vaddr
                        vcpuins.data.mem[vcpuins.data.msize].linear);
             }
         }
-        /*for (i = 0;i < vcpuins.data.msize;++i) {
+        /* for (i = 0;i < vcpuins.data.msize;++i) {
             if (vcpuins.data.mem[i].flagWrite == vcpuins.data.mem[vcpuins.data.msize].flagWrite &&
                 vcpuins.data.mem[i].linear == vcpuins.data.mem[vcpuins.data.msize].linear) {
                 _bb("mem(same)");
                 _impossible_r_;
                 _ce;
             }
-        }*/
+        } */
         vcpuins.data.msize++;
         if (vcpuins.data.msize == 0x20) _impossible_r_;
         _be;
@@ -856,16 +856,16 @@ static t_bool _s_check_selector(t_nubit16 selector) {
     _cb("_s_check_selector");
     if (_IsSelectorNull(selector)) {
         _ce;
-        return 1;
+        return True;
     }
     if (GetMax32(_GetSelector_Offset(selector) + 7) >
             (_GetSelector_TI(selector) ? GetMax32(vcpu.data.ldtr.limit) :
              GetMax32(vcpu.data.gdtr.limit))) {
         _ce;
-        return 1;
+        return True;
     }
     _ce;
-    return 0;
+    return False;
 }
 static void _s_read_idt(t_nubit8 intid, t_vaddrcc rdata) {
     _cb("_s_read_idt");
@@ -1252,20 +1252,20 @@ static t_bool _kdf_check_prefix(t_nubit8 opcode) {
     case 0x36:
     case 0x3e:
     case 0x26:
-        return 1;
+        return True;
         break;
     case 0x64:
     case 0x65:
     case 0x66:
     case 0x67:
-        i386(opcode) return 1;
-        else return 0;
+        i386(opcode) return True;
+        else return False;
         break;
     default:
-        return 0;
+        return False;
         break;
     }
-    return 0x00;
+    return False;
 }
 
 static void _kdf_skip(t_nubit8 byte) {
@@ -2381,9 +2381,9 @@ static void _ser_int_real(t_nubit8 intid, t_nubit8 byte) {
 }
 _______todo _ser_int_protected(t_nubit8 intid, t_nubit8 byte, t_bool flagext) {
     t_nubit16 oldss;
-    t_nubit32 oldeflags, oldesp, newesp = 0;
+    t_nubit32 oldeflags, oldesp, newesp = Zero32;
     t_nubit32 xs_sel;
-    t_nubit16 newcs, newss = 0;
+    t_nubit16 newcs, newss = Zero16;
     t_nubit64 cs_desc, ss_desc, gate_desc;
     _cb("_ser_int_protected");
     if (!_GetCR0_PE) _impossible_r_;
@@ -2815,7 +2815,7 @@ _______todo _e_except_n(t_nubit8 exid, t_nubit8 byte) {
 }
 _______todo _e_iret(t_nubit8 byte) {
     t_nubit16 newcs, newss, newds, newes, newfs, newgs;
-    t_nubit32 neweip = 0, newesp, neweflags = 0;
+    t_nubit32 neweip = Zero32, newesp, neweflags = Zero32;
     t_nubit32 xs_sel;
     t_nubit32 mask = VCPU_EFLAGS_RESERVED;
     t_cpu_data_sreg ccs = vcpu.data.cs;
@@ -8519,7 +8519,7 @@ static void PUSHF() {
 }
 static void POPF() {
     t_nubit32 mask = VCPU_EFLAGS_RESERVED;
-    t_nubit32 ceflags = 0;
+    t_nubit32 ceflags = Zero32;
     _cb("POPF");
     i386(0x9d) {
         _adv;
@@ -10004,16 +10004,16 @@ static void INS_C7() {
 static void ENTER() {
     t_nubit32 data = 0;
     t_nubit32 temp = 0;
-    t_nubit32 i = 0x00000000;
-    t_nubit16 size = 0x0000;
-    t_nubit8 level = 0x00;
+    t_nubitcc i = 0;
+    t_nubit16 size = Zero16;
+    t_nubit8 level = Zero8;
     _cb("ENTER");
     i386(0xc8) {
         _adv;
         _chr(_d_imm(2));
-        size = (t_nubit16)vcpuins.data.cimm;
+        size = (t_nubit16) vcpuins.data.cimm;
         _chr(_d_imm(1));
-        level = (t_nubit8)vcpuins.data.cimm;
+        level = (t_nubit8) vcpuins.data.cimm;
         level %= 32;
         switch (_GetStackSize) {
         case 2:
@@ -12072,7 +12072,7 @@ static void _a_shrd(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 count, t_nubit8 bi
             flagcf = !!GetMSB16(vcpuins.data.result);
             MakeBit(vcpu.data.eflags, VCPU_EFLAGS_CF,
                     GetBit(vcpuins.data.result, GetMax64(1 << (count - 1))));
-            for (i = (t_nsbit32)0; i <= (t_nsbit32)(bit - count - 1); ++i) {
+            for (i = 0; i <= (t_nsbit32)(bit - count - 1); ++i) {
                 flagbit = GetBit(vcpuins.data.opr1, GetMax64(1 << (i + count)));
                 MakeBit(vcpuins.data.result, GetMax64(1 << i), flagbit);
             }
@@ -12096,7 +12096,7 @@ static void _a_shrd(t_nubit64 cdest, t_nubit64 csrc, t_nubit8 count, t_nubit8 bi
             flagcf = !!GetMSB32(vcpuins.data.result);
             MakeBit(vcpu.data.eflags, VCPU_EFLAGS_CF,
                     GetBit(vcpuins.data.result, GetMax64(1 << (count - 1))));
-            for (i = (t_nsbit32)0; i <= (t_nsbit32)(bit - count - 1); ++i) {
+            for (i = 0; i <= (t_nsbit32)(bit - count - 1); ++i) {
                 flagbit = GetBit(vcpuins.data.opr1, GetMax64(1 << (i + count)));
                 MakeBit(vcpuins.data.result, GetMax64(1 << i), flagbit);
             }
@@ -13368,7 +13368,6 @@ t_bool vcpuinsLoadSreg(t_cpu_data_sreg *rsreg, t_nubit16 selector) {
     vcpuins.data.except = oldexcept;
     return fail;
 }
-
 t_bool vcpuinsReadLinear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte) {
     t_bool fail;
     t_nubit32 oldexcept = vcpuins.data.except;
@@ -13378,7 +13377,6 @@ t_bool vcpuinsReadLinear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte) {
     vcpuins.data.except = oldexcept;
     return fail;
 }
-
 t_bool vcpuinsWriteLinear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte) {
     t_bool fail;
     t_nubit32 oldexcept = vcpuins.data.except;
@@ -13905,11 +13903,9 @@ void vcpuinsInit() {
     vcpuins.connect.insTable_0f[0xfe] = (t_faddrcc) UndefinedOpcode;
     vcpuins.connect.insTable_0f[0xff] = (t_faddrcc) UndefinedOpcode;
 }
-
 void vcpuinsReset() {
     MEMSET((void *)(&vcpuins.data), Zero8, sizeof(t_cpuins_data));
 }
-
 void vcpuinsRefresh() {
     if (!vcpu.data.flagHalt) {
         ExecIns();
@@ -13918,5 +13914,4 @@ void vcpuinsRefresh() {
     }
     ExecInt();
 }
-
 void vcpuinsFinal() {}

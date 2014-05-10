@@ -30,7 +30,6 @@ static t_nubit8 GetRegTopId(t_pic *rpic, t_nubit8 reg) {
     }
     return (id + rpic->data.irx) % VPIC_MAX_IRQ_COUNT;
 }
-
 /*
  * GetRegTopId: Internal function
  * Returns flag of higher priority interrupt
@@ -68,7 +67,6 @@ static t_bool HasINTR(t_pic *rpic) {
         return reqId < svcId;
     }
 }
-
 /*
  * RespondINTR: Internal function
  * Adds INTR to IRR and removes it from ISR
@@ -118,7 +116,6 @@ static void io_read_00x0(t_pic *rpic) {
         }
     }
 }
-
 /*
  * io_write_00x0
  * PIC get ICW1, OCW2, OCW3
@@ -232,7 +229,6 @@ static void io_write_00x0(t_pic *rpic) {
         }
     }
 }
-
 /*
  * io_read_00x1
  * PIC provide IMR
@@ -241,7 +237,6 @@ static void io_write_00x0(t_pic *rpic) {
 static void io_read_00x1(t_pic *rpic) {
     vport.data.ioByte = rpic->data.imr;
 }
-
 /*
  * io_write_00x1
  * PIC get ICW2, ICW3, ICW4, OCW1 after ICW1
@@ -375,7 +370,6 @@ void vpicSetIRQ(t_nubit8 irqId) {
         break;
     }
 }
-
 /*
  * vpicScanINTR
  * Returns true if system has a valid INTR
@@ -390,7 +384,6 @@ t_bool vpicScanINTR() {
     }
     return flagINTR;
 }
-
 /* Peeks highest priority interrupt without responding to IRQ */
 t_nubit8 vpicPeekINTR() {
     t_nubit8 irid1; /* top requested int id in master pic */
@@ -406,7 +399,6 @@ t_nubit8 vpicPeekINTR() {
         return (irid1 | vpic1.data.icw2);
     }
 }
-
 /*
  * vpicGetINTR
  * Returns the id of int request with highest priority
@@ -447,14 +439,12 @@ void vpicInit() {
     vbiosAddPost(VPIC_POST);
     vpitAddMe(0);
 }
-
 void vpicReset() {
     MEMSET((void *)(&vpic1.data), Zero8, sizeof(t_pic_data));
     MEMSET((void *)(&vpic2.data), Zero8, sizeof(t_pic_data));
     vpic1.data.status = vpic2.data.status = ICW1;
     vpic1.data.ocw3 = vpic2.data.ocw3 = VPIC_OCW3_RR;
 }
-
 void vpicRefresh() {
     if (vpic2.data.irr & (~vpic2.data.imr)) {
         /* if slave pic has requested int, then
@@ -465,7 +455,6 @@ void vpicRefresh() {
         ClrBit(vpic1.data.irr, VPIC_IRR_IRQ(2));
     }
 }
-
 void vpicFinal() {}
 
 static void printPic(t_pic *rpic) {

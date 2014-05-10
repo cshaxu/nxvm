@@ -501,11 +501,9 @@ void vfdcInit() {
     vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x13);
     vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x40);
 }
-
 void vfdcReset() {
     doReset();
 }
-
 void vfdcRefresh() {
     if (!vfdd.connect.flagDiskExist) {
         SetBit(vfdc.data.dir, VFDC_DIR_DC);
@@ -513,12 +511,11 @@ void vfdcRefresh() {
         ClrBit(vfdc.data.dir, VFDC_DIR_DC);
     }
 }
-
 void vfdcFinal() {}
 
 /* Prints FDC status */
 void devicePrintFdc() {
-    t_nubit8 i;
+    t_nubitcc i;
     PRINTF("FDC INFO\n========\n");
     PRINTF("msr = %x, dir = %x, dor = %x, ccr = %x, dr = %x\n",
            vfdc.data.msr,vfdc.data.dir,vfdc.data.dor,vfdc.data.ccr,vfdc.data.dr);

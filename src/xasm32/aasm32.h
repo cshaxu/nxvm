@@ -7,10 +7,12 @@
 extern "C" {
 #endif
 
+#include "../global.h"
+
 /* assemble single instruction */
-unsigned char aasm32(const char *stmt, unsigned char *rcode, unsigned char flag32);
+uint8_t aasm32(const char *stmt, uint8_t *rcode, int flag32);
 /* assemble a paragraph of instructions */
-unsigned int aasm32x(const char *stmt, unsigned char *rcode, unsigned char flag32);
+uint32_t aasm32x(const char *stmt, uint8_t *rcode, int flag32);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
