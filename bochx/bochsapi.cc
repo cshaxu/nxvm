@@ -1,5 +1,5 @@
 #define PRODUCT "BOCHX: BOCHs - nXvm Connector\n\
-Copyright 2012-2014 Neko.\n"
+Copyright (c) 2012-2014 Neko.\n"
 
 /* BOCHSAPI connects bochs cpu and ram with nxvm cpu and ram. */
 

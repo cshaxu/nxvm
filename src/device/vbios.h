@@ -17,8 +17,14 @@ typedef struct {
     t_strptr  intTable[0x100];  /* table of INT routine string pointers, null if not defined */
 } t_bios_connect;
 
+typedef struct {
+    t_nubit16 buildCS;
+    t_nubit16 buildIP;
+} t_bios_data;
+
 /* bios connections */
 typedef struct {
+    t_bios_data data;
     t_bios_connect connect;
 } t_bios;
 

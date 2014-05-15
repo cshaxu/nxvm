@@ -13,19 +13,18 @@ t_bios vbios;
 
 /* internal variable */
 static t_bool flagBoot;
-static t_nubit16 ics, iip;
 
 static t_nubit32 assemble(const t_strptr stmt, t_nubit16 seg, t_nubit16 off) {
     t_nubit32 len = 0;
     t_nubit8 *code = NULL;
     t_nubitcc i;
     t_nubitcc insCount = 0; /* the number of instructions to be assembled */
-    for (i = 0; i < strlen(stmt); ++i) {
+    for (i = 0; i < STRLEN(stmt); ++i) {
         if (stmt[i] == '\n') {
             insCount++;
         }
     }
-    if (strlen(stmt)) insCount++;
+    if (STRLEN(stmt)) insCount++;
     /* 15 is the maximum length of each instruction */
     code = p_nubit8(MALLOC(15 * insCount * sizeof(t_nubit8)));
     len = utilsAasm32x(stmt, code, False);
@@ -103,12 +102,12 @@ static void biosLoadRomInfo() {
 }
 static void biosLoadInt() {
     t_nubitcc i;
-    iip += (t_nubit16) assemble("iret", VBIOS_ADDR_START_SEG, VBIOS_ADDR_START_OFF);
+    vbios.data.buildIP += (t_nubit16) assemble("iret", VBIOS_ADDR_START_SEG, VBIOS_ADDR_START_OFF);
     for (i = 0; i < 0x100; ++i) {
         if (vbios.connect.intTable[i]) {
-            vramRealWord(Zero16, i * 4 + 0) = iip;
-            vramRealWord(Zero16, i * 4 + 2) = ics;
-            iip += (t_nubit16) assemble(vbios.connect.intTable[i], ics, iip);
+            vramRealWord(Zero16, i * 4 + 0) = vbios.data.buildIP;
+            vramRealWord(Zero16, i * 4 + 2) = vbios.data.buildCS;
+            vbios.data.buildIP += (t_nubit16) assemble(vbios.connect.intTable[i], vbios.data.buildCS, vbios.data.buildIP);
         } else {
             vramRealWord(Zero16, i * 4 + 0) = VBIOS_ADDR_START_OFF;
             vramRealWord(Zero16, i * 4 + 2) = VBIOS_ADDR_START_SEG;
@@ -118,12 +117,12 @@ static void biosLoadInt() {
 static void biosLoadPost() {
     t_nubitcc i;
     t_string stmt;
-    SPRINTF(stmt, "jmp %04x:%04x", ics, iip);
+    SPRINTF(stmt, "jmp %04x:%04x", vbios.data.buildCS, vbios.data.buildIP);
     assemble(stmt, VBIOS_ADDR_POST_SEG, VBIOS_ADDR_POST_OFF);
     for (i = 0; i < vbios.connect.postCount; ++i) {
-        iip += (t_nubit16) assemble(vbios.connect.postTable[i], ics, iip);
+        vbios.data.buildIP += (t_nubit16) assemble(vbios.connect.postTable[i], vbios.data.buildCS, vbios.data.buildIP);
     }
-    iip += (t_nubit16) assemble(VBIOS_POST_BOOT, ics, iip);
+    vbios.data.buildIP += (t_nubit16) assemble(VBIOS_POST_BOOT, vbios.data.buildCS, vbios.data.buildIP);
 }
 static void biosLoadAdditional() {
     /* hard disk param table */
@@ -152,7 +151,7 @@ void vbiosAddInt(t_strptr stmt, t_nubit8 intid) {
 void vbiosInit() {
     MEMSET((void *)(&vbios), Zero8, sizeof(t_bios));
     flagBoot = False;
-    ics = iip = Zero16;
+    vbios.data.buildCS = vbios.data.buildIP = Zero16;
     vbiosAddInt(VBIOS_INT_SOFT_MISC_11, 0x11);
     vbiosAddInt(VBIOS_INT_SOFT_MISC_12, 0x12);
     vbiosAddInt(VBIOS_INT_SOFT_MISC_15, 0x15);
@@ -160,9 +159,10 @@ void vbiosInit() {
 
 /* Loads bios to ram */
 void vbiosReset() {
+    MEMSET((void *)(&vbios.data), Zero8, sizeof(t_bios_data));
     /* bios area starts at f000:0000 */
-    ics = VBIOS_ADDR_START_SEG;
-    iip = VBIOS_ADDR_START_OFF;
+    vbios.data.buildCS = VBIOS_ADDR_START_SEG;
+    vbios.data.buildIP = VBIOS_ADDR_START_OFF;
     biosLoadData();       /* bios data area */
     biosLoadRomInfo();    /* bios rom info area */
     biosLoadInt();        /* bios interrupt services */

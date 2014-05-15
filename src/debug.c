@@ -20,7 +20,7 @@ static int flagExit;
 static char strCmdBuff[0x100], strCmdCopy[0x100], strFileName[0x100];
 
 static void seterr(size_t pos) {
-    nErrPos = (size_t)(arg[pos] - strCmdCopy + strlen(arg[pos]) + 1);
+    nErrPos = (size_t)(arg[pos] - strCmdCopy + STRLEN(arg[pos]) + 1);
 }
 static uint8_t scannubit8(char *s) {
     uint8_t ans = 0;
@@ -135,7 +135,7 @@ static void aconsole() {
         fflush(stdin);
         FGETS(cmdAsmBuff, 0x100, stdin);
         utilsLowerStr(cmdAsmBuff);
-        if (!strlen(cmdAsmBuff)) {
+        if (!STRLEN(cmdAsmBuff)) {
             flagExitAsm = 1;
             continue;
         }
@@ -145,7 +145,7 @@ static void aconsole() {
         errAsmPos = 0;
         len = utilsAasm32(cmdAsmBuff, acode, deviceConnectCpuGetCsDefSize());
         if (!len) {
-            errAsmPos = strlen(cmdAsmBuff) + 9;
+            errAsmPos = STRLEN(cmdAsmBuff) + 9;
         } else {
             if (deviceConnectCpuWriteLinear((asmSegRec << 4) + asmPtrRec, (void *) acode, (uint8_t) len)) {
                 PRINTF("debug: fail to write to L%08X\n", (asmSegRec << 4) + asmPtrRec);
@@ -510,7 +510,7 @@ static uint8_t uprintins(uint16_t seg, uint16_t off) {
             SPRINTF(sbin, "%s%02X", sbin, (uint8_t) ucode[i]);
         }
         SPRINTF(str, "%04X:%04X %s", seg, off, sbin);
-        for (i = strlen(str); i < 24; ++i) {
+        for (i = STRLEN(str); i < 24; ++i) {
             STRCAT(str, " ");
         }
         STRCAT(str, stmt);
@@ -873,8 +873,8 @@ static void v() {
     char str[0x100];
     PRINTF(":");
     FGETS(str, 0x100, stdin);
-    str[strlen(str) - 1] = '\0';
-    for (i = 0; i < strlen(str); ++i) {
+    str[STRLEN(str) - 1] = '\0';
+    for (i = 0; i < STRLEN(str); ++i) {
         PRINTF("%02X", str[i]);
         if (!((i + 1) % 0x10)) {
             PRINTF("\n");
@@ -894,7 +894,7 @@ static void w() {
     uint8_t val;
     uint32_t len = (_bx << 16) + _cx;
     FILE *write;
-    if (!strlen(strFileName)) {
+    if (!STRLEN(strFileName)) {
         PRINTF("(W)rite error, no destination defined\n");
         return;
     } else {
@@ -950,7 +950,7 @@ static uint8_t xuprintins(uint32_t linear) {
             SPRINTF(sbin, "%s%02X", sbin, (uint8_t) ucode[i]);
         }
         SPRINTF(str, "L%08X %s ", linear, sbin);
-        for (i = strlen(str); i < 24; ++i) {
+        for (i = STRLEN(str); i < 24; ++i) {
             STRCAT(str, " ");
         }
         STRCAT(str, stmt);
@@ -973,15 +973,15 @@ static void xaconsole(uint32_t linear) {
         PRINTF("L%08X ", linear);
         FGETS(astmt, 0x100, stdin);
         fflush(stdin);
-        astmt[strlen(astmt) - 1] = 0;
-        if (!strlen(astmt)) {
+        astmt[STRLEN(astmt) - 1] = 0;
+        if (!STRLEN(astmt)) {
             flagExitAsm = 1;
             continue;
         }
         errAsmPos = 0;
         len = utilsAasm32(astmt, acode, deviceConnectCpuGetCsDefSize());
         if (!len) {
-            errAsmPos = strlen(astmt) + 9;
+            errAsmPos = STRLEN(astmt) + 9;
         } else {
             if (deviceConnectCpuWriteLinear(linear, (void *) acode, (uint8_t) len)) {
                 PRINTF("debug: fail to write to L%08X\n", linear);
@@ -1744,7 +1744,7 @@ static void parse() {
     } else {
         return;
     }
-    if (strlen(arg[narg - 1]) != 1) {
+    if (STRLEN(arg[narg - 1]) != 1) {
         arg[narg] = arg[narg - 1] + 1;
         narg++;
     }

@@ -123,8 +123,11 @@ char* STRCPY(char *_Dest, const char *_Source) {
 char* STRTOK(char *_Str, const char *_Delim) {
     return strtok(_Str, _Delim);
 }
-int   STRCMP(const char *_Str1, const char *_Str2) {
+int STRCMP(const char *_Str1, const char *_Str2) {
     return strcmp(_Str1, _Str2);
+}
+size_t STRLEN(const char *_Str) {
+    return strlen(_Str);
 }
 
 int PRINTF(const char *_Format, ...) {
@@ -153,10 +156,10 @@ int SPRINTF(char *_Dest, const char *_Format, ...) {
     return nWrittenBytes;
 }
 
-FILE*  FOPEN(const char *_Filename, const char *_Mode) {
+FILE* FOPEN(const char *_Filename, const char *_Mode) {
     return fopen(_Filename, _Mode);
 }
-int    FCLOSE(FILE *_File) {
+int FCLOSE(FILE *_File) {
     return fclose(_File);
 }
 size_t FREAD(void *_DstBuf, size_t _ElementSize, size_t _Count, FILE *_File) {
@@ -165,14 +168,14 @@ size_t FREAD(void *_DstBuf, size_t _ElementSize, size_t _Count, FILE *_File) {
 size_t FWRITE(void *_Str, size_t _Size, size_t _Count, FILE *_File) {
     return fwrite(_Str, _Size, _Count, _File);
 }
-char*  FGETS(char *_Buf, int _MaxCount, FILE *_File) {
+char* FGETS(char *_Buf, int _MaxCount, FILE *_File) {
     return fgets(_Buf, _MaxCount, _File);
 }
 
 void* MALLOC(size_t _Size) {
     return malloc(_Size);
 }
-void  FREE(void *_Memory) {
+void FREE(void *_Memory) {
     free(_Memory);
 }
 void* MEMSET(void *_Dst, int _Val, size_t _Size) {
@@ -181,7 +184,7 @@ void* MEMSET(void *_Dst, int _Val, size_t _Size) {
 void* MEMCPY(void *_Dst, const void *_Src, size_t _Size) {
     return memcpy(_Dst, _Src, _Size);
 }
-int   MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size) {
+int MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size) {
     return memcmp(_Buf1, _Buf2, _Size);
 }
 

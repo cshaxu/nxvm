@@ -89,7 +89,7 @@ typedef t_nubitcc t_faddrcc;
 #define ClrBit(d, s) ((d) &= ~(s))
 #define MakeBit(d, s, f) ((f) ? SetBit((d), (s)) : ClrBit((d), (s)))
 #define GetMSB(n, b) (GetBit((n), (1 << ((b) - 1))))
-#define GetLSB(n, b) (GetBit((n), 1))
+#define GetLSB(n) (GetBit((n), 1))
 #define False  0x00
 #define True   0x01
 #define Zero1  0x00

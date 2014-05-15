@@ -122,10 +122,8 @@ eax=%08x ecx=%08x edx=%08x ebx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x f
 eflags=%08x %s %s %s %s %s %s %s %s %s %s %s %s | cs:eip=%04x:%08x(L%08x)"
 void vdebugRefresh() {
     if ((vdebug.data.flagBreak && vcpu.data.cs.selector == vdebug.data.breakCS && vcpu.data.ip == vdebug.data.breakIP) ||
-            (vdebug.data.flagBreak32 && (vcpu.data.cs.base + vcpu.data.eip == vdebug.data.breakLinear))) {
-        if (vdebug.data.breakCount) {
-            deviceStop();
-        }
+            (vdebug.data.flagBreak32 && vdebug.data.breakCount && (vcpu.data.cs.base + vcpu.data.eip == vdebug.data.breakLinear))) {
+        deviceStop();
     }
     vdebug.data.breakCount++;
     if (vdebug.data.flagTrace) {
@@ -146,7 +144,7 @@ void vdebugRefresh() {
                 vcpu.data.ss.selector, vcpu.data.esp, vcpu.data.ss.base + vcpu.data.esp,
                 vcpu.data.eax, vcpu.data.ecx, vcpu.data.edx, vcpu.data.ebx,
                 vcpu.data.ebp, vcpu.data.esi, vcpu.data.edi,
-                vcpu.data.ds.selector, vcpu.data.es,
+                vcpu.data.ds.selector, vcpu.data.es.selector,
                 vcpu.data.fs.selector, vcpu.data.gs.selector,
                 vcpu.data.eflags,
                 _GetEFLAGS_OF ? "OF" : "of",
@@ -166,7 +164,7 @@ void vdebugRefresh() {
         /* disassemble opcode */
         if (vcpuins.data.oplen) {
             vcpuins.data.oplen = utilsDasm32(stmt, vcpuins.data.opcodes, vcpu.data.cs.seg.exec.defsize);
-            for (i = 0; i < strlen(stmt); ++i) {
+            for (i = 0; i < STRLEN(stmt); ++i) {
                 if (stmt[i] == '\n') {
                     stmt[i] = ' ';
                 }
@@ -185,7 +183,7 @@ void vdebugRefresh() {
 
         /* print assembly, at least 40 char in length */
         FPRINTF(vdebug.connect.recordFile, "%s ", stmt);
-        for (i = strlen(stmt); i < 40; ++i) {
+        for (i = STRLEN(stmt); i < 40; ++i) {
             FPRINTF(vdebug.connect.recordFile, " ");
         }
 

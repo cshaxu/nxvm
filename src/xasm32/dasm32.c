@@ -6215,10 +6215,10 @@ uint8_t dasm32(char *stmt, uint8_t *rcode, int flag32) {
         _chb(_d_code((uint8_t *)(&opcode), 1));
         iop = oldiop;
         _chb((*(dtable[opcode]))());
-        if (strlen(dop)) {
+        if (STRLEN(dop)) {
             STRCAT(dop, " ");
             STRCPY(dstmt, dop);
-            for (i = strlen(dop); i < 8; ++i) STRCAT(dstmt, " ");
+            for (i = STRLEN(dop); i < 8; ++i) STRCAT(dstmt, " ");
             STRCAT(dstmt, dopr);
             STRCAT(stmt, dstmt);
         }

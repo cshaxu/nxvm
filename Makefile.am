@@ -33,4 +33,4 @@ nxvm_SOURCES = src/main.c src/global.h \
 	src/device/qdx/qdcga.c src/device/qdx/qdcga.h \
 	src/device/qdx/qddisk.c src/device/qdx/qddisk.h \
 	src/device/qdx/qdkeyb.c src/device/qdx/qdkeyb.h
-nxvm_LDFLAGS = -lpthread -lncurses
+LIBS = -lpthread -lncurses

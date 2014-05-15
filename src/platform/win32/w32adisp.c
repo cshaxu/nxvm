@@ -418,15 +418,15 @@ VOID w32adispSetScreen() {
     LONG widthOffset, heightOffset;
     sizeRow = deviceConnectDisplayGetRowSize();
     sizeCol = deviceConnectDisplayGetColSize();
-    GetClientRect(w32aHWnd,&clientRect);
-    GetWindowRect(w32aHWnd,&windowRect);
+    GetClientRect(w32aHWnd, &clientRect);
+    GetWindowRect(w32aHWnd, &windowRect);
 
     /* fetch window and customer area size to decide window side */
     widthOffset = windowRect.right - windowRect.left - clientRect.right;
     heightOffset = windowRect.bottom - windowRect.top - clientRect.bottom;
     MoveWindow(w32aHWnd, windowRect.left, windowRect.top, sizeRow * FONT_WIDTH + widthOffset,
                sizeCol * FONT_HEIGHT + heightOffset, SWP_NOMOVE);
-    GetClientRect(w32aHWnd,&clientRect);
+    GetClientRect(w32aHWnd, &clientRect);
     clientHeight = clientRect.bottom - clientRect.top;
     clientWidth  = clientRect.right - clientRect.left;
     hBmpBuf = CreateCompatibleBitmap(hdcWnd,

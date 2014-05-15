@@ -112,7 +112,7 @@ void deviceConnectCpuClearVM();
 #define _bp     (*(uint16_t *)(deviceConnectCpuGetRefBP()))
 #define _si     (*(uint16_t *)(deviceConnectCpuGetRefSI()))
 #define _di     (*(uint16_t *)(deviceConnectCpuGetRefDI()))
-#define _flags  (*(uint16_t *)(deviceConnectCpuGetRefFLAS()))
+#define _flags  (*(uint16_t *)(deviceConnectCpuGetRefFLAGS()))
 #define _ip     (*(uint16_t *)(deviceConnectCpuGetRefIP()))
 
 #define _es     (*(uint16_t *)(deviceConnectCpuGetRefES()))

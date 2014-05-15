@@ -101,10 +101,11 @@ void utilsTraceBlockEnd(t_utils_trace *rtrace);
 /* Standard C Library */
 struct tm* LOCALTIME(const time_t *_Time);
 
-char* STRCAT(char *_Dest, const char *_Source);
-char* STRCPY(char *_Dest, const char *_Source);
-char* STRTOK(char *_Str, const char *_Delim);
-int   STRCMP(const char *_Str1, const char *_Str2);
+char*  STRCAT(char *_Dest, const char *_Source);
+char*  STRCPY(char *_Dest, const char *_Source);
+char*  STRTOK(char *_Str, const char *_Delim);
+int    STRCMP(const char *_Str1, const char *_Str2);
+size_t STRLEN(const char *_Str);
 
 int   PRINTF(const char *_Format, ...);
 int   FPRINTF(FILE *_File, const char *_Format, ...);

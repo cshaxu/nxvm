@@ -41,9 +41,9 @@ static void QDX() {
         break;
     default: /* QDINT */
         ExecFun(qdxTable[cmdId]);
-        if (vcpuins.data.cimm < 0x80) {
-            /* all interrupt handlers taken over have intId less than 0x80 */
-            /* set flags after executing of qdx interrupt handlers */
+        if (cmdId < 0x20) {
+            /* all interrupt handlers taken over have intId less than 0x20 are hard
+             * interrupt service routines, need to set flags after execution */
             if (vcpuinsReadLinear(vcpu.data.ss.base + vcpu.data.sp + 4, GetRef(flags), 2)) {
                 PRINTF("Cannot read data from L%08X.\n", vcpu.data.ss.base + vcpu.data.sp + 4);
                 deviceStop();

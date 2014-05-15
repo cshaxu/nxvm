@@ -39,8 +39,8 @@ static VOID w32ckeybProcess() {
     ReadConsoleInput(hIn,&inRec,1,&res);
     switch (inRec.EventType) {
     case KEY_EVENT:
-        scanCode = (UCHAR)inRec.Event.KeyEvent.wVirtualScanCode;
-        virtualKey = (UCHAR)inRec.Event.KeyEvent.wVirtualKeyCode;
+        scanCode = (UCHAR) inRec.Event.KeyEvent.wVirtualScanCode;
+        virtualKey = (UCHAR) inRec.Event.KeyEvent.wVirtualKeyCode;
         if (inRec.Event.KeyEvent.bKeyDown) {
             win32KeyboardMakeKey(scanCode, virtualKey);
         } else {

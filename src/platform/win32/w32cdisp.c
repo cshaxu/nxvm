@@ -77,7 +77,7 @@ VOID w32cdispPaint(BOOL flagForce) {
         SetConsoleCursorInfo(hOut, &curInfo);
         curPos.X = deviceConnectDisplayGetCurrentCursorPosY();
         curPos.Y = deviceConnectDisplayGetCurrentCursorPosX();
-        SetConsoleCursorPosition(hOut,curPos);
+        SetConsoleCursorPosition(hOut, curPos);
     }
 }
 
