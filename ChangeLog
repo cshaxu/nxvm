@@ -1,0 +1,228 @@
+0x20
+create vmachine, vmemory, vcpu, vcpuins
+create console, debug, asm86;
+create vdisplay;
+Milestone: console, debug, asm86/aasm
+
+0x22
+modify asm86: add disassembler 0x00-0x7f
+
+0x24
+modify asm86: add disassembler 0x80-0xaf
+
+0x26
+modify asm86: add disassembler 0xb0-0xca
+
+0x27
+modify asm86: add disassembler 0xc2-0xe3
+
+0x28
+modify asm86: add disassembler 0xe0-0xff
+
+0x2a
+rename vdisplay->vapi; modify vmachine: add functions
+modify console, debug: add implement
+Milestone: asm86
+
+0x2b
+modify vcpu: add insTable
+modify debug: add implement
+create vglobal
+
+0x2c
+minor
+
+0x2d
+modify vmemory, vapi: add implement; modify vcpuins: add implement
+
+0x2e
+modify vcpuins: add implement
+
+0x2f
+modify vcpuins: add implement
+
+0x31
+modify vcpuins: add implement
+
+0x33
+modify vcpuins: add implement
+
+0x34
+modify vcpuins: add implement
+
+0x35
+modify vcpuins: add implement
+
+0x36
+modify vcpuins: add implement, add faddrcc
+modify vglobal: add faddrcc
+
+0x37
+modify vcpuins: add type cast
+create coption
+
+0x38
+modify vcpuins: add implement, change macro
+
+0x39
+modify vcpuins: add implement, caseError()
+
+0x3a
+modify vcpuins: replace nvmprint functions
+modify console: add implement
+
+0x3b
+minor
+
+0x3d
+modify debug: add errPos
+Milestone: vcpuins instructions
+
+0x3e
+move src/nvm/ to src/vmachine/
+add makefile
+
+0x3f
+modify makefile
+
+0x40
+minor
+
+0x41
+minor
+
+0x42
+modify debug: add functions
+
+0x43
+minor
+Milestone: BASIC_CONSOLE_DEBUG
+
+0x45
+create vpic; modify vcpuins: add interrupt handler, change flag macros
+minor
+
+0.1.0x46
+Milestone: vpic, interrupt handler
+
+0.1.0x4a
+create vcmos, vrtc, vpit; rename vmemory->vram; modify vpic: change to master-slave two pics
+modify debug: add port accessing
+Milestone: vcmos, vrtc, port handler
+
+0.1.0x4b
+create vdma
+modify console: fix bug;
+
+0.1.0x4c
+modify vdma: implement; modify vpic: rename m/s chips
+
+0.1.0x4f
+create vfdc, vfdd; rename vdma->vdmac; modify vpic: fix m/s int bug
+
+0.1.0x51
+modify console: add floppy loader
+
+0.1.0x52
+modify vfdx: add implement
+
+0.1.0x54
+modify vfdx: add implement; modify vdma, vcpuins
+
+0.1.0x58
+modify vcmos, vpic
+
+0.1.0x5a
+modify: rename all device init-refresh-final functions
+Milestone: vmachine
+
+0.1.0x5c
+modify vpit: add implement
+Milestone: vpit
+
+0.1.0x5d
+rename vdmac->vdma
+
+0.1.0x5e
+modify vdma: reorg code
+
+0.1.0x5f
+modify vdma: add macro
+
+0.1.0x60
+modify vdma: add implement
+
+0.1.0x62
+modify vdma: add implement
+
+0.1.0x63
+modify vdma: add implement
+
+0.1.0x64
+modify vdma: add implement
+Milestone: vdma
+
+0.1.0x65
+modify vfdx: reorg code
+
+0.1.0x66
+modify vapi: integrate with vfdc, vfdd
+
+0.1.0x67
+modify vfdx: add implement
+
+0.1.0x68
+modify vfdx: add implement, integrate with vdma
+
+0.1.0x69
+modify vfdx: add implement, integrate with vdma
+Milestone: vfdx
+
+0.1.0x6a
+modify: add iobyte in vcpu
+
+0.1.0x6b
+create vkbc
+
+0.1.0x6d
+modify vkbc: add implement
+
+0.1.0x6e
+modify vkbc: add implement
+
+0.1.0x6f
+modify vkbc: add implementation
+Milestone: vkbc, ALL_VIRTUAL_DEVICES
+
+0.2.0x73
+modify vkbc: add implement; modify vmachine: integrate with system/win32app
+create system module
+
+0.2.0x74
+minor
+
+0.2.0x75
+create vbios
+
+0.2.0x76
+minor
+
+0.2.0x78
+remove vbios, vcmos, vdma, vfdx, vkbx, vpit; create qdbios, qdfdd, qdkeyb, qdrtc, qddisp
+Milestone: QUICK_AND_DIRTY
+
+0.2.0x7a
+create vlog
+modify qdbios, qdrtc: add implement
+
+0.2.0x7c
+modify vcpuins: bug fix
+modify qdbios, qdrtc: add implement
+
+0.2.0x7d
+modify vcpuins: bug fix
+modify vapi: integrate with vlog
+modify qdbios, qdkeyb: add implement
+
+0.2.0x7e
+modify qdkeyb: add implement
