@@ -483,6 +483,451 @@ static void _55C6_printCharToDevice() {
     SI = saveSI;
 }
 /**
+ * Keyboard Input with Echo
+ * Output: AL = character from stdin
+ */
+static void _54E0_keyboardInputWithEcho() {
+    t_nubit16 tempAX;
+    CODE_STARTS_AT(0x0019, 0x54e0);
+    CALL_NEAR(0x51ba, 0x54e3); /* input char from keyboard */
+    tempAX = AX;
+    CALL_NEAR(0x54eb, 0x54e7); /* output to display */
+    AX = tempAX;
+}
+/**
+ * Direct Console I/O
+ * Input: DL = (00-FE character to output)
+ *        DL = FF for console input
+ * Output: (null) if DL != FF; otherwise:
+ *         AL = intput character from console when DL = FF
+ *         ZF is clear if console input char ready in AL
+ */
+static void _541C_directConsoleIO() {
+    CODE_STARTS_AT(0x0019, 0x541c);
+    AL = DL;
+    if (DL == 0xff) {
+        /* stdin */
+        CODE_STARTS_AT(0x0019, 0x5425);
+        /* load program stack ptr */
+        LOAD_ES(_WORD(SS, KDATA_SAVE_SS));
+        DI = _WORD(SS, KDATA_SAVE_SP);
+        BX = 0x0000; /* stdin device id */
+        CALL_NEAR(0x7583, 0x542f); /* get device hpt */
+        if (!_GetEFLAGS_CF) {
+            /* succeed to get device hpt */
+            AH = 0x01;
+            CALL_NEAR(0x8413, 0x5436); /* check device stdin status */
+            if (!_GetEFLAGS_ZF) {
+                /* stdin is ready */
+                CODE_STARTS_AT(0x0019, 0x5443);
+                _BYTE(ES, DI + 0x16) &= 0xbf;
+                CALL_NEAR(0x9109, 0x544b); /* check redirection */
+                _544B_readFromStdin();
+            } else {
+                /* stdin is not ready */
+                CALL_NEAR(0x9109, 0x543b); /* check redirection */
+                _BYTE(ES, DI + 0x16) |= 0x40;
+                AL = 0x00;
+            }
+        }
+    } else {
+        /* stdout */
+        _5467_writeToStdout();
+    }
+}
+/**
+ * Console Input Without Echo
+ * Output: AL = character from stdin
+ */
+static void _51BA_consoleInputWithoutEcho() {
+    CODE_STARTS_AT(0x0019, 0x51ba);
+    PUSH(GetRef(DS), 2);
+    PUSH(GetRef(SI), 2);
+    CODE_STARTS_AT(0x0019, 0x51bc);
+    CALL_NEAR(0x9137, 0x51bf); /* check stdin ready */
+    while (_GetEFLAGS_ZF) {
+        /* stdin not ready */
+        if (_BYTE(SS, 0x0aa0) == 0x00) {
+            CODE_STARTS_AT(0x0019, 0x51c1);
+            /* do stdin status check */
+            AH = 0x05;
+            CALL_NEAR(0x8413, 0x51ce); /* io command peek */
+        }
+        /* keyboard busy loop */
+        AH = 0x84;
+        INT(0x2a, 0x51d2);
+        /* get date and time */
+        if (_BYTE(SS, 0x0d91) == 0xff) {
+            PUSH(GetRef(AX), 2);
+            PUSH(GetRef(BX), 2);
+            PUSH(GetRef(CX), 2);
+            PUSH(GetRef(DX), 2);
+            PUSH(GetRef(DS), 2);
+            LOAD_DS(SS);
+            AX = 0x0000;
+            CALL_NEAR(0x54b9, 0x51e7); /* copy io request header */
+            CALL_NEAR(0x48f8, 0x51ea); /* read device */
+            AX = 0x0001;
+            CALL_NEAR(0x54b9, 0x51f0); /* copy device driver result to some table */
+            POP(GetRef(DS), 2);
+            POP(GetRef(DX), 2);
+            POP(GetRef(CX), 2);
+            POP(GetRef(BX), 2);
+            POP(GetRef(AX), 2);
+        }
+        CODE_STARTS_AT(0x0019, 0x51f5);
+        _WORD(SS, 0x0d91) += 0x0001; /* increase counter */
+        CALL_NEAR(0x9137, 0x51bf); /* check stdin ready */
+    };
+    /* ready, get 1 char */
+    CODE_STARTS_AT(0x0019, 0x51fc);
+    AH = 0x00;
+    CALL_NEAR(0x8413, 0x5201); /* get 1 cahr from stdin */
+
+    POP(GetRef(SI), 2);
+    POP(GetRef(DS), 2);
+    LOAD_DS(DS);
+
+    if (AL == 0x00) {
+        /* is control char */
+        _BYTE(SS, 0x0d90) = 0x01; /* set control char flag */
+    } else {
+        _BYTE(SS, 0x0d90) = 0x00; /* clear control char flag */
+    }
+}
+/**
+ * Buffered Keyboard Input
+ * Input: DS:DX = pointer to input buffer of the format:
+ *  | max | count |  BUFFER (N bytes)
+ *     |      |      `------ input buffer
+ *     |      `------------ number of characters returned (byte)
+ *     `-------------- maximum number of characters to read (byte)
+ * Output: (null)
+ */
+static void _5220_bufferedKeyboardInput() {
+    t_nubit16 t = 0xffff;
+    CODE_STARTS_AT(0x0019, 0x5220);
+    LOAD_ES(SS); /* ES:DI points to kernel keyboard buffer (diff w/ kb buf, temporary) */
+    SI = DX; /* DS:DX points to input buffer (user buff, destination) */
+    CH = 0x00; /* clear counter */
+    AX = _WORD(DS, SI); /* read first input buffer word */
+    SI += 0x02;
+    /* buffer size is not 0 */
+    if (AL != 0x00) {
+        CODE_STARTS_AT(0x0019, 0x522d);
+        BL = AH; /* maximum char number allowed */
+        BH = 0x00; /* count of char number in input buff */
+        /* buff sz <= max char num, or max char num doesnt include ENTER char */
+        if (AL <= BL || _BYTE(DS, BX + SI) != 0x0d) {
+            CODE_STARTS_AT(0x0019, 0x523a);
+            BL = 0x00; /* maximum char number limit doesnt make sense */
+        }
+        CODE_STARTS_AT(0x0019, 0x523c);
+        DL = AL - 0x01; /* get buffer size and exclude ENTER */
+        CODE_STARTS_AT(0x0019, 0x523f);
+        AL = _BYTE(SS, 0x01f9); /* get column position */
+        _BYTE(SS, 0x01fa) = AL; /* save current position */
+        PUSH(GetRef(SI), 2); /* save offset of first char in target buff */
+        DI = 0x01fb; /* get starting address of temp buffer (keyb buff) */
+        _BYTE(SS, 0x0579) = 0x00; /* clear INSERT flag */
+        BH = DH = 0x00; /* clear char counter/ptr */
+        CALL_NEAR(0x51ba, 0x5254); /* read one char to AL */
+        /* char is LF */
+        if (AL == 0x0a) {
+            CALL_NEAR(0x51ba, 0x525e); /* get new char */
+        }
+        do {
+            CODE_STARTS_AT(0x0019, 0x525e);
+            if (AL == 0x17 || AL == 0x15) {
+                /* char is ^W or ^U */
+                /* do nothing: nop */
+            } else if (AL == 0x06) {
+                /* char is ^F */
+                CALL_NEAR(0x51ba, 0x525e); /* get new char */
+                continue; /* loop back */
+            } else if (AL == _BYTE(CS, 0x47f4)) {
+                /* char is ESC */
+                AL = '\\';
+                CALL_NEAR(0x54eb, 0x52f8); /* output char '\' */
+                POP(GetRef(SI), 2); /* clear stack */
+                CALL_NEAR(0x5412, 0x52fc); /* print CRLF */
+                AL = _BYTE(SS, 0x01fa); /* get number of space */
+                CALL_NEAR(0x555f, 0x5303); /* print spaces */
+                CODE_STARTS_AT(0x0019, 0x523f);
+                AL = _BYTE(SS, 0x01f9); /* get column position */
+                _BYTE(SS, 0x01fa) = AL; /* save current position */
+                PUSH(GetRef(SI), 2); /* save offset of first char in target buff */
+                DI = 0x01fb; /* get starting address of temp buffer (keyb buff) */
+                _BYTE(SS, 0x0579) = 0x00; /* clear INSERT flag */
+                BH = DH = 0x00; /* clear char counter/ptr */
+                CALL_NEAR(0x51ba, 0x5254); /* read one char to AL */
+                /* char is LF */
+                if (AL == 0x0a) {
+                    CALL_NEAR(0x51ba, 0x525e); /* get new char */
+                }
+                continue; /* loop back */
+            } else if (AL == 0x7f || AL == 0x08) {
+                /* char is DEL or BACKSPACE */
+                CODE_STARTS_AT(0x0019, 0x5306);
+                CALL_NEAR(0x530c, 0x5309); /* execute delete char */
+                CALL_NEAR(0x51ba, 0x525e); /* get new char */
+                continue;
+            } else if (AL == 0x0a) {
+                /* char is line feed */
+                CODE_STARTS_AT(0x0019, 0x52c5);
+                CALL_NEAR(0x0019, 0x5412); /* print CRLF */
+                CALL_NEAR(0x51ba, 0x525e); /* get new char */
+                continue; /* loop back */
+            } else if (AL == 0x0d) {
+                /* char is carriage return */
+                t_nubitcc i;
+                t_nubit16 tempDS, tempES;
+                CODE_STARTS_AT(0x0019, 0x52af);
+                _BYTE(ES, DI) = AL; /* save char to temp buffer */
+                CALL_NEAR(0x54eb, 0x52b3);
+                _BYTE(DS, DS - 0x01) = DH; /* save actual char number to target buff */
+                DH += 0x01; /* include ENTER char */
+                /* DS:SI -> temp buff, ES:DI -> target buff */
+                POP(GetRef(DI), 2); /* get offset of first char in target buff */
+                tempDS = DS;
+                tempES = ES;
+                LOAD_DS(tempES);
+                LOAD_ES(tempDS);
+                SI = 0x01fb;
+                /* copy data from temp buff to target buff */
+                for (i = 0; i < DH; ++i) {
+                    _BYTE(ES, DI) = _BYTE(DS, SI);
+                    DI += 0x0001;
+                    SI += 0x0001;
+                }
+                CL = 0x00;
+                break;
+            } else if (AL == _BYTE(CS, 0x47f5)) {
+                /* char is extended ascii */
+                CODE_STARTS_AT(0x0019, 0x4820);
+                CALL_NEAR(0x51ba, 0x4823); /* read char to AL */
+                /*
+                 TABLE 0x47f6 + (0x0000, 0x000e);
+                 41 525b    F7  goto F0A
+                 41 537d *  F7  send NUL to temp buff and print
+                 52 5405    INS change INSERT flag
+                 52 5405 *  INS change INSERT flag
+                 4B 5306 *  <-  same as DEL
+                 3F 53f1 *  F5  print '@', copy temp buff to user buff, jmp to next line for edit
+                 3D 52f3    F3  same as ESC for second F3
+                 3D 5384 *  F3  copy chars from curr ptr in user buff to temp buff
+                 3E 53b7 *  F4  starting from curr ptr, search in user buff for specific char
+                 3C 538a *  F2  copy chars from curr ptr to specific char in user buff to temp buff
+                 53 53ad *  DEL user buff ptr skip current char, cursor moves down
+                 3B 538f *  F1  copy current 1 char in user buff to temp buff
+                 4D 538f *  ->  same as F1
+                 40 540d *  F6  send 1A (^Z) to AL
+                 */
+                if (AL == 0x41) {
+                    /* F7 */
+                    CODE_STARTS_AT(0x0019, 0x537d);
+                    AL = _BYTE(CS, 0x47f5); /* convert F7 to NUL */
+                    CODE_STARTS_AT(0x0019, 0x5288);
+                } else if (AL == 0x40) {
+                    /* F6 */
+                    CODE_STARTS_AT(0x0019, 0x540d);
+                    AL = 0x1a;
+                    CODE_STARTS_AT(0x0019, 0x5288);
+                } else if (AL == 0x52) {
+                    /* INSERT */
+                    CODE_STARTS_AT(0x0019, 0x5405);
+                    _BYTE(SS, 0x0579) = ~_BYTE(SS, 0x0579); /* revert INSERT flag */
+                    CALL_NEAR(0x51ba, 0x525e); /* get new char */
+                    continue; /* loop back */
+                } else if (AL == 0x4b) {
+                    /* <- */
+                    CODE_STARTS_AT(0x0019, 0x5306);
+                    CALL_NEAR(0x530c, 0x5309);
+                    CALL_NEAR(0x51ba, 0x525e); /* get new char */
+                    continue; /* loop back */
+                } else if (AL == 0x53) {
+                    /* extended DEL */
+                    CODE_STARTS_AT(0x0019, 0x53ad);
+                    if (BH != BL) {
+                        /* user buff is not full */
+                        BH += 0x01;
+                        SI += 0x0001;
+                    }
+                    CALL_NEAR(0x51ba, 0x525e); /* get new char */
+                    continue; /* loop back */
+                } else if (AL == 0x3f) {
+                    /* F5 */
+                    t_nubit16 saveES, saveDS;
+                    CODE_STARTS_AT(0x0019, 0x53f1);
+                    AL = '@';
+                    CALL_NEAR(0x54eb, 0x53f6); /* output @ */
+                    POP(GetRef(DI), 2); /* load DI with SI, starting position  */
+                    PUSH(GetRef(DI), 2);
+                    saveES = ES;
+                    saveDS = DS;
+                    CALL_NEAR(0x52b9, 0x53fd); /* copy temp buff to user buff */
+                    LOAD_DS(saveDS);
+                    LOAD_ES(saveES);
+                    POP(GetRef(SI), 2);
+                    CALL_NEAR(0x5412, 0x52fc); /* print CRLF */
+                    AL = _BYTE(SS, 0x01fa); /* get number of space */
+                    CALL_NEAR(0x555f, 0x5303); /* print spaces */
+                    CODE_STARTS_AT(0x0019, 0x523f);
+                    AL = _BYTE(SS, 0x01f9); /* get column position */
+                    _BYTE(SS, 0x01fa) = AL; /* save current position */
+                    PUSH(GetRef(SI), 2); /* save offset of first char in target buff */
+                    DI = 0x01fb; /* get starting address of temp buffer (keyb buff) */
+                    _BYTE(SS, 0x0579) = 0x00; /* clear INSERT flag */
+                    BH = DH = 0x00; /* clear char counter/ptr */
+                    CALL_NEAR(0x51ba, 0x5254); /* read one char to AL */
+                    /* char is LF */
+                    if (AL == 0x0a) {
+                        CALL_NEAR(0x51ba, 0x525e); /* get new char */
+                    }
+                    continue; /* loop back */
+                } else if (AL == 0x3d || AL == 0x3c || AL == 0x3b || AL == 0x4d) {
+                    /* F3 or F2 or F1 or -> */
+                    /* copy CL chars from user buff to temp buff */
+                    if (AL == 0x3d) {
+                        /* F3 */
+                        CODE_STARTS_AT(0x0019, 0x5384);
+                        CL = BL - BH; /* copy remaining chars, usr bf -> tmp bf */
+                    } else if (AL == 0x3c) {
+                        /* F2 */
+                        t_nubit16 saveES, saveDI;
+                        CODE_STARTS_AT(0x0019, 0x538a);
+                        CODE_STARTS_AT(0x0019, 0x53c1);
+                        CALL_NEAR(0x51ba, 0x53c4); /* get one char */
+                        if (AL == _BYTE(CS, 0x47f5)) {
+                            /* is control char */
+                            CALL_NEAR(0x51ba, 0x53c4); /* get one more char */
+                            CALL_NEAR(0x51ba, 0x53c4); /* get even more char */
+                            continue; /* loop back */
+                        }
+                        CL = BL - BH; /* get range to search */
+                        if (CL < 0x02) {
+                            CALL_NEAR(0x51ba, 0x53c4); /* get one char */
+                            continue; /* loop back */
+                        }
+                        CL -= 0x01;
+                        saveES = ES;
+                        saveDI = DI;
+                        LOAD_ES(DS);
+                        DI = SI + 0x0001;
+                        while (CL) {
+                            CL -= 0x01;
+                            if (_BYTE(ES, DI) == AL) {
+                                break;
+                            }
+                            DI += 0x0001;
+                        }
+                        DI = saveDI;
+                        LOAD_ES(saveES);
+                        if (!_GetEFLAGS_ZF) {
+                            CALL_NEAR(0x51ba, 0x53c4); /* get one char */
+                            continue; /* loop back */
+                        }
+                        CL = BL - BH - CL;
+                    } else {
+                        /* F1 or -> */
+                        CODE_STARTS_AT(0x0019, 0x538f);
+                        CL = 0x01; /* copy 1 char, usr bf -> tmp bf */
+                    }
+                    /* copy CL chars from user buff to temp buff */
+                    CODE_STARTS_AT(0x0019, 0x5391);
+                    do {
+                        _BYTE(SS, 0x0579) = 0x00; /* clear INSERT flag */
+                        if (DH != DL && BH != BL) {
+                            /* neither temp buf nor user buf is full */
+                            /* copy char from user buff to temp buff */
+                            AL = _BYTE(DS, SI);
+                            SI += 0x0001;
+                            _BYTE(ES, DI) = AL;
+                            DI += 0x0001;
+                            CALL_NEAR(0x5582, 0x53a4); /* print char */
+                            BH += 0x01;
+                            DH += 0x01;
+                        } else {
+                            break;
+                        }
+                        CL -= 0x01;
+                    } while (CL != 0x00);
+                    CODE_STARTS_AT(0x0019, 0x53aa);
+                    CALL_NEAR(0x51ba, 0x525e); /* get new char */
+                    continue; /* loop back */
+                } else if (AL == 0x3e) {
+                    /* F4 */
+                    t_nubit16 saveES, saveDI;
+                    CODE_STARTS_AT(0x0019, 0x53b7);
+                    CODE_STARTS_AT(0x0019, 0x53c1);
+                    CALL_NEAR(0x51ba, 0x53c4); /* get one char */
+                    if (AL == _BYTE(CS, 0x47f5)) {
+                        /* is control char */
+                        CALL_NEAR(0x51ba, 0x53c4); /* get one more char */
+                        CALL_NEAR(0x51ba, 0x53c4); /* get even more char */
+                        continue; /* loop back */
+                    }
+                    CL = BL - BH; /* get range to search */
+                    if (CL < 0x02) {
+                        CALL_NEAR(0x51ba, 0x53c4); /* get one char */
+                        continue; /* loop back */
+                    }
+                    CL -= 0x01;
+                    saveES = ES;
+                    saveDI = DI;
+                    LOAD_ES(DS);
+                    DI = SI + 0x0001;
+                    while (CL) {
+                        CL -= 0x01;
+                        if (_BYTE(ES, DI) == AL) {
+                            break;
+                        }
+                        DI += 0x0001;
+                    }
+                    DI = saveDI;
+                    LOAD_ES(saveES);
+                    if (!_GetEFLAGS_ZF) {
+                        CALL_NEAR(0x51ba, 0x53c4); /* get one char */
+                        continue; /* loop back */
+                    }
+                    CL = BL - BH - CL;
+                    CODE_STARTS_AT(0x0019, 0x53ba);
+                    SI += CX; /* ? */
+                    BH += CL; /* ? */
+                    CALL_NEAR(0x51ba, 0x53c4); /* get one char */
+                    continue; /* loop back */
+                } else {
+                    /* all others */
+                    CALL_NEAR(0x51ba, 0x525e); /* get new char */
+                    continue; /* loop back */
+                }
+            }
+            CODE_STARTS_AT(0x0019, 0x5288);
+            /* BH = char num in user buff, BL = max char num allowed */
+            /* DH = char num in temp buff, DL = user buff size */
+            if (DH >= DL) {
+                /* temp buffer is full */
+                CODE_STARTS_AT(0x0019, 0x52a5);
+                AL = 0x07;
+                CALL_NEAR(0x54eb, 0x52aa); /* ring the bell */
+            } else {
+                CODE_STARTS_AT(0x0019, 0x528c);
+                _BYTE(ES, DI) = AL; /* send char to temp buffer */
+                DI += 0x0001; /* increase temp buffer pointer */
+                DH += 0x01; /* increase counter */
+                CALL_NEAR(0x5582, 0x5292); /* output the char */
+                if (_BYTE(SS, 0x0579) == 0x00 && BH < BL) {
+                    /* INSERT flag is clear and not reach end of buff */
+                    SI += 0x0001; /* increase buffer pointer */
+                    BH += 0x01; /* increase char counter  */
+                }
+            }
+            CALL_NEAR(0x51ba, 0x525e); /* get new char */
+            /* loop back */
+        } while (1);
+    }
+}
+/**
  * Terminates program
  * Input: AH = return type, AL = return code
  * Output: Free memory, CS:IP = return address
@@ -575,6 +1020,9 @@ static t_bool execTerminate_A1FF() {
 }
 
 static void kernelEntry();
+/** TODO: NEED REVIEW
+ * Execute ctrl-break handler
+ */
 static t_bool checkCtrlBreak() {
     CODE_STARTS_AT(0x0019, 0x9080);
     /* check if currently on DOS internal stack */
@@ -898,13 +1346,9 @@ static void F00() {
  * Output: AL = character from stdin
  */
 static void F01() {
-    t_nubit16 tempAX;
-    CODE_STARTS_AT(0x0019, 0x54e0);
     _ret(asmFuncBegin());
-    CALL_NEAR(0x51ba, 0x54e3); /* input char from keyboard */
-    tempAX = AX;
-    CALL_NEAR(0x54eb, 0x54e7); /* output to display */
-    AX = tempAX;
+    CODE_STARTS_AT(0x0019, 0x54e0);
+    _54E0_keyboardInputWithEcho();
     _ret(asmFuncEnd());
 }
 /**
@@ -986,36 +1430,7 @@ static void F05() {
 static void F06() {
     _ret(asmFuncBegin());
     CODE_STARTS_AT(0x0019, 0x541c);
-    AL = DL;
-    if (DL == 0xff) {
-        /* stdin */
-        CODE_STARTS_AT(0x0019, 0x5425);
-        /* load program stack ptr */
-        LOAD_ES(_WORD(SS, KDATA_SAVE_SS));
-        DI = _WORD(SS, KDATA_SAVE_SP);
-        BX = 0x0000; /* stdin device id */
-        CALL_NEAR(0x7583, 0x542f); /* get device hpt */
-        if (!_GetEFLAGS_CF) {
-            /* succeed to get device hpt */
-            AH = 0x01;
-            CALL_NEAR(0x8413, 0x5436); /* check device stdin status */
-            if (!_GetEFLAGS_ZF) {
-                /* stdin is ready */
-                CODE_STARTS_AT(0x0019, 0x5443);
-                _BYTE(ES, DI + 0x16) &= 0xbf;
-                CALL_NEAR(0x9109, 0x544b); /* check redirection */
-                _544B_readFromStdin();
-            } else {
-                /* stdin is not ready */
-                CALL_NEAR(0x9109, 0x543b); /* check redirection */
-                _BYTE(ES, DI + 0x16) |= 0x40;
-                AL = 0x00;
-            }
-        }
-    } else {
-        /* stdout */
-        _5467_writeToStdout();
-    }
+    _541C_directConsoleIO();
     _ret(asmFuncEnd());
 }
 /**
@@ -1036,61 +1451,8 @@ static void F07() {
  */
 static void F08() {
     _ret(asmFuncBegin());
-    CALL_NEAR(0x51ba, 0x41f9);
-    PUSH(GetRef(DS), 2);
-    PUSH(GetRef(SI), 2);
-
-    CODE_STARTS_AT(0x0019, 0x51bc);
-    CALL_NEAR(0x9137, 0x51bf); /* check stdin ready */
-    while (_GetEFLAGS_ZF) {
-        /* stdin not ready */
-        if (_BYTE(SS, 0x0aa0) == 0x00) {
-            CODE_STARTS_AT(0x0019, 0x51c1);
-            /* do stdin status check */
-            AH = 0x05;
-            CALL_NEAR(0x8413, 0x51ce); /* io command peek */
-        }
-        /* keyboard busy loop */
-        AH = 0x84;
-        INT(0x2a, 0x51d2);
-        /* get date and time */
-        if (_BYTE(SS, 0x0d91) == 0xff) {
-            PUSH(GetRef(AX), 2);
-            PUSH(GetRef(BX), 2);
-            PUSH(GetRef(CX), 2);
-            PUSH(GetRef(DX), 2);
-            PUSH(GetRef(DS), 2);
-            LOAD_DS(SS);
-            AX = 0x0000;
-            CALL_NEAR(0x54b9, 0x51e7); /* copy io request header */
-            CALL_NEAR(0x48f8, 0x51ea); /* read device */
-            AX = 0x0001;
-            CALL_NEAR(0x54b9, 0x51f0); /* copy device driver result to some table */
-            POP(GetRef(DS), 2);
-            POP(GetRef(DX), 2);
-            POP(GetRef(CX), 2);
-            POP(GetRef(BX), 2);
-            POP(GetRef(AX), 2);
-        }
-        CODE_STARTS_AT(0x0019, 0x51f5);
-        _WORD(SS, 0x0d91) += 0x0001; /* increase counter */
-        CALL_NEAR(0x9137, 0x51bf); /* check stdin ready */
-    };
-    /* ready, get 1 char */
-    CODE_STARTS_AT(0x0019, 0x51fc);
-    AH = 0x00;
-    CALL_NEAR(0x8413, 0x5201); /* get 1 cahr from stdin */
-
-    POP(GetRef(SI), 2);
-    POP(GetRef(DS), 2);
-    LOAD_DS(DS);
-
-    if (AL == 0x00) {
-        /* is control char */
-        _BYTE(SS, 0x0d90) = 0x01; /* set control char flag */
-    } else {
-        _BYTE(SS, 0x0d90) = 0x00; /* clear control char flag */
-    }
+    CODE_STARTS_AT(0x0019, 0x51ba);
+    _51BA_consoleInputWithoutEcho();
     _ret(asmFuncEnd());
 }
 /** TODO
@@ -1111,7 +1473,7 @@ static void F09() {
     }
     _ret(asmFuncEnd());
 }
-/** TODO
+/** TODO: NEED REVIEW
  * INT 21,A - Buffered Keyboard Input
  * Input: AH = 0A, DS:DX = pointer to input buffer of the format:
  *  | max | count |  BUFFER (N bytes)
@@ -1121,338 +1483,27 @@ static void F09() {
  * Output: (null)
  */
 static void F0A() {
-    t_nubit16 t = 0xffff;
     _ret(asmFuncBegin());
     CODE_STARTS_AT(0x0019, 0x5220);
-    LOAD_ES(SS); /* ES:DI points to kernel keyboard buffer (diff w/ kb buf, temporary) */
-    SI = DX; /* DS:DX points to input buffer (user buff, destination) */
-    CH = 0x00; /* clear counter */
-    AX = _WORD(DS, SI); /* read first input buffer word */
-    SI += 0x02;
-    /* buffer size is not 0 */
-    if (AL != 0x00) {
-        CODE_STARTS_AT(0x0019, 0x522d);
-        BL = AH; /* maximum char number allowed */
-        BH = 0x00; /* count of char number in input buff */
-        /* buff sz <= max char num, or max char num doesnt include ENTER char */
-        if (AL <= BL || _BYTE(DS, BX + SI) != 0x0d) {
-            CODE_STARTS_AT(0x0019, 0x523a);
-            BL = 0x00; /* maximum char number limit doesnt make sense */
-        }
-        CODE_STARTS_AT(0x0019, 0x523c);
-        DL = AL - 0x01; /* get buffer size and exclude ENTER */
-        CODE_STARTS_AT(0x0019, 0x523f);
-        AL = _BYTE(SS, 0x01f9); /* get column position */
-        _BYTE(SS, 0x01fa) = AL; /* save current position */
-        PUSH(GetRef(SI), 2); /* save offset of first char in target buff */
-        DI = 0x01fb; /* get starting address of temp buffer (keyb buff) */
-        _BYTE(SS, 0x0579) = 0x00; /* clear INSERT flag */
-        BH = DH = 0x00; /* clear char counter/ptr */
-        CALL_NEAR(0x51ba, 0x5254); /* read one char to AL */
-        /* char is LF */
-        if (AL == 0x0a) {
-            CALL_NEAR(0x51ba, 0x525e); /* get new char */
-        }
-        do {
-            CODE_STARTS_AT(0x0019, 0x525e);
-            if (AL == 0x17 || AL == 0x15) {
-                /* char is ^W or ^U */
-                /* do nothing: nop */
-            } else if (AL == 0x06) {
-                /* char is ^F */
-                CALL_NEAR(0x51ba, 0x525e); /* get new char */
-                continue; /* loop back */
-            } else if (AL == _BYTE(CS, 0x47f4)) {
-                /* char is ESC */
-                AL = '\\';
-                CALL_NEAR(0x54eb, 0x52f8); /* output char '\' */
-                POP(GetRef(SI), 2); /* clear stack */
-                CALL_NEAR(0x5412, 0x52fc); /* print CRLF */
-                AL = _BYTE(SS, 0x01fa); /* get number of space */
-                CALL_NEAR(0x555f, 0x5303); /* print spaces */
-                CODE_STARTS_AT(0x0019, 0x523f);
-                AL = _BYTE(SS, 0x01f9); /* get column position */
-                _BYTE(SS, 0x01fa) = AL; /* save current position */
-                PUSH(GetRef(SI), 2); /* save offset of first char in target buff */
-                DI = 0x01fb; /* get starting address of temp buffer (keyb buff) */
-                _BYTE(SS, 0x0579) = 0x00; /* clear INSERT flag */
-                BH = DH = 0x00; /* clear char counter/ptr */
-                CALL_NEAR(0x51ba, 0x5254); /* read one char to AL */
-                /* char is LF */
-                if (AL == 0x0a) {
-                    CALL_NEAR(0x51ba, 0x525e); /* get new char */
-                }
-                continue; /* loop back */
-            } else if (AL == 0x7f || AL == 0x08) {
-                /* char is DEL or BACKSPACE */
-                CODE_STARTS_AT(0x0019, 0x5306);
-                CALL_NEAR(0x530c, 0x5309); /* execute delete char */
-                CALL_NEAR(0x51ba, 0x525e); /* get new char */
-                continue;
-            } else if (AL == 0x0a) {
-                /* char is line feed */
-                CODE_STARTS_AT(0x0019, 0x52c5);
-                CALL_NEAR(0x0019, 0x5412); /* print CRLF */
-                CALL_NEAR(0x51ba, 0x525e); /* get new char */
-                continue; /* loop back */
-            } else if (AL == 0x0d) {
-                /* char is carriage return */
-                t_nubitcc i;
-                t_nubit16 tempDS, tempES;
-                CODE_STARTS_AT(0x0019, 0x52af);
-                _BYTE(ES, DI) = AL; /* save char to temp buffer */
-                CALL_NEAR(0x54eb, 0x52b3);
-                _BYTE(DS, DS - 0x01) = DH; /* save actual char number to target buff */
-                DH += 0x01; /* include ENTER char */
-                /* DS:SI -> temp buff, ES:DI -> target buff */
-                POP(GetRef(DI), 2); /* get offset of first char in target buff */
-                tempDS = DS;
-                tempES = ES;
-                LOAD_DS(tempES);
-                LOAD_ES(tempDS);
-                SI = 0x01fb;
-                /* copy data from temp buff to target buff */
-                for (i = 0; i < DH; ++i) {
-                    _BYTE(ES, DI) = _BYTE(DS, SI);
-                    DI += 0x0001;
-                    SI += 0x0001;
-                }
-                CL = 0x00;
-                break;
-            } else if (AL == _BYTE(CS, 0x47f5)) {
-                /* char is extended ascii */
-                CODE_STARTS_AT(0x0019, 0x4820);
-                CALL_NEAR(0x51ba, 0x4823); /* read char to AL */
-                /*
-                 TABLE 0x47f6 + (0x0000, 0x000e);
-                 41 525b    F7  goto F0A
-                 41 537d *  F7  send NUL to temp buff and print
-                 52 5405    INS change INSERT flag
-                 52 5405 *  INS change INSERT flag
-                 4B 5306 *  <-  same as DEL
-                 3F 53f1 *  F5  print '@', copy temp buff to user buff, jmp to next line for edit
-                 3D 52f3    F3  same as ESC for second F3
-                 3D 5384 *  F3  copy chars from curr ptr in user buff to temp buff
-                 3E 53b7 *  F4  starting from curr ptr, search in user buff for specific char
-                 3C 538a *  F2  copy chars from curr ptr to specific char in user buff to temp buff
-                 53 53ad *  DEL user buff ptr skip current char, cursor moves down
-                 3B 538f *  F1  copy current 1 char in user buff to temp buff
-                 4D 538f *  ->  same as F1
-                 40 540d *  F6  send 1A (^Z) to AL
-                 */
-                if (AL == 0x41) {
-                    /* F7 */
-                    CODE_STARTS_AT(0x0019, 0x537d);
-                    AL = _BYTE(CS, 0x47f5); /* convert F7 to NUL */
-                    CODE_STARTS_AT(0x0019, 0x5288);
-                } else if (AL == 0x40) {
-                    /* F6 */
-                    CODE_STARTS_AT(0x0019, 0x540d);
-                    AL = 0x1a;
-                    CODE_STARTS_AT(0x0019, 0x5288);
-                } else if (AL == 0x52) {
-                    /* INSERT */
-                    CODE_STARTS_AT(0x0019, 0x5405);
-                    _BYTE(SS, 0x0579) = ~_BYTE(SS, 0x0579); /* revert INSERT flag */
-                    CALL_NEAR(0x51ba, 0x525e); /* get new char */
-                    continue; /* loop back */
-                } else if (AL == 0x4b) {
-                    /* <- */
-                    CODE_STARTS_AT(0x0019, 0x5306);
-                    CALL_NEAR(0x530c, 0x5309);
-                    CALL_NEAR(0x51ba, 0x525e); /* get new char */
-                    continue; /* loop back */
-                } else if (AL == 0x53) {
-                    /* extended DEL */
-                    CODE_STARTS_AT(0x0019, 0x53ad);
-                    if (BH != BL) {
-                        /* user buff is not full */
-                        BH += 0x01;
-                        SI += 0x0001;
-                    }
-                    CALL_NEAR(0x51ba, 0x525e); /* get new char */
-                    continue; /* loop back */
-                } else if (AL == 0x3f) {
-                    /* F5 */
-                    t_nubit16 saveES, saveDS;
-                    CODE_STARTS_AT(0x0019, 0x53f1);
-                    AL = '@';
-                    CALL_NEAR(0x54eb, 0x53f6); /* output @ */
-                    POP(GetRef(DI), 2); /* load DI with SI, starting position  */
-                    PUSH(GetRef(DI), 2);
-                    saveES = ES;
-                    saveDS = DS;
-                    CALL_NEAR(0x52b9, 0x53fd); /* copy temp buff to user buff */
-                    LOAD_DS(saveDS);
-                    LOAD_ES(saveES);
-                    POP(GetRef(SI), 2);
-                    CALL_NEAR(0x5412, 0x52fc); /* print CRLF */
-                    AL = _BYTE(SS, 0x01fa); /* get number of space */
-                    CALL_NEAR(0x555f, 0x5303); /* print spaces */
-                    CODE_STARTS_AT(0x0019, 0x523f);
-                    AL = _BYTE(SS, 0x01f9); /* get column position */
-                    _BYTE(SS, 0x01fa) = AL; /* save current position */
-                    PUSH(GetRef(SI), 2); /* save offset of first char in target buff */
-                    DI = 0x01fb; /* get starting address of temp buffer (keyb buff) */
-                    _BYTE(SS, 0x0579) = 0x00; /* clear INSERT flag */
-                    BH = DH = 0x00; /* clear char counter/ptr */
-                    CALL_NEAR(0x51ba, 0x5254); /* read one char to AL */
-                    /* char is LF */
-                    if (AL == 0x0a) {
-                        CALL_NEAR(0x51ba, 0x525e); /* get new char */
-                    }
-                    continue; /* loop back */
-                } else if (AL == 0x3d || AL == 0x3c || AL == 0x3b || AL == 0x4d) {
-                    /* F3 or F2 or F1 or -> */
-                    /* copy CL chars from user buff to temp buff */
-                    if (AL == 0x3d) {
-                        /* F3 */
-                        CODE_STARTS_AT(0x0019, 0x5384);
-                        CL = BL - BH; /* copy remaining chars, usr bf -> tmp bf */
-                    } else if (AL == 0x3c) {
-                        /* F2 */
-                        t_nubit16 saveES, saveDI;
-                        CODE_STARTS_AT(0x0019, 0x538a);
-                        CODE_STARTS_AT(0x0019, 0x53c1);
-                        CALL_NEAR(0x51ba, 0x53c4); /* get one char */
-                        if (AL == _BYTE(CS, 0x47f5)) {
-                            /* is control char */
-                            CALL_NEAR(0x51ba, 0x53c4); /* get one more char */
-                            CALL_NEAR(0x51ba, 0x53c4); /* get even more char */
-                            continue; /* loop back */
-                        }
-                        CL = BL - BH; /* get range to search */
-                        if (CL < 0x02) {
-                            CALL_NEAR(0x51ba, 0x53c4); /* get one char */
-                            continue; /* loop back */
-                        }
-                        CL -= 0x01;
-                        saveES = ES;
-                        saveDI = DI;
-                        LOAD_ES(DS);
-                        DI = SI + 0x0001;
-                        while (CL) {
-                            CL -= 0x01;
-                            if (_BYTE(ES, DI) == AL) {
-                                break;
-                            }
-                            DI += 0x0001;
-                        }
-                        DI = saveDI;
-                        LOAD_ES(saveES);
-                        if (!_GetEFLAGS_ZF) {
-                            CALL_NEAR(0x51ba, 0x53c4); /* get one char */
-                            continue; /* loop back */
-                        }
-                        CL = BL - BH - CL;
-                    } else {
-                        /* F1 or -> */
-                        CODE_STARTS_AT(0x0019, 0x538f);
-                        CL = 0x01; /* copy 1 char, usr bf -> tmp bf */
-                    }
-                    /* copy CL chars from user buff to temp buff */
-                    CODE_STARTS_AT(0x0019, 0x5391);
-                    do {
-                        _BYTE(SS, 0x0579) = 0x00; /* clear INSERT flag */
-                        if (DH != DL && BH != BL) {
-                            /* neither temp buf nor user buf is full */
-                            /* copy char from user buff to temp buff */
-                            AL = _BYTE(DS, SI);
-                            SI += 0x0001;
-                            _BYTE(ES, DI) = AL;
-                            DI += 0x0001;
-                            CALL_NEAR(0x5582, 0x53a4); /* print char */
-                            BH += 0x01;
-                            DH += 0x01;
-                        } else {
-                            break;
-                        }
-                        CL -= 0x01;
-                    } while (CL != 0x00);
-                    CODE_STARTS_AT(0x0019, 0x53aa);
-                    CALL_NEAR(0x51ba, 0x525e); /* get new char */
-                    continue; /* loop back */
-                } else if (AL == 0x3e) {
-                    /* F4 */
-                    t_nubit16 saveES, saveDI;
-                    CODE_STARTS_AT(0x0019, 0x53b7);
-                    CODE_STARTS_AT(0x0019, 0x53c1);
-                    CALL_NEAR(0x51ba, 0x53c4); /* get one char */
-                    if (AL == _BYTE(CS, 0x47f5)) {
-                        /* is control char */
-                        CALL_NEAR(0x51ba, 0x53c4); /* get one more char */
-                        CALL_NEAR(0x51ba, 0x53c4); /* get even more char */
-                        continue; /* loop back */
-                    }
-                    CL = BL - BH; /* get range to search */
-                    if (CL < 0x02) {
-                        CALL_NEAR(0x51ba, 0x53c4); /* get one char */
-                        continue; /* loop back */
-                    }
-                    CL -= 0x01;
-                    saveES = ES;
-                    saveDI = DI;
-                    LOAD_ES(DS);
-                    DI = SI + 0x0001;
-                    while (CL) {
-                        CL -= 0x01;
-                        if (_BYTE(ES, DI) == AL) {
-                            break;
-                        }
-                        DI += 0x0001;
-                    }
-                    DI = saveDI;
-                    LOAD_ES(saveES);
-                    if (!_GetEFLAGS_ZF) {
-                        CALL_NEAR(0x51ba, 0x53c4); /* get one char */
-                        continue; /* loop back */
-                    }
-                    CL = BL - BH - CL;
-                    CODE_STARTS_AT(0x0019, 0x53ba);
-                    SI += CX; /* ? */
-                    BH += CL; /* ? */
-                    CALL_NEAR(0x51ba, 0x53c4); /* get one char */
-                    continue; /* loop back */
-                } else {
-                    /* all others */
-                    CALL_NEAR(0x51ba, 0x525e); /* get new char */
-                    continue; /* loop back */
-                }
-            }
-            CODE_STARTS_AT(0x0019, 0x5288);
-            /* BH = char num in user buff, BL = max char num allowed */
-            /* DH = char num in temp buff, DL = user buff size */
-            if (DH >= DL) {
-                /* temp buffer is full */
-                CODE_STARTS_AT(0x0019, 0x52a5);
-                AL = 0x07;
-                CALL_NEAR(0x54eb, 0x52aa); /* ring the bell */
-            } else {
-                CODE_STARTS_AT(0x0019, 0x528c);
-                _BYTE(ES, DI) = AL; /* send char to temp buffer */
-                DI += 0x0001; /* increase temp buffer pointer */
-                DH += 0x01; /* increase counter */
-                CALL_NEAR(0x5582, 0x5292); /* output the char */
-                if (_BYTE(SS, 0x0579) == 0x00 && BH < BL) {
-                    /* INSERT flag is clear and not reach end of buff */
-                    SI += 0x0001; /* increase buffer pointer */
-                    BH += 0x01; /* increase char counter  */
-                }
-            }
-            CALL_NEAR(0x51ba, 0x525e); /* get new char */
-            /* loop back */
-        } while (1);
-    }
+    _5220_bufferedKeyboardInput();
     _ret(asmFuncEnd());
 }
-/** TODO
+/**
  * INT 21,B - Check Standard Input Status
  * Input: AH = 0B
  * Output: AL = 00: no char available from stdin; vise versa.
  */
 static void F0B() {
     _ret(asmFuncBegin());
-    CALL_NEAR(0x55d6, 0x41f9);
+    CODE_STARTS_AT(0x0019, 0x55d6);
+    CALL_NEAR(0x9137, 0x55d9); /* check ^CSPN */
+    if (_GetEFLAGS_ZF) {
+        /* has input */
+        AL = 0xff;
+    } else {
+        /* no input */
+        AL = 0x00;
+    }
     _ret(asmFuncEnd());
 }
 /** TODO
@@ -1461,38 +1512,252 @@ static void F0B() {
  * Output: see different sub-functions
  */
 static void F0C() {
+    t_nubit16 saveAX, saveDX;
     _ret(asmFuncBegin());
-    CALL_NEAR(0x55e0, 0x41f9);
+    saveAX = AX;
+    saveDX = DX;
+    BX = 0x0000;
+    CALL_NEAR(0x7583, 0x55e7); /* get stdin hpt */
+    if (!_GetEFLAGS_CF) {
+        /* succeed, clean stdin buffer */
+        AH = 0x04;
+        CALL_NEAR(0x8413, 0x55ee);
+    }
+    DX = saveDX;
+    AX = saveAX;
+    /* invoke keyboard functions */
+    AH = AL;
+    switch (AH) {
+    case 0x01:
+        _ClrEFLAGS_IF;
+        _54E0_keyboardInputWithEcho();
+        break;
+    case 0x06:
+        _ClrEFLAGS_IF;
+        _541C_directConsoleIO();
+        break;
+    case 0x07:
+        _ClrEFLAGS_IF;
+        _544B_readFromStdin();
+        break;
+    case 0x08:
+        _ClrEFLAGS_IF;
+        _51BA_consoleInputWithoutEcho();
+        break;
+    case 0x0a:
+        _ClrEFLAGS_IF;
+        _5220_bufferedKeyboardInput();
+        break;
+    default:
+        AL = 0x00;
+        break;
+    }
     _ret(asmFuncEnd());
 }
-/** TODO
+/**
  * INT 21,D - Disk Reset, flush all file bufs to disk w/o updating dir entry
  * Input: AH = 0D
  * Output: (null)
  */
 static void F0D() {
     _ret(asmFuncBegin());
-    CALL_NEAR(0x4da1, 0x41f9);
+    CODE_STARTS_AT(0x0019, 0x4da1);
+    AL = 0xff; /* flush all buff */
+    LOAD_DS(SS);
+    CALL_NEAR(0x513a, 0x4da8);
+    /* scan fba and write back to disk */
+    _WORD(DS, 0x0611) |= 0x4db1;
+    CALL_NEAR(0x9a35, 0x4db0);
+    _WORD(DS, 0x0611) &= 0x4db0;
+    _WORD(DS, 0x0db5) = Zero16;
+    /* set current buffer pointer invalid */
+    _WORD(DS, 0x0020) = _WORD(DS, 0x001e) = BX;
+    /* ? */
+    CALL_NEAR(0x515a, 0x4dc9);
+    /* invoke int 2f */
+    AX = 0xffff;
+    PUSH(GetRef(AX), 2);
+    AX = 0x1120;
+    INT(0x2f, 0x4dd2);
+    POP(GetRef(AX), 2);
     _ret(asmFuncEnd());
 }
-/** TODO
+/**
  * INT 21,E - Select Disk
  * Input: AH = 0E, DL = drive number 0 based (0-25, A:-Z:)
  * Output: AL = total num of logical drive (1-26)
  */
 static void F0E() {
     _ret(asmFuncBegin());
-    CALL_NEAR(0x4c78, 0x41f9);
+    CODE_STARTS_AT(0x0019, 0x4c78);
+    AL = DL + 0x01; /* get target drive id */
+    CALL_NEAR(0xaa9f, 0x4c7f); /* check drive id and return total drive count if error */
+    if (!_GetEFLAGS_CF) {
+        /* if no error */
+        _BYTE(SS, 0x0336) = AL; /* set current drive letter */
+        AL = _BYTE(SS, 0x0047); /* get drive count */
+    }
     _ret(asmFuncEnd());
 }
-/** TODO
+/** TODO: NEED REVIEW
  * INT 21,F - Open a File Using FCB
  * Input: AH = 0F, DS:DX = pointer to unopened FCB
  * Output: AL = 00 if file opened, or FF if unable to open
  */
 static void F0F() {
     _ret(asmFuncBegin());
-    CALL_NEAR(0x5ccc, 0x41f9);
+    CODE_STARTS_AT(0x0019, 0x5ccc);
+    AX = 0x0002; /* open file in rw mode */
+    CX = 0x6a60; /* get file open routine entry address */
+    PUSH(GetRef(DS), 2);
+    PUSH(GetRef(DX), 2);
+    PUSH(GetRef(CX), 2);
+    PUSH(GetRef(AX), 2);
+    DI = 0x03be; /* DI points to file name buffer */
+    /* find or create DPAT from current file,
+     * check path and name */
+    CALL_NEAR(0xab37, 0x5cd9);
+    POP(GetRef(AX), 2);
+    POP(GetRef(CX), 2);
+    POP(GetRef(DX), 2);
+    POP(GetRef(DS), 2);
+    if (_GetEFLAGS_CF) {
+        /* fail, goto error handler */
+        CODE_STARTS_AT(0x0019, 0x5ce2);
+        CODE_STARTS_AT(0x0019, 0x4410);
+        /* error handler 2 */
+        AH = 0x00;
+        _WORD(SS, 0x0324) = AX;
+        CALL_NEAR(0x441c, 0x4419);
+        AL = 0xff;
+    } else {
+        /* succeed */
+        CODE_STARTS_AT(0x0019, 0x5ce5);
+        CALL_NEAR(0x5b10, 0x5ce8); /* SI points to FCB header */
+        /* allocate hpt and handler for curr file */
+        PUSH(GetRef(AX), 2);
+        AL = 0x01;
+        CALL_NEAR(0x5805, 0x5cee);
+        POP(GetRef(AX), 2);
+        if (_GetEFLAGS_CF) {
+            /* failed to allocate hpt and handler for file */
+            CODE_STARTS_AT(0x0019, 0x5d1b);
+            /* call io error handler */
+            PUSH(GetRef(AX), 2);
+            CALL_NEAR(0x5ab4, 0x5d1f);
+            POP(GetRef(AX), 2);
+            CODE_STARTS_AT(0x0019, 0x4410);
+            /* error handler 2 */
+            AH = 0x00;
+            _WORD(SS, 0x0324) = AX;
+            CALL_NEAR(0x441c, 0x4419);
+            AL = 0xff;
+        } else {
+            CODE_STARTS_AT(0x0019, 0x5cf1);
+            _WORD(ES, DI + 0x02) = 0x8000; /* set hpt open flag */
+            PUSH(GetRef(DS), 2);
+            PUSH(GetRef(SI), 2);
+            PUSH(GetRef(BX), 2);
+            SI = CX; /* DS:SI points to file open routine */
+            LOAD_DS(SS);
+            CALL_NEAR(SI, 0x5d00); /* execute file open routine */
+            POP(GetRef(BX), 2);
+            POP(GetRef(SI), 2);
+            POP(GetRef(DS), 2);
+            LOAD_DS(DS);
+            /* get hpt address */
+            DI = _WORD(SS, 0x059e);
+            LOAD_ES(_WORD(SS, 0x05a0));
+            if (_GetEFLAGS_CF) {
+                /* file not found */
+                CODE_STARTS_AT(0x0019, 0x5d0a);
+                PUSH(GetRef(AX), 2);
+                AL = 0x52;
+                CALL_NEAR(0x59ee, 0x5d10);
+                POP(GetRef(AX), 2);
+                if (AX == 0x0024) {
+                    /* shared buffer is full */
+                    CODE_STARTS_AT(0x0019, 0x5d1b);
+                    PUSH(GetRef(AX), 2);
+                    CALL_NEAR(0x5ab4, 0x5d10);
+                    POP(GetRef(AX), 2);
+                }
+                CODE_STARTS_AT(0x0019, 0x5d20);
+                CODE_STARTS_AT(0x0019, 0x4410);
+                /* error handler 2 */
+                AH = 0x00;
+                _WORD(SS, 0x0324) = AX;
+                CALL_NEAR(0x441c, 0x4419);
+                AL = 0xff;
+            } else {
+                CODE_STARTS_AT(0x0019, 0x5d22);
+                CALL_NEAR(0x508e, 0x5d25);
+                if (_GetEFLAGS_ZF) {
+                    CALL_NEAR(0xb37e, 0x5d2a);
+                    if (_GetEFLAGS_ZF) {
+                        _WORD(SS, 0x105d) = DI;
+                        _WORD(SS, 0x105f) = ES;
+                    }
+                }
+                CODE_STARTS_AT(0x0019, 0x5d36);
+                _WORD(ES, DI) += 0x0001; /* set hpt open flag */
+                CALL_NEAR(0x5733, 0x5d3c);
+                if (!GetBit(_BYTE(ES, DI + 0x05), 0x80)) {
+                    /* is char device */
+                    CODE_STARTS_AT(0x0019, 0x5d43);
+                    AL = _BYTE(DS, SI); /* get drive id */
+                    CALL_NEAR(0xaabc, 0x5d48); /* get dpat address */
+                    AL += 0x01; /* get drive letter */
+                    _BYTE(DS, SI) = AL; /* send drive letter to fcb */
+                }
+                CODE_STARTS_AT(0x0019, 0x5d4c);
+                _WORD(DS, SI + 0x0e) = 0x0080; /* set record size 80 */
+                _WORD(DS, SI + 0x16) = _WORD(ES, DI + 0x0d); /* fill in time */
+                _WORD(DS, SI + 0x14) = _WORD(ES, DI + 0x0f); /* fill in date */
+                _WORD(DS, SI + 0x10) = _WORD(ES, DI + 0x11); /* fill in file size */
+                _WORD(DS, SI + 0x12) = _WORD(ES, DI + 0x13); /* fill in ? */
+                AX = 0x0000;
+                _WORD(DS, SI + 0x0c) = 0x0000; /* current block is zero ? */
+                /* load hpa address into ES:DI */
+                DI = _WORD(SS, 0x0040);
+                LOAD_ES(_WORD(SS, 0x0042));
+                AH = _BYTE(ES, DI + 0x04);
+                do {
+                    CODE_STARTS_AT(0x0019, 0x5d7b);
+                    if (AL != _BYTE(DS, SI + 0x18)) {
+                        /* compare current handler with AL */
+                        /* get another hpt and check if it's current fcb */
+                        PUSH(GetRef(AX), 2);
+                        CALL_NEAR(0x5a04, 0x5d84);
+                        POP(GetRef(AX), 2);
+                        if (!_GetEFLAGS_CF) {
+                            /* succeed, set fcb and done */
+                            CODE_STARTS_AT(0x0019, 0x5d90);
+                            _BYTE(DS, SI + 0x18) = AL; /* get handler to fcb */
+                            _WORD(ES, DI) += 0x0001; /* number of opened file +1 */
+                            /* set current file pos ptr in hpt */
+                            _WORD(ES, DI + 0x15) = AX = _WORD(SS, 0x0010);
+                            LOAD_DS(SS);
+                            DI = _WORD(DS, 0x059e);
+                            LOAD_ES(_WORD(DS, 0x05a0)); /* load current hpt address */
+                            _WORD(ES, DI) -= 0x0001; /* number of opened file -1 */
+                            CALL_NEAR(0xb3b6, 0x5daa); /* clear cf */
+                            /* release handler, reset hpt
+                             * error code: "network name not found" */
+                            AL = 0x43;
+                            CALL_NEAR(0x59ee, 0x5daf);
+                            break;
+                        }
+                    }
+                    CODE_STARTS_AT(0x0019, 0x5d87);
+                    AL += 0x01;
+                    /* if AL not equ maximum handler, go back check */
+                } while (AL != AH);
+                CODE_STARTS_AT(0x0019, 0x5d8d);
+                AL = 0x00;
+            }
+        }
+    }
     _ret(asmFuncEnd());
 }
 /** TODO
@@ -2858,12 +3123,12 @@ void msdosInit() {
     fpTable[0x08] = (t_faddrcc) F08;
     fpTable[0x09] = (t_faddrcc) F09;
     fpTable[0x0A] = (t_faddrcc) F0A;
+    fpTable[0x0B] = (t_faddrcc) F0B;
+    fpTable[0x0C] = (t_faddrcc) F0C;
+    fpTable[0x0D] = (t_faddrcc) F0D;
+    fpTable[0x0E] = (t_faddrcc) F0E;
+    fpTable[0x0F] = (t_faddrcc) F0F;
     /*
-        fpTable[0x0B] = (t_faddrcc) F0B;
-        fpTable[0x0C] = (t_faddrcc) F0C;
-        fpTable[0x0D] = (t_faddrcc) F0D;
-        fpTable[0x0E] = (t_faddrcc) F0E;
-        fpTable[0x0F] = (t_faddrcc) F0F;
         fpTable[0x10] = (t_faddrcc) F10;
         fpTable[0x11] = (t_faddrcc) F11;
         fpTable[0x12] = (t_faddrcc) F12;

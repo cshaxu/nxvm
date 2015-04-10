@@ -412,11 +412,14 @@ FUNCTION 61 ENTRY
 FUNCTION 6B ENTRY
 0019:440D(0000459D)    XOR     AL,AL                       
 0019:440F(0000459F)    RET                                 
+
+; error processor 2
 0019:4410(000045A0)    XOR     AH,AH                       
 0019:4412(000045A2)    MOV     SS:[0324],AX                
 0019:4416(000045A6)    CALL    0000441C                    
 0019:4419(000045A9)    MOV     AL,FF                       
 0019:441B(000045AB)    RET                                 
+
 0019:441C(000045AC)    PUSH    SI                          
 0019:441D(000045AD)    MOV     SI,0DDB                     
 0019:4420(000045B0)    CMP     BYTE PTR SS:[034A],00       
@@ -1412,12 +1415,12 @@ FUNCTION 19 ENTRY
 0019:4C77(00004E07)    RET                                 
 
 FUNCTION 0E ENTRY
-0019:4C78(00004E08)    MOV     AL,DL                       
-0019:4C7A(00004E0A)    INC     AL                          
-0019:4C7C(00004E0C)    CALL    0000AA9F                    
-0019:4C7F(00004E0F)    JC      00004C85                    
-0019:4C81(00004E11)    MOV     SS:[0336],AL                
-0019:4C85(00004E15)    MOV     AL,SS:[0047]                
+0019:4C78(00004E08)    MOV     AL,DL                       ; target drive id
+0019:4C7A(00004E0A)    INC     AL                          ; get drive id
+0019:4C7C(00004E0C)    CALL    0000AA9F                    ; check drv id, return total drive count if error
+0019:4C7F(00004E0F)    JC      00004C85                    ; error
+0019:4C81(00004E11)    MOV     SS:[0336],AL                ; set current drive letter
+0019:4C85(00004E15)    MOV     AL,SS:[0047]                ; return driver number
 0019:4C89(00004E19)    RET                                 
 
 FUNCTION 35 ENTRY
@@ -1559,24 +1562,25 @@ FUNCTION 32 ENTRY
 0019:4DA0(00004F30)    RET                                 
 
 FUNCTION 0D ENTRY
-0019:4DA1(00004F31)    MOV     AL,FF                       
+0019:4DA1(00004F31)    MOV     AL,FF                       ; flush all buff
 0019:4DA3(00004F33)    PUSH    SS                          
 0019:4DA4(00004F34)    POP     DS                          
-0019:4DA5(00004F35)    CALL    0000513A                    
-0019:4DA8(00004F38)    OR      WORD PTR DS:[0611],00004DB1 
-0019:4DAD(00004F3D)    CALL    00009A35                    
-0019:4DB0(00004F40)    AND     WORD PTR DS:[0611],00004DB0 
-0019:4DB5(00004F45)    MOV     WORD PTR DS:[0DB5],0000     
-0019:4DBB(00004F4B)    MOV     BX,FFFF                     
-0019:4DBE(00004F4E)    MOV     DS:[0020],BX                
-0019:4DC2(00004F52)    MOV     DS:[001E],BX                
-0019:4DC6(00004F56)    CALL    0000515A                    
-0019:4DC9(00004F59)    MOV     AX,FFFF                     
+0019:4DA5(00004F35)    CALL    0000513A                    ; flush all buff
+0019:4DA8(00004F38)    OR      WORD PTR DS:[0611],00004DB1 ; ?
+0019:4DAD(00004F3D)    CALL    00009A35                    ; scan fba and write back to disk
+0019:4DB0(00004F40)    AND     WORD PTR DS:[0611],00004DB0 ; ?
+0019:4DB5(00004F45)    MOV     WORD PTR DS:[0DB5],0000     ; ?
+0019:4DBB(00004F4B)    MOV     BX,FFFF                     ; set current buff ptr as invalid
+0019:4DBE(00004F4E)    MOV     DS:[0020],BX                ; set invalid
+0019:4DC2(00004F52)    MOV     DS:[001E],BX                ; set invalid
+0019:4DC6(00004F56)    CALL    0000515A                    ; ?
+0019:4DC9(00004F59)    MOV     AX,FFFF                     ; invoke int 2f
 0019:4DCC(00004F5C)    PUSH    AX                          
 0019:4DCD(00004F5D)    MOV     AX,1120                     
 0019:4DD0(00004F60)    INT     2F                          
 0019:4DD2(00004F62)    POP     AX                          
 0019:4DD3(00004F63)    RET                                 
+
 0019:4DD4(00004F64)    ADD     AX,DS:[BX+SI]               
 
 FUNCTION 53 ENTRY
@@ -2568,8 +2572,8 @@ FUNCTION 05 ENTRY (P217)
 0019:55D5(00005765)    RET                                 
 
 FUNCTION 0B ENTRY (P218)
-0019:55D6(00005766)    CALL    00009137                    
-0019:55D9(00005769)    MOV     AL,00                       
+0019:55D6(00005766)    CALL    00009137                    ; check ^CSPN
+0019:55D9(00005769)    MOV     AL,00                       ; no input
 0019:55DB(0000576B)    JZ      000055D5                    ; AL==00, RET
 0019:55DD(0000576D)    OR      AL,FF                       ; AL=FF, RET
 0019:55DF(0000576F)    RET                                 
@@ -2578,13 +2582,13 @@ FUNCTION 0C ENTRY (P218)
 0019:55E0(00005770)    PUSH    AX                          
 0019:55E1(00005771)    PUSH    DX                          
 0019:55E2(00005772)    XOR     BX,BX                       
-0019:55E4(00005774)    CALL    00007583                    
-0019:55E7(00005777)    JC      000055EE                    
-0019:55E9(00005779)    MOV     AH,04                       
-0019:55EB(0000577B)    CALL    00008413                    
+0019:55E4(00005774)    CALL    00007583                    ; stdin hpt
+0019:55E7(00005777)    JC      000055EE                    ; fail, RET
+0019:55E9(00005779)    MOV     AH,04                       ; clear stdin buff
+0019:55EB(0000577B)    CALL    00008413                    ;
 0019:55EE(0000577E)    POP     DX                          
 0019:55EF(0000577F)    POP     AX                          
-0019:55F0(00005780)    MOV     AH,AL                       
+0019:55F0(00005780)    MOV     AH,AL                       ; call int 21
 0019:55F2(00005782)    CMP     AL,01                       
 0019:55F4(00005784)    JZ      00005609                    
 0019:55F6(00005786)    CMP     AL,06                       
@@ -3276,101 +3280,103 @@ FUNCTION 17 ENTRY
 0019:5CCB(00005E5B)    RET                                 
 
 FUNCTION 0F ENTRY (P238)
-0019:5CCC(00005E5C)    MOV     AX,0002                     
-0019:5CCF(00005E5F)    MOV     CX,6A60                     
-0019:5CD2(00005E62)    PUSH    DS                          
+0019:5CCC(00005E5C)    MOV     AX,0002                     ; open file in RW mode
+0019:5CCF(00005E5F)    MOV     CX,6A60                     ; set file opener routine address
+0019:5CD2(00005E62)    PUSH    DS                          ; save registers
 0019:5CD3(00005E63)    PUSH    DX                          
 0019:5CD4(00005E64)    PUSH    CX                          
 0019:5CD5(00005E65)    PUSH    AX                          
-0019:5CD6(00005E66)    MOV     DI,03BE                     
-0019:5CD9(00005E69)    CALL    0000AB37                    
+0019:5CD6(00005E66)    MOV     DI,03BE                     ; DI points to file name buffer
+0019:5CD9(00005E69)    CALL    0000AB37                    ; find or create DPAT for current file, check pathname
 0019:5CDC(00005E6C)    POP     AX                          
 0019:5CDD(00005E6D)    POP     CX                          
 0019:5CDE(00005E6E)    POP     DX                          
 0019:5CDF(00005E6F)    POP     DS                          
-0019:5CE0(00005E70)    JNC     00005CE5                    
-0019:5CE2(00005E72)    JMP     00004410                    
-0019:5CE5(00005E75)    CALL    00005B10                    
+0019:5CE0(00005E70)    JNC     00005CE5                    ; succ, goto 5ce5
+0019:5CE2(00005E72)    JMP     00004410                    ; fail, goto 4410 fail handler 2
+0019:5CE5(00005E75)    CALL    00005B10                    ; SI point to fcb header
 0019:5CE8(00005E78)    PUSH    AX                          
 0019:5CE9(00005E79)    MOV     AL,01                       
-0019:5CEB(00005E7B)    CALL    00005805                    
+0019:5CEB(00005E7B)    CALL    00005805                    ; allocate hpt and handler for current file
 0019:5CEE(00005E7E)    POP     AX                          
-0019:5CEF(00005E7F)    JC      00005D1B                    
-0019:5CF1(00005E81)    MOV     WORD PTR ES:[DI+02],8000    
-0019:5CF7(00005E87)    PUSH    DS                          
+0019:5CEF(00005E7F)    JC      00005D1B                    ; fail, goto io error handler
+0019:5CF1(00005E81)    MOV     WORD PTR ES:[DI+02],8000    ; set hpt open flag
+0019:5CF7(00005E87)    PUSH    DS                          ; push fcb pointer
 0019:5CF8(00005E88)    PUSH    SI                          
 0019:5CF9(00005E89)    PUSH    BX                          
-0019:5CFA(00005E8A)    MOV     SI,CX                       
+0019:5CFA(00005E8A)    MOV     SI,CX                       ; DS:SI point to file opener routine
 0019:5CFC(00005E8C)    PUSH    SS                          
 0019:5CFD(00005E8D)    POP     DS                          
-0019:5CFE(00005E8E)    CALL    SI                          
+0019:5CFE(00005E8E)    CALL    SI                          ; call routine to open/create file
 0019:5D00(00005E90)    POP     BX                          
 0019:5D01(00005E91)    POP     SI                          
 0019:5D02(00005E92)    POP     DS                          
-0019:5D03(00005E93)    LES     DI,SS:[059E]                
-0019:5D08(00005E98)    JNC     00005D22                    
+0019:5D03(00005E93)    LES     DI,SS:[059E]                ; get hpt address
+0019:5D08(00005E98)    JNC     00005D22                    ; file not found, reset hpt and release handler
 0019:5D0A(00005E9A)    PUSH    AX                          
 0019:5D0B(00005E9B)    MOV     AL,52                       
-0019:5D0D(00005E9D)    CALL    000059EE                    
+0019:5D0D(00005E9D)    CALL    000059EE                    ; ?
 0019:5D10(00005EA0)    POP     AX                          
-0019:5D11(00005EA1)    CMP     AX,0004                     
-0019:5D14(00005EA4)    JZ      00005D1B                    
-0019:5D16(00005EA6)    CMP     AX,0024                     
-0019:5D19(00005EA9)    JNZ     00005D20                    
+0019:5D11(00005EA1)    CMP     AX,0004                     ; file name has *?
+0019:5D14(00005EA4)    JZ      00005D1B                    ; yes, 5d1b, io error
+0019:5D16(00005EA6)    CMP     AX,0024                     ; shared buffer full?
+0019:5D19(00005EA9)    JNZ     00005D20                    ; no, 5d20 skip io error but..
 0019:5D1B(00005EAB)    PUSH    AX                          
-0019:5D1C(00005EAC)    CALL    00005AB4                    
+0019:5D1C(00005EAC)    CALL    00005AB4                    ; call io error handler
 0019:5D1F(00005EAF)    POP     AX                          
-0019:5D20(00005EB0)    JMP     00005CE2                    
+0019:5D20(00005EB0)    JMP     00005CE2          >>>>      ; something bad comes
+
 0019:5D22(00005EB2)    CALL    0000508E                    
 0019:5D25(00005EB5)    JNZ     00005D36                    
 0019:5D27(00005EB7)    CALL    0000B37E                    
 0019:5D2A(00005EBA)    JNZ     00005D36                    
 0019:5D2C(00005EBC)    MOV     SS:[105D],DI                
 0019:5D31(00005EC1)    MOV     WORD PTR SS:[105F],ES       
-0019:5D36(00005EC6)    INC     WORD PTR ES:[DI]            
-0019:5D39(00005EC9)    CALL    00005733                    
-0019:5D3C(00005ECC)    TEST    BYTE PTR ES:[DI+05],80      
-0019:5D41(00005ED1)    JNZ     00005D4C                    
-0019:5D43(00005ED3)    MOV     AL,DS:[SI]                  
-0019:5D45(00005ED5)    CALL    0000AABC                    
-0019:5D48(00005ED8)    INC     AL                          
-0019:5D4A(00005EDA)    MOV     DS:[SI],AL                  
-0019:5D4C(00005EDC)    MOV     WORD PTR DS:[SI+0E],0080    
-0019:5D51(00005EE1)    MOV     AX,ES:[DI+0D]               
+0019:5D36(00005EC6)    INC     WORD PTR ES:[DI]            ; set hpt open flag
+0019:5D39(00005EC9)    CALL    00005733                    ; ?
+0019:5D3C(00005ECC)    TEST    BYTE PTR ES:[DI+05],80      ; is char device?
+0019:5D41(00005ED1)    JNZ     00005D4C                    ; yes, goto 2af5
+0019:5D43(00005ED3)    MOV     AL,DS:[SI]                  ; get drive id
+0019:5D45(00005ED5)    CALL    0000AABC                    ; get disk DPAT addr
+0019:5D48(00005ED8)    INC     AL                          ; get drive letter
+0019:5D4A(00005EDA)    MOV     DS:[SI],AL                  ; send drive letter to fcb
+0019:5D4C(00005EDC)    MOV     WORD PTR DS:[SI+0E],0080    ; set record size 80
+0019:5D51(00005EE1)    MOV     AX,ES:[DI+0D]               ; fill in time
 0019:5D55(00005EE5)    MOV     DS:[SI+16],AX               
-0019:5D58(00005EE8)    MOV     AX,ES:[DI+0F]               
+0019:5D58(00005EE8)    MOV     AX,ES:[DI+0F]               ; fill in date
 0019:5D5C(00005EEC)    MOV     DS:[SI+14],AX               
-0019:5D5F(00005EEF)    MOV     AX,ES:[DI+11]               
+0019:5D5F(00005EEF)    MOV     AX,ES:[DI+11]               ; fill in file size
 0019:5D63(00005EF3)    MOV     DS:[SI+10],AX               
 0019:5D66(00005EF6)    MOV     AX,ES:[DI+13]               
 0019:5D6A(00005EFA)    MOV     DS:[SI+12],AX               
 0019:5D6D(00005EFD)    XOR     AX,AX                       
-0019:5D6F(00005EFF)    MOV     DS:[SI+0C],AX               
-0019:5D72(00005F02)    LES     DI,SS:[0040]                
-0019:5D77(00005F07)    MOV     AH,ES:[DI+04]               
-0019:5D7B(00005F0B)    CMP     AL,DS:[SI+18]               
-0019:5D7E(00005F0E)    JZ      00005D87                    
-0019:5D80(00005F10)    PUSH    AX                          
+0019:5D6F(00005EFF)    MOV     DS:[SI+0C],AX               ; current block is zero ?
+0019:5D72(00005F02)    LES     DI,SS:[0040]                ; load HPA address to ES:DI
+0019:5D77(00005F07)    MOV     AH,ES:[DI+04]               ; get hpt count to AH
+0019:5D7B(00005F0B) >  CMP     AL,DS:[SI+18]               ; compare current handler with AL
+0019:5D7E(00005F0E)    JZ      00005D87                    ; equal, current handler is the one we created, goto 5d87
+0019:5D80(00005F10)    PUSH    AX                          ; get another hpt and check if it's current fcb
 0019:5D81(00005F11)    CALL    00005A04                    
 0019:5D84(00005F14)    POP     AX                          
-0019:5D85(00005F15)    JNC     00005D90                    
-0019:5D87(00005F17)    INC     AL                          
-0019:5D89(00005F19)    CMP     AL,AH                       
-0019:5D8B(00005F1B)    JNZ     00005D7B                    
-0019:5D8D(00005F1D)    XOR     AL,AL                       
-0019:5D8F(00005F1F)    RET                                 
-0019:5D90(00005F20)    MOV     DS:[SI+18],AL               
-0019:5D93(00005F23)    INC     WORD PTR ES:[DI]            
+0019:5D85(00005F15)    JNC     00005D90                    ; succeed, set fcb and done
+0019:5D87(00005F17) >  INC     AL                          ; al point to next hpt
+0019:5D89(00005F19)    CMP     AL,AH                       ; is AL == maximum handler?
+0019:5D8B(00005F1B)    JNZ     00005D7B                    ; no, go back check
+0019:5D8D(00005F1D) >  XOR     AL,AL                       ; succeed
+0019:5D8F(00005F1F)    RET                                 ; done
+
+0019:5D90(00005F20) >  MOV     DS:[SI+18],AL               ; get handler to fcb
+0019:5D93(00005F23)    INC     WORD PTR ES:[DI]            ; number of opened file +1
 0019:5D96(00005F26)    MOV     AX,SS:[0010]                
-0019:5D9A(00005F2A)    MOV     ES:[DI+15],AX               
+0019:5D9A(00005F2A)    MOV     ES:[DI+15],AX               ; set current file pos ptr in hpt
 0019:5D9E(00005F2E)    PUSH    SS                          
 0019:5D9F(00005F2F)    POP     DS                          
-0019:5DA0(00005F30)    LES     DI,DS:[059E]                
-0019:5DA4(00005F34)    DEC     WORD PTR ES:[DI]            
-0019:5DA7(00005F37)    CALL    0000B3B6                    
-0019:5DAA(00005F3A)    MOV     AL,43                       
-0019:5DAC(00005F3C)    CALL    000059EE                    
-0019:5DAF(00005F3F)    JMP     00005D8D                    
+0019:5DA0(00005F30)    LES     DI,DS:[059E]                ; load current hpt address
+0019:5DA4(00005F34)    DEC     WORD PTR ES:[DI]            ; number of opened file -1
+0019:5DA7(00005F37)    CALL    0000B3B6                    ; clear cf
+0019:5DAA(00005F3A)    MOV     AL,43                       ; error code: "network name not found"
+0019:5DAC(00005F3C)    CALL    000059EE                    ; release handler, reset hpt
+0019:5DAF(00005F3F)    JMP     00005D8D                    ; succeed and done
 
 FUNCTION 16 ENTRY
 0019:5DB1(00005F41)    MOV     CX,6934                     
