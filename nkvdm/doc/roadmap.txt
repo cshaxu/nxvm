@@ -1,5 +1,11 @@
 Roadmap for NKVDM Development
 
+Phase I - implement guest
+1. [DONE] Create Fhh entries in msdos.c with description in comment
+2. Comment in msdos.txt and implement these Fhh
+3. Implement sub-functions and remove the CALL_NEAR in Fhh
+
+Phase II - connect with host
 1. Replace MS-DOS Interrupt Services (Disk, FAT)
    Collect all INT services dealing with Disk
    MS-DOS Read/Write To Host Machine Disk/Files

@@ -36,6 +36,7 @@ static void hack(t_faddrcc fpInt, t_nubit8 intId) {
 static void doHack() {
     hack((t_faddrcc) int20, 0x20);
     hack((t_faddrcc) int21, 0x21);
+    hack((t_faddrcc) int27, 0x27);
     hack((t_faddrcc) int2a, 0x2a);
 }
 
@@ -54,6 +55,9 @@ static void test() {
     machineStart();
     while (vramRealDWord(Zero16, 0x0084) != 0x001940f8) utilsSleep(100);
     doHack();
+    if (!device.flagRun) {
+        machineResume();
+    }
     /* **** ***** */
     while (STRCMP(cmd, "exit")) {
         PRINTF("Console> ");
@@ -79,24 +83,39 @@ static void test() {
         } else if (!STRCMP(cmd, "record.stop")) {
             deviceConnectDebugRecordStop();
         } else if (!STRCMP(cmd, "dasm")) {
-            FILE *fp = FOPEN("d:/msdos.log", "w");
             t_nubit16 len = 1;
             t_nubit16 seg = 0x0019;
-            t_nubit16 off = 0x4052;
+            t_nubit16 off = 0x112d;
             t_nubit32 linear;
+            t_nubit32 in;
             t_nubitcc i;
-            char stmt[0x100];
+            char str[0x100];
+            FILE *fp = NULL;
+            PRINTF("Output file: ");
+            FGETS(str, 0x100, stdin);
+            str[STRLEN(str) - 1] = 0;
+            fp = FOPEN(str, "w");
+            PRINTF("Starting offset: ");
+            scanf("%04x", &in);
+            off = GetMax16(in);
             while (len && off < 0xfff0) {
                 linear = (seg << 4) + off;
-                len = dasm16s(stmt, (uint8_t *) (vram.connect.pBase + linear), off);
-                FPRINTF(fp, "%04X:%04X(%08X)    %s", seg, off, linear, stmt);
-                for (i = STRLEN(stmt); i < 36; ++i) {
+                len = dasm16s(str, (uint8_t *)(vram.connect.pBase + linear), off);
+                FPRINTF(fp, "%04X:%04X(%08X)    %s", seg, off, linear, str);
+                for (i = STRLEN(str); i < 36; ++i) {
                     FPRINTF(fp, " ");
                 }
                 FPRINTF(fp, "\n");
                 off += len;
             }
             FCLOSE(fp);
+        } else if (!STRCMP(cmd, "calc")) {
+            t_nubit8 funId;
+            t_nubit32 in;
+            PRINTF("function id: ");
+            scanf("%02x", &in);
+            funId = GetMax8(in);
+            PRINTF("0019:%04x\n", vramRealWord(0x0019, funId * 2 + 0x3e9e));
         }
     }
 }
