@@ -1,0 +1,20 @@
+Roadmap for NKVDM Development
+
+1. Replace MS-DOS Interrupt Services (Disk, FAT)
+   Collect all INT services dealing with Disk
+   MS-DOS Read/Write To Host Machine Disk/Files
+   * Keep io.sys, msdos.sys and command.com
+2. Hack Command Interpreter (Exec, PSP)
+   Collect all Exec related interrupt services
+   Learn about DOS Kernel
+   Move command.com out of disk image
+   Load and execute command.com from host machine
+   * Keep io.sys and msdos.sys
+3. Hack Dos Kernel
+   Move msdos.sys out of disk image
+   Implement Dos Kernel in C for NKVDM
+   * Keep io.sys
+4. Hack Dos IO
+   Move io.sys out of disk image
+   Implement Dos IO in C for NKVDM
+   * Remove disk image

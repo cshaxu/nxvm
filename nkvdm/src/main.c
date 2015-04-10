@@ -10,7 +10,7 @@
 ###############################################################################\n\
 ########                   ####################################################\n\
 #######                     ###################################################\n\
-#######   ##      ####      ######### Neko's Virtual DOGE Machine [0.0.0000] ##\n\
+#######   ##      ####      ######### Neko's Virtual DOGE Machine [0.0.0001] ##\n\
 ######                        ####### Copyright (c) 2013-2014 Neko.          ##\n\
 ######                        #################################################\n\
 ########                 ######################################################\n\
@@ -29,21 +29,7 @@ nkvdm [<dos-executable> <arg1> <arg2> ...]"
 /*
  * main.c: version statement
  * exec.ch: main entry to execute program
- * msdos.ch: dos kernel, interrupt handler hub
- *  int20.ch
- *  int21.ch
- *  ...
- *  int2f.ch
- * basicio.ch: dos basic io, standard device drivers
- *  drvpic.ch
- *  drvdma.ch
- *  ...
- *
- * step 1: hack dos disk int service
- * step 2: hack command interpreter
- * step 3: hack dos kernel
- * step 4: hack dos io device drivers
- *
+ * msdos.ch: dos kernel
  */
 
 #include "../../src/utils.h"

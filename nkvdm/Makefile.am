@@ -3,6 +3,7 @@ bin_PROGRAMS = nkvdm
 nkvdm_SOURCES = src/main.c \
 	src/exec.c src/exec.h \
 	src/msdos.c src/msdos.h \
+	src/dasm16s.c src/dasm16s.h \
 	../src/machine.c ../src/machine.h \
 	../src/utils.c ../src/utils.h \
 	../src/debug.c ../src/debug.h \

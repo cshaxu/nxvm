@@ -12,6 +12,7 @@
 #include "../../src/device/vbios.h"
 #include "../../src/device/qdx/qdx.h"
 #include "../../src/platform/platform.h"
+#include "dasm16s.h"
 
 static void hack(t_faddrcc fpInt, t_nubit8 intId) {
     t_nubit16 intIP = vramRealWord(Zero16, intId * 4 + 0);
@@ -32,6 +33,12 @@ static void hack(t_faddrcc fpInt, t_nubit8 intId) {
     vbios.data.buildIP += 2;
 }
 
+static void doHack() {
+    hack((t_faddrcc) int20, 0x20);
+    hack((t_faddrcc) int21, 0x21);
+    hack((t_faddrcc) int2a, 0x2a);
+}
+
 static void test() {
     char cmd[0x100];
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
@@ -43,6 +50,11 @@ static void test() {
     deviceConnectHardDiskInsert("/Users/xha/hd.img");
 #endif
     cmd[0] = 0;
+    /* very hacky */
+    machineStart();
+    while (vramRealDWord(Zero16, 0x0084) != 0x001940f8) utilsSleep(100);
+    doHack();
+    /* **** ***** */
     while (STRCMP(cmd, "exit")) {
         PRINTF("Console> ");
         FGETS(cmd, 0x100, stdin);
@@ -56,16 +68,35 @@ static void test() {
         } else if (!STRCMP(cmd, "stop")) {
             machineStop();
         } else if (!STRCMP(cmd, "hack")) {
-            hack((t_faddrcc) int21, 0x21);
+            doHack();
         } else if (!STRCMP(cmd, "debug")) {
             debugMain();
         } else if (!STRCMP(cmd, "record.start")) {
-            PRINTF("Log file to dump: ");
+            PRINTF("Log file to output: ");
             FGETS(cmd, 0x100, stdin);
             cmd[STRLEN(cmd) - 1] = 0;
             deviceConnectDebugRecordStart(cmd);
         } else if (!STRCMP(cmd, "record.stop")) {
             deviceConnectDebugRecordStop();
+        } else if (!STRCMP(cmd, "dasm")) {
+            FILE *fp = FOPEN("d:/msdos.log", "w");
+            t_nubit16 len = 1;
+            t_nubit16 seg = 0x0019;
+            t_nubit16 off = 0x4052;
+            t_nubit32 linear;
+            t_nubitcc i;
+            char stmt[0x100];
+            while (len && off < 0xfff0) {
+                linear = (seg << 4) + off;
+                len = dasm16s(stmt, (uint8_t *) (vram.connect.pBase + linear), off);
+                FPRINTF(fp, "%04X:%04X(%08X)    %s", seg, off, linear, stmt);
+                for (i = STRLEN(stmt); i < 36; ++i) {
+                    FPRINTF(fp, " ");
+                }
+                FPRINTF(fp, "\n");
+                off += len;
+            }
+            FCLOSE(fp);
         }
     }
 }
@@ -73,15 +104,15 @@ static void test() {
 int exec(int argc, char **argv) {
     int exitCode = 0;
     machineInit();
+    msdosInit();
 #if 1
     test();
 #else
-    msdosInit();
     load(argc, argv);
     run();
     exitCode = ret();
-    msdosFinal();
 #endif
+    msdosFinal();
     machineFinal();
     return exitCode;
 }

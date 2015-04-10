@@ -7,7 +7,12 @@
 extern "C" {
 #endif
 
+void int20();
 void int21();
+void int2a();
+
+void msdosInit();
+void msdosFinal();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

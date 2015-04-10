@@ -97,9 +97,10 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_nkvdm_OBJECTS = src/main.$(OBJEXT) src/exec.$(OBJEXT) \
-	src/msdos.$(OBJEXT) ../src/machine.$(OBJEXT) \
-	../src/utils.$(OBJEXT) ../src/debug.$(OBJEXT) \
-	../src/xasm32/aasm32.$(OBJEXT) ../src/xasm32/dasm32.$(OBJEXT) \
+	src/msdos.$(OBJEXT) src/dasm16s.$(OBJEXT) \
+	../src/machine.$(OBJEXT) ../src/utils.$(OBJEXT) \
+	../src/debug.$(OBJEXT) ../src/xasm32/aasm32.$(OBJEXT) \
+	../src/xasm32/dasm32.$(OBJEXT) \
 	../src/platform/platform.$(OBJEXT) \
 	../src/platform/linux/linux.$(OBJEXT) \
 	../src/platform/linux/linuxcon.$(OBJEXT) \
@@ -283,6 +284,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 nkvdm_SOURCES = src/main.c \
 	src/exec.c src/exec.h \
 	src/msdos.c src/msdos.h \
+	src/dasm16s.c src/dasm16s.h \
 	../src/machine.c ../src/machine.h \
 	../src/utils.c ../src/utils.h \
 	../src/debug.c ../src/debug.h \
@@ -420,6 +422,8 @@ src/$(DEPDIR)/$(am__dirstamp):
 src/main.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/exec.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/msdos.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
+src/dasm16s.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 ../src/$(am__dirstamp):
 	@$(MKDIR_P) ../src
 	@: > ../src/$(am__dirstamp)
@@ -566,6 +570,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../src/platform/linux/$(DEPDIR)/linuxcon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/xasm32/$(DEPDIR)/aasm32.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/xasm32/$(DEPDIR)/dasm32.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/dasm16s.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/exec.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/msdos.Po@am__quote@
