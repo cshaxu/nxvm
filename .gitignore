@@ -27,20 +27,21 @@
 *.out
 *.app
 /nxvm
-bochx/bochx
+/bochx/bochx
+/nkvdm/nkvdm
 
 # Automake directories
-/autom4te.cache/
+autom4te.cache/
 .deps/
 .dirstamp
 
 # Automake makefiles
-/config.h.in~
-/Makefile
-/config.h
-/config.status
-/config.log
-/stamp-h1
+config.h.in~
+Makefile
+config.h
+config.status
+config.log
+stamp-h1
 
 # Astyle trash
 *.orig
