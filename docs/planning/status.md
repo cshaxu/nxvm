@@ -12,4 +12,4 @@
 ## Delivery State
 
 No runtime code, third-party source, guest media, or compatibility claim has
-been added. The project license remains an owner decision.
+been added. Project-owned material is licensed under the root MIT License.
