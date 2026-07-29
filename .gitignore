@@ -1,0 +1,12 @@
+/build/
+/out/
+/artifacts/
+/local-assets/
+!.gitkeep
+*.user
+*.suo
+*.vcxproj.user
+*.pdb
+*.obj
+*.exe
+*.dll
