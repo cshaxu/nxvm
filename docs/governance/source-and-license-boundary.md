@@ -2,9 +2,9 @@
 
 ## Project Code
 
-The project license is intentionally undecided at M0. No release or third-party
-source import occurs until the owner selects a license and confirms that it is
-compatible with all intended derivations.
+Project-owned code and documentation are released under the MIT License in the
+root `LICENSE` file. No third-party source import occurs until its terms are
+reviewed against this license and the intended distribution model.
 
 ## NXVM
 
