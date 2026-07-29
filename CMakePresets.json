@@ -1,0 +1,25 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "vs2022-x64",
+      "displayName": "Visual Studio 2022 x64",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/vs2022-x64"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "m0-probe",
+      "configurePreset": "vs2022-x64",
+      "targets": ["generate-m1-probe"],
+      "configuration": "Debug"
+    }
+  ]
+}
