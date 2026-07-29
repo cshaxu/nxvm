@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.com binary
+*.exe binary
+*.dll binary
+*.img binary
+*.rom binary

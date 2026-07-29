@@ -3,8 +3,20 @@
 ## M0 Governance And Laboratory
 
 Establish repository policy, reference baselines, generated probe conventions,
-and the C/Windows build decision. Completion: no code dependency is imported,
-boundaries are reviewable, and M1 has an executable contract.
+and the C/Windows build decision.
+
+- T1 Governance and laboratory contract: S1 establishes source, asset, evidence,
+  architecture, tracking, and license boundaries; S2 establishes CMake, the
+  Visual Studio toolchain contract, and deterministic generated probes.
+- T2 Reference baseline discipline: S1 pins the permitted NXVM reference and
+  records its license boundary; S2 records the behavioral-only NTVDMx64 and
+  external WineVDM boundaries.
+- T3 M1 entry gate: S1 reviews that no runtime, protected asset, or third-party
+  source entered M0 and that the M1 COM launch contract is explicit.
+
+Completion: no code dependency is imported, boundaries are reviewable, the M0
+probe generator produces a manifest-verified COM input, and M1 has an
+executable acceptance contract.
 
 ## M1 DOS Launch Spine
 
