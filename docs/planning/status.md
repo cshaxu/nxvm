@@ -1,5 +1,11 @@
 # Project Status
 
+## M0 Closure
+
+M0 is complete. Its governance, source and redistribution boundaries, roadmap,
+lightweight C11 toolchain contract, and deterministic probe laboratory have all
+been documented and verified. M1 is eligible to begin, but has not started.
+
 ## Completed
 
 - M0 T1 S1 P1: repository governance and architecture foundation.
@@ -20,18 +26,18 @@
   research boundary.
 - M0 T5 S1: corrected milestone/snapshot governance and selected MinGW-w64 GCC
   with CMake and Ninja as the default lightweight C11 toolchain.
+- M0 T5 S2: verified the x64 GCC/CMake/Ninja C11 configuration and deterministic
+  probe build; adopted the Windows 7 through Windows 11 support policy.
 
 ## Next Eligible Work
 
-- M1 T1 S1: first run the MinGW-w64 GCC compiler/probe smoke gate, then import
-  and baseline the smallest NXVM machine slice required for a real-mode probe.
-  Follow [the subtask record](subtasks/m1-t1-s1.md). This task does not
-  implement DOS services or alter NXVM source in place.
+- M1 T1 S1: import and baseline the smallest NXVM machine slice required for a
+  real-mode probe. Follow [the subtask record](subtasks/m1-t1-s1.md). This task
+  does not implement DOS services or alter NXVM source in place.
 
 ## Delivery State
 
 No NXVM runtime code, other third-party source, guest media, or DOS
 compatibility claim has been added. The generated M1 COM probe is test input
-only. The MinGW-w64 GCC CMake smoke gate is an M1 entry condition and has not
-yet run on this authoring host. Project-owned material is MIT; later
-NXVM-derived units retain applicable LGPL-3.0-or-later obligations.
+only. The MinGW-w64 GCC CMake smoke gate passed. Project-owned material is MIT;
+later NXVM-derived units retain applicable LGPL-3.0-or-later obligations.
