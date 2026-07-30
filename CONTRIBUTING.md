@@ -1,50 +1,43 @@
 # Contributing
 
-## Language And Scope
+## Engineering Rules
 
-- Write repository content in English.
-- Implement runtime code in portable C11 plus narrowly scoped Win32 API calls.
-- Keep `core/` independent of Win32 where practical. Host files belong under
-  `host/win32/`; executable-format classification belongs under `formats/`.
-- New behavior starts with a bounded task record, exact verification command,
-  and compatibility expectation.
+- Repository content is English. Runtime code is C11 plus narrowly scoped
+  documented Win32 APIs.
+- Follow the visible module boundaries in `src/`. `machine` has no DOS or
+  Windows dependency; `dos` has no concrete Windows API dependency; `app` has
+  no emulation logic; `runtime` is the composition root.
+- One subtask is active at a time. Define its scope, non-goals, source baseline,
+  verification commands, and acceptance evidence before changing runtime code.
+- Use `TODO(High)`, `TODO(Medium)`, or `TODO(Low)` only for deferred work.
 
-## Clean-Room Reference Discipline
+## NXVM Imports
 
-Use public documentation and observed behavior to define requirements. When a
-source contribution is intentionally derived from NXVM, record source commit,
-paths, license obligations, destination paths, and tests in
-`docs/provenance/`. Do not copy from NTVDMx64. Do not inspect or reproduce
-Windows private symbols, leaked Windows source, or private loader internals.
+NXVM is the approved machine foundation, not merely an example. Before copying
+or substantially deriving code, add a provenance record containing commit,
+source and destination paths, license, preserved notices, changes, and tests.
+Keep imported code inside the appropriate `machine` boundary and reduce legacy
+global-state coupling when making new interfaces.
 
-WineVDM integration is a process contract: classify an NE executable and pass
-it to a configured external executable. Do not link, compile in, or redistribute
-WineVDM without an owner-approved GPL-compatible release plan.
+## References And Guest Components
 
-## Tests And Compatibility
+Other open-source projects require a license review before copying. OpenNT and
+NTVDMx64 are historical research sources only. Microsoft binaries are never
+committed. BYOB Microsoft guest work belongs under `src/microsoft/`, remains
+profile/hash validated, and cannot block the owned DOS backend.
 
-- Add focused unit tests for VM state, executable loading, and DOS service
-  contracts.
-- Add application or utility probes only when their redistribution status is
-  documented. Generated guest programs are preferred.
-- A completed subtask records automated commands, result, local-input identity,
-  and manual result when applicable under `docs/verification/`.
-- Unsupported behavior must fail predictably with a documented diagnostic, not
-  silently emulate a guessed result.
+## Pull Request Record
+
+Every change must state:
+
+- affected module and whether it crosses a module boundary;
+- whether it imports or derives NXVM code, or references another project;
+- license and redistributability impact;
+- tests added and user-observable behavior changed;
+- whether Microsoft guest components or invasive integration are involved.
 
 ## Commits And Tracking
 
-The hierarchy is `Milestone -> Task -> Subtask -> Part`.
-
-```text
-M1 T1 S1 P1: add COM launch contract
-M2 T2 S3 P2: map DOS handle writes to host console
-```
-
-Create or update one `docs/tracking/M<milestone>-T<task>.md` file when a task
-starts. Each active subtask has an `## S<subtask>` section and one concise part
-entry in the same commit as its change.
-
-Use only `TODO(High)`, `TODO(Medium)`, or `TODO(Low)` for deferred work. State
-the reason and the condition that makes it active. Do not hide a current
-blocker in a TODO.
+Use `M<milestone> T<task> S<subtask> P<part>: description`. Keep task records
+under `docs/tracking/`, write a verification record for completed subtasks, and
+preserve all established baselines.

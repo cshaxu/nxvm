@@ -1,20 +1,13 @@
-# NXVM Reference Baseline
+# NXVM Reference And Import Baseline
 
-## Role
+NXVM is the formal machine foundation for ntvdm64. Its eligible CPU, memory,
+BIOS, device, debugger, assembler, and disassembler code may be imported under
+the policy in [../source-policy.md](../source-policy.md).
 
-NXVM is a secondary reference for C project layout, CPU/memory state design,
-device separation, debugger/tracing concepts, and selected x86 behavior. It is
-not authority for DOS, BIOS, POST, guest services, or quick-and-dirty devices.
+The sibling checkout remains read-only. Before importing any unit, pin its
+commit, record source and destination paths in `docs/provenance/`, preserve
+copyright and LGPL notices, describe modifications, and add focused tests.
 
-## Local Identity
-
-- Local reference: sibling `../nxvm` checkout.
-- Declared license: LGPL-3.0-or-later (`LICENSE`).
-- Baseline commit: record before use; do not rely on an unpinned working tree.
-
-## Restrictions
-
-- Never modify the sibling checkout from this project.
-- Create a provenance record before copying or closely deriving code.
-- Verify CPU behavior with primary x86 documentation and focused tests.
-- Treat its BIOS/POST/DOS hacks as leads for experiments, not accepted behavior.
+NXVM's documented quick-and-dirty areas remain Supporting evidence for behavior
+until tests or stronger sources validate them; they are not a reason to discard
+NXVM as the implementation foundation.

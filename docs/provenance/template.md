@@ -8,6 +8,8 @@
 - Source repository and remote:
 - Source commit or archive identity:
 - Source license:
+- Import class: copied, substantially derived, behavior reference, or research
+  orientation:
 
 ## Scope
 
@@ -21,6 +23,7 @@
 - Copyright and license notices preserved:
 - Third-party notice update:
 - Asset exclusion review:
+- LGPL source/relinking obligations, when applicable:
 - Intentional deviations:
 
 ## Verification
