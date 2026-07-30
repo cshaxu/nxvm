@@ -2,13 +2,21 @@
 
 ## Default Development Toolchain
 
-The default x64 Windows development toolchain is MinGW-w64 GCC, CMake 3.23 or
+Development and release targets are 64-bit Windows 7 through Windows 11. The
+default x64 Windows development toolchain is MinGW-w64 GCC, CMake 3.23 or
 later, and Ninja. This is a native Windows C toolchain and does not require
 Visual Studio. Use a standalone MinGW-w64 distribution or a managed
 installation that exposes `gcc.exe` and `ninja.exe` on `PATH` in an ordinary
-Windows command environment.
+Windows command environment. The default distribution uses MSVCRT to avoid
+making the Universal CRT an implicit Windows 7 prerequisite.
 
-The first supported compiler contract is GCC with C11 support. M1 project code
+If a future API, compiler runtime, or behavior difference makes all supported
+versions impractical, Windows 11 usability takes priority. Record the Windows 7
+gap as an evidence-backed `TODO(High)` or `TODO(Medium)` with its activation
+condition; do not silently narrow the supported range.
+
+The first supported compiler contract is GCC with C11 support. The M0 baseline
+is WinLibs MinGW-w64 GCC 16.1.0, Ninja 1.13.2, and CMake 4.4.0. M1 project code
 uses warnings equivalent to `-Wall -Wextra -Wpedantic -Werror`. Visual Studio
 2022/MSVC remains an optional compatibility build, not the primary developer
 or release toolchain.
