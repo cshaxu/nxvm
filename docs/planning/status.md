@@ -28,6 +28,9 @@ been documented and verified. M1 is eligible to begin, but has not started.
   with CMake and Ninja as the default lightweight C11 toolchain.
 - M0 T5 S2: verified the x64 GCC/CMake/Ninja C11 configuration and deterministic
   probe build; adopted the Windows 7 through Windows 11 support policy.
+- M0 T6 S1: recorded the future `ntvdm64 run` CLI, display, debugger, host-drive
+  visibility, cancellation, and Console-ownership contract without beginning
+  implementation.
 
 ## Next Eligible Work
 

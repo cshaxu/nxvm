@@ -37,17 +37,19 @@ machine/DOS ABI leakage. Dependency: M1 machine contract.
 
 ## M3: Non-Invasive Windows Platform Integration
 
-**Goal:** make the default backend usable through `ntvdm run` on a clean
+**Goal:** make the default backend usable through `ntvdm64 run` on a clean
 64-bit Windows system.
 
 **Scope:** CLI, arguments, current directory, environment, host filesystem,
 keyboard/mouse, text and basic graphics paths, exit code, logging, debug mode,
-configuration, Ctrl+C, and adapted NXVM input/display components.
+configuration, Ctrl+C, and adapted NXVM input/display components. Implement the
+display and host-drive visibility contract in
+[Runtime CLI Requirements](requirements/runtime-cli.md).
 
 **Non-goals:** global file association, loader replacement, injection, drivers,
 or registry-dependent operation.
 
-**Demo and exit:** `ntvdm run hello.com` and an argument-bearing DOS program
+**Demo and exit:** `ntvdm64 run hello.com` and an argument-bearing DOS program
 work without system changes. Tests cover paths, arguments, host I/O, and exit
 status. Risk: platform adapters becoming DOS internals. Dependency: M2.
 
