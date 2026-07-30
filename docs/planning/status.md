@@ -18,8 +18,8 @@ None. M1 T1 S1 is the next eligible subtask, not an active subtask.
 - M0 T1 S2: recorded the initial CMake/Visual Studio 2022 contract and added a
   deterministic generated M1 DOS probe; the default toolchain was later
   replaced by M0 T5.
-- M0 T2 S1: pinned the local NXVM reference and LGPL license identity without
-  importing source.
+- M0 T2 S1: pinned the local NXVM reference and its then-current upstream
+  license identity without importing source.
 - M0 T2 S2: recorded NTVDMx64 behavioral-only and WineVDM process-only
   boundaries.
 - M0 T3 S1: reviewed M0 closure conditions.
@@ -44,6 +44,8 @@ None. M1 T1 S1 is the next eligible subtask, not an active subtask.
 - M0 T7 S1: fixed the M2 owned-DOS profile, service allowlist, memory and
   filesystem boundaries, acceptance probes, and escalation rule without
   beginning M2.
+- M0 T8 S1: recorded the NXVM copyright-holder authorization for MIT imports
+  into ntvdm64, while retaining upstream-license capture as historical evidence.
 
 ## Next Eligible Work
 
@@ -56,4 +58,5 @@ None. M1 T1 S1 is the next eligible subtask, not an active subtask.
 No NXVM runtime code, other third-party source, guest media, or DOS
 compatibility claim has been added. The generated M1 COM probe is test input
 only. The MinGW-w64 GCC CMake smoke gate passed. Project-owned material is MIT;
-later NXVM-derived units retain applicable LGPL-3.0-or-later obligations.
+authorized later NXVM-derived units use MIT with source provenance and copyright
+attribution.

@@ -15,7 +15,8 @@
 
 NXVM is the approved machine foundation, not merely an example. Before copying
 or substantially deriving code, add a provenance record containing commit,
-source and destination paths, license, preserved notices, changes, and tests.
+source and destination paths, the MIT authorization record, preserved copyright
+notices, changes, and tests.
 Keep imported code inside the appropriate `machine` boundary and reduce legacy
 global-state coupling when making new interfaces.
 
