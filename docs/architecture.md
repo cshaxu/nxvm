@@ -30,6 +30,8 @@ app -> runtime -> adapters -> dos + platform
   machine and host-service interfaces.
 - `platform/`: non-invasive host adapters. Windows-specific filesystem,
   console, input, display, timing, process, and logging code stay here.
+  Windows is the current product target; retained Linux platform code is a
+  future portability opportunity, not a current delivery promise.
 - `integration/`: isolated research for host-changing features. It is excluded
   from the default build and release.
 - `adapters/`: explicit glue between concrete machine, DOS, and platform
@@ -67,6 +69,12 @@ to reproduce recorded baseline behavior. No new product feature belongs there.
 After the baseline is verified, retained code moves into the final boundaries;
 obsolete code is removed with focused evidence. This temporary area does not
 relax provenance, LGPL, or platform-isolation requirements.
+
+The full baseline preserves the existing Linux platform implementation alongside
+the Win32 implementation. M1 acceptance is the Windows GCC run; Linux is kept
+as a source baseline for a future platform adapter. The long-term reusable core
+is `machine + dos`; host Console, display, filesystem, and process behavior
+remain platform adapters.
 
 ## Directory Plan
 
