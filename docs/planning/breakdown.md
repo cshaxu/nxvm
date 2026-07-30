@@ -1,6 +1,7 @@
 # Canonical Breakdown
 
-The canonical six-milestone roadmap is [../roadmap.md](../roadmap.md).
+The canonical plan is M0 plus seven product and research milestones. The full
+definition is [../roadmap.md](../roadmap.md).
 
 - M0: governance, source/import policy, probe laboratory, and architecture plan.
 - M1: validate an NXVM-derived machine foundation.

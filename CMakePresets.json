@@ -7,6 +7,16 @@
   },
   "configurePresets": [
     {
+      "name": "mingw-gcc-x64",
+      "displayName": "MinGW-w64 GCC x64",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/mingw-gcc-x64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc"
+      }
+    },
+    {
       "name": "vs2022-x64",
       "displayName": "Visual Studio 2022 x64",
       "generator": "Visual Studio 17 2022",
@@ -16,7 +26,12 @@
   ],
   "buildPresets": [
     {
-      "name": "m0-probe",
+      "name": "m0-probe-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["generate-m1-probe"]
+    },
+    {
+      "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],
       "configuration": "Debug"
