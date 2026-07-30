@@ -36,12 +36,14 @@ None. M1 T1 S1 is the next eligible subtask, not an active subtask.
 - M0 T6 S1: recorded the future `ntvdm64 run` CLI, display, debugger, host-drive
   visibility, cancellation, and Console-ownership contract without beginning
   implementation.
+- M0 T6 S2: changed M1 to a full NXVM baseline-first, subtractive-refactoring
+  strategy; recorded its local image-fixture boundary without beginning M1.
 
 ## Next Eligible Work
 
-- M1 T1 S1: import and baseline the smallest NXVM machine slice required for a
-  real-mode probe. Follow [the subtask record](subtasks/m1-t1-s1.md). This task
-  does not implement DOS services or alter NXVM source in place.
+- M1 T1 S1: import and baseline the full NXVM machine before subtractive
+  refactoring. Follow [the subtask record](subtasks/m1-t1-s1.md). This task
+  does not implement an owned DOS backend or alter the sibling NXVM checkout.
 
 ## Delivery State
 

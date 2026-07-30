@@ -16,10 +16,12 @@ gap as an evidence-backed `TODO(High)` or `TODO(Medium)` with its activation
 condition; do not silently narrow the supported range.
 
 The first supported compiler contract is GCC with C11 support. The M0 baseline
-is WinLibs MinGW-w64 GCC 16.1.0, Ninja 1.13.2, and CMake 4.4.0. M1 project code
-uses warnings equivalent to `-Wall -Wextra -Wpedantic -Werror`. Visual Studio
-2022/MSVC remains an optional compatibility build, not the primary developer
-or release toolchain.
+is WinLibs MinGW-w64 GCC 16.1.0, Ninja 1.13.2, and CMake 4.4.0. M1
+project-owned compatibility and boundary code uses warnings equivalent to
+`-Wall -Wextra -Wpedantic -Werror`; the imported whole-NXVM baseline records
+its warning inventory before later units are migrated under that policy. Visual
+Studio 2022/MSVC remains an optional compatibility build, not the primary
+developer or release toolchain.
 
 From the repository root:
 

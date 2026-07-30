@@ -5,22 +5,30 @@ recorded evidence, and preservation of established baselines.
 
 ## M1: Validate The NXVM Machine Foundation
 
-**Goal:** prove that an NXVM-derived 80386 machine can reliably execute the
-real-mode subset required by the first DOS path.
+**Goal:** establish a GCC-runnable, behavior-recorded full NXVM machine
+baseline before reducing it into ntvdm64's final module boundaries.
 
-**Scope:** CPU/memory, IVT, minimal BIOS service or startup path, PIC/PIT,
-basic keyboard and text-display paths, machine-level debugger primitives,
-assembler/disassembler, single stepping, register and memory inspection. These
-primitives are not the M3 `ntvdm64 run --debug` product experience.
+**Scope:** import and build the complete current NXVM machine baseline: CPU,
+memory, IVT, BIOS/POST and current boot path, PIC/PIT, connected devices,
+keyboard, existing text display, execution loop, and machine-level debugger
+primitives. Run it against the owner-provided local disk-image fixtures and
+record the observed boot or stop state. Only after this baseline works, begin
+subtractive isolation of units into the final `machine` and `platform`
+boundaries. These debugger primitives are not the M3 `ntvdm64 run --debug`
+product experience.
 
-**Non-goals:** complete DOS, VGA, sound, networking, full disk controller, or
-full PC boot chain. The existing 80386 CPU is retained; M1 does not replace it
+**Non-goals:** a project-owned DOS backend, host-drive mapping, a product CLI,
+new graphics or device features, or a claim about the contents or license of a
+local disk image. The existing 80386 CPU is retained; M1 does not replace it
 with a new 8086 implementation.
 
-**Demo and exit:** load a small real-mode binary, execute instructions and an
-interrupt, and verify expected registers and memory. Tests cover the selected
-instruction and interrupt boundaries. Risk: inherited global state and device
-coupling. Dependency: a provenance-reviewed NXVM import.
+**Demo and exit:** GCC builds the imported full baseline and runs a repeatable
+text-mode boot/execution scenario using the recorded local fixtures. Evidence
+captures source and fixture identities, configured device path, terminal or
+window observation, and the reached boot or stop state. The resulting baseline
+then supplies focused tests for later reduction. Risk: inherited global state,
+device coupling, and legacy Win32 assumptions. Dependency: a
+provenance-reviewed NXVM import.
 
 ## M2: Add The Owned DOS Backend
 

@@ -9,6 +9,11 @@ established corpus entries remain valid, provenance/evidence records are
 updated where needed, `docs/verification/` contains a compact result, and the
 task tracking entry is updated in the same commit.
 
+For a legacy coupled system, first establish and record a runnable full-source
+baseline before subtractive refactoring. A baseline import may be isolated from
+the final module layout, but it cannot gain new product behavior or weaken
+source, asset, licensing, or test rules.
+
 Do not advance a milestone merely because individual code exists. Each
 milestone closes on the observable completion condition in `breakdown.md`.
 When a release cadence is established, implementation milestones M1 through M4

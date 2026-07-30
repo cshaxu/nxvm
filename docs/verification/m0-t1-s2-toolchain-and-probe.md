@@ -26,5 +26,7 @@ M0 T5 S2 subsequently ran the GCC/CMake/Ninja smoke test successfully. Its
 current evidence is [m0-t5-s2-gcc-smoke.md](m0-t5-s2-gcc-smoke.md), and M1 T1
 S1 now only confirms that the recorded M0 result applies to its checkout.
 
-M0 creates a test input only. M1 must run it and verify observed marker and
-exit status through the project-owned DOS runtime.
+M0 creates a test input only. M1 may use it as an optional baseline workload
+when a lawful owner-provided local fixture can load it. M2 must run it and
+verify the observed marker and exit status through the project-owned DOS
+runtime.
