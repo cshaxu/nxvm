@@ -102,6 +102,11 @@ not available on the host, not eligible for the runtime, or not in the visible
 set must appear nonexistent to DOS operations; it must not be substituted with
 another host path.
 
+For this contract, an eligible drive is an available, locally mounted,
+drive-letter Windows volume that the caller can open through the platform
+filesystem adapter. UNC-only paths, mapped network drives, and device
+namespaces are never eligible drives.
+
 The program file and every DOS file operation must be resolved inside an
 exposed drive. If `<program>` is outside the visible set, loading fails before
 guest execution with a clear nonzero result. The platform filesystem adapter

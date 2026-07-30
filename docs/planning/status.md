@@ -6,13 +6,18 @@ M0 is complete. Its governance, source and redistribution boundaries, roadmap,
 lightweight C11 toolchain contract, and deterministic probe laboratory have all
 been documented and verified. M1 is eligible to begin, but has not started.
 
+## Active Work
+
+None. M1 T1 S1 is the next eligible subtask, not an active subtask.
+
 ## Completed
 
 - M0 T1 S1 P1: repository governance and architecture foundation.
 - M0 T1 S1 P2: recorded the project MIT license after integrating the remote
   initial commit.
-- M0 T1 S2: selected the CMake/Visual Studio 2022 contract and added a
-  deterministic generated M1 DOS probe.
+- M0 T1 S2: recorded the initial CMake/Visual Studio 2022 contract and added a
+  deterministic generated M1 DOS probe; the default toolchain was later
+  replaced by M0 T5.
 - M0 T2 S1: pinned the local NXVM reference and LGPL license identity without
   importing source.
 - M0 T2 S2: recorded NTVDMx64 behavioral-only and WineVDM process-only

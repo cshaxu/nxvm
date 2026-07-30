@@ -9,8 +9,9 @@ recorded evidence, and preservation of established baselines.
 real-mode subset required by the first DOS path.
 
 **Scope:** CPU/memory, IVT, minimal BIOS service or startup path, PIC/PIT,
-basic keyboard and text-display paths, debugger, assembler/disassembler,
-single stepping, register and memory inspection.
+basic keyboard and text-display paths, machine-level debugger primitives,
+assembler/disassembler, single stepping, register and memory inspection. These
+primitives are not the M3 `ntvdm64 run --debug` product experience.
 
 **Non-goals:** complete DOS, VGA, sound, networking, full disk controller, or
 full PC boot chain. The existing 80386 CPU is retained; M1 does not replace it
