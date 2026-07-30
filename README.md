@@ -22,9 +22,10 @@ NXVM machine foundation
   + adapters, runtime composition, and CLI
 ```
 
-NXVM is the formal machine foundation. Eligible LGPL-licensed CPU, debugger,
-hardware, BIOS, and device code can be imported with recorded provenance and
-preserved notices. The owned DOS runtime is the default compatibility path.
+NXVM is the formal machine foundation. Its copyright holder authorizes NXVM
+code imported into ntvdm64 under this repository's MIT License, with recorded
+source provenance and preserved copyright notices. The owned DOS runtime is the
+default compatibility path.
 
 The default release is buildable and usable without Microsoft binaries, WineVDM,
 host injection, loader replacement, registry changes, or administrator rights.

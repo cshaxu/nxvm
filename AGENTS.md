@@ -14,8 +14,9 @@ Read these documents before changing the repository:
 - ntvdm64 is the canonical product repository. Sibling references, including
   `../nxvm`, are read-only unless a task explicitly authorizes a source import
   into this repository.
-- NXVM is the formal machine foundation. Imports require exact provenance,
-  preserved LGPL notices, and focused tests.
+- NXVM is the formal machine foundation. Copyright-holder-authorized imports
+  use the root MIT License and require exact provenance, preserved copyright
+  notices, and focused tests.
 - The owned DOS backend is the default path. Microsoft NTVDM components are a
   post-M5 research topic, not a backend. OpenNT and NTVDMx64 are historical
   research only.

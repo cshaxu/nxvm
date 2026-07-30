@@ -6,7 +6,8 @@ the policy in [../source-policy.md](../source-policy.md).
 
 The sibling checkout remains read-only. Before importing any unit, pin its
 commit, record source and destination paths in `docs/provenance/`, preserve
-copyright and LGPL notices, describe modifications, and add focused tests.
+copyright notices, record the copyright-holder MIT authorization, describe
+modifications, and add focused tests.
 
 NXVM's documented quick-and-dirty areas remain Supporting evidence for behavior
 until tests or stronger sources validate them; they are not a reason to discard

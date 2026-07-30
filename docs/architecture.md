@@ -70,7 +70,8 @@ refactoring. Its imported source may temporarily live in
 to reproduce recorded baseline behavior. No new product feature belongs there.
 After the baseline is verified, retained code moves into the final boundaries;
 obsolete code is removed with focused evidence. This temporary area does not
-relax provenance, LGPL, or platform-isolation requirements.
+relax provenance, MIT-authorization, copyright-notice, or platform-isolation
+requirements.
 
 The full baseline preserves the existing Linux platform implementation alongside
 the Win32 implementation. M1 acceptance is the Windows GCC run; Linux is kept

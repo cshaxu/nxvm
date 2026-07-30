@@ -6,8 +6,10 @@ patching, global injection, or registry modification to run its supported DOS
 feature set.
 
 - Project-owned files use the root MIT License.
-- NXVM-derived code retains applicable LGPL-3.0-or-later notices and release
-  obligations; source provenance and `THIRD_PARTY_NOTICES.md` must be updated.
+- NXVM-derived code imported under the copyright-holder authorization uses the
+  root MIT License; source provenance and `THIRD_PARTY_NOTICES.md` must record
+  its origin and copyright attribution. Independently licensed third-party
+  material remains subject to separate review.
 - Microsoft BYOB is a future M6 research possibility. Releases neither package
   nor download Microsoft files, and no `ntvdm import` workflow is promised.
 - Invasive integration is excluded from the default build and release.

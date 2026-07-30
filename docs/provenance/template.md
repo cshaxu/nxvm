@@ -23,7 +23,8 @@
 - Copyright and license notices preserved:
 - Third-party notice update:
 - Asset exclusion review:
-- LGPL source/relinking obligations, when applicable:
+- Source license or copyright-holder authorization:
+- Independent third-party obligations, when applicable:
 - Intentional deviations:
 
 ## Verification
