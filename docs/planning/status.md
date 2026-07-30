@@ -12,8 +12,12 @@
 - M0 T2 S2: recorded NTVDMx64 behavioral-only and WineVDM process-only
   boundaries.
 - M0 T3 S1: reviewed M0 closure conditions.
-- M0 T4 S1: adopted the NXVM-foundation architecture correction, six-milestone
-  roadmap, source policy, redistributability rules, and directory plan.
+- M0 T4 S1: adopted the initial NXVM-foundation architecture correction, source
+  policy, redistributability rules, and directory plan.
+- M0 T4 S2: downgraded Microsoft component work from a planned backend to an
+  M6 feasibility study after M5 host-integration research; added M4 real-program
+  compatibility and M7 Win16 research; and moved Microsoft material to the
+  research boundary.
 
 ## Next Eligible Work
 

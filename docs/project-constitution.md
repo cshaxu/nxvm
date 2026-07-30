@@ -1,16 +1,16 @@
 # Project Constitution
 
 1. NXVM is the machine foundation.
-2. DOS compatibility is implemented as a separate module.
-3. Host integration is isolated from machine and DOS logic.
-4. Non-invasive execution is the primary product path.
-5. Invasive Windows integration remains optional and isolated.
-6. Microsoft guest components are optional and never redistributed.
-7. Milestones prioritize runnable end-to-end value.
-8. Existing working code is reused unless replacement has clear ROI.
-9. Module boundaries must be visible in the directory structure.
-10. Compatibility is validated by generated probes and real programs.
-11. Historical implementations may guide research, but released code uses this
-    project's structure and recorded source provenance.
-12. The default release remains buildable and usable without proprietary guest
-    components.
+2. The independent DOS runtime is the default compatibility path.
+3. Non-invasive execution is the primary product path.
+4. The default release must not depend on Microsoft NTVDM binaries.
+5. Real-program compatibility has priority over speculative private-ABI work.
+6. Invasive Windows integration remains isolated until explicitly approved.
+7. Microsoft NTVDM component support is a research option, not a committed
+   backend.
+8. Microsoft component implementation may begin only after host integration
+   research and a formal Go decision.
+9. Existing working NXVM code is reused unless replacement has clear ROI.
+10. Module boundaries remain visible in the source tree.
+11. Compatibility is validated through tests and real programs.
+12. Research code must not become an implicit runtime dependency.

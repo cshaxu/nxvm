@@ -16,11 +16,13 @@ Read these documents before changing the repository:
   into this repository.
 - NXVM is the formal machine foundation. Imports require exact provenance,
   preserved LGPL notices, and focused tests.
-- The owned DOS backend is the default path. Microsoft guest mode is optional
-  BYOB research. OpenNT and NTVDMx64 are historical research only.
+- The owned DOS backend is the default path. Microsoft NTVDM components are a
+  post-M5 research topic, not a backend. OpenNT and NTVDMx64 are historical
+  research only.
 - Use the module boundaries defined in `docs/architecture.md`.
-- Invasive integration and Win16 are research-only. Do not add them to default
-  builds, release dependencies, or automatic system changes.
+- Invasive integration, Microsoft component research, and Win16 are research-
+  only. Do not add them to default builds, release dependencies, or automatic
+  system changes.
 - Do not commit protected guest media, Microsoft binaries, machine-local paths,
   or unreviewed third-party code.
 

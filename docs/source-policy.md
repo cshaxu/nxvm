@@ -20,12 +20,14 @@ probe, documentation source, or reproducible reference test validates it.
 ## Historical NTVDM Research
 
 OpenNT and NTVDMx64 are historical architecture and problem-location sources.
-They may inform BOP hypotheses, component expectations, startup order, and
+They may inform research leads, component inventory, startup hypotheses, and
 test design. They are not copied, transliterated, or treated as the ntvdm64
-specification. Published ntvdm64 code is organized and maintained here.
+specification. They do not authorize a formal Microsoft backend design before
+M5 and M6. Research conclusions require binary behavior, experiments, or tests
+where feasible. Published ntvdm64 code is organized and maintained here.
 
 ## Microsoft Binaries
 
-Microsoft binaries never enter this repository or the default release. Optional
-guest-mode support accepts only user-supplied local files through an explicit
-profile and hash policy. Mixed versions are rejected.
+Microsoft binaries never enter this repository or the default release. BYOB is
+a future research possibility, not a current feature or promised `ntvdm import`
+workflow. Any future profile and hash policy follows an M6 Go decision.

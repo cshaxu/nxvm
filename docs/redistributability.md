@@ -8,8 +8,8 @@ feature set.
 - Project-owned files use the root MIT License.
 - NXVM-derived code retains applicable LGPL-3.0-or-later notices and release
   obligations; source provenance and `THIRD_PARTY_NOTICES.md` must be updated.
-- Microsoft guest mode is BYOB: users supply files from a lawful source into a
-  private local directory. Releases neither package nor download those files.
+- Microsoft BYOB is a future M6 research possibility. Releases neither package
+  nor download Microsoft files, and no `ntvdm import` workflow is promised.
 - Invasive integration is excluded from the default build and release.
 - Every shipped third-party component requires a license, notice, source
   provenance, and packaging entry.
@@ -17,3 +17,5 @@ feature set.
 Before the first release, the build produces a machine-readable dependency and
 notice manifest. A release review verifies that protected inputs and local
 paths are absent.
+
+Research documents and tools are excluded from the default installation package.

@@ -8,6 +8,6 @@ LGPL-3.0-or-later obligations, attribution, and provenance records. The root
 MIT license does not relabel NXVM-derived code.
 
 NTVDMx64 and OpenNT are historical research sources only. WineVDM remains an
-external GPL-2.0 program unless a separate approved distribution decision says
-otherwise. Microsoft guest binaries are BYOB local inputs and are neither
-committed nor distributed.
+external GPL-2.0 research candidate unless a separate approved distribution
+decision says otherwise. Microsoft guest binaries are neither committed nor
+distributed; any BYOB proposal requires a future M6 Go decision.
