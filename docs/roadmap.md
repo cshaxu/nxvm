@@ -14,13 +14,15 @@ keyboard, existing text display, execution loop, and machine-level debugger
 primitives. Run it against the owner-provided local disk-image fixtures and
 record the observed boot or stop state. Only after this baseline works, begin
 subtractive isolation of units into the final `machine` and `platform`
-boundaries. These debugger primitives are not the M3 `ntvdm64 run --debug`
-product experience.
+boundaries. Preserve the existing Linux platform source as part of the baseline,
+but use the Windows GCC run as M1 acceptance. These debugger primitives are not
+the M3 `ntvdm64 run --debug` product experience.
 
 **Non-goals:** a project-owned DOS backend, host-drive mapping, a product CLI,
 new graphics or device features, or a claim about the contents or license of a
 local disk image. The existing 80386 CPU is retained; M1 does not replace it
-with a new 8086 implementation.
+with a new 8086 implementation. A Linux release or Linux compatibility claim
+is also outside M1.
 
 **Demo and exit:** GCC builds the imported full baseline and runs a repeatable
 text-mode boot/execution scenario using the recorded local fixtures. Evidence

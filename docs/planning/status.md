@@ -38,6 +38,9 @@ None. M1 T1 S1 is the next eligible subtask, not an active subtask.
   implementation.
 - M0 T6 S2: changed M1 to a full NXVM baseline-first, subtractive-refactoring
   strategy; recorded its local image-fixture boundary without beginning M1.
+- M0 T6 S3: retained the existing Linux platform source in the M1 baseline and
+  recorded the future shared `machine + dos` portability direction without
+  adding a Linux delivery commitment.
 
 ## Next Eligible Work
 
