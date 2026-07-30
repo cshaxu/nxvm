@@ -1,52 +1,47 @@
 # ntvdm64
 
-ntvdm64 is a DOS and Win16 compatibility runtime evolved from NXVM. It combines
-reusable PC emulation, an independently developed DOS layer, Windows platform
-adapters, and optional compatibility with historical Microsoft NTVDM guest
-components.
+ntvdm64 is a DOS compatibility runtime evolved from NXVM, combining reusable
+PC emulation, an independently implemented DOS environment, and non-invasive
+Windows host integration.
 
-The primary user path will be non-invasive command-line execution:
+The primary product path is:
 
 ```text
 ntvdm run <program> [args]
 ```
 
-The default backend is project-owned and distributable without proprietary
-guest components. NXVM is the machine foundation: its eligible LGPL-licensed
-CPU, debugger, hardware, BIOS, and device code can be imported with recorded
-provenance and preserved notices. DOS compatibility, platform integration, and
-runtime composition are maintained in ntvdm64's own module structure.
-
-## Architecture
+## Formal Runtime
 
 ```text
 NXVM machine foundation
-  + owned DOS module
+  + independent DOS runtime
   + non-invasive Windows platform integration
-  + optional Microsoft NTVDM guest compatibility
-  + isolated invasive integration research
+  + adapters, runtime composition, and CLI
 ```
 
-The module boundaries are `machine`, `dos`, `platform`, `adapters`, `runtime`,
-and `app`. `microsoft` is a future BYOB research boundary; `integration` is
-research-only and excluded from normal builds and releases.
+NXVM is the formal machine foundation. Eligible LGPL-licensed CPU, debugger,
+hardware, BIOS, and device code can be imported with recorded provenance and
+preserved notices. The owned DOS runtime is the default compatibility path.
 
-## Product Rules
+The default release is buildable and usable without Microsoft binaries, WineVDM,
+host injection, loader replacement, registry changes, or administrator rights.
 
-- The owned DOS backend is the default and highest-priority path.
-- Microsoft guest files are optional, user-supplied, profile/hash validated,
-  and never redistributed by this project.
-- OpenNT and NTVDMx64 are historical research sources, not copied code.
-- Invasive Windows integration is limited to research, TODOs, and approved
-  prototypes. No global injection, loader replacement, or automatic system
-  changes are part of the default product.
-- Win16 remains research-only. WineVDM may be evaluated as an external backend.
+## Long-Term Research
+
+- invasive Windows integration;
+- historical Microsoft NTVDM component feasibility; and
+- Win16 feasibility, including external WineVDM evaluation.
+
+These are not committed backends or present product features. Microsoft
+components are never redistributed. Research cannot become an implicit runtime
+dependency or delay the distributable DOS product.
 
 ## Current State
 
-M0 established governance, source/license boundaries, the CMake probe
-laboratory, and directory ownership. No NXVM runtime code has been imported and
-no DOS program can run yet.
+M0 established governance, the probe laboratory, source/import policy, and the
+module plan. No NXVM runtime code has been imported and no DOS program runs
+yet. The roadmap begins with NXVM machine validation, then minimal DOS, then
+the non-invasive CLI product path.
 
 Read [AGENTS.md](AGENTS.md) before changing the repository. Canonical guidance
 is in [architecture](docs/architecture.md), [roadmap](docs/roadmap.md), and the

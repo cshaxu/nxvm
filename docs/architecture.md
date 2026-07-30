@@ -2,17 +2,15 @@
 
 ## Product Shape
 
-ntvdm64 evolves NXVM machine code into a DOS and Win16 compatibility runtime
-for 64-bit Windows. The primary product path is non-invasive command-line
-execution:
+ntvdm64 evolves NXVM machine code into a DOS compatibility runtime for 64-bit
+Windows. The primary product path is non-invasive command-line execution:
 
 ```text
 ntvdm run <program> [args]
 ```
 
-The default backend is a project-owned DOS layer. Optional Microsoft guest mode
-is experimental and BYOB. Win16 is research-only until a separately approved
-route is selected.
+The default backend is a project-owned DOS layer. Microsoft NTVDM components and
+Win16 are future research topics, not current runtime backends.
 
 ## Module Boundaries
 
@@ -36,8 +34,6 @@ app -> runtime -> adapters -> dos + platform
 - `runtime/`: composition root that creates modules, configures adapters,
   drives the execution loop, and reports results.
 - `app/`: CLI commands only; it contains no emulation logic.
-- `microsoft/`: future BYOB guest profile, hash validation, loader, and BOP
-  adapter work. It never contains Microsoft binary files.
 
 ## Dependency Rules
 
@@ -47,27 +43,32 @@ machine internals`. Allowed dependencies are `dos -> abstract machine and host
 interfaces`, `platform -> host OS`, `adapters -> concrete interfaces`, and
 `runtime -> major modules`.
 
+## Microsoft NTVDM Research
+
+Microsoft component work is not a formal runtime module or a committed backend.
+It belongs under `docs/research/microsoft-ntvdm/` and, if required, owner-
+approved one-off `tools/research/microsoft-ntvdm/` tools. It cannot create a
+BOP framework, component loader, profile system, or dependency in the core
+architecture before M5 host-integration research and an M6 Go decision.
+
+Historical NTVDM may be a coupled combination of guest DOS, machine emulation,
+ROMs, BOP host services, console/redirection, and private Windows integration.
+Research first establishes those boundaries; it does not pre-design an adapter.
+
 ## Directory Plan
 
 ```text
 src/
-  app/ runtime/ machine/ dos/ platform/ adapters/ microsoft/ integration/
+  app/ runtime/ machine/ dos/ platform/ adapters/ integration/
 tests/
-  machine/ dos/ platform/ adapters/ runtime/ microsoft/ integration/
+  machine/ dos/ platform/ adapters/ runtime/
+docs/research/microsoft-ntvdm/
+tools/research/microsoft-ntvdm/
 ```
 
 Directory README files define future ownership. This change does not copy, move,
 or alter NXVM runtime code. NXVM assimilation begins only under a tracked
 subtask with a provenance record and preserved license notices.
 
-## Backends
-
-```text
-DOS program -> owned DOS kernel -> machine -> platform
-DOS program -> optional Microsoft guest -> BOP adapter -> machine + platform
-```
-
-The first route is required for all supported releases. The second route may
-increase compatibility but is optional, profile-bound, and unable to block the
-first. Historical sources provide orientation; tests provide validation; NXVM
-provides the machine foundation; ntvdm64 provides the new integration.
+Historical sources provide orientation; tests provide validation; NXVM provides
+the machine foundation; ntvdm64 provides the new integration.

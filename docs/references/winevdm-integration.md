@@ -1,6 +1,6 @@
 # WineVDM Research Boundary
 
-WineVDM is one candidate external backend for M6 Win16 research. ntvdm64 does
+WineVDM is one candidate external backend for M7 Win16 research. ntvdm64 does
 not currently classify, route, or claim support for NE executables.
 
 Any future adapter must remain out of process, preserve target path, working

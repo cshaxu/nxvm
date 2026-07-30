@@ -51,19 +51,18 @@ or registry-dependent operation.
 work without system changes. Tests cover paths, arguments, host I/O, and exit
 status. Risk: platform adapters becoming DOS internals. Dependency: M2.
 
-## M4: Optional Microsoft NTVDM Guest Research
+## M4: Real DOS Program Compatibility
 
-**Goal:** investigate validated, user-supplied NTVDM guest components.
+**Goal:** grow from probes to representative DOS utilities and real programs.
 
-**Scope:** component discovery, hash/profile validation, binary loading, BOP
-trap/dispatch, startup traces, and an XP SP3 x86 research profile.
+**Scope:** add MZ loading, EXEC, MCB, FCB, wildcard and 8.3 semantics,
+attributes, date/time, device names, selected XMS/EMS, graphics, and mouse only
+when a corpus requirement justifies it.
 
-**Non-goals:** redistribution, default-backend dependency, or a blanket
-compatibility promise.
+**Non-goals:** theoretical API completeness or speculative Microsoft ABI.
 
-**Demo and exit:** staged M4A first BOP, M4B `COMMAND.COM` startup, M4C prompt
-with `DIR`, `TYPE`, and `EXIT`. Tests use metadata and permitted local inputs.
-Risk: undocumented protocol and licensing. Dependencies: M1-M3 and BYOB policy.
+**Demo and exit:** each corpus program has a reproducible result. Risk:
+unbounded compatibility scope. Dependency: M3.
 
 ## M5: Invasive Windows Integration Research
 
@@ -77,18 +76,33 @@ dependency, or security-policy changes.
 
 **Demo and exit:** reviewed design and rollback prototype only. Tests validate
 reversibility where a prototype is approved. Risk: security and distribution.
-Dependency: explicit owner decision.
+Dependency: explicit owner decision. Its host-ABI findings are an M6 entry
+condition.
 
-## M6: Win16 Research
+## M6: Microsoft NTVDM Component Research
+
+**Goal:** after M5, evaluate the complete Microsoft component system and decide
+whether any bounded, non-invasive, high-value integration is feasible.
+
+**Scope:** inventory NTVDM host files, guest DOS files, ROMs, redirectors,
+debuggers, configuration, WOW, and host facilities; map startup dependencies,
+private ABI, BYOB usability, and interface feasibility with NXVM and Platform.
+
+**Non-goals:** a component loader, BOP dispatcher, or implementation promise.
+
+**Demo and exit:** component matrix, dependency graph, ABI findings, feasibility
+report, and a formal Go/No-go decision. Risk: coupled private host architecture.
+Dependency: M5.
+
+## M7: Win16 Research
 
 **Goal:** select a viable Win16 route without blocking DOS delivery.
 
-**Scope:** WineVDM external backend, Microsoft WOW research, NE loading,
-unified launcher options, API thunking, process/filesystem model, license,
-distribution, ARM64 feasibility, and relation to Microsoft guest mode.
+**Scope:** WineVDM, Microsoft WOW, NE loading, KERNEL/USER/GDI, thunking,
+unified launcher options, ARM64, licensing, distribution, and relation to M6.
 
 **Non-goals:** a promise of complete Win16 support.
 
-**Demo and exit:** architecture options, dependency map, license analysis,
-proof of concept, and recommended path. Risk: large API and licensing surface.
-Dependency: M3 and an owner-approved direction.
+**Demo and exit:** architecture options, dependency map, proof of concept where
+approved, and recommended path. Risk: large API surface. Dependency: M3 and
+owner approval.

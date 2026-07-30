@@ -23,8 +23,9 @@ global-state coupling when making new interfaces.
 
 Other open-source projects require a license review before copying. OpenNT and
 NTVDMx64 are historical research sources only. Microsoft binaries are never
-committed. BYOB Microsoft guest work belongs under `src/microsoft/`, remains
-profile/hash validated, and cannot block the owned DOS backend.
+committed. Microsoft NTVDM research belongs under `docs/research/` or approved
+`tools/research/`; it cannot create a default runtime dependency or block the
+owned DOS backend.
 
 ## Pull Request Record
 
@@ -34,7 +35,10 @@ Every change must state:
 - whether it imports or derives NXVM code, or references another project;
 - license and redistributability impact;
 - tests added and user-observable behavior changed;
-- whether Microsoft guest components or invasive integration are involved.
+- whether the change involves Microsoft research or invasive integration;
+- whether research code becomes a default runtime dependency; and
+- whether the work directly improves real-program compatibility and has a
+  demonstrable test result.
 
 ## Commits And Tracking
 

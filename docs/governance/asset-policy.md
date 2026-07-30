@@ -11,5 +11,5 @@ components, and third-party executables whose redistribution status is unclear.
 - Never commit absolute paths, credentials, registry exports, or a captured
   user's application data.
 - A release must separately list included and required external components.
-- Microsoft guest-mode components are BYOB local inputs and require version,
-  size, and SHA-256 profile validation. They never enter the repository.
+- Any future Microsoft research input remains local and never enters the
+  repository. A BYOB/profile proposal requires an M6 Go decision.
