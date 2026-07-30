@@ -41,6 +41,9 @@ None. M1 T1 S1 is the next eligible subtask, not an active subtask.
 - M0 T6 S3: retained the existing Linux platform source in the M1 baseline and
   recorded the future shared `machine + dos` portability direction without
   adding a Linux delivery commitment.
+- M0 T7 S1: fixed the M2 owned-DOS profile, service allowlist, memory and
+  filesystem boundaries, acceptance probes, and escalation rule without
+  beginning M2.
 
 ## Next Eligible Work
 
