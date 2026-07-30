@@ -7,8 +7,11 @@ Windows host integration.
 The primary product path is:
 
 ```text
-ntvdm run <program> [args]
+ntvdm64 run [options] [<program> [args...]]
 ```
+
+The planned `run` command has explicit display selection and host-drive
+visibility controls. See [Runtime CLI Requirements](docs/requirements/runtime-cli.md).
 
 ## Formal Runtime
 

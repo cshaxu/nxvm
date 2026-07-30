@@ -6,8 +6,11 @@ ntvdm64 evolves NXVM machine code into a DOS compatibility runtime for 64-bit
 Windows. The primary product path is non-invasive command-line execution:
 
 ```text
-ntvdm run <program> [args]
+ntvdm64 run [options] [<program> [args...]]
 ```
+
+The command-line contract, including display backend selection and host-drive
+visibility, is defined in [Runtime CLI Requirements](requirements/runtime-cli.md).
 
 The default backend is a project-owned DOS layer. Microsoft NTVDM components and
 Win16 are future research topics, not current runtime backends.

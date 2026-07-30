@@ -6,7 +6,7 @@ definition is [../roadmap.md](../roadmap.md).
 - M0: governance, source/import policy, probe laboratory, and architecture plan.
 - M1: validate an NXVM-derived machine foundation.
 - M2: implement the owned DOS backend.
-- M3: add non-invasive Windows platform integration and `ntvdm run`.
+- M3: add non-invasive Windows platform integration and `ntvdm64 run`.
 - M4: expand compatibility through real DOS programs.
 - M5: research invasive Windows integration only.
 - M6: research Microsoft NTVDM component feasibility after M5.
