@@ -36,15 +36,19 @@ provenance-reviewed NXVM import.
 
 **Goal:** run a simple COM program using DOS interrupts.
 
-**Scope:** COM loader, PSP, environment, INT 20h, high-ROI INT 21h services,
-text and keyboard I/O, exit, basic files, memory services, and DOS errors.
+**Scope:** the bounded COM loader, PSP, environment, `INT 20h`, the approved
+`INT 21h` subset, deterministic text/keyboard I/O, exit, an in-memory fixture
+filesystem, fixed loader memory, and defined DOS errors. The exact M2 profile
+is [M2 DOS Backend Requirements](requirements/m2-dos-backend.md).
 
-**Non-goals:** complete DOS API, XMS/EMS/DPMI, Microsoft guest components, and
-shell integration.
+**Non-goals:** complete DOS API, dynamic MCB memory, MZ/EXEC, directories,
+wildcards, FCB, device names, LFN, XMS/EMS/DPMI, Microsoft guest components,
+host-drive mapping, and shell integration.
 
-**Demo and exit:** `hello.com` prints and exits; a file probe opens, reads,
-prints, closes, and exits. Generated probes cover each new service. Risk:
-machine/DOS ABI leakage. Dependency: M1 machine contract.
+**Demo and exit:** the approved COM probes print and exit, perform fixture-file
+open/read/seek/close, and verify defined failure results. Generated probes cover
+each approved service. Risk: machine/DOS ABI leakage and unbounded API growth.
+Dependency: M1 machine contract.
 
 ## M3: Non-Invasive Windows Platform Integration
 

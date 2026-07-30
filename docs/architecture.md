@@ -27,7 +27,9 @@ app -> runtime -> adapters -> dos + platform
   machine runner. It has no DOS or Windows API dependency.
 - `dos/`: project-owned loader, PSP, environment, MCB, interrupts, process,
   filesystem, console, and later XMS/EMS/DPMI behavior. It consumes abstract
-  machine and host-service interfaces.
+  machine and host-service interfaces. M2 begins with a bounded, in-memory
+  fixture filesystem and deterministic Console interface; direct Win32
+  filesystem, Console, and drive behavior belongs to `platform/` in M3.
 - `platform/`: non-invasive host adapters. Windows-specific filesystem,
   console, input, display, timing, process, and logging code stay here.
   Windows is the current product target; retained Linux platform code is a
