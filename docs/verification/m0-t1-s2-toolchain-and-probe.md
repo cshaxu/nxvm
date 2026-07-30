@@ -18,7 +18,13 @@ The first 12 bytes matched the documented instruction sequence, the final byte
 was `$`, and the JSON SHA-256 agreed.
 The authoring host did not expose CMake, Ninja, MSBuild, MSVC, or GCC, so CMake
 preset configuration was not executed there. The MinGW-w64 GCC smoke gate is a
-required M1 T1 S1 entry condition, not a claim that this host validated GCC.
+historical M1 T1 S1 entry condition, not a claim that this host validated GCC.
+
+## Supersession
+
+M0 T5 S2 subsequently ran the GCC/CMake/Ninja smoke test successfully. Its
+current evidence is [m0-t5-s2-gcc-smoke.md](m0-t5-s2-gcc-smoke.md), and M1 T1
+S1 now only confirms that the recorded M0 result applies to its checkout.
 
 M0 creates a test input only. M1 must run it and verify observed marker and
 exit status through the project-owned DOS runtime.
