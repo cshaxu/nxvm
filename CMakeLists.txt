@@ -1,8 +1,20 @@
 cmake_minimum_required(VERSION 3.23)
 
-# M0 deliberately has no runtime target. M1 enables C after the DOS launch
-# contract and its host-independent test boundary are accepted.
-project(ntvdm64 LANGUAGES NONE)
+# M0 validates the selected C toolchain. M1 adds the first runtime target after
+# its DOS launch contract and host-independent test boundary are accepted.
+project(ntvdm64 LANGUAGES C)
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
+if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|MSVC|Clang)$")
+    message(FATAL_ERROR "ntvdm64 requires GCC, MSVC, or Clang C11 support.")
+endif()
+
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "ntvdm64 requires a 64-bit Windows C toolchain.")
+endif()
 
 find_program(POWERSHELL_EXECUTABLE NAMES powershell pwsh REQUIRED)
 
