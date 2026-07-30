@@ -58,11 +58,21 @@ Historical NTVDM may be a coupled combination of guest DOS, machine emulation,
 ROMs, BOP host services, console/redirection, and private Windows integration.
 Research first establishes those boundaries; it does not pre-design an adapter.
 
+## M1 Baseline Exception
+
+M1 first establishes a runnable whole-NXVM baseline before subtractive
+refactoring. Its imported source may temporarily live in
+`src/nxvm-baseline/`, retaining upstream machine and platform coupling solely
+to reproduce recorded baseline behavior. No new product feature belongs there.
+After the baseline is verified, retained code moves into the final boundaries;
+obsolete code is removed with focused evidence. This temporary area does not
+relax provenance, LGPL, or platform-isolation requirements.
+
 ## Directory Plan
 
 ```text
 src/
-  app/ runtime/ machine/ dos/ platform/ adapters/ integration/
+  nxvm-baseline/ app/ runtime/ machine/ dos/ platform/ adapters/ integration/
 tests/
   machine/ dos/ platform/ adapters/ runtime/
 docs/research/microsoft-ntvdm/
