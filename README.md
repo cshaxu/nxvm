@@ -1,48 +1,53 @@
 # ntvdm64
 
-`ntvdm64` is a native C compatibility runtime for running selected DOS
-programs on 64-bit Windows. It owns a DOS-oriented virtual machine and host
-bridge. It may dispatch Win16 NE programs to a separately installed WineVDM
-backend; WineVDM is not embedded in this repository.
+ntvdm64 is a DOS and Win16 compatibility runtime evolved from NXVM. It combines
+reusable PC emulation, an independently developed DOS layer, Windows platform
+adapters, and optional compatibility with historical Microsoft NTVDM guest
+components.
 
-The initial product target is explicit launching:
+The primary user path will be non-invasive command-line execution:
 
 ```text
-ntvdm64 run PROGRAM.COM [arguments]
-ntvdm64 run PROGRAM.EXE [arguments]
+ntvdm run <program> [args]
 ```
 
-Explorer integration is a later, opt-in delivery feature. It must not depend
-on global loader injection, undocumented Windows patching, or replacing the
-normal PE loader.
+The default backend is project-owned and distributable without proprietary
+guest components. NXVM is the machine foundation: its eligible LGPL-licensed
+CPU, debugger, hardware, BIOS, and device code can be imported with recorded
+provenance and preserved notices. DOS compatibility, platform integration, and
+runtime composition are maintained in ntvdm64's own module structure.
 
-## Delivery Model
+## Architecture
 
-1. **M0 governance and laboratory**: establish legal, evidence, executable
-   format, and compatibility-test boundaries.
-2. **M1 DOS launch spine**: load a COM program into a synthetic DOS process
-   environment and support controlled termination and text output.
-3. **M2 DOS host bridge**: add MZ loading, DOS file/console/input services,
-   command-line execution, and a repeatable compatibility corpus.
-4. **M3 interactive DOS compatibility**: add mouse, graphics, timer, and
-   selected XMS/EMS behavior through explicit profiles.
-5. **M4 protected-mode and Win16 routing**: add only evidence-backed DPMI
-   scope and dispatch NE programs to an external WineVDM installation.
-6. **M5 packaging and opt-in shell integration**: ship a signed, documented
-   distribution with no forced global hooks.
+```text
+NXVM machine foundation
+  + owned DOS module
+  + non-invasive Windows platform integration
+  + optional Microsoft NTVDM guest compatibility
+  + isolated invasive integration research
+```
 
-## Core Rules
+The module boundaries are `machine`, `dos`, `platform`, `adapters`, `runtime`,
+and `app`. `microsoft` is a future BYOB research boundary; `integration` is
+research-only and excluded from normal builds and releases.
 
-- Runtime and tooling are C for 64-bit Windows, using documented Win32 APIs.
-- The DOS VM is project-owned. NXVM can inform bounded, recorded derivations
-  under its LGPL-3.0-or-later terms; it is not an unreviewed source dump.
-- NTVDMx64 is a behavioral and compatibility reference only. Do not copy its
-  code, private Windows symbols, loader injection, or internal-patch strategy.
-- WineVDM is an optional external GPL-2.0 program launched by process boundary.
-- BIOS ROMs, DOS system files, disk images, application binaries, and other
-  protected media are local test inputs unless redistribution is documented.
-- Every compatibility claim requires a reproducible test or an explicit
-  limitation record.
+## Product Rules
 
-Read [AGENTS.md](AGENTS.md) before changing the repository. The active work
-is named in [docs/planning/status.md](docs/planning/status.md).
+- The owned DOS backend is the default and highest-priority path.
+- Microsoft guest files are optional, user-supplied, profile/hash validated,
+  and never redistributed by this project.
+- OpenNT and NTVDMx64 are historical research sources, not copied code.
+- Invasive Windows integration is limited to research, TODOs, and approved
+  prototypes. No global injection, loader replacement, or automatic system
+  changes are part of the default product.
+- Win16 remains research-only. WineVDM may be evaluated as an external backend.
+
+## Current State
+
+M0 established governance, source/license boundaries, the CMake probe
+laboratory, and directory ownership. No NXVM runtime code has been imported and
+no DOS program can run yet.
+
+Read [AGENTS.md](AGENTS.md) before changing the repository. Canonical guidance
+is in [architecture](docs/architecture.md), [roadmap](docs/roadmap.md), and the
+[project constitution](docs/project-constitution.md).

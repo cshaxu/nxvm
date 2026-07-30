@@ -12,15 +12,19 @@
 - M0 T2 S2: recorded NTVDMx64 behavioral-only and WineVDM process-only
   boundaries.
 - M0 T3 S1: reviewed M0 closure conditions.
+- M0 T4 S1: adopted the NXVM-foundation architecture correction, six-milestone
+  roadmap, source policy, redistributability rules, and directory plan.
 
 ## Next Eligible Work
 
-- M1 T1 S1: define the project-owned 8086 CPU/memory integration boundary and
-  a host-independent instruction-step test harness. This task may not add DOS
-  host services beyond the M1 launch contract.
+- M1 T1 S1: import and baseline the smallest NXVM machine slice required for a
+  real-mode execution probe. Record per-file provenance, preserve LGPL notices,
+  and add a host-independent instruction-step test harness. This task does not
+  implement DOS services or alter NXVM source in place.
 
 ## Delivery State
 
-No runtime code, third-party source, guest media, or DOS compatibility claim
-has been added. The generated M1 COM probe is test input only. Project-owned
-material is licensed under the root MIT License.
+No NXVM runtime code, other third-party source, guest media, or DOS
+compatibility claim has been added. The generated M1 COM probe is test input
+only. Project-owned material is MIT; later NXVM-derived units retain applicable
+LGPL-3.0-or-later obligations.
