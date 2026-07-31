@@ -53,9 +53,14 @@ architecture.
 ## Local Developer Artifact
 
 - Local ignored artifact: `build/output/ntvdm64-m1_t2_s1.exe`.
-- Source commit: `7d542233c3335ba607c99b2ec77ec586fb6a38a9`.
+- Source commit: `d701b49f7ad6d2ec0d72ba6d35ead1c6ddb65ddb`.
 - SHA-256:
-  `90ec2860a14a4e998cea6b85214959da07fcb28c5a2dfe9608f1618e57875363`.
+  `9d2d7c3dbbb01bad49186cf45bc62001749dd12095a32a42747b928f81b041b2`.
 - Classification: M1 NXVM baseline developer artifact only. It starts the
   inherited NXVM Console; it is not `ntvdm64 run`, does not implement the owned
   DOS backend, and bundles no guest media.
+- Runtime banner:
+  `Neko's x86 Virtual Machine [0.4.015d.m1t2s1]` followed by
+  `Copyright (c) 2012-2014 Neko.`
+- Provenance note: this post-snapshot artifact carries the one-line approved
+  `main.c` title deviation documented in `docs/provenance/m1-nxvm-baseline.md`.
