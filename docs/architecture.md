@@ -160,7 +160,8 @@ M1 first establishes a runnable whole-NXVM baseline before subtractive
 refactoring. Its imported source may temporarily live in
 `src/nxvm-baseline/`, retaining upstream machine and platform coupling solely
 to reproduce recorded baseline behavior. No new product feature belongs there.
-M3 moves retained code into the final boundaries after M2 closes.
+The initial M3 contracts did not move the real whole-PC executor. M5 owns its
+source migration according to `docs/planning/m5-execution-migration.md`.
 
 The full baseline preserves the existing Linux platform implementation
 alongside Win32. M1 acceptance is the Windows GCC run; Linux is kept as a source

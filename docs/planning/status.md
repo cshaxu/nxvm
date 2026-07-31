@@ -38,7 +38,8 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T8 S1: map the real execution migration before invasive source changes.
+M5 T9 S1: lift the original NXVM Console/debugger source before migrating the
+execution engine.
 
 ## Completed
 
@@ -168,12 +169,12 @@ M5 T8 S1: map the real execution migration before invasive source changes.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t8-s1.md`.
+`docs/planning/subtasks/m5-t9-s1.md`.
 
 ## Next Eligible Work
 
-- M5 T8 S1 produces the code-level migration map and bounded implementation
-  order. M6 remains blocked until M5 truly closes.
+- M5 T9 S1 begins the source migration with the retained Console/debugger;
+  M6 remains blocked until M5 truly closes.
 
 ## Delivery State
 
