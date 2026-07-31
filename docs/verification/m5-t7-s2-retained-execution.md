@@ -27,4 +27,7 @@ providers. A created FDD was reset then removed through `remove <path>` into
 the ignored build directory, producing 1,474,560 bytes. The complete focused
 GCC smoke suite passed, including CPU probes, core machine/device/presentation,
 firmware, registries, product adapters, sessions, and both local fixture
-profile paths. This is closure evidence, not a release artifact.
+profile paths. `nxvm-product-debug-console-smoke` launches the artifact through
+Win32 pipes, waits until its debugger prompt is active, submits `q`, then
+proves the returned product Console reports `debugger-paused` and exits zero.
+This is closure evidence, not a release artifact.
