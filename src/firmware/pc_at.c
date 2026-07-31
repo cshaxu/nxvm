@@ -53,3 +53,13 @@ nxvm_core_status nxvm_firmware_pc_at_apply_image(
     if (status != NXVM_CORE_STATUS_OK) return status;
     return nxvm_core_machine_memory_write(machine, 0xffff0u, reset_stub, sizeof(reset_stub));
 }
+
+void nxvm_firmware_pc_at_cmos_initialize(
+    nxvm_firmware_pc_at_cmos *cmos, int boot_hdd)
+{
+    if (cmos == NULL) return;
+    cmos->equipment = 0x21u;
+    cmos->base_memory_kib = 0x7fu;
+    cmos->base_memory_kib_high = 0x02u;
+    cmos->boot_drive = boot_hdd ? 0x80u : 0u;
+}

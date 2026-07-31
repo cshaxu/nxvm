@@ -32,5 +32,7 @@ nxvm_core_status nxvm_firmware_register_service(
 nxvm_core_status nxvm_firmware_freeze(nxvm_firmware *firmware);
 const nxvm_firmware_service_descriptor *nxvm_firmware_service_at(
     const nxvm_firmware *firmware, size_t index);
+const nxvm_firmware_service_descriptor *nxvm_firmware_find_interrupt(
+    const nxvm_firmware *firmware, unsigned vector);
 
 #endif

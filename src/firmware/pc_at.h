@@ -10,9 +10,18 @@ typedef struct nxvm_firmware_pc_at_plan {
     unsigned service_count;
 } nxvm_firmware_pc_at_plan;
 
+typedef struct nxvm_firmware_pc_at_cmos {
+    uint8_t equipment;
+    uint8_t base_memory_kib;
+    uint8_t base_memory_kib_high;
+    uint8_t boot_drive;
+} nxvm_firmware_pc_at_cmos;
+
 nxvm_core_status nxvm_firmware_pc_at_compose(
     nxvm_firmware *firmware, nxvm_firmware_pc_at_plan *out_plan);
 nxvm_core_status nxvm_firmware_pc_at_apply_image(
     nxvm_core_machine *machine, int boot_hdd);
+void nxvm_firmware_pc_at_cmos_initialize(
+    nxvm_firmware_pc_at_cmos *cmos, int boot_hdd);
 
 #endif
