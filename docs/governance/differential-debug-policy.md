@@ -52,8 +52,17 @@ Every differential runner enforces all of these:
 - instruction budget;
 - wall-clock timeout;
 - no-progress limit based on checkpoint/event advance;
+- maximum raw-trace byte budget with a unique ignored output path;
 - bounded ring buffer of the last trace events; and
-- separate-process termination and a divergence report on failure.
+- separate-process-tree termination and a divergence report on failure.
+
+The runner monitors raw trace growth independently of guest progress. At any
+instruction, time, no-progress, or byte limit it terminates all owned child
+processes, waits for their trace handles to close, records only the final size
+and compact checkpoint evidence, then deletes the raw trace by default. A
+timeout without process-tree cleanup and byte containment is not a bounded
+experiment. The shared operational rules, including required free workspace,
+are in `docs/planning/execution-policy.md`.
 
 ## Cleanup Gate
 
