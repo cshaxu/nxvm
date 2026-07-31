@@ -20,10 +20,12 @@ All 75 files below were copied byte-for-byte from NXVM `src/` into the temporary
 - Third-party notice update: no independent third-party notice was found in the imported source tree.
 - Asset exclusion review: no disk image, ROM, Microsoft binary, or guest payload was imported.
 - Source authorization: NXVM copyright-holder authorization for root MIT import, as recorded by project policy.
-- Intentional deviations: none; this is a byte-for-byte source baseline.
-- Git whitespace policy: `src/nxvm-baseline/**` is excluded from whitespace
-  checking because its copied upstream bytes contain pre-existing space/tab
-  indentation. This does not exempt project-owned code or alter imported bytes.
+- Intentional deviations: none; this is a byte-for-byte source baseline in
+  both the working tree and Git object database.
+- Git text/whitespace policy: `src/nxvm-baseline/**` is excluded from text
+  conversion and whitespace checking because its copied upstream bytes contain
+  CRLF and pre-existing space/tab indentation. This does not exempt
+  project-owned code or alter imported bytes.
 
 ## Per-File Manifest
 
