@@ -46,6 +46,9 @@ None. M1 T1 S1 is the next eligible subtask, not an active subtask.
   beginning M2.
 - M0 T8 S1: recorded the NXVM copyright-holder authorization for MIT imports
   into ntvdm64, while retaining upstream-license capture as historical evidence.
+- M0 T9 S1: defined optional differential verification interfaces for machine
+  and DOS traces, external-reference boundaries, watchdogs, and cleanup without
+  beginning M1 or M2.
 
 ## Next Eligible Work
 

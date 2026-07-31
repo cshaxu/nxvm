@@ -18,6 +18,11 @@ boundaries. Preserve the existing Linux platform source as part of the baseline,
 but use the Windows GCC run as M1 acceptance. These debugger primitives are not
 the M3 `ntvdm64 run --debug` product experience.
 
+M1 may use the optional differential trace interface to correlate CPU,
+interrupt, I/O-port, IRQ, disk, display, and stop events across baseline runs.
+NTVDMx64 is not a reference for POST or disk boot; any external adapter is a
+local research tool, not an M1 dependency.
+
 **Non-goals:** a project-owned DOS backend, host-drive mapping, a product CLI,
 new graphics or device features, or a claim about the contents or license of a
 local disk image. The existing 80386 CPU is retained; M1 does not replace it
@@ -40,6 +45,10 @@ provenance-reviewed NXVM import.
 `INT 21h` subset, deterministic text/keyboard I/O, exit, an in-memory fixture
 filesystem, fixed loader memory, and defined DOS errors. The exact M2 profile
 is [M2 DOS Backend Requirements](requirements/m2-dos-backend.md).
+
+M2 may correlate its DOS-service events with the same machine trace stream and
+compare bounded COM probes against an external NTVDMx64 adapter. This adapter
+is evidence only; it does not define the DOS profile or enter the product.
 
 **Non-goals:** complete DOS API, dynamic MCB memory, MZ/EXEC, directories,
 wildcards, FCB, device names, LFN, XMS/EMS/DPMI, Microsoft guest components,

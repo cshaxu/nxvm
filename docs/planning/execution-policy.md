@@ -14,6 +14,11 @@ baseline before subtractive refactoring. A baseline import may be isolated from
 the final module layout, but it cannot gain new product behavior or weaken
 source, asset, licensing, or test rules.
 
+Differential debugging is a bounded verification experiment. Its record names
+both implementations, inputs, event schema, checkpoints, comparison masks,
+instruction/time/no-progress budgets, and cleanup owner. It cannot become a
+runtime dependency or replace focused project-owned tests.
+
 Do not advance a milestone merely because individual code exists. Each
 milestone closes on the observable completion condition in `breakdown.md`.
 When a release cadence is established, implementation milestones M1 through M4
