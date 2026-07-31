@@ -22,6 +22,7 @@ set(NTVDM64_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 
 add_library(nxvm-core STATIC
     src/core/cpu.c
+    src/core/cpu_capability.c
     src/core/debug.c
     src/core/machine.c
     src/core/memory.c
@@ -57,6 +58,11 @@ add_executable(nxvm-core-machine-debug-smoke
 )
 target_link_libraries(nxvm-core-machine-debug-smoke PRIVATE nxvm-core)
 
+add_executable(nxvm-core-cpu-capability-smoke
+    tests/core/cpu_capability_smoke.c
+)
+target_link_libraries(nxvm-core-cpu-capability-smoke PRIVATE nxvm-core)
+
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -64,6 +70,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-core-cpu-capability-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 add_custom_target(generate-m1-probe
@@ -102,6 +109,21 @@ target_include_directories(nxvm-baseline-full-pc-adapter PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(nxvm-baseline-full-pc-adapter PUBLIC nxvm-baseline-runtime)
+
+add_library(nxvm-baseline-cpu-probe-adapter STATIC
+    src/adapters/nxvm_baseline/cpu_probe.c
+)
+target_include_directories(nxvm-baseline-cpu-probe-adapter PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-baseline-cpu-probe-adapter PUBLIC nxvm-baseline-runtime)
+
+add_executable(nxvm-baseline-cpu-probe-smoke
+    tests/adapters/nxvm_baseline_cpu_probe_smoke.c
+)
+target_link_libraries(nxvm-baseline-cpu-probe-smoke PRIVATE
+    nxvm-baseline-cpu-probe-adapter
+)
 
 add_library(nxvm-runtime STATIC
     src/runtime/dos_minimal.c
@@ -158,6 +180,7 @@ endfunction()
 
 add_nxvm_full_pc_artifact(nxvm-baseline "m1t2s1")
 add_nxvm_full_pc_artifact(nxvm-m3-t5 "m3t5")
+add_nxvm_full_pc_artifact(nxvm-m5-t1 "m5t1")
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-runtime PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -166,5 +189,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-dos-minimal-presentation-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-baseline-full-pc-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-baseline-cpu-probe-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-baseline-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-full-pc-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

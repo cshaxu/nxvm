@@ -86,6 +86,19 @@
       "targets": ["nxvm-m3-t5"]
     },
     {
+      "name": "m5-cpu-probes-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": [
+        "nxvm-core-cpu-capability-smoke",
+        "nxvm-baseline-cpu-probe-smoke"
+      ]
+    },
+    {
+      "name": "m5-t1-nxvm-artifact-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-m5-t1"]
+    },
+    {
       "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],
