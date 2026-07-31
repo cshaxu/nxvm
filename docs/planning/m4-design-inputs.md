@@ -14,5 +14,10 @@ M4 must preserve the legacy-adapter regression until M5 replaces it with an
 explicit firmware/product composition. It must not treat the adapter as a
 reusable core Machine or alter the M8 product-CLI boundary.
 
+M4 also establishes that the retained descriptor is an adapter, not the final
+machine model: M5 introduces only `nxvm.machine.pc_at_builtin`; future NXVM
+machine profiles and ntvdm64 execution profiles use the separate profile
+families defined in `docs/requirements/profiles.md`.
+
 The bounded M4 design tasks are in
 `docs/planning/m4-firmware-nxvm-design-breakdown.md`.
