@@ -11,7 +11,8 @@ current sequence.
 - M5: implement firmware and `nxvm.exe`.
 - M6: design the owned DOS module.
 - M7: implement the owned DOS backend.
-- M8: design platform integration and product CLIs.
+- M8: design ntvdm64 platform integration, process CLI, and window-mode control
+  Console.
 - M9: implement `ntvdm64.exe`.
 - M10: expand compatibility and extended devices through corpus increments.
 - M11: optional integration, Microsoft NTVDM, and Win16 research.

@@ -92,6 +92,9 @@ None. M3 is closed; M4 is the next design milestone.
   `nxvm.exe` remains a bootable whole-machine VM, `ntvdm64.exe` becomes the
   non-bootable DOS app runner, and both share `core`, `firmware`, `platform`,
   `runtime`, and product-specific composition.
+- M0 T13 S1 P3: clarified the product interaction boundary: NXVM retains its
+  interactive whole-machine Console without a new process CLI; ntvdm64 owns
+  `run` and its window-mode control Console.
 - M1 T1 S1: approved the bounded GCC migration design after a zero-patch GCC
   compile and warning inventory.
 - M1 T2 S1: imported and built the full provenance-recorded NXVM baseline;

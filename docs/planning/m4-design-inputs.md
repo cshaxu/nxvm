@@ -4,7 +4,8 @@ M3 leaves two explicit, testable profile paths for M4:
 
 - `nxvm.full_pc`: retained single-session NXVM adapter with BIOS, CMOS, DMA,
   storage, VADP, and local fixture boot evidence. M4 assigns retained behavior
-  to `firmware` versus `products/nxvm` and specifies the new product surface.
+  to `firmware` versus `products/nxvm` and specifies the retained interactive
+  NXVM Console surface. M4 does not add an nxvm process CLI.
 - `ntvdm64.dos_minimal`: core-backed no-media profile with PIC/PIT, keyboard,
   text snapshots, presentation adapter, trace, and debug boundaries. M6 owns
   all DOS ABI decisions; M4 does not add DOS behavior.
