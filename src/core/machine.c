@@ -40,6 +40,7 @@ nxvm_core_status nxvm_core_machine_create(
     machine->config = *config;
     machine->lifecycle = NXVM_CORE_MACHINE_INITIALIZED;
     atomic_init(&machine->stop_requested, 0);
+    nxvm_core_trace_initialize(machine);
 
     status = nxvm_core_memory_initialize(machine);
     if (status != NXVM_CORE_STATUS_OK) {
@@ -76,6 +77,7 @@ nxvm_core_status nxvm_core_machine_reset(nxvm_core_machine *machine)
     atomic_store(&machine->stop_requested, 0);
     machine->fault_detail = 0u;
     machine->lifecycle = NXVM_CORE_MACHINE_PAUSED;
+    nxvm_core_trace_record(machine, NXVM_CORE_TRACE_RESET, 0u, 0u, 0u);
     return NXVM_CORE_STATUS_OK;
 }
 
@@ -122,12 +124,16 @@ nxvm_core_status nxvm_core_machine_run(
     if (atomic_load(&machine->stop_requested)) {
         result->reason = NXVM_CORE_STOP_REQUESTED;
         machine->lifecycle = NXVM_CORE_MACHINE_STOPPED;
+        nxvm_core_trace_record(machine, NXVM_CORE_TRACE_STOP, 0u, 0u,
+                               (uint32_t)result->reason);
         return NXVM_CORE_STATUS_OK;
     }
 
     machine->lifecycle = NXVM_CORE_MACHINE_RUNNING;
     machine->lifecycle = NXVM_CORE_MACHINE_PAUSED;
     result->reason = NXVM_CORE_STOP_BUDGET;
+    nxvm_core_trace_record(machine, NXVM_CORE_TRACE_RUN_BOUNDARY, 0u, 0u,
+                           (uint32_t)result->reason);
     return NXVM_CORE_STATUS_OK;
 }
 
@@ -156,11 +162,13 @@ nxvm_core_status nxvm_core_machine_report_fault(
 
     machine->fault_detail = detail;
     machine->lifecycle = NXVM_CORE_MACHINE_FAULTED;
+    nxvm_core_trace_record(machine, NXVM_CORE_TRACE_FAULT, 0u, 0u, detail);
     return NXVM_CORE_STATUS_OK;
 }
 
 void nxvm_core_machine_destroy(nxvm_core_machine *machine)
 {
+    nxvm_core_trace_finalize(machine);
     nxvm_core_port_finalize(machine);
     nxvm_core_memory_finalize(machine);
     free(machine);

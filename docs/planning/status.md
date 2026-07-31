@@ -23,7 +23,7 @@ Task/subtask breakdown is approved; M3 is active.
 
 ## Active Work
 
-None. M3 T2 S2 is the next eligible subtask and remains inactive.
+None. M3 T3 S1 is the next eligible subtask and remains inactive.
 
 ## Completed
 
@@ -127,7 +127,7 @@ None.
 
 ## Next Eligible Work
 
-- M3 T2 S2: add the neutral trace boundary after M3 T2 S1 closes.
+- M3 T3 S1: make `nxvm.full_pc` explicit after M3 T2 closes.
 
 ## Delivery State
 

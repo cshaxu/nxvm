@@ -73,7 +73,13 @@ nxvm_core_status nxvm_core_machine_port_read(
         return NXVM_CORE_STATUS_UNSUPPORTED;
     }
 
-    return slot->ops.read(slot->owner, port, out_value);
+    {
+        nxvm_core_status status = slot->ops.read(slot->owner, port, out_value);
+        nxvm_core_trace_record(machine, NXVM_CORE_TRACE_PORT_READ, port,
+                               status == NXVM_CORE_STATUS_OK ? *out_value : 0u,
+                               (uint32_t)status);
+        return status;
+    }
 }
 
 nxvm_core_status nxvm_core_machine_port_write(
@@ -92,5 +98,10 @@ nxvm_core_status nxvm_core_machine_port_write(
         return NXVM_CORE_STATUS_UNSUPPORTED;
     }
 
-    return slot->ops.write(slot->owner, port, value);
+    {
+        nxvm_core_status status = slot->ops.write(slot->owner, port, value);
+        nxvm_core_trace_record(machine, NXVM_CORE_TRACE_PORT_WRITE, port, value,
+                               (uint32_t)status);
+        return status;
+    }
 }

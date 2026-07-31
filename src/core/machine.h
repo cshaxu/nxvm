@@ -9,6 +9,7 @@
 #include "core/port.h"
 #include "core/profile.h"
 #include "core/status.h"
+#include "core/trace.h"
 
 #ifdef __cplusplus
 extern "C" {

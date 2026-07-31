@@ -25,6 +25,7 @@ add_library(nxvm-core STATIC
     src/core/machine.c
     src/core/memory.c
     src/core/port.c
+    src/core/trace.c
 )
 target_include_directories(nxvm-core PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -45,11 +46,17 @@ add_executable(nxvm-core-machine-lifecycle-smoke
 )
 target_link_libraries(nxvm-core-machine-lifecycle-smoke PRIVATE nxvm-core)
 
+add_executable(nxvm-core-machine-trace-smoke
+    tests/core/machine_trace_smoke.c
+)
+target_link_libraries(nxvm-core-machine-trace-smoke PRIVATE nxvm-core)
+
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 add_custom_target(generate-m1-probe
