@@ -3,6 +3,11 @@
 
 #include <stdlib.h>
 
+static uint32_t nxvm_core_machine_linear_pc(const nxvm_core_machine *machine)
+{
+    return machine->cpu.state.cs_base + machine->cpu.state.eip;
+}
+
 static int nxvm_core_profile_is_supported(nxvm_core_profile profile)
 {
     return profile == NXVM_CORE_PROFILE_CUSTOM ||
@@ -33,7 +38,8 @@ nxvm_core_status nxvm_core_machine_create(
     }
 
     machine->config = *config;
-    machine->state = NXVM_CORE_MACHINE_NEW;
+    machine->lifecycle = NXVM_CORE_MACHINE_INITIALIZED;
+    atomic_init(&machine->stop_requested, 0);
 
     status = nxvm_core_memory_initialize(machine);
     if (status != NXVM_CORE_STATUS_OK) {
@@ -58,12 +64,30 @@ nxvm_core_status nxvm_core_machine_reset(nxvm_core_machine *machine)
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
 
+    if (machine->lifecycle == NXVM_CORE_MACHINE_RUNNING) {
+        return NXVM_CORE_STATUS_INVALID_STATE;
+    }
+
     if (nxvm_core_cpu_reset(machine) != NXVM_CORE_STATUS_OK ||
         nxvm_core_memory_reset(machine) != NXVM_CORE_STATUS_OK) {
         return NXVM_CORE_STATUS_FAULT;
     }
 
-    machine->state = NXVM_CORE_MACHINE_RESET;
+    atomic_store(&machine->stop_requested, 0);
+    machine->fault_detail = 0u;
+    machine->lifecycle = NXVM_CORE_MACHINE_PAUSED;
+    return NXVM_CORE_STATUS_OK;
+}
+
+nxvm_core_status nxvm_core_machine_get_lifecycle(
+    const nxvm_core_machine *machine,
+    nxvm_core_machine_lifecycle *out_lifecycle)
+{
+    if (machine == NULL || out_lifecycle == NULL) {
+        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+    }
+
+    *out_lifecycle = machine->lifecycle;
     return NXVM_CORE_STATUS_OK;
 }
 
@@ -78,21 +102,33 @@ nxvm_core_status nxvm_core_machine_run(
 
     result->reason = NXVM_CORE_STOP_NONE;
     result->executed = 0u;
-    result->linear_pc = 0u;
+    result->linear_pc = nxvm_core_machine_linear_pc(machine);
     result->detail = 0u;
 
-    if (machine->state == NXVM_CORE_MACHINE_STOP_REQUESTED) {
-        result->reason = NXVM_CORE_STOP_REQUESTED;
-        return NXVM_CORE_STATUS_OK;
+    if (machine->lifecycle == NXVM_CORE_MACHINE_FAULTED) {
+        result->reason = NXVM_CORE_STOP_FAULT;
+        result->detail = machine->fault_detail;
+        return NXVM_CORE_STATUS_FAULT;
     }
 
-    if (machine->state != NXVM_CORE_MACHINE_RESET) {
+    if (machine->lifecycle != NXVM_CORE_MACHINE_PAUSED) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
 
-    (void)budget;
+    if (budget.instructions == 0u && budget.ticks == 0u) {
+        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (atomic_load(&machine->stop_requested)) {
+        result->reason = NXVM_CORE_STOP_REQUESTED;
+        machine->lifecycle = NXVM_CORE_MACHINE_STOPPED;
+        return NXVM_CORE_STATUS_OK;
+    }
+
+    machine->lifecycle = NXVM_CORE_MACHINE_RUNNING;
+    machine->lifecycle = NXVM_CORE_MACHINE_PAUSED;
     result->reason = NXVM_CORE_STOP_BUDGET;
-    return NXVM_CORE_STATUS_UNSUPPORTED;
+    return NXVM_CORE_STATUS_OK;
 }
 
 nxvm_core_status nxvm_core_machine_request_stop(nxvm_core_machine *machine)
@@ -101,7 +137,25 @@ nxvm_core_status nxvm_core_machine_request_stop(nxvm_core_machine *machine)
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
 
-    machine->state = NXVM_CORE_MACHINE_STOP_REQUESTED;
+    atomic_store(&machine->stop_requested, 1);
+    return NXVM_CORE_STATUS_OK;
+}
+
+nxvm_core_status nxvm_core_machine_report_fault(
+    nxvm_core_machine *machine,
+    uint32_t detail)
+{
+    if (machine == NULL) {
+        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (machine->lifecycle != NXVM_CORE_MACHINE_PAUSED &&
+        machine->lifecycle != NXVM_CORE_MACHINE_RUNNING) {
+        return NXVM_CORE_STATUS_INVALID_STATE;
+    }
+
+    machine->fault_detail = detail;
+    machine->lifecycle = NXVM_CORE_MACHINE_FAULTED;
     return NXVM_CORE_STATUS_OK;
 }
 
