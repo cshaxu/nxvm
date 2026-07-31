@@ -29,7 +29,7 @@ behavior.
 
 ## Active Work
 
-None. M5 is the next implementation milestone.
+M5 T1 S2: optional local Bochx/Bochs experiment harness.
 
 ## Completed
 
@@ -159,7 +159,7 @@ None. M5 is the next implementation milestone.
 
 ## Active Subtask
 
-None.
+`docs/planning/subtasks/m5-t1-s2.md`.
 
 ## Next Eligible Work
 
