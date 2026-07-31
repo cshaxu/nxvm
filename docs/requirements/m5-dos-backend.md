@@ -3,6 +3,15 @@
 M5 delivers a deliberately small, project-owned DOS profile. It is not an
 MS-DOS version claim and it does not promise behavior outside this document.
 
+## M4 Design Gate
+
+Before M5 implementation, this profile is completed as a testable ABI: COM load
+segment and image limits; PSP, environment, DTA, stack, and initial registers;
+`INT 20h`/`INT 21h` entry and return; register/FLAGS and memory effects;
+handle allocation; read, seek, EOF, pathname, input-blocked, error, and exit
+semantics. Every allowed service has an executable vector. Intentional absences
+are specified here, never inferred from implementation.
+
 ## Program Model
 
 - Load one COM image at a fixed, documented conventional-memory location.
@@ -60,6 +69,10 @@ reparse-point handling, and UNC/device-namespace denial.
 M5 Console input and output are deterministic harness queues and buffers. They
 have no Win32 Console, GUI window, pipe, Ctrl+C, mouse, or host-redirection
 semantics. Those are Platform product behavior in M7.
+
+M5 test execution uses the retained NXVM Console `load` workflow and a
+project-owned fixture adapter. It does not implement the `ntvdm64 run` product
+path, host-drive mapping, or product command-line parsing.
 
 ## Acceptance Probes
 

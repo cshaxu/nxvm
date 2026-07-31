@@ -3,6 +3,10 @@
 Each milestone requires a runnable demonstration, focused automated tests,
 recorded evidence, and preservation of established baselines.
 
+Before M7, DOS program testing uses the imported NXVM Console `load` workflow
+and its machine/debug controls. It is not the product CLI, does not create host
+drive mapping, and does not alter the future `ntvdm64 run` contract.
+
 ## M1: Validate The NXVM Machine Foundation
 
 **Goal:** establish a GCC-runnable, behavior-recorded full NXVM machine
@@ -143,49 +147,35 @@ when a corpus requirement justifies it.
 
 **Non-goals:** theoretical API completeness or speculative Microsoft ABI.
 
-**Demo and exit:** each declared corpus program has a reproducible result. The
-corpus follows [M8 Compatibility Corpus Policy](requirements/m8-corpus-policy.md).
-Risk: unbounded compatibility scope. Dependency: M7.
+**Demo and exit:** each declared corpus program has a reproducible result. Each
+entry records legal basis, identity, required feature, and verdict before it can
+expand scope. Separate redistributable project probes from local owner-provided
+programs; prioritize the smallest missing feature and require evidence,
+owner-approved scope, and a focused regression before expanding M8. Risk:
+unbounded compatibility scope. Dependency: M7.
 
-## M9: Invasive Windows Integration Research
+## M9: Optional Integration Research
 
-**Goal:** evaluate optional system integration outside the CLI path.
+**Goal:** investigate optional Windows integration, historical Microsoft NTVDM
+components, and Win16 routing without blocking the owned DOS product.
 
-**Scope:** documents, risk analysis, reversible prototypes, installer and
-uninstaller design, and Windows-version compatibility evaluation.
+### T1: Invasive Windows Integration
 
-**Non-goals:** default build inclusion, automatic system changes, release
-dependency, or security-policy changes.
+Research only: threat/risk analysis, reversible prototypes, installer/uninstaller
+and rollback design, and Windows-version matrix. No default build, automatic
+system change, release dependency, or security-policy change.
 
-**Demo and exit:** reviewed design and rollback prototype only. Tests validate
-reversibility where a prototype is approved. Risk: security and distribution.
-Dependency: explicit owner decision. Its host-ABI findings are an M10 entry
-condition.
+### T2: Microsoft NTVDM Components
 
-## M10: Microsoft NTVDM Component Research
+After T1 establishes host boundaries, inventory owner-provided local BYOB
+components, startup dependencies, private ABI, and feasibility with NXVM and
+Platform. No loader, BOP dispatcher, or implementation promise.
 
-**Goal:** after M9, evaluate the complete Microsoft component system and decide
-whether any bounded, non-invasive, high-value integration is feasible.
+### T3: Win16 Route
 
-**Scope:** inventory NTVDM host files, guest DOS files, ROMs, redirectors,
-debuggers, configuration, WOW, and host facilities; map startup dependencies,
-private ABI, BYOB usability, and interface feasibility with NXVM and Platform.
+Compare WineVDM, Microsoft WOW, NE loading, thunking, launcher, ARM64,
+licensing, and distribution options. No complete Win16-support promise.
 
-**Non-goals:** a component loader, BOP dispatcher, or implementation promise.
-
-**Demo and exit:** component matrix, dependency graph, ABI findings, feasibility
-report, and a formal Go/No-go decision. Risk: coupled private host architecture.
-Dependency: M9.
-
-## M11: Win16 Research
-
-**Goal:** select a viable Win16 route without blocking DOS delivery.
-
-**Scope:** WineVDM, Microsoft WOW, NE loading, KERNEL/USER/GDI, thunking,
-unified launcher options, ARM64, licensing, distribution, and relation to M10.
-
-**Non-goals:** a promise of complete Win16 support.
-
-**Demo and exit:** architecture options, dependency map, proof of concept where
-approved, and recommended path. Risk: large API surface. Dependency: M7 and
-owner approval.
+**Exit:** each task records evidence and a recommendation; M9 closes only on an
+owner-approved consolidated Go/No-go report. Research never becomes a default
+runtime or release dependency.

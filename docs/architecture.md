@@ -62,7 +62,7 @@ Microsoft component work is not a formal runtime module or a committed backend.
 It belongs under `docs/research/microsoft-ntvdm/` and, if required, owner-
 approved one-off `tools/research/microsoft-ntvdm/` tools. It cannot create a
 BOP framework, component loader, profile system, or dependency in the core
-architecture before M9 host-integration research and an M10 Go decision.
+architecture before M9 T1/T2 research and an owner-approved M9 Go decision.
 
 Historical NTVDM may be a coupled combination of guest DOS, machine emulation,
 ROMs, BOP host services, console/redirection, and private Windows integration.
