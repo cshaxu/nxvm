@@ -1,5 +1,5 @@
 * text=auto eol=lf
-src/nxvm-baseline/** -whitespace
+src/nxvm-baseline/** -text -whitespace
 *.com binary
 *.exe binary
 *.dll binary
