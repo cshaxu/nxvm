@@ -82,9 +82,41 @@ file(GLOB_RECURSE NXVM_BASELINE_SOURCES CONFIGURE_DEPENDS
 )
 list(FILTER NXVM_BASELINE_SOURCES EXCLUDE REGEX ".*/platform/linux/.*")
 
+set(NXVM_BASELINE_RUNTIME_SOURCES ${NXVM_BASELINE_SOURCES})
+list(FILTER NXVM_BASELINE_RUNTIME_SOURCES EXCLUDE REGEX ".*/main\\.c$")
+
+add_library(nxvm-baseline-runtime STATIC ${NXVM_BASELINE_RUNTIME_SOURCES})
+target_link_libraries(nxvm-baseline-runtime PUBLIC user32 gdi32)
+
+add_library(nxvm-baseline-full-pc-adapter STATIC
+    src/adapters/nxvm_baseline/full_pc_profile.c
+)
+target_include_directories(nxvm-baseline-full-pc-adapter PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-baseline-full-pc-adapter PUBLIC nxvm-baseline-runtime)
+
+add_library(nxvm-runtime STATIC
+    src/runtime/profile.c
+)
+target_include_directories(nxvm-runtime PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+
+add_executable(nxvm-full-pc-profile-smoke
+    tests/adapters/nxvm_full_pc_profile_smoke.c
+)
+target_link_libraries(nxvm-full-pc-profile-smoke PRIVATE
+    nxvm-runtime
+    nxvm-baseline-full-pc-adapter
+)
+
 add_executable(nxvm-baseline ${NXVM_BASELINE_SOURCES})
 target_link_libraries(nxvm-baseline PRIVATE user32 gdi32)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-baseline PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(nxvm-runtime PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-baseline-full-pc-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-full-pc-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
