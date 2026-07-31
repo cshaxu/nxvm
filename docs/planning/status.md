@@ -13,9 +13,16 @@ Windows with the default GCC toolchain, and has bounded FDD/HDD execution
 evidence. Its immutable snapshot branch is created from the verified M1 commit
 before M2 begins.
 
+## M2 Closure
+
+M2 is complete. Machine/DOS Architecture Requirements V1 defines the minimum
+profiles, lifecycle, ownership, abstract host-service and trace boundaries, and
+M3 regression strategy. The bounded M3 Task/subtask breakdown is approved; M3
+has not started.
+
 ## Active Work
 
-None. M2 T1 S1 is the next eligible subtask and remains inactive.
+None. M3 T1 S1 is the next eligible subtask and remains inactive.
 
 ## Completed
 
@@ -85,11 +92,16 @@ None. M2 T1 S1 is the next eligible subtask and remains inactive.
 - M1 T2 S1: imported and built the full provenance-recorded NXVM baseline;
   recorded bounded FDD/HDD instruction-trace evidence, the raw M1 snapshot,
   and the post-snapshot M1 T2 build identity banner.
+- M2 T1 S1: approved Machine/DOS Architecture Requirements V1, including
+  explicit legacy-boot and DOS-minimal profiles, lifecycle and ownership rules,
+  versioned interface contracts, M1 regression mapping, and the bounded M3
+  Task/subtask breakdown. No runtime behavior changed.
 
 ## Next Eligible Work
 
-- M2 T1 S1: design the Machine and DOS architecture from the verified M1
-  baseline. Follow [the subtask record](subtasks/m2-t1-s1.md).
+- M3 T1 S1: define the Machine V1 contract as specified in
+  [the approved M3 breakdown](m3-machine-refactor-breakdown.md). Create its
+  active subtask record before changing runtime code.
 
 ## Delivery State
 

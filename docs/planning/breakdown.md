@@ -6,7 +6,8 @@ definition is [../roadmap.md](../roadmap.md).
 - M0: governance, source/import policy, probe laboratory, and architecture plan.
 - M1: validate an NXVM-derived machine foundation.
 - M2: design the minimum machine, DOS, and host-service architecture.
-- M3: refactor the machine to the approved architecture and expose its DOS API.
+- M3: refactor the machine to the approved architecture and expose the
+  Machine/DOS contract defined by M2.
 - M4: design the owned DOS module.
 - M5: implement the bounded owned DOS backend.
 - M6: design the non-invasive Windows Platform and CLI.
