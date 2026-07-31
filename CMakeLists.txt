@@ -82,6 +82,10 @@ target_link_libraries(nxvm-product-presentation-debug-smoke PRIVATE
     nxvm-product-presentation-debug)
 add_executable(nxvm-product-session-smoke tests/products/nxvm_session_smoke.c)
 target_link_libraries(nxvm-product-session-smoke PRIVATE nxvm-product-session)
+
+add_executable(nxvm-product-debug-console-smoke
+    tests/products/nxvm_debug_console_smoke.c
+)
 target_link_libraries(nxvm-core-contract-smoke PRIVATE nxvm-core)
 
 add_executable(nxvm-core-machine-instance-smoke
@@ -133,6 +137,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-presentation-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-product-debug-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
