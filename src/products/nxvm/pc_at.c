@@ -48,6 +48,23 @@ nxvm_core_status nxvm_product_nxvm_pc_at_get_reset_vector(
     return NXVM_CORE_STATUS_OK;
 }
 
+void nxvm_product_nxvm_pc_at_run(nxvm_product_nxvm_pc_at *pc_at)
+{
+    if (pc_at != NULL && pc_at->active) nxvm_baseline_full_pc_run();
+}
+
+nxvm_core_status nxvm_product_nxvm_pc_at_record_start(
+    nxvm_product_nxvm_pc_at *pc_at, const char *path)
+{
+    if (pc_at == NULL || !pc_at->active) return NXVM_CORE_STATUS_INVALID_STATE;
+    return nxvm_baseline_full_pc_record_start(path);
+}
+
+void nxvm_product_nxvm_pc_at_record_stop(nxvm_product_nxvm_pc_at *pc_at)
+{
+    if (pc_at != NULL && pc_at->active) nxvm_baseline_full_pc_record_stop();
+}
+
 void nxvm_product_nxvm_pc_at_request_stop(nxvm_product_nxvm_pc_at *pc_at)
 {
     if (pc_at != NULL && pc_at->active) nxvm_baseline_full_pc_request_stop();

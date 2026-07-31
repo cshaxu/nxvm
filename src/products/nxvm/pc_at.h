@@ -22,6 +22,10 @@ nxvm_core_status nxvm_product_nxvm_pc_at_create(
 nxvm_core_status nxvm_product_nxvm_pc_at_get_reset_vector(
     const nxvm_product_nxvm_pc_at *pc_at,
     nxvm_product_nxvm_reset_vector *out_vector);
+void nxvm_product_nxvm_pc_at_run(nxvm_product_nxvm_pc_at *pc_at);
+nxvm_core_status nxvm_product_nxvm_pc_at_record_start(
+    nxvm_product_nxvm_pc_at *pc_at, const char *path);
+void nxvm_product_nxvm_pc_at_record_stop(nxvm_product_nxvm_pc_at *pc_at);
 void nxvm_product_nxvm_pc_at_request_stop(nxvm_product_nxvm_pc_at *pc_at);
 void nxvm_product_nxvm_pc_at_destroy(nxvm_product_nxvm_pc_at *pc_at);
 

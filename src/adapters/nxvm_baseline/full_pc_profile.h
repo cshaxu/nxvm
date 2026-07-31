@@ -27,6 +27,8 @@ nxvm_core_status nxvm_baseline_full_pc_get_reset_vector(
     nxvm_baseline_reset_vector *out_vector);
 
 void nxvm_baseline_full_pc_run(void);
+nxvm_core_status nxvm_baseline_full_pc_record_start(const char *path);
+void nxvm_baseline_full_pc_record_stop(void);
 void nxvm_baseline_full_pc_request_stop(void);
 void nxvm_baseline_full_pc_destroy(void);
 
