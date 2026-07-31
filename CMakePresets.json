@@ -144,6 +144,11 @@
       "targets": ["nxvm-pc-at-firmware-smoke"]
     },
     {
+      "name": "m5-nxvm-media-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-product-media-smoke"]
+    },
+    {
       "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],
