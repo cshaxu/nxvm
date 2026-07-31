@@ -107,6 +107,7 @@ target_link_libraries(nxvm-baseline-runtime PUBLIC user32 gdi32)
 
 add_library(nxvm-baseline-full-pc-adapter STATIC
     src/adapters/nxvm_baseline/full_pc_profile.c
+    src/adapters/nxvm_baseline/pc_at_builtin_profile.c
 )
 target_include_directories(nxvm-baseline-full-pc-adapter PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -172,6 +173,14 @@ target_link_libraries(nxvm-dos-minimal-profile-smoke PRIVATE nxvm-runtime)
 add_executable(nxvm-full-pc-profile-smoke
     tests/adapters/nxvm_full_pc_profile_smoke.c
 )
+
+add_executable(nxvm-pc-at-builtin-profile-smoke
+    tests/adapters/nxvm_pc_at_builtin_profile_smoke.c
+)
+target_link_libraries(nxvm-pc-at-builtin-profile-smoke PRIVATE
+    nxvm-runtime
+    nxvm-baseline-full-pc-adapter
+)
 target_link_libraries(nxvm-full-pc-profile-smoke PRIVATE
     nxvm-runtime
     nxvm-baseline-full-pc-adapter
@@ -190,6 +199,7 @@ endfunction()
 add_nxvm_full_pc_artifact(nxvm-baseline "m1t2s1")
 add_nxvm_full_pc_artifact(nxvm-m3-t5 "m3t5")
 add_nxvm_full_pc_artifact(nxvm-m5-t1 "m5t1")
+add_nxvm_full_pc_artifact(nxvm-m5-t2 "m5t2")
 
 if(NTVDM64_ENABLE_BOCHX_RESEARCH)
     add_executable(ntvdm64-bochx-manifest-check
@@ -212,4 +222,5 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-baseline-cpu-probe-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-baseline-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-full-pc-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-pc-at-builtin-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

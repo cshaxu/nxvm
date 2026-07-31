@@ -1,0 +1,40 @@
+#include <stdio.h>
+
+#include "adapters/nxvm_baseline/full_pc_profile.h"
+#include "adapters/nxvm_baseline/pc_at_builtin_profile.h"
+
+int main(int argc, char **argv)
+{
+    nxvm_core_cpu_capability_manifest capabilities;
+    nxvm_runtime_registry registry;
+    nxvm_baseline_full_pc_config config;
+    nxvm_baseline_reset_vector vector;
+
+    if (argc != 2) {
+        return 1;
+    }
+    nxvm_core_cpu_capability_manifest_initialize(&capabilities);
+    nxvm_runtime_registry_initialize(&registry);
+    if (nxvm_baseline_pc_at_builtin_register(&registry) != NXVM_CORE_STATUS_OK ||
+        nxvm_runtime_registry_find_profile(&registry,
+            NXVM_BASELINE_PC_AT_BUILTIN_PROFILE_ID,
+            NXVM_RUNTIME_PROFILE_MACHINE, &capabilities) == NULL ||
+        nxvm_runtime_registry_find_firmware_provider(&registry,
+            NXVM_BASELINE_PC_AT_BUILTIN_PROVIDER_ID,
+            NXVM_BASELINE_PC_AT_BUILTIN_PROFILE_ID) == NULL ||
+        nxvm_runtime_registry_freeze(&registry) != NXVM_CORE_STATUS_OK) {
+        return 1;
+    }
+    config.fdd_image = argv[1];
+    config.hdd_image = NULL;
+    config.boot_hdd = 0;
+    if (nxvm_baseline_full_pc_create(&config) != NXVM_CORE_STATUS_OK ||
+        nxvm_baseline_full_pc_get_reset_vector(&vector) != NXVM_CORE_STATUS_OK ||
+        vector.cs != 0xf000u || vector.ip != 0xfff0u) {
+        nxvm_baseline_full_pc_destroy();
+        return 1;
+    }
+    nxvm_baseline_full_pc_destroy();
+    puts("M5:T2:S2:PC-AT-BUILTIN:OK");
+    return 0;
+}

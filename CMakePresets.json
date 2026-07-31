@@ -99,9 +99,19 @@
       "targets": ["nxvm-m5-t1"]
     },
     {
+      "name": "m5-t2-nxvm-artifact-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-m5-t2"]
+    },
+    {
       "name": "m5-profile-registry-gcc",
       "configurePreset": "mingw-gcc-x64",
       "targets": ["nxvm-runtime-registry-smoke"]
+    },
+    {
+      "name": "m5-pc-at-builtin-profile-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-pc-at-builtin-profile-smoke"]
     },
     {
       "name": "m0-probe-msvc",
