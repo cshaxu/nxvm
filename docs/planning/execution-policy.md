@@ -33,6 +33,12 @@ identity/banner and version. It must follow the pre-cutover or post-cutover
 rules in `docs/architecture.md`; changing identity, version, or cutover state
 without an approved subtask and regression evidence is prohibited.
 
+At the owner request, pre-product M3 smoke executables may also use the
+`ntvdm64-m<M>_t<T>_s<S>.exe` local naming form. Their verification record must
+state that they are task-specific developer tools, not product artifacts, and
+whether they are an exact historical build or a closure-commit replay. This
+exception does not change the future `nxvm.exe`/`ntvdm64.exe` product naming.
+
 For a legacy coupled system, first establish and record a runnable full-source
 baseline before subtractive refactoring. A baseline import may be isolated from
 the final module layout, but it cannot gain new product behavior or weaken

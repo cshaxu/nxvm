@@ -43,7 +43,8 @@ M1 `nxvm-baseline` also built successfully.
   product CLI, product source, or baseline source.
 - Platform source scan found no core Machine or private-core-header access.
 - `git diff --check` passed. No guest media, Microsoft binary, trace output, or
-  product artifact was committed.
+  product artifact was committed. Owner-requested local M3 developer artifacts
+  are recorded in `docs/verification/m3-developer-artifacts.md`.
 
 ## Result
 
