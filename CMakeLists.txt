@@ -50,13 +50,15 @@ add_library(nxvm-product-presentation-debug STATIC
 )
 target_include_directories(nxvm-product-presentation-debug PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(nxvm-product-presentation-debug PUBLIC nxvm-core)
+add_library(nxvm-product-profile STATIC src/products/nxvm/profile.c)
+target_include_directories(nxvm-product-profile PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(nxvm-product-profile PUBLIC nxvm-runtime)
 add_library(nxvm-product-session STATIC
-    src/products/nxvm/profile.c
     src/products/nxvm/session.c
 )
 target_include_directories(nxvm-product-session PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(nxvm-product-session PUBLIC nxvm-firmware nxvm-product-pc-at
-    nxvm-product-console nxvm-product-presentation-debug nxvm-runtime)
+    nxvm-product-console nxvm-product-presentation-debug nxvm-runtime nxvm-product-profile)
 target_include_directories(nxvm-core PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -122,6 +124,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-product-pc-at PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-console PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-presentation-debug PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-product-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-session PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-pc-at-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -171,7 +174,6 @@ target_link_libraries(nxvm-baseline-runtime PUBLIC user32 gdi32)
 
 add_library(nxvm-baseline-full-pc-adapter STATIC
     src/adapters/nxvm_baseline/full_pc_profile.c
-    src/adapters/nxvm_baseline/pc_at_builtin_profile.c
 )
 target_include_directories(nxvm-baseline-full-pc-adapter PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -244,6 +246,7 @@ add_executable(nxvm-pc-at-builtin-profile-smoke
 target_link_libraries(nxvm-pc-at-builtin-profile-smoke PRIVATE
     nxvm-runtime
     nxvm-baseline-full-pc-adapter
+    nxvm-product-profile
 )
 target_link_libraries(nxvm-full-pc-profile-smoke PRIVATE
     nxvm-runtime
