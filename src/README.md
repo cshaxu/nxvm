@@ -1,6 +1,7 @@
 # Source Layout
 
-This is a directory plan only. No NXVM runtime code has been copied or moved.
-Each future import requires a tracked subtask, provenance record, preserved
-license notice, and focused tests. Microsoft component research is outside
-`src/` until an M9 Go decision authorizes a bounded implementation.
+Shared-core code lives under module directories with headers beside their C
+implementation. The imported NXVM baseline remains isolated in
+`src/nxvm-baseline/` until tracked refactor subtasks move behavior with
+provenance and focused tests. Microsoft component research is outside `src/`
+until an M11 Go decision authorizes a bounded implementation.

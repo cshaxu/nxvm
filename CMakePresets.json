@@ -36,6 +36,11 @@
       "targets": ["nxvm-baseline"]
     },
     {
+      "name": "m3-core-contract-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-core-contract-smoke"]
+    },
+    {
       "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],

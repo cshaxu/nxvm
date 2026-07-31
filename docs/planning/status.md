@@ -23,7 +23,7 @@ Task/subtask breakdown is approved; M3 has not started.
 
 ## Active Work
 
-None. M3 T1 S1 is the next eligible subtask and remains inactive.
+None. M3 T1 S2 is the next eligible subtask and remains inactive.
 
 ## Completed
 
@@ -109,12 +109,14 @@ None. M3 T1 S1 is the next eligible subtask and remains inactive.
 - M2 T1 S3: adopted parity-first module headers for M3: contract headers live
   beside C implementations in `src/core/`, private headers use `_impl.h`, and a
   top-level `include/` tree is deferred until a future packaging/SDK need.
+- M3 T1 S1: defined the Shared Core V1 contract skeleton with module-local
+  `src/core/*.h` headers, minimal `src/core/*.c` implementation, CMake target,
+  compile/link smoke test, and forbidden-dependency scan. No baseline behavior
+  moved.
 
 ## Next Eligible Work
 
-- M3 T1 S1: define the Shared Core V1 contract as specified in
-  [the approved M3 breakdown](m3-machine-refactor-breakdown.md). Create its
-  active subtask record before changing runtime code.
+- M3 T1 S2: create the Machine instance shell after M3 T1 S1 closes.
 
 ## Delivery State
 

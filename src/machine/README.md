@@ -1,4 +1,5 @@
-# Machine
+# Superseded Layout
 
-NXVM-derived CPU, memory, BIOS, I/O, devices, debugger, and machine-runner
-code belongs here. This module must not depend on DOS semantics or Windows APIs.
+This old placeholder predates the shared-core direction. New machine-core code
+belongs in `src/core/`. Firmware-specific behavior belongs in `src/firmware/`
+when that module is created.
