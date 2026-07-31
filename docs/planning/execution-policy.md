@@ -4,6 +4,14 @@ One subtask is active at a time. Before implementation, create a subtask record
 with objective, non-goals, reference baseline, files/ABI surface, exact test
 commands, expected markers, asset needs, and stop conditions.
 
+A design milestone is not complete until it has produced the bounded Task and
+subtask breakdown for its immediate implementation milestone. The breakdown
+maps each task to an approved decision, contract, regression set, acceptance
+result, and stop condition. Do not pre-create or activate implementation tasks
+from an earlier milestone: their shape is an output of the preceding design
+gate, not an M0 prediction. M8 instead approves one such breakdown for each
+admitted corpus increment before implementation.
+
 A subtask completes only when scoped behavior works, focused tests pass,
 established corpus entries remain valid, provenance/evidence records are
 updated where needed, `docs/verification/` contains a compact result, and the

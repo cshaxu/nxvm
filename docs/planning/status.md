@@ -67,6 +67,9 @@ cannot start until the GCC migration design is approved.
 - M0 T12 S3: constrained debugger `load` to an empty paused debug session and
   aligned its reset, first-instruction, and rejection semantics without
   beginning implementation.
+- M0 T12 S4: removed premature M3/M5 implementation subtasks and required each
+  preceding design milestone to produce the bounded Task/subtask breakdown for
+  its implementation successor without beginning M1.
 
 ## Next Eligible Work
 

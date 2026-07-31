@@ -29,6 +29,8 @@ by the owned DOS runtime before M3 changes the imported NXVM baseline.
 - a minimum-device decision table and removal list;
 - a migration sequence with no behavior-changing step lacking an M1 regression;
 - M3 test commands, checkpoints, and progress budgets; and
+- the complete bounded M3 Task/subtask breakdown, with each migration task
+  mapped to an approved contract decision and M1 regression; and
 - an explicit list of decisions deferred to M4 and M6.
 
 ## Stop Rule
