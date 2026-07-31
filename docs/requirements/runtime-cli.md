@@ -11,9 +11,10 @@ guest-drive mapping, exact guest/host/cancellation exit-status table, option
 error table, handle-based filesystem-containment algorithm, DOS normalization,
 dot/reparse/UNC/device/race rules, Windows 7 through Windows 11 matrix,
 Console/window state machine, display-mode table, debugger grammar, input
-routing, and restoration behavior. M1 through M5 use NXVM Console loading and
-do not implement this product CLI. That pre-M7 workflow is distinct from the
-product debugger, which has no runtime `load` command.
+routing, and restoration behavior. M5 introduces a project-owned temporary
+NXVM Console `load <host-binary-path>` command for pre-M7 developer/test work;
+M1 through M5 do not implement this product CLI. That workflow is distinct from
+the product debugger, which has no runtime `load` command.
 
 ## Command Shape
 

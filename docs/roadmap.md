@@ -3,8 +3,10 @@
 Each milestone requires a runnable demonstration, focused automated tests,
 recorded evidence, and preservation of established baselines.
 
-Before M7, DOS program testing uses the imported NXVM Console `load` workflow
-and its machine/debug controls. It is not the product CLI, does not create host
+Before M7, DOS program testing uses a project-owned temporary `load` command in
+the NXVM Console. M5 introduces it after the M1 baseline; it accepts an explicit
+host binary path and hands the image to the approved DOS loader/test harness. It
+is not asserted to exist in NXVM today, is not the product CLI, creates no host
 drive mapping, and does not alter the future `ntvdm64 run` contract.
 
 ## M1: Validate The NXVM Machine Foundation
@@ -12,7 +14,10 @@ drive mapping, and does not alter the future `ntvdm64 run` contract.
 **Goal:** establish a GCC-runnable, behavior-recorded full NXVM machine
 baseline before pruning or redesigning it.
 
-**Scope:** at M1 start, record the then-current sibling NXVM `HEAD` and import
+**Scope:** first approve a bounded GCC migration design: compiler compatibility
+surface, compatibility-header rules, build graph, warning policy, expected
+patch classes and per-class budget, test/rollback plan, and explicit stop
+conditions. Only then record the then-current sibling NXVM `HEAD` and import
 that exact complete baseline: CPU, memory, IVT, BIOS/POST and current boot path,
 PIC/PIT, connected devices, keyboard, display, execution loop, and debugger
 primitives. Use local `fdd.img`, `hdd.img`, `stop.com`, and `reset.com` fixture
@@ -34,7 +39,8 @@ local disk image. The existing 80386 CPU is retained; M1 does not replace it
 with a new 8086 implementation. A Linux release or Linux compatibility claim
 is also outside M1.
 
-**Demo and exit:** GCC builds the imported full baseline and runs repeatable
+**Demo and exit:** the approved GCC migration design gates all baseline changes.
+GCC then builds the imported full baseline and runs repeatable
 FDD/HDD text-mode boot/execution scenarios using the recorded fixtures. Evidence
 captures source and fixture identities, exact configured devices, expected
 checkpoints or stop reasons, instruction/time/no-progress budgets, terminal or
@@ -90,8 +96,9 @@ against the M3 contract. **Non-goal:** DOS implementation.
 
 **Scope:** the bounded COM loader, PSP, environment, `INT 20h`, the approved
 `INT 21h` subset, deterministic text/keyboard I/O, exit, an in-memory fixture
-filesystem, fixed loader memory, and defined DOS errors. The exact M5 profile
-is [M5 DOS Backend Requirements](requirements/m5-dos-backend.md).
+filesystem, fixed loader memory, defined DOS errors, and a temporary NXVM
+Console `load <host-binary-path>` developer/test command that delegates to the
+COM loader. The exact M5 profile is [M5 DOS Backend Requirements](requirements/m5-dos-backend.md).
 
 M5 may correlate its DOS-service events with the same machine trace stream and
 compare bounded COM probes against an external NTVDMx64 adapter. This adapter

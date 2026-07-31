@@ -8,7 +8,8 @@ been documented and verified. M1 is eligible to begin, but has not started.
 
 ## Active Work
 
-None. M1 T1 S1 is the next eligible subtask, not an active subtask.
+None. M1 T1 S1 is the next eligible subtask, not an active subtask. M1 T2 S1
+cannot start until the GCC migration design is approved.
 
 ## Completed
 
@@ -60,12 +61,15 @@ None. M1 T1 S1 is the next eligible subtask, not an active subtask.
 - M0 T12 S1: consolidated M9-M11 into M9 tasks, deferred all product CLI work
   to M6/M7, and merged redundant short planning, requirement, and research
   documents without beginning M1.
+- M0 T12 S2: clarified the future project-owned pre-M7 Console `load` command,
+  required it to enter through the owned DOS loader, and made GCC migration
+  design the mandatory first M1 task without beginning M1.
 
 ## Next Eligible Work
 
-- M1 T1 S1: import and baseline the full NXVM machine before subtractive
-  refactoring. Follow [the subtask record](subtasks/m1-t1-s1.md). This task
-  does not implement an owned DOS backend or alter the sibling NXVM checkout.
+- M1 T1 S1: design the bounded GCC migration. Follow [the subtask
+  record](subtasks/m1-t1-s1.md). It must approve M1 T2 before any import or
+  migration execution.
 
 ## Delivery State
 
