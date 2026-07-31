@@ -15,7 +15,7 @@ ABI findings, redistributability constraints, and open questions. It does not
 contain Microsoft binaries, a component loader, a BOP dispatcher, or runtime
 source code.
 
-M9 T2 inventories the complete possible environment rather than assuming that
+M11 T2 inventories the complete possible environment rather than assuming that
 `NTIO.SYS`, `NTDOS.SYS`, and `COMMAND.COM` are standalone. Candidate groups are
 host runtime, guest DOS files, ROMs, redirectors, debuggers, configuration, WOW,
 and Windows host facilities. For each component, record version, architecture,
@@ -31,9 +31,9 @@ Inputs are owner-provided local BYOB files read only. Evidence records logical
 identity, version, architecture, hash, and observations, never local paths or
 binary contents. Missing or unclassified components make an experiment
 unavailable; they do not authorize fetching, copying, or substitution.
-No `ntvdm import` command is promised before the M9 Go decision.
+No `ntvdm import` command is promised before the M11 Go decision.
 
-Formal Microsoft backend work requires an M9 Go decision meeting all of these
+Formal Microsoft backend work requires an M11 Go decision meeting all of these
 conditions:
 
 1. a finite, testable component boundary;

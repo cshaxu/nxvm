@@ -2,18 +2,23 @@
 
 ## Product Shape
 
-ntvdm64 evolves NXVM machine code into a DOS compatibility runtime for 64-bit
-Windows. The primary product path is non-invasive command-line execution:
+ntvdm64 is the canonical successor repository for the NXVM machine codebase. It
+builds two first-class executables over one shared core:
 
 ```text
-ntvdm64 run [options] [<program> [args...]]
+nxvm.exe
+  bootable whole-machine VM with BIOS/POST, disk-image boot, Console and
+  whole-machine debugging behavior.
+
+ntvdm64.exe
+  non-bootable DOS application runner with an owned DOS backend and
+  non-invasive host integration.
 ```
 
-The command-line contract, including display backend selection and host-drive
-visibility, is defined in [Runtime CLI Requirements](requirements/runtime-cli.md).
-
-The default backend is a project-owned DOS layer. Microsoft NTVDM components and
-Win16 are future research topics, not current runtime backends.
+The planned `ntvdm64 run` contract is defined in
+[Runtime CLI Requirements](requirements/runtime-cli.md). Microsoft NTVDM
+components, invasive integration, and Win16 remain research-only unless a later
+owner-approved Go decision changes that boundary.
 
 ## Runtime Identity And Versioning
 
@@ -25,8 +30,8 @@ Neko's x86 Virtual Machine [0.4.015d]
 Copyright (c) 2012-2014 Neko.
 ```
 
-After that snapshot and until the identity cutover, a still-standalone machine
-executable uses:
+After that snapshot and until the product split is implemented, a standalone
+machine artifact uses:
 
 ```text
 Neko's x86 Virtual Machine [0.4.015d.m<M>t<T>s<S>]
@@ -34,80 +39,108 @@ Copyright (c) 2012-2014 Neko.
 ```
 
 `M`, `T`, and `S` are the decimal milestone, task, and subtask identifiers that
-produced the executable, for example `0.4.015d.m3t1s2`. The runtime banner and
-any equivalent window title must derive from one build identity; artifact names
-do not replace this banner.
+produced the executable, for example `0.4.015d.m3t1s2`.
 
-The identity cutover occurs only in an approved M7-or-later implementation
-subtask whose tests prove all of the following: the default executable has no
-direct NXVM Console or disk-boot launch path; ordinary execution selects an
-application binary through the product loader; no implicit DOS shell or booted
-guest OS can run; and no-program debug mode, if retained, remains paused and
-cannot continue into standalone machine execution. At that cutover, the banner
-switches exactly to:
+After M5 implements the first-class `nxvm.exe` surface, that product keeps the
+Virtual Machine identity and follows the NXVM versioning lineage. After M9
+implements the non-bootable DOS runner and proves that `ntvdm64.exe` cannot
+continue into standalone disk boot or an implicit guest DOS shell, that product
+uses:
 
 ```text
 Neko's x86 Virtual DOS Machine [0.5.0000] Copyright (c) 2012-2026 Neko.
 ```
 
-After cutover, the final four version digits use NXVM-style `DDDH` encoding:
-`DDD` is a zero-padded three-digit decimal release counter and `H` is one
-lowercase hexadecimal revision digit (`0` through `f`). Increment `H` for each
-compatible revision; after `f`, increment `DDD` and reset `H` to `0`. A
-verification record must state the assigned version and its predecessor.
+Post-cutover ntvdm64 versions use NXVM-style `DDDH` encoding: `DDD` is a
+zero-padded three-digit decimal release counter and `H` is one lowercase
+hexadecimal revision digit (`0` through `f`).
 
 ## Module Boundaries
 
 ```text
-app -> runtime -> adapters -> dos + platform
-                               |       |
-                            machine   host OS
+products/nxvm      products/ntvdm64
+      |                   |
+      +-------- runtime --+
+                 |
+      +----------+----------+
+      |          |          |
+    core     firmware      dos
+      |          |          |
+      +------ adapters -----+
+                 |
+              platform
+                 |
+              host OS
 ```
 
-- `machine/`: NXVM-derived CPU, memory, BIOS, I/O bus, devices, debugger, and
-  machine runner. It has no DOS or Windows API dependency.
-- `dos/`: project-owned loader, PSP, environment, MCB, interrupts, process,
-  filesystem, console, and later XMS/EMS/DPMI behavior. It consumes abstract
-  machine and host-service interfaces. M5 begins with a bounded, in-memory
-  fixture filesystem and deterministic Console interface; direct Win32
-  filesystem, Console, and drive behavior belongs to `platform/` in M7.
-- `platform/`: non-invasive host adapters. Windows-specific filesystem,
-  console, input, display, timing, process, and logging code stay here.
-  Windows is the current product target; retained Linux platform code is a
-  future portability opportunity, not a current delivery promise.
-- `integration/`: isolated research for host-changing features. It is excluded
-  from the default build and release.
-- `adapters/`: explicit glue between concrete machine, DOS, and platform
-  implementations. Cross-module policy does not live inside a core module.
-- `runtime/`: composition root that creates modules, configures adapters,
-  drives the execution loop, and reports results.
-- `app/`: CLI commands only; it contains no emulation logic.
+- `core/`: CPU, RAM, bus, port dispatch, memory map, interrupt controller
+  contracts, generic device lifecycle, trace, debug, profile hooks, and
+  `Machine` instance state. It has no DOS, firmware policy, product CLI, or
+  host OS dependency.
+- `firmware/`: BIOS/POST/ROM behavior and BIOS interrupt/service handlers. It
+  can be composed into `nxvm.full_pc` and selected ntvdm64 profiles through the
+  firmware service registry, but it does not own product CLI or host handles.
+- `platform/`: host capability providers such as Win32, retained Linux source,
+  future macOS, display, input, clocks, block files, host filesystem, audio,
+  logging, and process/Console integration. It does not know DOS internals.
+- `dos/`: ntvdm64-only loader, PSP, environment, DTA, handles, DOS service
+  registry, fixture filesystem for early tests, and later DOS compatibility
+  behavior. It consumes abstract Machine and host capability contracts.
+- `runtime/`: the composition root. It creates a session, selects a product
+  profile, wires registries, owns lifecycle transitions, drives execution, and
+  reports a product result.
+- `products/nxvm/`: bootable VM CLI, Console, boot media policy, whole-machine
+  profile selection, and nxvm-specific registry composition.
+- `products/ntvdm64/`: DOS app-runner CLI, display/debug UX, drive visibility,
+  host filesystem policy, and ntvdm64-specific registry composition.
+- `adapters/`: explicit glue between concrete modules. Cross-module policy does
+  not live inside `core`.
+- `integration/`: isolated research for host-changing features; excluded from
+  default builds and releases.
 
-Machine and DOS may both emit optional normalized verification events through a
-project-owned abstract trace sink. Trace instrumentation is disabled in ordinary
-and release builds; it does not link, inject, or otherwise depend on NTVDMx64.
-Differential reference adapters live only in `tools/research/differential/` and
-are removed after their bounded validation use.
+## Registries
+
+Registries are session-owned composition tables, not process-global mutable
+maps. A registry entry has a key, versioned contract, owner, profile/capability
+gate, lifecycle state, and teardown rule.
+
+- Profile/composition registry: selects `nxvm.full_pc`,
+  `ntvdm64.dos_minimal`, test profiles, and enabled module sets.
+- Device registry: owns generic device lifecycle and reset/run participation.
+- Port and memory-range registry: maps I/O ports and mapped memory ranges to
+  checked callbacks.
+- Interrupt registry: maps guest interrupt vectors to Machine, firmware, DOS,
+  or tooling handlers.
+- Firmware service registry: routes BIOS services such as INT 10h, INT 13h,
+  INT 16h, and INT 1Ah to firmware handlers and declared host capabilities.
+- DOS service registry: routes DOS ABI functions such as INT 20h and INT 21h
+  to the owned DOS module.
+- Host capability registry: exposes abstract input, display, clock,
+  filesystem, block-device, audio, serial/parallel, print, and logging
+  providers selected by `runtime`.
+- Debug/command registry: exposes synchronized developer and product commands
+  without giving Console or window threads direct access to guest state.
 
 ## Dependency Rules
 
-Forbidden dependencies are `machine -> dos`, `machine -> Windows`, `dos ->
-concrete Windows APIs`, `platform -> DOS internals`, and `integration ->
-machine internals`. Allowed dependencies are `dos -> abstract machine and host
-interfaces`, `platform -> host OS`, `adapters -> concrete interfaces`, and
-`runtime -> major modules`.
+Forbidden dependencies are `core -> dos`, `core -> platform/host OS`, `core ->
+product CLI`, `dos -> concrete platform APIs`, `platform -> DOS internals`, and
+`products/* -> core internals`. Allowed dependencies are `firmware -> abstract
+Machine and host capability contracts`, `dos -> abstract Machine and host
+capability contracts`, `platform -> host OS`, `adapters -> concrete module
+interfaces`, and `runtime -> major modules`.
 
-## Microsoft NTVDM Research
+All guest-state mutations occur on the Machine execution thread at a command
+boundary. Platform threads exchange timestamped input events and immutable
+display snapshots through adapters. Trace callbacks receive copied event data
+and never a mutable Machine pointer.
 
-Microsoft component work is not a formal runtime module or a committed backend.
-It belongs under `docs/research/microsoft-ntvdm/` and, if required, owner-
-approved one-off `tools/research/microsoft-ntvdm/` tools. It cannot create a
-BOP framework, component loader, profile system, or dependency in the core
-architecture before M9 T1/T2 research and an owner-approved M9 Go decision.
+## Research Boundary
 
-Historical NTVDM may be a coupled combination of guest DOS, machine emulation,
-ROMs, BOP host services, console/redirection, and private Windows integration.
-Research first establishes those boundaries; it does not pre-design an adapter.
+Microsoft component work is not a runtime module or committed backend. It
+belongs under `docs/research/` and owner-approved `tools/research/` utilities.
+It cannot create a BOP framework, component loader, default dependency, or
+release requirement before M11 research and an owner-approved Go decision.
 
 ## M1 Baseline Exception
 
@@ -115,38 +148,50 @@ M1 first establishes a runnable whole-NXVM baseline before subtractive
 refactoring. Its imported source may temporarily live in
 `src/nxvm-baseline/`, retaining upstream machine and platform coupling solely
 to reproduce recorded baseline behavior. No new product feature belongs there.
-M3 moves retained code into the final boundaries after the M2 design closes;
-obsolete code is removed with focused evidence. This temporary area does not
-relax provenance, MIT-authorization, copyright-notice, or platform-isolation
-requirements.
+M3 moves retained code into the final boundaries after M2 closes.
 
-The M1 snapshot banner is preserved unchanged so its source hashes remain
-reproducible. The current M1 T2 developer artifact is the first approved
-post-snapshot identity build and uses `0.4.015d.m1t2s1`; its one-line banner
-deviation is recorded in its provenance. Later standalone artifacts follow the
-same suffix rule.
-
-The full baseline preserves the existing Linux platform implementation alongside
-the Win32 implementation. M1 acceptance is the Windows GCC run; Linux is kept
-as a source baseline for a future platform adapter. The long-term reusable core
-is `machine + dos`; host Console, display, filesystem, and process behavior
-remain platform adapters.
+The full baseline preserves the existing Linux platform implementation
+alongside Win32. M1 acceptance is the Windows GCC run; Linux is kept as a source
+baseline for a future platform provider.
 
 ## Directory Plan
 
 ```text
 src/
-  nxvm-baseline/ app/ runtime/ machine/ dos/ platform/ adapters/ integration/
+  nxvm-baseline/
+  core/
+  firmware/
+  platform/
+  dos/
+  runtime/
+  adapters/
+  products/
+    nxvm/
+    ntvdm64/
+  integration/
+include/
+  nxvm_core/
+  nxvm/
+  ntvdm64/
 tests/
-  machine/ dos/ platform/ adapters/ runtime/
-docs/research/microsoft-ntvdm/
-tools/research/microsoft-ntvdm/
-tools/research/differential/
+  core/
+  firmware/
+  platform/
+  dos/
+  runtime/
+  products/
+tools/
+  research/
+docs/
+  requirements/
+  planning/
+  provenance/
+  verification/
+  tracking/
+  research/
 ```
 
-Directory README files define future ownership. This change does not copy, move,
-or alter NXVM runtime code. NXVM assimilation begins only under a tracked
-subtask with a provenance record and preserved license notices.
-
-Historical sources provide orientation; tests provide validation; NXVM provides
-the machine foundation; ntvdm64 provides the new integration.
+Directory README files define ownership when the directories are created.
+Historical sources provide orientation; tests provide validation; `core` and
+`firmware` preserve NXVM's whole-machine value; `dos` and
+`products/ntvdm64` provide the VDM product value.

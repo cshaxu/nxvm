@@ -1,23 +1,23 @@
 # Canonical Breakdown
 
-The canonical plan is M0 plus nine product and research milestones. The full
-definition is [../roadmap.md](../roadmap.md).
+The roadmap is the single source of milestone truth. This index only lists the
+current sequence.
 
-- M0: governance, source/import policy, probe laboratory, and architecture plan.
-- M1: validate an NXVM-derived machine foundation.
-- M2: design the minimum machine, DOS, and host-service architecture.
-- M3: refactor the machine to the approved architecture and expose the
-  Machine/DOS contract defined by M2.
-- M4: design the owned DOS module.
-- M5: implement the bounded owned DOS backend.
-- M6: design the non-invasive Windows Platform and CLI.
-- M7: implement Windows platform integration and `ntvdm64 run`.
-- M8: expand compatibility through a declared real-program corpus.
-- M9: optional-integration research with T1 Windows integration, T2 Microsoft
-  NTVDM components, and T3 Win16 route selection.
+- M0: governance reset for the dual-product NXVM successor repository.
+- M1: preserve the current NXVM baseline with GCC/CMake/Ninja evidence.
+- M2: design the shared core architecture.
+- M3: refactor the shared core.
+- M4: design firmware and the `nxvm.exe` product surface.
+- M5: implement firmware and `nxvm.exe`.
+- M6: design the owned DOS module.
+- M7: implement the owned DOS backend.
+- M8: design platform integration and product CLIs.
+- M9: implement `ntvdm64.exe`.
+- M10: expand compatibility and extended devices through corpus increments.
+- M11: optional integration, Microsoft NTVDM, and Win16 research.
 
 Tasks and subtasks add bounded scope and acceptance criteria under these fixed
-milestones. M2, M4, and M6 each produce the Task/subtask breakdown for the
-following implementation milestone; M8 produces one for each corpus increment.
-Do not predeclare those implementation tasks or reorder milestones without an
+milestones. Each design milestone produces the Task/subtask breakdown for its
+immediate implementation successor; M10 produces one for each corpus increment.
+Do not predeclare implementation tasks or reorder milestones without an
 owner-approved direction record.

@@ -18,13 +18,15 @@ updated where needed, `docs/verification/` contains a compact result, and the
 task tracking entry is updated in the same commit.
 
 When a completed subtask produces a runnable Windows executable, copy its
-verified local build output to the ignored `build/output/` directory as
-`ntvdm64-m<M>_t<T>_s<S>.exe`. Record its SHA-256, source commit, and whether it
-is a baseline/developer artifact or a product artifact in the verification
-record. Do not manufacture an executable for a design-only subtask. Local
-artifacts are never release evidence, must not bundle protected media or
-Microsoft binaries, and may be replaced only by a newly verified build of the
-same named subtask.
+verified local build output to the ignored `build/output/` directory. Use
+`nxvm-m<M>_t<T>_s<S>.exe` for the bootable VM product or
+`ntvdm64-m<M>_t<T>_s<S>.exe` for the DOS app-runner product. Baseline artifacts
+may keep the historical `ntvdm64-*` name already recorded by M1. Record its
+SHA-256, source commit, and whether it is a baseline/developer artifact or a
+product artifact in the verification record. Do not manufacture an executable
+for a design-only subtask. Local artifacts are never release evidence, must not
+bundle protected media or Microsoft binaries, and may be replaced only by a
+newly verified build of the same named subtask.
 
 For a runnable artifact, the verification record also states the emitted runtime
 identity/banner and version. It must follow the pre-cutover or post-cutover
@@ -46,11 +48,11 @@ owns milestone goal, scope, and exit conditions; its active subtask owns exact
 commands, expected markers, budgets, and stop conditions. `breakdown.md` is an
 index only and cannot close a milestone.
 When a release cadence is established, implementation milestones M1, M3, M5,
-M7, and M8 create immutable snapshot branches from verified `main` commits
-before the next milestone begins. M2, M4, and M6 are design milestones; M9 is a
-research milestone with one active task at a time. Design and research work has no
-default snapshot obligation, though the owner may require one for a specific
-approved deliverable.
+M7, M9, and M10 create immutable snapshot branches from verified `main` commits
+before the next milestone begins. M2, M4, M6, and M8 are design milestones; M11
+is a research milestone with one active task at a time. Design and research
+work has no default snapshot obligation, though the owner may require one for a
+specific approved deliverable.
 
 Escalate to the owner if a license choice, protected asset, incompatible source
 license, undocumented Windows mechanism, or change to the direct-launch product

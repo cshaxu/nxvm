@@ -11,15 +11,16 @@ Read these documents before changing the repository:
 
 ## Boundaries
 
-- ntvdm64 is the canonical product repository. Sibling references, including
-  `../nxvm`, are read-only unless a task explicitly authorizes a source import
-  into this repository.
-- NXVM is the formal machine foundation. Copyright-holder-authorized imports
-  use the root MIT License and require exact provenance, preserved copyright
-  notices, and focused tests.
-- The owned DOS backend is the default path. Microsoft NTVDM components are an
-  M9 T2 research topic, not a backend. OpenNT and NTVDMx64 are historical
-  research only.
+- ntvdm64 is the canonical dual-product successor repository. It builds
+  `nxvm.exe` and `ntvdm64.exe` over one shared core. Sibling references,
+  including `../nxvm`, are read-only unless a task explicitly authorizes a
+  source import into this repository.
+- NXVM is the formal machine foundation and continuing bootable-VM product
+  surface. Copyright-holder-authorized imports use the root MIT License and
+  require exact provenance, preserved copyright notices, and focused tests.
+- The owned DOS backend is the default ntvdm64 path. Microsoft NTVDM components
+  are an M11 T2 research topic, not a backend. OpenNT and NTVDMx64 are
+  historical research only.
 - Use the module boundaries defined in `docs/architecture.md`.
 - Invasive integration, Microsoft component research, and Win16 are research-
   only. Do not add them to default builds, release dependencies, or automatic

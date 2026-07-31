@@ -3,8 +3,8 @@
 ## M0 Closure
 
 M0 is complete. Its governance, source and redistribution boundaries, roadmap,
-lightweight C11 toolchain contract, and deterministic probe laboratory have all
-been documented and verified.
+lightweight C11 toolchain contract, deterministic probe laboratory, and
+dual-product NXVM-successor direction have all been documented and verified.
 
 ## M1 Closure
 
@@ -15,10 +15,11 @@ before M2 begins.
 
 ## M2 Closure
 
-M2 is complete. Machine/DOS Architecture Requirements V1 defines the minimum
-profiles, lifecycle, ownership, abstract host-service and trace boundaries, and
-M3 regression strategy. The bounded M3 Task/subtask breakdown is approved; M3
-has not started.
+M2 is complete. Shared Core Architecture Requirements V2 defines the
+`nxvm.exe` and `ntvdm64.exe` product split, `nxvm.full_pc` and
+`ntvdm64.dos_minimal` profiles, lifecycle, ownership, registries, abstract
+host-service and trace boundaries, and M3 regression strategy. The bounded M3
+Task/subtask breakdown is approved; M3 has not started.
 
 ## Active Work
 
@@ -39,10 +40,9 @@ None. M3 T1 S1 is the next eligible subtask and remains inactive.
 - M0 T3 S1: reviewed M0 closure conditions.
 - M0 T4 S1: adopted the initial NXVM-foundation architecture correction, source
   policy, redistributability rules, and directory plan.
-- M0 T4 S2: downgraded Microsoft component work from a planned backend to an
-  M6 feasibility study after M5 host-integration research; added M4 real-program
-  compatibility and M7 Win16 research; and moved Microsoft material to the
-  research boundary.
+- M0 T4 S2: downgraded Microsoft component work from a planned backend to
+  then-current research milestones and moved Microsoft material to the research
+  boundary. This numbering was superseded by later roadmap revisions.
 - M0 T5 S1: corrected milestone/snapshot governance and selected MinGW-w64 GCC
   with CMake and Ninja as the default lightweight C11 toolchain.
 - M0 T5 S2: verified the x64 GCC/CMake/Ninja C11 configuration and deterministic
@@ -57,55 +57,67 @@ None. M3 T1 S1 is the next eligible subtask and remains inactive.
   adding a Linux delivery commitment.
 - M0 T7 S1: fixed the owned-DOS profile, service allowlist, memory and
   filesystem boundaries, acceptance probes, and escalation rule without
-  beginning implementation; the profile is now scheduled for M5 after the
-  required M2/M3/M4 design and refactor work.
+  beginning implementation. Its milestone placement was superseded by M0 T13.
 - M0 T8 S1: recorded the NXVM copyright-holder authorization for MIT imports
   into ntvdm64, while retaining upstream-license capture as historical evidence.
 - M0 T9 S1: defined optional differential verification interfaces for machine
   and DOS traces, external-reference boundaries, watchdogs, and cleanup without
   beginning M1 or M2.
-- M0 T10 S1: resequenced delivery into M1 baseline, M2 architecture design, M3
-  machine refactor, M4 DOS design, M5 DOS implementation, M6 Platform/CLI
-  design, and M7 product implementation; clarified M1 fixtures and CLI debug
-  ownership without beginning M1.
-- M0 T11 S1: closed remaining planning ambiguities around M5 dependencies,
-  milestone authority, M1 experiment freezing, M2/M6 containment ownership,
-  M3 planning, corpus policy, toolchain identity, and local BYOB research.
-- M0 T12 S1: consolidated M9-M11 into M9 tasks, deferred all product CLI work
-  to M6/M7, and merged redundant short planning, requirement, and research
-  documents without beginning M1.
-- M0 T12 S2: clarified the future project-owned pre-M7 Console `load` command,
-  required it to enter through the owned DOS loader, and made GCC migration
-  design the mandatory first M1 task without beginning M1.
+- M0 T10 S1: resequenced the then-current delivery plan into baseline,
+  architecture, machine refactor, DOS, Platform/CLI, and product milestones;
+  clarified M1 fixtures and CLI debug ownership without beginning M1. This
+  sequence was superseded by M0 T13.
+- M0 T11 S1: closed remaining planning ambiguities around implementation
+  dependencies, milestone authority, M1 experiment freezing, containment
+  ownership, M3 planning, corpus policy, toolchain identity, and local BYOB
+  research. Its old milestone numbering was superseded by M0 T13.
+- M0 T12 S1: consolidated the then-current optional-research milestones,
+  deferred all product CLI work, and merged redundant short planning,
+  requirement, and research documents without beginning M1. This numbering was
+  superseded by M0 T13.
+- M0 T12 S2: clarified the then-future project-owned pre-product Console
+  `load` command, required it to enter through the owned DOS loader, and made
+  GCC migration design the mandatory first M1 task without beginning M1.
 - M0 T12 S3: constrained debugger `load` to an empty paused debug session and
   aligned its reset, first-instruction, and rejection semantics without
   beginning implementation.
-- M0 T12 S4: removed premature M3/M5 implementation subtasks and required each
+- M0 T12 S4: removed premature implementation subtasks and required each
   preceding design milestone to produce the bounded Task/subtask breakdown for
   its implementation successor without beginning M1.
 - M0 T12 S5: defined the ignored local executable-artifact convention for
   completed runnable subtasks and recorded the M1 baseline developer artifact.
 - M0 T12 S6: defined runtime identity, pre-cutover task version suffixes, the
   post-cutover DOS Machine banner, and post-cutover version encoding.
+- M0 T13 S1: reset governance to the dual-product shared-core direction:
+  `nxvm.exe` remains a bootable whole-machine VM, `ntvdm64.exe` becomes the
+  non-bootable DOS app runner, and both share `core`, `firmware`, `platform`,
+  `runtime`, and product-specific composition.
 - M1 T1 S1: approved the bounded GCC migration design after a zero-patch GCC
   compile and warning inventory.
 - M1 T2 S1: imported and built the full provenance-recorded NXVM baseline;
   recorded bounded FDD/HDD instruction-trace evidence, the raw M1 snapshot,
   and the post-snapshot M1 T2 build identity banner.
 - M2 T1 S1: approved Machine/DOS Architecture Requirements V1, including
-  explicit legacy-boot and DOS-minimal profiles, lifecycle and ownership rules,
+  explicit boot and DOS-minimal profiles, lifecycle and ownership rules,
   versioned interface contracts, M1 regression mapping, and the bounded M3
-  Task/subtask breakdown. No runtime behavior changed.
+  Task/subtask breakdown. No runtime behavior changed. This was superseded by
+  M2 T1 S2.
+- M2 T1 S2: revised M2 to Shared Core Architecture Requirements V2, promoting
+  `nxvm.full_pc` to a first-class product profile, adding explicit registry
+  boundaries, and resequencing firmware, DOS, platform, product, compatibility,
+  and research milestones without beginning M3.
 
 ## Next Eligible Work
 
-- M3 T1 S1: define the Machine V1 contract as specified in
+- M3 T1 S1: define the Shared Core V1 contract as specified in
   [the approved M3 breakdown](m3-machine-refactor-breakdown.md). Create its
   active subtask record before changing runtime code.
 
 ## Delivery State
 
 The full NXVM `src/` baseline is now present only in `src/nxvm-baseline/` under
-MIT authorization, preserved copyright attribution, and exact provenance. No
-guest media, Microsoft binary, or DOS compatibility claim has been added. The
-generated M1 COM probe remains test input only.
+MIT authorization, preserved copyright attribution, and exact provenance. The
+repository direction is dual-product: future `nxvm.exe` preserves bootable
+whole-machine VM value, and future `ntvdm64.exe` provides the DOS app runner.
+No guest media, Microsoft binary, or DOS compatibility claim has been added.
+The generated M1 COM probe remains test input only.

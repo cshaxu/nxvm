@@ -4,17 +4,17 @@ This document defines the user-visible contract for the non-invasive
 `ntvdm64 run` product path. It is a requirements record; it does not claim that
 the options are implemented before their scheduled milestone.
 
-## M6 Design Gate
+## M8 Design Gate
 
-Before M7 implementation, this document is completed with the program-path to
+Before M9 implementation, this document is completed with the program-path to
 guest-drive mapping, exact guest/host/cancellation exit-status table, option
 error table, handle-based filesystem-containment algorithm, DOS normalization,
 dot/reparse/UNC/device/race rules, Windows 7 through Windows 11 matrix,
 Console/window state machine, display-mode table, debugger grammar, input
-routing, and restoration behavior. M5 introduces a project-owned temporary
-NXVM Console `load <host-binary-path>` command for pre-M7 developer/test work;
-M1 through M5 do not implement this product CLI. That workflow is distinct from
-the product debugger, whose constrained `load` state machine is defined below.
+routing, and restoration behavior. M7 introduces project-owned developer/test
+loading through the owned DOS loader; M1 through M7 do not implement this
+product CLI. That workflow is distinct from the product debugger, whose
+constrained `load` state machine is defined below.
 
 ## Command Shape
 
@@ -114,7 +114,7 @@ pause. The surface currently running the guest owns guest `Ctrl+C`: Console for
 Console display, and the guest window for window display. During a windowed run,
 the inherited Console remains the ntvdm64 control surface and receives `Ctrl+C`
 only through ordinary Windows Console default handling; it does not interrupt or
-manage the guest. M6 assigns the exact exit-status values and event sequences.
+manage the guest. M8 assigns the exact exit-status values and event sequences.
 
 ## Host Drive Visibility
 

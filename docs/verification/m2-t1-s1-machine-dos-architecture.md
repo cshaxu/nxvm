@@ -13,8 +13,8 @@
 
 ## Result
 
-Architecture Requirements V1 defines explicit `legacy_boot` and `dos_minimal`
-profiles; Machine ownership and thread/lifecycle rules; V1 Machine, host-service
+Architecture Requirements V1 defined explicit boot and DOS-minimal profiles;
+Machine ownership and thread/lifecycle rules; V1 Machine, host-service
 and trace contracts; DOS interrupt/loader direction without a Machine-to-DOS
 dependency; and concrete M1 regression checkpoints. The separate M3 breakdown
 contains nine bounded subtasks, each with an approved decision, acceptance, and
@@ -25,3 +25,6 @@ M6 retains concrete Windows/CLI ownership, and M3 has no DOS implementation
 scope. Historical M0 wording was clarified to state its superseded planning
 role. `git diff --check` passed. This documentation-only subtask produces no
 runnable executable and therefore no `build/output` artifact.
+
+M2 T1 S2 supersedes this V1 record's profile names and milestone sequence with
+Shared Core Architecture Requirements V2.

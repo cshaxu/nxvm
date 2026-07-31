@@ -1,61 +1,94 @@
-# M2 Machine And DOS Architecture Requirements
+# M2 Shared Core Architecture Requirements
 
 ## Decision
 
-This is version 1 of the Machine/DOS design. M3 creates the Machine boundary;
-M4 specifies the DOS ABI; M5 implements it. No M2 decision adds runtime
-behavior.
+This is version 2 of the M2 design after the project direction changed from a
+single VDM product to a dual-product NXVM successor. M3 creates the shared core
+boundary. M4 designs firmware and the `nxvm.exe` product surface. M5 implements
+the first-class bootable VM product. M6 and M7 design and implement the owned
+DOS backend. No M2 decision adds runtime behavior.
 
 M1 proves that the imported whole machine reaches DOS code from both local boot
-fixtures, but not that booted guest DOS is the product backend. The FDD trace
-reached a final `INT 21h` after 469,926 records; the HDD trace reached `INT 21h`
-by record 224,602. Both runs stopped at a ten-second watchdog while still making
-progress. See `docs/verification/m1-t2-s1-nxvm-baseline.md`.
+fixtures. That remains product value for `nxvm.exe`; it is not the ntvdm64 DOS
+backend. The FDD trace reached a final `INT 21h` after 469,926 records; the HDD
+trace reached `INT 21h` by record 224,602. Both runs stopped at a ten-second
+watchdog while still making progress. See
+`docs/verification/m1-t2-s1-nxvm-baseline.md`.
 
 ## Profiles And Devices
 
-M3 supports two explicit profiles. `legacy_boot` exists solely to preserve M1
-regressions. `dos_minimal` is the M5 foundation: it starts from a controlled
-reset, and the DOS loader, not POST or a disk image, selects program execution.
-No implicit shell, disk boot, or BIOS program loader is permitted in that
-profile.
+M3 supports two explicit product profiles. `nxvm.full_pc` preserves and evolves
+the whole-machine boot path as a first-class product surface. It is not legacy
+cleanup. `ntvdm64.dos_minimal` is the owned-DOS foundation: it starts from a
+controlled reset, and the DOS loader, not POST or a disk image, selects program
+execution. No implicit shell, disk boot, or BIOS program loader is permitted in
+that profile.
 
 | Baseline unit | M3 disposition | Reason and M3 proof |
 | --- | --- | --- |
-| `vcpu`, `vram`, `vport` | retain behind `Machine` | Required for real-mode program execution, memory and I/O; CPU/memory microtests plus both M1 boot traces. |
+| `vcpu`, `vram`, `vport` | retain behind `core` Machine | Required for real-mode program execution, memory and I/O; CPU/memory microtests plus both M1 boot traces. |
 | `vpic`, `vpit` | retain as optional core devices | Required for an explicit interrupt/timing model; disabled only by a declared profile, never by hidden global state. |
-| `vkbc`, `qdx`/CGA display | retain as optional DOS-profile devices | M5 deterministic keyboard/text I/O needs abstract input and text presentation; platform code supplies events and consumes snapshots. |
-| `vbios`, `vcmos`, `vdma`, `vfdc`, `vfdd`, `vhdc`, `vhdd`, `vvadp` | legacy-boot adapter only | Needed to reproduce M1 POST/disk boot, but not a dependency of `dos_minimal`. Each is initialized only by `legacy_boot`. |
-| `vdebug`, `debug`, `console`, `xasm32` | developer tooling, outside `machine` | May inspect a paused machine through a read-only debug interface; it cannot own execution or mutate device globals directly. |
-| `machine.c`, `platform/*` startup loops | replace | The baseline has `machine -> platform`, global `device.flagRun`, and platform-created kernel/display threads. M3 replaces these with runtime-owned composition and a synchronized command boundary. |
+| `vkbc`, `qdx`/CGA display | retain as optional product/profile devices | `nxvm.full_pc` needs current presentation behavior; `ntvdm64.dos_minimal` needs abstract input and text snapshots. Platform supplies events and consumes snapshots. |
+| `vbios`, `vcmos`, `vdma`, `vfdc`, `vfdd`, `vhdc`, `vhdd`, `vvadp` | firmware or `products/nxvm` profile only until M4 assigns exact ownership | Needed to reproduce M1 POST/disk boot, but not a dependency of `ntvdm64.dos_minimal`. Each is initialized only by an explicit profile. |
+| `vdebug`, `debug`, `console`, `xasm32` | developer tooling, outside `core` | May inspect a paused machine through debug APIs; it cannot own execution or mutate device globals directly. |
+| `machine.c`, `platform/*` startup loops | replace | The baseline has machine-to-platform coupling, global `device.flagRun`, and platform-created kernel/display threads. M3 replaces these with runtime-owned composition and a synchronized command boundary. |
 
-No unit is deleted in M3 merely because it is absent from `dos_minimal`; the
-legacy profile remains until the M1 regression has a replacement baseline. A
-future removal requires an approved task, a usage search, and the same M1 trace
-checkpoints. Graphics, mouse, DMA consumers, disk emulation for DOS programs,
-and a BIOS compatibility surface are deferred to corpus-driven M8 work.
+No unit is deleted in M3 merely because it is absent from
+`ntvdm64.dos_minimal`; `nxvm.full_pc` remains a supported product profile.
+Graphics, mouse, DMA consumers, disk emulation for ntvdm64 DOS programs, and
+expanded BIOS compatibility are deferred until a later product or corpus
+requirement admits them.
 
 ## Module Ownership
 
 ```text
-app -> runtime -> adapters -> machine
-                  |             ^
-                  +-> dos ------+
-                  +-> platform
+products/nxvm      products/ntvdm64
+      |                   |
+      +-------- runtime --+
+                 |
+      +----------+----------+
+      |          |          |
+    core     firmware      dos
+      |          |          |
+      +------ adapters -----+
+                 |
+              platform
 ```
 
-`runtime` owns one `Machine`, one selected profile, the run loop, and final
-result. `machine` owns CPU, RAM, I/O dispatch, enabled devices, and mutable
-execution state. `dos` owns loader state, PSP/environment and `INT 20h`/`INT
-21h` dispatch; it calls only Machine and abstract HostService capabilities.
-`platform` owns host threads, input collection, display presentation, clocks,
-and later Windows filesystem implementation. `adapters` install DOS interrupt
-handlers and translate platform events at declared synchronization points.
+`runtime` owns one Machine session, one selected product profile, registries,
+the run loop, and final result. `core` owns CPU, RAM, I/O dispatch, enabled
+generic devices, and mutable execution state. `firmware` owns BIOS/POST/ROM and
+BIOS service handlers. `dos` owns loader state, PSP/environment and
+`INT 20h`/`INT 21h` dispatch; it calls only Machine and abstract host
+capability contracts. `platform` owns host threads, input collection, display
+presentation, clocks, and concrete filesystem/Console/window implementations.
+`products/nxvm` and `products/ntvdm64` own CLI and product policy.
 
-There is no `machine -> dos`, `machine -> platform/Windows`, `dos -> Win32`, or
-`platform -> DOS internals` dependency. The M1 direct calls from platform code
-to `deviceConnect*` are legacy behavior to be replaced in M3, not an allowed
-new boundary.
+There is no `core -> dos`, `core -> platform/Windows`, `core -> product CLI`,
+`dos -> Win32`, or `platform -> DOS internals` dependency. The M1 direct calls
+from platform code to `deviceConnect*` are baseline behavior to be replaced in
+M3, not an allowed new boundary.
+
+## Registry Contracts
+
+M3 establishes the first registry skeletons as session-owned tables:
+
+- profile/composition: selects `nxvm.full_pc`, `ntvdm64.dos_minimal`, or test
+  profiles and declares enabled modules;
+- device: owns core device lifecycle and reset/run participation;
+- port/memory: maps I/O ports and mapped memory ranges to checked callbacks;
+- interrupt: routes guest vectors to Machine, firmware, DOS, or tooling owners;
+- firmware service: routes BIOS services to firmware handlers and declared host
+  capabilities;
+- DOS service: defined in M6 and implemented in M7, but its ownership slot is
+  reserved in M3;
+- host capability: exposes abstract display, input, clock, filesystem,
+  block-device, audio, serial/parallel, print, and logging providers;
+- debug/command: routes synchronized developer commands without thread races.
+
+Registries cannot be mutable process-global maps. They are created by
+`runtime`, frozen before `machine_run` except for declared command queues, and
+destroyed before their owning module.
 
 ## Lifecycle And Threading
 
@@ -84,9 +117,11 @@ selected profile's deterministic tick policy.
 
 ## Versioned C Contracts
 
-The exact header locations are an M3 implementation choice. All declarations
-below carry `NTVDM64_MACHINE_ABI_V1`; future changes are append-only or require
-a new ABI version. Opaque handles prevent callers from reaching NXVM globals.
+The exact header locations are an M3 implementation choice, expected under
+`include/nxvm_core/` or an equivalent shared-core namespace. All declarations
+below carry `NXVM_CORE_MACHINE_ABI_V1`; future changes are append-only or
+require a new ABI version. Opaque handles prevent callers from reaching NXVM
+globals.
 
 ```c
 typedef struct ntvdm64_machine ntvdm64_machine;
@@ -121,11 +156,11 @@ pointer. Port and interrupt callbacks execute on the Machine thread, may not
 re-enter `machine_run`, and return a handled/unhandled/fault result. An
 installed handler has one owner and is removed before that owner is destroyed.
 
-DOS uses `machine_set_vector_v1` or `machine_install_interrupt_v1`; it does not
-write CPU-reference macros or call legacy `deviceConnect*` functions. The
-Machine never names DOS. `dos` reports guest termination through a registered
-Machine-neutral stop request with an exit value; `runtime` converts it to the
-future product result.
+Firmware and DOS use `machine_set_vector_v1` or
+`machine_install_interrupt_v1`; they do not write CPU-reference macros or call
+legacy `deviceConnect*` functions. The Machine never names firmware or DOS.
+`dos` reports guest termination through a registered Machine-neutral stop
+request with an exit value; `runtime` converts it to the future product result.
 
 ## Host Service And Trace Boundaries
 
@@ -144,9 +179,10 @@ int host_close_v1(ntvdm64_host_service *, ntvdm64_handle_id);
 
 A root capability is selected by `runtime`; an operation can affect only that
 capability's exposed root. `dos` receives opaque tokens and host status classes,
-not a host path, handle, drive letter, or operating-system error. M5 uses only
-an in-memory fixture implementation. M6 specifies DOS path grammar,
-canonicalization, reparse/race handling, Windows handles, and CLI drive policy.
+not a host path, handle, drive letter, or operating-system error. Early DOS
+tests use only an in-memory fixture implementation. M8 specifies DOS path
+grammar, canonicalization, reparse/race handling, Windows handles, and CLI
+drive policy.
 
 Trace is the append-only, null-by-default `ntvdm64_trace_sink` V1 described in
 `docs/governance/differential-debug-policy.md`. Machine emits reset, run
@@ -159,9 +195,9 @@ change guest behavior.
 
 | M1 observation | M3 owner | Required regression/checkpoint |
 | --- | --- | --- |
-| Reset begins at `F000:FFF0` | Machine lifecycle and legacy BIOS adapter | FDD/HDD trace records reset vector. |
-| FDD inserts and CPU reaches DOS `INT 21h` | legacy disk/BIOS profile | Fixture identity plus `Floppy disk inserted.` and trace checkpoint. |
-| HDD connects and CPU reaches DOS `INT 21h` | legacy disk/BIOS profile | Fixture identity plus `Hard disk connected.` and trace checkpoint. |
+| Reset begins at `F000:FFF0` | Machine lifecycle and `nxvm.full_pc` firmware path | FDD/HDD trace records reset vector. |
+| FDD inserts and CPU reaches DOS `INT 21h` | `nxvm.full_pc` disk/firmware profile | Fixture identity plus `Floppy disk inserted.` and trace checkpoint. |
+| HDD connects and CPU reaches DOS `INT 21h` | `nxvm.full_pc` disk/firmware profile | Fixture identity plus `Hard disk connected.` and trace checkpoint. |
 | CPU made progress until watchdog | Machine budget/stop state | finite instruction, wall-clock and no-progress budgets yield declared stop. |
 | Console `exit` returns 0 | developer-console adapter | focused Console lifecycle test; this is not product CLI behavior. |
 | Win32 console/window create separate threads and touch `device.flagRun` | Platform adapter replacement | platform code has no include or symbol reference to Machine internals; mock-input/snapshot test. |
@@ -176,12 +212,13 @@ sets instruction, wall-clock, and no-progress budgets.
 
 ## Deferred Decisions
 
-M4 owns COM layout, PSP/environment/DTA, initial registers, DOS error table,
-handle semantics, blocked input protocol and the approved `INT 20h`/`INT 21h`
-subset. M6 owns `run` grammar, program-path mapping, host-drive and reparse
-policy, Windows-version matrix, Console/window ownership, graphics switching,
-debugger grammar, signals, cancellation and product exit statuses. M8 admits
-further hardware or DOS features only through a corpus requirement.
+M4 owns firmware and `nxvm.exe` CLI/Console design. M6 owns COM layout,
+PSP/environment/DTA, initial registers, DOS error table, handle semantics,
+blocked input protocol and the approved `INT 20h`/`INT 21h` subset. M8 owns
+`run` grammar, program-path mapping, host-drive and reparse policy,
+Windows-version matrix, Console/window ownership, graphics switching, debugger
+grammar, signals, cancellation and product exit statuses. M10 admits further
+hardware or DOS features only through a corpus requirement.
 
 ## M3 Gate
 

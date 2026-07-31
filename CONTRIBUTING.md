@@ -4,21 +4,22 @@
 
 - Repository content is English. Runtime code is C11 plus narrowly scoped
   documented Win32 APIs.
-- Follow the visible module boundaries in `src/`. `machine` has no DOS or
-  Windows dependency; `dos` has no concrete Windows API dependency; `app` has
-  no emulation logic; `runtime` is the composition root.
+- Follow the visible module boundaries in `src/`. `core` has no DOS, product
+  CLI, or host OS dependency; `dos` has no concrete platform API dependency;
+  `products/*` contain product policy only; `runtime` is the composition root.
 - One subtask is active at a time. Define its scope, non-goals, source baseline,
   verification commands, and acceptance evidence before changing runtime code.
 - Use `TODO(High)`, `TODO(Medium)`, or `TODO(Low)` only for deferred work.
 
 ## NXVM Imports
 
-NXVM is the approved machine foundation, not merely an example. Before copying
-or substantially deriving code, add a provenance record containing commit,
-source and destination paths, the MIT authorization record, preserved copyright
-notices, changes, and tests.
-Keep imported code inside the appropriate `machine` boundary and reduce legacy
-global-state coupling when making new interfaces.
+NXVM is the approved machine foundation and continuing bootable-VM product
+surface, not merely an example. Before copying or substantially deriving code,
+add a provenance record containing commit, source and destination paths, the
+MIT authorization record, preserved copyright notices, changes, and tests. Keep
+imported code inside the appropriate shared-core, firmware, platform, or
+product boundary and reduce legacy global-state coupling when making new
+interfaces.
 
 ## References And Guest Components
 
@@ -48,6 +49,7 @@ under `docs/tracking/`, write a verification record for completed subtasks, and
 preserve all established baselines.
 
 When a completed subtask produces a runnable Windows executable, place its
-verified local copy in ignored `build/output/` as
-`ntvdm64-m<M>_t<T>_s<S>.exe`. Record its hash and artifact classification in
-the verification record; do not treat it as a release or bundle protected media.
+verified local copy in ignored `build/output/` using the product-specific
+artifact name from `docs/planning/execution-policy.md`. Record its hash and
+artifact classification in the verification record; do not treat it as a
+release or bundle protected media.
