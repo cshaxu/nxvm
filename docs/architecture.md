@@ -42,6 +42,12 @@ app -> runtime -> adapters -> dos + platform
   drives the execution loop, and reports results.
 - `app/`: CLI commands only; it contains no emulation logic.
 
+Machine and DOS may both emit optional normalized verification events through a
+project-owned abstract trace sink. Trace instrumentation is disabled in ordinary
+and release builds; it does not link, inject, or otherwise depend on NTVDMx64.
+Differential reference adapters live only in `tools/research/differential/` and
+are removed after their bounded validation use.
+
 ## Dependency Rules
 
 Forbidden dependencies are `machine -> dos`, `machine -> Windows`, `dos ->
@@ -88,6 +94,7 @@ tests/
   machine/ dos/ platform/ adapters/ runtime/
 docs/research/microsoft-ntvdm/
 tools/research/microsoft-ntvdm/
+tools/research/differential/
 ```
 
 Directory README files define future ownership. This change does not copy, move,
