@@ -240,6 +240,22 @@ static void reconfigure(nxvm_product_console_runtime *runtime)
     if (!runtime->running) destroy_session(runtime);
 }
 
+static int export_fdd(nxvm_product_console_runtime *runtime, const char *path)
+{
+    if (path == NULL || path[0] == '\0') return 1;
+    if (!runtime->session_active) return 0;
+    return nxvm_product_nxvm_pc_at_remove_fdd(&runtime->session.pc_at, path) ==
+           NXVM_CORE_STATUS_OK;
+}
+
+static int export_hdd(nxvm_product_console_runtime *runtime, const char *path)
+{
+    if (path == NULL || path[0] == '\0') return 1;
+    if (!runtime->session_active) return 0;
+    return nxvm_product_nxvm_pc_at_disconnect_hdd(&runtime->session.pc_at, path) ==
+           NXVM_CORE_STATUS_OK;
+}
+
 static int parse_memory_kb(const char *text, unsigned int *out_kilobytes)
 {
     char *end;
@@ -326,9 +342,12 @@ int main(void)
             } else if (equal_word(value, "create")) {
                 reconfigure(&runtime); config.fdd_path[0] = '\0'; config.create_fdd = 1;
                 puts("Floppy disk created.");
-            } else if (equal_word(value, "remove")) {
-                reconfigure(&runtime); config.fdd_path[0] = '\0'; config.create_fdd = 0;
-                puts("Floppy disk removed.");
+            } else if (sscanf(value, "%31s %511[^\r\n]", action, path) >= 1 &&
+                     equal_word(action, "remove")) {
+                if (export_fdd(&runtime, path)) {
+                    reconfigure(&runtime); config.fdd_path[0] = '\0'; config.create_fdd = 0;
+                    puts("Floppy disk removed.");
+                } else puts("No materialized floppy disk is available to write.");
             } else puts("Usage: DEVICE fdd create|insert <file>|remove");
         } else if (equal_word(command, "device") && equal_word(item, "hdd")) {
             char action[32] = { 0 };
@@ -346,9 +365,12 @@ int main(void)
                 reconfigure(&runtime); config.hdd_path[0] = '\0';
                 config.create_hdd_cylinders = cylinders;
                 puts("Hard disk created.");
-            } else if (equal_word(value, "disconnect")) {
-                reconfigure(&runtime); config.hdd_path[0] = '\0'; config.create_hdd_cylinders = 0u;
-                puts("Hard disk disconnected.");
+            } else if (sscanf(value, "%31s %511[^\r\n]", action, path) >= 1 &&
+                     equal_word(action, "disconnect")) {
+                if (export_hdd(&runtime, path)) {
+                    reconfigure(&runtime); config.hdd_path[0] = '\0'; config.create_hdd_cylinders = 0u;
+                    puts("Hard disk disconnected.");
+                } else puts("No materialized hard disk is available to write.");
             } else puts("Usage: DEVICE hdd create [cyl <n>]|connect <file>|disconnect");
         } else if (equal_word(command, "device") && equal_word(item, "ram")) {
             unsigned int memory_kb;

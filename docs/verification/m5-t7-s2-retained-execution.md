@@ -23,4 +23,8 @@ accepted `stop`, returned to `ready`, exited zero, and left no process running.
 The focused PC/AT smoke also covered stopped-state display selection, reset,
 memory configuration, and an observed non-running state for both fixture
 targets. Product media/session smokes also exercised frozen created FDD and HDD
-providers. This is closure evidence, not a release artifact.
+providers. A created FDD was reset then removed through `remove <path>` into
+the ignored build directory, producing 1,474,560 bytes. The complete focused
+GCC smoke suite passed, including CPU probes, core machine/device/presentation,
+firmware, registries, product adapters, sessions, and both local fixture
+profile paths. This is closure evidence, not a release artifact.

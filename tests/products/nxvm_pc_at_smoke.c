@@ -28,9 +28,12 @@ static int verify(const char *fdd_path, const char *hdd_path,
         nxvm_product_nxvm_media_freeze(&media) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_pc_at_create(&pc_at, &media) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_pc_at_set_window_display(&pc_at, 0) != NXVM_CORE_STATUS_OK ||
+        nxvm_product_nxvm_pc_at_set_memory_kb(&pc_at, 16384u) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_pc_at_reset(&pc_at) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_pc_at_is_running(&pc_at, &running) != NXVM_CORE_STATUS_OK ||
         running != 0 ||
+        nxvm_product_nxvm_pc_at_remove_fdd(&pc_at, NULL) != NXVM_CORE_STATUS_OK ||
+        nxvm_product_nxvm_pc_at_disconnect_hdd(&pc_at, NULL) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_pc_at_get_reset_vector(&pc_at, &vector) != NXVM_CORE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         nxvm_product_nxvm_pc_at_destroy(&pc_at);

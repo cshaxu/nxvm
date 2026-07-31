@@ -24,12 +24,18 @@ nxvm_core_status nxvm_product_nxvm_pc_at_get_reset_vector(
     nxvm_product_nxvm_reset_vector *out_vector);
 nxvm_core_status nxvm_product_nxvm_pc_at_set_window_display(
     nxvm_product_nxvm_pc_at *pc_at, int enabled);
+nxvm_core_status nxvm_product_nxvm_pc_at_set_memory_kb(
+    nxvm_product_nxvm_pc_at *pc_at, uint32_t kilobytes);
 nxvm_core_status nxvm_product_nxvm_pc_at_reset(nxvm_product_nxvm_pc_at *pc_at);
 void nxvm_product_nxvm_pc_at_run(nxvm_product_nxvm_pc_at *pc_at);
 void nxvm_product_nxvm_pc_at_resume(nxvm_product_nxvm_pc_at *pc_at);
 nxvm_core_status nxvm_product_nxvm_pc_at_is_running(
     const nxvm_product_nxvm_pc_at *pc_at, int *out_running);
 nxvm_core_status nxvm_product_nxvm_pc_at_debug(nxvm_product_nxvm_pc_at *pc_at);
+nxvm_core_status nxvm_product_nxvm_pc_at_remove_fdd(
+    nxvm_product_nxvm_pc_at *pc_at, const char *path);
+nxvm_core_status nxvm_product_nxvm_pc_at_disconnect_hdd(
+    nxvm_product_nxvm_pc_at *pc_at, const char *path);
 nxvm_core_status nxvm_product_nxvm_pc_at_record_start(
     nxvm_product_nxvm_pc_at *pc_at, const char *path);
 void nxvm_product_nxvm_pc_at_record_stop(nxvm_product_nxvm_pc_at *pc_at);

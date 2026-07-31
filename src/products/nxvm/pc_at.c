@@ -96,6 +96,20 @@ nxvm_core_status nxvm_product_nxvm_pc_at_debug(nxvm_product_nxvm_pc_at *pc_at)
     return nxvm_baseline_full_pc_debug();
 }
 
+nxvm_core_status nxvm_product_nxvm_pc_at_remove_fdd(
+    nxvm_product_nxvm_pc_at *pc_at, const char *path)
+{
+    if (pc_at == NULL || !pc_at->active) return NXVM_CORE_STATUS_INVALID_STATE;
+    return nxvm_baseline_full_pc_remove_fdd(path);
+}
+
+nxvm_core_status nxvm_product_nxvm_pc_at_disconnect_hdd(
+    nxvm_product_nxvm_pc_at *pc_at, const char *path)
+{
+    if (pc_at == NULL || !pc_at->active) return NXVM_CORE_STATUS_INVALID_STATE;
+    return nxvm_baseline_full_pc_disconnect_hdd(path);
+}
+
 nxvm_core_status nxvm_product_nxvm_pc_at_record_start(
     nxvm_product_nxvm_pc_at *pc_at, const char *path)
 {
