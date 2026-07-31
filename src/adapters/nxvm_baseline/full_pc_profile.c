@@ -117,6 +117,22 @@ nxvm_core_status nxvm_baseline_full_pc_debug(void)
     return NXVM_CORE_STATUS_OK;
 }
 
+nxvm_core_status nxvm_baseline_full_pc_remove_fdd(const char *path)
+{
+    if (!nxvm_baseline_full_pc_active || device.flagRun) {
+        return NXVM_CORE_STATUS_INVALID_STATE;
+    }
+    return deviceConnectFloppyRemove(path) ? NXVM_CORE_STATUS_FAULT : NXVM_CORE_STATUS_OK;
+}
+
+nxvm_core_status nxvm_baseline_full_pc_disconnect_hdd(const char *path)
+{
+    if (!nxvm_baseline_full_pc_active || device.flagRun) {
+        return NXVM_CORE_STATUS_INVALID_STATE;
+    }
+    return deviceConnectHardDiskRemove(path) ? NXVM_CORE_STATUS_FAULT : NXVM_CORE_STATUS_OK;
+}
+
 nxvm_core_status nxvm_baseline_full_pc_record_start(const char *path)
 {
     if (!nxvm_baseline_full_pc_active || path == NULL || path[0] == '\0') {
