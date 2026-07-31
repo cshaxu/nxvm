@@ -9,10 +9,10 @@
 - License file SHA-256:
   `aa21d51516f4d73fbeb163daffeaf12c3e30f8298038e57761bfc3cb85408e97`.
 
-This baseline was read only to identify module vocabulary and its stated
-BIOS/platform/device separation. It imports no source and creates no runtime
-dependency. M1 and later must add a provenance record before any code is copied
-or substantially derived.
+This initial M0 baseline record was read only to identify module vocabulary and
+its stated BIOS/platform/device separation. M1 T2 later copied the complete
+`src/` tree under the recorded authorization; see
+`docs/provenance/m1-nxvm-baseline.md`. The sibling checkout remains read-only.
 
 NXVM's stated quick-and-dirty and incomplete device areas mean its POST, BIOS,
 DOS, and device behavior is Supporting evidence, not an authority.

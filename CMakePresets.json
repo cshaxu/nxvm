@@ -31,6 +31,11 @@
       "targets": ["generate-m1-probe"]
     },
     {
+      "name": "m1-baseline-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-baseline"]
+    },
+    {
       "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],
