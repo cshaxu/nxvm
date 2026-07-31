@@ -114,6 +114,11 @@
       "targets": ["nxvm-m5-t4"]
     },
     {
+      "name": "m5-t5-nxvm-artifact-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-m5-t5"]
+    },
+    {
       "name": "m5-profile-registry-gcc",
       "configurePreset": "mingw-gcc-x64",
       "targets": ["nxvm-runtime-registry-smoke"]
@@ -147,6 +152,11 @@
       "name": "m5-nxvm-media-gcc",
       "configurePreset": "mingw-gcc-x64",
       "targets": ["nxvm-product-media-smoke"]
+    },
+    {
+      "name": "m5-nxvm-pc-at-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-product-pc-at-smoke"]
     },
     {
       "name": "m0-probe-msvc",
