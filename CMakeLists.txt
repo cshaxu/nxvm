@@ -34,6 +34,8 @@ add_library(nxvm-core STATIC
     src/core/presentation.c
     src/core/trace.c
 )
+add_library(nxvm-firmware STATIC src/firmware/firmware.c src/firmware/pc_at.c)
+target_include_directories(nxvm-firmware PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_include_directories(nxvm-core PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -41,6 +43,10 @@ target_include_directories(nxvm-core PUBLIC
 add_executable(nxvm-core-contract-smoke
     tests/core/core_contract_smoke.c
 )
+add_executable(nxvm-firmware-smoke tests/firmware/firmware_smoke.c)
+target_link_libraries(nxvm-firmware-smoke PRIVATE nxvm-firmware)
+add_executable(nxvm-pc-at-firmware-smoke tests/firmware/pc_at_smoke.c)
+target_link_libraries(nxvm-pc-at-firmware-smoke PRIVATE nxvm-firmware)
 target_link_libraries(nxvm-core-contract-smoke PRIVATE nxvm-core)
 
 add_executable(nxvm-core-machine-instance-smoke
@@ -78,6 +84,9 @@ target_link_libraries(nxvm-core-presentation-smoke PRIVATE nxvm-core)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-firmware PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-pc-at-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

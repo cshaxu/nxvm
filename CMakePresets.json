@@ -129,6 +129,16 @@
       "targets": ["nxvm-core-presentation-smoke"]
     },
     {
+      "name": "m5-firmware-registry-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-firmware-smoke"]
+    },
+    {
+      "name": "m5-pc-at-firmware-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-pc-at-firmware-smoke"]
+    },
+    {
       "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],

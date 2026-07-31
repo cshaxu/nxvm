@@ -29,7 +29,7 @@ behavior.
 
 ## Active Work
 
-M5 T3 S2: keyboard and QDX snapshot contracts.
+M5 T4 S1: Firmware V1 service registry.
 
 ## Completed
 
@@ -159,7 +159,7 @@ M5 T3 S2: keyboard and QDX snapshot contracts.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t3-s2.md`.
+`docs/planning/subtasks/m5-t4-s1.md`.
 
 ## Next Eligible Work
 
