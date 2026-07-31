@@ -20,6 +20,9 @@
   `90ec2860a14a4e998cea6b85214959da07fcb28c5a2dfe9608f1618e57875363`.
 - GCC recorded 529 imported-baseline warnings under
   `-Wall -Wextra -Wpedantic`; no warning cleanup entered M1.
+- The copied source has pre-existing space/tab indentation. A path-scoped Git
+  whitespace exemption preserves byte identity for this baseline only; all
+  project-owned paths remain subject to `git diff --check`.
 - Piped `exit` completed the Console lifecycle with exit status 0.
 
 ## Fixture Runs
