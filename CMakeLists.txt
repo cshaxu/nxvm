@@ -31,6 +31,7 @@ add_library(nxvm-core STATIC
     src/core/memory.c
     src/core/port.c
     src/core/pc_devices.c
+    src/core/presentation.c
     src/core/trace.c
 )
 target_include_directories(nxvm-core PUBLIC
@@ -72,6 +73,9 @@ add_executable(nxvm-core-pc-devices-smoke
 )
 target_link_libraries(nxvm-core-pc-devices-smoke PRIVATE nxvm-core)
 
+add_executable(nxvm-core-presentation-smoke tests/core/presentation_smoke.c)
+target_link_libraries(nxvm-core-presentation-smoke PRIVATE nxvm-core)
+
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -81,6 +85,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core-machine-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-cpu-capability-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-pc-devices-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-core-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 add_custom_target(generate-m1-probe
@@ -207,6 +212,7 @@ add_nxvm_full_pc_artifact(nxvm-baseline "m1t2s1")
 add_nxvm_full_pc_artifact(nxvm-m3-t5 "m3t5")
 add_nxvm_full_pc_artifact(nxvm-m5-t1 "m5t1")
 add_nxvm_full_pc_artifact(nxvm-m5-t2 "m5t2")
+add_nxvm_full_pc_artifact(nxvm-m5-t3 "m5t3")
 
 if(NTVDM64_ENABLE_BOCHX_RESEARCH)
     add_executable(ntvdm64-bochx-manifest-check
