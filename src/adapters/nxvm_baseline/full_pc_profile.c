@@ -3,7 +3,9 @@
 #include <string.h>
 
 #include "nxvm-baseline/device/device.h"
+#include "nxvm-baseline/debug.h"
 #include "nxvm-baseline/machine.h"
+#include "nxvm-baseline/platform/platform.h"
 
 static int nxvm_baseline_full_pc_active;
 
@@ -53,8 +55,51 @@ nxvm_core_status nxvm_baseline_full_pc_get_reset_vector(
 void nxvm_baseline_full_pc_run(void)
 {
     if (nxvm_baseline_full_pc_active) {
-        deviceStart();
+        machineStart();
     }
+}
+
+nxvm_core_status nxvm_baseline_full_pc_set_window_display(int enabled)
+{
+    if (!nxvm_baseline_full_pc_active || device.flagRun) {
+        return NXVM_CORE_STATUS_INVALID_STATE;
+    }
+    platform.flagMode = enabled != 0;
+    return NXVM_CORE_STATUS_OK;
+}
+
+nxvm_core_status nxvm_baseline_full_pc_reset(void)
+{
+    if (!nxvm_baseline_full_pc_active || device.flagRun) {
+        return NXVM_CORE_STATUS_INVALID_STATE;
+    }
+    machineReset();
+    return NXVM_CORE_STATUS_OK;
+}
+
+void nxvm_baseline_full_pc_resume(void)
+{
+    if (nxvm_baseline_full_pc_active && !device.flagRun) {
+        machineResume();
+    }
+}
+
+nxvm_core_status nxvm_baseline_full_pc_is_running(int *out_running)
+{
+    if (!nxvm_baseline_full_pc_active || out_running == NULL) {
+        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+    }
+    *out_running = device.flagRun != 0;
+    return NXVM_CORE_STATUS_OK;
+}
+
+nxvm_core_status nxvm_baseline_full_pc_debug(void)
+{
+    if (!nxvm_baseline_full_pc_active || device.flagRun) {
+        return NXVM_CORE_STATUS_INVALID_STATE;
+    }
+    debugMain();
+    return NXVM_CORE_STATUS_OK;
 }
 
 nxvm_core_status nxvm_baseline_full_pc_record_start(const char *path)

@@ -48,9 +48,40 @@ nxvm_core_status nxvm_product_nxvm_pc_at_get_reset_vector(
     return NXVM_CORE_STATUS_OK;
 }
 
+nxvm_core_status nxvm_product_nxvm_pc_at_set_window_display(
+    nxvm_product_nxvm_pc_at *pc_at, int enabled)
+{
+    if (pc_at == NULL || !pc_at->active) return NXVM_CORE_STATUS_INVALID_STATE;
+    return nxvm_baseline_full_pc_set_window_display(enabled);
+}
+
+nxvm_core_status nxvm_product_nxvm_pc_at_reset(nxvm_product_nxvm_pc_at *pc_at)
+{
+    if (pc_at == NULL || !pc_at->active) return NXVM_CORE_STATUS_INVALID_STATE;
+    return nxvm_baseline_full_pc_reset();
+}
+
 void nxvm_product_nxvm_pc_at_run(nxvm_product_nxvm_pc_at *pc_at)
 {
     if (pc_at != NULL && pc_at->active) nxvm_baseline_full_pc_run();
+}
+
+void nxvm_product_nxvm_pc_at_resume(nxvm_product_nxvm_pc_at *pc_at)
+{
+    if (pc_at != NULL && pc_at->active) nxvm_baseline_full_pc_resume();
+}
+
+nxvm_core_status nxvm_product_nxvm_pc_at_is_running(
+    const nxvm_product_nxvm_pc_at *pc_at, int *out_running)
+{
+    if (pc_at == NULL || !pc_at->active) return NXVM_CORE_STATUS_INVALID_STATE;
+    return nxvm_baseline_full_pc_is_running(out_running);
+}
+
+nxvm_core_status nxvm_product_nxvm_pc_at_debug(nxvm_product_nxvm_pc_at *pc_at)
+{
+    if (pc_at == NULL || !pc_at->active) return NXVM_CORE_STATUS_INVALID_STATE;
+    return nxvm_baseline_full_pc_debug();
 }
 
 nxvm_core_status nxvm_product_nxvm_pc_at_record_start(
