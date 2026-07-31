@@ -17,27 +17,24 @@ established corpus entries remain valid, provenance/evidence records are
 updated where needed, `docs/verification/` contains a compact result, and the
 task tracking entry is updated in the same commit.
 
-When a completed subtask produces a runnable Windows executable, copy its
-verified local build output to the ignored `build/output/` directory. Use
-`nxvm-m<M>_t<T>_s<S>.exe` for the bootable VM product or
-`ntvdm64-m<M>_t<T>_s<S>.exe` for the DOS app-runner product. Baseline artifacts
-may keep the historical `ntvdm64-*` name already recorded by M1. Record its
-SHA-256, source commit, and whether it is a baseline/developer artifact or a
-product artifact in the verification record. Do not manufacture an executable
-for a design-only subtask. Local artifacts are never release evidence, must not
-bundle protected media or Microsoft binaries, and may be replaced only by a
-newly verified build of the same named subtask.
+Each completed implementation task that changes a runnable path must compile,
+verify, and copy one usable task-level local build output to the ignored
+`build/output/` directory. Use `nxvm-m<M>_t<T>.exe` for the bootable VM product or
+`ntvdm64-m<M>_t<T>.exe` for the DOS app-runner product. Its runtime identity
+uses the aggregate suffix `m<M>t<T>`. Baseline artifacts may keep the
+historical `ntvdm64-*` name already recorded by M1. Record its SHA-256, source
+commit, and whether it is a baseline/developer artifact or a product artifact
+in the verification record. Smoke-test executables remain build-tree
+verification tools and are never copied as developer artifacts. Design-only
+tasks do not manufacture executables. M3 is a recorded historical exception:
+only its final T5 artifact is retained. Local artifacts are never release
+evidence, must not bundle protected media or Microsoft binaries, and may be
+replaced only by a newly verified build of the same named task.
 
 For a runnable artifact, the verification record also states the emitted runtime
 identity/banner and version. It must follow the pre-cutover or post-cutover
 rules in `docs/architecture.md`; changing identity, version, or cutover state
 without an approved subtask and regression evidence is prohibited.
-
-At the owner request, pre-product M3 smoke executables may also use the
-`ntvdm64-m<M>_t<T>_s<S>.exe` local naming form. Their verification record must
-state that they are task-specific developer tools, not product artifacts, and
-whether they are an exact historical build or a closure-commit replay. This
-exception does not change the future `nxvm.exe`/`ntvdm64.exe` product naming.
 
 For a legacy coupled system, first establish and record a runnable full-source
 baseline before subtractive refactoring. A baseline import may be isolated from

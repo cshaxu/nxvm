@@ -146,11 +146,20 @@ target_link_libraries(nxvm-full-pc-profile-smoke PRIVATE
     nxvm-baseline-full-pc-adapter
 )
 
-add_executable(nxvm-baseline ${NXVM_BASELINE_SOURCES})
-target_link_libraries(nxvm-baseline PRIVATE user32 gdi32)
+function(add_nxvm_full_pc_artifact target suffix)
+    add_executable(${target} ${NXVM_BASELINE_SOURCES})
+    target_compile_definitions(${target} PRIVATE "NXVM_BUILD_SUFFIX=\"${suffix}\"")
+    target_link_libraries(${target} PRIVATE user32 gdi32)
+
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+endfunction()
+
+add_nxvm_full_pc_artifact(nxvm-baseline "m1t2s1")
+add_nxvm_full_pc_artifact(nxvm-m3-t5 "m3t5")
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(nxvm-baseline PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(nxvm-runtime PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-runtime-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

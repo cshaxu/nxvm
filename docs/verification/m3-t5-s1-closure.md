@@ -33,18 +33,23 @@ M1 `nxvm-baseline` also built successfully.
   - HDD: `f4d1e81bc410bb9a7558667b7c3741a9664e84077a3774e73104cd24b631d688`.
 - Full-PC adapter tests separately configured both fixtures and observed
   `F000:FFF0` after reset.
-- `git diff --exit-code -- src/nxvm-baseline` passed. The M1 FDD/HDD
-  ten-second watchdog traces, insertion/connection markers, and DOS `INT 21h`
-  checkpoints therefore remain applicable to the unchanged legacy path.
+- At the immutable M3 closure snapshot `da1c7d6`, `git diff --exit-code --
+  src/nxvm-baseline` passed. The M1 FDD/HDD ten-second watchdog traces,
+  insertion/connection markers, and DOS `INT 21h` checkpoints therefore remain
+  applicable to the unchanged legacy path.
+- The post-closure developer-artifact correction parameterizes only the startup
+  banner in `main.c`; it does not change the full-PC machine, device, Console,
+  or boot path. Its provenance and task-level artifact evidence are recorded
+  separately.
 
 ## Boundary Audit
 
 - Forbidden core dependency scan returned no matches for Win32, DOS INT 21h,
   product CLI, product source, or baseline source.
 - Platform source scan found no core Machine or private-core-header access.
-- `git diff --check` passed. No guest media, Microsoft binary, trace output, or
-  product artifact was committed. Owner-requested local M3 developer artifacts
-  are recorded in `docs/verification/m3-developer-artifacts.md`.
+- No guest media, Microsoft binary, trace output, or product artifact is
+  committed. Task-level local NXVM developer artifacts are recorded in
+  `docs/verification/m3-developer-artifacts.md`.
 
 ## Result
 

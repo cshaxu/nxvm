@@ -1,4 +1,8 @@
-#define PRODUCT "Neko's x86 Virtual Machine [0.4.015d.m1t2s1]\n\
+#ifndef NXVM_BUILD_SUFFIX
+#define NXVM_BUILD_SUFFIX "m1t2s1"
+#endif
+
+#define PRODUCT "Neko's x86 Virtual Machine [0.4.015d." NXVM_BUILD_SUFFIX "]\n\
 Copyright (c) 2012-2014 Neko.\n"
 
 /*

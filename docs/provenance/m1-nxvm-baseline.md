@@ -21,11 +21,13 @@ All 75 files below were copied byte-for-byte from NXVM `src/` into the temporary
 - Asset exclusion review: no disk image, ROM, Microsoft binary, or guest payload was imported.
 - Source authorization: NXVM copyright-holder authorization for root MIT import, as recorded by project policy.
 - Intentional deviations after the M1 snapshot: only
-  `src/nxvm-baseline/main.c` changes the startup banner to the approved
-  `0.4.015d.m1t2s1` build identity. Its source SHA-256 is
+  `src/nxvm-baseline/main.c` parameterizes the approved startup banner. Its
+  default remains `0.4.015d.m1t2s1`; a task artifact may provide its approved
+  task suffix at compile time without changing the Console or machine path.
+  Its source SHA-256 is
   `ec874f6c173e3d8198e321f0eb147ca596a3c391fcf8aa91e914f163be7c93b0`;
   its current destination SHA-256 is
-  `ad0dfc4e0b474da6afef7640d935236dc8e1db01abad59766ba794c98bb8246d`.
+  `937517c32f97912a6e441c65d727366195007293107123e85c73aa9f646df79d`.
 - Git text/whitespace policy: `src/nxvm-baseline/**` is excluded from text
   conversion and whitespace checking because its snapshot upstream bytes contain
   CRLF and pre-existing space/tab indentation. This does not exempt

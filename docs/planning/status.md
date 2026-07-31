@@ -132,6 +132,8 @@ None. M3 is closed; M4 is the next design milestone.
 - M3 T5 S1: composed runtime-owned profile sessions, completed the M3 matrix,
   revalidated fixture identities and retained M1 regression evidence, and
   recorded M4 design inputs.
+- M3 T5 S1 P4: corrected the local developer artifact to the final bootable
+  NXVM Console executable; smoke executables remain build verification only.
 
 ## Active Subtask
 
