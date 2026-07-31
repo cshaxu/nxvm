@@ -82,6 +82,8 @@ products/nxvm      products/ntvdm64
 - `firmware/`: BIOS/POST/ROM behavior and BIOS interrupt/service handlers. It
   can be composed into `nxvm.full_pc` and selected ntvdm64 profiles through the
   firmware service registry, but it does not own product CLI or host handles.
+  M5 introduces `firmware/pc_at` for the bootable NXVM ROM, POST, CMOS, and
+  BIOS-service package.
 - `platform/`: host capability providers such as Win32, retained Linux source,
   future macOS, display, input, clocks, block files, host filesystem, audio,
   logging, and process/Console integration. It does not know DOS internals.
@@ -93,7 +95,7 @@ products/nxvm      products/ntvdm64
   reports a product result.
 - `products/nxvm/`: bootable VM Console, boot-media policy, whole-machine
   profile selection, and nxvm-specific registry composition. It does not add a
-  process CLI.
+  process CLI. Its `pc_at` package composes full-PC storage/controller devices.
 - `products/ntvdm64/`: DOS app-runner CLI, display/debug UX, window-mode
   control Console, drive visibility, host filesystem policy, and ntvdm64-
   specific registry composition.

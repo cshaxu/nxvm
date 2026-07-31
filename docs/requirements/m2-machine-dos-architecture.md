@@ -29,7 +29,9 @@ that profile.
 | `vcpu`, `vram`, `vport` | retain behind `core` Machine | Required for real-mode program execution, memory and I/O; CPU/memory microtests plus both M1 boot traces. |
 | `vpic`, `vpit` | retain as optional core devices | Required for an explicit interrupt/timing model; disabled only by a declared profile, never by hidden global state. |
 | `vkbc`, `qdx`/CGA display | retain as optional product/profile devices | `nxvm.full_pc` needs current presentation behavior; `ntvdm64.dos_minimal` needs abstract input and text snapshots. Platform supplies events and consumes snapshots. |
-| `vbios`, `vcmos`, `vdma`, `vfdc`, `vfdd`, `vhdc`, `vhdd`, `vvadp` | firmware or `products/nxvm` profile only until M4 assigns exact ownership | Needed to reproduce M1 POST/disk boot, but not a dependency of `ntvdm64.dos_minimal`. Each is initialized only by an explicit profile. |
+| `vbios`, `vcmos`, `vvadp` | `firmware/pc_at`; see `docs/requirements/firmware-nxvm.md` | PC/AT ROM, POST, CMOS configuration, and BIOS services needed for M1 boot, but not for `ntvdm64.dos_minimal`. |
+| `vdma` | optional core device; see `docs/requirements/firmware-nxvm.md` | Machine-neutral DMA semantics with no DOS or host UI dependency. |
+| `vfdc`, `vfdd`, `vhdc`, `vhdd` | `products/nxvm/pc_at`; see `docs/requirements/firmware-nxvm.md` | Full-PC controller/device composition and media policy needed for M1 boot, but not for `ntvdm64.dos_minimal`. |
 | `vdebug`, `debug`, `console`, `xasm32` | developer tooling, outside `core` | May inspect a paused machine through debug APIs; it cannot own execution or mutate device globals directly. |
 | `machine.c`, `platform/*` startup loops | replace | The baseline has machine-to-platform coupling, global `device.flagRun`, and platform-created kernel/display threads. M3 replaces these with runtime-owned composition and a synchronized command boundary. |
 
