@@ -90,7 +90,8 @@ bounded M5 breakdown. **Non-goal:** implementation.
 
 **Goal:** make the bootable VM product a first-class output on the shared core.
 
-**Scope:** implement the profile/provider registry and only the built-in
+**Scope:** establish CPU capability claims and optional Bochx/Bochs differential
+verification; implement the profile/provider registry and only the built-in
 `nxvm.machine.pc_at_builtin` machine profile; move its retained BIOS/POST/ROM
 and boot devices into `firmware` or `products/nxvm`; implement retained NXVM
 Console contracts; retain FDD/HDD boot fixtures; and produce runnable artifacts.

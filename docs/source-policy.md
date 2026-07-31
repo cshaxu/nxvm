@@ -53,3 +53,11 @@ user-supplied local bundle only after an owner-approved machine-profile design
 gate defines its manifest, validation, mapping, and legal boundary. A local
 manifest hash validates the owner's supplied file; it does not make a ROM
 redistributable or authorize copying vendor code.
+
+## Bochx And Bochs Research
+
+The historical NXVM Bochx bridge may be imported only as provenance-recorded
+NXVM code into an optional research tool. Bochs source, patches, binaries,
+firmware, guest media, and generated traces are separate local research inputs
+pending their own license review; none enter this repository, default build,
+release, or runtime dependency.
