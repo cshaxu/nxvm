@@ -15,4 +15,4 @@ the root MIT License governs all repository material.
 NTVDMx64 and OpenNT are historical research sources only. WineVDM remains an
 external GPL-2.0 research candidate unless a separate approved distribution
 decision says otherwise. Microsoft guest binaries are neither committed nor
-distributed; any BYOB proposal requires a future M10 Go decision.
+distributed; any BYOB proposal requires a future M9 Go decision.

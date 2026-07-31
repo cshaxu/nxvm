@@ -17,8 +17,8 @@ Read these documents before changing the repository:
 - NXVM is the formal machine foundation. Copyright-holder-authorized imports
   use the root MIT License and require exact provenance, preserved copyright
   notices, and focused tests.
-- The owned DOS backend is the default path. Microsoft NTVDM components are a
-  post-M9 research topic, not a backend. OpenNT and NTVDMx64 are historical
+- The owned DOS backend is the default path. Microsoft NTVDM components are an
+  M9 T2 research topic, not a backend. OpenNT and NTVDMx64 are historical
   research only.
 - Use the module boundaries defined in `docs/architecture.md`.
 - Invasive integration, Microsoft component research, and Win16 are research-

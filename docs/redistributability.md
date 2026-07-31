@@ -10,7 +10,7 @@ feature set.
   root MIT License; source provenance and `THIRD_PARTY_NOTICES.md` must record
   its origin and copyright attribution. Independently licensed third-party
   material remains subject to separate review.
-- Microsoft BYOB is a future M10 research possibility. Releases neither package
+- Microsoft BYOB is a future M9 T2 research possibility. Releases neither package
   nor download Microsoft files, and no `ntvdm import` workflow is promised.
 - Invasive integration is excluded from the default build and release.
 - Every shipped third-party component requires a license, notice, source

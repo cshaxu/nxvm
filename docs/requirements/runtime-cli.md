@@ -4,6 +4,17 @@ This document defines the user-visible contract for the non-invasive
 `ntvdm64 run` product path. It is a requirements record; it does not claim that
 the options are implemented before their scheduled milestone.
 
+## M6 Design Gate
+
+Before M7 implementation, this document is completed with the program-path to
+guest-drive mapping, exact guest/host/cancellation exit-status table, option
+error table, handle-based filesystem-containment algorithm, DOS normalization,
+dot/reparse/UNC/device/race rules, Windows 7 through Windows 11 matrix,
+Console/window state machine, display-mode table, debugger grammar, input
+routing, and restoration behavior. M1 through M5 use NXVM Console loading and
+do not implement this product CLI. That pre-M7 workflow is distinct from the
+product debugger, which has no runtime `load` command.
+
 ## Command Shape
 
 ```text

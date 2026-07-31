@@ -57,6 +57,9 @@ None. M1 T1 S1 is the next eligible subtask, not an active subtask.
 - M0 T11 S1: closed remaining planning ambiguities around M5 dependencies,
   milestone authority, M1 experiment freezing, M2/M6 containment ownership,
   M3 planning, corpus policy, toolchain identity, and local BYOB research.
+- M0 T12 S1: consolidated M9-M11 into M9 tasks, deferred all product CLI work
+  to M6/M7, and merged redundant short planning, requirement, and research
+  documents without beginning M1.
 
 ## Next Eligible Work
 

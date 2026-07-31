@@ -12,7 +12,7 @@ components, and third-party executables whose redistribution status is unclear.
   user's application data.
 - A release must separately list included and required external components.
 - Any future Microsoft research input remains local and never enters the
-  repository. A BYOB/profile proposal requires an M10 Go decision.
+  repository. A BYOB/profile proposal requires an M9 Go decision.
 
 ## M1 Local Fixtures
 

@@ -25,8 +25,8 @@ commands, expected markers, budgets, and stop conditions. `breakdown.md` is an
 index only and cannot close a milestone.
 When a release cadence is established, implementation milestones M1, M3, M5,
 M7, and M8 create immutable snapshot branches from verified `main` commits
-before the next milestone begins. M2, M4, and M6 are design milestones; M9
-through M11 are research milestones. Design and research milestones have no
+before the next milestone begins. M2, M4, and M6 are design milestones; M9 is a
+research milestone with one active task at a time. Design and research work has no
 default snapshot obligation, though the owner may require one for a specific
 approved deliverable.
 
