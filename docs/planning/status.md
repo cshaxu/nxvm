@@ -27,9 +27,18 @@ M4 is complete. Firmware, profile/provider, CPU verification, and retained
 NXVM Console contracts now bound M5 implementation without changing runtime
 behavior.
 
+## M5 Closure
+
+M5 is complete. The shared architecture now produces a first-class bootable
+`nxvm.exe` product path with canonical PC/AT profile/provider composition,
+firmware, media, Console, presentation, debugger, bounded FDD/HDD evidence,
+and a verified task artifact. Its snapshot is created from the M5 closure
+commit before M6 begins.
+
 ## Active Work
 
-M5 T7 S2: M5 regression and closure.
+No implementation subtask is active. M6 design work requires explicit owner
+activation.
 
 ## Completed
 
@@ -159,11 +168,11 @@ M5 T7 S2: M5 regression and closure.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t7-s2.md`.
+None.
 
 ## Next Eligible Work
 
-- M5 begins from `docs/planning/m5-firmware-nxvm-implementation-breakdown.md`.
+- M6 begins only after explicit activation from `docs/roadmap.md`.
 
 ## Delivery State
 
