@@ -36,6 +36,7 @@ add_library(nxvm-core STATIC
 )
 add_library(nxvm-firmware STATIC src/firmware/firmware.c src/firmware/pc_at.c)
 target_include_directories(nxvm-firmware PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(nxvm-firmware PUBLIC nxvm-core)
 target_include_directories(nxvm-core PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
