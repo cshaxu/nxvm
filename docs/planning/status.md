@@ -76,6 +76,8 @@ None. M2 T1 S1 is the next eligible subtask and remains inactive.
 - M0 T12 S4: removed premature M3/M5 implementation subtasks and required each
   preceding design milestone to produce the bounded Task/subtask breakdown for
   its implementation successor without beginning M1.
+- M0 T12 S5: defined the ignored local executable-artifact convention for
+  completed runnable subtasks and recorded the M1 baseline developer artifact.
 - M1 T1 S1: approved the bounded GCC migration design after a zero-patch GCC
   compile and warning inventory.
 - M1 T2 S1: imported and built the full provenance-recorded NXVM baseline;
