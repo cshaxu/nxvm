@@ -29,7 +29,7 @@ behavior.
 
 ## Active Work
 
-M5 T7 S1: First-class PC/AT product composition.
+M5 T7 S2: M5 regression and closure.
 
 ## Completed
 
@@ -159,7 +159,7 @@ M5 T7 S1: First-class PC/AT product composition.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t7-s1.md`.
+`docs/planning/subtasks/m5-t7-s2.md`.
 
 ## Next Eligible Work
 
