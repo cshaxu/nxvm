@@ -52,7 +52,7 @@ product/firmware/platform/DOS include in core. No guest media, Microsoft
 binary, generated trace, or local artifact is tracked; default targets do not
 include Bochx research.
 
-M5 is complete. `nxvm.exe` is a first-class bootable whole-machine product
-artifact over the shared architecture, while the retained baseline bridge stays
-explicitly isolated for uncovered whole-PC execution behavior. The immutable M5
-snapshot is created from this verified closure commit before M6 begins.
+This record demonstrated product composition and bounded regression behavior,
+not completion of the M5 migration goal. The user-facing execution loop still
+entered `src/nxvm-baseline/` through the temporary adapter, so M5 was reopened
+before M6. The historical snapshot remains a checkpoint only.

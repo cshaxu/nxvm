@@ -88,18 +88,24 @@ bounded M5 breakdown. **Non-goal:** implementation.
 
 ## M5: Implement Firmware And nxvm.exe
 
-**Goal:** make the bootable VM product a first-class output on the shared core.
+**Goal:** make the bootable VM product a first-class output whose actual
+full-PC execution path runs on the shared core.
 
 **Scope:** establish CPU capability claims and optional Bochx/Bochs differential
 verification; implement the profile/provider registry and only the built-in
-`nxvm.machine.pc_at_builtin` machine profile; move its retained BIOS/POST/ROM
-and boot devices into `firmware` or `products/nxvm`; implement retained NXVM
-Console contracts; retain FDD/HDD boot fixtures; and produce runnable artifacts.
-External-ROM loading and additional machine profiles remain future design work.
-`nxvm.exe` has no new process CLI.
+`nxvm.machine.pc_at_builtin` machine profile; migrate the actual CPU execution,
+machine lifecycle, BIOS/POST/ROM, boot devices, and presentation path from the
+temporary baseline adapter into `core`, `firmware`, `platform`, and
+`products/nxvm`; preserve the original NXVM Console and debugger behavior;
+retain FDD/HDD boot fixtures; and produce runnable artifacts. External-ROM
+loading and additional machine profiles remain future design work. `nxvm.exe`
+has no new process CLI.
 
 **Exit:** `nxvm.exe` boots the recorded full-PC fixtures through the shared core
-with focused regression evidence. No ntvdm64 DOS runner behavior is required.
+with focused regression evidence. The temporary baseline adapter may remain
+only as an independently runnable regression reference; it cannot own the
+user-facing artifact's execution loop, Console, debugger, firmware, devices,
+or platform lifecycle. No ntvdm64 DOS runner behavior is required.
 
 ## M6: Design The Owned DOS Module
 

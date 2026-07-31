@@ -83,9 +83,6 @@ target_link_libraries(nxvm-product-presentation-debug-smoke PRIVATE
 add_executable(nxvm-product-session-smoke tests/products/nxvm_session_smoke.c)
 target_link_libraries(nxvm-product-session-smoke PRIVATE nxvm-product-session)
 
-add_executable(nxvm-product-debug-console-smoke
-    tests/products/nxvm_debug_console_smoke.c
-)
 target_link_libraries(nxvm-core-contract-smoke PRIVATE nxvm-core)
 
 add_executable(nxvm-core-machine-instance-smoke
@@ -137,7 +134,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-presentation-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-product-debug-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -277,16 +273,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t4 "m5t4")
 add_nxvm_full_pc_artifact(nxvm-m5-t5 "m5t5")
 add_nxvm_full_pc_artifact(nxvm-m5-t6 "m5t6")
 
-add_executable(nxvm-m5-t7
-    src/products/nxvm/main.c
-    ${NXVM_BASELINE_RUNTIME_SOURCES}
-)
-target_compile_definitions(nxvm-m5-t7 PRIVATE "NXVM_BUILD_SUFFIX=\"m5t7\"")
-target_include_directories(nxvm-m5-t7 PRIVATE "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(nxvm-m5-t7 PRIVATE nxvm-product-session user32 gdi32)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(nxvm-m5-t7 PRIVATE -Wall -Wextra -Wpedantic)
-endif()
+add_nxvm_full_pc_artifact(nxvm-m5-t7 "m5t7")
 
 if(NTVDM64_ENABLE_BOCHX_RESEARCH)
     add_executable(ntvdm64-bochx-manifest-check
