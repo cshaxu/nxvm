@@ -19,8 +19,10 @@ both implementations, inputs, event schema, checkpoints, comparison masks,
 instruction/time/no-progress budgets, and cleanup owner. It cannot become a
 runtime dependency or replace focused project-owned tests.
 
-Do not advance a milestone merely because individual code exists. Each
-milestone closes on the observable completion condition in `breakdown.md`.
+Do not advance a milestone merely because individual code exists. The roadmap
+owns milestone goal, scope, and exit conditions; its active subtask owns exact
+commands, expected markers, budgets, and stop conditions. `breakdown.md` is an
+index only and cannot close a milestone.
 When a release cadence is established, implementation milestones M1, M3, M5,
 M7, and M8 create immutable snapshot branches from verified `main` commits
 before the next milestone begins. M2, M4, and M6 are design milestones; M9

@@ -54,6 +54,9 @@ None. M1 T1 S1 is the next eligible subtask, not an active subtask.
   machine refactor, M4 DOS design, M5 DOS implementation, M6 Platform/CLI
   design, and M7 product implementation; clarified M1 fixtures and CLI debug
   ownership without beginning M1.
+- M0 T11 S1: closed remaining planning ambiguities around M5 dependencies,
+  milestone authority, M1 experiment freezing, M2/M6 containment ownership,
+  M3 planning, corpus policy, toolchain identity, and local BYOB research.
 
 ## Next Eligible Work
 

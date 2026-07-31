@@ -100,7 +100,7 @@ host-drive mapping, and shell integration.
 **Demo and exit:** the approved COM probes print and exit, perform fixture-file
 open/read/seek/close, and verify defined failure results. Generated probes cover
 each approved service. Risk: machine/DOS ABI leakage and unbounded API growth.
-Dependency: M1 machine contract.
+Dependency: M3 machine contract and M4 DOS specification.
 
 ## M6: Design The Windows Platform And CLI
 
@@ -143,8 +143,9 @@ when a corpus requirement justifies it.
 
 **Non-goals:** theoretical API completeness or speculative Microsoft ABI.
 
-**Demo and exit:** each declared corpus program has a reproducible result. Risk:
-unbounded compatibility scope. Dependency: M7.
+**Demo and exit:** each declared corpus program has a reproducible result. The
+corpus follows [M8 Compatibility Corpus Policy](requirements/m8-corpus-policy.md).
+Risk: unbounded compatibility scope. Dependency: M7.
 
 ## M9: Invasive Windows Integration Research
 
