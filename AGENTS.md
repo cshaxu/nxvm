@@ -18,7 +18,7 @@ Read these documents before changing the repository:
   use the root MIT License and require exact provenance, preserved copyright
   notices, and focused tests.
 - The owned DOS backend is the default path. Microsoft NTVDM components are a
-  post-M5 research topic, not a backend. OpenNT and NTVDMx64 are historical
+  post-M9 research topic, not a backend. OpenNT and NTVDMx64 are historical
   research only.
 - Use the module boundaries defined in `docs/architecture.md`.
 - Invasive integration, Microsoft component research, and Win16 are research-

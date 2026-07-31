@@ -27,9 +27,9 @@ app -> runtime -> adapters -> dos + platform
   machine runner. It has no DOS or Windows API dependency.
 - `dos/`: project-owned loader, PSP, environment, MCB, interrupts, process,
   filesystem, console, and later XMS/EMS/DPMI behavior. It consumes abstract
-  machine and host-service interfaces. M2 begins with a bounded, in-memory
+  machine and host-service interfaces. M5 begins with a bounded, in-memory
   fixture filesystem and deterministic Console interface; direct Win32
-  filesystem, Console, and drive behavior belongs to `platform/` in M3.
+  filesystem, Console, and drive behavior belongs to `platform/` in M7.
 - `platform/`: non-invasive host adapters. Windows-specific filesystem,
   console, input, display, timing, process, and logging code stay here.
   Windows is the current product target; retained Linux platform code is a
@@ -62,7 +62,7 @@ Microsoft component work is not a formal runtime module or a committed backend.
 It belongs under `docs/research/microsoft-ntvdm/` and, if required, owner-
 approved one-off `tools/research/microsoft-ntvdm/` tools. It cannot create a
 BOP framework, component loader, profile system, or dependency in the core
-architecture before M5 host-integration research and an M6 Go decision.
+architecture before M9 host-integration research and an M10 Go decision.
 
 Historical NTVDM may be a coupled combination of guest DOS, machine emulation,
 ROMs, BOP host services, console/redirection, and private Windows integration.
@@ -74,7 +74,7 @@ M1 first establishes a runnable whole-NXVM baseline before subtractive
 refactoring. Its imported source may temporarily live in
 `src/nxvm-baseline/`, retaining upstream machine and platform coupling solely
 to reproduce recorded baseline behavior. No new product feature belongs there.
-After the baseline is verified, retained code moves into the final boundaries;
+M3 moves retained code into the final boundaries after the M2 design closes;
 obsolete code is removed with focused evidence. This temporary area does not
 relax provenance, MIT-authorization, copyright-notice, or platform-isolation
 requirements.

@@ -34,11 +34,11 @@ OpenNT and NTVDMx64 are historical architecture and problem-location sources.
 They may inform research leads, component inventory, startup hypotheses, and
 test design. They are not copied, transliterated, or treated as the ntvdm64
 specification. They do not authorize a formal Microsoft backend design before
-M5 and M6. Research conclusions require binary behavior, experiments, or tests
+M9 and M10. Research conclusions require binary behavior, experiments, or tests
 where feasible. Published ntvdm64 code is organized and maintained here.
 
 ## Microsoft Binaries
 
 Microsoft binaries never enter this repository or the default release. BYOB is
 a future research possibility, not a current feature or promised `ntvdm import`
-workflow. Any future profile and hash policy follows an M6 Go decision.
+workflow. Any future profile and hash policy follows an M10 Go decision.

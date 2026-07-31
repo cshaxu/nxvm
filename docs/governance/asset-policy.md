@@ -12,14 +12,14 @@ components, and third-party executables whose redistribution status is unclear.
   user's application data.
 - A release must separately list included and required external components.
 - Any future Microsoft research input remains local and never enters the
-  repository. A BYOB/profile proposal requires an M6 Go decision.
+  repository. A BYOB/profile proposal requires an M10 Go decision.
 
-## M1 Local Image Fixtures
+## M1 Local Fixtures
 
-M1 may read owner-provided `*.img` files only to reproduce the legacy NXVM
-baseline. They remain read-only, local, unclassified protected media: they are
-not copied into this repository, build output, test fixture directory, or
-release package. The repository records only a logical name, size, SHA-256,
-role, and the fact that the owner supplied the file. See
+M1 may read owner-provided disk images and guest probes only to reproduce the
+legacy NXVM baseline. They remain read-only, local, unclassified protected
+inputs: they are not copied into this repository, build output, test fixture
+directory, or release package. The repository records only a logical name, size,
+SHA-256, role, and the fact that the owner supplied the file. See
 `docs/fixtures/m1-local-images.md`. Absolute paths and image contents are never
 recorded.

@@ -41,14 +41,19 @@ None. M1 T1 S1 is the next eligible subtask, not an active subtask.
 - M0 T6 S3: retained the existing Linux platform source in the M1 baseline and
   recorded the future shared `machine + dos` portability direction without
   adding a Linux delivery commitment.
-- M0 T7 S1: fixed the M2 owned-DOS profile, service allowlist, memory and
+- M0 T7 S1: fixed the owned-DOS profile, service allowlist, memory and
   filesystem boundaries, acceptance probes, and escalation rule without
-  beginning M2.
+  beginning implementation; the profile is now scheduled for M5 after the
+  required M2/M3/M4 design and refactor work.
 - M0 T8 S1: recorded the NXVM copyright-holder authorization for MIT imports
   into ntvdm64, while retaining upstream-license capture as historical evidence.
 - M0 T9 S1: defined optional differential verification interfaces for machine
   and DOS traces, external-reference boundaries, watchdogs, and cleanup without
   beginning M1 or M2.
+- M0 T10 S1: resequenced delivery into M1 baseline, M2 architecture design, M3
+  machine refactor, M4 DOS design, M5 DOS implementation, M6 Platform/CLI
+  design, and M7 product implementation; clarified M1 fixtures and CLI debug
+  ownership without beginning M1.
 
 ## Next Eligible Work
 

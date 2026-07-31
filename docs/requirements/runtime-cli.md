@@ -18,6 +18,11 @@ ntvdm64 run [--display=auto|console|window]
 letter. Later mount aliases may extend this grammar, but must not weaken the
 access policy defined here.
 
+Without `--debug`, omitting `<program>` is a usage error and returns before a
+machine is created. `--debug` is the explicit entry-break request for a program:
+with `<program>`, it stops before the first guest program instruction and makes
+single-step and other debugger commands available.
+
 ## Display Policy
 
 `--display` controls the DOS display surface. Its default is `auto`.
@@ -61,9 +66,10 @@ it must not concurrently mutate CPU state from the Console or window thread.
 `ntvdm64 run --debug` without `<program>` is valid. It creates a reset machine
 and stops at its initial execution point without loading a DOS program or an
 implicit command interpreter. The debugger reports that no program is loaded.
-It may then load an explicitly requested image, reset the machine, single-step,
-or continue according to the supported machine state. A debug run with a
-program stops before the guest's first program instruction.
+There is no debugger `load` command: program selection is exclusively the
+command-line `<program>` argument. In this no-program state, `continue` returns
+to the host Console after normal debugger cleanup. A debug run with a program
+stops before the guest's first program instruction.
 
 If `--debug` is not enabled and `--display=window` is selected, the inherited
 Console is a silent wait surface: it must not render guest display output,
@@ -83,7 +89,11 @@ If no parent Console exists, `--debug` must create one for the interactive
 debugger. If the selected standard handles cannot support interaction because
 they are redirected, interactive `--debug` must fail clearly rather than read
 or write through an unintended pipeline. `Ctrl+Break` requests a debugger
-pause; `Ctrl+C` retains its normal guest or host interruption semantics.
+pause. The surface currently running the guest owns guest `Ctrl+C`: Console for
+Console display, and the guest window for window display. During a windowed run,
+the inherited Console remains the ntvdm64 control surface and receives `Ctrl+C`
+only through ordinary Windows Console default handling; it does not interrupt or
+manage the guest. M6 assigns the exact exit-status values and event sequences.
 
 ## Host Drive Visibility
 
@@ -145,3 +155,9 @@ access.
     reparse point fails as nonexistent to the guest.
 11. Closing a windowed guest returns the defined cancellation result only after
     guest resources and any inherited Console state are restored.
+12. `ntvdm64 run` without a program and without `--debug` returns a usage error;
+    `ntvdm64 run --debug` pauses with no program, and `continue` returns to the
+    host Console without loading an image.
+13. During a windowed guest run, `Ctrl+C` in the inherited Console follows normal
+    Windows Console behavior and does not control the guest; guest `Ctrl+C` is
+    owned by the guest window.
