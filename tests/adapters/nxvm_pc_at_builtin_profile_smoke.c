@@ -27,6 +27,8 @@ int main(int argc, char **argv)
     }
     config.fdd_image = argv[1];
     config.hdd_image = NULL;
+    config.create_fdd = 0;
+    config.create_hdd_cylinders = 0u;
     config.boot_hdd = 0;
     if (nxvm_baseline_full_pc_create(&config) != NXVM_CORE_STATUS_OK ||
         nxvm_baseline_full_pc_get_reset_vector(&vector) != NXVM_CORE_STATUS_OK ||

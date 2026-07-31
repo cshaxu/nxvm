@@ -18,6 +18,8 @@ static nxvm_core_status nxvm_runtime_session_create_full_pc(
     const nxvm_baseline_full_pc_config config = {
         session->config.fdd_image,
         session->config.hdd_image,
+        0,
+        0u,
         session->config.boot_hdd
     };
     nxvm_core_status status = nxvm_baseline_full_pc_create(&config);

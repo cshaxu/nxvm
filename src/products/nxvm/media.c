@@ -63,6 +63,27 @@ nxvm_core_status nxvm_product_nxvm_media_configure(
     return NXVM_CORE_STATUS_OK;
 }
 
+nxvm_core_status nxvm_product_nxvm_media_configure_created(
+    nxvm_product_nxvm_media_policy *policy,
+    nxvm_product_nxvm_boot_target target,
+    uint16_t cylinders)
+{
+    nxvm_product_nxvm_block_provider *provider;
+
+    if (policy == NULL || !nxvm_product_nxvm_media_valid_target(target) ||
+        policy->frozen ||
+        (target == NXVM_PRODUCT_NXVM_BOOT_HDD && cylinders == 0u)) {
+        return policy != NULL && policy->frozen ? NXVM_CORE_STATUS_INVALID_STATE :
+                                                  NXVM_CORE_STATUS_INVALID_ARGUMENT;
+    }
+    provider = nxvm_product_nxvm_media_mutable_provider(policy, target);
+    memset(provider, 0, sizeof(*provider));
+    provider->configured = 1;
+    provider->created = 1;
+    provider->cylinders = cylinders;
+    return NXVM_CORE_STATUS_OK;
+}
+
 nxvm_core_status nxvm_product_nxvm_media_set_boot_target(
     nxvm_product_nxvm_media_policy *policy,
     nxvm_product_nxvm_boot_target target)

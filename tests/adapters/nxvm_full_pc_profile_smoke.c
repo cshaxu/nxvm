@@ -30,7 +30,7 @@ static int verify_profile(void)
 
 static int verify_image(const char *fdd, const char *hdd, int boot_hdd)
 {
-    nxvm_baseline_full_pc_config config = { fdd, hdd, boot_hdd };
+    nxvm_baseline_full_pc_config config = { fdd, hdd, 0, 0u, boot_hdd };
     nxvm_baseline_reset_vector vector;
 
     if (nxvm_baseline_full_pc_create(&config) != NXVM_CORE_STATUS_OK) {

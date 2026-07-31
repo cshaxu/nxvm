@@ -14,6 +14,8 @@ typedef struct nxvm_product_nxvm_session_config {
     const nxvm_product_nxvm_media_identity *fdd_identity;
     const char *hdd_path;
     const nxvm_product_nxvm_media_identity *hdd_identity;
+    int create_fdd;
+    uint16_t create_hdd_cylinders;
     nxvm_product_nxvm_boot_target boot_target;
 } nxvm_product_nxvm_session_config;
 
