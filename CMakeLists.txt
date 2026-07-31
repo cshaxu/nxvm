@@ -34,3 +34,18 @@ add_custom_target(generate-m1-probe
     COMMENT "Generating deterministic M1 DOS COM probe"
     VERBATIM
 )
+
+# M1 retains the imported source tree as a behavior baseline. The Linux source
+# remains present for future portability work but is not part of this Windows
+# executable target.
+file(GLOB_RECURSE NXVM_BASELINE_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/src/nxvm-baseline/*.c"
+)
+list(FILTER NXVM_BASELINE_SOURCES EXCLUDE REGEX ".*/platform/linux/.*")
+
+add_executable(nxvm-baseline ${NXVM_BASELINE_SOURCES})
+target_link_libraries(nxvm-baseline PRIVATE user32 gdi32)
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(nxvm-baseline PRIVATE -Wall -Wextra -Wpedantic)
+endif()

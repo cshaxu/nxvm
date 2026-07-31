@@ -4,12 +4,18 @@
 
 M0 is complete. Its governance, source and redistribution boundaries, roadmap,
 lightweight C11 toolchain contract, and deterministic probe laboratory have all
-been documented and verified. M1 is eligible to begin, but has not started.
+been documented and verified.
+
+## M1 Closure
+
+M1 is complete. The full NXVM `src/` baseline is provenance-recorded, builds on
+Windows with the default GCC toolchain, and has bounded FDD/HDD execution
+evidence. Its immutable snapshot branch is created from the verified M1 commit
+before M2 begins.
 
 ## Active Work
 
-M1 T2 S1 is active: import and baseline the full NXVM machine under the approved
-GCC migration design.
+None. M2 T1 S1 is the next eligible subtask and remains inactive.
 
 ## Completed
 
@@ -70,17 +76,19 @@ GCC migration design.
 - M0 T12 S4: removed premature M3/M5 implementation subtasks and required each
   preceding design milestone to produce the bounded Task/subtask breakdown for
   its implementation successor without beginning M1.
+- M1 T1 S1: approved the bounded GCC migration design after a zero-patch GCC
+  compile and warning inventory.
+- M1 T2 S1: imported and built the full provenance-recorded NXVM baseline;
+  recorded bounded FDD/HDD instruction-trace evidence and the M1 snapshot.
 
 ## Next Eligible Work
 
-- M1 T1 S1: design the bounded GCC migration. Follow [the subtask
-  record](subtasks/m1-t1-s1.md). It must approve M1 T2 before any import or
-  migration execution.
+- M2 T1 S1: design the Machine and DOS architecture from the verified M1
+  baseline. Follow [the subtask record](subtasks/m2-t1-s1.md).
 
 ## Delivery State
 
-No NXVM runtime code, other third-party source, guest media, or DOS
-compatibility claim has been added. The generated M1 COM probe is test input
-only. The MinGW-w64 GCC CMake smoke gate passed. Project-owned material is MIT;
-authorized later NXVM-derived units use MIT with source provenance and copyright
-attribution.
+The full NXVM `src/` baseline is now present only in `src/nxvm-baseline/` under
+MIT authorization, preserved copyright attribution, and exact provenance. No
+guest media, Microsoft binary, or DOS compatibility claim has been added. The
+generated M1 COM probe remains test input only.
