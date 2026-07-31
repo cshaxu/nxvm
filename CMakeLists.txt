@@ -105,6 +105,21 @@ target_include_directories(nxvm-runtime PUBLIC
 )
 target_link_libraries(nxvm-runtime PUBLIC nxvm-core)
 
+add_library(nxvm-dos-minimal-presentation-adapter STATIC
+    src/adapters/dos_minimal_presentation.c
+)
+target_include_directories(nxvm-dos-minimal-presentation-adapter PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-dos-minimal-presentation-adapter PUBLIC nxvm-runtime)
+
+add_executable(nxvm-dos-minimal-presentation-smoke
+    tests/adapters/dos_minimal_presentation_smoke.c
+)
+target_link_libraries(nxvm-dos-minimal-presentation-smoke PRIVATE
+    nxvm-dos-minimal-presentation-adapter
+)
+
 add_executable(nxvm-dos-minimal-profile-smoke
     tests/runtime/dos_minimal_profile_smoke.c
 )
@@ -125,6 +140,8 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-baseline PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(nxvm-runtime PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-dos-minimal-presentation-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-dos-minimal-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-baseline-full-pc-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-full-pc-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
