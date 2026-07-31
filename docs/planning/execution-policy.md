@@ -46,6 +46,30 @@ both implementations, inputs, event schema, checkpoints, comparison masks,
 instruction/time/no-progress budgets, and cleanup owner. It cannot become a
 runtime dependency or replace focused project-owned tests.
 
+## Recorder Trace Containment
+
+Raw instruction recording is an ignored, potentially unbounded diagnostic
+artifact. A recorder run is prohibited unless its subtask record declares a
+unique ignored output path, wall-clock, no-progress, and maximum-byte budget,
+the process-tree cleanup owner, and the checkpoint data to retain after the raw
+trace is deleted. The byte budget is a hard limit: a cooperative recorder must
+stop before it; otherwise the host harness monitors file growth and terminates
+the entire launched process tree at the first exceeded limit. A timeout alone
+is not sufficient.
+
+Use a fresh run-specific name under ignored `build/` or `artifacts/`; never
+reuse a trace path from an earlier run. Before launch, reserve at least twice
+the declared byte budget as free workspace space. After every completion,
+timeout, failure, or cancellation, the harness must wait for process exit,
+verify that the trace handle is closed, record the final size/checkpoint in the
+compact verification record, and delete the raw trace unless the approved
+subtask explicitly retains it for immediate diagnosis. The next recorder run is
+blocked while a prior owned process or trace remains.
+
+Legacy recorders without an in-process byte limit are diagnostic-only and must
+run through this monitored harness. Their raw output is never a fixture,
+baseline, release artifact, or committed evidence.
+
 Do not advance a milestone merely because individual code exists. The roadmap
 owns milestone goal, scope, and exit conditions; its active subtask owns exact
 commands, expected markers, budgets, and stop conditions. `breakdown.md` is an
