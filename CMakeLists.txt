@@ -22,6 +22,7 @@ set(NTVDM64_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 
 add_library(nxvm-core STATIC
     src/core/cpu.c
+    src/core/debug.c
     src/core/machine.c
     src/core/memory.c
     src/core/port.c
@@ -51,12 +52,18 @@ add_executable(nxvm-core-machine-trace-smoke
 )
 target_link_libraries(nxvm-core-machine-trace-smoke PRIVATE nxvm-core)
 
+add_executable(nxvm-core-machine-debug-smoke
+    tests/core/machine_debug_smoke.c
+)
+target_link_libraries(nxvm-core-machine-debug-smoke PRIVATE nxvm-core)
+
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-core-machine-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 add_custom_target(generate-m1-probe

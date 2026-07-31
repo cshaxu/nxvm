@@ -23,7 +23,7 @@ Task/subtask breakdown is approved; M3 is active.
 
 ## Active Work
 
-None. M3 T4 S2 is the next eligible subtask and remains inactive.
+None. M3 T5 S1 is the next eligible subtask and remains inactive.
 
 ## Completed
 
@@ -127,6 +127,8 @@ None. M3 T4 S2 is the next eligible subtask and remains inactive.
   deterministic PIC/PIT, keyboard IRQ/port, and text-snapshot boundaries.
 - M3 T4 S1: isolated presentation through adapter-owned input queues and
   copied text snapshots, without platform access to core internals.
+- M3 T4 S2: added paused-state Machine debug commands for CPU/memory inspection
+  and finite step/continue execution without baseline-global access.
 
 ## Active Subtask
 
@@ -134,7 +136,7 @@ None.
 
 ## Next Eligible Work
 
-- M3 T4 S2: move the developer debugging boundary after M3 T4 S1.
+- M3 T5 S1: compose and close M3 after T4 closes.
 
 ## Delivery State
 
