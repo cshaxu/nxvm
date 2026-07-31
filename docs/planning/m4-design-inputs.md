@@ -19,5 +19,10 @@ machine model: M5 introduces only `nxvm.machine.pc_at_builtin`; future NXVM
 machine profiles and ntvdm64 execution profiles use the separate profile
 families defined in `docs/requirements/profiles.md`.
 
+The retained CPU is partial i386 coverage, not a complete 80386 claim. M5 first
+establishes capability probes and optional local Bochx/Bochs differential
+verification under `docs/requirements/cpu-verification.md` before CPU-adjacent
+migration.
+
 The bounded M4 design tasks are in
 `docs/planning/m4-firmware-nxvm-design-breakdown.md`.

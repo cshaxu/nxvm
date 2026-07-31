@@ -23,9 +23,9 @@ Task/subtask breakdown was executed and M3 is complete.
 
 ## M4 Closure
 
-M4 is complete. Firmware V1, profile/provider boundaries, the retained NXVM
-Console product contract, M1 regression ownership, and the bounded M5
-implementation breakdown are approved without implementation changes.
+M4 is complete. Firmware, profile/provider, CPU verification, and retained
+NXVM Console contracts now bound M5 implementation without changing runtime
+behavior.
 
 ## Active Work
 
@@ -154,6 +154,8 @@ None. M5 is the next implementation milestone.
 - M4 T5 S1: split NXVM machine profiles from ntvdm64 execution profiles,
   defined firmware providers and BYOR ROM manifests, and limited M5 to
   `nxvm.machine.pc_at_builtin`.
+- M4 T6 S1: defined evidence-backed CPU capabilities, `#UD` triage, and the
+  optional local Bochx/Bochs CPU differential boundary; M5 now starts there.
 
 ## Active Subtask
 

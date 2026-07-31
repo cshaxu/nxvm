@@ -16,7 +16,8 @@ An NXVM machine profile describes a bootable computer. Its registry key uses
 
 Each descriptor declares:
 
-- CPU class/features and required core capabilities;
+- CPU class/features and the evidence-backed required capability set from
+  `cpu-verification.md`;
 - RAM, ROM, port, IRQ, DMA, and memory-map topology;
 - enabled devices and their connection graph;
 - firmware provider and required service/device identities;

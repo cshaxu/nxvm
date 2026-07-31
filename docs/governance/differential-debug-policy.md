@@ -12,11 +12,15 @@ ntvdm64 builds a project-owned optional trace interface. Machine and DOS code
 emit normalized events to a null-by-default trace sink. A reference adapter,
 including one that drives a locally installed NTVDMx64 debugger, runs out of
 process under `tools/research/differential/` and is never linked into ntvdm64.
+The optional Bochx/Bochs paired-step CPU bridge is a distinct local research
+tool under `tools/research/bochx/`: its coupling exists only inside a separate
+developer reference build and never in an ntvdm64 or nxvm product process.
 
-NTVDMx64 can provide evidence for bounded COM and DOS ABI probes. It is not an
-oracle for NXVM POST, BIOS, virtual disk boot, PIC/PIT, or device initialization.
-Those M1 behaviors compare against the preserved NXVM baseline and focused
-project-owned observations.
+NTVDMx64 can provide evidence for bounded COM and DOS ABI probes. Bochx/Bochs
+can provide evidence for bounded CPU instruction/state probes. Neither is an
+oracle for NXVM POST, BIOS, virtual disk boot, PIC/PIT, device initialization,
+or platform behavior. Those M1 behaviors compare against the preserved NXVM
+baseline and focused project-owned observations.
 
 ## Required Trace Contract
 
@@ -53,9 +57,10 @@ Every differential runner enforces all of these:
 
 ## Cleanup Gate
 
-When a bounded experiment reaches its verdict, remove its temporary bridge,
-reference-specific configuration, reference trace capture, and diagnostic-only
-hooks from the active build. Retain a project-owned neutral trace sink or probe
-only when it has a focused regression test and no external reference dependency.
-No M1 or M5 milestone closes with an enabled external-reference bridge in the
-default build, runtime, test fixture, or release package.
+When a bounded experiment reaches its verdict, remove its experiment-specific
+direct hooks, reference configuration, and raw reference trace capture from the
+active build. A reusable Bochx bridge may remain only as an optional local
+research tool; retain a project-owned neutral trace sink or probe only when it
+has a focused regression test and no external reference dependency. No M1 or M5
+milestone closes with an enabled external-reference bridge in the default build,
+runtime, test fixture, or release package.
