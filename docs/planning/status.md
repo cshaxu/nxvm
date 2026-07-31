@@ -29,7 +29,7 @@ behavior.
 
 ## Active Work
 
-M5 T2 S1: profile and firmware-provider registry.
+M5 T3 S1: PIC/PIT/DMA core device contracts.
 
 ## Completed
 
@@ -159,7 +159,7 @@ M5 T2 S1: profile and firmware-provider registry.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t2-s1.md`.
+`docs/planning/subtasks/m5-t3-s1.md`.
 
 ## Next Eligible Work
 
