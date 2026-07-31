@@ -29,7 +29,7 @@ behavior.
 
 ## Active Work
 
-M5 T6 S1: Retained NXVM Console command adapter.
+M5 T6 S2: Presentation and debugger adapters.
 
 ## Completed
 
@@ -159,7 +159,7 @@ M5 T6 S1: Retained NXVM Console command adapter.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t6-s1.md`.
+`docs/planning/subtasks/m5-t6-s2.md`.
 
 ## Next Eligible Work
 

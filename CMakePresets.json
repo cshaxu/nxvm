@@ -159,6 +159,11 @@
       "targets": ["nxvm-product-pc-at-smoke"]
     },
     {
+      "name": "m5-nxvm-console-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-product-console-smoke"]
+    },
+    {
       "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],
