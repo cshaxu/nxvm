@@ -114,6 +114,11 @@
       "targets": ["nxvm-pc-at-builtin-profile-smoke"]
     },
     {
+      "name": "m5-pc-devices-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-core-pc-devices-smoke"]
+    },
+    {
       "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],
