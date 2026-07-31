@@ -50,6 +50,13 @@ add_library(nxvm-product-presentation-debug STATIC
 )
 target_include_directories(nxvm-product-presentation-debug PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(nxvm-product-presentation-debug PUBLIC nxvm-core)
+add_library(nxvm-product-session STATIC
+    src/products/nxvm/profile.c
+    src/products/nxvm/session.c
+)
+target_include_directories(nxvm-product-session PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(nxvm-product-session PUBLIC nxvm-firmware nxvm-product-pc-at
+    nxvm-product-console nxvm-product-presentation-debug nxvm-runtime)
 target_include_directories(nxvm-core PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -71,6 +78,8 @@ add_executable(nxvm-product-presentation-debug-smoke
     tests/products/nxvm_presentation_debugger_smoke.c)
 target_link_libraries(nxvm-product-presentation-debug-smoke PRIVATE
     nxvm-product-presentation-debug)
+add_executable(nxvm-product-session-smoke tests/products/nxvm_session_smoke.c)
+target_link_libraries(nxvm-product-session-smoke PRIVATE nxvm-product-session)
 target_link_libraries(nxvm-core-contract-smoke PRIVATE nxvm-core)
 
 add_executable(nxvm-core-machine-instance-smoke
@@ -113,12 +122,14 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-product-pc-at PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-console PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-presentation-debug PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-product-session PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-pc-at-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-media-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-pc-at-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-presentation-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-product-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
