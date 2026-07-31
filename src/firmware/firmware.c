@@ -41,3 +41,17 @@ const nxvm_firmware_service_descriptor *nxvm_firmware_service_at(
 {
     return firmware == NULL || index >= firmware->count ? NULL : firmware->services[index];
 }
+
+const nxvm_firmware_service_descriptor *nxvm_firmware_find_interrupt(
+    const nxvm_firmware *firmware, unsigned vector)
+{
+    size_t index;
+
+    if (firmware == NULL || vector > 255u) return NULL;
+    for (index = 0u; index < firmware->count; ++index) {
+        const nxvm_firmware_service_descriptor *service = firmware->services[index];
+        if (service->kind == NXVM_FIRMWARE_SERVICE_INTERRUPT &&
+            service->vector == vector) return service;
+    }
+    return NULL;
+}

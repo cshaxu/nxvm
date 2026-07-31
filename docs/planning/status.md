@@ -29,7 +29,7 @@ behavior.
 
 ## Active Work
 
-M5 T4 S1: Firmware V1 service registry.
+M5 T5 S1: NXVM media policy and block provider.
 
 ## Completed
 
@@ -159,7 +159,7 @@ M5 T4 S1: Firmware V1 service registry.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t4-s1.md`.
+`docs/planning/subtasks/m5-t5-s1.md`.
 
 ## Next Eligible Work
 

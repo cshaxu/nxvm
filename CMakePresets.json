@@ -109,6 +109,11 @@
       "targets": ["nxvm-m5-t3"]
     },
     {
+      "name": "m5-t4-nxvm-artifact-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-m5-t4"]
+    },
+    {
       "name": "m5-profile-registry-gcc",
       "configurePreset": "mingw-gcc-x64",
       "targets": ["nxvm-runtime-registry-smoke"]
