@@ -76,6 +76,11 @@
       "targets": ["nxvm-core-machine-debug-smoke"]
     },
     {
+      "name": "m3-session-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-runtime-session-smoke"]
+    },
+    {
       "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],
