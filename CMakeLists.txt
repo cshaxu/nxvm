@@ -8,6 +8,9 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+option(NTVDM64_ENABLE_BOCHX_RESEARCH
+    "Build the local-only Bochx experiment manifest validator" OFF)
+
 if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|MSVC|Clang)$")
     message(FATAL_ERROR "ntvdm64 requires GCC, MSVC, or Clang C11 support.")
 endif()
@@ -181,6 +184,16 @@ endfunction()
 add_nxvm_full_pc_artifact(nxvm-baseline "m1t2s1")
 add_nxvm_full_pc_artifact(nxvm-m3-t5 "m3t5")
 add_nxvm_full_pc_artifact(nxvm-m5-t1 "m5t1")
+
+if(NTVDM64_ENABLE_BOCHX_RESEARCH)
+    add_executable(ntvdm64-bochx-manifest-check
+        tools/research/bochx/bochx_manifest_check.c
+    )
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(ntvdm64-bochx-manifest-check PRIVATE
+            -Wall -Wextra -Wpedantic -Werror)
+    endif()
+endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-runtime PRIVATE -Wall -Wextra -Wpedantic -Werror)

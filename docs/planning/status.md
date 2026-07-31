@@ -29,7 +29,7 @@ behavior.
 
 ## Active Work
 
-M5 T1 S2: optional local Bochx/Bochs experiment harness.
+M5 T2 S1: profile and firmware-provider registry.
 
 ## Completed
 
@@ -159,7 +159,7 @@ M5 T1 S2: optional local Bochx/Bochs experiment harness.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t1-s2.md`.
+`docs/planning/subtasks/m5-t2-s1.md`.
 
 ## Next Eligible Work
 
