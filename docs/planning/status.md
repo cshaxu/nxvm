@@ -27,18 +27,18 @@ M4 is complete. Firmware, profile/provider, CPU verification, and retained
 NXVM Console contracts now bound M5 implementation without changing runtime
 behavior.
 
-## M5 Closure
+## M5 Reopened
 
-M5 is complete. The shared architecture now produces a first-class bootable
-`nxvm.exe` product path with canonical PC/AT profile/provider composition,
-firmware, media, Console, presentation, debugger, bounded FDD/HDD evidence,
-and a verified task artifact. Its snapshot is created from the M5 closure
-commit before M6 begins.
+The former M5 closure established product composition and regression evidence,
+but its user-facing full-PC execution still entered `src/nxvm-baseline/`
+through the temporary adapter. M5 is reopened: actual CPU execution, lifecycle,
+firmware, devices, presentation, and retained NXVM Console/debugger behavior
+must migrate to the declared module owners before M6 may begin. The historical
+`snapshot/m5-nxvm-28fb4b1` remains a checkpoint, not an M5 completion snapshot.
 
 ## Active Work
 
-No implementation subtask is active. M6 design work requires explicit owner
-activation.
+M5 T8 S1: map the real execution migration before invasive source changes.
 
 ## Completed
 
@@ -168,11 +168,12 @@ activation.
 
 ## Active Subtask
 
-None.
+`docs/planning/subtasks/m5-t8-s1.md`.
 
 ## Next Eligible Work
 
-- M6 begins only after explicit activation from `docs/roadmap.md`.
+- M5 T8 S1 produces the code-level migration map and bounded implementation
+  order. M6 remains blocked until M5 truly closes.
 
 ## Delivery State
 
