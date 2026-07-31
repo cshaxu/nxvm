@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     }
     nxvm_core_cpu_capability_manifest_initialize(&capabilities);
     nxvm_runtime_registry_initialize(&registry);
-    if (nxvm_product_nxvm_register_pc_at_builtin(&registry) != NXVM_CORE_STATUS_OK ||
+    if (nxvm_product_nxvm_register_default_profile_builtin(&registry) != NXVM_CORE_STATUS_OK ||
         nxvm_runtime_registry_find_profile(&registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID,
             NXVM_RUNTIME_PROFILE_MACHINE, &capabilities) == NULL ||

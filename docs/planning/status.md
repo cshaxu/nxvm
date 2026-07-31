@@ -38,7 +38,7 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T9 S1: lift the original NXVM Console/debugger source before migrating the
+M5 T9 S2: lift the original NXVM Console/debugger source before migrating the
 execution engine.
 
 ## Completed
@@ -169,11 +169,11 @@ execution engine.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t9-s1.md`.
+`docs/planning/subtasks/m5-t9-s2.md`.
 
 ## Next Eligible Work
 
-- M5 T9 S1 begins the source migration with the retained Console/debugger;
+- M5 T9 S2 begins the source migration with the retained Console/debugger;
   M6 remains blocked until M5 truly closes.
 
 ## Delivery State

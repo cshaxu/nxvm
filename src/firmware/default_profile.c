@@ -1,13 +1,13 @@
-#include "firmware/pc_at.h"
+#include "firmware/default_profile.h"
 
 #include "core/memory.h"
 
-nxvm_core_status nxvm_firmware_pc_at_compose(
-    nxvm_firmware *firmware, nxvm_firmware_pc_at_plan *out_plan)
+nxvm_core_status nxvm_firmware_default_profile_compose(
+    nxvm_firmware *firmware, nxvm_firmware_default_profile_plan *out_plan)
 {
     static const nxvm_firmware_service_descriptor services[] = {
-        { "pc_at.rom", NXVM_FIRMWARE_SERVICE_ROM, 10u, 0u },
-        { "pc_at.post", NXVM_FIRMWARE_SERVICE_POST, 20u, 0u },
+        { "default_profile.rom", NXVM_FIRMWARE_SERVICE_ROM, 10u, 0u },
+        { "default_profile.post", NXVM_FIRMWARE_SERVICE_POST, 20u, 0u },
         { "bios.int10.video", NXVM_FIRMWARE_SERVICE_INTERRUPT, 30u, 0x10u },
         { "bios.int13.disk", NXVM_FIRMWARE_SERVICE_INTERRUPT, 40u, 0x13u },
         { "bios.int16.keyboard", NXVM_FIRMWARE_SERVICE_INTERRUPT, 50u, 0x16u },
@@ -27,7 +27,7 @@ nxvm_core_status nxvm_firmware_pc_at_compose(
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_firmware_pc_at_apply_image(
+nxvm_core_status nxvm_firmware_default_profile_apply_image(
     nxvm_core_machine *machine, int boot_hdd)
 {
     static const uint8_t reset_stub[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0xf0u };
@@ -54,8 +54,8 @@ nxvm_core_status nxvm_firmware_pc_at_apply_image(
     return nxvm_core_machine_memory_write(machine, 0xffff0u, reset_stub, sizeof(reset_stub));
 }
 
-void nxvm_firmware_pc_at_cmos_initialize(
-    nxvm_firmware_pc_at_cmos *cmos, int boot_hdd)
+void nxvm_firmware_default_profile_cmos_initialize(
+    nxvm_firmware_default_profile_cmos *cmos, int boot_hdd)
 {
     if (cmos == NULL) return;
     cmos->equipment = 0x21u;
