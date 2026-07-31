@@ -49,3 +49,13 @@ M1 is complete. The required immutable M1 snapshot branch is created from this
 verified commit before M2 begins. M2 may use the recorded behavior and source
 provenance, but must not treat the temporary baseline coupling as final
 architecture.
+
+## Local Developer Artifact
+
+- Local ignored artifact: `build/output/ntvdm64-m1_t2_s1.exe`.
+- Source commit: `7d542233c3335ba607c99b2ec77ec586fb6a38a9`.
+- SHA-256:
+  `90ec2860a14a4e998cea6b85214959da07fcb28c5a2dfe9608f1618e57875363`.
+- Classification: M1 NXVM baseline developer artifact only. It starts the
+  inherited NXVM Console; it is not `ntvdm64 run`, does not implement the owned
+  DOS backend, and bundles no guest media.

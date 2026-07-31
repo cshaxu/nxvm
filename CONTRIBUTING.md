@@ -46,3 +46,8 @@ Every change must state:
 Use `M<milestone> T<task> S<subtask> P<part>: description`. Keep task records
 under `docs/tracking/`, write a verification record for completed subtasks, and
 preserve all established baselines.
+
+When a completed subtask produces a runnable Windows executable, place its
+verified local copy in ignored `build/output/` as
+`ntvdm64-m<M>_t<T>_s<S>.exe`. Record its hash and artifact classification in
+the verification record; do not treat it as a release or bundle protected media.
