@@ -29,7 +29,7 @@ behavior.
 
 ## Active Work
 
-M5 T5 S1: NXVM media policy and block provider.
+M5 T5 S2: PC/AT block composition.
 
 ## Completed
 
@@ -159,7 +159,7 @@ M5 T5 S1: NXVM media policy and block provider.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t5-s1.md`.
+`docs/planning/subtasks/m5-t5-s2.md`.
 
 ## Next Eligible Work
 
