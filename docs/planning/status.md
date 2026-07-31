@@ -19,11 +19,11 @@ M2 is complete. Shared Core Architecture Requirements V2 defines the
 `nxvm.exe` and `ntvdm64.exe` product split, `nxvm.full_pc` and
 `ntvdm64.dos_minimal` profiles, lifecycle, ownership, registries, abstract
 host-service and trace boundaries, and M3 regression strategy. The bounded M3
-Task/subtask breakdown is approved; M3 is active.
+Task/subtask breakdown was executed and M3 is complete.
 
 ## Active Work
 
-None. M3 T5 S1 is the next eligible subtask and remains inactive.
+None. M3 is closed; M4 is the next design milestone.
 
 ## Completed
 
@@ -129,6 +129,9 @@ None. M3 T5 S1 is the next eligible subtask and remains inactive.
   copied text snapshots, without platform access to core internals.
 - M3 T4 S2: added paused-state Machine debug commands for CPU/memory inspection
   and finite step/continue execution without baseline-global access.
+- M3 T5 S1: composed runtime-owned profile sessions, completed the M3 matrix,
+  revalidated fixture identities and retained M1 regression evidence, and
+  recorded M4 design inputs.
 
 ## Active Subtask
 
@@ -136,7 +139,7 @@ None.
 
 ## Next Eligible Work
 
-- M3 T5 S1: compose and close M3 after T4 closes.
+- M4 design begins from `docs/planning/m4-design-inputs.md`.
 
 ## Delivery State
 
