@@ -64,6 +64,9 @@ cannot start until the GCC migration design is approved.
 - M0 T12 S2: clarified the future project-owned pre-M7 Console `load` command,
   required it to enter through the owned DOS loader, and made GCC migration
   design the mandatory first M1 task without beginning M1.
+- M0 T12 S3: constrained debugger `load` to an empty paused debug session and
+  aligned its reset, first-instruction, and rejection semantics without
+  beginning implementation.
 
 ## Next Eligible Work
 

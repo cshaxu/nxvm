@@ -71,12 +71,16 @@ have no Win32 Console, GUI window, pipe, Ctrl+C, mouse, or host-redirection
 semantics. Those are Platform product behavior in M7.
 
 M5 test execution uses a project-owned temporary NXVM Console
-`load <host-binary-path>` command and a project-owned fixture adapter. `load`
-must pass the selected image into the M5 COM loader; it must not inject bytes at
-an arbitrary CPU address or bypass PSP/environment/loader semantics. It does
-not implement the `ntvdm64 run` product path, host-drive mapping, or product
-command-line parsing. Its host path is a developer/test input only; DOS sees
-only the fixture filesystem and cannot enumerate or open that host path.
+`load <host-binary-path>` command and a project-owned fixture adapter. It is a
+debugger command: it is accepted only while the machine is paused, debug mode is
+enabled, and no program has been selected or loaded; it is rejected otherwise.
+After success, it remains paused before the first program instruction; only a
+reset returns to the loadable state. `load` must pass the selected image into the
+M5 COM loader; it must not inject bytes at an arbitrary CPU address or bypass
+PSP/environment/loader semantics. It does not implement the `ntvdm64 run`
+product path, host-drive mapping, or product command-line parsing. Its host path
+is a developer/test input only; DOS sees only the fixture filesystem and cannot
+enumerate or open that host path.
 
 ## Acceptance Probes
 
