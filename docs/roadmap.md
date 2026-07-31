@@ -4,10 +4,12 @@ Each milestone requires a runnable demonstration, focused automated tests,
 recorded evidence, and preservation of established baselines.
 
 Before M7, DOS program testing uses a project-owned temporary `load` command in
-the NXVM Console. M5 introduces it after the M1 baseline; it accepts an explicit
-host binary path and hands the image to the approved DOS loader/test harness. It
-is not asserted to exist in NXVM today, is not the product CLI, creates no host
-drive mapping, and does not alter the future `ntvdm64 run` contract.
+the NXVM Console. M5 introduces it after the M1 baseline as an empty-session
+debugger command: it accepts an explicit host binary path only when debug mode
+is enabled and no program is selected or loaded, then hands the image to the
+approved DOS loader/test harness and remains paused. It is not asserted to exist
+in NXVM today, is not the product CLI, creates no host drive mapping, and does
+not alter the future `ntvdm64 run` contract.
 
 ## M1: Validate The NXVM Machine Foundation
 
@@ -97,8 +99,9 @@ against the M3 contract. **Non-goal:** DOS implementation.
 **Scope:** the bounded COM loader, PSP, environment, `INT 20h`, the approved
 `INT 21h` subset, deterministic text/keyboard I/O, exit, an in-memory fixture
 filesystem, fixed loader memory, defined DOS errors, and a temporary NXVM
-Console `load <host-binary-path>` developer/test command that delegates to the
-COM loader. The exact M5 profile is [M5 DOS Backend Requirements](requirements/m5-dos-backend.md).
+Console `load <host-binary-path>` developer/test debugger command. It is
+available only to an empty paused debug session and delegates to the COM loader.
+The exact M5 profile is [M5 DOS Backend Requirements](requirements/m5-dos-backend.md).
 
 M5 may correlate its DOS-service events with the same machine trace stream and
 compare bounded COM probes against an external NTVDMx64 adapter. This adapter

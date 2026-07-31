@@ -14,7 +14,7 @@ Console/window state machine, display-mode table, debugger grammar, input
 routing, and restoration behavior. M5 introduces a project-owned temporary
 NXVM Console `load <host-binary-path>` command for pre-M7 developer/test work;
 M1 through M5 do not implement this product CLI. That workflow is distinct from
-the product debugger, which has no runtime `load` command.
+the product debugger, whose constrained `load` state machine is defined below.
 
 ## Command Shape
 
@@ -72,16 +72,25 @@ guest display and guest keyboard/mouse input. The Console owns only the
 interactive debugger. It presents register state, stop reasons, and a command
 prompt supporting at least register inspection, disassembly, memory inspection,
 execution breakpoints, single-step, continue, trace control, reset, and quit.
-The debugger controls guest execution through a synchronized command boundary;
-it must not concurrently mutate CPU state from the Console or window thread.
+It also supports the constrained `load` command defined below. The debugger
+controls guest execution through a synchronized command boundary; it must not
+concurrently mutate CPU state from the Console or window thread.
 
 `ntvdm64 run --debug` without `<program>` is valid. It creates a reset machine
 and stops at its initial execution point without loading a DOS program or an
 implicit command interpreter. The debugger reports that no program is loaded.
-There is no debugger `load` command: program selection is exclusively the
-command-line `<program>` argument. In this no-program state, `continue` returns
-to the host Console after normal debugger cleanup. A debug run with a program
-stops before the guest's first program instruction.
+
+The debugger provides `load <path>` only in this reset, paused, no-program
+state. It rejects `load` when debug mode is absent, when `<program>` was given
+on the command line, or when a program is already loaded. On success it invokes
+the normal DOS loader, creates the declared process state, and remains paused
+immediately before the first guest program instruction. `step` or `continue`
+then begins execution. `reset` discards the loaded program and restores the
+only state in which `load` is accepted. A path used by `load` follows the same
+visible-drive and containment rules as `<program>`; it cannot bypass the host
+filesystem policy. In an unloaded debug session, `continue` returns to the host
+Console after normal debugger cleanup. A debug run with a command-line program
+stops before that program's first guest instruction.
 
 If `--debug` is not enabled and `--display=window` is selected, the inherited
 Console is a silent wait surface: it must not render guest display output,
@@ -158,8 +167,9 @@ access.
    output is discarded when `graphics.com` requests an unsupported graphics
    mode.
 8. `ntvdm64 run --debug` creates a reset, paused machine with no DOS program
-   loaded; `ntvdm64 run --debug program.com` stops before its first guest
-   instruction.
+   loaded; `load program.com` then uses the normal DOS loader and remains paused
+   at its first guest instruction. `ntvdm64 run --debug program.com` also stops
+   before its first guest instruction.
 9. `ntvdm64 run --debug --display=console program.com` fails before guest
    execution; `ntvdm64 run --debug program.com` uses the dedicated guest window
    and an interactive debugger Console.
@@ -173,3 +183,6 @@ access.
 13. During a windowed guest run, `Ctrl+C` in the inherited Console follows normal
     Windows Console behavior and does not control the guest; guest `Ctrl+C` is
     owned by the guest window.
+14. `load` fails clearly in non-debug mode, after a command-line program was
+    selected, and after any successful `load`; after `reset`, it is available
+    again only to an unloaded debug session.

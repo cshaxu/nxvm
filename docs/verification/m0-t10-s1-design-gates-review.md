@@ -12,3 +12,7 @@ to the active guest display surface.
 ## Status
 
 This is governance only. M1 remains the next eligible and inactive subtask.
+
+M0 T12 S3 subsequently supersedes the earlier no-debugger-`load` decision with
+the constrained empty-paused-debug-session `load` state machine. This record
+otherwise remains a historical review of the M0 T10 decision.
