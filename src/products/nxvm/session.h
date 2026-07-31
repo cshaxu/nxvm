@@ -1,11 +1,11 @@
 #ifndef NXVM_PRODUCT_NXVM_SESSION_H
 #define NXVM_PRODUCT_NXVM_SESSION_H
 
-#include "firmware/pc_at.h"
+#include "firmware/default_profile.h"
 #include "products/nxvm/console.h"
 #include "products/nxvm/debugger.h"
 #include "products/nxvm/media.h"
-#include "products/nxvm/pc_at.h"
+#include "products/nxvm/default_profile.h"
 #include "products/nxvm/presentation.h"
 #include "runtime/registry.h"
 
@@ -22,10 +22,10 @@ typedef struct nxvm_product_nxvm_session_config {
 typedef struct nxvm_product_nxvm_session {
     nxvm_runtime_registry registry;
     nxvm_firmware firmware;
-    nxvm_firmware_pc_at_plan firmware_plan;
-    nxvm_firmware_pc_at_cmos cmos;
+    nxvm_firmware_default_profile_plan firmware_plan;
+    nxvm_firmware_default_profile_cmos cmos;
     nxvm_product_nxvm_media_policy media;
-    nxvm_product_nxvm_pc_at pc_at;
+    nxvm_product_nxvm_default_profile default_profile;
     nxvm_product_nxvm_console console;
     nxvm_product_nxvm_presentation presentation;
     nxvm_core_machine *firmware_machine;

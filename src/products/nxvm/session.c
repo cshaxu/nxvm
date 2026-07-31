@@ -49,7 +49,7 @@ nxvm_core_status nxvm_product_nxvm_session_create(
     memset(session, 0, sizeof(*session));
     nxvm_core_cpu_capability_manifest_initialize(&capabilities);
     nxvm_runtime_registry_initialize(&session->registry);
-    status = nxvm_product_nxvm_register_pc_at_builtin(&session->registry);
+    status = nxvm_product_nxvm_register_default_profile_builtin(&session->registry);
     if (status != NXVM_CORE_STATUS_OK ||
         nxvm_runtime_registry_find_profile(&session->registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID, NXVM_RUNTIME_PROFILE_MACHINE,
@@ -61,21 +61,21 @@ nxvm_core_status nxvm_product_nxvm_session_create(
         return NXVM_CORE_STATUS_FAULT;
     }
     nxvm_firmware_initialize(&session->firmware);
-    if (nxvm_firmware_pc_at_compose(&session->firmware, &session->firmware_plan) !=
+    if (nxvm_firmware_default_profile_compose(&session->firmware, &session->firmware_plan) !=
             NXVM_CORE_STATUS_OK || nxvm_firmware_freeze(&session->firmware) !=
             NXVM_CORE_STATUS_OK || nxvm_core_machine_create(&machine_config,
             &session->firmware_machine) != NXVM_CORE_STATUS_OK ||
         nxvm_core_machine_reset(session->firmware_machine) != NXVM_CORE_STATUS_OK ||
-        nxvm_firmware_pc_at_apply_image(session->firmware_machine,
+        nxvm_firmware_default_profile_apply_image(session->firmware_machine,
             config->boot_target == NXVM_PRODUCT_NXVM_BOOT_HDD) != NXVM_CORE_STATUS_OK) {
         nxvm_product_nxvm_session_destroy(session);
         return NXVM_CORE_STATUS_FAULT;
     }
-    nxvm_firmware_pc_at_cmos_initialize(&session->cmos,
+    nxvm_firmware_default_profile_cmos_initialize(&session->cmos,
         config->boot_target == NXVM_PRODUCT_NXVM_BOOT_HDD);
     status = nxvm_product_nxvm_session_configure_media(session, config);
     if (status != NXVM_CORE_STATUS_OK ||
-        (status = nxvm_product_nxvm_pc_at_create(&session->pc_at, &session->media)) !=
+        (status = nxvm_product_nxvm_default_profile_create(&session->default_profile, &session->media)) !=
             NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_debugger_initialize(&session->debugger,
             session->firmware_machine) != NXVM_CORE_STATUS_OK) {
@@ -109,13 +109,13 @@ nxvm_core_status nxvm_product_nxvm_session_get_execution_reset_vector(
     nxvm_product_nxvm_reset_vector *out_vector)
 {
     if (session == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    return nxvm_product_nxvm_pc_at_get_reset_vector(&session->pc_at, out_vector);
+    return nxvm_product_nxvm_default_profile_get_reset_vector(&session->default_profile, out_vector);
 }
 
 void nxvm_product_nxvm_session_destroy(nxvm_product_nxvm_session *session)
 {
     if (session == NULL) return;
-    nxvm_product_nxvm_pc_at_destroy(&session->pc_at);
+    nxvm_product_nxvm_default_profile_destroy(&session->default_profile);
     if (session->firmware_machine != NULL) {
         nxvm_core_machine_destroy(session->firmware_machine);
     }
