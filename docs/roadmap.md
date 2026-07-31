@@ -76,11 +76,12 @@ forbidden dependencies are absent, and M3 produces the M4 breakdown.
 **Goal:** specify the bootable VM product before implementation.
 
 **Scope:** BIOS/POST/ROM and BIOS interrupt-service ownership; firmware service
-registry; whole-machine profile composition; disk-image and removable-media
-policy; retained interactive NXVM Console grammar and behavior; debugger entry
-points; display/input expectations; artifact identity; and regression rules
-that keep whole-machine boot ability from becoming accidental. `nxvm.exe` has
-no new process CLI.
+and provider registries; machine-profile and execution-profile composition;
+disk-image and removable-media policy; retained interactive NXVM Console grammar
+and behavior; debugger entry points; display/input expectations; artifact
+identity; external-ROM manifest boundary; and regression rules that keep
+whole-machine boot ability from becoming accidental. `nxvm.exe` has no new
+process CLI.
 
 **Exit:** versioned firmware and `nxvm.exe` product specifications plus the
 bounded M5 breakdown. **Non-goal:** implementation.
@@ -89,10 +90,12 @@ bounded M5 breakdown. **Non-goal:** implementation.
 
 **Goal:** make the bootable VM product a first-class output on the shared core.
 
-**Scope:** move retained BIOS/POST/ROM and boot devices into `firmware` or
-`products/nxvm` as specified by M4, implement retained NXVM Console contracts,
-retain FDD/HDD boot fixtures, and produce runnable artifacts. `nxvm.exe` has
-no new process CLI.
+**Scope:** implement the profile/provider registry and only the built-in
+`nxvm.machine.pc_at_builtin` machine profile; move its retained BIOS/POST/ROM
+and boot devices into `firmware` or `products/nxvm`; implement retained NXVM
+Console contracts; retain FDD/HDD boot fixtures; and produce runnable artifacts.
+External-ROM loading and additional machine profiles remain future design work.
+`nxvm.exe` has no new process CLI.
 
 **Exit:** `nxvm.exe` boots the recorded full-PC fixtures through the shared core
 with focused regression evidence. No ntvdm64 DOS runner behavior is required.

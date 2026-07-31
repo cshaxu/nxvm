@@ -43,3 +43,13 @@ where feasible. Published product code is organized and maintained here.
 Microsoft binaries never enter this repository or the default release. BYOB is
 a future research possibility, not a current feature or promised `ntvdm import`
 workflow. Any future profile and hash policy follows an M11 Go decision.
+
+## Third-Party Firmware Images
+
+Award, Phoenix, IBM, Compaq, and other third-party firmware images are never
+committed, bundled, downloaded, listed in a project/release hash catalog, or
+made a default runtime dependency. A future external-ROM provider may read a
+user-supplied local bundle only after an owner-approved machine-profile design
+gate defines its manifest, validation, mapping, and legal boundary. A local
+manifest hash validates the owner's supplied file; it does not make a ROM
+redistributable or authorize copying vendor code.

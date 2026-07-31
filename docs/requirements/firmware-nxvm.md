@@ -8,10 +8,12 @@ to `nxvm.exe`.
 
 ## T1: Ownership And Migration
 
-`nxvm.full_pc` remains a supported product profile. Its source of behavior is
-the M1 baseline, but its target ownership is the table below. A target owner
-may use a module-local adapter during M5; no target module may reach baseline
-globals after its migration task closes.
+`nxvm.full_pc` remains the M3 supported adapter descriptor. Its M5 target is
+the canonical `nxvm.machine.pc_at_builtin` machine profile defined in
+`profiles.md`. Its source of behavior is the M1 baseline, but its target
+ownership is the table below. A target owner may use a module-local adapter
+during M5; no target module may reach baseline globals after its migration task
+closes.
 
 | Baseline units | Target owner | Responsibility | M5 order and regression |
 | --- | --- | --- | --- |
@@ -25,10 +27,11 @@ globals after its migration task closes.
 
 ## Composition Rules
 
-`runtime` creates the Machine and selects `nxvm.full_pc`. The NXVM product then
-selects its media policy, requests the PC/AT device package, and composes the
-firmware package. Firmware registers typed POST, ROM, and interrupt services;
-it does not open host files, create windows, or parse Console input.
+`runtime` creates the Machine and selects `nxvm.machine.pc_at_builtin`. The
+NXVM product then selects its media policy, requests the PC/AT device package,
+and composes the built-in firmware provider. Firmware registers typed POST,
+ROM, and interrupt services; it does not open host files, create windows, or
+parse Console input.
 
 ```text
 products/nxvm Console and media policy

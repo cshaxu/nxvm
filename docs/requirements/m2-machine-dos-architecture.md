@@ -17,18 +17,20 @@ watchdog while still making progress. See
 
 ## Profiles And Devices
 
-M3 supports two explicit product profiles. `nxvm.full_pc` preserves and evolves
-the whole-machine boot path as a first-class product surface. It is not legacy
-cleanup. `ntvdm64.dos_minimal` is the owned-DOS foundation: it starts from a
-controlled reset, and the DOS loader, not POST or a disk image, selects program
-execution. No implicit shell, disk boot, or BIOS program loader is permitted in
-that profile.
+M3 supports two explicit transitional product descriptors. `nxvm.full_pc`
+preserves the whole-machine boot path as a first-class adapter and migrates in
+M5 to the canonical `nxvm.machine.pc_at_builtin` machine profile. It is not
+legacy cleanup. `ntvdm64.dos_minimal` migrates to the canonical
+`ntvdm64.execution.dos_minimal` execution profile: it starts from a controlled
+reset, and the DOS loader, not POST or a disk image, selects program execution.
+No implicit shell, disk boot, or BIOS program loader is permitted in that
+execution profile.
 
 | Baseline unit | M3 disposition | Reason and M3 proof |
 | --- | --- | --- |
 | `vcpu`, `vram`, `vport` | retain behind `core` Machine | Required for real-mode program execution, memory and I/O; CPU/memory microtests plus both M1 boot traces. |
 | `vpic`, `vpit` | retain as optional core devices | Required for an explicit interrupt/timing model; disabled only by a declared profile, never by hidden global state. |
-| `vkbc`, `qdx`/CGA display | retain as optional product/profile devices | `nxvm.full_pc` needs current presentation behavior; `ntvdm64.dos_minimal` needs abstract input and text snapshots. Platform supplies events and consumes snapshots. |
+| `vkbc`, `qdx`/CGA display | retain as optional core devices; see `docs/requirements/firmware-nxvm.md` | The NXVM machine profile needs current presentation behavior; ntvdm64 execution profiles consume declared input/text-snapshot capabilities. Platform supplies events and consumes snapshots. |
 | `vbios`, `vcmos`, `vvadp` | `firmware/pc_at`; see `docs/requirements/firmware-nxvm.md` | PC/AT ROM, POST, CMOS configuration, and BIOS services needed for M1 boot, but not for `ntvdm64.dos_minimal`. |
 | `vdma` | optional core device; see `docs/requirements/firmware-nxvm.md` | Machine-neutral DMA semantics with no DOS or host UI dependency. |
 | `vfdc`, `vfdd`, `vhdc`, `vhdd` | `products/nxvm/pc_at`; see `docs/requirements/firmware-nxvm.md` | Full-PC controller/device composition and media policy needed for M1 boot, but not for `ntvdm64.dos_minimal`. |
@@ -36,10 +38,11 @@ that profile.
 | `machine.c`, `platform/*` startup loops | replace | The baseline has machine-to-platform coupling, global `device.flagRun`, and platform-created kernel/display threads. M3 replaces these with runtime-owned composition and a synchronized command boundary. |
 
 No unit is deleted in M3 merely because it is absent from
-`ntvdm64.dos_minimal`; `nxvm.full_pc` remains a supported product profile.
-Graphics, mouse, DMA consumers, disk emulation for ntvdm64 DOS programs, and
-expanded BIOS compatibility are deferred until a later product or corpus
-requirement admits them.
+`ntvdm64.dos_minimal`; `nxvm.full_pc` remains the supported transitional
+adapter while M5 introduces `nxvm.machine.pc_at_builtin`. Graphics, mouse, DMA
+consumers, disk emulation for ntvdm64 DOS programs, and expanded BIOS
+compatibility are deferred until a later product or corpus requirement admits
+them.
 
 ## Module Ownership
 
@@ -77,8 +80,9 @@ M3, not an allowed new boundary.
 
 M3 establishes the first registry skeletons as session-owned tables:
 
-- profile/composition: selects `nxvm.full_pc`, `ntvdm64.dos_minimal`, or test
-  profiles and declares enabled modules;
+- profile/composition: transitional M3 descriptors; M4 splits this into
+  machine-profile and execution-profile registries defined in
+  `docs/requirements/profiles.md`;
 - device: owns core device lifecycle and reset/run participation;
 - port/memory: maps I/O ports and mapped memory ranges to checked callbacks;
 - interrupt: routes guest vectors to Machine, firmware, DOS, or tooling owners;

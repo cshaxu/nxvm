@@ -23,9 +23,9 @@ Task/subtask breakdown was executed and M3 is complete.
 
 ## M4 Closure
 
-M4 is complete. Firmware V1, the retained NXVM Console product contract, M1
-regression ownership, and the bounded M5 implementation breakdown are approved
-without implementation changes.
+M4 is complete. Firmware V1, profile/provider boundaries, the retained NXVM
+Console product contract, M1 regression ownership, and the bounded M5
+implementation breakdown are approved without implementation changes.
 
 ## Active Work
 
@@ -151,6 +151,9 @@ None. M5 is the next implementation milestone.
   artifact contract without adding a process CLI or changing runtime behavior.
 - M4 T4 S1: froze M5's bounded implementation breakdown, shared verification
   gates, task artifact rule, and closure criteria.
+- M4 T5 S1: split NXVM machine profiles from ntvdm64 execution profiles,
+  defined firmware providers and BYOR ROM manifests, and limited M5 to
+  `nxvm.machine.pc_at_builtin`.
 
 ## Active Subtask
 

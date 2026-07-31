@@ -80,8 +80,9 @@ products/nxvm      products/ntvdm64
   `Machine` instance state. It has no DOS, firmware policy, product CLI, or
   host OS dependency.
 - `firmware/`: BIOS/POST/ROM behavior and BIOS interrupt/service handlers. It
-  can be composed into `nxvm.full_pc` and selected ntvdm64 profiles through the
-  firmware service registry, but it does not own product CLI or host handles.
+  can be composed into an NXVM machine profile or an explicitly selected
+  ntvdm64 execution-profile subset through the firmware service registry, but
+  it does not own product CLI or host handles.
   M5 introduces `firmware/pc_at` for the bootable NXVM ROM, POST, CMOS, and
   BIOS-service package.
 - `platform/`: host capability providers such as Win32, retained Linux source,
@@ -110,8 +111,11 @@ Registries are session-owned composition tables, not process-global mutable
 maps. A registry entry has a key, versioned contract, owner, profile/capability
 gate, lifecycle state, and teardown rule.
 
-- Profile/composition registry: selects `nxvm.full_pc`,
-  `ntvdm64.dos_minimal`, test profiles, and enabled module sets.
+- Machine-profile registry: selects bootable NXVM machine descriptions such as
+  `nxvm.machine.pc_at_builtin`, including topology, firmware provider, and
+  boot/media policy.
+- Execution-profile registry: selects non-booting ntvdm64 capability sets such
+  as `ntvdm64.execution.dos_minimal`, including owned DOS and platform policy.
 - Device registry: owns generic device lifecycle and reset/run participation.
 - Port and memory-range registry: maps I/O ports and mapped memory ranges to
   checked callbacks.
@@ -119,6 +123,8 @@ gate, lifecycle state, and teardown rule.
   or tooling handlers.
 - Firmware service registry: routes BIOS services such as INT 10h, INT 13h,
   INT 16h, and INT 1Ah to firmware handlers and declared host capabilities.
+- Firmware-provider registry: selects built-in, external-ROM, or absent
+  providers subject to the selected profile and redistribution policy.
 - DOS service registry: routes DOS ABI functions such as INT 20h and INT 21h
   to the owned DOS module.
 - Host capability registry: exposes abstract input, display, clock,
