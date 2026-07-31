@@ -81,6 +81,11 @@
       "targets": ["nxvm-runtime-session-smoke"]
     },
     {
+      "name": "m3-nxvm-task-artifacts-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-m3-t5"]
+    },
+    {
       "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],

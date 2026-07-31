@@ -39,7 +39,8 @@ Copyright (c) 2012-2014 Neko.
 ```
 
 `M`, `T`, and `S` are the decimal milestone, task, and subtask identifiers that
-produced the executable, for example `0.4.015d.m3t1s2`.
+produced the executable. A task-level aggregate omits `s`, for example
+`0.4.015d.m3t1`; a subtask-specific executable is not a developer artifact.
 
 After M5 implements the first-class `nxvm.exe` surface, that product keeps the
 Virtual Machine identity and follows the NXVM versioning lineage. After M9
