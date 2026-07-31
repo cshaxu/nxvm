@@ -57,5 +57,5 @@ When a bounded experiment reaches its verdict, remove its temporary bridge,
 reference-specific configuration, reference trace capture, and diagnostic-only
 hooks from the active build. Retain a project-owned neutral trace sink or probe
 only when it has a focused regression test and no external reference dependency.
-No M1 or M2 milestone closes with an enabled external-reference bridge in the
+No M1 or M5 milestone closes with an enabled external-reference bridge in the
 default build, runtime, test fixture, or release package.

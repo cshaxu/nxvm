@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
-# M0 validates the selected C toolchain. M1 adds the first runtime target after
-# its DOS launch contract and host-independent test boundary are accepted.
+# M0 validates the selected C toolchain. M1 adds the imported baseline target;
+# M3 later adds the refactored machine target after M2 design approval.
 project(ntvdm64 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)

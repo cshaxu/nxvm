@@ -21,6 +21,6 @@ Any future proposal needs an owner-approved decision record, threat model,
 Windows-version matrix, reversible installer/uninstaller design, rollback plan,
 and redistributability review before it can move beyond research.
 
-M5 findings are an M6 entry condition. Until host ABI, loader, WOW64, CSRSS,
+M9 findings are an M10 entry condition. Until host ABI, loader, WOW64, CSRSS,
 and ConHost relationships are inventoried, no Microsoft component implementation
 may start. This research must not force changes to Machine or DOS boundaries.

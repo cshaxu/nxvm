@@ -44,8 +44,9 @@ dependency or delay the distributable DOS product.
 
 M0 established governance, the probe laboratory, source/import policy, and the
 module plan. No NXVM runtime code has been imported and no DOS program runs
-yet. The roadmap begins with NXVM machine validation, then minimal DOS, then
-the non-invasive CLI product path.
+yet. The roadmap begins with NXVM machine validation, a whole-machine design and
+refactor, then separate DOS and Platform/CLI design milestones before their
+implementations.
 
 Read [AGENTS.md](AGENTS.md) before changing the repository. Canonical guidance
 is in [architecture](docs/architecture.md), [roadmap](docs/roadmap.md), and the
