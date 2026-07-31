@@ -117,11 +117,13 @@ selected profile's deterministic tick policy.
 
 ## Versioned C Contracts
 
-The exact header locations are an M3 implementation choice, expected under
-`include/nxvm_core/` or an equivalent shared-core namespace. All declarations
-below carry `NXVM_CORE_MACHINE_ABI_V1`; future changes are append-only or
-require a new ABI version. Opaque handles prevent callers from reaching NXVM
-globals.
+The exact header split is an M3 implementation choice, but M3 uses a
+parity-first layout: public contract headers live beside their C implementation
+in `src/core/`, while private headers use an `_impl.h` suffix and remain
+module-local. All declarations below carry `NXVM_CORE_MACHINE_ABI_V1`; future
+changes are append-only or require a new ABI version. Opaque handles prevent
+callers from reaching NXVM globals. A future packaging task may mirror stable
+headers into a top-level `include/` tree, but M3 does not create that tree.
 
 ```c
 typedef struct ntvdm64_machine ntvdm64_machine;

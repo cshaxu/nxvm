@@ -106,6 +106,9 @@ None. M3 T1 S1 is the next eligible subtask and remains inactive.
   `nxvm.full_pc` to a first-class product profile, adding explicit registry
   boundaries, and resequencing firmware, DOS, platform, product, compatibility,
   and research milestones without beginning M3.
+- M2 T1 S3: adopted parity-first module headers for M3: contract headers live
+  beside C implementations in `src/core/`, private headers use `_impl.h`, and a
+  top-level `include/` tree is deferred until a future packaging/SDK need.
 
 ## Next Eligible Work
 

@@ -169,10 +169,6 @@ src/
     nxvm/
     ntvdm64/
   integration/
-include/
-  nxvm_core/
-  nxvm/
-  ntvdm64/
 tests/
   core/
   firmware/
@@ -190,6 +186,12 @@ docs/
   tracking/
   research/
 ```
+
+Headers live beside their C implementation in the owning module. Contract
+headers use ordinary module names such as `src/core/machine.h`; private headers
+use an `_impl.h` suffix and are included only by their module. A future SDK or
+library packaging task may introduce a top-level `include/` tree after the ABI
+is stable, but M3 uses parity-first layout.
 
 Directory README files define ownership when the directories are created.
 Historical sources provide orientation; tests provide validation; `core` and
