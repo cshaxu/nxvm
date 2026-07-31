@@ -23,7 +23,7 @@ Task/subtask breakdown is approved; M3 is active.
 
 ## Active Work
 
-None. M3 T4 S1 is the next eligible subtask and remains inactive.
+None. M3 T4 S2 is the next eligible subtask and remains inactive.
 
 ## Completed
 
@@ -125,6 +125,8 @@ None. M3 T4 S1 is the next eligible subtask and remains inactive.
   verification.
 - M3 T3 S2: created the no-media `ntvdm64.dos_minimal` profile shell with
   deterministic PIC/PIT, keyboard IRQ/port, and text-snapshot boundaries.
+- M3 T4 S1: isolated presentation through adapter-owned input queues and
+  copied text snapshots, without platform access to core internals.
 
 ## Active Subtask
 
@@ -132,7 +134,7 @@ None.
 
 ## Next Eligible Work
 
-- M3 T4 S1: isolate platform presentation after M3 T3 closes.
+- M3 T4 S2: move the developer debugging boundary after M3 T4 S1.
 
 ## Delivery State
 
