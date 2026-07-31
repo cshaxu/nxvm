@@ -21,9 +21,15 @@ M2 is complete. Shared Core Architecture Requirements V2 defines the
 host-service and trace boundaries, and M3 regression strategy. The bounded M3
 Task/subtask breakdown was executed and M3 is complete.
 
+## M4 Closure
+
+M4 is complete. Firmware V1, the retained NXVM Console product contract, M1
+regression ownership, and the bounded M5 implementation breakdown are approved
+without implementation changes.
+
 ## Active Work
 
-None. M3 is closed; M4 is the next design milestone.
+None. M5 is the next implementation milestone.
 
 ## Completed
 
@@ -137,6 +143,14 @@ None. M3 is closed; M4 is the next design milestone.
   recorded M4 design inputs.
 - M3 T5 S1 P4: corrected the local developer artifact to the final bootable
   NXVM Console executable; smoke executables remain build verification only.
+- M4 T1 S1: assigned full-PC baseline ownership, M5 migration order, and M1
+  regression ownership without changing runtime behavior.
+- M4 T2 S1: defined session-owned Firmware V1 service, reset, failure,
+  host-capability, and trace contracts without changing runtime behavior.
+- M4 T3 S1: defined the retained NXVM Console, presentation, debugger, and
+  artifact contract without adding a process CLI or changing runtime behavior.
+- M4 T4 S1: froze M5's bounded implementation breakdown, shared verification
+  gates, task artifact rule, and closure criteria.
 
 ## Active Subtask
 
@@ -144,7 +158,7 @@ None.
 
 ## Next Eligible Work
 
-- M4 design begins from `docs/planning/m4-design-inputs.md`.
+- M5 begins from `docs/planning/m5-firmware-nxvm-implementation-breakdown.md`.
 
 ## Delivery State
 
