@@ -61,6 +61,11 @@
       "targets": ["nxvm-full-pc-profile-smoke"]
     },
     {
+      "name": "m3-dos-minimal-profile-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-dos-minimal-profile-smoke"]
+    },
+    {
       "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],

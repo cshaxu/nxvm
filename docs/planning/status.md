@@ -23,7 +23,7 @@ Task/subtask breakdown is approved; M3 is active.
 
 ## Active Work
 
-None. M3 T3 S2 is the next eligible subtask and remains inactive.
+None. M3 T4 S1 is the next eligible subtask and remains inactive.
 
 ## Completed
 
@@ -123,6 +123,8 @@ None. M3 T3 S2 is the next eligible subtask and remains inactive.
 - M3 T3 S1: made `nxvm.full_pc` an explicit runtime profile and retained
   baseline adapter, with declared whole-PC inventory and FDD/HDD reset-vector
   verification.
+- M3 T3 S2: created the no-media `ntvdm64.dos_minimal` profile shell with
+  deterministic PIC/PIT, keyboard IRQ/port, and text-snapshot boundaries.
 
 ## Active Subtask
 
@@ -130,7 +132,7 @@ None.
 
 ## Next Eligible Work
 
-- M3 T3 S2: create the `ntvdm64.dos_minimal` profile shell after M3 T3 S1.
+- M3 T4 S1: isolate platform presentation after M3 T3 closes.
 
 ## Delivery State
 
