@@ -23,6 +23,11 @@ nxvm_core_status nxvm_product_nxvm_pc_at_create(
     hdd = nxvm_product_nxvm_media_provider(media, NXVM_PRODUCT_NXVM_BOOT_HDD);
     config.fdd_image = fdd != NULL && fdd->configured ? fdd->path : NULL;
     config.hdd_image = hdd != NULL && hdd->configured ? hdd->path : NULL;
+    config.create_fdd = fdd != NULL && fdd->configured && fdd->created;
+    config.create_hdd_cylinders = hdd != NULL && hdd->configured && hdd->created ?
+        hdd->cylinders : 0u;
+    if (config.create_fdd) config.fdd_image = NULL;
+    if (config.create_hdd_cylinders != 0u) config.hdd_image = NULL;
     config.boot_hdd = media->boot_target == NXVM_PRODUCT_NXVM_BOOT_HDD;
     status = nxvm_baseline_full_pc_create(&config);
     if (status != NXVM_CORE_STATUS_OK) return status;
@@ -53,6 +58,13 @@ nxvm_core_status nxvm_product_nxvm_pc_at_set_window_display(
 {
     if (pc_at == NULL || !pc_at->active) return NXVM_CORE_STATUS_INVALID_STATE;
     return nxvm_baseline_full_pc_set_window_display(enabled);
+}
+
+nxvm_core_status nxvm_product_nxvm_pc_at_set_memory_kb(
+    nxvm_product_nxvm_pc_at *pc_at, uint32_t kilobytes)
+{
+    if (pc_at == NULL || !pc_at->active) return NXVM_CORE_STATUS_INVALID_STATE;
+    return nxvm_baseline_full_pc_set_memory_kb(kilobytes);
 }
 
 nxvm_core_status nxvm_product_nxvm_pc_at_reset(nxvm_product_nxvm_pc_at *pc_at)

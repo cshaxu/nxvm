@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "products/nxvm/session.h"
@@ -16,6 +17,9 @@ typedef struct nxvm_product_console_config {
     char record_path[NXVM_PRODUCT_PATH_CAPACITY];
     nxvm_product_nxvm_boot_target boot_target;
     int window_display;
+    unsigned int memory_kb;
+    int create_fdd;
+    unsigned int create_hdd_cylinders;
 } nxvm_product_console_config;
 
 typedef struct nxvm_product_console_runtime {
@@ -89,8 +93,11 @@ static void print_info(const nxvm_product_console_config *config,
     printf("firmware: firmware.provider.pc_at_builtin\n");
     printf("boot: %s\n", config->boot_target == NXVM_PRODUCT_NXVM_BOOT_HDD ? "hdd" : "fdd");
     printf("display: %s\n", config->window_display ? "window" : "console");
-    printf("fdd: %s\n", config->fdd_path[0] == '\0' ? "none" : config->fdd_path);
-    printf("hdd: %s\n", config->hdd_path[0] == '\0' ? "none" : config->hdd_path);
+    printf("memory: %u KB\n", config->memory_kb);
+    printf("fdd: %s\n", config->create_fdd ? "created" :
+           config->fdd_path[0] == '\0' ? "none" : config->fdd_path);
+    printf("hdd: %s\n", config->create_hdd_cylinders != 0u ? "created" :
+           config->hdd_path[0] == '\0' ? "none" : config->hdd_path);
     printf("record: %s\n", config->record_path[0] == '\0' ? "off" : config->record_path);
     printf("lifecycle: %s\n", runtime->running ? "running" :
            runtime->debugger_paused ? "debugger-paused" : "ready");
@@ -113,8 +120,10 @@ static int create_session(const nxvm_product_console_config *config,
     nxvm_core_status status;
 
     if (runtime->session_active) return 1;
-    if ((config->boot_target == NXVM_PRODUCT_NXVM_BOOT_FDD && config->fdd_path[0] == '\0') ||
-        (config->boot_target == NXVM_PRODUCT_NXVM_BOOT_HDD && config->hdd_path[0] == '\0')) {
+    if ((config->boot_target == NXVM_PRODUCT_NXVM_BOOT_FDD && config->fdd_path[0] == '\0' &&
+         !config->create_fdd) ||
+        (config->boot_target == NXVM_PRODUCT_NXVM_BOOT_HDD && config->hdd_path[0] == '\0' &&
+         config->create_hdd_cylinders == 0u)) {
         puts("Selected boot media is not configured.");
         return 0;
     }
@@ -122,11 +131,16 @@ static int create_session(const nxvm_product_console_config *config,
     session_config.fdd_identity = session_config.fdd_path == NULL ? NULL : &unverified_fdd;
     session_config.hdd_path = config->hdd_path[0] == '\0' ? NULL : config->hdd_path;
     session_config.hdd_identity = session_config.hdd_path == NULL ? NULL : &unverified_hdd;
+    session_config.create_fdd = config->create_fdd;
+    session_config.create_hdd_cylinders = (uint16_t)config->create_hdd_cylinders;
     session_config.boot_target = config->boot_target;
     status = nxvm_product_nxvm_session_create(&runtime->session, &session_config);
     if (status != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_pc_at_set_window_display(&runtime->session.pc_at,
-            config->window_display) != NXVM_CORE_STATUS_OK) {
+            config->window_display) != NXVM_CORE_STATUS_OK ||
+        nxvm_product_nxvm_pc_at_set_memory_kb(&runtime->session.pc_at,
+            config->memory_kb) != NXVM_CORE_STATUS_OK ||
+        nxvm_product_nxvm_pc_at_reset(&runtime->session.pc_at) != NXVM_CORE_STATUS_OK) {
         puts("Could not create PC/AT session.");
         destroy_session(runtime);
         return 0;
@@ -226,6 +240,18 @@ static void reconfigure(nxvm_product_console_runtime *runtime)
     if (!runtime->running) destroy_session(runtime);
 }
 
+static int parse_memory_kb(const char *text, unsigned int *out_kilobytes)
+{
+    char *end;
+    unsigned long value;
+
+    if (text == NULL || out_kilobytes == NULL || text[0] == '\0') return 0;
+    value = strtoul(text, &end, 10);
+    if (*end != '\0' || value < 1024ul || value > 16384ul) return 0;
+    *out_kilobytes = (unsigned int)value;
+    return 1;
+}
+
 int main(void)
 {
     char line[1024];
@@ -233,7 +259,7 @@ int main(void)
     char item[32];
     char value[NXVM_PRODUCT_PATH_CAPACITY];
     nxvm_product_console_config config = { { 0 }, { 0 }, { 0 },
-        NXVM_PRODUCT_NXVM_BOOT_FDD, 0 };
+        NXVM_PRODUCT_NXVM_BOOT_FDD, 0, 16384u, 0, 0u };
     nxvm_product_console_runtime runtime = { 0 };
 
     print_banner();
@@ -296,22 +322,42 @@ int main(void)
             if (runtime.running) puts("Cannot change media while the guest is running.");
             else if (sscanf(value, "%31s %511[^\r\n]", action, path) == 2 &&
                      equal_word(action, "insert") && copy_path(config.fdd_path, path)) {
-                reconfigure(&runtime); puts("Floppy disk configured.");
+                reconfigure(&runtime); config.create_fdd = 0; puts("Floppy disk configured.");
+            } else if (equal_word(value, "create")) {
+                reconfigure(&runtime); config.fdd_path[0] = '\0'; config.create_fdd = 1;
+                puts("Floppy disk created.");
             } else if (equal_word(value, "remove")) {
-                reconfigure(&runtime); config.fdd_path[0] = '\0'; puts("Floppy disk removed.");
-            } else puts("Usage: DEVICE fdd insert <file>|remove");
+                reconfigure(&runtime); config.fdd_path[0] = '\0'; config.create_fdd = 0;
+                puts("Floppy disk removed.");
+            } else puts("Usage: DEVICE fdd create|insert <file>|remove");
         } else if (equal_word(command, "device") && equal_word(item, "hdd")) {
             char action[32] = { 0 };
             char path[NXVM_PRODUCT_PATH_CAPACITY] = { 0 };
+            unsigned int cylinders = 0u;
             if (runtime.running) puts("Cannot change media while the guest is running.");
             else if (sscanf(value, "%31s %511[^\r\n]", action, path) == 2 &&
                      equal_word(action, "connect") && copy_path(config.hdd_path, path)) {
-                reconfigure(&runtime); puts("Hard disk configured.");
+                reconfigure(&runtime); config.create_hdd_cylinders = 0u; puts("Hard disk configured.");
+            } else if (equal_word(value, "create")) {
+                reconfigure(&runtime); config.hdd_path[0] = '\0'; config.create_hdd_cylinders = 20u;
+                puts("Hard disk created.");
+            } else if (sscanf(value, "%31s cyl %u", action, &cylinders) == 2 &&
+                     equal_word(action, "create") && cylinders != 0u && cylinders <= 1024u) {
+                reconfigure(&runtime); config.hdd_path[0] = '\0';
+                config.create_hdd_cylinders = cylinders;
+                puts("Hard disk created.");
             } else if (equal_word(value, "disconnect")) {
-                reconfigure(&runtime); config.hdd_path[0] = '\0'; puts("Hard disk disconnected.");
-            } else puts("Usage: DEVICE hdd connect <file>|disconnect");
+                reconfigure(&runtime); config.hdd_path[0] = '\0'; config.create_hdd_cylinders = 0u;
+                puts("Hard disk disconnected.");
+            } else puts("Usage: DEVICE hdd create [cyl <n>]|connect <file>|disconnect");
         } else if (equal_word(command, "device") && equal_word(item, "ram")) {
-            puts("RAM configuration remains fixed by nxvm.machine.pc_at_builtin.");
+            unsigned int memory_kb;
+            if (runtime.running) puts("Cannot change memory while the guest is running.");
+            else if (parse_memory_kb(value, &memory_kb)) {
+                reconfigure(&runtime);
+                config.memory_kb = memory_kb;
+                puts("Memory configuration updated.");
+            } else puts("Memory must be between 1024 and 16384 KB.");
         } else {
             puts("Illegal command. Type HELP for available commands.");
         }

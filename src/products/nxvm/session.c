@@ -11,12 +11,20 @@ static nxvm_core_status nxvm_product_nxvm_session_configure_media(
     nxvm_core_status status;
 
     nxvm_product_nxvm_media_policy_initialize(&session->media);
-    if (config->fdd_path != NULL) {
+    if (config->create_fdd) {
+        status = nxvm_product_nxvm_media_configure_created(&session->media,
+            NXVM_PRODUCT_NXVM_BOOT_FDD, 0u);
+        if (status != NXVM_CORE_STATUS_OK) return status;
+    } else if (config->fdd_path != NULL) {
         status = nxvm_product_nxvm_media_configure(&session->media,
             NXVM_PRODUCT_NXVM_BOOT_FDD, config->fdd_path, config->fdd_identity);
         if (status != NXVM_CORE_STATUS_OK) return status;
     }
-    if (config->hdd_path != NULL) {
+    if (config->create_hdd_cylinders != 0u) {
+        status = nxvm_product_nxvm_media_configure_created(&session->media,
+            NXVM_PRODUCT_NXVM_BOOT_HDD, config->create_hdd_cylinders);
+        if (status != NXVM_CORE_STATUS_OK) return status;
+    } else if (config->hdd_path != NULL) {
         status = nxvm_product_nxvm_media_configure(&session->media,
             NXVM_PRODUCT_NXVM_BOOT_HDD, config->hdd_path, config->hdd_identity);
         if (status != NXVM_CORE_STATUS_OK) return status;

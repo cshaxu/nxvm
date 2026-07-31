@@ -21,7 +21,8 @@ nxvm_core_status nxvm_baseline_full_pc_create(
     const nxvm_baseline_full_pc_config *config)
 {
     if (config == NULL || nxvm_baseline_full_pc_active ||
-        (config->fdd_image == NULL && config->hdd_image == NULL)) {
+        (config->fdd_image == NULL && config->hdd_image == NULL &&
+         !config->create_fdd && config->create_hdd_cylinders == 0u)) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -32,6 +33,10 @@ nxvm_core_status nxvm_baseline_full_pc_create(
          deviceConnectHardDiskInsert(config->hdd_image))) {
         machineFinal();
         return NXVM_CORE_STATUS_FAULT;
+    }
+    if (config->create_fdd) deviceConnectFloppyCreate();
+    if (config->create_hdd_cylinders != 0u) {
+        deviceConnectHardDiskCreate(config->create_hdd_cylinders);
     }
 
     deviceConnectBiosSetBoot(config->boot_hdd != 0);
@@ -65,6 +70,16 @@ nxvm_core_status nxvm_baseline_full_pc_set_window_display(int enabled)
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     platform.flagMode = enabled != 0;
+    return NXVM_CORE_STATUS_OK;
+}
+
+nxvm_core_status nxvm_baseline_full_pc_set_memory_kb(uint32_t kilobytes)
+{
+    if (!nxvm_baseline_full_pc_active || device.flagRun ||
+        kilobytes < 1024u || kilobytes > 16384u) {
+        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+    }
+    deviceConnectRamAllocate((size_t)kilobytes * 1024u);
     return NXVM_CORE_STATUS_OK;
 }
 

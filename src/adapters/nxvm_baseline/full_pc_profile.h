@@ -12,6 +12,8 @@ extern "C" {
 typedef struct nxvm_baseline_full_pc_config {
     const char *fdd_image;
     const char *hdd_image;
+    int create_fdd;
+    uint16_t create_hdd_cylinders;
     int boot_hdd;
 } nxvm_baseline_full_pc_config;
 
@@ -27,6 +29,7 @@ nxvm_core_status nxvm_baseline_full_pc_get_reset_vector(
     nxvm_baseline_reset_vector *out_vector);
 
 nxvm_core_status nxvm_baseline_full_pc_set_window_display(int enabled);
+nxvm_core_status nxvm_baseline_full_pc_set_memory_kb(uint32_t kilobytes);
 nxvm_core_status nxvm_baseline_full_pc_reset(void);
 void nxvm_baseline_full_pc_run(void);
 void nxvm_baseline_full_pc_resume(void);

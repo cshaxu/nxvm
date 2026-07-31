@@ -34,6 +34,18 @@ int main(void)
             NXVM_PRODUCT_NXVM_BOOT_FDD) != NXVM_CORE_STATUS_INVALID_STATE ||
         nxvm_product_nxvm_media_configure(&policy, NXVM_PRODUCT_NXVM_BOOT_HDD,
             "D:/fixtures/hdd.img", &hdd) != NXVM_CORE_STATUS_INVALID_STATE) return 1;
+
+    nxvm_product_nxvm_media_policy_initialize(&policy);
+    if (nxvm_product_nxvm_media_configure_created(&policy,
+            NXVM_PRODUCT_NXVM_BOOT_FDD, 0u) != NXVM_CORE_STATUS_OK ||
+        nxvm_product_nxvm_media_configure_created(&policy,
+            NXVM_PRODUCT_NXVM_BOOT_HDD, 1u) != NXVM_CORE_STATUS_OK ||
+        nxvm_product_nxvm_media_set_boot_target(&policy,
+            NXVM_PRODUCT_NXVM_BOOT_HDD) != NXVM_CORE_STATUS_OK ||
+        nxvm_product_nxvm_media_freeze(&policy) != NXVM_CORE_STATUS_OK) return 1;
+    provider = nxvm_product_nxvm_media_provider(&policy, NXVM_PRODUCT_NXVM_BOOT_HDD);
+    if (provider == NULL || !provider->configured || !provider->created ||
+        provider->cylinders != 1u || provider->path[0] != '\0') return 1;
     puts("M5:T5:S1:NXVM-MEDIA:OK");
     return 0;
 }

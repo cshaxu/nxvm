@@ -26,6 +26,8 @@ typedef struct nxvm_product_nxvm_block_provider {
     char expected_sha256[NXVM_PRODUCT_NXVM_MEDIA_SHA256_CAPACITY];
     uint64_t expected_bytes;
     int configured;
+    int created;
+    uint16_t cylinders;
 } nxvm_product_nxvm_block_provider;
 
 typedef struct nxvm_product_nxvm_media_policy {
@@ -42,6 +44,10 @@ nxvm_core_status nxvm_product_nxvm_media_configure(
     nxvm_product_nxvm_boot_target target,
     const char *path,
     const nxvm_product_nxvm_media_identity *identity);
+nxvm_core_status nxvm_product_nxvm_media_configure_created(
+    nxvm_product_nxvm_media_policy *policy,
+    nxvm_product_nxvm_boot_target target,
+    uint16_t cylinders);
 nxvm_core_status nxvm_product_nxvm_media_set_boot_target(
     nxvm_product_nxvm_media_policy *policy,
     nxvm_product_nxvm_boot_target target);
