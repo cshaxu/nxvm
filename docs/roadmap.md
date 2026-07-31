@@ -64,9 +64,9 @@ the cross-layer filesystem-containment model, but not CLI grammar or Win32
 implementation details.
 
 **Demo and exit:** a versioned Machine/DOS architecture specification,
-interface contracts, state/ownership diagrams, M3 migration plan, and focused
-test plan are approved. **Non-goals:** refactoring or implementing the DOS
-runtime.
+interface contracts, state/ownership diagrams, focused test plan, and the
+approved bounded M3 Task/subtask breakdown are complete. **Non-goals:**
+refactoring or implementing the DOS runtime.
 
 ## M3: Refactor The Machine To The Approved Architecture
 
@@ -89,8 +89,9 @@ contract, M1 regression evidence, and the required immutable snapshot.
 state, interrupt dispatch, register preservation, handle and fixture-filesystem
 semantics, deterministic input-blocked protocol, error table, and M5 probes.
 
-**Demo and exit:** versioned DOS specification and ABI test vectors approved
-against the M3 contract. **Non-goal:** DOS implementation.
+**Demo and exit:** versioned DOS specification and ABI test vectors, plus the
+approved bounded M5 Task/subtask breakdown, are complete against the M3
+contract. **Non-goal:** DOS implementation.
 
 ## M5: Add The Owned DOS Backend
 
@@ -126,7 +127,8 @@ state machine, graphics capability table, debugger command grammar, Ctrl+C and
 Ctrl+Break ownership, and cleanup/error behavior.
 
 **Demo and exit:** an approved Platform/CLI specification, security test matrix,
-and M7 implementation plan. **Non-goal:** production platform implementation.
+and bounded M7 Task/subtask breakdown. **Non-goal:** production platform
+implementation.
 
 ## M7: Non-Invasive Windows Platform Integration
 
@@ -161,7 +163,8 @@ when a corpus requirement justifies it.
 entry records legal basis, identity, required feature, and verdict before it can
 expand scope. Separate redistributable project probes from local owner-provided
 programs; prioritize the smallest missing feature and require evidence,
-owner-approved scope, and a focused regression before expanding M8. Risk:
+owner-approved scope, a bounded corpus-increment Task/subtask breakdown, and a
+focused regression before expanding M8. Risk:
 unbounded compatibility scope. Dependency: M7.
 
 ## M9: Optional Integration Research

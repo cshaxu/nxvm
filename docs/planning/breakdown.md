@@ -16,5 +16,7 @@ definition is [../roadmap.md](../roadmap.md).
   NTVDM components, and T3 Win16 route selection.
 
 Tasks and subtasks add bounded scope and acceptance criteria under these fixed
-milestones. Do not reorder milestones without an owner-approved direction
-record.
+milestones. M2, M4, and M6 each produce the Task/subtask breakdown for the
+following implementation milestone; M8 produces one for each corpus increment.
+Do not predeclare those implementation tasks or reorder milestones without an
+owner-approved direction record.
