@@ -272,6 +272,17 @@ add_nxvm_full_pc_artifact(nxvm-m5-t4 "m5t4")
 add_nxvm_full_pc_artifact(nxvm-m5-t5 "m5t5")
 add_nxvm_full_pc_artifact(nxvm-m5-t6 "m5t6")
 
+add_executable(nxvm-m5-t7
+    src/products/nxvm/main.c
+    ${NXVM_BASELINE_RUNTIME_SOURCES}
+)
+target_compile_definitions(nxvm-m5-t7 PRIVATE "NXVM_BUILD_SUFFIX=\"m5t7\"")
+target_include_directories(nxvm-m5-t7 PRIVATE "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(nxvm-m5-t7 PRIVATE nxvm-product-session user32 gdi32)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(nxvm-m5-t7 PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
 if(NTVDM64_ENABLE_BOCHX_RESEARCH)
     add_executable(ntvdm64-bochx-manifest-check
         tools/research/bochx/bochx_manifest_check.c

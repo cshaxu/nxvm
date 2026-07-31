@@ -57,6 +57,20 @@ void nxvm_baseline_full_pc_run(void)
     }
 }
 
+nxvm_core_status nxvm_baseline_full_pc_record_start(const char *path)
+{
+    if (!nxvm_baseline_full_pc_active || path == NULL || path[0] == '\0') {
+        return NXVM_CORE_STATUS_INVALID_STATE;
+    }
+    deviceConnectDebugRecordStart(path);
+    return NXVM_CORE_STATUS_OK;
+}
+
+void nxvm_baseline_full_pc_record_stop(void)
+{
+    if (nxvm_baseline_full_pc_active) deviceConnectDebugRecordStop();
+}
+
 void nxvm_baseline_full_pc_request_stop(void)
 {
     if (nxvm_baseline_full_pc_active) {
