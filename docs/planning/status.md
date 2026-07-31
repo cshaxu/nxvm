@@ -29,7 +29,7 @@ behavior.
 
 ## Active Work
 
-M5 T6 S2: Presentation and debugger adapters.
+M5 T7 S1: First-class PC/AT product composition.
 
 ## Completed
 
@@ -159,7 +159,7 @@ M5 T6 S2: Presentation and debugger adapters.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t6-s2.md`.
+`docs/planning/subtasks/m5-t7-s1.md`.
 
 ## Next Eligible Work
 
