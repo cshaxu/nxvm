@@ -23,7 +23,7 @@ Task/subtask breakdown is approved; M3 is active.
 
 ## Active Work
 
-None. M3 T3 S1 is the next eligible subtask and remains inactive.
+None. M3 T3 S2 is the next eligible subtask and remains inactive.
 
 ## Completed
 
@@ -120,6 +120,9 @@ None. M3 T3 S1 is the next eligible subtask and remains inactive.
 - M3 T2 S1: made the core Machine lifecycle explicit with observable state,
   finite budget boundaries, atomic requested-stop observation, and stable fault
   reporting. No guest executor or platform thread was introduced.
+- M3 T3 S1: made `nxvm.full_pc` an explicit runtime profile and retained
+  baseline adapter, with declared whole-PC inventory and FDD/HDD reset-vector
+  verification.
 
 ## Active Subtask
 
@@ -127,7 +130,7 @@ None.
 
 ## Next Eligible Work
 
-- M3 T3 S1: make `nxvm.full_pc` explicit after M3 T2 closes.
+- M3 T3 S2: create the `ntvdm64.dos_minimal` profile shell after M3 T3 S1.
 
 ## Delivery State
 

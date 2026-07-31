@@ -56,6 +56,11 @@
       "targets": ["nxvm-core-machine-trace-smoke"]
     },
     {
+      "name": "m3-full-pc-profile-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-full-pc-profile-smoke"]
+    },
+    {
       "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],
