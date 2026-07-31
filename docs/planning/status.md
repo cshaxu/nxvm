@@ -29,7 +29,7 @@ behavior.
 
 ## Active Work
 
-M5 T3 S1: PIC/PIT/DMA core device contracts.
+M5 T3 S2: keyboard and QDX snapshot contracts.
 
 ## Completed
 
@@ -159,7 +159,7 @@ M5 T3 S1: PIC/PIT/DMA core device contracts.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t3-s1.md`.
+`docs/planning/subtasks/m5-t3-s2.md`.
 
 ## Next Eligible Work
 
