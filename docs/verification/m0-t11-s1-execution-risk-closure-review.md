@@ -2,11 +2,13 @@
 
 ## Result
 
-M5 now depends on M3 and M4. Roadmap/subtask authority is explicit. M1 has a
+The then-current DOS implementation depended on the preceding refactor and
+design gates. Roadmap/subtask authority is explicit. M1 has a
 concrete FDD/HDD Console-command template and freezes observed checkpoints only
 after raw baseline evidence; local COM payloads cannot become implicit tests.
-M2 defines abstract containment invariants while M6 owns Windows details. M3,
-M8, toolchain, and M9 T2 research have bounded records for their previous gaps.
+M2 defines abstract containment invariants while the later Platform/CLI design
+owns Windows details. Shared-core refactor, compatibility, toolchain, and
+Microsoft-component research have bounded records for their previous gaps.
 
 ## Status
 

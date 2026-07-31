@@ -1,10 +1,14 @@
 # ntvdm64
 
-ntvdm64 is a DOS compatibility runtime evolved from NXVM, combining reusable
-PC emulation, an independently implemented DOS environment, and non-invasive
-Windows host integration.
+ntvdm64 is the successor repository for NXVM. It evolves the existing PC
+emulator into a shared core with two first-class products:
 
-The primary product path is:
+```text
+nxvm.exe      bootable whole-machine VM
+ntvdm64.exe   non-bootable DOS application runner
+```
+
+The planned ntvdm64 product path is:
 
 ```text
 ntvdm64 run [options] [<program> [args...]]
@@ -16,19 +20,19 @@ visibility controls. See [Runtime CLI Requirements](docs/requirements/runtime-cl
 ## Formal Runtime
 
 ```text
-NXVM machine foundation
-  + independent DOS runtime
-  + non-invasive Windows platform integration
-  + adapters, runtime composition, and CLI
+shared core + firmware + platform + runtime
+  + products/nxvm
+  + dos + products/ntvdm64
 ```
 
-NXVM is the formal machine foundation. Its copyright holder authorizes NXVM
-code imported into ntvdm64 under this repository's MIT License, with recorded
-source provenance and preserved copyright notices. The owned DOS runtime is the
-default compatibility path.
+NXVM is the formal machine foundation and remains a supported product surface
+through `nxvm.exe`. Its copyright holder authorizes NXVM code imported into this
+repository under the root MIT License, with recorded source provenance and
+preserved copyright notices. The owned DOS runtime is the default ntvdm64
+compatibility path.
 
-The default release is buildable and usable without Microsoft binaries, WineVDM,
-host injection, loader replacement, registry changes, or administrator rights.
+The default products are buildable without Microsoft binaries, WineVDM, host
+injection, loader replacement, registry changes, or administrator rights.
 
 ## Long-Term Research
 
@@ -42,11 +46,10 @@ dependency or delay the distributable DOS product.
 
 ## Current State
 
-M0 established governance, the probe laboratory, source/import policy, and the
-module plan. No NXVM runtime code has been imported and no DOS program runs
-yet. The roadmap begins with NXVM machine validation, a whole-machine design and
-refactor, then separate DOS and Platform/CLI design milestones before their
-implementations.
+M0 through M2 are complete. M1 imported and preserved the NXVM baseline under
+the root MIT authorization and proved a GCC-built whole-machine baseline. M2
+defines the shared-core architecture. M3 is the next eligible milestone and has
+not started.
 
 Read [AGENTS.md](AGENTS.md) before changing the repository. Canonical guidance
 is in [architecture](docs/architecture.md), [roadmap](docs/roadmap.md), and the

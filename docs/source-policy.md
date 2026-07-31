@@ -2,17 +2,18 @@
 
 ## NXVM Foundation
 
-Before M1 imports NXVM source, ntvdm64 contains only project-owned material
+Before M1 imported NXVM source, ntvdm64 contained only project-owned material
 under the root MIT License. Referencing or pinning an external NXVM checkout
 does not import its source or attach that checkout's license metadata to this
 repository.
 
-NXVM is the formal machine-code foundation for ntvdm64. Its CPU, memory,
-interrupt, BIOS, device, debugger, assembler, and disassembler assets may be
-copied, adapted, reorganized, or removed as the ntvdm64 architecture requires.
-The NXVM copyright holder authorizes NXVM code imported into ntvdm64 under the
-root MIT License. The separate NXVM repository's license metadata is maintained
-there and is not a precondition for this authorization.
+NXVM is the formal machine-code foundation and a continuing product surface.
+Its CPU, memory, interrupt, BIOS, device, debugger, assembler, and disassembler
+assets may be copied, adapted, reorganized, or removed as the shared-core
+architecture requires. The NXVM copyright holder authorizes NXVM code imported
+into this repository under the root MIT License. The separate NXVM repository's
+license metadata is maintained there and is not a precondition for this
+authorization.
 
 Each imported or substantially derived unit must record the exact NXVM commit,
 source and destination paths, copyright notices, MIT authorization, changes,
@@ -34,11 +35,11 @@ OpenNT and NTVDMx64 are historical architecture and problem-location sources.
 They may inform research leads, component inventory, startup hypotheses, and
 test design. They are not copied, transliterated, or treated as the ntvdm64
 specification. They do not authorize a formal Microsoft backend design before
-M9 T1 and T2. Research conclusions require binary behavior, experiments, or tests
-where feasible. Published ntvdm64 code is organized and maintained here.
+M11 T1 and T2. Research conclusions require binary behavior, experiments, or tests
+where feasible. Published product code is organized and maintained here.
 
 ## Microsoft Binaries
 
 Microsoft binaries never enter this repository or the default release. BYOB is
 a future research possibility, not a current feature or promised `ntvdm import`
-workflow. Any future profile and hash policy follows an M9 Go decision.
+workflow. Any future profile and hash policy follows an M11 Go decision.

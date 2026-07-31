@@ -21,7 +21,7 @@ Any future proposal needs an owner-approved decision record, threat model,
 Windows-version matrix, reversible installer/uninstaller design, rollback plan,
 and redistributability review before it can move beyond research.
 
-M9 T1 findings bound M9 T2 component research. Until host ABI, loader, WOW64,
+M11 T1 findings bound M11 T2 component research. Until host ABI, loader, WOW64,
 CSRSS, and ConHost relationships are inventoried, no Microsoft component
 implementation may start. This research must not force changes to Machine or
 DOS boundaries.
