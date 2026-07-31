@@ -15,6 +15,46 @@ visibility, is defined in [Runtime CLI Requirements](requirements/runtime-cli.md
 The default backend is a project-owned DOS layer. Microsoft NTVDM components and
 Win16 are future research topics, not current runtime backends.
 
+## Runtime Identity And Versioning
+
+The M1 byte-identical NXVM baseline retains its imported startup banner exactly:
+
+```text
+Neko's x86 Virtual Machine [0.4.015d]
+Copyright (c) 2012-2014 Neko.
+```
+
+From the first refactored runnable machine build in M3 until the identity
+cutover, a still-standalone machine executable uses:
+
+```text
+Neko's x86 Virtual Machine [0.4.015d.m<M>t<T>s<S>]
+Copyright (c) 2012-2014 Neko.
+```
+
+`M`, `T`, and `S` are the decimal milestone, task, and subtask identifiers that
+produced the executable, for example `0.4.015d.m3t1s2`. The runtime banner and
+any equivalent window title must derive from one build identity; artifact names
+do not replace this banner.
+
+The identity cutover occurs only in an approved M7-or-later implementation
+subtask whose tests prove all of the following: the default executable has no
+direct NXVM Console or disk-boot launch path; ordinary execution selects an
+application binary through the product loader; no implicit DOS shell or booted
+guest OS can run; and no-program debug mode, if retained, remains paused and
+cannot continue into standalone machine execution. At that cutover, the banner
+switches exactly to:
+
+```text
+Neko's x86 Virtual DOS Machine [0.5.0000] Copyright (c) 2012-2026 Neko.
+```
+
+After cutover, the final four version digits use NXVM-style `DDDH` encoding:
+`DDD` is a zero-padded three-digit decimal release counter and `H` is one
+lowercase hexadecimal revision digit (`0` through `f`). Increment `H` for each
+compatible revision; after `f`, increment `DDD` and reset `H` to `0`. A
+verification record must state the assigned version and its predecessor.
+
 ## Module Boundaries
 
 ```text
@@ -78,6 +118,10 @@ M3 moves retained code into the final boundaries after the M2 design closes;
 obsolete code is removed with focused evidence. This temporary area does not
 relax provenance, MIT-authorization, copyright-notice, or platform-isolation
 requirements.
+
+The imported M1 banner is also preserved unchanged so its source hashes remain
+reproducible. The pre-cutover identity suffix begins only when M3 creates the
+first refactored runnable machine artifact.
 
 The full baseline preserves the existing Linux platform implementation alongside
 the Win32 implementation. M1 acceptance is the Windows GCC run; Linux is kept

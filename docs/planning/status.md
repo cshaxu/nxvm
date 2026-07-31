@@ -78,6 +78,8 @@ None. M2 T1 S1 is the next eligible subtask and remains inactive.
   its implementation successor without beginning M1.
 - M0 T12 S5: defined the ignored local executable-artifact convention for
   completed runnable subtasks and recorded the M1 baseline developer artifact.
+- M0 T12 S6: defined runtime identity, pre-cutover task version suffixes, the
+  post-cutover DOS Machine banner, and post-cutover version encoding.
 - M1 T1 S1: approved the bounded GCC migration design after a zero-patch GCC
   compile and warning inventory.
 - M1 T2 S1: imported and built the full provenance-recorded NXVM baseline;

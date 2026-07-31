@@ -26,6 +26,11 @@ artifacts are never release evidence, must not bundle protected media or
 Microsoft binaries, and may be replaced only by a newly verified build of the
 same named subtask.
 
+For a runnable artifact, the verification record also states the emitted runtime
+identity/banner and version. It must follow the pre-cutover or post-cutover
+rules in `docs/architecture.md`; changing identity, version, or cutover state
+without an approved subtask and regression evidence is prohibited.
+
 For a legacy coupled system, first establish and record a runnable full-source
 baseline before subtractive refactoring. A baseline import may be isolated from
 the final module layout, but it cannot gain new product behavior or weaken
