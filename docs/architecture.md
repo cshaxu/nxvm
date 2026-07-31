@@ -17,15 +17,16 @@ Win16 are future research topics, not current runtime backends.
 
 ## Runtime Identity And Versioning
 
-The M1 byte-identical NXVM baseline retains its imported startup banner exactly:
+The immutable M1 byte-identical NXVM snapshot retains its imported startup
+banner exactly:
 
 ```text
 Neko's x86 Virtual Machine [0.4.015d]
 Copyright (c) 2012-2014 Neko.
 ```
 
-From the first refactored runnable machine build in M3 until the identity
-cutover, a still-standalone machine executable uses:
+After that snapshot and until the identity cutover, a still-standalone machine
+executable uses:
 
 ```text
 Neko's x86 Virtual Machine [0.4.015d.m<M>t<T>s<S>]
@@ -119,9 +120,11 @@ obsolete code is removed with focused evidence. This temporary area does not
 relax provenance, MIT-authorization, copyright-notice, or platform-isolation
 requirements.
 
-The imported M1 banner is also preserved unchanged so its source hashes remain
-reproducible. The pre-cutover identity suffix begins only when M3 creates the
-first refactored runnable machine artifact.
+The M1 snapshot banner is preserved unchanged so its source hashes remain
+reproducible. The current M1 T2 developer artifact is the first approved
+post-snapshot identity build and uses `0.4.015d.m1t2s1`; its one-line banner
+deviation is recorded in its provenance. Later standalone artifacts follow the
+same suffix rule.
 
 The full baseline preserves the existing Linux platform implementation alongside
 the Win32 implementation. M1 acceptance is the Windows GCC run; Linux is kept

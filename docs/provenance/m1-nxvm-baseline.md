@@ -12,7 +12,7 @@
 
 ## Scope
 
-All 75 files below were copied byte-for-byte from NXVM `src/` into the temporary M1 baseline. Linux platform units remain retained source but are excluded from the Windows target. Excluded neighboring content: `bochx/`, root build files, root documentation, guest media, and `*.com` payloads.
+All 75 files below were copied byte-for-byte from NXVM `src/` into the temporary M1 baseline and preserved in the immutable M1 snapshot. Linux platform units remain retained source but are excluded from the Windows target. Excluded neighboring content: `bochx/`, root build files, root documentation, guest media, and `*.com` payloads.
 
 ## Compliance
 
@@ -20,10 +20,14 @@ All 75 files below were copied byte-for-byte from NXVM `src/` into the temporary
 - Third-party notice update: no independent third-party notice was found in the imported source tree.
 - Asset exclusion review: no disk image, ROM, Microsoft binary, or guest payload was imported.
 - Source authorization: NXVM copyright-holder authorization for root MIT import, as recorded by project policy.
-- Intentional deviations: none; this is a byte-for-byte source baseline in
-  both the working tree and Git object database.
+- Intentional deviations after the M1 snapshot: only
+  `src/nxvm-baseline/main.c` changes the startup banner to the approved
+  `0.4.015d.m1t2s1` build identity. Its source SHA-256 is
+  `ec874f6c173e3d8198e321f0eb147ca596a3c391fcf8aa91e914f163be7c93b0`;
+  its current destination SHA-256 is
+  `ad0dfc4e0b474da6afef7640d935236dc8e1db01abad59766ba794c98bb8246d`.
 - Git text/whitespace policy: `src/nxvm-baseline/**` is excluded from text
-  conversion and whitespace checking because its copied upstream bytes contain
+  conversion and whitespace checking because its snapshot upstream bytes contain
   CRLF and pre-existing space/tab indentation. This does not exempt
   project-owned code or alter imported bytes.
 

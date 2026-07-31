@@ -83,7 +83,8 @@ None. M2 T1 S1 is the next eligible subtask and remains inactive.
 - M1 T1 S1: approved the bounded GCC migration design after a zero-patch GCC
   compile and warning inventory.
 - M1 T2 S1: imported and built the full provenance-recorded NXVM baseline;
-  recorded bounded FDD/HDD instruction-trace evidence and the M1 snapshot.
+  recorded bounded FDD/HDD instruction-trace evidence, the raw M1 snapshot,
+  and the post-snapshot M1 T2 build identity banner.
 
 ## Next Eligible Work
 
