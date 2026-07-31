@@ -16,9 +16,10 @@ by the owned DOS runtime before M3 changes the imported NXVM baseline.
    Machine-to-DOS calls. Define thread ownership for every mutable state.
 4. Define DOS ownership of COM loading and `INT 20h`/`INT 21h` dispatch without
    permitting `machine -> dos` dependency.
-5. Define the abstract host-service trust boundary. It must name path parsing,
-   visible-root capability handles, reparse traversal rules, and error mapping;
-   it must not choose a Win32 implementation or CLI syntax.
+5. Define the abstract host-service trust boundary: visible-root capabilities,
+   operation/error categories, and the invariant that an operation cannot escape
+   an exposed root. M2 does not define DOS path grammar, reparse traversal,
+   race handling, Win32 handles, or CLI syntax; M6 owns those concrete rules.
 6. Map every M1 baseline observation to its M3 owning module and focused test.
 
 ## Required Deliverables

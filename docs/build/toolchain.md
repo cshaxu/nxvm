@@ -38,6 +38,11 @@ M1 COM probe. The manifest must report marker `NTVDM64:M1:TEXT:OK`, exit code
 `42`, the two DOS interrupt contracts, and the SHA-256 of the adjacent COM
 file.
 
+Every M1 baseline record also captures the exact `gcc`, `cmake`, and `ninja`
+versions, executable SHA-256 values, host Windows edition/build, and target
+architecture. A Windows 7 claim remains pending until the same record exists
+from a Windows 7 host or an evidence-backed compatibility limitation is filed.
+
 ## Optional MSVC Verification
 
 ```powershell
