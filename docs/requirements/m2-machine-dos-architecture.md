@@ -62,7 +62,9 @@ BIOS service handlers. `dos` owns loader state, PSP/environment and
 `INT 20h`/`INT 21h` dispatch; it calls only Machine and abstract host
 capability contracts. `platform` owns host threads, input collection, display
 presentation, clocks, and concrete filesystem/Console/window implementations.
-`products/nxvm` and `products/ntvdm64` own CLI and product policy.
+`products/nxvm` owns the retained interactive Console and product policy;
+`products/ntvdm64` owns its process CLI, window-mode control Console, and
+product policy.
 
 There is no `core -> dos`, `core -> platform/Windows`, `core -> product CLI`,
 `dos -> Win32`, or `platform -> DOS internals` dependency. The M1 direct calls
@@ -214,7 +216,8 @@ sets instruction, wall-clock, and no-progress budgets.
 
 ## Deferred Decisions
 
-M4 owns firmware and `nxvm.exe` CLI/Console design. M6 owns COM layout,
+M4 owns firmware and retained `nxvm.exe` Console design; it does not add an
+nxvm process CLI. M6 owns COM layout,
 PSP/environment/DTA, initial registers, DOS error table, handle semantics,
 blocked input protocol and the approved `INT 20h`/`INT 21h` subset. M8 owns
 `run` grammar, program-path mapping, host-drive and reparse policy,

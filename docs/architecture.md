@@ -7,8 +7,9 @@ builds two first-class executables over one shared core:
 
 ```text
 nxvm.exe
-  bootable whole-machine VM with BIOS/POST, disk-image boot, Console and
-  whole-machine debugging behavior.
+  bootable whole-machine VM with BIOS/POST, disk-image boot, its retained
+  interactive NXVM Console, and whole-machine debugging behavior. It has no
+  new process CLI.
 
 ntvdm64.exe
   non-bootable DOS application runner with an owned DOS backend and
@@ -90,10 +91,12 @@ products/nxvm      products/ntvdm64
 - `runtime/`: the composition root. It creates a session, selects a product
   profile, wires registries, owns lifecycle transitions, drives execution, and
   reports a product result.
-- `products/nxvm/`: bootable VM CLI, Console, boot media policy, whole-machine
-  profile selection, and nxvm-specific registry composition.
-- `products/ntvdm64/`: DOS app-runner CLI, display/debug UX, drive visibility,
-  host filesystem policy, and ntvdm64-specific registry composition.
+- `products/nxvm/`: bootable VM Console, boot-media policy, whole-machine
+  profile selection, and nxvm-specific registry composition. It does not add a
+  process CLI.
+- `products/ntvdm64/`: DOS app-runner CLI, display/debug UX, window-mode
+  control Console, drive visibility, host filesystem policy, and ntvdm64-
+  specific registry composition.
 - `adapters/`: explicit glue between concrete modules. Cross-module policy does
   not live inside `core`.
 - `integration/`: isolated research for host-changing features; excluded from

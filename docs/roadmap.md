@@ -77,9 +77,10 @@ forbidden dependencies are absent, and M3 produces the M4 breakdown.
 
 **Scope:** BIOS/POST/ROM and BIOS interrupt-service ownership; firmware service
 registry; whole-machine profile composition; disk-image and removable-media
-policy; `nxvm.exe` CLI grammar; NXVM Console behavior; debugger entry points;
-display/input expectations; artifact identity; and regression rules that keep
-whole-machine boot ability from becoming accidental.
+policy; retained interactive NXVM Console grammar and behavior; debugger entry
+points; display/input expectations; artifact identity; and regression rules
+that keep whole-machine boot ability from becoming accidental. `nxvm.exe` has
+no new process CLI.
 
 **Exit:** versioned firmware and `nxvm.exe` product specifications plus the
 bounded M5 breakdown. **Non-goal:** implementation.
@@ -89,8 +90,9 @@ bounded M5 breakdown. **Non-goal:** implementation.
 **Goal:** make the bootable VM product a first-class output on the shared core.
 
 **Scope:** move retained BIOS/POST/ROM and boot devices into `firmware` or
-`products/nxvm` as specified by M4, implement `nxvm.exe` CLI and Console
-contracts, retain FDD/HDD boot fixtures, and produce runnable artifacts.
+`products/nxvm` as specified by M4, implement retained NXVM Console contracts,
+retain FDD/HDD boot fixtures, and produce runnable artifacts. `nxvm.exe` has
+no new process CLI.
 
 **Exit:** `nxvm.exe` boots the recorded full-PC fixtures through the shared core
 with focused regression evidence. No ntvdm64 DOS runner behavior is required.
@@ -124,11 +126,12 @@ and exit through the shared core.
 
 **Goal:** specify non-invasive host integration before product implementation.
 
-**Scope:** `ntvdm64 run` grammar, `nxvm`/`ntvdm64` command separation,
+**Scope:** `ntvdm64 run` grammar, separation from the retained NXVM Console,
 program-path mapping, exit-status table, filesystem containment, Windows 7
 through Windows 11 matrix, Console/window state machine, graphics capability
 table, debugger grammar, Ctrl+C/Ctrl+Break ownership, cleanup, and error
-behavior.
+behavior. A windowed ntvdm64 session retains a product control Console for
+online debugging; its exact lifetime and ownership are M8 decisions.
 
 **Exit:** approved Platform/CLI specification, security matrix, and bounded M9
 breakdown. **Non-goal:** production platform implementation.

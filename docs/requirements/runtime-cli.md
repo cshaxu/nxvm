@@ -4,6 +4,11 @@ This document defines the user-visible contract for the non-invasive
 `ntvdm64 run` product path. It is a requirements record; it does not claim that
 the options are implemented before their scheduled milestone.
 
+It does not define NXVM Console commands: `nxvm.exe` retains its interactive
+whole-machine Console and has no process CLI. In window mode, ntvdm64 retains a
+product control Console for online debugging; M8 fixes its detailed lifecycle
+and input ownership.
+
 ## M8 Design Gate
 
 Before M9 implementation, this document is completed with the program-path to
