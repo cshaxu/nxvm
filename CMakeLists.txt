@@ -40,10 +40,16 @@ add_executable(nxvm-core-machine-instance-smoke
 )
 target_link_libraries(nxvm-core-machine-instance-smoke PRIVATE nxvm-core)
 
+add_executable(nxvm-core-machine-lifecycle-smoke
+    tests/core/machine_lifecycle_smoke.c
+)
+target_link_libraries(nxvm-core-machine-lifecycle-smoke PRIVATE nxvm-core)
+
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 add_custom_target(generate-m1-probe

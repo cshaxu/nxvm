@@ -46,6 +46,11 @@
       "targets": ["nxvm-core-machine-instance-smoke"]
     },
     {
+      "name": "m3-machine-lifecycle-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["nxvm-core-machine-lifecycle-smoke"]
+    },
+    {
       "name": "m0-probe-msvc",
       "configurePreset": "vs2022-x64",
       "targets": ["generate-m1-probe"],

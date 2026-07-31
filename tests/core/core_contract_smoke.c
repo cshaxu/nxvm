@@ -23,7 +23,7 @@ int main(void)
     }
 
     if (nxvm_core_machine_run(machine, budget, &result) !=
-        NXVM_CORE_STATUS_UNSUPPORTED) {
+        NXVM_CORE_STATUS_OK) {
         nxvm_core_machine_destroy(machine);
         return 3;
     }

@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "core/cpu.h"
+#include "core/lifecycle.h"
 #include "core/memory.h"
 #include "core/port.h"
 #include "core/profile.h"
@@ -42,12 +43,20 @@ nxvm_core_status nxvm_core_machine_create(
 
 nxvm_core_status nxvm_core_machine_reset(nxvm_core_machine *machine);
 
+nxvm_core_status nxvm_core_machine_get_lifecycle(
+    const nxvm_core_machine *machine,
+    nxvm_core_machine_lifecycle *out_lifecycle);
+
 nxvm_core_status nxvm_core_machine_run(
     nxvm_core_machine *machine,
     nxvm_core_run_budget budget,
     nxvm_core_run_result *result);
 
 nxvm_core_status nxvm_core_machine_request_stop(nxvm_core_machine *machine);
+
+nxvm_core_status nxvm_core_machine_report_fault(
+    nxvm_core_machine *machine,
+    uint32_t detail);
 
 void nxvm_core_machine_destroy(nxvm_core_machine *machine);
 

@@ -2,17 +2,13 @@
 #define NXVM_CORE_MACHINE_IMPL_H
 
 #include <stddef.h>
+#include <stdatomic.h>
 #include <stdint.h>
 
 #include "core/cpu.h"
+#include "core/lifecycle.h"
 #include "core/port.h"
 #include "core/profile.h"
-
-typedef enum nxvm_core_machine_state {
-    NXVM_CORE_MACHINE_NEW = 0,
-    NXVM_CORE_MACHINE_RESET,
-    NXVM_CORE_MACHINE_STOP_REQUESTED
-} nxvm_core_machine_state;
 
 typedef struct nxvm_core_cpu {
     nxvm_core_cpu_state state;
@@ -35,7 +31,9 @@ typedef struct nxvm_core_port_table {
 
 struct nxvm_core_machine {
     nxvm_core_machine_config config;
-    nxvm_core_machine_state state;
+    nxvm_core_machine_lifecycle lifecycle;
+    atomic_bool stop_requested;
+    uint32_t fault_detail;
     nxvm_core_cpu cpu;
     nxvm_core_memory memory;
     nxvm_core_port_table ports;

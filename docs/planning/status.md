@@ -19,11 +19,11 @@ M2 is complete. Shared Core Architecture Requirements V2 defines the
 `nxvm.exe` and `ntvdm64.exe` product split, `nxvm.full_pc` and
 `ntvdm64.dos_minimal` profiles, lifecycle, ownership, registries, abstract
 host-service and trace boundaries, and M3 regression strategy. The bounded M3
-Task/subtask breakdown is approved; M3 is active with T1 S2.
+Task/subtask breakdown is approved; M3 is active.
 
 ## Active Work
 
-None. M3 T2 S1 is the next eligible subtask and remains inactive.
+None. M3 T2 S2 is the next eligible subtask and remains inactive.
 
 ## Completed
 
@@ -117,6 +117,9 @@ None. M3 T2 S1 is the next eligible subtask and remains inactive.
   explicit A20 state, and session-local typed port dispatch. The untouched M1
   baseline remains the temporary full-PC regression adapter; verification and
   provenance record the distinction.
+- M3 T2 S1: made the core Machine lifecycle explicit with observable state,
+  finite budget boundaries, atomic requested-stop observation, and stable fault
+  reporting. No guest executor or platform thread was introduced.
 
 ## Active Subtask
 
@@ -124,7 +127,7 @@ None.
 
 ## Next Eligible Work
 
-- M3 T2 S1: make the Machine lifecycle explicit after M3 T1 closes.
+- M3 T2 S2: add the neutral trace boundary after M3 T2 S1 closes.
 
 ## Delivery State
 
