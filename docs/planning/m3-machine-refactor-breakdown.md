@@ -16,7 +16,7 @@ immutable.
 
 | Task / subtask | Approved decision and implementation result | Focused acceptance | Stop condition |
 | --- | --- | --- | --- |
-| T1 S1: define Shared Core V1 | Create project-owned opaque headers, status/stop enums, instance config and profile selector. No source behavior moves yet. | Compile-only ABI consumer; forbidden-dependency include scan. | Any interface needs a DOS, product CLI or Win32 type. |
+| T1 S1: define Shared Core V1 | Create module-local `src/core/*.h` contract headers and minimal `src/core/*.c` linkable skeletons for opaque Machine, status/stop enums, instance config and profile selection. No baseline behavior moves yet. | Compile-only ABI consumer; link test; forbidden-dependency include scan. | Any interface needs a DOS, product CLI or Win32 type, or requires a top-level SDK-style include tree. |
 | T1 S2: create Machine instance shell | Move or wrap CPU, RAM and port state under one instance without raw state exposure; retain legacy adapter behind it. | CPU/RAM/port deterministic tests; M1 FDD/HDD checkpoints. | Pointer-width, aliasing or ownership defect that changes M1 trace before diagnosis. |
 | T2 S1: make lifecycle explicit | Implement initialize/reset/run/request-stop/destroy state machine and finite run budgets on the Machine thread. | Legal/illegal transition tests, reset-vector checkpoint, budget/request/fault stop reason tests. | A transition requires platform thread access. |
 | T2 S2: add neutral trace boundary | Implement disabled-by-default V1 sink at run and device boundaries with bounded buffering. | Null-sink equivalence; deterministic event schema test; no external reference adapter. | Trace alters M1 checkpoint or becomes required at runtime. |
