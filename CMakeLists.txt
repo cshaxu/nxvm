@@ -131,6 +131,7 @@ target_link_libraries(nxvm-baseline-cpu-probe-smoke PRIVATE
 add_library(nxvm-runtime STATIC
     src/runtime/dos_minimal.c
     src/runtime/profile.c
+    src/runtime/registry.c
     src/runtime/session.c
 )
 target_include_directories(nxvm-runtime PUBLIC
@@ -142,6 +143,11 @@ add_executable(nxvm-runtime-session-smoke
     tests/runtime/session_smoke.c
 )
 target_link_libraries(nxvm-runtime-session-smoke PRIVATE nxvm-runtime)
+
+add_executable(nxvm-runtime-registry-smoke
+    tests/runtime/registry_smoke.c
+)
+target_link_libraries(nxvm-runtime-registry-smoke PRIVATE nxvm-runtime)
 
 add_library(nxvm-dos-minimal-presentation-adapter STATIC
     src/adapters/dos_minimal_presentation.c
@@ -199,6 +205,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-runtime PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-runtime-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-runtime-registry-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-presentation-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-baseline-full-pc-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
