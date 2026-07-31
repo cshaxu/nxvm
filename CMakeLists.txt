@@ -44,6 +44,12 @@ target_include_directories(nxvm-product-pc-at PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(nxvm-product-pc-at PUBLIC nxvm-product-media nxvm-baseline-full-pc-adapter)
 add_library(nxvm-product-console STATIC src/products/nxvm/console.c)
 target_include_directories(nxvm-product-console PUBLIC "${CMAKE_SOURCE_DIR}/src")
+add_library(nxvm-product-presentation-debug STATIC
+    src/products/nxvm/presentation.c
+    src/products/nxvm/debugger.c
+)
+target_include_directories(nxvm-product-presentation-debug PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(nxvm-product-presentation-debug PUBLIC nxvm-core)
 target_include_directories(nxvm-core PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -61,6 +67,10 @@ add_executable(nxvm-product-pc-at-smoke tests/products/nxvm_pc_at_smoke.c)
 target_link_libraries(nxvm-product-pc-at-smoke PRIVATE nxvm-product-pc-at)
 add_executable(nxvm-product-console-smoke tests/products/nxvm_console_smoke.c)
 target_link_libraries(nxvm-product-console-smoke PRIVATE nxvm-product-console)
+add_executable(nxvm-product-presentation-debug-smoke
+    tests/products/nxvm_presentation_debugger_smoke.c)
+target_link_libraries(nxvm-product-presentation-debug-smoke PRIVATE
+    nxvm-product-presentation-debug)
 target_link_libraries(nxvm-core-contract-smoke PRIVATE nxvm-core)
 
 add_executable(nxvm-core-machine-instance-smoke
@@ -102,11 +112,13 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-product-media PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-pc-at PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-console PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-product-presentation-debug PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-pc-at-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-media-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-pc-at-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-product-presentation-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -244,6 +256,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t2 "m5t2")
 add_nxvm_full_pc_artifact(nxvm-m5-t3 "m5t3")
 add_nxvm_full_pc_artifact(nxvm-m5-t4 "m5t4")
 add_nxvm_full_pc_artifact(nxvm-m5-t5 "m5t5")
+add_nxvm_full_pc_artifact(nxvm-m5-t6 "m5t6")
 
 if(NTVDM64_ENABLE_BOCHX_RESEARCH)
     add_executable(ntvdm64-bochx-manifest-check
