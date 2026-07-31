@@ -8,8 +8,8 @@ been documented and verified. M1 is eligible to begin, but has not started.
 
 ## Active Work
 
-None. M1 T1 S1 is the next eligible subtask, not an active subtask. M1 T2 S1
-cannot start until the GCC migration design is approved.
+M1 T2 S1 is active: import and baseline the full NXVM machine under the approved
+GCC migration design.
 
 ## Completed
 
