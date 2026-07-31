@@ -29,7 +29,7 @@ behavior.
 
 ## Active Work
 
-M5 T5 S2: PC/AT block composition.
+M5 T6 S1: Retained NXVM Console command adapter.
 
 ## Completed
 
@@ -159,7 +159,7 @@ M5 T5 S2: PC/AT block composition.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t5-s2.md`.
+`docs/planning/subtasks/m5-t6-s1.md`.
 
 ## Next Eligible Work
 
