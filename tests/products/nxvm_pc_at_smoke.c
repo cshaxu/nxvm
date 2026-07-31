@@ -17,6 +17,7 @@ static int verify(const char *fdd_path, const char *hdd_path,
     nxvm_product_nxvm_media_policy media;
     nxvm_product_nxvm_pc_at pc_at = { 0 };
     nxvm_product_nxvm_reset_vector vector;
+    int running = 1;
 
     nxvm_product_nxvm_media_policy_initialize(&media);
     if (nxvm_product_nxvm_media_configure(&media, NXVM_PRODUCT_NXVM_BOOT_FDD,
@@ -26,6 +27,10 @@ static int verify(const char *fdd_path, const char *hdd_path,
         nxvm_product_nxvm_media_set_boot_target(&media, boot_target) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_media_freeze(&media) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_pc_at_create(&pc_at, &media) != NXVM_CORE_STATUS_OK ||
+        nxvm_product_nxvm_pc_at_set_window_display(&pc_at, 0) != NXVM_CORE_STATUS_OK ||
+        nxvm_product_nxvm_pc_at_reset(&pc_at) != NXVM_CORE_STATUS_OK ||
+        nxvm_product_nxvm_pc_at_is_running(&pc_at, &running) != NXVM_CORE_STATUS_OK ||
+        running != 0 ||
         nxvm_product_nxvm_pc_at_get_reset_vector(&pc_at, &vector) != NXVM_CORE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         nxvm_product_nxvm_pc_at_destroy(&pc_at);

@@ -17,6 +17,9 @@ the product-owned PC/AT session, then calls the retained bridge through
 `products/nxvm/pc_at`; the entry no longer calls the baseline Console.
 
 The ignored local task artifact is `build/output/nxvm-m5_t7.exe`, SHA-256
-`4155367c28635b44973e06257ccf88cc1366b55285e418e0ad77a16dcd963342`. It
-emits `0.4.015d.m5t7`; scripted `help`, `info`, and `exit` commands returned
-zero. This is closure evidence, not a release artifact.
+`e46ec9de8aa55e275814168ee956c504d449183323c200ad2ccc6508b97fbd4b`. It
+emits `0.4.015d.m5t7`. A scripted window-mode FDD run reported `running`,
+accepted `stop`, returned to `ready`, exited zero, and left no process running.
+The focused PC/AT smoke also covered stopped-state display selection, reset,
+and an observed non-running state for both fixture targets. This is closure
+evidence, not a release artifact.
