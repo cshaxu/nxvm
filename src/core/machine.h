@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#include "core/cpu.h"
+#include "core/memory.h"
+#include "core/port.h"
 #include "core/profile.h"
 #include "core/status.h"
 

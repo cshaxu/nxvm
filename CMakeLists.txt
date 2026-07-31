@@ -21,7 +21,10 @@ find_program(POWERSHELL_EXECUTABLE NAMES powershell pwsh REQUIRED)
 set(NTVDM64_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 
 add_library(nxvm-core STATIC
+    src/core/cpu.c
     src/core/machine.c
+    src/core/memory.c
+    src/core/port.c
 )
 target_include_directories(nxvm-core PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -32,9 +35,15 @@ add_executable(nxvm-core-contract-smoke
 )
 target_link_libraries(nxvm-core-contract-smoke PRIVATE nxvm-core)
 
+add_executable(nxvm-core-machine-instance-smoke
+    tests/core/machine_instance_smoke.c
+)
+target_link_libraries(nxvm-core-machine-instance-smoke PRIVATE nxvm-core)
+
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 add_custom_target(generate-m1-probe
