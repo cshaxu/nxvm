@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "machine/vm/device.h"
+#include "vm/machine/device.h"
 #include "machine/vm/execution_context.h"
 
 static DWORD WINAPI run_device(LPVOID parameter)

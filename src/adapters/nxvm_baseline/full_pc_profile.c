@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "machine/vm/device.h"
+#include "vm/machine/device.h"
 #include "adapters/nxvm_baseline/vm_request_transport.h"
 #include "product/vm/debug.h"
 #include "vm/machine/machine.h"

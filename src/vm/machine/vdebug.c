@@ -6,7 +6,7 @@
  */
 
 #include "nxvm-baseline/utils.h"
-#include "machine/vm/device.h"
+#include "vm/machine/device.h"
 
 #include "core/machine/vcpuins.h"
 

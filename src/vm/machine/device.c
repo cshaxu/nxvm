@@ -14,7 +14,7 @@
 #include "core/machine/vram.h"
 #include "core/machine/vport.h"
 
-#include "device.h"
+#include "vm/machine/device.h"
 
 t_device device;
 static nxvm_execution_context device_execution_context;
