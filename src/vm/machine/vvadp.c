@@ -6,7 +6,7 @@
 
 #include "nxvm-baseline/device/vbios.h"
 #include "core/machine/vport.h"
-#include "machine/core/vvadp.h"
+#include "vm/machine/vvadp.h"
 
 t_vadp vvadp;
 

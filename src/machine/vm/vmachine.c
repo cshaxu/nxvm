@@ -17,7 +17,7 @@
 #include "machine/vm/vhdc.h"
 #include "machine/vm/vhdd.h"
 #include "core/machine/vkbc.h"
-#include "machine/core/vvadp.h"
+#include "vm/machine/vvadp.h"
 #include "nxvm-baseline/device/qdx/qdx.h"
 
 #include "vmachine.h"

@@ -6,11 +6,11 @@
 - Original M1 paths and hashes:
   `src/device/vvadp.c` `712e38e8051192e4b897ce60b101743e5709ecbdc821b78c3701e2a9be1edfc8`;
   `src/device/vvadp.h` `655c55701c6805919636dacd5f88e3025d03f45c3a7ccd160b11f31bf41871fb`.
-- M5 destinations: `src/machine/core/vvadp.c`
-  `83228e447b7a8bcaa4ee4af1d2d0176435dfc39e49fa9cecfc61ea268ebc16f8`;
-  `src/machine/core/vvadp.h`
-  `2d246438f43d4a305f1d5fb362c8d43874d8b540ec908d209424787eedd4bb19`.
-- Changes: preserved VADP logic and copyright notices; adjusted include paths,
-  added a forwarding header, and added the implementation to the machine-core
-  CMake source set.
+- Current M5 destination: `src/vm/machine/vvadp.c`
+  `5514b54fadbaa93a2f4f890c8e775e0a7e0d43c9fa0b8443017428d72ef18a66d`;
+  `src/vm/machine/vvadp.h`
+  `159ebf55d358d38b7d34a98d402590e92b9c055c421509a877d7b417d3d9a496`.
+- Changes: preserved VADP logic and copyright notices; adjusted direct include
+  paths and CMake ownership. The VADP BIOS INT 10h registration makes this a
+  VM-machine source, not a shared-core device.
 - Verification: `docs/verification/m5-t11-s5-vadp-move.md`.
