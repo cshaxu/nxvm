@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-#include "vm/product/baseline_full_pc.h"
+#include "vm/product/full_pc.h"
 #include "vdm/machine/dos_minimal.h"
 
 struct nxvm_runtime_session {
@@ -15,14 +15,14 @@ struct nxvm_runtime_session {
 static nxvm_core_status nxvm_runtime_session_create_full_pc(
     nxvm_runtime_session *session)
 {
-    const nxvm_baseline_full_pc_config config = {
+    const nxvm_full_pc_config config = {
         session->config.fdd_image,
         session->config.hdd_image,
         0,
         0u,
         session->config.boot_hdd
     };
-    nxvm_core_status status = nxvm_baseline_full_pc_create(&config);
+    nxvm_core_status status = nxvm_full_pc_create(&config);
 
     if (status == NXVM_CORE_STATUS_OK) {
         session->full_pc_active = 1;
@@ -71,7 +71,7 @@ nxvm_core_status nxvm_runtime_session_reset(nxvm_runtime_session *session)
     }
     if (session->config.profile == NXVM_RUNTIME_PROFILE_NXVM_FULL_PC) {
         if (session->full_pc_active) {
-            nxvm_baseline_full_pc_destroy();
+            nxvm_full_pc_destroy();
             session->full_pc_active = 0;
         }
         return nxvm_runtime_session_create_full_pc(session);
@@ -89,7 +89,7 @@ void nxvm_runtime_session_destroy(nxvm_runtime_session *session)
 {
     if (session != NULL) {
         if (session->full_pc_active) {
-            nxvm_baseline_full_pc_destroy();
+            nxvm_full_pc_destroy();
         }
         nxvm_runtime_dos_minimal_destroy(session->dos_minimal);
         free(session);
