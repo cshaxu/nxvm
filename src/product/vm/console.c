@@ -9,7 +9,7 @@
 
 #include "device/device.h"
 #include "platform/vm/platform.h"
-#include "machine/vm/machine.h"
+#include "vm/machine/machine.h"
 
 #include "debug.h"
 #include "console.h"

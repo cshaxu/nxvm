@@ -5,7 +5,7 @@
 #include "machine/vm/device.h"
 #include "platform/vm/platform.h"
 
-#include "machine.h"
+#include "vm/machine/machine.h"
 
 void machineStart() {
     machineReset();

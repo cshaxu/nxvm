@@ -22,3 +22,8 @@ made.
 No Console, debugger, display, input, media, boot, or thread behavior was
 intentionally changed. T10 is still active, so no task-level artifact was
 copied to `build/output`.
+
+The M5 T12 S9 canonical-root follow-up moved the unchanged lifecycle pair to
+`src/vm/machine/machine.c` and `.h`, repaired its direct callers, and reran the
+GCC target plus finite CPU probe. The probe retained
+`M5:T1:S1:CPU-PROBES:OK`.
