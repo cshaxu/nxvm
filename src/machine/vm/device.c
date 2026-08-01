@@ -10,6 +10,9 @@
 #include "nxvm-baseline/device/vdebug.h"
 #include "machine/vm/vmachine.h"
 #include "machine/vm/execution_context.h"
+#include "machine/core/vcpu.h"
+#include "machine/core/vram.h"
+#include "machine/core/vport.h"
 #include "machine/vm/execution_context.h"
 
 #include "device.h"
@@ -60,6 +63,8 @@ void deviceStop()  {
 void deviceInit() {
     MEMSET((void *)(&device), Zero8, sizeof(t_device));
     nxvm_execution_context_initialize(&device_execution_context);
+    nxvm_execution_context_bind_machine_state(
+        &device_execution_context, &vcpu, &vram, &vport, &device);
     nxvm_execution_context_initialize(&device_execution_context);
     vdebugInit();
     vmachineInit();
