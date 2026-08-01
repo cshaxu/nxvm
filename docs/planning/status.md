@@ -334,6 +334,9 @@ legacy `vmachine` lifecycle sequence.
 - M5 T14 S3: consolidated VM profile metadata and default-profile firmware
   under `nxvm-vm-profile`; historical profile smoke executables now link that
   module target rather than narrow profile libraries.
+- M5 T14 S3: consolidated all remaining `vm/composition_*.c` sources under
+  `nxvm-vm-composition`. Full-PC, CPU-probe, default-profile, and session
+  smoke executables now link the root composition target directly.
 
 ## Active Subtask
 
