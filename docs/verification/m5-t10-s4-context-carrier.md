@@ -16,3 +16,8 @@ the old device connector accessors. Reset, RAM writes, and instruction
 execution remain on their retained paths. GCC builds, the established `#UD`
 CPU-probe marker, and the no-media Console/debugger interaction regression
 passed.
+
+P5 extends the finite CPU-probe smoke to create, probe, finalize, and recreate
+the retained PC/AT session. It verifies that the current context is cleared at
+each finalization and that the second session retains the established CPU
+result. The sequential probe and no-media Console/debugger regression passed.
