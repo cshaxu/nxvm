@@ -9,7 +9,7 @@
 #include "core/machine/lifecycle.h"
 #include "core/machine/port.h"
 #include "core/machine/profile.h"
-#include "machine/core/trace.h"
+#include "core/machine/trace.h"
 
 #define NXVM_CORE_TRACE_CAPACITY 32u
 
