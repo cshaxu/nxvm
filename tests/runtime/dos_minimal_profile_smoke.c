@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "vdm/machine/dos_minimal.h"
-#include "runtime/profile.h"
+#include "core/product/runtime/profile.h"
 
 int main(void)
 {
