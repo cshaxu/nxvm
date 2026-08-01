@@ -323,24 +323,20 @@ add_executable(nxvm-vm-platform-execution-smoke
 )
 target_link_libraries(nxvm-vm-platform-execution-smoke PRIVATE nxvm-platform-vm)
 
-add_library(nxvm-legacy-runtime-dependencies INTERFACE)
-target_link_libraries(nxvm-legacy-runtime-dependencies INTERFACE
+add_library(nxvm-vm-composition STATIC ${NXVM_COMPOSITION_VM_SOURCES})
+target_include_directories(nxvm-vm-composition PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-vm-composition PUBLIC
+    nxvm-vm-machine
     nxvm-machine-core-executor
     nxvm-product-core-debug
     nxvm-product-core-utils
     nxvm-profile-vm-default-firmware
     nxvm-platform-vm
+    nxvm-runtime
     user32
     gdi32)
-
-add_library(nxvm-machine-vm-lifecycle STATIC ${NXVM_COMPOSITION_VM_SOURCES})
-target_include_directories(nxvm-machine-vm-lifecycle PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(nxvm-machine-vm-lifecycle PUBLIC
-    nxvm-vm-machine
-    nxvm-legacy-runtime-dependencies
-    nxvm-runtime)
 
 add_library(nxvm-vm-machine STATIC ${NXVM_MACHINE_VM_SOURCES})
 target_include_directories(nxvm-vm-machine PUBLIC
@@ -363,8 +359,7 @@ target_include_directories(nxvm-vm-full-pc PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(nxvm-vm-full-pc PUBLIC
-    nxvm-machine-vm-lifecycle
-    nxvm-legacy-runtime-dependencies
+    nxvm-vm-composition
     nxvm-vm-request-transport)
 
 add_library(nxvm-vm-cpu-probe STATIC
@@ -374,8 +369,7 @@ target_include_directories(nxvm-vm-cpu-probe PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(nxvm-vm-cpu-probe PUBLIC
-    nxvm-machine-vm-lifecycle
-    nxvm-legacy-runtime-dependencies)
+    nxvm-vm-composition)
 
 add_executable(nxvm-vm-cpu-probe-smoke
     tests/adapters/nxvm_vm_cpu_probe_smoke.c
@@ -388,21 +382,21 @@ add_executable(nxvm-execution-context-smoke
     tests/machine/vm_execution_context_smoke.c
 )
 target_link_libraries(nxvm-execution-context-smoke PRIVATE
-    nxvm-machine-vm-lifecycle
+    nxvm-vm-composition
 )
 
 add_executable(nxvm-vm-cpu-stop-smoke
     tests/machine/vm_cpu_stop_smoke.c
 )
 target_link_libraries(nxvm-vm-cpu-stop-smoke PRIVATE
-    nxvm-machine-vm-lifecycle
+    nxvm-vm-composition
 )
 
 add_executable(nxvm-vm-debug-target-smoke
     tests/machine/vm_debug_target_smoke.c
 )
 target_link_libraries(nxvm-vm-debug-target-smoke PRIVATE
-    nxvm-machine-vm-lifecycle
+    nxvm-vm-composition
 )
 
 add_library(nxvm-runtime STATIC
@@ -524,7 +518,7 @@ function(add_nxvm_full_pc_artifact target suffix)
         "${CMAKE_SOURCE_DIR}/src")
     target_link_libraries(${target} PRIVATE
         nxvm-vm-product
-        nxvm-machine-vm-lifecycle)
+        nxvm-vm-composition)
 
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
