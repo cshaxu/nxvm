@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-#include "vm/machine/vvadp.h"
 #include "core/machine/vram.h"
 
 #define QDCGA_COUNT_MAX_PAGE               0x08
