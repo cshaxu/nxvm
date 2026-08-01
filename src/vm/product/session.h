@@ -1,7 +1,7 @@
 #ifndef NXVM_PRODUCT_NXVM_SESSION_H
 #define NXVM_PRODUCT_NXVM_SESSION_H
 
-#include "firmware/default_profile.h"
+#include "vm/profile/default_profile/firmware/default_profile.h"
 #include "vm/product/session_console.h"
 #include "vm/product/session_debugger.h"
 #include "vm/product/media.h"

@@ -1,4 +1,4 @@
-#include "firmware/default_profile.h"
+#include "vm/profile/default_profile/firmware/default_profile.h"
 
 #include "core/machine/memory.h"
 
