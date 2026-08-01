@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "nxvm-baseline/device/vglobal.h"
+#include "machine/core/vglobal.h"
 
 #define NXVM_DEVICE_PORT "Unknown I/O Port"
 
