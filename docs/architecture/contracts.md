@@ -55,6 +55,22 @@ corresponding runtime path:
 No implementation detail or old M2/M4 contract becomes current merely because
 it remains in `history/`.
 
+## Presentation Boundary
+
+A display bridge has two independent payload contracts. The product machine
+module owns its snapshot, which may embed `nxvm_core_text_snapshot` and carry
+machine-private diagnostics. The product platform module owns its frame and
+its submit or sink contract; the frame carries host-facing copies only and
+must not embed, reference, or name a machine snapshot type.
+
+Only `vm` or `vdm` root composition may include both contracts. At its defined
+execution boundary it maps a machine snapshot to a platform frame and submits
+the frame. Neither `core/platform` nor a product platform module may include a
+machine header. A presentation probe injects a platform-sink spy through the
+platform contract and verifies copied cells, attributes, geometry, cursor,
+generation, and boundary timing; a dependency gate rejects machine-to-platform
+or platform-to-machine sibling includes.
+
 ## Core Machine: Lifecycle And Cooperative Execution
 
 `core/machine` owns no host thread and exposes no `start` function or internal

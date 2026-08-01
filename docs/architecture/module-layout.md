@@ -70,13 +70,16 @@ but no session composition, VM Console, VDM CLI, profile, boot/media, or
 host-policy decision. Its runtime infrastructure lives in
 `core/product/runtime`; there is no top-level runtime module.
 
-Machine snapshots and platform frames are distinct contracts. A machine
+Machine snapshots and platform frames are distinct contracts. A product-machine
 snapshot may contain text cells, attributes, geometry, cursor, generation, and
-machine-private diagnostics; a platform frame contains only host-facing
-presentation data. Root composition translates between them. Product-private
-diagnostics such as DOS-minimal PIT state or pending keyboard IRQ remain in
-that product's machine module and require a separate diagnostic contract if
-they must be exposed.
+machine-private diagnostics, and may embed a core text snapshot; it remains a
+machine type. A product-platform frame contains only copied host-facing
+presentation data and must not embed, point at, or name a machine snapshot
+type. The corresponding VM or VDM root composition is the sole source that may
+include both contracts: at a defined execution boundary it converts the
+snapshot to a frame and submits it. Product-private diagnostics such as
+DOS-minimal PIT state or pending keyboard IRQ remain in that product's machine
+module and require a separate diagnostic contract if they must be exposed.
 
 Ownership is determined by reuse, not by abstraction level or the source's
 current directory. Any logic used by both products belongs in the matching
@@ -135,8 +138,9 @@ It must not include `core/platform`, `core/product`, `vm/*`, or `vdm/*`.
 `core/platform` is the leaf for host-capability contracts and shared host
 providers. It must not mutate guest state or include `core/product`, `vm/*`,
 or `vdm/*`; it also does not include `core/machine` or `core/product`.
-Platform-facing frames and events are platform contracts. A root composition
-translates a machine-owned snapshot into such a frame when required.
+Platform-facing frames and events are platform contracts. Only the relevant
+product root composition translates a machine-owned snapshot into such a frame
+when required; no platform header may name a machine snapshot type.
 
 `core/product` contains reusable product tooling only: generic command,
 registry, trace, debug, assembler, and disassembler facilities. It may depend
