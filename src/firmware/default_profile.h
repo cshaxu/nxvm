@@ -2,7 +2,7 @@
 #define NXVM_FIRMWARE_PC_AT_H
 
 #include "core/machine/machine.h"
-#include "firmware/firmware.h"
+#include "core/machine/firmware.h"
 
 typedef struct nxvm_firmware_default_profile_plan {
     unsigned reset_segment;

@@ -1,4 +1,4 @@
-#include "firmware/firmware.h"
+#include "core/machine/firmware.h"
 
 #include <string.h>
 
