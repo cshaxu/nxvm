@@ -5,7 +5,7 @@
 #include "core/product/utils.h"
 
 #include "core/machine/vram.h"
-#include "vm/machine/vhdd.h"
+#include "core/machine/block.h"
 
 #include "vbios.h"
 
@@ -39,6 +39,8 @@ static t_nubit32 assemble(const t_strptr stmt, t_nubit16 seg, t_nubit16 off) {
 }
 
 static void biosLoadData() {
+    core_block_geometry geometry;
+    coreBlockGetGeometry(&geometry);
     MEMSET((void *) vramGetRealAddr(0x0040, Zero16), Zero8, 0x100);
     vramRealWord(Zero16, VBIOS_ADDR_SERI_PORT_COM1) = 0x03f8;
     vramRealWord(Zero16, VBIOS_ADDR_PARA_PORT_LPT1) = 0x0378;
@@ -70,7 +72,7 @@ static void biosLoadData() {
     vramRealByte(Zero16, VBIOS_ADDR_VGA_MODE_REGISTER) = 0x29;
     vramRealByte(Zero16, VBIOS_ADDR_VGA_COLOR_PALETTE) = 0x30;
     vramRealByte(Zero16, VBIOS_ADDR_HDD_LST_OP_STATUS) = 0x01;
-    vramRealByte(Zero16, VBIOS_ADDR_HDD_NUMBER) = vhdd.connect.flagDiskExist ? 0x01 : Zero8; /* number of hard disks */
+    vramRealByte(Zero16, VBIOS_ADDR_HDD_NUMBER) = geometry.present ? 0x01 : Zero8; /* number of hard disks */
     vramRealByte(Zero16, VBIOS_ADDR_HDD_CONTROL)        = 0xc0;
     vramRealByte(Zero16, VBIOS_ADDR_PARA_TIMEOUT_LPT1)  = 0x14;
     vramRealByte(Zero16, VBIOS_ADDR_SERI_TIMEOUT_COM1)  = 0x0a;
@@ -125,20 +127,22 @@ static void biosLoadPost() {
     vbios.data.buildIP += (t_nubit16) assemble(VBIOS_POST_BOOT, vbios.data.buildCS, vbios.data.buildIP);
 }
 static void biosLoadAdditional() {
+    core_block_geometry geometry;
+    coreBlockGetGeometry(&geometry);
     /* hard disk param table */
     vramRealWord(Zero16, VBIOS_ADDR_HDD_PARAM_OFFSET) = VBIOS_ADDR_HDD_PARAM;
     vramRealWord(Zero16, VBIOS_ADDR_HDD_PARAM_SEGMENT) = VBIOS_ADDR_START_SEG;
-    vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  0) = vhdd.data.ncyl;
-    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  2) = GetMax8(vhdd.data.nhead);
+    vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  0) = geometry.cylinders;
+    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  2) = GetMax8(geometry.heads);
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  3) = 0xa0;
-    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  4) = GetMax8(vhdd.data.nsector);
+    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  4) = GetMax8(geometry.sectors);
     vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  5) = Max16;
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  7) = Zero8;
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  8) = 0x08;
-    vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  9) = vhdd.data.ncyl;
-    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 11) = GetMax8(vhdd.data.nhead);
+    vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM +  9) = geometry.cylinders;
+    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 11) = GetMax8(geometry.heads);
     vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 12) = Zero16;
-    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 14) = GetMax8(vhdd.data.nsector);
+    vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 14) = GetMax8(geometry.sectors);
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 15) = Zero8;
 }
 

@@ -13,5 +13,3 @@ src/vm/product/console.c|vm/platform
 src/vm/product/debug.c|vm/machine
 src/vm/profile/default_profile/firmware/qdcga.c|vm/platform
 src/vm/profile/default_profile/firmware/qdcga.c|vm/machine
-src/vm/profile/default_profile/firmware/qddisk.c|vm/machine
-src/vm/profile/default_profile/firmware/vbios.c|vm/machine
