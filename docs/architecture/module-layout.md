@@ -43,6 +43,14 @@ but no VM Console, VDM CLI, profile, boot/media, or host-policy decision. Its
 runtime infrastructure lives in `core/product/runtime`; there is no top-level
 runtime module.
 
+Ownership is determined by reuse, not by abstraction level or the source's
+current directory. Any logic used by both products belongs in the matching
+`core/{machine,platform,product}` owner, including concrete host code:
+shared Win32 and Linux providers live in `core/platform/win32` and
+`core/platform/linux`; platform-neutral platform code lives directly in
+`core/platform`. A product-only implementation belongs under its `vm/*` or
+`vdm/*` counterpart. The same rule applies to machine and product code.
+
 `vm/machine` owns boot/reset sequencing, execution-loop glue, and VM-only
 controllers such as FDC/HDC/FDD/HDD. `vm/platform` owns full-machine
 input/presentation routing. `vm/product` owns the retained NXVM Console,
