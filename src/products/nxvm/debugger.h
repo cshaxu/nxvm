@@ -1,7 +1,7 @@
 #ifndef NXVM_PRODUCT_NXVM_DEBUGGER_H
 #define NXVM_PRODUCT_NXVM_DEBUGGER_H
 
-#include "machine/core/debug.h"
+#include "core/machine/debug.h"
 
 typedef struct nxvm_product_nxvm_debugger {
     nxvm_core_machine *machine;
