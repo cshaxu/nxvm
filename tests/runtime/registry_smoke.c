@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "runtime/registry.h"
+#include "core/product/runtime/registry.h"
 
 int main(void)
 {
