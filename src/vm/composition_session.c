@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-#include "vm/product/full_pc.h"
+#include "vm/composition_full_pc.h"
 #include "vm/profile/full_pc_profile.h"
 
 struct nxvm_vm_full_pc_session {

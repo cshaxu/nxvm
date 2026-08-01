@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "vm/product/full_pc.h"
+#include "vm/composition_full_pc.h"
 
 nxvm_core_status nxvm_product_nxvm_default_profile_create(
     nxvm_product_nxvm_default_profile *default_profile,

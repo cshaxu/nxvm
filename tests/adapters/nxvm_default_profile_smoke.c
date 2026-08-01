@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "vm/product/full_pc.h"
+#include "vm/composition_full_pc.h"
 #include "vm/profile/default_profile/profile.h"
 
 int main(int argc, char **argv)
