@@ -4,8 +4,8 @@
 
 #include "core/product/utils.h"
 
-#include "vram.h"
-#include "vhdd.h"
+#include "core/machine/vram.h"
+#include "vm/machine/vhdd.h"
 
 #include "vbios.h"
 

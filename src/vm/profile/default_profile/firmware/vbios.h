@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "vglobal.h"
+#include "core/machine/vglobal.h"
 
 #define NXVM_DEVICE_BIOS "Unknown BIOS"
 

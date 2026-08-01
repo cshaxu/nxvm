@@ -9,7 +9,7 @@
 #include "core/machine/vport.h"
 #include "vm/machine/vfdd.h"
 
-#include "nxvm-baseline/device/vbios.h"
+#include "vm/profile/default_profile/firmware/vbios.h"
 #include "vm/machine/vfdc.h"
 
 t_fdc vfdc;

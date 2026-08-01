@@ -2,7 +2,7 @@
 
 /* VKBC is Keyboard Controller: Intel 8042 not implemented yet. */
 
-#include "nxvm-baseline/device/vbios.h"
+#include "vm/profile/default_profile/firmware/vbios.h"
 #include "core/machine/vport.h"
 #include "core/machine/vkbc.h"
 
