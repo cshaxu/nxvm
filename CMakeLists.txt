@@ -202,6 +202,9 @@ set(NXVM_MACHINE_CORE_SOURCES
     src/machine/core/vcmos.c
     src/machine/core/vdebug.c
 )
+set(NXVM_PLATFORM_VM_SOURCES
+    src/platform/vm/platform.c
+)
 
 add_library(nxvm-product-core-debug STATIC ${NXVM_PRODUCT_CORE_DEBUG_SOURCES})
 target_include_directories(nxvm-product-core-debug PUBLIC
@@ -215,7 +218,10 @@ target_include_directories(nxvm-machine-core-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src/nxvm-baseline"
 )
 
-add_library(nxvm-baseline-runtime STATIC ${NXVM_BASELINE_RUNTIME_SOURCES})
+add_library(nxvm-baseline-runtime STATIC
+    ${NXVM_BASELINE_RUNTIME_SOURCES}
+    ${NXVM_PLATFORM_VM_SOURCES}
+)
 target_link_libraries(nxvm-baseline-runtime PUBLIC
     nxvm-machine-core-executor
     nxvm-product-core-debug
@@ -337,6 +343,7 @@ function(add_nxvm_full_pc_artifact target suffix)
         ${NXVM_BASELINE_SOURCES}
         ${NXVM_MACHINE_VM_SOURCES}
         ${NXVM_MACHINE_CORE_SOURCES}
+        ${NXVM_PLATFORM_VM_SOURCES}
         ${NXVM_PRODUCT_CORE_DEBUG_SOURCES}
         ${NXVM_PRODUCT_VM_SOURCES})
     target_compile_definitions(${target} PRIVATE "NXVM_BUILD_SUFFIX=\"${suffix}\"")
