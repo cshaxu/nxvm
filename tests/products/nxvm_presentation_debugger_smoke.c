@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "products/nxvm/debugger.h"
+#include "vm/product/session_debugger.h"
 #include "vm/product/presentation.h"
 
 typedef struct input_fixture {
