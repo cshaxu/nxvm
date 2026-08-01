@@ -2,11 +2,11 @@
 
 /* VHDD implements Hard Disk Drive: 10 MBytes, cyl = 20, head = 16, sector = 63 */
 
-#include "../utils.h"
+#include "nxvm-baseline/utils.h"
 
-#include "vdma.h"
+#include "machine/core/vdma.h"
 
-#include "vhdd.h"
+#include "machine/vm/vhdd.h"
 
 t_hdd vhdd;
 
