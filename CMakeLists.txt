@@ -45,7 +45,7 @@ target_link_libraries(nxvm-product-default-profile PUBLIC nxvm-product-media nxv
 add_library(nxvm-product-console STATIC src/products/nxvm/console.c)
 target_include_directories(nxvm-product-console PUBLIC "${CMAKE_SOURCE_DIR}/src")
 add_library(nxvm-product-presentation-debug STATIC
-    src/products/nxvm/presentation.c
+    src/vm/product/presentation.c
     src/products/nxvm/debugger.c
 )
 target_include_directories(nxvm-product-presentation-debug PUBLIC "${CMAKE_SOURCE_DIR}/src")

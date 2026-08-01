@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "products/nxvm/debugger.h"
-#include "products/nxvm/presentation.h"
+#include "vm/product/presentation.h"
 
 typedef struct input_fixture {
     uint16_t values[2];

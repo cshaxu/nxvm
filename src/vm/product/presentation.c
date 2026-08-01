@@ -1,4 +1,4 @@
-#include "products/nxvm/presentation.h"
+#include "vm/product/presentation.h"
 
 void nxvm_product_nxvm_presentation_initialize(
     nxvm_product_nxvm_presentation *presentation)
