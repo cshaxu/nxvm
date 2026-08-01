@@ -10,6 +10,11 @@ extern "C" {
 
 typedef struct nxvm_dos_minimal_presentation nxvm_dos_minimal_presentation;
 
+typedef struct nxvm_vdm_presentation_snapshot {
+    uint64_t timestamp;
+    nxvm_core_text_snapshot text;
+} nxvm_vdm_presentation_snapshot;
+
 nxvm_core_status nxvm_dos_minimal_presentation_create(
     nxvm_runtime_dos_minimal *session,
     nxvm_dos_minimal_presentation **out_presentation);
@@ -21,7 +26,7 @@ nxvm_core_status nxvm_dos_minimal_presentation_apply_input(
 nxvm_core_status nxvm_dos_minimal_presentation_capture_text(
     nxvm_dos_minimal_presentation *presentation,
     uint64_t timestamp,
-    nxvm_platform_text_snapshot *out_snapshot);
+    nxvm_vdm_presentation_snapshot *out_snapshot);
 void nxvm_dos_minimal_presentation_destroy(
     nxvm_dos_minimal_presentation *presentation);
 
