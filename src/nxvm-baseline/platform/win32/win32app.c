@@ -7,7 +7,7 @@
 #include "core/product/utils.h"
 #include "../../device/device.h"
 
-#include "win32.h"
+#include "vm/platform/win32/win32.h"
 #include "w32adisp.h"
 #include "win32app.h"
 

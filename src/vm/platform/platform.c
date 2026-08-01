@@ -9,7 +9,7 @@
 t_platform platform;
 
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
-#include "nxvm-baseline/platform/win32/win32.h"
+#include "vm/platform/win32/win32.h"
 void platformSleep(uint32_t milisec) {
     win32Sleep(milisec);
 }
