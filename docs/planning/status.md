@@ -331,6 +331,9 @@ legacy `vmachine` lifecycle sequence.
   presentation, and session UX helpers) into `nxvm-vm-product`; their retained
   smoke executables now link the module target rather than historical narrow
   product libraries.
+- M5 T14 S3: consolidated VM profile metadata and default-profile firmware
+  under `nxvm-vm-profile`; historical profile smoke executables now link that
+  module target rather than narrow profile libraries.
 
 ## Active Subtask
 
