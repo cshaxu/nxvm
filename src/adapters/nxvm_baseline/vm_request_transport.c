@@ -114,3 +114,20 @@ void nxvm_baseline_vm_request_transport_discard(
     nxvm_platform_vm_request_bridge_initialize(&transport->egress);
     nxvm_baseline_vm_request_transport_unlock(transport);
 }
+
+void nxvm_baseline_vm_request_transport_observe_execution_boundary(void *opaque)
+{
+    nxvm_baseline_vm_request_transport *transport =
+        (nxvm_baseline_vm_request_transport *)opaque;
+
+    if (transport == NULL) return;
+    nxvm_baseline_vm_request_transport_lock(transport);
+    ++transport->execution_boundary_count;
+    nxvm_baseline_vm_request_transport_unlock(transport);
+}
+
+unsigned nxvm_baseline_vm_request_transport_execution_boundary_count(
+    const nxvm_baseline_vm_request_transport *transport)
+{
+    return transport != NULL ? transport->execution_boundary_count : 0u;
+}

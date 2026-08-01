@@ -76,3 +76,21 @@ void nxvm_execution_context_machine_refresh(nxvm_execution_context *context)
         context->callbacks->machine_refresh();
     }
 }
+
+void nxvm_execution_context_bind_command_boundary(
+    nxvm_execution_context *context,
+    nxvm_execution_context_command_boundary callback, void *opaque)
+{
+    if (context != 0) {
+        context->command_boundary = callback;
+        context->command_boundary_opaque = opaque;
+    }
+}
+
+void nxvm_execution_context_run_command_boundary(nxvm_execution_context *context)
+{
+    if (context != 0 && context->active &&
+        context->command_boundary != 0) {
+        context->command_boundary(context->command_boundary_opaque);
+    }
+}

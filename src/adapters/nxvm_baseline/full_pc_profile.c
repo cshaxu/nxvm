@@ -2,12 +2,14 @@
 
 #include <string.h>
 
-#include "nxvm-baseline/device/device.h"
+#include "machine/vm/device.h"
+#include "adapters/nxvm_baseline/vm_request_transport.h"
 #include "product/vm/debug.h"
 #include "machine/vm/machine.h"
 #include "platform/vm/platform.h"
 
 static int nxvm_baseline_full_pc_active;
+static nxvm_baseline_vm_request_transport nxvm_baseline_full_pc_transport;
 
 static uint16_t nxvm_baseline_read_u16(const void *source)
 {
@@ -27,6 +29,10 @@ nxvm_core_status nxvm_baseline_full_pc_create(
     }
 
     machineInit();
+    nxvm_baseline_vm_request_transport_initialize(&nxvm_baseline_full_pc_transport);
+    deviceConnectBindCommandBoundary(
+        nxvm_baseline_vm_request_transport_observe_execution_boundary,
+        &nxvm_baseline_full_pc_transport);
     if ((config->fdd_image != NULL &&
          deviceConnectFloppyInsert(config->fdd_image)) ||
         (config->hdd_image != NULL &&
@@ -158,6 +164,9 @@ void nxvm_baseline_full_pc_destroy(void)
 {
     if (nxvm_baseline_full_pc_active) {
         deviceStop();
+        deviceConnectBindCommandBoundary(NULL, NULL);
+        nxvm_baseline_vm_request_transport_close(&nxvm_baseline_full_pc_transport);
+        nxvm_baseline_vm_request_transport_discard(&nxvm_baseline_full_pc_transport);
         machineFinal();
         nxvm_baseline_full_pc_active = 0;
     }
