@@ -83,8 +83,10 @@ and command registry before the baseline adapter is removed.
    retain `utils` with the still-baseline device/platform sources. Link the
    moved units to the still-baseline execution engine only as a temporary
    compatibility step.
-3. **T10: core execution carrier.** Move the actual CPU, memory, port and
-   machine/device loop into `core`; prove the executor, not a lifecycle stub,
+3. **T10: core execution carrier.** Follow the bounded source slices in
+   `docs/planning/m5-t10-execution-carrier.md`: move the actual full-PC
+   lifecycle and loop into `machine/vm`, then CPU, memory, port, and instruction
+   sources into `machine/core`; prove the executor, not a lifecycle stub,
    advances guest instructions under a finite budget.
 4. **T11: PC/AT devices and firmware.** Move controller, storage, QDX,
    keyboard, CMOS and BIOS/POST code to `machine/core`, `machine/vm`, and

@@ -38,8 +38,8 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T10 S1: define the core execution-carrier file-move slice before moving the
-actual CPU, memory, port, and execution-loop sources.
+M5 T10 S2: move the original full-PC lifecycle carrier before moving CPU,
+memory, port, and instruction sources.
 
 ## Completed
 
@@ -173,15 +173,18 @@ actual CPU, memory, port, and execution-loop sources.
   `src/product/core/debug/xasm32`; retained `utils` with its unchanged
   baseline consumers. The original no-media Console and debugger interactions
   were revalidated.
+- M5 T10 S1: mapped the actual machine/device/refresh/CPU execution chain,
+  bounded its real source-move order, temporary state binding, and regression
+  gates without changing runtime behavior.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t10-s1.md`.
+`docs/planning/subtasks/m5-t10-s2.md`.
 
 ## Next Eligible Work
 
-- M5 T10 S1 plans the next small source-move slice for the actual execution
-  carrier; M6 remains blocked until M5 truly closes.
+- M5 T10 S2 moves the full-PC lifecycle carrier in a small source slice; M6
+  remains blocked until M5 truly closes.
 
 ## Delivery State
 
