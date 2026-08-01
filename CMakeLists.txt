@@ -218,6 +218,21 @@ add_executable(nxvm-platform-vm-request-bridge-smoke
 target_link_libraries(nxvm-platform-vm-request-bridge-smoke PRIVATE
     nxvm-platform-vm-requests
 )
+add_library(nxvm-baseline-vm-request-transport STATIC
+    src/adapters/nxvm_baseline/vm_request_transport.c
+)
+target_include_directories(nxvm-baseline-vm-request-transport PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-baseline-vm-request-transport PUBLIC
+    nxvm-platform-vm-requests
+)
+add_executable(nxvm-baseline-vm-request-transport-smoke
+    tests/adapters/nxvm_baseline_vm_request_transport_smoke.c
+)
+target_link_libraries(nxvm-baseline-vm-request-transport-smoke PRIVATE
+    nxvm-baseline-vm-request-transport
+)
 
 add_library(nxvm-product-core-debug STATIC ${NXVM_PRODUCT_CORE_DEBUG_SOURCES})
 target_include_directories(nxvm-product-core-debug PUBLIC
