@@ -5,7 +5,7 @@
 #include "machine/vm/device.h"
 #include "adapters/nxvm_baseline/vm_request_transport.h"
 #include "product/vm/debug.h"
-#include "machine/vm/machine.h"
+#include "vm/machine/machine.h"
 #include "platform/vm/platform.h"
 
 static int nxvm_baseline_full_pc_active;
