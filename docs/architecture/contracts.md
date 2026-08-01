@@ -168,3 +168,33 @@ composition delivers host input and product commands through its own boundary,
 then the relevant provider or core API applies them on the machine execution
 thread. This preserves deterministic guest state without giving platform or
 product modules direct access to the machine.
+
+## Core Machine: Provider Scope
+
+A provider is an optional or configured machine behavior registered through a
+core-machine contract. It is not a synonym for every core-machine component.
+CPU execution, RAM, and the routing mechanisms for ports, mapped address
+ranges, interrupts, and reset are indispensable product-neutral core
+mechanics. They remain core implementation, not replaceable providers.
+
+A behavior is a provider when a product form, machine profile, or firmware
+policy must be able to select, configure, replace, or omit it without changing
+those core mechanics. The core contract provides deterministic registration
+and dispatch; a provider implementation belongs to the narrowest owner that
+can reuse it:
+
+- A reusable PIC, PIT, DMA, CMOS, or generic video model may be implemented in
+  `core/machine` and registered with a profile-selected configuration.
+- A full-PC-only FDC or HDC belongs in `vm/machine` and registers through the
+  same core port, IRQ, DMA, and reset contracts.
+- A DOS service such as an INT 21h handler belongs in `vdm/machine`; it is not
+  a core DOS implementation.
+- A PC-specific BIOS interrupt handler or ROM behavior belongs to its VM
+  profile as a restricted firmware override provider.
+
+For example, VM composition reads a profile, creates a reusable core PIC with
+that profile's port and IRQ configuration, then registers it before freeze. A
+CPU test can instead register a small fake port or interrupt provider and run
+without booting a full PC. The provider boundary therefore keeps core usable
+for focused instruction tests and lets VM/VDM profiles differ without teaching
+core about PC/AT, DOS, Windows, or a host OS.
