@@ -36,7 +36,6 @@ src/vm/product/console.c|vm/machine
 src/vm/product/console.c|vm/platform
 src/vm/product/cpu_probe.c|vm/machine
 src/vm/product/debug.c|vm/machine
-src/vm/product/full_pc_session.c|vm/profile
 src/vm/product/session.c|vm/profile
 src/vm/product/session.h|vm/profile
 src/vm/profile/default_profile/default_profile.c|vm/product

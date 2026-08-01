@@ -333,7 +333,7 @@ target_include_directories(nxvm-vm-full-pc-profile PUBLIC
 target_link_libraries(nxvm-vm-full-pc-profile PUBLIC nxvm-runtime)
 
 add_library(nxvm-vm-full-pc-session STATIC
-    src/vm/product/full_pc_session.c
+    src/vm/composition_session.c
 )
 target_include_directories(nxvm-vm-full-pc-session PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
