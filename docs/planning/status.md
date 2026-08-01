@@ -320,6 +320,8 @@ legacy `vmachine` lifecycle sequence.
 - M5 T14 S3: removed the final CMake mixed-owner target exception list. The
   configured source-owner verifier now rejects every target that aggregates
   sources from multiple module owners.
+- M5 T14 S3: renamed the retained core machine implementation target to
+  `nxvm-core-machine`; it compiles only `core/machine` sources.
 
 ## Active Subtask
 

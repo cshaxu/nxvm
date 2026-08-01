@@ -81,7 +81,7 @@ are not forbidden peer edges.
 | Current target/debt | Required outcome |
 | --- | --- |
 | `nxvm-baseline-runtime` | Complete: deleted. Its former core-product, VM-profile, and VM-platform sources now compile in separate ownership targets. The temporary `nxvm-legacy-runtime-dependencies` aggregate is deleted; root composition links its required module targets explicitly. |
-| `nxvm-machine-core-executor` | Complete for the retained build: it now compiles only `core/machine` sources. The final named `core-machine` target remains M5 closure work. |
+| `nxvm-core-machine` | Complete for the retained build: it compiles only `core/machine` sources and carries the final core-machine target identity. |
 | `nxvm-firmware` | Complete: it is now a zero-source historical test aggregate. `nxvm-core-machine-firmware` owns the core registry and `nxvm-vm-profile-default-firmware` owns the default-profile provider. |
 | `nxvm-product-default-profile`, `nxvm-product-profile`, `nxvm-product-session` | Remove product/profile cross-linking. Product UX and profile metadata become peers linked only by `vm-composition`. |
 | `nxvm-vm-full-pc`, `nxvm-vm-full-pc-session` | Replace with the final `vm-composition` owner once its lifecycle bindings preserve the current session gate. |

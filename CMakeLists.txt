@@ -278,11 +278,11 @@ target_include_directories(nxvm-product-core-debug PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 
-add_library(nxvm-machine-core-executor STATIC
+add_library(nxvm-core-machine STATIC
     ${NXVM_FOUNDATION_SOURCES}
     ${NXVM_MACHINE_CORE_SOURCES}
 )
-target_include_directories(nxvm-machine-core-executor PUBLIC
+target_include_directories(nxvm-core-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 
@@ -339,7 +339,7 @@ target_include_directories(nxvm-vm-composition PUBLIC
 )
 target_link_libraries(nxvm-vm-composition PUBLIC
     nxvm-vm-machine
-    nxvm-machine-core-executor
+    nxvm-core-machine
     nxvm-product-core-debug
     nxvm-product-core-utils
     nxvm-profile-vm-default-firmware
@@ -353,7 +353,7 @@ target_include_directories(nxvm-vm-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(nxvm-vm-machine PUBLIC
-    nxvm-machine-core-executor
+    nxvm-core-machine
     nxvm-profile-vm-default-firmware)
 
 add_library(nxvm-vm-product STATIC ${NXVM_PRODUCT_VM_SOURCES})
