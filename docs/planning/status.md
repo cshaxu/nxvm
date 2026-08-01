@@ -38,7 +38,8 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T12 S2: audit the retained Win32 dispatch boundary before source migration.
+M5 T12 S3: add an inactive VM input/display bridge before switching the
+retained Win32 path.
 
 ## Completed
 
@@ -204,15 +205,18 @@ M5 T12 S2: audit the retained Win32 dispatch boundary before source migration.
 - M5 T12 S1: moved the retained VM platform hub into `platform/vm`, preserving
   its original static-link resolution and passing GCC, lifecycle, CPU,
   FDD/HDD reset, Console, and debugger regressions.
+- M5 T12 S2: audited the Win32 dispatch layer; host threads directly mutate
+  keyboard/stop state, so an inactive copied-request bridge is required before
+  a safe source move.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t12-s2.md`.
+`docs/planning/subtasks/m5-t12-s3.md`.
 
 ## Next Eligible Work
 
-- M5 T12 S2 audits the retained Win32 dispatch boundary; M6 remains blocked
-  until M5 truly closes.
+- M5 T12 S3 adds the inactive VM input/display bridge; M6 remains blocked until
+  M5 truly closes.
 
 ## Delivery State
 
