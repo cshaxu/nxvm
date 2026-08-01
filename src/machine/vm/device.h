@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "nxvm-baseline/global.h"
+#include "core/platform/global.h"
 
 typedef struct {
     int flagFlip;  /* flag flips when device thread is created  */

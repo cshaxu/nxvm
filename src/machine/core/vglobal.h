@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include "nxvm-baseline/global.h"
+#include "core/platform/global.h"
 
 #define MAXLINE   0x100
 

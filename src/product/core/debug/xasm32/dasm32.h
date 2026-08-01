@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "nxvm-baseline/global.h"
+#include "core/platform/global.h"
 
 uint8_t dasm32(char *stmt, uint8_t *rcode, int flag32);
 

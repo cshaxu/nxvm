@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "global.h"
+#include "core/platform/global.h"
 
 /* Code Tracer */
 #define UTILS_TRACE_MAX_STACK 0x100

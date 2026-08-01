@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "nxvm-baseline/global.h"
+#include "core/platform/global.h"
 
 /* assemble single instruction */
 uint8_t aasm32(const char *stmt, uint8_t *rcode, int flag32);
