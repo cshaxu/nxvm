@@ -41,8 +41,8 @@ solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T13 S4: rename only the VM CPU-probe pair out of the historical `baseline`
-label, preserving its exact finite probe and `#UD` behavior.
+M5 T13 S5: design bounded cutover slices for the remaining real
+core-to-VM/VDM dependency debt; no runtime code changes are authorized.
 
 ## Completed
 
@@ -241,15 +241,17 @@ label, preserving its exact finite probe and `#UD` behavior.
   name and revalidated CPU, FDD/HDD, Console, and debugger gates.
 - M5 T13 S3: moved the VM request transport to its final owner name and
   revalidated transport, CPU, FDD/HDD, Console, and debugger gates.
+- M5 T13 S4: moved the VM-only CPU probe to its final owner name and
+  revalidated its `#UD` output plus the retained compatibility matrix.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t13-s4.md`.
+`docs/planning/subtasks/m5-t13-s5.md`.
 
 ## Next Eligible Work
 
-- M5 T13 S4 may rename the VM CPU probe only. M6 remains blocked until M5 truly
-  closes.
+- M5 T13 S5 may design core ownership cutover only. M6 remains blocked until
+  M5 truly closes.
 
 ## Delivery State
 
