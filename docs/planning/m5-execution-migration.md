@@ -12,6 +12,20 @@ The retained Console is an exact compatibility surface: command grammar,
 default workflow, help/info text, debugger entry without mounted media, and
 debugger command/output behavior do not change without owner approval.
 
+## M5 Compatibility Gate
+
+M5 is a structural migration, not a product redesign. It must preserve NXVM
+functionality and user experience: the Console and debugger command surface,
+output, default workflow, Console/window presentation, input behavior, media
+operations, whole-machine debugging, and established boot behavior. A source
+move or internal interface change is not permission to alter any of them.
+
+If a change is genuinely unavoidable, stop before implementing it and obtain
+explicit owner approval. The approval record must name the affected behavior,
+reason no compatible implementation exists, user-visible before/after result,
+and focused regression/acceptance plan. Silence, an internal cleanup benefit,
+or a build failure is not approval.
+
 Final destination names and ownership in this plan are interpreted through
 `docs/architecture/module-layout.md`: `machine/core`, `machine/vm`,
 `machine/vdm`, `platform/{core,vm,vdm}`, `product/{core,vm,vdm}`, and
