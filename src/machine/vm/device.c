@@ -7,7 +7,7 @@
 
 #include "nxvm-baseline/utils.h"
 
-#include "machine/core/vdebug.h"
+#include "vm/machine/vdebug.h"
 #include "machine/vm/vmachine.h"
 #include "machine/vm/execution_context.h"
 #include "core/machine/vcpu.h"
