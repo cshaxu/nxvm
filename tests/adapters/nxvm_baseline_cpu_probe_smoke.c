@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "adapters/nxvm_baseline/cpu_probe.h"
+#include "machine/vm/execution_context.h"
 #include "nxvm-baseline/device/vcpuins.h"
 
 static int expect_capture(
@@ -46,6 +47,13 @@ int main(void)
         capture.before.cs != 0u || capture.before.ip != 0u ||
         capture.before.linear_pc != 0u || capture.exception_code != 0u;
     nxvm_baseline_cpu_probe_end();
+
+    failed |= nxvm_execution_context_current() != NULL;
+    failed |= !nxvm_baseline_cpu_probe_begin();
+    failed |= !nxvm_baseline_cpu_probe_step(mov_ax, sizeof(mov_ax), &capture);
+    failed |= !expect_capture(&capture, 0x00001234u, 3u, 0u);
+    nxvm_baseline_cpu_probe_end();
+    failed |= nxvm_execution_context_current() != NULL;
 
     if (failed) {
         return 1;
