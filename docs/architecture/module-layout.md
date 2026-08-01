@@ -19,8 +19,7 @@ src/
     main.c
     {machine,platform,product,profile}/
     profile/dos_minimal_profile/
-  adapter/
-  nxvm-baseline/
+  nxvm_baseline/
 ```
 
 Headers stay beside implementations. Device models are flat files unless they
@@ -39,13 +38,17 @@ call.
 
 `core/platform` contains product-neutral host-capability contracts and shared
 host facilities. It never mutates guest state. `core/product` contains shared
-session, registry, command/debug, trace, result, assembler, and disassembler
-infrastructure, but no VM Console, VDM CLI, profile, or host-policy decision.
+session lifecycle, registry composition, abstract command boundaries, generic
+debug/trace coordination, result, assembler, and disassembler infrastructure,
+but no VM Console, VDM CLI, profile, boot/media, or host-policy decision. Its
+runtime infrastructure lives in `core/product/runtime`; there is no top-level
+runtime module.
 
 `vm/machine` owns boot/reset sequencing, execution-loop glue, and VM-only
 controllers such as FDC/HDC/FDD/HDD. `vm/platform` owns full-machine
 input/presentation routing. `vm/product` owns the retained NXVM Console,
-hardware debugger, media workflow, and VM composition. `vm/profile` owns VM
+hardware debugger, media workflow, full-machine startup, VM profile selection,
+and VM composition. `vm/profile` owns VM
 topology and boot policy; the built-in PC/AT BIOS, POST, ROM, QDX handlers, and
 default CMOS wiring live in `vm/profile/default_profile/firmware`.
 
@@ -53,11 +56,14 @@ default CMOS wiring live in `vm/profile/default_profile/firmware`.
 devices/services, errors, and program exit. `vdm/platform` owns app-runner
 process lifetime, parent-Console protection, cancellation, filesystem
 containment, and VDM presentation/input routing. `vdm/product` owns
-`ntvdm64 run`, VDM debugging UX, and composition. `vdm/profile` owns DOS
+`ntvdm64 run`, program-launch parameters, VDM debugging UX, display/Console
+policy, cancellation policy, execution-profile selection, and composition.
+`vdm/profile` owns DOS
 memory/service/device policy and any firmware-service subset.
 
-`adapter` is temporary or bounded glue only, never a final product owner.
-`nxvm-baseline` is the immutable imported reference and independently buildable
+Temporary adapters are classified by their actual owner and moved to `core`,
+`vm`, or `vdm`; no top-level adapter root remains at source-root closure.
+`nxvm_baseline` is the immutable imported reference and independently buildable
 regression target; it cannot supply a final-product source after M5 T13.
 
 ## Dependencies
@@ -72,9 +78,16 @@ mutation occurs on the machine execution thread at a command boundary.
 
 ## Migration Rule
 
-The current roots `app`, `dos`, `firmware`, `integration`, `machine`,
-`platform`, `product`, `products`, and `runtime` are migration sources only.
+The current roots `app`, `adapters`, `dos`, `firmware`, `integration`,
+`machine`, `platform`, `product`, `products`, and `runtime` are migration
+sources only.
 Their contents move in small buildable slices, with includes and CMake repaired
-immediately after each move, and their directories are deleted when empty. The
-current `adapters` root is renamed to canonical `adapter` as part of its next
-touched migration slice. No new source may be added to a migration-source root.
+immediately after each move, and their directories are deleted when empty. A
+runtime file moves to `core/product/runtime` only
+when it serves both products without VM/VDM policy; VM startup/Console/profile/
+media logic moves to `vm/product`, and VDM launch/profile/display/Console/
+cancellation logic moves to `vdm/product`. Stop for an owner decision when a
+file cannot be classified from its actual dependencies. The immutable legacy
+reference root is renamed from `nxvm-baseline` to `nxvm_baseline` without
+mixing it with migrated product code. No new source may be added to a
+migration-source root.

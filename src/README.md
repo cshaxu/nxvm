@@ -1,6 +1,6 @@
 # Source Layout
 
-Canonical roots are `core`, `vm`, `vdm`, `adapter`, and `nxvm-baseline`.
-`core` is shared; `vm` and `vdm` are product-specific; `adapter` is temporary
-bridge code; and `nxvm-baseline` is the independent reference. All other
-current source roots are migration sources and receive no new files.
+Canonical roots are `core`, `vm`, `vdm`, and `nxvm_baseline`. `core` is shared;
+`vm` and `vdm` are product-specific; and `nxvm_baseline` is the immutable
+legacy reference. All other current source roots, including temporary adapters,
+are migration sources and receive no new files.
