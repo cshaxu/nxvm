@@ -1,4 +1,4 @@
-#include "runtime/dos_minimal.h"
+#include "vdm/machine/dos_minimal.h"
 
 #include <stdlib.h>
 #include <string.h>

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "adapters/nxvm_baseline/full_pc_profile.h"
-#include "runtime/dos_minimal.h"
+#include "vdm/machine/dos_minimal.h"
 
 struct nxvm_runtime_session {
     nxvm_runtime_session_config config;

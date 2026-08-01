@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "core/machine/status.h"
-#include "runtime/dos_minimal.h"
+#include "vdm/machine/dos_minimal.h"
 
 #ifdef __cplusplus
 extern "C" {
