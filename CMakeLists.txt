@@ -183,9 +183,10 @@ set(NXVM_RUNTIME_SOURCES
 set(NXVM_PRODUCT_VM_SOURCES
     src/vm/main.c
     src/vm/product/console.c
-    src/vm/product/debug.c
 )
 set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
+    src/core/product/debug/debug_access.c
+    src/core/product/debug/debug.c
     src/core/product/debug/debug_target.c
     src/core/product/debug/xasm32/aasm32.c
     src/core/product/debug/xasm32/dasm32.c
@@ -293,6 +294,9 @@ add_executable(nxvm-core-product-debug-target-smoke
 target_include_directories(nxvm-core-product-debug-target-smoke PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
+target_link_libraries(nxvm-core-product-debug-target-smoke PRIVATE
+    nxvm-product-core-debug
+)
 
 add_library(nxvm-profile-vm-default-firmware STATIC ${NXVM_PROFILE_VM_SOURCES})
 target_include_directories(nxvm-profile-vm-default-firmware PUBLIC
@@ -336,15 +340,6 @@ target_link_libraries(nxvm-machine-vm-lifecycle PUBLIC
     nxvm-legacy-runtime-dependencies
     nxvm-runtime)
 
-add_library(nxvm-product-vm-debug STATIC
-    src/vm/product/debug.c
-)
-target_include_directories(nxvm-product-vm-debug PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(nxvm-product-vm-debug PUBLIC
-    nxvm-legacy-runtime-dependencies)
-
 add_library(nxvm-vm-full-pc STATIC
     src/vm/composition_full_pc.c
 )
@@ -355,7 +350,6 @@ target_link_libraries(nxvm-vm-full-pc PUBLIC
     nxvm-machine-vm-lifecycle
     nxvm-legacy-runtime-dependencies
     nxvm-vm-request-transport)
-target_link_libraries(nxvm-vm-full-pc PUBLIC nxvm-product-vm-debug)
 
 add_library(nxvm-vm-cpu-probe STATIC
     src/vm/composition_cpu_probe.c

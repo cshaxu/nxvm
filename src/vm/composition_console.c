@@ -3,7 +3,7 @@
 #include "vm/composition_machine.h"
 #include "vm/machine/device.h"
 #include "vm/platform/platform.h"
-#include "vm/product/debug.h"
+#include "core/product/debug/debug.h"
 
 static void vm_composition_console_initialize(void *context)
 {
