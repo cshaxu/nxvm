@@ -54,3 +54,41 @@ corresponding runtime path:
 
 No implementation detail or old M2/M4 contract becomes current merely because
 it remains in `history/`.
+
+## Core Machine: Lifecycle And Cooperative Execution
+
+`core/machine` owns no host thread and exposes no `start` function or internal
+infinite loop. It is a deterministic guest execution library: root composition
+owns product threads, host event policy, realtime pacing, wall-clock watchdogs,
+and process exit.
+
+- `core_machine_create` creates CPU, RAM, bus, and execution state in a
+  configuring state. It does not execute guest instructions.
+- Composition registers core-machine providers while configuring, then calls
+  `core_machine_freeze`. Provider topology, port/IRQ ownership, and firmware
+  service registration are immutable after freeze.
+- `core_machine_reset` resets execution state and invokes frozen provider reset
+  callbacks. A topology change is a root-composition reconstruction, not an
+  ordinary reset.
+- `core_machine_run` is synchronous and accepts a finite instruction budget.
+  Core has no host-time budget; a root composition owns wall-clock limits.
+- `core_machine_run` returns when its budget is exhausted or earlier for a
+  pause, stop request, guest/provider stop, or fault. A normal product loop
+  immediately issues the next quantum when its own policy permits.
+- `core_machine_request_stop` is the only cross-thread machine-control entry.
+  It records a stop request and the execution thread observes it at a defined
+  guest boundary.
+- `core_machine_destroy` releases only core-machine resources. Root composition
+  detaches and destroys providers, product UX, and platform objects.
+
+An instruction budget is an execution quantum, not a debugger-only limit. For
+example, VM composition may run 100,000 instructions, drain host events and
+publish output, then run another quantum. A debugger step uses the same path
+with a budget of one. This prevents an unbounded guest loop from owning the
+host control flow while preserving one execution implementation.
+
+VM and VDM root compositions may share a `core/product` queue, wake, and drain
+primitive only after both loops have a demonstrated identical mechanism. Such
+a primitive knows no machine or platform type and never decides scheduling,
+display policy, cancellation, boot continuation, or program exit. Those remain
+VM/VDM root-composition policy.

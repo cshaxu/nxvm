@@ -152,9 +152,11 @@ a machine constructor. It may contain a profile-specific ROM or firmware
 override only through a public core callback contract. The `vm/` or `vdm/`
 root composition may depend on all four modules and on `core/*`; it chooses a
 profile, creates the machine, binds platform capabilities and product UX, and
-owns teardown. Adapters which translate input, display snapshots, or callbacks
-belong to that root composition, rather than creating a `machine <-> platform`
-dependency.
+owns execution-loop policy and teardown. Adapters which translate input,
+display snapshots, or callbacks belong to that root composition, rather than
+creating a `machine <-> platform` dependency. Root composition repeatedly
+drives bounded synchronous machine quanta; it owns host threads, wall-clock
+watchdogs, pacing, and product exit policy.
 
 The three core modules have zero compile-time dependency on one another.
 Cross-domain data is carried through public provider contracts and translated
