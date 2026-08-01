@@ -38,7 +38,7 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T11 S4: migrate the retained KBC controller source into `machine/core`
+M5 T11 S5: migrate the retained VADP controller source into `machine/core`
 without changing NXVM behavior.
 
 ## Completed
@@ -190,11 +190,11 @@ without changing NXVM behavior.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t11-s4.md`.
+`docs/planning/subtasks/m5-t11-s5.md`.
 
 ## Next Eligible Work
 
-- M5 T11 S4 migrates the retained KBC controller; M6 remains blocked until M5
+- M5 T11 S5 migrates the retained VADP controller; M6 remains blocked until M5
   truly closes.
 
 ## Delivery State

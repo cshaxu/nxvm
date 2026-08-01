@@ -194,6 +194,7 @@ set(NXVM_MACHINE_CORE_SOURCES
     src/machine/core/vpit.c
     src/machine/core/vdma.c
     src/machine/core/vkbc.c
+    src/machine/core/vvadp.c
 )
 
 add_library(nxvm-product-core-debug STATIC ${NXVM_PRODUCT_CORE_DEBUG_SOURCES})
