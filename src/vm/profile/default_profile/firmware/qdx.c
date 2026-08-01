@@ -3,7 +3,6 @@
 /* QDX implements quick and dirty instruction loader */
 
 #include "core/product/utils.h"
-#include "vm/machine/device.h"
 #include "core/machine/vcpuins.h"
 
 #include "vm/profile/default_profile/firmware/qdcga.h"
@@ -20,7 +19,7 @@ static void QDX() {
     vcpu.data.eip++;
     if (vcpuinsReadLinear(vcpu.data.cs.base + vcpu.data.eip, GetRef(cmdId), 1)) {
         PRINTF("Cannot read data from L%08X.\n", vcpu.data.cs.base + vcpu.data.eip);
-        deviceStop();
+        vcpuRequestStop();
     } else {
         vcpu.data.eip++;
     }
@@ -30,14 +29,14 @@ static void QDX() {
         PRINTF("\nNXVM CPU STOP at CS:%04X IP:%08X INS:QDX IMM:%02X\n",
                vcpu.data.cs.selector, vcpu.data.eip, cmdId);
         PRINTF("This happens because of the special instruction.\n");
-        deviceStop();
+        vcpuRequestStop();
         break;
     case 0x01:
     case 0xfe: /* RESET */
         PRINTF("\nNXVM CPU RESET at CS:%04X IP:%08X INS:QDX IMM:%02X\n",
                vcpu.data.cs.selector, vcpu.data.eip, cmdId);
         PRINTF("This happens because of the special instruction.\n");
-        deviceReset();
+        vcpuRequestReset();
         break;
     default: /* QDINT */
         ExecFun(qdxTable[cmdId]);
@@ -46,13 +45,13 @@ static void QDX() {
              * interrupt service routines, need to set flags after execution */
             if (vcpuinsReadLinear(vcpu.data.ss.base + vcpu.data.sp + 4, GetRef(flags), 2)) {
                 PRINTF("Cannot read data from L%08X.\n", vcpu.data.ss.base + vcpu.data.sp + 4);
-                deviceStop();
+                vcpuRequestStop();
             }
             MakeBit(flags, VCPU_EFLAGS_ZF, _GetEFLAGS_ZF);
             MakeBit(flags, VCPU_EFLAGS_CF, _GetEFLAGS_CF);
             if (vcpuinsWriteLinear(vcpu.data.ss.base + vcpu.data.sp + 4, GetRef(flags), 2)) {
                 PRINTF("Cannot write data to L%08X.\n", vcpu.data.ss.base + vcpu.data.sp + 4);
-                deviceStop();
+                vcpuRequestStop();
             }
         }
         break;
