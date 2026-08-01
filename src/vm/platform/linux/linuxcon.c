@@ -5,10 +5,10 @@
 #include <curses.h>
 #include <pthread.h>
 
-#include "../../utils.h"
-#include "../../device/device.h"
+#include "core/product/utils.h"
+#include "vm/machine/device.h"
 
-#include "linuxcon.h"
+#include "vm/platform/linux/linuxcon.h"
 
 #define GetMin(x, y) ((x) < (y) ? (x) : (y))
 #define ZERO 0x00

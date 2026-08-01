@@ -4,7 +4,7 @@
 
 #include <unistd.h>
 
-#include "nxvm-baseline/platform/linux/linuxcon.h"
+#include "vm/platform/linux/linuxcon.h"
 #include "vm/platform/linux/linux.h"
 
 void linuxSleep(uint32_t milisec) {
