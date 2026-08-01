@@ -1,4 +1,4 @@
-#include "machine/core/machine_impl.h"
+#include "core/machine/machine_impl.h"
 
 nxvm_core_status nxvm_core_cpu_reset(nxvm_core_machine *machine)
 {

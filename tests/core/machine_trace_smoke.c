@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "machine/core/machine.h"
+#include "core/machine/machine.h"
 
 typedef struct trace_fixture {
     nxvm_core_trace_event events[8];

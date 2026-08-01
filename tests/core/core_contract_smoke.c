@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "machine/core/machine.h"
+#include "core/machine/machine.h"
 
 int main(void)
 {

@@ -1,5 +1,5 @@
-#include "machine/core/machine.h"
-#include "machine/core/machine_impl.h"
+#include "core/machine/machine.h"
+#include "core/machine/machine_impl.h"
 
 #include <stdlib.h>
 
