@@ -4,7 +4,7 @@
 #define i386(n) if (1)
 /* ************************************************************************* */
 
-#include "core/product/utils.h"
+#include "type.h"
 #include "core/machine/vport.h"
 #include "core/machine/vram.h"
 #include "core/machine/vpic.h"
@@ -13907,8 +13907,6 @@ void vcpuinsReset() {
 void vcpuinsRefresh() {
     if (!vcpu.data.flagHalt) {
         ExecIns();
-    } else {
-        utilsSleep(1);
     }
     ExecInt();
 }

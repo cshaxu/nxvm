@@ -38,11 +38,13 @@ composition in `vm/composition.*` or `vdm/composition.*`.
 
 ## Foundation Units
 
-`src/type.h` is the sole common type header. It defines standard project types
-such as `BOOL`, `SIZE_T`, fixed-width aliases, `STATUS`, and the stable
-`STATUS_*` result constants. `src/type.c` exists only if a non-inline type
-helper is genuinely required. All modules may include `type.h`; this is a
-foundation-unit dependency, not a dependency between product forms or modules.
+`src/type.h` is the sole common type header and legacy diagnostic foundation.
+It defines standard project types such as `BOOL`, `SIZE_T`, fixed-width
+aliases, `STATUS`, and the stable `STATUS_*` result constants, together with
+the product-neutral legacy C-runtime and trace primitives needed by more than
+one module. `src/type.c` owns their non-inline implementations. All modules
+may include `type.h`; this is a foundation-unit dependency, not a dependency
+between product forms or modules.
 
 `src/version.h` and `src/version.c` are the sole version and build-identity
 source. They provide product Console banner identity and build timestamp data.
