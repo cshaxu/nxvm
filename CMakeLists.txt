@@ -54,7 +54,7 @@ add_library(nxvm-product-profile STATIC src/vm/profile/default_profile/profile.c
 target_include_directories(nxvm-product-profile PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(nxvm-product-profile PUBLIC nxvm-runtime)
 add_library(nxvm-product-session STATIC
-    src/vm/product/session.c
+    src/vm/composition_session_model.c
 )
 target_include_directories(nxvm-product-session PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(nxvm-product-session PUBLIC nxvm-firmware nxvm-product-default-profile
