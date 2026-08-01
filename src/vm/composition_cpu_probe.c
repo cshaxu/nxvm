@@ -1,4 +1,4 @@
-#include "vm/product/cpu_probe.h"
+#include "vm/composition_cpu_probe.h"
 
 #include <string.h>
 
