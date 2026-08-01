@@ -38,7 +38,8 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T11 S12: audit QDX ownership boundaries before any QDX source move.
+M5 T12 S1: migrate the retained VM platform hub into `platform/vm` without
+changing NXVM behavior.
 
 ## Completed
 
@@ -198,14 +199,17 @@ M5 T11 S12: audit QDX ownership boundaries before any QDX source move.
 - M5 T11 S11: moved retained hardware debug state into `machine/core`, with
   forwarding-header compatibility only; GCC, lifecycle, CPU, FDD/HDD reset,
   Console, and debugger regressions passed without enabling the raw recorder.
+- M5 T11 S12: audited QDX ownership; its dispatcher/handlers are default-profile
+  firmware, and the direct platform display call requires T12 boundary work
+  before a safe QDX source move.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t11-s12.md`.
+`docs/planning/subtasks/m5-t12-s1.md`.
 
 ## Next Eligible Work
 
-- M5 T11 S12 audits QDX ownership boundaries; M6 remains blocked until M5
+- M5 T12 S1 migrates the retained VM platform hub; M6 remains blocked until M5
   truly closes.
 
 ## Delivery State
