@@ -19,7 +19,6 @@ src/
     main.c
     {machine,platform,product,profile}/
     profile/dos_minimal_profile/
-  nxvm_baseline/
 ```
 
 Headers stay beside implementations. Device models are flat files unless they
@@ -62,9 +61,11 @@ policy, cancellation policy, execution-profile selection, and composition.
 memory/service/device policy and any firmware-service subset.
 
 Temporary adapters are classified by their actual owner and moved to `core`,
-`vm`, or `vdm`; no top-level adapter root remains at source-root closure.
-`nxvm_baseline` is the immutable imported reference and independently buildable
-regression target; it cannot supply a final-product source after M5 T13.
+`vm`, or `vdm`; no top-level adapter root remains at source-root closure. The
+imported `nxvm-baseline` tree is a migration reference only: its VM-owned
+contents move into `vm/{machine,platform,product,profile}`, after which its
+root is deleted. Git history and the recorded M1 snapshot preserve provenance;
+it is not a final source root.
 
 ## Dependencies
 
@@ -79,15 +80,14 @@ mutation occurs on the machine execution thread at a command boundary.
 ## Migration Rule
 
 The current roots `app`, `adapters`, `dos`, `firmware`, `integration`,
-`machine`, `platform`, `product`, `products`, and `runtime` are migration
-sources only.
+`machine`, `nxvm-baseline`, `platform`, `product`, `products`, and `runtime`
+are migration sources only.
 Their contents move in small buildable slices, with includes and CMake repaired
 immediately after each move, and their directories are deleted when empty. A
 runtime file moves to `core/product/runtime` only
 when it serves both products without VM/VDM policy; VM startup/Console/profile/
 media logic moves to `vm/product`, and VDM launch/profile/display/Console/
 cancellation logic moves to `vdm/product`. Stop for an owner decision when a
-file cannot be classified from its actual dependencies. The immutable legacy
-reference root is renamed from `nxvm-baseline` to `nxvm_baseline` without
-mixing it with migrated product code. No new source may be added to a
-migration-source root.
+file cannot be classified from its actual dependencies. No new source may be
+added to a migration-source root. At M5 closure, only `core`, `vm`, and `vdm`
+may be top-level source roots.
