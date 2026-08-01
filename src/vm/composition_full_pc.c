@@ -1,4 +1,4 @@
-#include "vm/product/full_pc.h"
+#include "vm/composition_full_pc.h"
 
 #include <string.h>
 

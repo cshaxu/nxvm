@@ -1,5 +1,5 @@
-#ifndef NXVM_VM_FULL_PC_H
-#define NXVM_VM_FULL_PC_H
+#ifndef NXVM_COMPOSITION_FULL_PC_H
+#define NXVM_COMPOSITION_FULL_PC_H
 
 #include <stdint.h>
 

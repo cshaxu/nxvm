@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "vm/product/full_pc.h"
+#include "vm/composition_full_pc.h"
 #include "vm/profile/full_pc_profile.h"
 
 static int verify_profile(void)
