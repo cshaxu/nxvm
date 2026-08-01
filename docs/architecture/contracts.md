@@ -233,3 +233,24 @@ handlers must cooperate, VM or VDM root composition explicitly constructs one
 composite service, defines and tests its internal order, and registers that
 single service with core. This keeps dispatch order, fallback, and fault
 meaning uniform across products.
+
+## Core Machine: Read-Only Observation
+
+Core exposes only product-neutral read-only state: machine lifecycle state,
+the last run result and fault detail, copied CPU state, and range-checked
+physical-memory reads. It does not expose a universal mutable RAM pointer or a
+single whole-product snapshot.
+
+Each provider may expose its own copied read-only view through its public
+contract. For example, a reusable core video provider may report text cells,
+attributes, geometry, cursor, and generation; a PIC provider may report IRQ
+diagnostics. VM-only storage-controller detail and VDM-only DOS diagnostic
+state remain in their respective product-form machine modules.
+
+VM or VDM root composition selects the views needed by its product, copies and
+combines them at an execution boundary, and adapts them to a product or
+platform contract. A platform receives only a platform frame and never a
+`CORE_MACHINE` handle, guest-memory pointer, DOS-private state, VM media
+controller state, or window policy. This permits debugger inspection and
+safe presentation refresh without turning core into a whole-product snapshot
+schema.
