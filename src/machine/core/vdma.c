@@ -7,7 +7,7 @@
 #include "core/machine/vram.h"
 
 #include "nxvm-baseline/device/vbios.h"
-#include "machine/core/vport.h"
+#include "core/machine/vport.h"
 #include "machine/core/vdma.h"
 
 t_latch vlatch;
