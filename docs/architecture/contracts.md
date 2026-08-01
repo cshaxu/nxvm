@@ -294,3 +294,23 @@ enter `core/platform` merely because they touch the host. VM media attachment
 and VDM path containment have distinct product and security meaning, so they
 remain in `vm/platform` and `vdm/platform` until both products demonstrate an
 identical, policy-free byte-stream capability worth promoting to core.
+
+## Core Platform: Event, Frame, And Teardown Ownership
+
+An event source creates a copied normalized event on its host thread.
+Composition's event callback may only enqueue or otherwise record that copied
+event for later consumption; it may not mutate a machine or call a provider
+that mutates guest state. The source `stop` operation is synchronous: when it
+returns successfully, no source callback remains active and no later callback
+will occur.
+
+A presentation sink copies each submitted frame, audio block, or diagnostic
+payload before its submission call returns. Composition retains ownership of
+the source data and may reuse or release it immediately after the call.
+
+Composition owns shutdown order: it stops event sources, closes its ingress
+queue, requests and observes a machine stop at an execution boundary, then
+detaches and destroys machine providers, platform objects, and product UI.
+Window close, Ctrl+C, and host-device loss enter this boundary only as
+normalized platform events. VM/VDM composition decides whether each event
+pauses, exits, cancels, or produces a product result.
