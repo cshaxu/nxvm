@@ -1,4 +1,4 @@
-#include "machine/core/contract/debug.h"
+#include "machine/core/debug.h"
 
 static nxvm_core_status nxvm_core_debug_require_paused(
     const nxvm_core_machine *machine)

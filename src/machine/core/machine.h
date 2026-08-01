@@ -3,13 +3,13 @@
 
 #include <stdint.h>
 
-#include "machine/core/contract/cpu.h"
-#include "machine/core/contract/lifecycle.h"
-#include "machine/core/contract/memory.h"
-#include "machine/core/contract/port.h"
-#include "machine/core/contract/profile.h"
-#include "machine/core/contract/status.h"
-#include "machine/core/contract/trace.h"
+#include "machine/core/cpu.h"
+#include "machine/core/lifecycle.h"
+#include "machine/core/memory.h"
+#include "machine/core/port.h"
+#include "machine/core/profile.h"
+#include "machine/core/status.h"
+#include "machine/core/trace.h"
 
 #ifdef __cplusplus
 extern "C" {

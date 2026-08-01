@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "core/debug.h"
+#include "machine/core/debug.h"
 
 int main(void)
 {

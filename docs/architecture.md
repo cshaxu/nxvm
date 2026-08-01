@@ -22,8 +22,11 @@ components, invasive integration, and Win16 remain research-only unless a later
 owner-approved Go decision changes that boundary.
 
 Forward directory and ownership decisions are defined exclusively by
-`architecture/module-layout.md`. The older boundary and directory sections in
-this document describe the pre-migration structure and are historical context.
+`architecture/module-layout.md`. In particular, `machine/core` is the sole
+machine-core directory: headers live beside implementations, private headers
+use `_impl.h`, and neither `src/core` nor `machine/core/contract` exists as a
+forward module. The older boundary and directory sections in this document describe
+pre-migration context.
 
 ## Runtime Identity And Versioning
 
@@ -176,7 +179,7 @@ baseline for a future platform provider.
 ```text
 src/
   nxvm-baseline/
-  core/
+  machine/{core,vm,vdm}/
   firmware/
   platform/
   dos/
@@ -204,11 +207,12 @@ docs/
   research/
 ```
 
-Headers live beside their C implementation in the owning module. Contract
-headers use ordinary module names such as `src/core/machine.h`; private headers
-use an `_impl.h` suffix and are included only by their module. A future SDK or
-library packaging task may introduce a top-level `include/` tree after the ABI
-is stable, but M3 uses parity-first layout.
+Headers live beside their C implementation in the owning module. `machine/core`
+is the only machine-core directory; public headers use ordinary module names
+such as `src/machine/core/machine.h`, while private headers use an `_impl.h`
+suffix. The earlier `src/core` forwarding tree has been removed. A future SDK
+or library packaging task may introduce a top-level `include/` tree
+after the ABI is stable.
 
 Directory README files define ownership when the directories are created.
 Historical sources provide orientation; tests provide validation; `core` and

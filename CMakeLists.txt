@@ -24,15 +24,15 @@ find_program(POWERSHELL_EXECUTABLE NAMES powershell pwsh REQUIRED)
 set(NTVDM64_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 
 add_library(nxvm-core STATIC
-    src/machine/core/contract/cpu.c
-    src/machine/core/contract/cpu_capability.c
-    src/machine/core/contract/debug.c
-    src/machine/core/contract/machine.c
-    src/machine/core/contract/memory.c
-    src/machine/core/contract/port.c
-    src/machine/core/contract/pc_devices.c
-    src/machine/core/contract/presentation.c
-    src/machine/core/contract/trace.c
+    src/machine/core/cpu.c
+    src/machine/core/cpu_capability.c
+    src/machine/core/debug.c
+    src/machine/core/machine.c
+    src/machine/core/memory.c
+    src/machine/core/port.c
+    src/machine/core/pc_devices.c
+    src/machine/core/presentation.c
+    src/machine/core/trace.c
 )
 add_library(nxvm-firmware STATIC src/firmware/firmware.c src/firmware/default_profile.c)
 target_include_directories(nxvm-firmware PUBLIC "${CMAKE_SOURCE_DIR}/src")

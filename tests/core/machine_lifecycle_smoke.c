@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "core/machine.h"
+#include "machine/core/machine.h"
 
 static int expect_status(nxvm_core_status actual, nxvm_core_status expected)
 {

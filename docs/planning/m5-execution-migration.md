@@ -30,6 +30,8 @@ Final destination names and ownership in this plan are interpreted through
 `docs/architecture/module-layout.md`: `machine/core`, `machine/vm`,
 `machine/vdm`, `platform/{core,vm,vdm}`, `product/{core,vm,vdm}`, and
 `profile/{vm,vdm}` replace the earlier shorthand names in the historical table.
+`machine/core` is flat: it has no `contract` child. The obsolete `src/core`
+forwarding headers are removed once every caller uses `machine/core/*.h`.
 
 ## Actual Execution Chain
 
@@ -50,9 +52,9 @@ completed migration.
 | Baseline units | Final owner | Required change | Regression gate |
 | --- | --- | --- | --- |
 | `main.c`, `console.c`, `debug.c`, `xasm32/*` | `product/vm` and `product/core` | Move the retained Console and debug tooling by `git mv`; preserve grammar. `utils.c` remains with its device/platform consumers until their own slice. | Byte-level command-list markers; `DEBUG` with no media enters `-`, `q` returns to `Console>`. |
-| `machine.c`, `device/device.c`, `device/vmachine.c`, `device/vglobal.h` | `core` and `runtime` | Replace process-global lifecycle with a session-owned PC/AT execution carrier. The carrier owns refresh order and the execution thread. | Reset vector, stop/reset/resume, no leaked thread, M1 fixture checkpoints. |
-| `device/vcpu.c`, `device/vcpuins.c`, `device/vram.c`, `device/vport.c` | `core` | Move the real x86 executor, register state, real/linear memory and I/O dispatch into one machine instance. Existing minimal CPU/RAM/port scaffolds become supporting contracts, not a second executor. | CPU microprobes, normalized `#UD`, reset vector, bounded FDD/HDD progress. |
-| `device/vpic.c`, `vpit.c`, `vdma.c`, `vkbc.c`, `vvadp.c` | `core` | Make PIC/PIT/DMA/keyboard/video state part of the PC/AT instance and retain refresh order. | IRQ/timer/input/display probes plus fixture boot. |
+| `machine.c`, `device/device.c`, `device/vmachine.c`, `device/vglobal.h` | `machine/core` and `machine/vm` | Replace process-global lifecycle with a session-owned PC/AT execution carrier. The carrier owns refresh order and the execution thread. | Reset vector, stop/reset/resume, no leaked thread, M1 fixture checkpoints. |
+| `device/vcpu.c`, `device/vcpuins.c`, `device/vram.c`, `device/vport.c` | `machine/core` | Move the real x86 executor, register state, real/linear memory and I/O dispatch into one machine instance. Existing minimal CPU/RAM/port scaffolds become supporting contracts, not a second executor. | CPU microprobes, normalized `#UD`, reset vector, bounded FDD/HDD progress. |
+| `device/vpic.c`, `vpit.c`, `vdma.c`, `vkbc.c`, `vvadp.c` | `machine/core` | Make PIC/PIT/DMA/keyboard/video state part of the PC/AT instance and retain refresh order. | IRQ/timer/input/display probes plus fixture boot. |
 | `device/qdx/*` | `profile/vm/default_profile/firmware` | QDX is legacy built-in BIOS-service dispatch, not a machine-neutral device. Move its dispatcher and handlers only as one firmware slice after the display-mode request no longer calls the concrete platform directly. | BIOS INT 09h/10h/13h/16h, input/display probes, and fixture boot. |
 | `device/vfdc.c`, `vfdd.c`, `vhdc.c`, `vhdd.c` | `machine/vm` plus `product/vm` media policy | Keep this stack VM-local until independent reuse is proved. | Frozen FDD/HDD identities, create/remove behavior, bounded boot checkpoints. |
 | `device/vbios.c`, `vcmos.c` | `profile/vm/default_profile/firmware` plus `machine/core` CMOS | Move ROM/BDA/POST/interrupt table and CMOS defaults into the profile. | Reset image, POST order, boot selection, BIOS interrupt checkpoints. |
@@ -97,9 +99,9 @@ and command registry before the baseline adapter is removed.
    input code to `platform`, replacing direct globals with queues/snapshots
    without changing visible NXVM behavior.
 6. **T13: composition cutover.** Wire `product/vm` through `product/core` to
-   migrated owners, remove baseline sources from the final target, and run the
-   retained FDD/HDD and Console/debugger gates. The baseline remains a separate
-   reference target only.
+   migrated owners, remove baseline sources from the final target, delete the
+   transition adapter, and run the retained FDD/HDD and Console/debugger gates.
+   `src/nxvm-baseline` remains an independently buildable reference target only.
 
 Every implementation task produces its task-level `nxvm-m5_t<task>.exe` after
 its focused gates pass. A failed fixture, changed Console/debugger transcript,
