@@ -27,8 +27,7 @@ nxvm_core_status nxvm_core_machine_create(
 
     *out_machine = NULL;
 
-    if (config->abi_version != NXVM_CORE_ABI_VERSION ||
-        !nxvm_core_profile_is_supported(config->profile)) {
+    if (!nxvm_core_profile_is_supported(config->profile)) {
         return NXVM_CORE_STATUS_UNSUPPORTED;
     }
 

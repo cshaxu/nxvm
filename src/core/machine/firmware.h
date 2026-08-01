@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-#include "core/machine/status.h"
+#include "type.h"
 
 #define NXVM_FIRMWARE_SERVICE_CAPACITY 16u
 

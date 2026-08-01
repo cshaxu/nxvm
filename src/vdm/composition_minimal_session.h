@@ -1,7 +1,7 @@
 #ifndef NTVDM64_VDM_MINIMAL_SESSION_H
 #define NTVDM64_VDM_MINIMAL_SESSION_H
 
-#include "core/machine/status.h"
+#include "type.h"
 #include "core/product/runtime/profile_descriptor.h"
 
 #ifdef __cplusplus

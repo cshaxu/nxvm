@@ -40,7 +40,7 @@ nxvm_core_status nxvm_product_nxvm_session_create(
     const nxvm_product_nxvm_session_config *config)
 {
     nxvm_core_machine_config machine_config = {
-        NXVM_CORE_ABI_VERSION, NXVM_CORE_PROFILE_CUSTOM, 0u
+        NXVM_CORE_PROFILE_CUSTOM, 0u
     };
     nxvm_core_status status;
 

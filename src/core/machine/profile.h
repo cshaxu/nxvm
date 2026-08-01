@@ -17,7 +17,6 @@ typedef enum nxvm_core_profile {
 #define NXVM_CORE_MAXIMUM_MEMORY_BYTES (64u * 1024u * 1024u)
 
 typedef struct nxvm_core_machine_config {
-    unsigned abi_version;
     nxvm_core_profile profile;
     size_t memory_bytes;
 } nxvm_core_machine_config;

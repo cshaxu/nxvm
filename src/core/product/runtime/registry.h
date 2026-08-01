@@ -9,8 +9,6 @@
 extern "C" {
 #endif
 
-#define NXVM_RUNTIME_PROFILE_ABI_V1 1u
-#define NXVM_RUNTIME_PROVIDER_ABI_V1 1u
 #define NXVM_RUNTIME_REGISTRY_CAPACITY 16u
 
 typedef enum nxvm_runtime_profile_family {
@@ -29,7 +27,6 @@ typedef int (*nxvm_runtime_capability_query)(void *context,
 
 typedef struct nxvm_runtime_profile_descriptor_v1 {
     const char *id;
-    unsigned abi_version;
     nxvm_runtime_profile_family family;
     const char *owner;
     const unsigned *required_capabilities;
@@ -39,7 +36,6 @@ typedef struct nxvm_runtime_profile_descriptor_v1 {
 
 typedef struct nxvm_runtime_firmware_provider_descriptor_v1 {
     const char *id;
-    unsigned abi_version;
     nxvm_runtime_firmware_provider_kind kind;
     const char *owner;
     const char *machine_profile_id;

@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "core/machine/keyboard_state.h"
-#include "core/machine/status.h"
+#include "type.h"
 
 #define NXVM_PLATFORM_VM_REQUEST_CAPACITY 32u
 

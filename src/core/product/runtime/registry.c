@@ -11,7 +11,6 @@ static int profile_valid(const nxvm_runtime_profile_descriptor_v1 *descriptor)
 {
     return descriptor != NULL && valid_text(descriptor->id) &&
         valid_text(descriptor->owner) &&
-        descriptor->abi_version == NXVM_RUNTIME_PROFILE_ABI_V1 &&
         (descriptor->family == NXVM_RUNTIME_PROFILE_MACHINE ||
          descriptor->family == NXVM_RUNTIME_PROFILE_EXECUTION) &&
         (descriptor->required_capability_count == 0u ||
@@ -25,7 +24,6 @@ static int provider_valid(
 {
     return descriptor != NULL && valid_text(descriptor->id) &&
         valid_text(descriptor->owner) && valid_text(descriptor->machine_profile_id) &&
-        descriptor->abi_version == NXVM_RUNTIME_PROVIDER_ABI_V1 &&
         (descriptor->kind == NXVM_RUNTIME_FIRMWARE_PROVIDER_BUILTIN ||
          descriptor->kind == NXVM_RUNTIME_FIRMWARE_PROVIDER_EXTERNAL_ROM_BUNDLE ||
          descriptor->kind == NXVM_RUNTIME_FIRMWARE_PROVIDER_ABSENT);

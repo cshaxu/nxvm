@@ -11,7 +11,7 @@ extern "C" {
 #include <windows.h>
 
 #include "core/machine/keyboard_state.h"
-#include "core/machine/status.h"
+#include "type.h"
 
 typedef nxvm_core_status (*nxvm_win32_keyboard_state_sink)(
     void *opaque, uint32_t asynchronous_keys, uint32_t toggle_keys);

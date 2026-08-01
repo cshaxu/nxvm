@@ -3,7 +3,7 @@
 
 #include <stdatomic.h>
 
-#include "core/machine/status.h"
+#include "type.h"
 #include "vm/platform/request_bridge.h"
 
 typedef void (*nxvm_vm_request_consumer)(
