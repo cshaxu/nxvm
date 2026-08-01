@@ -4,8 +4,8 @@
 
 #include <unistd.h>
 
-#include "linuxcon.h"
-#include "linux.h"
+#include "nxvm-baseline/platform/linux/linuxcon.h"
+#include "vm/platform/linux/linux.h"
 
 void linuxSleep(uint32_t milisec) {
     usleep((milisec) * 1000);

@@ -23,7 +23,7 @@ void platformStart() {
     win32StartMachine(platform.flagMode);
 }
 #elif GLOBAL_PLATFORM == GLOBAL_VAR_LINUX
-#include "nxvm-baseline/platform/linux/linux.h"
+#include "vm/platform/linux/linux.h"
 void platformSleep(uint32_t milisec) {
     linuxSleep(milisec);
 }
