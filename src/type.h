@@ -37,6 +37,50 @@ extern "C" {
 #include <memory.h>
 #include <time.h>
 
+/* Legacy C-runtime wrappers are a product-neutral root foundation. */
+struct tm* LOCALTIME(const time_t *_Time);
+char* STRCAT(char *_Dest, const char *_Source);
+char* STRCPY(char *_Dest, const char *_Source);
+char* STRTOK(char *_Str, const char *_Delim);
+int STRCMP(const char *_Str1, const char *_Str2);
+size_t STRLEN(const char *_Str);
+int PRINTF(const char *_Format, ...);
+int FPRINTF(FILE *_File, const char *_Format, ...);
+int SPRINTF(char *_Dest, const char *_Format, ...);
+FILE* FOPEN(const char *_Filename, const char *_Mode);
+int FCLOSE(FILE *_File);
+size_t FREAD(void *_DstBuf, size_t _ElementSize, size_t _Count, FILE *_File);
+size_t FWRITE(void *_Str, size_t _Size, size_t _Count, FILE *_File);
+char* FGETS(char *_Buf, int _MaxCount, FILE *_File);
+void* MALLOC(size_t _Size);
+void FREE(void *_Memory);
+void* MEMSET(void *_Dst, int _Val, size_t _Size);
+void* MEMCPY(void *_Dst, const void *_Src, size_t _Size);
+int MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size);
+void utilsLowerStr(char *str);
+
+/* Legacy C-runtime wrappers are a product-neutral root foundation. */
+struct tm* LOCALTIME(const time_t *_Time);
+char* STRCAT(char *_Dest, const char *_Source);
+char* STRCPY(char *_Dest, const char *_Source);
+char* STRTOK(char *_Str, const char *_Delim);
+int STRCMP(const char *_Str1, const char *_Str2);
+size_t STRLEN(const char *_Str);
+int PRINTF(const char *_Format, ...);
+int FPRINTF(FILE *_File, const char *_Format, ...);
+int SPRINTF(char *_Dest, const char *_Format, ...);
+FILE* FOPEN(const char *_Filename, const char *_Mode);
+int FCLOSE(FILE *_File);
+size_t FREAD(void *_DstBuf, size_t _ElementSize, size_t _Count, FILE *_File);
+size_t FWRITE(void *_Str, size_t _Size, size_t _Count, FILE *_File);
+char* FGETS(char *_Buf, int _MaxCount, FILE *_File);
+void* MALLOC(size_t _Size);
+void FREE(void *_Memory);
+void* MEMSET(void *_Dst, int _Val, size_t _Size);
+void* MEMCPY(void *_Dst, const void *_Src, size_t _Size);
+int MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size);
+void utilsLowerStr(char *str);
+
 /* COMPATIBILITY DEFINITIONS *********************************************** */
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
 typedef unsigned char    uint8_t;

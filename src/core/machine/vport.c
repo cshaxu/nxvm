@@ -2,7 +2,7 @@
 
 /* VPORT is the hub that connects all devices with the I/O port. */
 
-#include "core/product/utils.h"
+#include "type.h"
 
 #include "core/machine/vport.h"
 

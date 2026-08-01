@@ -5,7 +5,7 @@
  * two Intel 8259A chips, one master and one slave.
  */
 
-#include "core/product/utils.h"
+#include "type.h"
 
 #include "core/machine/vpit.h"
 #include "core/machine/vport.h"
