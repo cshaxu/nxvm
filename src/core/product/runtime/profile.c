@@ -1,4 +1,4 @@
-#include "runtime/profile.h"
+#include "core/product/runtime/profile.h"
 
 static const nxvm_runtime_profile_descriptor nxvm_runtime_profiles[] = {
     {

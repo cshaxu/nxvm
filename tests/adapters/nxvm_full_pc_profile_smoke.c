@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "adapters/nxvm_baseline/full_pc_profile.h"
-#include "runtime/profile.h"
+#include "core/product/runtime/profile.h"
 
 static int verify_profile(void)
 {
