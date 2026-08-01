@@ -162,6 +162,9 @@ add_custom_target(generate-m1-probe
 set(NXVM_PRODUCT_CORE_SOURCES
     src/core/product/utils.c
 )
+set(NXVM_FOUNDATION_SOURCES
+    src/type.c
+)
 
 set(NXVM_PROFILE_VM_SOURCES
     src/vm/profile/default_profile/firmware/vbios.c
@@ -252,7 +255,10 @@ target_include_directories(nxvm-product-core-debug PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 
-add_library(nxvm-machine-core-executor STATIC ${NXVM_MACHINE_CORE_SOURCES})
+add_library(nxvm-machine-core-executor STATIC
+    ${NXVM_FOUNDATION_SOURCES}
+    ${NXVM_MACHINE_CORE_SOURCES}
+)
 target_include_directories(nxvm-machine-core-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -446,6 +452,7 @@ function(add_nxvm_full_pc_artifact target suffix)
         ${NXVM_RUNTIME_SOURCES}
         ${NXVM_MACHINE_VM_SOURCES}
         ${NXVM_MACHINE_CORE_SOURCES}
+        ${NXVM_FOUNDATION_SOURCES}
         ${NXVM_CORE_PRODUCT_RUNTIME_SOURCES}
         ${NXVM_PLATFORM_VM_SOURCES}
         ${NXVM_PROFILE_VM_SOURCES}

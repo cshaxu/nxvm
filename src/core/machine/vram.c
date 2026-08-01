@@ -2,7 +2,7 @@
 
 /* VRAM is the random accessing memory module.  */
 
-#include "core/product/utils.h"
+#include "type.h"
 
 #include "core/machine/vpit.h"
 #include "core/machine/vport.h"
