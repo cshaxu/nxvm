@@ -189,7 +189,7 @@ set(NXVM_MACHINE_VM_SOURCES
     src/core/product/runtime/execution_context.c
     src/vm/machine/machine.c
     src/vm/machine/device.c
-    src/vm/machine/vmachine.c
+    src/vm/composition.c
     src/vm/machine/vfdd.c
     src/vm/machine/vhdd.c
     src/vm/machine/vfdc.c
