@@ -7,7 +7,7 @@
 
 #include "machine/core/contract/cpu.h"
 #include "machine/core/contract/lifecycle.h"
-#include "core/port.h"
+#include "machine/core/contract/port.h"
 #include "machine/core/contract/profile.h"
 #include "core/trace.h"
 
