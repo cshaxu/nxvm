@@ -8,7 +8,7 @@
 #include "../../device/device.h"
 
 #include "vm/platform/win32/win32.h"
-#include "w32adisp.h"
+#include "vm/platform/win32/w32adisp.h"
 #include "win32app.h"
 
 HWND w32aHWnd = NULL; /* handler for window; if null, window is not yet ready */

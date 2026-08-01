@@ -2,10 +2,10 @@
 
 /* W32ADISP provides win32 window output interface. */
 
-#include "../../device/device.h"
+#include "vm/machine/device.h"
 
-#include "win32app.h"
-#include "w32adisp.h"
+#include "nxvm-baseline/platform/win32/win32app.h"
+#include "vm/platform/win32/w32adisp.h"
 
 #define W32ADISP_FONT_BITMAP 1
 
