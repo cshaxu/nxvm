@@ -30,7 +30,7 @@ add_library(nxvm-core STATIC
     src/core/machine/machine.c
     src/core/machine/memory.c
     src/core/machine/port.c
-    src/machine/core/pc_devices.c
+    src/core/machine/pc_devices.c
     src/machine/core/presentation.c
     src/core/machine/trace.c
 )
