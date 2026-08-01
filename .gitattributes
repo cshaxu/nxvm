@@ -4,6 +4,7 @@ src/nxvm-baseline/** -text -whitespace
 src/product/vm/** -text -whitespace
 src/product/core/debug/xasm32/** -text -whitespace
 src/machine/vm/** -text -whitespace
+src/machine/core/** -text -whitespace
 *.com binary
 *.exe binary
 *.dll binary
