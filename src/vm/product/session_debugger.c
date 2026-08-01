@@ -1,4 +1,4 @@
-#include "products/nxvm/debugger.h"
+#include "vm/product/session_debugger.h"
 
 static nxvm_core_status nxvm_product_nxvm_debugger_require_boundary(
     const nxvm_product_nxvm_debugger *debugger)
