@@ -8,3 +8,11 @@ compiled the new source and the finite real CPU probe retained its established
 P2 binds the context to the existing CPU, RAM, port, and device objects through
 opaque slots at `deviceInit`. The project GCC build and finite real CPU probe
 passed after this binding; legacy anonymous state typedefs remain unchanged.
+
+P3 exposes the context CPU slot to retained consumers without changing the
+legacy anonymous CPU type. P4 makes the finite CPU-probe adapter that consumer:
+it samples the bound `t_cpu` through the active context rather than through
+the old device connector accessors. Reset, RAM writes, and instruction
+execution remain on their retained paths. GCC builds, the established `#UD`
+CPU-probe marker, and the no-media Console/debugger interaction regression
+passed.

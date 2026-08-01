@@ -2,24 +2,32 @@
 
 #include <string.h>
 
+#include "machine/core/vcpu.h"
+#include "machine/vm/execution_context.h"
 #include "nxvm-baseline/device/device.h"
-#include "nxvm-baseline/device/vcpu.h"
 #include "nxvm-baseline/device/vcpuins.h"
 
 static int nxvm_baseline_cpu_probe_active;
 
-static void nxvm_baseline_cpu_probe_capture_state(
+static int nxvm_baseline_cpu_probe_capture_state(
     nxvm_baseline_cpu_probe_state *state)
 {
-    state->cs = *(const uint16_t *)deviceConnectCpuGetRefCS();
-    state->ip = *(const uint16_t *)deviceConnectCpuGetRefIP();
-    state->linear_pc = deviceConnectCpuGetCsBase() +
-        *(const uint32_t *)deviceConnectCpuGetRefEIP();
-    state->eax = *(const uint32_t *)deviceConnectCpuGetRefEAX();
-    state->ebx = *(const uint32_t *)deviceConnectCpuGetRefEBX();
-    state->ecx = *(const uint32_t *)deviceConnectCpuGetRefECX();
-    state->edx = *(const uint32_t *)deviceConnectCpuGetRefEDX();
-    state->eflags = *(const uint32_t *)deviceConnectCpuGetRefEFLAGS();
+    const nxvm_execution_context *context =
+        nxvm_execution_context_current();
+    const t_cpu *cpu = (const t_cpu *)nxvm_execution_context_cpu(context);
+
+    if (cpu == NULL) {
+        return 0;
+    }
+    state->cs = cpu->data.cs.selector;
+    state->ip = cpu->data.ip;
+    state->linear_pc = cpu->data.cs.base + cpu->data.eip;
+    state->eax = cpu->data.eax;
+    state->ebx = cpu->data.ebx;
+    state->ecx = cpu->data.ecx;
+    state->edx = cpu->data.edx;
+    state->eflags = cpu->data.eflags;
+    return 1;
 }
 
 static int nxvm_baseline_cpu_probe_reset(void)
@@ -64,9 +72,13 @@ int nxvm_baseline_cpu_probe_step(
     memcpy(out_capture->bytes, bytes, byte_count);
     out_capture->byte_count = byte_count;
     deviceConnectRamRealWrite(0u, 0u, (void *)bytes, byte_count);
-    nxvm_baseline_cpu_probe_capture_state(&out_capture->before);
+    if (!nxvm_baseline_cpu_probe_capture_state(&out_capture->before)) {
+        return 0;
+    }
     vcpuRefresh();
-    nxvm_baseline_cpu_probe_capture_state(&out_capture->after);
+    if (!nxvm_baseline_cpu_probe_capture_state(&out_capture->after)) {
+        return 0;
+    }
     out_capture->exception_mask = vcpuins.data.except;
     out_capture->exception_code = vcpuins.data.excode;
     return 1;
