@@ -2,13 +2,13 @@
 
 /* VCMOS implements CMOS and Real Time Clock DS1302. */
 
-#include "../utils.h"
+#include "nxvm-baseline/utils.h"
 
-#include "vcpu.h"
+#include "machine/core/vcpu.h"
 
-#include "vbios.h"
-#include "vport.h"
-#include "vcmos.h"
+#include "nxvm-baseline/device/vbios.h"
+#include "machine/core/vport.h"
+#include "machine/core/vcmos.h"
 
 t_cmos vcmos;
 
