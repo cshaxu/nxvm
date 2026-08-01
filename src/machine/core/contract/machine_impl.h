@@ -5,7 +5,7 @@
 #include <stdatomic.h>
 #include <stdint.h>
 
-#include "core/cpu.h"
+#include "machine/core/contract/cpu.h"
 #include "machine/core/contract/lifecycle.h"
 #include "core/port.h"
 #include "machine/core/contract/profile.h"

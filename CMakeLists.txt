@@ -24,7 +24,7 @@ find_program(POWERSHELL_EXECUTABLE NAMES powershell pwsh REQUIRED)
 set(NTVDM64_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 
 add_library(nxvm-core STATIC
-    src/core/cpu.c
+    src/machine/core/contract/cpu.c
     src/machine/core/contract/cpu_capability.c
     src/core/debug.c
     src/machine/core/contract/machine.c
