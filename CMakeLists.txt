@@ -389,37 +389,38 @@ add_executable(nxvm-vm-full-pc-session-smoke
 )
 target_link_libraries(nxvm-vm-full-pc-session-smoke PRIVATE nxvm-vm-composition)
 
-add_library(ntvdm64-vdm-dos-minimal STATIC
+add_library(ntvdm64-vdm-machine STATIC
     src/vdm/machine/dos_minimal.c
 )
-target_include_directories(ntvdm64-vdm-dos-minimal PUBLIC
+target_include_directories(ntvdm64-vdm-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(ntvdm64-vdm-dos-minimal PUBLIC nxvm-core)
+target_link_libraries(ntvdm64-vdm-machine PUBLIC nxvm-core)
 
-add_library(ntvdm64-vdm-dos-minimal-profile STATIC
+add_library(ntvdm64-vdm-profile STATIC
     src/vdm/profile/dos_minimal_profile.c
 )
-target_include_directories(ntvdm64-vdm-dos-minimal-profile PUBLIC
+target_include_directories(ntvdm64-vdm-profile PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(ntvdm64-vdm-dos-minimal-profile PUBLIC nxvm-runtime)
+target_link_libraries(ntvdm64-vdm-profile PUBLIC nxvm-runtime)
 
-add_library(ntvdm64-vdm-minimal-session STATIC
+add_library(ntvdm64-vdm-composition STATIC
     src/vdm/composition_minimal_session.c
+    src/vdm/composition_presentation.c
 )
-target_include_directories(ntvdm64-vdm-minimal-session PUBLIC
+target_include_directories(ntvdm64-vdm-composition PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(ntvdm64-vdm-minimal-session PUBLIC
-    ntvdm64-vdm-dos-minimal ntvdm64-vdm-dos-minimal-profile
+target_link_libraries(ntvdm64-vdm-composition PUBLIC
+    ntvdm64-vdm-machine ntvdm64-vdm-profile
 )
 
 add_executable(ntvdm64-vdm-minimal-session-smoke
     tests/products/ntvdm64_minimal_session_smoke.c
 )
 target_link_libraries(ntvdm64-vdm-minimal-session-smoke PRIVATE
-    ntvdm64-vdm-minimal-session
+    ntvdm64-vdm-composition
 )
 
 add_executable(nxvm-runtime-registry-smoke
@@ -427,29 +428,19 @@ add_executable(nxvm-runtime-registry-smoke
 )
 target_link_libraries(nxvm-runtime-registry-smoke PRIVATE nxvm-runtime nxvm-core)
 
-add_library(nxvm-dos-minimal-presentation-adapter STATIC
-    src/vdm/composition_presentation.c
-)
-target_include_directories(nxvm-dos-minimal-presentation-adapter PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(nxvm-dos-minimal-presentation-adapter PUBLIC
-    ntvdm64-vdm-dos-minimal
-)
-
 add_executable(nxvm-dos-minimal-presentation-smoke
     tests/adapters/dos_minimal_presentation_smoke.c
 )
 target_link_libraries(nxvm-dos-minimal-presentation-smoke PRIVATE
-    nxvm-dos-minimal-presentation-adapter
+    ntvdm64-vdm-composition
 )
 
 add_executable(nxvm-dos-minimal-profile-smoke
     tests/runtime/dos_minimal_profile_smoke.c
 )
 target_link_libraries(nxvm-dos-minimal-profile-smoke PRIVATE
-    ntvdm64-vdm-dos-minimal
-    ntvdm64-vdm-dos-minimal-profile
+    ntvdm64-vdm-machine
+    ntvdm64-vdm-profile
 )
 
 add_executable(nxvm-full-pc-profile-smoke
@@ -548,11 +539,10 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-dos-minimal-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-runtime-registry-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(ntvdm64-vdm-dos-minimal PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(ntvdm64-vdm-dos-minimal-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(ntvdm64-vdm-minimal-session PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(ntvdm64-vdm-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(ntvdm64-vdm-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(ntvdm64-vdm-composition PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-vdm-minimal-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-dos-minimal-presentation-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-vm-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

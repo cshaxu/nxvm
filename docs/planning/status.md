@@ -337,6 +337,9 @@ legacy `vmachine` lifecycle sequence.
 - M5 T14 S3: consolidated all remaining `vm/composition_*.c` sources under
   `nxvm-vm-composition`. Full-PC, CPU-probe, default-profile, and session
   smoke executables now link the root composition target directly.
+- M5 T14 S3: recast the test-only VDM minimal shell as explicit machine,
+  profile, and composition targets. No VDM executable, DOS runner, or CLI was
+  added.
 
 ## Active Subtask
 
