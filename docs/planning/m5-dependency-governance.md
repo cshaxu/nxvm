@@ -16,6 +16,11 @@ retained VM has direct `vm/machine <-> vm/platform` calls. The VDM minimal
 shell has `vdm/platform -> vdm/machine` presentation routing. The historical
 `nxvm-baseline-runtime` CMake aggregate also hides mixed ownership.
 
+The complete source-edge, CMake-edge, gate, and stop-condition inventory is
+[`m5-t14-s2-migration-map.md`](m5-t14-s2-migration-map.md). It is the active
+T14 S2 design deliverable; implementation may begin only after owner review of
+its listed review points.
+
 ## Bounded Follow-Up
 
 | Task | Outcome | Stop condition |
