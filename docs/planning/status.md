@@ -41,8 +41,8 @@ solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T13 S1: audit the remaining historical composition names and direct
-legacy-owner dependencies before the behavior-neutral cutover sequence.
+M5 T13 S2: rename only the active full-PC VM composition pair out of the
+historical `baseline` label, preserving its exact behavior and gates.
 
 ## Completed
 
@@ -235,15 +235,17 @@ legacy-owner dependencies before the behavior-neutral cutover sequence.
   through copied ingress at the execution boundary; KEYDOWN mapping remains
   direct, and queue failure preserves the original direct state path. GCC,
   transport, CPU, FDD/HDD, Console, and debugger gates passed.
+- M5 T13 S1: audited historical composition names separately from real
+  core-to-product ownership debt; no runtime behavior changed.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t13-s1.md`.
+`docs/planning/subtasks/m5-t13-s2.md`.
 
 ## Next Eligible Work
 
-- M5 T13 S1 may audit composition cutover only. M6 remains blocked until M5
-  truly closes.
+- M5 T13 S2 may rename the active full-PC composition pair only. M6 remains
+  blocked until M5 truly closes.
 
 ## Delivery State
 
