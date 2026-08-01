@@ -2,7 +2,7 @@
 
 #include "vm/product/baseline_cpu_probe.h"
 #include "core/product/runtime/execution_context.h"
-#include "nxvm-baseline/device/vcpuins.h"
+#include "core/machine/vcpuins.h"
 
 static int expect_capture(
     const nxvm_baseline_cpu_probe_capture *capture,

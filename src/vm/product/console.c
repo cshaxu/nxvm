@@ -7,7 +7,7 @@
 
 #include "core/product/utils.h"
 
-#include "device/device.h"
+#include "vm/machine/device.h"
 #include "vm/platform/platform.h"
 #include "vm/machine/machine.h"
 

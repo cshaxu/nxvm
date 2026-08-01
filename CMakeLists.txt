@@ -159,17 +159,6 @@ add_custom_target(generate-m1-probe
     VERBATIM
 )
 
-# M1 retains the imported source tree as a behavior baseline. The Linux source
-# remains present for future portability work but is not part of this Windows
-# executable target.
-file(GLOB_RECURSE NXVM_BASELINE_SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/src/nxvm-baseline/*.c"
-)
-list(FILTER NXVM_BASELINE_SOURCES EXCLUDE REGEX ".*/platform/linux/.*")
-
-set(NXVM_BASELINE_RUNTIME_SOURCES ${NXVM_BASELINE_SOURCES})
-list(FILTER NXVM_BASELINE_RUNTIME_SOURCES EXCLUDE REGEX ".*/main\\.c$")
-
 set(NXVM_PRODUCT_CORE_SOURCES
     src/core/product/utils.c
 )
@@ -182,8 +171,10 @@ set(NXVM_PROFILE_VM_SOURCES
     src/vm/profile/default_profile/firmware/qdx.c
 )
 
-list(APPEND NXVM_BASELINE_RUNTIME_SOURCES ${NXVM_PRODUCT_CORE_SOURCES})
-list(APPEND NXVM_BASELINE_RUNTIME_SOURCES ${NXVM_PROFILE_VM_SOURCES})
+set(NXVM_RUNTIME_SOURCES
+    ${NXVM_PRODUCT_CORE_SOURCES}
+    ${NXVM_PROFILE_VM_SOURCES}
+)
 
 set(NXVM_PRODUCT_VM_SOURCES
     src/vm/main.c
@@ -257,17 +248,15 @@ target_link_libraries(nxvm-baseline-vm-request-transport-smoke PRIVATE
 add_library(nxvm-product-core-debug STATIC ${NXVM_PRODUCT_CORE_DEBUG_SOURCES})
 target_include_directories(nxvm-product-core-debug PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
-    "${CMAKE_SOURCE_DIR}/src/nxvm-baseline"
 )
 
 add_library(nxvm-machine-core-executor STATIC ${NXVM_MACHINE_CORE_SOURCES})
 target_include_directories(nxvm-machine-core-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
-    "${CMAKE_SOURCE_DIR}/src/nxvm-baseline"
 )
 
 add_library(nxvm-baseline-runtime STATIC
-    ${NXVM_BASELINE_RUNTIME_SOURCES}
+    ${NXVM_RUNTIME_SOURCES}
     ${NXVM_PLATFORM_VM_SOURCES}
 )
 target_link_libraries(nxvm-baseline-runtime PUBLIC
@@ -279,7 +268,6 @@ target_link_libraries(nxvm-baseline-runtime PUBLIC
 add_library(nxvm-machine-vm-lifecycle STATIC ${NXVM_MACHINE_VM_SOURCES})
 target_include_directories(nxvm-machine-vm-lifecycle PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
-    "${CMAKE_SOURCE_DIR}/src/nxvm-baseline"
 )
 target_link_libraries(nxvm-machine-vm-lifecycle PUBLIC nxvm-baseline-runtime)
 
@@ -288,7 +276,6 @@ add_library(nxvm-product-vm-debug STATIC
 )
 target_include_directories(nxvm-product-vm-debug PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
-    "${CMAKE_SOURCE_DIR}/src/nxvm-baseline"
 )
 target_link_libraries(nxvm-product-vm-debug PUBLIC
     nxvm-baseline-runtime)
@@ -389,7 +376,7 @@ target_link_libraries(nxvm-full-pc-profile-smoke PRIVATE
 
 function(add_nxvm_full_pc_artifact target suffix)
     add_executable(${target}
-        ${NXVM_BASELINE_SOURCES}
+        ${NXVM_RUNTIME_SOURCES}
         ${NXVM_MACHINE_VM_SOURCES}
         ${NXVM_MACHINE_CORE_SOURCES}
         ${NXVM_PLATFORM_VM_SOURCES}
@@ -399,8 +386,7 @@ function(add_nxvm_full_pc_artifact target suffix)
         ${NXVM_PRODUCT_VM_SOURCES})
     target_compile_definitions(${target} PRIVATE "NXVM_BUILD_SUFFIX=\"${suffix}\"")
     target_include_directories(${target} PRIVATE
-        "${CMAKE_SOURCE_DIR}/src"
-        "${CMAKE_SOURCE_DIR}/src/nxvm-baseline")
+        "${CMAKE_SOURCE_DIR}/src")
     target_link_libraries(${target} PRIVATE user32 gdi32)
 
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
