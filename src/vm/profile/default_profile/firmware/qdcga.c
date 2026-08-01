@@ -5,6 +5,7 @@
 #include "core/product/utils.h"
 
 #include "vm/platform/platform.h"
+#include "vm/machine/vvadp.h"
 #include "core/machine/vcpu.h"
 
 #include "vm/profile/default_profile/firmware/qdx.h"
