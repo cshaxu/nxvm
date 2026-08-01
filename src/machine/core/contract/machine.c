@@ -1,5 +1,5 @@
-#include "core/machine.h"
-#include "core/machine_impl.h"
+#include "machine/core/contract/machine.h"
+#include "machine/core/contract/machine_impl.h"
 
 #include <stdlib.h>
 
