@@ -13,17 +13,14 @@
 #include "machine/core/vcpu.h"
 #include "machine/core/vram.h"
 #include "machine/core/vport.h"
-#include "machine/vm/execution_context.h"
 
 #include "device.h"
 
 t_device device;
 static nxvm_execution_context device_execution_context;
-static nxvm_execution_context device_execution_context;
 
 /* Starts device thread */
 void deviceStart() {
-    nxvm_execution_context_enter(&device_execution_context);
     nxvm_execution_context_enter(&device_execution_context);
     device.flagRun = True;
     device.flagFlip = !device.flagFlip;
@@ -39,7 +36,6 @@ void deviceStart() {
         }
         vmachineRefresh();
     }
-    nxvm_execution_context_leave(&device_execution_context);
     nxvm_execution_context_leave(&device_execution_context);
 }
 
@@ -65,14 +61,13 @@ void deviceInit() {
     nxvm_execution_context_initialize(&device_execution_context);
     nxvm_execution_context_bind_machine_state(
         &device_execution_context, &vcpu, &vram, &vport, &device);
-    nxvm_execution_context_initialize(&device_execution_context);
+    nxvm_execution_context_enter(&device_execution_context);
     vdebugInit();
     vmachineInit();
 }
 
 /* Finalizes devices */
 void deviceFinal() {
-    nxvm_execution_context_leave(&device_execution_context);
     nxvm_execution_context_leave(&device_execution_context);
     vdebugFinal();
     vmachineFinal();
