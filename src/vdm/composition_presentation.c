@@ -1,4 +1,4 @@
-#include "vdm/platform/dos_minimal_presentation.h"
+#include "vdm/composition_presentation.h"
 
 #include <stdlib.h>
 

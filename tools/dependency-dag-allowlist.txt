@@ -19,7 +19,6 @@ src/core/product/debug/xasm32/dasm32.h|core/platform
 src/core/product/runtime/registry.h|core/machine
 src/core/product/utils.c|vm/platform
 src/core/product/utils.h|core/platform
-src/vdm/platform/dos_minimal_presentation.h|vdm/machine
 src/vm/machine/vcmos.c|vm/profile
 src/vm/machine/vfdc.c|vm/profile
 src/vm/machine/vhdc.c|vm/profile
