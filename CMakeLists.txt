@@ -219,6 +219,7 @@ set(NXVM_MACHINE_CORE_SOURCES
 )
 set(NXVM_PLATFORM_VM_SOURCES
     src/vm/platform/platform.c
+    src/vm/platform/win32/win32.c
 )
 add_library(nxvm-platform-vm-requests STATIC
     src/vm/platform/request_bridge.c
