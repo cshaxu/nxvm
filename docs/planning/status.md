@@ -38,7 +38,7 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T11 S9: select and migrate one retained adjacent VM device without changing
+M5 T11 S10: migrate the retained HDC source into `machine/vm` without changing
 NXVM behavior.
 
 ## Completed
@@ -190,15 +190,18 @@ NXVM behavior.
 - M5 T11 S8: moved the retained HDD implementation into `machine/vm`, with
   forwarding-header compatibility only; GCC, lifecycle, CPU, FDD/HDD reset,
   Console, and debugger regressions passed.
+- M5 T11 S9: moved the retained FDC implementation into `machine/vm`, with
+  forwarding-header compatibility only; GCC, lifecycle, CPU, FDD/HDD reset,
+  Console, and debugger regressions passed.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t11-s9.md`.
+`docs/planning/subtasks/m5-t11-s10.md`.
 
 ## Next Eligible Work
 
-- M5 T11 S9 selects the next small retained VM-device migration; M6 remains
-  blocked until M5 truly closes.
+- M5 T11 S10 migrates the retained HDC source; M6 remains blocked until M5
+  truly closes.
 
 ## Delivery State
 

@@ -2,15 +2,15 @@
 
 /* VFDC implements Floppy Driver Controller: Intel 8272A. */
 
-#include "../utils.h"
+#include "nxvm-baseline/utils.h"
 
-#include "vdma.h"
-#include "vfdd.h"
-#include "vpic.h"
+#include "machine/core/vdma.h"
+#include "machine/core/vpic.h"
+#include "machine/core/vport.h"
+#include "machine/vm/vfdd.h"
 
-#include "vbios.h"
-#include "vport.h"
-#include "vfdc.h"
+#include "nxvm-baseline/device/vbios.h"
+#include "machine/vm/vfdc.h"
 
 t_fdc vfdc;
 
