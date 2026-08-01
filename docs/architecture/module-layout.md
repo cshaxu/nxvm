@@ -69,8 +69,11 @@ call.
 host facilities. It never mutates guest state. `core/product` contains generic
 command, debug/trace, registry, result, assembler, and disassembler tooling,
 but no session composition, VM Console, VDM CLI, profile, boot/media, or
-host-policy decision. Its runtime infrastructure lives in
-`core/product/runtime`; there is no top-level runtime module.
+host-policy decision. It may expose a product-neutral provider contract, such
+as the bound wait service used by retained firmware and debugger paths; root
+composition owns the host implementation and its lifetime. Its runtime
+infrastructure lives in `core/product/runtime`; there is no top-level runtime
+module.
 
 Machine snapshots and platform frames are distinct contracts. A product-machine
 snapshot may contain text cells, attributes, geometry, cursor, generation, and
