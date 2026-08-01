@@ -76,19 +76,22 @@ hexadecimal revision digit (`0` through `f`).
 
 - `core/machine`: shared guest mechanics and firmware-service registry.
 - `core/platform`: shared host-capability contracts and host facilities.
-- `core/product`: shared session, registry, debug/trace and tooling primitives.
+- `core/product`: shared registry, debug/trace, command and tooling primitives;
+  it is independent of the other core modules.
 - `vm/{machine,platform,product,profile}`: bootable NXVM-only behavior;
   built-in BIOS/POST/ROM/QDX lives in `vm/profile/default_profile/firmware`.
 - `vdm/{machine,platform,product,profile}`: DOS app-runner-only behavior;
   the owned DOS backend lives in `vdm/machine`.
+- `vm/` and `vdm/`: each product-form root owns composition, callback binding,
+  lifecycle, and teardown. Their `product` modules own user experience only.
 - temporary bridge code and imported baseline code move by actual ownership
   into `core`, `vm`, or `vdm`; Git history preserves the regression reference.
 
 ## Registries
 
-Registries are session-owned composition tables, not process-global mutable
-maps. A registry entry has a key, versioned contract, owner, profile/capability
-gate, lifecycle state, and teardown rule.
+Registries are product-form-root-owned composition tables, not process-global
+mutable maps. A registry entry has a key, versioned contract, owner,
+profile/capability gate, lifecycle state, and teardown rule.
 
 - Machine-profile registry: selects bootable NXVM machine descriptions such as
   `nxvm.machine.default_profile_builtin`, including topology, firmware provider, and
@@ -108,17 +111,19 @@ gate, lifecycle state, and teardown rule.
   to the owned DOS module.
 - Host capability registry: exposes abstract input, display, clock,
   filesystem, block-device, audio, serial/parallel, print, and logging
-  providers selected by `runtime`.
+  providers selected by root composition.
 - Debug/command registry: exposes synchronized developer and product commands
   without giving Console or window threads direct access to guest state.
 
 ## Dependency Rules
 
-Forbidden dependencies are `core -> VM/VDM policy`, `core -> concrete product
-UI`, `platform -> guest state`, `vm -> vdm`, `vdm -> vm`, and profile-to-foreign
-product implementation. Allowed dependencies are `vm|vdm -> core`,
-`core/product -> abstract core/machine and core/platform`, and `core/platform ->
-host OS`. Temporary bridge code follows the same owner dependency rules.
+The three `core` modules are independent libraries: they have no compile-time
+dependency on one another. Forbidden dependencies are `core -> VM/VDM policy`,
+`core -> concrete product UI`, `platform -> guest state`, `vm -> vdm`,
+`vdm -> vm`, every sibling-module dependency within VM or VDM, and
+profile-to-product construction. VM/VDM modules depend only on their matching
+core contracts; the `vm/` or `vdm/` root is the sole composition point.
+Temporary bridge code follows the same owner dependency rules.
 
 All guest-state mutations occur on the Machine execution thread at a command
 boundary. Platform threads exchange timestamped input events and immutable

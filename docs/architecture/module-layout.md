@@ -20,10 +20,12 @@ src/
   core/{machine,platform,product}/
   vm/
     main.c
+    composition.{c,h}
     {machine,platform,product,profile}/
     profile/default_profile/firmware/
   vdm/
     main.c
+    composition.{c,h}
     {machine,platform,product,profile}/
     profile/dos_minimal_profile/
 ```
@@ -31,7 +33,8 @@ src/
 Headers stay beside implementations. Device models are flat files unless they
 become real multi-file subsystems; private implementation headers use `_impl.h`.
 `vm/main.c` is the `nxvm.exe` entry point and `vdm/main.c` is the
-`ntvdm64.exe` entry point.
+`ntvdm64.exe` entry point. Each remains thin and enters its product-form root
+composition in `vm/composition.*` or `vdm/composition.*`.
 
 ## Ownership
 
@@ -50,13 +53,13 @@ but no VM Console, VDM CLI, profile, boot/media, or host-policy decision. Its
 runtime infrastructure lives in `core/product/runtime`; there is no top-level
 runtime module.
 
-Shared presentation contracts carry only presentation data: text cells,
-attributes, geometry, cursor, generation, and timestamps. Product-private
-machine diagnostics such as DOS-minimal PIT state or pending keyboard IRQ state
-remain in that product's machine module and require a separate product
-diagnostic contract if they must be exposed. A product-private snapshot may
-embed the shared core text snapshot; its platform adapter copies that child
-object without translating product diagnostics into presentation data.
+Machine snapshots and platform frames are distinct contracts. A machine
+snapshot may contain text cells, attributes, geometry, cursor, generation, and
+machine-private diagnostics; a platform frame contains only host-facing
+presentation data. Root composition translates between them. Product-private
+diagnostics such as DOS-minimal PIT state or pending keyboard IRQ remain in
+that product's machine module and require a separate diagnostic contract if
+they must be exposed.
 
 Ownership is determined by reuse, not by abstraction level or the source's
 current directory. Any logic used by both products belongs in the matching
@@ -67,21 +70,23 @@ shared Win32 and Linux providers live in `core/platform/win32` and
 `vdm/*` counterpart. The same rule applies to machine and product code.
 
 `vm/machine` owns boot/reset sequencing, execution-loop glue, and VM-only
-controllers such as FDC/HDC/FDD/HDD. `vm/platform` owns full-machine
-input/presentation routing. `vm/product` owns the retained NXVM Console,
-hardware debugger, media workflow, full-machine startup, VM profile selection,
-and VM composition. `vm/profile` owns VM
-topology and boot policy; the built-in PC/AT BIOS, POST, ROM, QDX handlers, and
-default CMOS wiring live in `vm/profile/default_profile/firmware`.
+controllers such as FDC/HDC/FDD/HDD. `vm/platform` owns full-machine host
+providers. `vm/product` owns retained NXVM user experience: Console, hardware
+debugger UX, media commands, and presentation policy. `vm/profile` owns VM
+topology, boot policy, ROM assets, and declarative firmware-provider metadata.
+The `vm/` root composition selects that profile, creates the providers, and
+binds their callbacks and lifetime. Profile-specific firmware code is allowed
+only as an override provider against a public core contract; it does not create
+the machine or call a sibling module directly.
 
 `vdm/machine` owns the DOS loader, PSP, environment, DTA, handles, paths, DOS
 devices/services, errors, and program exit. `vdm/platform` owns app-runner
-process lifetime, parent-Console protection, cancellation, filesystem
-containment, and VDM presentation/input routing. `vdm/product` owns
-`ntvdm64 run`, program-launch parameters, VDM debugging UX, display/Console
-policy, cancellation policy, execution-profile selection, and composition.
-`vdm/profile` owns DOS
-memory/service/device policy and any firmware-service subset.
+host providers for parent-Console protection, cancellation, filesystem
+containment, and presentation/input. `vdm/product` owns `ntvdm64 run`, launch
+parameters, VDM debugging UX, display/Console policy, and cancellation UX.
+`vdm/profile` owns declarative DOS memory/service/device policy and any
+firmware-service subset. The `vdm/` root composition selects that profile and
+binds machine, platform, product, and teardown.
 
 Temporary adapters are classified by their actual owner and live under `core`,
 `vm`, or `vdm`; no top-level adapter root remains. The imported
@@ -92,53 +97,53 @@ recorded M1 snapshot preserve provenance; it is not a source root.
 
 The required architecture is a directed acyclic graph, not a collection of
 mutually aware subsystems. No module may reach sideways to a sibling module
-and no lower module may depend on a product form. Product composition is the
-only permitted integration point.
+and no lower module may depend on a product form. The product-form root
+composition is the only permitted integration point.
 
 ```text
-core/machine  <--- core/platform (immutable public data contracts only)
-      ^                    ^
-      |                    |
-core/product --------------+
+core/machine      core/platform      core/product
+     (independent libraries with public provider contracts)
 
 vm/machine   -> core/machine          vdm/machine   -> core/machine
 vm/platform  -> core/platform         vdm/platform  -> core/platform
+vm/product   -> core/product          vdm/product   -> core/product
 vm/profile   -> core contracts        vdm/profile   -> core contracts
-       \             |                       \             |
-        +------------+                        +------------+
-                     v                                     v
-                 vm/product                            vdm/product
+       \       |       /                       \       |       /
+        +------v------+                         +------v------+
+             vm/compose                              vdm/compose
 ```
 
 `core/machine` is the leaf for mutable guest state and guest-domain contracts.
 It must not include `core/platform`, `core/product`, `vm/*`, or `vdm/*`.
 `core/platform` is the leaf for host-capability contracts and shared host
 providers. It must not mutate guest state or include `core/product`, `vm/*`,
-or `vdm/*`. It may consume an immutable public value type owned by
-`core/machine`, such as a copied text snapshot. This single one-way type
-dependency avoids duplicating a guest-domain representation; it is not a
-platform-to-machine control path.
+or `vdm/*`; it also does not include `core/machine` or `core/product`.
+Platform-facing frames and events are platform contracts. A root composition
+translates a machine-owned snapshot into such a frame when required.
 
 `core/product` contains reusable product tooling only: generic command,
 registry, trace, debug, assembler, and disassembler facilities. It may depend
-on the public contracts of `core/machine` and `core/platform`, but it may not
-select a product, own a product profile, instantiate a VM/VDM session, or
-include `vm/*` or `vdm/*`.
+only on its own public callback contracts; it may not select a product, own a
+product profile, instantiate a VM/VDM session, or include `core/machine`,
+`core/platform`, `vm/*`, or `vdm/*`. A root composition adapts a concrete
+machine or platform provider to a generic product-tool target.
 
-Within either product form, `machine`, `platform`, and `profile` are peer
-providers. They may depend on matching core contracts but must not include one
-another. A profile is declarative data and provider metadata, not a machine
-constructor. `vm/product` or `vdm/product` is the sole composition root: it
-may depend on all modules in its own product form and on `core/*`, choose a
-profile, create the machine, bind platform capabilities, and own teardown.
-Product adapters which translate input, display snapshots, or callbacks belong
-there, rather than creating a `machine <-> platform` dependency.
+Within either product form, `machine`, `platform`, `product`, and `profile`
+are peer providers. They may depend on matching core contracts but must not
+include one another. A profile is declarative data and provider metadata, not
+a machine constructor. It may contain a profile-specific ROM or firmware
+override only through a public core callback contract. The `vm/` or `vdm/`
+root composition may depend on all four modules and on `core/*`; it chooses a
+profile, creates the machine, binds platform capabilities and product UX, and
+owns teardown. Adapters which translate input, display snapshots, or callbacks
+belong to that root composition, rather than creating a `machine <-> platform`
+dependency.
 
-Thus zero *mutual* dependency is mandatory. Completely zero dependency among
-the three core modules is neither necessary nor desirable while a platform
-must carry a typed immutable machine snapshot; the permitted edge is narrow,
-one-way, and has no lifecycle or callback authority. All guest-state mutation
-occurs on the machine execution thread at a command boundary.
+The three core modules have zero compile-time dependency on one another.
+Cross-domain data is carried through public provider contracts and translated
+by a product-form root composition; a platform never imports a machine snapshot
+type. All guest-state mutation occurs on the machine execution thread at a
+command boundary.
 
 Forbidden dependencies are any core-to-VM/VDM path, any VM-to-VDM or
 VDM-to-VM path, sibling module includes within `vm` or `vdm`, profile-to-product

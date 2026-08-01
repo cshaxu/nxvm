@@ -8,7 +8,8 @@
   policy, concrete product UI, profile, or host OS dependency; `core/platform`
   never mutates guest state. `vm/*` and `vdm/*` contain only their own product
   behavior. `core/product` is shared infrastructure, while `vm/product` and
-  `vdm/product` contain product policy and composition.
+  `vdm/product` contain user experience. The `vm/` and `vdm/` roots own
+  product-form composition.
 - One subtask is active at a time. Define its scope, non-goals, source baseline,
   verification commands, and acceptance evidence before changing runtime code.
 - Use `TODO(High)`, `TODO(Medium)`, or `TODO(Low)` only for deferred work.

@@ -107,7 +107,7 @@ with focused regression evidence. The temporary baseline adapter may remain
 only as an independently runnable regression reference; it cannot own the
 user-facing artifact's execution loop, Console, debugger, firmware, devices,
 or platform lifecycle. The source and CMake target graphs obey the directed
-core/VM/VDM dependency model, and VM/VDM product modules are the only
+core/VM/VDM dependency model, and the `vm/` and `vdm/` roots are the only
 composition roots. No ntvdm64 DOS runner behavior is required.
 
 **Compatibility gate:** M5 must not alter NXVM functionality or user experience.
