@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "adapters/nxvm_baseline/cpu_probe.h"
-#include "machine/vm/execution_context.h"
+#include "core/product/runtime/execution_context.h"
 #include "nxvm-baseline/device/vcpuins.h"
 
 static int expect_capture(

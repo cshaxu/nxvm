@@ -46,3 +46,8 @@ probe, both FDD/HDD reset-vector setups, and retained no-media Console/debugger
 interactions. The raw DOS trace checkpoint remains the separately recorded
 bounded M5 T7 evidence; this subtask did not create an unbudgeted recorder
 trace.
+
+The M5 T12 S9 canonical-root follow-up moved the platform-neutral carrier,
+unchanged, to `src/core/product/runtime/execution_context.c` and `.h`. Direct
+VM and CPU-probe includes were repaired, GCC rebuilt `nxvm-m5-t10` and the
+finite CPU probe retained `M5:T1:S1:CPU-PROBES:OK`.
