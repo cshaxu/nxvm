@@ -86,7 +86,7 @@ are not forbidden peer edges.
 | VM product/profile/composition targets | Complete: pure product sources compile in `nxvm-vm-product`, profile metadata and default-profile firmware compile in `nxvm-vm-profile`, and every `vm/composition_*.c` source compiles in `nxvm-vm-composition`. Historical smoke executables link these final module/composition targets directly. |
 | `nxvm-vm-composition` | Complete for the retained NXVM path: it compiles only `vm/composition*.c` root sources and explicitly links VM machine/platform/profile/product-facing core dependencies. `nxvm-vm-machine` separately owns VM controller sources. Historical narrow targets remain only as smoke compatibility shims pending their test migration. |
 | `add_nxvm_full_pc_artifact` | Complete: each retained artifact compiles only `vm/main.c` and links the same VM product/lifecycle graph. It remains the task-artifact producer, not a second build graph. Final naming and composition-target consolidation remain separate closure work. |
-| VDM minimal targets | Recast as four peer targets plus test-only `vdm-composition`; no VDM executable or CLI enters M5. |
+| VDM minimal targets | Complete: `ntvdm64-vdm-machine`, `ntvdm64-vdm-profile`, and test-only `ntvdm64-vdm-composition` own the isolated shell. No VDM executable or CLI enters M5. |
 
 ## Execution Order
 
