@@ -38,8 +38,8 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T9 S2: lift the original NXVM Console/debugger source before migrating the
-execution engine.
+M5 T10 S1: define the core execution-carrier file-move slice before moving the
+actual CPU, memory, port, and execution-loop sources.
 
 ## Completed
 
@@ -166,15 +166,22 @@ execution engine.
   `nxvm.machine.pc_at_builtin`.
 - M4 T6 S1: defined evidence-backed CPU capabilities, `#UD` triage, and the
   optional local Bochx/Bochs CPU differential boundary; M5 now starts there.
+- M5 T9 S1: renamed the built-in PC/AT profile implementation to
+  `default_profile` without changing emulated-machine identity.
+- M5 T9 S2: moved the original NXVM entry point, Console, and hardware
+  debugger to `src/product/vm`, and assembler/disassembler to
+  `src/product/core/debug/xasm32`; retained `utils` with its unchanged
+  baseline consumers. The original no-media Console and debugger interactions
+  were revalidated.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t9-s2.md`.
+`docs/planning/subtasks/m5-t10-s1.md`.
 
 ## Next Eligible Work
 
-- M5 T9 S2 begins the source migration with the retained Console/debugger;
-  M6 remains blocked until M5 truly closes.
+- M5 T10 S1 plans the next small source-move slice for the actual execution
+  carrier; M6 remains blocked until M5 truly closes.
 
 ## Delivery State
 

@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#include "../utils.h"
+#include "nxvm-baseline/utils.h"
 
 #include "dasm32.h"
 

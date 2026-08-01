@@ -49,7 +49,7 @@ completed migration.
 
 | Baseline units | Final owner | Required change | Regression gate |
 | --- | --- | --- | --- |
-| `main.c`, `console.c`, `debug.c`, `utils.c`, `xasm32/*` | `product/vm` and `product/core` | Move the retained Console and shared debug tooling by `git mv`; preserve grammar. | Byte-level command-list markers; `DEBUG` with no media enters `-`, `q` returns to `Console>`. |
+| `main.c`, `console.c`, `debug.c`, `xasm32/*` | `product/vm` and `product/core` | Move the retained Console and debug tooling by `git mv`; preserve grammar. `utils.c` remains with its device/platform consumers until their own slice. | Byte-level command-list markers; `DEBUG` with no media enters `-`, `q` returns to `Console>`. |
 | `machine.c`, `device/device.c`, `device/vmachine.c`, `device/vglobal.h` | `core` and `runtime` | Replace process-global lifecycle with a session-owned PC/AT execution carrier. The carrier owns refresh order and the execution thread. | Reset vector, stop/reset/resume, no leaked thread, M1 fixture checkpoints. |
 | `device/vcpu.c`, `device/vcpuins.c`, `device/vram.c`, `device/vport.c` | `core` | Move the real x86 executor, register state, real/linear memory and I/O dispatch into one machine instance. Existing minimal CPU/RAM/port scaffolds become supporting contracts, not a second executor. | CPU microprobes, normalized `#UD`, reset vector, bounded FDD/HDD progress. |
 | `device/vpic.c`, `vpit.c`, `vdma.c`, `vkbc.c`, `qdx/*`, `vvadp.c` | `core` | Make PIC/PIT/DMA/keyboard/QDX/video state part of the PC/AT instance and retain refresh order. | IRQ/timer/input/display probes plus fixture boot. |
@@ -78,9 +78,11 @@ and command registry before the baseline adapter is removed.
 1. **T9 S1: default-profile naming.** Rename the built-in profile implementation
    to `default_profile`; the emulated PC/AT identity remains factual, while
    future machine profiles receive their own names.
-2. **T9 S2: retained Console source lift.** Move the original Console, debugger,
-   assembler/disassembler and support code into `product/vm` and `product/core`; link it to the
-   still-baseline execution engine only as a temporary compatibility step.
+2. **T9 S2: retained Console source lift.** Move the original Console and
+   debugger into `product/vm`, and assembler/disassembler into `product/core`;
+   retain `utils` with the still-baseline device/platform sources. Link the
+   moved units to the still-baseline execution engine only as a temporary
+   compatibility step.
 3. **T10: core execution carrier.** Move the actual CPU, memory, port and
    machine/device loop into `core`; prove the executor, not a lifecycle stub,
    advances guest instructions under a finite budget.

@@ -2,8 +2,8 @@
 
 /* UTILS implements code tracer and all utility functions. */
 
-#include "xasm32/aasm32.h"
-#include "xasm32/dasm32.h"
+#include "product/core/debug/xasm32/aasm32.h"
+#include "product/core/debug/xasm32/dasm32.h"
 #include "platform/platform.h"
 
 #include "utils.h"

@@ -1,5 +1,8 @@
 * text=auto eol=lf
 src/nxvm-baseline/** -text -whitespace
+# Preserve exact line endings for the staged NXVM source migration.
+src/product/vm/** -text -whitespace
+src/product/core/debug/xasm32/** -text -whitespace
 *.com binary
 *.exe binary
 *.dll binary
