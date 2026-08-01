@@ -366,7 +366,7 @@ target_include_directories(ntvdm64-vdm-dos-minimal-profile PUBLIC
 target_link_libraries(ntvdm64-vdm-dos-minimal-profile PUBLIC nxvm-runtime)
 
 add_library(ntvdm64-vdm-minimal-session STATIC
-    src/vdm/product/minimal_session.c
+    src/vdm/composition_minimal_session.c
 )
 target_include_directories(ntvdm64-vdm-minimal-session PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
