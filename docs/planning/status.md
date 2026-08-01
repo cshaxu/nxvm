@@ -38,8 +38,8 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T10 S5: verify that the user-facing T10 artifact owns its lifecycle,
-refresh loop, CPU, RAM, and port implementations from their migrated paths.
+M5 T11 S1: migrate the retained PIC controller source into `machine/core`
+without changing NXVM behavior.
 
 ## Completed
 
@@ -180,14 +180,21 @@ refresh loop, CPU, RAM, and port implementations from their migrated paths.
   implementations into `src/machine/vm`; baseline headers are temporary
   forwarding compatibility layers only. No-media Console/debugger and full-PC
   profile-link checks passed.
+- M5 T10 S4: replaced the temporary carrier binding with a session-owned
+  execution context and preserved the retained loop ordering; sequential CPU,
+  bounded execution-thread lifecycle, FDD/HDD reset-vector, Console, and
+  debugger gates passed.
+- M5 T10 S5: verified `nxvm-m5-t10.exe` compiles lifecycle, loop, CPU, RAM,
+  port, and instruction dispatch only from their migrated module owners. The
+  verified task artifact is recorded in its closure evidence.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t10-s5.md`.
+`docs/planning/subtasks/m5-t11-s1.md`.
 
 ## Next Eligible Work
 
-- M5 T10 S5 audits the migrated execution source set; M6 remains blocked until
+- M5 T11 S1 migrates the first retained controller; M6 remains blocked until
   M5 truly closes.
 
 ## Delivery State
