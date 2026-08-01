@@ -9,7 +9,7 @@
 
 #include "machine/core/vport.h"
 #include "machine/core/vram.h"
-#include "nxvm-baseline/device/vpic.h"
+#include "machine/core/vpic.h"
 
 #include "machine/core/vcpuins.h"
 
