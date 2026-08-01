@@ -2,7 +2,7 @@
 
 /* VVADP is Video Adapter: not implemented yet. */
 
-#include "nxvm-baseline/utils.h"
+#include "core/product/utils.h"
 
 #include "nxvm-baseline/device/vbios.h"
 #include "core/machine/vport.h"

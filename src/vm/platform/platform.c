@@ -2,7 +2,7 @@
 
 /* PLATFORM is the hub that connects all platform-specific modules */
 
-#include "nxvm-baseline/utils.h"
+#include "core/product/utils.h"
 
 #include "vm/platform/platform.h"
 

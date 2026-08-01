@@ -2,7 +2,7 @@
 
 /* VMACHINE is the hub that assembles all devices. */
 
-#include "nxvm-baseline/utils.h"
+#include "core/product/utils.h"
 
 #include "core/machine/vport.h"
 #include "core/machine/vram.h"

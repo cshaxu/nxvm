@@ -2,7 +2,7 @@
 
 /* QDDISK implements quick and dirty hard drive control routines. */
 
-#include "../../utils.h"
+#include "core/product/utils.h"
 
 #include "../vcpu.h"
 #include "../vram.h"

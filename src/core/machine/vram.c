@@ -2,7 +2,7 @@
 
 /* VRAM is the random accessing memory module.  */
 
-#include "nxvm-baseline/utils.h"
+#include "core/product/utils.h"
 
 #include "core/machine/vpit.h"
 #include "core/machine/vport.h"

@@ -6,7 +6,7 @@
 #include "core/product/debug/xasm32/dasm32.h"
 #include "platform/platform.h"
 
-#include "utils.h"
+#include "core/product/utils.h"
 
 static void printTraceCall(t_utils_trace_call *rtracecall) {
     size_t i;

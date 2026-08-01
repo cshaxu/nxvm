@@ -5,7 +5,7 @@
  * to configure, debug and run the virtual machine.
  */
 
-#include "utils.h"
+#include "core/product/utils.h"
 
 #include "device/device.h"
 #include "vm/platform/platform.h"

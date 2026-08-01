@@ -2,7 +2,7 @@
 
 /* QDCGA implements quick and dirty video control routines. */
 
-#include "../../utils.h"
+#include "core/product/utils.h"
 
 #include "../../platform/platform.h"
 #include "../vcpu.h"

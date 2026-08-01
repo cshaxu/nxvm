@@ -5,7 +5,7 @@
  * device status and stops device thread at breakpoints.
  */
 
-#include "nxvm-baseline/utils.h"
+#include "core/product/utils.h"
 #include "vm/machine/device.h"
 
 #include "core/machine/vcpuins.h"

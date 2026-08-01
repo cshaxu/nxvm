@@ -2,7 +2,7 @@
 
 /* QDKEYB implements quick and dirty keyboard control routines. */
 
-#include "../../utils.h"
+#include "core/product/utils.h"
 #include "../vport.h"
 #include "../vcpu.h"
 #include "../vpic.h"

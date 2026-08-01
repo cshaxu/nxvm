@@ -3,7 +3,7 @@
 /* DEBUG is the debug console for users to break, trace, lookup,
  * and print virtual machine devices. */
 
-#include "utils.h"
+#include "core/product/utils.h"
 
 #include "device/device.h"
 #include "machine.h"
