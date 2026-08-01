@@ -177,7 +177,7 @@ set(NXVM_PRODUCT_VM_SOURCES
 )
 set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/xasm32/aasm32.c
-    src/product/core/debug/xasm32/dasm32.c
+    src/core/product/debug/xasm32/dasm32.c
 )
 set(NXVM_MACHINE_VM_SOURCES
     src/core/product/runtime/execution_context.c
