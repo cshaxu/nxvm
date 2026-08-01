@@ -3,14 +3,14 @@
 #include <string.h>
 
 #include "vm/machine/device.h"
-#include "vm/platform/baseline_request_transport.h"
+#include "vm/platform/vm_request_transport.h"
 #include "vm/platform/win32/win32.h"
 #include "vm/product/debug.h"
 #include "vm/machine/machine.h"
 #include "vm/platform/platform.h"
 
 static int nxvm_full_pc_active;
-static nxvm_baseline_vm_request_transport nxvm_full_pc_transport;
+static nxvm_vm_request_transport nxvm_full_pc_transport;
 
 static nxvm_core_status nxvm_full_pc_enqueue_keyboard_state(
     void *opaque, uint32_t asynchronous_keys, uint32_t toggle_keys)
@@ -20,8 +20,8 @@ static nxvm_core_status nxvm_full_pc_enqueue_keyboard_state(
     request.kind = NXVM_PLATFORM_VM_REQUEST_KEYBOARD_STATE;
     request.data.keyboard_state.asynchronous_keys = asynchronous_keys;
     request.data.keyboard_state.toggle_keys = toggle_keys;
-    return nxvm_baseline_vm_request_transport_enqueue_ingress(
-        (nxvm_baseline_vm_request_transport *)opaque, &request);
+    return nxvm_vm_request_transport_enqueue_ingress(
+        (nxvm_vm_request_transport *)opaque, &request);
 }
 
 static void nxvm_full_pc_consume_request(
@@ -53,14 +53,14 @@ nxvm_core_status nxvm_full_pc_create(
     }
 
     machineInit();
-    nxvm_baseline_vm_request_transport_initialize(&nxvm_full_pc_transport);
-    nxvm_baseline_vm_request_transport_bind_consumer(
+    nxvm_vm_request_transport_initialize(&nxvm_full_pc_transport);
+    nxvm_vm_request_transport_bind_consumer(
         &nxvm_full_pc_transport,
         nxvm_full_pc_consume_request, NULL);
     win32KeyboardBindStateSink(nxvm_full_pc_enqueue_keyboard_state,
                                &nxvm_full_pc_transport);
     deviceConnectBindCommandBoundary(
-        nxvm_baseline_vm_request_transport_observe_execution_boundary,
+        nxvm_vm_request_transport_observe_execution_boundary,
         &nxvm_full_pc_transport);
     if ((config->fdd_image != NULL &&
          deviceConnectFloppyInsert(config->fdd_image)) ||
@@ -68,8 +68,8 @@ nxvm_core_status nxvm_full_pc_create(
          deviceConnectHardDiskInsert(config->hdd_image))) {
         win32KeyboardBindStateSink(NULL, NULL);
         deviceConnectBindCommandBoundary(NULL, NULL);
-        nxvm_baseline_vm_request_transport_close(&nxvm_full_pc_transport);
-        nxvm_baseline_vm_request_transport_discard(&nxvm_full_pc_transport);
+        nxvm_vm_request_transport_close(&nxvm_full_pc_transport);
+        nxvm_vm_request_transport_discard(&nxvm_full_pc_transport);
         machineFinal();
         return NXVM_CORE_STATUS_FAULT;
     }
@@ -199,8 +199,8 @@ void nxvm_full_pc_destroy(void)
         win32KeyboardBindStateSink(NULL, NULL);
         deviceStop();
         deviceConnectBindCommandBoundary(NULL, NULL);
-        nxvm_baseline_vm_request_transport_close(&nxvm_full_pc_transport);
-        nxvm_baseline_vm_request_transport_discard(&nxvm_full_pc_transport);
+        nxvm_vm_request_transport_close(&nxvm_full_pc_transport);
+        nxvm_vm_request_transport_discard(&nxvm_full_pc_transport);
         machineFinal();
         nxvm_full_pc_active = 0;
     }

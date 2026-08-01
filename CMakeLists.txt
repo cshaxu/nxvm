@@ -229,20 +229,20 @@ add_executable(nxvm-platform-vm-request-bridge-smoke
 target_link_libraries(nxvm-platform-vm-request-bridge-smoke PRIVATE
     nxvm-platform-vm-requests
 )
-add_library(nxvm-baseline-vm-request-transport STATIC
-    src/vm/platform/baseline_request_transport.c
+add_library(nxvm-vm-request-transport STATIC
+    src/vm/platform/vm_request_transport.c
 )
-target_include_directories(nxvm-baseline-vm-request-transport PUBLIC
+target_include_directories(nxvm-vm-request-transport PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(nxvm-baseline-vm-request-transport PUBLIC
+target_link_libraries(nxvm-vm-request-transport PUBLIC
     nxvm-platform-vm-requests
 )
-add_executable(nxvm-baseline-vm-request-transport-smoke
-    tests/adapters/nxvm_baseline_vm_request_transport_smoke.c
+add_executable(nxvm-vm-request-transport-smoke
+    tests/adapters/nxvm_vm_request_transport_smoke.c
 )
-target_link_libraries(nxvm-baseline-vm-request-transport-smoke PRIVATE
-    nxvm-baseline-vm-request-transport
+target_link_libraries(nxvm-vm-request-transport-smoke PRIVATE
+    nxvm-vm-request-transport
 )
 
 add_library(nxvm-product-core-debug STATIC ${NXVM_PRODUCT_CORE_DEBUG_SOURCES})
@@ -289,7 +289,7 @@ target_include_directories(nxvm-vm-full-pc PUBLIC
 target_link_libraries(nxvm-vm-full-pc PUBLIC
     nxvm-machine-vm-lifecycle
     nxvm-baseline-runtime
-    nxvm-baseline-vm-request-transport)
+    nxvm-vm-request-transport)
 target_link_libraries(nxvm-vm-full-pc PUBLIC nxvm-product-vm-debug)
 
 add_library(nxvm-baseline-cpu-probe-adapter STATIC
