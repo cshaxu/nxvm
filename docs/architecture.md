@@ -22,8 +22,8 @@ components, invasive integration, and Win16 remain research-only unless a later
 owner-approved Go decision changes that boundary.
 
 Forward directory and ownership decisions are defined exclusively by
-`architecture/module-layout.md`. The canonical roots are `core`, `vm`, `vdm`,
-and legacy `nxvm_baseline`; current horizontal roots and temporary adapters are migration sources,
+`architecture/module-layout.md`. The canonical roots are `core`, `vm`, and
+`vdm`; current horizontal roots, the imported baseline, and temporary adapters are migration sources,
 not forward modules. The older boundary and directory sections in this document
 describe pre-migration context.
 
@@ -72,7 +72,6 @@ hexadecimal revision digit (`0` through `f`).
                      |
                   host OS
 
-nxvm_baseline/*: independent legacy reference only
 ```
 
 - `core/machine`: shared guest mechanics and firmware-service registry.
@@ -82,8 +81,8 @@ nxvm_baseline/*: independent legacy reference only
   built-in BIOS/POST/ROM/QDX lives in `vm/profile/default_profile/firmware`.
 - `vdm/{machine,platform,product,profile}`: DOS app-runner-only behavior;
   the owned DOS backend lives in `vdm/machine`.
-- temporary bridge code moves by actual ownership into `core`, `vm`, or `vdm`;
-  `nxvm_baseline` is the immutable regression reference only.
+- temporary bridge code and imported baseline code move by actual ownership
+  into `core`, `vm`, or `vdm`; Git history preserves the regression reference.
 
 ## Registries
 
@@ -137,7 +136,7 @@ release requirement before M11 research and an owner-approved Go decision.
 
 M1 first establishes a runnable whole-NXVM baseline before subtractive
 refactoring. Its imported source may temporarily live in
-`src/nxvm_baseline/`, retaining upstream machine and platform coupling solely
+`src/nxvm-baseline/`, retaining upstream machine and platform coupling solely
 to reproduce recorded baseline behavior. No new product feature belongs there.
 The initial M3 contracts did not move the real whole-PC executor. M5 owns its
 source migration according to `docs/planning/m5-execution-migration.md`.
@@ -155,7 +154,6 @@ src/
   vm/main.c
   vdm/{machine,platform,product,profile}/
   vdm/main.c
-  nxvm_baseline/
 tests/
   core/
   firmware/
