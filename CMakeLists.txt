@@ -317,20 +317,70 @@ target_link_libraries(nxvm-execution-context-smoke PRIVATE
 )
 
 add_library(nxvm-runtime STATIC
-    src/vdm/machine/dos_minimal.c
-    src/core/product/runtime/profile.c
     src/core/product/runtime/registry.c
-    src/core/product/runtime/session.c
 )
 target_include_directories(nxvm-runtime PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(nxvm-runtime PUBLIC nxvm-core nxvm-vm-full-pc)
+target_link_libraries(nxvm-runtime PUBLIC nxvm-core)
 
-add_executable(nxvm-runtime-session-smoke
-    tests/runtime/session_smoke.c
+add_library(nxvm-vm-full-pc-profile STATIC
+    src/vm/profile/full_pc_profile.c
 )
-target_link_libraries(nxvm-runtime-session-smoke PRIVATE nxvm-runtime)
+target_include_directories(nxvm-vm-full-pc-profile PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-vm-full-pc-profile PUBLIC nxvm-runtime)
+
+add_library(nxvm-vm-full-pc-session STATIC
+    src/vm/product/full_pc_session.c
+)
+target_include_directories(nxvm-vm-full-pc-session PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-vm-full-pc-session PUBLIC
+    nxvm-vm-full-pc nxvm-vm-full-pc-profile
+)
+
+add_executable(nxvm-vm-full-pc-session-smoke
+    tests/products/nxvm_full_pc_session_smoke.c
+)
+target_link_libraries(nxvm-vm-full-pc-session-smoke PRIVATE
+    nxvm-vm-full-pc-session
+)
+
+add_library(ntvdm64-vdm-dos-minimal STATIC
+    src/vdm/machine/dos_minimal.c
+)
+target_include_directories(ntvdm64-vdm-dos-minimal PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(ntvdm64-vdm-dos-minimal PUBLIC nxvm-core)
+
+add_library(ntvdm64-vdm-dos-minimal-profile STATIC
+    src/vdm/profile/dos_minimal_profile.c
+)
+target_include_directories(ntvdm64-vdm-dos-minimal-profile PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(ntvdm64-vdm-dos-minimal-profile PUBLIC nxvm-runtime)
+
+add_library(ntvdm64-vdm-minimal-session STATIC
+    src/vdm/product/minimal_session.c
+)
+target_include_directories(ntvdm64-vdm-minimal-session PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(ntvdm64-vdm-minimal-session PUBLIC
+    ntvdm64-vdm-dos-minimal ntvdm64-vdm-dos-minimal-profile
+)
+
+add_executable(ntvdm64-vdm-minimal-session-smoke
+    tests/products/ntvdm64_minimal_session_smoke.c
+)
+target_link_libraries(ntvdm64-vdm-minimal-session-smoke PRIVATE
+    ntvdm64-vdm-minimal-session
+)
 
 add_executable(nxvm-runtime-registry-smoke
     tests/runtime/registry_smoke.c
@@ -343,7 +393,9 @@ add_library(nxvm-dos-minimal-presentation-adapter STATIC
 target_include_directories(nxvm-dos-minimal-presentation-adapter PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(nxvm-dos-minimal-presentation-adapter PUBLIC nxvm-runtime)
+target_link_libraries(nxvm-dos-minimal-presentation-adapter PUBLIC
+    ntvdm64-vdm-dos-minimal
+)
 
 add_executable(nxvm-dos-minimal-presentation-smoke
     tests/adapters/dos_minimal_presentation_smoke.c
@@ -355,7 +407,10 @@ target_link_libraries(nxvm-dos-minimal-presentation-smoke PRIVATE
 add_executable(nxvm-dos-minimal-profile-smoke
     tests/runtime/dos_minimal_profile_smoke.c
 )
-target_link_libraries(nxvm-dos-minimal-profile-smoke PRIVATE nxvm-runtime)
+target_link_libraries(nxvm-dos-minimal-profile-smoke PRIVATE
+    ntvdm64-vdm-dos-minimal
+    ntvdm64-vdm-dos-minimal-profile
+)
 
 add_executable(nxvm-full-pc-profile-smoke
     tests/adapters/nxvm_full_pc_profile_smoke.c
@@ -370,8 +425,8 @@ target_link_libraries(nxvm-default-profile-smoke PRIVATE
     nxvm-product-profile
 )
 target_link_libraries(nxvm-full-pc-profile-smoke PRIVATE
-    nxvm-runtime
     nxvm-vm-full-pc
+    nxvm-vm-full-pc-profile
 )
 
 function(add_nxvm_full_pc_artifact target suffix)
@@ -406,6 +461,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t7 "m5t7")
 add_nxvm_full_pc_artifact(nxvm-m5-t9 "m5t9")
 add_nxvm_full_pc_artifact(nxvm-m5-t10 "m5t10")
 add_nxvm_full_pc_artifact(nxvm-m5-t12 "m5t12")
+add_nxvm_full_pc_artifact(nxvm-m5-t13 "m5t13")
 
 if(NTVDM64_ENABLE_BOCHX_RESEARCH)
     add_executable(ntvdm64-bochx-manifest-check
@@ -420,8 +476,14 @@ endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-runtime PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-runtime-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-runtime-registry-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-vm-full-pc-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-vm-full-pc-session PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(ntvdm64-vdm-dos-minimal PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(ntvdm64-vdm-dos-minimal-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(ntvdm64-vdm-minimal-session PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(ntvdm64-vdm-minimal-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-presentation-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-vm-full-pc PRIVATE -Wall -Wextra -Wpedantic -Werror)

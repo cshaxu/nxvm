@@ -41,9 +41,9 @@ solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T13 S8: split VM/VDM session composition out of `core/product` using the
-approved product-owned descriptor and session design. Implementation remains
-pending owner approval.
+M5 T13 S9: replace the remaining `core/product/utils.c -> vm/platform`
+dependency with a core host-sleep capability while preserving Console/debugger
+timing.
 
 ## Completed
 
@@ -251,15 +251,18 @@ pending owner approval.
   which its platform adapter copies across the boundary.
 - M5 T13 S7: defined the product-owned session/profile replacement API and
   test migration map; no runtime source changed.
+- M5 T13 S8: moved static descriptors and session composition to VM and VDM
+  product owners; `core/product/runtime` now contains no VM/VDM selection or
+  product include. Focused product/session and retained NXVM gates passed.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t13-s8.md`.
+`docs/planning/subtasks/m5-t13-s9.md`.
 
 ## Next Eligible Work
 
-- M5 T13 S8 may split product session composition only after explicit owner
-  approval. M6 remains blocked until M5 truly closes.
+- M5 T13 S9 may remove only the core-to-VM host-sleep dependency. M6 remains
+  blocked until M5 truly closes.
 
 ## Delivery State
 

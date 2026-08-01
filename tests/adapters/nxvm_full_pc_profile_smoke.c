@@ -2,14 +2,12 @@
 #include <string.h>
 
 #include "vm/product/full_pc.h"
-#include "core/product/runtime/profile.h"
+#include "vm/profile/full_pc_profile.h"
 
 static int verify_profile(void)
 {
-    const nxvm_runtime_profile_descriptor *profile = nxvm_runtime_profile_get(
-        NXVM_RUNTIME_PROFILE_NXVM_FULL_PC);
-    const nxvm_runtime_profile_descriptor *minimal = nxvm_runtime_profile_get(
-        NXVM_RUNTIME_PROFILE_NTVDM64_DOS_MINIMAL);
+    const nxvm_runtime_profile_descriptor *profile =
+        nxvm_vm_full_pc_profile_descriptor();
 
     return profile == NULL || strcmp(profile->name, "nxvm.full_pc") != 0 ||
            !profile->permits_disk_boot || !profile->uses_legacy_adapter ||
@@ -20,12 +18,7 @@ static int verify_profile(void)
                                 NXVM_RUNTIME_DEVICE_FDD |
                                 NXVM_RUNTIME_DEVICE_HDC |
                                 NXVM_RUNTIME_DEVICE_HDD |
-                                NXVM_RUNTIME_DEVICE_VADP)) == 0u ||
-           minimal == NULL || minimal->permits_disk_boot ||
-           minimal->uses_legacy_adapter ||
-           (minimal->devices & (NXVM_RUNTIME_DEVICE_BIOS |
-                                NXVM_RUNTIME_DEVICE_FDD |
-                                NXVM_RUNTIME_DEVICE_HDD)) != 0u;
+                                NXVM_RUNTIME_DEVICE_VADP)) == 0u;
 }
 
 static int verify_image(const char *fdd, const char *hdd, int boot_hdd)
