@@ -6,7 +6,7 @@
 #include "../device.h"
 #include "../vcpuins.h"
 
-#include "qdcga.h"
+#include "vm/profile/default_profile/firmware/qdcga.h"
 #include "qdkeyb.h"
 #include "qddisk.h"
 

@@ -176,6 +176,7 @@ set(NXVM_PRODUCT_CORE_SOURCES
 
 set(NXVM_PROFILE_VM_SOURCES
     src/vm/profile/default_profile/firmware/vbios.c
+    src/vm/profile/default_profile/firmware/qdcga.c
 )
 
 list(APPEND NXVM_BASELINE_RUNTIME_SOURCES ${NXVM_PRODUCT_CORE_SOURCES})
