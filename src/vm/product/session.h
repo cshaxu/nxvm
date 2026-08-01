@@ -5,7 +5,7 @@
 #include "vm/product/session_console.h"
 #include "vm/product/session_debugger.h"
 #include "vm/product/media.h"
-#include "vm/profile/default_profile/default_profile.h"
+#include "vm/composition_default_profile.h"
 #include "vm/product/presentation.h"
 #include "core/product/runtime/registry.h"
 
