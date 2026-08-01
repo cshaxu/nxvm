@@ -123,5 +123,6 @@ choices:
 - `vmachine.c` ordering moves whole into composition before any refactoring of
   its sequence or global-state lifetime.
 
-All other source moves, include repairs, target splits, and focused gates follow
-the current contracts and this map without a new product decision.
+All source moves, include repairs, target splits, and focused gates in this map
+are complete. The M5 closure audit is recorded in `status.md`; M6 owns the
+next design work.
