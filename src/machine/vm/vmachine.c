@@ -9,7 +9,7 @@
 #include "core/machine/vcpu.h"
 #include "nxvm-baseline/device/vbios.h"
 #include "core/machine/vpit.h"
-#include "machine/core/vdma.h"
+#include "core/machine/vdma.h"
 #include "core/machine/vpic.h"
 #include "machine/core/vcmos.h"
 #include "machine/vm/vfdc.h"

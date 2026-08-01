@@ -8,7 +8,7 @@
 
 #include "nxvm-baseline/device/vbios.h"
 #include "core/machine/vport.h"
-#include "machine/core/vdma.h"
+#include "core/machine/vdma.h"
 
 t_latch vlatch;
 t_dma vdma1, vdma2;
