@@ -1,4 +1,4 @@
-#include "platform/vm/request_bridge.h"
+#include "vm/platform/request_bridge.h"
 
 int main(void)
 {
