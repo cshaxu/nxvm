@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
+#include "core/machine/presentation.h"
 #include "core/machine/status.h"
-#include "vdm/machine/dos_minimal.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,7 +17,7 @@ typedef struct nxvm_platform_input_event {
 
 typedef struct nxvm_platform_text_snapshot {
     uint64_t timestamp;
-    nxvm_runtime_text_snapshot text;
+    nxvm_core_text_snapshot text;
 } nxvm_platform_text_snapshot;
 
 #ifdef __cplusplus

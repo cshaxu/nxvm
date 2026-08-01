@@ -41,8 +41,8 @@ solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T13 S6: move only the shared presentation snapshot type out of the VDM
-header; retain its content and conversion behavior exactly.
+M5 T13 S7: design and split VM/VDM session composition out of `core/product`;
+retain existing session/profile behavior and full-PC compatibility gates.
 
 ## Completed
 
@@ -245,15 +245,17 @@ header; retain its content and conversion behavior exactly.
   revalidated its `#UD` output plus the retained compatibility matrix.
 - M5 T13 S5: converted real core-to-product dependency debt into five bounded
   implementation slices; no runtime source changed.
+- M5 T13 S6: moved the shared presentation type into core; VDM retains its
+  private PIT/IRQ state and copies only display data across the boundary.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t13-s6.md`.
+`docs/planning/subtasks/m5-t13-s7.md`.
 
 ## Next Eligible Work
 
-- M5 T13 S6 may move the shared presentation type only. M6 remains blocked
-  until M5 truly closes.
+- M5 T13 S7 may design and split product session composition only. M6 remains
+  blocked until M5 truly closes.
 
 ## Delivery State
 

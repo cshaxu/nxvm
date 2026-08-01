@@ -6,7 +6,7 @@ FDD/HDD gates unchanged. No slice starts before its predecessor passes.
 
 | Slice | Change | Boundary | Gates |
 | --- | --- | --- | --- |
-| S6 | Move the platform text snapshot type to `core/machine/presentation.h`; let VDM explicitly convert its DOS-minimal snapshot. | `core/platform` stops including `vdm/machine`. | presentation smoke, full GCC build. |
+| S6 | Move the platform text snapshot type to `core/machine/presentation.h`; let VDM copy only text cells/attributes from its DOS-minimal snapshot. PIT/IRQ remain VDM-private. | `core/platform` stops including `vdm/machine`. | presentation smoke, full GCC build. |
 | S7 | Split `core/product/runtime/session` by product owner. VM full-PC session composition moves to `vm/product`; VDM minimal composition moves to `vdm/product`; any core lifecycle helper is callback-only and has no profile enum or product include. | `core/product` stops selecting VM/VDM profiles. | session/profile smokes, CPU, FDD/HDD, Console/debugger. |
 | S8 | Replace `utilsSleep -> vm/platform` with a core host-sleep capability callback, bound by VM product composition and rejected when unbound. | `core/product` has no VM platform include. | Console/debugger delays, CPU, FDD/HDD. |
 | S9 | Replace `vcpuins -> deviceStop` with a core execution-stop callback bound by VM lifecycle. | `core/machine` has no VM device include. | CPU probe, finite stop/reset lifecycle, Console/debugger. |
