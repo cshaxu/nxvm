@@ -187,6 +187,7 @@ set(NXVM_MACHINE_VM_SOURCES
 set(NXVM_MACHINE_CORE_SOURCES
     src/machine/core/vport.c
     src/machine/core/vram.c
+    src/machine/core/vcpu.c
 )
 
 add_library(nxvm-product-core-debug STATIC ${NXVM_PRODUCT_CORE_DEBUG_SOURCES})
@@ -242,7 +243,9 @@ add_library(nxvm-baseline-cpu-probe-adapter STATIC
 target_include_directories(nxvm-baseline-cpu-probe-adapter PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(nxvm-baseline-cpu-probe-adapter PUBLIC nxvm-baseline-runtime)
+target_link_libraries(nxvm-baseline-cpu-probe-adapter PUBLIC
+    nxvm-machine-vm-lifecycle
+    nxvm-baseline-runtime)
 
 add_executable(nxvm-baseline-cpu-probe-smoke
     tests/adapters/nxvm_baseline_cpu_probe_smoke.c

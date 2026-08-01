@@ -2,11 +2,11 @@
 
 /* VCPU defines the Central Processing Unit. */
 
-#include "../utils.h"
+#include "nxvm-baseline/utils.h"
 
-#include "vcpuins.h"
+#include "nxvm-baseline/device/vcpuins.h"
 
-#include "vcpu.h"
+#include "machine/core/vcpu.h"
 
 t_cpu vcpu;
 
