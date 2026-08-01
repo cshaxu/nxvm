@@ -203,7 +203,7 @@ set(NXVM_MACHINE_CORE_SOURCES
     src/vm/machine/vdebug.c
 )
 set(NXVM_PLATFORM_VM_SOURCES
-    src/platform/vm/platform.c
+    src/vm/platform/platform.c
 )
 add_library(nxvm-platform-vm-requests STATIC
     src/platform/vm/request_bridge.c
