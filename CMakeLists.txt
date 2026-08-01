@@ -340,8 +340,6 @@ add_library(nxvm-runtime STATIC
 target_include_directories(nxvm-runtime PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(nxvm-runtime PUBLIC nxvm-core)
-
 add_library(nxvm-vm-full-pc-profile STATIC
     src/vm/profile/full_pc_profile.c
 )
@@ -403,7 +401,7 @@ target_link_libraries(ntvdm64-vdm-minimal-session-smoke PRIVATE
 add_executable(nxvm-runtime-registry-smoke
     tests/runtime/registry_smoke.c
 )
-target_link_libraries(nxvm-runtime-registry-smoke PRIVATE nxvm-runtime)
+target_link_libraries(nxvm-runtime-registry-smoke PRIVATE nxvm-runtime nxvm-core)
 
 add_library(nxvm-dos-minimal-presentation-adapter STATIC
     src/vdm/composition_presentation.c

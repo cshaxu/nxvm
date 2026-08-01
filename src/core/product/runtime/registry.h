@@ -3,8 +3,7 @@
 
 #include <stddef.h>
 
-#include "core/machine/cpu_capability.h"
-#include "core/machine/status.h"
+#include "type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,12 +24,15 @@ typedef enum nxvm_runtime_firmware_provider_kind {
     NXVM_RUNTIME_FIRMWARE_PROVIDER_ABSENT = 3
 } nxvm_runtime_firmware_provider_kind;
 
+typedef int (*nxvm_runtime_capability_query)(void *context,
+                                              unsigned capability);
+
 typedef struct nxvm_runtime_profile_descriptor_v1 {
     const char *id;
     unsigned abi_version;
     nxvm_runtime_profile_family family;
     const char *owner;
-    const nxvm_core_cpu_capability *required_capabilities;
+    const unsigned *required_capabilities;
     size_t required_capability_count;
     const char *firmware_provider_id;
 } nxvm_runtime_profile_descriptor_v1;
@@ -63,7 +65,8 @@ const nxvm_runtime_profile_descriptor_v1 *nxvm_runtime_registry_find_profile(
     const nxvm_runtime_registry *registry,
     const char *id,
     nxvm_runtime_profile_family family,
-    const nxvm_core_cpu_capability_manifest *capabilities);
+    nxvm_runtime_capability_query capability_query,
+    void *capability_context);
 const nxvm_runtime_firmware_provider_descriptor_v1 *
 nxvm_runtime_registry_find_firmware_provider(
     const nxvm_runtime_registry *registry,

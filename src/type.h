@@ -37,6 +37,15 @@ extern "C" {
 #include <memory.h>
 #include <time.h>
 
+typedef enum nxvm_core_status {
+    NXVM_CORE_STATUS_OK = 0,
+    NXVM_CORE_STATUS_INVALID_ARGUMENT,
+    NXVM_CORE_STATUS_INVALID_STATE,
+    NXVM_CORE_STATUS_UNSUPPORTED,
+    NXVM_CORE_STATUS_NO_MEMORY,
+    NXVM_CORE_STATUS_FAULT
+} nxvm_core_status;
+
 /* Legacy C-runtime wrappers are a product-neutral root foundation. */
 struct tm* LOCALTIME(const time_t *_Time);
 char* STRCAT(char *_Dest, const char *_Source);

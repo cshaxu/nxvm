@@ -5,7 +5,6 @@
 
 int main(int argc, char **argv)
 {
-    nxvm_core_cpu_capability_manifest capabilities;
     nxvm_runtime_registry registry;
     nxvm_full_pc_config config;
     nxvm_vm_reset_vector vector;
@@ -13,12 +12,11 @@ int main(int argc, char **argv)
     if (argc != 2) {
         return 1;
     }
-    nxvm_core_cpu_capability_manifest_initialize(&capabilities);
     nxvm_runtime_registry_initialize(&registry);
     if (nxvm_product_nxvm_register_default_profile_builtin(&registry) != NXVM_CORE_STATUS_OK ||
         nxvm_runtime_registry_find_profile(&registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID,
-            NXVM_RUNTIME_PROFILE_MACHINE, &capabilities) == NULL ||
+            NXVM_RUNTIME_PROFILE_MACHINE, NULL, NULL) == NULL ||
         nxvm_runtime_registry_find_firmware_provider(&registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROVIDER_ID,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID) == NULL ||
