@@ -31,7 +31,7 @@ add_library(nxvm-core STATIC
     src/machine/core/contract/memory.c
     src/machine/core/contract/port.c
     src/machine/core/contract/pc_devices.c
-    src/core/presentation.c
+    src/machine/core/contract/presentation.c
     src/machine/core/contract/trace.c
 )
 add_library(nxvm-firmware STATIC src/firmware/firmware.c src/firmware/default_profile.c)
