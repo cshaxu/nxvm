@@ -14,7 +14,7 @@
 #include "vm/machine/vcmos.h"
 #include "vm/machine/vfdc.h"
 #include "vm/machine/vfdd.h"
-#include "machine/vm/vhdc.h"
+#include "vm/machine/vhdc.h"
 #include "vm/machine/vhdd.h"
 #include "core/machine/vkbc.h"
 #include "vm/machine/vvadp.h"
