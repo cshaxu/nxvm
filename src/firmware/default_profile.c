@@ -1,6 +1,6 @@
 #include "firmware/default_profile.h"
 
-#include "machine/core/memory.h"
+#include "core/machine/memory.h"
 
 nxvm_core_status nxvm_firmware_default_profile_compose(
     nxvm_firmware *firmware, nxvm_firmware_default_profile_plan *out_plan)
