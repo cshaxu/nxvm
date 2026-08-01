@@ -553,21 +553,6 @@ option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
 if(NTVDM64_VERIFY_DEPENDENCY_DAG)
-    set(NTVDM64_LEGACY_MIXED_OWNER_TARGETS
-        nxvm-firmware
-        nxvm-m3-t5
-        nxvm-m5-t1
-        nxvm-m5-t2
-        nxvm-m5-t3
-        nxvm-m5-t4
-        nxvm-m5-t5
-        nxvm-m5-t6
-        nxvm-m5-t7
-        nxvm-m5-t9
-        nxvm-m5-t10
-        nxvm-m5-t12
-        nxvm-m5-t13)
-
     function(ntvdm64_verify_target_source_owners target)
         get_target_property(target_sources ${target} SOURCES)
         set(owners)
@@ -581,7 +566,7 @@ if(NTVDM64_VERIFY_DEPENDENCY_DAG)
         endforeach()
         list(REMOVE_DUPLICATES owners)
         list(LENGTH owners owner_count)
-        if(owner_count GREATER 1 AND NOT target IN_LIST NTVDM64_LEGACY_MIXED_OWNER_TARGETS)
+        if(owner_count GREATER 1)
             message(FATAL_ERROR
                 "Dependency DAG violation: target ${target} mixes source owners: ${owners}")
         endif()

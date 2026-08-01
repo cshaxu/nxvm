@@ -36,6 +36,11 @@ does not create a user-facing ntvdm64 executable. Existing task artifacts must
 link the same `vm-composition` graph as `nxvm.exe`; they may not compile an
 independent hand-selected source list.
 
+The CMake source-owner verifier carries no legacy mixed-target exception. A
+target with sources from more than one module fails configuration; a root
+composition target uses root `vm/composition*.c` or `vdm/composition*.c` and
+links peer module targets rather than aggregating their sources.
+
 ## Shared Gates
 
 Every runtime slice configures and builds with GCC. The smallest applicable
