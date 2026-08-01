@@ -7,7 +7,7 @@
 #include "core/machine/vcpu.h"
 #include "core/machine/vpic.h"
 
-#include "nxvm-baseline/device/qdx/qdx.h"
+#include "vm/profile/default_profile/firmware/qdx.h"
 #include "qdkeyb.h"
 
 #define bufptrHead (vramRealWord(Zero16, QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD))

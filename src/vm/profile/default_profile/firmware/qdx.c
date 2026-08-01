@@ -3,14 +3,14 @@
 /* QDX implements quick and dirty instruction loader */
 
 #include "core/product/utils.h"
-#include "../device.h"
-#include "../vcpuins.h"
+#include "vm/machine/device.h"
+#include "core/machine/vcpuins.h"
 
 #include "vm/profile/default_profile/firmware/qdcga.h"
 #include "vm/profile/default_profile/firmware/qdkeyb.h"
 #include "vm/profile/default_profile/firmware/qddisk.h"
 
-#include "qdx.h"
+#include "vm/profile/default_profile/firmware/qdx.h"
 
 t_faddrcc qdxTable[0x100];
 

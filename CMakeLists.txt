@@ -179,6 +179,7 @@ set(NXVM_PROFILE_VM_SOURCES
     src/vm/profile/default_profile/firmware/qdcga.c
     src/vm/profile/default_profile/firmware/qddisk.c
     src/vm/profile/default_profile/firmware/qdkeyb.c
+    src/vm/profile/default_profile/firmware/qdx.c
 )
 
 list(APPEND NXVM_BASELINE_RUNTIME_SOURCES ${NXVM_PRODUCT_CORE_SOURCES})
