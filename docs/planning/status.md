@@ -38,8 +38,8 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T10 S4: replace the temporary execution binding with an explicit
-session-owned PC/AT context while preserving retained NXVM behavior.
+M5 T10 S5: verify that the user-facing T10 artifact owns its lifecycle,
+refresh loop, CPU, RAM, and port implementations from their migrated paths.
 
 ## Completed
 
@@ -183,11 +183,11 @@ session-owned PC/AT context while preserving retained NXVM behavior.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t10-s4.md`.
+`docs/planning/subtasks/m5-t10-s5.md`.
 
 ## Next Eligible Work
 
-- M5 T10 S4 replaces the temporary execution binding; M6 remains blocked until
+- M5 T10 S5 audits the migrated execution source set; M6 remains blocked until
   M5 truly closes.
 
 ## Delivery State
