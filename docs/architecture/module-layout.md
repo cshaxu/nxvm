@@ -43,6 +43,12 @@ but no VM Console, VDM CLI, profile, boot/media, or host-policy decision. Its
 runtime infrastructure lives in `core/product/runtime`; there is no top-level
 runtime module.
 
+Shared presentation contracts carry only presentation data: text cells,
+attributes, geometry, cursor, generation, and timestamps. Product-private
+machine diagnostics such as DOS-minimal PIT state or pending keyboard IRQ state
+remain in that product's machine module and require a separate product
+diagnostic contract if they must be exposed.
+
 Ownership is determined by reuse, not by abstraction level or the source's
 current directory. Any logic used by both products belongs in the matching
 `core/{machine,platform,product}` owner, including concrete host code:
