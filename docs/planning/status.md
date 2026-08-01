@@ -314,6 +314,9 @@ legacy `vmachine` lifecycle sequence.
   the temporary `nxvm-legacy-runtime-dependencies` aggregate with explicit
   module links. Retained task artifacts and focused VM smoke targets now link
   the root composition target directly.
+- M5 T14 S3: split the mixed historical firmware library into a core-machine
+  firmware target and a VM default-profile firmware target. The old
+  `nxvm-firmware` name remains only as a zero-source test aggregate.
 
 ## Active Subtask
 
