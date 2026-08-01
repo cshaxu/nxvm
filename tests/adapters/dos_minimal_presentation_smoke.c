@@ -7,7 +7,7 @@ int main(void)
     nxvm_runtime_dos_minimal *session = NULL;
     nxvm_dos_minimal_presentation *presentation = NULL;
     nxvm_platform_input_event event = { 42u, 0x1eu };
-    nxvm_platform_text_snapshot snapshot;
+    nxvm_vdm_presentation_snapshot snapshot;
     uint32_t key;
 
     if (nxvm_runtime_dos_minimal_create(&session) != NXVM_CORE_STATUS_OK ||

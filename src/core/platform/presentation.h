@@ -3,9 +3,6 @@
 
 #include <stdint.h>
 
-#include "core/machine/presentation.h"
-#include "core/machine/status.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -14,11 +11,6 @@ typedef struct nxvm_platform_input_event {
     uint64_t timestamp;
     uint8_t scan_code;
 } nxvm_platform_input_event;
-
-typedef struct nxvm_platform_text_snapshot {
-    uint64_t timestamp;
-    nxvm_core_text_snapshot text;
-} nxvm_platform_text_snapshot;
 
 #ifdef __cplusplus
 }

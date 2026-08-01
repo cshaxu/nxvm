@@ -67,7 +67,7 @@ nxvm_core_status nxvm_dos_minimal_presentation_apply_input(
 nxvm_core_status nxvm_dos_minimal_presentation_capture_text(
     nxvm_dos_minimal_presentation *presentation,
     uint64_t timestamp,
-    nxvm_platform_text_snapshot *out_snapshot)
+    nxvm_vdm_presentation_snapshot *out_snapshot)
 {
     nxvm_runtime_text_snapshot text;
     nxvm_core_status status;
