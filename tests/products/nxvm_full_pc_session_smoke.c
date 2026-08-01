@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "vm/product/full_pc_session.h"
+#include "vm/composition_session.h"
 
 int main(int argc, char **argv)
 {
