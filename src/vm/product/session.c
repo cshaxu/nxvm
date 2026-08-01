@@ -1,4 +1,4 @@
-#include "products/nxvm/session.h"
+#include "vm/product/session.h"
 
 #include <string.h>
 
