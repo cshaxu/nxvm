@@ -2,7 +2,7 @@
 
 /* MACHINE controls machine status. */
 
-#include "nxvm-baseline/device/device.h"
+#include "machine/vm/device.h"
 #include "nxvm-baseline/platform/platform.h"
 
 #include "machine.h"
