@@ -6,7 +6,7 @@
 
 #include "machine/core/vcpuins.h"
 
-#include "machine/core/vcpu.h"
+#include "core/machine/vcpu.h"
 
 t_cpu vcpu;
 

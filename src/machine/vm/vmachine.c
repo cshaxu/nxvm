@@ -6,7 +6,7 @@
 
 #include "machine/core/vport.h"
 #include "machine/core/vram.h"
-#include "machine/core/vcpu.h"
+#include "core/machine/vcpu.h"
 #include "nxvm-baseline/device/vbios.h"
 #include "machine/core/vpit.h"
 #include "machine/core/vdma.h"
