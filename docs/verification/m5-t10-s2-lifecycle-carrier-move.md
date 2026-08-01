@@ -32,3 +32,8 @@ The same follow-up then moved the unchanged retained device loop to
 `src/vm/machine/device.c` and `.h`. Its direct callers and focused lifecycle
 smoke include now use that owner; the same GCC target and CPU probe passed with
 the established marker.
+
+It also moved the unchanged retained refresh chain to
+`src/vm/machine/vmachine.c` and `.h`, preserving its refresh order and direct
+device includes. The GCC target and finite CPU probe again retained the
+established marker.

@@ -20,7 +20,7 @@
 #include "vm/machine/vvadp.h"
 #include "nxvm-baseline/device/qdx/qdx.h"
 
-#include "vmachine.h"
+#include "vm/machine/vmachine.h"
 
 #define _empty_
 #define _vdebug_
