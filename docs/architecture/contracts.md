@@ -340,3 +340,29 @@ product-specific debug interaction belong in `vm/product` or `vdm/product`.
 Assembler/disassembler code whose inputs and outputs are pure data belongs in
 core product because it accesses neither a machine, a platform provider, nor a
 global session.
+
+## Root Composition: Product Integration
+
+`vm/main.c` and `vdm/main.c` are thin entry points that enter only their
+respective root composition. `vm_composition` and `vdm_composition` are the
+sole integration owners: they may include the applicable core contracts and
+all peer modules of their own product form. No peer module receives this
+privilege.
+
+Composition selects a profile; creates core machine state and product-form
+machine, platform, and product providers; translates profile descriptions into
+registration configuration; binds abstract debug targets and platform event
+queues; and freezes the machine. It owns host threads and its product loop:
+driving bounded run quanta, consuming queued events, submitting frames,
+handling product commands, and applying product exit policy.
+
+Composition alone translates `STATUS` and machine run results into observable
+product behavior. VM may return to or pause its retained Console; VDM may
+produce a guest exit code, a cancellation result, or a CLI failure. Core and
+peer providers never make either decision.
+
+Composition shuts down in reverse dependency order: stop platform event
+sources, close ingress, request and observe a machine stop at an execution
+boundary, then detach and destroy providers, platform objects, product UI, and
+core machine state. VM and VDM may have similar loops, but sharing a mechanism
+must never import VM boot behavior or VDM program-run semantics into core.
