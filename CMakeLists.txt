@@ -27,7 +27,7 @@ add_library(nxvm-core STATIC
     src/core/machine/cpu.c
     src/core/machine/cpu_capability.c
     src/core/machine/debug.c
-    src/machine/core/machine.c
+    src/core/machine/machine.c
     src/core/machine/memory.c
     src/core/machine/port.c
     src/machine/core/pc_devices.c

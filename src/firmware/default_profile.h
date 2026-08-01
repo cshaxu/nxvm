@@ -1,7 +1,7 @@
 #ifndef NXVM_FIRMWARE_PC_AT_H
 #define NXVM_FIRMWARE_PC_AT_H
 
-#include "machine/core/machine.h"
+#include "core/machine/machine.h"
 #include "firmware/firmware.h"
 
 typedef struct nxvm_firmware_default_profile_plan {

@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-#include "machine/core/machine.h"
+#include "core/machine/machine.h"
 
 #ifdef __cplusplus
 extern "C" {
