@@ -6,7 +6,7 @@
 #include "../../device/device.h"
 
 #include "vm/platform/win32/win32.h"
-#include "w32cdisp.h"
+#include "vm/platform/win32/w32cdisp.h"
 #include "win32con.h"
 
 HANDLE hIn, hOut;
