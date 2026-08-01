@@ -7,7 +7,7 @@
 #include "vm/platform/platform.h"
 #include "core/machine/vcpu.h"
 
-#include "nxvm-baseline/device/qdx/qdx.h"
+#include "vm/profile/default_profile/firmware/qdx.h"
 #include "qdcga.h"
 
 t_nubit32 qdcgaModeBufSize[0x14] = {

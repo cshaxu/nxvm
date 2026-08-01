@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "../vglobal.h"
+#include "core/machine/vglobal.h"
 
 extern t_faddrcc qdxTable[0x100];
 

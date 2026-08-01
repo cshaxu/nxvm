@@ -8,7 +8,7 @@
 #include "core/machine/vram.h"
 #include "vm/machine/vhdd.h"
 
-#include "nxvm-baseline/device/qdx/qdx.h"
+#include "vm/profile/default_profile/firmware/qdx.h"
 #include "qddisk.h"
 
 #define SetHddStatus (vramRealByte(0x0040, 0x0074) = vcpu.data.ah)
