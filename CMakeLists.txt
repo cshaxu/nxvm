@@ -219,7 +219,7 @@ target_link_libraries(nxvm-platform-vm-request-bridge-smoke PRIVATE
     nxvm-platform-vm-requests
 )
 add_library(nxvm-baseline-vm-request-transport STATIC
-    src/adapters/nxvm_baseline/vm_request_transport.c
+    src/vm/platform/baseline_request_transport.c
 )
 target_include_directories(nxvm-baseline-vm-request-transport PUBLIC
     "${CMAKE_SOURCE_DIR}/src"

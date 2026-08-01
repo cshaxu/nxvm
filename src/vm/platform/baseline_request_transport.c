@@ -1,4 +1,4 @@
-#include "adapters/nxvm_baseline/vm_request_transport.h"
+#include "vm/platform/baseline_request_transport.h"
 
 static void nxvm_baseline_vm_request_transport_lock(
     nxvm_baseline_vm_request_transport *transport)
