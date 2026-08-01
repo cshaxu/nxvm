@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "core/platform/global.h"
+#include "type.h"
 
 typedef struct {
     int flagMode;  /* true if runs in window, otherwise in console */

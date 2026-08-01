@@ -3,17 +3,13 @@
 src/core/machine/vcpu.c|core/product
 src/core/machine/vcpuins.c|core/product
 src/core/machine/vdma.c|core/product
-src/core/machine/vglobal.h|core/platform
 src/core/machine/vpic.c|core/product
 src/core/machine/vpit.c|core/product
 src/core/machine/vport.c|core/product
 src/core/machine/vram.c|core/product
 src/core/platform/presentation.h|core/machine
-src/core/product/debug/xasm32/aasm32.h|core/platform
-src/core/product/debug/xasm32/dasm32.h|core/platform
 src/core/product/runtime/registry.h|core/machine
 src/core/product/utils.c|vm/platform
-src/core/product/utils.h|core/platform
 src/vm/platform/linux/linuxcon.c|vm/machine
 src/vm/platform/win32/w32adisp.c|vm/machine
 src/vm/platform/win32/w32cdisp.c|vm/machine

@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include "core/platform/global.h"
+#include "type.h"
 
 #define MAXLINE   0x100
 
