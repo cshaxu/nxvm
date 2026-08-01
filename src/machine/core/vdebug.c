@@ -8,7 +8,7 @@
 #include "nxvm-baseline/utils.h"
 #include "machine/vm/device.h"
 
-#include "machine/core/vcpuins.h"
+#include "core/machine/vcpuins.h"
 
 #include "machine/core/vdebug.h"
 

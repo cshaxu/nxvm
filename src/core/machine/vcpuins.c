@@ -11,7 +11,7 @@
 #include "machine/core/vram.h"
 #include "machine/core/vpic.h"
 
-#include "machine/core/vcpuins.h"
+#include "core/machine/vcpuins.h"
 
 t_cpuins vcpuins;
 
