@@ -190,6 +190,7 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/xasm32/dasm32.c
 )
 set(NXVM_MACHINE_VM_SOURCES
+    src/vm/composition_console.c
     src/vm/composition_block.c
     src/vm/composition_display.c
     src/vm/composition_machine.c

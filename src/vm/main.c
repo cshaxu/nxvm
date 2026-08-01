@@ -13,11 +13,12 @@ Copyright (c) 2012-2014 Neko.\n"
  */
 
 #include "core/product/utils.h"
+#include "vm/composition_console.h"
 #include "vm/product/console.h"
 
 int main(int argc, char **argv) {
     PRINTF("%s\n", PRODUCT);
     PRINTF("Built on %s at %s.\n", __DATE__, __TIME__);
-    consoleMain();
+    consoleMain(vm_composition_console_target());
     return 0;
 }

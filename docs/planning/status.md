@@ -280,6 +280,11 @@ legacy `vmachine` lifecycle sequence.
   message loop, and close ordering remain unchanged. The focused execution
   smoke and full retained NXVM gates passed; the temporary source allowlist is
   now 4 edges.
+- M5 T14 S3: routed the retained full NXVM Console through a product command
+  target supplied by VM composition. Console text, parser, default media
+  behavior, and command order remain retained; interactive HELP/INFO/EXIT and
+  the full GCC regression suite passed. The temporary source allowlist is now
+  2 edges.
 
 ## Active Subtask
 
