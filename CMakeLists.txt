@@ -293,7 +293,7 @@ target_link_libraries(nxvm-vm-full-pc PUBLIC
 target_link_libraries(nxvm-vm-full-pc PUBLIC nxvm-product-vm-debug)
 
 add_library(nxvm-vm-cpu-probe STATIC
-    src/vm/product/cpu_probe.c
+    src/vm/composition_cpu_probe.c
 )
 target_include_directories(nxvm-vm-cpu-probe PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
