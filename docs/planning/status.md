@@ -305,6 +305,11 @@ legacy `vmachine` lifecycle sequence.
   retained task artifact. Each `nxvm-m*` executable now compiles only the
   thin `vm/main.c` entry point and links the common VM product/lifecycle graph;
   no user-visible behavior or artifact identity changes.
+- M5 T14 S3: split VM controller implementation sources from the retained
+  lifecycle target into the peer `nxvm-vm-machine` CMake target. The lifecycle
+  target now compiles root composition sources only and links that machine
+  target; the temporary aggregate link dependency remains until the next
+  target-graph slice.
 
 ## Active Subtask
 

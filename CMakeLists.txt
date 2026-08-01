@@ -190,7 +190,7 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/xasm32/aasm32.c
     src/core/product/debug/xasm32/dasm32.c
 )
-set(NXVM_MACHINE_VM_SOURCES
+set(NXVM_COMPOSITION_VM_SOURCES
     src/vm/composition_console.c
     src/vm/composition_debug.c
     src/vm/composition_block.c
@@ -198,6 +198,8 @@ set(NXVM_MACHINE_VM_SOURCES
     src/vm/composition_machine.c
     src/vm/composition_loop.c
     src/vm/composition.c
+)
+set(NXVM_MACHINE_VM_SOURCES
     src/vm/machine/vfdd.c
     src/vm/machine/vhdd.c
     src/vm/machine/vfdc.c
@@ -331,13 +333,22 @@ target_link_libraries(nxvm-legacy-runtime-dependencies INTERFACE
     user32
     gdi32)
 
-add_library(nxvm-machine-vm-lifecycle STATIC ${NXVM_MACHINE_VM_SOURCES})
+add_library(nxvm-machine-vm-lifecycle STATIC ${NXVM_COMPOSITION_VM_SOURCES})
 target_include_directories(nxvm-machine-vm-lifecycle PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(nxvm-machine-vm-lifecycle PUBLIC
+    nxvm-vm-machine
     nxvm-legacy-runtime-dependencies
     nxvm-runtime)
+
+add_library(nxvm-vm-machine STATIC ${NXVM_MACHINE_VM_SOURCES})
+target_include_directories(nxvm-vm-machine PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-vm-machine PUBLIC
+    nxvm-machine-core-executor
+    nxvm-profile-vm-default-firmware)
 
 add_library(nxvm-vm-product STATIC ${NXVM_PRODUCT_VM_SOURCES})
 target_include_directories(nxvm-vm-product PUBLIC
