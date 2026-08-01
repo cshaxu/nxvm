@@ -1,4 +1,4 @@
-#include "vm/profile/default_profile/default_profile.h"
+#include "vm/composition_default_profile.h"
 
 #include <string.h>
 
