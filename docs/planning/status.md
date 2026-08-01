@@ -301,6 +301,10 @@ legacy `vmachine` lifecycle sequence.
   callbacks. The source-DAG allowlist is now empty; GCC and focused debugger
   target smokes passed. Retained interactive debugger and full-PC gates remain
   required before this slice is accepted.
+- M5 T14 S3: removed the hand-selected full-PC source aggregation from every
+  retained task artifact. Each `nxvm-m*` executable now compiles only the
+  thin `vm/main.c` entry point and links the common VM product/lifecycle graph;
+  no user-visible behavior or artifact identity changes.
 
 ## Active Subtask
 
