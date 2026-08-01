@@ -225,7 +225,7 @@ M5 T12 S9: retain the planned keyboard-state ingress switch; it has not begun.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t12-s8.md`.
+`docs/planning/subtasks/m5-t12-s9.md`.
 
 ## Next Eligible Work
 
