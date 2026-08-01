@@ -10,7 +10,7 @@
 #include "vm/machine/vfdd.h"
 
 #include "nxvm-baseline/device/vbios.h"
-#include "machine/vm/vfdc.h"
+#include "vm/machine/vfdc.h"
 
 t_fdc vfdc;
 

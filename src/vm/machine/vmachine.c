@@ -12,7 +12,7 @@
 #include "core/machine/vdma.h"
 #include "core/machine/vpic.h"
 #include "vm/machine/vcmos.h"
-#include "machine/vm/vfdc.h"
+#include "vm/machine/vfdc.h"
 #include "vm/machine/vfdd.h"
 #include "machine/vm/vhdc.h"
 #include "machine/vm/vhdd.h"
