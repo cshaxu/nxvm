@@ -4,7 +4,7 @@
 
 #include "nxvm-baseline/device/vbios.h"
 #include "core/machine/vport.h"
-#include "machine/core/vkbc.h"
+#include "core/machine/vkbc.h"
 
 void io_read_0064() {
     vport.data.ioByte = VKBC_STATUS_KE;
