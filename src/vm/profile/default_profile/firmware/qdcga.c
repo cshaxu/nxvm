@@ -4,7 +4,7 @@
 
 #include "core/product/utils.h"
 
-#include "vm/platform/platform.h"
+#include "core/machine/display.h"
 #include "vm/machine/vvadp.h"
 #include "core/machine/vcpu.h"
 
@@ -118,14 +118,14 @@ static void qdcgaSetDisplayMode() {
         qdcgaVarRowSize = 0x28;
         vvadp.data.colSize   = 0x19;
         vvadp.data.flagColor = False;
-        platformDisplaySetScreen();
+        core_machine_display_notify_mode_changed();
         break;
     case 0x01:
         /* 40 x 25 */
         qdcgaVarRowSize = 0x28;
         vvadp.data.colSize   = 0x19;
         vvadp.data.flagColor = True;
-        platformDisplaySetScreen();
+        core_machine_display_notify_mode_changed();
         break;
     case 0x02:
     case 0x07:
@@ -133,14 +133,14 @@ static void qdcgaSetDisplayMode() {
         qdcgaVarRowSize = 0x50;
         vvadp.data.colSize   = 0x19;
         vvadp.data.flagColor = False;
-        platformDisplaySetScreen();
+        core_machine_display_notify_mode_changed();
         break;
     case 0x03:
         /* 80 x 25 */
         qdcgaVarRowSize = 0x50;
         vvadp.data.colSize   = 0x19;
         vvadp.data.flagColor = True;
-        platformDisplaySetScreen();
+        core_machine_display_notify_mode_changed();
         break;
     default:
         break;

@@ -17,6 +17,7 @@
 #include "vm/machine/vhdc.h"
 #include "vm/machine/vhdd.h"
 #include "vm/composition_block.h"
+#include "vm/composition_display.h"
 #include "core/machine/vkbc.h"
 #include "vm/machine/vvadp.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
@@ -47,6 +48,7 @@ void vmachineInit() {
     vfddInit();
     vhddInit();
     vmCompositionBindBlock();
+    vm_composition_bind_display();
     vbiosInit();
     vvadpInit();
     vbiosAddInt("qdx 10\niret", 0x10);
