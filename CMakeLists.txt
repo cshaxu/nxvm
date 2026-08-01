@@ -184,7 +184,7 @@ set(NXVM_MACHINE_VM_SOURCES
     src/vm/machine/machine.c
     src/vm/machine/device.c
     src/vm/machine/vmachine.c
-    src/machine/vm/vfdd.c
+    src/vm/machine/vfdd.c
     src/machine/vm/vhdd.c
     src/machine/vm/vfdc.c
     src/machine/vm/vhdc.c
