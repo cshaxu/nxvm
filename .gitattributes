@@ -1,10 +1,6 @@
 * text=auto eol=lf
-src/nxvm-baseline/** -text -whitespace
-# Preserve exact line endings for the staged NXVM source migration.
-src/product/vm/** -text -whitespace
-src/product/core/debug/xasm32/** -text -whitespace
-src/machine/vm/** -text -whitespace
-src/machine/core/** -text -whitespace
+# Preserve legacy non-UTF-8 Win32 source bytes during the completed M5 move.
+src/vm/platform/win32/win32.c -text -whitespace
 *.com binary
 *.exe binary
 *.dll binary

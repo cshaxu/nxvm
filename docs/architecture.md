@@ -132,18 +132,17 @@ belongs under `docs/research/` and owner-approved `tools/research/` utilities.
 It cannot create a BOP framework, component loader, default dependency, or
 release requirement before M11 research and an owner-approved Go decision.
 
-## M1 Baseline Exception
+## M1 Baseline Record
 
-M1 first establishes a runnable whole-NXVM baseline before subtractive
-refactoring. Its imported source may temporarily live in
-`src/nxvm-baseline/`, retaining upstream machine and platform coupling solely
-to reproduce recorded baseline behavior. No new product feature belongs there.
-The initial M3 contracts did not move the real whole-PC executor. M5 owns its
-source migration according to `docs/planning/m5-execution-migration.md`.
+M1 established a runnable whole-NXVM baseline before subtractive refactoring.
+Its imported `src/nxvm-baseline/` tree was a temporary reproduction area. M5
+migrated its real executor, devices, firmware, presentation, and retained
+Console/debugger sources into the canonical roots, then deleted that tree.
+Git history and provenance records preserve the baseline evidence.
 
-The full baseline preserves the existing Linux platform implementation
-alongside Win32. M1 acceptance is the Windows GCC run; Linux is kept as a source
-baseline for a future platform provider.
+The migrated VM keeps the historical Linux platform implementation alongside
+Win32. Windows GCC is the current acceptance run; Linux remains source-only
+until a Linux run gate is introduced.
 
 ## Directory Plan
 

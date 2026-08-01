@@ -68,12 +68,10 @@ policy, cancellation policy, execution-profile selection, and composition.
 `vdm/profile` owns DOS
 memory/service/device policy and any firmware-service subset.
 
-Temporary adapters are classified by their actual owner and moved to `core`,
-`vm`, or `vdm`; no top-level adapter root remains at source-root closure. The
-imported `nxvm-baseline` tree is a migration reference only: its VM-owned
-contents move into `vm/{machine,platform,product,profile}`, after which its
-root is deleted. Git history and the recorded M1 snapshot preserve provenance;
-it is not a final source root.
+Temporary adapters are classified by their actual owner and live under `core`,
+`vm`, or `vdm`; no top-level adapter root remains. The imported
+`nxvm-baseline` tree was fully migrated and deleted. Git history and the
+recorded M1 snapshot preserve provenance; it is not a source root.
 
 ## Dependencies
 
@@ -85,17 +83,13 @@ policy, core-to-concrete product UI, platform-to-guest-state, VM-to-VDM,
 VDM-to-VM, and profile-to-foreign-product implementation. All guest-state
 mutation occurs on the machine execution thread at a command boundary.
 
-## Migration Rule
+## Migration Closure
 
-The current roots `app`, `adapters`, `dos`, `firmware`, `integration`,
+M5 removed the prior `app`, `adapters`, `dos`, `firmware`, `integration`,
 `machine`, `nxvm-baseline`, `platform`, `product`, `products`, and `runtime`
-are migration sources only.
-Their contents move in small buildable slices, with includes and CMake repaired
-immediately after each move, and their directories are deleted when empty. A
-runtime file moves to `core/product/runtime` only
-when it serves both products without VM/VDM policy; VM startup/Console/profile/
-media logic moves to `vm/product`, and VDM launch/profile/display/Console/
-cancellation logic moves to `vdm/product`. Stop for an owner decision when a
-file cannot be classified from its actual dependencies. No new source may be
-added to a migration-source root. At M5 closure, only `core`, `vm`, and `vdm`
-may be top-level source roots.
+source roots. Only `core`, `vm`, and `vdm` may receive source files.
+
+The retained NXVM executor still has explicitly recorded legacy direct calls
+between moved owners, such as an instruction stop path and a VM sleep service.
+They preserve behavior during this source-preserving migration and are not new
+module APIs. Any later decoupling must be designed and approved separately.

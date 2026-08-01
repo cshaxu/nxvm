@@ -394,7 +394,6 @@ function(add_nxvm_full_pc_artifact target suffix)
     endif()
 endfunction()
 
-add_nxvm_full_pc_artifact(nxvm-baseline "m1t2s1")
 add_nxvm_full_pc_artifact(nxvm-m3-t5 "m3t5")
 add_nxvm_full_pc_artifact(nxvm-m5-t1 "m5t1")
 add_nxvm_full_pc_artifact(nxvm-m5-t2 "m5t2")
