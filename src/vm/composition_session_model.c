@@ -1,4 +1,4 @@
-#include "vm/product/session.h"
+#include "vm/composition_session_model.h"
 
 #include <string.h>
 
