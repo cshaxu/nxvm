@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "machine/core/vglobal.h"
+#include "core/machine/vglobal.h"
 
 #define NXVM_DEVICE_CPU "Intel 8086+"
 
