@@ -276,3 +276,21 @@ in `vm/platform`. VDM parent-Console protection, cancellation semantics, and
 drive/path containment remain in `vdm/platform`. A core platform capability
 provides a mechanism, never a product policy or a hidden second composition
 layer.
+
+## Core Platform: Capability Granularity
+
+Core platform begins with independent, narrow capabilities rather than one
+global host-services object:
+
+- An event source produces copied, normalized keyboard, mouse, window, and
+  system events.
+- Presentation sinks consume copied display frames, audio blocks, and, where
+  needed, diagnostic output.
+- Clock and wake primitives support composition-owned pacing, waiting, and
+  watchdogs; `core/machine` never reads host time.
+
+Filesystem, drive visibility, serial/parallel policy, and printing do not
+enter `core/platform` merely because they touch the host. VM media attachment
+and VDM path containment have distinct product and security meaning, so they
+remain in `vm/platform` and `vdm/platform` until both products demonstrate an
+identical, policy-free byte-stream capability worth promoting to core.
