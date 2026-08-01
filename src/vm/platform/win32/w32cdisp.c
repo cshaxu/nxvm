@@ -4,10 +4,10 @@
 
 #include "core/product/utils.h"
 
-#include "../../device/device.h"
+#include "vm/machine/device.h"
 
-#include "win32con.h"
-#include "w32cdisp.h"
+#include "nxvm-baseline/platform/win32/win32con.h"
+#include "vm/platform/win32/w32cdisp.h"
 
 static PCHAR_INFO charBuf;
 static COORD coordDefaultBufSize, coordBufSize, coordBufStart;
