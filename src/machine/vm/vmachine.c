@@ -4,9 +4,9 @@
 
 #include "nxvm-baseline/utils.h"
 
-#include "nxvm-baseline/device/vport.h"
-#include "nxvm-baseline/device/vram.h"
-#include "nxvm-baseline/device/vcpu.h"
+#include "machine/core/vport.h"
+#include "machine/core/vram.h"
+#include "machine/core/vcpu.h"
 #include "nxvm-baseline/device/vbios.h"
 #include "nxvm-baseline/device/vpit.h"
 #include "nxvm-baseline/device/vdma.h"

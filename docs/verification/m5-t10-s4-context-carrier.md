@@ -26,3 +26,8 @@ P6 changes only the moved `machine/vm/machine.c` lifecycle implementation to
 include its owned `machine/vm/device.h`, rather than the temporary baseline
 forwarding path. GCC build, CPU probe, no-media Console, and debugger-prompt
 regressions passed.
+
+P7 changes only `machine/vm/vmachine.c` to include the migrated CPU, RAM, and
+port headers from `machine/core`; its controller and firmware includes remain
+unchanged for T11. GCC build, CPU probe, no-media Console, and debugger-prompt
+regressions passed.
