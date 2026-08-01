@@ -4,6 +4,14 @@ This is the required bounded follow-up to the T13 S1 audit. Every slice keeps
 the retained full-PC Console, debugger, boot order, keyboard mapping, and local
 FDD/HDD gates unchanged. No slice starts before its predecessor passes.
 
+## Supersession
+
+T13 S6 through S8 are complete. The remaining S9 through S11 source-level
+fixes are superseded by `docs/planning/m5-dependency-governance.md`: a local
+callback replacement is insufficient unless the complete source and CMake
+dependency graph reaches the product-composition model in
+`docs/architecture/module-layout.md`.
+
 | Slice | Change | Boundary | Gates |
 | --- | --- | --- | --- |
 | S6 | Move the platform text snapshot type to `core/machine/presentation.h`; let VDM copy only text cells/attributes from its DOS-minimal snapshot. PIT/IRQ remain VDM-private. | `core/platform` stops including `vdm/machine`. | presentation smoke, full GCC build. |
