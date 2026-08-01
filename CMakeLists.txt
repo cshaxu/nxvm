@@ -187,7 +187,7 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
 )
 set(NXVM_MACHINE_VM_SOURCES
     src/core/product/runtime/execution_context.c
-    src/vm/machine/machine.c
+    src/vm/composition_machine.c
     src/vm/composition_loop.c
     src/vm/composition.c
     src/vm/machine/vfdd.c
