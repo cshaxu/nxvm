@@ -6,6 +6,13 @@ This is the forward-looking source-layout authority. Historical M1 through M5
 records retain evidence, not ownership rules. Source moves use `git mv`; copied
 or independently rewritten NXVM implementations are prohibited.
 
+## Terms
+
+A **product form** is one of `core`, `vm`, or `vdm`. A **module** is one of
+`machine`, `platform`, `product`, or `profile`. `core` has no profile module:
+it is the shared foundation. `vm` and `vdm` are separate products, not layers
+above one another.
+
 ## Topology
 
 ```text
@@ -81,15 +88,63 @@ Temporary adapters are classified by their actual owner and live under `core`,
 `nxvm-baseline` tree was fully migrated and deleted. Git history and the
 recorded M1 snapshot preserve provenance; it is not a source root.
 
-## Dependencies
+## Dependency Model
 
-`vm/*` and `vdm/*` may depend on `core/*` and their own product root.
-`core/product` may depend on abstract `core/machine` and `core/platform`;
-`core/platform` may depend on the host OS but not guest state. Profiles wire
-only their own product components. Forbidden dependencies are core-to-VM/VDM
-policy, core-to-concrete product UI, platform-to-guest-state, VM-to-VDM,
-VDM-to-VM, and profile-to-foreign-product implementation. All guest-state
-mutation occurs on the machine execution thread at a command boundary.
+The required architecture is a directed acyclic graph, not a collection of
+mutually aware subsystems. No module may reach sideways to a sibling module
+and no lower module may depend on a product form. Product composition is the
+only permitted integration point.
+
+```text
+core/machine  <--- core/platform (immutable public data contracts only)
+      ^                    ^
+      |                    |
+core/product --------------+
+
+vm/machine   -> core/machine          vdm/machine   -> core/machine
+vm/platform  -> core/platform         vdm/platform  -> core/platform
+vm/profile   -> core contracts        vdm/profile   -> core contracts
+       \             |                       \             |
+        +------------+                        +------------+
+                     v                                     v
+                 vm/product                            vdm/product
+```
+
+`core/machine` is the leaf for mutable guest state and guest-domain contracts.
+It must not include `core/platform`, `core/product`, `vm/*`, or `vdm/*`.
+`core/platform` is the leaf for host-capability contracts and shared host
+providers. It must not mutate guest state or include `core/product`, `vm/*`,
+or `vdm/*`. It may consume an immutable public value type owned by
+`core/machine`, such as a copied text snapshot. This single one-way type
+dependency avoids duplicating a guest-domain representation; it is not a
+platform-to-machine control path.
+
+`core/product` contains reusable product tooling only: generic command,
+registry, trace, debug, assembler, and disassembler facilities. It may depend
+on the public contracts of `core/machine` and `core/platform`, but it may not
+select a product, own a product profile, instantiate a VM/VDM session, or
+include `vm/*` or `vdm/*`.
+
+Within either product form, `machine`, `platform`, and `profile` are peer
+providers. They may depend on matching core contracts but must not include one
+another. A profile is declarative data and provider metadata, not a machine
+constructor. `vm/product` or `vdm/product` is the sole composition root: it
+may depend on all modules in its own product form and on `core/*`, choose a
+profile, create the machine, bind platform capabilities, and own teardown.
+Product adapters which translate input, display snapshots, or callbacks belong
+there, rather than creating a `machine <-> platform` dependency.
+
+Thus zero *mutual* dependency is mandatory. Completely zero dependency among
+the three core modules is neither necessary nor desirable while a platform
+must carry a typed immutable machine snapshot; the permitted edge is narrow,
+one-way, and has no lifecycle or callback authority. All guest-state mutation
+occurs on the machine execution thread at a command boundary.
+
+Forbidden dependencies are any core-to-VM/VDM path, any VM-to-VDM or
+VDM-to-VM path, sibling module includes within `vm` or `vdm`, profile-to-product
+construction, platform-to-guest-state mutation, and all dependency cycles.
+The build-target graph follows the same rules: a target may not conceal a
+forbidden source edge through an aggregate library.
 
 ## Migration Closure
 
@@ -100,4 +155,5 @@ source roots. Only `core`, `vm`, and `vdm` may receive source files.
 The retained NXVM executor still has explicitly recorded legacy direct calls
 between moved owners, such as an instruction stop path and a VM sleep service.
 They preserve behavior during this source-preserving migration and are not new
-module APIs. Any later decoupling must be designed and approved separately.
+module APIs. M5 dependency-governance work removes them without changing the
+retained Console, debugger, boot sequence, or media behavior.

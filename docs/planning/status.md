@@ -41,9 +41,8 @@ solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T13 S9: replace the remaining `core/product/utils.c -> vm/platform`
-dependency with a core host-sleep capability while preserving Console/debugger
-timing.
+M5 T14 S2: produce the target-by-target migration map and automated
+source/target dependency checks for the product-composition DAG.
 
 ## Completed
 
@@ -254,15 +253,17 @@ timing.
 - M5 T13 S8: moved static descriptors and session composition to VM and VDM
   product owners; `core/product/runtime` now contains no VM/VDM selection or
   product include. Focused product/session and retained NXVM gates passed.
+- M5 T14 S1: adopted the product-composition dependency DAG and made it the M5
+  source/target closure criterion. No runtime or build-graph change occurred.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t13-s9.md`.
+`docs/planning/subtasks/m5-t14-s2.md`.
 
 ## Next Eligible Work
 
-- M5 T13 S9 may remove only the core-to-VM host-sleep dependency. M6 remains
-  blocked until M5 truly closes.
+- M5 T14 S2 may produce the dependency migration map only. T13 S9-S11 are
+  superseded; M6 remains blocked until the new M5 closure rule is met.
 
 ## Delivery State
 
