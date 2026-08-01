@@ -9,13 +9,19 @@
 
 #include "nxvm-baseline/device/vdebug.h"
 #include "machine/vm/vmachine.h"
+#include "machine/vm/execution_context.h"
+#include "machine/vm/execution_context.h"
 
 #include "device.h"
 
 t_device device;
+static nxvm_execution_context device_execution_context;
+static nxvm_execution_context device_execution_context;
 
 /* Starts device thread */
 void deviceStart() {
+    nxvm_execution_context_enter(&device_execution_context);
+    nxvm_execution_context_enter(&device_execution_context);
     device.flagRun = True;
     device.flagFlip = !device.flagFlip;
     while (device.flagRun) {
@@ -30,6 +36,8 @@ void deviceStart() {
         }
         vmachineRefresh();
     }
+    nxvm_execution_context_leave(&device_execution_context);
+    nxvm_execution_context_leave(&device_execution_context);
 }
 
 /* Issues resetting signal to device thread */
@@ -51,12 +59,16 @@ void deviceStop()  {
 /* Initializes devices */
 void deviceInit() {
     MEMSET((void *)(&device), Zero8, sizeof(t_device));
+    nxvm_execution_context_initialize(&device_execution_context);
+    nxvm_execution_context_initialize(&device_execution_context);
     vdebugInit();
     vmachineInit();
 }
 
 /* Finalizes devices */
 void deviceFinal() {
+    nxvm_execution_context_leave(&device_execution_context);
+    nxvm_execution_context_leave(&device_execution_context);
     vdebugFinal();
     vmachineFinal();
 }
