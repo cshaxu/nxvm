@@ -4,7 +4,7 @@
 
 #include "nxvm-baseline/utils.h"
 
-#include "platform/vm/platform.h"
+#include "vm/platform/platform.h"
 
 t_platform platform;
 

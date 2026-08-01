@@ -8,7 +8,7 @@
 #include "utils.h"
 
 #include "device/device.h"
-#include "platform/vm/platform.h"
+#include "vm/platform/platform.h"
 #include "vm/machine/machine.h"
 
 #include "debug.h"
