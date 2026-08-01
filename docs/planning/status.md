@@ -260,6 +260,12 @@ legacy `vmachine` lifecycle sequence.
   approved halt, block-capability, video-notification, and legacy lifecycle
   directions; and added source/CMake dependency checks. No runtime behavior
   changed.
+- M5 T14 S3: routed supported INT 10h screen reconfiguration through core
+  notification and VM composition, then moved shared text state to core and
+  published copied VM-platform display frames. Win32 renderers no longer
+  include VM machine state; Linux painting uses the same frame while retaining
+  its lifecycle/input adapter. The temporary source allowlist is now 8 edges;
+  full GCC, dependency, CPU, retained UX, and FDD/HDD session gates passed.
 
 ## Active Subtask
 

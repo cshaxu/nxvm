@@ -146,6 +146,7 @@ void vmachineRefresh() {
     }
     vcpuRefresh();
     _vpic_
+    vm_composition_publish_display(False);
 }
 /* Finalize all devices, deallocates space */
 void vmachineFinal() {

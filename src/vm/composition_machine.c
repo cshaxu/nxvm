@@ -5,6 +5,8 @@
 #include "vm/machine/device.h"
 #include "vm/platform/platform.h"
 
+#include "vm/composition_display.h"
+
 #include "vm/composition_machine.h"
 
 void machineStart() {
@@ -14,6 +16,7 @@ void machineStart() {
 
 void machineReset() {
     deviceReset();
+    if (!device.flagRun) vm_composition_publish_display(1);
 }
 
 void machineStop() {

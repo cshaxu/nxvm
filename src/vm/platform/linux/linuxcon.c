@@ -7,6 +7,7 @@
 
 #include "core/product/utils.h"
 #include "vm/machine/device.h"
+#include "vm/platform/display_frame.h"
 
 #include "vm/platform/linux/linuxcon.h"
 
@@ -201,19 +202,24 @@ static uint8_t Ascii2Print[][2] = {
     {0xfc, 'n'}, {0xfd, '2'}, {0xfe, '#'}, {0xff, ' '}
 };
 
+static uint64_t displayedGeneration;
+
 static void lnxcdispPaint(uint8_t force) {
     int ref;
     uint8_t p, c;
     int i, j, sizeRow, sizeCol, curX, curY;
-    sizeRow = GetMin(COLS, deviceConnectDisplayGetRowSize());
-    sizeCol = GetMin(LINES, deviceConnectDisplayGetColSize());
+    vm_platform_display_frame frame;
+
+    vm_platform_display_capture(&frame);
+    sizeRow = GetMin(COLS, frame.columns);
+    sizeCol = GetMin(LINES, frame.rows);
     ref = 0;
-    if (force || deviceConnectDisplayGetBufferChange()) {
+    if (force || (frame.generation != displayedGeneration && frame.buffer_changed)) {
         clear();
         for (i = 0; i < sizeCol; ++i) {
             for (j = 0; j < sizeRow; ++j) {
-                c = deviceConnectDisplayGetCurrentChar(i, j);
-                p = deviceConnectDisplayGetCurrentCharProp(i, j) & 0x7f;
+                c = frame.characters[i * VM_PLATFORM_DISPLAY_MAX_COLUMNS + j];
+                p = frame.attributes[i * VM_PLATFORM_DISPLAY_MAX_COLUMNS + j] & 0x7f;
                 c = Ascii2Print[c][1]; /* curses cannot print ext ascii */
                 move(i, j);
                 addch(c | COLOR_PAIR(GetColorFromProp(p)));
@@ -221,12 +227,11 @@ static void lnxcdispPaint(uint8_t force) {
         }
         ref = 1;
     }
-    if (force || deviceConnectDisplayGetCursorChange()) {
-        curX = deviceConnectDisplayGetCurrentCursorPosX();
-        curY = deviceConnectDisplayGetCurrentCursorPosY();
+    if (force || (frame.generation != displayedGeneration && frame.cursor_changed)) {
+        curX = frame.cursor_x;
+        curY = frame.cursor_y;
         if (curX < sizeCol && curY < sizeRow) {
-            move(deviceConnectDisplayGetCurrentCursorPosX(),
-                 deviceConnectDisplayGetCurrentCursorPosY());
+            move(frame.cursor_x, frame.cursor_y);
         } else {
             move(0, 0);
         }
@@ -235,6 +240,7 @@ static void lnxcdispPaint(uint8_t force) {
     if (ref) {
         refresh();
     }
+    displayedGeneration = frame.generation;
 }
 
 static void *ThreadDisplay(void *arg) {
