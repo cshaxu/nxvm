@@ -292,21 +292,21 @@ target_link_libraries(nxvm-vm-full-pc PUBLIC
     nxvm-vm-request-transport)
 target_link_libraries(nxvm-vm-full-pc PUBLIC nxvm-product-vm-debug)
 
-add_library(nxvm-baseline-cpu-probe-adapter STATIC
-    src/vm/product/baseline_cpu_probe.c
+add_library(nxvm-vm-cpu-probe STATIC
+    src/vm/product/cpu_probe.c
 )
-target_include_directories(nxvm-baseline-cpu-probe-adapter PUBLIC
+target_include_directories(nxvm-vm-cpu-probe PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(nxvm-baseline-cpu-probe-adapter PUBLIC
+target_link_libraries(nxvm-vm-cpu-probe PUBLIC
     nxvm-machine-vm-lifecycle
     nxvm-baseline-runtime)
 
-add_executable(nxvm-baseline-cpu-probe-smoke
-    tests/adapters/nxvm_baseline_cpu_probe_smoke.c
+add_executable(nxvm-vm-cpu-probe-smoke
+    tests/adapters/nxvm_vm_cpu_probe_smoke.c
 )
-target_link_libraries(nxvm-baseline-cpu-probe-smoke PRIVATE
-    nxvm-baseline-cpu-probe-adapter
+target_link_libraries(nxvm-vm-cpu-probe-smoke PRIVATE
+    nxvm-vm-cpu-probe
 )
 
 add_executable(nxvm-execution-context-smoke
@@ -425,8 +425,8 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-dos-minimal-presentation-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-vm-full-pc PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-baseline-cpu-probe-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-baseline-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-vm-cpu-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-vm-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-full-pc-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

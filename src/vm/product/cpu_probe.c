@@ -1,4 +1,4 @@
-#include "vm/product/baseline_cpu_probe.h"
+#include "vm/product/cpu_probe.h"
 
 #include <string.h>
 
@@ -7,10 +7,10 @@
 #include "vm/machine/device.h"
 #include "core/machine/vcpuins.h"
 
-static int nxvm_baseline_cpu_probe_active;
+static int nxvm_cpu_probe_active;
 
-static int nxvm_baseline_cpu_probe_capture_state(
-    nxvm_baseline_cpu_probe_state *state)
+static int nxvm_cpu_probe_capture_state(
+    nxvm_cpu_probe_state *state)
 {
     const nxvm_execution_context *context =
         nxvm_execution_context_current();
@@ -30,7 +30,7 @@ static int nxvm_baseline_cpu_probe_capture_state(
     return 1;
 }
 
-static int nxvm_baseline_cpu_probe_reset(void)
+static int nxvm_cpu_probe_reset(void)
 {
     uint32_t eip = 0u;
 
@@ -43,28 +43,28 @@ static int nxvm_baseline_cpu_probe_reset(void)
     return 1;
 }
 
-int nxvm_baseline_cpu_probe_begin(void)
+int nxvm_cpu_probe_begin(void)
 {
-    if (nxvm_baseline_cpu_probe_active) {
+    if (nxvm_cpu_probe_active) {
         return 0;
     }
     deviceInit();
-    nxvm_baseline_cpu_probe_active = 1;
-    if (!nxvm_baseline_cpu_probe_reset()) {
-        nxvm_baseline_cpu_probe_end();
+    nxvm_cpu_probe_active = 1;
+    if (!nxvm_cpu_probe_reset()) {
+        nxvm_cpu_probe_end();
         return 0;
     }
     return 1;
 }
 
-int nxvm_baseline_cpu_probe_step(
+int nxvm_cpu_probe_step(
     const uint8_t *bytes,
     size_t byte_count,
-    nxvm_baseline_cpu_probe_capture *out_capture)
+    nxvm_cpu_probe_capture *out_capture)
 {
-    if (!nxvm_baseline_cpu_probe_active || bytes == NULL || out_capture == NULL ||
+    if (!nxvm_cpu_probe_active || bytes == NULL || out_capture == NULL ||
         byte_count == 0u || byte_count > NXVM_BASELINE_CPU_PROBE_MAX_BYTES ||
-        !nxvm_baseline_cpu_probe_reset()) {
+        !nxvm_cpu_probe_reset()) {
         return 0;
     }
 
@@ -72,11 +72,11 @@ int nxvm_baseline_cpu_probe_step(
     memcpy(out_capture->bytes, bytes, byte_count);
     out_capture->byte_count = byte_count;
     deviceConnectRamRealWrite(0u, 0u, (void *)bytes, byte_count);
-    if (!nxvm_baseline_cpu_probe_capture_state(&out_capture->before)) {
+    if (!nxvm_cpu_probe_capture_state(&out_capture->before)) {
         return 0;
     }
     vcpuRefresh();
-    if (!nxvm_baseline_cpu_probe_capture_state(&out_capture->after)) {
+    if (!nxvm_cpu_probe_capture_state(&out_capture->after)) {
         return 0;
     }
     out_capture->exception_mask = vcpuins.data.except;
@@ -84,10 +84,10 @@ int nxvm_baseline_cpu_probe_step(
     return 1;
 }
 
-void nxvm_baseline_cpu_probe_end(void)
+void nxvm_cpu_probe_end(void)
 {
-    if (nxvm_baseline_cpu_probe_active) {
+    if (nxvm_cpu_probe_active) {
         deviceFinal();
-        nxvm_baseline_cpu_probe_active = 0;
+        nxvm_cpu_probe_active = 0;
     }
 }
