@@ -100,7 +100,10 @@ providers. `vm/product` owns retained NXVM user experience: Console, hardware
 debugger UX, media commands, and presentation policy. `vm/profile` owns VM
 topology, boot policy, ROM assets, and declarative firmware-provider metadata.
 The `vm/` root composition selects that profile, creates the providers, and
-binds their callbacks and lifetime. Profile-specific firmware code is allowed
+binds their callbacks and lifetime. The retained Console receives a
+product-owned command target from that composition; it owns parsing, text, and
+command UX while the target owns machine, platform, debug, and media effects.
+Profile-specific firmware code is allowed
 only as an override provider against a public core contract; it does not create
 the machine or call a sibling module directly.
 

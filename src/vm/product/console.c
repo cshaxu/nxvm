@@ -7,11 +7,6 @@
 
 #include "core/product/utils.h"
 
-#include "vm/machine/device.h"
-#include "vm/platform/platform.h"
-#include "vm/composition_machine.h"
-
-#include "vm/product/debug.h"
 #include "vm/product/console.h"
 
 #define CONSOLE_MAXNARG 256
@@ -20,6 +15,7 @@ static size_t numArgs;
 static char **argArray;
 static int flagExit;
 static char strCmdBuff[0x100];
+static const nxvm_product_console_target *consoleTarget;
 
 /*
  * Parses command-line input.
@@ -154,7 +150,7 @@ static void doExit() {
     if (numArgs != 1) {
         GetHelp;
     }
-    if (!device.flagRun) {
+    if (!consoleTarget->is_running(consoleTarget->context)) {
         flagExit = 1;
     } else {
         PRINTF("Please stop NXVM before exit.\n");
@@ -168,19 +164,19 @@ static void doInfo() {
     }
     PRINTF("NXVM Device Info\n");
     PRINTF("================\n");
-    devicePrintMachine();
+    consoleTarget->print_machine(consoleTarget->context);
     PRINTF("\n");
     PRINTF("NXVM Platform Info\n");
     PRINTF("==================\n");
-    PRINTF("Display Type: %s\n", platform.flagMode ? "Window" : "Console");
+    PRINTF("Display Type: %s\n", consoleTarget->get_window_display(consoleTarget->context) ? "Window" : "Console");
     PRINTF("\n");
     PRINTF("NXVM BIOS Settings\n");
     PRINTF("==================\n");
-    devicePrintBios();
+    consoleTarget->print_bios(consoleTarget->context);
     PRINTF("\n");
     PRINTF("NXVM Device Status\n");
     PRINTF("==================\n");
-    devicePrintStatus();
+    consoleTarget->print_status(consoleTarget->context);
 }
 
 /* Starts internal debugger */
@@ -188,7 +184,7 @@ static void doDebug() {
     if (numArgs != 1) {
         GetHelp;
     }
-    debugMain();
+    consoleTarget->debug(consoleTarget->context);
 }
 
 /* Executes cpu instruction recorder */
@@ -196,7 +192,7 @@ static void doRecord() {
     if (numArgs < 2) {
         GetHelp;
     }
-    if (device.flagRun) {
+    if (consoleTarget->is_running(consoleTarget->context)) {
         PRINTF("Cannot change record status or dump record now.\n");
         return;
     }
@@ -204,9 +200,9 @@ static void doRecord() {
         if (numArgs != 3) {
             GetHelp;
         }
-        deviceConnectDebugRecordStart(argArray[2]);
+        consoleTarget->record_start(consoleTarget->context, argArray[2]);
     } else if (!STRCMP(argArray[1], "stop")) {
-        deviceConnectDebugRecordStop();
+        consoleTarget->record_stop(consoleTarget->context);
     } else {
         GetHelp;
     }
@@ -222,9 +218,9 @@ static void doSet() {
             GetHelp;
         }
         if (!STRCMP(argArray[2], "fdd")) {
-            deviceConnectBiosSetBoot(0);
+            consoleTarget->set_boot_hdd(consoleTarget->context, 0);
         } else if (!STRCMP(argArray[2], "hdd")) {
-            deviceConnectBiosSetBoot(1);
+            consoleTarget->set_boot_hdd(consoleTarget->context, 1);
         } else {
             GetHelp;
         }
@@ -238,7 +234,7 @@ static void doDevice() {
     if (numArgs < 2) {
         GetHelp;
     }
-    if (device.flagRun) {
+    if (consoleTarget->is_running(consoleTarget->context)) {
         PRINTF("Cannot change device now.\n");
         return;
     }
@@ -246,15 +242,15 @@ static void doDevice() {
         if (numArgs != 3) {
             GetHelp;
         }
-        deviceConnectRamAllocate(atoi(argArray[2]) << 10);
+        consoleTarget->set_memory(consoleTarget->context, (size_t)atoi(argArray[2]) << 10);
     } else if (!STRCMP(argArray[1], "display")) {
         if (numArgs != 3) {
             GetHelp;
         }
         if (!STRCMP(argArray[2], "console")) {
-            platform.flagMode = 0;
+            consoleTarget->set_window_display(consoleTarget->context, 0);
         } else if (!STRCMP(argArray[2], "window")) {
-            platform.flagMode = 1;
+            consoleTarget->set_window_display(consoleTarget->context, 1);
         } else {
             GetHelp;
         }
@@ -263,13 +259,13 @@ static void doDevice() {
             GetHelp;
         }
         if (!STRCMP(argArray[2], "create")) {
-            deviceConnectFloppyCreate();
+            consoleTarget->create_fdd(consoleTarget->context);
             PRINTF("Floppy disk created.\n");
         } else if (!STRCMP(argArray[2], "insert")) {
             if (numArgs < 4) {
                 GetHelp;
             }
-            if (!deviceConnectFloppyInsert(argArray[3])) {
+            if (!consoleTarget->insert_fdd(consoleTarget->context, argArray[3])) {
                 PRINTF("Floppy disk inserted.\n");
             } else {
                 PRINTF("Cannot read floppy disk from '%s'.\n", argArray[3]);
@@ -278,7 +274,7 @@ static void doDevice() {
             if (numArgs < 4) {
                 argArray[3] = NULL;
             }
-            if (!deviceConnectFloppyRemove(argArray[3])) {
+            if (!consoleTarget->remove_fdd(consoleTarget->context, argArray[3])) {
                 PRINTF("Floppy disk removed.\n");
             } else {
                 PRINTF("Cannot write floppy disk to '%s'.\n", argArray[3]);
@@ -294,7 +290,7 @@ static void doDevice() {
             if (numArgs > 3) {
                 if (numArgs == 5 && !STRCMP(argArray[3], "cyl")) {
                     if (atoi(argArray[4])) {
-                        deviceConnectHardDiskCreate(atoi(argArray[4]));
+                        consoleTarget->create_hdd(consoleTarget->context, (uint16_t)atoi(argArray[4]));
                     } else {
                         GetHelp;
                     }
@@ -302,14 +298,14 @@ static void doDevice() {
                     GetHelp;
                 }
             } else {
-                deviceConnectHardDiskCreate(20);
+                consoleTarget->create_hdd(consoleTarget->context, 20);
             }
             PRINTF("Hard disk created.\n");
         } else if (!STRCMP(argArray[2], "connect")) {
             if (numArgs < 4) {
                 GetHelp;
             }
-            if (!deviceConnectHardDiskInsert(argArray[3])) {
+            if (!consoleTarget->insert_hdd(consoleTarget->context, argArray[3])) {
                 PRINTF("Hard disk connected.\n");
             } else {
                 PRINTF("Cannot read hard disk from '%s'.\n", argArray[3]);
@@ -318,7 +314,7 @@ static void doDevice() {
             if (numArgs < 4) {
                 argArray[3] = NULL;
             }
-            if (!deviceConnectHardDiskRemove(argArray[3])) {
+            if (!consoleTarget->remove_hdd(consoleTarget->context, argArray[3])) {
                 PRINTF("Hard disk disconnected.\n");
             } else {
                 PRINTF("Cannot write hard disk to '%s'.\n", argArray[3]);
@@ -333,8 +329,8 @@ static void doDevice() {
 
 /* Tests NXVM: reset and start debugger */
 static void doTest() {
-    deviceReset();
-    debugMain();
+    consoleTarget->reset(consoleTarget->context);
+    consoleTarget->debug(consoleTarget->context);
 }
 
 /* Executes commands */
@@ -358,17 +354,18 @@ static void execute() {
     } else if (!STRCMP(argArray[0], "device")) {
         doDevice();
     } else if (!STRCMP(argArray[0], "mode")) {
-        if (!device.flagRun) {
-            platform.flagMode = !platform.flagMode;
+        if (!consoleTarget->is_running(consoleTarget->context)) {
+            consoleTarget->set_window_display(consoleTarget->context,
+                !consoleTarget->get_window_display(consoleTarget->context));
         }
     } else if (!STRCMP(argArray[0], "start")) {
-        machineStart();
+        consoleTarget->start(consoleTarget->context);
     } else if (!STRCMP(argArray[0], "reset")) {
-        machineReset();
+        consoleTarget->reset(consoleTarget->context);
     } else if (!STRCMP(argArray[0], "stop")) {
-        machineStop();
+        consoleTarget->stop(consoleTarget->context);
     } else if (!STRCMP(argArray[0], "resume")) {
-        machineResume();
+        consoleTarget->resume(consoleTarget->context);
     } else {
         PRINTF("Illegal command '%s'.\n",argArray[0]);
     }
@@ -379,26 +376,21 @@ static void execute() {
 static void consoleInit() {
     argArray = (char **) MALLOC(CONSOLE_MAXNARG * sizeof(char *));
     flagExit = 0;
-    machineInit();
-#if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
-    deviceConnectFloppyInsert("d:/fd.img");
-    deviceConnectHardDiskInsert("d:/hd.img");
-#else
-    deviceConnectFloppyInsert("/Users/xha/fd.img");
-    deviceConnectHardDiskInsert("/Users/xha/hd.img");
-#endif
+    consoleTarget->initialize(consoleTarget->context);
 }
 
 /* Finalizes console */
 static void consoleFinal() {
-    machineFinal();
+    consoleTarget->finalize(consoleTarget->context);
     if (argArray) {
         FREE((void *) argArray);
     }
 }
 
 /* Entry point of NXVM console */
-void consoleMain() {
+void consoleMain(const nxvm_product_console_target *target) {
+    if (target == NULL) return;
+    consoleTarget = target;
     consoleInit();
     PRINTF("\nPlease enter 'HELP' for information.\n\n");
     while (!flagExit) {

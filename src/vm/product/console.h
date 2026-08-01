@@ -7,8 +7,10 @@
 extern "C" {
 #endif
 
+#include "vm/product/console_target.h"
+
 /* Entry point of NXVM console */
-void consoleMain();
+void consoleMain(const nxvm_product_console_target *target);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
