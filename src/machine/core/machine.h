@@ -3,12 +3,12 @@
 
 #include <stdint.h>
 
-#include "machine/core/cpu.h"
-#include "machine/core/lifecycle.h"
+#include "core/machine/cpu.h"
+#include "core/machine/lifecycle.h"
 #include "machine/core/memory.h"
 #include "machine/core/port.h"
-#include "machine/core/profile.h"
-#include "machine/core/status.h"
+#include "core/machine/profile.h"
+#include "core/machine/status.h"
 #include "machine/core/trace.h"
 
 #ifdef __cplusplus

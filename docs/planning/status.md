@@ -40,8 +40,8 @@ the forward source layout is defined solely by `docs/architecture/module-layout.
 
 ## Active Work
 
-M5 T12 S9: define the canonical `core/vm/vdm` source-root migration before
-further platform ingress work.
+M5 T12 S9: migrate formal source roots to the canonical `core/vm/vdm` layout
+before further platform ingress work.
 
 ## Completed
 

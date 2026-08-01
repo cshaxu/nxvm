@@ -5,10 +5,10 @@
 #include <stdatomic.h>
 #include <stdint.h>
 
-#include "machine/core/cpu.h"
-#include "machine/core/lifecycle.h"
+#include "core/machine/cpu.h"
+#include "core/machine/lifecycle.h"
 #include "machine/core/port.h"
-#include "machine/core/profile.h"
+#include "core/machine/profile.h"
 #include "machine/core/trace.h"
 
 #define NXVM_CORE_TRACE_CAPACITY 32u
