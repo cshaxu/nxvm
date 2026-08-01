@@ -322,6 +322,11 @@ legacy `vmachine` lifecycle sequence.
   sources from multiple module owners.
 - M5 T14 S3: renamed the retained core machine implementation target to
   `nxvm-core-machine`; it compiles only `core/machine` sources.
+- M5 T14 S3: reran the fixture-backed VM session and profile gates after the
+  target graph changes. A bounded piped Console `START/STOP` attempt retained
+  the historical full-machine execution thread beyond its host timeout and was
+  terminated; it is recorded as an unsuitable automated stop boundary, not a
+  changed product behavior or replacement for the fixture gates.
 
 ## Active Subtask
 
