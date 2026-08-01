@@ -463,6 +463,60 @@ add_nxvm_full_pc_artifact(nxvm-m5-t10 "m5t10")
 add_nxvm_full_pc_artifact(nxvm-m5-t12 "m5t12")
 add_nxvm_full_pc_artifact(nxvm-m5-t13 "m5t13")
 
+option(NTVDM64_VERIFY_DEPENDENCY_DAG
+    "Reject newly introduced mixed-owner CMake targets" ON)
+
+if(NTVDM64_VERIFY_DEPENDENCY_DAG)
+    set(NTVDM64_LEGACY_MIXED_OWNER_TARGETS
+        nxvm-firmware
+        nxvm-machine-core-executor
+        nxvm-baseline-runtime
+        nxvm-machine-vm-lifecycle
+        nxvm-m3-t5
+        nxvm-m5-t1
+        nxvm-m5-t2
+        nxvm-m5-t3
+        nxvm-m5-t4
+        nxvm-m5-t5
+        nxvm-m5-t6
+        nxvm-m5-t7
+        nxvm-m5-t9
+        nxvm-m5-t10
+        nxvm-m5-t12
+        nxvm-m5-t13)
+
+    function(ntvdm64_verify_target_source_owners target)
+        get_target_property(target_sources ${target} SOURCES)
+        set(owners)
+        foreach(source IN LISTS target_sources)
+            get_filename_component(source_path "${source}" ABSOLUTE
+                BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+            file(RELATIVE_PATH source_relative "${CMAKE_SOURCE_DIR}" "${source_path}")
+            if(source_relative MATCHES "^src/(core|vm|vdm)/([^/]+)/")
+                list(APPEND owners "${CMAKE_MATCH_1}/${CMAKE_MATCH_2}")
+            endif()
+        endforeach()
+        list(REMOVE_DUPLICATES owners)
+        list(LENGTH owners owner_count)
+        if(owner_count GREATER 1 AND NOT target IN_LIST NTVDM64_LEGACY_MIXED_OWNER_TARGETS)
+            message(FATAL_ERROR
+                "Dependency DAG violation: target ${target} mixes source owners: ${owners}")
+        endif()
+    endfunction()
+
+    get_property(NTVDM64_ALL_TARGETS DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+    foreach(target IN LISTS NTVDM64_ALL_TARGETS)
+        ntvdm64_verify_target_source_owners(${target})
+    endforeach()
+
+    add_custom_target(verify-dependency-dag
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/Verify-DependencyDag.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 source dependency allowlist"
+        VERBATIM)
+endif()
+
 if(NTVDM64_ENABLE_BOCHX_RESEARCH)
     add_executable(ntvdm64-bochx-manifest-check
         tools/research/bochx/bochx_manifest_check.c
