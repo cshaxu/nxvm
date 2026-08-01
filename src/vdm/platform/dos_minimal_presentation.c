@@ -1,4 +1,4 @@
-#include "adapters/dos_minimal_presentation.h"
+#include "vdm/platform/dos_minimal_presentation.h"
 
 #include <stdlib.h>
 
