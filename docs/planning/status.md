@@ -38,8 +38,7 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T12 S3: add an inactive VM input/display bridge before switching the
-retained Win32 path.
+M5 T12 S4: design the VM execution-boundary handoff for platform requests.
 
 ## Completed
 
@@ -208,14 +207,16 @@ retained Win32 path.
 - M5 T12 S2: audited the Win32 dispatch layer; host threads directly mutate
   keyboard/stop state, so an inactive copied-request bridge is required before
   a safe source move.
+- M5 T12 S3: added a project-owned inactive copied-request bridge and focused
+  FIFO smoke; it has no producer or consumer and all retained regressions pass.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t12-s3.md`.
+`docs/planning/subtasks/m5-t12-s4.md`.
 
 ## Next Eligible Work
 
-- M5 T12 S3 adds the inactive VM input/display bridge; M6 remains blocked until
+- M5 T12 S4 designs the VM execution-boundary handoff; M6 remains blocked until
   M5 truly closes.
 
 ## Delivery State

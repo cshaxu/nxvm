@@ -205,6 +205,19 @@ set(NXVM_MACHINE_CORE_SOURCES
 set(NXVM_PLATFORM_VM_SOURCES
     src/platform/vm/platform.c
 )
+add_library(nxvm-platform-vm-requests STATIC
+    src/platform/vm/request_bridge.c
+)
+target_include_directories(nxvm-platform-vm-requests PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-platform-vm-requests PUBLIC nxvm-core)
+add_executable(nxvm-platform-vm-request-bridge-smoke
+    tests/platform/vm_request_bridge_smoke.c
+)
+target_link_libraries(nxvm-platform-vm-request-bridge-smoke PRIVATE
+    nxvm-platform-vm-requests
+)
 
 add_library(nxvm-product-core-debug STATIC ${NXVM_PRODUCT_CORE_DEBUG_SOURCES})
 target_include_directories(nxvm-product-core-debug PUBLIC
