@@ -3,7 +3,9 @@
 /* MACHINE controls machine status. */
 
 #include "vm/machine/device.h"
+#include "core/product/debug/debug_target.h"
 #include "core/product/wait.h"
+#include "vm/composition_debug.h"
 #include "vm/platform/execution.h"
 #include "vm/platform/input.h"
 #include "vm/platform/platform.h"
@@ -116,12 +118,14 @@ void machineInit() {
     platformInit();
     core_product_wait_bind(vm_composition_wait, NULL);
     deviceInit();
+    core_product_debug_bind_target(vm_composition_debug_target());
     vm_platform_keyboard_bind(&vm_composition_keyboard_sink, NULL);
     vm_platform_execution_bind(&vm_composition_execution_sink, NULL);
 }
 
 void machineFinal() {
     deviceFinal();
+    core_product_debug_bind_target(NULL);
     vm_platform_execution_bind(NULL, NULL);
     vm_platform_keyboard_bind(NULL, NULL);
     core_product_wait_bind(NULL, NULL);
