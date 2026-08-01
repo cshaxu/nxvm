@@ -21,3 +21,8 @@ P5 extends the finite CPU-probe smoke to create, probe, finalize, and recreate
 the retained PC/AT session. It verifies that the current context is cleared at
 each finalization and that the second session retains the established CPU
 result. The sequential probe and no-media Console/debugger regression passed.
+
+P6 changes only the moved `machine/vm/machine.c` lifecycle implementation to
+include its owned `machine/vm/device.h`, rather than the temporary baseline
+forwarding path. GCC build, CPU probe, no-media Console, and debugger-prompt
+regressions passed.
