@@ -2,7 +2,7 @@
 
 /* W32ADISP provides win32 window output interface. */
 
-#include "vm/machine/device.h"
+#include "vm/platform/display_frame.h"
 
 #include "vm/platform/win32/win32app.h"
 #include "vm/platform/win32/w32adisp.h"
@@ -294,6 +294,7 @@ static INT FONT_WIDTH;
 static INT FONT_HEIGHT;
 static USHORT sizeRow, sizeCol;
 static UCHAR cursorTop, cursorBottom;
+static uint64_t displayedGeneration;
 
 static COLORREF CharProp2Color(UCHAR prop, BOOL flagForeColor) {
     UCHAR byte;
@@ -416,8 +417,11 @@ VOID w32adispInit() {
 VOID w32adispSetScreen() {
     RECT clientRect,windowRect;
     LONG widthOffset, heightOffset;
-    sizeRow = deviceConnectDisplayGetRowSize();
-    sizeCol = deviceConnectDisplayGetColSize();
+    vm_platform_display_frame frame;
+
+    vm_platform_display_capture(&frame);
+    sizeRow = frame.columns;
+    sizeCol = frame.rows;
     GetClientRect(w32aHWnd, &clientRect);
     GetWindowRect(w32aHWnd, &windowRect);
 
@@ -435,19 +439,18 @@ VOID w32adispSetScreen() {
     w32adispPaint(TRUE);
 }
 
-static VOID DisplayCursor() {
+static VOID DisplayCursor(const vm_platform_display_frame *frame) {
     HBRUSH hBrush;
     HGDIOBJ hOldGdiObj;
     RECT rect;
     INT x1_cursor, y1_cursor, x2_cursor, y2_cursor;
-    x1_cursor = x2_cursor =
-                    deviceConnectDisplayGetCurrentCursorPosX() * FONT_HEIGHT; /* + FONT_HEIGHT / 2 */;
-    cursorTop = deviceConnectDisplayGetCursorTop();
-    cursorBottom = deviceConnectDisplayGetCursorBottom();
+    x1_cursor = x2_cursor = frame->cursor_x * FONT_HEIGHT; /* + FONT_HEIGHT / 2 */;
+    cursorTop = frame->cursor_top;
+    cursorBottom = frame->cursor_bottom;
     x1_cursor += (cursorTop % 8) * FONT_HEIGHT / 8;
     x2_cursor += (cursorBottom % 8) * FONT_HEIGHT / 8;
-    y1_cursor = (deviceConnectDisplayGetCurrentCursorPosY() + 0) * FONT_WIDTH;
-    y2_cursor = (deviceConnectDisplayGetCurrentCursorPosY() + 1) * FONT_WIDTH;
+    y1_cursor = (frame->cursor_y + 0) * FONT_WIDTH;
+    y2_cursor = (frame->cursor_y + 1) * FONT_WIDTH;
     rect.left = y1_cursor;
     rect.top = x1_cursor;
     rect.right = y2_cursor;
@@ -461,12 +464,19 @@ static VOID DisplayCursor() {
 
 VOID w32adispPaint(BOOL flagForce) {
     UCHAR i, j, ch, prop;
+    USHORT index;
+    BOOL changed;
+    vm_platform_display_frame frame;
+
+    vm_platform_display_capture(&frame);
     flashCount = (flashCount + 1) % 10;
-    if (flagForce || deviceConnectDisplayGetBufferChange() || deviceConnectDisplayGetCursorChange()) {
+    changed = flagForce || frame.generation != displayedGeneration;
+    if (changed) {
         for (i = 0; i < sizeCol; ++i) {
             for (j = 0; j < sizeRow; ++j) {
-                ch = deviceConnectDisplayGetCurrentChar(i, j);
-                prop = deviceConnectDisplayGetCurrentCharProp(i, j); /* & 0x7f; */
+                index = i * VM_PLATFORM_DISPLAY_MAX_COLUMNS + j;
+                ch = frame.characters[index];
+                prop = frame.attributes[index]; /* & 0x7f; */
                 if (!bFontCharExist[ch][prop]) {
                     CreateBitmapFontChar(ch, prop);
                 }
@@ -474,10 +484,11 @@ VOID w32adispPaint(BOOL flagForce) {
                        hdcFont, ch * FONT_WIDTH, prop * FONT_HEIGHT, SRCCOPY);
             }
         }
+        displayedGeneration = frame.generation;
     }
     BitBlt(hdcWnd, 0, 0, clientWidth, clientHeight, hdcBuf, 0, 0, SRCCOPY);
-    if (deviceConnectDisplayGetCursorVisible() && ((flashCount % 10) < flashInterval)) {
-        DisplayCursor();
+    if (frame.cursor_visible && ((flashCount % 10) < flashInterval)) {
+        DisplayCursor(&frame);
     }
 }
 

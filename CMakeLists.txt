@@ -219,6 +219,7 @@ set(NXVM_CORE_PRODUCT_RUNTIME_SOURCES
 )
 set(NXVM_PLATFORM_VM_SOURCES
     src/vm/platform/platform.c
+    src/vm/platform/display_frame.c
     src/vm/platform/win32/win32.c
     src/vm/platform/win32/w32cdisp.c
     src/vm/platform/win32/w32adisp.c

@@ -4,6 +4,7 @@
 
 #include "core/product/utils.h"
 
+#include "vm/platform/display_frame.h"
 #include "vm/platform/platform.h"
 
 t_platform platform;
@@ -41,6 +42,7 @@ void platformStart() {
 void platformInit() {
     MEMSET((void *)(&platform), 0x00, sizeof(t_platform));
     platform.flagMode = 0;
+    vm_platform_display_initialize();
 }
 
 void platformFinal() {}

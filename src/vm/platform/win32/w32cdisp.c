@@ -4,7 +4,7 @@
 
 #include "core/product/utils.h"
 
-#include "vm/machine/device.h"
+#include "vm/platform/display_frame.h"
 
 #include "vm/platform/win32/win32con.h"
 #include "vm/platform/win32/w32cdisp.h"
@@ -17,6 +17,7 @@ static CONSOLE_CURSOR_INFO defaultCurInfo;
 static UINT defaultCodePage;
 static CONSOLE_SCREEN_BUFFER_INFO defaultBufInfo;
 static UCHAR bufComp[0x1000];
+static uint64_t displayedGeneration;
 
 VOID w32cdispInit() {
     /* GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&defaultCurInfo)); */
@@ -27,8 +28,11 @@ VOID w32cdispInit() {
 }
 
 VOID w32cdispSetScreen() {
-    sizeCol = deviceConnectDisplayGetColSize();
-    sizeRow = deviceConnectDisplayGetRowSize();
+    vm_platform_display_frame frame;
+
+    vm_platform_display_capture(&frame);
+    sizeCol = frame.rows;
+    sizeRow = frame.columns;
     coordBufSize.X = sizeRow; /* number of cols */
     coordBufSize.Y = sizeCol; /* number of rows */
     coordBufStart.X = 0;
@@ -47,20 +51,25 @@ VOID w32cdispSetScreen() {
 }
 
 VOID w32cdispPaint(BOOL flagForce) {
+    vm_platform_display_frame frame;
     UCHAR ansiChar;
     WCHAR unicodeChar;
     WORD  charProp;
     UCHAR i, j;
     COORD curPos;
     CONSOLE_CURSOR_INFO curInfo;
+    BOOL changed;
+    vm_platform_display_capture(&frame);
     if (!charBuf) {
         return;
     }
-    if (flagForce || deviceConnectDisplayGetBufferChange()) {
+    changed = flagForce || frame.generation != displayedGeneration;
+    if (changed) {
         for (i = 0; i < sizeCol; ++i) {
             for (j = 0; j < sizeRow; ++j) {
-                ansiChar = deviceConnectDisplayGetCurrentChar(i, j);
-                charProp = deviceConnectDisplayGetCurrentCharProp(i, j); /* & 0x7f; */
+                USHORT index = i * VM_PLATFORM_DISPLAY_MAX_COLUMNS + j;
+                ansiChar = frame.characters[index];
+                charProp = frame.attributes[index]; /* & 0x7f; */
                 /* if (!ansiChar) continue; */
                 MultiByteToWideChar(437, 0, (LPCSTR)(&ansiChar), 1, (LPWSTR)(&unicodeChar), 1);
                 charBuf[i * sizeRow + j].Char.UnicodeChar = unicodeChar;
@@ -68,15 +77,15 @@ VOID w32cdispPaint(BOOL flagForce) {
             }
         }
         WriteConsoleOutput(hOut, charBuf, coordBufSize, coordBufStart, &srctWriteRect);
+        displayedGeneration = frame.generation;
     }
-    if (flagForce || deviceConnectDisplayGetCursorChange()) {
+    if (changed) {
         GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&curInfo));
-        curInfo.bVisible = deviceConnectDisplayGetCursorVisible();
-        curInfo.dwSize = (DWORD)(((deviceConnectDisplayGetCursorBottom() -
-                                   deviceConnectDisplayGetCursorTop()) % 8 + 1) * 100. / 8.);
+        curInfo.bVisible = frame.cursor_visible;
+        curInfo.dwSize = (DWORD)(((frame.cursor_bottom - frame.cursor_top) % 8 + 1) * 100. / 8.);
         SetConsoleCursorInfo(hOut, &curInfo);
-        curPos.X = deviceConnectDisplayGetCurrentCursorPosY();
-        curPos.Y = deviceConnectDisplayGetCurrentCursorPosX();
+        curPos.X = frame.cursor_y;
+        curPos.Y = frame.cursor_x;
         SetConsoleCursorPosition(hOut, curPos);
     }
 }
