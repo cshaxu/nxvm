@@ -274,7 +274,7 @@ target_link_libraries(nxvm-product-vm-debug PUBLIC
     nxvm-baseline-runtime)
 
 add_library(nxvm-baseline-full-pc-adapter STATIC
-    src/adapters/nxvm_baseline/full_pc_profile.c
+    src/vm/product/baseline_full_pc.c
 )
 target_include_directories(nxvm-baseline-full-pc-adapter PUBLIC
     "${CMAKE_SOURCE_DIR}/src"

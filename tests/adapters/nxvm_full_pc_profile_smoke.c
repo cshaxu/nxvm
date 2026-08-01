@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "adapters/nxvm_baseline/full_pc_profile.h"
+#include "vm/product/baseline_full_pc.h"
 #include "core/product/runtime/profile.h"
 
 static int verify_profile(void)

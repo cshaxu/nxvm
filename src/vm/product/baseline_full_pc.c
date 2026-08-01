@@ -1,4 +1,4 @@
-#include "adapters/nxvm_baseline/full_pc_profile.h"
+#include "vm/product/baseline_full_pc.h"
 
 #include <string.h>
 

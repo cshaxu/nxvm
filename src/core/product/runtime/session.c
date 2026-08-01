@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-#include "adapters/nxvm_baseline/full_pc_profile.h"
+#include "vm/product/baseline_full_pc.h"
 #include "vdm/machine/dos_minimal.h"
 
 struct nxvm_runtime_session {

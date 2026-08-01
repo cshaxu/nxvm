@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "adapters/nxvm_baseline/full_pc_profile.h"
+#include "vm/product/baseline_full_pc.h"
 
 nxvm_core_status nxvm_product_nxvm_default_profile_create(
     nxvm_product_nxvm_default_profile *default_profile,
