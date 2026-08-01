@@ -38,7 +38,7 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T12 S6: bind the inactive request transport at the VM execution boundary.
+M5 T12 S7: design the first retained producer switch before implementation.
 
 ## Completed
 
@@ -214,6 +214,8 @@ M5 T12 S6: bind the inactive request transport at the VM execution boundary.
   no runtime behavior.
 - M5 T12 S5: added the inactive synchronized adapter transport and focused
   ownership/lifecycle smoke; all retained regressions pass without a caller.
+- M5 T12 S6: bound the inactive transport observer to the retained execution
+  boundary; no producer, request consumption, or guest mutation is enabled.
 
 ## Active Subtask
 

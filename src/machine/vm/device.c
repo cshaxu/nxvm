@@ -41,6 +41,7 @@ void deviceStart() {
             nxvm_execution_context_reset(&device_execution_context);
             device.flagReset = False;
         }
+        nxvm_execution_context_run_command_boundary(&device_execution_context);
         nxvm_execution_context_debug_refresh(&device_execution_context);
         if (!device.flagRun) {
             break;
@@ -63,6 +64,13 @@ void deviceReset() {
 /* Issues stopping signal to device thread */
 void deviceStop()  {
     device.flagRun = False;
+}
+
+void deviceConnectBindCommandBoundary(
+    void (*callback)(void *opaque), void *opaque)
+{
+    nxvm_execution_context_bind_command_boundary(
+        &device_execution_context, callback, opaque);
 }
 
 /* Initializes devices */

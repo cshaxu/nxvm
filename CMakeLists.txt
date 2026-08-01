@@ -281,7 +281,8 @@ target_include_directories(nxvm-baseline-full-pc-adapter PUBLIC
 )
 target_link_libraries(nxvm-baseline-full-pc-adapter PUBLIC
     nxvm-machine-vm-lifecycle
-    nxvm-baseline-runtime)
+    nxvm-baseline-runtime
+    nxvm-baseline-vm-request-transport)
 target_link_libraries(nxvm-baseline-full-pc-adapter PUBLIC nxvm-product-vm-debug)
 
 add_library(nxvm-baseline-cpu-probe-adapter STATIC

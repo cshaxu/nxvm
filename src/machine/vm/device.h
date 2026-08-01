@@ -269,6 +269,8 @@ void devicePrintStatus();
 void deviceStart();
 void deviceReset();
 void deviceStop();
+void deviceConnectBindCommandBoundary(
+    void (*callback)(void *opaque), void *opaque);
 
 void deviceInit();
 void deviceFinal();

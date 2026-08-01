@@ -8,6 +8,8 @@ typedef struct nxvm_execution_context_callbacks {
     void (*machine_refresh)(void);
 } nxvm_execution_context_callbacks;
 
+typedef void (*nxvm_execution_context_command_boundary)(void *opaque);
+
 typedef struct nxvm_execution_context {
     unsigned generation;
     int active;
@@ -15,6 +17,8 @@ typedef struct nxvm_execution_context {
     void *ram;
     void *port;
     void *device;
+    nxvm_execution_context_command_boundary command_boundary;
+    void *command_boundary_opaque;
     const nxvm_execution_context_callbacks *callbacks;
 } nxvm_execution_context;
 
@@ -32,5 +36,9 @@ void *nxvm_execution_context_cpu(const nxvm_execution_context *context);
 void nxvm_execution_context_reset(nxvm_execution_context *context);
 void nxvm_execution_context_debug_refresh(nxvm_execution_context *context);
 void nxvm_execution_context_machine_refresh(nxvm_execution_context *context);
+void nxvm_execution_context_bind_command_boundary(
+    nxvm_execution_context *context,
+    nxvm_execution_context_command_boundary callback, void *opaque);
+void nxvm_execution_context_run_command_boundary(nxvm_execution_context *context);
 
 #endif
