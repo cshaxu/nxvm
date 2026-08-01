@@ -42,18 +42,16 @@ nxvm_core_status nxvm_product_nxvm_session_create(
     nxvm_core_machine_config machine_config = {
         NXVM_CORE_ABI_VERSION, NXVM_CORE_PROFILE_CUSTOM, 0u
     };
-    nxvm_core_cpu_capability_manifest capabilities;
     nxvm_core_status status;
 
     if (session == NULL || config == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     memset(session, 0, sizeof(*session));
-    nxvm_core_cpu_capability_manifest_initialize(&capabilities);
     nxvm_runtime_registry_initialize(&session->registry);
     status = nxvm_product_nxvm_register_default_profile_builtin(&session->registry);
     if (status != NXVM_CORE_STATUS_OK ||
         nxvm_runtime_registry_find_profile(&session->registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID, NXVM_RUNTIME_PROFILE_MACHINE,
-            &capabilities) == NULL ||
+            NULL, NULL) == NULL ||
         nxvm_runtime_registry_find_firmware_provider(&session->registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROVIDER_ID,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID) == NULL ||

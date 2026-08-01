@@ -1,10 +1,20 @@
 #include <stdio.h>
 
+#include "core/machine/cpu_capability.h"
 #include "core/product/runtime/registry.h"
+
+static int capability_is_proven(void *context, unsigned capability)
+{
+    const nxvm_core_cpu_capability_manifest *manifest =
+        (const nxvm_core_cpu_capability_manifest *)context;
+
+    return nxvm_core_cpu_capability_manifest_get(manifest,
+        (nxvm_core_cpu_capability)capability) == NXVM_CORE_CPU_CAPABILITY_PROVEN;
+}
 
 int main(void)
 {
-    const nxvm_core_cpu_capability required[] = {
+    const unsigned required[] = {
         NXVM_CORE_CPU_CAPABILITY_REAL_MODE_8086
     };
     const nxvm_runtime_profile_descriptor_v1 profile = {
@@ -28,12 +38,14 @@ int main(void)
         nxvm_runtime_registry_register_profile(&registry, &profile) !=
             NXVM_CORE_STATUS_UNSUPPORTED ||
         nxvm_runtime_registry_find_profile(&registry, profile.id,
-            NXVM_RUNTIME_PROFILE_MACHINE, &capabilities) != NULL ||
+            NXVM_RUNTIME_PROFILE_MACHINE, capability_is_proven,
+            &capabilities) != NULL ||
         !nxvm_core_cpu_capability_manifest_set(&capabilities,
             NXVM_CORE_CPU_CAPABILITY_REAL_MODE_8086,
             NXVM_CORE_CPU_CAPABILITY_PROVEN) ||
         nxvm_runtime_registry_find_profile(&registry, profile.id,
-            NXVM_RUNTIME_PROFILE_MACHINE, &capabilities) != &profile ||
+            NXVM_RUNTIME_PROFILE_MACHINE, capability_is_proven,
+            &capabilities) != &profile ||
         nxvm_runtime_registry_find_firmware_provider(&registry, provider.id,
             profile.id) != &provider ||
         nxvm_runtime_registry_find_firmware_provider(&registry, provider.id,

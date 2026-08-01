@@ -18,15 +18,13 @@ static int verify(const char *fdd_path, const char *hdd_path,
         fdd_path, &fdd, hdd_path, &hdd, 0, 0u, target
     };
     nxvm_product_nxvm_session session;
-    nxvm_core_cpu_capability_manifest capabilities;
     nxvm_product_nxvm_reset_vector firmware_vector;
     nxvm_product_nxvm_reset_vector execution_vector;
 
-    nxvm_core_cpu_capability_manifest_initialize(&capabilities);
     if (nxvm_product_nxvm_session_create(&session, &config) != NXVM_CORE_STATUS_OK ||
         nxvm_runtime_registry_find_profile(&session.registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID, NXVM_RUNTIME_PROFILE_MACHINE,
-            &capabilities) == NULL ||
+            NULL, NULL) == NULL ||
         nxvm_runtime_registry_find_firmware_provider(&session.registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROVIDER_ID,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID) == NULL ||

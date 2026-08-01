@@ -98,12 +98,13 @@ nxvm_core_status nxvm_runtime_registry_freeze(nxvm_runtime_registry *registry)
 const nxvm_runtime_profile_descriptor_v1 *nxvm_runtime_registry_find_profile(
     const nxvm_runtime_registry *registry, const char *id,
     nxvm_runtime_profile_family family,
-    const nxvm_core_cpu_capability_manifest *capabilities)
+    nxvm_runtime_capability_query capability_query,
+    void *capability_context)
 {
     size_t index;
     size_t capability;
 
-    if (registry == NULL || !valid_text(id) || capabilities == NULL) {
+    if (registry == NULL || !valid_text(id)) {
         return NULL;
     }
     for (index = 0u; index < registry->profile_count; ++index) {
@@ -113,9 +114,8 @@ const nxvm_runtime_profile_descriptor_v1 *nxvm_runtime_registry_find_profile(
         }
         for (capability = 0u; capability < candidate->required_capability_count;
              ++capability) {
-            if (nxvm_core_cpu_capability_manifest_get(
-                    capabilities, candidate->required_capabilities[capability]) !=
-                NXVM_CORE_CPU_CAPABILITY_PROVEN) {
+            if (capability_query == NULL || !capability_query(
+                    capability_context, candidate->required_capabilities[capability])) {
                 return NULL;
             }
         }
