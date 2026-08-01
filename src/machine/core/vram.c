@@ -2,10 +2,10 @@
 
 /* VRAM is the random accessing memory module.  */
 
-#include "../utils.h"
+#include "nxvm-baseline/utils.h"
 
-#include "vpit.h"
-#include "vport.h"
+#include "nxvm-baseline/device/vpit.h"
+#include "machine/core/vport.h"
 #include "vram.h"
 
 t_ram vram;
