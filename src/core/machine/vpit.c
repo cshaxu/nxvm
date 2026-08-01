@@ -8,7 +8,7 @@
 
 #include "nxvm-baseline/device/vbios.h"
 #include "core/machine/vport.h"
-#include "machine/core/vpit.h"
+#include "core/machine/vpit.h"
 
 t_pit vpit;
 

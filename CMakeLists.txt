@@ -195,7 +195,7 @@ set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/vcpu.c
     src/core/machine/vcpuins.c
     src/core/machine/vpic.c
-    src/machine/core/vpit.c
+    src/core/machine/vpit.c
     src/machine/core/vdma.c
     src/machine/core/vkbc.c
     src/machine/core/vvadp.c
