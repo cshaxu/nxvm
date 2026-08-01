@@ -22,6 +22,18 @@ void nxvm_execution_context_leave(nxvm_execution_context *context)
     if (context != 0) context->active = 0;
 }
 
+void nxvm_execution_context_bind_machine_state(
+    nxvm_execution_context *context, void *cpu, void *ram, void *port,
+    void *device)
+{
+    if (context != 0) {
+        context->cpu = cpu;
+        context->ram = ram;
+        context->port = port;
+        context->device = device;
+    }
+}
+
 const nxvm_execution_context *nxvm_execution_context_current(void)
 {
     return nxvm_current_execution_context;
