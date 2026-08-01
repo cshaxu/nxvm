@@ -34,9 +34,18 @@ add_library(nxvm-core STATIC
     src/core/machine/presentation.c
     src/core/machine/trace.c
 )
-add_library(nxvm-firmware STATIC src/core/machine/firmware.c src/vm/profile/default_profile/firmware/default_profile.c)
-target_include_directories(nxvm-firmware PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(nxvm-firmware PUBLIC nxvm-core)
+add_library(nxvm-core-machine-firmware STATIC src/core/machine/firmware.c)
+target_include_directories(nxvm-core-machine-firmware PUBLIC "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(nxvm-core-machine-firmware PUBLIC nxvm-core)
+add_library(nxvm-vm-profile-default-firmware STATIC
+    src/vm/profile/default_profile/firmware/default_profile.c)
+target_include_directories(nxvm-vm-profile-default-firmware PUBLIC
+    "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(nxvm-vm-profile-default-firmware PUBLIC nxvm-core)
+add_library(nxvm-firmware INTERFACE)
+target_link_libraries(nxvm-firmware INTERFACE
+    nxvm-core-machine-firmware
+    nxvm-vm-profile-default-firmware)
 add_library(nxvm-product-media STATIC src/vm/product/media.c)
 target_include_directories(nxvm-product-media PUBLIC "${CMAKE_SOURCE_DIR}/src")
 add_library(nxvm-product-default-profile STATIC src/vm/composition_default_profile.c)
@@ -120,7 +129,8 @@ target_link_libraries(nxvm-core-presentation-smoke PRIVATE nxvm-core)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-firmware PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-core-machine-firmware PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-vm-profile-default-firmware PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-media PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-default-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-console PRIVATE -Wall -Wextra -Wpedantic -Werror)
