@@ -8,7 +8,7 @@
 
 #include "nxvm-baseline/device/vbios.h"
 #include "core/machine/vport.h"
-#include "machine/core/vcmos.h"
+#include "vm/machine/vcmos.h"
 
 t_cmos vcmos;
 
