@@ -171,7 +171,7 @@ set(NXVM_BASELINE_RUNTIME_SOURCES ${NXVM_BASELINE_SOURCES})
 list(FILTER NXVM_BASELINE_RUNTIME_SOURCES EXCLUDE REGEX ".*/main\\.c$")
 
 set(NXVM_PRODUCT_VM_SOURCES
-    src/product/vm/main.c
+    src/vm/main.c
     src/product/vm/console.c
     src/product/vm/debug.c
 )

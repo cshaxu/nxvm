@@ -13,7 +13,7 @@ Copyright (c) 2012-2014 Neko.\n"
  */
 
 #include "utils.h"
-#include "console.h"
+#include "product/vm/console.h"
 
 int main(int argc, char **argv) {
     PRINTF("%s\n", PRODUCT);
