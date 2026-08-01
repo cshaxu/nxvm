@@ -41,8 +41,8 @@ solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T13 S5: design bounded cutover slices for the remaining real
-core-to-VM/VDM dependency debt; no runtime code changes are authorized.
+M5 T13 S6: move only the shared presentation snapshot type out of the VDM
+header; retain its content and conversion behavior exactly.
 
 ## Completed
 
@@ -243,15 +243,17 @@ core-to-VM/VDM dependency debt; no runtime code changes are authorized.
   revalidated transport, CPU, FDD/HDD, Console, and debugger gates.
 - M5 T13 S4: moved the VM-only CPU probe to its final owner name and
   revalidated its `#UD` output plus the retained compatibility matrix.
+- M5 T13 S5: converted real core-to-product dependency debt into five bounded
+  implementation slices; no runtime source changed.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t13-s5.md`.
+`docs/planning/subtasks/m5-t13-s6.md`.
 
 ## Next Eligible Work
 
-- M5 T13 S5 may design core ownership cutover only. M6 remains blocked until
-  M5 truly closes.
+- M5 T13 S6 may move the shared presentation type only. M6 remains blocked
+  until M5 truly closes.
 
 ## Delivery State
 
