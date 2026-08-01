@@ -9,7 +9,7 @@
 #include "machine/core/contract/port.h"
 #include "machine/core/contract/profile.h"
 #include "machine/core/contract/status.h"
-#include "core/trace.h"
+#include "machine/core/contract/trace.h"
 
 #ifdef __cplusplus
 extern "C" {
