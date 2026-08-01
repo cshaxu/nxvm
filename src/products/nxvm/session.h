@@ -5,7 +5,7 @@
 #include "products/nxvm/console.h"
 #include "products/nxvm/debugger.h"
 #include "vm/product/media.h"
-#include "products/nxvm/default_profile.h"
+#include "vm/profile/default_profile/default_profile.h"
 #include "products/nxvm/presentation.h"
 #include "runtime/registry.h"
 

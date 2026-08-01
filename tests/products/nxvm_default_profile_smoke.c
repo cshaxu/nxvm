@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "vm/product/media.h"
-#include "products/nxvm/default_profile.h"
+#include "vm/profile/default_profile/default_profile.h"
 
 static int verify(const char *fdd_path, const char *hdd_path,
                   nxvm_product_nxvm_boot_target boot_target)
