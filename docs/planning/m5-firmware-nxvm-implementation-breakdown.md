@@ -1,4 +1,9 @@
-# M5 Firmware And NXVM Implementation Breakdown
+# Historical M5 Firmware And NXVM Implementation Breakdown
+
+> Superseded for future task ownership by
+> `docs/planning/m5-execution-migration.md` and
+> `docs/architecture/module-layout.md`. Its completed-task evidence remains
+> valid; it cannot close M5 or direct new source placement.
 
 M5 implements the M4 design only. Every task keeps the transitional
 `nxvm.full_pc` adapter bootable while introducing only
