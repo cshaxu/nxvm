@@ -106,6 +106,10 @@ only as an independently runnable regression reference; it cannot own the
 user-facing artifact's execution loop, Console, debugger, firmware, devices,
 or platform lifecycle. No ntvdm64 DOS runner behavior is required.
 
+**Compatibility gate:** M5 must not alter NXVM functionality or user experience.
+Any unavoidable user-visible change requires explicit owner approval before
+implementation and a recorded before/after acceptance plan.
+
 ## M6: Design The Owned DOS Module
 
 **Goal:** specify the bounded ntvdm64 DOS backend before implementation.
