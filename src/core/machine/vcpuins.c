@@ -5,7 +5,7 @@
 /* ************************************************************************* */
 
 #include "core/product/utils.h"
-#include "nxvm-baseline/device/device.h"
+#include "vm/machine/device.h"
 
 #include "core/machine/vport.h"
 #include "core/machine/vram.h"

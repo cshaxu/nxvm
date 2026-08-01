@@ -4,7 +4,7 @@
 
 #include "core/product/debug/xasm32/aasm32.h"
 #include "core/product/debug/xasm32/dasm32.h"
-#include "platform/platform.h"
+#include "vm/platform/platform.h"
 
 #include "core/product/utils.h"
 

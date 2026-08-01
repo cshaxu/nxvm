@@ -5,8 +5,8 @@
 
 #include "core/product/utils.h"
 
-#include "device/device.h"
-#include "machine.h"
+#include "vm/machine/device.h"
+#include "vm/machine/machine.h"
 
 #include "vm/product/debug.h"
 

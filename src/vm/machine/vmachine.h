@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "nxvm-baseline/device/vglobal.h"
+#include "core/machine/vglobal.h"
 
 #define NXVM_DEVICE_MACHINE "IBM PC/AT"
 

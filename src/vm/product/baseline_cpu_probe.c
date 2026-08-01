@@ -4,8 +4,8 @@
 
 #include "core/machine/vcpu.h"
 #include "core/product/runtime/execution_context.h"
-#include "nxvm-baseline/device/device.h"
-#include "nxvm-baseline/device/vcpuins.h"
+#include "vm/machine/device.h"
+#include "core/machine/vcpuins.h"
 
 static int nxvm_baseline_cpu_probe_active;
 
