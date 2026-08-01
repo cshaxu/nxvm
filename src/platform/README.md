@@ -1,4 +1,5 @@
-# Platform
+# Migration Source
 
-Non-invasive host integration belongs here. Windows implementations adapt
-filesystem, console, input, display, timing, process, and logging services.
+Shared host contracts belong in `src/core/platform`; VM and VDM integrations
+belong in `src/vm/platform` and `src/vdm/platform`. This root receives no new
+files.

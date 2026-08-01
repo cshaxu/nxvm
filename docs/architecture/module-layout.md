@@ -10,60 +10,71 @@ or independently rewritten NXVM implementations are prohibited.
 
 ```text
 src/
-  base/
-  machine/{core,vm,vdm}/
-  platform/core/{win32,linux}/
-  platform/vm/{win32,linux}/
-  platform/vdm/{win32,linux}/
-  product/{core,vm,vdm}/
-  profile/vm/{default_profile,pc110_profile,...}/
-  profile/vdm/{dos_minimal_profile,...}/
-  integration/
+  core/{machine,platform,product}/
+  vm/
+    main.c
+    {machine,platform,product,profile}/
+    profile/default_profile/firmware/
+  vdm/
+    main.c
+    {machine,platform,product,profile}/
+    profile/dos_minimal_profile/
+  adapter/
+  nxvm-baseline/
 ```
 
 Headers stay beside implementations. Device models are flat files unless they
-become real multi-file subsystems.
-
-`machine/core` is the only machine-core directory. Its public headers and C
-implementations are peers (`cpu.h/.c`, `machine.h/.c`, `memory.h/.c`, and so
-on); private implementation headers use the `_impl.h` suffix. There is no
-`machine/core/contract` layer. The earlier `src/core` forwarding tree has been
-removed: callers include `machine/core/*.h` directly.
+become real multi-file subsystems; private implementation headers use `_impl.h`.
+`vm/main.c` is the `nxvm.exe` entry point and `vdm/main.c` is the
+`ntvdm64.exe` entry point.
 
 ## Ownership
 
-`machine/core` contains shared CPU/instructions, RAM, bus, interrupts,
-execution loop, trace/debug state, and reusable PIC/PIT/DMA/CMOS/keyboard/video
-and block models. It knows no host OS, product UX, DOS ABI, or profile name.
-`machine/vm` contains boot/reset sequencing and VM-only hardware; the current
-FDC/HDC/FDD/HDD stack starts there until proven reusable. `machine/vdm` contains
-the DOS loader, PSP, environment, DTA, handles, paths, DOS devices/services,
-errors, and program exit. VM and VDM share the core execution loop.
+`core/machine` contains product-neutral guest mechanics: CPU/instructions,
+RAM, ports, interrupts, shared execution support, reusable
+PIC/PIT/DMA/CMOS/keyboard/video/block models, trace/debug state, and the
+firmware-service registry. The registry describes POST, ROM, and interrupt
+services but contains no PC/AT handler, ROM image, product policy, or host OS
+call.
 
-`platform/core` contains host contracts and shared Win32/Linux facilities.
-`platform/vm` adds only full-machine presentation/input routing; `platform/vdm`
-adds only app-runner process lifetime, parent-console protection, cancellation,
-and filesystem containment. Platform never mutates guest state.
+`core/platform` contains product-neutral host-capability contracts and shared
+host facilities. It never mutates guest state. `core/product` contains shared
+session, registry, command/debug, trace, result, assembler, and disassembler
+infrastructure, but no VM Console, VDM CLI, profile, or host-policy decision.
 
-`product/core` owns session/registry/result/version and shared debugger,
-breakpoint, step, trace, assembler, and disassembler logic. `product/vm` owns
-the exact NXVM Console and VM UX; `product/vdm` owns `ntvdm64 run` and VDM UX.
+`vm/machine` owns boot/reset sequencing, execution-loop glue, and VM-only
+controllers such as FDC/HDC/FDD/HDD. `vm/platform` owns full-machine
+input/presentation routing. `vm/product` owns the retained NXVM Console,
+hardware debugger, media workflow, and VM composition. `vm/profile` owns VM
+topology and boot policy; the built-in PC/AT BIOS, POST, ROM, QDX handlers, and
+default CMOS wiring live in `vm/profile/default_profile/firmware`.
 
-There is no `profile/core`. `profile/vm` describes hardware topology, wiring,
-firmware/ROM/POST/CMOS defaults and boot policy; it may supply a capability
-subset to either product. `profile/vdm` describes DOS loader, memory layout,
-service level, DOS-device policy, and firmware-service subset. Profiles select
-and wire components; they never implement CPU, devices, DOS, or host calls.
+`vdm/machine` owns the DOS loader, PSP, environment, DTA, handles, paths, DOS
+devices/services, errors, and program exit. `vdm/platform` owns app-runner
+process lifetime, parent-Console protection, cancellation, filesystem
+containment, and VDM presentation/input routing. `vdm/product` owns
+`ntvdm64 run`, VDM debugging UX, and composition. `vdm/profile` owns DOS
+memory/service/device policy and any firmware-service subset.
+
+`adapter` is temporary or bounded glue only, never a final product owner.
+`nxvm-baseline` is the immutable imported reference and independently buildable
+regression target; it cannot supply a final-product source after M5 T13.
 
 ## Dependencies
 
-`machine/vm|vdm -> machine/core`; `product -> abstract machine/platform`;
-`profile -> abstract machine/product contracts`; `platform -> host OS`.
-Forbidden: core-to-platform/product/profile, platform-to-guest-state,
-profile-to-device implementation, and product-to-concrete host API.
+`vm/*` and `vdm/*` may depend on `core/*` and their own product root.
+`core/product` may depend on abstract `core/machine` and `core/platform`;
+`core/platform` may depend on the host OS but not guest state. Profiles wire
+only their own product components. Forbidden dependencies are core-to-VM/VDM
+policy, core-to-concrete product UI, platform-to-guest-state, VM-to-VDM,
+VDM-to-VM, and profile-to-foreign-product implementation. All guest-state
+mutation occurs on the machine execution thread at a command boundary.
 
-`src/nxvm-baseline` and `src/adapters/nxvm_baseline` are M5 transition and
-regression references, not final product modules. Until T13 they may preserve
-the old full-PC path solely for comparison; T13 removes them from the formal
-`nxvm.exe` target and then deletes the adapter. No new formal-product
-dependency may be added to either tree.
+## Migration Rule
+
+The current roots `app`, `dos`, `firmware`, `integration`, `machine`,
+`platform`, `product`, `products`, and `runtime` are migration sources only.
+Their contents move in small buildable slices, with includes and CMake repaired
+immediately after each move, and their directories are deleted when empty. The
+current `adapters` root is renamed to canonical `adapter` as part of its next
+touched migration slice. No new source may be added to a migration-source root.

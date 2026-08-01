@@ -2,8 +2,10 @@
 
 > Superseded for forward module ownership by
 > `docs/architecture/module-layout.md` and `docs/requirements/profiles.md`.
-> It remains M4/M5 evidence only. Forward firmware belongs under the owning VM
-> or VDM profile, not a root `firmware/` module.
+> It remains M4/M5 evidence only. Forward ownership puts the generic
+> firmware-service registry in `core/machine`; PC/AT BIOS/POST/ROM/QDX code
+> belongs in `vm/profile/default_profile/firmware`, and any VDM subset belongs
+> in its VDM profile. The path names below are historical.
 
 ## Status
 

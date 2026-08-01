@@ -35,10 +35,13 @@ through the temporary adapter. M5 is reopened: actual CPU execution, lifecycle,
 firmware, devices, presentation, and retained NXVM Console/debugger behavior
 must migrate to the declared module owners before M6 may begin. The historical
 `snapshot/m5-nxvm-28fb4b1` remains a checkpoint, not an M5 completion snapshot.
+Completed M5 records retain their then-current paths as historical evidence;
+the forward source layout is defined solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T12 S9: retain the planned keyboard-state ingress switch; it has not begun.
+M5 T12 S9: define the canonical `core/vm/vdm` source-root migration before
+further platform ingress work.
 
 ## Completed
 
@@ -221,7 +224,8 @@ M5 T12 S9: retain the planned keyboard-state ingress switch; it has not begun.
   original status path.
 - M5 T12 S8: flattened `machine/core/contract` into `machine/core`, removed
   `src/core` forwarding headers, and revalidated the core, profile, product,
-  and retained NXVM build gates without changing user-visible behavior.
+  and retained NXVM build gates without changing user-visible behavior. The
+  paths are now migration sources under the later `core/vm/vdm` topology.
 
 ## Active Subtask
 
@@ -229,8 +233,9 @@ M5 T12 S9: retain the planned keyboard-state ingress switch; it has not begun.
 
 ## Next Eligible Work
 
-- M5 T12 S9 may switch retained keyboard-state synchronization through ingress.
-  M6 remains blocked until M5 truly closes.
+- M5 T12 S9 first approves the canonical root migration. M5 T12 S10 may then
+  switch retained keyboard-state synchronization through ingress. M6 remains
+  blocked until M5 truly closes.
 
 ## Delivery State
 
