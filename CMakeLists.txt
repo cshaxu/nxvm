@@ -256,6 +256,13 @@ target_link_libraries(nxvm-baseline-cpu-probe-smoke PRIVATE
     nxvm-baseline-cpu-probe-adapter
 )
 
+add_executable(nxvm-execution-context-smoke
+    tests/machine/vm_execution_context_smoke.c
+)
+target_link_libraries(nxvm-execution-context-smoke PRIVATE
+    nxvm-machine-vm-lifecycle
+)
+
 add_library(nxvm-runtime STATIC
     src/runtime/dos_minimal.c
     src/runtime/profile.c
@@ -365,6 +372,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-baseline-full-pc-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-baseline-cpu-probe-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-baseline-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-full-pc-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

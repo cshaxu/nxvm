@@ -37,3 +37,12 @@ table. Its reset callback still calls `vdebugReset` then `vmachineReset`; its
 refresh callbacks still call `vdebugRefresh` before `vmachineRefresh`. GCC
 build, sequential CPU-probe, no-media Console, and debugger-prompt regressions
 passed.
+
+P9 adds a Win32-only focused lifecycle smoke with the verified local FDD
+fixture. It enters the real device loop, observes a running reset request,
+requests stop, requires thread exit within two seconds, finalizes the machine,
+and confirms the context clears. The closure set also reran the sequential CPU
+probe, both FDD/HDD reset-vector setups, and retained no-media Console/debugger
+interactions. The raw DOS trace checkpoint remains the separately recorded
+bounded M5 T7 evidence; this subtask did not create an unbudgeted recorder
+trace.
