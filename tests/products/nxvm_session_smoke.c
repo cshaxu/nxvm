@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "vm/profile/default_profile/profile.h"
-#include "products/nxvm/session.h"
+#include "vm/product/session.h"
 
 static int verify(const char *fdd_path, const char *hdd_path,
                   nxvm_product_nxvm_boot_target target)
