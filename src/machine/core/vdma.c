@@ -2,13 +2,13 @@
 
 /* VDMA implements two chips of Direct Memory Access Controller: Intel 8237A (Master+Slave). */
 
-#include "../utils.h"
+#include "nxvm-baseline/utils.h"
 
-#include "vram.h"
+#include "machine/core/vram.h"
 
-#include "vbios.h"
-#include "vport.h"
-#include "vdma.h"
+#include "nxvm-baseline/device/vbios.h"
+#include "machine/core/vport.h"
+#include "machine/core/vdma.h"
 
 t_latch vlatch;
 t_dma vdma1, vdma2;
