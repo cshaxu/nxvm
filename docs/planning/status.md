@@ -38,8 +38,7 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T11 S11: migrate retained hardware debug state into `machine/core` without
-changing NXVM behavior.
+M5 T11 S12: audit QDX ownership boundaries before any QDX source move.
 
 ## Completed
 
@@ -196,15 +195,18 @@ changing NXVM behavior.
 - M5 T11 S10: moved the retained HDC implementation into `machine/vm`, with
   forwarding-header compatibility only; GCC, lifecycle, CPU, FDD/HDD reset,
   Console, and debugger regressions passed.
+- M5 T11 S11: moved retained hardware debug state into `machine/core`, with
+  forwarding-header compatibility only; GCC, lifecycle, CPU, FDD/HDD reset,
+  Console, and debugger regressions passed without enabling the raw recorder.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t11-s11.md`.
+`docs/planning/subtasks/m5-t11-s12.md`.
 
 ## Next Eligible Work
 
-- M5 T11 S11 migrates retained hardware debug state; M6 remains blocked until
-  M5 truly closes.
+- M5 T11 S12 audits QDX ownership boundaries; M6 remains blocked until M5
+  truly closes.
 
 ## Delivery State
 
