@@ -285,6 +285,13 @@ target_link_libraries(nxvm-core-product-wait-smoke PRIVATE
     nxvm-product-core-utils
 )
 
+add_executable(nxvm-core-product-debug-target-smoke
+    tests/product/core_product_debug_target_smoke.c
+)
+target_include_directories(nxvm-core-product-debug-target-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+
 add_library(nxvm-profile-vm-default-firmware STATIC ${NXVM_PROFILE_VM_SOURCES})
 target_include_directories(nxvm-profile-vm-default-firmware PUBLIC
     "${CMAKE_SOURCE_DIR}/src"

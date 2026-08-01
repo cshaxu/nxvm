@@ -289,6 +289,9 @@ legacy `vmachine` lifecycle sequence.
   shared VM-platform contracts. The source DAG has no Linux machine edge;
   Windows GCC and static verification passed, while POSIX GCC/ncurses build
   evidence remains pending external validation.
+- M5 T14 S3: created the typed core debugger-target contract and fake-target
+  smoke. It covers shared debugger operations without VM headers; VM/VDM
+  composition adapters and the retained UI source move remain pending.
 
 ## Active Subtask
 
