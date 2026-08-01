@@ -123,3 +123,27 @@ x86 implementation without importing product profile semantics.
 - `FAULT`: core reports a machine/CPU fault and guest location detail.
 
 The core does not define a DOS program exit or a whole-PC process exit result.
+
+## Core Machine: CPU State And Physical Memory
+
+`core_machine_get_cpu_state` copies `CORE_MACHINE_CPU_STATE`, including general
+registers, segments, flags, instruction location, execution mode, and fault
+location. `core_machine_set_cpu_state` replaces that state only while the
+machine is `CONFIGURING`, `READY`, or `PAUSED`; it is forbidden while
+`RUNNING`. The contract exposes no separate register-setter API.
+
+`core_machine_mem_read` and `core_machine_mem_write` accept only a
+`CORE_MACHINE_ADDRESS` physical address, caller storage, and `SIZE_T` length.
+`CORE_MACHINE_ADDRESS` is represented by `U64` even where a current x86
+profile uses only a smaller range. Access is range checked and observes the
+current A20 state. Neither function returns a writable raw RAM pointer.
+
+Segment:offset translation, linear addressing, paging translation, and CPU
+mode interpretation are core CPU semantics. They are not alternate forms of
+the generic physical-memory API. A future explicit CPU debug helper may expose
+such a translation when required, without weakening this boundary.
+
+CPU and memory mutation occurs only at an execution boundary. A debugger, DOS
+loader, firmware override, or root composition uses these APIs only after the
+current quantum has returned; `core/product` receives an adapted debug target,
+not a `CORE_MACHINE` handle.
