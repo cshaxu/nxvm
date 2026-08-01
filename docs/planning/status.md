@@ -327,6 +327,10 @@ legacy `vmachine` lifecycle sequence.
   the historical full-machine execution thread beyond its host timeout and was
   terminated; it is recorded as an unsuitable automated stop boundary, not a
   changed product behavior or replacement for the fixture gates.
+- M5 T14 S3: consolidated pure `vm/product` implementations (Console media,
+  presentation, and session UX helpers) into `nxvm-vm-product`; their retained
+  smoke executables now link the module target rather than historical narrow
+  product libraries.
 
 ## Active Subtask
 
