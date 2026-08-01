@@ -2,7 +2,6 @@
 
 /* VKBC is Keyboard Controller: Intel 8042 not implemented yet. */
 
-#include "vm/profile/default_profile/firmware/vbios.h"
 #include "core/machine/vport.h"
 #include "core/machine/vkbc.h"
 
@@ -12,8 +11,6 @@ void io_read_0064() {
 
 void vkbcInit() {
     vportAddRead(0x0064, (t_faddrcc) io_read_0064);
-    vbiosAddInt("qdx 09\niret", 0x09);
-    vbiosAddInt("qdx 16\niret", 0x16);
 }
 void vkbcReset() {}
 void vkbcRefresh() {}

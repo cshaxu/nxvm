@@ -4,7 +4,6 @@
 
 #include "core/product/utils.h"
 
-#include "vm/profile/default_profile/firmware/vbios.h"
 #include "core/machine/vport.h"
 #include "vm/machine/vvadp.h"
 
@@ -12,7 +11,6 @@ t_vadp vvadp;
 
 void vvadpInit() {
     MEMSET((void *)(&vvadp), Zero8, sizeof(t_vadp));
-    vbiosAddInt("qdx 10\niret", 0x10);
 }
 void vvadpReset() {
     MEMSET((void *)(&vvadp.data), Zero8, sizeof(t_vadp_data));

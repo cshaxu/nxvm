@@ -6,7 +6,6 @@
 
 #include "core/machine/vcpu.h"
 
-#include "vm/profile/default_profile/firmware/vbios.h"
 #include "core/machine/vport.h"
 #include "vm/machine/vcmos.h"
 
@@ -42,11 +41,6 @@ void vcmosInit() {
     vportAddRead(0x0071, (t_faddrcc) io_read_0071);
     vportAddWrite(0x0070, (t_faddrcc) io_write_0070);
     vportAddWrite(0x0071, (t_faddrcc) io_write_0071);
-    vbiosAddPost(VCMOS_POST);
-    vbiosAddInt(VCMOS_INT_HARD_RTC_08, 0x08);
-    vbiosAddInt(VCMOS_INT_SOFT_RTC_1A, 0x1a);
-    vcmosReset();
-    vcmosRefresh();
 }
 void vcmosReset() {
     MEMSET((void *)(&vcmos.data), Zero8, sizeof(t_cmos_data));

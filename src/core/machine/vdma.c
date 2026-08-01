@@ -6,7 +6,6 @@
 
 #include "core/machine/vram.h"
 
-#include "vm/profile/default_profile/firmware/vbios.h"
 #include "core/machine/vport.h"
 #include "core/machine/vdma.h"
 
@@ -568,7 +567,6 @@ void vdmaInit() {
     vportAddWrite(0x00dc, (t_faddrcc) io_write_00DC);
     vportAddWrite(0x00de, (t_faddrcc) io_write_00DE);
 
-    vbiosAddPost(VDMA_POST);
 }
 void vdmaReset() {
     MEMSET((void *)(&vlatch.data), Zero8, sizeof(t_latch_data));

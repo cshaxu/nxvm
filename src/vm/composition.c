@@ -47,21 +47,38 @@ void vmachineInit() {
     vhddInit();
     vbiosInit();
     vvadpInit();
+    vbiosAddInt("qdx 10\niret", 0x10);
     _vbios_
     vportInit();
     vcmosInit();
+    vbiosAddPost(VCMOS_POST);
+    vbiosAddInt(VCMOS_INT_HARD_RTC_08, 0x08);
+    vbiosAddInt(VCMOS_INT_SOFT_RTC_1A, 0x1a);
+    vcmosReset();
+    vcmosRefresh();
     _vbios_ _vport_
     vkbcInit();
+    vbiosAddInt("qdx 09\niret", 0x09);
+    vbiosAddInt("qdx 16\niret", 0x16);
     _vbios_ _vport_
     vdmaInit();
+    vbiosAddPost(VDMA_POST);
     _vbios_ _vport_
     vfdcInit();
+    vbiosAddPost(VFDC_POST);
+    vbiosAddInt(VFDC_INT_HARD_FDD_0E, 0x0e);
+    /* overwritten below by the hard-disk INT 13 service, as before. */
+    vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x13);
+    vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x40);
     _vbios_ _vport_ _vdma_
     vhdcInit();
+    vbiosAddInt(VHDC_INT_SOFT_HDD_13, 0x13);
     _vbios_ _vport_ _vdma_ _vfdc_
     vpitInit();
+    vbiosAddPost(VPIT_POST);
     _vbios_ _vport_
     vpicInit();
+    vbiosAddPost(VPIC_POST);
     _vbios_ _vport_ _vpic_
     vramInit();
     _vbios_ _vport_ _vpit_
