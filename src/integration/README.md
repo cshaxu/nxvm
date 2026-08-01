@@ -1,4 +1,4 @@
-# Invasive Integration Research
+# Migration Source
 
-This boundary is for owner-approved research only. It is excluded from default
-builds and releases and may not become a core runtime dependency.
+There is no canonical `src/integration` root. Owner-approved research belongs
+under `tools/research` and is excluded from default builds and releases.

@@ -1,4 +1,4 @@
-# DOS
+# Migration Source
 
-The project-owned DOS backend belongs here: loading, PSP, environment, MCB,
-interrupt services, process, filesystem, console, and later XMS/EMS/DPMI.
+The owned DOS backend belongs in `src/vdm/machine`. This root is retained only
+until its contents are moved with provenance and focused tests.

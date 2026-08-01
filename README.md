@@ -20,9 +20,9 @@ visibility controls. See [Runtime CLI Requirements](docs/requirements/runtime-cl
 ## Formal Runtime
 
 ```text
-shared core + firmware + platform + runtime
-  + products/nxvm
-  + dos + products/ntvdm64
+core/{machine,platform,product}
+  + vm/{machine,platform,product,profile}
+  + vdm/{machine,platform,product,profile}
 ```
 
 NXVM is the formal machine foundation and remains a supported product surface

@@ -2,9 +2,10 @@
 
 > Superseded for forward ownership by
 > `docs/architecture/module-layout.md`. This record remains only for M4/M5
-> historical registry and verification evidence. The forward model has no
-> `profile/core`; VM profiles may be selected by either product, while VDM
-> profiles define only DOS-environment behavior.
+> historical registry and verification evidence. The forward model places VM
+> profiles under `vm/profile` and VDM profiles under `vdm/profile`; shared
+> registry mechanics live in `core/product`. The path names below are
+> historical.
 
 ## Purpose
 

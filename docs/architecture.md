@@ -22,11 +22,10 @@ components, invasive integration, and Win16 remain research-only unless a later
 owner-approved Go decision changes that boundary.
 
 Forward directory and ownership decisions are defined exclusively by
-`architecture/module-layout.md`. In particular, `machine/core` is the sole
-machine-core directory: headers live beside implementations, private headers
-use `_impl.h`, and neither `src/core` nor `machine/core/contract` exists as a
-forward module. The older boundary and directory sections in this document describe
-pre-migration context.
+`architecture/module-layout.md`. The canonical roots are `core`, `vm`, `vdm`,
+`adapter`, and `nxvm-baseline`; current horizontal roots are migration sources,
+not forward modules. The older boundary and directory sections in this document
+describe pre-migration context.
 
 ## Runtime Identity And Versioning
 
@@ -67,50 +66,25 @@ hexadecimal revision digit (`0` through `f`).
 ## Module Boundaries
 
 ```text
-products/nxvm      products/ntvdm64
-      |                   |
-      +-------- runtime --+
-                 |
-      +----------+----------+
-      |          |          |
-    core     firmware      dos
-      |          |          |
-      +------ adapters -----+
-                 |
-              platform
-                 |
-              host OS
+      vm/*                         vdm/*
+       |                             |
+       +---------- core/* -----------+
+                     |
+                  host OS
+
+adapter/*: temporary migration glue
+nxvm-baseline/*: independent reference only
 ```
 
-- `core/`: CPU, RAM, bus, port dispatch, memory map, interrupt controller
-  contracts, generic device lifecycle, trace, debug, profile hooks, and
-  `Machine` instance state. It has no DOS, firmware policy, product CLI, or
-  host OS dependency.
-- `firmware/`: BIOS/POST/ROM behavior and BIOS interrupt/service handlers. It
-  can be composed into an NXVM machine profile or an explicitly selected
-  ntvdm64 execution-profile subset through the firmware service registry, but
-  it does not own product CLI or host handles.
-  M5 introduces `firmware/default_profile` for the bootable NXVM ROM, POST, CMOS, and
-  BIOS-service package.
-- `platform/`: host capability providers such as Win32, retained Linux source,
-  future macOS, display, input, clocks, block files, host filesystem, audio,
-  logging, and process/Console integration. It does not know DOS internals.
-- `dos/`: ntvdm64-only loader, PSP, environment, DTA, handles, DOS service
-  registry, fixture filesystem for early tests, and later DOS compatibility
-  behavior. It consumes abstract Machine and host capability contracts.
-- `runtime/`: the composition root. It creates a session, selects a product
-  profile, wires registries, owns lifecycle transitions, drives execution, and
-  reports a product result.
-- `products/nxvm/`: bootable VM Console, boot-media policy, whole-machine
-  profile selection, and nxvm-specific registry composition. It does not add a
-  process CLI. Its `default_profile` package composes full-PC storage/controller devices.
-- `products/ntvdm64/`: DOS app-runner CLI, display/debug UX, window-mode
-  control Console, drive visibility, host filesystem policy, and ntvdm64-
-  specific registry composition.
-- `adapters/`: explicit glue between concrete modules. Cross-module policy does
-  not live inside `core`.
-- `integration/`: isolated research for host-changing features; excluded from
-  default builds and releases.
+- `core/machine`: shared guest mechanics and firmware-service registry.
+- `core/platform`: shared host-capability contracts and host facilities.
+- `core/product`: shared session, registry, debug/trace and tooling primitives.
+- `vm/{machine,platform,product,profile}`: bootable NXVM-only behavior;
+  built-in BIOS/POST/ROM/QDX lives in `vm/profile/default_profile/firmware`.
+- `vdm/{machine,platform,product,profile}`: DOS app-runner-only behavior;
+  the owned DOS backend lives in `vdm/machine`.
+- `adapter`: temporary concrete bridging only; `nxvm-baseline`: immutable
+  regression reference only.
 
 ## Registries
 
@@ -142,12 +116,11 @@ gate, lifecycle state, and teardown rule.
 
 ## Dependency Rules
 
-Forbidden dependencies are `core -> dos`, `core -> platform/host OS`, `core ->
-product CLI`, `dos -> concrete platform APIs`, `platform -> DOS internals`, and
-`products/* -> core internals`. Allowed dependencies are `firmware -> abstract
-Machine and host capability contracts`, `dos -> abstract Machine and host
-capability contracts`, `platform -> host OS`, `adapters -> concrete module
-interfaces`, and `runtime -> major modules`.
+Forbidden dependencies are `core -> VM/VDM policy`, `core -> concrete product
+UI`, `platform -> guest state`, `vm -> vdm`, `vdm -> vm`, and profile-to-foreign
+product implementation. Allowed dependencies are `vm|vdm -> core`,
+`core/product -> abstract core/machine and core/platform`, `core/platform ->
+host OS`, and `adapter -> concrete transition interfaces`.
 
 All guest-state mutations occur on the Machine execution thread at a command
 boundary. Platform threads exchange timestamped input events and immutable
@@ -178,17 +151,13 @@ baseline for a future platform provider.
 
 ```text
 src/
+  core/{machine,platform,product}/
+  vm/{machine,platform,product,profile}/
+  vm/main.c
+  vdm/{machine,platform,product,profile}/
+  vdm/main.c
+  adapter/
   nxvm-baseline/
-  machine/{core,vm,vdm}/
-  firmware/
-  platform/
-  dos/
-  runtime/
-  adapters/
-  products/
-    nxvm/
-    ntvdm64/
-  integration/
 tests/
   core/
   firmware/
@@ -207,14 +176,11 @@ docs/
   research/
 ```
 
-Headers live beside their C implementation in the owning module. `machine/core`
-is the only machine-core directory; public headers use ordinary module names
-such as `src/machine/core/machine.h`, while private headers use an `_impl.h`
-suffix. The earlier `src/core` forwarding tree has been removed. A future SDK
-or library packaging task may introduce a top-level `include/` tree
-after the ABI is stable.
+Headers live beside their C implementation in the owning module. Public headers
+use ordinary module names such as `src/core/machine/machine.h`; private headers
+use an `_impl.h` suffix. A future SDK or library packaging task may introduce a
+top-level `include/` tree after the ABI is stable.
 
 Directory README files define ownership when the directories are created.
-Historical sources provide orientation; tests provide validation; `core` and
-`firmware` preserve NXVM's whole-machine value; `dos` and
-`products/ntvdm64` provide the VDM product value.
+Historical sources provide orientation; tests provide validation; `vm` preserves
+NXVM's whole-machine value and `vdm` provides the DOS product value.

@@ -4,11 +4,11 @@
 
 - Repository content is English. Runtime code is C11 plus narrowly scoped
   documented Win32 APIs.
-- Follow the visible module boundaries in `src/`. `machine/core` has no DOS,
-  product CLI, profile, or host OS dependency; `machine/vm` and `machine/vdm`
-  add only their product-specific machine behavior. `dos` has no concrete
-  platform API dependency; `product/*` contains product policy only; `runtime`
-  is the composition root.
+- Follow the visible module boundaries in `src/`. `core/machine` has no VM/VDM
+  policy, concrete product UI, profile, or host OS dependency; `core/platform`
+  never mutates guest state. `vm/*` and `vdm/*` contain only their own product
+  behavior. `core/product` is shared infrastructure, while `vm/product` and
+  `vdm/product` contain product policy and composition.
 - One subtask is active at a time. Define its scope, non-goals, source baseline,
   verification commands, and acceptance evidence before changing runtime code.
 - Use `TODO(High)`, `TODO(Medium)`, or `TODO(Low)` only for deferred work.

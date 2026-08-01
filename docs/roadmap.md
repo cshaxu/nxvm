@@ -44,8 +44,9 @@ are recorded.
 **Goal:** define the architecture that lets `nxvm.exe` and `ntvdm64.exe` share
 one machine core while keeping product policy out of that core.
 
-**Scope:** specify `machine/{core,vm,vdm}`, `platform/{core,vm,vdm}`,
-`product/{core,vm,vdm}`, and `profile/{vm,vdm}` ownership; profile/composition, device, port/memory, interrupt,
+**Scope:** specify `core/{machine,platform,product}` and
+`{vm,vdm}/{machine,platform,product,profile}` ownership; profile/composition,
+device, port/memory, interrupt,
 firmware-service, DOS-service, host-capability, and debug/command registries;
 machine lifecycle, threading, trace boundaries, host-service trust boundaries,
 and the M3 task breakdown.
@@ -62,7 +63,7 @@ started.
 **Goal:** move the verified NXVM-derived machine into the M2 shared-core shape.
 
 **Scope:** create the versioned Machine V1 contract; instance CPU/RAM/bus,
-port, memory, interrupt, device, trace, and debug state in `machine/core`;
+port, memory, interrupt, device, trace, and debug state in `core/machine`;
 isolate platform presentation; and preserve the M1 full-PC boot
 regression through the `nxvm.full_pc` profile. No owned DOS backend or product
 CLI enters M3.
@@ -81,7 +82,8 @@ disk-image and removable-media policy; retained interactive NXVM Console grammar
 and behavior; debugger entry points; display/input expectations; artifact
 identity; external-ROM manifest boundary; and regression rules that keep
 whole-machine boot ability from becoming accidental. `nxvm.exe` has no new
-process CLI.
+process CLI. Its source entry is `vm/main.c`; the future VDM entry is
+`vdm/main.c`.
 
 **Exit:** versioned firmware and `nxvm.exe` product specifications plus the
 bounded M5 breakdown. **Non-goal:** implementation.
@@ -92,10 +94,10 @@ bounded M5 breakdown. **Non-goal:** implementation.
 full-PC execution path runs on the shared core.
 
 **Scope:** establish CPU capability claims and optional Bochx/Bochs differential
-verification; implement only `profile/vm/default_profile`; migrate the actual CPU execution,
-machine lifecycle, BIOS/POST/ROM, boot devices, and presentation path from the
-temporary baseline adapter into `machine`, `platform`, `product`, and
-`profile`; preserve the original NXVM Console and debugger behavior;
+verification; implement only `vm/profile/default_profile`; migrate the actual
+CPU execution, machine lifecycle, BIOS/POST/ROM, boot devices, and presentation
+path from the temporary baseline adapter into `core/*` and `vm/*`; preserve the
+original NXVM Console and debugger behavior;
 retain FDD/HDD boot fixtures; and produce runnable artifacts. External-ROM
 loading and additional machine profiles remain future design work. `nxvm.exe`
 has no new process CLI.

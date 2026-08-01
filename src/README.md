@@ -1,7 +1,6 @@
 # Source Layout
 
-Shared-core code lives under module directories with headers beside their C
-implementation. The imported NXVM baseline remains isolated in
-`src/nxvm-baseline/` until tracked refactor subtasks move behavior with
-provenance and focused tests. Microsoft component research is outside `src/`
-until an M11 Go decision authorizes a bounded implementation.
+Canonical roots are `core`, `vm`, `vdm`, `adapter`, and `nxvm-baseline`.
+`core` is shared; `vm` and `vdm` are product-specific; `adapter` is temporary
+bridge code; and `nxvm-baseline` is the independent reference. All other
+current source roots are migration sources and receive no new files.
