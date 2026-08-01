@@ -8,7 +8,6 @@
 #include "core/product/utils.h"
 
 #include "core/machine/vpit.h"
-#include "vm/profile/default_profile/firmware/vbios.h"
 #include "core/machine/vport.h"
 #include "core/machine/vpic.h"
 
@@ -436,7 +435,6 @@ void vpicInit() {
     vportAddWrite(0x0021, (t_faddrcc) io_write_0021);
     vportAddWrite(0x00a0, (t_faddrcc) io_write_00A0);
     vportAddWrite(0x00a1, (t_faddrcc) io_write_00A1);
-    vbiosAddPost(VPIC_POST);
     vpitAddMe(0);
 }
 void vpicReset() {

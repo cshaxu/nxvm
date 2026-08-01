@@ -9,7 +9,6 @@
 #include "core/machine/vport.h"
 #include "vm/machine/vfdd.h"
 
-#include "vm/profile/default_profile/firmware/vbios.h"
 #include "vm/machine/vfdc.h"
 
 t_fdc vfdc;
@@ -495,11 +494,6 @@ void vfdcInit() {
     /* connect vfdc to dma request 2 (on vdma1) */
     vdmaAddMe(2);
 
-    vbiosAddPost(VFDC_POST);
-    vbiosAddInt(VFDC_INT_HARD_FDD_0E, 0x0e);
-    /* overridden by VHDC_INT_SOFT_HDD_13 */
-    vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x13);
-    vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x40);
 }
 void vfdcReset() {
     doReset();
