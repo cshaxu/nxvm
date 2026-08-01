@@ -41,8 +41,8 @@ solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T13 S3: rename only the VM request-transport pair out of the historical
-`baseline` label, preserving its exact queue and execution-boundary behavior.
+M5 T13 S4: rename only the VM CPU-probe pair out of the historical `baseline`
+label, preserving its exact finite probe and `#UD` behavior.
 
 ## Completed
 
@@ -239,15 +239,17 @@ M5 T13 S3: rename only the VM request-transport pair out of the historical
   core-to-product ownership debt; no runtime behavior changed.
 - M5 T13 S2: moved the active full-PC composition pair to its final VM owner
   name and revalidated CPU, FDD/HDD, Console, and debugger gates.
+- M5 T13 S3: moved the VM request transport to its final owner name and
+  revalidated transport, CPU, FDD/HDD, Console, and debugger gates.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t13-s3.md`.
+`docs/planning/subtasks/m5-t13-s4.md`.
 
 ## Next Eligible Work
 
-- M5 T13 S3 may rename the VM request transport only. M6 remains blocked until
-  M5 truly closes.
+- M5 T13 S4 may rename the VM CPU probe only. M6 remains blocked until M5 truly
+  closes.
 
 ## Delivery State
 
