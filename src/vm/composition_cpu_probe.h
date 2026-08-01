@@ -1,5 +1,5 @@
-#ifndef NXVM_BASELINE_CPU_PROBE_H
-#define NXVM_BASELINE_CPU_PROBE_H
+#ifndef NXVM_COMPOSITION_CPU_PROBE_H
+#define NXVM_COMPOSITION_CPU_PROBE_H
 
 #include <stddef.h>
 #include <stdint.h>

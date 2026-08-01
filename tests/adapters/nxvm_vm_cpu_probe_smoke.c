@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "vm/product/cpu_probe.h"
+#include "vm/composition_cpu_probe.h"
 #include "core/product/runtime/execution_context.h"
 #include "core/machine/vcpuins.h"
 
