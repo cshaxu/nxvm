@@ -313,7 +313,7 @@ add_library(nxvm-runtime STATIC
     src/vdm/machine/dos_minimal.c
     src/core/product/runtime/profile.c
     src/core/product/runtime/registry.c
-    src/runtime/session.c
+    src/core/product/runtime/session.c
 )
 target_include_directories(nxvm-runtime PUBLIC
     "${CMAKE_SOURCE_DIR}/src"

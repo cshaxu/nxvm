@@ -1,4 +1,4 @@
-#include "runtime/session.h"
+#include "core/product/runtime/session.h"
 
 #include <stdlib.h>
 
