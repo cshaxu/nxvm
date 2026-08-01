@@ -2,7 +2,6 @@
 
 static const nxvm_runtime_profile_descriptor_v1 profile = {
     NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID,
-    NXVM_RUNTIME_PROFILE_ABI_V1,
     NXVM_RUNTIME_PROFILE_MACHINE,
     "products.nxvm.default_profile_builtin",
     NULL,
@@ -12,7 +11,6 @@ static const nxvm_runtime_profile_descriptor_v1 profile = {
 
 static const nxvm_runtime_firmware_provider_descriptor_v1 provider = {
     NXVM_PRODUCT_NXVM_PC_AT_PROVIDER_ID,
-    NXVM_RUNTIME_PROVIDER_ABI_V1,
     NXVM_RUNTIME_FIRMWARE_PROVIDER_BUILTIN,
     "products.nxvm.default_profile_builtin",
     NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID

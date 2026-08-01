@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "core/machine/status.h"
+#include "type.h"
 
 #define NXVM_CORE_KEYBOARD_QUEUE_CAPACITY 32u
 #define NXVM_CORE_TEXT_COLUMNS 80u

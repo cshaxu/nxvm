@@ -6,7 +6,7 @@ int main(void)
 {
     nxvm_core_machine *machine = NULL;
     nxvm_core_machine_config config = {
-        NXVM_CORE_ABI_VERSION, NXVM_CORE_PROFILE_TEST_MINIMAL, 0u
+        NXVM_CORE_PROFILE_TEST_MINIMAL, 0u
     };
     nxvm_core_cpu_state cpu;
     nxvm_core_run_result result;

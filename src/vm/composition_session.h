@@ -1,7 +1,7 @@
 #ifndef NXVM_COMPOSITION_SESSION_H
 #define NXVM_COMPOSITION_SESSION_H
 
-#include "core/machine/status.h"
+#include "type.h"
 #include "core/product/runtime/profile_descriptor.h"
 
 #ifdef __cplusplus

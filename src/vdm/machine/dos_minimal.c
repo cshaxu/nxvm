@@ -98,7 +98,6 @@ nxvm_core_status nxvm_runtime_dos_minimal_create(
 {
     nxvm_runtime_dos_minimal *session;
     nxvm_core_machine_config config = {
-        NXVM_CORE_ABI_VERSION,
         NXVM_CORE_PROFILE_TEST_MINIMAL,
         NXVM_CORE_MINIMUM_MEMORY_BYTES
     };

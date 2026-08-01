@@ -18,12 +18,12 @@ int main(void)
         NXVM_CORE_CPU_CAPABILITY_REAL_MODE_8086
     };
     const nxvm_runtime_profile_descriptor_v1 profile = {
-        "nxvm.machine.test", NXVM_RUNTIME_PROFILE_ABI_V1,
+        "nxvm.machine.test",
         NXVM_RUNTIME_PROFILE_MACHINE, "test", required, 1u,
         "firmware.provider.test"
     };
     const nxvm_runtime_firmware_provider_descriptor_v1 provider = {
-        "firmware.provider.test", NXVM_RUNTIME_PROVIDER_ABI_V1,
+        "firmware.provider.test",
         NXVM_RUNTIME_FIRMWARE_PROVIDER_BUILTIN, "test", "nxvm.machine.test"
     };
     nxvm_core_cpu_capability_manifest capabilities;

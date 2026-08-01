@@ -9,7 +9,7 @@ int main(void)
     nxvm_firmware_default_profile_plan plan;
     nxvm_core_machine *machine = NULL;
     nxvm_core_machine_config config = {
-        NXVM_CORE_ABI_VERSION, NXVM_CORE_PROFILE_TEST_MINIMAL, 0u
+        NXVM_CORE_PROFILE_TEST_MINIMAL, 0u
     };
     nxvm_firmware_default_profile_cmos cmos;
     uint8_t reset[5];

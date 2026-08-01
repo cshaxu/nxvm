@@ -42,7 +42,6 @@ int main(void)
     nxvm_core_machine *first = NULL;
     nxvm_core_machine *second = NULL;
     nxvm_core_machine_config config = {
-        NXVM_CORE_ABI_VERSION,
         NXVM_CORE_PROFILE_TEST_MINIMAL,
         NXVM_CORE_MINIMUM_MEMORY_BYTES
     };

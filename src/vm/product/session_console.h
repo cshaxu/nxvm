@@ -1,7 +1,7 @@
 #ifndef NXVM_PRODUCT_NXVM_CONSOLE_H
 #define NXVM_PRODUCT_NXVM_CONSOLE_H
 
-#include "core/machine/status.h"
+#include "type.h"
 
 typedef enum nxvm_product_nxvm_console_state {
     NXVM_PRODUCT_NXVM_CONSOLE_READY = 1,
