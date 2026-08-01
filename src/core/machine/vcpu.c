@@ -10,14 +10,17 @@
 
 t_cpu vcpu;
 static t_bool vcpuStopRequested;
+static t_bool vcpuResetRequested;
 
 void vcpuInit() {
     vcpuStopRequested = False;
+    vcpuResetRequested = False;
     vcpuinsInit();
 }
 void vcpuReset() {
     MEMSET((void *)(&vcpu), Zero8, sizeof(t_cpu));
     vcpuStopRequested = False;
+    vcpuResetRequested = False;
 
     vcpu.data.eip = 0x0000fff0;
     vcpu.data.eflags = 0x00000002;
@@ -99,6 +102,14 @@ void vcpuRequestStop() {
 t_bool vcpuConsumeStopRequest() {
     t_bool requested = vcpuStopRequested;
     vcpuStopRequested = False;
+    return requested;
+}
+void vcpuRequestReset() {
+    vcpuResetRequested = True;
+}
+t_bool vcpuConsumeResetRequest() {
+    t_bool requested = vcpuResetRequested;
+    vcpuResetRequested = False;
     return requested;
 }
 

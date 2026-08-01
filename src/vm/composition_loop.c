@@ -48,6 +48,9 @@ void deviceStart() {
             break;
         }
         nxvm_execution_context_machine_refresh(&device_execution_context);
+        if (vcpuConsumeResetRequest()) {
+            deviceReset();
+        }
         if (vcpuConsumeStopRequest()) {
             deviceStop();
         }
