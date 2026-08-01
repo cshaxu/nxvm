@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "core/machine/status.h"
-#include "products/nxvm/media.h"
+#include "vm/product/media.h"
 
 typedef struct nxvm_product_nxvm_reset_vector {
     uint16_t cs;

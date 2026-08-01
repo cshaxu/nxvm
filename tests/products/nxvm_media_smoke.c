@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "products/nxvm/media.h"
+#include "vm/product/media.h"
 
 int main(void)
 {

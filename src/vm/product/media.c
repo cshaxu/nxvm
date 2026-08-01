@@ -1,4 +1,4 @@
-#include "products/nxvm/media.h"
+#include "vm/product/media.h"
 
 #include <string.h>
 

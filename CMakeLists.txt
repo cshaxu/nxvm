@@ -37,7 +37,7 @@ add_library(nxvm-core STATIC
 add_library(nxvm-firmware STATIC src/firmware/firmware.c src/firmware/default_profile.c)
 target_include_directories(nxvm-firmware PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(nxvm-firmware PUBLIC nxvm-core)
-add_library(nxvm-product-media STATIC src/products/nxvm/media.c)
+add_library(nxvm-product-media STATIC src/vm/product/media.c)
 target_include_directories(nxvm-product-media PUBLIC "${CMAKE_SOURCE_DIR}/src")
 add_library(nxvm-product-default-profile STATIC src/products/nxvm/default_profile.c)
 target_include_directories(nxvm-product-default-profile PUBLIC "${CMAKE_SOURCE_DIR}/src")

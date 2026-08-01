@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "products/nxvm/media.h"
+#include "vm/product/media.h"
 #include "products/nxvm/default_profile.h"
 
 static int verify(const char *fdd_path, const char *hdd_path,
