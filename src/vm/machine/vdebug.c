@@ -10,7 +10,7 @@
 
 #include "core/machine/vcpuins.h"
 
-#include "machine/core/vdebug.h"
+#include "vm/machine/vdebug.h"
 
 t_debug vdebug;
 
