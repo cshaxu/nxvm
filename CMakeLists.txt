@@ -316,6 +316,13 @@ target_link_libraries(nxvm-execution-context-smoke PRIVATE
     nxvm-machine-vm-lifecycle
 )
 
+add_executable(nxvm-vm-cpu-stop-smoke
+    tests/machine/vm_cpu_stop_smoke.c
+)
+target_link_libraries(nxvm-vm-cpu-stop-smoke PRIVATE
+    nxvm-machine-vm-lifecycle
+)
+
 add_library(nxvm-runtime STATIC
     src/core/product/runtime/registry.c
 )
