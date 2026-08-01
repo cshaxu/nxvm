@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "products/nxvm/profile.h"
+#include "vm/profile/default_profile/profile.h"
 
 static nxvm_core_status nxvm_product_nxvm_session_configure_media(
     nxvm_product_nxvm_session *session,

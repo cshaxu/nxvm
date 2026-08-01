@@ -1,4 +1,4 @@
-#include "products/nxvm/profile.h"
+#include "vm/profile/default_profile/profile.h"
 
 static const nxvm_runtime_profile_descriptor_v1 profile = {
     NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID,
