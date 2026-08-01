@@ -5,10 +5,10 @@
  * and access the virtual devices.
  */
 
-#include "../utils.h"
+#include "nxvm-baseline/utils.h"
 
-#include "vdebug.h"
-#include "vmachine.h"
+#include "nxvm-baseline/device/vdebug.h"
+#include "machine/vm/vmachine.h"
 
 #include "device.h"
 

@@ -38,8 +38,8 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T10 S2: move the original full-PC lifecycle carrier before moving CPU,
-memory, port, and instruction sources.
+M5 T10 S3: move the original CPU, RAM, port, and instruction sources while
+preserving their single-session execution binding.
 
 ## Completed
 
@@ -176,15 +176,19 @@ memory, port, and instruction sources.
 - M5 T10 S1: mapped the actual machine/device/refresh/CPU execution chain,
   bounded its real source-move order, temporary state binding, and regression
   gates without changing runtime behavior.
+- M5 T10 S2: moved the original `machine`, `device`, and `vmachine`
+  implementations into `src/machine/vm`; baseline headers are temporary
+  forwarding compatibility layers only. No-media Console/debugger and full-PC
+  profile-link checks passed.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t10-s2.md`.
+`docs/planning/subtasks/m5-t10-s3.md`.
 
 ## Next Eligible Work
 
-- M5 T10 S2 moves the full-PC lifecycle carrier in a small source slice; M6
-  remains blocked until M5 truly closes.
+- M5 T10 S3 moves the real CPU/RAM/port/instruction source slice; M6 remains
+  blocked until M5 truly closes.
 
 ## Delivery State
 

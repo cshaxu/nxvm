@@ -179,6 +179,11 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/product/core/debug/xasm32/aasm32.c
     src/product/core/debug/xasm32/dasm32.c
 )
+set(NXVM_MACHINE_VM_SOURCES
+    src/machine/vm/machine.c
+    src/machine/vm/device.c
+    src/machine/vm/vmachine.c
+)
 
 add_library(nxvm-product-core-debug STATIC ${NXVM_PRODUCT_CORE_DEBUG_SOURCES})
 target_include_directories(nxvm-product-core-debug PUBLIC
@@ -191,6 +196,13 @@ target_link_libraries(nxvm-baseline-runtime PUBLIC
     nxvm-product-core-debug
     user32
     gdi32)
+
+add_library(nxvm-machine-vm-lifecycle STATIC ${NXVM_MACHINE_VM_SOURCES})
+target_include_directories(nxvm-machine-vm-lifecycle PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+    "${CMAKE_SOURCE_DIR}/src/nxvm-baseline"
+)
+target_link_libraries(nxvm-machine-vm-lifecycle PUBLIC nxvm-baseline-runtime)
 
 add_library(nxvm-product-vm-debug STATIC
     src/product/vm/debug.c
@@ -208,7 +220,9 @@ add_library(nxvm-baseline-full-pc-adapter STATIC
 target_include_directories(nxvm-baseline-full-pc-adapter PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(nxvm-baseline-full-pc-adapter PUBLIC nxvm-baseline-runtime)
+target_link_libraries(nxvm-baseline-full-pc-adapter PUBLIC
+    nxvm-machine-vm-lifecycle
+    nxvm-baseline-runtime)
 target_link_libraries(nxvm-baseline-full-pc-adapter PUBLIC nxvm-product-vm-debug)
 
 add_library(nxvm-baseline-cpu-probe-adapter STATIC
@@ -287,6 +301,7 @@ target_link_libraries(nxvm-full-pc-profile-smoke PRIVATE
 function(add_nxvm_full_pc_artifact target suffix)
     add_executable(${target}
         ${NXVM_BASELINE_SOURCES}
+        ${NXVM_MACHINE_VM_SOURCES}
         ${NXVM_PRODUCT_CORE_DEBUG_SOURCES}
         ${NXVM_PRODUCT_VM_SOURCES})
     target_compile_definitions(${target} PRIVATE "NXVM_BUILD_SUFFIX=\"${suffix}\"")
@@ -311,6 +326,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t6 "m5t6")
 
 add_nxvm_full_pc_artifact(nxvm-m5-t7 "m5t7")
 add_nxvm_full_pc_artifact(nxvm-m5-t9 "m5t9")
+add_nxvm_full_pc_artifact(nxvm-m5-t10 "m5t10")
 
 if(NTVDM64_ENABLE_BOCHX_RESEARCH)
     add_executable(ntvdm64-bochx-manifest-check
