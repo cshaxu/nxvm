@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "core/machine.h"
+#include "machine/core/machine.h"
 
 typedef struct port_fixture {
     uint16_t last_port;

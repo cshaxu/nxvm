@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "core/status.h"
+#include "machine/core/status.h"
 
 #ifdef __cplusplus
 extern "C" {

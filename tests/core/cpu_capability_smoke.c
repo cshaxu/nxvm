@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "core/cpu_capability.h"
+#include "machine/core/cpu_capability.h"
 
 int main(void)
 {

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core/machine.h"
+#include "machine/core/machine.h"
 
 #define NXVM_RUNTIME_KEY_QUEUE_CAPACITY 16u
 

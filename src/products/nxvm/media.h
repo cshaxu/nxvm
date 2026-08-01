@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "core/status.h"
+#include "machine/core/status.h"
 
 #define NXVM_PRODUCT_NXVM_MEDIA_PATH_CAPACITY 512u
 #define NXVM_PRODUCT_NXVM_MEDIA_NAME_CAPACITY 32u

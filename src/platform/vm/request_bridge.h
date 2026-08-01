@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "machine/core/contract/status.h"
+#include "machine/core/status.h"
 
 #define NXVM_PLATFORM_VM_REQUEST_CAPACITY 32u
 

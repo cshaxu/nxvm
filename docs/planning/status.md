@@ -38,7 +38,7 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T12 S8: switch retained keyboard-state synchronization through ingress.
+M5 T12 S9: retain the planned keyboard-state ingress switch; it has not begun.
 
 ## Completed
 
@@ -219,6 +219,9 @@ M5 T12 S8: switch retained keyboard-state synchronization through ingress.
 - M5 T12 S7: selected keyboard-state synchronization as the first producer;
   key-down, F9, and display remain direct, with enqueue failure preserving the
   original status path.
+- M5 T12 S8: flattened `machine/core/contract` into `machine/core`, removed
+  `src/core` forwarding headers, and revalidated the core, profile, product,
+  and retained NXVM build gates without changing user-visible behavior.
 
 ## Active Subtask
 
@@ -226,7 +229,7 @@ M5 T12 S8: switch retained keyboard-state synchronization through ingress.
 
 ## Next Eligible Work
 
-- M5 T12 S8 switches retained keyboard-state synchronization through ingress;
+- M5 T12 S9 may switch retained keyboard-state synchronization through ingress.
   M6 remains blocked until M5 truly closes.
 
 ## Delivery State

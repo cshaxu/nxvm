@@ -24,6 +24,12 @@ src/
 Headers stay beside implementations. Device models are flat files unless they
 become real multi-file subsystems.
 
+`machine/core` is the only machine-core directory. Its public headers and C
+implementations are peers (`cpu.h/.c`, `machine.h/.c`, `memory.h/.c`, and so
+on); private implementation headers use the `_impl.h` suffix. There is no
+`machine/core/contract` layer. The earlier `src/core` forwarding tree has been
+removed: callers include `machine/core/*.h` directly.
+
 ## Ownership
 
 `machine/core` contains shared CPU/instructions, RAM, bus, interrupts,
@@ -55,3 +61,9 @@ and wire components; they never implement CPU, devices, DOS, or host calls.
 `profile -> abstract machine/product contracts`; `platform -> host OS`.
 Forbidden: core-to-platform/product/profile, platform-to-guest-state,
 profile-to-device implementation, and product-to-concrete host API.
+
+`src/nxvm-baseline` and `src/adapters/nxvm_baseline` are M5 transition and
+regression references, not final product modules. Until T13 they may preserve
+the old full-PC path solely for comparison; T13 removes them from the formal
+`nxvm.exe` target and then deletes the adapter. No new formal-product
+dependency may be added to either tree.

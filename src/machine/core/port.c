@@ -1,4 +1,4 @@
-#include "machine/core/contract/machine_impl.h"
+#include "machine/core/machine_impl.h"
 
 #include <stdlib.h>
 

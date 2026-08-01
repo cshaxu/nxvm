@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "machine/core/contract/machine.h"
+#include "machine/core/machine.h"
 
 typedef struct nxvm_core_pc_devices {
     uint8_t pic_pending;

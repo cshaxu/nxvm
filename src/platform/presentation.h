@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "core/status.h"
+#include "machine/core/status.h"
 #include "runtime/dos_minimal.h"
 
 #ifdef __cplusplus

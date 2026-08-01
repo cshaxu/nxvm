@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-#include "machine/core/contract/machine.h"
+#include "machine/core/machine.h"
 
 #ifdef __cplusplus
 extern "C" {

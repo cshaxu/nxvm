@@ -1,5 +1,5 @@
-# Superseded Layout
+# Machine
 
-This old placeholder predates the shared-core direction. New machine-core code
-belongs in `src/core/`. Firmware-specific behavior belongs in `src/firmware/`
-when that module is created.
+`machine/core` is the sole shared machine-core directory. Its public API and
+implementation files are peers; private headers use the `_impl.h` suffix.
+`machine/vm` and `machine/vdm` add only product-specific machine behavior.
