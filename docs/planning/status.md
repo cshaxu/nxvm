@@ -38,7 +38,7 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T11 S7: migrate the retained FDD source into `machine/vm` without changing
+M5 T11 S9: select and migrate one retained adjacent VM device without changing
 NXVM behavior.
 
 ## Completed
@@ -187,15 +187,18 @@ NXVM behavior.
 - M5 T10 S5: verified `nxvm-m5-t10.exe` compiles lifecycle, loop, CPU, RAM,
   port, and instruction dispatch only from their migrated module owners. The
   verified task artifact is recorded in its closure evidence.
+- M5 T11 S8: moved the retained HDD implementation into `machine/vm`, with
+  forwarding-header compatibility only; GCC, lifecycle, CPU, FDD/HDD reset,
+  Console, and debugger regressions passed.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t11-s7.md`.
+`docs/planning/subtasks/m5-t11-s9.md`.
 
 ## Next Eligible Work
 
-- M5 T11 S7 migrates the retained FDD source; M6 remains blocked until M5
-  truly closes.
+- M5 T11 S9 selects the next small retained VM-device migration; M6 remains
+  blocked until M5 truly closes.
 
 ## Delivery State
 
