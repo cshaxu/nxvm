@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "core/platform/global.h"
+#include "type.h"
 
 uint8_t dasm32(char *stmt, uint8_t *rcode, int flag32);
 

@@ -1,9 +1,9 @@
 /* Copyright 2012-2014 Neko. */
 
-/* Global Settings */
+/* Shared project types and compile-time settings. */
 
-#ifndef NXVM_GLOBAL_H
-#define NXVM_GLOBAL_H
+#ifndef NTVDM64_TYPE_H
+#define NTVDM64_TYPE_H
 
 #ifdef __cplusplus
 extern "C" {

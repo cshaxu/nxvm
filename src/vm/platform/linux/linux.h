@@ -7,7 +7,7 @@
 /*extern "C" {*/
 #endif
 
-#include "core/platform/global.h"
+#include "type.h"
 
 void linuxSleep(uint32_t milisec);
 void linuxDisplaySetScreen(int window);

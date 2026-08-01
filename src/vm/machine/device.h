@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "core/platform/global.h"
+#include "type.h"
 
 typedef struct {
     int flagFlip;  /* flag flips when device thread is created  */
