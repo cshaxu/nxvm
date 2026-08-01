@@ -41,8 +41,8 @@ solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T13 S7: design and split VM/VDM session composition out of `core/product`;
-retain existing session/profile behavior and full-PC compatibility gates.
+M5 T13 S8: split VM/VDM session composition out of `core/product` using the
+approved product-owned descriptor and session design.
 
 ## Completed
 
@@ -247,15 +247,17 @@ retain existing session/profile behavior and full-PC compatibility gates.
   implementation slices; no runtime source changed.
 - M5 T13 S6: moved the shared presentation type into core; VDM retains its
   private PIT/IRQ state and copies only display data across the boundary.
+- M5 T13 S7: defined the product-owned session/profile replacement API and
+  test migration map; no runtime source changed.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t13-s7.md`.
+`docs/planning/subtasks/m5-t13-s8.md`.
 
 ## Next Eligible Work
 
-- M5 T13 S7 may design and split product session composition only. M6 remains
-  blocked until M5 truly closes.
+- M5 T13 S8 may split product session composition only. M6 remains blocked
+  until M5 truly closes.
 
 ## Delivery State
 
