@@ -254,3 +254,25 @@ platform contract. A platform receives only a platform frame and never a
 controller state, or window policy. This permits debugger inspection and
 safe presentation refresh without turning core into a whole-product snapshot
 schema.
+
+## Core Platform: Host-Capability Boundary
+
+`core/platform` defines reusable host-capability, platform-event, and
+presentation-frame contracts. It has no `CORE_MACHINE` dependency and knows no
+DOS service, VM profile, CLI, debugger policy, product exit status, or window
+ownership decision.
+
+A platform provider may produce copied, normalized host events on a host
+thread and may consume copied presentation, audio, or log frames. It may not
+mutate guest state. VM or VDM root composition is the sole bridge: it accepts
+platform events into its product-owned queue, consumes them at a machine
+execution boundary, and translates machine/provider views into platform frames
+before submission.
+
+Concrete host implementations reused by both products belong in
+`core/platform/win32` or `core/platform/linux`; platform-neutral contracts and
+helpers live directly in `core/platform`. Full-machine window policy remains
+in `vm/platform`. VDM parent-Console protection, cancellation semantics, and
+drive/path containment remain in `vdm/platform`. A core platform capability
+provides a mechanism, never a product policy or a hidden second composition
+layer.
