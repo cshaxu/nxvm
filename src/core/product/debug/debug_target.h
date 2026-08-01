@@ -47,4 +47,7 @@ typedef struct core_product_debug_target {
     void *context;
 } core_product_debug_target;
 
+void core_product_debug_bind_target(const core_product_debug_target *target);
+const core_product_debug_target *core_product_debug_get_target(void);
+
 #endif
