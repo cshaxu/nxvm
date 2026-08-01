@@ -4,7 +4,7 @@
 
 #include "nxvm-baseline/utils.h"
 
-#include "machine/core/vdma.h"
+#include "core/machine/vdma.h"
 
 #include "machine/vm/vfdd.h"
 
