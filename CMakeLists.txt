@@ -172,7 +172,7 @@ list(FILTER NXVM_BASELINE_RUNTIME_SOURCES EXCLUDE REGEX ".*/main\\.c$")
 
 set(NXVM_PRODUCT_VM_SOURCES
     src/vm/main.c
-    src/product/vm/console.c
+    src/vm/product/console.c
     src/product/vm/debug.c
 )
 set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
