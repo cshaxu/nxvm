@@ -1,4 +1,4 @@
-#include "adapters/nxvm_baseline/cpu_probe.h"
+#include "vm/product/baseline_cpu_probe.h"
 
 #include <string.h>
 

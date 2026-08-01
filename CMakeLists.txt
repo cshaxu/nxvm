@@ -286,7 +286,7 @@ target_link_libraries(nxvm-baseline-full-pc-adapter PUBLIC
 target_link_libraries(nxvm-baseline-full-pc-adapter PUBLIC nxvm-product-vm-debug)
 
 add_library(nxvm-baseline-cpu-probe-adapter STATIC
-    src/adapters/nxvm_baseline/cpu_probe.c
+    src/vm/product/baseline_cpu_probe.c
 )
 target_include_directories(nxvm-baseline-cpu-probe-adapter PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
