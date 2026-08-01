@@ -271,6 +271,10 @@ legacy `vmachine` lifecycle sequence.
   legacy `utilsSleep` callers and timing arguments remain unchanged. A focused
   provider smoke and the full retained NXVM gates passed; the temporary source
   allowlist is now 7 edges.
+- M5 T14 S3: replaced Win32 keyboard-machine calls with a VM-platform input
+  sink bound by composition. Key mapping, F9 fallthrough, and existing Console
+  and window call order remain unchanged. The focused input smoke and full
+  retained NXVM gates passed; the temporary source allowlist is now 6 edges.
 
 ## Active Subtask
 

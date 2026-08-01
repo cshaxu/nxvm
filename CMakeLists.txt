@@ -221,6 +221,7 @@ set(NXVM_CORE_PRODUCT_RUNTIME_SOURCES
 set(NXVM_PLATFORM_VM_SOURCES
     src/vm/platform/platform.c
     src/vm/platform/display_frame.c
+    src/vm/platform/input.c
     src/vm/platform/win32/win32.c
     src/vm/platform/win32/w32cdisp.c
     src/vm/platform/win32/w32adisp.c
@@ -295,6 +296,11 @@ target_include_directories(nxvm-platform-vm PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(nxvm-platform-vm PUBLIC nxvm-product-core-utils)
+
+add_executable(nxvm-vm-platform-input-smoke
+    tests/platform/vm_platform_input_smoke.c
+)
+target_link_libraries(nxvm-vm-platform-input-smoke PRIVATE nxvm-platform-vm)
 
 add_library(nxvm-legacy-runtime-dependencies INTERFACE)
 target_link_libraries(nxvm-legacy-runtime-dependencies INTERFACE
