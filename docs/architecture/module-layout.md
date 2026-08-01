@@ -47,7 +47,9 @@ Shared presentation contracts carry only presentation data: text cells,
 attributes, geometry, cursor, generation, and timestamps. Product-private
 machine diagnostics such as DOS-minimal PIT state or pending keyboard IRQ state
 remain in that product's machine module and require a separate product
-diagnostic contract if they must be exposed.
+diagnostic contract if they must be exposed. A product-private snapshot may
+embed the shared core text snapshot; its platform adapter copies that child
+object without translating product diagnostics into presentation data.
 
 Ownership is determined by reuse, not by abstraction level or the source's
 current directory. Any logic used by both products belongs in the matching

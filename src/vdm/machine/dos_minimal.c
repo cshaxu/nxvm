@@ -18,10 +18,11 @@ static void nxvm_runtime_dos_minimal_clear(
     nxvm_runtime_dos_minimal *session)
 {
     memset(&session->snapshot, 0, sizeof(session->snapshot));
-    memset(session->snapshot.characters, ' ',
-           sizeof(session->snapshot.characters));
-    memset(session->snapshot.attributes, 0x07,
-           sizeof(session->snapshot.attributes));
+    nxvm_core_text_snapshot_initialize(&session->snapshot.text);
+    memset(session->snapshot.text.characters, ' ',
+           sizeof(session->snapshot.text.characters));
+    memset(session->snapshot.text.attributes, 0x07,
+           sizeof(session->snapshot.text.attributes));
     session->key_count = 0u;
 }
 
@@ -173,11 +174,11 @@ nxvm_core_status nxvm_runtime_dos_minimal_write_text(
     uint8_t character,
     uint8_t attribute)
 {
-    if (session == NULL || cell >= NXVM_RUNTIME_TEXT_CELLS) {
+    if (session == NULL || cell >= NXVM_CORE_TEXT_CELLS) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
-    session->snapshot.characters[cell] = character;
-    session->snapshot.attributes[cell] = attribute;
+    session->snapshot.text.characters[cell] = character;
+    session->snapshot.text.attributes[cell] = attribute;
     return NXVM_CORE_STATUS_OK;
 }
 
