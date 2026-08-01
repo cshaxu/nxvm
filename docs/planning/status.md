@@ -27,23 +27,19 @@ M4 is complete. Firmware, profile/provider, CPU verification, and retained
 NXVM Console contracts now bound M5 implementation without changing runtime
 behavior.
 
-## M5 Reopened
+## M5 Closure
 
-The former M5 closure established product composition and regression evidence,
-but its user-facing full-PC execution still entered `src/nxvm-baseline/`
-through a temporary adapter. M5 T12 S9 has now migrated the actual execution,
-firmware, platform, retained Console/debugger sources, and deleted that source
-root. M5 remains open for composition, fixture, and deferred interface work
-before M6 may begin. The historical `snapshot/m5-nxvm-28fb4b1` remains a
-checkpoint, not an M5 completion snapshot. Completed M5 records retain their
-then-current paths as historical evidence; the forward source layout is defined
-solely by `docs/architecture/module-layout.md`.
+M5 is complete. The actual bootable NXVM path compiles from the `core`, `vm`,
+and test-only `vdm` topology without a baseline or adapter source root. Core,
+VM, and VDM module/composition targets are source-owner checked with no
+exception list; the retained Console and debugger continue through VM root
+composition. Full GCC, source-DAG, core/VM/VDM smoke, and local FDD/HDD fixture
+session/profile evidence passed. The historical `snapshot/m5-nxvm-28fb4b1`
+remains a checkpoint, not the M5 closure snapshot.
 
 ## Active Work
 
-M5 T14 S3: remove core-to-VM/default-profile dependencies through approved
-core contracts and VM root-composition bindings, beginning with the preserved
-legacy `vmachine` lifecycle sequence.
+M5 T14 S3 P59: publish the closure artifact and final verification evidence.
 
 ## Completed
 
@@ -340,16 +336,16 @@ legacy `vmachine` lifecycle sequence.
 - M5 T14 S3: recast the test-only VDM minimal shell as explicit machine,
   profile, and composition targets. No VDM executable, DOS runner, or CLI was
   added.
-
-## Active Subtask
-
-`docs/planning/subtasks/m5-t14-s3.md`.
+- M5 T14 S3: completed the M5 closure audit. The full GCC build, all available
+  core/VM/VDM smokes, source-DAG with zero allowed edges, source-root scan,
+  local FDD/HDD fixture session/profile checks, and retained NXVM Console smoke
+  passed. The task artifact `ntvdm64-m5_t14.exe` is built from the same VM
+  composition graph with the `m5t14` identity.
 
 ## Next Eligible Work
 
-- M5 T14 S3 may remove the approved core-to-VM/default-profile dependency
-  edges. T13 S9-S11 are superseded; M6 remains blocked until the new M5
-  closure rule is met.
+- M6 design may begin. M7+ implementation remains blocked until M6 produces
+  its approved architecture and bounded task breakdown.
 
 ## Delivery State
 
