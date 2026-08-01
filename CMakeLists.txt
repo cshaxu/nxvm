@@ -32,7 +32,7 @@ add_library(nxvm-core STATIC
     src/machine/core/contract/port.c
     src/core/pc_devices.c
     src/core/presentation.c
-    src/core/trace.c
+    src/machine/core/contract/trace.c
 )
 add_library(nxvm-firmware STATIC src/firmware/firmware.c src/firmware/default_profile.c)
 target_include_directories(nxvm-firmware PUBLIC "${CMAKE_SOURCE_DIR}/src")
