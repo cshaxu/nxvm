@@ -147,3 +147,24 @@ CPU and memory mutation occurs only at an execution boundary. A debugger, DOS
 loader, firmware override, or root composition uses these APIs only after the
 current quantum has returned; `core/product` receives an adapted debug target,
 not a `CORE_MACHINE` handle.
+
+## Core Machine: Frozen Topology And Mutable Guest State
+
+`core_machine_freeze` makes the machine topology immutable: physical-address
+routing, port ownership, IRQ ownership, and firmware-service registration may
+not be added, removed, or rebound until root composition destroys and rebuilds
+the machine. It does not make guest-visible contents immutable.
+
+While a quantum runs, guest CPU instructions, DOS, and firmware may freely
+change writable RAM and device state through the frozen map. For example, a
+guest may write video memory, update interrupt vectors in writable memory, or
+change DMA/device registers. A ROM or other read-only region retains the
+semantics supplied by its registered provider. Dynamic CPU address behavior,
+including A20, affects translation to the same frozen map; it never changes
+which provider owns a mapped range.
+
+External mutations remain serialized at an execution boundary. Root
+composition delivers host input and product commands through its own boundary,
+then the relevant provider or core API applies them on the machine execution
+thread. This preserves deterministic guest state without giving platform or
+product modules direct access to the machine.
