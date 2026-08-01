@@ -10,7 +10,7 @@
 #include "nxvm-baseline/device/vbios.h"
 #include "machine/core/vpit.h"
 #include "machine/core/vdma.h"
-#include "machine/core/vpic.h"
+#include "core/machine/vpic.h"
 #include "machine/core/vcmos.h"
 #include "machine/vm/vfdc.h"
 #include "machine/vm/vfdd.h"

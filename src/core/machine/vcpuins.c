@@ -9,7 +9,7 @@
 
 #include "core/machine/vport.h"
 #include "core/machine/vram.h"
-#include "machine/core/vpic.h"
+#include "core/machine/vpic.h"
 
 #include "core/machine/vcpuins.h"
 
