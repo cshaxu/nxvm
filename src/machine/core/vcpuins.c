@@ -4,14 +4,14 @@
 #define i386(n) if (1)
 /* ************************************************************************* */
 
-#include "../utils.h"
-#include "device.h"
+#include "nxvm-baseline/utils.h"
+#include "nxvm-baseline/device/device.h"
 
-#include "vport.h"
-#include "vram.h"
-#include "vpic.h"
+#include "machine/core/vport.h"
+#include "machine/core/vram.h"
+#include "nxvm-baseline/device/vpic.h"
 
-#include "vcpuins.h"
+#include "machine/core/vcpuins.h"
 
 t_cpuins vcpuins;
 
