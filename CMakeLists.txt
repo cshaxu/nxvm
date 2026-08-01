@@ -182,7 +182,7 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
 set(NXVM_MACHINE_VM_SOURCES
     src/core/product/runtime/execution_context.c
     src/vm/machine/machine.c
-    src/machine/vm/device.c
+    src/vm/machine/device.c
     src/machine/vm/vmachine.c
     src/machine/vm/vfdd.c
     src/machine/vm/vhdd.c

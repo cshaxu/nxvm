@@ -27,3 +27,8 @@ The M5 T12 S9 canonical-root follow-up moved the unchanged lifecycle pair to
 `src/vm/machine/machine.c` and `.h`, repaired its direct callers, and reran the
 GCC target plus finite CPU probe. The probe retained
 `M5:T1:S1:CPU-PROBES:OK`.
+
+The same follow-up then moved the unchanged retained device loop to
+`src/vm/machine/device.c` and `.h`. Its direct callers and focused lifecycle
+smoke include now use that owner; the same GCC target and CPU probe passed with
+the established marker.

@@ -2,7 +2,7 @@
 
 /* MACHINE controls machine status. */
 
-#include "machine/vm/device.h"
+#include "vm/machine/device.h"
 #include "platform/vm/platform.h"
 
 #include "vm/machine/machine.h"
