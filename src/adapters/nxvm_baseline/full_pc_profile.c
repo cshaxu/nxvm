@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "nxvm-baseline/device/device.h"
-#include "nxvm-baseline/debug.h"
+#include "product/vm/debug.h"
 #include "nxvm-baseline/machine.h"
 #include "nxvm-baseline/platform/platform.h"
 
