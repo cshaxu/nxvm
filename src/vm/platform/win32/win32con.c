@@ -3,11 +3,11 @@
 /* WIN32CON provides win32 console i/o interface. */
 
 #include "core/product/utils.h"
-#include "../../device/device.h"
+#include "vm/machine/device.h"
 
 #include "vm/platform/win32/win32.h"
 #include "vm/platform/win32/w32cdisp.h"
-#include "win32con.h"
+#include "vm/platform/win32/win32con.h"
 
 HANDLE hIn, hOut;
 

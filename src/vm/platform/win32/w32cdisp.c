@@ -6,7 +6,7 @@
 
 #include "vm/machine/device.h"
 
-#include "nxvm-baseline/platform/win32/win32con.h"
+#include "vm/platform/win32/win32con.h"
 #include "vm/platform/win32/w32cdisp.h"
 
 static PCHAR_INFO charBuf;
