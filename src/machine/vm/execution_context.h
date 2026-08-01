@@ -18,5 +18,6 @@ void nxvm_execution_context_bind_machine_state(
     nxvm_execution_context *context, void *cpu, void *ram, void *port,
     void *device);
 const nxvm_execution_context *nxvm_execution_context_current(void);
+void *nxvm_execution_context_cpu(const nxvm_execution_context *context);
 
 #endif

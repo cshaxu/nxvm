@@ -38,3 +38,8 @@ const nxvm_execution_context *nxvm_execution_context_current(void)
 {
     return nxvm_current_execution_context;
 }
+
+void *nxvm_execution_context_cpu(const nxvm_execution_context *context)
+{
+    return context != 0 ? context->cpu : 0;
+}
