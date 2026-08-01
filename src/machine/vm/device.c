@@ -19,6 +19,18 @@
 t_device device;
 static nxvm_execution_context device_execution_context;
 
+static void device_execution_context_reset(void)
+{
+    vdebugReset();
+    vmachineReset();
+}
+
+static const nxvm_execution_context_callbacks device_execution_callbacks = {
+    device_execution_context_reset,
+    vdebugRefresh,
+    vmachineRefresh
+};
+
 /* Starts device thread */
 void deviceStart() {
     nxvm_execution_context_enter(&device_execution_context);
@@ -26,15 +38,14 @@ void deviceStart() {
     device.flagFlip = !device.flagFlip;
     while (device.flagRun) {
         if (device.flagReset) {
-            vdebugReset();
-            vmachineReset();
+            nxvm_execution_context_reset(&device_execution_context);
             device.flagReset = False;
         }
-        vdebugRefresh();
+        nxvm_execution_context_debug_refresh(&device_execution_context);
         if (!device.flagRun) {
             break;
         }
-        vmachineRefresh();
+        nxvm_execution_context_machine_refresh(&device_execution_context);
     }
     nxvm_execution_context_leave(&device_execution_context);
 }
@@ -44,8 +55,7 @@ void deviceReset() {
     if (device.flagRun) {
         device.flagReset = True;
     } else {
-        vdebugReset();
-        vmachineReset();
+        nxvm_execution_context_reset(&device_execution_context);
         device.flagReset = False;
     }
 }
@@ -61,6 +71,8 @@ void deviceInit() {
     nxvm_execution_context_initialize(&device_execution_context);
     nxvm_execution_context_bind_machine_state(
         &device_execution_context, &vcpu, &vram, &vport, &device);
+    nxvm_execution_context_bind_callbacks(
+        &device_execution_context, &device_execution_callbacks);
     nxvm_execution_context_enter(&device_execution_context);
     vdebugInit();
     vmachineInit();

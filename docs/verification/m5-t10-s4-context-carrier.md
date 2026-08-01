@@ -31,3 +31,9 @@ P7 changes only `machine/vm/vmachine.c` to include the migrated CPU, RAM, and
 port headers from `machine/core`; its controller and firmware includes remain
 unchanged for T11. GCC build, CPU probe, no-media Console, and debugger-prompt
 regressions passed.
+
+P8 binds the retained device-loop order to the execution-context callback
+table. Its reset callback still calls `vdebugReset` then `vmachineReset`; its
+refresh callbacks still call `vdebugRefresh` before `vmachineRefresh`. GCC
+build, sequential CPU-probe, no-media Console, and debugger-prompt regressions
+passed.

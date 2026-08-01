@@ -34,6 +34,15 @@ void nxvm_execution_context_bind_machine_state(
     }
 }
 
+void nxvm_execution_context_bind_callbacks(
+    nxvm_execution_context *context,
+    const nxvm_execution_context_callbacks *callbacks)
+{
+    if (context != 0) {
+        context->callbacks = callbacks;
+    }
+}
+
 const nxvm_execution_context *nxvm_execution_context_current(void)
 {
     return nxvm_current_execution_context;
@@ -42,4 +51,28 @@ const nxvm_execution_context *nxvm_execution_context_current(void)
 void *nxvm_execution_context_cpu(const nxvm_execution_context *context)
 {
     return context != 0 ? context->cpu : 0;
+}
+
+void nxvm_execution_context_reset(nxvm_execution_context *context)
+{
+    if (context != 0 && context->callbacks != 0 &&
+        context->callbacks->reset != 0) {
+        context->callbacks->reset();
+    }
+}
+
+void nxvm_execution_context_debug_refresh(nxvm_execution_context *context)
+{
+    if (context != 0 && context->callbacks != 0 &&
+        context->callbacks->debug_refresh != 0) {
+        context->callbacks->debug_refresh();
+    }
+}
+
+void nxvm_execution_context_machine_refresh(nxvm_execution_context *context)
+{
+    if (context != 0 && context->callbacks != 0 &&
+        context->callbacks->machine_refresh != 0) {
+        context->callbacks->machine_refresh();
+    }
 }
