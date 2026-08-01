@@ -281,7 +281,7 @@ target_link_libraries(nxvm-product-vm-debug PUBLIC
     nxvm-baseline-runtime)
 
 add_library(nxvm-vm-full-pc STATIC
-    src/vm/product/full_pc.c
+    src/vm/composition_full_pc.c
 )
 target_include_directories(nxvm-vm-full-pc PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
