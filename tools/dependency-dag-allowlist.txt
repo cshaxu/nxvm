@@ -11,5 +11,4 @@ src/vm/platform/win32/win32con.c|vm/machine
 src/vm/product/console.c|vm/machine
 src/vm/product/console.c|vm/platform
 src/vm/product/debug.c|vm/machine
-src/vm/profile/default_profile/firmware/qdcga.c|vm/platform
 src/vm/profile/default_profile/firmware/qdcga.c|vm/machine
