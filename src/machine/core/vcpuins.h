@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include "machine/core/vcpu.h"
+#include "core/machine/vcpu.h"
 
 typedef enum {
     ARITHTYPE_NULL,

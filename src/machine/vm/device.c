@@ -10,7 +10,7 @@
 #include "machine/core/vdebug.h"
 #include "machine/vm/vmachine.h"
 #include "machine/vm/execution_context.h"
-#include "machine/core/vcpu.h"
+#include "core/machine/vcpu.h"
 #include "machine/core/vram.h"
 #include "machine/core/vport.h"
 
