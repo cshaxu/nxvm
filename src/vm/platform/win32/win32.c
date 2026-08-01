@@ -5,7 +5,7 @@
 #include "vm/machine/device.h"
 
 #include "vm/platform/win32/win32con.h"
-#include "nxvm-baseline/platform/win32/win32app.h"
+#include "vm/platform/win32/win32app.h"
 #include "vm/platform/win32/win32.h"
 
 static UCHAR CodeMap[][8]= {

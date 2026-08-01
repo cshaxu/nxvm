@@ -4,7 +4,7 @@
 
 #include "vm/machine/device.h"
 
-#include "nxvm-baseline/platform/win32/win32app.h"
+#include "vm/platform/win32/win32app.h"
 #include "vm/platform/win32/w32adisp.h"
 
 #define W32ADISP_FONT_BITMAP 1
