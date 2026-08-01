@@ -77,7 +77,7 @@ are not forbidden peer edges.
 
 | Current target/debt | Required outcome |
 | --- | --- |
-| `nxvm-baseline-runtime` | Delete after its runtime/profile/platform sources are assigned to their owner targets. No replacement aggregate may mix core, VM platform, and VM profile sources. |
+| `nxvm-baseline-runtime` | Complete: deleted. Its former core-product, VM-profile, and VM-platform sources now compile in separate ownership targets. The temporary `nxvm-legacy-runtime-dependencies` target is link-only (`INTERFACE`) and owns no source; M5 closure replaces it with final module links. |
 | `nxvm-machine-core-executor` | Complete for the retained build: it now compiles only `core/machine` sources. The final named `core-machine` target remains M5 closure work. |
 | `nxvm-firmware` | Split core firmware registry from default-profile firmware implementation; composition links both. |
 | `nxvm-product-default-profile`, `nxvm-product-profile`, `nxvm-product-session` | Remove product/profile cross-linking. Product UX and profile metadata become peers linked only by `vm-composition`. |
