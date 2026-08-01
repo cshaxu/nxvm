@@ -27,6 +27,8 @@ typedef struct core_product_debug_target {
                          uint32_t *value);
     int (*write_register)(void *context, core_product_debug_register reg,
                           uint32_t value);
+    int (*get_code_default_size)(void *context);
+    uint32_t (*get_code_base)(void *context);
     int (*read_linear)(void *context, uint32_t address, void *out, uint8_t size);
     int (*write_linear)(void *context, uint32_t address, const void *in, uint8_t size);
     int (*read_real)(void *context, uint16_t segment, uint16_t offset,
@@ -44,6 +46,11 @@ typedef struct core_product_debug_target {
     void (*set_watch)(void *context, core_product_debug_watch_kind kind,
                       uint32_t address);
     void (*clear_watch)(void *context, core_product_debug_watch_kind kind);
+    void (*print_registers)(void *context);
+    void (*print_segment_registers)(void *context);
+    void (*print_control_registers)(void *context);
+    void (*print_memory)(void *context);
+    void (*print_watchpoints)(void *context);
     void *context;
 } core_product_debug_target;
 

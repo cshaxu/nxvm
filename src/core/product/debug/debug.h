@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_DEBUG_H
-#define NXVM_DEBUG_H
+#ifndef NTVDM64_CORE_PRODUCT_DEBUG_H
+#define NTVDM64_CORE_PRODUCT_DEBUG_H
 
 #ifdef __cplusplus
 extern "C" {

@@ -294,7 +294,13 @@ legacy `vmachine` lifecycle sequence.
   composition adapters and the retained UI source move remain pending.
 - M5 T14 S3: bound the core debugger target in VM composition and verified
   register and real-memory callbacks against the initialized NXVM machine.
-  The legacy debugger UI move remains the next isolated slice.
+- M5 T14 S3: moved the retained debugger command UI and header into
+  `core/product/debug` after replacing all direct device operations with the
+  core debug-target access contract. VM composition supplies the retained
+  register, memory, port, execution, break/trace, watchpoint, and diagnostic
+  callbacks. The source-DAG allowlist is now empty; GCC and focused debugger
+  target smokes passed. Retained interactive debugger and full-PC gates remain
+  required before this slice is accepted.
 
 ## Active Subtask
 

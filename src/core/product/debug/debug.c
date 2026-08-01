@@ -4,11 +4,9 @@
  * and print virtual machine devices. */
 
 #include "core/product/utils.h"
+#include "core/product/debug/debug_access.h"
 
-#include "vm/machine/device.h"
-#include "vm/composition_machine.h"
-
-#include "vm/product/debug.h"
+#include "core/product/debug/debug.h"
 
 #define DEBUG_MAXNARG 256
 #define DEBUG_MAXNASMARG 4
@@ -18,6 +16,49 @@ static size_t narg;
 static char **arg;
 static int flagExit;
 static char strCmdBuff[0x100], strCmdCopy[0x100], strFileName[0x100];
+
+static uint32_t debug_register(core_product_debug_register reg) {
+    uint32_t value = 0;
+    core_product_debug_read_register(reg, &value);
+    return value;
+}
+static int debug_set_register(core_product_debug_register reg, uint32_t value) {
+    return core_product_debug_write_register(reg, value);
+}
+static int debug_flag(uint32_t mask) {
+    return (debug_register(CORE_PRODUCT_DEBUG_EFLAGS) & mask) != 0;
+}
+static void debug_set_flag(uint32_t mask, int set) {
+    uint32_t flags = debug_register(CORE_PRODUCT_DEBUG_EFLAGS);
+    debug_set_register(CORE_PRODUCT_DEBUG_EFLAGS, set ? flags | mask : flags & ~mask);
+}
+
+#define _eax debug_register(CORE_PRODUCT_DEBUG_EAX)
+#define _ecx debug_register(CORE_PRODUCT_DEBUG_ECX)
+#define _edx debug_register(CORE_PRODUCT_DEBUG_EDX)
+#define _ebx debug_register(CORE_PRODUCT_DEBUG_EBX)
+#define _esp debug_register(CORE_PRODUCT_DEBUG_ESP)
+#define _ebp debug_register(CORE_PRODUCT_DEBUG_EBP)
+#define _esi debug_register(CORE_PRODUCT_DEBUG_ESI)
+#define _edi debug_register(CORE_PRODUCT_DEBUG_EDI)
+#define _eflags debug_register(CORE_PRODUCT_DEBUG_EFLAGS)
+#define _eip debug_register(CORE_PRODUCT_DEBUG_EIP)
+#define _cr(i) debug_register((core_product_debug_register)(CORE_PRODUCT_DEBUG_CR0 + (i)))
+#define _ax ((uint16_t)_eax)
+#define _cx ((uint16_t)_ecx)
+#define _dx ((uint16_t)_edx)
+#define _bx ((uint16_t)_ebx)
+#define _sp ((uint16_t)_esp)
+#define _bp ((uint16_t)_ebp)
+#define _si ((uint16_t)_esi)
+#define _di ((uint16_t)_edi)
+#define _ip ((uint16_t)_eip)
+#define _es ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_ES))
+#define _cs ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_CS))
+#define _ss ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_SS))
+#define _ds ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_DS))
+#define _fs ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_FS))
+#define _gs ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_GS))
 
 static void seterr(size_t pos) {
     nErrPos = (size_t)(arg[pos] - strCmdCopy + STRLEN(arg[pos]) + 1);
@@ -143,11 +184,11 @@ static void aconsole() {
             continue;
         }
         errAsmPos = 0;
-        len = utilsAasm32(cmdAsmBuff, acode, deviceConnectCpuGetCsDefSize());
+        len = utilsAasm32(cmdAsmBuff, acode, core_product_debug_get_code_default_size());
         if (!len) {
             errAsmPos = STRLEN(cmdAsmBuff) + 9;
         } else {
-            if (deviceConnectCpuWriteLinear((asmSegRec << 4) + asmPtrRec, (void *) acode, (uint8_t) len)) {
+            if (core_product_debug_write_linear((asmSegRec << 4) + asmPtrRec, (void *) acode, (uint8_t) len)) {
                 PRINTF("debug: fail to write to L%08X\n", (asmSegRec << 4) + asmPtrRec);
                 return;
             }
@@ -193,8 +234,8 @@ static void c() {
         range = scannubit16(arg[2])-ptr1;
         if (!nErrPos) {
             for (i = 0; i <= range; ++i) {
-                deviceConnectRamRealRead(seg1, (uint16_t)(ptr1 + i), (void *)(&val1), 1);
-                deviceConnectRamRealRead(seg2, (uint16_t)(ptr2 + i), (void *)(&val2), 1);
+                core_product_debug_read_real(seg1, (uint16_t)(ptr1 + i), (void *)(&val1), 1);
+                core_product_debug_read_real(seg2, (uint16_t)(ptr2 + i), (void *)(&val2), 1);
                 if (val1 != val2) {
                     PRINTF("%04X:%04X  ", seg1, (uint16_t)(ptr1 + i));
                     PRINTF("%02X  %02X", val1, val2);
@@ -224,7 +265,7 @@ static void dprint(uint16_t segment, uint16_t start, uint16_t end) {
             PRINTF("  ");
             c[iaddr % 0x10] = ' ';
         } else {
-            deviceConnectRamRealRead(segment, iaddr, (void *)(&c[iaddr % 0x10]), 1);
+            core_product_debug_read_real(segment, iaddr, (void *)(&c[iaddr % 0x10]), 1);
             PRINTF("%02X", c[iaddr % 0x10] & 0xff);
             t = c[iaddr % 0x10];
             if ((t >=1 && t <= 7) || t == ' ' ||
@@ -287,14 +328,14 @@ static void e() {
             return;
         }
         PRINTF("%04X:%04X  ", seg, ptr);
-        deviceConnectRamRealRead(seg, ptr, (void *)(&val), 1);
+        core_product_debug_read_real(seg, ptr, (void *)(&val), 1);
         PRINTF("%02X", val);
         PRINTF(".");
         FGETS(s, 0x100, stdin);
         utilsLowerStr(s); /* MARK */
         val = scannubit8(s); /* MARK */
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            deviceConnectRamRealWrite(seg, ptr, (void *)(&val), 1);
+            core_product_debug_write_real(seg, ptr, (void *)(&val), 1);
         }
     } else if (narg > 2) {
         addrparse(_ds, arg[1]);
@@ -304,7 +345,7 @@ static void e() {
         for (i = 2; i < narg; ++i) {
             val = scannubit8(arg[i]); /* MARK */
             if (!nErrPos) {
-                deviceConnectRamRealWrite(seg, ptr, (void *)(&val), 1);
+                core_product_debug_write_real(seg, ptr, (void *)(&val), 1);
             } else {
                 break;
             }
@@ -331,7 +372,7 @@ static void f() {
             for (i = ptr, j = 0; i <= end; ++i, ++j) {
                 val = scannubit8(arg[j % nbyte + 3]);
                 if (!nErrPos) {
-                    deviceConnectRamRealWrite(seg, (uint16_t) i, (void *)(&val), 1);
+                    core_product_debug_write_real(seg, (uint16_t) i, (void *)(&val), 1);
                 } else {
                     return;
                 }
@@ -342,27 +383,27 @@ static void f() {
 /* go */
 static void rprintregs();
 static void g() {
-    if (device.flagRun) {
+    if (core_product_debug_is_running()) {
         PRINTF("NXVM is already running.\n");
         return;
     }
     switch (narg) {
     case 1:
-        deviceConnectDebugClearBreak();
+        core_product_debug_clear_break(0);
         break;
     case 2:
         addrparse(_cs, arg[1]);
-        deviceConnectDebugSetBreak(seg, ptr);
+        core_product_debug_set_break_real(seg, ptr);
         break;
     case 3:
         addrparse(_cs, arg[1]);
-        if (deviceConnectCpuLoadCS(seg)) {
+        if (debug_set_register(CORE_PRODUCT_DEBUG_CS, seg)) {
             PRINTF("debug: fail to load cs from %04X\n", seg);
             return;
         }
-        _ip = ptr;
+        debug_set_register(CORE_PRODUCT_DEBUG_EIP, ptr);
         addrparse(_cs, arg[2]);
-        deviceConnectDebugSetBreak(seg, ptr);
+        core_product_debug_set_break_real(seg, ptr);
         break;
     default:
         seterr(narg - 1);
@@ -371,11 +412,11 @@ static void g() {
     if (nErrPos) {
         return;
     }
-    machineResume();
-    while (device.flagRun) {
+    core_product_debug_resume();
+    while (core_product_debug_is_running()) {
         utilsSleep(10);
     }
-    deviceConnectDebugClearBreak();
+    core_product_debug_clear_break(0);
     rprintregs();
 }
 /* hex */
@@ -404,8 +445,7 @@ static void i() {
         if (nErrPos) {
             return;
         }
-        deviceConnectPortRead(in);
-        PRINTF("%08X\n", deviceConnectPortGetValue());
+        PRINTF("%08X\n", core_product_debug_read_port(in));
     }
 }
 /* load */
@@ -431,13 +471,13 @@ static void l() {
         if (!nErrPos) {
             c = fgetc(load);
             while (!feof(load)) {
-                deviceConnectRamRealWrite(seg + i, ptr + len++, (void *)(&c), 1);
+                core_product_debug_write_real(seg + i, ptr + len++, (void *)(&c), 1);
                 i = len / 0x10000;
                 c = fgetc(load);
             }
-            _cx = len & 0xffff;
-            if (len > 0xffff) _bx = (len>>16);
-            else _bx = 0x0000;
+            debug_set_register(CORE_PRODUCT_DEBUG_ECX, (uint16_t)(len & 0xffff));
+            if (len > 0xffff) debug_set_register(CORE_PRODUCT_DEBUG_EBX, (uint16_t)(len >> 16));
+            else debug_set_register(CORE_PRODUCT_DEBUG_EBX, 0x0000u);
         }
         FCLOSE(load);
     }
@@ -459,13 +499,13 @@ static void m() {
         if (!nErrPos) {
             if (((seg1 << 4) + ptr1) < ((seg2 << 4) + ptr2)) {
                 for (i = 0; i <= range; ++i) {
-                    deviceConnectRamRealRead(seg1, (uint16_t)(ptr1 + range - i), (void *)(&val), 1);
-                    deviceConnectRamRealWrite(seg2, (uint16_t)(ptr2 + range - i), (void *)(&val), 1);
+                    core_product_debug_read_real(seg1, (uint16_t)(ptr1 + range - i), (void *)(&val), 1);
+                    core_product_debug_write_real(seg2, (uint16_t)(ptr2 + range - i), (void *)(&val), 1);
                 }
             } else if (((seg1 << 4) + ptr1) > ((seg2 << 4) + ptr2)) {
                 for (i = 0; i <= range; ++i) {
-                    deviceConnectRamRealRead(seg1, (uint16_t)(ptr1 + i), (void *)(&val), 1);
-                    deviceConnectRamRealWrite(seg2, (uint16_t)(ptr2 + i), (void *)(&val), 1);
+                    core_product_debug_read_real(seg1, (uint16_t)(ptr1 + i), (void *)(&val), 1);
+                    core_product_debug_write_real(seg2, (uint16_t)(ptr2 + i), (void *)(&val), 1);
                 }
             }
         }
@@ -486,8 +526,7 @@ static void o() {
         if (nErrPos) return;
         value = scannubit32(arg[2]);
         if (nErrPos) return;
-        deviceConnectPortSetValue(value);
-        deviceConnectPortWrite(out);
+        core_product_debug_write_port(out, value);
     }
 }
 /* quit */
@@ -500,11 +539,11 @@ static uint8_t uprintins(uint16_t seg, uint16_t off) {
     uint8_t len;
     uint8_t ucode[15];
     char str[0x100], stmt[0x100], sbin[0x100];
-    if (deviceConnectCpuReadLinear((seg << 4) + off, (void *) ucode, 15)) {
+    if (core_product_debug_read_linear((seg << 4) + off, (void *) ucode, 15)) {
         len = 0;
         SPRINTF(str, "%04X:%04X <ERROR>", seg, off);
     } else {
-        len = utilsDasm32(stmt, ucode, deviceConnectCpuGetCsDefSize());
+        len = utilsDasm32(stmt, ucode, core_product_debug_get_code_default_size());
         sbin[0] = 0;
         for (i = 0; i < len; ++i) {
             SPRINTF(sbin, "%s%02X", sbin, (uint8_t) ucode[i]);
@@ -519,14 +558,14 @@ static uint8_t uprintins(uint16_t seg, uint16_t off) {
     return len;
 }
 static void rprintflags() {
-    PRINTF("%s ", deviceConnectCpuGetOF() ? "OV" : "NV");
-    PRINTF("%s ", deviceConnectCpuGetDF() ? "DN" : "UP");
-    PRINTF("%s ", deviceConnectCpuGetIF() ? "EI" : "DI");
-    PRINTF("%s ", deviceConnectCpuGetSF() ? "NG" : "PL");
-    PRINTF("%s ", deviceConnectCpuGetZF() ? "ZR" : "NZ");
-    PRINTF("%s ", deviceConnectCpuGetAF() ? "AC" : "NA");
-    PRINTF("%s ", deviceConnectCpuGetPF() ? "PE" : "PO");
-    PRINTF("%s ", deviceConnectCpuGetCF() ? "CY" : "NC");
+    PRINTF("%s ", debug_flag(0x0800u) ? "OV" : "NV");
+    PRINTF("%s ", debug_flag(0x0400u) ? "DN" : "UP");
+    PRINTF("%s ", debug_flag(0x0200u) ? "EI" : "DI");
+    PRINTF("%s ", debug_flag(0x0080u) ? "NG" : "PL");
+    PRINTF("%s ", debug_flag(0x0040u) ? "ZR" : "NZ");
+    PRINTF("%s ", debug_flag(0x0010u) ? "AC" : "NA");
+    PRINTF("%s ", debug_flag(0x0004u) ? "PE" : "PO");
+    PRINTF("%s ", debug_flag(0x0001u) ? "CY" : "NC");
 }
 static void rprintregs() {
     PRINTF(  "AX=%04X", _ax);
@@ -559,7 +598,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _ax = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EAX, (uint16_t)value);
         }
     } else if (!STRCMP(arg[1], "bx")) {
         PRINTF("BX ");
@@ -568,7 +607,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _bx = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EBX, (uint16_t)value);
         }
     } else if (!STRCMP(arg[1], "cx")) {
         PRINTF("CX ");
@@ -577,7 +616,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _cx = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_ECX, (uint16_t)value);
         }
     } else if (!STRCMP(arg[1], "dx")) {
         PRINTF("DX ");
@@ -586,7 +625,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _dx = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EDX, (uint16_t)value);
         }
     } else if (!STRCMP(arg[1], "bp")) {
         PRINTF("BP ");
@@ -595,7 +634,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _bp = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EBP, (uint16_t)value);
         }
     } else if (!STRCMP(arg[1], "sp")) {
         PRINTF("SP ");
@@ -604,7 +643,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _sp = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_ESP, (uint16_t)value);
         }
     } else if (!STRCMP(arg[1], "si")) {
         PRINTF("SI ");
@@ -613,7 +652,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _si = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_ESI, (uint16_t)value);
         }
     } else if (!STRCMP(arg[1], "di")) {
         PRINTF("DI ");
@@ -622,7 +661,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _di = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EDI, (uint16_t)value);
         }
     } else if (!STRCMP(arg[1], "ss")) {
         PRINTF("SS ");
@@ -631,7 +670,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (deviceConnectCpuLoadSS((uint16_t) value)) {
+            if (debug_set_register(CORE_PRODUCT_DEBUG_SS, (uint16_t) value)) {
                 PRINTF("debug: fail to load ss from %04X\n", (uint16_t) value);
             }
         }
@@ -642,7 +681,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (deviceConnectCpuLoadCS((uint16_t) value)) {
+            if (debug_set_register(CORE_PRODUCT_DEBUG_CS, (uint16_t) value)) {
                 PRINTF("debug: fail to load cs from %04X\n", (uint16_t) value);
             }
         }
@@ -653,7 +692,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (deviceConnectCpuLoadDS((uint16_t) value)) {
+            if (debug_set_register(CORE_PRODUCT_DEBUG_DS, (uint16_t) value)) {
                 PRINTF("debug: fail to load ds from %04X\n", (uint16_t) value);
             }
         }
@@ -664,7 +703,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (deviceConnectCpuLoadES((uint16_t) value)) {
+            if (debug_set_register(CORE_PRODUCT_DEBUG_ES, (uint16_t) value)) {
                 PRINTF("debug: fail to load es from %04X\n", (uint16_t) value);
             }
         }
@@ -675,7 +714,7 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _ip = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EIP, value);
         }
     } else if (!STRCMP(arg[1], "f")) {
         rprintflags();
@@ -683,37 +722,37 @@ static void rscanregs() {
         FGETS(s, 0x100, stdin);
         utilsLowerStr(s);
         if (!STRCMP(s,"ov")) {
-            deviceConnectCpuSetOF();
+            debug_set_flag(0x0800u, 1);
         } else if (!STRCMP(s,"nv")) {
-            deviceConnectCpuClearOF();
+            debug_set_flag(0x0800u, 0);
         } else if (!STRCMP(s,"dn")) {
-            deviceConnectCpuSetDF();
+            debug_set_flag(0x0400u, 1);
         } else if (!STRCMP(s,"up")) {
-            deviceConnectCpuClearDF();
+            debug_set_flag(0x0400u, 0);
         } else if (!STRCMP(s,"ei")) {
-            deviceConnectCpuSetIF();
+            debug_set_flag(0x0200u, 1);
         } else if (!STRCMP(s,"di")) {
-            deviceConnectCpuClearIF();
+            debug_set_flag(0x0200u, 0);
         } else if (!STRCMP(s,"ng")) {
-            deviceConnectCpuSetSF();
+            debug_set_flag(0x0080u, 1);
         } else if (!STRCMP(s,"pl")) {
-            deviceConnectCpuClearSF();
+            debug_set_flag(0x0080u, 0);
         } else if (!STRCMP(s,"zr")) {
-            deviceConnectCpuSetZF();
+            debug_set_flag(0x0040u, 1);
         } else if (!STRCMP(s,"nz")) {
-            deviceConnectCpuClearZF();
+            debug_set_flag(0x0040u, 0);
         } else if (!STRCMP(s,"ac")) {
-            deviceConnectCpuSetAF();
+            debug_set_flag(0x0010u, 1);
         } else if (!STRCMP(s,"na")) {
-            deviceConnectCpuClearAF();
+            debug_set_flag(0x0010u, 0);
         } else if (!STRCMP(s,"pe")) {
-            deviceConnectCpuSetPF();
+            debug_set_flag(0x0004u, 1);
         } else if (!STRCMP(s,"po")) {
-            deviceConnectCpuClearPF();
+            debug_set_flag(0x0004u, 0);
         } else if (!STRCMP(s,"cy")) {
-            deviceConnectCpuSetCF();
+            debug_set_flag(0x0001u, 1);
         } else if (!STRCMP(s,"nc")) {
-            deviceConnectCpuClearCF();
+            debug_set_flag(0x0001u, 0);
         } else {
             PRINTF("bf Error\n");
         }
@@ -744,12 +783,12 @@ static void s() {
             p = start;
             cstart = scannubit8(arg[3]);
             while (p <= end) {
-                deviceConnectRamRealRead(seg, p, (void *)(&val), 1);
+                core_product_debug_read_real(seg, p, (void *)(&val), 1);
                 if (val == cstart) {
                     pfront = p;
                     flagFound = 1;
                     for (i = 3; i < narg; ++i) {
-                        deviceConnectRamRealRead(seg, p, (void *)(&val), 1);
+                        core_product_debug_read_real(seg, p, (void *)(&val), 1);
                         if (val != scannubit8(arg[i])) {
                             flagFound = 0;
                             p = pfront + 1;
@@ -771,7 +810,7 @@ static void s() {
 static void t() {
     size_t i;
     uint16_t count;
-    if (device.flagRun) {
+    if (core_product_debug_is_running()) {
         PRINTF("NXVM is already running.\n");
         return;
     }
@@ -784,11 +823,11 @@ static void t() {
         break;
     case 3:
         addrparse(_cs, arg[1]);
-        if (deviceConnectCpuLoadCS(seg)) {
+        if (debug_set_register(CORE_PRODUCT_DEBUG_CS, seg)) {
             PRINTF("debug: fail to load cs from %04X\n", seg);
             return;
         }
-        _ip = ptr;
+        debug_set_register(CORE_PRODUCT_DEBUG_EIP, ptr);
         count = scannubit16(arg[2]);
         break;
     default:
@@ -800,9 +839,9 @@ static void t() {
     }
     if (count < 0x100) {
         for (i = 0; i < count; ++i) {
-            deviceConnectDebugSetTrace(1);
-            machineResume();
-            while (device.flagRun) {
+            core_product_debug_set_trace(1);
+            core_product_debug_resume();
+            while (core_product_debug_is_running()) {
                 utilsSleep(10);
             }
             rprintregs();
@@ -811,14 +850,14 @@ static void t() {
             }
         }
     } else {
-        deviceConnectDebugSetTrace(count);
-        machineResume();
-        while (device.flagRun) {
+        core_product_debug_set_trace(count);
+        core_product_debug_resume();
+        while (core_product_debug_is_running()) {
             utilsSleep(10);
         }
         rprintregs();
     }
-    deviceConnectDebugClearTrace();
+    core_product_debug_clear_trace();
 }
 /* unassemble */
 static void uprint(uint16_t segment, uint16_t start, uint16_t end) {
@@ -921,7 +960,7 @@ static void w() {
         }
         if (!nErrPos) {
             while (i < len) {
-                deviceConnectRamRealRead(seg, (uint8_t)(ptr + i++), (void *)(&val), 1);
+                core_product_debug_read_real(seg, (uint8_t)(ptr + i++), (void *)(&val), 1);
                 fputc(val, write);
             }
         }
@@ -940,11 +979,11 @@ static uint8_t xuprintins(uint32_t linear) {
     uint8_t len;
     uint8_t ucode[15];
     char str[0x100], stmt[0x100], sbin[0x100];
-    if (deviceConnectCpuReadLinear(linear, (void *) ucode, 15)) {
+    if (core_product_debug_read_linear(linear, (void *) ucode, 15)) {
         len = 0;
         SPRINTF(str, "L%08X <ERROR>", linear);
     } else {
-        len = utilsDasm32(stmt, ucode, deviceConnectCpuGetCsDefSize());
+        len = utilsDasm32(stmt, ucode, core_product_debug_get_code_default_size());
         sbin[0] = 0;
         for (i = 0; i < len; ++i) {
             SPRINTF(sbin, "%s%02X", sbin, (uint8_t) ucode[i]);
@@ -959,8 +998,8 @@ static uint8_t xuprintins(uint32_t linear) {
     return len;
 }
 static void xrprintreg() {
-    devicePrintCpuReg();
-    xulin = deviceConnectCpuGetCsBase() + _eip;
+    core_product_debug_print_registers();
+    xulin = core_product_debug_get_code_base() + _eip;
     xuprintins(xulin);
 }
 /* assemble */
@@ -979,11 +1018,11 @@ static void xaconsole(uint32_t linear) {
             continue;
         }
         errAsmPos = 0;
-        len = utilsAasm32(astmt, acode, deviceConnectCpuGetCsDefSize());
+        len = utilsAasm32(astmt, acode, core_product_debug_get_code_default_size());
         if (!len) {
             errAsmPos = STRLEN(astmt) + 9;
         } else {
-            if (deviceConnectCpuWriteLinear(linear, (void *) acode, (uint8_t) len)) {
+            if (core_product_debug_write_linear(linear, (void *) acode, (uint8_t) len)) {
                 PRINTF("debug: fail to write to L%08X\n", linear);
                 return;
             }
@@ -1035,11 +1074,11 @@ static void xc() {
             return;
         }
         for (i = 0; i < count; ++i) {
-            if (deviceConnectCpuReadLinear((uint32_t)(lin1 + i), (void *)(&val1), 1)) {
+            if (core_product_debug_read_linear((uint32_t)(lin1 + i), (void *)(&val1), 1)) {
                 PRINTF("debug: fail to read from L%08X.\n", (uint32_t)(lin1 + i));
                 return;
             }
-            if (deviceConnectCpuReadLinear((uint32_t)(lin2 + i), (void *)(&val2), 1)) {
+            if (core_product_debug_read_linear((uint32_t)(lin2 + i), (void *)(&val2), 1)) {
                 PRINTF("debug: fail to read from L%08X.\n", (uint32_t)(lin2 + i));
                 return;
             }
@@ -1066,7 +1105,7 @@ static void xdprint(uint32_t linear,uint32_t count) {
             PRINTF("  ");
             c[ilinear % 0x10] = ' ';
         } else {
-            if (deviceConnectCpuReadLinear(ilinear, (void *)(&c[ilinear % 0x10]), 1)) {
+            if (core_product_debug_read_linear(ilinear, (void *)(&c[ilinear % 0x10]), 1)) {
                 PRINTF("debug: fail to read from L%08X\n", ilinear);
                 return;
             } else {
@@ -1124,7 +1163,7 @@ static void xe() {
         if (nErrPos) {
             return;
         }
-        if (deviceConnectCpuReadLinear(linear, (void *)(&val), 1)) {
+        if (core_product_debug_read_linear(linear, (void *)(&val), 1)) {
             PRINTF("debug: fail to read from L%08X.\n", linear);
             return;
         }
@@ -1136,7 +1175,7 @@ static void xe() {
             return;
         }
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (deviceConnectCpuWriteLinear(linear, (void *)(&val), 1)) {
+            if (core_product_debug_write_linear(linear, (void *)(&val), 1)) {
                 PRINTF("debug: fail to write to L%08X.\n", linear);
             }
         }
@@ -1148,7 +1187,7 @@ static void xe() {
         for (i = 2; i < narg; ++i) {
             val = scannubit8(arg[i]);
             if (!nErrPos) {
-                if (deviceConnectCpuWriteLinear(linear, (void *)(&val), 1)) {
+                if (core_product_debug_write_linear(linear, (void *)(&val), 1)) {
                     PRINTF("debug: fail to write to L%08X.\n", linear);
                     return;
                 }
@@ -1181,7 +1220,7 @@ static void xf() {
             if (nErrPos) {
                 return;
             }
-            if (deviceConnectCpuWriteLinear((uint32_t)(linear + i), (void *)(&val), 1)) {
+            if (core_product_debug_write_linear((uint32_t)(linear + i), (void *)(&val), 1)) {
                 PRINTF("debug: fail to write to L%08X.\n", (uint32_t)(linear + i));
                 return;
             }
@@ -1192,7 +1231,7 @@ static void xf() {
 static void xg() {
     size_t i, count = 0;
     uint32_t linear;
-    if (device.flagRun) {
+    if (core_product_debug_is_running()) {
         PRINTF("NXVM is already running.\n");
         return;
     }
@@ -1217,16 +1256,16 @@ static void xg() {
         return;
     }
     for (i = 0; i < count; ++i) {
-        deviceConnectDebugSetBreak32(linear);
-        machineResume();
-        while (device.flagRun) {
+        core_product_debug_set_break_linear(linear);
+        core_product_debug_resume();
+        while (core_product_debug_is_running()) {
             utilsSleep(10);
         }
         PRINTF("%d instructions executed before the break point.\n",
-               deviceConnectDebugGetBreakCount());
+               core_product_debug_get_break_count());
         xrprintreg();
     }
-    deviceConnectDebugClearBreak32();
+    core_product_debug_clear_break(1);
 }
 /* move */
 static void xm() {
@@ -1249,11 +1288,11 @@ static void xm() {
             return;
         }
         for (i = 0; i < count; ++i) {
-            if (deviceConnectCpuReadLinear((uint32_t)(lin1 + i), (void *)(&val), 1)) {
+            if (core_product_debug_read_linear((uint32_t)(lin1 + i), (void *)(&val), 1)) {
                 PRINTF("debug: fail to read from L%08X.\n", lin1 + i);
                 return;
             }
-            if (deviceConnectCpuWriteLinear((uint32_t)(lin2 + i), (void *)(&val), 1)) {
+            if (core_product_debug_write_linear((uint32_t)(lin2 + i), (void *)(&val), 1)) {
                 PRINTF("debug: fail to write to L%08X.\n", lin2 + i);
                 return;
             }
@@ -1286,7 +1325,7 @@ static void xs() {
             line[i] = val;
         }
         for (i = 0; i < count; ++i) {
-            if (deviceConnectCpuReadLinear((uint32_t)(linear + i), (void *) mem, (uint8_t) bcount)) {
+            if (core_product_debug_read_linear((uint32_t)(linear + i), (void *) mem, (uint8_t) bcount)) {
                 PRINTF("debug: fail to read from L%08X.\n", linear + i);
                 return;
             }
@@ -1300,7 +1339,7 @@ static void xs() {
 static void xt() {
     size_t i;
     uint32_t count;
-    if (device.flagRun) {
+    if (core_product_debug_is_running()) {
         PRINTF("NXVM is already running.\n");
         return;
     }
@@ -1320,27 +1359,27 @@ static void xt() {
     }
     if (count < 0x0100) {
         for (i = 0; i < count; ++i) {
-            deviceConnectDebugSetTrace(1);
-            machineResume();
-            while (device.flagRun) {
+            core_product_debug_set_trace(1);
+            core_product_debug_resume();
+            while (core_product_debug_is_running()) {
                 utilsSleep(10);
             }
-            devicePrintCpuMem();
+            core_product_debug_print_memory();
             xrprintreg();
             if (i != count - 1) {
                 PRINTF("\n");
             }
         }
     } else {
-        deviceConnectDebugSetTrace(count);
-        machineResume();
-        while (device.flagRun) {
+        core_product_debug_set_trace(count);
+        core_product_debug_resume();
+        while (core_product_debug_is_running()) {
             utilsSleep(10);
         }
-        devicePrintCpuMem();
+        core_product_debug_print_memory();
         xrprintreg();
     }
-    deviceConnectDebugClearTrace();
+    core_product_debug_clear_trace();
 }
 /* register */
 static void xrscanreg() {
@@ -1353,7 +1392,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _eax = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EAX, value);
         }
     } else if (!STRCMP(arg[1], "ecx")) {
         PRINTF("ECX ");
@@ -1362,7 +1401,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _ecx = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_ECX, value);
         }
     } else if (!STRCMP(arg[1], "edx")) {
         PRINTF("EDX ");
@@ -1371,7 +1410,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _edx = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EDX, value);
         }
     } else if (!STRCMP(arg[1], "ebx")) {
         PRINTF("EBX ");
@@ -1380,7 +1419,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _ebx = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EBX, value);
         }
     } else if (!STRCMP(arg[1], "esp")) {
         PRINTF("ESP ");
@@ -1389,7 +1428,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _esp = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_ESP, value);
         }
     } else if (!STRCMP(arg[1], "ebp")) {
         PRINTF("EBP ");
@@ -1398,7 +1437,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _ebp = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EBP, value);
         }
     } else if (!STRCMP(arg[1], "esi")) {
         PRINTF("ESI ");
@@ -1407,7 +1446,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _esi = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_ESI, value);
         }
     } else if (!STRCMP(arg[1], "edi")) {
         PRINTF("EDI ");
@@ -1416,7 +1455,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _edi = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EDI, value);
         }
     } else if (!STRCMP(arg[1], "eip")) {
         PRINTF("EIP ");
@@ -1425,7 +1464,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _eip = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EIP, value);
         }
     } else if (!STRCMP(arg[1], "eflags")) {
         PRINTF("EFLAGS ");
@@ -1434,65 +1473,65 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _eflags = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_EFLAGS, value);
         }
     } else if (!STRCMP(arg[1], "es")) {
-        devicePrintCpuSreg();
+        core_product_debug_print_segment_registers();
         PRINTF(":");
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (deviceConnectCpuLoadES((uint16_t) value)) {
+            if (debug_set_register(CORE_PRODUCT_DEBUG_ES, (uint16_t) value)) {
                 PRINTF("debug: fail to load es from %04X\n", (uint16_t) value);
             }
         }
     } else if (!STRCMP(arg[1], "cs")) {
-        devicePrintCpuSreg();
+        core_product_debug_print_segment_registers();
         PRINTF(":");
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (deviceConnectCpuLoadCS((uint16_t) value)) {
+            if (debug_set_register(CORE_PRODUCT_DEBUG_CS, (uint16_t) value)) {
                 PRINTF("debug: fail to load cs from %04X\n", (uint16_t) value);
             }
         }
     }  else if (!STRCMP(arg[1], "ss")) {
-        devicePrintCpuSreg();
+        core_product_debug_print_segment_registers();
         PRINTF(":");
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (deviceConnectCpuLoadSS((uint16_t) value)) {
+            if (debug_set_register(CORE_PRODUCT_DEBUG_SS, (uint16_t) value)) {
                 PRINTF("debug: fail to load ss from %04X\n", (uint16_t) value);
             }
         }
     } else if (!STRCMP(arg[1], "ds")) {
-        devicePrintCpuSreg();
+        core_product_debug_print_segment_registers();
         PRINTF(":");
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (deviceConnectCpuLoadDS((uint16_t) value)) {
+            if (debug_set_register(CORE_PRODUCT_DEBUG_DS, (uint16_t) value)) {
                 PRINTF("debug: fail to load ds from %04X\n", (uint16_t) value);
             }
         }
     } else if (!STRCMP(arg[1], "fs")) {
-        devicePrintCpuSreg();
+        core_product_debug_print_segment_registers();
         PRINTF(":");
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (deviceConnectCpuLoadFS((uint16_t) value)) {
+            if (debug_set_register(CORE_PRODUCT_DEBUG_FS, (uint16_t) value)) {
                 PRINTF("debug: fail to load fs from %04X\n", (uint16_t) value);
             }
         }
     } else if (!STRCMP(arg[1], "gs")) {
-        devicePrintCpuSreg();
+        core_product_debug_print_segment_registers();
         PRINTF(":");
         FGETS(s, 0x100, stdin);
         value = scannubit16(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (deviceConnectCpuLoadGS((uint16_t) value)) {
+            if (debug_set_register(CORE_PRODUCT_DEBUG_GS, (uint16_t) value)) {
                 PRINTF("debug: fail to load gs from %04X\n", (uint16_t) value);
             }
         }
@@ -1503,7 +1542,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _cr(0) = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_CR0, value);
         }
     } else if (!STRCMP(arg[1], "cr1")) {
         PRINTF("CR1 ");
@@ -1512,7 +1551,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _cr(1) = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_CR1, value);
         }
     } else if (!STRCMP(arg[1], "cr2")) {
         PRINTF("CR2 ");
@@ -1521,7 +1560,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _cr(2) = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_CR2, value);
         }
     } else if (!STRCMP(arg[1], "cr3")) {
         PRINTF("CR3 ");
@@ -1530,7 +1569,7 @@ static void xrscanreg() {
         FGETS(s, 0x100, stdin);
         value = scannubit32(s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            _cr(3) = value;
+            debug_set_register(CORE_PRODUCT_DEBUG_CR3, value);
         }
     } else {
         PRINTF("br Error\n");
@@ -1584,26 +1623,26 @@ static void xw() {
     uint32_t linear;
     switch (narg) {
     case 1:
-        devicePrintCpuWatch();
+        core_product_debug_print_watchpoints();
         break;
     case 2:
         switch (arg[1][0]) {
         case 'r':
-            deviceConnectCpuClearWR();
+            core_product_debug_clear_watch(CORE_PRODUCT_DEBUG_WATCH_READ);
             PRINTF("Watch-read point removed.\n");
             break;
         case 'w':
-            deviceConnectCpuClearWW();
+            core_product_debug_clear_watch(CORE_PRODUCT_DEBUG_WATCH_WRITE);
             PRINTF("Watch-write point removed.\n");
             break;
         case 'e':
-            deviceConnectCpuClearWE();
+            core_product_debug_clear_watch(CORE_PRODUCT_DEBUG_WATCH_EXECUTE);
             PRINTF("Watch-exec point removed.\n");
             break;
         case 'u':
-            deviceConnectCpuClearWR();
-            deviceConnectCpuClearWW();
-            deviceConnectCpuClearWE();
+            core_product_debug_clear_watch(CORE_PRODUCT_DEBUG_WATCH_READ);
+            core_product_debug_clear_watch(CORE_PRODUCT_DEBUG_WATCH_WRITE);
+            core_product_debug_clear_watch(CORE_PRODUCT_DEBUG_WATCH_EXECUTE);
             PRINTF("All watch points removed.\n");
             break;
         default:
@@ -1615,15 +1654,15 @@ static void xw() {
         switch (arg[1][0]) {
         case 'r':
             linear = scannubit32(arg[2]);
-            deviceConnectCpuSetWR(linear);
+            core_product_debug_set_watch(CORE_PRODUCT_DEBUG_WATCH_READ, linear);
             break;
         case 'w':
             linear = scannubit32(arg[2]);
-            deviceConnectCpuSetWW(linear);
+            core_product_debug_set_watch(CORE_PRODUCT_DEBUG_WATCH_WRITE, linear);
             break;
         case 'e':
             linear = scannubit32(arg[2]);
-            deviceConnectCpuSetWE(linear);
+            core_product_debug_set_watch(CORE_PRODUCT_DEBUG_WATCH_EXECUTE, linear);
             break;
         default:
             seterr(2);
@@ -1690,9 +1729,9 @@ static void x() {
     } else if (!STRCMP(arg[0], "reg")) {
         xrprintreg();
     } else if (!STRCMP(arg[0], "sreg")) {
-        devicePrintCpuSreg();
+        core_product_debug_print_segment_registers();
     } else if (!STRCMP(arg[0], "creg")) {
-        devicePrintCpuCreg();
+        core_product_debug_print_control_registers();
     } else {
         arg[0] = arg[narg];
         seterr(0);
@@ -1843,7 +1882,7 @@ void debugMain() {
     dumpPtrRec = (uint16_t)(_ip) / 0x10 * 0x10;
     xalin = 0;
     xdlin = 0;
-    xulin = deviceConnectCpuGetCsBase() + _eip;
+    xulin = core_product_debug_get_code_base() + _eip;
     arg = (char **) MALLOC(DEBUG_MAXNARG * sizeof(char *));
     flagExit = 0;
     while (!flagExit) {

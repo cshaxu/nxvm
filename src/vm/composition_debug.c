@@ -50,6 +50,11 @@ static int vm_debug_write_register(void *context, core_product_debug_register re
     return 0;
 }
 
+static int vm_debug_code_default_size(void *context)
+{ (void)context; return deviceConnectCpuGetCsDefSize(); }
+static uint32_t vm_debug_code_base(void *context)
+{ (void)context; return deviceConnectCpuGetCsBase(); }
+
 static int vm_debug_read_linear(void *context, uint32_t address, void *out, uint8_t size)
 { (void)context; return deviceConnectCpuReadLinear(address, out, size); }
 static int vm_debug_write_linear(void *context, uint32_t address, const void *in, uint8_t size)
@@ -88,14 +93,44 @@ static void vm_debug_clear_watch(void *context, core_product_debug_watch_kind ki
     else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) deviceConnectCpuClearWW();
     else deviceConnectCpuClearWE();
 }
+static void vm_debug_print_registers(void *context)
+{ (void)context; devicePrintCpuReg(); }
+static void vm_debug_print_segment_registers(void *context)
+{ (void)context; devicePrintCpuSreg(); }
+static void vm_debug_print_control_registers(void *context)
+{ (void)context; devicePrintCpuCreg(); }
+static void vm_debug_print_memory(void *context)
+{ (void)context; devicePrintCpuMem(); }
+static void vm_debug_print_watchpoints(void *context)
+{ (void)context; devicePrintCpuWatch(); }
 
 static const core_product_debug_target vmDebugTarget = {
-    vm_debug_running, vm_debug_resume, vm_debug_read_register,
-    vm_debug_write_register, vm_debug_read_linear, vm_debug_write_linear,
-    vm_debug_read_real, vm_debug_write_real, vm_debug_read_port,
-    vm_debug_write_port, vm_debug_set_break_real, vm_debug_set_break_linear,
-    vm_debug_clear_break, vm_debug_set_trace, vm_debug_clear_trace,
-    vm_debug_break_count, vm_debug_set_watch, vm_debug_clear_watch, NULL
+    .is_running = vm_debug_running,
+    .resume = vm_debug_resume,
+    .read_register = vm_debug_read_register,
+    .write_register = vm_debug_write_register,
+    .get_code_default_size = vm_debug_code_default_size,
+    .get_code_base = vm_debug_code_base,
+    .read_linear = vm_debug_read_linear,
+    .write_linear = vm_debug_write_linear,
+    .read_real = vm_debug_read_real,
+    .write_real = vm_debug_write_real,
+    .read_port = vm_debug_read_port,
+    .write_port = vm_debug_write_port,
+    .set_break_real = vm_debug_set_break_real,
+    .set_break_linear = vm_debug_set_break_linear,
+    .clear_break = vm_debug_clear_break,
+    .set_trace = vm_debug_set_trace,
+    .clear_trace = vm_debug_clear_trace,
+    .get_break_count = vm_debug_break_count,
+    .set_watch = vm_debug_set_watch,
+    .clear_watch = vm_debug_clear_watch,
+    .print_registers = vm_debug_print_registers,
+    .print_segment_registers = vm_debug_print_segment_registers,
+    .print_control_registers = vm_debug_print_control_registers,
+    .print_memory = vm_debug_print_memory,
+    .print_watchpoints = vm_debug_print_watchpoints,
+    .context = NULL
 };
 
 const core_product_debug_target *vm_composition_debug_target(void)

@@ -5,7 +5,7 @@
 #include "vm/machine/device.h"
 #include "vm/platform/vm_request_transport.h"
 #include "vm/platform/win32/win32.h"
-#include "vm/product/debug.h"
+#include "core/product/debug/debug.h"
 #include "vm/composition_machine.h"
 #include "vm/platform/platform.h"
 
