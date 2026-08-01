@@ -7,7 +7,7 @@
 #include "../vcpuins.h"
 
 #include "vm/profile/default_profile/firmware/qdcga.h"
-#include "qdkeyb.h"
+#include "vm/profile/default_profile/firmware/qdkeyb.h"
 #include "vm/profile/default_profile/firmware/qddisk.h"
 
 #include "qdx.h"
