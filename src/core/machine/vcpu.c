@@ -4,7 +4,7 @@
 
 #include "nxvm-baseline/utils.h"
 
-#include "machine/core/vcpuins.h"
+#include "core/machine/vcpuins.h"
 
 #include "core/machine/vcpu.h"
 
