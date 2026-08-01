@@ -366,3 +366,28 @@ sources, close ingress, request and observe a machine stop at an execution
 boundary, then detach and destroy providers, platform objects, product UI, and
 core machine state. VM and VDM may have similar loops, but sharing a mechanism
 must never import VM boot behavior or VDM program-run semantics into core.
+
+## Profile: Immutable Blueprint And Firmware Assets
+
+A profile is an immutable declaration: required machine or DOS capabilities,
+device mapping, defaults, ROM assets, and provider metadata. It does not
+create a machine, start a thread, choose a product interaction policy, or hold
+mutable session state.
+
+A profile owns its ROM and other static assets. Root composition retains the
+profile for the complete session; registered providers may borrow its immutable
+asset data only while that session and its providers remain alive. Composition
+destroys those providers before releasing the profile. It translates profile
+metadata into concrete provider configuration and registration, rather than
+giving arbitrary providers a global profile object.
+
+A profile-specific firmware override may own private provider context and use
+only public `core/machine` service and provider contracts to affect guest
+state. It may not access platform, product, composition, host resources, or
+peer modules directly. VM profiles describe machine models and firmware;
+VDM profiles describe DOS memory, service, and device policy. They share this
+discipline but have no universal all-product profile object.
+
+Profiles exclude machine-local paths, CLI arguments, window/Console choices,
+and other product-session policy. They are reproducible read-only blueprints;
+composition turns a selected blueprint into a running session.
