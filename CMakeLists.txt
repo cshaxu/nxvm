@@ -206,7 +206,7 @@ set(NXVM_PLATFORM_VM_SOURCES
     src/vm/platform/platform.c
 )
 add_library(nxvm-platform-vm-requests STATIC
-    src/platform/vm/request_bridge.c
+    src/vm/platform/request_bridge.c
 )
 target_include_directories(nxvm-platform-vm-requests PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
