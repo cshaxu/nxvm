@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "runtime/session.h"
+#include "core/product/runtime/session.h"
 
 int main(int argc, char **argv)
 {
