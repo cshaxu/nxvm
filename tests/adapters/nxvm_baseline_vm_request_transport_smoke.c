@@ -1,10 +1,29 @@
 #include "vm/platform/baseline_request_transport.h"
 
+typedef struct keyboard_state_observer {
+    unsigned count;
+    uint32_t asynchronous_keys;
+    uint32_t toggle_keys;
+} keyboard_state_observer;
+
+static void observe_keyboard_state(void *opaque,
+                                   const nxvm_platform_vm_request *request)
+{
+    keyboard_state_observer *observer = (keyboard_state_observer *)opaque;
+
+    if (request->kind == NXVM_PLATFORM_VM_REQUEST_KEYBOARD_STATE) {
+        ++observer->count;
+        observer->asynchronous_keys = request->data.keyboard_state.asynchronous_keys;
+        observer->toggle_keys = request->data.keyboard_state.toggle_keys;
+    }
+}
+
 int main(void)
 {
     nxvm_baseline_vm_request_transport transport;
     nxvm_platform_vm_request request;
     nxvm_platform_vm_request copy;
+    keyboard_state_observer observer = {0u, 0u, 0u};
     size_t index;
 
     nxvm_baseline_vm_request_transport_initialize(&transport);
@@ -21,6 +40,24 @@ int main(void)
                                                              &copy) !=
         NXVM_CORE_STATUS_OK ||
         copy.data.key_press.scan_code != 0x1eu) return 1;
+
+    nxvm_baseline_vm_request_transport_bind_consumer(
+        &transport, observe_keyboard_state, &observer);
+    request.kind = NXVM_PLATFORM_VM_REQUEST_KEYBOARD_STATE;
+    request.data.keyboard_state.asynchronous_keys =
+        NXVM_KEYBOARD_ASYNC_LEFT_SHIFT | NXVM_KEYBOARD_ASYNC_CONTROL;
+    request.data.keyboard_state.toggle_keys = NXVM_KEYBOARD_TOGGLE_CAPS_LOCK;
+    if (nxvm_baseline_vm_request_transport_enqueue_ingress(&transport,
+                                                            &request) !=
+        NXVM_CORE_STATUS_OK) return 1;
+    nxvm_baseline_vm_request_transport_observe_execution_boundary(&transport);
+    if (observer.count != 1u ||
+        observer.asynchronous_keys != request.data.keyboard_state.asynchronous_keys ||
+        observer.toggle_keys != request.data.keyboard_state.toggle_keys ||
+        nxvm_baseline_vm_request_transport_execution_boundary_count(&transport) != 1u ||
+        nxvm_baseline_vm_request_transport_dequeue_ingress(&transport,
+                                                             &copy) !=
+        NXVM_CORE_STATUS_UNSUPPORTED) return 1;
 
     request.kind = NXVM_PLATFORM_VM_REQUEST_DISPLAY_MODE;
     request.data.window_display = 1;

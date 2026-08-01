@@ -41,8 +41,8 @@ solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T12 S9: final audit of the canonical `core/vm/vdm` source-root closure and
-the retained full-PC compatibility gates.
+M5 T13 S1: audit the remaining historical composition names and direct
+legacy-owner dependencies before the behavior-neutral cutover sequence.
 
 ## Completed
 
@@ -231,15 +231,19 @@ the retained full-PC compatibility gates.
   and `vdm`, removed the baseline and adapter source roots, removed formal
   baseline source/include dependencies, and revalidated GCC, CPU, Console, and
   debugger gates without changing user-visible behavior.
+- M5 T12 S10: switched only retained Win32 KEYUP/FOCUS keyboard-state events
+  through copied ingress at the execution boundary; KEYDOWN mapping remains
+  direct, and queue failure preserves the original direct state path. GCC,
+  transport, CPU, FDD/HDD, Console, and debugger gates passed.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t12-s10.md`.
+`docs/planning/subtasks/m5-t13-s1.md`.
 
 ## Next Eligible Work
 
-- M5 T12 S10 may switch retained keyboard-state synchronization through ingress.
-  M6 remains blocked until M5 truly closes.
+- M5 T13 S1 may audit composition cutover only. M6 remains blocked until M5
+  truly closes.
 
 ## Delivery State
 

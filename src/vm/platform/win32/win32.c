@@ -8,6 +8,9 @@
 #include "vm/platform/win32/win32app.h"
 #include "vm/platform/win32/win32.h"
 
+static nxvm_win32_keyboard_state_sink win32_keyboard_state_sink;
+static void *win32_keyboard_state_sink_opaque;
+
 static UCHAR CodeMap[][8]= {
     /* {SINGLE£¬ASCII£¬+SHIFT£¬ASCII£¬+CTRL£¬ASCII£¬+ALT£¬ASCII} */
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
@@ -117,75 +120,57 @@ static UCHAR MoveKeyCode[][8] = {
     {0x53, 0x00, 0x53, 0xE0, 0x93, 0xE0, 0xA3, 0x00}
 };
 
-VOID win32KeyboardMakeStatus() {
-    if (GetAsyncKeyState(VK_RSHIFT) & 0x8000) {
-        deviceConnectKeyboardSetFlag0RightShift();
-    } else {
-        deviceConnectKeyboardClrFlag0RightShift();
-    }
-    if (GetAsyncKeyState(VK_LSHIFT) & 0x8000) {
-        deviceConnectKeyboardSetFlag0LeftShift();
-    } else {
-        deviceConnectKeyboardClrFlag0LeftShift();
-    }
-    if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-        deviceConnectKeyboardSetFlag0Ctrl();
-    } else {
-        deviceConnectKeyboardClrFlag0Ctrl();
-    }
-    if (GetAsyncKeyState(VK_MENU) & 0x8000) {
-        deviceConnectKeyboardSetFlag0Alt();
-    } else {
-        deviceConnectKeyboardClrFlag0Alt();
-    }
-    if (GetAsyncKeyState(VK_SCROLL) & 0x8000) {
-        deviceConnectKeyboardSetFlag1ScrLck();
-    } else {
-        deviceConnectKeyboardClrFlag1ScrLck();
-    }
-    if (GetAsyncKeyState(VK_NUMLOCK) & 0x8000) {
-        deviceConnectKeyboardSetFlag1NumLck();
-    } else {
-        deviceConnectKeyboardClrFlag1NumLck();
-    }
-    if (GetAsyncKeyState(VK_CAPITAL) & 0x8000) {
-        deviceConnectKeyboardSetFlag1CapLck();
-    } else {
-        deviceConnectKeyboardClrFlag1CapLck();
-    }
-    if (GetAsyncKeyState(VK_INSERT) & 0x8000) {
-        deviceConnectKeyboardSetFlag1Insert();
-    } else {
-        deviceConnectKeyboardClrFlag1Insert();
-    }
-
-    if (GetKeyState(VK_SCROLL) & 0x0001) {
-        deviceConnectKeyboardSetFlag0ScrLck();
-    } else {
-        deviceConnectKeyboardClrFlag0ScrLck();
-    }
-    if (GetKeyState(VK_NUMLOCK) & 0x0001) {
-        deviceConnectKeyboardSetFlag0NumLck();
-    } else {
-        deviceConnectKeyboardClrFlag0NumLck();
-    }
-    if (GetKeyState(VK_CAPITAL) & 0x0001) {
-        deviceConnectKeyboardSetFlag0CapLck();
-    } else {
-        deviceConnectKeyboardClrFlag0CapLck();
-    }
-    if (GetKeyState(VK_INSERT) & 0x0001) {
-        deviceConnectKeyboardSetFlag0Insert();
-    } else {
-        deviceConnectKeyboardClrFlag0Insert();
-    }
-    if (GetKeyState(VK_PAUSE) & 0x0001) {
-        deviceConnectKeyboardSetFlag1Pause();
-    } else {
-        deviceConnectKeyboardClrFlag1Pause();
-    }
+void win32KeyboardBindStateSink(nxvm_win32_keyboard_state_sink sink,
+                                void *opaque)
+{
+    win32_keyboard_state_sink = sink;
+    win32_keyboard_state_sink_opaque = opaque;
 }
 
+static uint32_t win32KeyboardGetAsyncState(void)
+{
+    uint32_t state = 0u;
+
+    if (GetAsyncKeyState(VK_RSHIFT) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_RIGHT_SHIFT;
+    if (GetAsyncKeyState(VK_LSHIFT) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_LEFT_SHIFT;
+    if (GetAsyncKeyState(VK_CONTROL) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_CONTROL;
+    if (GetAsyncKeyState(VK_MENU) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_ALT;
+    if (GetAsyncKeyState(VK_SCROLL) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_SCROLL_LOCK;
+    if (GetAsyncKeyState(VK_NUMLOCK) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_NUM_LOCK;
+    if (GetAsyncKeyState(VK_CAPITAL) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_CAPS_LOCK;
+    if (GetAsyncKeyState(VK_INSERT) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_INSERT;
+    return state;
+}
+
+static uint32_t win32KeyboardGetToggleState(void)
+{
+    uint32_t state = 0u;
+
+    if (GetKeyState(VK_SCROLL) & 0x0001) state |= NXVM_KEYBOARD_TOGGLE_SCROLL_LOCK;
+    if (GetKeyState(VK_NUMLOCK) & 0x0001) state |= NXVM_KEYBOARD_TOGGLE_NUM_LOCK;
+    if (GetKeyState(VK_CAPITAL) & 0x0001) state |= NXVM_KEYBOARD_TOGGLE_CAPS_LOCK;
+    if (GetKeyState(VK_INSERT) & 0x0001) state |= NXVM_KEYBOARD_TOGGLE_INSERT;
+    if (GetKeyState(VK_PAUSE) & 0x0001) state |= NXVM_KEYBOARD_TOGGLE_PAUSE;
+    return state;
+}
+
+static void win32KeyboardApplyCurrentStateDirect(void)
+{
+    deviceConnectKeyboardApplyHostState(win32KeyboardGetAsyncState(),
+                                        win32KeyboardGetToggleState());
+}
+
+VOID win32KeyboardMakeStatus() {
+    uint32_t asynchronous_keys = win32KeyboardGetAsyncState();
+    uint32_t toggle_keys = win32KeyboardGetToggleState();
+
+    if (win32_keyboard_state_sink == NULL ||
+        win32_keyboard_state_sink(win32_keyboard_state_sink_opaque,
+                                  asynchronous_keys, toggle_keys) !=
+        NXVM_CORE_STATUS_OK) {
+        deviceConnectKeyboardApplyHostState(asynchronous_keys, toggle_keys);
+    }
+}
 VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
     UCHAR ascii = 0x00;
     USHORT code = 0x0000;
@@ -198,7 +183,7 @@ VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
     case VK_MENU:
     case VK_CONTROL:
     case VK_PAUSE:
-        win32KeyboardMakeStatus();
+        win32KeyboardApplyCurrentStateDirect();
         code = ((USHORT) scanCode << 8);
         break;
     case VK_UP:

@@ -6,10 +6,15 @@
 #include "core/machine/status.h"
 #include "vm/platform/request_bridge.h"
 
+typedef void (*nxvm_baseline_vm_request_consumer)(
+    void *opaque, const nxvm_platform_vm_request *request);
+
 typedef struct nxvm_baseline_vm_request_transport {
     atomic_bool locked;
     int accepting;
     unsigned execution_boundary_count;
+    nxvm_baseline_vm_request_consumer consumer;
+    void *consumer_opaque;
     nxvm_platform_vm_request_bridge ingress;
     nxvm_platform_vm_request_bridge egress;
 } nxvm_baseline_vm_request_transport;
@@ -32,6 +37,9 @@ void nxvm_baseline_vm_request_transport_close(
     nxvm_baseline_vm_request_transport *transport);
 void nxvm_baseline_vm_request_transport_discard(
     nxvm_baseline_vm_request_transport *transport);
+void nxvm_baseline_vm_request_transport_bind_consumer(
+    nxvm_baseline_vm_request_transport *transport,
+    nxvm_baseline_vm_request_consumer consumer, void *opaque);
 void nxvm_baseline_vm_request_transport_observe_execution_boundary(void *opaque);
 unsigned nxvm_baseline_vm_request_transport_execution_boundary_count(
     const nxvm_baseline_vm_request_transport *transport);

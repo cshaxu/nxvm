@@ -21,6 +21,9 @@ void nxvm_baseline_vm_request_transport_initialize(
 
     atomic_init(&transport->locked, 0);
     transport->accepting = 1;
+    transport->execution_boundary_count = 0u;
+    transport->consumer = NULL;
+    transport->consumer_opaque = NULL;
     nxvm_platform_vm_request_bridge_initialize(&transport->ingress);
     nxvm_platform_vm_request_bridge_initialize(&transport->egress);
 }
@@ -115,15 +118,43 @@ void nxvm_baseline_vm_request_transport_discard(
     nxvm_baseline_vm_request_transport_unlock(transport);
 }
 
+void nxvm_baseline_vm_request_transport_bind_consumer(
+    nxvm_baseline_vm_request_transport *transport,
+    nxvm_baseline_vm_request_consumer consumer, void *opaque)
+{
+    if (transport == NULL) return;
+
+    nxvm_baseline_vm_request_transport_lock(transport);
+    transport->consumer = consumer;
+    transport->consumer_opaque = opaque;
+    nxvm_baseline_vm_request_transport_unlock(transport);
+}
+
 void nxvm_baseline_vm_request_transport_observe_execution_boundary(void *opaque)
 {
     nxvm_baseline_vm_request_transport *transport =
         (nxvm_baseline_vm_request_transport *)opaque;
+    nxvm_platform_vm_request request;
+    nxvm_baseline_vm_request_consumer consumer;
+    void *consumer_opaque;
 
     if (transport == NULL) return;
     nxvm_baseline_vm_request_transport_lock(transport);
     ++transport->execution_boundary_count;
     nxvm_baseline_vm_request_transport_unlock(transport);
+    for (;;) {
+        nxvm_baseline_vm_request_transport_lock(transport);
+        if (nxvm_platform_vm_request_bridge_dequeue(&transport->ingress,
+                                                    &request) !=
+            NXVM_CORE_STATUS_OK) {
+            nxvm_baseline_vm_request_transport_unlock(transport);
+            return;
+        }
+        consumer = transport->consumer;
+        consumer_opaque = transport->consumer_opaque;
+        nxvm_baseline_vm_request_transport_unlock(transport);
+        if (consumer != NULL) consumer(consumer_opaque, &request);
+    }
 }
 
 unsigned nxvm_baseline_vm_request_transport_execution_boundary_count(

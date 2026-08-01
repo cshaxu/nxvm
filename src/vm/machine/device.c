@@ -13,6 +13,7 @@
 #include "core/machine/vcpu.h"
 #include "core/machine/vram.h"
 #include "core/machine/vport.h"
+#include "core/machine/keyboard_state.h"
 
 #include "vm/machine/device.h"
 
@@ -96,4 +97,54 @@ void deviceFinal() {
 void devicePrintStatus() {
     PRINTF("Recording: %s\n", vdebug.connect.recordFile ? "Yes" : "No");
     PRINTF("Running:   %s\n", device.flagRun  ? "Yes" : "No");
+}
+
+void deviceConnectKeyboardApplyHostState(uint32_t asynchronous_keys,
+                                         uint32_t toggle_keys)
+{
+#define NXVM_SET_KEYBOARD_FLAG(mask, set_call, clear_call) \
+    do { \
+        if ((mask) != 0u) set_call(); \
+        else clear_call(); \
+    } while (0)
+    NXVM_SET_KEYBOARD_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_RIGHT_SHIFT,
+                           deviceConnectKeyboardSetFlag0RightShift,
+                           deviceConnectKeyboardClrFlag0RightShift);
+    NXVM_SET_KEYBOARD_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_LEFT_SHIFT,
+                           deviceConnectKeyboardSetFlag0LeftShift,
+                           deviceConnectKeyboardClrFlag0LeftShift);
+    NXVM_SET_KEYBOARD_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_CONTROL,
+                           deviceConnectKeyboardSetFlag0Ctrl,
+                           deviceConnectKeyboardClrFlag0Ctrl);
+    NXVM_SET_KEYBOARD_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_ALT,
+                           deviceConnectKeyboardSetFlag0Alt,
+                           deviceConnectKeyboardClrFlag0Alt);
+    NXVM_SET_KEYBOARD_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_SCROLL_LOCK,
+                           deviceConnectKeyboardSetFlag1ScrLck,
+                           deviceConnectKeyboardClrFlag1ScrLck);
+    NXVM_SET_KEYBOARD_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_NUM_LOCK,
+                           deviceConnectKeyboardSetFlag1NumLck,
+                           deviceConnectKeyboardClrFlag1NumLck);
+    NXVM_SET_KEYBOARD_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_CAPS_LOCK,
+                           deviceConnectKeyboardSetFlag1CapLck,
+                           deviceConnectKeyboardClrFlag1CapLck);
+    NXVM_SET_KEYBOARD_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_INSERT,
+                           deviceConnectKeyboardSetFlag1Insert,
+                           deviceConnectKeyboardClrFlag1Insert);
+    NXVM_SET_KEYBOARD_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_SCROLL_LOCK,
+                           deviceConnectKeyboardSetFlag0ScrLck,
+                           deviceConnectKeyboardClrFlag0ScrLck);
+    NXVM_SET_KEYBOARD_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_NUM_LOCK,
+                           deviceConnectKeyboardSetFlag0NumLck,
+                           deviceConnectKeyboardClrFlag0NumLck);
+    NXVM_SET_KEYBOARD_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_CAPS_LOCK,
+                           deviceConnectKeyboardSetFlag0CapLck,
+                           deviceConnectKeyboardClrFlag0CapLck);
+    NXVM_SET_KEYBOARD_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_INSERT,
+                           deviceConnectKeyboardSetFlag0Insert,
+                           deviceConnectKeyboardClrFlag0Insert);
+    NXVM_SET_KEYBOARD_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_PAUSE,
+                           deviceConnectKeyboardSetFlag1Pause,
+                           deviceConnectKeyboardClrFlag1Pause);
+#undef NXVM_SET_KEYBOARD_FLAG
 }
