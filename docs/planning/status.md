@@ -38,7 +38,7 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T11 S1: migrate the retained PIC controller source into `machine/core`
+M5 T11 S2: migrate the retained PIT controller source into `machine/core`
 without changing NXVM behavior.
 
 ## Completed
@@ -190,12 +190,12 @@ without changing NXVM behavior.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t11-s1.md`.
+`docs/planning/subtasks/m5-t11-s2.md`.
 
 ## Next Eligible Work
 
-- M5 T11 S1 migrates the first retained controller; M6 remains blocked until
-  M5 truly closes.
+- M5 T11 S2 migrates the retained PIT controller; M6 remains blocked until M5
+  truly closes.
 
 ## Delivery State
 
