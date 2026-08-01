@@ -16,7 +16,7 @@
 #include "nxvm-baseline/device/vfdd.h"
 #include "nxvm-baseline/device/vhdc.h"
 #include "nxvm-baseline/device/vhdd.h"
-#include "nxvm-baseline/device/vkbc.h"
+#include "machine/core/vkbc.h"
 #include "nxvm-baseline/device/vvadp.h"
 #include "nxvm-baseline/device/qdx/qdx.h"
 

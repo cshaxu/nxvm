@@ -2,9 +2,9 @@
 
 /* VKBC is Keyboard Controller: Intel 8042 not implemented yet. */
 
-#include "vbios.h"
-#include "vport.h"
-#include "vkbc.h"
+#include "nxvm-baseline/device/vbios.h"
+#include "machine/core/vport.h"
+#include "machine/core/vkbc.h"
 
 void io_read_0064() {
     vport.data.ioByte = VKBC_STATUS_KE;
