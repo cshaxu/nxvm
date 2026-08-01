@@ -4,6 +4,7 @@
 
 #include "vm/machine/device.h"
 #include "core/product/wait.h"
+#include "vm/platform/execution.h"
 #include "vm/platform/input.h"
 #include "vm/platform/platform.h"
 
@@ -62,6 +63,37 @@ static const vm_platform_keyboard_sink vm_composition_keyboard_sink = {
     vm_composition_keyboard_request_stop
 };
 
+static int vm_composition_execution_is_running(void *context)
+{
+    (void)context;
+    return device.flagRun;
+}
+
+static int vm_composition_execution_get_flip(void *context)
+{
+    (void)context;
+    return device.flagFlip;
+}
+
+static void vm_composition_execution_start(void *context)
+{
+    (void)context;
+    deviceStart();
+}
+
+static void vm_composition_execution_stop(void *context)
+{
+    (void)context;
+    deviceStop();
+}
+
+static const vm_platform_execution_sink vm_composition_execution_sink = {
+    vm_composition_execution_is_running,
+    vm_composition_execution_get_flip,
+    vm_composition_execution_start,
+    vm_composition_execution_stop
+};
+
 void machineStart() {
     machineReset();
     machineResume();
@@ -85,10 +117,12 @@ void machineInit() {
     core_product_wait_bind(vm_composition_wait, NULL);
     deviceInit();
     vm_platform_keyboard_bind(&vm_composition_keyboard_sink, NULL);
+    vm_platform_execution_bind(&vm_composition_execution_sink, NULL);
 }
 
 void machineFinal() {
     deviceFinal();
+    vm_platform_execution_bind(NULL, NULL);
     vm_platform_keyboard_bind(NULL, NULL);
     core_product_wait_bind(NULL, NULL);
     platformFinal();

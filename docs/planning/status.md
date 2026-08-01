@@ -275,6 +275,11 @@ legacy `vmachine` lifecycle sequence.
   sink bound by composition. Key mapping, F9 fallthrough, and existing Console
   and window call order remain unchanged. The focused input smoke and full
   retained NXVM gates passed; the temporary source allowlist is now 6 edges.
+- M5 T14 S3: replaced Win32 Console/window lifecycle calls with a VM-platform
+  execution sink bound by composition. Existing threads, polling intervals,
+  message loop, and close ordering remain unchanged. The focused execution
+  smoke and full retained NXVM gates passed; the temporary source allowlist is
+  now 4 edges.
 
 ## Active Subtask
 
