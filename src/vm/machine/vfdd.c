@@ -6,7 +6,7 @@
 
 #include "core/machine/vdma.h"
 
-#include "machine/vm/vfdd.h"
+#include "vm/machine/vfdd.h"
 
 t_fdd vfdd;
 

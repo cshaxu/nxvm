@@ -1,2 +1,2 @@
 /* Temporary M5 forwarding header. The implementation moved to machine/vm. */
-#include "machine/vm/vfdd.h"
+#include "vm/machine/vfdd.h"
