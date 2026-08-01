@@ -2,7 +2,7 @@
 
 #include "nxvm-baseline/utils.h"
 
-#include "aasm32.h"
+#include "core/product/debug/xasm32/aasm32.h"
 
 #define UTILS_TRACE_VAR   trace
 #define UTILS_TRACE_ERROR flagError
