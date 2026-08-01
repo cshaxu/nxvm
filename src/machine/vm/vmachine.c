@@ -11,7 +11,7 @@
 #include "core/machine/vpit.h"
 #include "core/machine/vdma.h"
 #include "core/machine/vpic.h"
-#include "machine/core/vcmos.h"
+#include "vm/machine/vcmos.h"
 #include "machine/vm/vfdc.h"
 #include "machine/vm/vfdd.h"
 #include "machine/vm/vhdc.h"
