@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "machine/core/pc_devices.h"
+#include "core/machine/pc_devices.h"
 
 int main(void)
 {
