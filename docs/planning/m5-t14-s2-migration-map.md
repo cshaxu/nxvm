@@ -75,12 +75,12 @@ are not forbidden peer edges.
 
 | Current target/debt | Required outcome |
 | --- | --- |
-| `nxvm-baseline-runtime` | Complete: deleted. Its former core-product, VM-profile, and VM-platform sources now compile in separate ownership targets. The temporary `nxvm-legacy-runtime-dependencies` target is link-only (`INTERFACE`) and owns no source; M5 closure replaces it with final module links. |
+| `nxvm-baseline-runtime` | Complete: deleted. Its former core-product, VM-profile, and VM-platform sources now compile in separate ownership targets. The temporary `nxvm-legacy-runtime-dependencies` aggregate is deleted; root composition links its required module targets explicitly. |
 | `nxvm-machine-core-executor` | Complete for the retained build: it now compiles only `core/machine` sources. The final named `core-machine` target remains M5 closure work. |
 | `nxvm-firmware` | Split core firmware registry from default-profile firmware implementation; composition links both. |
 | `nxvm-product-default-profile`, `nxvm-product-profile`, `nxvm-product-session` | Remove product/profile cross-linking. Product UX and profile metadata become peers linked only by `vm-composition`. |
 | `nxvm-vm-full-pc`, `nxvm-vm-full-pc-session` | Replace with the final `vm-composition` owner once its lifecycle bindings preserve the current session gate. |
-| `nxvm-machine-vm-lifecycle` | In progress: VM device sources now compile in the peer `nxvm-vm-machine` target; the remaining target contains only `vm/composition*.c` root sources and will be renamed/consolidated after its direct dependency list replaces the temporary aggregate interface. |
+| `nxvm-vm-composition` | Complete for the retained NXVM path: it compiles only `vm/composition*.c` root sources and explicitly links VM machine/platform/profile/product-facing core dependencies. `nxvm-vm-machine` separately owns VM controller sources. Historical narrow targets remain only as smoke compatibility shims pending their test migration. |
 | `add_nxvm_full_pc_artifact` | Complete: each retained artifact compiles only `vm/main.c` and links the same VM product/lifecycle graph. It remains the task-artifact producer, not a second build graph. Final naming and composition-target consolidation remain separate closure work. |
 | VDM minimal targets | Recast as four peer targets plus test-only `vdm-composition`; no VDM executable or CLI enters M5. |
 

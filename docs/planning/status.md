@@ -310,6 +310,10 @@ legacy `vmachine` lifecycle sequence.
   target now compiles root composition sources only and links that machine
   target; the temporary aggregate link dependency remains until the next
   target-graph slice.
+- M5 T14 S3: renamed that root target to `nxvm-vm-composition` and replaced
+  the temporary `nxvm-legacy-runtime-dependencies` aggregate with explicit
+  module links. Retained task artifacts and focused VM smoke targets now link
+  the root composition target directly.
 
 ## Active Subtask
 
