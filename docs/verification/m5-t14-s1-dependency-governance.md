@@ -9,5 +9,7 @@ firmware. The retained VM also has both `vm/machine -> vm/platform` and
 
 The CMake inventory confirms that `nxvm-baseline-runtime` is a mixed aggregate
 target. These facts match `docs/planning/m5-dependency-governance.md` and
-justify superseding the isolated T13 S9-S11 plans. No source, CMake, runtime,
-or user-visible behavior changed in this design-only subtask.
+justify superseding the isolated T13 S9-S11 plans. The forward rule places
+composition in the `vm/` and `vdm/` roots, not their user-experience modules.
+No source, CMake, runtime, or user-visible behavior changed in this design-only
+subtask.

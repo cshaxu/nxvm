@@ -27,29 +27,29 @@ closes.
 | `vcpu`, `vram`, `vport` | `core` | CPU execution, RAM, port/memory dispatch and A20 behavior. | Already represented by M3 contracts; preserve core smoke tests and reset-vector path. |
 | `vpic`, `vpit`, `vdma`, `vkbc`, `qdx` | `core` optional devices | Machine-neutral PC-compatible interrupt, timer, DMA, keyboard-controller and text/CGA device behavior. They expose ports, IRQ/DRQ, and immutable snapshots only. | M5 T3 establishes the device contracts after CPU/profile gates; M1 FDD/HDD boot and presentation regressions remain required. |
 | `vbios`, `vcmos`, `vvadp` | `firmware/pc_at` | POST, ROM/BDA construction, CMOS-backed firmware configuration, and BIOS interrupt services including display routing. | M5 T2 replaces string-assembled registration with typed firmware registrations and proves reset `F000:FFF0`. |
-| `vfdc`, `vhdc`, `vfdd`, `vhdd` | `products/nxvm/pc_at` | Full-PC controller/device composition plus removable and fixed disk policy. Media selection is a product concern, not a firmware or core concern. | M5 T3 proves FDD insertion and HDD connection against the existing fixture identities. |
+| `vfdc`, `vhdc`, `vfdd`, `vhdd` | `vm/machine`, selected by `vm/` root composition | Full-PC controller/device providers plus removable and fixed disk policy. Media selection and binding are root-composition concerns, not firmware or core concerns. | M5 T3 proves FDD insertion and HDD connection against the existing fixture identities. |
 | `console`, `machine.c`, `debug`, `vdebug`, `xasm32` | `products/nxvm` plus debug adapter | Interactive NXVM Console, command parsing, debugger presentation, and product lifecycle policy. Debug inspection uses the M3 synchronized debug boundary. | M5 T4 preserves the documented Console commands and does not add a process CLI. |
 | `platform/win32/*`, retained `platform/linux/*` | `platform` | Host threads, console/window presentation, keyboard event collection, clocks, block-file I/O, and logging. Host callbacks never mutate guest state directly. | M5 T4 uses queued commands/events and copied snapshots; Windows whole-PC regression is mandatory. |
 | `device.c`, `vmachine.c`, baseline global connection helpers | temporary baseline adapter | Evidence-preserving bridge only while a target owner is migrated. | M5 T5 removes each migrated path from the active composition; the adapter remains only for uncovered baseline behavior and is deleted only after equivalent regression coverage exists. |
 
 ## Composition Rules
 
-`runtime` creates the Machine and selects `nxvm.machine.pc_at_builtin`. The
-NXVM product then selects its media policy, requests the PC/AT device package,
-and composes the built-in firmware provider. Firmware registers typed POST,
-ROM, and interrupt services; it does not open host files, create windows, or
-parse Console input.
+The `vm/` root composition creates the Machine and selects
+`nxvm.machine.pc_at_builtin`. It selects media policy, requests the PC/AT
+device package, and composes the built-in firmware provider. Firmware registers
+typed POST, ROM, and interrupt services; it does not open host files, create
+windows, or parse Console input.
 
 ```text
-products/nxvm Console and media policy
+vm/product Console and media UX
                  |
-runtime -> core Machine <- pc_at optional devices
+vm/ root composition -> core Machine <- PC/AT providers
                  |
-             firmware/pc_at
+       profile firmware override
                  |
        abstract host capabilities
                  |
-              platform
+          vm/platform provider
 ```
 
 `ntvdm64.dos_minimal` neither selects the PC/AT device package nor imports

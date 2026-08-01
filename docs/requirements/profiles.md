@@ -63,12 +63,12 @@ milestone and corpus evidence.
 
 ## Registry Contract
 
-`runtime` owns two composition registries: one for machine profiles and one
-for execution profiles. A descriptor has a stable id, ABI version, owner,
-capability requirements, composition callback, teardown rule, and verification
-schema. Product code requests a profile by id; runtime rejects a mismatched
-product family, missing required capability, duplicate id, unsupported ABI, or
-late profile change.
+Each product-form root owns its composition registry: one for VM machine
+profiles and one for VDM execution profiles. A descriptor has a stable id, ABI
+version, owner, capability requirements, composition callback, teardown rule,
+and verification schema. Root composition requests a profile by id and rejects
+a mismatched product family, missing required capability, duplicate id,
+unsupported ABI, or late profile change.
 
 ```c
 typedef enum {
