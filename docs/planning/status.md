@@ -38,8 +38,8 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T10 S3: move the original CPU, RAM, port, and instruction sources while
-preserving their single-session execution binding.
+M5 T10 S4: replace the temporary execution binding with an explicit
+session-owned PC/AT context while preserving retained NXVM behavior.
 
 ## Completed
 
@@ -183,12 +183,12 @@ preserving their single-session execution binding.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t10-s3.md`.
+`docs/planning/subtasks/m5-t10-s4.md`.
 
 ## Next Eligible Work
 
-- M5 T10 S3 moves the real CPU/RAM/port/instruction source slice; M6 remains
-  blocked until M5 truly closes.
+- M5 T10 S4 replaces the temporary execution binding; M6 remains blocked until
+  M5 truly closes.
 
 ## Delivery State
 
