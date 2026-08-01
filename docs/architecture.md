@@ -78,6 +78,10 @@ hexadecimal revision digit (`0` through `f`).
 - `core/platform`: shared host-capability contracts and host facilities.
 - `core/product`: shared registry, debug/trace, command and tooling primitives;
   it is independent of the other core modules.
+- `type.*`: system-wide primitive aliases and `STATUS`; it is the only common
+  type foundation and carries no product policy.
+- `version.*`: the only source of version and build identity used by product
+  Console banners; it is not a module contract.
 - `vm/{machine,platform,product,profile}`: bootable NXVM-only behavior;
   built-in BIOS/POST/ROM/QDX lives in `vm/profile/default_profile/firmware`.
 - `vdm/{machine,platform,product,profile}`: DOS app-runner-only behavior;
@@ -90,8 +94,8 @@ hexadecimal revision digit (`0` through `f`).
 ## Registries
 
 Registries are product-form-root-owned composition tables, not process-global
-mutable maps. A registry entry has a key, versioned contract, owner,
-profile/capability gate, lifecycle state, and teardown rule.
+mutable maps. A registry entry has a key, contract, owner, profile/capability
+gate, lifecycle state, and teardown rule.
 
 - Machine-profile registry: selects bootable NXVM machine descriptions such as
   `nxvm.machine.default_profile_builtin`, including topology, firmware provider, and

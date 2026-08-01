@@ -126,78 +126,82 @@ they never call a platform UI. Timer and IRQ delivery occur only inside the
 execution thread and before the next instruction boundary according to the
 selected profile's deterministic tick policy.
 
-## Versioned C Contracts
+## C Contract Conventions
 
-The exact header split is an M3 implementation choice, but M3 uses a
-parity-first layout: public contract headers live beside their C implementation
-in `src/core/`, while private headers use an `_impl.h` suffix and remain
-module-local. All declarations below carry `NXVM_CORE_MACHINE_ABI_V1`; future
-changes are append-only or require a new ABI version. Opaque handles prevent
-callers from reaching NXVM globals. A future packaging task may mirror stable
-headers into a top-level `include/` tree, but M3 does not create that tree.
+The exact header split is an M3 implementation choice, but public contract
+headers live beside their C implementation in `src/core/`, while private
+headers use an `_impl.h` suffix and remain module-local. `src/type.h` supplies
+`BOOL`, `SIZE_T`, fixed-width aliases, and `STATUS`; `src/version.*` is the
+only version source and does not participate in contracts. Opaque handles
+prevent callers from reaching NXVM globals. A future packaging task may mirror
+stable headers into a top-level `include/` tree, but M3 does not create that
+tree.
 
 ```c
-typedef struct ntvdm64_machine ntvdm64_machine;
+typedef struct CORE_MACHINE CORE_MACHINE;
 typedef enum {
-    NTVDM64_STOP_BUDGET, NTVDM64_STOP_PAUSED, NTVDM64_STOP_GUEST_EXIT,
-    NTVDM64_STOP_REQUESTED, NTVDM64_STOP_FAULT
-} ntvdm64_stop_reason;
-typedef struct { uint64_t instructions; uint32_t ticks; } ntvdm64_run_budget;
-typedef struct { ntvdm64_stop_reason reason; uint64_t executed;
-                 uint32_t linear_pc; uint32_t detail; } ntvdm64_run_result;
+    CORE_MACHINE_STOP_BUDGET, CORE_MACHINE_STOP_PAUSED,
+    CORE_MACHINE_STOP_GUEST_EXIT, CORE_MACHINE_STOP_REQUESTED,
+    CORE_MACHINE_STOP_FAULT
+} CORE_MACHINE_STOP_REASON;
+typedef struct { U64 instructions; U32 ticks; } CORE_MACHINE_RUN_BUDGET;
+typedef struct { CORE_MACHINE_STOP_REASON reason; U64 executed;
+                 U32 linear_pc; U32 detail; } CORE_MACHINE_RUN_RESULT;
 
-int machine_create_v1(const ntvdm64_machine_config *, ntvdm64_machine **out);
-int machine_reset_v1(ntvdm64_machine *);
-int machine_run_v1(ntvdm64_machine *, ntvdm64_run_budget, ntvdm64_run_result *);
-int machine_request_stop_v1(ntvdm64_machine *);
-int machine_destroy_v1(ntvdm64_machine *);
+STATUS core_machine_create(const CORE_MACHINE_CONFIG *, CORE_MACHINE **out);
+STATUS core_machine_reset(CORE_MACHINE *);
+STATUS core_machine_run(CORE_MACHINE *, CORE_MACHINE_RUN_BUDGET,
+                        CORE_MACHINE_RUN_RESULT *);
+STATUS core_machine_request_stop(CORE_MACHINE *);
+STATUS core_machine_destroy(CORE_MACHINE *);
 
-int machine_mem_read_v1(ntvdm64_machine *, uint32_t linear, void *, size_t);
-int machine_mem_write_v1(ntvdm64_machine *, uint32_t linear, const void *, size_t);
-int machine_set_vector_v1(ntvdm64_machine *, uint8_t vector,
-                          uint16_t segment, uint16_t offset);
-int machine_install_port_v1(ntvdm64_machine *, uint16_t first, uint16_t last,
-                            const ntvdm64_port_ops *, void *owner);
-int machine_install_interrupt_v1(ntvdm64_machine *, uint8_t vector,
-                                 const ntvdm64_interrupt_ops *, void *owner);
+STATUS core_machine_mem_read(CORE_MACHINE *, U32 linear, void *, SIZE_T);
+STATUS core_machine_mem_write(CORE_MACHINE *, U32 linear, const void *, SIZE_T);
+STATUS core_machine_set_vector(CORE_MACHINE *, U8 vector,
+                               U16 segment, U16 offset);
+STATUS core_machine_install_port(CORE_MACHINE *, U16 first, U16 last,
+                                 const CORE_MACHINE_PORT_OPS *, void *owner);
+STATUS core_machine_install_interrupt(CORE_MACHINE *, U8 vector,
+                                      const CORE_MACHINE_INTERRUPT_OPS *,
+                                      void *owner);
 ```
 
-All functions return a project status enum; invalid state, invalid range,
+All functions return `STATUS`; invalid state, invalid range,
 duplicate ownership, unsupported profile feature, and guest fault are distinct
 results. Memory calls are range checked and never expose a writable raw RAM
 pointer. Port and interrupt callbacks execute on the Machine thread, may not
 re-enter `machine_run`, and return a handled/unhandled/fault result. An
 installed handler has one owner and is removed before that owner is destroyed.
 
-Firmware and DOS use `machine_set_vector_v1` or
-`machine_install_interrupt_v1`; they do not write CPU-reference macros or call
+Firmware and DOS use `core_machine_set_vector` or
+`core_machine_install_interrupt`; they do not write CPU-reference macros or call
 legacy `deviceConnect*` functions. The Machine never names firmware or DOS.
 `dos` reports guest termination through a registered Machine-neutral stop
-request with an exit value; `runtime` converts it to the future product result.
+request with an exit value; VDM root composition converts it to the future
+product result.
 
 ## Host Service And Trace Boundaries
 
 M2 defines capabilities, not DOS pathname syntax or Win32 calls:
 
 ```c
-typedef struct ntvdm64_host_service ntvdm64_host_service;
-typedef enum { NTVDM64_HOST_OK, NTVDM64_HOST_NOT_FOUND,
-    NTVDM64_HOST_DENIED, NTVDM64_HOST_INVALID, NTVDM64_HOST_IO } ntvdm64_host_status;
-int host_open_v1(ntvdm64_host_service *, ntvdm64_root_id, const void *token,
-                 size_t token_size, unsigned access, ntvdm64_handle_id *out);
-int host_read_v1(ntvdm64_host_service *, ntvdm64_handle_id, void *, size_t,
-                 size_t *read);
-int host_close_v1(ntvdm64_host_service *, ntvdm64_handle_id);
+typedef struct CORE_PLATFORM_FILESYSTEM CORE_PLATFORM_FILESYSTEM;
+STATUS core_platform_open(CORE_PLATFORM_FILESYSTEM *, U32 root_id,
+                          const void *token, SIZE_T token_size, U32 access,
+                          U32 *out_handle);
+STATUS core_platform_read(CORE_PLATFORM_FILESYSTEM *, U32 handle, void *,
+                          SIZE_T size, SIZE_T *out_read);
+STATUS core_platform_close(CORE_PLATFORM_FILESYSTEM *, U32 handle);
 ```
 
-A root capability is selected by `runtime`; an operation can affect only that
+A root capability is selected by VDM root composition; an operation can affect only that
 capability's exposed root. `dos` receives opaque tokens and host status classes,
 not a host path, handle, drive letter, or operating-system error. Early DOS
 tests use only an in-memory fixture implementation. M8 specifies DOS path
 grammar, canonicalization, reparse/race handling, Windows handles, and CLI
 drive policy.
 
-Trace is the append-only, null-by-default `ntvdm64_trace_sink` V1 described in
+Trace is the append-only, null-by-default `CORE_MACHINE_TRACE_SINK` described in
 `docs/governance/differential-debug-policy.md`. Machine emits reset, run
 boundary, step, interrupt, port, IRQ, device reset, text snapshot and stop
 records. DOS later emits loader/service/filesystem/exit records. Trace callbacks
