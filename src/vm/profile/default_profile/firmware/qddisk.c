@@ -4,11 +4,11 @@
 
 #include "core/product/utils.h"
 
-#include "../vcpu.h"
-#include "../vram.h"
-#include "../vhdd.h"
+#include "core/machine/vcpu.h"
+#include "core/machine/vram.h"
+#include "vm/machine/vhdd.h"
 
-#include "qdx.h"
+#include "nxvm-baseline/device/qdx/qdx.h"
 #include "qddisk.h"
 
 #define SetHddStatus (vramRealByte(0x0040, 0x0074) = vcpu.data.ah)
