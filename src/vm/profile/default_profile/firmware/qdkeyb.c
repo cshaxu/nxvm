@@ -3,11 +3,11 @@
 /* QDKEYB implements quick and dirty keyboard control routines. */
 
 #include "core/product/utils.h"
-#include "../vport.h"
-#include "../vcpu.h"
-#include "../vpic.h"
+#include "core/machine/vport.h"
+#include "core/machine/vcpu.h"
+#include "core/machine/vpic.h"
 
-#include "qdx.h"
+#include "nxvm-baseline/device/qdx/qdx.h"
 #include "qdkeyb.h"
 
 #define bufptrHead (vramRealWord(Zero16, QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD))
