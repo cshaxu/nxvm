@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_MACHINE_H
-#define NXVM_MACHINE_H
+#ifndef NXVM_COMPOSITION_MACHINE_H
+#define NXVM_COMPOSITION_MACHINE_H
 
 #ifdef __cplusplus
 extern "C" {

@@ -6,7 +6,7 @@
 #include "core/product/utils.h"
 
 #include "vm/machine/device.h"
-#include "vm/machine/machine.h"
+#include "vm/composition_machine.h"
 
 #include "vm/product/debug.h"
 

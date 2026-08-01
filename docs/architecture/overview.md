@@ -68,6 +68,9 @@ The product forms are `core`, `vm`, and `vdm`. The shared foundation has three
 independent modules: `core/machine`, `core/platform`, and `core/product`.
 `vm/` and `vdm/` each own product composition, lifecycle, and teardown; their
 `product` modules own user experience rather than system composition.
+Cross-module adaptation, including display and input bridging, occurs only in
+the relevant product root composition. Peer machine and platform modules do
+not adapt each other's contracts directly.
 
 `src/type.h` is the system-wide type and `STATUS` foundation. `src/version.*`
 is the only source for version and build identity. Public symbols use their
