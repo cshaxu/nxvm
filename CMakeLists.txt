@@ -180,7 +180,7 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/product/core/debug/xasm32/dasm32.c
 )
 set(NXVM_MACHINE_VM_SOURCES
-    src/machine/vm/execution_context.c
+    src/core/product/runtime/execution_context.c
     src/machine/vm/machine.c
     src/machine/vm/device.c
     src/machine/vm/vmachine.c

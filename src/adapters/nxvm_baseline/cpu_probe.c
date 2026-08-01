@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "core/machine/vcpu.h"
-#include "machine/vm/execution_context.h"
+#include "core/product/runtime/execution_context.h"
 #include "nxvm-baseline/device/device.h"
 #include "nxvm-baseline/device/vcpuins.h"
 

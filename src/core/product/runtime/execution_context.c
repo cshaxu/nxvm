@@ -1,4 +1,4 @@
-#include "machine/vm/execution_context.h"
+#include "core/product/runtime/execution_context.h"
 
 static nxvm_execution_context *nxvm_current_execution_context;
 
