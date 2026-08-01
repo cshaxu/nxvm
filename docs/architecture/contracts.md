@@ -92,3 +92,34 @@ primitive only after both loops have a demonstrated identical mechanism. Such
 a primitive knows no machine or platform type and never decides scheduling,
 display policy, cancellation, boot continuation, or program exit. Those remain
 VM/VDM root-composition policy.
+
+## Core Machine: Configuration, State, And Run Result
+
+`CORE_MACHINE_CONFIG` contains only static core-machine capability: RAM
+capacity, CPU architecture capability bits, address-space limits, and baseline
+machine settings such as A20 reset policy. VM/VDM root composition translates a
+selected profile into this configuration.
+
+It contains no profile identifier, ROM/BIOS/CMOS data, storage device, host
+resource, window/Console option, debugger option, or product exit policy.
+Those are provider, product, or root-composition concerns.
+
+CPU selection is expressed as core capability bits, not VM or VDM model names.
+For example, a VM profile may require 386 instruction capability, while root
+composition supplies the corresponding core bit set. This lets core evolve its
+x86 implementation without importing product profile semantics.
+
+`CORE_MACHINE_STATE` exposes only `CONFIGURING`, `READY`, `RUNNING`, `PAUSED`,
+`STOPPED`, and `FAULTED`. `RUNNING` exists only while a synchronous
+`core_machine_run` call is active; `READY` means another quantum may begin.
+
+`CORE_MACHINE_RUN_RESULT` reports why one quantum returned:
+
+- `QUANTUM_COMPLETE`: instruction budget exhausted and execution may continue.
+- `PAUSED`: a debugger or explicit pause boundary was reached.
+- `STOP_REQUESTED`: root composition requested a safe stop.
+- `PROVIDER_STOP`: a registered provider requested termination with provider
+  detail; only root composition interprets that detail as product behavior.
+- `FAULT`: core reports a machine/CPU fault and guest location detail.
+
+The core does not define a DOS program exit or a whole-PC process exit result.
