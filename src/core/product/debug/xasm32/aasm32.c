@@ -1,6 +1,6 @@
 /* This file is a part of NXVM project. */
 
-#include "nxvm-baseline/utils.h"
+#include "core/product/utils.h"
 
 #include "core/product/debug/xasm32/aasm32.h"
 

@@ -2,7 +2,7 @@
 
 /* WIN32CON provides win32 console i/o interface. */
 
-#include "../../utils.h"
+#include "core/product/utils.h"
 #include "../../device/device.h"
 
 #include "win32.h"

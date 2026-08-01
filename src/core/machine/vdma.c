@@ -2,7 +2,7 @@
 
 /* VDMA implements two chips of Direct Memory Access Controller: Intel 8237A (Master+Slave). */
 
-#include "nxvm-baseline/utils.h"
+#include "core/product/utils.h"
 
 #include "core/machine/vram.h"
 

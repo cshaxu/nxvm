@@ -2,7 +2,7 @@
 
 /* VPIT implements Programmable Interval Timer Intel 8254. */
 
-#include "nxvm-baseline/utils.h"
+#include "core/product/utils.h"
 
 #include "core/machine/vpic.h"
 

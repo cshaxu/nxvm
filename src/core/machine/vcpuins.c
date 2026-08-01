@@ -4,7 +4,7 @@
 #define i386(n) if (1)
 /* ************************************************************************* */
 
-#include "nxvm-baseline/utils.h"
+#include "core/product/utils.h"
 #include "nxvm-baseline/device/device.h"
 
 #include "core/machine/vport.h"

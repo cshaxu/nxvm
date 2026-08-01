@@ -2,7 +2,7 @@
 
 /* QDX implements quick and dirty instruction loader */
 
-#include "../../utils.h"
+#include "core/product/utils.h"
 #include "../device.h"
 #include "../vcpuins.h"
 

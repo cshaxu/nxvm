@@ -5,7 +5,7 @@
  * two Intel 8259A chips, one master and one slave.
  */
 
-#include "nxvm-baseline/utils.h"
+#include "core/product/utils.h"
 
 #include "core/machine/vpit.h"
 #include "nxvm-baseline/device/vbios.h"

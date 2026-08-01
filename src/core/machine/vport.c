@@ -2,7 +2,7 @@
 
 /* VPORT is the hub that connects all devices with the I/O port. */
 
-#include "nxvm-baseline/utils.h"
+#include "core/product/utils.h"
 
 #include "core/machine/vport.h"
 

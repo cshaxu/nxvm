@@ -2,7 +2,7 @@
 
 /* VFDD implements Floppy Disk Drive: 3.5" 1.44MB. */
 
-#include "nxvm-baseline/utils.h"
+#include "core/product/utils.h"
 
 #include "core/machine/vdma.h"
 

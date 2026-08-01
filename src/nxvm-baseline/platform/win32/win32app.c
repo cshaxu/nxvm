@@ -4,7 +4,7 @@
 
 #include <tchar.h>
 
-#include "../../utils.h"
+#include "core/product/utils.h"
 #include "../../device/device.h"
 
 #include "win32.h"

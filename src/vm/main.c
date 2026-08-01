@@ -12,7 +12,7 @@ Copyright (c) 2012-2014 Neko.\n"
  * Start:      01/25/2012
  */
 
-#include "utils.h"
+#include "core/product/utils.h"
 #include "vm/product/console.h"
 
 int main(int argc, char **argv) {
