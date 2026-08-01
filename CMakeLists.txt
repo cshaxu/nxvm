@@ -174,7 +174,12 @@ set(NXVM_PRODUCT_CORE_SOURCES
     src/core/product/utils.c
 )
 
+set(NXVM_PROFILE_VM_SOURCES
+    src/vm/profile/default_profile/firmware/vbios.c
+)
+
 list(APPEND NXVM_BASELINE_RUNTIME_SOURCES ${NXVM_PRODUCT_CORE_SOURCES})
+list(APPEND NXVM_BASELINE_RUNTIME_SOURCES ${NXVM_PROFILE_VM_SOURCES})
 
 set(NXVM_PRODUCT_VM_SOURCES
     src/vm/main.c
@@ -379,6 +384,7 @@ function(add_nxvm_full_pc_artifact target suffix)
         ${NXVM_MACHINE_VM_SOURCES}
         ${NXVM_MACHINE_CORE_SOURCES}
         ${NXVM_PLATFORM_VM_SOURCES}
+        ${NXVM_PROFILE_VM_SOURCES}
         ${NXVM_PRODUCT_CORE_SOURCES}
         ${NXVM_PRODUCT_CORE_DEBUG_SOURCES}
         ${NXVM_PRODUCT_VM_SOURCES})

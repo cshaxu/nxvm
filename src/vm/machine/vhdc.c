@@ -2,7 +2,7 @@
 
 /* VHDC is Hard Disk Driver Controller, not yet implemented. */
 
-#include "nxvm-baseline/device/vbios.h"
+#include "vm/profile/default_profile/firmware/vbios.h"
 #include "vm/machine/vhdc.h"
 
 void vhdcInit() {

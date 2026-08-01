@@ -6,7 +6,7 @@
 
 #include "core/machine/vcpu.h"
 
-#include "nxvm-baseline/device/vbios.h"
+#include "vm/profile/default_profile/firmware/vbios.h"
 #include "core/machine/vport.h"
 #include "vm/machine/vcmos.h"
 
