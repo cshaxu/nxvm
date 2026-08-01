@@ -1,4 +1,4 @@
-#include "products/nxvm/console.h"
+#include "vm/product/session_console.h"
 
 #include <ctype.h>
 #include <string.h>

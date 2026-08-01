@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "products/nxvm/console.h"
+#include "vm/product/session_console.h"
 
 typedef struct console_fixture {
     unsigned count;
