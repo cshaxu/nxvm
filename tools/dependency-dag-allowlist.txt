@@ -26,7 +26,6 @@ src/vm/machine/machine.c|vm/platform
 src/vm/machine/vcmos.c|vm/profile
 src/vm/machine/vfdc.c|vm/profile
 src/vm/machine/vhdc.c|vm/profile
-src/vm/machine/vmachine.c|vm/profile
 src/vm/machine/vvadp.c|vm/profile
 src/vm/platform/linux/linuxcon.c|vm/machine
 src/vm/platform/win32/w32adisp.c|vm/machine

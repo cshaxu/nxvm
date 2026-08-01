@@ -41,8 +41,9 @@ solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T14 S2: produce the target-by-target migration map and automated
-source/target dependency checks for the product-composition DAG.
+M5 T14 S3: remove core-to-VM/default-profile dependencies through approved
+core contracts and VM root-composition bindings, beginning with the preserved
+legacy `vmachine` lifecycle sequence.
 
 ## Completed
 
@@ -255,15 +256,20 @@ source/target dependency checks for the product-composition DAG.
   product include. Focused product/session and retained NXVM gates passed.
 - M5 T14 S1: adopted the product-composition dependency DAG and made it the M5
   source/target closure criterion. No runtime or build-graph change occurred.
+- M5 T14 S2: recorded the target-by-target dependency migration map; froze the
+  approved halt, block-capability, video-notification, and legacy lifecycle
+  directions; and added source/CMake dependency checks. No runtime behavior
+  changed.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t14-s2.md`.
+`docs/planning/subtasks/m5-t14-s3.md`.
 
 ## Next Eligible Work
 
-- M5 T14 S2 may produce the dependency migration map only. T13 S9-S11 are
-  superseded; M6 remains blocked until the new M5 closure rule is met.
+- M5 T14 S3 may remove the approved core-to-VM/default-profile dependency
+  edges. T13 S9-S11 are superseded; M6 remains blocked until the new M5
+  closure rule is met.
 
 ## Delivery State
 
