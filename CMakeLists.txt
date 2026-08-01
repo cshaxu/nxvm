@@ -186,7 +186,6 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/xasm32/dasm32.c
 )
 set(NXVM_MACHINE_VM_SOURCES
-    src/core/product/runtime/execution_context.c
     src/vm/composition_machine.c
     src/vm/composition_loop.c
     src/vm/composition.c
@@ -194,6 +193,9 @@ set(NXVM_MACHINE_VM_SOURCES
     src/vm/machine/vhdd.c
     src/vm/machine/vfdc.c
     src/vm/machine/vhdc.c
+    src/vm/machine/vvadp.c
+    src/vm/machine/vcmos.c
+    src/vm/machine/vdebug.c
 )
 set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/vport.c
@@ -204,9 +206,9 @@ set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/vpit.c
     src/core/machine/vdma.c
     src/core/machine/vkbc.c
-    src/vm/machine/vvadp.c
-    src/vm/machine/vcmos.c
-    src/vm/machine/vdebug.c
+)
+set(NXVM_CORE_PRODUCT_RUNTIME_SOURCES
+    src/core/product/runtime/execution_context.c
 )
 set(NXVM_PLATFORM_VM_SOURCES
     src/vm/platform/platform.c
@@ -269,7 +271,9 @@ add_library(nxvm-machine-vm-lifecycle STATIC ${NXVM_MACHINE_VM_SOURCES})
 target_include_directories(nxvm-machine-vm-lifecycle PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(nxvm-machine-vm-lifecycle PUBLIC nxvm-baseline-runtime)
+target_link_libraries(nxvm-machine-vm-lifecycle PUBLIC
+    nxvm-baseline-runtime
+    nxvm-runtime)
 
 add_library(nxvm-product-vm-debug STATIC
     src/vm/product/debug.c
@@ -324,6 +328,7 @@ target_link_libraries(nxvm-vm-cpu-stop-smoke PRIVATE
 )
 
 add_library(nxvm-runtime STATIC
+    ${NXVM_CORE_PRODUCT_RUNTIME_SOURCES}
     src/core/product/runtime/registry.c
 )
 target_include_directories(nxvm-runtime PUBLIC
@@ -441,6 +446,7 @@ function(add_nxvm_full_pc_artifact target suffix)
         ${NXVM_RUNTIME_SOURCES}
         ${NXVM_MACHINE_VM_SOURCES}
         ${NXVM_MACHINE_CORE_SOURCES}
+        ${NXVM_CORE_PRODUCT_RUNTIME_SOURCES}
         ${NXVM_PLATFORM_VM_SOURCES}
         ${NXVM_PROFILE_VM_SOURCES}
         ${NXVM_PRODUCT_CORE_SOURCES}
@@ -476,9 +482,7 @@ option(NTVDM64_VERIFY_DEPENDENCY_DAG
 if(NTVDM64_VERIFY_DEPENDENCY_DAG)
     set(NTVDM64_LEGACY_MIXED_OWNER_TARGETS
         nxvm-firmware
-        nxvm-machine-core-executor
         nxvm-baseline-runtime
-        nxvm-machine-vm-lifecycle
         nxvm-m3-t5
         nxvm-m5-t1
         nxvm-m5-t2
