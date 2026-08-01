@@ -1,7 +1,7 @@
 #ifndef NXVM_ADAPTERS_DOS_MINIMAL_PRESENTATION_H
 #define NXVM_ADAPTERS_DOS_MINIMAL_PRESENTATION_H
 
-#include "platform/presentation.h"
+#include "core/platform/presentation.h"
 
 #ifdef __cplusplus
 extern "C" {
