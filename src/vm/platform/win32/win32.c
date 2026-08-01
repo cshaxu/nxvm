@@ -2,7 +2,7 @@
 
 /* WIN32 provides win32 platform input and output interface. */
 
-#include "vm/machine/device.h"
+#include "vm/platform/input.h"
 
 #include "vm/platform/win32/win32con.h"
 #include "vm/platform/win32/win32app.h"
@@ -156,7 +156,7 @@ static uint32_t win32KeyboardGetToggleState(void)
 
 static void win32KeyboardApplyCurrentStateDirect(void)
 {
-    deviceConnectKeyboardApplyHostState(win32KeyboardGetAsyncState(),
+    vm_platform_keyboard_apply_host_state(win32KeyboardGetAsyncState(),
                                         win32KeyboardGetToggleState());
 }
 
@@ -168,7 +168,7 @@ VOID win32KeyboardMakeStatus() {
         win32_keyboard_state_sink(win32_keyboard_state_sink_opaque,
                                   asynchronous_keys, toggle_keys) !=
         NXVM_CORE_STATUS_OK) {
-        deviceConnectKeyboardApplyHostState(asynchronous_keys, toggle_keys);
+        vm_platform_keyboard_apply_host_state(asynchronous_keys, toggle_keys);
     }
 }
 VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
@@ -195,11 +195,11 @@ VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
     case VK_END:
     case VK_PRIOR:
     case VK_NEXT:
-        if (deviceConnectKeyboardGetFlag0Alt()) {
+        if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
             code = MoveKeyCode[scanCode - 0x47][7];
-        } else if (deviceConnectKeyboardGetFlag0Ctrl()) {
+        } else if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL)) {
             code = MoveKeyCode[scanCode - 0x47][5];
-        } else if (deviceConnectKeyboardGetFlag0Shift()) {
+        } else if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT)) {
             code = MoveKeyCode[scanCode - 0x47][3];
         } else {
             code = MoveKeyCode[scanCode - 0x47][1];
@@ -208,19 +208,19 @@ VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
         code |= ((USHORT)scanCode << 8);
         break;
     case VK_F9:
-        deviceStop();
+        vm_platform_keyboard_request_stop();
     default:
-        if (deviceConnectKeyboardGetFlag0Alt()) {
+        if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
             code = CodeMap[scanCode][7];
-        } else if (deviceConnectKeyboardGetFlag0Ctrl()) {
+        } else if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL)) {
             code = CodeMap[scanCode][5];
-        } else if (deviceConnectKeyboardGetFlag0Shift()) {
+        } else if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT)) {
             code = CodeMap[scanCode][3];
         } else {
             if (virtualKey > 0x40 && virtualKey < 0x5b) {
                 /* Caps Lock Active */
-                if (deviceConnectKeyboardGetFlag0CapsLock() ==
-                        deviceConnectKeyboardGetFlag0Shift())
+                if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_CAPS_LOCK) ==
+                        vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT))
                     code = CodeMap[scanCode][1];
                 else
                     code = CodeMap[scanCode][3];
@@ -230,25 +230,25 @@ VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
                     /* Arrow Keys */
                     code = 0x00;
                 else {
-                    if (deviceConnectKeyboardGetFlag0NumLock() &&
-                            deviceConnectKeyboardGetFlag0Shift())
+                    if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_NUM_LOCK) &&
+                            vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT))
                         code = CodeMap[scanCode][3];
                     else
                         code = CodeMap[scanCode][1];
                 }
             } else {
-                if (deviceConnectKeyboardGetFlag0Shift())
+                if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT))
                     code = CodeMap[scanCode][3];
                 else
                     code = CodeMap[scanCode][1];
             }
         }
         /* correct scanCode */
-        if (deviceConnectKeyboardGetFlag0Alt()) {
+        if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
             scanCode = CodeMap[scanCode][6];
-        } else if (deviceConnectKeyboardGetFlag0Ctrl()) {
+        } else if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL)) {
             scanCode = CodeMap[scanCode][4];
-        } else if (deviceConnectKeyboardGetFlag0Shift()) {
+        } else if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT)) {
             scanCode = CodeMap[scanCode][2];
         } else {
             scanCode = CodeMap[scanCode][0];
@@ -257,7 +257,7 @@ VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
         code |= ((USHORT) scanCode << 8);
         break;
     }
-    deviceConnectKeyboardRecvKeyPress(code);
+    vm_platform_keyboard_receive_key_press(code);
 }
 
 VOID win32DisplaySetScreen(BOOL flagWindow) {
