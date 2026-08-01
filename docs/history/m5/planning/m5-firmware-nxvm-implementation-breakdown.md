@@ -1,7 +1,7 @@
 # Historical M5 Firmware And NXVM Implementation Breakdown
 
 > Superseded for future task ownership by
-> `docs/planning/m5-execution-migration.md` and
+> `docs/history/m5/planning/m5-execution-migration.md` and
 > `docs/architecture/module-layout.md`. Its completed-task evidence remains
 > valid; it cannot close M5 or direct new source placement.
 

@@ -54,15 +54,14 @@ and the M3 task breakdown.
 **Non-goals:** runtime refactoring, DOS implementation, or final product CLI
 behavior.
 
-**Exit:** a versioned architecture specification and bounded M3 breakdown are
-approved. M0 through M2 are closed and M3 remains inactive until explicitly
-started.
+**Exit:** the architecture specification and bounded M3 breakdown are approved.
+M0 through M2 are closed and M3 remains inactive until explicitly started.
 
 ## M3: Refactor The Shared Core
 
 **Goal:** move the verified NXVM-derived machine into the M2 shared-core shape.
 
-**Scope:** create the versioned Machine V1 contract; instance CPU/RAM/bus,
+**Scope:** create the documented Machine contract; instance CPU/RAM/bus,
 port, memory, interrupt, device, trace, and debug state in `core/machine`;
 isolate platform presentation; and preserve the M1 full-PC boot
 regression through the `nxvm.full_pc` profile. No owned DOS backend or product
@@ -96,17 +95,15 @@ full-PC execution path runs on the shared core.
 **Scope:** establish CPU capability claims and optional Bochx/Bochs differential
 verification; implement only `vm/profile/default_profile`; migrate the actual
 CPU execution, machine lifecycle, BIOS/POST/ROM, boot devices, and presentation
-path from the temporary baseline adapter into `core/*` and `vm/*`; preserve the
-original NXVM Console and debugger behavior;
+path into `core/*` and `vm/*`; preserve the original NXVM Console and debugger
+behavior;
 retain FDD/HDD boot fixtures; and produce runnable artifacts. External-ROM
 loading and additional machine profiles remain future design work. `nxvm.exe`
 has no new process CLI.
 
 **Exit:** `nxvm.exe` boots the recorded full-PC fixtures through the shared core
-with focused regression evidence. The temporary baseline adapter may remain
-only as an independently runnable regression reference; it cannot own the
-user-facing artifact's execution loop, Console, debugger, firmware, devices,
-or platform lifecycle. The source and CMake target graphs obey the directed
+with focused regression evidence. No baseline or adapter source root remains in
+the formal build graph. The source and CMake target graphs obey the directed
 core/VM/VDM dependency model, and the `vm/` and `vdm/` roots are the only
 composition roots. No ntvdm64 DOS runner behavior is required.
 
@@ -118,18 +115,18 @@ implementation and a recorded before/after acceptance plan.
 
 **Goal:** specify the bounded ntvdm64 DOS backend before implementation.
 
-**Scope:** define `machine/vdm/dos` COM load state, PSP/environment/DTA layout, initial CPU state, DOS
+**Scope:** define `vdm/machine` COM load state, PSP/environment/DTA layout, initial CPU state, DOS
 interrupt dispatch, register preservation, handle and fixture-filesystem
 semantics, deterministic input-blocked protocol, error table, and M7 probes.
 
-**Exit:** versioned DOS ABI specification and test vectors plus the bounded M7
-breakdown. **Non-goal:** DOS implementation.
+**Exit:** DOS ABI specification and test vectors plus the bounded M7 breakdown.
+**Non-goal:** DOS implementation.
 
 ## M7: Implement The Owned DOS Backend
 
 **Goal:** run simple DOS programs without booting a guest DOS image.
 
-**Scope:** implement bounded `machine/vdm/dos` loader, PSP, environment, `INT 20h`, approved `INT 21h`
+**Scope:** implement bounded `vdm/machine` loader, PSP, environment, `INT 20h`, approved `INT 21h`
 subset, deterministic text/keyboard I/O, guest exit, in-memory fixture
 filesystem, and developer/debugger loading through the owned DOS loader.
 

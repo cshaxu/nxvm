@@ -7,7 +7,7 @@ engine through `nxvm_baseline_full_pc_*`. The real guest executor is
 `device/vcpuins.c`, reached from `deviceStart` and `vmachineRefresh`; the
 existing `core/machine.c` does not execute instructions.
 
-`docs/planning/m5-execution-migration.md` records the destination ownership,
+`docs/history/m5/planning/m5-execution-migration.md` records the destination ownership,
 global-state breaks, regression gates, and T9 through T13 order. It preserves
 the retained Console/debugger surface as an explicit stop condition. This is a
 design result and produces no executable.

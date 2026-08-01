@@ -12,5 +12,5 @@ produces the bounded M5 implementation breakdown.
 | T5: generalize profiles and firmware providers | Define NXVM machine profiles, ntvdm64 execution profiles, built-in/external firmware providers, and the BYOR ROM manifest boundary. | Versioned profile/provider contract and revised M5 breakdown limited to `pc_at_builtin`. | M5 must implement an external ROM or an additional machine profile. |
 | T6: define CPU correctness and Bochx verification | Define evidence-backed CPU capability claims, `#UD` triage, and optional local Bochx/Bochs paired-step experiments. | CPU verification contract and M5 front-loaded CPU task with no default reference dependency. | Bochs material enters the repository/default build or unproven i386 coverage is claimed. |
 
-M4 starts from `docs/planning/m4-design-inputs.md` and the immutable M3
+M4 starts from `docs/history/m0-m4/planning/m4-design-inputs.md` and the immutable M3
 snapshot. Its implementation work begins only after M4 closes.

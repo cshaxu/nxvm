@@ -3,8 +3,8 @@
 Read these documents before changing the repository:
 
 1. `docs/planning/status.md`
-2. `docs/roadmap.md`
-3. `docs/architecture.md`
+2. `docs/planning/roadmap.md`
+3. `docs/architecture/overview.md`
 4. `docs/source-policy.md`
 5. `docs/planning/execution-policy.md`
 6. `CONTRIBUTING.md`
@@ -21,7 +21,7 @@ Read these documents before changing the repository:
 - The owned DOS backend is the default ntvdm64 path. Microsoft NTVDM components
   are an M11 T2 research topic, not a backend. OpenNT and NTVDMx64 are
   historical research only.
-- Use the module boundaries defined in `docs/architecture.md`.
+- Use the module boundaries defined in `docs/architecture/module-layout.md`.
 - Invasive integration, Microsoft component research, and Win16 are research-
   only. Do not add them to default builds, release dependencies, or automatic
   system changes.

@@ -15,7 +15,7 @@ ntvdm64 run [options] [<program> [args...]]
 ```
 
 The planned `run` command has explicit display selection and host-drive
-visibility controls. See [Runtime CLI Requirements](docs/requirements/runtime-cli.md).
+visibility controls. See [Runtime CLI Requirements](docs/requirements/ntvdm64-runtime.md).
 
 ## Formal Runtime
 
@@ -52,5 +52,7 @@ defines the shared-core architecture. M3 is the next eligible milestone and has
 not started.
 
 Read [AGENTS.md](AGENTS.md) before changing the repository. Canonical guidance
-is in [architecture](docs/architecture.md), [roadmap](docs/roadmap.md), and the
+is in the [documentation guide](docs/README.md),
+[architecture](docs/architecture/overview.md),
+[roadmap](docs/planning/roadmap.md), and the
 [project constitution](docs/project-constitution.md).

@@ -33,10 +33,10 @@ execution profile.
 | --- | --- | --- |
 | `vcpu`, `vram`, `vport` | retain behind `core` Machine | Required for real-mode program execution, memory and I/O; CPU/memory microtests plus both M1 boot traces. |
 | `vpic`, `vpit` | retain as optional core devices | Required for an explicit interrupt/timing model; disabled only by a declared profile, never by hidden global state. |
-| `vkbc`, `qdx`/CGA display | retain as optional core devices; see `docs/requirements/firmware-nxvm.md` | The NXVM machine profile needs current presentation behavior; ntvdm64 execution profiles consume declared input/text-snapshot capabilities. Platform supplies events and consumes snapshots. |
-| `vbios`, `vcmos`, `vvadp` | `firmware/pc_at`; see `docs/requirements/firmware-nxvm.md` | PC/AT ROM, POST, CMOS configuration, and BIOS services needed for M1 boot, but not for `ntvdm64.dos_minimal`. |
-| `vdma` | optional core device; see `docs/requirements/firmware-nxvm.md` | Machine-neutral DMA semantics with no DOS or host UI dependency. |
-| `vfdc`, `vfdd`, `vhdc`, `vhdd` | `products/nxvm/pc_at`; see `docs/requirements/firmware-nxvm.md` | Full-PC controller/device composition and media policy needed for M1 boot, but not for `ntvdm64.dos_minimal`. |
+| `vkbc`, `qdx`/CGA display | retain as optional core devices; see `docs/history/m0-m4/firmware-nxvm.md` | The NXVM machine profile needs current presentation behavior; ntvdm64 execution profiles consume declared input/text-snapshot capabilities. Platform supplies events and consumes snapshots. |
+| `vbios`, `vcmos`, `vvadp` | `firmware/pc_at`; see `docs/history/m0-m4/firmware-nxvm.md` | PC/AT ROM, POST, CMOS configuration, and BIOS services needed for M1 boot, but not for `ntvdm64.dos_minimal`. |
+| `vdma` | optional core device; see `docs/history/m0-m4/firmware-nxvm.md` | Machine-neutral DMA semantics with no DOS or host UI dependency. |
+| `vfdc`, `vfdd`, `vhdc`, `vhdd` | `products/nxvm/pc_at`; see `docs/history/m0-m4/firmware-nxvm.md` | Full-PC controller/device composition and media policy needed for M1 boot, but not for `ntvdm64.dos_minimal`. |
 | `vdebug`, `debug`, `console`, `xasm32` | developer tooling, outside `core` | May inspect a paused machine through debug APIs; it cannot own execution or mutate device globals directly. |
 | `machine.c`, `platform/*` startup loops | replace | The baseline has machine-to-platform coupling, global `device.flagRun`, and platform-created kernel/display threads. M3 replaces these with runtime-owned composition and a synchronized command boundary. |
 
@@ -241,6 +241,6 @@ hardware or DOS features only through a corpus requirement.
 ## M3 Gate
 
 M3 starts only from the bounded task/subtask breakdown in
-`docs/planning/m3-machine-refactor-breakdown.md`. An uncertain device behavior,
+`docs/history/m0-m4/planning/m3-machine-refactor-breakdown.md`. An uncertain device behavior,
 undocumented Windows mechanism, or new DOS service remains an evidence question;
 it does not enlarge M3.

@@ -90,7 +90,7 @@ and command registry before the baseline adapter is removed.
    moved units to the still-baseline execution engine only as a temporary
    compatibility step.
 3. **T10: core execution carrier.** Follow the bounded source slices in
-   `docs/planning/m5-t10-execution-carrier.md`: move the actual full-PC
+   `docs/history/m5/planning/m5-t10-execution-carrier.md`: move the actual full-PC
    lifecycle and loop into `vm/machine`, then CPU, memory, port, and instruction
    sources into `core/machine`; prove the executor, not a lifecycle stub,
    advances guest instructions under a finite budget.

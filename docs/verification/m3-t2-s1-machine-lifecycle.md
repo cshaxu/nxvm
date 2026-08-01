@@ -3,7 +3,7 @@
 ## Evidence Reviewed
 
 - M2 lifecycle contract:
-  `docs/requirements/m2-machine-dos-architecture.md`.
+  `docs/history/m0-m4/m2-machine-dos-architecture.md`.
 - M3 scope: `docs/planning/subtasks/m3-t2-s1.md`.
 - M1 baseline snapshot:
   `6d6b7d70ab6ed83ab973d27aeea6db88f4e87e4f`.

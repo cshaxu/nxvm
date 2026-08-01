@@ -9,7 +9,7 @@ current sequence.
 - M3: refactor the shared core.
 - M4: design firmware and the `nxvm.exe` product surface.
 - M5: implement firmware and the retained NXVM Console according to
-  `docs/planning/m5-firmware-nxvm-implementation-breakdown.md`.
+  `docs/history/m5/planning/m5-firmware-nxvm-implementation-breakdown.md`.
 - M6: design the owned DOS module.
 - M7: implement the owned DOS backend.
 - M8: design ntvdm64 platform integration, process CLI, and window-mode control
