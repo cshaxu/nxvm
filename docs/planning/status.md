@@ -38,7 +38,7 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T12 S7: design the first retained producer switch before implementation.
+M5 T12 S8: switch retained keyboard-state synchronization through ingress.
 
 ## Completed
 
@@ -216,14 +216,17 @@ M5 T12 S7: design the first retained producer switch before implementation.
   ownership/lifecycle smoke; all retained regressions pass without a caller.
 - M5 T12 S6: bound the inactive transport observer to the retained execution
   boundary; no producer, request consumption, or guest mutation is enabled.
+- M5 T12 S7: selected keyboard-state synchronization as the first producer;
+  key-down, F9, and display remain direct, with enqueue failure preserving the
+  original status path.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t12-s6.md`.
+`docs/planning/subtasks/m5-t12-s8.md`.
 
 ## Next Eligible Work
 
-- M5 T12 S6 binds the inactive request transport at the VM execution boundary;
+- M5 T12 S8 switches retained keyboard-state synchronization through ingress;
   M6 remains blocked until M5 truly closes.
 
 ## Delivery State
