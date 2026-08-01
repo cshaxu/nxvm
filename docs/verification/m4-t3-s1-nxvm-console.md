@@ -4,6 +4,6 @@
   device/media commands, lifecycle commands, and Console exit behavior.
 - Reviewed the baseline Win32 console/window split and recorded the M5 target:
   product commands and host events cross only the runtime command boundary.
-- `docs/requirements/firmware-nxvm.md` defines the retained Console surface,
+- `docs/history/m0-m4/firmware-nxvm.md` defines the retained Console surface,
   state/presentation rules, debug boundary, and no-process-CLI decision.
 - No runtime source, command behavior, DOS behavior, or ntvdm64 policy changed.

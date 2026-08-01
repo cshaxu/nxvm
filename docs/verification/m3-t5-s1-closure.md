@@ -53,7 +53,7 @@ M1 `nxvm-baseline` also built successfully.
 
 ## Result
 
-M3 is complete. M4 starts from `docs/planning/m4-design-inputs.md` and the
-bounded `docs/planning/m4-firmware-nxvm-design-breakdown.md`; it assigns
+M3 is complete. M4 starts from `docs/history/m0-m4/planning/m4-design-inputs.md` and the
+bounded `docs/history/m0-m4/planning/m4-firmware-nxvm-design-breakdown.md`; it assigns
 firmware and nxvm product ownership without reopening M3's shared-core or
 product-CLI boundary.

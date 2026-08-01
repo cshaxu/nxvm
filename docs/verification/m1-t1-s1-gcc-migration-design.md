@@ -13,6 +13,6 @@
 ## Result
 
 The bounded migration design in
-`docs/planning/m1-gcc-migration-design.md` is approved: **Go for M1 T2 S1**.
+`docs/history/m0-m4/planning/m1-gcc-migration-design.md` is approved: **Go for M1 T2 S1**.
 The warning inventory is recorded baseline debt and is not authorization for
 cleanup during import.

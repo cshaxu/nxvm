@@ -25,4 +25,4 @@ verification under `docs/requirements/cpu-verification.md` before CPU-adjacent
 migration.
 
 The bounded M4 design tasks are in
-`docs/planning/m4-firmware-nxvm-design-breakdown.md`.
+`docs/history/m0-m4/planning/m4-firmware-nxvm-design-breakdown.md`.

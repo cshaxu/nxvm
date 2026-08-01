@@ -33,7 +33,7 @@ replaced only by a newly verified build of the same named task.
 
 For a runnable artifact, the verification record also states the emitted runtime
 identity/banner and version. It must follow the pre-cutover or post-cutover
-rules in `docs/architecture.md`; changing identity, version, or cutover state
+rules in `docs/architecture/overview.md`; changing identity, version, or cutover state
 without an approved subtask and regression evidence is prohibited.
 
 For a legacy coupled system, first establish and record a runnable full-source
