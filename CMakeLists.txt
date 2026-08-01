@@ -388,7 +388,7 @@ add_executable(nxvm-runtime-registry-smoke
 target_link_libraries(nxvm-runtime-registry-smoke PRIVATE nxvm-runtime)
 
 add_library(nxvm-dos-minimal-presentation-adapter STATIC
-    src/vdm/platform/dos_minimal_presentation.c
+    src/vdm/composition_presentation.c
 )
 target_include_directories(nxvm-dos-minimal-presentation-adapter PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
