@@ -20,7 +20,7 @@
 #include "vm/machine/vvadp.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
 
-#include "vm/machine/vmachine.h"
+#include "vm/composition.h"
 
 #define _empty_
 #define _vdebug_

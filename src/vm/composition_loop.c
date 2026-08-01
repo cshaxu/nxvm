@@ -8,7 +8,7 @@
 #include "core/product/utils.h"
 
 #include "vm/machine/vdebug.h"
-#include "vm/machine/vmachine.h"
+#include "vm/composition.h"
 #include "core/product/runtime/execution_context.h"
 #include "core/machine/vcpu.h"
 #include "core/machine/vram.h"
