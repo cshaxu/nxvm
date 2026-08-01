@@ -14,7 +14,7 @@
 #include "machine/core/vcmos.h"
 #include "machine/vm/vfdc.h"
 #include "machine/vm/vfdd.h"
-#include "nxvm-baseline/device/vhdc.h"
+#include "machine/vm/vhdc.h"
 #include "machine/vm/vhdd.h"
 #include "machine/core/vkbc.h"
 #include "machine/core/vvadp.h"
