@@ -34,7 +34,6 @@ src/vm/platform/win32/win32app.c|vm/machine
 src/vm/platform/win32/win32con.c|vm/machine
 src/vm/product/console.c|vm/machine
 src/vm/product/console.c|vm/platform
-src/vm/product/cpu_probe.c|vm/machine
 src/vm/product/debug.c|vm/machine
 src/vm/product/session.c|vm/profile
 src/vm/product/session.h|vm/profile
