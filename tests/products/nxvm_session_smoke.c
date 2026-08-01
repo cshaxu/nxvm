@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "products/nxvm/profile.h"
+#include "vm/profile/default_profile/profile.h"
 #include "products/nxvm/session.h"
 
 static int verify(const char *fdd_path, const char *hdd_path,

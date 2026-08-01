@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "adapters/nxvm_baseline/full_pc_profile.h"
-#include "products/nxvm/profile.h"
+#include "vm/profile/default_profile/profile.h"
 
 int main(int argc, char **argv)
 {
