@@ -263,13 +263,29 @@ target_include_directories(nxvm-machine-core-executor PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 
-add_library(nxvm-baseline-runtime STATIC
-    ${NXVM_RUNTIME_SOURCES}
-    ${NXVM_PLATFORM_VM_SOURCES}
+add_library(nxvm-product-core-utils STATIC ${NXVM_PRODUCT_CORE_SOURCES})
+target_include_directories(nxvm-product-core-utils PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(nxvm-baseline-runtime PUBLIC
+target_link_libraries(nxvm-product-core-utils PUBLIC nxvm-product-core-debug)
+
+add_library(nxvm-profile-vm-default-firmware STATIC ${NXVM_PROFILE_VM_SOURCES})
+target_include_directories(nxvm-profile-vm-default-firmware PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+
+add_library(nxvm-platform-vm STATIC ${NXVM_PLATFORM_VM_SOURCES})
+target_include_directories(nxvm-platform-vm PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+
+add_library(nxvm-legacy-runtime-dependencies INTERFACE)
+target_link_libraries(nxvm-legacy-runtime-dependencies INTERFACE
     nxvm-machine-core-executor
     nxvm-product-core-debug
+    nxvm-product-core-utils
+    nxvm-profile-vm-default-firmware
+    nxvm-platform-vm
     user32
     gdi32)
 
@@ -278,7 +294,7 @@ target_include_directories(nxvm-machine-vm-lifecycle PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(nxvm-machine-vm-lifecycle PUBLIC
-    nxvm-baseline-runtime
+    nxvm-legacy-runtime-dependencies
     nxvm-runtime)
 
 add_library(nxvm-product-vm-debug STATIC
@@ -288,7 +304,7 @@ target_include_directories(nxvm-product-vm-debug PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(nxvm-product-vm-debug PUBLIC
-    nxvm-baseline-runtime)
+    nxvm-legacy-runtime-dependencies)
 
 add_library(nxvm-vm-full-pc STATIC
     src/vm/composition_full_pc.c
@@ -298,7 +314,7 @@ target_include_directories(nxvm-vm-full-pc PUBLIC
 )
 target_link_libraries(nxvm-vm-full-pc PUBLIC
     nxvm-machine-vm-lifecycle
-    nxvm-baseline-runtime
+    nxvm-legacy-runtime-dependencies
     nxvm-vm-request-transport)
 target_link_libraries(nxvm-vm-full-pc PUBLIC nxvm-product-vm-debug)
 
@@ -310,7 +326,7 @@ target_include_directories(nxvm-vm-cpu-probe PUBLIC
 )
 target_link_libraries(nxvm-vm-cpu-probe PUBLIC
     nxvm-machine-vm-lifecycle
-    nxvm-baseline-runtime)
+    nxvm-legacy-runtime-dependencies)
 
 add_executable(nxvm-vm-cpu-probe-smoke
     tests/adapters/nxvm_vm_cpu_probe_smoke.c
@@ -487,7 +503,6 @@ option(NTVDM64_VERIFY_DEPENDENCY_DAG
 if(NTVDM64_VERIFY_DEPENDENCY_DAG)
     set(NTVDM64_LEGACY_MIXED_OWNER_TARGETS
         nxvm-firmware
-        nxvm-baseline-runtime
         nxvm-m3-t5
         nxvm-m5-t1
         nxvm-m5-t2
