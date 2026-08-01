@@ -4,10 +4,10 @@
 
 #include "core/product/utils.h"
 
-#include "../../platform/platform.h"
-#include "../vcpu.h"
+#include "vm/platform/platform.h"
+#include "core/machine/vcpu.h"
 
-#include "qdx.h"
+#include "nxvm-baseline/device/qdx/qdx.h"
 #include "qdcga.h"
 
 t_nubit32 qdcgaModeBufSize[0x14] = {

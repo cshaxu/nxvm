@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-#include "../vvadp.h"
-#include "../vram.h"
+#include "vm/machine/vvadp.h"
+#include "core/machine/vram.h"
 
 #define QDCGA_COUNT_MAX_PAGE               0x08
 #define QDCGA_SIZE_CHAR_WIDTH              0x0a
