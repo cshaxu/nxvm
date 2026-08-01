@@ -444,6 +444,12 @@ void vcpuInit();
 void vcpuReset();
 void vcpuRefresh();
 void vcpuFinal();
+void vcpuRequestStop();
+t_bool vcpuConsumeStopRequest();
+void vcpuRequestStop();
+t_bool vcpuConsumeStopRequest();
+void vcpuRequestStop();
+t_bool vcpuConsumeStopRequest();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

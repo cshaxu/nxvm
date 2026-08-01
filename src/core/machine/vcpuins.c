@@ -5,8 +5,6 @@
 /* ************************************************************************* */
 
 #include "core/product/utils.h"
-#include "vm/machine/device.h"
-
 #include "core/machine/vport.h"
 #include "core/machine/vram.h"
 #include "core/machine/vpic.h"
@@ -4853,7 +4851,7 @@ static void UndefinedOpcode() {
     vcpu = vcpuins.data.oldcpu;
     if (!_GetCR0_PE) {
         PRINTF("The NXVM CPU has encountered an illegal instruction at L%08X.\n", vcpu.data.cs.base + vcpu.data.eip);
-        deviceStop();
+        vcpuRequestStop();
     }
     _chr(_SetExcept_UD(0));
     _ce;
@@ -13309,7 +13307,7 @@ static void ExecFinal() {
             ClrBit(vcpuins.data.except, VCPUINS_EXCEPT_GP);
             _e_except_n(0x0d, _GetOperandSize);
         }
-        deviceStop();
+        vcpuRequestStop();
     }
 }
 static void ExecIns() {
@@ -13326,7 +13324,7 @@ static void ExecIns() {
     if (vcpuins.data.flagWE && vcpuins.data.weLinear == vcpuins.data.linear) {
         PRINTF("Watch point caught at L%08x: EXECUTED\n", vcpuins.data.linear);
         /* printCpuReg(); */
-        deviceStop();
+        vcpuRequestStop();
     }
     ExecFinal();
 }

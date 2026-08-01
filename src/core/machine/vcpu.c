@@ -9,12 +9,15 @@
 #include "core/machine/vcpu.h"
 
 t_cpu vcpu;
+static t_bool vcpuStopRequested;
 
 void vcpuInit() {
+    vcpuStopRequested = False;
     vcpuinsInit();
 }
 void vcpuReset() {
     MEMSET((void *)(&vcpu), Zero8, sizeof(t_cpu));
+    vcpuStopRequested = False;
 
     vcpu.data.eip = 0x0000fff0;
     vcpu.data.eflags = 0x00000002;
@@ -89,6 +92,14 @@ void vcpuRefresh() {
 }
 void vcpuFinal() {
     vcpuinsFinal();
+}
+void vcpuRequestStop() {
+    vcpuStopRequested = True;
+}
+t_bool vcpuConsumeStopRequest() {
+    t_bool requested = vcpuStopRequested;
+    vcpuStopRequested = False;
+    return requested;
 }
 
 int deviceConnectCpuReadLinear(uint32_t linear, void *rdest, uint8_t size) {

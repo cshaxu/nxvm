@@ -2,7 +2,6 @@
 # Remove an entry in the same change that removes its direct include.
 src/core/machine/vcpu.c|core/product
 src/core/machine/vcpuins.c|core/product
-src/core/machine/vcpuins.c|vm/machine
 src/core/machine/vdma.c|core/product
 src/core/machine/vglobal.h|core/platform
 src/core/machine/vpic.c|core/product
