@@ -31,17 +31,18 @@ behavior.
 
 The former M5 closure established product composition and regression evidence,
 but its user-facing full-PC execution still entered `src/nxvm-baseline/`
-through the temporary adapter. M5 is reopened: actual CPU execution, lifecycle,
-firmware, devices, presentation, and retained NXVM Console/debugger behavior
-must migrate to the declared module owners before M6 may begin. The historical
-`snapshot/m5-nxvm-28fb4b1` remains a checkpoint, not an M5 completion snapshot.
-Completed M5 records retain their then-current paths as historical evidence;
-the forward source layout is defined solely by `docs/architecture/module-layout.md`.
+through a temporary adapter. M5 T12 S9 has now migrated the actual execution,
+firmware, platform, retained Console/debugger sources, and deleted that source
+root. M5 remains open for composition, fixture, and deferred interface work
+before M6 may begin. The historical `snapshot/m5-nxvm-28fb4b1` remains a
+checkpoint, not an M5 completion snapshot. Completed M5 records retain their
+then-current paths as historical evidence; the forward source layout is defined
+solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T12 S9: migrate formal source roots to the canonical `core/vm/vdm` layout
-before further platform ingress work.
+M5 T12 S9: final audit of the canonical `core/vm/vdm` source-root closure and
+the retained full-PC compatibility gates.
 
 ## Completed
 
@@ -226,6 +227,10 @@ before further platform ingress work.
   `src/core` forwarding headers, and revalidated the core, profile, product,
   and retained NXVM build gates without changing user-visible behavior. The
   paths are now migration sources under the later `core/vm/vdm` topology.
+- M5 T12 S9: migrated the remaining NXVM implementations into `core`, `vm`,
+  and `vdm`, removed the baseline and adapter source roots, removed formal
+  baseline source/include dependencies, and revalidated GCC, CPU, Console, and
+  debugger gates without changing user-visible behavior.
 
 ## Active Subtask
 
@@ -233,15 +238,14 @@ before further platform ingress work.
 
 ## Next Eligible Work
 
-- M5 T12 S9 first approves the canonical root migration. M5 T12 S10 may then
-  switch retained keyboard-state synchronization through ingress. M6 remains
-  blocked until M5 truly closes.
+- M5 T12 S10 may switch retained keyboard-state synchronization through ingress.
+  M6 remains blocked until M5 truly closes.
 
 ## Delivery State
 
-The full NXVM `src/` baseline is now present only in `src/nxvm-baseline/` under
-MIT authorization, preserved copyright attribution, and exact provenance. The
-repository direction is dual-product: future `nxvm.exe` preserves bootable
-whole-machine VM value, and future `ntvdm64.exe` provides the DOS app runner.
-No guest media, Microsoft binary, or DOS compatibility claim has been added.
-The generated M1 COM probe remains test input only.
+The M1 NXVM import is preserved by MIT authorization, copyright attribution,
+Git history, and exact provenance records; its temporary source root has been
+deleted. The repository direction is dual-product: future `nxvm.exe` preserves
+bootable whole-machine VM value, and future `ntvdm64.exe` provides the DOS app
+runner. No guest media, Microsoft binary, or DOS compatibility claim has been
+added. The generated M1 COM probe remains test input only.

@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "vm/machine/device.h"
-#include "machine/vm/execution_context.h"
+#include "core/product/runtime/execution_context.h"
 
 static DWORD WINAPI run_device(LPVOID parameter)
 {
