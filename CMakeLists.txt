@@ -41,7 +41,7 @@ add_library(nxvm-product-media STATIC src/vm/product/media.c)
 target_include_directories(nxvm-product-media PUBLIC "${CMAKE_SOURCE_DIR}/src")
 add_library(nxvm-product-default-profile STATIC src/vm/profile/default_profile/default_profile.c)
 target_include_directories(nxvm-product-default-profile PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(nxvm-product-default-profile PUBLIC nxvm-product-media nxvm-baseline-full-pc-adapter)
+target_link_libraries(nxvm-product-default-profile PUBLIC nxvm-product-media nxvm-vm-full-pc)
 add_library(nxvm-product-console STATIC src/vm/product/session_console.c)
 target_include_directories(nxvm-product-console PUBLIC "${CMAKE_SOURCE_DIR}/src")
 add_library(nxvm-product-presentation-debug STATIC
@@ -280,17 +280,17 @@ target_include_directories(nxvm-product-vm-debug PUBLIC
 target_link_libraries(nxvm-product-vm-debug PUBLIC
     nxvm-baseline-runtime)
 
-add_library(nxvm-baseline-full-pc-adapter STATIC
-    src/vm/product/baseline_full_pc.c
+add_library(nxvm-vm-full-pc STATIC
+    src/vm/product/full_pc.c
 )
-target_include_directories(nxvm-baseline-full-pc-adapter PUBLIC
+target_include_directories(nxvm-vm-full-pc PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(nxvm-baseline-full-pc-adapter PUBLIC
+target_link_libraries(nxvm-vm-full-pc PUBLIC
     nxvm-machine-vm-lifecycle
     nxvm-baseline-runtime
     nxvm-baseline-vm-request-transport)
-target_link_libraries(nxvm-baseline-full-pc-adapter PUBLIC nxvm-product-vm-debug)
+target_link_libraries(nxvm-vm-full-pc PUBLIC nxvm-product-vm-debug)
 
 add_library(nxvm-baseline-cpu-probe-adapter STATIC
     src/vm/product/baseline_cpu_probe.c
@@ -325,7 +325,7 @@ add_library(nxvm-runtime STATIC
 target_include_directories(nxvm-runtime PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(nxvm-runtime PUBLIC nxvm-core nxvm-baseline-full-pc-adapter)
+target_link_libraries(nxvm-runtime PUBLIC nxvm-core nxvm-vm-full-pc)
 
 add_executable(nxvm-runtime-session-smoke
     tests/runtime/session_smoke.c
@@ -366,12 +366,12 @@ add_executable(nxvm-default-profile-smoke
 )
 target_link_libraries(nxvm-default-profile-smoke PRIVATE
     nxvm-runtime
-    nxvm-baseline-full-pc-adapter
+    nxvm-vm-full-pc
     nxvm-product-profile
 )
 target_link_libraries(nxvm-full-pc-profile-smoke PRIVATE
     nxvm-runtime
-    nxvm-baseline-full-pc-adapter
+    nxvm-vm-full-pc
 )
 
 function(add_nxvm_full_pc_artifact target suffix)
@@ -424,7 +424,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-runtime-registry-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-presentation-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-baseline-full-pc-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-vm-full-pc PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-baseline-cpu-probe-adapter PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-baseline-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

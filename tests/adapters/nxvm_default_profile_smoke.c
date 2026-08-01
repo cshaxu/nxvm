@@ -1,14 +1,14 @@
 #include <stdio.h>
 
-#include "vm/product/baseline_full_pc.h"
+#include "vm/product/full_pc.h"
 #include "vm/profile/default_profile/profile.h"
 
 int main(int argc, char **argv)
 {
     nxvm_core_cpu_capability_manifest capabilities;
     nxvm_runtime_registry registry;
-    nxvm_baseline_full_pc_config config;
-    nxvm_baseline_reset_vector vector;
+    nxvm_full_pc_config config;
+    nxvm_vm_reset_vector vector;
 
     if (argc != 2) {
         return 1;
@@ -30,13 +30,13 @@ int main(int argc, char **argv)
     config.create_fdd = 0;
     config.create_hdd_cylinders = 0u;
     config.boot_hdd = 0;
-    if (nxvm_baseline_full_pc_create(&config) != NXVM_CORE_STATUS_OK ||
-        nxvm_baseline_full_pc_get_reset_vector(&vector) != NXVM_CORE_STATUS_OK ||
+    if (nxvm_full_pc_create(&config) != NXVM_CORE_STATUS_OK ||
+        nxvm_full_pc_get_reset_vector(&vector) != NXVM_CORE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
-        nxvm_baseline_full_pc_destroy();
+        nxvm_full_pc_destroy();
         return 1;
     }
-    nxvm_baseline_full_pc_destroy();
+    nxvm_full_pc_destroy();
     puts("M5:T2:S2:PC-AT-BUILTIN:OK");
     return 0;
 }

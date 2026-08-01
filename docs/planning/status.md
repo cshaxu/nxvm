@@ -41,8 +41,8 @@ solely by `docs/architecture/module-layout.md`.
 
 ## Active Work
 
-M5 T13 S2: rename only the active full-PC VM composition pair out of the
-historical `baseline` label, preserving its exact behavior and gates.
+M5 T13 S3: rename only the VM request-transport pair out of the historical
+`baseline` label, preserving its exact queue and execution-boundary behavior.
 
 ## Completed
 
@@ -237,15 +237,17 @@ historical `baseline` label, preserving its exact behavior and gates.
   transport, CPU, FDD/HDD, Console, and debugger gates passed.
 - M5 T13 S1: audited historical composition names separately from real
   core-to-product ownership debt; no runtime behavior changed.
+- M5 T13 S2: moved the active full-PC composition pair to its final VM owner
+  name and revalidated CPU, FDD/HDD, Console, and debugger gates.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t13-s2.md`.
+`docs/planning/subtasks/m5-t13-s3.md`.
 
 ## Next Eligible Work
 
-- M5 T13 S2 may rename the active full-PC composition pair only. M6 remains
-  blocked until M5 truly closes.
+- M5 T13 S3 may rename the VM request transport only. M6 remains blocked until
+  M5 truly closes.
 
 ## Delivery State
 

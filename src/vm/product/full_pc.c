@@ -1,4 +1,4 @@
-#include "vm/product/baseline_full_pc.h"
+#include "vm/product/full_pc.h"
 
 #include <string.h>
 
@@ -9,10 +9,10 @@
 #include "vm/machine/machine.h"
 #include "vm/platform/platform.h"
 
-static int nxvm_baseline_full_pc_active;
-static nxvm_baseline_vm_request_transport nxvm_baseline_full_pc_transport;
+static int nxvm_full_pc_active;
+static nxvm_baseline_vm_request_transport nxvm_full_pc_transport;
 
-static nxvm_core_status nxvm_baseline_full_pc_enqueue_keyboard_state(
+static nxvm_core_status nxvm_full_pc_enqueue_keyboard_state(
     void *opaque, uint32_t asynchronous_keys, uint32_t toggle_keys)
 {
     nxvm_platform_vm_request request;
@@ -24,7 +24,7 @@ static nxvm_core_status nxvm_baseline_full_pc_enqueue_keyboard_state(
         (nxvm_baseline_vm_request_transport *)opaque, &request);
 }
 
-static void nxvm_baseline_full_pc_consume_request(
+static void nxvm_full_pc_consume_request(
     void *opaque, const nxvm_platform_vm_request *request)
 {
     (void)opaque;
@@ -43,33 +43,33 @@ static uint16_t nxvm_baseline_read_u16(const void *source)
     return value;
 }
 
-nxvm_core_status nxvm_baseline_full_pc_create(
-    const nxvm_baseline_full_pc_config *config)
+nxvm_core_status nxvm_full_pc_create(
+    const nxvm_full_pc_config *config)
 {
-    if (config == NULL || nxvm_baseline_full_pc_active ||
+    if (config == NULL || nxvm_full_pc_active ||
         (config->fdd_image == NULL && config->hdd_image == NULL &&
          !config->create_fdd && config->create_hdd_cylinders == 0u)) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
 
     machineInit();
-    nxvm_baseline_vm_request_transport_initialize(&nxvm_baseline_full_pc_transport);
+    nxvm_baseline_vm_request_transport_initialize(&nxvm_full_pc_transport);
     nxvm_baseline_vm_request_transport_bind_consumer(
-        &nxvm_baseline_full_pc_transport,
-        nxvm_baseline_full_pc_consume_request, NULL);
-    win32KeyboardBindStateSink(nxvm_baseline_full_pc_enqueue_keyboard_state,
-                               &nxvm_baseline_full_pc_transport);
+        &nxvm_full_pc_transport,
+        nxvm_full_pc_consume_request, NULL);
+    win32KeyboardBindStateSink(nxvm_full_pc_enqueue_keyboard_state,
+                               &nxvm_full_pc_transport);
     deviceConnectBindCommandBoundary(
         nxvm_baseline_vm_request_transport_observe_execution_boundary,
-        &nxvm_baseline_full_pc_transport);
+        &nxvm_full_pc_transport);
     if ((config->fdd_image != NULL &&
          deviceConnectFloppyInsert(config->fdd_image)) ||
         (config->hdd_image != NULL &&
          deviceConnectHardDiskInsert(config->hdd_image))) {
         win32KeyboardBindStateSink(NULL, NULL);
         deviceConnectBindCommandBoundary(NULL, NULL);
-        nxvm_baseline_vm_request_transport_close(&nxvm_baseline_full_pc_transport);
-        nxvm_baseline_vm_request_transport_discard(&nxvm_baseline_full_pc_transport);
+        nxvm_baseline_vm_request_transport_close(&nxvm_full_pc_transport);
+        nxvm_baseline_vm_request_transport_discard(&nxvm_full_pc_transport);
         machineFinal();
         return NXVM_CORE_STATUS_FAULT;
     }
@@ -80,14 +80,14 @@ nxvm_core_status nxvm_baseline_full_pc_create(
 
     deviceConnectBiosSetBoot(config->boot_hdd != 0);
     deviceReset();
-    nxvm_baseline_full_pc_active = 1;
+    nxvm_full_pc_active = 1;
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_baseline_full_pc_get_reset_vector(
-    nxvm_baseline_reset_vector *out_vector)
+nxvm_core_status nxvm_full_pc_get_reset_vector(
+    nxvm_vm_reset_vector *out_vector)
 {
-    if (!nxvm_baseline_full_pc_active || out_vector == NULL) {
+    if (!nxvm_full_pc_active || out_vector == NULL) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
 
@@ -96,25 +96,25 @@ nxvm_core_status nxvm_baseline_full_pc_get_reset_vector(
     return NXVM_CORE_STATUS_OK;
 }
 
-void nxvm_baseline_full_pc_run(void)
+void nxvm_full_pc_run(void)
 {
-    if (nxvm_baseline_full_pc_active) {
+    if (nxvm_full_pc_active) {
         machineStart();
     }
 }
 
-nxvm_core_status nxvm_baseline_full_pc_set_window_display(int enabled)
+nxvm_core_status nxvm_full_pc_set_window_display(int enabled)
 {
-    if (!nxvm_baseline_full_pc_active || device.flagRun) {
+    if (!nxvm_full_pc_active || device.flagRun) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     platform.flagMode = enabled != 0;
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_baseline_full_pc_set_memory_kb(uint32_t kilobytes)
+nxvm_core_status nxvm_full_pc_set_memory_kb(uint32_t kilobytes)
 {
-    if (!nxvm_baseline_full_pc_active || device.flagRun ||
+    if (!nxvm_full_pc_active || device.flagRun ||
         kilobytes < 1024u || kilobytes > 16384u) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
@@ -122,86 +122,86 @@ nxvm_core_status nxvm_baseline_full_pc_set_memory_kb(uint32_t kilobytes)
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_baseline_full_pc_reset(void)
+nxvm_core_status nxvm_full_pc_reset(void)
 {
-    if (!nxvm_baseline_full_pc_active || device.flagRun) {
+    if (!nxvm_full_pc_active || device.flagRun) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     machineReset();
     return NXVM_CORE_STATUS_OK;
 }
 
-void nxvm_baseline_full_pc_resume(void)
+void nxvm_full_pc_resume(void)
 {
-    if (nxvm_baseline_full_pc_active && !device.flagRun) {
+    if (nxvm_full_pc_active && !device.flagRun) {
         machineResume();
     }
 }
 
-nxvm_core_status nxvm_baseline_full_pc_is_running(int *out_running)
+nxvm_core_status nxvm_full_pc_is_running(int *out_running)
 {
-    if (!nxvm_baseline_full_pc_active || out_running == NULL) {
+    if (!nxvm_full_pc_active || out_running == NULL) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
     *out_running = device.flagRun != 0;
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_baseline_full_pc_debug(void)
+nxvm_core_status nxvm_full_pc_debug(void)
 {
-    if (!nxvm_baseline_full_pc_active || device.flagRun) {
+    if (!nxvm_full_pc_active || device.flagRun) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     debugMain();
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_baseline_full_pc_remove_fdd(const char *path)
+nxvm_core_status nxvm_full_pc_remove_fdd(const char *path)
 {
-    if (!nxvm_baseline_full_pc_active || device.flagRun) {
+    if (!nxvm_full_pc_active || device.flagRun) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     return deviceConnectFloppyRemove(path) ? NXVM_CORE_STATUS_FAULT : NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_baseline_full_pc_disconnect_hdd(const char *path)
+nxvm_core_status nxvm_full_pc_disconnect_hdd(const char *path)
 {
-    if (!nxvm_baseline_full_pc_active || device.flagRun) {
+    if (!nxvm_full_pc_active || device.flagRun) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     return deviceConnectHardDiskRemove(path) ? NXVM_CORE_STATUS_FAULT : NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_baseline_full_pc_record_start(const char *path)
+nxvm_core_status nxvm_full_pc_record_start(const char *path)
 {
-    if (!nxvm_baseline_full_pc_active || path == NULL || path[0] == '\0') {
+    if (!nxvm_full_pc_active || path == NULL || path[0] == '\0') {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     deviceConnectDebugRecordStart(path);
     return NXVM_CORE_STATUS_OK;
 }
 
-void nxvm_baseline_full_pc_record_stop(void)
+void nxvm_full_pc_record_stop(void)
 {
-    if (nxvm_baseline_full_pc_active) deviceConnectDebugRecordStop();
+    if (nxvm_full_pc_active) deviceConnectDebugRecordStop();
 }
 
-void nxvm_baseline_full_pc_request_stop(void)
+void nxvm_full_pc_request_stop(void)
 {
-    if (nxvm_baseline_full_pc_active) {
+    if (nxvm_full_pc_active) {
         deviceStop();
     }
 }
 
-void nxvm_baseline_full_pc_destroy(void)
+void nxvm_full_pc_destroy(void)
 {
-    if (nxvm_baseline_full_pc_active) {
+    if (nxvm_full_pc_active) {
         win32KeyboardBindStateSink(NULL, NULL);
         deviceStop();
         deviceConnectBindCommandBoundary(NULL, NULL);
-        nxvm_baseline_vm_request_transport_close(&nxvm_baseline_full_pc_transport);
-        nxvm_baseline_vm_request_transport_discard(&nxvm_baseline_full_pc_transport);
+        nxvm_baseline_vm_request_transport_close(&nxvm_full_pc_transport);
+        nxvm_baseline_vm_request_transport_discard(&nxvm_full_pc_transport);
         machineFinal();
-        nxvm_baseline_full_pc_active = 0;
+        nxvm_full_pc_active = 0;
     }
 }

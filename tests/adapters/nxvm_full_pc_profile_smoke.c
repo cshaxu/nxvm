@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "vm/product/baseline_full_pc.h"
+#include "vm/product/full_pc.h"
 #include "core/product/runtime/profile.h"
 
 static int verify_profile(void)
@@ -30,18 +30,18 @@ static int verify_profile(void)
 
 static int verify_image(const char *fdd, const char *hdd, int boot_hdd)
 {
-    nxvm_baseline_full_pc_config config = { fdd, hdd, 0, 0u, boot_hdd };
-    nxvm_baseline_reset_vector vector;
+    nxvm_full_pc_config config = { fdd, hdd, 0, 0u, boot_hdd };
+    nxvm_vm_reset_vector vector;
 
-    if (nxvm_baseline_full_pc_create(&config) != NXVM_CORE_STATUS_OK) {
+    if (nxvm_full_pc_create(&config) != NXVM_CORE_STATUS_OK) {
         return 1;
     }
-    if (nxvm_baseline_full_pc_get_reset_vector(&vector) != NXVM_CORE_STATUS_OK ||
+    if (nxvm_full_pc_get_reset_vector(&vector) != NXVM_CORE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
-        nxvm_baseline_full_pc_destroy();
+        nxvm_full_pc_destroy();
         return 1;
     }
-    nxvm_baseline_full_pc_destroy();
+    nxvm_full_pc_destroy();
     return 0;
 }
 
