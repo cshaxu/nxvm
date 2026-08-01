@@ -36,6 +36,24 @@ become real multi-file subsystems; private implementation headers use `_impl.h`.
 `ntvdm64.exe` entry point. Each remains thin and enters its product-form root
 composition in `vm/composition.*` or `vdm/composition.*`.
 
+## Foundation Units
+
+`src/type.h` is the sole common type header. It defines standard project types
+such as `BOOL`, `SIZE_T`, fixed-width aliases, `STATUS`, and the stable
+`STATUS_*` result constants. `src/type.c` exists only if a non-inline type
+helper is genuinely required. All modules may include `type.h`; this is a
+foundation-unit dependency, not a dependency between product forms or modules.
+
+`src/version.h` and `src/version.c` are the sole version and build-identity
+source. They provide product Console banner identity and build timestamp data.
+No module contract contains an ABI version, timestamp, or compatibility probe;
+the repository is one synchronously built system.
+
+Public C symbols use their source ownership path: `core_machine_*`,
+`core_platform_*`, `core_product_*`, `vm_machine_*`, `vm_platform_*`,
+`vm_product_*`, `vm_profile_*`, and their VDM counterparts. Root composition
+uses `vm_composition_*` or `vdm_composition_*`.
+
 ## Ownership
 
 `core/machine` contains product-neutral guest mechanics: CPU/instructions,
@@ -46,12 +64,11 @@ services but contains no PC/AT handler, ROM image, product policy, or host OS
 call.
 
 `core/platform` contains product-neutral host-capability contracts and shared
-host facilities. It never mutates guest state. `core/product` contains shared
-session lifecycle, registry composition, abstract command boundaries, generic
-debug/trace coordination, result, assembler, and disassembler infrastructure,
-but no VM Console, VDM CLI, profile, boot/media, or host-policy decision. Its
-runtime infrastructure lives in `core/product/runtime`; there is no top-level
-runtime module.
+host facilities. It never mutates guest state. `core/product` contains generic
+command, debug/trace, registry, result, assembler, and disassembler tooling,
+but no session composition, VM Console, VDM CLI, profile, boot/media, or
+host-policy decision. Its runtime infrastructure lives in
+`core/product/runtime`; there is no top-level runtime module.
 
 Machine snapshots and platform frames are distinct contracts. A machine
 snapshot may contain text cells, attributes, geometry, cursor, generation, and
@@ -155,7 +172,8 @@ forbidden source edge through an aggregate library.
 
 M5 removed the prior `app`, `adapters`, `dos`, `firmware`, `integration`,
 `machine`, `nxvm-baseline`, `platform`, `product`, `products`, and `runtime`
-source roots. Only `core`, `vm`, and `vdm` may receive source files.
+source roots. Only `core`, `vm`, and `vdm` directories, plus the root
+foundation units `type.*` and `version.*`, may receive source files.
 
 The retained NXVM executor still has explicitly recorded legacy direct calls
 between moved owners, such as an instruction stop path and a VM sleep service.

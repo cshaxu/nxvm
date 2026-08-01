@@ -76,44 +76,35 @@ new profile decision.
 
 ## T2: Firmware V1 Contract
 
-Firmware is a session-owned package composed by `runtime`; it is neither a
-global singleton nor a core dependency. The M5 implementation creates the
-following module-local contract headers in `src/firmware/` and keeps their
-implementation private to the package.
+Firmware is a profile-owned override provider bound by VM root composition; it
+is neither a global singleton nor a core dependency. Its public contract uses
+the shared `STATUS` type and path-owned symbols; implementation remains private
+to the provider.
 
 ```c
-typedef struct nxvm_firmware nxvm_firmware;
-typedef struct nxvm_host_capabilities nxvm_host_capabilities;
+typedef struct VM_PROFILE_FIRMWARE VM_PROFILE_FIRMWARE;
+typedef struct CORE_MACHINE_FIRMWARE_CONTEXT CORE_MACHINE_FIRMWARE_CONTEXT;
 
 typedef enum {
-    NXVM_FIRMWARE_SERVICE_POST,
-    NXVM_FIRMWARE_SERVICE_ROM,
-    NXVM_FIRMWARE_SERVICE_INTERRUPT
-} nxvm_firmware_service_kind;
+    VM_PROFILE_FIRMWARE_SERVICE_POST,
+    VM_PROFILE_FIRMWARE_SERVICE_ROM,
+    VM_PROFILE_FIRMWARE_SERVICE_INTERRUPT
+} VM_PROFILE_FIRMWARE_SERVICE_KIND;
 
 typedef struct {
     const char *id;
-    nxvm_firmware_service_kind kind;
-    unsigned int order;
-    unsigned int vector; /* 0 through 255 for INTERRUPT; otherwise unused */
-} nxvm_firmware_service_descriptor;
-
-typedef enum {
-    NXVM_FIRMWARE_OK,
-    NXVM_FIRMWARE_INVALID,
-    NXVM_FIRMWARE_DUPLICATE,
-    NXVM_FIRMWARE_UNSUPPORTED,
-    NXVM_FIRMWARE_MACHINE_ERROR,
-    NXVM_FIRMWARE_HOST_ERROR
-} nxvm_firmware_status;
+    VM_PROFILE_FIRMWARE_SERVICE_KIND kind;
+    U32 order;
+    U32 vector; /* 0 through 255 for INTERRUPT; otherwise unused */
+} VM_PROFILE_FIRMWARE_SERVICE_DESCRIPTOR;
 ```
 
-`firmware_register_service_v1` is available only while the session is being
+`vm_profile_firmware_register_service` is available only while composition is being
 composed. It rejects a duplicate service id, an interrupt vector claimed by a
 different enabled firmware service, an invalid ordering key, or a service that
-is unavailable in the selected profile. `runtime` freezes the registry before
-the first reset and destroys it after the Machine has stopped and all product
-adapters have detached.
+is unavailable in the selected profile. VM root composition freezes the
+registry before the first reset and destroys it after the Machine has stopped
+and all adapters have detached.
 
 The service entries are typed metadata plus an implementation-private callback.
 The callback receives the Machine contract, its owning firmware context, and
@@ -122,15 +113,15 @@ host pathname, Console handle, window handle, or a mutable core pointer.
 
 ### Lifecycle
 
-1. `runtime` creates the core Machine and optional core devices.
-2. `products/nxvm` selects boot target and media policy, then composes the
-   PC/AT firmware package and its declared services.
+1. VM root composition creates the core Machine and optional core devices.
+2. It selects boot target and media policy, then binds the PC/AT firmware
+   override and its declared services.
 3. At reset, core devices reset first; firmware builds ROM/BDA state, installs
    interrupt vectors, runs ordered POST services, and transfers the reset path
    to `F000:FFF0`.
 4. During execution, an interrupt service runs only at the Machine execution
    boundary. A service may enqueue a declared device operation but cannot start
-   a host thread or re-enter `machine_run_v1`.
+   a host thread or re-enter `core_machine_run`.
 5. Stop/fault detaches product presentation before firmware teardown. Firmware
    then unregisters services, releases its session allocations, and emits its
    final trace event.
@@ -147,7 +138,7 @@ boot selection. The implementation may use preassembled bytes or a bounded
 project-owned assembler during composition, but it must not retain the
 baseline's mutable string pointer tables as the public registry. Firmware owns
 the BDA/ROM layout, service vector installation, POST order, and firmware
-status codes. Core owns RAM range checks, vector installation mechanics, port
+detail codes. Core owns RAM range checks, vector installation mechanics, port
 dispatch, and CPU execution.
 
 Each interrupt entry declares whether it is implemented by a guest-ROM stub or
@@ -158,8 +149,8 @@ later corpus requirement.
 
 ### Failure, Host Capability, And Trace Rules
 
-- A composition failure occurs before reset and reports a stable firmware
-  status; it leaves no partially installed service.
+- A composition failure occurs before reset and reports `STATUS`; it leaves no
+  partially installed service.
 - A POST or ROM build failure faults the session before guest execution and
   records service id, stable detail code, and reset phase.
 - A runtime service failure returns either a documented BIOS status/register

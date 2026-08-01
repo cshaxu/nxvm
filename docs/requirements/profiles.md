@@ -64,24 +64,23 @@ milestone and corpus evidence.
 ## Registry Contract
 
 Each product-form root owns its composition registry: one for VM machine
-profiles and one for VDM execution profiles. A descriptor has a stable id, ABI
-version, owner, capability requirements, composition callback, teardown rule,
-and verification schema. Root composition requests a profile by id and rejects
-a mismatched product family, missing required capability, duplicate id,
-unsupported ABI, or late profile change.
+profiles and one for VDM execution profiles. A descriptor has a stable id,
+owner, capability requirements, composition callback, teardown rule, and
+verification schema. Root composition requests a profile by id and rejects a
+mismatched product family, missing required capability, duplicate id, or late
+profile change.
 
 ```c
 typedef enum {
-    NXVM_PROFILE_MACHINE,
-    NXVM_PROFILE_EXECUTION
-} nxvm_profile_family;
+    PROFILE_MACHINE,
+    PROFILE_EXECUTION
+} PROFILE_FAMILY;
 
 typedef struct {
     const char *id;
-    unsigned int abi_version;
-    nxvm_profile_family family;
+    PROFILE_FAMILY family;
     const char *owner;
-} nxvm_profile_descriptor_v1;
+} PROFILE_DESCRIPTOR;
 ```
 
 The public descriptor is metadata. Composition callbacks are private to the
