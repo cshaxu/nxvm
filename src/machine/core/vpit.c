@@ -4,7 +4,7 @@
 
 #include "nxvm-baseline/utils.h"
 
-#include "machine/core/vpic.h"
+#include "core/machine/vpic.h"
 
 #include "nxvm-baseline/device/vbios.h"
 #include "core/machine/vport.h"

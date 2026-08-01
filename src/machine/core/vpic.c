@@ -10,7 +10,7 @@
 #include "machine/core/vpit.h"
 #include "nxvm-baseline/device/vbios.h"
 #include "core/machine/vport.h"
-#include "machine/core/vpic.h"
+#include "core/machine/vpic.h"
 
 t_pic vpic1, vpic2;
 

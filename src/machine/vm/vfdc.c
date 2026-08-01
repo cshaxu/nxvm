@@ -5,7 +5,7 @@
 #include "nxvm-baseline/utils.h"
 
 #include "machine/core/vdma.h"
-#include "machine/core/vpic.h"
+#include "core/machine/vpic.h"
 #include "core/machine/vport.h"
 #include "machine/vm/vfdd.h"
 
