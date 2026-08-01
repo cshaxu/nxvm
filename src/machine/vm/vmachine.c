@@ -11,7 +11,7 @@
 #include "machine/core/vpit.h"
 #include "machine/core/vdma.h"
 #include "machine/core/vpic.h"
-#include "nxvm-baseline/device/vcmos.h"
+#include "machine/core/vcmos.h"
 #include "nxvm-baseline/device/vfdc.h"
 #include "nxvm-baseline/device/vfdd.h"
 #include "nxvm-baseline/device/vhdc.h"
