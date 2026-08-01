@@ -314,3 +314,29 @@ detaches and destroys machine providers, platform objects, and product UI.
 Window close, Ctrl+C, and host-device loss enter this boundary only as
 normalized platform events. VM/VDM composition decides whether each event
 pauses, exits, cancels, or produces a product result.
+
+## Core Product: Reusable Product Tooling
+
+`core/product` is a reusable product-tool library, not a third product
+composition layer. It may contain pure assembler/disassembler operations,
+generic command dispatch, abstract debugger operations, structured trace,
+bounded trace storage, and explicit registries.
+
+Generic command and debugger tools act only through abstract targets, such as
+read CPU state, read memory, step, continue, or set a breakpoint. Root
+composition adapts a real machine or provider to that target. Core product
+does not include a machine or platform type and never selects a profile,
+creates a session, owns an execution loop, receives host events, or determines
+product exit semantics.
+
+An explicit registry is a narrow registration/query utility, not a global
+service locator through which a module may discover sibling objects. Trace
+events are structured, filterable, and capacity-bounded. Their collection,
+clearing, and export remain composition and product-UX policy; an unbounded
+raw instruction recorder is not a core-product facility.
+
+NXVM Console commands, ntvdm64 CLI parsing, display/Console ownership, and
+product-specific debug interaction belong in `vm/product` or `vdm/product`.
+Assembler/disassembler code whose inputs and outputs are pure data belongs in
+core product because it accesses neither a machine, a platform provider, nor a
+global session.
