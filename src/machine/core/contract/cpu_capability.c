@@ -1,4 +1,4 @@
-#include "core/cpu_capability.h"
+#include "machine/core/contract/cpu_capability.h"
 
 #include <string.h>
 

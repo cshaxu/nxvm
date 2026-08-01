@@ -25,7 +25,7 @@ set(NTVDM64_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 
 add_library(nxvm-core STATIC
     src/core/cpu.c
-    src/core/cpu_capability.c
+    src/machine/core/contract/cpu_capability.c
     src/core/debug.c
     src/core/machine.c
     src/core/memory.c
