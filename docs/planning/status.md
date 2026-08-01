@@ -42,7 +42,8 @@ solely by `docs/architecture/module-layout.md`.
 ## Active Work
 
 M5 T13 S8: split VM/VDM session composition out of `core/product` using the
-approved product-owned descriptor and session design.
+approved product-owned descriptor and session design. Implementation remains
+pending owner approval.
 
 ## Completed
 
@@ -246,7 +247,8 @@ approved product-owned descriptor and session design.
 - M5 T13 S5: converted real core-to-product dependency debt into five bounded
   implementation slices; no runtime source changed.
 - M5 T13 S6: moved the shared presentation type into core; VDM retains its
-  private PIT/IRQ state and copies only display data across the boundary.
+  private PIT/IRQ state and its private snapshot embeds the shared text child,
+  which its platform adapter copies across the boundary.
 - M5 T13 S7: defined the product-owned session/profile replacement API and
   test migration map; no runtime source changed.
 
@@ -256,8 +258,8 @@ approved product-owned descriptor and session design.
 
 ## Next Eligible Work
 
-- M5 T13 S8 may split product session composition only. M6 remains blocked
-  until M5 truly closes.
+- M5 T13 S8 may split product session composition only after explicit owner
+  approval. M6 remains blocked until M5 truly closes.
 
 ## Delivery State
 

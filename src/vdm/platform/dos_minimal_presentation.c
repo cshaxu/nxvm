@@ -1,7 +1,6 @@
 #include "vdm/platform/dos_minimal_presentation.h"
 
 #include <stdlib.h>
-#include <string.h>
 
 #define NXVM_DOS_MINIMAL_INPUT_CAPACITY 32u
 
@@ -79,11 +78,7 @@ nxvm_core_status nxvm_dos_minimal_presentation_capture_text(
     out_snapshot->timestamp = timestamp;
     status = nxvm_runtime_dos_minimal_get_snapshot(presentation->session, &text);
     if (status != NXVM_CORE_STATUS_OK) return status;
-    nxvm_core_text_snapshot_initialize(&out_snapshot->text);
-    memcpy(out_snapshot->text.characters, text.characters,
-           sizeof(out_snapshot->text.characters));
-    memcpy(out_snapshot->text.attributes, text.attributes,
-           sizeof(out_snapshot->text.attributes));
+    out_snapshot->text = text.text;
     return NXVM_CORE_STATUS_OK;
 }
 

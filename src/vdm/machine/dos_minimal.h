@@ -3,24 +3,19 @@
 
 #include <stdint.h>
 
+#include "core/machine/presentation.h"
 #include "core/machine/status.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define NXVM_RUNTIME_TEXT_COLUMNS 80u
-#define NXVM_RUNTIME_TEXT_ROWS 25u
-#define NXVM_RUNTIME_TEXT_CELLS \
-    (NXVM_RUNTIME_TEXT_COLUMNS * NXVM_RUNTIME_TEXT_ROWS)
-
 typedef struct nxvm_runtime_dos_minimal nxvm_runtime_dos_minimal;
 
 typedef struct nxvm_runtime_text_snapshot {
     uint64_t pit_ticks;
     uint8_t keyboard_irq_pending;
-    uint8_t characters[NXVM_RUNTIME_TEXT_CELLS];
-    uint8_t attributes[NXVM_RUNTIME_TEXT_CELLS];
+    nxvm_core_text_snapshot text;
 } nxvm_runtime_text_snapshot;
 
 nxvm_core_status nxvm_runtime_dos_minimal_create(
