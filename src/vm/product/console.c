@@ -11,7 +11,7 @@
 #include "vm/platform/platform.h"
 #include "vm/machine/machine.h"
 
-#include "product/vm/debug.h"
+#include "vm/product/debug.h"
 #include "vm/product/console.h"
 
 #define CONSOLE_MAXNARG 256

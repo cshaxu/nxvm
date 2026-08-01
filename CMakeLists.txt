@@ -173,7 +173,7 @@ list(FILTER NXVM_BASELINE_RUNTIME_SOURCES EXCLUDE REGEX ".*/main\\.c$")
 set(NXVM_PRODUCT_VM_SOURCES
     src/vm/main.c
     src/vm/product/console.c
-    src/product/vm/debug.c
+    src/vm/product/debug.c
 )
 set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/xasm32/aasm32.c
@@ -264,7 +264,7 @@ target_include_directories(nxvm-machine-vm-lifecycle PUBLIC
 target_link_libraries(nxvm-machine-vm-lifecycle PUBLIC nxvm-baseline-runtime)
 
 add_library(nxvm-product-vm-debug STATIC
-    src/product/vm/debug.c
+    src/vm/product/debug.c
 )
 target_include_directories(nxvm-product-vm-debug PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
