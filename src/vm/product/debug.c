@@ -8,7 +8,7 @@
 #include "device/device.h"
 #include "machine.h"
 
-#include "debug.h"
+#include "vm/product/debug.h"
 
 #define DEBUG_MAXNARG 256
 #define DEBUG_MAXNASMARG 4

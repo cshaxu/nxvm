@@ -4,7 +4,7 @@
 
 #include "vm/machine/device.h"
 #include "adapters/nxvm_baseline/vm_request_transport.h"
-#include "product/vm/debug.h"
+#include "vm/product/debug.h"
 #include "vm/machine/machine.h"
 #include "vm/platform/platform.h"
 
