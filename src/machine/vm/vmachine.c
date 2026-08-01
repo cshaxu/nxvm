@@ -13,7 +13,7 @@
 #include "machine/core/vpic.h"
 #include "machine/core/vcmos.h"
 #include "nxvm-baseline/device/vfdc.h"
-#include "nxvm-baseline/device/vfdd.h"
+#include "machine/vm/vfdd.h"
 #include "nxvm-baseline/device/vhdc.h"
 #include "nxvm-baseline/device/vhdd.h"
 #include "machine/core/vkbc.h"

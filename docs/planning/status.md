@@ -38,8 +38,8 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T11 S6: migrate the retained CMOS controller source into `machine/core`
-without changing NXVM behavior.
+M5 T11 S7: migrate the retained FDD source into `machine/vm` without changing
+NXVM behavior.
 
 ## Completed
 
@@ -190,11 +190,11 @@ without changing NXVM behavior.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t11-s6.md`.
+`docs/planning/subtasks/m5-t11-s7.md`.
 
 ## Next Eligible Work
 
-- M5 T11 S6 migrates the retained CMOS controller; M6 remains blocked until M5
+- M5 T11 S7 migrates the retained FDD source; M6 remains blocked until M5
   truly closes.
 
 ## Delivery State
