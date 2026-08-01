@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "vdm/machine/dos_minimal.h"
-#include "core/product/runtime/profile.h"
+#include "vdm/profile/dos_minimal_profile.h"
 
 int main(void)
 {
@@ -10,7 +10,7 @@ int main(void)
     nxvm_runtime_text_snapshot snapshot;
     uint32_t value;
 
-    profile = nxvm_runtime_profile_get(NXVM_RUNTIME_PROFILE_NTVDM64_DOS_MINIMAL);
+    profile = ntvdm64_dos_minimal_profile_descriptor();
     if (profile == NULL || profile->permits_disk_boot || profile->uses_legacy_adapter ||
         (profile->devices & (NXVM_RUNTIME_DEVICE_BIOS |
                              NXVM_RUNTIME_DEVICE_FDD |

@@ -1,16 +1,11 @@
-#ifndef NXVM_RUNTIME_PROFILE_H
-#define NXVM_RUNTIME_PROFILE_H
+#ifndef NXVM_RUNTIME_PROFILE_DESCRIPTOR_H
+#define NXVM_RUNTIME_PROFILE_DESCRIPTOR_H
 
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef enum nxvm_runtime_profile_id {
-    NXVM_RUNTIME_PROFILE_NXVM_FULL_PC = 1,
-    NXVM_RUNTIME_PROFILE_NTVDM64_DOS_MINIMAL = 2
-} nxvm_runtime_profile_id;
 
 enum {
     NXVM_RUNTIME_DEVICE_CPU = UINT64_C(1) << 0,
@@ -31,15 +26,11 @@ enum {
 };
 
 typedef struct nxvm_runtime_profile_descriptor {
-    nxvm_runtime_profile_id id;
     const char *name;
     uint64_t devices;
     int permits_disk_boot;
     int uses_legacy_adapter;
 } nxvm_runtime_profile_descriptor;
-
-const nxvm_runtime_profile_descriptor *nxvm_runtime_profile_get(
-    nxvm_runtime_profile_id id);
 
 #ifdef __cplusplus
 }
