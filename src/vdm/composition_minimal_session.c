@@ -1,4 +1,4 @@
-#include "vdm/product/minimal_session.h"
+#include "vdm/composition_minimal_session.h"
 
 #include <stdlib.h>
 

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "vdm/product/minimal_session.h"
+#include "vdm/composition_minimal_session.h"
 
 int main(void)
 {
