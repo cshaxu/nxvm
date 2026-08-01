@@ -236,6 +236,8 @@ int deviceConnectKeyboardGetFlag0Shift();
 int deviceConnectKeyboardGetFlag0Alt();
 int deviceConnectKeyboardGetFlag0Ctrl();
 void deviceConnectKeyboardRecvKeyPress(uint16_t code);
+void deviceConnectKeyboardApplyHostState(uint32_t asynchronous_keys,
+                                         uint32_t toggle_keys);
 
 /* Display Operations */
 int deviceConnectDisplayGetCursorVisible();

@@ -7,10 +7,19 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
 #include <windows.h>
+
+#include "core/machine/keyboard_state.h"
+#include "core/machine/status.h"
+
+typedef nxvm_core_status (*nxvm_win32_keyboard_state_sink)(
+    void *opaque, uint32_t asynchronous_keys, uint32_t toggle_keys);
 
 VOID win32KeyboardMakeStatus();
 VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey);
+void win32KeyboardBindStateSink(nxvm_win32_keyboard_state_sink sink,
+                                void *opaque);
 
 #define win32Sleep Sleep
 VOID win32DisplaySetScreen(BOOL flagWindow);

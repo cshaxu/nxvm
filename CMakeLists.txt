@@ -405,6 +405,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t6 "m5t6")
 add_nxvm_full_pc_artifact(nxvm-m5-t7 "m5t7")
 add_nxvm_full_pc_artifact(nxvm-m5-t9 "m5t9")
 add_nxvm_full_pc_artifact(nxvm-m5-t10 "m5t10")
+add_nxvm_full_pc_artifact(nxvm-m5-t12 "m5t12")
 
 if(NTVDM64_ENABLE_BOCHX_RESEARCH)
     add_executable(ntvdm64-bochx-manifest-check
