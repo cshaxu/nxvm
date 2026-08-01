@@ -191,6 +191,7 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
 )
 set(NXVM_MACHINE_VM_SOURCES
     src/vm/composition_console.c
+    src/vm/composition_debug.c
     src/vm/composition_block.c
     src/vm/composition_display.c
     src/vm/composition_machine.c
@@ -383,6 +384,13 @@ add_executable(nxvm-vm-cpu-stop-smoke
     tests/machine/vm_cpu_stop_smoke.c
 )
 target_link_libraries(nxvm-vm-cpu-stop-smoke PRIVATE
+    nxvm-machine-vm-lifecycle
+)
+
+add_executable(nxvm-vm-debug-target-smoke
+    tests/machine/vm_debug_target_smoke.c
+)
+target_link_libraries(nxvm-vm-debug-target-smoke PRIVATE
     nxvm-machine-vm-lifecycle
 )
 

@@ -292,6 +292,9 @@ legacy `vmachine` lifecycle sequence.
 - M5 T14 S3: created the typed core debugger-target contract and fake-target
   smoke. It covers shared debugger operations without VM headers; VM/VDM
   composition adapters and the retained UI source move remain pending.
+- M5 T14 S3: bound the core debugger target in VM composition and verified
+  register and real-memory callbacks against the initialized NXVM machine.
+  The legacy debugger UI move remains the next isolated slice.
 
 ## Active Subtask
 
