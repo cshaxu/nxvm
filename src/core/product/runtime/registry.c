@@ -1,4 +1,4 @@
-#include "runtime/registry.h"
+#include "core/product/runtime/registry.h"
 
 #include <string.h>
 
