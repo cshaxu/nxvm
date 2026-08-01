@@ -38,7 +38,7 @@ must migrate to the declared module owners before M6 may begin. The historical
 
 ## Active Work
 
-M5 T12 S5: implement the inactive synchronized VM request transport.
+M5 T12 S6: bind the inactive request transport at the VM execution boundary.
 
 ## Completed
 
@@ -212,15 +212,17 @@ M5 T12 S5: implement the inactive synchronized VM request transport.
 - M5 T12 S4: defined adapter-owned synchronized ingress/egress transport and
   teardown ordering; it avoids `machine <-> platform` dependencies and changes
   no runtime behavior.
+- M5 T12 S5: added the inactive synchronized adapter transport and focused
+  ownership/lifecycle smoke; all retained regressions pass without a caller.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t12-s5.md`.
+`docs/planning/subtasks/m5-t12-s6.md`.
 
 ## Next Eligible Work
 
-- M5 T12 S5 implements the inactive synchronized VM request transport; M6
-  remains blocked until M5 truly closes.
+- M5 T12 S6 binds the inactive request transport at the VM execution boundary;
+  M6 remains blocked until M5 truly closes.
 
 ## Delivery State
 
