@@ -391,3 +391,23 @@ discipline but have no universal all-product profile object.
 Profiles exclude machine-local paths, CLI arguments, window/Console choices,
 and other product-session policy. They are reproducible read-only blueprints;
 composition turns a selected blueprint into a running session.
+
+## Cross-Module: Resource, Failure, And Callback Rules
+
+Creation, registration, freeze, and reset failures return a factual `STATUS`
+synchronously. They leave no half-registered or half-frozen object; callers
+still destroy every object whose creation succeeded. Runtime providers may
+continue normally, request a safe machine stop, or report a machine fault.
+They never exit a process, close a window, or interpret a result as a DOS
+program exit code.
+
+Only root composition translates a lower-level result into retained NXVM
+Console behavior, a VDM CLI result, user-visible diagnostics, or product exit
+policy. This preserves the distinction between machine fact and product
+meaning.
+
+Callbacks never re-enter mutable operations on their originating object.
+Cross-thread callbacks transfer copied data only and are synchronously closed
+by the relevant `stop` or `destroy` operation. Unless an API explicitly states
+otherwise, creators destroy their objects, inputs are borrowed, and outputs
+are copied. Any exception must be visible in both its API name and contract.
