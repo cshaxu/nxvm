@@ -234,7 +234,7 @@ the retained full-PC compatibility gates.
 
 ## Active Subtask
 
-`docs/planning/subtasks/m5-t12-s9.md`.
+`docs/planning/subtasks/m5-t12-s10.md`.
 
 ## Next Eligible Work
 
