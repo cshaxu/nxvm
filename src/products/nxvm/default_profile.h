@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "machine/core/status.h"
+#include "core/machine/status.h"
 #include "products/nxvm/media.h"
 
 typedef struct nxvm_product_nxvm_reset_vector {

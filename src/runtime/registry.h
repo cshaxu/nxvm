@@ -3,8 +3,8 @@
 
 #include <stddef.h>
 
-#include "machine/core/cpu_capability.h"
-#include "machine/core/status.h"
+#include "core/machine/cpu_capability.h"
+#include "core/machine/status.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -3,7 +3,7 @@
 
 #include <stdatomic.h>
 
-#include "machine/core/status.h"
+#include "core/machine/status.h"
 #include "platform/vm/request_bridge.h"
 
 typedef struct nxvm_baseline_vm_request_transport {

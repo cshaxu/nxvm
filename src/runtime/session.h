@@ -1,7 +1,7 @@
 #ifndef NXVM_RUNTIME_SESSION_H
 #define NXVM_RUNTIME_SESSION_H
 
-#include "machine/core/status.h"
+#include "core/machine/status.h"
 #include "runtime/profile.h"
 
 #ifdef __cplusplus
