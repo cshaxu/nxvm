@@ -5,7 +5,7 @@
 #include <tchar.h>
 
 #include "core/product/utils.h"
-#include "vm/machine/device.h"
+#include "vm/platform/execution.h"
 
 #include "vm/platform/win32/win32.h"
 #include "vm/platform/win32/w32adisp.h"
@@ -39,7 +39,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
     case WM_TIMER:
         switch (wParam) {
         case TIMER_PAINT:
-            if (device.flagRun) {
+            if (vm_platform_execution_is_running()) {
                 w32adispPaint(FALSE);
             }
             break;
@@ -49,7 +49,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
         break;
     case WM_PAINT:
         BeginPaint(hWnd, &ps);
-        if (device.flagRun) {
+        if (vm_platform_execution_is_running()) {
             w32adispPaint(TRUE);
         }
         EndPaint(hWnd, &ps);
@@ -119,14 +119,14 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
         DispatchMessage(&msg);
     }
     w32aHWnd = NULL;
-    deviceStop();
+    vm_platform_execution_stop();
     w32adispFinal();
     ThreadIdDisplay = 0;
     return 0;
 }
 
 static DWORD WINAPI ThreadKernel(LPVOID lpParam) {
-    deviceStart();
+    vm_platform_execution_start();
     w32adispPaint(TRUE);
     ThreadIdKernel = 0;
     return 0;
@@ -139,9 +139,9 @@ VOID win32appDisplayPaint() {
     w32adispPaint(TRUE);
 }
 VOID win32appStartMachine() {
-    BOOL oldDeviceFlip = device.flagFlip;
+    BOOL oldDeviceFlip = vm_platform_execution_get_flip();
     CreateThread(NULL, 0, ThreadKernel, NULL, 0, &ThreadIdKernel);
-    while (oldDeviceFlip == device.flagFlip) {
+    while (oldDeviceFlip == vm_platform_execution_get_flip()) {
         utilsSleep(100);
     }
     if (!ThreadIdDisplay) {

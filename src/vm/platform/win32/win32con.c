@@ -3,7 +3,7 @@
 /* WIN32CON provides win32 console i/o interface. */
 
 #include "core/product/utils.h"
-#include "vm/machine/device.h"
+#include "vm/platform/execution.h"
 
 #include "vm/platform/win32/win32.h"
 #include "vm/platform/win32/w32cdisp.h"
@@ -14,7 +14,7 @@ HANDLE hIn, hOut;
 static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     w32cdispInit();
     w32cdispPaint(TRUE);
-    while (device.flagRun) {
+    while (vm_platform_execution_is_running()) {
         w32cdispPaint(FALSE);
         utilsSleep(100);
     }
@@ -23,7 +23,7 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
 }
 
 static DWORD WINAPI ThreadKernel(LPVOID lpParam) {
-    deviceStart();
+    vm_platform_execution_start();
     return 0;
 }
 
@@ -66,15 +66,15 @@ VOID win32conDisplayPaint() {
 VOID win32conStartMachine() {
     DWORD ThreadIdDisplay;
     DWORD ThreadIdKernel;
-    BOOL oldDeviceFlip = device.flagFlip;
+    BOOL oldDeviceFlip = vm_platform_execution_get_flip();
     hIn = GetStdHandle(STD_INPUT_HANDLE);
     hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     CreateThread(NULL, 0, ThreadKernel, NULL, 0, &ThreadIdKernel);
-    while (oldDeviceFlip == device.flagFlip) {
+    while (oldDeviceFlip == vm_platform_execution_get_flip()) {
         utilsSleep(100);
     }
     CreateThread(NULL, 0, ThreadDisplay, NULL, 0, &ThreadIdDisplay);
-    while (device.flagRun) {
+    while (vm_platform_execution_is_running()) {
         utilsSleep(20);
         w32ckeybProcess();
     }
