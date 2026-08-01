@@ -8,7 +8,7 @@
 #include "core/machine/vram.h"
 #include "core/machine/vcpu.h"
 #include "nxvm-baseline/device/vbios.h"
-#include "machine/core/vpit.h"
+#include "core/machine/vpit.h"
 #include "machine/core/vdma.h"
 #include "core/machine/vpic.h"
 #include "machine/core/vcmos.h"
