@@ -6,8 +6,9 @@
 #include <pthread.h>
 
 #include "core/product/utils.h"
-#include "vm/machine/device.h"
 #include "vm/platform/display_frame.h"
+#include "vm/platform/execution.h"
+#include "vm/platform/input.h"
 
 #include "vm/platform/linux/linuxcon.h"
 
@@ -246,7 +247,7 @@ static void lnxcdispPaint(uint8_t force) {
 static void *ThreadDisplay(void *arg) {
     lnxcdispInit();
     lnxcdispPaint(1);
-    while (device.flagRun) {
+    while (vm_platform_execution_is_running()) {
         lnxcdispPaint(0);
         utilsSleep(100);
     }
@@ -255,7 +256,7 @@ static void *ThreadDisplay(void *arg) {
 }
 
 static void *ThreadKernel(void *arg) {
-    deviceStart();
+    vm_platform_execution_start();
     return 0;
 }
 
@@ -326,10 +327,10 @@ static uint8_t Ascii2ScanCode[][2] = {
     {0xfc, ZERO}, {0xfd, ZERO}, {0xfe, ZERO}, {0xff, ZERO}
 };
 
-#define send(n) deviceConnectKeyboardRecvKeyPress(n)
+#define send(n) vm_platform_keyboard_receive_key_press(n)
 static void lnxckeybMakeKey(int keyvalue) {
     if (keyvalue == KEY_F(9)) {
-        deviceStop();
+        vm_platform_execution_stop();
     }
     if (keyvalue < 0x001b) {
         switch (keyvalue) {
@@ -436,15 +437,15 @@ void lnxcStartMachine() {
     pthread_t ThreadIdDisplay;
     pthread_t ThreadIdKernel;
     pthread_attr_t attr;
-    int oldDeviceFlip = device.flagFlip;
+    int oldDeviceFlip = vm_platform_execution_get_flip();
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
     pthread_create(&ThreadIdKernel,  &attr, ThreadKernel, NULL);
-    while (oldDeviceFlip == device.flagFlip) {
+    while (oldDeviceFlip == vm_platform_execution_get_flip()) {
         utilsSleep(100);
     }
     pthread_create(&ThreadIdDisplay, &attr, ThreadDisplay, NULL);
-    while (device.flagRun) {
+    while (vm_platform_execution_is_running()) {
         utilsSleep(20);
         lnxckeybProcess();
     }

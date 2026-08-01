@@ -285,6 +285,10 @@ legacy `vmachine` lifecycle sequence.
   behavior, and command order remain retained; interactive HELP/INFO/EXIT and
   the full GCC regression suite passed. The temporary source allowlist is now
   2 edges.
+- M5 T14 S3: routed Linux Console display, input, and execution through the
+  shared VM-platform contracts. The source DAG has no Linux machine edge;
+  Windows GCC and static verification passed, while POSIX GCC/ncurses build
+  evidence remains pending external validation.
 
 ## Active Subtask
 
