@@ -6,7 +6,7 @@
 
 #include "machine/core/vpit.h"
 #include "machine/core/vport.h"
-#include "vram.h"
+#include "core/machine/vram.h"
 
 t_ram vram;
 

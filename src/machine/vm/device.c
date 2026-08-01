@@ -11,7 +11,7 @@
 #include "machine/vm/vmachine.h"
 #include "machine/vm/execution_context.h"
 #include "core/machine/vcpu.h"
-#include "machine/core/vram.h"
+#include "core/machine/vram.h"
 #include "machine/core/vport.h"
 
 #include "device.h"
