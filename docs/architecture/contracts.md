@@ -116,6 +116,8 @@ x86 implementation without importing product profile semantics.
 `CORE_MACHINE_RUN_RESULT` reports why one quantum returned:
 
 - `QUANTUM_COMPLETE`: instruction budget exhausted and execution may continue.
+- `WAITING_FOR_INTERRUPT`: CPU is halted awaiting an interrupt or another
+  execution-boundary event; root composition owns any host wait or wake.
 - `PAUSED`: a debugger or explicit pause boundary was reached.
 - `STOP_REQUESTED`: root composition requested a safe stop.
 - `PROVIDER_STOP`: a registered provider requested termination with provider
@@ -199,6 +201,13 @@ without booting a full PC. The provider boundary therefore keeps core usable
 for focused instruction tests and lets VM/VDM profiles differ without teaching
 core about PC/AT, DOS, Windows, or a host OS.
 
+A generic block capability is a core-machine provider contract, not an HDC
+implementation. VM composition may bind its VM HDC to that capability so a
+profile firmware handler can read immutable reset-time geometry and perform
+sector operations without including VM machine code or accessing global device
+state. Core thereby defines the data/command boundary, while VM retains its
+controller and media policy.
+
 ## Core Machine: Hardware IRQ And Firmware Service
 
 Hardware IRQ delivery and a guest `INT n` instruction are separate mechanisms.
@@ -254,6 +263,13 @@ platform contract. A platform receives only a platform frame and never a
 controller state, or window policy. This permits debugger inspection and
 safe presentation refresh without turning core into a whole-product snapshot
 schema.
+
+A core video provider marks its presentation state changed when guest execution
+alters a display mode or visible content. The mark is machine state, not a host
+call. Composition observes it at the next execution boundary, captures the
+provider view, translates it to a frame, and submits it to platform. This
+replaces profile firmware directly calling a display implementation while
+preserving the same refresh cycle.
 
 ## Core Platform: Host-Capability Boundary
 
@@ -355,6 +371,12 @@ registration configuration; binds abstract debug targets and platform event
 queues; and freezes the machine. It owns host threads and its product loop:
 driving bounded run quanta, consuming queued events, submitting frames,
 handling product commands, and applying product exit policy.
+
+For retained NXVM, composition initially owns the legacy `vmachine` init,
+reset, refresh, and final ordering as one explicit sequence. It reproduces that
+sequence statement-for-statement before any later simplification; device code
+does not infer or alter the order. This is the path for moving lifecycle and
+host-start calls out of `vm/machine` without changing boot behavior.
 
 Composition alone translates `STATUS` and machine run results into observable
 product behavior. VM may return to or pause its retained Console; VDM may

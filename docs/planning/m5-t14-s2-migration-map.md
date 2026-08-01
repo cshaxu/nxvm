@@ -55,14 +55,17 @@ is enabled.
 
 | Current source edge | Required boundary and migration action | CMake destination | Gate and stop condition |
 | --- | --- | --- | --- |
-| `core/product/utils.c -> vm/platform/platform.h` (`utilsSleep`) | Split pure utility/trace support from host sleeping. A core execution result may request a cooperative yield; VM composition applies any host sleep/pacing through `vm/platform`. Core must not call platform. | `core-product`; pacing adapter in `vm-composition` | Core + retained CPU. Stop if the `vcpuins.c` sleep site changes instruction, HLT, or debugger timing. |
+| `core/machine/{vcpu,vcpuins,vdma,vpic,vpit,vport,vram}.c -> core/product/utils.h`; `core/machine/vglobal.h -> core/platform/global.h` | Remove legacy global utility/type coupling. Migrate standard types and C-runtime helpers needed by all modules to the approved root `type.*`; keep trace/product helpers in `core-product`. | root foundation, `core-machine`, `core-product` | Core. Stop if legacy diagnostics, CPU trace, allocation, or type width changes. |
+| `core/platform/presentation.h -> core/machine/{presentation,status}.h` | Replace machine snapshot types with an independent platform frame/event contract. Composition remains the only snapshot-to-frame translator. | `core-platform`, `vm-composition`, `vdm-composition` | Core presentation + VDM shell. Stop if copied text/frame content or generation timing changes. |
+| `core/product/{utils.h,debug/xasm32/*.h,runtime/registry.h} -> core/{platform,machine}/*` | Move shared primitive types/status to root `type.*`; make assembler/disassembler pure-data and registry generic. Core product cannot carry CPU capability or machine status definitions. | root foundation, `core-product` | Core debug/trace/registry. Stop if assembler output, debugger display, or registry behavior changes. |
+| `core/product/utils.c -> vm/platform/platform.h` (`utilsSleep`) | Split pure utility/trace support from host sleeping. A halted CPU returns the approved `WAITING_FOR_INTERRUPT` result; VM composition applies host wait/wake through `vm/platform`. Core must not call platform. | `core-product`; pacing adapter in `vm-composition` | Core + retained CPU. Stop if the `vcpuins.c` sleep site changes instruction, HLT, or debugger timing. |
 | `core/machine/vcpuins.c -> vm/machine/device.h` (`deviceStop`) | Replace direct stop with the core-machine safe-stop/result path. VM composition maps the result to the retained VM stop state. | `core-machine`; binding in `vm-composition` | Core lifecycle/CPU + retained debugger. Stop if F9, debugger stop, or CPU exception behavior differs. |
 | `core/machine/{vkbc,vdma,vpic,vpit}.c -> vm/profile/default_profile/firmware/vbios.h` | Remove direct BIOS assembly-string registration. Default profile contributes an ordered immutable firmware plan; VM composition binds the plan before freeze, preserving the legacy `vmachineInit` registration order. | `core-machine`, `vm-profile`, `vm-composition` | Core firmware + default-profile firmware + FDD/HDD reset-vector. Stop if POST or IVT order changes. |
 | `vm/machine/machine.c -> vm/platform/platform.h` | Move lifecycle orchestration (`platformInit/Start/Final`) into `vm-composition`; retain machine-only reset/stop operations behind VM machine API. | `vm-machine`, `vm-platform`, `vm-composition` | VM composition + Console. Stop if `START`, `STOP`, `RESUME`, `RESET`, or Console shutdown order changes. |
 | `vm/machine/{vcmos,vfdc,vhdc,vvadp,vmachine}.c -> vm/profile/default_profile/firmware/*` | `vmachine.c` becomes composition-owned assembly/reset/refresh ordering. Device-specific POST/INT contributions become profile-plan entries, not device-to-profile calls. | `vm-machine`, `vm-profile`, `vm-composition` | Firmware + FDD/HDD reset-vector. Stop if device initialization, reset, or refresh ordering changes. |
 | `vm/platform/{linux/linuxcon,win32/{win32,w32adisp,w32cdisp,win32app,win32con}}.c -> vm/machine/device.h` | Host callbacks emit copied VM platform events only. VM composition consumes them at the execution boundary and invokes VM machine operations. Existing direct fallback remains until the whole affected event kind is bound and gated. | `vm-platform`, `vm-composition` | Transport + retained Console/debugger. Stop if key mapping, F9 stop, window close, display paint, or input timing changes. |
 | `vm/product/{console,debug,cpu_probe,full_pc,full_pc_session,session*}.c/.h -> vm/{machine,platform,profile}/*` | Keep exact Console/debugger grammar in `vm/product`, but make it emit product commands against an abstract VM target. Move target implementation, profile selection, media binding, and session lifecycle to `vm-composition`. | `vm-product`, `vm-profile`, `vm-composition` | Console + debugger + VM composition. Stop for any changed prompt, command acceptance, media behavior, display toggle, or debug entry behavior. |
-| `vm/profile/default_profile/{default_profile.*,firmware/{qdcga,qddisk,qdx,vbios}.c/.h} -> vm/{machine,platform,product}/*` | Replace sibling calls with declared provider requirements. Video mode changes become machine view/frame notifications observed by composition; HDD geometry/block access is supplied through a profile-declared machine capability bound by composition; profile metadata does not call media/product code. | `vm-profile`, capability adapter in `vm-composition` | Default-profile firmware + FDD/HDD reset-vector. **Owner review required** before defining the block-capability adapter or changing video notification timing. |
+| `vm/profile/default_profile/{default_profile.*,firmware/{qdcga,qddisk,qdx,vbios}.c/.h} -> vm/{machine,platform,product}/*` | Replace sibling calls with declared provider requirements. Video mode changes mark core video state and composition submits the next boundary frame; VM HDC binds the approved core block capability for reset-time geometry and sector operations; profile metadata does not call media/product code. | `vm-profile`, capability adapter in `vm-composition` | Default-profile firmware + FDD/HDD reset-vector. Stop if video refresh timing or geometry/sector behavior changes. |
 | `vdm/platform/dos_minimal_presentation.* -> vdm/machine/dos_minimal.*` | Move session-to-presentation translation into `vdm-composition`. Platform keeps copied event/frame mechanism; VDM machine keeps DOS-minimal state. | `vdm-platform`, `vdm-machine`, `vdm-composition` | VDM shell. Stop if the no-media smoke's input/frame behavior changes. |
 | `vdm/product/minimal_session.* -> vdm/{machine,profile}/*` | Move profile selection and session construction to `vdm-composition`; retain any future VDM UX in `vdm/product`. | `vdm-machine`, `vdm-profile`, `vdm-composition` | VDM shell. Stop before creating a VDM executable or changing DOS-minimal behavior. |
 
@@ -85,7 +88,10 @@ are not forbidden peer edges.
 ## Execution Order
 
 1. Add automated include and CMake-target dependency checks with the current
-   violations allowlisted by this map. Make new violations fail immediately.
+   violations allowlisted by this map. `tools/Verify-DependencyDag.ps1`
+   compares exact source-owner edges against its checked-in temporary
+   allowlist; CMake also rejects a newly introduced mixed-owner target. Make
+   new violations fail immediately.
 2. Introduce the minimal core stop/yield and ordered firmware-plan contracts;
    bind them in VM composition without changing the legacy device sequence.
 3. Move VM lifecycle, platform ingress/egress, and retained product command
@@ -104,13 +110,14 @@ are not forbidden peer edges.
 The following are deliberate approval points rather than hidden implementation
 choices:
 
-- The exact core run result used for the legacy CPU host-sleep site.
-- The exact default-profile block-capability adapter used by `vbios` and
-  `qddisk`, including its reset-time geometry snapshot semantics.
-- The event sequencing for video-mode changes and all currently direct Win32
-  callbacks.
-- Any change needed to preserve legacy global-state lifetime while converting
-  `vmachine.c` into composition-owned ordering.
+- CPU halt returns `WAITING_FOR_INTERRUPT`; VM composition supplies host
+  waiting and waking.
+- VM HDC binds the core block capability used by `vbios` and `qddisk`; geometry
+  is snapshotted at reset.
+- Video mode changes mark core state and are submitted through composition at
+  the next execution boundary; direct Win32 callbacks remain separately gated.
+- `vmachine.c` ordering moves whole into composition before any refactoring of
+  its sequence or global-state lifetime.
 
 All other source moves, include repairs, target splits, and focused gates follow
 the current contracts and this map without a new product decision.
