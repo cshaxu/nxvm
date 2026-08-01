@@ -1,5 +1,5 @@
-#ifndef NXVM_VM_FULL_PC_SESSION_H
-#define NXVM_VM_FULL_PC_SESSION_H
+#ifndef NXVM_COMPOSITION_SESSION_H
+#define NXVM_COMPOSITION_SESSION_H
 
 #include "core/machine/status.h"
 #include "core/product/runtime/profile_descriptor.h"

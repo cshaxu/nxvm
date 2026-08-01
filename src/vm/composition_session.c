@@ -1,4 +1,4 @@
-#include "vm/product/full_pc_session.h"
+#include "vm/composition_session.h"
 
 #include <stdlib.h>
 
