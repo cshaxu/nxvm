@@ -310,7 +310,7 @@ target_link_libraries(nxvm-execution-context-smoke PRIVATE
 )
 
 add_library(nxvm-runtime STATIC
-    src/runtime/dos_minimal.c
+    src/vdm/machine/dos_minimal.c
     src/runtime/profile.c
     src/core/product/runtime/registry.c
     src/runtime/session.c

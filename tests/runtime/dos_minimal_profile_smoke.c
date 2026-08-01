@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "runtime/dos_minimal.h"
+#include "vdm/machine/dos_minimal.h"
 #include "runtime/profile.h"
 
 int main(void)
