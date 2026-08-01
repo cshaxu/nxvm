@@ -266,6 +266,11 @@ legacy `vmachine` lifecycle sequence.
   include VM machine state; Linux painting uses the same frame while retaining
   its lifecycle/input adapter. The temporary source allowlist is now 8 edges;
   full GCC, dependency, CPU, retained UX, and FDD/HDD session gates passed.
+- M5 T14 S3: replaced the legacy core-product-to-VM-platform sleep call with a
+  bound core-product wait provider. VM composition owns the platform binding;
+  legacy `utilsSleep` callers and timing arguments remain unchanged. A focused
+  provider smoke and the full retained NXVM gates passed; the temporary source
+  allowlist is now 7 edges.
 
 ## Active Subtask
 

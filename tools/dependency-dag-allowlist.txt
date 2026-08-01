@@ -1,6 +1,5 @@
 # Exact temporary source-owner edges recorded by M5 T14 S2.
 # Remove an entry in the same change that removes its direct include.
-src/core/product/utils.c|vm/platform
 src/vm/platform/linux/linuxcon.c|vm/machine
 src/vm/platform/win32/win32.c|vm/machine
 src/vm/platform/win32/win32app.c|vm/machine

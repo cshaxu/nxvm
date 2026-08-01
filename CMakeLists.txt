@@ -161,6 +161,7 @@ add_custom_target(generate-m1-probe
 
 set(NXVM_PRODUCT_CORE_SOURCES
     src/core/product/utils.c
+    src/core/product/wait.c
 )
 set(NXVM_FOUNDATION_SOURCES
     src/type.c
@@ -274,15 +275,26 @@ target_include_directories(nxvm-product-core-utils PUBLIC
 )
 target_link_libraries(nxvm-product-core-utils PUBLIC nxvm-product-core-debug)
 
+add_executable(nxvm-core-product-wait-smoke
+    tests/product/core_product_wait_smoke.c
+)
+target_link_libraries(nxvm-core-product-wait-smoke PRIVATE
+    nxvm-product-core-utils
+)
+
 add_library(nxvm-profile-vm-default-firmware STATIC ${NXVM_PROFILE_VM_SOURCES})
 target_include_directories(nxvm-profile-vm-default-firmware PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-profile-vm-default-firmware PUBLIC
+    nxvm-product-core-utils
 )
 
 add_library(nxvm-platform-vm STATIC ${NXVM_PLATFORM_VM_SOURCES})
 target_include_directories(nxvm-platform-vm PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
+target_link_libraries(nxvm-platform-vm PUBLIC nxvm-product-core-utils)
 
 add_library(nxvm-legacy-runtime-dependencies INTERFACE)
 target_link_libraries(nxvm-legacy-runtime-dependencies INTERFACE
