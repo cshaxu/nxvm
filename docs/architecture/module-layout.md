@@ -75,6 +75,12 @@ composition owns the host implementation and its lifetime. Its runtime
 infrastructure lives in `core/product/runtime`; there is no top-level runtime
 module.
 
+The retained hardware debugger command language, prompt, help, and text
+presentation are shared product UX and belong in `core/product/debug`. Its
+core-owned debug target declares the machine effects it needs; VM and VDM root
+composition bind that target to their respective machines. Product forms may
+add capability-specific commands, but they do not fork the common debugger UI.
+
 Machine snapshots and platform frames are distinct contracts. A product-machine
 snapshot may contain text cells, attributes, geometry, cursor, generation, and
 machine-private diagnostics, and may embed a core text snapshot; it remains a
