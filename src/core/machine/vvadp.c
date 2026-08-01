@@ -2,10 +2,7 @@
 
 /* VVADP is Video Adapter: not implemented yet. */
 
-#include "core/product/utils.h"
-
-#include "core/machine/vport.h"
-#include "vm/machine/vvadp.h"
+#include "core/machine/vvadp.h"
 
 t_vadp vvadp;
 

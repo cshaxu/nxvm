@@ -198,13 +198,13 @@ set(NXVM_MACHINE_VM_SOURCES
     src/vm/machine/vhdd.c
     src/vm/machine/vfdc.c
     src/vm/machine/vhdc.c
-    src/vm/machine/vvadp.c
     src/vm/machine/vcmos.c
     src/vm/machine/vdebug.c
 )
 set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/block.c
     src/core/machine/display.c
+    src/core/machine/vvadp.c
     src/core/machine/vport.c
     src/core/machine/vram.c
     src/core/machine/vcpu.c

@@ -19,7 +19,7 @@
 #include "vm/composition_block.h"
 #include "vm/composition_display.h"
 #include "core/machine/vkbc.h"
-#include "vm/machine/vvadp.h"
+#include "core/machine/vvadp.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
 
 #include "vm/composition.h"
