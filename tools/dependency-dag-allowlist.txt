@@ -22,7 +22,6 @@ src/core/product/utils.h|core/platform
 src/vdm/platform/dos_minimal_presentation.h|vdm/machine
 src/vdm/product/minimal_session.c|vdm/machine
 src/vdm/product/minimal_session.c|vdm/profile
-src/vm/machine/machine.c|vm/platform
 src/vm/machine/vcmos.c|vm/profile
 src/vm/machine/vfdc.c|vm/profile
 src/vm/machine/vhdc.c|vm/profile
