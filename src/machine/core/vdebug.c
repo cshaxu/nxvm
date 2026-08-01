@@ -5,12 +5,12 @@
  * device status and stops device thread at breakpoints.
  */
 
-#include "../utils.h"
-#include "device.h"
+#include "nxvm-baseline/utils.h"
+#include "machine/vm/device.h"
 
-#include "vcpuins.h"
+#include "machine/core/vcpuins.h"
 
-#include "vdebug.h"
+#include "machine/core/vdebug.h"
 
 t_debug vdebug;
 
