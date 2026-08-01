@@ -12,7 +12,7 @@
 #include "machine/vm/execution_context.h"
 #include "core/machine/vcpu.h"
 #include "core/machine/vram.h"
-#include "machine/core/vport.h"
+#include "core/machine/vport.h"
 
 #include "device.h"
 

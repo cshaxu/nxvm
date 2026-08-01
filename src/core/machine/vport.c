@@ -4,7 +4,7 @@
 
 #include "nxvm-baseline/utils.h"
 
-#include "vport.h"
+#include "core/machine/vport.h"
 
 t_port vport;
 
