@@ -21,6 +21,10 @@ The planned `ntvdm64 run` contract is defined in
 components, invasive integration, and Win16 remain research-only unless a later
 owner-approved Go decision changes that boundary.
 
+Forward directory and ownership decisions are defined exclusively by
+`architecture/module-layout.md`. The older boundary and directory sections in
+this document describe the pre-migration structure and are historical context.
+
 ## Runtime Identity And Versioning
 
 The immutable M1 byte-identical NXVM snapshot retains its imported startup

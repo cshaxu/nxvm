@@ -1,4 +1,10 @@
-# Profile And Firmware Provider Requirements
+# Historical Profile And Firmware Provider Record
+
+> Superseded for forward ownership by
+> `docs/architecture/module-layout.md`. This record remains only for M4/M5
+> historical registry and verification evidence. The forward model has no
+> `profile/core`; VM profiles may be selected by either product, while VDM
+> profiles define only DOS-environment behavior.
 
 ## Purpose
 

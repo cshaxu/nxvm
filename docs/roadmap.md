@@ -44,8 +44,8 @@ are recorded.
 **Goal:** define the architecture that lets `nxvm.exe` and `ntvdm64.exe` share
 one machine core while keeping product policy out of that core.
 
-**Scope:** specify `core`, `firmware`, `platform`, `runtime`, `dos`, and
-`products` ownership; profile/composition, device, port/memory, interrupt,
+**Scope:** specify `machine/{core,vm,vdm}`, `platform/{core,vm,vdm}`,
+`product/{core,vm,vdm}`, and `profile/{vm,vdm}` ownership; profile/composition, device, port/memory, interrupt,
 firmware-service, DOS-service, host-capability, and debug/command registries;
 machine lifecycle, threading, trace boundaries, host-service trust boundaries,
 and the M3 task breakdown.
@@ -62,8 +62,8 @@ started.
 **Goal:** move the verified NXVM-derived machine into the M2 shared-core shape.
 
 **Scope:** create the versioned Machine V1 contract; instance CPU/RAM/bus,
-port, memory, interrupt, device, trace, and debug state; move composition into
-`runtime`; isolate platform presentation; and preserve the M1 full-PC boot
+port, memory, interrupt, device, trace, and debug state in `machine/core`;
+isolate platform presentation; and preserve the M1 full-PC boot
 regression through the `nxvm.full_pc` profile. No owned DOS backend or product
 CLI enters M3.
 
@@ -75,8 +75,8 @@ forbidden dependencies are absent, and M3 produces the M4 breakdown.
 
 **Goal:** specify the bootable VM product before implementation.
 
-**Scope:** BIOS/POST/ROM and BIOS interrupt-service ownership; firmware service
-and provider registries; machine-profile and execution-profile composition;
+**Scope:** BIOS/POST/ROM and BIOS interrupt-service ownership under VM/VDM
+profiles; machine-profile and DOS-profile composition;
 disk-image and removable-media policy; retained interactive NXVM Console grammar
 and behavior; debugger entry points; display/input expectations; artifact
 identity; external-ROM manifest boundary; and regression rules that keep
@@ -92,11 +92,10 @@ bounded M5 breakdown. **Non-goal:** implementation.
 full-PC execution path runs on the shared core.
 
 **Scope:** establish CPU capability claims and optional Bochx/Bochs differential
-verification; implement the profile/provider registry and only the built-in
-`nxvm.machine.pc_at_builtin` machine profile; migrate the actual CPU execution,
+verification; implement only `profile/vm/default_profile`; migrate the actual CPU execution,
 machine lifecycle, BIOS/POST/ROM, boot devices, and presentation path from the
-temporary baseline adapter into `core`, `firmware`, `platform`, and
-`products/nxvm`; preserve the original NXVM Console and debugger behavior;
+temporary baseline adapter into `machine`, `platform`, `product`, and
+`profile`; preserve the original NXVM Console and debugger behavior;
 retain FDD/HDD boot fixtures; and produce runnable artifacts. External-ROM
 loading and additional machine profiles remain future design work. `nxvm.exe`
 has no new process CLI.
@@ -111,7 +110,7 @@ or platform lifecycle. No ntvdm64 DOS runner behavior is required.
 
 **Goal:** specify the bounded ntvdm64 DOS backend before implementation.
 
-**Scope:** COM load state, PSP/environment/DTA layout, initial CPU state, DOS
+**Scope:** define `machine/vdm/dos` COM load state, PSP/environment/DTA layout, initial CPU state, DOS
 interrupt dispatch, register preservation, handle and fixture-filesystem
 semantics, deterministic input-blocked protocol, error table, and M7 probes.
 
@@ -122,7 +121,7 @@ breakdown. **Non-goal:** DOS implementation.
 
 **Goal:** run simple DOS programs without booting a guest DOS image.
 
-**Scope:** bounded COM loader, PSP, environment, `INT 20h`, approved `INT 21h`
+**Scope:** implement bounded `machine/vdm/dos` loader, PSP, environment, `INT 20h`, approved `INT 21h`
 subset, deterministic text/keyboard I/O, guest exit, in-memory fixture
 filesystem, and developer/debugger loading through the owned DOS loader.
 

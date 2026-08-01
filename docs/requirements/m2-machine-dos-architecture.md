@@ -1,4 +1,7 @@
-# M2 Shared Core Architecture Requirements
+# Historical M2 Shared Core Architecture Record
+
+> Superseded for forward ownership and layout by
+> `docs/architecture/module-layout.md`. This document preserves M2 evidence.
 
 ## Decision
 

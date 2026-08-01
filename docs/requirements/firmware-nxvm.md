@@ -1,4 +1,9 @@
-# Firmware And NXVM Product Requirements
+# Historical Firmware And NXVM Product Record
+
+> Superseded for forward module ownership by
+> `docs/architecture/module-layout.md` and `docs/requirements/profiles.md`.
+> It remains M4/M5 evidence only. Forward firmware belongs under the owning VM
+> or VDM profile, not a root `firmware/` module.
 
 ## Status
 
