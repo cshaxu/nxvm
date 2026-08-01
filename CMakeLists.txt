@@ -181,7 +181,6 @@ set(NXVM_RUNTIME_SOURCES
 )
 
 set(NXVM_PRODUCT_VM_SOURCES
-    src/vm/main.c
     src/vm/product/console.c
 )
 set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
@@ -339,6 +338,12 @@ target_include_directories(nxvm-machine-vm-lifecycle PUBLIC
 target_link_libraries(nxvm-machine-vm-lifecycle PUBLIC
     nxvm-legacy-runtime-dependencies
     nxvm-runtime)
+
+add_library(nxvm-vm-product STATIC ${NXVM_PRODUCT_VM_SOURCES})
+target_include_directories(nxvm-vm-product PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-vm-product PUBLIC nxvm-product-core-utils)
 
 add_library(nxvm-vm-full-pc STATIC
     src/vm/composition_full_pc.c
@@ -502,21 +507,13 @@ target_link_libraries(nxvm-full-pc-profile-smoke PRIVATE
 )
 
 function(add_nxvm_full_pc_artifact target suffix)
-    add_executable(${target}
-        ${NXVM_RUNTIME_SOURCES}
-        ${NXVM_MACHINE_VM_SOURCES}
-        ${NXVM_MACHINE_CORE_SOURCES}
-        ${NXVM_FOUNDATION_SOURCES}
-        ${NXVM_CORE_PRODUCT_RUNTIME_SOURCES}
-        ${NXVM_PLATFORM_VM_SOURCES}
-        ${NXVM_PROFILE_VM_SOURCES}
-        ${NXVM_PRODUCT_CORE_SOURCES}
-        ${NXVM_PRODUCT_CORE_DEBUG_SOURCES}
-        ${NXVM_PRODUCT_VM_SOURCES})
+    add_executable(${target} src/vm/main.c)
     target_compile_definitions(${target} PRIVATE "NXVM_BUILD_SUFFIX=\"${suffix}\"")
     target_include_directories(${target} PRIVATE
         "${CMAKE_SOURCE_DIR}/src")
-    target_link_libraries(${target} PRIVATE user32 gdi32)
+    target_link_libraries(${target} PRIVATE
+        nxvm-vm-product
+        nxvm-machine-vm-lifecycle)
 
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)

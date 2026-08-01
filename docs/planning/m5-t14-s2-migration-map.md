@@ -80,7 +80,7 @@ are not forbidden peer edges.
 | `nxvm-firmware` | Split core firmware registry from default-profile firmware implementation; composition links both. |
 | `nxvm-product-default-profile`, `nxvm-product-profile`, `nxvm-product-session` | Remove product/profile cross-linking. Product UX and profile metadata become peers linked only by `vm-composition`. |
 | `nxvm-vm-full-pc`, `nxvm-vm-full-pc-session` | Replace with the final `vm-composition` owner once its lifecycle bindings preserve the current session gate. |
-| `add_nxvm_full_pc_artifact` | Replace its hand-selected source aggregation with linkage to the final target graph. It remains the task-artifact producer, not a second build graph. |
+| `add_nxvm_full_pc_artifact` | Complete: each retained artifact compiles only `vm/main.c` and links the same VM product/lifecycle graph. It remains the task-artifact producer, not a second build graph. Final naming and composition-target consolidation remain separate closure work. |
 | VDM minimal targets | Recast as four peer targets plus test-only `vdm-composition`; no VDM executable or CLI enters M5. |
 
 ## Execution Order
