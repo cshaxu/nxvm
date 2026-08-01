@@ -5,7 +5,7 @@
 The source baseline is NXVM commit
 `6d6b7d70ab6ed83ab973d27aeea6db88f4e87e4f`, recorded in
 `docs/provenance/m1-nxvm-baseline.md`. The immutable
-`src/nxvm-baseline/` copy remains a regression reference. It must not supply
+`src/nxvm_baseline/` copy remains a regression reference. It must not supply
 any source to the final `nxvm.exe` once M5 closes.
 
 The retained Console is an exact compatibility surface: command grammar,
@@ -30,7 +30,7 @@ Final destination names and ownership in this plan are interpreted through
 `docs/architecture/module-layout.md`: `core/{machine,platform,product}` and
 `{vm,vdm}/{machine,platform,product,profile}` replace the earlier horizontal
 layout. `vm/main.c` and `vdm/main.c` are the product entry points. `adapter`
-and `nxvm-baseline` are the only permitted non-product roots.
+and legacy `nxvm_baseline` is the only permitted non-product root.
 
 ## Actual Execution Chain
 
@@ -43,7 +43,7 @@ main -> consoleMain -> machineInit
 
 `core/machine/machine.c` currently provides lifecycle scaffolding only; it does
 not execute guest instructions. The staged NXVM profile currently enters the
-chain above through `adapter/nxvm_baseline/full_pc_profile.c`. That adapter is
+chain above through a temporary bridge now under `adapters/nxvm_baseline/full_pc_profile.c`. That bridge is
 not a completed migration.
 
 ## Source Ownership Map
@@ -101,7 +101,7 @@ and command registry before the baseline adapter is removed.
 6. **T13: composition cutover.** Wire `vm/product` through `core/product` to
    migrated owners, remove baseline sources from the final target, delete the
    transition adapter, and run the retained FDD/HDD and Console/debugger gates.
-   `src/nxvm-baseline` remains an independently buildable reference target only.
+   `src/nxvm_baseline` remains an independently buildable reference target only.
 
 Every implementation task produces its task-level `nxvm-m5_t<task>.exe` after
 its focused gates pass. A failed fixture, changed Console/debugger transcript,
