@@ -317,6 +317,9 @@ legacy `vmachine` lifecycle sequence.
 - M5 T14 S3: split the mixed historical firmware library into a core-machine
   firmware target and a VM default-profile firmware target. The old
   `nxvm-firmware` name remains only as a zero-source test aggregate.
+- M5 T14 S3: removed the final CMake mixed-owner target exception list. The
+  configured source-owner verifier now rejects every target that aggregates
+  sources from multiple module owners.
 
 ## Active Subtask
 
