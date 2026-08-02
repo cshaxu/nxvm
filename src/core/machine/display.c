@@ -1,23 +1,23 @@
-#include "core/machine/display.h"
+#include "core/machine/display_interface.h"
 
 #include <stddef.h>
 
 static void *coreMachineDisplayContext;
-static core_machine_display_mode_notifier coreMachineDisplayModeNotifier;
+static core_machine_display_provider coreMachineDisplayProvider;
 static void *coreMachineDisplaySnapshotContext;
 static core_machine_display_snapshot_provider coreMachineDisplaySnapshotProvider;
 
 void core_machine_display_bind(void *context,
-    core_machine_display_mode_notifier mode_notifier)
+    core_machine_display_provider provider)
 {
     coreMachineDisplayContext = context;
-    coreMachineDisplayModeNotifier = mode_notifier;
+    coreMachineDisplayProvider = provider;
 }
 
 void core_machine_display_notify_mode_changed(void)
 {
-    if (coreMachineDisplayModeNotifier != NULL) {
-        coreMachineDisplayModeNotifier(coreMachineDisplayContext);
+    if (coreMachineDisplayProvider != NULL) {
+        coreMachineDisplayProvider(coreMachineDisplayContext);
     }
 }
 

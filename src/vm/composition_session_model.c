@@ -39,8 +39,8 @@ nxvm_core_status nxvm_product_nxvm_session_create(
     nxvm_product_nxvm_session *session,
     const nxvm_product_nxvm_session_config *config)
 {
-    nxvm_core_machine_config machine_config = {
-        NXVM_CORE_PROFILE_CUSTOM, 0u
+    core_machine_config machine_config = {
+        CORE_MACHINE_PROFILE_CUSTOM, 0u
     };
     nxvm_core_status status;
 
@@ -61,9 +61,9 @@ nxvm_core_status nxvm_product_nxvm_session_create(
     nxvm_firmware_initialize(&session->firmware);
     if (nxvm_firmware_default_profile_compose(&session->firmware, &session->firmware_plan) !=
             NXVM_CORE_STATUS_OK || nxvm_firmware_freeze(&session->firmware) !=
-            NXVM_CORE_STATUS_OK || nxvm_core_machine_create(&machine_config,
+            NXVM_CORE_STATUS_OK || core_machine_create(&machine_config,
             &session->firmware_machine) != NXVM_CORE_STATUS_OK ||
-        nxvm_core_machine_reset(session->firmware_machine) != NXVM_CORE_STATUS_OK ||
+        core_machine_reset(session->firmware_machine) != NXVM_CORE_STATUS_OK ||
         nxvm_firmware_default_profile_apply_image(session->firmware_machine,
             config->boot_target == NXVM_PRODUCT_NXVM_BOOT_HDD) != NXVM_CORE_STATUS_OK) {
         nxvm_product_nxvm_session_destroy(session);
@@ -94,7 +94,7 @@ nxvm_core_status nxvm_product_nxvm_session_get_firmware_reset_vector(
     if (session == NULL || out_vector == NULL || session->firmware_machine == NULL) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
-    if (nxvm_core_machine_memory_read(session->firmware_machine, 0xffff0u,
+    if (core_machine_memory_read(session->firmware_machine, 0xffff0u,
         reset, sizeof(reset)) != NXVM_CORE_STATUS_OK || reset[0] != 0xeau ||
         reset[4] != 0xf0u) return NXVM_CORE_STATUS_FAULT;
     out_vector->cs = (uint16_t)session->firmware_plan.reset_segment;
@@ -115,7 +115,7 @@ void nxvm_product_nxvm_session_destroy(nxvm_product_nxvm_session *session)
     if (session == NULL) return;
     nxvm_product_nxvm_default_profile_destroy(&session->default_profile);
     if (session->firmware_machine != NULL) {
-        nxvm_core_machine_destroy(session->firmware_machine);
+        core_machine_destroy(session->firmware_machine);
     }
     memset(session, 0, sizeof(*session));
 }

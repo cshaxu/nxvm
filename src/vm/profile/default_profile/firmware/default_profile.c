@@ -28,7 +28,7 @@ nxvm_core_status nxvm_firmware_default_profile_compose(
 }
 
 nxvm_core_status nxvm_firmware_default_profile_apply_image(
-    nxvm_core_machine *machine, int boot_hdd)
+    core_machine *machine, int boot_hdd)
 {
     static const uint8_t reset_stub[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0xf0u };
     uint8_t value;
@@ -37,21 +37,21 @@ nxvm_core_status nxvm_firmware_default_profile_apply_image(
 
     if (machine == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     word = 0x03f8u;
-    status = nxvm_core_machine_memory_write(machine, 0x0400u, &word, sizeof(word));
+    status = core_machine_memory_write(machine, 0x0400u, &word, sizeof(word));
     if (status != NXVM_CORE_STATUS_OK) return status;
     word = 0x027fu;
-    status = nxvm_core_machine_memory_write(machine, 0x0413u, &word, sizeof(word));
+    status = core_machine_memory_write(machine, 0x0413u, &word, sizeof(word));
     if (status != NXVM_CORE_STATUS_OK) return status;
     value = boot_hdd ? 0x80u : 0u;
-    status = nxvm_core_machine_memory_write(machine, 0x0472u, &value, sizeof(value));
+    status = core_machine_memory_write(machine, 0x0472u, &value, sizeof(value));
     if (status != NXVM_CORE_STATUS_OK) return status;
     value = 0x55u;
-    status = nxvm_core_machine_memory_write(machine, 0xf0000u, &value, sizeof(value));
+    status = core_machine_memory_write(machine, 0xf0000u, &value, sizeof(value));
     if (status != NXVM_CORE_STATUS_OK) return status;
     value = 0xaau;
-    status = nxvm_core_machine_memory_write(machine, 0xf0001u, &value, sizeof(value));
+    status = core_machine_memory_write(machine, 0xf0001u, &value, sizeof(value));
     if (status != NXVM_CORE_STATUS_OK) return status;
-    return nxvm_core_machine_memory_write(machine, 0xffff0u, reset_stub, sizeof(reset_stub));
+    return core_machine_memory_write(machine, 0xffff0u, reset_stub, sizeof(reset_stub));
 }
 
 void nxvm_firmware_default_profile_cmos_initialize(

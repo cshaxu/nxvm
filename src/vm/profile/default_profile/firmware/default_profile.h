@@ -1,8 +1,8 @@
 #ifndef NXVM_FIRMWARE_PC_AT_H
 #define NXVM_FIRMWARE_PC_AT_H
 
-#include "core/machine/machine.h"
-#include "core/machine/firmware.h"
+#include "core/machine/machine_interface.h"
+#include "core/machine/firmware_interface.h"
 
 typedef struct nxvm_firmware_default_profile_plan {
     unsigned reset_segment;
@@ -20,7 +20,7 @@ typedef struct nxvm_firmware_default_profile_cmos {
 nxvm_core_status nxvm_firmware_default_profile_compose(
     nxvm_firmware *firmware, nxvm_firmware_default_profile_plan *out_plan);
 nxvm_core_status nxvm_firmware_default_profile_apply_image(
-    nxvm_core_machine *machine, int boot_hdd);
+    core_machine *machine, int boot_hdd);
 void nxvm_firmware_default_profile_cmos_initialize(
     nxvm_firmware_default_profile_cmos *cmos, int boot_hdd);
 

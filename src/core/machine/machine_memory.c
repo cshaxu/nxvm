@@ -1,10 +1,10 @@
-#include "core/machine/machine_impl.h"
+#include "core/machine/machine.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-static int nxvm_core_memory_translate(
-    const nxvm_core_memory *memory,
+static int core_machine_memory_translate(
+    const core_machine_memory *memory,
     uint32_t physical,
     size_t size,
     size_t *out_offset)
@@ -23,7 +23,7 @@ static int nxvm_core_memory_translate(
     return 1;
 }
 
-nxvm_core_status nxvm_core_memory_initialize(nxvm_core_machine *machine)
+nxvm_core_status core_machine_memory_initialize(core_machine *machine)
 {
     size_t size;
 
@@ -33,11 +33,11 @@ nxvm_core_status nxvm_core_memory_initialize(nxvm_core_machine *machine)
 
     size = machine->config.memory_bytes;
     if (size == 0u) {
-        size = NXVM_CORE_DEFAULT_MEMORY_BYTES;
+        size = CORE_MACHINE_DEFAULT_MEMORY_BYTES;
     }
 
-    if (size < NXVM_CORE_MINIMUM_MEMORY_BYTES ||
-        size > NXVM_CORE_MAXIMUM_MEMORY_BYTES) {
+    if (size < CORE_MACHINE_MINIMUM_MEMORY_BYTES ||
+        size > CORE_MACHINE_MAXIMUM_MEMORY_BYTES) {
         return NXVM_CORE_STATUS_UNSUPPORTED;
     }
 
@@ -51,7 +51,7 @@ nxvm_core_status nxvm_core_memory_initialize(nxvm_core_machine *machine)
     return NXVM_CORE_STATUS_OK;
 }
 
-void nxvm_core_memory_finalize(nxvm_core_machine *machine)
+void core_machine_memory_finalize(core_machine *machine)
 {
     if (machine != NULL) {
         free(machine->memory.bytes);
@@ -61,7 +61,7 @@ void nxvm_core_memory_finalize(nxvm_core_machine *machine)
     }
 }
 
-nxvm_core_status nxvm_core_memory_reset(nxvm_core_machine *machine)
+nxvm_core_status core_machine_memory_reset(core_machine *machine)
 {
     if (machine == NULL || machine->memory.bytes == NULL) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
@@ -72,8 +72,8 @@ nxvm_core_status nxvm_core_memory_reset(nxvm_core_machine *machine)
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_core_machine_memory_read(
-    const nxvm_core_machine *machine,
+nxvm_core_status core_machine_memory_read(
+    const core_machine *machine,
     uint32_t physical,
     void *out_data,
     size_t size)
@@ -84,7 +84,7 @@ nxvm_core_status nxvm_core_machine_memory_read(
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
 
-    if (!nxvm_core_memory_translate(&machine->memory, physical, size, &offset)) {
+    if (!core_machine_memory_translate(&machine->memory, physical, size, &offset)) {
         return NXVM_CORE_STATUS_FAULT;
     }
 
@@ -92,8 +92,8 @@ nxvm_core_status nxvm_core_machine_memory_read(
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_core_machine_memory_write(
-    nxvm_core_machine *machine,
+nxvm_core_status core_machine_memory_write(
+    core_machine *machine,
     uint32_t physical,
     const void *data,
     size_t size)
@@ -104,7 +104,7 @@ nxvm_core_status nxvm_core_machine_memory_write(
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
 
-    if (!nxvm_core_memory_translate(&machine->memory, physical, size, &offset)) {
+    if (!core_machine_memory_translate(&machine->memory, physical, size, &offset)) {
         return NXVM_CORE_STATUS_FAULT;
     }
 
@@ -112,8 +112,8 @@ nxvm_core_status nxvm_core_machine_memory_write(
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_core_machine_set_a20(
-    nxvm_core_machine *machine,
+nxvm_core_status core_machine_set_a20(
+    core_machine *machine,
     int enabled)
 {
     if (machine == NULL) {

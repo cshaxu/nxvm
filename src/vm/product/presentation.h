@@ -1,7 +1,7 @@
 #ifndef NXVM_PRODUCT_NXVM_PRESENTATION_H
 #define NXVM_PRODUCT_NXVM_PRESENTATION_H
 
-#include "core/machine/presentation.h"
+#include "core/machine/presentation_interface.h"
 
 typedef struct nxvm_product_nxvm_presentation {
     nxvm_core_keyboard_queue pending_input;

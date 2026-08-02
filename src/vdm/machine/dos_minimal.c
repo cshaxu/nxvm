@@ -3,12 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core/machine/machine.h"
+#include "core/machine/machine_interface.h"
 
 #define NXVM_RUNTIME_KEY_QUEUE_CAPACITY 16u
 
 struct nxvm_runtime_dos_minimal {
-    nxvm_core_machine *machine;
+    core_machine *machine;
     nxvm_runtime_text_snapshot snapshot;
     uint8_t key_queue[NXVM_RUNTIME_KEY_QUEUE_CAPACITY];
     uint8_t key_count;
@@ -73,23 +73,23 @@ static nxvm_core_status nxvm_runtime_dos_minimal_port_write_handler(
 static nxvm_core_status nxvm_runtime_dos_minimal_install_ports(
     nxvm_runtime_dos_minimal *session)
 {
-    const nxvm_core_port_ops ops = {
+    const core_machine_port_provider ops = {
         nxvm_runtime_dos_minimal_port_read_handler,
         nxvm_runtime_dos_minimal_port_write_handler
     };
     nxvm_core_status status;
 
-    status = nxvm_core_machine_install_port(session->machine, 0x20u, 0x20u,
+    status = core_machine_install_port_provider(session->machine, 0x20u, 0x20u,
                                             &ops, session);
     if (status != NXVM_CORE_STATUS_OK) {
         return status;
     }
-    status = nxvm_core_machine_install_port(session->machine, 0x40u, 0x43u,
+    status = core_machine_install_port_provider(session->machine, 0x40u, 0x43u,
                                             &ops, session);
     if (status != NXVM_CORE_STATUS_OK) {
         return status;
     }
-    return nxvm_core_machine_install_port(session->machine, 0x60u, 0x64u,
+    return core_machine_install_port_provider(session->machine, 0x60u, 0x64u,
                                           &ops, session);
 }
 
@@ -97,9 +97,9 @@ nxvm_core_status nxvm_runtime_dos_minimal_create(
     nxvm_runtime_dos_minimal **out_session)
 {
     nxvm_runtime_dos_minimal *session;
-    nxvm_core_machine_config config = {
-        NXVM_CORE_PROFILE_TEST_MINIMAL,
-        NXVM_CORE_MINIMUM_MEMORY_BYTES
+    core_machine_config config = {
+        CORE_MACHINE_PROFILE_TEST_MINIMAL,
+        CORE_MACHINE_MINIMUM_MEMORY_BYTES
     };
     nxvm_core_status status;
 
@@ -111,7 +111,7 @@ nxvm_core_status nxvm_runtime_dos_minimal_create(
     if (session == NULL) {
         return NXVM_CORE_STATUS_NO_MEMORY;
     }
-    status = nxvm_core_machine_create(&config, &session->machine);
+    status = core_machine_create(&config, &session->machine);
     if (status == NXVM_CORE_STATUS_OK) {
         status = nxvm_runtime_dos_minimal_install_ports(session);
     }
@@ -134,7 +134,7 @@ nxvm_core_status nxvm_runtime_dos_minimal_reset(
     if (session == NULL) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
-    status = nxvm_core_machine_reset(session->machine);
+    status = core_machine_reset(session->machine);
     if (status == NXVM_CORE_STATUS_OK) {
         nxvm_runtime_dos_minimal_clear(session);
     }
@@ -200,13 +200,13 @@ nxvm_core_status nxvm_runtime_dos_minimal_port_read(
     if (session == NULL) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
-    return nxvm_core_machine_port_read(session->machine, port, out_value);
+    return core_machine_port_read(session->machine, port, out_value);
 }
 
 void nxvm_runtime_dos_minimal_destroy(nxvm_runtime_dos_minimal *session)
 {
     if (session != NULL) {
-        nxvm_core_machine_destroy(session->machine);
+        core_machine_destroy(session->machine);
         free(session);
     }
 }

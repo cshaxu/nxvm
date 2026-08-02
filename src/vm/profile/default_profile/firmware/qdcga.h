@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 #include "core/machine/memory.h"
-#include "core/machine/display.h"
+#include "core/machine/display_interface.h"
 
 #define QDCGA_COUNT_MAX_PAGE               0x08
 #define QDCGA_SIZE_CHAR_WIDTH              0x0a

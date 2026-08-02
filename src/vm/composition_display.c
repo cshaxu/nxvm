@@ -1,4 +1,4 @@
-#include "core/machine/display.h"
+#include "core/machine/display_interface.h"
 #include "vm/composition_display.h"
 #include "core/platform/display_frame.h"
 #include "vm/platform/platform.h"

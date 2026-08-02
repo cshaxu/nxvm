@@ -30,8 +30,12 @@ src/
     profile/dos_minimal_profile/
 ```
 
-Headers stay beside implementations. Device models are flat files unless they
-become real multi-file subsystems; private implementation headers use `_impl.h`.
+Headers stay beside implementations. A header consumed outside its owning
+module is named `<subject>_interface.h` and contains only the needed contract.
+An owning module may use `<subject>.h` for private instance layout and internal
+helpers. `machine.h`, for example, is private to `core/machine`; its public
+handle contract is `machine_interface.h`. Device models are flat files unless
+they become real multi-file subsystems.
 `vm/main.c` is the `nxvm.exe` entry point and `vdm/main.c` is the
 `ntvdm64.exe` entry point. Each remains thin and enters its product-form root
 composition in `vm/composition.*` or `vdm/composition.*`.
@@ -55,6 +59,26 @@ Public C symbols use their source ownership path: `core_machine_*`,
 `core_platform_*`, `core_product_*`, `vm_machine_*`, `vm_platform_*`,
 `vm_product_*`, `vm_profile_*`, and their VDM counterparts. Root composition
 uses `vm_composition_*` or `vdm_composition_*`.
+
+## Interface Naming
+
+Public contracts are explicit rather than inferred from include paths.
+
+- A cross-module machine contract uses a name such as `machine_interface.h`,
+  `memory_interface.h`, `port_interface.h`, `debug_interface.h`,
+  `trace_interface.h`, or `lifecycle_interface.h`.
+- Public types and functions use the source-owner prefix, such as
+  `core_machine_*`, `vm_machine_*`, or `vdm_platform_*`.
+- An implementation supplied by another owner is a `*_provider`; a callback
+  type also ends in `_provider`, and its installation function ends in
+  `_bind_provider` or `_install_provider`.
+- The owning machine contract fixes callback order, failure handling, and
+  lifetime. A profile, platform, or product may supply a provider but may not
+  alter those rules.
+
+`*_interface.h` marks an internal repository dependency contract, not a
+versioned SDK or ABI promise. Legacy compatibility aliases are temporary
+implementation detail, never a new public contract.
 
 ## Ownership
 

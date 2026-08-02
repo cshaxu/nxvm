@@ -21,13 +21,14 @@ Windows GCC passed these automated gates:
 The local task artifact is `build/output/nxvm-m5_t25.exe`, SHA-256
 `C698D5D330E8AD9C4F7EE0D2812DCA7536F13527CA8F592B327A3DF334700E33`.
 
-The actual FDD DOS-prompt run remains a P2 manual checkpoint. The automated
-reset-vector/profile smoke is recorded evidence, not a replacement for that
-runtime observation.
+The owner subsequently observed the actual FDD DOS prompt for the T25 through
+T31 authority artifacts, closing P2. The automated reset-vector/profile smoke
+remains supplementary evidence, not a replacement for that runtime
+observation.
 
 A scripted retained-Console attempt inserted the local FDD image, started the
 machine, waited 20 seconds, then requested stop and exit. It exceeded the
 60-second host bound without prompt text on capturable stdout, so its owned
 `nxvm-m5_t25.exe` process was terminated. This matches the documented
 unreliable automated stop boundary; it is not a boot claim or a regression
-verdict. Visual prompt observation remains required to close T25.
+verdict. Visual prompt observation has closed T25.

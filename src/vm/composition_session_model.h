@@ -28,7 +28,7 @@ typedef struct nxvm_product_nxvm_session {
     nxvm_product_nxvm_default_profile default_profile;
     nxvm_product_nxvm_console console;
     nxvm_product_nxvm_presentation presentation;
-    nxvm_core_machine *firmware_machine;
+    core_machine *firmware_machine;
     nxvm_product_nxvm_debugger debugger;
 } nxvm_product_nxvm_session;
 

@@ -22,13 +22,13 @@ int main(void)
     nxvm_core_text_snapshot guest_text;
     nxvm_core_text_snapshot captured_text;
     input_fixture input = { { 0u, 0u }, 0u };
-    nxvm_core_machine *machine = NULL;
-    nxvm_core_machine_config config = {
-        NXVM_CORE_PROFILE_TEST_MINIMAL, 0u
+    core_machine *machine = NULL;
+    core_machine_config config = {
+        CORE_MACHINE_PROFILE_TEST_MINIMAL, 0u
     };
     nxvm_product_nxvm_debugger debugger;
-    nxvm_core_cpu_state cpu;
-    nxvm_core_run_result result;
+    core_machine_cpu_state cpu;
+    core_machine_run_result result;
 
     nxvm_product_nxvm_presentation_initialize(&presentation);
     nxvm_core_text_snapshot_initialize(&guest_text);
@@ -48,20 +48,20 @@ int main(void)
     nxvm_product_nxvm_presentation_close_command_boundary(&presentation);
     if (nxvm_product_nxvm_presentation_publish_text(&presentation,
             &guest_text) != NXVM_CORE_STATUS_INVALID_STATE ||
-        nxvm_core_machine_create(&config, &machine) != NXVM_CORE_STATUS_OK ||
-        nxvm_core_machine_reset(machine) != NXVM_CORE_STATUS_OK ||
+        core_machine_create(&config, &machine) != NXVM_CORE_STATUS_OK ||
+        core_machine_reset(machine) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_debugger_initialize(&debugger, machine) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_debugger_read_cpu(&debugger, &cpu) != NXVM_CORE_STATUS_INVALID_STATE ||
         nxvm_product_nxvm_debugger_open_command_boundary(&debugger) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_debugger_read_cpu(&debugger, &cpu) != NXVM_CORE_STATUS_OK ||
         cpu.cs != 0xf000u ||
         nxvm_product_nxvm_debugger_step(&debugger, &result) != NXVM_CORE_STATUS_OK ||
-        result.reason != NXVM_CORE_STOP_BUDGET) {
-        nxvm_core_machine_destroy(machine);
+        result.reason != CORE_MACHINE_STOP_BUDGET) {
+        core_machine_destroy(machine);
         return 1;
     }
     nxvm_product_nxvm_debugger_close_command_boundary(&debugger);
-    nxvm_core_machine_destroy(machine);
+    core_machine_destroy(machine);
     puts("M5:T6:S2:NXVM-PRESENTATION-DEBUG:OK");
     return 0;
 }

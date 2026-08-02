@@ -1,5 +1,5 @@
-#ifndef NXVM_CORE_TRACE_INTERFACE_H
-#define NXVM_CORE_TRACE_INTERFACE_H
+#ifndef NTVDM64_CORE_MACHINE_TRACE_INTERFACE_H
+#define NTVDM64_CORE_MACHINE_TRACE_INTERFACE_H
 
 #include <stdint.h>
 
@@ -9,38 +9,38 @@
 extern "C" {
 #endif
 
-typedef struct nxvm_core_machine nxvm_core_machine;
+typedef struct core_machine core_machine;
 
-typedef enum nxvm_core_trace_event_type {
-    NXVM_CORE_TRACE_RESET = 1,
-    NXVM_CORE_TRACE_PORT_READ,
-    NXVM_CORE_TRACE_PORT_WRITE,
-    NXVM_CORE_TRACE_RUN_BOUNDARY,
-    NXVM_CORE_TRACE_STOP,
-    NXVM_CORE_TRACE_FAULT
-} nxvm_core_trace_event_type;
+typedef enum core_machine_trace_event_type {
+    CORE_MACHINE_TRACE_RESET = 1,
+    CORE_MACHINE_TRACE_PORT_READ,
+    CORE_MACHINE_TRACE_PORT_WRITE,
+    CORE_MACHINE_TRACE_RUN_BOUNDARY,
+    CORE_MACHINE_TRACE_STOP,
+    CORE_MACHINE_TRACE_FAULT
+} core_machine_trace_event_type;
 
-typedef struct nxvm_core_trace_event {
-    nxvm_core_trace_event_type type;
+typedef struct core_machine_trace_event {
+    core_machine_trace_event_type type;
     uint64_t sequence;
     uint32_t linear_pc;
     uint32_t address;
     uint32_t value;
     uint32_t detail;
-} nxvm_core_trace_event;
+} core_machine_trace_event;
 
-typedef void (*nxvm_core_trace_callback)(
+typedef void (*core_machine_trace_event_provider)(
     void *context,
-    const nxvm_core_trace_event *event);
+    const core_machine_trace_event *event);
 
-typedef struct nxvm_core_trace_sink {
-    nxvm_core_trace_callback callback;
+typedef struct core_machine_trace_provider {
+    core_machine_trace_event_provider callback;
     void *context;
-} nxvm_core_trace_sink;
+} core_machine_trace_provider;
 
-nxvm_core_status nxvm_core_machine_set_trace_sink(
-    nxvm_core_machine *machine,
-    const nxvm_core_trace_sink *sink);
+nxvm_core_status core_machine_set_trace_provider(
+    core_machine *machine,
+    const core_machine_trace_provider *provider);
 
 #ifdef __cplusplus
 }

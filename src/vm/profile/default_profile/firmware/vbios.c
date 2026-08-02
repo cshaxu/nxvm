@@ -5,7 +5,7 @@
 #include "core/product/utils.h"
 
 #include "core/machine/memory.h"
-#include "core/machine/block.h"
+#include "core/machine/block_interface.h"
 
 #include "vbios.h"
 
@@ -39,8 +39,8 @@ static t_nubit32 assemble(const t_strptr stmt, t_nubit16 seg, t_nubit16 off) {
 }
 
 static void biosLoadData() {
-    core_block_geometry geometry;
-    coreBlockGetGeometry(&geometry);
+    core_machine_block_geometry geometry;
+    core_machine_block_get_geometry(&geometry);
     MEMSET((void *) vramGetRealAddr(0x0040, Zero16), Zero8, 0x100);
     vramRealWord(Zero16, VBIOS_ADDR_SERI_PORT_COM1) = 0x03f8;
     vramRealWord(Zero16, VBIOS_ADDR_PARA_PORT_LPT1) = 0x0378;
@@ -127,8 +127,8 @@ static void biosLoadPost() {
     vbios.data.buildIP += (t_nubit16) assemble(VBIOS_POST_BOOT, vbios.data.buildCS, vbios.data.buildIP);
 }
 static void biosLoadAdditional() {
-    core_block_geometry geometry;
-    coreBlockGetGeometry(&geometry);
+    core_machine_block_geometry geometry;
+    core_machine_block_get_geometry(&geometry);
     /* hard disk param table */
     vramRealWord(Zero16, VBIOS_ADDR_HDD_PARAM_OFFSET) = VBIOS_ADDR_HDD_PARAM;
     vramRealWord(Zero16, VBIOS_ADDR_HDD_PARAM_SEGMENT) = VBIOS_ADDR_START_SEG;
