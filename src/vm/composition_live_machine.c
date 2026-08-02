@@ -23,6 +23,7 @@ void vm_composition_live_machine_bind(void)
     vmCompositionLiveMachine.cmos = &vmCompositionLiveMachine.cmos_storage;
     vmCompositionLiveMachine.fdd = &vmCompositionLiveMachine.fdd_storage;
     vmCompositionLiveMachine.fdc = &vmCompositionLiveMachine.fdc_storage;
+    vmCompositionLiveMachine.hdd = &vmCompositionLiveMachine.hdd_storage;
     core_machine_cpu_bind_live(vmCompositionLiveMachine.cpu);
     core_machine_cpu_instructions_bind_live(vmCompositionLiveMachine.cpuins);
     core_machine_memory_bind_live(vmCompositionLiveMachine.ram);
@@ -37,6 +38,7 @@ void vm_composition_live_machine_bind(void)
     vm_machine_cmos_bind_live(vmCompositionLiveMachine.cmos);
     vm_machine_fdd_bind_live(vmCompositionLiveMachine.fdd);
     vm_machine_fdc_bind_live(vmCompositionLiveMachine.fdc);
+    vm_machine_hdd_bind_live(vmCompositionLiveMachine.hdd);
     vmCompositionLiveMachineBound = 1;
 }
 
@@ -52,6 +54,7 @@ void vm_composition_live_machine_clear(void)
     vm_machine_cmos_unbind_live();
     vm_machine_fdd_unbind_live();
     vm_machine_fdc_unbind_live();
+    vm_machine_hdd_unbind_live();
     core_machine_cpu_instructions_unbind_live();
     core_machine_cpu_unbind_live();
     vmCompositionLiveMachine.cpu = NULL;
@@ -69,6 +72,7 @@ void vm_composition_live_machine_clear(void)
     vmCompositionLiveMachine.cmos = NULL;
     vmCompositionLiveMachine.fdd = NULL;
     vmCompositionLiveMachine.fdc = NULL;
+    vmCompositionLiveMachine.hdd = NULL;
     vmCompositionLiveMachineBound = 0;
 }
 

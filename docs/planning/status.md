@@ -71,12 +71,15 @@ M5 T34 S1 moved FDD media state to the live-machine-owned `fdd_storage` object
 while retaining image-buffer and transfer behavior.
 M5 T35 S1 moved FDC controller state to the live-machine-owned `fdc_storage`
 object while retaining its port, DMA, IRQ, and FDD callback order.
+M5 T36 S1 moved HDD media state to the live-machine-owned `hdd_storage` object
+while retaining image-buffer allocation, transfer, and teardown behavior.
 
 ## Active Work
 
-M5 T36 S1 is active: map VM-only HDD media allocation, transfer, and teardown
-before a same-object live-machine binding change. Owner-observed FDD DOS-prompt
-acceptance covers the preceding authority tasks.
+M5 T37 S1 is active: audit the VM HDD-controller lifecycle boundary and retain
+its current no-state implementation unless the code reveals an authority to
+bind. Owner-observed FDD DOS-prompt acceptance covers the preceding authority
+tasks.
 
 ## Completed
 
