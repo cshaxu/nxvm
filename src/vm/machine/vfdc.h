@@ -34,7 +34,12 @@ typedef struct {
     t_fdc_data data;
 } t_fdc;
 
-extern t_fdc vfdc;
+t_fdc *vm_machine_fdc_current(void);
+void vm_machine_fdc_bind_live(t_fdc *fdc);
+void vm_machine_fdc_unbind_live(void);
+
+/* Transitional direct alias to the one composition-owned FDC object. */
+#define vfdc (*vm_machine_fdc_current())
 
 /*
  * MSR: RQM | DIO | NDM | CB  | D3B | D2B | D1B | D0B
