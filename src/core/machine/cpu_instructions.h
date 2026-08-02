@@ -94,28 +94,57 @@ typedef struct {
     t_nubit32 receip;
 } t_cpuins_data;
 
+typedef struct t_cpuins t_cpuins;
+typedef struct core_machine_cpu_execution_context
+    core_machine_cpu_execution_context;
+typedef void (*core_machine_cpu_instruction_handler)(
+    core_machine_cpu_execution_context *context);
+
 typedef struct {
     /* instruction dispatch */
-    t_faddrcc insTable[0x100];
-    t_faddrcc insTable_0f[0x100];
+    core_machine_cpu_instruction_handler insTable[0x100];
+    core_machine_cpu_instruction_handler insTable_0f[0x100];
 } t_cpuins_connect;
 
-typedef struct {
+struct t_cpuins {
     t_cpuins_data data;
     t_cpuins_connect connect;
-} t_cpuins;
+};
 
 /* One composition-owned executor context names the existing CPU and decoder. */
-typedef struct core_machine_cpu_execution_context {
+struct core_machine_cpu_execution_context {
     t_cpu *cpu;
     t_cpuins *instructions;
     t_bool stop_requested;
     t_bool reset_requested;
-} core_machine_cpu_execution_context;
+};
 
 void core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
     t_cpuins *instructions);
+void core_machine_cpu_execution_bind_legacy(
+    core_machine_cpu_execution_context *context);
+void core_machine_cpu_execution_unbind_legacy(void);
+core_machine_cpu_execution_context *
+core_machine_cpu_execution_current_legacy(void);
+
+t_bool core_machine_cpu_execution_load_segment(
+    core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
+    t_nubit16 selector);
+t_bool core_machine_cpu_execution_read_linear(
+    core_machine_cpu_execution_context *context, t_nubit32 linear,
+    t_vaddrcc rdata, t_nubit8 byte);
+t_bool core_machine_cpu_execution_write_linear(
+    core_machine_cpu_execution_context *context, t_nubit32 linear,
+    t_vaddrcc rdata, t_nubit8 byte);
+void core_machine_cpu_execution_initialize(
+    core_machine_cpu_execution_context *context);
+void core_machine_cpu_execution_reset(
+    core_machine_cpu_execution_context *context);
+void core_machine_cpu_execution_refresh(
+    core_machine_cpu_execution_context *context);
+void core_machine_cpu_execution_finalize(
+    core_machine_cpu_execution_context *context);
 
 t_cpuins *core_machine_cpu_instructions_current(void);
 void core_machine_cpu_instructions_bind_live(t_cpuins *instructions);

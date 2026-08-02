@@ -27,6 +27,18 @@ typedef enum core_machine_cpu_watchpoint {
     CORE_MACHINE_CPU_WATCH_EXECUTE
 } core_machine_cpu_watchpoint;
 
+typedef struct core_machine_cpu_execution_context
+    core_machine_cpu_execution_context;
+
+void core_machine_cpu_execution_request_stop(
+    core_machine_cpu_execution_context *context);
+t_bool core_machine_cpu_execution_consume_stop_request(
+    core_machine_cpu_execution_context *context);
+void core_machine_cpu_execution_request_reset(
+    core_machine_cpu_execution_context *context);
+t_bool core_machine_cpu_execution_consume_reset_request(
+    core_machine_cpu_execution_context *context);
+
 #include "core/machine/vglobal.h"
 
 #define NXVM_DEVICE_CPU "Intel 8086+"

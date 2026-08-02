@@ -17,9 +17,10 @@ t_qdx *vm_profile_default_qdx_current(void) { return vmProfileDefaultQdx; }
 void vm_profile_default_qdx_bind_live(t_qdx *qdx) { vmProfileDefaultQdx = qdx; }
 void vm_profile_default_qdx_unbind_live(void) { vmProfileDefaultQdx = NULL; }
 
-static void QDX() {
+static void QDX(core_machine_cpu_execution_context *context) {
     t_nubit8 cmdId;
     t_nubit16 flags;
+    (void)context;
     vcpu.data.eip++;
     if (vcpuinsReadLinear(vcpu.data.cs.base + vcpu.data.eip, GetRef(cmdId), 1)) {
         PRINTF("Cannot read data from L%08X.\n", vcpu.data.cs.base + vcpu.data.eip);
@@ -72,7 +73,7 @@ void qdxInit() {
     qdcgaInit();
     qddiskInit();
     /* takes over opcode 0xf1 */
-    vcpuins.connect.insTable[0xf1] = (t_faddrcc) QDX;
+    vcpuins.connect.insTable[0xf1] = QDX;
 }
 
 void qdxReset() {
