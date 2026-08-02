@@ -111,8 +111,9 @@ nxvm_core_status nxvm_full_pc_get_reset_vector(
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
 
-    out_vector->cs = nxvm_baseline_read_u16(&vcpu.data.cs.selector);
-    out_vector->ip = nxvm_baseline_read_u16(&vcpu.data.ip);
+    out_vector->cs = nxvm_baseline_read_u16(
+        &full_pc->machine.cpu->data.cs.selector);
+    out_vector->ip = nxvm_baseline_read_u16(&full_pc->machine.cpu->data.ip);
     return NXVM_CORE_STATUS_OK;
 }
 
