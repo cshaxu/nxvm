@@ -9,6 +9,7 @@ typedef struct t_ram t_ram;
 typedef struct t_vadp t_vadp;
 typedef struct core_machine_block_provider_slot core_machine_block_provider_slot;
 typedef struct core_machine_keyboard_provider_slot core_machine_keyboard_provider_slot;
+typedef struct core_machine_display_provider_slot core_machine_display_provider_slot;
 
 typedef struct vm_profile_default_context {
     t_bios *bios;
@@ -17,6 +18,7 @@ typedef struct vm_profile_default_context {
     t_vadp *vadp;
     core_machine_block_provider_slot *block_provider;
     core_machine_keyboard_provider_slot *keyboard_provider;
+    core_machine_display_provider_slot *display_provider;
     core_machine_cpu_execution_context *execution;
 } vm_profile_default_context;
 
@@ -32,6 +34,7 @@ static inline void vm_profile_default_context_initialize(
     context->vadp = vadp;
     context->block_provider = block_provider;
     context->keyboard_provider = keyboard_provider;
+    context->display_provider = NULL;
     context->execution = NULL;
 }
 

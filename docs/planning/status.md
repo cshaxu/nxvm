@@ -42,12 +42,14 @@ T75 recorded the residual process-global facade baseline and added the CMake
 T76 moved full-PC host keyboard-state requests to their own frozen keyboard
 provider slot. Its GCC artifact is `build/output/nxvm_0_5_0076.exe`.
 
+T77 moved QDCGA display notifications and display generation to their owning
+profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
+
 ## Active Work
 
-**M5 T77 S1: Display facade replacement design.** Trace QDCGA mode changes,
-display generation, snapshot capture, and platform presentation ownership
-before changing runtime code. Retained window/Console behavior and the FDD
-display gate remain unchanged.
+**M5 T78 S1: Debug target facade replacement design.** Trace the retained
+debugger UI's target lookup and define its composition-owned target binding
+without changing debugger grammar or Console behavior.
 
 ## Short-Term M5 Plan
 

@@ -53,7 +53,6 @@ void vmachineInit(vm_composition_live_machine *machine) {
     vm_machine_fdd_initialize(machine->fdd);
     vm_machine_hdd_initialize(machine->hdd);
     vmCompositionBindBlock(machine);
-    vm_composition_bind_display(machine);
     vm_profile_default_bios_initialize(machine->default_bios);
     core_machine_vadp_initialize(machine->vadp);
     vm_profile_default_bios_add_interrupt(machine->default_bios,
