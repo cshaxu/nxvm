@@ -25,9 +25,9 @@ void linuxDisplayPaint(int window) {
     }
 }
 
-void linuxStartMachine(int window) {
+void linuxStartMachine(int window, const vm_platform_run_context *context) {
     if (window) {
     } else {
-        lnxcStartMachine();
+        lnxcStartMachine(context);
     }
 }

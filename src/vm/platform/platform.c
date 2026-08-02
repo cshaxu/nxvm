@@ -50,8 +50,7 @@ void platformDisplayPaint() {
     linuxDisplayPaint(platform.flagMode);
 }
 void platformStart(const vm_platform_run_context *context) {
-    (void)context;
-    linuxStartMachine(platform.flagMode);
+    linuxStartMachine(platform.flagMode, context);
 }
 #endif
 

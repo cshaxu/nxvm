@@ -7,9 +7,11 @@
 /*extern "C" {*/
 #endif
 
+typedef struct vm_platform_run_context vm_platform_run_context;
+
 void lnxcDisplaySetScreen();
 void lnxcDisplayPaint();
-void lnxcStartMachine();
+void lnxcStartMachine(const vm_platform_run_context *context);
 
 #ifdef __cplusplus
 /*}_EOCD_*/
