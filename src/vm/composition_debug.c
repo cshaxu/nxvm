@@ -111,13 +111,13 @@ static int vm_debug_write_linear(void *context, uint32_t address, const void *in
         machine->cpu_execution, address, (t_vaddrcc)in, size);
 }
 static int vm_debug_read_real(void *context, uint16_t seg, uint16_t off, void *out, size_t size)
-{ (void)context; core_machine_memory_read_real(seg, off, out, size); return 0; }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine == NULL) return 1; core_machine_memory_read_real_from(machine->ram, seg, off, out, size); return 0; }
 static int vm_debug_write_real(void *context, uint16_t seg, uint16_t off, const void *in, size_t size)
-{ (void)context; core_machine_memory_write_real(seg, off, in, size); return 0; }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine == NULL) return 1; core_machine_memory_write_real_to(machine->ram, seg, off, in, size); return 0; }
 static uint32_t vm_debug_read_port(void *context, uint16_t port)
-{ (void)context; return core_machine_port_read_legacy(port); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; return machine == NULL ? 0u : core_machine_port_read(machine->port, port); }
 static void vm_debug_write_port(void *context, uint16_t port, uint32_t value)
-{ (void)context; core_machine_port_write_legacy(port, value); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_port_write(machine->port, port, value); }
 static void vm_debug_set_break_real(void *context, uint16_t seg, uint16_t off)
 { (void)context; vm_machine_debug_set_breakpoint_real(seg, off); }
 static void vm_debug_set_break_linear(void *context, uint32_t address)

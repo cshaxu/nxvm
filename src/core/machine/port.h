@@ -43,6 +43,11 @@ void vportAddWrite(t_nubit16 portId, t_faddrcc fpOut);
 void vportExecRead(t_nubit16 portId);
 void vportExecWrite(t_nubit16 portId);
 
+void core_machine_port_execute_read(t_port *port, t_nubit16 port_id);
+void core_machine_port_execute_write(t_port *port, t_nubit16 port_id);
+uint32_t core_machine_port_read(t_port *port, uint16_t port_id);
+void core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value);
+
 void vportInit();
 void vportReset();
 void vportRefresh();
