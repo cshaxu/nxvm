@@ -19,7 +19,7 @@
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
-#include "vm/profile/default_profile/firmware/vbios.h"
+#include "vm/profile/default_profile/firmware/bios.h"
 
 static int has_single_live_authority(void)
 {

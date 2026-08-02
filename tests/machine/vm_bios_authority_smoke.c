@@ -2,7 +2,7 @@
 
 #include "vm/composition_live_machine.h"
 #include "vm/composition_machine.h"
-#include "vm/profile/default_profile/firmware/vbios.h"
+#include "vm/profile/default_profile/firmware/bios.h"
 
 int main(void)
 {

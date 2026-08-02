@@ -7,7 +7,7 @@
 #include "core/machine/memory.h"
 #include "core/machine/block_interface.h"
 
-#include "vbios.h"
+#include "bios.h"
 
 static t_bios *vmProfileDefaultBios;
 
