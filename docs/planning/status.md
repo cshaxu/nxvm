@@ -54,6 +54,8 @@ M5 T22 S2 corrected the authority model: the live full PC must converge into
 one machine instance without parallel CPU/RAM/port state.
 M5 T22 S3 schedules device-by-device live-machine convergence as T23 through
 T43; debugger pause and backend work are deferred to T44 and T45.
+M5 T22 S4 defines the no-copy, same-object compatibility method and stop gates
+for that convergence; T23 implementation has not begun.
 
 ## Completed
 
@@ -255,6 +257,8 @@ T43; debugger pause and backend work are deferred to T44 and T45.
   map before debugger implementation.
 - M5 T22 S3 P1: replaced the premature debugger implementation sequence with
   device-by-device live-machine convergence through T43.
+- M5 T22 S4 P1: recorded the controlled no-copy migration method and rollback
+  gates before T23 implementation.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware

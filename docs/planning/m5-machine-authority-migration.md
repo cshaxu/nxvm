@@ -52,6 +52,48 @@ instruction, memory, and I/O semantics unchanged and proves FDD DOS boot before
 the next authority moves. Shared devices follow, then VM-only devices and
 profile firmware bind to that same handle.
 
+## Controlled Execution Method
+
+T23 is a no-behavior-change staging task. VM root composition creates one
+private live-machine handle. That handle is an identity and a set of typed,
+non-owning references to the existing live CPU, instruction decoder, RAM, port
+dispatcher, and later device objects. It owns no guest storage, calls no
+device initializer, and does not replace `vmachineInit`, `vmachineReset`, or
+`vmachineRefresh`.
+
+The handle is bound once during the existing full-PC composition setup, before
+the retained machine lifecycle begins. Its references point directly at the
+already-existing objects. T23 may add a focused binding check, but no retained
+Console, firmware, device, or execution caller may be redirected through the
+handle yet. The current minimal `nxvm_core_machine_create` path remains a
+separate test/session path and is not constructed by full-PC composition.
+
+Each later device task uses this exact sequence:
+
+1. Map every definition, read, write, initializer, finalizer, and callback for
+   the one authority.
+2. Bind the pre-existing object through the live handle and add a focused
+   identity check. The check proves both paths name the same object.
+3. Move the authority's storage and its direct callers to the selected instance
+   representation. A temporary compatibility access path may dereference that
+   same storage, but may not allocate, cache, copy, or synchronize it.
+4. Preserve the exact existing init, reset, refresh, finalization, IRQ/DMA, and
+   firmware callback order. Do not combine a device move with a functional fix.
+5. Build the task artifact, run the static dependency gates and retained
+   Console/debugger smokes, then boot the FDD fixture to the DOS prompt before
+   opening the next task.
+
+The compatibility path is transitional and must be listed by the task that
+introduces it. It is removed only when all of that authority's callers use the
+live instance. It must remain a direct alias or accessor to the sole object;
+mirrored structs, copy-in/copy-out bridges, dual reset paths, and background
+synchronization are forbidden.
+
+Stop immediately for design review if a move requires a second allocation,
+changes observable boot timing or device order, requires a core-to-VM include,
+changes retained Console/debugger grammar, or fails the FDD DOS-prompt gate.
+The failed task remains the rollback boundary; no later device task begins.
+
 ## Debugger Consequence
 
 Debugger migration begins only after this authority convergence. It must target
