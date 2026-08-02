@@ -14,14 +14,14 @@ static int verify(const char *fdd_path, const char *hdd_path,
         "hdd.img", 51609600u,
         "f4d1e81bc410bb9a7558667b7c3741a9664e84077a3774e73104cd24b631d688"
     };
-    nxvm_product_nxvm_session_config config = {
+    vm_composition_session_model_config config = {
         fdd_path, &fdd, hdd_path, &hdd, 0, 0u, target
     };
-    nxvm_product_nxvm_session session;
+    vm_composition_session_model session;
     nxvm_product_nxvm_reset_vector firmware_vector;
     nxvm_product_nxvm_reset_vector execution_vector;
 
-    if (nxvm_product_nxvm_session_create(&session, &config) != NXVM_CORE_STATUS_OK ||
+    if (vm_composition_session_model_create(&session, &config) != NXVM_CORE_STATUS_OK ||
         nxvm_runtime_registry_find_profile(&session.registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID, NXVM_RUNTIME_PROFILE_MACHINE,
             NULL, NULL) == NULL ||
@@ -29,36 +29,36 @@ static int verify(const char *fdd_path, const char *hdd_path,
             NXVM_PRODUCT_NXVM_PC_AT_PROVIDER_ID,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID) == NULL ||
         session.firmware.frozen == 0 || session.media.frozen == 0 ||
-        nxvm_product_nxvm_session_get_firmware_reset_vector(&session,
+        vm_composition_session_model_get_firmware_reset_vector(&session,
             &firmware_vector) != NXVM_CORE_STATUS_OK ||
-        nxvm_product_nxvm_session_get_execution_reset_vector(&session,
+        vm_composition_session_model_get_execution_reset_vector(&session,
             &execution_vector) != NXVM_CORE_STATUS_OK ||
         firmware_vector.cs != 0xf000u || firmware_vector.ip != 0xfff0u ||
         execution_vector.cs != 0xf000u || execution_vector.ip != 0xfff0u) {
-        nxvm_product_nxvm_session_destroy(&session);
+        vm_composition_session_model_destroy(&session);
         return 1;
     }
-    nxvm_product_nxvm_session_destroy(&session);
+    vm_composition_session_model_destroy(&session);
     return 0;
 }
 
 static int verify_created(void)
 {
-    nxvm_product_nxvm_session_config config = {
+    vm_composition_session_model_config config = {
         NULL, NULL, NULL, NULL, 1, 1u, NXVM_PRODUCT_NXVM_BOOT_HDD
     };
-    nxvm_product_nxvm_session session;
+    vm_composition_session_model session;
     nxvm_product_nxvm_reset_vector vector;
 
-    if (nxvm_product_nxvm_session_create(&session, &config) != NXVM_CORE_STATUS_OK ||
+    if (vm_composition_session_model_create(&session, &config) != NXVM_CORE_STATUS_OK ||
         !session.media.fdd.created || !session.media.hdd.created ||
         session.media.hdd.cylinders != 1u ||
-        nxvm_product_nxvm_session_get_execution_reset_vector(&session, &vector) !=
+        vm_composition_session_model_get_execution_reset_vector(&session, &vector) !=
             NXVM_CORE_STATUS_OK || vector.cs != 0xf000u || vector.ip != 0xfff0u) {
-        nxvm_product_nxvm_session_destroy(&session);
+        vm_composition_session_model_destroy(&session);
         return 1;
     }
-    nxvm_product_nxvm_session_destroy(&session);
+    vm_composition_session_model_destroy(&session);
     return 0;
 }
 

@@ -4,9 +4,9 @@
 
 #include "vm/profile/default_profile/profile.h"
 
-static nxvm_core_status nxvm_product_nxvm_session_configure_media(
-    nxvm_product_nxvm_session *session,
-    const nxvm_product_nxvm_session_config *config)
+static nxvm_core_status vm_composition_session_model_configure_media(
+    vm_composition_session_model *session,
+    const vm_composition_session_model_config *config)
 {
     nxvm_core_status status;
 
@@ -35,9 +35,9 @@ static nxvm_core_status nxvm_product_nxvm_session_configure_media(
         nxvm_product_nxvm_media_freeze(&session->media) : status;
 }
 
-nxvm_core_status nxvm_product_nxvm_session_create(
-    nxvm_product_nxvm_session *session,
-    const nxvm_product_nxvm_session_config *config)
+nxvm_core_status vm_composition_session_model_create(
+    vm_composition_session_model *session,
+    const vm_composition_session_model_config *config)
 {
     core_machine_config machine_config = {
         CORE_MACHINE_PROFILE_CUSTOM, 0u
@@ -66,18 +66,18 @@ nxvm_core_status nxvm_product_nxvm_session_create(
         core_machine_reset(session->firmware_machine) != NXVM_CORE_STATUS_OK ||
         vm_profile_default_firmware_apply_image(session->firmware_machine,
             config->boot_target == NXVM_PRODUCT_NXVM_BOOT_HDD) != NXVM_CORE_STATUS_OK) {
-        nxvm_product_nxvm_session_destroy(session);
+        vm_composition_session_model_destroy(session);
         return NXVM_CORE_STATUS_FAULT;
     }
     vm_profile_default_firmware_cmos_initialize(&session->cmos,
         config->boot_target == NXVM_PRODUCT_NXVM_BOOT_HDD);
-    status = nxvm_product_nxvm_session_configure_media(session, config);
+    status = vm_composition_session_model_configure_media(session, config);
     if (status != NXVM_CORE_STATUS_OK ||
         (status = nxvm_product_nxvm_default_profile_create(&session->default_profile, &session->media)) !=
             NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_debugger_initialize(&session->debugger,
             session->firmware_machine) != NXVM_CORE_STATUS_OK) {
-        nxvm_product_nxvm_session_destroy(session);
+        vm_composition_session_model_destroy(session);
         return status == NXVM_CORE_STATUS_OK ? NXVM_CORE_STATUS_FAULT : status;
     }
     nxvm_product_nxvm_console_initialize(&session->console);
@@ -85,8 +85,8 @@ nxvm_core_status nxvm_product_nxvm_session_create(
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_product_nxvm_session_get_firmware_reset_vector(
-    const nxvm_product_nxvm_session *session,
+nxvm_core_status vm_composition_session_model_get_firmware_reset_vector(
+    const vm_composition_session_model *session,
     nxvm_product_nxvm_reset_vector *out_vector)
 {
     uint8_t reset[5];
@@ -102,15 +102,15 @@ nxvm_core_status nxvm_product_nxvm_session_get_firmware_reset_vector(
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_product_nxvm_session_get_execution_reset_vector(
-    const nxvm_product_nxvm_session *session,
+nxvm_core_status vm_composition_session_model_get_execution_reset_vector(
+    const vm_composition_session_model *session,
     nxvm_product_nxvm_reset_vector *out_vector)
 {
     if (session == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     return nxvm_product_nxvm_default_profile_get_reset_vector(&session->default_profile, out_vector);
 }
 
-void nxvm_product_nxvm_session_destroy(nxvm_product_nxvm_session *session)
+void vm_composition_session_model_destroy(vm_composition_session_model *session)
 {
     if (session == NULL) return;
     nxvm_product_nxvm_default_profile_destroy(&session->default_profile);

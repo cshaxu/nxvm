@@ -144,11 +144,14 @@ M5 T56 S1 corrected current/future documentation facts for the future
 M5 T57 S1 renamed VM default-profile firmware public symbols to
 `vm_profile_default_firmware_*`, preserved firmware/profile behavior, and
 produced `build/output/nxvm_0_5_0057.exe`.
+M5 T58 S1 renamed low-risk VM session/composition public symbols to
+`vm_composition_session_model_*` and `vm_composition_full_pc_session_*`,
+preserved session behavior, and produced `build/output/nxvm_0_5_0058.exe`.
 
 ## Active Work
 
-M5 T58 S1 is active, not started: rename low-risk VM session and composition
-public symbols with mixed legacy prefixes.
+M5 T59 S1 is active, not started: audit VM platform Win32/Linux ownership
+while preserving symmetric host-surface filenames.
 M6 T1 S1 is deferred and not active.
 
 ## Completed
@@ -584,10 +587,14 @@ M6 T1 S1 is deferred and not active.
 - M5 T57 S1 P1: renamed VM default-profile firmware public symbols to
   `vm_profile_default_firmware_*` and built
   `build/output/nxvm_0_5_0057.exe`.
+- M5 T58 S1 P1: renamed low-risk VM session/composition public symbols to
+  `vm_composition_session_model_*` and
+  `vm_composition_full_pc_session_*`, and built
+  `build/output/nxvm_0_5_0058.exe`.
 
 ## Next Eligible Work
 
-- M5 T58 may begin. M6 design remains ineligible until M5 T63 closes the
+- M5 T59 may begin. M6 design remains ineligible until M5 T63 closes the
   second-pass naming and ownership cleanup.
 
 ## Delivery State
