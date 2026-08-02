@@ -2,8 +2,7 @@
 
 ## Status
 
-Planned after T74. T75 is the next task; no task in this sequence is active
-until it has its own scoped subtask record.
+T75 S1 is complete. T76 S1 is active. No later task in this sequence is active.
 
 ## Story 1: Remove Residual Global Facades
 

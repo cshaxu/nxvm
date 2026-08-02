@@ -696,6 +696,7 @@ add_nxvm_version_artifact(nxvm-0-5-0070 "0.5.0070")
 add_nxvm_version_artifact(nxvm-0-5-0071 "0.5.0071")
 add_nxvm_version_artifact(nxvm-0-5-0072 "0.5.0072")
 add_nxvm_version_artifact(nxvm-0-5-0073 "0.5.0073")
+add_nxvm_version_artifact(nxvm-0-5-0075 "0.5.0075")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -737,6 +738,13 @@ if(NTVDM64_VERIFY_DEPENDENCY_DAG)
             -File "${CMAKE_SOURCE_DIR}/tools/VerifyLiveMachineAuthority.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 live-machine storage closure"
+        VERBATIM)
+
+    add_custom_target(verify-facade-ownership
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifyFacadeOwnership.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 residual facade ownership baseline"
         VERBATIM)
 endif()
 
