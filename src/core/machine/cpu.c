@@ -19,8 +19,19 @@ void core_machine_cpu_execution_context_initialize(
     context->instructions = instructions;
     context->memory = memory;
     context->port = port;
+    context->pic_master = NULL;
+    context->pic_slave = NULL;
     context->stop_requested = False;
     context->reset_requested = False;
+}
+
+void core_machine_cpu_execution_context_bind_pic(
+    core_machine_cpu_execution_context *context, t_pic *master,
+    t_pic *slave)
+{
+    if (context == NULL) return;
+    context->pic_master = master;
+    context->pic_slave = slave;
 }
 
 t_cpu *core_machine_cpu_current(void)

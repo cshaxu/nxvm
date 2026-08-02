@@ -13387,9 +13387,11 @@ static void ExecInt(core_machine_cpu_execution_context *context) {
         _e_intr_n(context, 0x02, _GetOperandSize);
         ExecFinal(context);
     }
-    if (_GetEFLAGS_IF && vpicScanINTR()) {
+    if (_GetEFLAGS_IF && core_machine_pic_scan_interrupt(
+            context->pic_master, context->pic_slave)) {
         cpu_state.data.flagHalt = False;
-        intr = vpicGetINTR();
+        intr = core_machine_pic_get_interrupt(context->pic_master,
+            context->pic_slave);
         ExecInit(context);
         _e_intr_n(context, intr, _GetOperandSize);
         ExecFinal(context);
