@@ -68,6 +68,11 @@ functions. `vm/machine/vdebug` now requests its immediate stop through a
 composition-bound callback, preserving breakpoint/trace timing without a
 VM-machine-to-composition include.
 
+The obsolete `t_device` global declaration and all lifecycle, run-state,
+status, and command-boundary declarations have been removed from `device.h`.
+The affected artifact and focused smokes still build; no source references an
+old control symbol.
+
 This is not T15 completion. `composition_loop.c` still includes the aggregate
 only for the unconverted keyboard bridge, and the remaining consumers still
 use its CPU, RAM, port, media, BIOS, debug-recording, and display surfaces.
