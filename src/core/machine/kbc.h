@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "core/machine/vglobal.h"
+#include "core/machine/port.h"
 
 #define NXVM_DEVICE_KBC "Intel 8042"
 
@@ -23,6 +24,7 @@ void vkbcInit();
 void vkbcReset();
 void vkbcRefresh();
 void vkbcFinal();
+void core_machine_kbc_register_ports(t_kbc *controller, t_port *port);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
