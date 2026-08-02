@@ -5,7 +5,7 @@
 #include "core/product/utils.h"
 #include "core/machine/port.h"
 #include "core/machine/cpu.h"
-#include "core/machine/vpic.h"
+#include "core/machine/pic.h"
 
 #include "vm/profile/default_profile/firmware/qdx.h"
 #include "qdkeyb.h"

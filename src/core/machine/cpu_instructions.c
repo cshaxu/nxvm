@@ -7,7 +7,7 @@
 #include "type.h"
 #include "core/machine/port.h"
 #include "core/machine/memory.h"
-#include "core/machine/vpic.h"
+#include "core/machine/pic.h"
 
 #include "core/machine/cpu_instructions.h"
 
