@@ -24,3 +24,10 @@ The local task artifact is `build/output/nxvm-m5_t25.exe`, SHA-256
 The actual FDD DOS-prompt run remains a P2 manual checkpoint. The automated
 reset-vector/profile smoke is recorded evidence, not a replacement for that
 runtime observation.
+
+A scripted retained-Console attempt inserted the local FDD image, started the
+machine, waited 20 seconds, then requested stop and exit. It exceeded the
+60-second host bound without prompt text on capturable stdout, so its owned
+`nxvm-m5_t25.exe` process was terminated. This matches the documented
+unreliable automated stop boundary; it is not a boot claim or a regression
+verdict. Visual prompt observation remains required to close T25.
