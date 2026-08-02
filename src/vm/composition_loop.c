@@ -46,7 +46,7 @@ static const nxvm_execution_context_callbacks device_execution_callbacks = {
 /* Starts device thread */
 void vm_composition_control_start(vm_composition_control_state *control) {
     if (control == NULL) return;
-    nxvm_execution_context_enter(&control->execution_context);
+    nxvm_execution_context_activate(&control->execution_context);
     control->flagRun = True;
     control->flagFlip = !control->flagFlip;
     while (control->flagRun) {
@@ -69,10 +69,14 @@ void vm_composition_control_start(vm_composition_control_state *control) {
             break;
         }
         nxvm_execution_context_machine_refresh(&control->execution_context);
-        if (vcpuConsumeResetRequest()) {
+        if (core_machine_cpu_execution_consume_reset_request(
+                ((vm_composition_live_machine *)
+                    control->execution_context.device)->cpu_execution)) {
             vm_composition_control_reset(control);
         }
-        if (vcpuConsumeStopRequest()) {
+        if (core_machine_cpu_execution_consume_stop_request(
+                ((vm_composition_live_machine *)
+                    control->execution_context.device)->cpu_execution)) {
             vm_composition_control_stop(control);
         }
         if (control->stepRequested) {
@@ -80,7 +84,7 @@ void vm_composition_control_start(vm_composition_control_state *control) {
             vm_composition_control_request_pause(control, VM_COMPOSITION_PAUSE_STEP);
         }
     }
-    nxvm_execution_context_leave(&control->execution_context);
+    nxvm_execution_context_deactivate(&control->execution_context);
 }
 
 /* Issues resetting signal to device thread */
@@ -179,7 +183,7 @@ void vm_composition_control_initialize(vm_composition_control_state *control,
         machine);
     nxvm_execution_context_bind_callbacks(
         &control->execution_context, &device_execution_callbacks);
-    nxvm_execution_context_enter(&control->execution_context);
+    nxvm_execution_context_activate(&control->execution_context);
     vm_machine_debug_initialize(machine->debug, machine->cpu, machine->cpuins);
     vmachineInit(machine);
 }
@@ -188,7 +192,7 @@ void vm_composition_control_initialize(vm_composition_control_state *control,
 void vm_composition_control_finalize(vm_composition_control_state *control,
     vm_composition_live_machine *machine) {
     if (control == NULL || machine == NULL) return;
-    nxvm_execution_context_leave(&control->execution_context);
+    nxvm_execution_context_deactivate(&control->execution_context);
     vm_machine_debug_finalize(machine->debug);
     vmachineFinal(machine);
 }

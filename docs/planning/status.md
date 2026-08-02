@@ -166,8 +166,8 @@ alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M5 T72 S1 is active: migrate retained Console/debugger/runtime callers from
-the selected execution-context facade to the composition-owned session target.
+M5 T73 S1 is active: delete the final shared legacy selection layer, prove two
+sessions remain isolated, and run the closure scans and compatibility gates.
 M5 T70 S2 repaired the FDC boot regression and added the fixture-backed
 three-second guest DOS-prompt gate. M6 T1 remains deferred and DOS
 implementation remains ineligible.
@@ -191,6 +191,11 @@ identity gate pass full-PC and six retained-Console FDD start survival probes.
   Firmware, CGA, full-authority, and the strengthened gate passed; manual
   Console review passed using `build/output/nxvm_0_5_0071a.exe`, SHA-256
   `D63B4B8D12C83F67E7A98395B864CDA6A0BF369E54F2662C71D308ECE914460E`.
+
+- M5 T72 S1: removed the unused runtime execution-context selector and moved
+  VM loop reset/stop consumption to its composition-owned CPU execution
+  context. Retained Console/debugger, full-authority, and strengthened FDD
+  prompt/display gates passed; `0.5.0072` is built separately.
 
 - M5 T70 S1: removed selected-object aliases for CMOS, HDD, FDD, FDC, and VM
   debug state. Its original `0.5.0070` artifact is revoked: its retained

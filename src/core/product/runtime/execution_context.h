@@ -23,15 +23,14 @@ typedef struct nxvm_execution_context {
 } nxvm_execution_context;
 
 void nxvm_execution_context_initialize(nxvm_execution_context *context);
-void nxvm_execution_context_enter(nxvm_execution_context *context);
-void nxvm_execution_context_leave(nxvm_execution_context *context);
+void nxvm_execution_context_activate(nxvm_execution_context *context);
+void nxvm_execution_context_deactivate(nxvm_execution_context *context);
 void nxvm_execution_context_bind_machine_state(
     nxvm_execution_context *context, void *cpu, void *ram, void *port,
     void *device);
 void nxvm_execution_context_bind_callbacks(
     nxvm_execution_context *context,
     const nxvm_execution_context_callbacks *callbacks);
-const nxvm_execution_context *nxvm_execution_context_current(void);
 void *nxvm_execution_context_cpu(const nxvm_execution_context *context);
 void nxvm_execution_context_reset(nxvm_execution_context *context);
 void nxvm_execution_context_debug_refresh(nxvm_execution_context *context);
