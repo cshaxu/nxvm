@@ -12,12 +12,9 @@
 #include "vm/profile/default_profile/firmware/qdx.h"
 #include "qdcga.h"
 
-#undef vcpu
-#undef vram
-#undef vvadp
-#define vcpu (*profile->execution->cpu)
-#define vram (*profile->ram)
-#define vvadp (*profile->vadp)
+#define profile_cpu (*profile->execution->cpu)
+#define profile_ram (profile->ram)
+#define profile_vadp (*profile->vadp)
 
 static const t_nubit32 qdcgaModeBufSize[0x14] = {
     2048, 2048, 4096, 4096, 16000, 16000, 16000,
@@ -40,14 +37,14 @@ static void CursorBackward(vm_profile_default_context *profile, t_nubit8 page) {
 static void CursorForward(vm_profile_default_context *profile, t_nubit8 page) {
     if (qdcgaVarCursorPosCol(page) < qdcgaVarRowSize -1) {
         qdcgaVarCursorPosCol(page)++;
-    } else if (qdcgaVarCursorPosRow(page) < vvadp.data.colSize -1) {
+    } else if (qdcgaVarCursorPosRow(page) < profile_vadp.data.colSize -1) {
         qdcgaVarCursorPosCol(page) = 0;
         qdcgaVarCursorPosRow(page)++;
     }
 }
 static void CursorNewLine(vm_profile_default_context *profile, t_nubit8 page) {
     qdcgaVarCursorPosCol(page) = 0;
-    if (qdcgaVarCursorPosRow(page) < vvadp.data.colSize - 1) {
+    if (qdcgaVarCursorPosRow(page) < profile_vadp.data.colSize - 1) {
         qdcgaVarCursorPosRow(page)++;
     } else {
         /* move up video memory content */
@@ -64,7 +61,7 @@ static void CursorCarriageReturn(vm_profile_default_context *profile,
     qdcgaVarCursorPosCol(page) = 0;
 }
 static void CursorLineFeed(vm_profile_default_context *profile, t_nubit8 page) {
-    if (qdcgaVarCursorPosRow(page) < vvadp.data.colSize - 1) {
+    if (qdcgaVarCursorPosRow(page) < profile_vadp.data.colSize - 1) {
         qdcgaVarCursorPosRow(page)++;
     } else {
         /* move up video memory content */
@@ -117,188 +114,188 @@ static void InsertString(vm_profile_default_context *profile, t_vaddrcc string,
 }
 
 static void qdcgaSetDisplayMode(vm_profile_default_context *profile) {
-    qdcgaVarMode = vcpu.data.al;
+    qdcgaVarMode = profile_cpu.data.al;
     qdcgaVarPageNum = 0x00;
     qdcgaVarPageOffset = 0x00;
     qdcgaVarCursorPosRow(qdcgaVarPageNum) = 0x00;
     qdcgaVarCursorPosCol(qdcgaVarPageNum) = 0x00;
-    switch (vcpu.data.al) {
+    switch (profile_cpu.data.al) {
     case 0x00:
         /* 40 x 25 */
         qdcgaVarRowSize = 0x28;
-        vvadp.data.colSize   = 0x19;
-        vvadp.data.flagColor = False;
+        profile_vadp.data.colSize   = 0x19;
+        profile_vadp.data.flagColor = False;
         core_machine_display_notify_mode_changed();
         break;
     case 0x01:
         /* 40 x 25 */
         qdcgaVarRowSize = 0x28;
-        vvadp.data.colSize   = 0x19;
-        vvadp.data.flagColor = True;
+        profile_vadp.data.colSize   = 0x19;
+        profile_vadp.data.flagColor = True;
         core_machine_display_notify_mode_changed();
         break;
     case 0x02:
     case 0x07:
         /* 80 x 25 */
         qdcgaVarRowSize = 0x50;
-        vvadp.data.colSize   = 0x19;
-        vvadp.data.flagColor = False;
+        profile_vadp.data.colSize   = 0x19;
+        profile_vadp.data.flagColor = False;
         core_machine_display_notify_mode_changed();
         break;
     case 0x03:
         /* 80 x 25 */
         qdcgaVarRowSize = 0x50;
-        vvadp.data.colSize   = 0x19;
-        vvadp.data.flagColor = True;
+        profile_vadp.data.colSize   = 0x19;
+        profile_vadp.data.flagColor = True;
         core_machine_display_notify_mode_changed();
         break;
     default:
         break;
     }
     qdcgaVarRagenSize = qdcgaModeBufSize[qdcgaVarMode];
-    MEMCPY((void *) vvadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
+    MEMCPY((void *) profile_vadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
     ClearTextMemory(profile);
 }
 static void qdcgaSetCursorShape(vm_profile_default_context *profile) {
-    qdcgaVarCursorBottom = vcpu.data.cl; /* & 0x0f; */
-    qdcgaVarCursorTop    = vcpu.data.ch; /* & 0x0f; */
+    qdcgaVarCursorBottom = profile_cpu.data.cl; /* & 0x0f; */
+    qdcgaVarCursorTop    = profile_cpu.data.ch; /* & 0x0f; */
 }
 static void qdcgaSetCursorPos(vm_profile_default_context *profile) {
-    /* qdcgaVarPageNum = vcpu.data.bh;
-     * qdcgaVarPageOffset = vcpu.data.bh * qdcgaModeBufSize[qdcgaVarMode]; */
-    qdcgaVarCursorPosRow(vcpu.data.bh) = vcpu.data.dh;
-    qdcgaVarCursorPosCol(vcpu.data.bh) = vcpu.data.dl;
+    /* qdcgaVarPageNum = profile_cpu.data.bh;
+     * qdcgaVarPageOffset = profile_cpu.data.bh * qdcgaModeBufSize[qdcgaVarMode]; */
+    qdcgaVarCursorPosRow(profile_cpu.data.bh) = profile_cpu.data.dh;
+    qdcgaVarCursorPosCol(profile_cpu.data.bh) = profile_cpu.data.dl;
 }
 static void qdcgaGetCursorPos(vm_profile_default_context *profile) {
-    /* qdcgaVarPageNum = vcpu.data.bh;
-     * qdcgaVarPageOffset = vcpu.data.bh * qdcgaModeBufSize[qdcgaVarMode]; */
-    vcpu.data.dh = qdcgaVarCursorPosRow(vcpu.data.bh);
-    vcpu.data.dl = qdcgaVarCursorPosCol(vcpu.data.bh);
-    vcpu.data.ch = qdcgaVarCursorTop;
-    vcpu.data.cl = qdcgaVarCursorBottom;
+    /* qdcgaVarPageNum = profile_cpu.data.bh;
+     * qdcgaVarPageOffset = profile_cpu.data.bh * qdcgaModeBufSize[qdcgaVarMode]; */
+    profile_cpu.data.dh = qdcgaVarCursorPosRow(profile_cpu.data.bh);
+    profile_cpu.data.dl = qdcgaVarCursorPosCol(profile_cpu.data.bh);
+    profile_cpu.data.ch = qdcgaVarCursorTop;
+    profile_cpu.data.cl = qdcgaVarCursorBottom;
 }
 static void qdcgaSetDisplayPage(vm_profile_default_context *profile) {
-    qdcgaVarPageNum = vcpu.data.al;
-    qdcgaVarPageOffset = vcpu.data.al * qdcgaModeBufSize[qdcgaVarMode];
+    qdcgaVarPageNum = profile_cpu.data.al;
+    qdcgaVarPageOffset = profile_cpu.data.al * qdcgaModeBufSize[qdcgaVarMode];
 }
 static void qdcgaScrollUp(vm_profile_default_context *profile) {
     t_nubitcc i, j;
-    if (! vcpu.data.al) {
-        for (i = vcpu.data.ch; i <= vcpu.data.dh; ++i) {
-            for (j = vcpu.data.cl; j <= vcpu.data.dl; ++j) {
+    if (! profile_cpu.data.al) {
+        for (i = profile_cpu.data.ch; i <= profile_cpu.data.dh; ++i) {
+            for (j = profile_cpu.data.cl; j <= profile_cpu.data.dl; ++j) {
                 qdcgaVarChar(qdcgaVarPageNum, i, j) = ' ';
-                qdcgaVarCharProp(qdcgaVarPageNum, i, j) = vcpu.data.bh;
+                qdcgaVarCharProp(qdcgaVarPageNum, i, j) = profile_cpu.data.bh;
             }
         }
     } else {
-        for (i = 0; i < (t_nubitcc)(vcpu.data.dh - vcpu.data.ch); ++i) {
-            for (j = vcpu.data.cl; j <= vcpu.data.dl; ++j) {
-                qdcgaVarChar(qdcgaVarPageNum, (i + vcpu.data.ch), j) =
-                    qdcgaVarChar(qdcgaVarPageNum, (i + vcpu.data.ch + vcpu.data.al), j);
-                qdcgaVarCharProp(qdcgaVarPageNum, (i + vcpu.data.ch), j) =
-                    qdcgaVarCharProp(qdcgaVarPageNum, (i + vcpu.data.ch + vcpu.data.al), j);
+        for (i = 0; i < (t_nubitcc)(profile_cpu.data.dh - profile_cpu.data.ch); ++i) {
+            for (j = profile_cpu.data.cl; j <= profile_cpu.data.dl; ++j) {
+                qdcgaVarChar(qdcgaVarPageNum, (i + profile_cpu.data.ch), j) =
+                    qdcgaVarChar(qdcgaVarPageNum, (i + profile_cpu.data.ch + profile_cpu.data.al), j);
+                qdcgaVarCharProp(qdcgaVarPageNum, (i + profile_cpu.data.ch), j) =
+                    qdcgaVarCharProp(qdcgaVarPageNum, (i + profile_cpu.data.ch + profile_cpu.data.al), j);
             }
         }
-        for (i = 0; i < vcpu.data.al; ++i) {
-            for (j = vcpu.data.cl; j <= vcpu.data.dl; ++j) {
-                qdcgaVarChar(0, (i + vcpu.data.dh - vcpu.data.al + 1), j) = ' ';
-                qdcgaVarCharProp(0, (i + vcpu.data.dh - vcpu.data.al + 1), j) = vcpu.data.bh;
+        for (i = 0; i < profile_cpu.data.al; ++i) {
+            for (j = profile_cpu.data.cl; j <= profile_cpu.data.dl; ++j) {
+                qdcgaVarChar(0, (i + profile_cpu.data.dh - profile_cpu.data.al + 1), j) = ' ';
+                qdcgaVarCharProp(0, (i + profile_cpu.data.dh - profile_cpu.data.al + 1), j) = profile_cpu.data.bh;
             }
         }
     }
 }
 static void qdcgaScrollDown(vm_profile_default_context *profile) {
     t_nubitcc i, j;
-    if (! vcpu.data.al) {
-        for (i = 0; i < vvadp.data.colSize; ++i) {
+    if (! profile_cpu.data.al) {
+        for (i = 0; i < profile_vadp.data.colSize; ++i) {
             for (j = 0; j < qdcgaVarRowSize; ++j) {
                 qdcgaVarChar(qdcgaVarPageNum, i, j) = 0x20;
-                qdcgaVarCharProp(qdcgaVarPageNum, i, j) = vcpu.data.bh;
+                qdcgaVarCharProp(qdcgaVarPageNum, i, j) = profile_cpu.data.bh;
             }
         }
     } else {
-        for (i = 0; i < (t_nubitcc)(vcpu.data.dh - vcpu.data.ch); ++i) {
-            for (j = vcpu.data.cl; j <= vcpu.data.dl; ++j) {
-                qdcgaVarChar(qdcgaVarPageNum, (vcpu.data.dh - 1 - i + vcpu.data.al), j) =
-                    qdcgaVarChar(qdcgaVarPageNum, (vcpu.data.dh - 1 - i), j);
-                qdcgaVarCharProp(qdcgaVarPageNum, (vcpu.data.dh - 1 - i + vcpu.data.al), j) =
-                    qdcgaVarCharProp(qdcgaVarPageNum, (vcpu.data.dh - 1 - i), j);
+        for (i = 0; i < (t_nubitcc)(profile_cpu.data.dh - profile_cpu.data.ch); ++i) {
+            for (j = profile_cpu.data.cl; j <= profile_cpu.data.dl; ++j) {
+                qdcgaVarChar(qdcgaVarPageNum, (profile_cpu.data.dh - 1 - i + profile_cpu.data.al), j) =
+                    qdcgaVarChar(qdcgaVarPageNum, (profile_cpu.data.dh - 1 - i), j);
+                qdcgaVarCharProp(qdcgaVarPageNum, (profile_cpu.data.dh - 1 - i + profile_cpu.data.al), j) =
+                    qdcgaVarCharProp(qdcgaVarPageNum, (profile_cpu.data.dh - 1 - i), j);
             }
         }
-        for (i = 0; i < vcpu.data.al; ++i) {
-            for (j = vcpu.data.cl; j <= vcpu.data.dl; ++j) {
-                qdcgaVarChar(0, (vcpu.data.al - 1 - i + vcpu.data.ch), j) = ' ';
-                qdcgaVarCharProp(0, (vcpu.data.al - 1 - i + vcpu.data.ch), j) = vcpu.data.bh;
+        for (i = 0; i < profile_cpu.data.al; ++i) {
+            for (j = profile_cpu.data.cl; j <= profile_cpu.data.dl; ++j) {
+                qdcgaVarChar(0, (profile_cpu.data.al - 1 - i + profile_cpu.data.ch), j) = ' ';
+                qdcgaVarCharProp(0, (profile_cpu.data.al - 1 - i + profile_cpu.data.ch), j) = profile_cpu.data.bh;
             }
         }
-        /* for (i = vcpu.data.dh - vcpu.data.ch - 1; i >= 0; --i) {
-            for (j = vcpu.data.cl; j <= vcpu.data.dl; ++j) {
-                qdcgaVarChar(qdcgaVarPageNum, (i + vcpu.data.ch + vcpu.data.al), j) =
-                    qdcgaVarChar(qdcgaVarPageNum, (i + vcpu.data.ch), j);
-                qdcgaVarCharProp(qdcgaVarPageNum, (i + vcpu.data.ch + vcpu.data.al), j) =
-                    qdcgaVarCharProp(qdcgaVarPageNum, (i + vcpu.data.ch), j);
+        /* for (i = profile_cpu.data.dh - profile_cpu.data.ch - 1; i >= 0; --i) {
+            for (j = profile_cpu.data.cl; j <= profile_cpu.data.dl; ++j) {
+                qdcgaVarChar(qdcgaVarPageNum, (i + profile_cpu.data.ch + profile_cpu.data.al), j) =
+                    qdcgaVarChar(qdcgaVarPageNum, (i + profile_cpu.data.ch), j);
+                qdcgaVarCharProp(qdcgaVarPageNum, (i + profile_cpu.data.ch + profile_cpu.data.al), j) =
+                    qdcgaVarCharProp(qdcgaVarPageNum, (i + profile_cpu.data.ch), j);
             }
         }
-        for (i = vcpu.data.al - 1; i >= 0; --i) {
-            for (j = vcpu.data.cl; j <= vcpu.data.dl; ++j) {
-                qdcgaVarChar(0, (i + vcpu.data.ch), j) = ' ';
-                qdcgaVarCharProp(0, (i + vcpu.data.ch), j) = vcpu.data.bh;
+        for (i = profile_cpu.data.al - 1; i >= 0; --i) {
+            for (j = profile_cpu.data.cl; j <= profile_cpu.data.dl; ++j) {
+                qdcgaVarChar(0, (i + profile_cpu.data.ch), j) = ' ';
+                qdcgaVarCharProp(0, (i + profile_cpu.data.ch), j) = profile_cpu.data.bh;
             }
         } */
     }
 }
 static void qdcgaGetCharProp(vm_profile_default_context *profile) {
-    vcpu.data.al = qdcgaVarChar(vcpu.data.bh, qdcgaVarCursorPosRow(vcpu.data.bh), qdcgaVarCursorPosCol(vcpu.data.bh));
-    vcpu.data.ah = qdcgaVarCharProp(vcpu.data.bh, qdcgaVarCursorPosRow(vcpu.data.bh), qdcgaVarCursorPosCol(vcpu.data.bh));
+    profile_cpu.data.al = qdcgaVarChar(profile_cpu.data.bh, qdcgaVarCursorPosRow(profile_cpu.data.bh), qdcgaVarCursorPosCol(profile_cpu.data.bh));
+    profile_cpu.data.ah = qdcgaVarCharProp(profile_cpu.data.bh, qdcgaVarCursorPosRow(profile_cpu.data.bh), qdcgaVarCursorPosCol(profile_cpu.data.bh));
 }
 static void qdcgaDisplayCharProp9(vm_profile_default_context *profile) {
-    InsertString(profile, (t_vaddrcc)(&vcpu.data.al), vcpu.data.cx, 0x01, 0x00, vcpu.data.bl, vcpu.data.bh,
-                 qdcgaVarCursorPosRow(vcpu.data.bh), qdcgaVarCursorPosCol(vcpu.data.bh));
+    InsertString(profile, (t_vaddrcc)(&profile_cpu.data.al), profile_cpu.data.cx, 0x01, 0x00, profile_cpu.data.bl, profile_cpu.data.bh,
+                 qdcgaVarCursorPosRow(profile_cpu.data.bh), qdcgaVarCursorPosCol(profile_cpu.data.bh));
 }
 static void qdcgaDisplayCharPropE(vm_profile_default_context *profile) {
-    InsertString(profile, (t_vaddrcc)(&vcpu.data.al), 0x01, 0x01, 0x01, vcpu.data.bl, vcpu.data.bh,
-                 qdcgaVarCursorPosRow(vcpu.data.bh), qdcgaVarCursorPosCol(vcpu.data.bh));
+    InsertString(profile, (t_vaddrcc)(&profile_cpu.data.al), 0x01, 0x01, 0x01, profile_cpu.data.bl, profile_cpu.data.bh,
+                 qdcgaVarCursorPosRow(profile_cpu.data.bh), qdcgaVarCursorPosCol(profile_cpu.data.bh));
 }
 static void qdcgaDisplayChar(vm_profile_default_context *profile) {
-    InsertString(profile, (t_vaddrcc)(&vcpu.data.al), vcpu.data.cx, 0x01, 0x01, 0x0f, vcpu.data.bh,
-                 qdcgaVarCursorPosRow(vcpu.data.bh), qdcgaVarCursorPosCol(vcpu.data.bh));
+    InsertString(profile, (t_vaddrcc)(&profile_cpu.data.al), profile_cpu.data.cx, 0x01, 0x01, 0x0f, profile_cpu.data.bh,
+                 qdcgaVarCursorPosRow(profile_cpu.data.bh), qdcgaVarCursorPosCol(profile_cpu.data.bh));
 }
 static void qdcgaGetAdapterStatus(vm_profile_default_context *profile) {
-    vcpu.data.ah = (t_nubit8) qdcgaVarRowSize;
-    vcpu.data.al = qdcgaVarMode;
-    vcpu.data.bh = qdcgaVarPageNum;
+    profile_cpu.data.ah = (t_nubit8) qdcgaVarRowSize;
+    profile_cpu.data.al = qdcgaVarMode;
+    profile_cpu.data.bh = qdcgaVarPageNum;
 }
 static void qdcgaGenerateChar(vm_profile_default_context *profile) {
-    if (vcpu.data.al == 0x30) {
-        switch (vcpu.data.bh) {
+    if (profile_cpu.data.al == 0x30) {
+        switch (profile_cpu.data.bh) {
         case 0x00:
-            vcpu.data.bp = vramRealWord(0x0000, 0x001f * 4 + 0);
-            vcpu.data.es.selector = vramRealWord(0x0000, 0x001f * 4 + 2);
+            profile_cpu.data.bp = *(t_nubit16 *)QDCGA_MEMORY_ADDRESS(0x0000, 0x001f * 4 + 0);
+            profile_cpu.data.es.selector = *(t_nubit16 *)QDCGA_MEMORY_ADDRESS(0x0000, 0x001f * 4 + 2);
             break;
         case 0x01:
-            vcpu.data.bp = vramRealWord(0x0000, 0x0043 * 4 + 0);
-            vcpu.data.es.selector = vramRealWord(0x0000, 0x0043 * 4 + 2);
+            profile_cpu.data.bp = *(t_nubit16 *)QDCGA_MEMORY_ADDRESS(0x0000, 0x0043 * 4 + 0);
+            profile_cpu.data.es.selector = *(t_nubit16 *)QDCGA_MEMORY_ADDRESS(0x0000, 0x0043 * 4 + 2);
             break;
         default:
             break;
         }
-        vcpu.data.cx = 0x0010;
-        vcpu.data.dl = vvadp.data.colSize - 0x01;
+        profile_cpu.data.cx = 0x0010;
+        profile_cpu.data.dl = profile_vadp.data.colSize - 0x01;
     }
 }
 static void qdcgaGetAdapterInfo(vm_profile_default_context *profile) {
-    vcpu.data.bh = 0x00;
-    vcpu.data.bl = 0x03;
-    vcpu.data.cl = 0x07;
-    /*     vcpu.data.ch = 0x??; */
+    profile_cpu.data.bh = 0x00;
+    profile_cpu.data.bl = 0x03;
+    profile_cpu.data.cl = 0x07;
+    /*     profile_cpu.data.ch = 0x??; */
 }
 static void qdcgaDisplayStr(vm_profile_default_context *profile) {
-    InsertString(profile, vramGetRealAddr(vcpu.data.es.selector, vcpu.data.bp), vcpu.data.cl, 0x00, 0x01,
-                 vcpu.data.bl, vcpu.data.bh, vcpu.data.dh, vcpu.data.dl);
+    InsertString(profile, (t_vaddrcc)QDCGA_MEMORY_ADDRESS(profile_cpu.data.es.selector, profile_cpu.data.bp), profile_cpu.data.cl, 0x00, 0x01,
+                 profile_cpu.data.bl, profile_cpu.data.bh, profile_cpu.data.dh, profile_cpu.data.dl);
 }
 
 static void INT_10(vm_profile_default_context *profile) {
-    switch (vcpu.data.ah) {
+    switch (profile_cpu.data.ah) {
     case 0x00:
         qdcgaSetDisplayMode(profile);
         break;
@@ -343,17 +340,17 @@ static void INT_10(vm_profile_default_context *profile) {
         qdcgaGenerateChar(profile);
         break;
     case 0x12:
-        if (vcpu.data.bl == 0x10)
+        if (profile_cpu.data.bl == 0x10)
             qdcgaGetAdapterInfo(profile);
         break;
     case 0x13:
         qdcgaDisplayStr(profile);
         break;
     case 0x1a:
-        if (vcpu.data.al == 0x00) {
-            vcpu.data.al = 0x1a;
-            vcpu.data.bh = 0x00;
-            vcpu.data.bl = 0x08;
+        if (profile_cpu.data.al == 0x00) {
+            profile_cpu.data.al = 0x1a;
+            profile_cpu.data.bh = 0x00;
+            profile_cpu.data.bl = 0x08;
         }
         break;
     default:
@@ -372,8 +369,8 @@ void vm_profile_default_cga_initialize(t_qdx *qdx) {
 void vm_profile_default_cga_reset(vm_profile_default_context *profile) {
     /* 80 x 25 */
     qdcgaVarRowSize = 0x50;
-    vvadp.data.colSize = 0x19;
-    vvadp.data.flagColor = True;
+    profile_vadp.data.colSize = 0x19;
+    profile_vadp.data.flagColor = True;
 
     qdcgaVarPageNum = 0x00;
     qdcgaVarMode = 0x03;
@@ -382,8 +379,8 @@ void vm_profile_default_cga_reset(vm_profile_default_context *profile) {
     qdcgaVarCursorPosCol(0) = 0x00;
     qdcgaVarCursorTop       = 0x06;
     qdcgaVarCursorBottom    = 0x07;
-    vvadp.data.oldCurPosX = vvadp.data.oldCurPosY = 0x00;
-    vvadp.data.oldCurTop  = vvadp.data.oldCurBottom = 0x00;
+    profile_vadp.data.oldCurPosX = profile_vadp.data.oldCurPosY = 0x00;
+    profile_vadp.data.oldCurTop  = profile_vadp.data.oldCurBottom = 0x00;
 }
 
 static int vm_profile_default_display_cursor_visible(
@@ -393,14 +390,14 @@ static int vm_profile_default_display_cursor_visible(
 }
 static int vm_profile_default_display_cursor_changed(
     vm_profile_default_context *profile) {
-    if (vvadp.data.oldCurPosX != qdcgaVarCursorPosRow(qdcgaVarPageNum) ||
-            vvadp.data.oldCurPosY != qdcgaVarCursorPosCol(qdcgaVarPageNum) ||
-            vvadp.data.oldCurTop  != qdcgaVarCursorTop ||
-            vvadp.data.oldCurBottom != qdcgaVarCursorBottom) {
-        vvadp.data.oldCurPosX = qdcgaVarCursorPosRow(qdcgaVarPageNum);
-        vvadp.data.oldCurPosY = qdcgaVarCursorPosCol(qdcgaVarPageNum);
-        vvadp.data.oldCurTop  = qdcgaVarCursorTop;
-        vvadp.data.oldCurBottom = qdcgaVarCursorBottom;
+    if (profile_vadp.data.oldCurPosX != qdcgaVarCursorPosRow(qdcgaVarPageNum) ||
+            profile_vadp.data.oldCurPosY != qdcgaVarCursorPosCol(qdcgaVarPageNum) ||
+            profile_vadp.data.oldCurTop  != qdcgaVarCursorTop ||
+            profile_vadp.data.oldCurBottom != qdcgaVarCursorBottom) {
+        profile_vadp.data.oldCurPosX = qdcgaVarCursorPosRow(qdcgaVarPageNum);
+        profile_vadp.data.oldCurPosY = qdcgaVarCursorPosCol(qdcgaVarPageNum);
+        profile_vadp.data.oldCurTop  = qdcgaVarCursorTop;
+        profile_vadp.data.oldCurBottom = qdcgaVarCursorBottom;
         return True;
     } else {
         return False;
@@ -408,8 +405,8 @@ static int vm_profile_default_display_cursor_changed(
 }
 static int vm_profile_default_display_buffer_changed(
     vm_profile_default_context *profile) {
-    if (MEMCMP((void *) vvadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize)) {
-        MEMCPY((void *) vvadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
+    if (MEMCMP((void *) profile_vadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize)) {
+        MEMCPY((void *) profile_vadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
         return True;
     } else {
         return False;
@@ -421,7 +418,7 @@ static uint16_t vm_profile_default_display_columns(
 }
 static uint16_t vm_profile_default_display_rows(
     vm_profile_default_context *profile) {
-    return vvadp.data.colSize;
+    return profile_vadp.data.colSize;
 }
 static uint8_t vm_profile_default_display_cursor_top(
     vm_profile_default_context *profile) {
@@ -487,6 +484,6 @@ int vm_profile_default_display_capture(void *context,
     return True;
 }
 
-#undef vcpu
-#undef vram
-#undef vvadp
+#undef profile_cpu
+#undef profile_ram
+#undef profile_vadp
