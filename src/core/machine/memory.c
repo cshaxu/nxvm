@@ -166,9 +166,12 @@ void core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
 void *core_machine_memory_real_address(t_ram *ram, uint16_t segment,
     uint16_t offset)
 {
+    t_nubit32 physical;
+
     if (ram == NULL || ram->connect.pBase == 0u || ram->connect.size == 0u) {
         return NULL;
     }
-    return (void *)(ram->connect.pBase +
-        ((((t_nubit32)segment << 4) + offset) % ram->connect.size));
+    physical = core_machine_memory_wrap_a20(ram,
+        ((t_nubit32)segment << 4) + offset);
+    return (void *)(ram->connect.pBase + (physical % ram->connect.size));
 }
