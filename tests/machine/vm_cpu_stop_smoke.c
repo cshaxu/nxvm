@@ -3,7 +3,6 @@
 #include "core/machine/vcpu.h"
 #include "core/machine/vram.h"
 #include "vm/composition_control.h"
-#include "vm/machine/device.h"
 
 int main(void)
 {

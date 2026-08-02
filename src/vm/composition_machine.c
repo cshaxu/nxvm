@@ -3,7 +3,6 @@
 /* MACHINE controls machine status. */
 
 #include "vm/composition_control.h"
-#include "vm/machine/device.h"
 #include "core/product/debug/debug_target.h"
 #include "core/product/wait.h"
 #include "vm/composition_debug.h"

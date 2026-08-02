@@ -26,6 +26,11 @@ recorded before/after acceptance plan.
    or mutate machine/product state. VM- and VDM-specific display, Console,
    input, cancellation, boot, and execution policies remain in their product
    form and are bound by root composition.
+4. Legacy component names converge by ownership, not by a parallel rewrite:
+   `vcpu` becomes the implementation behind `cpu`, `vram` behind `memory`,
+   and `vport` behind `port`, with one state instance throughout. Public
+   contracts use the `core_machine_*` prefix; historical names disappear only
+   after all direct callers are moved and focused regressions pass.
 
 ## Work Breakdown
 
@@ -38,7 +43,7 @@ recorded before/after acceptance plan.
 
 ## T15 Consumer Map
 
-`device.h` currently has eight direct consumers. It is deleted only after each
+`device.h` originally had eight direct consumers. It is deleted only after each
 consumer changes to the narrow owner listed below.
 
 | Consumer | Current aggregate use | Replacement owner |
@@ -92,6 +97,22 @@ VM hardware debugger controls now live in `vm/machine/vdebug.h` under
 `vm_machine_debug_*`. The core debugger adapter, retained Console recorder,
 and full-PC session use that narrow interface; the debugger declarations are
 gone from `device.h`. GCC plus debugger-target and Console gates passed.
+
+The BIOS/media, display, and keyboard surfaces have since been narrowed. VM
+media and built-in BIOS controls use their machine/profile headers; display
+uses a copied `core_machine_display_snapshot` provider; and keyboard input
+uses a `core_machine_keyboard_provider` bound by VM composition. The old
+composition keyboard bridge is deleted rather than retained as a wrapper.
+Only its implementation-local default-profile helpers retain historical names
+until T16 performs their one-at-a-time naming convergence.
+
+The remaining direct `device.h` includes had no active declaration use, so the
+aggregate is deleted. T15 is complete: no source or CMake reference remains.
+The deletion gate passed the Windows GCC build, keyboard-input and expected
+`#UD` stop smokes, FDD/HDD reset-vector fixture smoke, retained Console
+`HELP`/`EXIT` interaction, and the zero-edge dependency-DAG verifier. This
+preserves the existing device state, Console grammar, execution loop, and
+profile behavior.
 
 ## Migration Discipline
 
