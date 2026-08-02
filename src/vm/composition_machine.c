@@ -125,7 +125,9 @@ void machineStart(vm_composition_live_machine *machine) {
 void machineReset(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_composition_control_reset(machine->control);
-    if (!vm_composition_control_is_running(machine->control)) vm_composition_publish_display(1);
+    if (!vm_composition_control_is_running(machine->control)) {
+        vm_composition_publish_display(machine, 1);
+    }
 }
 
 void machineStop(vm_composition_live_machine *machine) {
@@ -152,8 +154,11 @@ void machineInit(vm_composition_live_machine *machine) {
     core_machine_keyboard_provider_slot_bind(machine->keyboard_provider, NULL,
         vm_profile_default_keyboard_provider());
     core_machine_keyboard_provider_slot_freeze(machine->keyboard_provider);
-    core_machine_display_bind_snapshot_provider(NULL,
-        vm_profile_default_display_capture);
+    /* Mode notifications remain on the legacy facade until the profile
+       firmware receives an explicit session display context in T71. */
+    core_machine_display_provider_slot_bind(machine->display_provider, NULL,
+        NULL, NULL, vm_profile_default_display_capture);
+    core_machine_display_provider_slot_freeze(machine->display_provider);
     vm_machine_debug_bind_pause(vm_composition_debug_request_pause, NULL);
     core_product_debug_bind_target(vm_composition_debug_target(machine));
     vm_platform_keyboard_bind(&vm_composition_keyboard_sink, machine);
@@ -164,7 +169,7 @@ void machineFinal(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_composition_control_finalize(machine->control, machine);
     core_machine_keyboard_provider_slot_finalize(machine->keyboard_provider);
-    core_machine_display_bind_snapshot_provider(NULL, NULL);
+    core_machine_display_provider_slot_finalize(machine->display_provider);
     vm_machine_debug_bind_pause(NULL, NULL);
     core_product_debug_bind_target(NULL);
     vm_composition_debug_target_finalize(machine);

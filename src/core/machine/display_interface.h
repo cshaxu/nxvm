@@ -26,11 +26,34 @@ typedef struct core_machine_display_snapshot {
 typedef int (*core_machine_display_snapshot_provider)(void *context,
     core_machine_display_snapshot *out_snapshot);
 
+typedef struct core_machine_display_provider_slot {
+    void *mode_context;
+    core_machine_display_provider mode_provider;
+    void *snapshot_context;
+    core_machine_display_snapshot_provider snapshot_provider;
+    int frozen;
+} core_machine_display_provider_slot;
+
 void core_machine_display_bind(void *context,
     core_machine_display_provider provider);
 void core_machine_display_notify_mode_changed(void);
 void core_machine_display_bind_snapshot_provider(void *context,
     core_machine_display_snapshot_provider provider);
 int core_machine_display_capture_snapshot(core_machine_display_snapshot *out_snapshot);
+void core_machine_display_provider_slot_initialize(
+    core_machine_display_provider_slot *slot);
+void core_machine_display_provider_slot_bind(
+    core_machine_display_provider_slot *slot, void *mode_context,
+    core_machine_display_provider mode_provider, void *snapshot_context,
+    core_machine_display_snapshot_provider snapshot_provider);
+void core_machine_display_provider_slot_freeze(
+    core_machine_display_provider_slot *slot);
+void core_machine_display_provider_slot_finalize(
+    core_machine_display_provider_slot *slot);
+void core_machine_display_notify_mode_changed_to(
+    const core_machine_display_provider_slot *slot);
+int core_machine_display_capture_snapshot_from(
+    const core_machine_display_provider_slot *slot,
+    core_machine_display_snapshot *out_snapshot);
 
 #endif

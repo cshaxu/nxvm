@@ -2,12 +2,14 @@
 #include "vm/composition_display.h"
 #include "core/platform/display_frame.h"
 #include "vm/platform/platform.h"
+#include "vm/composition_live_machine.h"
 
 #include <string.h>
 
 static uint64_t vmCompositionDisplayGeneration;
 
-void vm_composition_publish_display(int force)
+void vm_composition_publish_display(vm_composition_live_machine *machine,
+    int force)
 {
     core_platform_display_frame frame;
     uint16_t row;
@@ -17,8 +19,10 @@ void vm_composition_publish_display(int force)
 
     core_machine_display_snapshot snapshot;
 
+    if (machine == NULL) return;
     memset(&snapshot, 0, sizeof(snapshot));
-    if (!core_machine_display_capture_snapshot(&snapshot)) return;
+    if (!core_machine_display_capture_snapshot_from(machine->display_provider,
+        &snapshot)) return;
     buffer_changed = snapshot.buffer_changed;
     cursor_changed = snapshot.cursor_changed;
     if (!force && !buffer_changed && !cursor_changed) return;
@@ -52,12 +56,12 @@ void vm_composition_publish_display(int force)
 
 static void vmCompositionDisplayModeChanged(void *context)
 {
-    (void)context;
-    vm_composition_publish_display(1);
+    vm_composition_publish_display((vm_composition_live_machine *)context, 1);
     platformDisplaySetScreen();
 }
 
-void vm_composition_bind_display(void)
+void vm_composition_bind_display(vm_composition_live_machine *machine)
 {
-    core_machine_display_bind(NULL, vmCompositionDisplayModeChanged);
+    if (machine == NULL) return;
+    core_machine_display_bind(machine, vmCompositionDisplayModeChanged);
 }

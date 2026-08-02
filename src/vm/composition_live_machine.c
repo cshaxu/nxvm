@@ -33,6 +33,8 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
     core_machine_block_provider_slot_initialize(machine->block_provider);
     machine->keyboard_provider = &machine->keyboard_provider_storage;
     core_machine_keyboard_provider_slot_initialize(machine->keyboard_provider);
+    machine->display_provider = &machine->display_provider_storage;
+    core_machine_display_provider_slot_initialize(machine->display_provider);
     machine->control = (vm_composition_control_state *)calloc(1u,
         sizeof(*machine->control));
 }
@@ -104,6 +106,8 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     machine->block_provider = NULL;
     core_machine_keyboard_provider_slot_finalize(machine->keyboard_provider);
     machine->keyboard_provider = NULL;
+    core_machine_display_provider_slot_finalize(machine->display_provider);
+    machine->display_provider = NULL;
     free(machine->control);
     machine->control = NULL;
 }
