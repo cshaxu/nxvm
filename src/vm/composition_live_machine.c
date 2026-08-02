@@ -48,34 +48,8 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
         sizeof(*machine->control));
 }
 
-void vm_composition_live_machine_bind_legacy(vm_composition_live_machine *machine)
-{
-    if (machine == NULL) return;
-    core_machine_cpu_bind_live(machine->cpu);
-    core_machine_cpu_instructions_bind_live(machine->cpuins);
-    core_machine_cpu_execution_bind_legacy(machine->cpu_execution);
-    core_machine_memory_bind_live(machine->ram);
-    core_machine_port_bind_live(machine->port);
-    core_machine_pic_bind_live(machine->pic_master, machine->pic_slave);
-    core_machine_pit_bind_live(machine->pit);
-    core_machine_dma_bind_live(machine->dma_latch, machine->dma_primary,
-        machine->dma_secondary);
-    core_machine_kbc_bind_live(machine->kbc);
-    core_machine_vadp_bind_live(machine->vadp);
-}
-
 void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
 {
-    core_machine_memory_unbind_live();
-    core_machine_port_unbind_live();
-    core_machine_pic_unbind_live();
-    core_machine_pit_unbind_live();
-    core_machine_dma_unbind_live();
-    core_machine_kbc_unbind_live();
-    core_machine_vadp_unbind_live();
-    core_machine_cpu_execution_unbind_legacy();
-    core_machine_cpu_instructions_unbind_live();
-    core_machine_cpu_unbind_live();
     if (machine == NULL) return;
     machine->cpu = NULL;
     machine->cpuins = NULL;

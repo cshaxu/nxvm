@@ -166,13 +166,6 @@ typedef struct {
     t_cpu_data data;
 } t_cpu;
 
-t_cpu *core_machine_cpu_current(void);
-void core_machine_cpu_bind_live(t_cpu *cpu);
-void core_machine_cpu_unbind_live(void);
-
-/* Transitional direct alias to the one composition-owned live CPU object. */
-#define vcpu (*core_machine_cpu_current())
-
 #define VCPU_PAGESIZE 0x1000
 
 #define VCPU_EFLAGS_CF 0x00000001
@@ -198,66 +191,66 @@ void core_machine_cpu_unbind_live(void);
 #define VCPU_EFLAGS_ID    0x00200000
 #define VCPU_EFLAGS_RESERVED 0xffc0802a
 */
-#define _GetEFLAGS_CF    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_CF))
-#define _GetEFLAGS_PF    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_PF))
-#define _GetEFLAGS_AF    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_AF))
-#define _GetEFLAGS_ZF    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_ZF))
-#define _GetEFLAGS_SF    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_SF))
-#define _GetEFLAGS_TF    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_TF))
-#define _GetEFLAGS_IF    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_IF))
-#define _GetEFLAGS_DF    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_DF))
-#define _GetEFLAGS_OF    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_OF))
-#define _GetEFLAGS_IOPLL (GetBit(vcpu.data.eflags, VCPU_EFLAGS_IOPLL))
-#define _GetEFLAGS_IOPLH (GetBit(vcpu.data.eflags, VCPU_EFLAGS_IOPLH))
-#define _GetEFLAGS_IOPL  ((vcpu.data.eflags & VCPU_EFLAGS_IOPL) >> 12)
-#define _GetEFLAGS_NT    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_NT))
-#define _GetEFLAGS_RF    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_RF))
-#define _GetEFLAGS_VM    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_VM))
+#define _GetEFLAGS_CF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_CF))
+#define _GetEFLAGS_PF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_PF))
+#define _GetEFLAGS_AF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_AF))
+#define _GetEFLAGS_ZF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
+#define _GetEFLAGS_SF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_SF))
+#define _GetEFLAGS_TF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_TF))
+#define _GetEFLAGS_IF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_IF))
+#define _GetEFLAGS_DF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_DF))
+#define _GetEFLAGS_OF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_OF))
+#define _GetEFLAGS_IOPLL (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
+#define _GetEFLAGS_IOPLH (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
+#define _GetEFLAGS_IOPL  ((cpu_state.data.eflags & VCPU_EFLAGS_IOPL) >> 12)
+#define _GetEFLAGS_NT    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_NT))
+#define _GetEFLAGS_RF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_RF))
+#define _GetEFLAGS_VM    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_VM))
 /*
-#define _GetEFLAGS_AC    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_AC))
-#define _GetEFLAGS_VIF   (GetBit(vcpu.data.eflags, VCPU_EFLAGS_VIF))
-#define _GetEFLAGS_VIP   (GetBit(vcpu.data.eflags, VCPU_EFLAGS_VIP))
-#define _GetEFLAGS_ID    (GetBit(vcpu.data.eflags, VCPU_EFLAGS_ID))*/
-#define _SetEFLAGS_CF    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_CF))
-#define _SetEFLAGS_PF    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_PF))
-#define _SetEFLAGS_AF    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_AF))
-#define _SetEFLAGS_ZF    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_ZF))
-#define _SetEFLAGS_SF    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_SF))
-#define _SetEFLAGS_TF    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_TF))
-#define _SetEFLAGS_IF    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_IF))
-#define _SetEFLAGS_DF    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_DF))
-#define _SetEFLAGS_OF    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_OF))
-#define _SetEFLAGS_IOPLL (SetBit(vcpu.data.eflags, VCPU_EFLAGS_IOPLL))
-#define _SetEFLAGS_IOPLH (SetBit(vcpu.data.eflags, VCPU_EFLAGS_IOPLH))
-#define _SetEFLAGS_IOPL  (SetBit(vcpu.data.eflags, VCPU_EFLAGS_IOPL)
-#define _SetEFLAGS_NT    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_NT))
-#define _SetEFLAGS_RF    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_RF))
-#define _SetEFLAGS_VM    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_VM))
+#define _GetEFLAGS_AC    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_AC))
+#define _GetEFLAGS_VIF   (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
+#define _GetEFLAGS_VIP   (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
+#define _GetEFLAGS_ID    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
+#define _SetEFLAGS_CF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_CF))
+#define _SetEFLAGS_PF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_PF))
+#define _SetEFLAGS_AF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_AF))
+#define _SetEFLAGS_ZF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
+#define _SetEFLAGS_SF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_SF))
+#define _SetEFLAGS_TF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_TF))
+#define _SetEFLAGS_IF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_IF))
+#define _SetEFLAGS_DF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_DF))
+#define _SetEFLAGS_OF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_OF))
+#define _SetEFLAGS_IOPLL (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
+#define _SetEFLAGS_IOPLH (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
+#define _SetEFLAGS_IOPL  (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPL)
+#define _SetEFLAGS_NT    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_NT))
+#define _SetEFLAGS_RF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_RF))
+#define _SetEFLAGS_VM    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_VM))
 /*
-#define _SetEFLAGS_AC    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_AC))
-#define _SetEFLAGS_VIF   (SetBit(vcpu.data.eflags, VCPU_EFLAGS_VIF))
-#define _SetEFLAGS_VIP   (SetBit(vcpu.data.eflags, VCPU_EFLAGS_VIP))
-#define _SetEFLAGS_ID    (SetBit(vcpu.data.eflags, VCPU_EFLAGS_ID))*/
-#define _ClrEFLAGS_CF    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_CF))
-#define _ClrEFLAGS_PF    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_PF))
-#define _ClrEFLAGS_AF    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_AF))
-#define _ClrEFLAGS_ZF    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_ZF))
-#define _ClrEFLAGS_SF    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_SF))
-#define _ClrEFLAGS_TF    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_TF))
-#define _ClrEFLAGS_IF    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_IF))
-#define _ClrEFLAGS_DF    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_DF))
-#define _ClrEFLAGS_OF    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_OF))
-#define _ClrEFLAGS_IOPLL (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_IOPLL))
-#define _ClrEFLAGS_IOPLH (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_IOPLH))
-#define _ClrEFLAGS_IOPL  (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_IOPL)
-#define _ClrEFLAGS_NT    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_NT))
-#define _ClrEFLAGS_RF    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_RF))
-#define _ClrEFLAGS_VM    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_VM))
+#define _SetEFLAGS_AC    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_AC))
+#define _SetEFLAGS_VIF   (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
+#define _SetEFLAGS_VIP   (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
+#define _SetEFLAGS_ID    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
+#define _ClrEFLAGS_CF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_CF))
+#define _ClrEFLAGS_PF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_PF))
+#define _ClrEFLAGS_AF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_AF))
+#define _ClrEFLAGS_ZF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
+#define _ClrEFLAGS_SF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_SF))
+#define _ClrEFLAGS_TF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_TF))
+#define _ClrEFLAGS_IF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_IF))
+#define _ClrEFLAGS_DF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_DF))
+#define _ClrEFLAGS_OF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_OF))
+#define _ClrEFLAGS_IOPLL (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
+#define _ClrEFLAGS_IOPLH (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
+#define _ClrEFLAGS_IOPL  (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPL)
+#define _ClrEFLAGS_NT    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_NT))
+#define _ClrEFLAGS_RF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_RF))
+#define _ClrEFLAGS_VM    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_VM))
 /*
-#define _ClrEFLAGS_AC    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_AC))
-#define _ClrEFLAGS_VIF   (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_VIF))
-#define _ClrEFLAGS_VIP   (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_VIP))
-#define _ClrEFLAGS_ID    (ClrBit(vcpu.data.eflags, VCPU_EFLAGS_ID))*/
+#define _ClrEFLAGS_AC    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_AC))
+#define _ClrEFLAGS_VIF   (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
+#define _ClrEFLAGS_VIP   (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
+#define _ClrEFLAGS_ID    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
 
 #define VCPU_ModRM_MOD 0xc0
 #define VCPU_ModRM_REG 0x38
@@ -275,9 +268,9 @@ void core_machine_cpu_unbind_live(void);
 #define VCPU_CR0_PE 0x00000001
 #define VCPU_CR0_TS 0x00000008
 #define VCPU_CR0_PG 0x80000000
-#define _GetCR0_PE (GetBit(vcpu.data.cr0, VCPU_CR0_PE))
-#define _GetCR0_PG (GetBit(vcpu.data.cr0, VCPU_CR0_PG))
-#define _SetCR0_TS (SetBit(vcpu.data.cr0, VCPU_CR0_TS))
+#define _GetCR0_PE (GetBit(cpu_state.data.cr0, VCPU_CR0_PE))
+#define _GetCR0_PG (GetBit(cpu_state.data.cr0, VCPU_CR0_PG))
+#define _SetCR0_TS (SetBit(cpu_state.data.cr0, VCPU_CR0_TS))
 
 #define _MakePageFaultErrorCode(p, wr, us) ((p) | ((wr) << 1) | ((us) << 2))
 
@@ -463,44 +456,47 @@ void core_machine_cpu_unbind_live(void);
 #define VCPU_CR0_TS 0x00000008
 #define VCPU_CR0_ET 0x00000010
 #define VCPU_CR0_PG 0x80000000
-#define _GetCR0_PE (GetBit(vcpu.data.cr0, VCPU_CR0_PE))
-#define _GetCR0_MP (GetBit(vcpu.data.cr0, VCPU_CR0_MP))
-#define _GetCR0_EM (GetBit(vcpu.data.cr0, VCPU_CR0_EM))
-#define _GetCR0_TS (GetBit(vcpu.data.cr0, VCPU_CR0_TS))
-#define _GetCR0_ET (GetBit(vcpu.data.cr0, VCPU_CR0_ET))
-#define _GetCR0_PG (GetBit(vcpu.data.cr0, VCPU_CR0_PG))
-#define _SetCR0_TS (SetBit(vcpu.data.cr0, VCPU_CR0_TS))
-#define _ClrCR0_TS (ClrBit(vcpu.data.cr0, VCPU_CR0_TS))
+#define _GetCR0_PE (GetBit(cpu_state.data.cr0, VCPU_CR0_PE))
+#define _GetCR0_MP (GetBit(cpu_state.data.cr0, VCPU_CR0_MP))
+#define _GetCR0_EM (GetBit(cpu_state.data.cr0, VCPU_CR0_EM))
+#define _GetCR0_TS (GetBit(cpu_state.data.cr0, VCPU_CR0_TS))
+#define _GetCR0_ET (GetBit(cpu_state.data.cr0, VCPU_CR0_ET))
+#define _GetCR0_PG (GetBit(cpu_state.data.cr0, VCPU_CR0_PG))
+#define _SetCR0_TS (SetBit(cpu_state.data.cr0, VCPU_CR0_TS))
+#define _ClrCR0_TS (ClrBit(cpu_state.data.cr0, VCPU_CR0_TS))
 
 #define VCPU_CR3_BASE   0xfffff000
-#define _GetCR3_Base    (vcpu.data.cr3 & VCPU_CR3_BASE)
+#define _GetCR3_Base    (cpu_state.data.cr3 & VCPU_CR3_BASE)
 
 #define _IsPaging (_GetCR0_PE && _GetCR0_PG)
 #define _IsProtected (_GetCR0_PE && !_GetEFLAGS_VM)
-#define _GetCPL  (_GetCR0_PE ? (_GetEFLAGS_VM ? 3 : vcpu.data.cs.dpl) : 0)
-#define _MakeCPL(cpl) (vcpu.data.cs.dpl = (cpl))
+#define _GetCPL  (_GetCR0_PE ? (_GetEFLAGS_VM ? 3 : cpu_state.data.cs.dpl) : 0)
+#define _MakeCPL(cpl) (cpu_state.data.cs.dpl = (cpl))
 
-int core_machine_cpu_read_linear(uint32_t linear, void *out_data,
-    uint8_t size);
-int core_machine_cpu_write_linear(uint32_t linear, const void *in_data,
-    uint8_t size);
-int core_machine_cpu_load_segment(core_machine_cpu_segment segment,
-    uint16_t selector);
-int core_machine_cpu_get_code_default_size(void);
-uint32_t core_machine_cpu_get_code_base(void);
-void core_machine_cpu_set_watchpoint(core_machine_cpu_watchpoint kind,
-    uint32_t linear);
-void core_machine_cpu_clear_watchpoint(core_machine_cpu_watchpoint kind);
-void core_machine_cpu_print_registers(void);
-void core_machine_cpu_print_segment_registers(void);
-void core_machine_cpu_print_control_registers(void);
-void core_machine_cpu_print_memory_accesses(void);
-void core_machine_cpu_print_watchpoints(void);
-
-void vcpuRequestStop();
-t_bool vcpuConsumeStopRequest();
-void vcpuRequestReset();
-t_bool vcpuConsumeResetRequest();
+int core_machine_cpu_read_linear(core_machine_cpu_execution_context *context,
+    uint32_t linear, void *out_data, uint8_t size);
+int core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
+    uint32_t linear, const void *in_data, uint8_t size);
+int core_machine_cpu_load_segment(core_machine_cpu_execution_context *context,
+    core_machine_cpu_segment segment, uint16_t selector);
+int core_machine_cpu_get_code_default_size(
+    const core_machine_cpu_execution_context *context);
+uint32_t core_machine_cpu_get_code_base(
+    const core_machine_cpu_execution_context *context);
+void core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context,
+    core_machine_cpu_watchpoint kind, uint32_t linear);
+void core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *context,
+    core_machine_cpu_watchpoint kind);
+void core_machine_cpu_print_registers(
+    const core_machine_cpu_execution_context *context);
+void core_machine_cpu_print_segment_registers(
+    const core_machine_cpu_execution_context *context);
+void core_machine_cpu_print_control_registers(
+    const core_machine_cpu_execution_context *context);
+void core_machine_cpu_print_memory_accesses(
+    const core_machine_cpu_execution_context *context);
+void core_machine_cpu_print_watchpoints(
+    const core_machine_cpu_execution_context *context);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

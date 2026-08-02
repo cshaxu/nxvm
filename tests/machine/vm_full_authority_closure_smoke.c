@@ -25,13 +25,19 @@
 static int has_single_live_authority(const vm_composition_live_machine *machine)
 {
     return machine != NULL &&
-        machine->cpu == &vcpu && machine->cpuins == &vcpuins &&
-        machine->ram == &vram && machine->port == &vport &&
-        machine->pic_master == &vpic1 && machine->pic_slave == &vpic2 &&
-        machine->pit == &vpit && machine->dma_latch == &vlatch &&
-        machine->dma_primary == &vdma1 && machine->dma_secondary == &vdma2 &&
-        machine->kbc == &vkbc &&
-        machine->vadp == &vvadp && machine->cmos == &machine->cmos_storage &&
+        machine->cpu == &machine->cpu_storage &&
+        machine->cpuins == &machine->cpuins_storage &&
+        machine->ram == &machine->ram_storage &&
+        machine->port == &machine->port_storage &&
+        machine->pic_master == &machine->pic_master_storage &&
+        machine->pic_slave == &machine->pic_slave_storage &&
+        machine->pit == &machine->pit_storage &&
+        machine->dma_latch == &machine->dma_latch_storage &&
+        machine->dma_primary == &machine->dma_primary_storage &&
+        machine->dma_secondary == &machine->dma_secondary_storage &&
+        machine->kbc == &machine->kbc_storage &&
+        machine->vadp == &machine->vadp_storage &&
+        machine->cmos == &machine->cmos_storage &&
         machine->fdd == &machine->fdd_storage &&
         machine->fdc == &machine->fdc_storage &&
         machine->hdd == &machine->hdd_storage &&
@@ -61,7 +67,6 @@ int main(int argc, char **argv)
     session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
     if (session == NULL) return 1;
     vm_composition_live_machine_initialize(session);
-    vm_composition_live_machine_bind_legacy(session);
     vm_composition_control_initialize(session->control, session);
     if (!has_single_live_authority(session) ||
         vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) {
@@ -102,7 +107,6 @@ int main(int argc, char **argv)
     vm_composition_control_finalize(session->control, session);
     vm_composition_live_machine_finalize(session);
     free(session);
-    if (core_machine_cpu_current() != NULL) return 1;
     puts("M5:T44:S1:FULL-AUTHORITY-CLOSURE:OK");
     return 0;
 }

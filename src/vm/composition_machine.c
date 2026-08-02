@@ -149,7 +149,6 @@ void machineInit(vm_composition_live_machine *machine) {
     platformInit();
     core_product_wait_bind(vm_composition_wait, NULL);
     vm_composition_live_machine_initialize(machine);
-    vm_composition_live_machine_bind_legacy(machine);
     vm_composition_control_initialize(machine->control, machine);
     core_machine_keyboard_provider_slot_bind(machine->keyboard_provider,
         machine->default_profile_context,
