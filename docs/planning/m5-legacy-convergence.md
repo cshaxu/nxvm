@@ -188,3 +188,23 @@ old VM `platformSleep` wrapper is gone. Windows GCC, core wait,
 VM-platform execution, and zero-edge DAG gates passed. The Linux implementation
 is selected by CMake on non-Windows and remains subject to the existing external
 POSIX compile validation.
+
+T17 is complete. The remaining `vm/platform` sources are VM policy, not
+unmigrated core capability: input and execution adapters invoke VM composition
+sinks; Win32/Linux Console/window code selects product display mode, owns
+threads/event loops, or maps host keys to the retained VM interaction model.
+They remain in VM until a future product-neutral provider contract exists.
+The core-platform source scan contains no machine or product include.
+
+## T18 Closure Evidence
+
+M5 is complete. `vm/machine/device.h` and every `deviceConnect*` export are
+absent; retained CPU/RAM/port execution uses the core-machine contracts over
+one legacy state instance per subsystem. Shared display-frame and native
+Win32/Linux sleep capabilities are in `core/platform`; its source includes no
+VM/VDM machine or product header. The final task artifact is
+`build/nxvm-m5-t18.exe`, a bootable retained NXVM Console showing
+`0.4.015d.m5t18`. Windows GCC build, zero-edge DAG, expected-`#UD` CPU probe,
+debugger target, input/execution, FDD/HDD reset-vector, and Console
+`HELP`/`EXIT` gates passed. POSIX compilation remains the explicitly external
+Linux validation gate recorded by M0/M5 governance.

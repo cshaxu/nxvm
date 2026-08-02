@@ -40,8 +40,8 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 T17 S1 P3: complete the remaining shared-platform ownership audit and record
-which VM files remain product-specific by callback or UI-policy dependency.
+M5 is complete. The shared-core source topology, legacy-convergence closure,
+and retained NXVM compatibility gates are recorded in the M5 planning evidence.
 
 ## Completed
 
@@ -220,6 +220,12 @@ which VM files remain product-specific by callback or UI-policy dependency.
   it through the existing core-product wait provider. GCC, core wait,
   VM-platform execution, and DAG gates passed; POSIX compilation remains an
   external validation gate.
+- M5 T17 S1 P3: completed the platform ownership audit. The remaining VM
+  platform files retain VM callback, keyboard mapping, Console/window, or
+  execution-loop policy; core platform has no machine/product include.
+- M5 T18 S1 P1: closed M5 with `build/nxvm-m5-t18.exe`. Windows GCC, zero-edge
+  DAG, expected-`#UD`, debugger-target, input/execution, FDD/HDD reset-vector,
+  retained Console `HELP`/`EXIT`, and legacy/forbidden-dependency scans passed.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware
