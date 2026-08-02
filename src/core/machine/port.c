@@ -8,8 +8,6 @@
 
 #include "core/machine/port.h"
 
-static t_port *coreMachinePort;
-
 struct core_machine_port_provider_entry {
     t_nubit16 port_id;
     t_bool write;
@@ -47,21 +45,6 @@ static void core_machine_port_add_provider(t_port *port, t_nubit16 port_id,
     }
     entry->handler = handler;
     entry->owner = owner;
-}
-
-t_port *core_machine_port_current(void)
-{
-    return coreMachinePort;
-}
-
-void core_machine_port_bind_live(t_port *port)
-{
-    coreMachinePort = port;
-}
-
-void core_machine_port_unbind_live(void)
-{
-    coreMachinePort = NULL;
 }
 
 
@@ -142,14 +125,4 @@ void core_machine_port_finalize(t_port *port)
         entry = next;
     }
     port->connect.providers = NULL;
-}
-
-uint32_t core_machine_port_read_legacy(uint16_t port)
-{
-    return core_machine_port_read(core_machine_port_current(), port);
-}
-
-void core_machine_port_write_legacy(uint16_t port, uint32_t value)
-{
-    core_machine_port_write(core_machine_port_current(), port, value);
 }

@@ -5,11 +5,6 @@
 #include "core/machine/port.h"
 #include "core/machine/kbc.h"
 
-static t_kbc *coreMachineKbc;
-t_kbc *core_machine_kbc_current(void) { return coreMachineKbc; }
-void core_machine_kbc_bind_live(t_kbc *controller) { coreMachineKbc=controller; }
-void core_machine_kbc_unbind_live(void) { coreMachineKbc=NULL; }
-
 static void core_machine_kbc_read_status(t_port *port, t_nubit16 port_id,
     void *owner)
 {
@@ -24,18 +19,11 @@ void core_machine_kbc_register_ports(t_kbc *controller, t_port *port)
         core_machine_kbc_read_status, controller);
 }
 
-void vkbcInit() {
-    core_machine_kbc_initialize(core_machine_kbc_current(),
-        core_machine_port_current());
-}
 void core_machine_kbc_initialize(t_kbc *controller, t_port *port) {
     if (controller == NULL || port == NULL) return;
     MEMSET(controller, Zero8, sizeof(*controller));
     core_machine_kbc_register_ports(controller, port);
 }
-void vkbcReset() { core_machine_kbc_reset(core_machine_kbc_current()); }
 void core_machine_kbc_reset(t_kbc *controller) { (void)controller; }
-void vkbcRefresh() { core_machine_kbc_refresh(core_machine_kbc_current()); }
 void core_machine_kbc_refresh(t_kbc *controller) { (void)controller; }
-void vkbcFinal() { core_machine_kbc_finalize(core_machine_kbc_current()); }
 void core_machine_kbc_finalize(t_kbc *controller) { (void)controller; }

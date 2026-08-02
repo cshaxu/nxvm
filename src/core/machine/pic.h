@@ -28,15 +28,6 @@ typedef struct t_pic {
     t_pic_data data;
 } t_pic;
 
-t_pic *core_machine_pic_master_current(void);
-t_pic *core_machine_pic_slave_current(void);
-void core_machine_pic_bind_live(t_pic *master, t_pic *slave);
-void core_machine_pic_unbind_live(void);
-
-/* Transitional direct aliases to the composition-owned PIC pair. */
-#define vpic1 (*core_machine_pic_master_current())
-#define vpic2 (*core_machine_pic_slave_current())
-
 #define VPIC_MAX_IRQ_COUNT 8
 
 /*
@@ -114,15 +105,6 @@ void core_machine_pic_unbind_live(void);
 #define VPIC_GetIrrTopId(rpic)  (GetRegTopId((rpic), (rpic)->data.irr))
 #define VPIC_GetImrTopId(rpic)  (GetRegTopId((rpic), (rpic)->data.imr))
 
-void vpicSetIRQ(t_nubit8 irqId);
-t_bool vpicScanINTR();
-t_nubit8 vpicPeekINTR();
-t_nubit8 vpicGetINTR();
-
-void vpicInit();
-void vpicReset();
-void vpicRefresh();
-void vpicFinal();
 void core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port);
 void core_machine_pic_reset(t_pic *master, t_pic *slave);
 void core_machine_pic_refresh(t_pic *master, t_pic *slave);
@@ -133,7 +115,7 @@ t_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
 t_nubit8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
 
 #define VPIC_POST "           \
-; init vpic1                \n\
+; init pic master           \n\
 mov al, 11 ; icw1 0001 0001 \n\
 out 20, al                  \n\
 mov al, 08 ; icw2 0000 1000 \n\
@@ -143,7 +125,7 @@ out 21, al                  \n\
 mov al, 11 ; icw4 0001 0001 \n\
 out 21, al                  \n\
 \
-; init vpic2                \n\
+; init pic slave            \n\
 mov al, 11 ; icw1 0001 0001 \n\
 out a0, al                  \n\
 mov al, 70 ; icw2 0111 0000 \n\

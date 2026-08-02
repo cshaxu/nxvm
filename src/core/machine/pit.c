@@ -9,12 +9,6 @@
 #include "core/machine/port.h"
 #include "core/machine/pit.h"
 
-static t_pit *coreMachinePit;
-
-t_pit *core_machine_pit_current(void) { return coreMachinePit; }
-void core_machine_pit_bind_live(t_pit *pit) { coreMachinePit = pit; }
-void core_machine_pit_unbind_live(void) { coreMachinePit = NULL; }
-
 /* Initializes counter when status is ready */
 static void LoadInit(t_pit *pit, t_nubit8 id) {
     if (pit->data.flagWrite[id] == VPIT_STATUS_RW_READY) {
@@ -210,27 +204,6 @@ static void io_write_0043(t_port *port, t_nubit16 port_id, void *owner) {
     }
 }
 
-/* set gate value and load init */
-void vpitSetGate(t_nubit8 id, t_bool flagGate) {
-    if (VPIT_GetCW_M(vpit.data.cw[id]) != Zero8) {
-        if (!vpit.connect.flagGate[id] && flagGate) {
-            LoadInit(&vpit, id);
-        }
-    }
-    vpit.connect.flagGate[id] = flagGate;
-}
-void vpitAddDevice(t_nubit8 id, t_faddrcc fpOut) {
-    (void)fpOut;
-    (void)id;
-    /* GATE tells if counter is connected */
-    vpit.connect.flagGate[id] = True;
-}
-
-void vpitInit() {
-    core_machine_pit_initialize(core_machine_pit_current(),
-        core_machine_port_current());
-}
-
 void core_machine_pit_set_output(t_pit *pit, t_nubit8 id,
     core_machine_pit_output_provider provider, void *owner) {
     if (pit == NULL || id >= 3u) return;
@@ -251,9 +224,6 @@ void core_machine_pit_initialize(t_pit *pit, t_port *port)
     core_machine_port_add_write(port, 0x0042, io_write_0042, pit);
     core_machine_port_add_write(port, 0x0043, io_write_0043, pit);
 }
-void vpitReset() {
-    core_machine_pit_reset(core_machine_pit_current());
-}
 void core_machine_pit_reset(t_pit *pit) {
     t_nubitcc i;
     if (pit == NULL) return;
@@ -262,9 +232,6 @@ void core_machine_pit_reset(t_pit *pit) {
         pit->data.flagReady[i] = pit->data.flagLatch[i] = True;
         pit->data.flagRead[i] = pit->data.flagWrite[i] = VPIT_STATUS_RW_READY;
     }
-}
-void vpitRefresh() {
-    core_machine_pit_refresh(core_machine_pit_current());
 }
 void core_machine_pit_refresh(t_pit *pit) {
     t_nubitcc i;
@@ -340,27 +307,4 @@ void core_machine_pit_refresh(t_pit *pit) {
         }
     }
 }
-void vpitFinal() { core_machine_pit_finalize(core_machine_pit_current()); }
 void core_machine_pit_finalize(t_pit *pit) { (void)pit; }
-
-/* Print PIT status */
-void devicePrintPit() {
-    t_nubit8 id;
-    for (id = 0; id < 3; ++id) {
-        PRINTF("PIT INFO %d\n========\n",id);
-        PRINTF("Control Word = %x, SC = %d, RW = %d, Mode = %d, BCD=%d\n",
-               vpit.data.cw[id], VPIT_GetCW_SC(vpit.data.cw[id]), VPIT_GetCW_RW(vpit.data.cw[id]),
-               VPIT_GetCW_M(vpit.data.cw[id]), GetBit(vpit.data.cw[id], VPIT_CW_BCD));
-        PRINTF("Init = %x, Count = %x, Latch = %x\n",
-               vpit.data.init[id], vpit.data.count[id], vpit.data.latch[id]);
-        PRINTF("Flags: ready = %d, latch = %d, read = %d, write = %d, gate = %d, out = %p\n",
-               vpit.data.flagReady[id], vpit.data.flagLatch[id], vpit.data.flagRead[id],
-               vpit.data.flagWrite[id], vpit.connect.flagGate[id],
-               (void *)vpit.connect.output[id]);
-    }
-    id = 3;
-    PRINTF("PIT INFO %d (read-back)\n========\n",id);
-    PRINTF("Control Word = %x, SC = %d, RW = %d, Mode = %d, BCD=%d\n",
-           vpit.data.cw[id], VPIT_GetCW_SC(vpit.data.cw[id]), VPIT_GetCW_RW(vpit.data.cw[id]),
-           VPIT_GetCW_M(vpit.data.cw[id]), GetBit(vpit.data.cw[id], VPIT_CW_BCD));
-}

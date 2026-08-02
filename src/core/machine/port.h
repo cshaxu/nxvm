@@ -39,14 +39,6 @@ struct t_port {
     t_port_connect connect;
 };
 
-t_port *core_machine_port_current(void);
-void core_machine_port_bind_live(t_port *port);
-void core_machine_port_unbind_live(void);
-
-/* Transitional direct alias to the one composition-owned live port object. */
-#define vport (*core_machine_port_current())
-
-
 void core_machine_port_execute_read(t_port *port, t_nubit16 port_id);
 void core_machine_port_execute_write(t_port *port, t_nubit16 port_id);
 void core_machine_port_add_read(t_port *port, t_nubit16 port_id,
@@ -59,9 +51,6 @@ void core_machine_port_initialize(t_port *port);
 void core_machine_port_reset(t_port *port);
 void core_machine_port_finalize(t_port *port);
 
-
-uint32_t core_machine_port_read_legacy(uint16_t port);
-void core_machine_port_write_legacy(uint16_t port, uint32_t value);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
