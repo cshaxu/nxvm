@@ -96,7 +96,8 @@ nxvm_core_status nxvm_full_pc_create(
         vm_machine_hdd_create(full_pc->machine.hdd, config->create_hdd_cylinders);
     }
 
-    vm_profile_default_bios_set_boot_hdd(config->boot_hdd != 0);
+    vm_profile_default_bios_set_boot_hdd(full_pc->machine.default_bios,
+        config->boot_hdd != 0);
     vm_composition_control_reset(full_pc->machine.control);
     full_pc->active = 1;
     *out_full_pc = full_pc;
