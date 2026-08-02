@@ -166,9 +166,9 @@ alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M5 T70 S1 is active: migrate VM-only machine providers and their callback
-callers to explicit live-machine references. M6 T1 remains deferred and DOS
-implementation remains ineligible.
+M5 T71 S1 is active: migrate default-profile firmware callbacks and static
+facades to explicit composition-owned profile objects. M6 T1 remains deferred
+and DOS implementation remains ineligible.
 
 M5 T68 S2 repaired a fixture-backed full-PC execution regression before T70
 continued. `nxvm_0_5_0068.exe` is revoked: its execution context supplied a
@@ -177,6 +177,11 @@ timing-dependent access violation after FDD boot. The corrected binding and
 identity gate pass full-PC and six retained-Console FDD start survival probes.
 
 ## Completed
+
+- M5 T70 S1: removed selected-object aliases for CMOS, HDD, FDD, FDC, and VM
+  debug state. Focused authority, full-PC, debugger, profile, and retained
+  Console FDD start gates passed; `build/output/nxvm_0_5_0070.exe` is the
+  verified `0.5.0070` developer artifact.
 
 - M5 T69 S1: moved block, keyboard, and display composition paths onto frozen
   live-machine provider slots without copying guest state. Trace and firmware
