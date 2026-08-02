@@ -10,7 +10,7 @@
 #include "vm/machine/vdebug.h"
 #include "vm/profile/default_profile/firmware/qdcga.h"
 #include "vm/profile/default_profile/firmware/qdkeyb.h"
-#include "core/machine/keyboard_state.h"
+#include "core/machine/keyboard_interface.h"
 #include "vm/platform/execution.h"
 #include "vm/platform/input.h"
 #include "vm/platform/platform.h"
