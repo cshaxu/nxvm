@@ -29,18 +29,24 @@ static void vm_composition_wait(void *context, uint32_t milliseconds)
 static int vm_composition_keyboard_get_modifier(
     void *context, vm_platform_keyboard_modifier modifier)
 {
-    (void)context;
+    vm_composition_live_machine *machine =
+        (vm_composition_live_machine *)context;
     switch (modifier) {
     case VM_PLATFORM_KEYBOARD_MODIFIER_ALT:
-        return core_machine_keyboard_get_modifier(CORE_MACHINE_KEYBOARD_MODIFIER_ALT);
+        return core_machine_keyboard_get_modifier_from(machine->keyboard_provider,
+            CORE_MACHINE_KEYBOARD_MODIFIER_ALT);
     case VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL:
-        return core_machine_keyboard_get_modifier(CORE_MACHINE_KEYBOARD_MODIFIER_CONTROL);
+        return core_machine_keyboard_get_modifier_from(machine->keyboard_provider,
+            CORE_MACHINE_KEYBOARD_MODIFIER_CONTROL);
     case VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT:
-        return core_machine_keyboard_get_modifier(CORE_MACHINE_KEYBOARD_MODIFIER_SHIFT);
+        return core_machine_keyboard_get_modifier_from(machine->keyboard_provider,
+            CORE_MACHINE_KEYBOARD_MODIFIER_SHIFT);
     case VM_PLATFORM_KEYBOARD_MODIFIER_CAPS_LOCK:
-        return core_machine_keyboard_get_modifier(CORE_MACHINE_KEYBOARD_MODIFIER_CAPS_LOCK);
+        return core_machine_keyboard_get_modifier_from(machine->keyboard_provider,
+            CORE_MACHINE_KEYBOARD_MODIFIER_CAPS_LOCK);
     case VM_PLATFORM_KEYBOARD_MODIFIER_NUM_LOCK:
-        return core_machine_keyboard_get_modifier(CORE_MACHINE_KEYBOARD_MODIFIER_NUM_LOCK);
+        return core_machine_keyboard_get_modifier_from(machine->keyboard_provider,
+            CORE_MACHINE_KEYBOARD_MODIFIER_NUM_LOCK);
     }
     return 0;
 }
@@ -48,14 +54,17 @@ static int vm_composition_keyboard_get_modifier(
 static void vm_composition_keyboard_apply_host_state(
     void *context, uint32_t asynchronous_keys, uint32_t toggle_keys)
 {
-    (void)context;
-    core_machine_keyboard_apply_host_state(asynchronous_keys, toggle_keys);
+    vm_composition_live_machine *machine =
+        (vm_composition_live_machine *)context;
+    core_machine_keyboard_apply_host_state_to(machine->keyboard_provider,
+        asynchronous_keys, toggle_keys);
 }
 
 static void vm_composition_keyboard_receive_key_press(void *context, uint16_t code)
 {
-    (void)context;
-    core_machine_keyboard_receive_key_press(code);
+    vm_composition_live_machine *machine =
+        (vm_composition_live_machine *)context;
+    core_machine_keyboard_receive_key_press_to(machine->keyboard_provider, code);
 }
 
 static void vm_composition_keyboard_request_stop(void *context)
@@ -140,7 +149,9 @@ void machineInit(vm_composition_live_machine *machine) {
     vm_composition_live_machine_initialize(machine);
     vm_composition_live_machine_bind_legacy(machine);
     vm_composition_control_initialize(machine->control, machine);
-    core_machine_keyboard_bind(NULL, vm_profile_default_keyboard_provider());
+    core_machine_keyboard_provider_slot_bind(machine->keyboard_provider, NULL,
+        vm_profile_default_keyboard_provider());
+    core_machine_keyboard_provider_slot_freeze(machine->keyboard_provider);
     core_machine_display_bind_snapshot_provider(NULL,
         vm_profile_default_display_capture);
     vm_machine_debug_bind_pause(vm_composition_debug_request_pause, NULL);
@@ -152,7 +163,7 @@ void machineInit(vm_composition_live_machine *machine) {
 void machineFinal(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_composition_control_finalize(machine->control, machine);
-    core_machine_keyboard_bind(NULL, NULL);
+    core_machine_keyboard_provider_slot_finalize(machine->keyboard_provider);
     core_machine_display_bind_snapshot_provider(NULL, NULL);
     vm_machine_debug_bind_pause(NULL, NULL);
     core_product_debug_bind_target(NULL);

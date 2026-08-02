@@ -18,6 +18,12 @@ typedef struct core_machine_keyboard_provider {
     void (*receive_key_press)(void *context, uint16_t code);
 } core_machine_keyboard_provider;
 
+typedef struct core_machine_keyboard_provider_slot {
+    void *context;
+    const core_machine_keyboard_provider *provider;
+    int frozen;
+} core_machine_keyboard_provider_slot;
+
 #define NXVM_KEYBOARD_ASYNC_RIGHT_SHIFT (UINT32_C(1) << 0)
 #define NXVM_KEYBOARD_ASYNC_LEFT_SHIFT  (UINT32_C(1) << 1)
 #define NXVM_KEYBOARD_ASYNC_CONTROL     (UINT32_C(1) << 2)
@@ -39,5 +45,22 @@ int core_machine_keyboard_get_modifier(core_machine_keyboard_modifier modifier);
 void core_machine_keyboard_apply_host_state(uint32_t asynchronous_keys,
     uint32_t toggle_keys);
 void core_machine_keyboard_receive_key_press(uint16_t code);
+void core_machine_keyboard_provider_slot_initialize(
+    core_machine_keyboard_provider_slot *slot);
+void core_machine_keyboard_provider_slot_bind(
+    core_machine_keyboard_provider_slot *slot, void *context,
+    const core_machine_keyboard_provider *provider);
+void core_machine_keyboard_provider_slot_freeze(
+    core_machine_keyboard_provider_slot *slot);
+void core_machine_keyboard_provider_slot_finalize(
+    core_machine_keyboard_provider_slot *slot);
+int core_machine_keyboard_get_modifier_from(
+    const core_machine_keyboard_provider_slot *slot,
+    core_machine_keyboard_modifier modifier);
+void core_machine_keyboard_apply_host_state_to(
+    const core_machine_keyboard_provider_slot *slot,
+    uint32_t asynchronous_keys, uint32_t toggle_keys);
+void core_machine_keyboard_receive_key_press_to(
+    const core_machine_keyboard_provider_slot *slot, uint16_t code);
 
 #endif
