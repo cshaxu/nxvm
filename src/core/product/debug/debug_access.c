@@ -2,7 +2,7 @@
 
 static const core_product_debug_target *debug_target(void)
 {
-    return core_product_debug_get_target();
+    return core_product_debug_scope_target();
 }
 
 int core_product_debug_is_running(void)

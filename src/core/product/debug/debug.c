@@ -1873,8 +1873,10 @@ static void exec() {
     }
 }
 
-void debugMain() {
+void debugMain(const core_product_debug_target *target) {
     size_t i;
+    if (target == NULL) return;
+    core_product_debug_scope_enter(target);
     strFileName[0] = '\0';
     asmSegRec = uasmSegRec = _cs;
     asmPtrRec = uasmPtrRec = _ip;
@@ -1899,4 +1901,5 @@ void debugMain() {
         }
     }
     FREE((void *) arg);
+    core_product_debug_scope_leave();
 }

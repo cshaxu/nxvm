@@ -7,7 +7,9 @@
 extern "C" {
 #endif
 
-void debugMain();
+#include "core/product/debug/debug_target.h"
+
+void debugMain(const core_product_debug_target *target);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

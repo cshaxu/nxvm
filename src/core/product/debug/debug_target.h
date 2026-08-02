@@ -67,7 +67,8 @@ typedef struct core_product_debug_target {
     void *context;
 } core_product_debug_target;
 
-void core_product_debug_bind_target(const core_product_debug_target *target);
-const core_product_debug_target *core_product_debug_get_target(void);
+void core_product_debug_scope_enter(const core_product_debug_target *target);
+void core_product_debug_scope_leave(void);
+const core_product_debug_target *core_product_debug_scope_target(void);
 
 #endif

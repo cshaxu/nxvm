@@ -1,13 +1,18 @@
 #include "core/product/debug/debug_target.h"
 
-static const core_product_debug_target *coreProductDebugTarget;
+static _Thread_local const core_product_debug_target *coreProductDebugScopeTarget;
 
-void core_product_debug_bind_target(const core_product_debug_target *target)
+void core_product_debug_scope_enter(const core_product_debug_target *target)
 {
-    coreProductDebugTarget = target;
+    coreProductDebugScopeTarget = target;
 }
 
-const core_product_debug_target *core_product_debug_get_target(void)
+void core_product_debug_scope_leave(void)
 {
-    return coreProductDebugTarget;
+    coreProductDebugScopeTarget = NULL;
+}
+
+const core_product_debug_target *core_product_debug_scope_target(void)
+{
+    return coreProductDebugScopeTarget;
 }

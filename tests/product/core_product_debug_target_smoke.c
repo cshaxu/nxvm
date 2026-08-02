@@ -71,7 +71,7 @@ int main(void)
         target.write_register(target.context, CORE_PRODUCT_DEBUG_EAX, 0x87654321u) ||
         fixture.eax != 0x87654321u ||
         target.get_break_count(target.context) != 7u) return 1;
-    core_product_debug_bind_target(&target);
+    core_product_debug_scope_enter(&target);
     if (!core_product_debug_is_running() ||
         core_product_debug_read_register(CORE_PRODUCT_DEBUG_EAX, &value) ||
         value != fixture.eax ||
@@ -80,7 +80,7 @@ int main(void)
         core_product_debug_get_code_default_size() != 16 ||
         core_product_debug_get_code_base() != 0xf0000u ||
         core_product_debug_get_break_count() != 7u) return 1;
-    core_product_debug_bind_target(NULL);
+    core_product_debug_scope_leave();
     puts("M5:T14:S3:CORE-PRODUCT-DEBUG-TARGET:OK");
     return 0;
 }
