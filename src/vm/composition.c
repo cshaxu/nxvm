@@ -50,7 +50,7 @@
 void vmachineInit(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vcpuInit();
-    vfddInit();
+    vm_machine_fdd_initialize(machine->fdd);
     vm_machine_hdd_initialize(machine->hdd);
     vmCompositionBindBlock(machine);
     vm_composition_bind_display(machine);
@@ -114,7 +114,7 @@ void vmachineReset(vm_composition_live_machine *machine) {
     core_machine_dma_reset(machine->dma_latch, machine->dma_primary,
         machine->dma_secondary);
     vm_machine_fdc_reset(machine->fdc);
-    vfddReset();
+    vm_machine_fdd_reset(machine->fdd);
     vm_machine_hdd_reset(machine->hdd);
     core_machine_pic_reset(machine->pic_master, machine->pic_slave);
     core_machine_pit_reset(machine->pit);
@@ -133,7 +133,7 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
     _empty_
     vbiosRefresh();
     _empty_
-    vfddRefresh();
+    vm_machine_fdd_refresh(machine->fdd);
     _empty_
     vhdcRefresh();
     _empty_
@@ -191,7 +191,7 @@ void vmachineFinal(vm_composition_live_machine *machine) {
     _empty_
 
     vcpuFinal();
-    vfddFinal();
+    vm_machine_fdd_finalize(machine->fdd);
     vm_machine_hdd_finalize(machine->hdd);
     vramFinal();
 }
@@ -202,8 +202,8 @@ void devicePrintMachine(const vm_composition_live_machine *machine) {
     PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
     PRINTF("RAM Size:          %d MB\n", vram.connect.size >> 20);
     PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
-           vfddGetImageSize * 1. / VFDD_BYTE_PER_MB,
-           vfdd.connect.flagDiskExist ? "inserted" : "not inserted");
+           vm_machine_fdd_image_size(machine->fdd) * 1. / VFDD_BYTE_PER_MB,
+           machine->fdd->connect.flagDiskExist ? "inserted" : "not inserted");
     PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n",
            machine->hdd->data.ncyl,
            vm_machine_hdd_image_size(machine->hdd) * 1. / VHDD_BYTE_PER_MB,

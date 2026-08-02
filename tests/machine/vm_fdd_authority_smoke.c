@@ -11,12 +11,11 @@ int main(void)
 
     machineInit(&session);
     machine = (&session);
-    if (machine == NULL || &vfdd != machine->fdd) {
+    if (machine == NULL || machine->fdd != &machine->fdd_storage) {
         machineFinal(&session);
         return 1;
     }
     machineFinal(&session);
-    if (vm_machine_fdd_current() != NULL) return 1;
-    puts("M5:T34:S1:FDD-AUTHORITY:OK");
+    puts("M5:T70:S1:P7:FDD-AUTHORITY:OK");
     return 0;
 }

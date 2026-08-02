@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     vm_composition_live_machine_initialize(&session);
     vm_composition_live_machine_bind_legacy(&session);
     vm_composition_control_initialize(session.control, &session);
-    if (vm_machine_fdd_insert(argv[1]) != 0) {
+    if (vm_machine_fdd_insert_for(session.fdd, argv[1]) != 0) {
         vm_composition_control_finalize(session.control, &session);
     vm_composition_live_machine_finalize(&session);
         return 1;

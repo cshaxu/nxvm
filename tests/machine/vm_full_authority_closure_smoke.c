@@ -31,7 +31,8 @@ static int has_single_live_authority(const vm_composition_live_machine *machine)
         machine->dma_primary == &vdma1 && machine->dma_secondary == &vdma2 &&
         machine->kbc == &vkbc &&
         machine->vadp == &vvadp && machine->cmos == &machine->cmos_storage &&
-        machine->fdd == &vfdd && machine->fdc == &machine->fdc_storage &&
+        machine->fdd == &machine->fdd_storage &&
+        machine->fdc == &machine->fdc_storage &&
         machine->hdd == &machine->hdd_storage && machine->debug == &vdebug &&
         machine->default_bios == &vbios &&
         machine->default_qdx->table == qdxTable &&
@@ -54,7 +55,8 @@ int main(int argc, char **argv)
     vm_composition_live_machine_initialize(&session);
     vm_composition_live_machine_bind_legacy(&session);
     vm_composition_control_initialize(session.control, &session);
-    if (!has_single_live_authority(&session) || vm_machine_fdd_insert(argv[1]) != 0) {
+    if (!has_single_live_authority(&session) ||
+        vm_machine_fdd_insert_for(session.fdd, argv[1]) != 0) {
         vm_composition_control_finalize(session.control, &session);
     vm_composition_live_machine_finalize(&session);
         return 1;
