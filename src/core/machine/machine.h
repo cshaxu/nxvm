@@ -9,7 +9,7 @@
 #include "core/machine/port.h"
 #include "core/machine/profile.h"
 #include "type.h"
-#include "core/machine/trace.h"
+#include "core/machine/trace_interface.h"
 
 #ifdef __cplusplus
 extern "C" {

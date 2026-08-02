@@ -1,5 +1,5 @@
-#ifndef NXVM_CORE_TRACE_H
-#define NXVM_CORE_TRACE_H
+#ifndef NXVM_CORE_TRACE_INTERFACE_H
+#define NXVM_CORE_TRACE_INTERFACE_H
 
 #include <stdint.h>
 

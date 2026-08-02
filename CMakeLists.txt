@@ -30,7 +30,7 @@ add_library(nxvm-core STATIC
     src/core/machine/memory.c
     src/core/machine/port.c
     src/core/machine/presentation.c
-    src/core/machine/trace.c
+    src/core/machine/trace_interface.c
 )
 add_library(nxvm-core-machine-firmware STATIC src/core/machine/firmware.c)
 target_include_directories(nxvm-core-machine-firmware PUBLIC "${CMAKE_SOURCE_DIR}/src")
@@ -492,6 +492,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t14 "m5t14")
 add_nxvm_full_pc_artifact(nxvm-m5-t18 "m5t18")
 add_nxvm_full_pc_artifact(nxvm-m5-t19 "m5t19")
 add_nxvm_full_pc_artifact(nxvm-m5-t20 "m5t20")
+add_nxvm_full_pc_artifact(nxvm-m5-t21 "m5t21")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
