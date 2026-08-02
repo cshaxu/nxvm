@@ -154,21 +154,6 @@ void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
 #undef cpu_state
 }
 
-void vcpuInit() {
-    core_machine_cpu_state_initialize(
-        core_machine_cpu_execution_current_legacy());
-}
-void vcpuReset() {
-    core_machine_cpu_state_reset(core_machine_cpu_execution_current_legacy());
-}
-void vcpuRefresh() {
-    core_machine_cpu_execution_refresh(
-        core_machine_cpu_execution_current_legacy());
-}
-void vcpuFinal() {
-    core_machine_cpu_execution_finalize(
-        core_machine_cpu_execution_current_legacy());
-}
 void core_machine_cpu_execution_request_stop(
     core_machine_cpu_execution_context *context)
 {

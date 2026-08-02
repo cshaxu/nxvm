@@ -64,18 +64,6 @@ void core_machine_port_unbind_live(void)
     coreMachinePort = NULL;
 }
 
-void vportAddRead(t_nubit16 portId, t_faddrcc fpIn) {
-    vport.connect.legacy_read[portId] = fpIn;
-}
-void vportAddWrite(t_nubit16 portId, t_faddrcc fpOut) {
-    vport.connect.legacy_write[portId] = fpOut;
-}
-void vportExecRead(t_nubit16 portId) {
-    core_machine_port_execute_read(core_machine_port_current(), portId);
-}
-void vportExecWrite(t_nubit16 portId) {
-    core_machine_port_execute_write(core_machine_port_current(), portId);
-}
 
 void core_machine_port_execute_read(t_port *port, t_nubit16 port_id)
 {
@@ -129,16 +117,6 @@ void core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value)
     core_machine_port_execute_write(port, port_id);
 }
 
-void vportInit() {
-    core_machine_port_initialize(core_machine_port_current());
-}
-void vportReset() {
-    core_machine_port_reset(core_machine_port_current());
-}
-void vportRefresh() {}
-void vportFinal() {
-    core_machine_port_finalize(core_machine_port_current());
-}
 
 void core_machine_port_initialize(t_port *port)
 {

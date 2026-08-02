@@ -87,32 +87,6 @@ void core_machine_memory_write_physical(t_ram *ram, t_nubit32 physical,
     MEMCPY((void *) core_machine_memory_address(ram, physical),
         (void *) source, byte);
 }
-void vramReadPhysical(t_nubit32 physical, t_vaddrcc destination,
-    t_nubitcc byte)
-{
-    core_machine_memory_read_physical(core_machine_memory_current(), physical,
-        destination, byte);
-}
-void vramWritePhysical(t_nubit32 physical, t_vaddrcc source, t_nubitcc byte)
-{
-    core_machine_memory_write_physical(core_machine_memory_current(), physical,
-        source, byte);
-}
-
-#define pitOut ((t_faddrcc) NULL)
-void vramInit() {
-    core_machine_memory_initialize(core_machine_memory_current());
-    core_machine_memory_register_ports(core_machine_memory_current(),
-        core_machine_port_current());
-    vpitAddMe(1);
-}
-void vramReset() {
-    core_machine_memory_reset(core_machine_memory_current());
-}
-void vramRefresh() {}
-void vramFinal() {
-    core_machine_memory_finalize(core_machine_memory_current());
-}
 
 void core_machine_memory_initialize(t_ram *ram)
 {
