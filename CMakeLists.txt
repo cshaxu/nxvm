@@ -216,9 +216,14 @@ set(NXVM_MACHINE_CORE_SOURCES
 set(NXVM_CORE_PRODUCT_RUNTIME_SOURCES
     src/core/product/runtime/execution_context.c
 )
+add_library(ntvdm64-core-platform STATIC
+    src/core/platform/display_frame.c
+)
+target_include_directories(ntvdm64-core-platform PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
 set(NXVM_PLATFORM_VM_SOURCES
     src/vm/platform/platform.c
-    src/vm/platform/display_frame.c
     src/vm/platform/execution.c
     src/vm/platform/input.c
     src/vm/platform/win32/win32.c
@@ -305,7 +310,9 @@ add_library(nxvm-platform-vm STATIC ${NXVM_PLATFORM_VM_SOURCES})
 target_include_directories(nxvm-platform-vm PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(nxvm-platform-vm PUBLIC nxvm-product-core-utils)
+target_link_libraries(nxvm-platform-vm PUBLIC
+    nxvm-product-core-utils
+    ntvdm64-core-platform)
 
 add_executable(nxvm-vm-platform-input-smoke
     tests/platform/vm_platform_input_smoke.c

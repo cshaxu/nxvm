@@ -40,9 +40,8 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 T17 S1 P1: audit concrete Win32/Linux platform sources for truly shared host
-primitives, then define the first `core/platform` extraction without moving
-VM-specific policy.
+M5 T17 S1 P2: audit the remaining Win32/Linux sources and extract only host
+primitives that have no VM callback, boot, Console, or display-policy ownership.
 
 ## Completed
 
@@ -214,6 +213,9 @@ VM-specific policy.
 - M5 T16 S1 P4: renamed default-profile keyboard helpers behind the existing
   core keyboard provider. GCC, platform-input, default-profile FDD, full-PC
   FDD/HDD, and DAG gates passed without BIOS keyboard-state or IRQ changes.
+- M5 T17 S1 P1: moved the shared display-frame mailbox to `core/platform` and
+  gave it the `core_platform_display_*` contract. GCC, core presentation,
+  VM-platform execution, default-profile FDD, and DAG gates passed.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware

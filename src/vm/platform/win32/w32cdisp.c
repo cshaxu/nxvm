@@ -4,7 +4,7 @@
 
 #include "core/product/utils.h"
 
-#include "vm/platform/display_frame.h"
+#include "core/platform/display_frame.h"
 
 #include "vm/platform/win32/win32con.h"
 #include "vm/platform/win32/w32cdisp.h"
@@ -28,9 +28,9 @@ VOID w32cdispInit() {
 }
 
 VOID w32cdispSetScreen() {
-    vm_platform_display_frame frame;
+    core_platform_display_frame frame;
 
-    vm_platform_display_capture(&frame);
+    core_platform_display_capture(&frame);
     sizeCol = frame.rows;
     sizeRow = frame.columns;
     coordBufSize.X = sizeRow; /* number of cols */
@@ -51,7 +51,7 @@ VOID w32cdispSetScreen() {
 }
 
 VOID w32cdispPaint(BOOL flagForce) {
-    vm_platform_display_frame frame;
+    core_platform_display_frame frame;
     UCHAR ansiChar;
     WCHAR unicodeChar;
     WORD  charProp;
@@ -59,7 +59,7 @@ VOID w32cdispPaint(BOOL flagForce) {
     COORD curPos;
     CONSOLE_CURSOR_INFO curInfo;
     BOOL changed;
-    vm_platform_display_capture(&frame);
+    core_platform_display_capture(&frame);
     if (!charBuf) {
         return;
     }
@@ -67,7 +67,7 @@ VOID w32cdispPaint(BOOL flagForce) {
     if (changed) {
         for (i = 0; i < sizeCol; ++i) {
             for (j = 0; j < sizeRow; ++j) {
-                USHORT index = i * VM_PLATFORM_DISPLAY_MAX_COLUMNS + j;
+                USHORT index = i * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + j;
                 ansiChar = frame.characters[index];
                 charProp = frame.attributes[index]; /* & 0x7f; */
                 /* if (!ansiChar) continue; */

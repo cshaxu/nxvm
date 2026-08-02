@@ -6,7 +6,7 @@
 #include <pthread.h>
 
 #include "core/product/utils.h"
-#include "vm/platform/display_frame.h"
+#include "core/platform/display_frame.h"
 #include "vm/platform/execution.h"
 #include "vm/platform/input.h"
 
@@ -209,9 +209,9 @@ static void lnxcdispPaint(uint8_t force) {
     int ref;
     uint8_t p, c;
     int i, j, sizeRow, sizeCol, curX, curY;
-    vm_platform_display_frame frame;
+    core_platform_display_frame frame;
 
-    vm_platform_display_capture(&frame);
+    core_platform_display_capture(&frame);
     sizeRow = GetMin(COLS, frame.columns);
     sizeCol = GetMin(LINES, frame.rows);
     ref = 0;
@@ -219,8 +219,8 @@ static void lnxcdispPaint(uint8_t force) {
         clear();
         for (i = 0; i < sizeCol; ++i) {
             for (j = 0; j < sizeRow; ++j) {
-                c = frame.characters[i * VM_PLATFORM_DISPLAY_MAX_COLUMNS + j];
-                p = frame.attributes[i * VM_PLATFORM_DISPLAY_MAX_COLUMNS + j] & 0x7f;
+                c = frame.characters[i * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + j];
+                p = frame.attributes[i * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + j] & 0x7f;
                 c = Ascii2Print[c][1]; /* curses cannot print ext ascii */
                 move(i, j);
                 addch(c | COLOR_PAIR(GetColorFromProp(p)));

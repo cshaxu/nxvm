@@ -170,3 +170,13 @@ Console protection, cancellation, and exit semantics are product policy.
 adapts a core machine snapshot to a core-platform frame and binds any host
 provider. `core/product` debugger UI reaches a concrete machine only through
 its debug-target callback contract.
+
+## T17 Shared Platform Extraction
+
+The first shared host primitive is complete: the copied, lock-protected display
+frame mailbox moved with `git mv` to `core/platform/display_frame.*` and now
+uses the `core_platform_display_*` contract. It contains no guest-machine,
+Console, boot, or product policy. `ntvdm64-core-platform` owns the source;
+the VM platform target consumes it. Windows GCC, core presentation,
+VM-platform execution, default-profile FDD fixture, and the zero-edge DAG
+verifier passed.

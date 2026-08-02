@@ -2,7 +2,7 @@
 
 /* W32ADISP provides win32 window output interface. */
 
-#include "vm/platform/display_frame.h"
+#include "core/platform/display_frame.h"
 
 #include "vm/platform/win32/win32app.h"
 #include "vm/platform/win32/w32adisp.h"
@@ -417,9 +417,9 @@ VOID w32adispInit() {
 VOID w32adispSetScreen() {
     RECT clientRect,windowRect;
     LONG widthOffset, heightOffset;
-    vm_platform_display_frame frame;
+    core_platform_display_frame frame;
 
-    vm_platform_display_capture(&frame);
+    core_platform_display_capture(&frame);
     sizeRow = frame.columns;
     sizeCol = frame.rows;
     GetClientRect(w32aHWnd, &clientRect);
@@ -439,7 +439,7 @@ VOID w32adispSetScreen() {
     w32adispPaint(TRUE);
 }
 
-static VOID DisplayCursor(const vm_platform_display_frame *frame) {
+static VOID DisplayCursor(const core_platform_display_frame *frame) {
     HBRUSH hBrush;
     HGDIOBJ hOldGdiObj;
     RECT rect;
@@ -466,15 +466,15 @@ VOID w32adispPaint(BOOL flagForce) {
     UCHAR i, j, ch, prop;
     USHORT index;
     BOOL changed;
-    vm_platform_display_frame frame;
+    core_platform_display_frame frame;
 
-    vm_platform_display_capture(&frame);
+    core_platform_display_capture(&frame);
     flashCount = (flashCount + 1) % 10;
     changed = flagForce || frame.generation != displayedGeneration;
     if (changed) {
         for (i = 0; i < sizeCol; ++i) {
             for (j = 0; j < sizeRow; ++j) {
-                index = i * VM_PLATFORM_DISPLAY_MAX_COLUMNS + j;
+                index = i * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + j;
                 ch = frame.characters[index];
                 prop = frame.attributes[index]; /* & 0x7f; */
                 if (!bFontCharExist[ch][prop]) {
