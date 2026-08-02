@@ -16,7 +16,7 @@ void vmachineInit(vm_composition_live_machine *machine);
 void vmachineReset(vm_composition_live_machine *machine);
 void vmachineRefresh(vm_composition_live_machine *machine);
 void vmachineFinal(vm_composition_live_machine *machine);
-void devicePrintMachine();
+void devicePrintMachine(const vm_composition_live_machine *machine);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

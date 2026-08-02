@@ -51,7 +51,7 @@ void vmachineInit(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vcpuInit();
     vfddInit();
-    vhddInit();
+    vm_machine_hdd_initialize(machine->hdd);
     vmCompositionBindBlock(machine);
     vm_composition_bind_display(machine);
     vbiosInit();
@@ -112,7 +112,7 @@ void vmachineReset(vm_composition_live_machine *machine) {
         machine->dma_secondary);
     vfdcReset();
     vfddReset();
-    vhddReset();
+    vm_machine_hdd_reset(machine->hdd);
     core_machine_pic_reset(machine->pic_master, machine->pic_slave);
     core_machine_pit_reset(machine->pit);
     vportReset();
@@ -134,7 +134,7 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
     _empty_
     vhdcRefresh();
     _empty_
-    vhddRefresh();
+    vm_machine_hdd_refresh(machine->hdd);
     _empty_
     core_machine_kbc_refresh(machine->kbc);
     _empty_
@@ -189,18 +189,20 @@ void vmachineFinal(vm_composition_live_machine *machine) {
 
     vcpuFinal();
     vfddFinal();
-    vhddFinal();
+    vm_machine_hdd_finalize(machine->hdd);
     vramFinal();
 }
 /* Print machine info */
-void devicePrintMachine() {
+void devicePrintMachine(const vm_composition_live_machine *machine) {
+    if (machine == NULL) return;
     PRINTF("Machine:           %s\n", NXVM_DEVICE_MACHINE);
     PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
     PRINTF("RAM Size:          %d MB\n", vram.connect.size >> 20);
     PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
            vfddGetImageSize * 1. / VFDD_BYTE_PER_MB,
            vfdd.connect.flagDiskExist ? "inserted" : "not inserted");
-    PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n", vhdd.data.ncyl,
-           vhddGetImageSize * 1. / VHDD_BYTE_PER_MB,
-           vhdd.connect.flagDiskExist ? "connected" : "disconnected");
+    PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n",
+           machine->hdd->data.ncyl,
+           vm_machine_hdd_image_size(machine->hdd) * 1. / VHDD_BYTE_PER_MB,
+           machine->hdd->connect.flagDiskExist ? "connected" : "disconnected");
 }

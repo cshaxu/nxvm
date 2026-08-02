@@ -17,16 +17,16 @@ static void vm_composition_console_initialize(void *context)
     machineInit(machine);
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
     vm_machine_fdd_insert("d:/fd.img");
-    vm_machine_hdd_insert("d:/hd.img");
+    vm_machine_hdd_insert(machine->hdd, "d:/hd.img");
 #else
     vm_machine_fdd_insert("/Users/xha/fd.img");
-    vm_machine_hdd_insert("/Users/xha/hd.img");
+    vm_machine_hdd_insert(machine->hdd, "/Users/xha/hd.img");
 #endif
 }
 
 static void vm_composition_console_finalize(void *context) { machineFinal((vm_composition_live_machine *)context); }
 static int vm_composition_console_is_running(void *context) { return vm_composition_control_is_running(((vm_composition_live_machine *)context)->control); }
-static void vm_composition_console_print_machine(void *context) { (void)context; devicePrintMachine(); }
+static void vm_composition_console_print_machine(void *context) { devicePrintMachine((vm_composition_live_machine *)context); }
 static int vm_composition_console_get_window_display(void *context) { (void)context; return platform.flagMode; }
 static void vm_composition_console_set_window_display(void *context, int enabled) { (void)context; platform.flagMode = enabled; }
 static void vm_composition_console_print_bios(void *context) { (void)context; vm_profile_default_bios_print(); }
@@ -48,9 +48,9 @@ static void vm_composition_console_set_memory(void *context, size_t bytes) { (vo
 static void vm_composition_console_create_fdd(void *context) { (void)context; vm_machine_fdd_create(); }
 static int vm_composition_console_insert_fdd(void *context, const char *path) { (void)context; return vm_machine_fdd_insert(path); }
 static int vm_composition_console_remove_fdd(void *context, const char *path) { (void)context; return vm_machine_fdd_remove(path); }
-static void vm_composition_console_create_hdd(void *context, uint16_t cylinders) { (void)context; vm_machine_hdd_create(cylinders); }
-static int vm_composition_console_insert_hdd(void *context, const char *path) { (void)context; return vm_machine_hdd_insert(path); }
-static int vm_composition_console_remove_hdd(void *context, const char *path) { (void)context; return vm_machine_hdd_remove(path); }
+static void vm_composition_console_create_hdd(void *context, uint16_t cylinders) { vm_machine_hdd_create(((vm_composition_live_machine *)context)->hdd, cylinders); }
+static int vm_composition_console_insert_hdd(void *context, const char *path) { return vm_machine_hdd_insert(((vm_composition_live_machine *)context)->hdd, path); }
+static int vm_composition_console_remove_hdd(void *context, const char *path) { return vm_machine_hdd_remove(((vm_composition_live_machine *)context)->hdd, path); }
 static void vm_composition_console_start(void *context) { machineStart((vm_composition_live_machine *)context); }
 static void vm_composition_console_reset(void *context) { machineReset((vm_composition_live_machine *)context); }
 static void vm_composition_console_stop(void *context) { machineStop((vm_composition_live_machine *)context); }

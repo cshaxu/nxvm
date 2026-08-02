@@ -32,7 +32,7 @@ static int has_single_live_authority(const vm_composition_live_machine *machine)
         machine->kbc == &vkbc &&
         machine->vadp == &vvadp && machine->cmos == &machine->cmos_storage &&
         machine->fdd == &vfdd && machine->fdc == &vfdc &&
-        machine->hdd == &vhdd && machine->debug == &vdebug &&
+        machine->hdd == &machine->hdd_storage && machine->debug == &vdebug &&
         machine->default_bios == &vbios &&
         machine->default_qdx->table == qdxTable &&
         machine->control != NULL &&
