@@ -47,10 +47,10 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
 ## Active Work
 
-**M5 T80 S2: Window run-context cutover.** Replace the Win32 window procedure
-and its threads' global transport lookups with one explicit window context.
-Console C1 is complete; Linux, display mailbox, mode/handle ownership, and
-wait scope remain outside this subtask.
+**M5 T80 S3: Linux thread-context shape.** Replace Linux Console thread entry
+points' global transport lookups with an explicit run context. Console C1 and
+window C2 are complete; display mailbox, mode/handle ownership, and wait scope
+remain outside this subtask.
 
 ## Short-Term M5 Plan
 
