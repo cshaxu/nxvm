@@ -9,7 +9,7 @@
 
 #include "core/machine/vport.h"
 #include "core/machine/vram.h"
-#include "core/machine/vcpu.h"
+#include "core/machine/cpu.h"
 #include "vm/profile/default_profile/firmware/vbios.h"
 #include "core/machine/vpit.h"
 #include "core/machine/vdma.h"

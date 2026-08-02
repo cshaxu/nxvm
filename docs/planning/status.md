@@ -58,12 +58,16 @@ M5 T22 S4 defines the no-copy, same-object compatibility method and stop gates
 for that convergence. M5 T23 S1 is complete: root composition owns a
 non-owning live-machine carrier bound directly to the existing CPU, decoder,
 RAM, and port objects without any lifecycle behavior change.
+M5 T24 S1 is complete: the canonical `cpu.*` and `cpu_instructions.*` units
+now contain the retained CPU/executor implementation, and the live-machine
+carrier owns their one full-PC storage instance. The legacy spellings are
+direct aliases only; no global CPU/decoder storage remains.
 
 ## Active Work
 
-M5 T24 S1 P1: map the retained CPU and executor's complete storage, direct
-read/write, initializer, reset, refresh, and callback surface before any CPU
-authority migration.
+M5 T25 S1 P1: map the retained RAM/A20 storage, allocation, translation,
+direct read/write, initializer, reset, refresh, and callback surface before
+any RAM authority migration.
 
 ## Completed
 

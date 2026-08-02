@@ -3,7 +3,7 @@
 /* QDX implements quick and dirty instruction loader */
 
 #include "core/product/utils.h"
-#include "core/machine/vcpuins.h"
+#include "core/machine/cpu_instructions.h"
 
 #include "vm/profile/default_profile/firmware/qdcga.h"
 #include "vm/profile/default_profile/firmware/qdkeyb.h"

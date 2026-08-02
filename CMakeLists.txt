@@ -24,7 +24,6 @@ find_program(POWERSHELL_EXECUTABLE NAMES powershell pwsh REQUIRED)
 set(NTVDM64_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 
 add_library(nxvm-core STATIC
-    src/core/machine/cpu.c
     src/core/machine/debug.c
     src/core/machine/machine.c
     src/core/machine/memory.c
@@ -193,8 +192,8 @@ set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/vvadp.c
     src/core/machine/vport.c
     src/core/machine/vram.c
-    src/core/machine/vcpu.c
-    src/core/machine/vcpuins.c
+    src/core/machine/cpu.c
+    src/core/machine/cpu_instructions.c
     src/core/machine/vpic.c
     src/core/machine/vpit.c
     src/core/machine/vdma.c
@@ -379,6 +378,13 @@ target_link_libraries(nxvm-vm-live-machine-smoke PRIVATE
     nxvm-vm-composition
 )
 
+add_executable(nxvm-vm-cpu-authority-smoke
+    tests/machine/vm_cpu_authority_smoke.c
+)
+target_link_libraries(nxvm-vm-cpu-authority-smoke PRIVATE
+    nxvm-vm-composition
+)
+
 add_executable(nxvm-vm-debug-target-smoke
     tests/machine/vm_debug_target_smoke.c
 )
@@ -514,6 +520,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t19 "m5t19")
 add_nxvm_full_pc_artifact(nxvm-m5-t20 "m5t20")
 add_nxvm_full_pc_artifact(nxvm-m5-t21 "m5t21")
 add_nxvm_full_pc_artifact(nxvm-m5-t23 "m5t23")
+add_nxvm_full_pc_artifact(nxvm-m5-t24 "m5t24")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

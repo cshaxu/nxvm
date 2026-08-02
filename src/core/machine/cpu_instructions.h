@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include "core/machine/vcpu.h"
+#include "core/machine/cpu.h"
 
 typedef enum {
     ARITHTYPE_NULL,
@@ -105,7 +105,12 @@ typedef struct {
     t_cpuins_connect connect;
 } t_cpuins;
 
-extern t_cpuins vcpuins;
+t_cpuins *core_machine_cpu_instructions_current(void);
+void core_machine_cpu_instructions_bind_live(t_cpuins *instructions);
+void core_machine_cpu_instructions_unbind_live(void);
+
+/* Transitional direct alias to the one composition-owned live decoder. */
+#define vcpuins (*core_machine_cpu_instructions_current())
 
 #define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */
 #define VCPUINS_EXCEPT_DB  0x00000002 /* 01 - trap/fault: debug exception */

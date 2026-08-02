@@ -6,7 +6,7 @@
 
 #include "core/machine/display.h"
 #include "core/machine/vvadp.h"
-#include "core/machine/vcpu.h"
+#include "core/machine/cpu.h"
 
 #include "vm/profile/default_profile/firmware/qdx.h"
 #include "qdcga.h"

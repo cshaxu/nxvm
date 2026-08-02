@@ -148,6 +148,16 @@ finalization behavior. Windows GCC, dependency DAG, expected-`#UD` CPU stop,
 FDD/HDD reset-vector, and retained Console `HELP`/`EXIT` gates passed. The
 task artifact is `build/output/nxvm-m5_t23.exe`.
 
+## T24 Evidence
+
+T24 moved the retained CPU and instruction executor into canonical
+`core/machine/cpu.*` and `cpu_instructions.*` units. The live-machine carrier
+now embeds their only full-PC storage; the core accessors and temporary legacy
+aliases dereference that same storage. GCC, authority identity, retained CPU
+probe and stop, FDD/HDD full-PC profile, debugger target, Console, and
+dependency-DAG gates passed. The task artifact is
+`build/output/nxvm-m5_t24.exe`.
+
 ## Stop Conditions
 
 Stop for design review if the first CPU/RAM/port slice needs a second machine

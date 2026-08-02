@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "core/machine/vcpu.h"
-#include "core/machine/vcpuins.h"
+#include "core/machine/cpu.h"
+#include "core/machine/cpu_instructions.h"
 #include "core/machine/vport.h"
 #include "core/machine/vram.h"
 #include "vm/composition_live_machine.h"

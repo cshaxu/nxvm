@@ -10,10 +10,11 @@
 #include "vm/machine/vdebug.h"
 #include "vm/composition.h"
 #include "core/product/runtime/execution_context.h"
-#include "core/machine/vcpu.h"
+#include "core/machine/cpu.h"
 #include "core/machine/vram.h"
 #include "core/machine/vport.h"
 #include "vm/composition_control.h"
+#include "vm/composition_live_machine.h"
 
 typedef struct vm_composition_control_state {
     int flagFlip;
@@ -23,6 +24,7 @@ typedef struct vm_composition_control_state {
 
 static vm_composition_control_state vmCompositionControl;
 static nxvm_execution_context device_execution_context;
+static int vmCompositionControlOwnsLiveMachine;
 
 static void device_execution_context_reset(void)
 {
@@ -86,11 +88,19 @@ void vm_composition_control_bind_command_boundary(
 
 /* Initializes devices */
 void vm_composition_control_initialize(void) {
+    const vm_composition_live_machine *machine;
+
     MEMSET((void *)(&vmCompositionControl), Zero8,
         sizeof(vmCompositionControl));
+    vmCompositionControlOwnsLiveMachine = 0;
+    if (vm_composition_live_machine_current() == NULL) {
+        vm_composition_live_machine_bind(&vram, &vport);
+        vmCompositionControlOwnsLiveMachine = 1;
+    }
+    machine = vm_composition_live_machine_current();
     nxvm_execution_context_initialize(&device_execution_context);
     nxvm_execution_context_bind_machine_state(
-        &device_execution_context, &vcpu, &vram, &vport,
+        &device_execution_context, machine->cpu, machine->ram, machine->port,
         &vmCompositionControl);
     nxvm_execution_context_bind_callbacks(
         &device_execution_context, &device_execution_callbacks);
@@ -104,6 +114,10 @@ void vm_composition_control_finalize(void) {
     nxvm_execution_context_leave(&device_execution_context);
     vdebugFinal();
     vmachineFinal();
+    if (vmCompositionControlOwnsLiveMachine) {
+        vm_composition_live_machine_clear();
+        vmCompositionControlOwnsLiveMachine = 0;
+    }
 }
 
 void vm_composition_control_print_status(void) {

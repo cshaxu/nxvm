@@ -9,9 +9,24 @@
 #include "core/machine/vram.h"
 #include "core/machine/vpic.h"
 
-#include "core/machine/vcpuins.h"
+#include "core/machine/cpu_instructions.h"
 
-t_cpuins vcpuins;
+static t_cpuins *coreMachineCpuInstructions;
+
+t_cpuins *core_machine_cpu_instructions_current(void)
+{
+    return coreMachineCpuInstructions;
+}
+
+void core_machine_cpu_instructions_bind_live(t_cpuins *instructions)
+{
+    coreMachineCpuInstructions = instructions;
+}
+
+void core_machine_cpu_instructions_unbind_live(void)
+{
+    coreMachineCpuInstructions = NULL;
+}
 
 #define UTILS_TRACE_VAR    trace
 #define UTILS_TRACE_ERROR  vcpuins.data.except

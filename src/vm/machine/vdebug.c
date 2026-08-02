@@ -7,7 +7,7 @@
 
 #include "core/product/utils.h"
 
-#include "core/machine/vcpuins.h"
+#include "core/machine/cpu_instructions.h"
 
 #include "vm/machine/vdebug.h"
 
