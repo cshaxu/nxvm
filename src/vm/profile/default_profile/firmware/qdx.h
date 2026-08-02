@@ -10,11 +10,13 @@ extern "C" {
 #include "core/machine/vglobal.h"
 #include "core/machine/cpu_instructions.h"
 
-typedef struct t_qdx {
-    t_faddrcc table[0x100];
-} t_qdx;
-
 typedef struct vm_profile_default_context vm_profile_default_context;
+typedef void (*vm_profile_default_qdx_handler)(
+    vm_profile_default_context *profile);
+
+typedef struct t_qdx {
+    vm_profile_default_qdx_handler table[0x100];
+} t_qdx;
 
 void vm_profile_default_qdx_initialize(vm_profile_default_context *profile,
     core_machine_cpu_execution_context *execution);

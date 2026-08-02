@@ -75,6 +75,8 @@ void core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
     uint16_t offset, void *out_data, size_t size);
 void core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
     uint16_t offset, const void *in_data, size_t size);
+void *core_machine_memory_real_address(t_ram *ram, uint16_t segment,
+    uint16_t offset);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

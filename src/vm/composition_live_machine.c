@@ -35,6 +35,7 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
         machine->vadp, NULL, NULL);
     core_machine_cpu_execution_context_bind_extension(machine->cpu_execution,
         machine->default_profile_context);
+    machine->default_profile_context->execution = machine->cpu_execution;
     machine->block_provider = &machine->block_provider_storage;
     core_machine_block_provider_slot_initialize(machine->block_provider);
     machine->default_profile_context->block_provider = machine->block_provider;

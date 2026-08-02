@@ -8,50 +8,58 @@
 #include "core/machine/memory.h"
 #include "core/machine/block_interface.h"
 
+#include "vm/profile/default_profile/firmware/context.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
 #include "qddisk.h"
 
-#define SetHddStatus (vramRealByte(0x0040, 0x0074) = vcpu.data.ah)
-#define GetHddStatus (vramRealByte(0x0040, 0x0074))
-
-static void INT_13_02_HDD_ReadSector() {
-    t_nubit8 drive  = vcpu.data.dl;
-    t_nubit8 head   = vcpu.data.dh;
-    t_nubit8 cyl    = vcpu.data.ch | ((vcpu.data.cl & 0xc0) << 8);
-    t_nubit8 sector = vcpu.data.cl & 0x3f;
-    drive &= 0x7f;
-    core_machine_block_geometry geometry;
-    core_machine_block_get_geometry(&geometry);
-    if (drive || !sector || head >= geometry.heads || sector > geometry.sectors || cyl >= geometry.cylinders || !core_machine_block_read(cyl, head, sector, (void *)vramGetRealAddr(vcpu.data.es.selector,vcpu.data.bx), vcpu.data.al * geometry.bytes_per_sector)) {
-        /* sector not found */
-        vcpu.data.ah = 0x04;
-        SetBit(vcpu.data.eflags, VCPU_EFLAGS_CF);
-    } else {
-        vcpu.data.ah = 0x00;
-        ClrBit(vcpu.data.eflags, VCPU_EFLAGS_CF);
-    }
+static void set_hdd_status(vm_profile_default_context *profile, t_nubit8 status)
+{
+    core_machine_memory_write_real_to(profile->ram, 0x0040, 0x0074,
+        &status, sizeof(status));
 }
 
-static void INT_13_03_HDD_WriteSector() {
-    t_nubit8 drive  = vcpu.data.dl;
-    t_nubit8 head   = vcpu.data.dh;
-    t_nubit8 cyl    = vcpu.data.ch | ((vcpu.data.cl & 0xc0) << 8);
-    t_nubit8 sector = vcpu.data.cl & 0x3f;
+static void int_13_02_hdd_read_sector(vm_profile_default_context *profile) {
+    t_cpu *cpu = profile->execution->cpu;
+    t_nubit8 drive  = cpu->data.dl;
+    t_nubit8 head   = cpu->data.dh;
+    t_nubit8 cyl    = cpu->data.ch | ((cpu->data.cl & 0xc0) << 8);
+    t_nubit8 sector = cpu->data.cl & 0x3f;
     drive &= 0x7f;
     core_machine_block_geometry geometry;
-    core_machine_block_get_geometry(&geometry);
-    if (drive || !sector || head >= geometry.heads || sector > geometry.sectors || cyl >= geometry.cylinders || !core_machine_block_write(cyl, head, sector, (void *)vramGetRealAddr(vcpu.data.es.selector,vcpu.data.bx), vcpu.data.al * geometry.bytes_per_sector)) {
+    core_machine_block_get_geometry_from(profile->block_provider, &geometry);
+    if (drive || !sector || head >= geometry.heads || sector > geometry.sectors || cyl >= geometry.cylinders || !core_machine_block_read_from(profile->block_provider, cyl, head, sector, core_machine_memory_real_address(profile->ram, cpu->data.es.selector, cpu->data.bx), cpu->data.al * geometry.bytes_per_sector)) {
         /* sector not found */
-        vcpu.data.ah = 0x04;
-        SetBit(vcpu.data.eflags, VCPU_EFLAGS_CF);
+        cpu->data.ah = 0x04;
+        SetBit(cpu->data.eflags, VCPU_EFLAGS_CF);
     } else {
-        vcpu.data.ah = 0x00;
-        ClrBit(vcpu.data.eflags, VCPU_EFLAGS_CF);
+        cpu->data.ah = 0x00;
+        ClrBit(cpu->data.eflags, VCPU_EFLAGS_CF);
     }
+    set_hdd_status(profile, cpu->data.ah);
+}
+
+static void int_13_03_hdd_write_sector(vm_profile_default_context *profile) {
+    t_cpu *cpu = profile->execution->cpu;
+    t_nubit8 drive  = cpu->data.dl;
+    t_nubit8 head   = cpu->data.dh;
+    t_nubit8 cyl    = cpu->data.ch | ((cpu->data.cl & 0xc0) << 8);
+    t_nubit8 sector = cpu->data.cl & 0x3f;
+    drive &= 0x7f;
+    core_machine_block_geometry geometry;
+    core_machine_block_get_geometry_from(profile->block_provider, &geometry);
+    if (drive || !sector || head >= geometry.heads || sector > geometry.sectors || cyl >= geometry.cylinders || !core_machine_block_write_from(profile->block_provider, cyl, head, sector, core_machine_memory_real_address(profile->ram, cpu->data.es.selector, cpu->data.bx), cpu->data.al * geometry.bytes_per_sector)) {
+        /* sector not found */
+        cpu->data.ah = 0x04;
+        SetBit(cpu->data.eflags, VCPU_EFLAGS_CF);
+    } else {
+        cpu->data.ah = 0x00;
+        ClrBit(cpu->data.eflags, VCPU_EFLAGS_CF);
+    }
+    set_hdd_status(profile, cpu->data.ah);
 }
 
 void vm_profile_default_disk_initialize(t_qdx *qdx) {
     if (qdx == NULL) return;
-    qdx->table[0xa2] = (t_faddrcc) INT_13_02_HDD_ReadSector;
-    qdx->table[0xa3] = (t_faddrcc) INT_13_03_HDD_WriteSector;
+    qdx->table[0xa2] = int_13_02_hdd_read_sector;
+    qdx->table[0xa3] = int_13_03_hdd_write_sector;
 }
