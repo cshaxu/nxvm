@@ -47,10 +47,10 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
 ## Active Work
 
-**M5 T80 S3: Linux thread-context shape.** Replace Linux Console thread entry
-points' global transport lookups with an explicit run context. Console C1 and
-window C2 are complete; display mailbox, mode/handle ownership, and wait scope
-remain outside this subtask.
+**M5 T80 S4: Presentation mailbox.** Replace the process-global display frame
+with a VM composition-owned presentation mailbox. Console C1, window C2, and
+Linux C3 are complete; mode/handle ownership and wait scope remain outside this
+subtask.
 
 ## Short-Term M5 Plan
 

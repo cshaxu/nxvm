@@ -9,10 +9,12 @@
 
 #include "type.h"
 
+typedef struct vm_platform_run_context vm_platform_run_context;
+
 void linuxSleep(uint32_t milisec);
 void linuxDisplaySetScreen(int window);
 void linuxDisplayPaint(int window);
-void linuxStartMachine(int window);
+void linuxStartMachine(int window, const vm_platform_run_context *context);
 
 #ifdef __cplusplus
 /*}_EOCD_*/

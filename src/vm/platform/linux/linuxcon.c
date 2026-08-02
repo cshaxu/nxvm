@@ -7,8 +7,7 @@
 
 #include "core/product/utils.h"
 #include "core/platform/display_frame.h"
-#include "vm/platform/execution.h"
-#include "vm/platform/input.h"
+#include "vm/platform/platform.h"
 
 #include "vm/platform/linux/linuxcon.h"
 
@@ -245,9 +244,11 @@ static void lnxcdispPaint(uint8_t force) {
 }
 
 static void *ThreadDisplay(void *arg) {
+    const vm_platform_run_context *context = arg;
+
     lnxcdispInit();
     lnxcdispPaint(1);
-    while (vm_platform_execution_is_running()) {
+    while (vm_platform_execution_is_running_for(context->execution)) {
         lnxcdispPaint(0);
         utilsSleep(100);
     }
@@ -256,7 +257,9 @@ static void *ThreadDisplay(void *arg) {
 }
 
 static void *ThreadKernel(void *arg) {
-    vm_platform_execution_start();
+    const vm_platform_run_context *context = arg;
+
+    vm_platform_execution_start_for(context->execution);
     return 0;
 }
 
@@ -327,21 +330,23 @@ static uint8_t Ascii2ScanCode[][2] = {
     {0xfc, ZERO}, {0xfd, ZERO}, {0xfe, ZERO}, {0xff, ZERO}
 };
 
-#define send(n) vm_platform_keyboard_receive_key_press(n)
-static void lnxckeybMakeKey(int keyvalue) {
+#define send(context, n) vm_platform_keyboard_receive_key_press_for(\
+    (context)->keyboard, (n))
+static void lnxckeybMakeKey(const vm_platform_run_context *context,
+                            int keyvalue) {
     if (keyvalue == KEY_F(9)) {
-        vm_platform_execution_stop();
+        vm_platform_execution_stop_for(context->execution);
     }
     if (keyvalue < 0x001b) {
         switch (keyvalue) {
         case 0x000a:
             /* ENTER */
-            send(0x1c0d);
+            send(context, 0x1c0d);
             break;
         default:
             /* CTRL + LETTER */
-            send(0x1d00);
-            send((Ascii2ScanCode[keyvalue + 0x60][1] << 8) | keyvalue);
+            send(context, 0x1d00);
+            send(context, (Ascii2ScanCode[keyvalue + 0x60][1] << 8) | keyvalue);
             break;
         }
     } else if (keyvalue < 0x0020) {
@@ -350,11 +355,11 @@ static void lnxckeybMakeKey(int keyvalue) {
             keyvalue = getch();
             if (keyvalue == ERR) {
                 /* ESCAPE*/
-                send(0x011b);
+                send(context, 0x011b);
             } else {
                 /* ALT */
-                send(0x3800);
-                send(Ascii2ScanCode[keyvalue][1] << 8);
+                send(context, 0x3800);
+                send(context, Ascii2ScanCode[keyvalue][1] << 8);
             }
             break;
         default:
@@ -364,55 +369,55 @@ static void lnxckeybMakeKey(int keyvalue) {
     } else if (keyvalue < 0x0100) {
         switch (keyvalue) {
         default:
-            send((Ascii2ScanCode[keyvalue][1] << 8) | keyvalue);
+            send(context, (Ascii2ScanCode[keyvalue][1] << 8) | keyvalue);
             break;
         }
     } else if (keyvalue > KEY_F0 && keyvalue <= KEY_F(12)) {
         switch (keyvalue) {
         default:
-            send((keyvalue - KEY_F0 + 0x3a) << 8);
+            send(context, (keyvalue - KEY_F0 + 0x3a) << 8);
             break;
         }
     } else {
         /* get special keys */
         switch (keyvalue) {
         case KEY_DOWN:
-            send(0x5000);
+            send(context, 0x5000);
             break;
         case KEY_UP:
-            send(0x4800);
+            send(context, 0x4800);
             break;
         case KEY_LEFT:
-            send(0x4b00);
+            send(context, 0x4b00);
             break;
         case KEY_RIGHT:
-            send(0x4d00);
+            send(context, 0x4d00);
             break;
         case KEY_HOME:
-            send(0x4700);
+            send(context, 0x4700);
             break;
         case KEY_BACKSPACE:
-            send(0x0e08);
+            send(context, 0x0e08);
             break;
         case KEY_ENTER:
-            send(0x1c0d);
+            send(context, 0x1c0d);
             break;
         case KEY_NPAGE:
-            send(0x5100);
+            send(context, 0x5100);
             break;
         case KEY_PPAGE:
-            send(0x4900);
+            send(context, 0x4900);
             break;
         case KEY_END:
-            send(0x4f00);
+            send(context, 0x4f00);
             break;
         case 0x014a:
             /* DELETE */
-            send(0x5300);
+            send(context, 0x5300);
             break;
         case 0x014b:
             /* INSERT */
-            send(0x5200);
+            send(context, 0x5200);
             break;
         default:
             return;
@@ -420,10 +425,10 @@ static void lnxckeybMakeKey(int keyvalue) {
     }
 }
 
-static void lnxckeybProcess() {
+static void lnxckeybProcess(const vm_platform_run_context *context) {
     int keyvalue = getch();
     if (keyvalue != ERR) {
-        lnxckeybMakeKey(keyvalue);
+        lnxckeybMakeKey(context, keyvalue);
     }
 }
 
@@ -433,21 +438,26 @@ void lnxcDisplayPaint() {
     lnxcdispPaint(1);
 }
 
-void lnxcStartMachine() {
+void lnxcStartMachine(const vm_platform_run_context *context) {
     pthread_t ThreadIdDisplay;
     pthread_t ThreadIdKernel;
     pthread_attr_t attr;
-    int oldDeviceFlip = vm_platform_execution_get_flip();
+    int oldDeviceFlip;
+
+    if (context == NULL || context->execution == NULL ||
+        context->keyboard == NULL) return;
+    oldDeviceFlip = vm_platform_execution_get_flip_for(context->execution);
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
-    pthread_create(&ThreadIdKernel,  &attr, ThreadKernel, NULL);
-    while (oldDeviceFlip == vm_platform_execution_get_flip()) {
+    pthread_create(&ThreadIdKernel,  &attr, ThreadKernel, (void *)context);
+    while (oldDeviceFlip ==
+           vm_platform_execution_get_flip_for(context->execution)) {
         utilsSleep(100);
     }
-    pthread_create(&ThreadIdDisplay, &attr, ThreadDisplay, NULL);
-    while (vm_platform_execution_is_running()) {
+    pthread_create(&ThreadIdDisplay, &attr, ThreadDisplay, (void *)context);
+    while (vm_platform_execution_is_running_for(context->execution)) {
         utilsSleep(20);
-        lnxckeybProcess();
+        lnxckeybProcess(context);
     }
     pthread_attr_destroy(&attr);
 }
