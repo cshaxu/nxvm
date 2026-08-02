@@ -40,12 +40,10 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 is complete. The shared-core source topology, legacy-convergence closure,
-and retained NXVM compatibility gates are recorded in the M5 planning evidence.
-The unused CPU capability manifest was removed after closure; CPU probe and
-evidence requirements remain governed by the CPU-verification documents.
-The unused PC-device aggregate was also removed; retained PIC/PIT/DMA device
-implementations remain the only machine-device path.
+M5 T19 S1 repaired a full-PC display snapshot performance regression found
+after T18 closure. The recorded T13-to-T18 bisection identifies `ff4cd24` as
+the first bad commit; its replacement preserves the snapshot contract while
+restoring the unchanged-display fast path.
 
 ## Completed
 
@@ -235,6 +233,8 @@ implementations remain the only machine-device path.
   GCC, registry/core smokes, and the DAG verifier passed.
 - M5 T18 S1 P3: removed the unused aggregate PIC/PIT/DMA model and its dedicated
   smoke. GCC, core contract, retained NXVM artifact, and DAG gates passed.
+- M5 T19 S1 P1: restored the default display provider's unchanged-display fast
+  path after a T13-to-T18 full-PC FDD regression bisection.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware
