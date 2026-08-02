@@ -5,9 +5,10 @@
 
 int main(void)
 {
-    machineInit();
+    vm_composition_live_machine session = {0};
+    machineInit(&session);
     qdcgaReset();
-    machineFinal();
+    machineFinal(&session);
     puts("M5:T40:S1:QDCGA-BOUNDARY:OK");
     return 0;
 }

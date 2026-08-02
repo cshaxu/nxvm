@@ -13,6 +13,7 @@
 #include "vm/composition_live_machine.h"
 
 static int nxvm_cpu_probe_active;
+static vm_composition_live_machine nxvmCpuProbeMachine;
 
 static int nxvm_cpu_probe_capture_state(
     nxvm_cpu_probe_state *state)
@@ -55,8 +56,9 @@ int nxvm_cpu_probe_begin(void)
     if (nxvm_cpu_probe_active) {
         return 0;
     }
-    vm_composition_live_machine_bind();
-    vm_composition_control_initialize();
+    vm_composition_live_machine_initialize(&nxvmCpuProbeMachine);
+    vm_composition_live_machine_bind_legacy(&nxvmCpuProbeMachine);
+    vm_composition_control_initialize(&nxvmCpuProbeMachine);
     nxvm_cpu_probe_active = 1;
     if (!nxvm_cpu_probe_reset()) {
         nxvm_cpu_probe_end();
@@ -95,8 +97,8 @@ int nxvm_cpu_probe_step(
 void nxvm_cpu_probe_end(void)
 {
     if (nxvm_cpu_probe_active) {
-        vm_composition_control_finalize();
-        vm_composition_live_machine_clear();
+        vm_composition_control_finalize(&nxvmCpuProbeMachine);
+        vm_composition_live_machine_finalize(&nxvmCpuProbeMachine);
         nxvm_cpu_probe_active = 0;
     }
 }

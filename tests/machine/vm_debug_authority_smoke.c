@@ -6,21 +6,22 @@
 
 int main(void)
 {
+    vm_composition_live_machine session = {0};
     const vm_composition_live_machine *machine;
 
-    machineInit();
-    machine = vm_composition_live_machine_current();
+    machineInit(&session);
+    machine = (&session);
     if (machine == NULL || &vdebug != machine->debug) {
-        machineFinal();
+        machineFinal(&session);
         return 1;
     }
     vm_machine_debug_set_trace(2u);
     if (!vdebug.data.flagTrace || vdebug.data.traceCount != 2u) {
-        machineFinal();
+        machineFinal(&session);
         return 1;
     }
     vm_machine_debug_clear_trace();
-    machineFinal();
+    machineFinal(&session);
     if (vm_machine_debug_current() != NULL) return 1;
     puts("M5:T43:S1:DEBUG-AUTHORITY:OK");
     return 0;

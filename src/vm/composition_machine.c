@@ -133,11 +133,13 @@ void machineResume() {
     }
 }
 
-void machineInit() {
+void machineInit(vm_composition_live_machine *machine) {
+    if (machine == NULL) return;
     platformInit();
     core_product_wait_bind(vm_composition_wait, NULL);
-    vm_composition_live_machine_bind();
-    vm_composition_control_initialize();
+    vm_composition_live_machine_initialize(machine);
+    vm_composition_live_machine_bind_legacy(machine);
+    vm_composition_control_initialize(machine);
     core_machine_keyboard_bind(NULL, vm_profile_default_keyboard_provider());
     core_machine_display_bind_snapshot_provider(NULL,
         vm_profile_default_display_capture);
@@ -147,8 +149,9 @@ void machineInit() {
     vm_platform_execution_bind(&vm_composition_execution_sink, NULL);
 }
 
-void machineFinal() {
-    vm_composition_control_finalize();
+void machineFinal(vm_composition_live_machine *machine) {
+    if (machine == NULL) return;
+    vm_composition_control_finalize(machine);
     core_machine_keyboard_bind(NULL, NULL);
     core_machine_display_bind_snapshot_provider(NULL, NULL);
     vm_machine_debug_bind_pause(NULL, NULL);
@@ -156,6 +159,6 @@ void machineFinal() {
     vm_platform_execution_bind(NULL, NULL);
     vm_platform_keyboard_bind(NULL, NULL);
     core_product_wait_bind(NULL, NULL);
-    vm_composition_live_machine_clear();
+    vm_composition_live_machine_finalize(machine);
     platformFinal();
 }

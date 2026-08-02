@@ -18,9 +18,10 @@ int main(int argc, char **argv)
 {
     HANDLE thread;
     DWORD result;
+    vm_composition_live_machine session = {0};
 
     if (argc != 2) return 1;
-    machineInit();
+    machineInit(&session);
     if (vm_machine_fdd_insert(argv[1]) != 0) goto fail;
     vm_composition_control_reset();
     thread = CreateThread(NULL, 0u, run_full_pc, NULL, 0u, NULL);
@@ -40,7 +41,7 @@ int main(int argc, char **argv)
     vm_composition_control_stop();
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    machineFinal();
+    machineFinal(&session);
     if (result != WAIT_OBJECT_0) return 1;
     puts("M5:T46:S1:UNIFIED-DEBUG-BACKEND:OK");
     return 0;
@@ -50,6 +51,6 @@ fail_thread:
     WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
 fail:
-    machineFinal();
+    machineFinal(&session);
     return 1;
 }

@@ -7,13 +7,15 @@
 extern "C" {
 #endif
 
+#include "vm/composition_live_machine.h"
+
 void machineStart();
 void machineReset();
 void machineStop();
 void machineResume();
 
-void machineInit();
-void machineFinal();
+void machineInit(vm_composition_live_machine *machine);
+void machineFinal(vm_composition_live_machine *machine);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
