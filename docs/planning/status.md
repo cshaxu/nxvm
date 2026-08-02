@@ -121,11 +121,16 @@ M5 T51 S1 completed the first interface/provider naming split: block and wait
 provider contracts now live in `*_provider.h`, core firmware public names now
 use the `core_machine_firmware_*` prefix, and
 `build/output/nxvm_0_5_0051.exe` is the verified task artifact.
+M5 T52 S1 completed the first ambiguous implementation-name audit:
+`machine_memory.c`, `machine_port.c`, and `presentation.c` are now
+`memory_interface.c`, `port_interface.c`, and `presentation_interface.c`; core
+presentation public names now use `core_machine_*`, and
+`build/output/nxvm_0_5_0052.exe` is the verified task artifact.
 
 ## Active Work
 
-M5 T52 S1 is active, not started: audit ambiguous implementation, platform,
-and product names and apply only approved low-risk renames.
+M5 T53 S1 is active, not started: decide and begin the `vglobal.h` retirement
+path without breaking retained compatibility.
 M6 T1 S1 is deferred and not active.
 
 ## Completed
@@ -543,10 +548,14 @@ M6 T1 S1 is deferred and not active.
   `block_provider.h` and `wait_provider.h`, renamed core firmware public
   symbols to `core_machine_firmware_*`, preserved retained behavior, and built
   `build/output/nxvm_0_5_0051.exe`.
+- M5 T52 S1 P1: renamed ambiguous core machine implementation files to their
+  interface owners, renamed core presentation public symbols to
+  `core_machine_*`, preserved retained behavior, and built
+  `build/output/nxvm_0_5_0052.exe`.
 
 ## Next Eligible Work
 
-- M5 T52 may begin. M6 design is deferred until M5 naming convergence closes
+- M5 T53 may begin. M6 design is deferred until M5 naming convergence closes
   or the owner explicitly pauses M5.
 
 ## Delivery State

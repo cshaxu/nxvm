@@ -4,8 +4,8 @@
 #include "core/machine/presentation_interface.h"
 
 typedef struct nxvm_product_nxvm_presentation {
-    nxvm_core_keyboard_queue pending_input;
-    nxvm_core_text_snapshot published_text;
+    core_machine_keyboard_queue pending_input;
+    core_machine_text_snapshot published_text;
     int command_boundary_open;
 } nxvm_product_nxvm_presentation;
 
@@ -23,10 +23,10 @@ nxvm_core_status nxvm_product_nxvm_presentation_apply_input(
     nxvm_product_nxvm_input_consumer consumer, void *context);
 nxvm_core_status nxvm_product_nxvm_presentation_publish_text(
     nxvm_product_nxvm_presentation *presentation,
-    const nxvm_core_text_snapshot *snapshot);
+    const core_machine_text_snapshot *snapshot);
 nxvm_core_status nxvm_product_nxvm_presentation_capture_text(
     const nxvm_product_nxvm_presentation *presentation,
-    nxvm_core_text_snapshot *out_snapshot);
+    core_machine_text_snapshot *out_snapshot);
 void nxvm_product_nxvm_presentation_close_command_boundary(
     nxvm_product_nxvm_presentation *presentation);
 

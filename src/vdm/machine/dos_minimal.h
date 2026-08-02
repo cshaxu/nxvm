@@ -15,7 +15,7 @@ typedef struct nxvm_runtime_dos_minimal nxvm_runtime_dos_minimal;
 typedef struct nxvm_runtime_text_snapshot {
     uint64_t pit_ticks;
     uint8_t keyboard_irq_pending;
-    nxvm_core_text_snapshot text;
+    core_machine_text_snapshot text;
 } nxvm_runtime_text_snapshot;
 
 nxvm_core_status nxvm_runtime_dos_minimal_create(

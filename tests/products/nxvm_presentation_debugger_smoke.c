@@ -19,8 +19,8 @@ static nxvm_core_status consume_input(void *context, uint16_t scan_code)
 int main(void)
 {
     nxvm_product_nxvm_presentation presentation;
-    nxvm_core_text_snapshot guest_text;
-    nxvm_core_text_snapshot captured_text;
+    core_machine_text_snapshot guest_text;
+    core_machine_text_snapshot captured_text;
     input_fixture input = { { 0u, 0u }, 0u };
     core_machine *machine = NULL;
     core_machine_config config = {
@@ -31,7 +31,7 @@ int main(void)
     core_machine_run_result result;
 
     nxvm_product_nxvm_presentation_initialize(&presentation);
-    nxvm_core_text_snapshot_initialize(&guest_text);
+    core_machine_text_snapshot_initialize(&guest_text);
     if (nxvm_product_nxvm_presentation_enqueue_input(&presentation, 0x1eu) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_presentation_enqueue_input(&presentation, 0x30u) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_presentation_apply_input(&presentation, consume_input,
@@ -40,7 +40,7 @@ int main(void)
         nxvm_product_nxvm_presentation_apply_input(&presentation, consume_input,
             &input) != NXVM_CORE_STATUS_OK || input.count != 2u ||
         input.values[0] != 0x1eu || input.values[1] != 0x30u ||
-        nxvm_core_text_snapshot_write(&guest_text, 0u, 0u, 'A', 7u) != NXVM_CORE_STATUS_OK ||
+        core_machine_text_snapshot_write(&guest_text, 0u, 0u, 'A', 7u) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_presentation_publish_text(&presentation,
             &guest_text) != NXVM_CORE_STATUS_OK ||
         nxvm_product_nxvm_presentation_capture_text(&presentation,

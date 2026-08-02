@@ -26,8 +26,8 @@ int main(void)
         nxvm_runtime_dos_minimal_write_text(session, 0u, 'N', 0x1fu) != NXVM_CORE_STATUS_OK ||
         nxvm_runtime_dos_minimal_get_snapshot(session, &snapshot) != NXVM_CORE_STATUS_OK ||
         snapshot.pit_ticks != 3u || snapshot.keyboard_irq_pending != 0u ||
-        snapshot.text.columns != NXVM_CORE_TEXT_COLUMNS ||
-        snapshot.text.rows != NXVM_CORE_TEXT_ROWS ||
+        snapshot.text.columns != CORE_MACHINE_TEXT_COLUMNS ||
+        snapshot.text.rows != CORE_MACHINE_TEXT_ROWS ||
         snapshot.text.characters[0] != 'N' ||
         snapshot.text.attributes[0] != 0x1fu) {
         nxvm_runtime_dos_minimal_destroy(session);

@@ -58,7 +58,7 @@ it remains in `history/`.
 ## Presentation Boundary
 
 A display bridge has two independent payload contracts. The product machine
-module owns its snapshot, which may embed `nxvm_core_text_snapshot` and carry
+module owns its snapshot, which may embed `core_machine_text_snapshot` and carry
 machine-private diagnostics. The product platform module owns its frame and
 its submit or sink contract; the frame carries host-facing copies only and
 must not embed, reference, or name a machine snapshot type.

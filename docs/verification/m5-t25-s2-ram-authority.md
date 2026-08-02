@@ -2,7 +2,7 @@
 
 `memory.c/.h` now own the retained full-PC RAM implementation. Its one `t_ram`
 object is embedded in `vm_composition_live_machine`; `vram` directly aliases
-the bound object and no global RAM storage remains. `machine_memory.c/.h`
+the bound object and no global RAM storage remains. `memory_interface.c/.h`
 retain the independent M3 minimal-model API and are never constructed by full-
 PC composition.
 
