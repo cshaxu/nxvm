@@ -27,14 +27,15 @@ M4 is complete. Firmware, profile/provider, CPU verification, and retained
 NXVM Console contracts now bound M5 implementation without changing runtime
 behavior.
 
-## M5 Closure
+## M5 Reopened Design
 
-M5 is complete through the T63 second-pass naming and ownership cleanup. T54 is
-retained as first closure evidence, and T63 is final second-pass closure
-evidence. The retained NXVM full PC has one composition-owned machine authority,
-no legacy full-PC storage definitions, an acknowledged debugger pause boundary,
-one product-neutral debugger backend, a single `src/version.*` identity source,
-recorded platform ownership boundaries, and recorded retained-alias exceptions.
+T63 closed the second-pass naming window. M5 is reopened at T64 for the
+remaining selected-session-global and explicit instance-authority design. The
+retained NXVM full PC still has one composition-owned storage authority, an
+acknowledged debugger pause boundary, one product-neutral debugger backend, a
+single `src/version.*` identity source, recorded platform ownership boundaries,
+and recorded retained-alias exceptions; its execution still resolves those
+objects through transitional current-machine aliases.
 
 ## M5 Continuity
 
@@ -165,8 +166,9 @@ alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M6 T1 S1 is active, not started: prepare the bounded owned-DOS design inputs
-and M7 task breakdown. Do not begin DOS implementation in M6.
+M5 T64 S1 is active: freeze core-machine naming and session-instance design
+before any context-passing implementation. M6 T1 is deferred and DOS
+implementation remains ineligible.
 
 ## Completed
 
@@ -621,8 +623,9 @@ and M7 task breakdown. Do not begin DOS implementation in M6.
 
 ## Next Eligible Work
 
-- M6 T1 may begin as a design task only. DOS implementation remains ineligible
-  until the M6 design task creates and closes the M7 implementation breakdown.
+- Complete M5 T64's design and approve its bounded authority-migration plan.
+- M6 T1 may resume only after that plan is complete. DOS implementation remains
+  ineligible until M6 creates and closes the M7 implementation breakdown.
 
 ## Delivery State
 

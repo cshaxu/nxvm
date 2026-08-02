@@ -7,6 +7,12 @@ platform-ownership, and retained-alias convergence. T54 is first closure
 evidence, not final naming closure. This plan does not reopen DOS, CLI,
 Win16, Microsoft NTVDM, or compatibility-corpus work.
 
+T63 closes this plan's naming-only scope. M5 T64 is separate explicit
+instance-authority design work: it does not revise T48--T63 results, but it
+does replace the retained selected-session aliases through a later bounded
+context-passing plan. Its forward authority is
+`architecture/core-machine-instance-design.md`.
+
 The compatibility gate is unchanged: no task may alter retained NXVM Console
 text or grammar, debugger behavior, boot/reset ordering, media behavior, or
 visible runtime behavior without explicit owner approval and recorded

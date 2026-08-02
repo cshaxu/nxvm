@@ -25,6 +25,11 @@ Public symbols use source-path ownership: `core_machine_*`,
 `vm_product_*`, `vm_profile_*`, and VDM counterparts. Root composition uses
 `vm_composition_*` and `vdm_composition_*`.
 
+The precise distinction among private machine implementation, exposed
+interface, injected provider, and session-owned registry is defined in
+[Core Machine Instance Design](core-machine-instance-design.md). This document
+continues to define the semantics of those public contracts.
+
 ## Common Rules
 
 - Public state is opaque; configuration, commands, snapshots, and callback
