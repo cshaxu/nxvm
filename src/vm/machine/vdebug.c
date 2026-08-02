@@ -214,44 +214,44 @@ void vm_machine_debug_bind_stop(vm_machine_debug_stop_callback callback,
     vdebugStopContext = context;
 }
 
-void deviceConnectDebugSetBreak(uint16_t breakCS, uint16_t breakIP) {
-    vdebug.data.breakCS = breakCS;
-    vdebug.data.breakIP = breakIP;
+void vm_machine_debug_set_breakpoint_real(uint16_t segment, uint16_t offset) {
+    vdebug.data.breakCS = segment;
+    vdebug.data.breakIP = offset;
     vdebug.data.flagBreak = True;
 }
-void deviceConnectDebugClearBreak() {
+void vm_machine_debug_clear_breakpoint_real(void) {
     vdebug.data.flagBreak = False;
 }
-void deviceConnectDebugSetBreak32(uint32_t breakLinear) {
-    vdebug.data.breakLinear = breakLinear;
+void vm_machine_debug_set_breakpoint_linear(uint32_t linear) {
+    vdebug.data.breakLinear = linear;
     vdebug.data.flagBreak32 = True;
     vdebug.data.breakCount = 0;
 }
-void deviceConnectDebugClearBreak32() {
+void vm_machine_debug_clear_breakpoint_linear(void) {
     vdebug.data.flagBreak32 = False;
 }
-size_t deviceConnectDebugGetBreakCount() {
+size_t vm_machine_debug_get_breakpoint_count(void) {
     return vdebug.data.breakCount;
 }
-void deviceConnectDebugSetTrace(size_t traceCount) {
-    vdebug.data.traceCount = traceCount;
+void vm_machine_debug_set_trace(size_t instruction_count) {
+    vdebug.data.traceCount = instruction_count;
     vdebug.data.flagTrace = True;
 }
-void deviceConnectDebugClearTrace() {
+void vm_machine_debug_clear_trace(void) {
     vdebug.data.flagTrace = False;
 }
-void deviceConnectDebugRecordStart(const char *fileName) {
+void vm_machine_debug_record_start(const char *file_name) {
     if (vdebug.connect.recordFile) {
         FCLOSE(vdebug.connect.recordFile);
     }
-    vdebug.connect.recordFile = FOPEN(fileName, "w");
+    vdebug.connect.recordFile = FOPEN(file_name, "w");
     if (!vdebug.connect.recordFile) {
         PRINTF("ERROR:\tcannot write dump file.\n");
     } else {
         PRINTF("Record started.\n");
     }
 }
-void deviceConnectDebugRecordStop() {
+void vm_machine_debug_record_stop(void) {
     if (!vdebug.connect.recordFile) {
         PRINTF("ERROR:\trecorder not turned on.\n");
     } else {

@@ -6,7 +6,7 @@
 #include "core/machine/memory.h"
 #include "core/machine/port.h"
 #include "core/machine/vcpu.h"
-#include "vm/machine/device.h"
+#include "vm/machine/vdebug.h"
 
 static int vm_debug_running(void *context) { (void)context; return vm_composition_control_is_running(); }
 static void vm_debug_resume(void *context) { (void)context; machineResume(); }
@@ -73,17 +73,17 @@ static uint32_t vm_debug_read_port(void *context, uint16_t port)
 static void vm_debug_write_port(void *context, uint16_t port, uint32_t value)
 { (void)context; core_machine_port_write_legacy(port, value); }
 static void vm_debug_set_break_real(void *context, uint16_t seg, uint16_t off)
-{ (void)context; deviceConnectDebugSetBreak(seg, off); }
+{ (void)context; vm_machine_debug_set_breakpoint_real(seg, off); }
 static void vm_debug_set_break_linear(void *context, uint32_t address)
-{ (void)context; deviceConnectDebugSetBreak32(address); }
+{ (void)context; vm_machine_debug_set_breakpoint_linear(address); }
 static void vm_debug_clear_break(void *context, int linear)
-{ (void)context; if (linear) deviceConnectDebugClearBreak32(); else deviceConnectDebugClearBreak(); }
+{ (void)context; if (linear) vm_machine_debug_clear_breakpoint_linear(); else vm_machine_debug_clear_breakpoint_real(); }
 static void vm_debug_set_trace(void *context, size_t count)
-{ (void)context; deviceConnectDebugSetTrace(count); }
+{ (void)context; vm_machine_debug_set_trace(count); }
 static void vm_debug_clear_trace(void *context)
-{ (void)context; deviceConnectDebugClearTrace(); }
+{ (void)context; vm_machine_debug_clear_trace(); }
 static size_t vm_debug_break_count(void *context)
-{ (void)context; return deviceConnectDebugGetBreakCount(); }
+{ (void)context; return vm_machine_debug_get_breakpoint_count(); }
 static void vm_debug_set_watch(void *context, core_product_debug_watch_kind kind, uint32_t address)
 {
     (void)context;

@@ -11,17 +11,6 @@ extern "C" {
 
 /* Connection Functions Invoked By Other Modules */
 
-/* Debug Controls */
-void deviceConnectDebugSetBreak(uint16_t breakCS, uint16_t breakIP);
-void deviceConnectDebugClearBreak();
-void deviceConnectDebugSetBreak32(uint32_t breakLinear);
-void deviceConnectDebugClearBreak32();
-size_t deviceConnectDebugGetBreakCount();
-void deviceConnectDebugSetTrace(size_t traceCount);
-void deviceConnectDebugClearTrace();
-void deviceConnectDebugRecordStart(const char *fileName);
-void deviceConnectDebugRecordStop();
-
 /* Bios Settings */
 void deviceConnectBiosSetBoot(int flagHdd);
 int deviceConnectBiosGetBoot();

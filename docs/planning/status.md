@@ -40,8 +40,8 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 T15 S1 P4: replace the retained VM debugger, BIOS, and media declarations
-with narrow owner-local headers.
+M5 T15 S1 P5: replace the retained BIOS and media declarations with narrow
+owner-local headers.
 
 ## Completed
 
@@ -182,6 +182,10 @@ with narrow owner-local headers.
   memory-sizing callers to them. GCC, debug-target, expected-`#UD`, and
   FDD/HDD profile gates passed; legacy exports remain only for unconverted
   callers pending final deletion.
+- M5 T15 S1 P4: moved VM hardware-debug controls to `vm_machine_debug_*` in
+  `vdebug.h`; the core debugger adapter, Console recorder, and full-PC session
+  no longer access them through `device.h`. GCC, debugger-target, and Console
+  gates passed.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware

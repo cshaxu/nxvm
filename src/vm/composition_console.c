@@ -3,6 +3,7 @@
 #include "vm/composition_machine.h"
 #include "vm/composition_control.h"
 #include "core/machine/memory.h"
+#include "vm/machine/vdebug.h"
 #include "vm/machine/device.h"
 #include "vm/platform/platform.h"
 #include "core/product/debug/debug.h"
@@ -28,8 +29,8 @@ static void vm_composition_console_set_window_display(void *context, int enabled
 static void vm_composition_console_print_bios(void *context) { (void)context; devicePrintBios(); }
 static void vm_composition_console_print_status(void *context) { (void)context; vm_composition_control_print_status(); }
 static void vm_composition_console_debug(void *context) { (void)context; debugMain(); }
-static void vm_composition_console_record_start(void *context, const char *path) { (void)context; deviceConnectDebugRecordStart(path); }
-static void vm_composition_console_record_stop(void *context) { (void)context; deviceConnectDebugRecordStop(); }
+static void vm_composition_console_record_start(void *context, const char *path) { (void)context; vm_machine_debug_record_start(path); }
+static void vm_composition_console_record_stop(void *context) { (void)context; vm_machine_debug_record_stop(); }
 static void vm_composition_console_set_boot_hdd(void *context, int enabled) { (void)context; deviceConnectBiosSetBoot(enabled); }
 static void vm_composition_console_set_memory(void *context, size_t bytes) { (void)context; core_machine_memory_allocate(bytes); }
 static void vm_composition_console_create_fdd(void *context) { (void)context; deviceConnectFloppyCreate(); }

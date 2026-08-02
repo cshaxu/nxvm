@@ -5,6 +5,7 @@
 #include "vm/composition_control.h"
 #include "core/machine/vcpu.h"
 #include "core/machine/memory.h"
+#include "vm/machine/vdebug.h"
 #include "vm/machine/device.h"
 #include "vm/platform/vm_request_transport.h"
 #include "vm/platform/win32/win32.h"
@@ -180,13 +181,13 @@ nxvm_core_status nxvm_full_pc_record_start(const char *path)
     if (!nxvm_full_pc_active || path == NULL || path[0] == '\0') {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
-    deviceConnectDebugRecordStart(path);
+    vm_machine_debug_record_start(path);
     return NXVM_CORE_STATUS_OK;
 }
 
 void nxvm_full_pc_record_stop(void)
 {
-    if (nxvm_full_pc_active) deviceConnectDebugRecordStop();
+    if (nxvm_full_pc_active) vm_machine_debug_record_stop();
 }
 
 void nxvm_full_pc_request_stop(void)
