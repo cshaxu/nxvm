@@ -157,7 +157,8 @@ void machineInit(vm_composition_live_machine *machine) {
     core_machine_keyboard_provider_slot_freeze(machine->keyboard_provider);
     core_machine_display_provider_slot_bind(machine->display_provider,
         machine->default_profile_context,
-        NULL, NULL, vm_profile_default_display_capture);
+        NULL, machine->default_profile_context,
+        vm_profile_default_display_capture);
     core_machine_display_provider_slot_freeze(machine->display_provider);
     vm_machine_debug_bind_pause(machine->debug,
         vm_composition_debug_request_pause, NULL);

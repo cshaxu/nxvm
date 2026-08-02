@@ -3,8 +3,11 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "core/machine/memory.h"
+#include "core/platform/display_frame.h"
+#include "vm/composition_machine.h"
 #include "vm/composition_control.h"
 #include "vm/composition_live_machine.h"
 #include "vm/machine/fdd.h"
@@ -15,7 +18,7 @@
 
 static DWORD WINAPI run_full_pc(void *opaque)
 {
-    vm_composition_control_start((vm_composition_control_state *)opaque);
+    machineStart((vm_composition_live_machine *)opaque);
     return 0u;
 }
 
@@ -31,6 +34,23 @@ static int has_dos_prompt(const t_ram *ram)
         const unsigned char drive = text[cell * 2u];
         if (isalpha((unsigned char)drive) && text[(cell + 1u) * 2u] == ':' &&
             text[(cell + 2u) * 2u] == '\\' && text[(cell + 3u) * 2u] == '>') {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static int frame_has_dos_prompt(const core_platform_display_frame *frame)
+{
+    size_t cell;
+
+    if (frame == NULL) return 0;
+    for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
+        const unsigned char drive = frame->characters[cell];
+        if (isalpha((unsigned char)drive) &&
+            frame->characters[cell + 1u] == ':' &&
+            frame->characters[cell + 2u] == '\\' &&
+            frame->characters[cell + 3u] == '>') {
             return 1;
         }
     }
@@ -62,28 +82,27 @@ int main(int argc, char **argv)
     DWORD result;
     DWORD elapsed;
     int prompt_seen = 0;
+    core_platform_display_frame frame;
     vm_composition_live_machine *session;
 
     if (argc != 2) return 1;
     session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
     if (session == NULL) return 1;
-    vm_composition_live_machine_initialize(session);
-    vm_composition_live_machine_bind_legacy(session);
-    vm_composition_control_initialize(session->control, session);
+    machineInit(session);
     if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) goto fail;
-    vm_composition_control_reset(session->control);
-    thread = CreateThread(NULL, 0u, run_full_pc, session->control, 0u, NULL);
+    thread = CreateThread(NULL, 0u, run_full_pc, session, 0u, NULL);
     if (thread == NULL) goto fail;
 
     for (elapsed = 0u; elapsed < DOS_PROMPT_TIMEOUT_MILLISECONDS;
          elapsed += 10u) {
-        if (has_dos_prompt(session->ram)) {
+        core_platform_display_capture(&frame);
+        if (has_dos_prompt(session->ram) && frame_has_dos_prompt(&frame)) {
             prompt_seen = 1;
             break;
         }
         Sleep(10u);
     }
-    vm_composition_control_stop(session->control);
+    machineStop(session);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
     if (result != WAIT_OBJECT_0 || !prompt_seen) {
@@ -91,16 +110,14 @@ int main(int argc, char **argv)
         fputs("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", stderr);
         goto fail;
     }
-    vm_composition_control_finalize(session->control, session);
-    vm_composition_live_machine_finalize(session);
+    machineFinal(session);
     free(session);
     puts("M5:T70:S2:DOS-PROMPT:OK");
     return 0;
 
 fail:
-    vm_composition_control_stop(session->control);
-    vm_composition_control_finalize(session->control, session);
-    vm_composition_live_machine_finalize(session);
+    machineStop(session);
+    machineFinal(session);
     free(session);
     return 1;
 }
