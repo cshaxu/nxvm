@@ -3,6 +3,8 @@
 #include <string.h>
 
 #include "vm/composition_control.h"
+#include "core/machine/vcpu.h"
+#include "core/machine/memory.h"
 #include "vm/machine/device.h"
 #include "vm/platform/vm_request_transport.h"
 #include "vm/platform/win32/win32.h"
@@ -92,8 +94,8 @@ nxvm_core_status nxvm_full_pc_get_reset_vector(
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
 
-    out_vector->cs = nxvm_baseline_read_u16(deviceConnectCpuGetRefCS());
-    out_vector->ip = nxvm_baseline_read_u16(deviceConnectCpuGetRefIP());
+    out_vector->cs = nxvm_baseline_read_u16(&vcpu.data.cs.selector);
+    out_vector->ip = nxvm_baseline_read_u16(&vcpu.data.ip);
     return NXVM_CORE_STATUS_OK;
 }
 
@@ -119,7 +121,7 @@ nxvm_core_status nxvm_full_pc_set_memory_kb(uint32_t kilobytes)
         kilobytes < 1024u || kilobytes > 16384u) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
-    deviceConnectRamAllocate((size_t)kilobytes * 1024u);
+    core_machine_memory_allocate((size_t)kilobytes * 1024u);
     return NXVM_CORE_STATUS_OK;
 }
 

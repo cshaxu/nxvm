@@ -79,6 +79,15 @@ use its CPU, RAM, port, media, BIOS, debug-recording, and display surfaces.
 The slice passed GCC build, FDD execution-context lifecycle, expected-`#UD`
 CPU-stop, source-DAG, and retained Console `HELP`/`EXIT` gates.
 
+The next slice adds direct `core_machine_cpu_*`, `core_machine_memory_*`, and
+`core_machine_port_*` entry points over the retained single executor state.
+Debugger composition, CPU probing, reset-vector inspection, and memory sizing
+now use those core paths (or the same explicit `vcpu` state where inspection is
+required). The old `deviceConnectCpu*`, `deviceConnectRam*`, and
+`deviceConnectPort*` definitions remain only as uncalled legacy exports until
+their final deletion; no duplicate machine state was introduced. GCC,
+debug-target, expected-`#UD` probe, and FDD/HDD full-PC profile gates passed.
+
 ## Migration Discipline
 
 Each slice first maps all direct callers and an observable behavior baseline.

@@ -3,9 +3,10 @@
 #include <string.h>
 
 #include "core/machine/vcpu.h"
+#include "core/machine/cpu.h"
+#include "core/machine/memory.h"
 #include "core/product/runtime/execution_context.h"
 #include "vm/composition_control.h"
-#include "vm/machine/device.h"
 #include "core/machine/vcpuins.h"
 
 static int nxvm_cpu_probe_active;
@@ -36,11 +37,13 @@ static int nxvm_cpu_probe_reset(void)
     uint32_t eip = 0u;
 
     vm_composition_control_reset();
-    if (deviceConnectCpuLoadCS(0u) || deviceConnectCpuLoadDS(0u) ||
-        deviceConnectCpuLoadES(0u) || deviceConnectCpuLoadSS(0u)) {
+    if (core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_CS, 0u) ||
+        core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_DS, 0u) ||
+        core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_ES, 0u) ||
+        core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_SS, 0u)) {
         return 0;
     }
-    memcpy(deviceConnectCpuGetRefEIP(), &eip, sizeof(eip));
+    memcpy(&vcpu.data.eip, &eip, sizeof(eip));
     return 1;
 }
 
@@ -72,7 +75,7 @@ int nxvm_cpu_probe_step(
     memset(out_capture, 0, sizeof(*out_capture));
     memcpy(out_capture->bytes, bytes, byte_count);
     out_capture->byte_count = byte_count;
-    deviceConnectRamRealWrite(0u, 0u, (void *)bytes, byte_count);
+    core_machine_memory_write_real(0u, 0u, bytes, byte_count);
     if (!nxvm_cpu_probe_capture_state(&out_capture->before)) {
         return 0;
     }

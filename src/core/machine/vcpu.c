@@ -6,6 +6,7 @@
 
 #include "core/machine/vcpuins.h"
 
+#include "core/machine/cpu.h"
 #include "core/machine/vcpu.h"
 
 t_cpu vcpu;
@@ -111,6 +112,81 @@ t_bool vcpuConsumeResetRequest() {
     t_bool requested = vcpuResetRequested;
     vcpuResetRequested = False;
     return requested;
+}
+
+int core_machine_cpu_read_linear(uint32_t linear, void *out_data, uint8_t size)
+{
+    return vcpuinsReadLinear(linear, (t_vaddrcc)out_data, size);
+}
+
+int core_machine_cpu_write_linear(uint32_t linear, const void *in_data,
+    uint8_t size)
+{
+    return vcpuinsWriteLinear(linear, (t_vaddrcc)in_data, size);
+}
+
+int core_machine_cpu_load_segment(core_machine_cpu_segment segment,
+    uint16_t selector)
+{
+    switch (segment) {
+    case CORE_MACHINE_CPU_SEGMENT_ES:
+        return vcpuinsLoadSreg(&vcpu.data.es, selector);
+    case CORE_MACHINE_CPU_SEGMENT_CS:
+        return vcpuinsLoadSreg(&vcpu.data.cs, selector);
+    case CORE_MACHINE_CPU_SEGMENT_SS:
+        return vcpuinsLoadSreg(&vcpu.data.ss, selector);
+    case CORE_MACHINE_CPU_SEGMENT_DS:
+        return vcpuinsLoadSreg(&vcpu.data.ds, selector);
+    case CORE_MACHINE_CPU_SEGMENT_FS:
+        return vcpuinsLoadSreg(&vcpu.data.fs, selector);
+    case CORE_MACHINE_CPU_SEGMENT_GS:
+        return vcpuinsLoadSreg(&vcpu.data.gs, selector);
+    }
+    return 1;
+}
+
+int core_machine_cpu_get_code_default_size(void)
+{
+    return vcpu.data.cs.seg.exec.defsize;
+}
+
+uint32_t core_machine_cpu_get_code_base(void)
+{
+    return vcpu.data.cs.base;
+}
+
+void core_machine_cpu_set_watchpoint(core_machine_cpu_watchpoint kind,
+    uint32_t linear)
+{
+    switch (kind) {
+    case CORE_MACHINE_CPU_WATCH_READ:
+        vcpuins.data.wrLinear = linear;
+        vcpuins.data.flagWR = True;
+        break;
+    case CORE_MACHINE_CPU_WATCH_WRITE:
+        vcpuins.data.wwLinear = linear;
+        vcpuins.data.flagWW = True;
+        break;
+    case CORE_MACHINE_CPU_WATCH_EXECUTE:
+        vcpuins.data.weLinear = linear;
+        vcpuins.data.flagWE = True;
+        break;
+    }
+}
+
+void core_machine_cpu_clear_watchpoint(core_machine_cpu_watchpoint kind)
+{
+    switch (kind) {
+    case CORE_MACHINE_CPU_WATCH_READ:
+        vcpuins.data.flagWR = False;
+        break;
+    case CORE_MACHINE_CPU_WATCH_WRITE:
+        vcpuins.data.flagWW = False;
+        break;
+    case CORE_MACHINE_CPU_WATCH_EXECUTE:
+        vcpuins.data.flagWE = False;
+        break;
+    }
 }
 
 int deviceConnectCpuReadLinear(uint32_t linear, void *rdest, uint8_t size) {
@@ -493,4 +569,29 @@ void devicePrintCpuWatch() {
     if (vcpuins.data.flagWE) {
         PRINTF("Watch-exec point: Lin=%08x\n", vcpuins.data.weLinear);
     }
+}
+
+void core_machine_cpu_print_registers(void)
+{
+    devicePrintCpuReg();
+}
+
+void core_machine_cpu_print_segment_registers(void)
+{
+    devicePrintCpuSreg();
+}
+
+void core_machine_cpu_print_control_registers(void)
+{
+    devicePrintCpuCreg();
+}
+
+void core_machine_cpu_print_memory_accesses(void)
+{
+    devicePrintCpuMem();
+}
+
+void core_machine_cpu_print_watchpoints(void)
+{
+    devicePrintCpuWatch();
 }
