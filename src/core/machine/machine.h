@@ -49,9 +49,9 @@ struct core_machine {
 };
 
 nxvm_core_status core_machine_cpu_reset(core_machine *machine);
-nxvm_core_status core_machine_memory_initialize(core_machine *machine);
-void core_machine_memory_finalize(core_machine *machine);
-nxvm_core_status core_machine_memory_reset(core_machine *machine);
+nxvm_core_status core_machine_instance_memory_initialize(core_machine *machine);
+void core_machine_instance_memory_finalize(core_machine *machine);
+nxvm_core_status core_machine_instance_memory_reset(core_machine *machine);
 nxvm_core_status core_machine_port_initialize(core_machine *machine);
 void core_machine_port_finalize(core_machine *machine);
 void core_machine_trace_initialize(core_machine *machine);
