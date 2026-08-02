@@ -48,6 +48,8 @@ M5 T20 S1 then renamed the shared keyboard provider unit to
 `keyboard_interface` without changing its API or behavior.
 M5 T21 S1 renamed the core machine event-observer unit to `trace_interface`
 without changing trace semantics.
+M5 T22 S1 audited the retained debugger and defined the T23 pause-boundary and
+T24 unified-backend migration; implementation remains inactive pending review.
 
 ## Completed
 
@@ -243,6 +245,8 @@ without changing trace semantics.
   `keyboard_interface` and rebuilt the task artifact.
 - M5 T21 S1 P1: renamed the core machine trace observer unit to
   `trace_interface` and rebuilt the task artifact.
+- M5 T22 S1 P1: recorded the retained debugger audit and the T23/T24 migration
+  design without changing runtime code.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware
