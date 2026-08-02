@@ -21,6 +21,7 @@ void core_machine_cpu_execution_context_initialize(
     context->port = port;
     context->pic_master = NULL;
     context->pic_slave = NULL;
+    context->extension_context = NULL;
     context->stop_requested = False;
     context->reset_requested = False;
 }
@@ -32,6 +33,18 @@ void core_machine_cpu_execution_context_bind_pic(
     if (context == NULL) return;
     context->pic_master = master;
     context->pic_slave = slave;
+}
+
+void core_machine_cpu_execution_context_bind_extension(
+    core_machine_cpu_execution_context *context, void *extension_context)
+{
+    if (context != NULL) context->extension_context = extension_context;
+}
+
+void *core_machine_cpu_execution_context_extension(
+    const core_machine_cpu_execution_context *context)
+{
+    return context == NULL ? NULL : context->extension_context;
 }
 
 t_cpu *core_machine_cpu_current(void)

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "vm/composition_live_machine.h"
 #include "vm/composition_machine.h"
@@ -6,17 +7,24 @@
 
 int main(void)
 {
-    vm_composition_live_machine session = {0};
+    vm_composition_live_machine *session;
     const vm_composition_live_machine *machine;
 
-    machineInit(&session);
-    machine = (&session);
-    if (machine == NULL || qdxTable != machine->default_qdx->table) {
-        machineFinal(&session);
+    session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
+    if (session == NULL) return 1;
+    machineInit(session);
+    machine = session;
+    if (machine == NULL ||
+        machine->default_qdx != &machine->default_qdx_storage ||
+        machine->default_profile_context->qdx != machine->default_qdx ||
+        core_machine_cpu_execution_context_extension(machine->cpu_execution) !=
+            machine->default_profile_context) {
+        machineFinal(session);
+        free(session);
         return 1;
     }
-    machineFinal(&session);
-    if (vm_profile_default_qdx_current() != NULL) return 1;
+    machineFinal(session);
+    free(session);
     puts("M5:T39:S1:QDX-AUTHORITY:OK");
     return 0;
 }

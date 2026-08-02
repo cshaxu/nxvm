@@ -50,7 +50,8 @@ static void INT_13_03_HDD_WriteSector() {
     }
 }
 
-void qddiskInit() {
-    qdxTable[0xa2] = (t_faddrcc) INT_13_02_HDD_ReadSector;
-    qdxTable[0xa3] = (t_faddrcc) INT_13_03_HDD_WriteSector;
+void vm_profile_default_disk_initialize(t_qdx *qdx) {
+    if (qdx == NULL) return;
+    qdx->table[0xa2] = (t_faddrcc) INT_13_02_HDD_ReadSector;
+    qdx->table[0xa3] = (t_faddrcc) INT_13_03_HDD_WriteSector;
 }

@@ -37,7 +37,11 @@ static int has_single_live_authority(const vm_composition_live_machine *machine)
         machine->hdd == &machine->hdd_storage &&
         machine->debug == &machine->debug_storage &&
         machine->default_bios == &machine->default_bios_storage &&
-        machine->default_qdx->table == qdxTable &&
+        machine->default_qdx == &machine->default_qdx_storage &&
+        machine->default_profile_context != NULL &&
+        machine->default_profile_context->qdx == machine->default_qdx &&
+        core_machine_cpu_execution_context_extension(machine->cpu_execution) ==
+            machine->default_profile_context &&
         machine->control != NULL &&
         machine->control->execution_context.device == machine;
 }
@@ -98,8 +102,7 @@ int main(int argc, char **argv)
     vm_composition_control_finalize(session->control, session);
     vm_composition_live_machine_finalize(session);
     free(session);
-    if (core_machine_cpu_current() != NULL ||
-        vm_profile_default_qdx_current() != NULL) return 1;
+    if (core_machine_cpu_current() != NULL) return 1;
     puts("M5:T44:S1:FULL-AUTHORITY-CLOSURE:OK");
     return 0;
 }

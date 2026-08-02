@@ -20,6 +20,7 @@
 #include "vm/machine/debug.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
+#include "vm/profile/default_profile/firmware/context.h"
 #include "vm/composition_control.h"
 #include "core/product/debug/debug_target.h"
 
@@ -44,6 +45,7 @@ typedef struct vm_composition_live_machine {
     t_debug debug_storage;
     t_bios default_bios_storage;
     t_qdx default_qdx_storage;
+    vm_profile_default_context default_profile_context_storage;
     core_machine_block_provider_slot block_provider_storage;
     core_machine_keyboard_provider_slot keyboard_provider_storage;
     core_machine_display_provider_slot display_provider_storage;
@@ -68,6 +70,7 @@ typedef struct vm_composition_live_machine {
     t_debug *debug;
     t_bios *default_bios;
     t_qdx *default_qdx;
+    vm_profile_default_context *default_profile_context;
     core_machine_block_provider_slot *block_provider;
     core_machine_keyboard_provider_slot *keyboard_provider;
     core_machine_display_provider_slot *display_provider;

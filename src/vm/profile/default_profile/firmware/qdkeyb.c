@@ -111,9 +111,10 @@ static void INT_16() {
     }
 }
 
-void qdkeybInit() {
-    qdxTable[0x09] = (t_faddrcc) INT_09; /* hard keyb */
-    qdxTable[0x16] = (t_faddrcc) INT_16; /* soft keyb */
+void vm_profile_default_keyboard_initialize(t_qdx *qdx) {
+    if (qdx == NULL) return;
+    qdx->table[0x09] = (t_faddrcc) INT_09; /* hard keyb */
+    qdx->table[0x16] = (t_faddrcc) INT_16; /* soft keyb */
 }
 
 int qdkeybGetFlag0CapsLock() {
