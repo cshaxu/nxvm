@@ -4,8 +4,8 @@ void nxvm_product_nxvm_presentation_initialize(
     nxvm_product_nxvm_presentation *presentation)
 {
     if (presentation == NULL) return;
-    nxvm_core_keyboard_queue_initialize(&presentation->pending_input);
-    nxvm_core_text_snapshot_initialize(&presentation->published_text);
+    core_machine_keyboard_queue_initialize(&presentation->pending_input);
+    core_machine_text_snapshot_initialize(&presentation->published_text);
     presentation->command_boundary_open = 0;
 }
 
@@ -13,7 +13,7 @@ nxvm_core_status nxvm_product_nxvm_presentation_enqueue_input(
     nxvm_product_nxvm_presentation *presentation, uint16_t scan_code)
 {
     if (presentation == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    return nxvm_core_keyboard_queue_push(&presentation->pending_input, scan_code);
+    return core_machine_keyboard_queue_push(&presentation->pending_input, scan_code);
 }
 
 nxvm_core_status nxvm_product_nxvm_presentation_open_command_boundary(
@@ -34,7 +34,7 @@ nxvm_core_status nxvm_product_nxvm_presentation_apply_input(
 
     if (presentation == NULL || consumer == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     if (!presentation->command_boundary_open) return NXVM_CORE_STATUS_INVALID_STATE;
-    while ((status = nxvm_core_keyboard_queue_pop(&presentation->pending_input,
+    while ((status = core_machine_keyboard_queue_pop(&presentation->pending_input,
                                                    &scan_code)) == NXVM_CORE_STATUS_OK) {
         status = consumer(context, scan_code);
         if (status != NXVM_CORE_STATUS_OK) return status;
@@ -44,19 +44,19 @@ nxvm_core_status nxvm_product_nxvm_presentation_apply_input(
 
 nxvm_core_status nxvm_product_nxvm_presentation_publish_text(
     nxvm_product_nxvm_presentation *presentation,
-    const nxvm_core_text_snapshot *snapshot)
+    const core_machine_text_snapshot *snapshot)
 {
     if (presentation == NULL || snapshot == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     if (!presentation->command_boundary_open) return NXVM_CORE_STATUS_INVALID_STATE;
-    return nxvm_core_text_snapshot_copy(snapshot, &presentation->published_text);
+    return core_machine_text_snapshot_copy(snapshot, &presentation->published_text);
 }
 
 nxvm_core_status nxvm_product_nxvm_presentation_capture_text(
     const nxvm_product_nxvm_presentation *presentation,
-    nxvm_core_text_snapshot *out_snapshot)
+    core_machine_text_snapshot *out_snapshot)
 {
     if (presentation == NULL || out_snapshot == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    return nxvm_core_text_snapshot_copy(&presentation->published_text, out_snapshot);
+    return core_machine_text_snapshot_copy(&presentation->published_text, out_snapshot);
 }
 
 void nxvm_product_nxvm_presentation_close_command_boundary(

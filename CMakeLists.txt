@@ -26,9 +26,9 @@ set(NTVDM64_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 add_library(nxvm-core STATIC
     src/core/machine/debug.c
     src/core/machine/machine.c
-    src/core/machine/machine_memory.c
-    src/core/machine/machine_port.c
-    src/core/machine/presentation.c
+    src/core/machine/memory_interface.c
+    src/core/machine/port_interface.c
+    src/core/machine/presentation_interface.c
     src/core/machine/trace_interface.c
 )
 add_library(nxvm-core-machine-firmware STATIC src/core/machine/firmware.c)
@@ -645,6 +645,7 @@ add_nxvm_version_artifact(nxvm-0-5-0048 "0.5.0048")
 add_nxvm_version_artifact(nxvm-0-5-0049 "0.5.0049")
 add_nxvm_version_artifact(nxvm-0-5-0050 "0.5.0050")
 add_nxvm_version_artifact(nxvm-0-5-0051 "0.5.0051")
+add_nxvm_version_artifact(nxvm-0-5-0052 "0.5.0052")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

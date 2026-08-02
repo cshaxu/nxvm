@@ -12,7 +12,7 @@ typedef struct nxvm_dos_minimal_presentation nxvm_dos_minimal_presentation;
 
 typedef struct nxvm_vdm_presentation_snapshot {
     uint64_t timestamp;
-    nxvm_core_text_snapshot text;
+    core_machine_text_snapshot text;
 } nxvm_vdm_presentation_snapshot;
 
 nxvm_core_status nxvm_dos_minimal_presentation_create(
