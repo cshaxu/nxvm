@@ -27,16 +27,14 @@ M4 is complete. Firmware, profile/provider, CPU verification, and retained
 NXVM Console contracts now bound M5 implementation without changing runtime
 behavior.
 
-## M5 Reopened
+## M5 Closure
 
-M5 is reopened after T54 for second-pass naming and ownership cleanup. T54 is
-retained as first closure evidence, not final naming closure. The retained
-NXVM full PC still has one composition-owned machine authority, no legacy
-full-PC storage definitions, an acknowledged debugger pause boundary, one
-product-neutral debugger backend, and a single `src/version.*` identity source.
-Remaining M5 work is bounded to T55 through T63: documentation facts, public
-symbol prefixes, platform ownership, retained alias inventory/cleanup, and a
-final second-pass audit.
+M5 is complete through the T63 second-pass naming and ownership cleanup. T54 is
+retained as first closure evidence, and T63 is final second-pass closure
+evidence. The retained NXVM full PC has one composition-owned machine authority,
+no legacy full-PC storage definitions, an acknowledged debugger pause boundary,
+one product-neutral debugger backend, a single `src/version.*` identity source,
+recorded platform ownership boundaries, and recorded retained-alias exceptions.
 
 ## M5 Continuity
 
@@ -161,13 +159,14 @@ alias was removed, and it produced `build/output/nxvm_0_5_0061.exe`.
 M5 T62 S1 recorded that no retained runtime alias is safe to remove inside this
 naming window without beginning explicit context-passing and multi-session
 state-authority work. It produced `build/output/nxvm_0_5_0062.exe`.
+M5 T63 S1 completed the final second-pass naming closure audit over source
+roots, CMake, current docs, public symbols, platform ownership, and retained
+alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M5 T63 S1 is active, not started: final second-pass naming closure audit over
-source, CMake, docs, public symbols, platform ownership, and retained alias
-exceptions.
-M6 T1 S1 is deferred and not active.
+M6 T1 S1 is active, not started: prepare the bounded owned-DOS design inputs
+and M7 task breakdown. Do not begin DOS implementation in M6.
 
 ## Completed
 
@@ -617,11 +616,13 @@ M6 T1 S1 is deferred and not active.
 - M5 T62 S1 P1: recorded that no retained runtime alias cleanup is safe inside
   this naming window, preserved source behavior, and built
   `build/output/nxvm_0_5_0062.exe`.
+- M5 T63 S1 P1: completed the final second-pass naming closure audit and built
+  `build/output/nxvm_0_5_0063.exe`.
 
 ## Next Eligible Work
 
-- M5 T63 may begin. M6 design remains ineligible until M5 T63 closes the
-  second-pass naming and ownership cleanup.
+- M6 T1 may begin as a design task only. DOS implementation remains ineligible
+  until the M6 design task creates and closes the M7 implementation breakdown.
 
 ## Delivery State
 
