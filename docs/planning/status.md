@@ -65,8 +65,9 @@ direct aliases only; no global CPU/decoder storage remains.
 
 ## Active Work
 
-M5 T25 S2 P2: retain the FDD DOS-prompt checkpoint for the canonical RAM/A20
-authority migration before closing T25.
+M5 T27 S1 P1: map and migrate the retained master/slave PIC pair into embedded
+live-machine storage. The owner has authorized T26-T31 to proceed while T25's
+manual FDD DOS-prompt observation remains deferred.
 
 ## Completed
 

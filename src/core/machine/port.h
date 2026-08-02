@@ -1,53 +1,58 @@
+/* Copyright 2012-2014 Neko. */
+
 #ifndef NXVM_CORE_PORT_H
 #define NXVM_CORE_PORT_H
-
-#include <stdint.h>
-
-#include "type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct nxvm_core_machine nxvm_core_machine;
+#include "core/machine/vglobal.h"
 
-typedef nxvm_core_status (*nxvm_core_port_read_handler)(
-    void *owner,
-    uint16_t port,
-    uint32_t *out_value);
+#define NXVM_DEVICE_PORT "Unknown I/O Port"
 
-typedef nxvm_core_status (*nxvm_core_port_write_handler)(
-    void *owner,
-    uint16_t port,
-    uint32_t value);
+#define VPORT_MAX_PORT_COUNT 0x10000
 
-typedef struct nxvm_core_port_ops {
-    nxvm_core_port_read_handler read;
-    nxvm_core_port_write_handler write;
-} nxvm_core_port_ops;
+typedef struct {
+    t_faddrcc fpIn[VPORT_MAX_PORT_COUNT];
+    t_faddrcc fpOut[VPORT_MAX_PORT_COUNT];
+} t_port_connect;
 
-nxvm_core_status nxvm_core_machine_install_port(
-    nxvm_core_machine *machine,
-    uint16_t first,
-    uint16_t last,
-    const nxvm_core_port_ops *ops,
-    void *owner);
+typedef struct {
+    union {
+        t_nubit8  ioByte;
+        t_nubit16 ioWord;
+        t_nubit32 ioDWord;
+    };
+} t_port_data;
 
-nxvm_core_status nxvm_core_machine_port_read(
-    nxvm_core_machine *machine,
-    uint16_t port,
-    uint32_t *out_value);
+typedef struct {
+    t_port_data data;
+    t_port_connect connect;
+} t_port;
 
-nxvm_core_status nxvm_core_machine_port_write(
-    nxvm_core_machine *machine,
-    uint16_t port,
-    uint32_t value);
+t_port *core_machine_port_current(void);
+void core_machine_port_bind_live(t_port *port);
+void core_machine_port_unbind_live(void);
+
+/* Transitional direct alias to the one composition-owned live port object. */
+#define vport (*core_machine_port_current())
+
+void vportAddRead(t_nubit16 portId, t_faddrcc fpIn);
+void vportAddWrite(t_nubit16 portId, t_faddrcc fpOut);
+void vportExecRead(t_nubit16 portId);
+void vportExecWrite(t_nubit16 portId);
+
+void vportInit();
+void vportReset();
+void vportRefresh();
+void vportFinal();
 
 uint32_t core_machine_port_read_legacy(uint16_t port);
 void core_machine_port_write_legacy(uint16_t port, uint32_t value);
 
 #ifdef __cplusplus
-}
+}/*_EOCD_*/
 #endif
 
 #endif

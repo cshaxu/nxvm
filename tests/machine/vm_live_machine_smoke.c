@@ -2,7 +2,7 @@
 
 #include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
-#include "core/machine/vport.h"
+#include "core/machine/port.h"
 #include "core/machine/memory.h"
 #include "vm/composition_live_machine.h"
 #include "vm/composition_machine.h"

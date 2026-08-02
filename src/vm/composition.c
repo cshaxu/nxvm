@@ -7,7 +7,7 @@
 #include "core/platform/sleep.h"
 #include "core/platform/sleep.h"
 
-#include "core/machine/vport.h"
+#include "core/machine/port.h"
 #include "core/machine/memory.h"
 #include "core/machine/cpu.h"
 #include "vm/profile/default_profile/firmware/vbios.h"

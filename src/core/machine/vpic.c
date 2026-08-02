@@ -8,7 +8,7 @@
 #include "type.h"
 
 #include "core/machine/vpit.h"
-#include "core/machine/vport.h"
+#include "core/machine/port.h"
 #include "core/machine/vpic.h"
 
 t_pic vpic1, vpic2;

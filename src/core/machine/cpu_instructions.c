@@ -5,7 +5,7 @@
 /* ************************************************************************* */
 
 #include "type.h"
-#include "core/machine/vport.h"
+#include "core/machine/port.h"
 #include "core/machine/memory.h"
 #include "core/machine/vpic.h"
 

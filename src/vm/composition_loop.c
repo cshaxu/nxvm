@@ -12,7 +12,7 @@
 #include "core/product/runtime/execution_context.h"
 #include "core/machine/cpu.h"
 #include "core/machine/memory.h"
-#include "core/machine/vport.h"
+#include "core/machine/port.h"
 #include "vm/composition_control.h"
 #include "vm/composition_live_machine.h"
 
@@ -94,7 +94,7 @@ void vm_composition_control_initialize(void) {
         sizeof(vmCompositionControl));
     vmCompositionControlOwnsLiveMachine = 0;
     if (vm_composition_live_machine_current() == NULL) {
-        vm_composition_live_machine_bind(&vport);
+        vm_composition_live_machine_bind();
         vmCompositionControlOwnsLiveMachine = 1;
     }
     machine = vm_composition_live_machine_current();
