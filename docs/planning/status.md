@@ -138,11 +138,14 @@ aliases or historical/provenance references; and
 `build/output/nxvm_0_5_0054.exe` is the verified first closure artifact.
 M5 T55 S1 reopened second-pass naming cleanup, froze the T55 through T63 plan,
 deferred M6 again, and produced `build/output/nxvm_0_5_0055.exe`.
+M5 T56 S1 corrected current/future documentation facts for the future
+`vdm/main.c` entry point and actual `type.h` contents, and produced
+`build/output/nxvm_0_5_0056.exe`.
 
 ## Active Work
 
-M5 T56 S1 is active, not started: correct current/future documentation facts,
-especially absent `vdm/main.c` and actual `type.h` contents.
+M5 T57 S1 is active, not started: rename VM default-profile firmware public
+symbols to `vm_profile_default_firmware_*`.
 M6 T1 S1 is deferred and not active.
 
 ## Completed
@@ -572,10 +575,13 @@ M6 T1 S1 is deferred and not active.
   `build/output/nxvm_0_5_0054.exe`.
 - M5 T55 S1 P1: reopened second-pass naming cleanup, froze T55 through T63,
   deferred M6 again, and built `build/output/nxvm_0_5_0055.exe`.
+- M5 T56 S1 P1: corrected current/future documentation facts around the
+  future `vdm/main.c` entry point and actual `type.h` contents, and built
+  `build/output/nxvm_0_5_0056.exe`.
 
 ## Next Eligible Work
 
-- M5 T56 may begin. M6 design remains ineligible until M5 T63 closes the
+- M5 T57 may begin. M6 design remains ineligible until M5 T63 closes the
   second-pass naming and ownership cleanup.
 
 ## Delivery State

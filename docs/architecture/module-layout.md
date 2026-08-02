@@ -24,7 +24,6 @@ src/
     {machine,platform,product,profile}/
     profile/default_profile/firmware/
   vdm/
-    main.c
     composition.{c,h}
     {machine,platform,product,profile}/
     profile/dos_minimal_profile/
@@ -36,16 +35,16 @@ An owning module may use `<subject>.h` for private instance layout and internal
 helpers. `machine.h`, for example, is private to `core/machine`; its public
 handle contract is `machine_interface.h`. Device models are flat files unless
 they become real multi-file subsystems.
-`vm/main.c` is the `nxvm.exe` entry point and `vdm/main.c` is the
-`ntvdm64.exe` entry point. Each remains thin and enters its product-form root
-composition in `vm/composition.*` or `vdm/composition.*`.
+`vm/main.c` is the current `nxvm.exe` entry point. `vdm/main.c` is the future
+`ntvdm64.exe` entry point and must remain thin when introduced; until then,
+VDM code is limited to design and smoke-test composition.
 
 ## Foundation Units
 
 `src/type.h` is the sole common type header and legacy diagnostic foundation.
-It defines standard project types such as `BOOL`, `SIZE_T`, fixed-width
-aliases, `STATUS`, and the stable `STATUS_*` result constants, together with
-the product-neutral legacy C-runtime and trace primitives needed by more than
+It defines `nxvm_core_status`, retained NXVM numeric aliases such as `t_nubit8`
+and `t_bool`, fixed-width compatibility typedefs, common bit/constant helpers,
+and product-neutral legacy C-runtime and trace primitives needed by more than
 one module. `src/type.c` owns their non-inline implementations. All modules
 may include `type.h`; this is a foundation-unit dependency, not a dependency
 between product forms or modules.
