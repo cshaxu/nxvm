@@ -40,20 +40,23 @@ static int vm_debug_step(void *context)
 static int vm_debug_read_register(void *context, core_product_debug_register reg,
                                   uint32_t *value)
 {
-    (void)context;
+    vm_composition_live_machine *machine =
+        (vm_composition_live_machine *)context;
+    t_cpu *cpu = machine == NULL ? NULL : machine->cpu;
+    if (cpu == NULL) return 1;
     if (value == NULL) return 1;
     switch (reg) {
-    case CORE_PRODUCT_DEBUG_EAX: *value = vcpu.data.eax; break; case CORE_PRODUCT_DEBUG_ECX: *value = vcpu.data.ecx; break;
-    case CORE_PRODUCT_DEBUG_EDX: *value = vcpu.data.edx; break; case CORE_PRODUCT_DEBUG_EBX: *value = vcpu.data.ebx; break;
-    case CORE_PRODUCT_DEBUG_ESP: *value = vcpu.data.esp; break; case CORE_PRODUCT_DEBUG_EBP: *value = vcpu.data.ebp; break;
-    case CORE_PRODUCT_DEBUG_ESI: *value = vcpu.data.esi; break; case CORE_PRODUCT_DEBUG_EDI: *value = vcpu.data.edi; break;
-    case CORE_PRODUCT_DEBUG_EIP: *value = vcpu.data.eip; break; case CORE_PRODUCT_DEBUG_EFLAGS: *value = vcpu.data.eflags; break;
-    case CORE_PRODUCT_DEBUG_ES: *value = vcpu.data.es.selector; break; case CORE_PRODUCT_DEBUG_CS: *value = vcpu.data.cs.selector; break;
-    case CORE_PRODUCT_DEBUG_SS: *value = vcpu.data.ss.selector; break; case CORE_PRODUCT_DEBUG_DS: *value = vcpu.data.ds.selector; break;
-    case CORE_PRODUCT_DEBUG_FS: *value = vcpu.data.fs.selector; break; case CORE_PRODUCT_DEBUG_GS: *value = vcpu.data.gs.selector; break;
-    case CORE_PRODUCT_DEBUG_CR0: *value = vcpu.data.cr0; break; case CORE_PRODUCT_DEBUG_CR1: *value = vcpu.data.cr1; break;
-    case CORE_PRODUCT_DEBUG_CR2: *value = vcpu.data.cr2; break; case CORE_PRODUCT_DEBUG_CR3: *value = vcpu.data.cr3; break;
-    case CORE_PRODUCT_DEBUG_CR4: *value = vcpu.data.cr4; break; default: return 1;
+    case CORE_PRODUCT_DEBUG_EAX: *value = cpu->data.eax; break; case CORE_PRODUCT_DEBUG_ECX: *value = cpu->data.ecx; break;
+    case CORE_PRODUCT_DEBUG_EDX: *value = cpu->data.edx; break; case CORE_PRODUCT_DEBUG_EBX: *value = cpu->data.ebx; break;
+    case CORE_PRODUCT_DEBUG_ESP: *value = cpu->data.esp; break; case CORE_PRODUCT_DEBUG_EBP: *value = cpu->data.ebp; break;
+    case CORE_PRODUCT_DEBUG_ESI: *value = cpu->data.esi; break; case CORE_PRODUCT_DEBUG_EDI: *value = cpu->data.edi; break;
+    case CORE_PRODUCT_DEBUG_EIP: *value = cpu->data.eip; break; case CORE_PRODUCT_DEBUG_EFLAGS: *value = cpu->data.eflags; break;
+    case CORE_PRODUCT_DEBUG_ES: *value = cpu->data.es.selector; break; case CORE_PRODUCT_DEBUG_CS: *value = cpu->data.cs.selector; break;
+    case CORE_PRODUCT_DEBUG_SS: *value = cpu->data.ss.selector; break; case CORE_PRODUCT_DEBUG_DS: *value = cpu->data.ds.selector; break;
+    case CORE_PRODUCT_DEBUG_FS: *value = cpu->data.fs.selector; break; case CORE_PRODUCT_DEBUG_GS: *value = cpu->data.gs.selector; break;
+    case CORE_PRODUCT_DEBUG_CR0: *value = cpu->data.cr0; break; case CORE_PRODUCT_DEBUG_CR1: *value = cpu->data.cr1; break;
+    case CORE_PRODUCT_DEBUG_CR2: *value = cpu->data.cr2; break; case CORE_PRODUCT_DEBUG_CR3: *value = cpu->data.cr3; break;
+    case CORE_PRODUCT_DEBUG_CR4: *value = cpu->data.cr4; break; default: return 1;
     }
     return 0;
 }
@@ -61,35 +64,52 @@ static int vm_debug_read_register(void *context, core_product_debug_register reg
 static int vm_debug_write_register(void *context, core_product_debug_register reg,
                                    uint32_t value)
 {
-    (void)context;
+    vm_composition_live_machine *machine =
+        (vm_composition_live_machine *)context;
+    t_cpu *cpu = machine == NULL ? NULL : machine->cpu;
+    if (machine == NULL || cpu == NULL) return 1;
     switch (reg) {
-    case CORE_PRODUCT_DEBUG_EAX: vcpu.data.eax = value; break; case CORE_PRODUCT_DEBUG_ECX: vcpu.data.ecx = value; break;
-    case CORE_PRODUCT_DEBUG_EDX: vcpu.data.edx = value; break; case CORE_PRODUCT_DEBUG_EBX: vcpu.data.ebx = value; break;
-    case CORE_PRODUCT_DEBUG_ESP: vcpu.data.esp = value; break; case CORE_PRODUCT_DEBUG_EBP: vcpu.data.ebp = value; break;
-    case CORE_PRODUCT_DEBUG_ESI: vcpu.data.esi = value; break; case CORE_PRODUCT_DEBUG_EDI: vcpu.data.edi = value; break;
-    case CORE_PRODUCT_DEBUG_EIP: vcpu.data.eip = value; break; case CORE_PRODUCT_DEBUG_EFLAGS: vcpu.data.eflags = value; break;
-    case CORE_PRODUCT_DEBUG_ES: return core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_ES, (uint16_t)value);
-    case CORE_PRODUCT_DEBUG_CS: return core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_CS, (uint16_t)value);
-    case CORE_PRODUCT_DEBUG_SS: return core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_SS, (uint16_t)value);
-    case CORE_PRODUCT_DEBUG_DS: return core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_DS, (uint16_t)value);
-    case CORE_PRODUCT_DEBUG_FS: return core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_FS, (uint16_t)value);
-    case CORE_PRODUCT_DEBUG_GS: return core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_GS, (uint16_t)value);
-    case CORE_PRODUCT_DEBUG_CR0: vcpu.data.cr0 = value; break; case CORE_PRODUCT_DEBUG_CR1: vcpu.data.cr1 = value; break;
-    case CORE_PRODUCT_DEBUG_CR2: vcpu.data.cr2 = value; break; case CORE_PRODUCT_DEBUG_CR3: vcpu.data.cr3 = value; break;
-    case CORE_PRODUCT_DEBUG_CR4: vcpu.data.cr4 = value; break; default: return 1;
+    case CORE_PRODUCT_DEBUG_EAX: cpu->data.eax = value; break; case CORE_PRODUCT_DEBUG_ECX: cpu->data.ecx = value; break;
+    case CORE_PRODUCT_DEBUG_EDX: cpu->data.edx = value; break; case CORE_PRODUCT_DEBUG_EBX: cpu->data.ebx = value; break;
+    case CORE_PRODUCT_DEBUG_ESP: cpu->data.esp = value; break; case CORE_PRODUCT_DEBUG_EBP: cpu->data.ebp = value; break;
+    case CORE_PRODUCT_DEBUG_ESI: cpu->data.esi = value; break; case CORE_PRODUCT_DEBUG_EDI: cpu->data.edi = value; break;
+    case CORE_PRODUCT_DEBUG_EIP: cpu->data.eip = value; break; case CORE_PRODUCT_DEBUG_EFLAGS: cpu->data.eflags = value; break;
+    case CORE_PRODUCT_DEBUG_ES: return core_machine_cpu_execution_load_segment(machine->cpu_execution, &cpu->data.es, (uint16_t)value);
+    case CORE_PRODUCT_DEBUG_CS: return core_machine_cpu_execution_load_segment(machine->cpu_execution, &cpu->data.cs, (uint16_t)value);
+    case CORE_PRODUCT_DEBUG_SS: return core_machine_cpu_execution_load_segment(machine->cpu_execution, &cpu->data.ss, (uint16_t)value);
+    case CORE_PRODUCT_DEBUG_DS: return core_machine_cpu_execution_load_segment(machine->cpu_execution, &cpu->data.ds, (uint16_t)value);
+    case CORE_PRODUCT_DEBUG_FS: return core_machine_cpu_execution_load_segment(machine->cpu_execution, &cpu->data.fs, (uint16_t)value);
+    case CORE_PRODUCT_DEBUG_GS: return core_machine_cpu_execution_load_segment(machine->cpu_execution, &cpu->data.gs, (uint16_t)value);
+    case CORE_PRODUCT_DEBUG_CR0: cpu->data.cr0 = value; break; case CORE_PRODUCT_DEBUG_CR1: cpu->data.cr1 = value; break;
+    case CORE_PRODUCT_DEBUG_CR2: cpu->data.cr2 = value; break; case CORE_PRODUCT_DEBUG_CR3: cpu->data.cr3 = value; break;
+    case CORE_PRODUCT_DEBUG_CR4: cpu->data.cr4 = value; break; default: return 1;
     }
     return 0;
 }
 
 static int vm_debug_code_default_size(void *context)
-{ (void)context; return core_machine_cpu_get_code_default_size(); }
+{
+    vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
+    return machine == NULL ? 0 : machine->cpu->data.cs.seg.exec.defsize;
+}
 static uint32_t vm_debug_code_base(void *context)
-{ (void)context; return core_machine_cpu_get_code_base(); }
+{
+    vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
+    return machine == NULL ? 0u : machine->cpu->data.cs.base;
+}
 
 static int vm_debug_read_linear(void *context, uint32_t address, void *out, uint8_t size)
-{ (void)context; return core_machine_cpu_read_linear(address, out, size); }
+{
+    vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
+    return machine == NULL ? 1 : core_machine_cpu_execution_read_linear(
+        machine->cpu_execution, address, (t_vaddrcc)out, size);
+}
 static int vm_debug_write_linear(void *context, uint32_t address, const void *in, uint8_t size)
-{ (void)context; return core_machine_cpu_write_linear(address, in, size); }
+{
+    vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
+    return machine == NULL ? 1 : core_machine_cpu_execution_write_linear(
+        machine->cpu_execution, address, (t_vaddrcc)in, size);
+}
 static int vm_debug_read_real(void *context, uint16_t seg, uint16_t off, void *out, size_t size)
 { (void)context; core_machine_memory_read_real(seg, off, out, size); return 0; }
 static int vm_debug_write_real(void *context, uint16_t seg, uint16_t off, const void *in, size_t size)
@@ -112,17 +132,19 @@ static size_t vm_debug_break_count(void *context)
 { (void)context; return vm_machine_debug_get_breakpoint_count(); }
 static void vm_debug_set_watch(void *context, core_product_debug_watch_kind kind, uint32_t address)
 {
-    (void)context;
-    if (kind == CORE_PRODUCT_DEBUG_WATCH_READ) core_machine_cpu_set_watchpoint(CORE_MACHINE_CPU_WATCH_READ, address);
-    else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) core_machine_cpu_set_watchpoint(CORE_MACHINE_CPU_WATCH_WRITE, address);
-    else core_machine_cpu_set_watchpoint(CORE_MACHINE_CPU_WATCH_EXECUTE, address);
+    vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
+    if (machine == NULL) return;
+    if (kind == CORE_PRODUCT_DEBUG_WATCH_READ) { machine->cpuins->data.wrLinear = address; machine->cpuins->data.flagWR = True; }
+    else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) { machine->cpuins->data.wwLinear = address; machine->cpuins->data.flagWW = True; }
+    else { machine->cpuins->data.weLinear = address; machine->cpuins->data.flagWE = True; }
 }
 static void vm_debug_clear_watch(void *context, core_product_debug_watch_kind kind)
 {
-    (void)context;
-    if (kind == CORE_PRODUCT_DEBUG_WATCH_READ) core_machine_cpu_clear_watchpoint(CORE_MACHINE_CPU_WATCH_READ);
-    else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) core_machine_cpu_clear_watchpoint(CORE_MACHINE_CPU_WATCH_WRITE);
-    else core_machine_cpu_clear_watchpoint(CORE_MACHINE_CPU_WATCH_EXECUTE);
+    vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
+    if (machine == NULL) return;
+    if (kind == CORE_PRODUCT_DEBUG_WATCH_READ) machine->cpuins->data.flagWR = False;
+    else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) machine->cpuins->data.flagWW = False;
+    else machine->cpuins->data.flagWE = False;
 }
 static void vm_debug_print_registers(void *context)
 { (void)context; core_machine_cpu_print_registers(); }
