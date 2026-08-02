@@ -9,7 +9,16 @@ extern "C" {
 
 #include "core/machine/vglobal.h"
 
-extern t_faddrcc qdxTable[0x100];
+typedef struct {
+    t_faddrcc table[0x100];
+} t_qdx;
+
+t_qdx *vm_profile_default_qdx_current(void);
+void vm_profile_default_qdx_bind_live(t_qdx *qdx);
+void vm_profile_default_qdx_unbind_live(void);
+
+/* Transitional direct alias to the one composition-owned QDX table. */
+#define qdxTable (vm_profile_default_qdx_current()->table)
 
 void qdxExecInt(t_nubit8 intId);
 

@@ -79,12 +79,15 @@ authority to migrate.
 M5 T38 S1 moved default-profile BIOS/POST and interrupt-registration state to
 the live machine's `default_bios_storage` object while preserving the retained
 profile ownership and POST sequence.
+M5 T39 S1 moved the default-profile QDX interrupt-dispatch table to the live
+machine's `default_qdx_storage` object while preserving firmware registration
+and dispatch semantics.
 
 ## Active Work
 
-M5 T39 S1 is active: map default-profile QDX interrupt-dispatch state before
-binding its sole firmware service object through the live machine. Owner-
-observed FDD DOS-prompt acceptance covers the preceding authority tasks.
+M5 T40 S1 is active: audit default-profile CGA text firmware and its display
+snapshot provider before binding any actual profile-owned state. Owner-observed
+FDD DOS-prompt acceptance covers the preceding authority tasks.
 
 ## Completed
 

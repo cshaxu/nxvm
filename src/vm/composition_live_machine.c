@@ -26,6 +26,8 @@ void vm_composition_live_machine_bind(void)
     vmCompositionLiveMachine.hdd = &vmCompositionLiveMachine.hdd_storage;
     vmCompositionLiveMachine.default_bios =
         &vmCompositionLiveMachine.default_bios_storage;
+    vmCompositionLiveMachine.default_qdx =
+        &vmCompositionLiveMachine.default_qdx_storage;
     core_machine_cpu_bind_live(vmCompositionLiveMachine.cpu);
     core_machine_cpu_instructions_bind_live(vmCompositionLiveMachine.cpuins);
     core_machine_memory_bind_live(vmCompositionLiveMachine.ram);
@@ -42,6 +44,7 @@ void vm_composition_live_machine_bind(void)
     vm_machine_fdc_bind_live(vmCompositionLiveMachine.fdc);
     vm_machine_hdd_bind_live(vmCompositionLiveMachine.hdd);
     vm_profile_default_bios_bind_live(vmCompositionLiveMachine.default_bios);
+    vm_profile_default_qdx_bind_live(vmCompositionLiveMachine.default_qdx);
     vmCompositionLiveMachineBound = 1;
 }
 
@@ -59,6 +62,7 @@ void vm_composition_live_machine_clear(void)
     vm_machine_fdc_unbind_live();
     vm_machine_hdd_unbind_live();
     vm_profile_default_bios_unbind_live();
+    vm_profile_default_qdx_unbind_live();
     core_machine_cpu_instructions_unbind_live();
     core_machine_cpu_unbind_live();
     vmCompositionLiveMachine.cpu = NULL;
@@ -78,6 +82,7 @@ void vm_composition_live_machine_clear(void)
     vmCompositionLiveMachine.fdc = NULL;
     vmCompositionLiveMachine.hdd = NULL;
     vmCompositionLiveMachine.default_bios = NULL;
+    vmCompositionLiveMachine.default_qdx = NULL;
     vmCompositionLiveMachineBound = 0;
 }
 
