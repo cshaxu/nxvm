@@ -65,8 +65,8 @@ direct aliases only; no global CPU/decoder storage remains.
 
 ## Active Work
 
-M5 T31 S1 P1: migrate the retained video adapter into embedded live-machine
-storage while preserving display behavior.
+M5 T32 is next eligible: bind the VM-only CMOS/RTC provider to the converged
+live machine. T25's manual FDD DOS-prompt observation remains deferred.
 
 ## Completed
 

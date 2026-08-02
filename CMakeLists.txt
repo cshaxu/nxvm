@@ -189,7 +189,7 @@ set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/block.c
     src/core/machine/display.c
     src/core/machine/keyboard_interface.c
-    src/core/machine/vvadp.c
+    src/core/machine/video_adapter.c
     src/core/machine/port.c
     src/core/machine/memory.c
     src/core/machine/cpu.c
@@ -410,6 +410,8 @@ add_executable(nxvm-vm-dma-authority-smoke tests/machine/vm_dma_authority_smoke.
 target_link_libraries(nxvm-vm-dma-authority-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-vm-kbc-authority-smoke tests/machine/vm_kbc_authority_smoke.c)
 target_link_libraries(nxvm-vm-kbc-authority-smoke PRIVATE nxvm-vm-composition)
+add_executable(nxvm-vm-vadp-authority-smoke tests/machine/vm_vadp_authority_smoke.c)
+target_link_libraries(nxvm-vm-vadp-authority-smoke PRIVATE nxvm-vm-composition)
 target_link_libraries(nxvm-vm-pit-authority-smoke PRIVATE nxvm-vm-composition)
 target_link_libraries(nxvm-vm-pic-authority-smoke PRIVATE
     nxvm-vm-composition
@@ -557,6 +559,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t27 "m5t27")
 add_nxvm_full_pc_artifact(nxvm-m5-t28 "m5t28")
 add_nxvm_full_pc_artifact(nxvm-m5-t29 "m5t29")
 add_nxvm_full_pc_artifact(nxvm-m5-t30 "m5t30")
+add_nxvm_full_pc_artifact(nxvm-m5-t31 "m5t31")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
