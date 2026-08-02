@@ -9,14 +9,6 @@ extern "C" {
 
 #include "type.h"
 
-typedef struct {
-    int flagFlip;  /* flag flips when device thread is created  */
-    int flagRun;   /* device thread is running (1) or not (0) */
-    int flagReset; /* reset command is issued or not */
-} t_device;
-
-extern t_device device;
-
 /* Connection Functions Invoked By Other Modules */
 
 /* Debug Controls */
@@ -265,18 +257,6 @@ void devicePrintFdc();
 void devicePrintFdd();
 void devicePrintBios();
 void devicePrintMachine();
-void devicePrintStatus();
-
-/* Device Thread Controller */
-void deviceStart();
-void deviceReset();
-void deviceStop();
-void deviceConnectBindCommandBoundary(
-    void (*callback)(void *opaque), void *opaque);
-
-void deviceInit();
-void deviceFinal();
-
 #ifdef __cplusplus
 }/*_EOCD_*/
 #endif
