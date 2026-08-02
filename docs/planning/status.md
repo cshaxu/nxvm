@@ -40,9 +40,8 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 T16 S1 P2: replace uncalled CPU compatibility exports with the existing
-`core_machine_cpu_*` operations, preserving the retained CPU state and
-instruction behavior.
+M5 T16 S1 P3: rename default-profile display helpers behind the existing core
+snapshot provider, retaining the exact text state and capture behavior.
 
 ## Completed
 
@@ -204,6 +203,10 @@ instruction behavior.
 - M5 T16 S1 P1: deleted uncalled RAM/port `deviceConnect*` compatibility
   exports. The existing core-machine operations remain the only public path;
   GCC, expected-`#UD`, FDD/HDD reset-vector, and DAG gates passed.
+- M5 T16 S1 P2: deleted uncalled CPU `deviceConnect*` compatibility exports.
+  The existing `core_machine_cpu_*` operations remain the only active path;
+  GCC, CPU probe/stop, debugger-target, FDD/HDD reset-vector, and DAG gates
+  passed.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware

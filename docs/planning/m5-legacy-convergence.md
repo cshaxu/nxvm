@@ -127,18 +127,24 @@ the required change alters any compatibility-gate behavior.
 ## T16 Convergence Map
 
 T16 removes historical `deviceConnect*` names in four independent groups.
-RAM and port compatibility exports have no callers and can be deleted directly;
-CPU compatibility exports require a caller-by-caller migration to the existing
-`core_machine_cpu_*` contract; default-profile display and keyboard helpers
-are renamed inside their provider implementation without changing provider
-behavior. Each group retains the same underlying state object and has its own
-build and focused smoke gate.
+RAM, port, and CPU compatibility exports have no callers and can be deleted
+directly because their existing `core_machine_*` operations already cover the
+active paths. Default-profile display and keyboard helpers are renamed inside
+their provider implementation without changing provider behavior. Each group
+retains the same underlying state object and has its own build and focused
+smoke gate.
 
 The RAM/port group is complete. The uncalled `deviceConnectRam*` and
 `deviceConnectPort*` exports are deleted; their existing `core_machine_memory_*`
 and `core_machine_port_*` operations remain the sole public path over the
 retained `vram` and `vport` instances. Windows GCC, expected-`#UD` CPU probe,
 FDD/HDD reset-vector fixture smoke, and the zero-edge DAG verifier passed.
+
+The CPU group is complete. All uncalled `deviceConnectCpu*` exports are
+deleted; linear memory access, segment loading, code metadata, watchpoints,
+and debugger display continue through `core_machine_cpu_*` over the existing
+`vcpu` and `vcpuins` state. Windows GCC, CPU probe, CPU-stop, debug-target,
+FDD/HDD reset-vector fixture, and zero-edge DAG gates passed.
 
 ## Ownership Rules
 
