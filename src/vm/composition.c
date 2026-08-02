@@ -49,7 +49,7 @@
 /* Initializes all devices, allocates space */
 void vmachineInit(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
-    vcpuInit();
+    core_machine_cpu_state_initialize(machine->cpu_execution);
     vm_machine_fdd_initialize(machine->fdd);
     vm_machine_hdd_initialize(machine->hdd);
     vmCompositionBindBlock(machine);
@@ -59,7 +59,7 @@ void vmachineInit(vm_composition_live_machine *machine) {
     vm_profile_default_bios_add_interrupt(machine->default_bios,
         "qdx 10\niret", 0x10);
     _vbios_
-    vportInit();
+    core_machine_port_initialize(machine->port);
     vm_machine_cmos_initialize(machine->cmos, machine->cpu, machine->port);
     vm_profile_default_bios_add_post(machine->default_bios, VCMOS_POST);
     vm_profile_default_bios_add_interrupt(machine->default_bios, VCMOS_INT_HARD_RTC_08, 0x08);
@@ -97,7 +97,9 @@ void vmachineInit(vm_composition_live_machine *machine) {
         machine->port);
     vm_profile_default_bios_add_post(machine->default_bios, VPIC_POST);
     _vbios_ _vport_ _vpic_
-    vramInit();
+    core_machine_memory_initialize(machine->ram);
+    core_machine_memory_register_ports(machine->ram, machine->port);
+    core_machine_pit_set_output(machine->pit, 1, NULL, NULL);
     _vbios_ _vport_ _vpit_
     vm_profile_default_qdx_initialize(machine->default_profile_context,
         machine->cpu_execution);
@@ -112,7 +114,7 @@ void vmachineReset(vm_composition_live_machine *machine) {
     _empty_
 
     vm_machine_cmos_reset(machine->cmos);
-    vcpuReset();
+    core_machine_cpu_state_reset(machine->cpu_execution);
     core_machine_dma_reset(machine->dma_latch, machine->dma_primary,
         machine->dma_secondary);
     vm_machine_fdc_reset(machine->fdc);
@@ -120,9 +122,9 @@ void vmachineReset(vm_composition_live_machine *machine) {
     vm_machine_hdd_reset(machine->hdd);
     core_machine_pic_reset(machine->pic_master, machine->pic_slave);
     core_machine_pit_reset(machine->pit);
-    vportReset();
+    core_machine_port_reset(machine->port);
     core_machine_vadp_reset(machine->vadp);
-    vramReset();
+    core_machine_memory_reset(machine->ram);
     vm_profile_default_bios_reset(machine->default_bios, machine->ram,
         machine->block_provider);
     _vram_
@@ -159,10 +161,10 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
     core_machine_pic_refresh(machine->pic_master, machine->pic_slave);
     core_machine_pit_refresh(machine->pit);
     _vpic_
-    if (vcpu.data.flagHalt) {
+    if (machine->cpu->data.flagHalt) {
         core_platform_sleep_milliseconds(1);
     }
-    vcpuRefresh();
+    core_machine_cpu_execution_refresh(machine->cpu_execution);
     _vpic_
     vm_composition_publish_display(machine, False);
 }
@@ -188,22 +190,22 @@ void vmachineFinal(vm_composition_live_machine *machine) {
     _empty_
     core_machine_pit_finalize(machine->pit);
     _empty_
-    vportFinal();
+    core_machine_port_finalize(machine->port);
     _empty_
     core_machine_vadp_finalize(machine->vadp);
     _empty_
 
-    vcpuFinal();
+    core_machine_cpu_execution_finalize(machine->cpu_execution);
     vm_machine_fdd_finalize(machine->fdd);
     vm_machine_hdd_finalize(machine->hdd);
-    vramFinal();
+    core_machine_memory_finalize(machine->ram);
 }
 /* Print machine info */
 void devicePrintMachine(const vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     PRINTF("Machine:           %s\n", NXVM_DEVICE_MACHINE);
     PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
-    PRINTF("RAM Size:          %d MB\n", vram.connect.size >> 20);
+    PRINTF("RAM Size:          %d MB\n", machine->ram->connect.size >> 20);
     PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
            vm_machine_fdd_image_size(machine->fdd) * 1. / VFDD_BYTE_PER_MB,
            machine->fdd->connect.flagDiskExist ? "inserted" : "not inserted");
