@@ -1,9 +1,10 @@
 #include "vm/composition_debug.h"
 
 #include "vm/composition_machine.h"
+#include "vm/composition_control.h"
 #include "vm/machine/device.h"
 
-static int vm_debug_running(void *context) { (void)context; return device.flagRun; }
+static int vm_debug_running(void *context) { (void)context; return vm_composition_control_is_running(); }
 static void vm_debug_resume(void *context) { (void)context; machineResume(); }
 
 static int vm_debug_read_register(void *context, core_product_debug_register reg,

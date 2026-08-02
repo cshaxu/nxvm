@@ -31,10 +31,14 @@ typedef struct {
 
 extern t_debug vdebug;
 
+typedef void (*vm_machine_debug_stop_callback)(void *context);
+
 void vdebugInit();
 void vdebugReset();
 void vdebugRefresh();
 void vdebugFinal();
+void vm_machine_debug_bind_stop(vm_machine_debug_stop_callback callback,
+    void *context);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

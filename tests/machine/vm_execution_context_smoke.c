@@ -2,13 +2,14 @@
 
 #include <stdio.h>
 
+#include "vm/composition_control.h"
 #include "vm/machine/device.h"
 #include "core/product/runtime/execution_context.h"
 
 static DWORD WINAPI run_device(LPVOID parameter)
 {
     (void)parameter;
-    deviceStart();
+    vm_composition_control_start();
     return 0u;
 }
 
@@ -20,35 +21,35 @@ int main(int argc, char **argv)
     if (argc != 2) {
         return 1;
     }
-    deviceInit();
+    vm_composition_control_initialize();
     if (deviceConnectFloppyInsert(argv[1]) != 0) {
-        deviceFinal();
+        vm_composition_control_finalize();
         return 1;
     }
     deviceConnectBiosSetBoot(0);
-    deviceReset();
+    vm_composition_control_reset();
     thread = CreateThread(NULL, 0u, run_device, NULL, 0u, NULL);
     if (thread == NULL) {
         fputs("M5:T10:S4:CONTEXT-LIFECYCLE:THREAD-CREATE-FAILED\n", stderr);
-        deviceFinal();
+        vm_composition_control_finalize();
         return 1;
     }
 
     Sleep(10u);
-    if (!device.flagRun) {
+    if (!vm_composition_control_is_running()) {
         fputs("M5:T10:S4:CONTEXT-LIFECYCLE:DEVICE-DID-NOT-START\n", stderr);
-        deviceStop();
+        vm_composition_control_stop();
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
-        deviceFinal();
+        vm_composition_control_finalize();
         return 1;
     }
-    deviceReset();
+    vm_composition_control_reset();
     Sleep(10u);
-    deviceStop();
+    vm_composition_control_stop();
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    deviceFinal();
+    vm_composition_control_finalize();
 
     if (result != WAIT_OBJECT_0 || nxvm_execution_context_current() != NULL) {
         fprintf(stderr,

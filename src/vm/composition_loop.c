@@ -15,9 +15,16 @@
 #include "core/machine/vport.h"
 #include "core/machine/keyboard_state.h"
 
+#include "vm/composition_control.h"
 #include "vm/machine/device.h"
 
-t_device device;
+typedef struct vm_composition_control_state {
+    int flagFlip;
+    int flagRun;
+    int flagReset;
+} vm_composition_control_state;
+
+static vm_composition_control_state vmCompositionControl;
 static nxvm_execution_context device_execution_context;
 
 static void device_execution_context_reset(void)
@@ -33,47 +40,47 @@ static const nxvm_execution_context_callbacks device_execution_callbacks = {
 };
 
 /* Starts device thread */
-void deviceStart() {
+void vm_composition_control_start(void) {
     nxvm_execution_context_enter(&device_execution_context);
-    device.flagRun = True;
-    device.flagFlip = !device.flagFlip;
-    while (device.flagRun) {
-        if (device.flagReset) {
+    vmCompositionControl.flagRun = True;
+    vmCompositionControl.flagFlip = !vmCompositionControl.flagFlip;
+    while (vmCompositionControl.flagRun) {
+        if (vmCompositionControl.flagReset) {
             nxvm_execution_context_reset(&device_execution_context);
-            device.flagReset = False;
+            vmCompositionControl.flagReset = False;
         }
         nxvm_execution_context_run_command_boundary(&device_execution_context);
         nxvm_execution_context_debug_refresh(&device_execution_context);
-        if (!device.flagRun) {
+        if (!vmCompositionControl.flagRun) {
             break;
         }
         nxvm_execution_context_machine_refresh(&device_execution_context);
         if (vcpuConsumeResetRequest()) {
-            deviceReset();
+            vm_composition_control_reset();
         }
         if (vcpuConsumeStopRequest()) {
-            deviceStop();
+            vm_composition_control_stop();
         }
     }
     nxvm_execution_context_leave(&device_execution_context);
 }
 
 /* Issues resetting signal to device thread */
-void deviceReset() {
-    if (device.flagRun) {
-        device.flagReset = True;
+void vm_composition_control_reset(void) {
+    if (vmCompositionControl.flagRun) {
+        vmCompositionControl.flagReset = True;
     } else {
         nxvm_execution_context_reset(&device_execution_context);
-        device.flagReset = False;
+        vmCompositionControl.flagReset = False;
     }
 }
 
 /* Issues stopping signal to device thread */
-void deviceStop()  {
-    device.flagRun = False;
+void vm_composition_control_stop(void)  {
+    vmCompositionControl.flagRun = False;
 }
 
-void deviceConnectBindCommandBoundary(
+void vm_composition_control_bind_command_boundary(
     void (*callback)(void *opaque), void *opaque)
 {
     nxvm_execution_context_bind_command_boundary(
@@ -81,11 +88,13 @@ void deviceConnectBindCommandBoundary(
 }
 
 /* Initializes devices */
-void deviceInit() {
-    MEMSET((void *)(&device), Zero8, sizeof(t_device));
+void vm_composition_control_initialize(void) {
+    MEMSET((void *)(&vmCompositionControl), Zero8,
+        sizeof(vmCompositionControl));
     nxvm_execution_context_initialize(&device_execution_context);
     nxvm_execution_context_bind_machine_state(
-        &device_execution_context, &vcpu, &vram, &vport, &device);
+        &device_execution_context, &vcpu, &vram, &vport,
+        &vmCompositionControl);
     nxvm_execution_context_bind_callbacks(
         &device_execution_context, &device_execution_callbacks);
     nxvm_execution_context_enter(&device_execution_context);
@@ -94,15 +103,25 @@ void deviceInit() {
 }
 
 /* Finalizes devices */
-void deviceFinal() {
+void vm_composition_control_finalize(void) {
     nxvm_execution_context_leave(&device_execution_context);
     vdebugFinal();
     vmachineFinal();
 }
 
-void devicePrintStatus() {
+void vm_composition_control_print_status(void) {
     PRINTF("Recording: %s\n", vdebug.connect.recordFile ? "Yes" : "No");
-    PRINTF("Running:   %s\n", device.flagRun  ? "Yes" : "No");
+    PRINTF("Running:   %s\n", vmCompositionControl.flagRun ? "Yes" : "No");
+}
+
+int vm_composition_control_is_running(void)
+{
+    return vmCompositionControl.flagRun;
+}
+
+int vm_composition_control_get_flip(void)
+{
+    return vmCompositionControl.flagFlip;
 }
 
 void deviceConnectKeyboardApplyHostState(uint32_t asynchronous_keys,

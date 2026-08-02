@@ -4,6 +4,7 @@
 
 #include "core/machine/vcpu.h"
 #include "core/product/runtime/execution_context.h"
+#include "vm/composition_control.h"
 #include "vm/machine/device.h"
 #include "core/machine/vcpuins.h"
 
@@ -34,7 +35,7 @@ static int nxvm_cpu_probe_reset(void)
 {
     uint32_t eip = 0u;
 
-    deviceReset();
+    vm_composition_control_reset();
     if (deviceConnectCpuLoadCS(0u) || deviceConnectCpuLoadDS(0u) ||
         deviceConnectCpuLoadES(0u) || deviceConnectCpuLoadSS(0u)) {
         return 0;
@@ -48,7 +49,7 @@ int nxvm_cpu_probe_begin(void)
     if (nxvm_cpu_probe_active) {
         return 0;
     }
-    deviceInit();
+    vm_composition_control_initialize();
     nxvm_cpu_probe_active = 1;
     if (!nxvm_cpu_probe_reset()) {
         nxvm_cpu_probe_end();
@@ -87,7 +88,7 @@ int nxvm_cpu_probe_step(
 void nxvm_cpu_probe_end(void)
 {
     if (nxvm_cpu_probe_active) {
-        deviceFinal();
+        vm_composition_control_finalize();
         nxvm_cpu_probe_active = 0;
     }
 }

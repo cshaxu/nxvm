@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include "vm/composition_control.h"
 #include "vm/machine/device.h"
 #include "vm/platform/vm_request_transport.h"
 #include "vm/platform/win32/win32.h"
@@ -59,7 +60,7 @@ nxvm_core_status nxvm_full_pc_create(
         nxvm_full_pc_consume_request, NULL);
     win32KeyboardBindStateSink(nxvm_full_pc_enqueue_keyboard_state,
                                &nxvm_full_pc_transport);
-    deviceConnectBindCommandBoundary(
+    vm_composition_control_bind_command_boundary(
         nxvm_vm_request_transport_observe_execution_boundary,
         &nxvm_full_pc_transport);
     if ((config->fdd_image != NULL &&
@@ -67,7 +68,7 @@ nxvm_core_status nxvm_full_pc_create(
         (config->hdd_image != NULL &&
          deviceConnectHardDiskInsert(config->hdd_image))) {
         win32KeyboardBindStateSink(NULL, NULL);
-        deviceConnectBindCommandBoundary(NULL, NULL);
+        vm_composition_control_bind_command_boundary(NULL, NULL);
         nxvm_vm_request_transport_close(&nxvm_full_pc_transport);
         nxvm_vm_request_transport_discard(&nxvm_full_pc_transport);
         machineFinal();
@@ -79,7 +80,7 @@ nxvm_core_status nxvm_full_pc_create(
     }
 
     deviceConnectBiosSetBoot(config->boot_hdd != 0);
-    deviceReset();
+    vm_composition_control_reset();
     nxvm_full_pc_active = 1;
     return NXVM_CORE_STATUS_OK;
 }
@@ -105,7 +106,7 @@ void nxvm_full_pc_run(void)
 
 nxvm_core_status nxvm_full_pc_set_window_display(int enabled)
 {
-    if (!nxvm_full_pc_active || device.flagRun) {
+    if (!nxvm_full_pc_active || vm_composition_control_is_running()) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     platform.flagMode = enabled != 0;
@@ -114,7 +115,7 @@ nxvm_core_status nxvm_full_pc_set_window_display(int enabled)
 
 nxvm_core_status nxvm_full_pc_set_memory_kb(uint32_t kilobytes)
 {
-    if (!nxvm_full_pc_active || device.flagRun ||
+    if (!nxvm_full_pc_active || vm_composition_control_is_running() ||
         kilobytes < 1024u || kilobytes > 16384u) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
@@ -124,7 +125,7 @@ nxvm_core_status nxvm_full_pc_set_memory_kb(uint32_t kilobytes)
 
 nxvm_core_status nxvm_full_pc_reset(void)
 {
-    if (!nxvm_full_pc_active || device.flagRun) {
+    if (!nxvm_full_pc_active || vm_composition_control_is_running()) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     machineReset();
@@ -133,7 +134,7 @@ nxvm_core_status nxvm_full_pc_reset(void)
 
 void nxvm_full_pc_resume(void)
 {
-    if (nxvm_full_pc_active && !device.flagRun) {
+    if (nxvm_full_pc_active && !vm_composition_control_is_running()) {
         machineResume();
     }
 }
@@ -143,13 +144,13 @@ nxvm_core_status nxvm_full_pc_is_running(int *out_running)
     if (!nxvm_full_pc_active || out_running == NULL) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
-    *out_running = device.flagRun != 0;
+    *out_running = vm_composition_control_is_running() != 0;
     return NXVM_CORE_STATUS_OK;
 }
 
 nxvm_core_status nxvm_full_pc_debug(void)
 {
-    if (!nxvm_full_pc_active || device.flagRun) {
+    if (!nxvm_full_pc_active || vm_composition_control_is_running()) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     debugMain();
@@ -158,7 +159,7 @@ nxvm_core_status nxvm_full_pc_debug(void)
 
 nxvm_core_status nxvm_full_pc_remove_fdd(const char *path)
 {
-    if (!nxvm_full_pc_active || device.flagRun) {
+    if (!nxvm_full_pc_active || vm_composition_control_is_running()) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     return deviceConnectFloppyRemove(path) ? NXVM_CORE_STATUS_FAULT : NXVM_CORE_STATUS_OK;
@@ -166,7 +167,7 @@ nxvm_core_status nxvm_full_pc_remove_fdd(const char *path)
 
 nxvm_core_status nxvm_full_pc_disconnect_hdd(const char *path)
 {
-    if (!nxvm_full_pc_active || device.flagRun) {
+    if (!nxvm_full_pc_active || vm_composition_control_is_running()) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     return deviceConnectHardDiskRemove(path) ? NXVM_CORE_STATUS_FAULT : NXVM_CORE_STATUS_OK;
@@ -189,7 +190,7 @@ void nxvm_full_pc_record_stop(void)
 void nxvm_full_pc_request_stop(void)
 {
     if (nxvm_full_pc_active) {
-        deviceStop();
+        vm_composition_control_stop();
     }
 }
 
@@ -197,8 +198,8 @@ void nxvm_full_pc_destroy(void)
 {
     if (nxvm_full_pc_active) {
         win32KeyboardBindStateSink(NULL, NULL);
-        deviceStop();
-        deviceConnectBindCommandBoundary(NULL, NULL);
+        vm_composition_control_stop();
+        vm_composition_control_bind_command_boundary(NULL, NULL);
         nxvm_vm_request_transport_close(&nxvm_full_pc_transport);
         nxvm_vm_request_transport_discard(&nxvm_full_pc_transport);
         machineFinal();

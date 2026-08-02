@@ -57,6 +57,23 @@ profile firmware: BIOS boot, keyboard state, and text display access. Those
 implementation symbols must be renamed or relocated only when their provider
 contract is ready; they may not be exposed through a replacement aggregate.
 
+## T15 Progress
+
+The first replacement surface is complete: composition-owned execution control
+now has `vm_composition_control_*` operations for initialize/finalize,
+start/reset/stop, running/flip observation, status printing, and command-boundary
+binding. Its state is private to `composition_loop.c`; root composition and
+its focused smokes no longer access `device.flag*` or the old lifecycle
+functions. `vm/machine/vdebug` now requests its immediate stop through a
+composition-bound callback, preserving breakpoint/trace timing without a
+VM-machine-to-composition include.
+
+This is not T15 completion. `composition_loop.c` still includes the aggregate
+only for the unconverted keyboard bridge, and the remaining consumers still
+use its CPU, RAM, port, media, BIOS, debug-recording, and display surfaces.
+The slice passed GCC build, FDD execution-context lifecycle, expected-`#UD`
+CPU-stop, source-DAG, and retained Console `HELP`/`EXIT` gates.
+
 ## Migration Discipline
 
 Each slice first maps all direct callers and an observable behavior baseline.

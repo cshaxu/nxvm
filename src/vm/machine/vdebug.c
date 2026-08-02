@@ -6,13 +6,21 @@
  */
 
 #include "core/product/utils.h"
-#include "vm/machine/device.h"
 
 #include "core/machine/vcpuins.h"
 
 #include "vm/machine/vdebug.h"
 
 t_debug vdebug;
+static vm_machine_debug_stop_callback vdebugStopCallback;
+static void *vdebugStopContext;
+
+static void vdebug_request_stop(void)
+{
+    if (vdebugStopCallback != NULL) {
+        vdebugStopCallback(vdebugStopContext);
+    }
+}
 
 static void xasmTest() {
     static t_nubitcc total = 0; /* total number of instructions tested */
@@ -107,7 +115,7 @@ static void xasmTest() {
             PRINTF("%02X", ins2[i]);
         }
         PRINTF("\t%s\n", strDasm2);
-        deviceStop();
+        vdebug_request_stop();
     }
 }
 
@@ -123,13 +131,13 @@ eflags=%08x %s %s %s %s %s %s %s %s %s %s %s %s | cs:eip=%04x:%08x(L%08x)"
 void vdebugRefresh() {
     if ((vdebug.data.flagBreak && vcpu.data.cs.selector == vdebug.data.breakCS && vcpu.data.ip == vdebug.data.breakIP) ||
             (vdebug.data.flagBreak32 && vdebug.data.breakCount && (vcpu.data.cs.base + vcpu.data.eip == vdebug.data.breakLinear))) {
-        deviceStop();
+        vdebug_request_stop();
     }
     vdebug.data.breakCount++;
     if (vdebug.data.flagTrace) {
         if (!vdebug.data.traceCount) {
             vdebug.data.flagTrace = False;
-            deviceStop();
+            vdebug_request_stop();
         } else {
             vdebug.data.traceCount--;
         }
@@ -198,6 +206,13 @@ void vdebugRefresh() {
     }
 }
 void vdebugFinal() {}
+
+void vm_machine_debug_bind_stop(vm_machine_debug_stop_callback callback,
+    void *context)
+{
+    vdebugStopCallback = callback;
+    vdebugStopContext = context;
+}
 
 void deviceConnectDebugSetBreak(uint16_t breakCS, uint16_t breakIP) {
     vdebug.data.breakCS = breakCS;

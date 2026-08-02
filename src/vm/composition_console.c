@@ -1,6 +1,7 @@
 #include "vm/composition_console.h"
 
 #include "vm/composition_machine.h"
+#include "vm/composition_control.h"
 #include "vm/machine/device.h"
 #include "vm/platform/platform.h"
 #include "core/product/debug/debug.h"
@@ -19,12 +20,12 @@ static void vm_composition_console_initialize(void *context)
 }
 
 static void vm_composition_console_finalize(void *context) { (void)context; machineFinal(); }
-static int vm_composition_console_is_running(void *context) { (void)context; return device.flagRun; }
+static int vm_composition_console_is_running(void *context) { (void)context; return vm_composition_control_is_running(); }
 static void vm_composition_console_print_machine(void *context) { (void)context; devicePrintMachine(); }
 static int vm_composition_console_get_window_display(void *context) { (void)context; return platform.flagMode; }
 static void vm_composition_console_set_window_display(void *context, int enabled) { (void)context; platform.flagMode = enabled; }
 static void vm_composition_console_print_bios(void *context) { (void)context; devicePrintBios(); }
-static void vm_composition_console_print_status(void *context) { (void)context; devicePrintStatus(); }
+static void vm_composition_console_print_status(void *context) { (void)context; vm_composition_control_print_status(); }
 static void vm_composition_console_debug(void *context) { (void)context; debugMain(); }
 static void vm_composition_console_record_start(void *context, const char *path) { (void)context; deviceConnectDebugRecordStart(path); }
 static void vm_composition_console_record_stop(void *context) { (void)context; deviceConnectDebugRecordStop(); }
