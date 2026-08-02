@@ -12,7 +12,7 @@
 #include "core/machine/cpu.h"
 #include "vm/profile/default_profile/firmware/vbios.h"
 #include "core/machine/pit.h"
-#include "core/machine/vdma.h"
+#include "core/machine/dma.h"
 #include "core/machine/pic.h"
 #include "vm/machine/vcmos.h"
 #include "vm/machine/vfdc.h"

@@ -196,7 +196,7 @@ set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/cpu_instructions.c
     src/core/machine/pic.c
     src/core/machine/pit.c
-    src/core/machine/vdma.c
+    src/core/machine/dma.c
     src/core/machine/vkbc.c
 )
 set(NXVM_CORE_PRODUCT_RUNTIME_SOURCES
@@ -406,6 +406,8 @@ add_executable(nxvm-vm-pic-authority-smoke
 add_executable(nxvm-vm-pit-authority-smoke
     tests/machine/vm_pit_authority_smoke.c
 )
+add_executable(nxvm-vm-dma-authority-smoke tests/machine/vm_dma_authority_smoke.c)
+target_link_libraries(nxvm-vm-dma-authority-smoke PRIVATE nxvm-vm-composition)
 target_link_libraries(nxvm-vm-pit-authority-smoke PRIVATE nxvm-vm-composition)
 target_link_libraries(nxvm-vm-pic-authority-smoke PRIVATE
     nxvm-vm-composition
@@ -551,6 +553,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t25 "m5t25")
 add_nxvm_full_pc_artifact(nxvm-m5-t26 "m5t26")
 add_nxvm_full_pc_artifact(nxvm-m5-t27 "m5t27")
 add_nxvm_full_pc_artifact(nxvm-m5-t28 "m5t28")
+add_nxvm_full_pc_artifact(nxvm-m5-t29 "m5t29")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
