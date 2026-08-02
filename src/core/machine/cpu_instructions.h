@@ -105,6 +105,18 @@ typedef struct {
     t_cpuins_connect connect;
 } t_cpuins;
 
+/* One composition-owned executor context names the existing CPU and decoder. */
+typedef struct core_machine_cpu_execution_context {
+    t_cpu *cpu;
+    t_cpuins *instructions;
+    t_bool stop_requested;
+    t_bool reset_requested;
+} core_machine_cpu_execution_context;
+
+void core_machine_cpu_execution_context_initialize(
+    core_machine_cpu_execution_context *context, t_cpu *cpu,
+    t_cpuins *instructions);
+
 t_cpuins *core_machine_cpu_instructions_current(void);
 void core_machine_cpu_instructions_bind_live(t_cpuins *instructions);
 void core_machine_cpu_instructions_unbind_live(void);

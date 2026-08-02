@@ -12,6 +12,17 @@ static t_cpu *coreMachineCpu;
 static t_bool vcpuStopRequested;
 static t_bool vcpuResetRequested;
 
+void core_machine_cpu_execution_context_initialize(
+    core_machine_cpu_execution_context *context, t_cpu *cpu,
+    t_cpuins *instructions)
+{
+    if (context == NULL) return;
+    context->cpu = cpu;
+    context->instructions = instructions;
+    context->stop_requested = False;
+    context->reset_requested = False;
+}
+
 t_cpu *core_machine_cpu_current(void)
 {
     return coreMachineCpu;
