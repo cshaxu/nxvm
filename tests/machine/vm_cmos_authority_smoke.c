@@ -11,12 +11,11 @@ int main(void)
 
     machineInit(&session);
     machine = (&session);
-    if (machine == NULL || &vcmos != machine->cmos) {
+    if (machine == NULL || machine->cmos != &session.cmos_storage) {
         machineFinal(&session);
         return 1;
     }
     machineFinal(&session);
-    if (vm_machine_cmos_current() != NULL) return 1;
-    puts("M5:T33:S1:CMOS-AUTHORITY:OK");
+    puts("M5:T70:S1:CMOS-AUTHORITY:OK");
     return 0;
 }

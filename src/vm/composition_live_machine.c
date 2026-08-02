@@ -53,7 +53,6 @@ void vm_composition_live_machine_bind_legacy(vm_composition_live_machine *machin
         machine->dma_secondary);
     core_machine_kbc_bind_live(machine->kbc);
     core_machine_vadp_bind_live(machine->vadp);
-    vm_machine_cmos_bind_live(machine->cmos);
     vm_machine_fdd_bind_live(machine->fdd);
     vm_machine_fdc_bind_live(machine->fdc);
     vm_machine_hdd_bind_live(machine->hdd);
@@ -71,7 +70,6 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     core_machine_dma_unbind_live();
     core_machine_kbc_unbind_live();
     core_machine_vadp_unbind_live();
-    vm_machine_cmos_unbind_live();
     vm_machine_fdd_unbind_live();
     vm_machine_fdc_unbind_live();
     vm_machine_hdd_unbind_live();

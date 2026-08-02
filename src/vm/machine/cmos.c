@@ -9,57 +9,57 @@
 #include "core/machine/port.h"
 #include "vm/machine/cmos.h"
 
-static t_cmos *vmMachineCmos;
-
-t_cmos *vm_machine_cmos_current(void) { return vmMachineCmos; }
-void vm_machine_cmos_bind_live(t_cmos *cmos) { vmMachineCmos = cmos; }
-void vm_machine_cmos_unbind_live(void) { vmMachineCmos = NULL; }
-
-static void io_write_0070() {
-    vcmos.data.regId = vport.data.ioByte; /* select reg id */
-    if (GetMSB8(vcmos.data.regId)) {
+static void io_write_0070(t_port *port, t_nubit16 port_id, void *owner) {
+    t_cmos *cmos = (t_cmos *)owner;
+    (void)port_id;
+    cmos->data.regId = port->data.ioByte; /* select reg id */
+    if (GetMSB8(cmos->data.regId)) {
         /* if MSB=1, disable NMI */
-        vcpu.data.flagMaskNMI = True;
+        cmos->connect.cpu->data.flagMaskNMI = True;
     } else {
-        vcpu.data.flagMaskNMI = False;
+        cmos->connect.cpu->data.flagMaskNMI = False;
     }
 }
-static void io_write_0071() {
+static void io_write_0071(t_port *port, t_nubit16 port_id, void *owner) {
+    t_cmos *cmos = (t_cmos *)owner;
     t_nubitcc i;
     t_nubit16 checksum = Zero16;
-    vcmos.connect.reg[vcmos.data.regId] = vport.data.ioByte;
-    if ((vcmos.data.regId >= VCMOS_TYPE_DISK_FLOPPY) && (vcmos.data.regId < VCMOS_CHECKSUM_MSB)) {
+    (void)port_id;
+    cmos->connect.reg[cmos->data.regId] = port->data.ioByte;
+    if ((cmos->data.regId >= VCMOS_TYPE_DISK_FLOPPY) && (cmos->data.regId < VCMOS_CHECKSUM_MSB)) {
         for (i = VCMOS_TYPE_DISK_FLOPPY; i < VCMOS_CHECKSUM_MSB; ++i) {
-            checksum += vcmos.connect.reg[i];
+            checksum += cmos->connect.reg[i];
         }
     }
-    vcmos.connect.reg[VCMOS_CHECKSUM_LSB] = GetMax8(checksum);
-    vcmos.connect.reg[VCMOS_CHECKSUM_MSB] = GetMax8(checksum >> 8);
+    cmos->connect.reg[VCMOS_CHECKSUM_LSB] = GetMax8(checksum);
+    cmos->connect.reg[VCMOS_CHECKSUM_MSB] = GetMax8(checksum >> 8);
 }
-static void io_read_0071() {
-    vport.data.ioByte = vcmos.connect.reg[vcmos.data.regId];
+static void io_read_0071(t_port *port, t_nubit16 port_id, void *owner) {
+    t_cmos *cmos = (t_cmos *)owner;
+    (void)port_id;
+    port->data.ioByte = cmos->connect.reg[cmos->data.regId];
 }
 
-void vcmosInit() {
-    MEMSET((void *)(&vcmos), Zero8, sizeof(t_cmos));
-    vportAddRead(0x0071, (t_faddrcc) io_read_0071);
-    vportAddWrite(0x0070, (t_faddrcc) io_write_0070);
-    vportAddWrite(0x0071, (t_faddrcc) io_write_0071);
+void vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_port *port) {
+    MEMSET((void *)cmos, Zero8, sizeof(*cmos));
+    cmos->connect.cpu = cpu;
+    core_machine_port_add_read(port, 0x0071, io_read_0071, cmos);
+    core_machine_port_add_write(port, 0x0070, io_write_0070, cmos);
+    core_machine_port_add_write(port, 0x0071, io_write_0071, cmos);
 }
-void vcmosReset() {
-    MEMSET((void *)(&vcmos.data), Zero8, sizeof(t_cmos_data));
+void vm_machine_cmos_reset(t_cmos *cmos) {
+    MEMSET((void *)(&cmos->data), Zero8, sizeof(cmos->data));
 }
-void vcmosRefresh() {
-    static time_t tPrev = 0;
+void vm_machine_cmos_refresh(t_cmos *cmos) {
     time_t tCurr;
     struct tm *ptm;
     t_nubit8 century, year, month, mday, wday, hour, min, sec;
 
     tCurr = time(NULL);
-    if (tCurr == tPrev) {
+    if (tCurr == cmos->connect.last_refresh) {
         return;
     } else {
-        tPrev = tCurr;
+        cmos->connect.last_refresh = tCurr;
     }
     ptm = LOCALTIME(&tCurr);
 
@@ -72,13 +72,13 @@ void vcmosRefresh() {
     min     = GetMax8(ptm->tm_min);
     sec     = GetMax8(ptm->tm_sec);
 
-    vcmos.connect.reg[VCMOS_RTC_SECOND]    = Hex2BCD(sec);
-    vcmos.connect.reg[VCMOS_RTC_MINUTE]    = Hex2BCD(min);
-    vcmos.connect.reg[VCMOS_RTC_HOUR]      = Hex2BCD(hour);
-    vcmos.connect.reg[VCMOS_RTC_DAY_WEEK]  = Hex2BCD(wday);
-    vcmos.connect.reg[VCMOS_RTC_DAY_MONTH] = Hex2BCD(mday);
-    vcmos.connect.reg[VCMOS_RTC_MONTH]     = Hex2BCD(month);
-    vcmos.connect.reg[VCMOS_RTC_YEAR]      = Hex2BCD(year);
-    vcmos.connect.reg[VCMOS_RTC_CENTURY]   = Hex2BCD(century);
+    cmos->connect.reg[VCMOS_RTC_SECOND]    = Hex2BCD(sec);
+    cmos->connect.reg[VCMOS_RTC_MINUTE]    = Hex2BCD(min);
+    cmos->connect.reg[VCMOS_RTC_HOUR]      = Hex2BCD(hour);
+    cmos->connect.reg[VCMOS_RTC_DAY_WEEK]  = Hex2BCD(wday);
+    cmos->connect.reg[VCMOS_RTC_DAY_MONTH] = Hex2BCD(mday);
+    cmos->connect.reg[VCMOS_RTC_MONTH]     = Hex2BCD(month);
+    cmos->connect.reg[VCMOS_RTC_YEAR]      = Hex2BCD(year);
+    cmos->connect.reg[VCMOS_RTC_CENTURY]   = Hex2BCD(century);
 }
-void vcmosFinal() {}
+void vm_machine_cmos_finalize(t_cmos *cmos) { (void)cmos; }
