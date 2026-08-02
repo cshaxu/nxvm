@@ -36,8 +36,7 @@ Neko's x86 Virtual Machine [0.4.015d]
 Copyright (c) 2012-2014 Neko.
 ```
 
-After that snapshot and until the product split is implemented, a task-level
-machine artifact uses:
+Historical M3 through M5 T47 task-level machine artifacts used:
 
 ```text
 Neko's x86 Virtual Machine [0.4.015d.m<M>t<T>]
@@ -48,19 +47,23 @@ Copyright (c) 2012-2014 Neko.
 executable, for example `0.4.015d.m3t1`. Subtask-specific executables are not
 developer artifacts.
 
-After M5 implements the first-class `nxvm.exe` surface, that product keeps the
-Virtual Machine identity and follows the NXVM versioning lineage. After M9
-implements the non-bootable DOS runner and proves that `ntvdm64.exe` cannot
-continue into standalone disk boot or an implicit guest DOS shell, that product
-uses:
+Beginning with M5 T48, task artifacts use the NXVM lineage `0.5.NNNN` form,
+where `NNNN` is the four-digit decimal task number. For example, T48 is
+`0.5.0048` and its bootable VM developer artifact is
+`build/output/nxvm_0_5_0048.exe` when T48 completes. Design-only subtasks do
+not create artifacts by themselves.
+
+The bootable product keeps the Virtual Machine identity. After M9 implements
+the non-bootable DOS runner and proves that `ntvdm64.exe` cannot continue into
+standalone disk boot or an implicit guest DOS shell, that product uses:
 
 ```text
-Neko's x86 Virtual DOS Machine [0.5.0000] Copyright (c) 2012-2026 Neko.
+Neko's x86 Virtual DOS Machine [0.5.NNNN] Copyright (c) 2012-2026 Neko.
 ```
 
-Post-cutover ntvdm64 versions use NXVM-style `DDDH` encoding: `DDD` is a
-zero-padded three-digit decimal release counter and `H` is one lowercase
-hexadecimal revision digit (`0` through `f`).
+Post-M5 task versions are task-governed developer versions, not release
+numbers. A future release cadence may restore NXVM-style `DDDH` release
+encoding through a separate owner-approved release policy.
 
 ## Shared Foundation
 

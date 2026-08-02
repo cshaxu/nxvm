@@ -220,11 +220,12 @@ M5 removed the prior `app`, `adapters`, `dos`, `firmware`, `integration`,
 source roots. Only `core`, `vm`, and `vdm` directories, plus the root
 foundation units `type.*` and `version.*`, may receive source files.
 
-The prior M5 source-root migration is not final implementation convergence.
-`vm/machine/device.h` remains a legacy aggregate and must be deleted by
-replacing it with narrow owner-local APIs. The retained `vcpu`, `vram`, and
-`vport` path must converge to the `core_machine_*` CPU, memory, and port
-contracts without duplicating guest state. Shared concrete Win32/Linux host
-providers must move to `core/platform`; VM and future VDM policies bind them
-through root composition. `planning/m5-legacy-convergence.md` owns the exact
-work and closure gates.
+The prior M5 source-root migration was followed by live-machine authority
+convergence: the `device.h` aggregate is gone, CPU/RAM/port authority is owned
+by the live machine, and retained compatibility spellings are direct aliases
+only. The remaining M5 work is naming and contract clarity: legacy `v*`
+implementation filenames, mixed interface/provider headers, stale documents,
+and ambiguous platform/product names converge under
+`planning/m5-naming-convergence.md`. Shared concrete Win32/Linux host
+providers move to `core/platform` only when proven mechanism-only; VM and VDM
+policies remain bound by root composition.

@@ -198,13 +198,17 @@ The core-platform source scan contains no machine or product include.
 
 ## T18 Closure Evidence
 
-M5 is complete. `vm/machine/device.h` and every `deviceConnect*` export are
-absent; retained CPU/RAM/port execution uses the core-machine contracts over
-one legacy state instance per subsystem. Shared display-frame and native
-Win32/Linux sleep capabilities are in `core/platform`; its source includes no
-VM/VDM machine or product header. The final task artifact is
-`build/nxvm-m5-t18.exe`, a bootable retained NXVM Console showing
-`0.4.015d.m5t18`. Windows GCC build, zero-edge DAG, expected-`#UD` CPU probe,
-debugger target, input/execution, FDD/HDD reset-vector, and Console
-`HELP`/`EXIT` gates passed. POSIX compilation remains the explicitly external
-Linux validation gate recorded by M0/M5 governance.
+The legacy convergence scope through T18 is complete. `vm/machine/device.h`
+and every `deviceConnect*` export are absent; retained CPU/RAM/port execution
+uses the core-machine contracts over one legacy state instance per subsystem.
+Shared display-frame and native Win32/Linux sleep capabilities are in
+`core/platform`; its source includes no VM/VDM machine or product header. The
+T18 task artifact was `build/nxvm-m5-t18.exe`, a bootable retained NXVM
+Console showing `0.4.015d.m5t18`. Windows GCC build, zero-edge DAG,
+expected-`#UD` CPU probe, debugger target, input/execution, FDD/HDD
+reset-vector, and Console `HELP`/`EXIT` gates passed. POSIX compilation
+remains the explicitly external Linux validation gate recorded by M0/M5
+governance.
+
+M5 itself remains reopened for the naming-convergence scope in
+`planning/m5-naming-convergence.md`.
