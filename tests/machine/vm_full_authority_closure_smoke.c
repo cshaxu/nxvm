@@ -34,7 +34,9 @@ static int has_single_live_authority(const vm_composition_live_machine *machine)
         machine->fdd == &vfdd && machine->fdc == &vfdc &&
         machine->hdd == &vhdd && machine->debug == &vdebug &&
         machine->default_bios == &vbios &&
-        machine->default_qdx->table == qdxTable;
+        machine->default_qdx->table == qdxTable &&
+        machine->control != NULL &&
+        machine->control->execution_context.device == machine;
 }
 static DWORD WINAPI run_full_pc(void *opaque)
 {
