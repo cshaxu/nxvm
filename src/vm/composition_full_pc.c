@@ -140,7 +140,8 @@ nxvm_core_status nxvm_full_pc_set_memory_kb(nxvm_full_pc *full_pc, uint32_t kilo
         kilobytes < 1024u || kilobytes > 16384u) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
-    core_machine_memory_allocate((size_t)kilobytes * 1024u);
+    core_machine_memory_allocate_for(full_pc->machine.ram,
+        (size_t)kilobytes * 1024u);
     return NXVM_CORE_STATUS_OK;
 }
 

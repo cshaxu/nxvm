@@ -44,7 +44,7 @@ static void vm_composition_console_debug(void *context)
 static void vm_composition_console_record_start(void *context, const char *path) { vm_machine_debug_record_start(((vm_composition_live_machine *)context)->debug, path); }
 static void vm_composition_console_record_stop(void *context) { vm_machine_debug_record_stop(((vm_composition_live_machine *)context)->debug); }
 static void vm_composition_console_set_boot_hdd(void *context, int enabled) { vm_profile_default_bios_set_boot_hdd(((vm_composition_live_machine *)context)->default_bios, enabled); }
-static void vm_composition_console_set_memory(void *context, size_t bytes) { (void)context; core_machine_memory_allocate(bytes); }
+static void vm_composition_console_set_memory(void *context, size_t bytes) { vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_memory_allocate_for(machine->ram, bytes); }
 static void vm_composition_console_create_fdd(void *context) { vm_machine_fdd_create_for(((vm_composition_live_machine *)context)->fdd); }
 static int vm_composition_console_insert_fdd(void *context, const char *path) { return vm_machine_fdd_insert_for(((vm_composition_live_machine *)context)->fdd, path); }
 static int vm_composition_console_remove_fdd(void *context, const char *path) { return vm_machine_fdd_remove_for(((vm_composition_live_machine *)context)->fdd, path); }

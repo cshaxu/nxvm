@@ -8,23 +8,6 @@
 #include "core/machine/memory.h"
 #include "core/machine/port.h"
 
-static t_ram *coreMachineMemory;
-
-t_ram *core_machine_memory_current(void)
-{
-    return coreMachineMemory;
-}
-
-void core_machine_memory_bind_live(t_ram *ram)
-{
-    coreMachineMemory = ram;
-}
-
-void core_machine_memory_unbind_live(void)
-{
-    coreMachineMemory = NULL;
-}
-
 /* Allocates memory for virtual machine ram */
 static t_nubit32 core_machine_memory_wrap_a20(const t_ram *ram,
     t_nubit32 offset)
@@ -118,25 +101,6 @@ void core_machine_memory_register_ports(t_ram *ram, t_port *port)
         core_machine_memory_read_a20, ram);
     core_machine_port_add_write(port, 0x0092,
         core_machine_memory_write_a20, ram);
-}
-
-void core_machine_memory_allocate(size_t bytes)
-{
-    core_machine_memory_allocate_for(core_machine_memory_current(), bytes);
-}
-
-void core_machine_memory_read_real(uint16_t segment, uint16_t offset,
-    void *out_data, size_t size)
-{
-    core_machine_memory_read_real_from(core_machine_memory_current(), segment,
-        offset, out_data, size);
-}
-
-void core_machine_memory_write_real(uint16_t segment, uint16_t offset,
-    const void *in_data, size_t size)
-{
-    core_machine_memory_write_real_to(core_machine_memory_current(), segment,
-        offset, in_data, size);
 }
 
 void core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
