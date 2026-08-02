@@ -17,16 +17,29 @@
 #include "vm/composition_control.h"
 #include "vm/composition_live_machine.h"
 
-static void device_execution_context_reset(void)
+static void device_execution_context_reset(void *device)
 {
+    vm_composition_live_machine *machine =
+        (vm_composition_live_machine *)device;
     vdebugReset();
-    vmachineReset();
+    vmachineReset(machine);
+}
+
+static void device_execution_context_debug_refresh(void *device)
+{
+    (void)device;
+    vdebugRefresh();
+}
+
+static void device_execution_context_machine_refresh(void *device)
+{
+    vmachineRefresh((vm_composition_live_machine *)device);
 }
 
 static const nxvm_execution_context_callbacks device_execution_callbacks = {
     device_execution_context_reset,
-    vdebugRefresh,
-    vmachineRefresh
+    device_execution_context_debug_refresh,
+    device_execution_context_machine_refresh
 };
 
 /* Starts device thread */
@@ -167,7 +180,7 @@ void vm_composition_control_initialize(vm_composition_control_state *control,
         &control->execution_context, &device_execution_callbacks);
     nxvm_execution_context_enter(&control->execution_context);
     vdebugInit();
-    vmachineInit();
+    vmachineInit(machine);
 }
 
 /* Finalizes devices */
@@ -176,8 +189,7 @@ void vm_composition_control_finalize(vm_composition_control_state *control,
     if (control == NULL || machine == NULL) return;
     nxvm_execution_context_leave(&control->execution_context);
     vdebugFinal();
-    vmachineFinal();
-    (void)machine;
+    vmachineFinal(machine);
 }
 
 void vm_composition_control_print_status(const vm_composition_control_state *control) {

@@ -57,7 +57,7 @@ void nxvm_execution_context_reset(nxvm_execution_context *context)
 {
     if (context != 0 && context->callbacks != 0 &&
         context->callbacks->reset != 0) {
-        context->callbacks->reset();
+        context->callbacks->reset(context->device);
     }
 }
 
@@ -65,7 +65,7 @@ void nxvm_execution_context_debug_refresh(nxvm_execution_context *context)
 {
     if (context != 0 && context->callbacks != 0 &&
         context->callbacks->debug_refresh != 0) {
-        context->callbacks->debug_refresh();
+        context->callbacks->debug_refresh(context->device);
     }
 }
 
@@ -73,7 +73,7 @@ void nxvm_execution_context_machine_refresh(nxvm_execution_context *context)
 {
     if (context != 0 && context->callbacks != 0 &&
         context->callbacks->machine_refresh != 0) {
-        context->callbacks->machine_refresh();
+        context->callbacks->machine_refresh(context->device);
     }
 }
 

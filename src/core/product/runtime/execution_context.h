@@ -3,9 +3,9 @@
 #define NXVM_MACHINE_VM_EXECUTION_CONTEXT_H
 
 typedef struct nxvm_execution_context_callbacks {
-    void (*reset)(void);
-    void (*debug_refresh)(void);
-    void (*machine_refresh)(void);
+    void (*reset)(void *device);
+    void (*debug_refresh)(void *device);
+    void (*machine_refresh)(void *device);
 } nxvm_execution_context_callbacks;
 
 typedef void (*nxvm_execution_context_command_boundary)(void *opaque);
