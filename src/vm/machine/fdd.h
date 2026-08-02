@@ -9,6 +9,8 @@ extern "C" {
 
 #include "core/machine/vglobal.h"
 
+typedef struct t_latch t_latch;
+
 #define NXVM_DEVICE_FDD "3.5\" Floppy Disk Drive"
 
 typedef struct {
@@ -50,6 +52,19 @@ void vm_machine_fdd_unbind_live(void);
     (vfdd.data.sector - 1)) * vfdd.data.nbyte)
 #define vfddGetImageSize (vfdd.data.nbyte * vfdd.data.nsector * \
     vfdd.data.nhead * vfdd.data.ncyl)
+
+size_t vm_machine_fdd_image_size(const t_fdd *fdd);
+void vm_machine_fdd_set_pointer(t_fdd *fdd);
+void vm_machine_fdd_transfer_read(t_fdd *fdd, t_latch *latch);
+void vm_machine_fdd_transfer_write(t_fdd *fdd, t_latch *latch);
+void vm_machine_fdd_format_track(t_fdd *fdd, t_nubit8 fill_byte);
+void vm_machine_fdd_initialize(t_fdd *fdd);
+void vm_machine_fdd_reset(t_fdd *fdd);
+void vm_machine_fdd_refresh(t_fdd *fdd);
+void vm_machine_fdd_finalize(t_fdd *fdd);
+void vm_machine_fdd_create_for(t_fdd *fdd);
+int vm_machine_fdd_insert_for(t_fdd *fdd, const char *file_name);
+int vm_machine_fdd_remove_for(t_fdd *fdd, const char *file_name);
 
 void vfddTransRead();
 void vfddTransWrite();
