@@ -11,12 +11,11 @@ int main(void)
 
     machineInit(&session);
     machine = (&session);
-    if (machine == NULL || &vhdd != machine->hdd) {
+    if (machine == NULL || machine->hdd != &session.hdd_storage) {
         machineFinal(&session);
         return 1;
     }
     machineFinal(&session);
-    if (vm_machine_hdd_current() != NULL) return 1;
     puts("M5:T36:S1:HDD-AUTHORITY:OK");
     return 0;
 }

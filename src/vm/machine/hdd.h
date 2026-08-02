@@ -9,6 +9,8 @@ extern "C" {
 
 #include "core/machine/vglobal.h"
 
+typedef struct t_latch t_latch;
+
 #define NXVM_DEVICE_HDD "Unknown Hard Disk Drive"
 
 typedef struct {
@@ -36,32 +38,20 @@ typedef struct {
     t_hdd_connect connect;
 } t_hdd;
 
-t_hdd *vm_machine_hdd_current(void);
-void vm_machine_hdd_bind_live(t_hdd *hdd);
-void vm_machine_hdd_unbind_live(void);
-
-/* Transitional direct alias to the one composition-owned HDD object. */
-#define vhdd (*vm_machine_hdd_current())
-
 #define VHDD_BYTE_PER_MB (1 << 20)
 
-#define vhddSetPointer (vhdd.connect.pCurrByte = vhdd.connect.pImgBase + \
-    ((vhdd.data.cyl * vhdd.data.nhead + vhdd.data.head) * vhdd.data.nsector +  \
-    (vhdd.data.sector - 1)) * vhdd.data.nbyte)
-#define vhddGetImageSize (vhdd.data.nbyte * vhdd.data.nsector * \
-    vhdd.data.nhead * vhdd.data.ncyl)
-
-void vhddTransRead();
-void vhddTransWrite();
-void vhddFormatTrack(t_nubit8 fillByte);
-
-void vhddInit();
-void vhddReset();
-void vhddRefresh();
-void vhddFinal();
-void vm_machine_hdd_create(uint16_t cylinders);
-int vm_machine_hdd_insert(const char *file_name);
-int vm_machine_hdd_remove(const char *file_name);
+size_t vm_machine_hdd_image_size(const t_hdd *hdd);
+void vm_machine_hdd_set_pointer(t_hdd *hdd);
+void vm_machine_hdd_transfer_read(t_hdd *hdd, t_latch *latch);
+void vm_machine_hdd_transfer_write(t_hdd *hdd, t_latch *latch);
+void vm_machine_hdd_format_track(t_hdd *hdd, t_nubit8 fill_byte);
+void vm_machine_hdd_initialize(t_hdd *hdd);
+void vm_machine_hdd_reset(t_hdd *hdd);
+void vm_machine_hdd_refresh(t_hdd *hdd);
+void vm_machine_hdd_finalize(t_hdd *hdd);
+void vm_machine_hdd_create(t_hdd *hdd, uint16_t cylinders);
+int vm_machine_hdd_insert(t_hdd *hdd, const char *file_name);
+int vm_machine_hdd_remove(t_hdd *hdd, const char *file_name);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
