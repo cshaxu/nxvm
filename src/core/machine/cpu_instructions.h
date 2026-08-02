@@ -137,12 +137,6 @@ void core_machine_cpu_execution_context_bind_extension(
     core_machine_cpu_execution_context *context, void *extension_context);
 void *core_machine_cpu_execution_context_extension(
     const core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_bind_legacy(
-    core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_unbind_legacy(void);
-core_machine_cpu_execution_context *
-core_machine_cpu_execution_current_legacy(void);
-
 t_bool core_machine_cpu_execution_load_segment(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
     t_nubit16 selector);
@@ -160,13 +154,6 @@ void core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context);
-
-t_cpuins *core_machine_cpu_instructions_current(void);
-void core_machine_cpu_instructions_bind_live(t_cpuins *instructions);
-void core_machine_cpu_instructions_unbind_live(void);
-
-/* Transitional direct alias to the one composition-owned live decoder. */
-#define vcpuins (*core_machine_cpu_instructions_current())
 
 #define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */
 #define VCPUINS_EXCEPT_DB  0x00000002 /* 01 - trap/fault: debug exception */
@@ -187,15 +174,6 @@ void core_machine_cpu_instructions_unbind_live(void);
 #define VCPUINS_EXCEPT_MF  0x00010000 /* 16 - fault: x87 fpu floating point error */
 
 #define VCPUINS_EXCEPT_CE  0x80000000 /* 31 - internal case error */
-
-t_bool vcpuinsLoadSreg(t_cpu_data_sreg *rsreg, t_nubit16 selector);
-t_bool vcpuinsReadLinear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte);
-t_bool vcpuinsWriteLinear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte);
-
-void vcpuinsInit();
-void vcpuinsReset();
-void vcpuinsRefresh();
-void vcpuinsFinal();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

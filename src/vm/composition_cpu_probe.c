@@ -67,7 +67,6 @@ int nxvm_cpu_probe_create(nxvm_cpu_probe **out_probe)
     probe = (nxvm_cpu_probe *)calloc(1u, sizeof(*probe));
     if (probe == NULL) return 0;
     vm_composition_live_machine_initialize(&probe->machine);
-    vm_composition_live_machine_bind_legacy(&probe->machine);
     vm_composition_control_initialize(probe->machine.control, &probe->machine);
     probe->active = 1;
     if (!nxvm_cpu_probe_reset(probe)) {

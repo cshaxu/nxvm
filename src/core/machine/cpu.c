@@ -8,7 +8,8 @@
 
 #include "core/machine/cpu.h"
 
-static t_cpu *coreMachineCpu;
+#define cpu_state (*context->cpu)
+#define instruction_state (*context->instructions)
 
 void core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
@@ -47,21 +48,6 @@ void *core_machine_cpu_execution_context_extension(
     return context == NULL ? NULL : context->extension_context;
 }
 
-t_cpu *core_machine_cpu_current(void)
-{
-    return coreMachineCpu;
-}
-
-void core_machine_cpu_bind_live(t_cpu *cpu)
-{
-    coreMachineCpu = cpu;
-}
-
-void core_machine_cpu_unbind_live(void)
-{
-    coreMachineCpu = NULL;
-}
-
 void core_machine_cpu_state_initialize(
     core_machine_cpu_execution_context *context) {
     if (context == NULL || context->cpu == NULL ||
@@ -80,8 +66,6 @@ void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
         context->stop_requested = False;
         context->reset_requested = False;
     }
-
-#define cpu_state (*context->cpu)
 
     cpu_state.data.eip = 0x0000fff0;
     cpu_state.data.eflags = 0x00000002;
@@ -151,7 +135,6 @@ void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
 
     core_machine_cpu_execution_reset(context);
 
-#undef cpu_state
 }
 
 void core_machine_cpu_execution_request_stop(
@@ -179,94 +162,86 @@ t_bool core_machine_cpu_execution_consume_reset_request(
     return requested;
 }
 
-void vcpuRequestStop() {
-    core_machine_cpu_execution_request_stop(
-        core_machine_cpu_execution_current_legacy());
-}
-t_bool vcpuConsumeStopRequest() {
-    return core_machine_cpu_execution_consume_stop_request(
-        core_machine_cpu_execution_current_legacy());
-}
-void vcpuRequestReset() {
-    core_machine_cpu_execution_request_reset(
-        core_machine_cpu_execution_current_legacy());
-}
-t_bool vcpuConsumeResetRequest() {
-    return core_machine_cpu_execution_consume_reset_request(
-        core_machine_cpu_execution_current_legacy());
-}
-
-int core_machine_cpu_read_linear(uint32_t linear, void *out_data, uint8_t size)
+int core_machine_cpu_read_linear(core_machine_cpu_execution_context *context, uint32_t linear, void *out_data, uint8_t size)
 {
-    return vcpuinsReadLinear(linear, (t_vaddrcc)out_data, size);
+    return core_machine_cpu_execution_read_linear(context, linear,
+        (t_vaddrcc)out_data, size);
 }
 
-int core_machine_cpu_write_linear(uint32_t linear, const void *in_data,
-    uint8_t size)
+int core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
+    uint32_t linear, const void *in_data, uint8_t size)
 {
-    return vcpuinsWriteLinear(linear, (t_vaddrcc)in_data, size);
+    return core_machine_cpu_execution_write_linear(context, linear,
+        (t_vaddrcc)in_data, size);
 }
 
-int core_machine_cpu_load_segment(core_machine_cpu_segment segment,
-    uint16_t selector)
+int core_machine_cpu_load_segment(core_machine_cpu_execution_context *context,
+    core_machine_cpu_segment segment, uint16_t selector)
 {
     switch (segment) {
     case CORE_MACHINE_CPU_SEGMENT_ES:
-        return vcpuinsLoadSreg(&vcpu.data.es, selector);
+        return core_machine_cpu_execution_load_segment(context,
+            &cpu_state.data.es, selector);
     case CORE_MACHINE_CPU_SEGMENT_CS:
-        return vcpuinsLoadSreg(&vcpu.data.cs, selector);
+        return core_machine_cpu_execution_load_segment(context,
+            &cpu_state.data.cs, selector);
     case CORE_MACHINE_CPU_SEGMENT_SS:
-        return vcpuinsLoadSreg(&vcpu.data.ss, selector);
+        return core_machine_cpu_execution_load_segment(context,
+            &cpu_state.data.ss, selector);
     case CORE_MACHINE_CPU_SEGMENT_DS:
-        return vcpuinsLoadSreg(&vcpu.data.ds, selector);
+        return core_machine_cpu_execution_load_segment(context,
+            &cpu_state.data.ds, selector);
     case CORE_MACHINE_CPU_SEGMENT_FS:
-        return vcpuinsLoadSreg(&vcpu.data.fs, selector);
+        return core_machine_cpu_execution_load_segment(context,
+            &cpu_state.data.fs, selector);
     case CORE_MACHINE_CPU_SEGMENT_GS:
-        return vcpuinsLoadSreg(&vcpu.data.gs, selector);
+        return core_machine_cpu_execution_load_segment(context,
+            &cpu_state.data.gs, selector);
     }
     return 1;
 }
 
-int core_machine_cpu_get_code_default_size(void)
+int core_machine_cpu_get_code_default_size(const core_machine_cpu_execution_context *context)
 {
-    return vcpu.data.cs.seg.exec.defsize;
+    return cpu_state.data.cs.seg.exec.defsize;
 }
 
-uint32_t core_machine_cpu_get_code_base(void)
+uint32_t core_machine_cpu_get_code_base(const core_machine_cpu_execution_context *context)
 {
-    return vcpu.data.cs.base;
+    return cpu_state.data.cs.base;
 }
 
-void core_machine_cpu_set_watchpoint(core_machine_cpu_watchpoint kind,
-    uint32_t linear)
+void core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context,
+    core_machine_cpu_watchpoint kind, uint32_t linear)
 {
     switch (kind) {
     case CORE_MACHINE_CPU_WATCH_READ:
-        vcpuins.data.wrLinear = linear;
-        vcpuins.data.flagWR = True;
+        instruction_state.data.wrLinear = linear;
+        instruction_state.data.flagWR = True;
         break;
     case CORE_MACHINE_CPU_WATCH_WRITE:
-        vcpuins.data.wwLinear = linear;
-        vcpuins.data.flagWW = True;
+        instruction_state.data.wwLinear = linear;
+        instruction_state.data.flagWW = True;
         break;
     case CORE_MACHINE_CPU_WATCH_EXECUTE:
-        vcpuins.data.weLinear = linear;
-        vcpuins.data.flagWE = True;
+        instruction_state.data.weLinear = linear;
+        instruction_state.data.flagWE = True;
         break;
     }
 }
 
-void core_machine_cpu_clear_watchpoint(core_machine_cpu_watchpoint kind)
+void core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *context,
+    core_machine_cpu_watchpoint kind)
 {
     switch (kind) {
     case CORE_MACHINE_CPU_WATCH_READ:
-        vcpuins.data.flagWR = False;
+        instruction_state.data.flagWR = False;
         break;
     case CORE_MACHINE_CPU_WATCH_WRITE:
-        vcpuins.data.flagWW = False;
+        instruction_state.data.flagWW = False;
         break;
     case CORE_MACHINE_CPU_WATCH_EXECUTE:
-        vcpuins.data.flagWE = False;
+        instruction_state.data.flagWE = False;
         break;
     }
 }
@@ -295,44 +270,44 @@ static void print_sreg_sys(t_cpu_data_sreg *rsreg, const t_strptr label) {
            rsreg->dpl, rsreg->sys.type);
 }
 /* Prints segment registers */
-void devicePrintCpuSreg() {
-    print_sreg_seg(&vcpu.data.es, "ES");
-    print_sreg_seg(&vcpu.data.cs, "CS");
-    print_sreg_seg(&vcpu.data.ss, "SS");
-    print_sreg_seg(&vcpu.data.ds, "DS");
-    print_sreg_seg(&vcpu.data.fs, "FS");
-    print_sreg_seg(&vcpu.data.gs, "GS");
-    print_sreg_sys(&vcpu.data.tr, "TR  ");
-    print_sreg_sys(&vcpu.data.ldtr, "LDTR");
+void core_machine_cpu_print_segment_registers(const core_machine_cpu_execution_context *context) {
+    print_sreg_seg(&cpu_state.data.es, "ES");
+    print_sreg_seg(&cpu_state.data.cs, "CS");
+    print_sreg_seg(&cpu_state.data.ss, "SS");
+    print_sreg_seg(&cpu_state.data.ds, "DS");
+    print_sreg_seg(&cpu_state.data.fs, "FS");
+    print_sreg_seg(&cpu_state.data.gs, "GS");
+    print_sreg_sys(&cpu_state.data.tr, "TR  ");
+    print_sreg_sys(&cpu_state.data.ldtr, "LDTR");
     PRINTF("GDTR Base=%08X, Limit=%04X\n",
-           vcpu.data.gdtr.base, vcpu.data.gdtr.limit);
+           cpu_state.data.gdtr.base, cpu_state.data.gdtr.limit);
     PRINTF("IDTR Base=%08X, Limit=%04X\n",
-           vcpu.data.idtr.base, vcpu.data.idtr.limit);
+           cpu_state.data.idtr.base, cpu_state.data.idtr.limit);
 }
 /* Prints control registers */
-void devicePrintCpuCreg() {
-    PRINTF("CR0=%08X: %s %s %s %s %s %s\n", vcpu.data.cr0,
+void core_machine_cpu_print_control_registers(const core_machine_cpu_execution_context *context) {
+    PRINTF("CR0=%08X: %s %s %s %s %s %s\n", cpu_state.data.cr0,
            _GetCR0_PG ? "PG" : "pg",
            _GetCR0_ET ? "ET" : "et",
            _GetCR0_TS ? "TS" : "ts",
            _GetCR0_EM ? "EM" : "em",
            _GetCR0_MP ? "MP" : "mp",
            _GetCR0_PE ? "PE" : "pe");
-    PRINTF("CR2=PFLR=%08X\n", vcpu.data.cr2);
-    PRINTF("CR3=PDBR=%08X\n", vcpu.data.cr3);
+    PRINTF("CR2=PFLR=%08X\n", cpu_state.data.cr2);
+    PRINTF("CR3=PDBR=%08X\n", cpu_state.data.cr3);
 }
 /* Prints regular registers */
-void devicePrintCpuReg() {
-    PRINTF( "EAX=%08X", vcpu.data.eax);
-    PRINTF(" EBX=%08X", vcpu.data.ebx);
-    PRINTF(" ECX=%08X", vcpu.data.ecx);
-    PRINTF(" EDX=%08X", vcpu.data.edx);
-    PRINTF("\nESP=%08X",vcpu.data.esp);
-    PRINTF(" EBP=%08X", vcpu.data.ebp);
-    PRINTF(" ESI=%08X", vcpu.data.esi);
-    PRINTF(" EDI=%08X", vcpu.data.edi);
-    PRINTF("\nEIP=%08X",vcpu.data.eip);
-    PRINTF(" EFL=%08X", vcpu.data.eflags);
+void core_machine_cpu_print_registers(const core_machine_cpu_execution_context *context) {
+    PRINTF( "EAX=%08X", cpu_state.data.eax);
+    PRINTF(" EBX=%08X", cpu_state.data.ebx);
+    PRINTF(" ECX=%08X", cpu_state.data.ecx);
+    PRINTF(" EDX=%08X", cpu_state.data.edx);
+    PRINTF("\nESP=%08X",cpu_state.data.esp);
+    PRINTF(" EBP=%08X", cpu_state.data.ebp);
+    PRINTF(" ESI=%08X", cpu_state.data.esi);
+    PRINTF(" EDI=%08X", cpu_state.data.edi);
+    PRINTF("\nEIP=%08X",cpu_state.data.eip);
+    PRINTF(" EFL=%08X", cpu_state.data.eflags);
     PRINTF(": ");
     PRINTF("%s ", _GetEFLAGS_VM ? "VM" : "vm");
     PRINTF("%s ", _GetEFLAGS_RF ? "RF" : "rf");
@@ -350,47 +325,23 @@ void devicePrintCpuReg() {
     PRINTF("\n");
 }
 /* Prints active memory info */
-void devicePrintCpuMem() {
+void core_machine_cpu_print_memory_accesses(const core_machine_cpu_execution_context *context) {
     t_nubitcc i;
-    for (i = 0; i < vcpuins.data.msize; ++i) {
+    for (i = 0; i < instruction_state.data.msize; ++i) {
         PRINTF("%s: Lin=%08x, Data=%08x, Bytes=%1x\n",
-               vcpuins.data.mem[i].flagWrite ? "Write" : "Read",
-               vcpuins.data.mem[i].linear, vcpuins.data.mem[i].data, vcpuins.data.mem[i].byte);
+               instruction_state.data.mem[i].flagWrite ? "Write" : "Read",
+               instruction_state.data.mem[i].linear, instruction_state.data.mem[i].data, instruction_state.data.mem[i].byte);
     }
 }
-void devicePrintCpuWatch() {
-    if (vcpuins.data.flagWR) {
-        PRINTF("Watch-read point: Lin=%08x\n", vcpuins.data.wrLinear);
+void core_machine_cpu_print_watchpoints(const core_machine_cpu_execution_context *context) {
+    if (instruction_state.data.flagWR) {
+        PRINTF("Watch-read point: Lin=%08x\n", instruction_state.data.wrLinear);
     }
-    if (vcpuins.data.flagWW) {
-        PRINTF("Watch-write point: Lin=%08x\n", vcpuins.data.wwLinear);
+    if (instruction_state.data.flagWW) {
+        PRINTF("Watch-write point: Lin=%08x\n", instruction_state.data.wwLinear);
     }
-    if (vcpuins.data.flagWE) {
-        PRINTF("Watch-exec point: Lin=%08x\n", vcpuins.data.weLinear);
+    if (instruction_state.data.flagWE) {
+        PRINTF("Watch-exec point: Lin=%08x\n", instruction_state.data.weLinear);
     }
 }
 
-void core_machine_cpu_print_registers(void)
-{
-    devicePrintCpuReg();
-}
-
-void core_machine_cpu_print_segment_registers(void)
-{
-    devicePrintCpuSreg();
-}
-
-void core_machine_cpu_print_control_registers(void)
-{
-    devicePrintCpuCreg();
-}
-
-void core_machine_cpu_print_memory_accesses(void)
-{
-    devicePrintCpuMem();
-}
-
-void core_machine_cpu_print_watchpoints(void)
-{
-    devicePrintCpuWatch();
-}

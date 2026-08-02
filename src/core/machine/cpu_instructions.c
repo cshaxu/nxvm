@@ -15,41 +15,6 @@
 #define instruction_state (*context->instructions)
 #define ExecCpuInstruction(handler) ((handler) ? ((handler)(context), 0) : 0)
 
-static t_cpuins *coreMachineCpuInstructions;
-static core_machine_cpu_execution_context *coreMachineCpuExecution;
-
-t_cpuins *core_machine_cpu_instructions_current(void)
-{
-    return coreMachineCpuInstructions;
-}
-
-void core_machine_cpu_instructions_bind_live(t_cpuins *instructions)
-{
-    coreMachineCpuInstructions = instructions;
-}
-
-void core_machine_cpu_instructions_unbind_live(void)
-{
-    coreMachineCpuInstructions = NULL;
-}
-
-void core_machine_cpu_execution_bind_legacy(
-    core_machine_cpu_execution_context *context)
-{
-    coreMachineCpuExecution = context;
-}
-
-void core_machine_cpu_execution_unbind_legacy(void)
-{
-    coreMachineCpuExecution = NULL;
-}
-
-core_machine_cpu_execution_context *
-core_machine_cpu_execution_current_legacy(void)
-{
-    return coreMachineCpuExecution;
-}
-
 #define UTILS_TRACE_VAR    trace
 #define UTILS_TRACE_ERROR  instruction_state.data.except
 #define UTILS_TRACE_SETERR (_SetExcept_CE(0xffffffff))
@@ -13970,45 +13935,3 @@ void core_machine_cpu_execution_refresh(
 }
 void core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context) { (void)context; }
-
-/* Transitional wrappers for callers that T66 P3 and later tasks have not moved. */
-t_bool vcpuinsLoadSreg(t_cpu_data_sreg *rsreg, t_nubit16 selector)
-{
-    return core_machine_cpu_execution_load_segment(
-        core_machine_cpu_execution_current_legacy(), rsreg, selector);
-}
-
-t_bool vcpuinsReadLinear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte)
-{
-    return core_machine_cpu_execution_read_linear(
-        core_machine_cpu_execution_current_legacy(), linear, rdata, byte);
-}
-
-t_bool vcpuinsWriteLinear(t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte)
-{
-    return core_machine_cpu_execution_write_linear(
-        core_machine_cpu_execution_current_legacy(), linear, rdata, byte);
-}
-
-void vcpuinsInit(void)
-{
-    core_machine_cpu_execution_initialize(
-        core_machine_cpu_execution_current_legacy());
-}
-
-void vcpuinsReset(void)
-{
-    core_machine_cpu_execution_reset(core_machine_cpu_execution_current_legacy());
-}
-
-void vcpuinsRefresh(void)
-{
-    core_machine_cpu_execution_refresh(
-        core_machine_cpu_execution_current_legacy());
-}
-
-void vcpuinsFinal(void)
-{
-    core_machine_cpu_execution_finalize(
-        core_machine_cpu_execution_current_legacy());
-}

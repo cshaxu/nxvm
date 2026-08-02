@@ -15,9 +15,10 @@ int main(void)
     if ((&session) != NULL) return 1;
     machineInit(&session);
     machine = (&session);
-    if (machine == NULL || machine->cpu != &vcpu ||
-        machine->cpuins != &vcpuins || machine->ram != &vram ||
-        machine->port != &vport) {
+    if (machine == NULL || machine->cpu != &machine->cpu_storage ||
+        machine->cpuins != &machine->cpuins_storage ||
+        machine->ram != &machine->ram_storage ||
+        machine->port != &machine->port_storage) {
         machineFinal(&session);
         return 1;
     }

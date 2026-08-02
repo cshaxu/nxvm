@@ -78,7 +78,6 @@ typedef struct vm_composition_live_machine {
 } vm_composition_live_machine;
 
 void vm_composition_live_machine_initialize(vm_composition_live_machine *machine);
-void vm_composition_live_machine_bind_legacy(vm_composition_live_machine *machine);
 void vm_composition_live_machine_finalize(vm_composition_live_machine *machine);
 
 #endif

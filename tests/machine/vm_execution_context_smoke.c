@@ -22,14 +22,13 @@ int main(int argc, char **argv)
         return 1;
     }
     vm_composition_live_machine_initialize(&session);
-    vm_composition_live_machine_bind_legacy(&session);
     vm_composition_control_initialize(session.control, &session);
     if (vm_machine_fdd_insert_for(session.fdd, argv[1]) != 0) {
         vm_composition_control_finalize(session.control, &session);
     vm_composition_live_machine_finalize(&session);
         return 1;
     }
-    vm_profile_default_bios_set_boot_hdd(0);
+    vm_profile_default_bios_set_boot_hdd(session.default_bios, 0);
     vm_composition_control_reset(session.control);
     thread = CreateThread(NULL, 0u, run_device, session.control, 0u, NULL);
     if (thread == NULL) {
@@ -57,11 +56,11 @@ int main(int argc, char **argv)
     vm_composition_control_finalize(session.control, &session);
     vm_composition_live_machine_finalize(&session);
 
-    if (result != WAIT_OBJECT_0 || nxvm_execution_context_current() != NULL) {
+    if (result != WAIT_OBJECT_0) {
         fprintf(stderr,
             "M5:T10:S4:CONTEXT-LIFECYCLE:STOP-FAILED:%lu:%d\n",
             (unsigned long)result,
-            nxvm_execution_context_current() != NULL);
+            0);
         return 1;
     }
     puts("M5:T10:S4:CONTEXT-LIFECYCLE:OK");

@@ -50,12 +50,10 @@ int main(void)
     nxvm_cpu_probe_destroy(probe);
     probe = NULL;
 
-    failed |= nxvm_execution_context_current() != NULL;
     failed |= !nxvm_cpu_probe_create(&probe);
     failed |= !nxvm_cpu_probe_step(probe, mov_ax, sizeof(mov_ax), &capture);
     failed |= !expect_capture(&capture, 0x00001234u, 3u, 0u);
     nxvm_cpu_probe_destroy(probe);
-    failed |= nxvm_execution_context_current() != NULL;
 
     if (failed) {
         return 1;

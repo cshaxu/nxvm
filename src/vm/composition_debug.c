@@ -147,15 +147,15 @@ static void vm_debug_clear_watch(void *context, core_product_debug_watch_kind ki
     else machine->cpuins->data.flagWE = False;
 }
 static void vm_debug_print_registers(void *context)
-{ (void)context; core_machine_cpu_print_registers(); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_cpu_print_registers(machine->cpu_execution); }
 static void vm_debug_print_segment_registers(void *context)
-{ (void)context; core_machine_cpu_print_segment_registers(); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_cpu_print_segment_registers(machine->cpu_execution); }
 static void vm_debug_print_control_registers(void *context)
-{ (void)context; core_machine_cpu_print_control_registers(); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_cpu_print_control_registers(machine->cpu_execution); }
 static void vm_debug_print_memory(void *context)
-{ (void)context; core_machine_cpu_print_memory_accesses(); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_cpu_print_memory_accesses(machine->cpu_execution); }
 static void vm_debug_print_watchpoints(void *context)
-{ (void)context; core_machine_cpu_print_watchpoints(); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_cpu_print_watchpoints(machine->cpu_execution); }
 
 static const core_product_debug_target vmDebugTargetTemplate = {
     .is_running = vm_debug_running,
