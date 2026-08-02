@@ -76,12 +76,15 @@ while retaining image-buffer allocation, transfer, and teardown behavior.
 M5 T37 S1 recorded that the retained `vhdc` is deliberately stateless: it has
 only empty lifecycle hooks and no controller, port, DMA/IRQ, BIOS, or media
 authority to migrate.
+M5 T38 S1 moved default-profile BIOS/POST and interrupt-registration state to
+the live machine's `default_bios_storage` object while preserving the retained
+profile ownership and POST sequence.
 
 ## Active Work
 
-M5 T38 S1 is active: map default-profile BIOS/POST storage and interrupt
-registration before binding its sole firmware object through the live machine.
-Owner-observed FDD DOS-prompt acceptance covers the preceding authority tasks.
+M5 T39 S1 is active: map default-profile QDX interrupt-dispatch state before
+binding its sole firmware service object through the live machine. Owner-
+observed FDD DOS-prompt acceptance covers the preceding authority tasks.
 
 ## Completed
 

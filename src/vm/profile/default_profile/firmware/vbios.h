@@ -26,9 +26,15 @@ typedef struct {
 typedef struct {
     t_bios_data data;
     t_bios_connect connect;
+    t_bool flagBoot;
 } t_bios;
 
-extern t_bios vbios;
+t_bios *vm_profile_default_bios_current(void);
+void vm_profile_default_bios_bind_live(t_bios *bios);
+void vm_profile_default_bios_unbind_live(void);
+
+/* Transitional direct alias to the one composition-owned profile BIOS object. */
+#define vbios (*vm_profile_default_bios_current())
 
 #define VBIOS_ADDR_START_SEG 0xf000
 #define VBIOS_ADDR_START_OFF Zero16

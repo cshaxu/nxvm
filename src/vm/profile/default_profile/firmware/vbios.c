@@ -9,10 +9,11 @@
 
 #include "vbios.h"
 
-t_bios vbios;
+static t_bios *vmProfileDefaultBios;
 
-/* internal variable */
-static t_bool flagBoot;
+t_bios *vm_profile_default_bios_current(void) { return vmProfileDefaultBios; }
+void vm_profile_default_bios_bind_live(t_bios *bios) { vmProfileDefaultBios = bios; }
+void vm_profile_default_bios_unbind_live(void) { vmProfileDefaultBios = NULL; }
 
 static t_nubit32 assemble(const t_strptr stmt, t_nubit16 seg, t_nubit16 off) {
     t_nubit32 len = 0;
@@ -89,7 +90,7 @@ static void biosLoadData() {
     vramRealByte(Zero16, VBIOS_ADDR_KEYB_MODE_TYPE)     = 0x10;
     vramRealByte(Zero16, VBIOS_ADDR_KEYB_LED_FLAG)      = 0x02;
     vramRealDWord(Zero16, VBIOS_ADDR_VGA_VIDEO_TAB_PTR) = 0xc0005d3a;
-    vramRealByte(Zero16, VBIOS_ADDR_POST_WORK_AREA) = flagBoot ? 0x80 : Zero8; /* boot disk */
+    vramRealByte(Zero16, VBIOS_ADDR_POST_WORK_AREA) = vbios.flagBoot ? 0x80 : Zero8; /* boot disk */
 }
 static void biosLoadRomInfo() {
     vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 0) = 0x0008;
@@ -154,7 +155,7 @@ void vbiosAddInt(t_strptr stmt, t_nubit8 intid) {
 }
 void vbiosInit() {
     MEMSET((void *)(&vbios), Zero8, sizeof(t_bios));
-    flagBoot = False;
+    vbios.flagBoot = False;
     vbios.data.buildCS = vbios.data.buildIP = Zero16;
     vbiosAddInt(VBIOS_INT_SOFT_MISC_11, 0x11);
     vbiosAddInt(VBIOS_INT_SOFT_MISC_12, 0x12);
@@ -176,12 +177,12 @@ void vbiosReset() {
 void vbiosRefresh() {}
 void vbiosFinal() {}
 void vm_profile_default_bios_print(void) {
-    PRINTF("Boot Disk: %s\n", flagBoot ? "Hard Drive" : "Floppy");
+    PRINTF("Boot Disk: %s\n", vbios.flagBoot ? "Hard Drive" : "Floppy");
 }
 
 void vm_profile_default_bios_set_boot_hdd(int enabled) {
-    flagBoot = enabled;
+    vbios.flagBoot = enabled;
 }
 int vm_profile_default_bios_get_boot_hdd(void) {
-    return flagBoot;
+    return vbios.flagBoot;
 }
