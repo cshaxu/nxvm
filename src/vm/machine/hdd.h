@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_VHDD_H
-#define NXVM_VHDD_H
+#ifndef NXVM_VM_MACHINE_HDD_H
+#define NXVM_VM_MACHINE_HDD_H
 
 #ifdef __cplusplus
 extern "C" {

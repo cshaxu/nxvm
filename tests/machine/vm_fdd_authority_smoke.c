@@ -2,7 +2,7 @@
 
 #include "vm/composition_live_machine.h"
 #include "vm/composition_machine.h"
-#include "vm/machine/vfdd.h"
+#include "vm/machine/fdd.h"
 
 int main(void)
 {

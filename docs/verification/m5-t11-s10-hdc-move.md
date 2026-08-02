@@ -1,7 +1,7 @@
 # M5 T11 S10 HDC Move Verification
 
 The original NXVM HDD-controller implementation now compiles from
-`src/vm/machine/vhdc.c`; its header is `src/vm/machine/vhdc.h`. The retained
+`src/vm/machine/hdc.c`; its header is `src/vm/machine/hdc.h`. The retained
 baseline header forwards BIOS callers to the new owner. `vmachine.c` includes
 HDC directly, and CMake adds only the migrated implementation to the VM source
 set. The existing Console media calls remain unchanged.

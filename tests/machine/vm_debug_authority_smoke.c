@@ -2,7 +2,7 @@
 
 #include "vm/composition_live_machine.h"
 #include "vm/composition_machine.h"
-#include "vm/machine/vdebug.h"
+#include "vm/machine/debug.h"
 
 int main(void)
 {

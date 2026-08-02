@@ -55,7 +55,7 @@ consumer changes to the narrow owner listed below.
 | `vm/composition_cpu_probe.c` | test lifecycle, segment/eip setup, RAM write | narrow core-machine execution/probe API |
 | `vm/composition_display.c` | text snapshot reads | `core/machine/display.h` snapshot API |
 | `vm/composition_full_pc.c` | command boundary, media, boot, RAM, reset, reset vector, record control | narrow composition, VM-machine, profile, and core-machine APIs |
-| `vm/machine/vdebug.c` | stop request | composition-owned stop callback or core-machine pending-stop contract |
+| `vm/machine/debug.c` | stop request | composition-owned stop callback or core-machine pending-stop contract |
 
 The aggregate also declares implementations consumed internally by default
 profile firmware: BIOS boot, keyboard state, and text display access. Those
@@ -93,7 +93,7 @@ required). The old `deviceConnectCpu*`, `deviceConnectRam*`, and
 their final deletion; no duplicate machine state was introduced. GCC,
 debug-target, expected-`#UD` probe, and FDD/HDD full-PC profile gates passed.
 
-VM hardware debugger controls now live in `vm/machine/vdebug.h` under
+VM hardware debugger controls now live in `vm/machine/debug.h` under
 `vm_machine_debug_*`. The core debugger adapter, retained Console recorder,
 and full-PC session use that narrow interface; the debugger declarations are
 gone from `device.h`. GCC plus debugger-target and Console gates passed.

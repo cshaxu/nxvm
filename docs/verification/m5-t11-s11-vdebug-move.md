@@ -1,7 +1,7 @@
 # M5 T11 S11 Hardware Debug-State Move Verification
 
 The original NXVM hardware debug-state implementation now compiles from
-`src/vm/machine/vdebug.c`; its header is `src/vm/machine/vdebug.h`. The retained
+`src/vm/machine/debug.c`; its header is `src/vm/machine/debug.h`. The retained
 baseline header forwards callers to this owner. VM lifecycle code includes the
 state device directly, and CMake adds only the migrated implementation to the
 source set. Its direct `deviceStop()` control makes this VM-machine logic;

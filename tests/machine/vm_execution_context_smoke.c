@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "vm/composition_control.h"
-#include "vm/machine/vfdd.h"
+#include "vm/machine/fdd.h"
 #include "vm/profile/default_profile/firmware/vbios.h"
 #include "core/product/runtime/execution_context.h"
 

@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "vm/composition_machine.h"
-#include "vm/machine/vhdc.h"
+#include "vm/machine/hdc.h"
 
 int main(void)
 {

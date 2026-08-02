@@ -112,12 +112,15 @@ It is complete as a design subtask and produced no executable.
 M5 T48 S2 completed the first naming implementation task: shared core
 `keyboard_controller.*` is now `kbc.*`, shared core `video_adapter.*` is now
 `vadp.*`, and `build/output/nxvm_0_5_0048.exe` is the verified task artifact.
+M5 T49 S1 completed VM-private device file naming: `vcmos`, `vdebug`, `vfdd`,
+`vfdc`, `vhdd`, and `vhdc` file pairs now use canonical owner filenames, and
+`build/output/nxvm_0_5_0049.exe` is the verified task artifact.
 
 ## Active Work
 
-M5 T49 S1 is active, not started: rename VM-private `vcmos`, `vdebug`, `vfdd`,
-`vfdc`, `vhdd`, and `vhdc` file pairs to canonical owner names, then complete
-T49 by producing `build/output/nxvm_0_5_0049.exe` after verification.
+M5 T50 S1 is active, not started: rename default-profile `vbios.*` to
+`bios.*`, then complete T50 by producing `build/output/nxvm_0_5_0050.exe`
+after verification.
 M6 T1 S1 is deferred and not active.
 
 ## Completed
@@ -525,10 +528,13 @@ M6 T1 S1 is deferred and not active.
 - M5 T48 S2 P1: renamed shared core KBC/VADP files and current-object
   functions, preserved retained aliases and behavior, and built
   `build/output/nxvm_0_5_0048.exe`.
+- M5 T49 S1 P1: renamed VM-private CMOS/debug/FDD/FDC/HDD/HDC file pairs to
+  canonical owner filenames, preserved retained aliases and behavior, and
+  built `build/output/nxvm_0_5_0049.exe`.
 
 ## Next Eligible Work
 
-- M5 T49 may begin. M6 design is deferred until M5 naming convergence closes
+- M5 T50 may begin. M6 design is deferred until M5 naming convergence closes
   or the owner explicitly pauses M5.
 
 ## Delivery State

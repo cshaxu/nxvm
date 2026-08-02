@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "vm/composition_control.h"
-#include "vm/machine/vfdd.h"
+#include "vm/machine/fdd.h"
 
 static DWORD WINAPI run_full_pc(void *opaque)
 {

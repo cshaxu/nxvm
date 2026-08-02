@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_VDEBUG_H
-#define NXVM_VDEBUG_H
+#ifndef NXVM_VM_MACHINE_DEBUG_H
+#define NXVM_VM_MACHINE_DEBUG_H
 
 #ifdef __cplusplus
 extern "C" {
