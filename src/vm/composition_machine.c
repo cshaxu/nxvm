@@ -8,6 +8,7 @@
 #include "core/product/wait.h"
 #include "vm/composition_debug.h"
 #include "vm/machine/vdebug.h"
+#include "vm/profile/default_profile/firmware/qdcga.h"
 #include "vm/platform/execution.h"
 #include "vm/platform/input.h"
 #include "vm/platform/platform.h"
@@ -126,6 +127,8 @@ void machineInit() {
     platformInit();
     core_product_wait_bind(vm_composition_wait, NULL);
     vm_composition_control_initialize();
+    core_machine_display_bind_snapshot_provider(NULL,
+        vm_profile_default_display_capture);
     vm_machine_debug_bind_stop(vm_composition_debug_request_stop, NULL);
     core_product_debug_bind_target(vm_composition_debug_target());
     vm_platform_keyboard_bind(&vm_composition_keyboard_sink, NULL);
@@ -134,6 +137,7 @@ void machineInit() {
 
 void machineFinal() {
     vm_composition_control_finalize();
+    core_machine_display_bind_snapshot_provider(NULL, NULL);
     vm_machine_debug_bind_stop(NULL, NULL);
     core_product_debug_bind_target(NULL);
     vm_platform_execution_bind(NULL, NULL);

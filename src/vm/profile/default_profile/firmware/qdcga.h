@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "core/machine/vram.h"
+#include "core/machine/display.h"
 
 #define QDCGA_COUNT_MAX_PAGE               0x08
 #define QDCGA_SIZE_CHAR_WIDTH              0x0a
@@ -75,6 +76,8 @@ extern t_nubit32 qdcgaModeBufSize[0x14];
 
 void qdcgaInit();
 void qdcgaReset();
+int vm_profile_default_display_capture(void *context,
+    core_machine_display_snapshot *out_snapshot);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
