@@ -14,6 +14,7 @@
 #include "vm/machine/vfdd.h"
 #include "vm/machine/vfdc.h"
 #include "vm/machine/vhdd.h"
+#include "vm/machine/vdebug.h"
 #include "vm/profile/default_profile/firmware/vbios.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
 
@@ -34,6 +35,7 @@ typedef struct vm_composition_live_machine {
     t_fdd fdd_storage;
     t_fdc fdc_storage;
     t_hdd hdd_storage;
+    t_debug debug_storage;
     t_bios default_bios_storage;
     t_qdx default_qdx_storage;
     t_cpu *cpu;
@@ -52,6 +54,7 @@ typedef struct vm_composition_live_machine {
     t_fdd *fdd;
     t_fdc *fdc;
     t_hdd *hdd;
+    t_debug *debug;
     t_bios *default_bios;
     t_qdx *default_qdx;
 } vm_composition_live_machine;

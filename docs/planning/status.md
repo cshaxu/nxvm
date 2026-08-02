@@ -91,12 +91,16 @@ and buffering remain in BIOS RAM.
 M5 T42 S1 confirmed that default-profile disk firmware has no separate mutable
 state: it registers INT 13 handlers in the bound QDX table and accesses the
 existing media authorities through the core block interface.
+M5 T43 S1 moved VM debug breakpoint, trace, recording, and stop-callback state
+to the live machine's `debug_storage` object while retaining the existing
+debugger commands and target binding.
 
 ## Active Work
 
-M5 T43 S1 is active: map VM debug break/watch/trace/stop state before binding
-its sole instrumentation object to the live machine. Owner-observed FDD DOS-
-prompt acceptance covers the preceding authority tasks.
+M5 T44 S1 is the next active governance entry: full-PC authority closure is
+not started. It may begin only after review of T23-T43 evidence and the
+retained NXVM Console/debugger behavior. Owner-observed FDD DOS-prompt
+acceptance covers the preceding authority tasks.
 
 ## Completed
 
