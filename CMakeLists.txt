@@ -192,7 +192,7 @@ set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/block.c
     src/core/machine/display.c
     src/core/machine/keyboard_interface.c
-    src/core/machine/video_adapter.c
+    src/core/machine/vadp.c
     src/core/machine/port.c
     src/core/machine/memory.c
     src/core/machine/cpu.c
@@ -200,7 +200,7 @@ set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/pic.c
     src/core/machine/pit.c
     src/core/machine/dma.c
-    src/core/machine/keyboard_controller.c
+    src/core/machine/kbc.c
 )
 set(NXVM_CORE_PRODUCT_RUNTIME_SOURCES
     src/core/product/runtime/execution_context.c
@@ -572,6 +572,32 @@ function(add_nxvm_full_pc_artifact target suffix)
             "${CMAKE_BINARY_DIR}/output/${task_artifact_filename}")
 endfunction()
 
+function(add_nxvm_version_artifact target version)
+    string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9][0-9][0-9][0-9])$"
+        "nxvm_\\1_\\2_\\3.exe" task_artifact_filename "${version}")
+    if(task_artifact_filename STREQUAL version)
+        message(FATAL_ERROR "Invalid NXVM task artifact version: ${version}")
+    endif()
+
+    add_executable(${target} src/vm/main.c)
+    target_compile_definitions(${target} PRIVATE "NXVM_BUILD_SUFFIX=\"${version}\"")
+    target_include_directories(${target} PRIVATE
+        "${CMAKE_SOURCE_DIR}/src")
+    target_link_libraries(${target} PRIVATE
+        nxvm-vm-product
+        nxvm-vm-composition)
+
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/output"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:${target}>"
+            "${CMAKE_BINARY_DIR}/output/${task_artifact_filename}")
+endfunction()
+
 add_nxvm_full_pc_artifact(nxvm-m3-t5 "m3t5")
 add_nxvm_full_pc_artifact(nxvm-m5-t1 "m5t1")
 add_nxvm_full_pc_artifact(nxvm-m5-t2 "m5t2")
@@ -615,6 +641,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t44 "m5t44")
 add_nxvm_full_pc_artifact(nxvm-m5-t45 "m5t45")
 add_nxvm_full_pc_artifact(nxvm-m5-t46 "m5t46")
 add_nxvm_full_pc_artifact(nxvm-m5-t47 "m5t47")
+add_nxvm_version_artifact(nxvm-0-5-0048 "0.5.0048")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

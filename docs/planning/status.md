@@ -109,12 +109,15 @@ M5 T48 S1 reopened M5 for naming convergence: low-risk device/file renames,
 interface/provider naming cleanup, stale-document removal, and the
 `0.5.NNNN` task-version artifact rule are planned before further source moves.
 It is complete as a design subtask and produced no executable.
+M5 T48 S2 completed the first naming implementation task: shared core
+`keyboard_controller.*` is now `kbc.*`, shared core `video_adapter.*` is now
+`vadp.*`, and `build/output/nxvm_0_5_0048.exe` is the verified task artifact.
 
 ## Active Work
 
-M5 T48 S2 is active, not started: rename low-risk shared core device files
-`keyboard_controller.*` to `kbc.*` and `video_adapter.*` to `vadp.*`, then
-complete T48 by producing `build/output/nxvm_0_5_0048.exe` after verification.
+M5 T49 S1 is active, not started: rename VM-private `vcmos`, `vdebug`, `vfdd`,
+`vfdc`, `vhdd`, and `vhdc` file pairs to canonical owner names, then complete
+T49 by producing `build/output/nxvm_0_5_0049.exe` after verification.
 M6 T1 S1 is deferred and not active.
 
 ## Completed
@@ -519,11 +522,14 @@ M6 T1 S1 is deferred and not active.
 - M5 T48 S1 P1: froze the M5 naming-convergence task breakdown,
   stale-document cleanup, and `0.5.NNNN` task-version artifact rule.
   Design subtask; no executable artifact until T48 S2 completes T48.
+- M5 T48 S2 P1: renamed shared core KBC/VADP files and current-object
+  functions, preserved retained aliases and behavior, and built
+  `build/output/nxvm_0_5_0048.exe`.
 
 ## Next Eligible Work
 
-- M5 T48 S2 may begin. M6 design is deferred until M5 naming convergence
-  closes or the owner explicitly pauses M5.
+- M5 T49 may begin. M6 design is deferred until M5 naming convergence closes
+  or the owner explicitly pauses M5.
 
 ## Delivery State
 

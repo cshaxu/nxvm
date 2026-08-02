@@ -8,8 +8,8 @@
 #include "core/machine/pic.h"
 #include "core/machine/pit.h"
 #include "core/machine/dma.h"
-#include "core/machine/keyboard_controller.h"
-#include "core/machine/video_adapter.h"
+#include "core/machine/kbc.h"
+#include "core/machine/vadp.h"
 #include "vm/machine/vcmos.h"
 #include "vm/machine/vfdd.h"
 #include "vm/machine/vfdc.h"
@@ -29,8 +29,8 @@ typedef struct vm_composition_live_machine {
     t_latch dma_latch_storage;
     t_dma dma_primary_storage;
     t_dma dma_secondary_storage;
-    t_kbc keyboard_controller_storage;
-    t_vadp video_adapter_storage;
+    t_kbc kbc_storage;
+    t_vadp vadp_storage;
     t_cmos cmos_storage;
     t_fdd fdd_storage;
     t_fdc fdc_storage;
@@ -48,8 +48,8 @@ typedef struct vm_composition_live_machine {
     t_latch *dma_latch;
     t_dma *dma_primary;
     t_dma *dma_secondary;
-    t_kbc *keyboard_controller;
-    t_vadp *video_adapter;
+    t_kbc *kbc;
+    t_vadp *vadp;
     t_cmos *cmos;
     t_fdd *fdd;
     t_fdc *fdc;

@@ -5,12 +5,12 @@
 #include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
 #include "core/machine/dma.h"
-#include "core/machine/keyboard_controller.h"
+#include "core/machine/kbc.h"
 #include "core/machine/memory.h"
 #include "core/machine/pic.h"
 #include "core/machine/pit.h"
 #include "core/machine/port.h"
-#include "core/machine/video_adapter.h"
+#include "core/machine/vadp.h"
 #include "vm/composition_control.h"
 #include "vm/composition_live_machine.h"
 #include "vm/machine/vcmos.h"
@@ -32,8 +32,8 @@ static int has_single_live_authority(void)
         machine->pic_master == &vpic1 && machine->pic_slave == &vpic2 &&
         machine->pit == &vpit && machine->dma_latch == &vlatch &&
         machine->dma_primary == &vdma1 && machine->dma_secondary == &vdma2 &&
-        machine->keyboard_controller == &vkbc &&
-        machine->video_adapter == &vvadp && machine->cmos == &vcmos &&
+        machine->kbc == &vkbc &&
+        machine->vadp == &vvadp && machine->cmos == &vcmos &&
         machine->fdd == &vfdd && machine->fdc == &vfdc &&
         machine->hdd == &vhdd && machine->debug == &vdebug &&
         machine->default_bios == &vbios &&
