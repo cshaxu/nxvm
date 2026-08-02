@@ -58,9 +58,9 @@ nxvm_core_status nxvm_product_nxvm_session_create(
         nxvm_runtime_registry_freeze(&session->registry) != NXVM_CORE_STATUS_OK) {
         return NXVM_CORE_STATUS_FAULT;
     }
-    nxvm_firmware_initialize(&session->firmware);
+    core_machine_firmware_initialize(&session->firmware);
     if (nxvm_firmware_default_profile_compose(&session->firmware, &session->firmware_plan) !=
-            NXVM_CORE_STATUS_OK || nxvm_firmware_freeze(&session->firmware) !=
+            NXVM_CORE_STATUS_OK || core_machine_firmware_freeze(&session->firmware) !=
             NXVM_CORE_STATUS_OK || core_machine_create(&machine_config,
             &session->firmware_machine) != NXVM_CORE_STATUS_OK ||
         core_machine_reset(session->firmware_machine) != NXVM_CORE_STATUS_OK ||

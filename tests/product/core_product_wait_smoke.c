@@ -3,6 +3,7 @@
 
 #include "core/product/utils.h"
 #include "core/product/wait.h"
+#include "core/product/wait_provider.h"
 
 static uint32_t observed_milliseconds;
 

@@ -5,7 +5,7 @@
 #include "vm/composition_control.h"
 #include "vm/composition_live_machine.h"
 #include "core/product/debug/debug_target.h"
-#include "core/product/wait.h"
+#include "core/product/wait_provider.h"
 #include "core/platform/sleep.h"
 #include "vm/composition_debug.h"
 #include "vm/machine/debug.h"

@@ -1,4 +1,4 @@
-#include "core/machine/block_interface.h"
+#include "core/machine/block_provider.h"
 #include "vm/machine/hdd.h"
 
 static void vmBlockGeometry(void *context, core_machine_block_geometry *out_geometry)

@@ -5,7 +5,7 @@
 
 int main(void)
 {
-    nxvm_firmware firmware;
+    core_machine_firmware firmware;
     nxvm_firmware_default_profile_plan plan;
     core_machine *machine = NULL;
     core_machine_config config = {
@@ -14,16 +14,16 @@ int main(void)
     nxvm_firmware_default_profile_cmos cmos;
     uint8_t reset[5];
 
-    nxvm_firmware_initialize(&firmware);
+    core_machine_firmware_initialize(&firmware);
     if (nxvm_firmware_default_profile_compose(&firmware, &plan) != NXVM_CORE_STATUS_OK ||
         plan.reset_segment != 0xf000u || plan.reset_offset != 0xfff0u ||
         plan.service_count != 6u ||
-        strcmp(nxvm_firmware_service_at(&firmware, 2u)->id,
+        strcmp(core_machine_firmware_service_at(&firmware, 2u)->id,
                "bios.int10.video") != 0 ||
-        strcmp(nxvm_firmware_find_interrupt(&firmware, 0x13u)->id,
+        strcmp(core_machine_firmware_find_interrupt(&firmware, 0x13u)->id,
                "bios.int13.disk") != 0 ||
-        nxvm_firmware_find_interrupt(&firmware, 0x19u) != NULL ||
-        nxvm_firmware_freeze(&firmware) != NXVM_CORE_STATUS_OK ||
+        core_machine_firmware_find_interrupt(&firmware, 0x19u) != NULL ||
+        core_machine_firmware_freeze(&firmware) != NXVM_CORE_STATUS_OK ||
         core_machine_create(&config, &machine) != NXVM_CORE_STATUS_OK ||
         core_machine_reset(machine) != NXVM_CORE_STATUS_OK ||
         nxvm_firmware_default_profile_apply_image(machine, 1) != NXVM_CORE_STATUS_OK ||

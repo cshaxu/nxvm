@@ -1,4 +1,5 @@
 #include "core/machine/block_interface.h"
+#include "core/machine/block_provider.h"
 
 static void *coreBlockContext;
 static core_machine_block_geometry_provider coreMachineBlockGeometryProvider;
