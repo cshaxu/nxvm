@@ -23,6 +23,7 @@
 typedef struct vm_composition_live_machine {
     t_cpu cpu_storage;
     t_cpuins cpuins_storage;
+    core_machine_cpu_execution_context cpu_execution_storage;
     t_ram ram_storage;
     t_port port_storage;
     t_pic pic_master_storage;
@@ -43,6 +44,7 @@ typedef struct vm_composition_live_machine {
     core_product_debug_target *debug_target;
     t_cpu *cpu;
     t_cpuins *cpuins;
+    core_machine_cpu_execution_context *cpu_execution;
     t_ram *ram;
     t_port *port;
     t_pic *pic_master;

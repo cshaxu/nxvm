@@ -7,6 +7,9 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
     if (machine == NULL) return;
     machine->cpu = &machine->cpu_storage;
     machine->cpuins = &machine->cpuins_storage;
+    machine->cpu_execution = &machine->cpu_execution_storage;
+    core_machine_cpu_execution_context_initialize(machine->cpu_execution,
+        machine->cpu, machine->cpuins);
     machine->ram = &machine->ram_storage;
     machine->port = &machine->port_storage;
     machine->pic_master = &machine->pic_master_storage;
@@ -71,6 +74,7 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     if (machine == NULL) return;
     machine->cpu = NULL;
     machine->cpuins = NULL;
+    machine->cpu_execution = NULL;
     machine->ram = NULL;
     machine->port = NULL;
     machine->pic_master = NULL;
