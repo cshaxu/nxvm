@@ -48,7 +48,7 @@ artifact is produced when the runnable task completes.
 
 | Task | Purpose | Gate |
 | --- | --- | --- |
-| M5 T48 | Freeze the naming plan, then rename low-risk shared core device files: `keyboard_controller.*` to `kbc.*` and `video_adapter.*` to `vadp.*`. | GCC build, source-DAG, authority smokes, retained Console smoke, `nxvm_0_5_0048.exe`. |
+| M5 T48 | Freeze the naming plan, then rename low-risk shared core device files and current-object functions: `keyboard_controller.*` to `kbc.*` and `video_adapter.*` to `vadp.*`. | GCC build, source-DAG, authority smokes, retained Console smoke, `nxvm_0_5_0048.exe`. |
 | M5 T49 | Rename VM machine device files from legacy `v*` spellings to canonical owner names: `vcmos`, `vdebug`, `vfdd`, `vfdc`, `vhdd`, and `vhdc`. | Same behavior and lifecycle order; GCC, device authority smokes, retained Console smoke, `nxvm_0_5_0049.exe`. |
 | M5 T50 | Rename default-profile firmware files whose names still encode legacy VM implementation rather than profile role, beginning with `vbios.*` to `bios.*`; audit QD firmware names separately before changing them. | BIOS/POST/reset-vector and FDD/HDD gates pass, `nxvm_0_5_0050.exe`. |
 | M5 T51 | Split or rename remaining public/provider contracts where current files mix interface and injected callback ownership. | Header dependency scan and focused provider smokes pass, `nxvm_0_5_0051.exe` if runnable paths changed. |

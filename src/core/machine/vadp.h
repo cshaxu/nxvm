@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_CORE_VIDEO_ADAPTER_H
-#define NXVM_CORE_VIDEO_ADAPTER_H
+#ifndef NXVM_CORE_VADP_H
+#define NXVM_CORE_VADP_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,10 +23,10 @@ typedef struct {
     t_vadp_data data;
 } t_vadp;
 
-t_vadp *core_machine_video_adapter_current(void);
-void core_machine_video_adapter_bind_live(t_vadp *adapter);
-void core_machine_video_adapter_unbind_live(void);
-#define vvadp (*core_machine_video_adapter_current())
+t_vadp *core_machine_vadp_current(void);
+void core_machine_vadp_bind_live(t_vadp *adapter);
+void core_machine_vadp_unbind_live(void);
+#define vvadp (*core_machine_vadp_current())
 
 void vvadpInit();
 void vvadpReset();

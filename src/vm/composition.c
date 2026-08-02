@@ -21,8 +21,8 @@
 #include "vm/machine/vhdd.h"
 #include "vm/composition_block.h"
 #include "vm/composition_display.h"
-#include "core/machine/keyboard_controller.h"
-#include "core/machine/video_adapter.h"
+#include "core/machine/kbc.h"
+#include "core/machine/vadp.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
 
 #include "vm/composition.h"

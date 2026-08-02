@@ -37,14 +37,22 @@ int ntvdm64_version_format_nxvm_banner(char *buffer, size_t buffer_size,
     const char *build_suffix)
 {
     int written;
+    const int versioned_suffix = build_suffix != NULL &&
+        build_suffix[0] >= '0' && build_suffix[0] <= '9';
 
     if (buffer == NULL || buffer_size == 0 || build_suffix == NULL ||
         build_suffix[0] == '\0') {
         return 0;
     }
 
-    written = snprintf(buffer, buffer_size, "%s [%s.%s]\n%s",
-        ntvdm64_version_nxvm_name(), ntvdm64_version_nxvm_release(),
-        build_suffix, ntvdm64_version_nxvm_copyright());
+    if (versioned_suffix) {
+        written = snprintf(buffer, buffer_size, "%s [%s]\n%s",
+            ntvdm64_version_nxvm_name(), build_suffix,
+            ntvdm64_version_nxvm_copyright());
+    } else {
+        written = snprintf(buffer, buffer_size, "%s [%s.%s]\n%s",
+            ntvdm64_version_nxvm_name(), ntvdm64_version_nxvm_release(),
+            build_suffix, ntvdm64_version_nxvm_copyright());
+    }
     return written >= 0 && (size_t)written < buffer_size;
 }

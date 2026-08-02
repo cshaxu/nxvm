@@ -18,8 +18,8 @@ void vm_composition_live_machine_bind(void)
     vmCompositionLiveMachine.dma_latch = &vmCompositionLiveMachine.dma_latch_storage;
     vmCompositionLiveMachine.dma_primary = &vmCompositionLiveMachine.dma_primary_storage;
     vmCompositionLiveMachine.dma_secondary = &vmCompositionLiveMachine.dma_secondary_storage;
-    vmCompositionLiveMachine.keyboard_controller = &vmCompositionLiveMachine.keyboard_controller_storage;
-    vmCompositionLiveMachine.video_adapter = &vmCompositionLiveMachine.video_adapter_storage;
+    vmCompositionLiveMachine.kbc = &vmCompositionLiveMachine.kbc_storage;
+    vmCompositionLiveMachine.vadp = &vmCompositionLiveMachine.vadp_storage;
     vmCompositionLiveMachine.cmos = &vmCompositionLiveMachine.cmos_storage;
     vmCompositionLiveMachine.fdd = &vmCompositionLiveMachine.fdd_storage;
     vmCompositionLiveMachine.fdc = &vmCompositionLiveMachine.fdc_storage;
@@ -38,8 +38,8 @@ void vm_composition_live_machine_bind(void)
     core_machine_pit_bind_live(vmCompositionLiveMachine.pit);
     core_machine_dma_bind_live(vmCompositionLiveMachine.dma_latch,
         vmCompositionLiveMachine.dma_primary, vmCompositionLiveMachine.dma_secondary);
-    core_machine_keyboard_controller_bind_live(vmCompositionLiveMachine.keyboard_controller);
-    core_machine_video_adapter_bind_live(vmCompositionLiveMachine.video_adapter);
+    core_machine_kbc_bind_live(vmCompositionLiveMachine.kbc);
+    core_machine_vadp_bind_live(vmCompositionLiveMachine.vadp);
     vm_machine_cmos_bind_live(vmCompositionLiveMachine.cmos);
     vm_machine_fdd_bind_live(vmCompositionLiveMachine.fdd);
     vm_machine_fdc_bind_live(vmCompositionLiveMachine.fdc);
@@ -57,8 +57,8 @@ void vm_composition_live_machine_clear(void)
     core_machine_pic_unbind_live();
     core_machine_pit_unbind_live();
     core_machine_dma_unbind_live();
-    core_machine_keyboard_controller_unbind_live();
-    core_machine_video_adapter_unbind_live();
+    core_machine_kbc_unbind_live();
+    core_machine_vadp_unbind_live();
     vm_machine_cmos_unbind_live();
     vm_machine_fdd_unbind_live();
     vm_machine_fdc_unbind_live();
@@ -78,8 +78,8 @@ void vm_composition_live_machine_clear(void)
     vmCompositionLiveMachine.dma_latch = NULL;
     vmCompositionLiveMachine.dma_primary = NULL;
     vmCompositionLiveMachine.dma_secondary = NULL;
-    vmCompositionLiveMachine.keyboard_controller = NULL;
-    vmCompositionLiveMachine.video_adapter = NULL;
+    vmCompositionLiveMachine.kbc = NULL;
+    vmCompositionLiveMachine.vadp = NULL;
     vmCompositionLiveMachine.cmos = NULL;
     vmCompositionLiveMachine.fdd = NULL;
     vmCompositionLiveMachine.fdc = NULL;
