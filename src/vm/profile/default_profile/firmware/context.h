@@ -17,6 +17,7 @@ typedef struct vm_profile_default_context {
     t_vadp *vadp;
     core_machine_block_provider_slot *block_provider;
     core_machine_keyboard_provider_slot *keyboard_provider;
+    core_machine_cpu_execution_context *execution;
 } vm_profile_default_context;
 
 static inline void vm_profile_default_context_initialize(
@@ -31,6 +32,7 @@ static inline void vm_profile_default_context_initialize(
     context->vadp = vadp;
     context->block_provider = block_provider;
     context->keyboard_provider = keyboard_provider;
+    context->execution = NULL;
 }
 
 static inline vm_profile_default_context *

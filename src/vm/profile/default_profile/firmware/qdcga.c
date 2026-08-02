@@ -8,6 +8,7 @@
 #include "core/machine/vadp.h"
 #include "core/machine/cpu.h"
 
+#include "vm/profile/default_profile/firmware/context.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
 #include "qdcga.h"
 
@@ -351,8 +352,14 @@ static void INT_10() {
     }
 }
 
+static void vm_profile_default_cga_dispatch(vm_profile_default_context *profile)
+{
+    (void)profile;
+    INT_10();
+}
+
 void vm_profile_default_cga_initialize(t_qdx *qdx) {
-    if (qdx != NULL) qdx->table[0x10] = (t_faddrcc) INT_10; /* soft cga*/
+    if (qdx != NULL) qdx->table[0x10] = vm_profile_default_cga_dispatch;
 }
 void qdcgaReset() {
     /* 80 x 25 */

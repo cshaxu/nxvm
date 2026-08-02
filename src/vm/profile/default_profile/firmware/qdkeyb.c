@@ -7,6 +7,7 @@
 #include "core/machine/cpu.h"
 #include "core/machine/pic.h"
 
+#include "vm/profile/default_profile/firmware/context.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
 #include "qdkeyb.h"
 
@@ -111,10 +112,24 @@ static void INT_16() {
     }
 }
 
+static void vm_profile_default_keyboard_int_09(
+    vm_profile_default_context *profile)
+{
+    (void)profile;
+    INT_09();
+}
+
+static void vm_profile_default_keyboard_int_16(
+    vm_profile_default_context *profile)
+{
+    (void)profile;
+    INT_16();
+}
+
 void vm_profile_default_keyboard_initialize(t_qdx *qdx) {
     if (qdx == NULL) return;
-    qdx->table[0x09] = (t_faddrcc) INT_09; /* hard keyb */
-    qdx->table[0x16] = (t_faddrcc) INT_16; /* soft keyb */
+    qdx->table[0x09] = vm_profile_default_keyboard_int_09;
+    qdx->table[0x16] = vm_profile_default_keyboard_int_16;
 }
 
 int qdkeybGetFlag0CapsLock() {

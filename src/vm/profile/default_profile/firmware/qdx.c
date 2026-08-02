@@ -49,7 +49,9 @@ static void vm_profile_default_qdx_dispatch(
         core_machine_cpu_execution_request_reset(execution);
         break;
     default:
-        ExecFun(profile->qdx->table[command_id]);
+        if (profile->qdx->table[command_id] != NULL) {
+            profile->qdx->table[command_id](profile);
+        }
         if (command_id < 0x20) {
             if (core_machine_cpu_execution_read_linear(execution,
                     cpu->data.ss.base + cpu->data.sp + 4, GetRef(flags), 2)) {
@@ -79,7 +81,7 @@ void vm_profile_default_qdx_initialize(vm_profile_default_context *profile,
     if (profile == NULL || profile->qdx == NULL || execution == NULL ||
         execution->instructions == NULL) return;
     for (index = 0; index < 0x100; ++index) {
-        profile->qdx->table[index] = (t_faddrcc)NULL;
+        profile->qdx->table[index] = NULL;
     }
     vm_profile_default_keyboard_initialize(profile->qdx);
     vm_profile_default_cga_initialize(profile->qdx);

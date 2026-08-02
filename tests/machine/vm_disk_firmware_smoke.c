@@ -10,8 +10,8 @@ int main(void)
         (vm_composition_live_machine *)calloc(1u, sizeof(*session));
     if (session == NULL) return 1;
     machineInit(session);
-    if (session->default_qdx->table[0xa2] == (t_faddrcc)NULL ||
-        session->default_qdx->table[0xa3] == (t_faddrcc)NULL) {
+    if (session->default_qdx->table[0xa2] == NULL ||
+        session->default_qdx->table[0xa3] == NULL) {
         machineFinal(session);
         free(session);
         return 1;

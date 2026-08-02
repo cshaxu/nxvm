@@ -188,3 +188,13 @@ void core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
     physical %= ram->connect.size;
     MEMCPY((void *)(ram->connect.pBase + physical), (void *)in_data, size);
 }
+
+void *core_machine_memory_real_address(t_ram *ram, uint16_t segment,
+    uint16_t offset)
+{
+    if (ram == NULL || ram->connect.pBase == 0u || ram->connect.size == 0u) {
+        return NULL;
+    }
+    return (void *)(ram->connect.pBase +
+        ((((t_nubit32)segment << 4) + offset) % ram->connect.size));
+}
