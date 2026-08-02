@@ -443,6 +443,10 @@ add_executable(nxvm-vm-debug-pause-boundary-smoke
     tests/machine/vm_debug_pause_boundary_smoke.c)
 target_link_libraries(nxvm-vm-debug-pause-boundary-smoke PRIVATE
     nxvm-vm-composition)
+add_executable(nxvm-vm-unified-debug-backend-smoke
+    tests/machine/vm_unified_debug_backend_smoke.c)
+target_link_libraries(nxvm-vm-unified-debug-backend-smoke PRIVATE
+    nxvm-vm-composition)
 target_link_libraries(nxvm-vm-pit-authority-smoke PRIVATE nxvm-vm-composition)
 target_link_libraries(nxvm-vm-pic-authority-smoke PRIVATE
     nxvm-vm-composition
@@ -605,6 +609,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t42 "m5t42")
 add_nxvm_full_pc_artifact(nxvm-m5-t43 "m5t43")
 add_nxvm_full_pc_artifact(nxvm-m5-t44 "m5t44")
 add_nxvm_full_pc_artifact(nxvm-m5-t45 "m5t45")
+add_nxvm_full_pc_artifact(nxvm-m5-t46 "m5t46")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

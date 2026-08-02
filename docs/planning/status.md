@@ -27,16 +27,12 @@ M4 is complete. Firmware, profile/provider, CPU verification, and retained
 NXVM Console contracts now bound M5 implementation without changing runtime
 behavior.
 
-## M5 Status
+## M5 Closure
 
-M5 source-root and target-graph migration is complete, with the recorded GCC,
-source-DAG, core/VM/VDM smoke, retained Console/debugger, and local FDD/HDD
-fixture evidence intact. M5 is reopened for legacy implementation convergence:
-delete the `device.h` aggregate, converge the retained executor to one
-core-machine CPU/RAM/port authority, and move reusable Win32/Linux host
-providers to `core/platform`. The detailed scope and gates are in
-`m5-legacy-convergence.md`. The historical `snapshot/m5-nxvm-28fb4b1` remains
-a checkpoint, not the eventual M5 closure snapshot.
+M5 is complete. The retained NXVM full PC has one composition-owned machine
+authority, no legacy full-PC storage definitions, an acknowledged debugger
+pause boundary, and one product-neutral debugger backend. GCC, source-DAG,
+live-authority, retained Console/debugger, and FDD/HDD fixture gates passed.
 
 ## M5 Continuity
 
@@ -100,11 +96,14 @@ rejects remaining legacy full-PC storage definitions.
 M5 T45 S1 added an acknowledged execution-boundary pause protocol. Explicit,
 breakpoint, trace, and step pauses now retain the one live loop until continue
 or stop, without launching a second VM thread.
+M5 T46 S1 extended the product-neutral debug target with pause state, reason,
+request, continue, and step operations, and proved that its VM adapter reaches
+the one live full-PC authority.
 
 ## Active Work
 
-M5 T46 S1 is active: expose the converged live-machine debugger through one
-product-neutral backend and route the retained debugger UI through it.
+M6 T1 S1 is active, not started: prepare the bounded owned-DOS module design
+inputs and task breakdown. No DOS implementation is authorized by this entry.
 
 ## Completed
 

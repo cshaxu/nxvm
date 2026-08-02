@@ -5,6 +5,11 @@
 
 int core_product_debug_is_running(void);
 void core_product_debug_resume(void);
+int core_product_debug_is_paused(void);
+core_product_debug_pause_reason core_product_debug_get_pause_reason(void);
+int core_product_debug_request_pause(core_product_debug_pause_reason reason);
+void core_product_debug_continue(void);
+int core_product_debug_step(void);
 int core_product_debug_read_register(core_product_debug_register reg, uint32_t *value);
 int core_product_debug_write_register(core_product_debug_register reg, uint32_t value);
 int core_product_debug_get_code_default_size(void);
