@@ -166,11 +166,19 @@ alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M5 T68 S1 is active: migrate core-device mutable authority and port callback
-binding to explicit composition-owned references. M6 T1 remains deferred and
-DOS implementation remains ineligible.
+M5 T69 S1 is active: migrate shared core registries and provider bindings to
+explicit composition-owned references. M6 T1 remains deferred and DOS
+implementation remains ineligible.
 
 ## Completed
+
+- M5 T68 S1: made core PIC/PIT/DMA/KBC/VADP lifecycle and core execution
+  edges explicit. Port and PIT-output providers retain their owner references;
+  the CPU carries its live PIC pair; no core-device runtime path selects
+  mutable state implicitly. VM-device/profile/diagnostic compatibility callers
+  remain assigned to T70--T72 and final aliases to T73. Focused authority,
+  CPU-probe, and FDD/HDD full-PC profile gates passed; `0.5.0068` is built
+  separately.
 
 - M5 T67 S1: made CPU and debugger RAM/port access explicit, added direct
   RAM/port lifecycle and bus operations, and proved two RAM/port contexts do
