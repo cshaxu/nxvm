@@ -7,6 +7,9 @@
 #include "core/machine/memory.h"
 #include "vm/machine/vdebug.h"
 #include "vm/machine/device.h"
+#include "vm/machine/vfdd.h"
+#include "vm/machine/vhdd.h"
+#include "vm/profile/default_profile/firmware/vbios.h"
 #include "vm/platform/vm_request_transport.h"
 #include "vm/platform/win32/win32.h"
 #include "core/product/debug/debug.h"
@@ -67,9 +70,9 @@ nxvm_core_status nxvm_full_pc_create(
         nxvm_vm_request_transport_observe_execution_boundary,
         &nxvm_full_pc_transport);
     if ((config->fdd_image != NULL &&
-         deviceConnectFloppyInsert(config->fdd_image)) ||
+         vm_machine_fdd_insert(config->fdd_image)) ||
         (config->hdd_image != NULL &&
-         deviceConnectHardDiskInsert(config->hdd_image))) {
+         vm_machine_hdd_insert(config->hdd_image))) {
         win32KeyboardBindStateSink(NULL, NULL);
         vm_composition_control_bind_command_boundary(NULL, NULL);
         nxvm_vm_request_transport_close(&nxvm_full_pc_transport);
@@ -77,12 +80,12 @@ nxvm_core_status nxvm_full_pc_create(
         machineFinal();
         return NXVM_CORE_STATUS_FAULT;
     }
-    if (config->create_fdd) deviceConnectFloppyCreate();
+    if (config->create_fdd) vm_machine_fdd_create();
     if (config->create_hdd_cylinders != 0u) {
-        deviceConnectHardDiskCreate(config->create_hdd_cylinders);
+        vm_machine_hdd_create(config->create_hdd_cylinders);
     }
 
-    deviceConnectBiosSetBoot(config->boot_hdd != 0);
+    vm_profile_default_bios_set_boot_hdd(config->boot_hdd != 0);
     vm_composition_control_reset();
     nxvm_full_pc_active = 1;
     return NXVM_CORE_STATUS_OK;
@@ -165,7 +168,7 @@ nxvm_core_status nxvm_full_pc_remove_fdd(const char *path)
     if (!nxvm_full_pc_active || vm_composition_control_is_running()) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
-    return deviceConnectFloppyRemove(path) ? NXVM_CORE_STATUS_FAULT : NXVM_CORE_STATUS_OK;
+    return vm_machine_fdd_remove(path) ? NXVM_CORE_STATUS_FAULT : NXVM_CORE_STATUS_OK;
 }
 
 nxvm_core_status nxvm_full_pc_disconnect_hdd(const char *path)
@@ -173,7 +176,7 @@ nxvm_core_status nxvm_full_pc_disconnect_hdd(const char *path)
     if (!nxvm_full_pc_active || vm_composition_control_is_running()) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
-    return deviceConnectHardDiskRemove(path) ? NXVM_CORE_STATUS_FAULT : NXVM_CORE_STATUS_OK;
+    return vm_machine_hdd_remove(path) ? NXVM_CORE_STATUS_FAULT : NXVM_CORE_STATUS_OK;
 }
 
 nxvm_core_status nxvm_full_pc_record_start(const char *path)

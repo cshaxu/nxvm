@@ -11,10 +11,6 @@ extern "C" {
 
 /* Connection Functions Invoked By Other Modules */
 
-/* Bios Settings */
-void deviceConnectBiosSetBoot(int flagHdd);
-int deviceConnectBiosGetBoot();
-
 /* CPU Operations */
 int deviceConnectCpuReadLinear(uint32_t linear, void *rdest, uint8_t size);
 int deviceConnectCpuWriteLinear(uint32_t linear, void *rsrc, uint8_t size);
@@ -162,15 +158,6 @@ void deviceConnectPortWrite(uint16_t portId);
 uint32_t deviceConnectPortGetValue();
 void deviceConnectPortSetValue(uint32_t value);
 
-/* Disk Drive Operations */
-void deviceConnectFloppyCreate();
-int deviceConnectFloppyInsert(const char *fileName);
-int deviceConnectFloppyRemove(const char *fileName);
-
-void deviceConnectHardDiskCreate(uint16_t ncyl);
-int deviceConnectHardDiskInsert(const char *fileName);
-int deviceConnectHardDiskRemove(const char *fileName);
-
 /* Keyboard Operations */
 void deviceConnectKeyboardClrFlag0();
 void deviceConnectKeyboardClrFlag1();
@@ -244,7 +231,6 @@ void devicePrintPit();
 void devicePrintDma();
 void devicePrintFdc();
 void devicePrintFdd();
-void devicePrintBios();
 void devicePrintMachine();
 #ifdef __cplusplus
 }/*_EOCD_*/

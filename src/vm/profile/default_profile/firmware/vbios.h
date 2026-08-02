@@ -153,6 +153,9 @@ void vbiosInit();
 void vbiosReset();
 void vbiosRefresh();
 void vbiosFinal();
+void vm_profile_default_bios_print(void);
+void vm_profile_default_bios_set_boot_hdd(int enabled);
+int vm_profile_default_bios_get_boot_hdd(void);
 
 #define VBIOS_POST_BOOT "             \
 $(label_post_boot_start):           \n\
