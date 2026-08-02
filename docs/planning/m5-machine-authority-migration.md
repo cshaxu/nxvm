@@ -146,7 +146,7 @@ The carrier contains only direct pointers to `vcpu`, `vcpuins`, `vram`, and
 or debugger logic. Its focused smoke proves pointer identity and unbound-after-
 finalization behavior. Windows GCC, dependency DAG, expected-`#UD` CPU stop,
 FDD/HDD reset-vector, and retained Console `HELP`/`EXIT` gates passed. The
-task artifact is `build/nxvm-m5-t23.exe`.
+task artifact is `build/output/nxvm-m5_t23.exe`.
 
 ## Stop Conditions
 
