@@ -8,6 +8,7 @@
 #include "core/machine/pic.h"
 #include "core/machine/pit.h"
 #include "core/machine/dma.h"
+#include "core/machine/keyboard_controller.h"
 
 typedef struct vm_composition_live_machine {
     t_cpu cpu_storage;
@@ -20,6 +21,7 @@ typedef struct vm_composition_live_machine {
     t_latch dma_latch_storage;
     t_dma dma_primary_storage;
     t_dma dma_secondary_storage;
+    t_kbc keyboard_controller_storage;
     t_cpu *cpu;
     t_cpuins *cpuins;
     t_ram *ram;
@@ -30,6 +32,7 @@ typedef struct vm_composition_live_machine {
     t_latch *dma_latch;
     t_dma *dma_primary;
     t_dma *dma_secondary;
+    t_kbc *keyboard_controller;
 } vm_composition_live_machine;
 
 void vm_composition_live_machine_bind(void);
