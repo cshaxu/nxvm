@@ -9,10 +9,10 @@ extern "C" {
 
 #include "vm/composition_live_machine.h"
 
-void machineStart();
-void machineReset();
-void machineStop();
-void machineResume();
+void machineStart(vm_composition_live_machine *machine);
+void machineReset(vm_composition_live_machine *machine);
+void machineStop(vm_composition_live_machine *machine);
+void machineResume(vm_composition_live_machine *machine);
 
 void machineInit(vm_composition_live_machine *machine);
 void machineFinal(vm_composition_live_machine *machine);

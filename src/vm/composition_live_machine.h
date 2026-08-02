@@ -17,6 +17,8 @@
 #include "vm/machine/debug.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
+#include "vm/composition_control.h"
+#include "core/product/debug/debug_target.h"
 
 typedef struct vm_composition_live_machine {
     t_cpu cpu_storage;
@@ -38,6 +40,8 @@ typedef struct vm_composition_live_machine {
     t_debug debug_storage;
     t_bios default_bios_storage;
     t_qdx default_qdx_storage;
+    vm_composition_control_state control_storage;
+    core_product_debug_target debug_target;
     t_cpu *cpu;
     t_cpuins *cpuins;
     t_ram *ram;
@@ -57,6 +61,7 @@ typedef struct vm_composition_live_machine {
     t_debug *debug;
     t_bios *default_bios;
     t_qdx *default_qdx;
+    vm_composition_control_state *control;
 } vm_composition_live_machine;
 
 void vm_composition_live_machine_initialize(vm_composition_live_machine *machine);

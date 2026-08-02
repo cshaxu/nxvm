@@ -8,13 +8,12 @@
 #include "core/machine/cpu.h"
 #include "vm/machine/debug.h"
 
-static int vm_debug_running(void *context) { (void)context; return vm_composition_control_is_running(); }
-static void vm_debug_resume(void *context) { (void)context; machineResume(); }
-static int vm_debug_paused(void *context) { (void)context; return vm_composition_control_is_paused(); }
+static int vm_debug_running(void *context) { return vm_composition_control_is_running(((vm_composition_live_machine *)context)->control); }
+static void vm_debug_resume(void *context) { machineResume((vm_composition_live_machine *)context); }
+static int vm_debug_paused(void *context) { return vm_composition_control_is_paused(((vm_composition_live_machine *)context)->control); }
 static core_product_debug_pause_reason vm_debug_pause_reason(void *context)
 {
-    (void)context;
-    switch (vm_composition_control_get_pause_reason()) {
+    switch (vm_composition_control_get_pause_reason(((vm_composition_live_machine *)context)->control)) {
     case VM_COMPOSITION_PAUSE_EXPLICIT: return CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT;
     case VM_COMPOSITION_PAUSE_BREAKPOINT: return CORE_PRODUCT_DEBUG_PAUSE_BREAKPOINT;
     case VM_COMPOSITION_PAUSE_TRACE: return CORE_PRODUCT_DEBUG_PAUSE_TRACE;
@@ -25,17 +24,16 @@ static core_product_debug_pause_reason vm_debug_pause_reason(void *context)
 static int vm_debug_request_pause(void *context, core_product_debug_pause_reason reason)
 {
     vm_composition_pause_reason mapped = VM_COMPOSITION_PAUSE_EXPLICIT;
-    (void)context;
     if (reason == CORE_PRODUCT_DEBUG_PAUSE_BREAKPOINT) mapped = VM_COMPOSITION_PAUSE_BREAKPOINT;
     else if (reason == CORE_PRODUCT_DEBUG_PAUSE_TRACE) mapped = VM_COMPOSITION_PAUSE_TRACE;
     else if (reason == CORE_PRODUCT_DEBUG_PAUSE_STEP) mapped = VM_COMPOSITION_PAUSE_STEP;
-    vm_composition_control_request_pause(mapped);
+    vm_composition_control_request_pause(((vm_composition_live_machine *)context)->control, mapped);
     return 0;
 }
 static void vm_debug_continue(void *context)
-{ (void)context; vm_composition_control_continue(); }
+{ vm_composition_control_continue(((vm_composition_live_machine *)context)->control); }
 static int vm_debug_step(void *context)
-{ (void)context; return vm_composition_control_step() ? 0 : 1; }
+{ return vm_composition_control_step(((vm_composition_live_machine *)context)->control) ? 0 : 1; }
 
 static int vm_debug_read_register(void *context, core_product_debug_register reg,
                                   uint32_t *value)
@@ -135,7 +133,7 @@ static void vm_debug_print_memory(void *context)
 static void vm_debug_print_watchpoints(void *context)
 { (void)context; core_machine_cpu_print_watchpoints(); }
 
-static const core_product_debug_target vmDebugTarget = {
+static const core_product_debug_target vmDebugTargetTemplate = {
     .is_running = vm_debug_running,
     .resume = vm_debug_resume,
     .is_paused = vm_debug_paused,
@@ -169,7 +167,11 @@ static const core_product_debug_target vmDebugTarget = {
     .context = NULL
 };
 
-const core_product_debug_target *vm_composition_debug_target(void)
+const core_product_debug_target *vm_composition_debug_target(
+    vm_composition_live_machine *machine)
 {
-    return &vmDebugTarget;
+    if (machine == NULL) return NULL;
+    machine->debug_target = vmDebugTargetTemplate;
+    machine->debug_target.context = machine;
+    return &machine->debug_target;
 }

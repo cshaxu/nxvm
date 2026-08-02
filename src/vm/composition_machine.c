@@ -60,8 +60,7 @@ static void vm_composition_keyboard_receive_key_press(void *context, uint16_t co
 
 static void vm_composition_keyboard_request_stop(void *context)
 {
-    (void)context;
-    vm_composition_control_stop();
+    vm_composition_control_stop(((vm_composition_live_machine *)context)->control);
 }
 
 static const vm_platform_keyboard_sink vm_composition_keyboard_sink = {
@@ -73,26 +72,24 @@ static const vm_platform_keyboard_sink vm_composition_keyboard_sink = {
 
 static int vm_composition_execution_is_running(void *context)
 {
-    (void)context;
-    return vm_composition_control_is_running();
+    return vm_composition_control_is_running(
+        ((vm_composition_live_machine *)context)->control);
 }
 
 static int vm_composition_execution_get_flip(void *context)
 {
-    (void)context;
-    return vm_composition_control_get_flip();
+    return vm_composition_control_get_flip(
+        ((vm_composition_live_machine *)context)->control);
 }
 
 static void vm_composition_execution_start(void *context)
 {
-    (void)context;
-    vm_composition_control_start();
+    vm_composition_control_start(((vm_composition_live_machine *)context)->control);
 }
 
 static void vm_composition_execution_stop(void *context)
 {
-    (void)context;
-    vm_composition_control_stop();
+    vm_composition_control_stop(((vm_composition_live_machine *)context)->control);
 }
 
 static const vm_platform_execution_sink vm_composition_execution_sink = {
@@ -105,29 +102,32 @@ static const vm_platform_execution_sink vm_composition_execution_sink = {
 static void vm_composition_debug_request_pause(void *context,
     vm_machine_debug_pause_reason reason)
 {
-    (void)context;
     vm_composition_control_request_pause(
+        ((vm_composition_live_machine *)context)->control,
         reason == VM_MACHINE_DEBUG_PAUSE_TRACE ?
         VM_COMPOSITION_PAUSE_TRACE : VM_COMPOSITION_PAUSE_BREAKPOINT);
 }
 
-void machineStart() {
-    machineReset();
-    machineResume();
+void machineStart(vm_composition_live_machine *machine) {
+    machineReset(machine);
+    machineResume(machine);
 }
 
-void machineReset() {
-    vm_composition_control_reset();
-    if (!vm_composition_control_is_running()) vm_composition_publish_display(1);
+void machineReset(vm_composition_live_machine *machine) {
+    if (machine == NULL) return;
+    vm_composition_control_reset(machine->control);
+    if (!vm_composition_control_is_running(machine->control)) vm_composition_publish_display(1);
 }
 
-void machineStop() {
-    vm_composition_control_stop();
+void machineStop(vm_composition_live_machine *machine) {
+    if (machine == NULL) return;
+    vm_composition_control_stop(machine->control);
 }
 
-void machineResume() {
-    if (vm_composition_control_is_paused()) {
-        vm_composition_control_continue();
+void machineResume(vm_composition_live_machine *machine) {
+    if (machine == NULL) return;
+    if (vm_composition_control_is_paused(machine->control)) {
+        vm_composition_control_continue(machine->control);
     } else {
         platformStart();
     }
@@ -139,19 +139,19 @@ void machineInit(vm_composition_live_machine *machine) {
     core_product_wait_bind(vm_composition_wait, NULL);
     vm_composition_live_machine_initialize(machine);
     vm_composition_live_machine_bind_legacy(machine);
-    vm_composition_control_initialize(machine);
+    vm_composition_control_initialize(machine->control, machine);
     core_machine_keyboard_bind(NULL, vm_profile_default_keyboard_provider());
     core_machine_display_bind_snapshot_provider(NULL,
         vm_profile_default_display_capture);
     vm_machine_debug_bind_pause(vm_composition_debug_request_pause, NULL);
-    core_product_debug_bind_target(vm_composition_debug_target());
-    vm_platform_keyboard_bind(&vm_composition_keyboard_sink, NULL);
-    vm_platform_execution_bind(&vm_composition_execution_sink, NULL);
+    core_product_debug_bind_target(vm_composition_debug_target(machine));
+    vm_platform_keyboard_bind(&vm_composition_keyboard_sink, machine);
+    vm_platform_execution_bind(&vm_composition_execution_sink, machine);
 }
 
 void machineFinal(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
-    vm_composition_control_finalize(machine);
+    vm_composition_control_finalize(machine->control, machine);
     core_machine_keyboard_bind(NULL, NULL);
     core_machine_display_bind_snapshot_provider(NULL, NULL);
     vm_machine_debug_bind_pause(NULL, NULL);
