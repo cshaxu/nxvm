@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "core/machine/vglobal.h"
+#include "core/machine/port.h"
 
 #define NXVM_DEVICE_PIC "Intel 8259A"
 
@@ -122,6 +123,7 @@ void vpicInit();
 void vpicReset();
 void vpicRefresh();
 void vpicFinal();
+void core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port);
 
 #define VPIC_POST "           \
 ; init vpic1                \n\
