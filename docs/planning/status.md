@@ -65,12 +65,14 @@ carrier owns their one full-PC storage instance. The legacy spellings are
 direct aliases only; no global CPU/decoder storage remains.
 M5 T32 S1 completed the explicit core-machine interface/provider naming
 boundary without changing retained machine or Console behavior.
+M5 T33 S1 moved CMOS/RTC to the live-machine-owned `cmos_storage` object while
+retaining its lifecycle and port-registration order.
 
 ## Active Work
 
-M5 T33 S1 is active: map the VM-only CMOS/RTC authority before a same-object
+M5 T34 S1 is active: map the VM-only FDD media authority before a same-object
 live-machine binding change. Owner-observed FDD DOS-prompt acceptance covers
-T25 through T31.
+the preceding authority tasks.
 
 ## Completed
 
@@ -290,6 +292,9 @@ T25 through T31.
   remains historical automation-boundary evidence only.
 - M5 T32 S1 P1: completed explicit core-machine interface and provider naming
   without machine, callback-order, Console, or debugger behavior changes.
+- M5 T33 S1 P1: moved the VM-only CMOS/RTC provider state into the live
+  machine with direct alias access; GCC, authority, FDD/HDD profile, debugger,
+  Console, and DAG gates passed.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware

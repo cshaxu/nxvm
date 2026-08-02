@@ -24,7 +24,12 @@ typedef struct {
     t_cmos_connect connect;
 } t_cmos;
 
-extern t_cmos vcmos;
+t_cmos *vm_machine_cmos_current(void);
+void vm_machine_cmos_bind_live(t_cmos *cmos);
+void vm_machine_cmos_unbind_live(void);
+
+/* Transitional direct alias to the one composition-owned CMOS object. */
+#define vcmos (*vm_machine_cmos_current())
 
 #define VCMOS_RTC_SECOND       0x00
 #define VCMOS_RTC_SECOND_ALARM 0x01
