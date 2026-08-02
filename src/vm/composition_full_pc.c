@@ -199,13 +199,14 @@ nxvm_core_status nxvm_full_pc_record_start(nxvm_full_pc *full_pc, const char *pa
     if (full_pc == NULL || !full_pc->active || path == NULL || path[0] == '\0') {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
-    vm_machine_debug_record_start(path);
+    vm_machine_debug_record_start(full_pc->machine.debug, path);
     return NXVM_CORE_STATUS_OK;
 }
 
 void nxvm_full_pc_record_stop(nxvm_full_pc *full_pc)
 {
-    if (full_pc != NULL && full_pc->active) vm_machine_debug_record_stop();
+    if (full_pc != NULL && full_pc->active)
+        vm_machine_debug_record_stop(full_pc->machine.debug);
 }
 
 void nxvm_full_pc_request_stop(nxvm_full_pc *full_pc)

@@ -119,17 +119,17 @@ static uint32_t vm_debug_read_port(void *context, uint16_t port)
 static void vm_debug_write_port(void *context, uint16_t port, uint32_t value)
 { vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_port_write(machine->port, port, value); }
 static void vm_debug_set_break_real(void *context, uint16_t seg, uint16_t off)
-{ (void)context; vm_machine_debug_set_breakpoint_real(seg, off); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) vm_machine_debug_set_breakpoint_real(machine->debug, seg, off); }
 static void vm_debug_set_break_linear(void *context, uint32_t address)
-{ (void)context; vm_machine_debug_set_breakpoint_linear(address); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) vm_machine_debug_set_breakpoint_linear(machine->debug, address); }
 static void vm_debug_clear_break(void *context, int linear)
-{ (void)context; if (linear) vm_machine_debug_clear_breakpoint_linear(); else vm_machine_debug_clear_breakpoint_real(); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine == NULL) return; if (linear) vm_machine_debug_clear_breakpoint_linear(machine->debug); else vm_machine_debug_clear_breakpoint_real(machine->debug); }
 static void vm_debug_set_trace(void *context, size_t count)
-{ (void)context; vm_machine_debug_set_trace(count); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) vm_machine_debug_set_trace(machine->debug, count); }
 static void vm_debug_clear_trace(void *context)
-{ (void)context; vm_machine_debug_clear_trace(); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) vm_machine_debug_clear_trace(machine->debug); }
 static size_t vm_debug_break_count(void *context)
-{ (void)context; return vm_machine_debug_get_breakpoint_count(); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; return machine == NULL ? 0u : vm_machine_debug_get_breakpoint_count(machine->debug); }
 static void vm_debug_set_watch(void *context, core_product_debug_watch_kind kind, uint32_t address)
 {
     vm_composition_live_machine *machine = (vm_composition_live_machine *)context;

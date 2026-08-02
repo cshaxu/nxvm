@@ -41,8 +41,8 @@ static void vm_composition_console_debug(void *context)
     }
     debugMain();
 }
-static void vm_composition_console_record_start(void *context, const char *path) { (void)context; vm_machine_debug_record_start(path); }
-static void vm_composition_console_record_stop(void *context) { (void)context; vm_machine_debug_record_stop(); }
+static void vm_composition_console_record_start(void *context, const char *path) { vm_machine_debug_record_start(((vm_composition_live_machine *)context)->debug, path); }
+static void vm_composition_console_record_stop(void *context) { vm_machine_debug_record_stop(((vm_composition_live_machine *)context)->debug); }
 static void vm_composition_console_set_boot_hdd(void *context, int enabled) { (void)context; vm_profile_default_bios_set_boot_hdd(enabled); }
 static void vm_composition_console_set_memory(void *context, size_t bytes) { (void)context; core_machine_memory_allocate(bytes); }
 static void vm_composition_console_create_fdd(void *context) { vm_machine_fdd_create_for(((vm_composition_live_machine *)context)->fdd); }

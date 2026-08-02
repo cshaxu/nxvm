@@ -33,7 +33,8 @@ static int has_single_live_authority(const vm_composition_live_machine *machine)
         machine->vadp == &vvadp && machine->cmos == &machine->cmos_storage &&
         machine->fdd == &machine->fdd_storage &&
         machine->fdc == &machine->fdc_storage &&
-        machine->hdd == &machine->hdd_storage && machine->debug == &vdebug &&
+        machine->hdd == &machine->hdd_storage &&
+        machine->debug == &machine->debug_storage &&
         machine->default_bios == &vbios &&
         machine->default_qdx->table == qdxTable &&
         machine->control != NULL &&
@@ -90,7 +91,6 @@ int main(int argc, char **argv)
     vm_composition_control_finalize(session.control, &session);
     vm_composition_live_machine_finalize(&session);
     if (core_machine_cpu_current() != NULL ||
-        vm_machine_debug_current() != NULL ||
         vm_profile_default_bios_current() != NULL ||
         vm_profile_default_qdx_current() != NULL) return 1;
     puts("M5:T44:S1:FULL-AUTHORITY-CLOSURE:OK");
