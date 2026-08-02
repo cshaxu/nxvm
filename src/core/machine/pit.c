@@ -7,9 +7,13 @@
 #include "core/machine/pic.h"
 
 #include "core/machine/port.h"
-#include "core/machine/vpit.h"
+#include "core/machine/pit.h"
 
-t_pit vpit;
+static t_pit *coreMachinePit;
+
+t_pit *core_machine_pit_current(void) { return coreMachinePit; }
+void core_machine_pit_bind_live(t_pit *pit) { coreMachinePit = pit; }
+void core_machine_pit_unbind_live(void) { coreMachinePit = NULL; }
 
 /* Initializes counter when status is ready */
 static void LoadInit(t_nubit8 id) {

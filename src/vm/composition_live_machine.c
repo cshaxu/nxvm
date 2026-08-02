@@ -14,12 +14,14 @@ void vm_composition_live_machine_bind(void)
         &vmCompositionLiveMachine.pic_master_storage;
     vmCompositionLiveMachine.pic_slave =
         &vmCompositionLiveMachine.pic_slave_storage;
+    vmCompositionLiveMachine.pit = &vmCompositionLiveMachine.pit_storage;
     core_machine_cpu_bind_live(vmCompositionLiveMachine.cpu);
     core_machine_cpu_instructions_bind_live(vmCompositionLiveMachine.cpuins);
     core_machine_memory_bind_live(vmCompositionLiveMachine.ram);
     core_machine_port_bind_live(vmCompositionLiveMachine.port);
     core_machine_pic_bind_live(vmCompositionLiveMachine.pic_master,
         vmCompositionLiveMachine.pic_slave);
+    core_machine_pit_bind_live(vmCompositionLiveMachine.pit);
     vmCompositionLiveMachineBound = 1;
 }
 
@@ -28,6 +30,7 @@ void vm_composition_live_machine_clear(void)
     core_machine_memory_unbind_live();
     core_machine_port_unbind_live();
     core_machine_pic_unbind_live();
+    core_machine_pit_unbind_live();
     core_machine_cpu_instructions_unbind_live();
     core_machine_cpu_unbind_live();
     vmCompositionLiveMachine.cpu = NULL;
@@ -36,6 +39,7 @@ void vm_composition_live_machine_clear(void)
     vmCompositionLiveMachine.port = NULL;
     vmCompositionLiveMachine.pic_master = NULL;
     vmCompositionLiveMachine.pic_slave = NULL;
+    vmCompositionLiveMachine.pit = NULL;
     vmCompositionLiveMachineBound = 0;
 }
 

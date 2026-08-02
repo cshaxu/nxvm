@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_VPIT_H
-#define NXVM_VPIT_H
+#ifndef NXVM_CORE_PIT_H
+#define NXVM_CORE_PIT_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,7 +42,12 @@ typedef struct {
     t_pit_connect connect;
 } t_pit;
 
-extern t_pit vpit;
+t_pit *core_machine_pit_current(void);
+void core_machine_pit_bind_live(t_pit *pit);
+void core_machine_pit_unbind_live(void);
+
+/* Transitional direct alias to the composition-owned PIT object. */
+#define vpit (*core_machine_pit_current())
 
 /*
  * Ctrl Word: SC1 | SC0 | RW1   | RW0    | M2   | M1   | M0   | BCD

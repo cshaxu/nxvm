@@ -11,7 +11,7 @@
 #include "core/machine/memory.h"
 #include "core/machine/cpu.h"
 #include "vm/profile/default_profile/firmware/vbios.h"
-#include "core/machine/vpit.h"
+#include "core/machine/pit.h"
 #include "core/machine/vdma.h"
 #include "core/machine/pic.h"
 #include "vm/machine/vcmos.h"
