@@ -32,6 +32,10 @@ void vvadpInit();
 void vvadpReset();
 void vvadpRefresh();
 void vvadpFinal();
+void core_machine_vadp_initialize(t_vadp *adapter);
+void core_machine_vadp_reset(t_vadp *adapter);
+void core_machine_vadp_refresh(t_vadp *adapter);
+void core_machine_vadp_finalize(t_vadp *adapter);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
