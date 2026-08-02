@@ -112,6 +112,10 @@ No ntvdm64 DOS runner behavior is required. The reopened closure plans are
 `planning/m5-legacy-convergence.md` and
 `planning/m5-naming-convergence.md`.
 
+M5 T64 reopens bounded design work for explicit session ownership and
+context-passing. It must produce the next bounded authority-migration plan
+before M6 may begin; it does not authorize a multi-session product feature.
+
 **Compatibility gate:** M5 must not alter NXVM functionality or user experience.
 Any unavoidable user-visible change requires explicit owner approval before
 implementation and a recorded before/after acceptance plan.

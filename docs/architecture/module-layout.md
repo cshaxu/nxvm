@@ -39,6 +39,11 @@ they become real multi-file subsystems.
 `ntvdm64.exe` entry point and must remain thin when introduced; until then,
 VDM code is limited to design and smoke-test composition.
 
+The concrete rules for distinguishing a private implementation, an exposed
+interface, an injected provider, and a session-owned registry are defined in
+[Core Machine Instance Design](core-machine-instance-design.md). That document
+also owns the forward migration away from selected-session globals.
+
 ## Foundation Units
 
 `src/type.h` is the sole common type header and legacy diagnostic foundation.
@@ -74,6 +79,11 @@ Public contracts are explicit rather than inferred from include paths.
 - The owning machine contract fixes callback order, failure handling, and
   lifetime. A profile, platform, or product may supply a provider but may not
   alter those rules.
+
+Where a capability has multiple selectable services or providers, its
+`*_registry_interface.h` owns registration, conflict handling, lookup, and
+freeze. It is separate from the provider contract; a descriptor alone is not a
+provider.
 
 `*_interface.h` marks an internal repository dependency contract, not a
 versioned SDK or ABI promise. Legacy compatibility aliases are temporary
@@ -228,3 +238,7 @@ and ambiguous platform/product names converge under
 `planning/m5-naming-convergence.md`. Shared concrete Win32/Linux host
 providers move to `core/platform` only when proven mechanism-only; VM and VDM
 policies remain bound by root composition.
+
+M5 T64 reopens the milestone for the remaining selected-session-global and
+instance-authority design. T63 remains closure evidence for the naming-only
+window; it does not close explicit context-passing work.

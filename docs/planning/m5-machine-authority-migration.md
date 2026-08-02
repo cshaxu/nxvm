@@ -1,5 +1,14 @@
 # M5 Live Machine Authority Migration
 
+## Status
+
+This record preserves the completed T23--T46 migration method and evidence.
+Its forward-looking references to `nxvm_core_machine`, task closure, and
+retained live accessors are superseded by
+`architecture/core-machine-instance-design.md`. M5 T64 owns the next bounded
+context-passing and selected-session-global design; this document is not a
+current source-interface authority.
+
 ## Decision
 
 The bootable NXVM product has one live machine authority. It currently consists

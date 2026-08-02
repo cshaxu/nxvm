@@ -82,6 +82,9 @@ build identity. Public symbols use their ownership path, for example
 and dependency rules live only in
 [Module Layout](module-layout.md) and [Contracts](contracts.md).
 
+`core/machine` session ownership plus provider/registry naming rules are
+defined in [Core Machine Instance Design](core-machine-instance-design.md).
+
 ## Research Boundary
 
 Microsoft component work is not a runtime module or committed backend. It
