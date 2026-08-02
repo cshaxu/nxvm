@@ -2,10 +2,12 @@
 
 /* MACHINE controls machine status. */
 
+#include "vm/composition_control.h"
 #include "vm/machine/device.h"
 #include "core/product/debug/debug_target.h"
 #include "core/product/wait.h"
 #include "vm/composition_debug.h"
+#include "vm/machine/vdebug.h"
 #include "vm/platform/execution.h"
 #include "vm/platform/input.h"
 #include "vm/platform/platform.h"
@@ -55,7 +57,7 @@ static void vm_composition_keyboard_receive_key_press(void *context, uint16_t co
 static void vm_composition_keyboard_request_stop(void *context)
 {
     (void)context;
-    deviceStop();
+    vm_composition_control_stop();
 }
 
 static const vm_platform_keyboard_sink vm_composition_keyboard_sink = {
@@ -68,25 +70,25 @@ static const vm_platform_keyboard_sink vm_composition_keyboard_sink = {
 static int vm_composition_execution_is_running(void *context)
 {
     (void)context;
-    return device.flagRun;
+    return vm_composition_control_is_running();
 }
 
 static int vm_composition_execution_get_flip(void *context)
 {
     (void)context;
-    return device.flagFlip;
+    return vm_composition_control_get_flip();
 }
 
 static void vm_composition_execution_start(void *context)
 {
     (void)context;
-    deviceStart();
+    vm_composition_control_start();
 }
 
 static void vm_composition_execution_stop(void *context)
 {
     (void)context;
-    deviceStop();
+    vm_composition_control_stop();
 }
 
 static const vm_platform_execution_sink vm_composition_execution_sink = {
@@ -96,18 +98,24 @@ static const vm_platform_execution_sink vm_composition_execution_sink = {
     vm_composition_execution_stop
 };
 
+static void vm_composition_debug_request_stop(void *context)
+{
+    (void)context;
+    vm_composition_control_stop();
+}
+
 void machineStart() {
     machineReset();
     machineResume();
 }
 
 void machineReset() {
-    deviceReset();
-    if (!device.flagRun) vm_composition_publish_display(1);
+    vm_composition_control_reset();
+    if (!vm_composition_control_is_running()) vm_composition_publish_display(1);
 }
 
 void machineStop() {
-    deviceStop();
+    vm_composition_control_stop();
 }
 
 void machineResume() {
@@ -117,14 +125,16 @@ void machineResume() {
 void machineInit() {
     platformInit();
     core_product_wait_bind(vm_composition_wait, NULL);
-    deviceInit();
+    vm_composition_control_initialize();
+    vm_machine_debug_bind_stop(vm_composition_debug_request_stop, NULL);
     core_product_debug_bind_target(vm_composition_debug_target());
     vm_platform_keyboard_bind(&vm_composition_keyboard_sink, NULL);
     vm_platform_execution_bind(&vm_composition_execution_sink, NULL);
 }
 
 void machineFinal() {
-    deviceFinal();
+    vm_composition_control_finalize();
+    vm_machine_debug_bind_stop(NULL, NULL);
     core_product_debug_bind_target(NULL);
     vm_platform_execution_bind(NULL, NULL);
     vm_platform_keyboard_bind(NULL, NULL);

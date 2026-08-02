@@ -40,8 +40,8 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 T15 S1 P1: map the `device.h` aggregate and establish its first narrow
-replacement surface.
+M5 T15 S1 P2: replace the next `device.h` surface after the completed
+composition-control split.
 
 ## Completed
 
@@ -168,6 +168,11 @@ replacement surface.
   `nxvm.machine.pc_at_builtin`.
 - M4 T6 S1: defined evidence-backed CPU capabilities, `#UD` triage, and the
   optional local Bochx/Bochs CPU differential boundary; M5 now starts there.
+- M5 T15 S1 P1: reopened M5 for approved legacy convergence, recorded the
+  exact `device.h` consumer map and closure gates, and replaced its
+  composition-owned control surface with a private root-composition API. GCC,
+  fixture lifecycle, expected-`#UD`, dependency-DAG, and retained Console
+  gates passed; the aggregate remains pending further narrow replacements.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware

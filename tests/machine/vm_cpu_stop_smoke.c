@@ -2,6 +2,7 @@
 
 #include "core/machine/vcpu.h"
 #include "core/machine/vram.h"
+#include "vm/composition_control.h"
 #include "vm/machine/device.h"
 
 int main(void)
@@ -10,16 +11,16 @@ int main(void)
     unsigned char *reset_vector;
     int failed = 0;
 
-    deviceInit();
-    deviceReset();
+    vm_composition_control_initialize();
+    vm_composition_control_reset();
     reset_vector = (unsigned char *)vramGetRealAddr(0xf000u, 0xfff0u);
     reset_vector[0] = invalid_instruction[0];
     reset_vector[1] = invalid_instruction[1];
-    deviceStart();
+    vm_composition_control_start();
 
-    failed |= device.flagRun != False;
+    failed |= vm_composition_control_is_running() != False;
     failed |= vcpuConsumeStopRequest() != False;
-    deviceFinal();
+    vm_composition_control_finalize();
 
     if (failed) return 1;
     puts("M5:T14:S3:CPU-STOP:OK");
