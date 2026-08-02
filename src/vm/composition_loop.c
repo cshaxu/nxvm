@@ -7,7 +7,7 @@
 
 #include "core/product/utils.h"
 
-#include "vm/machine/vdebug.h"
+#include "vm/machine/debug.h"
 #include "vm/composition.h"
 #include "core/product/runtime/execution_context.h"
 #include "core/machine/cpu.h"

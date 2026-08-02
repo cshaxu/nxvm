@@ -1,7 +1,7 @@
 # M5 T11 S8 HDD Move Verification
 
 The original NXVM HDD implementation now compiles from
-`src/vm/machine/vhdd.c`; its header is `src/vm/machine/vhdd.h`. The retained
+`src/vm/machine/hdd.c`; its header is `src/vm/machine/hdd.h`. The retained
 baseline header forwards HDC callers to the new owner. `vmachine.c` includes
 HDD directly, and CMake adds only the migrated implementation to the VM source
 set. The existing Console media calls remain unchanged.

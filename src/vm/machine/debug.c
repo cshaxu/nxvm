@@ -9,7 +9,7 @@
 
 #include "core/machine/cpu_instructions.h"
 
-#include "vm/machine/vdebug.h"
+#include "vm/machine/debug.h"
 
 static t_debug *vmMachineDebug;
 

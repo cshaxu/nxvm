@@ -6,7 +6,7 @@
 
 #include "core/machine/dma.h"
 
-#include "vm/machine/vhdd.h"
+#include "vm/machine/hdd.h"
 
 static t_hdd *vmMachineHdd;
 

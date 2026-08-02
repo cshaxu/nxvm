@@ -8,7 +8,7 @@
 #include "core/product/wait.h"
 #include "core/platform/sleep.h"
 #include "vm/composition_debug.h"
-#include "vm/machine/vdebug.h"
+#include "vm/machine/debug.h"
 #include "vm/profile/default_profile/firmware/qdcga.h"
 #include "vm/profile/default_profile/firmware/qdkeyb.h"
 #include "core/machine/keyboard_interface.h"

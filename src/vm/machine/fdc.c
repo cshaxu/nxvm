@@ -7,9 +7,9 @@
 #include "core/machine/dma.h"
 #include "core/machine/pic.h"
 #include "core/machine/port.h"
-#include "vm/machine/vfdd.h"
+#include "vm/machine/fdd.h"
 
-#include "vm/machine/vfdc.h"
+#include "vm/machine/fdc.h"
 
 static t_fdc *vmMachineFdc;
 

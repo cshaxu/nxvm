@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_VCMOS_H
-#define NXVM_VCMOS_H
+#ifndef NXVM_VM_MACHINE_CMOS_H
+#define NXVM_VM_MACHINE_CMOS_H
 
 #ifdef __cplusplus
 extern "C" {

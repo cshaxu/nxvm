@@ -1,7 +1,7 @@
 # M5 T11 S7 FDD Move Verification
 
 The original NXVM 1.44MB FDD implementation now compiles from
-`src/vm/machine/vfdd.c`; its header is `src/vm/machine/vfdd.h`. The retained
+`src/vm/machine/fdd.c`; its header is `src/vm/machine/fdd.h`. The retained
 baseline header forwards FDC callers to the new owner. `vmachine.c` includes
 FDD directly, and CMake adds only the migrated implementation to the VM source
 set. The existing Console media calls remain unchanged.

@@ -1,5 +1,5 @@
 #include "core/machine/block_interface.h"
-#include "vm/machine/vhdd.h"
+#include "vm/machine/hdd.h"
 
 static void vmBlockGeometry(void *context, core_machine_block_geometry *out_geometry)
 {

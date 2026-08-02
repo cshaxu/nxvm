@@ -7,7 +7,7 @@
 #include "core/machine/cpu.h"
 
 #include "core/machine/port.h"
-#include "vm/machine/vcmos.h"
+#include "vm/machine/cmos.h"
 
 static t_cmos *vmMachineCmos;
 

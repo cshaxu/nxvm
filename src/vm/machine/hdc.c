@@ -2,7 +2,7 @@
 
 /* VHDC is Hard Disk Driver Controller, not yet implemented. */
 
-#include "vm/machine/vhdc.h"
+#include "vm/machine/hdc.h"
 
 void vhdcInit() {
 }

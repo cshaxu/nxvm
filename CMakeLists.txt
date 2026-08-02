@@ -181,12 +181,12 @@ set(NXVM_COMPOSITION_VM_SOURCES
     src/vm/composition_session_model.c
 )
 set(NXVM_MACHINE_VM_SOURCES
-    src/vm/machine/vfdd.c
-    src/vm/machine/vhdd.c
-    src/vm/machine/vfdc.c
-    src/vm/machine/vhdc.c
-    src/vm/machine/vcmos.c
-    src/vm/machine/vdebug.c
+    src/vm/machine/fdd.c
+    src/vm/machine/hdd.c
+    src/vm/machine/fdc.c
+    src/vm/machine/hdc.c
+    src/vm/machine/cmos.c
+    src/vm/machine/debug.c
 )
 set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/block.c
@@ -642,6 +642,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t45 "m5t45")
 add_nxvm_full_pc_artifact(nxvm-m5-t46 "m5t46")
 add_nxvm_full_pc_artifact(nxvm-m5-t47 "m5t47")
 add_nxvm_version_artifact(nxvm-0-5-0048 "0.5.0048")
+add_nxvm_version_artifact(nxvm-0-5-0049 "0.5.0049")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

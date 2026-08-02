@@ -5,7 +5,7 @@
 #include "core/product/debug/debug_access.h"
 #include "vm/composition_control.h"
 #include "vm/composition_machine.h"
-#include "vm/machine/vfdd.h"
+#include "vm/machine/fdd.h"
 
 static DWORD WINAPI run_full_pc(void *opaque)
 {

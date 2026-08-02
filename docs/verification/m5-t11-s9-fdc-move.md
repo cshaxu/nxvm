@@ -1,7 +1,7 @@
 # M5 T11 S9 FDC Move Verification
 
 The original NXVM Intel 8272A FDC implementation now compiles from
-`src/vm/machine/vfdc.c`; its header is `src/vm/machine/vfdc.h`. The retained
+`src/vm/machine/fdc.c`; its header is `src/vm/machine/fdc.h`. The retained
 baseline header forwards BIOS callers to the new owner. `vmachine.c` includes
 FDC directly, and CMake adds only the migrated implementation to the VM source
 set. The existing Console media calls remain unchanged.
