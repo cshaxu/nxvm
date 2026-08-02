@@ -53,7 +53,7 @@ artifact is produced when the runnable task completes.
 | M5 T50 | Rename default-profile firmware files whose names still encode legacy VM implementation rather than profile role, beginning with `vbios.*` to `bios.*`; audit QD firmware names separately before changing them. | BIOS/POST/reset-vector and FDD/HDD gates pass, `nxvm_0_5_0050.exe`. |
 | M5 T51 | Split or rename remaining public/provider contracts where current files mix interface and injected callback ownership. | Header dependency scan and focused provider smokes pass, `nxvm_0_5_0051.exe` if runnable paths changed. |
 | M5 T52 | Audit ambiguous implementation names, beginning with the former `machine_memory.c`, `machine_port.c`, and core presentation names; apply only approved low-risk renames. | No module-boundary regression; GCC and retained UX gates pass, `nxvm_0_5_0052.exe`. |
-| M5 T53 | Decide `vglobal.h` retirement path and remove only declarations already replaced by `type.*`, `version.*`, or owner-local headers. | No broad compatibility header remains for new code; GCC and retained fixture gates pass, artifact if runnable paths changed. |
+| M5 T53 | Decide `vglobal.h` retirement path and move obvious shared type/constant declarations to `type.h`; keep `vglobal.h` as a transitional include only. | GCC and retained fixture gates pass, `nxvm_0_5_0053.exe`. |
 | M5 T54 | Close naming convergence with a source/CMake/doc audit and final retained NXVM artifact. | No stale `device.h` claim, no unintended legacy `v*` source names, zero forbidden dependencies, final artifact. |
 
 ## Non-goals
