@@ -41,12 +41,26 @@ static void vm_platform_input_smoke_request_stop(void *context)
 int main(void)
 {
     vm_platform_input_smoke_state state = {1};
+    vm_platform_input_smoke_state second_state = {0};
     vm_platform_keyboard_sink sink = {
         vm_platform_input_smoke_get_modifier,
         vm_platform_input_smoke_apply_host_state,
         vm_platform_input_smoke_receive_key_press,
         vm_platform_input_smoke_request_stop
     };
+    vm_platform_keyboard_transport transport;
+    vm_platform_keyboard_transport second_transport;
+
+    vm_platform_keyboard_transport_initialize(&transport, &sink, &state);
+    vm_platform_keyboard_transport_initialize(&second_transport, &sink,
+                                              &second_state);
+    vm_platform_keyboard_apply_host_state_for(&transport, 0xabu, 0xcdu);
+    vm_platform_keyboard_receive_key_press_for(&second_transport, 0x1234u);
+    vm_platform_keyboard_request_stop_for(&second_transport);
+    if (state.asynchronous_keys != 0xabu || state.toggle_keys != 0xcdu ||
+        second_state.key_code != 0x1234u || second_state.stop_count != 1u) {
+        return 1;
+    }
 
     vm_platform_keyboard_bind(&sink, &state);
     if (!vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_ALT) ||
@@ -64,6 +78,6 @@ int main(void)
     if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
         return 1;
     }
-    puts("M5:T14:S3:VM-PLATFORM-INPUT:OK");
+    puts("M5:T80:S1:VM-PLATFORM-INPUT:OK");
     return 0;
 }

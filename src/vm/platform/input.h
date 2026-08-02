@@ -19,6 +19,28 @@ typedef struct vm_platform_keyboard_sink {
     void (*request_stop)(void *context);
 } vm_platform_keyboard_sink;
 
+typedef int (*vm_platform_keyboard_state_sink)(
+    void *context, uint32_t asynchronous_keys, uint32_t toggle_keys);
+
+typedef struct vm_platform_keyboard_transport {
+    const vm_platform_keyboard_sink *sink;
+    void *context;
+} vm_platform_keyboard_transport;
+
+void vm_platform_keyboard_transport_initialize(
+    vm_platform_keyboard_transport *transport,
+    const vm_platform_keyboard_sink *sink, void *context);
+int vm_platform_keyboard_get_modifier_for(
+    const vm_platform_keyboard_transport *transport,
+    vm_platform_keyboard_modifier modifier);
+void vm_platform_keyboard_apply_host_state_for(
+    const vm_platform_keyboard_transport *transport,
+    uint32_t asynchronous_keys, uint32_t toggle_keys);
+void vm_platform_keyboard_receive_key_press_for(
+    const vm_platform_keyboard_transport *transport, uint16_t code);
+void vm_platform_keyboard_request_stop_for(
+    const vm_platform_keyboard_transport *transport);
+
 void vm_platform_keyboard_bind(const vm_platform_keyboard_sink *sink,
                                void *context);
 int vm_platform_keyboard_get_modifier(vm_platform_keyboard_modifier modifier);

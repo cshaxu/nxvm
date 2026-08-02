@@ -9,12 +9,14 @@ extern "C" {
 
 #include <windows.h>
 
-extern HANDLE hIn, hOut;
+typedef struct vm_platform_run_context vm_platform_run_context;
+
+extern HANDLE hOut;
 
 VOID win32conDisplaySetScreen();
 VOID win32conDisplayPaint();
 
-VOID win32conStartMachine();
+VOID win32conStartMachine(const vm_platform_run_context *context);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

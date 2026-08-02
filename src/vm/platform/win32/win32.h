@@ -12,19 +12,23 @@ extern "C" {
 
 #include "core/machine/keyboard_interface.h"
 #include "type.h"
+#include "vm/platform/platform.h"
 
-typedef nxvm_core_status (*nxvm_win32_keyboard_state_sink)(
-    void *opaque, uint32_t asynchronous_keys, uint32_t toggle_keys);
+typedef vm_platform_keyboard_state_sink nxvm_win32_keyboard_state_sink;
 
 VOID win32KeyboardMakeStatus();
 VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey);
+VOID win32KeyboardMakeStatusFor(const vm_platform_run_context *context);
+VOID win32KeyboardMakeKeyFor(const vm_platform_run_context *context,
+                             UCHAR scanCode, UCHAR virtualKey);
 void win32KeyboardBindStateSink(nxvm_win32_keyboard_state_sink sink,
                                 void *opaque);
 
 #define win32Sleep Sleep
 VOID win32DisplaySetScreen(BOOL flagWindow);
 VOID win32DisplayPaint(BOOL flagWindow);
-VOID win32StartMachine(BOOL flagWindow);
+VOID win32StartMachine(BOOL flagWindow,
+                       const vm_platform_run_context *context);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

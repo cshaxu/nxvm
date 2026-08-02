@@ -25,6 +25,7 @@
 #include "vm/profile/default_profile/firmware/context.h"
 #include "vm/composition_control.h"
 #include "core/product/debug/debug_target.h"
+#include "vm/platform/platform.h"
 
 typedef struct vm_composition_live_machine {
     t_cpu cpu_storage;
@@ -51,6 +52,9 @@ typedef struct vm_composition_live_machine {
     core_machine_block_provider_slot block_provider_storage;
     core_machine_keyboard_provider_slot keyboard_provider_storage;
     core_machine_display_provider_slot display_provider_storage;
+    vm_platform_execution_transport execution_transport_storage;
+    vm_platform_keyboard_transport keyboard_transport_storage;
+    vm_platform_run_context platform_run_context_storage;
     uint64_t display_generation;
     core_product_debug_target *debug_target;
     t_cpu *cpu;
@@ -77,6 +81,9 @@ typedef struct vm_composition_live_machine {
     core_machine_block_provider_slot *block_provider;
     core_machine_keyboard_provider_slot *keyboard_provider;
     core_machine_display_provider_slot *display_provider;
+    vm_platform_execution_transport *execution_transport;
+    vm_platform_keyboard_transport *keyboard_transport;
+    vm_platform_run_context *platform_run_context;
     vm_composition_control_state *control;
 } vm_composition_live_machine;
 

@@ -9,6 +9,27 @@
 
 t_platform platform;
 
+void vm_platform_run_context_initialize(
+    vm_platform_run_context *context,
+    const vm_platform_execution_transport *execution,
+    const vm_platform_keyboard_transport *keyboard)
+{
+    if (context == NULL) return;
+    context->execution = execution;
+    context->keyboard = keyboard;
+    context->keyboard_state_sink = NULL;
+    context->keyboard_state_context = NULL;
+}
+
+void vm_platform_run_context_bind_keyboard_state(
+    vm_platform_run_context *context, vm_platform_keyboard_state_sink sink,
+    void *sink_context)
+{
+    if (context == NULL) return;
+    context->keyboard_state_sink = sink;
+    context->keyboard_state_context = sink_context;
+}
+
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
 #include "vm/platform/win32/win32.h"
 void platformDisplaySetScreen() {
@@ -17,8 +38,8 @@ void platformDisplaySetScreen() {
 void platformDisplayPaint() {
     win32DisplayPaint(platform.flagMode);
 }
-void platformStart() {
-    win32StartMachine(platform.flagMode);
+void platformStart(const vm_platform_run_context *context) {
+    win32StartMachine(platform.flagMode, context);
 }
 #elif GLOBAL_PLATFORM == GLOBAL_VAR_LINUX
 #include "vm/platform/linux/linux.h"
@@ -28,7 +49,8 @@ void platformDisplaySetScreen() {
 void platformDisplayPaint() {
     linuxDisplayPaint(platform.flagMode);
 }
-void platformStart() {
+void platformStart(const vm_platform_run_context *context) {
+    (void)context;
     linuxStartMachine(platform.flagMode);
 }
 #endif

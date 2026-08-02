@@ -39,12 +39,29 @@ static void vm_platform_execution_smoke_stop(void *context)
 int main(void)
 {
     vm_platform_execution_smoke_state state = {0};
+    vm_platform_execution_smoke_state second_state = {0};
     vm_platform_execution_sink sink = {
         vm_platform_execution_smoke_is_running,
         vm_platform_execution_smoke_get_flip,
         vm_platform_execution_smoke_start,
         vm_platform_execution_smoke_stop
     };
+    vm_platform_execution_transport transport;
+    vm_platform_execution_transport second_transport;
+
+    vm_platform_execution_transport_initialize(&transport, &sink, &state);
+    vm_platform_execution_transport_initialize(&second_transport, &sink,
+                                               &second_state);
+    vm_platform_execution_start_for(&transport);
+    vm_platform_execution_start_for(&second_transport);
+    vm_platform_execution_stop_for(&transport);
+    if (vm_platform_execution_is_running_for(&transport) ||
+        !vm_platform_execution_is_running_for(&second_transport) ||
+        state.stops != 1u || second_state.starts != 1u) {
+        return 1;
+    }
+
+    state = (vm_platform_execution_smoke_state){0};
 
     vm_platform_execution_bind(&sink, &state);
     vm_platform_execution_start();
@@ -61,6 +78,6 @@ int main(void)
         vm_platform_execution_get_flip() != 0) {
         return 1;
     }
-    puts("M5:T14:S3:VM-PLATFORM-EXECUTION:OK");
+    puts("M5:T80:S1:VM-PLATFORM-EXECUTION:OK");
     return 0;
 }

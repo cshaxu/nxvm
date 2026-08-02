@@ -24,7 +24,7 @@ struct nxvm_full_pc {
     vm_composition_live_machine machine;
 };
 
-static nxvm_core_status nxvm_full_pc_enqueue_keyboard_state(
+static int nxvm_full_pc_enqueue_keyboard_state(
     void *opaque, uint32_t asynchronous_keys, uint32_t toggle_keys)
 {
     nxvm_platform_vm_request request;
@@ -80,6 +80,9 @@ nxvm_core_status nxvm_full_pc_create(
         nxvm_full_pc_consume_request, full_pc);
     win32KeyboardBindStateSink(nxvm_full_pc_enqueue_keyboard_state,
                                &full_pc->transport);
+    vm_platform_run_context_bind_keyboard_state(
+        full_pc->machine.platform_run_context,
+        nxvm_full_pc_enqueue_keyboard_state, &full_pc->transport);
     vm_composition_control_bind_command_boundary(full_pc->machine.control,
         nxvm_vm_request_transport_observe_execution_boundary,
         &full_pc->transport);
@@ -88,6 +91,8 @@ nxvm_core_status nxvm_full_pc_create(
         (config->hdd_image != NULL &&
          vm_machine_hdd_insert(full_pc->machine.hdd, config->hdd_image))) {
         win32KeyboardBindStateSink(NULL, NULL);
+        vm_platform_run_context_bind_keyboard_state(
+            full_pc->machine.platform_run_context, NULL, NULL);
         vm_composition_control_bind_command_boundary(full_pc->machine.control, NULL, NULL);
         nxvm_vm_request_transport_close(&full_pc->transport);
         nxvm_vm_request_transport_discard(&full_pc->transport);
@@ -226,6 +231,8 @@ void nxvm_full_pc_destroy(nxvm_full_pc *full_pc)
 {
     if (full_pc != NULL && full_pc->active) {
         win32KeyboardBindStateSink(NULL, NULL);
+        vm_platform_run_context_bind_keyboard_state(
+            full_pc->machine.platform_run_context, NULL, NULL);
         vm_composition_control_stop(full_pc->machine.control);
         vm_composition_control_bind_command_boundary(full_pc->machine.control, NULL, NULL);
         nxvm_vm_request_transport_close(&full_pc->transport);

@@ -140,7 +140,7 @@ void machineResume(vm_composition_live_machine *machine) {
     if (vm_composition_control_is_paused(machine->control)) {
         vm_composition_control_continue(machine->control);
     } else {
-        platformStart();
+        platformStart(machine->platform_run_context);
     }
 }
 
@@ -157,6 +157,12 @@ void machineInit(vm_composition_live_machine *machine) {
     vm_composition_bind_display(machine);
     vm_machine_debug_bind_pause(machine->debug,
         vm_composition_debug_request_pause, NULL);
+    vm_platform_keyboard_transport_initialize(machine->keyboard_transport,
+        &vm_composition_keyboard_sink, machine);
+    vm_platform_execution_transport_initialize(machine->execution_transport,
+        &vm_composition_execution_sink, machine);
+    vm_platform_run_context_initialize(machine->platform_run_context,
+        machine->execution_transport, machine->keyboard_transport);
     vm_platform_keyboard_bind(&vm_composition_keyboard_sink, machine);
     vm_platform_execution_bind(&vm_composition_execution_sink, machine);
 }
