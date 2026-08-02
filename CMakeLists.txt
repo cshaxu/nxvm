@@ -50,6 +50,7 @@ target_include_directories(nxvm-core PUBLIC
 add_executable(nxvm-core-contract-smoke
     tests/core/core_contract_smoke.c
 )
+add_executable(ntvdm64-version-smoke tests/core/version_smoke.c)
 add_executable(nxvm-firmware-smoke tests/firmware/firmware_smoke.c)
 target_link_libraries(nxvm-firmware-smoke PRIVATE nxvm-firmware)
 add_executable(nxvm-default-profile-firmware-smoke tests/firmware/default_profile_smoke.c)
@@ -103,6 +104,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-product-presentation-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(ntvdm64-version-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -131,6 +133,7 @@ set(NXVM_PRODUCT_CORE_SOURCES
 )
 set(NXVM_FOUNDATION_SOURCES
     src/type.c
+    src/version.c
 )
 
 set(NXVM_PROFILE_VM_SOURCES
@@ -266,6 +269,7 @@ add_library(nxvm-core-machine STATIC
 target_include_directories(nxvm-core-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
+target_link_libraries(ntvdm64-version-smoke PRIVATE nxvm-core-machine)
 
 add_library(nxvm-product-core-utils STATIC ${NXVM_PRODUCT_CORE_SOURCES})
 target_include_directories(nxvm-product-core-utils PUBLIC
@@ -610,6 +614,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t43 "m5t43")
 add_nxvm_full_pc_artifact(nxvm-m5-t44 "m5t44")
 add_nxvm_full_pc_artifact(nxvm-m5-t45 "m5t45")
 add_nxvm_full_pc_artifact(nxvm-m5-t46 "m5t46")
+add_nxvm_full_pc_artifact(nxvm-m5-t47 "m5t47")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

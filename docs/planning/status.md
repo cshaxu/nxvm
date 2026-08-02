@@ -31,8 +31,9 @@ behavior.
 
 M5 is complete. The retained NXVM full PC has one composition-owned machine
 authority, no legacy full-PC storage definitions, an acknowledged debugger
-pause boundary, and one product-neutral debugger backend. GCC, source-DAG,
-live-authority, retained Console/debugger, and FDD/HDD fixture gates passed.
+pause boundary, one product-neutral debugger backend, and a single
+`src/version.*` identity source. GCC, source-DAG, live-authority, retained
+Console/debugger, and FDD/HDD fixture gates passed.
 
 ## M5 Continuity
 
@@ -99,6 +100,9 @@ or stop, without launching a second VM thread.
 M5 T46 S1 extended the product-neutral debug target with pause state, reason,
 request, continue, and step operations, and proved that its VM adapter reaches
 the one live full-PC authority.
+M5 T47 S1 closed the missing version foundation: `vm/main.c` no longer owns
+product identity or build timestamp strings, and `src/version.*` formats the
+retained task-level NXVM banner.
 
 ## Active Work
 
