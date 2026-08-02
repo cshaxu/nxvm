@@ -9,9 +9,11 @@ observable behavior; planning documents do not define interfaces.
 
 ## Foundation
 
-`src/type.h` is the common system type header. It defines `BOOL`, `SIZE_T`,
-fixed-width aliases, `STATUS`, and the stable `STATUS_*` result constants.
-`src/type.c` exists only if a non-inline type helper is necessary.
+`src/type.h` is the common system type header. It defines `nxvm_core_status`,
+retained NXVM numeric aliases such as `t_nubit8` and `t_bool`, fixed-width
+compatibility typedefs, common bit/constant helpers, and product-neutral
+legacy C-runtime and trace primitives. `src/type.c` owns their non-inline
+implementations.
 
 `src/version.h` and `src/version.c` are the only version and build-identity
 source. They provide product banner identity and build-time information. No
@@ -31,8 +33,9 @@ Public symbols use source-path ownership: `core_machine_*`,
   only resources owned by that module and accepts `NULL`.
 - Inputs are borrowed unless an API explicitly registers or retains them.
   Outputs are copied into caller-provided storage or copied callback payloads.
-- `STATUS` distinguishes invalid arguments, invalid state, unsupported
-  capability, no memory, busy, and fault. It never carries product policy.
+- `nxvm_core_status` distinguishes invalid arguments, invalid state,
+  unsupported capability, no memory, and fault. It never carries product
+  policy.
 - Callbacks state their thread, synchronization, ownership, and teardown rule.
   They do not re-enter mutable operations on their originating object.
 
@@ -150,10 +153,10 @@ location. `core_machine_set_cpu_state` replaces that state only while the
 machine is `CONFIGURING`, `READY`, or `PAUSED`; it is forbidden while
 `RUNNING`. The contract exposes no separate register-setter API.
 
-`core_machine_mem_read` and `core_machine_mem_write` accept only a
-`CORE_MACHINE_ADDRESS` physical address, caller storage, and `SIZE_T` length.
-`CORE_MACHINE_ADDRESS` is represented by `U64` even where a current x86
-profile uses only a smaller range. Access is range checked and observes the
+`core_machine_memory_read` and `core_machine_memory_write` accept only a
+physical address, caller storage, and `size_t` length. The current public
+contract uses a `uint32_t` physical address; wider translation helpers require
+a future explicit CPU/debug contract. Access is range checked and observes the
 current A20 state. Neither function returns a writable raw RAM pointer.
 
 Segment:offset translation, linear addressing, paging translation, and CPU
@@ -375,11 +378,11 @@ global session.
 
 ## Root Composition: Product Integration
 
-`vm/main.c` and `vdm/main.c` are thin entry points that enter only their
-respective root composition. `vm_composition` and `vdm_composition` are the
-sole integration owners: they may include the applicable core contracts and
-all peer modules of their own product form. No peer module receives this
-privilege.
+`vm/main.c` is the current thin `nxvm.exe` entry point. `vdm/main.c` is the
+future thin `ntvdm64.exe` entry point and must enter only VDM root composition
+when introduced. `vm_composition` and `vdm_composition` are the sole
+integration owners: they may include the applicable core contracts and all peer
+modules of their own product form. No peer module receives this privilege.
 
 Composition selects a profile; creates core machine state and product-form
 machine, platform, and product providers; translates profile descriptions into
@@ -394,10 +397,10 @@ sequence statement-for-statement before any later simplification; device code
 does not infer or alter the order. This is the path for moving lifecycle and
 host-start calls out of `vm/machine` without changing boot behavior.
 
-Composition alone translates `STATUS` and machine run results into observable
-product behavior. VM may return to or pause its retained Console; VDM may
-produce a guest exit code, a cancellation result, or a CLI failure. Core and
-peer providers never make either decision.
+Composition alone translates `nxvm_core_status` and machine run results into
+observable product behavior. VM may return to or pause its retained Console;
+VDM may produce a guest exit code, a cancellation result, or a CLI failure.
+Core and peer providers never make either decision.
 
 Composition shuts down in reverse dependency order: stop platform event
 sources, close ingress, request and observe a machine stop at an execution
@@ -432,12 +435,12 @@ composition turns a selected blueprint into a running session.
 
 ## Cross-Module: Resource, Failure, And Callback Rules
 
-Creation, registration, freeze, and reset failures return a factual `STATUS`
-synchronously. They leave no half-registered or half-frozen object; callers
-still destroy every object whose creation succeeded. Runtime providers may
-continue normally, request a safe machine stop, or report a machine fault.
-They never exit a process, close a window, or interpret a result as a DOS
-program exit code.
+Creation, registration, freeze, and reset failures return a factual
+`nxvm_core_status` synchronously. They leave no half-registered or half-frozen
+object; callers still destroy every object whose creation succeeded. Runtime
+providers may continue normally, request a safe machine stop, or report a
+machine fault. They never exit a process, close a window, or interpret a
+result as a DOS program exit code.
 
 Only root composition translates a lower-level result into retained NXVM
 Console behavior, a VDM CLI result, user-visible diagnostics, or product exit

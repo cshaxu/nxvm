@@ -75,10 +75,11 @@ Cross-module adaptation, including display and input bridging, occurs only in
 the relevant product root composition. Peer machine and platform modules do
 not adapt each other's contracts directly.
 
-`src/type.h` is the system-wide type and `STATUS` foundation. `src/version.*`
-is the only source for version and build identity. Public symbols use their
-ownership path, for example `core_machine_*`, `vm_product_*`, and
-`vdm_platform_*`. The detailed registry and dependency rules live only in
+`src/type.h` is the system-wide type, `nxvm_core_status`, retained alias, and
+legacy helper foundation. `src/version.*` is the only source for version and
+build identity. Public symbols use their ownership path, for example
+`core_machine_*`, `vm_product_*`, and `vdm_platform_*`. The detailed registry
+and dependency rules live only in
 [Module Layout](module-layout.md) and [Contracts](contracts.md).
 
 ## Research Boundary
