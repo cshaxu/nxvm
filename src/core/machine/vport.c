@@ -42,16 +42,3 @@ void core_machine_port_write_legacy(uint16_t port, uint32_t value)
     vport.data.ioDWord = value;
     vportExecWrite(port);
 }
-
-void deviceConnectPortRead(uint16_t portId) {
-    vportExecRead(portId);
-}
-void deviceConnectPortWrite(uint16_t portId) {
-    vportExecWrite(portId);
-}
-uint32_t deviceConnectPortGetValue() {
-    return vport.data.ioDWord;
-}
-void deviceConnectPortSetValue(uint32_t value) {
-    vport.data.ioDWord = value;
-}

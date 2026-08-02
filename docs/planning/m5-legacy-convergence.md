@@ -124,6 +124,22 @@ moves use `git mv`; implementation rewrites are allowed only where needed to
 remove a proven duplicate state or forbidden dependency. Stop for approval if
 the required change alters any compatibility-gate behavior.
 
+## T16 Convergence Map
+
+T16 removes historical `deviceConnect*` names in four independent groups.
+RAM and port compatibility exports have no callers and can be deleted directly;
+CPU compatibility exports require a caller-by-caller migration to the existing
+`core_machine_cpu_*` contract; default-profile display and keyboard helpers
+are renamed inside their provider implementation without changing provider
+behavior. Each group retains the same underlying state object and has its own
+build and focused smoke gate.
+
+The RAM/port group is complete. The uncalled `deviceConnectRam*` and
+`deviceConnectPort*` exports are deleted; their existing `core_machine_memory_*`
+and `core_machine_port_*` operations remain the sole public path over the
+retained `vram` and `vport` instances. Windows GCC, expected-`#UD` CPU probe,
+FDD/HDD reset-vector fixture smoke, and the zero-edge DAG verifier passed.
+
 ## Ownership Rules
 
 `core/platform` owns host capability, not policy: Console attachment/mode,

@@ -75,13 +75,3 @@ void core_machine_memory_write_real(uint16_t segment, uint16_t offset,
 {
     MEMCPY((void *)vramGetRealAddr(segment, offset), (void *)in_data, size);
 }
-
-void deviceConnectRamAllocate(size_t newsize) {
-    allocate(newsize);
-}
-void deviceConnectRamRealRead(uint16_t seg, uint16_t off, void *rdest, size_t size) {
-    MEMCPY(rdest, (void *) vramGetRealAddr(seg, off), size);
-}
-void deviceConnectRamRealWrite(uint16_t seg, uint16_t off, void *rsrc, size_t size) {
-    MEMCPY((void *) vramGetRealAddr(seg, off), rsrc, size);
-}
