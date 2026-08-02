@@ -9,7 +9,11 @@
 #include "core/machine/port.h"
 #include "vm/machine/vcmos.h"
 
-t_cmos vcmos;
+static t_cmos *vmMachineCmos;
+
+t_cmos *vm_machine_cmos_current(void) { return vmMachineCmos; }
+void vm_machine_cmos_bind_live(t_cmos *cmos) { vmMachineCmos = cmos; }
+void vm_machine_cmos_unbind_live(void) { vmMachineCmos = NULL; }
 
 static void io_write_0070() {
     vcmos.data.regId = vport.data.ioByte; /* select reg id */

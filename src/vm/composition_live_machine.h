@@ -10,6 +10,7 @@
 #include "core/machine/dma.h"
 #include "core/machine/keyboard_controller.h"
 #include "core/machine/video_adapter.h"
+#include "vm/machine/vcmos.h"
 
 typedef struct vm_composition_live_machine {
     t_cpu cpu_storage;
@@ -24,6 +25,7 @@ typedef struct vm_composition_live_machine {
     t_dma dma_secondary_storage;
     t_kbc keyboard_controller_storage;
     t_vadp video_adapter_storage;
+    t_cmos cmos_storage;
     t_cpu *cpu;
     t_cpuins *cpuins;
     t_ram *ram;
@@ -36,6 +38,7 @@ typedef struct vm_composition_live_machine {
     t_dma *dma_secondary;
     t_kbc *keyboard_controller;
     t_vadp *video_adapter;
+    t_cmos *cmos;
 } vm_composition_live_machine;
 
 void vm_composition_live_machine_bind(void);
