@@ -18,7 +18,6 @@ extern t_platform platform;
 /* Device Operations */
 void platformDisplaySetScreen();
 void platformDisplayPaint();
-void platformSleep(uint32_t milisec);
 
 void platformStart();
 

@@ -3,6 +3,9 @@
 /* VMACHINE is the hub that assembles all devices. */
 
 #include "core/product/utils.h"
+#include "core/platform/sleep.h"
+#include "core/platform/sleep.h"
+#include "core/platform/sleep.h"
 
 #include "core/machine/vport.h"
 #include "core/machine/vram.h"
@@ -18,7 +21,6 @@
 #include "vm/machine/vhdd.h"
 #include "vm/composition_block.h"
 #include "vm/composition_display.h"
-#include "vm/platform/platform.h"
 #include "core/machine/vkbc.h"
 #include "core/machine/vvadp.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
@@ -142,7 +144,7 @@ void vmachineRefresh() {
     vpitRefresh();
     _vpic_
     if (vcpu.data.flagHalt) {
-        platformSleep(1);
+        core_platform_sleep_milliseconds(1);
     }
     vcpuRefresh();
     _vpic_

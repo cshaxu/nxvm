@@ -40,8 +40,8 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 T17 S1 P2: audit the remaining Win32/Linux sources and extract only host
-primitives that have no VM callback, boot, Console, or display-policy ownership.
+M5 T17 S1 P3: complete the remaining shared-platform ownership audit and record
+which VM files remain product-specific by callback or UI-policy dependency.
 
 ## Completed
 
@@ -216,6 +216,10 @@ primitives that have no VM callback, boot, Console, or display-policy ownership.
 - M5 T17 S1 P1: moved the shared display-frame mailbox to `core/platform` and
   gave it the `core_platform_display_*` contract. GCC, core presentation,
   VM-platform execution, default-profile FDD, and DAG gates passed.
+- M5 T17 S1 P2: moved concrete Win32/Linux sleep to `core/platform` and bound
+  it through the existing core-product wait provider. GCC, core wait,
+  VM-platform execution, and DAG gates passed; POSIX compilation remains an
+  external validation gate.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware
