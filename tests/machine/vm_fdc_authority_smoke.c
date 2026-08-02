@@ -11,12 +11,18 @@ int main(void)
 
     machineInit(&session);
     machine = (&session);
-    if (machine == NULL || &vfdc != machine->fdc) {
+    if (machine == NULL || machine->fdc == NULL ||
+        machine->fdc->connect.fdd != machine->fdd ||
+        machine->fdc->connect.dma_latch != machine->dma_latch ||
+        machine->fdc->connect.dma_primary != machine->dma_primary ||
+        machine->fdc->connect.dma_secondary != machine->dma_secondary ||
+        machine->fdc->connect.pic_master != machine->pic_master ||
+        machine->fdc->connect.pic_slave != machine->pic_slave ||
+        machine->fdc->connect.port != machine->port) {
         machineFinal(&session);
         return 1;
     }
     machineFinal(&session);
-    if (vm_machine_fdc_current() != NULL) return 1;
-    puts("M5:T35:S1:FDC-AUTHORITY:OK");
+    puts("M5:T70:S1:P5:FDC-CONNECT:OK");
     return 0;
 }

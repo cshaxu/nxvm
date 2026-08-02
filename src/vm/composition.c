@@ -91,6 +91,9 @@ void vmachineInit(vm_composition_live_machine *machine) {
     _vbios_ _vport_
     core_machine_pic_initialize(machine->pic_master, machine->pic_slave,
         machine->port);
+    vm_machine_fdc_connect(machine->fdc, machine->fdd, machine->dma_latch,
+        machine->dma_primary, machine->dma_secondary, machine->pic_master,
+        machine->pic_slave, machine->port);
     vbiosAddPost(VPIC_POST);
     _vbios_ _vport_ _vpic_
     vramInit();

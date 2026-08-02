@@ -17,6 +17,20 @@ t_fdc *vm_machine_fdc_current(void) { return vmMachineFdc; }
 void vm_machine_fdc_bind_live(t_fdc *fdc) { vmMachineFdc = fdc; }
 void vm_machine_fdc_unbind_live(void) { vmMachineFdc = NULL; }
 
+void vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
+    t_dma *dma_primary, t_dma *dma_secondary, t_pic *pic_master,
+    t_pic *pic_slave, t_port *port)
+{
+    if (fdc == NULL) return;
+    fdc->connect.fdd = fdd;
+    fdc->connect.dma_latch = dma_latch;
+    fdc->connect.dma_primary = dma_primary;
+    fdc->connect.dma_secondary = dma_secondary;
+    fdc->connect.pic_master = pic_master;
+    fdc->connect.pic_slave = pic_slave;
+    fdc->connect.port = port;
+}
+
 #define VFDC_RET_ERROR         0x80 /* Error Code */
 /* Commands */
 #define CMD_SPECIFY            0x03 /* set drive parameters */
