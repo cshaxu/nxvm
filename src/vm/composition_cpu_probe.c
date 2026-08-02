@@ -18,12 +18,10 @@ struct nxvm_cpu_probe {
     vm_composition_live_machine machine;
 };
 
-static int nxvm_cpu_probe_capture_state(
+static int nxvm_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
     nxvm_cpu_probe_state *state)
 {
-    const nxvm_execution_context *context =
-        nxvm_execution_context_current();
-    const t_cpu *cpu = (const t_cpu *)nxvm_execution_context_cpu(context);
+    const t_cpu *cpu = probe == NULL ? NULL : probe->machine.cpu;
 
     if (cpu == NULL) {
         return 0;
@@ -44,13 +42,17 @@ static int nxvm_cpu_probe_reset(nxvm_cpu_probe *probe)
     uint32_t eip = 0u;
 
     vm_composition_control_reset(probe->machine.control);
-    if (core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_CS, 0u) ||
-        core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_DS, 0u) ||
-        core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_ES, 0u) ||
-        core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_SS, 0u)) {
+    if (core_machine_cpu_execution_load_segment(probe->machine.cpu_execution,
+            &probe->machine.cpu->data.cs, 0u) ||
+        core_machine_cpu_execution_load_segment(probe->machine.cpu_execution,
+            &probe->machine.cpu->data.ds, 0u) ||
+        core_machine_cpu_execution_load_segment(probe->machine.cpu_execution,
+            &probe->machine.cpu->data.es, 0u) ||
+        core_machine_cpu_execution_load_segment(probe->machine.cpu_execution,
+            &probe->machine.cpu->data.ss, 0u)) {
         return 0;
     }
-    memcpy(&vcpu.data.eip, &eip, sizeof(eip));
+    memcpy(&probe->machine.cpu->data.eip, &eip, sizeof(eip));
     return 1;
 }
 
@@ -92,15 +94,15 @@ int nxvm_cpu_probe_step(
     memcpy(out_capture->bytes, bytes, byte_count);
     out_capture->byte_count = byte_count;
     core_machine_memory_write_real(0u, 0u, bytes, byte_count);
-    if (!nxvm_cpu_probe_capture_state(&out_capture->before)) {
+    if (!nxvm_cpu_probe_capture_state(probe, &out_capture->before)) {
         return 0;
     }
-    vcpuRefresh();
-    if (!nxvm_cpu_probe_capture_state(&out_capture->after)) {
+    core_machine_cpu_execution_refresh(probe->machine.cpu_execution);
+    if (!nxvm_cpu_probe_capture_state(probe, &out_capture->after)) {
         return 0;
     }
-    out_capture->exception_mask = vcpuins.data.except;
-    out_capture->exception_code = vcpuins.data.excode;
+    out_capture->exception_mask = probe->machine.cpuins->data.except;
+    out_capture->exception_code = probe->machine.cpuins->data.excode;
     return 1;
 }
 
