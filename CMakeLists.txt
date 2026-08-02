@@ -219,6 +219,13 @@ set(NXVM_CORE_PRODUCT_RUNTIME_SOURCES
 add_library(ntvdm64-core-platform STATIC
     src/core/platform/display_frame.c
 )
+if(WIN32)
+    target_sources(ntvdm64-core-platform PRIVATE
+        src/core/platform/win32/sleep.c)
+else()
+    target_sources(ntvdm64-core-platform PRIVATE
+        src/core/platform/linux/sleep.c)
+endif()
 target_include_directories(ntvdm64-core-platform PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )

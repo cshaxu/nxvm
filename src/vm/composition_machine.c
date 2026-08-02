@@ -5,6 +5,7 @@
 #include "vm/composition_control.h"
 #include "core/product/debug/debug_target.h"
 #include "core/product/wait.h"
+#include "core/platform/sleep.h"
 #include "vm/composition_debug.h"
 #include "vm/machine/vdebug.h"
 #include "vm/profile/default_profile/firmware/qdcga.h"
@@ -21,7 +22,7 @@
 static void vm_composition_wait(void *context, uint32_t milliseconds)
 {
     (void)context;
-    platformSleep(milliseconds);
+    core_platform_sleep_milliseconds(milliseconds);
 }
 
 static int vm_composition_keyboard_get_modifier(

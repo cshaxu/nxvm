@@ -180,3 +180,11 @@ Console, boot, or product policy. `ntvdm64-core-platform` owns the source;
 the VM platform target consumes it. Windows GCC, core presentation,
 VM-platform execution, default-profile FDD fixture, and the zero-edge DAG
 verifier passed.
+
+The second shared primitive is complete: `core/platform/{win32,linux}/sleep.c`
+implements one `core_platform_sleep_milliseconds` contract. VM composition
+binds that concrete provider to the existing core-product wait contract; the
+old VM `platformSleep` wrapper is gone. Windows GCC, core wait,
+VM-platform execution, and zero-edge DAG gates passed. The Linux implementation
+is selected by CMake on non-Windows and remains subject to the existing external
+POSIX compile validation.
