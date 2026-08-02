@@ -5,15 +5,16 @@
 The retained NXVM Console sends `debug` directly to `debugMain()`. That UI
 preserves the historical command grammar and reaches the real bootable VM
 through `core_product_debug_target`, whose VM composition adapter reads and
-writes the legacy `vcpu`, `vram`, `vport`, and `vdebug` state.
+writes the live NXVM global `vcpu`, `vram`, `vport`, and `vdebug` state.
 
 The execution loop calls `vdebugRefresh()` before each machine refresh.
 Breakpoints and trace counts request a stop by clearing the loop's run flag.
 This is not an acknowledged pause protocol: Console entry, state access, and
 resume are not serialized through one command boundary. The newer
-`core/machine/debug.*` API instead controls a separate `nxvm_core_machine`
-owned by the session model; it is tested and initialized but is not the
-authority that boots the current full PC.
+`core/machine/debug.*` API instead controls a separate minimal
+`nxvm_core_machine` owned by the session model; it is tested and initialized
+but is not the authority that boots the current full PC. The authority
+convergence rules are in [Live Machine Authority Migration](m5-machine-authority-migration.md).
 
 ## Target Contract
 
@@ -46,13 +47,13 @@ experiment.
 
 T24 introduces one product-neutral debug backend interface for register,
 memory, port, run-control, break/watch, disassembly inputs, and stop-reason
-access. During convergence, VM composition supplies an adapter over the real
-legacy execution authority. A future VDM supplies its owned-DOS machine
-adapter. The small `core/machine/debug.*` API becomes one provider of this
-backend for native `nxvm_core_machine` instances; it must not be mistaken for
-the current full-PC authority. The retained debugger UI consumes the backend,
-removing direct legacy access from its composition adapter only after command,
-output, and DOS-boot regressions pass.
+access. It binds only to the single live machine authority defined by the
+authority migration plan. A future VDM supplies its owned-DOS machine adapter.
+The small `core/machine/debug.*` API becomes a native implementation only after
+it owns the real full-PC state; it must not be mistaken for that authority
+before convergence. The retained debugger UI consumes the backend, removing
+direct global-state access only after command, output, and DOS-boot regressions
+pass.
 
 ## Exit Evidence
 
