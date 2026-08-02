@@ -40,8 +40,9 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 T16 S1 P4: rename default-profile keyboard helpers behind the existing core
-keyboard provider, retaining BIOS data-area state and host-key handling.
+M5 T17 S1 P1: audit concrete Win32/Linux platform sources for truly shared host
+primitives, then define the first `core/platform` extraction without moving
+VM-specific policy.
 
 ## Completed
 
@@ -210,6 +211,9 @@ keyboard provider, retaining BIOS data-area state and host-key handling.
 - M5 T16 S1 P3: renamed default-profile display helpers behind the existing
   snapshot provider. GCC, core presentation, default-profile FDD fixture, and
   DAG gates passed without a text-state or frame-layout change.
+- M5 T16 S1 P4: renamed default-profile keyboard helpers behind the existing
+  core keyboard provider. GCC, platform-input, default-profile FDD, full-PC
+  FDD/HDD, and DAG gates passed without BIOS keyboard-state or IRQ changes.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware

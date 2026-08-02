@@ -116,129 +116,129 @@ void qdkeybInit() {
     qdxTable[0x16] = (t_faddrcc) INT_16; /* soft keyb */
 }
 
-int deviceConnectKeyboardGetFlag0CapsLock() {
+int qdkeybGetFlag0CapsLock() {
     return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);
 }
-int deviceConnectKeyboardGetFlag0NumLock()  {
+int qdkeybGetFlag0NumLock()  {
     return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_NUMLCK);
 }
-int deviceConnectKeyboardGetFlag0Shift() {
+int qdkeybGetFlag0Shift() {
     return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT) || GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT);
 }
-int deviceConnectKeyboardGetFlag0Alt()  {
+int qdkeybGetFlag0Alt()  {
     return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT);
 }
-int deviceConnectKeyboardGetFlag0Ctrl() {
+int qdkeybGetFlag0Ctrl() {
     return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL);
 }
-void deviceConnectKeyboardClrFlag0() {
+void qdkeybClrFlag0() {
     qdkeybVarFlag0 = Zero8;
 }
-void deviceConnectKeyboardClrFlag1() {
+void qdkeybClrFlag1() {
     qdkeybVarFlag1 = Zero8;
 }
 
-void deviceConnectKeyboardSetFlag0Insert()     {
+void qdkeybSetFlag0Insert()     {
     SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_INSERT);
 }
-void deviceConnectKeyboardSetFlag0CapLck()     {
+void qdkeybSetFlag0CapLck()     {
     SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);
 }
-void deviceConnectKeyboardSetFlag0NumLck()     {
+void qdkeybSetFlag0NumLck()     {
     SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_NUMLCK);
 }
-void deviceConnectKeyboardSetFlag0ScrLck()     {
+void qdkeybSetFlag0ScrLck()     {
     SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_SCRLCK);
 }
-void deviceConnectKeyboardSetFlag0Alt()        {
+void qdkeybSetFlag0Alt()        {
     SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT);
 }
-void deviceConnectKeyboardSetFlag0Ctrl()       {
+void qdkeybSetFlag0Ctrl()       {
     SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL);
 }
-void deviceConnectKeyboardSetFlag0LeftShift()  {
+void qdkeybSetFlag0LeftShift()  {
     SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT);
 }
-void deviceConnectKeyboardSetFlag0RightShift() {
+void qdkeybSetFlag0RightShift() {
     SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT);
 }
 
-void deviceConnectKeyboardClrFlag0Insert()     {
+void qdkeybClrFlag0Insert()     {
     ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_INSERT);
 }
-void deviceConnectKeyboardClrFlag0CapLck()     {
+void qdkeybClrFlag0CapLck()     {
     ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);
 }
-void deviceConnectKeyboardClrFlag0NumLck()     {
+void qdkeybClrFlag0NumLck()     {
     ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_NUMLCK);
 }
-void deviceConnectKeyboardClrFlag0ScrLck()     {
+void qdkeybClrFlag0ScrLck()     {
     ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_SCRLCK);
 }
-void deviceConnectKeyboardClrFlag0Alt()        {
+void qdkeybClrFlag0Alt()        {
     ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT);
 }
-void deviceConnectKeyboardClrFlag0Ctrl()       {
+void qdkeybClrFlag0Ctrl()       {
     ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL);
 }
-void deviceConnectKeyboardClrFlag0LeftShift()  {
+void qdkeybClrFlag0LeftShift()  {
     ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT);
 }
-void deviceConnectKeyboardClrFlag0RightShift() {
+void qdkeybClrFlag0RightShift() {
     ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT);
 }
 
-void deviceConnectKeyboardSetFlag1Insert()   {
+void qdkeybSetFlag1Insert()   {
     SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_INSERT);
 }
-void deviceConnectKeyboardSetFlag1CapLck()   {
+void qdkeybSetFlag1CapLck()   {
     SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_CAPLCK);
 }
-void deviceConnectKeyboardSetFlag1NumLck()   {
+void qdkeybSetFlag1NumLck()   {
     SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_NUMLCK);
 }
-void deviceConnectKeyboardSetFlag1ScrLck()   {
+void qdkeybSetFlag1ScrLck()   {
     SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SCRLCK);
 }
-void deviceConnectKeyboardSetFlag1Pause()    {
+void qdkeybSetFlag1Pause()    {
     SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_PAUSE);
 }
-void deviceConnectKeyboardSetFlag1SysRq()    {
+void qdkeybSetFlag1SysRq()    {
     SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SYSRQ);
 }
-void deviceConnectKeyboardSetFlag1LeftAlt()  {
+void qdkeybSetFlag1LeftAlt()  {
     SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LALT);
 }
-void deviceConnectKeyboardSetFlag1LeftCtrl() {
+void qdkeybSetFlag1LeftCtrl() {
     SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LCTRL);
 }
 
-void deviceConnectKeyboardClrFlag1Insert()   {
+void qdkeybClrFlag1Insert()   {
     ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_INSERT);
 }
-void deviceConnectKeyboardClrFlag1CapLck()   {
+void qdkeybClrFlag1CapLck()   {
     ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_CAPLCK);
 }
-void deviceConnectKeyboardClrFlag1NumLck()   {
+void qdkeybClrFlag1NumLck()   {
     ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_NUMLCK);
 }
-void deviceConnectKeyboardClrFlag1ScrLck()   {
+void qdkeybClrFlag1ScrLck()   {
     ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SCRLCK);
 }
-void deviceConnectKeyboardClrFlag1Pause()    {
+void qdkeybClrFlag1Pause()    {
     ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_PAUSE);
 }
-void deviceConnectKeyboardClrFlag1SysRq()    {
+void qdkeybClrFlag1SysRq()    {
     ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SYSRQ);
 }
-void deviceConnectKeyboardClrFlag1LeftAlt()  {
+void qdkeybClrFlag1LeftAlt()  {
     ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LALT);
 }
-void deviceConnectKeyboardClrFlag1LeftCtrl() {
+void qdkeybClrFlag1LeftCtrl() {
     ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LCTRL);
 }
 
-void deviceConnectKeyboardRecvKeyPress(uint16_t code) {
+void qdkeybRecvKeyPress(uint16_t code) {
     /* while(bufPush(code)) {
         utilsSleep(1);
     } */
@@ -252,15 +252,15 @@ static int qdkeybGetModifier(void *context,
     (void)context;
     switch (modifier) {
     case CORE_MACHINE_KEYBOARD_MODIFIER_ALT:
-        return deviceConnectKeyboardGetFlag0Alt();
+        return qdkeybGetFlag0Alt();
     case CORE_MACHINE_KEYBOARD_MODIFIER_CONTROL:
-        return deviceConnectKeyboardGetFlag0Ctrl();
+        return qdkeybGetFlag0Ctrl();
     case CORE_MACHINE_KEYBOARD_MODIFIER_SHIFT:
-        return deviceConnectKeyboardGetFlag0Shift();
+        return qdkeybGetFlag0Shift();
     case CORE_MACHINE_KEYBOARD_MODIFIER_CAPS_LOCK:
-        return deviceConnectKeyboardGetFlag0CapsLock();
+        return qdkeybGetFlag0CapsLock();
     case CORE_MACHINE_KEYBOARD_MODIFIER_NUM_LOCK:
-        return deviceConnectKeyboardGetFlag0NumLock();
+        return qdkeybGetFlag0NumLock();
     }
     return False;
 }
@@ -271,26 +271,26 @@ static void qdkeybApplyHostState(void *context, uint32_t asynchronous_keys,
 #define QDKEYB_SET_HOST_FLAG(mask, set_call, clear_call) \
     do { if ((mask) != 0u) set_call(); else clear_call(); } while (0)
     (void)context;
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_RIGHT_SHIFT, deviceConnectKeyboardSetFlag0RightShift, deviceConnectKeyboardClrFlag0RightShift);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_LEFT_SHIFT, deviceConnectKeyboardSetFlag0LeftShift, deviceConnectKeyboardClrFlag0LeftShift);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_CONTROL, deviceConnectKeyboardSetFlag0Ctrl, deviceConnectKeyboardClrFlag0Ctrl);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_ALT, deviceConnectKeyboardSetFlag0Alt, deviceConnectKeyboardClrFlag0Alt);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_SCROLL_LOCK, deviceConnectKeyboardSetFlag1ScrLck, deviceConnectKeyboardClrFlag1ScrLck);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_NUM_LOCK, deviceConnectKeyboardSetFlag1NumLck, deviceConnectKeyboardClrFlag1NumLck);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_CAPS_LOCK, deviceConnectKeyboardSetFlag1CapLck, deviceConnectKeyboardClrFlag1CapLck);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_INSERT, deviceConnectKeyboardSetFlag1Insert, deviceConnectKeyboardClrFlag1Insert);
-    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_SCROLL_LOCK, deviceConnectKeyboardSetFlag0ScrLck, deviceConnectKeyboardClrFlag0ScrLck);
-    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_NUM_LOCK, deviceConnectKeyboardSetFlag0NumLck, deviceConnectKeyboardClrFlag0NumLck);
-    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_CAPS_LOCK, deviceConnectKeyboardSetFlag0CapLck, deviceConnectKeyboardClrFlag0CapLck);
-    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_INSERT, deviceConnectKeyboardSetFlag0Insert, deviceConnectKeyboardClrFlag0Insert);
-    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_PAUSE, deviceConnectKeyboardSetFlag1Pause, deviceConnectKeyboardClrFlag1Pause);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_RIGHT_SHIFT, qdkeybSetFlag0RightShift, qdkeybClrFlag0RightShift);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_LEFT_SHIFT, qdkeybSetFlag0LeftShift, qdkeybClrFlag0LeftShift);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_CONTROL, qdkeybSetFlag0Ctrl, qdkeybClrFlag0Ctrl);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_ALT, qdkeybSetFlag0Alt, qdkeybClrFlag0Alt);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_SCROLL_LOCK, qdkeybSetFlag1ScrLck, qdkeybClrFlag1ScrLck);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_NUM_LOCK, qdkeybSetFlag1NumLck, qdkeybClrFlag1NumLck);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_CAPS_LOCK, qdkeybSetFlag1CapLck, qdkeybClrFlag1CapLck);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_INSERT, qdkeybSetFlag1Insert, qdkeybClrFlag1Insert);
+    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_SCROLL_LOCK, qdkeybSetFlag0ScrLck, qdkeybClrFlag0ScrLck);
+    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_NUM_LOCK, qdkeybSetFlag0NumLck, qdkeybClrFlag0NumLck);
+    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_CAPS_LOCK, qdkeybSetFlag0CapLck, qdkeybClrFlag0CapLck);
+    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_INSERT, qdkeybSetFlag0Insert, qdkeybClrFlag0Insert);
+    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_PAUSE, qdkeybSetFlag1Pause, qdkeybClrFlag1Pause);
 #undef QDKEYB_SET_HOST_FLAG
 }
 
 static void qdkeybReceiveKeyPress(void *context, uint16_t code)
 {
     (void)context;
-    deviceConnectKeyboardRecvKeyPress(code);
+    qdkeybRecvKeyPress(code);
 }
 
 const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(void)
