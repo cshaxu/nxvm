@@ -4,7 +4,7 @@
 
 #include "core/product/utils.h"
 
-#include "core/machine/vdma.h"
+#include "core/machine/dma.h"
 
 #include "vm/machine/vhdd.h"
 

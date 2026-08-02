@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_VDMA_H
-#define NXVM_VDMA_H
+#ifndef NXVM_CORE_DMA_H
+#define NXVM_CORE_DMA_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,8 +60,15 @@ typedef struct {
     t_latch_data data;
 } t_latch;
 
-extern t_latch vlatch;
-extern t_dma vdma1, vdma2;
+t_latch *core_machine_dma_latch_current(void);
+t_dma *core_machine_dma_primary_current(void);
+t_dma *core_machine_dma_secondary_current(void);
+void core_machine_dma_bind_live(t_latch *latch, t_dma *primary, t_dma *secondary);
+void core_machine_dma_unbind_live(void);
+
+#define vlatch (*core_machine_dma_latch_current())
+#define vdma1 (*core_machine_dma_primary_current())
+#define vdma2 (*core_machine_dma_secondary_current())
 
 /*
  * CMD:    DACK | DREQ | WS   | R    | TM   | CTRL | C0AD | M2M

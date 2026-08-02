@@ -65,8 +65,8 @@ direct aliases only; no global CPU/decoder storage remains.
 
 ## Active Work
 
-M5 T29 S1 P1: migrate the retained DMA controller pair into embedded
-live-machine storage while preserving DRQ and port behavior.
+M5 T30 S1 P1: migrate the retained keyboard controller into embedded
+live-machine storage while preserving IRQ and port behavior.
 
 ## Completed
 

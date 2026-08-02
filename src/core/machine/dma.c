@@ -7,10 +7,16 @@
 #include "core/machine/memory.h"
 
 #include "core/machine/port.h"
-#include "core/machine/vdma.h"
+#include "core/machine/dma.h"
 
-t_latch vlatch;
-t_dma vdma1, vdma2;
+static t_latch *coreMachineDmaLatch;
+static t_dma *coreMachineDmaPrimary;
+static t_dma *coreMachineDmaSecondary;
+t_latch *core_machine_dma_latch_current(void) { return coreMachineDmaLatch; }
+t_dma *core_machine_dma_primary_current(void) { return coreMachineDmaPrimary; }
+t_dma *core_machine_dma_secondary_current(void) { return coreMachineDmaSecondary; }
+void core_machine_dma_bind_live(t_latch *latch, t_dma *primary, t_dma *secondary) { coreMachineDmaLatch=latch; coreMachineDmaPrimary=primary; coreMachineDmaSecondary=secondary; }
+void core_machine_dma_unbind_live(void) { coreMachineDmaLatch=NULL; coreMachineDmaPrimary=NULL; coreMachineDmaSecondary=NULL; }
 
 static void doReset(t_dma *rdma) {
     MEMSET((void *)(&rdma->data), Zero8, sizeof(t_dma_data));
