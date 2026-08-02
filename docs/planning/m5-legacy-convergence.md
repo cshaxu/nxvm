@@ -88,6 +88,11 @@ required). The old `deviceConnectCpu*`, `deviceConnectRam*`, and
 their final deletion; no duplicate machine state was introduced. GCC,
 debug-target, expected-`#UD` probe, and FDD/HDD full-PC profile gates passed.
 
+VM hardware debugger controls now live in `vm/machine/vdebug.h` under
+`vm_machine_debug_*`. The core debugger adapter, retained Console recorder,
+and full-PC session use that narrow interface; the debugger declarations are
+gone from `device.h`. GCC plus debugger-target and Console gates passed.
+
 ## Migration Discipline
 
 Each slice first maps all direct callers and an observable behavior baseline.

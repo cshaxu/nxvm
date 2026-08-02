@@ -39,6 +39,15 @@ void vdebugRefresh();
 void vdebugFinal();
 void vm_machine_debug_bind_stop(vm_machine_debug_stop_callback callback,
     void *context);
+void vm_machine_debug_set_breakpoint_real(uint16_t segment, uint16_t offset);
+void vm_machine_debug_clear_breakpoint_real(void);
+void vm_machine_debug_set_breakpoint_linear(uint32_t linear);
+void vm_machine_debug_clear_breakpoint_linear(void);
+size_t vm_machine_debug_get_breakpoint_count(void);
+void vm_machine_debug_set_trace(size_t instruction_count);
+void vm_machine_debug_clear_trace(void);
+void vm_machine_debug_record_start(const char *file_name);
+void vm_machine_debug_record_stop(void);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
