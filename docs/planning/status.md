@@ -27,14 +27,16 @@ M4 is complete. Firmware, profile/provider, CPU verification, and retained
 NXVM Console contracts now bound M5 implementation without changing runtime
 behavior.
 
-## M5 Closure
+## M5 Reopened
 
-M5 is complete after T54. The retained NXVM full PC has one
-composition-owned machine authority, no legacy full-PC storage definitions, an
-acknowledged debugger pause boundary, one product-neutral debugger backend, a
-single `src/version.*` identity source, canonical naming for the reopened
-naming-convergence scope, and verified task artifacts through
-`build/output/nxvm_0_5_0054.exe`.
+M5 is reopened after T54 for second-pass naming and ownership cleanup. T54 is
+retained as first closure evidence, not final naming closure. The retained
+NXVM full PC still has one composition-owned machine authority, no legacy
+full-PC storage definitions, an acknowledged debugger pause boundary, one
+product-neutral debugger backend, and a single `src/version.*` identity source.
+Remaining M5 work is bounded to T55 through T63: documentation facts, public
+symbol prefixes, platform ownership, retained alias inventory/cleanup, and a
+final second-pass audit.
 
 ## M5 Continuity
 
@@ -133,13 +135,15 @@ M5 T54 S1 completed the final naming-convergence audit: source roots are only
 `src/core`, `src/vm`, and `src/vdm`; source/CMake no longer contain the old
 renamed file paths; remaining `v*` names are intentional retained runtime
 aliases or historical/provenance references; and
-`build/output/nxvm_0_5_0054.exe` is the verified final M5 naming artifact.
+`build/output/nxvm_0_5_0054.exe` is the verified first closure artifact.
+M5 T55 S1 reopened second-pass naming cleanup, froze the T55 through T63 plan,
+deferred M6 again, and produced `build/output/nxvm_0_5_0055.exe`.
 
 ## Active Work
 
-M6 T1 S1 is active, not started: prepare the bounded owned-DOS ABI design,
-test vectors, and M7 implementation breakdown. This does not authorize DOS
-implementation.
+M5 T56 S1 is active, not started: correct current/future documentation facts,
+especially absent `vdm/main.c` and actual `type.h` contents.
+M6 T1 S1 is deferred and not active.
 
 ## Completed
 
@@ -566,11 +570,13 @@ implementation.
 - M5 T54 S1 P1: closed naming convergence with source/CMake/docs scans,
   recorded intentional retained aliases and historical references, and built
   `build/output/nxvm_0_5_0054.exe`.
+- M5 T55 S1 P1: reopened second-pass naming cleanup, froze T55 through T63,
+  deferred M6 again, and built `build/output/nxvm_0_5_0055.exe`.
 
 ## Next Eligible Work
 
-- M6 T1 S1 may begin as a design-only task. M7 implementation remains
-  ineligible until M6 produces its approved design and bounded breakdown.
+- M5 T56 may begin. M6 design remains ineligible until M5 T63 closes the
+  second-pass naming and ownership cleanup.
 
 ## Delivery State
 
