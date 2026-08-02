@@ -182,4 +182,4 @@ deferred until the selected-session globals and the dual machine execution
 paths have a bounded M5 plan.
 
 The approved execution order and per-task deletion gates are recorded in
-[M5 Instance Authority Plan](../planning/m5-instance-authority-plan.md).
+[M5 Instance Authority Plan](../history/m5/planning/m5-instance-authority-plan.md).

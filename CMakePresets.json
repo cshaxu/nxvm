@@ -15,179 +15,35 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "gcc"
       }
-    },
-    {
-      "name": "vs2022-x64",
-      "displayName": "Visual Studio 2022 x64",
-      "generator": "Visual Studio 17 2022",
-      "architecture": "x64",
-      "binaryDir": "${sourceDir}/build/vs2022-x64"
     }
   ],
   "buildPresets": [
     {
-      "name": "m0-probe-gcc",
+      "name": "nxvm-current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["generate-m1-probe"]
+      "targets": ["nxvm-0-5-0073"]
     },
     {
-      "name": "m1-baseline-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-baseline"]
-    },
-    {
-      "name": "m3-core-contract-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-core-contract-smoke"]
-    },
-    {
-      "name": "m3-machine-instance-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-core-machine-instance-smoke"]
-    },
-    {
-      "name": "m3-machine-lifecycle-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-core-machine-lifecycle-smoke"]
-    },
-    {
-      "name": "m3-machine-trace-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-core-machine-trace-smoke"]
-    },
-    {
-      "name": "m3-full-pc-profile-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-full-pc-profile-smoke"]
-    },
-    {
-      "name": "m3-dos-minimal-profile-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-dos-minimal-profile-smoke"]
-    },
-    {
-      "name": "m3-presentation-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-dos-minimal-presentation-smoke"]
-    },
-    {
-      "name": "m3-machine-debug-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-core-machine-debug-smoke"]
-    },
-    {
-      "name": "m3-session-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-runtime-session-smoke"]
-    },
-    {
-      "name": "m3-nxvm-task-artifacts-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-m3-t5"]
-    },
-    {
-      "name": "m5-cpu-probes-gcc",
+      "name": "nxvm-current-gates-gcc",
       "configurePreset": "mingw-gcc-x64",
       "targets": [
-        "nxvm-core-cpu-capability-smoke",
-        "nxvm-baseline-cpu-probe-smoke"
+        "nxvm-vm-two-session-isolation-smoke",
+        "nxvm-vm-full-authority-closure-smoke",
+        "nxvm-vm-dos-prompt-smoke",
+        "nxvm-product-console-smoke",
+        "nxvm-vm-debug-target-smoke",
+        "verify-dependency-dag",
+        "verify-live-machine-authority"
       ]
     },
     {
-      "name": "m5-t1-nxvm-artifact-gcc",
+      "name": "ntvdm64-minimal-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-m5-t1"]
-    },
-    {
-      "name": "m5-t2-nxvm-artifact-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-m5-t2"]
-    },
-    {
-      "name": "m5-t3-nxvm-artifact-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-m5-t3"]
-    },
-    {
-      "name": "m5-t4-nxvm-artifact-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-m5-t4"]
-    },
-    {
-      "name": "m5-t5-nxvm-artifact-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-m5-t5"]
-    },
-    {
-      "name": "m5-t6-nxvm-artifact-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-m5-t6"]
-    },
-    {
-      "name": "m5-t7-nxvm-artifact-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-m5-t7"]
-    },
-    {
-      "name": "m5-profile-registry-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-runtime-registry-smoke"]
-    },
-    {
-      "name": "m5-pc-at-builtin-profile-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-pc-at-builtin-profile-smoke"]
-    },
-    {
-      "name": "m5-pc-devices-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-core-pc-devices-smoke"]
-    },
-    {
-      "name": "m5-presentation-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-core-presentation-smoke"]
-    },
-    {
-      "name": "m5-firmware-registry-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-firmware-smoke"]
-    },
-    {
-      "name": "m5-pc-at-firmware-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-pc-at-firmware-smoke"]
-    },
-    {
-      "name": "m5-nxvm-media-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-product-media-smoke"]
-    },
-    {
-      "name": "m5-nxvm-pc-at-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-product-pc-at-smoke"]
-    },
-    {
-      "name": "m5-nxvm-console-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-product-console-smoke"]
-    },
-    {
-      "name": "m5-nxvm-presentation-debug-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-product-presentation-debug-smoke"]
-    },
-    {
-      "name": "m5-nxvm-session-gcc",
-      "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-product-session-smoke"]
-    },
-    {
-      "name": "m0-probe-msvc",
-      "configurePreset": "vs2022-x64",
-      "targets": ["generate-m1-probe"],
-      "configuration": "Debug"
+      "targets": [
+        "ntvdm64-version-smoke",
+        "ntvdm64-vdm-minimal-session-smoke",
+        "nxvm-dos-minimal-profile-smoke"
+      ]
     }
   ]
 }

@@ -229,16 +229,9 @@ M5 removed the prior `app`, `adapters`, `dos`, `firmware`, `integration`,
 source roots. Only `core`, `vm`, and `vdm` directories, plus the root
 foundation units `type.*` and `version.*`, may receive source files.
 
-The prior M5 source-root migration was followed by live-machine authority
-convergence: the `device.h` aggregate is gone, CPU/RAM/port authority is owned
-by the live machine, and retained compatibility spellings are direct aliases
-only. The remaining M5 work is naming and contract clarity: legacy `v*`
-implementation filenames, mixed interface/provider headers, stale documents,
-and ambiguous platform/product names converge under
-`planning/m5-naming-convergence.md`. Shared concrete Win32/Linux host
+The source-root, naming, and live-machine authority plans are complete and
+archived under `history/m5/planning/`. T64 through T73 removed the final
+mutable selected-session selectors; retained execution now receives its
+composition-owned object graph explicitly. Shared concrete Win32/Linux host
 providers move to `core/platform` only when proven mechanism-only; VM and VDM
 policies remain bound by root composition.
-
-M5 T64 reopens the milestone for the remaining selected-session-global and
-instance-authority design. T63 remains closure evidence for the naming-only
-window; it does not close explicit context-passing work.

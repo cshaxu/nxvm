@@ -108,17 +108,16 @@ core/VM/VDM dependency model, and the `vm/` and `vdm/` roots are the only
 composition roots. The legacy `device.h` aggregate is deleted; retained CPU,
 RAM, and port execution has one core-machine state/API authority; and reusable
 Win32/Linux host providers live in `core/platform` rather than `vm/platform`.
-No ntvdm64 DOS runner behavior is required. The reopened closure plans are
-`planning/m5-legacy-convergence.md` and
-`planning/m5-naming-convergence.md`.
+No ntvdm64 DOS runner behavior is required. The early structural and naming
+plans are closed historical evidence under `history/m5/planning/`.
 
 M5 T64 reopens bounded design work for explicit session ownership and
 context-passing. It must produce the next bounded authority-migration plan
 before M6 may begin; it does not authorize a multi-session product feature.
 
-M5 T65 through T73 execute that plan, removing selected-session globals one
-authority family at a time. M6 remains deferred until T73 records a clean
-closure scan and compatibility evidence.
+M5 T65 through T73 completed that plan, removing selected-session globals one
+authority family at a time. T73 recorded a clean closure scan and compatibility
+evidence. T74 is a non-runtime governance/build cleanup task.
 
 **Compatibility gate:** M5 must not alter NXVM functionality or user experience.
 Any unavoidable user-visible change requires explicit owner approval before
