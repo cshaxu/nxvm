@@ -14,6 +14,8 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
         machine->cpu, machine->cpuins, machine->ram, machine->port);
     machine->pic_master = &machine->pic_master_storage;
     machine->pic_slave = &machine->pic_slave_storage;
+    core_machine_cpu_execution_context_bind_pic(machine->cpu_execution,
+        machine->pic_master, machine->pic_slave);
     machine->pit = &machine->pit_storage;
     machine->dma_latch = &machine->dma_latch_storage;
     machine->dma_primary = &machine->dma_primary_storage;

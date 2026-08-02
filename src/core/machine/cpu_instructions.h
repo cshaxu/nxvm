@@ -97,6 +97,7 @@ typedef struct {
 typedef struct t_cpuins t_cpuins;
 typedef struct t_ram t_ram;
 typedef struct t_port t_port;
+typedef struct t_pic t_pic;
 typedef struct core_machine_cpu_execution_context
     core_machine_cpu_execution_context;
 typedef void (*core_machine_cpu_instruction_handler)(
@@ -119,6 +120,8 @@ struct core_machine_cpu_execution_context {
     t_cpuins *instructions;
     t_ram *memory;
     t_port *port;
+    t_pic *pic_master;
+    t_pic *pic_slave;
     t_bool stop_requested;
     t_bool reset_requested;
 };
@@ -126,6 +129,9 @@ struct core_machine_cpu_execution_context {
 void core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
     t_cpuins *instructions, t_ram *memory, t_port *port);
+void core_machine_cpu_execution_context_bind_pic(
+    core_machine_cpu_execution_context *context, t_pic *master,
+    t_pic *slave);
 void core_machine_cpu_execution_bind_legacy(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_unbind_legacy(void);

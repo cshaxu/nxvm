@@ -401,11 +401,16 @@ void vpicSetIRQ(t_nubit8 irqId) {
  * Called by CPU
  */
 t_bool vpicScanINTR() {
+    return core_machine_pic_scan_interrupt(core_machine_pic_master_current(),
+        core_machine_pic_slave_current());
+}
+t_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
     t_bool flagINTR;
-    flagINTR = HasINTR(&vpic1);
-    if (flagINTR && (VPIC_GetIntrTopId(&vpic1) == 2)) {
+    if (master == NULL || slave == NULL) return False;
+    flagINTR = HasINTR(master);
+    if (flagINTR && (VPIC_GetIntrTopId(master) == 2)) {
         /* check slave pic */
-        flagINTR = HasINTR(&vpic2);
+        flagINTR = HasINTR(slave);
     }
     return flagINTR;
 }
@@ -430,19 +435,24 @@ t_nubit8 vpicPeekINTR() {
  * Called by CPU, who is responding to this interrupt
  */
 t_nubit8 vpicGetINTR() {
+    return core_machine_pic_get_interrupt(core_machine_pic_master_current(),
+        core_machine_pic_slave_current());
+}
+t_nubit8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
     t_nubit8 reqId1; /* top requested int id in master pic */
     t_nubit8 reqId2; /* top requested int id in slave pic */
-    reqId1 = VPIC_GetIntrTopId(&vpic1);
-    RespondINTR(&vpic1, reqId1);
+    if (master == NULL || slave == NULL) return 0;
+    reqId1 = VPIC_GetIntrTopId(master);
+    RespondINTR(master, reqId1);
     if (reqId1 == 0x02) {
         /* if IR2 has int request, then test slave pic */
-        reqId2 = VPIC_GetIntrTopId(&vpic2);
-        RespondINTR(&vpic2, reqId2);
+        reqId2 = VPIC_GetIntrTopId(slave);
+        RespondINTR(slave, reqId2);
         /* find the final int id based on slave ICW2 */
-        return (reqId2 | vpic2.data.icw2);
+        return (reqId2 | slave->data.icw2);
     } else {
         /* find the final int id based on master ICW2 */
-        return (reqId1 | vpic1.data.icw2);
+        return (reqId1 | master->data.icw2);
     }
 }
 

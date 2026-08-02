@@ -24,7 +24,7 @@ typedef struct {
     t_nubit8 irx; /* id of current top potential ir */
 } t_pic_data;
 
-typedef struct {
+typedef struct t_pic {
     t_pic_data data;
 } t_pic;
 
@@ -129,6 +129,8 @@ void core_machine_pic_refresh(t_pic *master, t_pic *slave);
 void core_machine_pic_finalize(t_pic *master, t_pic *slave);
 void core_machine_pic_set_irq(t_pic *master, t_pic *slave, t_nubit8 irq_id);
 void core_machine_pic_timer_output(void *owner);
+t_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
+t_nubit8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
 
 #define VPIC_POST "           \
 ; init vpic1                \n\
