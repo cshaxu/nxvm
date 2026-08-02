@@ -439,6 +439,9 @@ int vm_profile_default_display_capture(void *context,
     out_snapshot->cursor_x = vm_profile_default_display_cursor_x();
     out_snapshot->cursor_y = vm_profile_default_display_cursor_y();
     out_snapshot->cursor_visible = vm_profile_default_display_cursor_visible();
+    if (!out_snapshot->buffer_changed && !out_snapshot->cursor_changed) {
+        return True;
+    }
     for (row = 0u; row < out_snapshot->rows; ++row) {
         for (column = 0u; column < out_snapshot->columns; ++column) {
             uint16_t index = row * CORE_MACHINE_DISPLAY_MAX_COLUMNS + column;
