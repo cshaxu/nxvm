@@ -65,9 +65,9 @@ direct aliases only; no global CPU/decoder storage remains.
 
 ## Active Work
 
-M5 T25 S1 P1: map the retained RAM/A20 storage, allocation, translation,
-direct read/write, initializer, reset, refresh, and callback surface before
-any RAM authority migration.
+M5 T25 S2 P1: migrate the retained RAM/A20 implementation into canonical
+`memory.*` and the sole embedded live-machine storage, preserving every
+existing lifecycle and direct-access behavior.
 
 ## Completed
 
@@ -277,6 +277,11 @@ any RAM authority migration.
   GCC, same-object identity, expected-`#UD`, FDD/HDD reset-vector, retained
   Console `HELP`/`EXIT`, and DAG gates passed; `nxvm-m5-t23.exe` is the task
   artifact.
+- M5 T25 S1 P1: mapped the retained full-PC `vram` allocation, A20 state,
+  port `0x92` callbacks, physical/real address semantics, lifecycle order,
+  and direct consumers. The separate M3 minimal-machine memory buffer remains
+  outside full-PC composition; T25 S2 has a same-object migration plan and no
+  mapping-only artifact is required.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware
