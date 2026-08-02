@@ -2,7 +2,7 @@
 
 /* VKBC is Keyboard Controller: Intel 8042 not implemented yet. */
 
-#include "core/machine/vport.h"
+#include "core/machine/port.h"
 #include "core/machine/vkbc.h"
 
 void io_read_0064() {

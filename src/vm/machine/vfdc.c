@@ -6,7 +6,7 @@
 
 #include "core/machine/vdma.h"
 #include "core/machine/vpic.h"
-#include "core/machine/vport.h"
+#include "core/machine/port.h"
 #include "vm/machine/vfdd.h"
 
 #include "vm/machine/vfdc.h"

@@ -6,7 +6,7 @@
 
 #include "core/machine/vpit.h"
 #include "core/machine/memory.h"
-#include "core/machine/vport.h"
+#include "core/machine/port.h"
 
 static t_ram *coreMachineMemory;
 

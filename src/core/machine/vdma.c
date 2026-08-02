@@ -6,7 +6,7 @@
 
 #include "core/machine/memory.h"
 
-#include "core/machine/vport.h"
+#include "core/machine/port.h"
 #include "core/machine/vdma.h"
 
 t_latch vlatch;

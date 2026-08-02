@@ -1,107 +1,58 @@
-#include "core/machine/machine_impl.h"
+/* Copyright 2012-2014 Neko. */
 
-#include <stdlib.h>
+/* VPORT is the hub that connects all devices with the I/O port. */
 
-#define NXVM_CORE_PORT_COUNT 65536u
+#include "type.h"
 
-nxvm_core_status nxvm_core_port_initialize(nxvm_core_machine *machine)
+#include "core/machine/port.h"
+
+static t_port *coreMachinePort;
+
+t_port *core_machine_port_current(void)
 {
-    if (machine == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    }
-
-    machine->ports.slots = (nxvm_core_port_slot *)calloc(
-        NXVM_CORE_PORT_COUNT,
-        sizeof(*machine->ports.slots));
-    if (machine->ports.slots == NULL) {
-        return NXVM_CORE_STATUS_NO_MEMORY;
-    }
-
-    return NXVM_CORE_STATUS_OK;
+    return coreMachinePort;
 }
 
-void nxvm_core_port_finalize(nxvm_core_machine *machine)
+void core_machine_port_bind_live(t_port *port)
 {
-    if (machine != NULL) {
-        free(machine->ports.slots);
-        machine->ports.slots = NULL;
-    }
+    coreMachinePort = port;
 }
 
-nxvm_core_status nxvm_core_machine_install_port(
-    nxvm_core_machine *machine,
-    uint16_t first,
-    uint16_t last,
-    const nxvm_core_port_ops *ops,
-    void *owner)
+void core_machine_port_unbind_live(void)
 {
-    uint32_t port;
-
-    if (machine == NULL || ops == NULL || first > last ||
-        (ops->read == NULL && ops->write == NULL)) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    }
-
-    for (port = first; port <= last; ++port) {
-        if (machine->ports.slots[port].ops.read != NULL ||
-            machine->ports.slots[port].ops.write != NULL) {
-            return NXVM_CORE_STATUS_INVALID_STATE;
-        }
-    }
-
-    for (port = first; port <= last; ++port) {
-        machine->ports.slots[port].ops = *ops;
-        machine->ports.slots[port].owner = owner;
-    }
-
-    return NXVM_CORE_STATUS_OK;
+    coreMachinePort = NULL;
 }
 
-nxvm_core_status nxvm_core_machine_port_read(
-    nxvm_core_machine *machine,
-    uint16_t port,
-    uint32_t *out_value)
-{
-    nxvm_core_port_slot *slot;
-
-    if (machine == NULL || out_value == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    }
-
-    slot = &machine->ports.slots[port];
-    if (slot->ops.read == NULL) {
-        return NXVM_CORE_STATUS_UNSUPPORTED;
-    }
-
-    {
-        nxvm_core_status status = slot->ops.read(slot->owner, port, out_value);
-        nxvm_core_trace_record(machine, NXVM_CORE_TRACE_PORT_READ, port,
-                               status == NXVM_CORE_STATUS_OK ? *out_value : 0u,
-                               (uint32_t)status);
-        return status;
-    }
+void vportAddRead(t_nubit16 portId, t_faddrcc fpIn) {
+    vport.connect.fpIn[portId] = fpIn;
+}
+void vportAddWrite(t_nubit16 portId, t_faddrcc fpOut) {
+    vport.connect.fpOut[portId] = fpOut;
+}
+void vportExecRead(t_nubit16 portId) {
+    ExecFun(vport.connect.fpIn[portId]);
+}
+void vportExecWrite(t_nubit16 portId) {
+    ExecFun(vport.connect.fpOut[portId]);
 }
 
-nxvm_core_status nxvm_core_machine_port_write(
-    nxvm_core_machine *machine,
-    uint16_t port,
-    uint32_t value)
+void vportInit() {
+    MEMSET((void *)(&vport), Zero8, sizeof(t_port));
+}
+void vportReset() {
+    MEMSET((void *)(&vport.data), Zero8, sizeof(t_port_data));
+}
+void vportRefresh() {}
+void vportFinal() {}
+
+uint32_t core_machine_port_read_legacy(uint16_t port)
 {
-    nxvm_core_port_slot *slot;
+    vportExecRead(port);
+    return vport.data.ioDWord;
+}
 
-    if (machine == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    }
-
-    slot = &machine->ports.slots[port];
-    if (slot->ops.write == NULL) {
-        return NXVM_CORE_STATUS_UNSUPPORTED;
-    }
-
-    {
-        nxvm_core_status status = slot->ops.write(slot->owner, port, value);
-        nxvm_core_trace_record(machine, NXVM_CORE_TRACE_PORT_WRITE, port, value,
-                               (uint32_t)status);
-        return status;
-    }
+void core_machine_port_write_legacy(uint16_t port, uint32_t value)
+{
+    vport.data.ioDWord = value;
+    vportExecWrite(port);
 }

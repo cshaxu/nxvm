@@ -6,7 +6,7 @@
 
 #include "core/machine/vpic.h"
 
-#include "core/machine/vport.h"
+#include "core/machine/port.h"
 #include "core/machine/vpit.h"
 
 t_pit vpit;
