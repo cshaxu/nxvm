@@ -11,7 +11,11 @@
 
 #include "vm/profile/default_profile/firmware/qdx.h"
 
-t_faddrcc qdxTable[0x100];
+static t_qdx *vmProfileDefaultQdx;
+
+t_qdx *vm_profile_default_qdx_current(void) { return vmProfileDefaultQdx; }
+void vm_profile_default_qdx_bind_live(t_qdx *qdx) { vmProfileDefaultQdx = qdx; }
+void vm_profile_default_qdx_unbind_live(void) { vmProfileDefaultQdx = NULL; }
 
 static void QDX() {
     t_nubit8 cmdId;
