@@ -5,13 +5,13 @@
 void vm_composition_live_machine_initialize(vm_composition_live_machine *machine)
 {
     if (machine == NULL) return;
+    machine->ram = &machine->ram_storage;
+    machine->port = &machine->port_storage;
     machine->cpu = &machine->cpu_storage;
     machine->cpuins = &machine->cpuins_storage;
     machine->cpu_execution = &machine->cpu_execution_storage;
     core_machine_cpu_execution_context_initialize(machine->cpu_execution,
-        machine->cpu, machine->cpuins);
-    machine->ram = &machine->ram_storage;
-    machine->port = &machine->port_storage;
+        machine->cpu, machine->cpuins, machine->ram, machine->port);
     machine->pic_master = &machine->pic_master_storage;
     machine->pic_slave = &machine->pic_slave_storage;
     machine->pit = &machine->pit_storage;

@@ -26,14 +26,29 @@ void core_machine_memory_unbind_live(void)
 }
 
 /* Allocates memory for virtual machine ram */
-static void allocate(t_nubitcc newsize) {
+static t_nubit32 core_machine_memory_wrap_a20(const t_ram *ram,
+    t_nubit32 offset)
+{
+    return offset & (ram->data.flagA20 ? Max32 : ~VRAM_BIT_A20);
+}
+
+static t_vaddrcc core_machine_memory_address(t_ram *ram,
+    t_nubit32 physical)
+{
+    return ram->connect.pBase + (t_vaddrcc)core_machine_memory_wrap_a20(
+        ram, physical);
+}
+
+/* Allocates memory for one composition-owned RAM object. */
+void core_machine_memory_allocate_for(t_ram *ram, size_t newsize) {
+    if (ram == NULL) return;
     if (newsize) {
-        vram.connect.size = newsize;
-        if (vram.connect.pBase) {
-            FREE((void *) vram.connect.pBase);
+        ram->connect.size = newsize;
+        if (ram->connect.pBase) {
+            FREE((void *) ram->connect.pBase);
         }
-        vram.connect.pBase = (t_vaddrcc) MALLOC(vram.connect.size);
-        MEMSET((void *) vram.connect.pBase, Zero8, vram.connect.size);
+        ram->connect.pBase = (t_vaddrcc) MALLOC(ram->connect.size);
+        MEMSET((void *) ram->connect.pBase, Zero8, ram->connect.size);
     }
 }
 static void io_read_0092() {
@@ -43,14 +58,33 @@ static void io_write_0092() {
     vram.data.flagA20 = GetBit(vport.data.ioByte, VRAM_FLAG_A20);
 }
 
-void vramReadPhysical(t_nubit32 physical, t_vaddrcc rdest, t_nubitcc byte) {
-    if (physical >= vram.connect.size && physical >= 0xfffe0000) {
+void core_machine_memory_read_physical(t_ram *ram, t_nubit32 physical,
+    t_vaddrcc destination, t_nubitcc byte)
+{
+    if (ram == NULL) return;
+    if (physical >= ram->connect.size && physical >= 0xfffe0000) {
         physical &= 0x001fffff;
     }
-    MEMCPY((void *) rdest, (void *) VRAM_GetAddr(physical), byte);
+    MEMCPY((void *) destination,
+        (void *) core_machine_memory_address(ram, physical), byte);
 }
-void vramWritePhysical(t_nubit32 physical, t_vaddrcc rsrc, t_nubitcc byte) {
-    MEMCPY((void *) VRAM_GetAddr(physical), (void *) rsrc, byte);
+void core_machine_memory_write_physical(t_ram *ram, t_nubit32 physical,
+    t_vaddrcc source, t_nubitcc byte)
+{
+    if (ram == NULL) return;
+    MEMCPY((void *) core_machine_memory_address(ram, physical),
+        (void *) source, byte);
+}
+void vramReadPhysical(t_nubit32 physical, t_vaddrcc destination,
+    t_nubitcc byte)
+{
+    core_machine_memory_read_physical(core_machine_memory_current(), physical,
+        destination, byte);
+}
+void vramWritePhysical(t_nubit32 physical, t_vaddrcc source, t_nubitcc byte)
+{
+    core_machine_memory_write_physical(core_machine_memory_current(), physical,
+        source, byte);
 }
 
 #define pitOut ((t_faddrcc) NULL)
@@ -60,7 +94,7 @@ void vramInit() {
     vportAddWrite(0x0092, (t_faddrcc) io_write_0092);
     vpitAddMe(1);
     /* 16 MB */
-    allocate(1 << 24);
+    core_machine_memory_allocate_for(core_machine_memory_current(), 1 << 24);
 }
 void vramReset() {
     MEMSET((void *)(&vram.data), Zero8, sizeof(t_ram_data));
@@ -75,17 +109,43 @@ void vramFinal() {
 
 void core_machine_memory_allocate(size_t bytes)
 {
-    allocate(bytes);
+    core_machine_memory_allocate_for(core_machine_memory_current(), bytes);
 }
 
 void core_machine_memory_read_real(uint16_t segment, uint16_t offset,
     void *out_data, size_t size)
 {
-    MEMCPY(out_data, (void *)vramGetRealAddr(segment, offset), size);
+    core_machine_memory_read_real_from(core_machine_memory_current(), segment,
+        offset, out_data, size);
 }
 
 void core_machine_memory_write_real(uint16_t segment, uint16_t offset,
     const void *in_data, size_t size)
 {
-    MEMCPY((void *)vramGetRealAddr(segment, offset), (void *)in_data, size);
+    core_machine_memory_write_real_to(core_machine_memory_current(), segment,
+        offset, in_data, size);
+}
+
+void core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
+    uint16_t offset, void *out_data, size_t size)
+{
+    t_nubit32 physical;
+
+    if (ram == NULL || ram->connect.size == 0u) return;
+    physical = core_machine_memory_wrap_a20(ram,
+        (GetMax16(segment) << 4) + GetMax16(offset));
+    physical %= ram->connect.size;
+    MEMCPY(out_data, (void *)(ram->connect.pBase + physical), size);
+}
+
+void core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
+    uint16_t offset, const void *in_data, size_t size)
+{
+    t_nubit32 physical;
+
+    if (ram == NULL || ram->connect.size == 0u) return;
+    physical = core_machine_memory_wrap_a20(ram,
+        (GetMax16(segment) << 4) + GetMax16(offset));
+    physical %= ram->connect.size;
+    MEMCPY((void *)(ram->connect.pBase + physical), (void *)in_data, size);
 }

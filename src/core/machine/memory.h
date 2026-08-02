@@ -20,7 +20,7 @@ typedef struct {
     t_nubitcc size; /* memory size in byte */
 } t_ram_connect;
 
-typedef struct {
+typedef struct t_ram {
     t_ram_data data;
     t_ram_connect connect;
 } t_ram;
@@ -49,16 +49,26 @@ void core_machine_memory_unbind_live(void);
 void vramReadPhysical(t_nubit32 physical, t_vaddrcc rdest, t_nubitcc size);
 void vramWritePhysical(t_nubit32 physical, t_vaddrcc rsrc, t_nubitcc size);
 
+void core_machine_memory_read_physical(t_ram *ram, t_nubit32 physical,
+    t_vaddrcc destination, t_nubitcc size);
+void core_machine_memory_write_physical(t_ram *ram, t_nubit32 physical,
+    t_vaddrcc source, t_nubitcc size);
+
 void vramInit();
 void vramReset();
 void vramRefresh();
 void vramFinal();
 
 void core_machine_memory_allocate(size_t bytes);
+void core_machine_memory_allocate_for(t_ram *ram, size_t bytes);
 void core_machine_memory_read_real(uint16_t segment, uint16_t offset,
     void *out_data, size_t size);
 void core_machine_memory_write_real(uint16_t segment, uint16_t offset,
     const void *in_data, size_t size);
+void core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
+    uint16_t offset, void *out_data, size_t size);
+void core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
+    uint16_t offset, const void *in_data, size_t size);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
