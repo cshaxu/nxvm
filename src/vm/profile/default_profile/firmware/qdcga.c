@@ -371,11 +371,11 @@ void qdcgaReset() {
     vvadp.data.oldCurTop  = vvadp.data.oldCurBottom = 0x00;
 }
 
-int deviceConnectDisplayGetCursorVisible() {
+static int vm_profile_default_display_cursor_visible(void) {
     /* qdcgaGetCursorVisible; */
     return (qdcgaVarCursorTop < qdcgaVarCursorBottom);
 }
-int deviceConnectDisplayGetCursorChange() {
+static int vm_profile_default_display_cursor_changed(void) {
     if (vvadp.data.oldCurPosX != qdcgaVarCursorPosRow(qdcgaVarPageNum) ||
             vvadp.data.oldCurPosY != qdcgaVarCursorPosCol(qdcgaVarPageNum) ||
             vvadp.data.oldCurTop  != qdcgaVarCursorTop ||
@@ -389,7 +389,7 @@ int deviceConnectDisplayGetCursorChange() {
         return False;
     }
 }
-int deviceConnectDisplayGetBufferChange() {
+static int vm_profile_default_display_buffer_changed(void) {
     if (MEMCMP((void *) vvadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize)) {
         MEMCPY((void *) vvadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
         return True;
@@ -397,28 +397,28 @@ int deviceConnectDisplayGetBufferChange() {
         return False;
     }
 }
-uint16_t deviceConnectDisplayGetRowSize() {
+static uint16_t vm_profile_default_display_columns(void) {
     return qdcgaVarRowSize;
 }
-uint16_t deviceConnectDisplayGetColSize() {
+static uint16_t vm_profile_default_display_rows(void) {
     return vvadp.data.colSize;
 }
-uint8_t deviceConnectDisplayGetCursorTop() {
+static uint8_t vm_profile_default_display_cursor_top(void) {
     return qdcgaVarCursorTop;
 }
-uint8_t deviceConnectDisplayGetCursorBottom() {
+static uint8_t vm_profile_default_display_cursor_bottom(void) {
     return qdcgaVarCursorBottom;
 }
-uint8_t deviceConnectDisplayGetCurrentCursorPosX() {
+static uint8_t vm_profile_default_display_cursor_x(void) {
     return qdcgaVarCursorPosRow(qdcgaVarPageNum);
 }
-uint8_t deviceConnectDisplayGetCurrentCursorPosY() {
+static uint8_t vm_profile_default_display_cursor_y(void) {
     return qdcgaVarCursorPosCol(qdcgaVarPageNum);
 }
-uint8_t deviceConnectDisplayGetCurrentChar(uint8_t x, uint8_t y) {
+static uint8_t vm_profile_default_display_character(uint8_t x, uint8_t y) {
     return qdcgaVarChar(qdcgaVarPageNum, x, y);
 }
-uint8_t deviceConnectDisplayGetCurrentCharProp(uint8_t x, uint8_t y) {
+static uint8_t vm_profile_default_display_attribute(uint8_t x, uint8_t y) {
     return qdcgaVarCharProp(qdcgaVarPageNum, x, y);
 }
 
@@ -430,21 +430,21 @@ int vm_profile_default_display_capture(void *context,
 
     (void)context;
     if (out_snapshot == NULL) return False;
-    out_snapshot->buffer_changed = deviceConnectDisplayGetBufferChange();
-    out_snapshot->cursor_changed = deviceConnectDisplayGetCursorChange();
-    out_snapshot->columns = deviceConnectDisplayGetRowSize();
-    out_snapshot->rows = deviceConnectDisplayGetColSize();
-    out_snapshot->cursor_top = deviceConnectDisplayGetCursorTop();
-    out_snapshot->cursor_bottom = deviceConnectDisplayGetCursorBottom();
-    out_snapshot->cursor_x = deviceConnectDisplayGetCurrentCursorPosX();
-    out_snapshot->cursor_y = deviceConnectDisplayGetCurrentCursorPosY();
-    out_snapshot->cursor_visible = deviceConnectDisplayGetCursorVisible();
+    out_snapshot->buffer_changed = vm_profile_default_display_buffer_changed();
+    out_snapshot->cursor_changed = vm_profile_default_display_cursor_changed();
+    out_snapshot->columns = vm_profile_default_display_columns();
+    out_snapshot->rows = vm_profile_default_display_rows();
+    out_snapshot->cursor_top = vm_profile_default_display_cursor_top();
+    out_snapshot->cursor_bottom = vm_profile_default_display_cursor_bottom();
+    out_snapshot->cursor_x = vm_profile_default_display_cursor_x();
+    out_snapshot->cursor_y = vm_profile_default_display_cursor_y();
+    out_snapshot->cursor_visible = vm_profile_default_display_cursor_visible();
     for (row = 0u; row < out_snapshot->rows; ++row) {
         for (column = 0u; column < out_snapshot->columns; ++column) {
             uint16_t index = row * CORE_MACHINE_DISPLAY_MAX_COLUMNS + column;
-            out_snapshot->characters[index] = deviceConnectDisplayGetCurrentChar(
+            out_snapshot->characters[index] = vm_profile_default_display_character(
                 (uint8_t)row, (uint8_t)column);
-            out_snapshot->attributes[index] = deviceConnectDisplayGetCurrentCharProp(
+            out_snapshot->attributes[index] = vm_profile_default_display_attribute(
                 (uint8_t)row, (uint8_t)column);
         }
     }
