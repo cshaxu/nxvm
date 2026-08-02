@@ -4,7 +4,7 @@
 
 #include "type.h"
 
-#include "core/machine/vpit.h"
+#include "core/machine/pit.h"
 #include "core/machine/memory.h"
 #include "core/machine/port.h"
 
