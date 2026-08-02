@@ -470,6 +470,12 @@ target_link_libraries(nxvm-full-pc-profile-smoke PRIVATE
 )
 
 function(add_nxvm_full_pc_artifact target suffix)
+    string(REGEX REPLACE "^m([0-9]+)t([0-9]+)$" "nxvm-m\\1_t\\2.exe"
+        task_artifact_filename "${suffix}")
+    if(task_artifact_filename STREQUAL suffix)
+        message(FATAL_ERROR "Invalid NXVM task artifact suffix: ${suffix}")
+    endif()
+
     add_executable(${target} src/vm/main.c)
     target_compile_definitions(${target} PRIVATE "NXVM_BUILD_SUFFIX=\"${suffix}\"")
     target_include_directories(${target} PRIVATE
@@ -481,6 +487,12 @@ function(add_nxvm_full_pc_artifact target suffix)
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
     endif()
+
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/output"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:${target}>"
+            "${CMAKE_BINARY_DIR}/output/${task_artifact_filename}")
 endfunction()
 
 add_nxvm_full_pc_artifact(nxvm-m3-t5 "m3t5")
