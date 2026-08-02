@@ -20,9 +20,22 @@ typedef enum core_product_debug_watch_kind {
     CORE_PRODUCT_DEBUG_WATCH_EXECUTE
 } core_product_debug_watch_kind;
 
+typedef enum core_product_debug_pause_reason {
+    CORE_PRODUCT_DEBUG_PAUSE_NONE,
+    CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT,
+    CORE_PRODUCT_DEBUG_PAUSE_BREAKPOINT,
+    CORE_PRODUCT_DEBUG_PAUSE_TRACE,
+    CORE_PRODUCT_DEBUG_PAUSE_STEP
+} core_product_debug_pause_reason;
+
 typedef struct core_product_debug_target {
     int (*is_running)(void *context);
     void (*resume)(void *context);
+    int (*is_paused)(void *context);
+    core_product_debug_pause_reason (*get_pause_reason)(void *context);
+    int (*request_pause)(void *context, core_product_debug_pause_reason reason);
+    void (*continue_execution)(void *context);
+    int (*step)(void *context);
     int (*read_register)(void *context, core_product_debug_register reg,
                          uint32_t *value);
     int (*write_register)(void *context, core_product_debug_register reg,

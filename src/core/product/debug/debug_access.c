@@ -15,7 +15,47 @@ int core_product_debug_is_running(void)
 void core_product_debug_resume(void)
 {
     const core_product_debug_target *target = debug_target();
-    if (target != NULL && target->resume != NULL) target->resume(target->context);
+    if (target != NULL && target->is_paused != NULL &&
+        target->is_paused(target->context) && target->continue_execution != NULL) {
+        target->continue_execution(target->context);
+    } else if (target != NULL && target->resume != NULL) {
+        target->resume(target->context);
+    }
+}
+
+int core_product_debug_is_paused(void)
+{
+    const core_product_debug_target *target = debug_target();
+    return target != NULL && target->is_paused != NULL &&
+           target->is_paused(target->context);
+}
+
+core_product_debug_pause_reason core_product_debug_get_pause_reason(void)
+{
+    const core_product_debug_target *target = debug_target();
+    return target != NULL && target->get_pause_reason != NULL ?
+        target->get_pause_reason(target->context) : CORE_PRODUCT_DEBUG_PAUSE_NONE;
+}
+
+int core_product_debug_request_pause(core_product_debug_pause_reason reason)
+{
+    const core_product_debug_target *target = debug_target();
+    return target != NULL && target->request_pause != NULL &&
+           target->request_pause(target->context, reason) == 0;
+}
+
+void core_product_debug_continue(void)
+{
+    const core_product_debug_target *target = debug_target();
+    if (target != NULL && target->continue_execution != NULL) {
+        target->continue_execution(target->context);
+    }
+}
+
+int core_product_debug_step(void)
+{
+    const core_product_debug_target *target = debug_target();
+    return target != NULL && target->step != NULL && target->step(target->context) == 0;
 }
 
 int core_product_debug_read_register(core_product_debug_register reg, uint32_t *value)

@@ -10,6 +10,32 @@
 
 static int vm_debug_running(void *context) { (void)context; return vm_composition_control_is_running(); }
 static void vm_debug_resume(void *context) { (void)context; machineResume(); }
+static int vm_debug_paused(void *context) { (void)context; return vm_composition_control_is_paused(); }
+static core_product_debug_pause_reason vm_debug_pause_reason(void *context)
+{
+    (void)context;
+    switch (vm_composition_control_get_pause_reason()) {
+    case VM_COMPOSITION_PAUSE_EXPLICIT: return CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT;
+    case VM_COMPOSITION_PAUSE_BREAKPOINT: return CORE_PRODUCT_DEBUG_PAUSE_BREAKPOINT;
+    case VM_COMPOSITION_PAUSE_TRACE: return CORE_PRODUCT_DEBUG_PAUSE_TRACE;
+    case VM_COMPOSITION_PAUSE_STEP: return CORE_PRODUCT_DEBUG_PAUSE_STEP;
+    default: return CORE_PRODUCT_DEBUG_PAUSE_NONE;
+    }
+}
+static int vm_debug_request_pause(void *context, core_product_debug_pause_reason reason)
+{
+    vm_composition_pause_reason mapped = VM_COMPOSITION_PAUSE_EXPLICIT;
+    (void)context;
+    if (reason == CORE_PRODUCT_DEBUG_PAUSE_BREAKPOINT) mapped = VM_COMPOSITION_PAUSE_BREAKPOINT;
+    else if (reason == CORE_PRODUCT_DEBUG_PAUSE_TRACE) mapped = VM_COMPOSITION_PAUSE_TRACE;
+    else if (reason == CORE_PRODUCT_DEBUG_PAUSE_STEP) mapped = VM_COMPOSITION_PAUSE_STEP;
+    vm_composition_control_request_pause(mapped);
+    return 0;
+}
+static void vm_debug_continue(void *context)
+{ (void)context; vm_composition_control_continue(); }
+static int vm_debug_step(void *context)
+{ (void)context; return vm_composition_control_step() ? 0 : 1; }
 
 static int vm_debug_read_register(void *context, core_product_debug_register reg,
                                   uint32_t *value)
@@ -112,6 +138,11 @@ static void vm_debug_print_watchpoints(void *context)
 static const core_product_debug_target vmDebugTarget = {
     .is_running = vm_debug_running,
     .resume = vm_debug_resume,
+    .is_paused = vm_debug_paused,
+    .get_pause_reason = vm_debug_pause_reason,
+    .request_pause = vm_debug_request_pause,
+    .continue_execution = vm_debug_continue,
+    .step = vm_debug_step,
     .read_register = vm_debug_read_register,
     .write_register = vm_debug_write_register,
     .get_code_default_size = vm_debug_code_default_size,
