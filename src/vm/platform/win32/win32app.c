@@ -138,7 +138,8 @@ VOID win32appDisplaySetScreen() {
 VOID win32appDisplayPaint() {
     w32adispPaint(TRUE);
 }
-VOID win32appStartMachine() {
+VOID win32appStartMachine(const vm_platform_run_context *context) {
+    (void)context;
     BOOL oldDeviceFlip = vm_platform_execution_get_flip();
     CreateThread(NULL, 0, ThreadKernel, NULL, 0, &ThreadIdKernel);
     while (oldDeviceFlip == vm_platform_execution_get_flip()) {

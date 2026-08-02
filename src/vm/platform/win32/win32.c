@@ -12,7 +12,7 @@ static nxvm_win32_keyboard_state_sink win32_keyboard_state_sink;
 static void *win32_keyboard_state_sink_opaque;
 
 static UCHAR CodeMap[][8]= {
-    /* {SINGLE£¬ASCII£¬+SHIFT£¬ASCII£¬+CTRL£¬ASCII£¬+ALT£¬ASCII} */
+    /* {single, ASCII, shift, ASCII, control, ASCII, alt, ASCII} */
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
     {0x01, 0x1B, 0x01, 0x1B, 0x01, 0x1B, 0x01, 0x00},
     {0x02, 0x31, 0x02, 0x21, 0x00, 0x00, 0x78, 0x00},
@@ -154,24 +154,50 @@ static uint32_t win32KeyboardGetToggleState(void)
     return state;
 }
 
-static void win32KeyboardApplyCurrentStateDirect(void)
+static int win32KeyboardGetModifierFor(const vm_platform_run_context *context,
+                                       vm_platform_keyboard_modifier modifier)
 {
-    vm_platform_keyboard_apply_host_state(win32KeyboardGetAsyncState(),
-                                        win32KeyboardGetToggleState());
+    return context == NULL ? vm_platform_keyboard_get_modifier(modifier) :
+        vm_platform_keyboard_get_modifier_for(context->keyboard, modifier);
 }
 
-VOID win32KeyboardMakeStatus() {
+static void win32KeyboardApplyCurrentStateFor(
+    const vm_platform_run_context *context)
+{
     uint32_t asynchronous_keys = win32KeyboardGetAsyncState();
     uint32_t toggle_keys = win32KeyboardGetToggleState();
 
-    if (win32_keyboard_state_sink == NULL ||
-        win32_keyboard_state_sink(win32_keyboard_state_sink_opaque,
-                                  asynchronous_keys, toggle_keys) !=
-        NXVM_CORE_STATUS_OK) {
+    if (context == NULL) {
         vm_platform_keyboard_apply_host_state(asynchronous_keys, toggle_keys);
+    } else {
+        vm_platform_keyboard_apply_host_state_for(context->keyboard,
+            asynchronous_keys, toggle_keys);
     }
 }
-VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
+
+VOID win32KeyboardMakeStatusFor(const vm_platform_run_context *context) {
+    uint32_t asynchronous_keys = win32KeyboardGetAsyncState();
+    uint32_t toggle_keys = win32KeyboardGetToggleState();
+    nxvm_win32_keyboard_state_sink state_sink = context == NULL ?
+        win32_keyboard_state_sink : context->keyboard_state_sink;
+    void *state_context = context == NULL ? win32_keyboard_state_sink_opaque :
+        context->keyboard_state_context;
+
+    if (state_sink == NULL || state_sink(state_context, asynchronous_keys,
+                                         toggle_keys) !=
+        NXVM_CORE_STATUS_OK) {
+        if (context == NULL) {
+            vm_platform_keyboard_apply_host_state(asynchronous_keys, toggle_keys);
+        } else {
+            vm_platform_keyboard_apply_host_state_for(context->keyboard,
+                asynchronous_keys, toggle_keys);
+        }
+    }
+}
+VOID win32KeyboardMakeStatus() { win32KeyboardMakeStatusFor(NULL); }
+
+VOID win32KeyboardMakeKeyFor(const vm_platform_run_context *context,
+                             UCHAR scanCode, UCHAR virtualKey) {
     UCHAR ascii = 0x00;
     USHORT code = 0x0000;
     switch (virtualKey) {
@@ -183,7 +209,7 @@ VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
     case VK_MENU:
     case VK_CONTROL:
     case VK_PAUSE:
-        win32KeyboardApplyCurrentStateDirect();
+        win32KeyboardApplyCurrentStateFor(context);
         code = ((USHORT) scanCode << 8);
         break;
     case VK_UP:
@@ -195,11 +221,11 @@ VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
     case VK_END:
     case VK_PRIOR:
     case VK_NEXT:
-        if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
+        if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
             code = MoveKeyCode[scanCode - 0x47][7];
-        } else if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL)) {
+        } else if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL)) {
             code = MoveKeyCode[scanCode - 0x47][5];
-        } else if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT)) {
+        } else if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT)) {
             code = MoveKeyCode[scanCode - 0x47][3];
         } else {
             code = MoveKeyCode[scanCode - 0x47][1];
@@ -208,19 +234,20 @@ VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
         code |= ((USHORT)scanCode << 8);
         break;
     case VK_F9:
-        vm_platform_keyboard_request_stop();
+        if (context == NULL) vm_platform_keyboard_request_stop();
+        else vm_platform_keyboard_request_stop_for(context->keyboard);
     default:
-        if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
+        if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
             code = CodeMap[scanCode][7];
-        } else if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL)) {
+        } else if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL)) {
             code = CodeMap[scanCode][5];
-        } else if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT)) {
+        } else if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT)) {
             code = CodeMap[scanCode][3];
         } else {
             if (virtualKey > 0x40 && virtualKey < 0x5b) {
                 /* Caps Lock Active */
-                if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_CAPS_LOCK) ==
-                        vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT))
+                if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_CAPS_LOCK) ==
+                        win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT))
                     code = CodeMap[scanCode][1];
                 else
                     code = CodeMap[scanCode][3];
@@ -230,25 +257,25 @@ VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
                     /* Arrow Keys */
                     code = 0x00;
                 else {
-                    if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_NUM_LOCK) &&
-                            vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT))
+                    if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_NUM_LOCK) &&
+                            win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT))
                         code = CodeMap[scanCode][3];
                     else
                         code = CodeMap[scanCode][1];
                 }
             } else {
-                if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT))
+                if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT))
                     code = CodeMap[scanCode][3];
                 else
                     code = CodeMap[scanCode][1];
             }
         }
         /* correct scanCode */
-        if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
+        if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
             scanCode = CodeMap[scanCode][6];
-        } else if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL)) {
+        } else if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL)) {
             scanCode = CodeMap[scanCode][4];
-        } else if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT)) {
+        } else if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT)) {
             scanCode = CodeMap[scanCode][2];
         } else {
             scanCode = CodeMap[scanCode][0];
@@ -257,7 +284,12 @@ VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
         code |= ((USHORT) scanCode << 8);
         break;
     }
-    vm_platform_keyboard_receive_key_press(code);
+    if (context == NULL) vm_platform_keyboard_receive_key_press(code);
+    else vm_platform_keyboard_receive_key_press_for(context->keyboard, code);
+}
+
+VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
+    win32KeyboardMakeKeyFor(NULL, scanCode, virtualKey);
 }
 
 VOID win32DisplaySetScreen(BOOL flagWindow) {
@@ -276,10 +308,11 @@ VOID win32DisplayPaint(BOOL flagWindow) {
     }
 }
 
-VOID win32StartMachine(BOOL flagWindow) {
+VOID win32StartMachine(BOOL flagWindow,
+                       const vm_platform_run_context *context) {
     if (flagWindow) {
-        win32appStartMachine();
+        win32appStartMachine(context);
     } else {
-        win32conStartMachine();
+        win32conStartMachine(context);
     }
 }

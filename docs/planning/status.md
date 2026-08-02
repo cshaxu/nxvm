@@ -47,17 +47,20 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
 ## Active Work
 
-**M5 T78 S1: Debug target facade replacement design.** Trace the retained
-debugger UI's target lookup and define its composition-owned target binding
-without changing debugger grammar or Console behavior.
+**M5 T80 S2: Window run-context cutover.** Replace the Win32 window procedure
+and its threads' global transport lookups with one explicit window context.
+Console C1 is complete; Linux, display mailbox, mode/handle ownership, and
+wait scope remain outside this subtask.
 
 ## Short-Term M5 Plan
 
 The current M5 sequence is defined in
-[Facade And Executor Convergence](m5-facade-executor-convergence.md). It has
-two stories: T75--T81 removes residual process-global facades from real NXVM
-paths, then T82--T86 makes `core_machine` the one true guest executor while
-VM retains the outer product loop.
+[Facade And Executor Convergence](m5-facade-executor-convergence.md). T79
+closed the entry-point map for Story 1. T80 now executes its first cutover,
+Console host-surface context ownership; later T80 subtasks follow its fixed
+C2--C6 order. T81 closes the residual facade scan. Story 2 then makes
+`core_machine` the one true guest executor while VM retains the outer product
+loop.
 
 M6 T1 remains deferred until this M5 sequence closes. M7 implementation remains
 ineligible until M6 defines and closes its implementation breakdown.
