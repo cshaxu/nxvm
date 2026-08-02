@@ -166,11 +166,18 @@ alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M5 T67 S1 is active: migrate RAM and port-bus mutable authority from retained
-aliases to explicit composition-owned references. M6 T1 remains deferred and
+M5 T68 S1 is active: migrate core-device mutable authority and port callback
+binding to explicit composition-owned references. M6 T1 remains deferred and
 DOS implementation remains ineligible.
 
 ## Completed
+
+- M5 T67 S1: made CPU and debugger RAM/port access explicit, added direct
+  RAM/port lifecycle and bus operations, and proved two RAM/port contexts do
+  not cross-write. Core/VM device callback bodies remain assigned to T68/T70,
+  composition wrappers to T72, and final aliases to T73. GCC, CPU-probe,
+  Console, debugger-target, and FDD/HDD profile gates passed; `0.5.0067` is
+  built separately.
 
 - M5 T66 S1: introduced the composition-owned CPU execution context, threaded
   it through instruction decoding, probes, and debugger CPU access, and added

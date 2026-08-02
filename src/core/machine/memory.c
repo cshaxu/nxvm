@@ -89,22 +89,41 @@ void vramWritePhysical(t_nubit32 physical, t_vaddrcc source, t_nubitcc byte)
 
 #define pitOut ((t_faddrcc) NULL)
 void vramInit() {
-    MEMSET((void *)(&vram), Zero8, sizeof(t_ram));
+    core_machine_memory_initialize(core_machine_memory_current());
     vportAddRead(0x0092, (t_faddrcc) io_read_0092);
     vportAddWrite(0x0092, (t_faddrcc) io_write_0092);
     vpitAddMe(1);
-    /* 16 MB */
-    core_machine_memory_allocate_for(core_machine_memory_current(), 1 << 24);
 }
 void vramReset() {
-    MEMSET((void *)(&vram.data), Zero8, sizeof(t_ram_data));
-    MEMSET((void *) vram.connect.pBase, Zero8, vram.connect.size);
+    core_machine_memory_reset(core_machine_memory_current());
 }
 void vramRefresh() {}
 void vramFinal() {
-    if (vram.connect.pBase) {
-        FREE((void *) vram.connect.pBase);
+    core_machine_memory_finalize(core_machine_memory_current());
+}
+
+void core_machine_memory_initialize(t_ram *ram)
+{
+    if (ram == NULL) return;
+    MEMSET((void *)ram, Zero8, sizeof(*ram));
+    core_machine_memory_allocate_for(ram, 1u << 24);
+}
+
+void core_machine_memory_reset(t_ram *ram)
+{
+    if (ram == NULL || ram->connect.pBase == 0u) return;
+    MEMSET((void *)&ram->data, Zero8, sizeof(ram->data));
+    MEMSET((void *)ram->connect.pBase, Zero8, ram->connect.size);
+}
+
+void core_machine_memory_finalize(t_ram *ram)
+{
+    if (ram == NULL) return;
+    if (ram->connect.pBase != 0u) {
+        FREE((void *)ram->connect.pBase);
     }
+    ram->connect.pBase = 0u;
+    ram->connect.size = 0u;
 }
 
 void core_machine_memory_allocate(size_t bytes)

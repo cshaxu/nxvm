@@ -53,6 +53,9 @@ void core_machine_memory_read_physical(t_ram *ram, t_nubit32 physical,
     t_vaddrcc destination, t_nubitcc size);
 void core_machine_memory_write_physical(t_ram *ram, t_nubit32 physical,
     t_vaddrcc source, t_nubitcc size);
+void core_machine_memory_initialize(t_ram *ram);
+void core_machine_memory_reset(t_ram *ram);
+void core_machine_memory_finalize(t_ram *ram);
 
 void vramInit();
 void vramReset();

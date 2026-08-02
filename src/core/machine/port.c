@@ -63,13 +63,25 @@ void core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value)
 }
 
 void vportInit() {
-    MEMSET((void *)(&vport), Zero8, sizeof(t_port));
+    core_machine_port_initialize(core_machine_port_current());
 }
 void vportReset() {
-    MEMSET((void *)(&vport.data), Zero8, sizeof(t_port_data));
+    core_machine_port_reset(core_machine_port_current());
 }
 void vportRefresh() {}
 void vportFinal() {}
+
+void core_machine_port_initialize(t_port *port)
+{
+    if (port == NULL) return;
+    MEMSET((void *)port, Zero8, sizeof(*port));
+}
+
+void core_machine_port_reset(t_port *port)
+{
+    if (port == NULL) return;
+    MEMSET((void *)&port->data, Zero8, sizeof(port->data));
+}
 
 uint32_t core_machine_port_read_legacy(uint16_t port)
 {
