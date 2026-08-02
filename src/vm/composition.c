@@ -55,7 +55,7 @@ void vmachineInit(vm_composition_live_machine *machine) {
     vmCompositionBindBlock();
     vm_composition_bind_display();
     vbiosInit();
-    vvadpInit();
+    core_machine_vadp_initialize(machine->vadp);
     vbiosAddInt("qdx 10\niret", 0x10);
     _vbios_
     vportInit();
@@ -66,7 +66,7 @@ void vmachineInit(vm_composition_live_machine *machine) {
     vcmosReset();
     vcmosRefresh();
     _vbios_ _vport_
-    vkbcInit();
+    core_machine_kbc_initialize(machine->kbc, machine->port);
     vbiosAddInt("qdx 09\niret", 0x09);
     vbiosAddInt("qdx 16\niret", 0x16);
     _vbios_ _vport_
@@ -103,7 +103,7 @@ void vmachineReset(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vhdcReset();
     _empty_
-    vkbcReset();
+    core_machine_kbc_reset(machine->kbc);
     _empty_
 
     vcmosReset();
@@ -116,7 +116,7 @@ void vmachineReset(vm_composition_live_machine *machine) {
     core_machine_pic_reset(machine->pic_master, machine->pic_slave);
     core_machine_pit_reset(machine->pit);
     vportReset();
-    vvadpReset();
+    core_machine_vadp_reset(machine->vadp);
     vramReset();
     vbiosReset();
     _vram_
@@ -136,11 +136,11 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
     _empty_
     vhddRefresh();
     _empty_
-    vkbcRefresh();
+    core_machine_kbc_refresh(machine->kbc);
     _empty_
     vportRefresh();
     _empty_
-    vvadpRefresh();
+    core_machine_vadp_refresh(machine->vadp);
     _empty_
     vramRefresh();
     _empty_
@@ -176,7 +176,7 @@ void vmachineFinal(vm_composition_live_machine *machine) {
     _empty_
     vhdcFinal();
     _empty_
-    vkbcFinal();
+    core_machine_kbc_finalize(machine->kbc);
     _empty_
     core_machine_pic_finalize(machine->pic_master, machine->pic_slave);
     _empty_
@@ -184,7 +184,7 @@ void vmachineFinal(vm_composition_live_machine *machine) {
     _empty_
     vportFinal();
     _empty_
-    vvadpFinal();
+    core_machine_vadp_finalize(machine->vadp);
     _empty_
 
     vcpuFinal();
