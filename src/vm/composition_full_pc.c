@@ -7,6 +7,7 @@
 #include "core/machine/memory.h"
 #include "vm/machine/vdebug.h"
 #include "vm/machine/device.h"
+#include "core/machine/keyboard_state.h"
 #include "vm/machine/vfdd.h"
 #include "vm/machine/vhdd.h"
 #include "vm/profile/default_profile/firmware/vbios.h"
@@ -36,7 +37,7 @@ static void nxvm_full_pc_consume_request(
 {
     (void)opaque;
     if (request != NULL && request->kind == NXVM_PLATFORM_VM_REQUEST_KEYBOARD_STATE) {
-        deviceConnectKeyboardApplyHostState(
+        core_machine_keyboard_apply_host_state(
             request->data.keyboard_state.asynchronous_keys,
             request->data.keyboard_state.toggle_keys);
     }

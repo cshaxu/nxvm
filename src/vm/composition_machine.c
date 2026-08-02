@@ -9,6 +9,8 @@
 #include "vm/composition_debug.h"
 #include "vm/machine/vdebug.h"
 #include "vm/profile/default_profile/firmware/qdcga.h"
+#include "vm/profile/default_profile/firmware/qdkeyb.h"
+#include "core/machine/keyboard_state.h"
 #include "vm/platform/execution.h"
 #include "vm/platform/input.h"
 #include "vm/platform/platform.h"
@@ -29,15 +31,15 @@ static int vm_composition_keyboard_get_modifier(
     (void)context;
     switch (modifier) {
     case VM_PLATFORM_KEYBOARD_MODIFIER_ALT:
-        return deviceConnectKeyboardGetFlag0Alt();
+        return core_machine_keyboard_get_modifier(CORE_MACHINE_KEYBOARD_MODIFIER_ALT);
     case VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL:
-        return deviceConnectKeyboardGetFlag0Ctrl();
+        return core_machine_keyboard_get_modifier(CORE_MACHINE_KEYBOARD_MODIFIER_CONTROL);
     case VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT:
-        return deviceConnectKeyboardGetFlag0Shift();
+        return core_machine_keyboard_get_modifier(CORE_MACHINE_KEYBOARD_MODIFIER_SHIFT);
     case VM_PLATFORM_KEYBOARD_MODIFIER_CAPS_LOCK:
-        return deviceConnectKeyboardGetFlag0CapsLock();
+        return core_machine_keyboard_get_modifier(CORE_MACHINE_KEYBOARD_MODIFIER_CAPS_LOCK);
     case VM_PLATFORM_KEYBOARD_MODIFIER_NUM_LOCK:
-        return deviceConnectKeyboardGetFlag0NumLock();
+        return core_machine_keyboard_get_modifier(CORE_MACHINE_KEYBOARD_MODIFIER_NUM_LOCK);
     }
     return 0;
 }
@@ -46,13 +48,13 @@ static void vm_composition_keyboard_apply_host_state(
     void *context, uint32_t asynchronous_keys, uint32_t toggle_keys)
 {
     (void)context;
-    deviceConnectKeyboardApplyHostState(asynchronous_keys, toggle_keys);
+    core_machine_keyboard_apply_host_state(asynchronous_keys, toggle_keys);
 }
 
 static void vm_composition_keyboard_receive_key_press(void *context, uint16_t code)
 {
     (void)context;
-    deviceConnectKeyboardRecvKeyPress(code);
+    core_machine_keyboard_receive_key_press(code);
 }
 
 static void vm_composition_keyboard_request_stop(void *context)
@@ -127,6 +129,7 @@ void machineInit() {
     platformInit();
     core_product_wait_bind(vm_composition_wait, NULL);
     vm_composition_control_initialize();
+    core_machine_keyboard_bind(NULL, vm_profile_default_keyboard_provider());
     core_machine_display_bind_snapshot_provider(NULL,
         vm_profile_default_display_capture);
     vm_machine_debug_bind_stop(vm_composition_debug_request_stop, NULL);
@@ -137,6 +140,7 @@ void machineInit() {
 
 void machineFinal() {
     vm_composition_control_finalize();
+    core_machine_keyboard_bind(NULL, NULL);
     core_machine_display_bind_snapshot_provider(NULL, NULL);
     vm_machine_debug_bind_stop(NULL, NULL);
     core_product_debug_bind_target(NULL);
