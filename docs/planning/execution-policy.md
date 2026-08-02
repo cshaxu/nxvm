@@ -19,21 +19,23 @@ task tracking entry is updated in the same commit.
 
 Each completed implementation task that changes a runnable path must compile,
 verify, and copy one usable task-level local build output to the ignored
-`build/output/` directory. Use `nxvm-m<M>_t<T>.exe` for the bootable VM product or
-`ntvdm64-m<M>_t<T>.exe` for the DOS app-runner product. Its runtime identity
-uses the aggregate suffix `m<M>t<T>`. Baseline artifacts may keep the
-historical `ntvdm64-*` name already recorded by M1. Record its SHA-256, source
-commit, and whether it is a baseline/developer artifact or a product artifact
-in the verification record. Smoke-test executables remain build-tree
-verification tools and are never copied as developer artifacts. Design-only
-tasks do not manufacture executables. M3 is a recorded historical exception:
-only its final T5 artifact is retained. Local artifacts are never release
-evidence, must not bundle protected media or Microsoft binaries, and may be
-replaced only by a newly verified build of the same named task.
+`build/output/` directory. Beginning with M5 T48, the task number is the patch
+version: `T48` is `0.5.0048`, `T49` is `0.5.0049`, and so on. Use
+`nxvm_0_5_NNNN.exe` for the bootable VM product or `ntvdm64_0_5_NNNN.exe` for
+the DOS app-runner product, where `NNNN` is the four-digit decimal task
+number. Earlier historical artifacts retain their recorded names and banners.
+Record the artifact SHA-256, source commit, runtime identity/banner, and
+whether it is a baseline/developer artifact or a product artifact in the
+verification record. Smoke-test executables remain build-tree verification
+tools and are never copied as developer artifacts. Design-only tasks do not
+manufacture executables. M3 is a recorded historical exception: only its final
+T5 artifact is retained. Local artifacts are never release evidence, must not
+bundle protected media or Microsoft binaries, and may be replaced only by a
+newly verified build of the same named task.
 
 For a runnable artifact, the verification record also states the emitted runtime
-identity/banner and version. It must follow the pre-cutover or post-cutover
-rules in `docs/architecture/overview.md`; changing identity, version, or cutover state
+identity/banner and version. It must follow the task-version rules in
+`docs/architecture/overview.md`; changing identity, version, or cutover state
 without an approved subtask and regression evidence is prohibited.
 
 For a legacy coupled system, first establish and record a runnable full-source

@@ -27,13 +27,15 @@ M4 is complete. Firmware, profile/provider, CPU verification, and retained
 NXVM Console contracts now bound M5 implementation without changing runtime
 behavior.
 
-## M5 Closure
+## M5 Reopened
 
-M5 is complete. The retained NXVM full PC has one composition-owned machine
-authority, no legacy full-PC storage definitions, an acknowledged debugger
-pause boundary, one product-neutral debugger backend, and a single
-`src/version.*` identity source. GCC, source-DAG, live-authority, retained
-Console/debugger, and FDD/HDD fixture gates passed.
+M5 is reopened after T47 for naming convergence and remaining structural
+clarity before M6. The retained NXVM full PC still has one composition-owned
+machine authority, no legacy full-PC storage definitions, an acknowledged
+debugger pause boundary, one product-neutral debugger backend, and a single
+`src/version.*` identity source. The prior GCC, source-DAG, live-authority,
+retained Console/debugger, and FDD/HDD fixture evidence remains the regression
+baseline, not final closure.
 
 ## M5 Continuity
 
@@ -103,11 +105,17 @@ the one live full-PC authority.
 M5 T47 S1 closed the missing version foundation: `vm/main.c` no longer owns
 product identity or build timestamp strings, and `src/version.*` formats the
 retained task-level NXVM banner.
+M5 T48 S1 reopened M5 for naming convergence: low-risk device/file renames,
+interface/provider naming cleanup, stale-document removal, and the
+`0.5.NNNN` task-version artifact rule are planned before further source moves.
+It is complete as a design subtask and produced no executable.
 
 ## Active Work
 
-M6 T1 S1 is active, not started: prepare the bounded owned-DOS module design
-inputs and task breakdown. No DOS implementation is authorized by this entry.
+M5 T48 S2 is active, not started: rename low-risk shared core device files
+`keyboard_controller.*` to `kbc.*` and `video_adapter.*` to `vadp.*`, then
+complete T48 by producing `build/output/nxvm_0_5_0048.exe` after verification.
+M6 T1 S1 is deferred and not active.
 
 ## Completed
 
@@ -508,11 +516,14 @@ inputs and task breakdown. No DOS implementation is authorized by this entry.
   local FDD/HDD fixture session/profile checks, and retained NXVM Console smoke
   passed. The task artifact `ntvdm64-m5_t14.exe` is built from the same VM
   composition graph with the `m5t14` identity.
+- M5 T48 S1 P1: froze the M5 naming-convergence task breakdown,
+  stale-document cleanup, and `0.5.NNNN` task-version artifact rule.
+  Design subtask; no executable artifact until T48 S2 completes T48.
 
 ## Next Eligible Work
 
-- M6 design may begin. M7+ implementation remains blocked until M6 produces
-  its approved architecture and bounded task breakdown.
+- M5 T48 S2 may begin. M6 design is deferred until M5 naming convergence
+  closes or the owner explicitly pauses M5.
 
 ## Delivery State
 
