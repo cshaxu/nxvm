@@ -72,8 +72,6 @@ extern "C" {
 #define qdcgaGetCursorVisible \
     (!(qdcgaVarCursorTop & 0x08))
 
-extern t_nubit32 qdcgaModeBufSize[0x14];
-
 void qdcgaInit();
 void qdcgaReset();
 int vm_profile_default_display_capture(void *context,
