@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 
     if (argc != 2) return 1;
     machineInit(&session);
-    if (vm_machine_fdd_insert(argv[1]) != 0) goto fail;
+    if (vm_machine_fdd_insert_for(session.fdd, argv[1]) != 0) goto fail;
     vm_composition_control_reset(session.control);
     thread = CreateThread(NULL, 0u, run_full_pc, session.control, 0u, NULL);
     if (thread == NULL) goto fail;

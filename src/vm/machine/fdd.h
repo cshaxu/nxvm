@@ -38,20 +38,7 @@ typedef struct {
     t_fdd_connect connect;
 } t_fdd;
 
-t_fdd *vm_machine_fdd_current(void);
-void vm_machine_fdd_bind_live(t_fdd *fdd);
-void vm_machine_fdd_unbind_live(void);
-
-/* Transitional direct alias to the one composition-owned FDD object. */
-#define vfdd (*vm_machine_fdd_current())
-
 #define VFDD_BYTE_PER_MB ((1 << 10) * 1000)
-
-#define vfddSetPointer (vfdd.connect.pCurrByte = vfdd.connect.pImgBase + \
-    ((vfdd.data.cyl * vfdd.data.nhead + vfdd.data.head) * vfdd.data.nsector + \
-    (vfdd.data.sector - 1)) * vfdd.data.nbyte)
-#define vfddGetImageSize (vfdd.data.nbyte * vfdd.data.nsector * \
-    vfdd.data.nhead * vfdd.data.ncyl)
 
 size_t vm_machine_fdd_image_size(const t_fdd *fdd);
 void vm_machine_fdd_set_pointer(t_fdd *fdd);
@@ -66,17 +53,7 @@ void vm_machine_fdd_create_for(t_fdd *fdd);
 int vm_machine_fdd_insert_for(t_fdd *fdd, const char *file_name);
 int vm_machine_fdd_remove_for(t_fdd *fdd, const char *file_name);
 
-void vfddTransRead();
-void vfddTransWrite();
-void vfddFormatTrack(t_nubit8 fillByte);
-
-void vfddInit();
-void vfddReset();
-void vfddRefresh();
-void vfddFinal();
-void vm_machine_fdd_create(void);
-int vm_machine_fdd_insert(const char *file_name);
-int vm_machine_fdd_remove(const char *file_name);
+void vm_machine_fdd_print(const t_fdd *fdd);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

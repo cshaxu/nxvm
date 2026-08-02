@@ -80,7 +80,7 @@ nxvm_core_status nxvm_full_pc_create(
         nxvm_vm_request_transport_observe_execution_boundary,
         &full_pc->transport);
     if ((config->fdd_image != NULL &&
-         vm_machine_fdd_insert(config->fdd_image)) ||
+         vm_machine_fdd_insert_for(full_pc->machine.fdd, config->fdd_image)) ||
         (config->hdd_image != NULL &&
          vm_machine_hdd_insert(full_pc->machine.hdd, config->hdd_image))) {
         win32KeyboardBindStateSink(NULL, NULL);
@@ -91,7 +91,7 @@ nxvm_core_status nxvm_full_pc_create(
         free(full_pc);
         return NXVM_CORE_STATUS_FAULT;
     }
-    if (config->create_fdd) vm_machine_fdd_create();
+    if (config->create_fdd) vm_machine_fdd_create_for(full_pc->machine.fdd);
     if (config->create_hdd_cylinders != 0u) {
         vm_machine_hdd_create(full_pc->machine.hdd, config->create_hdd_cylinders);
     }
@@ -182,7 +182,8 @@ nxvm_core_status nxvm_full_pc_remove_fdd(nxvm_full_pc *full_pc, const char *path
     if (full_pc == NULL || !full_pc->active || vm_composition_control_is_running(full_pc->machine.control)) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
-    return vm_machine_fdd_remove(path) ? NXVM_CORE_STATUS_FAULT : NXVM_CORE_STATUS_OK;
+    return vm_machine_fdd_remove_for(full_pc->machine.fdd, path) ?
+        NXVM_CORE_STATUS_FAULT : NXVM_CORE_STATUS_OK;
 }
 
 nxvm_core_status nxvm_full_pc_disconnect_hdd(nxvm_full_pc *full_pc, const char *path)
