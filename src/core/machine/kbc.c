@@ -10,12 +10,21 @@ t_kbc *core_machine_kbc_current(void) { return coreMachineKbc; }
 void core_machine_kbc_bind_live(t_kbc *controller) { coreMachineKbc=controller; }
 void core_machine_kbc_unbind_live(void) { coreMachineKbc=NULL; }
 
-void io_read_0064() {
-    vport.data.ioByte = VKBC_STATUS_KE;
+static void core_machine_kbc_read_status(t_port *port, void *owner)
+{
+    (void)owner;
+    port->data.ioByte = VKBC_STATUS_KE;
+}
+
+void core_machine_kbc_register_ports(t_kbc *controller, t_port *port)
+{
+    core_machine_port_add_read(port, 0x0064,
+        core_machine_kbc_read_status, controller);
 }
 
 void vkbcInit() {
-    vportAddRead(0x0064, (t_faddrcc) io_read_0064);
+    core_machine_kbc_register_ports(core_machine_kbc_current(),
+        core_machine_port_current());
 }
 void vkbcReset() {}
 void vkbcRefresh() {}
