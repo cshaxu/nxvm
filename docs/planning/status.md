@@ -42,6 +42,8 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 M5 is complete. The shared-core source topology, legacy-convergence closure,
 and retained NXVM compatibility gates are recorded in the M5 planning evidence.
+The unused CPU capability manifest was removed after closure; CPU probe and
+evidence requirements remain governed by the CPU-verification documents.
 
 ## Completed
 
@@ -226,6 +228,9 @@ and retained NXVM compatibility gates are recorded in the M5 planning evidence.
 - M5 T18 S1 P1: closed M5 with `build/nxvm-m5-t18.exe`. Windows GCC, zero-edge
   DAG, expected-`#UD`, debugger-target, input/execution, FDD/HDD reset-vector,
   retained Console `HELP`/`EXIT`, and legacy/forbidden-dependency scans passed.
+- M5 T18 S1 P2: removed the unused hand-managed CPU capability manifest and
+  its dedicated smoke. The registry retains its generic capability-query test;
+  GCC, registry/core smokes, and the DAG verifier passed.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware
