@@ -78,3 +78,7 @@ artifact is produced when the runnable task completes.
 - Do not rename `win32app`, `win32con`, or `linuxcon` merely for style.
   Symmetric host-surface names are acceptable; ownership is determined by
   dependencies and policy content.
+- `win32app`, `win32con`, `linuxapp`, and `linuxcon` name host surface modes.
+  They may exist under `core/platform/<os>` only for policy-free shared host
+  mechanisms; VM/VDM lifecycle, CLI, debugger, or guest input semantics stay
+  under the owning product shape.

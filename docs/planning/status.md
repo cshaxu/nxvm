@@ -147,11 +147,16 @@ produced `build/output/nxvm_0_5_0057.exe`.
 M5 T58 S1 renamed low-risk VM session/composition public symbols to
 `vm_composition_session_model_*` and `vm_composition_full_pc_session_*`,
 preserved session behavior, and produced `build/output/nxvm_0_5_0058.exe`.
+M5 T59 S1 audited VM platform Win32/Linux ownership while preserving symmetric
+`win32app`, `win32con`, `linuxapp`, and `linuxcon` host-surface naming. No
+platform source file was moved; the audit found no safe whole-file T60
+migration and produced `build/output/nxvm_0_5_0059.exe`.
 
 ## Active Work
 
-M5 T59 S1 is active, not started: audit VM platform Win32/Linux ownership
-while preserving symmetric host-surface filenames.
+M5 T60 S1 is active, not started: close the platform migration decision by
+moving only proven shared, policy-free mechanisms, or by recording that no safe
+T60 migration exists after the T59 audit.
 M6 T1 S1 is deferred and not active.
 
 ## Completed
@@ -591,10 +596,13 @@ M6 T1 S1 is deferred and not active.
   `vm_composition_session_model_*` and
   `vm_composition_full_pc_session_*`, and built
   `build/output/nxvm_0_5_0058.exe`.
+- M5 T59 S1 P1: audited VM platform ownership, preserved symmetric
+  host-surface filenames, recorded that no whole VM platform file is safe for
+  T60 migration, and built `build/output/nxvm_0_5_0059.exe`.
 
 ## Next Eligible Work
 
-- M5 T59 may begin. M6 design remains ineligible until M5 T63 closes the
+- M5 T60 may begin. M6 design remains ineligible until M5 T63 closes the
   second-pass naming and ownership cleanup.
 
 ## Delivery State
