@@ -1,5 +1,7 @@
 #include "vm/composition_live_machine.h"
 
+#include <stdlib.h>
+
 void vm_composition_live_machine_initialize(vm_composition_live_machine *machine)
 {
     if (machine == NULL) return;
@@ -22,7 +24,8 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
     machine->debug = &machine->debug_storage;
     machine->default_bios = &machine->default_bios_storage;
     machine->default_qdx = &machine->default_qdx_storage;
-    machine->control = &machine->control_storage;
+    machine->control = (vm_composition_control_state *)calloc(1u,
+        sizeof(*machine->control));
 }
 
 void vm_composition_live_machine_bind_legacy(vm_composition_live_machine *machine)
@@ -85,5 +88,6 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     machine->debug = NULL;
     machine->default_bios = NULL;
     machine->default_qdx = NULL;
+    free(machine->control);
     machine->control = NULL;
 }

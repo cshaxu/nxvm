@@ -156,6 +156,7 @@ void machineFinal(vm_composition_live_machine *machine) {
     core_machine_display_bind_snapshot_provider(NULL, NULL);
     vm_machine_debug_bind_pause(NULL, NULL);
     core_product_debug_bind_target(NULL);
+    vm_composition_debug_target_finalize(machine);
     vm_platform_execution_bind(NULL, NULL);
     vm_platform_keyboard_bind(NULL, NULL);
     core_product_wait_bind(NULL, NULL);
