@@ -152,6 +152,12 @@ snapshot provider; text RAM reads, change detection, and copied-frame layout
 are unchanged. Windows GCC, core presentation, default-profile FDD fixture,
 and zero-edge DAG gates passed.
 
+The default-profile keyboard group is complete. Its helpers are now local
+`qdkeyb*` functions behind the existing core keyboard provider; BIOS data-area
+flags, queued scancodes, and IRQ1 delivery are unchanged. Windows GCC,
+platform-input, default-profile FDD, full-PC FDD/HDD, and zero-edge DAG gates
+passed.
+
 ## Ownership Rules
 
 `core/platform` owns host capability, not policy: Console attachment/mode,
