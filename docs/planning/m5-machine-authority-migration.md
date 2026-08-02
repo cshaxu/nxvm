@@ -47,18 +47,53 @@ accessors to inherited callers, but it has no duplicate CPU, RAM, or port
 storage. Product code must not construct the current minimal
 `nxvm_core_machine` as an additional machine for a bootable session.
 
-The first implementation slice is CPU/RAM/port authority only. It moves the
-actual `vcpu`, `vram`, and `vport` storage behind the live machine handle while
-retaining instruction, memory, and I/O semantics. Shared devices follow only
-after that slice proves FDD DOS boot. VM-only devices and profile firmware bind
-to that same handle later.
+After T23, CPU, RAM/A20, and port authority move in separate tasks. Each keeps
+instruction, memory, and I/O semantics unchanged and proves FDD DOS boot before
+the next authority moves. Shared devices follow, then VM-only devices and
+profile firmware bind to that same handle.
 
 ## Debugger Consequence
 
-T23 may add pause request and acknowledgement to the current live execution
-loop; it must not target the separate minimal model. T24 may expose a unified
-debug backend only over the live machine handle. An adapter that merely mirrors
-or redirects an unrelated `nxvm_core_machine` is prohibited.
+Debugger migration begins only after this authority convergence. It must target
+the single live machine handle. An adapter that mirrors or redirects an
+unrelated `nxvm_core_machine` is prohibited.
+
+## Task Breakdown
+
+Every implementation task below changes one primary authority only, compiles a
+task-level `nxvm-m5_t<N>.exe`, and retains the full-PC FDD DOS-prompt gate.
+The temporary compatibility surface may be reduced only after the corresponding
+device task proves that no second storage remains.
+
+| Task | Primary authority | Scope |
+| --- | --- | --- |
+| T23 | live-machine carrier | Create the one composition-owned live machine handle and bind existing state by reference only; no duplicate CPU/RAM/port allocation. |
+| T24 | CPU/executor | Move `vcpu` and `vcpuins` state and execution into the live machine instance. |
+| T25 | RAM/A20 | Move `vram` storage, allocation, translation, and A20 state into the instance. |
+| T26 | port dispatcher | Move `vport` ownership and I/O dispatch table into the instance. |
+| T27 | PIC | Move `vpic` state and instance binding. |
+| T28 | PIT | Move `vpit` state and instance binding. |
+| T29 | DMA | Move `vdma` state and instance binding. |
+| T30 | keyboard controller | Move `vkbc` state and instance binding. |
+| T31 | video adapter | Move `vvadp` state and instance binding. |
+| T32 | CMOS/RTC | Bind the VM-only `vcmos` provider to the instance. |
+| T33 | floppy media | Bind `vfdd` media state to the instance. |
+| T34 | floppy controller | Bind `vfdc` controller state and DMA/IRQ links to the instance. |
+| T35 | hard-disk media | Bind `vhdd` media state to the instance. |
+| T36 | hard-disk controller | Bind `vhdc` controller state and BIOS service links to the instance. |
+| T37 | BIOS/POST | Bind `vbios` firmware image, POST, and interrupt registrations to the instance while preserving default-profile ownership. |
+| T38 | QDX service | Bind the profile video interrupt service through the instance. |
+| T39 | CGA text service | Bind `qdcga` profile text state and display snapshot provider through the instance. |
+| T40 | keyboard firmware service | Bind `qdkeyb` through the instance keyboard controller and platform ingress. |
+| T41 | disk firmware service | Bind `qddisk` INT 13 services through the instance media/controller providers. |
+| T42 | debug instrumentation | Bind `vdebug` break, watch, bounded trace, and stop-reason state to the instance. |
+| T43 | full-PC closure | Remove obsolete global compatibility storage, prove one authority across init/reset/refresh, and freeze the migrated full-PC baseline. |
+| T44 | debugger pause boundary | Add request, acknowledgement, pause reason, step, and continue to the converged live execution loop. |
+| T45 | unified debugger backend | Route the retained debugger UI and future VDM debugger through the single live-machine backend. |
+
+T23 is structural preparation, not a second machine model. T24 through T42 are
+one-device tasks; T43 is the required composition closure. T44 and T45 remain
+inactive until T43 proves a single authority.
 
 ## Stop Conditions
 
