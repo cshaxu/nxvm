@@ -166,8 +166,8 @@ alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M5 T64 S1 is active: freeze core-machine naming and session-instance design
-before any context-passing implementation. M6 T1 is deferred and DOS
+M5 T65 S1 is active: replace the root VM selected-session carrier with an
+explicit composition-owned session context. M6 T1 is deferred and DOS
 implementation remains ineligible.
 
 ## Completed
@@ -623,7 +623,8 @@ implementation remains ineligible.
 
 ## Next Eligible Work
 
-- Complete M5 T64's design and approve its bounded authority-migration plan.
+- Complete M5 T65 through T73 instance-authority migration. The task order and
+  hard deletion gates are in `planning/m5-instance-authority-plan.md`.
 - M6 T1 may resume only after that plan is complete. DOS implementation remains
   ineligible until M6 creates and closes the M7 implementation breakdown.
 
