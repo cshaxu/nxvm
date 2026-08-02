@@ -434,6 +434,11 @@ add_executable(nxvm-vm-disk-firmware-smoke tests/machine/vm_disk_firmware_smoke.
 target_link_libraries(nxvm-vm-disk-firmware-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-vm-debug-authority-smoke tests/machine/vm_debug_authority_smoke.c)
 target_link_libraries(nxvm-vm-debug-authority-smoke PRIVATE nxvm-vm-composition)
+add_executable(nxvm-vm-full-authority-closure-smoke
+    tests/machine/vm_full_authority_closure_smoke.c)
+target_link_libraries(nxvm-vm-full-authority-closure-smoke PRIVATE
+    nxvm-vm-composition
+    nxvm-vm-profile)
 target_link_libraries(nxvm-vm-pit-authority-smoke PRIVATE nxvm-vm-composition)
 target_link_libraries(nxvm-vm-pic-authority-smoke PRIVATE
     nxvm-vm-composition
@@ -594,6 +599,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t40 "m5t40")
 add_nxvm_full_pc_artifact(nxvm-m5-t41 "m5t41")
 add_nxvm_full_pc_artifact(nxvm-m5-t42 "m5t42")
 add_nxvm_full_pc_artifact(nxvm-m5-t43 "m5t43")
+add_nxvm_full_pc_artifact(nxvm-m5-t44 "m5t44")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -628,6 +634,13 @@ if(NTVDM64_VERIFY_DEPENDENCY_DAG)
             -File "${CMAKE_SOURCE_DIR}/tools/Verify-DependencyDag.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 source dependency allowlist"
+        VERBATIM)
+
+    add_custom_target(verify-live-machine-authority
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifyLiveMachineAuthority.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 live-machine storage closure"
         VERBATIM)
 endif()
 

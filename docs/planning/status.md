@@ -94,13 +94,15 @@ existing media authorities through the core block interface.
 M5 T43 S1 moved VM debug breakpoint, trace, recording, and stop-callback state
 to the live machine's `debug_storage` object while retaining the existing
 debugger commands and target binding.
+M5 T44 S1 closed full-PC authority: a live-loop/reset smoke proves every
+retained accessor names the composition-owned machine object, and a static gate
+rejects remaining legacy full-PC storage definitions.
 
 ## Active Work
 
-M5 T44 S1 is the next active governance entry: full-PC authority closure is
-not started. It may begin only after review of T23-T43 evidence and the
-retained NXVM Console/debugger behavior. Owner-observed FDD DOS-prompt
-acceptance covers the preceding authority tasks.
+M5 T45 S1 is active: add a synchronized debugger pause boundary with request,
+acknowledgement, reason, step, and continue while preserving retained Console
+command behavior. Owner-observed FDD DOS-prompt acceptance covers T44.
 
 ## Completed
 
