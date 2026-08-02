@@ -9,7 +9,7 @@
 #include "vm/product/presentation.h"
 #include "core/product/runtime/registry.h"
 
-typedef struct nxvm_product_nxvm_session_config {
+typedef struct vm_composition_session_model_config {
     const char *fdd_path;
     const nxvm_product_nxvm_media_identity *fdd_identity;
     const char *hdd_path;
@@ -17,9 +17,9 @@ typedef struct nxvm_product_nxvm_session_config {
     int create_fdd;
     uint16_t create_hdd_cylinders;
     nxvm_product_nxvm_boot_target boot_target;
-} nxvm_product_nxvm_session_config;
+} vm_composition_session_model_config;
 
-typedef struct nxvm_product_nxvm_session {
+typedef struct vm_composition_session_model {
     nxvm_runtime_registry registry;
     core_machine_firmware firmware;
     vm_profile_default_firmware_plan firmware_plan;
@@ -30,17 +30,17 @@ typedef struct nxvm_product_nxvm_session {
     nxvm_product_nxvm_presentation presentation;
     core_machine *firmware_machine;
     nxvm_product_nxvm_debugger debugger;
-} nxvm_product_nxvm_session;
+} vm_composition_session_model;
 
-nxvm_core_status nxvm_product_nxvm_session_create(
-    nxvm_product_nxvm_session *session,
-    const nxvm_product_nxvm_session_config *config);
-nxvm_core_status nxvm_product_nxvm_session_get_firmware_reset_vector(
-    const nxvm_product_nxvm_session *session,
+nxvm_core_status vm_composition_session_model_create(
+    vm_composition_session_model *session,
+    const vm_composition_session_model_config *config);
+nxvm_core_status vm_composition_session_model_get_firmware_reset_vector(
+    const vm_composition_session_model *session,
     nxvm_product_nxvm_reset_vector *out_vector);
-nxvm_core_status nxvm_product_nxvm_session_get_execution_reset_vector(
-    const nxvm_product_nxvm_session *session,
+nxvm_core_status vm_composition_session_model_get_execution_reset_vector(
+    const vm_composition_session_model *session,
     nxvm_product_nxvm_reset_vector *out_vector);
-void nxvm_product_nxvm_session_destroy(nxvm_product_nxvm_session *session);
+void vm_composition_session_model_destroy(vm_composition_session_model *session);
 
 #endif

@@ -5,14 +5,14 @@
 #include "vm/composition_full_pc.h"
 #include "vm/profile/full_pc_profile.h"
 
-struct nxvm_vm_full_pc_session {
-    nxvm_vm_full_pc_session_config config;
+struct vm_composition_full_pc_session {
+    vm_composition_full_pc_session_config config;
     const nxvm_runtime_profile_descriptor *profile;
     int active;
 };
 
-static nxvm_core_status nxvm_vm_full_pc_session_start(
-    nxvm_vm_full_pc_session *session)
+static nxvm_core_status vm_composition_full_pc_session_start(
+    vm_composition_full_pc_session *session)
 {
     const nxvm_full_pc_config config = {
         session->config.fdd_image,
@@ -29,33 +29,33 @@ static nxvm_core_status nxvm_vm_full_pc_session_start(
     return status;
 }
 
-nxvm_core_status nxvm_vm_full_pc_session_create(
-    const nxvm_vm_full_pc_session_config *config,
-    nxvm_vm_full_pc_session **out_session)
+nxvm_core_status vm_composition_full_pc_session_create(
+    const vm_composition_full_pc_session_config *config,
+    vm_composition_full_pc_session **out_session)
 {
-    nxvm_vm_full_pc_session *session;
+    vm_composition_full_pc_session *session;
     nxvm_core_status status;
 
     if (config == NULL || out_session == NULL) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
     *out_session = NULL;
-    session = (nxvm_vm_full_pc_session *)calloc(1u, sizeof(*session));
+    session = (vm_composition_full_pc_session *)calloc(1u, sizeof(*session));
     if (session == NULL) {
         return NXVM_CORE_STATUS_NO_MEMORY;
     }
     session->config = *config;
     session->profile = nxvm_vm_full_pc_profile_descriptor();
-    status = nxvm_vm_full_pc_session_start(session);
+    status = vm_composition_full_pc_session_start(session);
     if (status != NXVM_CORE_STATUS_OK) {
-        nxvm_vm_full_pc_session_destroy(session);
+        vm_composition_full_pc_session_destroy(session);
         return status;
     }
     *out_session = session;
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_vm_full_pc_session_reset(nxvm_vm_full_pc_session *session)
+nxvm_core_status vm_composition_full_pc_session_reset(vm_composition_full_pc_session *session)
 {
     if (session == NULL) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
@@ -64,16 +64,16 @@ nxvm_core_status nxvm_vm_full_pc_session_reset(nxvm_vm_full_pc_session *session)
         nxvm_full_pc_destroy();
         session->active = 0;
     }
-    return nxvm_vm_full_pc_session_start(session);
+    return vm_composition_full_pc_session_start(session);
 }
 
-const nxvm_runtime_profile_descriptor *nxvm_vm_full_pc_session_profile(
-    const nxvm_vm_full_pc_session *session)
+const nxvm_runtime_profile_descriptor *vm_composition_full_pc_session_profile(
+    const vm_composition_full_pc_session *session)
 {
     return session == NULL ? NULL : session->profile;
 }
 
-void nxvm_vm_full_pc_session_destroy(nxvm_vm_full_pc_session *session)
+void vm_composition_full_pc_session_destroy(vm_composition_full_pc_session *session)
 {
     if (session != NULL) {
         if (session->active) {
