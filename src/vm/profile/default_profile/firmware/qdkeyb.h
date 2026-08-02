@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-#include "core/machine/memory.h"
 #include "core/machine/keyboard_interface.h"
 
 #define QDKEYB_VBIOS_ADDR_KEYB_FLAG0         0x0417
@@ -34,9 +33,6 @@ extern "C" {
 #define QDKEYB_FLAG1_D_SYSRQ   0x04
 #define QDKEYB_FLAG1_D_LALT    0x02
 #define QDKEYB_FLAG1_D_LCTRL   0x01
-
-#define qdkeybVarFlag0 (vramRealByte(0x0000, QDKEYB_VBIOS_ADDR_KEYB_FLAG0))
-#define qdkeybVarFlag1 (vramRealByte(0x0000, QDKEYB_VBIOS_ADDR_KEYB_FLAG1))
 
 typedef struct t_qdx t_qdx;
 void vm_profile_default_keyboard_initialize(t_qdx *qdx);
