@@ -151,12 +151,15 @@ M5 T59 S1 audited VM platform Win32/Linux ownership while preserving symmetric
 `win32app`, `win32con`, `linuxapp`, and `linuxcon` host-surface naming. No
 platform source file was moved; the audit found no safe whole-file T60
 migration and produced `build/output/nxvm_0_5_0059.exe`.
+M5 T60 S1 closed the platform migration decision with a no-move result: shared
+policy-free platform mechanisms are already in `src/core/platform`, and the
+remaining Win32/Linux VM platform files stay in `src/vm/platform` until future
+context-object extraction work. It produced `build/output/nxvm_0_5_0060.exe`.
 
 ## Active Work
 
-M5 T60 S1 is active, not started: close the platform migration decision by
-moving only proven shared, policy-free mechanisms, or by recording that no safe
-T60 migration exists after the T59 audit.
+M5 T61 S1 is active, not started: inventory retained runtime aliases and split
+compatibility spelling from state-authority debt.
 M6 T1 S1 is deferred and not active.
 
 ## Completed
@@ -599,10 +602,13 @@ M6 T1 S1 is deferred and not active.
 - M5 T59 S1 P1: audited VM platform ownership, preserved symmetric
   host-surface filenames, recorded that no whole VM platform file is safe for
   T60 migration, and built `build/output/nxvm_0_5_0059.exe`.
+- M5 T60 S1 P1: recorded the no-move platform migration decision, preserved
+  symmetric host-surface filenames, left VM platform files in place, and built
+  `build/output/nxvm_0_5_0060.exe`.
 
 ## Next Eligible Work
 
-- M5 T60 may begin. M6 design remains ineligible until M5 T63 closes the
+- M5 T61 may begin. M6 design remains ineligible until M5 T63 closes the
   second-pass naming and ownership cleanup.
 
 ## Delivery State
