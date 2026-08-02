@@ -54,7 +54,6 @@ void vm_composition_live_machine_bind_legacy(vm_composition_live_machine *machin
     core_machine_kbc_bind_live(machine->kbc);
     core_machine_vadp_bind_live(machine->vadp);
     vm_machine_fdd_bind_live(machine->fdd);
-    vm_machine_fdc_bind_live(machine->fdc);
     vm_machine_debug_bind_live(machine->debug);
     vm_profile_default_bios_bind_live(machine->default_bios);
     vm_profile_default_qdx_bind_live(machine->default_qdx);
@@ -70,7 +69,6 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     core_machine_kbc_unbind_live();
     core_machine_vadp_unbind_live();
     vm_machine_fdd_unbind_live();
-    vm_machine_fdc_unbind_live();
     vm_machine_debug_unbind_live();
     vm_profile_default_bios_unbind_live();
     vm_profile_default_qdx_unbind_live();

@@ -51,13 +51,6 @@ typedef struct {
     t_fdc_connect connect;
 } t_fdc;
 
-t_fdc *vm_machine_fdc_current(void);
-void vm_machine_fdc_bind_live(t_fdc *fdc);
-void vm_machine_fdc_unbind_live(void);
-
-/* Transitional direct alias to the one composition-owned FDC object. */
-#define vfdc (*vm_machine_fdc_current())
-
 /*
  * MSR: RQM | DIO | NDM | CB  | D3B | D2B | D1B | D0B
  * DIR: DC  | -   | -   | -   | -   | -   | -   | HD
@@ -163,13 +156,14 @@ t_nubit8 VFDC_GetBPSC(t_nubit16 cb); /* convert bps to bps type */
 /* #define VFDC_GetBPS(cbyte)  (0x0080 << (cbyte))  * bytes per sector */
 /* sector size code */
 
-void vfdcInit();
-void vfdcReset();
-void vfdcRefresh();
-void vfdcFinal();
 void vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
     t_dma *dma_primary, t_dma *dma_secondary, t_pic *pic_master,
     t_pic *pic_slave, t_port *port);
+void vm_machine_fdc_initialize(t_fdc *fdc);
+void vm_machine_fdc_reset(t_fdc *fdc);
+void vm_machine_fdc_refresh(t_fdc *fdc);
+void vm_machine_fdc_finalize(t_fdc *fdc);
+void vm_machine_fdc_print(const t_fdc *fdc);
 
 #define VFDC_POST "           \
 ; init vfdc                 \n\
