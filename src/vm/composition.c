@@ -59,12 +59,12 @@ void vmachineInit(vm_composition_live_machine *machine) {
     vbiosAddInt("qdx 10\niret", 0x10);
     _vbios_
     vportInit();
-    vcmosInit();
+    vm_machine_cmos_initialize(machine->cmos, machine->cpu, machine->port);
     vbiosAddPost(VCMOS_POST);
     vbiosAddInt(VCMOS_INT_HARD_RTC_08, 0x08);
     vbiosAddInt(VCMOS_INT_SOFT_RTC_1A, 0x1a);
-    vcmosReset();
-    vcmosRefresh();
+    vm_machine_cmos_reset(machine->cmos);
+    vm_machine_cmos_refresh(machine->cmos);
     _vbios_ _vport_
     core_machine_kbc_initialize(machine->kbc, machine->port);
     vbiosAddInt("qdx 09\niret", 0x09);
@@ -106,7 +106,7 @@ void vmachineReset(vm_composition_live_machine *machine) {
     core_machine_kbc_reset(machine->kbc);
     _empty_
 
-    vcmosReset();
+    vm_machine_cmos_reset(machine->cmos);
     vcpuReset();
     core_machine_dma_reset(machine->dma_latch, machine->dma_primary,
         machine->dma_secondary);
@@ -145,7 +145,7 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
     vramRefresh();
     _empty_
 
-    vcmosRefresh();
+    vm_machine_cmos_refresh(machine->cmos);
     vfdcRefresh();
     core_machine_dma_refresh(machine->dma_latch, machine->dma_primary,
         machine->dma_secondary, machine->ram);
@@ -167,7 +167,7 @@ void vmachineFinal(vm_composition_live_machine *machine) {
     _empty_
     vbiosFinal();
     _empty_
-    vcmosFinal();
+    vm_machine_cmos_finalize(machine->cmos);
     _empty_
     core_machine_dma_finalize(machine->dma_latch, machine->dma_primary,
         machine->dma_secondary);

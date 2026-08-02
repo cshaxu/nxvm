@@ -8,11 +8,15 @@ extern "C" {
 #endif
 
 #include "core/machine/vglobal.h"
+#include "core/machine/cpu.h"
+#include "core/machine/port.h"
 
 #define NXVM_DEVICE_CMOS "DS1302"
 
 typedef struct {
     t_nubit8 reg[0x80]; /* cmos registers */
+    t_cpu *cpu;
+    time_t last_refresh;
 } t_cmos_connect;
 
 typedef struct {
@@ -23,13 +27,6 @@ typedef struct {
     t_cmos_data data;
     t_cmos_connect connect;
 } t_cmos;
-
-t_cmos *vm_machine_cmos_current(void);
-void vm_machine_cmos_bind_live(t_cmos *cmos);
-void vm_machine_cmos_unbind_live(void);
-
-/* Transitional direct alias to the one composition-owned CMOS object. */
-#define vcmos (*vm_machine_cmos_current())
 
 #define VCMOS_RTC_SECOND       0x00
 #define VCMOS_RTC_SECOND_ALARM 0x01
@@ -63,13 +60,13 @@ void vm_machine_cmos_unbind_live(void);
 #define VCMOS_RTC_CENTURY      0x32
 #define VCMOS_FLAGS_INFO       0x33
 
-void vcmosInit();
-void vcmosReset();
-void vcmosRefresh();
-void vcmosFinal();
+void vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_port *port);
+void vm_machine_cmos_reset(t_cmos *cmos);
+void vm_machine_cmos_refresh(t_cmos *cmos);
+void vm_machine_cmos_finalize(t_cmos *cmos);
 
 #define VCMOS_POST "            \
-; init vcmos                  \n\
+; init cmos                   \n\
 mov al, 0b ; select reg b     \n\
 out 70, al                    \n\
 mov al, 01 ; 24 hour mode     \n\

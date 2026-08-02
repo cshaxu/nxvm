@@ -30,7 +30,7 @@ static int has_single_live_authority(const vm_composition_live_machine *machine)
         machine->pit == &vpit && machine->dma_latch == &vlatch &&
         machine->dma_primary == &vdma1 && machine->dma_secondary == &vdma2 &&
         machine->kbc == &vkbc &&
-        machine->vadp == &vvadp && machine->cmos == &vcmos &&
+        machine->vadp == &vvadp && machine->cmos == &machine->cmos_storage &&
         machine->fdd == &vfdd && machine->fdc == &vfdc &&
         machine->hdd == &vhdd && machine->debug == &vdebug &&
         machine->default_bios == &vbios &&
