@@ -65,9 +65,8 @@ direct aliases only; no global CPU/decoder storage remains.
 
 ## Active Work
 
-M5 T25 S2 P1: migrate the retained RAM/A20 implementation into canonical
-`memory.*` and the sole embedded live-machine storage, preserving every
-existing lifecycle and direct-access behavior.
+M5 T25 S2 P2: retain the FDD DOS-prompt checkpoint for the canonical RAM/A20
+authority migration before closing T25.
 
 ## Completed
 

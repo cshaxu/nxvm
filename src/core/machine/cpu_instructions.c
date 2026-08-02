@@ -6,7 +6,7 @@
 
 #include "type.h"
 #include "core/machine/vport.h"
-#include "core/machine/vram.h"
+#include "core/machine/memory.h"
 #include "core/machine/vpic.h"
 
 #include "core/machine/cpu_instructions.h"

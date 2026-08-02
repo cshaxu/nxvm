@@ -5,7 +5,7 @@
 
 #include "core/machine/cpu.h"
 #include "core/machine/lifecycle.h"
-#include "core/machine/memory.h"
+#include "core/machine/machine_memory.h"
 #include "core/machine/port.h"
 #include "core/machine/profile.h"
 #include "type.h"

@@ -1,32 +1,58 @@
+/* Copyright 2012-2014 Neko. */
+
 #ifndef NXVM_CORE_MEMORY_H
 #define NXVM_CORE_MEMORY_H
-
-#include <stddef.h>
-#include <stdint.h>
-
-#include "type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct nxvm_core_machine nxvm_core_machine;
+#include "core/machine/vglobal.h"
 
-nxvm_core_status nxvm_core_machine_memory_read(
-    const nxvm_core_machine *machine,
-    uint32_t physical,
-    void *out_data,
-    size_t size);
+#define NXVM_DEVICE_RAM "Unknown Random-access Memory"
 
-nxvm_core_status nxvm_core_machine_memory_write(
-    nxvm_core_machine *machine,
-    uint32_t physical,
-    const void *data,
-    size_t size);
+typedef struct {
+    t_bool flagA20; /* 0 = disable, 1 = enable */
+} t_ram_data;
 
-nxvm_core_status nxvm_core_machine_set_a20(
-    nxvm_core_machine *machine,
-    int enabled);
+typedef struct {
+    t_vaddrcc pBase; /* memory base address is 20 bit */
+    t_nubitcc size; /* memory size in byte */
+} t_ram_connect;
+
+typedef struct {
+    t_ram_data data;
+    t_ram_connect connect;
+} t_ram;
+
+t_ram *core_machine_memory_current(void);
+void core_machine_memory_bind_live(t_ram *ram);
+void core_machine_memory_unbind_live(void);
+
+/* Transitional direct alias to the one composition-owned live RAM object. */
+#define vram (*core_machine_memory_current())
+
+#define VRAM_BIT_A20  0x00100000
+#define VRAM_FLAG_A20 0x02
+
+#define VRAM_WrapA20(offset)   ((offset) & (vram.data.flagA20 ? Max32 : ~VRAM_BIT_A20))
+#define VRAM_GetAddr(physical) (vram.connect.pBase + (t_vaddrcc)(VRAM_WrapA20(physical)))
+
+/* macros below are defined for real-addressing mode */
+#define vramGetRealAddr(segment, offset) (vram.connect.pBase + \
+    (VRAM_WrapA20((GetMax16(segment) << 4) + GetMax16(offset)) % vram.connect.size))
+
+#define vramRealByte(segment, offset)  (d_nubit8(vramGetRealAddr(segment, offset)))
+#define vramRealWord(segment, offset)  (d_nubit16(vramGetRealAddr(segment, offset)))
+#define vramRealDWord(segment, offset) (d_nubit32(vramGetRealAddr(segment, offset)))
+
+void vramReadPhysical(t_nubit32 physical, t_vaddrcc rdest, t_nubitcc size);
+void vramWritePhysical(t_nubit32 physical, t_vaddrcc rsrc, t_nubitcc size);
+
+void vramInit();
+void vramReset();
+void vramRefresh();
+void vramFinal();
 
 void core_machine_memory_allocate(size_t bytes);
 void core_machine_memory_read_real(uint16_t segment, uint16_t offset,
@@ -35,7 +61,7 @@ void core_machine_memory_write_real(uint16_t segment, uint16_t offset,
     const void *in_data, size_t size);
 
 #ifdef __cplusplus
-}
+}/*_EOCD_*/
 #endif
 
 #endif

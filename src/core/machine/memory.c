@@ -1,125 +1,91 @@
-#include "core/machine/machine_impl.h"
+/* Copyright 2012-2014 Neko. */
 
-#include <stdlib.h>
-#include <string.h>
+/* VRAM is the random accessing memory module.  */
 
-static int nxvm_core_memory_translate(
-    const nxvm_core_memory *memory,
-    uint32_t physical,
-    size_t size,
-    size_t *out_offset)
+#include "type.h"
+
+#include "core/machine/vpit.h"
+#include "core/machine/memory.h"
+#include "core/machine/vport.h"
+
+static t_ram *coreMachineMemory;
+
+t_ram *core_machine_memory_current(void)
 {
-    uint64_t offset = physical;
-
-    if (!memory->a20_enabled) {
-        offset &= ~(UINT64_C(1) << 20);
-    }
-
-    if (size > memory->size || offset > memory->size - size) {
-        return 0;
-    }
-
-    *out_offset = (size_t)offset;
-    return 1;
+    return coreMachineMemory;
 }
 
-nxvm_core_status nxvm_core_memory_initialize(nxvm_core_machine *machine)
+void core_machine_memory_bind_live(t_ram *ram)
 {
-    size_t size;
-
-    if (machine == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    }
-
-    size = machine->config.memory_bytes;
-    if (size == 0u) {
-        size = NXVM_CORE_DEFAULT_MEMORY_BYTES;
-    }
-
-    if (size < NXVM_CORE_MINIMUM_MEMORY_BYTES ||
-        size > NXVM_CORE_MAXIMUM_MEMORY_BYTES) {
-        return NXVM_CORE_STATUS_UNSUPPORTED;
-    }
-
-    machine->memory.bytes = (uint8_t *)calloc(size, sizeof(uint8_t));
-    if (machine->memory.bytes == NULL) {
-        return NXVM_CORE_STATUS_NO_MEMORY;
-    }
-
-    machine->memory.size = size;
-    machine->memory.a20_enabled = 0;
-    return NXVM_CORE_STATUS_OK;
+    coreMachineMemory = ram;
 }
 
-void nxvm_core_memory_finalize(nxvm_core_machine *machine)
+void core_machine_memory_unbind_live(void)
 {
-    if (machine != NULL) {
-        free(machine->memory.bytes);
-        machine->memory.bytes = NULL;
-        machine->memory.size = 0u;
-        machine->memory.a20_enabled = 0;
+    coreMachineMemory = NULL;
+}
+
+/* Allocates memory for virtual machine ram */
+static void allocate(t_nubitcc newsize) {
+    if (newsize) {
+        vram.connect.size = newsize;
+        if (vram.connect.pBase) {
+            FREE((void *) vram.connect.pBase);
+        }
+        vram.connect.pBase = (t_vaddrcc) MALLOC(vram.connect.size);
+        MEMSET((void *) vram.connect.pBase, Zero8, vram.connect.size);
+    }
+}
+static void io_read_0092() {
+    vport.data.ioByte = vram.data.flagA20 ? VRAM_FLAG_A20 : Zero8;
+}
+static void io_write_0092() {
+    vram.data.flagA20 = GetBit(vport.data.ioByte, VRAM_FLAG_A20);
+}
+
+void vramReadPhysical(t_nubit32 physical, t_vaddrcc rdest, t_nubitcc byte) {
+    if (physical >= vram.connect.size && physical >= 0xfffe0000) {
+        physical &= 0x001fffff;
+    }
+    MEMCPY((void *) rdest, (void *) VRAM_GetAddr(physical), byte);
+}
+void vramWritePhysical(t_nubit32 physical, t_vaddrcc rsrc, t_nubitcc byte) {
+    MEMCPY((void *) VRAM_GetAddr(physical), (void *) rsrc, byte);
+}
+
+#define pitOut ((t_faddrcc) NULL)
+void vramInit() {
+    MEMSET((void *)(&vram), Zero8, sizeof(t_ram));
+    vportAddRead(0x0092, (t_faddrcc) io_read_0092);
+    vportAddWrite(0x0092, (t_faddrcc) io_write_0092);
+    vpitAddMe(1);
+    /* 16 MB */
+    allocate(1 << 24);
+}
+void vramReset() {
+    MEMSET((void *)(&vram.data), Zero8, sizeof(t_ram_data));
+    MEMSET((void *) vram.connect.pBase, Zero8, vram.connect.size);
+}
+void vramRefresh() {}
+void vramFinal() {
+    if (vram.connect.pBase) {
+        FREE((void *) vram.connect.pBase);
     }
 }
 
-nxvm_core_status nxvm_core_memory_reset(nxvm_core_machine *machine)
+void core_machine_memory_allocate(size_t bytes)
 {
-    if (machine == NULL || machine->memory.bytes == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    }
-
-    memset(machine->memory.bytes, 0, machine->memory.size);
-    machine->memory.a20_enabled = 0;
-    return NXVM_CORE_STATUS_OK;
+    allocate(bytes);
 }
 
-nxvm_core_status nxvm_core_machine_memory_read(
-    const nxvm_core_machine *machine,
-    uint32_t physical,
-    void *out_data,
-    size_t size)
+void core_machine_memory_read_real(uint16_t segment, uint16_t offset,
+    void *out_data, size_t size)
 {
-    size_t offset;
-
-    if (machine == NULL || out_data == NULL || size == 0u) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    }
-
-    if (!nxvm_core_memory_translate(&machine->memory, physical, size, &offset)) {
-        return NXVM_CORE_STATUS_FAULT;
-    }
-
-    memcpy(out_data, machine->memory.bytes + offset, size);
-    return NXVM_CORE_STATUS_OK;
+    MEMCPY(out_data, (void *)vramGetRealAddr(segment, offset), size);
 }
 
-nxvm_core_status nxvm_core_machine_memory_write(
-    nxvm_core_machine *machine,
-    uint32_t physical,
-    const void *data,
-    size_t size)
+void core_machine_memory_write_real(uint16_t segment, uint16_t offset,
+    const void *in_data, size_t size)
 {
-    size_t offset;
-
-    if (machine == NULL || data == NULL || size == 0u) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    }
-
-    if (!nxvm_core_memory_translate(&machine->memory, physical, size, &offset)) {
-        return NXVM_CORE_STATUS_FAULT;
-    }
-
-    memcpy(machine->memory.bytes + offset, data, size);
-    return NXVM_CORE_STATUS_OK;
-}
-
-nxvm_core_status nxvm_core_machine_set_a20(
-    nxvm_core_machine *machine,
-    int enabled)
-{
-    if (machine == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    }
-
-    machine->memory.a20_enabled = enabled != 0;
-    return NXVM_CORE_STATUS_OK;
+    MEMCPY((void *)vramGetRealAddr(segment, offset), (void *)in_data, size);
 }
