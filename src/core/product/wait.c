@@ -1,4 +1,5 @@
 #include "core/product/wait.h"
+#include "core/product/wait_provider.h"
 
 static core_product_wait_provider coreProductWaitProvider;
 static void *coreProductWaitContext;
