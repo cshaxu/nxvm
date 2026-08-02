@@ -13,7 +13,7 @@
 #include "vm/profile/default_profile/firmware/vbios.h"
 #include "core/machine/vpit.h"
 #include "core/machine/vdma.h"
-#include "core/machine/vpic.h"
+#include "core/machine/pic.h"
 #include "vm/machine/vcmos.h"
 #include "vm/machine/vfdc.h"
 #include "vm/machine/vfdd.h"

@@ -4,7 +4,7 @@
 
 #include "type.h"
 
-#include "core/machine/vpic.h"
+#include "core/machine/pic.h"
 
 #include "core/machine/port.h"
 #include "core/machine/vpit.h"

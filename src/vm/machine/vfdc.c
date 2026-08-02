@@ -5,7 +5,7 @@
 #include "core/product/utils.h"
 
 #include "core/machine/vdma.h"
-#include "core/machine/vpic.h"
+#include "core/machine/pic.h"
 #include "core/machine/port.h"
 #include "vm/machine/vfdd.h"
 

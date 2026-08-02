@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_VPIC_H
-#define NXVM_VPIC_H
+#ifndef NXVM_CORE_PIC_H
+#define NXVM_CORE_PIC_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,7 +27,14 @@ typedef struct {
     t_pic_data data;
 } t_pic;
 
-extern t_pic vpic1, vpic2;
+t_pic *core_machine_pic_master_current(void);
+t_pic *core_machine_pic_slave_current(void);
+void core_machine_pic_bind_live(t_pic *master, t_pic *slave);
+void core_machine_pic_unbind_live(void);
+
+/* Transitional direct aliases to the composition-owned PIC pair. */
+#define vpic1 (*core_machine_pic_master_current())
+#define vpic2 (*core_machine_pic_slave_current())
 
 #define VPIC_MAX_IRQ_COUNT 8
 

@@ -9,9 +9,23 @@
 
 #include "core/machine/vpit.h"
 #include "core/machine/port.h"
-#include "core/machine/vpic.h"
+#include "core/machine/pic.h"
 
-t_pic vpic1, vpic2;
+static t_pic *coreMachinePicMaster;
+static t_pic *coreMachinePicSlave;
+
+t_pic *core_machine_pic_master_current(void) { return coreMachinePicMaster; }
+t_pic *core_machine_pic_slave_current(void) { return coreMachinePicSlave; }
+void core_machine_pic_bind_live(t_pic *master, t_pic *slave)
+{
+    coreMachinePicMaster = master;
+    coreMachinePicSlave = slave;
+}
+void core_machine_pic_unbind_live(void)
+{
+    coreMachinePicMaster = NULL;
+    coreMachinePicSlave = NULL;
+}
 
 /*
  * GetRegTopId: Internal function
