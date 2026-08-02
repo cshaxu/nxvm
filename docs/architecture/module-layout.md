@@ -229,9 +229,11 @@ M5 removed the prior `app`, `adapters`, `dos`, `firmware`, `integration`,
 source roots. Only `core`, `vm`, and `vdm` directories, plus the root
 foundation units `type.*` and `version.*`, may receive source files.
 
-The source-root, naming, and live-machine authority plans are complete and
-archived under `history/m5/planning/`. T64 through T73 removed the final
-mutable selected-session selectors; retained execution now receives its
-composition-owned object graph explicitly. Shared concrete Win32/Linux host
-providers move to `core/platform` only when proven mechanism-only; VM and VDM
-policies remain bound by root composition.
+The source-root, naming, and selected-session-authority plans are complete and
+archived under `history/m5/planning/`. T64 through T73 removed the selected
+live-object aliases, but did not eliminate every process-global facade or unify
+the minimal `core_machine` path with the real NXVM executor. The current M5
+convergence plan first removes those facades, then makes `core_machine` the
+true guest executor while VM retains its outer product loop. Shared concrete
+Win32/Linux host providers move to `core/platform` only when proven
+mechanism-only; VM and VDM policies remain bound by root composition.
