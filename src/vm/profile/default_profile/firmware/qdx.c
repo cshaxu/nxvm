@@ -92,8 +92,7 @@ void vm_profile_default_qdx_initialize(vm_profile_default_context *profile,
 
 void vm_profile_default_qdx_reset(vm_profile_default_context *profile)
 {
-    (void)profile;
-    qdcgaReset();
+    vm_profile_default_cga_reset(profile);
 }
 
 void vm_profile_default_qdx_refresh(vm_profile_default_context *profile)

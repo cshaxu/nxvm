@@ -73,8 +73,9 @@ extern "C" {
     (!(qdcgaVarCursorTop & 0x08))
 
 typedef struct t_qdx t_qdx;
+typedef struct vm_profile_default_context vm_profile_default_context;
 void vm_profile_default_cga_initialize(t_qdx *qdx);
-void qdcgaReset();
+void vm_profile_default_cga_reset(vm_profile_default_context *profile);
 int vm_profile_default_display_capture(void *context,
     core_machine_display_snapshot *out_snapshot);
 

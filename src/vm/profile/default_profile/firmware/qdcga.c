@@ -12,6 +12,13 @@
 #include "vm/profile/default_profile/firmware/qdx.h"
 #include "qdcga.h"
 
+#undef vcpu
+#undef vram
+#undef vvadp
+#define vcpu (*profile->execution->cpu)
+#define vram (*profile->ram)
+#define vvadp (*profile->vadp)
+
 static const t_nubit32 qdcgaModeBufSize[0x14] = {
     2048, 2048, 4096, 4096, 16000, 16000, 16000,
     4096, 16000, 32000, 32000,
@@ -19,10 +26,10 @@ static const t_nubit32 qdcgaModeBufSize[0x14] = {
     28000, 224000, 38400, 153600, 64000
 };
 
-static void ClearTextMemory() {
+static void ClearTextMemory(vm_profile_default_context *profile) {
     MEMSET((void *) qdcgaGetTextMemAddrPageCur, 0x00, qdcgaGetPageSize);
 }
-static void CursorBackward(t_nubit8 page) {
+static void CursorBackward(vm_profile_default_context *profile, t_nubit8 page) {
     if (qdcgaVarCursorPosCol(page)) {
         qdcgaVarCursorPosCol(page)--;
     } else if (qdcgaVarCursorPosRow(page)) {
@@ -30,7 +37,7 @@ static void CursorBackward(t_nubit8 page) {
         qdcgaVarCursorPosRow(page)--;
     }
 }
-static void CursorForward(t_nubit8 page) {
+static void CursorForward(vm_profile_default_context *profile, t_nubit8 page) {
     if (qdcgaVarCursorPosCol(page) < qdcgaVarRowSize -1) {
         qdcgaVarCursorPosCol(page)++;
     } else if (qdcgaVarCursorPosRow(page) < vvadp.data.colSize -1) {
@@ -38,7 +45,7 @@ static void CursorForward(t_nubit8 page) {
         qdcgaVarCursorPosRow(page)++;
     }
 }
-static void CursorNewLine(t_nubit8 page) {
+static void CursorNewLine(vm_profile_default_context *profile, t_nubit8 page) {
     qdcgaVarCursorPosCol(page) = 0;
     if (qdcgaVarCursorPosRow(page) < vvadp.data.colSize - 1) {
         qdcgaVarCursorPosRow(page)++;
@@ -52,10 +59,11 @@ static void CursorNewLine(t_nubit8 page) {
                0x00, 2 * qdcgaVarRowSize);
     }
 }
-static void CursorCarriageReturn(t_nubit8 page) {
+static void CursorCarriageReturn(vm_profile_default_context *profile,
+    t_nubit8 page) {
     qdcgaVarCursorPosCol(page) = 0;
 }
-static void CursorLineFeed(t_nubit8 page) {
+static void CursorLineFeed(vm_profile_default_context *profile, t_nubit8 page) {
     if (qdcgaVarCursorPosRow(page) < vvadp.data.colSize - 1) {
         qdcgaVarCursorPosRow(page)++;
     } else {
@@ -68,7 +76,8 @@ static void CursorLineFeed(t_nubit8 page) {
                0x00, 2 * qdcgaVarRowSize);
     }
 }
-static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool flagdup,
+static void InsertString(vm_profile_default_context *profile, t_vaddrcc string,
+                         t_nubitcc count, t_bool flagdup,
                          t_bool move, t_nubit8 charprop, t_nubit8 page, t_nubit8 x, t_nubit8 y) {
     t_nubitcc i;
     qdcgaVarCursorPosRow(page) = x;
@@ -80,21 +89,21 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool flagdup,
             break;
         case 0x08:
             /* backspace */
-            CursorBackward(page);
+            CursorBackward(profile, page);
             break;
         case 0x0a:
             /* new line */
-            CursorLineFeed(page);
+            CursorLineFeed(profile, page);
             break;
         case 0x0d:
-            CursorCarriageReturn(page);
+            CursorCarriageReturn(profile, page);
             break;
         default:
             qdcgaVarChar(page, qdcgaVarCursorPosRow(page),
                          qdcgaVarCursorPosCol(page)) = d_nubit8(string);
             qdcgaVarCharProp(page, qdcgaVarCursorPosRow(page),
                              qdcgaVarCursorPosCol(page)) = charprop;
-            CursorForward(page);
+            CursorForward(profile, page);
             break;
         }
         if (!flagdup) {
@@ -107,7 +116,7 @@ static void InsertString(t_vaddrcc string, t_nubitcc count, t_bool flagdup,
     }
 }
 
-static void qdcgaSetDisplayMode() {
+static void qdcgaSetDisplayMode(vm_profile_default_context *profile) {
     qdcgaVarMode = vcpu.data.al;
     qdcgaVarPageNum = 0x00;
     qdcgaVarPageOffset = 0x00;
@@ -148,19 +157,19 @@ static void qdcgaSetDisplayMode() {
     }
     qdcgaVarRagenSize = qdcgaModeBufSize[qdcgaVarMode];
     MEMCPY((void *) vvadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
-    ClearTextMemory();
+    ClearTextMemory(profile);
 }
-static void qdcgaSetCursorShape() {
+static void qdcgaSetCursorShape(vm_profile_default_context *profile) {
     qdcgaVarCursorBottom = vcpu.data.cl; /* & 0x0f; */
     qdcgaVarCursorTop    = vcpu.data.ch; /* & 0x0f; */
 }
-static void qdcgaSetCursorPos() {
+static void qdcgaSetCursorPos(vm_profile_default_context *profile) {
     /* qdcgaVarPageNum = vcpu.data.bh;
      * qdcgaVarPageOffset = vcpu.data.bh * qdcgaModeBufSize[qdcgaVarMode]; */
     qdcgaVarCursorPosRow(vcpu.data.bh) = vcpu.data.dh;
     qdcgaVarCursorPosCol(vcpu.data.bh) = vcpu.data.dl;
 }
-static void qdcgaGetCursorPos() {
+static void qdcgaGetCursorPos(vm_profile_default_context *profile) {
     /* qdcgaVarPageNum = vcpu.data.bh;
      * qdcgaVarPageOffset = vcpu.data.bh * qdcgaModeBufSize[qdcgaVarMode]; */
     vcpu.data.dh = qdcgaVarCursorPosRow(vcpu.data.bh);
@@ -168,11 +177,11 @@ static void qdcgaGetCursorPos() {
     vcpu.data.ch = qdcgaVarCursorTop;
     vcpu.data.cl = qdcgaVarCursorBottom;
 }
-static void qdcgaSetDisplayPage() {
+static void qdcgaSetDisplayPage(vm_profile_default_context *profile) {
     qdcgaVarPageNum = vcpu.data.al;
     qdcgaVarPageOffset = vcpu.data.al * qdcgaModeBufSize[qdcgaVarMode];
 }
-static void qdcgaScrollUp() {
+static void qdcgaScrollUp(vm_profile_default_context *profile) {
     t_nubitcc i, j;
     if (! vcpu.data.al) {
         for (i = vcpu.data.ch; i <= vcpu.data.dh; ++i) {
@@ -198,7 +207,7 @@ static void qdcgaScrollUp() {
         }
     }
 }
-static void qdcgaScrollDown() {
+static void qdcgaScrollDown(vm_profile_default_context *profile) {
     t_nubitcc i, j;
     if (! vcpu.data.al) {
         for (i = 0; i < vvadp.data.colSize; ++i) {
@@ -238,28 +247,28 @@ static void qdcgaScrollDown() {
         } */
     }
 }
-static void qdcgaGetCharProp() {
+static void qdcgaGetCharProp(vm_profile_default_context *profile) {
     vcpu.data.al = qdcgaVarChar(vcpu.data.bh, qdcgaVarCursorPosRow(vcpu.data.bh), qdcgaVarCursorPosCol(vcpu.data.bh));
     vcpu.data.ah = qdcgaVarCharProp(vcpu.data.bh, qdcgaVarCursorPosRow(vcpu.data.bh), qdcgaVarCursorPosCol(vcpu.data.bh));
 }
-static void qdcgaDisplayCharProp9() {
-    InsertString((t_vaddrcc)(&vcpu.data.al), vcpu.data.cx, 0x01, 0x00, vcpu.data.bl, vcpu.data.bh,
+static void qdcgaDisplayCharProp9(vm_profile_default_context *profile) {
+    InsertString(profile, (t_vaddrcc)(&vcpu.data.al), vcpu.data.cx, 0x01, 0x00, vcpu.data.bl, vcpu.data.bh,
                  qdcgaVarCursorPosRow(vcpu.data.bh), qdcgaVarCursorPosCol(vcpu.data.bh));
 }
-static void qdcgaDisplayCharPropE() {
-    InsertString((t_vaddrcc)(&vcpu.data.al), 0x01, 0x01, 0x01, vcpu.data.bl, vcpu.data.bh,
+static void qdcgaDisplayCharPropE(vm_profile_default_context *profile) {
+    InsertString(profile, (t_vaddrcc)(&vcpu.data.al), 0x01, 0x01, 0x01, vcpu.data.bl, vcpu.data.bh,
                  qdcgaVarCursorPosRow(vcpu.data.bh), qdcgaVarCursorPosCol(vcpu.data.bh));
 }
-static void qdcgaDisplayChar() {
-    InsertString((t_vaddrcc)(&vcpu.data.al), vcpu.data.cx, 0x01, 0x01, 0x0f, vcpu.data.bh,
+static void qdcgaDisplayChar(vm_profile_default_context *profile) {
+    InsertString(profile, (t_vaddrcc)(&vcpu.data.al), vcpu.data.cx, 0x01, 0x01, 0x0f, vcpu.data.bh,
                  qdcgaVarCursorPosRow(vcpu.data.bh), qdcgaVarCursorPosCol(vcpu.data.bh));
 }
-static void qdcgaGetAdapterStatus() {
+static void qdcgaGetAdapterStatus(vm_profile_default_context *profile) {
     vcpu.data.ah = (t_nubit8) qdcgaVarRowSize;
     vcpu.data.al = qdcgaVarMode;
     vcpu.data.bh = qdcgaVarPageNum;
 }
-static void qdcgaGenerateChar() {
+static void qdcgaGenerateChar(vm_profile_default_context *profile) {
     if (vcpu.data.al == 0x30) {
         switch (vcpu.data.bh) {
         case 0x00:
@@ -277,68 +286,68 @@ static void qdcgaGenerateChar() {
         vcpu.data.dl = vvadp.data.colSize - 0x01;
     }
 }
-static void qdcgaGetAdapterInfo() {
+static void qdcgaGetAdapterInfo(vm_profile_default_context *profile) {
     vcpu.data.bh = 0x00;
     vcpu.data.bl = 0x03;
     vcpu.data.cl = 0x07;
     /*     vcpu.data.ch = 0x??; */
 }
-static void qdcgaDisplayStr() {
-    InsertString(vramGetRealAddr(vcpu.data.es.selector, vcpu.data.bp), vcpu.data.cl, 0x00, 0x01,
+static void qdcgaDisplayStr(vm_profile_default_context *profile) {
+    InsertString(profile, vramGetRealAddr(vcpu.data.es.selector, vcpu.data.bp), vcpu.data.cl, 0x00, 0x01,
                  vcpu.data.bl, vcpu.data.bh, vcpu.data.dh, vcpu.data.dl);
 }
 
-static void INT_10() {
+static void INT_10(vm_profile_default_context *profile) {
     switch (vcpu.data.ah) {
     case 0x00:
-        qdcgaSetDisplayMode();
+        qdcgaSetDisplayMode(profile);
         break;
     case 0x01:
-        qdcgaSetCursorShape();
+        qdcgaSetCursorShape(profile);
         break;
     case 0x02:
-        qdcgaSetCursorPos();
+        qdcgaSetCursorPos(profile);
         break;
     case 0x03:
-        qdcgaGetCursorPos();
+        qdcgaGetCursorPos(profile);
         break;
     case 0x04:
         break;
     case 0x05:
-        qdcgaSetDisplayPage();
+        qdcgaSetDisplayPage(profile);
         break;
     case 0x06:
-        qdcgaScrollUp();
+        qdcgaScrollUp(profile);
         break;
     case 0x07:
-        qdcgaScrollDown();
+        qdcgaScrollDown(profile);
         break;
     case 0x08:
-        qdcgaGetCharProp();
+        qdcgaGetCharProp(profile);
         break;
     case 0x09:
-        qdcgaDisplayCharProp9();
+        qdcgaDisplayCharProp9(profile);
         break;
     case 0x0a:
-        qdcgaDisplayChar();
+        qdcgaDisplayChar(profile);
         break;
     case 0x0e:
-        qdcgaDisplayCharPropE();
+        qdcgaDisplayCharPropE(profile);
         break;
     case 0x0f:
-        qdcgaGetAdapterStatus();
+        qdcgaGetAdapterStatus(profile);
         break;
     case 0x10:
         break;
     case 0x11:
-        qdcgaGenerateChar();
+        qdcgaGenerateChar(profile);
         break;
     case 0x12:
         if (vcpu.data.bl == 0x10)
-            qdcgaGetAdapterInfo();
+            qdcgaGetAdapterInfo(profile);
         break;
     case 0x13:
-        qdcgaDisplayStr();
+        qdcgaDisplayStr(profile);
         break;
     case 0x1a:
         if (vcpu.data.al == 0x00) {
@@ -354,14 +363,13 @@ static void INT_10() {
 
 static void vm_profile_default_cga_dispatch(vm_profile_default_context *profile)
 {
-    (void)profile;
-    INT_10();
+    INT_10(profile);
 }
 
 void vm_profile_default_cga_initialize(t_qdx *qdx) {
     if (qdx != NULL) qdx->table[0x10] = vm_profile_default_cga_dispatch;
 }
-void qdcgaReset() {
+void vm_profile_default_cga_reset(vm_profile_default_context *profile) {
     /* 80 x 25 */
     qdcgaVarRowSize = 0x50;
     vvadp.data.colSize = 0x19;
@@ -378,11 +386,13 @@ void qdcgaReset() {
     vvadp.data.oldCurTop  = vvadp.data.oldCurBottom = 0x00;
 }
 
-static int vm_profile_default_display_cursor_visible(void) {
+static int vm_profile_default_display_cursor_visible(
+    vm_profile_default_context *profile) {
     /* qdcgaGetCursorVisible; */
     return (qdcgaVarCursorTop < qdcgaVarCursorBottom);
 }
-static int vm_profile_default_display_cursor_changed(void) {
+static int vm_profile_default_display_cursor_changed(
+    vm_profile_default_context *profile) {
     if (vvadp.data.oldCurPosX != qdcgaVarCursorPosRow(qdcgaVarPageNum) ||
             vvadp.data.oldCurPosY != qdcgaVarCursorPosCol(qdcgaVarPageNum) ||
             vvadp.data.oldCurTop  != qdcgaVarCursorTop ||
@@ -396,7 +406,8 @@ static int vm_profile_default_display_cursor_changed(void) {
         return False;
     }
 }
-static int vm_profile_default_display_buffer_changed(void) {
+static int vm_profile_default_display_buffer_changed(
+    vm_profile_default_context *profile) {
     if (MEMCMP((void *) vvadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize)) {
         MEMCPY((void *) vvadp.data.bufcomp, (void *) qdcgaGetTextMemAddr, qdcgaVarRagenSize);
         return True;
@@ -404,28 +415,36 @@ static int vm_profile_default_display_buffer_changed(void) {
         return False;
     }
 }
-static uint16_t vm_profile_default_display_columns(void) {
+static uint16_t vm_profile_default_display_columns(
+    vm_profile_default_context *profile) {
     return qdcgaVarRowSize;
 }
-static uint16_t vm_profile_default_display_rows(void) {
+static uint16_t vm_profile_default_display_rows(
+    vm_profile_default_context *profile) {
     return vvadp.data.colSize;
 }
-static uint8_t vm_profile_default_display_cursor_top(void) {
+static uint8_t vm_profile_default_display_cursor_top(
+    vm_profile_default_context *profile) {
     return qdcgaVarCursorTop;
 }
-static uint8_t vm_profile_default_display_cursor_bottom(void) {
+static uint8_t vm_profile_default_display_cursor_bottom(
+    vm_profile_default_context *profile) {
     return qdcgaVarCursorBottom;
 }
-static uint8_t vm_profile_default_display_cursor_x(void) {
+static uint8_t vm_profile_default_display_cursor_x(
+    vm_profile_default_context *profile) {
     return qdcgaVarCursorPosRow(qdcgaVarPageNum);
 }
-static uint8_t vm_profile_default_display_cursor_y(void) {
+static uint8_t vm_profile_default_display_cursor_y(
+    vm_profile_default_context *profile) {
     return qdcgaVarCursorPosCol(qdcgaVarPageNum);
 }
-static uint8_t vm_profile_default_display_character(uint8_t x, uint8_t y) {
+static uint8_t vm_profile_default_display_character(
+    vm_profile_default_context *profile, uint8_t x, uint8_t y) {
     return qdcgaVarChar(qdcgaVarPageNum, x, y);
 }
-static uint8_t vm_profile_default_display_attribute(uint8_t x, uint8_t y) {
+static uint8_t vm_profile_default_display_attribute(
+    vm_profile_default_context *profile, uint8_t x, uint8_t y) {
     return qdcgaVarCharProp(qdcgaVarPageNum, x, y);
 }
 
@@ -435,28 +454,39 @@ int vm_profile_default_display_capture(void *context,
     uint16_t row;
     uint16_t column;
 
-    (void)context;
-    if (out_snapshot == NULL) return False;
-    out_snapshot->buffer_changed = vm_profile_default_display_buffer_changed();
-    out_snapshot->cursor_changed = vm_profile_default_display_cursor_changed();
-    out_snapshot->columns = vm_profile_default_display_columns();
-    out_snapshot->rows = vm_profile_default_display_rows();
-    out_snapshot->cursor_top = vm_profile_default_display_cursor_top();
-    out_snapshot->cursor_bottom = vm_profile_default_display_cursor_bottom();
-    out_snapshot->cursor_x = vm_profile_default_display_cursor_x();
-    out_snapshot->cursor_y = vm_profile_default_display_cursor_y();
-    out_snapshot->cursor_visible = vm_profile_default_display_cursor_visible();
+    vm_profile_default_context *profile = context;
+
+    if (profile == NULL || out_snapshot == NULL) return False;
+    out_snapshot->buffer_changed =
+        vm_profile_default_display_buffer_changed(profile);
+    out_snapshot->cursor_changed =
+        vm_profile_default_display_cursor_changed(profile);
+    out_snapshot->columns = vm_profile_default_display_columns(profile);
+    out_snapshot->rows = vm_profile_default_display_rows(profile);
+    out_snapshot->cursor_top = vm_profile_default_display_cursor_top(profile);
+    out_snapshot->cursor_bottom =
+        vm_profile_default_display_cursor_bottom(profile);
+    out_snapshot->cursor_x = vm_profile_default_display_cursor_x(profile);
+    out_snapshot->cursor_y = vm_profile_default_display_cursor_y(profile);
+    out_snapshot->cursor_visible =
+        vm_profile_default_display_cursor_visible(profile);
     if (!out_snapshot->buffer_changed && !out_snapshot->cursor_changed) {
         return True;
     }
     for (row = 0u; row < out_snapshot->rows; ++row) {
         for (column = 0u; column < out_snapshot->columns; ++column) {
             uint16_t index = row * CORE_MACHINE_DISPLAY_MAX_COLUMNS + column;
-            out_snapshot->characters[index] = vm_profile_default_display_character(
-                (uint8_t)row, (uint8_t)column);
-            out_snapshot->attributes[index] = vm_profile_default_display_attribute(
-                (uint8_t)row, (uint8_t)column);
+            out_snapshot->characters[index] =
+                vm_profile_default_display_character(profile, (uint8_t)row,
+                    (uint8_t)column);
+            out_snapshot->attributes[index] =
+                vm_profile_default_display_attribute(profile, (uint8_t)row,
+                    (uint8_t)column);
         }
     }
     return True;
 }
+
+#undef vcpu
+#undef vram
+#undef vvadp
