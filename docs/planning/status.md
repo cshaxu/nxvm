@@ -155,11 +155,14 @@ M5 T60 S1 closed the platform migration decision with a no-move result: shared
 policy-free platform mechanisms are already in `src/core/platform`, and the
 remaining Win32/Linux VM platform files stay in `src/vm/platform` until future
 context-object extraction work. It produced `build/output/nxvm_0_5_0060.exe`.
+M5 T61 S1 inventoried retained runtime aliases, separating current-object
+compatibility spellings from executor/session state-authority debt. No stateful
+alias was removed, and it produced `build/output/nxvm_0_5_0061.exe`.
 
 ## Active Work
 
-M5 T61 S1 is active, not started: inventory retained runtime aliases and split
-compatibility spelling from state-authority debt.
+M5 T62 S1 is active, not started: apply only low-risk alias cleanup approved by
+the T61 inventory, or record that no such cleanup is safe in this naming window.
 M6 T1 S1 is deferred and not active.
 
 ## Completed
@@ -605,10 +608,12 @@ M6 T1 S1 is deferred and not active.
 - M5 T60 S1 P1: recorded the no-move platform migration decision, preserved
   symmetric host-surface filenames, left VM platform files in place, and built
   `build/output/nxvm_0_5_0060.exe`.
+- M5 T61 S1 P1: inventoried retained runtime aliases, classified cleanup risk,
+  removed no stateful alias, and built `build/output/nxvm_0_5_0061.exe`.
 
 ## Next Eligible Work
 
-- M5 T61 may begin. M6 design remains ineligible until M5 T63 closes the
+- M5 T62 may begin. M6 design remains ineligible until M5 T63 closes the
   second-pass naming and ownership cleanup.
 
 ## Delivery State
