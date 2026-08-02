@@ -170,6 +170,12 @@ M5 T70 S1 is active: migrate VM-only machine providers and their callback
 callers to explicit live-machine references. M6 T1 remains deferred and DOS
 implementation remains ineligible.
 
+M5 T68 S2 repaired a fixture-backed full-PC execution regression before T70
+continued. `nxvm_0_5_0068.exe` is revoked: its execution context supplied a
+control object where callbacks required the live machine, producing a
+timing-dependent access violation after FDD boot. The corrected binding and
+identity gate pass full-PC and six retained-Console FDD start survival probes.
+
 ## Completed
 
 - M5 T69 S1: moved block, keyboard, and display composition paths onto frozen

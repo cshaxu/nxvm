@@ -175,7 +175,7 @@ void vm_composition_control_initialize(vm_composition_control_state *control,
     nxvm_execution_context_initialize(&control->execution_context);
     nxvm_execution_context_bind_machine_state(
         &control->execution_context, machine->cpu, machine->ram, machine->port,
-        control);
+        machine);
     nxvm_execution_context_bind_callbacks(
         &control->execution_context, &device_execution_callbacks);
     nxvm_execution_context_enter(&control->execution_context);

@@ -41,6 +41,11 @@ prompt behavior are compatibility constraints throughout.
    authority smokes, retained Console/debugger smoke, and the FDD DOS-prompt
    observation before opening the next task.
 
+Every explicit execution callback must also have an identity gate proving its
+opaque device pointer is the composition-owned live machine. The fixture-backed
+retained Console `device fdd insert <image>` then `start` survival probe is a
+required artifact gate; a process exit or access violation rejects the task.
+
 ## Required Migration Shape
 
 Every authority-family task follows the same four implementation parts. A
