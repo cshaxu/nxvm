@@ -12,6 +12,7 @@
 #include "core/machine/vadp.h"
 #include "core/machine/block_provider.h"
 #include "core/machine/keyboard_interface.h"
+#include "core/machine/display_interface.h"
 #include "vm/machine/cmos.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/fdc.h"
@@ -45,6 +46,7 @@ typedef struct vm_composition_live_machine {
     t_qdx default_qdx_storage;
     core_machine_block_provider_slot block_provider_storage;
     core_machine_keyboard_provider_slot keyboard_provider_storage;
+    core_machine_display_provider_slot display_provider_storage;
     core_product_debug_target *debug_target;
     t_cpu *cpu;
     t_cpuins *cpuins;
@@ -68,6 +70,7 @@ typedef struct vm_composition_live_machine {
     t_qdx *default_qdx;
     core_machine_block_provider_slot *block_provider;
     core_machine_keyboard_provider_slot *keyboard_provider;
+    core_machine_display_provider_slot *display_provider;
     vm_composition_control_state *control;
 } vm_composition_live_machine;
 

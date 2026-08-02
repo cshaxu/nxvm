@@ -166,11 +166,18 @@ alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M5 T69 S1 is active: migrate shared core registries and provider bindings to
-explicit composition-owned references. M6 T1 remains deferred and DOS
+M5 T70 S1 is active: migrate VM-only machine providers and their callback
+callers to explicit live-machine references. M6 T1 remains deferred and DOS
 implementation remains ineligible.
 
 ## Completed
+
+- M5 T69 S1: moved block, keyboard, and display composition paths onto frozen
+  live-machine provider slots without copying guest state. Trace and firmware
+  were verified already machine/session owned. Default-profile static facade
+  consumers are explicitly assigned to T71, and the remaining shared selection
+  layer remains a T73 deletion gate. Presentation/debug, session, Console, and
+  FDD/HDD full-PC profile gates passed; `0.5.0069` is built separately.
 
 - M5 T68 S1: made core PIC/PIT/DMA/KBC/VADP lifecycle and core execution
   edges explicit. Port and PIT-output providers retain their owner references;

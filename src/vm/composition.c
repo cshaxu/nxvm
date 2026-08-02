@@ -53,7 +53,7 @@ void vmachineInit(vm_composition_live_machine *machine) {
     vfddInit();
     vhddInit();
     vmCompositionBindBlock(machine);
-    vm_composition_bind_display();
+    vm_composition_bind_display(machine);
     vbiosInit();
     core_machine_vadp_initialize(machine->vadp);
     vbiosAddInt("qdx 10\niret", 0x10);
@@ -158,7 +158,7 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
     }
     vcpuRefresh();
     _vpic_
-    vm_composition_publish_display(False);
+    vm_composition_publish_display(machine, False);
 }
 /* Finalize all devices, deallocates space */
 void vmachineFinal(vm_composition_live_machine *machine) {

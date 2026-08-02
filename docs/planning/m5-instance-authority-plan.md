@@ -19,7 +19,7 @@ prompt behavior are compatibility constraints throughout.
 | T66 | CPU/executor | Pass one explicit core execution context through CPU decode, instruction helpers, probes, and debugger adapters. Retained CPU aliases are compatibility-only until T73 removes the shared selection layer. | `nxvm_0_5_0066.exe` |
 | T67 | RAM and port bus | Pass explicit memory/port context through real-mode helpers, CPU I/O, debugger, and direct bus operations. Device callback bodies migrate in T68/T70; retained aliases are compatibility-only until T73 removes the selection layer. | `nxvm_0_5_0067.exe` |
 | T68 | core devices | Context-bind PIC, PIT, DMA, KBC, and VADP, including their live lifecycle and core execution edges. Record VM/profile/diagnostic compatibility callers; T73 deletes their aliases only after those owners migrate. | `nxvm_0_5_0068.exe` |
-| T69 | core registries | Convert block, keyboard, display, trace, and firmware to session-owned registries/provider slots with configuration/freeze/teardown rules; eliminate their static provider bindings. | `nxvm_0_5_0069.exe` |
+| T69 | core registries | Convert block, keyboard, and display composition paths to session-owned provider slots with configuration/freeze/teardown rules. Confirm trace and firmware are already machine/session owned. Static compatibility facades remain only for explicit T71 profile-firmware callers. | `nxvm_0_5_0069.exe` |
 | T70 | VM machine providers | Context-bind VM-only CMOS/FDD/FDC/HDD/debug state and callbacks; remove `vcmos`, `vfdd`, `vfdc`, `vhdd`, and `vdebug`. | `nxvm_0_5_0070.exe` |
 | T71 | profile firmware | Bind BIOS/QDX/CGA/keyboard/disk firmware through the selected session/provider contexts; remove `vbios`, `qdxTable`, and profile current-object accessors. | `nxvm_0_5_0071.exe` |
 | T72 | product/debug/runtime | Remove remaining selected execution-context globals and adapt retained Console/debugger commands to their composition-owned session target. | `nxvm_0_5_0072.exe` |
@@ -33,8 +33,10 @@ prompt behavior are compatibility constraints throughout.
    ownership and teardown are fixed before callers move.
 3. Convert direct callers, including firmware and debugger paths, without
    changing guest-visible operation order.
-4. Delete the chosen aliases and selected-session accessor functions in the
-   same task. A new compatibility alias is prohibited.
+4. Delete aliases owned solely by the chosen family in the same task. A
+   cross-family compatibility alias may remain only for a recorded later
+   caller; a new compatibility alias is prohibited, and T73 deletes the
+   shared selection layer after its source scan is clean.
 5. Build the numbered NXVM artifact; run GCC, dependency-DAG, relevant
    authority smokes, retained Console/debugger smoke, and the FDD DOS-prompt
    observation before opening the next task.

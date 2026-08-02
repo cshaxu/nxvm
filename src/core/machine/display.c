@@ -7,6 +7,60 @@ static core_machine_display_provider coreMachineDisplayProvider;
 static void *coreMachineDisplaySnapshotContext;
 static core_machine_display_snapshot_provider coreMachineDisplaySnapshotProvider;
 
+void core_machine_display_provider_slot_initialize(
+    core_machine_display_provider_slot *slot)
+{
+    if (slot != NULL) {
+        slot->mode_context = NULL;
+        slot->mode_provider = NULL;
+        slot->snapshot_context = NULL;
+        slot->snapshot_provider = NULL;
+        slot->frozen = 0;
+    }
+}
+
+void core_machine_display_provider_slot_bind(
+    core_machine_display_provider_slot *slot, void *mode_context,
+    core_machine_display_provider mode_provider, void *snapshot_context,
+    core_machine_display_snapshot_provider snapshot_provider)
+{
+    if (slot == NULL || slot->frozen) return;
+    slot->mode_context = mode_context;
+    slot->mode_provider = mode_provider;
+    slot->snapshot_context = snapshot_context;
+    slot->snapshot_provider = snapshot_provider;
+}
+
+void core_machine_display_provider_slot_freeze(
+    core_machine_display_provider_slot *slot)
+{
+    if (slot != NULL) slot->frozen = 1;
+}
+
+void core_machine_display_provider_slot_finalize(
+    core_machine_display_provider_slot *slot)
+{
+    core_machine_display_provider_slot_initialize(slot);
+}
+
+void core_machine_display_notify_mode_changed_to(
+    const core_machine_display_provider_slot *slot)
+{
+    if (slot != NULL && slot->mode_provider != NULL) {
+        slot->mode_provider(slot->mode_context);
+    }
+}
+
+int core_machine_display_capture_snapshot_from(
+    const core_machine_display_provider_slot *slot,
+    core_machine_display_snapshot *out_snapshot)
+{
+    if (slot == NULL || slot->snapshot_provider == NULL || out_snapshot == NULL) {
+        return 0;
+    }
+    return slot->snapshot_provider(slot->snapshot_context, out_snapshot);
+}
+
 void core_machine_display_bind(void *context,
     core_machine_display_provider provider)
 {
