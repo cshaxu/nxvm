@@ -21,11 +21,8 @@
 #include "vm/profile/default_profile/firmware/qdx.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 
-static int has_single_live_authority(void)
+static int has_single_live_authority(const vm_composition_live_machine *machine)
 {
-    const vm_composition_live_machine *machine =
-        vm_composition_live_machine_current();
-
     return machine != NULL &&
         machine->cpu == &vcpu && machine->cpuins == &vcpuins &&
         machine->ram == &vram && machine->port == &vport &&
@@ -51,25 +48,31 @@ int main(int argc, char **argv)
 {
     HANDLE thread;
     DWORD result;
+    vm_composition_live_machine session = {0};
 
     if (argc != 2) return 1;
-    vm_composition_control_initialize();
-    if (!has_single_live_authority() || vm_machine_fdd_insert(argv[1]) != 0) {
-        vm_composition_control_finalize();
+    vm_composition_live_machine_initialize(&session);
+    vm_composition_live_machine_bind_legacy(&session);
+    vm_composition_control_initialize(&session);
+    if (!has_single_live_authority(&session) || vm_machine_fdd_insert(argv[1]) != 0) {
+        vm_composition_control_finalize(&session);
+    vm_composition_live_machine_finalize(&session);
         return 1;
     }
     vm_composition_control_reset();
     thread = CreateThread(NULL, 0u, run_full_pc, NULL, 0u, NULL);
     if (thread == NULL) {
-        vm_composition_control_finalize();
+        vm_composition_control_finalize(&session);
+    vm_composition_live_machine_finalize(&session);
         return 1;
     }
     Sleep(10u);
-    if (!vm_composition_control_is_running() || !has_single_live_authority()) {
+    if (!vm_composition_control_is_running() || !has_single_live_authority(&session)) {
         vm_composition_control_stop();
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
-        vm_composition_control_finalize();
+        vm_composition_control_finalize(&session);
+    vm_composition_live_machine_finalize(&session);
         return 1;
     }
     vm_composition_control_reset();
@@ -77,13 +80,14 @@ int main(int argc, char **argv)
     vm_composition_control_stop();
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    if (result != WAIT_OBJECT_0 || !has_single_live_authority()) {
-        vm_composition_control_finalize();
+    if (result != WAIT_OBJECT_0 || !has_single_live_authority(&session)) {
+        vm_composition_control_finalize(&session);
+    vm_composition_live_machine_finalize(&session);
         return 1;
     }
-    vm_composition_control_finalize();
-    if (vm_composition_live_machine_current() != NULL ||
-        core_machine_cpu_current() != NULL ||
+    vm_composition_control_finalize(&session);
+    vm_composition_live_machine_finalize(&session);
+    if (core_machine_cpu_current() != NULL ||
         vm_machine_debug_current() != NULL ||
         vm_profile_default_bios_current() != NULL ||
         vm_profile_default_qdx_current() != NULL) return 1;

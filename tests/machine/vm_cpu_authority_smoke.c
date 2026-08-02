@@ -7,6 +7,7 @@
 
 int main(void)
 {
+    vm_composition_live_machine session = {0};
     const vm_composition_live_machine *machine;
 
     if (core_machine_cpu_current() != NULL ||
@@ -14,18 +15,18 @@ int main(void)
         return 1;
     }
 
-    machineInit();
-    machine = vm_composition_live_machine_current();
+    machineInit(&session);
+    machine = (&session);
     if (machine == NULL || machine->cpu != &machine->cpu_storage ||
         machine->cpuins != &machine->cpuins_storage ||
         machine->cpu != core_machine_cpu_current() ||
         machine->cpuins != core_machine_cpu_instructions_current() ||
         &vcpu != machine->cpu || &vcpuins != machine->cpuins) {
-        machineFinal();
+        machineFinal(&session);
         return 1;
     }
 
-    machineFinal();
+    machineFinal(&session);
     if (core_machine_cpu_current() != NULL ||
         core_machine_cpu_instructions_current() != NULL) {
         return 1;

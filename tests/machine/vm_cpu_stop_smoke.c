@@ -6,11 +6,14 @@
 
 int main(void)
 {
+    vm_composition_live_machine session = {0};
     const unsigned char invalid_instruction[] = { 0x0fu, 0x0bu };
     unsigned char *reset_vector;
     int failed = 0;
 
-    vm_composition_control_initialize();
+    vm_composition_live_machine_initialize(&session);
+    vm_composition_live_machine_bind_legacy(&session);
+    vm_composition_control_initialize(&session);
     vm_composition_control_reset();
     reset_vector = (unsigned char *)vramGetRealAddr(0xf000u, 0xfff0u);
     reset_vector[0] = invalid_instruction[0];
@@ -19,7 +22,8 @@ int main(void)
 
     failed |= vm_composition_control_is_running() != False;
     failed |= vcpuConsumeStopRequest() != False;
-    vm_composition_control_finalize();
+    vm_composition_control_finalize(&session);
+    vm_composition_live_machine_finalize(&session);
 
     if (failed) return 1;
     puts("M5:T14:S3:CPU-STOP:OK");

@@ -15,17 +15,18 @@ static int expect_physical(t_nubit32 physical, t_nubit8 expected)
 
 int main(void)
 {
+    vm_composition_live_machine session = {0};
     const vm_composition_live_machine *machine;
     t_nubit8 value;
     int failed = 0;
 
     if (core_machine_memory_current() != NULL) return 1;
 
-    machineInit();
-    machine = vm_composition_live_machine_current();
+    machineInit(&session);
+    machine = (&session);
     if (machine == NULL || machine->ram != &machine->ram_storage ||
         machine->ram != core_machine_memory_current() || &vram != machine->ram) {
-        machineFinal();
+        machineFinal(&session);
         return 1;
     }
 
@@ -48,7 +49,7 @@ int main(void)
     vramWritePhysical(0x001e0000u, (t_vaddrcc)&value, 1u);
     failed |= !expect_physical(0xfffe0000u, 0x5au);
 
-    machineFinal();
+    machineFinal(&session);
     if (core_machine_memory_current() != NULL) return 1;
     if (failed) return 1;
 

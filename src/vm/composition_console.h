@@ -2,7 +2,10 @@
 #define NTVDM64_VM_COMPOSITION_CONSOLE_H
 
 #include "vm/product/console_target.h"
+#include "vm/composition_live_machine.h"
 
-const nxvm_product_console_target *vm_composition_console_target(void);
+void vm_composition_console_target_initialize(
+    nxvm_product_console_target *target,
+    vm_composition_live_machine *machine);
 
 #endif

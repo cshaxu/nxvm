@@ -12,10 +12,13 @@
 #include "core/product/utils.h"
 #include "version.h"
 #include "vm/composition_console.h"
+#include "vm/composition_live_machine.h"
 #include "vm/product/console.h"
 
 int main(int argc, char **argv) {
     char banner[160];
+    vm_composition_live_machine machine;
+    nxvm_product_console_target console_target;
 
     (void)argc;
     (void)argv;
@@ -26,6 +29,7 @@ int main(int argc, char **argv) {
     PRINTF("%s\n", banner);
     PRINTF("Built on %s at %s.\n", ntvdm64_version_build_date(),
         ntvdm64_version_build_time());
-    consoleMain(vm_composition_console_target());
+    vm_composition_console_target_initialize(&console_target, &machine);
+    consoleMain(&console_target);
     return 0;
 }

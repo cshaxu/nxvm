@@ -5,13 +5,14 @@
 
 int main(void)
 {
-    machineInit();
+    vm_composition_live_machine session = {0};
+    machineInit(&session);
     core_machine_keyboard_apply_host_state(NXVM_KEYBOARD_ASYNC_ALT, 0u);
     if (!core_machine_keyboard_get_modifier(CORE_MACHINE_KEYBOARD_MODIFIER_ALT)) {
-        machineFinal();
+        machineFinal(&session);
         return 1;
     }
-    machineFinal();
+    machineFinal(&session);
     puts("M5:T41:S1:KEYBOARD-FIRMWARE:OK");
     return 0;
 }

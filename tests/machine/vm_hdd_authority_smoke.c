@@ -6,15 +6,16 @@
 
 int main(void)
 {
+    vm_composition_live_machine session = {0};
     const vm_composition_live_machine *machine;
 
-    machineInit();
-    machine = vm_composition_live_machine_current();
+    machineInit(&session);
+    machine = (&session);
     if (machine == NULL || &vhdd != machine->hdd) {
-        machineFinal();
+        machineFinal(&session);
         return 1;
     }
-    machineFinal();
+    machineFinal(&session);
     if (vm_machine_hdd_current() != NULL) return 1;
     puts("M5:T36:S1:HDD-AUTHORITY:OK");
     return 0;

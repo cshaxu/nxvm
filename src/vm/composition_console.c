@@ -13,8 +13,8 @@
 
 static void vm_composition_console_initialize(void *context)
 {
-    (void)context;
-    machineInit();
+    vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
+    machineInit(machine);
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
     vm_machine_fdd_insert("d:/fd.img");
     vm_machine_hdd_insert("d:/hd.img");
@@ -24,7 +24,7 @@ static void vm_composition_console_initialize(void *context)
 #endif
 }
 
-static void vm_composition_console_finalize(void *context) { (void)context; machineFinal(); }
+static void vm_composition_console_finalize(void *context) { machineFinal((vm_composition_live_machine *)context); }
 static int vm_composition_console_is_running(void *context) { (void)context; return vm_composition_control_is_running(); }
 static void vm_composition_console_print_machine(void *context) { (void)context; devicePrintMachine(); }
 static int vm_composition_console_get_window_display(void *context) { (void)context; return platform.flagMode; }
@@ -55,7 +55,7 @@ static void vm_composition_console_reset(void *context) { (void)context; machine
 static void vm_composition_console_stop(void *context) { (void)context; machineStop(); }
 static void vm_composition_console_resume(void *context) { (void)context; machineResume(); }
 
-static const nxvm_product_console_target vmCompositionConsoleTarget = {
+static const nxvm_product_console_target vmCompositionConsoleTargetTemplate = {
     vm_composition_console_initialize, vm_composition_console_finalize,
     vm_composition_console_is_running, vm_composition_console_print_machine,
     vm_composition_console_get_window_display, vm_composition_console_set_window_display,
@@ -70,7 +70,11 @@ static const nxvm_product_console_target vmCompositionConsoleTarget = {
     vm_composition_console_resume, NULL
 };
 
-const nxvm_product_console_target *vm_composition_console_target(void)
+void vm_composition_console_target_initialize(
+    nxvm_product_console_target *target,
+    vm_composition_live_machine *machine)
 {
-    return &vmCompositionConsoleTarget;
+    if (target == NULL) return;
+    *target = vmCompositionConsoleTargetTemplate;
+    target->context = machine;
 }

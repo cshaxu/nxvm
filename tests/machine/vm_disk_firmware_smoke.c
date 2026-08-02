@@ -5,13 +5,14 @@
 
 int main(void)
 {
-    machineInit();
+    vm_composition_live_machine session = {0};
+    machineInit(&session);
     if (qdxTable[0xa2] == (t_faddrcc)NULL ||
         qdxTable[0xa3] == (t_faddrcc)NULL) {
-        machineFinal();
+        machineFinal(&session);
         return 1;
     }
-    machineFinal();
+    machineFinal(&session);
     puts("M5:T42:S1:DISK-FIRMWARE:OK");
     return 0;
 }

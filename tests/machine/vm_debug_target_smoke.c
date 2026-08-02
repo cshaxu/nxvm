@@ -6,11 +6,12 @@
 
 int main(void)
 {
+    vm_composition_live_machine session = {0};
     const core_product_debug_target *target;
     uint32_t value = 0u;
     uint8_t byte = 0x5au;
 
-    machineInit();
+    machineInit(&session);
     target = vm_composition_debug_target();
     if (target == NULL || core_product_debug_get_target() != target ||
         target->read_register(target->context,
@@ -18,10 +19,10 @@ int main(void)
         target->write_real(target->context, 0u, 0x500u, &byte, 1u) ||
         target->read_real(target->context, 0u, 0x500u, &value, 1u) ||
         (uint8_t)value != byte) {
-        machineFinal();
+        machineFinal(&session);
         return 1;
     }
-    machineFinal();
+    machineFinal(&session);
     if (core_product_debug_get_target() != NULL) return 1;
     puts("M5:T14:S3:VM-DEBUG-TARGET:OK");
     return 0;

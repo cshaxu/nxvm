@@ -18,6 +18,7 @@
 
 static int nxvm_full_pc_active;
 static nxvm_vm_request_transport nxvm_full_pc_transport;
+static vm_composition_live_machine nxvmFullPcMachine;
 
 static nxvm_core_status nxvm_full_pc_enqueue_keyboard_state(
     void *opaque, uint32_t asynchronous_keys, uint32_t toggle_keys)
@@ -59,7 +60,7 @@ nxvm_core_status nxvm_full_pc_create(
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
 
-    machineInit();
+    machineInit(&nxvmFullPcMachine);
     nxvm_vm_request_transport_initialize(&nxvm_full_pc_transport);
     nxvm_vm_request_transport_bind_consumer(
         &nxvm_full_pc_transport,
@@ -77,7 +78,7 @@ nxvm_core_status nxvm_full_pc_create(
         vm_composition_control_bind_command_boundary(NULL, NULL);
         nxvm_vm_request_transport_close(&nxvm_full_pc_transport);
         nxvm_vm_request_transport_discard(&nxvm_full_pc_transport);
-        machineFinal();
+        machineFinal(&nxvmFullPcMachine);
         return NXVM_CORE_STATUS_FAULT;
     }
     if (config->create_fdd) vm_machine_fdd_create();
@@ -208,7 +209,7 @@ void nxvm_full_pc_destroy(void)
         vm_composition_control_bind_command_boundary(NULL, NULL);
         nxvm_vm_request_transport_close(&nxvm_full_pc_transport);
         nxvm_vm_request_transport_discard(&nxvm_full_pc_transport);
-        machineFinal();
+        machineFinal(&nxvmFullPcMachine);
         nxvm_full_pc_active = 0;
     }
 }

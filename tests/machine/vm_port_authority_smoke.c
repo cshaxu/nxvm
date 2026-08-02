@@ -7,16 +7,17 @@
 
 int main(void)
 {
+    vm_composition_live_machine session = {0};
     const vm_composition_live_machine *machine;
     int failed = 0;
 
     if (core_machine_port_current() != NULL) return 1;
 
-    machineInit();
-    machine = vm_composition_live_machine_current();
+    machineInit(&session);
+    machine = (&session);
     if (machine == NULL || machine->port != &machine->port_storage ||
         machine->port != core_machine_port_current() || &vport != machine->port) {
-        machineFinal();
+        machineFinal(&session);
         return 1;
     }
 
@@ -26,7 +27,7 @@ int main(void)
     vportExecRead(0x0092u);
     failed |= vport.data.ioByte != VRAM_FLAG_A20;
 
-    machineFinal();
+    machineFinal(&session);
     if (core_machine_port_current() != NULL || failed) return 1;
 
     puts("M5:T26:S1:PORT-AUTHORITY:OK");

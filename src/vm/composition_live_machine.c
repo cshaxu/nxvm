@@ -1,56 +1,52 @@
 #include "vm/composition_live_machine.h"
 
-static vm_composition_live_machine vmCompositionLiveMachine;
-static int vmCompositionLiveMachineBound;
-
-void vm_composition_live_machine_bind(void)
+void vm_composition_live_machine_initialize(vm_composition_live_machine *machine)
 {
-    vmCompositionLiveMachine.cpu = &vmCompositionLiveMachine.cpu_storage;
-    vmCompositionLiveMachine.cpuins =
-        &vmCompositionLiveMachine.cpuins_storage;
-    vmCompositionLiveMachine.ram = &vmCompositionLiveMachine.ram_storage;
-    vmCompositionLiveMachine.port = &vmCompositionLiveMachine.port_storage;
-    vmCompositionLiveMachine.pic_master =
-        &vmCompositionLiveMachine.pic_master_storage;
-    vmCompositionLiveMachine.pic_slave =
-        &vmCompositionLiveMachine.pic_slave_storage;
-    vmCompositionLiveMachine.pit = &vmCompositionLiveMachine.pit_storage;
-    vmCompositionLiveMachine.dma_latch = &vmCompositionLiveMachine.dma_latch_storage;
-    vmCompositionLiveMachine.dma_primary = &vmCompositionLiveMachine.dma_primary_storage;
-    vmCompositionLiveMachine.dma_secondary = &vmCompositionLiveMachine.dma_secondary_storage;
-    vmCompositionLiveMachine.kbc = &vmCompositionLiveMachine.kbc_storage;
-    vmCompositionLiveMachine.vadp = &vmCompositionLiveMachine.vadp_storage;
-    vmCompositionLiveMachine.cmos = &vmCompositionLiveMachine.cmos_storage;
-    vmCompositionLiveMachine.fdd = &vmCompositionLiveMachine.fdd_storage;
-    vmCompositionLiveMachine.fdc = &vmCompositionLiveMachine.fdc_storage;
-    vmCompositionLiveMachine.hdd = &vmCompositionLiveMachine.hdd_storage;
-    vmCompositionLiveMachine.debug = &vmCompositionLiveMachine.debug_storage;
-    vmCompositionLiveMachine.default_bios =
-        &vmCompositionLiveMachine.default_bios_storage;
-    vmCompositionLiveMachine.default_qdx =
-        &vmCompositionLiveMachine.default_qdx_storage;
-    core_machine_cpu_bind_live(vmCompositionLiveMachine.cpu);
-    core_machine_cpu_instructions_bind_live(vmCompositionLiveMachine.cpuins);
-    core_machine_memory_bind_live(vmCompositionLiveMachine.ram);
-    core_machine_port_bind_live(vmCompositionLiveMachine.port);
-    core_machine_pic_bind_live(vmCompositionLiveMachine.pic_master,
-        vmCompositionLiveMachine.pic_slave);
-    core_machine_pit_bind_live(vmCompositionLiveMachine.pit);
-    core_machine_dma_bind_live(vmCompositionLiveMachine.dma_latch,
-        vmCompositionLiveMachine.dma_primary, vmCompositionLiveMachine.dma_secondary);
-    core_machine_kbc_bind_live(vmCompositionLiveMachine.kbc);
-    core_machine_vadp_bind_live(vmCompositionLiveMachine.vadp);
-    vm_machine_cmos_bind_live(vmCompositionLiveMachine.cmos);
-    vm_machine_fdd_bind_live(vmCompositionLiveMachine.fdd);
-    vm_machine_fdc_bind_live(vmCompositionLiveMachine.fdc);
-    vm_machine_hdd_bind_live(vmCompositionLiveMachine.hdd);
-    vm_machine_debug_bind_live(vmCompositionLiveMachine.debug);
-    vm_profile_default_bios_bind_live(vmCompositionLiveMachine.default_bios);
-    vm_profile_default_qdx_bind_live(vmCompositionLiveMachine.default_qdx);
-    vmCompositionLiveMachineBound = 1;
+    if (machine == NULL) return;
+    machine->cpu = &machine->cpu_storage;
+    machine->cpuins = &machine->cpuins_storage;
+    machine->ram = &machine->ram_storage;
+    machine->port = &machine->port_storage;
+    machine->pic_master = &machine->pic_master_storage;
+    machine->pic_slave = &machine->pic_slave_storage;
+    machine->pit = &machine->pit_storage;
+    machine->dma_latch = &machine->dma_latch_storage;
+    machine->dma_primary = &machine->dma_primary_storage;
+    machine->dma_secondary = &machine->dma_secondary_storage;
+    machine->kbc = &machine->kbc_storage;
+    machine->vadp = &machine->vadp_storage;
+    machine->cmos = &machine->cmos_storage;
+    machine->fdd = &machine->fdd_storage;
+    machine->fdc = &machine->fdc_storage;
+    machine->hdd = &machine->hdd_storage;
+    machine->debug = &machine->debug_storage;
+    machine->default_bios = &machine->default_bios_storage;
+    machine->default_qdx = &machine->default_qdx_storage;
 }
 
-void vm_composition_live_machine_clear(void)
+void vm_composition_live_machine_bind_legacy(vm_composition_live_machine *machine)
+{
+    if (machine == NULL) return;
+    core_machine_cpu_bind_live(machine->cpu);
+    core_machine_cpu_instructions_bind_live(machine->cpuins);
+    core_machine_memory_bind_live(machine->ram);
+    core_machine_port_bind_live(machine->port);
+    core_machine_pic_bind_live(machine->pic_master, machine->pic_slave);
+    core_machine_pit_bind_live(machine->pit);
+    core_machine_dma_bind_live(machine->dma_latch, machine->dma_primary,
+        machine->dma_secondary);
+    core_machine_kbc_bind_live(machine->kbc);
+    core_machine_vadp_bind_live(machine->vadp);
+    vm_machine_cmos_bind_live(machine->cmos);
+    vm_machine_fdd_bind_live(machine->fdd);
+    vm_machine_fdc_bind_live(machine->fdc);
+    vm_machine_hdd_bind_live(machine->hdd);
+    vm_machine_debug_bind_live(machine->debug);
+    vm_profile_default_bios_bind_live(machine->default_bios);
+    vm_profile_default_qdx_bind_live(machine->default_qdx);
+}
+
+void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
 {
     core_machine_memory_unbind_live();
     core_machine_port_unbind_live();
@@ -68,29 +64,24 @@ void vm_composition_live_machine_clear(void)
     vm_profile_default_qdx_unbind_live();
     core_machine_cpu_instructions_unbind_live();
     core_machine_cpu_unbind_live();
-    vmCompositionLiveMachine.cpu = NULL;
-    vmCompositionLiveMachine.cpuins = NULL;
-    vmCompositionLiveMachine.ram = NULL;
-    vmCompositionLiveMachine.port = NULL;
-    vmCompositionLiveMachine.pic_master = NULL;
-    vmCompositionLiveMachine.pic_slave = NULL;
-    vmCompositionLiveMachine.pit = NULL;
-    vmCompositionLiveMachine.dma_latch = NULL;
-    vmCompositionLiveMachine.dma_primary = NULL;
-    vmCompositionLiveMachine.dma_secondary = NULL;
-    vmCompositionLiveMachine.kbc = NULL;
-    vmCompositionLiveMachine.vadp = NULL;
-    vmCompositionLiveMachine.cmos = NULL;
-    vmCompositionLiveMachine.fdd = NULL;
-    vmCompositionLiveMachine.fdc = NULL;
-    vmCompositionLiveMachine.hdd = NULL;
-    vmCompositionLiveMachine.debug = NULL;
-    vmCompositionLiveMachine.default_bios = NULL;
-    vmCompositionLiveMachine.default_qdx = NULL;
-    vmCompositionLiveMachineBound = 0;
-}
-
-const vm_composition_live_machine *vm_composition_live_machine_current(void)
-{
-    return vmCompositionLiveMachineBound ? &vmCompositionLiveMachine : NULL;
+    if (machine == NULL) return;
+    machine->cpu = NULL;
+    machine->cpuins = NULL;
+    machine->ram = NULL;
+    machine->port = NULL;
+    machine->pic_master = NULL;
+    machine->pic_slave = NULL;
+    machine->pit = NULL;
+    machine->dma_latch = NULL;
+    machine->dma_primary = NULL;
+    machine->dma_secondary = NULL;
+    machine->kbc = NULL;
+    machine->vadp = NULL;
+    machine->cmos = NULL;
+    machine->fdd = NULL;
+    machine->fdc = NULL;
+    machine->hdd = NULL;
+    machine->debug = NULL;
+    machine->default_bios = NULL;
+    machine->default_qdx = NULL;
 }

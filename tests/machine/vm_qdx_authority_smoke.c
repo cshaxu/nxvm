@@ -6,15 +6,16 @@
 
 int main(void)
 {
+    vm_composition_live_machine session = {0};
     const vm_composition_live_machine *machine;
 
-    machineInit();
-    machine = vm_composition_live_machine_current();
+    machineInit(&session);
+    machine = (&session);
     if (machine == NULL || qdxTable != machine->default_qdx->table) {
-        machineFinal();
+        machineFinal(&session);
         return 1;
     }
-    machineFinal();
+    machineFinal(&session);
     if (vm_profile_default_qdx_current() != NULL) return 1;
     puts("M5:T39:S1:QDX-AUTHORITY:OK");
     return 0;

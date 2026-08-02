@@ -6,15 +6,16 @@
 
 int main(void)
 {
+    vm_composition_live_machine session = {0};
     const vm_composition_live_machine *machine;
 
-    machineInit();
-    machine = vm_composition_live_machine_current();
+    machineInit(&session);
+    machine = (&session);
     if (machine == NULL || &vbios != machine->default_bios) {
-        machineFinal();
+        machineFinal(&session);
         return 1;
     }
-    machineFinal();
+    machineFinal(&session);
     if (vm_profile_default_bios_current() != NULL) return 1;
     puts("M5:T38:S1:BIOS-AUTHORITY:OK");
     return 0;

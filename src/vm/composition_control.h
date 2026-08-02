@@ -2,6 +2,7 @@
 #define NTVDM64_VM_COMPOSITION_CONTROL_H
 
 #include "type.h"
+#include "vm/composition_live_machine.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,8 +25,8 @@ int vm_composition_control_is_paused(void);
 vm_composition_pause_reason vm_composition_control_get_pause_reason(void);
 void vm_composition_control_continue(void);
 int vm_composition_control_step(void);
-void vm_composition_control_initialize(void);
-void vm_composition_control_finalize(void);
+void vm_composition_control_initialize(vm_composition_live_machine *machine);
+void vm_composition_control_finalize(vm_composition_live_machine *machine);
 int vm_composition_control_is_running(void);
 int vm_composition_control_get_flip(void);
 void vm_composition_control_print_status(void);
