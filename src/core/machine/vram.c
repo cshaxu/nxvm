@@ -5,6 +5,7 @@
 #include "type.h"
 
 #include "core/machine/vpit.h"
+#include "core/machine/memory.h"
 #include "core/machine/vport.h"
 #include "core/machine/vram.h"
 
@@ -56,6 +57,23 @@ void vramFinal() {
     if (vram.connect.pBase) {
         FREE((void *) vram.connect.pBase);
     }
+}
+
+void core_machine_memory_allocate(size_t bytes)
+{
+    allocate(bytes);
+}
+
+void core_machine_memory_read_real(uint16_t segment, uint16_t offset,
+    void *out_data, size_t size)
+{
+    MEMCPY(out_data, (void *)vramGetRealAddr(segment, offset), size);
+}
+
+void core_machine_memory_write_real(uint16_t segment, uint16_t offset,
+    const void *in_data, size_t size)
+{
+    MEMCPY((void *)vramGetRealAddr(segment, offset), (void *)in_data, size);
 }
 
 void deviceConnectRamAllocate(size_t newsize) {

@@ -28,6 +28,12 @@ nxvm_core_status nxvm_core_machine_set_a20(
     nxvm_core_machine *machine,
     int enabled);
 
+void core_machine_memory_allocate(size_t bytes);
+void core_machine_memory_read_real(uint16_t segment, uint16_t offset,
+    void *out_data, size_t size);
+void core_machine_memory_write_real(uint16_t segment, uint16_t offset,
+    const void *in_data, size_t size);
+
 #ifdef __cplusplus
 }
 #endif

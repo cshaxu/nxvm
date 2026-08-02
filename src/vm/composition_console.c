@@ -2,6 +2,7 @@
 
 #include "vm/composition_machine.h"
 #include "vm/composition_control.h"
+#include "core/machine/memory.h"
 #include "vm/machine/device.h"
 #include "vm/platform/platform.h"
 #include "core/product/debug/debug.h"
@@ -30,7 +31,7 @@ static void vm_composition_console_debug(void *context) { (void)context; debugMa
 static void vm_composition_console_record_start(void *context, const char *path) { (void)context; deviceConnectDebugRecordStart(path); }
 static void vm_composition_console_record_stop(void *context) { (void)context; deviceConnectDebugRecordStop(); }
 static void vm_composition_console_set_boot_hdd(void *context, int enabled) { (void)context; deviceConnectBiosSetBoot(enabled); }
-static void vm_composition_console_set_memory(void *context, size_t bytes) { (void)context; deviceConnectRamAllocate(bytes); }
+static void vm_composition_console_set_memory(void *context, size_t bytes) { (void)context; core_machine_memory_allocate(bytes); }
 static void vm_composition_console_create_fdd(void *context) { (void)context; deviceConnectFloppyCreate(); }
 static int vm_composition_console_insert_fdd(void *context, const char *path) { (void)context; return deviceConnectFloppyInsert(path); }
 static int vm_composition_console_remove_fdd(void *context, const char *path) { (void)context; return deviceConnectFloppyRemove(path); }

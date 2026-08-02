@@ -40,8 +40,8 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 T15 S1 P3: replace the retained CPU/RAM/port and VM-media declarations with
-narrow owner-local headers.
+M5 T15 S1 P4: replace the retained VM debugger, BIOS, and media declarations
+with narrow owner-local headers.
 
 ## Completed
 
@@ -177,6 +177,11 @@ narrow owner-local headers.
   declarations after their composition-control replacement. The affected GCC
   artifact and focused smoke targets rebuild without any old control-symbol
   reference.
+- M5 T15 S1 P3: introduced direct core CPU/RAM/port access paths over the
+  retained single executor state and moved debugger, probe, reset-vector, and
+  memory-sizing callers to them. GCC, debug-target, expected-`#UD`, and
+  FDD/HDD profile gates passed; legacy exports remain only for unconverted
+  callers pending final deletion.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware

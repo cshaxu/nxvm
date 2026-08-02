@@ -43,6 +43,9 @@ nxvm_core_status nxvm_core_machine_port_write(
     uint16_t port,
     uint32_t value);
 
+uint32_t core_machine_port_read_legacy(uint16_t port);
+void core_machine_port_write_legacy(uint16_t port, uint32_t value);
+
 #ifdef __cplusplus
 }
 #endif

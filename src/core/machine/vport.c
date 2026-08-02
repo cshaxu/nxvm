@@ -5,6 +5,7 @@
 #include "type.h"
 
 #include "core/machine/vport.h"
+#include "core/machine/port.h"
 
 t_port vport;
 
@@ -29,6 +30,18 @@ void vportReset() {
 }
 void vportRefresh() {}
 void vportFinal() {}
+
+uint32_t core_machine_port_read_legacy(uint16_t port)
+{
+    vportExecRead(port);
+    return vport.data.ioDWord;
+}
+
+void core_machine_port_write_legacy(uint16_t port, uint32_t value)
+{
+    vport.data.ioDWord = value;
+    vportExecWrite(port);
+}
 
 void deviceConnectPortRead(uint16_t portId) {
     vportExecRead(portId);
