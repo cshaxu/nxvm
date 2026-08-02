@@ -48,10 +48,12 @@ M5 T20 S1 then renamed the shared keyboard provider unit to
 `keyboard_interface` without changing its API or behavior.
 M5 T21 S1 renamed the core machine event-observer unit to `trace_interface`
 without changing trace semantics.
-M5 T22 S1 audited the retained debugger and defined the T23 pause-boundary and
-T24 unified-backend migration; implementation remains inactive pending review.
+M5 T22 S1 audited the retained debugger and defined its pause-boundary and
+unified-backend migration; implementation remains inactive pending review.
 M5 T22 S2 corrected the authority model: the live full PC must converge into
 one machine instance without parallel CPU/RAM/port state.
+M5 T22 S3 schedules device-by-device live-machine convergence as T23 through
+T43; debugger pause and backend work are deferred to T44 and T45.
 
 ## Completed
 
@@ -247,10 +249,12 @@ one machine instance without parallel CPU/RAM/port state.
   `keyboard_interface` and rebuilt the task artifact.
 - M5 T21 S1 P1: renamed the core machine trace observer unit to
   `trace_interface` and rebuilt the task artifact.
-- M5 T22 S1 P1: recorded the retained debugger audit and the T23/T24 migration
-  design without changing runtime code.
+- M5 T22 S1 P1: recorded the retained debugger audit and migration design
+  without changing runtime code.
 - M5 T22 S2 P1: recorded the live-machine authority migration rules and source
-  map before T23/T24 implementation.
+  map before debugger implementation.
+- M5 T22 S3 P1: replaced the premature debugger implementation sequence with
+  device-by-device live-machine convergence through T43.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware

@@ -31,9 +31,9 @@ reason. `step` runs exactly one instruction through that owner and returns to
 the boundary; `continue` closes the boundary and resumes. The retained command
 grammar and printed output remain stable.
 
-## T23: Pause Boundary
+## T44: Pause Boundary
 
-T23 adds a composition-owned debugger control state and synchronized request /
+T44 adds a composition-owned debugger control state and synchronized request /
 acknowledgement transport. The Console `debug` path requests pause and waits
 for acknowledgement before calling the retained UI. `vdebug` converts its
 breakpoint and trace detections into the same request. The execution loop
@@ -43,9 +43,9 @@ accepted. Existing `stop`, `reset`, window, input, boot, and recorder behavior
 are regression gates; no raw recorder runs without a separately budgeted
 experiment.
 
-## T24: Unified Backend
+## T45: Unified Backend
 
-T24 introduces one product-neutral debug backend interface for register,
+T45 introduces one product-neutral debug backend interface for register,
 memory, port, run-control, break/watch, disassembly inputs, and stop-reason
 access. It binds only to the single live machine authority defined by the
 authority migration plan. A future VDM supplies its owned-DOS machine adapter.
@@ -57,8 +57,8 @@ pass.
 
 ## Exit Evidence
 
-T23 requires a bounded breakpoint/pause/continue/step interaction against the
-FDD fixture and no-media Console, plus lifecycle and input regressions. T24
+T44 requires a bounded breakpoint/pause/continue/step interaction against the
+FDD fixture and no-media Console, plus lifecycle and input regressions. T45
 requires the same interactions through the unified backend, parity checks for
 the retained debugger commands, and explicit proof that it observes the live
 full-PC state rather than the session-model machine.
