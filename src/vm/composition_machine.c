@@ -155,9 +155,8 @@ void machineInit(vm_composition_live_machine *machine) {
         machine->default_profile_context,
         vm_profile_default_keyboard_provider());
     core_machine_keyboard_provider_slot_freeze(machine->keyboard_provider);
-    /* Mode notifications remain on the legacy facade until the profile
-       firmware receives an explicit session display context in T71. */
-    core_machine_display_provider_slot_bind(machine->display_provider, NULL,
+    core_machine_display_provider_slot_bind(machine->display_provider,
+        machine->default_profile_context,
         NULL, NULL, vm_profile_default_display_capture);
     core_machine_display_provider_slot_freeze(machine->display_provider);
     vm_machine_debug_bind_pause(machine->debug,
