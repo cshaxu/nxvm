@@ -8,6 +8,7 @@
 struct vm_composition_full_pc_session {
     vm_composition_full_pc_session_config config;
     const nxvm_runtime_profile_descriptor *profile;
+    nxvm_full_pc *full_pc;
     int active;
 };
 
@@ -21,7 +22,7 @@ static nxvm_core_status vm_composition_full_pc_session_start(
         0u,
         session->config.boot_hdd
     };
-    nxvm_core_status status = nxvm_full_pc_create(&config);
+    nxvm_core_status status = nxvm_full_pc_create(&config, &session->full_pc);
 
     if (status == NXVM_CORE_STATUS_OK) {
         session->active = 1;
@@ -61,7 +62,8 @@ nxvm_core_status vm_composition_full_pc_session_reset(vm_composition_full_pc_ses
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
     if (session->active) {
-        nxvm_full_pc_destroy();
+        nxvm_full_pc_destroy(session->full_pc);
+        session->full_pc = NULL;
         session->active = 0;
     }
     return vm_composition_full_pc_session_start(session);
@@ -77,7 +79,7 @@ void vm_composition_full_pc_session_destroy(vm_composition_full_pc_session *sess
 {
     if (session != NULL) {
         if (session->active) {
-            nxvm_full_pc_destroy();
+            nxvm_full_pc_destroy(session->full_pc);
         }
         free(session);
     }
