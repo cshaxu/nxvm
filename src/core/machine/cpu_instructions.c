@@ -1222,21 +1222,24 @@ static void _kpa_test_mode(core_machine_cpu_execution_context *context, t_nubit1
 static void _p_input(core_machine_cpu_execution_context *context, t_nubit16 portid, t_vaddrcc rdata, t_nubit8 byte) {
     _cb("_p_input");
     _chr(_kpa_test_mode(context, portid, byte));
-    vportExecRead(portid);
+    core_machine_port_execute_read(context->port, portid);
     switch (byte) {
     case 1:
         _bb("byte(1)");
-        _chr(_m_write_ref(context, rdata, GetRef(vport.data.ioByte), 1));
+        _chr(_m_write_ref(context, rdata,
+            GetRef(context->port->data.ioByte), 1));
         _be;
         break;
     case 2:
         _bb("byte(2)");
-        _chr(_m_write_ref(context, rdata, GetRef(vport.data.ioWord), 2));
+        _chr(_m_write_ref(context, rdata,
+            GetRef(context->port->data.ioWord), 2));
         _be;
         break;
     case 4:
         _bb("byte(4)");
-        _chr(_m_write_ref(context, rdata, GetRef(vport.data.ioDWord), 4));
+        _chr(_m_write_ref(context, rdata,
+            GetRef(context->port->data.ioDWord), 4));
         _be;
         break;
     default:
@@ -1254,17 +1257,20 @@ static void _p_output(core_machine_cpu_execution_context *context, t_nubit16 por
     switch (byte) {
     case 1:
         _bb("byte(1)");
-        _chr(_m_read_ref(context, rdata, GetRef(vport.data.ioByte), 1));
+        _chr(_m_read_ref(context, rdata,
+            GetRef(context->port->data.ioByte), 1));
         _be;
         break;
     case 2:
         _bb("byte(2)");
-        _chr(_m_read_ref(context, rdata, GetRef(vport.data.ioWord), 2));
+        _chr(_m_read_ref(context, rdata,
+            GetRef(context->port->data.ioWord), 2));
         _be;
         break;
     case 4:
         _bb("byte(4)");
-        _chr(_m_read_ref(context, rdata, GetRef(vport.data.ioDWord), 4));
+        _chr(_m_read_ref(context, rdata,
+            GetRef(context->port->data.ioDWord), 4));
         _be;
         break;
     default:
@@ -1273,7 +1279,7 @@ static void _p_output(core_machine_cpu_execution_context *context, t_nubit16 por
         _be;
         break;
     }
-    vportExecWrite(portid);
+    core_machine_port_execute_write(context->port, portid);
     instruction_state.data.flagIgnore = True;
     _ce;
 }
