@@ -139,7 +139,7 @@ set(NXVM_FOUNDATION_SOURCES
 set(NXVM_PROFILE_VM_SOURCES
     src/vm/profile/default_profile/profile.c
     src/vm/profile/full_pc_profile.c
-    src/vm/profile/default_profile/firmware/vbios.c
+    src/vm/profile/default_profile/firmware/bios.c
     src/vm/profile/default_profile/firmware/qdcga.c
     src/vm/profile/default_profile/firmware/qddisk.c
     src/vm/profile/default_profile/firmware/qdkeyb.c
@@ -643,6 +643,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t46 "m5t46")
 add_nxvm_full_pc_artifact(nxvm-m5-t47 "m5t47")
 add_nxvm_version_artifact(nxvm-0-5-0048 "0.5.0048")
 add_nxvm_version_artifact(nxvm-0-5-0049 "0.5.0049")
+add_nxvm_version_artifact(nxvm-0-5-0050 "0.5.0050")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

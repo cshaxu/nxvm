@@ -115,12 +115,13 @@ M5 T48 S2 completed the first naming implementation task: shared core
 M5 T49 S1 completed VM-private device file naming: `vcmos`, `vdebug`, `vfdd`,
 `vfdc`, `vhdd`, and `vhdc` file pairs now use canonical owner filenames, and
 `build/output/nxvm_0_5_0049.exe` is the verified task artifact.
+M5 T50 S1 completed default-profile BIOS file naming: `vbios.*` is now
+`bios.*`, and `build/output/nxvm_0_5_0050.exe` is the verified task artifact.
 
 ## Active Work
 
-M5 T50 S1 is active, not started: rename default-profile `vbios.*` to
-`bios.*`, then complete T50 by producing `build/output/nxvm_0_5_0050.exe`
-after verification.
+M5 T51 S1 is active, not started: audit remaining interface/provider contract
+names and apply only low-risk naming splits or renames.
 M6 T1 S1 is deferred and not active.
 
 ## Completed
@@ -531,10 +532,13 @@ M6 T1 S1 is deferred and not active.
 - M5 T49 S1 P1: renamed VM-private CMOS/debug/FDD/FDC/HDD/HDC file pairs to
   canonical owner filenames, preserved retained aliases and behavior, and
   built `build/output/nxvm_0_5_0049.exe`.
+- M5 T50 S1 P1: renamed default-profile BIOS firmware files to
+  `bios.c/.h`, preserved retained `vbios` compatibility names and behavior,
+  and built `build/output/nxvm_0_5_0050.exe`.
 
 ## Next Eligible Work
 
-- M5 T50 may begin. M6 design is deferred until M5 naming convergence closes
+- M5 T51 may begin. M6 design is deferred until M5 naming convergence closes
   or the owner explicitly pauses M5.
 
 ## Delivery State

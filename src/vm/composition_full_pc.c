@@ -9,7 +9,7 @@
 #include "core/machine/keyboard_interface.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
-#include "vm/profile/default_profile/firmware/vbios.h"
+#include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/platform/vm_request_transport.h"
 #include "vm/platform/win32/win32.h"
 #include "core/product/debug/debug.h"

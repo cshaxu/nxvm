@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_VBIOS_H
-#define NXVM_VBIOS_H
+#ifndef NXVM_VM_PROFILE_DEFAULT_BIOS_H
+#define NXVM_VM_PROFILE_DEFAULT_BIOS_H
 
 #ifdef __cplusplus
 extern "C" {

@@ -10,7 +10,7 @@
 #include "core/machine/port.h"
 #include "core/machine/memory.h"
 #include "core/machine/cpu.h"
-#include "vm/profile/default_profile/firmware/vbios.h"
+#include "vm/profile/default_profile/firmware/bios.h"
 #include "core/machine/pit.h"
 #include "core/machine/dma.h"
 #include "core/machine/pic.h"

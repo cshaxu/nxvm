@@ -4,7 +4,7 @@
 
 #include "vm/composition_control.h"
 #include "vm/machine/fdd.h"
-#include "vm/profile/default_profile/firmware/vbios.h"
+#include "vm/profile/default_profile/firmware/bios.h"
 #include "core/product/runtime/execution_context.h"
 
 static DWORD WINAPI run_device(LPVOID parameter)

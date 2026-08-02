@@ -7,7 +7,7 @@
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
 #include "vm/machine/debug.h"
-#include "vm/profile/default_profile/firmware/vbios.h"
+#include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/platform/platform.h"
 #include "core/product/debug/debug.h"
 
