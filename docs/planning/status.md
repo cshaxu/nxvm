@@ -166,8 +166,9 @@ alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M5 T73 S1 is active: delete the final shared legacy selection layer, prove two
-sessions remain isolated, and run the closure scans and compatibility gates.
+M5 T73 S1 is complete: the final shared legacy selection layer is deleted,
+two simultaneously constructed sessions are isolated, and closure scans plus
+compatibility gates are recorded in `verification/m5-t73-s1-legacy-selection-closure.md`.
 M5 T70 S2 repaired the FDC boot regression and added the fixture-backed
 three-second guest DOS-prompt gate. M6 T1 remains deferred and DOS
 implementation remains ineligible.
