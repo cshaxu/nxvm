@@ -210,5 +210,5 @@ reset-vector, and Console `HELP`/`EXIT` gates passed. POSIX compilation
 remains the explicitly external Linux validation gate recorded by M0/M5
 governance.
 
-M5 itself remains reopened for the naming-convergence scope in
-`planning/m5-naming-convergence.md`.
+The naming-convergence scope is preserved in the adjacent
+`m5-naming-convergence.md` record.

@@ -16,7 +16,7 @@ policy. `verification/`, `provenance/`, `baselines/`, `build/`,
 `compatibility/`, `evidence/`, and `fixtures/` record acceptance inputs or
 evidence. `research/` and `references/` are non-default research inputs.
 
-`history/` preserves earlier plans and evidence. It is non-authoritative and
+`history/` preserves closed plans and evidence. It is non-authoritative and
 must not be used to define a forward module boundary, interface, or milestone
 scope. Historical task records remain in `planning/subtasks/` so their tracked
 links remain stable; they do not override the current planning documents.

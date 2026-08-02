@@ -1,6 +1,6 @@
 # Architecture Direction
 
-The canonical architecture is [Module Layout](module-layout.md). This
+The canonical architecture is [Module Layout](../../architecture/module-layout.md). This
 compatibility entry remains so older links resolve.
 
 The controlling direction is a shared NXVM-derived core with two products:

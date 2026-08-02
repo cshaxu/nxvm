@@ -18,8 +18,8 @@ shell has `vdm/platform -> vdm/machine` presentation routing. The historical
 
 The complete source-edge, CMake-edge, gate, and stop-condition inventory was
 [`m5-t14-s2-migration-map.md`](m5-t14-s2-migration-map.md). It is historical
-T14 S2 design evidence; current reopened M5 naming work is governed by
-[`m5-naming-convergence.md`](m5-naming-convergence.md).
+T14 S2 design evidence; the closed naming plan is archived at
+[`m5-naming-convergence.md`](../history/m5/planning/m5-naming-convergence.md).
 
 ## Bounded Follow-Up
 
