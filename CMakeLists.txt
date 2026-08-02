@@ -587,7 +587,11 @@ function(add_nxvm_full_pc_artifact target suffix)
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/output"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "$<TARGET_FILE:${target}>"
-            "${CMAKE_BINARY_DIR}/output/${task_artifact_filename}")
+            "${CMAKE_BINARY_DIR}/output/${task_artifact_filename}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/build/output"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:${target}>"
+            "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
 function(add_nxvm_version_artifact target version)
@@ -613,7 +617,11 @@ function(add_nxvm_version_artifact target version)
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/output"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "$<TARGET_FILE:${target}>"
-            "${CMAKE_BINARY_DIR}/output/${task_artifact_filename}")
+            "${CMAKE_BINARY_DIR}/output/${task_artifact_filename}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/build/output"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:${target}>"
+            "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
 add_nxvm_full_pc_artifact(nxvm-m3-t5 "m3t5")
@@ -681,6 +689,7 @@ add_nxvm_version_artifact(nxvm-0-5-0067 "0.5.0067")
 add_nxvm_version_artifact(nxvm-0-5-0068 "0.5.0068")
 add_nxvm_version_artifact(nxvm-0-5-0069 "0.5.0069")
 add_nxvm_version_artifact(nxvm-0-5-0070 "0.5.0070")
+add_nxvm_version_artifact(nxvm-0-5-0071 "0.5.0071")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

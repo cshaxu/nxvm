@@ -166,10 +166,11 @@ alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M5 T71 S1 is active: migrate default-profile firmware callbacks and static
-facades to explicit composition-owned profile objects. M5 T70 S2 repaired the
-FDC boot regression and added the fixture-backed three-second guest DOS-prompt
-gate. M6 T1 remains deferred and DOS implementation remains ineligible.
+M5 T72 S1 is active: migrate retained Console/debugger/runtime callers from
+the selected execution-context facade to the composition-owned session target.
+M5 T70 S2 repaired the FDC boot regression and added the fixture-backed
+three-second guest DOS-prompt gate. M6 T1 remains deferred and DOS
+implementation remains ineligible.
 
 M5 T68 S2 repaired a fixture-backed full-PC execution regression before T70
 continued. `nxvm_0_5_0068.exe` is revoked: its execution context supplied a
@@ -178,6 +179,13 @@ timing-dependent access violation after FDD boot. The corrected binding and
 identity gate pass full-PC and six retained-Console FDD start survival probes.
 
 ## Completed
+
+- M5 T71 S1: migrated the default-profile BIOS, QDX, disk, keyboard, and CGA
+  firmware paths to the composition-owned profile context and frozen provider
+  slots. No profile firmware now resolves a selected live machine. Firmware,
+  full-authority, and fixture-backed three-second DOS-prompt gates passed;
+  `build/output/nxvm_0_5_0071.exe` SHA-256 is
+  `0A401845D6920CDBA4F981AAA300D53A50E0D018985318BFA6DC1B5089FEDDD2`.
 
 - M5 T70 S1: removed selected-object aliases for CMOS, HDD, FDD, FDC, and VM
   debug state. Its original `0.5.0070` artifact is revoked: its retained
