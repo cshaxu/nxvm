@@ -11,8 +11,12 @@ extern "C" {
 
 #define NXVM_DEVICE_DEBUG "Unknown Hardware Debugger"
 
+typedef void (*vm_machine_debug_stop_callback)(void *context);
+
 typedef struct {
     FILE *recordFile; /* pointer to dump file */
+    vm_machine_debug_stop_callback stopCallback;
+    void *stopContext;
 } t_debug_connect;
 
 typedef struct {
@@ -29,9 +33,12 @@ typedef struct {
     t_debug_connect connect;
 } t_debug;
 
-extern t_debug vdebug;
+t_debug *vm_machine_debug_current(void);
+void vm_machine_debug_bind_live(t_debug *debug);
+void vm_machine_debug_unbind_live(void);
 
-typedef void (*vm_machine_debug_stop_callback)(void *context);
+/* Transitional direct alias to the one composition-owned debug object. */
+#define vdebug (*vm_machine_debug_current())
 
 void vdebugInit();
 void vdebugReset();

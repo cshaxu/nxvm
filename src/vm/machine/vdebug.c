@@ -11,14 +11,16 @@
 
 #include "vm/machine/vdebug.h"
 
-t_debug vdebug;
-static vm_machine_debug_stop_callback vdebugStopCallback;
-static void *vdebugStopContext;
+static t_debug *vmMachineDebug;
+
+t_debug *vm_machine_debug_current(void) { return vmMachineDebug; }
+void vm_machine_debug_bind_live(t_debug *debug) { vmMachineDebug = debug; }
+void vm_machine_debug_unbind_live(void) { vmMachineDebug = NULL; }
 
 static void vdebug_request_stop(void)
 {
-    if (vdebugStopCallback != NULL) {
-        vdebugStopCallback(vdebugStopContext);
+    if (vdebug.connect.stopCallback != NULL) {
+        vdebug.connect.stopCallback(vdebug.connect.stopContext);
     }
 }
 
@@ -210,8 +212,8 @@ void vdebugFinal() {}
 void vm_machine_debug_bind_stop(vm_machine_debug_stop_callback callback,
     void *context)
 {
-    vdebugStopCallback = callback;
-    vdebugStopContext = context;
+    vdebug.connect.stopCallback = callback;
+    vdebug.connect.stopContext = context;
 }
 
 void vm_machine_debug_set_breakpoint_real(uint16_t segment, uint16_t offset) {
