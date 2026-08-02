@@ -36,6 +36,7 @@ void vm_composition_live_machine_bind_legacy(vm_composition_live_machine *machin
     if (machine == NULL) return;
     core_machine_cpu_bind_live(machine->cpu);
     core_machine_cpu_instructions_bind_live(machine->cpuins);
+    core_machine_cpu_execution_bind_legacy(machine->cpu_execution);
     core_machine_memory_bind_live(machine->ram);
     core_machine_port_bind_live(machine->port);
     core_machine_pic_bind_live(machine->pic_master, machine->pic_slave);
@@ -69,6 +70,7 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     vm_machine_debug_unbind_live();
     vm_profile_default_bios_unbind_live();
     vm_profile_default_qdx_unbind_live();
+    core_machine_cpu_execution_unbind_legacy();
     core_machine_cpu_instructions_unbind_live();
     core_machine_cpu_unbind_live();
     if (machine == NULL) return;

@@ -9,8 +9,6 @@
 #include "core/machine/cpu.h"
 
 static t_cpu *coreMachineCpu;
-static t_bool vcpuStopRequested;
-static t_bool vcpuResetRequested;
 
 void core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
@@ -39,14 +37,22 @@ void core_machine_cpu_unbind_live(void)
 }
 
 void vcpuInit() {
-    vcpuStopRequested = False;
-    vcpuResetRequested = False;
+    core_machine_cpu_execution_context *context =
+        core_machine_cpu_execution_current_legacy();
+    if (context != NULL) {
+        context->stop_requested = False;
+        context->reset_requested = False;
+    }
     vcpuinsInit();
 }
 void vcpuReset() {
+    core_machine_cpu_execution_context *context =
+        core_machine_cpu_execution_current_legacy();
     MEMSET((void *)(&vcpu), Zero8, sizeof(t_cpu));
-    vcpuStopRequested = False;
-    vcpuResetRequested = False;
+    if (context != NULL) {
+        context->stop_requested = False;
+        context->reset_requested = False;
+    }
 
     vcpu.data.eip = 0x0000fff0;
     vcpu.data.eflags = 0x00000002;
@@ -122,21 +128,46 @@ void vcpuRefresh() {
 void vcpuFinal() {
     vcpuinsFinal();
 }
+void core_machine_cpu_execution_request_stop(
+    core_machine_cpu_execution_context *context)
+{
+    if (context != NULL) context->stop_requested = True;
+}
+ t_bool core_machine_cpu_execution_consume_stop_request(
+    core_machine_cpu_execution_context *context)
+{
+    t_bool requested = context != NULL && context->stop_requested;
+    if (context != NULL) context->stop_requested = False;
+    return requested;
+}
+void core_machine_cpu_execution_request_reset(
+    core_machine_cpu_execution_context *context)
+{
+    if (context != NULL) context->reset_requested = True;
+}
+t_bool core_machine_cpu_execution_consume_reset_request(
+    core_machine_cpu_execution_context *context)
+{
+    t_bool requested = context != NULL && context->reset_requested;
+    if (context != NULL) context->reset_requested = False;
+    return requested;
+}
+
 void vcpuRequestStop() {
-    vcpuStopRequested = True;
+    core_machine_cpu_execution_request_stop(
+        core_machine_cpu_execution_current_legacy());
 }
 t_bool vcpuConsumeStopRequest() {
-    t_bool requested = vcpuStopRequested;
-    vcpuStopRequested = False;
-    return requested;
+    return core_machine_cpu_execution_consume_stop_request(
+        core_machine_cpu_execution_current_legacy());
 }
 void vcpuRequestReset() {
-    vcpuResetRequested = True;
+    core_machine_cpu_execution_request_reset(
+        core_machine_cpu_execution_current_legacy());
 }
 t_bool vcpuConsumeResetRequest() {
-    t_bool requested = vcpuResetRequested;
-    vcpuResetRequested = False;
-    return requested;
+    return core_machine_cpu_execution_consume_reset_request(
+        core_machine_cpu_execution_current_legacy());
 }
 
 int core_machine_cpu_read_linear(uint32_t linear, void *out_data, uint8_t size)
