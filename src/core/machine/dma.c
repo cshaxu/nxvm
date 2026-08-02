@@ -82,214 +82,161 @@ static void io_write_Mask_Single(t_dma *rdma) {
 #define     io_write_Page(rdma, id, m) \
             ((rdma)->data.page[(id)] = vport.data.ioByte & (m))
 
-static void io_read_0000()  {
-    io_read_CurrentAddress   (&vdma1, 0);
-}
-static void io_read_0001()  {
-    io_read_CurrentWordCount (&vdma1, 0);
-}
-static void io_read_0002()  {
-    io_read_CurrentAddress   (&vdma1, 1);
-}
-static void io_read_0003()  {
-    io_read_CurrentWordCount (&vdma1, 1);
-}
-static void io_read_0004()  {
-    io_read_CurrentAddress   (&vdma1, 2);
-}
-static void io_read_0005()  {
-    io_read_CurrentWordCount (&vdma1, 2);
-}
-static void io_read_0006()  {
-    io_read_CurrentAddress   (&vdma1, 3);
-}
-static void io_read_0007()  {
-    io_read_CurrentWordCount (&vdma1, 3);
-}
-static void io_read_0008()  {
-    io_read_Status           (&vdma1   );
-}
-static void io_read_000D()  {
-    io_read_Temp             (&vdma1   );
+static void dma_read_address(t_dma *dma, t_port *port, t_nubit8 channel)
+{
+    port->data.ioByte = !dma->data.flagMSB ?
+        GetMax8(dma->data.currAddr[channel]) :
+        GetMax8(dma->data.currAddr[channel] >> 8);
+    dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static void io_write_0000() {
-    io_write_Address         (&vdma1, 0);
-}
-static void io_write_0001() {
-    io_write_WordCount       (&vdma1, 0);
-}
-static void io_write_0002() {
-    io_write_Address         (&vdma1, 1);
-}
-static void io_write_0003() {
-    io_write_WordCount       (&vdma1, 1);
-}
-static void io_write_0004() {
-    io_write_Address         (&vdma1, 2);
-}
-static void io_write_0005() {
-    io_write_WordCount       (&vdma1, 2);
-}
-static void io_write_0006() {
-    io_write_Address         (&vdma1, 3);
-}
-static void io_write_0007() {
-    io_write_WordCount       (&vdma1, 3);
-}
-static void io_write_0008() {
-    io_write_Command         (&vdma1   );
-}
-static void io_write_0009() {
-    io_write_Request_Single  (&vdma1   );
-}
-static void io_write_000A() {
-    io_write_Mask_Single     (&vdma1   );
-}
-static void io_write_000B() {
-    io_write_Mode            (&vdma1   );
-}
-static void io_write_000C() {
-    io_write_Flipflop_Clear  (&vdma1   );
-}
-static void io_write_000D() {
-    io_write_Reset           (&vdma1   );
-}
-static void io_write_000E() {
-    io_write_Mask_Clear      (&vdma1   );
-}
-static void io_write_000F() {
-    io_write_Mask_All        (&vdma1   );
+static void dma_read_count(t_dma *dma, t_port *port, t_nubit8 channel)
+{
+    port->data.ioByte = !dma->data.flagMSB ?
+        GetMax8(dma->data.currCount[channel]) :
+        GetMax8(dma->data.currCount[channel] >> 8);
+    dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static void io_read_0081()  {
-    io_read_Page             (&vdma1, 2);
-}
-static void io_read_0082()  {
-    io_read_Page             (&vdma1, 3);
-}
-static void io_read_0083()  {
-    io_read_Page             (&vdma1, 1);
-}
-static void io_read_0087()  {
-    io_read_Page             (&vdma1, 0);
-}
-static void io_read_0089()  {
-    io_read_Page             (&vdma2, 2);
-}
-static void io_read_008A()  {
-    io_read_Page             (&vdma2, 3);
-}
-static void io_read_008B()  {
-    io_read_Page             (&vdma2, 1);
-}
-static void io_read_008F()  {
-    io_read_Page             (&vdma2, 0);
+static void dma_write_address(t_dma *dma, t_port *port, t_nubit8 channel)
+{
+    if (!dma->data.flagMSB) {
+        dma->data.baseAddr[channel] = GetMax16(port->data.ioByte);
+    } else {
+        dma->data.baseAddr[channel] |= GetMax16(port->data.ioByte << 8);
+    }
+    dma->data.currAddr[channel] = dma->data.baseAddr[channel];
+    dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static void io_write_0081() {
-    io_write_Page            (&vdma1, 2, Max8);
-}
-static void io_write_0082() {
-    io_write_Page            (&vdma1, 3, Max8);
-}
-static void io_write_0083() {
-    io_write_Page            (&vdma1, 1, Max8);
-}
-static void io_write_0087() {
-    io_write_Page            (&vdma1, 0, Max8);
-}
-static void io_write_0089() {
-    io_write_Page            (&vdma2, 2, 0xfe);
-}
-static void io_write_008A() {
-    io_write_Page            (&vdma2, 3, 0xfe);
-}
-static void io_write_008B() {
-    io_write_Page            (&vdma2, 1, 0xfe);
-}
-static void io_write_008F() {
-    io_write_Page            (&vdma2, 0, 0xfe);
+static void dma_write_count(t_dma *dma, t_port *port, t_nubit8 channel)
+{
+    if (!dma->data.flagMSB) {
+        dma->data.baseCount[channel] = GetMax16(port->data.ioByte);
+    } else {
+        dma->data.baseCount[channel] |= GetMax16(port->data.ioByte << 8);
+    }
+    dma->data.currCount[channel] = dma->data.baseCount[channel];
+    dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static void io_read_00C0()  {
-    io_read_CurrentAddress   (&vdma2, 0);
-}
-static void io_read_00C2()  {
-    io_read_CurrentWordCount (&vdma2, 0);
-}
-static void io_read_00C4()  {
-    io_read_CurrentAddress   (&vdma2, 1);
-}
-static void io_read_00C6()  {
-    io_read_CurrentWordCount (&vdma2, 1);
-}
-static void io_read_00C8()  {
-    io_read_CurrentAddress   (&vdma2, 2);
-}
-static void io_read_00CA()  {
-    io_read_CurrentWordCount (&vdma2, 2);
-}
-static void io_read_00CC()  {
-    io_read_CurrentAddress   (&vdma2, 3);
-}
-static void io_read_00CE()  {
-    io_read_CurrentWordCount (&vdma2, 3);
-}
-static void io_read_00D0()  {
-    io_read_Status           (&vdma2   );
-}
-static void io_read_00DA()  {
-    io_read_Temp             (&vdma2   );
+static void dma_write_request(t_dma *dma, t_port *port)
+{
+    MakeBit(dma->data.request,
+        VDMA_REQUEST_DRQ(VDMA_GetREQSC_CS(port->data.ioByte)),
+        GetBit(port->data.ioByte, VDMA_REQSC_SR));
 }
 
-static void io_write_00C0() {
-    io_write_Address         (&vdma2, 0);
+static void dma_write_mask(t_dma *dma, t_port *port)
+{
+    MakeBit(dma->data.mask,
+        VDMA_MASK_DRQ(VDMA_GetMASKSC_CS(port->data.ioByte)),
+        GetBit(port->data.ioByte, VDMA_MASKSC_SM));
 }
-static void io_write_00C2() {
-    io_write_WordCount       (&vdma2, 0);
+
+static t_dma *dma_controller(t_dma *primary, t_nubit16 port_id)
+{
+    return port_id >= 0x00c0u ? primary->connect.peer : primary;
 }
-static void io_write_00C4() {
-    io_write_Address         (&vdma2, 1);
+
+static t_nubit8 dma_page_channel(t_nubit16 port_id)
+{
+    switch (port_id) {
+    case 0x0081: case 0x0089: return 2u;
+    case 0x0082: case 0x008a: return 3u;
+    case 0x0083: case 0x008b: return 1u;
+    default: return 0u;
+    }
 }
-static void io_write_00C6() {
-    io_write_WordCount       (&vdma2, 1);
+
+static void dma_port_read(t_port *port, t_nubit16 port_id, void *owner)
+{
+    t_dma *primary = (t_dma *)owner;
+    t_dma *dma;
+    t_nubit8 channel;
+
+    if (primary == NULL) return;
+    if (port_id <= 0x0007u) {
+        channel = (t_nubit8)(port_id >> 1);
+        if ((port_id & 1u) == 0u) dma_read_address(primary, port, channel);
+        else dma_read_count(primary, port, channel);
+        return;
+    }
+    if (port_id == 0x0008u) {
+        port->data.ioByte = primary->data.status;
+        ClrBit(primary->data.status, VDMA_STATUS_TCS);
+        return;
+    }
+    if (port_id == 0x000du) {
+        port->data.ioByte = primary->data.temp;
+        return;
+    }
+    if (port_id >= 0x0081u && port_id <= 0x008fu) {
+        dma = dma_controller(primary, port_id);
+        port->data.ioByte = dma->data.page[dma_page_channel(port_id)];
+        return;
+    }
+    if (port_id >= 0x00c0u && port_id <= 0x00ceu &&
+        (port_id & 1u) == 0u) {
+        dma = primary->connect.peer;
+        channel = (t_nubit8)((port_id - 0x00c0u) >> 1);
+        if ((channel & 1u) == 0u) dma_read_address(dma, port, channel >> 1);
+        else dma_read_count(dma, port, channel >> 1);
+        return;
+    }
+    if (port_id == 0x00d0u) {
+        port->data.ioByte = primary->connect.peer->data.status;
+        ClrBit(primary->connect.peer->data.status, VDMA_STATUS_TCS);
+        return;
+    }
+    if (port_id == 0x00dau) {
+        port->data.ioByte = primary->connect.peer->data.temp;
+    }
 }
-static void io_write_00C8() {
-    io_write_Address         (&vdma2, 2);
-}
-static void io_write_00CA() {
-    io_write_WordCount       (&vdma2, 2);
-}
-static void io_write_00CC() {
-    io_write_Address         (&vdma2, 3);
-}
-static void io_write_00CE() {
-    io_write_WordCount       (&vdma2, 3);
-}
-static void io_write_00D0() {
-    io_write_Command         (&vdma2   );
-}
-static void io_write_00D2() {
-    io_write_Request_Single  (&vdma2   );
-}
-static void io_write_00D4() {
-    io_write_Mask_Single     (&vdma2   );
-}
-static void io_write_00D6() {
-    io_write_Mode            (&vdma2   );
-}
-static void io_write_00D8() {
-    io_write_Flipflop_Clear  (&vdma2   );
-}
-static void io_write_00DA() {
-    io_write_Reset           (&vdma2   );
-}
-static void io_write_00DC() {
-    io_write_Mask_Clear      (&vdma2   );
-}
-static void io_write_00DE() {
-    io_write_Mask_All        (&vdma2   );
+
+static void dma_port_write(t_port *port, t_nubit16 port_id, void *owner)
+{
+    t_dma *primary = (t_dma *)owner;
+    t_dma *dma;
+    t_nubit8 channel;
+    t_nubit16 local_port;
+
+    if (primary == NULL) return;
+    if (port_id <= 0x0007u) {
+        channel = (t_nubit8)(port_id >> 1);
+        if ((port_id & 1u) == 0u) dma_write_address(primary, port, channel);
+        else dma_write_count(primary, port, channel);
+        return;
+    }
+    if (port_id >= 0x0081u && port_id <= 0x008fu) {
+        dma = dma_controller(primary, port_id);
+        dma->data.page[dma_page_channel(port_id)] = port->data.ioByte &
+            (port_id < 0x0089u ? Max8 : 0xfeu);
+        return;
+    }
+    dma = port_id >= 0x00c0u ? primary->connect.peer : primary;
+    local_port = port_id >= 0x00c0u ? port_id - 0x00c0u : port_id;
+    if (port_id >= 0x00c0u && (local_port & 1u) == 0u &&
+        local_port <= 0x000eu) {
+        channel = (t_nubit8)(local_port >> 1);
+        if ((channel & 1u) == 0u) dma_write_address(dma, port, channel >> 1);
+        else dma_write_count(dma, port, channel >> 1);
+        return;
+    }
+    if (port_id >= 0x00c0u) local_port -= 0x0008u;
+    switch (local_port) {
+    case 0x0008: dma->data.command = port->data.ioByte; break;
+    case 0x0009: dma_write_request(dma, port); break;
+    case 0x000a: dma_write_mask(dma, port); break;
+    case 0x000b:
+        dma->data.mode[VDMA_GetMODE_CS(port->data.ioByte)] = port->data.ioByte;
+        break;
+    case 0x000c: dma->data.flagMSB = False; break;
+    case 0x000d: doReset(dma); break;
+    case 0x000e: dma->data.mask = Zero8; break;
+    case 0x000f: dma->data.mask = port->data.ioByte & VDMA_MASKAC_VALID; break;
+    default: break;
+    }
 }
 
 static t_nubit8 GetRegTopId(t_dma *rdma, t_nubit8 reg) {
@@ -315,7 +262,8 @@ static void DecreaseCurrAddr(t_dma *rdma, t_nubit8 id) {
         rdma->data.page[id]--;
     }
 }
-static void Transmission(t_dma *rdma, t_nubit8 id, t_bool flagWord) {
+static void Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
+                         t_nubit8 id, t_bool flagWord) {
     switch (VDMA_GetMODE_TT(rdma->data.mode[id])) {
     case 0x00:
         /* verify */
@@ -331,11 +279,13 @@ static void Transmission(t_dma *rdma, t_nubit8 id, t_bool flagWord) {
         /* write */
         ExecFun(rdma->connect.fpReadDevice[id]);
         if (!flagWord) {
-            vramWritePhysical((rdma->data.page[id] << 16) + rdma->data.currAddr[id],
-                              (t_vaddrcc)(&vlatch.data.byte), 1);
+            core_machine_memory_write_physical(ram,
+                (rdma->data.page[id] << 16) + rdma->data.currAddr[id],
+                (t_vaddrcc)(&latch->data.byte), 1);
         } else {
-            vramWritePhysical((rdma->data.page[id] << 16) + (rdma->data.currAddr[id] << 1),
-                              (t_vaddrcc)(&vlatch.data.word), 2);
+            core_machine_memory_write_physical(ram,
+                (rdma->data.page[id] << 16) + (rdma->data.currAddr[id] << 1),
+                (t_vaddrcc)(&latch->data.word), 2);
         }
         rdma->data.currCount[id]--;
         if (GetBit(rdma->data.mode[id], VDMA_MODE_AIDS)) {
@@ -347,11 +297,13 @@ static void Transmission(t_dma *rdma, t_nubit8 id, t_bool flagWord) {
     case 0x02:
         /* read */
         if (!flagWord) {
-            vramReadPhysical((rdma->data.page[id] << 16) + rdma->data.currAddr[id],
-                             (t_vaddrcc)(&vlatch.data.byte), 1);
+            core_machine_memory_read_physical(ram,
+                (rdma->data.page[id] << 16) + rdma->data.currAddr[id],
+                (t_vaddrcc)(&latch->data.byte), 1);
         } else {
-            vramReadPhysical((rdma->data.page[id] << 16) + (rdma->data.currAddr[id] << 1),
-                             (t_vaddrcc)(&vlatch.data.word), 2);
+            core_machine_memory_read_physical(ram,
+                (rdma->data.page[id] << 16) + (rdma->data.currAddr[id] << 1),
+                (t_vaddrcc)(&latch->data.word), 2);
         }
         ExecFun(rdma->connect.fpWriteDevice[id]);
         rdma->data.currCount[id]--;
@@ -368,7 +320,8 @@ static void Transmission(t_dma *rdma, t_nubit8 id, t_bool flagWord) {
         break;
     }
 }
-static void Execute(t_dma *rdma, t_nubit8 id, t_bool flagWord) {
+static void Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
+                    t_nubit8 id, t_bool flagWord) {
     t_bool flagM2M = ((id == 0) &&
                       VDMA_GetREQUEST_DRQ(rdma->data.request, 1) &&
                       GetBit(rdma->data.command, VDMA_COMMAND_M2M));
@@ -380,10 +333,12 @@ static void Execute(t_dma *rdma, t_nubit8 id, t_bool flagWord) {
     if (flagM2M) {
         /* memory-to-memory */
         while (rdma->data.currCount[1] != 0xffff && !rdma->data.flagEOP) {
-            vramReadPhysical((rdma->data.page[0] << 16) + rdma->data.currAddr[0],
-                             (t_vaddrcc)(&rdma->data.temp), 1);
-            vramWritePhysical((rdma->data.page[1] << 16) + rdma->data.currAddr[1],
-                              (t_vaddrcc)(&rdma->data.temp), 1);
+            core_machine_memory_read_physical(ram,
+                (rdma->data.page[0] << 16) + rdma->data.currAddr[0],
+                (t_vaddrcc)(&rdma->data.temp), 1);
+            core_machine_memory_write_physical(ram,
+                (rdma->data.page[1] << 16) + rdma->data.currAddr[1],
+                (t_vaddrcc)(&rdma->data.temp), 1);
             rdma->data.currCount[1]--;
             if (GetBit(rdma->data.mode[id], VDMA_MODE_AIDS)) {
                 DecreaseCurrAddr(rdma, 1);
@@ -408,17 +363,17 @@ static void Execute(t_dma *rdma, t_nubit8 id, t_bool flagWord) {
             /* demand */
             while (rdma->data.currCount[id] != Max16 && !rdma->data.flagEOP
                     && VDMA_GetSTATUS_DRQ(rdma->data.status, id)) {
-                Transmission(rdma, id, flagWord);
+                Transmission(rdma, latch, ram, id, flagWord);
             }
             break;
         case 0x01:
             /* single */
-            Transmission(rdma, id, flagWord);
+            Transmission(rdma, latch, ram, id, flagWord);
             break;
         case 0x02:
             /* block */
             while (rdma->data.currCount[id] != Max16 && !rdma->data.flagEOP) {
-                Transmission(rdma, id, flagWord);
+                Transmission(rdma, latch, ram, id, flagWord);
             }
             break;
         case 0x03:
@@ -448,187 +403,208 @@ static void Execute(t_dma *rdma, t_nubit8 id, t_bool flagWord) {
     rdma->data.flagEOP = False;
 }
 
-void vdmaSetDRQ(t_nubit8 drqId) {
-    switch (drqId) {
+void core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
+                              t_nubit8 drq_id) {
+    if (primary == NULL || secondary == NULL) return;
+    switch (drq_id) {
     case 0:
     case 1:
     case 2:
     case 3:
-        SetBit(vdma1.data.status, VDMA_STATUS_DRQ(drqId));
+        SetBit(primary->data.status, VDMA_STATUS_DRQ(drq_id));
         break;
     case 5:
     case 6:
     case 7:
-        SetBit(vdma2.data.status, VDMA_STATUS_DRQ(drqId - 4));
+        SetBit(secondary->data.status, VDMA_STATUS_DRQ(drq_id - 4));
         break;
     case 4:
     default:
         break;
     }
-    if (vdma1.data.status & VDMA_STATUS_DRQS) {
-        SetBit(vdma2.data.status, VDMA_STATUS_DRQ(0));
+    if (primary->data.status & VDMA_STATUS_DRQS) {
+        SetBit(secondary->data.status, VDMA_STATUS_DRQ(0));
     } else {
-        ClrBit(vdma2.data.status, VDMA_STATUS_DRQ(0));
+        ClrBit(secondary->data.status, VDMA_STATUS_DRQ(0));
     }
 }
-void vdmaAddDevice(t_nubit8 drqId, t_faddrcc fpReadDevice,
-                   t_faddrcc fpWriteDevice, t_faddrcc fpCloseDevice) {
-    switch (drqId) {
+void vdmaSetDRQ(t_nubit8 drqId) {
+    core_machine_dma_set_drq(core_machine_dma_primary_current(),
+        core_machine_dma_secondary_current(), drqId);
+}
+
+void core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
+    t_nubit8 drq_id, t_faddrcc read_device, t_faddrcc write_device,
+    t_faddrcc close_device) {
+    if (primary == NULL || secondary == NULL) return;
+    switch (drq_id) {
     case 0:
     case 1:
     case 2:
     case 3:
-        vdma1.connect.fpReadDevice[drqId] = fpReadDevice;
-        vdma1.connect.fpWriteDevice[drqId] = fpWriteDevice;
-        vdma1.connect.fpCloseDevice[drqId] = fpCloseDevice;
+        primary->connect.fpReadDevice[drq_id] = read_device;
+        primary->connect.fpWriteDevice[drq_id] = write_device;
+        primary->connect.fpCloseDevice[drq_id] = close_device;
         break;
     case 5:
     case 6:
     case 7:
-        vdma2.connect.fpReadDevice[drqId - 4] = fpReadDevice;
-        vdma2.connect.fpWriteDevice[drqId - 4] = fpWriteDevice;
-        vdma2.connect.fpCloseDevice[drqId - 4] = fpCloseDevice;
+        secondary->connect.fpReadDevice[drq_id - 4] = read_device;
+        secondary->connect.fpWriteDevice[drq_id - 4] = write_device;
+        secondary->connect.fpCloseDevice[drq_id - 4] = close_device;
         break;
     case 4:
     default:
         break;
+    }
+}
+
+void vdmaAddDevice(t_nubit8 drqId, t_faddrcc fpReadDevice,
+                   t_faddrcc fpWriteDevice, t_faddrcc fpCloseDevice) {
+    core_machine_dma_add_device(core_machine_dma_primary_current(),
+        core_machine_dma_secondary_current(), drqId, fpReadDevice,
+        fpWriteDevice, fpCloseDevice);
+}
+
+void core_machine_dma_initialize(t_latch *latch, t_dma *primary,
+    t_dma *secondary, t_port *port)
+{
+    static const t_nubit16 primary_reads[] = {
+        0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
+        0x0008, 0x000d
+    };
+    static const t_nubit16 page_ports[] = {
+        0x0081, 0x0082, 0x0083, 0x0087, 0x0089, 0x008a, 0x008b, 0x008f
+    };
+    static const t_nubit16 secondary_reads[] = {
+        0x00c0, 0x00c2, 0x00c4, 0x00c6, 0x00c8, 0x00ca, 0x00cc, 0x00ce,
+        0x00d0, 0x00da
+    };
+    t_nubitcc index;
+
+    if (latch == NULL || primary == NULL || secondary == NULL ||
+        port == NULL) return;
+    MEMSET((void *)latch, Zero8, sizeof(*latch));
+    MEMSET((void *)primary, Zero8, sizeof(*primary));
+    MEMSET((void *)secondary, Zero8, sizeof(*secondary));
+    primary->connect.latch = latch;
+    primary->connect.peer = secondary;
+    secondary->connect.latch = latch;
+    secondary->connect.peer = primary;
+    for (index = 0; index < sizeof(primary_reads) / sizeof(primary_reads[0]);
+         ++index) {
+        core_machine_port_add_read(port, primary_reads[index], dma_port_read,
+            primary);
+    }
+    for (index = 0; index < 0x10u; ++index) {
+        core_machine_port_add_write(port, (t_nubit16)index, dma_port_write,
+            primary);
+    }
+    for (index = 0; index < sizeof(page_ports) / sizeof(page_ports[0]);
+         ++index) {
+        core_machine_port_add_read(port, page_ports[index], dma_port_read,
+            primary);
+        core_machine_port_add_write(port, page_ports[index], dma_port_write,
+            primary);
+    }
+    for (index = 0; index < sizeof(secondary_reads) /
+         sizeof(secondary_reads[0]); ++index) {
+        core_machine_port_add_read(port, secondary_reads[index], dma_port_read,
+            primary);
+    }
+    for (index = 0; index <= 0x1eu; index += 2u) {
+        core_machine_port_add_write(port, (t_nubit16)(0x00c0u + index),
+            dma_port_write, primary);
     }
 }
 
 void vdmaInit() {
-    MEMSET((void *)(&vlatch), Zero8, sizeof(t_latch));
-    MEMSET((void *)(&vdma1), Zero8, sizeof(t_dma));
-    MEMSET((void *)(&vdma2), Zero8, sizeof(t_dma));
-
-    vportAddRead(0x0000, (t_faddrcc) io_read_0000);
-    vportAddRead(0x0001, (t_faddrcc) io_read_0001);
-    vportAddRead(0x0002, (t_faddrcc) io_read_0002);
-    vportAddRead(0x0003, (t_faddrcc) io_read_0003);
-    vportAddRead(0x0004, (t_faddrcc) io_read_0004);
-    vportAddRead(0x0005, (t_faddrcc) io_read_0005);
-    vportAddRead(0x0006, (t_faddrcc) io_read_0006);
-    vportAddRead(0x0007, (t_faddrcc) io_read_0007);
-    vportAddRead(0x0008, (t_faddrcc) io_read_0008);
-    vportAddRead(0x000d, (t_faddrcc) io_read_000D);
-
-    vportAddWrite(0x0000, (t_faddrcc) io_write_0000);
-    vportAddWrite(0x0001, (t_faddrcc) io_write_0001);
-    vportAddWrite(0x0002, (t_faddrcc) io_write_0002);
-    vportAddWrite(0x0003, (t_faddrcc) io_write_0003);
-    vportAddWrite(0x0004, (t_faddrcc) io_write_0004);
-    vportAddWrite(0x0005, (t_faddrcc) io_write_0005);
-    vportAddWrite(0x0006, (t_faddrcc) io_write_0006);
-    vportAddWrite(0x0007, (t_faddrcc) io_write_0007);
-    vportAddWrite(0x0008, (t_faddrcc) io_write_0008);
-    vportAddWrite(0x0009, (t_faddrcc) io_write_0009);
-    vportAddWrite(0x000a, (t_faddrcc) io_write_000A);
-    vportAddWrite(0x000b, (t_faddrcc) io_write_000B);
-    vportAddWrite(0x000c, (t_faddrcc) io_write_000C);
-    vportAddWrite(0x000d, (t_faddrcc) io_write_000D);
-    vportAddWrite(0x000e, (t_faddrcc) io_write_000E);
-    vportAddWrite(0x000f, (t_faddrcc) io_write_000F);
-
-    vportAddRead(0x0081, (t_faddrcc) io_read_0081);
-    vportAddRead(0x0082, (t_faddrcc) io_read_0082);
-    vportAddRead(0x0083, (t_faddrcc) io_read_0083);
-    vportAddRead(0x0087, (t_faddrcc) io_read_0087);
-    vportAddRead(0x0089, (t_faddrcc) io_read_0089);
-    vportAddRead(0x008a, (t_faddrcc) io_read_008A);
-    vportAddRead(0x008b, (t_faddrcc) io_read_008B);
-    vportAddRead(0x008f, (t_faddrcc) io_read_008F);
-
-    vportAddWrite(0x0081, (t_faddrcc) io_write_0081);
-    vportAddWrite(0x0082, (t_faddrcc) io_write_0082);
-    vportAddWrite(0x0083, (t_faddrcc) io_write_0083);
-    vportAddWrite(0x0087, (t_faddrcc) io_write_0087);
-    vportAddWrite(0x0089, (t_faddrcc) io_write_0089);
-    vportAddWrite(0x008a, (t_faddrcc) io_write_008A);
-    vportAddWrite(0x008b, (t_faddrcc) io_write_008B);
-    vportAddWrite(0x008f, (t_faddrcc) io_write_008F);
-
-    vportAddRead(0x00c0, (t_faddrcc) io_read_00C0);
-    vportAddRead(0x00c2, (t_faddrcc) io_read_00C2);
-    vportAddRead(0x00c4, (t_faddrcc) io_read_00C4);
-    vportAddRead(0x00c6, (t_faddrcc) io_read_00C6);
-    vportAddRead(0x00c8, (t_faddrcc) io_read_00C8);
-    vportAddRead(0x00ca, (t_faddrcc) io_read_00CA);
-    vportAddRead(0x00cc, (t_faddrcc) io_read_00CC);
-    vportAddRead(0x00ce, (t_faddrcc) io_read_00CE);
-    vportAddRead(0x00d0, (t_faddrcc) io_read_00D0);
-    vportAddRead(0x00da, (t_faddrcc) io_read_00DA);
-
-    vportAddWrite(0x00c0, (t_faddrcc) io_write_00C0);
-    vportAddWrite(0x00c2, (t_faddrcc) io_write_00C2);
-    vportAddWrite(0x00c4, (t_faddrcc) io_write_00C4);
-    vportAddWrite(0x00c6, (t_faddrcc) io_write_00C6);
-    vportAddWrite(0x00c8, (t_faddrcc) io_write_00C8);
-    vportAddWrite(0x00ca, (t_faddrcc) io_write_00CA);
-    vportAddWrite(0x00cc, (t_faddrcc) io_write_00CC);
-    vportAddWrite(0x00ce, (t_faddrcc) io_write_00CE);
-    vportAddWrite(0x00d0, (t_faddrcc) io_write_00D0);
-    vportAddWrite(0x00d2, (t_faddrcc) io_write_00D2);
-    vportAddWrite(0x00d4, (t_faddrcc) io_write_00D4);
-    vportAddWrite(0x00d6, (t_faddrcc) io_write_00D6);
-    vportAddWrite(0x00d8, (t_faddrcc) io_write_00D8);
-    vportAddWrite(0x00dc, (t_faddrcc) io_write_00DC);
-    vportAddWrite(0x00de, (t_faddrcc) io_write_00DE);
-
+    core_machine_dma_initialize(core_machine_dma_latch_current(),
+        core_machine_dma_primary_current(), core_machine_dma_secondary_current(),
+        core_machine_port_current());
 }
+void core_machine_dma_reset(t_latch *latch, t_dma *primary,
+    t_dma *secondary) {
+    if (latch == NULL || primary == NULL || secondary == NULL) return;
+    MEMSET((void *)(&latch->data), Zero8, sizeof(t_latch_data));
+    doReset(primary);
+    doReset(secondary);
+}
+
 void vdmaReset() {
-    MEMSET((void *)(&vlatch.data), Zero8, sizeof(t_latch_data));
-    doReset(&vdma1);
-    doReset(&vdma2);
+    core_machine_dma_reset(core_machine_dma_latch_current(),
+        core_machine_dma_primary_current(), core_machine_dma_secondary_current());
 }
-void vdmaRefresh() {
+
+void core_machine_dma_refresh(t_latch *latch, t_dma *primary,
+    t_dma *secondary, t_ram *ram) {
     t_nubit8 id;
     t_nubit8 realDRQ1, realDRQ2;
-    if (GetBit(vdma2.data.command, VDMA_COMMAND_CTRL)) {
+    if (latch == NULL || primary == NULL || secondary == NULL || ram == NULL) return;
+    if (GetBit(secondary->data.command, VDMA_COMMAND_CTRL)) {
         return;
     }
-    if (GetBit(vdma2.data.isr, VDMA_ISR_IS)) {
-        if (VDMA_GetISR_ISR(vdma2.data.isr)) {
-            Execute(&vdma2, VDMA_GetISR_ISR(vdma2.data.isr), True);
-        } else if (GetBit(vdma1.data.isr, VDMA_ISR_IS)) {
-            Execute(&vdma1, VDMA_GetISR_ISR(vdma1.data.isr), False);
+    if (GetBit(secondary->data.isr, VDMA_ISR_IS)) {
+        if (VDMA_GetISR_ISR(secondary->data.isr)) {
+            Execute(secondary, latch, ram, VDMA_GetISR_ISR(secondary->data.isr), True);
+        } else if (GetBit(primary->data.isr, VDMA_ISR_IS)) {
+            Execute(primary, latch, ram, VDMA_GetISR_ISR(primary->data.isr), False);
         }
-        if (!GetBit(vdma1.data.isr, VDMA_ISR_IS)) {
-            vdma2.data.isr = Zero8;
+        if (!GetBit(primary->data.isr, VDMA_ISR_IS)) {
+            secondary->data.isr = Zero8;
         }
     }
-    if (!GetBit(vdma2.data.isr, VDMA_ISR_IS)) {
-        realDRQ2 = vdma2.data.request | (VDMA_GetSTATUS_DRQS(vdma2.data.status) & ~vdma2.data.mask);
+    if (!GetBit(secondary->data.isr, VDMA_ISR_IS)) {
+        realDRQ2 = secondary->data.request | (VDMA_GetSTATUS_DRQS(secondary->data.status) & ~secondary->data.mask);
         if (realDRQ2 == Zero8) {
             return;
         }
-        id = GetRegTopId(&vdma2, realDRQ2);
+        id = GetRegTopId(secondary, realDRQ2);
         if (id == 0) {
-            if (GetBit(vdma1.data.command, VDMA_COMMAND_CTRL)) {
+            if (GetBit(primary->data.command, VDMA_COMMAND_CTRL)) {
                 return;
             }
-            realDRQ1 = vdma1.data.request | (VDMA_GetSTATUS_DRQS(vdma1.data.status) & ~vdma1.data.mask);
+            realDRQ1 = primary->data.request | (VDMA_GetSTATUS_DRQS(primary->data.status) & ~primary->data.mask);
             if (realDRQ1 == Zero8) {
                 return;
             }
-            id = GetRegTopId(&vdma1, realDRQ1);
-            VDMA_SetISR(vdma2.data.isr, 0);
-            VDMA_SetISR(vdma1.data.isr, id);
-            Execute(&vdma1, id, False);
-            if (!GetBit(vdma1.data.isr, VDMA_ISR_IS)) {
-                vdma2.data.isr = Zero8;
+            id = GetRegTopId(primary, realDRQ1);
+            VDMA_SetISR(secondary->data.isr, 0);
+            VDMA_SetISR(primary->data.isr, id);
+            Execute(primary, latch, ram, id, False);
+            if (!GetBit(primary->data.isr, VDMA_ISR_IS)) {
+                secondary->data.isr = Zero8;
             }
-            if (!VDMA_GetSTATUS_DRQS(vdma1.data.status)) {
-                ClrBit(vdma2.data.status, VDMA_STATUS_DRQ(0));
+            if (!VDMA_GetSTATUS_DRQS(primary->data.status)) {
+                ClrBit(secondary->data.status, VDMA_STATUS_DRQ(0));
             }
-            if (!vdma1.data.request) {
-                ClrBit(vdma2.data.request, VDMA_REQUEST_DRQ(0));
+            if (!primary->data.request) {
+                ClrBit(secondary->data.request, VDMA_REQUEST_DRQ(0));
             }
         } else {
-            VDMA_SetISR(vdma2.data.isr, id);
-            Execute(&vdma2, id, True);
+            VDMA_SetISR(secondary->data.isr, id);
+            Execute(secondary, latch, ram, id, True);
         }
     }
 }
-void vdmaFinal() {}
+
+void vdmaRefresh() {
+    core_machine_dma_refresh(core_machine_dma_latch_current(),
+        core_machine_dma_primary_current(), core_machine_dma_secondary_current(),
+        core_machine_memory_current());
+}
+
+void core_machine_dma_finalize(t_latch *latch, t_dma *primary,
+    t_dma *secondary) {
+    (void)latch;
+    (void)primary;
+    (void)secondary;
+}
+
+void vdmaFinal() {
+    core_machine_dma_finalize(core_machine_dma_latch_current(),
+        core_machine_dma_primary_current(), core_machine_dma_secondary_current());
+}
 
 static void printDma(t_dma *rdma) {
     t_nubitcc i;

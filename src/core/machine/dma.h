@@ -8,10 +8,13 @@ extern "C" {
 #endif
 
 #include "core/machine/vglobal.h"
+#include "core/machine/port.h"
 
 #define NXVM_DEVICE_DMA "Intel 8237A"
 
 typedef t_nubit8 t_page;
+typedef struct t_latch t_latch;
+typedef struct t_ram t_ram;
 
 #define VDMA_CHANNEL_COUNT 4
 
@@ -38,6 +41,9 @@ typedef struct {
 } t_dma_data;
 
 typedef struct {
+    /* Non-owning links to the same composition-owned DMA pair. */
+    t_latch *latch;
+    struct t_dma *peer;
     /* get data from device to latch */
     t_faddrcc fpReadDevice[VDMA_CHANNEL_COUNT];
     /* write data to device from latch */
@@ -46,7 +52,7 @@ typedef struct {
     t_faddrcc fpCloseDevice[VDMA_CHANNEL_COUNT];
 } t_dma_connect;
 
-typedef struct {
+typedef struct t_dma {
     t_dma_data data;
     t_dma_connect connect;
 } t_dma;
@@ -56,9 +62,9 @@ typedef union {
     t_nubit16 word;
 } t_latch_data;
 
-typedef struct {
+struct t_latch {
     t_latch_data data;
-} t_latch;
+};
 
 t_latch *core_machine_dma_latch_current(void);
 t_dma *core_machine_dma_primary_current(void);
@@ -167,6 +173,19 @@ void vdmaInit();
 void vdmaReset();
 void vdmaRefresh();
 void vdmaFinal();
+void core_machine_dma_initialize(t_latch *latch, t_dma *primary,
+    t_dma *secondary, t_port *port);
+void core_machine_dma_reset(t_latch *latch, t_dma *primary,
+    t_dma *secondary);
+void core_machine_dma_refresh(t_latch *latch, t_dma *primary,
+    t_dma *secondary, t_ram *ram);
+void core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
+    t_nubit8 drq_id);
+void core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
+    t_nubit8 drq_id, t_faddrcc read_device, t_faddrcc write_device,
+    t_faddrcc close_device);
+void core_machine_dma_finalize(t_latch *latch, t_dma *primary,
+    t_dma *secondary);
 
 #define VDMA_POST "\
 ; init vdma      \n\

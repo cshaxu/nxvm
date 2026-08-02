@@ -24,6 +24,7 @@
 #include "core/machine/kbc.h"
 #include "core/machine/vadp.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
+#include "vm/composition_live_machine.h"
 
 #include "vm/composition.h"
 
@@ -46,7 +47,8 @@
 #define _qdx_
 
 /* Initializes all devices, allocates space */
-void vmachineInit() {
+void vmachineInit(vm_composition_live_machine *machine) {
+    if (machine == NULL) return;
     vcpuInit();
     vfddInit();
     vhddInit();
@@ -68,7 +70,8 @@ void vmachineInit() {
     vbiosAddInt("qdx 09\niret", 0x09);
     vbiosAddInt("qdx 16\niret", 0x16);
     _vbios_ _vport_
-    vdmaInit();
+    core_machine_dma_initialize(machine->dma_latch, machine->dma_primary,
+        machine->dma_secondary, machine->port);
     vbiosAddPost(VDMA_POST);
     _vbios_ _vport_
     vfdcInit();
@@ -93,7 +96,8 @@ void vmachineInit() {
     _vbios_ _vcpu_ _vram_
 }
 /* Resets all devices to initial values */
-void vmachineReset() {
+void vmachineReset(vm_composition_live_machine *machine) {
+    if (machine == NULL) return;
     vhdcReset();
     _empty_
     vkbcReset();
@@ -101,7 +105,8 @@ void vmachineReset() {
 
     vcmosReset();
     vcpuReset();
-    vdmaReset();
+    core_machine_dma_reset(machine->dma_latch, machine->dma_primary,
+        machine->dma_secondary);
     vfdcReset();
     vfddReset();
     vhddReset();
@@ -116,7 +121,8 @@ void vmachineReset() {
     _vram_
 }
 /* Executes all devices in one loop */
-void vmachineRefresh() {
+void vmachineRefresh(vm_composition_live_machine *machine) {
+    if (machine == NULL) return;
     qdxRefresh();
     _empty_
     vbiosRefresh();
@@ -138,7 +144,8 @@ void vmachineRefresh() {
 
     vcmosRefresh();
     vfdcRefresh();
-    vdmaRefresh();
+    core_machine_dma_refresh(machine->dma_latch, machine->dma_primary,
+        machine->dma_secondary, machine->ram);
     _vfdc_
     vpicRefresh();
     vpitRefresh();
@@ -151,14 +158,16 @@ void vmachineRefresh() {
     vm_composition_publish_display(False);
 }
 /* Finalize all devices, deallocates space */
-void vmachineFinal() {
+void vmachineFinal(vm_composition_live_machine *machine) {
+    if (machine == NULL) return;
     qdxFinal();
     _empty_
     vbiosFinal();
     _empty_
     vcmosFinal();
     _empty_
-    vdmaFinal();
+    core_machine_dma_finalize(machine->dma_latch, machine->dma_primary,
+        machine->dma_secondary);
     _empty_
     vfdcFinal();
     _empty_
