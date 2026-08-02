@@ -389,6 +389,13 @@ target_link_libraries(nxvm-vm-cpu-authority-smoke PRIVATE
     nxvm-vm-composition
 )
 
+add_executable(nxvm-core-machine-cpu-context-smoke
+    tests/machine/cpu_execution_context_smoke.c
+)
+target_link_libraries(nxvm-core-machine-cpu-context-smoke PRIVATE
+    nxvm-core-machine
+)
+
 add_executable(nxvm-vm-ram-authority-smoke
     tests/machine/vm_ram_authority_smoke.c
 )
@@ -658,6 +665,7 @@ add_nxvm_version_artifact(nxvm-0-5-0061 "0.5.0061")
 add_nxvm_version_artifact(nxvm-0-5-0062 "0.5.0062")
 add_nxvm_version_artifact(nxvm-0-5-0063 "0.5.0063")
 add_nxvm_version_artifact(nxvm-0-5-0065 "0.5.0065")
+add_nxvm_version_artifact(nxvm-0-5-0066 "0.5.0066")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

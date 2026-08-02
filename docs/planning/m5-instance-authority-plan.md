@@ -16,7 +16,7 @@ prompt behavior are compatibility constraints throughout.
 | Task | Authority family | Required result | Artifact |
 | --- | --- | --- | --- |
 | T65 | root session/composition | Replace the process-global live-machine carrier with an explicitly owned VM session object; make composition control and command targets receive that session. Do not yet remove device aliases. | `nxvm_0_5_0065.exe` |
-| T66 | CPU/executor | Pass one explicit core execution context through CPU decode, instruction helpers, probes, and debugger adapters; remove `vcpu`, `vcpuins`, CPU `*_current`, and CPU `*_bind_live`. | `nxvm_0_5_0066.exe` |
+| T66 | CPU/executor | Pass one explicit core execution context through CPU decode, instruction helpers, probes, and debugger adapters. Retained CPU aliases are compatibility-only until T73 removes the shared selection layer. | `nxvm_0_5_0066.exe` |
 | T67 | RAM and port bus | Pass explicit memory/port context through real-mode helpers, CPU I/O, and port callbacks; remove `vram`, `vport`, and their live accessors. | `nxvm_0_5_0067.exe` |
 | T68 | core devices | Context-bind PIC, PIT, DMA, KBC, VADP, and CMOS; remove `vpic*`, `vpit`, `vdma*`, `vlatch`, `vkbc`, and `vvadp`. | `nxvm_0_5_0068.exe` |
 | T69 | core registries | Convert block, keyboard, display, trace, and firmware to session-owned registries/provider slots with configuration/freeze/teardown rules; eliminate their static provider bindings. | `nxvm_0_5_0069.exe` |
