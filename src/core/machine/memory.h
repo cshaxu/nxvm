@@ -9,6 +9,8 @@ extern "C" {
 
 #include "core/machine/vglobal.h"
 
+typedef struct t_port t_port;
+
 #define NXVM_DEVICE_RAM "Unknown Random-access Memory"
 
 typedef struct {
@@ -56,6 +58,7 @@ void core_machine_memory_write_physical(t_ram *ram, t_nubit32 physical,
 void core_machine_memory_initialize(t_ram *ram);
 void core_machine_memory_reset(t_ram *ram);
 void core_machine_memory_finalize(t_ram *ram);
+void core_machine_memory_register_ports(t_ram *ram, t_port *port);
 
 void vramInit();
 void vramReset();
