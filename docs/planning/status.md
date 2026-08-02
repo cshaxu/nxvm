@@ -46,6 +46,8 @@ the first bad commit; its replacement preserves the snapshot contract while
 restoring the unchanged-display fast path.
 M5 T20 S1 then renamed the shared keyboard provider unit to
 `keyboard_interface` without changing its API or behavior.
+M5 T21 S1 renamed the core machine event-observer unit to `trace_interface`
+without changing trace semantics.
 
 ## Completed
 
@@ -239,6 +241,8 @@ M5 T20 S1 then renamed the shared keyboard provider unit to
   path after a T13-to-T18 full-PC FDD regression bisection.
 - M5 T20 S1 P1: renamed the shared core keyboard provider unit to
   `keyboard_interface` and rebuilt the task artifact.
+- M5 T21 S1 P1: renamed the core machine trace observer unit to
+  `trace_interface` and rebuilt the task artifact.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware
