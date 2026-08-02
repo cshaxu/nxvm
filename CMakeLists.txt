@@ -188,7 +188,7 @@ set(NXVM_MACHINE_VM_SOURCES
 set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/block.c
     src/core/machine/display.c
-    src/core/machine/keyboard_state.c
+    src/core/machine/keyboard_interface.c
     src/core/machine/vvadp.c
     src/core/machine/vport.c
     src/core/machine/vram.c
@@ -491,6 +491,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t13 "m5t13")
 add_nxvm_full_pc_artifact(nxvm-m5-t14 "m5t14")
 add_nxvm_full_pc_artifact(nxvm-m5-t18 "m5t18")
 add_nxvm_full_pc_artifact(nxvm-m5-t19 "m5t19")
+add_nxvm_full_pc_artifact(nxvm-m5-t20 "m5t20")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

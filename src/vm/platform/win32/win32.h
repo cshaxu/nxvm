@@ -10,7 +10,7 @@ extern "C" {
 #include <stdint.h>
 #include <windows.h>
 
-#include "core/machine/keyboard_state.h"
+#include "core/machine/keyboard_interface.h"
 #include "type.h"
 
 typedef nxvm_core_status (*nxvm_win32_keyboard_state_sink)(

@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 #include "core/machine/vram.h"
-#include "core/machine/keyboard_state.h"
+#include "core/machine/keyboard_interface.h"
 
 #define QDKEYB_VBIOS_ADDR_KEYB_FLAG0         0x0417
 #define QDKEYB_VBIOS_ADDR_KEYB_FLAG1         0x0418

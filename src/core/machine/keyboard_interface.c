@@ -1,4 +1,4 @@
-#include "core/machine/keyboard_state.h"
+#include "core/machine/keyboard_interface.h"
 
 #include <stddef.h>
 
