@@ -166,11 +166,16 @@ alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M5 T65 S1 is active: replace the root VM selected-session carrier with an
-explicit composition-owned session context. M6 T1 is deferred and DOS
+M5 T66 S1 is active: migrate CPU/executor mutable authority from retained
+aliases to one explicit session context. M6 T1 is deferred and DOS
 implementation remains ineligible.
 
 ## Completed
+
+- M5 T65 S1: made the VM root, full-PC wrapper, CPU probe, control loop,
+  execution context, Console target, and debug target caller/session owned.
+  Full GCC, FDD/HDD profile/session, retained Console, CPU-probe, and bounded
+  FDD `INT 21h` watchdog gates passed; the `0.5.0065` artifact is recorded.
 
 - M0 T1 S1 P1: repository governance and architecture foundation.
 - M0 T1 S1 P2: recorded the project MIT license after integrating the remote

@@ -40,8 +40,7 @@ typedef struct vm_composition_live_machine {
     t_debug debug_storage;
     t_bios default_bios_storage;
     t_qdx default_qdx_storage;
-    vm_composition_control_state control_storage;
-    core_product_debug_target debug_target;
+    core_product_debug_target *debug_target;
     t_cpu *cpu;
     t_cpuins *cpuins;
     t_ram *ram;

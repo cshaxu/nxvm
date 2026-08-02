@@ -1,5 +1,7 @@
 #include "vm/composition_debug.h"
 
+#include <stdlib.h>
+
 #include "vm/composition_machine.h"
 #include "vm/composition_control.h"
 #include "core/machine/cpu.h"
@@ -171,7 +173,19 @@ const core_product_debug_target *vm_composition_debug_target(
     vm_composition_live_machine *machine)
 {
     if (machine == NULL) return NULL;
-    machine->debug_target = vmDebugTargetTemplate;
-    machine->debug_target.context = machine;
-    return &machine->debug_target;
+    if (machine->debug_target == NULL) {
+        machine->debug_target = (core_product_debug_target *)malloc(
+            sizeof(*machine->debug_target));
+        if (machine->debug_target == NULL) return NULL;
+    }
+    *machine->debug_target = vmDebugTargetTemplate;
+    machine->debug_target->context = machine;
+    return machine->debug_target;
+}
+
+void vm_composition_debug_target_finalize(vm_composition_live_machine *machine)
+{
+    if (machine == NULL) return;
+    free(machine->debug_target);
+    machine->debug_target = NULL;
 }

@@ -6,5 +6,6 @@
 
 const core_product_debug_target *vm_composition_debug_target(
     vm_composition_live_machine *machine);
+void vm_composition_debug_target_finalize(vm_composition_live_machine *machine);
 
 #endif
