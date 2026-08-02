@@ -51,11 +51,19 @@ void core_machine_memory_allocate_for(t_ram *ram, size_t newsize) {
         MEMSET((void *) ram->connect.pBase, Zero8, ram->connect.size);
     }
 }
-static void io_read_0092() {
-    vport.data.ioByte = vram.data.flagA20 ? VRAM_FLAG_A20 : Zero8;
+static void core_machine_memory_read_a20(t_port *port, void *owner)
+{
+    t_ram *ram = (t_ram *)owner;
+
+    if (ram == NULL) return;
+    port->data.ioByte = ram->data.flagA20 ? VRAM_FLAG_A20 : Zero8;
 }
-static void io_write_0092() {
-    vram.data.flagA20 = GetBit(vport.data.ioByte, VRAM_FLAG_A20);
+static void core_machine_memory_write_a20(t_port *port, void *owner)
+{
+    t_ram *ram = (t_ram *)owner;
+
+    if (ram == NULL) return;
+    ram->data.flagA20 = GetBit(port->data.ioByte, VRAM_FLAG_A20);
 }
 
 void core_machine_memory_read_physical(t_ram *ram, t_nubit32 physical,
@@ -90,8 +98,8 @@ void vramWritePhysical(t_nubit32 physical, t_vaddrcc source, t_nubitcc byte)
 #define pitOut ((t_faddrcc) NULL)
 void vramInit() {
     core_machine_memory_initialize(core_machine_memory_current());
-    vportAddRead(0x0092, (t_faddrcc) io_read_0092);
-    vportAddWrite(0x0092, (t_faddrcc) io_write_0092);
+    core_machine_memory_register_ports(core_machine_memory_current(),
+        core_machine_port_current());
     vpitAddMe(1);
 }
 void vramReset() {
@@ -124,6 +132,14 @@ void core_machine_memory_finalize(t_ram *ram)
     }
     ram->connect.pBase = 0u;
     ram->connect.size = 0u;
+}
+
+void core_machine_memory_register_ports(t_ram *ram, t_port *port)
+{
+    core_machine_port_add_read(port, 0x0092,
+        core_machine_memory_read_a20, ram);
+    core_machine_port_add_write(port, 0x0092,
+        core_machine_memory_write_a20, ram);
 }
 
 void core_machine_memory_allocate(size_t bytes)
