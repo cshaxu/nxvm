@@ -2,8 +2,8 @@
 
 #include "core/machine/memory.h"
 
-nxvm_core_status nxvm_firmware_default_profile_compose(
-    core_machine_firmware *firmware, nxvm_firmware_default_profile_plan *out_plan)
+nxvm_core_status vm_profile_default_firmware_compose(
+    core_machine_firmware *firmware, vm_profile_default_firmware_plan *out_plan)
 {
     static const core_machine_firmware_service_descriptor services[] = {
         { "default_profile.rom", CORE_MACHINE_FIRMWARE_SERVICE_ROM, 10u, 0u },
@@ -27,7 +27,7 @@ nxvm_core_status nxvm_firmware_default_profile_compose(
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status nxvm_firmware_default_profile_apply_image(
+nxvm_core_status vm_profile_default_firmware_apply_image(
     core_machine *machine, int boot_hdd)
 {
     static const uint8_t reset_stub[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0xf0u };
@@ -54,8 +54,8 @@ nxvm_core_status nxvm_firmware_default_profile_apply_image(
     return core_machine_memory_write(machine, 0xffff0u, reset_stub, sizeof(reset_stub));
 }
 
-void nxvm_firmware_default_profile_cmos_initialize(
-    nxvm_firmware_default_profile_cmos *cmos, int boot_hdd)
+void vm_profile_default_firmware_cmos_initialize(
+    vm_profile_default_firmware_cmos *cmos, int boot_hdd)
 {
     if (cmos == NULL) return;
     cmos->equipment = 0x21u;

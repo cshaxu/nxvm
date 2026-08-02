@@ -59,17 +59,17 @@ nxvm_core_status nxvm_product_nxvm_session_create(
         return NXVM_CORE_STATUS_FAULT;
     }
     core_machine_firmware_initialize(&session->firmware);
-    if (nxvm_firmware_default_profile_compose(&session->firmware, &session->firmware_plan) !=
+    if (vm_profile_default_firmware_compose(&session->firmware, &session->firmware_plan) !=
             NXVM_CORE_STATUS_OK || core_machine_firmware_freeze(&session->firmware) !=
             NXVM_CORE_STATUS_OK || core_machine_create(&machine_config,
             &session->firmware_machine) != NXVM_CORE_STATUS_OK ||
         core_machine_reset(session->firmware_machine) != NXVM_CORE_STATUS_OK ||
-        nxvm_firmware_default_profile_apply_image(session->firmware_machine,
+        vm_profile_default_firmware_apply_image(session->firmware_machine,
             config->boot_target == NXVM_PRODUCT_NXVM_BOOT_HDD) != NXVM_CORE_STATUS_OK) {
         nxvm_product_nxvm_session_destroy(session);
         return NXVM_CORE_STATUS_FAULT;
     }
-    nxvm_firmware_default_profile_cmos_initialize(&session->cmos,
+    vm_profile_default_firmware_cmos_initialize(&session->cmos,
         config->boot_target == NXVM_PRODUCT_NXVM_BOOT_HDD);
     status = nxvm_product_nxvm_session_configure_media(session, config);
     if (status != NXVM_CORE_STATUS_OK ||

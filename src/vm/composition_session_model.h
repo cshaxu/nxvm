@@ -22,8 +22,8 @@ typedef struct nxvm_product_nxvm_session_config {
 typedef struct nxvm_product_nxvm_session {
     nxvm_runtime_registry registry;
     core_machine_firmware firmware;
-    nxvm_firmware_default_profile_plan firmware_plan;
-    nxvm_firmware_default_profile_cmos cmos;
+    vm_profile_default_firmware_plan firmware_plan;
+    vm_profile_default_firmware_cmos cmos;
     nxvm_product_nxvm_media_policy media;
     nxvm_product_nxvm_default_profile default_profile;
     nxvm_product_nxvm_console console;
