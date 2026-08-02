@@ -39,12 +39,15 @@ T75 recorded the residual process-global facade baseline and added the CMake
 `verify-facade-ownership` gate. Its GCC artifact is
 `build/output/nxvm_0_5_0075.exe`.
 
+T76 moved full-PC host keyboard-state requests to their own frozen keyboard
+provider slot. Its GCC artifact is `build/output/nxvm_0_5_0076.exe`.
+
 ## Active Work
 
-**M5 T76 S1: Keyboard facade replacement design.** Trace the host-keyboard
-request path and specify the smallest explicit-slot replacement before changing
-runtime code. Retained Console input, debugger behavior, and FDD boot remain
-unchanged.
+**M5 T77 S1: Display facade replacement design.** Trace QDCGA mode changes,
+display generation, snapshot capture, and platform presentation ownership
+before changing runtime code. Retained window/Console behavior and the FDD
+display gate remain unchanged.
 
 ## Short-Term M5 Plan
 

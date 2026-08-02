@@ -13,7 +13,7 @@ and FDD DOS-prompt gate.
 
 | Family | Current state and production use | Required explicit owner | Task |
 | --- | --- | --- | --- |
-| Core keyboard facade | `core_machine_keyboard_*` global binding; `vm/composition_full_pc.c` applies host state through it even though the real keyboard slot is session-owned. | The owning full-PC machine keyboard provider slot. | T76 |
+| Core keyboard facade | `core_machine_keyboard_*` global binding has no production caller after T76; full-PC host requests use their owning provider slot. | Delete the unused legacy facade after Story 1 closure review. | T81 |
 | Core display facade | `core_machine_display_*` global callback; default-profile QDCGA firmware notifies it and `composition_display` binds it. | A VM session/profile display context and its snapshot provider. | T77 |
 | Display generation | `vmCompositionDisplayGeneration` is process-static in `composition_display.c`. | The owning VM display context. | T77 |
 | Debug target | `core_product_debug_target.c` stores one process-global target selected by VM composition. | The composition-owned debug target passed through the existing debugger UI. | T78 |

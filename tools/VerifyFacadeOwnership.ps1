@@ -11,7 +11,7 @@ $sourceRoot = Join-Path $root 'src'
 $sourceFiles = Get-ChildItem -LiteralPath $sourceRoot -Recurse -File -Filter '*.c'
 
 $rules = @(
-    [pscustomobject]@{ Name = 'core keyboard legacy facade'; Pattern = '\bcore_machine_keyboard_(bind|apply_host_state|receive_key_press|get_modifier)\s*\('; AllowedFiles = @('src/core/machine/keyboard_interface.c', 'src/vm/composition_full_pc.c') },
+    [pscustomobject]@{ Name = 'core keyboard legacy facade'; Pattern = '\bcore_machine_keyboard_(bind|apply_host_state|receive_key_press|get_modifier)\s*\('; AllowedFiles = @('src/core/machine/keyboard_interface.c') },
     [pscustomobject]@{ Name = 'core display legacy facade'; Pattern = '\bcore_machine_display_(bind|notify_mode_changed|bind_snapshot_provider|capture_snapshot)\s*\('; AllowedFiles = @('src/core/machine/display.c', 'src/vm/composition_display.c', 'src/vm/profile/default_profile/firmware/qdcga.c') },
     [pscustomobject]@{ Name = 'core debug target facade'; Pattern = '\bcore_product_debug_(bind_target|get_target)\s*\('; AllowedFiles = @('src/core/product/debug/debug_target.c', 'src/core/product/debug/debug_access.c', 'src/vm/composition_machine.c') },
     [pscustomobject]@{ Name = 'core wait facade'; Pattern = '\bcore_product_wait_bind\s*\('; AllowedFiles = @('src/core/product/wait.c', 'src/vm/composition_machine.c') },

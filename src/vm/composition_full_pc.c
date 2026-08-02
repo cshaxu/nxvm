@@ -38,9 +38,12 @@ static nxvm_core_status nxvm_full_pc_enqueue_keyboard_state(
 static void nxvm_full_pc_consume_request(
     void *opaque, const nxvm_platform_vm_request *request)
 {
-    (void)opaque;
-    if (request != NULL && request->kind == NXVM_PLATFORM_VM_REQUEST_KEYBOARD_STATE) {
-        core_machine_keyboard_apply_host_state(
+    nxvm_full_pc *full_pc = (nxvm_full_pc *)opaque;
+
+    if (full_pc != NULL && full_pc->active && request != NULL &&
+        request->kind == NXVM_PLATFORM_VM_REQUEST_KEYBOARD_STATE) {
+        core_machine_keyboard_apply_host_state_to(
+            full_pc->machine.keyboard_provider,
             request->data.keyboard_state.asynchronous_keys,
             request->data.keyboard_state.toggle_keys);
     }
@@ -73,7 +76,7 @@ nxvm_core_status nxvm_full_pc_create(
     nxvm_vm_request_transport_initialize(&full_pc->transport);
     nxvm_vm_request_transport_bind_consumer(
         &full_pc->transport,
-        nxvm_full_pc_consume_request, NULL);
+        nxvm_full_pc_consume_request, full_pc);
     win32KeyboardBindStateSink(nxvm_full_pc_enqueue_keyboard_state,
                                &full_pc->transport);
     vm_composition_control_bind_command_boundary(full_pc->machine.control,

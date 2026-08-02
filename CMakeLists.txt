@@ -448,6 +448,10 @@ add_executable(nxvm-vm-qdcga-boundary-smoke tests/machine/vm_qdcga_boundary_smok
 target_link_libraries(nxvm-vm-qdcga-boundary-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-vm-keyboard-firmware-smoke tests/machine/vm_keyboard_firmware_smoke.c)
 target_link_libraries(nxvm-vm-keyboard-firmware-smoke PRIVATE nxvm-vm-composition)
+add_executable(nxvm-vm-keyboard-provider-isolation-smoke
+    tests/machine/vm_keyboard_provider_isolation_smoke.c)
+target_link_libraries(nxvm-vm-keyboard-provider-isolation-smoke PRIVATE
+    nxvm-vm-composition)
 add_executable(nxvm-vm-disk-firmware-smoke tests/machine/vm_disk_firmware_smoke.c)
 target_link_libraries(nxvm-vm-disk-firmware-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-vm-debug-authority-smoke tests/machine/vm_debug_authority_smoke.c)
@@ -697,6 +701,7 @@ add_nxvm_version_artifact(nxvm-0-5-0071 "0.5.0071")
 add_nxvm_version_artifact(nxvm-0-5-0072 "0.5.0072")
 add_nxvm_version_artifact(nxvm-0-5-0073 "0.5.0073")
 add_nxvm_version_artifact(nxvm-0-5-0075 "0.5.0075")
+add_nxvm_version_artifact(nxvm-0-5-0076 "0.5.0076")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

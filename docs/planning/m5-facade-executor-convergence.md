@@ -2,7 +2,8 @@
 
 ## Status
 
-T75 S1 is complete. T76 S1 is active. No later task in this sequence is active.
+T75 S1 and T76 S1 are complete. T77 S1 is active. No later task in this
+sequence is active.
 
 ## Story 1: Remove Residual Global Facades
 
