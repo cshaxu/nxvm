@@ -95,6 +95,8 @@ typedef struct {
 } t_cpuins_data;
 
 typedef struct t_cpuins t_cpuins;
+typedef struct t_ram t_ram;
+typedef struct t_port t_port;
 typedef struct core_machine_cpu_execution_context
     core_machine_cpu_execution_context;
 typedef void (*core_machine_cpu_instruction_handler)(
@@ -115,13 +117,15 @@ struct t_cpuins {
 struct core_machine_cpu_execution_context {
     t_cpu *cpu;
     t_cpuins *instructions;
+    t_ram *memory;
+    t_port *port;
     t_bool stop_requested;
     t_bool reset_requested;
 };
 
 void core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
-    t_cpuins *instructions);
+    t_cpuins *instructions, t_ram *memory, t_port *port);
 void core_machine_cpu_execution_bind_legacy(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_unbind_legacy(void);

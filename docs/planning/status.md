@@ -166,9 +166,9 @@ alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M5 T66 S1 is complete: CPU/executor mutable authority now flows through one
-explicit session context. T67 is next; M6 T1 remains deferred and DOS
-implementation remains ineligible.
+M5 T67 S1 is active: migrate RAM and port-bus mutable authority from retained
+aliases to explicit composition-owned references. M6 T1 remains deferred and
+DOS implementation remains ineligible.
 
 ## Completed
 

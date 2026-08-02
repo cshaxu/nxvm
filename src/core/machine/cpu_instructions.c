@@ -97,13 +97,15 @@ static void _kma_write_ref(core_machine_cpu_execution_context *context, t_vaddrc
 /* read content from physical */
 static void _kma_read_physical(core_machine_cpu_execution_context *context, t_nubit32 physical, t_vaddrcc rdata, t_nubit8 byte) {
     _cb("_kma_read_physical");
-    _chr(vramReadPhysical(physical, rdata, byte));
+    _chr(core_machine_memory_read_physical(context->memory, physical, rdata,
+        byte));
     _ce;
 }
 /* write content to physical */
 static void _kma_write_physical(core_machine_cpu_execution_context *context, t_nubit32 physical, t_vaddrcc rdata, t_nubit8 byte) {
     _cb("_kma_write_physical");
-    _chr(vramWritePhysical(physical, rdata, byte));
+    _chr(core_machine_memory_write_physical(context->memory, physical, rdata,
+        byte));
     _ce;
 }
 /* translate linear to physical - paging mechanism*/

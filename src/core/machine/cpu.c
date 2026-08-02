@@ -12,11 +12,13 @@ static t_cpu *coreMachineCpu;
 
 void core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
-    t_cpuins *instructions)
+    t_cpuins *instructions, t_ram *memory, t_port *port)
 {
     if (context == NULL) return;
     context->cpu = cpu;
     context->instructions = instructions;
+    context->memory = memory;
+    context->port = port;
     context->stop_requested = False;
     context->reset_requested = False;
 }

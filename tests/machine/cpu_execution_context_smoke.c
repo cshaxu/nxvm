@@ -2,6 +2,8 @@
 
 #include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
+#include "core/machine/memory.h"
+#include "core/machine/port.h"
 
 int main(void)
 {
@@ -9,14 +11,19 @@ int main(void)
     t_cpu second_cpu = {0};
     t_cpuins first_instructions = {0};
     t_cpuins second_instructions = {0};
+    t_ram first_memory = {0};
+    t_ram second_memory = {0};
+    t_port first_port = {0};
+    t_port second_port = {0};
     core_machine_cpu_execution_context first = {0};
     core_machine_cpu_execution_context second = {0};
     int result = 0;
 
     core_machine_cpu_execution_context_initialize(
-        &first, &first_cpu, &first_instructions);
+        &first, &first_cpu, &first_instructions, &first_memory, &first_port);
     core_machine_cpu_execution_context_initialize(
-        &second, &second_cpu, &second_instructions);
+        &second, &second_cpu, &second_instructions, &second_memory,
+        &second_port);
     core_machine_cpu_state_initialize(&first);
     core_machine_cpu_state_initialize(&second);
     core_machine_cpu_state_reset(&first);

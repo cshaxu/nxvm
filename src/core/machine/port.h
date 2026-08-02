@@ -26,7 +26,7 @@ typedef struct {
     };
 } t_port_data;
 
-typedef struct {
+typedef struct t_port {
     t_port_data data;
     t_port_connect connect;
 } t_port;
