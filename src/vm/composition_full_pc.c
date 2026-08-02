@@ -15,6 +15,7 @@
 #include "vm/platform/win32/win32.h"
 #include "core/product/debug/debug.h"
 #include "vm/composition_machine.h"
+#include "vm/composition_debug.h"
 #include "vm/platform/platform.h"
 
 struct nxvm_full_pc {
@@ -178,7 +179,7 @@ nxvm_core_status nxvm_full_pc_debug(nxvm_full_pc *full_pc)
     if (full_pc == NULL || !full_pc->active || vm_composition_control_is_running(full_pc->machine.control)) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
-    debugMain();
+    debugMain(vm_composition_debug_target(&full_pc->machine));
     return NXVM_CORE_STATUS_OK;
 }
 

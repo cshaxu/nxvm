@@ -16,7 +16,7 @@ int main(void)
     if (session == NULL) return 1;
     machineInit(session);
     target = vm_composition_debug_target(session);
-    if (target == NULL || core_product_debug_get_target() != target ||
+    if (target == NULL || core_product_debug_scope_target() != NULL ||
         target->read_register(target->context,
             CORE_PRODUCT_DEBUG_EIP, &value) ||
         target->write_real(target->context, 0u, 0x500u, &byte, 1u) ||
@@ -28,7 +28,7 @@ int main(void)
     }
     machineFinal(session);
     free(session);
-    if (core_product_debug_get_target() != NULL) return 1;
+    if (core_product_debug_scope_target() != NULL) return 1;
     puts("M5:T14:S3:VM-DEBUG-TARGET:OK");
     return 0;
 }

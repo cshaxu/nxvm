@@ -1,6 +1,7 @@
 #include "vm/composition_console.h"
 
 #include "vm/composition_machine.h"
+#include "vm/composition_debug.h"
 #include "vm/composition.h"
 #include "vm/composition_control.h"
 #include "core/machine/memory.h"
@@ -39,7 +40,7 @@ static void vm_composition_console_debug(void *context)
         vm_composition_control_request_pause(machine->control, VM_COMPOSITION_PAUSE_EXPLICIT);
         if (!vm_composition_control_wait_for_pause(machine->control, 2000u)) return;
     }
-    debugMain();
+    debugMain(vm_composition_debug_target(machine));
 }
 static void vm_composition_console_record_start(void *context, const char *path) { vm_machine_debug_record_start(((vm_composition_live_machine *)context)->debug, path); }
 static void vm_composition_console_record_stop(void *context) { vm_machine_debug_record_stop(((vm_composition_live_machine *)context)->debug); }

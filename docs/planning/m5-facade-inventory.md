@@ -16,7 +16,7 @@ and FDD DOS-prompt gate.
 | Core keyboard facade | `core_machine_keyboard_*` global binding has no production caller after T76; full-PC host requests use their owning provider slot. | Delete the unused legacy facade after Story 1 closure review. | T81 |
 | Core display facade | `core_machine_display_*` global callback has no production caller after T77; QDCGA notifies its context's provider slot. | Delete the unused legacy facade after Story 1 closure review. | T81 |
 | Display generation | Stored on `vm_composition_live_machine` after T77. | The owning VM display context. | Complete |
-| Debug target | `core_product_debug_target.c` stores one process-global target selected by VM composition. | The composition-owned debug target passed through the existing debugger UI. | T78 |
+| Debug target | T78 removed lifecycle-wide target binding. `debugMain(target)` establishes a thread-local scope only for one debugger interaction. | The composition-owned debug target passed explicitly into the retained debugger UI. | Complete |
 | Wait provider | `core_product_wait.c` stores one global provider and context. | The VM session host-wait transport. | T79 |
 | VM input sink | `vm/platform/input.c` stores one keyboard sink and context. | The VM session input transport. | T79 |
 | VM execution sink | `vm/platform/execution.c` stores one execution sink and context. | The VM session execution transport. | T79 |
