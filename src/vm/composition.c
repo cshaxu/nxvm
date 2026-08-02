@@ -87,7 +87,8 @@ void vmachineInit(vm_composition_live_machine *machine) {
     vpitInit();
     vbiosAddPost(VPIT_POST);
     _vbios_ _vport_
-    vpicInit();
+    core_machine_pic_initialize(machine->pic_master, machine->pic_slave,
+        machine->port);
     vbiosAddPost(VPIC_POST);
     _vbios_ _vport_ _vpic_
     vramInit();
@@ -110,7 +111,7 @@ void vmachineReset(vm_composition_live_machine *machine) {
     vfdcReset();
     vfddReset();
     vhddReset();
-    vpicReset();
+    core_machine_pic_reset(machine->pic_master, machine->pic_slave);
     vpitReset();
     vportReset();
     vvadpReset();
@@ -147,7 +148,7 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
     core_machine_dma_refresh(machine->dma_latch, machine->dma_primary,
         machine->dma_secondary, machine->ram);
     _vfdc_
-    vpicRefresh();
+    core_machine_pic_refresh(machine->pic_master, machine->pic_slave);
     vpitRefresh();
     _vpic_
     if (vcpu.data.flagHalt) {
@@ -175,7 +176,7 @@ void vmachineFinal(vm_composition_live_machine *machine) {
     _empty_
     vkbcFinal();
     _empty_
-    vpicFinal();
+    core_machine_pic_finalize(machine->pic_master, machine->pic_slave);
     _empty_
     vpitFinal();
     _empty_

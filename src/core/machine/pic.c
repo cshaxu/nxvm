@@ -357,8 +357,9 @@ static void io_write_00A1(t_port *port, t_nubit16 port_id, void *owner) {
  * Puts int request into IRR
  * Called by int request sender of devices, e.g. vpitIntTick
  */
-void vpicSetIRQ(t_nubit8 irqId) {
-    switch (irqId) {
+void core_machine_pic_set_irq(t_pic *master, t_pic *slave, t_nubit8 irq_id) {
+    if (master == NULL || slave == NULL) return;
+    switch (irq_id) {
     case 0x00:
     case 0x01:
     case 0x03:
@@ -366,7 +367,7 @@ void vpicSetIRQ(t_nubit8 irqId) {
     case 0x05:
     case 0x06:
     case 0x07:
-        SetBit(vpic1.data.irr, VPIC_IRR_IRQ(irqId));
+        SetBit(master->data.irr, VPIC_IRR_IRQ(irq_id));
         break;
     case 0x08:
     case 0x09:
@@ -376,13 +377,18 @@ void vpicSetIRQ(t_nubit8 irqId) {
     case 0x0d:
     case 0x0e:
     case 0x0f:
-        SetBit(vpic1.data.irr, VPIC_IRR_IRQ(0x02));
-        SetBit(vpic2.data.irr, VPIC_IRR_IRQ(irqId - 0x08));
+        SetBit(master->data.irr, VPIC_IRR_IRQ(0x02));
+        SetBit(slave->data.irr, VPIC_IRR_IRQ(irq_id - 0x08));
         break;
     case 0x02:
     default:
         break;
     }
+}
+
+void vpicSetIRQ(t_nubit8 irqId) {
+    core_machine_pic_set_irq(core_machine_pic_master_current(),
+        core_machine_pic_slave_current(), irqId);
 }
 /*
  * vpicScanINTR
@@ -460,22 +466,39 @@ void core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port)
     core_machine_port_add_write(port, 0x00a1, io_write_00A1, slave);
 }
 void vpicReset() {
-    MEMSET((void *)(&vpic1.data), Zero8, sizeof(t_pic_data));
-    MEMSET((void *)(&vpic2.data), Zero8, sizeof(t_pic_data));
-    vpic1.data.status = vpic2.data.status = ICW1;
-    vpic1.data.ocw3 = vpic2.data.ocw3 = VPIC_OCW3_RR;
+    core_machine_pic_reset(core_machine_pic_master_current(),
+        core_machine_pic_slave_current());
+}
+void core_machine_pic_reset(t_pic *master, t_pic *slave) {
+    if (master == NULL || slave == NULL) return;
+    MEMSET((void *)(&master->data), Zero8, sizeof(t_pic_data));
+    MEMSET((void *)(&slave->data), Zero8, sizeof(t_pic_data));
+    master->data.status = slave->data.status = ICW1;
+    master->data.ocw3 = slave->data.ocw3 = VPIC_OCW3_RR;
 }
 void vpicRefresh() {
-    if (vpic2.data.irr & (~vpic2.data.imr)) {
+    core_machine_pic_refresh(core_machine_pic_master_current(),
+        core_machine_pic_slave_current());
+}
+void core_machine_pic_refresh(t_pic *master, t_pic *slave) {
+    if (master == NULL || slave == NULL) return;
+    if (slave->data.irr & (~slave->data.imr)) {
         /* if slave pic has requested int, then
          * pass the request into IR2 of master pic */
-        SetBit(vpic1.data.irr, VPIC_IRR_IRQ(2));
+        SetBit(master->data.irr, VPIC_IRR_IRQ(2));
     } else {
         /* remove IR2 from master pic */
-        ClrBit(vpic1.data.irr, VPIC_IRR_IRQ(2));
+        ClrBit(master->data.irr, VPIC_IRR_IRQ(2));
     }
 }
-void vpicFinal() {}
+void vpicFinal() {
+    core_machine_pic_finalize(core_machine_pic_master_current(),
+        core_machine_pic_slave_current());
+}
+void core_machine_pic_finalize(t_pic *master, t_pic *slave) {
+    (void)master;
+    (void)slave;
+}
 
 static void printPic(t_pic *rpic) {
     PRINTF("Init Status = %d, IRX = %x\n",
