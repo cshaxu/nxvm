@@ -84,7 +84,7 @@ void core_machine_port_execute_read(t_port *port, t_nubit16 port_id)
     if (port == NULL) return;
     provider = core_machine_port_find_provider(port, port_id, False);
     if (provider != NULL && provider->handler != NULL) {
-        provider->handler(port, provider->owner);
+        provider->handler(port, port_id, provider->owner);
         return;
     }
     ExecFun(port->connect.legacy_read[port_id]);
@@ -97,7 +97,7 @@ void core_machine_port_execute_write(t_port *port, t_nubit16 port_id)
     if (port == NULL) return;
     provider = core_machine_port_find_provider(port, port_id, True);
     if (provider != NULL && provider->handler != NULL) {
-        provider->handler(port, provider->owner);
+        provider->handler(port, port_id, provider->owner);
         return;
     }
     ExecFun(port->connect.legacy_write[port_id]);

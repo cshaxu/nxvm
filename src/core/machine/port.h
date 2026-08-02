@@ -14,7 +14,8 @@ extern "C" {
 #define VPORT_MAX_PORT_COUNT 0x10000
 
 typedef struct t_port t_port;
-typedef void (*core_machine_port_handler)(t_port *port, void *owner);
+typedef void (*core_machine_port_handler)(t_port *port, t_nubit16 port_id,
+    void *owner);
 
 typedef struct core_machine_port_provider_entry
     core_machine_port_provider_entry;

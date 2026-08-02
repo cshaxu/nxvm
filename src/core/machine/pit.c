@@ -132,27 +132,34 @@ static void io_write_004x(t_pit *pit, t_port *port, t_nubit8 id) {
     }
 }
 
-static void io_read_0040(t_port *port, void *owner) {
+static void io_read_0040(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_read_004x((t_pit *)owner, port, 0);
 }
-static void io_read_0041(t_port *port, void *owner) {
+static void io_read_0041(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_read_004x((t_pit *)owner, port, 1);
 }
-static void io_read_0042(t_port *port, void *owner) {
+static void io_read_0042(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_read_004x((t_pit *)owner, port, 2);
 }
-static void io_write_0040(t_port *port, void *owner) {
+static void io_write_0040(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_write_004x((t_pit *)owner, port, 0);
 }
-static void io_write_0041(t_port *port, void *owner) {
+static void io_write_0041(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_write_004x((t_pit *)owner, port, 1);
 }
-static void io_write_0042(t_port *port, void *owner) {
+static void io_write_0042(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_write_004x((t_pit *)owner, port, 2);
 }
 /* write control word */
-static void io_write_0043(t_port *port, void *owner) {
+static void io_write_0043(t_port *port, t_nubit16 port_id, void *owner) {
     t_pit *pit = (t_pit *)owner;
+    (void)port_id;
     t_nubit8 id = VPIT_GetCW_SC(port->data.ioByte);
     if (id == (VPIT_CW_SC >> 6)) {
         /* read-back command */
