@@ -101,8 +101,9 @@ shared Win32 and Linux providers live in `core/platform/win32` and
 `vdm/*` counterpart. The same rule applies to machine and product code.
 
 `vm/machine` owns boot/reset sequencing, execution-loop glue, and VM-only
-controllers such as FDC/HDC/FDD/HDD. `vm/platform` owns full-machine host
-providers. `vm/product` owns retained NXVM user experience: Console, hardware
+controllers such as FDC/HDC/FDD/HDD. `vm/platform` owns only full-machine
+policy adapters; concrete host facilities shared with VDM belong in
+`core/platform/{win32,linux}`. `vm/product` owns retained NXVM user experience: Console, hardware
 debugger UX, media commands, and presentation policy. `vm/profile` owns VM
 topology, boot policy, ROM assets, and declarative firmware-provider metadata.
 The `vm/` root composition selects that profile, creates the providers, and
@@ -188,15 +189,18 @@ construction, platform-to-guest-state mutation, and all dependency cycles.
 The build-target graph follows the same rules: a target may not conceal a
 forbidden source edge through an aggregate library.
 
-## Migration Closure
+## M5 Convergence
 
 M5 removed the prior `app`, `adapters`, `dos`, `firmware`, `integration`,
 `machine`, `nxvm-baseline`, `platform`, `product`, `products`, and `runtime`
 source roots. Only `core`, `vm`, and `vdm` directories, plus the root
 foundation units `type.*` and `version.*`, may receive source files.
 
-The retained NXVM executor still has explicitly recorded legacy direct calls
-between moved owners, such as an instruction stop path and a VM sleep service.
-They preserve behavior during this source-preserving migration and are not new
-module APIs. M5 dependency-governance work removes them without changing the
-retained Console, debugger, boot sequence, or media behavior.
+The prior M5 source-root migration is not final implementation convergence.
+`vm/machine/device.h` remains a legacy aggregate and must be deleted by
+replacing it with narrow owner-local APIs. The retained `vcpu`, `vram`, and
+`vport` path must converge to the `core_machine_*` CPU, memory, and port
+contracts without duplicating guest state. Shared concrete Win32/Linux host
+providers must move to `core/platform`; VM and future VDM policies bind them
+through root composition. `planning/m5-legacy-convergence.md` owns the exact
+work and closure gates.

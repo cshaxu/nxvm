@@ -1,0 +1,81 @@
+# M5 Legacy Convergence
+
+## Authority And Status
+
+This feedback reopens M5. The prior M5 closure proved source-root and CMake
+owner separation, but not the implementation convergence now required for the
+shared core. It supersedes only the prior M5 closure claim; its recorded build
+and regression evidence remains valid as a baseline.
+
+M5 remains subject to its existing compatibility gate: no change to retained
+NXVM Console text or grammar, debugger behavior, boot/reset ordering, media
+behavior, or executable identity without explicit owner approval and a
+recorded before/after acceptance plan.
+
+## Required End State
+
+1. `vm/machine/device.h` is deleted. It is a temporary legacy aggregate, not
+   a public VM or core API. Callers use narrow owner-local headers instead.
+2. The retained NXVM executor has one authoritative core-machine state and
+   API path. `vcpu`, `vram`, `vport`, and related `v*` implementation names
+   are progressively absorbed into `cpu`, `memory`, `port`, and discrete core
+   device modules. No copied execution implementation or duplicated CPU/RAM/
+   port state is permitted.
+3. Shared concrete host facilities live in `core/platform/win32` and
+   `core/platform/linux`. They expose host primitives only and do not include
+   or mutate machine/product state. VM- and VDM-specific display, Console,
+   input, cancellation, boot, and execution policies remain in their product
+   form and are bound by root composition.
+
+## Work Breakdown
+
+| Task | Result | Completion gate |
+| --- | --- | --- |
+| M5 T15 | Record the exact `device.h` consumer/ownership map and replace one narrow, behavior-preserving surface at a time. | No source includes `device.h`; full retained VM gates pass. |
+| M5 T16 | Converge the legacy CPU/RAM/port executor behind `core_machine_*` contracts, then migrate the remaining shared device implementations by the same rule. | One state authority per subsystem; no `deviceConnect*` entry points; CPU probe and fixture/UX gates pass. |
+| M5 T17 | Extract reusable Win32/Linux host primitives into `core/platform`, leaving VM-only policy in `vm/*`. | Core provider targets have no machine/product includes; Windows build and Linux static gate pass. |
+| M5 T18 | Re-audit source/target DAG, remove transitional compatibility surfaces, publish the final M5 artifact and closure evidence. | Required end state and all existing M5 gates pass. |
+
+## T15 Consumer Map
+
+`device.h` currently has eight direct consumers. It is deleted only after each
+consumer changes to the narrow owner listed below.
+
+| Consumer | Current aggregate use | Replacement owner |
+| --- | --- | --- |
+| `vm/composition_loop.c` | global run/reset/flip state, lifecycle, command boundary, keyboard-host-state bridge | `vm/composition` session-control API plus `core/machine` keyboard API |
+| `vm/composition_machine.c` | lifecycle, run state, keyboard, stop | `vm/composition` session-control API and `core/machine` keyboard API |
+| `vm/composition_console.c` | media, boot, memory sizing, diagnostics, record control, run state | narrow `vm/machine`, `vm/profile`, `core/machine`, and composition control APIs |
+| `vm/composition_debug.c` | register/memory/port/debug-state access | narrow `core/machine` and `vm/machine/vdebug` APIs |
+| `vm/composition_cpu_probe.c` | test lifecycle, segment/eip setup, RAM write | narrow core-machine execution/probe API |
+| `vm/composition_display.c` | text snapshot reads | `core/machine/display.h` snapshot API |
+| `vm/composition_full_pc.c` | command boundary, media, boot, RAM, reset, reset vector, record control | narrow composition, VM-machine, profile, and core-machine APIs |
+| `vm/machine/vdebug.c` | stop request | composition-owned stop callback or core-machine pending-stop contract |
+
+The aggregate also declares implementations consumed internally by default
+profile firmware: BIOS boot, keyboard state, and text display access. Those
+implementation symbols must be renamed or relocated only when their provider
+contract is ready; they may not be exposed through a replacement aggregate.
+
+## Migration Discipline
+
+Each slice first maps all direct callers and an observable behavior baseline.
+Then it changes one narrow surface, repairs direct includes and CMake ownership,
+and runs the smallest focused smoke followed by the retained Console,
+debugger, CPU, FDD/HDD fixture, and dependency-DAG gates when affected. Source
+moves use `git mv`; implementation rewrites are allowed only where needed to
+remove a proven duplicate state or forbidden dependency. Stop for approval if
+the required change alters any compatibility-gate behavior.
+
+## Ownership Rules
+
+`core/platform` owns host capability, not policy: Console attachment/mode,
+window lifecycle and event pumping, host input events, frame submission,
+waiting, timers, and process-control primitives can be common. `auto` display
+selection, guest graphics transition, NXVM boot display behavior, VDM parent
+Console protection, cancellation, and exit semantics are product policy.
+
+`core/machine` owns guest state and never calls platform code. Root composition
+adapts a core machine snapshot to a core-platform frame and binds any host
+provider. `core/product` debugger UI reaches a concrete machine only through
+its debug-target callback contract.

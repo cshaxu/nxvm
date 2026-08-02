@@ -27,19 +27,21 @@ M4 is complete. Firmware, profile/provider, CPU verification, and retained
 NXVM Console contracts now bound M5 implementation without changing runtime
 behavior.
 
-## M5 Closure
+## M5 Status
 
-M5 is complete. The actual bootable NXVM path compiles from the `core`, `vm`,
-and test-only `vdm` topology without a baseline or adapter source root. Core,
-VM, and VDM module/composition targets are source-owner checked with no
-exception list; the retained Console and debugger continue through VM root
-composition. Full GCC, source-DAG, core/VM/VDM smoke, and local FDD/HDD fixture
-session/profile evidence passed. The historical `snapshot/m5-nxvm-28fb4b1`
-remains a checkpoint, not the M5 closure snapshot.
+M5 source-root and target-graph migration is complete, with the recorded GCC,
+source-DAG, core/VM/VDM smoke, retained Console/debugger, and local FDD/HDD
+fixture evidence intact. M5 is reopened for legacy implementation convergence:
+delete the `device.h` aggregate, converge the retained executor to one
+core-machine CPU/RAM/port authority, and move reusable Win32/Linux host
+providers to `core/platform`. The detailed scope and gates are in
+`m5-legacy-convergence.md`. The historical `snapshot/m5-nxvm-28fb4b1` remains
+a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 T14 S3 P59: publish the closure artifact and final verification evidence.
+M5 T15 S1 P1: map the `device.h` aggregate and establish its first narrow
+replacement surface.
 
 ## Completed
 
