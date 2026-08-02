@@ -11,7 +11,11 @@
 
 #include "vm/machine/vfdc.h"
 
-t_fdc vfdc;
+static t_fdc *vmMachineFdc;
+
+t_fdc *vm_machine_fdc_current(void) { return vmMachineFdc; }
+void vm_machine_fdc_bind_live(t_fdc *fdc) { vmMachineFdc = fdc; }
+void vm_machine_fdc_unbind_live(void) { vmMachineFdc = NULL; }
 
 #define VFDC_RET_ERROR         0x80 /* Error Code */
 /* Commands */
