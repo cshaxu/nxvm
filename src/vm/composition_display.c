@@ -3,10 +3,9 @@
 #include "core/platform/display_frame.h"
 #include "vm/platform/platform.h"
 #include "vm/composition_live_machine.h"
+#include "vm/profile/default_profile/firmware/qdcga.h"
 
 #include <string.h>
-
-static uint64_t vmCompositionDisplayGeneration;
 
 void vm_composition_publish_display(vm_composition_live_machine *machine,
     int force)
@@ -50,7 +49,7 @@ void vm_composition_publish_display(vm_composition_live_machine *machine,
             frame.attributes[index] = snapshot.attributes[index];
         }
     }
-    frame.generation = ++vmCompositionDisplayGeneration;
+    frame.generation = ++machine->display_generation;
     core_platform_display_publish(&frame);
 }
 
@@ -63,5 +62,8 @@ static void vmCompositionDisplayModeChanged(void *context)
 void vm_composition_bind_display(vm_composition_live_machine *machine)
 {
     if (machine == NULL) return;
-    core_machine_display_bind(machine, vmCompositionDisplayModeChanged);
+    core_machine_display_provider_slot_bind(machine->display_provider,
+        machine, vmCompositionDisplayModeChanged,
+        machine->default_profile_context, vm_profile_default_display_capture);
+    core_machine_display_provider_slot_freeze(machine->display_provider);
 }

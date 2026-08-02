@@ -125,14 +125,14 @@ static void qdcgaSetDisplayMode(vm_profile_default_context *profile) {
         qdcgaVarRowSize = 0x28;
         profile_vadp.data.colSize   = 0x19;
         profile_vadp.data.flagColor = False;
-        core_machine_display_notify_mode_changed();
+        core_machine_display_notify_mode_changed_to(profile->display_provider);
         break;
     case 0x01:
         /* 40 x 25 */
         qdcgaVarRowSize = 0x28;
         profile_vadp.data.colSize   = 0x19;
         profile_vadp.data.flagColor = True;
-        core_machine_display_notify_mode_changed();
+        core_machine_display_notify_mode_changed_to(profile->display_provider);
         break;
     case 0x02:
     case 0x07:
@@ -140,14 +140,14 @@ static void qdcgaSetDisplayMode(vm_profile_default_context *profile) {
         qdcgaVarRowSize = 0x50;
         profile_vadp.data.colSize   = 0x19;
         profile_vadp.data.flagColor = False;
-        core_machine_display_notify_mode_changed();
+        core_machine_display_notify_mode_changed_to(profile->display_provider);
         break;
     case 0x03:
         /* 80 x 25 */
         qdcgaVarRowSize = 0x50;
         profile_vadp.data.colSize   = 0x19;
         profile_vadp.data.flagColor = True;
-        core_machine_display_notify_mode_changed();
+        core_machine_display_notify_mode_changed_to(profile->display_provider);
         break;
     default:
         break;

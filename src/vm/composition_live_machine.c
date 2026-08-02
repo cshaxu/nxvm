@@ -44,6 +44,8 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
     machine->default_profile_context->keyboard_provider = machine->keyboard_provider;
     machine->display_provider = &machine->display_provider_storage;
     core_machine_display_provider_slot_initialize(machine->display_provider);
+    machine->default_profile_context->display_provider = machine->display_provider;
+    machine->display_generation = 0u;
     machine->control = (vm_composition_control_state *)calloc(1u,
         sizeof(*machine->control));
 }

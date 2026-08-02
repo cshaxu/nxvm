@@ -1,6 +1,8 @@
 #ifndef NXVM_COMPOSITION_LIVE_MACHINE_H
 #define NXVM_COMPOSITION_LIVE_MACHINE_H
 
+#include <stdint.h>
+
 #include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
 #include "core/machine/port.h"
@@ -49,6 +51,7 @@ typedef struct vm_composition_live_machine {
     core_machine_block_provider_slot block_provider_storage;
     core_machine_keyboard_provider_slot keyboard_provider_storage;
     core_machine_display_provider_slot display_provider_storage;
+    uint64_t display_generation;
     core_product_debug_target *debug_target;
     t_cpu *cpu;
     t_cpuins *cpuins;
