@@ -10,8 +10,10 @@ t_kbc *core_machine_kbc_current(void) { return coreMachineKbc; }
 void core_machine_kbc_bind_live(t_kbc *controller) { coreMachineKbc=controller; }
 void core_machine_kbc_unbind_live(void) { coreMachineKbc=NULL; }
 
-static void core_machine_kbc_read_status(t_port *port, void *owner)
+static void core_machine_kbc_read_status(t_port *port, t_nubit16 port_id,
+    void *owner)
 {
+    (void)port_id;
     (void)owner;
     port->data.ioByte = VKBC_STATUS_KE;
 }

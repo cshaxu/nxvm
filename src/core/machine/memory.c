@@ -51,17 +51,21 @@ void core_machine_memory_allocate_for(t_ram *ram, size_t newsize) {
         MEMSET((void *) ram->connect.pBase, Zero8, ram->connect.size);
     }
 }
-static void core_machine_memory_read_a20(t_port *port, void *owner)
+static void core_machine_memory_read_a20(t_port *port, t_nubit16 port_id,
+    void *owner)
 {
     t_ram *ram = (t_ram *)owner;
 
+    (void)port_id;
     if (ram == NULL) return;
     port->data.ioByte = ram->data.flagA20 ? VRAM_FLAG_A20 : Zero8;
 }
-static void core_machine_memory_write_a20(t_port *port, void *owner)
+static void core_machine_memory_write_a20(t_port *port, t_nubit16 port_id,
+    void *owner)
 {
     t_ram *ram = (t_ram *)owner;
 
+    (void)port_id;
     if (ram == NULL) return;
     ram->data.flagA20 = GetBit(port->data.ioByte, VRAM_FLAG_A20);
 }

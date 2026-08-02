@@ -319,28 +319,36 @@ static void io_write_00x1(t_pic *rpic, t_port *port) {
 }
 
 /* The provider owner is the composition-owned PIC selected for this port. */
-static void io_read_0020(t_port *port, void *owner) {
+static void io_read_0020(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_read_00x0((t_pic *)owner, port);
 }
-static void io_read_0021(t_port *port, void *owner) {
+static void io_read_0021(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_read_00x1((t_pic *)owner, port);
 }
-static void io_read_00A0(t_port *port, void *owner) {
+static void io_read_00A0(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_read_00x0((t_pic *)owner, port);
 }
-static void io_read_00A1(t_port *port, void *owner) {
+static void io_read_00A1(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_read_00x1((t_pic *)owner, port);
 }
-static void io_write_0020(t_port *port, void *owner) {
+static void io_write_0020(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_write_00x0((t_pic *)owner, port);
 }
-static void io_write_0021(t_port *port, void *owner) {
+static void io_write_0021(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_write_00x1((t_pic *)owner, port);
 }
-static void io_write_00A0(t_port *port, void *owner) {
+static void io_write_00A0(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_write_00x0((t_pic *)owner, port);
 }
-static void io_write_00A1(t_port *port, void *owner) {
+static void io_write_00A1(t_port *port, t_nubit16 port_id, void *owner) {
+    (void)port_id;
     io_write_00x1((t_pic *)owner, port);
 }
 
