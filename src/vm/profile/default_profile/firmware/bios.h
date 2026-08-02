@@ -26,7 +26,7 @@ typedef struct {
 } t_bios_data;
 
 /* bios connections */
-typedef struct {
+typedef struct t_bios {
     t_bios_data data;
     t_bios_connect connect;
     t_bool flagBoot;

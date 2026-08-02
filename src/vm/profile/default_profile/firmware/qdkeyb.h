@@ -38,7 +38,8 @@ extern "C" {
 #define qdkeybVarFlag0 (vramRealByte(0x0000, QDKEYB_VBIOS_ADDR_KEYB_FLAG0))
 #define qdkeybVarFlag1 (vramRealByte(0x0000, QDKEYB_VBIOS_ADDR_KEYB_FLAG1))
 
-void qdkeybInit();
+typedef struct t_qdx t_qdx;
+void vm_profile_default_keyboard_initialize(t_qdx *qdx);
 const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(void);
 
 #ifdef __cplusplus

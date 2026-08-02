@@ -7,7 +7,8 @@
 extern "C" {
 #endif
 
-void qddiskInit();
+typedef struct t_qdx t_qdx;
+void vm_profile_default_disk_initialize(t_qdx *qdx);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

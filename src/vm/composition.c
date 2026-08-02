@@ -99,7 +99,8 @@ void vmachineInit(vm_composition_live_machine *machine) {
     _vbios_ _vport_ _vpic_
     vramInit();
     _vbios_ _vport_ _vpit_
-    qdxInit();
+    vm_profile_default_qdx_initialize(machine->default_profile_context,
+        machine->cpu_execution);
     _vbios_ _vcpu_ _vram_
 }
 /* Resets all devices to initial values */
@@ -125,13 +126,13 @@ void vmachineReset(vm_composition_live_machine *machine) {
     vm_profile_default_bios_reset(machine->default_bios, machine->ram,
         machine->block_provider);
     _vram_
-    qdxReset();
+    vm_profile_default_qdx_reset(machine->default_profile_context);
     _vram_
 }
 /* Executes all devices in one loop */
 void vmachineRefresh(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
-    qdxRefresh();
+    vm_profile_default_qdx_refresh(machine->default_profile_context);
     _empty_
     vm_profile_default_bios_refresh(machine->default_bios);
     _empty_
@@ -168,7 +169,7 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
 /* Finalize all devices, deallocates space */
 void vmachineFinal(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
-    qdxFinal();
+    vm_profile_default_qdx_finalize(machine->default_profile_context);
     _empty_
     vm_profile_default_bios_finalize(machine->default_bios);
     _empty_

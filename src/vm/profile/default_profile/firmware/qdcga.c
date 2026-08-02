@@ -351,8 +351,8 @@ static void INT_10() {
     }
 }
 
-void qdcgaInit() {
-    qdxTable[0x10] = (t_faddrcc) INT_10; /* soft cga*/
+void vm_profile_default_cga_initialize(t_qdx *qdx) {
+    if (qdx != NULL) qdx->table[0x10] = (t_faddrcc) INT_10; /* soft cga*/
 }
 void qdcgaReset() {
     /* 80 x 25 */

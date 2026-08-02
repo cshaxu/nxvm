@@ -72,7 +72,8 @@ extern "C" {
 #define qdcgaGetCursorVisible \
     (!(qdcgaVarCursorTop & 0x08))
 
-void qdcgaInit();
+typedef struct t_qdx t_qdx;
+void vm_profile_default_cga_initialize(t_qdx *qdx);
 void qdcgaReset();
 int vm_profile_default_display_capture(void *context,
     core_machine_display_snapshot *out_snapshot);

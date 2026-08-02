@@ -29,10 +29,18 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
     machine->debug = &machine->debug_storage;
     machine->default_bios = &machine->default_bios_storage;
     machine->default_qdx = &machine->default_qdx_storage;
+    machine->default_profile_context = &machine->default_profile_context_storage;
+    vm_profile_default_context_initialize(machine->default_profile_context,
+        machine->default_bios, machine->default_qdx, machine->ram,
+        machine->vadp, NULL, NULL);
+    core_machine_cpu_execution_context_bind_extension(machine->cpu_execution,
+        machine->default_profile_context);
     machine->block_provider = &machine->block_provider_storage;
     core_machine_block_provider_slot_initialize(machine->block_provider);
+    machine->default_profile_context->block_provider = machine->block_provider;
     machine->keyboard_provider = &machine->keyboard_provider_storage;
     core_machine_keyboard_provider_slot_initialize(machine->keyboard_provider);
+    machine->default_profile_context->keyboard_provider = machine->keyboard_provider;
     machine->display_provider = &machine->display_provider_storage;
     core_machine_display_provider_slot_initialize(machine->display_provider);
     machine->control = (vm_composition_control_state *)calloc(1u,
@@ -53,7 +61,6 @@ void vm_composition_live_machine_bind_legacy(vm_composition_live_machine *machin
         machine->dma_secondary);
     core_machine_kbc_bind_live(machine->kbc);
     core_machine_vadp_bind_live(machine->vadp);
-    vm_profile_default_qdx_bind_live(machine->default_qdx);
 }
 
 void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
@@ -65,7 +72,6 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     core_machine_dma_unbind_live();
     core_machine_kbc_unbind_live();
     core_machine_vadp_unbind_live();
-    vm_profile_default_qdx_unbind_live();
     core_machine_cpu_execution_unbind_legacy();
     core_machine_cpu_instructions_unbind_live();
     core_machine_cpu_unbind_live();
@@ -90,6 +96,8 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     machine->debug = NULL;
     machine->default_bios = NULL;
     machine->default_qdx = NULL;
+    core_machine_cpu_execution_context_bind_extension(machine->cpu_execution, NULL);
+    machine->default_profile_context = NULL;
     core_machine_block_provider_slot_finalize(machine->block_provider);
     machine->block_provider = NULL;
     core_machine_keyboard_provider_slot_finalize(machine->keyboard_provider);

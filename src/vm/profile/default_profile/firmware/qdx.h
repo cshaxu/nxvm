@@ -8,24 +8,19 @@ extern "C" {
 #endif
 
 #include "core/machine/vglobal.h"
+#include "core/machine/cpu_instructions.h"
 
-typedef struct {
+typedef struct t_qdx {
     t_faddrcc table[0x100];
 } t_qdx;
 
-t_qdx *vm_profile_default_qdx_current(void);
-void vm_profile_default_qdx_bind_live(t_qdx *qdx);
-void vm_profile_default_qdx_unbind_live(void);
+typedef struct vm_profile_default_context vm_profile_default_context;
 
-/* Transitional direct alias to the one composition-owned QDX table. */
-#define qdxTable (vm_profile_default_qdx_current()->table)
-
-void qdxExecInt(t_nubit8 intId);
-
-void qdxInit();
-void qdxReset();
-void qdxRefresh();
-void qdxFinal();
+void vm_profile_default_qdx_initialize(vm_profile_default_context *profile,
+    core_machine_cpu_execution_context *execution);
+void vm_profile_default_qdx_reset(vm_profile_default_context *profile);
+void vm_profile_default_qdx_refresh(vm_profile_default_context *profile);
+void vm_profile_default_qdx_finalize(vm_profile_default_context *profile);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
