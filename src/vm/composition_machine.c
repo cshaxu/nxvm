@@ -129,7 +129,7 @@ void machineResume() {
 void machineInit() {
     platformInit();
     core_product_wait_bind(vm_composition_wait, NULL);
-    vm_composition_live_machine_bind(&vram, &vport);
+    vm_composition_live_machine_bind(&vport);
     vm_composition_control_initialize();
     core_machine_keyboard_bind(NULL, vm_profile_default_keyboard_provider());
     core_machine_display_bind_snapshot_provider(NULL,

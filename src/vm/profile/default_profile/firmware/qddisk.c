@@ -5,7 +5,7 @@
 #include "core/product/utils.h"
 
 #include "core/machine/cpu.h"
-#include "core/machine/vram.h"
+#include "core/machine/memory.h"
 #include "core/machine/block.h"
 
 #include "vm/profile/default_profile/firmware/qdx.h"

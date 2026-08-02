@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "core/machine/cpu.h"
-#include "core/machine/vram.h"
+#include "core/machine/memory.h"
 #include "vm/composition_control.h"
 
 int main(void)

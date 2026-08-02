@@ -4,7 +4,7 @@
 
 #include "type.h"
 
-#include "core/machine/vram.h"
+#include "core/machine/memory.h"
 
 #include "core/machine/vport.h"
 #include "core/machine/vdma.h"

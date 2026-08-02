@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "core/machine/vram.h"
+#include "core/machine/memory.h"
 #include "core/machine/keyboard_interface.h"
 
 #define QDKEYB_VBIOS_ADDR_KEYB_FLAG0         0x0417
