@@ -624,12 +624,6 @@ void core_machine_dma_refresh(t_latch *latch, t_dma *primary,
     }
 }
 
-void vdmaRefresh() {
-    core_machine_dma_refresh(core_machine_dma_latch_current(),
-        core_machine_dma_primary_current(), core_machine_dma_secondary_current(),
-        core_machine_memory_current());
-}
-
 void core_machine_dma_finalize(t_latch *latch, t_dma *primary,
     t_dma *secondary) {
     (void)latch;

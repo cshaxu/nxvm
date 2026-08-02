@@ -176,7 +176,6 @@ void vdmaAddDevice(t_nubit8 drqId, t_faddrcc fpReadDevice,
 
 void vdmaInit();
 void vdmaReset();
-void vdmaRefresh();
 void vdmaFinal();
 void core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_port *port);

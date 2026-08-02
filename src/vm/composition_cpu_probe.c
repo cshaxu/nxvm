@@ -92,7 +92,8 @@ int nxvm_cpu_probe_step(
     memset(out_capture, 0, sizeof(*out_capture));
     memcpy(out_capture->bytes, bytes, byte_count);
     out_capture->byte_count = byte_count;
-    core_machine_memory_write_real(0u, 0u, bytes, byte_count);
+    core_machine_memory_write_real_to(probe->machine.ram, 0u, 0u, bytes,
+        byte_count);
     if (!nxvm_cpu_probe_capture_state(probe, &out_capture->before)) {
         return 0;
     }
