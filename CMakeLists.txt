@@ -457,6 +457,10 @@ add_executable(nxvm-vm-full-authority-closure-smoke
 target_link_libraries(nxvm-vm-full-authority-closure-smoke PRIVATE
     nxvm-vm-composition
     nxvm-vm-profile)
+add_executable(nxvm-vm-dos-prompt-smoke
+    tests/machine/vm_dos_prompt_smoke.c)
+target_link_libraries(nxvm-vm-dos-prompt-smoke PRIVATE
+    nxvm-vm-composition)
 add_executable(nxvm-vm-debug-pause-boundary-smoke
     tests/machine/vm_debug_pause_boundary_smoke.c)
 target_link_libraries(nxvm-vm-debug-pause-boundary-smoke PRIVATE

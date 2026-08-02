@@ -74,6 +74,9 @@ void vmachineInit(vm_composition_live_machine *machine) {
         machine->dma_secondary, machine->port);
     vbiosAddPost(VDMA_POST);
     _vbios_ _vport_
+    vm_machine_fdc_connect(machine->fdc, machine->fdd, machine->dma_latch,
+        machine->dma_primary, machine->dma_secondary, machine->pic_master,
+        machine->pic_slave, machine->port);
     vm_machine_fdc_initialize(machine->fdc);
     vbiosAddPost(VFDC_POST);
     vbiosAddInt(VFDC_INT_HARD_FDD_0E, 0x0e);
@@ -91,9 +94,6 @@ void vmachineInit(vm_composition_live_machine *machine) {
     _vbios_ _vport_
     core_machine_pic_initialize(machine->pic_master, machine->pic_slave,
         machine->port);
-    vm_machine_fdc_connect(machine->fdc, machine->fdd, machine->dma_latch,
-        machine->dma_primary, machine->dma_secondary, machine->pic_master,
-        machine->pic_slave, machine->port);
     vbiosAddPost(VPIC_POST);
     _vbios_ _vport_ _vpic_
     vramInit();
