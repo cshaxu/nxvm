@@ -158,11 +158,15 @@ context-object extraction work. It produced `build/output/nxvm_0_5_0060.exe`.
 M5 T61 S1 inventoried retained runtime aliases, separating current-object
 compatibility spellings from executor/session state-authority debt. No stateful
 alias was removed, and it produced `build/output/nxvm_0_5_0061.exe`.
+M5 T62 S1 recorded that no retained runtime alias is safe to remove inside this
+naming window without beginning explicit context-passing and multi-session
+state-authority work. It produced `build/output/nxvm_0_5_0062.exe`.
 
 ## Active Work
 
-M5 T62 S1 is active, not started: apply only low-risk alias cleanup approved by
-the T61 inventory, or record that no such cleanup is safe in this naming window.
+M5 T63 S1 is active, not started: final second-pass naming closure audit over
+source, CMake, docs, public symbols, platform ownership, and retained alias
+exceptions.
 M6 T1 S1 is deferred and not active.
 
 ## Completed
@@ -610,10 +614,13 @@ M6 T1 S1 is deferred and not active.
   `build/output/nxvm_0_5_0060.exe`.
 - M5 T61 S1 P1: inventoried retained runtime aliases, classified cleanup risk,
   removed no stateful alias, and built `build/output/nxvm_0_5_0061.exe`.
+- M5 T62 S1 P1: recorded that no retained runtime alias cleanup is safe inside
+  this naming window, preserved source behavior, and built
+  `build/output/nxvm_0_5_0062.exe`.
 
 ## Next Eligible Work
 
-- M5 T62 may begin. M6 design remains ineligible until M5 T63 closes the
+- M5 T63 may begin. M6 design remains ineligible until M5 T63 closes the
   second-pass naming and ownership cleanup.
 
 ## Delivery State
