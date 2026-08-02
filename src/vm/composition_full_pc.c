@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "vm/composition_control.h"
-#include "core/machine/vcpu.h"
+#include "core/machine/cpu.h"
 #include "core/machine/memory.h"
 #include "vm/machine/vdebug.h"
 #include "core/machine/keyboard_interface.h"

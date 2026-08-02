@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "core/machine/vcpu.h"
+#include "core/machine/cpu.h"
 #include "core/machine/vram.h"
 #include "vm/composition_control.h"
 

@@ -2,12 +2,15 @@
 
 #include <string.h>
 
-#include "core/machine/vcpu.h"
+#include "core/machine/cpu.h"
 #include "core/machine/cpu.h"
 #include "core/machine/memory.h"
+#include "core/machine/vport.h"
+#include "core/machine/vram.h"
 #include "core/product/runtime/execution_context.h"
 #include "vm/composition_control.h"
-#include "core/machine/vcpuins.h"
+#include "core/machine/cpu_instructions.h"
+#include "vm/composition_live_machine.h"
 
 static int nxvm_cpu_probe_active;
 
@@ -52,6 +55,7 @@ int nxvm_cpu_probe_begin(void)
     if (nxvm_cpu_probe_active) {
         return 0;
     }
+    vm_composition_live_machine_bind(&vram, &vport);
     vm_composition_control_initialize();
     nxvm_cpu_probe_active = 1;
     if (!nxvm_cpu_probe_reset()) {
@@ -92,6 +96,7 @@ void nxvm_cpu_probe_end(void)
 {
     if (nxvm_cpu_probe_active) {
         vm_composition_control_finalize();
+        vm_composition_live_machine_clear();
         nxvm_cpu_probe_active = 0;
     }
 }

@@ -5,7 +5,7 @@
 #include "core/machine/cpu.h"
 #include "core/machine/memory.h"
 #include "core/machine/port.h"
-#include "core/machine/vcpu.h"
+#include "core/machine/cpu.h"
 #include "vm/machine/vdebug.h"
 
 static int vm_debug_running(void *context) { (void)context; return vm_composition_control_is_running(); }

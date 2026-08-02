@@ -2,7 +2,7 @@
 
 #include "vm/composition_cpu_probe.h"
 #include "core/product/runtime/execution_context.h"
-#include "core/machine/vcpuins.h"
+#include "core/machine/cpu_instructions.h"
 
 static int expect_capture(
     const nxvm_cpu_probe_capture *capture,

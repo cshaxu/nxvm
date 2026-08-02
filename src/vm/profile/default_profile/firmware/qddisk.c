@@ -4,7 +4,7 @@
 
 #include "core/product/utils.h"
 
-#include "core/machine/vcpu.h"
+#include "core/machine/cpu.h"
 #include "core/machine/vram.h"
 #include "core/machine/block.h"
 
