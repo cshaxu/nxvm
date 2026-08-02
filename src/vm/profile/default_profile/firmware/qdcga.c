@@ -11,7 +11,7 @@
 #include "vm/profile/default_profile/firmware/qdx.h"
 #include "qdcga.h"
 
-t_nubit32 qdcgaModeBufSize[0x14] = {
+static const t_nubit32 qdcgaModeBufSize[0x14] = {
     2048, 2048, 4096, 4096, 16000, 16000, 16000,
     4096, 16000, 32000, 32000,
     0, 0, 32000, 64000,

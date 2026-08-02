@@ -82,12 +82,15 @@ profile ownership and POST sequence.
 M5 T39 S1 moved the default-profile QDX interrupt-dispatch table to the live
 machine's `default_qdx_storage` object while preserving firmware registration
 and dispatch semantics.
+M5 T40 S1 confirmed that default-profile CGA firmware has no separate mutable
+state: text/cursor/snapshot state remains in the already bound RAM and video
+adapter, while its mode table is private immutable profile data.
 
 ## Active Work
 
-M5 T40 S1 is active: audit default-profile CGA text firmware and its display
-snapshot provider before binding any actual profile-owned state. Owner-observed
-FDD DOS-prompt acceptance covers the preceding authority tasks.
+M5 T41 S1 is active: audit default-profile keyboard firmware, its provider,
+and its platform ingress binding before binding any actual profile-owned state.
+Owner-observed FDD DOS-prompt acceptance covers the preceding authority tasks.
 
 ## Completed
 
