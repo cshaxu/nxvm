@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "core/machine/presentation.h"
+#include "core/machine/presentation_interface.h"
 
 int main(void)
 {

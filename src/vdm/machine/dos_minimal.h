@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "core/machine/presentation.h"
+#include "core/machine/presentation_interface.h"
 #include "type.h"
 
 #ifdef __cplusplus

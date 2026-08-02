@@ -1,0 +1,33 @@
+#ifndef NTVDM64_CORE_MACHINE_DEBUG_INTERFACE_H
+#define NTVDM64_CORE_MACHINE_DEBUG_INTERFACE_H
+
+#include <stddef.h>
+
+#include "core/machine/cpu_interface.h"
+#include "core/machine/machine_interface.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+nxvm_core_status core_machine_debug_read_cpu(
+    const core_machine *machine,
+    core_machine_cpu_state *out_state);
+nxvm_core_status core_machine_debug_read_memory(
+    const core_machine *machine,
+    uint32_t physical,
+    void *out_data,
+    size_t size);
+nxvm_core_status core_machine_debug_step(
+    core_machine *machine,
+    core_machine_run_result *out_result);
+nxvm_core_status core_machine_debug_continue(
+    core_machine *machine,
+    core_machine_run_budget budget,
+    core_machine_run_result *out_result);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

@@ -52,8 +52,9 @@ M5 T22 S1 audited the retained debugger and defined its pause-boundary and
 unified-backend migration; implementation remains inactive pending review.
 M5 T22 S2 corrected the authority model: the live full PC must converge into
 one machine instance without parallel CPU/RAM/port state.
-M5 T22 S3 schedules device-by-device live-machine convergence as T23 through
-T43; debugger pause and backend work are deferred to T44 and T45.
+M5 T22 S3 schedules device-by-device live-machine convergence; task numbers
+were later adjusted by T32's interface-naming prerequisite, and debugger pause
+and backend work are now T45 and T46.
 M5 T22 S4 defines the no-copy, same-object compatibility method and stop gates
 for that convergence. M5 T23 S1 is complete: root composition owns a
 non-owning live-machine carrier bound directly to the existing CPU, decoder,
@@ -62,11 +63,14 @@ M5 T24 S1 is complete: the canonical `cpu.*` and `cpu_instructions.*` units
 now contain the retained CPU/executor implementation, and the live-machine
 carrier owns their one full-PC storage instance. The legacy spellings are
 direct aliases only; no global CPU/decoder storage remains.
+M5 T32 S1 completed the explicit core-machine interface/provider naming
+boundary without changing retained machine or Console behavior.
 
 ## Active Work
 
-M5 T32 is next eligible: bind the VM-only CMOS/RTC provider to the converged
-live machine. T25's manual FDD DOS-prompt observation remains deferred.
+M5 T33 S1 is active: map the VM-only CMOS/RTC authority before a same-object
+live-machine binding change. Owner-observed FDD DOS-prompt acceptance covers
+T25 through T31.
 
 ## Completed
 
@@ -267,7 +271,7 @@ live machine. T25's manual FDD DOS-prompt observation remains deferred.
 - M5 T22 S2 P1: recorded the live-machine authority migration rules and source
   map before debugger implementation.
 - M5 T22 S3 P1: replaced the premature debugger implementation sequence with
-  device-by-device live-machine convergence through T43.
+  device-by-device live-machine convergence through T44.
 - M5 T22 S4 P1: recorded the controlled no-copy migration method and rollback
   gates before T23 implementation.
 - M5 T23 S1 P1: added the composition-owned live-machine carrier with direct,
@@ -281,6 +285,11 @@ live machine. T25's manual FDD DOS-prompt observation remains deferred.
   and direct consumers. The separate M3 minimal-machine memory buffer remains
   outside full-PC composition; T25 S2 has a same-object migration plan and no
   mapping-only artifact is required.
+- M5 T25 S2 P2: recorded owner-observed FDD DOS-prompt acceptance for the
+  T25 through T31 authority artifacts; the prior scripted Console timeout
+  remains historical automation-boundary evidence only.
+- M5 T32 S1 P1: completed explicit core-machine interface and provider naming
+  without machine, callback-order, Console, or debugger behavior changes.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware

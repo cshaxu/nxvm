@@ -560,6 +560,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t28 "m5t28")
 add_nxvm_full_pc_artifact(nxvm-m5-t29 "m5t29")
 add_nxvm_full_pc_artifact(nxvm-m5-t30 "m5t30")
 add_nxvm_full_pc_artifact(nxvm-m5-t31 "m5t31")
+add_nxvm_full_pc_artifact(nxvm-m5-t32 "m5t32")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

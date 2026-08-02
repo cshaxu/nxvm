@@ -1,7 +1,7 @@
-#include "core/machine/block.h"
+#include "core/machine/block_interface.h"
 #include "vm/machine/vhdd.h"
 
-static void vmBlockGeometry(void *context, core_block_geometry *out_geometry)
+static void vmBlockGeometry(void *context, core_machine_block_geometry *out_geometry)
 {
     (void)context;
     out_geometry->present = vhdd.connect.flagDiskExist;
@@ -41,5 +41,5 @@ static int vmBlockWrite(void *context, t_nubit8 cylinder, t_nubit8 head,
 
 void vmCompositionBindBlock(void)
 {
-    coreBlockBind(NULL, vmBlockGeometry, vmBlockRead, vmBlockWrite);
+    core_machine_block_bind_provider(NULL, vmBlockGeometry, vmBlockRead, vmBlockWrite);
 }

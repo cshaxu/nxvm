@@ -118,24 +118,26 @@ device task proves that no second storage remains.
 | T29 | DMA | Move `vdma` state and instance binding. |
 | T30 | keyboard controller | Move `vkbc` state and instance binding. |
 | T31 | video adapter | Move `vvadp` state and instance binding. |
-| T32 | CMOS/RTC | Bind the VM-only `vcmos` provider to the instance. |
-| T33 | floppy media | Bind `vfdd` media state to the instance. |
-| T34 | floppy controller | Bind `vfdc` controller state and DMA/IRQ links to the instance. |
-| T35 | hard-disk media | Bind `vhdd` media state to the instance. |
-| T36 | hard-disk controller | Bind `vhdc` controller state and BIOS service links to the instance. |
-| T37 | BIOS/POST | Bind `vbios` firmware image, POST, and interrupt registrations to the instance while preserving default-profile ownership. |
-| T38 | QDX service | Bind the profile video interrupt service through the instance. |
-| T39 | CGA text service | Bind `qdcga` profile text state and display snapshot provider through the instance. |
-| T40 | keyboard firmware service | Bind `qdkeyb` through the instance keyboard controller and platform ingress. |
-| T41 | disk firmware service | Bind `qddisk` INT 13 services through the instance media/controller providers. |
-| T42 | debug instrumentation | Bind `vdebug` break, watch, bounded trace, and stop-reason state to the instance. |
-| T43 | full-PC closure | Remove obsolete global compatibility storage, prove one authority across init/reset/refresh, and freeze the migrated full-PC baseline. |
-| T44 | debugger pause boundary | Add request, acknowledgement, pause reason, step, and continue to the converged live execution loop. |
-| T45 | unified debugger backend | Route the retained debugger UI and future VDM debugger through the single live-machine backend. |
+| T32 | interface naming | Rename public core-machine contracts to `*_interface.h`, make `machine.h` private instance state, and normalize callback inputs as `*_provider`; no behavior change. |
+| T33 | CMOS/RTC | Bind the VM-only `vcmos` provider to the instance. |
+| T34 | floppy media | Bind `vfdd` media state to the instance. |
+| T35 | floppy controller | Bind `vfdc` controller state and DMA/IRQ links to the instance. |
+| T36 | hard-disk media | Bind `vhdd` media state to the instance. |
+| T37 | hard-disk controller | Bind `vhdc` controller state and BIOS service links to the instance. |
+| T38 | BIOS/POST | Bind `vbios` firmware image, POST, and interrupt registrations to the instance while preserving default-profile ownership. |
+| T39 | QDX service | Bind the profile video interrupt service through the instance. |
+| T40 | CGA text service | Bind `qdcga` profile text state and display snapshot provider through the instance. |
+| T41 | keyboard firmware service | Bind `qdkeyb` through the instance keyboard controller and platform ingress. |
+| T42 | disk firmware service | Bind `qddisk` INT 13 services through the instance media/controller providers. |
+| T43 | debug instrumentation | Bind `vdebug` break, watch, bounded trace, and stop-reason state to the instance. |
+| T44 | full-PC closure | Remove obsolete global compatibility storage, prove one authority across init/reset/refresh, and freeze the migrated full-PC baseline. |
+| T45 | debugger pause boundary | Add request, acknowledgement, pause reason, step, and continue to the converged live execution loop. |
+| T46 | unified debugger backend | Route the retained debugger UI and future VDM debugger through the single live-machine backend. |
 
-T23 is structural preparation, not a second machine model. T24 through T42 are
-one-device tasks; T43 is the required composition closure. T44 and T45 remain
-inactive until T43 proves a single authority.
+T23 is structural preparation, not a second machine model. T24 through T31 and
+T33 through T43 are one-authority tasks; T32 is the naming-only prerequisite.
+T44 is the required composition closure. T45 and T46 remain inactive until T44
+proves a single authority.
 
 ## T23 Evidence
 
