@@ -46,10 +46,6 @@ void core_machine_port_unbind_live(void);
 /* Transitional direct alias to the one composition-owned live port object. */
 #define vport (*core_machine_port_current())
 
-void vportAddRead(t_nubit16 portId, t_faddrcc fpIn);
-void vportAddWrite(t_nubit16 portId, t_faddrcc fpOut);
-void vportExecRead(t_nubit16 portId);
-void vportExecWrite(t_nubit16 portId);
 
 void core_machine_port_execute_read(t_port *port, t_nubit16 port_id);
 void core_machine_port_execute_write(t_port *port, t_nubit16 port_id);
@@ -63,10 +59,6 @@ void core_machine_port_initialize(t_port *port);
 void core_machine_port_reset(t_port *port);
 void core_machine_port_finalize(t_port *port);
 
-void vportInit();
-void vportReset();
-void vportRefresh();
-void vportFinal();
 
 uint32_t core_machine_port_read_legacy(uint16_t port);
 void core_machine_port_write_legacy(uint16_t port, uint32_t value);

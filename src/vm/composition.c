@@ -146,11 +146,9 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
     _empty_
     core_machine_kbc_refresh(machine->kbc);
     _empty_
-    vportRefresh();
     _empty_
     core_machine_vadp_refresh(machine->vadp);
     _empty_
-    vramRefresh();
     _empty_
 
     vm_machine_cmos_refresh(machine->cmos);

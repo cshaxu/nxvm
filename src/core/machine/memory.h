@@ -48,8 +48,6 @@ void core_machine_memory_unbind_live(void);
 #define vramRealWord(segment, offset)  (d_nubit16(vramGetRealAddr(segment, offset)))
 #define vramRealDWord(segment, offset) (d_nubit32(vramGetRealAddr(segment, offset)))
 
-void vramReadPhysical(t_nubit32 physical, t_vaddrcc rdest, t_nubitcc size);
-void vramWritePhysical(t_nubit32 physical, t_vaddrcc rsrc, t_nubitcc size);
 
 void core_machine_memory_read_physical(t_ram *ram, t_nubit32 physical,
     t_vaddrcc destination, t_nubitcc size);
@@ -60,10 +58,6 @@ void core_machine_memory_reset(t_ram *ram);
 void core_machine_memory_finalize(t_ram *ram);
 void core_machine_memory_register_ports(t_ram *ram, t_port *port);
 
-void vramInit();
-void vramReset();
-void vramRefresh();
-void vramFinal();
 
 void core_machine_memory_allocate(size_t bytes);
 void core_machine_memory_allocate_for(t_ram *ram, size_t bytes);

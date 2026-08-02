@@ -497,10 +497,6 @@ void core_machine_cpu_print_control_registers(void);
 void core_machine_cpu_print_memory_accesses(void);
 void core_machine_cpu_print_watchpoints(void);
 
-void vcpuInit();
-void vcpuReset();
-void vcpuRefresh();
-void vcpuFinal();
 void vcpuRequestStop();
 t_bool vcpuConsumeStopRequest();
 void vcpuRequestReset();
