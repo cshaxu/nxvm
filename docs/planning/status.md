@@ -40,9 +40,9 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 T16 S1 P1: map and replace the remaining `deviceConnect*` implementation
-exports with narrow `core_machine_*` or profile-local names, one subsystem at
-a time without duplicating state.
+M5 T16 S1 P2: replace uncalled CPU compatibility exports with the existing
+`core_machine_cpu_*` operations, preserving the retained CPU state and
+instruction behavior.
 
 ## Completed
 
@@ -201,6 +201,9 @@ a time without duplicating state.
   includes were removed. Windows GCC, keyboard input, expected-`#UD`, FDD/HDD
   reset-vector, retained Console `HELP`/`EXIT`, and the zero-edge DAG verifier
   passed with no Console or machine behavior change.
+- M5 T16 S1 P1: deleted uncalled RAM/port `deviceConnect*` compatibility
+  exports. The existing core-machine operations remain the only public path;
+  GCC, expected-`#UD`, FDD/HDD reset-vector, and DAG gates passed.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware
