@@ -74,7 +74,7 @@ void vmachineInit(vm_composition_live_machine *machine) {
         machine->dma_secondary, machine->port);
     vbiosAddPost(VDMA_POST);
     _vbios_ _vport_
-    vfdcInit();
+    vm_machine_fdc_initialize(machine->fdc);
     vbiosAddPost(VFDC_POST);
     vbiosAddInt(VFDC_INT_HARD_FDD_0E, 0x0e);
     /* overwritten below by the hard-disk INT 13 service, as before. */
@@ -113,7 +113,7 @@ void vmachineReset(vm_composition_live_machine *machine) {
     vcpuReset();
     core_machine_dma_reset(machine->dma_latch, machine->dma_primary,
         machine->dma_secondary);
-    vfdcReset();
+    vm_machine_fdc_reset(machine->fdc);
     vfddReset();
     vm_machine_hdd_reset(machine->hdd);
     core_machine_pic_reset(machine->pic_master, machine->pic_slave);
@@ -149,7 +149,7 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
     _empty_
 
     vm_machine_cmos_refresh(machine->cmos);
-    vfdcRefresh();
+    vm_machine_fdc_refresh(machine->fdc);
     core_machine_dma_refresh(machine->dma_latch, machine->dma_primary,
         machine->dma_secondary, machine->ram);
     _vfdc_
@@ -175,7 +175,7 @@ void vmachineFinal(vm_composition_live_machine *machine) {
     core_machine_dma_finalize(machine->dma_latch, machine->dma_primary,
         machine->dma_secondary);
     _empty_
-    vfdcFinal();
+    vm_machine_fdc_finalize(machine->fdc);
     _empty_
     vhdcFinal();
     _empty_

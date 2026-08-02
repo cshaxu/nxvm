@@ -11,12 +11,6 @@
 
 #include "vm/machine/fdc.h"
 
-static t_fdc *vmMachineFdc;
-
-t_fdc *vm_machine_fdc_current(void) { return vmMachineFdc; }
-void vm_machine_fdc_bind_live(t_fdc *fdc) { vmMachineFdc = fdc; }
-void vm_machine_fdc_unbind_live(void) { vmMachineFdc = NULL; }
-
 void vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
     t_dma *dma_primary, t_dma *dma_secondary, t_pic *pic_master,
     t_pic *pic_slave, t_port *port)
@@ -81,466 +75,495 @@ t_nubit8 VFDC_GetBPSC(t_nubit16 cb) {
     }
 }
 
-#define IsRet(retl, count) (vfdc.data.cmd[0] == (retl) && vfdc.data.flagret == (count))
-#define SetST0 (vfdc.data.st0 = (0x00      << 7) | \
+#define IsRet(retl, count) (fdc->data.cmd[0] == (retl) && fdc->data.flagret == (count))
+#define SetST0 (fdc->data.st0 = (0x00      << 7) | \
                            (0x00      << 6) | \
                            (0x00      << 5) | \
-                           ((vfdd.data.cyl >= vfdd.data.ncyl) << 4) | \
+                           ((fdc->connect.fdd->data.cyl >= fdc->connect.fdd->data.ncyl) << 4) | \
                            (0x00      << 3) | \
-                           (vfdd.data.head << 2) | \
-                           ((vfdc.data.cmd[1] & VFDC_ST0_DS) << 0))
-#define SetST1 (vfdc.data.st1 = ((vfdd.data.sector >= (vfdd.data.nsector + 1)) << 7) | \
+                           (fdc->connect.fdd->data.head << 2) | \
+                           ((fdc->data.cmd[1] & VFDC_ST0_DS) << 0))
+#define SetST1 (fdc->data.st1 = ((fdc->connect.fdd->data.sector >= (fdc->connect.fdd->data.nsector + 1)) << 7) | \
                            (0x00 << 6) | \
                            (0x00 << 5) | \
                            (0x00 << 4) | \
                            (0x00 << 3) | \
-                           ((vfdd.data.cyl >= vfdd.data.ncyl) << 2) | \
+                           ((fdc->connect.fdd->data.cyl >= fdc->connect.fdd->data.ncyl) << 2) | \
                            (0x00 << 1) | \
                            (0x00 << 0))
-#define SetST2 (vfdc.data.st2 = (0x00 << 7) | \
+#define SetST2 (fdc->data.st2 = (0x00 << 7) | \
                            (0x00 << 6) | \
                            (0x00 << 5) | \
-                           ((vfdd.data.cyl >= vfdd.data.ncyl) << 4) | \
+                           ((fdc->connect.fdd->data.cyl >= fdc->connect.fdd->data.ncyl) << 4) | \
                            (0x00 << 3) | \
                            (0x00 << 2) | \
                            (0x00 << 1) | \
                            (0x00 << 0))
-#define SetST3 (vfdc.data.st3 = (0x00        << 7) | \
-                           (vfdd.connect.flagReadOnly << 6) | \
+#define SetST3 (fdc->data.st3 = (0x00        << 7) | \
+                           (fdc->connect.fdd->connect.flagReadOnly << 6) | \
                            (0x01        << 5) | \
-                           ((!vfdd.data.cyl) << 4) | \
+                           ((!fdc->connect.fdd->data.cyl) << 4) | \
                            (0x01        << 3) | \
-                           (vfdd.data.head   << 2) | \
-                           ((vfdc.data.cmd[1] & VFDC_ST3_DS) << 0))
-#define SetMSRReadyRead  (vfdc.data.msr = VFDC_MSR_ReadyRead, vfdc.data.rwCount = 0)
-#define SetMSRReadyWrite (vfdc.data.msr = VFDC_MSR_ReadyWrite, vfdc.data.rwCount = 0)
-#define SetMSRProcRead   (vfdc.data.msr = VFDC_MSR_ProcessRead)
-#define SetMSRProcWrite  (vfdc.data.msr = VFDC_MSR_ProcessWrite)
-#define SetMSRExecCmd    (vfdc.data.msr = VFDC_MSR_NDM)
+                           (fdc->connect.fdd->data.head   << 2) | \
+                           ((fdc->data.cmd[1] & VFDC_ST3_DS) << 0))
+#define SetMSRReadyRead  (fdc->data.msr = VFDC_MSR_ReadyRead, fdc->data.rwCount = 0)
+#define SetMSRReadyWrite (fdc->data.msr = VFDC_MSR_ReadyWrite, fdc->data.rwCount = 0)
+#define SetMSRProcRead   (fdc->data.msr = VFDC_MSR_ProcessRead)
+#define SetMSRProcWrite  (fdc->data.msr = VFDC_MSR_ProcessWrite)
+#define SetMSRExecCmd    (fdc->data.msr = VFDC_MSR_NDM)
 
-#define GetMSRReadyRead  ((vfdc.data.msr & 0xc0) == VFDC_MSR_ReadyRead)
-#define GetMSRReadyWrite ((vfdc.data.msr & 0xc0) == VFDC_MSR_ReadyWrite)
-#define GetMSRProcRW     (GetBit(vfdc.data.msr, VFDC_MSR_CB))
-#define GetMSRExecCmd    (GetBit(vfdc.data.msr, VFDC_MSR_NDM))
+#define GetMSRReadyRead  ((fdc->data.msr & 0xc0) == VFDC_MSR_ReadyRead)
+#define GetMSRReadyWrite ((fdc->data.msr & 0xc0) == VFDC_MSR_ReadyWrite)
+#define GetMSRProcRW     (GetBit(fdc->data.msr, VFDC_MSR_CB))
+#define GetMSRExecCmd    (GetBit(fdc->data.msr, VFDC_MSR_NDM))
 
 /* Resets FDC but keeps CCR */
-static void doReset() {
-    t_nubit8 ccr = vfdc.data.ccr;
-    MEMSET((void *)(&vfdc.data), Zero8, sizeof(t_fdc_data));
-    vfdc.data.ccr = ccr;
+static void reset_controller(t_fdc *fdc) {
+    t_nubit8 ccr = fdc->data.ccr;
+    MEMSET((void *)(&fdc->data), Zero8, sizeof(t_fdc_data));
+    fdc->data.ccr = ccr;
 }
 
-static void transRead() {
+static void dma_read(void *owner, t_latch *latch) {
+    t_fdc *fdc = owner;
     /* NOTE: being called by DMA/PIO */
-    vfddTransRead();
+    vm_machine_fdd_transfer_read(fdc->connect.fdd, latch);
 }
-static void transWrite() {
+static void dma_write(void *owner, t_latch *latch) {
+    t_fdc *fdc = owner;
     /* NOTE: being called by DMA/PIO */
-    vfddTransWrite();
+    vm_machine_fdd_transfer_write(fdc->connect.fdd, latch);
 }
-static void transInit() {
-    /* NOTE: being called internally in vfdc */
+static void begin_transfer(t_fdc *fdc) {
+    /* Called by the controller command path. */
     /* read parameters */
-    vfdd.data.cyl       = vfdc.data.cmd[2];
-    vfdd.data.head      = vfdc.data.cmd[3];
-    vfdd.data.sector    = vfdc.data.cmd[4];
-    vfdd.data.nbyte     = VFDC_GetBPS(vfdc.data.cmd[5]);
-    vfdd.data.nsector   = vfdc.data.cmd[6];
-    vfdd.data.gpl       = vfdc.data.cmd[7];
-    if (!vfdc.data.cmd[5]) {
-        vfdd.data.nbyte = vfdc.data.cmd[8];
+    fdc->connect.fdd->data.cyl       = fdc->data.cmd[2];
+    fdc->connect.fdd->data.head      = fdc->data.cmd[3];
+    fdc->connect.fdd->data.sector    = fdc->data.cmd[4];
+    fdc->connect.fdd->data.nbyte     = VFDC_GetBPS(fdc->data.cmd[5]);
+    fdc->connect.fdd->data.nsector   = fdc->data.cmd[6];
+    fdc->connect.fdd->data.gpl       = fdc->data.cmd[7];
+    if (!fdc->data.cmd[5]) {
+        fdc->connect.fdd->data.nbyte = fdc->data.cmd[8];
     }
-    vfdd.connect.transCount = Zero16;
-    vfddSetPointer;
+    fdc->connect.fdd->connect.transCount = Zero16;
+    vm_machine_fdd_set_pointer(fdc->connect.fdd);
     /* send trans request */
-    if (!vfdc.data.flagNDMA && GetBit(vfdc.data.dor, VFDC_DOR_ENRQ)) {
-        vdmaSetDRQ(2);
+    if (!fdc->data.flagNDMA && GetBit(fdc->data.dor, VFDC_DOR_ENRQ)) {
+        core_machine_dma_set_drq(fdc->connect.dma_primary, fdc->connect.dma_secondary, 2);
     }
     SetMSRExecCmd;
 }
-static void transFinal() {
+static void finish_transfer(t_fdc *fdc) {
     /* NOTE: being called by DMA/PIO */
     SetST0;
     SetST1;
     SetST2;
-    vfdc.data.ret[0] = vfdc.data.st0;
-    vfdc.data.ret[1] = vfdc.data.st1;
-    vfdc.data.ret[2] = vfdc.data.st2;
-    vfdc.data.ret[3] = GetMax8(vfdd.data.cyl);
-    vfdc.data.ret[4] = GetMax8(vfdd.data.head);
-    vfdc.data.ret[5] = GetMax8(vfdd.data.sector);
-    vfdc.data.ret[6] = VFDC_GetBPSC(vfdd.data.nbyte);
-    if (GetBit(vfdc.data.dor, VFDC_DOR_ENRQ)) {
-        vpicSetIRQ(0x06);
-        vfdc.data.flagINTR = True;
+    fdc->data.ret[0] = fdc->data.st0;
+    fdc->data.ret[1] = fdc->data.st1;
+    fdc->data.ret[2] = fdc->data.st2;
+    fdc->data.ret[3] = GetMax8(fdc->connect.fdd->data.cyl);
+    fdc->data.ret[4] = GetMax8(fdc->connect.fdd->data.head);
+    fdc->data.ret[5] = GetMax8(fdc->connect.fdd->data.sector);
+    fdc->data.ret[6] = VFDC_GetBPSC(fdc->connect.fdd->data.nbyte);
+    if (GetBit(fdc->data.dor, VFDC_DOR_ENRQ)) {
+        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave, 0x06);
+        fdc->data.flagINTR = True;
     }
     SetMSRReadyRead;
 }
 
-static void ExecCmdSpecify() {
-    vfdc.data.hut      = VFDC_GetCMD_Specify1_HUT(vfdc.data.cmd[1]);
-    vfdc.data.srt      = VFDC_GetCMD_Specify1_SRT(vfdc.data.cmd[1]);
-    vfdc.data.hlt      = VFDC_GetCMD_Specify2_HLT(vfdc.data.cmd[2]);
-    vfdc.data.flagNDMA = GetBit(vfdc.data.cmd[2], VFDC_CMD_Specify2_ND);
+static void execute_specify(t_fdc *fdc) {
+    fdc->data.hut      = VFDC_GetCMD_Specify1_HUT(fdc->data.cmd[1]);
+    fdc->data.srt      = VFDC_GetCMD_Specify1_SRT(fdc->data.cmd[1]);
+    fdc->data.hlt      = VFDC_GetCMD_Specify2_HLT(fdc->data.cmd[2]);
+    fdc->data.flagNDMA = GetBit(fdc->data.cmd[2], VFDC_CMD_Specify2_ND);
     SetMSRReadyWrite;
 }
-static void ExecCmdSenseDriveStatus() {
-    vfdd.data.head = GetBit(vfdc.data.cmd[1], VFDC_CMD_SenseDriveStatus1_HD);
-    vfddSetPointer;
+static void execute_sense_drive_status(t_fdc *fdc) {
+    fdc->connect.fdd->data.head = GetBit(fdc->data.cmd[1], VFDC_CMD_SenseDriveStatus1_HD);
+    vm_machine_fdd_set_pointer(fdc->connect.fdd);
     SetST3;
-    vfdc.data.ret[0] = vfdc.data.st3;
+    fdc->data.ret[0] = fdc->data.st3;
     SetMSRReadyRead;
 }
-static void ExecCmdRecalibrate() {
-    vfdd.data.cyl    = 0;
-    vfdd.data.head   = 0;
-    vfdd.data.sector = 1;
-    vfddSetPointer;
+static void execute_recalibrate(t_fdc *fdc) {
+    fdc->connect.fdd->data.cyl    = 0;
+    fdc->connect.fdd->data.head   = 0;
+    fdc->connect.fdd->data.sector = 1;
+    vm_machine_fdd_set_pointer(fdc->connect.fdd);
     SetST0;
-    SetBit(vfdc.data.st0, VFDC_ST0_SEEK_END);
-    if (GetBit(vfdc.data.dor, VFDC_DOR_ENRQ)) {
-        vpicSetIRQ(0x06);
-        vfdc.data.flagINTR = True;
+    SetBit(fdc->data.st0, VFDC_ST0_SEEK_END);
+    if (GetBit(fdc->data.dor, VFDC_DOR_ENRQ)) {
+        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave, 0x06);
+        fdc->data.flagINTR = True;
     }
     SetMSRReadyWrite;
 }
-static void ExecCmdSenseInterrupt() {
-    if (vfdc.data.flagINTR) {
-        vfdc.data.ret[0] = vfdc.data.st0;
-        vfdc.data.ret[1] = (t_nubit8)vfdd.data.cyl;
-        vfdc.data.flagINTR = False;
+static void execute_sense_interrupt(t_fdc *fdc) {
+    if (fdc->data.flagINTR) {
+        fdc->data.ret[0] = fdc->data.st0;
+        fdc->data.ret[1] = (t_nubit8)fdc->connect.fdd->data.cyl;
+        fdc->data.flagINTR = False;
     } else {
-        vfdc.data.ret[0] = vfdc.data.st0 = VFDC_RET_ERROR;
+        fdc->data.ret[0] = fdc->data.st0 = VFDC_RET_ERROR;
     }
     SetMSRReadyRead;
 }
-static void ExecCmdSeek() {
-    vfdd.data.head = GetBit(vfdc.data.cmd[1], VFDC_CMD_Seek1_HD);
-    vfdd.data.cyl  = vfdc.data.cmd[2];
-    vfdd.data.sector = 1;
-    vfddSetPointer;
+static void execute_seek(t_fdc *fdc) {
+    fdc->connect.fdd->data.head = GetBit(fdc->data.cmd[1], VFDC_CMD_Seek1_HD);
+    fdc->connect.fdd->data.cyl  = fdc->data.cmd[2];
+    fdc->connect.fdd->data.sector = 1;
+    vm_machine_fdd_set_pointer(fdc->connect.fdd);
     SetST0;
-    SetBit(vfdc.data.st0, VFDC_ST0_SEEK_END);
-    if (GetBit(vfdc.data.dor, VFDC_DOR_ENRQ)) {
-        vpicSetIRQ(0x06);
-        vfdc.data.flagINTR = True;
+    SetBit(fdc->data.st0, VFDC_ST0_SEEK_END);
+    if (GetBit(fdc->data.dor, VFDC_DOR_ENRQ)) {
+        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave, 0x06);
+        fdc->data.flagINTR = True;
     }
     SetMSRReadyWrite;
 }
-#define     ExecCmdReadTrack        transInit
-static void ExecCmdReadID() {
-    vfdd.data.head = GetBit(vfdc.data.cmd[1], VFDC_CMD_ReadId1_HD);
-    vfdd.data.sector = 1;
-    vfddSetPointer;
-    vfdc.data.dr = Zero8; /* data register: sector id info */
-    transFinal();
+#define execute_read_track(fdc) begin_transfer((fdc))
+static void execute_read_id(t_fdc *fdc) {
+    fdc->connect.fdd->data.head = GetBit(fdc->data.cmd[1], VFDC_CMD_ReadId1_HD);
+    fdc->connect.fdd->data.sector = 1;
+    vm_machine_fdd_set_pointer(fdc->connect.fdd);
+    fdc->data.dr = Zero8; /* data register: sector id info */
+    finish_transfer(fdc);
 }
-static void ExecCmdFormatTrack() {
+static void execute_format_track(t_fdc *fdc) {
     /* NOTE: simplified procedure; dma not used */
     t_nubit8 fillByte;
     /* load parameters*/
-    vfdd.data.head    = GetBit(vfdc.data.cmd[1], VFDC_CMD_FormatTrack1_HD);
-    vfdd.data.sector  = 0x01;
-    vfdd.data.nbyte   = VFDC_GetBPS(vfdc.data.cmd[2]);
-    vfdd.data.nsector = vfdc.data.cmd[3];
-    vfdd.data.gpl     = vfdc.data.cmd[4];
-    fillByte     = vfdc.data.cmd[5];
-    vfddSetPointer;
+    fdc->connect.fdd->data.head    = GetBit(fdc->data.cmd[1], VFDC_CMD_FormatTrack1_HD);
+    fdc->connect.fdd->data.sector  = 0x01;
+    fdc->connect.fdd->data.nbyte   = VFDC_GetBPS(fdc->data.cmd[2]);
+    fdc->connect.fdd->data.nsector = fdc->data.cmd[3];
+    fdc->connect.fdd->data.gpl     = fdc->data.cmd[4];
+    fillByte     = fdc->data.cmd[5];
+    vm_machine_fdd_set_pointer(fdc->connect.fdd);
     /* execute format track*/
-    vfddFormatTrack(fillByte);
+    vm_machine_fdd_format_track(fdc->connect.fdd, fillByte);
     /* finish transaction */
     SetST0;
     SetST1;
     SetST2;
-    vfdc.data.ret[0] = vfdc.data.st0;
-    vfdc.data.ret[1] = vfdc.data.st1;
-    vfdc.data.ret[2] = vfdc.data.st2;
-    vfdc.data.ret[3] = Zero8;
-    vfdc.data.ret[4] = Zero8;
-    vfdc.data.ret[5] = Zero8;
-    vfdc.data.ret[6] = Zero8;
-    if (GetBit(vfdc.data.dor, VFDC_DOR_ENRQ)) {
-        vpicSetIRQ(0x06);
-        vfdc.data.flagINTR = True;
+    fdc->data.ret[0] = fdc->data.st0;
+    fdc->data.ret[1] = fdc->data.st1;
+    fdc->data.ret[2] = fdc->data.st2;
+    fdc->data.ret[3] = Zero8;
+    fdc->data.ret[4] = Zero8;
+    fdc->data.ret[5] = Zero8;
+    fdc->data.ret[6] = Zero8;
+    if (GetBit(fdc->data.dor, VFDC_DOR_ENRQ)) {
+        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave, 0x06);
+        fdc->data.flagINTR = True;
     }
     SetMSRReadyRead;
 }
-#define     ExecCmdWriteData        transInit
-#define     ExecCmdReadDataAll      transInit
-#define     ExecCmdWriteDeletedData transInit
-#define     ExecCmdReadDeletedData  transInit
-#define     ExecCmdScanEqualAll     ExecCmdScanEqual
-#define     ExecCmdReadData         transInit
-static void ExecCmdScanEqual() {
+#define execute_write_data(fdc) begin_transfer((fdc))
+#define execute_read_data_all(fdc) begin_transfer((fdc))
+#define execute_write_deleted_data(fdc) begin_transfer((fdc))
+#define execute_read_deleted_data(fdc) begin_transfer((fdc))
+#define execute_scan_equal_all(fdc) execute_scan_equal((fdc))
+#define execute_read_data(fdc) begin_transfer((fdc))
+static void execute_scan_equal(t_fdc *fdc) {
     /* NOTE: not fully implemented; lack of reference */
     SetST0;
     SetST1;
     SetST2;
     /* assume all data match */
-    SetBit(vfdc.data.st2, VFDC_ST2_SCAN_MATCH);
-    vfdc.data.ret[0] = vfdc.data.st0;
-    vfdc.data.ret[1] = vfdc.data.st1;
-    vfdc.data.ret[2] = vfdc.data.st2;
-    vfdc.data.ret[3] = GetMax8(vfdd.data.cyl);
-    vfdc.data.ret[4] = GetMax8(vfdd.data.head);
-    vfdc.data.ret[5] = GetMax8(vfdd.data.sector); /* NOTE: eot not changed */
-    vfdc.data.ret[6] = VFDC_GetBPSC(vfdd.data.nbyte);
+    SetBit(fdc->data.st2, VFDC_ST2_SCAN_MATCH);
+    fdc->data.ret[0] = fdc->data.st0;
+    fdc->data.ret[1] = fdc->data.st1;
+    fdc->data.ret[2] = fdc->data.st2;
+    fdc->data.ret[3] = GetMax8(fdc->connect.fdd->data.cyl);
+    fdc->data.ret[4] = GetMax8(fdc->connect.fdd->data.head);
+    fdc->data.ret[5] = GetMax8(fdc->connect.fdd->data.sector); /* NOTE: eot not changed */
+    fdc->data.ret[6] = VFDC_GetBPSC(fdc->connect.fdd->data.nbyte);
     SetMSRReadyRead;
 }
-static void ExecCmdError() {
-    vfdc.data.ret[0] = VFDC_RET_ERROR;
+static void execute_error(t_fdc *fdc) {
+    fdc->data.ret[0] = VFDC_RET_ERROR;
     SetMSRReadyRead;
 }
 
 /* read main status register */
-static void io_read_03F4() {
-    vport.data.ioByte = vfdc.data.msr;
+static void read_03f4(t_port *port, t_nubit16 port_id, void *owner) {
+    t_fdc *fdc = owner;
+    (void)port;
+    (void)port_id;
+    fdc->connect.port->data.ioByte = fdc->data.msr;
 }
 /* read standard results */
-static void io_read_03F5() {
+static void read_03f5(t_port *port, t_nubit16 port_id, void *owner) {
+    t_fdc *fdc = owner;
+    (void)port;
+    (void)port_id;
     if (!GetMSRReadyRead) {
         return;
     } else {
         SetMSRProcRead;
     }
-    vport.data.ioByte = vfdc.data.ret[vfdc.data.rwCount++];
-    switch (vfdc.data.cmd[0]) {
+    fdc->connect.port->data.ioByte = fdc->data.ret[fdc->data.rwCount++];
+    switch (fdc->data.cmd[0]) {
     case CMD_SPECIFY:
-        if (vfdc.data.rwCount >= 0) {
+        if (fdc->data.rwCount >= 0) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_SENSE_DRIVE_STATUS:
-        if (vfdc.data.rwCount >= 1) {
+        if (fdc->data.rwCount >= 1) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_RECALIBRATE:
-        if (vfdc.data.rwCount >= 0) {
+        if (fdc->data.rwCount >= 0) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_SENSE_INTERRUPT:
-        if (vfdc.data.rwCount >= 2) {
+        if (fdc->data.rwCount >= 2) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_SEEK:
-        if (vfdc.data.rwCount >= 0) {
+        if (fdc->data.rwCount >= 0) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_READ_TRACK:
-        if (vfdc.data.rwCount >= 7) {
+        if (fdc->data.rwCount >= 7) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_READ_ID:
-        if (vfdc.data.rwCount >= 7) {
+        if (fdc->data.rwCount >= 7) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_FORMAT_TRACK:
-        if (vfdc.data.rwCount >= 7) {
+        if (fdc->data.rwCount >= 7) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_WRITE_DATA:
-        if (vfdc.data.rwCount >= 7) {
+        if (fdc->data.rwCount >= 7) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_READ_DATA_ALL:
-        if (vfdc.data.rwCount >= 7) {
+        if (fdc->data.rwCount >= 7) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_WRITE_DELETED_DATA:
-        if (vfdc.data.rwCount >= 7) {
+        if (fdc->data.rwCount >= 7) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_READ_DELETED_DATA:
-        if (vfdc.data.rwCount >= 7) {
+        if (fdc->data.rwCount >= 7) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_SCAN_EQUAL_ALL:
-        if (vfdc.data.rwCount >= 7) {
+        if (fdc->data.rwCount >= 7) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_READ_DATA:
-        if (vfdc.data.rwCount >= 7) {
+        if (fdc->data.rwCount >= 7) {
             SetMSRReadyWrite;
         }
         break;
     case CMD_SCAN_EQUAL:
-        if (vfdc.data.rwCount >= 7) {
+        if (fdc->data.rwCount >= 7) {
             SetMSRReadyWrite;
         }
         break;
     default:
-        if (vfdc.data.rwCount >= 1) {
+        if (fdc->data.rwCount >= 1) {
             SetMSRReadyWrite;
         }
         break;
     }
 }
 /* read digital input register */
-static void io_read_03F7() {
-    vport.data.ioByte = vfdc.data.dir;
+static void read_03f7(t_port *port, t_nubit16 port_id, void *owner) {
+    t_fdc *fdc = owner;
+    (void)port;
+    (void)port_id;
+    fdc->connect.port->data.ioByte = fdc->data.dir;
 }
 
 /* write digital output register */
-static void io_write_03F2() {
-    if (!GetBit(vfdc.data.dor, VFDC_DOR_NRS) && GetBit(vport.data.ioByte, VFDC_DOR_NRS)) {
+static void write_03f2(t_port *port, t_nubit16 port_id, void *owner) {
+    t_fdc *fdc = owner;
+    (void)port;
+    (void)port_id;
+    if (!GetBit(fdc->data.dor, VFDC_DOR_NRS) && GetBit(fdc->connect.port->data.ioByte, VFDC_DOR_NRS)) {
         SetMSRReadyWrite;
     }
-    vfdc.data.dor = vport.data.ioByte;
-    if (!GetBit(vfdc.data.dor, VFDC_DOR_NRS)) {
-        doReset();
+    fdc->data.dor = fdc->connect.port->data.ioByte;
+    if (!GetBit(fdc->data.dor, VFDC_DOR_NRS)) {
+        reset_controller(fdc);
     }
 }
 /* write standard commands */
-static void io_write_03F5() {
+static void write_03f5(t_port *port, t_nubit16 port_id, void *owner) {
+    t_fdc *fdc = owner;
+    (void)port;
+    (void)port_id;
     if (!GetMSRReadyWrite) {
         return;
     } else {
         SetMSRProcWrite;
     }
-    vfdc.data.cmd[vfdc.data.rwCount++] = vport.data.ioByte;
-    switch (vfdc.data.cmd[0]) {
+    fdc->data.cmd[fdc->data.rwCount++] = fdc->connect.port->data.ioByte;
+    switch (fdc->data.cmd[0]) {
     case CMD_SPECIFY:
-        if (vfdc.data.rwCount == 3) {
-            ExecCmdSpecify();
+        if (fdc->data.rwCount == 3) {
+            execute_specify(fdc);
         }
         break;
     case CMD_SENSE_DRIVE_STATUS:
-        if (vfdc.data.rwCount == 2) {
-            ExecCmdSenseDriveStatus();
+        if (fdc->data.rwCount == 2) {
+            execute_sense_drive_status(fdc);
         }
         break;
     case CMD_RECALIBRATE:
-        if (vfdc.data.rwCount == 2) {
-            ExecCmdRecalibrate();
+        if (fdc->data.rwCount == 2) {
+            execute_recalibrate(fdc);
         }
         break;
     case CMD_SENSE_INTERRUPT:
-        if (vfdc.data.rwCount == 1) {
-            ExecCmdSenseInterrupt();
+        if (fdc->data.rwCount == 1) {
+            execute_sense_interrupt(fdc);
         }
         break;
     case CMD_SEEK:
-        if (vfdc.data.rwCount == 3) {
-            ExecCmdSeek();
+        if (fdc->data.rwCount == 3) {
+            execute_seek(fdc);
         }
         break;
     case CMD_READ_TRACK:
-        if (vfdc.data.rwCount == 9) {
-            ExecCmdReadTrack();
+        if (fdc->data.rwCount == 9) {
+            execute_read_track(fdc);
         }
         break;
     case CMD_READ_ID:
-        if (vfdc.data.rwCount == 2) {
-            ExecCmdReadID();
+        if (fdc->data.rwCount == 2) {
+            execute_read_id(fdc);
         }
         break;
     case CMD_FORMAT_TRACK:
-        if (vfdc.data.rwCount == 6) {
-            ExecCmdFormatTrack();
+        if (fdc->data.rwCount == 6) {
+            execute_format_track(fdc);
         }
         break;
     case CMD_WRITE_DATA:
-        if (vfdc.data.rwCount == 9) {
-            ExecCmdWriteData();
+        if (fdc->data.rwCount == 9) {
+            execute_write_data(fdc);
         }
         break;
     case CMD_READ_DATA_ALL:
-        if (vfdc.data.rwCount == 9) {
-            ExecCmdReadDataAll();
+        if (fdc->data.rwCount == 9) {
+            execute_read_data_all(fdc);
         }
         break;
     case CMD_WRITE_DELETED_DATA:
-        if (vfdc.data.rwCount == 9) {
-            ExecCmdWriteDeletedData();
+        if (fdc->data.rwCount == 9) {
+            execute_write_deleted_data(fdc);
         }
         break;
     case CMD_READ_DELETED_DATA:
-        if (vfdc.data.rwCount == 9) {
-            ExecCmdReadDeletedData();
+        if (fdc->data.rwCount == 9) {
+            execute_read_deleted_data(fdc);
         }
         break;
     case CMD_SCAN_EQUAL_ALL:
-        if (vfdc.data.rwCount == 9) {
-            ExecCmdScanEqualAll();
+        if (fdc->data.rwCount == 9) {
+            execute_scan_equal_all(fdc);
         }
         break;
     case CMD_READ_DATA:
-        if (vfdc.data.rwCount == 9) {
-            ExecCmdReadData();
+        if (fdc->data.rwCount == 9) {
+            execute_read_data(fdc);
         }
         break;
     case CMD_SCAN_EQUAL:
-        if (vfdc.data.rwCount == 9) {
-            ExecCmdScanEqual();
+        if (fdc->data.rwCount == 9) {
+            execute_scan_equal(fdc);
         }
         break;
     default:
-        ExecCmdError();
+        execute_error(fdc);
         break;
     }
 }
-static void io_write_03F7() {
-    vfdc.data.ccr = vport.data.ioByte;
+static void write_03f7(t_port *port, t_nubit16 port_id, void *owner) {
+    t_fdc *fdc = owner;
+    (void)port;
+    (void)port_id;
+    fdc->data.ccr = fdc->connect.port->data.ioByte;
 }
 
-#define dmaReadMe   transRead
-#define dmaWriteMe  transWrite
-#define dmaCloseMe  transFinal
-
-void vfdcInit() {
-    MEMSET((void *)(&vfdc), Zero8, sizeof(t_fdc));
-    vfdc.data.ccr = VFDC_CCR_DRC;
-    vportAddRead(0x03f4, (t_faddrcc) io_read_03F4);
-    vportAddRead(0x03f5, (t_faddrcc) io_read_03F5);
-    vportAddRead(0x03f7, (t_faddrcc) io_read_03F7);
-    vportAddWrite(0x03f2, (t_faddrcc) io_write_03F2);
-    vportAddWrite(0x03f5, (t_faddrcc) io_write_03F5);
-    vportAddWrite(0x03f7, (t_faddrcc) io_write_03F7);
-
-    /* connect vfdc to dma request 2 (on vdma1) */
-    vdmaAddMe(2);
-
+static void dma_close(void *owner, t_latch *latch)
+{
+    t_fdc *fdc = owner;
+    (void)latch;
+    finish_transfer(fdc);
 }
-void vfdcReset() {
-    doReset();
+
+void vm_machine_fdc_initialize(t_fdc *fdc)
+{
+    if (fdc == NULL || fdc->connect.port == NULL) return;
+    MEMSET((void *)&fdc->data, Zero8, sizeof(fdc->data));
+    fdc->data.ccr = VFDC_CCR_DRC;
+    core_machine_port_add_read(fdc->connect.port, 0x03f4, read_03f4, fdc);
+    core_machine_port_add_read(fdc->connect.port, 0x03f5, read_03f5, fdc);
+    core_machine_port_add_read(fdc->connect.port, 0x03f7, read_03f7, fdc);
+    core_machine_port_add_write(fdc->connect.port, 0x03f2, write_03f2, fdc);
+    core_machine_port_add_write(fdc->connect.port, 0x03f5, write_03f5, fdc);
+    core_machine_port_add_write(fdc->connect.port, 0x03f7, write_03f7, fdc);
+    core_machine_dma_bind_device(fdc->connect.dma_primary,
+        fdc->connect.dma_secondary, 2, dma_read, dma_write, dma_close, fdc);
 }
-void vfdcRefresh() {
-    if (!vfdd.connect.flagDiskExist) {
-        SetBit(vfdc.data.dir, VFDC_DIR_DC);
+
+void vm_machine_fdc_reset(t_fdc *fdc)
+{
+    if (fdc != NULL) reset_controller(fdc);
+}
+
+void vm_machine_fdc_refresh(t_fdc *fdc)
+{
+    if (fdc == NULL || fdc->connect.fdd == NULL) return;
+    if (!fdc->connect.fdd->connect.flagDiskExist) {
+        SetBit(fdc->data.dir, VFDC_DIR_DC);
     } else {
-        ClrBit(vfdc.data.dir, VFDC_DIR_DC);
+        ClrBit(fdc->data.dir, VFDC_DIR_DC);
     }
 }
-void vfdcFinal() {}
+
+void vm_machine_fdc_finalize(t_fdc *fdc) { (void)fdc; }
 
 /* Prints FDC status */
-void devicePrintFdc() {
+void vm_machine_fdc_print(const t_fdc *fdc) {
     t_nubitcc i;
     PRINTF("FDC INFO\n========\n");
     PRINTF("msr = %x, dir = %x, dor = %x, ccr = %x, dr = %x\n",
-           vfdc.data.msr,vfdc.data.dir,vfdc.data.dor,vfdc.data.ccr,vfdc.data.dr);
+           fdc->data.msr,fdc->data.dir,fdc->data.dor,fdc->data.ccr,fdc->data.dr);
     PRINTF("hut = %x, hlt = %x, srt = %x, Non-DMA = %x, INTR = %x\n",
-           vfdc.data.hut,vfdc.data.hlt,vfdc.data.srt,vfdc.data.flagNDMA,vfdc.data.flagINTR);
+           fdc->data.hut,fdc->data.hlt,fdc->data.srt,fdc->data.flagNDMA,fdc->data.flagINTR);
     PRINTF("rwCount = %x, st0 = %x, st1 = %x, st2 = %x, st3 = %x\n",
-           vfdc.data.rwCount,vfdc.data.st0,vfdc.data.st1,vfdc.data.st2,vfdc.data.st3);
+           fdc->data.rwCount,fdc->data.st0,fdc->data.st1,fdc->data.st2,fdc->data.st3);
     for (i = 0; i < 9; ++i) {
-        PRINTF("cmd[%d] = %x, ", i, vfdc.data.cmd[i]);
+        PRINTF("cmd[%d] = %x, ", i, fdc->data.cmd[i]);
     }
     PRINTF("\n");
     for (i = 0; i < 7; ++i) {
-        PRINTF("ret[%d] = %x, ", i, vfdc.data.ret[i]);
+        PRINTF("ret[%d] = %x, ", i, fdc->data.ret[i]);
     }
     PRINTF("\n");
 }
