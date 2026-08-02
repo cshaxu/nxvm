@@ -166,11 +166,19 @@ alias exceptions. It produced `build/output/nxvm_0_5_0063.exe`.
 
 ## Active Work
 
-M5 T66 S1 is active: migrate CPU/executor mutable authority from retained
-aliases to one explicit session context. M6 T1 is deferred and DOS
+M5 T66 S1 is complete: CPU/executor mutable authority now flows through one
+explicit session context. T67 is next; M6 T1 remains deferred and DOS
 implementation remains ineligible.
 
 ## Completed
+
+- M5 T66 S1: introduced the composition-owned CPU execution context, threaded
+  it through instruction decoding, probes, and debugger CPU access, and added
+  a two-context isolation smoke. CPU aliases remain compatibility forwarding
+  only for later device/profile migration and are deleted together at T73.
+  GCC compiled the changed sources; CPU-context, expected-`#UD`, debugger, and
+  FDD/HDD profile gates passed. The full build's only failure was an unrelated
+  historical T19 artifact-copy step; `0.5.0066` is built separately.
 
 - M5 T65 S1: made the VM root, full-PC wrapper, CPU probe, control loop,
   execution context, Console target, and debug target caller/session owned.

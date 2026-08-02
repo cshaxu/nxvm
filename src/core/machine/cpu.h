@@ -38,6 +38,9 @@ void core_machine_cpu_execution_request_reset(
     core_machine_cpu_execution_context *context);
 t_bool core_machine_cpu_execution_consume_reset_request(
     core_machine_cpu_execution_context *context);
+void core_machine_cpu_state_initialize(
+    core_machine_cpu_execution_context *context);
+void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context);
 
 #include "core/machine/vglobal.h"
 

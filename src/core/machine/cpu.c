@@ -36,97 +36,112 @@ void core_machine_cpu_unbind_live(void)
     coreMachineCpu = NULL;
 }
 
-void vcpuInit() {
-    core_machine_cpu_execution_context *context =
-        core_machine_cpu_execution_current_legacy();
+void core_machine_cpu_state_initialize(
+    core_machine_cpu_execution_context *context) {
+    if (context == NULL || context->cpu == NULL ||
+        context->instructions == NULL) return;
     if (context != NULL) {
         context->stop_requested = False;
         context->reset_requested = False;
     }
-    vcpuinsInit();
+    core_machine_cpu_execution_initialize(context);
+}
+void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
+    if (context == NULL || context->cpu == NULL ||
+        context->instructions == NULL) return;
+    MEMSET((void *)context->cpu, Zero8, sizeof(t_cpu));
+    if (context != NULL) {
+        context->stop_requested = False;
+        context->reset_requested = False;
+    }
+
+#define cpu_state (*context->cpu)
+
+    cpu_state.data.eip = 0x0000fff0;
+    cpu_state.data.eflags = 0x00000002;
+
+    cpu_state.data.cs.base = 0xffff0000;
+    cpu_state.data.cs.dpl = Zero4;
+    cpu_state.data.cs.limit = Max32;
+    cpu_state.data.cs.seg.accessed = True;
+    cpu_state.data.cs.seg.executable = True;
+    cpu_state.data.cs.seg.exec.conform = False;
+    cpu_state.data.cs.seg.exec.defsize = False;
+    cpu_state.data.cs.seg.exec.readable = True;
+    cpu_state.data.cs.selector = 0xf000;
+    cpu_state.data.cs.sregtype = SREG_CODE;
+    cpu_state.data.cs.flagValid = True;
+
+    cpu_state.data.ss.base = Zero32;
+    cpu_state.data.ss.dpl = Zero4;
+    cpu_state.data.ss.limit = Max16;
+    cpu_state.data.ss.seg.accessed = True;
+    cpu_state.data.ss.seg.executable = False;
+    cpu_state.data.ss.seg.data.big = False;
+    cpu_state.data.ss.seg.data.expdown = False;
+    cpu_state.data.ss.seg.data.writable = True;
+    cpu_state.data.ss.selector = Zero16;
+    cpu_state.data.ss.sregtype = SREG_STACK;
+    cpu_state.data.ss.flagValid = True;
+
+    cpu_state.data.ds.base = Zero32;
+    cpu_state.data.ds.dpl = Zero4;
+    cpu_state.data.ds.limit = Max16;
+    cpu_state.data.ds.seg.accessed = True;
+    cpu_state.data.ss.seg.executable = False;
+    cpu_state.data.ds.seg.data.big = False;
+    cpu_state.data.ds.seg.data.expdown = False;
+    cpu_state.data.ds.seg.data.writable = True;
+    cpu_state.data.ds.selector = Zero16;
+    cpu_state.data.ds.sregtype = SREG_DATA;
+    cpu_state.data.ds.flagValid = True;
+    cpu_state.data.gs = cpu_state.data.fs = cpu_state.data.es = cpu_state.data.ds;
+
+    cpu_state.data.ldtr.base = Zero32;
+    cpu_state.data.ldtr.dpl = Zero4;
+    cpu_state.data.ldtr.limit = Max16;
+    cpu_state.data.ldtr.selector = Zero16;
+    cpu_state.data.ldtr.sregtype = SREG_LDTR;
+    cpu_state.data.ldtr.sys.type = VCPU_DESC_SYS_TYPE_LDT;
+    cpu_state.data.ldtr.flagValid = True;
+
+    cpu_state.data.tr.base = Zero32;
+    cpu_state.data.tr.dpl = Zero4;
+    cpu_state.data.tr.limit = Max16;
+    cpu_state.data.tr.selector = Zero16;
+    cpu_state.data.tr.sregtype = SREG_TR;
+    cpu_state.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_16_AVL;
+    cpu_state.data.tr.flagValid = True;
+
+    cpu_state.data.idtr.base = Zero32;
+    cpu_state.data.idtr.limit = 0x03ff;
+    cpu_state.data.idtr.sregtype = SREG_IDTR;
+    cpu_state.data.idtr.flagValid = True;
+
+    cpu_state.data.gdtr.base = Zero32;
+    cpu_state.data.gdtr.limit = Max16;
+    cpu_state.data.gdtr.sregtype = SREG_GDTR;
+    cpu_state.data.gdtr.flagValid = True;
+
+    core_machine_cpu_execution_reset(context);
+
+#undef cpu_state
+}
+
+void vcpuInit() {
+    core_machine_cpu_state_initialize(
+        core_machine_cpu_execution_current_legacy());
 }
 void vcpuReset() {
-    core_machine_cpu_execution_context *context =
-        core_machine_cpu_execution_current_legacy();
-    MEMSET((void *)(&vcpu), Zero8, sizeof(t_cpu));
-    if (context != NULL) {
-        context->stop_requested = False;
-        context->reset_requested = False;
-    }
-
-    vcpu.data.eip = 0x0000fff0;
-    vcpu.data.eflags = 0x00000002;
-
-    vcpu.data.cs.base = 0xffff0000;
-    vcpu.data.cs.dpl = Zero4;
-    vcpu.data.cs.limit = Max32;
-    vcpu.data.cs.seg.accessed = True;
-    vcpu.data.cs.seg.executable = True;
-    vcpu.data.cs.seg.exec.conform = False;
-    vcpu.data.cs.seg.exec.defsize = False;
-    vcpu.data.cs.seg.exec.readable = True;
-    vcpu.data.cs.selector = 0xf000;
-    vcpu.data.cs.sregtype = SREG_CODE;
-    vcpu.data.cs.flagValid = True;
-
-    vcpu.data.ss.base = Zero32;
-    vcpu.data.ss.dpl = Zero4;
-    vcpu.data.ss.limit = Max16;
-    vcpu.data.ss.seg.accessed = True;
-    vcpu.data.ss.seg.executable = False;
-    vcpu.data.ss.seg.data.big = False;
-    vcpu.data.ss.seg.data.expdown = False;
-    vcpu.data.ss.seg.data.writable = True;
-    vcpu.data.ss.selector = Zero16;
-    vcpu.data.ss.sregtype = SREG_STACK;
-    vcpu.data.ss.flagValid = True;
-
-    vcpu.data.ds.base = Zero32;
-    vcpu.data.ds.dpl = Zero4;
-    vcpu.data.ds.limit = Max16;
-    vcpu.data.ds.seg.accessed = True;
-    vcpu.data.ss.seg.executable = False;
-    vcpu.data.ds.seg.data.big = False;
-    vcpu.data.ds.seg.data.expdown = False;
-    vcpu.data.ds.seg.data.writable = True;
-    vcpu.data.ds.selector = Zero16;
-    vcpu.data.ds.sregtype = SREG_DATA;
-    vcpu.data.ds.flagValid = True;
-    vcpu.data.gs = vcpu.data.fs = vcpu.data.es = vcpu.data.ds;
-
-    vcpu.data.ldtr.base = Zero32;
-    vcpu.data.ldtr.dpl = Zero4;
-    vcpu.data.ldtr.limit = Max16;
-    vcpu.data.ldtr.selector = Zero16;
-    vcpu.data.ldtr.sregtype = SREG_LDTR;
-    vcpu.data.ldtr.sys.type = VCPU_DESC_SYS_TYPE_LDT;
-    vcpu.data.ldtr.flagValid = True;
-
-    vcpu.data.tr.base = Zero32;
-    vcpu.data.tr.dpl = Zero4;
-    vcpu.data.tr.limit = Max16;
-    vcpu.data.tr.selector = Zero16;
-    vcpu.data.tr.sregtype = SREG_TR;
-    vcpu.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_16_AVL;
-    vcpu.data.tr.flagValid = True;
-
-    vcpu.data.idtr.base = Zero32;
-    vcpu.data.idtr.limit = 0x03ff;
-    vcpu.data.idtr.sregtype = SREG_IDTR;
-    vcpu.data.idtr.flagValid = True;
-
-    vcpu.data.gdtr.base = Zero32;
-    vcpu.data.gdtr.limit = Max16;
-    vcpu.data.gdtr.sregtype = SREG_GDTR;
-    vcpu.data.gdtr.flagValid = True;
-
-    vcpuinsReset();
+    core_machine_cpu_state_reset(core_machine_cpu_execution_current_legacy());
 }
 void vcpuRefresh() {
-    vcpuinsRefresh();
+    core_machine_cpu_execution_refresh(
+        core_machine_cpu_execution_current_legacy());
 }
 void vcpuFinal() {
-    vcpuinsFinal();
+    core_machine_cpu_execution_finalize(
+        core_machine_cpu_execution_current_legacy());
 }
 void core_machine_cpu_execution_request_stop(
     core_machine_cpu_execution_context *context)
