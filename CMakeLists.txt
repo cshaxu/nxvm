@@ -29,7 +29,6 @@ add_library(nxvm-core STATIC
     src/core/machine/machine.c
     src/core/machine/memory.c
     src/core/machine/port.c
-    src/core/machine/pc_devices.c
     src/core/machine/presentation.c
     src/core/machine/trace.c
 )
@@ -90,11 +89,6 @@ add_executable(nxvm-core-machine-debug-smoke
 )
 target_link_libraries(nxvm-core-machine-debug-smoke PRIVATE nxvm-core)
 
-add_executable(nxvm-core-pc-devices-smoke
-    tests/core/pc_devices_smoke.c
-)
-target_link_libraries(nxvm-core-pc-devices-smoke PRIVATE nxvm-core)
-
 add_executable(nxvm-core-presentation-smoke tests/core/presentation_smoke.c)
 target_link_libraries(nxvm-core-presentation-smoke PRIVATE nxvm-core)
 
@@ -114,7 +108,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-core-pc-devices-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 

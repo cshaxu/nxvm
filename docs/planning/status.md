@@ -44,6 +44,8 @@ M5 is complete. The shared-core source topology, legacy-convergence closure,
 and retained NXVM compatibility gates are recorded in the M5 planning evidence.
 The unused CPU capability manifest was removed after closure; CPU probe and
 evidence requirements remain governed by the CPU-verification documents.
+The unused PC-device aggregate was also removed; retained PIC/PIT/DMA device
+implementations remain the only machine-device path.
 
 ## Completed
 
@@ -231,6 +233,8 @@ evidence requirements remain governed by the CPU-verification documents.
 - M5 T18 S1 P2: removed the unused hand-managed CPU capability manifest and
   its dedicated smoke. The registry retains its generic capability-query test;
   GCC, registry/core smokes, and the DAG verifier passed.
+- M5 T18 S1 P3: removed the unused aggregate PIC/PIT/DMA model and its dedicated
+  smoke. GCC, core contract, retained NXVM artifact, and DAG gates passed.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware
