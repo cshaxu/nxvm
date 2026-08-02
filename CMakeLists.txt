@@ -202,6 +202,7 @@ set(NXVM_MACHINE_VM_SOURCES
 set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/block.c
     src/core/machine/display.c
+    src/core/machine/keyboard_state.c
     src/core/machine/vvadp.c
     src/core/machine/vport.c
     src/core/machine/vram.c

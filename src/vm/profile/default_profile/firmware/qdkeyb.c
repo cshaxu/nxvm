@@ -41,6 +41,18 @@ static t_nubit16 bufPeek() {
     return vramRealWord(Zero16, bufptrHead);
 }
 
+static int qdkeybGetModifier(void *context,
+    core_machine_keyboard_modifier modifier);
+static void qdkeybApplyHostState(void *context, uint32_t asynchronous_keys,
+    uint32_t toggle_keys);
+static void qdkeybReceiveKeyPress(void *context, uint16_t code);
+
+static const core_machine_keyboard_provider qdkeybProvider = {
+    qdkeybGetModifier,
+    qdkeybApplyHostState,
+    qdkeybReceiveKeyPress
+};
+
 static void qdkeybReadInput() {
     /* TODO: this should have been working with INT 15 */
     while (bufIsEmpty) {
@@ -232,4 +244,56 @@ void deviceConnectKeyboardRecvKeyPress(uint16_t code) {
     } */
     bufPush(code);
     vpicSetIRQ(0x01);
+}
+
+static int qdkeybGetModifier(void *context,
+    core_machine_keyboard_modifier modifier)
+{
+    (void)context;
+    switch (modifier) {
+    case CORE_MACHINE_KEYBOARD_MODIFIER_ALT:
+        return deviceConnectKeyboardGetFlag0Alt();
+    case CORE_MACHINE_KEYBOARD_MODIFIER_CONTROL:
+        return deviceConnectKeyboardGetFlag0Ctrl();
+    case CORE_MACHINE_KEYBOARD_MODIFIER_SHIFT:
+        return deviceConnectKeyboardGetFlag0Shift();
+    case CORE_MACHINE_KEYBOARD_MODIFIER_CAPS_LOCK:
+        return deviceConnectKeyboardGetFlag0CapsLock();
+    case CORE_MACHINE_KEYBOARD_MODIFIER_NUM_LOCK:
+        return deviceConnectKeyboardGetFlag0NumLock();
+    }
+    return False;
+}
+
+static void qdkeybApplyHostState(void *context, uint32_t asynchronous_keys,
+    uint32_t toggle_keys)
+{
+#define QDKEYB_SET_HOST_FLAG(mask, set_call, clear_call) \
+    do { if ((mask) != 0u) set_call(); else clear_call(); } while (0)
+    (void)context;
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_RIGHT_SHIFT, deviceConnectKeyboardSetFlag0RightShift, deviceConnectKeyboardClrFlag0RightShift);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_LEFT_SHIFT, deviceConnectKeyboardSetFlag0LeftShift, deviceConnectKeyboardClrFlag0LeftShift);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_CONTROL, deviceConnectKeyboardSetFlag0Ctrl, deviceConnectKeyboardClrFlag0Ctrl);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_ALT, deviceConnectKeyboardSetFlag0Alt, deviceConnectKeyboardClrFlag0Alt);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_SCROLL_LOCK, deviceConnectKeyboardSetFlag1ScrLck, deviceConnectKeyboardClrFlag1ScrLck);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_NUM_LOCK, deviceConnectKeyboardSetFlag1NumLck, deviceConnectKeyboardClrFlag1NumLck);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_CAPS_LOCK, deviceConnectKeyboardSetFlag1CapLck, deviceConnectKeyboardClrFlag1CapLck);
+    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_INSERT, deviceConnectKeyboardSetFlag1Insert, deviceConnectKeyboardClrFlag1Insert);
+    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_SCROLL_LOCK, deviceConnectKeyboardSetFlag0ScrLck, deviceConnectKeyboardClrFlag0ScrLck);
+    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_NUM_LOCK, deviceConnectKeyboardSetFlag0NumLck, deviceConnectKeyboardClrFlag0NumLck);
+    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_CAPS_LOCK, deviceConnectKeyboardSetFlag0CapLck, deviceConnectKeyboardClrFlag0CapLck);
+    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_INSERT, deviceConnectKeyboardSetFlag0Insert, deviceConnectKeyboardClrFlag0Insert);
+    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_PAUSE, deviceConnectKeyboardSetFlag1Pause, deviceConnectKeyboardClrFlag1Pause);
+#undef QDKEYB_SET_HOST_FLAG
+}
+
+static void qdkeybReceiveKeyPress(void *context, uint16_t code)
+{
+    (void)context;
+    deviceConnectKeyboardRecvKeyPress(code);
+}
+
+const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(void)
+{
+    return &qdkeybProvider;
 }

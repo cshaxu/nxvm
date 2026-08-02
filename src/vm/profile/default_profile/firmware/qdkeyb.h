@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "core/machine/vram.h"
+#include "core/machine/keyboard_state.h"
 
 #define QDKEYB_VBIOS_ADDR_KEYB_FLAG0         0x0417
 #define QDKEYB_VBIOS_ADDR_KEYB_FLAG1         0x0418
@@ -38,6 +39,7 @@ extern "C" {
 #define qdkeybVarFlag1 (vramRealByte(0x0000, QDKEYB_VBIOS_ADDR_KEYB_FLAG1))
 
 void qdkeybInit();
+const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(void);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
