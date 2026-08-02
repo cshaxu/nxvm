@@ -8,6 +8,7 @@ int main(int argc, char **argv)
     nxvm_runtime_registry registry;
     nxvm_full_pc_config config;
     nxvm_vm_reset_vector vector;
+    nxvm_full_pc *full_pc = NULL;
 
     if (argc != 2) {
         return 1;
@@ -28,13 +29,13 @@ int main(int argc, char **argv)
     config.create_fdd = 0;
     config.create_hdd_cylinders = 0u;
     config.boot_hdd = 0;
-    if (nxvm_full_pc_create(&config) != NXVM_CORE_STATUS_OK ||
-        nxvm_full_pc_get_reset_vector(&vector) != NXVM_CORE_STATUS_OK ||
+    if (nxvm_full_pc_create(&config, &full_pc) != NXVM_CORE_STATUS_OK ||
+        nxvm_full_pc_get_reset_vector(full_pc, &vector) != NXVM_CORE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
-        nxvm_full_pc_destroy();
+        nxvm_full_pc_destroy(full_pc);
         return 1;
     }
-    nxvm_full_pc_destroy();
+    nxvm_full_pc_destroy(full_pc);
     puts("M5:T2:S2:PC-AT-BUILTIN:OK");
     return 0;
 }

@@ -6,6 +6,8 @@
 #include "type.h"
 #include "vm/product/media.h"
 
+typedef struct nxvm_full_pc nxvm_full_pc;
+
 typedef struct nxvm_product_nxvm_reset_vector {
     uint16_t cs;
     uint16_t ip;
@@ -13,6 +15,7 @@ typedef struct nxvm_product_nxvm_reset_vector {
 
 typedef struct nxvm_product_nxvm_default_profile {
     const nxvm_product_nxvm_media_policy *media;
+    nxvm_full_pc *full_pc;
     int active;
 } nxvm_product_nxvm_default_profile;
 

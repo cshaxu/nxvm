@@ -1,5 +1,6 @@
 #include "vm/composition_cpu_probe.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "core/machine/cpu.h"
@@ -12,8 +13,10 @@
 #include "core/machine/cpu_instructions.h"
 #include "vm/composition_live_machine.h"
 
-static int nxvm_cpu_probe_active;
-static vm_composition_live_machine nxvmCpuProbeMachine;
+struct nxvm_cpu_probe {
+    int active;
+    vm_composition_live_machine machine;
+};
 
 static int nxvm_cpu_probe_capture_state(
     nxvm_cpu_probe_state *state)
@@ -51,28 +54,35 @@ static int nxvm_cpu_probe_reset(void)
     return 1;
 }
 
-int nxvm_cpu_probe_begin(void)
+int nxvm_cpu_probe_create(nxvm_cpu_probe **out_probe)
 {
-    if (nxvm_cpu_probe_active) {
+    nxvm_cpu_probe *probe;
+
+    if (out_probe == NULL) {
         return 0;
     }
-    vm_composition_live_machine_initialize(&nxvmCpuProbeMachine);
-    vm_composition_live_machine_bind_legacy(&nxvmCpuProbeMachine);
-    vm_composition_control_initialize(&nxvmCpuProbeMachine);
-    nxvm_cpu_probe_active = 1;
+    *out_probe = NULL;
+    probe = (nxvm_cpu_probe *)calloc(1u, sizeof(*probe));
+    if (probe == NULL) return 0;
+    vm_composition_live_machine_initialize(&probe->machine);
+    vm_composition_live_machine_bind_legacy(&probe->machine);
+    vm_composition_control_initialize(&probe->machine);
+    probe->active = 1;
     if (!nxvm_cpu_probe_reset()) {
-        nxvm_cpu_probe_end();
+        nxvm_cpu_probe_destroy(probe);
         return 0;
     }
+    *out_probe = probe;
     return 1;
 }
 
 int nxvm_cpu_probe_step(
+    nxvm_cpu_probe *probe,
     const uint8_t *bytes,
     size_t byte_count,
     nxvm_cpu_probe_capture *out_capture)
 {
-    if (!nxvm_cpu_probe_active || bytes == NULL || out_capture == NULL ||
+    if (probe == NULL || !probe->active || bytes == NULL || out_capture == NULL ||
         byte_count == 0u || byte_count > NXVM_BASELINE_CPU_PROBE_MAX_BYTES ||
         !nxvm_cpu_probe_reset()) {
         return 0;
@@ -94,11 +104,12 @@ int nxvm_cpu_probe_step(
     return 1;
 }
 
-void nxvm_cpu_probe_end(void)
+void nxvm_cpu_probe_destroy(nxvm_cpu_probe *probe)
 {
-    if (nxvm_cpu_probe_active) {
-        vm_composition_control_finalize(&nxvmCpuProbeMachine);
-        vm_composition_live_machine_finalize(&nxvmCpuProbeMachine);
-        nxvm_cpu_probe_active = 0;
+    if (probe != NULL && probe->active) {
+        vm_composition_control_finalize(&probe->machine);
+        vm_composition_live_machine_finalize(&probe->machine);
+        probe->active = 0;
     }
+    free(probe);
 }

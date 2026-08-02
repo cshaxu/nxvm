@@ -30,12 +30,15 @@ typedef struct nxvm_cpu_probe_capture {
     uint32_t exception_code;
 } nxvm_cpu_probe_capture;
 
-int nxvm_cpu_probe_begin(void);
+typedef struct nxvm_cpu_probe nxvm_cpu_probe;
+
+int nxvm_cpu_probe_create(nxvm_cpu_probe **out_probe);
 int nxvm_cpu_probe_step(
+    nxvm_cpu_probe *probe,
     const uint8_t *bytes,
     size_t byte_count,
     nxvm_cpu_probe_capture *out_capture);
-void nxvm_cpu_probe_end(void);
+void nxvm_cpu_probe_destroy(nxvm_cpu_probe *probe);
 
 #ifdef __cplusplus
 }
