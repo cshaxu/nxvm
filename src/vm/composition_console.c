@@ -31,7 +31,15 @@ static int vm_composition_console_get_window_display(void *context) { (void)cont
 static void vm_composition_console_set_window_display(void *context, int enabled) { (void)context; platform.flagMode = enabled; }
 static void vm_composition_console_print_bios(void *context) { (void)context; vm_profile_default_bios_print(); }
 static void vm_composition_console_print_status(void *context) { (void)context; vm_composition_control_print_status(); }
-static void vm_composition_console_debug(void *context) { (void)context; debugMain(); }
+static void vm_composition_console_debug(void *context)
+{
+    (void)context;
+    if (vm_composition_control_is_running()) {
+        vm_composition_control_request_pause(VM_COMPOSITION_PAUSE_EXPLICIT);
+        if (!vm_composition_control_wait_for_pause(2000u)) return;
+    }
+    debugMain();
+}
 static void vm_composition_console_record_start(void *context, const char *path) { (void)context; vm_machine_debug_record_start(path); }
 static void vm_composition_console_record_stop(void *context) { (void)context; vm_machine_debug_record_stop(); }
 static void vm_composition_console_set_boot_hdd(void *context, int enabled) { (void)context; vm_profile_default_bios_set_boot_hdd(enabled); }

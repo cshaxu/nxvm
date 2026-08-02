@@ -13,6 +13,7 @@
 #include "core/machine/cpu.h"
 #include "core/machine/memory.h"
 #include "core/machine/port.h"
+#include "core/platform/sleep.h"
 #include "vm/composition_control.h"
 #include "vm/composition_live_machine.h"
 
@@ -20,6 +21,10 @@ typedef struct vm_composition_control_state {
     int flagFlip;
     int flagRun;
     int flagReset;
+    int pauseRequested;
+    int paused;
+    int stepRequested;
+    vm_composition_pause_reason pauseReason;
 } vm_composition_control_state;
 
 static vm_composition_control_state vmCompositionControl;
@@ -48,8 +53,17 @@ void vm_composition_control_start(void) {
             nxvm_execution_context_reset(&device_execution_context);
             vmCompositionControl.flagReset = False;
         }
+        if (vmCompositionControl.pauseRequested) {
+            vmCompositionControl.paused = True;
+        }
+        while (vmCompositionControl.flagRun && vmCompositionControl.paused) {
+            nxvm_execution_context_run_command_boundary(&device_execution_context);
+            core_platform_sleep_milliseconds(1u);
+        }
+        if (!vmCompositionControl.flagRun) break;
         nxvm_execution_context_run_command_boundary(&device_execution_context);
         nxvm_execution_context_debug_refresh(&device_execution_context);
+        if (vmCompositionControl.pauseRequested) continue;
         if (!vmCompositionControl.flagRun) {
             break;
         }
@@ -59,6 +73,10 @@ void vm_composition_control_start(void) {
         }
         if (vcpuConsumeStopRequest()) {
             vm_composition_control_stop();
+        }
+        if (vmCompositionControl.stepRequested) {
+            vmCompositionControl.stepRequested = False;
+            vm_composition_control_request_pause(VM_COMPOSITION_PAUSE_STEP);
         }
     }
     nxvm_execution_context_leave(&device_execution_context);
@@ -77,6 +95,59 @@ void vm_composition_control_reset(void) {
 /* Issues stopping signal to device thread */
 void vm_composition_control_stop(void)  {
     vmCompositionControl.flagRun = False;
+    vmCompositionControl.paused = False;
+    vmCompositionControl.pauseRequested = False;
+}
+
+void vm_composition_control_request_pause(vm_composition_pause_reason reason)
+{
+    if (!vmCompositionControl.flagRun) {
+        vmCompositionControl.paused = True;
+        vmCompositionControl.pauseReason = reason;
+        return;
+    }
+    vmCompositionControl.pauseRequested = True;
+    vmCompositionControl.pauseReason = reason;
+}
+
+int vm_composition_control_wait_for_pause(unsigned milliseconds)
+{
+    unsigned waited = 0u;
+
+    while (vmCompositionControl.flagRun && !vmCompositionControl.paused &&
+           waited < milliseconds) {
+        core_platform_sleep_milliseconds(1u);
+        ++waited;
+    }
+    return vmCompositionControl.paused;
+}
+
+int vm_composition_control_is_paused(void)
+{
+    return vmCompositionControl.paused;
+}
+
+vm_composition_pause_reason vm_composition_control_get_pause_reason(void)
+{
+    return vmCompositionControl.pauseReason;
+}
+
+void vm_composition_control_continue(void)
+{
+    vmCompositionControl.pauseRequested = False;
+    vmCompositionControl.paused = False;
+    vmCompositionControl.stepRequested = False;
+    vmCompositionControl.pauseReason = VM_COMPOSITION_PAUSE_NONE;
+}
+
+int vm_composition_control_step(void)
+{
+    if (!vmCompositionControl.paused) return False;
+    vmCompositionControl.pauseRequested = False;
+    vmCompositionControl.paused = False;
+    vmCompositionControl.stepRequested = True;
+    vmCompositionControl.pauseReason = VM_COMPOSITION_PAUSE_NONE;
+    return True;
 }
 
 void vm_composition_control_bind_command_boundary(
@@ -127,7 +198,7 @@ void vm_composition_control_print_status(void) {
 
 int vm_composition_control_is_running(void)
 {
-    return vmCompositionControl.flagRun;
+    return vmCompositionControl.flagRun && !vmCompositionControl.paused;
 }
 
 int vm_composition_control_get_flip(void)

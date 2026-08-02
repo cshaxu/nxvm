@@ -97,12 +97,14 @@ debugger commands and target binding.
 M5 T44 S1 closed full-PC authority: a live-loop/reset smoke proves every
 retained accessor names the composition-owned machine object, and a static gate
 rejects remaining legacy full-PC storage definitions.
+M5 T45 S1 added an acknowledged execution-boundary pause protocol. Explicit,
+breakpoint, trace, and step pauses now retain the one live loop until continue
+or stop, without launching a second VM thread.
 
 ## Active Work
 
-M5 T45 S1 is active: add a synchronized debugger pause boundary with request,
-acknowledgement, reason, step, and continue while preserving retained Console
-command behavior. Owner-observed FDD DOS-prompt acceptance covers T44.
+M5 T46 S1 is active: expose the converged live-machine debugger through one
+product-neutral backend and route the retained debugger UI through it.
 
 ## Completed
 

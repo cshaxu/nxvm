@@ -7,9 +7,23 @@
 extern "C" {
 #endif
 
+typedef enum vm_composition_pause_reason {
+    VM_COMPOSITION_PAUSE_NONE,
+    VM_COMPOSITION_PAUSE_EXPLICIT,
+    VM_COMPOSITION_PAUSE_BREAKPOINT,
+    VM_COMPOSITION_PAUSE_TRACE,
+    VM_COMPOSITION_PAUSE_STEP
+} vm_composition_pause_reason;
+
 void vm_composition_control_start(void);
 void vm_composition_control_reset(void);
 void vm_composition_control_stop(void);
+void vm_composition_control_request_pause(vm_composition_pause_reason reason);
+int vm_composition_control_wait_for_pause(unsigned milliseconds);
+int vm_composition_control_is_paused(void);
+vm_composition_pause_reason vm_composition_control_get_pause_reason(void);
+void vm_composition_control_continue(void);
+int vm_composition_control_step(void);
 void vm_composition_control_initialize(void);
 void vm_composition_control_finalize(void);
 int vm_composition_control_is_running(void);
