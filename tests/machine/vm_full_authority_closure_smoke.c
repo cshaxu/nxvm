@@ -1,6 +1,7 @@
 #include <windows.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
@@ -50,46 +51,53 @@ int main(int argc, char **argv)
 {
     HANDLE thread;
     DWORD result;
-    vm_composition_live_machine session = {0};
+    vm_composition_live_machine *session;
 
     if (argc != 2) return 1;
-    vm_composition_live_machine_initialize(&session);
-    vm_composition_live_machine_bind_legacy(&session);
-    vm_composition_control_initialize(session.control, &session);
-    if (!has_single_live_authority(&session) ||
-        vm_machine_fdd_insert_for(session.fdd, argv[1]) != 0) {
-        vm_composition_control_finalize(session.control, &session);
-    vm_composition_live_machine_finalize(&session);
+    session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
+    if (session == NULL) return 1;
+    vm_composition_live_machine_initialize(session);
+    vm_composition_live_machine_bind_legacy(session);
+    vm_composition_control_initialize(session->control, session);
+    if (!has_single_live_authority(session) ||
+        vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) {
+        vm_composition_control_finalize(session->control, session);
+        vm_composition_live_machine_finalize(session);
+        free(session);
         return 1;
     }
-    vm_composition_control_reset(session.control);
-    thread = CreateThread(NULL, 0u, run_full_pc, session.control, 0u, NULL);
+    vm_composition_control_reset(session->control);
+    thread = CreateThread(NULL, 0u, run_full_pc, session->control, 0u, NULL);
     if (thread == NULL) {
-        vm_composition_control_finalize(session.control, &session);
-    vm_composition_live_machine_finalize(&session);
+        vm_composition_control_finalize(session->control, session);
+        vm_composition_live_machine_finalize(session);
+        free(session);
         return 1;
     }
     Sleep(10u);
-    if (!vm_composition_control_is_running(session.control) || !has_single_live_authority(&session)) {
-        vm_composition_control_stop(session.control);
+    if (!vm_composition_control_is_running(session->control) || !has_single_live_authority(session)) {
+        vm_composition_control_stop(session->control);
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
-        vm_composition_control_finalize(session.control, &session);
-    vm_composition_live_machine_finalize(&session);
+        vm_composition_control_finalize(session->control, session);
+        vm_composition_live_machine_finalize(session);
+        free(session);
         return 1;
     }
-    vm_composition_control_reset(session.control);
+    vm_composition_control_reset(session->control);
     Sleep(10u);
-    vm_composition_control_stop(session.control);
+    vm_composition_control_stop(session->control);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    if (result != WAIT_OBJECT_0 || !has_single_live_authority(&session)) {
-        vm_composition_control_finalize(session.control, &session);
-    vm_composition_live_machine_finalize(&session);
+    if (result != WAIT_OBJECT_0 || !has_single_live_authority(session)) {
+        vm_composition_control_finalize(session->control, session);
+        vm_composition_live_machine_finalize(session);
+        free(session);
         return 1;
     }
-    vm_composition_control_finalize(session.control, &session);
-    vm_composition_live_machine_finalize(&session);
+    vm_composition_control_finalize(session->control, session);
+    vm_composition_live_machine_finalize(session);
+    free(session);
     if (core_machine_cpu_current() != NULL ||
         vm_profile_default_bios_current() != NULL ||
         vm_profile_default_qdx_current() != NULL) return 1;
