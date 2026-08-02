@@ -8,6 +8,12 @@ extern "C" {
 #endif
 
 #include "core/machine/vglobal.h"
+#include "vm/machine/fdd.h"
+
+typedef struct t_latch t_latch;
+typedef struct t_dma t_dma;
+typedef struct t_pic t_pic;
+typedef struct t_port t_port;
 
 #define NXVM_DEVICE_FDC "Intel 8272A"
 
@@ -31,7 +37,18 @@ typedef struct {
 } t_fdc_data;
 
 typedef struct {
+    t_fdd *fdd;
+    t_latch *dma_latch;
+    t_dma *dma_primary;
+    t_dma *dma_secondary;
+    t_pic *pic_master;
+    t_pic *pic_slave;
+    t_port *port;
+} t_fdc_connect;
+
+typedef struct {
     t_fdc_data data;
+    t_fdc_connect connect;
 } t_fdc;
 
 t_fdc *vm_machine_fdc_current(void);
@@ -150,6 +167,9 @@ void vfdcInit();
 void vfdcReset();
 void vfdcRefresh();
 void vfdcFinal();
+void vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
+    t_dma *dma_primary, t_dma *dma_secondary, t_pic *pic_master,
+    t_pic *pic_slave, t_port *port);
 
 #define VFDC_POST "           \
 ; init vfdc                 \n\
