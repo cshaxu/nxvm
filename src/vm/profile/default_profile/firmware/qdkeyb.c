@@ -1,315 +1,263 @@
 /* Copyright 2012-2014 Neko. */
 
-/* QDKEYB implements quick and dirty keyboard control routines. */
-
 #include "core/product/utils.h"
-#include "core/machine/port.h"
 #include "core/machine/cpu.h"
+#include "core/machine/memory.h"
 #include "core/machine/pic.h"
+#include "core/machine/port.h"
 
 #include "vm/profile/default_profile/firmware/context.h"
 #include "vm/profile/default_profile/firmware/qdx.h"
 #include "qdkeyb.h"
 
-#define bufptrHead (vramRealWord(Zero16, QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD))
-#define bufptrTail (vramRealWord(Zero16, QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL))
-#define bufGetSize (QDKEYB_VBIOS_ADDR_KEYB_BUFFER_END - \
-                    QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + 1)
-#define bufIsEmpty (bufptrHead == bufptrTail)
-#define bufIsFull  ((bufptrHead - QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START) == \
-    (bufptrTail - QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + 2) % bufGetSize)
-#define bufptrAdvance(ptr) ((ptr) = (QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + \
-        ((ptr) - QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + 2) % bufGetSize))
+static t_nubit8 keyboard_read_byte(vm_profile_default_context *profile,
+    t_nubit16 offset)
+{
+    t_nubit8 value = 0;
+    core_machine_memory_read_real_from(profile->ram, Zero16, offset, &value,
+        sizeof(value));
+    return value;
+}
 
-static t_bool bufPush(t_nubit16 code) {
-    if (bufIsFull) {
-        return True;
-    }
-    vramRealWord(Zero16, bufptrTail) = code;
-    bufptrAdvance(bufptrTail);
+static t_nubit16 keyboard_read_word(vm_profile_default_context *profile,
+    t_nubit16 offset)
+{
+    t_nubit16 value = 0;
+    core_machine_memory_read_real_from(profile->ram, Zero16, offset, &value,
+        sizeof(value));
+    return value;
+}
+
+static void keyboard_write_byte(vm_profile_default_context *profile,
+    t_nubit16 offset, t_nubit8 value)
+{
+    core_machine_memory_write_real_to(profile->ram, Zero16, offset, &value,
+        sizeof(value));
+}
+
+static void keyboard_write_word(vm_profile_default_context *profile,
+    t_nubit16 offset, t_nubit16 value)
+{
+    core_machine_memory_write_real_to(profile->ram, Zero16, offset, &value,
+        sizeof(value));
+}
+
+static t_nubit16 keyboard_buffer_next(t_nubit16 pointer)
+{
+    return QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START +
+        (pointer - QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + 2u) %
+        (QDKEYB_VBIOS_ADDR_KEYB_BUFFER_END -
+         QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + 1u);
+}
+
+static t_bool keyboard_buffer_empty(vm_profile_default_context *profile)
+{
+    return keyboard_read_word(profile, QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD) ==
+        keyboard_read_word(profile, QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL);
+}
+
+static t_bool keyboard_buffer_full(vm_profile_default_context *profile)
+{
+    return keyboard_buffer_next(keyboard_read_word(profile,
+        QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL)) == keyboard_read_word(profile,
+        QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD);
+}
+
+static t_bool keyboard_buffer_push(vm_profile_default_context *profile,
+    t_nubit16 code)
+{
+    t_nubit16 tail;
+
+    if (keyboard_buffer_full(profile)) return True;
+    tail = keyboard_read_word(profile, QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL);
+    keyboard_write_word(profile, tail, code);
+    keyboard_write_word(profile, QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL,
+        keyboard_buffer_next(tail));
     return False;
 }
-static t_nubit16 bufPop() {
-    t_nubit16 res = 0;
-    if (bufIsEmpty) {
-        return res;
+
+static t_nubit16 keyboard_buffer_pop(vm_profile_default_context *profile)
+{
+    t_nubit16 head;
+    t_nubit16 result;
+
+    if (keyboard_buffer_empty(profile)) return 0;
+    head = keyboard_read_word(profile, QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD);
+    result = keyboard_read_word(profile, head);
+    keyboard_write_word(profile, QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD,
+        keyboard_buffer_next(head));
+    return result;
+}
+
+static t_nubit16 keyboard_buffer_peek(vm_profile_default_context *profile)
+{
+    return keyboard_read_word(profile, keyboard_read_word(profile,
+        QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD));
+}
+
+static t_nubit8 keyboard_flag0(vm_profile_default_context *profile)
+{
+    return keyboard_read_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG0);
+}
+
+static void keyboard_set_flag0(vm_profile_default_context *profile,
+    t_nubit8 mask, int enabled)
+{
+    t_nubit8 value = keyboard_flag0(profile);
+    if (enabled) SetBit(value, mask); else ClrBit(value, mask);
+    keyboard_write_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG0, value);
+}
+
+static void keyboard_set_flag1(vm_profile_default_context *profile,
+    t_nubit8 mask, int enabled)
+{
+    t_nubit8 value = keyboard_read_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG1);
+    if (enabled) SetBit(value, mask); else ClrBit(value, mask);
+    keyboard_write_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG1, value);
+}
+
+static void keyboard_request_irq(vm_profile_default_context *profile)
+{
+    core_machine_pic_set_irq(profile->execution->pic_master,
+        profile->execution->pic_slave, 0x01);
+}
+
+static void keyboard_read_input(vm_profile_default_context *profile)
+{
+    t_cpu *cpu = profile->execution->cpu;
+    while (keyboard_buffer_empty(profile)) utilsSleep(10);
+    cpu->data.ax = keyboard_buffer_pop(profile);
+    keyboard_request_irq(profile);
+}
+
+static void keyboard_get_status(vm_profile_default_context *profile)
+{
+    t_cpu *cpu = profile->execution->cpu;
+    t_nubit16 key = keyboard_buffer_peek(profile);
+
+    if (keyboard_buffer_empty(profile)) {
+        SetBit(cpu->data.eflags, VCPU_EFLAGS_ZF);
+        return;
     }
-    res = vramRealWord(Zero16, bufptrHead);
-    bufptrAdvance(bufptrHead);
-    return res;
-}
-static t_nubit16 bufPeek() {
-    return vramRealWord(Zero16, bufptrHead);
-}
-
-static int qdkeybGetModifier(void *context,
-    core_machine_keyboard_modifier modifier);
-static void qdkeybApplyHostState(void *context, uint32_t asynchronous_keys,
-    uint32_t toggle_keys);
-static void qdkeybReceiveKeyPress(void *context, uint16_t code);
-
-static const core_machine_keyboard_provider qdkeybProvider = {
-    qdkeybGetModifier,
-    qdkeybApplyHostState,
-    qdkeybReceiveKeyPress
-};
-
-static void qdkeybReadInput() {
-    /* TODO: this should have been working with INT 15 */
-    while (bufIsEmpty) {
-        utilsSleep(10);
+    switch (key) {
+    case 0x1d00:
+    case 0x2a00:
+    case 0x3800:
+        cpu->data.ax = Zero16;
+        break;
+    default:
+        cpu->data.ax = key;
+        break;
     }
-    vcpu.data.ax = bufPop();
-    vpicSetIRQ(0x01);
-}
-static void qdkeybGetStatus() {
-    t_nubit16 x = bufPeek();
-    if (bufIsEmpty) {
-        _SetEFLAGS_ZF;
-    } else {
-        switch (x) {
-        case 0x1d00:
-        case 0x2a00:
-        case 0x3800:
-            vcpu.data.ax = Zero16;
-            break;
-        default:
-            vcpu.data.ax = x;
-            break;
-        }
-        _ClrEFLAGS_ZF;
-    }
-}
-static void qdkeybGetShiftStatus() {
-    vcpu.data.al = qdkeybVarFlag0;
-}
-static void qdkeybBufferKey() {
-    vcpu.data.al = bufPush((vcpu.data.ch << 8) | vcpu.data.cl);
+    ClrBit(cpu->data.eflags, VCPU_EFLAGS_ZF);
 }
 
-static void INT_09() {
-    vport.data.ioByte = 0x20;
-    vportExecWrite(0x20);
+static void keyboard_int_09(vm_profile_default_context *profile)
+{
+    core_machine_port_write(profile->execution->port, 0x0020, 0x20);
 }
-static void INT_16() {
-    switch (vcpu.data.ah) {
+
+static void keyboard_int_16(vm_profile_default_context *profile)
+{
+    t_cpu *cpu = profile->execution->cpu;
+
+    switch (cpu->data.ah) {
     case 0x00:
     case 0x10:
-        qdkeybReadInput();
+        keyboard_read_input(profile);
         break;
     case 0x01:
     case 0x11:
-        qdkeybGetStatus();
+        keyboard_get_status(profile);
         break;
     case 0x02:
-        qdkeybGetShiftStatus();
+        cpu->data.al = keyboard_flag0(profile);
         break;
     case 0x05:
-        qdkeybBufferKey();
+        cpu->data.al = keyboard_buffer_push(profile,
+            ((t_nubit16)cpu->data.ch << 8) | cpu->data.cl);
         break;
     default:
         break;
     }
 }
 
-static void vm_profile_default_keyboard_int_09(
-    vm_profile_default_context *profile)
-{
-    (void)profile;
-    INT_09();
-}
-
-static void vm_profile_default_keyboard_int_16(
-    vm_profile_default_context *profile)
-{
-    (void)profile;
-    INT_16();
-}
-
-void vm_profile_default_keyboard_initialize(t_qdx *qdx) {
-    if (qdx == NULL) return;
-    qdx->table[0x09] = vm_profile_default_keyboard_int_09;
-    qdx->table[0x16] = vm_profile_default_keyboard_int_16;
-}
-
-int qdkeybGetFlag0CapsLock() {
-    return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);
-}
-int qdkeybGetFlag0NumLock()  {
-    return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_NUMLCK);
-}
-int qdkeybGetFlag0Shift() {
-    return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT) || GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT);
-}
-int qdkeybGetFlag0Alt()  {
-    return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT);
-}
-int qdkeybGetFlag0Ctrl() {
-    return GetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL);
-}
-void qdkeybClrFlag0() {
-    qdkeybVarFlag0 = Zero8;
-}
-void qdkeybClrFlag1() {
-    qdkeybVarFlag1 = Zero8;
-}
-
-void qdkeybSetFlag0Insert()     {
-    SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_INSERT);
-}
-void qdkeybSetFlag0CapLck()     {
-    SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);
-}
-void qdkeybSetFlag0NumLck()     {
-    SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_NUMLCK);
-}
-void qdkeybSetFlag0ScrLck()     {
-    SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_SCRLCK);
-}
-void qdkeybSetFlag0Alt()        {
-    SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT);
-}
-void qdkeybSetFlag0Ctrl()       {
-    SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL);
-}
-void qdkeybSetFlag0LeftShift()  {
-    SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT);
-}
-void qdkeybSetFlag0RightShift() {
-    SetBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT);
-}
-
-void qdkeybClrFlag0Insert()     {
-    ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_INSERT);
-}
-void qdkeybClrFlag0CapLck()     {
-    ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_CAPLCK);
-}
-void qdkeybClrFlag0NumLck()     {
-    ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_NUMLCK);
-}
-void qdkeybClrFlag0ScrLck()     {
-    ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_A_SCRLCK);
-}
-void qdkeybClrFlag0Alt()        {
-    ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_ALT);
-}
-void qdkeybClrFlag0Ctrl()       {
-    ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_CTRL);
-}
-void qdkeybClrFlag0LeftShift()  {
-    ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_LSHIFT);
-}
-void qdkeybClrFlag0RightShift() {
-    ClrBit(qdkeybVarFlag0, QDKEYB_FLAG0_D_RSHIFT);
-}
-
-void qdkeybSetFlag1Insert()   {
-    SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_INSERT);
-}
-void qdkeybSetFlag1CapLck()   {
-    SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_CAPLCK);
-}
-void qdkeybSetFlag1NumLck()   {
-    SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_NUMLCK);
-}
-void qdkeybSetFlag1ScrLck()   {
-    SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SCRLCK);
-}
-void qdkeybSetFlag1Pause()    {
-    SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_PAUSE);
-}
-void qdkeybSetFlag1SysRq()    {
-    SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SYSRQ);
-}
-void qdkeybSetFlag1LeftAlt()  {
-    SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LALT);
-}
-void qdkeybSetFlag1LeftCtrl() {
-    SetBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LCTRL);
-}
-
-void qdkeybClrFlag1Insert()   {
-    ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_INSERT);
-}
-void qdkeybClrFlag1CapLck()   {
-    ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_CAPLCK);
-}
-void qdkeybClrFlag1NumLck()   {
-    ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_NUMLCK);
-}
-void qdkeybClrFlag1ScrLck()   {
-    ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SCRLCK);
-}
-void qdkeybClrFlag1Pause()    {
-    ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_PAUSE);
-}
-void qdkeybClrFlag1SysRq()    {
-    ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_SYSRQ);
-}
-void qdkeybClrFlag1LeftAlt()  {
-    ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LALT);
-}
-void qdkeybClrFlag1LeftCtrl() {
-    ClrBit(qdkeybVarFlag1, QDKEYB_FLAG1_D_LCTRL);
-}
-
-void qdkeybRecvKeyPress(uint16_t code) {
-    /* while(bufPush(code)) {
-        utilsSleep(1);
-    } */
-    bufPush(code);
-    vpicSetIRQ(0x01);
-}
-
-static int qdkeybGetModifier(void *context,
+static int keyboard_get_modifier(void *context,
     core_machine_keyboard_modifier modifier)
 {
-    (void)context;
+    vm_profile_default_context *profile = context;
+    t_nubit8 flags = keyboard_flag0(profile);
+
     switch (modifier) {
     case CORE_MACHINE_KEYBOARD_MODIFIER_ALT:
-        return qdkeybGetFlag0Alt();
+        return GetBit(flags, QDKEYB_FLAG0_D_ALT);
     case CORE_MACHINE_KEYBOARD_MODIFIER_CONTROL:
-        return qdkeybGetFlag0Ctrl();
+        return GetBit(flags, QDKEYB_FLAG0_D_CTRL);
     case CORE_MACHINE_KEYBOARD_MODIFIER_SHIFT:
-        return qdkeybGetFlag0Shift();
+        return GetBit(flags, QDKEYB_FLAG0_D_LSHIFT) ||
+            GetBit(flags, QDKEYB_FLAG0_D_RSHIFT);
     case CORE_MACHINE_KEYBOARD_MODIFIER_CAPS_LOCK:
-        return qdkeybGetFlag0CapsLock();
+        return GetBit(flags, QDKEYB_FLAG0_A_CAPLCK);
     case CORE_MACHINE_KEYBOARD_MODIFIER_NUM_LOCK:
-        return qdkeybGetFlag0NumLock();
+        return GetBit(flags, QDKEYB_FLAG0_A_NUMLCK);
     }
     return False;
 }
 
-static void qdkeybApplyHostState(void *context, uint32_t asynchronous_keys,
-    uint32_t toggle_keys)
+static void keyboard_apply_host_state(void *context,
+    uint32_t asynchronous_keys, uint32_t toggle_keys)
 {
-#define QDKEYB_SET_HOST_FLAG(mask, set_call, clear_call) \
-    do { if ((mask) != 0u) set_call(); else clear_call(); } while (0)
-    (void)context;
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_RIGHT_SHIFT, qdkeybSetFlag0RightShift, qdkeybClrFlag0RightShift);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_LEFT_SHIFT, qdkeybSetFlag0LeftShift, qdkeybClrFlag0LeftShift);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_CONTROL, qdkeybSetFlag0Ctrl, qdkeybClrFlag0Ctrl);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_ALT, qdkeybSetFlag0Alt, qdkeybClrFlag0Alt);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_SCROLL_LOCK, qdkeybSetFlag1ScrLck, qdkeybClrFlag1ScrLck);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_NUM_LOCK, qdkeybSetFlag1NumLck, qdkeybClrFlag1NumLck);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_CAPS_LOCK, qdkeybSetFlag1CapLck, qdkeybClrFlag1CapLck);
-    QDKEYB_SET_HOST_FLAG(asynchronous_keys & NXVM_KEYBOARD_ASYNC_INSERT, qdkeybSetFlag1Insert, qdkeybClrFlag1Insert);
-    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_SCROLL_LOCK, qdkeybSetFlag0ScrLck, qdkeybClrFlag0ScrLck);
-    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_NUM_LOCK, qdkeybSetFlag0NumLck, qdkeybClrFlag0NumLck);
-    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_CAPS_LOCK, qdkeybSetFlag0CapLck, qdkeybClrFlag0CapLck);
-    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_INSERT, qdkeybSetFlag0Insert, qdkeybClrFlag0Insert);
-    QDKEYB_SET_HOST_FLAG(toggle_keys & NXVM_KEYBOARD_TOGGLE_PAUSE, qdkeybSetFlag1Pause, qdkeybClrFlag1Pause);
-#undef QDKEYB_SET_HOST_FLAG
+    vm_profile_default_context *profile = context;
+
+    keyboard_set_flag0(profile, QDKEYB_FLAG0_D_RSHIFT,
+        (asynchronous_keys & NXVM_KEYBOARD_ASYNC_RIGHT_SHIFT) != 0u);
+    keyboard_set_flag0(profile, QDKEYB_FLAG0_D_LSHIFT,
+        (asynchronous_keys & NXVM_KEYBOARD_ASYNC_LEFT_SHIFT) != 0u);
+    keyboard_set_flag0(profile, QDKEYB_FLAG0_D_CTRL,
+        (asynchronous_keys & NXVM_KEYBOARD_ASYNC_CONTROL) != 0u);
+    keyboard_set_flag0(profile, QDKEYB_FLAG0_D_ALT,
+        (asynchronous_keys & NXVM_KEYBOARD_ASYNC_ALT) != 0u);
+    keyboard_set_flag1(profile, QDKEYB_FLAG1_D_SCRLCK,
+        (asynchronous_keys & NXVM_KEYBOARD_ASYNC_SCROLL_LOCK) != 0u);
+    keyboard_set_flag1(profile, QDKEYB_FLAG1_D_NUMLCK,
+        (asynchronous_keys & NXVM_KEYBOARD_ASYNC_NUM_LOCK) != 0u);
+    keyboard_set_flag1(profile, QDKEYB_FLAG1_D_CAPLCK,
+        (asynchronous_keys & NXVM_KEYBOARD_ASYNC_CAPS_LOCK) != 0u);
+    keyboard_set_flag1(profile, QDKEYB_FLAG1_D_INSERT,
+        (asynchronous_keys & NXVM_KEYBOARD_ASYNC_INSERT) != 0u);
+    keyboard_set_flag0(profile, QDKEYB_FLAG0_A_SCRLCK,
+        (toggle_keys & NXVM_KEYBOARD_TOGGLE_SCROLL_LOCK) != 0u);
+    keyboard_set_flag0(profile, QDKEYB_FLAG0_A_NUMLCK,
+        (toggle_keys & NXVM_KEYBOARD_TOGGLE_NUM_LOCK) != 0u);
+    keyboard_set_flag0(profile, QDKEYB_FLAG0_A_CAPLCK,
+        (toggle_keys & NXVM_KEYBOARD_TOGGLE_CAPS_LOCK) != 0u);
+    keyboard_set_flag0(profile, QDKEYB_FLAG0_A_INSERT,
+        (toggle_keys & NXVM_KEYBOARD_TOGGLE_INSERT) != 0u);
+    keyboard_set_flag1(profile, QDKEYB_FLAG1_D_PAUSE,
+        (toggle_keys & NXVM_KEYBOARD_TOGGLE_PAUSE) != 0u);
 }
 
-static void qdkeybReceiveKeyPress(void *context, uint16_t code)
+static void keyboard_receive_key_press(void *context, uint16_t code)
 {
-    (void)context;
-    qdkeybRecvKeyPress(code);
+    vm_profile_default_context *profile = context;
+    (void)keyboard_buffer_push(profile, code);
+    keyboard_request_irq(profile);
+}
+
+static const core_machine_keyboard_provider keyboard_provider = {
+    keyboard_get_modifier,
+    keyboard_apply_host_state,
+    keyboard_receive_key_press
+};
+
+void vm_profile_default_keyboard_initialize(t_qdx *qdx)
+{
+    if (qdx == NULL) return;
+    qdx->table[0x09] = keyboard_int_09;
+    qdx->table[0x16] = keyboard_int_16;
 }
 
 const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(void)
 {
-    return &qdkeybProvider;
+    return &keyboard_provider;
 }
