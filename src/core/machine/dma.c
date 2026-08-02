@@ -277,7 +277,11 @@ static void Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         break;
     case 0x01:
         /* write */
-        ExecFun(rdma->connect.fpReadDevice[id]);
+        if (rdma->connect.read_provider[id] != NULL) {
+            rdma->connect.read_provider[id](rdma->connect.device_owner[id], latch);
+        } else {
+            ExecFun(rdma->connect.fpReadDevice[id]);
+        }
         if (!flagWord) {
             core_machine_memory_write_physical(ram,
                 (rdma->data.page[id] << 16) + rdma->data.currAddr[id],
@@ -305,7 +309,11 @@ static void Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
                 (rdma->data.page[id] << 16) + (rdma->data.currAddr[id] << 1),
                 (t_vaddrcc)(&latch->data.word), 2);
         }
-        ExecFun(rdma->connect.fpWriteDevice[id]);
+        if (rdma->connect.write_provider[id] != NULL) {
+            rdma->connect.write_provider[id](rdma->connect.device_owner[id], latch);
+        } else {
+            ExecFun(rdma->connect.fpWriteDevice[id]);
+        }
         rdma->data.currCount[id]--;
         if (GetBit(rdma->data.mode[id], VDMA_MODE_AIDS)) {
             DecreaseCurrAddr(rdma, id);
@@ -391,7 +399,11 @@ static void Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
     }
     if (rdma->data.flagEOP) {
         rdma->data.isr = Zero8;
-        ExecFun(rdma->connect.fpCloseDevice[id]);
+        if (rdma->connect.close_provider[id] != NULL) {
+            rdma->connect.close_provider[id](rdma->connect.device_owner[id], latch);
+        } else {
+            ExecFun(rdma->connect.fpCloseDevice[id]);
+        }
         if (GetBit(rdma->data.mode[id], VDMA_MODE_AI)) {
             rdma->data.currAddr[id] = rdma->data.baseAddr[id];
             rdma->data.currCount[id] = rdma->data.baseCount[id];
@@ -457,6 +469,30 @@ void core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
     default:
         break;
     }
+}
+
+void core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
+    t_nubit8 drq_id, core_machine_dma_device_provider read_provider,
+    core_machine_dma_device_provider write_provider,
+    core_machine_dma_device_provider close_provider, void *owner)
+{
+    t_dma *dma;
+    t_nubit8 channel;
+
+    if (primary == NULL || secondary == NULL) return;
+    if (drq_id <= 3u) {
+        dma = primary;
+        channel = drq_id;
+    } else if (drq_id >= 5u && drq_id <= 7u) {
+        dma = secondary;
+        channel = drq_id - 4u;
+    } else {
+        return;
+    }
+    dma->connect.read_provider[channel] = read_provider;
+    dma->connect.write_provider[channel] = write_provider;
+    dma->connect.close_provider[channel] = close_provider;
+    dma->connect.device_owner[channel] = owner;
 }
 
 void vdmaAddDevice(t_nubit8 drqId, t_faddrcc fpReadDevice,
