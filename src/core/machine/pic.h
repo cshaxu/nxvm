@@ -128,6 +128,7 @@ void core_machine_pic_reset(t_pic *master, t_pic *slave);
 void core_machine_pic_refresh(t_pic *master, t_pic *slave);
 void core_machine_pic_finalize(t_pic *master, t_pic *slave);
 void core_machine_pic_set_irq(t_pic *master, t_pic *slave, t_nubit8 irq_id);
+void core_machine_pic_timer_output(void *owner);
 
 #define VPIC_POST "           \
 ; init vpic1                \n\

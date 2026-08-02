@@ -84,7 +84,9 @@ void vmachineInit(vm_composition_live_machine *machine) {
     vhdcInit();
     vbiosAddInt(VHDC_INT_SOFT_HDD_13, 0x13);
     _vbios_ _vport_ _vdma_ _vfdc_
-    vpitInit();
+    core_machine_pit_initialize(machine->pit, machine->port);
+    core_machine_pit_set_output(machine->pit, 0,
+        core_machine_pic_timer_output, machine->pic_master);
     vbiosAddPost(VPIT_POST);
     _vbios_ _vport_
     core_machine_pic_initialize(machine->pic_master, machine->pic_slave,
@@ -112,7 +114,7 @@ void vmachineReset(vm_composition_live_machine *machine) {
     vfddReset();
     vhddReset();
     core_machine_pic_reset(machine->pic_master, machine->pic_slave);
-    vpitReset();
+    core_machine_pit_reset(machine->pit);
     vportReset();
     vvadpReset();
     vramReset();
@@ -149,7 +151,7 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
         machine->dma_secondary, machine->ram);
     _vfdc_
     core_machine_pic_refresh(machine->pic_master, machine->pic_slave);
-    vpitRefresh();
+    core_machine_pit_refresh(machine->pit);
     _vpic_
     if (vcpu.data.flagHalt) {
         core_platform_sleep_milliseconds(1);
@@ -178,7 +180,7 @@ void vmachineFinal(vm_composition_live_machine *machine) {
     _empty_
     core_machine_pic_finalize(machine->pic_master, machine->pic_slave);
     _empty_
-    vpitFinal();
+    core_machine_pit_finalize(machine->pit);
     _empty_
     vportFinal();
     _empty_
