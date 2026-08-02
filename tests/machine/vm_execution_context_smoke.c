@@ -3,7 +3,8 @@
 #include <stdio.h>
 
 #include "vm/composition_control.h"
-#include "vm/machine/device.h"
+#include "vm/machine/vfdd.h"
+#include "vm/profile/default_profile/firmware/vbios.h"
 #include "core/product/runtime/execution_context.h"
 
 static DWORD WINAPI run_device(LPVOID parameter)
@@ -22,11 +23,11 @@ int main(int argc, char **argv)
         return 1;
     }
     vm_composition_control_initialize();
-    if (deviceConnectFloppyInsert(argv[1]) != 0) {
+    if (vm_machine_fdd_insert(argv[1]) != 0) {
         vm_composition_control_finalize();
         return 1;
     }
-    deviceConnectBiosSetBoot(0);
+    vm_profile_default_bios_set_boot_hdd(0);
     vm_composition_control_reset();
     thread = CreateThread(NULL, 0u, run_device, NULL, 0u, NULL);
     if (thread == NULL) {

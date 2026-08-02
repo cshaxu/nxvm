@@ -54,6 +54,9 @@ void vhddInit();
 void vhddReset();
 void vhddRefresh();
 void vhddFinal();
+void vm_machine_hdd_create(uint16_t cylinders);
+int vm_machine_hdd_insert(const char *file_name);
+int vm_machine_hdd_remove(const char *file_name);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

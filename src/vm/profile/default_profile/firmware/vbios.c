@@ -175,13 +175,13 @@ void vbiosReset() {
 }
 void vbiosRefresh() {}
 void vbiosFinal() {}
-void devicePrintBios() {
+void vm_profile_default_bios_print(void) {
     PRINTF("Boot Disk: %s\n", flagBoot ? "Hard Drive" : "Floppy");
 }
 
-void deviceConnectBiosSetBoot(int flagHdd) {
-    flagBoot = flagHdd;
+void vm_profile_default_bios_set_boot_hdd(int enabled) {
+    flagBoot = enabled;
 }
-int deviceConnectBiosGetBoot() {
+int vm_profile_default_bios_get_boot_hdd(void) {
     return flagBoot;
 }

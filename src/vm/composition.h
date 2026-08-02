@@ -15,6 +15,7 @@ void vmachineInit();
 void vmachineReset();
 void vmachineRefresh();
 void vmachineFinal();
+void devicePrintMachine();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

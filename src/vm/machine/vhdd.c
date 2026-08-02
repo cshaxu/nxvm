@@ -92,14 +92,14 @@ void vhddFinal() {
     vhdd.connect.pImgBase = (t_vaddrcc) NULL;
 }
 
-void deviceConnectHardDiskCreate(uint16_t ncyl) {
-    vhdd.data.ncyl = ncyl;
+void vm_machine_hdd_create(uint16_t cylinders) {
+    vhdd.data.ncyl = cylinders;
     allocate();
     vhdd.connect.flagDiskExist = True;
 }
-int deviceConnectHardDiskInsert(const char *fileName) {
+int vm_machine_hdd_insert(const char *file_name) {
     t_nubitcc count;
-    FILE *image = FOPEN(fileName, "rb");
+    FILE *image = FOPEN(file_name, "rb");
     if (image) {
         fseek(image, Zero32, SEEK_END);
         count = ftell(image);
@@ -114,11 +114,11 @@ int deviceConnectHardDiskInsert(const char *fileName) {
         return True;
     }
 }
-int deviceConnectHardDiskRemove(const char *fileName) {
+int vm_machine_hdd_remove(const char *file_name) {
     t_nubitcc count;
     FILE *image;
-    if (fileName) {
-        image = FOPEN(fileName, "wb");
+    if (file_name) {
+        image = FOPEN(file_name, "wb");
         if (image) {
             if (!vhdd.connect.flagReadOnly)
                 count = FWRITE((void *) vhdd.connect.pImgBase, sizeof(t_nubit8), vhddGetImageSize, image);

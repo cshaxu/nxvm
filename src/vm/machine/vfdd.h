@@ -54,6 +54,9 @@ void vfddInit();
 void vfddReset();
 void vfddRefresh();
 void vfddFinal();
+void vm_machine_fdd_create(void);
+int vm_machine_fdd_insert(const char *file_name);
+int vm_machine_fdd_remove(const char *file_name);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

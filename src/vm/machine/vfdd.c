@@ -85,11 +85,11 @@ void vfddFinal() {
     vfdd.connect.pImgBase = (t_vaddrcc) NULL;
 }
 
-void deviceConnectFloppyCreate() {
+void vm_machine_fdd_create(void) {
     vfdd.connect.flagDiskExist = True;
 }
-int deviceConnectFloppyInsert(const char *fileName) {
-    FILE *fpImage = FOPEN(fileName, "rb");
+int vm_machine_fdd_insert(const char *file_name) {
+    FILE *fpImage = FOPEN(file_name, "rb");
     if (fpImage && vfdd.connect.pImgBase) {
         FREAD((void *) vfdd.connect.pImgBase, sizeof(t_nubit8), vfddGetImageSize, fpImage);
         vfdd.connect.flagDiskExist = True;
@@ -99,10 +99,10 @@ int deviceConnectFloppyInsert(const char *fileName) {
         return True;
     }
 }
-int deviceConnectFloppyRemove(const char *fileName) {
+int vm_machine_fdd_remove(const char *file_name) {
     FILE *fpImage;
-    if (fileName) {
-        fpImage = FOPEN(fileName, "wb");
+    if (file_name) {
+        fpImage = FOPEN(file_name, "wb");
         if (fpImage) {
             if (!vfdd.connect.flagReadOnly) {
                 FWRITE((void *) vfdd.connect.pImgBase, sizeof(t_nubit8), vfddGetImageSize, fpImage);
