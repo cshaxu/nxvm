@@ -25,9 +25,17 @@ void core_machine_kbc_register_ports(t_kbc *controller, t_port *port)
 }
 
 void vkbcInit() {
-    core_machine_kbc_register_ports(core_machine_kbc_current(),
+    core_machine_kbc_initialize(core_machine_kbc_current(),
         core_machine_port_current());
 }
-void vkbcReset() {}
-void vkbcRefresh() {}
-void vkbcFinal() {}
+void core_machine_kbc_initialize(t_kbc *controller, t_port *port) {
+    if (controller == NULL || port == NULL) return;
+    MEMSET(controller, Zero8, sizeof(*controller));
+    core_machine_kbc_register_ports(controller, port);
+}
+void vkbcReset() { core_machine_kbc_reset(core_machine_kbc_current()); }
+void core_machine_kbc_reset(t_kbc *controller) { (void)controller; }
+void vkbcRefresh() { core_machine_kbc_refresh(core_machine_kbc_current()); }
+void core_machine_kbc_refresh(t_kbc *controller) { (void)controller; }
+void vkbcFinal() { core_machine_kbc_finalize(core_machine_kbc_current()); }
+void core_machine_kbc_finalize(t_kbc *controller) { (void)controller; }

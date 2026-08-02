@@ -25,6 +25,10 @@ void vkbcReset();
 void vkbcRefresh();
 void vkbcFinal();
 void core_machine_kbc_register_ports(t_kbc *controller, t_port *port);
+void core_machine_kbc_initialize(t_kbc *controller, t_port *port);
+void core_machine_kbc_reset(t_kbc *controller);
+void core_machine_kbc_refresh(t_kbc *controller);
+void core_machine_kbc_finalize(t_kbc *controller);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
