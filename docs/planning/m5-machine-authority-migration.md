@@ -137,6 +137,17 @@ T23 is structural preparation, not a second machine model. T24 through T42 are
 one-device tasks; T43 is the required composition closure. T44 and T45 remain
 inactive until T43 proves a single authority.
 
+## T23 Evidence
+
+T23 binds `vm_composition_live_machine` in root composition immediately before
+the retained control initialization and clears it during retained finalization.
+The carrier contains only direct pointers to `vcpu`, `vcpuins`, `vram`, and
+`vport`; it owns no storage and does not invoke `vmachine*`, device, Console,
+or debugger logic. Its focused smoke proves pointer identity and unbound-after-
+finalization behavior. Windows GCC, dependency DAG, expected-`#UD` CPU stop,
+FDD/HDD reset-vector, and retained Console `HELP`/`EXIT` gates passed. The
+task artifact is `build/nxvm-m5-t23.exe`.
+
 ## Stop Conditions
 
 Stop for design review if the first CPU/RAM/port slice needs a second machine

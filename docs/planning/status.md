@@ -38,7 +38,7 @@ providers to `core/platform`. The detailed scope and gates are in
 `m5-legacy-convergence.md`. The historical `snapshot/m5-nxvm-28fb4b1` remains
 a checkpoint, not the eventual M5 closure snapshot.
 
-## Active Work
+## M5 Continuity
 
 M5 T19 S1 repaired a full-PC display snapshot performance regression found
 after T18 closure. The recorded T13-to-T18 bisection identifies `ff4cd24` as
@@ -55,7 +55,15 @@ one machine instance without parallel CPU/RAM/port state.
 M5 T22 S3 schedules device-by-device live-machine convergence as T23 through
 T43; debugger pause and backend work are deferred to T44 and T45.
 M5 T22 S4 defines the no-copy, same-object compatibility method and stop gates
-for that convergence; T23 implementation has not begun.
+for that convergence. M5 T23 S1 is complete: root composition owns a
+non-owning live-machine carrier bound directly to the existing CPU, decoder,
+RAM, and port objects without any lifecycle behavior change.
+
+## Active Work
+
+M5 T24 S1 P1: map the retained CPU and executor's complete storage, direct
+read/write, initializer, reset, refresh, and callback surface before any CPU
+authority migration.
 
 ## Completed
 
@@ -259,6 +267,12 @@ for that convergence; T23 implementation has not begun.
   device-by-device live-machine convergence through T43.
 - M5 T22 S4 P1: recorded the controlled no-copy migration method and rollback
   gates before T23 implementation.
+- M5 T23 S1 P1: added the composition-owned live-machine carrier with direct,
+  non-owning references to the existing `vcpu`, `vcpuins`, `vram`, and `vport`
+  objects. It allocates no guest storage and invokes no device lifecycle path.
+  GCC, same-object identity, expected-`#UD`, FDD/HDD reset-vector, retained
+  Console `HELP`/`EXIT`, and DAG gates passed; `nxvm-m5-t23.exe` is the task
+  artifact.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware

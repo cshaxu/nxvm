@@ -169,6 +169,7 @@ set(NXVM_COMPOSITION_VM_SOURCES
     src/vm/composition_block.c
     src/vm/composition_display.c
     src/vm/composition_machine.c
+    src/vm/composition_live_machine.c
     src/vm/composition_loop.c
     src/vm/composition.c
     src/vm/composition_cpu_probe.c
@@ -371,6 +372,13 @@ target_link_libraries(nxvm-vm-cpu-stop-smoke PRIVATE
     nxvm-vm-composition
 )
 
+add_executable(nxvm-vm-live-machine-smoke
+    tests/machine/vm_live_machine_smoke.c
+)
+target_link_libraries(nxvm-vm-live-machine-smoke PRIVATE
+    nxvm-vm-composition
+)
+
 add_executable(nxvm-vm-debug-target-smoke
     tests/machine/vm_debug_target_smoke.c
 )
@@ -493,6 +501,7 @@ add_nxvm_full_pc_artifact(nxvm-m5-t18 "m5t18")
 add_nxvm_full_pc_artifact(nxvm-m5-t19 "m5t19")
 add_nxvm_full_pc_artifact(nxvm-m5-t20 "m5t20")
 add_nxvm_full_pc_artifact(nxvm-m5-t21 "m5t21")
+add_nxvm_full_pc_artifact(nxvm-m5-t23 "m5t23")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
