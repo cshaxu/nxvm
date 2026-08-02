@@ -85,12 +85,15 @@ and dispatch semantics.
 M5 T40 S1 confirmed that default-profile CGA firmware has no separate mutable
 state: text/cursor/snapshot state remains in the already bound RAM and video
 adapter, while its mode table is private immutable profile data.
+M5 T41 S1 confirmed that default-profile keyboard firmware has no separate
+mutable state: its provider is bound through core keyboard ingress while flags
+and buffering remain in BIOS RAM.
 
 ## Active Work
 
-M5 T41 S1 is active: audit default-profile keyboard firmware, its provider,
-and its platform ingress binding before binding any actual profile-owned state.
-Owner-observed FDD DOS-prompt acceptance covers the preceding authority tasks.
+M5 T42 S1 is active: audit default-profile INT 13 disk firmware and its media/
+controller bindings before binding any actual profile-owned state. Owner-
+observed FDD DOS-prompt acceptance covers the preceding authority tasks.
 
 ## Completed
 
