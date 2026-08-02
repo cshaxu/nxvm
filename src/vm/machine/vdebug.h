@@ -11,12 +11,18 @@ extern "C" {
 
 #define NXVM_DEVICE_DEBUG "Unknown Hardware Debugger"
 
-typedef void (*vm_machine_debug_stop_callback)(void *context);
+typedef enum vm_machine_debug_pause_reason {
+    VM_MACHINE_DEBUG_PAUSE_BREAKPOINT,
+    VM_MACHINE_DEBUG_PAUSE_TRACE
+} vm_machine_debug_pause_reason;
+
+typedef void (*vm_machine_debug_pause_callback)(void *context,
+    vm_machine_debug_pause_reason reason);
 
 typedef struct {
     FILE *recordFile; /* pointer to dump file */
-    vm_machine_debug_stop_callback stopCallback;
-    void *stopContext;
+    vm_machine_debug_pause_callback pauseCallback;
+    void *pauseContext;
 } t_debug_connect;
 
 typedef struct {
@@ -44,7 +50,7 @@ void vdebugInit();
 void vdebugReset();
 void vdebugRefresh();
 void vdebugFinal();
-void vm_machine_debug_bind_stop(vm_machine_debug_stop_callback callback,
+void vm_machine_debug_bind_pause(vm_machine_debug_pause_callback callback,
     void *context);
 void vm_machine_debug_set_breakpoint_real(uint16_t segment, uint16_t offset);
 void vm_machine_debug_clear_breakpoint_real(void);

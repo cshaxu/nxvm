@@ -102,10 +102,13 @@ static const vm_platform_execution_sink vm_composition_execution_sink = {
     vm_composition_execution_stop
 };
 
-static void vm_composition_debug_request_stop(void *context)
+static void vm_composition_debug_request_pause(void *context,
+    vm_machine_debug_pause_reason reason)
 {
     (void)context;
-    vm_composition_control_stop();
+    vm_composition_control_request_pause(
+        reason == VM_MACHINE_DEBUG_PAUSE_TRACE ?
+        VM_COMPOSITION_PAUSE_TRACE : VM_COMPOSITION_PAUSE_BREAKPOINT);
 }
 
 void machineStart() {
@@ -123,7 +126,11 @@ void machineStop() {
 }
 
 void machineResume() {
-    platformStart();
+    if (vm_composition_control_is_paused()) {
+        vm_composition_control_continue();
+    } else {
+        platformStart();
+    }
 }
 
 void machineInit() {
@@ -134,7 +141,7 @@ void machineInit() {
     core_machine_keyboard_bind(NULL, vm_profile_default_keyboard_provider());
     core_machine_display_bind_snapshot_provider(NULL,
         vm_profile_default_display_capture);
-    vm_machine_debug_bind_stop(vm_composition_debug_request_stop, NULL);
+    vm_machine_debug_bind_pause(vm_composition_debug_request_pause, NULL);
     core_product_debug_bind_target(vm_composition_debug_target());
     vm_platform_keyboard_bind(&vm_composition_keyboard_sink, NULL);
     vm_platform_execution_bind(&vm_composition_execution_sink, NULL);
@@ -144,7 +151,7 @@ void machineFinal() {
     vm_composition_control_finalize();
     core_machine_keyboard_bind(NULL, NULL);
     core_machine_display_bind_snapshot_provider(NULL, NULL);
-    vm_machine_debug_bind_stop(NULL, NULL);
+    vm_machine_debug_bind_pause(NULL, NULL);
     core_product_debug_bind_target(NULL);
     vm_platform_execution_bind(NULL, NULL);
     vm_platform_keyboard_bind(NULL, NULL);

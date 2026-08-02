@@ -17,10 +17,10 @@ t_debug *vm_machine_debug_current(void) { return vmMachineDebug; }
 void vm_machine_debug_bind_live(t_debug *debug) { vmMachineDebug = debug; }
 void vm_machine_debug_unbind_live(void) { vmMachineDebug = NULL; }
 
-static void vdebug_request_stop(void)
+static void vdebug_request_pause(vm_machine_debug_pause_reason reason)
 {
-    if (vdebug.connect.stopCallback != NULL) {
-        vdebug.connect.stopCallback(vdebug.connect.stopContext);
+    if (vdebug.connect.pauseCallback != NULL) {
+        vdebug.connect.pauseCallback(vdebug.connect.pauseContext, reason);
     }
 }
 
@@ -117,7 +117,7 @@ static void xasmTest() {
             PRINTF("%02X", ins2[i]);
         }
         PRINTF("\t%s\n", strDasm2);
-        vdebug_request_stop();
+        vdebug_request_pause(VM_MACHINE_DEBUG_PAUSE_BREAKPOINT);
     }
 }
 
@@ -133,13 +133,13 @@ eflags=%08x %s %s %s %s %s %s %s %s %s %s %s %s | cs:eip=%04x:%08x(L%08x)"
 void vdebugRefresh() {
     if ((vdebug.data.flagBreak && vcpu.data.cs.selector == vdebug.data.breakCS && vcpu.data.ip == vdebug.data.breakIP) ||
             (vdebug.data.flagBreak32 && vdebug.data.breakCount && (vcpu.data.cs.base + vcpu.data.eip == vdebug.data.breakLinear))) {
-        vdebug_request_stop();
+        vdebug_request_pause(VM_MACHINE_DEBUG_PAUSE_BREAKPOINT);
     }
     vdebug.data.breakCount++;
     if (vdebug.data.flagTrace) {
         if (!vdebug.data.traceCount) {
             vdebug.data.flagTrace = False;
-            vdebug_request_stop();
+            vdebug_request_pause(VM_MACHINE_DEBUG_PAUSE_TRACE);
         } else {
             vdebug.data.traceCount--;
         }
@@ -209,11 +209,11 @@ void vdebugRefresh() {
 }
 void vdebugFinal() {}
 
-void vm_machine_debug_bind_stop(vm_machine_debug_stop_callback callback,
+void vm_machine_debug_bind_pause(vm_machine_debug_pause_callback callback,
     void *context)
 {
-    vdebug.connect.stopCallback = callback;
-    vdebug.connect.stopContext = context;
+    vdebug.connect.pauseCallback = callback;
+    vdebug.connect.pauseContext = context;
 }
 
 void vm_machine_debug_set_breakpoint_real(uint16_t segment, uint16_t offset) {
