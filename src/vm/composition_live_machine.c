@@ -22,6 +22,7 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
     machine->debug = &machine->debug_storage;
     machine->default_bios = &machine->default_bios_storage;
     machine->default_qdx = &machine->default_qdx_storage;
+    machine->control = &machine->control_storage;
 }
 
 void vm_composition_live_machine_bind_legacy(vm_composition_live_machine *machine)
@@ -84,4 +85,5 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     machine->debug = NULL;
     machine->default_bios = NULL;
     machine->default_qdx = NULL;
+    machine->control = NULL;
 }

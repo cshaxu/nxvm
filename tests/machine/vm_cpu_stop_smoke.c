@@ -13,16 +13,16 @@ int main(void)
 
     vm_composition_live_machine_initialize(&session);
     vm_composition_live_machine_bind_legacy(&session);
-    vm_composition_control_initialize(&session);
-    vm_composition_control_reset();
+    vm_composition_control_initialize(session.control, &session);
+    vm_composition_control_reset(session.control);
     reset_vector = (unsigned char *)vramGetRealAddr(0xf000u, 0xfff0u);
     reset_vector[0] = invalid_instruction[0];
     reset_vector[1] = invalid_instruction[1];
-    vm_composition_control_start();
+    vm_composition_control_start(session.control);
 
-    failed |= vm_composition_control_is_running() != False;
+    failed |= vm_composition_control_is_running(session.control) != False;
     failed |= vcpuConsumeStopRequest() != False;
-    vm_composition_control_finalize(&session);
+    vm_composition_control_finalize(session.control, &session);
     vm_composition_live_machine_finalize(&session);
 
     if (failed) return 1;

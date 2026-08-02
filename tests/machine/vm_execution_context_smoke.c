@@ -9,11 +9,9 @@
 
 static DWORD WINAPI run_device(LPVOID parameter)
 {
-    (void)parameter;
-    vm_composition_control_start();
+    vm_composition_control_start((vm_composition_control_state *)parameter);
     return 0u;
 }
-
 int main(int argc, char **argv)
 {
     HANDLE thread;
@@ -25,38 +23,38 @@ int main(int argc, char **argv)
     }
     vm_composition_live_machine_initialize(&session);
     vm_composition_live_machine_bind_legacy(&session);
-    vm_composition_control_initialize(&session);
+    vm_composition_control_initialize(session.control, &session);
     if (vm_machine_fdd_insert(argv[1]) != 0) {
-        vm_composition_control_finalize(&session);
+        vm_composition_control_finalize(session.control, &session);
     vm_composition_live_machine_finalize(&session);
         return 1;
     }
     vm_profile_default_bios_set_boot_hdd(0);
-    vm_composition_control_reset();
-    thread = CreateThread(NULL, 0u, run_device, NULL, 0u, NULL);
+    vm_composition_control_reset(session.control);
+    thread = CreateThread(NULL, 0u, run_device, session.control, 0u, NULL);
     if (thread == NULL) {
         fputs("M5:T10:S4:CONTEXT-LIFECYCLE:THREAD-CREATE-FAILED\n", stderr);
-        vm_composition_control_finalize(&session);
+        vm_composition_control_finalize(session.control, &session);
     vm_composition_live_machine_finalize(&session);
         return 1;
     }
 
     Sleep(10u);
-    if (!vm_composition_control_is_running()) {
+    if (!vm_composition_control_is_running(session.control)) {
         fputs("M5:T10:S4:CONTEXT-LIFECYCLE:DEVICE-DID-NOT-START\n", stderr);
-        vm_composition_control_stop();
+        vm_composition_control_stop(session.control);
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
-        vm_composition_control_finalize(&session);
+        vm_composition_control_finalize(session.control, &session);
     vm_composition_live_machine_finalize(&session);
         return 1;
     }
-    vm_composition_control_reset();
+    vm_composition_control_reset(session.control);
     Sleep(10u);
-    vm_composition_control_stop();
+    vm_composition_control_stop(session.control);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    vm_composition_control_finalize(&session);
+    vm_composition_control_finalize(session.control, &session);
     vm_composition_live_machine_finalize(&session);
 
     if (result != WAIT_OBJECT_0 || nxvm_execution_context_current() != NULL) {

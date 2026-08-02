@@ -39,11 +39,11 @@ static int nxvm_cpu_probe_capture_state(
     return 1;
 }
 
-static int nxvm_cpu_probe_reset(void)
+static int nxvm_cpu_probe_reset(nxvm_cpu_probe *probe)
 {
     uint32_t eip = 0u;
 
-    vm_composition_control_reset();
+    vm_composition_control_reset(probe->machine.control);
     if (core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_CS, 0u) ||
         core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_DS, 0u) ||
         core_machine_cpu_load_segment(CORE_MACHINE_CPU_SEGMENT_ES, 0u) ||
@@ -66,9 +66,9 @@ int nxvm_cpu_probe_create(nxvm_cpu_probe **out_probe)
     if (probe == NULL) return 0;
     vm_composition_live_machine_initialize(&probe->machine);
     vm_composition_live_machine_bind_legacy(&probe->machine);
-    vm_composition_control_initialize(&probe->machine);
+    vm_composition_control_initialize(probe->machine.control, &probe->machine);
     probe->active = 1;
-    if (!nxvm_cpu_probe_reset()) {
+    if (!nxvm_cpu_probe_reset(probe)) {
         nxvm_cpu_probe_destroy(probe);
         return 0;
     }
@@ -84,7 +84,7 @@ int nxvm_cpu_probe_step(
 {
     if (probe == NULL || !probe->active || bytes == NULL || out_capture == NULL ||
         byte_count == 0u || byte_count > NXVM_BASELINE_CPU_PROBE_MAX_BYTES ||
-        !nxvm_cpu_probe_reset()) {
+        !nxvm_cpu_probe_reset(probe)) {
         return 0;
     }
 
@@ -107,7 +107,7 @@ int nxvm_cpu_probe_step(
 void nxvm_cpu_probe_destroy(nxvm_cpu_probe *probe)
 {
     if (probe != NULL && probe->active) {
-        vm_composition_control_finalize(&probe->machine);
+        vm_composition_control_finalize(probe->machine.control, &probe->machine);
         vm_composition_live_machine_finalize(&probe->machine);
         probe->active = 0;
     }

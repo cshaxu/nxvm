@@ -12,7 +12,7 @@ int main(void)
     uint8_t byte = 0x5au;
 
     machineInit(&session);
-    target = vm_composition_debug_target();
+    target = vm_composition_debug_target(&session);
     if (target == NULL || core_product_debug_get_target() != target ||
         target->read_register(target->context,
             CORE_PRODUCT_DEBUG_EIP, &value) ||
