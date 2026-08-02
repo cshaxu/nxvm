@@ -3,6 +3,7 @@
 /* MACHINE controls machine status. */
 
 #include "vm/composition_control.h"
+#include "vm/composition_live_machine.h"
 #include "core/product/debug/debug_target.h"
 #include "core/product/wait.h"
 #include "core/platform/sleep.h"
@@ -128,6 +129,7 @@ void machineResume() {
 void machineInit() {
     platformInit();
     core_product_wait_bind(vm_composition_wait, NULL);
+    vm_composition_live_machine_bind(&vcpu, &vcpuins, &vram, &vport);
     vm_composition_control_initialize();
     core_machine_keyboard_bind(NULL, vm_profile_default_keyboard_provider());
     core_machine_display_bind_snapshot_provider(NULL,
@@ -147,5 +149,6 @@ void machineFinal() {
     vm_platform_execution_bind(NULL, NULL);
     vm_platform_keyboard_bind(NULL, NULL);
     core_product_wait_bind(NULL, NULL);
+    vm_composition_live_machine_clear();
     platformFinal();
 }
