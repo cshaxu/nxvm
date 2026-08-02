@@ -40,8 +40,8 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 T16 S1 P3: rename default-profile display helpers behind the existing core
-snapshot provider, retaining the exact text state and capture behavior.
+M5 T16 S1 P4: rename default-profile keyboard helpers behind the existing core
+keyboard provider, retaining BIOS data-area state and host-key handling.
 
 ## Completed
 
@@ -207,6 +207,9 @@ snapshot provider, retaining the exact text state and capture behavior.
   The existing `core_machine_cpu_*` operations remain the only active path;
   GCC, CPU probe/stop, debugger-target, FDD/HDD reset-vector, and DAG gates
   passed.
+- M5 T16 S1 P3: renamed default-profile display helpers behind the existing
+  snapshot provider. GCC, core presentation, default-profile FDD fixture, and
+  DAG gates passed without a text-state or frame-layout change.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware

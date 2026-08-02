@@ -146,6 +146,12 @@ and debugger display continue through `core_machine_cpu_*` over the existing
 `vcpu` and `vcpuins` state. Windows GCC, CPU probe, CPU-stop, debug-target,
 FDD/HDD reset-vector fixture, and zero-edge DAG gates passed.
 
+The default-profile display group is complete. Its capture helpers are now
+private `vm_profile_default_display_*` functions behind the existing core
+snapshot provider; text RAM reads, change detection, and copied-frame layout
+are unchanged. Windows GCC, core presentation, default-profile FDD fixture,
+and zero-edge DAG gates passed.
+
 ## Ownership Rules
 
 `core/platform` owns host capability, not policy: Console attachment/mode,
