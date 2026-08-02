@@ -18,6 +18,7 @@ void vm_composition_live_machine_bind(void)
     vmCompositionLiveMachine.dma_latch = &vmCompositionLiveMachine.dma_latch_storage;
     vmCompositionLiveMachine.dma_primary = &vmCompositionLiveMachine.dma_primary_storage;
     vmCompositionLiveMachine.dma_secondary = &vmCompositionLiveMachine.dma_secondary_storage;
+    vmCompositionLiveMachine.keyboard_controller = &vmCompositionLiveMachine.keyboard_controller_storage;
     core_machine_cpu_bind_live(vmCompositionLiveMachine.cpu);
     core_machine_cpu_instructions_bind_live(vmCompositionLiveMachine.cpuins);
     core_machine_memory_bind_live(vmCompositionLiveMachine.ram);
@@ -27,6 +28,7 @@ void vm_composition_live_machine_bind(void)
     core_machine_pit_bind_live(vmCompositionLiveMachine.pit);
     core_machine_dma_bind_live(vmCompositionLiveMachine.dma_latch,
         vmCompositionLiveMachine.dma_primary, vmCompositionLiveMachine.dma_secondary);
+    core_machine_keyboard_controller_bind_live(vmCompositionLiveMachine.keyboard_controller);
     vmCompositionLiveMachineBound = 1;
 }
 
@@ -37,6 +39,7 @@ void vm_composition_live_machine_clear(void)
     core_machine_pic_unbind_live();
     core_machine_pit_unbind_live();
     core_machine_dma_unbind_live();
+    core_machine_keyboard_controller_unbind_live();
     core_machine_cpu_instructions_unbind_live();
     core_machine_cpu_unbind_live();
     vmCompositionLiveMachine.cpu = NULL;
@@ -49,6 +52,7 @@ void vm_composition_live_machine_clear(void)
     vmCompositionLiveMachine.dma_latch = NULL;
     vmCompositionLiveMachine.dma_primary = NULL;
     vmCompositionLiveMachine.dma_secondary = NULL;
+    vmCompositionLiveMachine.keyboard_controller = NULL;
     vmCompositionLiveMachineBound = 0;
 }
 
