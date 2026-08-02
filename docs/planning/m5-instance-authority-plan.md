@@ -39,6 +39,43 @@ prompt behavior are compatibility constraints throughout.
    authority smokes, retained Console/debugger smoke, and the FDD DOS-prompt
    observation before opening the next task.
 
+## Required Migration Shape
+
+Every authority-family task follows the same four implementation parts. A
+part is a review and recovery boundary, not a separately closed task or a
+separate executable artifact.
+
+1. **Object graph:** introduce the session-owned context or registry, record
+   its owner, child references, initialization, reset, refresh, and teardown
+   order. It contains the real objects; it must not mirror guest state.
+2. **Internal ABI:** change internal dispatch and callback signatures to take
+   that context explicitly. A function pointer table, provider callback, or
+   observer callback may not discover a session through a global.
+3. **Callers:** move every direct consumer, including profile firmware,
+   debugger, product composition, and smoke code, to the explicit object
+   graph. Preserve each existing lifecycle and guest-visible operation order.
+4. **Deletion readiness:** remove the family from every newly migrated path
+   and add a focused isolation gate proving two independently constructed
+   contexts do not cross-write. Retain a legacy entry only when an unmigrated
+   later family still calls it; record each remaining caller and its owning
+   task.
+
+T66--T72 are explicit-context conversion tasks. T73 is the only task allowed
+to delete the shared legacy selection layer wholesale, after its source scan
+proves that no caller remains. This is necessary because the current CPU
+aliases are consumed by device and profile callbacks that belong to T68--T71;
+deleting them in T66 would force an uncontrolled cross-family rewrite. No new
+caller may use a legacy alias after its owner task begins.
+
+### T66 CPU/Executor Parts
+
+| Part | Work | Deletion gate |
+| --- | --- | --- |
+| P1 | Add a composition-owned CPU execution context referencing the one CPU and decoder storage objects, including stop/reset requests. | No new current-object accessor exists. |
+| P2 | Replace the no-argument instruction-dispatch ABI with a typed handler receiving that context; thread it through all decoder helpers and execution paths. | `cpu.c` and `cpu_instructions.c` contain no selected-session pointer. |
+| P3 | Move VM composition, probes, and core debug adapter to the explicit context; publish the typed instruction-handler ABI for later device/profile injection. | No T66-owned caller resolves CPU state through a selected-session lookup. |
+| P4 | Add two-context CPU reset/execution isolation smoke; record any remaining device/profile legacy callers and prohibit new ones. | T66-owned executor and composition paths have no selected-session CPU lookup. Global CPU alias deletion is a T73 gate. |
+
 ## Hard Stop Conditions
 
 Stop and obtain owner review if a task requires copied guest state, a second
