@@ -35,18 +35,24 @@ The completed authority plan and its evidence index are in
 [the archived plan](../history/m5/planning/m5-instance-authority-plan.md) and
 [the authority-closure index](../verification/m5-t64-t73-authority-closure-index.md).
 
-## Active Work
+## Latest Completed Work
 
 **M5 T74 S1 is complete.** It reconciled the current status and task ledger,
 archived closed M5 plans, retained only working GCC presets, repaired
 documentation links, and removed empty local-only state. It changed no runtime
 source or user-visible behavior and produced no executable artifact.
 
-## Next Gate
+## Short-Term M5 Plan
 
-The owner may select either a bounded remaining M5 code cleanup task or M6 T1
-owned-DOS design. M7 implementation remains ineligible until M6 defines and
-closes its implementation breakdown.
+The next M5 sequence is defined in
+[Facade And Executor Convergence](m5-facade-executor-convergence.md). It has
+two stories: T75--T81 removes residual process-global facades from real NXVM
+paths, then T82--T86 makes `core_machine` the one true guest executor while
+VM retains the outer product loop. This plan is not active until T75 receives
+its scoped subtask record.
+
+M6 T1 remains deferred until this M5 sequence closes. M7 implementation remains
+ineligible until M6 defines and closes its implementation breakdown.
 
 ## Delivery Boundary
 

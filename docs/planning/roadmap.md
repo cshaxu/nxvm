@@ -117,7 +117,11 @@ before M6 may begin; it does not authorize a multi-session product feature.
 
 M5 T65 through T73 completed that plan, removing selected-session globals one
 authority family at a time. T73 recorded a clean closure scan and compatibility
-evidence. T74 is a non-runtime governance/build cleanup task.
+evidence. T74 completed non-runtime governance/build cleanup. The remaining
+M5 convergence is explicitly split: T75--T81 removes residual global facades
+from real NXVM paths, and T82--T86 makes `core_machine` the one true guest
+executor while VM retains the outer product loop. The authoritative breakdown
+is [`planning/m5-facade-executor-convergence.md`](m5-facade-executor-convergence.md).
 
 **Compatibility gate:** M5 must not alter NXVM functionality or user experience.
 Any unavoidable user-visible change requires explicit owner approval before
