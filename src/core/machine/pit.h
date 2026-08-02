@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "core/machine/vglobal.h"
+#include "core/machine/port.h"
 
 #define NXVM_DEVICE_PIT "Intel 8254"
 
@@ -90,6 +91,7 @@ void vpitInit();
 void vpitReset();
 void vpitRefresh();
 void vpitFinal();
+void core_machine_pit_initialize(t_pit *pit, t_port *port);
 
 #define VPIT_POST "                                 \
 ; init vpit                                       \n\

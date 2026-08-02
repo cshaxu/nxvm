@@ -16,61 +16,61 @@ void core_machine_pit_bind_live(t_pit *pit) { coreMachinePit = pit; }
 void core_machine_pit_unbind_live(void) { coreMachinePit = NULL; }
 
 /* Initializes counter when status is ready */
-static void LoadInit(t_nubit8 id) {
-    if (vpit.data.flagWrite[id] == VPIT_STATUS_RW_READY) {
-        vpit.data.count[id] = vpit.data.init[id];
-        vpit.data.flagReady[id] = True;
+static void LoadInit(t_pit *pit, t_nubit8 id) {
+    if (pit->data.flagWrite[id] == VPIT_STATUS_RW_READY) {
+        pit->data.count[id] = pit->data.init[id];
+        pit->data.flagReady[id] = True;
     }
 }
 /* Decreases count */
-static void Decrease(t_nubit8 id) {
-    vpit.data.count[id]--;
-    if (GetBit(vpit.data.cw[id], VPIT_CW_BCD)) {
-        if ((vpit.data.count[id] & 0x000f) == 0x000f) {
-            vpit.data.count[id] = (vpit.data.count[id] & 0xfff0) | 0x0009;
+static void Decrease(t_pit *pit, t_nubit8 id) {
+    pit->data.count[id]--;
+    if (GetBit(pit->data.cw[id], VPIT_CW_BCD)) {
+        if ((pit->data.count[id] & 0x000f) == 0x000f) {
+            pit->data.count[id] = (pit->data.count[id] & 0xfff0) | 0x0009;
         }
-        if ((vpit.data.count[id] & 0x00f0) == 0x00f0) {
-            vpit.data.count[id] = (vpit.data.count[id] & 0xff0f) | 0x0090;
+        if ((pit->data.count[id] & 0x00f0) == 0x00f0) {
+            pit->data.count[id] = (pit->data.count[id] & 0xff0f) | 0x0090;
         }
-        if ((vpit.data.count[id] & 0x0f00) == 0x0f00) {
-            vpit.data.count[id] = (vpit.data.count[id] & 0xf0ff) | 0x0900;
+        if ((pit->data.count[id] & 0x0f00) == 0x0f00) {
+            pit->data.count[id] = (pit->data.count[id] & 0xf0ff) | 0x0900;
         }
-        if ((vpit.data.count[id] & 0xf000) == 0xf000) {
-            vpit.data.count[id] = (vpit.data.count[id] & 0x0fff) | 0x9000;
+        if ((pit->data.count[id] & 0xf000) == 0xf000) {
+            pit->data.count[id] = (pit->data.count[id] & 0x0fff) | 0x9000;
         }
     }
 }
 
-static void io_read_004x(t_nubit8 id) {
-    if (vpit.data.flagLatch[id]) {
-        if (vpit.data.flagRead[id] == VPIT_STATUS_RW_MSB) {
-            vport.data.ioByte = GetMax8(vpit.data.latch[id] >> 8);
-            vpit.data.flagRead[id] = VPIT_STATUS_RW_READY;
-            vpit.data.flagLatch[id] = False; /* finish reading latch */
+static void io_read_004x(t_pit *pit, t_port *port, t_nubit8 id) {
+    if (pit->data.flagLatch[id]) {
+        if (pit->data.flagRead[id] == VPIT_STATUS_RW_MSB) {
+            port->data.ioByte = GetMax8(pit->data.latch[id] >> 8);
+            pit->data.flagRead[id] = VPIT_STATUS_RW_READY;
+            pit->data.flagLatch[id] = False; /* finish reading latch */
         } else {
-            vport.data.ioByte = GetMax8(vpit.data.latch[id]);
-            vpit.data.flagRead[id] = VPIT_STATUS_RW_MSB;
-            vpit.data.flagLatch[id] = True; /* latch msb to be read */
+            port->data.ioByte = GetMax8(pit->data.latch[id]);
+            pit->data.flagRead[id] = VPIT_STATUS_RW_MSB;
+            pit->data.flagLatch[id] = True; /* latch msb to be read */
         }
     } else {
-        switch (VPIT_GetCW_RW(vpit.data.cw[id])) {
+        switch (VPIT_GetCW_RW(pit->data.cw[id])) {
         case 0x00:
             break;
         case 0x01:
-            vport.data.ioByte = GetMax8(vpit.data.count[id]);
-            vpit.data.flagRead[id] = VPIT_STATUS_RW_READY;
+            port->data.ioByte = GetMax8(pit->data.count[id]);
+            pit->data.flagRead[id] = VPIT_STATUS_RW_READY;
             break;
         case 0x02:
-            vport.data.ioByte = GetMax8(vpit.data.count[id] >> 8);
-            vpit.data.flagRead[id] = VPIT_STATUS_RW_READY;
+            port->data.ioByte = GetMax8(pit->data.count[id] >> 8);
+            pit->data.flagRead[id] = VPIT_STATUS_RW_READY;
             break;
         case 0x03:
-            if (vpit.data.flagRead[id] == VPIT_STATUS_RW_MSB) {
-                vport.data.ioByte = GetMax8(vpit.data.count[id] >> 8);
-                vpit.data.flagRead[id] = VPIT_STATUS_RW_READY;
+            if (pit->data.flagRead[id] == VPIT_STATUS_RW_MSB) {
+                port->data.ioByte = GetMax8(pit->data.count[id] >> 8);
+                pit->data.flagRead[id] = VPIT_STATUS_RW_READY;
             } else {
-                vport.data.ioByte = GetMax8(vpit.data.count[id]);
-                vpit.data.flagRead[id] = VPIT_STATUS_RW_MSB;
+                port->data.ioByte = GetMax8(pit->data.count[id]);
+                pit->data.flagRead[id] = VPIT_STATUS_RW_MSB;
             }
             break;
         default:
@@ -78,51 +78,51 @@ static void io_read_004x(t_nubit8 id) {
         }
     }
 }
-static void io_write_004x(t_nubit8 id) {
-    switch (VPIT_GetCW_RW(vpit.data.cw[id])) {
+static void io_write_004x(t_pit *pit, t_port *port, t_nubit8 id) {
+    switch (VPIT_GetCW_RW(pit->data.cw[id])) {
     case 0x00:
         return;
         break;
     case 0x01:
-        vpit.data.init[id] = GetMax16(vport.data.ioByte);
-        vpit.data.flagWrite[id] = VPIT_STATUS_RW_READY;
+        pit->data.init[id] = GetMax16(port->data.ioByte);
+        pit->data.flagWrite[id] = VPIT_STATUS_RW_READY;
         break;
     case 0x02:
-        vpit.data.init[id] = GetMax16(vport.data.ioByte << 8);
-        vpit.data.flagWrite[id] = VPIT_STATUS_RW_READY;
+        pit->data.init[id] = GetMax16(port->data.ioByte << 8);
+        pit->data.flagWrite[id] = VPIT_STATUS_RW_READY;
         break;
     case 0x03:
-        if (vpit.data.flagWrite[id] == VPIT_STATUS_RW_MSB) {
-            vpit.data.init[id] = GetMax16(vport.data.ioByte << 8) | GetMax8(vpit.data.init[id]);
-            vpit.data.flagWrite[id] = VPIT_STATUS_RW_READY;
+        if (pit->data.flagWrite[id] == VPIT_STATUS_RW_MSB) {
+            pit->data.init[id] = GetMax16(port->data.ioByte << 8) | GetMax8(pit->data.init[id]);
+            pit->data.flagWrite[id] = VPIT_STATUS_RW_READY;
         } else {
-            vpit.data.init[id] = GetMax16(vport.data.ioByte);
-            vpit.data.flagWrite[id] = VPIT_STATUS_RW_MSB;
+            pit->data.init[id] = GetMax16(port->data.ioByte);
+            pit->data.flagWrite[id] = VPIT_STATUS_RW_MSB;
         }
     default:
         break;
     }
-    switch (VPIT_GetCW_M(vpit.data.cw[id])) {
+    switch (VPIT_GetCW_M(pit->data.cw[id])) {
     case 0x00:
-        LoadInit(id);
+        LoadInit(pit, id);
         break;
     case 0x01:
         break;
     case 0x02:
     case 0x06:
-        if (!vpit.data.flagReady[id]) {
-            LoadInit(id);
+        if (!pit->data.flagReady[id]) {
+            LoadInit(pit, id);
         }
         break;
     case 0x03:
     case 0x07:
-        if (!vpit.data.flagReady[id]) {
-            LoadInit(id);
+        if (!pit->data.flagReady[id]) {
+            LoadInit(pit, id);
         }
         break;
     case 0x04:
-        if (!vpit.data.flagReady[id]) {
-            LoadInit(id);
+        if (!pit->data.flagReady[id]) {
+            LoadInit(pit, id);
         }
         break;
     case 0x05:
@@ -132,72 +132,67 @@ static void io_write_004x(t_nubit8 id) {
     }
 }
 
-/* read counter 0 */
-static void io_read_0040() {
-    io_read_004x(0);
+static void io_read_0040(t_port *port, void *owner) {
+    io_read_004x((t_pit *)owner, port, 0);
 }
-/* read counter 1 */
-static void io_read_0041() {
-    io_read_004x(1);
+static void io_read_0041(t_port *port, void *owner) {
+    io_read_004x((t_pit *)owner, port, 1);
 }
-/* read counter 2 */
-static void io_read_0042() {
-    io_read_004x(2);
+static void io_read_0042(t_port *port, void *owner) {
+    io_read_004x((t_pit *)owner, port, 2);
 }
-/* write counter 0 */
-static void io_write_0040() {
-    io_write_004x(0);
+static void io_write_0040(t_port *port, void *owner) {
+    io_write_004x((t_pit *)owner, port, 0);
 }
-/* write counter 1 */
-static void io_write_0041() {
-    io_write_004x(1);
+static void io_write_0041(t_port *port, void *owner) {
+    io_write_004x((t_pit *)owner, port, 1);
 }
-/* write counter 2 */
-static void io_write_0042() {
-    io_write_004x(2);
+static void io_write_0042(t_port *port, void *owner) {
+    io_write_004x((t_pit *)owner, port, 2);
 }
 /* write control word */
-static void io_write_0043() {
-    t_nubit8 id = VPIT_GetCW_SC(vport.data.ioByte);
+static void io_write_0043(t_port *port, void *owner) {
+    t_pit *pit = (t_pit *)owner;
+    t_nubit8 id = VPIT_GetCW_SC(port->data.ioByte);
     if (id == (VPIT_CW_SC >> 6)) {
         /* read-back command */
-        vpit.data.cw[id] = vport.data.ioByte;
+        pit->data.cw[id] = port->data.ioByte;
         /* TODO: implement read-back functionalities */
     } else {
-        vpit.data.flagLatch[id] = False; /* unlatch when counter is re-programmed */
-        switch (VPIT_GetCW_RW(vport.data.ioByte)) {
+        pit->data.flagLatch[id] = False; /* unlatch when counter is re-programmed */
+        switch (VPIT_GetCW_RW(port->data.ioByte)) {
         case 0x00:
             /* latch command */
-            vpit.data.flagLatch[id] = True;
-            vpit.data.latch[id] = vpit.data.count[id];
-            vpit.data.flagRead[id] = VPIT_STATUS_RW_LSB;
+            pit->data.flagLatch[id] = True;
+            pit->data.latch[id] = pit->data.count[id];
+            pit->data.flagRead[id] = VPIT_STATUS_RW_LSB;
             break;
         case 0x01:
             /* LSB */
-            vpit.data.cw[id] = vport.data.ioByte;
-            vpit.data.flagReady[id] = False;
-            vpit.data.flagRead[id] = VPIT_STATUS_RW_LSB;
-            vpit.data.flagWrite[id] = VPIT_STATUS_RW_LSB;
+            pit->data.cw[id] = port->data.ioByte;
+            pit->data.flagReady[id] = False;
+            pit->data.flagRead[id] = VPIT_STATUS_RW_LSB;
+            pit->data.flagWrite[id] = VPIT_STATUS_RW_LSB;
             break;
         case 0x02:
             /* MSB */
-            vpit.data.cw[id] = vport.data.ioByte;
-            vpit.data.flagReady[id] = False;
-            vpit.data.flagRead[id] = VPIT_STATUS_RW_MSB;
-            vpit.data.flagWrite[id] = VPIT_STATUS_RW_MSB;
+            pit->data.cw[id] = port->data.ioByte;
+            pit->data.flagReady[id] = False;
+            pit->data.flagRead[id] = VPIT_STATUS_RW_MSB;
+            pit->data.flagWrite[id] = VPIT_STATUS_RW_MSB;
             break;
         case 0x03:
             /* 16-bit */
-            vpit.data.cw[id] = vport.data.ioByte;
-            vpit.data.flagReady[id] = False;
-            vpit.data.flagRead[id] = VPIT_STATUS_RW_LSB;
-            vpit.data.flagWrite[id] = VPIT_STATUS_RW_LSB;
+            pit->data.cw[id] = port->data.ioByte;
+            pit->data.flagReady[id] = False;
+            pit->data.flagRead[id] = VPIT_STATUS_RW_LSB;
+            pit->data.flagWrite[id] = VPIT_STATUS_RW_LSB;
             break;
         default:
             break;
         }
-        if (VPIT_GetCW_M(vpit.data.cw[id]) != Zero8) {
-            ExecFun(vpit.connect.fpOut[id]);
+        if (VPIT_GetCW_M(pit->data.cw[id]) != Zero8) {
+            ExecFun(pit->connect.fpOut[id]);
         }
     }
 }
@@ -206,7 +201,7 @@ static void io_write_0043() {
 void vpitSetGate(t_nubit8 id, t_bool flagGate) {
     if (VPIT_GetCW_M(vpit.data.cw[id]) != Zero8) {
         if (!vpit.connect.flagGate[id] && flagGate) {
-            LoadInit(id);
+            LoadInit(&vpit, id);
         }
     }
     vpit.connect.flagGate[id] = flagGate;
@@ -218,14 +213,21 @@ void vpitAddDevice(t_nubit8 id, t_faddrcc fpOut) {
 }
 
 void vpitInit() {
-    MEMSET((void *)(&vpit), Zero8, sizeof(t_pit));
-    vportAddRead(0x0040, (t_faddrcc) io_read_0040);
-    vportAddRead(0x0041, (t_faddrcc) io_read_0041);
-    vportAddRead(0x0042, (t_faddrcc) io_read_0042);
-    vportAddWrite(0x0040, (t_faddrcc) io_write_0040);
-    vportAddWrite(0x0041, (t_faddrcc) io_write_0041);
-    vportAddWrite(0x0042, (t_faddrcc) io_write_0042);
-    vportAddWrite(0x0043, (t_faddrcc) io_write_0043);
+    core_machine_pit_initialize(core_machine_pit_current(),
+        core_machine_port_current());
+}
+
+void core_machine_pit_initialize(t_pit *pit, t_port *port)
+{
+    if (pit == NULL || port == NULL) return;
+    MEMSET((void *)pit, Zero8, sizeof(*pit));
+    core_machine_port_add_read(port, 0x0040, io_read_0040, pit);
+    core_machine_port_add_read(port, 0x0041, io_read_0041, pit);
+    core_machine_port_add_read(port, 0x0042, io_read_0042, pit);
+    core_machine_port_add_write(port, 0x0040, io_write_0040, pit);
+    core_machine_port_add_write(port, 0x0041, io_write_0041, pit);
+    core_machine_port_add_write(port, 0x0042, io_write_0042, pit);
+    core_machine_port_add_write(port, 0x0043, io_write_0043, pit);
 }
 void vpitReset() {
     t_nubitcc i;
@@ -242,7 +244,7 @@ void vpitRefresh() {
         case 0x00:
             if (vpit.data.flagReady[i]) {
                 if (vpit.connect.flagGate[i]) {
-                    Decrease(GetMax8(i));
+                    Decrease(&vpit, GetMax8(i));
                     if (vpit.data.count[i] == Zero16) {
                         ExecFun(vpit.connect.fpOut[i]);
                         vpit.data.flagReady[i] = False;
@@ -252,7 +254,7 @@ void vpitRefresh() {
             break;
         case 0x01:
             if (vpit.data.flagReady[i]) {
-                Decrease(GetMax8(i));
+                Decrease(&vpit, GetMax8(i));
                 if (vpit.data.count[i] == Zero16) {
                     ExecFun(vpit.connect.fpOut[i]);
                     vpit.data.flagReady[i] = False;
@@ -263,10 +265,10 @@ void vpitRefresh() {
         case 0x06:
             if (vpit.data.flagReady[i]) {
                 if (vpit.connect.flagGate[i]) {
-                    Decrease(GetMax8(i));
+                    Decrease(&vpit, GetMax8(i));
                     if (vpit.data.count[i] == 0x0001) {
                         ExecFun(vpit.connect.fpOut[i]);
-                        LoadInit(GetMax8(i));
+                        LoadInit(&vpit, GetMax8(i));
                     }
                 }
             }
@@ -275,10 +277,10 @@ void vpitRefresh() {
         case 0x07:
             if (vpit.data.flagReady[i]) {
                 if (vpit.connect.flagGate[i]) {
-                    Decrease(GetMax8(i));
+                    Decrease(&vpit, GetMax8(i));
                     if (vpit.data.count[i] == Zero16) {
                         ExecFun(vpit.connect.fpOut[i]);
-                        LoadInit(GetMax8(i));
+                        LoadInit(&vpit, GetMax8(i));
                     }
                 }
             }
@@ -286,7 +288,7 @@ void vpitRefresh() {
         case 0x04:
             if (vpit.data.flagReady[i]) {
                 if (vpit.connect.flagGate[i]) {
-                    Decrease(GetMax8(i));
+                    Decrease(&vpit, GetMax8(i));
                     if (vpit.data.count[i] == Zero16) {
                         ExecFun(vpit.connect.fpOut[i]);
                         vpit.data.flagReady[i] = False;
@@ -296,7 +298,7 @@ void vpitRefresh() {
             break;
         case 0x05:
             if (vpit.data.flagReady[i]) {
-                Decrease(GetMax8(i));
+                Decrease(&vpit, GetMax8(i));
                 if (vpit.data.count[i] == Zero16) {
                     ExecFun(vpit.connect.fpOut[i]);
                     vpit.data.flagReady[i] = False;
