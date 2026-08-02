@@ -8,7 +8,11 @@
 
 #include "vm/machine/vfdd.h"
 
-t_fdd vfdd;
+static t_fdd *vmMachineFdd;
+
+t_fdd *vm_machine_fdd_current(void) { return vmMachineFdd; }
+void vm_machine_fdd_bind_live(t_fdd *fdd) { vmMachineFdd = fdd; }
+void vm_machine_fdd_unbind_live(void) { vmMachineFdd = NULL; }
 
 #define IsTrackEnd (vfdd.data.sector >= (vfdd.data.nsector + 1))
 #define IsCylHalf  (vfdd.data.head == 0 && IsTrackEnd)

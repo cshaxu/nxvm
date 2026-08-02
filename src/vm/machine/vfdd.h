@@ -36,7 +36,12 @@ typedef struct {
     t_fdd_connect connect;
 } t_fdd;
 
-extern t_fdd vfdd;
+t_fdd *vm_machine_fdd_current(void);
+void vm_machine_fdd_bind_live(t_fdd *fdd);
+void vm_machine_fdd_unbind_live(void);
+
+/* Transitional direct alias to the one composition-owned FDD object. */
+#define vfdd (*vm_machine_fdd_current())
 
 #define VFDD_BYTE_PER_MB ((1 << 10) * 1000)
 
