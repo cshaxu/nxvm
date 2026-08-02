@@ -11,18 +11,18 @@ int main(void)
 
     machineInit(&session);
     machine = (&session);
-    if (machine == NULL || &vdebug != machine->debug) {
+    if (machine == NULL || machine->debug != &machine->debug_storage) {
         machineFinal(&session);
         return 1;
     }
-    vm_machine_debug_set_trace(2u);
-    if (!vdebug.data.flagTrace || vdebug.data.traceCount != 2u) {
+    vm_machine_debug_set_trace(machine->debug, 2u);
+    if (!machine->debug->data.flagTrace ||
+        machine->debug->data.traceCount != 2u) {
         machineFinal(&session);
         return 1;
     }
-    vm_machine_debug_clear_trace();
+    vm_machine_debug_clear_trace(machine->debug);
     machineFinal(&session);
-    if (vm_machine_debug_current() != NULL) return 1;
     puts("M5:T43:S1:DEBUG-AUTHORITY:OK");
     return 0;
 }

@@ -21,14 +21,15 @@ static void device_execution_context_reset(void *device)
 {
     vm_composition_live_machine *machine =
         (vm_composition_live_machine *)device;
-    vdebugReset();
+    vm_machine_debug_reset(machine->debug);
     vmachineReset(machine);
 }
 
 static void device_execution_context_debug_refresh(void *device)
 {
-    (void)device;
-    vdebugRefresh();
+    vm_composition_live_machine *machine =
+        (vm_composition_live_machine *)device;
+    vm_machine_debug_refresh(machine == NULL ? NULL : machine->debug);
 }
 
 static void device_execution_context_machine_refresh(void *device)
@@ -179,7 +180,7 @@ void vm_composition_control_initialize(vm_composition_control_state *control,
     nxvm_execution_context_bind_callbacks(
         &control->execution_context, &device_execution_callbacks);
     nxvm_execution_context_enter(&control->execution_context);
-    vdebugInit();
+    vm_machine_debug_initialize(machine->debug, machine->cpu, machine->cpuins);
     vmachineInit(machine);
 }
 
@@ -188,12 +189,15 @@ void vm_composition_control_finalize(vm_composition_control_state *control,
     vm_composition_live_machine *machine) {
     if (control == NULL || machine == NULL) return;
     nxvm_execution_context_leave(&control->execution_context);
-    vdebugFinal();
+    vm_machine_debug_finalize(machine->debug);
     vmachineFinal(machine);
 }
 
 void vm_composition_control_print_status(const vm_composition_control_state *control) {
-    PRINTF("Recording: %s\n", vdebug.connect.recordFile ? "Yes" : "No");
+    PRINTF("Recording: %s\n", control != NULL &&
+        control->execution_context.device != NULL &&
+        ((vm_composition_live_machine *)control->execution_context.device)->debug->
+            connect.recordFile ? "Yes" : "No");
     PRINTF("Running:   %s\n", control != NULL && control->flagRun ? "Yes" : "No");
 }
 
