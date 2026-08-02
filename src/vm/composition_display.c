@@ -1,6 +1,5 @@
 #include "core/machine/display.h"
 #include "vm/composition_display.h"
-#include "vm/machine/device.h"
 #include "vm/platform/display_frame.h"
 #include "vm/platform/platform.h"
 
@@ -16,33 +15,35 @@ void vm_composition_publish_display(int force)
     int buffer_changed;
     int cursor_changed;
 
-    buffer_changed = deviceConnectDisplayGetBufferChange();
-    cursor_changed = deviceConnectDisplayGetCursorChange();
+    core_machine_display_snapshot snapshot;
+
+    memset(&snapshot, 0, sizeof(snapshot));
+    if (!core_machine_display_capture_snapshot(&snapshot)) return;
+    buffer_changed = snapshot.buffer_changed;
+    cursor_changed = snapshot.cursor_changed;
     if (!force && !buffer_changed && !cursor_changed) return;
 
     memset(&frame, 0, sizeof(frame));
-    frame.columns = deviceConnectDisplayGetRowSize();
-    frame.rows = deviceConnectDisplayGetColSize();
+    frame.columns = snapshot.columns;
+    frame.rows = snapshot.rows;
     if (frame.columns > VM_PLATFORM_DISPLAY_MAX_COLUMNS) {
         frame.columns = VM_PLATFORM_DISPLAY_MAX_COLUMNS;
     }
     if (frame.rows > VM_PLATFORM_DISPLAY_MAX_ROWS) {
         frame.rows = VM_PLATFORM_DISPLAY_MAX_ROWS;
     }
-    frame.cursor_top = deviceConnectDisplayGetCursorTop();
-    frame.cursor_bottom = deviceConnectDisplayGetCursorBottom();
-    frame.cursor_x = deviceConnectDisplayGetCurrentCursorPosX();
-    frame.cursor_y = deviceConnectDisplayGetCurrentCursorPosY();
-    frame.cursor_visible = deviceConnectDisplayGetCursorVisible();
+    frame.cursor_top = snapshot.cursor_top;
+    frame.cursor_bottom = snapshot.cursor_bottom;
+    frame.cursor_x = snapshot.cursor_x;
+    frame.cursor_y = snapshot.cursor_y;
+    frame.cursor_visible = snapshot.cursor_visible;
     frame.buffer_changed = buffer_changed;
     frame.cursor_changed = cursor_changed;
     for (row = 0u; row < frame.rows; ++row) {
         for (column = 0u; column < frame.columns; ++column) {
             uint16_t index = row * VM_PLATFORM_DISPLAY_MAX_COLUMNS + column;
-            frame.characters[index] = deviceConnectDisplayGetCurrentChar(
-                (uint8_t)row, (uint8_t)column);
-            frame.attributes[index] = deviceConnectDisplayGetCurrentCharProp(
-                (uint8_t)row, (uint8_t)column);
+            frame.characters[index] = snapshot.characters[index];
+            frame.attributes[index] = snapshot.attributes[index];
         }
     }
     frame.generation = ++vmCompositionDisplayGeneration;

@@ -421,3 +421,32 @@ uint8_t deviceConnectDisplayGetCurrentChar(uint8_t x, uint8_t y) {
 uint8_t deviceConnectDisplayGetCurrentCharProp(uint8_t x, uint8_t y) {
     return qdcgaVarCharProp(qdcgaVarPageNum, x, y);
 }
+
+int vm_profile_default_display_capture(void *context,
+    core_machine_display_snapshot *out_snapshot)
+{
+    uint16_t row;
+    uint16_t column;
+
+    (void)context;
+    if (out_snapshot == NULL) return False;
+    out_snapshot->buffer_changed = deviceConnectDisplayGetBufferChange();
+    out_snapshot->cursor_changed = deviceConnectDisplayGetCursorChange();
+    out_snapshot->columns = deviceConnectDisplayGetRowSize();
+    out_snapshot->rows = deviceConnectDisplayGetColSize();
+    out_snapshot->cursor_top = deviceConnectDisplayGetCursorTop();
+    out_snapshot->cursor_bottom = deviceConnectDisplayGetCursorBottom();
+    out_snapshot->cursor_x = deviceConnectDisplayGetCurrentCursorPosX();
+    out_snapshot->cursor_y = deviceConnectDisplayGetCurrentCursorPosY();
+    out_snapshot->cursor_visible = deviceConnectDisplayGetCursorVisible();
+    for (row = 0u; row < out_snapshot->rows; ++row) {
+        for (column = 0u; column < out_snapshot->columns; ++column) {
+            uint16_t index = row * CORE_MACHINE_DISPLAY_MAX_COLUMNS + column;
+            out_snapshot->characters[index] = deviceConnectDisplayGetCurrentChar(
+                (uint8_t)row, (uint8_t)column);
+            out_snapshot->attributes[index] = deviceConnectDisplayGetCurrentCharProp(
+                (uint8_t)row, (uint8_t)column);
+        }
+    }
+    return True;
+}
