@@ -116,6 +116,10 @@ M5 T64 reopens bounded design work for explicit session ownership and
 context-passing. It must produce the next bounded authority-migration plan
 before M6 may begin; it does not authorize a multi-session product feature.
 
+M5 T65 through T73 execute that plan, removing selected-session globals one
+authority family at a time. M6 remains deferred until T73 records a clean
+closure scan and compatibility evidence.
+
 **Compatibility gate:** M5 must not alter NXVM functionality or user experience.
 Any unavoidable user-visible change requires explicit owner approval before
 implementation and a recorded before/after acceptance plan.

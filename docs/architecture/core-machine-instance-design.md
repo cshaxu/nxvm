@@ -180,3 +180,6 @@ callers for one family, define its context-passing API and freeze/lifetime
 rules, then migrate it without changing user-visible behavior. M6 remains
 deferred until the selected-session globals and the dual machine execution
 paths have a bounded M5 plan.
+
+The approved execution order and per-task deletion gates are recorded in
+[M5 Instance Authority Plan](../planning/m5-instance-authority-plan.md).
