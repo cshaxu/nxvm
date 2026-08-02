@@ -1,21 +1,16 @@
 #include <stdio.h>
 
-#include "core/machine/cpu_capability.h"
 #include "core/product/runtime/registry.h"
 
 static int capability_is_proven(void *context, unsigned capability)
 {
-    const nxvm_core_cpu_capability_manifest *manifest =
-        (const nxvm_core_cpu_capability_manifest *)context;
-
-    return nxvm_core_cpu_capability_manifest_get(manifest,
-        (nxvm_core_cpu_capability)capability) == NXVM_CORE_CPU_CAPABILITY_PROVEN;
+    return capability == 0u && *(const int *)context != 0;
 }
 
 int main(void)
 {
     const unsigned required[] = {
-        NXVM_CORE_CPU_CAPABILITY_REAL_MODE_8086
+        0u
     };
     const nxvm_runtime_profile_descriptor_v1 profile = {
         "nxvm.machine.test",
@@ -26,10 +21,9 @@ int main(void)
         "firmware.provider.test",
         NXVM_RUNTIME_FIRMWARE_PROVIDER_BUILTIN, "test", "nxvm.machine.test"
     };
-    nxvm_core_cpu_capability_manifest capabilities;
+    int capability_is_available = 0;
     nxvm_runtime_registry registry;
 
-    nxvm_core_cpu_capability_manifest_initialize(&capabilities);
     nxvm_runtime_registry_initialize(&registry);
     if (nxvm_runtime_registry_register_profile(&registry, &profile) !=
             NXVM_CORE_STATUS_OK ||
@@ -39,13 +33,11 @@ int main(void)
             NXVM_CORE_STATUS_UNSUPPORTED ||
         nxvm_runtime_registry_find_profile(&registry, profile.id,
             NXVM_RUNTIME_PROFILE_MACHINE, capability_is_proven,
-            &capabilities) != NULL ||
-        !nxvm_core_cpu_capability_manifest_set(&capabilities,
-            NXVM_CORE_CPU_CAPABILITY_REAL_MODE_8086,
-            NXVM_CORE_CPU_CAPABILITY_PROVEN) ||
+            &capability_is_available) != NULL ||
+        (capability_is_available = 1) == 0 ||
         nxvm_runtime_registry_find_profile(&registry, profile.id,
             NXVM_RUNTIME_PROFILE_MACHINE, capability_is_proven,
-            &capabilities) != &profile ||
+            &capability_is_available) != &profile ||
         nxvm_runtime_registry_find_firmware_provider(&registry, provider.id,
             profile.id) != &provider ||
         nxvm_runtime_registry_find_firmware_provider(&registry, provider.id,
