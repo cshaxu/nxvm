@@ -6,7 +6,6 @@
 #include "core/machine/vcpu.h"
 #include "core/machine/memory.h"
 #include "vm/machine/vdebug.h"
-#include "vm/machine/device.h"
 #include "core/machine/keyboard_state.h"
 #include "vm/machine/vfdd.h"
 #include "vm/machine/vhdd.h"

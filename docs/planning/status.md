@@ -40,8 +40,9 @@ a checkpoint, not the eventual M5 closure snapshot.
 
 ## Active Work
 
-M5 T15 S1 P5: replace the retained BIOS and media declarations with narrow
-owner-local headers.
+M5 T16 S1 P1: map and replace the remaining `deviceConnect*` implementation
+exports with narrow `core_machine_*` or profile-local names, one subsystem at
+a time without duplicating state.
 
 ## Completed
 
@@ -186,6 +187,20 @@ owner-local headers.
   `vdebug.h`; the core debugger adapter, Console recorder, and full-PC session
   no longer access them through `device.h`. GCC, debugger-target, and Console
   gates passed.
+- M5 T15 S1 P5: moved retained BIOS/media controls to narrow VM machine and
+  default-profile headers; the Console and full-PC session no longer require
+  the aggregate for these operations.
+- M5 T15 S1 P6: bound text display capture through the core snapshot-provider
+  contract, preserving the default-profile text state and existing renderers.
+- M5 T15 S1 P7: bound host keyboard state and keypress delivery through the
+  core keyboard-provider contract; VM composition owns the provider binding.
+- M5 T15 S1 P8: removed the now-unused composition keyboard bridge and all
+  inactive direct `device.h` includes; aggregate deletion is the next bounded
+  slice.
+- M5 T15 S1 P9: deleted `vm/machine/device.h` after the final inactive
+  includes were removed. Windows GCC, keyboard input, expected-`#UD`, FDD/HDD
+  reset-vector, retained Console `HELP`/`EXIT`, and the zero-edge DAG verifier
+  passed with no Console or machine behavior change.
 - M5 T9 S1: renamed the built-in PC/AT profile implementation to
   `default_profile` without changing emulated-machine identity.
 - M5 T9 S2: moved the original NXVM entry point, Console, and hardware
