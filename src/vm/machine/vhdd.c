@@ -8,7 +8,11 @@
 
 #include "vm/machine/vhdd.h"
 
-t_hdd vhdd;
+static t_hdd *vmMachineHdd;
+
+t_hdd *vm_machine_hdd_current(void) { return vmMachineHdd; }
+void vm_machine_hdd_bind_live(t_hdd *hdd) { vmMachineHdd = hdd; }
+void vm_machine_hdd_unbind_live(void) { vmMachineHdd = NULL; }
 
 #define IsTrackEnd (vhdd.data.sector >= (vhdd.data.nsector + 1))
 #define IsCylEnd   (vhdd.data.head == (vhdd.data.nhead - 1) && IsTrackEnd)

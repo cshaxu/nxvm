@@ -13,6 +13,7 @@
 #include "vm/machine/vcmos.h"
 #include "vm/machine/vfdd.h"
 #include "vm/machine/vfdc.h"
+#include "vm/machine/vhdd.h"
 
 typedef struct vm_composition_live_machine {
     t_cpu cpu_storage;
@@ -30,6 +31,7 @@ typedef struct vm_composition_live_machine {
     t_cmos cmos_storage;
     t_fdd fdd_storage;
     t_fdc fdc_storage;
+    t_hdd hdd_storage;
     t_cpu *cpu;
     t_cpuins *cpuins;
     t_ram *ram;
@@ -45,6 +47,7 @@ typedef struct vm_composition_live_machine {
     t_cmos *cmos;
     t_fdd *fdd;
     t_fdc *fdc;
+    t_hdd *hdd;
 } vm_composition_live_machine;
 
 void vm_composition_live_machine_bind(void);

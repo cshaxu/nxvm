@@ -36,7 +36,12 @@ typedef struct {
     t_hdd_connect connect;
 } t_hdd;
 
-extern t_hdd vhdd;
+t_hdd *vm_machine_hdd_current(void);
+void vm_machine_hdd_bind_live(t_hdd *hdd);
+void vm_machine_hdd_unbind_live(void);
+
+/* Transitional direct alias to the one composition-owned HDD object. */
+#define vhdd (*vm_machine_hdd_current())
 
 #define VHDD_BYTE_PER_MB (1 << 20)
 
