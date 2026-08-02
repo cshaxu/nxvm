@@ -358,7 +358,7 @@ static void io_write_00A1(t_port *port, t_nubit16 port_id, void *owner) {
  * Called by int request sender of devices, e.g. vpitIntTick
  */
 void core_machine_pic_set_irq(t_pic *master, t_pic *slave, t_nubit8 irq_id) {
-    if (master == NULL || slave == NULL) return;
+    if (master == NULL) return;
     switch (irq_id) {
     case 0x00:
     case 0x01:
@@ -377,6 +377,7 @@ void core_machine_pic_set_irq(t_pic *master, t_pic *slave, t_nubit8 irq_id) {
     case 0x0d:
     case 0x0e:
     case 0x0f:
+        if (slave == NULL) return;
         SetBit(master->data.irr, VPIC_IRR_IRQ(0x02));
         SetBit(slave->data.irr, VPIC_IRR_IRQ(irq_id - 0x08));
         break;
@@ -384,6 +385,10 @@ void core_machine_pic_set_irq(t_pic *master, t_pic *slave, t_nubit8 irq_id) {
     default:
         break;
     }
+}
+
+void core_machine_pic_timer_output(void *owner) {
+    core_machine_pic_set_irq((t_pic *)owner, NULL, 0x00);
 }
 
 void vpicSetIRQ(t_nubit8 irqId) {
@@ -441,14 +446,11 @@ t_nubit8 vpicGetINTR() {
     }
 }
 
-static void pitOut() {
-    vpicSetIRQ(0x00);
-}
-
 void vpicInit() {
     core_machine_pic_initialize(core_machine_pic_master_current(),
         core_machine_pic_slave_current(), core_machine_port_current());
-    vpitAddMe(0);
+    core_machine_pit_set_output(core_machine_pit_current(), 0,
+        core_machine_pic_timer_output, core_machine_pic_master_current());
 }
 
 void core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port)

@@ -18,6 +18,8 @@ typedef enum {
     VPIT_STATUS_RW_MSB
 } t_pit_data_status_rw;
 
+typedef void (*core_machine_pit_output_provider)(void *owner);
+
 typedef struct {
     /* control words[0-2] for counter 0-2, and cw[3] is read-back command */
     t_nubit8 cw[4];
@@ -35,7 +37,8 @@ typedef struct {
 
 typedef struct {
     t_bool flagGate[3];  /* enable or disable counter */
-    t_faddrcc fpOut[3]; /* action when out signal is valid */
+    core_machine_pit_output_provider output[3];
+    void *output_owner[3];
 } t_pit_connect;
 
 typedef struct {
@@ -92,6 +95,11 @@ void vpitReset();
 void vpitRefresh();
 void vpitFinal();
 void core_machine_pit_initialize(t_pit *pit, t_port *port);
+void core_machine_pit_reset(t_pit *pit);
+void core_machine_pit_refresh(t_pit *pit);
+void core_machine_pit_finalize(t_pit *pit);
+void core_machine_pit_set_output(t_pit *pit, t_nubit8 id,
+    core_machine_pit_output_provider provider, void *owner);
 
 #define VPIT_POST "                                 \
 ; init vpit                                       \n\
