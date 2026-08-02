@@ -182,10 +182,15 @@ identity gate pass full-PC and six retained-Console FDD start survival probes.
 
 - M5 T71 S1: migrated the default-profile BIOS, QDX, disk, keyboard, and CGA
   firmware paths to the composition-owned profile context and frozen provider
-  slots. No profile firmware now resolves a selected live machine. Firmware,
-  full-authority, and fixture-backed three-second DOS-prompt gates passed;
-  `build/output/nxvm_0_5_0071.exe` SHA-256 is
-  `0A401845D6920CDBA4F981AAA300D53A50E0D018985318BFA6DC1B5089FEDDD2`.
+  slots. Its initial artifact is revoked: the test observed guest RAM but did
+  not prove the host display frame, allowing a NULL snapshot context to pass.
+
+- M5 T71 S2: repaired the display snapshot binding and strengthened the FDD
+  gate to require both guest RAM and the actual host display frame to show
+  `A:\>` within three seconds through `machineStart -> platformStart`.
+  Firmware, CGA, full-authority, and the strengthened gate passed; manual
+  Console review passed using `build/output/nxvm_0_5_0071a.exe`, SHA-256
+  `D63B4B8D12C83F67E7A98395B864CDA6A0BF369E54F2662C71D308ECE914460E`.
 
 - M5 T70 S1: removed selected-object aliases for CMOS, HDD, FDD, FDC, and VM
   debug state. Its original `0.5.0070` artifact is revoked: its retained
