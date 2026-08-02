@@ -70,7 +70,7 @@ nxvm_core_status core_machine_create(
     atomic_init(&machine->stop_requested, 0);
     core_machine_trace_initialize(machine);
 
-    status = core_machine_memory_initialize(machine);
+    status = core_machine_instance_memory_initialize(machine);
     if (status != NXVM_CORE_STATUS_OK) {
         core_machine_destroy(machine);
         return status;
@@ -98,7 +98,7 @@ nxvm_core_status core_machine_reset(core_machine *machine)
     }
 
     if (core_machine_cpu_reset(machine) != NXVM_CORE_STATUS_OK ||
-        core_machine_memory_reset(machine) != NXVM_CORE_STATUS_OK) {
+        core_machine_instance_memory_reset(machine) != NXVM_CORE_STATUS_OK) {
         return NXVM_CORE_STATUS_FAULT;
     }
 
@@ -198,6 +198,6 @@ void core_machine_destroy(core_machine *machine)
 {
     core_machine_trace_finalize(machine);
     core_machine_port_finalize(machine);
-    core_machine_memory_finalize(machine);
+    core_machine_instance_memory_finalize(machine);
     free(machine);
 }

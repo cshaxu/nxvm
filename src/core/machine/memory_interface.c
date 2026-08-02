@@ -23,7 +23,7 @@ static int core_machine_memory_translate(
     return 1;
 }
 
-nxvm_core_status core_machine_memory_initialize(core_machine *machine)
+nxvm_core_status core_machine_instance_memory_initialize(core_machine *machine)
 {
     size_t size;
 
@@ -51,7 +51,7 @@ nxvm_core_status core_machine_memory_initialize(core_machine *machine)
     return NXVM_CORE_STATUS_OK;
 }
 
-void core_machine_memory_finalize(core_machine *machine)
+void core_machine_instance_memory_finalize(core_machine *machine)
 {
     if (machine != NULL) {
         free(machine->memory.bytes);
@@ -61,7 +61,7 @@ void core_machine_memory_finalize(core_machine *machine)
     }
 }
 
-nxvm_core_status core_machine_memory_reset(core_machine *machine)
+nxvm_core_status core_machine_instance_memory_reset(core_machine *machine)
 {
     if (machine == NULL || machine->memory.bytes == NULL) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;

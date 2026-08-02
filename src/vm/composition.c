@@ -52,7 +52,7 @@ void vmachineInit(vm_composition_live_machine *machine) {
     vcpuInit();
     vfddInit();
     vhddInit();
-    vmCompositionBindBlock();
+    vmCompositionBindBlock(machine);
     vm_composition_bind_display();
     vbiosInit();
     core_machine_vadp_initialize(machine->vadp);
