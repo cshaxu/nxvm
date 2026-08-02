@@ -6,16 +6,12 @@
 
 #include "core/machine/memory.h"
 #include "core/machine/block_interface.h"
+#include "core/machine/block_provider.h"
 
 #include "bios.h"
 
-static t_bios *vmProfileDefaultBios;
-
-t_bios *vm_profile_default_bios_current(void) { return vmProfileDefaultBios; }
-void vm_profile_default_bios_bind_live(t_bios *bios) { vmProfileDefaultBios = bios; }
-void vm_profile_default_bios_unbind_live(void) { vmProfileDefaultBios = NULL; }
-
-static t_nubit32 assemble(const t_strptr stmt, t_nubit16 seg, t_nubit16 off) {
+static t_nubit32 assemble(t_ram *ram, const t_strptr stmt, t_nubit16 seg,
+    t_nubit16 off) {
     t_nubit32 len = 0;
     t_nubit8 *code = NULL;
     t_nubitcc i;
@@ -39,9 +35,10 @@ static t_nubit32 assemble(const t_strptr stmt, t_nubit16 seg, t_nubit16 off) {
     return len;
 }
 
-static void biosLoadData() {
+static void bios_load_data(t_bios *bios, t_ram *ram,
+    const core_machine_block_provider_slot *block_provider) {
     core_machine_block_geometry geometry;
-    core_machine_block_get_geometry(&geometry);
+    core_machine_block_get_geometry_from(block_provider, &geometry);
     MEMSET((void *) vramGetRealAddr(0x0040, Zero16), Zero8, 0x100);
     vramRealWord(Zero16, VBIOS_ADDR_SERI_PORT_COM1) = 0x03f8;
     vramRealWord(Zero16, VBIOS_ADDR_PARA_PORT_LPT1) = 0x0378;
@@ -90,9 +87,9 @@ static void biosLoadData() {
     vramRealByte(Zero16, VBIOS_ADDR_KEYB_MODE_TYPE)     = 0x10;
     vramRealByte(Zero16, VBIOS_ADDR_KEYB_LED_FLAG)      = 0x02;
     vramRealDWord(Zero16, VBIOS_ADDR_VGA_VIDEO_TAB_PTR) = 0xc0005d3a;
-    vramRealByte(Zero16, VBIOS_ADDR_POST_WORK_AREA) = vbios.flagBoot ? 0x80 : Zero8; /* boot disk */
+    vramRealByte(Zero16, VBIOS_ADDR_POST_WORK_AREA) = bios->flagBoot ? 0x80 : Zero8; /* boot disk */
 }
-static void biosLoadRomInfo() {
+static void bios_load_rom_info(t_ram *ram) {
     vramRealWord(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 0) = 0x0008;
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 2) = 0xfc;
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 3) = Zero8;
@@ -103,33 +100,39 @@ static void biosLoadRomInfo() {
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 8) = Zero8;
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 9) = Zero8;
 }
-static void biosLoadInt() {
+static void bios_load_interrupts(t_bios *bios, t_ram *ram) {
     t_nubitcc i;
-    vbios.data.buildIP += (t_nubit16) assemble("iret", VBIOS_ADDR_START_SEG, VBIOS_ADDR_START_OFF);
+    bios->data.buildIP += (t_nubit16)assemble(ram, "iret",
+        VBIOS_ADDR_START_SEG, VBIOS_ADDR_START_OFF);
     for (i = 0; i < 0x100; ++i) {
-        if (vbios.connect.intTable[i]) {
-            vramRealWord(Zero16, i * 4 + 0) = vbios.data.buildIP;
-            vramRealWord(Zero16, i * 4 + 2) = vbios.data.buildCS;
-            vbios.data.buildIP += (t_nubit16) assemble(vbios.connect.intTable[i], vbios.data.buildCS, vbios.data.buildIP);
+        if (bios->connect.intTable[i]) {
+            vramRealWord(Zero16, i * 4 + 0) = bios->data.buildIP;
+            vramRealWord(Zero16, i * 4 + 2) = bios->data.buildCS;
+            bios->data.buildIP += (t_nubit16)assemble(ram,
+                bios->connect.intTable[i], bios->data.buildCS,
+                bios->data.buildIP);
         } else {
             vramRealWord(Zero16, i * 4 + 0) = VBIOS_ADDR_START_OFF;
             vramRealWord(Zero16, i * 4 + 2) = VBIOS_ADDR_START_SEG;
         }
     }
 }
-static void biosLoadPost() {
+static void bios_load_post(t_bios *bios, t_ram *ram) {
     t_nubitcc i;
     t_string stmt;
-    SPRINTF(stmt, "jmp %04x:%04x", vbios.data.buildCS, vbios.data.buildIP);
-    assemble(stmt, VBIOS_ADDR_POST_SEG, VBIOS_ADDR_POST_OFF);
-    for (i = 0; i < vbios.connect.postCount; ++i) {
-        vbios.data.buildIP += (t_nubit16) assemble(vbios.connect.postTable[i], vbios.data.buildCS, vbios.data.buildIP);
+    SPRINTF(stmt, "jmp %04x:%04x", bios->data.buildCS, bios->data.buildIP);
+    assemble(ram, stmt, VBIOS_ADDR_POST_SEG, VBIOS_ADDR_POST_OFF);
+    for (i = 0; i < bios->connect.postCount; ++i) {
+        bios->data.buildIP += (t_nubit16)assemble(ram,
+            bios->connect.postTable[i], bios->data.buildCS, bios->data.buildIP);
     }
-    vbios.data.buildIP += (t_nubit16) assemble(VBIOS_POST_BOOT, vbios.data.buildCS, vbios.data.buildIP);
+    bios->data.buildIP += (t_nubit16)assemble(ram, VBIOS_POST_BOOT,
+        bios->data.buildCS, bios->data.buildIP);
 }
-static void biosLoadAdditional() {
+static void bios_load_additional(t_ram *ram,
+    const core_machine_block_provider_slot *block_provider) {
     core_machine_block_geometry geometry;
-    core_machine_block_get_geometry(&geometry);
+    core_machine_block_get_geometry_from(block_provider, &geometry);
     /* hard disk param table */
     vramRealWord(Zero16, VBIOS_ADDR_HDD_PARAM_OFFSET) = VBIOS_ADDR_HDD_PARAM;
     vramRealWord(Zero16, VBIOS_ADDR_HDD_PARAM_SEGMENT) = VBIOS_ADDR_START_SEG;
@@ -147,42 +150,48 @@ static void biosLoadAdditional() {
     vramRealByte(VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 15) = Zero8;
 }
 
-void vbiosAddPost(t_strptr stmt) {
-    vbios.connect.postTable[vbios.connect.postCount++] = stmt;
+void vm_profile_default_bios_add_post(t_bios *bios, t_strptr stmt) {
+    if (bios == NULL) return;
+    bios->connect.postTable[bios->connect.postCount++] = stmt;
 }
-void vbiosAddInt(t_strptr stmt, t_nubit8 intid) {
-    vbios.connect.intTable[intid] = stmt;
+void vm_profile_default_bios_add_interrupt(t_bios *bios, t_strptr stmt,
+    t_nubit8 intid) {
+    if (bios == NULL) return;
+    bios->connect.intTable[intid] = stmt;
 }
-void vbiosInit() {
-    MEMSET((void *)(&vbios), Zero8, sizeof(t_bios));
-    vbios.flagBoot = False;
-    vbios.data.buildCS = vbios.data.buildIP = Zero16;
-    vbiosAddInt(VBIOS_INT_SOFT_MISC_11, 0x11);
-    vbiosAddInt(VBIOS_INT_SOFT_MISC_12, 0x12);
-    vbiosAddInt(VBIOS_INT_SOFT_MISC_15, 0x15);
+void vm_profile_default_bios_initialize(t_bios *bios) {
+    if (bios == NULL) return;
+    MEMSET((void *)bios, Zero8, sizeof(*bios));
+    bios->flagBoot = False;
+    bios->data.buildCS = bios->data.buildIP = Zero16;
+    vm_profile_default_bios_add_interrupt(bios, VBIOS_INT_SOFT_MISC_11, 0x11);
+    vm_profile_default_bios_add_interrupt(bios, VBIOS_INT_SOFT_MISC_12, 0x12);
+    vm_profile_default_bios_add_interrupt(bios, VBIOS_INT_SOFT_MISC_15, 0x15);
 }
 
 /* Loads bios to ram */
-void vbiosReset() {
-    MEMSET((void *)(&vbios.data), Zero8, sizeof(t_bios_data));
+void vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
+    const core_machine_block_provider_slot *block_provider) {
+    if (bios == NULL || ram == NULL) return;
+    MEMSET((void *)(&bios->data), Zero8, sizeof(t_bios_data));
     /* bios area starts at f000:0000 */
-    vbios.data.buildCS = VBIOS_ADDR_START_SEG;
-    vbios.data.buildIP = VBIOS_ADDR_START_OFF;
-    biosLoadData();       /* bios data area */
-    biosLoadRomInfo();    /* bios rom info area */
-    biosLoadInt();        /* bios interrupt services */
-    biosLoadPost();       /* bios init/post routines */
-    biosLoadAdditional(); /* additional bios data */
+    bios->data.buildCS = VBIOS_ADDR_START_SEG;
+    bios->data.buildIP = VBIOS_ADDR_START_OFF;
+    bios_load_data(bios, ram, block_provider);
+    bios_load_rom_info(ram);
+    bios_load_interrupts(bios, ram);
+    bios_load_post(bios, ram);
+    bios_load_additional(ram, block_provider);
 }
-void vbiosRefresh() {}
-void vbiosFinal() {}
-void vm_profile_default_bios_print(void) {
-    PRINTF("Boot Disk: %s\n", vbios.flagBoot ? "Hard Drive" : "Floppy");
+void vm_profile_default_bios_refresh(t_bios *bios) { (void)bios; }
+void vm_profile_default_bios_finalize(t_bios *bios) { (void)bios; }
+void vm_profile_default_bios_print(const t_bios *bios) {
+    PRINTF("Boot Disk: %s\n", bios != NULL && bios->flagBoot ? "Hard Drive" : "Floppy");
 }
 
-void vm_profile_default_bios_set_boot_hdd(int enabled) {
-    vbios.flagBoot = enabled;
+void vm_profile_default_bios_set_boot_hdd(t_bios *bios, int enabled) {
+    if (bios != NULL) bios->flagBoot = enabled;
 }
-int vm_profile_default_bios_get_boot_hdd(void) {
-    return vbios.flagBoot;
+int vm_profile_default_bios_get_boot_hdd(const t_bios *bios) {
+    return bios != NULL && bios->flagBoot;
 }

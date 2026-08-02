@@ -54,47 +54,48 @@ void vmachineInit(vm_composition_live_machine *machine) {
     vm_machine_hdd_initialize(machine->hdd);
     vmCompositionBindBlock(machine);
     vm_composition_bind_display(machine);
-    vbiosInit();
+    vm_profile_default_bios_initialize(machine->default_bios);
     core_machine_vadp_initialize(machine->vadp);
-    vbiosAddInt("qdx 10\niret", 0x10);
+    vm_profile_default_bios_add_interrupt(machine->default_bios,
+        "qdx 10\niret", 0x10);
     _vbios_
     vportInit();
     vm_machine_cmos_initialize(machine->cmos, machine->cpu, machine->port);
-    vbiosAddPost(VCMOS_POST);
-    vbiosAddInt(VCMOS_INT_HARD_RTC_08, 0x08);
-    vbiosAddInt(VCMOS_INT_SOFT_RTC_1A, 0x1a);
+    vm_profile_default_bios_add_post(machine->default_bios, VCMOS_POST);
+    vm_profile_default_bios_add_interrupt(machine->default_bios, VCMOS_INT_HARD_RTC_08, 0x08);
+    vm_profile_default_bios_add_interrupt(machine->default_bios, VCMOS_INT_SOFT_RTC_1A, 0x1a);
     vm_machine_cmos_reset(machine->cmos);
     vm_machine_cmos_refresh(machine->cmos);
     _vbios_ _vport_
     core_machine_kbc_initialize(machine->kbc, machine->port);
-    vbiosAddInt("qdx 09\niret", 0x09);
-    vbiosAddInt("qdx 16\niret", 0x16);
+    vm_profile_default_bios_add_interrupt(machine->default_bios, "qdx 09\niret", 0x09);
+    vm_profile_default_bios_add_interrupt(machine->default_bios, "qdx 16\niret", 0x16);
     _vbios_ _vport_
     core_machine_dma_initialize(machine->dma_latch, machine->dma_primary,
         machine->dma_secondary, machine->port);
-    vbiosAddPost(VDMA_POST);
+    vm_profile_default_bios_add_post(machine->default_bios, VDMA_POST);
     _vbios_ _vport_
     vm_machine_fdc_connect(machine->fdc, machine->fdd, machine->dma_latch,
         machine->dma_primary, machine->dma_secondary, machine->pic_master,
         machine->pic_slave, machine->port);
     vm_machine_fdc_initialize(machine->fdc);
-    vbiosAddPost(VFDC_POST);
-    vbiosAddInt(VFDC_INT_HARD_FDD_0E, 0x0e);
+    vm_profile_default_bios_add_post(machine->default_bios, VFDC_POST);
+    vm_profile_default_bios_add_interrupt(machine->default_bios, VFDC_INT_HARD_FDD_0E, 0x0e);
     /* overwritten below by the hard-disk INT 13 service, as before. */
-    vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x13);
-    vbiosAddInt(VFDC_INT_SOFT_FDD_40, 0x40);
+    vm_profile_default_bios_add_interrupt(machine->default_bios, VFDC_INT_SOFT_FDD_40, 0x13);
+    vm_profile_default_bios_add_interrupt(machine->default_bios, VFDC_INT_SOFT_FDD_40, 0x40);
     _vbios_ _vport_ _vdma_
     vhdcInit();
-    vbiosAddInt(VHDC_INT_SOFT_HDD_13, 0x13);
+    vm_profile_default_bios_add_interrupt(machine->default_bios, VHDC_INT_SOFT_HDD_13, 0x13);
     _vbios_ _vport_ _vdma_ _vfdc_
     core_machine_pit_initialize(machine->pit, machine->port);
     core_machine_pit_set_output(machine->pit, 0,
         core_machine_pic_timer_output, machine->pic_master);
-    vbiosAddPost(VPIT_POST);
+    vm_profile_default_bios_add_post(machine->default_bios, VPIT_POST);
     _vbios_ _vport_
     core_machine_pic_initialize(machine->pic_master, machine->pic_slave,
         machine->port);
-    vbiosAddPost(VPIC_POST);
+    vm_profile_default_bios_add_post(machine->default_bios, VPIC_POST);
     _vbios_ _vport_ _vpic_
     vramInit();
     _vbios_ _vport_ _vpit_
@@ -121,7 +122,8 @@ void vmachineReset(vm_composition_live_machine *machine) {
     vportReset();
     core_machine_vadp_reset(machine->vadp);
     vramReset();
-    vbiosReset();
+    vm_profile_default_bios_reset(machine->default_bios, machine->ram,
+        machine->block_provider);
     _vram_
     qdxReset();
     _vram_
@@ -131,7 +133,7 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     qdxRefresh();
     _empty_
-    vbiosRefresh();
+    vm_profile_default_bios_refresh(machine->default_bios);
     _empty_
     vm_machine_fdd_refresh(machine->fdd);
     _empty_
@@ -168,7 +170,7 @@ void vmachineFinal(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     qdxFinal();
     _empty_
-    vbiosFinal();
+    vm_profile_default_bios_finalize(machine->default_bios);
     _empty_
     vm_machine_cmos_finalize(machine->cmos);
     _empty_

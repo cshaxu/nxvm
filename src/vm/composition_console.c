@@ -29,7 +29,7 @@ static int vm_composition_console_is_running(void *context) { return vm_composit
 static void vm_composition_console_print_machine(void *context) { devicePrintMachine((vm_composition_live_machine *)context); }
 static int vm_composition_console_get_window_display(void *context) { (void)context; return platform.flagMode; }
 static void vm_composition_console_set_window_display(void *context, int enabled) { (void)context; platform.flagMode = enabled; }
-static void vm_composition_console_print_bios(void *context) { (void)context; vm_profile_default_bios_print(); }
+static void vm_composition_console_print_bios(void *context) { vm_profile_default_bios_print(((vm_composition_live_machine *)context)->default_bios); }
 static void vm_composition_console_print_status(void *context) { vm_composition_control_print_status(((vm_composition_live_machine *)context)->control); }
 static void vm_composition_console_debug(void *context)
 {
@@ -43,7 +43,7 @@ static void vm_composition_console_debug(void *context)
 }
 static void vm_composition_console_record_start(void *context, const char *path) { vm_machine_debug_record_start(((vm_composition_live_machine *)context)->debug, path); }
 static void vm_composition_console_record_stop(void *context) { vm_machine_debug_record_stop(((vm_composition_live_machine *)context)->debug); }
-static void vm_composition_console_set_boot_hdd(void *context, int enabled) { (void)context; vm_profile_default_bios_set_boot_hdd(enabled); }
+static void vm_composition_console_set_boot_hdd(void *context, int enabled) { vm_profile_default_bios_set_boot_hdd(((vm_composition_live_machine *)context)->default_bios, enabled); }
 static void vm_composition_console_set_memory(void *context, size_t bytes) { (void)context; core_machine_memory_allocate(bytes); }
 static void vm_composition_console_create_fdd(void *context) { vm_machine_fdd_create_for(((vm_composition_live_machine *)context)->fdd); }
 static int vm_composition_console_insert_fdd(void *context, const char *path) { return vm_machine_fdd_insert_for(((vm_composition_live_machine *)context)->fdd, path); }

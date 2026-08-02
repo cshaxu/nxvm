@@ -9,6 +9,9 @@ extern "C" {
 
 #include "core/machine/vglobal.h"
 
+typedef struct t_ram t_ram;
+typedef struct core_machine_block_provider_slot core_machine_block_provider_slot;
+
 #define NXVM_DEVICE_BIOS "Unknown BIOS"
 
 typedef struct {
@@ -28,13 +31,6 @@ typedef struct {
     t_bios_connect connect;
     t_bool flagBoot;
 } t_bios;
-
-t_bios *vm_profile_default_bios_current(void);
-void vm_profile_default_bios_bind_live(t_bios *bios);
-void vm_profile_default_bios_unbind_live(void);
-
-/* Transitional direct alias to the one composition-owned profile BIOS object. */
-#define vbios (*vm_profile_default_bios_current())
 
 #define VBIOS_ADDR_START_SEG 0xf000
 #define VBIOS_ADDR_START_OFF Zero16
@@ -152,16 +148,17 @@ void vm_profile_default_bios_unbind_live(void);
 #define VBIOS_ADDR_INTRAPP_COMM_AREA  0x04f0
 #define VBIOS_ADDR_POST_WORK_AREA     0x0505
 
-void vbiosAddPost(t_strptr stmt);
-void vbiosAddInt(t_strptr stmt, t_nubit8 intid);
-
-void vbiosInit();
-void vbiosReset();
-void vbiosRefresh();
-void vbiosFinal();
-void vm_profile_default_bios_print(void);
-void vm_profile_default_bios_set_boot_hdd(int enabled);
-int vm_profile_default_bios_get_boot_hdd(void);
+void vm_profile_default_bios_add_post(t_bios *bios, t_strptr stmt);
+void vm_profile_default_bios_add_interrupt(t_bios *bios, t_strptr stmt,
+    t_nubit8 intid);
+void vm_profile_default_bios_initialize(t_bios *bios);
+void vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
+    const core_machine_block_provider_slot *block_provider);
+void vm_profile_default_bios_refresh(t_bios *bios);
+void vm_profile_default_bios_finalize(t_bios *bios);
+void vm_profile_default_bios_print(const t_bios *bios);
+void vm_profile_default_bios_set_boot_hdd(t_bios *bios, int enabled);
+int vm_profile_default_bios_get_boot_hdd(const t_bios *bios);
 
 #define VBIOS_POST_BOOT "             \
 $(label_post_boot_start):           \n\
