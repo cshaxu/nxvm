@@ -11,22 +11,6 @@
 #include "core/machine/port.h"
 #include "core/machine/pic.h"
 
-static t_pic *coreMachinePicMaster;
-static t_pic *coreMachinePicSlave;
-
-t_pic *core_machine_pic_master_current(void) { return coreMachinePicMaster; }
-t_pic *core_machine_pic_slave_current(void) { return coreMachinePicSlave; }
-void core_machine_pic_bind_live(t_pic *master, t_pic *slave)
-{
-    coreMachinePicMaster = master;
-    coreMachinePicSlave = slave;
-}
-void core_machine_pic_unbind_live(void)
-{
-    coreMachinePicMaster = NULL;
-    coreMachinePicSlave = NULL;
-}
-
 /*
  * GetRegTopId: Internal function
  * Returns id of highest priority interrupt
@@ -391,19 +375,6 @@ void core_machine_pic_timer_output(void *owner) {
     core_machine_pic_set_irq((t_pic *)owner, NULL, 0x00);
 }
 
-void vpicSetIRQ(t_nubit8 irqId) {
-    core_machine_pic_set_irq(core_machine_pic_master_current(),
-        core_machine_pic_slave_current(), irqId);
-}
-/*
- * vpicScanINTR
- * Returns true if system has a valid INTR
- * Called by CPU
- */
-t_bool vpicScanINTR() {
-    return core_machine_pic_scan_interrupt(core_machine_pic_master_current(),
-        core_machine_pic_slave_current());
-}
 t_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
     t_bool flagINTR;
     if (master == NULL || slave == NULL) return False;
@@ -413,30 +384,6 @@ t_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
         flagINTR = HasINTR(slave);
     }
     return flagINTR;
-}
-/* Peeks highest priority interrupt without responding to IRQ */
-t_nubit8 vpicPeekINTR() {
-    t_nubit8 irid1; /* top requested int id in master pic */
-    t_nubit8 irid2; /* top requested int id in slave pic */
-    irid1 = VPIC_GetIntrTopId(&vpic1);
-    if (irid1 == 2) {
-        /* if IR2 has int request, then test slave pic */
-        irid2 = VPIC_GetIntrTopId(&vpic2);
-        /* find the final int id based on slave ICW2 */
-        return (irid2 | vpic2.data.icw2);
-    } else {
-        /* find the final int id based on master ICW2 */
-        return (irid1 | vpic1.data.icw2);
-    }
-}
-/*
- * vpicGetINTR
- * Returns the id of int request with highest priority
- * Called by CPU, who is responding to this interrupt
- */
-t_nubit8 vpicGetINTR() {
-    return core_machine_pic_get_interrupt(core_machine_pic_master_current(),
-        core_machine_pic_slave_current());
 }
 t_nubit8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
     t_nubit8 reqId1; /* top requested int id in master pic */
@@ -456,13 +403,6 @@ t_nubit8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
     }
 }
 
-void vpicInit() {
-    core_machine_pic_initialize(core_machine_pic_master_current(),
-        core_machine_pic_slave_current(), core_machine_port_current());
-    core_machine_pit_set_output(core_machine_pit_current(), 0,
-        core_machine_pic_timer_output, core_machine_pic_master_current());
-}
-
 void core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port)
 {
     if (master == NULL || slave == NULL || port == NULL) return;
@@ -477,20 +417,12 @@ void core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port)
     core_machine_port_add_write(port, 0x00a0, io_write_00A0, slave);
     core_machine_port_add_write(port, 0x00a1, io_write_00A1, slave);
 }
-void vpicReset() {
-    core_machine_pic_reset(core_machine_pic_master_current(),
-        core_machine_pic_slave_current());
-}
 void core_machine_pic_reset(t_pic *master, t_pic *slave) {
     if (master == NULL || slave == NULL) return;
     MEMSET((void *)(&master->data), Zero8, sizeof(t_pic_data));
     MEMSET((void *)(&slave->data), Zero8, sizeof(t_pic_data));
     master->data.status = slave->data.status = ICW1;
     master->data.ocw3 = slave->data.ocw3 = VPIC_OCW3_RR;
-}
-void vpicRefresh() {
-    core_machine_pic_refresh(core_machine_pic_master_current(),
-        core_machine_pic_slave_current());
 }
 void core_machine_pic_refresh(t_pic *master, t_pic *slave) {
     if (master == NULL || slave == NULL) return;
@@ -503,45 +435,9 @@ void core_machine_pic_refresh(t_pic *master, t_pic *slave) {
         ClrBit(master->data.irr, VPIC_IRR_IRQ(2));
     }
 }
-void vpicFinal() {
-    core_machine_pic_finalize(core_machine_pic_master_current(),
-        core_machine_pic_slave_current());
-}
 void core_machine_pic_finalize(t_pic *master, t_pic *slave) {
     (void)master;
     (void)slave;
-}
-
-static void printPic(t_pic *rpic) {
-    PRINTF("Init Status = %d, IRX = %x\n",
-           rpic->data.status, rpic->data.irx);
-    PRINTF("IRR = %x, ISR = %x, IMR = %x, intr = %x\n",
-           rpic->data.irr, rpic->data.isr, rpic->data.imr, rpic->data.irr & (~rpic->data.imr));
-    PRINTF("ICW1 = %x, LTIM = %d, SNGL = %d, IC4 = %d\n",
-           rpic->data.icw1, GetBit(rpic->data.icw1, VPIC_ICW1_LTIM), GetBit(rpic->data.icw1, VPIC_ICW1_SNGL),
-           GetBit(rpic->data.icw1, VPIC_ICW1_IC4));
-    PRINTF("ICW2 = %x\n",rpic->data.icw2);
-    PRINTF("ICW3 = %x\n", rpic->data.icw3);
-    PRINTF("ICW4 = %x, SFNM = %d, BUF = %d, M/S = %d, AEOI = %d, uPM = %d\n",
-           rpic->data.icw4, GetBit(rpic->data.icw4, VPIC_ICW4_SFNM), GetBit(rpic->data.icw4, VPIC_ICW4_BUF),
-           GetBit(rpic->data.icw4, VPIC_ICW4_MS), GetBit(rpic->data.icw4, VPIC_ICW4_AEOI),
-           GetBit(rpic->data.icw4, VPIC_ICW4_uPM));
-    PRINTF("OCW1 = %x\n", rpic->data.ocw1);
-    PRINTF("OCW2 = %x, R = %d, SL = %d, EOI = %d, L = %d\n",
-           rpic->data.ocw2, GetBit(rpic->data.ocw2, VPIC_OCW2_R), GetBit(rpic->data.ocw2, VPIC_OCW2_SL),
-           GetBit(rpic->data.ocw2, VPIC_OCW2_EOI), rpic->data.ocw2 & VPIC_OCW2_L);
-    PRINTF("OCW3 = %x, ESMM = %d, SMM = %d, P = %d, RR = %d, RIS = %d\n",
-           rpic->data.ocw3, GetBit(rpic->data.ocw3, VPIC_OCW3_ESMM), GetBit(rpic->data.ocw3, VPIC_OCW3_SMM),
-           GetBit(rpic->data.ocw3, VPIC_OCW3_P), GetBit(rpic->data.ocw3, VPIC_OCW3_RR),
-           GetBit(rpic->data.ocw3, VPIC_OCW3_RIS));
-}
-
-/* Print PIC status */
-void devicePrintPic() {
-    PRINTF("INFO PIC 1\n==========\n");
-    printPic(&vpic1);
-    PRINTF("INFO PIC 2\n==========\n");
-    printPic(&vpic2);
 }
 
 /*

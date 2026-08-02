@@ -4,4 +4,4 @@
 #include "vm/composition_machine.h"
 int main(void)
 {
-    vm_composition_live_machine session = {0};const vm_composition_live_machine*m;machineInit(&session);m=(&session);if(!m||&vvadp!=m->vadp){machineFinal(&session);return 1;}machineFinal(&session);puts("M5:T31:S1:VADP-AUTHORITY:OK");return 0;}
+    vm_composition_live_machine session = {0};const vm_composition_live_machine*m;machineInit(&session);m=(&session);if(!m||m->vadp!=&m->vadp_storage){machineFinal(&session);return 1;}machineFinal(&session);puts("M5:T31:S1:VADP-AUTHORITY:OK");return 0;}

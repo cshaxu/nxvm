@@ -46,13 +46,6 @@ typedef struct {
     t_pit_connect connect;
 } t_pit;
 
-t_pit *core_machine_pit_current(void);
-void core_machine_pit_bind_live(t_pit *pit);
-void core_machine_pit_unbind_live(void);
-
-/* Transitional direct alias to the composition-owned PIT object. */
-#define vpit (*core_machine_pit_current())
-
 /*
  * Ctrl Word: SC1 | SC0 | RW1   | RW0    | M2   | M1   | M0   | BCD
  * Latch Cmd: SC1 | SC0 | 0     | 0      | x    | x    | x    | x
@@ -85,15 +78,6 @@ void core_machine_pit_unbind_live(void);
 #define VPIT_SB_NC  0x40 /* null count (1) or count available (0) */
 #define VPIT_SB_OUT 0x80 /* state of out pin high(1) or low(0) */
 
-void vpitSetGate(t_nubit8 id, t_bool flagGate);
-
-#define vpitAddMe(id) vpitAddDevice((id), (t_faddrcc) pitOut);
-void vpitAddDevice(t_nubit8 id, t_faddrcc fpOut);
-
-void vpitInit();
-void vpitReset();
-void vpitRefresh();
-void vpitFinal();
 void core_machine_pit_initialize(t_pit *pit, t_port *port);
 void core_machine_pit_reset(t_pit *pit);
 void core_machine_pit_refresh(t_pit *pit);
@@ -102,7 +86,7 @@ void core_machine_pit_set_output(t_pit *pit, t_nubit8 id,
     core_machine_pit_output_provider provider, void *owner);
 
 #define VPIT_POST "                                 \
-; init vpit                                       \n\
+; init pit                                        \n\
 mov al, 36 ; 0011 0110 mode = 3, counter = 0, 16b \n\
 out 43, al                                        \n\
 mov al, 00                                        \n\

@@ -71,16 +71,6 @@ struct t_latch {
     t_latch_data data;
 };
 
-t_latch *core_machine_dma_latch_current(void);
-t_dma *core_machine_dma_primary_current(void);
-t_dma *core_machine_dma_secondary_current(void);
-void core_machine_dma_bind_live(t_latch *latch, t_dma *primary, t_dma *secondary);
-void core_machine_dma_unbind_live(void);
-
-#define vlatch (*core_machine_dma_latch_current())
-#define vdma1 (*core_machine_dma_primary_current())
-#define vdma2 (*core_machine_dma_secondary_current())
-
 /*
  * CMD:    DACK | DREQ | WS   | R    | TM   | CTRL | C0AD | M2M
  * MODE:   M1   | M0   | AIDS | AI   | TT1  | TT0  | CS1  | CS0
@@ -166,17 +156,6 @@ void core_machine_dma_unbind_live(void);
 #define VDMA_GetISR_ISR(cisr) (((cisr) & VDMA_ISR_ISR) >> 4)
 #define VDMA_SetISR(cisr, id) ((cisr) = (VDMA_ISR_IS | ((id) << 4)))
 
-void vdmaSetDRQ(t_nubit8 drqId);
-
-#define vdmaAddMe(drqId) vdmaAddDevice((drqId), (t_faddrcc) dmaReadMe, \
-    (t_faddrcc) dmaWriteMe, (t_faddrcc) dmaCloseMe)
-
-void vdmaAddDevice(t_nubit8 drqId, t_faddrcc fpReadDevice,
-                   t_faddrcc fpWriteDevice, t_faddrcc fpCloseDevice);
-
-void vdmaInit();
-void vdmaReset();
-void vdmaFinal();
 void core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_port *port);
 void core_machine_dma_reset(t_latch *latch, t_dma *primary,

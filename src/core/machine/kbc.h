@@ -15,15 +15,6 @@ extern "C" {
 #define VKBC_STATUS_KE 0x10 /* keyboard enabled(1) or not(0) */
 
 typedef struct { t_nubit8 reserved; } t_kbc;
-t_kbc *core_machine_kbc_current(void);
-void core_machine_kbc_bind_live(t_kbc *controller);
-void core_machine_kbc_unbind_live(void);
-#define vkbc (*core_machine_kbc_current())
-
-void vkbcInit();
-void vkbcReset();
-void vkbcRefresh();
-void vkbcFinal();
 void core_machine_kbc_register_ports(t_kbc *controller, t_port *port);
 void core_machine_kbc_initialize(t_kbc *controller, t_port *port);
 void core_machine_kbc_reset(t_kbc *controller);

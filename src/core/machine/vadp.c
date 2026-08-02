@@ -4,20 +4,6 @@
 
 #include "core/machine/vadp.h"
 
-static t_vadp *coreMachineVadp;
-t_vadp *core_machine_vadp_current(void) { return coreMachineVadp; }
-void core_machine_vadp_bind_live(t_vadp *adapter) { coreMachineVadp=adapter; }
-void core_machine_vadp_unbind_live(void) { coreMachineVadp=NULL; }
-
-void vvadpInit() {
-    core_machine_vadp_initialize(core_machine_vadp_current());
-}
-void vvadpReset() {
-    core_machine_vadp_reset(core_machine_vadp_current());
-}
-void vvadpRefresh() { core_machine_vadp_refresh(core_machine_vadp_current()); }
-void vvadpFinal() { core_machine_vadp_finalize(core_machine_vadp_current()); }
-
 void core_machine_vadp_initialize(t_vadp *adapter)
 {
     if (adapter == NULL) return;

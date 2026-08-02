@@ -23,15 +23,6 @@ typedef struct t_vadp {
     t_vadp_data data;
 } t_vadp;
 
-t_vadp *core_machine_vadp_current(void);
-void core_machine_vadp_bind_live(t_vadp *adapter);
-void core_machine_vadp_unbind_live(void);
-#define vvadp (*core_machine_vadp_current())
-
-void vvadpInit();
-void vvadpReset();
-void vvadpRefresh();
-void vvadpFinal();
 void core_machine_vadp_initialize(t_vadp *adapter);
 void core_machine_vadp_reset(t_vadp *adapter);
 void core_machine_vadp_refresh(t_vadp *adapter);
