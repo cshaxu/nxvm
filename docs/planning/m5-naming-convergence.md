@@ -2,9 +2,10 @@
 
 ## Authority And Status
 
-This plan reopens M5 after T47 for source-name and public-contract
-convergence. It does not reopen DOS, CLI, Win16, Microsoft NTVDM, or
-compatibility-corpus work.
+This plan reopens M5 after T54 for second-pass source-name, public-symbol,
+platform-ownership, and retained-alias convergence. T54 is first closure
+evidence, not final naming closure. This plan does not reopen DOS, CLI,
+Win16, Microsoft NTVDM, or compatibility-corpus work.
 
 The compatibility gate is unchanged: no task may alter retained NXVM Console
 text or grammar, debugger behavior, boot/reset ordering, media behavior, or
@@ -54,7 +55,16 @@ artifact is produced when the runnable task completes.
 | M5 T51 | Split or rename remaining public/provider contracts where current files mix interface and injected callback ownership. | Header dependency scan and focused provider smokes pass, `nxvm_0_5_0051.exe` if runnable paths changed. |
 | M5 T52 | Audit ambiguous implementation names, beginning with the former `machine_memory.c`, `machine_port.c`, and core presentation names; apply only approved low-risk renames. | No module-boundary regression; GCC and retained UX gates pass, `nxvm_0_5_0052.exe`. |
 | M5 T53 | Decide `vglobal.h` retirement path and move obvious shared type/constant declarations to `type.h`; keep `vglobal.h` as a transitional include only. | GCC and retained fixture gates pass, `nxvm_0_5_0053.exe`. |
-| M5 T54 | Close naming convergence with a source/CMake/doc audit and final retained NXVM artifact. | No stale `device.h` claim, no unintended legacy `v*` source names, zero forbidden dependencies, final artifact. |
+| M5 T54 | First closure audit for T48-T53. This recorded remaining alias and platform questions and is not final naming closure. | No stale `device.h` claim, no unintended legacy `v*` source filenames, zero forbidden dependencies, `nxvm_0_5_0054.exe`. |
+| M5 T55 | Reopen second-pass naming cleanup and freeze the T55-T63 plan. | Governance is consistent, M6 is deferred again, `nxvm_0_5_0055.exe`. |
+| M5 T56 | Correct current/future documentation facts, especially absent `vdm/main.c` and actual `type.h` contents. | Docs match current tree and foundation headers, `nxvm_0_5_0056.exe`. |
+| M5 T57 | Rename VM default-profile firmware public symbols from old `nxvm_firmware_default_profile_*` spelling to ownership-prefixed `vm_profile_default_firmware_*`. | Firmware/profile smokes pass, `nxvm_0_5_0057.exe`. |
+| M5 T58 | Rename low-risk VM session/composition public symbols with mixed `nxvm_product_nxvm_*` / `nxvm_vm_*` prefixes to clearer ownership-prefixed names. | Session/product smokes pass, `nxvm_0_5_0058.exe`. |
+| M5 T59 | Audit `vm/platform/{win32,linux}` ownership while preserving symmetric filenames such as `win32app`, `win32con`, future `linuxapp`, and `linuxcon`. | Function-level ownership map recorded, `nxvm_0_5_0059.exe`. |
+| M5 T60 | Move only proven shared, policy-free platform mechanisms to `core/platform/{win32,linux}`; keep VM policy and symmetric adapter filenames in `vm/platform`. | Platform and retained Console gates pass, `nxvm_0_5_0060.exe`. |
+| M5 T61 | Inventory retained runtime aliases such as `vcpu`, `vram`, `vport`, `vfdd`, `vhdd`, `vdebug`, and `vbios`, separating compatibility aliases from state-authority debt. | Alias/debt table recorded, `nxvm_0_5_0061.exe`. |
+| M5 T62 | Apply only low-risk alias cleanup approved by the T61 inventory; defer stateful/multi-session aliases to explicit state-authority work. | Authority gates and retained UX pass, `nxvm_0_5_0062.exe`. |
+| M5 T63 | Final second-pass naming closure audit over source, CMake, docs, public symbols, platform ownership, and retained alias exceptions. | Final audit evidence and `nxvm_0_5_0063.exe`. |
 
 ## Non-goals
 
@@ -65,3 +75,6 @@ artifact is produced when the runnable task completes.
   or session-boundary task.
 - Do not move shared Win32/Linux mechanisms to `core/platform` unless the task
   has first proven that the code is mechanism-only and contains no VM policy.
+- Do not rename `win32app`, `win32con`, or `linuxcon` merely for style.
+  Symmetric host-surface names are acceptable; ownership is determined by
+  dependencies and policy content.
