@@ -42,7 +42,7 @@ static C_INT has_dos_prompt(const t_ram *ram)
     text = (const C_UCHAR *)ram->connect.pBase + TEXT_VIDEO_BASE;
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         const C_UCHAR drive = text[cell * 2u];
-        if (isalpha((C_UCHAR)drive) && text[(cell + 1u) * 2u] == ':' &&
+        if (STD_ISALPHA((C_UCHAR)drive) && text[(cell + 1u) * 2u] == ':' &&
             text[(cell + 2u) * 2u] == '\\' && text[(cell + 3u) * 2u] == '>') {
             return 1;
         }
@@ -57,7 +57,7 @@ static C_INT frame_has_dos_prompt(const core_platform_display_frame *frame)
     if (frame == STD_NULL) return 0;
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         const C_UCHAR drive = frame->characters[cell];
-        if (isalpha((C_UCHAR)drive) &&
+        if (STD_ISALPHA((C_UCHAR)drive) &&
             frame->characters[cell + 1u] == ':' &&
             frame->characters[cell + 2u] == '\\' &&
             frame->characters[cell + 3u] == '>') {
@@ -76,11 +76,11 @@ static C_VOID dump_text_screen(const t_ram *ram)
     if (ram == STD_NULL || ram->connect.pBase == 0u ||
         ram->connect.size < TEXT_VIDEO_BASE + TEXT_VIDEO_CELLS * 2u) return;
     text = (const C_UCHAR *)ram->connect.pBase + TEXT_VIDEO_BASE;
-    fputs("M5:T70:S2:SCREEN:\n", STD_STDERR);
+    STD_FPUTS("M5:T70:S2:SCREEN:\n", STD_STDERR);
     for (row = 0u; row < 25u; ++row) {
         for (column = 0u; column < 80u; ++column) {
             const C_UCHAR character = text[(row * 80u + column) * 2u];
-            STD_FPUTC(isprint(character) ? character : ' ', STD_STDERR);
+            STD_FPUTC(STD_ISPRINT(character) ? character : ' ', STD_STDERR);
         }
         STD_FPUTC('\n', STD_STDERR);
     }
@@ -118,7 +118,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     CloseHandle(thread);
     if (result != WAIT_OBJECT_0 || !prompt_seen) {
         dump_text_screen(session->ram);
-        fputs("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
+        STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
         goto fail;
     }
     vm_composition_finalize(session);

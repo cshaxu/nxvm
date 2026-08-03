@@ -36,7 +36,7 @@ C_INT main(C_VOID)
 
     input = tmpfile();
     if (input == STD_NULL ||
-        fputs("help\ninfo\nexit\n", input) < 0 ||
+        STD_FPUTS("help\ninfo\nexit\n", input) < 0 ||
         fflush(input) != 0 ||
         STD_FSEEK(input, 0L, STD_SEEK_SET) != 0) {
         if (input != STD_NULL) STD_FCLOSE(input);

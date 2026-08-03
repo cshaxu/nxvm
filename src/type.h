@@ -73,6 +73,8 @@ typedef va_list STD_VA_LIST;
 #define STD_STDERR stderr
 #define STD_ISSPACE(value) isspace((unsigned char)(value))
 #define STD_TOUPPER(value) toupper((unsigned char)(value))
+#define STD_ISALPHA(value) isalpha((unsigned char)(value))
+#define STD_ISPRINT(value) isprint((unsigned char)(value))
 
 typedef atomic_bool STD_ATOMIC_BOOL;
 typedef atomic_int STD_ATOMIC_INT;
@@ -114,8 +116,8 @@ typedef uint64_t  ntvdm64_type_unsigned_48;
 typedef int64_t   ntvdm64_type_signed_48;
 typedef uint64_t  ntvdm64_type_unsigned_64;
 typedef int64_t   ntvdm64_type_signed_64;
-typedef float     ntvdm64_type_float_32;
-typedef double    ntvdm64_type_float_64;
+typedef C_FLOAT   ntvdm64_type_float_32;
+typedef C_DOUBLE  ntvdm64_type_float_64;
 #if GLOBAL_SIZE_INTEGER == 64
 typedef ntvdm64_type_unsigned_64 ntvdm64_type_native_unsigned;
 typedef ntvdm64_type_signed_64 ntvdm64_type_native_signed;
@@ -240,7 +242,7 @@ typedef ntvdm64_type_native_unsigned ntvdm64_type_flat_address;
 #define NTVDM64_TYPE_HEX_TO_BCD(x)  ((((x) / 10) << 4) | ((x) % 10))
 #define NTVDM64_TYPE_BCD_TO_HEX(x)  (((x) & 0x0f) + ((((x) & 0xf0) >> 4) * 10))
 
-#define NTVDM64_TYPE_EXECUTE_FUNCTION(faddr) ((faddr) ? ((*(void (*)(void))(faddr))()) : 0)
+#define NTVDM64_TYPE_EXECUTE_FUNCTION(faddr) ((faddr) ? ((*(C_VOID (*)(C_VOID))(faddr))()) : 0)
 
 typedef enum ntvdm64_status {
     NTVDM64_STATUS_OK = 0,
@@ -271,7 +273,9 @@ C_INT STD_FSEEK(STD_FILE *_File, C_LONG _Offset, C_INT _Origin);
 C_LONG STD_FTELL(STD_FILE *_File);
 C_INT STD_FGETC(STD_FILE *_File);
 C_INT STD_FPUTC(C_INT _Character, STD_FILE *_File);
+C_INT STD_FPUTS(const C_CHAR *_String, STD_FILE *_File);
 C_INT STD_FEOF(STD_FILE *_File);
+C_INT STD_ATOI(const C_CHAR *_String);
 STD_TIME_T STD_TIME(STD_TIME_T *_Time);
 C_VOID* STD_CALLOC(STD_SIZE_T _Count, STD_SIZE_T _Size);
 C_VOID* STD_MALLOC(STD_SIZE_T _Size);
@@ -279,28 +283,28 @@ C_VOID STD_FREE(C_VOID *_Memory);
 C_VOID* STD_MEMSET(C_VOID *_Dst, C_INT _Val, STD_SIZE_T _Size);
 C_VOID* STD_MEMCPY(C_VOID *_Dst, const C_VOID *_Src, STD_SIZE_T _Size);
 C_INT STD_MEMCMP(const C_VOID *_Buf1, const C_VOID *_Buf2, STD_SIZE_T _Size);
-void ntvdm64_type_string_lower(char *str);
+C_VOID ntvdm64_type_string_lower(C_CHAR *str);
 
 /* Legacy trace support is shared root diagnostic infrastructure. */
 #define NTVDM64_TYPE_TRACE_MAX_STACK 0x100
 typedef struct {
-    char* blockStack[NTVDM64_TYPE_TRACE_MAX_STACK];
+    C_CHAR* blockStack[NTVDM64_TYPE_TRACE_MAX_STACK];
     STD_SIZE_T blockCount;
-    char *callName;
+    C_CHAR *callName;
 } ntvdm64_type_trace_call;
 typedef struct {
     ntvdm64_type_trace_call callStack[NTVDM64_TYPE_TRACE_MAX_STACK];
     STD_SIZE_T callCount;
-    int flagError;
+    C_INT flagError;
 } ntvdm64_type_trace;
 
-void ntvdm64_type_trace_print(ntvdm64_type_trace *rtrace);
-void ntvdm64_type_trace_initialize(ntvdm64_type_trace *rtrace);
-void ntvdm64_type_trace_finalize(ntvdm64_type_trace *rtrace);
-void ntvdm64_type_trace_call_begin(ntvdm64_type_trace *rtrace, char *callName);
-void ntvdm64_type_trace_call_end(ntvdm64_type_trace *rtrace);
-void ntvdm64_type_trace_block_begin(ntvdm64_type_trace *rtrace, char *blockName);
-void ntvdm64_type_trace_block_end(ntvdm64_type_trace *rtrace);
+C_VOID ntvdm64_type_trace_print(ntvdm64_type_trace *rtrace);
+C_VOID ntvdm64_type_trace_initialize(ntvdm64_type_trace *rtrace);
+C_VOID ntvdm64_type_trace_finalize(ntvdm64_type_trace *rtrace);
+C_VOID ntvdm64_type_trace_call_begin(ntvdm64_type_trace *rtrace, C_CHAR *callName);
+C_VOID ntvdm64_type_trace_call_end(ntvdm64_type_trace *rtrace);
+C_VOID ntvdm64_type_trace_block_begin(ntvdm64_type_trace *rtrace, C_CHAR *blockName);
+C_VOID ntvdm64_type_trace_block_end(ntvdm64_type_trace *rtrace);
 
 /* #define NTVDM64_TYPE_TRACE_CONTEXT    tracer variable */
 /* #define NTVDM64_TYPE_TRACE_ERROR  error condition */
