@@ -17,11 +17,11 @@ struct core_product_runtime_dos_minimal {
 static void core_product_runtime_dos_minimal_clear(
     core_product_runtime_dos_minimal *session)
 {
-    memset(&session->snapshot, 0, sizeof(session->snapshot));
+    STD_MEMSET(&session->snapshot, 0, sizeof(session->snapshot));
     core_machine_text_snapshot_initialize(&session->snapshot.text);
-    memset(session->snapshot.text.characters, ' ',
+    STD_MEMSET(session->snapshot.text.characters, ' ',
            sizeof(session->snapshot.text.characters));
-    memset(session->snapshot.text.attributes, 0x07,
+    STD_MEMSET(session->snapshot.text.attributes, 0x07,
            sizeof(session->snapshot.text.attributes));
     session->key_count = 0u;
 }
@@ -107,7 +107,7 @@ ntvdm64_status core_product_runtime_dos_minimal_create(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     *out_session = NULL;
-    session = (core_product_runtime_dos_minimal *)calloc(1u, sizeof(*session));
+    session = (core_product_runtime_dos_minimal *)STD_CALLOC(1u, sizeof(*session));
     if (session == NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
@@ -207,6 +207,6 @@ void core_product_runtime_dos_minimal_destroy(core_product_runtime_dos_minimal *
 {
     if (session != NULL) {
         core_machine_destroy(session->machine);
-        free(session);
+        STD_FREE(session);
     }
 }

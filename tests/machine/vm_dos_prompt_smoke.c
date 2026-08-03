@@ -71,9 +71,9 @@ static void dump_text_screen(const t_ram *ram)
     for (row = 0u; row < 25u; ++row) {
         for (column = 0u; column < 80u; ++column) {
             const unsigned char character = text[(row * 80u + column) * 2u];
-            fputc(isprint(character) ? character : ' ', stderr);
+            STD_FPUTC(isprint(character) ? character : ' ', stderr);
         }
-        fputc('\n', stderr);
+        STD_FPUTC('\n', stderr);
     }
 }
 
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
     vm_composition_live_machine *session;
 
     if (argc != 2) return 1;
-    session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
+    session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
     if (session == NULL) return 1;
     vm_composition_initialize(session);
     if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) goto fail;
@@ -113,13 +113,13 @@ int main(int argc, char **argv)
         goto fail;
     }
     vm_composition_finalize(session);
-    free(session);
+    STD_FREE(session);
     puts("M5:T70:S2:DOS-PROMPT:OK");
     return 0;
 
 fail:
     vm_composition_stop(session);
     vm_composition_finalize(session);
-    free(session);
+    STD_FREE(session);
     return 1;
 }

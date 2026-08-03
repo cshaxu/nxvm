@@ -142,8 +142,14 @@ set(NXVM_PRODUCT_CORE_SOURCES
     src/core/product/wait.c
 )
 set(NXVM_FOUNDATION_SOURCES
-    src/type.c
     src/version.c
+)
+
+# The ISO C facade is below every product and module layer. Keep it separate
+# from core-machine so platform-only targets never acquire a machine dependency.
+add_library(ntvdm64-c-facade STATIC src/type.c)
+target_include_directories(ntvdm64-c-facade PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
 )
 
 set(NXVM_PROFILE_VM_SOURCES
@@ -277,6 +283,7 @@ add_library(nxvm-product-core-debug STATIC ${NXVM_PRODUCT_CORE_DEBUG_SOURCES})
 target_include_directories(nxvm-product-core-debug PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
+target_link_libraries(nxvm-product-core-debug PUBLIC ntvdm64-c-facade)
 
 add_library(nxvm-core-machine STATIC
     ${NXVM_FOUNDATION_SOURCES}
@@ -285,6 +292,7 @@ add_library(nxvm-core-machine STATIC
 target_include_directories(nxvm-core-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
+target_link_libraries(nxvm-core-machine PUBLIC ntvdm64-c-facade)
 target_link_libraries(nxvm-core PUBLIC nxvm-core-machine)
 target_link_libraries(ntvdm64-version-smoke PRIVATE nxvm-core-machine)
 
@@ -326,6 +334,7 @@ target_include_directories(nxvm-platform-vm PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(nxvm-platform-vm PUBLIC
+    ntvdm64-c-facade
     nxvm-product-core-utils
     ntvdm64-core-platform)
 
@@ -733,6 +742,7 @@ add_nxvm_version_artifact(nxvm-0-5-0105 "0.5.0105")
 add_nxvm_version_artifact(nxvm-0-5-0106 "0.5.0106")
 add_nxvm_version_artifact(nxvm-0-5-0107 "0.5.0107")
 add_nxvm_version_artifact(nxvm-0-5-0109 "0.5.0109")
+add_nxvm_version_artifact(nxvm-0-5-0110 "0.5.0110")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

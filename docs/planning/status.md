@@ -126,6 +126,11 @@ legacy APIs now use their actual source-owner prefixes.
 **M5 T109 complete:** `C_*`/`STD_*` facade surfaces exist and former root
 wrappers/callers now use `STD_*`; scalar aliases and Win32 remain separate.
 
+**M5 T110 complete:** active direct allocation, memory/string, file, time,
+ctype, and formatting calls outside `type.*` use `STD_*`. The C facade is a
+base target rather than a core-machine dependency; `fflush(stdin)` remains for
+the later platform input-flush design.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

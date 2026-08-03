@@ -120,11 +120,11 @@ int vm_machine_hdd_insert(t_hdd *hdd, const char *file_name) {
     ntvdm64_type_native_unsigned count;
     FILE *image = STD_FOPEN(file_name, "rb");
     if (hdd != NULL && image) {
-        fseek(image, NTVDM64_TYPE_ZERO_32, SEEK_END);
-        count = ftell(image);
+        STD_FSEEK(image, NTVDM64_TYPE_ZERO_32, SEEK_END);
+        count = STD_FTELL(image);
         hdd->data.ncyl = (ntvdm64_type_unsigned_16)(count / hdd->data.nhead /
             hdd->data.nsector / hdd->data.nbyte);
-        fseek(image, NTVDM64_TYPE_ZERO_32, SEEK_SET);
+        STD_FSEEK(image, NTVDM64_TYPE_ZERO_32, SEEK_SET);
         vm_machine_hdd_allocate(hdd);
         count = STD_FREAD((void *)hdd->connect.pImgBase, sizeof(ntvdm64_type_unsigned_8),
             vm_machine_hdd_image_size(hdd), image);

@@ -74,7 +74,7 @@ out 71, al                    \n\
 \
 ; init vrtc                   \n\
 mov ah, 02 ; ch,cl,dh         \n\
-int 1a     ; get cmos time    \n\
+int 1a     ; get cmos STD_TIME    \n\
 \
 mov bh, ch ; convert ch       \n\
 and bh, 0f                    \n\
@@ -200,20 +200,20 @@ jmp near $(label_int_1a_set_alarm) \n\
 $(label_int_1a_cmp_def):           \n\
 jmp near $(label_int_1a_ret)       \n\
 \
-$(label_int_1a_get_tick):    ; get time tick count        \n\
+$(label_int_1a_get_tick):    ; get STD_TIME tick count        \n\
 mov cx, ds:[006e]                                         \n\
 mov dx, ds:[006c]                                         \n\
 mov al, ds:[0070]                                         \n\
 mov byte ds:[0070], 00                                    \n\
 jmp near $(label_int_1a_ret)                              \n\
 \
-$(label_int_1a_set_tick):    ; set time tick count        \n\
+$(label_int_1a_set_tick):    ; set STD_TIME tick count        \n\
 mov ds:[006e], cx                                         \n\
 mov ds:[006c], dx                                         \n\
 mov byte ds:[0070], 00                                    \n\
 jmp near $(label_int_1a_ret)                              \n\
 \
-$(label_int_1a_get_time):    ; get cmos time              \n\
+$(label_int_1a_get_time):    ; get cmos STD_TIME              \n\
 mov al, 00                   ; read cmos second register  \n\
 out 70, al                                                \n\
 in  al, 71                                                \n\
@@ -234,7 +234,7 @@ mov dl, al                                                \n\
 clc                                                       \n\
 jmp near $(label_int_1a_set_flag)                         \n\
 \
-$(label_int_1a_set_time):    ; set cmos time              \n\
+$(label_int_1a_set_time):    ; set cmos STD_TIME              \n\
 mov al, 00                   ; write cmos second register \n\
 out 70, al                                                \n\
 mov al, dh                                                \n\

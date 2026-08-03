@@ -83,7 +83,7 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
     nxvm_product_console_context_initialize(machine->console_context);
     machine->console_target = &machine->console_target_storage;
     machine->display_generation = 0u;
-    machine->control = (vm_composition_control_state *)calloc(1u,
+    machine->control = (vm_composition_control_state *)STD_CALLOC(1u,
         sizeof(*machine->control));
 }
 
@@ -126,7 +126,7 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     machine->debugger_context = NULL;
     machine->console_context = NULL;
     machine->console_target = NULL;
-    free(machine->control);
+    STD_FREE(machine->control);
     machine->control = NULL;
     core_machine_destroy(machine->core_machine);
     machine->core_machine = NULL;

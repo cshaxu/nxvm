@@ -19,14 +19,14 @@ int main(int argc, char **argv)
     vm_composition_live_machine *session;
 
     if (argc != 2) return 1;
-    session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
+    session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
     if (session == NULL) return 1;
     vm_composition_live_machine_initialize(session);
     vm_composition_control_initialize(session->control, session);
     if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) {
         vm_composition_control_finalize(session->control, session);
         vm_composition_live_machine_finalize(session);
-        free(session);
+        STD_FREE(session);
         return 1;
     }
     vm_composition_control_reset(session->control);
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     if (thread == NULL) {
         vm_composition_control_finalize(session->control, session);
         vm_composition_live_machine_finalize(session);
-        free(session);
+        STD_FREE(session);
         return 1;
     }
     Sleep(10u);
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     CloseHandle(thread);
     vm_composition_control_finalize(session->control, session);
     vm_composition_live_machine_finalize(session);
-    free(session);
+    STD_FREE(session);
     if (result != WAIT_OBJECT_0) return 1;
     puts("M5:T45:S1:PAUSE-BOUNDARY:OK");
     return 0;
@@ -70,6 +70,6 @@ fail:
     CloseHandle(thread);
     vm_composition_control_finalize(session->control, session);
     vm_composition_live_machine_finalize(session);
-    free(session);
+    STD_FREE(session);
     return 1;
 }

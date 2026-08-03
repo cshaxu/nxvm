@@ -18,7 +18,7 @@ ntvdm64_status vm_composition_default_profile_create(
          media->boot_target != VM_PRODUCT_BOOT_HDD)) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
-    memset(default_profile, 0, sizeof(*default_profile));
+    STD_MEMSET(default_profile, 0, sizeof(*default_profile));
     fdd = vm_product_media_provider(media, VM_PRODUCT_BOOT_FDD);
     hdd = vm_product_media_provider(media, VM_PRODUCT_BOOT_HDD);
     config.fdd_image = fdd != NULL && fdd->configured ? fdd->path : NULL;
@@ -131,6 +131,6 @@ void vm_composition_default_profile_destroy(vm_composition_default_profile *defa
 {
     if (default_profile != NULL && default_profile->active) {
         vm_composition_full_pc_destroy(default_profile->full_pc);
-        memset(default_profile, 0, sizeof(*default_profile));
+        STD_MEMSET(default_profile, 0, sizeof(*default_profile));
     }
 }

@@ -1,7 +1,6 @@
 /* Copyright 2012-2026 Neko. */
 
-#include <stdio.h>
-
+#include "type.h"
 #include "version.h"
 
 static const char *const nxvm_name = "Neko's x86 Virtual Machine";
@@ -46,11 +45,11 @@ int ntvdm64_version_format_nxvm_banner(char *buffer, size_t buffer_size,
     }
 
     if (versioned_suffix) {
-        written = snprintf(buffer, buffer_size, "%s [%s]\n%s",
+        written = STD_SNPRINTF(buffer, buffer_size, "%s [%s]\n%s",
             ntvdm64_version_nxvm_name(), build_suffix,
             ntvdm64_version_nxvm_copyright());
     } else {
-        written = snprintf(buffer, buffer_size, "%s [%s.%s]\n%s",
+        written = STD_SNPRINTF(buffer, buffer_size, "%s [%s.%s]\n%s",
             ntvdm64_version_nxvm_name(), ntvdm64_version_nxvm_release(),
             build_suffix, ntvdm64_version_nxvm_copyright());
     }

@@ -7,13 +7,13 @@
 int main(void)
 {
     vm_composition_live_machine *first =
-        (vm_composition_live_machine *)calloc(1u, sizeof(*first));
+        (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*first));
     vm_composition_live_machine *second =
-        (vm_composition_live_machine *)calloc(1u, sizeof(*second));
+        (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*second));
 
     if (first == NULL || second == NULL) {
-        free(second);
-        free(first);
+        STD_FREE(second);
+        STD_FREE(first);
         return 1;
     }
 
@@ -34,15 +34,15 @@ int main(void)
             CORE_MACHINE_KEYBOARD_MODIFIER_CONTROL)) {
         vm_composition_finalize(second);
         vm_composition_finalize(first);
-        free(second);
-        free(first);
+        STD_FREE(second);
+        STD_FREE(first);
         return 1;
     }
 
     vm_composition_finalize(second);
     vm_composition_finalize(first);
-    free(second);
-    free(first);
+    STD_FREE(second);
+    STD_FREE(first);
     puts("M5:T76:S1:KEYBOARD-PROVIDER-ISOLATION:OK");
     return 0;
 }

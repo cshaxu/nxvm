@@ -6,7 +6,7 @@
 
 int main(void)
 {
-    vm_composition_live_machine *machine = calloc(1u, sizeof(*machine));
+    vm_composition_live_machine *machine = STD_CALLOC(1u, sizeof(*machine));
 
     if (machine == NULL) return 1;
     vm_composition_live_machine_initialize(machine);
@@ -32,11 +32,11 @@ int main(void)
         machine->kbc != core_machine_shared_kbc_borrow(machine->core_machine) ||
         machine->vadp != core_machine_shared_vadp_borrow(machine->core_machine)) {
         vm_composition_live_machine_finalize(machine);
-        free(machine);
+        STD_FREE(machine);
         return 1;
     }
     vm_composition_live_machine_finalize(machine);
-    free(machine);
+    STD_FREE(machine);
     puts("M5:T83:S2:CORE-EXECUTOR-STORAGE:OK");
     return 0;
 }

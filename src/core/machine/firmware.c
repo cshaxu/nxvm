@@ -4,7 +4,7 @@
 
 void core_machine_firmware_initialize(core_machine_firmware *firmware)
 {
-    if (firmware != NULL) memset(firmware, 0, sizeof(*firmware));
+    if (firmware != NULL) STD_MEMSET(firmware, 0, sizeof(*firmware));
 }
 
 ntvdm64_status core_machine_firmware_register_service(
@@ -17,7 +17,7 @@ ntvdm64_status core_machine_firmware_register_service(
     if (firmware->frozen) return NTVDM64_STATUS_INVALID_STATE;
     for (index = 0u; index < firmware->count; ++index) {
         const core_machine_firmware_service_descriptor *existing = firmware->services[index];
-        if (strcmp(existing->id, service->id) == 0 ||
+        if (STD_STRCMP(existing->id, service->id) == 0 ||
             (service->kind == CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT &&
              existing->kind == CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT && existing->vector == service->vector)) return NTVDM64_STATUS_UNSUPPORTED;
     }

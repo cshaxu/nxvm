@@ -148,7 +148,7 @@ ntvdm64_status core_machine_create(
         return NTVDM64_STATUS_UNSUPPORTED;
     }
 
-    machine = (core_machine *)calloc(1u, sizeof(*machine));
+    machine = (core_machine *)STD_CALLOC(1u, sizeof(*machine));
     if (machine == NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
@@ -361,5 +361,5 @@ void core_machine_destroy(core_machine *machine)
     core_machine_trace_finalize(machine);
     core_machine_bus_finalize(machine);
     core_machine_instance_memory_finalize(machine);
-    free(machine);
+    STD_FREE(machine);
 }

@@ -132,7 +132,7 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     ThreadDisplayRegisterClass(context);
     if (!ThreadDisplayInitInstance(context, 0)) {
         core_product_wait_scope_leave(previous);
-        free(context);
+        STD_FREE(context);
         return FALSE;
     }
     ((vm_platform_run_context *)context->platform)->window_surface.native_handle =
@@ -142,7 +142,7 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     if (context->platform->window_renderer == NULL) {
         DestroyWindow(context->window);
         core_product_wait_scope_leave(previous);
-        free(context);
+        STD_FREE(context);
         return FALSE;
     }
 
@@ -158,7 +158,7 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     ((vm_platform_run_context *)context->platform)->window_renderer = NULL;
     ((vm_platform_run_context *)context->platform)->window_surface.native_handle = NULL;
     core_product_wait_scope_leave(previous);
-    free(context);
+    STD_FREE(context);
     return 0;
 }
 
@@ -193,7 +193,7 @@ VOID vm_platform_win32app_start_machine(const vm_platform_run_context *context) 
     if (context == NULL || context->execution == NULL ||
         context->keyboard == NULL) return;
     previous = core_product_wait_scope_enter(context->wait_scope);
-    run_context = calloc(1u, sizeof(*run_context));
+    run_context = STD_CALLOC(1u, sizeof(*run_context));
     if (run_context == NULL) return;
     run_context->platform = context;
     run_context->window_class = _T("nxvm");

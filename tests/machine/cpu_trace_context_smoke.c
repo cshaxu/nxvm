@@ -8,14 +8,14 @@
 
 int main(void)
 {
-    t_cpu *first_cpu = calloc(1u, sizeof(*first_cpu));
-    t_cpu *second_cpu = calloc(1u, sizeof(*second_cpu));
-    t_cpuins *first_instructions = calloc(1u, sizeof(*first_instructions));
-    t_cpuins *second_instructions = calloc(1u, sizeof(*second_instructions));
-    t_ram *first_memory = calloc(1u, sizeof(*first_memory));
-    t_ram *second_memory = calloc(1u, sizeof(*second_memory));
-    t_port *first_port = calloc(1u, sizeof(*first_port));
-    t_port *second_port = calloc(1u, sizeof(*second_port));
+    t_cpu *first_cpu = STD_CALLOC(1u, sizeof(*first_cpu));
+    t_cpu *second_cpu = STD_CALLOC(1u, sizeof(*second_cpu));
+    t_cpuins *first_instructions = STD_CALLOC(1u, sizeof(*first_instructions));
+    t_cpuins *second_instructions = STD_CALLOC(1u, sizeof(*second_instructions));
+    t_ram *first_memory = STD_CALLOC(1u, sizeof(*first_memory));
+    t_ram *second_memory = STD_CALLOC(1u, sizeof(*second_memory));
+    t_port *first_port = STD_CALLOC(1u, sizeof(*first_port));
+    t_port *second_port = STD_CALLOC(1u, sizeof(*second_port));
     core_machine_cpu_execution_context first = {0};
     core_machine_cpu_execution_context second = {0};
     int failed = 0;
@@ -48,14 +48,14 @@ int main(void)
     core_machine_cpu_execution_finalize(&first);
 
 cleanup:
-    free(second_port);
-    free(first_port);
-    free(second_memory);
-    free(first_memory);
-    free(second_instructions);
-    free(first_instructions);
-    free(second_cpu);
-    free(first_cpu);
+    STD_FREE(second_port);
+    STD_FREE(first_port);
+    STD_FREE(second_memory);
+    STD_FREE(first_memory);
+    STD_FREE(second_instructions);
+    STD_FREE(first_instructions);
+    STD_FREE(second_cpu);
+    STD_FREE(first_cpu);
     if (failed) return 1;
     puts("M5:T88:S1:TRACE-CONTEXT:OK");
     return 0;

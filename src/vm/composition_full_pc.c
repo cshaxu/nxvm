@@ -54,7 +54,7 @@ static uint16_t nxvm_baseline_read_u16(const void *source)
 {
     uint16_t value;
 
-    memcpy(&value, source, sizeof(value));
+    STD_MEMCPY(&value, source, sizeof(value));
     return value;
 }
 
@@ -70,7 +70,7 @@ ntvdm64_status vm_composition_full_pc_create(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     *out_full_pc = NULL;
-    full_pc = (vm_composition_full_pc *)calloc(1u, sizeof(*full_pc));
+    full_pc = (vm_composition_full_pc *)STD_CALLOC(1u, sizeof(*full_pc));
     if (full_pc == NULL) return NTVDM64_STATUS_NO_MEMORY;
 
     vm_composition_initialize(&full_pc->machine);
@@ -94,7 +94,7 @@ ntvdm64_status vm_composition_full_pc_create(
         vm_platform_request_transport_close(&full_pc->transport);
         vm_platform_request_transport_discard(&full_pc->transport);
         vm_composition_finalize(&full_pc->machine);
-        free(full_pc);
+        STD_FREE(full_pc);
         return NTVDM64_STATUS_FAULT;
     }
     if (config->create_fdd) vm_machine_fdd_create_for(full_pc->machine.fdd);
@@ -239,5 +239,5 @@ void vm_composition_full_pc_destroy(vm_composition_full_pc *full_pc)
         vm_composition_finalize(&full_pc->machine);
         full_pc->active = 0;
     }
-    free(full_pc);
+    STD_FREE(full_pc);
 }

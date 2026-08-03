@@ -6,7 +6,7 @@ void nxvm_platform_vm_request_bridge_initialize(
     nxvm_platform_vm_request_bridge *bridge)
 {
     if (bridge != NULL) {
-        memset(bridge, 0, sizeof(*bridge));
+        STD_MEMSET(bridge, 0, sizeof(*bridge));
     }
 }
 

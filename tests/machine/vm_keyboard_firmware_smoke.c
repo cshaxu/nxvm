@@ -7,7 +7,7 @@
 int main(void)
 {
     vm_composition_live_machine *session =
-        (vm_composition_live_machine *)calloc(1u, sizeof(*session));
+        (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
     if (session == NULL) return 1;
     vm_composition_initialize(session);
     core_machine_keyboard_apply_host_state_to(session->keyboard_provider,
@@ -15,11 +15,11 @@ int main(void)
     if (!core_machine_keyboard_get_modifier_from(session->keyboard_provider,
         CORE_MACHINE_KEYBOARD_MODIFIER_ALT)) {
         vm_composition_finalize(session);
-        free(session);
+        STD_FREE(session);
         return 1;
     }
     vm_composition_finalize(session);
-    free(session);
+    STD_FREE(session);
     puts("M5:T41:S1:KEYBOARD-FIRMWARE:OK");
     return 0;
 }

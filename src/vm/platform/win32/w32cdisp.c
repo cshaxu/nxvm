@@ -26,13 +26,13 @@ struct w32cdisp_context {
 };
 
 w32cdisp_context *w32cdisp_context_create(void) {
-    return calloc(1u, sizeof(w32cdisp_context));
+    return STD_CALLOC(1u, sizeof(w32cdisp_context));
 }
 
 VOID w32cdisp_context_destroy(w32cdisp_context *context) {
     if (context == NULL) return;
-    free(context->char_buffer);
-    free(context);
+    STD_FREE(context->char_buffer);
+    STD_FREE(context);
 }
 
 uint64_t w32cdisp_context_generation(const w32cdisp_context *context) {
@@ -68,9 +68,9 @@ VOID w32cdispSetScreen(w32cdisp_context *context, HANDLE output,
     context->write_rect.Left = 0;
     context->write_rect.Right = context->rows - 1;
     if (context->char_buffer) {
-        free(context->char_buffer);
+        STD_FREE(context->char_buffer);
     }
-    context->char_buffer = malloc(context->columns * context->rows * sizeof(CHAR_INFO));
+    context->char_buffer = STD_MALLOC(context->columns * context->rows * sizeof(CHAR_INFO));
     /* Legacy cursor-shape control remains intentionally disabled. */
     SetConsoleOutputCP(437);
     SetConsoleScreenBufferSize(output, context->buffer_size);
@@ -122,7 +122,7 @@ VOID w32cdispPaint(w32cdisp_context *context, HANDLE output,
 VOID w32cdispFinal(w32cdisp_context *context, HANDLE output) {
     if (context == NULL) return;
     if (context->char_buffer) {
-        free(context->char_buffer);
+        STD_FREE(context->char_buffer);
     }
     context->char_buffer = NULL;
     SetConsoleCursorInfo(output, &context->default_cursor);

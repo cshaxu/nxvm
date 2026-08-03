@@ -18,9 +18,9 @@ int main(void)
     if (vm_profile_default_firmware_compose(&firmware, &plan) != NTVDM64_STATUS_OK ||
         plan.reset_segment != 0xf000u || plan.reset_offset != 0xfff0u ||
         plan.service_count != 6u ||
-        strcmp(core_machine_firmware_service_at(&firmware, 2u)->id,
+        STD_STRCMP(core_machine_firmware_service_at(&firmware, 2u)->id,
                "bios.int10.video") != 0 ||
-        strcmp(core_machine_firmware_find_interrupt(&firmware, 0x13u)->id,
+        STD_STRCMP(core_machine_firmware_find_interrupt(&firmware, 0x13u)->id,
                "bios.int13.disk") != 0 ||
         core_machine_firmware_find_interrupt(&firmware, 0x19u) != NULL ||
         core_machine_firmware_freeze(&firmware) != NTVDM64_STATUS_OK ||

@@ -10,7 +10,7 @@ ntvdm64_status core_machine_bus_initialize(core_machine *machine)
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    machine->ports.slots = (core_machine_port_slot *)calloc(
+    machine->ports.slots = (core_machine_port_slot *)STD_CALLOC(
         NXVM_CORE_PORT_COUNT,
         sizeof(*machine->ports.slots));
     if (machine->ports.slots == NULL) {
@@ -23,7 +23,7 @@ ntvdm64_status core_machine_bus_initialize(core_machine *machine)
 void core_machine_bus_finalize(core_machine *machine)
 {
     if (machine != NULL) {
-        free(machine->ports.slots);
+        STD_FREE(machine->ports.slots);
         machine->ports.slots = NULL;
     }
 }

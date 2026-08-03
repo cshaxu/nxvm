@@ -36,7 +36,7 @@ static void core_machine_port_add_provider(t_port *port, ntvdm64_type_unsigned_1
 
     if (port == NULL) return;
     if (entry == NULL) {
-        entry = (core_machine_port_provider_entry *)malloc(sizeof(*entry));
+        entry = (core_machine_port_provider_entry *)STD_MALLOC(sizeof(*entry));
         if (entry == NULL) return;
         entry->port_id = port_id;
         entry->write = write;
@@ -121,7 +121,7 @@ void core_machine_port_finalize(t_port *port)
     entry = port->connect.providers;
     while (entry != NULL) {
         core_machine_port_provider_entry *next = entry->next;
-        free(entry);
+        STD_FREE(entry);
         entry = next;
     }
     port->connect.providers = NULL;

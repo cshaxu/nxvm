@@ -9,7 +9,7 @@ static int verify_profile(void)
     const core_product_runtime_profile_descriptor *profile =
         vm_profile_full_pc_profile_descriptor();
 
-    return profile == NULL || strcmp(profile->name, "nxvm.full_pc") != 0 ||
+    return profile == NULL || STD_STRCMP(profile->name, "nxvm.full_pc") != 0 ||
            !profile->permits_disk_boot || !profile->uses_legacy_adapter ||
            (profile->devices & (NXVM_RUNTIME_DEVICE_BIOS |
                                 NXVM_RUNTIME_DEVICE_CMOS |
