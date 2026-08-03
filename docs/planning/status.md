@@ -186,8 +186,12 @@ is active to converge the VDM skeleton boundary.
 uses the session as its sole entry.
 
 **M5 T125 complete:** unconsumed descriptor/registry wrappers are removed;
-the full focused GCC gate suite passes after the state-inventory update. T126
-is active to close no-op platform/machine facades and host-lease ownership.
+the full focused GCC gate suite passes after the state-inventory update.
+
+**M5 T126 complete:** no-op VM platform/HDC lifecycle facades are removed;
+the retained hard-disk interrupt firmware belongs to the default VM profile.
+The two host Console leases remain explicit process-exclusive resources and
+T127 is active to re-audit all such exceptions against the unique-owner rule.
 
 ## Short-Term M5 Plan
 

@@ -198,7 +198,6 @@ set(NXVM_MACHINE_VM_SOURCES
     src/vm/machine/fdd.c
     src/vm/machine/hdd.c
     src/vm/machine/fdc.c
-    src/vm/machine/hdc.c
     src/vm/machine/cmos.c
     src/vm/machine/debug.c
 )
@@ -449,8 +448,6 @@ add_executable(nxvm-vm-fdc-authority-smoke tests/machine/vm_fdc_authority_smoke.
 target_link_libraries(nxvm-vm-fdc-authority-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-vm-hdd-authority-smoke tests/machine/vm_hdd_authority_smoke.c)
 target_link_libraries(nxvm-vm-hdd-authority-smoke PRIVATE nxvm-vm-composition)
-add_executable(nxvm-vm-hdc-boundary-smoke tests/machine/vm_hdc_boundary_smoke.c)
-target_link_libraries(nxvm-vm-hdc-boundary-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-vm-bios-authority-smoke tests/machine/vm_bios_authority_smoke.c)
 target_link_libraries(nxvm-vm-bios-authority-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-vm-qdx-authority-smoke tests/machine/vm_qdx_authority_smoke.c)
@@ -717,6 +714,7 @@ add_nxvm_version_artifact(nxvm-0-5-0121 "0.5.0121")
 add_nxvm_version_artifact(nxvm-0-5-0122 "0.5.0122")
 add_nxvm_version_artifact(nxvm-0-5-0123 "0.5.0123")
 add_nxvm_version_artifact(nxvm-0-5-0125 "0.5.0125")
+add_nxvm_version_artifact(nxvm-0-5-0126 "0.5.0126")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

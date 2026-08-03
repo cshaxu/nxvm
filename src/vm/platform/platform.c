@@ -83,8 +83,3 @@ C_VOID vm_platform_start(const vm_platform_run_context *context) {
     vm_platform_linux_start_machine(vm_platform_run_context_get_window_display(context), context);
 }
 #endif
-
-C_VOID vm_platform_initialize() {
-}
-
-C_VOID vm_platform_finalize() {}

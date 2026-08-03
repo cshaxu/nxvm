@@ -49,9 +49,6 @@ C_VOID vm_platform_display_paint(const vm_platform_run_context *context);
 
 C_VOID vm_platform_start(const vm_platform_run_context *context);
 
-C_VOID vm_platform_initialize();
-C_VOID vm_platform_finalize();
-
 #ifdef __cplusplus
 }/*_EOCD_*/
 #endif
