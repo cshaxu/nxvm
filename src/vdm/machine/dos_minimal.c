@@ -118,6 +118,9 @@ ntvdm64_status vdm_machine_dos_minimal_create(
         status = vdm_machine_dos_minimal_install_ports(session);
     }
     if (status == NTVDM64_STATUS_OK) {
+        status = core_machine_freeze_execution_providers(session->machine);
+    }
+    if (status == NTVDM64_STATUS_OK) {
         status = vdm_machine_dos_minimal_reset(session);
     }
     if (status != NTVDM64_STATUS_OK) {

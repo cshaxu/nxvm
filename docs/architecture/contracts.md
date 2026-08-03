@@ -117,9 +117,9 @@ and process exit.
 
 - `core_machine_create` creates CPU, RAM, bus, and execution state in a
   configuring state. It does not execute guest instructions.
-- Composition registers core-machine providers while configuring, then calls
-  `core_machine_freeze`. Provider topology, port/IRQ ownership, and firmware
-  service registration are immutable after freeze.
+- Composition registers execution and port providers while configuring, then
+  calls `core_machine_freeze_execution_providers`. Provider topology, port/IRQ
+  ownership, and firmware service registration are immutable after freeze.
 - `core_machine_reset` resets execution state and invokes frozen provider reset
   callbacks. A topology change is a root-composition reconstruction, not an
   ordinary reset.
@@ -162,9 +162,9 @@ For example, a VM profile may require 386 instruction capability, while root
 composition supplies the corresponding core bit set. This lets core evolve its
 x86 implementation without importing product profile semantics.
 
-`CORE_MACHINE_STATE` exposes only `CONFIGURING`, `READY`, `RUNNING`, `PAUSED`,
-`STOPPED`, and `FAULTED`. `RUNNING` exists only while a synchronous
-`core_machine_run` call is active; `READY` means another quantum may begin.
+`core_machine_lifecycle` exposes `INITIALIZED`, `PAUSED`, `RUNNING`, `STOPPED`,
+and `FAULTED`. `INITIALIZED` is the configuration window and is not runnable;
+`RUNNING` exists only while a synchronous `core_machine_run` call is active.
 
 `CORE_MACHINE_RUN_RESULT` reports why one quantum returned:
 
@@ -205,7 +205,8 @@ not a `CORE_MACHINE` handle.
 
 ## Core Machine: Frozen Topology And Mutable Guest State
 
-`core_machine_freeze` makes the machine topology immutable: physical-address
+`core_machine_freeze_execution_providers` closes the machine configuration
+window and makes the machine topology immutable: physical-address
 routing, port ownership, IRQ ownership, and firmware-service registration may
 not be added, removed, or rebound until root composition destroys and rebuilds
 the machine. It does not make guest-visible contents immutable.
@@ -218,7 +219,8 @@ semantics supplied by its registered provider. Dynamic CPU address behavior,
 including A20, affects translation to the same frozen map; it never changes
 which provider owns a mapped range.
 
-External mutations remain serialized at an execution boundary. Root
+External memory, port, and A20 operations require the returned `PAUSED`
+execution boundary. Root
 composition delivers host input and product commands through its own boundary,
 then the relevant provider or core API applies them on the machine execution
 thread. This preserves deterministic guest state without giving platform or

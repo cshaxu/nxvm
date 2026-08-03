@@ -16,7 +16,8 @@ C_INT main(C_VOID)
         return 1;
     }
 
-    if (core_machine_reset(machine) != NTVDM64_STATUS_OK) {
+    if (core_machine_freeze_execution_providers(machine) != NTVDM64_STATUS_OK ||
+        core_machine_reset(machine) != NTVDM64_STATUS_OK) {
         core_machine_destroy(machine);
         return 2;
     }

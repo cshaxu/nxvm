@@ -93,6 +93,16 @@ add_executable(nxvm-core-machine-lifecycle-smoke
 )
 target_link_libraries(nxvm-core-machine-lifecycle-smoke PRIVATE nxvm-core)
 
+add_executable(nxvm-core-machine-configuration-smoke
+    tests/core/machine_configuration_smoke.c
+)
+target_link_libraries(nxvm-core-machine-configuration-smoke PRIVATE nxvm-core)
+add_custom_target(nxvm-core-machine-lifecycle-contract-smoke
+    COMMAND $<TARGET_FILE:nxvm-core-machine-configuration-smoke>
+    DEPENDS nxvm-core-machine-configuration-smoke
+    COMMENT "Verifying frozen core-machine lifecycle contract"
+    VERBATIM)
+
 add_executable(nxvm-core-machine-trace-smoke
     tests/core/machine_trace_smoke.c
 )
@@ -119,6 +129,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-version-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-core-machine-configuration-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -816,6 +827,7 @@ add_nxvm_version_artifact(nxvm-0-5-0156 "0.5.0156")
 add_nxvm_version_artifact(nxvm-0-5-0157 "0.5.0157")
 add_nxvm_version_artifact(nxvm-0-5-0158 "0.5.0158")
 add_nxvm_version_artifact(nxvm-0-5-0159 "0.5.0159")
+add_nxvm_version_artifact(nxvm-0-5-0160 "0.5.0160")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

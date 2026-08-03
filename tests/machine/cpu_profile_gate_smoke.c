@@ -16,6 +16,7 @@ static C_INT prepare_machine(core_machine_cpu_profile profile,
     t_cpu *cpu;
 
     if (core_machine_create(&config, out_machine) != NTVDM64_STATUS_OK ||
+        core_machine_freeze_execution_providers(*out_machine) != NTVDM64_STATUS_OK ||
         core_machine_reset(*out_machine) != NTVDM64_STATUS_OK) return 1;
     execution = core_machine_executor_cpu_execution_borrow(*out_machine);
     cpu = core_machine_executor_cpu_borrow(*out_machine);

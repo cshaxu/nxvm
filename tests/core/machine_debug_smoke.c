@@ -16,6 +16,7 @@ C_INT main(C_VOID)
 
     if (test_core_machine_create_executor(0u, &machine) != NTVDM64_STATUS_OK ||
         core_machine_debug_read_cpu(machine, &cpu) != NTVDM64_STATUS_INVALID_STATE ||
+        core_machine_freeze_execution_providers(machine) != NTVDM64_STATUS_OK ||
         core_machine_reset(machine) != NTVDM64_STATUS_OK ||
         core_machine_memory_write(machine, 0u, &byte, 1u) != NTVDM64_STATUS_OK ||
         core_machine_memory_write(machine, 0xffff0u, &nop, 1u) != NTVDM64_STATUS_OK ||
