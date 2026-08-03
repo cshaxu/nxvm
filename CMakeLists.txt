@@ -59,7 +59,11 @@ add_executable(nxvm-product-media-smoke tests/products/nxvm_media_smoke.c)
 target_link_libraries(nxvm-product-media-smoke PRIVATE nxvm-vm-product)
 add_executable(nxvm-product-default-profile-smoke tests/products/nxvm_default_profile_smoke.c)
 target_link_libraries(nxvm-product-default-profile-smoke PRIVATE nxvm-vm-composition)
-add_executable(nxvm-product-console-smoke tests/products/nxvm_console_smoke.c)
+add_executable(nxvm-product-console-smoke
+    tests/products/nxvm_console_smoke.c
+    tests/products/support/vm_session_console.c)
+target_include_directories(nxvm-product-console-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/tests")
 target_link_libraries(nxvm-product-console-smoke PRIVATE nxvm-vm-product)
 add_executable(nxvm-product-console-lifecycle-smoke
     tests/products/nxvm_console_lifecycle_smoke.c)
@@ -71,7 +75,10 @@ add_custom_target(nxvm-product-console-lifecycle-gate
     COMMENT "Verifying retained NXVM Console lifecycle"
     VERBATIM)
 add_executable(nxvm-product-presentation-debug-smoke
-    tests/products/nxvm_presentation_debugger_smoke.c)
+    tests/products/nxvm_presentation_debugger_smoke.c
+    tests/products/support/vm_session_debugger.c)
+target_include_directories(nxvm-product-presentation-debug-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/tests")
 target_link_libraries(nxvm-product-presentation-debug-smoke PRIVATE nxvm-vm-product)
 add_executable(nxvm-product-session-smoke tests/products/nxvm_session_smoke.c)
 target_link_libraries(nxvm-product-session-smoke PRIVATE nxvm-vm-composition)
@@ -171,8 +178,6 @@ set(NXVM_PRODUCT_VM_SOURCES
     src/vm/product/console.c
     src/vm/product/media.c
     src/vm/product/presentation.c
-    src/vm/product/session_console.c
-    src/vm/product/session_debugger.c
 )
 set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/debug_access.c
@@ -191,7 +196,6 @@ set(NXVM_COMPOSITION_VM_SOURCES
     src/vm/composition/session_control.c
     src/vm/composition/session_runner.c
     src/vm/composition/providers.c
-    src/vm/composition/cpu_probe.c
 )
 set(NXVM_MACHINE_VM_SOURCES
     src/vm/machine/fdd.c
@@ -399,7 +403,10 @@ target_link_libraries(nxvm-vm-product PUBLIC
 
 add_executable(nxvm-vm-cpu-probe-smoke
     tests/adapters/nxvm_vm_cpu_probe_smoke.c
+    tests/adapters/support/vm_cpu_probe.c
 )
+target_include_directories(nxvm-vm-cpu-probe-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/tests")
 target_link_libraries(nxvm-vm-cpu-probe-smoke PRIVATE nxvm-vm-composition)
 
 add_executable(nxvm-execution-context-smoke
@@ -750,6 +757,7 @@ add_nxvm_version_artifact(nxvm-0-5-0117 "0.5.0117")
 add_nxvm_version_artifact(nxvm-0-5-0118 "0.5.0118")
 add_nxvm_version_artifact(nxvm-0-5-0120 "0.5.0120")
 add_nxvm_version_artifact(nxvm-0-5-0121 "0.5.0121")
+add_nxvm_version_artifact(nxvm-0-5-0122 "0.5.0122")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

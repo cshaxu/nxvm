@@ -2,7 +2,7 @@
 
 
 
-#include "vm/product/session_debugger.h"
+#include "products/support/vm_session_debugger.h"
 
 #include "vm/product/presentation.h"
 
@@ -58,8 +58,8 @@ C_INT main(C_VOID)
         vm_product_debugger_open_command_boundary(&debugger) != NTVDM64_STATUS_OK ||
         vm_product_debugger_read_cpu(&debugger, &cpu) != NTVDM64_STATUS_OK ||
         cpu.cs != 0xf000u ||
-        vm_product_debugger_step(&debugger, &result) != NTVDM64_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_BUDGET) {
+        vm_product_debugger_step(&debugger, &result) != NTVDM64_STATUS_UNSUPPORTED ||
+        result.reason != CORE_MACHINE_STOP_NONE) {
         core_machine_destroy(machine);
         return 1;
     }

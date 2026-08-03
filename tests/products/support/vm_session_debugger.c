@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/product/session_debugger.h"
+#include "products/support/vm_session_debugger.h"
 
 static ntvdm64_status vm_product_debugger_require_boundary(
     const vm_product_debugger *debugger)

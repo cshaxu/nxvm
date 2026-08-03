@@ -173,7 +173,11 @@ Console lifecycle, debugger, session, and DOS-prompt gates passed.
 
 **M5 T121 complete:** custom core machines have one production executor;
 test-minimal state is explicitly non-executing contract-fixture state. Core
-and DOS-prompt gates passed; T122 is active to remove parallel VM test models.
+and DOS-prompt gates passed.
+
+**M5 T122 complete:** CPU-probe and compact alternate Console/debugger models
+are test support, not production VM targets. T123 is active to remove
+command-level TLS current-object facades.
 
 ## Short-Term M5 Plan
 

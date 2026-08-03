@@ -2,7 +2,7 @@
 
 
 
-#include "vm/product/session_console.h"
+#include "products/support/vm_session_console.h"
 
 typedef struct console_fixture {
     C_UINT count;
