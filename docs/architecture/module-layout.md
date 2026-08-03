@@ -18,13 +18,14 @@ above one another.
 ```text
 src/
   core/{machine,platform,product}/
+    product/session/
   vm/
     main.c
-    composition/
+    composition/session/
     {machine,platform,product,profile}/
     profile/default_profile/firmware/
   vdm/
-    composition/
+    composition/session/
     {machine,platform,product,profile}/
     profile/dos_minimal_profile/
 ```
@@ -76,6 +77,17 @@ Composition implementation and private headers live under
 it is not a fourth module and does not relax the directed module dependency
 rules. Product entry points remain directly under `vm/main.c` and, when added,
 `vdm/main.c`.
+
+Common product-session tooling belongs in `core/product/session/`: opaque
+entry registration, selection, copied snapshots, shared commands, and explicit
+provider contracts. It never creates or understands a concrete VM/VDM session.
+VM and VDM root composition own their concrete session construction, provider
+implementation, selected-item adaptation, and teardown under
+`composition/session/`. Product UI receives copied snapshots and calls the
+core-product contract; it never owns or caches a selected session pointer or
+ID. `core/composition/` is forbidden because it would be an accidental second
+product assembly layer. This rule is realized by
+[`planning/m5-product-session-management.md`](../planning/m5-product-session-management.md).
 
 Approved compact lexical families are also retained: `kbc`, `vadp`,
 `win32app`, `win32con`, `linuxapp`, `linuxcon`, `w32*`, `xasm32`, `aasm`,

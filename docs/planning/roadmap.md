@@ -114,7 +114,8 @@ active-source follow-up is governed by `planning/m5-naming-remediation.md`.
 
 M5 T64 reopens bounded design work for explicit session ownership and
 context-passing. It must produce the next bounded authority-migration plan
-before M6 may begin; it does not authorize a multi-session product feature.
+before M6 may begin; it does not itself authorize a multi-session product
+feature.
 
 M5 T65 through T73 completed that plan, removing selected-session globals one
 authority family at a time. T73 recorded a clean closure scan and compatibility
@@ -135,13 +136,21 @@ owner-bounded naming sequence without expanding M6 scope.
 Any unavoidable user-visible change requires explicit owner approval before
 implementation and a recorded before/after acceptance plan.
 
+**Owner-approved extension:** M5 T144 defines a shared opaque product-session
+mechanism and its NXVM Console adoption after session-readiness closure. It is
+an intentional user-visible NXVM addition, not a compatibility regression.
+Its core-product mechanism is reusable by VDM, but it neither starts M6 nor
+authorizes VDM runtime behavior. The contract is
+[`m5-product-session-management.md`](m5-product-session-management.md).
+
 ## M6: Design The Owned DOS Module
 
 **Goal:** specify the bounded ntvdm64 DOS backend before implementation.
 
 **Scope:** define `vdm/machine` COM load state, PSP/environment/DTA layout, initial CPU state, DOS
 interrupt dispatch, register preservation, handle and fixture-filesystem
-semantics, deterministic input-blocked protocol, error table, and M7 probes.
+semantics, deterministic input-blocked protocol, error table, VDM concrete
+session-provider requirements, and M7 probes.
 
 **Exit:** DOS ABI specification and test vectors plus the bounded M7 breakdown.
 **Non-goal:** DOS implementation.
@@ -169,7 +178,9 @@ program-path mapping, exit-status table, filesystem containment, Windows 7
 through Windows 11 matrix, Console/window state machine, graphics capability
 table, debugger grammar, Ctrl+C/Ctrl+Break ownership, cleanup, and error
 behavior. A windowed ntvdm64 session retains a product control Console for
-online debugging; its exact lifetime and ownership are M8 decisions.
+online debugging; its exact lifetime and ownership are M8 decisions. Define
+the VDM debug-mode adoption of the shared `core/product/session` manager,
+including how an opened VDM session receives a workload.
 
 **Exit:** approved Platform/CLI specification, security matrix, and bounded M9
 breakdown. **Non-goal:** production platform implementation.
@@ -182,7 +193,8 @@ breakdown. **Non-goal:** production platform implementation.
 **Scope:** CLI, arguments, current directory, environment, host filesystem,
 keyboard/mouse, text and basic graphics paths, exit codes, logging, debug mode,
 configuration, Ctrl+C, cancellation, and adapted shared-core input/display
-components.
+components. Non-debug creates/runs/closes session `0` without a management
+Console; debug mode adopts the approved shared session manager and Console.
 
 **Non-goals:** global file association, loader replacement, injection, drivers,
 or registry-dependent operation.
