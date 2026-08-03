@@ -190,8 +190,13 @@ the full focused GCC gate suite passes after the state-inventory update.
 
 **M5 T126 complete:** no-op VM platform/HDC lifecycle facades are removed;
 the retained hard-disk interrupt firmware belongs to the default VM profile.
-The two host Console leases remain explicit process-exclusive resources and
-T127 is active to re-audit all such exceptions against the unique-owner rule.
+The two host Console leases remain explicit process-exclusive resources.
+
+**M5 T127 audit complete:** VM has one formal session and execution path, and
+the unconsumed profile wrappers are gone. The audit records three P1 remaining
+TLS implementation dependencies (debug, Console, wait), plus VDM's intentional
+non-runnable skeleton boundary and host-lease verification gap. These are
+post-audit work, not evidence that the unique-owner objective has fully closed.
 
 ## Short-Term M5 Plan
 
