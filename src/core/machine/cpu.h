@@ -42,7 +42,7 @@ void core_machine_cpu_state_initialize(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context);
 
-#include "core/machine/vglobal.h"
+#include "type.h"
 
 #define NXVM_DEVICE_CPU "Intel 8086+"
 

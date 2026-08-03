@@ -2,7 +2,7 @@
 #ifndef NTVDM64_CORE_MACHINE_BLOCK_H
 #define NTVDM64_CORE_MACHINE_BLOCK_H
 
-#include "core/machine/vglobal.h"
+#include "type.h"
 
 typedef struct core_machine_block_geometry {
     t_bool present;
