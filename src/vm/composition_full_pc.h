@@ -1,7 +1,6 @@
 #ifndef NXVM_COMPOSITION_FULL_PC_H
 #define NXVM_COMPOSITION_FULL_PC_H
 
-#include <stdint.h>
 
 #include "type.h"
 

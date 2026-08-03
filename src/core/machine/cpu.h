@@ -3,7 +3,6 @@
 #ifndef NXVM_CORE_CPU_H
 #define NXVM_CORE_CPU_H
 
-#include <stdint.h>
 
 #include "core/machine/cpu_interface.h"
 #include "type.h"

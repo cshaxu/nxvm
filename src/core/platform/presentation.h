@@ -1,7 +1,7 @@
 #ifndef NXVM_PLATFORM_PRESENTATION_H
 #define NXVM_PLATFORM_PRESENTATION_H
 
-#include <stdint.h>
+#include "type.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,7 +1,6 @@
 #ifndef NTVDM64_CORE_MACHINE_FIRMWARE_INTERFACE_H
 #define NTVDM64_CORE_MACHINE_FIRMWARE_INTERFACE_H
 
-#include <stddef.h>
 
 #include "type.h"
 

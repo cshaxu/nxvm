@@ -3,7 +3,6 @@
 
 #include "type.h"
 
-#include <stdint.h>
 
 typedef C_VOID (*core_product_wait_provider)(C_VOID *context, uint32_t milliseconds);
 

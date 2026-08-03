@@ -6,7 +6,6 @@
 #include "core/machine/machine.h"
 
 
-#include <stdlib.h>
 
 C_VOID vm_composition_live_machine_initialize(vm_composition_live_machine *machine)
 {

@@ -3,7 +3,6 @@
 #include "vm/composition_default_profile.h"
 
 
-#include <string.h>
 
 
 #include "vm/composition_full_pc.h"

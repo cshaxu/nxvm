@@ -3,7 +3,6 @@
 #include "core/machine/machine.h"
 
 
-#include <string.h>
 
 static uint32_t core_machine_trace_linear_pc(const core_machine *machine)
 {

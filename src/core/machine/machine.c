@@ -3,7 +3,6 @@
 #include "core/machine/machine.h"
 
 
-#include <stdlib.h>
 
 static uint32_t core_machine_linear_pc(const core_machine *machine)
 {

@@ -3,7 +3,6 @@
 
 #include "type.h"
 
-#include <stdint.h>
 
 
 #include "core/machine/cpu.h"

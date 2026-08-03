@@ -1,7 +1,7 @@
 #ifndef NTVDM64_CORE_MACHINE_PROFILE_INTERFACE_H
 #define NTVDM64_CORE_MACHINE_PROFILE_INTERFACE_H
 
-#include <stddef.h>
+#include "type.h"
 
 #ifdef __cplusplus
 extern "C" {

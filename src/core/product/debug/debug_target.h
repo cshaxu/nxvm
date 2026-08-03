@@ -3,9 +3,7 @@
 
 #include "type.h"
 
-#include <stddef.h>
 
-#include <stdint.h>
 
 typedef enum core_product_debug_register {
     CORE_PRODUCT_DEBUG_EAX, CORE_PRODUCT_DEBUG_ECX, CORE_PRODUCT_DEBUG_EDX,

@@ -11,7 +11,6 @@
 
 #include "type.h"
 
-#include <stdlib.h>
 
 
 #include "core/product/utils.h"

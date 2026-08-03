@@ -37,24 +37,9 @@ extern "C" {
 #include <stddef.h>
 #include <stdatomic.h>
 #include <string.h>
-#include <memory.h>
 #include <time.h>
 #include <ctype.h>
-
-/* COMPATIBILITY DEFINITIONS *********************************************** */
-#if GLOBAL_PLATFORM == GLOBAL_PLATFORM_WIN32
-typedef unsigned char    uint8_t;
-typedef unsigned short   uint16_t;
-typedef unsigned int     uint32_t;
-typedef unsigned __int64 uint64_t;
-typedef   signed char    int8_t;
-typedef   signed short   int16_t;
-typedef   signed int     int32_t;
-typedef   signed __int64 int64_t;
-#else
 #include <stdint.h>
-#endif
-/* ************************************************************************* */
 
 typedef void C_VOID;
 typedef char C_CHAR;

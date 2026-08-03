@@ -7,7 +7,6 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
 #include <windows.h>
 
 #include "core/machine/keyboard_interface.h"

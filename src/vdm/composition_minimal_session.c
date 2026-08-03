@@ -3,7 +3,6 @@
 #include "vdm/composition_minimal_session.h"
 
 
-#include <stdlib.h>
 
 
 #include "vdm/machine/dos_minimal.h"

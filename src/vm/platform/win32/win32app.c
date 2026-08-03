@@ -3,7 +3,7 @@
 /* WIN32APP provides win32 window i/o interface. */
 
 #include <tchar.h>
-#include <stdlib.h>
+#include "type.h"
 
 #include "core/product/utils.h"
 

@@ -3,7 +3,6 @@
 #include "vm/composition_session_model.h"
 
 
-#include <string.h>
 
 
 #include "vm/profile/default_profile/profile.h"

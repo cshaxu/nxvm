@@ -3,7 +3,6 @@
 #include "core/product/runtime/registry.h"
 
 
-#include <string.h>
 
 static C_INT valid_text(const C_CHAR *value)
 {

@@ -7,7 +7,6 @@
 #include "core/product/utils.h"
 
 
-#include <stdlib.h>
 
 
 #include "core/platform/display_frame.h"

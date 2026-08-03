@@ -138,6 +138,9 @@ Guest firmware strings retain their native assembly vocabulary.
 **M5 T112 complete:** active project ISO C types, objects, constants, and
 atomic operations use `STD_*`; explicit atomic memory orders are unchanged.
 
+**M5 T113 complete:** `type.h` is the only active ISO C header boundary;
+`memory.h` is removed and the static ownership gate passes.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

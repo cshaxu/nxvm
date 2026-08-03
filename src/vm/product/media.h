@@ -1,7 +1,6 @@
 #ifndef VM_PRODUCT_MEDIA_H
 #define VM_PRODUCT_MEDIA_H
 
-#include <stdint.h>
 
 #include "type.h"
 

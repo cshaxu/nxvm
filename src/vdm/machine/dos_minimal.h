@@ -1,7 +1,6 @@
 #ifndef NXVM_RUNTIME_DOS_MINIMAL_H
 #define NXVM_RUNTIME_DOS_MINIMAL_H
 
-#include <stdint.h>
 
 #include "core/machine/presentation_interface.h"
 #include "type.h"

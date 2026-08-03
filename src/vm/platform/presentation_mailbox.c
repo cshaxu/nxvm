@@ -1,6 +1,5 @@
 #include "vm/platform/presentation_mailbox.h"
 
-#include <string.h>
 
 #include "type.h"
 

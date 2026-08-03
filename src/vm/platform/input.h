@@ -3,7 +3,6 @@
 
 #include "type.h"
 
-#include <stdint.h>
 
 typedef enum vm_platform_keyboard_modifier {
     VM_PLATFORM_KEYBOARD_MODIFIER_ALT,

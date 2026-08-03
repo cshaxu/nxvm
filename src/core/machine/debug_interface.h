@@ -3,7 +3,6 @@
 
 #include "type.h"
 
-#include <stddef.h>
 
 
 #include "core/machine/cpu_interface.h"

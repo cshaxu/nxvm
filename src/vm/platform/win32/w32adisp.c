@@ -2,7 +2,6 @@
 
 /* W32ADISP provides win32 window output interface. */
 
-#include <stdlib.h>
 
 #include "type.h"
 #include "core/platform/display_frame.h"

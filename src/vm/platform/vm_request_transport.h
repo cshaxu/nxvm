@@ -1,7 +1,6 @@
 #ifndef NXVM_BASELINE_VM_REQUEST_TRANSPORT_H
 #define NXVM_BASELINE_VM_REQUEST_TRANSPORT_H
 
-#include <stdatomic.h>
 
 #include "type.h"
 #include "vm/platform/request_bridge.h"

@@ -3,7 +3,6 @@
 #include "vm/composition_debug.h"
 
 
-#include <stdlib.h>
 
 
 #include "vm/composition_machine.h"

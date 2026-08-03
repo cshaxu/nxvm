@@ -23,6 +23,11 @@ standard-stream aliases, and `STD_ATOMIC_*` / `STD_MEMORY_ORDER_*`. The
 atomic facade is direct token mapping; it does not insert synchronization or
 alter explicit memory orders.
 
+T113 completes the header boundary: `type.h` unconditionally owns all ISO C
+headers used by active code, including `stdint.h`; `memory.h` is removed. The
+`verify-c-facade-headers` build gate rejects direct ISO C includes anywhere
+else in active source or tests.
+
 ## Decision
 
 `src/type.h` is the repository's one facade for ISO C headers and C11 atomics.
@@ -43,11 +48,11 @@ and `memcmp`. `PRINTF` and `FPRINTF` both forward through `vfprintf`.
 
 ## Header Inventory
 
-Active source uses ISO C headers `stdio.h`, `stdlib.h`, `stdarg.h`, `string.h`,
-`time.h`, `stdint.h`, `stddef.h`, `stdatomic.h`, and `ctype.h`. `memory.h` is
-non-standard and redundant with `string.h`; remove it when the facade is
-implemented. `windows.h`, `unistd.h`, `pthread.h`, `curses.h`, and `tchar.h`
-are platform dependencies and remain outside this facade.
+`type.h` owns active ISO C headers `stdio.h`, `stdlib.h`, `stdarg.h`,
+`stdbool.h`, `string.h`, `time.h`, `stdint.h`, `stddef.h`, `stdatomic.h`, and
+`ctype.h`. `memory.h` is non-standard and has been removed. `windows.h`,
+`unistd.h`, `pthread.h`, `curses.h`, and `tchar.h` are platform dependencies
+and remain outside this facade.
 
 ## Function Facade
 

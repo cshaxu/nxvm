@@ -3,7 +3,6 @@
 #include "vm/product/media.h"
 
 
-#include <string.h>
 
 static C_INT vm_product_media_valid_target(
     vm_product_boot_target target)

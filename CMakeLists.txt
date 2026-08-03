@@ -745,6 +745,7 @@ add_nxvm_version_artifact(nxvm-0-5-0109 "0.5.0109")
 add_nxvm_version_artifact(nxvm-0-5-0110 "0.5.0110")
 add_nxvm_version_artifact(nxvm-0-5-0111 "0.5.0111")
 add_nxvm_version_artifact(nxvm-0-5-0112 "0.5.0112")
+add_nxvm_version_artifact(nxvm-0-5-0113 "0.5.0113")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -807,6 +808,13 @@ if(NTVDM64_VERIFY_DEPENDENCY_DAG)
             -File "${CMAKE_SOURCE_DIR}/tools/VerifySessionReadiness.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 mutable-state inventory"
+        VERBATIM)
+
+    add_custom_target(verify-c-facade-headers
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/Verify-CFacadeHeaders.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying ISO C header facade ownership"
         VERBATIM)
 endif()
 

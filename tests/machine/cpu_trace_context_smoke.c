@@ -1,8 +1,6 @@
 #include "type.h"
 
-#include <stdio.h>
 
-#include <stdlib.h>
 
 
 #include "core/machine/cpu.h"
