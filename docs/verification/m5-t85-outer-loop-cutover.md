@@ -4,7 +4,7 @@
   budget; it retains only host policy, command boundaries, display publish, and
   pause/reset/stop handling.
 - The old `vmachineRefresh` and runtime `machine_refresh` callback are gone.
-- `M5:T83:S3:CORE-LEGACY-RUN:OK` passed.
+- `M5:T83:S3:CORE-EXECUTOR-RUN:OK` passed.
 - `M5:T13:S8:VM-SESSION:OK` passed with `D:\fdd.img` and `D:\hdd.img`.
 - `M5:T70:S2:DOS-PROMPT:OK` passed with `D:\fdd.img`.
 - `M5:T45:S1:PAUSE-BOUNDARY:OK` and `M5:T14:S3:VM-DEBUG-TARGET:OK` passed.

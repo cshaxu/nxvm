@@ -5,7 +5,7 @@
 - VM/profile-only CMOS, media, BIOS, and QDX reset/refresh through the frozen
   `core_machine_execution_provider`.
 - `verify-facade-ownership` passed.
-- `M5:T83:S3:CORE-LEGACY-RUN:OK` passed.
+- `M5:T83:S3:CORE-EXECUTOR-RUN:OK` passed.
 - `M5:T13:S8:VM-SESSION:OK` passed with `D:\fdd.img` and `D:\hdd.img`.
 - `M5:T70:S2:DOS-PROMPT:OK` passed with `D:\fdd.img`.
 - Task artifact: `build/output/nxvm_0_5_0084.exe`.

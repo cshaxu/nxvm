@@ -11,13 +11,13 @@ int main(void)
     if (machine == NULL) return 1;
     vm_composition_live_machine_initialize(machine);
     if (machine->core_machine == NULL ||
-        machine->cpu != core_machine_legacy_cpu_borrow(machine->core_machine) ||
-        machine->cpuins != core_machine_legacy_cpu_instructions_borrow(
+        machine->cpu != core_machine_executor_cpu_borrow(machine->core_machine) ||
+        machine->cpuins != core_machine_executor_cpu_instructions_borrow(
             machine->core_machine) ||
-        machine->cpu_execution != core_machine_legacy_cpu_execution_borrow(
+        machine->cpu_execution != core_machine_executor_cpu_execution_borrow(
             machine->core_machine) ||
-        machine->ram != core_machine_legacy_memory_borrow(machine->core_machine) ||
-        machine->port != core_machine_legacy_port_borrow(machine->core_machine) ||
+        machine->ram != core_machine_executor_memory_borrow(machine->core_machine) ||
+        machine->port != core_machine_executor_port_borrow(machine->core_machine) ||
         machine->pic_master != core_machine_shared_pic_master_borrow(
             machine->core_machine) ||
         machine->pic_slave != core_machine_shared_pic_slave_borrow(

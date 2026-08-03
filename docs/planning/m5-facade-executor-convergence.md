@@ -2,8 +2,8 @@
 
 ## Status
 
-Story 1, T75 S1 through T81 S1, is complete. Story 2 begins with T82 S1,
-the real-executor contract and migration map.
+Story 1, T75 S1 through T81 S1, and Story 2, T82 S1 through T86 S1, are
+complete. Story 2 established `core_machine` as the true NXVM guest executor.
 
 ## Story 1: Remove Residual Global Facades
 
@@ -63,11 +63,11 @@ into core or execute guest instructions itself.
 
 | Task | Scope | Completion gate |
 | --- | --- | --- |
-| T82 | Define the real executor convergence interface: `core_machine` storage, reset/run order, provider registration, configuration freeze, and stop/event result. | Approved contract and bounded T83--T86 migration map; no code move. |
-| T83 | Move the real NXVM CPU, decoder, RAM, and port-bus executor into one `core_machine` instance. | No duplicate core storage; CPU/Console/FDD-HDD regressions pass. |
-| T84 | Move PIC/PIT/DMA/KBC/VADP and shared guest-domain scheduling into that core instance; bind VM-only/profile services as providers. | Device ordering and BIOS/FDD display regressions pass. |
-| T85 | Cut NXVM over: the VM outer loop repeatedly calls real `core_machine_run()` and the old `vmachineRefresh`/independent instruction loop is deleted. | FDD boot, BIOS, Console, debugger, pause/reset, and window behavior remain unchanged. |
-| T86 | Delete minimal-scaffold and parallel-machine remnants; prove the only guest execution path is `core_machine_run()`. | Source closure scan, full GCC regression, FDD/HDD and three-second DOS-prompt/display gates. |
+| T82 | Define the real executor convergence interface. | Complete. |
+| T83 | Move CPU, decoder, RAM, and port-bus execution into `core_machine`. | Complete. |
+| T84 | Move shared devices and bind VM/profile providers. | Complete. |
+| T85 | Route the VM outer loop through `core_machine_run()`. | Complete. |
+| T86 | Close parallel executor routes and prove one execution path. | Complete. |
 
 ## Non-Goals
 
