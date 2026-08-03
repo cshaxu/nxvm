@@ -45,8 +45,9 @@ The three core modules are independent libraries:
 - `core/platform` owns product-neutral host capabilities and reusable host
   integrations. It never mutates guest state.
 - `core/product` owns product-neutral user-control tooling: command/debug/trace
-  contracts, assembler/disassembler, result and registry utilities. It owns no
-  machine session, host policy, boot media, profile, or concrete product UI.
+  contracts, assembler/disassembler, opaque product-session registry/command
+  tooling, result and registry utilities. It owns no concrete machine session,
+  host policy, boot media, profile, or concrete product UI.
 
 Within `vm` and `vdm`, `machine`, `platform`, `product`, and `profile` are
 peers. A peer module may depend on the matching `core` contract it needs, but
@@ -67,6 +68,10 @@ selects a profile, creates the session, binds providers, converts machine
 snapshots to platform frames, owns the outer event loop/threads/pacing, and
 performs teardown. It does not create a second CPU executor, duplicate guest
 state, or implement a VM-side guest instruction loop.
+
+`core/composition` is forbidden. A reusable, opaque, policy-free product tool
+belongs in `core/product`; concrete session/profile/platform assembly belongs
+only in `vm/composition` or `vdm/composition`.
 
 Forbidden dependencies include:
 
@@ -136,6 +141,9 @@ remove the required owner prefix from public APIs.
   `_Thread_local`, singleton, or implicit current-object facade. A necessary
   process-exclusive host resource uses a caller-owned lease with one creator,
   one releaser, and an explicit failure result for a second claimant.
+- A `core_product_session_manager` keeps one or more live opaque entries and
+  exactly one selected entry. The final session is never closable; a close of
+  any other selected entry deterministically selects a remaining entry.
 - Workers may report state or completion; only their session-owned run handle
   controls cancellation, join, backend destruction, and release of shared
   session/platform state.

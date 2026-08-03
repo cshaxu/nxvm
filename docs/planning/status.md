@@ -18,6 +18,12 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
+**Latest task:** M5 T144 S1 is complete as a design-only, owner-approved shared
+product-session extension. Its NXVM implementation remains inactive until a
+later explicit start; the authoritative core/product and composition ownership,
+UX, source shape, and T145--T150 breakdown are in
+[M5 Shared Product Session Management Design](m5-product-session-management.md).
+
 - T64 defined the explicit session and provider model.
 - T65 through T73 removed mutable selected-session state from the VM execution
   graph. T73 proves two simultaneously constructed sessions are isolated and

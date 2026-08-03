@@ -44,6 +44,35 @@ continues to define the semantics of those public contracts.
 - Callbacks state their thread, synchronization, ownership, and teardown rule.
   They do not re-enter mutable operations on their originating object.
 
+## Product Session Management
+
+`core/product/session` is shared product tooling, not a product composition.
+`core_product_session_manager` owns the opaque entry table, numerical IDs,
+selection, copied snapshots, and generic `SESSION` grammar. It may retain an
+opaque concrete-session handle only to return it to its provider; it never
+constructs, mutates, runs, or interprets a VM/VDM session.
+
+The manager has a nonempty-table invariant: after initial creation it always
+contains at least one live entry and exactly one selected entry. `close` on the
+last entry returns a defined invalid-state result without calling the concrete
+provider. Closing the selected entry selects the lowest remaining ID.
+
+Each product-root composition provides a `core_product_session_provider` with
+`open`, `describe`, and synchronous `close` callbacks. `open` creates the
+concrete session; `describe` copies its generic state; `close` must stop, join,
+finalize, and destroy it before returning success. The manager removes an entry
+only after successful close. A selected-machine provider remains composition
+owned and resolves the selected opaque entry to its product's concrete session.
+
+The shared command facility receives caller-owned tokens and output callback;
+it does not depend on an NXVM Console or VDM CLI. Product UI may route the
+`SESSION` verb to that facility, but must not cache a selected machine/session
+pointer or selected ID. Workers and guest execution paths receive only their
+own session and never access a manager. `core/composition/` is not a valid
+home for this mechanism. The initial contract and NXVM implementation sequence
+are defined in
+[`planning/m5-product-session-management.md`](../planning/m5-product-session-management.md).
+
 ## Contract Sequence
 
 The following sections are completed in order before a migration changes the

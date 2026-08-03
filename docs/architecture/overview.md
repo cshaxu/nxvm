@@ -76,6 +76,11 @@ Cross-module adaptation, including display and input bridging, occurs only in
 the relevant product root composition. Peer machine and platform modules do
 not adapt each other's contracts directly.
 
+`core/product/session` is a shared opaque registry and command facility for
+product sessions. It owns neither a concrete VM/VDM session nor composition;
+VM and VDM composition provide concrete lifecycle callbacks. No
+`core/composition` layer exists or is permitted.
+
 `src/type.h` is the system-wide type, `nxvm_core_status`, retained alias, and
 legacy helper foundation. `src/version.*` is the only source for version and
 build identity. Public symbols use their ownership path, for example
