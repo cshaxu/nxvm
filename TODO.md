@@ -31,11 +31,6 @@ import. `docs/planning/status.md` remains authoritative for active work.
   firmware, and providers, but `core_machine` must own its generic-device
   prepare/reset/finalize order. Closure: move lifecycle authority behind a
   core contract without changing the retained full-PC boot order.
-- [ ] **Narrow raw core borrows.** `vm_session` currently caches raw borrows
-  of CPU, RAM, port, PIC, PIT, DMA, KBC, and VADP. They are aliases of one
-  live core machine, not duplicate state, but expose too much core-private
-  representation to VM composition. Closure: retain only necessary explicit
-  capabilities/bindings and prove no hidden second storage or reset path.
 - [ ] **Public lifecycle hardening.** Audit direct machine/device initialize,
   reset, refresh, and finalize calls. The supported lifecycle must have one
   owner and fail clearly when called out of order; no public helper may create
@@ -56,17 +51,6 @@ import. `docs/planning/status.md` remains authoritative for active work.
 - [ ] **Linux verification.** Retained Linux code is a portability asset, not
   validated support. Add native POSIX compile and runtime gates after the
   explicit-handle implementation is stable; preserve the Windows GCC baseline.
-- [ ] **Resolve `core/platform/presentation.h`.** It declares an
-  `nxvm_platform_input_event` despite living in `core/platform` and containing
-  an input event rather than presentation behavior. Decide whether it is a
-  generic `core_platform_input_event` in an `input_event.h` contract or a
-  VM-only type relocated to `vm/platform`; remove an unused declaration rather
-  than preserving an ambiguous abstraction.
-- [ ] **Resolve orphan VM product models.** `vm/product/media.*` and
-  `vm/product/presentation.*` are currently exercised by smoke tests but are
-  not the retained NXVM Console's real policy path. Decide explicitly to wire
-  them into the real product, reclassify them as test/design support, or remove
-  them. Do not present smoke coverage as implemented user-facing policy.
 - [ ] **Multi-session product design.** The state-isolation foundation is not
   a session manager or multi-window feature. Before implementation, design
   session creation/destruction, enumeration, debugger attachment, Console and
@@ -96,10 +80,18 @@ import. `docs/planning/status.md` remains authoritative for active work.
 - [ ] **Hardware compatibility corpus.** Audit and prioritize incomplete KBC,
   VADP, PIT read-back, HDC/FDC, DMA, PIC, CMOS, timing, and chipset behavior
   against focused owned probes. Preserve full-PC boot and Console regressions.
-- [ ] **Eliminate anonymous source TODOs.** Existing CPU naming, I/O-map test,
-  debugger assembler-test, and PIT read-back comments need a ledger item or a
-  bounded task. Source comments must use the documented `TODO(High|Medium|Low)`
-  form only and must not become the sole record of a compatibility gap.
+- [ ] **CPU internal naming (`TODO(Low)`).** Rename legacy segment-descriptor
+  fields to owner-consistent vocabulary only in a bounded compatibility task;
+  preserve layout, CPU behavior, and debugger output.
+- [ ] **Protected-mode I/O permission map (`TODO(High)`).** Implement and test
+  the TSS I/O-map permission check used when protected-mode CPL/IOPL rules
+  require it. Establish owned probes before changing CPU execution.
+- [ ] **Debugger assembler self-test (`TODO(Medium)`).** Add a bounded owned
+  assembler regression suite and invoke it from a defined test target, rather
+  than from the execution refresh path.
+- [ ] **8254 PIT read-back command (`TODO(Medium)`).** Implement read-back
+  status/count latch behavior with focused PIT port probes; preserve the
+  existing timer boot behavior.
 - [ ] **Bounded differential debugging.** The historical Bochx/Bochs bridge
   may be an optional developer research tool with provenance, comparison
   schema, masks, instruction/time/no-progress/size budgets, and cleanup. It is
@@ -171,4 +163,3 @@ import. `docs/planning/status.md` remains authoritative for active work.
 - [ ] Do not change retained NXVM Console, debugger, startup, or boot behavior
   during structural migration without explicit owner approval and regression
   evidence.
-

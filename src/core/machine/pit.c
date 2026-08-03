@@ -164,7 +164,7 @@ static C_VOID io_write_0043(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VO
     if (id == (VPIT_CW_SC >> 6)) {
         /* read-back command */
         pit->data.cw[id] = port->data.ioByte;
-        /* TODO: implement read-back functionalities */
+        /* TODO(Medium): Implement 8254 read-back status/count latching. */
     } else {
         pit->data.flagLatch[id] = NTVDM64_TYPE_FALSE; /* unlatch when counter is re-programmed */
         switch (VPIT_GetCW_RW(port->data.ioByte)) {

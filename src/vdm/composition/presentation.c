@@ -8,7 +8,7 @@
 
 struct vdm_presentation {
     vdm_session *session;
-    nxvm_platform_input_event input[NXVM_DOS_MINIMAL_INPUT_CAPACITY];
+    vdm_composition_input_event input[NXVM_DOS_MINIMAL_INPUT_CAPACITY];
     C_UINT count;
 };
 
@@ -34,7 +34,7 @@ ntvdm64_status vdm_presentation_create(
 
 ntvdm64_status vdm_presentation_enqueue_input(
     vdm_presentation *presentation,
-    nxvm_platform_input_event event)
+    vdm_composition_input_event event)
 {
     if (presentation == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;

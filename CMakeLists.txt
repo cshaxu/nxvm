@@ -55,8 +55,6 @@ add_executable(nxvm-firmware-smoke tests/firmware/firmware_smoke.c)
 target_link_libraries(nxvm-firmware-smoke PRIVATE nxvm-firmware)
 add_executable(nxvm-default-profile-firmware-smoke tests/firmware/default_profile_smoke.c)
 target_link_libraries(nxvm-default-profile-firmware-smoke PRIVATE nxvm-firmware)
-add_executable(nxvm-product-media-smoke tests/products/nxvm_media_smoke.c)
-target_link_libraries(nxvm-product-media-smoke PRIVATE nxvm-vm-product)
 add_executable(nxvm-product-default-profile-smoke tests/products/nxvm_default_profile_smoke.c)
 target_link_libraries(nxvm-product-default-profile-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-product-console-smoke
@@ -74,12 +72,6 @@ add_custom_target(nxvm-product-console-lifecycle-gate
     DEPENDS nxvm-product-console-lifecycle-smoke
     COMMENT "Verifying retained NXVM Console lifecycle"
     VERBATIM)
-add_executable(nxvm-product-presentation-debug-smoke
-    tests/products/nxvm_presentation_debugger_smoke.c
-    tests/products/support/vm_session_debugger.c)
-target_include_directories(nxvm-product-presentation-debug-smoke PRIVATE
-    "${CMAKE_SOURCE_DIR}/tests")
-target_link_libraries(nxvm-product-presentation-debug-smoke PRIVATE nxvm-vm-product)
 add_executable(nxvm-product-session-smoke tests/products/nxvm_session_smoke.c)
 target_link_libraries(nxvm-product-session-smoke PRIVATE nxvm-vm-composition)
 
@@ -114,11 +106,9 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-vm-profile-default-firmware PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-default-profile-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-product-media-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-product-presentation-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-version-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -174,8 +164,6 @@ set(NXVM_RUNTIME_SOURCES
 
 set(NXVM_PRODUCT_VM_SOURCES
     src/vm/product/console.c
-    src/vm/product/media.c
-    src/vm/product/presentation.c
 )
 set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/debug_access.c
@@ -731,6 +719,7 @@ add_nxvm_version_artifact(nxvm-0-5-0137 "0.5.0137")
 add_nxvm_version_artifact(nxvm-0-5-0139 "0.5.0139")
 add_nxvm_version_artifact(nxvm-0-5-0141 "0.5.0141")
 add_nxvm_version_artifact(nxvm-0-5-0142 "0.5.0142")
+add_nxvm_version_artifact(nxvm-0-5-0143 "0.5.0143")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

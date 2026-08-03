@@ -1168,7 +1168,7 @@ static C_VOID _s_test_esp(core_machine_cpu_execution_context *context) {
 /* portid accessing unit */
 /* kernel portid accessing */
 _______todo _kpa_test_iomap(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 portid, ntvdm64_type_unsigned_8 byte) {
-    /* TODO: iomap tester not implemented */
+    /* TODO(High): Add protected-mode I/O-map permission checks with owned probes. */
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kpa_test_iomap");
     NTVDM64_TYPE_TRACE_CALL_END;
 }

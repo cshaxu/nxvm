@@ -21,7 +21,7 @@
     {
       "name": "nxvm-current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-0-5-0142"]
+      "targets": ["nxvm-0-5-0143"]
     },
     {
       "name": "nxvm-current-gates-gcc",
@@ -44,7 +44,6 @@
         "nxvm-vm-unified-debug-backend-smoke",
         "nxvm-product-console-smoke",
         "nxvm-product-console-lifecycle-gate",
-        "nxvm-product-presentation-debug-smoke",
         "nxvm-vm-debug-target-smoke",
         "nxvm-vm-keyboard-provider-isolation-smoke",
         "nxvm-product-session-smoke",
