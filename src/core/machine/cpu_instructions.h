@@ -12,6 +12,7 @@ extern "C" {
 #include "type.h"
 
 #include "core/machine/cpu.h"
+#include "core/machine/fpu.h"
 #include "core/machine/fpu_interface.h"
 
 typedef enum {
@@ -152,6 +153,7 @@ struct core_machine_cpu_execution_context {
     ntvdm64_type_bool reset_requested;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
+    core_machine_fpu *fpu;
 };
 
 C_VOID core_machine_cpu_execution_context_initialize(
@@ -168,6 +170,8 @@ C_VOID core_machine_cpu_execution_context_bind_diagnostic_provider(
     core_machine_cpu_execution_context *context,
     const core_machine_cpu_execution_diagnostic_provider *provider,
     C_VOID *provider_context);
+C_VOID core_machine_cpu_execution_context_bind_fpu(
+    core_machine_cpu_execution_context *context, core_machine_fpu *fpu);
 ntvdm64_type_bool core_machine_cpu_execution_load_segment(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
     ntvdm64_type_unsigned_16 selector);
@@ -205,6 +209,8 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
 #define VCPUINS_EXCEPT_PF  0x00004000 /* 14 - fault: page fault */
 #define VCPUINS_EXCEPT_15  0x00008000 /* 15 - n/a:   reserved */
 #define VCPUINS_EXCEPT_MF  0x00010000 /* 16 - fault: x87 fpu floating point error */
+
+#define VCPUINS_EXCEPT_FPU_UNSUPPORTED 0x40000000 /* internal FPU model stop */
 
 #define VCPUINS_EXCEPT_CE  0x80000000 /* 31 - internal case error */
 

@@ -287,8 +287,8 @@ artifact/gates are `0.5.0143`; generated build products are removed outside
 ## Short-Term M5 Plan
 
 **M5 T152 complete: CPU `MEM` fault capture.** The owner-local FDD smoke
-reproduces `MEM` as FPU `FNINIT` (`DB E3`) at `096A:00CE`; the retained FPU
-escape dispatch produces `#UD`. `core_machine` now owns a fixed 32-entry
+historically reproduced `MEM` as FPU `FNINIT` (`DB E3`) at `096A:00CE`; that
+pre-T156 escape route produced `#UD`. `core_machine` now owns a fixed 32-entry
 execution window and immutable first-fault snapshot. Evidence is
 [`M5-T152.md`](../tracking/M5-T152.md); artifact `nxvm_0_5_0152.exe` is the
 current diagnostic baseline (SHA-256
@@ -309,11 +309,19 @@ metadata has one local source. Evidence is [`M5-T154.md`](../tracking/M5-T154.md
 dispatch now make one metadata-driven availability decision, and the default
 QDX escape remains 80386-only. Evidence is [`M5-T155.md`](../tracking/M5-T155.md).
 
-**M5 T156 S1 active: FPU ESC absence and FWAIT behavior.** Replace direct FPU
-escape `#UD` dispatch with bounded no-FPU consumption and correct CR0 `#NM`
-semantics. The task contract is [`m5-t156-s1.md`](subtasks/m5-t156-s1.md).
-T157--T158 then add session-creation UX and static closure; they do not claim
-a usable present FPU or complete i386 protected-mode/paging support.
+**M5 T156 S1 complete: FPU ESC absence and FWAIT behavior.** `D8`--`DF` now
+decode as FPU escape forms. The default `FPU=none` path consumes their complete
+encoding, while `EM` or `TS` produces `#NM`; FWAIT now requires `TS && MP`.
+Configured present FPU forms stop through a dedicated unimplemented-model
+diagnostic, never `#UD`. The FDD `MEM` probe passes `FNINIT` and continues.
+Evidence is [`M5-T156.md`](../tracking/M5-T156.md).
+
+**M5 T157 S1 active: session CPU/FPU profile UX.** Add `SESSION OPEN --cpu
+<model> --fpu <model>` and profile display to the existing NXVM session
+Console, preserving the default `80386+none`, frozen session configuration,
+and all boot/debugger behavior. T158 then closes static metadata/dispatcher
+coverage; neither task claims a usable present FPU or complete i386
+protected-mode/paging support.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

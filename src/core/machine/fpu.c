@@ -24,3 +24,15 @@ C_VOID core_machine_fpu_reset(core_machine_fpu *fpu)
 {
     (C_VOID)fpu;
 }
+
+core_machine_fpu_escape_action core_machine_fpu_escape_dispatch(
+    const core_machine_fpu *fpu, C_UCHAR escape_opcode, C_UCHAR modrm)
+{
+    (C_VOID)modrm;
+    if (escape_opcode < 0xd8u || escape_opcode > 0xdfu) {
+        return CORE_MACHINE_FPU_ESCAPE_UNSUPPORTED;
+    }
+    return fpu == STD_NULL || fpu->profile == CORE_MACHINE_FPU_PROFILE_NONE ?
+        CORE_MACHINE_FPU_ESCAPE_CONSUME_NONE :
+        CORE_MACHINE_FPU_ESCAPE_UNSUPPORTED;
+}

@@ -35,6 +35,7 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->reset_requested = NTVDM64_TYPE_FALSE;
     context->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     context->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
+    context->fpu = STD_NULL;
 }
 
 C_VOID core_machine_cpu_execution_context_bind_profiles(
@@ -45,6 +46,12 @@ C_VOID core_machine_cpu_execution_context_bind_profiles(
     if (context == STD_NULL) return;
     context->cpu_profile = cpu_profile;
     context->fpu_profile = fpu_profile;
+}
+
+C_VOID core_machine_cpu_execution_context_bind_fpu(
+    core_machine_cpu_execution_context *context, core_machine_fpu *fpu)
+{
+    if (context != STD_NULL) context->fpu = fpu;
 }
 
 const C_CHAR *core_machine_cpu_profile_name(core_machine_cpu_profile profile)

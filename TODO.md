@@ -74,13 +74,14 @@ import. `docs/planning/status.md` remains authoritative for active work.
 
 - [ ] **CPU correctness / MS-DOS MEM.** Do not claim complete 80386 support:
   the CPU is 8086-plus with partial i386 decode/execution coverage. T152
-  reproduced `MEM` as FPU `FNINIT` (`DB E3`) reaching the retained FPU-escape
-  `#UD` path and added a fixed 32-entry in-memory first-fault capture plus an
-  owner-local fixture smoke. T153 defined frozen `8086`/`80186`/`80286`/`80386`
-  CPU and independent `none`/`8087`/`80287`/`80387` FPU profiles. T154 added
-  frozen state and form metadata. T155--T158 add centralized `#UD` gating,
-  FPU escape semantics, session-creation UX, and closure probes; present FPU
-  profiles remain unavailable until their state/operations are implemented.
+  historically reproduced `MEM` as FPU `FNINIT` (`DB E3`) reaching the old
+  direct `#UD` route and added a fixed 32-entry in-memory first-fault capture
+  plus an owner-local fixture smoke. T153--T156 defined frozen
+  `8086`/`80186`/`80286`/`80386` CPU and independent
+  `none`/`8087`/`80287`/`80387` FPU profiles, centralized CPU gating, and made
+  default `FPU=none` consume legal ESC encodings. T157--T158 add
+  session-creation UX and closure probes; present FPU profiles remain
+  unavailable until their state/operations are implemented.
   Protected DOS media stays local.
 - [ ] **Hardware compatibility corpus.** Audit and prioritize incomplete KBC,
   VADP, PIT read-back, HDC/FDC, DMA, PIC, CMOS, timing, and chipset behavior

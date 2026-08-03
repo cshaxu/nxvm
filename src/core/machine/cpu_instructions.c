@@ -36,7 +36,8 @@ STD_PRINTF("NEW CODE PATH\n");if (context->trace != STD_NULL) ntvdm64_type_trace
 #define _SetExcept_NP(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NP), instruction_state.data.excode = (n), STD_PRINTF("#NP(%x) - not present\n",     instruction_state.data.excode))
 #define _SetExcept_BR(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR), instruction_state.data.excode = (n), STD_PRINTF("#BR(%x) - boundary\n",        instruction_state.data.excode))
 #define _SetExcept_TS(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_TS), instruction_state.data.excode = (n), STD_PRINTF("#TS(%x) - task state\n",      instruction_state.data.excode))
-#define _SetExcept_NM(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM), instruction_state.data.excode = (n), STD_PRINTF("#NM(%x) - divide error\n",    instruction_state.data.excode))
+#define _SetExcept_NM(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM), instruction_state.data.excode = (n), STD_PRINTF("#NM(%x) - coprocessor not available\n", instruction_state.data.excode))
+#define _SetExcept_FPU_UNSUPPORTED(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_FPU_UNSUPPORTED), instruction_state.data.excode = (n), STD_PRINTF("FPU(%x) - configured model is not implemented\n", instruction_state.data.excode))
 #define _SetExcept_CE(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_CE), instruction_state.data.excode = (n), STD_PRINTF("#CE(%x) - internal error\n",  instruction_state.data.excode))
 
 /* memory management unit */
@@ -4935,6 +4936,34 @@ static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
+static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context) {
+    core_machine_fpu_escape_action action;
+    core_machine_cpu_instruction_metadata metadata;
+    ntvdm64_type_unsigned_8 escape_opcode;
+    ntvdm64_type_unsigned_8 modrm;
+
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("FPU_ESCAPE");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
+        NTVDM64_TYPE_REFERENCE_OF(escape_opcode), 1));
+    _adv;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
+        NTVDM64_TYPE_REFERENCE_OF(modrm), 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+    metadata = core_machine_cpu_instruction_metadata_get(
+        CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE, escape_opcode, modrm);
+    if (!metadata.valid) {
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+    }
+    if (_GetCR0_EM || _GetCR0_TS) {
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NM(0));
+    } else {
+        action = core_machine_fpu_escape_dispatch(context->fpu, escape_opcode, modrm);
+        if (action == CORE_MACHINE_FPU_ESCAPE_UNSUPPORTED) {
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_FPU_UNSUPPORTED(0));
+        }
+    }
+    NTVDM64_TYPE_TRACE_CALL_END;
+}
 static C_VOID ADD_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM8_R8");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
@@ -8551,20 +8580,14 @@ static C_VOID CALL_PTR16_32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo WAIT(core_machine_cpu_execution_context *context) {
-    /* not implemented */
+static C_VOID WAIT(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("WAIT");
     _new_code_path_;
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
-        _adv;
-        if (_GetCR0_TS) {
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_TS(1)");
+    _adv;
+    if (_GetCR0_TS && _GetCR0_MP) {
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_TS_AND_MP(1)");
             NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NM(0));
             NTVDM64_TYPE_TRACE_BLOCK_END;
-        }
-    }
-    else {
-        cpu_state.data.ip++;
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
@@ -13720,16 +13743,14 @@ C_VOID core_machine_cpu_execution_initialize(
     instruction_state.connect.insTable[0xd5] = (core_machine_cpu_instruction_handler) AAD;
     instruction_state.connect.insTable[0xd6] = (core_machine_cpu_instruction_handler) UndefinedOpcode;
     instruction_state.connect.insTable[0xd7] = (core_machine_cpu_instruction_handler) XLAT;
-    instruction_state.connect.insTable[0xd8] = (core_machine_cpu_instruction_handler) UndefinedOpcode;
-    instruction_state.connect.insTable[0xd9] = (core_machine_cpu_instruction_handler) UndefinedOpcode;
-    /* instruction_state.connect.insTable[0xd9] = (core_machine_cpu_instruction_handler) INS_D9; */
-    instruction_state.connect.insTable[0xda] = (core_machine_cpu_instruction_handler) UndefinedOpcode;
-    instruction_state.connect.insTable[0xdb] = (core_machine_cpu_instruction_handler) UndefinedOpcode;
-    /* instruction_state.connect.insTable[0xdb] = (core_machine_cpu_instruction_handler) INS_DB; */
-    instruction_state.connect.insTable[0xdc] = (core_machine_cpu_instruction_handler) UndefinedOpcode;
-    instruction_state.connect.insTable[0xdd] = (core_machine_cpu_instruction_handler) UndefinedOpcode;
-    instruction_state.connect.insTable[0xde] = (core_machine_cpu_instruction_handler) UndefinedOpcode;
-    instruction_state.connect.insTable[0xdf] = (core_machine_cpu_instruction_handler) UndefinedOpcode;
+    instruction_state.connect.insTable[0xd8] = (core_machine_cpu_instruction_handler) FPU_ESCAPE;
+    instruction_state.connect.insTable[0xd9] = (core_machine_cpu_instruction_handler) FPU_ESCAPE;
+    instruction_state.connect.insTable[0xda] = (core_machine_cpu_instruction_handler) FPU_ESCAPE;
+    instruction_state.connect.insTable[0xdb] = (core_machine_cpu_instruction_handler) FPU_ESCAPE;
+    instruction_state.connect.insTable[0xdc] = (core_machine_cpu_instruction_handler) FPU_ESCAPE;
+    instruction_state.connect.insTable[0xdd] = (core_machine_cpu_instruction_handler) FPU_ESCAPE;
+    instruction_state.connect.insTable[0xde] = (core_machine_cpu_instruction_handler) FPU_ESCAPE;
+    instruction_state.connect.insTable[0xdf] = (core_machine_cpu_instruction_handler) FPU_ESCAPE;
     instruction_state.connect.insTable[0xe0] = (core_machine_cpu_instruction_handler) LOOPNZ_REL8;
     instruction_state.connect.insTable[0xe1] = (core_machine_cpu_instruction_handler) LOOPZ_REL8;
     instruction_state.connect.insTable[0xe2] = (core_machine_cpu_instruction_handler) LOOP_REL8;
