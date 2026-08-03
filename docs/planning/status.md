@@ -47,16 +47,15 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
 ## Active Work
 
-**M5 T80 S6: Scoped wait provider.** Remove the lifecycle-global wait binding
-after completing explicit ownership for Console, window, Linux, presentation,
-mode, and host-handle state.
+**M5 T81 S1: Residual facade closure.** Delete only the facades proven dead by
+the Story 1 inventory, then close its static and runtime evidence.
 
 ## Short-Term M5 Plan
 
 The current M5 sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). T79
-closed the entry-point map for Story 1. T80 has completed C1--C5 and now
-performs scoped wait ownership in C6. T81 closes the residual facade scan.
+closed the entry-point map for Story 1. T80 has completed C1--C6 and published
+its task artifact. T81 closes the residual facade scan.
 Story 2 then makes
 `core_machine` the one true guest executor while VM retains the outer product
 loop.

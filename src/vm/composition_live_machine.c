@@ -49,6 +49,7 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
     vm_platform_presentation_mailbox_initialize(machine->presentation_mailbox);
     machine->execution_transport = &machine->execution_transport_storage;
     machine->keyboard_transport = &machine->keyboard_transport_storage;
+    machine->wait_scope = &machine->wait_scope_storage;
     machine->platform_run_context = &machine->platform_run_context_storage;
     machine->display_generation = 0u;
     machine->control = (vm_composition_control_state *)calloc(1u,
@@ -89,6 +90,7 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     machine->presentation_mailbox = NULL;
     machine->execution_transport = NULL;
     machine->keyboard_transport = NULL;
+    machine->wait_scope = NULL;
     machine->platform_run_context = NULL;
     free(machine->control);
     machine->control = NULL;

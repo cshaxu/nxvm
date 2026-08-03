@@ -123,10 +123,13 @@ static BOOL ThreadDisplayInitInstance(win32app_run_context *context,
 
 static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     win32app_run_context *context = lpParam;
+    core_product_wait_scope previous = core_product_wait_scope_enter(
+        context->platform->wait_scope);
     MSG msg;
     context->instance = GetModuleHandle(NULL);
     ThreadDisplayRegisterClass(context);
     if (!ThreadDisplayInitInstance(context, 0)) {
+        core_product_wait_scope_leave(previous);
         free(context);
         return FALSE;
     }
@@ -139,15 +142,19 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     }
     vm_platform_execution_stop_for(context->platform->execution);
     w32adispFinal();
+    core_product_wait_scope_leave(previous);
     free(context);
     return 0;
 }
 
 static DWORD WINAPI ThreadKernel(LPVOID lpParam) {
     win32app_run_context *context = lpParam;
+    core_product_wait_scope previous = core_product_wait_scope_enter(
+        context->platform->wait_scope);
 
     vm_platform_execution_start_for(context->platform->execution);
     w32adispPaint(context->window, context->platform->presentation, TRUE);
+    core_product_wait_scope_leave(previous);
     return 0;
 }
 
@@ -161,9 +168,11 @@ VOID win32appStartMachine(const vm_platform_run_context *context) {
     win32app_run_context *run_context;
     BOOL oldDeviceFlip;
     DWORD thread_id;
+    core_product_wait_scope previous;
 
     if (context == NULL || context->execution == NULL ||
         context->keyboard == NULL) return;
+    previous = core_product_wait_scope_enter(context->wait_scope);
     run_context = calloc(1u, sizeof(*run_context));
     if (run_context == NULL) return;
     run_context->platform = context;
@@ -176,4 +185,5 @@ VOID win32appStartMachine(const vm_platform_run_context *context) {
         utilsSleep(100);
     }
     CreateThread(NULL, 0, ThreadDisplay, run_context, 0, &thread_id);
+    core_product_wait_scope_leave(previous);
 }

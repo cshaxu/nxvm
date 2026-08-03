@@ -34,13 +34,16 @@ static void vm_composition_console_print_bios(void *context) { vm_profile_defaul
 static void vm_composition_console_print_status(void *context) { vm_composition_control_print_status(((vm_composition_live_machine *)context)->control); }
 static void vm_composition_console_debug(void *context)
 {
-    (void)context;
     vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
+    core_product_wait_scope previous;
+    if (machine == NULL) return;
     if (vm_composition_control_is_running(machine->control)) {
         vm_composition_control_request_pause(machine->control, VM_COMPOSITION_PAUSE_EXPLICIT);
         if (!vm_composition_control_wait_for_pause(machine->control, 2000u)) return;
     }
+    previous = core_product_wait_scope_enter(machine->wait_scope);
     debugMain(vm_composition_debug_target(machine));
+    core_product_wait_scope_leave(previous);
 }
 static void vm_composition_console_record_start(void *context, const char *path) { vm_machine_debug_record_start(((vm_composition_live_machine *)context)->debug, path); }
 static void vm_composition_console_record_stop(void *context) { vm_machine_debug_record_stop(((vm_composition_live_machine *)context)->debug); }

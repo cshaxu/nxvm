@@ -11,12 +11,14 @@ void vm_platform_run_context_initialize(
     vm_platform_run_context *context,
     const vm_platform_execution_transport *execution,
     const vm_platform_keyboard_transport *keyboard,
-    const vm_platform_presentation_mailbox *presentation)
+    const vm_platform_presentation_mailbox *presentation,
+    const core_product_wait_scope *wait_scope)
 {
     if (context == NULL) return;
     context->execution = execution;
     context->keyboard = keyboard;
     context->presentation = presentation;
+    context->wait_scope = wait_scope;
     context->host_console_output = NULL;
     context->host_window = NULL;
     context->window_display = 0;

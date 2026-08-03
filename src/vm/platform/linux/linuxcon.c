@@ -246,6 +246,8 @@ static void lnxcdispPaint(const vm_platform_presentation_mailbox *mailbox,
 
 static void *ThreadDisplay(void *arg) {
     const vm_platform_run_context *context = arg;
+    core_product_wait_scope previous = core_product_wait_scope_enter(
+        context->wait_scope);
 
     lnxcdispInit();
     lnxcdispPaint(context->presentation, 1);
@@ -254,13 +256,17 @@ static void *ThreadDisplay(void *arg) {
         utilsSleep(100);
     }
     lnxcdispFinal();
+    core_product_wait_scope_leave(previous);
     return 0;
 }
 
 static void *ThreadKernel(void *arg) {
     const vm_platform_run_context *context = arg;
+    core_product_wait_scope previous = core_product_wait_scope_enter(
+        context->wait_scope);
 
     vm_platform_execution_start_for(context->execution);
+    core_product_wait_scope_leave(previous);
     return 0;
 }
 
@@ -446,9 +452,11 @@ void lnxcStartMachine(const vm_platform_run_context *context) {
     pthread_t ThreadIdKernel;
     pthread_attr_t attr;
     int oldDeviceFlip;
+    core_product_wait_scope previous;
 
     if (context == NULL || context->execution == NULL ||
         context->keyboard == NULL) return;
+    previous = core_product_wait_scope_enter(context->wait_scope);
     oldDeviceFlip = vm_platform_execution_get_flip_for(context->execution);
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
@@ -463,4 +471,5 @@ void lnxcStartMachine(const vm_platform_run_context *context) {
         lnxckeybProcess(context);
     }
     pthread_attr_destroy(&attr);
+    core_product_wait_scope_leave(previous);
 }

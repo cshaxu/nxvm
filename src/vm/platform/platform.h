@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "core/product/wait_provider.h"
 #include "vm/platform/execution.h"
 #include "vm/platform/input.h"
 #include "vm/platform/presentation_mailbox.h"
@@ -16,6 +17,7 @@ typedef struct vm_platform_run_context {
     const vm_platform_execution_transport *execution;
     const vm_platform_keyboard_transport *keyboard;
     const vm_platform_presentation_mailbox *presentation;
+    const core_product_wait_scope *wait_scope;
     void *host_console_output;
     void *host_window;
     int window_display;
@@ -27,7 +29,8 @@ void vm_platform_run_context_initialize(
     vm_platform_run_context *context,
     const vm_platform_execution_transport *execution,
     const vm_platform_keyboard_transport *keyboard,
-    const vm_platform_presentation_mailbox *presentation);
+    const vm_platform_presentation_mailbox *presentation,
+    const core_product_wait_scope *wait_scope);
 void vm_platform_run_context_bind_keyboard_state(
     vm_platform_run_context *context, vm_platform_keyboard_state_sink sink,
     void *sink_context);

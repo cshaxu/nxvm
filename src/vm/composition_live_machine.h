@@ -25,6 +25,7 @@
 #include "vm/profile/default_profile/firmware/context.h"
 #include "vm/composition_control.h"
 #include "core/product/debug/debug_target.h"
+#include "core/product/wait_provider.h"
 #include "vm/platform/platform.h"
 
 typedef struct vm_composition_live_machine {
@@ -55,6 +56,7 @@ typedef struct vm_composition_live_machine {
     vm_platform_presentation_mailbox presentation_mailbox_storage;
     vm_platform_execution_transport execution_transport_storage;
     vm_platform_keyboard_transport keyboard_transport_storage;
+    core_product_wait_scope wait_scope_storage;
     vm_platform_run_context platform_run_context_storage;
     uint64_t display_generation;
     core_product_debug_target *debug_target;
@@ -85,6 +87,7 @@ typedef struct vm_composition_live_machine {
     vm_platform_presentation_mailbox *presentation_mailbox;
     vm_platform_execution_transport *execution_transport;
     vm_platform_keyboard_transport *keyboard_transport;
+    core_product_wait_scope *wait_scope;
     vm_platform_run_context *platform_run_context;
     vm_composition_control_state *control;
 } vm_composition_live_machine;
