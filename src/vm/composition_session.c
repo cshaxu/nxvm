@@ -12,7 +12,7 @@ struct vm_composition_full_pc_session {
     int active;
 };
 
-static nxvm_core_status vm_composition_full_pc_session_start(
+static ntvdm64_status vm_composition_full_pc_session_start(
     vm_composition_full_pc_session *session)
 {
     const nxvm_full_pc_config config = {
@@ -22,44 +22,44 @@ static nxvm_core_status vm_composition_full_pc_session_start(
         0u,
         session->config.boot_hdd
     };
-    nxvm_core_status status = nxvm_full_pc_create(&config, &session->full_pc);
+    ntvdm64_status status = nxvm_full_pc_create(&config, &session->full_pc);
 
-    if (status == NXVM_CORE_STATUS_OK) {
+    if (status == NTVDM64_STATUS_OK) {
         session->active = 1;
     }
     return status;
 }
 
-nxvm_core_status vm_composition_full_pc_session_create(
+ntvdm64_status vm_composition_full_pc_session_create(
     const vm_composition_full_pc_session_config *config,
     vm_composition_full_pc_session **out_session)
 {
     vm_composition_full_pc_session *session;
-    nxvm_core_status status;
+    ntvdm64_status status;
 
     if (config == NULL || out_session == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     *out_session = NULL;
     session = (vm_composition_full_pc_session *)calloc(1u, sizeof(*session));
     if (session == NULL) {
-        return NXVM_CORE_STATUS_NO_MEMORY;
+        return NTVDM64_STATUS_NO_MEMORY;
     }
     session->config = *config;
     session->profile = nxvm_vm_full_pc_profile_descriptor();
     status = vm_composition_full_pc_session_start(session);
-    if (status != NXVM_CORE_STATUS_OK) {
+    if (status != NTVDM64_STATUS_OK) {
         vm_composition_full_pc_session_destroy(session);
         return status;
     }
     *out_session = session;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
-nxvm_core_status vm_composition_full_pc_session_reset(vm_composition_full_pc_session *session)
+ntvdm64_status vm_composition_full_pc_session_reset(vm_composition_full_pc_session *session)
 {
     if (session == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     if (session->active) {
         nxvm_full_pc_destroy(session->full_pc);

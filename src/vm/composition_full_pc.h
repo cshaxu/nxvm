@@ -24,24 +24,24 @@ typedef struct nxvm_vm_reset_vector {
 
 typedef struct nxvm_full_pc nxvm_full_pc;
 
-nxvm_core_status nxvm_full_pc_create(
+ntvdm64_status nxvm_full_pc_create(
     const nxvm_full_pc_config *config,
     nxvm_full_pc **out_full_pc);
 
-nxvm_core_status nxvm_full_pc_get_reset_vector(
+ntvdm64_status nxvm_full_pc_get_reset_vector(
     const nxvm_full_pc *full_pc,
     nxvm_vm_reset_vector *out_vector);
 
-nxvm_core_status nxvm_full_pc_set_window_display(nxvm_full_pc *full_pc, int enabled);
-nxvm_core_status nxvm_full_pc_set_memory_kb(nxvm_full_pc *full_pc, uint32_t kilobytes);
-nxvm_core_status nxvm_full_pc_reset(nxvm_full_pc *full_pc);
+ntvdm64_status nxvm_full_pc_set_window_display(nxvm_full_pc *full_pc, int enabled);
+ntvdm64_status nxvm_full_pc_set_memory_kb(nxvm_full_pc *full_pc, uint32_t kilobytes);
+ntvdm64_status nxvm_full_pc_reset(nxvm_full_pc *full_pc);
 void nxvm_full_pc_run(nxvm_full_pc *full_pc);
 void nxvm_full_pc_resume(nxvm_full_pc *full_pc);
-nxvm_core_status nxvm_full_pc_is_running(const nxvm_full_pc *full_pc, int *out_running);
-nxvm_core_status nxvm_full_pc_debug(nxvm_full_pc *full_pc);
-nxvm_core_status nxvm_full_pc_remove_fdd(nxvm_full_pc *full_pc, const char *path);
-nxvm_core_status nxvm_full_pc_disconnect_hdd(nxvm_full_pc *full_pc, const char *path);
-nxvm_core_status nxvm_full_pc_record_start(nxvm_full_pc *full_pc, const char *path);
+ntvdm64_status nxvm_full_pc_is_running(const nxvm_full_pc *full_pc, int *out_running);
+ntvdm64_status nxvm_full_pc_debug(nxvm_full_pc *full_pc);
+ntvdm64_status nxvm_full_pc_remove_fdd(nxvm_full_pc *full_pc, const char *path);
+ntvdm64_status nxvm_full_pc_disconnect_hdd(nxvm_full_pc *full_pc, const char *path);
+ntvdm64_status nxvm_full_pc_record_start(nxvm_full_pc *full_pc, const char *path);
 void nxvm_full_pc_record_stop(nxvm_full_pc *full_pc);
 void nxvm_full_pc_request_stop(nxvm_full_pc *full_pc);
 void nxvm_full_pc_destroy(nxvm_full_pc *full_pc);

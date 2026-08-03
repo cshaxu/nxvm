@@ -32,13 +32,13 @@ typedef struct vm_composition_session_model {
     nxvm_product_nxvm_debugger debugger;
 } vm_composition_session_model;
 
-nxvm_core_status vm_composition_session_model_create(
+ntvdm64_status vm_composition_session_model_create(
     vm_composition_session_model *session,
     const vm_composition_session_model_config *config);
-nxvm_core_status vm_composition_session_model_get_firmware_reset_vector(
+ntvdm64_status vm_composition_session_model_get_firmware_reset_vector(
     const vm_composition_session_model *session,
     nxvm_product_nxvm_reset_vector *out_vector);
-nxvm_core_status vm_composition_session_model_get_execution_reset_vector(
+ntvdm64_status vm_composition_session_model_get_execution_reset_vector(
     const vm_composition_session_model *session,
     nxvm_product_nxvm_reset_vector *out_vector);
 void vm_composition_session_model_destroy(vm_composition_session_model *session);

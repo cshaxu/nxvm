@@ -28,15 +28,15 @@ typedef struct core_machine_text_snapshot {
 } core_machine_text_snapshot;
 
 void core_machine_keyboard_queue_initialize(core_machine_keyboard_queue *queue);
-nxvm_core_status core_machine_keyboard_queue_push(
+ntvdm64_status core_machine_keyboard_queue_push(
     core_machine_keyboard_queue *queue, uint16_t value);
-nxvm_core_status core_machine_keyboard_queue_pop(
+ntvdm64_status core_machine_keyboard_queue_pop(
     core_machine_keyboard_queue *queue, uint16_t *out_value);
 void core_machine_text_snapshot_initialize(core_machine_text_snapshot *snapshot);
-nxvm_core_status core_machine_text_snapshot_write(
+ntvdm64_status core_machine_text_snapshot_write(
     core_machine_text_snapshot *snapshot, uint16_t x, uint16_t y,
     uint8_t character, uint8_t attribute);
-nxvm_core_status core_machine_text_snapshot_copy(
+ntvdm64_status core_machine_text_snapshot_copy(
     const core_machine_text_snapshot *source, core_machine_text_snapshot *destination);
 
 #endif

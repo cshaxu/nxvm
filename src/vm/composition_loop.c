@@ -25,7 +25,7 @@ static void device_execution_context_reset(void *device)
     vm_composition_live_machine *machine =
         (vm_composition_live_machine *)device;
     vm_machine_debug_reset(machine->debug);
-    if (core_machine_reset(machine->core_machine) != NXVM_CORE_STATUS_OK) {
+    if (core_machine_reset(machine->core_machine) != NTVDM64_STATUS_OK) {
         vm_composition_control_stop(machine->control);
     }
 }
@@ -73,7 +73,7 @@ void vm_composition_control_start(vm_composition_control_state *control) {
             break;
         }
         if (core_machine_run(machine->core_machine, budget, &result) !=
-            NXVM_CORE_STATUS_OK) {
+            NTVDM64_STATUS_OK) {
             vm_composition_control_stop(control);
             continue;
         }

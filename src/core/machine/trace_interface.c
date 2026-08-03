@@ -39,28 +39,28 @@ void core_machine_trace_finalize(core_machine *machine)
     }
 }
 
-nxvm_core_status core_machine_set_trace_provider(
+ntvdm64_status core_machine_set_trace_provider(
     core_machine *machine,
     const core_machine_trace_provider *provider)
 {
     if (machine == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
     if (machine->lifecycle == CORE_MACHINE_RUNNING) {
-        return NXVM_CORE_STATUS_INVALID_STATE;
+        return NTVDM64_STATUS_INVALID_STATE;
     }
 
     memset(&machine->trace.provider, 0, sizeof(machine->trace.provider));
     if (provider != NULL) {
         if (provider->callback == NULL) {
-            return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+            return NTVDM64_STATUS_INVALID_ARGUMENT;
         }
         machine->trace.provider = *provider;
     }
     machine->trace.count = 0u;
     machine->trace.flushing = 0;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
 void core_machine_trace_record(

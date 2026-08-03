@@ -50,13 +50,13 @@ typedef struct nxvm_runtime_registry {
 } nxvm_runtime_registry;
 
 void nxvm_runtime_registry_initialize(nxvm_runtime_registry *registry);
-nxvm_core_status nxvm_runtime_registry_register_profile(
+ntvdm64_status nxvm_runtime_registry_register_profile(
     nxvm_runtime_registry *registry,
     const nxvm_runtime_profile_descriptor_v1 *descriptor);
-nxvm_core_status nxvm_runtime_registry_register_firmware_provider(
+ntvdm64_status nxvm_runtime_registry_register_firmware_provider(
     nxvm_runtime_registry *registry,
     const nxvm_runtime_firmware_provider_descriptor_v1 *descriptor);
-nxvm_core_status nxvm_runtime_registry_freeze(nxvm_runtime_registry *registry);
+ntvdm64_status nxvm_runtime_registry_freeze(nxvm_runtime_registry *registry);
 const nxvm_runtime_profile_descriptor_v1 *nxvm_runtime_registry_find_profile(
     const nxvm_runtime_registry *registry,
     const char *id,

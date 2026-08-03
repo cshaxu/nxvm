@@ -21,7 +21,7 @@ static int verify(const char *fdd_path, const char *hdd_path,
     nxvm_product_nxvm_reset_vector firmware_vector;
     nxvm_product_nxvm_reset_vector execution_vector;
 
-    if (vm_composition_session_model_create(&session, &config) != NXVM_CORE_STATUS_OK ||
+    if (vm_composition_session_model_create(&session, &config) != NTVDM64_STATUS_OK ||
         nxvm_runtime_registry_find_profile(&session.registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID, NXVM_RUNTIME_PROFILE_MACHINE,
             NULL, NULL) == NULL ||
@@ -30,9 +30,9 @@ static int verify(const char *fdd_path, const char *hdd_path,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID) == NULL ||
         session.firmware.frozen == 0 || session.media.frozen == 0 ||
         vm_composition_session_model_get_firmware_reset_vector(&session,
-            &firmware_vector) != NXVM_CORE_STATUS_OK ||
+            &firmware_vector) != NTVDM64_STATUS_OK ||
         vm_composition_session_model_get_execution_reset_vector(&session,
-            &execution_vector) != NXVM_CORE_STATUS_OK ||
+            &execution_vector) != NTVDM64_STATUS_OK ||
         firmware_vector.cs != 0xf000u || firmware_vector.ip != 0xfff0u ||
         execution_vector.cs != 0xf000u || execution_vector.ip != 0xfff0u) {
         vm_composition_session_model_destroy(&session);
@@ -50,11 +50,11 @@ static int verify_created(void)
     vm_composition_session_model session;
     nxvm_product_nxvm_reset_vector vector;
 
-    if (vm_composition_session_model_create(&session, &config) != NXVM_CORE_STATUS_OK ||
+    if (vm_composition_session_model_create(&session, &config) != NTVDM64_STATUS_OK ||
         !session.media.fdd.created || !session.media.hdd.created ||
         session.media.hdd.cylinders != 1u ||
         vm_composition_session_model_get_execution_reset_vector(&session, &vector) !=
-            NXVM_CORE_STATUS_OK || vector.cs != 0xf000u || vector.ip != 0xfff0u) {
+            NTVDM64_STATUS_OK || vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         vm_composition_session_model_destroy(&session);
         return 1;
     }

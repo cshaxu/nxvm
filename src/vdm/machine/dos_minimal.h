@@ -18,25 +18,25 @@ typedef struct nxvm_runtime_text_snapshot {
     core_machine_text_snapshot text;
 } nxvm_runtime_text_snapshot;
 
-nxvm_core_status nxvm_runtime_dos_minimal_create(
+ntvdm64_status nxvm_runtime_dos_minimal_create(
     nxvm_runtime_dos_minimal **out_session);
-nxvm_core_status nxvm_runtime_dos_minimal_reset(
+ntvdm64_status nxvm_runtime_dos_minimal_reset(
     nxvm_runtime_dos_minimal *session);
-nxvm_core_status nxvm_runtime_dos_minimal_tick(
+ntvdm64_status nxvm_runtime_dos_minimal_tick(
     nxvm_runtime_dos_minimal *session,
     uint32_t ticks);
-nxvm_core_status nxvm_runtime_dos_minimal_inject_key(
+ntvdm64_status nxvm_runtime_dos_minimal_inject_key(
     nxvm_runtime_dos_minimal *session,
     uint8_t scan_code);
-nxvm_core_status nxvm_runtime_dos_minimal_write_text(
+ntvdm64_status nxvm_runtime_dos_minimal_write_text(
     nxvm_runtime_dos_minimal *session,
     uint16_t cell,
     uint8_t character,
     uint8_t attribute);
-nxvm_core_status nxvm_runtime_dos_minimal_get_snapshot(
+ntvdm64_status nxvm_runtime_dos_minimal_get_snapshot(
     const nxvm_runtime_dos_minimal *session,
     nxvm_runtime_text_snapshot *out_snapshot);
-nxvm_core_status nxvm_runtime_dos_minimal_port_read(
+ntvdm64_status nxvm_runtime_dos_minimal_port_read(
     nxvm_runtime_dos_minimal *session,
     uint16_t port,
     uint32_t *out_value);

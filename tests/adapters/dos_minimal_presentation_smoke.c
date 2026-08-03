@@ -14,39 +14,39 @@ int main(void)
     nxvm_vdm_presentation_snapshot second_snapshot;
     uint32_t key;
 
-    if (nxvm_runtime_dos_minimal_create(&first) != NXVM_CORE_STATUS_OK ||
-        nxvm_runtime_dos_minimal_create(&second) != NXVM_CORE_STATUS_OK ||
+    if (nxvm_runtime_dos_minimal_create(&first) != NTVDM64_STATUS_OK ||
+        nxvm_runtime_dos_minimal_create(&second) != NTVDM64_STATUS_OK ||
         nxvm_dos_minimal_presentation_create(first, &first_presentation) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         nxvm_dos_minimal_presentation_create(second, &second_presentation) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         nxvm_dos_minimal_presentation_enqueue_input(first_presentation,
                                                     first_event) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         nxvm_dos_minimal_presentation_enqueue_input(second_presentation,
                                                     second_event) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         nxvm_dos_minimal_presentation_apply_input(first_presentation) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         nxvm_runtime_dos_minimal_port_read(first, 0x60u, &key) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         key != 0x1eu ||
         nxvm_runtime_dos_minimal_write_text(first, 0u, 'P', 0x2eu) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         nxvm_dos_minimal_presentation_capture_text(first_presentation, 99u,
                                                    &first_snapshot) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         nxvm_dos_minimal_presentation_capture_text(second_presentation, 100u,
                                                    &second_snapshot) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         first_snapshot.timestamp != 99u ||
         first_snapshot.text.characters[0] != 'P' ||
         second_snapshot.timestamp != 100u ||
         second_snapshot.text.characters[0] != ' ' ||
         nxvm_dos_minimal_presentation_apply_input(second_presentation) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         nxvm_runtime_dos_minimal_port_read(second, 0x60u, &key) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         key != 0x30u) {
         nxvm_dos_minimal_presentation_destroy(second_presentation);
         nxvm_dos_minimal_presentation_destroy(first_presentation);

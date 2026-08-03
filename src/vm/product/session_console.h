@@ -27,12 +27,12 @@ typedef struct nxvm_product_nxvm_console {
     nxvm_product_nxvm_console_state state;
 } nxvm_product_nxvm_console;
 
-typedef nxvm_core_status (*nxvm_product_nxvm_console_operation)(
+typedef ntvdm64_status (*nxvm_product_nxvm_console_operation)(
     void *context, nxvm_product_nxvm_console_command command);
 
 void nxvm_product_nxvm_console_initialize(nxvm_product_nxvm_console *console);
 nxvm_product_nxvm_console_command nxvm_product_nxvm_console_parse(const char *line);
-nxvm_core_status nxvm_product_nxvm_console_dispatch(
+ntvdm64_status nxvm_product_nxvm_console_dispatch(
     nxvm_product_nxvm_console *console,
     nxvm_product_nxvm_console_command command,
     nxvm_product_nxvm_console_operation operation,

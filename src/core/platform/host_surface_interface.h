@@ -26,9 +26,9 @@ void core_platform_host_surface_context_initialize(
     core_platform_host_surface_kind kind, void *native_handle);
 void core_platform_host_surface_lease_initialize(
     core_platform_host_surface_lease *lease);
-nxvm_core_status core_platform_host_surface_lease_acquire(
+ntvdm64_status core_platform_host_surface_lease_acquire(
     core_platform_host_surface_lease *lease, const void *owner);
-nxvm_core_status core_platform_host_surface_lease_release(
+ntvdm64_status core_platform_host_surface_lease_release(
     core_platform_host_surface_lease *lease, const void *owner);
 int core_platform_host_surface_lease_is_owned_by(
     const core_platform_host_surface_lease *lease, const void *owner);

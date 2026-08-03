@@ -47,7 +47,7 @@ also owns the forward migration away from selected-session globals.
 ## Foundation Units
 
 `src/type.h` is the sole common type header and legacy diagnostic foundation.
-It defines `nxvm_core_status`, retained NXVM numeric aliases such as `t_nubit8`
+It defines `ntvdm64_status`, retained NXVM numeric aliases such as `t_nubit8`
 and `t_bool`, fixed-width compatibility typedefs, common bit/constant helpers,
 and product-neutral legacy C-runtime and trace primitives needed by more than
 one module. `src/type.c` owns their non-inline implementations. All modules

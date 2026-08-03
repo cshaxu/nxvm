@@ -35,7 +35,7 @@ void nxvm_product_nxvm_media_policy_initialize(
     if (policy != NULL) memset(policy, 0, sizeof(*policy));
 }
 
-nxvm_core_status nxvm_product_nxvm_media_configure(
+ntvdm64_status nxvm_product_nxvm_media_configure(
     nxvm_product_nxvm_media_policy *policy,
     nxvm_product_nxvm_boot_target target,
     const char *path,
@@ -45,8 +45,8 @@ nxvm_core_status nxvm_product_nxvm_media_configure(
 
     if (policy == NULL || identity == NULL || !nxvm_product_nxvm_media_valid_target(target) ||
         identity->expected_bytes == 0u || policy->frozen) {
-        return policy != NULL && policy->frozen ? NXVM_CORE_STATUS_INVALID_STATE :
-                                                  NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return policy != NULL && policy->frozen ? NTVDM64_STATUS_INVALID_STATE :
+                                                  NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     provider = nxvm_product_nxvm_media_mutable_provider(policy, target);
     memset(provider, 0, sizeof(*provider));
@@ -56,14 +56,14 @@ nxvm_core_status nxvm_product_nxvm_media_configure(
         !nxvm_product_nxvm_media_copy(provider->expected_sha256,
                                       sizeof(provider->expected_sha256), identity->expected_sha256)) {
         memset(provider, 0, sizeof(*provider));
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     provider->expected_bytes = identity->expected_bytes;
     provider->configured = 1;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
-nxvm_core_status nxvm_product_nxvm_media_configure_created(
+ntvdm64_status nxvm_product_nxvm_media_configure_created(
     nxvm_product_nxvm_media_policy *policy,
     nxvm_product_nxvm_boot_target target,
     uint16_t cylinders)
@@ -73,40 +73,40 @@ nxvm_core_status nxvm_product_nxvm_media_configure_created(
     if (policy == NULL || !nxvm_product_nxvm_media_valid_target(target) ||
         policy->frozen ||
         (target == NXVM_PRODUCT_NXVM_BOOT_HDD && cylinders == 0u)) {
-        return policy != NULL && policy->frozen ? NXVM_CORE_STATUS_INVALID_STATE :
-                                                  NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return policy != NULL && policy->frozen ? NTVDM64_STATUS_INVALID_STATE :
+                                                  NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     provider = nxvm_product_nxvm_media_mutable_provider(policy, target);
     memset(provider, 0, sizeof(*provider));
     provider->configured = 1;
     provider->created = 1;
     provider->cylinders = cylinders;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
-nxvm_core_status nxvm_product_nxvm_media_set_boot_target(
+ntvdm64_status nxvm_product_nxvm_media_set_boot_target(
     nxvm_product_nxvm_media_policy *policy,
     nxvm_product_nxvm_boot_target target)
 {
     if (policy == NULL || !nxvm_product_nxvm_media_valid_target(target)) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
-    if (policy->frozen) return NXVM_CORE_STATUS_INVALID_STATE;
+    if (policy->frozen) return NTVDM64_STATUS_INVALID_STATE;
     policy->boot_target = target;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
-nxvm_core_status nxvm_product_nxvm_media_freeze(
+ntvdm64_status nxvm_product_nxvm_media_freeze(
     nxvm_product_nxvm_media_policy *policy)
 {
     const nxvm_product_nxvm_block_provider *provider;
 
-    if (policy == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    if (policy->frozen) return NXVM_CORE_STATUS_INVALID_STATE;
+    if (policy == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (policy->frozen) return NTVDM64_STATUS_INVALID_STATE;
     provider = nxvm_product_nxvm_media_provider(policy, policy->boot_target);
-    if (provider == NULL || !provider->configured) return NXVM_CORE_STATUS_INVALID_STATE;
+    if (provider == NULL || !provider->configured) return NTVDM64_STATUS_INVALID_STATE;
     policy->frozen = 1;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
 const nxvm_product_nxvm_block_provider *nxvm_product_nxvm_media_provider(

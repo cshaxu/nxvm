@@ -172,7 +172,7 @@ VOID win32KeyboardMakeStatusFor(const vm_platform_run_context *context) {
 
     if (state_sink == NULL || state_sink(state_context, asynchronous_keys,
                                          toggle_keys) !=
-        NXVM_CORE_STATUS_OK) {
+        NTVDM64_STATUS_OK) {
         if (context != NULL) {
             vm_platform_keyboard_apply_host_state_for(context->keyboard,
                 asynchronous_keys, toggle_keys);

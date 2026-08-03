@@ -43,10 +43,10 @@ typedef struct nxvm_platform_vm_request_bridge {
 
 void nxvm_platform_vm_request_bridge_initialize(
     nxvm_platform_vm_request_bridge *bridge);
-nxvm_core_status nxvm_platform_vm_request_bridge_enqueue(
+ntvdm64_status nxvm_platform_vm_request_bridge_enqueue(
     nxvm_platform_vm_request_bridge *bridge,
     const nxvm_platform_vm_request *request);
-nxvm_core_status nxvm_platform_vm_request_bridge_dequeue(
+ntvdm64_status nxvm_platform_vm_request_bridge_dequeue(
     nxvm_platform_vm_request_bridge *bridge,
     nxvm_platform_vm_request *out_request);
 

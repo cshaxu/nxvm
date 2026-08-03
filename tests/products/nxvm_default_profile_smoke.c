@@ -21,20 +21,20 @@ static int verify(const char *fdd_path, const char *hdd_path,
 
     nxvm_product_nxvm_media_policy_initialize(&media);
     if (nxvm_product_nxvm_media_configure(&media, NXVM_PRODUCT_NXVM_BOOT_FDD,
-            fdd_path, &fdd) != NXVM_CORE_STATUS_OK ||
+            fdd_path, &fdd) != NTVDM64_STATUS_OK ||
         nxvm_product_nxvm_media_configure(&media, NXVM_PRODUCT_NXVM_BOOT_HDD,
-            hdd_path, &hdd) != NXVM_CORE_STATUS_OK ||
-        nxvm_product_nxvm_media_set_boot_target(&media, boot_target) != NXVM_CORE_STATUS_OK ||
-        nxvm_product_nxvm_media_freeze(&media) != NXVM_CORE_STATUS_OK ||
-        nxvm_product_nxvm_default_profile_create(&default_profile, &media) != NXVM_CORE_STATUS_OK ||
-        nxvm_product_nxvm_default_profile_set_window_display(&default_profile, 0) != NXVM_CORE_STATUS_OK ||
-        nxvm_product_nxvm_default_profile_set_memory_kb(&default_profile, 16384u) != NXVM_CORE_STATUS_OK ||
-        nxvm_product_nxvm_default_profile_reset(&default_profile) != NXVM_CORE_STATUS_OK ||
-        nxvm_product_nxvm_default_profile_is_running(&default_profile, &running) != NXVM_CORE_STATUS_OK ||
+            hdd_path, &hdd) != NTVDM64_STATUS_OK ||
+        nxvm_product_nxvm_media_set_boot_target(&media, boot_target) != NTVDM64_STATUS_OK ||
+        nxvm_product_nxvm_media_freeze(&media) != NTVDM64_STATUS_OK ||
+        nxvm_product_nxvm_default_profile_create(&default_profile, &media) != NTVDM64_STATUS_OK ||
+        nxvm_product_nxvm_default_profile_set_window_display(&default_profile, 0) != NTVDM64_STATUS_OK ||
+        nxvm_product_nxvm_default_profile_set_memory_kb(&default_profile, 16384u) != NTVDM64_STATUS_OK ||
+        nxvm_product_nxvm_default_profile_reset(&default_profile) != NTVDM64_STATUS_OK ||
+        nxvm_product_nxvm_default_profile_is_running(&default_profile, &running) != NTVDM64_STATUS_OK ||
         running != 0 ||
-        nxvm_product_nxvm_default_profile_remove_fdd(&default_profile, NULL) != NXVM_CORE_STATUS_OK ||
-        nxvm_product_nxvm_default_profile_disconnect_hdd(&default_profile, NULL) != NXVM_CORE_STATUS_OK ||
-        nxvm_product_nxvm_default_profile_get_reset_vector(&default_profile, &vector) != NXVM_CORE_STATUS_OK ||
+        nxvm_product_nxvm_default_profile_remove_fdd(&default_profile, NULL) != NTVDM64_STATUS_OK ||
+        nxvm_product_nxvm_default_profile_disconnect_hdd(&default_profile, NULL) != NTVDM64_STATUS_OK ||
+        nxvm_product_nxvm_default_profile_get_reset_vector(&default_profile, &vector) != NTVDM64_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         nxvm_product_nxvm_default_profile_destroy(&default_profile);
         return 1;

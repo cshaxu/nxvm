@@ -17,18 +17,18 @@ int main(void)
     failed |= context.kind != CORE_PLATFORM_HOST_SURFACE_TERMINAL;
     failed |= context.native_handle != &first_owner;
     failed |= core_platform_host_surface_lease_acquire(&lease, &first_owner) !=
-        NXVM_CORE_STATUS_OK;
+        NTVDM64_STATUS_OK;
     failed |= !core_platform_host_surface_lease_is_owned_by(&lease, &first_owner);
     failed |= core_platform_host_surface_lease_acquire(&lease, &second_owner) !=
-        NXVM_CORE_STATUS_UNSUPPORTED;
+        NTVDM64_STATUS_UNSUPPORTED;
     failed |= core_platform_host_surface_lease_release(&lease, &second_owner) !=
-        NXVM_CORE_STATUS_INVALID_STATE;
+        NTVDM64_STATUS_INVALID_STATE;
     failed |= core_platform_host_surface_lease_release(&lease, &first_owner) !=
-        NXVM_CORE_STATUS_OK;
+        NTVDM64_STATUS_OK;
     failed |= core_platform_host_surface_lease_acquire(&lease, &second_owner) !=
-        NXVM_CORE_STATUS_OK;
+        NTVDM64_STATUS_OK;
     failed |= core_platform_host_surface_lease_release(&lease, &second_owner) !=
-        NXVM_CORE_STATUS_OK;
+        NTVDM64_STATUS_OK;
 
     if (failed) return 1;
     puts("M5:T89:S1:HOST-SURFACE-LEASE:OK");

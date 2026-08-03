@@ -102,6 +102,9 @@ are recorded before the `type.*` call-site migrations.
 **M5 T100 complete:** root string/trace helper APIs now use
 `ntvdm64_type_*`; retained wrapper behavior is unchanged.
 
+**M5 T101 complete:** all active source/tests use the root-owned
+`ntvdm64_status` and `NTVDM64_STATUS_*` vocabulary without aliases.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

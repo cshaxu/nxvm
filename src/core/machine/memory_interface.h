@@ -12,19 +12,19 @@ extern "C" {
 
 typedef struct core_machine core_machine;
 
-nxvm_core_status core_machine_memory_read(
+ntvdm64_status core_machine_memory_read(
     const core_machine *machine,
     uint32_t physical,
     void *out_data,
     size_t size);
 
-nxvm_core_status core_machine_memory_write(
+ntvdm64_status core_machine_memory_write(
     core_machine *machine,
     uint32_t physical,
     const void *data,
     size_t size);
 
-nxvm_core_status core_machine_set_a20(
+ntvdm64_status core_machine_set_a20(
     core_machine *machine,
     int enabled);
 

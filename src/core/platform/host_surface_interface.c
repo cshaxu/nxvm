@@ -15,28 +15,28 @@ void core_platform_host_surface_lease_initialize(
     if (lease != NULL) atomic_init(&lease->owner, (uintptr_t)0u);
 }
 
-nxvm_core_status core_platform_host_surface_lease_acquire(
+ntvdm64_status core_platform_host_surface_lease_acquire(
     core_platform_host_surface_lease *lease, const void *owner)
 {
     uintptr_t expected = (uintptr_t)0u;
     uintptr_t token = (uintptr_t)owner;
 
-    if (lease == NULL || owner == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+    if (lease == NULL || owner == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     if (atomic_compare_exchange_strong(&lease->owner, &expected, token)) {
-        return NXVM_CORE_STATUS_OK;
+        return NTVDM64_STATUS_OK;
     }
-    return expected == token ? NXVM_CORE_STATUS_INVALID_STATE :
-        NXVM_CORE_STATUS_UNSUPPORTED;
+    return expected == token ? NTVDM64_STATUS_INVALID_STATE :
+        NTVDM64_STATUS_UNSUPPORTED;
 }
 
-nxvm_core_status core_platform_host_surface_lease_release(
+ntvdm64_status core_platform_host_surface_lease_release(
     core_platform_host_surface_lease *lease, const void *owner)
 {
     uintptr_t expected = (uintptr_t)owner;
 
-    if (lease == NULL || owner == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+    if (lease == NULL || owner == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     return atomic_compare_exchange_strong(&lease->owner, &expected,
-        (uintptr_t)0u) ? NXVM_CORE_STATUS_OK : NXVM_CORE_STATUS_INVALID_STATE;
+        (uintptr_t)0u) ? NTVDM64_STATUS_OK : NTVDM64_STATUS_INVALID_STATE;
 }
 
 int core_platform_host_surface_lease_is_owned_by(

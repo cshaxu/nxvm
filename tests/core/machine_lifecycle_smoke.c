@@ -2,7 +2,7 @@
 
 #include "core/machine/machine_interface.h"
 
-static int expect_status(nxvm_core_status actual, nxvm_core_status expected)
+static int expect_status(ntvdm64_status actual, ntvdm64_status expected)
 {
     return actual == expected ? 0 : 1;
 }
@@ -13,7 +13,7 @@ static int expect_lifecycle(
 {
     core_machine_lifecycle actual;
 
-    if (core_machine_get_lifecycle(machine, &actual) != NXVM_CORE_STATUS_OK) {
+    if (core_machine_get_lifecycle(machine, &actual) != NTVDM64_STATUS_OK) {
         return 1;
     }
 
@@ -33,42 +33,42 @@ int main(void)
     int result = 0;
 
     result |= expect_status(core_machine_create(&config, &machine),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     result |= expect_lifecycle(machine, CORE_MACHINE_INITIALIZED);
     result |= expect_status(core_machine_run(machine, budget, &run_result),
-                            NXVM_CORE_STATUS_INVALID_STATE);
+                            NTVDM64_STATUS_INVALID_STATE);
 
-    result |= expect_status(core_machine_reset(machine), NXVM_CORE_STATUS_OK);
+    result |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
     result |= expect_lifecycle(machine, CORE_MACHINE_PAUSED);
     result |= expect_status(core_machine_get_cpu_state(machine, &cpu),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     result |= cpu.cs != 0xf000u || cpu.eip != 0x0000fff0u;
     budget.instructions = 0u;
     result |= expect_status(core_machine_run(machine, budget, &run_result),
-                            NXVM_CORE_STATUS_INVALID_ARGUMENT);
+                            NTVDM64_STATUS_INVALID_ARGUMENT);
 
     budget.instructions = 1u;
     result |= expect_status(core_machine_run(machine, budget, &run_result),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     result |= run_result.reason != CORE_MACHINE_STOP_BUDGET ||
               run_result.executed != 0u;
     result |= expect_lifecycle(machine, CORE_MACHINE_PAUSED);
 
     result |= expect_status(core_machine_request_stop(machine),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     result |= expect_status(core_machine_run(machine, budget, &run_result),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     result |= run_result.reason != CORE_MACHINE_STOP_REQUESTED;
     result |= expect_lifecycle(machine, CORE_MACHINE_STOPPED);
     result |= expect_status(core_machine_run(machine, budget, &run_result),
-                            NXVM_CORE_STATUS_INVALID_STATE);
+                            NTVDM64_STATUS_INVALID_STATE);
 
-    result |= expect_status(core_machine_reset(machine), NXVM_CORE_STATUS_OK);
+    result |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
     result |= expect_status(core_machine_report_fault(machine, 0x1234u),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     result |= expect_lifecycle(machine, CORE_MACHINE_FAULTED);
     result |= expect_status(core_machine_run(machine, budget, &run_result),
-                            NXVM_CORE_STATUS_FAULT);
+                            NTVDM64_STATUS_FAULT);
     result |= run_result.reason != CORE_MACHINE_STOP_FAULT ||
               run_result.detail != 0x1234u ||
               run_result.linear_pc != 0xfffffff0u;

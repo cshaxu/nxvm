@@ -102,7 +102,7 @@ int nxvm_cpu_probe_step(
         core_machine_run_result result;
 
         if (core_machine_run(probe->machine.core_machine, budget, &result) !=
-                NXVM_CORE_STATUS_OK || result.executed != 1u) {
+                NTVDM64_STATUS_OK || result.executed != 1u) {
             return 0;
         }
     }

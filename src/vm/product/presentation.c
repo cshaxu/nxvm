@@ -9,53 +9,53 @@ void nxvm_product_nxvm_presentation_initialize(
     presentation->command_boundary_open = 0;
 }
 
-nxvm_core_status nxvm_product_nxvm_presentation_enqueue_input(
+ntvdm64_status nxvm_product_nxvm_presentation_enqueue_input(
     nxvm_product_nxvm_presentation *presentation, uint16_t scan_code)
 {
-    if (presentation == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+    if (presentation == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     return core_machine_keyboard_queue_push(&presentation->pending_input, scan_code);
 }
 
-nxvm_core_status nxvm_product_nxvm_presentation_open_command_boundary(
+ntvdm64_status nxvm_product_nxvm_presentation_open_command_boundary(
     nxvm_product_nxvm_presentation *presentation)
 {
-    if (presentation == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    if (presentation->command_boundary_open) return NXVM_CORE_STATUS_INVALID_STATE;
+    if (presentation == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (presentation->command_boundary_open) return NTVDM64_STATUS_INVALID_STATE;
     presentation->command_boundary_open = 1;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
-nxvm_core_status nxvm_product_nxvm_presentation_apply_input(
+ntvdm64_status nxvm_product_nxvm_presentation_apply_input(
     nxvm_product_nxvm_presentation *presentation,
     nxvm_product_nxvm_input_consumer consumer, void *context)
 {
     uint16_t scan_code;
-    nxvm_core_status status;
+    ntvdm64_status status;
 
-    if (presentation == NULL || consumer == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    if (!presentation->command_boundary_open) return NXVM_CORE_STATUS_INVALID_STATE;
+    if (presentation == NULL || consumer == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (!presentation->command_boundary_open) return NTVDM64_STATUS_INVALID_STATE;
     while ((status = core_machine_keyboard_queue_pop(&presentation->pending_input,
-                                                   &scan_code)) == NXVM_CORE_STATUS_OK) {
+                                                   &scan_code)) == NTVDM64_STATUS_OK) {
         status = consumer(context, scan_code);
-        if (status != NXVM_CORE_STATUS_OK) return status;
+        if (status != NTVDM64_STATUS_OK) return status;
     }
-    return status == NXVM_CORE_STATUS_UNSUPPORTED ? NXVM_CORE_STATUS_OK : status;
+    return status == NTVDM64_STATUS_UNSUPPORTED ? NTVDM64_STATUS_OK : status;
 }
 
-nxvm_core_status nxvm_product_nxvm_presentation_publish_text(
+ntvdm64_status nxvm_product_nxvm_presentation_publish_text(
     nxvm_product_nxvm_presentation *presentation,
     const core_machine_text_snapshot *snapshot)
 {
-    if (presentation == NULL || snapshot == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    if (!presentation->command_boundary_open) return NXVM_CORE_STATUS_INVALID_STATE;
+    if (presentation == NULL || snapshot == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (!presentation->command_boundary_open) return NTVDM64_STATUS_INVALID_STATE;
     return core_machine_text_snapshot_copy(snapshot, &presentation->published_text);
 }
 
-nxvm_core_status nxvm_product_nxvm_presentation_capture_text(
+ntvdm64_status nxvm_product_nxvm_presentation_capture_text(
     const nxvm_product_nxvm_presentation *presentation,
     core_machine_text_snapshot *out_snapshot)
 {
-    if (presentation == NULL || out_snapshot == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+    if (presentation == NULL || out_snapshot == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     return core_machine_text_snapshot_copy(&presentation->published_text, out_snapshot);
 }
 
