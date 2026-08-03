@@ -23,6 +23,11 @@ manager atomically establishes session 0, the final session cannot close, and
 all shared grammar, multi-window, Console lease, FDD, and structural gates
 pass. The VDM adoption boundary remains explicitly deferred. Evidence is
 [`m5-t150-product-session-closure.md`](../verification/m5-t150-product-session-closure.md).
+
+**M5 T151 complete:** Win32 guest-window focus and keyboard ingress are
+covered by a BIOS-buffer smoke and a real DOS `ver<Enter>` consumption smoke.
+The current artifact is `build/output/nxvm_0_5_0151.exe`; evidence is
+[`M5-T151.md`](../tracking/M5-T151.md).
 The authoritative core/product and composition ownership, UX, source shape,
 and T145--T150 breakdown are in
 [M5 Shared Product Session Management Design](m5-product-session-management.md).
