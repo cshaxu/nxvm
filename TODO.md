@@ -25,12 +25,12 @@ import. `docs/planning/status.md` remains authoritative for active work.
 
 ### Core Machine And VM Composition
 
-- [ ] **Core-owned generic-device lifecycle.** `vm/composition/providers.c`
-  still sequences preparation and finalization for core CPU/bus/memory and
-  shared VADP/KBC/DMA/PIT/PIC objects. Composition may bind VM-only devices,
-  firmware, and providers, but `core_machine` must own its generic-device
-  prepare/reset/finalize order. Closure: move lifecycle authority behind a
-  core contract without changing the retained full-PC boot order.
+- [x] **Core-owned generic-device lifecycle.** T141 moved CPU/bus/memory and
+  shared VADP/KBC/DMA/PIT/PIC prepare/reset/refresh/finalize order into
+  `core_machine`. T159 re-audited the current tree, removed misleading
+  composition markers, and added a source gate that rejects any VM/VDM direct
+  generic core-device lifecycle call. Composition only binds VM/VDM-only
+  devices, firmware, and providers.
 - [ ] **Public lifecycle hardening.** Audit direct machine/device initialize,
   reset, refresh, and finalize calls. The supported lifecycle must have one
   owner and fail clearly when called out of order; no public helper may create
