@@ -17,6 +17,8 @@ void machineResume(vm_composition_live_machine *machine);
 void machineInit(vm_composition_live_machine *machine);
 void machineFinal(vm_composition_live_machine *machine);
 
+int vm_composition_bind_execution_provider(vm_composition_live_machine *machine);
+
 #ifdef __cplusplus
 }/*_EOCD_*/
 #endif

@@ -89,6 +89,15 @@ static const core_machine_execution_provider vm_composition_execution_provider =
     vm_composition_execution_provider_refresh
 };
 
+int vm_composition_bind_execution_provider(vm_composition_live_machine *machine)
+{
+    return machine != NULL && machine->core_machine != NULL &&
+        core_machine_bind_execution_provider(machine->core_machine,
+            &vm_composition_execution_provider, machine) == NXVM_CORE_STATUS_OK &&
+        core_machine_freeze_execution_providers(machine->core_machine) ==
+            NXVM_CORE_STATUS_OK;
+}
+
 static const vm_platform_keyboard_sink vm_composition_keyboard_sink = {
     vm_composition_keyboard_get_modifier,
     vm_composition_keyboard_apply_host_state,
@@ -168,9 +177,6 @@ void machineInit(vm_composition_live_machine *machine) {
     core_product_wait_scope_initialize(machine->wait_scope,
         vm_composition_wait, NULL);
     vm_composition_control_initialize(machine->control, machine);
-    core_machine_bind_execution_provider(machine->core_machine,
-        &vm_composition_execution_provider, machine);
-    core_machine_freeze_execution_providers(machine->core_machine);
     core_machine_keyboard_provider_slot_bind(machine->keyboard_provider,
         machine->default_profile_context,
         vm_profile_default_keyboard_provider());

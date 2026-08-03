@@ -3,7 +3,6 @@
 /* VMACHINE is the hub that assembles all devices. */
 
 #include "core/product/utils.h"
-#include "core/platform/sleep.h"
 
 #include "core/machine/port.h"
 #include "core/machine/memory.h"
@@ -103,28 +102,6 @@ void vmachineInit(vm_composition_live_machine *machine) {
     _vbios_ _vcpu_ _vram_
 }
 
-/* Retained until T85 switches the outer loop to core_machine_run(). */
-void vmachineReset(vm_composition_live_machine *machine) {
-    if (machine == NULL) return;
-    vhdcReset();
-    core_machine_kbc_reset(machine->kbc);
-    vm_machine_cmos_reset(machine->cmos);
-    core_machine_cpu_state_reset(machine->cpu_execution);
-    core_machine_dma_reset(machine->dma_latch, machine->dma_primary,
-        machine->dma_secondary);
-    vm_machine_fdc_reset(machine->fdc);
-    vm_machine_fdd_reset(machine->fdd);
-    vm_machine_hdd_reset(machine->hdd);
-    core_machine_pic_reset(machine->pic_master, machine->pic_slave);
-    core_machine_pit_reset(machine->pit);
-    core_machine_port_reset(machine->port);
-    core_machine_vadp_reset(machine->vadp);
-    core_machine_memory_reset(machine->ram);
-    vm_profile_default_bios_reset(machine->default_bios, machine->ram,
-        machine->block_provider);
-    vm_profile_default_qdx_reset(machine->default_profile_context);
-}
-
 void vmachineRefreshProviders(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_profile_default_qdx_refresh(machine->default_profile_context);
@@ -151,23 +128,6 @@ void vmachineResetProviders(vm_composition_live_machine *machine) {
     vm_profile_default_bios_reset(machine->default_bios, machine->ram,
         machine->block_provider);
     vm_profile_default_qdx_reset(machine->default_profile_context);
-}
-
-/* Retained until T85 moves the shared refresh sequence into core_machine. */
-void vmachineRefresh(vm_composition_live_machine *machine) {
-    if (machine == NULL) return;
-    vmachineRefreshProviders(machine);
-    core_machine_kbc_refresh(machine->kbc);
-    core_machine_vadp_refresh(machine->vadp);
-    core_machine_dma_refresh(machine->dma_latch, machine->dma_primary,
-        machine->dma_secondary, machine->ram);
-    core_machine_pic_refresh(machine->pic_master, machine->pic_slave);
-    core_machine_pit_refresh(machine->pit);
-    if (machine->cpu->data.flagHalt) {
-        core_platform_sleep_milliseconds(1);
-    }
-    core_machine_cpu_execution_refresh(machine->cpu_execution);
-    vm_composition_publish_display(machine, False);
 }
 
 /* Finalize all devices, deallocates space */
