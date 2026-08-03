@@ -200,7 +200,7 @@ nxvm_core_status nxvm_runtime_dos_minimal_port_read(
     if (session == NULL) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
-    return core_machine_port_read(session->machine, port, out_value);
+    return core_machine_bus_read(session->machine, port, out_value);
 }
 
 void nxvm_runtime_dos_minimal_destroy(nxvm_runtime_dos_minimal *session)

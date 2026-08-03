@@ -4,7 +4,7 @@
 
 #define NXVM_CORE_PORT_COUNT 65536u
 
-nxvm_core_status core_machine_port_initialize(core_machine *machine)
+nxvm_core_status core_machine_bus_initialize(core_machine *machine)
 {
     if (machine == NULL) {
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
@@ -20,7 +20,7 @@ nxvm_core_status core_machine_port_initialize(core_machine *machine)
     return NXVM_CORE_STATUS_OK;
 }
 
-void core_machine_port_finalize(core_machine *machine)
+void core_machine_bus_finalize(core_machine *machine)
 {
     if (machine != NULL) {
         free(machine->ports.slots);
@@ -57,7 +57,7 @@ nxvm_core_status core_machine_install_port_provider(
     return NXVM_CORE_STATUS_OK;
 }
 
-nxvm_core_status core_machine_port_read(
+nxvm_core_status core_machine_bus_read(
     core_machine *machine,
     uint16_t port,
     uint32_t *out_value)
@@ -82,7 +82,7 @@ nxvm_core_status core_machine_port_read(
     }
 }
 
-nxvm_core_status core_machine_port_write(
+nxvm_core_status core_machine_bus_write(
     core_machine *machine,
     uint16_t port,
     uint32_t value)

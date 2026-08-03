@@ -91,9 +91,9 @@ int main(void)
     result |= expect_status(core_machine_install_port_provider(
                                 second, 0x1234u, 0x1234u, &ops, &second_port),
                             NXVM_CORE_STATUS_OK);
-    result |= expect_status(core_machine_port_write(first, 0x1234u, 0xa5a5u),
+    result |= expect_status(core_machine_bus_write(first, 0x1234u, 0xa5a5u),
                             NXVM_CORE_STATUS_OK);
-    result |= expect_status(core_machine_port_read(first, 0x1234u, &port_value),
+    result |= expect_status(core_machine_bus_read(first, 0x1234u, &port_value),
                             NXVM_CORE_STATUS_OK);
     result |= port_value != 0xa5a5u || first_port.last_port != 0x1234u ||
               second_port.value != 0u;

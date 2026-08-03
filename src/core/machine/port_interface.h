@@ -33,12 +33,12 @@ nxvm_core_status core_machine_install_port_provider(
     const core_machine_port_provider *provider,
     void *owner);
 
-nxvm_core_status core_machine_port_read(
+nxvm_core_status core_machine_bus_read(
     core_machine *machine,
     uint16_t port,
     uint32_t *out_value);
 
-nxvm_core_status core_machine_port_write(
+nxvm_core_status core_machine_bus_write(
     core_machine *machine,
     uint16_t port,
     uint32_t value);
