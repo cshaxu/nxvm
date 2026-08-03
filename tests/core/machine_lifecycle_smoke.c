@@ -3,6 +3,7 @@
 
 
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_executor_fixture.h"
 
 static C_INT expect_status(ntvdm64_status actual, ntvdm64_status expected)
 {
@@ -25,16 +26,13 @@ static C_INT expect_lifecycle(
 C_INT main(C_VOID)
 {
     core_machine *machine = STD_NULL;
-    core_machine_config config = {
-        CORE_MACHINE_PROFILE_TEST_MINIMAL,
-        0u
-    };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result run_result;
     core_machine_cpu_state cpu;
+    C_UCHAR halt = 0xf4u;
     C_INT result = 0;
 
-    result |= expect_status(core_machine_create(&config, &machine),
+    result |= expect_status(test_core_machine_create_executor(0u, &machine),
                             NTVDM64_STATUS_OK);
     result |= expect_lifecycle(machine, CORE_MACHINE_INITIALIZED);
     result |= expect_status(core_machine_run(machine, budget, &run_result),
@@ -45,13 +43,16 @@ C_INT main(C_VOID)
     result |= expect_status(core_machine_get_cpu_state(machine, &cpu),
                             NTVDM64_STATUS_OK);
     result |= cpu.cs != 0xf000u || cpu.eip != 0x0000fff0u;
+    result |= expect_status(core_machine_memory_write(machine, 0xffff0u, &halt, 1u),
+                            NTVDM64_STATUS_OK);
     budget.instructions = 0u;
     result |= expect_status(core_machine_run(machine, budget, &run_result),
                             NTVDM64_STATUS_INVALID_ARGUMENT);
 
     budget.instructions = 1u;
     result |= expect_status(core_machine_run(machine, budget, &run_result),
-                            NTVDM64_STATUS_UNSUPPORTED);
+                            NTVDM64_STATUS_OK);
+    result |= run_result.reason != CORE_MACHINE_STOP_BUDGET;
     result |= expect_lifecycle(machine, CORE_MACHINE_PAUSED);
 
     result |= expect_status(core_machine_request_stop(machine),

@@ -3,18 +3,16 @@
 
 
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_executor_fixture.h"
 
 C_INT main(C_VOID)
 {
     core_machine *machine = STD_NULL;
-    core_machine_config config = {
-        CORE_MACHINE_PROFILE_TEST_MINIMAL,
-        0u
-    };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
+    C_UCHAR halt = 0xf4u;
 
-    if (core_machine_create(&config, &machine) != NTVDM64_STATUS_OK) {
+    if (test_core_machine_create_executor(0u, &machine) != NTVDM64_STATUS_OK) {
         return 1;
     }
 
@@ -23,15 +21,12 @@ C_INT main(C_VOID)
         return 2;
     }
 
-    if (core_machine_run(machine, budget, &result) !=
-        NTVDM64_STATUS_UNSUPPORTED) {
+    if (core_machine_memory_write(machine, 0xffff0u, &halt, 1u) !=
+            NTVDM64_STATUS_OK ||
+        core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u) {
         core_machine_destroy(machine);
         return 3;
-    }
-
-    if (result.reason != CORE_MACHINE_STOP_NONE || result.executed != 0u) {
-        core_machine_destroy(machine);
-        return 4;
     }
 
     if (core_machine_request_stop(machine) != NTVDM64_STATUS_OK) {

@@ -31,16 +31,6 @@
 
 #define CORE_MACHINE_TRACE_CAPACITY 32u
 
-typedef struct core_machine_cpu {
-    core_machine_cpu_state state;
-} core_machine_cpu;
-
-typedef struct core_machine_memory {
-    uint8_t *bytes;
-    STD_SIZE_T size;
-    C_INT a20_enabled;
-} core_machine_memory;
-
 typedef struct core_machine_port_slot {
     core_machine_port_provider provider;
     C_VOID *owner;
@@ -63,10 +53,7 @@ struct core_machine {
     core_machine_lifecycle lifecycle;
     STD_ATOMIC_BOOL stop_requested;
     uint32_t fault_detail;
-    /* Contract-fixture state for CORE_MACHINE_PROFILE_TEST_MINIMAL only. */
-    core_machine_cpu test_cpu;
-    core_machine_memory test_memory;
-    core_machine_port_table test_ports;
+    core_machine_port_table port_providers;
     core_machine_trace_state trace;
     t_cpu executor_cpu;
     t_cpuins executor_cpu_instructions;
@@ -88,10 +75,6 @@ struct core_machine {
     C_INT execution_provider_frozen;
 };
 
-ntvdm64_status core_machine_cpu_reset(core_machine *machine);
-ntvdm64_status core_machine_instance_memory_initialize(core_machine *machine);
-C_VOID core_machine_instance_memory_finalize(core_machine *machine);
-ntvdm64_status core_machine_instance_memory_reset(core_machine *machine);
 ntvdm64_status core_machine_bus_initialize(core_machine *machine);
 C_VOID core_machine_bus_finalize(core_machine *machine);
 C_VOID core_machine_trace_initialize(core_machine *machine);
