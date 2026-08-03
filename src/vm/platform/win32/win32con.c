@@ -7,23 +7,22 @@
 #include "vm/platform/win32/w32cdisp.h"
 #include "vm/platform/win32/win32con.h"
 
-HANDLE hOut;
-
 typedef struct win32con_run_context {
     const vm_platform_run_context *platform;
     HANDLE input;
+    HANDLE output;
 } win32con_run_context;
 
 static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     const win32con_run_context *context = lpParam;
 
-    w32cdispInit(context->platform->presentation);
-    w32cdispPaint(context->platform->presentation, TRUE);
+    w32cdispInit(context->output, context->platform->presentation);
+    w32cdispPaint(context->output, context->platform->presentation, TRUE);
     while (vm_platform_execution_is_running_for(context->platform->execution)) {
-        w32cdispPaint(context->platform->presentation, FALSE);
+        w32cdispPaint(context->output, context->platform->presentation, FALSE);
         utilsSleep(100);
     }
-    w32cdispFinal();
+    w32cdispFinal(context->output);
     return 0;
 }
 
@@ -63,11 +62,13 @@ static VOID w32ckeybProcess(const win32con_run_context *context) {
 }
 
 VOID win32conDisplaySetScreen(const vm_platform_run_context *context) {
-    w32cdispSetScreen(context->presentation);
+    w32cdispSetScreen((HANDLE)context->host_console_output,
+                      context->presentation);
 }
 
 VOID win32conDisplayPaint(const vm_platform_run_context *context) {
-    w32cdispPaint(context->presentation, TRUE);
+    w32cdispPaint((HANDLE)context->host_console_output,
+                  context->presentation, TRUE);
 }
 
 VOID win32conStartMachine(const vm_platform_run_context *context) {
@@ -81,7 +82,9 @@ VOID win32conStartMachine(const vm_platform_run_context *context) {
     run_context.platform = context;
     run_context.input = GetStdHandle(STD_INPUT_HANDLE);
     oldDeviceFlip = vm_platform_execution_get_flip_for(context->execution);
-    hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    run_context.output = GetStdHandle(STD_OUTPUT_HANDLE);
+    ((vm_platform_run_context *)context)->host_console_output =
+        run_context.output;
     CreateThread(NULL, 0, ThreadKernel, &run_context, 0, &ThreadIdKernel);
     while (oldDeviceFlip == vm_platform_execution_get_flip_for(context->execution)) {
         utilsSleep(100);

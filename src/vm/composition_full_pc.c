@@ -139,7 +139,8 @@ nxvm_core_status nxvm_full_pc_set_window_display(nxvm_full_pc *full_pc, int enab
     if (full_pc == NULL || !full_pc->active || vm_composition_control_is_running(full_pc->machine.control)) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
-    platform.flagMode = enabled != 0;
+    vm_platform_run_context_set_window_display(
+        full_pc->machine.platform_run_context, enabled);
     return NXVM_CORE_STATUS_OK;
 }
 

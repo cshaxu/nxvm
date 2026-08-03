@@ -11,12 +11,12 @@
 #include "vm/platform/win32/w32adisp.h"
 #include "vm/platform/win32/win32app.h"
 
-HWND w32aHWnd = NULL; /* handler for window; if null, window is not yet ready */
 #define TIMER_PAINT   0
 /* #define TIMER_RTC     1 */
 
 typedef struct win32app_run_context {
     const vm_platform_run_context *platform;
+    HWND window;
     HINSTANCE instance;
     LPCSTR window_class;
     LPCSTR title;
@@ -54,7 +54,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
         case TIMER_PAINT:
             if (vm_platform_execution_is_running_for(
                     context->platform->execution)) {
-                w32adispPaint(context->platform->presentation, FALSE);
+                w32adispPaint(hWnd, context->platform->presentation, FALSE);
             }
             break;
         default:
@@ -64,7 +64,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
     case WM_PAINT:
         BeginPaint(hWnd, &ps);
         if (vm_platform_execution_is_running_for(context->platform->execution)) {
-            w32adispPaint(context->platform->presentation, TRUE);
+            w32adispPaint(hWnd, context->platform->presentation, TRUE);
         }
         EndPaint(hWnd, &ps);
         break;
@@ -109,15 +109,15 @@ static BOOL ThreadDisplayInitInstance(win32app_run_context *context,
                                       INT nCmdShow) {
     DWORD dwStyle = WS_THICKFRAME | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
                     WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
-    w32aHWnd = CreateWindow(context->window_class, context->title, dwStyle,
-                            CW_USEDEFAULT, 0, 888, 484, NULL, NULL,
-                            context->instance, context);
+    context->window = CreateWindow(context->window_class, context->title,
+                                   dwStyle, CW_USEDEFAULT, 0, 888, 484, NULL,
+                                   NULL, context->instance, context);
     /* window size is 888 x 484 for "Courier New" */
-    if (!w32aHWnd) {
+    if (!context->window) {
         return FALSE;
     }
-    ShowWindow(w32aHWnd, SW_SHOW);
-    UpdateWindow(w32aHWnd);
+    ShowWindow(context->window, SW_SHOW);
+    UpdateWindow(context->window);
     return TRUE;
 }
 
@@ -130,13 +130,13 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
         free(context);
         return FALSE;
     }
+    ((vm_platform_run_context *)context->platform)->host_window = context->window;
 
-    w32adispInit(context->platform->presentation);
+    w32adispInit(context->window, context->platform->presentation);
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
-    w32aHWnd = NULL;
     vm_platform_execution_stop_for(context->platform->execution);
     w32adispFinal();
     free(context);
@@ -147,15 +147,15 @@ static DWORD WINAPI ThreadKernel(LPVOID lpParam) {
     win32app_run_context *context = lpParam;
 
     vm_platform_execution_start_for(context->platform->execution);
-    w32adispPaint(context->platform->presentation, TRUE);
+    w32adispPaint(context->window, context->platform->presentation, TRUE);
     return 0;
 }
 
 VOID win32appDisplaySetScreen(const vm_platform_run_context *context) {
-    w32adispSetScreen(context->presentation);
+    w32adispSetScreen((HWND)context->host_window, context->presentation);
 }
 VOID win32appDisplayPaint(const vm_platform_run_context *context) {
-    w32adispPaint(context->presentation, TRUE);
+    w32adispPaint((HWND)context->host_window, context->presentation, TRUE);
 }
 VOID win32appStartMachine(const vm_platform_run_context *context) {
     win32app_run_context *run_context;

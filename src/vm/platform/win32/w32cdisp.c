@@ -4,6 +4,8 @@
 
 #include "core/product/utils.h"
 
+#include <stdlib.h>
+
 #include "core/platform/display_frame.h"
 #include "vm/platform/presentation_mailbox.h"
 
@@ -20,15 +22,17 @@ static CONSOLE_SCREEN_BUFFER_INFO defaultBufInfo;
 static UCHAR bufComp[0x1000];
 static uint64_t displayedGeneration;
 
-VOID w32cdispInit(const vm_platform_presentation_mailbox *mailbox) {
-    /* GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&defaultCurInfo)); */
-    GetConsoleScreenBufferInfo(hOut, &defaultBufInfo);
+VOID w32cdispInit(HANDLE output,
+                  const vm_platform_presentation_mailbox *mailbox) {
+    /* Cursor information is retained only for the owned output handle. */
+    GetConsoleScreenBufferInfo(output, &defaultBufInfo);
     defaultCodePage = GetConsoleCP();
     charBuf = NULL;
-    w32cdispSetScreen(mailbox);
+    w32cdispSetScreen(output, mailbox);
 }
 
-VOID w32cdispSetScreen(const vm_platform_presentation_mailbox *mailbox) {
+VOID w32cdispSetScreen(HANDLE output,
+                       const vm_platform_presentation_mailbox *mailbox) {
     core_platform_display_frame frame;
 
     vm_platform_presentation_mailbox_capture(mailbox, &frame);
@@ -43,15 +47,16 @@ VOID w32cdispSetScreen(const vm_platform_presentation_mailbox *mailbox) {
     srctWriteRect.Left = 0;
     srctWriteRect.Right = sizeRow - 1;
     if (charBuf) {
-        FREE((void *) charBuf);
+        free(charBuf);
     }
-    charBuf = (PCHAR_INFO) MALLOC(sizeCol * sizeRow * sizeof(CHAR_INFO));
-    /* SetConsoleCursorInfo(hOut, &curInfo); */
+    charBuf = malloc(sizeCol * sizeRow * sizeof(CHAR_INFO));
+    /* Legacy cursor-shape control remains intentionally disabled. */
     SetConsoleOutputCP(437);
-    SetConsoleScreenBufferSize(hOut, coordBufSize);
+    SetConsoleScreenBufferSize(output, coordBufSize);
 }
 
-VOID w32cdispPaint(const vm_platform_presentation_mailbox *mailbox,
+VOID w32cdispPaint(HANDLE output,
+                   const vm_platform_presentation_mailbox *mailbox,
                    BOOL flagForce) {
     core_platform_display_frame frame;
     UCHAR ansiChar;
@@ -78,27 +83,26 @@ VOID w32cdispPaint(const vm_platform_presentation_mailbox *mailbox,
                 charBuf[i * sizeRow + j].Attributes = charProp;
             }
         }
-        WriteConsoleOutput(hOut, charBuf, coordBufSize, coordBufStart, &srctWriteRect);
+        WriteConsoleOutput(output, charBuf, coordBufSize, coordBufStart, &srctWriteRect);
         displayedGeneration = frame.generation;
     }
     if (changed) {
-        GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&curInfo));
+        GetConsoleCursorInfo(output, (PCONSOLE_CURSOR_INFO)(&curInfo));
         curInfo.bVisible = frame.cursor_visible;
         curInfo.dwSize = (DWORD)(((frame.cursor_bottom - frame.cursor_top) % 8 + 1) * 100. / 8.);
-        SetConsoleCursorInfo(hOut, &curInfo);
+        SetConsoleCursorInfo(output, &curInfo);
         curPos.X = frame.cursor_y;
         curPos.Y = frame.cursor_x;
-        SetConsoleCursorPosition(hOut, curPos);
+        SetConsoleCursorPosition(output, curPos);
     }
 }
 
-VOID w32cdispFinal() {
+VOID w32cdispFinal(HANDLE output) {
     if (charBuf) {
-        FREE((void *) charBuf);
+        free(charBuf);
     }
     charBuf = NULL;
-    SetConsoleCursorInfo(hOut, &defaultCurInfo);
+    SetConsoleCursorInfo(output, &defaultCurInfo);
     SetConsoleOutputCP(defaultCodePage);
-    SetConsoleScreenBufferSize(hOut, defaultBufInfo.dwSize);
-    hOut = INVALID_HANDLE_VALUE;
+    SetConsoleScreenBufferSize(output, defaultBufInfo.dwSize);
 }

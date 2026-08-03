@@ -12,14 +12,13 @@ extern "C" {
 #include "vm/platform/input.h"
 #include "vm/platform/presentation_mailbox.h"
 
-typedef struct {
-    int flagMode;  /* true if runs in window, otherwise in console */
-} t_platform;
-
 typedef struct vm_platform_run_context {
     const vm_platform_execution_transport *execution;
     const vm_platform_keyboard_transport *keyboard;
     const vm_platform_presentation_mailbox *presentation;
+    void *host_console_output;
+    void *host_window;
+    int window_display;
     vm_platform_keyboard_state_sink keyboard_state_sink;
     void *keyboard_state_context;
 } vm_platform_run_context;
@@ -32,8 +31,10 @@ void vm_platform_run_context_initialize(
 void vm_platform_run_context_bind_keyboard_state(
     vm_platform_run_context *context, vm_platform_keyboard_state_sink sink,
     void *sink_context);
-
-extern t_platform platform;
+int vm_platform_run_context_get_window_display(
+    const vm_platform_run_context *context);
+void vm_platform_run_context_set_window_display(
+    vm_platform_run_context *context, int enabled);
 
 /* Device Operations */
 void platformDisplaySetScreen(const vm_platform_run_context *context);

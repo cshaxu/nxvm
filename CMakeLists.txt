@@ -328,6 +328,12 @@ add_executable(nxvm-vm-platform-presentation-mailbox-smoke
 target_link_libraries(nxvm-vm-platform-presentation-mailbox-smoke PRIVATE
     nxvm-platform-vm)
 
+add_executable(nxvm-vm-platform-mode-context-smoke
+    tests/platform/vm_platform_mode_context_smoke.c
+)
+target_link_libraries(nxvm-vm-platform-mode-context-smoke PRIVATE
+    nxvm-vm-composition)
+
 add_library(nxvm-vm-composition STATIC ${NXVM_COMPOSITION_VM_SOURCES})
 target_include_directories(nxvm-vm-composition PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
