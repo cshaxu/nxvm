@@ -34,12 +34,6 @@ typedef struct core_machine_display_provider_slot {
     int frozen;
 } core_machine_display_provider_slot;
 
-void core_machine_display_bind(void *context,
-    core_machine_display_provider provider);
-void core_machine_display_notify_mode_changed(void);
-void core_machine_display_bind_snapshot_provider(void *context,
-    core_machine_display_snapshot_provider provider);
-int core_machine_display_capture_snapshot(core_machine_display_snapshot *out_snapshot);
 void core_machine_display_provider_slot_initialize(
     core_machine_display_provider_slot *slot);
 void core_machine_display_provider_slot_bind(

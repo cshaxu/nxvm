@@ -13,17 +13,17 @@ and FDD DOS-prompt gate.
 
 | Family | Current state and production use | Required explicit owner | Task |
 | --- | --- | --- | --- |
-| Core keyboard facade | `core_machine_keyboard_*` global binding has no production caller after T76; full-PC host requests use their owning provider slot. | Delete the unused legacy facade after Story 1 closure review. | T81 |
-| Core display facade | `core_machine_display_*` global callback has no production caller after T77; QDCGA notifies its context's provider slot. | Delete the unused legacy facade after Story 1 closure review. | T81 |
+| Core keyboard facade | Deleted after T76 proved the provider-slot route is the only production route. | Provider slot. | Complete |
+| Core display facade | Deleted after T77 proved QDCGA uses its context provider slot. | Provider slot. | Complete |
 | Display generation | Stored on `vm_composition_live_machine` after T77. | The owning VM display context. | Complete |
 | Debug target | T78 removed lifecycle-wide target binding. `debugMain(target)` establishes a thread-local scope only for one debugger interaction. | The composition-owned debug target passed explicitly into the retained debugger UI. | Complete |
-| Wait provider | `core_product_wait.c` stores one global provider and context. | The VM session host-wait transport. | T79 |
-| VM input sink | `vm/platform/input.c` stores one keyboard sink and context. | The VM session input transport. | T79 |
-| VM execution sink | `vm/platform/execution.c` stores one execution sink and context. | The VM session execution transport. | T79 |
-| VM platform mode | `vm/platform/platform.c` owns one global `t_platform` mode state. | A VM platform/session object. | T80 |
-| Display frame mailbox | `core/platform/display_frame.c` stores one global frame and lock; composition publishes and platform renderers capture it. | The owning VM host-display adapter, without a platform-to-machine dependency. | T80 |
-| Host window and Console state | Win32 state includes static keyboard sink/context, window handle, display thread state, and Console handles. | Explicit VM platform/window or Console objects. | T80 |
-| Block facade | `core_machine_block_*` global provider storage has no production caller; explicit `*_from(slot, ...)` calls are used instead. | Delete the unused legacy facade. | T81 |
+| Wait provider | Thread-local scope restores the caller's previous provider. | VM run-context wait scope. | Complete |
+| VM input sink | Deleted; explicit transport is the only path. | VM session input transport. | Complete |
+| VM execution sink | Deleted; explicit transport is the only path. | VM session execution transport. | Complete |
+| VM platform mode | Stored in the VM platform run context. | VM platform run context. | Complete |
+| Display frame mailbox | Deleted global mailbox; each VM owns a presentation mailbox. | VM host-display adapter. | Complete |
+| Host window and Console state | Handles and keyboard-state callback live in the run context. | VM platform/window or Console object. | Complete |
+| Block facade | Deleted; firmware uses explicit `*_from(slot, ...)` calls. | Provider slot. | Complete |
 | Debugger UI working state | `core/product/debug/debug.c` has retained parser/UI state. It does not itself select the current machine, but must be rechecked when the target becomes explicit. | Retained single NXVM debugger UI until T78 completes. | T78 |
 
 ## Separate Executor Debt
@@ -35,7 +35,6 @@ path after Story 1 closes.
 
 ## T75 Static Gate
 
-`tools/VerifyFacadeOwnership.ps1` limits each recorded legacy facade to its
-known implementation and current production call sites. It rejects any new
-call site. The gate is containment only: it does not claim that a facade is
-already removed or that NXVM is a multi-session product.
+`tools/VerifyFacadeOwnership.ps1` rejects every retired facade in production
+sources. It proves Story 1 closure only; it does not claim multi-session
+product support or resolve the parallel executor debt.

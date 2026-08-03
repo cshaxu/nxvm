@@ -29,9 +29,4 @@ void core_machine_block_provider_slot_freeze(
 void core_machine_block_provider_slot_finalize(
     core_machine_block_provider_slot *slot);
 
-void core_machine_block_bind_provider(void *context,
-    core_machine_block_geometry_provider geometry_provider,
-    core_machine_block_transfer_provider read_provider,
-    core_machine_block_transfer_provider write_provider);
-
 #endif

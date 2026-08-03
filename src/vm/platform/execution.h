@@ -25,11 +25,4 @@ void vm_platform_execution_start_for(
 void vm_platform_execution_stop_for(
     const vm_platform_execution_transport *transport);
 
-void vm_platform_execution_bind(const vm_platform_execution_sink *sink,
-                                void *context);
-int vm_platform_execution_is_running(void);
-int vm_platform_execution_get_flip(void);
-void vm_platform_execution_start(void);
-void vm_platform_execution_stop(void);
-
 #endif

@@ -23,8 +23,4 @@ typedef struct core_platform_display_frame {
     uint64_t generation;
 } core_platform_display_frame;
 
-void core_platform_display_initialize(void);
-void core_platform_display_publish(const core_platform_display_frame *frame);
-void core_platform_display_capture(core_platform_display_frame *out_frame);
-
 #endif

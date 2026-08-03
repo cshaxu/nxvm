@@ -2,8 +2,7 @@
 
 ## Status
 
-T75 S1 through T80 S6 are complete. T81 S1 is active. No later task in this
-sequence is active.
+Story 1, T75 S1 through T81 S1, is complete. Story 2 is planned but not active.
 
 ## Story 1: Remove Residual Global Facades
 
@@ -26,7 +25,7 @@ window/Console behavior, boot sequence, and FDD DOS-prompt gate.
 | T78 | Replace the global core debug target with a composition-owned debug target while retaining the existing debugger UI. | Debugger command/output regression and full-PC gate. |
 | T79 | Map keyboard, execution, wait, display mailbox, and host-surface ownership before runtime changes. | Approved C1--C6 order, entry-point inventory, and focused gates; no artifact. |
 | T80 | Remove platform-state facades in ordered cutovers: C1 Console threads; C2 window threads; C3 Linux thread shape; C4 frame mailbox; C5 mode and handles; C6 scoped wait provider. | Each cutover has its own subtask and regression. C1 requires Console command, keyboard transport, and FDD DOS-prompt gates. |
-| T81 | Delete the old block facade only if T75 proves it has no production caller; close the facade scan. | Static closure scan, all Story 1 regressions, `nxvm_0_5_0081.exe` if a runnable path changes. |
+| T81 | Delete every legacy facade proven to have no production caller; close the facade scan. | Static closure scan, all Story 1 regressions, `nxvm_0_5_0081.exe`. |
 
 ## Story 2: Make Core Machine The True Executor
 

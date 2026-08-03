@@ -14,15 +14,9 @@ extern "C" {
 #include "type.h"
 #include "vm/platform/platform.h"
 
-typedef vm_platform_keyboard_state_sink nxvm_win32_keyboard_state_sink;
-
-VOID win32KeyboardMakeStatus();
-VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey);
 VOID win32KeyboardMakeStatusFor(const vm_platform_run_context *context);
 VOID win32KeyboardMakeKeyFor(const vm_platform_run_context *context,
                              UCHAR scanCode, UCHAR virtualKey);
-void win32KeyboardBindStateSink(nxvm_win32_keyboard_state_sink sink,
-                                void *opaque);
 
 #define win32Sleep Sleep
 VOID win32DisplaySetScreen(BOOL flagWindow,
