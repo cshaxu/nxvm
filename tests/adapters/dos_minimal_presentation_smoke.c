@@ -10,8 +10,8 @@ C_INT main(C_VOID)
     vdm_session *second = STD_NULL;
     vdm_presentation *first_presentation = STD_NULL;
     vdm_presentation *second_presentation = STD_NULL;
-    nxvm_platform_input_event first_event = { 42u, 0x1eu };
-    nxvm_platform_input_event second_event = { 43u, 0x30u };
+    vdm_composition_input_event first_event = { 42u, 0x1eu };
+    vdm_composition_input_event second_event = { 43u, 0x30u };
     vdm_presentation_snapshot first_snapshot;
     vdm_presentation_snapshot second_snapshot;
     uint32_t key;

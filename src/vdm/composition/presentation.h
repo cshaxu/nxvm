@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-#include "core/platform/presentation.h"
+#include "vdm/composition/input_event.h"
 
 #include "vdm/composition/session.h"
 
@@ -23,7 +23,7 @@ ntvdm64_status vdm_presentation_create(
     vdm_presentation **out_presentation);
 ntvdm64_status vdm_presentation_enqueue_input(
     vdm_presentation *presentation,
-    nxvm_platform_input_event event);
+    vdm_composition_input_event event);
 ntvdm64_status vdm_presentation_apply_input(
     vdm_presentation *presentation);
 ntvdm64_status vdm_presentation_capture_text(

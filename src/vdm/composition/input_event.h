@@ -1,5 +1,5 @@
-#ifndef NXVM_PLATFORM_PRESENTATION_H
-#define NXVM_PLATFORM_PRESENTATION_H
+#ifndef NTVDM64_VDM_COMPOSITION_INPUT_EVENT_H
+#define NTVDM64_VDM_COMPOSITION_INPUT_EVENT_H
 
 #include "type.h"
 
@@ -7,10 +7,10 @@
 extern "C" {
 #endif
 
-typedef struct nxvm_platform_input_event {
+typedef struct vdm_composition_input_event {
     uint64_t timestamp;
     uint8_t scan_code;
-} nxvm_platform_input_event;
+} vdm_composition_input_event;
 
 #ifdef __cplusplus
 }

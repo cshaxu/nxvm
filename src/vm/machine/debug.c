@@ -154,7 +154,7 @@ C_VOID vm_machine_debug_refresh(t_debug *debug) {
             debug->data.traceCount--;
         }
     }
-    /* TODO: xasmTest(); */
+    /* TODO(Medium): Add a dedicated assembler regression target. */
     /* dump cpu status before execution */
     if (debug->connect.recordFile) {
         ntvdm64_type_native_unsigned i;

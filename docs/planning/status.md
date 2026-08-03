@@ -264,6 +264,12 @@ execution-context CPU/RAM/port aliases are removed. Root composition directly
 borrows core-owned capabilities only for actual binding/debug-target assembly;
 the execution context holds its explicit `vm_session*` callback owner.
 
+**M5 T143 complete:** isolated VM product models and their fixture-only CMake
+targets are deleted; the VDM-only input event is correctly owned by
+`vdm/composition`; source TODOs are priority-tagged and ledgered; current
+artifact/gates are `0.5.0143`; generated build products are removed outside
+`build/output/`.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in
