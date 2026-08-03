@@ -126,6 +126,7 @@ M5 T87 through T95 close the remaining module-by-module session-readiness
 work under [`planning/m5-session-readiness.md`](m5-session-readiness.md).
 That plan fixes the closure order as core/VM/VDM machine, platform, product,
 then root composition; profiles remain immutable cross-cutting checks.
+T96 repairs the retained Console lifecycle regression found after that closure.
 
 **Compatibility gate:** M5 must not alter NXVM functionality or user experience.
 Any unavoidable user-visible change requires explicit owner approval before

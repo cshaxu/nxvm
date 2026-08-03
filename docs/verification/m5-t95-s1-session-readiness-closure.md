@@ -49,3 +49,10 @@ thread-local target scope instead of assuming the removed process-global target.
 
 This closes session readiness only. It authorizes no VDM CLI, host integration,
 or multi-session product UX; those remain later milestone work.
+
+## Correction
+
+T96 found that the task artifacts built after T91 could fault on the first
+retained Console command because their embedded Console context was rebuilt.
+Artifacts `0.5.0092` through `0.5.0095` are revoked; T96 adds the command
+lifecycle gate and supplies `0.5.0096` as the replacement.

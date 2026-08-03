@@ -6,7 +6,7 @@
 
 void vm_composition_live_machine_initialize(vm_composition_live_machine *machine)
 {
-    if (machine == NULL) return;
+    if (machine == NULL || machine->core_machine != NULL) return;
     {
         core_machine_config config = {0};
 
@@ -89,7 +89,8 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
 
 void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
 {
-    if (machine == NULL) return;
+    if (machine == NULL || machine->core_machine == NULL) return;
+    core_machine_cpu_execution_context_bind_extension(machine->cpu_execution, NULL);
     machine->cpu = NULL;
     machine->cpuins = NULL;
     machine->cpu_execution = NULL;
@@ -110,7 +111,6 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     machine->debug = NULL;
     machine->default_bios = NULL;
     machine->default_qdx = NULL;
-    core_machine_cpu_execution_context_bind_extension(machine->cpu_execution, NULL);
     machine->default_profile_context = NULL;
     core_machine_block_provider_slot_finalize(machine->block_provider);
     machine->block_provider = NULL;

@@ -69,6 +69,10 @@ T87 is design and governance only. T88--T95 each change a runnable path only
 when its scoped module has an implementation; such tasks produce the matching
 task artifact. This plan does not begin M6 or implement a VDM CLI.
 
+T96 is a post-closure retained-Console regression repair. It preserves the
+session model by making live-machine initialization single-lifetime and adds a
+real Console command lifecycle gate; it does not expand M6 or VDM scope.
+
 ## Guardrails
 
 - VM/VDM root composition owns session construction, host threads, and
