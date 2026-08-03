@@ -1,17 +1,32 @@
 #include "vm/composition_live_machine.h"
 
+#include "core/machine/machine.h"
+
 #include <stdlib.h>
 
 void vm_composition_live_machine_initialize(vm_composition_live_machine *machine)
 {
     if (machine == NULL) return;
-    machine->ram = &machine->ram_storage;
-    machine->port = &machine->port_storage;
-    machine->cpu = &machine->cpu_storage;
-    machine->cpuins = &machine->cpuins_storage;
-    machine->cpu_execution = &machine->cpu_execution_storage;
-    core_machine_cpu_execution_context_initialize(machine->cpu_execution,
-        machine->cpu, machine->cpuins, machine->ram, machine->port);
+    {
+        core_machine_config config = {0};
+
+        config.profile = CORE_MACHINE_PROFILE_CUSTOM;
+        if (core_machine_create(&config, &machine->core_machine) !=
+                NXVM_CORE_STATUS_OK ||
+            core_machine_enable_legacy_executor(machine->core_machine) !=
+                NXVM_CORE_STATUS_OK) {
+            core_machine_destroy(machine->core_machine);
+            machine->core_machine = NULL;
+            return;
+        }
+    }
+    machine->ram = core_machine_legacy_memory_borrow(machine->core_machine);
+    machine->port = core_machine_legacy_port_borrow(machine->core_machine);
+    machine->cpu = core_machine_legacy_cpu_borrow(machine->core_machine);
+    machine->cpuins = core_machine_legacy_cpu_instructions_borrow(
+        machine->core_machine);
+    machine->cpu_execution = core_machine_legacy_cpu_execution_borrow(
+        machine->core_machine);
     machine->pic_master = &machine->pic_master_storage;
     machine->pic_slave = &machine->pic_slave_storage;
     core_machine_cpu_execution_context_bind_pic(machine->cpu_execution,
@@ -94,4 +109,6 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     machine->platform_run_context = NULL;
     free(machine->control);
     machine->control = NULL;
+    core_machine_destroy(machine->core_machine);
+    machine->core_machine = NULL;
 }

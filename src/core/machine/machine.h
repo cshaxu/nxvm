@@ -6,7 +6,10 @@
 #include <stdint.h>
 
 #include "core/machine/cpu.h"
+#include "core/machine/cpu_instructions.h"
 #include "core/machine/machine_interface.h"
+#include "core/machine/memory.h"
+#include "core/machine/port.h"
 
 #define CORE_MACHINE_TRACE_CAPACITY 32u
 
@@ -46,6 +49,12 @@ struct core_machine {
     core_machine_memory memory;
     core_machine_port_table ports;
     core_machine_trace_state trace;
+    t_cpu legacy_cpu;
+    t_cpuins legacy_cpu_instructions;
+    core_machine_cpu_execution_context legacy_cpu_execution;
+    t_ram legacy_memory;
+    t_port legacy_port;
+    int legacy_executor_enabled;
 };
 
 nxvm_core_status core_machine_cpu_reset(core_machine *machine);
@@ -62,5 +71,12 @@ void core_machine_trace_record(
     uint32_t address,
     uint32_t value,
     uint32_t detail);
+nxvm_core_status core_machine_enable_legacy_executor(core_machine *machine);
+t_cpu *core_machine_legacy_cpu_borrow(core_machine *machine);
+t_cpuins *core_machine_legacy_cpu_instructions_borrow(core_machine *machine);
+core_machine_cpu_execution_context *core_machine_legacy_cpu_execution_borrow(
+    core_machine *machine);
+t_ram *core_machine_legacy_memory_borrow(core_machine *machine);
+t_port *core_machine_legacy_port_borrow(core_machine *machine);
 
 #endif
