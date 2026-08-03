@@ -50,8 +50,14 @@ C_INT main(C_VOID)
         id != 0u ||
         core_product_session_manager_get_selected_id(manager, &id) != NTVDM64_STATUS_OK ||
         id != 0u ||
+        core_product_session_manager_open(manager, &id) != NTVDM64_STATUS_OK || id != 1u ||
+        core_product_session_manager_select(manager, 1u) != NTVDM64_STATUS_OK ||
+        core_product_session_manager_close(manager, 1u) != NTVDM64_STATUS_OK ||
+        core_product_session_manager_get_selected_id(manager, &id) != NTVDM64_STATUS_OK ||
+        id != 0u ||
         core_product_session_manager_list(manager, &snapshot, 1u, &count) != NTVDM64_STATUS_OK ||
-        count != 1u || snapshot.id != 0u || !snapshot.selected) {
+        count != 1u || snapshot.id != 0u || !snapshot.selected ||
+        core_product_session_manager_close(manager, 0u) != NTVDM64_STATUS_INVALID_STATE) {
         core_product_session_manager_destroy(manager);
         return 1;
     }

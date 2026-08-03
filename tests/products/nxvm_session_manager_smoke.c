@@ -22,6 +22,11 @@ C_INT main(C_VOID)
         core_product_session_manager_select(manager, 1u) != NTVDM64_STATUS_OK ||
         core_product_session_manager_borrow_selected(manager, &second) != NTVDM64_STATUS_OK ||
         first == second ||
+        core_product_session_manager_close(manager, 1u) != NTVDM64_STATUS_OK ||
+        core_product_session_manager_get_selected_id(manager, &id) != NTVDM64_STATUS_OK ||
+        id != 0u ||
+        core_product_session_manager_open(manager, &id) != NTVDM64_STATUS_OK || id != 1u ||
+        core_product_session_manager_select(manager, 1u) != NTVDM64_STATUS_OK ||
         core_product_session_manager_list(manager, snapshots, 2u, &count) != NTVDM64_STATUS_OK ||
         count != 2u || snapshots[0].id != 0u || snapshots[0].selected ||
         snapshots[1].id != 1u || !snapshots[1].selected) {

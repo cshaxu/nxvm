@@ -95,6 +95,30 @@ ntvdm64_status core_product_session_manager_open(
     return NTVDM64_STATUS_OK;
 }
 
+ntvdm64_status core_product_session_manager_close(
+    core_product_session_manager *manager, core_product_session_id id)
+{
+    STD_SIZE_T index;
+    ntvdm64_status status;
+
+    if (manager == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    /* A product-visible manager is never allowed to become empty. */
+    if (manager->count <= 1u) return NTVDM64_STATUS_INVALID_STATE;
+    if (!core_product_session_manager_find(manager, id, &index)) {
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
+    }
+    status = manager->provider.close(manager->provider.context,
+        manager->entries[index].session);
+    if (status != NTVDM64_STATUS_OK) return status;
+    if (index + 1u < manager->count) {
+        STD_MEMCPY(&manager->entries[index], &manager->entries[index + 1u],
+            (manager->count - index - 1u) * sizeof(*manager->entries));
+    }
+    --manager->count;
+    if (manager->selected_id == id) manager->selected_id = manager->entries[0].id;
+    return NTVDM64_STATUS_OK;
+}
+
 ntvdm64_status core_product_session_manager_select(
     core_product_session_manager *manager, core_product_session_id id)
 {
