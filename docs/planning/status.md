@@ -254,9 +254,12 @@ gates with `nxvm_0_5_0139.exe`.
 sole-destroyer source structure. Native POSIX compilation and runtime evidence
 remain a designated POSIX-environment handoff.
 
-**M5 T141 active:** remove the historical core profile/executor selection, then
-move all remaining core-owned device lifecycle out of VM composition in bounded
-device-family gates.
+**M5 T141 complete:** core now owns one standard executor and the full shared
+device lifecycle. Windows GCC core, VDM, debugger, session, Console, and FDD
+DOS-prompt gates pass with `nxvm_0_5_0141.exe`.
+
+**M5 T142 active:** replace the VM session raw aliases to core storage with
+bounded composition, provider, and debugger access contracts.
 
 ## Short-Term M5 Plan
 

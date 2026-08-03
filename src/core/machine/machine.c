@@ -25,31 +25,22 @@ t_ram *core_machine_executor_memory_borrow(core_machine *machine)
 t_port *core_machine_executor_port_borrow(core_machine *machine)
 { return machine != STD_NULL ? &machine->executor_port : STD_NULL; }
 
-ntvdm64_status core_machine_enable_shared_devices(core_machine *machine)
-{
-    if (machine == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_STATE;
-    }
-    machine->shared_devices_enabled = 1;
-    return NTVDM64_STATUS_OK;
-}
-
 t_pic *core_machine_shared_pic_master_borrow(core_machine *machine)
-{ return machine != STD_NULL && machine->shared_devices_enabled ? &machine->shared_pic_master : STD_NULL; }
+{ return machine != STD_NULL ? &machine->shared_pic_master : STD_NULL; }
 t_pic *core_machine_shared_pic_slave_borrow(core_machine *machine)
-{ return machine != STD_NULL && machine->shared_devices_enabled ? &machine->shared_pic_slave : STD_NULL; }
+{ return machine != STD_NULL ? &machine->shared_pic_slave : STD_NULL; }
 t_pit *core_machine_shared_pit_borrow(core_machine *machine)
-{ return machine != STD_NULL && machine->shared_devices_enabled ? &machine->shared_pit : STD_NULL; }
+{ return machine != STD_NULL ? &machine->shared_pit : STD_NULL; }
 t_latch *core_machine_shared_dma_latch_borrow(core_machine *machine)
-{ return machine != STD_NULL && machine->shared_devices_enabled ? &machine->shared_dma_latch : STD_NULL; }
+{ return machine != STD_NULL ? &machine->shared_dma_latch : STD_NULL; }
 t_dma *core_machine_shared_dma_primary_borrow(core_machine *machine)
-{ return machine != STD_NULL && machine->shared_devices_enabled ? &machine->shared_dma_primary : STD_NULL; }
+{ return machine != STD_NULL ? &machine->shared_dma_primary : STD_NULL; }
 t_dma *core_machine_shared_dma_secondary_borrow(core_machine *machine)
-{ return machine != STD_NULL && machine->shared_devices_enabled ? &machine->shared_dma_secondary : STD_NULL; }
+{ return machine != STD_NULL ? &machine->shared_dma_secondary : STD_NULL; }
 t_kbc *core_machine_shared_kbc_borrow(core_machine *machine)
-{ return machine != STD_NULL && machine->shared_devices_enabled ? &machine->shared_kbc : STD_NULL; }
+{ return machine != STD_NULL ? &machine->shared_kbc : STD_NULL; }
 t_vadp *core_machine_shared_vadp_borrow(core_machine *machine)
-{ return machine != STD_NULL && machine->shared_devices_enabled ? &machine->shared_vadp : STD_NULL; }
+{ return machine != STD_NULL ? &machine->shared_vadp : STD_NULL; }
 
 ntvdm64_status core_machine_bind_execution_provider(core_machine *machine,
     const core_machine_execution_provider *provider, C_VOID *context)
@@ -123,6 +114,17 @@ ntvdm64_status core_machine_create(
     core_machine_memory_initialize(&machine->executor_memory);
     core_machine_memory_register_ports(&machine->executor_memory,
         &machine->executor_port);
+    core_machine_vadp_initialize(&machine->shared_vadp);
+    core_machine_kbc_initialize(&machine->shared_kbc, &machine->executor_port);
+    core_machine_dma_initialize(&machine->shared_dma_latch,
+        &machine->shared_dma_primary, &machine->shared_dma_secondary,
+        &machine->executor_port);
+    core_machine_pit_initialize(&machine->shared_pit, &machine->executor_port);
+    core_machine_pit_set_output(&machine->shared_pit, 0,
+        core_machine_pic_timer_output, &machine->shared_pic_master);
+    core_machine_pic_initialize(&machine->shared_pic_master,
+        &machine->shared_pic_slave, &machine->executor_port);
+    core_machine_pit_set_output(&machine->shared_pit, 1, STD_NULL, STD_NULL);
 
     *out_machine = machine;
 
@@ -142,15 +144,13 @@ ntvdm64_status core_machine_reset(core_machine *machine)
     core_machine_cpu_state_reset(&machine->executor_cpu_execution);
     core_machine_port_reset(&machine->executor_port);
     core_machine_memory_reset(&machine->executor_memory);
-    if (machine->shared_devices_enabled) {
-        core_machine_kbc_reset(&machine->shared_kbc);
-        core_machine_dma_reset(&machine->shared_dma_latch,
-            &machine->shared_dma_primary, &machine->shared_dma_secondary);
-        core_machine_pic_reset(&machine->shared_pic_master,
-            &machine->shared_pic_slave);
-        core_machine_pit_reset(&machine->shared_pit);
-        core_machine_vadp_reset(&machine->shared_vadp);
-    }
+    core_machine_kbc_reset(&machine->shared_kbc);
+    core_machine_dma_reset(&machine->shared_dma_latch,
+        &machine->shared_dma_primary, &machine->shared_dma_secondary);
+    core_machine_pic_reset(&machine->shared_pic_master,
+        &machine->shared_pic_slave);
+    core_machine_pit_reset(&machine->shared_pit);
+    core_machine_vadp_reset(&machine->shared_vadp);
 
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
     machine->fault_detail = 0u;
@@ -244,16 +244,14 @@ ntvdm64_status core_machine_run(
                 machine->execution_provider->refresh(
                     machine->execution_provider_context);
             }
-            if (machine->shared_devices_enabled) {
-                core_machine_kbc_refresh(&machine->shared_kbc);
-                core_machine_vadp_refresh(&machine->shared_vadp);
-                core_machine_dma_refresh(&machine->shared_dma_latch,
-                    &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                    &machine->executor_memory);
-                core_machine_pic_refresh(&machine->shared_pic_master,
-                    &machine->shared_pic_slave);
-                core_machine_pit_refresh(&machine->shared_pit);
-            }
+            core_machine_kbc_refresh(&machine->shared_kbc);
+            core_machine_vadp_refresh(&machine->shared_vadp);
+            core_machine_dma_refresh(&machine->shared_dma_latch,
+                &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                &machine->executor_memory);
+            core_machine_pic_refresh(&machine->shared_pic_master,
+                &machine->shared_pic_slave);
+            core_machine_pit_refresh(&machine->shared_pit);
             core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
             ++result->executed;
         }
@@ -299,6 +297,13 @@ ntvdm64_status core_machine_report_fault(
 C_VOID core_machine_destroy(core_machine *machine)
 {
     if (machine != STD_NULL) {
+        core_machine_dma_finalize(&machine->shared_dma_latch,
+            &machine->shared_dma_primary, &machine->shared_dma_secondary);
+        core_machine_kbc_finalize(&machine->shared_kbc);
+        core_machine_pic_finalize(&machine->shared_pic_master,
+            &machine->shared_pic_slave);
+        core_machine_pit_finalize(&machine->shared_pit);
+        core_machine_vadp_finalize(&machine->shared_vadp);
         core_machine_cpu_execution_finalize(&machine->executor_cpu_execution);
         core_machine_port_finalize(&machine->executor_port);
         core_machine_memory_finalize(&machine->executor_memory);

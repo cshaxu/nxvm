@@ -67,7 +67,6 @@ struct core_machine {
     t_dma shared_dma_secondary;
     t_kbc shared_kbc;
     t_vadp shared_vadp;
-    C_INT shared_devices_enabled;
     const core_machine_execution_provider *execution_provider;
     C_VOID *execution_provider_context;
     C_INT execution_provider_frozen;
@@ -89,7 +88,6 @@ core_machine_cpu_execution_context *core_machine_executor_cpu_execution_borrow(
     core_machine *machine);
 t_ram *core_machine_executor_memory_borrow(core_machine *machine);
 t_port *core_machine_executor_port_borrow(core_machine *machine);
-ntvdm64_status core_machine_enable_shared_devices(core_machine *machine);
 t_pic *core_machine_shared_pic_master_borrow(core_machine *machine);
 t_pic *core_machine_shared_pic_slave_borrow(core_machine *machine);
 t_pit *core_machine_shared_pit_borrow(core_machine *machine);

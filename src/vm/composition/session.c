@@ -65,12 +65,6 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
         machine->core_machine);
     machine->cpu_execution = core_machine_executor_cpu_execution_borrow(
         machine->core_machine);
-    if (core_machine_enable_shared_devices(machine->core_machine) !=
-        NTVDM64_STATUS_OK) {
-        core_machine_destroy(machine->core_machine);
-        machine->core_machine = STD_NULL;
-        return;
-    }
     machine->pic_master = core_machine_shared_pic_master_borrow(
         machine->core_machine);
     machine->pic_slave = core_machine_shared_pic_slave_borrow(
