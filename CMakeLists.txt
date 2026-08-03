@@ -467,10 +467,10 @@ add_executable(nxvm-vm-core-executor-storage-smoke
 )
 target_link_libraries(nxvm-vm-core-executor-storage-smoke PRIVATE
     nxvm-vm-composition)
-add_executable(nxvm-core-legacy-run-smoke
-    tests/machine/core_machine_legacy_run_smoke.c
+add_executable(nxvm-core-executor-run-smoke
+    tests/machine/core_machine_executor_run_smoke.c
 )
-target_link_libraries(nxvm-core-legacy-run-smoke PRIVATE
+target_link_libraries(nxvm-core-executor-run-smoke PRIVATE
     nxvm-core
     nxvm-core-machine
 )
@@ -553,7 +553,7 @@ function(add_nxvm_full_pc_artifact target suffix)
         message(FATAL_ERROR "Invalid NXVM task artifact suffix: ${suffix}")
     endif()
 
-    add_executable(${target} src/vm/main.c)
+    add_executable(${target} EXCLUDE_FROM_ALL src/vm/main.c)
     target_compile_definitions(${target} PRIVATE "NXVM_BUILD_SUFFIX=\"${suffix}\"")
     target_include_directories(${target} PRIVATE
         "${CMAKE_SOURCE_DIR}/src")
@@ -583,7 +583,7 @@ function(add_nxvm_version_artifact target version)
         message(FATAL_ERROR "Invalid NXVM task artifact version: ${version}")
     endif()
 
-    add_executable(${target} src/vm/main.c)
+    add_executable(${target} EXCLUDE_FROM_ALL src/vm/main.c)
     target_compile_definitions(${target} PRIVATE "NXVM_BUILD_SUFFIX=\"${version}\"")
     target_include_directories(${target} PRIVATE
         "${CMAKE_SOURCE_DIR}/src")
@@ -758,7 +758,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-runtime-registry-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-core-legacy-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-core-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-vdm-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-vdm-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-vdm-composition PRIVATE -Wall -Wextra -Wpedantic -Werror)

@@ -47,17 +47,16 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
 ## Active Work
 
-**M5 T86 S1: Executor closure.** Delete parallel-machine remnants and prove
-that NXVM guest execution only enters through `core_machine_run()`.
+**No implementation subtask is active.** M5 Story 2 is complete: NXVM guest
+execution enters through `core_machine_run()`; any wider M5 exit audit needs a
+separately authorized task.
 
 ## Short-Term M5 Plan
 
-The current M5 sequence is defined in
-[Facade And Executor Convergence](m5-facade-executor-convergence.md). T79
-closed the entry-point map for Story 1. T80 has completed C1--C6 and published
-its task artifact. T81 closed the residual facade scan and published its
-`core_machine` the one true guest executor while VM retains the outer product
-loop.
+The completed M5 convergence sequence is defined in
+[Facade And Executor Convergence](m5-facade-executor-convergence.md). It
+leaves `core_machine` as the one true guest executor while VM retains the outer
+product loop.
 
 M6 T1 remains deferred until this M5 sequence closes. M7 implementation remains
 ineligible until M6 defines and closes its implementation breakdown.

@@ -4,8 +4,8 @@
 
 static uint32_t core_machine_linear_pc(const core_machine *machine)
 {
-    if (machine->legacy_executor_enabled) {
-        return machine->legacy_cpu.data.cs.base + machine->legacy_cpu.data.eip;
+    if (machine->executor_enabled) {
+        return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
     }
     return machine->cpu.state.cs_base + machine->cpu.state.eip;
 }
@@ -16,40 +16,40 @@ static int core_machine_profile_is_supported(core_machine_profile profile)
            profile == CORE_MACHINE_PROFILE_TEST_MINIMAL;
 }
 
-nxvm_core_status core_machine_enable_legacy_executor(core_machine *machine)
+nxvm_core_status core_machine_enable_executor(core_machine *machine)
 {
     if (machine == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
-    if (machine->legacy_executor_enabled) return NXVM_CORE_STATUS_OK;
+    if (machine->executor_enabled) return NXVM_CORE_STATUS_OK;
     if (machine->lifecycle == CORE_MACHINE_RUNNING) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
-    core_machine_cpu_execution_context_initialize(&machine->legacy_cpu_execution,
-        &machine->legacy_cpu, &machine->legacy_cpu_instructions,
-        &machine->legacy_memory, &machine->legacy_port);
-    machine->legacy_executor_enabled = 1;
+    core_machine_cpu_execution_context_initialize(&machine->executor_cpu_execution,
+        &machine->executor_cpu, &machine->executor_cpu_instructions,
+        &machine->executor_memory, &machine->executor_port);
+    machine->executor_enabled = 1;
     machine->lifecycle = CORE_MACHINE_PAUSED;
     return NXVM_CORE_STATUS_OK;
 }
 
-t_cpu *core_machine_legacy_cpu_borrow(core_machine *machine)
-{ return machine != NULL && machine->legacy_executor_enabled ? &machine->legacy_cpu : NULL; }
+t_cpu *core_machine_executor_cpu_borrow(core_machine *machine)
+{ return machine != NULL && machine->executor_enabled ? &machine->executor_cpu : NULL; }
 
-t_cpuins *core_machine_legacy_cpu_instructions_borrow(core_machine *machine)
-{ return machine != NULL && machine->legacy_executor_enabled ? &machine->legacy_cpu_instructions : NULL; }
+t_cpuins *core_machine_executor_cpu_instructions_borrow(core_machine *machine)
+{ return machine != NULL && machine->executor_enabled ? &machine->executor_cpu_instructions : NULL; }
 
-core_machine_cpu_execution_context *core_machine_legacy_cpu_execution_borrow(
+core_machine_cpu_execution_context *core_machine_executor_cpu_execution_borrow(
     core_machine *machine)
-{ return machine != NULL && machine->legacy_executor_enabled ? &machine->legacy_cpu_execution : NULL; }
+{ return machine != NULL && machine->executor_enabled ? &machine->executor_cpu_execution : NULL; }
 
-t_ram *core_machine_legacy_memory_borrow(core_machine *machine)
-{ return machine != NULL && machine->legacy_executor_enabled ? &machine->legacy_memory : NULL; }
+t_ram *core_machine_executor_memory_borrow(core_machine *machine)
+{ return machine != NULL && machine->executor_enabled ? &machine->executor_memory : NULL; }
 
-t_port *core_machine_legacy_port_borrow(core_machine *machine)
-{ return machine != NULL && machine->legacy_executor_enabled ? &machine->legacy_port : NULL; }
+t_port *core_machine_executor_port_borrow(core_machine *machine)
+{ return machine != NULL && machine->executor_enabled ? &machine->executor_port : NULL; }
 
 nxvm_core_status core_machine_enable_shared_devices(core_machine *machine)
 {
-    if (machine == NULL || !machine->legacy_executor_enabled) {
+    if (machine == NULL || !machine->executor_enabled) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
     machine->shared_devices_enabled = 1;
@@ -119,12 +119,12 @@ nxvm_core_status core_machine_get_cpu_state(
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
 
-    if (machine->legacy_executor_enabled) {
-        out_state->cs = machine->legacy_cpu.data.cs.selector;
-        out_state->cs_base = machine->legacy_cpu.data.cs.base;
-        out_state->eip = machine->legacy_cpu.data.eip;
-        out_state->eflags = machine->legacy_cpu.data.eflags;
-        out_state->halted = machine->legacy_cpu.data.flagHalt;
+    if (machine->executor_enabled) {
+        out_state->cs = machine->executor_cpu.data.cs.selector;
+        out_state->cs_base = machine->executor_cpu.data.cs.base;
+        out_state->eip = machine->executor_cpu.data.eip;
+        out_state->eflags = machine->executor_cpu.data.eflags;
+        out_state->halted = machine->executor_cpu.data.flagHalt;
     } else {
         *out_state = machine->cpu.state;
     }
@@ -185,8 +185,8 @@ nxvm_core_status core_machine_reset(core_machine *machine)
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
 
-    if (machine->legacy_executor_enabled) {
-        core_machine_cpu_state_reset(&machine->legacy_cpu_execution);
+    if (machine->executor_enabled) {
+        core_machine_cpu_state_reset(&machine->executor_cpu_execution);
         if (machine->shared_devices_enabled) {
             core_machine_kbc_reset(&machine->shared_kbc);
             core_machine_dma_reset(&machine->shared_dma_latch,
@@ -194,9 +194,9 @@ nxvm_core_status core_machine_reset(core_machine *machine)
             core_machine_pic_reset(&machine->shared_pic_master,
                 &machine->shared_pic_slave);
             core_machine_pit_reset(&machine->shared_pit);
-            core_machine_port_reset(&machine->legacy_port);
+            core_machine_port_reset(&machine->executor_port);
             core_machine_vadp_reset(&machine->shared_vadp);
-            core_machine_memory_reset(&machine->legacy_memory);
+            core_machine_memory_reset(&machine->executor_memory);
         }
     } else if (core_machine_cpu_reset(machine) != NXVM_CORE_STATUS_OK ||
                core_machine_instance_memory_reset(machine) !=
@@ -264,13 +264,13 @@ nxvm_core_status core_machine_run(
     }
 
     machine->lifecycle = CORE_MACHINE_RUNNING;
-    if (machine->legacy_executor_enabled) {
+    if (machine->executor_enabled) {
         uint64_t limit = budget.instructions == 0u ? 1u : budget.instructions;
 
         while (result->executed < limit) {
             if (atomic_load(&machine->stop_requested) ||
                 core_machine_cpu_execution_consume_stop_request(
-                    &machine->legacy_cpu_execution)) {
+                    &machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_STOPPED;
                 result->reason = CORE_MACHINE_STOP_REQUESTED;
                 result->linear_pc = core_machine_linear_pc(machine);
@@ -279,13 +279,13 @@ nxvm_core_status core_machine_run(
                 return NXVM_CORE_STATUS_OK;
             }
             if (core_machine_cpu_execution_consume_reset_request(
-                    &machine->legacy_cpu_execution)) {
+                    &machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_RESET_REQUESTED;
                 result->linear_pc = core_machine_linear_pc(machine);
                 return NXVM_CORE_STATUS_OK;
             }
-            if (machine->legacy_cpu.data.flagHalt) {
+            if (machine->executor_cpu.data.flagHalt) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                 result->linear_pc = core_machine_linear_pc(machine);
@@ -301,12 +301,12 @@ nxvm_core_status core_machine_run(
                 core_machine_vadp_refresh(&machine->shared_vadp);
                 core_machine_dma_refresh(&machine->shared_dma_latch,
                     &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                    &machine->legacy_memory);
+                    &machine->executor_memory);
                 core_machine_pic_refresh(&machine->shared_pic_master,
                     &machine->shared_pic_slave);
                 core_machine_pit_refresh(&machine->shared_pit);
             }
-            core_machine_cpu_execution_refresh(&machine->legacy_cpu_execution);
+            core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
             ++result->executed;
         }
         machine->lifecycle = CORE_MACHINE_PAUSED;

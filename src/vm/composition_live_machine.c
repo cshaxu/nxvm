@@ -13,19 +13,19 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
         config.profile = CORE_MACHINE_PROFILE_CUSTOM;
         if (core_machine_create(&config, &machine->core_machine) !=
                 NXVM_CORE_STATUS_OK ||
-            core_machine_enable_legacy_executor(machine->core_machine) !=
+            core_machine_enable_executor(machine->core_machine) !=
                 NXVM_CORE_STATUS_OK) {
             core_machine_destroy(machine->core_machine);
             machine->core_machine = NULL;
             return;
         }
     }
-    machine->ram = core_machine_legacy_memory_borrow(machine->core_machine);
-    machine->port = core_machine_legacy_port_borrow(machine->core_machine);
-    machine->cpu = core_machine_legacy_cpu_borrow(machine->core_machine);
-    machine->cpuins = core_machine_legacy_cpu_instructions_borrow(
+    machine->ram = core_machine_executor_memory_borrow(machine->core_machine);
+    machine->port = core_machine_executor_port_borrow(machine->core_machine);
+    machine->cpu = core_machine_executor_cpu_borrow(machine->core_machine);
+    machine->cpuins = core_machine_executor_cpu_instructions_borrow(
         machine->core_machine);
-    machine->cpu_execution = core_machine_legacy_cpu_execution_borrow(
+    machine->cpu_execution = core_machine_executor_cpu_execution_borrow(
         machine->core_machine);
     if (core_machine_enable_shared_devices(machine->core_machine) !=
         NXVM_CORE_STATUS_OK) {
