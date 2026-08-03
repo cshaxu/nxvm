@@ -5,22 +5,22 @@
 #include "vdm/machine/dos_minimal.h"
 #include "vdm/profile/dos_minimal_profile.h"
 
-struct ntvdm64_vdm_minimal_session {
+struct vdm_composition_minimal_session {
     const core_product_runtime_profile_descriptor *profile;
     core_product_runtime_dos_minimal *dos_minimal;
 };
 
-ntvdm64_status ntvdm64_vdm_minimal_session_create(
-    ntvdm64_vdm_minimal_session **out_session)
+ntvdm64_status vdm_composition_minimal_session_create(
+    vdm_composition_minimal_session **out_session)
 {
-    ntvdm64_vdm_minimal_session *session;
+    vdm_composition_minimal_session *session;
     ntvdm64_status status;
 
     if (out_session == NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     *out_session = NULL;
-    session = (ntvdm64_vdm_minimal_session *)calloc(1u, sizeof(*session));
+    session = (vdm_composition_minimal_session *)calloc(1u, sizeof(*session));
     if (session == NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
@@ -34,8 +34,8 @@ ntvdm64_status ntvdm64_vdm_minimal_session_create(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status ntvdm64_vdm_minimal_session_reset(
-    ntvdm64_vdm_minimal_session *session)
+ntvdm64_status vdm_composition_minimal_session_reset(
+    vdm_composition_minimal_session *session)
 {
     if (session == NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
@@ -43,13 +43,13 @@ ntvdm64_status ntvdm64_vdm_minimal_session_reset(
     return core_product_runtime_dos_minimal_reset(session->dos_minimal);
 }
 
-const core_product_runtime_profile_descriptor *ntvdm64_vdm_minimal_session_profile(
-    const ntvdm64_vdm_minimal_session *session)
+const core_product_runtime_profile_descriptor *vdm_composition_minimal_session_profile(
+    const vdm_composition_minimal_session *session)
 {
     return session == NULL ? NULL : session->profile;
 }
 
-void ntvdm64_vdm_minimal_session_destroy(ntvdm64_vdm_minimal_session *session)
+void vdm_composition_minimal_session_destroy(vdm_composition_minimal_session *session)
 {
     if (session != NULL) {
         core_product_runtime_dos_minimal_destroy(session->dos_minimal);

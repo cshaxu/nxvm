@@ -4,23 +4,23 @@
 
 #define NXVM_DOS_MINIMAL_INPUT_CAPACITY 32u
 
-struct nxvm_dos_minimal_presentation {
+struct vdm_composition_presentation {
     core_product_runtime_dos_minimal *session;
     nxvm_platform_input_event input[NXVM_DOS_MINIMAL_INPUT_CAPACITY];
     unsigned count;
 };
 
-ntvdm64_status nxvm_dos_minimal_presentation_create(
+ntvdm64_status vdm_composition_presentation_create(
     core_product_runtime_dos_minimal *session,
-    nxvm_dos_minimal_presentation **out_presentation)
+    vdm_composition_presentation **out_presentation)
 {
-    nxvm_dos_minimal_presentation *presentation;
+    vdm_composition_presentation *presentation;
 
     if (session == NULL || out_presentation == NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     *out_presentation = NULL;
-    presentation = (nxvm_dos_minimal_presentation *)calloc(1u,
+    presentation = (vdm_composition_presentation *)calloc(1u,
                                                             sizeof(*presentation));
     if (presentation == NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
@@ -30,8 +30,8 @@ ntvdm64_status nxvm_dos_minimal_presentation_create(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status nxvm_dos_minimal_presentation_enqueue_input(
-    nxvm_dos_minimal_presentation *presentation,
+ntvdm64_status vdm_composition_presentation_enqueue_input(
+    vdm_composition_presentation *presentation,
     nxvm_platform_input_event event)
 {
     if (presentation == NULL) {
@@ -44,8 +44,8 @@ ntvdm64_status nxvm_dos_minimal_presentation_enqueue_input(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status nxvm_dos_minimal_presentation_apply_input(
-    nxvm_dos_minimal_presentation *presentation)
+ntvdm64_status vdm_composition_presentation_apply_input(
+    vdm_composition_presentation *presentation)
 {
     unsigned index;
     ntvdm64_status status;
@@ -64,8 +64,8 @@ ntvdm64_status nxvm_dos_minimal_presentation_apply_input(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status nxvm_dos_minimal_presentation_capture_text(
-    nxvm_dos_minimal_presentation *presentation,
+ntvdm64_status vdm_composition_presentation_capture_text(
+    vdm_composition_presentation *presentation,
     uint64_t timestamp,
     nxvm_vdm_presentation_snapshot *out_snapshot)
 {
@@ -82,8 +82,8 @@ ntvdm64_status nxvm_dos_minimal_presentation_capture_text(
     return NTVDM64_STATUS_OK;
 }
 
-void nxvm_dos_minimal_presentation_destroy(
-    nxvm_dos_minimal_presentation *presentation)
+void vdm_composition_presentation_destroy(
+    vdm_composition_presentation *presentation)
 {
     free(presentation);
 }

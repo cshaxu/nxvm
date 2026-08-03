@@ -8,27 +8,27 @@
 extern "C" {
 #endif
 
-typedef struct nxvm_dos_minimal_presentation nxvm_dos_minimal_presentation;
+typedef struct vdm_composition_presentation vdm_composition_presentation;
 
 typedef struct nxvm_vdm_presentation_snapshot {
     uint64_t timestamp;
     core_machine_text_snapshot text;
 } nxvm_vdm_presentation_snapshot;
 
-ntvdm64_status nxvm_dos_minimal_presentation_create(
+ntvdm64_status vdm_composition_presentation_create(
     core_product_runtime_dos_minimal *session,
-    nxvm_dos_minimal_presentation **out_presentation);
-ntvdm64_status nxvm_dos_minimal_presentation_enqueue_input(
-    nxvm_dos_minimal_presentation *presentation,
+    vdm_composition_presentation **out_presentation);
+ntvdm64_status vdm_composition_presentation_enqueue_input(
+    vdm_composition_presentation *presentation,
     nxvm_platform_input_event event);
-ntvdm64_status nxvm_dos_minimal_presentation_apply_input(
-    nxvm_dos_minimal_presentation *presentation);
-ntvdm64_status nxvm_dos_minimal_presentation_capture_text(
-    nxvm_dos_minimal_presentation *presentation,
+ntvdm64_status vdm_composition_presentation_apply_input(
+    vdm_composition_presentation *presentation);
+ntvdm64_status vdm_composition_presentation_capture_text(
+    vdm_composition_presentation *presentation,
     uint64_t timestamp,
     nxvm_vdm_presentation_snapshot *out_snapshot);
-void nxvm_dos_minimal_presentation_destroy(
-    nxvm_dos_minimal_presentation *presentation);
+void vdm_composition_presentation_destroy(
+    vdm_composition_presentation *presentation);
 
 #ifdef __cplusplus
 }
