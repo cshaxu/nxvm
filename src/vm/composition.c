@@ -130,8 +130,7 @@ void vmachineReset(vm_composition_live_machine *machine) {
     vm_profile_default_qdx_reset(machine->default_profile_context);
     _vram_
 }
-/* Executes all devices in one loop */
-void vmachineRefresh(vm_composition_live_machine *machine) {
+void vmachineRefreshProviders(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_profile_default_qdx_refresh(machine->default_profile_context);
     _empty_
@@ -143,6 +142,14 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
     _empty_
     vm_machine_hdd_refresh(machine->hdd);
     _empty_
+    vm_machine_cmos_refresh(machine->cmos);
+    vm_machine_fdc_refresh(machine->fdc);
+}
+
+/* Executes all devices in one loop */
+void vmachineRefresh(vm_composition_live_machine *machine) {
+    if (machine == NULL) return;
+    vmachineRefreshProviders(machine);
     core_machine_kbc_refresh(machine->kbc);
     _empty_
     _empty_
@@ -150,8 +157,6 @@ void vmachineRefresh(vm_composition_live_machine *machine) {
     _empty_
     _empty_
 
-    vm_machine_cmos_refresh(machine->cmos);
-    vm_machine_fdc_refresh(machine->fdc);
     core_machine_dma_refresh(machine->dma_latch, machine->dma_primary,
         machine->dma_secondary, machine->ram);
     _vfdc_

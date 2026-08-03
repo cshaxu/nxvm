@@ -268,6 +268,7 @@ add_library(nxvm-core-machine STATIC
 target_include_directories(nxvm-core-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
+target_link_libraries(nxvm-core PUBLIC nxvm-core-machine)
 target_link_libraries(ntvdm64-version-smoke PRIVATE nxvm-core-machine)
 
 add_library(nxvm-product-core-utils STATIC ${NXVM_PRODUCT_CORE_SOURCES})
