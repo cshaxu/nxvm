@@ -9,7 +9,14 @@
 
 static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
 {
-    vm_session_config config = { fdd, hdd, 0, 0u, boot_hdd };
+    vm_session_config config = {
+        .memory_bytes = 16384u * 1024u,
+        .fdd_image = fdd,
+        .hdd_image = hdd,
+        .boot_hdd = boot_hdd,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
     vm_session_reset_vector vector;
     vm_session *session = STD_NULL;
 
@@ -18,8 +25,6 @@ static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
         vm_session_destroy(session);
         return 1;
     }
-    core_machine_memory_allocate_for(
-        core_machine_executor_memory_borrow(session->core_machine), 16384u * 1024u);
     vm_session_reset(session);
     if (vm_machine_fdd_remove_for(session->fdd, STD_NULL) ||
         vm_machine_hdd_remove(session->hdd, STD_NULL) ||

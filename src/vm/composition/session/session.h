@@ -106,6 +106,7 @@ typedef struct vm_session {
 } vm_session;
 
 typedef struct vm_session_config {
+    STD_SIZE_T memory_bytes;
     const C_CHAR *fdd_image;
     const C_CHAR *hdd_image;
     C_INT create_fdd;

@@ -75,7 +75,7 @@ C_VOID vm_session_profile_firmware_initialize_qdx(vm_session *session)
 {
     if (session != STD_NULL) vm_profile_default_qdx_initialize(
         session->default_profile_context,
-        core_machine_executor_cpu_execution_borrow(session->core_machine));
+        core_machine_configuration_cpu_execution_borrow(session->core_machine));
 }
 
 C_VOID vm_session_profile_firmware_refresh(vm_session *session)
@@ -89,7 +89,7 @@ C_VOID vm_session_profile_firmware_reset(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_profile_default_bios_reset(session->default_bios,
-        core_machine_executor_memory_borrow(session->core_machine),
+        session->default_profile_context->ram,
         session->block_provider);
     vm_profile_default_qdx_reset(session->default_profile_context);
 }

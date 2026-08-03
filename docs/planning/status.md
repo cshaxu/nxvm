@@ -361,9 +361,15 @@ borrow, copied paused observation, transactionally reconstructed `DEVICE ram`,
 and T164--T168 task sequence are fixed in
 [`m5-t163-s1.md`](subtasks/m5-t163-s1.md). It makes no runtime change.
 
-**M5 T164 S1 active: core configuration and observation boundary.** Replace
-unscoped mutable executor borrows with configuration-only access and enforce
-copied paused CPU/fault observation before VM reconstruction work begins.
+**M5 T164 S1 complete: core configuration and observation boundary.** Generic
+executor borrows are replaced by configuration-only and returned-boundary debug
+access; copied observations and retained Console/FDD evidence are recorded in
+[`M5-T164.md`](../tracking/M5-T164.md). Artifact:
+`build/output/nxvm_0_5_0164.exe`.
+
+**M5 T165 S1 active: transactional VM RAM reconfiguration.** Route retained
+`DEVICE ram` through a stopped-session machine-graph rebuild without creating a
+second session or changing Console grammar.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

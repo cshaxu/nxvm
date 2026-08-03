@@ -13,11 +13,15 @@
 
 C_VOID vm_session_print_machine(const vm_session *session)
 {
+    STD_SIZE_T memory_bytes = 0u;
+
     if (session == STD_NULL) return;
+    if (core_machine_get_memory_bytes(session->core_machine, &memory_bytes) !=
+        NTVDM64_STATUS_OK) return;
     STD_PRINTF("Machine:           %s\n", VM_SESSION_MACHINE_NAME);
     STD_PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
     STD_PRINTF("RAM Size:          %d MB\n",
-        core_machine_executor_memory_borrow(session->core_machine)->connect.size >> 20);
+        memory_bytes >> 20);
     STD_PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
         vm_machine_fdd_image_size(session->fdd) * 1. / VFDD_BYTE_PER_MB,
         session->fdd->connect.flagDiskExist ? "inserted" : "not inserted");

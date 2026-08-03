@@ -149,7 +149,7 @@ static C_VOID vm_session_machine_debug(C_VOID *context) { vm_session *s = vm_ses
 static C_VOID vm_session_machine_record_start(C_VOID *context, const C_CHAR *path) { vm_session *s = vm_session_provider_selected(context); if (s != STD_NULL) vm_machine_debug_record_start(s->debug, path); }
 static C_VOID vm_session_machine_record_stop(C_VOID *context) { vm_session *s = vm_session_provider_selected(context); if (s != STD_NULL) vm_machine_debug_record_stop(s->debug); }
 static C_VOID vm_session_machine_boot_hdd(C_VOID *context, C_INT value) { vm_session *s = vm_session_provider_selected(context); if (s != STD_NULL) vm_profile_default_bios_set_boot_hdd(s->default_bios, value); }
-static C_VOID vm_session_machine_memory(C_VOID *context, STD_SIZE_T bytes) { vm_session *s = vm_session_provider_selected(context); if (s != STD_NULL) core_machine_memory_allocate_for(core_machine_executor_memory_borrow(s->core_machine), bytes); }
+static C_VOID vm_session_machine_memory(C_VOID *context, STD_SIZE_T bytes) { vm_session *s = vm_session_provider_selected(context); if (s != STD_NULL) core_machine_memory_allocate_for(core_machine_configuration_memory_borrow(s->core_machine), bytes); }
 static C_VOID vm_session_machine_create_fdd(C_VOID *context) { vm_session *s = vm_session_provider_selected(context); if (s != STD_NULL) vm_machine_fdd_create_for(s->fdd); }
 static C_INT vm_session_machine_insert_fdd(C_VOID *context, const C_CHAR *path) { vm_session *s = vm_session_provider_selected(context); return s != STD_NULL ? vm_machine_fdd_insert_for(s->fdd, path) : -1; }
 static C_INT vm_session_machine_remove_fdd(C_VOID *context, const C_CHAR *path) { vm_session *s = vm_session_provider_selected(context); return s != STD_NULL ? vm_machine_fdd_remove_for(s->fdd, path) : -1; }

@@ -33,7 +33,7 @@ static C_INT vm_session_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
     vm_session_cpu_probe_state *state)
 {
     const t_cpu *cpu = probe == STD_NULL ? STD_NULL :
-        core_machine_executor_cpu_borrow(probe->machine.core_machine);
+        core_machine_configuration_cpu_borrow(probe->machine.core_machine);
 
     if (cpu == STD_NULL) {
         return 0;
@@ -54,9 +54,9 @@ static C_INT vm_session_cpu_probe_reset(nxvm_cpu_probe *probe)
     uint32_t eip = 0u;
 
     vm_session_control_reset(probe->machine.control);
-    t_cpu *cpu = core_machine_executor_cpu_borrow(probe->machine.core_machine);
+    t_cpu *cpu = core_machine_configuration_cpu_borrow(probe->machine.core_machine);
     core_machine_cpu_execution_context *execution =
-        core_machine_executor_cpu_execution_borrow(probe->machine.core_machine);
+        core_machine_configuration_cpu_execution_borrow(probe->machine.core_machine);
 
     if (core_machine_cpu_execution_load_segment(execution, &cpu->data.cs, 0u) ||
         core_machine_cpu_execution_load_segment(execution, &cpu->data.ds, 0u) ||
@@ -105,7 +105,7 @@ C_INT vm_session_cpu_probe_step(
     STD_MEMCPY(out_capture->bytes, bytes, byte_count);
     out_capture->byte_count = byte_count;
     core_machine_memory_write_real_to(
-        core_machine_executor_memory_borrow(probe->machine.core_machine), 0u, 0u, bytes,
+        core_machine_configuration_memory_borrow(probe->machine.core_machine), 0u, 0u, bytes,
         byte_count);
     if (!vm_session_cpu_probe_capture_state(probe, &out_capture->before)) {
         return 0;
@@ -123,9 +123,9 @@ C_INT vm_session_cpu_probe_step(
         return 0;
     }
     out_capture->exception_mask =
-        core_machine_executor_cpu_instructions_borrow(probe->machine.core_machine)->data.except;
+        core_machine_configuration_cpu_instructions_borrow(probe->machine.core_machine)->data.except;
     out_capture->exception_code =
-        core_machine_executor_cpu_instructions_borrow(probe->machine.core_machine)->data.excode;
+        core_machine_configuration_cpu_instructions_borrow(probe->machine.core_machine)->data.excode;
     return 1;
 }
 

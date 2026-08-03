@@ -12,7 +12,7 @@ static C_INT vm_keyboard_host_ingress_read_word(const vm_session *session,
     uint16_t offset, uint16_t *out_value)
 {
     core_machine_memory_read_real_from(
-        core_machine_executor_memory_borrow(session->core_machine), 0u, offset,
+        core_machine_configuration_memory_borrow(session->core_machine), 0u, offset,
         out_value, sizeof(*out_value));
     return 1;
 }

@@ -24,7 +24,7 @@ static DWORD WINAPI vm_dos_mem_fault_run_machine(C_VOID *opaque)
 static C_INT vm_dos_mem_fault_has_prompt(const vm_session *session)
 {
     const C_UCHAR *screen = (const C_UCHAR *)
-        core_machine_executor_memory_borrow(session->core_machine)->connect.pBase +
+        core_machine_configuration_memory_borrow(session->core_machine)->connect.pBase +
         TEXT_VIDEO_BASE;
     STD_SIZE_T cell;
 

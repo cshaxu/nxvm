@@ -179,8 +179,8 @@ C_VOID vm_session_control_initialize(vm_session_control_state *control,
         &control->execution_context, &vm_session_execution_callbacks);
     vm_session_execution_context_activate(&control->execution_context);
     vm_machine_debug_initialize(machine->debug,
-        core_machine_executor_cpu_borrow(machine->core_machine),
-        core_machine_executor_cpu_instructions_borrow(machine->core_machine));
+        core_machine_configuration_cpu_borrow(machine->core_machine),
+        core_machine_configuration_cpu_instructions_borrow(machine->core_machine));
     vm_session_provider_lifecycle_initialize(machine);
     if (!vm_session_bind_execution_provider(machine)) {
         vm_session_control_stop(control);
