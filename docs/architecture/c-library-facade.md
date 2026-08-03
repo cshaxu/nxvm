@@ -91,3 +91,58 @@ No naming task may silently rewrite that control flow.
 4. Run the full GCC, FDD prompt, and retained Console gates after each runnable
    task. Add a compile-time include scan that allows ISO C headers only in
    `type.*` and approved platform integration files.
+
+## Revised Vocabulary Decision
+
+The previous unprefixed-uppercase facade is superseded for future adoption.
+The project uses three explicit domains: `C_*` for C language scalar typedefs,
+`STD_*` for ISO C library vocabulary, and `WIN32_*` for Win32-only adapters.
+
+`C_VOID`, `C_CHAR`, `C_INT`, `C_FLOAT`, and related scalar spellings are
+typedef aliases, never macro substitutions for C keywords. The complete scalar
+set is `C_VOID`, `C_CHAR`, `C_SCHAR`, `C_UCHAR`, `C_SHORT`, `C_USHORT`,
+`C_INT`, `C_UINT`, `C_LONG`, `C_ULONG`, `C_LLONG`, `C_ULLONG`, `C_FLOAT`, and
+`C_DOUBLE`. C11 Boolean vocabulary is `STD_BOOL`, based on `_Bool`; `BOOL`
+does not enter project-neutral code.
+
+All existing wrappers are renamed by a dedicated compatibility task to
+`STD_*`: `STD_LOCALTIME`, `STD_STRCAT`, `STD_STRCPY`, `STD_STRTOK`,
+`STD_STRCMP`, `STD_STRLEN`, `STD_PRINTF`, `STD_FPRINTF`, `STD_SPRINTF`,
+`STD_FOPEN`, `STD_FCLOSE`, `STD_FREAD`, `STD_FWRITE`, `STD_FGETS`,
+`STD_MALLOC`, `STD_FREE`, `STD_MEMSET`, `STD_MEMCPY`, and `STD_MEMCMP`.
+
+The direct-call inventory requires new `STD_CALLOC`, `STD_FSEEK`, `STD_FTELL`,
+`STD_FGETC`, `STD_FPUTC`, `STD_FEOF`, `STD_SNPRINTF`, `STD_TIME`,
+`STD_ISSPACE`, and `STD_TOUPPER`. The ctype wrappers cast the input to
+`unsigned char`. `fflush(stdin)` remains excluded: it must be replaced by a
+platform input-flush capability, not a `STD_FFLUSH` wrapper.
+
+Standard entities receive project spellings without redefining the standard
+name: `STD_SIZE_T`, `STD_PTRDIFF_T`, `STD_FILE`, `STD_TIME_T`,
+`STD_VA_LIST`, `STD_NULL`, `STD_EOF`, `STD_SEEK_*`, `STD_STDIN`,
+`STD_STDOUT`, `STD_STDERR`, and `STD_ATOMIC_*`. `STD_NULL` expands to `NULL`;
+the project never redefines `NULL`. Fixed-width `uint*_t`/`int*_t` types stay
+unchanged; `UINT8`-style aliases are prohibited because the Windows SDK owns
+that namespace.
+
+Win32 adapters currently use `BOOL`, `VOID`, `DWORD`, `WORD`, `BYTE`,
+`HANDLE`, `HWND`, `HDC`, `WPARAM`, `LPARAM`, `LRESULT`, `UINT`, `LONG`,
+`SHORT`, `LPCSTR`, and direct window/input APIs. Only files below
+`platform/win32` may introduce matching `WIN32_*` aliases and API wrappers,
+for example `WIN32_BOOL`, `WIN32_DWORD`, `WIN32_HANDLE`, `WIN32_HWND`, and
+`WIN32_SLEEP`. `SIZE_T`, `UINT*`, and `BOOL` must not leak into core.
+
+### Adoption Order
+
+1. Define `C_*`, `STD_*`, and `WIN32_*` facade surfaces plus focused smoke
+   tests; change no call sites.
+2. Rename existing wrappers and direct ISO C calls module by module: core
+   machine, core product/platform, VM, VDM, and tests.
+3. Migrate C scalar aliases and standard objects/types in the same order.
+4. Migrate `WIN32_*` only inside Win32 adapters; use equivalent platform-local
+   naming when Linux/macOS adapters exist.
+5. Replace debugger input flushing with a platform capability, add a direct
+   ISO-header include guard, and run full GCC/FDD/Console gates per task.
+
+This is a new phased adoption plan. It does not reopen M5 or start M6 without
+an owner-approved task breakdown.
