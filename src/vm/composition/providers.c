@@ -67,8 +67,6 @@
 /* Initializes all devices, allocates space */
 C_VOID vm_session_providers_initialize(vm_session *machine) {
     if (machine == STD_NULL) return;
-    if (core_machine_prepare_executor_cpu(machine->core_machine) !=
-        NTVDM64_STATUS_OK) return;
     vm_machine_fdd_initialize(machine->fdd);
     vm_machine_hdd_initialize(machine->hdd);
     vm_session_bind_block(machine);
@@ -77,8 +75,6 @@ C_VOID vm_session_providers_initialize(vm_session *machine) {
     vm_profile_default_bios_add_interrupt(machine->default_bios,
         "qdx 10\niret", 0x10);
     _vbios_
-    if (core_machine_prepare_executor_bus(machine->core_machine) !=
-        NTVDM64_STATUS_OK) return;
     vm_machine_cmos_initialize(machine->cmos, machine->cpu, machine->port);
     vm_profile_default_bios_add_post(machine->default_bios, VCMOS_POST);
     vm_profile_default_bios_add_interrupt(machine->default_bios, VCMOS_INT_HARD_RTC_08, 0x08);
@@ -115,8 +111,6 @@ C_VOID vm_session_providers_initialize(vm_session *machine) {
         machine->port);
     vm_profile_default_bios_add_post(machine->default_bios, VPIC_POST);
     _vbios_ _vport_ _vpic_
-    if (core_machine_prepare_executor_memory(machine->core_machine) !=
-        NTVDM64_STATUS_OK) return;
     core_machine_pit_set_output(machine->pit, 1, STD_NULL, STD_NULL);
     _vbios_ _vport_ _vpit_
     vm_profile_default_qdx_initialize(machine->default_profile_context,
@@ -169,15 +163,10 @@ C_VOID vm_session_providers_finalize(vm_session *machine) {
     _empty_
     core_machine_pit_finalize(machine->pit);
     _empty_
-    core_machine_port_finalize(machine->port);
-    _empty_
     core_machine_vadp_finalize(machine->vadp);
     _empty_
-
-    core_machine_cpu_execution_finalize(machine->cpu_execution);
     vm_machine_fdd_finalize(machine->fdd);
     vm_machine_hdd_finalize(machine->hdd);
-    core_machine_memory_finalize(machine->ram);
 }
 /* Print machine info */
 C_VOID vm_session_print_machine(const vm_session *machine) {

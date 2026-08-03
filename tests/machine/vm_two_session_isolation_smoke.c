@@ -26,8 +26,6 @@ C_INT main(C_VOID)
 
     vm_session_storage_initialize(first);
     vm_session_storage_initialize(second);
-    core_machine_memory_initialize(first->ram);
-    core_machine_memory_initialize(second->ram);
 
     failed |= first->cpu == second->cpu;
     failed |= first->cpuins == second->cpuins;
@@ -56,8 +54,6 @@ C_INT main(C_VOID)
     failed |= second->cpu->data.eax != 0x22222222u;
     failed |= second->cpuins->data.flagWR != NTVDM64_TYPE_FALSE;
 
-    core_machine_memory_finalize(second->ram);
-    core_machine_memory_finalize(first->ram);
     vm_session_storage_finalize(second);
     vm_session_storage_finalize(first);
     STD_FREE(second);
