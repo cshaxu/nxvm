@@ -117,6 +117,9 @@ APIs now use their source-owner prefixes without compatibility aliases.
 **M5 T105 complete:** VM product/profile and adjacent composition/platform
 legacy APIs now use their actual source-owner prefixes.
 
+**M5 T106 complete:** the implemented VDM composition skeleton now uses
+`vdm_composition_*` names without adding a VDM runtime path.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in
