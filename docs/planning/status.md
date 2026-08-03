@@ -152,6 +152,9 @@ provider and VM platform capability; `fflush(stdin)` is absent.
 GCC, DOS boot, and retained Console closure passed. The T111--T116 naming
 sequence is complete.
 
+**M5 T116 S2 complete:** the source vocabulary and build-tree cleanup policy
+are permanent governance rules; only `build/output/` remains after cleanup.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

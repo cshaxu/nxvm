@@ -33,6 +33,18 @@ T5 artifact is retained. Local artifacts are never release evidence, must not
 bundle protected media or Microsoft binaries, and may be replaced only by a
 newly verified build of the same named task.
 
+## Build Tree Hygiene
+
+After every build, test, smoke run, sanitizer run, or failed verification,
+remove owned temporary build products as soon as they are no longer required
+by the active task or its immediate next task. `build/output/` is the sole
+preserved local artifact directory and retains verified task executables. All
+other build configuration trees, object files, generated test executables,
+logs, traces, sanitizer trees, and stale CMake/Ninja state are disposable
+unless an active subtask records why they are needed. Before recursive cleanup,
+verify the resolved target is below `build/`, exclude `build/output/`, and
+confirm no owned process still uses it.
+
 For a runnable artifact, the verification record also states the emitted runtime
 identity/banner and version. It must follow the task-version rules in
 `docs/architecture/overview.md`; changing identity, version, or cutover state
