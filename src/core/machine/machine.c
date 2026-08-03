@@ -48,6 +48,53 @@ t_ram *core_machine_legacy_memory_borrow(core_machine *machine)
 t_port *core_machine_legacy_port_borrow(core_machine *machine)
 { return machine != NULL && machine->legacy_executor_enabled ? &machine->legacy_port : NULL; }
 
+nxvm_core_status core_machine_enable_shared_devices(core_machine *machine)
+{
+    if (machine == NULL || !machine->legacy_executor_enabled) {
+        return NXVM_CORE_STATUS_INVALID_STATE;
+    }
+    machine->shared_devices_enabled = 1;
+    return NXVM_CORE_STATUS_OK;
+}
+
+t_pic *core_machine_shared_pic_master_borrow(core_machine *machine)
+{ return machine != NULL && machine->shared_devices_enabled ? &machine->shared_pic_master : NULL; }
+t_pic *core_machine_shared_pic_slave_borrow(core_machine *machine)
+{ return machine != NULL && machine->shared_devices_enabled ? &machine->shared_pic_slave : NULL; }
+t_pit *core_machine_shared_pit_borrow(core_machine *machine)
+{ return machine != NULL && machine->shared_devices_enabled ? &machine->shared_pit : NULL; }
+t_latch *core_machine_shared_dma_latch_borrow(core_machine *machine)
+{ return machine != NULL && machine->shared_devices_enabled ? &machine->shared_dma_latch : NULL; }
+t_dma *core_machine_shared_dma_primary_borrow(core_machine *machine)
+{ return machine != NULL && machine->shared_devices_enabled ? &machine->shared_dma_primary : NULL; }
+t_dma *core_machine_shared_dma_secondary_borrow(core_machine *machine)
+{ return machine != NULL && machine->shared_devices_enabled ? &machine->shared_dma_secondary : NULL; }
+t_kbc *core_machine_shared_kbc_borrow(core_machine *machine)
+{ return machine != NULL && machine->shared_devices_enabled ? &machine->shared_kbc : NULL; }
+t_vadp *core_machine_shared_vadp_borrow(core_machine *machine)
+{ return machine != NULL && machine->shared_devices_enabled ? &machine->shared_vadp : NULL; }
+
+nxvm_core_status core_machine_bind_execution_provider(core_machine *machine,
+    const core_machine_execution_provider *provider, void *context)
+{
+    if (machine == NULL || machine->execution_provider_frozen ||
+        machine->lifecycle == CORE_MACHINE_RUNNING) {
+        return NXVM_CORE_STATUS_INVALID_STATE;
+    }
+    machine->execution_provider = provider;
+    machine->execution_provider_context = context;
+    return NXVM_CORE_STATUS_OK;
+}
+
+nxvm_core_status core_machine_freeze_execution_providers(core_machine *machine)
+{
+    if (machine == NULL || machine->lifecycle == CORE_MACHINE_RUNNING) {
+        return NXVM_CORE_STATUS_INVALID_STATE;
+    }
+    machine->execution_provider_frozen = 1;
+    return NXVM_CORE_STATUS_OK;
+}
+
 nxvm_core_status core_machine_cpu_reset(core_machine *machine)
 {
     core_machine_cpu_state *state;
@@ -229,6 +276,21 @@ nxvm_core_status core_machine_run(
                 result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                 result->linear_pc = core_machine_linear_pc(machine);
                 return NXVM_CORE_STATUS_OK;
+            }
+            if (machine->execution_provider != NULL &&
+                machine->execution_provider->refresh != NULL) {
+                machine->execution_provider->refresh(
+                    machine->execution_provider_context);
+            }
+            if (machine->shared_devices_enabled) {
+                core_machine_kbc_refresh(&machine->shared_kbc);
+                core_machine_vadp_refresh(&machine->shared_vadp);
+                core_machine_dma_refresh(&machine->shared_dma_latch,
+                    &machine->shared_dma_primary, &machine->shared_dma_secondary,
+                    &machine->legacy_memory);
+                core_machine_pic_refresh(&machine->shared_pic_master,
+                    &machine->shared_pic_slave);
+                core_machine_pit_refresh(&machine->shared_pit);
             }
             core_machine_cpu_execution_refresh(&machine->legacy_cpu_execution);
             ++result->executed;

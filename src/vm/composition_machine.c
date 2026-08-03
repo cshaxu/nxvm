@@ -3,6 +3,7 @@
 /* MACHINE controls machine status. */
 
 #include "vm/composition_control.h"
+#include "vm/composition.h"
 #include "vm/composition_live_machine.h"
 #include "core/product/debug/debug_target.h"
 #include "core/product/wait_provider.h"
@@ -12,6 +13,7 @@
 #include "vm/profile/default_profile/firmware/qdcga.h"
 #include "vm/profile/default_profile/firmware/qdkeyb.h"
 #include "core/machine/keyboard_interface.h"
+#include "core/machine/machine.h"
 #include "vm/platform/execution.h"
 #include "vm/platform/input.h"
 #include "vm/platform/platform.h"
@@ -71,6 +73,15 @@ static void vm_composition_keyboard_request_stop(void *context)
 {
     vm_composition_control_stop(((vm_composition_live_machine *)context)->control);
 }
+
+static void vm_composition_execution_provider_refresh(void *context)
+{
+    vmachineRefreshProviders((vm_composition_live_machine *)context);
+}
+
+static const core_machine_execution_provider vm_composition_execution_provider = {
+    vm_composition_execution_provider_refresh
+};
 
 static const vm_platform_keyboard_sink vm_composition_keyboard_sink = {
     vm_composition_keyboard_get_modifier,
@@ -151,6 +162,9 @@ void machineInit(vm_composition_live_machine *machine) {
     core_product_wait_scope_initialize(machine->wait_scope,
         vm_composition_wait, NULL);
     vm_composition_control_initialize(machine->control, machine);
+    core_machine_bind_execution_provider(machine->core_machine,
+        &vm_composition_execution_provider, machine);
+    core_machine_freeze_execution_providers(machine->core_machine);
     core_machine_keyboard_provider_slot_bind(machine->keyboard_provider,
         machine->default_profile_context,
         vm_profile_default_keyboard_provider());

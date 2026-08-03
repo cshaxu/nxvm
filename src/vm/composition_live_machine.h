@@ -31,14 +31,6 @@
 
 typedef struct vm_composition_live_machine {
     core_machine *core_machine;
-    t_pic pic_master_storage;
-    t_pic pic_slave_storage;
-    t_pit pit_storage;
-    t_latch dma_latch_storage;
-    t_dma dma_primary_storage;
-    t_dma dma_secondary_storage;
-    t_kbc kbc_storage;
-    t_vadp vadp_storage;
     t_cmos cmos_storage;
     t_fdd fdd_storage;
     t_fdc fdc_storage;

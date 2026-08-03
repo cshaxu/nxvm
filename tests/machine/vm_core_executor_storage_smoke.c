@@ -17,7 +17,20 @@ int main(void)
         machine->cpu_execution != core_machine_legacy_cpu_execution_borrow(
             machine->core_machine) ||
         machine->ram != core_machine_legacy_memory_borrow(machine->core_machine) ||
-        machine->port != core_machine_legacy_port_borrow(machine->core_machine)) {
+        machine->port != core_machine_legacy_port_borrow(machine->core_machine) ||
+        machine->pic_master != core_machine_shared_pic_master_borrow(
+            machine->core_machine) ||
+        machine->pic_slave != core_machine_shared_pic_slave_borrow(
+            machine->core_machine) ||
+        machine->pit != core_machine_shared_pit_borrow(machine->core_machine) ||
+        machine->dma_latch != core_machine_shared_dma_latch_borrow(
+            machine->core_machine) ||
+        machine->dma_primary != core_machine_shared_dma_primary_borrow(
+            machine->core_machine) ||
+        machine->dma_secondary != core_machine_shared_dma_secondary_borrow(
+            machine->core_machine) ||
+        machine->kbc != core_machine_shared_kbc_borrow(machine->core_machine) ||
+        machine->vadp != core_machine_shared_vadp_borrow(machine->core_machine)) {
         vm_composition_live_machine_finalize(machine);
         free(machine);
         return 1;

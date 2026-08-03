@@ -27,16 +27,27 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
         machine->core_machine);
     machine->cpu_execution = core_machine_legacy_cpu_execution_borrow(
         machine->core_machine);
-    machine->pic_master = &machine->pic_master_storage;
-    machine->pic_slave = &machine->pic_slave_storage;
+    if (core_machine_enable_shared_devices(machine->core_machine) !=
+        NXVM_CORE_STATUS_OK) {
+        core_machine_destroy(machine->core_machine);
+        machine->core_machine = NULL;
+        return;
+    }
+    machine->pic_master = core_machine_shared_pic_master_borrow(
+        machine->core_machine);
+    machine->pic_slave = core_machine_shared_pic_slave_borrow(
+        machine->core_machine);
     core_machine_cpu_execution_context_bind_pic(machine->cpu_execution,
         machine->pic_master, machine->pic_slave);
-    machine->pit = &machine->pit_storage;
-    machine->dma_latch = &machine->dma_latch_storage;
-    machine->dma_primary = &machine->dma_primary_storage;
-    machine->dma_secondary = &machine->dma_secondary_storage;
-    machine->kbc = &machine->kbc_storage;
-    machine->vadp = &machine->vadp_storage;
+    machine->pit = core_machine_shared_pit_borrow(machine->core_machine);
+    machine->dma_latch = core_machine_shared_dma_latch_borrow(
+        machine->core_machine);
+    machine->dma_primary = core_machine_shared_dma_primary_borrow(
+        machine->core_machine);
+    machine->dma_secondary = core_machine_shared_dma_secondary_borrow(
+        machine->core_machine);
+    machine->kbc = core_machine_shared_kbc_borrow(machine->core_machine);
+    machine->vadp = core_machine_shared_vadp_borrow(machine->core_machine);
     machine->cmos = &machine->cmos_storage;
     machine->fdd = &machine->fdd_storage;
     machine->fdc = &machine->fdc_storage;
