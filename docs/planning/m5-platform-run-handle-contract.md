@@ -63,3 +63,28 @@ worker and renderer resource.
 
 Historical M5 T137 already completed the former generic execution-context
 rename and move into `vm/composition`; it is not repeated in this sequence.
+
+## T141 Core Lifecycle Constraint
+
+T141 removes the remaining historical choice of core-machine shape. It is not
+permitted to introduce a VM core type, a VDM core type, or a second executor.
+
+- Delete `CORE_MACHINE_PROFILE_*` and the `profile` member of
+  `core_machine_config`.
+- Delete the public `core_machine_enable_executor()` selection layer and every
+  caller. `core_machine_create()` always constructs the one standard executor.
+- `core_machine` owns prepare, reset, and finalize for that executor and every
+  shared core device: PIC, PIT, DMA, KBC, and video.
+- VM and VDM both call the same core creation path. Their only later
+  differences are provider registration, firmware/profile callback binding,
+  and VM-only or VDM-only device binding.
+- The required lifecycle is:
+
+```text
+core_machine_create -> bind product providers/firmware -> freeze bindings
+                    -> core_machine_reset -> run -> core_machine_destroy
+```
+
+- T141 must prove no profile enum or executor-enable API remains, and retain
+  core executor lifecycle, VDM skeleton, VM two-session, Console, and FDD
+  DOS-prompt regression gates before T142 removes raw aliases.
