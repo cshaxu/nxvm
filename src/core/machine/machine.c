@@ -51,7 +51,7 @@ ntvdm64_status core_machine_prepare_executor_bus(core_machine *machine)
         return NTVDM64_STATUS_INVALID_STATE;
     }
     core_machine_port_initialize(&machine->executor_port);
-    return NTVDM64_STATUS_OK;
+    return core_machine_bus_initialize(machine);
 }
 
 ntvdm64_status core_machine_prepare_executor_memory(core_machine *machine)
@@ -228,6 +228,8 @@ ntvdm64_status core_machine_reset(core_machine *machine)
 
     if (machine->executor_enabled) {
         core_machine_cpu_state_reset(&machine->executor_cpu_execution);
+        core_machine_port_reset(&machine->executor_port);
+        core_machine_memory_reset(&machine->executor_memory);
         if (machine->shared_devices_enabled) {
             core_machine_kbc_reset(&machine->shared_kbc);
             core_machine_dma_reset(&machine->shared_dma_latch,
@@ -235,9 +237,7 @@ ntvdm64_status core_machine_reset(core_machine *machine)
             core_machine_pic_reset(&machine->shared_pic_master,
                 &machine->shared_pic_slave);
             core_machine_pit_reset(&machine->shared_pit);
-            core_machine_port_reset(&machine->executor_port);
             core_machine_vadp_reset(&machine->shared_vadp);
-            core_machine_memory_reset(&machine->executor_memory);
         }
     } else if (core_machine_cpu_reset(machine) != NTVDM64_STATUS_OK ||
                core_machine_instance_memory_reset(machine) !=
@@ -397,6 +397,8 @@ C_VOID core_machine_destroy(core_machine *machine)
 {
     if (machine != STD_NULL) {
         core_machine_cpu_execution_finalize(&machine->executor_cpu_execution);
+        core_machine_port_finalize(&machine->executor_port);
+        core_machine_memory_finalize(&machine->executor_memory);
     }
     core_machine_trace_finalize(machine);
     core_machine_bus_finalize(machine);
