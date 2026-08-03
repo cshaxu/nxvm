@@ -26,7 +26,7 @@
 
 #include "core/machine/keyboard_interface.h"
 
-#include "core/machine/machine.h"
+#include "core/machine/machine_interface.h"
 
 #include "vm/platform/execution.h"
 

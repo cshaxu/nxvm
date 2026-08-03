@@ -2,12 +2,12 @@
 
 ## Confirmed Structure
 
-- `vm_session` owns one `core_machine*` and one embedded
-  `vm_composition_machine_access`; the access record stores only that owning
-  pointer.
-- `machine_access.c` is the only VM source that calls core borrow APIs. Every
-  return value is a fresh non-owning borrow; it allocates no guest storage and
-  exposes no lifecycle operation.
+- At S3, `vm_session` owned one `core_machine*` and an embedded
+  `vm_composition_machine_access`. S5 supersedes that temporary record: both
+  the access record and its forwarding source are deleted.
+- At S3, `machine_access.c` was the only VM source that called core borrow
+  APIs. S5 moves that responsibility directly to root composition and records
+  the resulting composition-only source scan.
 - VM profile/device composition receives only the necessary borrowed
   capability at bind time. Core owns all executor and shared-device lifecycle.
 - The debugger target obtains CPU/RAM/port/execution/instruction capabilities
@@ -28,12 +28,14 @@ legacy platform start_machine / detached pthread lifecycle
 ```
 
 The only platform resource releases are backend finalizers, plus pre-worker
-allocation-failure lease release. The only VM core borrow calls reside in
-`src/vm/composition/machine_access.c`.
+allocation-failure lease release. S5 replaces the former VM access record with
+direct core-owned borrows confined to `src/vm/composition/`.
 
 ## Runtime Gates
 
 The final task artifact and complete focused gate suite are recorded in the
 T138--T142 contract audit. Windows GCC produced
 `build/output/nxvm_0_5_0142.exe` with banner `0.5.0142` and SHA-256
-`A8617DA8E203D048DEE0BE907649C92B91815CE1AFF11DEFF7E18606B4895A5C`.
+`A8617DA8E203D048DEE0BE907649C92B91815CE1AFF11DEFF7E18606B4895A5C`
+before S5. S5's current artifact hash is recorded in its own verification
+record.

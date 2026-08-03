@@ -188,7 +188,6 @@ set(NXVM_COMPOSITION_VM_SOURCES
     src/vm/composition/debug_target.c
     src/vm/composition/block_provider.c
     src/vm/composition/display_bridge.c
-    src/vm/composition/machine_access.c
     src/vm/composition/session_lifecycle.c
     src/vm/composition/session.c
     src/vm/composition/session_control.c

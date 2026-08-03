@@ -2,7 +2,7 @@
 
 #include "vm/composition/session.h"
 
-#include "core/machine/machine.h"
+#include "core/machine/machine_interface.h"
 #include "core/machine/keyboard_interface.h"
 #include "vm/composition/session_control.h"
 #include "vm/composition/session_lifecycle.h"
@@ -64,16 +64,13 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
             return;
         }
     }
-    machine->core_access = &machine->core_access_storage;
-    vm_composition_machine_access_initialize(machine->core_access,
-        machine->core_machine);
-    memory = vm_composition_machine_access_memory(machine->core_access);
-    execution = vm_composition_machine_access_execution(machine->core_access);
-    pic_master = vm_composition_machine_access_pic_master(machine->core_access);
-    pic_slave = vm_composition_machine_access_pic_slave(machine->core_access);
+    memory = core_machine_executor_memory_borrow(machine->core_machine);
+    execution = core_machine_executor_cpu_execution_borrow(machine->core_machine);
+    pic_master = core_machine_shared_pic_master_borrow(machine->core_machine);
+    pic_slave = core_machine_shared_pic_slave_borrow(machine->core_machine);
     core_machine_cpu_execution_context_bind_pic(execution,
         pic_master, pic_slave);
-    vadp = vm_composition_machine_access_vadp(machine->core_access);
+    vadp = core_machine_shared_vadp_borrow(machine->core_machine);
     machine->cmos = &machine->cmos_storage;
     machine->fdd = &machine->fdd_storage;
     machine->fdc = &machine->fdc_storage;
@@ -119,7 +116,7 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
 {
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     core_machine_cpu_execution_context_bind_extension(
-        vm_composition_machine_access_execution(machine->core_access), STD_NULL);
+        core_machine_executor_cpu_execution_borrow(machine->core_machine), STD_NULL);
     machine->cmos = STD_NULL;
     machine->fdd = STD_NULL;
     machine->fdc = STD_NULL;
@@ -143,8 +140,6 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     machine->debugger_context = STD_NULL;
     machine->console_context = STD_NULL;
     machine->console_target = STD_NULL;
-    vm_composition_machine_access_finalize(machine->core_access);
-    machine->core_access = STD_NULL;
     STD_FREE(machine->control);
     machine->control = STD_NULL;
     core_machine_destroy(machine->core_machine);
@@ -198,8 +193,8 @@ C_INT vm_session_get_reset_vector(const vm_session *session,
     if (session == STD_NULL || session->core_machine == STD_NULL ||
         out_vector == STD_NULL) return NTVDM64_STATUS_INVALID_STATE;
     out_vector->cs = vm_session_read_u16(
-        &vm_composition_machine_access_cpu(session->core_access)->data.cs.selector);
+        &core_machine_executor_cpu_borrow(session->core_machine)->data.cs.selector);
     out_vector->ip = vm_session_read_u16(
-        &vm_composition_machine_access_cpu(session->core_access)->data.ip);
+        &core_machine_executor_cpu_borrow(session->core_machine)->data.ip);
     return NTVDM64_STATUS_OK;
 }

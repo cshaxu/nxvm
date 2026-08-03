@@ -12,7 +12,7 @@ for the active NXVM path:
 | One live platform-run owner | Pass | `src/vm/composition/session.h` embeds `vm_platform_run_handle_storage`; T139 evidence and run-handle smoke |
 | No TLS/current-object execution selection | Pass | final source scan below; explicit invocation work is recorded through T129--T132 |
 | Core has no VM/VDM dependency | Pass | final source scan below |
-| No VM raw alias map for core internals | Pass | `src/vm/composition/machine_access.h`; final source scan below |
+| No VM raw alias map or forwarding borrow facade | Pass | S5 removes `machine_access.*`; final source scan below |
 | No active second VM session/machine execution path | Pass | T118 removal record; real-session tests and final two-session smoke |
 
 "One creation path" means that both product forms call the same unconditional
@@ -29,10 +29,10 @@ instances for distinct sessions; it does not require them to share an instance.
 | Console/debug context | VM session storage | command boundary / debugger target | VM session finalization after no live run handle remains |
 | VDM minimal machine | `vdm_machine_dos_minimal_initialize()` | no runnable DOS path is claimed | VDM minimal finalization |
 
-The VM access record in `src/vm/composition/machine_access.c` owns no guest
-storage and exposes no lifecycle operation. It is the only VM source that
-borrows core executor/shared-device objects; each accessor returns a fresh
-non-owning borrow.
+S5 deletes the former VM access record. Core-owned non-owning borrows are used
+directly only by `vm/composition` when it binds VM providers/profile firmware
+or builds the existing debugger adapter; no VM peer module receives a raw-core
+borrow surface.
 
 ## Final Source Audit
 
@@ -42,7 +42,7 @@ The following scans ran against the active source tree after the T142 build:
 | --- | --- | --- |
 | `#include "vm/"` or `#include "vdm/"` beneath `src/core` | Empty | Core does not depend on product forms. |
 | TLS current session/machine/active selection | Empty | No `_Thread_local` execution-selection facade remains. |
-| VM session raw CPU/RAM/port/PIC/PIT/DMA/KBC/VADP access | Empty | VM reaches core through the bounded access record. |
+| VM session raw CPU/RAM/port/PIC/PIT/DMA/KBC/VADP access | Empty | S5 deletes the raw alias map and forwarding access record. |
 | VM/VDM direct core executor lifecycle calls | Empty | Core owns prepare/reset/refresh/finalize. |
 | Detached platform workers or legacy `start_machine` lifecycle | Empty | Run-handle ownership is the active platform model. |
 | Profile-selected executor / `core_machine_enable_executor()` | Empty | `core_machine_create()` always creates the standard executor. |
@@ -84,8 +84,9 @@ M5:T45:S1:PAUSE-BOUNDARY:OK
 M5:T70:S2:DOS-PROMPT:OK
 ```
 
-The task artifact is `build/output/nxvm_0_5_0142.exe`, banner `0.5.0142`,
-SHA-256 `A8617DA8E203D048DEE0BE907649C92B91815CE1AFF11DEFF7E18606B4895A5C`.
+The task artifact is `build/output/nxvm_0_5_0142.exe`, banner `0.5.0142`.
+S5 rebuilt it as
+`1E76A4D338CED55494245CBCCA5A5112EAAB0EC4D1CC511559B7B8EEFF5E5EC6`.
 
 ## Environment Limit
 
