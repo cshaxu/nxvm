@@ -9,16 +9,16 @@ int main(void)
     vm_composition_live_machine *session =
         (vm_composition_live_machine *)calloc(1u, sizeof(*session));
     if (session == NULL) return 1;
-    machineInit(session);
+    vm_composition_initialize(session);
     core_machine_keyboard_apply_host_state_to(session->keyboard_provider,
         NXVM_KEYBOARD_ASYNC_ALT, 0u);
     if (!core_machine_keyboard_get_modifier_from(session->keyboard_provider,
         CORE_MACHINE_KEYBOARD_MODIFIER_ALT)) {
-        machineFinal(session);
+        vm_composition_finalize(session);
         free(session);
         return 1;
     }
-    machineFinal(session);
+    vm_composition_finalize(session);
     free(session);
     puts("M5:T41:S1:KEYBOARD-FIRMWARE:OK");
     return 0;

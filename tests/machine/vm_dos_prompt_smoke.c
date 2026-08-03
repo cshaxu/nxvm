@@ -19,7 +19,7 @@
 
 static DWORD WINAPI run_full_pc(void *opaque)
 {
-    machineStart((vm_composition_live_machine *)opaque);
+    vm_composition_start((vm_composition_live_machine *)opaque);
     return 0u;
 }
 
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     if (argc != 2) return 1;
     session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
     if (session == NULL) return 1;
-    machineInit(session);
+    vm_composition_initialize(session);
     if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) goto fail;
     thread = CreateThread(NULL, 0u, run_full_pc, session, 0u, NULL);
     if (thread == NULL) goto fail;
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
         }
         Sleep(10u);
     }
-    machineStop(session);
+    vm_composition_stop(session);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
     if (result != WAIT_OBJECT_0 || !prompt_seen) {
@@ -112,14 +112,14 @@ int main(int argc, char **argv)
         fputs("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", stderr);
         goto fail;
     }
-    machineFinal(session);
+    vm_composition_finalize(session);
     free(session);
     puts("M5:T70:S2:DOS-PROMPT:OK");
     return 0;
 
 fail:
-    machineStop(session);
-    machineFinal(session);
+    vm_composition_stop(session);
+    vm_composition_finalize(session);
     free(session);
     return 1;
 }

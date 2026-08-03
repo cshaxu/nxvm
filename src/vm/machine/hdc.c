@@ -4,8 +4,8 @@
 
 #include "vm/machine/hdc.h"
 
-void vhdcInit() {
+void vm_machine_hdc_initialize() {
 }
-void vhdcReset() {}
-void vhdcRefresh() {}
-void vhdcFinal() {}
+void vm_machine_hdc_reset() {}
+void vm_machine_hdc_refresh() {}
+void vm_machine_hdc_finalize() {}

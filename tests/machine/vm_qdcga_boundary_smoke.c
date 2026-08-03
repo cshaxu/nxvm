@@ -10,17 +10,17 @@ int main(void)
     vm_composition_live_machine *session =
         (vm_composition_live_machine *)calloc(1u, sizeof(*session));
     if (session == NULL) return 1;
-    machineInit(session);
+    vm_composition_initialize(session);
     vm_profile_default_cga_reset(session->default_profile_context);
     session->cpu->data.ah = 0x00u;
     session->cpu->data.al = 0x03u;
     if (session->default_qdx->table[0x10u] == NULL) {
-        machineFinal(session);
+        vm_composition_finalize(session);
         free(session);
         return 1;
     }
     session->default_qdx->table[0x10u](session->default_profile_context);
-    machineFinal(session);
+    vm_composition_finalize(session);
     free(session);
     puts("M5:T40:S1:QDCGA-BOUNDARY:OK");
     return 0;

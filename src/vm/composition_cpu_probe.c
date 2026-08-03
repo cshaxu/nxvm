@@ -18,8 +18,8 @@ struct nxvm_cpu_probe {
     vm_composition_live_machine machine;
 };
 
-static int nxvm_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
-    nxvm_cpu_probe_state *state)
+static int vm_composition_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
+    vm_composition_cpu_probe_state *state)
 {
     const t_cpu *cpu = probe == NULL ? NULL : probe->machine.cpu;
 
@@ -37,7 +37,7 @@ static int nxvm_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
     return 1;
 }
 
-static int nxvm_cpu_probe_reset(nxvm_cpu_probe *probe)
+static int vm_composition_cpu_probe_reset(nxvm_cpu_probe *probe)
 {
     uint32_t eip = 0u;
 
@@ -56,7 +56,7 @@ static int nxvm_cpu_probe_reset(nxvm_cpu_probe *probe)
     return 1;
 }
 
-int nxvm_cpu_probe_create(nxvm_cpu_probe **out_probe)
+int vm_composition_cpu_probe_create(nxvm_cpu_probe **out_probe)
 {
     nxvm_cpu_probe *probe;
 
@@ -69,23 +69,23 @@ int nxvm_cpu_probe_create(nxvm_cpu_probe **out_probe)
     vm_composition_live_machine_initialize(&probe->machine);
     vm_composition_control_initialize(probe->machine.control, &probe->machine);
     probe->active = 1;
-    if (!nxvm_cpu_probe_reset(probe)) {
-        nxvm_cpu_probe_destroy(probe);
+    if (!vm_composition_cpu_probe_reset(probe)) {
+        vm_composition_cpu_probe_destroy(probe);
         return 0;
     }
     *out_probe = probe;
     return 1;
 }
 
-int nxvm_cpu_probe_step(
+int vm_composition_cpu_probe_step(
     nxvm_cpu_probe *probe,
     const uint8_t *bytes,
     size_t byte_count,
-    nxvm_cpu_probe_capture *out_capture)
+    vm_composition_cpu_probe_capture *out_capture)
 {
     if (probe == NULL || !probe->active || bytes == NULL || out_capture == NULL ||
         byte_count == 0u || byte_count > NXVM_BASELINE_CPU_PROBE_MAX_BYTES ||
-        !nxvm_cpu_probe_reset(probe)) {
+        !vm_composition_cpu_probe_reset(probe)) {
         return 0;
     }
 
@@ -94,7 +94,7 @@ int nxvm_cpu_probe_step(
     out_capture->byte_count = byte_count;
     core_machine_memory_write_real_to(probe->machine.ram, 0u, 0u, bytes,
         byte_count);
-    if (!nxvm_cpu_probe_capture_state(probe, &out_capture->before)) {
+    if (!vm_composition_cpu_probe_capture_state(probe, &out_capture->before)) {
         return 0;
     }
     {
@@ -106,7 +106,7 @@ int nxvm_cpu_probe_step(
             return 0;
         }
     }
-    if (!nxvm_cpu_probe_capture_state(probe, &out_capture->after)) {
+    if (!vm_composition_cpu_probe_capture_state(probe, &out_capture->after)) {
         return 0;
     }
     out_capture->exception_mask = probe->machine.cpuins->data.except;
@@ -114,7 +114,7 @@ int nxvm_cpu_probe_step(
     return 1;
 }
 
-void nxvm_cpu_probe_destroy(nxvm_cpu_probe *probe)
+void vm_composition_cpu_probe_destroy(nxvm_cpu_probe *probe)
 {
     if (probe != NULL && probe->active) {
         vm_composition_control_finalize(probe->machine.control, &probe->machine);

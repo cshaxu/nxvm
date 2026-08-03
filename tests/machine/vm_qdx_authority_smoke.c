@@ -12,18 +12,18 @@ int main(void)
 
     session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
     if (session == NULL) return 1;
-    machineInit(session);
+    vm_composition_initialize(session);
     machine = session;
     if (machine == NULL ||
         machine->default_qdx != &machine->default_qdx_storage ||
         machine->default_profile_context->qdx != machine->default_qdx ||
         core_machine_cpu_execution_context_extension(machine->cpu_execution) !=
             machine->default_profile_context) {
-        machineFinal(session);
+        vm_composition_finalize(session);
         free(session);
         return 1;
     }
-    machineFinal(session);
+    vm_composition_finalize(session);
     free(session);
     puts("M5:T39:S1:QDX-AUTHORITY:OK");
     return 0;

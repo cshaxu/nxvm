@@ -11,7 +11,7 @@
 #include "vm/machine/debug.h"
 
 static int vm_debug_running(void *context) { return vm_composition_control_is_running(((vm_composition_live_machine *)context)->control); }
-static void vm_debug_resume(void *context) { machineResume((vm_composition_live_machine *)context); }
+static void vm_debug_resume(void *context) { vm_composition_resume((vm_composition_live_machine *)context); }
 static int vm_debug_paused(void *context) { return vm_composition_control_is_paused(((vm_composition_live_machine *)context)->control); }
 static core_product_debug_pause_reason vm_debug_pause_reason(void *context)
 {

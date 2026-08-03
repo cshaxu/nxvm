@@ -12,14 +12,14 @@ int main(void)
 
     session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
     if (session == NULL) return 1;
-    machineInit(session);
+    vm_composition_initialize(session);
     machine = session;
     if (machine == NULL || machine->default_bios != &machine->default_bios_storage) {
-        machineFinal(session);
+        vm_composition_finalize(session);
         free(session);
         return 1;
     }
-    machineFinal(session);
+    vm_composition_finalize(session);
     free(session);
     puts("M5:T38:S1:BIOS-AUTHORITY:OK");
     return 0;

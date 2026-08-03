@@ -6,10 +6,10 @@
 int main(void)
 {
     vm_composition_live_machine session = {0};
-    machineInit(&session);
-    vhdcReset();
-    vhdcRefresh();
-    machineFinal(&session);
+    vm_composition_initialize(&session);
+    vm_machine_hdc_reset();
+    vm_machine_hdc_refresh();
+    vm_composition_finalize(&session);
     puts("M5:T37:S1:HDC-BOUNDARY:OK");
     return 0;
 }

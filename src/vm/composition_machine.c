@@ -143,12 +143,12 @@ static void vm_composition_debug_request_pause(void *context,
         VM_COMPOSITION_PAUSE_TRACE : VM_COMPOSITION_PAUSE_BREAKPOINT);
 }
 
-void machineStart(vm_composition_live_machine *machine) {
-    machineReset(machine);
-    machineResume(machine);
+void vm_composition_start(vm_composition_live_machine *machine) {
+    vm_composition_reset(machine);
+    vm_composition_resume(machine);
 }
 
-void machineReset(vm_composition_live_machine *machine) {
+void vm_composition_reset(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_composition_control_reset(machine->control);
     if (!vm_composition_control_is_running(machine->control)) {
@@ -156,12 +156,12 @@ void machineReset(vm_composition_live_machine *machine) {
     }
 }
 
-void machineStop(vm_composition_live_machine *machine) {
+void vm_composition_stop(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_composition_control_stop(machine->control);
 }
 
-void machineResume(vm_composition_live_machine *machine) {
+void vm_composition_resume(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     if (vm_composition_control_is_paused(machine->control)) {
         vm_composition_control_continue(machine->control);
@@ -170,7 +170,7 @@ void machineResume(vm_composition_live_machine *machine) {
     }
 }
 
-void machineInit(vm_composition_live_machine *machine) {
+void vm_composition_initialize(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     platformInit();
     vm_composition_live_machine_initialize(machine);
@@ -194,7 +194,7 @@ void machineInit(vm_composition_live_machine *machine) {
         machine->presentation_mailbox, machine->wait_scope);
 }
 
-void machineFinal(vm_composition_live_machine *machine) {
+void vm_composition_finalize(vm_composition_live_machine *machine) {
     if (machine == NULL || machine->core_machine == NULL) return;
     vm_composition_control_finalize(machine->control, machine);
     core_machine_keyboard_provider_slot_finalize(machine->keyboard_provider);

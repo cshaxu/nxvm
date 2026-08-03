@@ -12,7 +12,7 @@ int main(void)
 
     session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
     if (session == NULL) return 1;
-    machineInit(session);
+    vm_composition_initialize(session);
     machine = session;
     if (machine == NULL || machine->fdc == NULL ||
         machine->fdc->connect.fdd != machine->fdd ||
@@ -22,11 +22,11 @@ int main(void)
         machine->fdc->connect.pic_master != machine->pic_master ||
         machine->fdc->connect.pic_slave != machine->pic_slave ||
         machine->fdc->connect.port != machine->port) {
-        machineFinal(session);
+        vm_composition_finalize(session);
         free(session);
         return 1;
     }
-    machineFinal(session);
+    vm_composition_finalize(session);
     free(session);
     puts("M5:T70:S1:P5:FDC-CONNECT:OK");
     return 0;

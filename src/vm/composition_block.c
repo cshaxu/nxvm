@@ -43,7 +43,7 @@ static int vmBlockWrite(void *context, t_nubit8 cylinder, t_nubit8 head,
     return vmBlockTransfer(context, cylinder, head, sector, buffer, byte_count, True);
 }
 
-void vmCompositionBindBlock(vm_composition_live_machine *machine)
+void vm_composition_bind_block(vm_composition_live_machine *machine)
 {
     if (machine == NULL) return;
     core_machine_block_provider_slot_bind(machine->block_provider, machine->hdd,

@@ -108,6 +108,9 @@ are recorded before the `type.*` call-site migrations.
 **M5 T102 complete:** shared product debug/runtime APIs use
 `core_product_*` while retaining approved debug/assembler lexical names.
 
+**M5 T103 complete:** VM composition lifecycle/block/CPU-probe and VM HDC
+APIs now use their source-owner prefixes without compatibility aliases.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in
