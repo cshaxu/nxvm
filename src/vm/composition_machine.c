@@ -147,8 +147,9 @@ void machineResume(vm_composition_live_machine *machine) {
 void machineInit(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     platformInit();
-    core_product_wait_bind(vm_composition_wait, NULL);
     vm_composition_live_machine_initialize(machine);
+    core_product_wait_scope_initialize(machine->wait_scope,
+        vm_composition_wait, NULL);
     vm_composition_control_initialize(machine->control, machine);
     core_machine_keyboard_provider_slot_bind(machine->keyboard_provider,
         machine->default_profile_context,
@@ -163,7 +164,7 @@ void machineInit(vm_composition_live_machine *machine) {
         &vm_composition_execution_sink, machine);
     vm_platform_run_context_initialize(machine->platform_run_context,
         machine->execution_transport, machine->keyboard_transport,
-        machine->presentation_mailbox);
+        machine->presentation_mailbox, machine->wait_scope);
     vm_platform_keyboard_bind(&vm_composition_keyboard_sink, machine);
     vm_platform_execution_bind(&vm_composition_execution_sink, machine);
 }
@@ -177,7 +178,6 @@ void machineFinal(vm_composition_live_machine *machine) {
     vm_composition_debug_target_finalize(machine);
     vm_platform_execution_bind(NULL, NULL);
     vm_platform_keyboard_bind(NULL, NULL);
-    core_product_wait_bind(NULL, NULL);
     vm_composition_live_machine_finalize(machine);
     platformFinal();
 }

@@ -15,6 +15,8 @@ typedef struct win32con_run_context {
 
 static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     const win32con_run_context *context = lpParam;
+    core_product_wait_scope previous = core_product_wait_scope_enter(
+        context->platform->wait_scope);
 
     w32cdispInit(context->output, context->platform->presentation);
     w32cdispPaint(context->output, context->platform->presentation, TRUE);
@@ -23,13 +25,17 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
         utilsSleep(100);
     }
     w32cdispFinal(context->output);
+    core_product_wait_scope_leave(previous);
     return 0;
 }
 
 static DWORD WINAPI ThreadKernel(LPVOID lpParam) {
     const win32con_run_context *context = lpParam;
+    core_product_wait_scope previous = core_product_wait_scope_enter(
+        context->platform->wait_scope);
 
     vm_platform_execution_start_for(context->platform->execution);
+    core_product_wait_scope_leave(previous);
     return 0;
 }
 
@@ -76,9 +82,11 @@ VOID win32conStartMachine(const vm_platform_run_context *context) {
     DWORD ThreadIdKernel;
     win32con_run_context run_context;
     BOOL oldDeviceFlip;
+    core_product_wait_scope previous;
 
     if (context == NULL || context->execution == NULL ||
         context->keyboard == NULL) return;
+    previous = core_product_wait_scope_enter(context->wait_scope);
     run_context.platform = context;
     run_context.input = GetStdHandle(STD_INPUT_HANDLE);
     oldDeviceFlip = vm_platform_execution_get_flip_for(context->execution);
@@ -94,4 +102,5 @@ VOID win32conStartMachine(const vm_platform_run_context *context) {
         utilsSleep(20);
         w32ckeybProcess(&run_context);
     }
+    core_product_wait_scope_leave(previous);
 }

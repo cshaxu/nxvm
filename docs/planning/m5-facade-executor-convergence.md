@@ -2,8 +2,8 @@
 
 ## Status
 
-T75 S1 through T79 S1 and T80 S1--S5 are complete. T80 S6 is active. No later
-task in this sequence is active.
+T75 S1 through T80 S6 are complete. T81 S1 is active. No later task in this
+sequence is active.
 
 ## Story 1: Remove Residual Global Facades
 

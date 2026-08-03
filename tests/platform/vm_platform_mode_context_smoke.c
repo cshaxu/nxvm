@@ -7,8 +7,8 @@ int main(void)
     vm_platform_run_context first;
     vm_platform_run_context second;
 
-    vm_platform_run_context_initialize(&first, NULL, NULL, NULL);
-    vm_platform_run_context_initialize(&second, NULL, NULL, NULL);
+    vm_platform_run_context_initialize(&first, NULL, NULL, NULL, NULL);
+    vm_platform_run_context_initialize(&second, NULL, NULL, NULL, NULL);
     vm_platform_run_context_set_window_display(&first, 1);
     if (!vm_platform_run_context_get_window_display(&first) ||
         vm_platform_run_context_get_window_display(&second)) return 1;

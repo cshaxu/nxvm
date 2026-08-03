@@ -14,7 +14,7 @@ $rules = @(
     [pscustomobject]@{ Name = 'core keyboard legacy facade'; Pattern = '\bcore_machine_keyboard_(bind|apply_host_state|receive_key_press|get_modifier)\s*\('; AllowedFiles = @('src/core/machine/keyboard_interface.c') },
     [pscustomobject]@{ Name = 'core display legacy facade'; Pattern = '\bcore_machine_display_(bind|notify_mode_changed|bind_snapshot_provider|capture_snapshot)\s*\('; AllowedFiles = @('src/core/machine/display.c') },
     [pscustomobject]@{ Name = 'persistent core debug target facade'; Pattern = '\bcore_product_debug_(bind_target|get_target)\s*\('; AllowedFiles = @() },
-    [pscustomobject]@{ Name = 'core wait facade'; Pattern = '\bcore_product_wait_bind\s*\('; AllowedFiles = @('src/core/product/wait.c', 'src/vm/composition_machine.c') },
+    [pscustomobject]@{ Name = 'core wait facade'; Pattern = '\bcore_product_wait_bind\s*\('; AllowedFiles = @() },
     [pscustomobject]@{ Name = 'VM keyboard sink facade'; Pattern = '\bvm_platform_keyboard_bind\s*\('; AllowedFiles = @('src/vm/platform/input.c', 'src/vm/composition_machine.c') },
     [pscustomobject]@{ Name = 'VM execution sink facade'; Pattern = '\bvm_platform_execution_bind\s*\('; AllowedFiles = @('src/vm/platform/execution.c', 'src/vm/composition_machine.c') },
     [pscustomobject]@{ Name = 'VM platform mode facade'; Pattern = '\bplatform\.flagMode\b'; AllowedFiles = @() },

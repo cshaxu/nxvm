@@ -18,17 +18,36 @@ static void core_product_wait_smoke_provider(void *context, uint32_t millisecond
 int main(void)
 {
     uint32_t calls = 0u;
+    uint32_t nested_calls = 0u;
+    core_product_wait_scope scope;
+    core_product_wait_scope nested_scope;
+    core_product_wait_scope previous;
+    core_product_wait_scope nested_previous;
 
-    core_product_wait_bind(core_product_wait_smoke_provider, &calls);
+    core_product_wait_scope_initialize(&scope, core_product_wait_smoke_provider,
+        &calls);
+    previous = core_product_wait_scope_enter(&scope);
     utilsSleep(17u);
     if (calls != 1u || observed_milliseconds != 17u) {
         return 1;
     }
-    core_product_wait_bind(NULL, NULL);
-    utilsSleep(1u);
-    if (calls != 1u) {
+    core_product_wait_scope_initialize(&nested_scope,
+        core_product_wait_smoke_provider, &nested_calls);
+    nested_previous = core_product_wait_scope_enter(&nested_scope);
+    utilsSleep(23u);
+    if (calls != 1u || nested_calls != 1u || observed_milliseconds != 23u) {
         return 1;
     }
-    puts("M5:T14:S3:CORE-PRODUCT-WAIT:OK");
+    core_product_wait_scope_leave(nested_previous);
+    utilsSleep(31u);
+    if (calls != 2u || nested_calls != 1u || observed_milliseconds != 31u) {
+        return 1;
+    }
+    core_product_wait_scope_leave(previous);
+    utilsSleep(1u);
+    if (calls != 2u) {
+        return 1;
+    }
+    puts("M5:T80:S6:WAIT-SCOPE:OK");
     return 0;
 }
