@@ -12,6 +12,7 @@ fault, prefix/addressing, register/FLAGS, and side-effect probes have passed.
 | `x86.i386_real_mode` | unknown | none | evidence-backed 32-bit real-mode execution matrix |
 | `x86.i386_protected_mode` | unknown | none | evidence-backed protected-mode execution matrix |
 | `x86.i386_paging` | unknown | none | paging translation, permission, and fault matrix |
+| `fpu.esc` | unavailable; contract design active | `MEM` reaches `FNINIT` (`DB E3`) but current escape dispatch raises `#UD` | T153--T158 define per-machine FPU profiles, then verify ESC consumption and CR0 `EM`/`TS`/`MP` behavior |
 
 The baseline probe harness records an instruction window of at most 15 bytes,
 CS:IP and linear PC, EAX/EBX/ECX/EDX, FLAGS, and exception mask/code. It has no

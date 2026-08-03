@@ -131,6 +131,11 @@ remove the required owner prefix from public APIs.
   before execution, and reset without changing frozen topology. Provider order,
   failure handling, lifetime, and re-entry constraints are fixed by the owning
   core contract.
+- CPU architecture and FPU capability are independent frozen per-machine
+  configuration. An unavailable instruction form must fault through its
+  documented guest path before side effects; a legal FPU escape must not be
+  mislabeled as an undefined opcode merely because the configured FPU is absent
+  or not yet implemented.
 - A product outer loop owns host input draining, Console commands, platform
   events, pacing, host waits, cancellation, product exit, and repeated bounded
   calls to `core_machine_run()`. It never executes guest instructions itself.
