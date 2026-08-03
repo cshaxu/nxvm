@@ -2,7 +2,7 @@
 
 
 
-#include "vm/composition_full_pc.h"
+#include "vm/composition/composition_full_pc.h"
 
 #include "vm/profile/default_profile/profile.h"
 

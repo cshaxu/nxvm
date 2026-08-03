@@ -5,7 +5,7 @@
 
 #include "core/machine/memory.h"
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
 C_INT main(C_VOID)
 {

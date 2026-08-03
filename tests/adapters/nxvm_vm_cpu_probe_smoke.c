@@ -2,7 +2,7 @@
 
 
 
-#include "vm/composition_cpu_probe.h"
+#include "vm/composition/composition_cpu_probe.h"
 
 #include "core/product/runtime/execution_context.h"
 

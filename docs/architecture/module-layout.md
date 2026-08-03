@@ -20,11 +20,11 @@ src/
   core/{machine,platform,product}/
   vm/
     main.c
-    composition.{c,h}
+    composition/
     {machine,platform,product,profile}/
     profile/default_profile/firmware/
   vdm/
-    composition.{c,h}
+    composition/
     {machine,platform,product,profile}/
     profile/dos_minimal_profile/
 ```
@@ -69,6 +69,12 @@ Public C symbols use their source ownership path: `core_machine_*`,
 `core_platform_*`, `core_product_*`, `vm_machine_*`, `vm_platform_*`,
 `vm_product_*`, `vm_profile_*`, and their VDM counterparts. Root composition
 uses `vm_composition_*` or `vdm_composition_*`.
+
+Composition implementation and private headers live under
+`vm/composition/` or `vdm/composition/`. The product root owns that directory;
+it is not a fourth module and does not relax the directed module dependency
+rules. Product entry points remain directly under `vm/main.c` and, when added,
+`vdm/main.c`.
 
 Approved compact lexical families are also retained: `kbc`, `vadp`,
 `win32app`, `win32con`, `linuxapp`, `linuxcon`, `w32*`, `xasm32`, `aasm`,

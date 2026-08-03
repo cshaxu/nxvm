@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
 
 #include "core/machine/machine.h"

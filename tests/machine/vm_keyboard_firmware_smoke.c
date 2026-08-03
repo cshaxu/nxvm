@@ -5,7 +5,7 @@
 
 #include "core/machine/keyboard_interface.h"
 
-#include "vm/composition_machine.h"
+#include "vm/composition/composition_machine.h"
 
 C_INT main(C_VOID)
 {

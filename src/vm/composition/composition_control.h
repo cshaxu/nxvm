@@ -30,7 +30,7 @@ typedef struct vm_composition_control_state {
     core_product_execution_context execution_context;
 } vm_composition_control_state;
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
 C_VOID vm_composition_control_start(vm_composition_control_state *control);
 C_VOID vm_composition_control_reset(vm_composition_control_state *control);

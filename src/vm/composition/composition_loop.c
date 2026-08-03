@@ -12,7 +12,7 @@
 
 #include "vm/machine/debug.h"
 
-#include "vm/composition.h"
+#include "vm/composition/composition.h"
 
 #include "core/product/runtime/execution_context.h"
 
@@ -26,13 +26,13 @@
 
 #include "core/platform/sleep.h"
 
-#include "vm/composition_control.h"
+#include "vm/composition/composition_control.h"
 
-#include "vm/composition_machine.h"
+#include "vm/composition/composition_machine.h"
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
-#include "vm/composition_display.h"
+#include "vm/composition/composition_display.h"
 
 static C_VOID device_execution_context_reset(C_VOID *device)
 {

@@ -17,9 +17,9 @@
 
 #include "version.h"
 
-#include "vm/composition_console.h"
+#include "vm/composition/composition_console.h"
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
 #include "vm/product/console.h"
 

@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
 #define VM_COMPOSITION_MACHINE_NAME "IBM PC/AT"
 

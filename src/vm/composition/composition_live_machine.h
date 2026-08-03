@@ -47,7 +47,7 @@
 
 #include "vm/profile/default_profile/firmware/context.h"
 
-#include "vm/composition_control.h"
+#include "vm/composition/composition_control.h"
 
 #include "core/product/debug/debug_target.h"
 

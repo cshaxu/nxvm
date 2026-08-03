@@ -5,9 +5,9 @@
 
 #include "core/product/debug/debug_target.h"
 
-#include "vm/composition_debug.h"
+#include "vm/composition/composition_debug.h"
 
-#include "vm/composition_machine.h"
+#include "vm/composition/composition_machine.h"
 
 C_INT main(C_VOID)
 {

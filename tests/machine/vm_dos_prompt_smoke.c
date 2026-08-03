@@ -14,11 +14,11 @@
 
 #include "vm/platform/presentation_mailbox.h"
 
-#include "vm/composition_machine.h"
+#include "vm/composition/composition_machine.h"
 
-#include "vm/composition_control.h"
+#include "vm/composition/composition_control.h"
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
 #include "vm/machine/fdd.h"
 

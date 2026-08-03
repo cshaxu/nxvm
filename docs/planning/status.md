@@ -155,6 +155,10 @@ sequence is complete.
 **M5 T116 S2 complete:** the source vocabulary and build-tree cleanup policy
 are permanent governance rules; only `build/output/` remains after cleanup.
 
+**M5 T117 complete:** VM and VDM composition implementation/private headers
+now live in their product-root `composition/` directories. GCC gates, FDD DOS
+boot, and retained Console behavior passed without a behavioral change.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

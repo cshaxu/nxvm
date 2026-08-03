@@ -2,7 +2,7 @@
 
 
 
-#include "vm/composition_machine.h"
+#include "vm/composition/composition_machine.h"
 
 #include "vm/machine/hdc.h"
 

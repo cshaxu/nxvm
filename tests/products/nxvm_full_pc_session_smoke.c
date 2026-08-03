@@ -3,7 +3,7 @@
 
 
 
-#include "vm/composition_session.h"
+#include "vm/composition/composition_session.h"
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {

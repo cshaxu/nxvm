@@ -3,7 +3,7 @@
 
 
 
-#include "vm/composition_full_pc.h"
+#include "vm/composition/composition_full_pc.h"
 
 #include "vm/profile/full_pc_profile.h"
 

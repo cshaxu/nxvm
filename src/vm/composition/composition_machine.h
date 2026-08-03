@@ -9,7 +9,7 @@ extern "C" {
 
 #include "type.h"
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
 C_VOID vm_composition_start(vm_composition_live_machine *machine);
 C_VOID vm_composition_reset(vm_composition_live_machine *machine);

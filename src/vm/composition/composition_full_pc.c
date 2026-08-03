@@ -1,12 +1,12 @@
 #include "type.h"
 
-#include "vm/composition_full_pc.h"
+#include "vm/composition/composition_full_pc.h"
 
 
 
 
 
-#include "vm/composition_control.h"
+#include "vm/composition/composition_control.h"
 
 #include "core/machine/cpu.h"
 
@@ -28,9 +28,9 @@
 
 #include "core/product/debug/debug.h"
 
-#include "vm/composition_machine.h"
+#include "vm/composition/composition_machine.h"
 
-#include "vm/composition_debug.h"
+#include "vm/composition/composition_debug.h"
 
 #include "vm/platform/platform.h"
 

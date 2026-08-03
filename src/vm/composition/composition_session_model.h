@@ -11,7 +11,7 @@
 
 #include "vm/product/media.h"
 
-#include "vm/composition_default_profile.h"
+#include "vm/composition/composition_default_profile.h"
 
 #include "vm/product/presentation.h"
 

@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vdm/composition_minimal_session.h"
+#include "vdm/composition/composition_minimal_session.h"
 
 
 
