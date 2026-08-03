@@ -38,5 +38,6 @@ M5:T142:S5:COMPOSITION-ONLY-BORROW:OK
 The latter source audit found no `machine_access`/`core_access` symbol and no
 production `core_machine_*_borrow` caller outside `src/vm/composition/`.
 
-The rebuilt task artifact is `build/output/nxvm_0_5_0142.exe`, SHA-256
+The S5 task artifact was `build/output/nxvm_0_5_0142.exe`, SHA-256
 `1E76A4D338CED55494245CBCCA5A5112EAAB0EC4D1CC511559B7B8EEFF5E5EC6`.
+S6 rebuilt the same task-level artifact and records its current hash.

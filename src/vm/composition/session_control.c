@@ -35,33 +35,31 @@
 
 #include "vm/composition/display_bridge.h"
 
-static C_VOID device_execution_context_reset(C_VOID *device)
+static C_VOID vm_session_execution_context_reset_callback(vm_session *machine)
 {
-    vm_session *machine =
-        (vm_session *)device;
+    if (machine == STD_NULL) return;
     vm_machine_debug_reset(machine->debug);
     if (core_machine_reset(machine->core_machine) != NTVDM64_STATUS_OK) {
         vm_session_control_stop(machine->control);
     }
 }
 
-static C_VOID device_execution_context_debug_refresh(C_VOID *device)
+static C_VOID vm_session_execution_context_debug_refresh_callback(
+    vm_session *machine)
 {
-    vm_session *machine =
-        (vm_session *)device;
     vm_machine_debug_refresh(machine == STD_NULL ? STD_NULL : machine->debug);
 }
 
-static const vm_session_execution_context_callbacks device_execution_callbacks = {
-    device_execution_context_reset,
-    device_execution_context_debug_refresh
+static const vm_session_execution_context_callbacks vm_session_execution_callbacks = {
+    vm_session_execution_context_reset_callback,
+    vm_session_execution_context_debug_refresh_callback
 };
 
 C_VOID vm_session_control_start(vm_session_control_state *control) {
     vm_session *machine;
 
     if (control == STD_NULL) return;
-    machine = (vm_session *)control->execution_context.device;
+    machine = control->execution_context.session;
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     vm_session_execution_context_activate(&control->execution_context);
     STD_ATOMIC_STORE(&control->flagRun, NTVDM64_TYPE_TRUE);
@@ -86,7 +84,7 @@ C_VOID vm_session_control_stop(vm_session_control_state *control)  {
     vm_session *machine;
 
     if (control == STD_NULL) return;
-    machine = (vm_session *)control->execution_context.device;
+    machine = control->execution_context.session;
     if (machine != STD_NULL && machine->core_machine != STD_NULL) {
         core_machine_request_stop(machine->core_machine);
     }
@@ -175,14 +173,10 @@ C_VOID vm_session_control_initialize(vm_session_control_state *control,
     STD_ATOMIC_INIT(&control->stepRequested, NTVDM64_TYPE_FALSE);
     STD_ATOMIC_INIT(&control->pauseReason, VM_SESSION_PAUSE_NONE);
     vm_session_execution_context_initialize(&control->execution_context);
-    vm_session_execution_context_bind_machine_state(
-        &control->execution_context,
-        core_machine_executor_cpu_borrow(machine->core_machine),
-        core_machine_executor_memory_borrow(machine->core_machine),
-        core_machine_executor_port_borrow(machine->core_machine),
+    vm_session_execution_context_bind_session(&control->execution_context,
         machine);
     vm_session_execution_context_bind_callbacks(
-        &control->execution_context, &device_execution_callbacks);
+        &control->execution_context, &vm_session_execution_callbacks);
     vm_session_execution_context_activate(&control->execution_context);
     vm_machine_debug_initialize(machine->debug,
         core_machine_executor_cpu_borrow(machine->core_machine),
@@ -204,8 +198,8 @@ C_VOID vm_session_control_finalize(vm_session_control_state *control,
 
 C_VOID vm_session_control_print_status(const vm_session_control_state *control) {
     STD_PRINTF("Recording: %s\n", control != STD_NULL &&
-        control->execution_context.device != STD_NULL &&
-        ((vm_session *)control->execution_context.device)->debug->
+        control->execution_context.session != STD_NULL &&
+        control->execution_context.session->debug->
             connect.recordFile ? "Yes" : "No");
     STD_PRINTF("Running:   %s\n", control != STD_NULL && STD_ATOMIC_LOAD(&control->flagRun) ?
         "Yes" : "No");
