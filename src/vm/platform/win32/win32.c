@@ -168,7 +168,7 @@ static C_VOID vm_platform_win32_keyboard_apply_current_state_for(
     }
 }
 
-VOID vm_platform_win32_keyboard_make_status_for(const vm_platform_run_context *context) {
+C_VOID vm_platform_win32_keyboard_make_status_for(const vm_platform_run_context *context) {
     uint32_t asynchronous_keys = vm_platform_win32_keyboard_get_async_state();
     uint32_t toggle_keys = vm_platform_win32_keyboard_get_toggle_state();
     vm_platform_keyboard_state_sink state_sink = context == STD_NULL ? STD_NULL :
@@ -184,8 +184,8 @@ VOID vm_platform_win32_keyboard_make_status_for(const vm_platform_run_context *c
         }
     }
 }
-VOID vm_platform_win32_keyboard_make_key_for(const vm_platform_run_context *context,
-                             UCHAR scanCode, UCHAR virtualKey) {
+C_VOID vm_platform_win32_keyboard_make_key_for(const vm_platform_run_context *context,
+                             C_UCHAR scanCode, C_UCHAR virtualKey) {
     UCHAR ascii = 0x00;
     USHORT code = 0x0000;
     switch (virtualKey) {
@@ -276,7 +276,7 @@ VOID vm_platform_win32_keyboard_make_key_for(const vm_platform_run_context *cont
     }
 }
 
-VOID vm_platform_win32_display_set_screen(BOOL flagWindow,
+C_VOID vm_platform_win32_display_set_screen(WIN32_BOOL flagWindow,
                            const vm_platform_run_context *context) {
     if (flagWindow) {
         vm_platform_win32app_display_set_screen(context);
@@ -285,7 +285,7 @@ VOID vm_platform_win32_display_set_screen(BOOL flagWindow,
     }
 }
 
-VOID vm_platform_win32_display_paint(BOOL flagWindow,
+C_VOID vm_platform_win32_display_paint(WIN32_BOOL flagWindow,
                        const vm_platform_run_context *context) {
     if (flagWindow) {
         vm_platform_win32app_display_paint(context);
@@ -294,7 +294,7 @@ VOID vm_platform_win32_display_paint(BOOL flagWindow,
     }
 }
 
-VOID vm_platform_win32_start_machine(BOOL flagWindow,
+C_VOID vm_platform_win32_start_machine(WIN32_BOOL flagWindow,
                        const vm_platform_run_context *context) {
     if (flagWindow) {
         vm_platform_win32app_start_machine(context);

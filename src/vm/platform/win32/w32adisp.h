@@ -9,25 +9,25 @@ extern "C" {
 
 #include "type.h"
 
-#include <windows.h>
+#include "vm/platform/win32/win32_types.h"
 
 
 typedef struct vm_platform_presentation_mailbox vm_platform_presentation_mailbox;
 typedef struct w32adisp_context w32adisp_context;
 
 w32adisp_context *w32adisp_context_create(C_VOID);
-VOID w32adisp_context_destroy(w32adisp_context *context);
+C_VOID w32adisp_context_destroy(w32adisp_context *context);
 uint64_t w32adisp_context_generation(const w32adisp_context *context);
 
-VOID w32adispSetScreen(w32adisp_context *context, HWND window,
+C_VOID w32adispSetScreen(w32adisp_context *context, WIN32_HWND window,
                         const vm_platform_presentation_mailbox *mailbox);
-VOID w32adispPaint(w32adisp_context *context, HWND window,
+C_VOID w32adispPaint(w32adisp_context *context, WIN32_HWND window,
                    const vm_platform_presentation_mailbox *mailbox,
-                   BOOL flagForce);
+                   WIN32_BOOL flagForce);
 
-VOID w32adispInit(w32adisp_context *context, HWND window,
+C_VOID w32adispInit(w32adisp_context *context, WIN32_HWND window,
                   const vm_platform_presentation_mailbox *mailbox);
-VOID w32adispFinal(w32adisp_context *context);
+C_VOID w32adispFinal(w32adisp_context *context);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

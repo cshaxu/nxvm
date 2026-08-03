@@ -35,7 +35,7 @@ w32cdisp_context *w32cdisp_context_create(C_VOID) {
     return STD_CALLOC(1u, sizeof(w32cdisp_context));
 }
 
-VOID w32cdisp_context_destroy(w32cdisp_context *context) {
+C_VOID w32cdisp_context_destroy(w32cdisp_context *context) {
     if (context == STD_NULL) return;
     STD_FREE(context->char_buffer);
     STD_FREE(context);
@@ -45,7 +45,7 @@ uint64_t w32cdisp_context_generation(const w32cdisp_context *context) {
     return context == STD_NULL ? 0u : context->displayed_generation;
 }
 
-VOID w32cdispInit(w32cdisp_context *context, HANDLE output,
+C_VOID w32cdispInit(w32cdisp_context *context, WIN32_HANDLE output,
                   const vm_platform_presentation_mailbox *mailbox) {
     if (context == STD_NULL) return;
     /* Cursor information is retained only for the owned output handle. */
@@ -57,7 +57,7 @@ VOID w32cdispInit(w32cdisp_context *context, HANDLE output,
     w32cdispSetScreen(context, output, mailbox);
 }
 
-VOID w32cdispSetScreen(w32cdisp_context *context, HANDLE output,
+C_VOID w32cdispSetScreen(w32cdisp_context *context, WIN32_HANDLE output,
                        const vm_platform_presentation_mailbox *mailbox) {
     core_platform_display_frame frame;
 
@@ -82,9 +82,9 @@ VOID w32cdispSetScreen(w32cdisp_context *context, HANDLE output,
     SetConsoleScreenBufferSize(output, context->buffer_size);
 }
 
-VOID w32cdispPaint(w32cdisp_context *context, HANDLE output,
+C_VOID w32cdispPaint(w32cdisp_context *context, WIN32_HANDLE output,
                    const vm_platform_presentation_mailbox *mailbox,
-                   BOOL flagForce) {
+                   WIN32_BOOL flagForce) {
     core_platform_display_frame frame;
     UCHAR ansiChar;
     WCHAR unicodeChar;
@@ -125,7 +125,7 @@ VOID w32cdispPaint(w32cdisp_context *context, HANDLE output,
     }
 }
 
-VOID w32cdispFinal(w32cdisp_context *context, HANDLE output) {
+C_VOID w32cdispFinal(w32cdisp_context *context, WIN32_HANDLE output) {
     if (context == STD_NULL) return;
     if (context->char_buffer) {
         STD_FREE(context->char_buffer);
