@@ -2,12 +2,14 @@
 
 Read current documentation in this order:
 
-1. `architecture/overview.md` defines product shape and system terms.
-2. `architecture/module-layout.md` defines source ownership, dependency rules,
+1. `../RULES.md` is the compact repository-wide implementation and review
+   checklist.
+2. `architecture/overview.md` defines product shape and system terms.
+3. `architecture/module-layout.md` defines source ownership, dependency rules,
    and root composition.
-3. `architecture/contracts.md` is the sole current interface-design authority.
-4. `requirements/` defines externally observable product behavior only.
-5. `planning/roadmap.md`, `planning/status.md`, and
+4. `architecture/contracts.md` is the sole current interface-design authority.
+5. `requirements/` defines externally observable product behavior only.
+6. `planning/roadmap.md`, `planning/status.md`, and
    `planning/execution-policy.md` define execution state and gates.
 
 `governance/`, `source-policy.md`, `project-constitution.md`,

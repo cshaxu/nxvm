@@ -1,8 +1,11 @@
 # Execution Policy
 
 One subtask is active at a time. Before implementation, create a subtask record
-with objective, non-goals, reference baseline, files/ABI surface, exact test
-commands, expected markers, asset needs, and stop conditions.
+with objective, non-goals, reference baseline, files/ABI surface, applicable
+`RULES.md` sections, exact test commands, expected markers, asset needs, and
+stop conditions. The rules review names each applicable invariant, its planned
+evidence, and any requested owner-approved exception; a task may mark a rule
+not applicable only with a short reason.
 
 A design milestone is not complete until it has produced the bounded Task and
 subtask breakdown for its immediate implementation milestone. The breakdown
@@ -13,9 +16,12 @@ gate, not an M0 prediction. M8 instead approves one such breakdown for each
 admitted corpus increment before implementation.
 
 A subtask completes only when scoped behavior works, focused tests pass,
-established corpus entries remain valid, provenance/evidence records are
+established corpus entries remain valid, applicable `RULES.md` invariants pass
+or have an owner-approved exception recorded, provenance/evidence records are
 updated where needed, `docs/verification/` contains a compact result, and the
-task tracking entry is updated in the same commit.
+task tracking entry is updated in the same commit. Documentation/design tasks
+apply only the rules relevant to their artifact and do not manufacture runtime
+verification requirements.
 
 Each completed implementation task that changes a runnable path must compile,
 verify, and copy one usable task-level local build output to the ignored

@@ -4,6 +4,10 @@
 
 - Repository content is English. Runtime code is C11 plus narrowly scoped
   documented Win32 APIs.
+- `RULES.md` is the concise repository-wide implementation checklist. It does
+  not replace the authoritative architecture or execution documents; every task
+  records its applicable rules and proves them at exit or records an
+  owner-approved exception.
 - Follow the visible module boundaries in `src/`. `core/machine` has no VM/VDM
   policy, concrete product UI, profile, or host OS dependency; `core/platform`
   never mutates guest state. `vm/*` and `vdm/*` contain only their own product
@@ -11,7 +15,8 @@
   `vdm/product` contain user experience. The `vm/` and `vdm/` roots own
   product-form composition.
 - One subtask is active at a time. Define its scope, non-goals, source baseline,
-  verification commands, and acceptance evidence before changing runtime code.
+  applicable `RULES.md` sections, verification commands, and acceptance
+  evidence before changing runtime code.
 - Use `TODO(High)`, `TODO(Medium)`, or `TODO(Low)` only for deferred work.
 
 ## NXVM Imports

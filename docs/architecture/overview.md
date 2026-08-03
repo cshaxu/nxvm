@@ -21,6 +21,7 @@ The planned `ntvdm64 run` contract is defined in
 components, invasive integration, and Win16 remain research-only unless a later
 owner-approved Go decision changes that boundary.
 
+`RULES.md` is the compact repository-wide implementation/review checklist.
 Forward source ownership and dependency decisions are defined exclusively by
 [Module Layout](module-layout.md); public interface decisions are defined by
 [Contracts](contracts.md). Historical records preserve rationale and evidence,

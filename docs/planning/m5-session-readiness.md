@@ -1,5 +1,11 @@
 # M5 Session Readiness
 
+> Historical record: T87--T95 temporarily accepted short-lived TLS scopes.
+> T129--T132 removed those production selectors. Forward work follows
+> `RULES.md`: mutable state is session-, execution-thread-, or caller-owned,
+> or protected by an explicit host lease; TLS/current-object selection is not
+> permitted in a production path.
+
 ## Goal
 
 Make every implemented module safe to instantiate for more than one session in
@@ -8,9 +14,9 @@ This is an ownership and synchronization closure, not a multi-session product
 or CLI feature.
 
 Every mutable datum must be one of: session-owned, execution-thread-owned,
-thread-local scope, or an explicit process-exclusive host lease. Immutable
-tables and descriptors are shared. An unclassified mutable global fails this
-plan.
+caller-owned invocation state, or an explicit process-exclusive host lease.
+Immutable tables and descriptors are shared. An unclassified mutable global,
+TLS selector, or implicit current-object facade fails this plan.
 
 ## Priority And Checklist
 
@@ -27,7 +33,7 @@ order or authorize speculative VDM code.
 | 4 | `core/platform` | T89, T95 | Pass | Shared host-surface contexts carry opaque handles; process-exclusive host resources use explicit atomic leases. |
 | 5 | `vm/platform` | T90, T95 | Pass | Console/window rendering state is context-owned; Console and Linux terminal capabilities have explicit exclusive leases. |
 | 6 | `vdm/platform` | T90, T95 | Absent | No production implementation; define against the core platform contracts when M8/M9 admits it. |
-| 7 | `core/product` | T91, T95 | Pass | Debugger command workspace is caller-owned; assembler/disassembler workspaces are invocation-owned; target/wait remain thread-local scopes only. |
+| 7 | `core/product` | T91, T95, T129--T132 | Pass | Debugger command workspace is caller-owned; assembler/disassembler workspaces are invocation-owned; target and wait are passed explicitly. |
 | 8 | `vm/product` | T92, T95 | Pass | Console parser, command buffer, target, and exit state are caller-owned Console-context fields. |
 | 9 | `vdm/product` | T92, T95 | Absent | No production CLI/UI implementation; do not add speculative session code. |
 | 10 | `vm/composition` | T93, T95 | Pass | Composition owns machine, platform, debugger, and Console context lifetimes without product-global selection. |
@@ -42,7 +48,7 @@ are immutable. T95 verifies them without inventing a dedicated migration.
 | Owner | Current mutable state | Required disposition |
 | --- | --- | --- |
 | `core/machine` | `core_machine`, installed provider state, and CPU instruction trace workspace | Session-owned. |
-| `core/platform` | wait/debug scopes; host-surface contexts and leases | Thread-local scopes and caller-owned opaque contexts are allowed; leases name one composition owner. |
+| `core/platform` | host-surface contexts and leases | Caller-owned opaque contexts and explicit leases name one composition owner. |
 | `core/product` | debugger command state, assembler, and disassembler workspaces | Caller-owned debugger context and invocation-owned assembler/disassembler contexts. |
 | `vm/machine` | `vm_composition_control_state` run/reset/pause/step fields and debug instrumentation | Atomic command/state boundary; instrumentation is session-owned or disabled. |
 | `vm/platform/win32` | Console buffer and GDI renderer state | Per-surface context owned by the VM platform session; the shared Console is explicitly leased. |
