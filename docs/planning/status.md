@@ -206,6 +206,10 @@ changes begin.
 caller-owned context; `consoleContext` TLS is removed. T129 remains active for
 the shared debugger invocation migration.
 
+**M5 T133 complete:** core exposes ordered executor CPU/bus/memory preparation;
+VM retains its proven provider order through that common contract. T129 remains
+active for debugger TLS removal.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in
