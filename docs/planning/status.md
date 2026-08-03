@@ -165,6 +165,11 @@ minimal session-model wrappers are deleted; their coverage now exercises the
 real session. Control and runner are separate, and VDM composition file names
 match the same directory rule.
 
+**M5 T119 complete:** the T120--T127 unique-owner convergence baseline is
+recorded in [`m5-unique-owner-convergence.md`](m5-unique-owner-convergence.md).
+T120 is active; it closes the retained Console's duplicate session
+initialization path without changing Console behavior.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in
