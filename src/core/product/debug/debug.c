@@ -73,7 +73,7 @@ static uint8_t scannubit8(char *s) {
     if (s[0] == '\'' && s[2] == '\'') {
         return s[1];
     }
-    utilsLowerStr(s);
+    ntvdm64_type_string_lower(s);
     while (s[i] != '\0' && s[i] != '\n') {
         if (i > 1) {
             seterr(narg - 1);
@@ -94,7 +94,7 @@ static uint8_t scannubit8(char *s) {
 static uint16_t scannubit16(char *s) {
     uint16_t ans = 0;
     size_t i = 0;
-    utilsLowerStr(s);
+    ntvdm64_type_string_lower(s);
     while (s[i] != '\0' && s[i] != '\n') {
         if (i > 3) {
             seterr(narg - 1);
@@ -115,7 +115,7 @@ static uint16_t scannubit16(char *s) {
 static uint32_t scannubit32(char *s) {
     uint32_t ans = 0;
     size_t i = 0;
-    utilsLowerStr(s);
+    ntvdm64_type_string_lower(s);
     while (s[i] != '\0' && s[i] != '\n') {
         if (i > 7) {
             seterr(narg - 1);
@@ -179,7 +179,7 @@ static void aconsole() {
         PRINTF("%04X:%04X ", asmSegRec, asmPtrRec);
         fflush(stdin);
         FGETS(cmdAsmBuff, 0x100, stdin);
-        utilsLowerStr(cmdAsmBuff);
+        ntvdm64_type_string_lower(cmdAsmBuff);
         if (!STRLEN(cmdAsmBuff)) {
             flagExitAsm = 1;
             continue;
@@ -336,7 +336,7 @@ static void e() {
         PRINTF("%02X", val);
         PRINTF(".");
         FGETS(s, 0x100, stdin);
-        utilsLowerStr(s); /* MARK */
+        ntvdm64_type_string_lower(s); /* MARK */
         val = scannubit8(s); /* MARK */
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
             core_product_debug_write_real(seg, ptr, (void *)(&val), 1);
@@ -724,7 +724,7 @@ static void rscanregs() {
         rprintflags();
         PRINTF(" -");
         FGETS(s, 0x100, stdin);
-        utilsLowerStr(s);
+        ntvdm64_type_string_lower(s);
         if (!STRCMP(s,"ov")) {
             debug_set_flag(0x0800u, 1);
         } else if (!STRCMP(s,"nv")) {
@@ -1173,7 +1173,7 @@ static void xe() {
         }
         PRINTF("L%08X  %02X.", linear, val);
         FGETS(s, 0x100, stdin);
-        utilsLowerStr(s);
+        ntvdm64_type_string_lower(s);
         val = scannubit8(s);
         if (nErrPos) {
             return;
@@ -1782,7 +1782,7 @@ static void parse() {
     narg = 0;
     arg[0] = STRTOK(strCmdCopy, " ,\t\n\r\f");
     if (arg[narg]) {
-        utilsLowerStr(arg[narg]);
+        ntvdm64_type_string_lower(arg[narg]);
         narg++;
     } else {
         return;
@@ -1794,7 +1794,7 @@ static void parse() {
     while (narg < DEBUG_MAXNARG) {
         arg[narg] = STRTOK(NULL," ,\t\n\r\f");
         if (arg[narg]) {
-            utilsLowerStr(arg[narg]);
+            ntvdm64_type_string_lower(arg[narg]);
             narg++;
         } else {
             break;

@@ -46,7 +46,7 @@ void* MEMSET(void *_Dst, int _Val, size_t _Size) { return memset(_Dst, _Val, _Si
 void* MEMCPY(void *_Dst, const void *_Src, size_t _Size) { return memcpy(_Dst, _Src, _Size); }
 int MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size) { return memcmp(_Buf1, _Buf2, _Size); }
 
-void utilsLowerStr(char *str) {
+void ntvdm64_type_string_lower(char *str) {
     size_t i = 0;
     if (str[0] == '\'') {
         return;
@@ -69,7 +69,7 @@ static void printTraceCall(t_utils_trace_call *rtracecall) {
     }
     PRINTF("\n");
 }
-void utilsTracePrint(t_utils_trace *rtrace) {
+void ntvdm64_type_trace_print(t_utils_trace *rtrace) {
     size_t i;
     if (rtrace->callCount) {
         for (i = 0; i < rtrace->callCount; ++i) {
@@ -77,23 +77,23 @@ void utilsTracePrint(t_utils_trace *rtrace) {
         }
     }
 }
-void utilsTraceInit(t_utils_trace *rtrace) {
+void ntvdm64_type_trace_initialize(t_utils_trace *rtrace) {
     rtrace->callCount = 0;
     rtrace->flagError = 0;
 }
-void utilsTraceFinal(t_utils_trace *rtrace) {
+void ntvdm64_type_trace_finalize(t_utils_trace *rtrace) {
     if (!rtrace->flagError && rtrace->callCount) {
         PRINTF("trace_final: call stack is not balanced. (call: %d, block: %d)\n",
                rtrace->callCount, rtrace->callStack[rtrace->callCount].blockCount);
         rtrace->flagError = 1;
     }
     if (rtrace->flagError) {
-        utilsTracePrint(rtrace);
+        ntvdm64_type_trace_print(rtrace);
     }
     rtrace->callCount = 0;
     rtrace->flagError = 0;
 }
-void utilsTraceCallBegin(t_utils_trace *rtrace, char *callName) {
+void ntvdm64_type_trace_call_begin(t_utils_trace *rtrace, char *callName) {
     if (rtrace->flagError) return;
     if (rtrace->callCount < UTILS_TRACE_MAX_STACK) {
 #if UTILS_TRACE_DEBUG == 1
@@ -107,7 +107,7 @@ void utilsTraceCallBegin(t_utils_trace *rtrace, char *callName) {
         rtrace->flagError = 1;
     }
 }
-void utilsTraceCallEnd(t_utils_trace *rtrace) {
+void ntvdm64_type_trace_call_end(t_utils_trace *rtrace) {
     if (rtrace->flagError) return;
     if (rtrace->callCount) {
         rtrace->callCount--;
@@ -126,7 +126,7 @@ void utilsTraceCallEnd(t_utils_trace *rtrace) {
         rtrace->flagError = 1;
     }
 }
-void utilsTraceBlockBegin(t_utils_trace *rtrace, char *blockName) {
+void ntvdm64_type_trace_block_begin(t_utils_trace *rtrace, char *blockName) {
     if (rtrace->flagError) return;
     if (rtrace->callStack[rtrace->callCount - 1].blockCount < UTILS_TRACE_MAX_STACK) {
 #if UTILS_TRACE_DEBUG == 1
@@ -139,7 +139,7 @@ void utilsTraceBlockBegin(t_utils_trace *rtrace, char *blockName) {
         rtrace->flagError = 1;
     }
 }
-void utilsTraceBlockEnd(t_utils_trace *rtrace) {
+void ntvdm64_type_trace_block_end(t_utils_trace *rtrace) {
     if (rtrace->flagError) return;
     if (rtrace->callStack[rtrace->callCount - 1].blockCount) {
         rtrace->callStack[rtrace->callCount - 1].blockCount--;

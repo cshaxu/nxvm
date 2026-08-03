@@ -99,6 +99,9 @@ are recorded before the `type.*` call-site migrations.
 **M5 T99 complete:** all active former `vglobal.h` callers include the root
 `type.h` foundation directly; the forwarding header is deleted.
 
+**M5 T100 complete:** root string/trace helper APIs now use
+`ntvdm64_type_*`; retained wrapper behavior is unchanged.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

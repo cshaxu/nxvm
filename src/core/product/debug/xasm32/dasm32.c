@@ -5700,7 +5700,7 @@ static uint8_t dasm32_execute(char *stmt, uint8_t *rcode, int flag32) {
     size_t i;
     uint8_t opcode, oldiop;
 #if DASM_TRACE == 1
-    utilsTraceInit(&trace);
+    ntvdm64_type_trace_initialize(&trace);
 #endif
     if (!dasmContext->initialized) {
         dtable[0x00] = ADD_RM8_R8;
@@ -6254,7 +6254,7 @@ static uint8_t dasm32_execute(char *stmt, uint8_t *rcode, int flag32) {
     if (trace.callCount || trace.flagError) {
         PRINTF("dasm32: bad machine code.\n");
     }
-    utilsTraceFinal(&trace);
+    ntvdm64_type_trace_finalize(&trace);
 #endif
     return iop;
 }

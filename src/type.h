@@ -228,7 +228,7 @@ void FREE(void *_Memory);
 void* MEMSET(void *_Dst, int _Val, size_t _Size);
 void* MEMCPY(void *_Dst, const void *_Src, size_t _Size);
 int MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size);
-void utilsLowerStr(char *str);
+void ntvdm64_type_string_lower(char *str);
 
 /* Legacy trace support is shared root diagnostic infrastructure. */
 #define UTILS_TRACE_MAX_STACK 0x100
@@ -243,29 +243,29 @@ typedef struct {
     int flagError;
 } t_utils_trace;
 
-void utilsTracePrint(t_utils_trace *rtrace);
-void utilsTraceInit(t_utils_trace *rtrace);
-void utilsTraceFinal(t_utils_trace *rtrace);
-void utilsTraceCallBegin(t_utils_trace *rtrace, char *callName);
-void utilsTraceCallEnd(t_utils_trace *rtrace);
-void utilsTraceBlockBegin(t_utils_trace *rtrace, char *blockName);
-void utilsTraceBlockEnd(t_utils_trace *rtrace);
+void ntvdm64_type_trace_print(t_utils_trace *rtrace);
+void ntvdm64_type_trace_initialize(t_utils_trace *rtrace);
+void ntvdm64_type_trace_finalize(t_utils_trace *rtrace);
+void ntvdm64_type_trace_call_begin(t_utils_trace *rtrace, char *callName);
+void ntvdm64_type_trace_call_end(t_utils_trace *rtrace);
+void ntvdm64_type_trace_block_begin(t_utils_trace *rtrace, char *blockName);
+void ntvdm64_type_trace_block_end(t_utils_trace *rtrace);
 
 /* #define UTILS_TRACE_VAR    tracer variable */
 /* #define UTILS_TRACE_ERROR  error condition */
 /* #define UTILS_TRACE_SETERR set error statement */
 
 #if UTILS_TRACE_ENABLED == 1
-#define _cb(callName)  utilsTraceCallBegin(&(UTILS_TRACE_VAR), (callName))
-#define _bb(blockName) utilsTraceBlockBegin(&(UTILS_TRACE_VAR), (blockName))
-#define _ce utilsTraceCallEnd(&(UTILS_TRACE_VAR))
-#define _be utilsTraceBlockEnd(&(UTILS_TRACE_VAR))
+#define _cb(callName)  ntvdm64_type_trace_call_begin(&(UTILS_TRACE_VAR), (callName))
+#define _bb(blockName) ntvdm64_type_trace_block_begin(&(UTILS_TRACE_VAR), (blockName))
+#define _ce ntvdm64_type_trace_call_end(&(UTILS_TRACE_VAR))
+#define _be ntvdm64_type_trace_block_end(&(UTILS_TRACE_VAR))
 #define _chb(n) \
     if (1) { \
         (n); \
         if (UTILS_TRACE_ERROR) { \
             (UTILS_TRACE_VAR).flagError = 1; \
-            utilsTraceFinal(&(UTILS_TRACE_VAR)); \
+            ntvdm64_type_trace_finalize(&(UTILS_TRACE_VAR)); \
             break; \
         } \
     } else
@@ -274,7 +274,7 @@ void utilsTraceBlockEnd(t_utils_trace *rtrace);
         (n); \
         if (UTILS_TRACE_ERROR) { \
             (UTILS_TRACE_VAR).flagError = 1; \
-            utilsTraceFinal(&(UTILS_TRACE_VAR)); \
+            ntvdm64_type_trace_finalize(&(UTILS_TRACE_VAR)); \
             return; \
         } \
     } while (0)
@@ -283,7 +283,7 @@ void utilsTraceBlockEnd(t_utils_trace *rtrace);
         (n); \
         if (UTILS_TRACE_ERROR) { \
             (UTILS_TRACE_VAR).flagError = 1; \
-            utilsTraceFinal(&(UTILS_TRACE_VAR)); \
+            ntvdm64_type_trace_finalize(&(UTILS_TRACE_VAR)); \
             return 0; \
         } \
     } while (0)
@@ -339,7 +339,7 @@ void FREE(void *_Memory);
 void* MEMSET(void *_Dst, int _Val, size_t _Size);
 void* MEMCPY(void *_Dst, const void *_Src, size_t _Size);
 int MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size);
-void utilsLowerStr(char *str);
+void ntvdm64_type_string_lower(char *str);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

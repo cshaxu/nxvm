@@ -32,11 +32,11 @@ static void parse() {
     if (!argArray[numArgs]) {
         return;
     }
-    utilsLowerStr(argArray[numArgs++]);
+    ntvdm64_type_string_lower(argArray[numArgs++]);
     while (numArgs < CONSOLE_MAXNARG) {
         argArray[numArgs] = STRTOK(NULL, " \t\n\r\f");
         if (argArray[numArgs]) {
-            utilsLowerStr(argArray[numArgs++]);
+            ntvdm64_type_string_lower(argArray[numArgs++]);
         } else {
             break;
         }
