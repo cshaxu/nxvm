@@ -141,6 +141,10 @@ atomic operations use `STD_*`; explicit atomic memory orders are unchanged.
 **M5 T113 complete:** `type.h` is the only active ISO C header boundary;
 `memory.h` is removed and the static ownership gate passes.
 
+**M5 T114 complete:** Win32 adapter public signatures use `C_VOID` and
+`WIN32_*`; SDK calls and private message-loop state remain inside
+`platform/win32`.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

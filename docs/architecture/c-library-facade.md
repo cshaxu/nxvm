@@ -28,6 +28,10 @@ headers used by active code, including `stdint.h`; `memory.h` is removed. The
 `verify-c-facade-headers` build gate rejects direct ISO C includes anywhere
 else in active source or tests.
 
+T114 completes the Win32 public boundary: adapter declarations use `C_VOID`
+and `WIN32_*` aliases, while native Win32 calls and callback plumbing remain
+private implementation details below `platform/win32`.
+
 ## Decision
 
 `src/type.h` is the repository's one facade for ISO C headers and C11 atomics.

@@ -410,7 +410,7 @@ w32adisp_context *w32adisp_context_create(C_VOID) {
     return STD_CALLOC(1u, sizeof(w32adisp_context));
 }
 
-VOID w32adisp_context_destroy(w32adisp_context *context) {
+C_VOID w32adisp_context_destroy(w32adisp_context *context) {
     if (context == STD_NULL) return;
     STD_FREE(context);
 }
@@ -419,7 +419,7 @@ uint64_t w32adisp_context_generation(const w32adisp_context *context) {
     return context == STD_NULL ? 0u : context->displayed_generation;
 }
 
-VOID w32adispInit(w32adisp_context *context, HWND window,
+C_VOID w32adispInit(w32adisp_context *context, WIN32_HWND window,
                   const vm_platform_presentation_mailbox *mailbox) {
     UINT i, j;
     if (context == STD_NULL) return;
@@ -443,7 +443,7 @@ VOID w32adispInit(w32adisp_context *context, HWND window,
     w32adispSetScreen(context, window, mailbox);
 }
 
-VOID w32adispSetScreen(w32adisp_context *context, HWND window,
+C_VOID w32adispSetScreen(w32adisp_context *context, WIN32_HWND window,
                         const vm_platform_presentation_mailbox *mailbox) {
     RECT clientRect,windowRect;
     LONG widthOffset, heightOffset;
@@ -494,9 +494,9 @@ static VOID DisplayCursor(w32adisp_context *context,
     DeleteObject(hBrush);
 }
 
-VOID w32adispPaint(w32adisp_context *context, HWND window,
+C_VOID w32adispPaint(w32adisp_context *context, WIN32_HWND window,
                    const vm_platform_presentation_mailbox *mailbox,
-                   BOOL flagForce) {
+                   WIN32_BOOL flagForce) {
     UCHAR i, j, ch, prop;
     USHORT index;
     BOOL changed;
@@ -529,7 +529,7 @@ VOID w32adispPaint(w32adisp_context *context, HWND window,
     }
 }
 
-VOID w32adispFinal(w32adisp_context *context) {
+C_VOID w32adispFinal(w32adisp_context *context) {
     if (context == STD_NULL) return;
     DeleteObject(context->font_bitmap);
     DeleteDC(context->font_dc);
