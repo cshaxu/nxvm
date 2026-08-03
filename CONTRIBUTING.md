@@ -56,3 +56,7 @@ verified local copy in ignored `build/output/` using the product-specific
 artifact name from `docs/planning/execution-policy.md`. Record its hash and
 artifact classification in the verification record; do not treat it as a
 release or bundle protected media.
+
+After each build or test run, delete owned temporary build trees, logs, and
+generated test binaries no longer needed by the active or immediate next task.
+Preserve verified developer artifacts only in `build/output/`.
