@@ -1,5 +1,5 @@
-#ifndef NXVM_COMPOSITION_LIVE_MACHINE_H
-#define NXVM_COMPOSITION_LIVE_MACHINE_H
+#ifndef NTVDM64_VM_SESSION_H
+#define NTVDM64_VM_SESSION_H
 
 #include "type.h"
 
@@ -47,7 +47,7 @@
 
 #include "vm/profile/default_profile/firmware/context.h"
 
-#include "vm/composition/composition_control.h"
+#include "vm/composition/session_control.h"
 
 #include "core/product/debug/debug_target.h"
 
@@ -56,10 +56,13 @@
 #include "core/product/wait_provider.h"
 
 #include "vm/platform/platform.h"
+#include "vm/platform/vm_request_transport.h"
 
 #include "vm/product/console.h"
 
-typedef struct vm_composition_live_machine {
+typedef struct vm_session {
+    C_INT active;
+    vm_platform_request_transport request_transport;
     core_machine *core_machine;
     t_cmos cmos_storage;
     t_fdd fdd_storage;
@@ -114,10 +117,31 @@ typedef struct vm_composition_live_machine {
     core_product_debug_context *debugger_context;
     nxvm_product_console_context *console_context;
     nxvm_product_console_target *console_target;
-    vm_composition_control_state *control;
-} vm_composition_live_machine;
+    vm_session_control_state *control;
+} vm_session;
 
-C_VOID vm_composition_live_machine_initialize(vm_composition_live_machine *machine);
-C_VOID vm_composition_live_machine_finalize(vm_composition_live_machine *machine);
+typedef struct vm_session_config {
+    const C_CHAR *fdd_image;
+    const C_CHAR *hdd_image;
+    C_INT create_fdd;
+    uint16_t create_hdd_cylinders;
+    C_INT boot_hdd;
+} vm_session_config;
+
+typedef struct vm_session_reset_vector {
+    uint16_t cs;
+    uint16_t ip;
+} vm_session_reset_vector;
+
+C_VOID vm_session_storage_initialize(vm_session *machine);
+C_VOID vm_session_storage_finalize(vm_session *machine);
+C_INT vm_session_enqueue_keyboard_state(C_VOID *opaque,
+    uint32_t asynchronous_keys, uint32_t toggle_keys);
+C_VOID vm_session_consume_request(C_VOID *opaque,
+    const nxvm_platform_vm_request *request);
+C_INT vm_session_create(const vm_session_config *config, vm_session **out_session);
+C_VOID vm_session_destroy(vm_session *session);
+C_INT vm_session_get_reset_vector(const vm_session *session,
+    vm_session_reset_vector *out_vector);
 
 #endif

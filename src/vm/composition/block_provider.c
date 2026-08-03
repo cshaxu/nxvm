@@ -4,7 +4,7 @@
 
 #include "vm/machine/hdd.h"
 
-#include "vm/composition/composition_live_machine.h"
+#include "vm/composition/session.h"
 
 static C_VOID vmBlockGeometry(C_VOID *context, core_machine_block_geometry *out_geometry)
 {
@@ -47,7 +47,7 @@ static C_INT vmBlockWrite(C_VOID *context, ntvdm64_type_unsigned_8 cylinder, ntv
     return vmBlockTransfer(context, cylinder, head, sector, buffer, byte_count, NTVDM64_TYPE_TRUE);
 }
 
-C_VOID vm_composition_bind_block(vm_composition_live_machine *machine)
+C_VOID vm_session_bind_block(vm_session *machine)
 {
     if (machine == STD_NULL) return;
     core_machine_block_provider_slot_bind(machine->block_provider, machine->hdd,

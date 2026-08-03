@@ -1,28 +1,28 @@
 #include "type.h"
 
-#include "vdm/composition/composition_presentation.h"
+#include "vdm/composition/presentation.h"
 
 
 
 #define NXVM_DOS_MINIMAL_INPUT_CAPACITY 32u
 
-struct vdm_composition_presentation {
+struct vdm_presentation {
     core_product_runtime_dos_minimal *session;
     nxvm_platform_input_event input[NXVM_DOS_MINIMAL_INPUT_CAPACITY];
     C_UINT count;
 };
 
-ntvdm64_status vdm_composition_presentation_create(
+ntvdm64_status vdm_presentation_create(
     core_product_runtime_dos_minimal *session,
-    vdm_composition_presentation **out_presentation)
+    vdm_presentation **out_presentation)
 {
-    vdm_composition_presentation *presentation;
+    vdm_presentation *presentation;
 
     if (session == STD_NULL || out_presentation == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     *out_presentation = STD_NULL;
-    presentation = (vdm_composition_presentation *)STD_CALLOC(1u,
+    presentation = (vdm_presentation *)STD_CALLOC(1u,
                                                             sizeof(*presentation));
     if (presentation == STD_NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
@@ -32,8 +32,8 @@ ntvdm64_status vdm_composition_presentation_create(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status vdm_composition_presentation_enqueue_input(
-    vdm_composition_presentation *presentation,
+ntvdm64_status vdm_presentation_enqueue_input(
+    vdm_presentation *presentation,
     nxvm_platform_input_event event)
 {
     if (presentation == STD_NULL) {
@@ -46,8 +46,8 @@ ntvdm64_status vdm_composition_presentation_enqueue_input(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status vdm_composition_presentation_apply_input(
-    vdm_composition_presentation *presentation)
+ntvdm64_status vdm_presentation_apply_input(
+    vdm_presentation *presentation)
 {
     C_UINT index;
     ntvdm64_status status;
@@ -66,10 +66,10 @@ ntvdm64_status vdm_composition_presentation_apply_input(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status vdm_composition_presentation_capture_text(
-    vdm_composition_presentation *presentation,
+ntvdm64_status vdm_presentation_capture_text(
+    vdm_presentation *presentation,
     uint64_t timestamp,
-    nxvm_vdm_presentation_snapshot *out_snapshot)
+    vdm_presentation_snapshot *out_snapshot)
 {
     core_product_runtime_text_snapshot text;
     ntvdm64_status status;
@@ -84,8 +84,8 @@ ntvdm64_status vdm_composition_presentation_capture_text(
     return NTVDM64_STATUS_OK;
 }
 
-C_VOID vdm_composition_presentation_destroy(
-    vdm_composition_presentation *presentation)
+C_VOID vdm_presentation_destroy(
+    vdm_presentation *presentation)
 {
     STD_FREE(presentation);
 }

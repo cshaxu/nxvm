@@ -159,6 +159,12 @@ are permanent governance rules; only `build/output/` remains after cleanup.
 now live in their product-root `composition/` directories. GCC gates, FDD DOS
 boot, and retained Console behavior passed without a behavioral change.
 
+**M5 T118 complete:** VM composition has one real `vm_session` object. The
+historical `full_pc`, default-profile forwarding, runtime-profile session, and
+minimal session-model wrappers are deleted; their coverage now exercises the
+real session. Control and runner are separate, and VDM composition file names
+match the same directory rule.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

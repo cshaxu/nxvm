@@ -5,27 +5,27 @@
 
 #include "core/machine/memory.h"
 
-#include "vm/composition/composition_live_machine.h"
+#include "vm/composition/session.h"
 
 C_INT main(C_VOID)
 {
-    vm_composition_live_machine *first;
-    vm_composition_live_machine *second;
+    vm_session *first;
+    vm_session *second;
     C_UCHAR first_value = 0x11u;
     C_UCHAR second_value = 0x22u;
     C_UCHAR observed = 0u;
     C_INT failed = 0;
 
-    first = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*first));
-    second = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*second));
+    first = (vm_session *)STD_CALLOC(1u, sizeof(*first));
+    second = (vm_session *)STD_CALLOC(1u, sizeof(*second));
     if (first == STD_NULL || second == STD_NULL) {
         STD_FREE(second);
         STD_FREE(first);
         return 1;
     }
 
-    vm_composition_live_machine_initialize(first);
-    vm_composition_live_machine_initialize(second);
+    vm_session_storage_initialize(first);
+    vm_session_storage_initialize(second);
     core_machine_memory_initialize(first->ram);
     core_machine_memory_initialize(second->ram);
 
@@ -58,8 +58,8 @@ C_INT main(C_VOID)
 
     core_machine_memory_finalize(second->ram);
     core_machine_memory_finalize(first->ram);
-    vm_composition_live_machine_finalize(second);
-    vm_composition_live_machine_finalize(first);
+    vm_session_storage_finalize(second);
+    vm_session_storage_finalize(first);
     STD_FREE(second);
     STD_FREE(first);
 

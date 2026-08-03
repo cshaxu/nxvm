@@ -5,14 +5,14 @@
 
 #include "core/machine/machine.h"
 
-#include "vm/composition/composition_live_machine.h"
+#include "vm/composition/session.h"
 
 C_INT main(C_VOID)
 {
-    vm_composition_live_machine *machine = STD_CALLOC(1u, sizeof(*machine));
+    vm_session *machine = STD_CALLOC(1u, sizeof(*machine));
 
     if (machine == STD_NULL) return 1;
-    vm_composition_live_machine_initialize(machine);
+    vm_session_storage_initialize(machine);
     if (machine->core_machine == STD_NULL ||
         machine->cpu != core_machine_executor_cpu_borrow(machine->core_machine) ||
         machine->cpuins != core_machine_executor_cpu_instructions_borrow(
@@ -34,11 +34,11 @@ C_INT main(C_VOID)
             machine->core_machine) ||
         machine->kbc != core_machine_shared_kbc_borrow(machine->core_machine) ||
         machine->vadp != core_machine_shared_vadp_borrow(machine->core_machine)) {
-        vm_composition_live_machine_finalize(machine);
+        vm_session_storage_finalize(machine);
         STD_FREE(machine);
         return 1;
     }
-    vm_composition_live_machine_finalize(machine);
+    vm_session_storage_finalize(machine);
     STD_FREE(machine);
     puts("M5:T83:S2:CORE-EXECUTOR-STORAGE:OK");
     return 0;

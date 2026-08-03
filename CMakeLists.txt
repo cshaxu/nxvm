@@ -182,19 +182,16 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/xasm32/dasm32.c
 )
 set(NXVM_COMPOSITION_VM_SOURCES
-    src/vm/composition/composition_console.c
-    src/vm/composition/composition_debug.c
-    src/vm/composition/composition_block.c
-    src/vm/composition/composition_display.c
-    src/vm/composition/composition_machine.c
-    src/vm/composition/composition_live_machine.c
-    src/vm/composition/composition_loop.c
-    src/vm/composition/composition.c
-    src/vm/composition/composition_cpu_probe.c
-    src/vm/composition/composition_default_profile.c
-    src/vm/composition/composition_full_pc.c
-    src/vm/composition/composition_session.c
-    src/vm/composition/composition_session_model.c
+    src/vm/composition/console_target.c
+    src/vm/composition/debug_target.c
+    src/vm/composition/block_provider.c
+    src/vm/composition/display_bridge.c
+    src/vm/composition/session_lifecycle.c
+    src/vm/composition/session.c
+    src/vm/composition/session_control.c
+    src/vm/composition/session_runner.c
+    src/vm/composition/providers.c
+    src/vm/composition/cpu_probe.c
 )
 set(NXVM_MACHINE_VM_SOURCES
     src/vm/machine/fdd.c
@@ -531,8 +528,8 @@ target_include_directories(ntvdm64-vdm-profile PUBLIC
 target_link_libraries(ntvdm64-vdm-profile PUBLIC nxvm-runtime)
 
 add_library(ntvdm64-vdm-composition STATIC
-    src/vdm/composition/composition_minimal_session.c
-    src/vdm/composition/composition_presentation.c
+    src/vdm/composition/session.c
+    src/vdm/composition/presentation.c
 )
 target_include_directories(ntvdm64-vdm-composition PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -585,7 +582,7 @@ target_link_libraries(nxvm-full-pc-profile-smoke PRIVATE
     nxvm-vm-profile
 )
 
-function(add_nxvm_full_pc_artifact target suffix)
+function(add_nxvm_task_artifact target suffix)
     string(REGEX REPLACE "^m([0-9]+)t([0-9]+)$" "nxvm-m\\1_t\\2.exe"
         task_artifact_filename "${suffix}")
     if(task_artifact_filename STREQUAL suffix)
@@ -645,49 +642,49 @@ function(add_nxvm_version_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_nxvm_full_pc_artifact(nxvm-m3-t5 "m3t5")
-add_nxvm_full_pc_artifact(nxvm-m5-t1 "m5t1")
-add_nxvm_full_pc_artifact(nxvm-m5-t2 "m5t2")
-add_nxvm_full_pc_artifact(nxvm-m5-t3 "m5t3")
-add_nxvm_full_pc_artifact(nxvm-m5-t4 "m5t4")
-add_nxvm_full_pc_artifact(nxvm-m5-t5 "m5t5")
-add_nxvm_full_pc_artifact(nxvm-m5-t6 "m5t6")
+add_nxvm_task_artifact(nxvm-m3-t5 "m3t5")
+add_nxvm_task_artifact(nxvm-m5-t1 "m5t1")
+add_nxvm_task_artifact(nxvm-m5-t2 "m5t2")
+add_nxvm_task_artifact(nxvm-m5-t3 "m5t3")
+add_nxvm_task_artifact(nxvm-m5-t4 "m5t4")
+add_nxvm_task_artifact(nxvm-m5-t5 "m5t5")
+add_nxvm_task_artifact(nxvm-m5-t6 "m5t6")
 
-add_nxvm_full_pc_artifact(nxvm-m5-t7 "m5t7")
-add_nxvm_full_pc_artifact(nxvm-m5-t9 "m5t9")
-add_nxvm_full_pc_artifact(nxvm-m5-t10 "m5t10")
-add_nxvm_full_pc_artifact(nxvm-m5-t12 "m5t12")
-add_nxvm_full_pc_artifact(nxvm-m5-t13 "m5t13")
-add_nxvm_full_pc_artifact(nxvm-m5-t14 "m5t14")
-add_nxvm_full_pc_artifact(nxvm-m5-t18 "m5t18")
-add_nxvm_full_pc_artifact(nxvm-m5-t19 "m5t19")
-add_nxvm_full_pc_artifact(nxvm-m5-t20 "m5t20")
-add_nxvm_full_pc_artifact(nxvm-m5-t21 "m5t21")
-add_nxvm_full_pc_artifact(nxvm-m5-t23 "m5t23")
-add_nxvm_full_pc_artifact(nxvm-m5-t24 "m5t24")
-add_nxvm_full_pc_artifact(nxvm-m5-t25 "m5t25")
-add_nxvm_full_pc_artifact(nxvm-m5-t26 "m5t26")
-add_nxvm_full_pc_artifact(nxvm-m5-t27 "m5t27")
-add_nxvm_full_pc_artifact(nxvm-m5-t28 "m5t28")
-add_nxvm_full_pc_artifact(nxvm-m5-t29 "m5t29")
-add_nxvm_full_pc_artifact(nxvm-m5-t30 "m5t30")
-add_nxvm_full_pc_artifact(nxvm-m5-t31 "m5t31")
-add_nxvm_full_pc_artifact(nxvm-m5-t32 "m5t32")
-add_nxvm_full_pc_artifact(nxvm-m5-t33 "m5t33")
-add_nxvm_full_pc_artifact(nxvm-m5-t34 "m5t34")
-add_nxvm_full_pc_artifact(nxvm-m5-t35 "m5t35")
-add_nxvm_full_pc_artifact(nxvm-m5-t36 "m5t36")
-add_nxvm_full_pc_artifact(nxvm-m5-t37 "m5t37")
-add_nxvm_full_pc_artifact(nxvm-m5-t38 "m5t38")
-add_nxvm_full_pc_artifact(nxvm-m5-t39 "m5t39")
-add_nxvm_full_pc_artifact(nxvm-m5-t40 "m5t40")
-add_nxvm_full_pc_artifact(nxvm-m5-t41 "m5t41")
-add_nxvm_full_pc_artifact(nxvm-m5-t42 "m5t42")
-add_nxvm_full_pc_artifact(nxvm-m5-t43 "m5t43")
-add_nxvm_full_pc_artifact(nxvm-m5-t44 "m5t44")
-add_nxvm_full_pc_artifact(nxvm-m5-t45 "m5t45")
-add_nxvm_full_pc_artifact(nxvm-m5-t46 "m5t46")
-add_nxvm_full_pc_artifact(nxvm-m5-t47 "m5t47")
+add_nxvm_task_artifact(nxvm-m5-t7 "m5t7")
+add_nxvm_task_artifact(nxvm-m5-t9 "m5t9")
+add_nxvm_task_artifact(nxvm-m5-t10 "m5t10")
+add_nxvm_task_artifact(nxvm-m5-t12 "m5t12")
+add_nxvm_task_artifact(nxvm-m5-t13 "m5t13")
+add_nxvm_task_artifact(nxvm-m5-t14 "m5t14")
+add_nxvm_task_artifact(nxvm-m5-t18 "m5t18")
+add_nxvm_task_artifact(nxvm-m5-t19 "m5t19")
+add_nxvm_task_artifact(nxvm-m5-t20 "m5t20")
+add_nxvm_task_artifact(nxvm-m5-t21 "m5t21")
+add_nxvm_task_artifact(nxvm-m5-t23 "m5t23")
+add_nxvm_task_artifact(nxvm-m5-t24 "m5t24")
+add_nxvm_task_artifact(nxvm-m5-t25 "m5t25")
+add_nxvm_task_artifact(nxvm-m5-t26 "m5t26")
+add_nxvm_task_artifact(nxvm-m5-t27 "m5t27")
+add_nxvm_task_artifact(nxvm-m5-t28 "m5t28")
+add_nxvm_task_artifact(nxvm-m5-t29 "m5t29")
+add_nxvm_task_artifact(nxvm-m5-t30 "m5t30")
+add_nxvm_task_artifact(nxvm-m5-t31 "m5t31")
+add_nxvm_task_artifact(nxvm-m5-t32 "m5t32")
+add_nxvm_task_artifact(nxvm-m5-t33 "m5t33")
+add_nxvm_task_artifact(nxvm-m5-t34 "m5t34")
+add_nxvm_task_artifact(nxvm-m5-t35 "m5t35")
+add_nxvm_task_artifact(nxvm-m5-t36 "m5t36")
+add_nxvm_task_artifact(nxvm-m5-t37 "m5t37")
+add_nxvm_task_artifact(nxvm-m5-t38 "m5t38")
+add_nxvm_task_artifact(nxvm-m5-t39 "m5t39")
+add_nxvm_task_artifact(nxvm-m5-t40 "m5t40")
+add_nxvm_task_artifact(nxvm-m5-t41 "m5t41")
+add_nxvm_task_artifact(nxvm-m5-t42 "m5t42")
+add_nxvm_task_artifact(nxvm-m5-t43 "m5t43")
+add_nxvm_task_artifact(nxvm-m5-t44 "m5t44")
+add_nxvm_task_artifact(nxvm-m5-t45 "m5t45")
+add_nxvm_task_artifact(nxvm-m5-t46 "m5t46")
+add_nxvm_task_artifact(nxvm-m5-t47 "m5t47")
 add_nxvm_version_artifact(nxvm-0-5-0048 "0.5.0048")
 add_nxvm_version_artifact(nxvm-0-5-0049 "0.5.0049")
 add_nxvm_version_artifact(nxvm-0-5-0050 "0.5.0050")
@@ -750,6 +747,7 @@ add_nxvm_version_artifact(nxvm-0-5-0114 "0.5.0114")
 add_nxvm_version_artifact(nxvm-0-5-0115 "0.5.0115")
 add_nxvm_version_artifact(nxvm-0-5-0116 "0.5.0116")
 add_nxvm_version_artifact(nxvm-0-5-0117 "0.5.0117")
+add_nxvm_version_artifact(nxvm-0-5-0118 "0.5.0118")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

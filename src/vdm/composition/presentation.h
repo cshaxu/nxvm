@@ -1,0 +1,40 @@
+#ifndef NXVM_ADAPTERS_DOS_MINIMAL_PRESENTATION_H
+#define NXVM_ADAPTERS_DOS_MINIMAL_PRESENTATION_H
+
+#include "type.h"
+
+#include "core/platform/presentation.h"
+
+#include "vdm/machine/dos_minimal.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct vdm_presentation vdm_presentation;
+
+typedef struct vdm_presentation_snapshot {
+    uint64_t timestamp;
+    core_machine_text_snapshot text;
+} vdm_presentation_snapshot;
+
+ntvdm64_status vdm_presentation_create(
+    core_product_runtime_dos_minimal *session,
+    vdm_presentation **out_presentation);
+ntvdm64_status vdm_presentation_enqueue_input(
+    vdm_presentation *presentation,
+    nxvm_platform_input_event event);
+ntvdm64_status vdm_presentation_apply_input(
+    vdm_presentation *presentation);
+ntvdm64_status vdm_presentation_capture_text(
+    vdm_presentation *presentation,
+    uint64_t timestamp,
+    vdm_presentation_snapshot *out_snapshot);
+C_VOID vdm_presentation_destroy(
+    vdm_presentation *presentation);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
