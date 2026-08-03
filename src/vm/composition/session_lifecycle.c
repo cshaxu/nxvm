@@ -191,7 +191,6 @@ C_VOID vm_session_resume(vm_session *machine) {
 C_VOID vm_session_initialize(vm_session *machine) {
     if (machine == STD_NULL) return;
     if (machine->active) return;
-    vm_platform_initialize();
     vm_session_storage_initialize(machine);
     if (machine->core_machine == STD_NULL) return;
     core_product_wait_scope_initialize(machine->wait_scope,
@@ -236,5 +235,4 @@ C_VOID vm_session_finalize(vm_session *machine) {
     vm_machine_debug_bind_pause(machine->debug, STD_NULL, STD_NULL);
     vm_session_debug_target_finalize(machine);
     vm_session_storage_finalize(machine);
-    vm_platform_finalize();
 }

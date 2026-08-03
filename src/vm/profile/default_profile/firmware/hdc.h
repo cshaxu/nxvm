@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_VM_MACHINE_HDC_H
-#define NXVM_VM_MACHINE_HDC_H
+#ifndef NTVDM64_VM_PROFILE_DEFAULT_FIRMWARE_HDC_H
+#define NTVDM64_VM_PROFILE_DEFAULT_FIRMWARE_HDC_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,11 +10,6 @@ extern "C" {
 #include "type.h"
 
 #define NXVM_DEVICE_HDC "Unknown Hard Drive Controller"
-
-C_VOID vm_machine_hdc_initialize();
-C_VOID vm_machine_hdc_reset();
-C_VOID vm_machine_hdc_refresh();
-C_VOID vm_machine_hdc_finalize();
 
 #define VHDC_INT_SOFT_HDD_13 "\
 test dl, 80                 \n\

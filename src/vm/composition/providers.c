@@ -27,7 +27,7 @@
 
 #include "vm/machine/fdd.h"
 
-#include "vm/machine/hdc.h"
+#include "vm/profile/default_profile/firmware/hdc.h"
 
 #include "vm/machine/hdd.h"
 
@@ -102,7 +102,6 @@ C_VOID vm_session_providers_initialize(vm_session *machine) {
     vm_profile_default_bios_add_interrupt(machine->default_bios, VFDC_INT_SOFT_FDD_40, 0x13);
     vm_profile_default_bios_add_interrupt(machine->default_bios, VFDC_INT_SOFT_FDD_40, 0x40);
     _vbios_ _vport_ _vdma_
-    vm_machine_hdc_initialize();
     vm_profile_default_bios_add_interrupt(machine->default_bios, VHDC_INT_SOFT_HDD_13, 0x13);
     _vbios_ _vport_ _vdma_ _vfdc_
     core_machine_pit_initialize(machine->pit, machine->port);
@@ -131,8 +130,6 @@ C_VOID vm_session_providers_refresh(vm_session *machine) {
     _empty_
     vm_machine_fdd_refresh(machine->fdd);
     _empty_
-    vm_machine_hdc_refresh();
-    _empty_
     vm_machine_hdd_refresh(machine->hdd);
     _empty_
     vm_machine_cmos_refresh(machine->cmos);
@@ -141,7 +138,6 @@ C_VOID vm_session_providers_refresh(vm_session *machine) {
 
 C_VOID vm_session_providers_reset(vm_session *machine) {
     if (machine == STD_NULL) return;
-    vm_machine_hdc_reset();
     vm_machine_cmos_reset(machine->cmos);
     vm_machine_fdc_reset(machine->fdc);
     vm_machine_fdd_reset(machine->fdd);
@@ -164,8 +160,6 @@ C_VOID vm_session_providers_finalize(vm_session *machine) {
         machine->dma_secondary);
     _empty_
     vm_machine_fdc_finalize(machine->fdc);
-    _empty_
-    vm_machine_hdc_finalize();
     _empty_
     core_machine_kbc_finalize(machine->kbc);
     _empty_
