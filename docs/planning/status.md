@@ -145,6 +145,9 @@ atomic operations use `STD_*`; explicit atomic memory orders are unchanged.
 `WIN32_*`; SDK calls and private message-loop state remain inside
 `platform/win32`.
 
+**M5 T115 complete:** debugger input clearing routes through a core product
+provider and VM platform capability; `fflush(stdin)` is absent.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

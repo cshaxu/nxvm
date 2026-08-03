@@ -32,6 +32,10 @@ T114 completes the Win32 public boundary: adapter declarations use `C_VOID`
 and `WIN32_*` aliases, while native Win32 calls and callback plumbing remain
 private implementation details below `platform/win32`.
 
+T115 removes `fflush(stdin)`: core product debug calls a registered input
+provider, and VM composition binds it to a platform capability. Win32 clears
+only a confirmed Console input handle; redirected input is left untouched.
+
 ## Decision
 
 `src/type.h` is the repository's one facade for ISO C headers and C11 atomics.

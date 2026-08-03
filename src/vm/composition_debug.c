@@ -18,6 +18,13 @@
 #include "core/machine/cpu.h"
 
 #include "vm/machine/debug.h"
+#include "vm/platform/input.h"
+
+C_VOID vm_composition_debug_flush_console_input(C_VOID *context)
+{
+    (void)context;
+    vm_platform_input_flush_console_input();
+}
 
 static C_INT vm_debug_running(C_VOID *context) { return vm_composition_control_is_running(((vm_composition_live_machine *)context)->control); }
 static C_VOID vm_debug_resume(C_VOID *context) { vm_composition_resume((vm_composition_live_machine *)context); }

@@ -11,6 +11,11 @@ extern "C" {
 
 #include "core/product/debug/debug_target.h"
 
+typedef struct core_product_debug_input_provider {
+    C_VOID (*flush_console_input)(C_VOID *context);
+    C_VOID *context;
+} core_product_debug_input_provider;
+
 typedef struct core_product_debug_context {
     STD_SIZE_T error_position;
     STD_SIZE_T argument_count;
@@ -31,7 +36,8 @@ typedef struct core_product_debug_context {
 
 C_VOID core_product_debug_context_initialize(core_product_debug_context *context);
 C_VOID core_product_debug_main(core_product_debug_context *context,
-               const core_product_debug_target *target);
+               const core_product_debug_target *target,
+               const core_product_debug_input_provider *input_provider);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

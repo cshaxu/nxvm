@@ -199,8 +199,11 @@ ntvdm64_status vm_composition_full_pc_debug(vm_composition_full_pc *full_pc)
         return NTVDM64_STATUS_INVALID_STATE;
     }
     core_product_debug_context_initialize(full_pc->machine.debugger_context);
+    static const core_product_debug_input_provider input_provider = {
+        vm_composition_debug_flush_console_input, STD_NULL
+    };
     core_product_debug_main(full_pc->machine.debugger_context,
-              vm_composition_debug_target(&full_pc->machine));
+        vm_composition_debug_target(&full_pc->machine), &input_provider);
     return NTVDM64_STATUS_OK;
 }
 

@@ -56,7 +56,11 @@ static C_VOID vm_composition_console_debug(C_VOID *context)
     }
     previous = core_product_wait_scope_enter(machine->wait_scope);
     core_product_debug_context_initialize(machine->debugger_context);
-    core_product_debug_main(machine->debugger_context, vm_composition_debug_target(machine));
+    static const core_product_debug_input_provider input_provider = {
+        vm_composition_debug_flush_console_input, STD_NULL
+    };
+    core_product_debug_main(machine->debugger_context,
+        vm_composition_debug_target(machine), &input_provider);
     core_product_wait_scope_leave(previous);
 }
 static C_VOID vm_composition_console_record_start(C_VOID *context, const C_CHAR *path) { vm_machine_debug_record_start(((vm_composition_live_machine *)context)->debug, path); }
