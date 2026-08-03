@@ -222,6 +222,16 @@ construction, platform-to-guest-state mutation, and all dependency cycles.
 The build-target graph follows the same rules: a target may not conceal a
 forbidden source edge through an aggregate library.
 
+## Session Readiness
+
+An implemented module is session-ready only when every mutable datum is
+session-owned, execution-thread-owned, thread-local scope, or an explicit
+process-exclusive host lease. Immutable tables and descriptors may be shared.
+The authoritative checklist, priority order, and closure tasks are in
+[`planning/m5-session-readiness.md`](../planning/m5-session-readiness.md).
+An undocumented mutable file-static object is never an acceptable substitute
+for a session context or host lease.
+
 ## M5 Convergence
 
 M5 removed the prior `app`, `adapters`, `dos`, `firmware`, `integration`,

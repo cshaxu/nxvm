@@ -47,16 +47,16 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
 ## Active Work
 
-**No implementation subtask is active.** M5 Story 2 is complete: NXVM guest
-execution enters through `core_machine_run()`; any wider M5 exit audit needs a
-separately authorized task.
+**M5 T87 S1: Session readiness inventory.** Define the module checklist and
+bounded T88--T92 closure sequence before changing session, thread, Console,
+debugger, or platform behavior.
 
 ## Short-Term M5 Plan
 
-The completed M5 convergence sequence is defined in
-[Facade And Executor Convergence](m5-facade-executor-convergence.md). It
-leaves `core_machine` as the one true guest executor while VM retains the outer
-product loop.
+The completed executor sequence is defined in
+[Facade And Executor Convergence](m5-facade-executor-convergence.md). The
+active session-readiness sequence is defined in
+[M5 Session Readiness](m5-session-readiness.md).
 
 M6 T1 remains deferred until this M5 sequence closes. M7 implementation remains
 ineligible until M6 defines and closes its implementation breakdown.
