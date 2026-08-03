@@ -252,9 +252,11 @@ forbidden source edge through an aggregate library.
 ## Session Readiness
 
 An implemented module is session-ready only when every mutable datum is
-session-owned, execution-thread-owned, thread-local scope, or an explicit
-process-exclusive host lease. Immutable tables and descriptors may be shared.
-The authoritative checklist, priority order, and closure tasks are in
+session-owned, execution-thread-owned, caller-owned invocation state, or an
+explicit process-exclusive host lease. Immutable tables and descriptors may be
+shared. A process-global, `_Thread_local`, or implicit-current-object selector
+is not an acceptable production-state owner. The authoritative checklist,
+priority order, and closure tasks are in
 [`planning/m5-session-readiness.md`](../planning/m5-session-readiness.md).
 An undocumented mutable file-static object is never an acceptable substitute
 for a session context or host lease.

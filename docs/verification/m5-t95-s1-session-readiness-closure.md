@@ -1,5 +1,9 @@
 # M5 T95 S1: Session-Readiness Closure
 
+> Historical evidence: this record accurately describes the T95 state. T129
+> through T132 later removed the listed production TLS scopes. Forward work
+> follows `RULES.md`, not the temporary TLS allowance recorded below.
+
 ## Result
 
 T87 through T95 are complete. Every implemented module has session-owned,

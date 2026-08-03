@@ -1,5 +1,10 @@
 # M5 Residual Facade Inventory
 
+> Historical baseline: rows 19--20 describe the transient TLS scopes present
+> during T75. T129--T132 subsequently removed them from production paths.
+> `RULES.md` is the forward rule; this inventory remains evidence of the
+> migration rather than a permission to restore TLS selection.
+
 ## Purpose
 
 This ledger is the T75 baseline for removing process-global facade state from
@@ -16,8 +21,8 @@ and FDD DOS-prompt gate.
 | Core keyboard facade | Deleted after T76 proved the provider-slot route is the only production route. | Provider slot. | Complete |
 | Core display facade | Deleted after T77 proved QDCGA uses its context provider slot. | Provider slot. | Complete |
 | Display generation | Stored on `vm_composition_live_machine` after T77. | The owning VM display context. | Complete |
-| Debug target | T78 removed lifecycle-wide target binding. `debugMain(target)` establishes a thread-local scope only for one debugger interaction. | The composition-owned debug target passed explicitly into the retained debugger UI. | Complete |
-| Wait provider | Thread-local scope restores the caller's previous provider. | VM run-context wait scope. | Complete |
+| Debug target | T78 removed lifecycle-wide target binding; T129 later made debugger invocation state explicit. | The composition-owned debug target passed explicitly into the retained debugger UI. | Complete |
+| Wait provider | T131 later replaced the transient scope with explicit propagation. | VM run-context wait scope passed explicitly. | Complete |
 | VM input sink | Deleted; explicit transport is the only path. | VM session input transport. | Complete |
 | VM execution sink | Deleted; explicit transport is the only path. | VM session execution transport. | Complete |
 | VM platform mode | Stored in the VM platform run context. | VM platform run context. | Complete |

@@ -77,8 +77,9 @@ historical QDX/approved compact-name exceptions are unchanged.
 ## M5 Closure
 
 **M5 T87--T95 session-readiness closure: complete.** Every implemented module
-now has session-owned, thread-local, or explicitly leased mutable state; the
-remaining VDM platform/product layers are deliberately absent. Evidence is in
+now has session-owned, execution-thread-owned, caller-owned, or explicitly
+leased mutable state; the remaining VDM platform/product layers are deliberately
+absent. Evidence is in
 [`m5-t95-s1-session-readiness-closure.md`](../verification/m5-t95-s1-session-readiness-closure.md).
 
 **M5 T96 Console regression repair: complete.** The retained Console has a
