@@ -305,12 +305,15 @@ no-op. The default remains `80386+none`. M6 remains blocked. The design contract
 now owns frozen profiles, default config resolves to `80386+none`, and form
 metadata has one local source. Evidence is [`M5-T154.md`](../tracking/M5-T154.md).
 
-**M5 T155 S1 active: centralized CPU profile gating.** Replace unconditional
-legacy decoder availability with T154 metadata-driven `#UD` rejection, without
-changing FPU escape behavior. The task contract is
-[`m5-t155-s1.md`](subtasks/m5-t155-s1.md). T156--T158 then install FPU
-escape/absence behavior, session-creation UX, and static closure. They do not
-claim a usable present FPU or complete i386 protected-mode/paging support.
+**M5 T155 S1 complete: centralized CPU profile gating.** Primary and `0F`
+dispatch now make one metadata-driven availability decision, and the default
+QDX escape remains 80386-only. Evidence is [`M5-T155.md`](../tracking/M5-T155.md).
+
+**M5 T156 S1 active: FPU ESC absence and FWAIT behavior.** Replace direct FPU
+escape `#UD` dispatch with bounded no-FPU consumption and correct CR0 `#NM`
+semantics. The task contract is [`m5-t156-s1.md`](subtasks/m5-t156-s1.md).
+T157--T158 then add session-creation UX and static closure; they do not claim
+a usable present FPU or complete i386 protected-mode/paging support.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

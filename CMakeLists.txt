@@ -528,6 +528,10 @@ add_executable(nxvm-core-machine-cpu-fpu-profile-smoke
     tests/machine/cpu_fpu_profile_smoke.c)
 target_link_libraries(nxvm-core-machine-cpu-fpu-profile-smoke PRIVATE
     nxvm-core)
+add_executable(nxvm-core-machine-cpu-profile-gate-smoke
+    tests/machine/cpu_profile_gate_smoke.c)
+target_link_libraries(nxvm-core-machine-cpu-profile-gate-smoke PRIVATE
+    nxvm-core)
 add_executable(nxvm-vm-two-session-isolation-smoke
     tests/machine/vm_two_session_isolation_smoke.c)
 target_link_libraries(nxvm-vm-two-session-isolation-smoke PRIVATE
@@ -790,6 +794,7 @@ add_nxvm_version_artifact(nxvm-0-5-0150 "0.5.0150")
 add_nxvm_version_artifact(nxvm-0-5-0151 "0.5.0151")
 add_nxvm_version_artifact(nxvm-0-5-0152 "0.5.0152")
 add_nxvm_version_artifact(nxvm-0-5-0154 "0.5.0154")
+add_nxvm_version_artifact(nxvm-0-5-0155 "0.5.0155")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
