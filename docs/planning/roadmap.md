@@ -122,7 +122,7 @@ M5 convergence is explicitly split: T75--T81 removes residual global facades
 from real NXVM paths, and T82--T86 makes `core_machine` the one true guest
 executor while VM retains the outer product loop. The authoritative breakdown
 is [`planning/m5-facade-executor-convergence.md`](m5-facade-executor-convergence.md).
-M5 T87 through T92 close the remaining module-by-module session-readiness
+M5 T87 through T95 close the remaining module-by-module session-readiness
 work under [`planning/m5-session-readiness.md`](m5-session-readiness.md).
 
 **Compatibility gate:** M5 must not alter NXVM functionality or user experience.

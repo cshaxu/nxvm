@@ -17,19 +17,22 @@ plan.
 | Priority | Module | Current judgement | Closure condition |
 | --- | --- | --- | --- |
 | 1 | `core/machine` | Pass | Guest state, providers, and executor storage are per `core_machine`; retain two-instance regression. |
-| 2 | `core/platform` | Gap | Define shared host-capability contexts and host-surface lease contract; it must not hold guest state. |
-| 3 | `core/product` | Fail | Debugger parser, assembler, and disassembler workspaces become session-owned contexts; thread-local target/wait scopes remain scopes only. |
-| 4 | `vm/machine` | Partial | Full-PC objects are per session, but control flags cross threads without synchronization. |
+| 2 | `vm/machine` | Partial | Full-PC objects are per session, but control flags cross threads without synchronization. |
+| 3 | `vdm/machine` | Pass for current scope | DOS-minimal instances own their state. It has no concurrent host-entry contract yet, so no new code is required before a VDM run loop exists. |
+| 4 | `core/platform` | Gap | Define shared host-capability contexts and host-surface lease contract; it must not hold guest state. |
 | 5 | `vm/platform` | Fail | Console/window rendering state becomes context-owned; Linux terminal capability has an explicit exclusive lease. |
-| 6 | `vm/product` | Fail | Console parser, command buffer, target, and exit state become one Console-session object. |
-| 7 | `vm/profile` | Pass | Default-profile mutable firmware context is session-owned; descriptors/tables are immutable. |
-| 8 | `vdm/machine` | Pass for current scope | DOS-minimal instances own their state. It has no concurrent host-entry contract yet, so no new code is required before a VDM run loop exists. |
-| 9 | `vdm/platform` | Absent | No production implementation; define against the core platform contracts when M8/M9 admits it. |
-| 10 | `vdm/product` | Absent | No production CLI/UI implementation; do not add speculative session code. |
-| 11 | `vdm/profile` | Pass for current scope | Existing descriptor is immutable; future DOS profile state must be session-owned. |
+| 6 | `vdm/platform` | Absent | No production implementation; define against the core platform contracts when M8/M9 admits it. |
+| 7 | `core/product` | Fail | Debugger parser, assembler, and disassembler workspaces become session-owned contexts; thread-local target/wait scopes remain scopes only. |
+| 8 | `vm/product` | Fail | Console parser, command buffer, target, and exit state become one Console-session object. |
+| 9 | `vdm/product` | Absent | No production CLI/UI implementation; do not add speculative session code. |
+| 10 | `vm/composition` | Partial | It owns construction and threads, but must adopt the new machine/platform/product contexts without reintroducing hidden state. |
+| 11 | `vdm/composition` | Pass for current scope | Minimal composition is instance-owned; future product composition must bind the same context and lease contracts. |
 
-The default priority is the table order. A task may move earlier only when it
-is an explicit dependency of a higher-priority migration.
+`vm/profile` and `vdm/profile` currently pass: runtime profile context is
+session-owned and descriptors/tables are immutable. They remain checked in
+T95 but do not require a dedicated migration. The default priority is the
+table order. A task may move earlier only when it is an explicit dependency of
+a higher-priority migration.
 
 ## Confirmed Inventory
 
@@ -49,16 +52,19 @@ is an explicit dependency of a higher-priority migration.
 
 | Task | Scope | Depends on | Completion gate |
 | --- | --- | --- | --- |
-| T87 | Establish the authoritative inventory, repair current GCC presets, and add a no-unclassified-mutable-global scan. | None | Current preset builds the current task artifact and gates; inventory is approved. |
+| T87 | Establish the authoritative inventory, repair current GCC presets, and add a no-unclassified-mutable-global scan. It confirms the already-passing `core/machine`, `vdm/machine`, and profile rows. | None | Current preset builds the current task artifact and gates; inventory is approved. |
 | T88 | Replace VM control flags with a synchronized command/state boundary. | T87 | Concurrent stop/pause/reset/step regression; retained Console and FDD/HDD gates. |
-| T89 | Make NXVM Console and shared debugger parser/assembler/disassembler state session-owned. | T87, T88 for command-boundary tests | Two independent Console/debug contexts do not cross-target; retained grammar/output gate. |
-| T90 | Define `core/platform` host-surface context and lease contracts; move only mechanism-only shared host facilities there. | T87 | No core-to-machine dependency; capability/lease contract tests. |
-| T91 | Contextualize VM Win32 Console/window renderers and define Linux curses as an explicit exclusive surface lease. | T88, T90 | Two Win32 presentation contexts have independent generations/resources; lease conflict is deterministic. |
-| T92 | Run the module checklist closure audit and remove temporary compatibility state. | T88--T91 | Static inventory, default GCC preset, two-session VM, FDD/HDD, display, Console/debugger, and VDM-minimal regressions pass. |
+| T89 | Define `core/platform` host-surface context and lease contracts; move only mechanism-only shared host facilities there. | T87 | No core-to-machine dependency; capability/lease contract tests. |
+| T90 | Contextualize VM Win32 Console/window renderers and define Linux curses as an explicit exclusive surface lease. VDM platform remains absent, with no speculative code. | T88, T89 | Two Win32 presentation contexts have independent generations/resources; lease conflict is deterministic. |
+| T91 | Make shared debugger parser/assembler/disassembler state session-owned. | T87, T88 for command-boundary tests | Two debug contexts do not cross-target; retained debugger grammar/output gate. |
+| T92 | Make NXVM Console parser, target, and exit state session-owned. VDM product remains absent, with no speculative code. | T88, T91 | Two Console contexts do not cross-target; retained Console grammar/output gate. |
+| T93 | Update VM root composition to construct, bind, and tear down the new machine/platform/product contexts. | T88--T92 | Two full VM sessions preserve independent control, Console, debugger, and presentation behavior. |
+| T94 | Audit VDM root composition against the same contracts; change code only if current minimal composition violates them. | T89, T91, T93 | VDM-minimal remains instance-owned and no VM dependency is introduced. |
+| T95 | Run the module checklist closure audit and remove temporary compatibility state. | T88--T94 | Static inventory, default GCC preset, two-session VM, FDD/HDD, display, Console/debugger, and VDM-minimal regressions pass. |
 
-T87 is design and governance only. T88--T92 each change a runnable path and
-therefore produce their corresponding task artifact. This plan does not begin
-M6 or implement a VDM CLI.
+T87 is design and governance only. T88--T95 each change a runnable path only
+when its scoped module has an implementation; such tasks produce the matching
+task artifact. This plan does not begin M6 or implement a VDM CLI.
 
 ## Guardrails
 
@@ -70,5 +76,5 @@ M6 or implement a VDM CLI.
   never retain a process-wide mutable current session.
 - Cross-thread host requests are commands; only the execution thread mutates
   guest state at its command boundary.
-- T92 may close this plan only after all implemented checklist rows pass or
+- T95 may close this plan only after all implemented checklist rows pass or
   carry a documented, tested process-exclusive lease.
