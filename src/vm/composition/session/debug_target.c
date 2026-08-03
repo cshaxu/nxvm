@@ -10,6 +10,7 @@
 #include "vm/composition/session/control.h"
 
 #include "core/machine/cpu.h"
+#include "core/machine/debug_interface.h"
 
 #include "core/machine/memory.h"
 
@@ -28,24 +29,24 @@ C_VOID vm_session_debug_flush_console_input(C_VOID *context)
 
 static t_cpu *vm_debug_cpu(const vm_session *machine)
 { return machine == STD_NULL ? STD_NULL :
-    core_machine_executor_cpu_borrow(machine->core_machine); }
+    core_machine_debug_cpu_borrow(machine->core_machine); }
 
 static t_cpuins *vm_debug_instructions(const vm_session *machine)
 { return machine == STD_NULL ? STD_NULL :
-    core_machine_executor_cpu_instructions_borrow(machine->core_machine); }
+    core_machine_debug_cpu_instructions_borrow(machine->core_machine); }
 
 static core_machine_cpu_execution_context *vm_debug_execution(
     const vm_session *machine)
 { return machine == STD_NULL ? STD_NULL :
-    core_machine_executor_cpu_execution_borrow(machine->core_machine); }
+    core_machine_debug_cpu_execution_borrow(machine->core_machine); }
 
 static t_ram *vm_debug_memory(const vm_session *machine)
 { return machine == STD_NULL ? STD_NULL :
-    core_machine_executor_memory_borrow(machine->core_machine); }
+    core_machine_debug_memory_borrow(machine->core_machine); }
 
 static t_port *vm_debug_port(const vm_session *machine)
 { return machine == STD_NULL ? STD_NULL :
-    core_machine_executor_port_borrow(machine->core_machine); }
+    core_machine_debug_port_borrow(machine->core_machine); }
 
 static C_INT vm_debug_running(C_VOID *context) { return vm_session_control_is_running(((vm_session *)context)->control); }
 static C_VOID vm_debug_resume(C_VOID *context) { vm_session_resume((vm_session *)context); }

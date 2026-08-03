@@ -14,26 +14,26 @@ C_INT main(C_VOID)
     if (machine == STD_NULL) return 1;
     vm_session_storage_initialize(machine);
     if (machine->core_machine == STD_NULL ||
-        core_machine_executor_cpu_borrow(machine->core_machine) != core_machine_executor_cpu_borrow(machine->core_machine) ||
-        core_machine_executor_cpu_instructions_borrow(machine->core_machine) != core_machine_executor_cpu_instructions_borrow(
+        core_machine_configuration_cpu_borrow(machine->core_machine) != core_machine_configuration_cpu_borrow(machine->core_machine) ||
+        core_machine_configuration_cpu_instructions_borrow(machine->core_machine) != core_machine_configuration_cpu_instructions_borrow(
             machine->core_machine) ||
-        core_machine_executor_cpu_execution_borrow(machine->core_machine) != core_machine_executor_cpu_execution_borrow(
+        core_machine_configuration_cpu_execution_borrow(machine->core_machine) != core_machine_configuration_cpu_execution_borrow(
             machine->core_machine) ||
-        core_machine_executor_memory_borrow(machine->core_machine) != core_machine_executor_memory_borrow(machine->core_machine) ||
-        core_machine_executor_port_borrow(machine->core_machine) != core_machine_executor_port_borrow(machine->core_machine) ||
-        core_machine_shared_pic_master_borrow(machine->core_machine) != core_machine_shared_pic_master_borrow(
+        core_machine_configuration_memory_borrow(machine->core_machine) != core_machine_configuration_memory_borrow(machine->core_machine) ||
+        core_machine_configuration_port_borrow(machine->core_machine) != core_machine_configuration_port_borrow(machine->core_machine) ||
+        core_machine_configuration_shared_pic_master_borrow(machine->core_machine) != core_machine_configuration_shared_pic_master_borrow(
             machine->core_machine) ||
-        core_machine_shared_pic_slave_borrow(machine->core_machine) != core_machine_shared_pic_slave_borrow(
+        core_machine_configuration_shared_pic_slave_borrow(machine->core_machine) != core_machine_configuration_shared_pic_slave_borrow(
             machine->core_machine) ||
-        core_machine_shared_pit_borrow(machine->core_machine) != core_machine_shared_pit_borrow(machine->core_machine) ||
-        core_machine_shared_dma_latch_borrow(machine->core_machine) != core_machine_shared_dma_latch_borrow(
+        core_machine_configuration_shared_pit_borrow(machine->core_machine) != core_machine_configuration_shared_pit_borrow(machine->core_machine) ||
+        core_machine_configuration_shared_dma_latch_borrow(machine->core_machine) != core_machine_configuration_shared_dma_latch_borrow(
             machine->core_machine) ||
-        core_machine_shared_dma_primary_borrow(machine->core_machine) != core_machine_shared_dma_primary_borrow(
+        core_machine_configuration_shared_dma_primary_borrow(machine->core_machine) != core_machine_configuration_shared_dma_primary_borrow(
             machine->core_machine) ||
-        core_machine_shared_dma_secondary_borrow(machine->core_machine) != core_machine_shared_dma_secondary_borrow(
+        core_machine_configuration_shared_dma_secondary_borrow(machine->core_machine) != core_machine_configuration_shared_dma_secondary_borrow(
             machine->core_machine) ||
-        core_machine_shared_kbc_borrow(machine->core_machine) != core_machine_shared_kbc_borrow(machine->core_machine) ||
-        core_machine_shared_vadp_borrow(machine->core_machine) != core_machine_shared_vadp_borrow(machine->core_machine)) {
+        core_machine_configuration_shared_kbc_borrow(machine->core_machine) != core_machine_configuration_shared_kbc_borrow(machine->core_machine) ||
+        core_machine_configuration_shared_vadp_borrow(machine->core_machine) != core_machine_configuration_shared_vadp_borrow(machine->core_machine)) {
         vm_session_storage_finalize(machine);
         STD_FREE(machine);
         return 1;

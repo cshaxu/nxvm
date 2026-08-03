@@ -22,7 +22,7 @@ static C_INT vm_dos_keyboard_has_text(const vm_session *session,
     const C_CHAR *text)
 {
     const C_UCHAR *screen = (const C_UCHAR *)
-        core_machine_executor_memory_borrow(session->core_machine)->connect.pBase +
+        core_machine_configuration_memory_borrow(session->core_machine)->connect.pBase +
         TEXT_VIDEO_BASE;
     STD_SIZE_T cell;
     STD_SIZE_T character;
@@ -40,7 +40,7 @@ static C_INT vm_dos_keyboard_has_text(const vm_session *session,
 static C_INT vm_dos_keyboard_has_prompt(const vm_session *session)
 {
     const C_UCHAR *screen = (const C_UCHAR *)
-        core_machine_executor_memory_borrow(session->core_machine)->connect.pBase +
+        core_machine_configuration_memory_borrow(session->core_machine)->connect.pBase +
         TEXT_VIDEO_BASE;
     STD_SIZE_T cell;
 

@@ -18,8 +18,8 @@ static C_INT prepare_machine(core_machine_cpu_profile profile,
     if (core_machine_create(&config, out_machine) != NTVDM64_STATUS_OK ||
         core_machine_freeze_execution_providers(*out_machine) != NTVDM64_STATUS_OK ||
         core_machine_reset(*out_machine) != NTVDM64_STATUS_OK) return 1;
-    execution = core_machine_executor_cpu_execution_borrow(*out_machine);
-    cpu = core_machine_executor_cpu_borrow(*out_machine);
+    execution = core_machine_configuration_cpu_execution_borrow(*out_machine);
+    cpu = core_machine_configuration_cpu_borrow(*out_machine);
     if (core_machine_cpu_execution_load_segment(execution, &cpu->data.cs, 0u) ||
         core_machine_cpu_execution_load_segment(execution, &cpu->data.ds, 0u) ||
         core_machine_cpu_execution_load_segment(execution, &cpu->data.es, 0u) ||
@@ -40,7 +40,7 @@ static C_INT run_case(core_machine_cpu_profile profile, const C_UCHAR *program,
     C_INT failed = prepare_machine(profile, &machine, &cpu);
 
     if (!failed) {
-        core_machine_memory_write_real_to(core_machine_executor_memory_borrow(machine),
+        core_machine_memory_write_real_to(core_machine_configuration_memory_borrow(machine),
             0u, 0u, program, program_size);
         failed |= core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK;
         failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) != NTVDM64_STATUS_OK;
@@ -70,9 +70,9 @@ static C_INT run_pop_cs_8086(C_VOID)
 
     if (!failed) {
         cpu->data.sp = 0x0100u;
-        core_machine_memory_write_real_to(core_machine_executor_memory_borrow(machine),
+        core_machine_memory_write_real_to(core_machine_configuration_memory_borrow(machine),
             0u, 0u, program, sizeof(program));
-        core_machine_memory_write_real_to(core_machine_executor_memory_borrow(machine),
+        core_machine_memory_write_real_to(core_machine_configuration_memory_borrow(machine),
             0u, 0x0100u, selector, sizeof(selector));
         failed |= core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK;
         failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) != NTVDM64_STATUS_OK;

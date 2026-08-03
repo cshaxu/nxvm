@@ -1,4 +1,4 @@
-﻿#include "type.h"
+#include "type.h"
 
 #include "core/product/debug/debug_access.h"
 

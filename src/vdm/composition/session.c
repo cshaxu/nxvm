@@ -1,4 +1,4 @@
-﻿#include "type.h"
+#include "type.h"
 
 #include "vdm/composition/session.h"
 

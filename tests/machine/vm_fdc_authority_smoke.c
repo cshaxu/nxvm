@@ -21,17 +21,17 @@ C_INT main(C_VOID)
     if (machine == STD_NULL || machine->fdc == STD_NULL ||
         machine->fdc->connect.fdd != machine->fdd ||
         machine->fdc->connect.dma_latch !=
-            core_machine_shared_dma_latch_borrow(machine->core_machine) ||
+            core_machine_configuration_shared_dma_latch_borrow(machine->core_machine) ||
         machine->fdc->connect.dma_primary !=
-            core_machine_shared_dma_primary_borrow(machine->core_machine) ||
+            core_machine_configuration_shared_dma_primary_borrow(machine->core_machine) ||
         machine->fdc->connect.dma_secondary !=
-            core_machine_shared_dma_secondary_borrow(machine->core_machine) ||
+            core_machine_configuration_shared_dma_secondary_borrow(machine->core_machine) ||
         machine->fdc->connect.pic_master !=
-            core_machine_shared_pic_master_borrow(machine->core_machine) ||
+            core_machine_configuration_shared_pic_master_borrow(machine->core_machine) ||
         machine->fdc->connect.pic_slave !=
-            core_machine_shared_pic_slave_borrow(machine->core_machine) ||
+            core_machine_configuration_shared_pic_slave_borrow(machine->core_machine) ||
         machine->fdc->connect.port !=
-            core_machine_executor_port_borrow(machine->core_machine)) {
+            core_machine_configuration_port_borrow(machine->core_machine)) {
         vm_session_finalize(session);
         STD_FREE(session);
         return 1;

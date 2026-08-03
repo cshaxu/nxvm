@@ -230,9 +230,11 @@ Composition may borrow mutable executor or shared-device implementation
 objects only during the `INITIALIZED` configuration window, immediately to
 bind a provider/profile callback. A configuration borrow is neither a public
 product capability nor a retained pointer: it cannot be cached in session
-state and expires at provider freeze. The historical generic executor-borrow
-names are migration debt and must be replaced by purpose-named configuration
-borrows.
+state and cannot be used by a product command. A provider registered before
+freeze may retain the supplied child reference for its own callback lifetime;
+core keeps that child storage stable until provider teardown. The historical
+generic executor-borrow names are migration debt and must be replaced by
+purpose-named configuration borrows.
 
 Physical RAM capacity is configuration, not mutable guest state. A product
 request to change it must quiesce its session and transactionally reconstruct

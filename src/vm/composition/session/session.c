@@ -62,13 +62,13 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
             return;
         }
     }
-    memory = core_machine_executor_memory_borrow(machine->core_machine);
-    execution = core_machine_executor_cpu_execution_borrow(machine->core_machine);
-    pic_master = core_machine_shared_pic_master_borrow(machine->core_machine);
-    pic_slave = core_machine_shared_pic_slave_borrow(machine->core_machine);
+    memory = core_machine_configuration_memory_borrow(machine->core_machine);
+    execution = core_machine_configuration_cpu_execution_borrow(machine->core_machine);
+    pic_master = core_machine_configuration_shared_pic_master_borrow(machine->core_machine);
+    pic_slave = core_machine_configuration_shared_pic_slave_borrow(machine->core_machine);
     core_machine_cpu_execution_context_bind_pic(execution,
         pic_master, pic_slave);
-    vadp = core_machine_shared_vadp_borrow(machine->core_machine);
+    vadp = core_machine_configuration_shared_vadp_borrow(machine->core_machine);
     machine->cmos = &machine->cmos_storage;
     machine->fdd = &machine->fdd_storage;
     machine->fdc = &machine->fdc_storage;
@@ -111,7 +111,7 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
 {
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     core_machine_cpu_execution_context_bind_extension(
-        core_machine_executor_cpu_execution_borrow(machine->core_machine), STD_NULL);
+        core_machine_configuration_cpu_execution_borrow(machine->core_machine), STD_NULL);
     machine->cmos = STD_NULL;
     machine->fdd = STD_NULL;
     machine->fdc = STD_NULL;
@@ -148,6 +148,7 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return NTVDM64_STATUS_NO_MEMORY;
     if (config != STD_NULL) {
+        session->core_machine_config.memory_bytes = config->memory_bytes;
         session->core_machine_config.cpu_profile = config->cpu_profile;
         session->core_machine_config.fpu_profile = config->fpu_profile;
     }
@@ -187,11 +188,13 @@ C_VOID vm_session_destroy(vm_session *session)
 C_INT vm_session_get_reset_vector(const vm_session *session,
     vm_session_reset_vector *out_vector)
 {
+    core_machine_observation observation;
+
     if (session == STD_NULL || session->core_machine == STD_NULL ||
         out_vector == STD_NULL) return NTVDM64_STATUS_INVALID_STATE;
-    out_vector->cs = vm_session_read_u16(
-        &core_machine_executor_cpu_borrow(session->core_machine)->data.cs.selector);
-    out_vector->ip = vm_session_read_u16(
-        &core_machine_executor_cpu_borrow(session->core_machine)->data.ip);
+    if (core_machine_capture_observation(session->core_machine, &observation) !=
+        NTVDM64_STATUS_OK) return NTVDM64_STATUS_INVALID_STATE;
+    out_vector->cs = observation.cpu.cs;
+    out_vector->ip = (uint16_t)observation.cpu.eip;
     return NTVDM64_STATUS_OK;
 }

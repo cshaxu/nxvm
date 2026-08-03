@@ -21,7 +21,7 @@ C_INT main(C_VOID)
         core_machine_destroy(machine);
         return 1;
     }
-    core_machine_memory_write_physical(core_machine_executor_memory_borrow(machine),
+    core_machine_memory_write_physical(core_machine_configuration_memory_borrow(machine),
         0xffff0u, (ntvdm64_type_virtual_address)&halt, 1u);
     if (core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK ||
         result.executed != 1u || result.reason != CORE_MACHINE_STOP_BUDGET ||

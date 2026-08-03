@@ -6,7 +6,13 @@
 
 static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
 {
-    vm_session_config config = { fdd, hdd, 0, 0u, boot_hdd };
+    vm_session_config config = {
+        .fdd_image = fdd,
+        .hdd_image = hdd,
+        .boot_hdd = boot_hdd,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
     vm_session_reset_vector vector;
     vm_session *session = STD_NULL;
 
@@ -23,7 +29,13 @@ static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
 
 static C_INT verify_created(C_VOID)
 {
-    vm_session_config config = { STD_NULL, STD_NULL, 1, 1u, 1 };
+    vm_session_config config = {
+        .create_fdd = 1,
+        .create_hdd_cylinders = 1u,
+        .boot_hdd = 1,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
     vm_session *session = STD_NULL;
 
     if (vm_session_create(&config, &session) != NTVDM64_STATUS_OK ||

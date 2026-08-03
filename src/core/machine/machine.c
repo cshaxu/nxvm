@@ -126,38 +126,38 @@ C_INT core_machine_configuration_is_open(const core_machine *machine)
         !machine->execution_provider_frozen;
 }
 
-t_cpu *core_machine_executor_cpu_borrow(core_machine *machine)
-{ return machine != STD_NULL ? &machine->executor_cpu : STD_NULL; }
+t_cpu *core_machine_configuration_cpu_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->executor_cpu : STD_NULL; }
 
-t_cpuins *core_machine_executor_cpu_instructions_borrow(core_machine *machine)
-{ return machine != STD_NULL ? &machine->executor_cpu_instructions : STD_NULL; }
+t_cpuins *core_machine_configuration_cpu_instructions_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->executor_cpu_instructions : STD_NULL; }
 
-core_machine_cpu_execution_context *core_machine_executor_cpu_execution_borrow(
+core_machine_cpu_execution_context *core_machine_configuration_cpu_execution_borrow(
     core_machine *machine)
-{ return machine != STD_NULL ? &machine->executor_cpu_execution : STD_NULL; }
+{ return core_machine_configuration_is_open(machine) ? &machine->executor_cpu_execution : STD_NULL; }
 
-t_ram *core_machine_executor_memory_borrow(core_machine *machine)
-{ return machine != STD_NULL ? &machine->executor_memory : STD_NULL; }
+t_ram *core_machine_configuration_memory_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->executor_memory : STD_NULL; }
 
-t_port *core_machine_executor_port_borrow(core_machine *machine)
-{ return machine != STD_NULL ? &machine->executor_port : STD_NULL; }
+t_port *core_machine_configuration_port_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->executor_port : STD_NULL; }
 
-t_pic *core_machine_shared_pic_master_borrow(core_machine *machine)
-{ return machine != STD_NULL ? &machine->shared_pic_master : STD_NULL; }
-t_pic *core_machine_shared_pic_slave_borrow(core_machine *machine)
-{ return machine != STD_NULL ? &machine->shared_pic_slave : STD_NULL; }
-t_pit *core_machine_shared_pit_borrow(core_machine *machine)
-{ return machine != STD_NULL ? &machine->shared_pit : STD_NULL; }
-t_latch *core_machine_shared_dma_latch_borrow(core_machine *machine)
-{ return machine != STD_NULL ? &machine->shared_dma_latch : STD_NULL; }
-t_dma *core_machine_shared_dma_primary_borrow(core_machine *machine)
-{ return machine != STD_NULL ? &machine->shared_dma_primary : STD_NULL; }
-t_dma *core_machine_shared_dma_secondary_borrow(core_machine *machine)
-{ return machine != STD_NULL ? &machine->shared_dma_secondary : STD_NULL; }
-t_kbc *core_machine_shared_kbc_borrow(core_machine *machine)
-{ return machine != STD_NULL ? &machine->shared_kbc : STD_NULL; }
-t_vadp *core_machine_shared_vadp_borrow(core_machine *machine)
-{ return machine != STD_NULL ? &machine->shared_vadp : STD_NULL; }
+t_pic *core_machine_configuration_shared_pic_master_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->shared_pic_master : STD_NULL; }
+t_pic *core_machine_configuration_shared_pic_slave_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->shared_pic_slave : STD_NULL; }
+t_pit *core_machine_configuration_shared_pit_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->shared_pit : STD_NULL; }
+t_latch *core_machine_configuration_shared_dma_latch_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->shared_dma_latch : STD_NULL; }
+t_dma *core_machine_configuration_shared_dma_primary_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->shared_dma_primary : STD_NULL; }
+t_dma *core_machine_configuration_shared_dma_secondary_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->shared_dma_secondary : STD_NULL; }
+t_kbc *core_machine_configuration_shared_kbc_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->shared_kbc : STD_NULL; }
+t_vadp *core_machine_configuration_shared_vadp_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->shared_vadp : STD_NULL; }
 
 ntvdm64_status core_machine_bind_execution_provider(core_machine *machine,
     const core_machine_execution_provider *provider, C_VOID *context)
@@ -191,7 +191,8 @@ ntvdm64_status core_machine_get_cpu_state(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    if (machine->lifecycle == CORE_MACHINE_INITIALIZED) {
+    if (machine->lifecycle == CORE_MACHINE_INITIALIZED ||
+        machine->lifecycle == CORE_MACHINE_RUNNING) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
     out_state->cs = machine->executor_cpu.data.cs.selector;
@@ -222,14 +223,44 @@ ntvdm64_status core_machine_get_fpu_profile(
     return NTVDM64_STATUS_OK;
 }
 
+ntvdm64_status core_machine_get_memory_bytes(
+    const core_machine *machine, STD_SIZE_T *out_memory_bytes)
+{
+    if (machine == STD_NULL || out_memory_bytes == STD_NULL) {
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
+    }
+    *out_memory_bytes = machine->executor_memory.connect.size;
+    return NTVDM64_STATUS_OK;
+}
+
 ntvdm64_status core_machine_get_cpu_diagnostic(
     const core_machine *machine, core_machine_cpu_diagnostic *out_diagnostic)
 {
-    if (machine == STD_NULL || out_diagnostic == STD_NULL) {
+    if (machine == STD_NULL || out_diagnostic == STD_NULL ||
+        machine->lifecycle == CORE_MACHINE_INITIALIZED ||
+        machine->lifecycle == CORE_MACHINE_RUNNING) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     core_machine_cpu_diagnostic_ordered_copy(&machine->cpu_diagnostic,
         out_diagnostic);
+    return NTVDM64_STATUS_OK;
+}
+
+ntvdm64_status core_machine_capture_observation(
+    const core_machine *machine, core_machine_observation *out_observation)
+{
+    if (machine == STD_NULL || out_observation == STD_NULL ||
+        machine->lifecycle == CORE_MACHINE_INITIALIZED ||
+        machine->lifecycle == CORE_MACHINE_RUNNING) {
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+    out_observation->lifecycle = machine->lifecycle;
+    if (core_machine_get_cpu_state(machine, &out_observation->cpu) !=
+            NTVDM64_STATUS_OK) {
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+    core_machine_cpu_diagnostic_ordered_copy(&machine->cpu_diagnostic,
+        &out_observation->diagnostic);
     return NTVDM64_STATUS_OK;
 }
 

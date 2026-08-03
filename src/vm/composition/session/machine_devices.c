@@ -23,20 +23,20 @@ C_VOID vm_session_machine_devices_initialize_cmos(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_cmos_initialize(session->cmos,
-        core_machine_executor_cpu_borrow(session->core_machine),
-        core_machine_executor_port_borrow(session->core_machine));
+        core_machine_configuration_cpu_borrow(session->core_machine),
+        core_machine_configuration_port_borrow(session->core_machine));
 }
 
 C_VOID vm_session_machine_devices_initialize_fdc(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdc_connect(session->fdc, session->fdd,
-        core_machine_shared_dma_latch_borrow(session->core_machine),
-        core_machine_shared_dma_primary_borrow(session->core_machine),
-        core_machine_shared_dma_secondary_borrow(session->core_machine),
-        core_machine_shared_pic_master_borrow(session->core_machine),
-        core_machine_shared_pic_slave_borrow(session->core_machine),
-        core_machine_executor_port_borrow(session->core_machine));
+        core_machine_configuration_shared_dma_latch_borrow(session->core_machine),
+        core_machine_configuration_shared_dma_primary_borrow(session->core_machine),
+        core_machine_configuration_shared_dma_secondary_borrow(session->core_machine),
+        core_machine_configuration_shared_pic_master_borrow(session->core_machine),
+        core_machine_configuration_shared_pic_slave_borrow(session->core_machine),
+        core_machine_configuration_port_borrow(session->core_machine));
     vm_machine_fdc_initialize(session->fdc);
 }
 

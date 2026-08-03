@@ -52,10 +52,10 @@ import. `docs/planning/status.md` remains authoritative for active work.
   boundary. The retained `DEVICE ram` Console command reaches
   `core_machine_memory_allocate_for` through this route. Define a replacement
   configuration/reconstruction contract before changing it; also constrain
-  direct CPU/diagnostic observation to a copied, synchronized boundary. T163
-  fixes the execution order: T164 establishes core-only configuration and
-  observation contracts, T165 reconstructs a stopped VM session for `DEVICE
-  ram`, then T166 removes machine-local default media paths.
+  direct CPU/diagnostic observation to a copied, synchronized boundary. T164
+  closed the generic borrow and observation portions. T165 remains to route
+  `DEVICE ram` through stopped-session reconstruction; T166 then removes
+  machine-local default media paths.
 - [ ] **Default-session media policy (`TODO(High)`).** The NXVM session
   factory must not commit machine-local image paths or silently select host
   media. Preserve explicit `DEVICE` media commands and define the approved

@@ -29,6 +29,15 @@ ntvdm64_status core_machine_debug_continue(
     core_machine_run_budget budget,
     core_machine_run_result *out_result);
 
+/* Transitional composition-debug adapter access. These borrows are valid
+ * only after the execution thread has returned a paused boundary. */
+t_cpu *core_machine_debug_cpu_borrow(core_machine *machine);
+t_cpuins *core_machine_debug_cpu_instructions_borrow(core_machine *machine);
+core_machine_cpu_execution_context *core_machine_debug_cpu_execution_borrow(
+    core_machine *machine);
+t_ram *core_machine_debug_memory_borrow(core_machine *machine);
+t_port *core_machine_debug_port_borrow(core_machine *machine);
+
 #ifdef __cplusplus
 }
 #endif

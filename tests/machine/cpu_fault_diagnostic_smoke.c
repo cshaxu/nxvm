@@ -24,8 +24,8 @@ C_INT main(C_VOID)
     if (core_machine_create(&config, &machine) != NTVDM64_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != NTVDM64_STATUS_OK ||
         core_machine_reset(machine) != NTVDM64_STATUS_OK) goto fail;
-    cpu = core_machine_executor_cpu_borrow(machine);
-    execution = core_machine_executor_cpu_execution_borrow(machine);
+    cpu = core_machine_configuration_cpu_borrow(machine);
+    execution = core_machine_configuration_cpu_execution_borrow(machine);
     if (core_machine_cpu_execution_load_segment(execution, &cpu->data.cs, 0u) ||
         core_machine_cpu_execution_load_segment(execution, &cpu->data.ds, 0u) ||
         core_machine_cpu_execution_load_segment(execution, &cpu->data.es, 0u) ||
@@ -36,7 +36,7 @@ C_INT main(C_VOID)
     }
     program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY] = 0xd6u;
     program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 1u] = 0x90u;
-    core_machine_memory_write_real_to(core_machine_executor_memory_borrow(machine),
+    core_machine_memory_write_real_to(core_machine_configuration_memory_borrow(machine),
         0u, 0u, program, sizeof(program));
     if (
         core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK ||
