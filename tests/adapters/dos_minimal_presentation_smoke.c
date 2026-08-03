@@ -1,4 +1,4 @@
-#include "type.h"
+﻿#include "type.h"
 
 
 
@@ -6,8 +6,8 @@
 
 C_INT main(C_VOID)
 {
-    core_product_runtime_dos_minimal *first = STD_NULL;
-    core_product_runtime_dos_minimal *second = STD_NULL;
+    vdm_session *first = STD_NULL;
+    vdm_session *second = STD_NULL;
     vdm_presentation *first_presentation = STD_NULL;
     vdm_presentation *second_presentation = STD_NULL;
     nxvm_platform_input_event first_event = { 42u, 0x1eu };
@@ -16,8 +16,8 @@ C_INT main(C_VOID)
     vdm_presentation_snapshot second_snapshot;
     uint32_t key;
 
-    if (core_product_runtime_dos_minimal_create(&first) != NTVDM64_STATUS_OK ||
-        core_product_runtime_dos_minimal_create(&second) != NTVDM64_STATUS_OK ||
+    if (vdm_session_create(&first) != NTVDM64_STATUS_OK ||
+        vdm_session_create(&second) != NTVDM64_STATUS_OK ||
         vdm_presentation_create(first, &first_presentation) !=
             NTVDM64_STATUS_OK ||
         vdm_presentation_create(second, &second_presentation) !=
@@ -30,10 +30,10 @@ C_INT main(C_VOID)
             NTVDM64_STATUS_OK ||
         vdm_presentation_apply_input(first_presentation) !=
             NTVDM64_STATUS_OK ||
-        core_product_runtime_dos_minimal_port_read(first, 0x60u, &key) !=
+        vdm_session_port_read(first, 0x60u, &key) !=
             NTVDM64_STATUS_OK ||
         key != 0x1eu ||
-        core_product_runtime_dos_minimal_write_text(first, 0u, 'P', 0x2eu) !=
+        vdm_session_write_text(first, 0u, 'P', 0x2eu) !=
             NTVDM64_STATUS_OK ||
         vdm_presentation_capture_text(first_presentation, 99u,
                                                    &first_snapshot) !=
@@ -47,20 +47,21 @@ C_INT main(C_VOID)
         second_snapshot.text.characters[0] != ' ' ||
         vdm_presentation_apply_input(second_presentation) !=
             NTVDM64_STATUS_OK ||
-        core_product_runtime_dos_minimal_port_read(second, 0x60u, &key) !=
+        vdm_session_port_read(second, 0x60u, &key) !=
             NTVDM64_STATUS_OK ||
         key != 0x30u) {
         vdm_presentation_destroy(second_presentation);
         vdm_presentation_destroy(first_presentation);
-        core_product_runtime_dos_minimal_destroy(second);
-        core_product_runtime_dos_minimal_destroy(first);
+        vdm_session_destroy(second);
+        vdm_session_destroy(first);
         return 1;
     }
 
     vdm_presentation_destroy(second_presentation);
     vdm_presentation_destroy(first_presentation);
-    core_product_runtime_dos_minimal_destroy(second);
-    core_product_runtime_dos_minimal_destroy(first);
+    vdm_session_destroy(second);
+    vdm_session_destroy(first);
     puts("M5:T94:S1:VDM-PRESENTATION-ISOLATION:OK");
     return 0;
 }
+

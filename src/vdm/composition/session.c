@@ -1,4 +1,4 @@
-#include "type.h"
+﻿#include "type.h"
 
 #include "vdm/composition/session.h"
 
@@ -11,7 +11,7 @@
 
 struct vdm_session {
     const core_product_runtime_profile_descriptor *profile;
-    core_product_runtime_dos_minimal *dos_minimal;
+    vdm_machine_dos_minimal *dos_minimal;
 };
 
 ntvdm64_status vdm_session_create(
@@ -29,7 +29,7 @@ ntvdm64_status vdm_session_create(
         return NTVDM64_STATUS_NO_MEMORY;
     }
     session->profile = ntvdm64_dos_minimal_profile_descriptor();
-    status = core_product_runtime_dos_minimal_create(&session->dos_minimal);
+    status = vdm_machine_dos_minimal_create(&session->dos_minimal);
     if (status != NTVDM64_STATUS_OK) {
         STD_FREE(session);
         return status;
@@ -44,7 +44,7 @@ ntvdm64_status vdm_session_reset(
     if (session == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
-    return core_product_runtime_dos_minimal_reset(session->dos_minimal);
+    return vdm_machine_dos_minimal_reset(session->dos_minimal);
 }
 
 const core_product_runtime_profile_descriptor *vdm_session_profile(
@@ -56,7 +56,24 @@ const core_product_runtime_profile_descriptor *vdm_session_profile(
 C_VOID vdm_session_destroy(vdm_session *session)
 {
     if (session != STD_NULL) {
-        core_product_runtime_dos_minimal_destroy(session->dos_minimal);
+        vdm_machine_dos_minimal_destroy(session->dos_minimal);
         STD_FREE(session);
     }
 }
+
+ntvdm64_status vdm_session_inject_key(vdm_session *session, uint8_t scan_code)
+{ return session == STD_NULL ? NTVDM64_STATUS_INVALID_ARGUMENT :
+    vdm_machine_dos_minimal_inject_key(session->dos_minimal, scan_code); }
+ntvdm64_status vdm_session_write_text(vdm_session *session, uint16_t cell,
+    uint8_t character, uint8_t attribute)
+{ return session == STD_NULL ? NTVDM64_STATUS_INVALID_ARGUMENT :
+    vdm_machine_dos_minimal_write_text(session->dos_minimal, cell, character, attribute); }
+ntvdm64_status vdm_session_get_snapshot(const vdm_session *session,
+    vdm_machine_text_snapshot *out_snapshot)
+{ return session == STD_NULL ? NTVDM64_STATUS_INVALID_ARGUMENT :
+    vdm_machine_dos_minimal_get_snapshot(session->dos_minimal, out_snapshot); }
+ntvdm64_status vdm_session_port_read(vdm_session *session, uint16_t port,
+    uint32_t *out_value)
+{ return session == STD_NULL ? NTVDM64_STATUS_INVALID_ARGUMENT :
+    vdm_machine_dos_minimal_port_read(session->dos_minimal, port, out_value); }
+
