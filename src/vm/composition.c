@@ -4,8 +4,6 @@
 
 #include "core/product/utils.h"
 #include "core/platform/sleep.h"
-#include "core/platform/sleep.h"
-#include "core/platform/sleep.h"
 
 #include "core/machine/port.h"
 #include "core/machine/memory.h"
@@ -104,14 +102,12 @@ void vmachineInit(vm_composition_live_machine *machine) {
         machine->cpu_execution);
     _vbios_ _vcpu_ _vram_
 }
-/* Resets all devices to initial values */
+
+/* Retained until T85 switches the outer loop to core_machine_run(). */
 void vmachineReset(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vhdcReset();
-    _empty_
     core_machine_kbc_reset(machine->kbc);
-    _empty_
-
     vm_machine_cmos_reset(machine->cmos);
     core_machine_cpu_state_reset(machine->cpu_execution);
     core_machine_dma_reset(machine->dma_latch, machine->dma_primary,
@@ -126,10 +122,9 @@ void vmachineReset(vm_composition_live_machine *machine) {
     core_machine_memory_reset(machine->ram);
     vm_profile_default_bios_reset(machine->default_bios, machine->ram,
         machine->block_provider);
-    _vram_
     vm_profile_default_qdx_reset(machine->default_profile_context);
-    _vram_
 }
+
 void vmachineRefreshProviders(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_profile_default_qdx_refresh(machine->default_profile_context);
@@ -146,30 +141,35 @@ void vmachineRefreshProviders(vm_composition_live_machine *machine) {
     vm_machine_fdc_refresh(machine->fdc);
 }
 
-/* Executes all devices in one loop */
+void vmachineResetProviders(vm_composition_live_machine *machine) {
+    if (machine == NULL) return;
+    vhdcReset();
+    vm_machine_cmos_reset(machine->cmos);
+    vm_machine_fdc_reset(machine->fdc);
+    vm_machine_fdd_reset(machine->fdd);
+    vm_machine_hdd_reset(machine->hdd);
+    vm_profile_default_bios_reset(machine->default_bios, machine->ram,
+        machine->block_provider);
+    vm_profile_default_qdx_reset(machine->default_profile_context);
+}
+
+/* Retained until T85 moves the shared refresh sequence into core_machine. */
 void vmachineRefresh(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vmachineRefreshProviders(machine);
     core_machine_kbc_refresh(machine->kbc);
-    _empty_
-    _empty_
     core_machine_vadp_refresh(machine->vadp);
-    _empty_
-    _empty_
-
     core_machine_dma_refresh(machine->dma_latch, machine->dma_primary,
         machine->dma_secondary, machine->ram);
-    _vfdc_
     core_machine_pic_refresh(machine->pic_master, machine->pic_slave);
     core_machine_pit_refresh(machine->pit);
-    _vpic_
     if (machine->cpu->data.flagHalt) {
         core_platform_sleep_milliseconds(1);
     }
     core_machine_cpu_execution_refresh(machine->cpu_execution);
-    _vpic_
     vm_composition_publish_display(machine, False);
 }
+
 /* Finalize all devices, deallocates space */
 void vmachineFinal(vm_composition_live_machine *machine) {
     if (machine == NULL) return;

@@ -2,6 +2,7 @@
 #define NTVDM64_CORE_MACHINE_EXECUTION_PROVIDER_H
 
 typedef struct core_machine_execution_provider {
+    void (*reset)(void *context);
     void (*refresh)(void *context);
 } core_machine_execution_provider;
 
