@@ -176,8 +176,11 @@ test-minimal state is explicitly non-executing contract-fixture state. Core
 and DOS-prompt gates passed.
 
 **M5 T122 complete:** CPU-probe and compact alternate Console/debugger models
-are test support, not production VM targets. T123 is active to remove
-command-level TLS current-object facades.
+are test support, not production VM targets.
+
+**M5 T123 complete:** debugger target access is explicit and no longer uses a
+TLS target scope. Retained parser-local TLS is recorded for T127 review; T124
+is active to converge the VDM skeleton boundary.
 
 ## Short-Term M5 Plan
 
