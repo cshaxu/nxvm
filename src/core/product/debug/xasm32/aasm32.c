@@ -13,7 +13,7 @@
         (n); \
         if (UTILS_TRACE_ERROR) { \
             (UTILS_TRACE_VAR).flagError = 1; \
-            utilsTraceFinal(&(UTILS_TRACE_VAR)); \
+            ntvdm64_type_trace_finalize(&(UTILS_TRACE_VAR)); \
             return info; \
         } \
     } while (0)
@@ -8287,11 +8287,11 @@ static uint8_t aasm32_execute(const char *stmt, uint8_t *rcode, int flag32) {
     }
 
 #if AASM_TRACE == 1
-    utilsTraceInit(&trace);
+    ntvdm64_type_trace_initialize(&trace);
 #endif
 
     MEMCPY((void *) astmt, (void *) stmt, 0x100);
-    utilsLowerStr(astmt);
+    ntvdm64_type_string_lower(astmt);
     rstmt = astmt;
 
     defsize = !!flag32;
@@ -8409,7 +8409,7 @@ static uint8_t aasm32_execute(const char *stmt, uint8_t *rcode, int flag32) {
     if (trace.callCount || trace.flagError) {
         PRINTF("aasm32: bad instruction '%s'\n", stmt);
     }
-    utilsTraceFinal(&trace);
+    ntvdm64_type_trace_finalize(&trace);
 #endif
 
     return len;
@@ -8604,7 +8604,7 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
                     }
                     if (j) {
                         instr[k].stmt[j + 1] = 0;
-                        utilsLowerStr(instr[k].stmt);
+                        ntvdm64_type_string_lower(instr[k].stmt);
                         instr[k].stmt_id = (uint32_t) k;
                         j = 0;
                         k++;
