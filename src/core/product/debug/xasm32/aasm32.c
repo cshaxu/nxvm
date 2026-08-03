@@ -7,8 +7,6 @@
 #define UTILS_TRACE_VAR   trace
 #define UTILS_TRACE_ERROR flagError
 
-static t_utils_trace UTILS_TRACE_VAR;
-
 #if UTILS_TRACE_ENABLED == 1
 #define _chrf(n) \
     do { \
@@ -146,18 +144,65 @@ typedef struct {
 
 typedef uint8_t t_aasm_prefix;
 
-static uint8_t defsize; /* default size passed in */
-static t_aasm_prefix prefix_oprsizeg, prefix_addrsizeg;
-static t_aasm_prefix prefix_oprsize, prefix_addrsize;
-static t_aasm_prefix prefix_lock, prefix_repz, prefix_repnz;
-static uint8_t acode[15];
-static uint8_t iop;
-static char *rop, *ropr1, *ropr2, *ropr3;
-static uint16_t avcs, avip;
-static char *aop, *aopr1, *aopr2;
-static uint8_t flagError;
-static t_aasm_oprinfo aoprig, aopri1, aopri2, aopri3;
-static t_aasm_oprinfo *rinfo = NULL;
+typedef struct aasm32_context {
+    t_utils_trace trace;
+    uint8_t defsize;
+    t_aasm_prefix prefix_oprsizeg, prefix_addrsizeg;
+    t_aasm_prefix prefix_oprsize, prefix_addrsize;
+    t_aasm_prefix prefix_lock, prefix_repz, prefix_repnz;
+    uint8_t acode[15];
+    uint8_t iop;
+    char *rop, *ropr1, *ropr2, *ropr3;
+    uint16_t avcs, avip;
+    char *aop, *aopr1, *aopr2;
+    uint8_t flagError;
+    t_aasm_oprinfo aoprig, aopri1, aopri2, aopri3;
+    t_aasm_oprinfo *rinfo;
+    uint8_t tokimm8;
+    uint16_t tokimm16;
+    uint32_t tokimm32;
+    char tokchar;
+    char tokstring[0x100], toklabel[0x100];
+    char *tokptr;
+    char *rstart;
+} aasm32_context;
+
+static _Thread_local aasm32_context *aasmContext;
+
+#define trace (aasmContext->trace)
+#define defsize (aasmContext->defsize)
+#define prefix_oprsizeg (aasmContext->prefix_oprsizeg)
+#define prefix_addrsizeg (aasmContext->prefix_addrsizeg)
+#define prefix_oprsize (aasmContext->prefix_oprsize)
+#define prefix_addrsize (aasmContext->prefix_addrsize)
+#define prefix_lock (aasmContext->prefix_lock)
+#define prefix_repz (aasmContext->prefix_repz)
+#define prefix_repnz (aasmContext->prefix_repnz)
+#define acode (aasmContext->acode)
+#define iop (aasmContext->iop)
+#define rop (aasmContext->rop)
+#define ropr1 (aasmContext->ropr1)
+#define ropr2 (aasmContext->ropr2)
+#define ropr3 (aasmContext->ropr3)
+#define avcs (aasmContext->avcs)
+#define avip (aasmContext->avip)
+#define aop (aasmContext->aop)
+#define aopr1 (aasmContext->aopr1)
+#define aopr2 (aasmContext->aopr2)
+#define flagError (aasmContext->flagError)
+#define aoprig (aasmContext->aoprig)
+#define aopri1 (aasmContext->aopri1)
+#define aopri2 (aasmContext->aopri2)
+#define aopri3 (aasmContext->aopri3)
+#define rinfo (aasmContext->rinfo)
+#define tokimm8 (aasmContext->tokimm8)
+#define tokimm16 (aasmContext->tokimm16)
+#define tokimm32 (aasmContext->tokimm32)
+#define tokchar (aasmContext->tokchar)
+#define tokstring (aasmContext->tokstring)
+#define toklabel (aasmContext->toklabel)
+#define tokptr (aasmContext->tokptr)
+#define rstart (aasmContext->rstart)
 /* arg flag level 0 */
 #define isNONE(oprinf)  ((oprinf).type  == TYPE_NONE)
 #define isR8(oprinf)    ((oprinf).type  == TYPE_R8 && (oprinf).mod == MOD_R)
@@ -573,15 +618,9 @@ typedef enum {
     TOKEN_TR6,TOKEN_TR7,TOKEN_DOLLAR
 } t_aasm_token;
 /* token variables */
-static uint8_t tokimm8;
-static uint16_t tokimm16;
-static uint32_t tokimm32;
-static char tokchar;
-static char tokstring[0x100], toklabel[0x100];
 #define tokch  (*tokptr)
 #define take(n) (flagend = 1, token = (n))
 static t_aasm_token gettoken(char *str) {
-    static char *tokptr = NULL;
     uint8_t toklen = 0;
     uint32_t tokimm = 0;
     uint8_t flagend = 0;
@@ -8208,7 +8247,6 @@ static void exec() {
     _ce;
 }
 static char *take_arg(char *s) {
-    static char *rstart = NULL;
     char *rend, *rresult;
     if (s) {
         rstart = s;
@@ -8238,7 +8276,7 @@ static char *take_arg(char *s) {
     *(rend + 1) = 0;
     return rresult;
 }
-uint8_t aasm32(const char *stmt, uint8_t *rcode, int flag32) {
+static uint8_t aasm32_execute(const char *stmt, uint8_t *rcode, int flag32) {
     uint8_t len;
     char astmt[0x100];
     char *rstmt;
@@ -8375,6 +8413,19 @@ uint8_t aasm32(const char *stmt, uint8_t *rcode, int flag32) {
 #endif
 
     return len;
+}
+
+uint8_t aasm32(const char *stmt, uint8_t *rcode, int flag32) {
+    aasm32_context local_context;
+    aasm32_context *previous = aasmContext;
+    uint8_t result;
+
+    if (previous != NULL) return aasm32_execute(stmt, rcode, flag32);
+    MEMSET(&local_context, 0, sizeof(local_context));
+    aasmContext = &local_context;
+    result = aasm32_execute(stmt, rcode, flag32);
+    aasmContext = previous;
+    return result;
 }
 
 /* extended routines - assemble a paragraph with call/jmp labels */
@@ -8525,7 +8576,7 @@ static void asmx_parse_instr(t_aasm_instr *rinstr) {
         }
     }
 }
-uint32_t aasm32x(const char *stmt, uint8_t *rcode, int flag32) {
+static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
     int32_t i, j, k, count;
     uint32_t len;
     uint32_t offset;
@@ -8757,4 +8808,17 @@ uint32_t aasm32x(const char *stmt, uint8_t *rcode, int flag32) {
     }
     FREE((void *) instr);
     return len;
+}
+
+uint32_t aasm32x(const char *stmt, uint8_t *rcode, int flag32) {
+    aasm32_context local_context;
+    aasm32_context *previous = aasmContext;
+    uint32_t result;
+
+    if (previous != NULL) return aasm32x_execute(stmt, rcode, flag32);
+    MEMSET(&local_context, 0, sizeof(local_context));
+    aasmContext = &local_context;
+    result = aasm32x_execute(stmt, rcode, flag32);
+    aasmContext = previous;
+    return result;
 }

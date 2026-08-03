@@ -1,7 +1,7 @@
 # Relative source path<TAB>classification<TAB>closure task<TAB>owner
-src/core/product/debug/debug.c	pending	T91	core/product
-src/core/product/debug/xasm32/aasm32.c	pending	T91	core/product
-src/core/product/debug/xasm32/dasm32.c	pending	T91	core/product
+src/core/product/debug/debug.c	thread-local	T91	core/product
+src/core/product/debug/xasm32/aasm32.c	thread-local	T91	core/product
+src/core/product/debug/xasm32/dasm32.c	thread-local	T91	core/product
 src/vm/platform/win32/win32con.c	process-exclusive-lease	T90	vm/platform
 src/vm/platform/linux/linuxcon.c	process-exclusive-lease	T90	vm/platform
 src/vm/product/console.c	pending	T92	vm/product

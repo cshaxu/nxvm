@@ -55,11 +55,15 @@ T90 made VM Win32 renderer resources context-owned and modeled shared Console
 and Linux terminal ownership as explicit leases. Its GCC artifact is
 `build/output/nxvm_0_5_0090.exe`.
 
+T91 made core debugger command state caller-owned and assembler/disassembler
+workspaces invocation-owned. Its GCC artifact is
+`build/output/nxvm_0_5_0091.exe`.
+
 ## Active Work
 
-**M5 T91 S1: Core debugger contexts.** Move debugger parser, assembler, and
-disassembler workspaces into caller-owned contexts without changing retained
-debugger grammar or presentation.
+**M5 T92 S1: NXVM Console contexts.** Move Console parser, target, argument,
+and exit state into a caller-owned Console session without changing its grammar
+or interactive behavior.
 
 ## Short-Term M5 Plan
 

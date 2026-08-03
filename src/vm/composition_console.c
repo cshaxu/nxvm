@@ -42,7 +42,11 @@ static void vm_composition_console_debug(void *context)
         if (!vm_composition_control_wait_for_pause(machine->control, 2000u)) return;
     }
     previous = core_product_wait_scope_enter(machine->wait_scope);
-    debugMain(vm_composition_debug_target(machine));
+    {
+        core_product_debug_context debug_context;
+        core_product_debug_context_initialize(&debug_context);
+        debugMain(&debug_context, vm_composition_debug_target(machine));
+    }
     core_product_wait_scope_leave(previous);
 }
 static void vm_composition_console_record_start(void *context, const char *path) { vm_machine_debug_record_start(((vm_composition_live_machine *)context)->debug, path); }
