@@ -18,7 +18,7 @@ typedef enum core_machine_profile {
 
 typedef struct core_machine_config {
     core_machine_profile profile;
-    size_t memory_bytes;
+    STD_SIZE_T memory_bytes;
 } core_machine_config;
 
 #ifdef __cplusplus

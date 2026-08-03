@@ -34,9 +34,9 @@ struct nxvm_cpu_probe {
 static C_INT vm_composition_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
     vm_composition_cpu_probe_state *state)
 {
-    const t_cpu *cpu = probe == NULL ? NULL : probe->machine.cpu;
+    const t_cpu *cpu = probe == STD_NULL ? STD_NULL : probe->machine.cpu;
 
-    if (cpu == NULL) {
+    if (cpu == STD_NULL) {
         return 0;
     }
     state->cs = cpu->data.cs.selector;
@@ -73,12 +73,12 @@ C_INT vm_composition_cpu_probe_create(nxvm_cpu_probe **out_probe)
 {
     nxvm_cpu_probe *probe;
 
-    if (out_probe == NULL) {
+    if (out_probe == STD_NULL) {
         return 0;
     }
-    *out_probe = NULL;
+    *out_probe = STD_NULL;
     probe = (nxvm_cpu_probe *)STD_CALLOC(1u, sizeof(*probe));
-    if (probe == NULL) return 0;
+    if (probe == STD_NULL) return 0;
     vm_composition_live_machine_initialize(&probe->machine);
     vm_composition_control_initialize(probe->machine.control, &probe->machine);
     probe->active = 1;
@@ -93,10 +93,10 @@ C_INT vm_composition_cpu_probe_create(nxvm_cpu_probe **out_probe)
 C_INT vm_composition_cpu_probe_step(
     nxvm_cpu_probe *probe,
     const uint8_t *bytes,
-    size_t byte_count,
+    STD_SIZE_T byte_count,
     vm_composition_cpu_probe_capture *out_capture)
 {
-    if (probe == NULL || !probe->active || bytes == NULL || out_capture == NULL ||
+    if (probe == STD_NULL || !probe->active || bytes == STD_NULL || out_capture == STD_NULL ||
         byte_count == 0u || byte_count > NXVM_BASELINE_CPU_PROBE_MAX_BYTES ||
         !vm_composition_cpu_probe_reset(probe)) {
         return 0;
@@ -129,7 +129,7 @@ C_INT vm_composition_cpu_probe_step(
 
 C_VOID vm_composition_cpu_probe_destroy(nxvm_cpu_probe *probe)
 {
-    if (probe != NULL && probe->active) {
+    if (probe != STD_NULL && probe->active) {
         vm_composition_control_finalize(probe->machine.control, &probe->machine);
         vm_composition_live_machine_finalize(&probe->machine);
         probe->active = 0;

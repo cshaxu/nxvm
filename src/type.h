@@ -81,6 +81,7 @@ typedef va_list STD_VA_LIST;
 #define STD_NULL NULL
 #define STD_EOF EOF
 #define STD_SEEK_SET SEEK_SET
+#define STD_SEEK_CUR SEEK_CUR
 #define STD_SEEK_END SEEK_END
 #define STD_STDIN stdin
 #define STD_STDOUT stdout
@@ -88,11 +89,32 @@ typedef va_list STD_VA_LIST;
 #define STD_ISSPACE(value) isspace((unsigned char)(value))
 #define STD_TOUPPER(value) toupper((unsigned char)(value))
 
+typedef atomic_bool STD_ATOMIC_BOOL;
+typedef atomic_int STD_ATOMIC_INT;
+typedef atomic_uintptr_t STD_ATOMIC_UINTPTR_T;
+typedef atomic_flag STD_ATOMIC_FLAG;
+
+#define STD_ATOMIC_INIT atomic_init
+#define STD_ATOMIC_LOAD atomic_load
+#define STD_ATOMIC_STORE atomic_store
+#define STD_ATOMIC_EXCHANGE atomic_exchange
+#define STD_ATOMIC_COMPARE_EXCHANGE_STRONG atomic_compare_exchange_strong
+#define STD_ATOMIC_EXCHANGE_EXPLICIT atomic_exchange_explicit
+#define STD_ATOMIC_STORE_EXPLICIT atomic_store_explicit
+#define STD_ATOMIC_FLAG_TEST_AND_SET_EXPLICIT atomic_flag_test_and_set_explicit
+#define STD_ATOMIC_FLAG_CLEAR_EXPLICIT atomic_flag_clear_explicit
+#define STD_MEMORY_ORDER_RELAXED memory_order_relaxed
+#define STD_MEMORY_ORDER_CONSUME memory_order_consume
+#define STD_MEMORY_ORDER_ACQUIRE memory_order_acquire
+#define STD_MEMORY_ORDER_RELEASE memory_order_release
+#define STD_MEMORY_ORDER_ACQ_REL memory_order_acq_rel
+#define STD_MEMORY_ORDER_SEQ_CST memory_order_seq_cst
+
 /* Retained NXVM numeric aliases. New code should prefer stdint names. */
 #define MAXLINE   0x100
 
-typedef char      ntvdm64_type_string_buffer[MAXLINE];
-typedef char     *ntvdm64_type_string_pointer;
+typedef C_CHAR      ntvdm64_type_string_buffer[MAXLINE];
+typedef C_CHAR     *ntvdm64_type_string_pointer;
 typedef uint8_t   ntvdm64_type_unsigned_1;
 typedef uint8_t   ntvdm64_type_unsigned_4;
 typedef uint8_t   ntvdm64_type_unsigned_8;
@@ -278,12 +300,12 @@ void ntvdm64_type_string_lower(char *str);
 #define NTVDM64_TYPE_TRACE_MAX_STACK 0x100
 typedef struct {
     char* blockStack[NTVDM64_TYPE_TRACE_MAX_STACK];
-    size_t blockCount;
+    STD_SIZE_T blockCount;
     char *callName;
 } ntvdm64_type_trace_call;
 typedef struct {
     ntvdm64_type_trace_call callStack[NTVDM64_TYPE_TRACE_MAX_STACK];
-    size_t callCount;
+    STD_SIZE_T callCount;
     int flagError;
 } ntvdm64_type_trace;
 

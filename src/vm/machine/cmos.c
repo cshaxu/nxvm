@@ -56,11 +56,11 @@ C_VOID vm_machine_cmos_reset(t_cmos *cmos) {
     STD_MEMSET((C_VOID *)(&cmos->data), NTVDM64_TYPE_ZERO_8, sizeof(cmos->data));
 }
 C_VOID vm_machine_cmos_refresh(t_cmos *cmos) {
-    time_t tCurr;
+    STD_TIME_T tCurr;
     struct tm *ptm;
     ntvdm64_type_unsigned_8 century, year, month, mday, wday, hour, min, sec;
 
-    tCurr = STD_TIME(NULL);
+    tCurr = STD_TIME(STD_NULL);
     if (tCurr == cmos->connect.last_refresh) {
         return;
     } else {

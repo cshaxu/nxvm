@@ -25,7 +25,7 @@ static C_INT expect_lifecycle(
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = NULL;
+    core_machine *machine = STD_NULL;
     core_machine_config config = {
         CORE_MACHINE_PROFILE_TEST_MINIMAL,
         0u

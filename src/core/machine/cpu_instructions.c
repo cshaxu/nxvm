@@ -23,7 +23,7 @@
 #define _______todo static C_VOID
 /* prints untested code path */
 #define _new_code_path_ do { \
-STD_PRINTF("NEW CODE PATH\n");if (context->trace != NULL) ntvdm64_type_trace_print(context->trace);} while (0)
+STD_PRINTF("NEW CODE PATH\n");if (context->trace != STD_NULL) ntvdm64_type_trace_print(context->trace);} while (0)
 
 /* stack pointer size */
 #define _GetStackSize   (cpu_state.data.ss.seg.data.big ? 4 : 2)
@@ -1294,10 +1294,10 @@ static C_VOID _kdf_modrm(core_machine_cpu_execution_context *context, ntvdm64_ty
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_modrm");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(context, NTVDM64_TYPE_REFERENCE_OF(modrm), 1));
     instruction_state.data.flagMem = NTVDM64_TYPE_TRUE;
-    instruction_state.data.mrm.rsreg = NULL;
+    instruction_state.data.mrm.rsreg = STD_NULL;
     instruction_state.data.mrm.offset = 0;
     instruction_state.data.cr = instruction_state.data.crm = 0;
-    instruction_state.data.rrm = instruction_state.data.rr = (ntvdm64_type_virtual_address)NULL;
+    instruction_state.data.rrm = instruction_state.data.rr = (ntvdm64_type_virtual_address)STD_NULL;
     switch (_GetAddressSize) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
@@ -1985,7 +1985,7 @@ static C_VOID _d_moffs(core_machine_cpu_execution_context *context, ntvdm64_type
 static C_VOID _d_modrm_sreg(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 rmbyte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_sreg");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, 0, rmbyte));
-    instruction_state.data.rmovsreg = NULL;
+    instruction_state.data.rmovsreg = STD_NULL;
     switch (instruction_state.data.cr) {
     case 0:
         instruction_state.data.rmovsreg = &cpu_state.data.es;
@@ -13293,12 +13293,12 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context) {
     instruction_state.data.opr2 = 0;
     instruction_state.data.result = 0;
     instruction_state.data.udf = NTVDM64_TYPE_ZERO_32;
-    instruction_state.data.mrm.rsreg = NULL;
+    instruction_state.data.mrm.rsreg = STD_NULL;
     instruction_state.data.mrm.offset = NTVDM64_TYPE_ZERO_32;
     instruction_state.data.except = NTVDM64_TYPE_ZERO_32;
     instruction_state.data.excode = NTVDM64_TYPE_ZERO_32;
 #if VCPUINS_TRACE == 1
-    if (context->trace != NULL) ntvdm64_type_trace_initialize(context->trace);
+    if (context->trace != STD_NULL) ntvdm64_type_trace_initialize(context->trace);
 #endif
 }
 static C_VOID ExecFinal(core_machine_cpu_execution_context *context) {
@@ -13307,10 +13307,10 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context) {
         cpu_state.data.eip = instruction_state.data.oldcpu.data.eip;
     }
 #if VCPUINS_TRACE == 1
-    if (context->trace != NULL && context->trace->callCount &&
+    if (context->trace != STD_NULL && context->trace->callCount &&
         !instruction_state.data.except)
         _SetExcept_CE(0);
-    if (context->trace != NULL) ntvdm64_type_trace_finalize(context->trace);
+    if (context->trace != STD_NULL) ntvdm64_type_trace_finalize(context->trace);
 #endif
     if (instruction_state.data.except) {
         cpu_state = instruction_state.data.oldcpu;
@@ -13936,8 +13936,8 @@ C_VOID core_machine_cpu_execution_refresh(
 C_VOID core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context)
 {
-    if (context != NULL) {
+    if (context != STD_NULL) {
         STD_FREE(context->trace);
-        context->trace = NULL;
+        context->trace = STD_NULL;
     }
 }

@@ -16,10 +16,10 @@ ntvdm64_status vm_profile_default_firmware_compose(
         { "bios.int16.keyboard", CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT, 50u, 0x16u },
         { "bios.int1a.clock", CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT, 60u, 0x1au }
     };
-    size_t index;
+    STD_SIZE_T index;
     ntvdm64_status status;
 
-    if (firmware == NULL || out_plan == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (firmware == STD_NULL || out_plan == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     for (index = 0u; index < sizeof(services) / sizeof(services[0]); ++index) {
         status = core_machine_firmware_register_service(firmware, &services[index]);
         if (status != NTVDM64_STATUS_OK) return status;
@@ -38,7 +38,7 @@ ntvdm64_status vm_profile_default_firmware_apply_image(
     uint16_t word;
     ntvdm64_status status;
 
-    if (machine == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (machine == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     word = 0x03f8u;
     status = core_machine_memory_write(machine, 0x0400u, &word, sizeof(word));
     if (status != NTVDM64_STATUS_OK) return status;
@@ -60,7 +60,7 @@ ntvdm64_status vm_profile_default_firmware_apply_image(
 C_VOID vm_profile_default_firmware_cmos_initialize(
     vm_profile_default_firmware_cmos *cmos, C_INT boot_hdd)
 {
-    if (cmos == NULL) return;
+    if (cmos == STD_NULL) return;
     cmos->equipment = 0x21u;
     cmos->base_memory_kib = 0x7fu;
     cmos->base_memory_kib_high = 0x02u;

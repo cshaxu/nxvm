@@ -37,23 +37,23 @@ w32cdisp_context *w32cdisp_context_create(C_VOID) {
 }
 
 VOID w32cdisp_context_destroy(w32cdisp_context *context) {
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     STD_FREE(context->char_buffer);
     STD_FREE(context);
 }
 
 uint64_t w32cdisp_context_generation(const w32cdisp_context *context) {
-    return context == NULL ? 0u : context->displayed_generation;
+    return context == STD_NULL ? 0u : context->displayed_generation;
 }
 
 VOID w32cdispInit(w32cdisp_context *context, HANDLE output,
                   const vm_platform_presentation_mailbox *mailbox) {
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     /* Cursor information is retained only for the owned output handle. */
     GetConsoleScreenBufferInfo(output, &context->default_buffer);
     GetConsoleCursorInfo(output, &context->default_cursor);
     context->default_code_page = GetConsoleCP();
-    context->char_buffer = NULL;
+    context->char_buffer = STD_NULL;
     context->displayed_generation = 0u;
     w32cdispSetScreen(context, output, mailbox);
 }
@@ -62,7 +62,7 @@ VOID w32cdispSetScreen(w32cdisp_context *context, HANDLE output,
                        const vm_platform_presentation_mailbox *mailbox) {
     core_platform_display_frame frame;
 
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     vm_platform_presentation_mailbox_capture(mailbox, &frame);
     context->columns = frame.rows;
     context->rows = frame.columns;
@@ -95,7 +95,7 @@ VOID w32cdispPaint(w32cdisp_context *context, HANDLE output,
     CONSOLE_CURSOR_INFO curInfo;
     BOOL changed;
     vm_platform_presentation_mailbox_capture(mailbox, &frame);
-    if (context == NULL || !context->char_buffer) {
+    if (context == STD_NULL || !context->char_buffer) {
         return;
     }
     changed = flagForce || frame.generation != context->displayed_generation;
@@ -127,11 +127,11 @@ VOID w32cdispPaint(w32cdisp_context *context, HANDLE output,
 }
 
 VOID w32cdispFinal(w32cdisp_context *context, HANDLE output) {
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     if (context->char_buffer) {
         STD_FREE(context->char_buffer);
     }
-    context->char_buffer = NULL;
+    context->char_buffer = STD_NULL;
     SetConsoleCursorInfo(output, &context->default_cursor);
     SetConsoleOutputCP(context->default_code_page);
     SetConsoleScreenBufferSize(output, context->default_buffer.dwSize);

@@ -30,7 +30,7 @@ C_INT main(C_VOID)
             VM_PRODUCT_BOOT_HDD) != NTVDM64_STATUS_OK ||
         vm_product_media_freeze(&policy) != NTVDM64_STATUS_OK) return 1;
     provider = vm_product_media_provider(&policy, VM_PRODUCT_BOOT_HDD);
-    if (provider == NULL || !provider->configured ||
+    if (provider == STD_NULL || !provider->configured ||
         STD_STRCMP(provider->logical_name, "hdd.img") != 0 ||
         STD_STRCMP(provider->expected_sha256, hdd.expected_sha256) != 0 ||
         provider->expected_bytes != hdd.expected_bytes ||
@@ -48,7 +48,7 @@ C_INT main(C_VOID)
             VM_PRODUCT_BOOT_HDD) != NTVDM64_STATUS_OK ||
         vm_product_media_freeze(&policy) != NTVDM64_STATUS_OK) return 1;
     provider = vm_product_media_provider(&policy, VM_PRODUCT_BOOT_HDD);
-    if (provider == NULL || !provider->configured || !provider->created ||
+    if (provider == STD_NULL || !provider->configured || !provider->created ||
         provider->cylinders != 1u || provider->path[0] != '\0') return 1;
     puts("M5:T5:S1:NXVM-MEDIA:OK");
     return 0;

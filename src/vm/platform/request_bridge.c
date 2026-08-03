@@ -8,7 +8,7 @@
 C_VOID nxvm_platform_vm_request_bridge_initialize(
     nxvm_platform_vm_request_bridge *bridge)
 {
-    if (bridge != NULL) {
+    if (bridge != STD_NULL) {
         STD_MEMSET(bridge, 0, sizeof(*bridge));
     }
 }
@@ -17,9 +17,9 @@ ntvdm64_status nxvm_platform_vm_request_bridge_enqueue(
     nxvm_platform_vm_request_bridge *bridge,
     const nxvm_platform_vm_request *request)
 {
-    size_t index;
+    STD_SIZE_T index;
 
-    if (bridge == NULL || request == NULL) {
+    if (bridge == STD_NULL || request == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     if (bridge->count == NXVM_PLATFORM_VM_REQUEST_CAPACITY) {
@@ -36,7 +36,7 @@ ntvdm64_status nxvm_platform_vm_request_bridge_dequeue(
     nxvm_platform_vm_request_bridge *bridge,
     nxvm_platform_vm_request *out_request)
 {
-    if (bridge == NULL || out_request == NULL) {
+    if (bridge == STD_NULL || out_request == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     if (bridge->count == 0u) {

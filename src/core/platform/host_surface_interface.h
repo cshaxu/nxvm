@@ -18,7 +18,7 @@ typedef struct core_platform_host_surface_context {
 } core_platform_host_surface_context;
 
 typedef struct core_platform_host_surface_lease {
-    atomic_uintptr_t owner;
+    STD_ATOMIC_UINTPTR_T owner;
 } core_platform_host_surface_lease;
 
 C_VOID core_platform_host_surface_context_initialize(

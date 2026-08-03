@@ -22,7 +22,7 @@ C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
     t_dma *dma_primary, t_dma *dma_secondary, t_pic *pic_master,
     t_pic *pic_slave, t_port *port)
 {
-    if (fdc == NULL) return;
+    if (fdc == STD_NULL) return;
     fdc->connect.fdd = fdd;
     fdc->connect.dma_latch = dma_latch;
     fdc->connect.dma_primary = dma_primary;
@@ -525,7 +525,7 @@ static C_VOID dma_close(C_VOID *owner, t_latch *latch)
 
 C_VOID vm_machine_fdc_initialize(t_fdc *fdc)
 {
-    if (fdc == NULL || fdc->connect.port == NULL) return;
+    if (fdc == STD_NULL || fdc->connect.port == STD_NULL) return;
     STD_MEMSET((C_VOID *)&fdc->data, NTVDM64_TYPE_ZERO_8, sizeof(fdc->data));
     fdc->data.ccr = VFDC_CCR_DRC;
     core_machine_port_add_read(fdc->connect.port, 0x03f4, read_03f4, fdc);
@@ -540,12 +540,12 @@ C_VOID vm_machine_fdc_initialize(t_fdc *fdc)
 
 C_VOID vm_machine_fdc_reset(t_fdc *fdc)
 {
-    if (fdc != NULL) reset_controller(fdc);
+    if (fdc != STD_NULL) reset_controller(fdc);
 }
 
 C_VOID vm_machine_fdc_refresh(t_fdc *fdc)
 {
-    if (fdc == NULL || fdc->connect.fdd == NULL) return;
+    if (fdc == STD_NULL || fdc->connect.fdd == STD_NULL) return;
     if (!fdc->connect.fdd->connect.flagDiskExist) {
         NTVDM64_TYPE_SET_BIT(fdc->data.dir, VFDC_DIR_DC);
     } else {

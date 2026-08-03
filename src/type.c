@@ -11,16 +11,16 @@ STD_SIZE_T STD_STRLEN(const C_CHAR *_Str) { return strlen(_Str); }
 
 C_INT STD_PRINTF(const C_CHAR *_Format, ...) {
     C_INT nWrittenBytes;
-    va_list arg_ptr;
+    STD_VA_LIST arg_ptr;
     va_start(arg_ptr, _Format);
-    nWrittenBytes = vfprintf(stdout, _Format, arg_ptr);
+    nWrittenBytes = vfprintf(STD_STDOUT, _Format, arg_ptr);
     va_end(arg_ptr);
     fflush(STD_STDOUT);
     return nWrittenBytes;
 }
 C_INT STD_FPRINTF(STD_FILE *_File, const C_CHAR *_Format, ...) {
     C_INT nWrittenBytes;
-    va_list arg_ptr;
+    STD_VA_LIST arg_ptr;
     va_start(arg_ptr, _Format);
     nWrittenBytes = vfprintf(_File, _Format, arg_ptr);
     va_end(arg_ptr);
@@ -28,7 +28,7 @@ C_INT STD_FPRINTF(STD_FILE *_File, const C_CHAR *_Format, ...) {
 }
 C_INT STD_SPRINTF(C_CHAR *_Dest, const C_CHAR *_Format, ...) {
     C_INT nWrittenBytes;
-    va_list arg_ptr;
+    STD_VA_LIST arg_ptr;
     va_start(arg_ptr, _Format);
     nWrittenBytes = vsprintf(_Dest, _Format, arg_ptr);
     va_end(arg_ptr);
@@ -63,7 +63,7 @@ C_VOID* STD_MEMCPY(C_VOID *_Dst, const C_VOID *_Src, STD_SIZE_T _Size) { return 
 C_INT STD_MEMCMP(const C_VOID *_Buf1, const C_VOID *_Buf2, STD_SIZE_T _Size) { return memcmp(_Buf1, _Buf2, _Size); }
 
 C_VOID ntvdm64_type_string_lower(C_CHAR *str) {
-    size_t i = 0;
+    STD_SIZE_T i = 0;
     if (str[0] == '\'') {
         return;
     }
@@ -78,7 +78,7 @@ C_VOID ntvdm64_type_string_lower(C_CHAR *str) {
 }
 
 static C_VOID printTraceCall(ntvdm64_type_trace_call *rtracecall) {
-    size_t i;
+    STD_SIZE_T i;
     STD_PRINTF("%s", rtracecall->callName);
     for (i = 0; i < rtracecall->blockCount; ++i) {
         STD_PRINTF("::%s", rtracecall->blockStack[i]);
@@ -86,7 +86,7 @@ static C_VOID printTraceCall(ntvdm64_type_trace_call *rtracecall) {
     STD_PRINTF("\n");
 }
 C_VOID ntvdm64_type_trace_print(ntvdm64_type_trace *rtrace) {
-    size_t i;
+    STD_SIZE_T i;
     if (rtrace->callCount) {
         for (i = 0; i < rtrace->callCount; ++i) {
             printTraceCall(&(rtrace->callStack[rtrace->callCount - 1 - i]));

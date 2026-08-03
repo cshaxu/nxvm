@@ -7,7 +7,7 @@ C_INT main(C_VOID)
     nxvm_platform_vm_request_bridge bridge;
     nxvm_platform_vm_request request;
     nxvm_platform_vm_request copy;
-    size_t index;
+    STD_SIZE_T index;
 
     nxvm_platform_vm_request_bridge_initialize(&bridge);
     request.kind = NXVM_PLATFORM_VM_REQUEST_KEY_PRESS;
@@ -33,7 +33,7 @@ C_INT main(C_VOID)
         NTVDM64_STATUS_OK ||
         nxvm_platform_vm_request_bridge_enqueue(&bridge, &request) !=
         NTVDM64_STATUS_OK ||
-        nxvm_platform_vm_request_bridge_dequeue(&bridge, NULL) !=
+        nxvm_platform_vm_request_bridge_dequeue(&bridge, STD_NULL) !=
         NTVDM64_STATUS_INVALID_ARGUMENT) return 1;
 
     return 0;

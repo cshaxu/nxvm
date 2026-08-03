@@ -9,14 +9,14 @@
 
 ntvdm64_status core_machine_bus_initialize(core_machine *machine)
 {
-    if (machine == NULL) {
+    if (machine == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
     machine->ports.slots = (core_machine_port_slot *)STD_CALLOC(
         NXVM_CORE_PORT_COUNT,
         sizeof(*machine->ports.slots));
-    if (machine->ports.slots == NULL) {
+    if (machine->ports.slots == STD_NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
 
@@ -25,9 +25,9 @@ ntvdm64_status core_machine_bus_initialize(core_machine *machine)
 
 C_VOID core_machine_bus_finalize(core_machine *machine)
 {
-    if (machine != NULL) {
+    if (machine != STD_NULL) {
         STD_FREE(machine->ports.slots);
-        machine->ports.slots = NULL;
+        machine->ports.slots = STD_NULL;
     }
 }
 
@@ -40,14 +40,14 @@ ntvdm64_status core_machine_install_port_provider(
 {
     uint32_t port;
 
-    if (machine == NULL || provider == NULL || first > last ||
-        (provider->read == NULL && provider->write == NULL)) {
+    if (machine == STD_NULL || provider == STD_NULL || first > last ||
+        (provider->read == STD_NULL && provider->write == STD_NULL)) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
     for (port = first; port <= last; ++port) {
-        if (machine->ports.slots[port].provider.read != NULL ||
-            machine->ports.slots[port].provider.write != NULL) {
+        if (machine->ports.slots[port].provider.read != STD_NULL ||
+            machine->ports.slots[port].provider.write != STD_NULL) {
             return NTVDM64_STATUS_INVALID_STATE;
         }
     }
@@ -67,12 +67,12 @@ ntvdm64_status core_machine_bus_read(
 {
     core_machine_port_slot *slot;
 
-    if (machine == NULL || out_value == NULL) {
+    if (machine == STD_NULL || out_value == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
     slot = &machine->ports.slots[port];
-    if (slot->provider.read == NULL) {
+    if (slot->provider.read == STD_NULL) {
         return NTVDM64_STATUS_UNSUPPORTED;
     }
 
@@ -92,12 +92,12 @@ ntvdm64_status core_machine_bus_write(
 {
     core_machine_port_slot *slot;
 
-    if (machine == NULL) {
+    if (machine == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
     slot = &machine->ports.slots[port];
-    if (slot->provider.write == NULL) {
+    if (slot->provider.write == STD_NULL) {
         return NTVDM64_STATUS_UNSUPPORTED;
     }
 

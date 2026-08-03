@@ -152,7 +152,7 @@ static uint32_t vm_platform_win32_keyboard_get_toggle_state(C_VOID)
 static C_INT vm_platform_win32_keyboard_get_modifier_for(const vm_platform_run_context *context,
                                        vm_platform_keyboard_modifier modifier)
 {
-    return context == NULL ? 0 : vm_platform_keyboard_get_modifier_for(
+    return context == STD_NULL ? 0 : vm_platform_keyboard_get_modifier_for(
         context->keyboard, modifier);
 }
 
@@ -162,7 +162,7 @@ static C_VOID vm_platform_win32_keyboard_apply_current_state_for(
     uint32_t asynchronous_keys = vm_platform_win32_keyboard_get_async_state();
     uint32_t toggle_keys = vm_platform_win32_keyboard_get_toggle_state();
 
-    if (context != NULL) {
+    if (context != STD_NULL) {
         vm_platform_keyboard_apply_host_state_for(context->keyboard,
             asynchronous_keys, toggle_keys);
     }
@@ -171,14 +171,14 @@ static C_VOID vm_platform_win32_keyboard_apply_current_state_for(
 VOID vm_platform_win32_keyboard_make_status_for(const vm_platform_run_context *context) {
     uint32_t asynchronous_keys = vm_platform_win32_keyboard_get_async_state();
     uint32_t toggle_keys = vm_platform_win32_keyboard_get_toggle_state();
-    vm_platform_keyboard_state_sink state_sink = context == NULL ? NULL :
+    vm_platform_keyboard_state_sink state_sink = context == STD_NULL ? STD_NULL :
         context->keyboard_state_sink;
-    C_VOID *state_context = context == NULL ? NULL : context->keyboard_state_context;
+    C_VOID *state_context = context == STD_NULL ? STD_NULL : context->keyboard_state_context;
 
-    if (state_sink == NULL || state_sink(state_context, asynchronous_keys,
+    if (state_sink == STD_NULL || state_sink(state_context, asynchronous_keys,
                                          toggle_keys) !=
         NTVDM64_STATUS_OK) {
-        if (context != NULL) {
+        if (context != STD_NULL) {
             vm_platform_keyboard_apply_host_state_for(context->keyboard,
                 asynchronous_keys, toggle_keys);
         }
@@ -222,7 +222,7 @@ VOID vm_platform_win32_keyboard_make_key_for(const vm_platform_run_context *cont
         code |= ((USHORT)scanCode << 8);
         break;
     case VK_F9:
-        if (context != NULL) vm_platform_keyboard_request_stop_for(context->keyboard);
+        if (context != STD_NULL) vm_platform_keyboard_request_stop_for(context->keyboard);
     default:
         if (vm_platform_win32_keyboard_get_modifier_for(context, VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
             code = CodeMap[scanCode][7];
@@ -271,7 +271,7 @@ VOID vm_platform_win32_keyboard_make_key_for(const vm_platform_run_context *cont
         code |= ((USHORT) scanCode << 8);
         break;
     }
-    if (context != NULL) {
+    if (context != STD_NULL) {
         vm_platform_keyboard_receive_key_press_for(context->keyboard, code);
     }
 }

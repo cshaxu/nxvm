@@ -26,7 +26,7 @@ typedef struct vm_composition_cpu_probe_state {
 
 typedef struct vm_composition_cpu_probe_capture {
     uint8_t bytes[NXVM_BASELINE_CPU_PROBE_MAX_BYTES];
-    size_t byte_count;
+    STD_SIZE_T byte_count;
     vm_composition_cpu_probe_state before;
     vm_composition_cpu_probe_state after;
     uint32_t exception_mask;
@@ -39,7 +39,7 @@ C_INT vm_composition_cpu_probe_create(nxvm_cpu_probe **out_probe);
 C_INT vm_composition_cpu_probe_step(
     nxvm_cpu_probe *probe,
     const uint8_t *bytes,
-    size_t byte_count,
+    STD_SIZE_T byte_count,
     vm_composition_cpu_probe_capture *out_capture);
 C_VOID vm_composition_cpu_probe_destroy(nxvm_cpu_probe *probe);
 

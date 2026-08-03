@@ -36,7 +36,7 @@ C_INT main(C_VOID)
             NTVDM64_STATUS_UNSUPPORTED ||
         core_product_runtime_registry_find_profile(&registry, profile.id,
             NXVM_RUNTIME_PROFILE_MACHINE, capability_is_proven,
-            &capability_is_available) != NULL ||
+            &capability_is_available) != STD_NULL ||
         (capability_is_available = 1) == 0 ||
         core_product_runtime_registry_find_profile(&registry, profile.id,
             NXVM_RUNTIME_PROFILE_MACHINE, capability_is_proven,
@@ -44,7 +44,7 @@ C_INT main(C_VOID)
         core_product_runtime_registry_find_firmware_provider(&registry, provider.id,
             profile.id) != &provider ||
         core_product_runtime_registry_find_firmware_provider(&registry, provider.id,
-            "nxvm.machine.other") != NULL ||
+            "nxvm.machine.other") != STD_NULL ||
         core_product_runtime_registry_freeze(&registry) != NTVDM64_STATUS_OK ||
         core_product_runtime_registry_register_profile(&registry, &profile) !=
             NTVDM64_STATUS_INVALID_STATE) {

@@ -19,10 +19,10 @@ C_INT main(C_VOID)
     uint8_t byte = 0x5au;
 
     session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
-    if (session == NULL) return 1;
+    if (session == STD_NULL) return 1;
     vm_composition_initialize(session);
     target = vm_composition_debug_target(session);
-    if (target == NULL || core_product_debug_scope_target() != NULL ||
+    if (target == STD_NULL || core_product_debug_scope_target() != STD_NULL ||
         target->read_register(target->context,
             CORE_PRODUCT_DEBUG_EIP, &value) ||
         target->write_real(target->context, 0u, 0x500u, &byte, 1u) ||
@@ -34,7 +34,7 @@ C_INT main(C_VOID)
     }
     vm_composition_finalize(session);
     STD_FREE(session);
-    if (core_product_debug_scope_target() != NULL) return 1;
+    if (core_product_debug_scope_target() != STD_NULL) return 1;
     puts("M5:T14:S3:VM-DEBUG-TARGET:OK");
     return 0;
 }

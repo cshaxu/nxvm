@@ -37,9 +37,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     vm_profile_default_bios_set_boot_hdd(session.default_bios, 0);
     vm_composition_control_reset(session.control);
-    thread = CreateThread(NULL, 0u, run_device, session.control, 0u, NULL);
-    if (thread == NULL) {
-        fputs("M5:T10:S4:CONTEXT-LIFECYCLE:THREAD-CREATE-FAILED\n", stderr);
+    thread = CreateThread(STD_NULL, 0u, run_device, session.control, 0u, STD_NULL);
+    if (thread == STD_NULL) {
+        fputs("M5:T10:S4:CONTEXT-LIFECYCLE:THREAD-CREATE-FAILED\n", STD_STDERR);
         vm_composition_control_finalize(session.control, &session);
     vm_composition_live_machine_finalize(&session);
         return 1;
@@ -47,7 +47,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
     Sleep(10u);
     if (!vm_composition_control_is_running(session.control)) {
-        fputs("M5:T10:S4:CONTEXT-LIFECYCLE:DEVICE-DID-NOT-START\n", stderr);
+        fputs("M5:T10:S4:CONTEXT-LIFECYCLE:DEVICE-DID-NOT-START\n", STD_STDERR);
         vm_composition_control_stop(session.control);
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
@@ -64,7 +64,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_composition_live_machine_finalize(&session);
 
     if (result != WAIT_OBJECT_0) {
-        fprintf(stderr,
+        fprintf(STD_STDERR,
             "M5:T10:S4:CONTEXT-LIFECYCLE:STOP-FAILED:%lu:%d\n",
             (C_ULONG)result,
             0);

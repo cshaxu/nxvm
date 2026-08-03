@@ -14,8 +14,8 @@ C_INT main(C_VOID)
     w32adisp_context *window_a = w32adisp_context_create();
     w32adisp_context *window_b = w32adisp_context_create();
 
-    if (console_a == NULL || console_b == NULL || window_a == NULL ||
-        window_b == NULL || console_a == console_b || window_a == window_b ||
+    if (console_a == STD_NULL || console_b == STD_NULL || window_a == STD_NULL ||
+        window_b == STD_NULL || console_a == console_b || window_a == window_b ||
         w32cdisp_context_generation(console_a) != 0u ||
         w32cdisp_context_generation(console_b) != 0u ||
         w32adisp_context_generation(window_a) != 0u ||

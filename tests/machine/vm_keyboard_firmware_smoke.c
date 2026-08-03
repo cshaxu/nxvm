@@ -13,7 +13,7 @@ C_INT main(C_VOID)
 {
     vm_composition_live_machine *session =
         (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
-    if (session == NULL) return 1;
+    if (session == STD_NULL) return 1;
     vm_composition_initialize(session);
     core_machine_keyboard_apply_host_state_to(session->keyboard_provider,
         NXVM_KEYBOARD_ASYNC_ALT, 0u);

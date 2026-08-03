@@ -261,7 +261,7 @@ static const core_machine_keyboard_provider keyboard_provider = {
 
 C_VOID vm_profile_default_keyboard_initialize(t_qdx *qdx)
 {
-    if (qdx == NULL) return;
+    if (qdx == STD_NULL) return;
     qdx->table[0x09] = keyboard_int_09;
     qdx->table[0x16] = keyboard_int_16;
 }

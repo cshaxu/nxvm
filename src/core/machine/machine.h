@@ -40,7 +40,7 @@ typedef struct core_machine_cpu {
 
 typedef struct core_machine_memory {
     uint8_t *bytes;
-    size_t size;
+    STD_SIZE_T size;
     C_INT a20_enabled;
 } core_machine_memory;
 
@@ -57,14 +57,14 @@ typedef struct core_machine_trace_state {
     core_machine_trace_provider provider;
     core_machine_trace_event events[CORE_MACHINE_TRACE_CAPACITY];
     uint64_t next_sequence;
-    size_t count;
+    STD_SIZE_T count;
     C_INT flushing;
 } core_machine_trace_state;
 
 struct core_machine {
     core_machine_config config;
     core_machine_lifecycle lifecycle;
-    atomic_bool stop_requested;
+    STD_ATOMIC_BOOL stop_requested;
     uint32_t fault_detail;
     core_machine_cpu cpu;
     core_machine_memory memory;

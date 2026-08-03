@@ -5,27 +5,27 @@
 static C_VOID vm_platform_request_transport_lock(
     vm_platform_request_transport *transport)
 {
-    while (atomic_exchange_explicit(&transport->locked, 1,
-                                    memory_order_acquire)) {
+    while (STD_ATOMIC_EXCHANGE_EXPLICIT(&transport->locked, 1,
+                                    STD_MEMORY_ORDER_ACQUIRE)) {
     }
 }
 
 static C_VOID vm_platform_request_transport_unlock(
     vm_platform_request_transport *transport)
 {
-    atomic_store_explicit(&transport->locked, 0, memory_order_release);
+    STD_ATOMIC_STORE_EXPLICIT(&transport->locked, 0, STD_MEMORY_ORDER_RELEASE);
 }
 
 C_VOID vm_platform_request_transport_initialize(
     vm_platform_request_transport *transport)
 {
-    if (transport == NULL) return;
+    if (transport == STD_NULL) return;
 
-    atomic_init(&transport->locked, 0);
+    STD_ATOMIC_INIT(&transport->locked, 0);
     transport->accepting = 1;
     transport->execution_boundary_count = 0u;
-    transport->consumer = NULL;
-    transport->consumer_opaque = NULL;
+    transport->consumer = STD_NULL;
+    transport->consumer_opaque = STD_NULL;
     nxvm_platform_vm_request_bridge_initialize(&transport->ingress);
     nxvm_platform_vm_request_bridge_initialize(&transport->egress);
 }
@@ -37,7 +37,7 @@ static ntvdm64_status vm_platform_request_transport_enqueue(
 {
     ntvdm64_status status;
 
-    if (transport == NULL || request == NULL) {
+    if (transport == STD_NULL || request == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
@@ -56,7 +56,7 @@ static ntvdm64_status vm_platform_request_transport_dequeue(
 {
     ntvdm64_status status;
 
-    if (transport == NULL || out_request == NULL) {
+    if (transport == STD_NULL || out_request == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
@@ -71,7 +71,7 @@ ntvdm64_status vm_platform_request_transport_enqueue_ingress(
     const nxvm_platform_vm_request *request)
 {
     return vm_platform_request_transport_enqueue(
-        transport, transport != NULL ? &transport->ingress : NULL, request);
+        transport, transport != STD_NULL ? &transport->ingress : STD_NULL, request);
 }
 
 ntvdm64_status vm_platform_request_transport_dequeue_ingress(
@@ -79,7 +79,7 @@ ntvdm64_status vm_platform_request_transport_dequeue_ingress(
     nxvm_platform_vm_request *out_request)
 {
     return vm_platform_request_transport_dequeue(
-        transport, transport != NULL ? &transport->ingress : NULL, out_request);
+        transport, transport != STD_NULL ? &transport->ingress : STD_NULL, out_request);
 }
 
 ntvdm64_status vm_platform_request_transport_enqueue_egress(
@@ -87,7 +87,7 @@ ntvdm64_status vm_platform_request_transport_enqueue_egress(
     const nxvm_platform_vm_request *request)
 {
     return vm_platform_request_transport_enqueue(
-        transport, transport != NULL ? &transport->egress : NULL, request);
+        transport, transport != STD_NULL ? &transport->egress : STD_NULL, request);
 }
 
 ntvdm64_status vm_platform_request_transport_dequeue_egress(
@@ -95,13 +95,13 @@ ntvdm64_status vm_platform_request_transport_dequeue_egress(
     nxvm_platform_vm_request *out_request)
 {
     return vm_platform_request_transport_dequeue(
-        transport, transport != NULL ? &transport->egress : NULL, out_request);
+        transport, transport != STD_NULL ? &transport->egress : STD_NULL, out_request);
 }
 
 C_VOID vm_platform_request_transport_close(
     vm_platform_request_transport *transport)
 {
-    if (transport == NULL) return;
+    if (transport == STD_NULL) return;
 
     vm_platform_request_transport_lock(transport);
     transport->accepting = 0;
@@ -111,7 +111,7 @@ C_VOID vm_platform_request_transport_close(
 C_VOID vm_platform_request_transport_discard(
     vm_platform_request_transport *transport)
 {
-    if (transport == NULL) return;
+    if (transport == STD_NULL) return;
 
     vm_platform_request_transport_lock(transport);
     transport->accepting = 0;
@@ -124,7 +124,7 @@ C_VOID vm_platform_request_transport_bind_consumer(
     vm_platform_request_transport *transport,
     vm_platform_request_consumer consumer, C_VOID *opaque)
 {
-    if (transport == NULL) return;
+    if (transport == STD_NULL) return;
 
     vm_platform_request_transport_lock(transport);
     transport->consumer = consumer;
@@ -140,7 +140,7 @@ C_VOID vm_platform_request_transport_observe_execution_boundary(C_VOID *opaque)
     vm_platform_request_consumer consumer;
     C_VOID *consumer_opaque;
 
-    if (transport == NULL) return;
+    if (transport == STD_NULL) return;
     vm_platform_request_transport_lock(transport);
     ++transport->execution_boundary_count;
     vm_platform_request_transport_unlock(transport);
@@ -155,12 +155,12 @@ C_VOID vm_platform_request_transport_observe_execution_boundary(C_VOID *opaque)
         consumer = transport->consumer;
         consumer_opaque = transport->consumer_opaque;
         vm_platform_request_transport_unlock(transport);
-        if (consumer != NULL) consumer(consumer_opaque, &request);
+        if (consumer != STD_NULL) consumer(consumer_opaque, &request);
     }
 }
 
 C_UINT vm_platform_request_transport_execution_boundary_count(
     const vm_platform_request_transport *transport)
 {
-    return transport != NULL ? transport->execution_boundary_count : 0u;
+    return transport != STD_NULL ? transport->execution_boundary_count : 0u;
 }

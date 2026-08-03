@@ -22,7 +22,7 @@ typedef C_VOID (*vm_machine_debug_pause_callback)(C_VOID *context,
     vm_machine_debug_pause_reason reason);
 
 typedef struct {
-    FILE *recordFile; /* pointer to dump file */
+    STD_FILE *recordFile; /* pointer to dump file */
     vm_machine_debug_pause_callback pauseCallback;
     C_VOID *pauseContext;
     t_cpu *cpu;
@@ -54,8 +54,8 @@ C_VOID vm_machine_debug_set_breakpoint_real(t_debug *debug, uint16_t segment,
 C_VOID vm_machine_debug_clear_breakpoint_real(t_debug *debug);
 C_VOID vm_machine_debug_set_breakpoint_linear(t_debug *debug, uint32_t linear);
 C_VOID vm_machine_debug_clear_breakpoint_linear(t_debug *debug);
-size_t vm_machine_debug_get_breakpoint_count(const t_debug *debug);
-C_VOID vm_machine_debug_set_trace(t_debug *debug, size_t instruction_count);
+STD_SIZE_T vm_machine_debug_get_breakpoint_count(const t_debug *debug);
+C_VOID vm_machine_debug_set_trace(t_debug *debug, STD_SIZE_T instruction_count);
 C_VOID vm_machine_debug_clear_trace(t_debug *debug);
 C_VOID vm_machine_debug_record_start(t_debug *debug, const C_CHAR *file_name);
 C_VOID vm_machine_debug_record_stop(t_debug *debug);

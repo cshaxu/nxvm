@@ -38,9 +38,9 @@ C_INT main(C_INT argc, C_CHAR **argv) {
     STD_PRINTF("Built on %s at %s.\n", ntvdm64_version_build_date(),
         ntvdm64_version_build_time());
     machine = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*machine));
-    if (machine == NULL) return 1;
+    if (machine == STD_NULL) return 1;
     vm_composition_live_machine_initialize(machine);
-    if (machine->core_machine == NULL) {
+    if (machine->core_machine == STD_NULL) {
         STD_FREE(machine);
         return 1;
     }

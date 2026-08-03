@@ -32,28 +32,28 @@
 C_INT main(C_VOID)
 {
     vm_composition_live_machine machine = {0};
-    FILE *input;
+    STD_FILE *input;
     C_INT saved_stdin;
 
     input = tmpfile();
-    if (input == NULL ||
+    if (input == STD_NULL ||
         fputs("help\ninfo\nexit\n", input) < 0 ||
         fflush(input) != 0 ||
-        STD_FSEEK(input, 0L, SEEK_SET) != 0) {
-        if (input != NULL) STD_FCLOSE(input);
+        STD_FSEEK(input, 0L, STD_SEEK_SET) != 0) {
+        if (input != STD_NULL) STD_FCLOSE(input);
         return 1;
     }
-    saved_stdin = NXVM_DUP(NXVM_FILENO(stdin));
+    saved_stdin = NXVM_DUP(NXVM_FILENO(STD_STDIN));
     if (saved_stdin < 0 ||
-        NXVM_DUP2(NXVM_FILENO(input), NXVM_FILENO(stdin)) < 0) {
+        NXVM_DUP2(NXVM_FILENO(input), NXVM_FILENO(STD_STDIN)) < 0) {
         if (saved_stdin >= 0) NXVM_CLOSE(saved_stdin);
         STD_FCLOSE(input);
         return 1;
     }
 
     vm_composition_live_machine_initialize(&machine);
-    if (machine.core_machine == NULL) {
-        NXVM_DUP2(saved_stdin, NXVM_FILENO(stdin));
+    if (machine.core_machine == STD_NULL) {
+        NXVM_DUP2(saved_stdin, NXVM_FILENO(STD_STDIN));
         NXVM_CLOSE(saved_stdin);
         STD_FCLOSE(input);
         return 1;
@@ -61,10 +61,10 @@ C_INT main(C_VOID)
     vm_composition_console_target_initialize(machine.console_target, &machine);
     vm_product_console_main(machine.console_context, machine.console_target);
 
-    NXVM_DUP2(saved_stdin, NXVM_FILENO(stdin));
+    NXVM_DUP2(saved_stdin, NXVM_FILENO(STD_STDIN));
     NXVM_CLOSE(saved_stdin);
     STD_FCLOSE(input);
-    if (machine.core_machine != NULL) return 1;
+    if (machine.core_machine != STD_NULL) return 1;
     puts("M5:T96:S1:CONSOLE-LIFECYCLE:OK");
     return 0;
 }

@@ -7,14 +7,14 @@
 
 C_VOID core_machine_firmware_initialize(core_machine_firmware *firmware)
 {
-    if (firmware != NULL) STD_MEMSET(firmware, 0, sizeof(*firmware));
+    if (firmware != STD_NULL) STD_MEMSET(firmware, 0, sizeof(*firmware));
 }
 
 ntvdm64_status core_machine_firmware_register_service(
     core_machine_firmware *firmware, const core_machine_firmware_service_descriptor *service)
 {
-    size_t index;
-    if (firmware == NULL || service == NULL || service->id == NULL || service->id[0] == '\0' ||
+    STD_SIZE_T index;
+    if (firmware == STD_NULL || service == STD_NULL || service->id == STD_NULL || service->id[0] == '\0' ||
         service->kind < CORE_MACHINE_FIRMWARE_SERVICE_POST || service->kind > CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT ||
         (service->kind == CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT && service->vector > 255u)) return NTVDM64_STATUS_INVALID_ARGUMENT;
     if (firmware->frozen) return NTVDM64_STATUS_INVALID_STATE;
@@ -35,26 +35,26 @@ ntvdm64_status core_machine_firmware_register_service(
 
 ntvdm64_status core_machine_firmware_freeze(core_machine_firmware *firmware)
 {
-    if (firmware == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (firmware == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     firmware->frozen = 1; return NTVDM64_STATUS_OK;
 }
 
 const core_machine_firmware_service_descriptor *core_machine_firmware_service_at(
-    const core_machine_firmware *firmware, size_t index)
+    const core_machine_firmware *firmware, STD_SIZE_T index)
 {
-    return firmware == NULL || index >= firmware->count ? NULL : firmware->services[index];
+    return firmware == STD_NULL || index >= firmware->count ? STD_NULL : firmware->services[index];
 }
 
 const core_machine_firmware_service_descriptor *core_machine_firmware_find_interrupt(
     const core_machine_firmware *firmware, C_UINT vector)
 {
-    size_t index;
+    STD_SIZE_T index;
 
-    if (firmware == NULL || vector > 255u) return NULL;
+    if (firmware == STD_NULL || vector > 255u) return STD_NULL;
     for (index = 0u; index < firmware->count; ++index) {
         const core_machine_firmware_service_descriptor *service = firmware->services[index];
         if (service->kind == CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT &&
             service->vector == vector) return service;
     }
-    return NULL;
+    return STD_NULL;
 }

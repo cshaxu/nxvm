@@ -20,7 +20,7 @@ typedef struct nxvm_product_console_target {
     C_VOID (*record_start)(C_VOID *context, const C_CHAR *path);
     C_VOID (*record_stop)(C_VOID *context);
     C_VOID (*set_boot_hdd)(C_VOID *context, C_INT enabled);
-    C_VOID (*set_memory)(C_VOID *context, size_t bytes);
+    C_VOID (*set_memory)(C_VOID *context, STD_SIZE_T bytes);
     C_VOID (*create_fdd)(C_VOID *context);
     C_INT (*insert_fdd)(C_VOID *context, const C_CHAR *path);
     C_INT (*remove_fdd)(C_VOID *context, const C_CHAR *path);

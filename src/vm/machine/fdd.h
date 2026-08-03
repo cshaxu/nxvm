@@ -40,7 +40,7 @@ typedef struct {
 
 #define VFDD_BYTE_PER_MB ((1 << 10) * 1000)
 
-size_t vm_machine_fdd_image_size(const t_fdd *fdd);
+STD_SIZE_T vm_machine_fdd_image_size(const t_fdd *fdd);
 C_VOID vm_machine_fdd_set_pointer(t_fdd *fdd);
 C_VOID vm_machine_fdd_transfer_read(t_fdd *fdd, t_latch *latch);
 C_VOID vm_machine_fdd_transfer_write(t_fdd *fdd, t_latch *latch);

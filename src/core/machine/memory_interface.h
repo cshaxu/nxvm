@@ -16,13 +16,13 @@ ntvdm64_status core_machine_memory_read(
     const core_machine *machine,
     uint32_t physical,
     C_VOID *out_data,
-    size_t size);
+    STD_SIZE_T size);
 
 ntvdm64_status core_machine_memory_write(
     core_machine *machine,
     uint32_t physical,
     const C_VOID *data,
-    size_t size);
+    STD_SIZE_T size);
 
 ntvdm64_status core_machine_set_a20(
     core_machine *machine,

@@ -16,7 +16,7 @@ C_INT main(C_VOID)
 
     vm_composition_initialize(&session);
     machine = (&session);
-    if (machine == NULL || machine->cmos != &session.cmos_storage) {
+    if (machine == STD_NULL || machine->cmos != &session.cmos_storage) {
         vm_composition_finalize(&session);
         return 1;
     }

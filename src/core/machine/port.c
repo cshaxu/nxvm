@@ -21,11 +21,11 @@ static core_machine_port_provider_entry *core_machine_port_find_provider(
 {
     core_machine_port_provider_entry *entry;
 
-    if (port == NULL) return NULL;
-    for (entry = port->connect.providers; entry != NULL; entry = entry->next) {
+    if (port == STD_NULL) return STD_NULL;
+    for (entry = port->connect.providers; entry != STD_NULL; entry = entry->next) {
         if (entry->port_id == port_id && entry->write == write) return entry;
     }
-    return NULL;
+    return STD_NULL;
 }
 
 static C_VOID core_machine_port_add_provider(t_port *port, ntvdm64_type_unsigned_16 port_id,
@@ -34,10 +34,10 @@ static C_VOID core_machine_port_add_provider(t_port *port, ntvdm64_type_unsigned
     core_machine_port_provider_entry *entry =
         core_machine_port_find_provider(port, port_id, write);
 
-    if (port == NULL) return;
-    if (entry == NULL) {
+    if (port == STD_NULL) return;
+    if (entry == STD_NULL) {
         entry = (core_machine_port_provider_entry *)STD_MALLOC(sizeof(*entry));
-        if (entry == NULL) return;
+        if (entry == STD_NULL) return;
         entry->port_id = port_id;
         entry->write = write;
         entry->next = port->connect.providers;
@@ -52,9 +52,9 @@ C_VOID core_machine_port_execute_read(t_port *port, ntvdm64_type_unsigned_16 por
 {
     core_machine_port_provider_entry *provider;
 
-    if (port == NULL) return;
+    if (port == STD_NULL) return;
     provider = core_machine_port_find_provider(port, port_id, NTVDM64_TYPE_FALSE);
-    if (provider != NULL && provider->handler != NULL) {
+    if (provider != STD_NULL && provider->handler != STD_NULL) {
         provider->handler(port, port_id, provider->owner);
         return;
     }
@@ -65,9 +65,9 @@ C_VOID core_machine_port_execute_write(t_port *port, ntvdm64_type_unsigned_16 po
 {
     core_machine_port_provider_entry *provider;
 
-    if (port == NULL) return;
+    if (port == STD_NULL) return;
     provider = core_machine_port_find_provider(port, port_id, NTVDM64_TYPE_TRUE);
-    if (provider != NULL && provider->handler != NULL) {
+    if (provider != STD_NULL && provider->handler != STD_NULL) {
         provider->handler(port, port_id, provider->owner);
         return;
     }
@@ -88,14 +88,14 @@ C_VOID core_machine_port_add_write(t_port *port, ntvdm64_type_unsigned_16 port_i
 
 uint32_t core_machine_port_read(t_port *port, uint16_t port_id)
 {
-    if (port == NULL) return 0u;
+    if (port == STD_NULL) return 0u;
     core_machine_port_execute_read(port, port_id);
     return port->data.ioDWord;
 }
 
 C_VOID core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value)
 {
-    if (port == NULL) return;
+    if (port == STD_NULL) return;
     port->data.ioDWord = value;
     core_machine_port_execute_write(port, port_id);
 }
@@ -103,13 +103,13 @@ C_VOID core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value)
 
 C_VOID core_machine_port_initialize(t_port *port)
 {
-    if (port == NULL) return;
+    if (port == STD_NULL) return;
     STD_MEMSET((C_VOID *)port, NTVDM64_TYPE_ZERO_8, sizeof(*port));
 }
 
 C_VOID core_machine_port_reset(t_port *port)
 {
-    if (port == NULL) return;
+    if (port == STD_NULL) return;
     STD_MEMSET((C_VOID *)&port->data, NTVDM64_TYPE_ZERO_8, sizeof(port->data));
 }
 
@@ -117,12 +117,12 @@ C_VOID core_machine_port_finalize(t_port *port)
 {
     core_machine_port_provider_entry *entry;
 
-    if (port == NULL) return;
+    if (port == STD_NULL) return;
     entry = port->connect.providers;
-    while (entry != NULL) {
+    while (entry != STD_NULL) {
         core_machine_port_provider_entry *next = entry->next;
         STD_FREE(entry);
         entry = next;
     }
-    port->connect.providers = NULL;
+    port->connect.providers = STD_NULL;
 }

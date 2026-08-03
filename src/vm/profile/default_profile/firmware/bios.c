@@ -26,7 +26,7 @@
 static ntvdm64_type_unsigned_32 assemble(t_ram *ram, const ntvdm64_type_string_pointer stmt, ntvdm64_type_unsigned_16 seg,
     ntvdm64_type_unsigned_16 off) {
     ntvdm64_type_unsigned_32 len = 0;
-    ntvdm64_type_unsigned_8 *code = NULL;
+    ntvdm64_type_unsigned_8 *code = STD_NULL;
     ntvdm64_type_native_unsigned i;
     ntvdm64_type_native_unsigned insCount = 0; /* the number of instructions to be assembled */
     for (i = 0; i < STD_STRLEN(stmt); ++i) {
@@ -160,16 +160,16 @@ static C_VOID bios_load_additional(t_ram *ram,
 }
 
 C_VOID vm_profile_default_bios_add_post(t_bios *bios, ntvdm64_type_string_pointer stmt) {
-    if (bios == NULL) return;
+    if (bios == STD_NULL) return;
     bios->connect.postTable[bios->connect.postCount++] = stmt;
 }
 C_VOID vm_profile_default_bios_add_interrupt(t_bios *bios, ntvdm64_type_string_pointer stmt,
     ntvdm64_type_unsigned_8 intid) {
-    if (bios == NULL) return;
+    if (bios == STD_NULL) return;
     bios->connect.intTable[intid] = stmt;
 }
 C_VOID vm_profile_default_bios_initialize(t_bios *bios) {
-    if (bios == NULL) return;
+    if (bios == STD_NULL) return;
     STD_MEMSET((C_VOID *)bios, NTVDM64_TYPE_ZERO_8, sizeof(*bios));
     bios->flagBoot = NTVDM64_TYPE_FALSE;
     bios->data.buildCS = bios->data.buildIP = NTVDM64_TYPE_ZERO_16;
@@ -181,7 +181,7 @@ C_VOID vm_profile_default_bios_initialize(t_bios *bios) {
 /* Loads bios to ram */
 C_VOID vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
     const core_machine_block_provider_slot *block_provider) {
-    if (bios == NULL || ram == NULL) return;
+    if (bios == STD_NULL || ram == STD_NULL) return;
     STD_MEMSET((C_VOID *)(&bios->data), NTVDM64_TYPE_ZERO_8, sizeof(t_bios_data));
     /* bios area starts at f000:0000 */
     bios->data.buildCS = VBIOS_ADDR_START_SEG;
@@ -195,12 +195,12 @@ C_VOID vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
 C_VOID vm_profile_default_bios_refresh(t_bios *bios) { (C_VOID)bios; }
 C_VOID vm_profile_default_bios_finalize(t_bios *bios) { (C_VOID)bios; }
 C_VOID vm_profile_default_bios_print(const t_bios *bios) {
-    STD_PRINTF("Boot Disk: %s\n", bios != NULL && bios->flagBoot ? "Hard Drive" : "Floppy");
+    STD_PRINTF("Boot Disk: %s\n", bios != STD_NULL && bios->flagBoot ? "Hard Drive" : "Floppy");
 }
 
 C_VOID vm_profile_default_bios_set_boot_hdd(t_bios *bios, C_INT enabled) {
-    if (bios != NULL) bios->flagBoot = enabled;
+    if (bios != STD_NULL) bios->flagBoot = enabled;
 }
 C_INT vm_profile_default_bios_get_boot_hdd(const t_bios *bios) {
-    return bios != NULL && bios->flagBoot;
+    return bios != STD_NULL && bios->flagBoot;
 }

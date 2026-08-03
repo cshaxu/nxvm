@@ -342,7 +342,7 @@ static C_VOID io_write_00A1(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VO
  * Called by C_INT request sender of devices, e.g. vpitIntTick
  */
 C_VOID core_machine_pic_set_irq(t_pic *master, t_pic *slave, ntvdm64_type_unsigned_8 irq_id) {
-    if (master == NULL) return;
+    if (master == STD_NULL) return;
     switch (irq_id) {
     case 0x00:
     case 0x01:
@@ -361,7 +361,7 @@ C_VOID core_machine_pic_set_irq(t_pic *master, t_pic *slave, ntvdm64_type_unsign
     case 0x0d:
     case 0x0e:
     case 0x0f:
-        if (slave == NULL) return;
+        if (slave == STD_NULL) return;
         NTVDM64_TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(0x02));
         NTVDM64_TYPE_SET_BIT(slave->data.irr, VPIC_IRR_IRQ(irq_id - 0x08));
         break;
@@ -372,12 +372,12 @@ C_VOID core_machine_pic_set_irq(t_pic *master, t_pic *slave, ntvdm64_type_unsign
 }
 
 C_VOID core_machine_pic_timer_output(C_VOID *owner) {
-    core_machine_pic_set_irq((t_pic *)owner, NULL, 0x00);
+    core_machine_pic_set_irq((t_pic *)owner, STD_NULL, 0x00);
 }
 
 ntvdm64_type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
     ntvdm64_type_bool flagINTR;
-    if (master == NULL || slave == NULL) return NTVDM64_TYPE_FALSE;
+    if (master == STD_NULL || slave == STD_NULL) return NTVDM64_TYPE_FALSE;
     flagINTR = HasINTR(master);
     if (flagINTR && (VPIC_GetIntrTopId(master) == 2)) {
         /* check slave pic */
@@ -388,7 +388,7 @@ ntvdm64_type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
 ntvdm64_type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
     ntvdm64_type_unsigned_8 reqId1; /* top requested C_INT id in master pic */
     ntvdm64_type_unsigned_8 reqId2; /* top requested C_INT id in slave pic */
-    if (master == NULL || slave == NULL) return 0;
+    if (master == STD_NULL || slave == STD_NULL) return 0;
     reqId1 = VPIC_GetIntrTopId(master);
     RespondINTR(master, reqId1);
     if (reqId1 == 0x02) {
@@ -405,7 +405,7 @@ ntvdm64_type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *sla
 
 C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port)
 {
-    if (master == NULL || slave == NULL || port == NULL) return;
+    if (master == STD_NULL || slave == STD_NULL || port == STD_NULL) return;
     STD_MEMSET((C_VOID *)master, NTVDM64_TYPE_ZERO_8, sizeof(*master));
     STD_MEMSET((C_VOID *)slave, NTVDM64_TYPE_ZERO_8, sizeof(*slave));
     core_machine_port_add_read(port, 0x0020, io_read_0020, master);
@@ -418,14 +418,14 @@ C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port)
     core_machine_port_add_write(port, 0x00a1, io_write_00A1, slave);
 }
 C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave) {
-    if (master == NULL || slave == NULL) return;
+    if (master == STD_NULL || slave == STD_NULL) return;
     STD_MEMSET((C_VOID *)(&master->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pic_data));
     STD_MEMSET((C_VOID *)(&slave->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pic_data));
     master->data.status = slave->data.status = ICW1;
     master->data.ocw3 = slave->data.ocw3 = VPIC_OCW3_RR;
 }
 C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave) {
-    if (master == NULL || slave == NULL) return;
+    if (master == STD_NULL || slave == STD_NULL) return;
     if (slave->data.irr & (~slave->data.imr)) {
         /* if slave pic has requested C_INT, then
          * pass the request into IR2 of master pic */

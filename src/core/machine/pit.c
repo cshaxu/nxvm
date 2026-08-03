@@ -132,7 +132,7 @@ static C_VOID io_read_0040(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOI
 }
 
 static C_VOID Emit(t_pit *pit, ntvdm64_type_unsigned_8 id) {
-    if (pit->connect.output[id] != NULL) {
+    if (pit->connect.output[id] != STD_NULL) {
         pit->connect.output[id](pit->connect.output_owner[id]);
     }
 }
@@ -206,7 +206,7 @@ static C_VOID io_write_0043(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VO
 
 C_VOID core_machine_pit_set_output(t_pit *pit, ntvdm64_type_unsigned_8 id,
     core_machine_pit_output_provider provider, C_VOID *owner) {
-    if (pit == NULL || id >= 3u) return;
+    if (pit == STD_NULL || id >= 3u) return;
     pit->connect.output[id] = provider;
     pit->connect.output_owner[id] = owner;
     pit->connect.flagGate[id] = NTVDM64_TYPE_TRUE;
@@ -214,7 +214,7 @@ C_VOID core_machine_pit_set_output(t_pit *pit, ntvdm64_type_unsigned_8 id,
 
 C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port)
 {
-    if (pit == NULL || port == NULL) return;
+    if (pit == STD_NULL || port == STD_NULL) return;
     STD_MEMSET((C_VOID *)pit, NTVDM64_TYPE_ZERO_8, sizeof(*pit));
     core_machine_port_add_read(port, 0x0040, io_read_0040, pit);
     core_machine_port_add_read(port, 0x0041, io_read_0041, pit);
@@ -226,7 +226,7 @@ C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port)
 }
 C_VOID core_machine_pit_reset(t_pit *pit) {
     ntvdm64_type_native_unsigned i;
-    if (pit == NULL) return;
+    if (pit == STD_NULL) return;
     STD_MEMSET((C_VOID *)(&pit->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pit_data));
     for (i = 0; i < 3; ++i) {
         pit->data.flagReady[i] = pit->data.flagLatch[i] = NTVDM64_TYPE_TRUE;
@@ -235,7 +235,7 @@ C_VOID core_machine_pit_reset(t_pit *pit) {
 }
 C_VOID core_machine_pit_refresh(t_pit *pit) {
     ntvdm64_type_native_unsigned i;
-    if (pit == NULL) return;
+    if (pit == STD_NULL) return;
     for (i = 0; i < 3; ++i) {
         switch (VPIT_GetCW_M(pit->data.cw[i])) {
         case 0x00:

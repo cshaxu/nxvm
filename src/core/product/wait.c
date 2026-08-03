@@ -9,7 +9,7 @@ static _Thread_local core_product_wait_scope coreProductWaitScope;
 C_VOID core_product_wait_scope_initialize(core_product_wait_scope *scope,
     core_product_wait_provider provider, C_VOID *context)
 {
-    if (scope == NULL) return;
+    if (scope == STD_NULL) return;
     scope->provider = provider;
     scope->context = context;
 }
@@ -19,9 +19,9 @@ core_product_wait_scope core_product_wait_scope_enter(
 {
     core_product_wait_scope previous = coreProductWaitScope;
 
-    if (scope == NULL) {
-        coreProductWaitScope.provider = NULL;
-        coreProductWaitScope.context = NULL;
+    if (scope == STD_NULL) {
+        coreProductWaitScope.provider = STD_NULL;
+        coreProductWaitScope.context = STD_NULL;
     } else {
         coreProductWaitScope = *scope;
     }
@@ -35,7 +35,7 @@ C_VOID core_product_wait_scope_leave(core_product_wait_scope previous)
 
 C_VOID core_product_wait_milliseconds(uint32_t milliseconds)
 {
-    if (coreProductWaitScope.provider != NULL) {
+    if (coreProductWaitScope.provider != STD_NULL) {
         coreProductWaitScope.provider(coreProductWaitScope.context, milliseconds);
     }
 }

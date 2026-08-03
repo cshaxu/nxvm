@@ -10,7 +10,7 @@
 
 C_VOID vm_composition_live_machine_initialize(vm_composition_live_machine *machine)
 {
-    if (machine == NULL || machine->core_machine != NULL) return;
+    if (machine == STD_NULL || machine->core_machine != STD_NULL) return;
     {
         core_machine_config config = {0};
 
@@ -20,7 +20,7 @@ C_VOID vm_composition_live_machine_initialize(vm_composition_live_machine *machi
             core_machine_enable_executor(machine->core_machine) !=
                 NTVDM64_STATUS_OK) {
             core_machine_destroy(machine->core_machine);
-            machine->core_machine = NULL;
+            machine->core_machine = STD_NULL;
             return;
         }
     }
@@ -34,7 +34,7 @@ C_VOID vm_composition_live_machine_initialize(vm_composition_live_machine *machi
     if (core_machine_enable_shared_devices(machine->core_machine) !=
         NTVDM64_STATUS_OK) {
         core_machine_destroy(machine->core_machine);
-        machine->core_machine = NULL;
+        machine->core_machine = STD_NULL;
         return;
     }
     machine->pic_master = core_machine_shared_pic_master_borrow(
@@ -62,7 +62,7 @@ C_VOID vm_composition_live_machine_initialize(vm_composition_live_machine *machi
     machine->default_profile_context = &machine->default_profile_context_storage;
     vm_profile_default_context_initialize(machine->default_profile_context,
         machine->default_bios, machine->default_qdx, machine->ram,
-        machine->vadp, NULL, NULL);
+        machine->vadp, STD_NULL, STD_NULL);
     core_machine_cpu_execution_context_bind_extension(machine->cpu_execution,
         machine->default_profile_context);
     machine->default_profile_context->execution = machine->cpu_execution;
@@ -93,45 +93,45 @@ C_VOID vm_composition_live_machine_initialize(vm_composition_live_machine *machi
 
 C_VOID vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
 {
-    if (machine == NULL || machine->core_machine == NULL) return;
-    core_machine_cpu_execution_context_bind_extension(machine->cpu_execution, NULL);
-    machine->cpu = NULL;
-    machine->cpuins = NULL;
-    machine->cpu_execution = NULL;
-    machine->ram = NULL;
-    machine->port = NULL;
-    machine->pic_master = NULL;
-    machine->pic_slave = NULL;
-    machine->pit = NULL;
-    machine->dma_latch = NULL;
-    machine->dma_primary = NULL;
-    machine->dma_secondary = NULL;
-    machine->kbc = NULL;
-    machine->vadp = NULL;
-    machine->cmos = NULL;
-    machine->fdd = NULL;
-    machine->fdc = NULL;
-    machine->hdd = NULL;
-    machine->debug = NULL;
-    machine->default_bios = NULL;
-    machine->default_qdx = NULL;
-    machine->default_profile_context = NULL;
+    if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
+    core_machine_cpu_execution_context_bind_extension(machine->cpu_execution, STD_NULL);
+    machine->cpu = STD_NULL;
+    machine->cpuins = STD_NULL;
+    machine->cpu_execution = STD_NULL;
+    machine->ram = STD_NULL;
+    machine->port = STD_NULL;
+    machine->pic_master = STD_NULL;
+    machine->pic_slave = STD_NULL;
+    machine->pit = STD_NULL;
+    machine->dma_latch = STD_NULL;
+    machine->dma_primary = STD_NULL;
+    machine->dma_secondary = STD_NULL;
+    machine->kbc = STD_NULL;
+    machine->vadp = STD_NULL;
+    machine->cmos = STD_NULL;
+    machine->fdd = STD_NULL;
+    machine->fdc = STD_NULL;
+    machine->hdd = STD_NULL;
+    machine->debug = STD_NULL;
+    machine->default_bios = STD_NULL;
+    machine->default_qdx = STD_NULL;
+    machine->default_profile_context = STD_NULL;
     core_machine_block_provider_slot_finalize(machine->block_provider);
-    machine->block_provider = NULL;
+    machine->block_provider = STD_NULL;
     core_machine_keyboard_provider_slot_finalize(machine->keyboard_provider);
-    machine->keyboard_provider = NULL;
+    machine->keyboard_provider = STD_NULL;
     core_machine_display_provider_slot_finalize(machine->display_provider);
-    machine->display_provider = NULL;
-    machine->presentation_mailbox = NULL;
-    machine->execution_transport = NULL;
-    machine->keyboard_transport = NULL;
-    machine->wait_scope = NULL;
-    machine->platform_run_context = NULL;
-    machine->debugger_context = NULL;
-    machine->console_context = NULL;
-    machine->console_target = NULL;
+    machine->display_provider = STD_NULL;
+    machine->presentation_mailbox = STD_NULL;
+    machine->execution_transport = STD_NULL;
+    machine->keyboard_transport = STD_NULL;
+    machine->wait_scope = STD_NULL;
+    machine->platform_run_context = STD_NULL;
+    machine->debugger_context = STD_NULL;
+    machine->console_context = STD_NULL;
+    machine->console_target = STD_NULL;
     STD_FREE(machine->control);
-    machine->control = NULL;
+    machine->control = STD_NULL;
     core_machine_destroy(machine->core_machine);
-    machine->core_machine = NULL;
+    machine->core_machine = STD_NULL;
 }

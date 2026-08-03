@@ -28,10 +28,10 @@ static C_INT verify(const C_CHAR *fdd_path, const C_CHAR *hdd_path,
     if (vm_composition_session_model_create(&session, &config) != NTVDM64_STATUS_OK ||
         core_product_runtime_registry_find_profile(&session.registry,
             VM_PROFILE_PC_AT_PROFILE_ID, NXVM_RUNTIME_PROFILE_MACHINE,
-            NULL, NULL) == NULL ||
+            STD_NULL, STD_NULL) == STD_NULL ||
         core_product_runtime_registry_find_firmware_provider(&session.registry,
             VM_PROFILE_PC_AT_PROVIDER_ID,
-            VM_PROFILE_PC_AT_PROFILE_ID) == NULL ||
+            VM_PROFILE_PC_AT_PROFILE_ID) == STD_NULL ||
         session.firmware.frozen == 0 || session.media.frozen == 0 ||
         vm_composition_session_model_get_firmware_reset_vector(&session,
             &firmware_vector) != NTVDM64_STATUS_OK ||
@@ -49,7 +49,7 @@ static C_INT verify(const C_CHAR *fdd_path, const C_CHAR *hdd_path,
 static C_INT verify_created(C_VOID)
 {
     vm_composition_session_model_config config = {
-        NULL, NULL, NULL, NULL, 1, 1u, VM_PRODUCT_BOOT_HDD
+        STD_NULL, STD_NULL, STD_NULL, STD_NULL, 1, 1u, VM_PRODUCT_BOOT_HDD
     };
     vm_composition_session_model session;
     vm_composition_default_profile_reset_vector vector;

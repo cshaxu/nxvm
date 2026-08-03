@@ -109,7 +109,7 @@ static const core_machine_execution_provider vm_composition_execution_provider =
 
 C_INT vm_composition_bind_execution_provider(vm_composition_live_machine *machine)
 {
-    return machine != NULL && machine->core_machine != NULL &&
+    return machine != STD_NULL && machine->core_machine != STD_NULL &&
         core_machine_bind_execution_provider(machine->core_machine,
             &vm_composition_execution_provider, machine) == NTVDM64_STATUS_OK &&
         core_machine_freeze_execution_providers(machine->core_machine) ==
@@ -167,7 +167,7 @@ C_VOID vm_composition_start(vm_composition_live_machine *machine) {
 }
 
 C_VOID vm_composition_reset(vm_composition_live_machine *machine) {
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     vm_composition_control_reset(machine->control);
     if (!vm_composition_control_is_running(machine->control)) {
         vm_composition_publish_display(machine, 1);
@@ -175,12 +175,12 @@ C_VOID vm_composition_reset(vm_composition_live_machine *machine) {
 }
 
 C_VOID vm_composition_stop(vm_composition_live_machine *machine) {
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     vm_composition_control_stop(machine->control);
 }
 
 C_VOID vm_composition_resume(vm_composition_live_machine *machine) {
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     if (vm_composition_control_is_paused(machine->control)) {
         vm_composition_control_continue(machine->control);
     } else {
@@ -189,12 +189,12 @@ C_VOID vm_composition_resume(vm_composition_live_machine *machine) {
 }
 
 C_VOID vm_composition_initialize(vm_composition_live_machine *machine) {
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     vm_platform_initialize();
     vm_composition_live_machine_initialize(machine);
-    if (machine->core_machine == NULL) return;
+    if (machine->core_machine == STD_NULL) return;
     core_product_wait_scope_initialize(machine->wait_scope,
-        vm_composition_wait, NULL);
+        vm_composition_wait, STD_NULL);
     vm_composition_control_initialize(machine->control, machine);
     core_machine_keyboard_provider_slot_bind(machine->keyboard_provider,
         machine->default_profile_context,
@@ -202,7 +202,7 @@ C_VOID vm_composition_initialize(vm_composition_live_machine *machine) {
     core_machine_keyboard_provider_slot_freeze(machine->keyboard_provider);
     vm_composition_bind_display(machine);
     vm_machine_debug_bind_pause(machine->debug,
-        vm_composition_debug_request_pause, NULL);
+        vm_composition_debug_request_pause, STD_NULL);
     vm_platform_keyboard_transport_initialize(machine->keyboard_transport,
         &vm_composition_keyboard_sink, machine);
     vm_platform_execution_transport_initialize(machine->execution_transport,
@@ -213,11 +213,11 @@ C_VOID vm_composition_initialize(vm_composition_live_machine *machine) {
 }
 
 C_VOID vm_composition_finalize(vm_composition_live_machine *machine) {
-    if (machine == NULL || machine->core_machine == NULL) return;
+    if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     vm_composition_control_finalize(machine->control, machine);
     core_machine_keyboard_provider_slot_finalize(machine->keyboard_provider);
     core_machine_display_provider_slot_finalize(machine->display_provider);
-    vm_machine_debug_bind_pause(machine->debug, NULL, NULL);
+    vm_machine_debug_bind_pause(machine->debug, STD_NULL, STD_NULL);
     vm_composition_debug_target_finalize(machine);
     vm_composition_live_machine_finalize(machine);
     vm_platform_finalize();

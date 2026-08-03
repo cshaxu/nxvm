@@ -384,7 +384,7 @@ static VOID CreateBitmapFontChar(w32adisp_context *context, UCHAR ch,
     HDC hdcChar;
     HBITMAP hBmpChar;
     HGDIOBJ hOldGdiObj;
-    hdcChar = CreateCompatibleDC(NULL);
+    hdcChar = CreateCompatibleDC(STD_NULL);
     hBmpChar = CreateCompatibleBitmap(context->window_dc, FONT_WIDTH, FONT_HEIGHT);
     hOldGdiObj = SelectObject(hdcChar, hBmpChar);
     /* prop &= 0x7f; */
@@ -412,27 +412,27 @@ w32adisp_context *w32adisp_context_create(C_VOID) {
 }
 
 VOID w32adisp_context_destroy(w32adisp_context *context) {
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     STD_FREE(context);
 }
 
 uint64_t w32adisp_context_generation(const w32adisp_context *context) {
-    return context == NULL ? 0u : context->displayed_generation;
+    return context == STD_NULL ? 0u : context->displayed_generation;
 }
 
 VOID w32adispInit(w32adisp_context *context, HWND window,
                   const vm_platform_presentation_mailbox *mailbox) {
     UINT i, j;
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     context->window_dc = GetDC(window);
-    context->buffer_dc = CreateCompatibleDC(NULL);
-    context->buffer_bitmap = NULL;
+    context->buffer_dc = CreateCompatibleDC(STD_NULL);
+    context->buffer_bitmap = STD_NULL;
     context->client_height = 0;
     context->client_width  = 0;
     context->flash_count   = 0;
     context->flash_interval = 5;
     context->displayed_generation = 0u;
-    context->font_dc = CreateCompatibleDC(NULL);
+    context->font_dc = CreateCompatibleDC(STD_NULL);
     context->font_bitmap = CreateCompatibleBitmap(context->window_dc,
         FONT_WIDTH * FONT_NCHAR, FONT_HEIGHT * FONT_NCOLOR);
     SelectObject(context->font_dc, context->font_bitmap);
@@ -450,7 +450,7 @@ VOID w32adispSetScreen(w32adisp_context *context, HWND window,
     LONG widthOffset, heightOffset;
     core_platform_display_frame frame;
 
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     vm_platform_presentation_mailbox_capture(mailbox, &frame);
     context->rows = frame.columns;
     context->columns = frame.rows;
@@ -503,7 +503,7 @@ VOID w32adispPaint(w32adisp_context *context, HWND window,
     BOOL changed;
     core_platform_display_frame frame;
 
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     vm_platform_presentation_mailbox_capture(mailbox, &frame);
     context->flash_count = (context->flash_count + 1) % 10;
     changed = flagForce || frame.generation != context->displayed_generation;
@@ -531,7 +531,7 @@ VOID w32adispPaint(w32adisp_context *context, HWND window,
 }
 
 VOID w32adispFinal(w32adisp_context *context) {
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     DeleteObject(context->font_bitmap);
     DeleteDC(context->font_dc);
     DeleteObject(context->buffer_bitmap);

@@ -17,10 +17,10 @@ C_INT main(C_VOID)
     const vm_composition_live_machine *machine;
 
     session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
-    if (session == NULL) return 1;
+    if (session == STD_NULL) return 1;
     vm_composition_initialize(session);
     machine = session;
-    if (machine == NULL || machine->default_bios != &machine->default_bios_storage) {
+    if (machine == STD_NULL || machine->default_bios != &machine->default_bios_storage) {
         vm_composition_finalize(session);
         STD_FREE(session);
         return 1;

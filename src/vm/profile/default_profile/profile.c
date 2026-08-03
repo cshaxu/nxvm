@@ -4,7 +4,7 @@ static const core_product_runtime_profile_descriptor_v1 profile = {
     VM_PROFILE_PC_AT_PROFILE_ID,
     NXVM_RUNTIME_PROFILE_MACHINE,
     "products.nxvm.default_profile_builtin",
-    NULL,
+    STD_NULL,
     0u,
     VM_PROFILE_PC_AT_PROVIDER_ID
 };

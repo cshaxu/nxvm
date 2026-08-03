@@ -372,7 +372,7 @@ static C_VOID vm_profile_default_cga_dispatch(vm_profile_default_context *profil
 }
 
 C_VOID vm_profile_default_cga_initialize(t_qdx *qdx) {
-    if (qdx != NULL) qdx->table[0x10] = vm_profile_default_cga_dispatch;
+    if (qdx != STD_NULL) qdx->table[0x10] = vm_profile_default_cga_dispatch;
 }
 C_VOID vm_profile_default_cga_reset(vm_profile_default_context *profile) {
     /* 80 x 25 */
@@ -461,7 +461,7 @@ C_INT vm_profile_default_display_capture(C_VOID *context,
 
     vm_profile_default_context *profile = context;
 
-    if (profile == NULL || out_snapshot == NULL) return NTVDM64_TYPE_FALSE;
+    if (profile == STD_NULL || out_snapshot == STD_NULL) return NTVDM64_TYPE_FALSE;
     out_snapshot->buffer_changed =
         vm_profile_default_display_buffer_changed(profile);
     out_snapshot->cursor_changed =

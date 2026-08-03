@@ -26,7 +26,7 @@ C_VOID vm_composition_publish_display(vm_composition_live_machine *machine,
 
     core_machine_display_snapshot snapshot;
 
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     STD_MEMSET(&snapshot, 0, sizeof(snapshot));
     if (!core_machine_display_capture_snapshot_from(machine->display_provider,
         &snapshot)) return;
@@ -72,7 +72,7 @@ static C_VOID vmCompositionDisplayModeChanged(C_VOID *context)
 
 C_VOID vm_composition_bind_display(vm_composition_live_machine *machine)
 {
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     core_machine_display_provider_slot_bind(machine->display_provider,
         machine, vmCompositionDisplayModeChanged,
         machine->default_profile_context, vm_profile_default_display_capture);

@@ -2739,7 +2739,7 @@ static C_VOID printtoken(t_aasm_token token) {
 }
 static C_VOID matchtoken(t_aasm_token token) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("matchtoken");
-    if (gettoken(NULL) != token) _ser_;
+    if (gettoken(STD_NULL) != token) _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
@@ -2761,7 +2761,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
     info.sib.index = R32_ESP; /* ESP for NULL Index */
     info.sib.scale = 0;
     oldtoken = token;
-    _chrf(token = gettoken(NULL));
+    _chrf(token = gettoken(STD_NULL));
     if (token == TOKEN_COLON) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_COLON");
         switch (oldtoken) {
@@ -2830,14 +2830,14 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
         return info;
     } else _serf_;
     _chrf(matchtoken(TOKEN_LSPAREN));
-    _chrf(token = gettoken(NULL));
+    _chrf(token = gettoken(STD_NULL));
     while (token != TOKEN_RSPAREN) {
         switch (token) {
         case TOKEN_PLUS:
             break;
         case TOKEN_MINUS:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_MINUS)");
-            _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
             neg = 1;
             switch (token) {
             case TOKEN_IMM8:
@@ -2932,19 +2932,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_EAX:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EAX)");
-            _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (ieax) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!ieax");
                     ieax = 1;
-                    _chrf(token = gettoken(NULL));
+                    _chrf(token = gettoken(STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_EAX;
-                        _chrf(token = gettoken(NULL));
+                        _chrf(token = gettoken(STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -2963,19 +2963,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_ECX:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_ECX)");
-            _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iecx) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iecx");
                     iecx = 1;
-                    _chrf(token = gettoken(NULL));
+                    _chrf(token = gettoken(STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_ECX;
-                        _chrf(token = gettoken(NULL));
+                        _chrf(token = gettoken(STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -2994,19 +2994,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_EDX:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EDX)");
-            _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iedx) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iedx");
                     iedx = 1;
-                    _chrf(token = gettoken(NULL));
+                    _chrf(token = gettoken(STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_EDX;
-                        _chrf(token = gettoken(NULL));
+                        _chrf(token = gettoken(STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -3025,19 +3025,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_EBX:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EBX)");
-            _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iebx) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iebx");
                     iebx = 1;
-                    _chrf(token = gettoken(NULL));
+                    _chrf(token = gettoken(STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_EBX;
-                        _chrf(token = gettoken(NULL));
+                        _chrf(token = gettoken(STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -3056,7 +3056,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_ESP:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_ESP)");
-            _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
             if (token == TOKEN_TIMES) _serf_;
             else {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(!TOKEN_TIMES)");
@@ -3072,19 +3072,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_EBP:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EBP)");
-            _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iebp) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iebp");
                     iebx = 1;
-                    _chrf(token = gettoken(NULL));
+                    _chrf(token = gettoken(STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_EBP;
-                        _chrf(token = gettoken(NULL));
+                        _chrf(token = gettoken(STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -3103,19 +3103,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_ESI:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_ESI)");
-            _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iesi) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iesi");
                     iesi = 1;
-                    _chrf(token = gettoken(NULL));
+                    _chrf(token = gettoken(STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_ESI;
-                        _chrf(token = gettoken(NULL));
+                        _chrf(token = gettoken(STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -3134,19 +3134,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_EDI:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EDI)");
-            _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iedi) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iedi");
                     iedi = 1;
-                    _chrf(token = gettoken(NULL));
+                    _chrf(token = gettoken(STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_EDI;
-                        _chrf(token = gettoken(NULL));
+                        _chrf(token = gettoken(STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -3167,9 +3167,9 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             _serf_;
             break;
         }
-        _chrf(token = gettoken(NULL));
+        _chrf(token = gettoken(STD_NULL));
     }
-    _chrf(token = gettoken(NULL));
+    _chrf(token = gettoken(STD_NULL));
     if (token != TOKEN_END) _serf_;
 
     if (al) {
@@ -3296,13 +3296,13 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_PLUS)");
         info.imms = 1;
         info.immn = 0;
-        _chrf(token = gettoken(NULL));
+        _chrf(token = gettoken(STD_NULL));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (token == TOKEN_MINUS) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_MINUS)");
         info.imms = 1;
         info.immn = 1;
-        _chrf(token = gettoken(NULL));
+        _chrf(token = gettoken(STD_NULL));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     }
 
@@ -3320,7 +3320,7 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
         else info.imm32 = (~tokimm32) + 1;
     } else _serf_;
 
-    _chrf(token = gettoken(NULL));
+    _chrf(token = gettoken(STD_NULL));
     if (token == TOKEN_COLON) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(!TOKEN_END)");
         if (info.imms) _serf_;
@@ -3330,7 +3330,7 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
             _serf_;
         }
         info.type = TYPE_NONE;
-        _chrf(token = gettoken(NULL));
+        _chrf(token = gettoken(STD_NULL));
         if (token == TOKEN_IMM16) {
             info.reip = tokimm16;
             info.type = TYPE_I16_16;
@@ -3361,16 +3361,16 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
         break;
     case TOKEN_BYTE:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_BYTE)");
-        _chrf(token = gettoken(NULL));
-        if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+        _chrf(token = gettoken(STD_NULL));
+        if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
         _chrf(info = parsearg_mem(token));
         info.type = TYPE_M8;
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case TOKEN_WORD:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_WORD)");
-        _chrf(token = gettoken(NULL));
-        if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+        _chrf(token = gettoken(STD_NULL));
+        if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
         _chrf(info = parsearg_mem(token));
         info.type = TYPE_M16;
         info.ptr = PTR_NEAR;
@@ -3378,8 +3378,8 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
         break;
     case TOKEN_DWORD:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_DWORD)");
-        _chrf(token = gettoken(NULL));
-        if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+        _chrf(token = gettoken(STD_NULL));
+        if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
         _chrf(info = parsearg_mem(token));
         info.type = TYPE_M32;
         info.ptr = PTR_FAR;
@@ -3548,8 +3548,8 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
         break;
     case TOKEN_SHORT:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SHORT)");
-        _chrf(token = gettoken(NULL));
-        if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+        _chrf(token = gettoken(STD_NULL));
+        if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
         if (token == TOKEN_PLUS || token == TOKEN_MINUS) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SIGNs)");
             _chrf(info = parsearg_imm(token));
@@ -3561,21 +3561,21 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
         break;
     case TOKEN_NEAR:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_NEAR)");
-        _chrf(token = gettoken(NULL));
-        if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+        _chrf(token = gettoken(STD_NULL));
+        if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
         switch (token) {
         case TOKEN_WORD:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_WORD)");
-            _chrf(token = gettoken(NULL));
-            if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
+            if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
             _chrf(info = parsearg_mem(token));
             info.type = TYPE_M16;
             NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_DWORD:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_DWORD)");
-            _chrf(token = gettoken(NULL));
-            if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
+            if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
             _chrf(info = parsearg_mem(token));
             info.type = TYPE_M32;
             NTVDM64_TYPE_TRACE_BLOCK_END;
@@ -3607,13 +3607,13 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
         break;
     case TOKEN_FAR:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_FAR)");
-        _chrf(token = gettoken(NULL));
-        if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+        _chrf(token = gettoken(STD_NULL));
+        if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
         switch (token) {
         case TOKEN_WORD:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_WORD)");
-            _chrf(token = gettoken(NULL));
-            if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
+            if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
             _chrf(info = parsearg_mem(token));
             info.type = TYPE_M16;
             info.ptr = PTR_FAR;
@@ -3621,8 +3621,8 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
             break;
         case TOKEN_DWORD:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_DWORD)");
-            _chrf(token = gettoken(NULL));
-            if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
+            _chrf(token = gettoken(STD_NULL));
+            if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
             _chrf(info = parsearg_mem(token));
             info.type = TYPE_M32;
             info.ptr = PTR_FAR;
@@ -5042,7 +5042,7 @@ static C_VOID IMUL_R32_RM32_I8(uint8_t byte) {
 static C_VOID INSB() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INSB");
     _c_setbyte(0x6c);
-    rinfo = NULL;
+    rinfo = STD_NULL;
     if (ARG_NONE) ;
     else if (ARG_ESDI8_DX) _SetAddressSize(2);
     else if (ARG_ESEDI8_DX) _SetAddressSize(4);
@@ -5053,7 +5053,7 @@ static C_VOID INSW(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INSW");
     _SetOperandSize(byte);
     _c_setbyte(0x6d);
-    rinfo = NULL;
+    rinfo = STD_NULL;
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
@@ -5082,7 +5082,7 @@ static C_VOID OUTSB() {
     _c_setbyte(0x6e);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
-    if (ARG_NONE) rinfo = NULL;
+    if (ARG_NONE) rinfo = STD_NULL;
     else if (ARG_DX_DSSI8) _SetAddressSize(2);
     else if (ARG_DSESI8) _SetAddressSize(4);
     else _ser_;
@@ -5097,7 +5097,7 @@ static C_VOID OUTSW(uint8_t byte) {
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        if (ARG_NONE) rinfo = NULL;
+        if (ARG_NONE) rinfo = STD_NULL;
         else if (ARG_DX_DSSI16) _SetAddressSize(2);
         else if (ARG_DX_DSESI16) _SetAddressSize(4);
         else _ser_;
@@ -5105,7 +5105,7 @@ static C_VOID OUTSW(uint8_t byte) {
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        if (ARG_NONE) rinfo = NULL;
+        if (ARG_NONE) rinfo = STD_NULL;
         else if (ARG_DX_DSSI32) _SetAddressSize(2);
         else if (ARG_DX_DSESI32) _SetAddressSize(4);
         else _ser_;
@@ -5492,7 +5492,7 @@ static C_VOID MOVSB() {
     _c_setbyte(0xa4);
     rinfo = &aopri2;
     if (rinfo->flagds) rinfo->flagds = 0;
-    if (ARG_NONE) rinfo = NULL;
+    if (ARG_NONE) rinfo = STD_NULL;
     else if (ARG_ESDI8_DSSI8) _SetAddressSize(2);
     else if (ARG_ESEDI8_DSESI8) _SetAddressSize(4);
     else _ser_;
@@ -5507,7 +5507,7 @@ static C_VOID MOVSW(uint8_t byte) {
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        if (ARG_NONE) rinfo = NULL;
+        if (ARG_NONE) rinfo = STD_NULL;
         else if (ARG_ESDI16_DSSI16) _SetAddressSize(2);
         else if (ARG_ESEDI16_DSESI16) _SetAddressSize(4);
         else _ser_;
@@ -5515,7 +5515,7 @@ static C_VOID MOVSW(uint8_t byte) {
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        if (ARG_NONE) rinfo = NULL;
+        if (ARG_NONE) rinfo = STD_NULL;
         else if (ARG_ESDI32_DSSI32) _SetAddressSize(2);
         else if (ARG_ESEDI32_DSESI32) _SetAddressSize(4);
         else _ser_;
@@ -5532,7 +5532,7 @@ static C_VOID CMPSB() {
     _c_setbyte(0xa6);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
-    if (ARG_NONE) rinfo = NULL;
+    if (ARG_NONE) rinfo = STD_NULL;
     else if (ARG_DSSI8_ESDI8) _SetAddressSize(2);
     else if (ARG_DSESI8_ESEDI8) _SetAddressSize(4);
     else _ser_;
@@ -5547,7 +5547,7 @@ static C_VOID CMPSW(uint8_t byte) {
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        if (ARG_NONE) rinfo = NULL;
+        if (ARG_NONE) rinfo = STD_NULL;
         else if (ARG_DSSI16_ESDI16) _SetAddressSize(2);
         else if (ARG_DSESI16_ESEDI16) _SetAddressSize(4);
         else _ser_;
@@ -5555,7 +5555,7 @@ static C_VOID CMPSW(uint8_t byte) {
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        if (ARG_NONE) rinfo = NULL;
+        if (ARG_NONE) rinfo = STD_NULL;
         else if (ARG_DSSI32_ESDI32) _SetAddressSize(2);
         else if (ARG_DSESI32_ESEDI32) _SetAddressSize(4);
         else _ser_;
@@ -5597,7 +5597,7 @@ static C_VOID TEST_EAX_I32(uint8_t byte) {
 static C_VOID STOSB() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSB");
     _c_setbyte(0xaa);
-    rinfo = NULL;
+    rinfo = STD_NULL;
     if (ARG_NONE) ;
     else if (ARG_ESDI8) _SetAddressSize(2);
     else if (ARG_ESEDI8) _SetAddressSize(4);
@@ -5608,7 +5608,7 @@ static C_VOID STOSW(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSW");
     _SetOperandSize(byte);
     _c_setbyte(0xab);
-    rinfo = NULL;
+    rinfo = STD_NULL;
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
@@ -5637,7 +5637,7 @@ static C_VOID LODSB() {
     _c_setbyte(0xac);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
-    if (ARG_NONE) rinfo = NULL;
+    if (ARG_NONE) rinfo = STD_NULL;
     else if (ARG_DSSI8) _SetAddressSize(2);
     else if (ARG_DSESI8) _SetAddressSize(4);
     else _ser_;
@@ -5652,7 +5652,7 @@ static C_VOID LODSW(uint8_t byte) {
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        if (ARG_NONE) rinfo = NULL;
+        if (ARG_NONE) rinfo = STD_NULL;
         else if (ARG_DSSI16) _SetAddressSize(2);
         else if (ARG_DSESI16) _SetAddressSize(4);
         else _ser_;
@@ -5660,7 +5660,7 @@ static C_VOID LODSW(uint8_t byte) {
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        if (ARG_NONE) rinfo = NULL;
+        if (ARG_NONE) rinfo = STD_NULL;
         else if (ARG_DSSI32) _SetAddressSize(2);
         else if (ARG_DSESI32) _SetAddressSize(4);
         else _ser_;
@@ -5675,7 +5675,7 @@ static C_VOID LODSW(uint8_t byte) {
 static C_VOID SCASB() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASB");
     _c_setbyte(0xae);
-    rinfo = NULL;
+    rinfo = STD_NULL;
     if (ARG_NONE) ;
     else if (ARG_ESDI8) _SetAddressSize(2);
     else if (ARG_ESEDI8) _SetAddressSize(4);
@@ -5686,7 +5686,7 @@ static C_VOID SCASW(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASW");
     _SetOperandSize(byte);
     _c_setbyte(0xaf);
-    rinfo = NULL;
+    rinfo = STD_NULL;
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
@@ -8255,13 +8255,13 @@ static C_CHAR *take_arg(C_CHAR *s) {
         rstart = s;
     }
     if (!rstart) {
-        return NULL;
+        return STD_NULL;
     }
     while (!is_end(*rstart) && is_space(*rstart)) {
         rstart++;
     }
     if (*rstart == ',' || is_end(*rstart)) {
-        return NULL;
+        return STD_NULL;
     }
     rresult = rstart;
     while (!is_end(*rstart) && (*rstart) != ',') {
@@ -8269,7 +8269,7 @@ static C_CHAR *take_arg(C_CHAR *s) {
     }
     rend = rstart - 1;
     if (is_end(*rstart)) {
-        rstart = NULL;
+        rstart = STD_NULL;
     } else {
         rstart++;
     }
@@ -8310,7 +8310,7 @@ static uint8_t aasm32_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) 
     STD_MEMSET((C_VOID *)(&aoprig), 0x00, sizeof(t_aasm_oprinfo));
     prefix_oprsizeg = prefix_addrsizeg = 0;
 
-    rop = ropr1 = ropr2 = ropr3 = NULL;
+    rop = ropr1 = ropr2 = ropr3 = STD_NULL;
 
     /* process prefixes */
     do {
@@ -8333,8 +8333,8 @@ static uint8_t aasm32_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) 
 
     /* process assembly statement */
     ropr1 = take_arg(rstmt);
-    ropr2 = take_arg(NULL);
-    ropr3 = take_arg(NULL);
+    ropr2 = take_arg(STD_NULL);
+    ropr3 = take_arg(STD_NULL);
 
     aopri1 = parsearg(ropr1);
     aopri2 = parsearg(ropr2);
@@ -8347,7 +8347,7 @@ static uint8_t aasm32_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) 
     } else if (isM(aopri3)) {
         rinfo = &aopri3;
     } else {
-        rinfo = NULL;
+        rinfo = STD_NULL;
     }
 
     exec();
@@ -8423,7 +8423,7 @@ uint8_t aasm32(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
     aasm32_context *previous = aasmContext;
     uint8_t result;
 
-    if (previous != NULL) return aasm32_execute(stmt, rcode, flag32);
+    if (previous != STD_NULL) return aasm32_execute(stmt, rcode, flag32);
     STD_MEMSET(&local_context, 0, sizeof(local_context));
     aasmContext = &local_context;
     result = aasm32_execute(stmt, rcode, flag32);
@@ -8446,7 +8446,7 @@ typedef struct {
 /* default operand size */
 #define _GetOperandSize (defsize ? 4 : 2)
 static C_VOID asmx_get_label(t_aasm_instr *rinstr) {
-    size_t i = 0, j = 0;
+    STD_SIZE_T i = 0, j = 0;
     rinstr->label_str[0] = 0;
     rinstr->flag_has_label = 0;
     rinstr->flag_is_label = 0;
@@ -8476,7 +8476,7 @@ static C_VOID asmx_get_label(t_aasm_instr *rinstr) {
     }
 }
 static C_VOID asmx_parse_instr(t_aasm_instr *rinstr) {
-    size_t i;
+    STD_SIZE_T i;
     C_CHAR *rstmt;
     t_aasm_token token;
     i = 0;
@@ -8493,9 +8493,9 @@ static C_VOID asmx_parse_instr(t_aasm_instr *rinstr) {
     token = gettoken(rstmt);
     switch (token) {
     case TOKEN_SHORT:
-        token = gettoken(NULL);
+        token = gettoken(STD_NULL);
         if (token == TOKEN_PTR) {
-            token = gettoken(NULL);
+            token = gettoken(STD_NULL);
         }
         if (token != TOKEN_DOLLAR) {
             return;
@@ -8503,9 +8503,9 @@ static C_VOID asmx_parse_instr(t_aasm_instr *rinstr) {
         rinstr->ptr = PTR_SHORT;
         break;
     case TOKEN_NEAR:
-        token = gettoken(NULL);
+        token = gettoken(STD_NULL);
         if (token == TOKEN_PTR) {
-            token = gettoken(NULL);
+            token = gettoken(STD_NULL);
         }
         if (token != TOKEN_DOLLAR) {
             return;
@@ -8818,7 +8818,7 @@ uint32_t aasm32x(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
     aasm32_context *previous = aasmContext;
     uint32_t result;
 
-    if (previous != NULL) return aasm32x_execute(stmt, rcode, flag32);
+    if (previous != STD_NULL) return aasm32x_execute(stmt, rcode, flag32);
     STD_MEMSET(&local_context, 0, sizeof(local_context));
     aasmContext = &local_context;
     result = aasm32x_execute(stmt, rcode, flag32);

@@ -30,7 +30,7 @@ typedef struct core_product_runtime_profile_descriptor_v1 {
     core_product_runtime_profile_family family;
     const C_CHAR *owner;
     const C_UINT *required_capabilities;
-    size_t required_capability_count;
+    STD_SIZE_T required_capability_count;
     const C_CHAR *firmware_provider_id;
 } core_product_runtime_profile_descriptor_v1;
 
@@ -44,8 +44,8 @@ typedef struct core_product_runtime_firmware_provider_descriptor_v1 {
 typedef struct core_product_runtime_registry {
     const core_product_runtime_profile_descriptor_v1 *profiles[NXVM_RUNTIME_REGISTRY_CAPACITY];
     const core_product_runtime_firmware_provider_descriptor_v1 *providers[NXVM_RUNTIME_REGISTRY_CAPACITY];
-    size_t profile_count;
-    size_t provider_count;
+    STD_SIZE_T profile_count;
+    STD_SIZE_T provider_count;
     C_INT frozen;
 } core_product_runtime_registry;
 

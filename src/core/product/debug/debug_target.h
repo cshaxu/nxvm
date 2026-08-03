@@ -48,17 +48,17 @@ typedef struct core_product_debug_target {
     C_INT (*read_linear)(C_VOID *context, uint32_t address, C_VOID *out, uint8_t size);
     C_INT (*write_linear)(C_VOID *context, uint32_t address, const C_VOID *in, uint8_t size);
     C_INT (*read_real)(C_VOID *context, uint16_t segment, uint16_t offset,
-                     C_VOID *out, size_t size);
+                     C_VOID *out, STD_SIZE_T size);
     C_INT (*write_real)(C_VOID *context, uint16_t segment, uint16_t offset,
-                      const C_VOID *in, size_t size);
+                      const C_VOID *in, STD_SIZE_T size);
     uint32_t (*read_port)(C_VOID *context, uint16_t port);
     C_VOID (*write_port)(C_VOID *context, uint16_t port, uint32_t value);
     C_VOID (*set_break_real)(C_VOID *context, uint16_t segment, uint16_t offset);
     C_VOID (*set_break_linear)(C_VOID *context, uint32_t address);
     C_VOID (*clear_break)(C_VOID *context, C_INT linear);
-    C_VOID (*set_trace)(C_VOID *context, size_t count);
+    C_VOID (*set_trace)(C_VOID *context, STD_SIZE_T count);
     C_VOID (*clear_trace)(C_VOID *context);
-    size_t (*get_break_count)(C_VOID *context);
+    STD_SIZE_T (*get_break_count)(C_VOID *context);
     C_VOID (*set_watch)(C_VOID *context, core_product_debug_watch_kind kind,
                       uint32_t address);
     C_VOID (*clear_watch)(C_VOID *context, core_product_debug_watch_kind kind);

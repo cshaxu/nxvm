@@ -23,7 +23,7 @@ C_VOID core_machine_kbc_register_ports(t_kbc *controller, t_port *port)
 }
 
 C_VOID core_machine_kbc_initialize(t_kbc *controller, t_port *port) {
-    if (controller == NULL || port == NULL) return;
+    if (controller == STD_NULL || port == STD_NULL) return;
     STD_MEMSET(controller, NTVDM64_TYPE_ZERO_8, sizeof(*controller));
     core_machine_kbc_register_ports(controller, port);
 }

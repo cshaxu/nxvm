@@ -32,14 +32,14 @@ const C_CHAR *ntvdm64_version_build_time(C_VOID)
     return __TIME__;
 }
 
-C_INT ntvdm64_version_format_nxvm_banner(C_CHAR *buffer, size_t buffer_size,
+C_INT ntvdm64_version_format_nxvm_banner(C_CHAR *buffer, STD_SIZE_T buffer_size,
     const C_CHAR *build_suffix)
 {
     C_INT written;
-    const C_INT versioned_suffix = build_suffix != NULL &&
+    const C_INT versioned_suffix = build_suffix != STD_NULL &&
         build_suffix[0] >= '0' && build_suffix[0] <= '9';
 
-    if (buffer == NULL || buffer_size == 0 || build_suffix == NULL ||
+    if (buffer == STD_NULL || buffer_size == 0 || build_suffix == STD_NULL ||
         build_suffix[0] == '\0') {
         return 0;
     }
@@ -53,5 +53,5 @@ C_INT ntvdm64_version_format_nxvm_banner(C_CHAR *buffer, size_t buffer_size,
             ntvdm64_version_nxvm_name(), ntvdm64_version_nxvm_release(),
             build_suffix, ntvdm64_version_nxvm_copyright());
     }
-    return written >= 0 && (size_t)written < buffer_size;
+    return written >= 0 && (STD_SIZE_T)written < buffer_size;
 }

@@ -13,10 +13,10 @@ C_INT main(C_VOID)
 {
     vm_composition_live_machine *session =
         (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
-    if (session == NULL) return 1;
+    if (session == STD_NULL) return 1;
     vm_composition_initialize(session);
-    if (session->default_qdx->table[0xa2] == NULL ||
-        session->default_qdx->table[0xa3] == NULL) {
+    if (session->default_qdx->table[0xa2] == STD_NULL ||
+        session->default_qdx->table[0xa3] == STD_NULL) {
         vm_composition_finalize(session);
         STD_FREE(session);
         return 1;

@@ -97,12 +97,12 @@ VOID vm_platform_win32con_start_machine(const vm_platform_run_context *context) 
     HANDLE kernel_thread;
     HANDLE display_thread;
 
-    if (context == NULL || context->execution == NULL ||
-        context->keyboard == NULL) return;
+    if (context == STD_NULL || context->execution == STD_NULL ||
+        context->keyboard == STD_NULL) return;
     if (core_platform_host_surface_lease_acquire(&win32_console_lease,
             context) != NTVDM64_STATUS_OK) return;
     run_context = STD_CALLOC(1u, sizeof(*run_context));
-    if (run_context == NULL) {
+    if (run_context == STD_NULL) {
         core_platform_host_surface_lease_release(&win32_console_lease, context);
         return;
     }
@@ -115,16 +115,16 @@ VOID vm_platform_win32con_start_machine(const vm_platform_run_context *context) 
         run_context->output;
     ((vm_platform_run_context *)context)->console_renderer =
         w32cdisp_context_create();
-    if (context->console_renderer == NULL) goto final;
-    kernel_thread = CreateThread(NULL, 0, ThreadKernel, run_context, 0,
+    if (context->console_renderer == STD_NULL) goto final;
+    kernel_thread = CreateThread(STD_NULL, 0, ThreadKernel, run_context, 0,
                                  &ThreadIdKernel);
-    if (kernel_thread == NULL) goto final;
+    if (kernel_thread == STD_NULL) goto final;
     while (oldDeviceFlip == vm_platform_execution_get_flip_for(context->execution)) {
         core_product_utils_sleep(100);
     }
-    display_thread = CreateThread(NULL, 0, ThreadDisplay, run_context, 0,
+    display_thread = CreateThread(STD_NULL, 0, ThreadDisplay, run_context, 0,
                                   &ThreadIdDisplay);
-    if (display_thread == NULL) {
+    if (display_thread == STD_NULL) {
         vm_platform_execution_stop_for(context->execution);
         WaitForSingleObject(kernel_thread, INFINITE);
         CloseHandle(kernel_thread);
@@ -140,8 +140,8 @@ VOID vm_platform_win32con_start_machine(const vm_platform_run_context *context) 
     CloseHandle(display_thread);
 final:
     w32cdisp_context_destroy((w32cdisp_context *)context->console_renderer);
-    ((vm_platform_run_context *)context)->console_renderer = NULL;
-    ((vm_platform_run_context *)context)->console_surface.native_handle = NULL;
+    ((vm_platform_run_context *)context)->console_renderer = STD_NULL;
+    ((vm_platform_run_context *)context)->console_surface.native_handle = STD_NULL;
     STD_FREE(run_context);
     core_platform_host_surface_lease_release(&win32_console_lease, context);
     core_product_wait_scope_leave(previous);

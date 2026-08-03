@@ -12,7 +12,7 @@ extern "C" {
 #include "vm/product/console_target.h"
 
 typedef struct nxvm_product_console_context {
-    size_t argument_count;
+    STD_SIZE_T argument_count;
     C_CHAR **arguments;
     C_INT exit_requested;
     C_CHAR command_buffer[0x100];

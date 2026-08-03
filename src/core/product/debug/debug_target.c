@@ -11,7 +11,7 @@ C_VOID core_product_debug_scope_enter(const core_product_debug_target *target)
 
 C_VOID core_product_debug_scope_leave(C_VOID)
 {
-    coreProductDebugScopeTarget = NULL;
+    coreProductDebugScopeTarget = STD_NULL;
 }
 
 const core_product_debug_target *core_product_debug_scope_target(C_VOID)

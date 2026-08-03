@@ -37,7 +37,7 @@ static C_VOID parse() {
     }
     ntvdm64_type_string_lower(argArray[numArgs++]);
     while (numArgs < CONSOLE_MAXNARG) {
-        argArray[numArgs] = STD_STRTOK(NULL, " \t\n\r\f");
+        argArray[numArgs] = STD_STRTOK(STD_NULL, " \t\n\r\f");
         if (argArray[numArgs]) {
             ntvdm64_type_string_lower(argArray[numArgs++]);
         } else {
@@ -247,7 +247,7 @@ static C_VOID doDevice() {
         if (numArgs != 3) {
             GetHelp;
         }
-        consoleTarget->set_memory(consoleTarget->context, (size_t)atoi(argArray[2]) << 10);
+        consoleTarget->set_memory(consoleTarget->context, (STD_SIZE_T)atoi(argArray[2]) << 10);
     } else if (!STD_STRCMP(argArray[1], "display")) {
         if (numArgs != 3) {
             GetHelp;
@@ -277,7 +277,7 @@ static C_VOID doDevice() {
             }
         } else if (!STD_STRCMP(argArray[2], "remove")) {
             if (numArgs < 4) {
-                argArray[3] = NULL;
+                argArray[3] = STD_NULL;
             }
             if (!consoleTarget->remove_fdd(consoleTarget->context, argArray[3])) {
                 STD_PRINTF("Floppy disk removed.\n");
@@ -317,7 +317,7 @@ static C_VOID doDevice() {
             }
         } else if (!STD_STRCMP(argArray[2], "disconnect")) {
             if (numArgs < 4) {
-                argArray[3] = NULL;
+                argArray[3] = STD_NULL;
             }
             if (!consoleTarget->remove_hdd(consoleTarget->context, argArray[3])) {
                 STD_PRINTF("Hard disk disconnected.\n");
@@ -396,13 +396,13 @@ static C_VOID vm_product_console_finalize() {
 C_VOID nxvm_product_console_context_initialize(
     nxvm_product_console_context *context)
 {
-    if (context != NULL) STD_MEMSET(context, 0, sizeof(*context));
+    if (context != STD_NULL) STD_MEMSET(context, 0, sizeof(*context));
 }
 
 C_VOID vm_product_console_main(nxvm_product_console_context *context,
                  const nxvm_product_console_target *target) {
     nxvm_product_console_context *previous;
-    if (context == NULL || target == NULL) return;
+    if (context == STD_NULL || target == STD_NULL) return;
     previous = consoleContext;
     consoleContext = context;
     nxvm_product_console_context_initialize(context);
@@ -411,7 +411,7 @@ C_VOID vm_product_console_main(nxvm_product_console_context *context,
     STD_PRINTF("\nPlease enter 'HELP' for information.\n\n");
     while (!flagExit) {
         STD_PRINTF("Console> ");
-        STD_FGETS(strCmdBuff, 0x100, stdin);
+        STD_FGETS(strCmdBuff, 0x100, STD_STDIN);
         parse();
         execute();
     }

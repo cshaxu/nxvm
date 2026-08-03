@@ -40,7 +40,7 @@ typedef struct {
 
 #define VHDD_BYTE_PER_MB (1 << 20)
 
-size_t vm_machine_hdd_image_size(const t_hdd *hdd);
+STD_SIZE_T vm_machine_hdd_image_size(const t_hdd *hdd);
 C_VOID vm_machine_hdd_set_pointer(t_hdd *hdd);
 C_VOID vm_machine_hdd_transfer_read(t_hdd *hdd, t_latch *latch);
 C_VOID vm_machine_hdd_transfer_write(t_hdd *hdd, t_latch *latch);

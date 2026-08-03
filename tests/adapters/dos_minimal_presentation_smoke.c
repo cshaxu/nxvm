@@ -7,10 +7,10 @@
 
 C_INT main(C_VOID)
 {
-    core_product_runtime_dos_minimal *first = NULL;
-    core_product_runtime_dos_minimal *second = NULL;
-    vdm_composition_presentation *first_presentation = NULL;
-    vdm_composition_presentation *second_presentation = NULL;
+    core_product_runtime_dos_minimal *first = STD_NULL;
+    core_product_runtime_dos_minimal *second = STD_NULL;
+    vdm_composition_presentation *first_presentation = STD_NULL;
+    vdm_composition_presentation *second_presentation = STD_NULL;
     nxvm_platform_input_event first_event = { 42u, 0x1eu };
     nxvm_platform_input_event second_event = { 43u, 0x30u };
     nxvm_vdm_presentation_snapshot first_snapshot;

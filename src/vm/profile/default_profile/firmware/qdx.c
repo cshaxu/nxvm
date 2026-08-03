@@ -29,8 +29,8 @@ static C_VOID vm_profile_default_qdx_dispatch(
     ntvdm64_type_unsigned_8 command_id;
     ntvdm64_type_unsigned_16 flags;
 
-    if (profile == NULL || profile->qdx == NULL || execution == NULL ||
-        execution->cpu == NULL || execution->instructions == NULL) return;
+    if (profile == STD_NULL || profile->qdx == STD_NULL || execution == STD_NULL ||
+        execution->cpu == STD_NULL || execution->instructions == STD_NULL) return;
     cpu = execution->cpu;
     instructions = execution->instructions;
     cpu->data.eip++;
@@ -58,7 +58,7 @@ static C_VOID vm_profile_default_qdx_dispatch(
         core_machine_cpu_execution_request_reset(execution);
         break;
     default:
-        if (profile->qdx->table[command_id] != NULL) {
+        if (profile->qdx->table[command_id] != STD_NULL) {
             profile->qdx->table[command_id](profile);
         }
         if (command_id < 0x20) {
@@ -87,10 +87,10 @@ C_VOID vm_profile_default_qdx_initialize(vm_profile_default_context *profile,
 {
     ntvdm64_type_native_unsigned index;
 
-    if (profile == NULL || profile->qdx == NULL || execution == NULL ||
-        execution->instructions == NULL) return;
+    if (profile == STD_NULL || profile->qdx == STD_NULL || execution == STD_NULL ||
+        execution->instructions == STD_NULL) return;
     for (index = 0; index < 0x100; ++index) {
-        profile->qdx->table[index] = NULL;
+        profile->qdx->table[index] = STD_NULL;
     }
     vm_profile_default_keyboard_initialize(profile->qdx);
     vm_profile_default_cga_initialize(profile->qdx);

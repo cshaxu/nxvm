@@ -12,8 +12,8 @@ extern "C" {
 #include "core/product/debug/debug_target.h"
 
 typedef struct core_product_debug_context {
-    size_t error_position;
-    size_t argument_count;
+    STD_SIZE_T error_position;
+    STD_SIZE_T argument_count;
     C_CHAR **arguments;
     C_INT exit_requested;
     C_CHAR command_buffer[0x100];

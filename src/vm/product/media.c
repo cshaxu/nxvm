@@ -17,15 +17,15 @@ static vm_product_block_provider *vm_product_media_mutable_provider(
 {
     if (target == VM_PRODUCT_BOOT_FDD) return &policy->fdd;
     if (target == VM_PRODUCT_BOOT_HDD) return &policy->hdd;
-    return NULL;
+    return STD_NULL;
 }
 
-static C_INT vm_product_media_copy(C_CHAR *destination, size_t capacity,
+static C_INT vm_product_media_copy(C_CHAR *destination, STD_SIZE_T capacity,
                                         const C_CHAR *source)
 {
-    size_t length;
+    STD_SIZE_T length;
 
-    if (source == NULL || source[0] == '\0') return 0;
+    if (source == STD_NULL || source[0] == '\0') return 0;
     length = STD_STRLEN(source);
     if (length >= capacity) return 0;
     STD_MEMCPY(destination, source, length + 1u);
@@ -35,7 +35,7 @@ static C_INT vm_product_media_copy(C_CHAR *destination, size_t capacity,
 C_VOID vm_product_media_policy_initialize(
     vm_product_media_policy *policy)
 {
-    if (policy != NULL) STD_MEMSET(policy, 0, sizeof(*policy));
+    if (policy != STD_NULL) STD_MEMSET(policy, 0, sizeof(*policy));
 }
 
 ntvdm64_status vm_product_media_configure(
@@ -46,9 +46,9 @@ ntvdm64_status vm_product_media_configure(
 {
     vm_product_block_provider *provider;
 
-    if (policy == NULL || identity == NULL || !vm_product_media_valid_target(target) ||
+    if (policy == STD_NULL || identity == STD_NULL || !vm_product_media_valid_target(target) ||
         identity->expected_bytes == 0u || policy->frozen) {
-        return policy != NULL && policy->frozen ? NTVDM64_STATUS_INVALID_STATE :
+        return policy != STD_NULL && policy->frozen ? NTVDM64_STATUS_INVALID_STATE :
                                                   NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     provider = vm_product_media_mutable_provider(policy, target);
@@ -73,10 +73,10 @@ ntvdm64_status vm_product_media_configure_created(
 {
     vm_product_block_provider *provider;
 
-    if (policy == NULL || !vm_product_media_valid_target(target) ||
+    if (policy == STD_NULL || !vm_product_media_valid_target(target) ||
         policy->frozen ||
         (target == VM_PRODUCT_BOOT_HDD && cylinders == 0u)) {
-        return policy != NULL && policy->frozen ? NTVDM64_STATUS_INVALID_STATE :
+        return policy != STD_NULL && policy->frozen ? NTVDM64_STATUS_INVALID_STATE :
                                                   NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     provider = vm_product_media_mutable_provider(policy, target);
@@ -91,7 +91,7 @@ ntvdm64_status vm_product_media_set_boot_target(
     vm_product_media_policy *policy,
     vm_product_boot_target target)
 {
-    if (policy == NULL || !vm_product_media_valid_target(target)) {
+    if (policy == STD_NULL || !vm_product_media_valid_target(target)) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     if (policy->frozen) return NTVDM64_STATUS_INVALID_STATE;
@@ -104,10 +104,10 @@ ntvdm64_status vm_product_media_freeze(
 {
     const vm_product_block_provider *provider;
 
-    if (policy == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (policy == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     if (policy->frozen) return NTVDM64_STATUS_INVALID_STATE;
     provider = vm_product_media_provider(policy, policy->boot_target);
-    if (provider == NULL || !provider->configured) return NTVDM64_STATUS_INVALID_STATE;
+    if (provider == STD_NULL || !provider->configured) return NTVDM64_STATUS_INVALID_STATE;
     policy->frozen = 1;
     return NTVDM64_STATUS_OK;
 }
@@ -116,8 +116,8 @@ const vm_product_block_provider *vm_product_media_provider(
     const vm_product_media_policy *policy,
     vm_product_boot_target target)
 {
-    if (policy == NULL) return NULL;
+    if (policy == STD_NULL) return STD_NULL;
     if (target == VM_PRODUCT_BOOT_FDD) return &policy->fdd;
     if (target == VM_PRODUCT_BOOT_HDD) return &policy->hdd;
-    return NULL;
+    return STD_NULL;
 }
