@@ -62,6 +62,7 @@
 typedef struct vm_session {
     C_INT active;
     vm_platform_request_transport request_transport;
+    core_machine_config core_machine_config;
     core_machine *core_machine;
     t_cmos cmos_storage;
     t_fdd fdd_storage;
@@ -110,6 +111,8 @@ typedef struct vm_session_config {
     C_INT create_fdd;
     uint16_t create_hdd_cylinders;
     C_INT boot_hdd;
+    core_machine_cpu_profile cpu_profile;
+    core_machine_fpu_profile fpu_profile;
 } vm_session_config;
 
 typedef struct vm_session_reset_vector {

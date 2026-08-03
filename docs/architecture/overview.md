@@ -34,14 +34,14 @@ banner exactly:
 
 ```text
 Neko's x86 Virtual Machine [0.4.015d]
-Copyright (c) 2012-2014 Neko.
+Copyright (c) 2012-2026 Neko.
 ```
 
 Historical M3 through M5 T47 task-level machine artifacts used:
 
 ```text
 Neko's x86 Virtual Machine [0.4.015d.m<M>t<T>]
-Copyright (c) 2012-2014 Neko.
+Copyright (c) 2012-2026 Neko.
 ```
 
 `M` and `T` are the decimal milestone and task identifiers that produced the

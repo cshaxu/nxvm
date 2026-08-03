@@ -70,6 +70,15 @@ C_VOID core_product_session_manager_destroy(core_product_session_manager *manage
 ntvdm64_status core_product_session_manager_open(
     core_product_session_manager *manager, core_product_session_id *out_id)
 {
+    return core_product_session_manager_open_with_options(manager, STD_NULL,
+        out_id);
+}
+
+ntvdm64_status core_product_session_manager_open_with_options(
+    core_product_session_manager *manager,
+    const core_product_session_open_options *options,
+    core_product_session_id *out_id)
+{
     core_product_session_entry *entries;
     core_product_session_id id;
     C_VOID *session = STD_NULL;
@@ -77,7 +86,8 @@ ntvdm64_status core_product_session_manager_open(
 
     if (manager == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     id = manager->count == 0u ? 0u : manager->entries[manager->count - 1u].id + 1u;
-    status = manager->provider.open(manager->provider.context, id, &session);
+    status = manager->provider.open(manager->provider.context, id, options,
+        &session);
     if (status != NTVDM64_STATUS_OK || session == STD_NULL) {
         return status == NTVDM64_STATUS_OK ? NTVDM64_STATUS_FAULT : status;
     }

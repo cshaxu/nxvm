@@ -8,10 +8,11 @@ typedef struct session_fixture {
 } session_fixture;
 
 static ntvdm64_status fixture_open(C_VOID *context, core_product_session_id id,
-    C_VOID **out_session)
+    const core_product_session_open_options *options, C_VOID **out_session)
 {
     session_fixture *fixture = (session_fixture *)STD_MALLOC(sizeof(*fixture));
     (C_VOID)context;
+    (C_VOID)options;
     if (fixture == STD_NULL) return NTVDM64_STATUS_NO_MEMORY;
     fixture->value = (C_INT)id;
     *out_session = fixture;

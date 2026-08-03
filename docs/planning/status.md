@@ -316,12 +316,18 @@ Configured present FPU forms stop through a dedicated unimplemented-model
 diagnostic, never `#UD`. The FDD `MEM` probe passes `FNINIT` and continues.
 Evidence is [`M5-T156.md`](../tracking/M5-T156.md).
 
-**M5 T157 S1 active: session CPU/FPU profile UX.** Add `SESSION OPEN --cpu
-<model> --fpu <model>` and profile display to the existing NXVM session
-Console, preserving the default `80386+none`, frozen session configuration,
-and all boot/debugger behavior. T158 then closes static metadata/dispatcher
-coverage; neither task claims a usable present FPU or complete i386
-protected-mode/paging support.
+**M5 T157 S1 complete: session CPU/FPU profile UX.** `SESSION OPEN --cpu
+<model> --fpu <model>` reaches VM composition through opaque core session
+options. `SESSION LIST` displays frozen selections; default session 0 is
+`80386+none`; every CPU profile with `FPU=none` creates successfully; present
+FPU selections reject clearly until implemented. Evidence is
+[`M5-T157.md`](../tracking/M5-T157.md).
+
+**M5 T158 S1 active: CPU/FPU static closure.** Audit form metadata and
+dispatch so every supported opcode is classified, no unconditional i386
+compatibility branch or direct FPU ESC-to-`#UD` route remains, and all current
+GCC/Console/debugger/FDD gates stay valid. It does not claim a usable present
+FPU or complete i386 protected-mode/paging support.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

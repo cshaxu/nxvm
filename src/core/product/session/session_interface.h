@@ -20,11 +20,17 @@ typedef enum core_product_session_display {
     CORE_PRODUCT_SESSION_DISPLAY_WINDOW
 } core_product_session_display;
 
+typedef struct core_product_session_open_options {
+    C_INT argument_count;
+    C_CHAR **arguments;
+} core_product_session_open_options;
+
 typedef struct core_product_session_snapshot {
     core_product_session_id id;
     C_INT selected;
     core_product_session_state state;
     core_product_session_display display;
+    C_CHAR details[64];
 } core_product_session_snapshot;
 
 typedef struct core_product_session_manager core_product_session_manager;
@@ -36,6 +42,10 @@ ntvdm64_status core_product_session_manager_create(
 C_VOID core_product_session_manager_destroy(core_product_session_manager *manager);
 ntvdm64_status core_product_session_manager_open(
     core_product_session_manager *manager, core_product_session_id *out_id);
+ntvdm64_status core_product_session_manager_open_with_options(
+    core_product_session_manager *manager,
+    const core_product_session_open_options *options,
+    core_product_session_id *out_id);
 ntvdm64_status core_product_session_manager_close(
     core_product_session_manager *manager, core_product_session_id id);
 ntvdm64_status core_product_session_manager_select(

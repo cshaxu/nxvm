@@ -39,7 +39,7 @@ static C_INT core_product_session_command_list(core_product_session_manager *man
     core_product_session_snapshot *snapshots;
     STD_SIZE_T count;
     STD_SIZE_T index;
-    C_CHAR line[96];
+    C_CHAR line[176];
 
     if (core_product_session_manager_get_count(manager, &count) != NTVDM64_STATUS_OK) {
         core_product_session_command_write(output, "Session manager is unavailable.");
@@ -53,10 +53,11 @@ static C_INT core_product_session_command_list(core_product_session_manager *man
         return 0;
     }
     for (index = 0u; index < count; ++index) {
-        STD_SNPRINTF(line, sizeof(line), "%c %u %s %s", snapshots[index].selected ?
+        STD_SNPRINTF(line, sizeof(line), "%c %u %s %s%s%s", snapshots[index].selected ?
             '*' : ' ', (unsigned int)snapshots[index].id,
             core_product_session_command_state(snapshots[index].state),
-            core_product_session_command_display(snapshots[index].display));
+            core_product_session_command_display(snapshots[index].display),
+            snapshots[index].details[0] ? " " : "", snapshots[index].details);
         core_product_session_command_write(output, line);
     }
     STD_FREE(snapshots);
@@ -78,9 +79,19 @@ C_INT core_product_session_command_execute(core_product_session_manager *manager
     if (!STD_STRCMP(arguments[1], "list") && argument_count == 2) {
         return core_product_session_command_list(manager, output);
     }
-    if (!STD_STRCMP(arguments[1], "open") && argument_count == 2) {
-        if (core_product_session_manager_open(manager, &id) != NTVDM64_STATUS_OK) {
-            core_product_session_command_write(output, "Unable to open session.");
+    if (!STD_STRCMP(arguments[1], "open")) {
+        const core_product_session_open_options options = {
+            argument_count - 2, arguments + 2
+        };
+        ntvdm64_status status = core_product_session_manager_open_with_options(
+            manager, &options, &id);
+        if (status != NTVDM64_STATUS_OK) {
+            core_product_session_command_write(output,
+                status == NTVDM64_STATUS_INVALID_ARGUMENT ?
+                "Invalid session options." :
+                status == NTVDM64_STATUS_INVALID_STATE ?
+                "Requested session configuration is unavailable." :
+                "Unable to open session.");
             return 0;
         }
         STD_SNPRINTF(line, sizeof(line), "Opened session %u.", (unsigned int)id);

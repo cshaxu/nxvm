@@ -74,9 +74,10 @@ static C_VOID doHelp(nxvm_product_console_context *context) {
             break;
         } else if (!STD_STRCMP(argArray[1], "session")) {
             STD_PRINTF("Manage NXVM sessions\n");
-            STD_PRINTF("\nSESSION LIST | OPEN | SELECT <id> | CLOSE [id]\n");
+            STD_PRINTF("\nSESSION LIST | OPEN [--cpu <model>] [--fpu <model>] | SELECT <id> | CLOSE [id]\n");
             STD_PRINTF("  list:   show sessions; * marks the selected session\n");
-            STD_PRINTF("  open:   create one stopped session\n");
+            STD_PRINTF("  open:   create one stopped session (default: 80386, no FPU)\n");
+            STD_PRINTF("          cpu: 8086, 80186, 80286, 80386; fpu: none\n");
             STD_PRINTF("  select: choose the session for machine commands\n");
             STD_PRINTF("  close:  destroy one stopped session; the final session stays\n");
             break;
