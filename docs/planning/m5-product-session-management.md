@@ -156,7 +156,10 @@ src/vm/
     control.h/.c            run/pause/reset command state
     runner.h/.c             one outer loop using core_machine_run()
     execution.h/.c          execution-boundary helpers
-    providers.h/.c          profile and provider binding
+    provider_lifecycle.h/.c retained device/firmware ordering coordinator
+    machine_devices.h/.c    VM-only CMOS/FDD/FDC/HDD lifecycle
+    profile_firmware.h/.c   default-profile BIOS/QDX/POST/IVT lifecycle
+    machine_info.h/.c       Console-facing machine information adapter
     display.h/.c
     debug_target.h/.c
     block.h/.c

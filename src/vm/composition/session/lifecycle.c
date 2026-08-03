@@ -6,7 +6,7 @@
 
 #include "vm/composition/session/control.h"
 
-#include "vm/composition/session/providers.h"
+#include "vm/composition/session/provider_lifecycle.h"
 
 #include "vm/composition/session/session.h"
 
@@ -94,12 +94,12 @@ static C_VOID vm_session_keyboard_request_stop(C_VOID *context)
 
 static C_VOID vm_session_execution_provider_refresh(C_VOID *context)
 {
-    vm_session_providers_refresh((vm_session *)context);
+    vm_session_provider_lifecycle_refresh((vm_session *)context);
 }
 
 static C_VOID vm_session_execution_provider_reset(C_VOID *context)
 {
-    vm_session_providers_reset((vm_session *)context);
+    vm_session_provider_lifecycle_reset((vm_session *)context);
 }
 
 static const core_machine_execution_provider vm_session_execution_provider = {

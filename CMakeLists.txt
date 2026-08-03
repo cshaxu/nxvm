@@ -198,7 +198,10 @@ set(NXVM_COMPOSITION_VM_SOURCES
     src/vm/composition/session/control.c
     src/vm/composition/session/execution.c
     src/vm/composition/session/runner.c
-    src/vm/composition/session/providers.c
+    src/vm/composition/session/provider_lifecycle.c
+    src/vm/composition/session/machine_devices.c
+    src/vm/composition/session/profile_firmware.c
+    src/vm/composition/session/machine_info.c
 )
 set(NXVM_MACHINE_VM_SOURCES
     src/vm/machine/fdd.c
@@ -828,6 +831,7 @@ add_nxvm_version_artifact(nxvm-0-5-0157 "0.5.0157")
 add_nxvm_version_artifact(nxvm-0-5-0158 "0.5.0158")
 add_nxvm_version_artifact(nxvm-0-5-0159 "0.5.0159")
 add_nxvm_version_artifact(nxvm-0-5-0160 "0.5.0160")
+add_nxvm_version_artifact(nxvm-0-5-0161 "0.5.0161")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -904,6 +908,12 @@ if(NTVDM64_VERIFY_DEPENDENCY_DAG)
             -File "${CMAKE_SOURCE_DIR}/tools/Verify-CFacadeHeaders.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying ISO C header facade ownership"
+        VERBATIM)
+
+    add_custom_target(verify-vm-provider-composition
+        COMMAND "${CMAKE_COMMAND}" -DNTVDM64_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_provider_composition.cmake"
+        COMMENT "Verifying VM provider composition separation"
         VERBATIM)
 endif()
 

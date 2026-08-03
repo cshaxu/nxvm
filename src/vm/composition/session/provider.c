@@ -5,7 +5,7 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/debug_target.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/providers.h"
+#include "vm/composition/session/machine_info.h"
 #include "core/machine/memory.h"
 #include "core/product/debug/debug.h"
 #include "vm/machine/debug.h"
