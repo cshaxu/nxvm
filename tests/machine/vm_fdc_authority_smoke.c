@@ -10,7 +10,7 @@ int main(void)
     vm_composition_live_machine *session;
     const vm_composition_live_machine *machine;
 
-    session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
+    session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
     if (session == NULL) return 1;
     vm_composition_initialize(session);
     machine = session;
@@ -23,11 +23,11 @@ int main(void)
         machine->fdc->connect.pic_slave != machine->pic_slave ||
         machine->fdc->connect.port != machine->port) {
         vm_composition_finalize(session);
-        free(session);
+        STD_FREE(session);
         return 1;
     }
     vm_composition_finalize(session);
-    free(session);
+    STD_FREE(session);
     puts("M5:T70:S1:P5:FDC-CONNECT:OK");
     return 0;
 }

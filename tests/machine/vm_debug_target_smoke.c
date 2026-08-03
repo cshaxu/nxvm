@@ -12,7 +12,7 @@ int main(void)
     uint32_t value = 0u;
     uint8_t byte = 0x5au;
 
-    session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
+    session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
     if (session == NULL) return 1;
     vm_composition_initialize(session);
     target = vm_composition_debug_target(session);
@@ -23,11 +23,11 @@ int main(void)
         target->read_real(target->context, 0u, 0x500u, &value, 1u) ||
         (uint8_t)value != byte) {
         vm_composition_finalize(session);
-        free(session);
+        STD_FREE(session);
         return 1;
     }
     vm_composition_finalize(session);
-    free(session);
+    STD_FREE(session);
     if (core_product_debug_scope_target() != NULL) return 1;
     puts("M5:T14:S3:VM-DEBUG-TARGET:OK");
     return 0;

@@ -55,7 +55,7 @@ void vm_machine_cmos_refresh(t_cmos *cmos) {
     struct tm *ptm;
     ntvdm64_type_unsigned_8 century, year, month, mday, wday, hour, min, sec;
 
-    tCurr = time(NULL);
+    tCurr = STD_TIME(NULL);
     if (tCurr == cmos->connect.last_refresh) {
         return;
     } else {

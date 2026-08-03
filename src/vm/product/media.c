@@ -23,16 +23,16 @@ static int vm_product_media_copy(char *destination, size_t capacity,
     size_t length;
 
     if (source == NULL || source[0] == '\0') return 0;
-    length = strlen(source);
+    length = STD_STRLEN(source);
     if (length >= capacity) return 0;
-    memcpy(destination, source, length + 1u);
+    STD_MEMCPY(destination, source, length + 1u);
     return 1;
 }
 
 void vm_product_media_policy_initialize(
     vm_product_media_policy *policy)
 {
-    if (policy != NULL) memset(policy, 0, sizeof(*policy));
+    if (policy != NULL) STD_MEMSET(policy, 0, sizeof(*policy));
 }
 
 ntvdm64_status vm_product_media_configure(
@@ -49,13 +49,13 @@ ntvdm64_status vm_product_media_configure(
                                                   NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     provider = vm_product_media_mutable_provider(policy, target);
-    memset(provider, 0, sizeof(*provider));
+    STD_MEMSET(provider, 0, sizeof(*provider));
     if (!vm_product_media_copy(provider->path, sizeof(provider->path), path) ||
         !vm_product_media_copy(provider->logical_name,
                                       sizeof(provider->logical_name), identity->logical_name) ||
         !vm_product_media_copy(provider->expected_sha256,
                                       sizeof(provider->expected_sha256), identity->expected_sha256)) {
-        memset(provider, 0, sizeof(*provider));
+        STD_MEMSET(provider, 0, sizeof(*provider));
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     provider->expected_bytes = identity->expected_bytes;
@@ -77,7 +77,7 @@ ntvdm64_status vm_product_media_configure_created(
                                                   NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     provider = vm_product_media_mutable_provider(policy, target);
-    memset(provider, 0, sizeof(*provider));
+    STD_MEMSET(provider, 0, sizeof(*provider));
     provider->configured = 1;
     provider->created = 1;
     provider->cylinders = cylinders;

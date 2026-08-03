@@ -4,7 +4,7 @@
 
 void core_machine_keyboard_queue_initialize(core_machine_keyboard_queue *queue)
 {
-    if (queue != NULL) memset(queue, 0, sizeof(*queue));
+    if (queue != NULL) STD_MEMSET(queue, 0, sizeof(*queue));
 }
 
 ntvdm64_status core_machine_keyboard_queue_push(
@@ -33,7 +33,7 @@ ntvdm64_status core_machine_keyboard_queue_pop(
 void core_machine_text_snapshot_initialize(core_machine_text_snapshot *snapshot)
 {
     if (snapshot != NULL) {
-        memset(snapshot, 0, sizeof(*snapshot));
+        STD_MEMSET(snapshot, 0, sizeof(*snapshot));
         snapshot->columns = CORE_MACHINE_TEXT_COLUMNS;
         snapshot->rows = CORE_MACHINE_TEXT_ROWS;
     }

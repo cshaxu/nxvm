@@ -41,7 +41,7 @@ ntvdm64_status vm_composition_full_pc_session_create(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     *out_session = NULL;
-    session = (vm_composition_full_pc_session *)calloc(1u, sizeof(*session));
+    session = (vm_composition_full_pc_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
@@ -81,6 +81,6 @@ void vm_composition_full_pc_session_destroy(vm_composition_full_pc_session *sess
         if (session->active) {
             vm_composition_full_pc_destroy(session->full_pc);
         }
-        free(session);
+        STD_FREE(session);
     }
 }

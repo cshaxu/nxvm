@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     int debug_scope_active = 0;
 
     if (argc != 2) return 1;
-    session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
+    session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
     if (session == NULL) return 1;
     vm_composition_initialize(session);
     if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) goto fail;
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     core_product_debug_scope_leave();
     debug_scope_active = 0;
     vm_composition_finalize(session);
-    free(session);
+    STD_FREE(session);
     if (result != WAIT_OBJECT_0) return 1;
     puts("M5:T46:S1:UNIFIED-DEBUG-BACKEND:OK");
     return 0;
@@ -65,6 +65,6 @@ fail_thread:
 fail:
     if (debug_scope_active) core_product_debug_scope_leave();
     vm_composition_finalize(session);
-    free(session);
+    STD_FREE(session);
     return 1;
 }

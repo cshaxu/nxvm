@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "type.h"
+
 static void vm_platform_presentation_mailbox_lock(
     vm_platform_presentation_mailbox *mailbox)
 {
@@ -14,7 +16,7 @@ void vm_platform_presentation_mailbox_initialize(
 {
     if (mailbox == NULL) return;
     atomic_flag_clear_explicit(&mailbox->lock, memory_order_release);
-    memset(&mailbox->frame, 0, sizeof(mailbox->frame));
+    STD_MEMSET(&mailbox->frame, 0, sizeof(mailbox->frame));
     mailbox->frame.columns = CORE_PLATFORM_DISPLAY_MAX_COLUMNS;
     mailbox->frame.rows = CORE_PLATFORM_DISPLAY_MAX_ROWS;
 }

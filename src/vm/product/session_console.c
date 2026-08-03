@@ -8,11 +8,11 @@ static int vm_product_console_word(const char *line, const char *word)
     size_t index;
 
     if (line == NULL || word == NULL) return 0;
-    while (*line != '\0' && isspace((unsigned char)*line)) ++line;
+    while (*line != '\0' && STD_ISSPACE((unsigned char)*line)) ++line;
     for (index = 0u; word[index] != '\0'; ++index) {
-        if (toupper((unsigned char)line[index]) != word[index]) return 0;
+        if (STD_TOUPPER((unsigned char)line[index]) != word[index]) return 0;
     }
-    return line[index] == '\0' || isspace((unsigned char)line[index]);
+    return line[index] == '\0' || STD_ISSPACE((unsigned char)line[index]);
 }
 
 static int vm_product_console_allowed(

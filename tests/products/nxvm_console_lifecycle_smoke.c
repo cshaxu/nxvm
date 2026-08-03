@@ -32,15 +32,15 @@ int main(void)
     if (input == NULL ||
         fputs("help\ninfo\nexit\n", input) < 0 ||
         fflush(input) != 0 ||
-        fseek(input, 0L, SEEK_SET) != 0) {
-        if (input != NULL) fclose(input);
+        STD_FSEEK(input, 0L, SEEK_SET) != 0) {
+        if (input != NULL) STD_FCLOSE(input);
         return 1;
     }
     saved_stdin = NXVM_DUP(NXVM_FILENO(stdin));
     if (saved_stdin < 0 ||
         NXVM_DUP2(NXVM_FILENO(input), NXVM_FILENO(stdin)) < 0) {
         if (saved_stdin >= 0) NXVM_CLOSE(saved_stdin);
-        fclose(input);
+        STD_FCLOSE(input);
         return 1;
     }
 
@@ -48,7 +48,7 @@ int main(void)
     if (machine.core_machine == NULL) {
         NXVM_DUP2(saved_stdin, NXVM_FILENO(stdin));
         NXVM_CLOSE(saved_stdin);
-        fclose(input);
+        STD_FCLOSE(input);
         return 1;
     }
     vm_composition_console_target_initialize(machine.console_target, &machine);
@@ -56,7 +56,7 @@ int main(void)
 
     NXVM_DUP2(saved_stdin, NXVM_FILENO(stdin));
     NXVM_CLOSE(saved_stdin);
-    fclose(input);
+    STD_FCLOSE(input);
     if (machine.core_machine != NULL) return 1;
     puts("M5:T96:S1:CONSOLE-LIFECYCLE:OK");
     return 0;

@@ -196,7 +196,7 @@ const core_product_debug_target *vm_composition_debug_target(
 {
     if (machine == NULL) return NULL;
     if (machine->debug_target == NULL) {
-        machine->debug_target = (core_product_debug_target *)malloc(
+        machine->debug_target = (core_product_debug_target *)STD_MALLOC(
             sizeof(*machine->debug_target));
         if (machine->debug_target == NULL) return NULL;
     }
@@ -208,6 +208,6 @@ const core_product_debug_target *vm_composition_debug_target(
 void vm_composition_debug_target_finalize(vm_composition_live_machine *machine)
 {
     if (machine == NULL) return;
-    free(machine->debug_target);
+    STD_FREE(machine->debug_target);
     machine->debug_target = NULL;
 }

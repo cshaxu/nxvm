@@ -20,7 +20,7 @@ ntvdm64_status vdm_composition_presentation_create(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     *out_presentation = NULL;
-    presentation = (vdm_composition_presentation *)calloc(1u,
+    presentation = (vdm_composition_presentation *)STD_CALLOC(1u,
                                                             sizeof(*presentation));
     if (presentation == NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
@@ -85,5 +85,5 @@ ntvdm64_status vdm_composition_presentation_capture_text(
 void vdm_composition_presentation_destroy(
     vdm_composition_presentation *presentation)
 {
-    free(presentation);
+    STD_FREE(presentation);
 }

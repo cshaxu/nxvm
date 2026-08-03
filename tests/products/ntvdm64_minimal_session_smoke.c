@@ -11,9 +11,9 @@ int main(void)
     if (vdm_composition_minimal_session_create(&first) != NTVDM64_STATUS_OK ||
         vdm_composition_minimal_session_create(&second) != NTVDM64_STATUS_OK ||
         first == second ||
-        strcmp(vdm_composition_minimal_session_profile(first)->name,
+        STD_STRCMP(vdm_composition_minimal_session_profile(first)->name,
                "ntvdm64.dos_minimal") != 0 ||
-        strcmp(vdm_composition_minimal_session_profile(second)->name,
+        STD_STRCMP(vdm_composition_minimal_session_profile(second)->name,
                "ntvdm64.dos_minimal") != 0 ||
         vdm_composition_minimal_session_reset(first) != NTVDM64_STATUS_OK ||
         vdm_composition_minimal_session_reset(second) != NTVDM64_STATUS_OK) {

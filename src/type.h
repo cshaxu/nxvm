@@ -1,6 +1,6 @@
 /* Copyright 2012-2014 Neko. */
 
-/* Shared project types and compile-time settings. */
+/* Shared project types and compile-STD_TIME settings. */
 
 #ifndef NTVDM64_TYPE_H
 #define NTVDM64_TYPE_H

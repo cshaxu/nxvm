@@ -41,7 +41,7 @@ ntvdm64_status core_machine_instance_memory_initialize(core_machine *machine)
         return NTVDM64_STATUS_UNSUPPORTED;
     }
 
-    machine->memory.bytes = (uint8_t *)calloc(size, sizeof(uint8_t));
+    machine->memory.bytes = (uint8_t *)STD_CALLOC(size, sizeof(uint8_t));
     if (machine->memory.bytes == NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
@@ -54,7 +54,7 @@ ntvdm64_status core_machine_instance_memory_initialize(core_machine *machine)
 void core_machine_instance_memory_finalize(core_machine *machine)
 {
     if (machine != NULL) {
-        free(machine->memory.bytes);
+        STD_FREE(machine->memory.bytes);
         machine->memory.bytes = NULL;
         machine->memory.size = 0u;
         machine->memory.a20_enabled = 0;
@@ -67,7 +67,7 @@ ntvdm64_status core_machine_instance_memory_reset(core_machine *machine)
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    memset(machine->memory.bytes, 0, machine->memory.size);
+    STD_MEMSET(machine->memory.bytes, 0, machine->memory.size);
     machine->memory.a20_enabled = 0;
     return NTVDM64_STATUS_OK;
 }
@@ -88,7 +88,7 @@ ntvdm64_status core_machine_memory_read(
         return NTVDM64_STATUS_FAULT;
     }
 
-    memcpy(out_data, machine->memory.bytes + offset, size);
+    STD_MEMCPY(out_data, machine->memory.bytes + offset, size);
     return NTVDM64_STATUS_OK;
 }
 
@@ -108,7 +108,7 @@ ntvdm64_status core_machine_memory_write(
         return NTVDM64_STATUS_FAULT;
     }
 
-    memcpy(machine->memory.bytes + offset, data, size);
+    STD_MEMCPY(machine->memory.bytes + offset, data, size);
     return NTVDM64_STATUS_OK;
 }
 

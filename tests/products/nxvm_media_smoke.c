@@ -27,8 +27,8 @@ int main(void)
         vm_product_media_freeze(&policy) != NTVDM64_STATUS_OK) return 1;
     provider = vm_product_media_provider(&policy, VM_PRODUCT_BOOT_HDD);
     if (provider == NULL || !provider->configured ||
-        strcmp(provider->logical_name, "hdd.img") != 0 ||
-        strcmp(provider->expected_sha256, hdd.expected_sha256) != 0 ||
+        STD_STRCMP(provider->logical_name, "hdd.img") != 0 ||
+        STD_STRCMP(provider->expected_sha256, hdd.expected_sha256) != 0 ||
         provider->expected_bytes != hdd.expected_bytes ||
         vm_product_media_set_boot_target(&policy,
             VM_PRODUCT_BOOT_FDD) != NTVDM64_STATUS_INVALID_STATE ||

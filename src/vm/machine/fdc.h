@@ -24,9 +24,9 @@ typedef struct {
     ntvdm64_type_unsigned_8 dir; /* digital input register */
     ntvdm64_type_unsigned_8 ccr; /* configuration control register */
 
-    ntvdm64_type_unsigned_4 hut; /* head unload time */
-    ntvdm64_type_unsigned_4 hlt; /* head load time */
-    ntvdm64_type_unsigned_8 srt; /* step rate time */
+    ntvdm64_type_unsigned_4 hut; /* head unload STD_TIME */
+    ntvdm64_type_unsigned_4 hlt; /* head load STD_TIME */
+    ntvdm64_type_unsigned_8 srt; /* step rate STD_TIME */
     ntvdm64_type_bool flagNDMA; /* 0 = dma mode; 1 = non-dma mode */
     ntvdm64_type_bool flagINTR; /* 0 = no intr; 1 = has intr */
 
@@ -99,9 +99,9 @@ typedef struct {
 #define VFDC_ST3_DS 0x03 /* drive select */
 
 /* fdc command specify bytes */
-#define VFDC_CMD_Specify1_HUT 0x0f /* head unload time */
-#define VFDC_CMD_Specify1_SRT 0xf0 /* step rate time */
-#define VFDC_CMD_Specify2_HLT 0xfe /* head load time */
+#define VFDC_CMD_Specify1_HUT 0x0f /* head unload STD_TIME */
+#define VFDC_CMD_Specify1_SRT 0xf0 /* step rate STD_TIME */
+#define VFDC_CMD_Specify2_HLT 0xfe /* head load STD_TIME */
 #define VFDC_CMD_Specify2_ND  0x01 /* non-dma */
 #define VFDC_GetCMD_Specify1_HUT(cb) ((cb) & VFDC_CMD_Specify1_HUT)
 #define VFDC_GetCMD_Specify1_SRT(cb) (((cb) & VFDC_CMD_Specify1_SRT) >> 4)
@@ -148,9 +148,9 @@ ntvdm64_type_unsigned_8 VFDC_GetBPSC(ntvdm64_type_unsigned_16 cb); /* convert bp
 /* #define VFDC_Get_STP(cbyte) * step */
 /* #define VFDC_GetENRQ(cbyte) ((cbyte) & 0x08) * enable dma and intr */
 /* #define VFDC_GetDS(cbyte)   ((cbyte) & 0x03) * drive select (ds0,ds1) */
-/* #define VFDC_GetHUT(cbyte)  ((cbyte) & 0x0f) * head unload time */
-/* #define VFDC_GetSRT(cbyte)  ((cbyte) >> 4)   * step rate time */
-/* #define VFDC_GetHLT(cbyte)  ((cbyte) >> 1)   * head load time */
+/* #define VFDC_GetHUT(cbyte)  ((cbyte) & 0x0f) * head unload STD_TIME */
+/* #define VFDC_GetSRT(cbyte)  ((cbyte) >> 4)   * step rate STD_TIME */
+/* #define VFDC_GetHLT(cbyte)  ((cbyte) >> 1)   * head load STD_TIME */
 /* #define VFDC_GetNDMA(cbyte) ((cbyte) & 0x01) * non-dma mode */
 /* #define VFDC_GetHDS(cbyte)  (!!((cbyte) & 0x04)) * head select (0 or 1) */
 /* #define VFDC_GetBPS(cbyte)  (0x0080 << (cbyte))  * bytes per sector */

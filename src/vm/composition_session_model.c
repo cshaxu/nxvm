@@ -45,7 +45,7 @@ ntvdm64_status vm_composition_session_model_create(
     ntvdm64_status status;
 
     if (session == NULL || config == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
-    memset(session, 0, sizeof(*session));
+    STD_MEMSET(session, 0, sizeof(*session));
     core_product_runtime_registry_initialize(&session->registry);
     status = vm_profile_register_default_profile_builtin(&session->registry);
     if (status != NTVDM64_STATUS_OK ||
@@ -117,5 +117,5 @@ void vm_composition_session_model_destroy(vm_composition_session_model *session)
     if (session->firmware_machine != NULL) {
         core_machine_destroy(session->firmware_machine);
     }
-    memset(session, 0, sizeof(*session));
+    STD_MEMSET(session, 0, sizeof(*session));
 }

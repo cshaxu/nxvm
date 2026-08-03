@@ -473,11 +473,11 @@ static void l() {
             break;
         }
         if (!nErrPos) {
-            c = fgetc(load);
-            while (!feof(load)) {
+            c = STD_FGETC(load);
+            while (!STD_FEOF(load)) {
                 core_product_debug_write_real(seg + i, ptr + len++, (void *)(&c), 1);
                 i = len / 0x10000;
-                c = fgetc(load);
+                c = STD_FGETC(load);
             }
             debug_set_register(CORE_PRODUCT_DEBUG_ECX, (uint16_t)(len & 0xffff));
             if (len > 0xffff) debug_set_register(CORE_PRODUCT_DEBUG_EBX, (uint16_t)(len >> 16));
@@ -965,7 +965,7 @@ static void w() {
         if (!nErrPos) {
             while (i < len) {
                 core_product_debug_read_real(seg, (uint8_t)(ptr + i++), (void *)(&val), 1);
-                fputc(val, write);
+                STD_FPUTC(val, write);
             }
         }
         STD_FCLOSE(write);

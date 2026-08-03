@@ -13,11 +13,11 @@ int main(void)
     unsigned char observed = 0u;
     int failed = 0;
 
-    first = (vm_composition_live_machine *)calloc(1u, sizeof(*first));
-    second = (vm_composition_live_machine *)calloc(1u, sizeof(*second));
+    first = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*first));
+    second = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*second));
     if (first == NULL || second == NULL) {
-        free(second);
-        free(first);
+        STD_FREE(second);
+        STD_FREE(first);
         return 1;
     }
 
@@ -57,8 +57,8 @@ int main(void)
     core_machine_memory_finalize(first->ram);
     vm_composition_live_machine_finalize(second);
     vm_composition_live_machine_finalize(first);
-    free(second);
-    free(first);
+    STD_FREE(second);
+    STD_FREE(first);
 
     if (failed) return 1;
     puts("M5:T73:S1:TWO-SESSION-ISOLATION:OK");

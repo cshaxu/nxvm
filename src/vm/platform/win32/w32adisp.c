@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 
+#include "type.h"
 #include "core/platform/display_frame.h"
 #include "vm/platform/presentation_mailbox.h"
 
@@ -407,12 +408,12 @@ static VOID CreateBitmapFontChar(w32adisp_context *context, UCHAR ch,
 }
 
 w32adisp_context *w32adisp_context_create(void) {
-    return calloc(1u, sizeof(w32adisp_context));
+    return STD_CALLOC(1u, sizeof(w32adisp_context));
 }
 
 VOID w32adisp_context_destroy(w32adisp_context *context) {
     if (context == NULL) return;
-    free(context);
+    STD_FREE(context);
 }
 
 uint64_t w32adisp_context_generation(const w32adisp_context *context) {

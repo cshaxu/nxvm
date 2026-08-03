@@ -30,15 +30,15 @@ int main(int argc, char **argv) {
     STD_PRINTF("%s\n", banner);
     STD_PRINTF("Built on %s at %s.\n", ntvdm64_version_build_date(),
         ntvdm64_version_build_time());
-    machine = (vm_composition_live_machine *)calloc(1u, sizeof(*machine));
+    machine = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*machine));
     if (machine == NULL) return 1;
     vm_composition_live_machine_initialize(machine);
     if (machine->core_machine == NULL) {
-        free(machine);
+        STD_FREE(machine);
         return 1;
     }
     vm_composition_console_target_initialize(machine->console_target, machine);
     vm_product_console_main(machine->console_context, machine->console_target);
-    free(machine);
+    STD_FREE(machine);
     return 0;
 }

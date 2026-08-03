@@ -28,14 +28,14 @@ static void core_machine_trace_flush(core_machine *machine)
 void core_machine_trace_initialize(core_machine *machine)
 {
     if (machine != NULL) {
-        memset(&machine->trace, 0, sizeof(machine->trace));
+        STD_MEMSET(&machine->trace, 0, sizeof(machine->trace));
     }
 }
 
 void core_machine_trace_finalize(core_machine *machine)
 {
     if (machine != NULL) {
-        memset(&machine->trace, 0, sizeof(machine->trace));
+        STD_MEMSET(&machine->trace, 0, sizeof(machine->trace));
     }
 }
 
@@ -51,7 +51,7 @@ ntvdm64_status core_machine_set_trace_provider(
         return NTVDM64_STATUS_INVALID_STATE;
     }
 
-    memset(&machine->trace.provider, 0, sizeof(machine->trace.provider));
+    STD_MEMSET(&machine->trace.provider, 0, sizeof(machine->trace.provider));
     if (provider != NULL) {
         if (provider->callback == NULL) {
             return NTVDM64_STATUS_INVALID_ARGUMENT;

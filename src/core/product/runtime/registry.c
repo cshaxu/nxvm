@@ -32,7 +32,7 @@ static int provider_valid(
 void core_product_runtime_registry_initialize(core_product_runtime_registry *registry)
 {
     if (registry != NULL) {
-        memset(registry, 0, sizeof(*registry));
+        STD_MEMSET(registry, 0, sizeof(*registry));
     }
 }
 
@@ -49,7 +49,7 @@ ntvdm64_status core_product_runtime_registry_register_profile(
         return NTVDM64_STATUS_INVALID_STATE;
     }
     for (index = 0u; index < registry->profile_count; ++index) {
-        if (strcmp(registry->profiles[index]->id, descriptor->id) == 0) {
+        if (STD_STRCMP(registry->profiles[index]->id, descriptor->id) == 0) {
             return NTVDM64_STATUS_UNSUPPORTED;
         }
     }
@@ -73,7 +73,7 @@ ntvdm64_status core_product_runtime_registry_register_firmware_provider(
         return NTVDM64_STATUS_INVALID_STATE;
     }
     for (index = 0u; index < registry->provider_count; ++index) {
-        if (strcmp(registry->providers[index]->id, descriptor->id) == 0) {
+        if (STD_STRCMP(registry->providers[index]->id, descriptor->id) == 0) {
             return NTVDM64_STATUS_UNSUPPORTED;
         }
     }
@@ -107,7 +107,7 @@ const core_product_runtime_profile_descriptor_v1 *core_product_runtime_registry_
     }
     for (index = 0u; index < registry->profile_count; ++index) {
         const core_product_runtime_profile_descriptor_v1 *candidate = registry->profiles[index];
-        if (candidate->family != family || strcmp(candidate->id, id) != 0) {
+        if (candidate->family != family || STD_STRCMP(candidate->id, id) != 0) {
             continue;
         }
         for (capability = 0u; capability < candidate->required_capability_count;
@@ -135,8 +135,8 @@ core_product_runtime_registry_find_firmware_provider(
     for (index = 0u; index < registry->provider_count; ++index) {
         const core_product_runtime_firmware_provider_descriptor_v1 *candidate =
             registry->providers[index];
-        if (strcmp(candidate->id, id) == 0 &&
-            strcmp(candidate->machine_profile_id, machine_profile_id) == 0) {
+        if (STD_STRCMP(candidate->id, id) == 0 &&
+            STD_STRCMP(candidate->machine_profile_id, machine_profile_id) == 0) {
             return candidate;
         }
     }

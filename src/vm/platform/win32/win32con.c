@@ -101,7 +101,7 @@ VOID vm_platform_win32con_start_machine(const vm_platform_run_context *context) 
         context->keyboard == NULL) return;
     if (core_platform_host_surface_lease_acquire(&win32_console_lease,
             context) != NTVDM64_STATUS_OK) return;
-    run_context = calloc(1u, sizeof(*run_context));
+    run_context = STD_CALLOC(1u, sizeof(*run_context));
     if (run_context == NULL) {
         core_platform_host_surface_lease_release(&win32_console_lease, context);
         return;
@@ -142,7 +142,7 @@ final:
     w32cdisp_context_destroy((w32cdisp_context *)context->console_renderer);
     ((vm_platform_run_context *)context)->console_renderer = NULL;
     ((vm_platform_run_context *)context)->console_surface.native_handle = NULL;
-    free(run_context);
+    STD_FREE(run_context);
     core_platform_host_surface_lease_release(&win32_console_lease, context);
     core_product_wait_scope_leave(previous);
 }

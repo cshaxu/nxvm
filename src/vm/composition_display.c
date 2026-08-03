@@ -19,14 +19,14 @@ void vm_composition_publish_display(vm_composition_live_machine *machine,
     core_machine_display_snapshot snapshot;
 
     if (machine == NULL) return;
-    memset(&snapshot, 0, sizeof(snapshot));
+    STD_MEMSET(&snapshot, 0, sizeof(snapshot));
     if (!core_machine_display_capture_snapshot_from(machine->display_provider,
         &snapshot)) return;
     buffer_changed = snapshot.buffer_changed;
     cursor_changed = snapshot.cursor_changed;
     if (!force && !buffer_changed && !cursor_changed) return;
 
-    memset(&frame, 0, sizeof(frame));
+    STD_MEMSET(&frame, 0, sizeof(frame));
     frame.columns = snapshot.columns;
     frame.rows = snapshot.rows;
     if (frame.columns > CORE_PLATFORM_DISPLAY_MAX_COLUMNS) {

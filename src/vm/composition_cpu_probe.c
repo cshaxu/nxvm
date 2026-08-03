@@ -52,7 +52,7 @@ static int vm_composition_cpu_probe_reset(nxvm_cpu_probe *probe)
             &probe->machine.cpu->data.ss, 0u)) {
         return 0;
     }
-    memcpy(&probe->machine.cpu->data.eip, &eip, sizeof(eip));
+    STD_MEMCPY(&probe->machine.cpu->data.eip, &eip, sizeof(eip));
     return 1;
 }
 
@@ -64,7 +64,7 @@ int vm_composition_cpu_probe_create(nxvm_cpu_probe **out_probe)
         return 0;
     }
     *out_probe = NULL;
-    probe = (nxvm_cpu_probe *)calloc(1u, sizeof(*probe));
+    probe = (nxvm_cpu_probe *)STD_CALLOC(1u, sizeof(*probe));
     if (probe == NULL) return 0;
     vm_composition_live_machine_initialize(&probe->machine);
     vm_composition_control_initialize(probe->machine.control, &probe->machine);
@@ -89,8 +89,8 @@ int vm_composition_cpu_probe_step(
         return 0;
     }
 
-    memset(out_capture, 0, sizeof(*out_capture));
-    memcpy(out_capture->bytes, bytes, byte_count);
+    STD_MEMSET(out_capture, 0, sizeof(*out_capture));
+    STD_MEMCPY(out_capture->bytes, bytes, byte_count);
     out_capture->byte_count = byte_count;
     core_machine_memory_write_real_to(probe->machine.ram, 0u, 0u, bytes,
         byte_count);
@@ -121,5 +121,5 @@ void vm_composition_cpu_probe_destroy(nxvm_cpu_probe *probe)
         vm_composition_live_machine_finalize(&probe->machine);
         probe->active = 0;
     }
-    free(probe);
+    STD_FREE(probe);
 }
