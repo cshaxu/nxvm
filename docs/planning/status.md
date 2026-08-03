@@ -47,9 +47,8 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
 ## Active Work
 
-**M5 T82 S1: Real executor contract.** Define the actual `core_machine`
-ownership, provider callbacks, lifecycle, and bounded T83--T86 map before any
-runtime storage move.
+**M5 T83 S2: Executor storage migration.** Move real CPU, decoder, RAM, and
+port storage into `core_machine`, retaining pointer identity and NXVM behavior.
 
 ## Short-Term M5 Plan
 

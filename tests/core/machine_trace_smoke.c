@@ -64,9 +64,9 @@ int main(void)
     failed |= expect_status(core_machine_install_port_provider(
                                 machine, 0x60u, 0x60u, &port_ops, &fixture),
                             NXVM_CORE_STATUS_OK);
-    failed |= expect_status(core_machine_port_write(machine, 0x60u, 0x55u),
+    failed |= expect_status(core_machine_bus_write(machine, 0x60u, 0x55u),
                             NXVM_CORE_STATUS_OK);
-    failed |= expect_status(core_machine_port_read(machine, 0x60u, &value),
+    failed |= expect_status(core_machine_bus_read(machine, 0x60u, &value),
                             NXVM_CORE_STATUS_OK);
     failed |= value != 0x55u;
     failed |= expect_status(core_machine_run(machine, budget, &result),

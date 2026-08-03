@@ -76,7 +76,7 @@ nxvm_core_status core_machine_create(
         return status;
     }
 
-    status = core_machine_port_initialize(machine);
+    status = core_machine_bus_initialize(machine);
     if (status != NXVM_CORE_STATUS_OK) {
         core_machine_destroy(machine);
         return status;
@@ -197,7 +197,7 @@ nxvm_core_status core_machine_report_fault(
 void core_machine_destroy(core_machine *machine)
 {
     core_machine_trace_finalize(machine);
-    core_machine_port_finalize(machine);
+    core_machine_bus_finalize(machine);
     core_machine_instance_memory_finalize(machine);
     free(machine);
 }
