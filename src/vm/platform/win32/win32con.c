@@ -63,32 +63,32 @@ static VOID w32ckeybProcess(const win32con_run_context *context) {
         scanCode = (UCHAR) inRec.Event.KeyEvent.wVirtualScanCode;
         virtualKey = (UCHAR) inRec.Event.KeyEvent.wVirtualKeyCode;
         if (inRec.Event.KeyEvent.bKeyDown) {
-            win32KeyboardMakeKeyFor(context->platform, scanCode, virtualKey);
+            vm_platform_win32_keyboard_make_key_for(context->platform, scanCode, virtualKey);
         } else {
-            win32KeyboardMakeStatusFor(context->platform);
+            vm_platform_win32_keyboard_make_status_for(context->platform);
         }
         break;
     case FOCUS_EVENT:
-        win32KeyboardMakeStatusFor(context->platform);
+        vm_platform_win32_keyboard_make_status_for(context->platform);
         break;
     default:
         break;
     }
 }
 
-VOID win32conDisplaySetScreen(const vm_platform_run_context *context) {
+VOID vm_platform_win32con_display_set_screen(const vm_platform_run_context *context) {
     w32cdispSetScreen((w32cdisp_context *)context->console_renderer,
                       (HANDLE)context->console_surface.native_handle,
                       context->presentation);
 }
 
-VOID win32conDisplayPaint(const vm_platform_run_context *context) {
+VOID vm_platform_win32con_display_paint(const vm_platform_run_context *context) {
     w32cdispPaint((w32cdisp_context *)context->console_renderer,
                   (HANDLE)context->console_surface.native_handle,
                   context->presentation, TRUE);
 }
 
-VOID win32conStartMachine(const vm_platform_run_context *context) {
+VOID vm_platform_win32con_start_machine(const vm_platform_run_context *context) {
     DWORD ThreadIdDisplay;
     DWORD ThreadIdKernel;
     win32con_run_context *run_context;

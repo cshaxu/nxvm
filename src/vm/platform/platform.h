@@ -44,13 +44,13 @@ void vm_platform_run_context_set_window_display(
     vm_platform_run_context *context, int enabled);
 
 /* Device Operations */
-void platformDisplaySetScreen(const vm_platform_run_context *context);
-void platformDisplayPaint(const vm_platform_run_context *context);
+void vm_platform_display_set_screen(const vm_platform_run_context *context);
+void vm_platform_display_paint(const vm_platform_run_context *context);
 
-void platformStart(const vm_platform_run_context *context);
+void vm_platform_start(const vm_platform_run_context *context);
 
-void platformInit();
-void platformFinal();
+void vm_platform_initialize();
+void vm_platform_finalize();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

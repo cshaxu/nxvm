@@ -111,6 +111,9 @@ are recorded before the `type.*` call-site migrations.
 **M5 T103 complete:** VM composition lifecycle/block/CPU-probe and VM HDC
 APIs now use their source-owner prefixes without compatibility aliases.
 
+**M5 T104 complete:** active VM platform hub and OS-backend APIs now use
+`vm_platform_*`, retaining approved backend lexical names.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

@@ -77,12 +77,12 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
     case WM_SYSKEYDOWN:
         scanCode = (UCHAR)((lParam >> 16) & 0x000000ff);
         virtualKey = (UCHAR)(wParam & 0x000000ff);
-        win32KeyboardMakeKeyFor(context->platform, scanCode, virtualKey);
+        vm_platform_win32_keyboard_make_key_for(context->platform, scanCode, virtualKey);
         break;
     case WM_KEYUP:
     case WM_SYSKEYUP:
     case WM_SETFOCUS:
-        win32KeyboardMakeStatusFor(context->platform);
+        vm_platform_win32_keyboard_make_status_for(context->platform);
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
@@ -174,17 +174,17 @@ static DWORD WINAPI ThreadKernel(LPVOID lpParam) {
     return 0;
 }
 
-VOID win32appDisplaySetScreen(const vm_platform_run_context *context) {
+VOID vm_platform_win32app_display_set_screen(const vm_platform_run_context *context) {
     w32adispSetScreen((w32adisp_context *)context->window_renderer,
                       (HWND)context->window_surface.native_handle,
                       context->presentation);
 }
-VOID win32appDisplayPaint(const vm_platform_run_context *context) {
+VOID vm_platform_win32app_display_paint(const vm_platform_run_context *context) {
     w32adispPaint((w32adisp_context *)context->window_renderer,
                   (HWND)context->window_surface.native_handle,
                   context->presentation, TRUE);
 }
-VOID win32appStartMachine(const vm_platform_run_context *context) {
+VOID vm_platform_win32app_start_machine(const vm_platform_run_context *context) {
     win32app_run_context *run_context;
     BOOL oldDeviceFlip;
     DWORD thread_id;

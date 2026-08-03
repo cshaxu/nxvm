@@ -14,16 +14,16 @@ extern "C" {
 #include "type.h"
 #include "vm/platform/platform.h"
 
-VOID win32KeyboardMakeStatusFor(const vm_platform_run_context *context);
-VOID win32KeyboardMakeKeyFor(const vm_platform_run_context *context,
+VOID vm_platform_win32_keyboard_make_status_for(const vm_platform_run_context *context);
+VOID vm_platform_win32_keyboard_make_key_for(const vm_platform_run_context *context,
                              UCHAR scanCode, UCHAR virtualKey);
 
-#define win32Sleep Sleep
-VOID win32DisplaySetScreen(BOOL flagWindow,
+#define vm_platform_win32_sleep Sleep
+VOID vm_platform_win32_display_set_screen(BOOL flagWindow,
                            const vm_platform_run_context *context);
-VOID win32DisplayPaint(BOOL flagWindow,
+VOID vm_platform_win32_display_paint(BOOL flagWindow,
                        const vm_platform_run_context *context);
-VOID win32StartMachine(BOOL flagWindow,
+VOID vm_platform_win32_start_machine(BOOL flagWindow,
                        const vm_platform_run_context *context);
 
 #ifdef __cplusplus
