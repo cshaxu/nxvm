@@ -41,5 +41,6 @@ C_VOID vm_platform_keyboard_receive_key_press_for(
     const vm_platform_keyboard_transport *transport, uint16_t code);
 C_VOID vm_platform_keyboard_request_stop_for(
     const vm_platform_keyboard_transport *transport);
+C_VOID vm_platform_input_flush_console_input(C_VOID);
 
 #endif

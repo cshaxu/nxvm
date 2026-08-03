@@ -16,6 +16,15 @@
 #define DEBUG_MAXNASMARG 4
 
 static _Thread_local core_product_debug_context *debugContext;
+static _Thread_local const core_product_debug_input_provider *debugInputProvider;
+
+static C_VOID core_product_debug_flush_console_input(C_VOID)
+{
+    if (debugInputProvider != STD_NULL &&
+        debugInputProvider->flush_console_input != STD_NULL) {
+        debugInputProvider->flush_console_input(debugInputProvider->context);
+    }
+}
 
 #define nErrPos (debugContext->error_position)
 #define narg (debugContext->argument_count)
@@ -181,7 +190,7 @@ static C_VOID aconsole() {
     C_INT flagExitAsm = 0;
     while (!flagExitAsm) {
         STD_PRINTF("%04X:%04X ", asmSegRec, asmPtrRec);
-        fflush(STD_STDIN);
+        core_product_debug_flush_console_input();
         STD_FGETS(cmdAsmBuff, 0x100, STD_STDIN);
         ntvdm64_type_string_lower(cmdAsmBuff);
         if (!STD_STRLEN(cmdAsmBuff)) {
@@ -1019,7 +1028,7 @@ static C_VOID xaconsole(uint32_t linear) {
     while (!flagExitAsm) {
         STD_PRINTF("L%08X ", linear);
         STD_FGETS(astmt, 0x100, STD_STDIN);
-        fflush(STD_STDIN);
+        core_product_debug_flush_console_input();
         astmt[STD_STRLEN(astmt) - 1] = 0;
         if (!STD_STRLEN(astmt)) {
             flagExitAsm = 1;
@@ -1887,12 +1896,16 @@ C_VOID core_product_debug_context_initialize(core_product_debug_context *context
 }
 
 C_VOID core_product_debug_main(core_product_debug_context *context,
-               const core_product_debug_target *target) {
+               const core_product_debug_target *target,
+               const core_product_debug_input_provider *input_provider) {
     STD_SIZE_T i;
     core_product_debug_context *previous;
+    const core_product_debug_input_provider *previous_input_provider;
     if (context == STD_NULL || target == STD_NULL) return;
     previous = debugContext;
+    previous_input_provider = debugInputProvider;
     debugContext = context;
+    debugInputProvider = input_provider;
     core_product_debug_context_initialize(context);
     core_product_debug_scope_enter(target);
     strFileName[0] = '\0';
@@ -1906,7 +1919,7 @@ C_VOID core_product_debug_main(core_product_debug_context *context,
     arg = (C_CHAR **) STD_MALLOC(DEBUG_MAXNARG * sizeof(C_CHAR *));
     flagExit = 0;
     while (!flagExit) {
-        fflush(STD_STDIN);
+        core_product_debug_flush_console_input();
         STD_PRINTF("-");
         STD_FGETS(strCmdBuff, 0x100, STD_STDIN);
         parse();
@@ -1921,4 +1934,5 @@ C_VOID core_product_debug_main(core_product_debug_context *context,
     STD_FREE((C_VOID *) arg);
     core_product_debug_scope_leave();
     debugContext = previous;
+    debugInputProvider = previous_input_provider;
 }

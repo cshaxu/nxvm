@@ -9,6 +9,7 @@
 
 const core_product_debug_target *vm_composition_debug_target(
     vm_composition_live_machine *machine);
+C_VOID vm_composition_debug_flush_console_input(C_VOID *context);
 C_VOID vm_composition_debug_target_finalize(vm_composition_live_machine *machine);
 
 #endif
