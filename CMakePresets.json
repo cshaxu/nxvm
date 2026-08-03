@@ -35,6 +35,7 @@
         "nxvm-core-product-debug-target-smoke",
         "nxvm-vm-platform-surface-context-smoke",
         "nxvm-vm-platform-execution-smoke",
+        "nxvm-vm-platform-run-handle-smoke",
         "nxvm-vm-platform-input-smoke",
         "nxvm-vm-platform-presentation-mailbox-smoke",
         "nxvm-vm-platform-mode-context-smoke",

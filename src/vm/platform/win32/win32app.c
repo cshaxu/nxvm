@@ -1,8 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-/* WIN32APP provides win32 window i/o interface. */
-
 #include <tchar.h>
+
 #include "type.h"
 
 #include "core/product/utils.h"
@@ -11,187 +10,243 @@
 #include "vm/platform/win32/w32adisp.h"
 #include "vm/platform/win32/win32app.h"
 
-#define TIMER_PAINT   0
-/* #define TIMER_RTC     1 */
+#define TIMER_PAINT 0
 
-typedef struct win32app_run_context {
+typedef struct win32app_run_handle {
+    vm_platform_run_handle *owner;
     const vm_platform_run_context *platform;
+    HANDLE kernel_thread;
+    HANDLE display_thread;
     HWND window;
     HINSTANCE instance;
-    LPCSTR window_class;
-    LPCSTR title;
-} win32app_run_context;
+    C_INT initial_flip;
+    C_INT display_ready;
+    C_INT display_failed;
+    C_INT stop_requested;
+} win32app_run_handle;
 
-static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
-                                WPARAM wParam, LPARAM lParam) {
-    win32app_run_context *context;
-    PAINTSTRUCT ps;
-    INT wmId, wmEvent;
-    UCHAR scanCode, virtualKey;
+static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
+    WPARAM wParam, LPARAM lParam)
+{
+    win32app_run_handle *handle;
+    PAINTSTRUCT paint;
+    UCHAR scan_code;
+    UCHAR virtual_key;
 
     if (message == WM_NCCREATE) {
-        context = ((CREATESTRUCT *)lParam)->lpCreateParams;
-        SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)context);
+        handle = ((CREATESTRUCT *)lParam)->lpCreateParams;
+        SetWindowLongPtr(window, GWLP_USERDATA, (LONG_PTR)handle);
         return TRUE;
     }
-    context = (win32app_run_context *)GetWindowLongPtr(hWnd,
-                                                        GWLP_USERDATA);
-    if (context == STD_NULL) return DefWindowProc(hWnd, message, wParam, lParam);
+    handle = (win32app_run_handle *)GetWindowLongPtr(window, GWLP_USERDATA);
+    if (handle == STD_NULL) return DefWindowProc(window, message, wParam, lParam);
 
     switch (message) {
     case WM_CREATE:
-        SetTimer(hWnd, TIMER_PAINT, 50, STD_NULL);
-        break;
+        SetTimer(window, TIMER_PAINT, 50u, STD_NULL);
+        return 0;
     case WM_DESTROY:
+        vm_platform_execution_stop_for(handle->platform->execution);
         PostQuitMessage(0);
-        break;
-    case WM_COMMAND:
-        wmId    = LOWORD(wParam);
-        wmEvent = HIWORD(wParam);
-        break;
+        return 0;
     case WM_TIMER:
-        switch (wParam) {
-        case TIMER_PAINT:
-            if (vm_platform_execution_is_running_for(
-                    context->platform->execution)) {
-                w32adispPaint((w32adisp_context *)context->platform->window_renderer,
-                              hWnd, context->platform->presentation, FALSE);
-            }
-            break;
-        default:
-            break;
+        if (wParam == TIMER_PAINT && vm_platform_execution_is_running_for(
+                handle->platform->execution)) {
+            w32adispPaint((w32adisp_context *)handle->platform->window_renderer,
+                window, handle->platform->presentation, FALSE);
         }
-        break;
+        return 0;
     case WM_PAINT:
-        BeginPaint(hWnd, &ps);
-        if (vm_platform_execution_is_running_for(context->platform->execution)) {
-            w32adispPaint((w32adisp_context *)context->platform->window_renderer,
-                          hWnd, context->platform->presentation, TRUE);
+        BeginPaint(window, &paint);
+        if (vm_platform_execution_is_running_for(handle->platform->execution)) {
+            w32adispPaint((w32adisp_context *)handle->platform->window_renderer,
+                window, handle->platform->presentation, TRUE);
         }
-        EndPaint(hWnd, &ps);
-        break;
-    /*case WM_SIZE: break;
-    case WM_SIZING: break;
-    case WM_CHAR: win32KeyboardMakeChar(wParam, lParam);break;*/
+        EndPaint(window, &paint);
+        return 0;
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
-        scanCode = (UCHAR)((lParam >> 16) & 0x000000ff);
-        virtualKey = (UCHAR)(wParam & 0x000000ff);
-        vm_platform_win32_keyboard_make_key_for(context->platform, scanCode, virtualKey);
-        break;
+        scan_code = (UCHAR)((lParam >> 16) & 0xff);
+        virtual_key = (UCHAR)(wParam & 0xff);
+        vm_platform_win32_keyboard_make_key_for(handle->platform, scan_code,
+            virtual_key);
+        return 0;
     case WM_KEYUP:
     case WM_SYSKEYUP:
     case WM_SETFOCUS:
-        vm_platform_win32_keyboard_make_status_for(context->platform);
-        break;
+        vm_platform_win32_keyboard_make_status_for(handle->platform);
+        return 0;
     default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
+        return DefWindowProc(window, message, wParam, lParam);
     }
-    return (LRESULT) STD_NULL;
 }
 
-static ATOM ThreadDisplayRegisterClass(const win32app_run_context *context) {
-    WNDCLASSEX wcex;
-    wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.style            = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = (WNDPROC) WndProc;
-    wcex.cbClsExtra        = 0;
-    wcex.cbWndExtra        = 0;
-    wcex.hInstance        = context->instance;
-    wcex.hIcon            = STD_NULL;
-    wcex.hCursor        = LoadCursor(STD_NULL, IDC_ARROW);
-    wcex.hbrBackground    = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wcex.lpszMenuName    = STD_NULL;
-    wcex.lpszClassName    = context->window_class;
-    wcex.hIconSm        = STD_NULL;
-    return RegisterClassEx(&wcex);
+static C_INT win32app_register_class(const win32app_run_handle *handle)
+{
+    WNDCLASSEX window_class = {0};
+
+    window_class.cbSize = sizeof(window_class);
+    window_class.style = CS_HREDRAW | CS_VREDRAW;
+    window_class.lpfnWndProc = win32app_window_procedure;
+    window_class.hInstance = handle->instance;
+    window_class.hCursor = LoadCursor(STD_NULL, IDC_ARROW);
+    window_class.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    window_class.lpszClassName = _T("nxvm");
+    return RegisterClassEx(&window_class) != 0 || GetLastError() == ERROR_CLASS_ALREADY_EXISTS;
 }
 
-static BOOL ThreadDisplayInitInstance(win32app_run_context *context,
-                                      INT nCmdShow) {
-    DWORD dwStyle = WS_THICKFRAME | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
-                    WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
-    context->window = CreateWindow(context->window_class, context->title,
-                                   dwStyle, CW_USEDEFAULT, 0, 888, 484, STD_NULL,
-                                   STD_NULL, context->instance, context);
-    /* window size is 888 x 484 for "Courier New" */
-    if (!context->window) {
-        return FALSE;
-    }
-    ShowWindow(context->window, SW_SHOW);
-    UpdateWindow(context->window);
-    return TRUE;
-}
+static DWORD WINAPI win32app_display_thread(LPVOID opaque)
+{
+    win32app_run_handle *handle = opaque;
+    vm_platform_run_context *platform = (vm_platform_run_context *)handle->platform;
+    MSG message;
+    DWORD style = WS_THICKFRAME | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
+        WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
 
-static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
-    win32app_run_context *context = lpParam;
-    MSG msg;
-    context->instance = GetModuleHandle(STD_NULL);
-    ThreadDisplayRegisterClass(context);
-    if (!ThreadDisplayInitInstance(context, 0)) {
-        STD_FREE(context);
-        return FALSE;
+    handle->instance = GetModuleHandle(STD_NULL);
+    if (!win32app_register_class(handle)) {
+        InterlockedExchange((volatile LONG *)&handle->display_failed, 1);
+        return 1;
     }
-    ((vm_platform_run_context *)context->platform)->window_surface.native_handle =
-        context->window;
-    ((vm_platform_run_context *)context->platform)->window_renderer =
-        w32adisp_context_create();
-    if (context->platform->window_renderer == STD_NULL) {
-        DestroyWindow(context->window);
-        STD_FREE(context);
-        return FALSE;
+    handle->window = CreateWindow(_T("nxvm"), _T("Neko's x86 Virtual Machine"),
+        style, CW_USEDEFAULT, 0, 888, 484, STD_NULL, STD_NULL, handle->instance,
+        handle);
+    if (handle->window == STD_NULL) {
+        InterlockedExchange((volatile LONG *)&handle->display_failed, 1);
+        return 1;
     }
-
-    w32adispInit((w32adisp_context *)context->platform->window_renderer,
-                 context->window, context->platform->presentation);
-    while (GetMessage(&msg, STD_NULL, 0, 0)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+    platform->window_surface.native_handle = handle->window;
+    platform->window_renderer = w32adisp_context_create();
+    if (platform->window_renderer == STD_NULL) {
+        DestroyWindow(handle->window);
+        InterlockedExchange((volatile LONG *)&handle->display_failed, 1);
+        return 1;
     }
-    vm_platform_execution_stop_for(context->platform->execution);
-    w32adispFinal((w32adisp_context *)context->platform->window_renderer);
-    w32adisp_context_destroy((w32adisp_context *)context->platform->window_renderer);
-    ((vm_platform_run_context *)context->platform)->window_renderer = STD_NULL;
-    ((vm_platform_run_context *)context->platform)->window_surface.native_handle = STD_NULL;
-    STD_FREE(context);
+    w32adispInit((w32adisp_context *)platform->window_renderer, handle->window,
+        platform->presentation);
+    InterlockedExchange((volatile LONG *)&handle->display_ready, 1);
+    while (!handle->stop_requested && handle->initial_flip ==
+            vm_platform_execution_get_flip_for(handle->platform->execution)) {
+        core_product_utils_sleep(handle->platform->wait_scope, 100u);
+    }
+    if (handle->stop_requested) {
+        DestroyWindow(handle->window);
+        return 0;
+    }
+    ShowWindow(handle->window, SW_SHOW);
+    UpdateWindow(handle->window);
+    while (GetMessage(&message, STD_NULL, 0, 0) > 0) {
+        TranslateMessage(&message);
+        DispatchMessage(&message);
+    }
     return 0;
 }
 
-static DWORD WINAPI ThreadKernel(LPVOID lpParam) {
-    win32app_run_context *context = lpParam;
-    vm_platform_execution_start_for(context->platform->execution);
-    w32adispPaint((w32adisp_context *)context->platform->window_renderer,
-                  context->window, context->platform->presentation, TRUE);
+static DWORD WINAPI win32app_kernel_thread(LPVOID opaque)
+{
+    win32app_run_handle *handle = opaque;
+
+    vm_platform_execution_start_for(handle->platform->execution);
+    if (handle->window != STD_NULL) PostMessage(handle->window, WM_CLOSE, 0, 0);
     return 0;
 }
 
-VOID vm_platform_win32app_display_set_screen(const vm_platform_run_context *context) {
-    w32adispSetScreen((w32adisp_context *)context->window_renderer,
-                      (HWND)context->window_surface.native_handle,
-                      context->presentation);
-}
-VOID vm_platform_win32app_display_paint(const vm_platform_run_context *context) {
-    w32adispPaint((w32adisp_context *)context->window_renderer,
-                  (HWND)context->window_surface.native_handle,
-                  context->presentation, TRUE);
-}
-VOID vm_platform_win32app_start_machine(const vm_platform_run_context *context) {
-    win32app_run_context *run_context;
-    BOOL oldDeviceFlip;
+ntvdm64_status vm_platform_win32app_run_handle_start(
+    const vm_platform_run_context *context, vm_platform_run_handle *owner)
+{
+    win32app_run_handle *handle;
     DWORD thread_id;
 
-    if (context == STD_NULL || context->execution == STD_NULL ||
-        context->keyboard == STD_NULL) return;
-    run_context = STD_CALLOC(1u, sizeof(*run_context));
-    if (run_context == STD_NULL) return;
-    run_context->platform = context;
-    run_context->window_class = _T("nxvm");
-    run_context->title = _T("Neko's x86 Virtual Machine");
-    oldDeviceFlip = vm_platform_execution_get_flip_for(context->execution);
-    CreateThread(STD_NULL, 0, ThreadKernel, run_context, 0, &thread_id);
-    while (oldDeviceFlip ==
-           vm_platform_execution_get_flip_for(context->execution)) {
-        core_product_utils_sleep(context->wait_scope, 100);
+    if (context == STD_NULL || owner == STD_NULL || owner->active ||
+        context->execution == STD_NULL || context->keyboard == STD_NULL) {
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
-    CreateThread(STD_NULL, 0, ThreadDisplay, run_context, 0, &thread_id);
+    handle = (win32app_run_handle *)STD_CALLOC(1u, sizeof(*handle));
+    if (handle == STD_NULL) return NTVDM64_STATUS_NO_MEMORY;
+    handle->owner = owner;
+    handle->platform = context;
+    handle->initial_flip = vm_platform_execution_get_flip_for(context->execution);
+    owner->context = context;
+    owner->backend = handle;
+    owner->window_display = 1;
+    owner->active = 1;
+    handle->display_thread = CreateThread(STD_NULL, 0, win32app_display_thread,
+        handle, 0, &thread_id);
+    if (handle->display_thread == STD_NULL) {
+        vm_platform_win32app_run_handle_finalize(owner);
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+    while (!handle->display_ready && !handle->display_failed) {
+        core_product_utils_sleep(context->wait_scope, 1u);
+    }
+    if (!handle->display_ready) {
+        vm_platform_win32app_run_handle_request_stop(owner);
+        vm_platform_win32app_run_handle_join(owner);
+        vm_platform_win32app_run_handle_finalize(owner);
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+    handle->kernel_thread = CreateThread(STD_NULL, 0, win32app_kernel_thread,
+        handle, 0, &thread_id);
+    if (handle->kernel_thread == STD_NULL) {
+        vm_platform_win32app_run_handle_request_stop(owner);
+        vm_platform_win32app_run_handle_join(owner);
+        vm_platform_win32app_run_handle_finalize(owner);
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+    return NTVDM64_STATUS_OK;
+}
+
+C_VOID vm_platform_win32app_run_handle_request_stop(vm_platform_run_handle *owner)
+{
+    win32app_run_handle *handle = owner == STD_NULL ? STD_NULL : owner->backend;
+
+    if (handle == STD_NULL) return;
+    InterlockedExchange((volatile LONG *)&handle->stop_requested, 1);
+    vm_platform_execution_stop_for(handle->platform->execution);
+    if (handle->window != STD_NULL) PostMessage(handle->window, WM_CLOSE, 0, 0);
+}
+
+C_VOID vm_platform_win32app_run_handle_join(vm_platform_run_handle *owner)
+{
+    win32app_run_handle *handle = owner == STD_NULL ? STD_NULL : owner->backend;
+
+    if (handle == STD_NULL) return;
+    if (handle->kernel_thread != STD_NULL) WaitForSingleObject(handle->kernel_thread, INFINITE);
+    if (handle->display_thread != STD_NULL) WaitForSingleObject(handle->display_thread, INFINITE);
+    owner->active = 0;
+}
+
+C_VOID vm_platform_win32app_run_handle_finalize(vm_platform_run_handle *owner)
+{
+    win32app_run_handle *handle = owner == STD_NULL ? STD_NULL : owner->backend;
+    vm_platform_run_context *platform;
+
+    if (handle == STD_NULL) return;
+    platform = (vm_platform_run_context *)handle->platform;
+    if (handle->kernel_thread != STD_NULL) CloseHandle(handle->kernel_thread);
+    if (handle->display_thread != STD_NULL) CloseHandle(handle->display_thread);
+    if (platform->window_renderer != STD_NULL) {
+        w32adispFinal((w32adisp_context *)platform->window_renderer);
+        w32adisp_context_destroy((w32adisp_context *)platform->window_renderer);
+    }
+    platform->window_renderer = STD_NULL;
+    platform->window_surface.native_handle = STD_NULL;
+    STD_FREE(handle);
+    vm_platform_run_handle_initialize(owner);
+}
+
+C_VOID vm_platform_win32app_display_set_screen(const vm_platform_run_context *context)
+{
+    if (context != STD_NULL && context->window_renderer != STD_NULL) {
+        w32adispSetScreen((w32adisp_context *)context->window_renderer,
+            (HWND)context->window_surface.native_handle, context->presentation);
+    }
+}
+
+C_VOID vm_platform_win32app_display_paint(const vm_platform_run_context *context)
+{
+    if (context != STD_NULL && context->window_renderer != STD_NULL) {
+        w32adispPaint((w32adisp_context *)context->window_renderer,
+            (HWND)context->window_surface.native_handle, context->presentation, TRUE);
+    }
 }

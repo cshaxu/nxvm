@@ -294,11 +294,34 @@ C_VOID vm_platform_win32_display_paint(WIN32_BOOL flagWindow,
     }
 }
 
-C_VOID vm_platform_win32_start_machine(WIN32_BOOL flagWindow,
-                       const vm_platform_run_context *context) {
-    if (flagWindow) {
-        vm_platform_win32app_start_machine(context);
+ntvdm64_status vm_platform_win32_run_handle_start(
+    const vm_platform_run_context *context, vm_platform_run_handle *handle) {
+    if (vm_platform_run_context_get_window_display(context)) {
+        return vm_platform_win32app_run_handle_start(context, handle);
+    }
+    return vm_platform_win32con_run_handle_start(context, handle);
+}
+
+C_VOID vm_platform_win32_run_handle_request_stop(vm_platform_run_handle *handle) {
+    if (vm_platform_run_handle_is_window_display(handle)) {
+        vm_platform_win32app_run_handle_request_stop(handle);
     } else {
-        vm_platform_win32con_start_machine(context);
+        vm_platform_win32con_run_handle_request_stop(handle);
+    }
+}
+
+C_VOID vm_platform_win32_run_handle_join(vm_platform_run_handle *handle) {
+    if (vm_platform_run_handle_is_window_display(handle)) {
+        vm_platform_win32app_run_handle_join(handle);
+    } else {
+        vm_platform_win32con_run_handle_join(handle);
+    }
+}
+
+C_VOID vm_platform_win32_run_handle_finalize(vm_platform_run_handle *handle) {
+    if (vm_platform_run_handle_is_window_display(handle)) {
+        vm_platform_win32app_run_handle_finalize(handle);
+    } else {
+        vm_platform_win32con_run_handle_finalize(handle);
     }
 }
