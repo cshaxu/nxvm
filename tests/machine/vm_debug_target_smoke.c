@@ -5,9 +5,9 @@
 
 #include "core/product/debug/debug_target.h"
 
-#include "vm/composition/debug_target.h"
+#include "vm/composition/session/debug_target.h"
 
-#include "vm/composition/session_lifecycle.h"
+#include "vm/composition/session/lifecycle.h"
 
 C_INT main(C_VOID)
 {

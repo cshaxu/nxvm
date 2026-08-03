@@ -6,7 +6,7 @@
 
 
 
-#include "vm/composition/session_control.h"
+#include "vm/composition/session/control.h"
 
 #include "vm/machine/fdd.h"
 

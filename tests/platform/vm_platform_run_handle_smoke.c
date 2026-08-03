@@ -2,8 +2,8 @@
 
 #include <windows.h>
 
-#include "vm/composition/session.h"
-#include "vm/composition/session_lifecycle.h"
+#include "vm/composition/session/session.h"
+#include "vm/composition/session/lifecycle.h"
 #include "vm/platform/platform.h"
 
 int main(void)

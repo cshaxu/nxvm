@@ -2,13 +2,13 @@
 
 #include "core/machine/display_interface.h"
 
-#include "vm/composition/display_bridge.h"
+#include "vm/composition/session/display.h"
 
 #include "core/platform/display_frame.h"
 
 #include "vm/platform/platform.h"
 
-#include "vm/composition/session.h"
+#include "vm/composition/session/session.h"
 
 #include "vm/profile/default_profile/firmware/qdcga.h"
 

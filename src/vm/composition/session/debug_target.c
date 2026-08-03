@@ -1,13 +1,13 @@
 #include "type.h"
 
-#include "vm/composition/debug_target.h"
+#include "vm/composition/session/debug_target.h"
 
 
 
 
-#include "vm/composition/session_lifecycle.h"
+#include "vm/composition/session/lifecycle.h"
 
-#include "vm/composition/session_control.h"
+#include "vm/composition/session/control.h"
 
 #include "core/machine/cpu.h"
 

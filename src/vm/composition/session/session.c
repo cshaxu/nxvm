@@ -1,11 +1,11 @@
 #include "type.h"
 
-#include "vm/composition/session.h"
+#include "vm/composition/session/session.h"
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/keyboard_interface.h"
-#include "vm/composition/session_control.h"
-#include "vm/composition/session_lifecycle.h"
+#include "vm/composition/session/control.h"
+#include "vm/composition/session/lifecycle.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
 #include "vm/profile/default_profile/firmware/bios.h"

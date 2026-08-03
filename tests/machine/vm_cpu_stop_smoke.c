@@ -6,7 +6,7 @@
 
 #include "core/machine/memory.h"
 
-#include "vm/composition/session_control.h"
+#include "vm/composition/session/control.h"
 
 C_INT main(C_VOID)
 {

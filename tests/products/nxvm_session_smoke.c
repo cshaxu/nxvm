@@ -1,8 +1,8 @@
 #include "type.h"
 
-#include "vm/composition/session.h"
-#include "vm/composition/session_control.h"
-#include "vm/composition/session_lifecycle.h"
+#include "vm/composition/session/session.h"
+#include "vm/composition/session/control.h"
+#include "vm/composition/session/lifecycle.h"
 
 static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
 {

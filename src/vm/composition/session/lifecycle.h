@@ -9,7 +9,7 @@ extern "C" {
 
 #include "type.h"
 
-#include "vm/composition/session.h"
+#include "vm/composition/session/session.h"
 
 C_VOID vm_session_start(vm_session *machine);
 C_VOID vm_session_reset(vm_session *machine);

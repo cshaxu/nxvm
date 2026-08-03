@@ -22,9 +22,9 @@
 #endif
 
 
-#include "vm/composition/console_target.h"
+#include "vm/composition/session/console_target.h"
 
-#include "vm/composition/session.h"
+#include "vm/composition/session/session.h"
 
 #include "vm/product/console.h"
 

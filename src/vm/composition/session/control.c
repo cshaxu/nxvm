@@ -12,9 +12,9 @@
 
 #include "vm/machine/debug.h"
 
-#include "vm/composition/providers.h"
+#include "vm/composition/session/providers.h"
 
-#include "vm/composition/session_execution_context.h"
+#include "vm/composition/session/execution.h"
 
 #include "core/machine/cpu.h"
 
@@ -26,14 +26,14 @@
 
 #include "core/platform/sleep.h"
 
-#include "vm/composition/session_control.h"
+#include "vm/composition/session/control.h"
 
-#include "vm/composition/session_lifecycle.h"
-#include "vm/composition/session_runner.h"
+#include "vm/composition/session/lifecycle.h"
+#include "vm/composition/session/runner.h"
 
-#include "vm/composition/session.h"
+#include "vm/composition/session/session.h"
 
-#include "vm/composition/display_bridge.h"
+#include "vm/composition/session/display.h"
 
 static C_VOID vm_session_execution_context_reset_callback(vm_session *machine)
 {

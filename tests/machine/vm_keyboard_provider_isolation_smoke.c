@@ -5,7 +5,7 @@
 
 #include "core/machine/keyboard_interface.h"
 
-#include "vm/composition/session_lifecycle.h"
+#include "vm/composition/session/lifecycle.h"
 
 C_INT main(C_VOID)
 {
