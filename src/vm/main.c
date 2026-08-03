@@ -41,9 +41,7 @@ C_INT main(C_INT argc, C_CHAR **argv) {
         ntvdm64_version_build_time());
     vm_session_provider_initialize(&session_provider);
     if (core_product_session_manager_create(&session_provider,
-            &session_manager) != NTVDM64_STATUS_OK ||
-        core_product_session_manager_open(session_manager, STD_NULL) !=
-            NTVDM64_STATUS_OK) {
+            &session_manager) != NTVDM64_STATUS_OK) {
         core_product_session_manager_destroy(session_manager);
         return 1;
     }

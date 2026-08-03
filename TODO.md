@@ -51,12 +51,13 @@ import. `docs/planning/status.md` remains authoritative for active work.
 - [ ] **Linux verification.** Retained Linux code is a portability asset, not
   validated support. Add native POSIX compile and runtime gates after the
   explicit-handle implementation is stable; preserve the Windows GCC baseline.
-- [ ] **Shared product-session implementation.** `core/product/session` owns
+- [x] **Shared product-session implementation.** `core/product/session` owns
   the opaque registry and shared command grammar; NXVM implements it in
   T145--T150, while VDM adopts it only after M6/M8 define its concrete session
   and debug Console contracts. The approved design is
   `docs/planning/m5-product-session-management.md`. Do not start an
-  implementation task without explicit activation.
+  implementation task without explicit activation. NXVM completed T145--T150;
+  VDM adoption remains deferred to its separate design/implementation work.
 
 ### VDM Boundary
 

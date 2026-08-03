@@ -36,6 +36,7 @@ ntvdm64_status core_product_session_manager_create(
     core_product_session_manager **out_manager)
 {
     core_product_session_manager *manager;
+    ntvdm64_status status;
 
     if (provider == STD_NULL || out_manager == STD_NULL ||
         provider->open == STD_NULL || provider->describe == STD_NULL ||
@@ -44,6 +45,11 @@ ntvdm64_status core_product_session_manager_create(
     manager = (core_product_session_manager *)STD_CALLOC(1u, sizeof(*manager));
     if (manager == STD_NULL) return NTVDM64_STATUS_NO_MEMORY;
     manager->provider = *provider;
+    status = core_product_session_manager_open(manager, STD_NULL);
+    if (status != NTVDM64_STATUS_OK) {
+        STD_FREE(manager);
+        return status;
+    }
     *out_manager = manager;
     return NTVDM64_STATUS_OK;
 }

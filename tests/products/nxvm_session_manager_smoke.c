@@ -16,7 +16,6 @@ C_INT main(C_VOID)
 
     vm_session_provider_initialize(&provider);
     if (core_product_session_manager_create(&provider, &manager) != NTVDM64_STATUS_OK ||
-        core_product_session_manager_open(manager, &id) != NTVDM64_STATUS_OK || id != 0u ||
         core_product_session_manager_borrow_selected(manager, &first) != NTVDM64_STATUS_OK ||
         core_product_session_manager_open(manager, &id) != NTVDM64_STATUS_OK || id != 1u ||
         core_product_session_manager_select(manager, 1u) != NTVDM64_STATUS_OK ||
