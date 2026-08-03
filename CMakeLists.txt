@@ -301,6 +301,7 @@ target_link_libraries(nxvm-core-product-debug-target-smoke PRIVATE
     nxvm-product-core-debug
 )
 
+
 add_library(nxvm-vm-profile STATIC ${NXVM_PROFILE_VM_SOURCES})
 target_include_directories(nxvm-vm-profile PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -706,6 +707,7 @@ add_nxvm_version_artifact(nxvm-0-5-0085 "0.5.0085")
 add_nxvm_version_artifact(nxvm-0-5-0086 "0.5.0086")
 add_nxvm_version_artifact(nxvm-0-5-0088 "0.5.0088")
 add_nxvm_version_artifact(nxvm-0-5-0090 "0.5.0090")
+add_nxvm_version_artifact(nxvm-0-5-0091 "0.5.0091")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

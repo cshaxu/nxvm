@@ -182,7 +182,11 @@ nxvm_core_status nxvm_full_pc_debug(nxvm_full_pc *full_pc)
     if (full_pc == NULL || !full_pc->active || vm_composition_control_is_running(full_pc->machine.control)) {
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
-    debugMain(vm_composition_debug_target(&full_pc->machine));
+    {
+        core_product_debug_context debug_context;
+        core_product_debug_context_initialize(&debug_context);
+        debugMain(&debug_context, vm_composition_debug_target(&full_pc->machine));
+    }
     return NXVM_CORE_STATUS_OK;
 }
 

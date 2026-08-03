@@ -11,11 +11,15 @@
 #define DEBUG_MAXNARG 256
 #define DEBUG_MAXNASMARG 4
 
-static size_t nErrPos;
-static size_t narg;
-static char **arg;
-static int flagExit;
-static char strCmdBuff[0x100], strCmdCopy[0x100], strFileName[0x100];
+static _Thread_local core_product_debug_context *debugContext;
+
+#define nErrPos (debugContext->error_position)
+#define narg (debugContext->argument_count)
+#define arg (debugContext->arguments)
+#define flagExit (debugContext->exit_requested)
+#define strCmdBuff (debugContext->command_buffer)
+#define strCmdCopy (debugContext->command_copy)
+#define strFileName (debugContext->file_name)
 
 static uint32_t debug_register(core_product_debug_register reg) {
     uint32_t value = 0;
@@ -130,14 +134,14 @@ static uint32_t scannubit32(char *s) {
     return ans;
 }
 
-static uint16_t dumpSegRec;
-static uint16_t dumpPtrRec;
-static uint16_t asmSegRec;
-static uint16_t asmPtrRec;
-static uint16_t uasmSegRec;
-static uint16_t uasmPtrRec;
-static uint16_t seg;
-static uint16_t ptr;
+#define dumpSegRec (debugContext->dump_segment)
+#define dumpPtrRec (debugContext->dump_offset)
+#define asmSegRec (debugContext->assemble_segment)
+#define asmPtrRec (debugContext->assemble_offset)
+#define uasmSegRec (debugContext->unassemble_segment)
+#define uasmPtrRec (debugContext->unassemble_offset)
+#define seg (debugContext->parsed_segment)
+#define ptr (debugContext->parsed_offset)
 
 static void addrparse(uint16_t defseg, const char *addr) {
     char *cseg, *cptr;
@@ -534,21 +538,21 @@ static void q() {
     flagExit = 1;
 }
 /* register */
-static uint8_t uprintins(uint16_t seg, uint16_t off) {
+static uint8_t uprintins(uint16_t segment, uint16_t off) {
     size_t i;
     uint8_t len;
     uint8_t ucode[15];
     char str[0x100], stmt[0x100], sbin[0x100];
-    if (core_product_debug_read_linear((seg << 4) + off, (void *) ucode, 15)) {
+    if (core_product_debug_read_linear((segment << 4) + off, (void *) ucode, 15)) {
         len = 0;
-        SPRINTF(str, "%04X:%04X <ERROR>", seg, off);
+        SPRINTF(str, "%04X:%04X <ERROR>", segment, off);
     } else {
         len = utilsDasm32(stmt, ucode, core_product_debug_get_code_default_size());
         sbin[0] = 0;
         for (i = 0; i < len; ++i) {
             SPRINTF(sbin, "%s%02X", sbin, (uint8_t) ucode[i]);
         }
-        SPRINTF(str, "%04X:%04X %s", seg, off, sbin);
+        SPRINTF(str, "%04X:%04X %s", segment, off, sbin);
         for (i = STRLEN(str); i < 24; ++i) {
             STRCAT(str, " ");
         }
@@ -1873,9 +1877,19 @@ static void exec() {
     }
 }
 
-void debugMain(const core_product_debug_target *target) {
+void core_product_debug_context_initialize(core_product_debug_context *context)
+{
+    if (context != NULL) MEMSET(context, 0, sizeof(*context));
+}
+
+void debugMain(core_product_debug_context *context,
+               const core_product_debug_target *target) {
     size_t i;
-    if (target == NULL) return;
+    core_product_debug_context *previous;
+    if (context == NULL || target == NULL) return;
+    previous = debugContext;
+    debugContext = context;
+    core_product_debug_context_initialize(context);
     core_product_debug_scope_enter(target);
     strFileName[0] = '\0';
     asmSegRec = uasmSegRec = _cs;
@@ -1902,4 +1916,5 @@ void debugMain(const core_product_debug_target *target) {
     }
     FREE((void *) arg);
     core_product_debug_scope_leave();
+    debugContext = previous;
 }

@@ -8,25 +8,53 @@
 #define UTILS_TRACE_ERROR  flagError
 #define UTILS_TRACE_SETERR (flagError = 1)
 
-static t_utils_trace UTILS_TRACE_VAR;
-
 typedef uint8_t t_dasm_prefix;
 
-static uint8_t defsize; /* default size passed in */
-static uint8_t flagError;
-static uint8_t *drcode;
-static char dstmt[0x100];
-static char dop[0x100], dopr[0x100], drm[0x100], dr[0x100], dimm[0x100];
-static char dmovsreg[0x100], doverds[0x100], doverss[0x100];
-static char dimmoff8[0x100], dimmoff16[0x100], dimmsign[0x100];
-static uint8_t flagmem, flaglock;
-static t_dasm_prefix prefix_oprsize, prefix_addrsize;
-static uint8_t cr;
-static uint64_t cimm;
-static uint8_t iop;
+typedef struct dasm32_context {
+    t_utils_trace trace;
+    uint8_t defsize;
+    uint8_t flagError;
+    uint8_t *drcode;
+    char dstmt[0x100];
+    char dop[0x100], dopr[0x100], drm[0x100], dr[0x100], dimm[0x100];
+    char dmovsreg[0x100], doverds[0x100], doverss[0x100];
+    char dimmoff8[0x100], dimmoff16[0x100], dimmsign[0x100];
+    uint8_t flagmem, flaglock;
+    t_dasm_prefix prefix_oprsize, prefix_addrsize;
+    uint8_t cr;
+    uint64_t cimm;
+    uint8_t iop;
+    void (*dtable[0x100])(),(*dtable_0f[0x100])();
+    uint8_t initialized;
+} dasm32_context;
 
-/* instruction dispatch */
-static void (*dtable[0x100])(),(*dtable_0f[0x100])();
+static _Thread_local dasm32_context *dasmContext;
+
+#define trace (dasmContext->trace)
+#define defsize (dasmContext->defsize)
+#define flagError (dasmContext->flagError)
+#define drcode (dasmContext->drcode)
+#define dstmt (dasmContext->dstmt)
+#define dop (dasmContext->dop)
+#define dopr (dasmContext->dopr)
+#define drm (dasmContext->drm)
+#define dr (dasmContext->dr)
+#define dimm (dasmContext->dimm)
+#define dmovsreg (dasmContext->dmovsreg)
+#define doverds (dasmContext->doverds)
+#define doverss (dasmContext->doverss)
+#define dimmoff8 (dasmContext->dimmoff8)
+#define dimmoff16 (dasmContext->dimmoff16)
+#define dimmsign (dasmContext->dimmsign)
+#define flagmem (dasmContext->flagmem)
+#define flaglock (dasmContext->flaglock)
+#define prefix_oprsize (dasmContext->prefix_oprsize)
+#define prefix_addrsize (dasmContext->prefix_addrsize)
+#define cr (dasmContext->cr)
+#define cimm (dasmContext->cimm)
+#define iop (dasmContext->iop)
+#define dtable (dasmContext->dtable)
+#define dtable_0f (dasmContext->dtable_0f)
 
 /* stack pointer size (unused) */
 /* #define _GetStackSize   (vcpu.ss.seg.data.big ? 4 : 2) */
@@ -5668,15 +5696,13 @@ static void QDX() {
     _ce;
 }
 
-static uint8_t flaginit = 0;
-
-uint8_t dasm32(char *stmt, uint8_t *rcode, int flag32) {
+static uint8_t dasm32_execute(char *stmt, uint8_t *rcode, int flag32) {
     size_t i;
     uint8_t opcode, oldiop;
 #if DASM_TRACE == 1
     utilsTraceInit(&trace);
 #endif
-    if (!flaginit) {
+    if (!dasmContext->initialized) {
         dtable[0x00] = ADD_RM8_R8;
         dtable[0x01] = ADD_RM32_R32;
         dtable[0x02] = ADD_R8_RM8;
@@ -6189,7 +6215,7 @@ uint8_t dasm32(char *stmt, uint8_t *rcode, int flag32) {
         dtable_0f[0xfd] = UndefinedOpcode;
         dtable_0f[0xfe] = UndefinedOpcode;
         dtable_0f[0xff] = UndefinedOpcode;
-        flaginit = 1;
+        dasmContext->initialized = 1;
     }
 
     stmt[0] = 0;
@@ -6231,4 +6257,17 @@ uint8_t dasm32(char *stmt, uint8_t *rcode, int flag32) {
     utilsTraceFinal(&trace);
 #endif
     return iop;
+}
+
+uint8_t dasm32(char *stmt, uint8_t *rcode, int flag32) {
+    dasm32_context local_context;
+    dasm32_context *previous = dasmContext;
+    uint8_t result;
+
+    if (previous != NULL) return dasm32_execute(stmt, rcode, flag32);
+    MEMSET(&local_context, 0, sizeof(local_context));
+    dasmContext = &local_context;
+    result = dasm32_execute(stmt, rcode, flag32);
+    dasmContext = previous;
+    return result;
 }
