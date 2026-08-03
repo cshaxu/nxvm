@@ -250,9 +250,13 @@ platform/session state.
 session-owned handle; task evidence records the join/finalize and DOS-prompt
 gates with `nxvm_0_5_0139.exe`.
 
-**M5 T140 active:** convert Linux Console to the same explicit handle and
-sole-destroyer contract; native POSIX compilation and runtime verification are
-deferred to the designated POSIX environment.
+**M5 T140 complete:** Linux Console now has the same explicit handle and
+sole-destroyer source structure. Native POSIX compilation and runtime evidence
+remain a designated POSIX-environment handoff.
+
+**M5 T141 active:** remove the historical core profile/executor selection, then
+move all remaining core-owned device lifecycle out of VM composition in bounded
+device-family gates.
 
 ## Short-Term M5 Plan
 

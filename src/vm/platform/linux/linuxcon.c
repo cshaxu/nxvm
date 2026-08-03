@@ -213,6 +213,8 @@ static core_platform_host_surface_lease linux_terminal_lease = {
     ATOMIC_VAR_INIT(0)
 };
 
+static C_VOID lnxckeybProcess(const vm_platform_run_context *context);
+
 static C_VOID lnxcdispPaint(vm_platform_run_context *context,
                           uint8_t force) {
     C_INT ref;
@@ -253,22 +255,35 @@ static C_VOID lnxcdispPaint(vm_platform_run_context *context,
     context->terminal_displayed_generation = frame.generation;
 }
 
-static C_VOID *ThreadDisplay(C_VOID *arg) {
-    vm_platform_run_context *context = arg;
+typedef struct linuxcon_run_handle {
+    vm_platform_run_handle *owner;
+    const vm_platform_run_context *platform;
+    pthread_t kernel_thread;
+    pthread_t display_thread;
+    C_INT kernel_started;
+    C_INT display_started;
+    C_INT terminal_initialized;
+} linuxcon_run_handle;
+
+static C_VOID *linuxcon_display_thread(C_VOID *arg) {
+    linuxcon_run_handle *handle = arg;
+    vm_platform_run_context *context = (vm_platform_run_context *)handle->platform;
+
     lnxcdispInit();
+    handle->terminal_initialized = 1;
     lnxcdispPaint(context, 1);
     while (vm_platform_execution_is_running_for(context->execution)) {
         lnxcdispPaint(context, 0);
-        core_product_utils_sleep(context->wait_scope, 100);
+        lnxckeybProcess(context);
+        core_product_utils_sleep(context->wait_scope, 20u);
     }
-    lnxcdispFinal();
-    core_platform_host_surface_lease_release(&linux_terminal_lease, context);
     return 0;
 }
 
-static C_VOID *ThreadKernel(C_VOID *arg) {
-    const vm_platform_run_context *context = arg;
-    vm_platform_execution_start_for(context->execution);
+static C_VOID *linuxcon_kernel_thread(C_VOID *arg) {
+    linuxcon_run_handle *handle = arg;
+
+    vm_platform_execution_start_for(handle->platform->execution);
     return 0;
 }
 
@@ -449,32 +464,72 @@ C_VOID lnxcDisplayPaint(const vm_platform_run_context *context) {
     lnxcdispPaint((vm_platform_run_context *)context, 1);
 }
 
-C_VOID lnxcStartMachine(const vm_platform_run_context *context) {
-    pthread_t ThreadIdDisplay;
-    pthread_t ThreadIdKernel;
-    pthread_attr_t attr;
-    C_INT oldDeviceFlip;
+ntvdm64_status vm_platform_linuxcon_run_handle_start(
+    const vm_platform_run_context *context, vm_platform_run_handle *owner) {
+    linuxcon_run_handle *handle;
+    C_INT old_flip;
 
-    if (context == STD_NULL || context->execution == STD_NULL ||
-        context->keyboard == STD_NULL) return;
+    if (context == STD_NULL || owner == STD_NULL || owner->active ||
+        context->execution == STD_NULL || context->keyboard == STD_NULL) {
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
+    }
     if (core_platform_host_surface_lease_acquire(&linux_terminal_lease,
-            context) != NTVDM64_STATUS_OK) return;
-    oldDeviceFlip = vm_platform_execution_get_flip_for(context->execution);
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
-    pthread_create(&ThreadIdKernel,  &attr, ThreadKernel, (C_VOID *)context);
-    while (oldDeviceFlip ==
-           vm_platform_execution_get_flip_for(context->execution)) {
-        core_product_utils_sleep(context->wait_scope, 100);
-    }
-    if (pthread_create(&ThreadIdDisplay, &attr, ThreadDisplay,
-                       (C_VOID *)context) != 0) {
-        vm_platform_execution_stop_for(context->execution);
+            context) != NTVDM64_STATUS_OK) return NTVDM64_STATUS_INVALID_STATE;
+    handle = (linuxcon_run_handle *)STD_CALLOC(1u, sizeof(*handle));
+    if (handle == STD_NULL) {
         core_platform_host_surface_lease_release(&linux_terminal_lease, context);
+        return NTVDM64_STATUS_NO_MEMORY;
     }
-    while (vm_platform_execution_is_running_for(context->execution)) {
-        core_product_utils_sleep(context->wait_scope, 20);
-        lnxckeybProcess(context);
+    handle->owner = owner;
+    handle->platform = context;
+    owner->context = context;
+    owner->backend = handle;
+    owner->window_display = 0;
+    owner->active = 1;
+    old_flip = vm_platform_execution_get_flip_for(context->execution);
+    if (pthread_create(&handle->kernel_thread, STD_NULL, linuxcon_kernel_thread,
+            handle) != 0) {
+        vm_platform_linuxcon_run_handle_finalize(owner);
+        return NTVDM64_STATUS_INVALID_STATE;
     }
-    pthread_attr_destroy(&attr);
+    handle->kernel_started = 1;
+    while (old_flip ==
+           vm_platform_execution_get_flip_for(context->execution)) {
+        core_product_utils_sleep(context->wait_scope, 100u);
+    }
+    if (pthread_create(&handle->display_thread, STD_NULL, linuxcon_display_thread,
+            handle) != 0) {
+        vm_platform_linuxcon_run_handle_request_stop(owner);
+        vm_platform_linuxcon_run_handle_join(owner);
+        vm_platform_linuxcon_run_handle_finalize(owner);
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+    handle->display_started = 1;
+    return NTVDM64_STATUS_OK;
+}
+
+C_VOID vm_platform_linuxcon_run_handle_request_stop(vm_platform_run_handle *owner) {
+    linuxcon_run_handle *handle = owner == STD_NULL ? STD_NULL : owner->backend;
+
+    if (handle != STD_NULL) vm_platform_execution_stop_for(handle->platform->execution);
+}
+
+C_VOID vm_platform_linuxcon_run_handle_join(vm_platform_run_handle *owner) {
+    linuxcon_run_handle *handle = owner == STD_NULL ? STD_NULL : owner->backend;
+
+    if (handle == STD_NULL) return;
+    if (handle->kernel_started) pthread_join(handle->kernel_thread, STD_NULL);
+    if (handle->display_started) pthread_join(handle->display_thread, STD_NULL);
+    owner->active = 0;
+}
+
+C_VOID vm_platform_linuxcon_run_handle_finalize(vm_platform_run_handle *owner) {
+    linuxcon_run_handle *handle = owner == STD_NULL ? STD_NULL : owner->backend;
+
+    if (handle == STD_NULL) return;
+    if (handle->terminal_initialized) lnxcdispFinal();
+    core_platform_host_surface_lease_release(&linux_terminal_lease,
+        handle->platform);
+    STD_FREE(handle);
+    vm_platform_run_handle_initialize(owner);
 }
