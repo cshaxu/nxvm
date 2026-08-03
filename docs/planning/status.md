@@ -148,6 +148,10 @@ atomic operations use `STD_*`; explicit atomic memory orders are unchanged.
 **M5 T115 complete:** debugger input clearing routes through a core product
 provider and VM platform capability; `fflush(stdin)` is absent.
 
+**M5 T116 complete:** final static vocabulary, dependency, documentation,
+GCC, DOS boot, and retained Console closure passed. The T111--T116 naming
+sequence is complete.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

@@ -36,6 +36,11 @@ T115 removes `fflush(stdin)`: core product debug calls a registered input
 provider, and VM composition binds it to a platform capability. Win32 clears
 only a confirmed Console input handle; redirected input is left untouched.
 
+T116 closes the vocabulary sequence. Active code uses the established scalar
+and C-library facade; remaining native-keyword scan matches are comments or
+guest/assembler text, while the only remaining direct `fflush` flushes a test
+temporary output stream rather than stdin.
+
 ## Decision
 
 `src/type.h` is the repository's one facade for ISO C headers and C11 atomics.

@@ -748,6 +748,7 @@ add_nxvm_version_artifact(nxvm-0-5-0112 "0.5.0112")
 add_nxvm_version_artifact(nxvm-0-5-0113 "0.5.0113")
 add_nxvm_version_artifact(nxvm-0-5-0114 "0.5.0114")
 add_nxvm_version_artifact(nxvm-0-5-0115 "0.5.0115")
+add_nxvm_version_artifact(nxvm-0-5-0116 "0.5.0116")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

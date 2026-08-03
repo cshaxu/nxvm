@@ -22,7 +22,7 @@
 
 C_VOID vm_composition_debug_flush_console_input(C_VOID *context)
 {
-    (void)context;
+    (C_VOID)context;
     vm_platform_input_flush_console_input();
 }
 

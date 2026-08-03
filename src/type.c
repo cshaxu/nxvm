@@ -53,7 +53,9 @@ C_INT STD_FSEEK(STD_FILE *_File, C_LONG _Offset, C_INT _Origin) { return fseek(_
 C_LONG STD_FTELL(STD_FILE *_File) { return ftell(_File); }
 C_INT STD_FGETC(STD_FILE *_File) { return fgetc(_File); }
 C_INT STD_FPUTC(C_INT _Character, STD_FILE *_File) { return fputc(_Character, _File); }
+C_INT STD_FPUTS(const C_CHAR *_String, STD_FILE *_File) { return fputs(_String, _File); }
 C_INT STD_FEOF(STD_FILE *_File) { return feof(_File); }
+C_INT STD_ATOI(const C_CHAR *_String) { return atoi(_String); }
 STD_TIME_T STD_TIME(STD_TIME_T *_Time) { return time(_Time); }
 C_VOID* STD_CALLOC(STD_SIZE_T _Count, STD_SIZE_T _Size) { return calloc(_Count, _Size); }
 C_VOID* STD_MALLOC(STD_SIZE_T _Size) { return malloc(_Size); }

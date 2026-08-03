@@ -247,7 +247,7 @@ static C_VOID doDevice() {
         if (numArgs != 3) {
             GetHelp;
         }
-        consoleTarget->set_memory(consoleTarget->context, (STD_SIZE_T)atoi(argArray[2]) << 10);
+        consoleTarget->set_memory(consoleTarget->context, (STD_SIZE_T)STD_ATOI(argArray[2]) << 10);
     } else if (!STD_STRCMP(argArray[1], "display")) {
         if (numArgs != 3) {
             GetHelp;
@@ -294,8 +294,8 @@ static C_VOID doDevice() {
         if (!STD_STRCMP(argArray[2], "create")) {
             if (numArgs > 3) {
                 if (numArgs == 5 && !STD_STRCMP(argArray[3], "cyl")) {
-                    if (atoi(argArray[4])) {
-                        consoleTarget->create_hdd(consoleTarget->context, (uint16_t)atoi(argArray[4]));
+                    if (STD_ATOI(argArray[4])) {
+                        consoleTarget->create_hdd(consoleTarget->context, (uint16_t)STD_ATOI(argArray[4]));
                     } else {
                         GetHelp;
                     }
