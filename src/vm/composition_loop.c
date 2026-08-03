@@ -206,7 +206,7 @@ void vm_composition_control_initialize(vm_composition_control_state *control,
         &control->execution_context, &device_execution_callbacks);
     nxvm_execution_context_activate(&control->execution_context);
     vm_machine_debug_initialize(machine->debug, machine->cpu, machine->cpuins);
-    vmachineInit(machine);
+    vm_composition_providers_initialize(machine);
     if (!vm_composition_bind_execution_provider(machine)) {
         vm_composition_control_stop(control);
     }
@@ -218,7 +218,7 @@ void vm_composition_control_finalize(vm_composition_control_state *control,
     if (control == NULL || machine == NULL) return;
     nxvm_execution_context_deactivate(&control->execution_context);
     vm_machine_debug_finalize(machine->debug);
-    vmachineFinal(machine);
+    vm_composition_providers_finalize(machine);
 }
 
 void vm_composition_control_print_status(const vm_composition_control_state *control) {

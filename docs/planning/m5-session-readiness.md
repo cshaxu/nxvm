@@ -73,6 +73,11 @@ T96 is a post-closure retained-Console regression repair. It preserves the
 session model by making live-machine initialization single-lifetime and adds a
 real Console command lifecycle gate; it does not expand M6 or VDM scope.
 
+T97 is a bounded composition API naming cleanup. It does not rename retained
+compact names (`kbc`, `vadp`, `win32app`, `win32con`, `linuxapp`, `linuxcon`,
+`w32a`, `w32p`, `xasm32`, `aasm`, `dasm`, or `debug`) or the documented QDX
+firmware hacks (`qdx`, `qdcga`, and `qdkeyb`).
+
 ## Guardrails
 
 - VM/VDM root composition owns session construction, host threads, and

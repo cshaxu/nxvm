@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_VMACHINE_H
-#define NXVM_VMACHINE_H
+#ifndef NXVM_VM_COMPOSITION_H
+#define NXVM_VM_COMPOSITION_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,13 +10,13 @@ extern "C" {
 #include "core/machine/vglobal.h"
 #include "vm/composition_live_machine.h"
 
-#define NXVM_DEVICE_MACHINE "IBM PC/AT"
+#define VM_COMPOSITION_MACHINE_NAME "IBM PC/AT"
 
-void vmachineInit(vm_composition_live_machine *machine);
-void vmachineRefreshProviders(vm_composition_live_machine *machine);
-void vmachineResetProviders(vm_composition_live_machine *machine);
-void vmachineFinal(vm_composition_live_machine *machine);
-void devicePrintMachine(const vm_composition_live_machine *machine);
+void vm_composition_providers_initialize(vm_composition_live_machine *machine);
+void vm_composition_providers_refresh(vm_composition_live_machine *machine);
+void vm_composition_providers_reset(vm_composition_live_machine *machine);
+void vm_composition_providers_finalize(vm_composition_live_machine *machine);
+void vm_composition_print_machine(const vm_composition_live_machine *machine);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

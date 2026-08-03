@@ -1,6 +1,6 @@
 /* Copyright 2012-2014 Neko. */
 
-/* VMACHINE is the hub that assembles all devices. */
+/* VM composition assembles the retained full-PC providers. */
 
 #include "core/product/utils.h"
 
@@ -44,7 +44,7 @@
 #define _qdx_
 
 /* Initializes all devices, allocates space */
-void vmachineInit(vm_composition_live_machine *machine) {
+void vm_composition_providers_initialize(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     core_machine_cpu_state_initialize(machine->cpu_execution);
     vm_machine_fdd_initialize(machine->fdd);
@@ -102,7 +102,7 @@ void vmachineInit(vm_composition_live_machine *machine) {
     _vbios_ _vcpu_ _vram_
 }
 
-void vmachineRefreshProviders(vm_composition_live_machine *machine) {
+void vm_composition_providers_refresh(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_profile_default_qdx_refresh(machine->default_profile_context);
     _empty_
@@ -118,7 +118,7 @@ void vmachineRefreshProviders(vm_composition_live_machine *machine) {
     vm_machine_fdc_refresh(machine->fdc);
 }
 
-void vmachineResetProviders(vm_composition_live_machine *machine) {
+void vm_composition_providers_reset(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vhdcReset();
     vm_machine_cmos_reset(machine->cmos);
@@ -131,7 +131,7 @@ void vmachineResetProviders(vm_composition_live_machine *machine) {
 }
 
 /* Finalize all devices, deallocates space */
-void vmachineFinal(vm_composition_live_machine *machine) {
+void vm_composition_providers_finalize(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_profile_default_qdx_finalize(machine->default_profile_context);
     _empty_
@@ -163,9 +163,9 @@ void vmachineFinal(vm_composition_live_machine *machine) {
     core_machine_memory_finalize(machine->ram);
 }
 /* Print machine info */
-void devicePrintMachine(const vm_composition_live_machine *machine) {
+void vm_composition_print_machine(const vm_composition_live_machine *machine) {
     if (machine == NULL) return;
-    PRINTF("Machine:           %s\n", NXVM_DEVICE_MACHINE);
+    PRINTF("Machine:           %s\n", VM_COMPOSITION_MACHINE_NAME);
     PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
     PRINTF("RAM Size:          %d MB\n", machine->ram->connect.size >> 20);
     PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
