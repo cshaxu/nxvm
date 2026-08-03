@@ -23,22 +23,22 @@ static ntvdm64_type_unsigned_32 assemble(t_ram *ram, const ntvdm64_type_string_p
     ntvdm64_type_unsigned_8 *code = NULL;
     ntvdm64_type_native_unsigned i;
     ntvdm64_type_native_unsigned insCount = 0; /* the number of instructions to be assembled */
-    for (i = 0; i < STRLEN(stmt); ++i) {
+    for (i = 0; i < STD_STRLEN(stmt); ++i) {
         if (stmt[i] == '\n') {
             insCount++;
         }
     }
-    if (STRLEN(stmt)) insCount++;
+    if (STD_STRLEN(stmt)) insCount++;
     /* 15 is the maximum length of each instruction */
-    code = NTVDM64_TYPE_POINTER_UNSIGNED_8(MALLOC(
+    code = NTVDM64_TYPE_POINTER_UNSIGNED_8(STD_MALLOC(
         15 * insCount * sizeof(ntvdm64_type_unsigned_8)));
     len = core_product_utils_aasm32x(stmt, code, NTVDM64_TYPE_FALSE);
     if (!len) {
-        PRINTF("vbios: invalid x86 assembly instruction.\n");
+        STD_PRINTF("vbios: invalid x86 assembly instruction.\n");
     }
-    MEMCPY(core_machine_memory_real_address(ram, seg, off), (void *) code, len);
+    STD_MEMCPY(core_machine_memory_real_address(ram, seg, off), (void *) code, len);
     if (code) {
-        FREE((void *) code);
+        STD_FREE((void *) code);
     }
     return len;
 }
@@ -47,7 +47,7 @@ static void bios_load_data(t_bios *bios, t_ram *ram,
     const core_machine_block_provider_slot *block_provider) {
     core_machine_block_geometry geometry;
     core_machine_block_get_geometry_from(block_provider, &geometry);
-    MEMSET(core_machine_memory_real_address(ram, 0x0040, NTVDM64_TYPE_ZERO_16), NTVDM64_TYPE_ZERO_8, 0x100);
+    STD_MEMSET(core_machine_memory_real_address(ram, 0x0040, NTVDM64_TYPE_ZERO_16), NTVDM64_TYPE_ZERO_8, 0x100);
     BIOS_WORD(ram, NTVDM64_TYPE_ZERO_16, VBIOS_ADDR_SERI_PORT_COM1) = 0x03f8;
     BIOS_WORD(ram, NTVDM64_TYPE_ZERO_16, VBIOS_ADDR_PARA_PORT_LPT1) = 0x0378;
     BIOS_WORD(ram, NTVDM64_TYPE_ZERO_16, VBIOS_ADDR_PARA_PORT_LPT4) = 0x9fc0;
@@ -123,7 +123,7 @@ static void bios_load_interrupts(t_bios *bios, t_ram *ram) {
 static void bios_load_post(t_bios *bios, t_ram *ram) {
     ntvdm64_type_native_unsigned i;
     ntvdm64_type_string_buffer stmt;
-    SPRINTF(stmt, "jmp %04x:%04x", bios->data.buildCS, bios->data.buildIP);
+    STD_SPRINTF(stmt, "jmp %04x:%04x", bios->data.buildCS, bios->data.buildIP);
     assemble(ram, stmt, VBIOS_ADDR_POST_SEG, VBIOS_ADDR_POST_OFF);
     for (i = 0; i < bios->connect.postCount; ++i) {
         bios->data.buildIP += (ntvdm64_type_unsigned_16)assemble(ram,
@@ -164,7 +164,7 @@ void vm_profile_default_bios_add_interrupt(t_bios *bios, ntvdm64_type_string_poi
 }
 void vm_profile_default_bios_initialize(t_bios *bios) {
     if (bios == NULL) return;
-    MEMSET((void *)bios, NTVDM64_TYPE_ZERO_8, sizeof(*bios));
+    STD_MEMSET((void *)bios, NTVDM64_TYPE_ZERO_8, sizeof(*bios));
     bios->flagBoot = NTVDM64_TYPE_FALSE;
     bios->data.buildCS = bios->data.buildIP = NTVDM64_TYPE_ZERO_16;
     vm_profile_default_bios_add_interrupt(bios, VBIOS_INT_SOFT_MISC_11, 0x11);
@@ -176,7 +176,7 @@ void vm_profile_default_bios_initialize(t_bios *bios) {
 void vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
     const core_machine_block_provider_slot *block_provider) {
     if (bios == NULL || ram == NULL) return;
-    MEMSET((void *)(&bios->data), NTVDM64_TYPE_ZERO_8, sizeof(t_bios_data));
+    STD_MEMSET((void *)(&bios->data), NTVDM64_TYPE_ZERO_8, sizeof(t_bios_data));
     /* bios area starts at f000:0000 */
     bios->data.buildCS = VBIOS_ADDR_START_SEG;
     bios->data.buildIP = VBIOS_ADDR_START_OFF;
@@ -189,7 +189,7 @@ void vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
 void vm_profile_default_bios_refresh(t_bios *bios) { (void)bios; }
 void vm_profile_default_bios_finalize(t_bios *bios) { (void)bios; }
 void vm_profile_default_bios_print(const t_bios *bios) {
-    PRINTF("Boot Disk: %s\n", bios != NULL && bios->flagBoot ? "Hard Drive" : "Floppy");
+    STD_PRINTF("Boot Disk: %s\n", bios != NULL && bios->flagBoot ? "Hard Drive" : "Floppy");
 }
 
 void vm_profile_default_bios_set_boot_hdd(t_bios *bios, int enabled) {

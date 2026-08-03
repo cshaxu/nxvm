@@ -26,8 +26,8 @@ static int vmBlockTransfer(void *context, ntvdm64_type_unsigned_8 cylinder, ntvd
     hdd->connect.pCurrByte = hdd->connect.pImgBase +
         ((hdd->data.cyl * hdd->data.nhead + hdd->data.head) *
         hdd->data.nsector + (hdd->data.sector - 1)) * hdd->data.nbyte;
-    if (write) MEMCPY((void *)hdd->connect.pCurrByte, buffer, byte_count);
-    else MEMCPY(buffer, (void *)hdd->connect.pCurrByte, byte_count);
+    if (write) STD_MEMCPY((void *)hdd->connect.pCurrByte, buffer, byte_count);
+    else STD_MEMCPY(buffer, (void *)hdd->connect.pCurrByte, byte_count);
     return NTVDM64_TYPE_TRUE;
 }
 

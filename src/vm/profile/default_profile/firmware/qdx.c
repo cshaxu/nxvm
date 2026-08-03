@@ -27,7 +27,7 @@ static void vm_profile_default_qdx_dispatch(
     cpu->data.eip++;
     if (core_machine_cpu_execution_read_linear(execution,
             cpu->data.cs.base + cpu->data.eip, NTVDM64_TYPE_REFERENCE_OF(command_id), 1)) {
-        PRINTF("Cannot read data from L%08X.\n",
+        STD_PRINTF("Cannot read data from L%08X.\n",
             cpu->data.cs.base + cpu->data.eip);
         core_machine_cpu_execution_request_stop(execution);
     } else {
@@ -36,16 +36,16 @@ static void vm_profile_default_qdx_dispatch(
     switch (command_id) {
     case 0x00:
     case 0xff:
-        PRINTF("\nNXVM CPU STOP at CS:%04X IP:%08X INS:QDX IMM:%02X\n",
+        STD_PRINTF("\nNXVM CPU STOP at CS:%04X IP:%08X INS:QDX IMM:%02X\n",
             cpu->data.cs.selector, cpu->data.eip, command_id);
-        PRINTF("This happens because of the special instruction.\n");
+        STD_PRINTF("This happens because of the special instruction.\n");
         core_machine_cpu_execution_request_stop(execution);
         break;
     case 0x01:
     case 0xfe:
-        PRINTF("\nNXVM CPU RESET at CS:%04X IP:%08X INS:QDX IMM:%02X\n",
+        STD_PRINTF("\nNXVM CPU RESET at CS:%04X IP:%08X INS:QDX IMM:%02X\n",
             cpu->data.cs.selector, cpu->data.eip, command_id);
-        PRINTF("This happens because of the special instruction.\n");
+        STD_PRINTF("This happens because of the special instruction.\n");
         core_machine_cpu_execution_request_reset(execution);
         break;
     default:
@@ -55,7 +55,7 @@ static void vm_profile_default_qdx_dispatch(
         if (command_id < 0x20) {
             if (core_machine_cpu_execution_read_linear(execution,
                     cpu->data.ss.base + cpu->data.sp + 4, NTVDM64_TYPE_REFERENCE_OF(flags), 2)) {
-                PRINTF("Cannot read data from L%08X.\n",
+                STD_PRINTF("Cannot read data from L%08X.\n",
                     cpu->data.ss.base + cpu->data.sp + 4);
                 core_machine_cpu_execution_request_stop(execution);
             }
@@ -63,7 +63,7 @@ static void vm_profile_default_qdx_dispatch(
             NTVDM64_TYPE_MAKE_BIT(flags, VCPU_EFLAGS_CF, NTVDM64_TYPE_GET_BIT(cpu->data.eflags, VCPU_EFLAGS_CF));
             if (core_machine_cpu_execution_write_linear(execution,
                     cpu->data.ss.base + cpu->data.sp + 4, NTVDM64_TYPE_REFERENCE_OF(flags), 2)) {
-                PRINTF("Cannot write data to L%08X.\n",
+                STD_PRINTF("Cannot write data to L%08X.\n",
                     cpu->data.ss.base + cpu->data.sp + 4);
                 core_machine_cpu_execution_request_stop(execution);
             }

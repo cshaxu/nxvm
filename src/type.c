@@ -2,23 +2,23 @@
 
 #include "type.h"
 
-struct tm* LOCALTIME(const time_t *_Time) { return localtime(_Time); }
-char* STRCAT(char *_Dest, const char *_Source) { return strcat(_Dest, _Source); }
-char* STRCPY(char *_Dest, const char *_Source) { return strcpy(_Dest, _Source); }
-char* STRTOK(char *_Str, const char *_Delim) { return strtok(_Str, _Delim); }
-int STRCMP(const char *_Str1, const char *_Str2) { return strcmp(_Str1, _Str2); }
-size_t STRLEN(const char *_Str) { return strlen(_Str); }
+struct tm* STD_LOCALTIME(const STD_TIME_T *_Time) { return localtime(_Time); }
+C_CHAR* STD_STRCAT(C_CHAR *_Dest, const C_CHAR *_Source) { return strcat(_Dest, _Source); }
+C_CHAR* STD_STRCPY(C_CHAR *_Dest, const C_CHAR *_Source) { return strcpy(_Dest, _Source); }
+C_CHAR* STD_STRTOK(C_CHAR *_Str, const C_CHAR *_Delim) { return strtok(_Str, _Delim); }
+C_INT STD_STRCMP(const C_CHAR *_Str1, const C_CHAR *_Str2) { return strcmp(_Str1, _Str2); }
+STD_SIZE_T STD_STRLEN(const C_CHAR *_Str) { return strlen(_Str); }
 
-int PRINTF(const char *_Format, ...) {
+C_INT STD_PRINTF(const C_CHAR *_Format, ...) {
     int nWrittenBytes;
     va_list arg_ptr;
     va_start(arg_ptr, _Format);
     nWrittenBytes = vfprintf(stdout, _Format, arg_ptr);
     va_end(arg_ptr);
-    fflush(stdout);
+    fflush(STD_STDOUT);
     return nWrittenBytes;
 }
-int FPRINTF(FILE *_File, const char *_Format, ...) {
+C_INT STD_FPRINTF(STD_FILE *_File, const C_CHAR *_Format, ...) {
     int nWrittenBytes;
     va_list arg_ptr;
     va_start(arg_ptr, _Format);
@@ -26,7 +26,7 @@ int FPRINTF(FILE *_File, const char *_Format, ...) {
     va_end(arg_ptr);
     return nWrittenBytes;
 }
-int SPRINTF(char *_Dest, const char *_Format, ...) {
+C_INT STD_SPRINTF(C_CHAR *_Dest, const C_CHAR *_Format, ...) {
     int nWrittenBytes;
     va_list arg_ptr;
     va_start(arg_ptr, _Format);
@@ -35,16 +35,32 @@ int SPRINTF(char *_Dest, const char *_Format, ...) {
     return nWrittenBytes;
 }
 
-FILE* FOPEN(const char *_Filename, const char *_Mode) { return fopen(_Filename, _Mode); }
-int FCLOSE(FILE *_File) { return fclose(_File); }
-size_t FREAD(void *_DstBuf, size_t _ElementSize, size_t _Count, FILE *_File) { return fread(_DstBuf, _ElementSize, _Count, _File); }
-size_t FWRITE(void *_Str, size_t _Size, size_t _Count, FILE *_File) { return fwrite(_Str, _Size, _Count, _File); }
-char* FGETS(char *_Buf, int _MaxCount, FILE *_File) { return fgets(_Buf, _MaxCount, _File); }
-void* MALLOC(size_t _Size) { return malloc(_Size); }
-void FREE(void *_Memory) { free(_Memory); }
-void* MEMSET(void *_Dst, int _Val, size_t _Size) { return memset(_Dst, _Val, _Size); }
-void* MEMCPY(void *_Dst, const void *_Src, size_t _Size) { return memcpy(_Dst, _Src, _Size); }
-int MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size) { return memcmp(_Buf1, _Buf2, _Size); }
+ C_INT STD_SNPRINTF(C_CHAR *_Dest, STD_SIZE_T _Size, const C_CHAR *_Format, ...) {
+    C_INT nWrittenBytes;
+    STD_VA_LIST arg_ptr;
+    va_start(arg_ptr, _Format);
+    nWrittenBytes = vsnprintf(_Dest, _Size, _Format, arg_ptr);
+    va_end(arg_ptr);
+    return nWrittenBytes;
+}
+
+STD_FILE* STD_FOPEN(const C_CHAR *_Filename, const C_CHAR *_Mode) { return fopen(_Filename, _Mode); }
+C_INT STD_FCLOSE(STD_FILE *_File) { return fclose(_File); }
+STD_SIZE_T STD_FREAD(C_VOID *_DstBuf, STD_SIZE_T _ElementSize, STD_SIZE_T _Count, STD_FILE *_File) { return fread(_DstBuf, _ElementSize, _Count, _File); }
+STD_SIZE_T STD_FWRITE(const C_VOID *_Buffer, STD_SIZE_T _Size, STD_SIZE_T _Count, STD_FILE *_File) { return fwrite(_Buffer, _Size, _Count, _File); }
+C_CHAR* STD_FGETS(C_CHAR *_Buf, C_INT _MaxCount, STD_FILE *_File) { return fgets(_Buf, _MaxCount, _File); }
+C_INT STD_FSEEK(STD_FILE *_File, C_LONG _Offset, C_INT _Origin) { return fseek(_File, _Offset, _Origin); }
+C_LONG STD_FTELL(STD_FILE *_File) { return ftell(_File); }
+C_INT STD_FGETC(STD_FILE *_File) { return fgetc(_File); }
+C_INT STD_FPUTC(C_INT _Character, STD_FILE *_File) { return fputc(_Character, _File); }
+C_INT STD_FEOF(STD_FILE *_File) { return feof(_File); }
+STD_TIME_T STD_TIME(STD_TIME_T *_Time) { return time(_Time); }
+C_VOID* STD_CALLOC(STD_SIZE_T _Count, STD_SIZE_T _Size) { return calloc(_Count, _Size); }
+C_VOID* STD_MALLOC(STD_SIZE_T _Size) { return malloc(_Size); }
+C_VOID STD_FREE(C_VOID *_Memory) { free(_Memory); }
+C_VOID* STD_MEMSET(C_VOID *_Dst, C_INT _Val, STD_SIZE_T _Size) { return memset(_Dst, _Val, _Size); }
+C_VOID* STD_MEMCPY(C_VOID *_Dst, const C_VOID *_Src, STD_SIZE_T _Size) { return memcpy(_Dst, _Src, _Size); }
+C_INT STD_MEMCMP(const C_VOID *_Buf1, const C_VOID *_Buf2, STD_SIZE_T _Size) { return memcmp(_Buf1, _Buf2, _Size); }
 
 void ntvdm64_type_string_lower(char *str) {
     size_t i = 0;
@@ -63,11 +79,11 @@ void ntvdm64_type_string_lower(char *str) {
 
 static void printTraceCall(ntvdm64_type_trace_call *rtracecall) {
     size_t i;
-    PRINTF("%s", rtracecall->callName);
+    STD_PRINTF("%s", rtracecall->callName);
     for (i = 0; i < rtracecall->blockCount; ++i) {
-        PRINTF("::%s", rtracecall->blockStack[i]);
+        STD_PRINTF("::%s", rtracecall->blockStack[i]);
     }
-    PRINTF("\n");
+    STD_PRINTF("\n");
 }
 void ntvdm64_type_trace_print(ntvdm64_type_trace *rtrace) {
     size_t i;
@@ -83,7 +99,7 @@ void ntvdm64_type_trace_initialize(ntvdm64_type_trace *rtrace) {
 }
 void ntvdm64_type_trace_finalize(ntvdm64_type_trace *rtrace) {
     if (!rtrace->flagError && rtrace->callCount) {
-        PRINTF("trace_final: call stack is not balanced. (call: %d, block: %d)\n",
+        STD_PRINTF("trace_final: call stack is not balanced. (call: %d, block: %d)\n",
                rtrace->callCount, rtrace->callStack[rtrace->callCount].blockCount);
         rtrace->flagError = 1;
     }
@@ -97,13 +113,13 @@ void ntvdm64_type_trace_call_begin(ntvdm64_type_trace *rtrace, char *callName) {
     if (rtrace->flagError) return;
     if (rtrace->callCount < NTVDM64_TYPE_TRACE_MAX_STACK) {
 #if NTVDM64_TYPE_TRACE_DEBUG == 1
-        PRINTF("enter call(%d): %s\n", rtrace->callCount, callName);
+        STD_PRINTF("enter call(%d): %s\n", rtrace->callCount, callName);
 #endif
         rtrace->callStack[rtrace->callCount].callName = callName;
         rtrace->callStack[rtrace->callCount].blockCount = 0;
         rtrace->callCount++;
     } else {
-        PRINTF("trace_call_begin: call stack is full.\n");
+        STD_PRINTF("trace_call_begin: call stack is full.\n");
         rtrace->flagError = 1;
     }
 }
@@ -112,17 +128,17 @@ void ntvdm64_type_trace_call_end(ntvdm64_type_trace *rtrace) {
     if (rtrace->callCount) {
         rtrace->callCount--;
 #if NTVDM64_TYPE_TRACE_DEBUG == 1
-        PRINTF("leave call(%d): %s\n", rtrace->callCount,
+        STD_PRINTF("leave call(%d): %s\n", rtrace->callCount,
                rtrace->callStack[rtrace->callCount].callName);
 #endif
         if (rtrace->callStack[rtrace->callCount].blockCount != 0) {
-            PRINTF("trace_call_end: call stack is not balanced. (call: %d, block: %d)\n",
+            STD_PRINTF("trace_call_end: call stack is not balanced. (call: %d, block: %d)\n",
                    rtrace->callCount, rtrace->callStack[rtrace->callCount].blockCount);
             rtrace->callCount++;
             rtrace->flagError = 1;
         }
     } else {
-        PRINTF("trace_call_end: call stack is empty.\n");
+        STD_PRINTF("trace_call_end: call stack is empty.\n");
         rtrace->flagError = 1;
     }
 }
@@ -130,12 +146,12 @@ void ntvdm64_type_trace_block_begin(ntvdm64_type_trace *rtrace, char *blockName)
     if (rtrace->flagError) return;
     if (rtrace->callStack[rtrace->callCount - 1].blockCount < NTVDM64_TYPE_TRACE_MAX_STACK) {
 #if NTVDM64_TYPE_TRACE_DEBUG == 1
-        PRINTF("enter block(%d): %s\n", rtrace->callStack[rtrace->callCount - 1].blockCount, blockName);
+        STD_PRINTF("enter block(%d): %s\n", rtrace->callStack[rtrace->callCount - 1].blockCount, blockName);
 #endif
         rtrace->callStack[rtrace->callCount - 1].
         blockStack[rtrace->callStack[rtrace->callCount - 1].blockCount++] = blockName;
     } else {
-        PRINTF("trace_block_begin: block stack is full.\n");
+        STD_PRINTF("trace_block_begin: block stack is full.\n");
         rtrace->flagError = 1;
     }
 }
@@ -144,12 +160,12 @@ void ntvdm64_type_trace_block_end(ntvdm64_type_trace *rtrace) {
     if (rtrace->callStack[rtrace->callCount - 1].blockCount) {
         rtrace->callStack[rtrace->callCount - 1].blockCount--;
 #if NTVDM64_TYPE_TRACE_DEBUG == 1
-        PRINTF("leave block(%d): %s\n",
+        STD_PRINTF("leave block(%d): %s\n",
                rtrace->callStack[rtrace->callCount - 1].blockCount,
                rtrace->callStack[rtrace->callCount - 1].blockStack[rtrace->callStack[rtrace->callCount - 1].blockCount]);
 #endif
     } else {
-        PRINTF("trace_block_end: block stack is empty.\n");
+        STD_PRINTF("trace_block_end: block stack is empty.\n");
         rtrace->flagError = 1;
     }
 }

@@ -2552,184 +2552,184 @@ static t_aasm_token gettoken(char *str) {
 static void printtoken(t_aasm_token token) {
     switch (token) {
     case TOKEN_NULL:
-        PRINTF(" NULL ");
+        STD_PRINTF(" NULL ");
         break;
     case TOKEN_END:
-        PRINTF(" END ");
+        STD_PRINTF(" END ");
         break;
     case TOKEN_LSPAREN:
-        PRINTF(" [[ ");
+        STD_PRINTF(" [[ ");
         break;
     case TOKEN_RSPAREN:
-        PRINTF(" ]] ");
+        STD_PRINTF(" ]] ");
         break;
     case TOKEN_COLON:
-        PRINTF(" :: ");
+        STD_PRINTF(" :: ");
         break;
     case TOKEN_PLUS:
-        PRINTF(" ++ ");
+        STD_PRINTF(" ++ ");
         break;
     case TOKEN_MINUS:
-        PRINTF(" -- ");
+        STD_PRINTF(" -- ");
         break;
     case TOKEN_TIMES:
-        PRINTF(" ** ");
+        STD_PRINTF(" ** ");
         break;
     case TOKEN_BYTE:
-        PRINTF(" BYTE ");
+        STD_PRINTF(" BYTE ");
         break;
     case TOKEN_WORD:
-        PRINTF(" WORD ");
+        STD_PRINTF(" WORD ");
         break;
     case TOKEN_DWORD:
-        PRINTF(" DWORD ");
+        STD_PRINTF(" DWORD ");
         break;
     case TOKEN_PTR:
-        PRINTF(" PTR ");
+        STD_PRINTF(" PTR ");
         break;
     case TOKEN_NEAR:
-        PRINTF(" NEAR ");
+        STD_PRINTF(" NEAR ");
         break;
     case TOKEN_FAR:
-        PRINTF(" FAR ");
+        STD_PRINTF(" FAR ");
         break;
     case TOKEN_SHORT:
-        PRINTF(" SHORT ");
+        STD_PRINTF(" SHORT ");
         break;
     case TOKEN_IMM8:
-        PRINTF(" I8(%02X) ",  tokimm8);
+        STD_PRINTF(" I8(%02X) ",  tokimm8);
         break;
     case TOKEN_IMM16:
-        PRINTF(" I16(%04X) ", tokimm16);
+        STD_PRINTF(" I16(%04X) ", tokimm16);
         break;
     case TOKEN_IMM32:
-        PRINTF(" I32(%08X) ", tokimm32);
+        STD_PRINTF(" I32(%08X) ", tokimm32);
         break;
     case TOKEN_AH:
-        PRINTF(" AH ");
+        STD_PRINTF(" AH ");
         break;
     case TOKEN_BH:
-        PRINTF(" BH ");
+        STD_PRINTF(" BH ");
         break;
     case TOKEN_CH:
-        PRINTF(" CH ");
+        STD_PRINTF(" CH ");
         break;
     case TOKEN_DH:
-        PRINTF(" DH ");
+        STD_PRINTF(" DH ");
         break;
     case TOKEN_AL:
-        PRINTF(" AL ");
+        STD_PRINTF(" AL ");
         break;
     case TOKEN_BL:
-        PRINTF(" BL ");
+        STD_PRINTF(" BL ");
         break;
     case TOKEN_CL:
-        PRINTF(" CL ");
+        STD_PRINTF(" CL ");
         break;
     case TOKEN_DL:
-        PRINTF(" DL ");
+        STD_PRINTF(" DL ");
         break;
     case TOKEN_AX:
-        PRINTF(" AX ");
+        STD_PRINTF(" AX ");
         break;
     case TOKEN_BX:
-        PRINTF(" BX ");
+        STD_PRINTF(" BX ");
         break;
     case TOKEN_CX:
-        PRINTF(" CX ");
+        STD_PRINTF(" CX ");
         break;
     case TOKEN_DX:
-        PRINTF(" DX ");
+        STD_PRINTF(" DX ");
         break;
     case TOKEN_SP:
-        PRINTF(" SP ");
+        STD_PRINTF(" SP ");
         break;
     case TOKEN_BP:
-        PRINTF(" BP ");
+        STD_PRINTF(" BP ");
         break;
     case TOKEN_SI:
-        PRINTF(" SI ");
+        STD_PRINTF(" SI ");
         break;
     case TOKEN_DI:
-        PRINTF(" DI ");
+        STD_PRINTF(" DI ");
         break;
     case TOKEN_ES:
-        PRINTF(" ES ");
+        STD_PRINTF(" ES ");
         break;
     case TOKEN_CS:
-        PRINTF(" CS ");
+        STD_PRINTF(" CS ");
         break;
     case TOKEN_SS:
-        PRINTF(" SS ");
+        STD_PRINTF(" SS ");
         break;
     case TOKEN_DS:
-        PRINTF(" DS ");
+        STD_PRINTF(" DS ");
         break;
     case TOKEN_FS:
-        PRINTF(" FS ");
+        STD_PRINTF(" FS ");
         break;
     case TOKEN_GS:
-        PRINTF(" GS ");
+        STD_PRINTF(" GS ");
         break;
     case TOKEN_EAX:
-        PRINTF(" EAX ");
+        STD_PRINTF(" EAX ");
         break;
     case TOKEN_EBX:
-        PRINTF(" EBX ");
+        STD_PRINTF(" EBX ");
         break;
     case TOKEN_ECX:
-        PRINTF(" ECX ");
+        STD_PRINTF(" ECX ");
         break;
     case TOKEN_EDX:
-        PRINTF(" EDX ");
+        STD_PRINTF(" EDX ");
         break;
     case TOKEN_ESP:
-        PRINTF(" ESP ");
+        STD_PRINTF(" ESP ");
         break;
     case TOKEN_EBP:
-        PRINTF(" EBP ");
+        STD_PRINTF(" EBP ");
         break;
     case TOKEN_ESI:
-        PRINTF(" ESI ");
+        STD_PRINTF(" ESI ");
         break;
     case TOKEN_EDI:
-        PRINTF(" EDI ");
+        STD_PRINTF(" EDI ");
         break;
     case TOKEN_CR0:
-        PRINTF(" CR0 ");
+        STD_PRINTF(" CR0 ");
         break;
     case TOKEN_CR2:
-        PRINTF(" CR2 ");
+        STD_PRINTF(" CR2 ");
         break;
     case TOKEN_CR3:
-        PRINTF(" CR3 ");
+        STD_PRINTF(" CR3 ");
         break;
     case TOKEN_DR0:
-        PRINTF(" DR0 ");
+        STD_PRINTF(" DR0 ");
         break;
     case TOKEN_DR1:
-        PRINTF(" DR1 ");
+        STD_PRINTF(" DR1 ");
         break;
     case TOKEN_DR2:
-        PRINTF(" DR2 ");
+        STD_PRINTF(" DR2 ");
         break;
     case TOKEN_DR3:
-        PRINTF(" DR3 ");
+        STD_PRINTF(" DR3 ");
         break;
     case TOKEN_DR6:
-        PRINTF(" DR6 ");
+        STD_PRINTF(" DR6 ");
         break;
     case TOKEN_DR7:
-        PRINTF(" DR7 ");
+        STD_PRINTF(" DR7 ");
         break;
     case TOKEN_TR6:
-        PRINTF(" TR6 ");
+        STD_PRINTF(" TR6 ");
         break;
     case TOKEN_TR7:
-        PRINTF(" TR7 ");
+        STD_PRINTF(" TR7 ");
         break;
     default:
-        PRINTF(" <ERROR> ");
+        STD_PRINTF(" <ERROR> ");
         break;
         break;
     }
@@ -2748,7 +2748,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
     uint8_t eax,ecx,edx,ebx,esp,ebp,esi,edi;
     uint8_t ieax,iecx,iedx,iebx,iebp,iesi,iedi;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("parsearg_mem");
-    MEMSET((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
+    STD_MEMSET((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
     bx = bp = si = di = neg = al = 0;
     eax = ecx = edx = ebx = esp = ebp = esi = edi = 0;
     ieax = iecx = iedx = iebx = iebp = iesi = iedi = 0;
@@ -3287,7 +3287,7 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
     t_aasm_oprinfo info;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("parsearg_imm");
 
-    MEMSET((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
+    STD_MEMSET((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
 
     if (token == TOKEN_PLUS) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_PLUS)");
@@ -3344,7 +3344,7 @@ static t_aasm_oprinfo parsearg(char *arg) {
     t_aasm_token token;
     t_aasm_oprinfo info;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("parsearg");
-    MEMSET((void *)(&info), 0x00 ,sizeof(t_aasm_oprinfo));
+    STD_MEMSET((void *)(&info), 0x00 ,sizeof(t_aasm_oprinfo));
     if (!arg || !arg[0]) {
         info.type = TYPE_NONE;
         NTVDM64_TYPE_TRACE_CALL_END;
@@ -8013,12 +8013,12 @@ static int is_space(char c) {
     return (c == ' ' || c == '\t');
 }
 static int is_prefix() {
-    if (!STRCMP(rop, "es:") || !STRCMP(rop, "cs:") ||
-            !STRCMP(rop, "ss:") || !STRCMP(rop, "ds:") ||
-            !STRCMP(rop, "fs:") || !STRCMP(rop, "gs:") ||
-            !STRCMP(rop, "lock:") || !STRCMP(rop, "rep:") ||
-            !STRCMP(rop, "repne:") || !STRCMP(rop, "repnz:") ||
-            !STRCMP(rop, "repe:") || !STRCMP(rop, "repz:")) {
+    if (!STD_STRCMP(rop, "es:") || !STD_STRCMP(rop, "cs:") ||
+            !STD_STRCMP(rop, "ss:") || !STD_STRCMP(rop, "ds:") ||
+            !STD_STRCMP(rop, "fs:") || !STD_STRCMP(rop, "gs:") ||
+            !STD_STRCMP(rop, "lock:") || !STD_STRCMP(rop, "rep:") ||
+            !STD_STRCMP(rop, "repne:") || !STD_STRCMP(rop, "repnz:") ||
+            !STD_STRCMP(rop, "repe:") || !STD_STRCMP(rop, "repz:")) {
         return 1;
     } else {
         return 0;
@@ -8028,221 +8028,221 @@ static void exec() {
     /* assemble single statement */
     NTVDM64_TYPE_TRACE_CALL_BEGIN("exec");
     if (!rop || is_end(rop[0])) ;
-    else if (!STRCMP(rop, "add")) ADD();
-    else if (!STRCMP(rop,"push")) PUSH();
-    else if (!STRCMP(rop, "pop")) POP();
-    else if (!STRCMP(rop, "or" )) OR();
-    else if (!STRCMP(rop, "adc")) ADC();
-    else if (!STRCMP(rop, "sbb")) SBB();
-    else if (!STRCMP(rop, "and")) AND();
-    else if (!STRCMP(rop, "es:")) PREFIX_ES();
-    else if (!STRCMP(rop, "daa")) DAA();
-    else if (!STRCMP(rop, "sub")) SUB();
-    else if (!STRCMP(rop, "cs:")) PREFIX_CS();
-    else if (!STRCMP(rop, "das")) DAS();
-    else if (!STRCMP(rop, "xor")) XOR();
-    else if (!STRCMP(rop, "ss:")) PREFIX_SS();
-    else if (!STRCMP(rop, "aaa")) AAA();
-    else if (!STRCMP(rop, "cmp")) CMP();
-    else if (!STRCMP(rop, "ds:")) PREFIX_DS();
-    else if (!STRCMP(rop, "aas")) AAS();
-    else if (!STRCMP(rop, "inc")) INC();
-    else if (!STRCMP(rop, "dec")) DEC();
-    else if (!STRCMP(rop, "pusha")) PUSHA(2);
-    else if (!STRCMP(rop, "pushad")) PUSHA(4);
-    else if (!STRCMP(rop, "popa")) POPA(2);
-    else if (!STRCMP(rop, "popad")) POPA(4);
-    else if (!STRCMP(rop, "bound")) BOUND();
-    else if (!STRCMP(rop, "arpl")) ARPL_RM16_R16();
-    else if (!STRCMP(rop, "fs:")) PREFIX_FS();
-    else if (!STRCMP(rop, "gs:")) PREFIX_GS();
-    else if (!STRCMP(rop, "op+:")) PREFIX_OprSize();
-    else if (!STRCMP(rop, "az+:")) PREFIX_AddrSize();
-    else if (!STRCMP(rop,"imul")) IMUL();
-    else if (!STRCMP(rop,"ins"))  INS();
-    else if (!STRCMP(rop,"insb")) INSB();
-    else if (!STRCMP(rop,"insw")) INSW(2);
-    else if (!STRCMP(rop,"insd")) INSW(4);
-    else if (!STRCMP(rop,"outs"))  OUTS();
-    else if (!STRCMP(rop,"outsb")) OUTSB();
-    else if (!STRCMP(rop,"outsw")) OUTSW(2);
-    else if (!STRCMP(rop,"outsd")) OUTSW(4);
-    else if (!STRCMP(rop, "jo" )) JCC_REL(0x70);
-    else if (!STRCMP(rop, "jno")) JCC_REL(0x71);
-    else if (!STRCMP(rop, "jb" )) JCC_REL(0x72);
-    else if (!STRCMP(rop, "jc" )) JCC_REL(0x72);
-    else if (!STRCMP(rop,"jnae")) JCC_REL(0x72);
-    else if (!STRCMP(rop, "jae")) JCC_REL(0x73);
-    else if (!STRCMP(rop, "jnb")) JCC_REL(0x73);
-    else if (!STRCMP(rop, "jnc")) JCC_REL(0x73);
-    else if (!STRCMP(rop, "je" )) JCC_REL(0x74);
-    else if (!STRCMP(rop, "jz" )) JCC_REL(0x74);
-    else if (!STRCMP(rop, "jne")) JCC_REL(0x75);
-    else if (!STRCMP(rop, "jnz")) JCC_REL(0x75);
-    else if (!STRCMP(rop, "jbe")) JCC_REL(0x76);
-    else if (!STRCMP(rop, "jna")) JCC_REL(0x76);
-    else if (!STRCMP(rop, "ja" )) JCC_REL(0x77);
-    else if (!STRCMP(rop,"jnbe")) JCC_REL(0x77);
-    else if (!STRCMP(rop, "js" )) JCC_REL(0x78);
-    else if (!STRCMP(rop, "jns")) JCC_REL(0x79);
-    else if (!STRCMP(rop, "jp" )) JCC_REL(0x7a);
-    else if (!STRCMP(rop, "jpe")) JCC_REL(0x7a);
-    else if (!STRCMP(rop, "jnp")) JCC_REL(0x7b);
-    else if (!STRCMP(rop, "jpo")) JCC_REL(0x7b);
-    else if (!STRCMP(rop, "jl" )) JCC_REL(0x7c);
-    else if (!STRCMP(rop,"jnge")) JCC_REL(0x7c);
-    else if (!STRCMP(rop, "jge")) JCC_REL(0x7d);
-    else if (!STRCMP(rop, "jnl")) JCC_REL(0x7d);
-    else if (!STRCMP(rop, "jle")) JCC_REL(0x7e);
-    else if (!STRCMP(rop, "jng")) JCC_REL(0x7e);
-    else if (!STRCMP(rop, "jg" )) JCC_REL(0x7f);
-    else if (!STRCMP(rop,"jnle")) JCC_REL(0x7f);
-    else if (!STRCMP(rop,"test")) TEST();
-    else if (!STRCMP(rop,"xchg")) XCHG();
-    else if (!STRCMP(rop, "mov")) MOV();
-    else if (!STRCMP(rop, "lea")) LEA();
-    else if (!STRCMP(rop, "nop")) NOP();
-    else if (!STRCMP(rop, "cbw"))  CBW(2);
-    else if (!STRCMP(rop, "cwde")) CBW(4);
-    else if (!STRCMP(rop, "cwd")) CWD(2);
-    else if (!STRCMP(rop, "cdq")) CWD(4);
-    else if (!STRCMP(rop,"call")) CALL();
-    else if (!STRCMP(rop,"wait")) WAIT();
-    else if (!STRCMP(rop,"pushf"))  PUSHF(2);
-    else if (!STRCMP(rop,"pushfd")) PUSHF(4);
-    else if (!STRCMP(rop,"popf"))  POPF(2);
-    else if (!STRCMP(rop,"popfd")) POPF(4);
-    else if (!STRCMP(rop,"sahf")) SAHF();
-    else if (!STRCMP(rop,"lahf")) LAHF();
-    else if (!STRCMP(rop,"movs"))  MOVS();
-    else if (!STRCMP(rop,"movsb")) MOVSB();
-    else if (!STRCMP(rop,"movsw")) MOVSW(2);
-    else if (!STRCMP(rop,"movsd")) MOVSW(4);
-    else if (!STRCMP(rop,"cmps"))  CMPS();
-    else if (!STRCMP(rop,"cmpsb")) CMPSB();
-    else if (!STRCMP(rop,"cmpsw")) CMPSW(2);
-    else if (!STRCMP(rop,"cmpsd")) CMPSW(4);
-    else if (!STRCMP(rop,"stos"))  STOS();
-    else if (!STRCMP(rop,"stosb")) STOSB();
-    else if (!STRCMP(rop,"stosw")) STOSW(2);
-    else if (!STRCMP(rop,"stosd")) STOSW(4);
-    else if (!STRCMP(rop,"lods"))  LODS();
-    else if (!STRCMP(rop,"lodsb")) LODSB();
-    else if (!STRCMP(rop,"lodsw")) LODSW(2);
-    else if (!STRCMP(rop,"lodsd")) LODSW(4);
-    else if (!STRCMP(rop,"scas"))  SCAS();
-    else if (!STRCMP(rop,"scasb")) SCASB();
-    else if (!STRCMP(rop,"scasw")) SCASW(2);
-    else if (!STRCMP(rop,"scasd")) SCASW(4);
-    else if (!STRCMP(rop, "ret")) RET();
-    else if (!STRCMP(rop, "les")) LES();
-    else if (!STRCMP(rop, "lds")) LDS();
-    else if (!STRCMP(rop, "enter")) ENTER();
-    else if (!STRCMP(rop, "leave")) LEAVE();
-    else if (!STRCMP(rop,"retf")) RETF();
-    else if (!STRCMP(rop, "int")) INT();
-    else if (!STRCMP(rop,"into")) INTO();
-    else if (!STRCMP(rop,"iret"))  IRET(2);
-    else if (!STRCMP(rop,"iretd")) IRET(4);
-    else if (!STRCMP(rop, "rol")) ROL();
-    else if (!STRCMP(rop, "ror")) ROR();
-    else if (!STRCMP(rop, "rcl")) RCL();
-    else if (!STRCMP(rop, "rcr")) RCR();
-    else if (!STRCMP(rop, "shl")) SHL();
-    else if (!STRCMP(rop, "shr")) SHR();
-    else if (!STRCMP(rop, "sal")) SAL();
-    else if (!STRCMP(rop, "sar")) SAR();
-    else if (!STRCMP(rop, "aam")) AAM();
-    else if (!STRCMP(rop, "aad")) AAD();
-    else if (!STRCMP(rop,"xlat"))  XLAT();
-    else if (!STRCMP(rop,"xlatb")) XLATB();
-    else if (!STRCMP(rop,"loopne")) JCC_REL(0xe0);
-    else if (!STRCMP(rop,"loopnz")) JCC_REL(0xe0);
-    else if (!STRCMP(rop,"loope"))  JCC_REL(0xe1);
-    else if (!STRCMP(rop,"loopz"))  JCC_REL(0xe1);
-    else if (!STRCMP(rop,"loop"))   JCC_REL(0xe2);
-    else if (!STRCMP(rop,"jcxz"))   JCC_REL(0xe3);
-    else if (!STRCMP(rop, "in" )) IN();
-    else if (!STRCMP(rop, "out")) OUT();
-    else if (!STRCMP(rop, "jmp")) JMP();
-    else if (!STRCMP(rop, "lock"))  PREFIX_LOCK();
-    else if (!STRCMP(rop,"repne:")) PREFIX_REPNZ();
-    else if (!STRCMP(rop,"repnz:")) PREFIX_REPNZ();
-    else if (!STRCMP(rop, "rep:")) PREFIX_REPZ();
-    else if (!STRCMP(rop,"repe:")) PREFIX_REPZ();
-    else if (!STRCMP(rop,"repz:")) PREFIX_REPZ();
-    else if (!STRCMP(rop, "hlt")) HLT();
-    else if (!STRCMP(rop, "cmc")) CMC();
-    else if (!STRCMP(rop, "not")) NOT();
-    else if (!STRCMP(rop, "neg")) NEG();
-    else if (!STRCMP(rop, "mul")) MUL();
-    else if (!STRCMP(rop, "div")) DIV();
-    else if (!STRCMP(rop,"idiv")) IDIV();
-    else if (!STRCMP(rop, "clc")) CLC();
-    else if (!STRCMP(rop, "stc")) STC();
-    else if (!STRCMP(rop, "cli")) CLI();
-    else if (!STRCMP(rop, "sti")) STI();
-    else if (!STRCMP(rop, "cld")) CLD();
-    else if (!STRCMP(rop, "std")) STD();
-    else if (!STRCMP(rop, "sldt"))  SLDT();
-    else if (!STRCMP(rop, "str"))   STR();
-    else if (!STRCMP(rop, "lldt"))  LLDT();
-    else if (!STRCMP(rop, "ltr"))   LTR();
-    else if (!STRCMP(rop, "verr"))  VERR();
-    else if (!STRCMP(rop, "verw"))  VERW();
-    else if (!STRCMP(rop, "sgdt"))  SGDT();
-    else if (!STRCMP(rop, "sidt"))  SIDT();
-    else if (!STRCMP(rop, "lgdt"))  LGDT();
-    else if (!STRCMP(rop, "lidt"))  LIDT();
-    else if (!STRCMP(rop, "smsw"))  SMSW();
-    else if (!STRCMP(rop, "lmsw"))  LMSW();
-    else if (!STRCMP(rop, "lar"))   LAR();
-    else if (!STRCMP(rop, "lsl"))   LSL();
-    else if (!STRCMP(rop, "clts"))  CLTS();
-    else if (!STRCMP(rop, "seto" )) SETCC_RM8(0x90);
-    else if (!STRCMP(rop, "setno")) SETCC_RM8(0x91);
-    else if (!STRCMP(rop, "setb" )) SETCC_RM8(0x92);
-    else if (!STRCMP(rop, "setc" )) SETCC_RM8(0x92);
-    else if (!STRCMP(rop,"setnae")) SETCC_RM8(0x92);
-    else if (!STRCMP(rop, "setae")) SETCC_RM8(0x93);
-    else if (!STRCMP(rop, "setnb")) SETCC_RM8(0x93);
-    else if (!STRCMP(rop, "setnc")) SETCC_RM8(0x93);
-    else if (!STRCMP(rop, "sete" )) SETCC_RM8(0x94);
-    else if (!STRCMP(rop, "setz" )) SETCC_RM8(0x94);
-    else if (!STRCMP(rop, "setne")) SETCC_RM8(0x95);
-    else if (!STRCMP(rop, "setnz")) SETCC_RM8(0x95);
-    else if (!STRCMP(rop, "setbe")) SETCC_RM8(0x96);
-    else if (!STRCMP(rop, "setna")) SETCC_RM8(0x96);
-    else if (!STRCMP(rop, "seta" )) SETCC_RM8(0x97);
-    else if (!STRCMP(rop,"setnbe")) SETCC_RM8(0x97);
-    else if (!STRCMP(rop, "sets" )) SETCC_RM8(0x98);
-    else if (!STRCMP(rop, "setns")) SETCC_RM8(0x99);
-    else if (!STRCMP(rop, "setp" )) SETCC_RM8(0x9a);
-    else if (!STRCMP(rop, "setpe")) SETCC_RM8(0x9a);
-    else if (!STRCMP(rop, "setnp")) SETCC_RM8(0x9b);
-    else if (!STRCMP(rop, "setpo")) SETCC_RM8(0x9b);
-    else if (!STRCMP(rop, "setl" )) SETCC_RM8(0x9c);
-    else if (!STRCMP(rop,"setnge")) SETCC_RM8(0x9c);
-    else if (!STRCMP(rop, "setge")) SETCC_RM8(0x9d);
-    else if (!STRCMP(rop, "setnl")) SETCC_RM8(0x9d);
-    else if (!STRCMP(rop, "setle")) SETCC_RM8(0x9e);
-    else if (!STRCMP(rop, "setng")) SETCC_RM8(0x9e);
-    else if (!STRCMP(rop, "setg" )) SETCC_RM8(0x9f);
-    else if (!STRCMP(rop,"setnle")) SETCC_RM8(0x9f);
-    else if (!STRCMP(rop, "bt"))    BT();
-    else if (!STRCMP(rop, "shld"))  SHLD();
-    else if (!STRCMP(rop, "bts"))   BTS();
-    else if (!STRCMP(rop, "shrd"))  SHRD();
-    else if (!STRCMP(rop, "lss"))   LSS();
-    else if (!STRCMP(rop, "btr"))   BTR();
-    else if (!STRCMP(rop, "lfs"))   LFS();
-    else if (!STRCMP(rop, "lgs"))   LGS();
-    else if (!STRCMP(rop, "movzx")) MOVZX();
-    else if (!STRCMP(rop, "btc"))   BTC();
-    else if (!STRCMP(rop, "bsf"))   BSF();
-    else if (!STRCMP(rop, "bsr"))   BSR();
-    else if (!STRCMP(rop, "movsx")) MOVSX();
-    else if (!STRCMP(rop, "qdx"))   QDX();
+    else if (!STD_STRCMP(rop, "add")) ADD();
+    else if (!STD_STRCMP(rop,"push")) PUSH();
+    else if (!STD_STRCMP(rop, "pop")) POP();
+    else if (!STD_STRCMP(rop, "or" )) OR();
+    else if (!STD_STRCMP(rop, "adc")) ADC();
+    else if (!STD_STRCMP(rop, "sbb")) SBB();
+    else if (!STD_STRCMP(rop, "and")) AND();
+    else if (!STD_STRCMP(rop, "es:")) PREFIX_ES();
+    else if (!STD_STRCMP(rop, "daa")) DAA();
+    else if (!STD_STRCMP(rop, "sub")) SUB();
+    else if (!STD_STRCMP(rop, "cs:")) PREFIX_CS();
+    else if (!STD_STRCMP(rop, "das")) DAS();
+    else if (!STD_STRCMP(rop, "xor")) XOR();
+    else if (!STD_STRCMP(rop, "ss:")) PREFIX_SS();
+    else if (!STD_STRCMP(rop, "aaa")) AAA();
+    else if (!STD_STRCMP(rop, "cmp")) CMP();
+    else if (!STD_STRCMP(rop, "ds:")) PREFIX_DS();
+    else if (!STD_STRCMP(rop, "aas")) AAS();
+    else if (!STD_STRCMP(rop, "inc")) INC();
+    else if (!STD_STRCMP(rop, "dec")) DEC();
+    else if (!STD_STRCMP(rop, "pusha")) PUSHA(2);
+    else if (!STD_STRCMP(rop, "pushad")) PUSHA(4);
+    else if (!STD_STRCMP(rop, "popa")) POPA(2);
+    else if (!STD_STRCMP(rop, "popad")) POPA(4);
+    else if (!STD_STRCMP(rop, "bound")) BOUND();
+    else if (!STD_STRCMP(rop, "arpl")) ARPL_RM16_R16();
+    else if (!STD_STRCMP(rop, "fs:")) PREFIX_FS();
+    else if (!STD_STRCMP(rop, "gs:")) PREFIX_GS();
+    else if (!STD_STRCMP(rop, "op+:")) PREFIX_OprSize();
+    else if (!STD_STRCMP(rop, "az+:")) PREFIX_AddrSize();
+    else if (!STD_STRCMP(rop,"imul")) IMUL();
+    else if (!STD_STRCMP(rop,"ins"))  INS();
+    else if (!STD_STRCMP(rop,"insb")) INSB();
+    else if (!STD_STRCMP(rop,"insw")) INSW(2);
+    else if (!STD_STRCMP(rop,"insd")) INSW(4);
+    else if (!STD_STRCMP(rop,"outs"))  OUTS();
+    else if (!STD_STRCMP(rop,"outsb")) OUTSB();
+    else if (!STD_STRCMP(rop,"outsw")) OUTSW(2);
+    else if (!STD_STRCMP(rop,"outsd")) OUTSW(4);
+    else if (!STD_STRCMP(rop, "jo" )) JCC_REL(0x70);
+    else if (!STD_STRCMP(rop, "jno")) JCC_REL(0x71);
+    else if (!STD_STRCMP(rop, "jb" )) JCC_REL(0x72);
+    else if (!STD_STRCMP(rop, "jc" )) JCC_REL(0x72);
+    else if (!STD_STRCMP(rop,"jnae")) JCC_REL(0x72);
+    else if (!STD_STRCMP(rop, "jae")) JCC_REL(0x73);
+    else if (!STD_STRCMP(rop, "jnb")) JCC_REL(0x73);
+    else if (!STD_STRCMP(rop, "jnc")) JCC_REL(0x73);
+    else if (!STD_STRCMP(rop, "je" )) JCC_REL(0x74);
+    else if (!STD_STRCMP(rop, "jz" )) JCC_REL(0x74);
+    else if (!STD_STRCMP(rop, "jne")) JCC_REL(0x75);
+    else if (!STD_STRCMP(rop, "jnz")) JCC_REL(0x75);
+    else if (!STD_STRCMP(rop, "jbe")) JCC_REL(0x76);
+    else if (!STD_STRCMP(rop, "jna")) JCC_REL(0x76);
+    else if (!STD_STRCMP(rop, "ja" )) JCC_REL(0x77);
+    else if (!STD_STRCMP(rop,"jnbe")) JCC_REL(0x77);
+    else if (!STD_STRCMP(rop, "js" )) JCC_REL(0x78);
+    else if (!STD_STRCMP(rop, "jns")) JCC_REL(0x79);
+    else if (!STD_STRCMP(rop, "jp" )) JCC_REL(0x7a);
+    else if (!STD_STRCMP(rop, "jpe")) JCC_REL(0x7a);
+    else if (!STD_STRCMP(rop, "jnp")) JCC_REL(0x7b);
+    else if (!STD_STRCMP(rop, "jpo")) JCC_REL(0x7b);
+    else if (!STD_STRCMP(rop, "jl" )) JCC_REL(0x7c);
+    else if (!STD_STRCMP(rop,"jnge")) JCC_REL(0x7c);
+    else if (!STD_STRCMP(rop, "jge")) JCC_REL(0x7d);
+    else if (!STD_STRCMP(rop, "jnl")) JCC_REL(0x7d);
+    else if (!STD_STRCMP(rop, "jle")) JCC_REL(0x7e);
+    else if (!STD_STRCMP(rop, "jng")) JCC_REL(0x7e);
+    else if (!STD_STRCMP(rop, "jg" )) JCC_REL(0x7f);
+    else if (!STD_STRCMP(rop,"jnle")) JCC_REL(0x7f);
+    else if (!STD_STRCMP(rop,"test")) TEST();
+    else if (!STD_STRCMP(rop,"xchg")) XCHG();
+    else if (!STD_STRCMP(rop, "mov")) MOV();
+    else if (!STD_STRCMP(rop, "lea")) LEA();
+    else if (!STD_STRCMP(rop, "nop")) NOP();
+    else if (!STD_STRCMP(rop, "cbw"))  CBW(2);
+    else if (!STD_STRCMP(rop, "cwde")) CBW(4);
+    else if (!STD_STRCMP(rop, "cwd")) CWD(2);
+    else if (!STD_STRCMP(rop, "cdq")) CWD(4);
+    else if (!STD_STRCMP(rop,"call")) CALL();
+    else if (!STD_STRCMP(rop,"wait")) WAIT();
+    else if (!STD_STRCMP(rop,"pushf"))  PUSHF(2);
+    else if (!STD_STRCMP(rop,"pushfd")) PUSHF(4);
+    else if (!STD_STRCMP(rop,"popf"))  POPF(2);
+    else if (!STD_STRCMP(rop,"popfd")) POPF(4);
+    else if (!STD_STRCMP(rop,"sahf")) SAHF();
+    else if (!STD_STRCMP(rop,"lahf")) LAHF();
+    else if (!STD_STRCMP(rop,"movs"))  MOVS();
+    else if (!STD_STRCMP(rop,"movsb")) MOVSB();
+    else if (!STD_STRCMP(rop,"movsw")) MOVSW(2);
+    else if (!STD_STRCMP(rop,"movsd")) MOVSW(4);
+    else if (!STD_STRCMP(rop,"cmps"))  CMPS();
+    else if (!STD_STRCMP(rop,"cmpsb")) CMPSB();
+    else if (!STD_STRCMP(rop,"cmpsw")) CMPSW(2);
+    else if (!STD_STRCMP(rop,"cmpsd")) CMPSW(4);
+    else if (!STD_STRCMP(rop,"stos"))  STOS();
+    else if (!STD_STRCMP(rop,"stosb")) STOSB();
+    else if (!STD_STRCMP(rop,"stosw")) STOSW(2);
+    else if (!STD_STRCMP(rop,"stosd")) STOSW(4);
+    else if (!STD_STRCMP(rop,"lods"))  LODS();
+    else if (!STD_STRCMP(rop,"lodsb")) LODSB();
+    else if (!STD_STRCMP(rop,"lodsw")) LODSW(2);
+    else if (!STD_STRCMP(rop,"lodsd")) LODSW(4);
+    else if (!STD_STRCMP(rop,"scas"))  SCAS();
+    else if (!STD_STRCMP(rop,"scasb")) SCASB();
+    else if (!STD_STRCMP(rop,"scasw")) SCASW(2);
+    else if (!STD_STRCMP(rop,"scasd")) SCASW(4);
+    else if (!STD_STRCMP(rop, "ret")) RET();
+    else if (!STD_STRCMP(rop, "les")) LES();
+    else if (!STD_STRCMP(rop, "lds")) LDS();
+    else if (!STD_STRCMP(rop, "enter")) ENTER();
+    else if (!STD_STRCMP(rop, "leave")) LEAVE();
+    else if (!STD_STRCMP(rop,"retf")) RETF();
+    else if (!STD_STRCMP(rop, "int")) INT();
+    else if (!STD_STRCMP(rop,"into")) INTO();
+    else if (!STD_STRCMP(rop,"iret"))  IRET(2);
+    else if (!STD_STRCMP(rop,"iretd")) IRET(4);
+    else if (!STD_STRCMP(rop, "rol")) ROL();
+    else if (!STD_STRCMP(rop, "ror")) ROR();
+    else if (!STD_STRCMP(rop, "rcl")) RCL();
+    else if (!STD_STRCMP(rop, "rcr")) RCR();
+    else if (!STD_STRCMP(rop, "shl")) SHL();
+    else if (!STD_STRCMP(rop, "shr")) SHR();
+    else if (!STD_STRCMP(rop, "sal")) SAL();
+    else if (!STD_STRCMP(rop, "sar")) SAR();
+    else if (!STD_STRCMP(rop, "aam")) AAM();
+    else if (!STD_STRCMP(rop, "aad")) AAD();
+    else if (!STD_STRCMP(rop,"xlat"))  XLAT();
+    else if (!STD_STRCMP(rop,"xlatb")) XLATB();
+    else if (!STD_STRCMP(rop,"loopne")) JCC_REL(0xe0);
+    else if (!STD_STRCMP(rop,"loopnz")) JCC_REL(0xe0);
+    else if (!STD_STRCMP(rop,"loope"))  JCC_REL(0xe1);
+    else if (!STD_STRCMP(rop,"loopz"))  JCC_REL(0xe1);
+    else if (!STD_STRCMP(rop,"loop"))   JCC_REL(0xe2);
+    else if (!STD_STRCMP(rop,"jcxz"))   JCC_REL(0xe3);
+    else if (!STD_STRCMP(rop, "in" )) IN();
+    else if (!STD_STRCMP(rop, "out")) OUT();
+    else if (!STD_STRCMP(rop, "jmp")) JMP();
+    else if (!STD_STRCMP(rop, "lock"))  PREFIX_LOCK();
+    else if (!STD_STRCMP(rop,"repne:")) PREFIX_REPNZ();
+    else if (!STD_STRCMP(rop,"repnz:")) PREFIX_REPNZ();
+    else if (!STD_STRCMP(rop, "rep:")) PREFIX_REPZ();
+    else if (!STD_STRCMP(rop,"repe:")) PREFIX_REPZ();
+    else if (!STD_STRCMP(rop,"repz:")) PREFIX_REPZ();
+    else if (!STD_STRCMP(rop, "hlt")) HLT();
+    else if (!STD_STRCMP(rop, "cmc")) CMC();
+    else if (!STD_STRCMP(rop, "not")) NOT();
+    else if (!STD_STRCMP(rop, "neg")) NEG();
+    else if (!STD_STRCMP(rop, "mul")) MUL();
+    else if (!STD_STRCMP(rop, "div")) DIV();
+    else if (!STD_STRCMP(rop,"idiv")) IDIV();
+    else if (!STD_STRCMP(rop, "clc")) CLC();
+    else if (!STD_STRCMP(rop, "stc")) STC();
+    else if (!STD_STRCMP(rop, "cli")) CLI();
+    else if (!STD_STRCMP(rop, "sti")) STI();
+    else if (!STD_STRCMP(rop, "cld")) CLD();
+    else if (!STD_STRCMP(rop, "std")) STD();
+    else if (!STD_STRCMP(rop, "sldt"))  SLDT();
+    else if (!STD_STRCMP(rop, "str"))   STR();
+    else if (!STD_STRCMP(rop, "lldt"))  LLDT();
+    else if (!STD_STRCMP(rop, "ltr"))   LTR();
+    else if (!STD_STRCMP(rop, "verr"))  VERR();
+    else if (!STD_STRCMP(rop, "verw"))  VERW();
+    else if (!STD_STRCMP(rop, "sgdt"))  SGDT();
+    else if (!STD_STRCMP(rop, "sidt"))  SIDT();
+    else if (!STD_STRCMP(rop, "lgdt"))  LGDT();
+    else if (!STD_STRCMP(rop, "lidt"))  LIDT();
+    else if (!STD_STRCMP(rop, "smsw"))  SMSW();
+    else if (!STD_STRCMP(rop, "lmsw"))  LMSW();
+    else if (!STD_STRCMP(rop, "lar"))   LAR();
+    else if (!STD_STRCMP(rop, "lsl"))   LSL();
+    else if (!STD_STRCMP(rop, "clts"))  CLTS();
+    else if (!STD_STRCMP(rop, "seto" )) SETCC_RM8(0x90);
+    else if (!STD_STRCMP(rop, "setno")) SETCC_RM8(0x91);
+    else if (!STD_STRCMP(rop, "setb" )) SETCC_RM8(0x92);
+    else if (!STD_STRCMP(rop, "setc" )) SETCC_RM8(0x92);
+    else if (!STD_STRCMP(rop,"setnae")) SETCC_RM8(0x92);
+    else if (!STD_STRCMP(rop, "setae")) SETCC_RM8(0x93);
+    else if (!STD_STRCMP(rop, "setnb")) SETCC_RM8(0x93);
+    else if (!STD_STRCMP(rop, "setnc")) SETCC_RM8(0x93);
+    else if (!STD_STRCMP(rop, "sete" )) SETCC_RM8(0x94);
+    else if (!STD_STRCMP(rop, "setz" )) SETCC_RM8(0x94);
+    else if (!STD_STRCMP(rop, "setne")) SETCC_RM8(0x95);
+    else if (!STD_STRCMP(rop, "setnz")) SETCC_RM8(0x95);
+    else if (!STD_STRCMP(rop, "setbe")) SETCC_RM8(0x96);
+    else if (!STD_STRCMP(rop, "setna")) SETCC_RM8(0x96);
+    else if (!STD_STRCMP(rop, "seta" )) SETCC_RM8(0x97);
+    else if (!STD_STRCMP(rop,"setnbe")) SETCC_RM8(0x97);
+    else if (!STD_STRCMP(rop, "sets" )) SETCC_RM8(0x98);
+    else if (!STD_STRCMP(rop, "setns")) SETCC_RM8(0x99);
+    else if (!STD_STRCMP(rop, "setp" )) SETCC_RM8(0x9a);
+    else if (!STD_STRCMP(rop, "setpe")) SETCC_RM8(0x9a);
+    else if (!STD_STRCMP(rop, "setnp")) SETCC_RM8(0x9b);
+    else if (!STD_STRCMP(rop, "setpo")) SETCC_RM8(0x9b);
+    else if (!STD_STRCMP(rop, "setl" )) SETCC_RM8(0x9c);
+    else if (!STD_STRCMP(rop,"setnge")) SETCC_RM8(0x9c);
+    else if (!STD_STRCMP(rop, "setge")) SETCC_RM8(0x9d);
+    else if (!STD_STRCMP(rop, "setnl")) SETCC_RM8(0x9d);
+    else if (!STD_STRCMP(rop, "setle")) SETCC_RM8(0x9e);
+    else if (!STD_STRCMP(rop, "setng")) SETCC_RM8(0x9e);
+    else if (!STD_STRCMP(rop, "setg" )) SETCC_RM8(0x9f);
+    else if (!STD_STRCMP(rop,"setnle")) SETCC_RM8(0x9f);
+    else if (!STD_STRCMP(rop, "bt"))    BT();
+    else if (!STD_STRCMP(rop, "shld"))  SHLD();
+    else if (!STD_STRCMP(rop, "bts"))   BTS();
+    else if (!STD_STRCMP(rop, "shrd"))  SHRD();
+    else if (!STD_STRCMP(rop, "lss"))   LSS();
+    else if (!STD_STRCMP(rop, "btr"))   BTR();
+    else if (!STD_STRCMP(rop, "lfs"))   LFS();
+    else if (!STD_STRCMP(rop, "lgs"))   LGS();
+    else if (!STD_STRCMP(rop, "movzx")) MOVZX();
+    else if (!STD_STRCMP(rop, "btc"))   BTC();
+    else if (!STD_STRCMP(rop, "bsf"))   BSF();
+    else if (!STD_STRCMP(rop, "bsr"))   BSR();
+    else if (!STD_STRCMP(rop, "movsx")) MOVSX();
+    else if (!STD_STRCMP(rop, "qdx"))   QDX();
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
@@ -8290,7 +8290,7 @@ static uint8_t aasm32_execute(const char *stmt, uint8_t *rcode, int flag32) {
     ntvdm64_type_trace_initialize(&trace);
 #endif
 
-    MEMCPY((void *) astmt, (void *) stmt, 0x100);
+    STD_MEMCPY((void *) astmt, (void *) stmt, 0x100);
     ntvdm64_type_string_lower(astmt);
     rstmt = astmt;
 
@@ -8301,10 +8301,10 @@ static uint8_t aasm32_execute(const char *stmt, uint8_t *rcode, int flag32) {
     flagError = 0;
 
     iop = 0;
-    MEMSET((void *)(&aopri1), 0x00, sizeof(t_aasm_oprinfo));
-    MEMSET((void *)(&aopri2), 0x00, sizeof(t_aasm_oprinfo));
-    MEMSET((void *)(&aopri3), 0x00, sizeof(t_aasm_oprinfo));
-    MEMSET((void *)(&aoprig), 0x00, sizeof(t_aasm_oprinfo));
+    STD_MEMSET((void *)(&aopri1), 0x00, sizeof(t_aasm_oprinfo));
+    STD_MEMSET((void *)(&aopri2), 0x00, sizeof(t_aasm_oprinfo));
+    STD_MEMSET((void *)(&aopri3), 0x00, sizeof(t_aasm_oprinfo));
+    STD_MEMSET((void *)(&aoprig), 0x00, sizeof(t_aasm_oprinfo));
     prefix_oprsizeg = prefix_addrsizeg = 0;
 
     rop = ropr1 = ropr2 = ropr3 = NULL;
@@ -8395,19 +8395,19 @@ static uint8_t aasm32_execute(const char *stmt, uint8_t *rcode, int flag32) {
             (*(rcode + len)) = 0x66;
             len++;
         }
-        MEMCPY((void *)(rcode + len), (void *) acode, iop);
+        STD_MEMCPY((void *)(rcode + len), (void *) acode, iop);
         len += iop;
     } else {
 #if AASM_TRACE == 1
-        PRINTF("aasm32: bad instruction '%s'\n", stmt);
-        PRINTF("aasm32: [%s] [%s/%d] [%s/%d] [%s/%d]\n",
+        STD_PRINTF("aasm32: bad instruction '%s'\n", stmt);
+        STD_PRINTF("aasm32: [%s] [%s/%d] [%s/%d] [%s/%d]\n",
                rop, ropr1, aopri1.type, ropr2, aopri2.type, ropr3, aopri3.type);
 #endif
     }
 
 #if AASM_TRACE == 1
     if (trace.callCount || trace.flagError) {
-        PRINTF("aasm32: bad instruction '%s'\n", stmt);
+        STD_PRINTF("aasm32: bad instruction '%s'\n", stmt);
     }
     ntvdm64_type_trace_finalize(&trace);
 #endif
@@ -8421,7 +8421,7 @@ uint8_t aasm32(const char *stmt, uint8_t *rcode, int flag32) {
     uint8_t result;
 
     if (previous != NULL) return aasm32_execute(stmt, rcode, flag32);
-    MEMSET(&local_context, 0, sizeof(local_context));
+    STD_MEMSET(&local_context, 0, sizeof(local_context));
     aasmContext = &local_context;
     result = aasm32_execute(stmt, rcode, flag32);
     aasmContext = previous;
@@ -8467,8 +8467,8 @@ static void asmx_get_label(t_aasm_instr *rinstr) {
     }
     rinstr->flag_has_label = 1;
     if (rinstr->stmt[0] == '$' && rinstr->stmt[1] == '(' &&
-            rinstr->stmt[STRLEN(rinstr->stmt) - 1] == ':' &&
-            rinstr->stmt[STRLEN(rinstr->stmt) - 2] == ')') {
+            rinstr->stmt[STD_STRLEN(rinstr->stmt) - 1] == ':' &&
+            rinstr->stmt[STD_STRLEN(rinstr->stmt) - 2] == ')') {
         rinstr->flag_is_label = 1;
     }
 }
@@ -8515,8 +8515,8 @@ static void asmx_parse_instr(t_aasm_instr *rinstr) {
     default:
         return;
     }
-    if (!STRCMP(rinstr->op_str,"loopne") || !STRCMP(rinstr->op_str,"loopnz") || !STRCMP(rinstr->op_str,"loope") ||
-            !STRCMP(rinstr->op_str,"loopz")  || !STRCMP(rinstr->op_str,"loop")   || !STRCMP(rinstr->op_str,"jcxz")) {
+    if (!STD_STRCMP(rinstr->op_str,"loopne") || !STD_STRCMP(rinstr->op_str,"loopnz") || !STD_STRCMP(rinstr->op_str,"loope") ||
+            !STD_STRCMP(rinstr->op_str,"loopz")  || !STD_STRCMP(rinstr->op_str,"loop")   || !STD_STRCMP(rinstr->op_str,"jcxz")) {
         switch (rinstr->ptr) {
         case PTR_NONE:
             rinstr->ptr = PTR_SHORT;
@@ -8527,16 +8527,16 @@ static void asmx_parse_instr(t_aasm_instr *rinstr) {
             return;
         }
     }
-    if (!STRCMP(rinstr->op_str, "jo")  || !STRCMP(rinstr->op_str, "jno") || !STRCMP(rinstr->op_str, "jb" ) ||
-            !STRCMP(rinstr->op_str, "jc" ) || !STRCMP(rinstr->op_str,"jnae") || !STRCMP(rinstr->op_str, "jae") ||
-            !STRCMP(rinstr->op_str, "jnb") || !STRCMP(rinstr->op_str, "jnc") || !STRCMP(rinstr->op_str, "je" ) ||
-            !STRCMP(rinstr->op_str, "jz" ) || !STRCMP(rinstr->op_str, "jne") || !STRCMP(rinstr->op_str, "jnz") ||
-            !STRCMP(rinstr->op_str, "jbe") || !STRCMP(rinstr->op_str, "jna") || !STRCMP(rinstr->op_str, "ja" ) ||
-            !STRCMP(rinstr->op_str,"jnbe") || !STRCMP(rinstr->op_str, "js" ) || !STRCMP(rinstr->op_str, "jns") ||
-            !STRCMP(rinstr->op_str, "jp" ) || !STRCMP(rinstr->op_str, "jpe") || !STRCMP(rinstr->op_str, "jnp") ||
-            !STRCMP(rinstr->op_str, "jpo") || !STRCMP(rinstr->op_str, "jl" ) || !STRCMP(rinstr->op_str,"jnge") ||
-            !STRCMP(rinstr->op_str, "jge") || !STRCMP(rinstr->op_str, "jnl") || !STRCMP(rinstr->op_str, "jle") ||
-            !STRCMP(rinstr->op_str, "jng") || !STRCMP(rinstr->op_str, "jg" ) || !STRCMP(rinstr->op_str,"jnle")) {
+    if (!STD_STRCMP(rinstr->op_str, "jo")  || !STD_STRCMP(rinstr->op_str, "jno") || !STD_STRCMP(rinstr->op_str, "jb" ) ||
+            !STD_STRCMP(rinstr->op_str, "jc" ) || !STD_STRCMP(rinstr->op_str,"jnae") || !STD_STRCMP(rinstr->op_str, "jae") ||
+            !STD_STRCMP(rinstr->op_str, "jnb") || !STD_STRCMP(rinstr->op_str, "jnc") || !STD_STRCMP(rinstr->op_str, "je" ) ||
+            !STD_STRCMP(rinstr->op_str, "jz" ) || !STD_STRCMP(rinstr->op_str, "jne") || !STD_STRCMP(rinstr->op_str, "jnz") ||
+            !STD_STRCMP(rinstr->op_str, "jbe") || !STD_STRCMP(rinstr->op_str, "jna") || !STD_STRCMP(rinstr->op_str, "ja" ) ||
+            !STD_STRCMP(rinstr->op_str,"jnbe") || !STD_STRCMP(rinstr->op_str, "js" ) || !STD_STRCMP(rinstr->op_str, "jns") ||
+            !STD_STRCMP(rinstr->op_str, "jp" ) || !STD_STRCMP(rinstr->op_str, "jpe") || !STD_STRCMP(rinstr->op_str, "jnp") ||
+            !STD_STRCMP(rinstr->op_str, "jpo") || !STD_STRCMP(rinstr->op_str, "jl" ) || !STD_STRCMP(rinstr->op_str,"jnge") ||
+            !STD_STRCMP(rinstr->op_str, "jge") || !STD_STRCMP(rinstr->op_str, "jnl") || !STD_STRCMP(rinstr->op_str, "jle") ||
+            !STD_STRCMP(rinstr->op_str, "jng") || !STD_STRCMP(rinstr->op_str, "jg" ) || !STD_STRCMP(rinstr->op_str,"jnle")) {
         switch (rinstr->ptr) {
         case PTR_NONE:
             rinstr->ptr = PTR_SHORT;
@@ -8550,7 +8550,7 @@ static void asmx_parse_instr(t_aasm_instr *rinstr) {
             return;
         }
     }
-    if (!STRCMP(rinstr->op_str, "jmp")) {
+    if (!STD_STRCMP(rinstr->op_str, "jmp")) {
         switch (rinstr->ptr) {
         case PTR_SHORT:
             rinstr->code_len = 1/*opcode*/ + 1/*rel_imm8*/;
@@ -8564,7 +8564,7 @@ static void asmx_parse_instr(t_aasm_instr *rinstr) {
             return;
         }
     }
-    if (!STRCMP(rinstr->op_str, "call")) {
+    if (!STD_STRCMP(rinstr->op_str, "call")) {
         switch (rinstr->ptr) {
         case PTR_NONE:
             rinstr->ptr = PTR_NEAR;
@@ -8584,12 +8584,12 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
     t_aasm_instr *instr;
     count = 1;
     flagError = 0;
-    for (i = 0; i < (int32_t) STRLEN(stmt); ++i) {
+    for (i = 0; i < (int32_t) STD_STRLEN(stmt); ++i) {
         if (stmt[i] == '\n') {
             count++;
         }
     }
-    instr = (t_aasm_instr *) MALLOC(count * sizeof(t_aasm_instr));
+    instr = (t_aasm_instr *) STD_MALLOC(count * sizeof(t_aasm_instr));
     i = j = k = 0;
     while (is_space(stmt[i])) {
         i++;
@@ -8630,7 +8630,7 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
     }
     count = k;
     for (i = 0; i < count; ++i) {
-        MEMSET((void *) instr[i].code_array, 0x00, 15);
+        STD_MEMSET((void *) instr[i].code_array, 0x00, 15);
         asmx_get_label(&instr[i]);
         if (instr[i].flag_has_label) {
             if (instr[i].flag_is_label) {
@@ -8643,28 +8643,28 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
             instr[i].code_len = aasm32(instr[i].stmt, instr[i].code_array, flag32);
         }
         if (flagError) {
-            FREE((void *) instr);
+            STD_FREE((void *) instr);
             return 0;
         }
         if (!instr[i].code_len) {
             flagError = 1;
-            PRINTF("bad instruction in first round:\n#%d: [%s], %x", instr[i].stmt_id, instr[i].stmt, instr[i].code_len);
+            STD_PRINTF("bad instruction in first round:\n#%d: [%s], %x", instr[i].stmt_id, instr[i].stmt, instr[i].code_len);
             if (instr[i].code_len) {
-                PRINTF(", code: [");
+                STD_PRINTF(", code: [");
                 for (j = 0; j < instr[i].code_len; ++j) {
-                    PRINTF("%02X", instr[i].code_array[j]);
+                    STD_PRINTF("%02X", instr[i].code_array[j]);
                 }
-                PRINTF("]");
+                STD_PRINTF("]");
             }
             if (instr[i].flag_has_label) {
-                PRINTF(", label: [%s], is=%s",
+                STD_PRINTF(", label: [%s], is=%s",
                        instr[i].label_str,
                        instr[i].flag_is_label ? "yes" : "no");
             }
-            PRINTF("\n");
+            STD_PRINTF("\n");
         }
         if (flagError) {
-            FREE((void *) instr);
+            STD_FREE((void *) instr);
             return 0;
         }
     }
@@ -8675,10 +8675,10 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
         }
         if (i) {
             for (j = i - 1; j >= 0; --j) {
-                if (instr[j].flag_has_label && !STRCMP(instr[j].label_str, instr[i].label_str)) {
+                if (instr[j].flag_has_label && !STD_STRCMP(instr[j].label_str, instr[i].label_str)) {
                     if (instr[j].flag_is_label) {
                         flagError = 1;
-                        PRINTF("aasm32x: duplicate label '%s'.\n", instr[i].label_str);
+                        STD_PRINTF("aasm32x: duplicate label '%s'.\n", instr[i].label_str);
                     } else {
                         offset = 0;
                         /* for (k = j + 1;k < i;++k) {
@@ -8687,34 +8687,34 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
                         for (k = j + 1; k <= i; ++k) {
                             offset += instr[k].code_len;
                         }
-                        STRCPY(instr[j].stmt, instr[j].op_str);
+                        STD_STRCPY(instr[j].stmt, instr[j].op_str);
                         switch (instr[j].ptr) {
                         case PTR_SHORT:
-                            STRCAT(instr[j].stmt, " short ");
+                            STD_STRCAT(instr[j].stmt, " short ");
                             if (offset < 0x80) {
-                                SPRINTF(imm, "+%02x", (uint8_t) offset);
+                                STD_SPRINTF(imm, "+%02x", (uint8_t) offset);
                             } else {
                                 flagError = 1;
-                                PRINTF("aasm32x: invalid short pointer 8+.\n");
+                                STD_PRINTF("aasm32x: invalid short pointer 8+.\n");
                             }
                             break;
                         case PTR_NEAR:
-                            STRCAT(instr[j].stmt, " near ");
+                            STD_STRCAT(instr[j].stmt, " near ");
                             switch (_GetOperandSize) {
                             case 2:
                                 if (offset < 0x8000) {
-                                    SPRINTF(imm, "+%04x", (uint16_t) offset);
+                                    STD_SPRINTF(imm, "+%04x", (uint16_t) offset);
                                 } else {
                                     flagError = 1;
-                                    PRINTF("aasm32x: invalid near pointer 16+.\n");
+                                    STD_PRINTF("aasm32x: invalid near pointer 16+.\n");
                                 }
                                 break;
                             case 4:
                                 if (offset < 0x80000000) {
-                                    SPRINTF(imm, "+%08x", (uint32_t) offset);
+                                    STD_SPRINTF(imm, "+%08x", (uint32_t) offset);
                                 } else {
                                     flagError = 1;
-                                    PRINTF("aasm32x: invalid near pointer 32+.\n");
+                                    STD_PRINTF("aasm32x: invalid near pointer 32+.\n");
                                 }
                                 break;
                             default:
@@ -8725,11 +8725,11 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
                             flagError = 1;
                             break;
                         }
-                        STRCAT(instr[j].stmt, imm);
+                        STD_STRCAT(instr[j].stmt, imm);
                         aasm32(instr[j].stmt, instr[j].code_array, flag32);
                     }
                     if (flagError) {
-                        FREE((void *) instr);
+                        STD_FREE((void *) instr);
                         return 0;
                     }
                 }
@@ -8738,43 +8738,43 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
         }
         if (i != count - 1) {
             for (j = i + 1; j < count; ++j) {
-                if (instr[j].flag_has_label && !STRCMP(instr[j].label_str, instr[i].label_str)) {
+                if (instr[j].flag_has_label && !STD_STRCMP(instr[j].label_str, instr[i].label_str)) {
                     if (instr[j].flag_is_label) {
                         flagError = 1;
-                        PRINTF("aasm32x: duplicated label '%s'.\n", instr[i].label_str);
+                        STD_PRINTF("aasm32x: duplicated label '%s'.\n", instr[i].label_str);
                     } else {
                         offset = 0;
                         for (k = i + 1; k < j + 1; ++k) {
                             offset += instr[k].code_len;
                         }
-                        STRCPY(instr[j].stmt, instr[j].op_str);
+                        STD_STRCPY(instr[j].stmt, instr[j].op_str);
                         switch (instr[j].ptr) {
                         case PTR_SHORT:
-                            STRCAT(instr[j].stmt, " short ");
+                            STD_STRCAT(instr[j].stmt, " short ");
                             if (offset < 0x80) {
-                                SPRINTF(imm, "-%02x", (uint8_t) offset);
+                                STD_SPRINTF(imm, "-%02x", (uint8_t) offset);
                             } else {
                                 flagError = 1;
-                                PRINTF("aasm32x: invalid short pointer 8-.\n");
+                                STD_PRINTF("aasm32x: invalid short pointer 8-.\n");
                             }
                             break;
                         case PTR_NEAR:
-                            STRCAT(instr[j].stmt, " near ");
+                            STD_STRCAT(instr[j].stmt, " near ");
                             switch (_GetOperandSize) {
                             case 2:
                                 if (offset < 0x8000) {
-                                    SPRINTF(imm, "-%04x", (uint16_t) offset);
+                                    STD_SPRINTF(imm, "-%04x", (uint16_t) offset);
                                 } else {
                                     flagError = 1;
-                                    PRINTF("aasm32x: invalid near pointer 16-.\n");
+                                    STD_PRINTF("aasm32x: invalid near pointer 16-.\n");
                                 }
                                 break;
                             case 4:
                                 if (offset < 0x80000000) {
-                                    SPRINTF(imm, "-%08x", (uint32_t) offset);
+                                    STD_SPRINTF(imm, "-%08x", (uint32_t) offset);
                                 } else {
                                     flagError = 1;
-                                    PRINTF("aasm32x: invalid near pointer 32-.\n");
+                                    STD_PRINTF("aasm32x: invalid near pointer 32-.\n");
                                 }
                                 break;
                             default:
@@ -8785,11 +8785,11 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
                             flagError = 1;
                             break;
                         }
-                        STRCAT(instr[j].stmt, imm);
+                        STD_STRCAT(instr[j].stmt, imm);
                         aasm32(instr[j].stmt, instr[j].code_array, flag32);
                     }
                     if (flagError) {
-                        FREE((void *) instr);
+                        STD_FREE((void *) instr);
                         return 0;
                     }
                 }
@@ -8798,15 +8798,15 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
     }
     len = 0;
     for (i = 0; i < count; ++i) {
-        /*PRINTF("%04X: %s", len, instr[i].stmt);
-        for (j = (int32_t) STRLEN(instr[i].stmt);j < 50;++j) PRINTF(" ");
-        PRINTF("[");
-        for (j = 0;j < instr[i].code_len;++j) PRINTF("%02X", instr[i].code_array[j]);
-        PRINTF("]\n");*/
-        MEMCPY((void *)(rcode + len), (void *) instr[i].code_array, instr[i].code_len);
+        /*STD_PRINTF("%04X: %s", len, instr[i].stmt);
+        for (j = (int32_t) STD_STRLEN(instr[i].stmt);j < 50;++j) STD_PRINTF(" ");
+        STD_PRINTF("[");
+        for (j = 0;j < instr[i].code_len;++j) STD_PRINTF("%02X", instr[i].code_array[j]);
+        STD_PRINTF("]\n");*/
+        STD_MEMCPY((void *)(rcode + len), (void *) instr[i].code_array, instr[i].code_len);
         len += instr[i].code_len;
     }
-    FREE((void *) instr);
+    STD_FREE((void *) instr);
     return len;
 }
 
@@ -8816,7 +8816,7 @@ uint32_t aasm32x(const char *stmt, uint8_t *rcode, int flag32) {
     uint32_t result;
 
     if (previous != NULL) return aasm32x_execute(stmt, rcode, flag32);
-    MEMSET(&local_context, 0, sizeof(local_context));
+    STD_MEMSET(&local_context, 0, sizeof(local_context));
     aasmContext = &local_context;
     result = aasm32x_execute(stmt, rcode, flag32);
     aasmContext = previous;

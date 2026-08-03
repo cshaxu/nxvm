@@ -28,13 +28,13 @@ static _Thread_local nxvm_product_console_context *consoleContext;
  */
 static void parse() {
     numArgs = 0;
-    argArray[numArgs] = STRTOK(strCmdBuff, " \t\n\r\f");
+    argArray[numArgs] = STD_STRTOK(strCmdBuff, " \t\n\r\f");
     if (!argArray[numArgs]) {
         return;
     }
     ntvdm64_type_string_lower(argArray[numArgs++]);
     while (numArgs < CONSOLE_MAXNARG) {
-        argArray[numArgs] = STRTOK(NULL, " \t\n\r\f");
+        argArray[numArgs] = STD_STRTOK(NULL, " \t\n\r\f");
         if (argArray[numArgs]) {
             ntvdm64_type_string_lower(argArray[numArgs++]);
         } else {
@@ -46,103 +46,103 @@ static void parse() {
 /* Prints help commands. */
 #define GetHelp if (1) {doHelp();return;} else
 static void doHelp() {
-    if (STRCMP(argArray[0], "help")) {
+    if (STD_STRCMP(argArray[0], "help")) {
         numArgs = 2;
         argArray[1] = argArray[0];
     }
     switch (numArgs) {
     case 2:
-        if (!STRCMP(argArray[1], "help")) {
-            PRINTF("Show help info\n");
-            PRINTF("\nHELP\n");
-            PRINTF("  show menu of all commands\n");
-            PRINTF("\nHELP <command>\n");
-            PRINTF("  show help info for command\n");
+        if (!STD_STRCMP(argArray[1], "help")) {
+            STD_PRINTF("Show help info\n");
+            STD_PRINTF("\nHELP\n");
+            STD_PRINTF("  show menu of all commands\n");
+            STD_PRINTF("\nHELP <command>\n");
+            STD_PRINTF("  show help info for command\n");
             break;
-        } else if (!STRCMP(argArray[1], "exit")) {
-            PRINTF("Quit the console\n");
-            PRINTF("\nEXIT\n");
+        } else if (!STD_STRCMP(argArray[1], "exit")) {
+            STD_PRINTF("Quit the console\n");
+            STD_PRINTF("\nEXIT\n");
             break;
-        } else if (!STRCMP(argArray[1], "info")) {
-            PRINTF("List virtual machine status\n");
-            PRINTF("\nINFO\n");
+        } else if (!STD_STRCMP(argArray[1], "info")) {
+            STD_PRINTF("List virtual machine status\n");
+            STD_PRINTF("\nINFO\n");
             break;
-        } else if (!STRCMP(argArray[1], "debug")) {
-            PRINTF("Launch NXVM hardware debugger\n");
-            PRINTF("\nDEBUG\n");
+        } else if (!STD_STRCMP(argArray[1], "debug")) {
+            STD_PRINTF("Launch NXVM hardware debugger\n");
+            STD_PRINTF("\nDEBUG\n");
             break;
-        } else if (!STRCMP(argArray[1], "debug32")) {
-            PRINTF("Launch NXVM 32-bit hardware debugger\n");
-            PRINTF("\nDEBUG\n");
+        } else if (!STD_STRCMP(argArray[1], "debug32")) {
+            STD_PRINTF("Launch NXVM 32-bit hardware debugger\n");
+            STD_PRINTF("\nDEBUG\n");
             break;
-        } else if (!STRCMP(argArray[1], "record")) {
-            PRINTF("Record cpu status in each iteration for futher dumping\n");
-            PRINTF("\nRECORD start <file> | stop\n");
-            PRINTF("  start: open output file for record writes\n");
-            PRINTF("  stop:  close output file to finish recording\n");
+        } else if (!STD_STRCMP(argArray[1], "record")) {
+            STD_PRINTF("Record cpu status in each iteration for futher dumping\n");
+            STD_PRINTF("\nRECORD start <file> | stop\n");
+            STD_PRINTF("  start: open output file for record writes\n");
+            STD_PRINTF("  stop:  close output file to finish recording\n");
             break;
-        } else if (!STRCMP(argArray[1], "set")) {
-            PRINTF("Change BIOS settings\n");
-            PRINTF("\nSET <item> <value>\n");
-            PRINTF("  available items and values\n");
-            PRINTF("  boot   fdd, hdd\n");
+        } else if (!STD_STRCMP(argArray[1], "set")) {
+            STD_PRINTF("Change BIOS settings\n");
+            STD_PRINTF("\nSET <item> <value>\n");
+            STD_PRINTF("  available items and values\n");
+            STD_PRINTF("  boot   fdd, hdd\n");
             break;
-        } else if (!STRCMP(argArray[1], "device")) {
-            PRINTF("Change NXVM devices\n");
-            PRINTF("\nDEVICE ram <size>\n");
-            PRINTF("  change memory size (KB)\n");
-            PRINTF("\nDEVICE display console | window\n");
-            PRINTF("  change display type\n");
-            PRINTF("\nDEVICE fdd create | (insert <file>) | (remove <file>)\n");
-            PRINTF("  change floppy drive status:\n");
-            PRINTF("  create: discard current floppy image\n");
-            PRINTF("          and create a new one\n");
-            PRINTF("  insert: load floppy image from file\n");
-            PRINTF("  remove: remove floppy image and dump to file\n");
-            PRINTF("\nDEVICE hdd (create [cyl <num>]) | (connect <file>) | (disconnect <file>)\n");
-            PRINTF("  change hard disk drive status:\n");
-            PRINTF("  create:     discard current hard disk image\n");
-            PRINTF("              and create a new one of n cyls\n");
-            PRINTF("  connect:    load hard disk image from file\n");
-            PRINTF("  disconnect: remove hard disk image and dump to file\n");
+        } else if (!STD_STRCMP(argArray[1], "device")) {
+            STD_PRINTF("Change NXVM devices\n");
+            STD_PRINTF("\nDEVICE ram <size>\n");
+            STD_PRINTF("  change memory size (KB)\n");
+            STD_PRINTF("\nDEVICE display console | window\n");
+            STD_PRINTF("  change display type\n");
+            STD_PRINTF("\nDEVICE fdd create | (insert <file>) | (remove <file>)\n");
+            STD_PRINTF("  change floppy drive status:\n");
+            STD_PRINTF("  create: discard current floppy image\n");
+            STD_PRINTF("          and create a new one\n");
+            STD_PRINTF("  insert: load floppy image from file\n");
+            STD_PRINTF("  remove: remove floppy image and dump to file\n");
+            STD_PRINTF("\nDEVICE hdd (create [cyl <num>]) | (connect <file>) | (disconnect <file>)\n");
+            STD_PRINTF("  change hard disk drive status:\n");
+            STD_PRINTF("  create:     discard current hard disk image\n");
+            STD_PRINTF("              and create a new one of n cyls\n");
+            STD_PRINTF("  connect:    load hard disk image from file\n");
+            STD_PRINTF("  disconnect: remove hard disk image and dump to file\n");
             break;
-        } else if (!STRCMP(argArray[1], "start")) {
-            PRINTF("Start virtual machine\n");
-            PRINTF("\nSTART\n");
+        } else if (!STD_STRCMP(argArray[1], "start")) {
+            STD_PRINTF("Start virtual machine\n");
+            STD_PRINTF("\nSTART\n");
             break;
-        } else if (!STRCMP(argArray[1], "reset")) {
-            PRINTF("Reset virtual machine\n");
-            PRINTF("\nRESET\n");
+        } else if (!STD_STRCMP(argArray[1], "reset")) {
+            STD_PRINTF("Reset virtual machine\n");
+            STD_PRINTF("\nRESET\n");
             break;
-        } else if (!STRCMP(argArray[1], "stop")) {
-            PRINTF("Stop virtual machine\n");
-            PRINTF("\nSTOP\n");
+        } else if (!STD_STRCMP(argArray[1], "stop")) {
+            STD_PRINTF("Stop virtual machine\n");
+            STD_PRINTF("\nSTOP\n");
             break;
-        } else if (!STRCMP(argArray[1], "resume")) {
-            PRINTF("Resume virtual machine\n");
-            PRINTF("\nRESUME\n");
+        } else if (!STD_STRCMP(argArray[1], "resume")) {
+            STD_PRINTF("Resume virtual machine\n");
+            STD_PRINTF("\nRESUME\n");
             break;
         }
     case 1:
     default:
-        PRINTF("NXVM Console Commands\n");
-        PRINTF("=====================\n");
-        PRINTF("HELP    Show help info\n");
-        PRINTF("EXIT    Quit the console\n");
-        PRINTF("INFO    List all NXVM info\n");
-        PRINTF("\n");
-        PRINTF("DEBUG   Launch NXVM hardware debugger\n");
-        PRINTF("RECORD  Record cpu status for each instruction\n");
-        PRINTF("\n");
-        PRINTF("SET     Change BIOS settings\n");
-        PRINTF("DEVICE  Change hardware parts\n");
-        PRINTF("\n");
-        PRINTF("START   Start virtual machine\n");
-        PRINTF("RESET   Reset virtual machine\n");
-        PRINTF("STOP    Stop virtual machine\n");
-        PRINTF("RESUME  Resume virtual machine\n");
-        PRINTF("\n");
-        PRINTF("For command usage, type 'HELP <command>'.\n");
+        STD_PRINTF("NXVM Console Commands\n");
+        STD_PRINTF("=====================\n");
+        STD_PRINTF("HELP    Show help info\n");
+        STD_PRINTF("EXIT    Quit the console\n");
+        STD_PRINTF("INFO    List all NXVM info\n");
+        STD_PRINTF("\n");
+        STD_PRINTF("DEBUG   Launch NXVM hardware debugger\n");
+        STD_PRINTF("RECORD  Record cpu status for each instruction\n");
+        STD_PRINTF("\n");
+        STD_PRINTF("SET     Change BIOS settings\n");
+        STD_PRINTF("DEVICE  Change hardware parts\n");
+        STD_PRINTF("\n");
+        STD_PRINTF("START   Start virtual machine\n");
+        STD_PRINTF("RESET   Reset virtual machine\n");
+        STD_PRINTF("STOP    Stop virtual machine\n");
+        STD_PRINTF("RESUME  Resume virtual machine\n");
+        STD_PRINTF("\n");
+        STD_PRINTF("For command usage, type 'HELP <command>'.\n");
         break;
     }
 }
@@ -155,7 +155,7 @@ static void doExit() {
     if (!consoleTarget->is_running(consoleTarget->context)) {
         flagExit = 1;
     } else {
-        PRINTF("Please stop NXVM before exit.\n");
+        STD_PRINTF("Please stop NXVM before exit.\n");
     }
 }
 
@@ -164,20 +164,20 @@ static void doInfo() {
     if (numArgs != 1) {
         GetHelp;
     }
-    PRINTF("NXVM Device Info\n");
-    PRINTF("================\n");
+    STD_PRINTF("NXVM Device Info\n");
+    STD_PRINTF("================\n");
     consoleTarget->print_machine(consoleTarget->context);
-    PRINTF("\n");
-    PRINTF("NXVM Platform Info\n");
-    PRINTF("==================\n");
-    PRINTF("Display Type: %s\n", consoleTarget->get_window_display(consoleTarget->context) ? "Window" : "Console");
-    PRINTF("\n");
-    PRINTF("NXVM BIOS Settings\n");
-    PRINTF("==================\n");
+    STD_PRINTF("\n");
+    STD_PRINTF("NXVM Platform Info\n");
+    STD_PRINTF("==================\n");
+    STD_PRINTF("Display Type: %s\n", consoleTarget->get_window_display(consoleTarget->context) ? "Window" : "Console");
+    STD_PRINTF("\n");
+    STD_PRINTF("NXVM BIOS Settings\n");
+    STD_PRINTF("==================\n");
     consoleTarget->print_bios(consoleTarget->context);
-    PRINTF("\n");
-    PRINTF("NXVM Device Status\n");
-    PRINTF("==================\n");
+    STD_PRINTF("\n");
+    STD_PRINTF("NXVM Device Status\n");
+    STD_PRINTF("==================\n");
     consoleTarget->print_status(consoleTarget->context);
 }
 
@@ -195,15 +195,15 @@ static void doRecord() {
         GetHelp;
     }
     if (consoleTarget->is_running(consoleTarget->context)) {
-        PRINTF("Cannot change record status or dump record now.\n");
+        STD_PRINTF("Cannot change record status or dump record now.\n");
         return;
     }
-    if (!STRCMP(argArray[1], "start")) {
+    if (!STD_STRCMP(argArray[1], "start")) {
         if (numArgs != 3) {
             GetHelp;
         }
         consoleTarget->record_start(consoleTarget->context, argArray[2]);
-    } else if (!STRCMP(argArray[1], "stop")) {
+    } else if (!STD_STRCMP(argArray[1], "stop")) {
         consoleTarget->record_stop(consoleTarget->context);
     } else {
         GetHelp;
@@ -215,13 +215,13 @@ static void doSet() {
     if (numArgs < 2) {
         GetHelp;
     }
-    if (!STRCMP(argArray[1], "boot")) {
+    if (!STD_STRCMP(argArray[1], "boot")) {
         if (numArgs != 3) {
             GetHelp;
         }
-        if (!STRCMP(argArray[2], "fdd")) {
+        if (!STD_STRCMP(argArray[2], "fdd")) {
             consoleTarget->set_boot_hdd(consoleTarget->context, 0);
-        } else if (!STRCMP(argArray[2], "hdd")) {
+        } else if (!STD_STRCMP(argArray[2], "hdd")) {
             consoleTarget->set_boot_hdd(consoleTarget->context, 1);
         } else {
             GetHelp;
@@ -237,60 +237,60 @@ static void doDevice() {
         GetHelp;
     }
     if (consoleTarget->is_running(consoleTarget->context)) {
-        PRINTF("Cannot change device now.\n");
+        STD_PRINTF("Cannot change device now.\n");
         return;
     }
-    if (!STRCMP(argArray[1], "ram")) {
+    if (!STD_STRCMP(argArray[1], "ram")) {
         if (numArgs != 3) {
             GetHelp;
         }
         consoleTarget->set_memory(consoleTarget->context, (size_t)atoi(argArray[2]) << 10);
-    } else if (!STRCMP(argArray[1], "display")) {
+    } else if (!STD_STRCMP(argArray[1], "display")) {
         if (numArgs != 3) {
             GetHelp;
         }
-        if (!STRCMP(argArray[2], "console")) {
+        if (!STD_STRCMP(argArray[2], "console")) {
             consoleTarget->set_window_display(consoleTarget->context, 0);
-        } else if (!STRCMP(argArray[2], "window")) {
+        } else if (!STD_STRCMP(argArray[2], "window")) {
             consoleTarget->set_window_display(consoleTarget->context, 1);
         } else {
             GetHelp;
         }
-    } else if (!STRCMP(argArray[1], "fdd")) {
+    } else if (!STD_STRCMP(argArray[1], "fdd")) {
         if (numArgs < 3) {
             GetHelp;
         }
-        if (!STRCMP(argArray[2], "create")) {
+        if (!STD_STRCMP(argArray[2], "create")) {
             consoleTarget->create_fdd(consoleTarget->context);
-            PRINTF("Floppy disk created.\n");
-        } else if (!STRCMP(argArray[2], "insert")) {
+            STD_PRINTF("Floppy disk created.\n");
+        } else if (!STD_STRCMP(argArray[2], "insert")) {
             if (numArgs < 4) {
                 GetHelp;
             }
             if (!consoleTarget->insert_fdd(consoleTarget->context, argArray[3])) {
-                PRINTF("Floppy disk inserted.\n");
+                STD_PRINTF("Floppy disk inserted.\n");
             } else {
-                PRINTF("Cannot read floppy disk from '%s'.\n", argArray[3]);
+                STD_PRINTF("Cannot read floppy disk from '%s'.\n", argArray[3]);
             }
-        } else if (!STRCMP(argArray[2], "remove")) {
+        } else if (!STD_STRCMP(argArray[2], "remove")) {
             if (numArgs < 4) {
                 argArray[3] = NULL;
             }
             if (!consoleTarget->remove_fdd(consoleTarget->context, argArray[3])) {
-                PRINTF("Floppy disk removed.\n");
+                STD_PRINTF("Floppy disk removed.\n");
             } else {
-                PRINTF("Cannot write floppy disk to '%s'.\n", argArray[3]);
+                STD_PRINTF("Cannot write floppy disk to '%s'.\n", argArray[3]);
             }
         } else {
             GetHelp;
         }
-    } else if (!STRCMP(argArray[1], "hdd")) {
+    } else if (!STD_STRCMP(argArray[1], "hdd")) {
         if (numArgs < 3) {
             GetHelp;
         }
-        if (!STRCMP(argArray[2], "create")) {
+        if (!STD_STRCMP(argArray[2], "create")) {
             if (numArgs > 3) {
-                if (numArgs == 5 && !STRCMP(argArray[3], "cyl")) {
+                if (numArgs == 5 && !STD_STRCMP(argArray[3], "cyl")) {
                     if (atoi(argArray[4])) {
                         consoleTarget->create_hdd(consoleTarget->context, (uint16_t)atoi(argArray[4]));
                     } else {
@@ -302,24 +302,24 @@ static void doDevice() {
             } else {
                 consoleTarget->create_hdd(consoleTarget->context, 20);
             }
-            PRINTF("Hard disk created.\n");
-        } else if (!STRCMP(argArray[2], "connect")) {
+            STD_PRINTF("Hard disk created.\n");
+        } else if (!STD_STRCMP(argArray[2], "connect")) {
             if (numArgs < 4) {
                 GetHelp;
             }
             if (!consoleTarget->insert_hdd(consoleTarget->context, argArray[3])) {
-                PRINTF("Hard disk connected.\n");
+                STD_PRINTF("Hard disk connected.\n");
             } else {
-                PRINTF("Cannot read hard disk from '%s'.\n", argArray[3]);
+                STD_PRINTF("Cannot read hard disk from '%s'.\n", argArray[3]);
             }
-        } else if (!STRCMP(argArray[2], "disconnect")) {
+        } else if (!STD_STRCMP(argArray[2], "disconnect")) {
             if (numArgs < 4) {
                 argArray[3] = NULL;
             }
             if (!consoleTarget->remove_hdd(consoleTarget->context, argArray[3])) {
-                PRINTF("Hard disk disconnected.\n");
+                STD_PRINTF("Hard disk disconnected.\n");
             } else {
-                PRINTF("Cannot write hard disk to '%s'.\n", argArray[3]);
+                STD_PRINTF("Cannot write hard disk to '%s'.\n", argArray[3]);
             }
         } else {
             GetHelp;
@@ -337,46 +337,46 @@ static void doTest() {
 
 /* Executes commands */
 static void execute() {
-    if (!argArray[0] || !STRLEN(argArray[0])) {
+    if (!argArray[0] || !STD_STRLEN(argArray[0])) {
         return;
-    } else if (!STRCMP(argArray[0], "test")) {
+    } else if (!STD_STRCMP(argArray[0], "test")) {
         doTest();
-    } else if (!STRCMP(argArray[0], "help")) {
+    } else if (!STD_STRCMP(argArray[0], "help")) {
         doHelp();
-    } else if (!STRCMP(argArray[0], "exit")) {
+    } else if (!STD_STRCMP(argArray[0], "exit")) {
         doExit();
-    } else if (!STRCMP(argArray[0], "info")) {
+    } else if (!STD_STRCMP(argArray[0], "info")) {
         doInfo();
-    } else if (!STRCMP(argArray[0], "debug")) {
+    } else if (!STD_STRCMP(argArray[0], "debug")) {
         doDebug();
-    } else if (!STRCMP(argArray[0], "record")) {
+    } else if (!STD_STRCMP(argArray[0], "record")) {
         doRecord();
-    } else if (!STRCMP(argArray[0], "set")) {
+    } else if (!STD_STRCMP(argArray[0], "set")) {
         doSet();
-    } else if (!STRCMP(argArray[0], "device")) {
+    } else if (!STD_STRCMP(argArray[0], "device")) {
         doDevice();
-    } else if (!STRCMP(argArray[0], "mode")) {
+    } else if (!STD_STRCMP(argArray[0], "mode")) {
         if (!consoleTarget->is_running(consoleTarget->context)) {
             consoleTarget->set_window_display(consoleTarget->context,
                 !consoleTarget->get_window_display(consoleTarget->context));
         }
-    } else if (!STRCMP(argArray[0], "start")) {
+    } else if (!STD_STRCMP(argArray[0], "start")) {
         consoleTarget->start(consoleTarget->context);
-    } else if (!STRCMP(argArray[0], "reset")) {
+    } else if (!STD_STRCMP(argArray[0], "reset")) {
         consoleTarget->reset(consoleTarget->context);
-    } else if (!STRCMP(argArray[0], "stop")) {
+    } else if (!STD_STRCMP(argArray[0], "stop")) {
         consoleTarget->stop(consoleTarget->context);
-    } else if (!STRCMP(argArray[0], "resume")) {
+    } else if (!STD_STRCMP(argArray[0], "resume")) {
         consoleTarget->resume(consoleTarget->context);
     } else {
-        PRINTF("Illegal command '%s'.\n",argArray[0]);
+        STD_PRINTF("Illegal command '%s'.\n",argArray[0]);
     }
-    PRINTF("\n");
+    STD_PRINTF("\n");
 }
 
 /* Initializes console */
 static void vm_product_console_initialize() {
-    argArray = (char **) MALLOC(CONSOLE_MAXNARG * sizeof(char *));
+    argArray = (char **) STD_MALLOC(CONSOLE_MAXNARG * sizeof(char *));
     flagExit = 0;
     consoleTarget->initialize(consoleTarget->context);
 }
@@ -385,7 +385,7 @@ static void vm_product_console_initialize() {
 static void vm_product_console_finalize() {
     consoleTarget->finalize(consoleTarget->context);
     if (argArray) {
-        FREE((void *) argArray);
+        STD_FREE((void *) argArray);
     }
 }
 
@@ -393,7 +393,7 @@ static void vm_product_console_finalize() {
 void nxvm_product_console_context_initialize(
     nxvm_product_console_context *context)
 {
-    if (context != NULL) MEMSET(context, 0, sizeof(*context));
+    if (context != NULL) STD_MEMSET(context, 0, sizeof(*context));
 }
 
 void vm_product_console_main(nxvm_product_console_context *context,
@@ -405,10 +405,10 @@ void vm_product_console_main(nxvm_product_console_context *context,
     nxvm_product_console_context_initialize(context);
     consoleTarget = target;
     vm_product_console_initialize();
-    PRINTF("\nPlease enter 'HELP' for information.\n\n");
+    STD_PRINTF("\nPlease enter 'HELP' for information.\n\n");
     while (!flagExit) {
-        PRINTF("Console> ");
-        FGETS(strCmdBuff, 0x100, stdin);
+        STD_PRINTF("Console> ");
+        STD_FGETS(strCmdBuff, 0x100, stdin);
         parse();
         execute();
     }

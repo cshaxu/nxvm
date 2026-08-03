@@ -10,7 +10,7 @@
 #include "core/machine/dma.h"
 
 static void doReset(t_dma *rdma) {
-    MEMSET((void *)(&rdma->data), NTVDM64_TYPE_ZERO_8, sizeof(t_dma_data));
+    STD_MEMSET((void *)(&rdma->data), NTVDM64_TYPE_ZERO_8, sizeof(t_dma_data));
     rdma->data.mask = VDMA_MASK_VALID;
 }
 
@@ -440,9 +440,9 @@ void core_machine_dma_initialize(t_latch *latch, t_dma *primary,
 
     if (latch == NULL || primary == NULL || secondary == NULL ||
         port == NULL) return;
-    MEMSET((void *)latch, NTVDM64_TYPE_ZERO_8, sizeof(*latch));
-    MEMSET((void *)primary, NTVDM64_TYPE_ZERO_8, sizeof(*primary));
-    MEMSET((void *)secondary, NTVDM64_TYPE_ZERO_8, sizeof(*secondary));
+    STD_MEMSET((void *)latch, NTVDM64_TYPE_ZERO_8, sizeof(*latch));
+    STD_MEMSET((void *)primary, NTVDM64_TYPE_ZERO_8, sizeof(*primary));
+    STD_MEMSET((void *)secondary, NTVDM64_TYPE_ZERO_8, sizeof(*secondary));
     primary->connect.latch = latch;
     primary->connect.peer = secondary;
     secondary->connect.latch = latch;
@@ -477,7 +477,7 @@ void core_machine_dma_initialize(t_latch *latch, t_dma *primary,
 void core_machine_dma_reset(t_latch *latch, t_dma *primary,
     t_dma *secondary) {
     if (latch == NULL || primary == NULL || secondary == NULL) return;
-    MEMSET((void *)(&latch->data), NTVDM64_TYPE_ZERO_8, sizeof(t_latch_data));
+    STD_MEMSET((void *)(&latch->data), NTVDM64_TYPE_ZERO_8, sizeof(t_latch_data));
     doReset(primary);
     doReset(secondary);
 }

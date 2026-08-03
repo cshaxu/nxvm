@@ -21,7 +21,7 @@ void core_machine_kbc_register_ports(t_kbc *controller, t_port *port)
 
 void core_machine_kbc_initialize(t_kbc *controller, t_port *port) {
     if (controller == NULL || port == NULL) return;
-    MEMSET(controller, NTVDM64_TYPE_ZERO_8, sizeof(*controller));
+    STD_MEMSET(controller, NTVDM64_TYPE_ZERO_8, sizeof(*controller));
     core_machine_kbc_register_ports(controller, port);
 }
 void core_machine_kbc_reset(t_kbc *controller) { (void)controller; }

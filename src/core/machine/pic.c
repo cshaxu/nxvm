@@ -406,8 +406,8 @@ ntvdm64_type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *sla
 void core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port)
 {
     if (master == NULL || slave == NULL || port == NULL) return;
-    MEMSET((void *)master, NTVDM64_TYPE_ZERO_8, sizeof(*master));
-    MEMSET((void *)slave, NTVDM64_TYPE_ZERO_8, sizeof(*slave));
+    STD_MEMSET((void *)master, NTVDM64_TYPE_ZERO_8, sizeof(*master));
+    STD_MEMSET((void *)slave, NTVDM64_TYPE_ZERO_8, sizeof(*slave));
     core_machine_port_add_read(port, 0x0020, io_read_0020, master);
     core_machine_port_add_read(port, 0x0021, io_read_0021, master);
     core_machine_port_add_read(port, 0x00a0, io_read_00A0, slave);
@@ -419,8 +419,8 @@ void core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port)
 }
 void core_machine_pic_reset(t_pic *master, t_pic *slave) {
     if (master == NULL || slave == NULL) return;
-    MEMSET((void *)(&master->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pic_data));
-    MEMSET((void *)(&slave->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pic_data));
+    STD_MEMSET((void *)(&master->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pic_data));
+    STD_MEMSET((void *)(&slave->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pic_data));
     master->data.status = slave->data.status = ICW1;
     master->data.ocw3 = slave->data.ocw3 = VPIC_OCW3_RR;
 }

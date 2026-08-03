@@ -120,7 +120,7 @@ ntvdm64_type_unsigned_8 VFDC_GetBPSC(ntvdm64_type_unsigned_16 cb) {
 /* Resets FDC but keeps CCR */
 static void reset_controller(t_fdc *fdc) {
     ntvdm64_type_unsigned_8 ccr = fdc->data.ccr;
-    MEMSET((void *)(&fdc->data), NTVDM64_TYPE_ZERO_8, sizeof(t_fdc_data));
+    STD_MEMSET((void *)(&fdc->data), NTVDM64_TYPE_ZERO_8, sizeof(t_fdc_data));
     fdc->data.ccr = ccr;
 }
 
@@ -519,7 +519,7 @@ static void dma_close(void *owner, t_latch *latch)
 void vm_machine_fdc_initialize(t_fdc *fdc)
 {
     if (fdc == NULL || fdc->connect.port == NULL) return;
-    MEMSET((void *)&fdc->data, NTVDM64_TYPE_ZERO_8, sizeof(fdc->data));
+    STD_MEMSET((void *)&fdc->data, NTVDM64_TYPE_ZERO_8, sizeof(fdc->data));
     fdc->data.ccr = VFDC_CCR_DRC;
     core_machine_port_add_read(fdc->connect.port, 0x03f4, read_03f4, fdc);
     core_machine_port_add_read(fdc->connect.port, 0x03f5, read_03f5, fdc);
@@ -551,21 +551,21 @@ void vm_machine_fdc_finalize(t_fdc *fdc) { (void)fdc; }
 /* Prints FDC status */
 void vm_machine_fdc_print(const t_fdc *fdc) {
     ntvdm64_type_native_unsigned i;
-    PRINTF("FDC INFO\n========\n");
-    PRINTF("msr = %x, dir = %x, dor = %x, ccr = %x, dr = %x\n",
+    STD_PRINTF("FDC INFO\n========\n");
+    STD_PRINTF("msr = %x, dir = %x, dor = %x, ccr = %x, dr = %x\n",
            fdc->data.msr,fdc->data.dir,fdc->data.dor,fdc->data.ccr,fdc->data.dr);
-    PRINTF("hut = %x, hlt = %x, srt = %x, Non-DMA = %x, INTR = %x\n",
+    STD_PRINTF("hut = %x, hlt = %x, srt = %x, Non-DMA = %x, INTR = %x\n",
            fdc->data.hut,fdc->data.hlt,fdc->data.srt,fdc->data.flagNDMA,fdc->data.flagINTR);
-    PRINTF("rwCount = %x, st0 = %x, st1 = %x, st2 = %x, st3 = %x\n",
+    STD_PRINTF("rwCount = %x, st0 = %x, st1 = %x, st2 = %x, st3 = %x\n",
            fdc->data.rwCount,fdc->data.st0,fdc->data.st1,fdc->data.st2,fdc->data.st3);
     for (i = 0; i < 9; ++i) {
-        PRINTF("cmd[%d] = %x, ", i, fdc->data.cmd[i]);
+        STD_PRINTF("cmd[%d] = %x, ", i, fdc->data.cmd[i]);
     }
-    PRINTF("\n");
+    STD_PRINTF("\n");
     for (i = 0; i < 7; ++i) {
-        PRINTF("ret[%d] = %x, ", i, fdc->data.ret[i]);
+        STD_PRINTF("ret[%d] = %x, ", i, fdc->data.ret[i]);
     }
-    PRINTF("\n");
+    STD_PRINTF("\n");
 }
 
 /*
