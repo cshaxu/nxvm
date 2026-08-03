@@ -3,6 +3,7 @@
 
 
 #include "core/machine/cpu_interface.h"
+#include "core/machine/fpu_interface.h"
 #include "core/machine/execution_provider.h"
 #include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
@@ -31,6 +32,8 @@ typedef struct core_machine core_machine;
 
 typedef struct core_machine_config {
     STD_SIZE_T memory_bytes;
+    core_machine_cpu_profile cpu_profile;
+    core_machine_fpu_profile fpu_profile;
 } core_machine_config;
 
 typedef enum core_machine_stop_reason {
@@ -69,6 +72,11 @@ ntvdm64_status core_machine_get_lifecycle(
 ntvdm64_status core_machine_get_cpu_state(
     const core_machine *machine,
     core_machine_cpu_state *out_state);
+
+ntvdm64_status core_machine_get_cpu_profile(
+    const core_machine *machine, core_machine_cpu_profile *out_profile);
+ntvdm64_status core_machine_get_fpu_profile(
+    const core_machine *machine, core_machine_fpu_profile *out_profile);
 
 ntvdm64_status core_machine_get_cpu_diagnostic(
     const core_machine *machine,

@@ -33,6 +33,30 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->diagnostic_context = STD_NULL;
     context->stop_requested = NTVDM64_TYPE_FALSE;
     context->reset_requested = NTVDM64_TYPE_FALSE;
+    context->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
+    context->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
+}
+
+C_VOID core_machine_cpu_execution_context_bind_profiles(
+    core_machine_cpu_execution_context *context,
+    core_machine_cpu_profile cpu_profile,
+    core_machine_fpu_profile fpu_profile)
+{
+    if (context == STD_NULL) return;
+    context->cpu_profile = cpu_profile;
+    context->fpu_profile = fpu_profile;
+}
+
+const C_CHAR *core_machine_cpu_profile_name(core_machine_cpu_profile profile)
+{
+    switch (profile) {
+    case CORE_MACHINE_CPU_PROFILE_8086: return "8086";
+    case CORE_MACHINE_CPU_PROFILE_80186: return "80186";
+    case CORE_MACHINE_CPU_PROFILE_80286: return "80286";
+    case CORE_MACHINE_CPU_PROFILE_80386: return "80386";
+    case CORE_MACHINE_CPU_PROFILE_DEFAULT: return "default";
+    }
+    return "invalid";
 }
 
 C_VOID core_machine_cpu_execution_context_bind_pic(

@@ -100,6 +100,25 @@ static uint32_t core_machine_linear_pc(const core_machine *machine)
     return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
 }
 
+static core_machine_cpu_profile core_machine_resolve_cpu_profile(
+    core_machine_cpu_profile profile)
+{
+    return profile == CORE_MACHINE_CPU_PROFILE_DEFAULT ?
+        CORE_MACHINE_CPU_PROFILE_80386 : profile;
+}
+
+static C_INT core_machine_valid_cpu_profile(core_machine_cpu_profile profile)
+{
+    return profile >= CORE_MACHINE_CPU_PROFILE_8086 &&
+        profile <= CORE_MACHINE_CPU_PROFILE_80386;
+}
+
+static C_INT core_machine_valid_fpu_profile(core_machine_fpu_profile profile)
+{
+    return profile >= CORE_MACHINE_FPU_PROFILE_NONE &&
+        profile <= CORE_MACHINE_FPU_PROFILE_80387;
+}
+
 t_cpu *core_machine_executor_cpu_borrow(core_machine *machine)
 { return machine != STD_NULL ? &machine->executor_cpu : STD_NULL; }
 
@@ -173,6 +192,26 @@ ntvdm64_status core_machine_get_cpu_state(
     return NTVDM64_STATUS_OK;
 }
 
+ntvdm64_status core_machine_get_cpu_profile(
+    const core_machine *machine, core_machine_cpu_profile *out_profile)
+{
+    if (machine == STD_NULL || out_profile == STD_NULL) {
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
+    }
+    *out_profile = machine->cpu_profile;
+    return NTVDM64_STATUS_OK;
+}
+
+ntvdm64_status core_machine_get_fpu_profile(
+    const core_machine *machine, core_machine_fpu_profile *out_profile)
+{
+    if (machine == STD_NULL || out_profile == STD_NULL) {
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
+    }
+    *out_profile = machine->fpu.profile;
+    return NTVDM64_STATUS_OK;
+}
+
 ntvdm64_status core_machine_get_cpu_diagnostic(
     const core_machine *machine, core_machine_cpu_diagnostic *out_diagnostic)
 {
@@ -189,7 +228,10 @@ ntvdm64_status core_machine_create(
     core_machine **out_machine)
 {
     core_machine *machine;
-    if (config == STD_NULL || out_machine == STD_NULL) {
+    if (config == STD_NULL || out_machine == STD_NULL ||
+        !core_machine_valid_cpu_profile(
+            core_machine_resolve_cpu_profile(config->cpu_profile)) ||
+        !core_machine_valid_fpu_profile(config->fpu_profile)) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
@@ -201,6 +243,8 @@ ntvdm64_status core_machine_create(
     }
 
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
+    machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
+    core_machine_fpu_initialize(&machine->fpu, config->fpu_profile);
     STD_ATOMIC_INIT(&machine->stop_requested, 0);
     core_machine_trace_initialize(machine);
     core_machine_cpu_diagnostic_initialize(machine);
@@ -208,6 +252,9 @@ ntvdm64_status core_machine_create(
     core_machine_cpu_execution_context_initialize(&machine->executor_cpu_execution,
         &machine->executor_cpu, &machine->executor_cpu_instructions,
         &machine->executor_memory, &machine->executor_port);
+    core_machine_cpu_execution_context_bind_profiles(
+        &machine->executor_cpu_execution, machine->cpu_profile,
+        machine->fpu.profile);
     core_machine_cpu_execution_context_bind_diagnostic_provider(
         &machine->executor_cpu_execution, &core_machine_cpu_diagnostic_provider,
         machine);
@@ -248,6 +295,7 @@ ntvdm64_status core_machine_reset(core_machine *machine)
     }
 
     core_machine_cpu_state_reset(&machine->executor_cpu_execution);
+    core_machine_fpu_reset(&machine->fpu);
     core_machine_port_reset(&machine->executor_port);
     core_machine_memory_reset(&machine->executor_memory);
     core_machine_kbc_reset(&machine->shared_kbc);

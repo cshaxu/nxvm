@@ -12,6 +12,7 @@ extern "C" {
 #include "type.h"
 
 #include "core/machine/cpu.h"
+#include "core/machine/fpu_interface.h"
 
 typedef enum {
     ARITHTYPE_NULL,
@@ -105,6 +106,18 @@ typedef struct core_machine_cpu_execution_context
 typedef C_VOID (*core_machine_cpu_instruction_handler)(
     core_machine_cpu_execution_context *context);
 
+typedef enum core_machine_cpu_instruction_space {
+    CORE_MACHINE_CPU_INSTRUCTION_PRIMARY,
+    CORE_MACHINE_CPU_INSTRUCTION_0F,
+    CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE
+} core_machine_cpu_instruction_space;
+
+typedef struct core_machine_cpu_instruction_metadata {
+    core_machine_cpu_profile minimum_cpu;
+    core_machine_fpu_profile minimum_fpu;
+    C_INT valid;
+} core_machine_cpu_instruction_metadata;
+
 typedef struct {
     /* instruction dispatch */
     core_machine_cpu_instruction_handler insTable[0x100];
@@ -137,6 +150,8 @@ struct core_machine_cpu_execution_context {
     C_VOID *diagnostic_context;
     ntvdm64_type_bool stop_requested;
     ntvdm64_type_bool reset_requested;
+    core_machine_cpu_profile cpu_profile;
+    core_machine_fpu_profile fpu_profile;
 };
 
 C_VOID core_machine_cpu_execution_context_initialize(
@@ -170,6 +185,8 @@ C_VOID core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context);
+core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
+    core_machine_cpu_instruction_space space, uint8_t opcode, uint8_t modrm);
 
 #define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */
 #define VCPUINS_EXCEPT_DB  0x00000002 /* 01 - trap/fault: debug exception */

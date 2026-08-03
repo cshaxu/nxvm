@@ -6,7 +6,9 @@
 
 C_INT main(C_VOID)
 {
-    const core_machine_config config = { CORE_MACHINE_DEFAULT_MEMORY_BYTES };
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_DEFAULT_MEMORY_BYTES
+    };
     C_UCHAR program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 2u];
     core_machine *machine = STD_NULL;
     core_machine_cpu_execution_context *execution;

@@ -100,7 +100,9 @@ ntvdm64_status vdm_machine_dos_minimal_create(
     vdm_machine_dos_minimal **out_session)
 {
     vdm_machine_dos_minimal *session;
-    core_machine_config config = { CORE_MACHINE_MINIMUM_MEMORY_BYTES };
+    core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES
+    };
     ntvdm64_status status;
 
     if (out_session == STD_NULL) {

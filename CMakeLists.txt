@@ -201,6 +201,7 @@ set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/port.c
     src/core/machine/memory.c
     src/core/machine/cpu.c
+    src/core/machine/fpu.c
     src/core/machine/cpu_instructions.c
     src/core/machine/pic.c
     src/core/machine/pit.c
@@ -523,6 +524,10 @@ add_executable(nxvm-vm-dos-mem-fault-smoke
     tests/machine/vm_dos_mem_fault_smoke.c)
 target_link_libraries(nxvm-vm-dos-mem-fault-smoke PRIVATE
     nxvm-vm-composition)
+add_executable(nxvm-core-machine-cpu-fpu-profile-smoke
+    tests/machine/cpu_fpu_profile_smoke.c)
+target_link_libraries(nxvm-core-machine-cpu-fpu-profile-smoke PRIVATE
+    nxvm-core)
 add_executable(nxvm-vm-two-session-isolation-smoke
     tests/machine/vm_two_session_isolation_smoke.c)
 target_link_libraries(nxvm-vm-two-session-isolation-smoke PRIVATE
@@ -784,6 +789,7 @@ add_nxvm_version_artifact(nxvm-0-5-0149 "0.5.0149")
 add_nxvm_version_artifact(nxvm-0-5-0150 "0.5.0150")
 add_nxvm_version_artifact(nxvm-0-5-0151 "0.5.0151")
 add_nxvm_version_artifact(nxvm-0-5-0152 "0.5.0152")
+add_nxvm_version_artifact(nxvm-0-5-0154 "0.5.0154")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
