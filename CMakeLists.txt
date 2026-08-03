@@ -61,6 +61,15 @@ add_executable(nxvm-product-default-profile-smoke tests/products/nxvm_default_pr
 target_link_libraries(nxvm-product-default-profile-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-product-console-smoke tests/products/nxvm_console_smoke.c)
 target_link_libraries(nxvm-product-console-smoke PRIVATE nxvm-vm-product)
+add_executable(nxvm-product-console-lifecycle-smoke
+    tests/products/nxvm_console_lifecycle_smoke.c)
+target_link_libraries(nxvm-product-console-lifecycle-smoke PRIVATE
+    nxvm-vm-product nxvm-vm-composition)
+add_custom_target(nxvm-product-console-lifecycle-gate
+    COMMAND $<TARGET_FILE:nxvm-product-console-lifecycle-smoke>
+    DEPENDS nxvm-product-console-lifecycle-smoke
+    COMMENT "Verifying retained NXVM Console lifecycle"
+    VERBATIM)
 add_executable(nxvm-product-presentation-debug-smoke
     tests/products/nxvm_presentation_debugger_smoke.c)
 target_link_libraries(nxvm-product-presentation-debug-smoke PRIVATE nxvm-vm-product)
@@ -101,6 +110,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-product-media-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-product-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-presentation-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -711,6 +721,7 @@ add_nxvm_version_artifact(nxvm-0-5-0092 "0.5.0092")
 add_nxvm_version_artifact(nxvm-0-5-0093 "0.5.0093")
 add_nxvm_version_artifact(nxvm-0-5-0094 "0.5.0094")
 add_nxvm_version_artifact(nxvm-0-5-0095 "0.5.0095")
+add_nxvm_version_artifact(nxvm-0-5-0096 "0.5.0096")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

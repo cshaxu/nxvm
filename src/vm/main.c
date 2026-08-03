@@ -39,7 +39,6 @@ int main(int argc, char **argv) {
     }
     vm_composition_console_target_initialize(machine->console_target, machine);
     consoleMain(machine->console_context, machine->console_target);
-    vm_composition_live_machine_finalize(machine);
     free(machine);
     return 0;
 }
