@@ -14,7 +14,7 @@
 
 #define CONSOLE_MAXNARG 256
 
-static _Thread_local nxvm_product_console_context *consoleContext;
+#define consoleContext context
 
 #define numArgs (consoleContext->argument_count)
 #define argArray (consoleContext->arguments)
@@ -29,7 +29,7 @@ static _Thread_local nxvm_product_console_context *consoleContext;
  * numArgs       [OUT] Number of argArrayuments
  * argArray        [OUT] Array of argArrayuments
  */
-static C_VOID parse() {
+static C_VOID parse(nxvm_product_console_context *context) {
     numArgs = 0;
     argArray[numArgs] = STD_STRTOK(strCmdBuff, " \t\n\r\f");
     if (!argArray[numArgs]) {
@@ -47,8 +47,8 @@ static C_VOID parse() {
 }
 
 /* Prints help commands. */
-#define GetHelp if (1) {doHelp();return;} else
-static C_VOID doHelp() {
+#define GetHelp if (1) {doHelp(context);return;} else
+static C_VOID doHelp(nxvm_product_console_context *context) {
     if (STD_STRCMP(argArray[0], "help")) {
         numArgs = 2;
         argArray[1] = argArray[0];
@@ -151,7 +151,7 @@ static C_VOID doHelp() {
 }
 
 /* Quits NXVM. */
-static C_VOID doExit() {
+static C_VOID doExit(nxvm_product_console_context *context) {
     if (numArgs != 1) {
         GetHelp;
     }
@@ -163,7 +163,7 @@ static C_VOID doExit() {
 }
 
 /* Prints virtual machine status */
-static C_VOID doInfo() {
+static C_VOID doInfo(nxvm_product_console_context *context) {
     if (numArgs != 1) {
         GetHelp;
     }
@@ -185,7 +185,7 @@ static C_VOID doInfo() {
 }
 
 /* Starts internal debugger */
-static C_VOID doDebug() {
+static C_VOID doDebug(nxvm_product_console_context *context) {
     if (numArgs != 1) {
         GetHelp;
     }
@@ -193,7 +193,7 @@ static C_VOID doDebug() {
 }
 
 /* Executes cpu instruction recorder */
-static C_VOID doRecord() {
+static C_VOID doRecord(nxvm_product_console_context *context) {
     if (numArgs < 2) {
         GetHelp;
     }
@@ -214,7 +214,7 @@ static C_VOID doRecord() {
 }
 
 /* Sets BIOS settings */
-static C_VOID doSet() {
+static C_VOID doSet(nxvm_product_console_context *context) {
     if (numArgs < 2) {
         GetHelp;
     }
@@ -235,7 +235,7 @@ static C_VOID doSet() {
 }
 
 /* Set hardware connections */
-static C_VOID doDevice() {
+static C_VOID doDevice(nxvm_product_console_context *context) {
     if (numArgs < 2) {
         GetHelp;
     }
@@ -333,31 +333,31 @@ static C_VOID doDevice() {
 }
 
 /* Tests NXVM: reset and start debugger */
-static C_VOID doTest() {
+static C_VOID doTest(nxvm_product_console_context *context) {
     consoleTarget->reset(consoleTarget->context);
     consoleTarget->debug(consoleTarget->context);
 }
 
 /* Executes commands */
-static C_VOID execute() {
+static C_VOID execute(nxvm_product_console_context *context) {
     if (!argArray[0] || !STD_STRLEN(argArray[0])) {
         return;
     } else if (!STD_STRCMP(argArray[0], "test")) {
-        doTest();
+        doTest(context);
     } else if (!STD_STRCMP(argArray[0], "help")) {
-        doHelp();
+        doHelp(context);
     } else if (!STD_STRCMP(argArray[0], "exit")) {
-        doExit();
+        doExit(context);
     } else if (!STD_STRCMP(argArray[0], "info")) {
-        doInfo();
+        doInfo(context);
     } else if (!STD_STRCMP(argArray[0], "debug")) {
-        doDebug();
+        doDebug(context);
     } else if (!STD_STRCMP(argArray[0], "record")) {
-        doRecord();
+        doRecord(context);
     } else if (!STD_STRCMP(argArray[0], "set")) {
-        doSet();
+        doSet(context);
     } else if (!STD_STRCMP(argArray[0], "device")) {
-        doDevice();
+        doDevice(context);
     } else if (!STD_STRCMP(argArray[0], "mode")) {
         if (!consoleTarget->is_running(consoleTarget->context)) {
             consoleTarget->set_window_display(consoleTarget->context,
@@ -378,14 +378,14 @@ static C_VOID execute() {
 }
 
 /* Initializes console */
-static C_VOID vm_product_console_initialize() {
+static C_VOID vm_product_console_initialize(nxvm_product_console_context *context) {
     argArray = (C_CHAR **) STD_MALLOC(CONSOLE_MAXNARG * sizeof(C_CHAR *));
     flagExit = 0;
     consoleTarget->initialize(consoleTarget->context);
 }
 
 /* Finalizes console */
-static C_VOID vm_product_console_finalize() {
+static C_VOID vm_product_console_finalize(nxvm_product_console_context *context) {
     consoleTarget->finalize(consoleTarget->context);
     if (argArray) {
         STD_FREE((C_VOID *) argArray);
@@ -401,20 +401,16 @@ C_VOID nxvm_product_console_context_initialize(
 
 C_VOID vm_product_console_main(nxvm_product_console_context *context,
                  const nxvm_product_console_target *target) {
-    nxvm_product_console_context *previous;
     if (context == STD_NULL || target == STD_NULL) return;
-    previous = consoleContext;
-    consoleContext = context;
     nxvm_product_console_context_initialize(context);
     consoleTarget = target;
-    vm_product_console_initialize();
+    vm_product_console_initialize(context);
     STD_PRINTF("\nPlease enter 'HELP' for information.\n\n");
     while (!flagExit) {
         STD_PRINTF("Console> ");
         STD_FGETS(strCmdBuff, 0x100, STD_STDIN);
-        parse();
-        execute();
+        parse(context);
+        execute(context);
     }
-    vm_product_console_finalize();
-    consoleContext = previous;
+    vm_product_console_finalize(context);
 }
