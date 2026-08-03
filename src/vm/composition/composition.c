@@ -31,9 +31,9 @@
 
 #include "vm/machine/hdd.h"
 
-#include "vm/composition_block.h"
+#include "vm/composition/composition_block.h"
 
-#include "vm/composition_display.h"
+#include "vm/composition/composition_display.h"
 
 #include "core/machine/kbc.h"
 
@@ -41,10 +41,10 @@
 
 #include "vm/profile/default_profile/firmware/qdx.h"
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
 
-#include "vm/composition.h"
+#include "vm/composition/composition.h"
 
 #define _empty_
 #define _vdebug_

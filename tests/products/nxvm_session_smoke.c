@@ -4,7 +4,7 @@
 
 #include "vm/profile/default_profile/profile.h"
 
-#include "vm/composition_session_model.h"
+#include "vm/composition/composition_session_model.h"
 
 static C_INT verify(const C_CHAR *fdd_path, const C_CHAR *hdd_path,
                   vm_product_boot_target target)

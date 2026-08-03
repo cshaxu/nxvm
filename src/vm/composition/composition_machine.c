@@ -4,11 +4,11 @@
 
 #include "type.h"
 
-#include "vm/composition_control.h"
+#include "vm/composition/composition_control.h"
 
-#include "vm/composition.h"
+#include "vm/composition/composition.h"
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
 #include "core/product/debug/debug_target.h"
 
@@ -16,7 +16,7 @@
 
 #include "core/platform/sleep.h"
 
-#include "vm/composition_debug.h"
+#include "vm/composition/composition_debug.h"
 
 #include "vm/machine/debug.h"
 
@@ -35,10 +35,10 @@
 #include "vm/platform/platform.h"
 
 
-#include "vm/composition_display.h"
+#include "vm/composition/composition_display.h"
 
 
-#include "vm/composition_machine.h"
+#include "vm/composition/composition_machine.h"
 
 static C_VOID vm_composition_wait(C_VOID *context, uint32_t milliseconds)
 {

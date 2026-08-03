@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/composition_session_model.h"
+#include "vm/composition/composition_session_model.h"
 
 
 

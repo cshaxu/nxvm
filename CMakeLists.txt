@@ -182,19 +182,19 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/xasm32/dasm32.c
 )
 set(NXVM_COMPOSITION_VM_SOURCES
-    src/vm/composition_console.c
-    src/vm/composition_debug.c
-    src/vm/composition_block.c
-    src/vm/composition_display.c
-    src/vm/composition_machine.c
-    src/vm/composition_live_machine.c
-    src/vm/composition_loop.c
-    src/vm/composition.c
-    src/vm/composition_cpu_probe.c
-    src/vm/composition_default_profile.c
-    src/vm/composition_full_pc.c
-    src/vm/composition_session.c
-    src/vm/composition_session_model.c
+    src/vm/composition/composition_console.c
+    src/vm/composition/composition_debug.c
+    src/vm/composition/composition_block.c
+    src/vm/composition/composition_display.c
+    src/vm/composition/composition_machine.c
+    src/vm/composition/composition_live_machine.c
+    src/vm/composition/composition_loop.c
+    src/vm/composition/composition.c
+    src/vm/composition/composition_cpu_probe.c
+    src/vm/composition/composition_default_profile.c
+    src/vm/composition/composition_full_pc.c
+    src/vm/composition/composition_session.c
+    src/vm/composition/composition_session_model.c
 )
 set(NXVM_MACHINE_VM_SOURCES
     src/vm/machine/fdd.c
@@ -531,8 +531,8 @@ target_include_directories(ntvdm64-vdm-profile PUBLIC
 target_link_libraries(ntvdm64-vdm-profile PUBLIC nxvm-runtime)
 
 add_library(ntvdm64-vdm-composition STATIC
-    src/vdm/composition_minimal_session.c
-    src/vdm/composition_presentation.c
+    src/vdm/composition/composition_minimal_session.c
+    src/vdm/composition/composition_presentation.c
 )
 target_include_directories(ntvdm64-vdm-composition PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -749,6 +749,7 @@ add_nxvm_version_artifact(nxvm-0-5-0113 "0.5.0113")
 add_nxvm_version_artifact(nxvm-0-5-0114 "0.5.0114")
 add_nxvm_version_artifact(nxvm-0-5-0115 "0.5.0115")
 add_nxvm_version_artifact(nxvm-0-5-0116 "0.5.0116")
+add_nxvm_version_artifact(nxvm-0-5-0117 "0.5.0117")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

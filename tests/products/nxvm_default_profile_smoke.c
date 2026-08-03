@@ -4,7 +4,7 @@
 
 #include "vm/product/media.h"
 
-#include "vm/composition_default_profile.h"
+#include "vm/composition/composition_default_profile.h"
 
 static C_INT verify(const C_CHAR *fdd_path, const C_CHAR *hdd_path,
                   vm_product_boot_target boot_target)

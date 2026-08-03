@@ -3,7 +3,7 @@
 
 
 
-#include "vm/composition_machine.h"
+#include "vm/composition/composition_machine.h"
 
 #include "vm/profile/default_profile/firmware/qdcga.h"
 

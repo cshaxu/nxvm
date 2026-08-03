@@ -2,13 +2,13 @@
 
 #include "core/machine/display_interface.h"
 
-#include "vm/composition_display.h"
+#include "vm/composition/composition_display.h"
 
 #include "core/platform/display_frame.h"
 
 #include "vm/platform/platform.h"
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
 #include "vm/profile/default_profile/firmware/qdcga.h"
 

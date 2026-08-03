@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/composition_cpu_probe.h"
+#include "vm/composition/composition_cpu_probe.h"
 
 
 
@@ -18,11 +18,11 @@
 
 #include "core/product/runtime/execution_context.h"
 
-#include "vm/composition_control.h"
+#include "vm/composition/composition_control.h"
 
 #include "core/machine/cpu_instructions.h"
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
 struct nxvm_cpu_probe {
     C_INT active;

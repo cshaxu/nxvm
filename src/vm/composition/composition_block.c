@@ -4,7 +4,7 @@
 
 #include "vm/machine/hdd.h"
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
 static C_VOID vmBlockGeometry(C_VOID *context, core_machine_block_geometry *out_geometry)
 {

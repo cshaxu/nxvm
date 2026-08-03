@@ -3,9 +3,9 @@
 
 
 
-#include "vm/composition_live_machine.h"
+#include "vm/composition/composition_live_machine.h"
 
-#include "vm/composition_machine.h"
+#include "vm/composition/composition_machine.h"
 
 #include "vm/profile/default_profile/firmware/qdx.h"
 

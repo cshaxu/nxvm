@@ -8,11 +8,11 @@
 
 #include "core/product/debug/debug_access.h"
 
-#include "vm/composition_control.h"
+#include "vm/composition/composition_control.h"
 
-#include "vm/composition_debug.h"
+#include "vm/composition/composition_debug.h"
 
-#include "vm/composition_machine.h"
+#include "vm/composition/composition_machine.h"
 
 #include "vm/machine/fdd.h"
 

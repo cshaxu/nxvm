@@ -3,7 +3,7 @@
 
 
 
-#include "vdm/composition_minimal_session.h"
+#include "vdm/composition/composition_minimal_session.h"
 
 C_INT main(C_VOID)
 {

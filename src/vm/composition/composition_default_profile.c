@@ -1,11 +1,11 @@
 #include "type.h"
 
-#include "vm/composition_default_profile.h"
+#include "vm/composition/composition_default_profile.h"
 
 
 
 
-#include "vm/composition_full_pc.h"
+#include "vm/composition/composition_full_pc.h"
 
 ntvdm64_status vm_composition_default_profile_create(
     vm_composition_default_profile *default_profile,
