@@ -135,7 +135,7 @@ static uint8_t GetColorFromProp(uint8_t prop) {
     return (fore1 * 8 + back1);
 }
 
-static uint8_t Ascii2Print[][2] = {
+static const uint8_t Ascii2Print[][2] = {
     {0x00, ' ' }, {0x01, '*' }, {0x02, '*' }, {0x03, '*' },
     {0x04, '*' }, {0x05, '*' }, {0x06, '*' }, {0x07, 0x07},
     {0x08, 0x08}, {0x09, 0x09}, {0x0a, 0x0a}, {0x0b, 0x0b},
@@ -202,20 +202,22 @@ static uint8_t Ascii2Print[][2] = {
     {0xfc, 'n'}, {0xfd, '2'}, {0xfe, '#'}, {0xff, ' '}
 };
 
-static uint64_t displayedGeneration;
+static core_platform_host_surface_lease linux_terminal_lease = {
+    ATOMIC_VAR_INIT(0)
+};
 
-static void lnxcdispPaint(const vm_platform_presentation_mailbox *mailbox,
+static void lnxcdispPaint(vm_platform_run_context *context,
                           uint8_t force) {
     int ref;
     uint8_t p, c;
     int i, j, sizeRow, sizeCol, curX, curY;
     core_platform_display_frame frame;
 
-    vm_platform_presentation_mailbox_capture(mailbox, &frame);
+    vm_platform_presentation_mailbox_capture(context->presentation, &frame);
     sizeRow = GetMin(COLS, frame.columns);
     sizeCol = GetMin(LINES, frame.rows);
     ref = 0;
-    if (force || (frame.generation != displayedGeneration && frame.buffer_changed)) {
+    if (force || (frame.generation != context->terminal_displayed_generation && frame.buffer_changed)) {
         clear();
         for (i = 0; i < sizeCol; ++i) {
             for (j = 0; j < sizeRow; ++j) {
@@ -228,7 +230,7 @@ static void lnxcdispPaint(const vm_platform_presentation_mailbox *mailbox,
         }
         ref = 1;
     }
-    if (force || (frame.generation != displayedGeneration && frame.cursor_changed)) {
+    if (force || (frame.generation != context->terminal_displayed_generation && frame.cursor_changed)) {
         curX = frame.cursor_x;
         curY = frame.cursor_y;
         if (curX < sizeCol && curY < sizeRow) {
@@ -241,21 +243,22 @@ static void lnxcdispPaint(const vm_platform_presentation_mailbox *mailbox,
     if (ref) {
         refresh();
     }
-    displayedGeneration = frame.generation;
+    context->terminal_displayed_generation = frame.generation;
 }
 
 static void *ThreadDisplay(void *arg) {
-    const vm_platform_run_context *context = arg;
+    vm_platform_run_context *context = arg;
     core_product_wait_scope previous = core_product_wait_scope_enter(
         context->wait_scope);
 
     lnxcdispInit();
-    lnxcdispPaint(context->presentation, 1);
+    lnxcdispPaint(context, 1);
     while (vm_platform_execution_is_running_for(context->execution)) {
-        lnxcdispPaint(context->presentation, 0);
+        lnxcdispPaint(context, 0);
         utilsSleep(100);
     }
     lnxcdispFinal();
+    core_platform_host_surface_lease_release(&linux_terminal_lease, context);
     core_product_wait_scope_leave(previous);
     return 0;
 }
@@ -270,7 +273,7 @@ static void *ThreadKernel(void *arg) {
     return 0;
 }
 
-static uint8_t Ascii2ScanCode[][2] = {
+static const uint8_t Ascii2ScanCode[][2] = {
     {0x00, ZERO}, {0x01, ZERO}, {0x02, ZERO}, {0x03, ZERO},
     {0x04, ZERO}, {0x05, ZERO}, {0x06, ZERO}, {0x07, ZERO},
     {0x08, 0x0e}, {0x09, 0x0f}, {0x0a, ZERO}, {0x0b, ZERO},
@@ -444,7 +447,7 @@ void lnxcDisplaySetScreen(const vm_platform_run_context *context) {
 }
 
 void lnxcDisplayPaint(const vm_platform_run_context *context) {
-    lnxcdispPaint(context->presentation, 1);
+    lnxcdispPaint((vm_platform_run_context *)context, 1);
 }
 
 void lnxcStartMachine(const vm_platform_run_context *context) {
@@ -456,6 +459,8 @@ void lnxcStartMachine(const vm_platform_run_context *context) {
 
     if (context == NULL || context->execution == NULL ||
         context->keyboard == NULL) return;
+    if (core_platform_host_surface_lease_acquire(&linux_terminal_lease,
+            context) != NXVM_CORE_STATUS_OK) return;
     previous = core_product_wait_scope_enter(context->wait_scope);
     oldDeviceFlip = vm_platform_execution_get_flip_for(context->execution);
     pthread_attr_init(&attr);
@@ -465,7 +470,11 @@ void lnxcStartMachine(const vm_platform_run_context *context) {
            vm_platform_execution_get_flip_for(context->execution)) {
         utilsSleep(100);
     }
-    pthread_create(&ThreadIdDisplay, &attr, ThreadDisplay, (void *)context);
+    if (pthread_create(&ThreadIdDisplay, &attr, ThreadDisplay,
+                       (void *)context) != 0) {
+        vm_platform_execution_stop_for(context->execution);
+        core_platform_host_surface_lease_release(&linux_terminal_lease, context);
+    }
     while (vm_platform_execution_is_running_for(context->execution)) {
         utilsSleep(20);
         lnxckeybProcess(context);

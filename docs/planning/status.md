@@ -51,11 +51,15 @@ atomic. Its GCC artifact is `build/output/nxvm_0_5_0088.exe`.
 T89 confirmed VDM-minimal state is instance-owned and added the shared
 host-surface context/lease contract. It changes no runnable product path.
 
+T90 made VM Win32 renderer resources context-owned and modeled shared Console
+and Linux terminal ownership as explicit leases. Its GCC artifact is
+`build/output/nxvm_0_5_0090.exe`.
+
 ## Active Work
 
-**M5 T90 S1: VM platform surface contexts.** Move each VM renderer's mutable
-state into a context and bind console/terminal exclusivity through the core
-host-surface lease contract.
+**M5 T91 S1: Core debugger contexts.** Move debugger parser, assembler, and
+disassembler workspaces into caller-owned contexts without changing retained
+debugger grammar or presentation.
 
 ## Short-Term M5 Plan
 

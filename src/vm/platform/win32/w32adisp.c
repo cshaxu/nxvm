@@ -2,6 +2,8 @@
 
 /* W32ADISP provides win32 window output interface. */
 
+#include <stdlib.h>
+
 #include "core/platform/display_frame.h"
 #include "vm/platform/presentation_mailbox.h"
 
@@ -286,16 +288,28 @@ static CONST UCHAR fontBitmap[256][16] = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 };
 
-static HDC hdcWnd, hdcBuf;
-static HBITMAP hBmpBuf;
-static INT clientHeight, clientWidth;
-static INT flashCount;
-static INT flashInterval;
-static INT FONT_WIDTH;
-static INT FONT_HEIGHT;
-static USHORT sizeRow, sizeCol;
-static UCHAR cursorTop, cursorBottom;
-static uint64_t displayedGeneration;
+#define FONT_WIDTH  8
+#define FONT_HEIGHT 16
+#define FONT_NCHAR  256
+#define FONT_NCOLOR 256 /* 128 */
+
+struct w32adisp_context {
+    HDC window_dc;
+    HDC buffer_dc;
+    HBITMAP buffer_bitmap;
+    INT client_height;
+    INT client_width;
+    INT flash_count;
+    INT flash_interval;
+    USHORT rows;
+    USHORT columns;
+    UCHAR cursor_top;
+    UCHAR cursor_bottom;
+    uint64_t displayed_generation;
+    HDC font_dc;
+    HBITMAP font_bitmap;
+    BOOL font_character_exists[FONT_NCHAR][FONT_NCOLOR];
+};
 
 static COLORREF CharProp2Color(UCHAR prop, BOOL flagForeColor) {
     UCHAR byte;
@@ -359,22 +373,18 @@ static COLORREF CharProp2Color(UCHAR prop, BOOL flagForeColor) {
     }
 }
 
-#define FONT_WIDTH  8
-#define FONT_HEIGHT 16
-#define FONT_NCHAR  256
-#define FONT_NCOLOR 256 /* 128 */
-static HDC hdcFont;
-static HBITMAP hBmpFont;
-static BOOL bFontCharExist[FONT_NCHAR][FONT_NCOLOR];
+static VOID CreateBitmapFontChar(w32adisp_context *context, UCHAR ch,
+                                 UCHAR prop);
 
-static VOID CreateBitmapFontChar(UCHAR ch, UCHAR prop) {
+static VOID CreateBitmapFontChar(w32adisp_context *context, UCHAR ch,
+                                 UCHAR prop) {
     UCHAR i, j;
     COLORREF fc, bc;
     HDC hdcChar;
     HBITMAP hBmpChar;
     HGDIOBJ hOldGdiObj;
     hdcChar = CreateCompatibleDC(NULL);
-    hBmpChar = CreateCompatibleBitmap(hdcWnd, FONT_WIDTH, FONT_HEIGHT);
+    hBmpChar = CreateCompatibleBitmap(context->window_dc, FONT_WIDTH, FONT_HEIGHT);
     hOldGdiObj = SelectObject(hdcChar, hBmpChar);
     /* prop &= 0x7f; */
     fc = CharProp2Color(prop, TRUE);
@@ -388,69 +398,89 @@ static VOID CreateBitmapFontChar(UCHAR ch, UCHAR prop) {
             }
         }
     }
-    BitBlt(hdcFont, ch * FONT_WIDTH, prop * FONT_HEIGHT, FONT_WIDTH, FONT_HEIGHT, hdcChar, 0, 0, SRCCOPY);
+    BitBlt(context->font_dc, ch * FONT_WIDTH, prop * FONT_HEIGHT,
+           FONT_WIDTH, FONT_HEIGHT, hdcChar, 0, 0, SRCCOPY);
     SelectObject(hdcChar, hOldGdiObj);
     DeleteObject(hBmpChar);
     DeleteDC(hdcChar);
-    bFontCharExist[ch][prop] = TRUE;
+    context->font_character_exists[ch][prop] = TRUE;
 }
 
-VOID w32adispInit(HWND window, const vm_platform_presentation_mailbox *mailbox) {
+w32adisp_context *w32adisp_context_create(void) {
+    return calloc(1u, sizeof(w32adisp_context));
+}
+
+VOID w32adisp_context_destroy(w32adisp_context *context) {
+    if (context == NULL) return;
+    free(context);
+}
+
+uint64_t w32adisp_context_generation(const w32adisp_context *context) {
+    return context == NULL ? 0u : context->displayed_generation;
+}
+
+VOID w32adispInit(w32adisp_context *context, HWND window,
+                  const vm_platform_presentation_mailbox *mailbox) {
     UINT i, j;
-    hdcWnd = GetDC(window);
-    hdcBuf = CreateCompatibleDC(NULL);
-    hBmpBuf = NULL;
-    clientHeight = 0;
-    clientWidth  = 0;
-    flashCount   = 0;
-    flashInterval = 5;
-    w32adispSetScreen(window, mailbox);
-    hdcFont = CreateCompatibleDC(NULL);
-    hBmpFont = CreateCompatibleBitmap(hdcWnd, FONT_WIDTH * FONT_NCHAR, FONT_HEIGHT * FONT_NCOLOR);
-    SelectObject(hdcFont, hBmpFont);
+    if (context == NULL) return;
+    context->window_dc = GetDC(window);
+    context->buffer_dc = CreateCompatibleDC(NULL);
+    context->buffer_bitmap = NULL;
+    context->client_height = 0;
+    context->client_width  = 0;
+    context->flash_count   = 0;
+    context->flash_interval = 5;
+    context->displayed_generation = 0u;
+    context->font_dc = CreateCompatibleDC(NULL);
+    context->font_bitmap = CreateCompatibleBitmap(context->window_dc,
+        FONT_WIDTH * FONT_NCHAR, FONT_HEIGHT * FONT_NCOLOR);
+    SelectObject(context->font_dc, context->font_bitmap);
     for (i = 0; i < FONT_NCHAR; ++i) {
         for (j = 0; j < FONT_NCOLOR; ++j) {
-            bFontCharExist[i][j] = FALSE;
+            context->font_character_exists[i][j] = FALSE;
         }
     }
+    w32adispSetScreen(context, window, mailbox);
 }
 
-VOID w32adispSetScreen(HWND window,
+VOID w32adispSetScreen(w32adisp_context *context, HWND window,
                         const vm_platform_presentation_mailbox *mailbox) {
     RECT clientRect,windowRect;
     LONG widthOffset, heightOffset;
     core_platform_display_frame frame;
 
+    if (context == NULL) return;
     vm_platform_presentation_mailbox_capture(mailbox, &frame);
-    sizeRow = frame.columns;
-    sizeCol = frame.rows;
+    context->rows = frame.columns;
+    context->columns = frame.rows;
     GetClientRect(window, &clientRect);
     GetWindowRect(window, &windowRect);
 
     /* fetch window and customer area size to decide window side */
     widthOffset = windowRect.right - windowRect.left - clientRect.right;
     heightOffset = windowRect.bottom - windowRect.top - clientRect.bottom;
-    MoveWindow(window, windowRect.left, windowRect.top, sizeRow * FONT_WIDTH + widthOffset,
-               sizeCol * FONT_HEIGHT + heightOffset, SWP_NOMOVE);
+    MoveWindow(window, windowRect.left, windowRect.top, context->rows * FONT_WIDTH + widthOffset,
+               context->columns * FONT_HEIGHT + heightOffset, SWP_NOMOVE);
     GetClientRect(window, &clientRect);
-    clientHeight = clientRect.bottom - clientRect.top;
-    clientWidth  = clientRect.right - clientRect.left;
-    hBmpBuf = CreateCompatibleBitmap(hdcWnd,
-                                     GetDeviceCaps(hdcWnd, HORZRES), GetDeviceCaps(hdcWnd, VERTRES));
-    SelectObject(hdcBuf, hBmpBuf);
-    w32adispPaint(window, mailbox, TRUE);
+    context->client_height = clientRect.bottom - clientRect.top;
+    context->client_width  = clientRect.right - clientRect.left;
+    context->buffer_bitmap = CreateCompatibleBitmap(context->window_dc,
+        GetDeviceCaps(context->window_dc, HORZRES), GetDeviceCaps(context->window_dc, VERTRES));
+    SelectObject(context->buffer_dc, context->buffer_bitmap);
+    w32adispPaint(context, window, mailbox, TRUE);
 }
 
-static VOID DisplayCursor(const core_platform_display_frame *frame) {
+static VOID DisplayCursor(w32adisp_context *context,
+                          const core_platform_display_frame *frame) {
     HBRUSH hBrush;
     HGDIOBJ hOldGdiObj;
     RECT rect;
     INT x1_cursor, y1_cursor, x2_cursor, y2_cursor;
     x1_cursor = x2_cursor = frame->cursor_x * FONT_HEIGHT; /* + FONT_HEIGHT / 2 */;
-    cursorTop = frame->cursor_top;
-    cursorBottom = frame->cursor_bottom;
-    x1_cursor += (cursorTop % 8) * FONT_HEIGHT / 8;
-    x2_cursor += (cursorBottom % 8) * FONT_HEIGHT / 8;
+    context->cursor_top = frame->cursor_top;
+    context->cursor_bottom = frame->cursor_bottom;
+    x1_cursor += (context->cursor_top % 8) * FONT_HEIGHT / 8;
+    x2_cursor += (context->cursor_bottom % 8) * FONT_HEIGHT / 8;
     y1_cursor = (frame->cursor_y + 0) * FONT_WIDTH;
     y2_cursor = (frame->cursor_y + 1) * FONT_WIDTH;
     rect.left = y1_cursor;
@@ -458,13 +488,13 @@ static VOID DisplayCursor(const core_platform_display_frame *frame) {
     rect.right = y2_cursor;
     rect.bottom = x2_cursor;
     hBrush = CreateSolidBrush(COLOR_LIGHTGRAY);
-    hOldGdiObj = SelectObject(hdcWnd, hBrush);
-    FillRect(hdcWnd, &rect, hBrush);
-    SelectObject(hdcWnd, hOldGdiObj);
+    hOldGdiObj = SelectObject(context->window_dc, hBrush);
+    FillRect(context->window_dc, &rect, hBrush);
+    SelectObject(context->window_dc, hOldGdiObj);
     DeleteObject(hBrush);
 }
 
-VOID w32adispPaint(HWND window,
+VOID w32adispPaint(w32adisp_context *context, HWND window,
                    const vm_platform_presentation_mailbox *mailbox,
                    BOOL flagForce) {
     UCHAR i, j, ch, prop;
@@ -472,33 +502,37 @@ VOID w32adispPaint(HWND window,
     BOOL changed;
     core_platform_display_frame frame;
 
+    if (context == NULL) return;
     vm_platform_presentation_mailbox_capture(mailbox, &frame);
-    flashCount = (flashCount + 1) % 10;
-    changed = flagForce || frame.generation != displayedGeneration;
+    context->flash_count = (context->flash_count + 1) % 10;
+    changed = flagForce || frame.generation != context->displayed_generation;
     if (changed) {
-        for (i = 0; i < sizeCol; ++i) {
-            for (j = 0; j < sizeRow; ++j) {
+        for (i = 0; i < context->columns; ++i) {
+            for (j = 0; j < context->rows; ++j) {
                 index = i * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + j;
                 ch = frame.characters[index];
                 prop = frame.attributes[index]; /* & 0x7f; */
-                if (!bFontCharExist[ch][prop]) {
-                    CreateBitmapFontChar(ch, prop);
+                if (!context->font_character_exists[ch][prop]) {
+                    CreateBitmapFontChar(context, ch, prop);
                 }
-                BitBlt(hdcBuf, j * FONT_WIDTH, i * FONT_HEIGHT, FONT_WIDTH, FONT_HEIGHT,
-                       hdcFont, ch * FONT_WIDTH, prop * FONT_HEIGHT, SRCCOPY);
+                BitBlt(context->buffer_dc, j * FONT_WIDTH, i * FONT_HEIGHT,
+                       FONT_WIDTH, FONT_HEIGHT, context->font_dc,
+                       ch * FONT_WIDTH, prop * FONT_HEIGHT, SRCCOPY);
             }
         }
-        displayedGeneration = frame.generation;
+        context->displayed_generation = frame.generation;
     }
-    BitBlt(hdcWnd, 0, 0, clientWidth, clientHeight, hdcBuf, 0, 0, SRCCOPY);
-    if (frame.cursor_visible && ((flashCount % 10) < flashInterval)) {
-        DisplayCursor(&frame);
+    BitBlt(context->window_dc, 0, 0, context->client_width,
+           context->client_height, context->buffer_dc, 0, 0, SRCCOPY);
+    if (frame.cursor_visible && ((context->flash_count % 10) < context->flash_interval)) {
+        DisplayCursor(context, &frame);
     }
 }
 
-VOID w32adispFinal() {
-    DeleteObject(hBmpFont);
-    DeleteDC(hdcFont);
-    DeleteObject(hBmpBuf);
-    DeleteDC(hdcBuf);
+VOID w32adispFinal(w32adisp_context *context) {
+    if (context == NULL) return;
+    DeleteObject(context->font_bitmap);
+    DeleteDC(context->font_dc);
+    DeleteObject(context->buffer_bitmap);
+    DeleteDC(context->buffer_dc);
 }

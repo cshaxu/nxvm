@@ -20,7 +20,7 @@ plan.
 | 2 | `vm/machine` | Pass | Full-PC objects are per session; control state is atomic and guest reset remains execution-boundary work. |
 | 3 | `vdm/machine` | Pass for current scope | DOS-minimal instances own their state. It has no concurrent host-entry contract yet, so no new code is required before a VDM run loop exists. |
 | 4 | `core/platform` | Pass | Shared host-surface contexts carry opaque handles; process-exclusive host resources use explicit atomic leases. |
-| 5 | `vm/platform` | Fail | Console/window rendering state becomes context-owned; Linux terminal capability has an explicit exclusive lease. |
+| 5 | `vm/platform` | Pass | Console/window rendering state is context-owned; Console and Linux terminal capabilities have explicit exclusive leases. |
 | 6 | `vdm/platform` | Absent | No production implementation; define against the core platform contracts when M8/M9 admits it. |
 | 7 | `core/product` | Fail | Debugger parser, assembler, and disassembler workspaces become session-owned contexts; thread-local target/wait scopes remain scopes only. |
 | 8 | `vm/product` | Fail | Console parser, command buffer, target, and exit state become one Console-session object. |
@@ -42,8 +42,8 @@ a higher-priority migration.
 | `core/platform` | wait/debug scopes; host-surface contexts and leases | Thread-local scopes and caller-owned opaque contexts are allowed; leases name one composition owner. |
 | `core/product` | `debug.c`, `aasm32.c`, and `dasm32.c` parser workspaces | Caller-owned debugger context. |
 | `vm/machine` | `vm_composition_control_state` run/reset/pause/step fields and debug instrumentation | Atomic command/state boundary; instrumentation is session-owned or disabled. |
-| `vm/platform/win32` | Console buffer and GDI renderer state | Per-surface context owned by the VM platform session. |
-| `vm/platform/linux` | curses `stdscr` and display generation | Explicit process-exclusive terminal lease plus per-lease state. |
+| `vm/platform/win32` | Console buffer and GDI renderer state | Per-surface context owned by the VM platform session; the shared Console is explicitly leased. |
+| `vm/platform/linux` | curses `stdscr` and display generation | Explicit process-exclusive terminal lease plus session-owned generation. |
 | `vm/product` | `console.c` target, parser buffer, arguments, and exit flag | Console-session object. |
 | `vm/profile` | default-profile runtime context | Session-owned; immutable firmware tables remain shared. |
 | `vdm/*` | DOS-minimal session and immutable descriptors | Current state is per session or immutable; future host/run loop must declare its synchronization contract. |
@@ -55,7 +55,7 @@ a higher-priority migration.
 | T87 | Freeze the inventory, repair current GCC presets, and add a no-unclassified-mutable-global gate. | None | The preset builds the latest verified runnable artifact and all current structural gates; inventory is recorded. |
 | T88 | Close machine state in priority order: make the core instruction trace workspace instance/call-owned, then replace VM control flags and debug instrumentation with a synchronized session command/state boundary. | T87 | Two core-machine trace contexts and concurrent VM stop/pause/reset/step regression; retained Console and FDD/HDD gates. |
 | T89 | Audit current `vdm/machine`, then define `core/platform` host-surface context and lease contracts; move only mechanism-only shared host facilities there. | T87 | VDM-minimal remains instance-owned; no core-to-machine dependency; capability/lease contract tests. |
-| T90 | Contextualize VM Win32 Console/window renderers and define Linux curses as an explicit exclusive surface lease; audit absent VDM platform against that contract without speculative code. | T88, T89 | Two Win32 presentation contexts have independent generations/resources; lease conflict is deterministic. |
+| T90 | Contextualize VM Win32 Console/window renderers and define Linux curses as an explicit exclusive surface lease; audit absent VDM platform against that contract without speculative code. | T88, T89 | Complete: two Win32 presentation contexts have independent resources; Console/terminal leases use the shared deterministic contract. |
 | T91 | Make shared debugger parser/assembler/disassembler state session-owned. | T88 | Two debug contexts do not cross-target; retained debugger grammar/output gate. |
 | T92 | Make NXVM Console parser, target, and exit state session-owned; audit absent VDM product against the same contract without speculative code. | T88, T91 | Two Console contexts do not cross-target; retained Console grammar/output gate. |
 | T93 | Update VM root composition to construct, bind, and tear down the new machine/platform/product contexts. | T88--T92 | Two full VM sessions preserve independent control, Console, debugger, and presentation behavior. |

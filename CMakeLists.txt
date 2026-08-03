@@ -334,6 +334,12 @@ add_executable(nxvm-vm-platform-presentation-mailbox-smoke
 target_link_libraries(nxvm-vm-platform-presentation-mailbox-smoke PRIVATE
     nxvm-platform-vm)
 
+add_executable(nxvm-vm-platform-surface-context-smoke
+    tests/platform/vm_platform_surface_context_smoke.c
+)
+target_link_libraries(nxvm-vm-platform-surface-context-smoke PRIVATE
+    nxvm-platform-vm)
+
 add_executable(nxvm-vm-platform-mode-context-smoke
     tests/platform/vm_platform_mode_context_smoke.c
 )
@@ -699,6 +705,7 @@ add_nxvm_version_artifact(nxvm-0-5-0084 "0.5.0084")
 add_nxvm_version_artifact(nxvm-0-5-0085 "0.5.0085")
 add_nxvm_version_artifact(nxvm-0-5-0086 "0.5.0086")
 add_nxvm_version_artifact(nxvm-0-5-0088 "0.5.0088")
+add_nxvm_version_artifact(nxvm-0-5-0090 "0.5.0090")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
