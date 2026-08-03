@@ -3,7 +3,6 @@
 #include "vm/platform/request_bridge.h"
 
 
-#include <string.h>
 
 C_VOID nxvm_platform_vm_request_bridge_initialize(
     nxvm_platform_vm_request_bridge *bridge)

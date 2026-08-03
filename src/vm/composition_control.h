@@ -1,7 +1,6 @@
 #ifndef NTVDM64_VM_COMPOSITION_CONTROL_H
 #define NTVDM64_VM_COMPOSITION_CONTROL_H
 
-#include <stdatomic.h>
 
 #include "type.h"
 #include "core/product/runtime/execution_context.h"

@@ -1,7 +1,6 @@
 #ifndef NTVDM64_CORE_MACHINE_PORT_INTERFACE_H
 #define NTVDM64_CORE_MACHINE_PORT_INTERFACE_H
 
-#include <stdint.h>
 
 #include "type.h"
 

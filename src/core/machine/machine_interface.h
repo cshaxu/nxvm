@@ -1,7 +1,6 @@
 #ifndef NTVDM64_CORE_MACHINE_INTERFACE_H
 #define NTVDM64_CORE_MACHINE_INTERFACE_H
 
-#include <stdint.h>
 
 #include "core/machine/cpu_interface.h"
 #include "core/machine/lifecycle_interface.h"

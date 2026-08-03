@@ -11,7 +11,6 @@ extern "C" {
 
 #include <windows.h>
 
-#include <stdint.h>
 
 typedef struct vm_platform_presentation_mailbox vm_platform_presentation_mailbox;
 typedef struct w32adisp_context w32adisp_context;

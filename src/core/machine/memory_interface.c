@@ -3,9 +3,7 @@
 #include "core/machine/machine.h"
 
 
-#include <stdlib.h>
 
-#include <string.h>
 
 static C_INT core_machine_memory_translate(
     const core_machine_memory *memory,

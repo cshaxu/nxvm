@@ -3,7 +3,7 @@
 /* WIN32CON provides win32 console i/o interface. */
 
 #include "core/product/utils.h"
-#include <stdlib.h>
+#include "type.h"
 #include "vm/platform/win32/win32.h"
 #include "vm/platform/win32/w32cdisp.h"
 #include "vm/platform/win32/win32con.h"

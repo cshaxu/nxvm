@@ -3,7 +3,6 @@
 
 #include "type.h"
 
-#include <stdint.h>
 
 C_VOID core_product_wait_milliseconds(uint32_t milliseconds);
 

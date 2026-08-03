@@ -3,7 +3,6 @@
 #include "core/machine/firmware_interface.h"
 
 
-#include <string.h>
 
 C_VOID core_machine_firmware_initialize(core_machine_firmware *firmware)
 {

@@ -3,7 +3,6 @@
 #include "core/machine/machine.h"
 
 
-#include <stdlib.h>
 
 #define NXVM_CORE_PORT_COUNT 65536u
 

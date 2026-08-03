@@ -3,7 +3,6 @@
 #include "core/machine/presentation_interface.h"
 
 
-#include <string.h>
 
 C_VOID core_machine_keyboard_queue_initialize(core_machine_keyboard_queue *queue)
 {

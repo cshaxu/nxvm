@@ -3,7 +3,6 @@
 #include "core/machine/display_interface.h"
 
 
-#include <stddef.h>
 
 C_VOID core_machine_display_provider_slot_initialize(
     core_machine_display_provider_slot *slot)

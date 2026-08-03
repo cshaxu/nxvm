@@ -1,6 +1,5 @@
 #include "type.h"
 
-#include <stdio.h>
 
 
 #include "core/product/debug/debug_access.h"

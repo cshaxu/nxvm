@@ -3,9 +3,7 @@
 #include "vdm/machine/dos_minimal.h"
 
 
-#include <stdlib.h>
 
-#include <string.h>
 
 
 #include "core/machine/machine_interface.h"

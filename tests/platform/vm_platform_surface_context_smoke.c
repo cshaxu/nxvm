@@ -1,6 +1,5 @@
 #include "type.h"
 
-#include <stdio.h>
 
 
 #include "vm/platform/win32/w32adisp.h"

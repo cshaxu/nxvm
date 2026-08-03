@@ -4,7 +4,6 @@
 
 #include "type.h"
 
-#include <stdint.h>
 
 #define CORE_MACHINE_DISPLAY_MAX_COLUMNS 80u
 #define CORE_MACHINE_DISPLAY_MAX_ROWS 25u

@@ -1,6 +1,5 @@
 #include "type.h"
 
-#include <stdio.h>
 
 
 #include "core/platform/host_surface_interface.h"

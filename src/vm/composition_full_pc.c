@@ -3,9 +3,7 @@
 #include "vm/composition_full_pc.h"
 
 
-#include <stdlib.h>
 
-#include <string.h>
 
 
 #include "vm/composition_control.h"

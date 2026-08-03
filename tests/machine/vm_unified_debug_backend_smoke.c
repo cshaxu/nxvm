@@ -3,9 +3,7 @@
 #include <windows.h>
 
 
-#include <stdio.h>
 
-#include <stdlib.h>
 
 
 #include "core/product/debug/debug_access.h"

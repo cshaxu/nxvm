@@ -1,7 +1,6 @@
 #ifndef NXVM_COMPOSITION_DEFAULT_PROFILE_H
 #define NXVM_COMPOSITION_DEFAULT_PROFILE_H
 
-#include <stdint.h>
 
 #include "type.h"
 #include "vm/product/media.h"

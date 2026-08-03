@@ -3,7 +3,6 @@
 #include <windows.h>
 
 
-#include <stdio.h>
 
 
 #include "vm/composition_control.h"

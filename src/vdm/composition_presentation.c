@@ -3,7 +3,6 @@
 #include "vdm/composition_presentation.h"
 
 
-#include <stdlib.h>
 
 #define NXVM_DOS_MINIMAL_INPUT_CAPACITY 32u
 

@@ -3,7 +3,6 @@
 
 #include "type.h"
 
-#include <stdatomic.h>
 
 
 #include "core/platform/display_frame.h"

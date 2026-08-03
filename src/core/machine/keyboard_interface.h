@@ -3,7 +3,6 @@
 
 #include "type.h"
 
-#include <stdint.h>
 
 typedef enum core_machine_keyboard_modifier {
     CORE_MACHINE_KEYBOARD_MODIFIER_ALT,

@@ -3,9 +3,7 @@
 #include "vm/product/session_console.h"
 
 
-#include <ctype.h>
 
-#include <string.h>
 
 static C_INT vm_product_console_word(const C_CHAR *line, const C_CHAR *word)
 {

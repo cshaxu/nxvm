@@ -3,9 +3,7 @@
 
 #include "type.h"
 
-#include <stddef.h>
 
-#include <stdint.h>
 
 typedef struct nxvm_product_console_target {
     C_VOID (*initialize)(C_VOID *context);

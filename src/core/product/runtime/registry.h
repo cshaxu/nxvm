@@ -1,7 +1,6 @@
 #ifndef NXVM_RUNTIME_REGISTRY_H
 #define NXVM_RUNTIME_REGISTRY_H
 
-#include <stddef.h>
 
 #include "type.h"
 

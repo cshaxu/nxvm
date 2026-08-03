@@ -1,8 +1,6 @@
 #ifndef NTVDM64_CORE_PLATFORM_HOST_SURFACE_INTERFACE_H
 #define NTVDM64_CORE_PLATFORM_HOST_SURFACE_INTERFACE_H
 
-#include <stdatomic.h>
-#include <stdint.h>
 
 #include "type.h"
 

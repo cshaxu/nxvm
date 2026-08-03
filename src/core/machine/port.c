@@ -4,7 +4,6 @@
 
 #include "type.h"
 
-#include <stdlib.h>
 
 #include "core/machine/port.h"
 

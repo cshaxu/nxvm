@@ -1,6 +1,5 @@
 #include "type.h"
 
-#include <stdio.h>
 
 #include "core/machine/firmware_interface.h"
 C_INT main(C_VOID) {

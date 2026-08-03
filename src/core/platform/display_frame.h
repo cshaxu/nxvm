@@ -3,7 +3,6 @@
 
 #include "type.h"
 
-#include <stdint.h>
 
 #define CORE_PLATFORM_DISPLAY_MAX_COLUMNS 80u
 #define CORE_PLATFORM_DISPLAY_MAX_ROWS 25u

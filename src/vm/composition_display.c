@@ -13,7 +13,6 @@
 #include "vm/profile/default_profile/firmware/qdcga.h"
 
 
-#include <string.h>
 
 C_VOID vm_composition_publish_display(vm_composition_live_machine *machine,
     C_INT force)

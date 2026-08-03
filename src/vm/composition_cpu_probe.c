@@ -3,9 +3,7 @@
 #include "vm/composition_cpu_probe.h"
 
 
-#include <stdlib.h>
 
-#include <string.h>
 
 
 #include "core/machine/cpu.h"

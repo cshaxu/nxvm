@@ -3,11 +3,8 @@
 
 #include "type.h"
 
-#include <stddef.h>
 
-#include <stdatomic.h>
 
-#include <stdint.h>
 
 
 #include "core/machine/cpu.h"

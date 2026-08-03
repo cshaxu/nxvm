@@ -1,8 +1,6 @@
 #include "type.h"
 
-#include <stdio.h>
 
-#include <string.h>
 
 
 #include "vm/profile/default_profile/firmware/default_profile.h"

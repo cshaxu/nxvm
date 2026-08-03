@@ -3,7 +3,6 @@
 #include "vm/platform/execution.h"
 
 
-#include <stddef.h>
 
 C_VOID vm_platform_execution_transport_initialize(
     vm_platform_execution_transport *transport,

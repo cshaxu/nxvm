@@ -1,8 +1,6 @@
 #include "type.h"
 
-#include <stdint.h>
 
-#include <stdio.h>
 
 
 #include "vm/platform/input.h"

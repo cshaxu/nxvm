@@ -1,8 +1,6 @@
 #ifndef NXVM_PLATFORM_VM_REQUEST_BRIDGE_H
 #define NXVM_PLATFORM_VM_REQUEST_BRIDGE_H
 
-#include <stddef.h>
-#include <stdint.h>
 
 #include "core/machine/keyboard_interface.h"
 #include "type.h"

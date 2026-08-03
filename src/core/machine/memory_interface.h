@@ -1,8 +1,6 @@
 #ifndef NTVDM64_CORE_MACHINE_MEMORY_INTERFACE_H
 #define NTVDM64_CORE_MACHINE_MEMORY_INTERFACE_H
 
-#include <stddef.h>
-#include <stdint.h>
 
 #include "type.h"
 

@@ -1,7 +1,7 @@
 #ifndef NTVDM64_CORE_MACHINE_CPU_INTERFACE_H
 #define NTVDM64_CORE_MACHINE_CPU_INTERFACE_H
 
-#include <stdint.h>
+#include "type.h"
 
 typedef struct core_machine_cpu_state {
     uint16_t cs;

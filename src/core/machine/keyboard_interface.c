@@ -3,7 +3,6 @@
 #include "core/machine/keyboard_interface.h"
 
 
-#include <stddef.h>
 
 C_VOID core_machine_keyboard_provider_slot_initialize(
     core_machine_keyboard_provider_slot *slot)
