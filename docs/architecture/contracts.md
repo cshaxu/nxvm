@@ -23,7 +23,7 @@ module-local status type.
 Public symbols use source-path ownership: `core_machine_*`,
 `core_platform_*`, `core_product_*`, `vm_machine_*`, `vm_platform_*`,
 `vm_product_*`, `vm_profile_*`, and VDM counterparts. Root composition uses
-`vm_composition_*` and `vdm_composition_*`.
+`vm_session_*` and `vdm_session_*` for its concrete session contracts.
 
 The precise distinction among private machine implementation, exposed
 interface, injected provider, and session-owned registry is defined in
@@ -385,7 +385,7 @@ global session.
 
 `vm/main.c` is the current thin `nxvm.exe` entry point. `vdm/main.c` is the
 future thin `ntvdm64.exe` entry point and must enter only VDM root composition
-when introduced. `vm_composition` and `vdm_composition` are the sole
+when introduced. `vm_session` and the future `vdm_session` are the sole
 integration owners: they may include the applicable core contracts and all peer
 modules of their own product form. No peer module receives this privilege.
 

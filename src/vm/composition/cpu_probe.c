@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/composition/composition_cpu_probe.h"
+#include "vm/composition/cpu_probe.h"
 
 
 
@@ -18,19 +18,19 @@
 
 #include "core/product/runtime/execution_context.h"
 
-#include "vm/composition/composition_control.h"
+#include "vm/composition/session_control.h"
 
 #include "core/machine/cpu_instructions.h"
 
-#include "vm/composition/composition_live_machine.h"
+#include "vm/composition/session.h"
 
 struct nxvm_cpu_probe {
     C_INT active;
-    vm_composition_live_machine machine;
+    vm_session machine;
 };
 
-static C_INT vm_composition_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
-    vm_composition_cpu_probe_state *state)
+static C_INT vm_session_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
+    vm_session_cpu_probe_state *state)
 {
     const t_cpu *cpu = probe == STD_NULL ? STD_NULL : probe->machine.cpu;
 
@@ -48,11 +48,11 @@ static C_INT vm_composition_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
     return 1;
 }
 
-static C_INT vm_composition_cpu_probe_reset(nxvm_cpu_probe *probe)
+static C_INT vm_session_cpu_probe_reset(nxvm_cpu_probe *probe)
 {
     uint32_t eip = 0u;
 
-    vm_composition_control_reset(probe->machine.control);
+    vm_session_control_reset(probe->machine.control);
     if (core_machine_cpu_execution_load_segment(probe->machine.cpu_execution,
             &probe->machine.cpu->data.cs, 0u) ||
         core_machine_cpu_execution_load_segment(probe->machine.cpu_execution,
@@ -67,7 +67,7 @@ static C_INT vm_composition_cpu_probe_reset(nxvm_cpu_probe *probe)
     return 1;
 }
 
-C_INT vm_composition_cpu_probe_create(nxvm_cpu_probe **out_probe)
+C_INT vm_session_cpu_probe_create(nxvm_cpu_probe **out_probe)
 {
     nxvm_cpu_probe *probe;
 
@@ -77,26 +77,26 @@ C_INT vm_composition_cpu_probe_create(nxvm_cpu_probe **out_probe)
     *out_probe = STD_NULL;
     probe = (nxvm_cpu_probe *)STD_CALLOC(1u, sizeof(*probe));
     if (probe == STD_NULL) return 0;
-    vm_composition_live_machine_initialize(&probe->machine);
-    vm_composition_control_initialize(probe->machine.control, &probe->machine);
+    vm_session_storage_initialize(&probe->machine);
+    vm_session_control_initialize(probe->machine.control, &probe->machine);
     probe->active = 1;
-    if (!vm_composition_cpu_probe_reset(probe)) {
-        vm_composition_cpu_probe_destroy(probe);
+    if (!vm_session_cpu_probe_reset(probe)) {
+        vm_session_cpu_probe_destroy(probe);
         return 0;
     }
     *out_probe = probe;
     return 1;
 }
 
-C_INT vm_composition_cpu_probe_step(
+C_INT vm_session_cpu_probe_step(
     nxvm_cpu_probe *probe,
     const uint8_t *bytes,
     STD_SIZE_T byte_count,
-    vm_composition_cpu_probe_capture *out_capture)
+    vm_session_cpu_probe_capture *out_capture)
 {
     if (probe == STD_NULL || !probe->active || bytes == STD_NULL || out_capture == STD_NULL ||
         byte_count == 0u || byte_count > NXVM_BASELINE_CPU_PROBE_MAX_BYTES ||
-        !vm_composition_cpu_probe_reset(probe)) {
+        !vm_session_cpu_probe_reset(probe)) {
         return 0;
     }
 
@@ -105,7 +105,7 @@ C_INT vm_composition_cpu_probe_step(
     out_capture->byte_count = byte_count;
     core_machine_memory_write_real_to(probe->machine.ram, 0u, 0u, bytes,
         byte_count);
-    if (!vm_composition_cpu_probe_capture_state(probe, &out_capture->before)) {
+    if (!vm_session_cpu_probe_capture_state(probe, &out_capture->before)) {
         return 0;
     }
     {
@@ -117,7 +117,7 @@ C_INT vm_composition_cpu_probe_step(
             return 0;
         }
     }
-    if (!vm_composition_cpu_probe_capture_state(probe, &out_capture->after)) {
+    if (!vm_session_cpu_probe_capture_state(probe, &out_capture->after)) {
         return 0;
     }
     out_capture->exception_mask = probe->machine.cpuins->data.except;
@@ -125,11 +125,11 @@ C_INT vm_composition_cpu_probe_step(
     return 1;
 }
 
-C_VOID vm_composition_cpu_probe_destroy(nxvm_cpu_probe *probe)
+C_VOID vm_session_cpu_probe_destroy(nxvm_cpu_probe *probe)
 {
     if (probe != STD_NULL && probe->active) {
-        vm_composition_control_finalize(probe->machine.control, &probe->machine);
-        vm_composition_live_machine_finalize(&probe->machine);
+        vm_session_control_finalize(probe->machine.control, &probe->machine);
+        vm_session_storage_finalize(&probe->machine);
         probe->active = 0;
     }
     STD_FREE(probe);

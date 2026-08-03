@@ -31,9 +31,9 @@
 
 #include "vm/machine/hdd.h"
 
-#include "vm/composition/composition_block.h"
+#include "vm/composition/block_provider.h"
 
-#include "vm/composition/composition_display.h"
+#include "vm/composition/display_bridge.h"
 
 #include "core/machine/kbc.h"
 
@@ -41,10 +41,10 @@
 
 #include "vm/profile/default_profile/firmware/qdx.h"
 
-#include "vm/composition/composition_live_machine.h"
+#include "vm/composition/session.h"
 
 
-#include "vm/composition/composition.h"
+#include "vm/composition/providers.h"
 
 #define _empty_
 #define _vdebug_
@@ -65,12 +65,12 @@
 #define _qdx_
 
 /* Initializes all devices, allocates space */
-C_VOID vm_composition_providers_initialize(vm_composition_live_machine *machine) {
+C_VOID vm_session_providers_initialize(vm_session *machine) {
     if (machine == STD_NULL) return;
     core_machine_cpu_state_initialize(machine->cpu_execution);
     vm_machine_fdd_initialize(machine->fdd);
     vm_machine_hdd_initialize(machine->hdd);
-    vm_composition_bind_block(machine);
+    vm_session_bind_block(machine);
     vm_profile_default_bios_initialize(machine->default_bios);
     core_machine_vadp_initialize(machine->vadp);
     vm_profile_default_bios_add_interrupt(machine->default_bios,
@@ -123,7 +123,7 @@ C_VOID vm_composition_providers_initialize(vm_composition_live_machine *machine)
     _vbios_ _vcpu_ _vram_
 }
 
-C_VOID vm_composition_providers_refresh(vm_composition_live_machine *machine) {
+C_VOID vm_session_providers_refresh(vm_session *machine) {
     if (machine == STD_NULL) return;
     vm_profile_default_qdx_refresh(machine->default_profile_context);
     _empty_
@@ -139,7 +139,7 @@ C_VOID vm_composition_providers_refresh(vm_composition_live_machine *machine) {
     vm_machine_fdc_refresh(machine->fdc);
 }
 
-C_VOID vm_composition_providers_reset(vm_composition_live_machine *machine) {
+C_VOID vm_session_providers_reset(vm_session *machine) {
     if (machine == STD_NULL) return;
     vm_machine_hdc_reset();
     vm_machine_cmos_reset(machine->cmos);
@@ -152,7 +152,7 @@ C_VOID vm_composition_providers_reset(vm_composition_live_machine *machine) {
 }
 
 /* Finalize all devices, deallocates space */
-C_VOID vm_composition_providers_finalize(vm_composition_live_machine *machine) {
+C_VOID vm_session_providers_finalize(vm_session *machine) {
     if (machine == STD_NULL) return;
     vm_profile_default_qdx_finalize(machine->default_profile_context);
     _empty_
@@ -184,9 +184,9 @@ C_VOID vm_composition_providers_finalize(vm_composition_live_machine *machine) {
     core_machine_memory_finalize(machine->ram);
 }
 /* Print machine info */
-C_VOID vm_composition_print_machine(const vm_composition_live_machine *machine) {
+C_VOID vm_session_print_machine(const vm_session *machine) {
     if (machine == STD_NULL) return;
-    STD_PRINTF("Machine:           %s\n", VM_COMPOSITION_MACHINE_NAME);
+    STD_PRINTF("Machine:           %s\n", VM_SESSION_MACHINE_NAME);
     STD_PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
     STD_PRINTF("RAM Size:          %d MB\n", machine->ram->connect.size >> 20);
     STD_PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,

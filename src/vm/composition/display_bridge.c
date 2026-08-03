@@ -2,19 +2,19 @@
 
 #include "core/machine/display_interface.h"
 
-#include "vm/composition/composition_display.h"
+#include "vm/composition/display_bridge.h"
 
 #include "core/platform/display_frame.h"
 
 #include "vm/platform/platform.h"
 
-#include "vm/composition/composition_live_machine.h"
+#include "vm/composition/session.h"
 
 #include "vm/profile/default_profile/firmware/qdcga.h"
 
 
 
-C_VOID vm_composition_publish_display(vm_composition_live_machine *machine,
+C_VOID vm_session_publish_display(vm_session *machine,
     C_INT force)
 {
     core_platform_display_frame frame;
@@ -63,13 +63,13 @@ C_VOID vm_composition_publish_display(vm_composition_live_machine *machine,
 
 static C_VOID vmCompositionDisplayModeChanged(C_VOID *context)
 {
-    vm_composition_live_machine *machine = context;
+    vm_session *machine = context;
 
-    vm_composition_publish_display(machine, 1);
+    vm_session_publish_display(machine, 1);
     vm_platform_display_set_screen(machine->platform_run_context);
 }
 
-C_VOID vm_composition_bind_display(vm_composition_live_machine *machine)
+C_VOID vm_session_bind_display(vm_session *machine)
 {
     if (machine == STD_NULL) return;
     core_machine_display_provider_slot_bind(machine->display_provider,

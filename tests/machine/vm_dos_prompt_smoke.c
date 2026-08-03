@@ -14,11 +14,11 @@
 
 #include "vm/platform/presentation_mailbox.h"
 
-#include "vm/composition/composition_machine.h"
+#include "vm/composition/session_lifecycle.h"
 
-#include "vm/composition/composition_control.h"
+#include "vm/composition/session_control.h"
 
-#include "vm/composition/composition_live_machine.h"
+#include "vm/composition/session.h"
 
 #include "vm/machine/fdd.h"
 
@@ -28,7 +28,7 @@
 
 static DWORD WINAPI run_full_pc(C_VOID *opaque)
 {
-    vm_composition_start((vm_composition_live_machine *)opaque);
+    vm_session_start((vm_session *)opaque);
     return 0u;
 }
 
@@ -93,12 +93,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
     DWORD elapsed;
     C_INT prompt_seen = 0;
     core_platform_display_frame frame;
-    vm_composition_live_machine *session;
+    vm_session *session;
 
     if (argc != 2) return 1;
-    session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
+    session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return 1;
-    vm_composition_initialize(session);
+    vm_session_initialize(session);
     if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) goto fail;
     thread = CreateThread(STD_NULL, 0u, run_full_pc, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
@@ -113,7 +113,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
         Sleep(10u);
     }
-    vm_composition_stop(session);
+    vm_session_stop(session);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
     if (result != WAIT_OBJECT_0 || !prompt_seen) {
@@ -121,14 +121,14 @@ C_INT main(C_INT argc, C_CHAR **argv)
         STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
         goto fail;
     }
-    vm_composition_finalize(session);
+    vm_session_finalize(session);
     STD_FREE(session);
     puts("M5:T70:S2:DOS-PROMPT:OK");
     return 0;
 
 fail:
-    vm_composition_stop(session);
-    vm_composition_finalize(session);
+    vm_session_stop(session);
+    vm_session_finalize(session);
     STD_FREE(session);
     return 1;
 }

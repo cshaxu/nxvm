@@ -68,7 +68,8 @@ the repository is one synchronously built system.
 Public C symbols use their source ownership path: `core_machine_*`,
 `core_platform_*`, `core_product_*`, `vm_machine_*`, `vm_platform_*`,
 `vm_product_*`, `vm_profile_*`, and their VDM counterparts. Root composition
-uses `vm_composition_*` or `vdm_composition_*`.
+exports its concrete session as `vm_session_*` or `vdm_session_*`. Internal
+composition helpers remain private to their product root.
 
 Composition implementation and private headers live under
 `vm/composition/` or `vdm/composition/`. The product root owns that directory;

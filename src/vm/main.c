@@ -17,15 +17,15 @@
 
 #include "version.h"
 
-#include "vm/composition/composition_console.h"
+#include "vm/composition/console_target.h"
 
-#include "vm/composition/composition_live_machine.h"
+#include "vm/composition/session.h"
 
 #include "vm/product/console.h"
 
 C_INT main(C_INT argc, C_CHAR **argv) {
     C_CHAR banner[160];
-    vm_composition_live_machine *machine;
+    vm_session *session;
 
     (C_VOID)argc;
     (C_VOID)argv;
@@ -36,15 +36,9 @@ C_INT main(C_INT argc, C_CHAR **argv) {
     STD_PRINTF("%s\n", banner);
     STD_PRINTF("Built on %s at %s.\n", ntvdm64_version_build_date(),
         ntvdm64_version_build_time());
-    machine = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*machine));
-    if (machine == STD_NULL) return 1;
-    vm_composition_live_machine_initialize(machine);
-    if (machine->core_machine == STD_NULL) {
-        STD_FREE(machine);
-        return 1;
-    }
-    vm_composition_console_target_initialize(machine->console_target, machine);
-    vm_product_console_main(machine->console_context, machine->console_target);
-    STD_FREE(machine);
+    if (vm_session_create(STD_NULL, &session) != NTVDM64_STATUS_OK) return 1;
+    vm_session_console_target_initialize(session->console_target, session);
+    vm_product_console_main(session->console_context, session->console_target);
+    vm_session_destroy(session);
     return 0;
 }

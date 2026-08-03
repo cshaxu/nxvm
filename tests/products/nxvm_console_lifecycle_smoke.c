@@ -22,15 +22,15 @@
 #endif
 
 
-#include "vm/composition/composition_console.h"
+#include "vm/composition/console_target.h"
 
-#include "vm/composition/composition_live_machine.h"
+#include "vm/composition/session.h"
 
 #include "vm/product/console.h"
 
 C_INT main(C_VOID)
 {
-    vm_composition_live_machine machine = {0};
+    vm_session machine = {0};
     STD_FILE *input;
     C_INT saved_stdin;
 
@@ -50,14 +50,14 @@ C_INT main(C_VOID)
         return 1;
     }
 
-    vm_composition_live_machine_initialize(&machine);
+    vm_session_storage_initialize(&machine);
     if (machine.core_machine == STD_NULL) {
         NXVM_DUP2(saved_stdin, NXVM_FILENO(STD_STDIN));
         NXVM_CLOSE(saved_stdin);
         STD_FCLOSE(input);
         return 1;
     }
-    vm_composition_console_target_initialize(machine.console_target, &machine);
+    vm_session_console_target_initialize(machine.console_target, &machine);
     vm_product_console_main(machine.console_context, machine.console_target);
 
     NXVM_DUP2(saved_stdin, NXVM_FILENO(STD_STDIN));

@@ -3,27 +3,27 @@
 
 
 
-#include "vm/composition/composition_live_machine.h"
+#include "vm/composition/session.h"
 
-#include "vm/composition/composition_machine.h"
+#include "vm/composition/session_lifecycle.h"
 
 #include "vm/profile/default_profile/firmware/bios.h"
 
 C_INT main(C_VOID)
 {
-    vm_composition_live_machine *session;
-    const vm_composition_live_machine *machine;
+    vm_session *session;
+    const vm_session *machine;
 
-    session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
+    session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return 1;
-    vm_composition_initialize(session);
+    vm_session_initialize(session);
     machine = session;
     if (machine == STD_NULL || machine->default_bios != &machine->default_bios_storage) {
-        vm_composition_finalize(session);
+        vm_session_finalize(session);
         STD_FREE(session);
         return 1;
     }
-    vm_composition_finalize(session);
+    vm_session_finalize(session);
     STD_FREE(session);
     puts("M5:T38:S1:BIOS-AUTHORITY:OK");
     return 0;

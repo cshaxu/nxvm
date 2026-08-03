@@ -1,26 +1,20 @@
 #include "type.h"
 
-
-
-
-#include "vm/composition/composition_session.h"
+#include "vm/composition/session.h"
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    vm_composition_full_pc_session *full_pc = STD_NULL;
-    vm_composition_full_pc_session_config full_pc_config;
+    vm_session_config config = { argv[1], argv[2], 0, 0u, 0 };
+    vm_session_reset_vector vector;
+    vm_session *session = STD_NULL;
 
-    full_pc_config.fdd_image = argv[1];
-    full_pc_config.hdd_image = argv[2];
-    full_pc_config.boot_hdd = 0;
-    if (argc != 3 ||
-        vm_composition_full_pc_session_create(&full_pc_config, &full_pc) != NTVDM64_STATUS_OK ||
-        STD_STRCMP(vm_composition_full_pc_session_profile(full_pc)->name, "nxvm.full_pc") != 0 ||
-        vm_composition_full_pc_session_reset(full_pc) != NTVDM64_STATUS_OK) {
-        vm_composition_full_pc_session_destroy(full_pc);
+    if (argc != 3 || vm_session_create(&config, &session) != NTVDM64_STATUS_OK ||
+        vm_session_get_reset_vector(session, &vector) != NTVDM64_STATUS_OK ||
+        vector.cs != 0xf000u || vector.ip != 0xfff0u) {
+        vm_session_destroy(session);
         return 1;
     }
-    vm_composition_full_pc_session_destroy(full_pc);
+    vm_session_destroy(session);
     puts("M5:T13:S8:VM-SESSION:OK");
     return 0;
 }
