@@ -71,7 +71,6 @@ C_VOID vm_session_providers_initialize(vm_session *machine) {
     vm_machine_hdd_initialize(machine->hdd);
     vm_session_bind_block(machine);
     vm_profile_default_bios_initialize(machine->default_bios);
-    core_machine_vadp_initialize(machine->vadp);
     vm_profile_default_bios_add_interrupt(machine->default_bios,
         "qdx 10\niret", 0x10);
     _vbios_
@@ -82,12 +81,9 @@ C_VOID vm_session_providers_initialize(vm_session *machine) {
     vm_machine_cmos_reset(machine->cmos);
     vm_machine_cmos_refresh(machine->cmos);
     _vbios_ _vport_
-    core_machine_kbc_initialize(machine->kbc, machine->port);
     vm_profile_default_bios_add_interrupt(machine->default_bios, "qdx 09\niret", 0x09);
     vm_profile_default_bios_add_interrupt(machine->default_bios, "qdx 16\niret", 0x16);
     _vbios_ _vport_
-    core_machine_dma_initialize(machine->dma_latch, machine->dma_primary,
-        machine->dma_secondary, machine->port);
     vm_profile_default_bios_add_post(machine->default_bios, VDMA_POST);
     _vbios_ _vport_
     vm_machine_fdc_connect(machine->fdc, machine->fdd, machine->dma_latch,
@@ -102,16 +98,10 @@ C_VOID vm_session_providers_initialize(vm_session *machine) {
     _vbios_ _vport_ _vdma_
     vm_profile_default_bios_add_interrupt(machine->default_bios, VHDC_INT_SOFT_HDD_13, 0x13);
     _vbios_ _vport_ _vdma_ _vfdc_
-    core_machine_pit_initialize(machine->pit, machine->port);
-    core_machine_pit_set_output(machine->pit, 0,
-        core_machine_pic_timer_output, machine->pic_master);
     vm_profile_default_bios_add_post(machine->default_bios, VPIT_POST);
     _vbios_ _vport_
-    core_machine_pic_initialize(machine->pic_master, machine->pic_slave,
-        machine->port);
     vm_profile_default_bios_add_post(machine->default_bios, VPIC_POST);
     _vbios_ _vport_ _vpic_
-    core_machine_pit_set_output(machine->pit, 1, STD_NULL, STD_NULL);
     _vbios_ _vport_ _vpit_
     vm_profile_default_qdx_initialize(machine->default_profile_context,
         machine->cpu_execution);
@@ -152,19 +142,7 @@ C_VOID vm_session_providers_finalize(vm_session *machine) {
     _empty_
     vm_machine_cmos_finalize(machine->cmos);
     _empty_
-    core_machine_dma_finalize(machine->dma_latch, machine->dma_primary,
-        machine->dma_secondary);
-    _empty_
     vm_machine_fdc_finalize(machine->fdc);
-    _empty_
-    core_machine_kbc_finalize(machine->kbc);
-    _empty_
-    core_machine_pic_finalize(machine->pic_master, machine->pic_slave);
-    _empty_
-    core_machine_pit_finalize(machine->pit);
-    _empty_
-    core_machine_vadp_finalize(machine->vadp);
-    _empty_
     vm_machine_fdd_finalize(machine->fdd);
     vm_machine_hdd_finalize(machine->hdd);
 }
