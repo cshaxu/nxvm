@@ -202,6 +202,10 @@ post-audit work, not evidence that the unique-owner objective has fully closed.
 defines the explicit-invocation and unified-executor sequence before runtime
 changes begin.
 
+**M5 T130 complete:** NXVM Console command helpers receive their explicit
+caller-owned context; `consoleContext` TLS is removed. T129 remains active for
+the shared debugger invocation migration.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in
