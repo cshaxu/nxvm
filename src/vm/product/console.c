@@ -11,11 +11,13 @@
 
 #define CONSOLE_MAXNARG 256
 
-static size_t numArgs;
-static char **argArray;
-static int flagExit;
-static char strCmdBuff[0x100];
-static const nxvm_product_console_target *consoleTarget;
+static _Thread_local nxvm_product_console_context *consoleContext;
+
+#define numArgs (consoleContext->argument_count)
+#define argArray (consoleContext->arguments)
+#define flagExit (consoleContext->exit_requested)
+#define strCmdBuff (consoleContext->command_buffer)
+#define consoleTarget (consoleContext->target)
 
 /*
  * Parses command-line input.
@@ -388,8 +390,19 @@ static void consoleFinal() {
 }
 
 /* Entry point of NXVM console */
-void consoleMain(const nxvm_product_console_target *target) {
-    if (target == NULL) return;
+void nxvm_product_console_context_initialize(
+    nxvm_product_console_context *context)
+{
+    if (context != NULL) MEMSET(context, 0, sizeof(*context));
+}
+
+void consoleMain(nxvm_product_console_context *context,
+                 const nxvm_product_console_target *target) {
+    nxvm_product_console_context *previous;
+    if (context == NULL || target == NULL) return;
+    previous = consoleContext;
+    consoleContext = context;
+    nxvm_product_console_context_initialize(context);
     consoleTarget = target;
     consoleInit();
     PRINTF("\nPlease enter 'HELP' for information.\n\n");
@@ -400,4 +413,5 @@ void consoleMain(const nxvm_product_console_target *target) {
         execute();
     }
     consoleFinal();
+    consoleContext = previous;
 }

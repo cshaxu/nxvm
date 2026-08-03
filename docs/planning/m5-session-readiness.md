@@ -23,7 +23,7 @@ plan.
 | 5 | `vm/platform` | Pass | Console/window rendering state is context-owned; Console and Linux terminal capabilities have explicit exclusive leases. |
 | 6 | `vdm/platform` | Absent | No production implementation; define against the core platform contracts when M8/M9 admits it. |
 | 7 | `core/product` | Pass | Debugger command workspace is caller-owned; assembler/disassembler workspaces are invocation-owned; target/wait remain thread-local scopes only. |
-| 8 | `vm/product` | Fail | Console parser, command buffer, target, and exit state become one Console-session object. |
+| 8 | `vm/product` | Pass | Console parser, command buffer, target, and exit state are caller-owned Console-context fields. |
 | 9 | `vdm/product` | Absent | No production CLI/UI implementation; do not add speculative session code. |
 | 10 | `vm/composition` | Partial | It owns construction and threads, but must adopt the new machine/platform/product contexts without reintroducing hidden state. |
 | 11 | `vdm/composition` | Pass for current scope | Minimal composition is instance-owned; future product composition must bind the same context and lease contracts. |
@@ -44,7 +44,7 @@ a higher-priority migration.
 | `vm/machine` | `vm_composition_control_state` run/reset/pause/step fields and debug instrumentation | Atomic command/state boundary; instrumentation is session-owned or disabled. |
 | `vm/platform/win32` | Console buffer and GDI renderer state | Per-surface context owned by the VM platform session; the shared Console is explicitly leased. |
 | `vm/platform/linux` | curses `stdscr` and display generation | Explicit process-exclusive terminal lease plus session-owned generation. |
-| `vm/product` | `console.c` target, parser buffer, arguments, and exit flag | Console-session object. |
+| `vm/product` | Console target, parser buffer, arguments, and exit flag | Caller-owned Console context. |
 | `vm/profile` | default-profile runtime context | Session-owned; immutable firmware tables remain shared. |
 | `vdm/*` | DOS-minimal session and immutable descriptors | Current state is per session or immutable; future host/run loop must declare its synchronization contract. |
 
@@ -57,7 +57,7 @@ a higher-priority migration.
 | T89 | Audit current `vdm/machine`, then define `core/platform` host-surface context and lease contracts; move only mechanism-only shared host facilities there. | T87 | VDM-minimal remains instance-owned; no core-to-machine dependency; capability/lease contract tests. |
 | T90 | Contextualize VM Win32 Console/window renderers and define Linux curses as an explicit exclusive surface lease; audit absent VDM platform against that contract without speculative code. | T88, T89 | Complete: two Win32 presentation contexts have independent resources; Console/terminal leases use the shared deterministic contract. |
 | T91 | Make shared debugger parser/assembler/disassembler state session-owned. | T88 | Complete: caller-owned command workspace and invocation-owned assembler/disassembler workspaces; retained debugger/FDD gates pass. |
-| T92 | Make NXVM Console parser, target, and exit state session-owned; audit absent VDM product against the same contract without speculative code. | T88, T91 | Two Console contexts do not cross-target; retained Console grammar/output gate. |
+| T92 | Make NXVM Console parser, target, and exit state session-owned; audit absent VDM product against the same contract without speculative code. | T88, T91 | Complete: caller-owned Console context; retained `help`/`exit` grammar and output pass. |
 | T93 | Update VM root composition to construct, bind, and tear down the new machine/platform/product contexts. | T88--T92 | Two full VM sessions preserve independent control, Console, debugger, and presentation behavior. |
 | T94 | Audit VDM root composition against the same contracts; change code only if current minimal composition violates them. | T89, T91, T93 | VDM-minimal remains instance-owned and no VM dependency is introduced. |
 | T95 | Run the module checklist closure audit and remove temporary compatibility state. | T88--T94 | Static inventory, default GCC preset, two-session VM, FDD/HDD, display, Console/debugger, and VDM-minimal regressions pass. |

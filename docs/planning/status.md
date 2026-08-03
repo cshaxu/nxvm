@@ -59,11 +59,14 @@ T91 made core debugger command state caller-owned and assembler/disassembler
 workspaces invocation-owned. Its GCC artifact is
 `build/output/nxvm_0_5_0091.exe`.
 
+T92 made NXVM Console state caller-owned. Its GCC artifact is
+`build/output/nxvm_0_5_0092.exe`.
+
 ## Active Work
 
-**M5 T92 S1: NXVM Console contexts.** Move Console parser, target, argument,
-and exit state into a caller-owned Console session without changing its grammar
-or interactive behavior.
+**M5 T93 S1: VM composition context integration.** Move current caller-owned
+machine, platform, debugger, and Console context ownership into VM composition
+lifecycle without changing the retained NXVM user surface.
 
 ## Short-Term M5 Plan
 
