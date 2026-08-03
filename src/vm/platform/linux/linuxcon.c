@@ -255,28 +255,20 @@ static C_VOID lnxcdispPaint(vm_platform_run_context *context,
 
 static C_VOID *ThreadDisplay(C_VOID *arg) {
     vm_platform_run_context *context = arg;
-    core_product_wait_scope previous = core_product_wait_scope_enter(
-        context->wait_scope);
-
     lnxcdispInit();
     lnxcdispPaint(context, 1);
     while (vm_platform_execution_is_running_for(context->execution)) {
         lnxcdispPaint(context, 0);
-        core_product_utils_sleep(100);
+        core_product_utils_sleep(context->wait_scope, 100);
     }
     lnxcdispFinal();
     core_platform_host_surface_lease_release(&linux_terminal_lease, context);
-    core_product_wait_scope_leave(previous);
     return 0;
 }
 
 static C_VOID *ThreadKernel(C_VOID *arg) {
     const vm_platform_run_context *context = arg;
-    core_product_wait_scope previous = core_product_wait_scope_enter(
-        context->wait_scope);
-
     vm_platform_execution_start_for(context->execution);
-    core_product_wait_scope_leave(previous);
     return 0;
 }
 
@@ -462,20 +454,18 @@ C_VOID lnxcStartMachine(const vm_platform_run_context *context) {
     pthread_t ThreadIdKernel;
     pthread_attr_t attr;
     C_INT oldDeviceFlip;
-    core_product_wait_scope previous;
 
     if (context == STD_NULL || context->execution == STD_NULL ||
         context->keyboard == STD_NULL) return;
     if (core_platform_host_surface_lease_acquire(&linux_terminal_lease,
             context) != NTVDM64_STATUS_OK) return;
-    previous = core_product_wait_scope_enter(context->wait_scope);
     oldDeviceFlip = vm_platform_execution_get_flip_for(context->execution);
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
     pthread_create(&ThreadIdKernel,  &attr, ThreadKernel, (C_VOID *)context);
     while (oldDeviceFlip ==
            vm_platform_execution_get_flip_for(context->execution)) {
-        core_product_utils_sleep(100);
+        core_product_utils_sleep(context->wait_scope, 100);
     }
     if (pthread_create(&ThreadIdDisplay, &attr, ThreadDisplay,
                        (C_VOID *)context) != 0) {
@@ -483,9 +473,8 @@ C_VOID lnxcStartMachine(const vm_platform_run_context *context) {
         core_platform_host_surface_lease_release(&linux_terminal_lease, context);
     }
     while (vm_platform_execution_is_running_for(context->execution)) {
-        core_product_utils_sleep(20);
+        core_product_utils_sleep(context->wait_scope, 20);
         lnxckeybProcess(context);
     }
     pthread_attr_destroy(&attr);
-    core_product_wait_scope_leave(previous);
 }

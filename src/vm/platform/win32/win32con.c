@@ -20,8 +20,6 @@ static core_platform_host_surface_lease win32_console_lease = {
 
 static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     const win32con_run_context *context = lpParam;
-    core_product_wait_scope previous = core_product_wait_scope_enter(
-        context->platform->wait_scope);
 
     w32cdispInit((w32cdisp_context *)context->platform->console_renderer,
                  context->output, context->platform->presentation);
@@ -30,21 +28,16 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     while (vm_platform_execution_is_running_for(context->platform->execution)) {
         w32cdispPaint((w32cdisp_context *)context->platform->console_renderer,
                       context->output, context->platform->presentation, FALSE);
-        core_product_utils_sleep(100);
+        core_product_utils_sleep(context->platform->wait_scope, 100);
     }
     w32cdispFinal((w32cdisp_context *)context->platform->console_renderer,
                   context->output);
-    core_product_wait_scope_leave(previous);
     return 0;
 }
 
 static DWORD WINAPI ThreadKernel(LPVOID lpParam) {
     const win32con_run_context *context = lpParam;
-    core_product_wait_scope previous = core_product_wait_scope_enter(
-        context->platform->wait_scope);
-
     vm_platform_execution_start_for(context->platform->execution);
-    core_product_wait_scope_leave(previous);
     return 0;
 }
 
@@ -93,7 +86,6 @@ VOID vm_platform_win32con_start_machine(const vm_platform_run_context *context) 
     DWORD ThreadIdKernel;
     win32con_run_context *run_context;
     BOOL oldDeviceFlip;
-    core_product_wait_scope previous;
     HANDLE kernel_thread;
     HANDLE display_thread;
 
@@ -106,7 +98,6 @@ VOID vm_platform_win32con_start_machine(const vm_platform_run_context *context) 
         core_platform_host_surface_lease_release(&win32_console_lease, context);
         return;
     }
-    previous = core_product_wait_scope_enter(context->wait_scope);
     run_context->platform = context;
     run_context->input = GetStdHandle(STD_INPUT_HANDLE);
     oldDeviceFlip = vm_platform_execution_get_flip_for(context->execution);
@@ -120,7 +111,7 @@ VOID vm_platform_win32con_start_machine(const vm_platform_run_context *context) 
                                  &ThreadIdKernel);
     if (kernel_thread == STD_NULL) goto final;
     while (oldDeviceFlip == vm_platform_execution_get_flip_for(context->execution)) {
-        core_product_utils_sleep(100);
+        core_product_utils_sleep(context->wait_scope, 100);
     }
     display_thread = CreateThread(STD_NULL, 0, ThreadDisplay, run_context, 0,
                                   &ThreadIdDisplay);
@@ -131,7 +122,7 @@ VOID vm_platform_win32con_start_machine(const vm_platform_run_context *context) 
         goto final;
     }
     while (vm_platform_execution_is_running_for(context->execution)) {
-        core_product_utils_sleep(20);
+        core_product_utils_sleep(context->wait_scope, 20);
         w32ckeybProcess(run_context);
     }
     WaitForSingleObject(kernel_thread, INFINITE);
@@ -144,5 +135,4 @@ final:
     ((vm_platform_run_context *)context)->console_surface.native_handle = STD_NULL;
     STD_FREE(run_context);
     core_platform_host_surface_lease_release(&win32_console_lease, context);
-    core_product_wait_scope_leave(previous);
 }
