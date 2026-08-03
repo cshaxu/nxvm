@@ -323,11 +323,12 @@ options. `SESSION LIST` displays frozen selections; default session 0 is
 FPU selections reject clearly until implemented. Evidence is
 [`M5-T157.md`](../tracking/M5-T157.md).
 
-**M5 T158 S1 active: CPU/FPU static closure.** Audit form metadata and
-dispatch so every supported opcode is classified, no unconditional i386
-compatibility branch or direct FPU ESC-to-`#UD` route remains, and all current
-GCC/Console/debugger/FDD gates stay valid. It does not claim a usable present
-FPU or complete i386 protected-mode/paging support.
+**M5 T158 S1 complete: CPU/FPU static closure.** Repository-owned metadata
+and source-shape gates now reject invalid profile metadata, the historical
+unconditional i386 gate, and a direct FPU ESC-to-`#UD` mapping. GCC, session,
+ESC, CPU-gate, debugger, and FDD prompt evidence remain green. Evidence is
+[`M5-T158.md`](../tracking/M5-T158.md). Present FPU profiles remain
+unavailable, and i386 protected-mode/paging completion remains separate work.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
