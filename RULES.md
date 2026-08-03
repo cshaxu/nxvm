@@ -157,6 +157,29 @@ remove the required owner prefix from public APIs.
   platform frame. A platform header must never name, embed, or point to a
   machine snapshot type.
 
+## Abstraction And Wrapper Discipline
+
+- Keep an abstraction only when it establishes a real boundary or policy: an
+  ownership/lifetime transition, provider registration and freeze, validation
+  or error/result normalization, data representation conversion, thread or
+  command-boundary synchronization, host-resource lease, or a stable
+  cross-module contract that prevents a forbidden dependency.
+- A wrapper that merely renames an object, forwards one call unchanged, keeps
+  a permanent same-object pointer alias, or exists only because a test still
+  calls it is not an abstraction. Remove it, merge it into its owner, or make
+  the caller use the owner directly.
+- Do not delete a thin adapter merely because its individual callbacks forward.
+  Retain it when the adapter is the one explicit product/composition boundary,
+  selects an opaque session, translates a provider contract, or confines a
+  product-specific implementation behind a core contract.
+- Every retained wrapper/adapter must name its owner and its boundary in the
+  source shape. It must not cache, duplicate, or rebind state owned elsewhere.
+  Same-object aliases are allowed only for a documented temporary migration
+  with a convergence task and removal condition.
+- Review wrapper chains end to end. A chain is valid only when each hop adds
+  one of the above responsibilities; never stack generic facade, context,
+  session, or manager objects that merely relay the same operation.
+
 ## C Vocabulary And Platform Boundaries
 
 `src/type.h` is the single common type and C-library facade boundary.

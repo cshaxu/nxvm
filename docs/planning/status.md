@@ -356,8 +356,14 @@ explicit session selection, core dependency direction, and T161 source split
 are confirmed. The audit records two P1 boundary/source-policy findings and
 bounded P2 cleanup work in [`M5-T162.md`](../tracking/M5-T162.md).
 
-**M5 T163 S1 active: frozen core API boundary design.** Define a safe retained
-`DEVICE ram` and observation contract before changing raw core borrows.
+**M5 T163 S1 complete: frozen core API boundary design.** The configuration
+borrow, copied paused observation, transactionally reconstructed `DEVICE ram`,
+and T164--T168 task sequence are fixed in
+[`m5-t163-s1.md`](subtasks/m5-t163-s1.md). It makes no runtime change.
+
+**M5 T164 S1 active: core configuration and observation boundary.** Replace
+unscoped mutable executor borrows with configuration-only access and enforce
+copied paused CPU/fault observation before VM reconstruction work begins.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

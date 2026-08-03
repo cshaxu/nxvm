@@ -40,12 +40,22 @@ import. `docs/planning/status.md` remains authoritative for active work.
   provider source into VM-only device lifecycle, default-profile firmware
   lifecycle, a thin order-only coordinator, and a separate machine-information
   adapter. A source-shape gate rejects a return to the mixed file.
+- [ ] **VM session same-object alias matrix (`TODO(High)`).**
+  `vm_session` embeds VM-only device, provider, platform, and debugger storage
+  but also keeps mutable pointers permanently assigned to those same fields.
+  Remove the `*_storage`/pointer alias pairs or document any unavoidable
+  dynamic ownership; callers must use the embedded owner directly. Preserve
+  the opaque `core_machine` owner, session lifecycle order, multi-session
+  isolation, retained Console/debugger behavior, and FDD DOS-prompt evidence.
 - [ ] **Frozen-core API bypass (`TODO(High)`).** The public mutable
   `core_machine_executor_*_borrow` surface can bypass the T160 configuration
   boundary. The retained `DEVICE ram` Console command reaches
   `core_machine_memory_allocate_for` through this route. Define a replacement
   configuration/reconstruction contract before changing it; also constrain
-  direct CPU/diagnostic observation to a copied, synchronized boundary.
+  direct CPU/diagnostic observation to a copied, synchronized boundary. T163
+  fixes the execution order: T164 establishes core-only configuration and
+  observation contracts, T165 reconstructs a stopped VM session for `DEVICE
+  ram`, then T166 removes machine-local default media paths.
 - [ ] **Default-session media policy (`TODO(High)`).** The NXVM session
   factory must not commit machine-local image paths or silently select host
   media. Preserve explicit `DEVICE` media commands and define the approved
@@ -53,7 +63,13 @@ import. `docs/planning/status.md` remains authoritative for active work.
 - [ ] **VM Console composition adapter (`TODO(Medium)`).**
   `vm/composition/session/provider.c` combines session-factory callbacks and
   selected-session Console command adapters. Split it into accurately named
-  source owners without changing Console grammar or selected-session semantics.
+  source owners without changing Console grammar or selected-session semantics;
+  remove the empty Console-provider initialize/finalize vtable callbacks.
+- [ ] **Legacy wait forwarding alias (`TODO(Low)`).**
+  `core_product_utils_sleep()` only forwards to
+  `core_product_wait_milliseconds()` without conversion or policy. Migrate
+  callers/tests to the actual wait-scope contract, delete the alias, and retain
+  explicit caller-owned wait scopes and their isolation smoke.
 - [ ] **Contract and vocabulary drift (`TODO(Medium)`).** Reconcile
   `docs/architecture/contracts.md` with actual lowercase C API names and
   current profile enums. Add the missing `STD_MEMMOVE` facade and remove the

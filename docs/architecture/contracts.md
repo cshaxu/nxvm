@@ -181,8 +181,9 @@ The core does not define a DOS program exit or a whole-PC process exit result.
 
 `core_machine_get_cpu_state` copies `core_machine_cpu_state`, including the
 current code location, flags, and halt state. There is no public CPU-state
-setter. T163 will close the remaining direct-observation boundary so this
-copied state is only observed at a synchronized execution boundary.
+setter. CPU state and the first-fault diagnostic are observable only at a
+returned paused/stopped/faulted execution boundary; a caller uses one combined
+copied observation payload when it needs both values from the same quantum.
 
 `core_machine_memory_read` and `core_machine_memory_write` accept only a
 physical address, caller storage, and `size_t` length. The current public
@@ -222,6 +223,22 @@ composition delivers host input and product commands through its own boundary,
 then the relevant provider or core API applies them on the machine execution
 thread. This preserves deterministic guest state without giving platform or
 product modules direct access to the machine.
+
+### Configuration Borrows And Reconfiguration
+
+Composition may borrow mutable executor or shared-device implementation
+objects only during the `INITIALIZED` configuration window, immediately to
+bind a provider/profile callback. A configuration borrow is neither a public
+product capability nor a retained pointer: it cannot be cached in session
+state and expires at provider freeze. The historical generic executor-borrow
+names are migration debt and must be replaced by purpose-named configuration
+borrows.
+
+Physical RAM capacity is configuration, not mutable guest state. A product
+request to change it must quiesce its session and transactionally reconstruct
+the machine graph from copied configuration. It retains the concrete session
+identity but discards guest state and resets the replacement. It never grows or
+reallocates the frozen machine's RAM through an escaped implementation pointer.
 
 ## Core Machine: Provider Scope
 
