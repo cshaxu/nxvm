@@ -364,6 +364,12 @@ add_executable(nxvm-vm-platform-input-smoke
 )
 target_link_libraries(nxvm-vm-platform-input-smoke PRIVATE nxvm-platform-vm)
 
+add_executable(nxvm-vm-keyboard-host-ingress-smoke
+    tests/platform/vm_keyboard_host_ingress_smoke.c
+)
+target_link_libraries(nxvm-vm-keyboard-host-ingress-smoke PRIVATE
+    nxvm-vm-composition)
+
 add_executable(nxvm-vm-platform-execution-smoke
     tests/platform/vm_platform_execution_smoke.c
 )
@@ -501,6 +507,10 @@ target_link_libraries(nxvm-vm-debug-authority-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-vm-dos-prompt-smoke
     tests/machine/vm_dos_prompt_smoke.c)
 target_link_libraries(nxvm-vm-dos-prompt-smoke PRIVATE
+    nxvm-vm-composition)
+add_executable(nxvm-vm-dos-keyboard-smoke
+    tests/machine/vm_dos_keyboard_smoke.c)
+target_link_libraries(nxvm-vm-dos-keyboard-smoke PRIVATE
     nxvm-vm-composition)
 add_executable(nxvm-vm-two-session-isolation-smoke
     tests/machine/vm_two_session_isolation_smoke.c)
@@ -761,6 +771,7 @@ add_nxvm_version_artifact(nxvm-0-5-0147 "0.5.0147")
 add_nxvm_version_artifact(nxvm-0-5-0148 "0.5.0148")
 add_nxvm_version_artifact(nxvm-0-5-0149 "0.5.0149")
 add_nxvm_version_artifact(nxvm-0-5-0150 "0.5.0150")
+add_nxvm_version_artifact(nxvm-0-5-0151 "0.5.0151")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
