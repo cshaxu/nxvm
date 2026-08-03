@@ -215,6 +215,10 @@ RAM, and port path as NXVM, while retaining only VDM-owned providers and
 snapshot state. It remains deliberately non-runnable pending the DOS design
 milestone. T129 remains the sole active subtask.
 
+**M5 T134/T136 complete:** core contract smoke uses the real executor and the
+test-minimal profile/state has been removed. T129 remains the sole active
+subtask.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

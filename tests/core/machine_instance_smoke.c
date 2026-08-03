@@ -4,6 +4,7 @@
 
 
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_executor_fixture.h"
 
 typedef struct port_fixture {
     uint16_t last_port;
@@ -43,10 +44,6 @@ C_INT main(C_VOID)
 {
     core_machine *first = STD_NULL;
     core_machine *second = STD_NULL;
-    core_machine_config config = {
-        CORE_MACHINE_PROFILE_TEST_MINIMAL,
-        CORE_MACHINE_MINIMUM_MEMORY_BYTES
-    };
     core_machine_cpu_state cpu;
     core_machine_port_provider ops = { port_read, port_write };
     port_fixture first_port = { 0u, 0u };
@@ -55,9 +52,11 @@ C_INT main(C_VOID)
     uint32_t port_value;
     C_INT result = 0;
 
-    result |= expect_status(core_machine_create(&config, &first),
+    result |= expect_status(test_core_machine_create_executor(
+                                CORE_MACHINE_MINIMUM_MEMORY_BYTES, &first),
                             NTVDM64_STATUS_OK);
-    result |= expect_status(core_machine_create(&config, &second),
+    result |= expect_status(test_core_machine_create_executor(
+                                CORE_MACHINE_MINIMUM_MEMORY_BYTES, &second),
                             NTVDM64_STATUS_OK);
     result |= expect_status(core_machine_reset(first), NTVDM64_STATUS_OK);
     result |= expect_status(core_machine_reset(second), NTVDM64_STATUS_OK);

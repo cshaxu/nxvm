@@ -6,16 +6,12 @@
 
 static uint32_t core_machine_linear_pc(const core_machine *machine)
 {
-    if (machine->executor_enabled) {
-        return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
-    }
-    return machine->test_cpu.state.cs_base + machine->test_cpu.state.eip;
+    return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
 }
 
 static C_INT core_machine_profile_is_supported(core_machine_profile profile)
 {
-    return profile == CORE_MACHINE_PROFILE_CUSTOM ||
-           profile == CORE_MACHINE_PROFILE_TEST_MINIMAL;
+    return profile == CORE_MACHINE_PROFILE_CUSTOM;
 }
 
 ntvdm64_status core_machine_enable_executor(core_machine *machine)
@@ -32,7 +28,6 @@ ntvdm64_status core_machine_enable_executor(core_machine *machine)
         &machine->executor_cpu, &machine->executor_cpu_instructions,
         &machine->executor_memory, &machine->executor_port);
     machine->executor_enabled = 1;
-    machine->lifecycle = CORE_MACHINE_PAUSED;
     return NTVDM64_STATUS_OK;
 }
 
@@ -128,23 +123,6 @@ ntvdm64_status core_machine_freeze_execution_providers(core_machine *machine)
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status core_machine_cpu_reset(core_machine *machine)
-{
-    core_machine_cpu_state *state;
-
-    if (machine == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
-    }
-
-    state = &machine->test_cpu.state;
-    state->cs = 0xf000u;
-    state->cs_base = 0xffff0000u;
-    state->eip = 0x0000fff0u;
-    state->eflags = 0x00000002u;
-    state->halted = 0u;
-    return NTVDM64_STATUS_OK;
-}
-
 ntvdm64_status core_machine_get_cpu_state(
     const core_machine *machine,
     core_machine_cpu_state *out_state)
@@ -153,15 +131,14 @@ ntvdm64_status core_machine_get_cpu_state(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    if (machine->executor_enabled) {
-        out_state->cs = machine->executor_cpu.data.cs.selector;
-        out_state->cs_base = machine->executor_cpu.data.cs.base;
-        out_state->eip = machine->executor_cpu.data.eip;
-        out_state->eflags = machine->executor_cpu.data.eflags;
-        out_state->halted = machine->executor_cpu.data.flagHalt;
-    } else {
-        *out_state = machine->test_cpu.state;
+    if (!machine->executor_enabled || machine->lifecycle == CORE_MACHINE_INITIALIZED) {
+        return NTVDM64_STATUS_INVALID_STATE;
     }
+    out_state->cs = machine->executor_cpu.data.cs.selector;
+    out_state->cs_base = machine->executor_cpu.data.cs.base;
+    out_state->eip = machine->executor_cpu.data.eip;
+    out_state->eflags = machine->executor_cpu.data.eflags;
+    out_state->halted = machine->executor_cpu.data.flagHalt;
     return NTVDM64_STATUS_OK;
 }
 
@@ -192,23 +169,10 @@ ntvdm64_status core_machine_create(
     STD_ATOMIC_INIT(&machine->stop_requested, 0);
     core_machine_trace_initialize(machine);
 
-    if (machine->config.profile == CORE_MACHINE_PROFILE_TEST_MINIMAL) {
-        status = core_machine_instance_memory_initialize(machine);
-        if (status != NTVDM64_STATUS_OK) {
-            core_machine_destroy(machine);
-            return status;
-        }
-        status = core_machine_bus_initialize(machine);
-        if (status != NTVDM64_STATUS_OK) {
-            core_machine_destroy(machine);
-            return status;
-        }
-    } else {
-        status = core_machine_enable_executor(machine);
-        if (status != NTVDM64_STATUS_OK) {
-            core_machine_destroy(machine);
-            return status;
-        }
+    status = core_machine_enable_executor(machine);
+    if (status != NTVDM64_STATUS_OK) {
+        core_machine_destroy(machine);
+        return status;
     }
 
     *out_machine = machine;
@@ -239,10 +203,8 @@ ntvdm64_status core_machine_reset(core_machine *machine)
             core_machine_pit_reset(&machine->shared_pit);
             core_machine_vadp_reset(&machine->shared_vadp);
         }
-    } else if (core_machine_cpu_reset(machine) != NTVDM64_STATUS_OK ||
-               core_machine_instance_memory_reset(machine) !=
-                   NTVDM64_STATUS_OK) {
-        return NTVDM64_STATUS_FAULT;
+    } else {
+        return NTVDM64_STATUS_INVALID_STATE;
     }
 
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
@@ -402,6 +364,5 @@ C_VOID core_machine_destroy(core_machine *machine)
     }
     core_machine_trace_finalize(machine);
     core_machine_bus_finalize(machine);
-    core_machine_instance_memory_finalize(machine);
     STD_FREE(machine);
 }

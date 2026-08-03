@@ -3,6 +3,7 @@
 
 
 #include "products/support/vm_session_debugger.h"
+#include "../support/core_machine_executor_fixture.h"
 
 #include "vm/product/presentation.h"
 
@@ -26,9 +27,6 @@ C_INT main(C_VOID)
     core_machine_text_snapshot captured_text;
     input_fixture input = { { 0u, 0u }, 0u };
     core_machine *machine = STD_NULL;
-    core_machine_config config = {
-        CORE_MACHINE_PROFILE_TEST_MINIMAL, 0u
-    };
     vm_product_debugger debugger;
     core_machine_cpu_state cpu;
     core_machine_run_result result;
@@ -51,15 +49,15 @@ C_INT main(C_VOID)
     vm_product_presentation_close_command_boundary(&presentation);
     if (vm_product_presentation_publish_text(&presentation,
             &guest_text) != NTVDM64_STATUS_INVALID_STATE ||
-        core_machine_create(&config, &machine) != NTVDM64_STATUS_OK ||
+        test_core_machine_create_executor(0u, &machine) != NTVDM64_STATUS_OK ||
         core_machine_reset(machine) != NTVDM64_STATUS_OK ||
         vm_product_debugger_initialize(&debugger, machine) != NTVDM64_STATUS_OK ||
         vm_product_debugger_read_cpu(&debugger, &cpu) != NTVDM64_STATUS_INVALID_STATE ||
         vm_product_debugger_open_command_boundary(&debugger) != NTVDM64_STATUS_OK ||
         vm_product_debugger_read_cpu(&debugger, &cpu) != NTVDM64_STATUS_OK ||
         cpu.cs != 0xf000u ||
-        vm_product_debugger_step(&debugger, &result) != NTVDM64_STATUS_UNSUPPORTED ||
-        result.reason != CORE_MACHINE_STOP_NONE) {
+        vm_product_debugger_step(&debugger, &result) != NTVDM64_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_BUDGET) {
         core_machine_destroy(machine);
         return 1;
     }

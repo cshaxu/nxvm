@@ -8,8 +8,7 @@ extern "C" {
 #endif
 
 typedef enum core_machine_profile {
-    CORE_MACHINE_PROFILE_CUSTOM = 1,
-    CORE_MACHINE_PROFILE_TEST_MINIMAL = 2
+    CORE_MACHINE_PROFILE_CUSTOM = 1
 } core_machine_profile;
 
 #define CORE_MACHINE_DEFAULT_MEMORY_BYTES (16u * 1024u * 1024u)

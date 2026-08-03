@@ -3,6 +3,7 @@
 
 
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_executor_fixture.h"
 
 typedef struct trace_fixture {
     core_machine_trace_event events[8];
@@ -45,9 +46,6 @@ static C_INT expect_status(ntvdm64_status actual, ntvdm64_status expected)
 C_INT main(C_VOID)
 {
     core_machine *machine = STD_NULL;
-    core_machine_config config = {
-        CORE_MACHINE_PROFILE_TEST_MINIMAL, 0u
-    };
     core_machine_trace_provider sink;
     core_machine_port_provider port_ops = { port_read, port_write };
     core_machine_run_budget budget = { 1u, 0u };
@@ -58,7 +56,7 @@ C_INT main(C_VOID)
 
     sink.callback = trace_callback;
     sink.context = &fixture;
-    failed |= expect_status(core_machine_create(&config, &machine),
+    failed |= expect_status(test_core_machine_create_executor(0u, &machine),
                             NTVDM64_STATUS_OK);
     failed |= expect_status(core_machine_set_trace_provider(machine, &sink),
                             NTVDM64_STATUS_OK);
@@ -71,8 +69,6 @@ C_INT main(C_VOID)
     failed |= expect_status(core_machine_bus_read(machine, 0x60u, &value),
                             NTVDM64_STATUS_OK);
     failed |= value != 0x55u;
-    failed |= expect_status(core_machine_run(machine, budget, &result),
-                            NTVDM64_STATUS_UNSUPPORTED);
     failed |= expect_status(core_machine_request_stop(machine),
                             NTVDM64_STATUS_OK);
     failed |= expect_status(core_machine_run(machine, budget, &result),
