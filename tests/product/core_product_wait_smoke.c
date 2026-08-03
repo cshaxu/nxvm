@@ -25,30 +25,24 @@ C_INT main(C_VOID)
     uint32_t nested_calls = 0u;
     core_product_wait_scope scope;
     core_product_wait_scope nested_scope;
-    core_product_wait_scope previous;
-    core_product_wait_scope nested_previous;
 
     core_product_wait_scope_initialize(&scope, core_product_wait_smoke_provider,
         &calls);
-    previous = core_product_wait_scope_enter(&scope);
-    core_product_utils_sleep(17u);
+    core_product_utils_sleep(&scope, 17u);
     if (calls != 1u || observed_milliseconds != 17u) {
         return 1;
     }
     core_product_wait_scope_initialize(&nested_scope,
         core_product_wait_smoke_provider, &nested_calls);
-    nested_previous = core_product_wait_scope_enter(&nested_scope);
-    core_product_utils_sleep(23u);
+    core_product_utils_sleep(&nested_scope, 23u);
     if (calls != 1u || nested_calls != 1u || observed_milliseconds != 23u) {
         return 1;
     }
-    core_product_wait_scope_leave(nested_previous);
-    core_product_utils_sleep(31u);
+    core_product_utils_sleep(&scope, 31u);
     if (calls != 2u || nested_calls != 1u || observed_milliseconds != 31u) {
         return 1;
     }
-    core_product_wait_scope_leave(previous);
-    core_product_utils_sleep(1u);
+    core_product_utils_sleep(STD_NULL, 1u);
     if (calls != 2u) {
         return 1;
     }

@@ -227,9 +227,14 @@ their caller-owned contexts explicitly; no debugger or xasm TLS selection
 remains. The retained Console/debugger and DOS-prompt gates pass with
 `nxvm_0_5_0129.exe`.
 
-**M5 T132 active:** perform the final production-source audit for TLS,
-implicit current-object facades, and second execution paths; run the focused
-suite and record any remaining non-production exceptions.
+**M5 T131 S2 complete:** the full build revealed and corrected a stale
+wait-scope smoke test that still named the removed ambient API. It now proves
+explicit scope isolation.
+
+**M5 T132 complete:** production source has no TLS/current-object selection
+facade, core has no VM/VDM include, and NXVM retains one product entry/run
+path. Windows GCC plus all 54 smoke executables pass; Linux remains a native
+POSIX follow-up gate and VDM intentionally remains non-runnable.
 
 ## Short-Term M5 Plan
 
