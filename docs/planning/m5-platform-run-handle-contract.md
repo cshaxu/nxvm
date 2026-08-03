@@ -51,6 +51,15 @@ No caller may invoke `vm_session_finalize` while a run handle is live. Failed
 thread creation follows the same cleanup order for every successfully created
 worker and renderer resource.
 
+## T138 Current-Owner Map
+
+| Path | Current creator | Current worker behavior | Current join / destroyer | Required correction |
+| --- | --- | --- | --- | --- |
+| `win32app` | `vm_platform_win32app_start_machine` heap-allocates `win32app_run_context`. | Kernel starts guest; display creates and destroys the window renderer, stops guest, clears the shared run context, and frees the shared run context. | No retained thread handles or outer joiner. | Move both thread handles and all shared state into the session-owned run handle; display only reports close/stop. |
+| `win32con` | `vm_platform_win32con_start_machine` heap-allocates `win32con_run_context`. | Kernel starts guest; display paints until stop. | Backend itself waits, closes thread handles, destroys renderer, frees context, and releases lease. | Let the run handle/lifecycle own join, teardown, and lease release; backend workers only report completion. |
+| `linuxcon` | `lnxcStartMachine` uses the embedded run context directly. | Both pthreads are detached; display finalizes curses and releases terminal lease. | No joiner; partial display-start failure releases the lease while detached kernel can still run. | Add handle-owned joinable pthreads; move curses/lease teardown to the outer destroyer. |
+| `vm_session_finalize` | Console target may call it directly. | It detaches providers and destroys session storage without a platform-run guard. | Session lifecycle is the current finalizer but cannot prove workers stopped. | Require run-handle stop/join/destroy before finalization. |
+
 ## T138--T142 Sequence
 
 | Task | Scope | Gate |
