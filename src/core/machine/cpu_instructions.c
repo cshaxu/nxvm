@@ -1,10 +1,5 @@
 /* This file is a part of NXVM project. */
 
-/* DEBUGGING OPTIONS ******************************************************* */
-/* T154 retains this compatibility shim; T155 replaces it with profile gates. */
-#define i386(n) if (1)
-/* ************************************************************************* */
-
 #include "type.h"
 #include "core/machine/port.h"
 #include "core/machine/memory.h"
@@ -1265,7 +1260,7 @@ static ntvdm64_type_bool _kdf_check_prefix(core_machine_cpu_execution_context *c
     case 0x65:
     case 0x66:
     case 0x67:
-        i386(opcode) return NTVDM64_TYPE_TRUE;
+        if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) return NTVDM64_TYPE_TRUE;
         else return NTVDM64_TYPE_FALSE;
         break;
     default:
@@ -4876,7 +4871,10 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80286;
         } else if (opcode >= 0x64u && opcode <= 0x67u) {
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
-        } else if (opcode == 0x82u || opcode == 0xd6u || opcode == 0xf1u) {
+        } else if (opcode == 0xf1u) {
+            /* Default-profile QDX claims this profile-reserved escape. */
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
+        } else if (opcode == 0x82u || opcode == 0xd6u) {
             metadata.valid = 0;
         }
         break;
@@ -4916,6 +4914,17 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
     return metadata;
 }
 
+static C_INT core_machine_cpu_profile_allows_form(
+    const core_machine_cpu_execution_context *context,
+    core_machine_cpu_instruction_space space, uint8_t opcode, uint8_t modrm)
+{
+    core_machine_cpu_instruction_metadata metadata;
+
+    if (context == STD_NULL) return 0;
+    metadata = core_machine_cpu_instruction_metadata_get(space, opcode, modrm);
+    return metadata.valid && context->cpu_profile >= metadata.minimum_cpu;
+}
+
 static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("UndefinedOpcode");
     cpu_state = instruction_state.data.oldcpu;
@@ -4928,7 +4937,7 @@ static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ADD_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM8_R8");
-    i386(0x00) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -4943,7 +4952,7 @@ static C_VOID ADD_RM8_R8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ADD_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM32_R32");
-    i386(0x01) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -4963,7 +4972,7 @@ static C_VOID ADD_RM32_R32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ADD_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R8_RM8");
-    i386(0x02) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -4977,7 +4986,7 @@ static C_VOID ADD_R8_RM8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ADD_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R32_RM32");
-    i386(0x03) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -4995,7 +5004,7 @@ static C_VOID ADD_R32_RM32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ADD_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_AL_I8");
-    i386(0x04) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5008,7 +5017,7 @@ static C_VOID ADD_AL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ADD_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_EAX_I32");
-    i386(0x05) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -5041,7 +5050,7 @@ static C_VOID ADD_EAX_I32(core_machine_cpu_execution_context *context) {
 static C_VOID PUSH_ES(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ES");
-    i386(0x06) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5056,7 +5065,7 @@ static C_VOID POP_ES(core_machine_cpu_execution_context *context) {
         push/pop selector only or with higher 16 bit */
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ES");
-    i386(0x07) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5068,7 +5077,7 @@ static C_VOID POP_ES(core_machine_cpu_execution_context *context) {
 }
 static C_VOID OR_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM8_R8");
-    i386(0x08) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5083,7 +5092,7 @@ static C_VOID OR_RM8_R8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID OR_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM32_R32");
-    i386(0x09) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5103,7 +5112,7 @@ static C_VOID OR_RM32_R32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID OR_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R8_RM8");
-    i386(0x0a) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5117,7 +5126,7 @@ static C_VOID OR_R8_RM8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID OR_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R32_RM32");
-    i386(0x0b) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5135,7 +5144,7 @@ static C_VOID OR_R32_RM32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID OR_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_AL_I8");
-    i386(0x0c) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5148,7 +5157,7 @@ static C_VOID OR_AL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID OR_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_EAX_I32");
-    i386(0x0d) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -5181,7 +5190,7 @@ static C_VOID OR_EAX_I32(core_machine_cpu_execution_context *context) {
 static C_VOID PUSH_CS(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_CS");
-    i386(0x0e) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5196,7 +5205,7 @@ static C_VOID POP_CS(core_machine_cpu_execution_context *context) {
         push/pop selector only or with higher 16 bit */
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_CS");
-    i386(0x0f) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5208,10 +5217,21 @@ static C_VOID POP_CS(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_0F(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 opcode = 0x00;
+    ntvdm64_type_unsigned_8 modrm = 0x00;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F");
-    i386(0x0f) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, NTVDM64_TYPE_REFERENCE_OF(opcode), 1));
+        if (opcode == 0x00u || opcode == 0x01u || opcode == 0xbau) {
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context,
+                cpu_state.data.eip + 1u, NTVDM64_TYPE_REFERENCE_OF(modrm), 1));
+        }
+        if (!core_machine_cpu_profile_allows_form(context,
+                CORE_MACHINE_CPU_INSTRUCTION_0F, opcode, modrm)) {
+            UndefinedOpcode(context);
+            NTVDM64_TYPE_TRACE_CALL_END;
+            return;
+        }
         NTVDM64_TYPE_TRACE_CHECK_RETURN(ExecCpuInstruction(instruction_state.connect.insTable_0f[opcode]));
     }
     else
@@ -5220,7 +5240,7 @@ static C_VOID INS_0F(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ADC_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM8_R8");
-    i386(0x10) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5235,7 +5255,7 @@ static C_VOID ADC_RM8_R8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ADC_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM32_R32");
-    i386(0x11) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5255,7 +5275,7 @@ static C_VOID ADC_RM32_R32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ADC_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R8_RM8");
-    i386(0x12) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5269,7 +5289,7 @@ static C_VOID ADC_R8_RM8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ADC_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R32_RM32");
-    i386(0x13) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5287,7 +5307,7 @@ static C_VOID ADC_R32_RM32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ADC_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_AL_I8");
-    i386(0x14) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5300,7 +5320,7 @@ static C_VOID ADC_AL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ADC_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_EAX_I32");
-    i386(0x15) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -5333,7 +5353,7 @@ static C_VOID ADC_EAX_I32(core_machine_cpu_execution_context *context) {
 static C_VOID PUSH_SS(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_SS");
-    i386(0x16) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5348,7 +5368,7 @@ static C_VOID POP_SS(core_machine_cpu_execution_context *context) {
         push/pop selector only or with higher 16 bit */
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_SS");
-    i386(0x17) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5360,7 +5380,7 @@ static C_VOID POP_SS(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SBB_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM8_R8");
-    i386(0x18) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5375,7 +5395,7 @@ static C_VOID SBB_RM8_R8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SBB_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM32_R32");
-    i386(0x19) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5395,7 +5415,7 @@ static C_VOID SBB_RM32_R32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SBB_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R8_RM8");
-    i386(0x1a) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5409,7 +5429,7 @@ static C_VOID SBB_R8_RM8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SBB_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R32_RM32");
-    i386(0x1b) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5427,7 +5447,7 @@ static C_VOID SBB_R32_RM32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SBB_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_AL_I8");
-    i386(0x1c) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5440,7 +5460,7 @@ static C_VOID SBB_AL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SBB_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_EAX_I32");
-    i386(0x1d) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -5473,7 +5493,7 @@ static C_VOID SBB_EAX_I32(core_machine_cpu_execution_context *context) {
 static C_VOID PUSH_DS(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_DS");
-    i386(0x1e) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5488,7 +5508,7 @@ static C_VOID POP_DS(core_machine_cpu_execution_context *context) {
         push/pop selector only or with higher 16 bit */
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_DS");
-    i386(0x1f) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5500,7 +5520,7 @@ static C_VOID POP_DS(core_machine_cpu_execution_context *context) {
 }
 static C_VOID AND_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM8_R8");
-    i386(0x20) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5515,7 +5535,7 @@ static C_VOID AND_RM8_R8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID AND_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM32_R32");
-    i386(0x21) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5535,7 +5555,7 @@ static C_VOID AND_RM32_R32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID AND_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R8_RM8");
-    i386(0x22) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5549,7 +5569,7 @@ static C_VOID AND_R8_RM8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID AND_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R32_RM32");
-    i386(0x23) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5567,7 +5587,7 @@ static C_VOID AND_R32_RM32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID AND_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_AL_I8");
-    i386(0x24) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5580,7 +5600,7 @@ static C_VOID AND_AL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID AND_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_EAX_I32");
-    i386(0x25) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -5612,7 +5632,7 @@ static C_VOID AND_EAX_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PREFIX_ES(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_ES");
-    i386(0x26) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.es;
         instruction_state.data.roverss = &cpu_state.data.es;
@@ -5627,7 +5647,7 @@ static C_VOID PREFIX_ES(core_machine_cpu_execution_context *context) {
 static C_VOID DAA(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 oldAL = cpu_state.data.al;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DAA");
-    i386(0x27)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     _adv;
     else
         cpu_state.data.ip++;
@@ -5649,7 +5669,7 @@ static C_VOID DAA(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SUB_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM8_R8");
-    i386(0x28) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5664,7 +5684,7 @@ static C_VOID SUB_RM8_R8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SUB_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM32_R32");
-    i386(0x29) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5684,7 +5704,7 @@ static C_VOID SUB_RM32_R32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SUB_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R8_RM8");
-    i386(0x2a) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5698,7 +5718,7 @@ static C_VOID SUB_R8_RM8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SUB_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R32_RM32");
-    i386(0x2b) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5716,7 +5736,7 @@ static C_VOID SUB_R32_RM32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SUB_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_AL_I8");
-    i386(0x2c) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5729,7 +5749,7 @@ static C_VOID SUB_AL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SUB_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_EAX_I32");
-    i386(0x2d) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -5761,7 +5781,7 @@ static C_VOID SUB_EAX_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PREFIX_CS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_CS");
-    i386(0x2e) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.cs;
         instruction_state.data.roverss = &cpu_state.data.cs;
@@ -5776,7 +5796,7 @@ static C_VOID PREFIX_CS(core_machine_cpu_execution_context *context) {
 static C_VOID DAS(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 oldAL = cpu_state.data.al;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DAS");
-    i386(0x2f)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     _adv;
     else
         cpu_state.data.ip++;
@@ -5798,7 +5818,7 @@ static C_VOID DAS(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XOR_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM8_R8");
-    i386(0x30) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5813,7 +5833,7 @@ static C_VOID XOR_RM8_R8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XOR_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM32_R32");
-    i386(0x31) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5833,7 +5853,7 @@ static C_VOID XOR_RM32_R32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XOR_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R8_RM8");
-    i386(0x32) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5847,7 +5867,7 @@ static C_VOID XOR_R8_RM8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XOR_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R32_RM32");
-    i386(0x33) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5865,7 +5885,7 @@ static C_VOID XOR_R32_RM32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XOR_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_AL_I8");
-    i386(0x34) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5878,7 +5898,7 @@ static C_VOID XOR_AL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XOR_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_EAX_I32");
-    i386(0x35) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -5910,7 +5930,7 @@ static C_VOID XOR_EAX_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PREFIX_SS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_SS");
-    i386(0x36) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.ss;
         instruction_state.data.roverss = &cpu_state.data.ss;
@@ -5924,7 +5944,7 @@ static C_VOID PREFIX_SS(core_machine_cpu_execution_context *context) {
 }
 static C_VOID AAA(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAA");
-    i386(0x37) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5945,7 +5965,7 @@ static C_VOID AAA(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CMP_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM8_R8");
-    i386(0x38) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5958,7 +5978,7 @@ static C_VOID CMP_RM8_R8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CMP_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM32_R32");
-    i386(0x39) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -5974,7 +5994,7 @@ static C_VOID CMP_RM32_R32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CMP_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R8_RM8");
-    i386(0x3a) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -5987,7 +6007,7 @@ static C_VOID CMP_R8_RM8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CMP_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R32_RM32");
-    i386(0x3b) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -6003,7 +6023,7 @@ static C_VOID CMP_R32_RM32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CMP_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_AL_I8");
-    i386(0x3c) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -6015,7 +6035,7 @@ static C_VOID CMP_AL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CMP_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_EAX_I32");
-    i386(0x3d) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6044,7 +6064,7 @@ static C_VOID CMP_EAX_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PREFIX_DS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_DS");
-    i386(0x3e) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.ds;
         instruction_state.data.roverss = &cpu_state.data.ds;
@@ -6058,7 +6078,7 @@ static C_VOID PREFIX_DS(core_machine_cpu_execution_context *context) {
 }
 static C_VOID AAS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAS");
-    i386(0x3f) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -6079,7 +6099,7 @@ static C_VOID AAS(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INC_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EAX");
-    i386(0x40) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6108,7 +6128,7 @@ static C_VOID INC_EAX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INC_ECX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ECX");
-    i386(0x41) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6137,7 +6157,7 @@ static C_VOID INC_ECX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INC_EDX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDX");
-    i386(0x42) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6166,7 +6186,7 @@ static C_VOID INC_EDX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INC_EBX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBX");
-    i386(0x43) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6195,7 +6215,7 @@ static C_VOID INC_EBX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INC_ESP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESP");
-    i386(0x44) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6224,7 +6244,7 @@ static C_VOID INC_ESP(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INC_EBP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBP");
-    i386(0x45) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6253,7 +6273,7 @@ static C_VOID INC_EBP(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INC_ESI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESI");
-    i386(0x46) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6282,7 +6302,7 @@ static C_VOID INC_ESI(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INC_EDI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDI");
-    i386(0x47) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6311,7 +6331,7 @@ static C_VOID INC_EDI(core_machine_cpu_execution_context *context) {
 }
 static C_VOID DEC_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EAX");
-    i386(0x48) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6340,7 +6360,7 @@ static C_VOID DEC_EAX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID DEC_ECX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ECX");
-    i386(0x49) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6369,7 +6389,7 @@ static C_VOID DEC_ECX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID DEC_EDX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDX");
-    i386(0x4a) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6398,7 +6418,7 @@ static C_VOID DEC_EDX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID DEC_EBX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBX");
-    i386(0x4b) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6427,7 +6447,7 @@ static C_VOID DEC_EBX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID DEC_ESP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESP");
-    i386(0x4c) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6456,7 +6476,7 @@ static C_VOID DEC_ESP(core_machine_cpu_execution_context *context) {
 }
 static C_VOID DEC_EBP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBP");
-    i386(0x4d) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6485,7 +6505,7 @@ static C_VOID DEC_EBP(core_machine_cpu_execution_context *context) {
 }
 static C_VOID DEC_ESI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESI");
-    i386(0x4e) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6514,7 +6534,7 @@ static C_VOID DEC_ESI(core_machine_cpu_execution_context *context) {
 }
 static C_VOID DEC_EDI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDI");
-    i386(0x4f) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6543,7 +6563,7 @@ static C_VOID DEC_EDI(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PUSH_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EAX");
-    i386(0x50) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6569,7 +6589,7 @@ static C_VOID PUSH_EAX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PUSH_ECX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ECX");
-    i386(0x51) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6595,7 +6615,7 @@ static C_VOID PUSH_ECX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PUSH_EDX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDX");
-    i386(0x52) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6621,7 +6641,7 @@ static C_VOID PUSH_EDX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PUSH_EBX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBX");
-    i386(0x53) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6647,7 +6667,7 @@ static C_VOID PUSH_EBX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PUSH_ESP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESP");
-    i386(0x54) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6673,7 +6693,7 @@ static C_VOID PUSH_ESP(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PUSH_EBP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBP");
-    i386(0x55) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6699,7 +6719,7 @@ static C_VOID PUSH_EBP(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PUSH_ESI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESI");
-    i386(0x56) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6725,7 +6745,7 @@ static C_VOID PUSH_ESI(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PUSH_EDI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDI");
-    i386(0x57) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6751,7 +6771,7 @@ static C_VOID PUSH_EDI(core_machine_cpu_execution_context *context) {
 }
 static C_VOID POP_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EAX");
-    i386(0x58) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6777,7 +6797,7 @@ static C_VOID POP_EAX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID POP_ECX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ECX");
-    i386(0x59) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6803,7 +6823,7 @@ static C_VOID POP_ECX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID POP_EDX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDX");
-    i386(0x5a) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6829,7 +6849,7 @@ static C_VOID POP_EDX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID POP_EBX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBX");
-    i386(0x5b) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6855,7 +6875,7 @@ static C_VOID POP_EBX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID POP_ESP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESP");
-    i386(0x5c) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6881,7 +6901,7 @@ static C_VOID POP_ESP(core_machine_cpu_execution_context *context) {
 }
 static C_VOID POP_EBP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBP");
-    i386(0x5d) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6907,7 +6927,7 @@ static C_VOID POP_EBP(core_machine_cpu_execution_context *context) {
 }
 static C_VOID POP_ESI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESI");
-    i386(0x5e) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6933,7 +6953,7 @@ static C_VOID POP_ESI(core_machine_cpu_execution_context *context) {
 }
 static C_VOID POP_EDI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDI");
-    i386(0x5f) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -6960,7 +6980,7 @@ static C_VOID POP_EDI(core_machine_cpu_execution_context *context) {
 static C_VOID PUSHA(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 cesp;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHA");
-    i386(0x60) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -7001,7 +7021,7 @@ static C_VOID PUSHA(core_machine_cpu_execution_context *context) {
 static C_VOID POPA(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 cesp;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POPA");
-    i386(0x61) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -7041,7 +7061,7 @@ static C_VOID BOUND_R16_M16_16(core_machine_cpu_execution_context *context) {
     ntvdm64_type_signed_16 a16,l16,u16;
     ntvdm64_type_signed_32 a32,l32,u32;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BOUND_R16_M16_16");
-    i386(0x62) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize * 2));
         if (!instruction_state.data.flagMem) {
@@ -7085,7 +7105,7 @@ static C_VOID BOUND_R16_M16_16(core_machine_cpu_execution_context *context) {
 }
 static C_VOID ARPL_RM16_R16(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ARPL_RM16_R16");
-    i386(0x63) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         if (_IsProtected) {
             _adv;
             NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
@@ -7108,7 +7128,7 @@ static C_VOID ARPL_RM16_R16(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PREFIX_FS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_FS");
-    i386(0x64) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.fs;
         instruction_state.data.roverss = &cpu_state.data.fs;
@@ -7119,7 +7139,7 @@ static C_VOID PREFIX_FS(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PREFIX_GS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_GS");
-    i386(0x65) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.gs;
         instruction_state.data.roverss = &cpu_state.data.gs;
@@ -7130,7 +7150,7 @@ static C_VOID PREFIX_GS(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PREFIX_OprSize(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_OprSize");
-    i386(0x66) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         instruction_state.data.prefix_oprsize = NTVDM64_TYPE_TRUE;
     }
@@ -7140,7 +7160,7 @@ static C_VOID PREFIX_OprSize(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PREFIX_AddrSize(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_AddrSize");
-    i386(0x67) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         instruction_state.data.prefix_addrsize = NTVDM64_TYPE_TRUE;
     }
@@ -7150,7 +7170,7 @@ static C_VOID PREFIX_AddrSize(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PUSH_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I32");
-    i386(0x68) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cimm), _GetOperandSize));
@@ -7161,7 +7181,7 @@ static C_VOID PUSH_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID IMUL_R32_RM32_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
-    i386(0x69) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -7175,7 +7195,7 @@ static C_VOID IMUL_R32_RM32_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PUSH_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I8");
-    i386(0x6a) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cimm), _GetOperandSize));
@@ -7186,7 +7206,7 @@ static C_VOID PUSH_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID IMUL_R32_RM32_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I8");
-    i386(0x6b) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -7200,7 +7220,7 @@ static C_VOID IMUL_R32_RM32_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INSB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INSB");
-    i386(0x6c) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -7244,7 +7264,7 @@ static C_VOID INSB(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INSW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INSW");
-    i386(0x6d) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -7288,7 +7308,7 @@ static C_VOID INSW(core_machine_cpu_execution_context *context) {
 }
 static C_VOID OUTSB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSB");
-    i386(0x6e) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -7332,7 +7352,7 @@ static C_VOID OUTSB(core_machine_cpu_execution_context *context) {
 }
 static C_VOID OUTSW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSW");
-    i386(0x6f) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -7376,7 +7396,7 @@ static C_VOID OUTSW(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JO_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JO_REL8");
-    i386(0x70) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7388,7 +7408,7 @@ static C_VOID JO_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JNO_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNO_REL8");
-    i386(0x71) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7400,7 +7420,7 @@ static C_VOID JNO_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JC_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JC_REL8");
-    i386(0x72) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7412,7 +7432,7 @@ static C_VOID JC_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JNC_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNC_REL8");
-    i386(0x73) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7424,7 +7444,7 @@ static C_VOID JNC_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JZ_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JZ_REL8");
-    i386(0x74) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7436,7 +7456,7 @@ static C_VOID JZ_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JNZ_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNZ_REL8");
-    i386(0x75) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7448,7 +7468,7 @@ static C_VOID JNZ_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JNA_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNA_REL8");
-    i386(0x76) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7461,7 +7481,7 @@ static C_VOID JNA_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JA_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JA_REL8");
-    i386(0x77) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7474,7 +7494,7 @@ static C_VOID JA_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JS_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JS_REL8");
-    i386(0x78) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7486,7 +7506,7 @@ static C_VOID JS_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JNS_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNS_REL8");
-    i386(0x79) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7499,7 +7519,7 @@ static C_VOID JNS_REL8(core_machine_cpu_execution_context *context) {
 static C_VOID JP_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JP_REL8");
     _new_code_path_;
-    i386(0x7a) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7512,7 +7532,7 @@ static C_VOID JP_REL8(core_machine_cpu_execution_context *context) {
 static C_VOID JNP_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNP_REL8");
     _new_code_path_;
-    i386(0x7b) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7524,7 +7544,7 @@ static C_VOID JNP_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JL_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JL_REL8");
-    i386(0x7c) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7536,7 +7556,7 @@ static C_VOID JL_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JNL_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNL_REL8");
-    i386(0x7d) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7548,7 +7568,7 @@ static C_VOID JNL_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JNG_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNG_REL8");
-    i386(0x7e) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7561,7 +7581,7 @@ static C_VOID JNG_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JG_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JG_REL8");
-    i386(0x7f) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7574,7 +7594,7 @@ static C_VOID JG_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_80(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_80");
-    i386 (0x80) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7647,7 +7667,7 @@ static C_VOID INS_80(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_81(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_81");
-    i386(0x81) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
@@ -7784,7 +7804,7 @@ static C_VOID INS_81(core_machine_cpu_execution_context *context) {
 static C_VOID INS_83(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 bit;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_83");
-    i386(0x83) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
@@ -7920,7 +7940,7 @@ static C_VOID INS_83(core_machine_cpu_execution_context *context) {
 }
 static C_VOID TEST_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM8_R8");
-    i386(0x84) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7933,7 +7953,7 @@ static C_VOID TEST_RM8_R8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID TEST_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM32_R32");
-    i386(0x85) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -7949,7 +7969,7 @@ static C_VOID TEST_RM32_R32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XCHG_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM8_R8");
-    i386(0x86) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7964,7 +7984,7 @@ static C_VOID XCHG_RM8_R8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XCHG_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM32_R32");
-    i386(0x87) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -7984,7 +8004,7 @@ static C_VOID XCHG_RM32_R32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM8_R8");
-    i386(0x88) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -7997,7 +8017,7 @@ static C_VOID MOV_RM8_R8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM32_R32");
-    i386(0x89) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         instruction_state.data.crm = instruction_state.data.cr;
@@ -8013,7 +8033,7 @@ static C_VOID MOV_RM32_R32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R8_RM8");
-    i386(0x8a) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -8026,7 +8046,7 @@ static C_VOID MOV_R8_RM8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_RM32");
-    i386(0x8b) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -8042,7 +8062,7 @@ static C_VOID MOV_R32_RM32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_RM16_SREG(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM16_SREG");
-    i386(0x8c) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -8055,7 +8075,7 @@ static C_VOID MOV_RM16_SREG(core_machine_cpu_execution_context *context) {
 }
 static C_VOID LEA_R32_M32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LEA_R32_M32");
-    i386(0x8d) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, _GetOperandSize, _GetOperandSize));
         switch (_GetOperandSize) {
@@ -8083,7 +8103,7 @@ static C_VOID LEA_R32_M32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_SREG_RM16(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_SREG_RM16");
-    i386(0x8e) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
         if (instruction_state.data.rmovsreg->sregtype == SREG_CODE) {
@@ -8106,7 +8126,7 @@ static C_VOID MOV_SREG_RM16(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_8F(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_8F");
-    i386(0x8f) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         switch (instruction_state.data.cr) {
@@ -8210,7 +8230,7 @@ static C_VOID INS_8F(core_machine_cpu_execution_context *context) {
 }
 static C_VOID NOP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("NOP");
-    i386(0x90) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else
@@ -8219,7 +8239,7 @@ static C_VOID NOP(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XCHG_ECX_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ECX_EAX");
-    i386(0x91) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -8252,7 +8272,7 @@ static C_VOID XCHG_ECX_EAX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XCHG_EDX_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDX_EAX");
-    i386(0x92) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -8285,7 +8305,7 @@ static C_VOID XCHG_EDX_EAX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XCHG_EBX_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBX_EAX");
-    i386(0x93) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -8319,7 +8339,7 @@ static C_VOID XCHG_EBX_EAX(core_machine_cpu_execution_context *context) {
 static C_VOID XCHG_ESP_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESP_EAX");
     _new_code_path_;
-    i386(0x94) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -8352,7 +8372,7 @@ static C_VOID XCHG_ESP_EAX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XCHG_EBP_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBP_EAX");
-    i386(0x95) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -8385,7 +8405,7 @@ static C_VOID XCHG_EBP_EAX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XCHG_ESI_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESI_EAX");
-    i386(0x96) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -8418,7 +8438,7 @@ static C_VOID XCHG_ESI_EAX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XCHG_EDI_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDI_EAX");
-    i386(0x97) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -8451,7 +8471,7 @@ static C_VOID XCHG_EDI_EAX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CBW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CBW");
-    i386(0x98) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -8473,7 +8493,7 @@ static C_VOID CBW(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CWD(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CWD");
-    i386(0x99) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -8498,7 +8518,7 @@ static C_VOID CALL_PTR16_32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 newcs;
     ntvdm64_type_unsigned_32 neweip;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_PTR16_32");
-    i386(0x9a) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -8535,7 +8555,7 @@ _______todo WAIT(core_machine_cpu_execution_context *context) {
     /* not implemented */
     NTVDM64_TYPE_TRACE_CALL_BEGIN("WAIT");
     _new_code_path_;
-    i386(0x9b) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (_GetCR0_TS) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_TS(1)");
@@ -8551,7 +8571,7 @@ _______todo WAIT(core_machine_cpu_execution_context *context) {
 static C_VOID PUSHF(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 ceflags;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHF");
-    i386(0x9c) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (!_GetCR0_PE || (_GetCR0_PE && (!_GetEFLAGS_VM || (_GetEFLAGS_VM && (_GetEFLAGS_IOPL == 3))))) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Real/Protected/(V86,IOPL(3))");
@@ -8589,7 +8609,7 @@ static C_VOID POPF(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 mask = VCPU_EFLAGS_RESERVED;
     ntvdm64_type_unsigned_32 ceflags = NTVDM64_TYPE_ZERO_32;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POPF");
-    i386(0x9d) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (!_GetCR0_PE || !_GetEFLAGS_VM) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!V86");
@@ -8682,7 +8702,7 @@ static C_VOID SAHF(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 mask = (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF |
                       VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_CF);
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SAHF");
-    i386(0x9e) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -8693,7 +8713,7 @@ static C_VOID SAHF(core_machine_cpu_execution_context *context) {
 }
 static C_VOID LAHF(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LAHF");
-    i386(0x9f) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -8704,7 +8724,7 @@ static C_VOID LAHF(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_AL_MOFFS8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_MOFFS8");
-    i386(0xa0) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -8717,7 +8737,7 @@ static C_VOID MOV_AL_MOFFS8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_EAX_MOFFS32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_MOFFS32");
-    i386(0xa1) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(context, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -8743,7 +8763,7 @@ static C_VOID MOV_EAX_MOFFS32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_MOFFS8_AL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS8_AL");
-    i386(0xa2) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -8757,7 +8777,7 @@ static C_VOID MOV_MOFFS8_AL(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_MOFFS32_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS32_EAX");
-    i386(0xa3) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(context, _GetOperandSize));
         switch (_GetOperandSize) {
@@ -8784,7 +8804,7 @@ static C_VOID MOV_MOFFS32_EAX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOVSB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSB");
-    i386(0xa4) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -8837,7 +8857,7 @@ static C_VOID MOVSB(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOVSW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSW");
-    i386(0xa5) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -8890,7 +8910,7 @@ static C_VOID MOVSW(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CMPSB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSB");
-    i386(0xa6) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -8952,7 +8972,7 @@ static C_VOID CMPSB(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CMPSW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSW");
-    i386(0xa7) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -9014,7 +9034,7 @@ static C_VOID CMPSW(core_machine_cpu_execution_context *context) {
 }
 static C_VOID TEST_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_AL_I8");
-    i386(0xa8) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -9026,7 +9046,7 @@ static C_VOID TEST_AL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID TEST_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_EAX_I32");
-    i386(0xa9) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -9056,7 +9076,7 @@ static C_VOID TEST_EAX_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID STOSB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSB");
-    i386(0xaa) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -9109,7 +9129,7 @@ static C_VOID STOSB(core_machine_cpu_execution_context *context) {
 }
 static C_VOID STOSW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSW");
-    i386(0xab) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -9162,7 +9182,7 @@ static C_VOID STOSW(core_machine_cpu_execution_context *context) {
 }
 static C_VOID LODSB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSB");
-    i386(0xac) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -9215,7 +9235,7 @@ static C_VOID LODSB(core_machine_cpu_execution_context *context) {
 }
 static C_VOID LODSW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSW");
-    i386(0xad) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -9268,7 +9288,7 @@ static C_VOID LODSW(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SCASB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASB");
-    i386(0xae) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -9330,7 +9350,7 @@ static C_VOID SCASB(core_machine_cpu_execution_context *context) {
 }
 static C_VOID SCASW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASW");
-    i386(0xaf) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
@@ -9392,7 +9412,7 @@ static C_VOID SCASW(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_I8");
-    i386(0xb0) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -9404,7 +9424,7 @@ static C_VOID MOV_AL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_CL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CL_I8");
-    i386(0xb1) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -9416,7 +9436,7 @@ static C_VOID MOV_CL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_DL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DL_I8");
-    i386(0xb2) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -9428,7 +9448,7 @@ static C_VOID MOV_DL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_BL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BL_I8");
-    i386(0xb3) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -9440,7 +9460,7 @@ static C_VOID MOV_BL_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_AH_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AH_I8");
-    i386(0xb4) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -9452,7 +9472,7 @@ static C_VOID MOV_AH_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_CH_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CH_I8");
-    i386(0xb5) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -9464,7 +9484,7 @@ static C_VOID MOV_CH_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_DH_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DH_I8");
-    i386(0xb6) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -9476,7 +9496,7 @@ static C_VOID MOV_DH_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_BH_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BH_I8");
-    i386(0xb7) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -9488,7 +9508,7 @@ static C_VOID MOV_BH_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_I32");
-    i386(0xb8) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
@@ -9512,7 +9532,7 @@ static C_VOID MOV_EAX_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_ECX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ECX_I32");
-    i386(0xb9) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
@@ -9536,7 +9556,7 @@ static C_VOID MOV_ECX_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_EDX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDX_I32");
-    i386(0xba) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
@@ -9560,7 +9580,7 @@ static C_VOID MOV_EDX_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_EBX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBX_I32");
-    i386(0xbb) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
@@ -9584,7 +9604,7 @@ static C_VOID MOV_EBX_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_ESP_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESP_I32");
-    i386(0xbc) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
@@ -9608,7 +9628,7 @@ static C_VOID MOV_ESP_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_EBP_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBP_I32");
-    i386(0xbd) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
@@ -9632,7 +9652,7 @@ static C_VOID MOV_EBP_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_ESI_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESI_I32");
-    i386(0xbe) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
@@ -9656,7 +9676,7 @@ static C_VOID MOV_ESI_I32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID MOV_EDI_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDI_I32");
-    i386(0xbf) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
@@ -9681,7 +9701,7 @@ static C_VOID MOV_EDI_I32(core_machine_cpu_execution_context *context) {
 static C_VOID INS_C0(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C0");
     _new_code_path_;
-    i386(0xc0) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
@@ -9740,7 +9760,7 @@ static C_VOID INS_C0(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_C1(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C1");
-    i386(0xc1) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -9799,7 +9819,7 @@ static C_VOID INS_C1(core_machine_cpu_execution_context *context) {
 }
 static C_VOID RET_I16(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RET_I16");
-    i386(0xc2) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_ret_near(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm), _GetOperandSize));
@@ -9813,7 +9833,7 @@ static C_VOID RET_I16(core_machine_cpu_execution_context *context) {
 }
 static C_VOID RET(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RET");
-    i386(0xc3) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_ret_near(context, 0, _GetOperandSize));
     }
@@ -9827,7 +9847,7 @@ static C_VOID LES_R32_M16_32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 selector;
     ntvdm64_type_unsigned_32 offset;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LES_R32_M16_32");
-    i386(0xc4) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
         if (!instruction_state.data.flagMem) {
@@ -9868,7 +9888,7 @@ static C_VOID LDS_R32_M16_32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 selector;
     ntvdm64_type_unsigned_32 offset;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LDS_R32_M16_32");
-    i386(0xc5) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
         if (!instruction_state.data.flagMem) {
@@ -9907,7 +9927,7 @@ static C_VOID LDS_R32_M16_32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_C6(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C6");
-    i386(0xc6) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -9965,7 +9985,7 @@ static C_VOID INS_C6(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_C7(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C7");
-    i386(0xc7) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         switch (instruction_state.data.cr) {
@@ -10076,7 +10096,7 @@ static C_VOID ENTER(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 size = NTVDM64_TYPE_ZERO_16;
     ntvdm64_type_unsigned_8 level = NTVDM64_TYPE_ZERO_8;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ENTER");
-    i386(0xc8) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
         size = (ntvdm64_type_unsigned_16) instruction_state.data.cimm;
@@ -10198,7 +10218,7 @@ static C_VOID ENTER(core_machine_cpu_execution_context *context) {
 }
 static C_VOID LEAVE(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LEAVE");
-    i386(0xc9) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (!_IsProtected && cpu_state.data.ebp > 0x0000ffff) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected(0),ebp(>0000ffff)");
@@ -10239,7 +10259,7 @@ static C_VOID LEAVE(core_machine_cpu_execution_context *context) {
 }
 static C_VOID RETF_I16(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF_I16");
-    i386(0xca) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_ret_far(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm), _GetOperandSize));
@@ -10253,7 +10273,7 @@ static C_VOID RETF_I16(core_machine_cpu_execution_context *context) {
 }
 static C_VOID RETF(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF");
-    i386(0xcb) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_ret_far(context, 0, _GetOperandSize));
     }
@@ -10266,7 +10286,7 @@ static C_VOID RETF(core_machine_cpu_execution_context *context) {
 static C_VOID INT3(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INT3");
     _new_code_path_;
-    i386(0xcc) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_int3(context, _GetOperandSize));
     }
@@ -10278,7 +10298,7 @@ static C_VOID INT3(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INT_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INT_I8");
-    i386(0xcc) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_int_n(context, (ntvdm64_type_unsigned_8)instruction_state.data.cimm, _GetOperandSize));
@@ -10293,7 +10313,7 @@ static C_VOID INT_I8(core_machine_cpu_execution_context *context) {
 static C_VOID INTO(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INTO");
     _new_code_path_;
-    i386(0xce) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_into(context, _GetOperandSize));
     }
@@ -10305,7 +10325,7 @@ static C_VOID INTO(core_machine_cpu_execution_context *context) {
 }
 static C_VOID IRET(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IRET");
-    i386(0xcf) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_iret(context, _GetOperandSize));
     }
@@ -10317,7 +10337,7 @@ static C_VOID IRET(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_D0(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D0");
-    i386(0xd0) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -10376,7 +10396,7 @@ static C_VOID INS_D0(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_D1(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D1");
-    i386(0xd1) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -10484,7 +10504,7 @@ static C_VOID INS_D1(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_D2(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D2");
-    i386(0xd2) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -10543,7 +10563,7 @@ static C_VOID INS_D2(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_D3(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D3");
-    i386(0xd3) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -10652,7 +10672,7 @@ static C_VOID INS_D3(core_machine_cpu_execution_context *context) {
 static C_VOID AAM(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 base;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAM");
-    i386(0xd4) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
     }
@@ -10672,7 +10692,7 @@ static C_VOID AAM(core_machine_cpu_execution_context *context) {
 static C_VOID AAD(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 base;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAD");
-    i386(0xd5) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
     }
@@ -10691,7 +10711,7 @@ static C_VOID AAD(core_machine_cpu_execution_context *context) {
 }
 static C_VOID XLAT(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XLAT");
-    i386(0xd7) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetAddressSize) {
         case 2:
@@ -10717,7 +10737,7 @@ static C_VOID XLAT(core_machine_cpu_execution_context *context) {
 }
 static C_VOID LOOPNZ_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOPNZ_REL8");
-    i386(0xe0) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -10729,7 +10749,7 @@ static C_VOID LOOPNZ_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID LOOPZ_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOPZ_REL8");
-    i386(0xe1) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -10741,7 +10761,7 @@ static C_VOID LOOPZ_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID LOOP_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOP_REL8");
-    i386(0xe2) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -10754,7 +10774,7 @@ static C_VOID LOOP_REL8(core_machine_cpu_execution_context *context) {
 static C_VOID JCXZ_REL8(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 cecx = 0x00000000;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JCXZ_REL8");
-    i386(0xe3) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         switch (_GetAddressSize) {
@@ -10779,7 +10799,7 @@ static C_VOID JCXZ_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID IN_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
-    i386(0xe4) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -10792,7 +10812,7 @@ static C_VOID IN_AL_I8(core_machine_cpu_execution_context *context) {
 static C_VOID IN_EAX_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_I8");
     _new_code_path_;
-    i386(0xe5) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         switch (_GetOperandSize) {
@@ -10820,7 +10840,7 @@ static C_VOID IN_EAX_I8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID OUT_I8_AL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_AL");
-    i386(0xe6) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -10834,7 +10854,7 @@ static C_VOID OUT_I8_AL(core_machine_cpu_execution_context *context) {
 static C_VOID OUT_I8_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_EAX");
     _new_code_path_;
-    i386(0xe7) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         switch (_GetOperandSize) {
@@ -10862,7 +10882,7 @@ static C_VOID OUT_I8_EAX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CALL_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_REL32");
-    i386(0xe8) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -10894,7 +10914,7 @@ static C_VOID CALL_REL32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JMP_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL32");
-    i386(0xe9) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, 1));
@@ -10910,7 +10930,7 @@ static C_VOID JMP_PTR16_32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 newcs = 0x0000;
     ntvdm64_type_unsigned_32 neweip = 0x00000000;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_PTR16_32");
-    i386(0xea) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -10948,7 +10968,7 @@ static C_VOID JMP_PTR16_32(core_machine_cpu_execution_context *context) {
 }
 static C_VOID JMP_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL8");
-    i386(0xeb) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -10960,7 +10980,7 @@ static C_VOID JMP_REL8(core_machine_cpu_execution_context *context) {
 }
 static C_VOID IN_AL_DX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_DX");
-    i386(0xec) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -10971,7 +10991,7 @@ static C_VOID IN_AL_DX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID IN_EAX_DX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_DX");
-    i386(0xed) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -10997,7 +11017,7 @@ static C_VOID IN_EAX_DX(core_machine_cpu_execution_context *context) {
 }
 static C_VOID OUT_DX_AL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_AL");
-    i386(0xee) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -11009,7 +11029,7 @@ static C_VOID OUT_DX_AL(core_machine_cpu_execution_context *context) {
 static C_VOID OUT_DX_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_EAX");
     _new_code_path_;
-    i386(0xef) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
@@ -11039,7 +11059,7 @@ static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 opcode_0f = 0x00;
     ntvdm64_type_unsigned_32 ceip = cpu_state.data.eip;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
-    i386(0xf0) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         do {
             NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip, NTVDM64_TYPE_REFERENCE_OF(opcode), 1));
@@ -11113,7 +11133,7 @@ static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PREFIX_REPNZ(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPNZ");
-    i386(0xf2) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         instruction_state.data.prefix_rep = PREFIX_REP_REPZNZ;
     }
@@ -11125,7 +11145,7 @@ static C_VOID PREFIX_REPNZ(core_machine_cpu_execution_context *context) {
 }
 static C_VOID PREFIX_REPZ(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPZ");
-    i386(0xf3) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         instruction_state.data.prefix_rep = PREFIX_REP_REPZ;
     }
@@ -11149,7 +11169,7 @@ static C_VOID HLT(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CMC(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMC");
-    i386(0xf5) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         cpu_state.data.eflags ^= VCPU_EFLAGS_CF;
     }
@@ -11161,7 +11181,7 @@ static C_VOID CMC(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_F6(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F6");
-    i386(0xf6) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -11224,7 +11244,7 @@ static C_VOID INS_F6(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_F7(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F7");
-    i386(0xf7) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
@@ -11338,7 +11358,7 @@ static C_VOID INS_F7(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CLC(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLC");
-    i386(0xf8) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         _ClrEFLAGS_CF;
     }
@@ -11350,7 +11370,7 @@ static C_VOID CLC(core_machine_cpu_execution_context *context) {
 }
 static C_VOID STC(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STC");
-    i386(0xf9) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         _SetEFLAGS_CF;
     }
@@ -11362,7 +11382,7 @@ static C_VOID STC(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CLI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLI");
-    i386(0xfa) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (!_GetCR0_PE)
             _ClrEFLAGS_IF;
@@ -11395,7 +11415,7 @@ static C_VOID CLI(core_machine_cpu_execution_context *context) {
 }
 static C_VOID STI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STI");
-    i386(0xfb) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         if (!_GetCR0_PE)
             _SetEFLAGS_IF;
@@ -11429,7 +11449,7 @@ static C_VOID STI(core_machine_cpu_execution_context *context) {
 }
 static C_VOID CLD(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLD");
-    i386(0xfc) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         _ClrEFLAGS_DF;
     }
@@ -11441,7 +11461,7 @@ static C_VOID CLD(core_machine_cpu_execution_context *context) {
 }
 static C_VOID STD(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLD");
-    i386(0xfd) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         _SetEFLAGS_DF;
     }
@@ -11453,7 +11473,7 @@ static C_VOID STD(core_machine_cpu_execution_context *context) {
 }
 static C_VOID INS_FE(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FE");
-    i386(0xfe) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
     }
     else {
@@ -11517,7 +11537,7 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 newcs;
     ntvdm64_type_unsigned_32 neweip;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FF");
-    i386(0xff) {
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
         _adv;
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, NTVDM64_TYPE_REFERENCE_OF(modrm), 1));
         switch (_GetModRM_REG(modrm)) {
@@ -13400,6 +13420,11 @@ static C_VOID ExecIns(core_machine_cpu_execution_context *context) {
     do {
         NTVDM64_TYPE_TRACE_CALL_BEGIN("ExecIns");
         NTVDM64_TYPE_TRACE_CHECK_BREAK(_s_read_cs(context, cpu_state.data.eip, NTVDM64_TYPE_REFERENCE_OF(opcode), 1));
+        if (!core_machine_cpu_profile_allows_form(context,
+                CORE_MACHINE_CPU_INSTRUCTION_PRIMARY, opcode, 0u)) {
+            UndefinedOpcode(context);
+            break;
+        }
         NTVDM64_TYPE_TRACE_CHECK_BREAK(ExecCpuInstruction(instruction_state.connect.insTable[opcode]));
         NTVDM64_TYPE_TRACE_CHECK_BREAK(_s_test_eip(context));
         NTVDM64_TYPE_TRACE_CHECK_BREAK(_s_test_esp(context));

@@ -9,6 +9,7 @@
 
 
 #include "core/machine/memory.h"
+#include "core/machine/machine_interface.h"
 
 #include "core/platform/display_frame.h"
 
@@ -86,6 +87,24 @@ static C_VOID dump_text_screen(const t_ram *ram)
     }
 }
 
+static C_VOID dump_first_fault(core_machine *machine)
+{
+    core_machine_cpu_diagnostic diagnostic;
+    const core_machine_cpu_fault_snapshot *fault;
+    STD_SIZE_T index;
+
+    if (core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
+        NTVDM64_STATUS_OK || !diagnostic.first_fault.valid) return;
+    fault = &diagnostic.first_fault;
+    STD_FPRINTF(STD_STDERR,
+        "M5:T155:S1:BOOT-FAULT CS:IP=%04X:%08X BYTES=",
+        fault->point.cs, fault->point.eip);
+    for (index = 0u; index < fault->point.byte_count; ++index) {
+        STD_FPRINTF(STD_STDERR, "%02X", fault->point.bytes[index]);
+    }
+    STD_FPUTC('\n', STD_STDERR);
+}
+
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     HANDLE thread;
@@ -117,6 +136,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
     if (result != WAIT_OBJECT_0 || !prompt_seen) {
+        dump_first_fault(session->core_machine);
         dump_text_screen(core_machine_executor_memory_borrow(session->core_machine));
         STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
         goto fail;
