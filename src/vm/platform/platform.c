@@ -19,8 +19,13 @@ void vm_platform_run_context_initialize(
     context->keyboard = keyboard;
     context->presentation = presentation;
     context->wait_scope = wait_scope;
-    context->host_console_output = NULL;
-    context->host_window = NULL;
+    core_platform_host_surface_context_initialize(&context->console_surface,
+        CORE_PLATFORM_HOST_SURFACE_CONSOLE, NULL);
+    core_platform_host_surface_context_initialize(&context->window_surface,
+        CORE_PLATFORM_HOST_SURFACE_WINDOW, NULL);
+    context->console_renderer = NULL;
+    context->window_renderer = NULL;
+    context->terminal_displayed_generation = 0u;
     context->window_display = 0;
     context->keyboard_state_sink = NULL;
     context->keyboard_state_context = NULL;

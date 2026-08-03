@@ -54,7 +54,8 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
         case TIMER_PAINT:
             if (vm_platform_execution_is_running_for(
                     context->platform->execution)) {
-                w32adispPaint(hWnd, context->platform->presentation, FALSE);
+                w32adispPaint((w32adisp_context *)context->platform->window_renderer,
+                              hWnd, context->platform->presentation, FALSE);
             }
             break;
         default:
@@ -64,7 +65,8 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
     case WM_PAINT:
         BeginPaint(hWnd, &ps);
         if (vm_platform_execution_is_running_for(context->platform->execution)) {
-            w32adispPaint(hWnd, context->platform->presentation, TRUE);
+            w32adispPaint((w32adisp_context *)context->platform->window_renderer,
+                          hWnd, context->platform->presentation, TRUE);
         }
         EndPaint(hWnd, &ps);
         break;
@@ -133,15 +135,28 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
         free(context);
         return FALSE;
     }
-    ((vm_platform_run_context *)context->platform)->host_window = context->window;
+    ((vm_platform_run_context *)context->platform)->window_surface.native_handle =
+        context->window;
+    ((vm_platform_run_context *)context->platform)->window_renderer =
+        w32adisp_context_create();
+    if (context->platform->window_renderer == NULL) {
+        DestroyWindow(context->window);
+        core_product_wait_scope_leave(previous);
+        free(context);
+        return FALSE;
+    }
 
-    w32adispInit(context->window, context->platform->presentation);
+    w32adispInit((w32adisp_context *)context->platform->window_renderer,
+                 context->window, context->platform->presentation);
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
     vm_platform_execution_stop_for(context->platform->execution);
-    w32adispFinal();
+    w32adispFinal((w32adisp_context *)context->platform->window_renderer);
+    w32adisp_context_destroy((w32adisp_context *)context->platform->window_renderer);
+    ((vm_platform_run_context *)context->platform)->window_renderer = NULL;
+    ((vm_platform_run_context *)context->platform)->window_surface.native_handle = NULL;
     core_product_wait_scope_leave(previous);
     free(context);
     return 0;
@@ -153,16 +168,21 @@ static DWORD WINAPI ThreadKernel(LPVOID lpParam) {
         context->platform->wait_scope);
 
     vm_platform_execution_start_for(context->platform->execution);
-    w32adispPaint(context->window, context->platform->presentation, TRUE);
+    w32adispPaint((w32adisp_context *)context->platform->window_renderer,
+                  context->window, context->platform->presentation, TRUE);
     core_product_wait_scope_leave(previous);
     return 0;
 }
 
 VOID win32appDisplaySetScreen(const vm_platform_run_context *context) {
-    w32adispSetScreen((HWND)context->host_window, context->presentation);
+    w32adispSetScreen((w32adisp_context *)context->window_renderer,
+                      (HWND)context->window_surface.native_handle,
+                      context->presentation);
 }
 VOID win32appDisplayPaint(const vm_platform_run_context *context) {
-    w32adispPaint((HWND)context->host_window, context->presentation, TRUE);
+    w32adispPaint((w32adisp_context *)context->window_renderer,
+                  (HWND)context->window_surface.native_handle,
+                  context->presentation, TRUE);
 }
 VOID win32appStartMachine(const vm_platform_run_context *context) {
     win32app_run_context *run_context;
