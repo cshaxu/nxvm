@@ -14,18 +14,21 @@
 
 
 #include "core/product/utils.h"
+#include "core/product/session/session_interface.h"
+#include "core/product/session/session_provider.h"
 
 #include "version.h"
 
-#include "vm/composition/session/console_target.h"
-
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/provider.h"
 
 #include "vm/product/console.h"
 
 C_INT main(C_INT argc, C_CHAR **argv) {
     C_CHAR banner[160];
-    vm_session *session;
+    core_product_session_provider session_provider;
+    core_product_session_manager *session_manager = STD_NULL;
+    vm_product_console_machine_provider machine_provider;
+    nxvm_product_console_context console_context;
 
     (C_VOID)argc;
     (C_VOID)argv;
@@ -36,9 +39,16 @@ C_INT main(C_INT argc, C_CHAR **argv) {
     STD_PRINTF("%s\n", banner);
     STD_PRINTF("Built on %s at %s.\n", ntvdm64_version_build_date(),
         ntvdm64_version_build_time());
-    if (vm_session_create(STD_NULL, &session) != NTVDM64_STATUS_OK) return 1;
-    vm_session_console_target_initialize(session->console_target, session);
-    vm_product_console_main(session->console_context, session->console_target);
-    vm_session_destroy(session);
+    vm_session_provider_initialize(&session_provider);
+    if (core_product_session_manager_create(&session_provider,
+            &session_manager) != NTVDM64_STATUS_OK ||
+        core_product_session_manager_open(session_manager, STD_NULL) !=
+            NTVDM64_STATUS_OK) {
+        core_product_session_manager_destroy(session_manager);
+        return 1;
+    }
+    vm_session_machine_provider_initialize(&machine_provider, session_manager);
+    vm_product_console_main(&console_context, &machine_provider);
+    core_product_session_manager_destroy(session_manager);
     return 0;
 }

@@ -172,7 +172,7 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/xasm32/dasm32.c
 )
 set(NXVM_COMPOSITION_VM_SOURCES
-    src/vm/composition/session/console_target.c
+    src/vm/composition/session/provider.c
     src/vm/composition/session/debug_target.c
     src/vm/composition/session/block.c
     src/vm/composition/session/display.c
@@ -285,6 +285,14 @@ target_include_directories(nxvm-product-core-utils PUBLIC
 )
 target_link_libraries(nxvm-product-core-utils PUBLIC nxvm-product-core-debug)
 
+add_library(nxvm-product-core-session STATIC
+    src/core/product/session/manager.c
+)
+target_include_directories(nxvm-product-core-session PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-product-core-session PUBLIC ntvdm64-c-facade)
+
 add_executable(nxvm-core-product-wait-smoke
     tests/product/core_product_wait_smoke.c
 )
@@ -300,6 +308,13 @@ target_include_directories(nxvm-core-product-session-contract-smoke PRIVATE
 )
 target_link_libraries(nxvm-core-product-session-contract-smoke PRIVATE
     ntvdm64-c-facade
+)
+
+add_executable(nxvm-core-product-session-manager-smoke
+    tests/product/core_product_session_manager_smoke.c
+)
+target_link_libraries(nxvm-core-product-session-manager-smoke PRIVATE
+    nxvm-product-core-session
 )
 
 add_executable(nxvm-core-product-debug-target-smoke
@@ -380,6 +395,7 @@ target_include_directories(nxvm-vm-composition PUBLIC
 target_link_libraries(nxvm-vm-composition PUBLIC
     nxvm-vm-machine
     nxvm-core-machine
+    nxvm-product-core-session
     "$<LINK_GROUP:RESCAN,nxvm-product-core-debug,nxvm-product-core-utils>"
     nxvm-vm-profile
     nxvm-vm-product
@@ -731,6 +747,7 @@ add_nxvm_version_artifact(nxvm-0-5-0141 "0.5.0141")
 add_nxvm_version_artifact(nxvm-0-5-0142 "0.5.0142")
 add_nxvm_version_artifact(nxvm-0-5-0143 "0.5.0143")
 add_nxvm_version_artifact(nxvm-0-5-0145 "0.5.0145")
+add_nxvm_version_artifact(nxvm-0-5-0146 "0.5.0146")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

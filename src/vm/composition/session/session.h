@@ -58,7 +58,6 @@
 #include "vm/platform/platform.h"
 #include "vm/platform/vm_request_transport.h"
 
-#include "vm/product/console.h"
 
 typedef struct vm_session {
     C_INT active;
@@ -82,8 +81,6 @@ typedef struct vm_session {
     vm_platform_run_context platform_run_context_storage;
     vm_platform_run_handle platform_run_handle_storage;
     core_product_debug_context debugger_context_storage;
-    nxvm_product_console_context console_context_storage;
-    nxvm_product_console_target console_target_storage;
     uint64_t display_generation;
     core_product_debug_target *debug_target;
     t_cmos *cmos;
@@ -104,8 +101,6 @@ typedef struct vm_session {
     vm_platform_run_context *platform_run_context;
     vm_platform_run_handle *platform_run_handle;
     core_product_debug_context *debugger_context;
-    nxvm_product_console_context *console_context;
-    nxvm_product_console_target *console_target;
     vm_session_control_state *control;
 } vm_session;
 

@@ -104,9 +104,6 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     machine->platform_run_handle = &machine->platform_run_handle_storage;
     machine->debugger_context = &machine->debugger_context_storage;
     core_product_debug_context_initialize(machine->debugger_context);
-    machine->console_context = &machine->console_context_storage;
-    nxvm_product_console_context_initialize(machine->console_context);
-    machine->console_target = &machine->console_target_storage;
     machine->display_generation = 0u;
     machine->control = (vm_session_control_state *)STD_CALLOC(1u,
         sizeof(*machine->control));
@@ -138,8 +135,6 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     machine->platform_run_context = STD_NULL;
     machine->platform_run_handle = STD_NULL;
     machine->debugger_context = STD_NULL;
-    machine->console_context = STD_NULL;
-    machine->console_target = STD_NULL;
     STD_FREE(machine->control);
     machine->control = STD_NULL;
     core_machine_destroy(machine->core_machine);
