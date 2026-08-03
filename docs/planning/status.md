@@ -332,8 +332,9 @@ unavailable, and i386 protected-mode/paging completion remains separate work.
 
 **M5 T159 S1 complete: core lifecycle boundary audit.** T141's core-owned
 lifecycle is now reconfirmed against current source and guarded by a static
-VM/VDM ownership gate. `providers.c` retains only VM-only device, firmware,
-and provider work; it cannot interleave generic core-device lifecycle calls.
+VM/VDM ownership gate. The former mixed provider implementation retained only
+VM-only device, firmware, and provider work; it could not interleave generic
+core-device lifecycle calls.
 Evidence is [`M5-T159.md`](../tracking/M5-T159.md). No guest lifecycle order
 changed.
 
@@ -343,9 +344,15 @@ require the returned paused boundary. Evidence is
 [`M5-T160.md`](../tracking/M5-T160.md); artifact `nxvm_0_5_0160.exe` is
 verified.
 
-**M5 T161 S1 active: VM provider composition separation.** Split the mixed
-VM-only device/firmware provider implementation into accurately named owners
-while preserving the retained full-PC lifecycle sequence.
+**M5 T161 S1 complete: VM provider composition separation.** VM-only device
+lifecycle, default-profile firmware lifecycle, the ordering coordinator, and
+machine-info adapter now have separate source ownership. The retained Console,
+debugger, and FDD DOS-prompt gates pass. Evidence is
+[`M5-T161.md`](../tracking/M5-T161.md); artifact `nxvm_0_5_0161.exe` is
+verified.
+
+**M5 T162 S1 active: structural closure audit.** Re-audit the post-T160/T161
+tree before selecting further implementation work; it has no behavior change.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

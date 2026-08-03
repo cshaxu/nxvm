@@ -36,10 +36,10 @@ import. `docs/planning/status.md` remains authoritative for active work.
   exactly once, then reset/run the frozen topology. Public memory, port, and
   A20 access require a returned `PAUSED` boundary. The contract smoke rejects
   reset-before-freeze and topology mutation after freeze.
-- [ ] **Composition naming and separation.** `vm/composition/providers.*`
-  currently combines provider binding, default-profile wiring, and lifecycle
-  sequencing. Split or rename only after the core lifecycle boundary is
-  complete; do not use a cosmetic rename to hide mixed responsibility.
+- [x] **Composition naming and separation.** T161 splits the former mixed
+  provider source into VM-only device lifecycle, default-profile firmware
+  lifecycle, a thin order-only coordinator, and a separate machine-information
+  adapter. A source-shape gate rejects a return to the mixed file.
 
 ### Platform, Product, And Session Boundaries
 
