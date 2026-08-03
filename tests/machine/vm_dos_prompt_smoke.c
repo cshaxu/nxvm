@@ -7,6 +7,7 @@
 
 #include "core/machine/memory.h"
 #include "core/platform/display_frame.h"
+#include "vm/platform/presentation_mailbox.h"
 #include "vm/composition_machine.h"
 #include "vm/composition_control.h"
 #include "vm/composition_live_machine.h"
@@ -95,7 +96,8 @@ int main(int argc, char **argv)
 
     for (elapsed = 0u; elapsed < DOS_PROMPT_TIMEOUT_MILLISECONDS;
          elapsed += 10u) {
-        core_platform_display_capture(&frame);
+        vm_platform_presentation_mailbox_capture(session->presentation_mailbox,
+                                                 &frame);
         if (has_dos_prompt(session->ram) && frame_has_dos_prompt(&frame)) {
             prompt_seen = 1;
             break;

@@ -54,7 +54,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
         case TIMER_PAINT:
             if (vm_platform_execution_is_running_for(
                     context->platform->execution)) {
-                w32adispPaint(FALSE);
+                w32adispPaint(context->platform->presentation, FALSE);
             }
             break;
         default:
@@ -64,7 +64,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
     case WM_PAINT:
         BeginPaint(hWnd, &ps);
         if (vm_platform_execution_is_running_for(context->platform->execution)) {
-            w32adispPaint(TRUE);
+            w32adispPaint(context->platform->presentation, TRUE);
         }
         EndPaint(hWnd, &ps);
         break;
@@ -131,7 +131,7 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
         return FALSE;
     }
 
-    w32adispInit();
+    w32adispInit(context->platform->presentation);
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
@@ -147,15 +147,15 @@ static DWORD WINAPI ThreadKernel(LPVOID lpParam) {
     win32app_run_context *context = lpParam;
 
     vm_platform_execution_start_for(context->platform->execution);
-    w32adispPaint(TRUE);
+    w32adispPaint(context->platform->presentation, TRUE);
     return 0;
 }
 
-VOID win32appDisplaySetScreen() {
-    w32adispSetScreen();
+VOID win32appDisplaySetScreen(const vm_platform_run_context *context) {
+    w32adispSetScreen(context->presentation);
 }
-VOID win32appDisplayPaint() {
-    w32adispPaint(TRUE);
+VOID win32appDisplayPaint(const vm_platform_run_context *context) {
+    w32adispPaint(context->presentation, TRUE);
 }
 VOID win32appStartMachine(const vm_platform_run_context *context) {
     win32app_run_context *run_context;

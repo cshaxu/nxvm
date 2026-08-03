@@ -9,10 +9,13 @@ extern "C" {
 
 #include <windows.h>
 
-VOID w32cdispSetScreen();
-VOID w32cdispPaint(BOOL flagForce);
+typedef struct vm_platform_presentation_mailbox vm_platform_presentation_mailbox;
 
-VOID w32cdispInit();
+VOID w32cdispSetScreen(const vm_platform_presentation_mailbox *mailbox);
+VOID w32cdispPaint(const vm_platform_presentation_mailbox *mailbox,
+                   BOOL flagForce);
+
+VOID w32cdispInit(const vm_platform_presentation_mailbox *mailbox);
 VOID w32cdispFinal();
 
 #ifdef __cplusplus

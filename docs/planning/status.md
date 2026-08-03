@@ -47,9 +47,8 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
 ## Active Work
 
-**M5 T80 S4: Presentation mailbox.** Replace the process-global display frame
-with a VM composition-owned presentation mailbox. Console C1, window C2, and
-Linux C3 are complete; mode/handle ownership and wait scope remain outside this
+**M5 T80 S5: Mode and host handles.** Move display mode and host handles into
+their owning run contexts. C1--C4 are complete; wait scope remains outside this
 subtask.
 
 ## Short-Term M5 Plan

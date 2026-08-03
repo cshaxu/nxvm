@@ -12,11 +12,13 @@ t_platform platform;
 void vm_platform_run_context_initialize(
     vm_platform_run_context *context,
     const vm_platform_execution_transport *execution,
-    const vm_platform_keyboard_transport *keyboard)
+    const vm_platform_keyboard_transport *keyboard,
+    const vm_platform_presentation_mailbox *presentation)
 {
     if (context == NULL) return;
     context->execution = execution;
     context->keyboard = keyboard;
+    context->presentation = presentation;
     context->keyboard_state_sink = NULL;
     context->keyboard_state_context = NULL;
 }
@@ -32,22 +34,24 @@ void vm_platform_run_context_bind_keyboard_state(
 
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
 #include "vm/platform/win32/win32.h"
-void platformDisplaySetScreen() {
-    win32DisplaySetScreen(platform.flagMode);
+void platformDisplaySetScreen(const vm_platform_run_context *context) {
+    win32DisplaySetScreen(platform.flagMode, context);
 }
-void platformDisplayPaint() {
-    win32DisplayPaint(platform.flagMode);
+void platformDisplayPaint(const vm_platform_run_context *context) {
+    win32DisplayPaint(platform.flagMode, context);
 }
 void platformStart(const vm_platform_run_context *context) {
     win32StartMachine(platform.flagMode, context);
 }
 #elif GLOBAL_PLATFORM == GLOBAL_VAR_LINUX
 #include "vm/platform/linux/linux.h"
-void platformDisplaySetScreen() {
-    linuxDisplaySetScreen(platform.flagMode);
+void platformDisplaySetScreen(const vm_platform_run_context *context) {
+    (void)context;
+    linuxDisplaySetScreen(platform.flagMode, context);
 }
-void platformDisplayPaint() {
-    linuxDisplayPaint(platform.flagMode);
+void platformDisplayPaint(const vm_platform_run_context *context) {
+    (void)context;
+    linuxDisplayPaint(platform.flagMode, context);
 }
 void platformStart(const vm_platform_run_context *context) {
     linuxStartMachine(platform.flagMode, context);
@@ -57,7 +61,6 @@ void platformStart(const vm_platform_run_context *context) {
 void platformInit() {
     MEMSET((void *)(&platform), 0x00, sizeof(t_platform));
     platform.flagMode = 0;
-    core_platform_display_initialize();
 }
 
 void platformFinal() {}

@@ -17,10 +17,10 @@ typedef struct win32con_run_context {
 static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     const win32con_run_context *context = lpParam;
 
-    w32cdispInit();
-    w32cdispPaint(TRUE);
+    w32cdispInit(context->platform->presentation);
+    w32cdispPaint(context->platform->presentation, TRUE);
     while (vm_platform_execution_is_running_for(context->platform->execution)) {
-        w32cdispPaint(FALSE);
+        w32cdispPaint(context->platform->presentation, FALSE);
         utilsSleep(100);
     }
     w32cdispFinal();
@@ -62,12 +62,12 @@ static VOID w32ckeybProcess(const win32con_run_context *context) {
     }
 }
 
-VOID win32conDisplaySetScreen() {
-    w32cdispSetScreen();
+VOID win32conDisplaySetScreen(const vm_platform_run_context *context) {
+    w32cdispSetScreen(context->presentation);
 }
 
-VOID win32conDisplayPaint() {
-    w32cdispPaint(TRUE);
+VOID win32conDisplayPaint(const vm_platform_run_context *context) {
+    w32cdispPaint(context->presentation, TRUE);
 }
 
 VOID win32conStartMachine(const vm_platform_run_context *context) {

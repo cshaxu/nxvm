@@ -9,8 +9,8 @@
 
 typedef struct vm_platform_run_context vm_platform_run_context;
 
-void lnxcDisplaySetScreen();
-void lnxcDisplayPaint();
+void lnxcDisplaySetScreen(const vm_platform_run_context *context);
+void lnxcDisplayPaint(const vm_platform_run_context *context);
 void lnxcStartMachine(const vm_platform_run_context *context);
 
 #ifdef __cplusplus
