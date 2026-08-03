@@ -26,11 +26,11 @@ int main(void)
 
     nxvm_runtime_registry_initialize(&registry);
     if (nxvm_runtime_registry_register_profile(&registry, &profile) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         nxvm_runtime_registry_register_firmware_provider(&registry, &provider) !=
-            NXVM_CORE_STATUS_OK ||
+            NTVDM64_STATUS_OK ||
         nxvm_runtime_registry_register_profile(&registry, &profile) !=
-            NXVM_CORE_STATUS_UNSUPPORTED ||
+            NTVDM64_STATUS_UNSUPPORTED ||
         nxvm_runtime_registry_find_profile(&registry, profile.id,
             NXVM_RUNTIME_PROFILE_MACHINE, capability_is_proven,
             &capability_is_available) != NULL ||
@@ -42,9 +42,9 @@ int main(void)
             profile.id) != &provider ||
         nxvm_runtime_registry_find_firmware_provider(&registry, provider.id,
             "nxvm.machine.other") != NULL ||
-        nxvm_runtime_registry_freeze(&registry) != NXVM_CORE_STATUS_OK ||
+        nxvm_runtime_registry_freeze(&registry) != NTVDM64_STATUS_OK ||
         nxvm_runtime_registry_register_profile(&registry, &profile) !=
-            NXVM_CORE_STATUS_INVALID_STATE) {
+            NTVDM64_STATUS_INVALID_STATE) {
         return 1;
     }
     puts("M5:T2:S1:REGISTRY:OK");

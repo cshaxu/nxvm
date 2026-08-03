@@ -21,16 +21,16 @@ typedef struct nxvm_vm_request_transport {
 
 void nxvm_vm_request_transport_initialize(
     nxvm_vm_request_transport *transport);
-nxvm_core_status nxvm_vm_request_transport_enqueue_ingress(
+ntvdm64_status nxvm_vm_request_transport_enqueue_ingress(
     nxvm_vm_request_transport *transport,
     const nxvm_platform_vm_request *request);
-nxvm_core_status nxvm_vm_request_transport_dequeue_ingress(
+ntvdm64_status nxvm_vm_request_transport_dequeue_ingress(
     nxvm_vm_request_transport *transport,
     nxvm_platform_vm_request *out_request);
-nxvm_core_status nxvm_vm_request_transport_enqueue_egress(
+ntvdm64_status nxvm_vm_request_transport_enqueue_egress(
     nxvm_vm_request_transport *transport,
     const nxvm_platform_vm_request *request);
-nxvm_core_status nxvm_vm_request_transport_dequeue_egress(
+ntvdm64_status nxvm_vm_request_transport_dequeue_egress(
     nxvm_vm_request_transport *transport,
     nxvm_platform_vm_request *out_request);
 void nxvm_vm_request_transport_close(

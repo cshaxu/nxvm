@@ -28,34 +28,34 @@ void nxvm_vm_request_transport_initialize(
     nxvm_platform_vm_request_bridge_initialize(&transport->egress);
 }
 
-static nxvm_core_status nxvm_vm_request_transport_enqueue(
+static ntvdm64_status nxvm_vm_request_transport_enqueue(
     nxvm_vm_request_transport *transport,
     nxvm_platform_vm_request_bridge *bridge,
     const nxvm_platform_vm_request *request)
 {
-    nxvm_core_status status;
+    ntvdm64_status status;
 
     if (transport == NULL || request == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
     nxvm_vm_request_transport_lock(transport);
     status = transport->accepting
         ? nxvm_platform_vm_request_bridge_enqueue(bridge, request)
-        : NXVM_CORE_STATUS_INVALID_STATE;
+        : NTVDM64_STATUS_INVALID_STATE;
     nxvm_vm_request_transport_unlock(transport);
     return status;
 }
 
-static nxvm_core_status nxvm_vm_request_transport_dequeue(
+static ntvdm64_status nxvm_vm_request_transport_dequeue(
     nxvm_vm_request_transport *transport,
     nxvm_platform_vm_request_bridge *bridge,
     nxvm_platform_vm_request *out_request)
 {
-    nxvm_core_status status;
+    ntvdm64_status status;
 
     if (transport == NULL || out_request == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
     nxvm_vm_request_transport_lock(transport);
@@ -64,7 +64,7 @@ static nxvm_core_status nxvm_vm_request_transport_dequeue(
     return status;
 }
 
-nxvm_core_status nxvm_vm_request_transport_enqueue_ingress(
+ntvdm64_status nxvm_vm_request_transport_enqueue_ingress(
     nxvm_vm_request_transport *transport,
     const nxvm_platform_vm_request *request)
 {
@@ -72,7 +72,7 @@ nxvm_core_status nxvm_vm_request_transport_enqueue_ingress(
         transport, transport != NULL ? &transport->ingress : NULL, request);
 }
 
-nxvm_core_status nxvm_vm_request_transport_dequeue_ingress(
+ntvdm64_status nxvm_vm_request_transport_dequeue_ingress(
     nxvm_vm_request_transport *transport,
     nxvm_platform_vm_request *out_request)
 {
@@ -80,7 +80,7 @@ nxvm_core_status nxvm_vm_request_transport_dequeue_ingress(
         transport, transport != NULL ? &transport->ingress : NULL, out_request);
 }
 
-nxvm_core_status nxvm_vm_request_transport_enqueue_egress(
+ntvdm64_status nxvm_vm_request_transport_enqueue_egress(
     nxvm_vm_request_transport *transport,
     const nxvm_platform_vm_request *request)
 {
@@ -88,7 +88,7 @@ nxvm_core_status nxvm_vm_request_transport_enqueue_egress(
         transport, transport != NULL ? &transport->egress : NULL, request);
 }
 
-nxvm_core_status nxvm_vm_request_transport_dequeue_egress(
+ntvdm64_status nxvm_vm_request_transport_dequeue_egress(
     nxvm_vm_request_transport *transport,
     nxvm_platform_vm_request *out_request)
 {
@@ -146,7 +146,7 @@ void nxvm_vm_request_transport_observe_execution_boundary(void *opaque)
         nxvm_vm_request_transport_lock(transport);
         if (nxvm_platform_vm_request_bridge_dequeue(&transport->ingress,
                                                     &request) !=
-            NXVM_CORE_STATUS_OK) {
+            NTVDM64_STATUS_OK) {
             nxvm_vm_request_transport_unlock(transport);
             return;
         }

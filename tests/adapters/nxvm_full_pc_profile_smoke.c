@@ -27,10 +27,10 @@ static int verify_image(const char *fdd, const char *hdd, int boot_hdd)
     nxvm_vm_reset_vector vector;
     nxvm_full_pc *full_pc = NULL;
 
-    if (nxvm_full_pc_create(&config, &full_pc) != NXVM_CORE_STATUS_OK) {
+    if (nxvm_full_pc_create(&config, &full_pc) != NTVDM64_STATUS_OK) {
         return 1;
     }
-    if (nxvm_full_pc_get_reset_vector(full_pc, &vector) != NXVM_CORE_STATUS_OK ||
+    if (nxvm_full_pc_get_reset_vector(full_pc, &vector) != NTVDM64_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         nxvm_full_pc_destroy(full_pc);
         return 1;

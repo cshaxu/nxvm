@@ -460,7 +460,7 @@ void lnxcStartMachine(const vm_platform_run_context *context) {
     if (context == NULL || context->execution == NULL ||
         context->keyboard == NULL) return;
     if (core_platform_host_surface_lease_acquire(&linux_terminal_lease,
-            context) != NXVM_CORE_STATUS_OK) return;
+            context) != NTVDM64_STATUS_OK) return;
     previous = core_product_wait_scope_enter(context->wait_scope);
     oldDeviceFlip = vm_platform_execution_get_flip_for(context->execution);
     pthread_attr_init(&attr);

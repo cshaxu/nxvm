@@ -36,61 +36,61 @@ void nxvm_runtime_registry_initialize(nxvm_runtime_registry *registry)
     }
 }
 
-nxvm_core_status nxvm_runtime_registry_register_profile(
+ntvdm64_status nxvm_runtime_registry_register_profile(
     nxvm_runtime_registry *registry,
     const nxvm_runtime_profile_descriptor_v1 *descriptor)
 {
     size_t index;
 
     if (registry == NULL || !profile_valid(descriptor)) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     if (registry->frozen) {
-        return NXVM_CORE_STATUS_INVALID_STATE;
+        return NTVDM64_STATUS_INVALID_STATE;
     }
     for (index = 0u; index < registry->profile_count; ++index) {
         if (strcmp(registry->profiles[index]->id, descriptor->id) == 0) {
-            return NXVM_CORE_STATUS_UNSUPPORTED;
+            return NTVDM64_STATUS_UNSUPPORTED;
         }
     }
     if (registry->profile_count == NXVM_RUNTIME_REGISTRY_CAPACITY) {
-        return NXVM_CORE_STATUS_NO_MEMORY;
+        return NTVDM64_STATUS_NO_MEMORY;
     }
     registry->profiles[registry->profile_count++] = descriptor;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
-nxvm_core_status nxvm_runtime_registry_register_firmware_provider(
+ntvdm64_status nxvm_runtime_registry_register_firmware_provider(
     nxvm_runtime_registry *registry,
     const nxvm_runtime_firmware_provider_descriptor_v1 *descriptor)
 {
     size_t index;
 
     if (registry == NULL || !provider_valid(descriptor)) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     if (registry->frozen) {
-        return NXVM_CORE_STATUS_INVALID_STATE;
+        return NTVDM64_STATUS_INVALID_STATE;
     }
     for (index = 0u; index < registry->provider_count; ++index) {
         if (strcmp(registry->providers[index]->id, descriptor->id) == 0) {
-            return NXVM_CORE_STATUS_UNSUPPORTED;
+            return NTVDM64_STATUS_UNSUPPORTED;
         }
     }
     if (registry->provider_count == NXVM_RUNTIME_REGISTRY_CAPACITY) {
-        return NXVM_CORE_STATUS_NO_MEMORY;
+        return NTVDM64_STATUS_NO_MEMORY;
     }
     registry->providers[registry->provider_count++] = descriptor;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
-nxvm_core_status nxvm_runtime_registry_freeze(nxvm_runtime_registry *registry)
+ntvdm64_status nxvm_runtime_registry_freeze(nxvm_runtime_registry *registry)
 {
     if (registry == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     registry->frozen = 1;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
 const nxvm_runtime_profile_descriptor_v1 *nxvm_runtime_registry_find_profile(

@@ -15,15 +15,15 @@ typedef struct nxvm_vdm_presentation_snapshot {
     core_machine_text_snapshot text;
 } nxvm_vdm_presentation_snapshot;
 
-nxvm_core_status nxvm_dos_minimal_presentation_create(
+ntvdm64_status nxvm_dos_minimal_presentation_create(
     nxvm_runtime_dos_minimal *session,
     nxvm_dos_minimal_presentation **out_presentation);
-nxvm_core_status nxvm_dos_minimal_presentation_enqueue_input(
+ntvdm64_status nxvm_dos_minimal_presentation_enqueue_input(
     nxvm_dos_minimal_presentation *presentation,
     nxvm_platform_input_event event);
-nxvm_core_status nxvm_dos_minimal_presentation_apply_input(
+ntvdm64_status nxvm_dos_minimal_presentation_apply_input(
     nxvm_dos_minimal_presentation *presentation);
-nxvm_core_status nxvm_dos_minimal_presentation_capture_text(
+ntvdm64_status nxvm_dos_minimal_presentation_capture_text(
     nxvm_dos_minimal_presentation *presentation,
     uint64_t timestamp,
     nxvm_vdm_presentation_snapshot *out_snapshot);

@@ -75,11 +75,11 @@ struct core_machine {
     int execution_provider_frozen;
 };
 
-nxvm_core_status core_machine_cpu_reset(core_machine *machine);
-nxvm_core_status core_machine_instance_memory_initialize(core_machine *machine);
+ntvdm64_status core_machine_cpu_reset(core_machine *machine);
+ntvdm64_status core_machine_instance_memory_initialize(core_machine *machine);
 void core_machine_instance_memory_finalize(core_machine *machine);
-nxvm_core_status core_machine_instance_memory_reset(core_machine *machine);
-nxvm_core_status core_machine_bus_initialize(core_machine *machine);
+ntvdm64_status core_machine_instance_memory_reset(core_machine *machine);
+ntvdm64_status core_machine_bus_initialize(core_machine *machine);
 void core_machine_bus_finalize(core_machine *machine);
 void core_machine_trace_initialize(core_machine *machine);
 void core_machine_trace_finalize(core_machine *machine);
@@ -89,14 +89,14 @@ void core_machine_trace_record(
     uint32_t address,
     uint32_t value,
     uint32_t detail);
-nxvm_core_status core_machine_enable_executor(core_machine *machine);
+ntvdm64_status core_machine_enable_executor(core_machine *machine);
 t_cpu *core_machine_executor_cpu_borrow(core_machine *machine);
 t_cpuins *core_machine_executor_cpu_instructions_borrow(core_machine *machine);
 core_machine_cpu_execution_context *core_machine_executor_cpu_execution_borrow(
     core_machine *machine);
 t_ram *core_machine_executor_memory_borrow(core_machine *machine);
 t_port *core_machine_executor_port_borrow(core_machine *machine);
-nxvm_core_status core_machine_enable_shared_devices(core_machine *machine);
+ntvdm64_status core_machine_enable_shared_devices(core_machine *machine);
 t_pic *core_machine_shared_pic_master_borrow(core_machine *machine);
 t_pic *core_machine_shared_pic_slave_borrow(core_machine *machine);
 t_pit *core_machine_shared_pit_borrow(core_machine *machine);
@@ -105,8 +105,8 @@ t_dma *core_machine_shared_dma_primary_borrow(core_machine *machine);
 t_dma *core_machine_shared_dma_secondary_borrow(core_machine *machine);
 t_kbc *core_machine_shared_kbc_borrow(core_machine *machine);
 t_vadp *core_machine_shared_vadp_borrow(core_machine *machine);
-nxvm_core_status core_machine_bind_execution_provider(core_machine *machine,
+ntvdm64_status core_machine_bind_execution_provider(core_machine *machine,
     const core_machine_execution_provider *provider, void *context);
-nxvm_core_status core_machine_freeze_execution_providers(core_machine *machine);
+ntvdm64_status core_machine_freeze_execution_providers(core_machine *machine);
 
 #endif

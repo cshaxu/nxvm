@@ -8,15 +8,15 @@ int main(void)
     ntvdm64_vdm_minimal_session *first = NULL;
     ntvdm64_vdm_minimal_session *second = NULL;
 
-    if (ntvdm64_vdm_minimal_session_create(&first) != NXVM_CORE_STATUS_OK ||
-        ntvdm64_vdm_minimal_session_create(&second) != NXVM_CORE_STATUS_OK ||
+    if (ntvdm64_vdm_minimal_session_create(&first) != NTVDM64_STATUS_OK ||
+        ntvdm64_vdm_minimal_session_create(&second) != NTVDM64_STATUS_OK ||
         first == second ||
         strcmp(ntvdm64_vdm_minimal_session_profile(first)->name,
                "ntvdm64.dos_minimal") != 0 ||
         strcmp(ntvdm64_vdm_minimal_session_profile(second)->name,
                "ntvdm64.dos_minimal") != 0 ||
-        ntvdm64_vdm_minimal_session_reset(first) != NXVM_CORE_STATUS_OK ||
-        ntvdm64_vdm_minimal_session_reset(second) != NXVM_CORE_STATUS_OK) {
+        ntvdm64_vdm_minimal_session_reset(first) != NTVDM64_STATUS_OK ||
+        ntvdm64_vdm_minimal_session_reset(second) != NTVDM64_STATUS_OK) {
         ntvdm64_vdm_minimal_session_destroy(second);
         ntvdm64_vdm_minimal_session_destroy(first);
         return 1;

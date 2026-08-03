@@ -93,9 +93,9 @@ int vm_composition_bind_execution_provider(vm_composition_live_machine *machine)
 {
     return machine != NULL && machine->core_machine != NULL &&
         core_machine_bind_execution_provider(machine->core_machine,
-            &vm_composition_execution_provider, machine) == NXVM_CORE_STATUS_OK &&
+            &vm_composition_execution_provider, machine) == NTVDM64_STATUS_OK &&
         core_machine_freeze_execution_providers(machine->core_machine) ==
-            NXVM_CORE_STATUS_OK;
+            NTVDM64_STATUS_OK;
 }
 
 static const vm_platform_keyboard_sink vm_composition_keyboard_sink = {

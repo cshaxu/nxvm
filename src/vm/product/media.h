@@ -39,19 +39,19 @@ typedef struct nxvm_product_nxvm_media_policy {
 
 void nxvm_product_nxvm_media_policy_initialize(
     nxvm_product_nxvm_media_policy *policy);
-nxvm_core_status nxvm_product_nxvm_media_configure(
+ntvdm64_status nxvm_product_nxvm_media_configure(
     nxvm_product_nxvm_media_policy *policy,
     nxvm_product_nxvm_boot_target target,
     const char *path,
     const nxvm_product_nxvm_media_identity *identity);
-nxvm_core_status nxvm_product_nxvm_media_configure_created(
+ntvdm64_status nxvm_product_nxvm_media_configure_created(
     nxvm_product_nxvm_media_policy *policy,
     nxvm_product_nxvm_boot_target target,
     uint16_t cylinders);
-nxvm_core_status nxvm_product_nxvm_media_set_boot_target(
+ntvdm64_status nxvm_product_nxvm_media_set_boot_target(
     nxvm_product_nxvm_media_policy *policy,
     nxvm_product_nxvm_boot_target target);
-nxvm_core_status nxvm_product_nxvm_media_freeze(
+ntvdm64_status nxvm_product_nxvm_media_freeze(
     nxvm_product_nxvm_media_policy *policy);
 const nxvm_product_nxvm_block_provider *nxvm_product_nxvm_media_provider(
     const nxvm_product_nxvm_media_policy *policy,

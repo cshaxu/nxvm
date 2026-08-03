@@ -8,18 +8,18 @@ typedef struct nxvm_product_nxvm_debugger {
     int command_boundary_open;
 } nxvm_product_nxvm_debugger;
 
-nxvm_core_status nxvm_product_nxvm_debugger_initialize(
+ntvdm64_status nxvm_product_nxvm_debugger_initialize(
     nxvm_product_nxvm_debugger *debugger, core_machine *machine);
-nxvm_core_status nxvm_product_nxvm_debugger_open_command_boundary(
+ntvdm64_status nxvm_product_nxvm_debugger_open_command_boundary(
     nxvm_product_nxvm_debugger *debugger);
-nxvm_core_status nxvm_product_nxvm_debugger_read_cpu(
+ntvdm64_status nxvm_product_nxvm_debugger_read_cpu(
     const nxvm_product_nxvm_debugger *debugger, core_machine_cpu_state *out_state);
-nxvm_core_status nxvm_product_nxvm_debugger_read_memory(
+ntvdm64_status nxvm_product_nxvm_debugger_read_memory(
     const nxvm_product_nxvm_debugger *debugger, uint32_t physical,
     void *out_data, size_t size);
-nxvm_core_status nxvm_product_nxvm_debugger_step(
+ntvdm64_status nxvm_product_nxvm_debugger_step(
     nxvm_product_nxvm_debugger *debugger, core_machine_run_result *out_result);
-nxvm_core_status nxvm_product_nxvm_debugger_continue(
+ntvdm64_status nxvm_product_nxvm_debugger_continue(
     nxvm_product_nxvm_debugger *debugger, core_machine_run_budget budget,
     core_machine_run_result *out_result);
 void nxvm_product_nxvm_debugger_close_command_boundary(

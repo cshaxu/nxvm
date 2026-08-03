@@ -17,25 +17,25 @@ static void trace_callback(void *context, const core_machine_trace_event *event)
     }
 }
 
-static nxvm_core_status port_read(void *owner, uint16_t port, uint32_t *out_value)
+static ntvdm64_status port_read(void *owner, uint16_t port, uint32_t *out_value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
     (void)port;
     *out_value = fixture->port_value;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
-static nxvm_core_status port_write(void *owner, uint16_t port, uint32_t value)
+static ntvdm64_status port_write(void *owner, uint16_t port, uint32_t value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
     (void)port;
     fixture->port_value = value;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
-static int expect_status(nxvm_core_status actual, nxvm_core_status expected)
+static int expect_status(ntvdm64_status actual, ntvdm64_status expected)
 {
     return actual == expected ? 0 : 1;
 }
@@ -57,25 +57,25 @@ int main(void)
     sink.callback = trace_callback;
     sink.context = &fixture;
     failed |= expect_status(core_machine_create(&config, &machine),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     failed |= expect_status(core_machine_set_trace_provider(machine, &sink),
-                            NXVM_CORE_STATUS_OK);
-    failed |= expect_status(core_machine_reset(machine), NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
+    failed |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
     failed |= expect_status(core_machine_install_port_provider(
                                 machine, 0x60u, 0x60u, &port_ops, &fixture),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     failed |= expect_status(core_machine_bus_write(machine, 0x60u, 0x55u),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     failed |= expect_status(core_machine_bus_read(machine, 0x60u, &value),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     failed |= value != 0x55u;
     failed |= expect_status(core_machine_run(machine, budget, &result),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
     failed |= expect_status(core_machine_request_stop(machine),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     failed |= expect_status(core_machine_run(machine, budget, &result),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     failed |= result.reason != CORE_MACHINE_STOP_REQUESTED;
     failed |= fixture.count != 5u ||
               fixture.events[0].type != CORE_MACHINE_TRACE_RESET ||
@@ -88,16 +88,16 @@ int main(void)
               fixture.events[4].type != CORE_MACHINE_TRACE_STOP ||
               fixture.events[4].detail != CORE_MACHINE_STOP_REQUESTED ||
               fixture.events[4].sequence != 4u;
-    failed |= expect_status(core_machine_reset(machine), NXVM_CORE_STATUS_OK);
+    failed |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
     fixture.count = 0u;
     failed |= expect_status(core_machine_report_fault(machine, 0x44u),
-                            NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
     failed |= fixture.count != 1u ||
               fixture.events[0].type != CORE_MACHINE_TRACE_FAULT ||
               fixture.events[0].detail != 0x44u;
     failed |= expect_status(core_machine_set_trace_provider(machine, NULL),
-                            NXVM_CORE_STATUS_OK);
-    failed |= expect_status(core_machine_reset(machine), NXVM_CORE_STATUS_OK);
+                            NTVDM64_STATUS_OK);
+    failed |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
     failed |= fixture.count != 1u;
 
     core_machine_destroy(machine);

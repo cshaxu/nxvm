@@ -16,12 +16,12 @@ static const nxvm_runtime_firmware_provider_descriptor_v1 provider = {
     NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID
 };
 
-nxvm_core_status nxvm_product_nxvm_register_default_profile_builtin(
+ntvdm64_status nxvm_product_nxvm_register_default_profile_builtin(
     nxvm_runtime_registry *registry)
 {
-    nxvm_core_status status = nxvm_runtime_registry_register_firmware_provider(
+    ntvdm64_status status = nxvm_runtime_registry_register_firmware_provider(
         registry, &provider);
 
-    if (status != NXVM_CORE_STATUS_OK) return status;
+    if (status != NTVDM64_STATUS_OK) return status;
     return nxvm_runtime_registry_register_profile(registry, &profile);
 }

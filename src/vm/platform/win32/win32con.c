@@ -100,7 +100,7 @@ VOID win32conStartMachine(const vm_platform_run_context *context) {
     if (context == NULL || context->execution == NULL ||
         context->keyboard == NULL) return;
     if (core_platform_host_surface_lease_acquire(&win32_console_lease,
-            context) != NXVM_CORE_STATUS_OK) return;
+            context) != NTVDM64_STATUS_OK) return;
     run_context = calloc(1u, sizeof(*run_context));
     if (run_context == NULL) {
         core_platform_host_surface_lease_release(&win32_console_lease, context);

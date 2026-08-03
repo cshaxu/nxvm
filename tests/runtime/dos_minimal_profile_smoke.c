@@ -16,15 +16,15 @@ int main(void)
                              NXVM_RUNTIME_DEVICE_FDD |
                              NXVM_RUNTIME_DEVICE_HDD |
                              NXVM_RUNTIME_DEVICE_VADP)) != 0u ||
-        nxvm_runtime_dos_minimal_create(&session) != NXVM_CORE_STATUS_OK ||
-        nxvm_runtime_dos_minimal_tick(session, 3u) != NXVM_CORE_STATUS_OK ||
-        nxvm_runtime_dos_minimal_inject_key(session, 0x1eu) != NXVM_CORE_STATUS_OK ||
-        nxvm_runtime_dos_minimal_port_read(session, 0x20u, &value) != NXVM_CORE_STATUS_OK ||
+        nxvm_runtime_dos_minimal_create(&session) != NTVDM64_STATUS_OK ||
+        nxvm_runtime_dos_minimal_tick(session, 3u) != NTVDM64_STATUS_OK ||
+        nxvm_runtime_dos_minimal_inject_key(session, 0x1eu) != NTVDM64_STATUS_OK ||
+        nxvm_runtime_dos_minimal_port_read(session, 0x20u, &value) != NTVDM64_STATUS_OK ||
         value != 0x02u ||
-        nxvm_runtime_dos_minimal_port_read(session, 0x60u, &value) != NXVM_CORE_STATUS_OK ||
+        nxvm_runtime_dos_minimal_port_read(session, 0x60u, &value) != NTVDM64_STATUS_OK ||
         value != 0x1eu ||
-        nxvm_runtime_dos_minimal_write_text(session, 0u, 'N', 0x1fu) != NXVM_CORE_STATUS_OK ||
-        nxvm_runtime_dos_minimal_get_snapshot(session, &snapshot) != NXVM_CORE_STATUS_OK ||
+        nxvm_runtime_dos_minimal_write_text(session, 0u, 'N', 0x1fu) != NTVDM64_STATUS_OK ||
+        nxvm_runtime_dos_minimal_get_snapshot(session, &snapshot) != NTVDM64_STATUS_OK ||
         snapshot.pit_ticks != 3u || snapshot.keyboard_irq_pending != 0u ||
         snapshot.text.columns != CORE_MACHINE_TEXT_COLUMNS ||
         snapshot.text.rows != CORE_MACHINE_TEXT_ROWS ||

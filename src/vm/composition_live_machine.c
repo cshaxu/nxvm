@@ -12,9 +12,9 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
 
         config.profile = CORE_MACHINE_PROFILE_CUSTOM;
         if (core_machine_create(&config, &machine->core_machine) !=
-                NXVM_CORE_STATUS_OK ||
+                NTVDM64_STATUS_OK ||
             core_machine_enable_executor(machine->core_machine) !=
-                NXVM_CORE_STATUS_OK) {
+                NTVDM64_STATUS_OK) {
             core_machine_destroy(machine->core_machine);
             machine->core_machine = NULL;
             return;
@@ -28,7 +28,7 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
     machine->cpu_execution = core_machine_executor_cpu_execution_borrow(
         machine->core_machine);
     if (core_machine_enable_shared_devices(machine->core_machine) !=
-        NXVM_CORE_STATUS_OK) {
+        NTVDM64_STATUS_OK) {
         core_machine_destroy(machine->core_machine);
         machine->core_machine = NULL;
         return;

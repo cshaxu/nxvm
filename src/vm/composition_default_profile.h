@@ -19,27 +19,27 @@ typedef struct nxvm_product_nxvm_default_profile {
     int active;
 } nxvm_product_nxvm_default_profile;
 
-nxvm_core_status nxvm_product_nxvm_default_profile_create(
+ntvdm64_status nxvm_product_nxvm_default_profile_create(
     nxvm_product_nxvm_default_profile *default_profile,
     const nxvm_product_nxvm_media_policy *media);
-nxvm_core_status nxvm_product_nxvm_default_profile_get_reset_vector(
+ntvdm64_status nxvm_product_nxvm_default_profile_get_reset_vector(
     const nxvm_product_nxvm_default_profile *default_profile,
     nxvm_product_nxvm_reset_vector *out_vector);
-nxvm_core_status nxvm_product_nxvm_default_profile_set_window_display(
+ntvdm64_status nxvm_product_nxvm_default_profile_set_window_display(
     nxvm_product_nxvm_default_profile *default_profile, int enabled);
-nxvm_core_status nxvm_product_nxvm_default_profile_set_memory_kb(
+ntvdm64_status nxvm_product_nxvm_default_profile_set_memory_kb(
     nxvm_product_nxvm_default_profile *default_profile, uint32_t kilobytes);
-nxvm_core_status nxvm_product_nxvm_default_profile_reset(nxvm_product_nxvm_default_profile *default_profile);
+ntvdm64_status nxvm_product_nxvm_default_profile_reset(nxvm_product_nxvm_default_profile *default_profile);
 void nxvm_product_nxvm_default_profile_run(nxvm_product_nxvm_default_profile *default_profile);
 void nxvm_product_nxvm_default_profile_resume(nxvm_product_nxvm_default_profile *default_profile);
-nxvm_core_status nxvm_product_nxvm_default_profile_is_running(
+ntvdm64_status nxvm_product_nxvm_default_profile_is_running(
     const nxvm_product_nxvm_default_profile *default_profile, int *out_running);
-nxvm_core_status nxvm_product_nxvm_default_profile_debug(nxvm_product_nxvm_default_profile *default_profile);
-nxvm_core_status nxvm_product_nxvm_default_profile_remove_fdd(
+ntvdm64_status nxvm_product_nxvm_default_profile_debug(nxvm_product_nxvm_default_profile *default_profile);
+ntvdm64_status nxvm_product_nxvm_default_profile_remove_fdd(
     nxvm_product_nxvm_default_profile *default_profile, const char *path);
-nxvm_core_status nxvm_product_nxvm_default_profile_disconnect_hdd(
+ntvdm64_status nxvm_product_nxvm_default_profile_disconnect_hdd(
     nxvm_product_nxvm_default_profile *default_profile, const char *path);
-nxvm_core_status nxvm_product_nxvm_default_profile_record_start(
+ntvdm64_status nxvm_product_nxvm_default_profile_record_start(
     nxvm_product_nxvm_default_profile *default_profile, const char *path);
 void nxvm_product_nxvm_default_profile_record_stop(nxvm_product_nxvm_default_profile *default_profile);
 void nxvm_product_nxvm_default_profile_request_stop(nxvm_product_nxvm_default_profile *default_profile);

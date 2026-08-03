@@ -40,28 +40,28 @@ typedef struct core_machine_run_result {
     uint32_t detail;
 } core_machine_run_result;
 
-nxvm_core_status core_machine_create(
+ntvdm64_status core_machine_create(
     const core_machine_config *config,
     core_machine **out_machine);
 
-nxvm_core_status core_machine_reset(core_machine *machine);
+ntvdm64_status core_machine_reset(core_machine *machine);
 
-nxvm_core_status core_machine_get_lifecycle(
+ntvdm64_status core_machine_get_lifecycle(
     const core_machine *machine,
     core_machine_lifecycle *out_lifecycle);
 
-nxvm_core_status core_machine_get_cpu_state(
+ntvdm64_status core_machine_get_cpu_state(
     const core_machine *machine,
     core_machine_cpu_state *out_state);
 
-nxvm_core_status core_machine_run(
+ntvdm64_status core_machine_run(
     core_machine *machine,
     core_machine_run_budget budget,
     core_machine_run_result *result);
 
-nxvm_core_status core_machine_request_stop(core_machine *machine);
+ntvdm64_status core_machine_request_stop(core_machine *machine);
 
-nxvm_core_status core_machine_report_fault(
+ntvdm64_status core_machine_report_fault(
     core_machine *machine,
     uint32_t detail);
 

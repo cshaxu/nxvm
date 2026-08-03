@@ -12,17 +12,17 @@ int main(void)
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
 
-    if (core_machine_create(&config, &machine) != NXVM_CORE_STATUS_OK) {
+    if (core_machine_create(&config, &machine) != NTVDM64_STATUS_OK) {
         return 1;
     }
 
-    if (core_machine_reset(machine) != NXVM_CORE_STATUS_OK) {
+    if (core_machine_reset(machine) != NTVDM64_STATUS_OK) {
         core_machine_destroy(machine);
         return 2;
     }
 
     if (core_machine_run(machine, budget, &result) !=
-        NXVM_CORE_STATUS_OK) {
+        NTVDM64_STATUS_OK) {
         core_machine_destroy(machine);
         return 3;
     }
@@ -32,13 +32,13 @@ int main(void)
         return 4;
     }
 
-    if (core_machine_request_stop(machine) != NXVM_CORE_STATUS_OK) {
+    if (core_machine_request_stop(machine) != NTVDM64_STATUS_OK) {
         core_machine_destroy(machine);
         return 5;
     }
 
     if (core_machine_run(machine, budget, &result) !=
-        NXVM_CORE_STATUS_OK) {
+        NTVDM64_STATUS_OK) {
         core_machine_destroy(machine);
         return 6;
     }

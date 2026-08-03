@@ -38,7 +38,7 @@ typedef struct core_machine_trace_provider {
     void *context;
 } core_machine_trace_provider;
 
-nxvm_core_status core_machine_set_trace_provider(
+ntvdm64_status core_machine_set_trace_provider(
     core_machine *machine,
     const core_machine_trace_provider *provider);
 

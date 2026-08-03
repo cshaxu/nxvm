@@ -199,14 +199,14 @@ typedef t_nubitcc t_faddrcc;
 
 #define ExecFun(faddr) ((faddr) ? ((*(void (*)(void))(faddr))()) : 0)
 
-typedef enum nxvm_core_status {
-    NXVM_CORE_STATUS_OK = 0,
-    NXVM_CORE_STATUS_INVALID_ARGUMENT,
-    NXVM_CORE_STATUS_INVALID_STATE,
-    NXVM_CORE_STATUS_UNSUPPORTED,
-    NXVM_CORE_STATUS_NO_MEMORY,
-    NXVM_CORE_STATUS_FAULT
-} nxvm_core_status;
+typedef enum ntvdm64_status {
+    NTVDM64_STATUS_OK = 0,
+    NTVDM64_STATUS_INVALID_ARGUMENT,
+    NTVDM64_STATUS_INVALID_STATE,
+    NTVDM64_STATUS_UNSUPPORTED,
+    NTVDM64_STATUS_NO_MEMORY,
+    NTVDM64_STATUS_FAULT
+} ntvdm64_status;
 
 /* Legacy C-runtime wrappers are a product-neutral root foundation. */
 struct tm* LOCALTIME(const time_t *_Time);

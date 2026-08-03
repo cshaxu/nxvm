@@ -61,24 +61,24 @@ nxvm_product_nxvm_console_command nxvm_product_nxvm_console_parse(const char *li
     return NXVM_PRODUCT_NXVM_CONSOLE_INVALID;
 }
 
-nxvm_core_status nxvm_product_nxvm_console_dispatch(
+ntvdm64_status nxvm_product_nxvm_console_dispatch(
     nxvm_product_nxvm_console *console,
     nxvm_product_nxvm_console_command command,
     nxvm_product_nxvm_console_operation operation,
     void *context)
 {
-    nxvm_core_status status;
+    ntvdm64_status status;
 
     if (console == NULL || operation == NULL ||
         console->state == NXVM_PRODUCT_NXVM_CONSOLE_EXITED) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
-    if (command == NXVM_PRODUCT_NXVM_CONSOLE_INVALID) return NXVM_CORE_STATUS_UNSUPPORTED;
+    if (command == NXVM_PRODUCT_NXVM_CONSOLE_INVALID) return NTVDM64_STATUS_UNSUPPORTED;
     if (!nxvm_product_nxvm_console_allowed(console->state, command)) {
-        return NXVM_CORE_STATUS_INVALID_STATE;
+        return NTVDM64_STATUS_INVALID_STATE;
     }
     status = operation(context, command);
-    if (status != NXVM_CORE_STATUS_OK) return status;
+    if (status != NTVDM64_STATUS_OK) return status;
     if (command == NXVM_PRODUCT_NXVM_CONSOLE_START ||
         command == NXVM_PRODUCT_NXVM_CONSOLE_RESUME) {
         console->state = NXVM_PRODUCT_NXVM_CONSOLE_RUNNING;
@@ -90,5 +90,5 @@ nxvm_core_status nxvm_product_nxvm_console_dispatch(
     } else if (command == NXVM_PRODUCT_NXVM_CONSOLE_EXIT) {
         console->state = NXVM_PRODUCT_NXVM_CONSOLE_EXITED;
     }
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }

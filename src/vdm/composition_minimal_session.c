@@ -10,35 +10,35 @@ struct ntvdm64_vdm_minimal_session {
     nxvm_runtime_dos_minimal *dos_minimal;
 };
 
-nxvm_core_status ntvdm64_vdm_minimal_session_create(
+ntvdm64_status ntvdm64_vdm_minimal_session_create(
     ntvdm64_vdm_minimal_session **out_session)
 {
     ntvdm64_vdm_minimal_session *session;
-    nxvm_core_status status;
+    ntvdm64_status status;
 
     if (out_session == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     *out_session = NULL;
     session = (ntvdm64_vdm_minimal_session *)calloc(1u, sizeof(*session));
     if (session == NULL) {
-        return NXVM_CORE_STATUS_NO_MEMORY;
+        return NTVDM64_STATUS_NO_MEMORY;
     }
     session->profile = ntvdm64_dos_minimal_profile_descriptor();
     status = nxvm_runtime_dos_minimal_create(&session->dos_minimal);
-    if (status != NXVM_CORE_STATUS_OK) {
+    if (status != NTVDM64_STATUS_OK) {
         free(session);
         return status;
     }
     *out_session = session;
-    return NXVM_CORE_STATUS_OK;
+    return NTVDM64_STATUS_OK;
 }
 
-nxvm_core_status ntvdm64_vdm_minimal_session_reset(
+ntvdm64_status ntvdm64_vdm_minimal_session_reset(
     ntvdm64_vdm_minimal_session *session)
 {
     if (session == NULL) {
-        return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     return nxvm_runtime_dos_minimal_reset(session->dos_minimal);
 }

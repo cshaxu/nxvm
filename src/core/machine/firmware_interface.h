@@ -27,9 +27,9 @@ typedef struct core_machine_firmware {
 } core_machine_firmware;
 
 void core_machine_firmware_initialize(core_machine_firmware *firmware);
-nxvm_core_status core_machine_firmware_register_service(
+ntvdm64_status core_machine_firmware_register_service(
     core_machine_firmware *firmware, const core_machine_firmware_service_descriptor *service);
-nxvm_core_status core_machine_firmware_freeze(core_machine_firmware *firmware);
+ntvdm64_status core_machine_firmware_freeze(core_machine_firmware *firmware);
 const core_machine_firmware_service_descriptor *core_machine_firmware_service_at(
     const core_machine_firmware *firmware, size_t index);
 const core_machine_firmware_service_descriptor *core_machine_firmware_find_interrupt(
