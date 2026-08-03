@@ -396,7 +396,7 @@ queues; and freezes the machine. It owns host threads and its product loop:
 driving bounded run quanta, consuming queued events, submitting frames,
 handling product commands, and applying product exit policy.
 
-For retained NXVM, composition initially owns the legacy `vmachine` init,
+For retained NXVM, composition owns the full-PC provider initialization,
 reset, refresh, and final ordering as one explicit sequence. It reproduces that
 sequence statement-for-statement before any later simplification; device code
 does not infer or alter the order. This is the path for moving lifecycle and

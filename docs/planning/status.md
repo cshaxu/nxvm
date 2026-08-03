@@ -70,6 +70,10 @@ context work and added a real command lifecycle gate. Artifacts `0.5.0092`
 through `0.5.0095` are revoked because they can fault on the first non-`exit`
 Console command. Use `build/output/nxvm_0_5_0096.exe`.
 
+**M5 T97 complete:** composition lifecycle APIs now use
+`vm_composition_providers_*`; the retained bootable VM behavior and the
+historical QDX/approved compact-name exceptions are unchanged.
+
 ## M5 Closure
 
 **M5 T87--T95 session-readiness closure: complete.** Every implemented module
@@ -79,6 +83,10 @@ remaining VDM platform/product layers are deliberately absent. Evidence is in
 
 **M5 T96 Console regression repair: complete.** The retained Console has a
 single live-machine lifetime and a command-level lifecycle gate.
+
+**M5 T97 composition API naming: complete.** The active full-PC lifecycle
+surface no longer uses `vmachine*` or `devicePrintMachine` names. Evidence is
+[`m5-t97-s1-composition-api-naming.md`](../verification/m5-t97-s1-composition-api-naming.md).
 
 ## Short-Term M5 Plan
 
