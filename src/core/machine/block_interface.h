@@ -24,10 +24,4 @@ int core_machine_block_write_from(const core_machine_block_provider_slot *slot,
     t_nubit8 cylinder, t_nubit8 head, t_nubit8 sector, void *buffer,
     t_nubitcc byte_count);
 
-void core_machine_block_get_geometry(core_machine_block_geometry *out_geometry);
-int core_machine_block_read(t_nubit8 cylinder, t_nubit8 head, t_nubit8 sector,
-    void *buffer, t_nubitcc byte_count);
-int core_machine_block_write(t_nubit8 cylinder, t_nubit8 head, t_nubit8 sector,
-    void *buffer, t_nubitcc byte_count);
-
 #endif

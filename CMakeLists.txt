@@ -205,9 +205,7 @@ set(NXVM_MACHINE_CORE_SOURCES
 set(NXVM_CORE_PRODUCT_RUNTIME_SOURCES
     src/core/product/runtime/execution_context.c
 )
-add_library(ntvdm64-core-platform STATIC
-    src/core/platform/display_frame.c
-)
+add_library(ntvdm64-core-platform STATIC)
 if(WIN32)
     target_sources(ntvdm64-core-platform PRIVATE
         src/core/platform/win32/sleep.c)
@@ -718,6 +716,7 @@ add_nxvm_version_artifact(nxvm-0-5-0076 "0.5.0076")
 add_nxvm_version_artifact(nxvm-0-5-0077 "0.5.0077")
 add_nxvm_version_artifact(nxvm-0-5-0078 "0.5.0078")
 add_nxvm_version_artifact(nxvm-0-5-0080 "0.5.0080")
+add_nxvm_version_artifact(nxvm-0-5-0081 "0.5.0081")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

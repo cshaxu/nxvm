@@ -62,20 +62,10 @@ int main(void)
         return 1;
     }
 
-    vm_platform_keyboard_bind(&sink, &state);
-    if (!vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_ALT) ||
-        vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT)) {
-        return 1;
-    }
-    vm_platform_keyboard_apply_host_state(0x12u, 0x34u);
-    vm_platform_keyboard_receive_key_press(0x5678u);
-    vm_platform_keyboard_request_stop();
-    if (state.asynchronous_keys != 0x12u || state.toggle_keys != 0x34u ||
-        state.key_code != 0x5678u || state.stop_count != 1u) {
-        return 1;
-    }
-    vm_platform_keyboard_bind(NULL, NULL);
-    if (vm_platform_keyboard_get_modifier(VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
+    if (!vm_platform_keyboard_get_modifier_for(&transport,
+            VM_PLATFORM_KEYBOARD_MODIFIER_ALT) ||
+        vm_platform_keyboard_get_modifier_for(&transport,
+            VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT)) {
         return 1;
     }
     puts("M5:T80:S1:VM-PLATFORM-INPUT:OK");

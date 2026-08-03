@@ -61,23 +61,6 @@ int main(void)
         return 1;
     }
 
-    state = (vm_platform_execution_smoke_state){0};
-
-    vm_platform_execution_bind(&sink, &state);
-    vm_platform_execution_start();
-    if (!vm_platform_execution_is_running() ||
-        vm_platform_execution_get_flip() != 1 || state.starts != 1u) {
-        return 1;
-    }
-    vm_platform_execution_stop();
-    if (vm_platform_execution_is_running() || state.stops != 1u) {
-        return 1;
-    }
-    vm_platform_execution_bind(NULL, NULL);
-    if (vm_platform_execution_is_running() ||
-        vm_platform_execution_get_flip() != 0) {
-        return 1;
-    }
     puts("M5:T80:S1:VM-PLATFORM-EXECUTION:OK");
     return 0;
 }

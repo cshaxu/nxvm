@@ -8,9 +8,6 @@
 #include "vm/platform/win32/win32app.h"
 #include "vm/platform/win32/win32.h"
 
-static nxvm_win32_keyboard_state_sink win32_keyboard_state_sink;
-static void *win32_keyboard_state_sink_opaque;
-
 static UCHAR CodeMap[][8]= {
     /* {single, ASCII, shift, ASCII, control, ASCII, alt, ASCII} */
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
@@ -120,13 +117,6 @@ static UCHAR MoveKeyCode[][8] = {
     {0x53, 0x00, 0x53, 0xE0, 0x93, 0xE0, 0xA3, 0x00}
 };
 
-void win32KeyboardBindStateSink(nxvm_win32_keyboard_state_sink sink,
-                                void *opaque)
-{
-    win32_keyboard_state_sink = sink;
-    win32_keyboard_state_sink_opaque = opaque;
-}
-
 static uint32_t win32KeyboardGetAsyncState(void)
 {
     uint32_t state = 0u;
@@ -157,8 +147,8 @@ static uint32_t win32KeyboardGetToggleState(void)
 static int win32KeyboardGetModifierFor(const vm_platform_run_context *context,
                                        vm_platform_keyboard_modifier modifier)
 {
-    return context == NULL ? vm_platform_keyboard_get_modifier(modifier) :
-        vm_platform_keyboard_get_modifier_for(context->keyboard, modifier);
+    return context == NULL ? 0 : vm_platform_keyboard_get_modifier_for(
+        context->keyboard, modifier);
 }
 
 static void win32KeyboardApplyCurrentStateFor(
@@ -167,9 +157,7 @@ static void win32KeyboardApplyCurrentStateFor(
     uint32_t asynchronous_keys = win32KeyboardGetAsyncState();
     uint32_t toggle_keys = win32KeyboardGetToggleState();
 
-    if (context == NULL) {
-        vm_platform_keyboard_apply_host_state(asynchronous_keys, toggle_keys);
-    } else {
+    if (context != NULL) {
         vm_platform_keyboard_apply_host_state_for(context->keyboard,
             asynchronous_keys, toggle_keys);
     }
@@ -178,24 +166,19 @@ static void win32KeyboardApplyCurrentStateFor(
 VOID win32KeyboardMakeStatusFor(const vm_platform_run_context *context) {
     uint32_t asynchronous_keys = win32KeyboardGetAsyncState();
     uint32_t toggle_keys = win32KeyboardGetToggleState();
-    nxvm_win32_keyboard_state_sink state_sink = context == NULL ?
-        win32_keyboard_state_sink : context->keyboard_state_sink;
-    void *state_context = context == NULL ? win32_keyboard_state_sink_opaque :
-        context->keyboard_state_context;
+    vm_platform_keyboard_state_sink state_sink = context == NULL ? NULL :
+        context->keyboard_state_sink;
+    void *state_context = context == NULL ? NULL : context->keyboard_state_context;
 
     if (state_sink == NULL || state_sink(state_context, asynchronous_keys,
                                          toggle_keys) !=
         NXVM_CORE_STATUS_OK) {
-        if (context == NULL) {
-            vm_platform_keyboard_apply_host_state(asynchronous_keys, toggle_keys);
-        } else {
+        if (context != NULL) {
             vm_platform_keyboard_apply_host_state_for(context->keyboard,
                 asynchronous_keys, toggle_keys);
         }
     }
 }
-VOID win32KeyboardMakeStatus() { win32KeyboardMakeStatusFor(NULL); }
-
 VOID win32KeyboardMakeKeyFor(const vm_platform_run_context *context,
                              UCHAR scanCode, UCHAR virtualKey) {
     UCHAR ascii = 0x00;
@@ -234,8 +217,7 @@ VOID win32KeyboardMakeKeyFor(const vm_platform_run_context *context,
         code |= ((USHORT)scanCode << 8);
         break;
     case VK_F9:
-        if (context == NULL) vm_platform_keyboard_request_stop();
-        else vm_platform_keyboard_request_stop_for(context->keyboard);
+        if (context != NULL) vm_platform_keyboard_request_stop_for(context->keyboard);
     default:
         if (win32KeyboardGetModifierFor(context, VM_PLATFORM_KEYBOARD_MODIFIER_ALT)) {
             code = CodeMap[scanCode][7];
@@ -284,12 +266,9 @@ VOID win32KeyboardMakeKeyFor(const vm_platform_run_context *context,
         code |= ((USHORT) scanCode << 8);
         break;
     }
-    if (context == NULL) vm_platform_keyboard_receive_key_press(code);
-    else vm_platform_keyboard_receive_key_press_for(context->keyboard, code);
-}
-
-VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
-    win32KeyboardMakeKeyFor(NULL, scanCode, virtualKey);
+    if (context != NULL) {
+        vm_platform_keyboard_receive_key_press_for(context->keyboard, code);
+    }
 }
 
 VOID win32DisplaySetScreen(BOOL flagWindow,

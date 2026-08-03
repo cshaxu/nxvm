@@ -165,8 +165,6 @@ void machineInit(vm_composition_live_machine *machine) {
     vm_platform_run_context_initialize(machine->platform_run_context,
         machine->execution_transport, machine->keyboard_transport,
         machine->presentation_mailbox, machine->wait_scope);
-    vm_platform_keyboard_bind(&vm_composition_keyboard_sink, machine);
-    vm_platform_execution_bind(&vm_composition_execution_sink, machine);
 }
 
 void machineFinal(vm_composition_live_machine *machine) {
@@ -176,8 +174,6 @@ void machineFinal(vm_composition_live_machine *machine) {
     core_machine_display_provider_slot_finalize(machine->display_provider);
     vm_machine_debug_bind_pause(machine->debug, NULL, NULL);
     vm_composition_debug_target_finalize(machine);
-    vm_platform_execution_bind(NULL, NULL);
-    vm_platform_keyboard_bind(NULL, NULL);
     vm_composition_live_machine_finalize(machine);
     platformFinal();
 }
