@@ -241,6 +241,10 @@ POSIX follow-up gate and VDM intentionally remains non-runnable.
 generic `nxvm-runtime` target is removed. Focused execution, Console,
 two-session, and FDD DOS-prompt gates pass with `nxvm_0_5_0137.exe`.
 
+**M5 T138 active:** design the session-owned platform run handle before
+changing Win32 or Linux threading. Workers may report stop/completion but may
+not release shared platform/session state.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in
