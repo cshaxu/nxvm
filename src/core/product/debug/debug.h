@@ -17,6 +17,8 @@ typedef struct core_product_debug_input_provider {
 } core_product_debug_input_provider;
 
 typedef struct core_product_debug_context {
+    const core_product_debug_target *target;
+    const core_product_debug_input_provider *input_provider;
     STD_SIZE_T error_position;
     STD_SIZE_T argument_count;
     C_CHAR **arguments;

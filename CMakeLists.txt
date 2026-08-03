@@ -182,7 +182,6 @@ set(NXVM_PRODUCT_VM_SOURCES
 set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/debug_access.c
     src/core/product/debug/debug.c
-    src/core/product/debug/debug_target.c
     src/core/product/debug/xasm32/aasm32.c
     src/core/product/debug/xasm32/dasm32.c
 )
@@ -758,6 +757,7 @@ add_nxvm_version_artifact(nxvm-0-5-0118 "0.5.0118")
 add_nxvm_version_artifact(nxvm-0-5-0120 "0.5.0120")
 add_nxvm_version_artifact(nxvm-0-5-0121 "0.5.0121")
 add_nxvm_version_artifact(nxvm-0-5-0122 "0.5.0122")
+add_nxvm_version_artifact(nxvm-0-5-0123 "0.5.0123")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

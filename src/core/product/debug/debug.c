@@ -16,13 +16,12 @@
 #define DEBUG_MAXNASMARG 4
 
 static _Thread_local core_product_debug_context *debugContext;
-static _Thread_local const core_product_debug_input_provider *debugInputProvider;
-
 static C_VOID core_product_debug_flush_console_input(C_VOID)
 {
-    if (debugInputProvider != STD_NULL &&
-        debugInputProvider->flush_console_input != STD_NULL) {
-        debugInputProvider->flush_console_input(debugInputProvider->context);
+    if (debugContext->input_provider != STD_NULL &&
+        debugContext->input_provider->flush_console_input != STD_NULL) {
+        debugContext->input_provider->flush_console_input(
+            debugContext->input_provider->context);
     }
 }
 
@@ -33,6 +32,37 @@ static C_VOID core_product_debug_flush_console_input(C_VOID)
 #define strCmdBuff (debugContext->command_buffer)
 #define strCmdCopy (debugContext->command_copy)
 #define strFileName (debugContext->file_name)
+#define debugTarget (debugContext->target)
+#define core_product_debug_is_running() core_product_debug_is_running(debugTarget)
+#define core_product_debug_resume() core_product_debug_resume(debugTarget)
+#define core_product_debug_is_paused() core_product_debug_is_paused(debugTarget)
+#define core_product_debug_get_pause_reason() core_product_debug_get_pause_reason(debugTarget)
+#define core_product_debug_request_pause(reason) core_product_debug_request_pause(debugTarget, reason)
+#define core_product_debug_continue() core_product_debug_continue(debugTarget)
+#define core_product_debug_step() core_product_debug_step(debugTarget)
+#define core_product_debug_read_register(reg, value) core_product_debug_read_register(debugTarget, reg, value)
+#define core_product_debug_write_register(reg, value) core_product_debug_write_register(debugTarget, reg, value)
+#define core_product_debug_get_code_default_size() core_product_debug_get_code_default_size(debugTarget)
+#define core_product_debug_get_code_base() core_product_debug_get_code_base(debugTarget)
+#define core_product_debug_read_linear(address, out, size) core_product_debug_read_linear(debugTarget, address, out, size)
+#define core_product_debug_write_linear(address, in, size) core_product_debug_write_linear(debugTarget, address, in, size)
+#define core_product_debug_read_real(segment, offset, out, size) core_product_debug_read_real(debugTarget, segment, offset, out, size)
+#define core_product_debug_write_real(segment, offset, in, size) core_product_debug_write_real(debugTarget, segment, offset, in, size)
+#define core_product_debug_read_port(port) core_product_debug_read_port(debugTarget, port)
+#define core_product_debug_write_port(port, value) core_product_debug_write_port(debugTarget, port, value)
+#define core_product_debug_set_break_real(segment, offset) core_product_debug_set_break_real(debugTarget, segment, offset)
+#define core_product_debug_set_break_linear(address) core_product_debug_set_break_linear(debugTarget, address)
+#define core_product_debug_clear_break(linear) core_product_debug_clear_break(debugTarget, linear)
+#define core_product_debug_set_trace(count) core_product_debug_set_trace(debugTarget, count)
+#define core_product_debug_clear_trace() core_product_debug_clear_trace(debugTarget)
+#define core_product_debug_get_break_count() core_product_debug_get_break_count(debugTarget)
+#define core_product_debug_set_watch(kind, address) core_product_debug_set_watch(debugTarget, kind, address)
+#define core_product_debug_clear_watch(kind) core_product_debug_clear_watch(debugTarget, kind)
+#define core_product_debug_print_registers() core_product_debug_print_registers(debugTarget)
+#define core_product_debug_print_segment_registers() core_product_debug_print_segment_registers(debugTarget)
+#define core_product_debug_print_control_registers() core_product_debug_print_control_registers(debugTarget)
+#define core_product_debug_print_memory() core_product_debug_print_memory(debugTarget)
+#define core_product_debug_print_watchpoints() core_product_debug_print_watchpoints(debugTarget)
 
 static uint32_t debug_register(core_product_debug_register reg) {
     uint32_t value = 0;
@@ -1900,14 +1930,12 @@ C_VOID core_product_debug_main(core_product_debug_context *context,
                const core_product_debug_input_provider *input_provider) {
     STD_SIZE_T i;
     core_product_debug_context *previous;
-    const core_product_debug_input_provider *previous_input_provider;
     if (context == STD_NULL || target == STD_NULL) return;
     previous = debugContext;
-    previous_input_provider = debugInputProvider;
     debugContext = context;
-    debugInputProvider = input_provider;
     core_product_debug_context_initialize(context);
-    core_product_debug_scope_enter(target);
+    context->target = target;
+    context->input_provider = input_provider;
     strFileName[0] = '\0';
     asmSegRec = uasmSegRec = _cs;
     asmPtrRec = uasmPtrRec = _ip;
@@ -1932,7 +1960,7 @@ C_VOID core_product_debug_main(core_product_debug_context *context,
         }
     }
     STD_FREE((C_VOID *) arg);
-    core_product_debug_scope_leave();
+    context->target = STD_NULL;
+    context->input_provider = STD_NULL;
     debugContext = previous;
-    debugInputProvider = previous_input_provider;
 }

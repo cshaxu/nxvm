@@ -28,7 +28,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
     DWORD result;
     vm_session *session;
     const core_product_debug_target *target;
-    C_INT debug_scope_active = 0;
 
     if (argc != 2) return 1;
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
@@ -37,28 +36,24 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) goto fail;
     target = vm_session_debug_target(session);
     if (target == STD_NULL) goto fail;
-    core_product_debug_scope_enter(target);
-    debug_scope_active = 1;
     vm_session_control_reset(session->control);
     thread = CreateThread(STD_NULL, 0u, run_full_pc, session->control, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
     Sleep(10u);
-    if (!core_product_debug_is_running() ||
-        !core_product_debug_request_pause(CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT) ||
+    if (!core_product_debug_is_running(target) ||
+        !core_product_debug_request_pause(target, CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT) ||
         !vm_session_control_wait_for_pause(session->control, 2000u) ||
-        !core_product_debug_is_paused() ||
-        core_product_debug_get_pause_reason() != CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT ||
-        !core_product_debug_step() ||
+        !core_product_debug_is_paused(target) ||
+        core_product_debug_get_pause_reason(target) != CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT ||
+        !core_product_debug_step(target) ||
         !vm_session_control_wait_for_pause(session->control, 2000u) ||
-        core_product_debug_get_pause_reason() != CORE_PRODUCT_DEBUG_PAUSE_STEP) goto fail_thread;
-    core_product_debug_continue();
+        core_product_debug_get_pause_reason(target) != CORE_PRODUCT_DEBUG_PAUSE_STEP) goto fail_thread;
+    core_product_debug_continue(target);
     Sleep(10u);
-    if (!core_product_debug_is_running()) goto fail_thread;
+    if (!core_product_debug_is_running(target)) goto fail_thread;
     vm_session_control_stop(session->control);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    core_product_debug_scope_leave();
-    debug_scope_active = 0;
     vm_session_finalize(session);
     STD_FREE(session);
     if (result != WAIT_OBJECT_0) return 1;
@@ -70,7 +65,6 @@ fail_thread:
     WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
 fail:
-    if (debug_scope_active) core_product_debug_scope_leave();
     vm_session_finalize(session);
     STD_FREE(session);
     return 1;
