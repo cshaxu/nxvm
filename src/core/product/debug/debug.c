@@ -188,7 +188,7 @@ static void aconsole() {
             continue;
         }
         errAsmPos = 0;
-        len = utilsAasm32(cmdAsmBuff, acode, core_product_debug_get_code_default_size());
+        len = core_product_utils_aasm32(cmdAsmBuff, acode, core_product_debug_get_code_default_size());
         if (!len) {
             errAsmPos = STRLEN(cmdAsmBuff) + 9;
         } else {
@@ -418,7 +418,7 @@ static void g() {
     }
     core_product_debug_resume();
     while (core_product_debug_is_running()) {
-        utilsSleep(10);
+        core_product_utils_sleep(10);
     }
     core_product_debug_clear_break(0);
     rprintregs();
@@ -547,7 +547,7 @@ static uint8_t uprintins(uint16_t segment, uint16_t off) {
         len = 0;
         SPRINTF(str, "%04X:%04X <ERROR>", segment, off);
     } else {
-        len = utilsDasm32(stmt, ucode, core_product_debug_get_code_default_size());
+        len = core_product_utils_dasm32(stmt, ucode, core_product_debug_get_code_default_size());
         sbin[0] = 0;
         for (i = 0; i < len; ++i) {
             SPRINTF(sbin, "%s%02X", sbin, (uint8_t) ucode[i]);
@@ -846,7 +846,7 @@ static void t() {
             core_product_debug_set_trace(1);
             core_product_debug_resume();
             while (core_product_debug_is_running()) {
-                utilsSleep(10);
+                core_product_utils_sleep(10);
             }
             rprintregs();
             if (i != count - 1) {
@@ -857,7 +857,7 @@ static void t() {
         core_product_debug_set_trace(count);
         core_product_debug_resume();
         while (core_product_debug_is_running()) {
-            utilsSleep(10);
+            core_product_utils_sleep(10);
         }
         rprintregs();
     }
@@ -987,7 +987,7 @@ static uint8_t xuprintins(uint32_t linear) {
         len = 0;
         SPRINTF(str, "L%08X <ERROR>", linear);
     } else {
-        len = utilsDasm32(stmt, ucode, core_product_debug_get_code_default_size());
+        len = core_product_utils_dasm32(stmt, ucode, core_product_debug_get_code_default_size());
         sbin[0] = 0;
         for (i = 0; i < len; ++i) {
             SPRINTF(sbin, "%s%02X", sbin, (uint8_t) ucode[i]);
@@ -1022,7 +1022,7 @@ static void xaconsole(uint32_t linear) {
             continue;
         }
         errAsmPos = 0;
-        len = utilsAasm32(astmt, acode, core_product_debug_get_code_default_size());
+        len = core_product_utils_aasm32(astmt, acode, core_product_debug_get_code_default_size());
         if (!len) {
             errAsmPos = STRLEN(astmt) + 9;
         } else {
@@ -1263,7 +1263,7 @@ static void xg() {
         core_product_debug_set_break_linear(linear);
         core_product_debug_resume();
         while (core_product_debug_is_running()) {
-            utilsSleep(10);
+            core_product_utils_sleep(10);
         }
         PRINTF("%d instructions executed before the break point.\n",
                core_product_debug_get_break_count());
@@ -1366,7 +1366,7 @@ static void xt() {
             core_product_debug_set_trace(1);
             core_product_debug_resume();
             while (core_product_debug_is_running()) {
-                utilsSleep(10);
+                core_product_utils_sleep(10);
             }
             core_product_debug_print_memory();
             xrprintreg();
@@ -1378,7 +1378,7 @@ static void xt() {
         core_product_debug_set_trace(count);
         core_product_debug_resume();
         while (core_product_debug_is_running()) {
-            utilsSleep(10);
+            core_product_utils_sleep(10);
         }
         core_product_debug_print_memory();
         xrprintreg();
@@ -1882,7 +1882,7 @@ void core_product_debug_context_initialize(core_product_debug_context *context)
     if (context != NULL) MEMSET(context, 0, sizeof(*context));
 }
 
-void debugMain(core_product_debug_context *context,
+void core_product_debug_main(core_product_debug_context *context,
                const core_product_debug_target *target) {
     size_t i;
     core_product_debug_context *previous;

@@ -6,7 +6,7 @@
 
 static int verify_profile(void)
 {
-    const nxvm_runtime_profile_descriptor *profile =
+    const core_product_runtime_profile_descriptor *profile =
         nxvm_vm_full_pc_profile_descriptor();
 
     return profile == NULL || strcmp(profile->name, "nxvm.full_pc") != 0 ||

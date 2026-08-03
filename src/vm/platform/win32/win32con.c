@@ -30,7 +30,7 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     while (vm_platform_execution_is_running_for(context->platform->execution)) {
         w32cdispPaint((w32cdisp_context *)context->platform->console_renderer,
                       context->output, context->platform->presentation, FALSE);
-        utilsSleep(100);
+        core_product_utils_sleep(100);
     }
     w32cdispFinal((w32cdisp_context *)context->platform->console_renderer,
                   context->output);
@@ -120,7 +120,7 @@ VOID win32conStartMachine(const vm_platform_run_context *context) {
                                  &ThreadIdKernel);
     if (kernel_thread == NULL) goto final;
     while (oldDeviceFlip == vm_platform_execution_get_flip_for(context->execution)) {
-        utilsSleep(100);
+        core_product_utils_sleep(100);
     }
     display_thread = CreateThread(NULL, 0, ThreadDisplay, run_context, 0,
                                   &ThreadIdDisplay);
@@ -131,7 +131,7 @@ VOID win32conStartMachine(const vm_platform_run_context *context) {
         goto final;
     }
     while (vm_platform_execution_is_running_for(context->execution)) {
-        utilsSleep(20);
+        core_product_utils_sleep(20);
         w32ckeybProcess(run_context);
     }
     WaitForSingleObject(kernel_thread, INFINITE);

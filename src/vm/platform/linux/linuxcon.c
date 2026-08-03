@@ -255,7 +255,7 @@ static void *ThreadDisplay(void *arg) {
     lnxcdispPaint(context, 1);
     while (vm_platform_execution_is_running_for(context->execution)) {
         lnxcdispPaint(context, 0);
-        utilsSleep(100);
+        core_product_utils_sleep(100);
     }
     lnxcdispFinal();
     core_platform_host_surface_lease_release(&linux_terminal_lease, context);
@@ -468,7 +468,7 @@ void lnxcStartMachine(const vm_platform_run_context *context) {
     pthread_create(&ThreadIdKernel,  &attr, ThreadKernel, (void *)context);
     while (oldDeviceFlip ==
            vm_platform_execution_get_flip_for(context->execution)) {
-        utilsSleep(100);
+        core_product_utils_sleep(100);
     }
     if (pthread_create(&ThreadIdDisplay, &attr, ThreadDisplay,
                        (void *)context) != 0) {
@@ -476,7 +476,7 @@ void lnxcStartMachine(const vm_platform_run_context *context) {
         core_platform_host_surface_lease_release(&linux_terminal_lease, context);
     }
     while (vm_platform_execution_is_running_for(context->execution)) {
-        utilsSleep(20);
+        core_product_utils_sleep(20);
         lnxckeybProcess(context);
     }
     pthread_attr_destroy(&attr);

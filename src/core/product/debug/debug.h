@@ -28,7 +28,7 @@ typedef struct core_product_debug_context {
 } core_product_debug_context;
 
 void core_product_debug_context_initialize(core_product_debug_context *context);
-void debugMain(core_product_debug_context *context,
+void core_product_debug_main(core_product_debug_context *context,
                const core_product_debug_target *target);
 
 #ifdef __cplusplus

@@ -16,7 +16,7 @@ typedef struct nxvm_vdm_presentation_snapshot {
 } nxvm_vdm_presentation_snapshot;
 
 ntvdm64_status nxvm_dos_minimal_presentation_create(
-    nxvm_runtime_dos_minimal *session,
+    core_product_runtime_dos_minimal *session,
     nxvm_dos_minimal_presentation **out_presentation);
 ntvdm64_status nxvm_dos_minimal_presentation_enqueue_input(
     nxvm_dos_minimal_presentation *presentation,

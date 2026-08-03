@@ -31,7 +31,7 @@ static t_nubit32 assemble(t_ram *ram, const t_strptr stmt, t_nubit16 seg,
     if (STRLEN(stmt)) insCount++;
     /* 15 is the maximum length of each instruction */
     code = p_nubit8(MALLOC(15 * insCount * sizeof(t_nubit8)));
-    len = utilsAasm32x(stmt, code, False);
+    len = core_product_utils_aasm32x(stmt, code, False);
     if (!len) {
         PRINTF("vbios: invalid x86 assembly instruction.\n");
     }

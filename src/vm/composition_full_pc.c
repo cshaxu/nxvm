@@ -183,7 +183,7 @@ ntvdm64_status nxvm_full_pc_debug(nxvm_full_pc *full_pc)
         return NTVDM64_STATUS_INVALID_STATE;
     }
     core_product_debug_context_initialize(full_pc->machine.debugger_context);
-    debugMain(full_pc->machine.debugger_context,
+    core_product_debug_main(full_pc->machine.debugger_context,
               vm_composition_debug_target(&full_pc->machine));
     return NTVDM64_STATUS_OK;
 }

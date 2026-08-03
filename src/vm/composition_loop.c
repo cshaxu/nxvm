@@ -37,7 +37,7 @@ static void device_execution_context_debug_refresh(void *device)
     vm_machine_debug_refresh(machine == NULL ? NULL : machine->debug);
 }
 
-static const nxvm_execution_context_callbacks device_execution_callbacks = {
+static const core_product_execution_context_callbacks device_execution_callbacks = {
     device_execution_context_reset,
     device_execution_context_debug_refresh
 };
@@ -51,23 +51,23 @@ void vm_composition_control_start(vm_composition_control_state *control) {
     if (control == NULL) return;
     machine = (vm_composition_live_machine *)control->execution_context.device;
     if (machine == NULL || machine->core_machine == NULL) return;
-    nxvm_execution_context_activate(&control->execution_context);
+    core_product_execution_context_activate(&control->execution_context);
     atomic_store(&control->flagRun, True);
     atomic_store(&control->flagFlip, !atomic_load(&control->flagFlip));
     while (atomic_load(&control->flagRun)) {
         if (atomic_exchange(&control->flagReset, False)) {
-            nxvm_execution_context_reset(&control->execution_context);
+            core_product_execution_context_reset(&control->execution_context);
         }
         if (atomic_load(&control->pauseRequested)) {
             atomic_store(&control->paused, True);
         }
         while (atomic_load(&control->flagRun) && atomic_load(&control->paused)) {
-            nxvm_execution_context_run_command_boundary(&control->execution_context);
+            core_product_execution_context_run_command_boundary(&control->execution_context);
             core_platform_sleep_milliseconds(1u);
         }
         if (!atomic_load(&control->flagRun)) break;
-        nxvm_execution_context_run_command_boundary(&control->execution_context);
-        nxvm_execution_context_debug_refresh(&control->execution_context);
+        core_product_execution_context_run_command_boundary(&control->execution_context);
+        core_product_execution_context_debug_refresh(&control->execution_context);
         if (atomic_load(&control->pauseRequested)) continue;
         if (!atomic_load(&control->flagRun)) {
             break;
@@ -91,7 +91,7 @@ void vm_composition_control_start(vm_composition_control_state *control) {
             vm_composition_control_request_pause(control, VM_COMPOSITION_PAUSE_STEP);
         }
     }
-    nxvm_execution_context_deactivate(&control->execution_context);
+    core_product_execution_context_deactivate(&control->execution_context);
 }
 
 /* Issues resetting signal to device thread */
@@ -100,7 +100,7 @@ void vm_composition_control_reset(vm_composition_control_state *control) {
     if (atomic_load(&control->flagRun)) {
         atomic_store(&control->flagReset, True);
     } else {
-        nxvm_execution_context_reset(&control->execution_context);
+        core_product_execution_context_reset(&control->execution_context);
         atomic_store(&control->flagReset, False);
     }
 }
@@ -181,7 +181,7 @@ void vm_composition_control_bind_command_boundary(
     vm_composition_control_state *control,
     void (*callback)(void *opaque), void *opaque)
 {
-    nxvm_execution_context_bind_command_boundary(
+    core_product_execution_context_bind_command_boundary(
         control == NULL ? NULL : &control->execution_context, callback, opaque);
 }
 
@@ -198,13 +198,13 @@ void vm_composition_control_initialize(vm_composition_control_state *control,
     atomic_init(&control->paused, False);
     atomic_init(&control->stepRequested, False);
     atomic_init(&control->pauseReason, VM_COMPOSITION_PAUSE_NONE);
-    nxvm_execution_context_initialize(&control->execution_context);
-    nxvm_execution_context_bind_machine_state(
+    core_product_execution_context_initialize(&control->execution_context);
+    core_product_execution_context_bind_machine_state(
         &control->execution_context, machine->cpu, machine->ram, machine->port,
         machine);
-    nxvm_execution_context_bind_callbacks(
+    core_product_execution_context_bind_callbacks(
         &control->execution_context, &device_execution_callbacks);
-    nxvm_execution_context_activate(&control->execution_context);
+    core_product_execution_context_activate(&control->execution_context);
     vm_machine_debug_initialize(machine->debug, machine->cpu, machine->cpuins);
     vm_composition_providers_initialize(machine);
     if (!vm_composition_bind_execution_provider(machine)) {
@@ -216,7 +216,7 @@ void vm_composition_control_initialize(vm_composition_control_state *control,
 void vm_composition_control_finalize(vm_composition_control_state *control,
     vm_composition_live_machine *machine) {
     if (control == NULL || machine == NULL) return;
-    nxvm_execution_context_deactivate(&control->execution_context);
+    core_product_execution_context_deactivate(&control->execution_context);
     vm_machine_debug_finalize(machine->debug);
     vm_composition_providers_finalize(machine);
 }

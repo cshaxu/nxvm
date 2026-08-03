@@ -105,6 +105,9 @@ are recorded before the `type.*` call-site migrations.
 **M5 T101 complete:** all active source/tests use the root-owned
 `ntvdm64_status` and `NTVDM64_STATUS_*` vocabulary without aliases.
 
+**M5 T102 complete:** shared product debug/runtime APIs use
+`core_product_*` while retaining approved debug/assembler lexical names.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

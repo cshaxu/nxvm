@@ -28,7 +28,7 @@ typedef struct vm_composition_control_state {
     atomic_bool paused;
     atomic_bool stepRequested;
     atomic_int pauseReason;
-    nxvm_execution_context execution_context;
+    core_product_execution_context execution_context;
 } vm_composition_control_state;
 
 #include "vm/composition_live_machine.h"

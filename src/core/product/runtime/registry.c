@@ -7,7 +7,7 @@ static int valid_text(const char *value)
     return value != NULL && value[0] != '\0';
 }
 
-static int profile_valid(const nxvm_runtime_profile_descriptor_v1 *descriptor)
+static int profile_valid(const core_product_runtime_profile_descriptor_v1 *descriptor)
 {
     return descriptor != NULL && valid_text(descriptor->id) &&
         valid_text(descriptor->owner) &&
@@ -20,7 +20,7 @@ static int profile_valid(const nxvm_runtime_profile_descriptor_v1 *descriptor)
 }
 
 static int provider_valid(
-    const nxvm_runtime_firmware_provider_descriptor_v1 *descriptor)
+    const core_product_runtime_firmware_provider_descriptor_v1 *descriptor)
 {
     return descriptor != NULL && valid_text(descriptor->id) &&
         valid_text(descriptor->owner) && valid_text(descriptor->machine_profile_id) &&
@@ -29,16 +29,16 @@ static int provider_valid(
          descriptor->kind == NXVM_RUNTIME_FIRMWARE_PROVIDER_ABSENT);
 }
 
-void nxvm_runtime_registry_initialize(nxvm_runtime_registry *registry)
+void core_product_runtime_registry_initialize(core_product_runtime_registry *registry)
 {
     if (registry != NULL) {
         memset(registry, 0, sizeof(*registry));
     }
 }
 
-ntvdm64_status nxvm_runtime_registry_register_profile(
-    nxvm_runtime_registry *registry,
-    const nxvm_runtime_profile_descriptor_v1 *descriptor)
+ntvdm64_status core_product_runtime_registry_register_profile(
+    core_product_runtime_registry *registry,
+    const core_product_runtime_profile_descriptor_v1 *descriptor)
 {
     size_t index;
 
@@ -60,9 +60,9 @@ ntvdm64_status nxvm_runtime_registry_register_profile(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status nxvm_runtime_registry_register_firmware_provider(
-    nxvm_runtime_registry *registry,
-    const nxvm_runtime_firmware_provider_descriptor_v1 *descriptor)
+ntvdm64_status core_product_runtime_registry_register_firmware_provider(
+    core_product_runtime_registry *registry,
+    const core_product_runtime_firmware_provider_descriptor_v1 *descriptor)
 {
     size_t index;
 
@@ -84,7 +84,7 @@ ntvdm64_status nxvm_runtime_registry_register_firmware_provider(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status nxvm_runtime_registry_freeze(nxvm_runtime_registry *registry)
+ntvdm64_status core_product_runtime_registry_freeze(core_product_runtime_registry *registry)
 {
     if (registry == NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
@@ -93,10 +93,10 @@ ntvdm64_status nxvm_runtime_registry_freeze(nxvm_runtime_registry *registry)
     return NTVDM64_STATUS_OK;
 }
 
-const nxvm_runtime_profile_descriptor_v1 *nxvm_runtime_registry_find_profile(
-    const nxvm_runtime_registry *registry, const char *id,
-    nxvm_runtime_profile_family family,
-    nxvm_runtime_capability_query capability_query,
+const core_product_runtime_profile_descriptor_v1 *core_product_runtime_registry_find_profile(
+    const core_product_runtime_registry *registry, const char *id,
+    core_product_runtime_profile_family family,
+    core_product_runtime_capability_query capability_query,
     void *capability_context)
 {
     size_t index;
@@ -106,7 +106,7 @@ const nxvm_runtime_profile_descriptor_v1 *nxvm_runtime_registry_find_profile(
         return NULL;
     }
     for (index = 0u; index < registry->profile_count; ++index) {
-        const nxvm_runtime_profile_descriptor_v1 *candidate = registry->profiles[index];
+        const core_product_runtime_profile_descriptor_v1 *candidate = registry->profiles[index];
         if (candidate->family != family || strcmp(candidate->id, id) != 0) {
             continue;
         }
@@ -122,9 +122,9 @@ const nxvm_runtime_profile_descriptor_v1 *nxvm_runtime_registry_find_profile(
     return NULL;
 }
 
-const nxvm_runtime_firmware_provider_descriptor_v1 *
-nxvm_runtime_registry_find_firmware_provider(
-    const nxvm_runtime_registry *registry, const char *id,
+const core_product_runtime_firmware_provider_descriptor_v1 *
+core_product_runtime_registry_find_firmware_provider(
+    const core_product_runtime_registry *registry, const char *id,
     const char *machine_profile_id)
 {
     size_t index;
@@ -133,7 +133,7 @@ nxvm_runtime_registry_find_firmware_provider(
         return NULL;
     }
     for (index = 0u; index < registry->provider_count; ++index) {
-        const nxvm_runtime_firmware_provider_descriptor_v1 *candidate =
+        const core_product_runtime_firmware_provider_descriptor_v1 *candidate =
             registry->providers[index];
         if (strcmp(candidate->id, id) == 0 &&
             strcmp(candidate->machine_profile_id, machine_profile_id) == 0) {

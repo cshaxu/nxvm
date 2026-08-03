@@ -25,12 +25,12 @@ enum {
     NXVM_RUNTIME_DEVICE_VADP = UINT64_C(1) << 14
 };
 
-typedef struct nxvm_runtime_profile_descriptor {
+typedef struct core_product_runtime_profile_descriptor {
     const char *name;
     uint64_t devices;
     int permits_disk_boot;
     int uses_legacy_adapter;
-} nxvm_runtime_profile_descriptor;
+} core_product_runtime_profile_descriptor;
 
 #ifdef __cplusplus
 }
