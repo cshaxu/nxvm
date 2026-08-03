@@ -7,7 +7,7 @@
 static int verify_profile(void)
 {
     const core_product_runtime_profile_descriptor *profile =
-        nxvm_vm_full_pc_profile_descriptor();
+        vm_profile_full_pc_profile_descriptor();
 
     return profile == NULL || strcmp(profile->name, "nxvm.full_pc") != 0 ||
            !profile->permits_disk_boot || !profile->uses_legacy_adapter ||
@@ -23,19 +23,19 @@ static int verify_profile(void)
 
 static int verify_image(const char *fdd, const char *hdd, int boot_hdd)
 {
-    nxvm_full_pc_config config = { fdd, hdd, 0, 0u, boot_hdd };
-    nxvm_vm_reset_vector vector;
-    nxvm_full_pc *full_pc = NULL;
+    vm_composition_full_pc_config config = { fdd, hdd, 0, 0u, boot_hdd };
+    vm_composition_reset_vector vector;
+    vm_composition_full_pc *full_pc = NULL;
 
-    if (nxvm_full_pc_create(&config, &full_pc) != NTVDM64_STATUS_OK) {
+    if (vm_composition_full_pc_create(&config, &full_pc) != NTVDM64_STATUS_OK) {
         return 1;
     }
-    if (nxvm_full_pc_get_reset_vector(full_pc, &vector) != NTVDM64_STATUS_OK ||
+    if (vm_composition_full_pc_get_reset_vector(full_pc, &vector) != NTVDM64_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
-        nxvm_full_pc_destroy(full_pc);
+        vm_composition_full_pc_destroy(full_pc);
         return 1;
     }
-    nxvm_full_pc_destroy(full_pc);
+    vm_composition_full_pc_destroy(full_pc);
     return 0;
 }
 

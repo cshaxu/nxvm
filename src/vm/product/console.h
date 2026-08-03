@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_CONSOLE_H
-#define NXVM_CONSOLE_H
+#ifndef VM_PRODUCT_CONSOLE_H
+#define VM_PRODUCT_CONSOLE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,7 +21,7 @@ void nxvm_product_console_context_initialize(
     nxvm_product_console_context *context);
 
 /* Entry point of NXVM console */
-void consoleMain(nxvm_product_console_context *context,
+void vm_product_console_main(nxvm_product_console_context *context,
                  const nxvm_product_console_target *target);
 
 #ifdef __cplusplus

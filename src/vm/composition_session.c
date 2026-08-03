@@ -8,21 +8,21 @@
 struct vm_composition_full_pc_session {
     vm_composition_full_pc_session_config config;
     const core_product_runtime_profile_descriptor *profile;
-    nxvm_full_pc *full_pc;
+    vm_composition_full_pc *full_pc;
     int active;
 };
 
 static ntvdm64_status vm_composition_full_pc_session_start(
     vm_composition_full_pc_session *session)
 {
-    const nxvm_full_pc_config config = {
+    const vm_composition_full_pc_config config = {
         session->config.fdd_image,
         session->config.hdd_image,
         0,
         0u,
         session->config.boot_hdd
     };
-    ntvdm64_status status = nxvm_full_pc_create(&config, &session->full_pc);
+    ntvdm64_status status = vm_composition_full_pc_create(&config, &session->full_pc);
 
     if (status == NTVDM64_STATUS_OK) {
         session->active = 1;
@@ -46,7 +46,7 @@ ntvdm64_status vm_composition_full_pc_session_create(
         return NTVDM64_STATUS_NO_MEMORY;
     }
     session->config = *config;
-    session->profile = nxvm_vm_full_pc_profile_descriptor();
+    session->profile = vm_profile_full_pc_profile_descriptor();
     status = vm_composition_full_pc_session_start(session);
     if (status != NTVDM64_STATUS_OK) {
         vm_composition_full_pc_session_destroy(session);
@@ -62,7 +62,7 @@ ntvdm64_status vm_composition_full_pc_session_reset(vm_composition_full_pc_sessi
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     if (session->active) {
-        nxvm_full_pc_destroy(session->full_pc);
+        vm_composition_full_pc_destroy(session->full_pc);
         session->full_pc = NULL;
         session->active = 0;
     }
@@ -79,7 +79,7 @@ void vm_composition_full_pc_session_destroy(vm_composition_full_pc_session *sess
 {
     if (session != NULL) {
         if (session->active) {
-            nxvm_full_pc_destroy(session->full_pc);
+            vm_composition_full_pc_destroy(session->full_pc);
         }
         free(session);
     }

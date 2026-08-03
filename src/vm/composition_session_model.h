@@ -11,12 +11,12 @@
 
 typedef struct vm_composition_session_model_config {
     const char *fdd_path;
-    const nxvm_product_nxvm_media_identity *fdd_identity;
+    const vm_product_media_identity *fdd_identity;
     const char *hdd_path;
-    const nxvm_product_nxvm_media_identity *hdd_identity;
+    const vm_product_media_identity *hdd_identity;
     int create_fdd;
     uint16_t create_hdd_cylinders;
-    nxvm_product_nxvm_boot_target boot_target;
+    vm_product_boot_target boot_target;
 } vm_composition_session_model_config;
 
 typedef struct vm_composition_session_model {
@@ -24,12 +24,12 @@ typedef struct vm_composition_session_model {
     core_machine_firmware firmware;
     vm_profile_default_firmware_plan firmware_plan;
     vm_profile_default_firmware_cmos cmos;
-    nxvm_product_nxvm_media_policy media;
-    nxvm_product_nxvm_default_profile default_profile;
-    nxvm_product_nxvm_console console;
-    nxvm_product_nxvm_presentation presentation;
+    vm_product_media_policy media;
+    vm_composition_default_profile default_profile;
+    vm_product_console console;
+    vm_product_presentation presentation;
     core_machine *firmware_machine;
-    nxvm_product_nxvm_debugger debugger;
+    vm_product_debugger debugger;
 } vm_composition_session_model;
 
 ntvdm64_status vm_composition_session_model_create(
@@ -37,10 +37,10 @@ ntvdm64_status vm_composition_session_model_create(
     const vm_composition_session_model_config *config);
 ntvdm64_status vm_composition_session_model_get_firmware_reset_vector(
     const vm_composition_session_model *session,
-    nxvm_product_nxvm_reset_vector *out_vector);
+    vm_composition_default_profile_reset_vector *out_vector);
 ntvdm64_status vm_composition_session_model_get_execution_reset_vector(
     const vm_composition_session_model *session,
-    nxvm_product_nxvm_reset_vector *out_vector);
+    vm_composition_default_profile_reset_vector *out_vector);
 void vm_composition_session_model_destroy(vm_composition_session_model *session);
 
 #endif

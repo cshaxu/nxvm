@@ -114,6 +114,9 @@ APIs now use their source-owner prefixes without compatibility aliases.
 **M5 T104 complete:** active VM platform hub and OS-backend APIs now use
 `vm_platform_*`, retaining approved backend lexical names.
 
+**M5 T105 complete:** VM product/profile and adjacent composition/platform
+legacy APIs now use their actual source-owner prefixes.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

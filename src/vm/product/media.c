@@ -2,22 +2,22 @@
 
 #include <string.h>
 
-static int nxvm_product_nxvm_media_valid_target(
-    nxvm_product_nxvm_boot_target target)
+static int vm_product_media_valid_target(
+    vm_product_boot_target target)
 {
-    return target == NXVM_PRODUCT_NXVM_BOOT_FDD ||
-           target == NXVM_PRODUCT_NXVM_BOOT_HDD;
+    return target == VM_PRODUCT_BOOT_FDD ||
+           target == VM_PRODUCT_BOOT_HDD;
 }
 
-static nxvm_product_nxvm_block_provider *nxvm_product_nxvm_media_mutable_provider(
-    nxvm_product_nxvm_media_policy *policy, nxvm_product_nxvm_boot_target target)
+static vm_product_block_provider *vm_product_media_mutable_provider(
+    vm_product_media_policy *policy, vm_product_boot_target target)
 {
-    if (target == NXVM_PRODUCT_NXVM_BOOT_FDD) return &policy->fdd;
-    if (target == NXVM_PRODUCT_NXVM_BOOT_HDD) return &policy->hdd;
+    if (target == VM_PRODUCT_BOOT_FDD) return &policy->fdd;
+    if (target == VM_PRODUCT_BOOT_HDD) return &policy->hdd;
     return NULL;
 }
 
-static int nxvm_product_nxvm_media_copy(char *destination, size_t capacity,
+static int vm_product_media_copy(char *destination, size_t capacity,
                                         const char *source)
 {
     size_t length;
@@ -29,31 +29,31 @@ static int nxvm_product_nxvm_media_copy(char *destination, size_t capacity,
     return 1;
 }
 
-void nxvm_product_nxvm_media_policy_initialize(
-    nxvm_product_nxvm_media_policy *policy)
+void vm_product_media_policy_initialize(
+    vm_product_media_policy *policy)
 {
     if (policy != NULL) memset(policy, 0, sizeof(*policy));
 }
 
-ntvdm64_status nxvm_product_nxvm_media_configure(
-    nxvm_product_nxvm_media_policy *policy,
-    nxvm_product_nxvm_boot_target target,
+ntvdm64_status vm_product_media_configure(
+    vm_product_media_policy *policy,
+    vm_product_boot_target target,
     const char *path,
-    const nxvm_product_nxvm_media_identity *identity)
+    const vm_product_media_identity *identity)
 {
-    nxvm_product_nxvm_block_provider *provider;
+    vm_product_block_provider *provider;
 
-    if (policy == NULL || identity == NULL || !nxvm_product_nxvm_media_valid_target(target) ||
+    if (policy == NULL || identity == NULL || !vm_product_media_valid_target(target) ||
         identity->expected_bytes == 0u || policy->frozen) {
         return policy != NULL && policy->frozen ? NTVDM64_STATUS_INVALID_STATE :
                                                   NTVDM64_STATUS_INVALID_ARGUMENT;
     }
-    provider = nxvm_product_nxvm_media_mutable_provider(policy, target);
+    provider = vm_product_media_mutable_provider(policy, target);
     memset(provider, 0, sizeof(*provider));
-    if (!nxvm_product_nxvm_media_copy(provider->path, sizeof(provider->path), path) ||
-        !nxvm_product_nxvm_media_copy(provider->logical_name,
+    if (!vm_product_media_copy(provider->path, sizeof(provider->path), path) ||
+        !vm_product_media_copy(provider->logical_name,
                                       sizeof(provider->logical_name), identity->logical_name) ||
-        !nxvm_product_nxvm_media_copy(provider->expected_sha256,
+        !vm_product_media_copy(provider->expected_sha256,
                                       sizeof(provider->expected_sha256), identity->expected_sha256)) {
         memset(provider, 0, sizeof(*provider));
         return NTVDM64_STATUS_INVALID_ARGUMENT;
@@ -63,20 +63,20 @@ ntvdm64_status nxvm_product_nxvm_media_configure(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status nxvm_product_nxvm_media_configure_created(
-    nxvm_product_nxvm_media_policy *policy,
-    nxvm_product_nxvm_boot_target target,
+ntvdm64_status vm_product_media_configure_created(
+    vm_product_media_policy *policy,
+    vm_product_boot_target target,
     uint16_t cylinders)
 {
-    nxvm_product_nxvm_block_provider *provider;
+    vm_product_block_provider *provider;
 
-    if (policy == NULL || !nxvm_product_nxvm_media_valid_target(target) ||
+    if (policy == NULL || !vm_product_media_valid_target(target) ||
         policy->frozen ||
-        (target == NXVM_PRODUCT_NXVM_BOOT_HDD && cylinders == 0u)) {
+        (target == VM_PRODUCT_BOOT_HDD && cylinders == 0u)) {
         return policy != NULL && policy->frozen ? NTVDM64_STATUS_INVALID_STATE :
                                                   NTVDM64_STATUS_INVALID_ARGUMENT;
     }
-    provider = nxvm_product_nxvm_media_mutable_provider(policy, target);
+    provider = vm_product_media_mutable_provider(policy, target);
     memset(provider, 0, sizeof(*provider));
     provider->configured = 1;
     provider->created = 1;
@@ -84,11 +84,11 @@ ntvdm64_status nxvm_product_nxvm_media_configure_created(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status nxvm_product_nxvm_media_set_boot_target(
-    nxvm_product_nxvm_media_policy *policy,
-    nxvm_product_nxvm_boot_target target)
+ntvdm64_status vm_product_media_set_boot_target(
+    vm_product_media_policy *policy,
+    vm_product_boot_target target)
 {
-    if (policy == NULL || !nxvm_product_nxvm_media_valid_target(target)) {
+    if (policy == NULL || !vm_product_media_valid_target(target)) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     if (policy->frozen) return NTVDM64_STATUS_INVALID_STATE;
@@ -96,25 +96,25 @@ ntvdm64_status nxvm_product_nxvm_media_set_boot_target(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status nxvm_product_nxvm_media_freeze(
-    nxvm_product_nxvm_media_policy *policy)
+ntvdm64_status vm_product_media_freeze(
+    vm_product_media_policy *policy)
 {
-    const nxvm_product_nxvm_block_provider *provider;
+    const vm_product_block_provider *provider;
 
     if (policy == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     if (policy->frozen) return NTVDM64_STATUS_INVALID_STATE;
-    provider = nxvm_product_nxvm_media_provider(policy, policy->boot_target);
+    provider = vm_product_media_provider(policy, policy->boot_target);
     if (provider == NULL || !provider->configured) return NTVDM64_STATUS_INVALID_STATE;
     policy->frozen = 1;
     return NTVDM64_STATUS_OK;
 }
 
-const nxvm_product_nxvm_block_provider *nxvm_product_nxvm_media_provider(
-    const nxvm_product_nxvm_media_policy *policy,
-    nxvm_product_nxvm_boot_target target)
+const vm_product_block_provider *vm_product_media_provider(
+    const vm_product_media_policy *policy,
+    vm_product_boot_target target)
 {
     if (policy == NULL) return NULL;
-    if (target == NXVM_PRODUCT_NXVM_BOOT_FDD) return &policy->fdd;
-    if (target == NXVM_PRODUCT_NXVM_BOOT_HDD) return &policy->hdd;
+    if (target == VM_PRODUCT_BOOT_FDD) return &policy->fdd;
+    if (target == VM_PRODUCT_BOOT_HDD) return &policy->hdd;
     return NULL;
 }

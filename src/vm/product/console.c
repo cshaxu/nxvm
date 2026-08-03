@@ -375,14 +375,14 @@ static void execute() {
 }
 
 /* Initializes console */
-static void consoleInit() {
+static void vm_product_console_initialize() {
     argArray = (char **) MALLOC(CONSOLE_MAXNARG * sizeof(char *));
     flagExit = 0;
     consoleTarget->initialize(consoleTarget->context);
 }
 
 /* Finalizes console */
-static void consoleFinal() {
+static void vm_product_console_finalize() {
     consoleTarget->finalize(consoleTarget->context);
     if (argArray) {
         FREE((void *) argArray);
@@ -396,7 +396,7 @@ void nxvm_product_console_context_initialize(
     if (context != NULL) MEMSET(context, 0, sizeof(*context));
 }
 
-void consoleMain(nxvm_product_console_context *context,
+void vm_product_console_main(nxvm_product_console_context *context,
                  const nxvm_product_console_target *target) {
     nxvm_product_console_context *previous;
     if (context == NULL || target == NULL) return;
@@ -404,7 +404,7 @@ void consoleMain(nxvm_product_console_context *context,
     consoleContext = context;
     nxvm_product_console_context_initialize(context);
     consoleTarget = target;
-    consoleInit();
+    vm_product_console_initialize();
     PRINTF("\nPlease enter 'HELP' for information.\n\n");
     while (!flagExit) {
         PRINTF("Console> ");
@@ -412,6 +412,6 @@ void consoleMain(nxvm_product_console_context *context,
         parse();
         execute();
     }
-    consoleFinal();
+    vm_product_console_finalize();
     consoleContext = previous;
 }

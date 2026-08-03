@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-const core_product_runtime_profile_descriptor *nxvm_vm_full_pc_profile_descriptor(void);
+const core_product_runtime_profile_descriptor *vm_profile_full_pc_profile_descriptor(void);
 
 #ifdef __cplusplus
 }
