@@ -21,7 +21,7 @@
     {
       "name": "nxvm-current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-0-5-0093"]
+      "targets": ["nxvm-0-5-0095"]
     },
     {
       "name": "nxvm-current-gates-gcc",
@@ -31,14 +31,23 @@
         "nxvm-vm-core-executor-storage-smoke",
         "nxvm-core-executor-run-smoke",
         "nxvm-core-machine-trace-context-smoke",
+        "nxvm-core-product-wait-smoke",
+        "nxvm-core-product-debug-target-smoke",
         "nxvm-vm-platform-surface-context-smoke",
+        "nxvm-vm-platform-execution-smoke",
+        "nxvm-vm-platform-input-smoke",
+        "nxvm-vm-platform-presentation-mailbox-smoke",
+        "nxvm-vm-platform-mode-context-smoke",
         "nxvm-vm-dos-prompt-smoke",
         "nxvm-vm-debug-pause-boundary-smoke",
+        "nxvm-vm-unified-debug-backend-smoke",
         "nxvm-product-console-smoke",
+        "nxvm-product-presentation-debug-smoke",
         "nxvm-vm-debug-target-smoke",
         "nxvm-vm-keyboard-provider-isolation-smoke",
         "ntvdm64-core-platform-host-surface-smoke",
         "ntvdm64-vdm-minimal-session-smoke",
+        "nxvm-dos-minimal-presentation-smoke",
         "nxvm-dos-minimal-profile-smoke",
         "verify-dependency-dag",
         "verify-live-machine-authority",

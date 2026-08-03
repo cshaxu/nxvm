@@ -65,11 +65,12 @@ T92 made NXVM Console state caller-owned. Its GCC artifact is
 T93 moved VM context lifetime into composition. Its GCC artifact is
 `build/output/nxvm_0_5_0093.exe`.
 
-## Active Work
+## M5 Closure
 
-**M5 T95 S1: ordered session-readiness closure.** Audit every implemented
-module against the fixed checklist and run the complete structural and product
-regression set. T94 confirmed that DOS-minimal composition is session-owned.
+**M5 T87--T95 session-readiness closure: complete.** Every implemented module
+now has session-owned, thread-local, or explicitly leased mutable state; the
+remaining VDM platform/product layers are deliberately absent. Evidence is in
+[`m5-t95-s1-session-readiness-closure.md`](../verification/m5-t95-s1-session-readiness-closure.md).
 
 ## Short-Term M5 Plan
 
@@ -79,8 +80,8 @@ active session-readiness sequence is defined in
 [M5 Session Readiness](m5-session-readiness.md): machine, platform, product,
 then root composition in the fixed core/VM/VDM order.
 
-M6 T1 remains deferred until this M5 sequence closes. M7 implementation remains
-ineligible until M6 defines and closes its implementation breakdown.
+M6 has not started. M7 implementation remains ineligible until M6 defines and
+closes its implementation breakdown.
 
 ## Delivery Boundary
 

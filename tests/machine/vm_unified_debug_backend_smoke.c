@@ -5,6 +5,7 @@
 
 #include "core/product/debug/debug_access.h"
 #include "vm/composition_control.h"
+#include "vm/composition_debug.h"
 #include "vm/composition_machine.h"
 #include "vm/machine/fdd.h"
 
@@ -19,12 +20,18 @@ int main(int argc, char **argv)
     HANDLE thread;
     DWORD result;
     vm_composition_live_machine *session;
+    const core_product_debug_target *target;
+    int debug_scope_active = 0;
 
     if (argc != 2) return 1;
     session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
     if (session == NULL) return 1;
     machineInit(session);
     if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) goto fail;
+    target = vm_composition_debug_target(session);
+    if (target == NULL) goto fail;
+    core_product_debug_scope_enter(target);
+    debug_scope_active = 1;
     vm_composition_control_reset(session->control);
     thread = CreateThread(NULL, 0u, run_full_pc, session->control, 0u, NULL);
     if (thread == NULL) goto fail;
@@ -43,6 +50,8 @@ int main(int argc, char **argv)
     vm_composition_control_stop(session->control);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
+    core_product_debug_scope_leave();
+    debug_scope_active = 0;
     machineFinal(session);
     free(session);
     if (result != WAIT_OBJECT_0) return 1;
@@ -54,6 +63,7 @@ fail_thread:
     WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
 fail:
+    if (debug_scope_active) core_product_debug_scope_leave();
     machineFinal(session);
     free(session);
     return 1;
