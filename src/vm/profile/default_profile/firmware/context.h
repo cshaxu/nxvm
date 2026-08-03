@@ -29,15 +29,15 @@ static inline C_VOID vm_profile_default_context_initialize(
     t_vadp *vadp, core_machine_block_provider_slot *block_provider,
     core_machine_keyboard_provider_slot *keyboard_provider)
 {
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     context->bios = bios;
     context->qdx = qdx;
     context->ram = ram;
     context->vadp = vadp;
     context->block_provider = block_provider;
     context->keyboard_provider = keyboard_provider;
-    context->display_provider = NULL;
-    context->execution = NULL;
+    context->display_provider = STD_NULL;
+    context->execution = STD_NULL;
 }
 
 static inline vm_profile_default_context *

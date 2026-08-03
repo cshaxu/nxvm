@@ -41,11 +41,11 @@ C_VOID core_machine_memory_finalize(t_ram *ram);
 C_VOID core_machine_memory_register_ports(t_ram *ram, t_port *port);
 
 
-C_VOID core_machine_memory_allocate_for(t_ram *ram, size_t bytes);
+C_VOID core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes);
 C_VOID core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
-    uint16_t offset, C_VOID *out_data, size_t size);
+    uint16_t offset, C_VOID *out_data, STD_SIZE_T size);
 C_VOID core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
-    uint16_t offset, const C_VOID *in_data, size_t size);
+    uint16_t offset, const C_VOID *in_data, STD_SIZE_T size);
 C_VOID *core_machine_memory_real_address(t_ram *ram, uint16_t segment,
     uint16_t offset);
 

@@ -18,40 +18,40 @@ C_VOID vm_platform_run_context_initialize(
     const vm_platform_presentation_mailbox *presentation,
     const core_product_wait_scope *wait_scope)
 {
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     context->execution = execution;
     context->keyboard = keyboard;
     context->presentation = presentation;
     context->wait_scope = wait_scope;
     core_platform_host_surface_context_initialize(&context->console_surface,
-        CORE_PLATFORM_HOST_SURFACE_CONSOLE, NULL);
+        CORE_PLATFORM_HOST_SURFACE_CONSOLE, STD_NULL);
     core_platform_host_surface_context_initialize(&context->window_surface,
-        CORE_PLATFORM_HOST_SURFACE_WINDOW, NULL);
-    context->console_renderer = NULL;
-    context->window_renderer = NULL;
+        CORE_PLATFORM_HOST_SURFACE_WINDOW, STD_NULL);
+    context->console_renderer = STD_NULL;
+    context->window_renderer = STD_NULL;
     context->terminal_displayed_generation = 0u;
     context->window_display = 0;
-    context->keyboard_state_sink = NULL;
-    context->keyboard_state_context = NULL;
+    context->keyboard_state_sink = STD_NULL;
+    context->keyboard_state_context = STD_NULL;
 }
 
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context)
 {
-    return context != NULL && context->window_display != 0;
+    return context != STD_NULL && context->window_display != 0;
 }
 
 C_VOID vm_platform_run_context_set_window_display(
     vm_platform_run_context *context, C_INT enabled)
 {
-    if (context != NULL) context->window_display = enabled != 0;
+    if (context != STD_NULL) context->window_display = enabled != 0;
 }
 
 C_VOID vm_platform_run_context_bind_keyboard_state(
     vm_platform_run_context *context, vm_platform_keyboard_state_sink sink,
     C_VOID *sink_context)
 {
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     context->keyboard_state_sink = sink;
     context->keyboard_state_context = sink_context;
 }

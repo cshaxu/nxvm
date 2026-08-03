@@ -9,8 +9,8 @@
 
 C_INT main(C_VOID)
 {
-    vdm_composition_minimal_session *first = NULL;
-    vdm_composition_minimal_session *second = NULL;
+    vdm_composition_minimal_session *first = STD_NULL;
+    vdm_composition_minimal_session *second = STD_NULL;
 
     if (vdm_composition_minimal_session_create(&first) != NTVDM64_STATUS_OK ||
         vdm_composition_minimal_session_create(&second) != NTVDM64_STATUS_OK ||

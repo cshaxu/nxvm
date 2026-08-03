@@ -42,12 +42,12 @@ ntvdm64_status vm_composition_full_pc_session_create(
     vm_composition_full_pc_session *session;
     ntvdm64_status status;
 
-    if (config == NULL || out_session == NULL) {
+    if (config == STD_NULL || out_session == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
-    *out_session = NULL;
+    *out_session = STD_NULL;
     session = (vm_composition_full_pc_session *)STD_CALLOC(1u, sizeof(*session));
-    if (session == NULL) {
+    if (session == STD_NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
     session->config = *config;
@@ -63,12 +63,12 @@ ntvdm64_status vm_composition_full_pc_session_create(
 
 ntvdm64_status vm_composition_full_pc_session_reset(vm_composition_full_pc_session *session)
 {
-    if (session == NULL) {
+    if (session == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     if (session->active) {
         vm_composition_full_pc_destroy(session->full_pc);
-        session->full_pc = NULL;
+        session->full_pc = STD_NULL;
         session->active = 0;
     }
     return vm_composition_full_pc_session_start(session);
@@ -77,12 +77,12 @@ ntvdm64_status vm_composition_full_pc_session_reset(vm_composition_full_pc_sessi
 const core_product_runtime_profile_descriptor *vm_composition_full_pc_session_profile(
     const vm_composition_full_pc_session *session)
 {
-    return session == NULL ? NULL : session->profile;
+    return session == STD_NULL ? STD_NULL : session->profile;
 }
 
 C_VOID vm_composition_full_pc_session_destroy(vm_composition_full_pc_session *session)
 {
-    if (session != NULL) {
+    if (session != STD_NULL) {
         if (session->active) {
             vm_composition_full_pc_destroy(session->full_pc);
         }

@@ -13,8 +13,8 @@
 
 typedef struct core_machine_keyboard_queue {
     uint16_t values[CORE_MACHINE_KEYBOARD_QUEUE_CAPACITY];
-    size_t head;
-    size_t count;
+    STD_SIZE_T head;
+    STD_SIZE_T count;
 } core_machine_keyboard_queue;
 
 typedef struct core_machine_text_snapshot {

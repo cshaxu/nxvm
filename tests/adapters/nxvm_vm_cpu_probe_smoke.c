@@ -28,7 +28,7 @@ C_INT main(C_VOID)
     const uint8_t prefixed_mov[] = { 0x66u, 0xb8u, 0x78u, 0x56u, 0x34u, 0x12u };
     const uint8_t invalid[] = { 0x0fu, 0x0bu };
     vm_composition_cpu_probe_capture capture;
-    nxvm_cpu_probe *probe = NULL;
+    nxvm_cpu_probe *probe = STD_NULL;
     C_INT failed = 0;
 
     if (!vm_composition_cpu_probe_create(&probe)) {
@@ -53,7 +53,7 @@ C_INT main(C_VOID)
         capture.before.cs != 0u || capture.before.ip != 0u ||
         capture.before.linear_pc != 0u || capture.exception_code != 0u;
     vm_composition_cpu_probe_destroy(probe);
-    probe = NULL;
+    probe = STD_NULL;
 
     failed |= !vm_composition_cpu_probe_create(&probe);
     failed |= !vm_composition_cpu_probe_step(probe, mov_ax, sizeof(mov_ax), &capture);

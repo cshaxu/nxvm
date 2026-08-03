@@ -31,7 +31,7 @@
 #define COLOR_LIGHTGRAY    0x0f
 
 static C_VOID lnxcdispInit() {
-    size_t i, j;
+    STD_SIZE_T i, j;
     initscr();
     raw();
     nodelay(stdscr, TRUE);
@@ -464,8 +464,8 @@ C_VOID lnxcStartMachine(const vm_platform_run_context *context) {
     C_INT oldDeviceFlip;
     core_product_wait_scope previous;
 
-    if (context == NULL || context->execution == NULL ||
-        context->keyboard == NULL) return;
+    if (context == STD_NULL || context->execution == STD_NULL ||
+        context->keyboard == STD_NULL) return;
     if (core_platform_host_surface_lease_acquire(&linux_terminal_lease,
             context) != NTVDM64_STATUS_OK) return;
     previous = core_product_wait_scope_enter(context->wait_scope);

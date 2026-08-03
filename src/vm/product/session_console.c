@@ -9,9 +9,9 @@
 
 static C_INT vm_product_console_word(const C_CHAR *line, const C_CHAR *word)
 {
-    size_t index;
+    STD_SIZE_T index;
 
-    if (line == NULL || word == NULL) return 0;
+    if (line == STD_NULL || word == STD_NULL) return 0;
     while (*line != '\0' && STD_ISSPACE((C_UCHAR)*line)) ++line;
     for (index = 0u; word[index] != '\0'; ++index) {
         if (STD_TOUPPER((C_UCHAR)line[index]) != word[index]) return 0;
@@ -48,7 +48,7 @@ static C_INT vm_product_console_allowed(
 
 C_VOID vm_product_console_initialize(vm_product_console *console)
 {
-    if (console != NULL) console->state = VM_PRODUCT_CONSOLE_READY;
+    if (console != STD_NULL) console->state = VM_PRODUCT_CONSOLE_READY;
 }
 
 vm_product_console_command vm_product_console_parse(const C_CHAR *line)
@@ -73,7 +73,7 @@ ntvdm64_status vm_product_console_dispatch(
 {
     ntvdm64_status status;
 
-    if (console == NULL || operation == NULL ||
+    if (console == STD_NULL || operation == STD_NULL ||
         console->state == VM_PRODUCT_CONSOLE_EXITED) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }

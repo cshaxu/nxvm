@@ -18,7 +18,7 @@ ntvdm64_status vm_product_debugger_read_cpu(
     const vm_product_debugger *debugger, core_machine_cpu_state *out_state);
 ntvdm64_status vm_product_debugger_read_memory(
     const vm_product_debugger *debugger, uint32_t physical,
-    C_VOID *out_data, size_t size);
+    C_VOID *out_data, STD_SIZE_T size);
 ntvdm64_status vm_product_debugger_step(
     vm_product_debugger *debugger, core_machine_run_result *out_result);
 ntvdm64_status vm_product_debugger_continue(

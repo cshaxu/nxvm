@@ -108,12 +108,12 @@ ntvdm64_status core_product_runtime_dos_minimal_create(
     };
     ntvdm64_status status;
 
-    if (out_session == NULL) {
+    if (out_session == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
-    *out_session = NULL;
+    *out_session = STD_NULL;
     session = (core_product_runtime_dos_minimal *)STD_CALLOC(1u, sizeof(*session));
-    if (session == NULL) {
+    if (session == STD_NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
     status = core_machine_create(&config, &session->machine);
@@ -136,7 +136,7 @@ ntvdm64_status core_product_runtime_dos_minimal_reset(
 {
     ntvdm64_status status;
 
-    if (session == NULL) {
+    if (session == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     status = core_machine_reset(session->machine);
@@ -150,7 +150,7 @@ ntvdm64_status core_product_runtime_dos_minimal_tick(
     core_product_runtime_dos_minimal *session,
     uint32_t ticks)
 {
-    if (session == NULL) {
+    if (session == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     session->snapshot.pit_ticks += ticks;
@@ -161,7 +161,7 @@ ntvdm64_status core_product_runtime_dos_minimal_inject_key(
     core_product_runtime_dos_minimal *session,
     uint8_t scan_code)
 {
-    if (session == NULL) {
+    if (session == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     if (session->key_count == NXVM_RUNTIME_KEY_QUEUE_CAPACITY) {
@@ -178,7 +178,7 @@ ntvdm64_status core_product_runtime_dos_minimal_write_text(
     uint8_t character,
     uint8_t attribute)
 {
-    if (session == NULL || cell >= CORE_MACHINE_TEXT_CELLS) {
+    if (session == STD_NULL || cell >= CORE_MACHINE_TEXT_CELLS) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     session->snapshot.text.characters[cell] = character;
@@ -190,7 +190,7 @@ ntvdm64_status core_product_runtime_dos_minimal_get_snapshot(
     const core_product_runtime_dos_minimal *session,
     core_product_runtime_text_snapshot *out_snapshot)
 {
-    if (session == NULL || out_snapshot == NULL) {
+    if (session == STD_NULL || out_snapshot == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     *out_snapshot = session->snapshot;
@@ -202,7 +202,7 @@ ntvdm64_status core_product_runtime_dos_minimal_port_read(
     uint16_t port,
     uint32_t *out_value)
 {
-    if (session == NULL) {
+    if (session == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     return core_machine_bus_read(session->machine, port, out_value);
@@ -210,7 +210,7 @@ ntvdm64_status core_product_runtime_dos_minimal_port_read(
 
 C_VOID core_product_runtime_dos_minimal_destroy(core_product_runtime_dos_minimal *session)
 {
-    if (session != NULL) {
+    if (session != STD_NULL) {
         core_machine_destroy(session->machine);
         STD_FREE(session);
     }

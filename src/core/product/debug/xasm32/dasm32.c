@@ -156,7 +156,7 @@ static C_VOID _kdf_skip(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 static C_VOID _kdf_code(uint8_t *rdata, uint8_t byte) {
-    size_t i;
+    STD_SIZE_T i;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_code");
     for (i = 0; i < byte; ++i)
         *(rdata + i) = *(drcode + iop + i);
@@ -5700,7 +5700,7 @@ static C_VOID QDX() {
 }
 
 static uint8_t dasm32_execute(C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
-    size_t i;
+    STD_SIZE_T i;
     uint8_t opcode, oldiop;
 #if DASM_TRACE == 1
     ntvdm64_type_trace_initialize(&trace);
@@ -6267,7 +6267,7 @@ uint8_t dasm32(C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
     dasm32_context *previous = dasmContext;
     uint8_t result;
 
-    if (previous != NULL) return dasm32_execute(stmt, rcode, flag32);
+    if (previous != STD_NULL) return dasm32_execute(stmt, rcode, flag32);
     STD_MEMSET(&local_context, 0, sizeof(local_context));
     dasmContext = &local_context;
     result = dasm32_execute(stmt, rcode, flag32);

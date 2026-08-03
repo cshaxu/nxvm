@@ -37,8 +37,8 @@ typedef struct nxvm_platform_vm_request {
 
 typedef struct nxvm_platform_vm_request_bridge {
     nxvm_platform_vm_request entries[NXVM_PLATFORM_VM_REQUEST_CAPACITY];
-    size_t head;
-    size_t count;
+    STD_SIZE_T head;
+    STD_SIZE_T count;
 } nxvm_platform_vm_request_bridge;
 
 C_VOID nxvm_platform_vm_request_bridge_initialize(

@@ -17,10 +17,10 @@ C_INT main(C_VOID)
     const vm_composition_live_machine *machine;
 
     session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
-    if (session == NULL) return 1;
+    if (session == STD_NULL) return 1;
     vm_composition_initialize(session);
     machine = session;
-    if (machine == NULL ||
+    if (machine == STD_NULL ||
         machine->default_qdx != &machine->default_qdx_storage ||
         machine->default_profile_context->qdx != machine->default_qdx ||
         core_machine_cpu_execution_context_extension(machine->cpu_execution) !=

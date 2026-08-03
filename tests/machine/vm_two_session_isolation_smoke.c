@@ -20,7 +20,7 @@ C_INT main(C_VOID)
 
     first = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*first));
     second = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*second));
-    if (first == NULL || second == NULL) {
+    if (first == STD_NULL || second == STD_NULL) {
         STD_FREE(second);
         STD_FREE(first);
         return 1;

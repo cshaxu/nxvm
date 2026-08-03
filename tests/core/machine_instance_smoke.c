@@ -43,8 +43,8 @@ static C_INT expect_status(ntvdm64_status actual, ntvdm64_status expected)
 
 C_INT main(C_VOID)
 {
-    core_machine *first = NULL;
-    core_machine *second = NULL;
+    core_machine *first = STD_NULL;
+    core_machine *second = STD_NULL;
     core_machine_config config = {
         CORE_MACHINE_PROFILE_TEST_MINIMAL,
         CORE_MACHINE_MINIMUM_MEMORY_BYTES

@@ -16,7 +16,7 @@ extern "C" {
 typedef struct {
     ntvdm64_type_unsigned_8 reg[0x80]; /* cmos registers */
     t_cpu *cpu;
-    time_t last_refresh;
+    STD_TIME_T last_refresh;
 } t_cmos_connect;
 
 typedef struct {

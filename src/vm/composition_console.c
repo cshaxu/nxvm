@@ -49,7 +49,7 @@ static C_VOID vm_composition_console_debug(C_VOID *context)
 {
     vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
     core_product_wait_scope previous;
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     if (vm_composition_control_is_running(machine->control)) {
         vm_composition_control_request_pause(machine->control, VM_COMPOSITION_PAUSE_EXPLICIT);
         if (!vm_composition_control_wait_for_pause(machine->control, 2000u)) return;
@@ -62,7 +62,7 @@ static C_VOID vm_composition_console_debug(C_VOID *context)
 static C_VOID vm_composition_console_record_start(C_VOID *context, const C_CHAR *path) { vm_machine_debug_record_start(((vm_composition_live_machine *)context)->debug, path); }
 static C_VOID vm_composition_console_record_stop(C_VOID *context) { vm_machine_debug_record_stop(((vm_composition_live_machine *)context)->debug); }
 static C_VOID vm_composition_console_set_boot_hdd(C_VOID *context, C_INT enabled) { vm_profile_default_bios_set_boot_hdd(((vm_composition_live_machine *)context)->default_bios, enabled); }
-static C_VOID vm_composition_console_set_memory(C_VOID *context, size_t bytes) { vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_memory_allocate_for(machine->ram, bytes); }
+static C_VOID vm_composition_console_set_memory(C_VOID *context, STD_SIZE_T bytes) { vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != STD_NULL) core_machine_memory_allocate_for(machine->ram, bytes); }
 static C_VOID vm_composition_console_create_fdd(C_VOID *context) { vm_machine_fdd_create_for(((vm_composition_live_machine *)context)->fdd); }
 static C_INT vm_composition_console_insert_fdd(C_VOID *context, const C_CHAR *path) { return vm_machine_fdd_insert_for(((vm_composition_live_machine *)context)->fdd, path); }
 static C_INT vm_composition_console_remove_fdd(C_VOID *context, const C_CHAR *path) { return vm_machine_fdd_remove_for(((vm_composition_live_machine *)context)->fdd, path); }
@@ -86,14 +86,14 @@ static const nxvm_product_console_target vmCompositionConsoleTargetTemplate = {
     vm_composition_console_create_hdd, vm_composition_console_insert_hdd,
     vm_composition_console_remove_hdd, vm_composition_console_start,
     vm_composition_console_reset, vm_composition_console_stop,
-    vm_composition_console_resume, NULL
+    vm_composition_console_resume, STD_NULL
 };
 
 C_VOID vm_composition_console_target_initialize(
     nxvm_product_console_target *target,
     vm_composition_live_machine *machine)
 {
-    if (target == NULL) return;
+    if (target == STD_NULL) return;
     *target = vmCompositionConsoleTargetTemplate;
     target->context = machine;
 }

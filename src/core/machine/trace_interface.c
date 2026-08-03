@@ -13,9 +13,9 @@ static uint32_t core_machine_trace_linear_pc(const core_machine *machine)
 static C_VOID core_machine_trace_flush(core_machine *machine)
 {
     core_machine_trace_state *trace = &machine->trace;
-    size_t index = 0u;
+    STD_SIZE_T index = 0u;
 
-    if (trace->provider.callback == NULL || trace->flushing) {
+    if (trace->provider.callback == STD_NULL || trace->flushing) {
         return;
     }
 
@@ -30,14 +30,14 @@ static C_VOID core_machine_trace_flush(core_machine *machine)
 
 C_VOID core_machine_trace_initialize(core_machine *machine)
 {
-    if (machine != NULL) {
+    if (machine != STD_NULL) {
         STD_MEMSET(&machine->trace, 0, sizeof(machine->trace));
     }
 }
 
 C_VOID core_machine_trace_finalize(core_machine *machine)
 {
-    if (machine != NULL) {
+    if (machine != STD_NULL) {
         STD_MEMSET(&machine->trace, 0, sizeof(machine->trace));
     }
 }
@@ -46,7 +46,7 @@ ntvdm64_status core_machine_set_trace_provider(
     core_machine *machine,
     const core_machine_trace_provider *provider)
 {
-    if (machine == NULL) {
+    if (machine == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
@@ -55,8 +55,8 @@ ntvdm64_status core_machine_set_trace_provider(
     }
 
     STD_MEMSET(&machine->trace.provider, 0, sizeof(machine->trace.provider));
-    if (provider != NULL) {
-        if (provider->callback == NULL) {
+    if (provider != STD_NULL) {
+        if (provider->callback == STD_NULL) {
             return NTVDM64_STATUS_INVALID_ARGUMENT;
         }
         machine->trace.provider = *provider;
@@ -76,12 +76,12 @@ C_VOID core_machine_trace_record(
     core_machine_trace_state *trace;
     core_machine_trace_event *event;
 
-    if (machine == NULL) {
+    if (machine == STD_NULL) {
         return;
     }
 
     trace = &machine->trace;
-    if (trace->provider.callback == NULL) {
+    if (trace->provider.callback == STD_NULL) {
         return;
     }
 

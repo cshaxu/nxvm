@@ -10,8 +10,8 @@
 static C_INT core_machine_memory_translate(
     const core_machine_memory *memory,
     uint32_t physical,
-    size_t size,
-    size_t *out_offset)
+    STD_SIZE_T size,
+    STD_SIZE_T *out_offset)
 {
     uint64_t offset = physical;
 
@@ -23,15 +23,15 @@ static C_INT core_machine_memory_translate(
         return 0;
     }
 
-    *out_offset = (size_t)offset;
+    *out_offset = (STD_SIZE_T)offset;
     return 1;
 }
 
 ntvdm64_status core_machine_instance_memory_initialize(core_machine *machine)
 {
-    size_t size;
+    STD_SIZE_T size;
 
-    if (machine == NULL) {
+    if (machine == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
@@ -46,7 +46,7 @@ ntvdm64_status core_machine_instance_memory_initialize(core_machine *machine)
     }
 
     machine->memory.bytes = (uint8_t *)STD_CALLOC(size, sizeof(uint8_t));
-    if (machine->memory.bytes == NULL) {
+    if (machine->memory.bytes == STD_NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
 
@@ -57,9 +57,9 @@ ntvdm64_status core_machine_instance_memory_initialize(core_machine *machine)
 
 C_VOID core_machine_instance_memory_finalize(core_machine *machine)
 {
-    if (machine != NULL) {
+    if (machine != STD_NULL) {
         STD_FREE(machine->memory.bytes);
-        machine->memory.bytes = NULL;
+        machine->memory.bytes = STD_NULL;
         machine->memory.size = 0u;
         machine->memory.a20_enabled = 0;
     }
@@ -67,7 +67,7 @@ C_VOID core_machine_instance_memory_finalize(core_machine *machine)
 
 ntvdm64_status core_machine_instance_memory_reset(core_machine *machine)
 {
-    if (machine == NULL || machine->memory.bytes == NULL) {
+    if (machine == STD_NULL || machine->memory.bytes == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
@@ -80,11 +80,11 @@ ntvdm64_status core_machine_memory_read(
     const core_machine *machine,
     uint32_t physical,
     C_VOID *out_data,
-    size_t size)
+    STD_SIZE_T size)
 {
-    size_t offset;
+    STD_SIZE_T offset;
 
-    if (machine == NULL || out_data == NULL || size == 0u) {
+    if (machine == STD_NULL || out_data == STD_NULL || size == 0u) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
@@ -100,11 +100,11 @@ ntvdm64_status core_machine_memory_write(
     core_machine *machine,
     uint32_t physical,
     const C_VOID *data,
-    size_t size)
+    STD_SIZE_T size)
 {
-    size_t offset;
+    STD_SIZE_T offset;
 
-    if (machine == NULL || data == NULL || size == 0u) {
+    if (machine == STD_NULL || data == STD_NULL || size == 0u) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
@@ -120,7 +120,7 @@ ntvdm64_status core_machine_set_a20(
     core_machine *machine,
     C_INT enabled)
 {
-    if (machine == NULL) {
+    if (machine == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 

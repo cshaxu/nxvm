@@ -16,7 +16,7 @@ C_INT main(C_VOID)
 
     vm_composition_initialize(&session);
     machine = (&session);
-    if (machine == NULL || machine->fdd != &machine->fdd_storage) {
+    if (machine == STD_NULL || machine->fdd != &machine->fdd_storage) {
         vm_composition_finalize(&session);
         return 1;
     }

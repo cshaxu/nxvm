@@ -18,7 +18,7 @@
 static C_VOID debug_request_pause(t_debug *debug,
     vm_machine_debug_pause_reason reason)
 {
-    if (debug->connect.pauseCallback != NULL) {
+    if (debug->connect.pauseCallback != STD_NULL) {
         debug->connect.pauseCallback(debug->connect.pauseContext, reason);
     }
 }
@@ -125,22 +125,22 @@ static C_VOID xasm_test(t_debug *debug) {
 
 C_VOID vm_machine_debug_initialize(t_debug *debug, t_cpu *cpu, t_cpuins *cpuins)
 {
-    if (debug == NULL) return;
+    if (debug == STD_NULL) return;
     STD_MEMSET((C_VOID *)debug, NTVDM64_TYPE_ZERO_8, sizeof(*debug));
     debug->connect.cpu = cpu;
     debug->connect.cpuins = cpuins;
 }
 C_VOID vm_machine_debug_reset(t_debug *debug)
 {
-    if (debug == NULL) return;
+    if (debug == STD_NULL) return;
     STD_MEMSET((C_VOID *)&debug->data, NTVDM64_TYPE_ZERO_8, sizeof(debug->data));
 }
 #define _expression "cs:eip=%04x:%08x(L%08x) ss:esp=%04x:%08x(L%08x) \
 eax=%08x ecx=%08x edx=%08x ebx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \
 eflags=%08x %s %s %s %s %s %s %s %s %s %s %s %s | cs:eip=%04x:%08x(L%08x)"
 void vm_machine_debug_refresh(t_debug *debug) {
-    if (debug == NULL || debug->connect.cpu == NULL ||
-        debug->connect.cpuins == NULL) return;
+    if (debug == STD_NULL || debug->connect.cpu == STD_NULL ||
+        debug->connect.cpuins == STD_NULL) return;
     if ((debug->data.flagBreak && debug->connect.cpu->data.cs.selector == debug->data.breakCS && debug->connect.cpu->data.ip == debug->data.breakIP) ||
             (debug->data.flagBreak32 && debug->data.breakCount && (debug->connect.cpu->data.cs.base + debug->connect.cpu->data.eip == debug->data.breakLinear))) {
         debug_request_pause(debug, VM_MACHINE_DEBUG_PAUSE_BREAKPOINT);
@@ -222,47 +222,47 @@ void vm_machine_debug_finalize(t_debug *debug) { (void)debug; }
 void vm_machine_debug_bind_pause(t_debug *debug,
     vm_machine_debug_pause_callback callback, void *context)
 {
-    if (debug == NULL) return;
+    if (debug == STD_NULL) return;
     debug->connect.pauseCallback = callback;
     debug->connect.pauseContext = context;
 }
 
 void vm_machine_debug_set_breakpoint_real(t_debug *debug, uint16_t segment,
     uint16_t offset) {
-    if (debug == NULL) return;
+    if (debug == STD_NULL) return;
     debug->data.breakCS = segment;
     debug->data.breakIP = offset;
     debug->data.flagBreak = NTVDM64_TYPE_TRUE;
 }
 void vm_machine_debug_clear_breakpoint_real(t_debug *debug) {
-    if (debug == NULL) return;
+    if (debug == STD_NULL) return;
     debug->data.flagBreak = NTVDM64_TYPE_FALSE;
 }
 void vm_machine_debug_set_breakpoint_linear(t_debug *debug, uint32_t linear) {
-    if (debug == NULL) return;
+    if (debug == STD_NULL) return;
     debug->data.breakLinear = linear;
     debug->data.flagBreak32 = NTVDM64_TYPE_TRUE;
     debug->data.breakCount = 0;
 }
 void vm_machine_debug_clear_breakpoint_linear(t_debug *debug) {
-    if (debug == NULL) return;
+    if (debug == STD_NULL) return;
     debug->data.flagBreak32 = NTVDM64_TYPE_FALSE;
 }
-size_t vm_machine_debug_get_breakpoint_count(const t_debug *debug) {
-    if (debug == NULL) return 0u;
+STD_SIZE_T vm_machine_debug_get_breakpoint_count(const t_debug *debug) {
+    if (debug == STD_NULL) return 0u;
     return debug->data.breakCount;
 }
-void vm_machine_debug_set_trace(t_debug *debug, size_t instruction_count) {
-    if (debug == NULL) return;
+void vm_machine_debug_set_trace(t_debug *debug, STD_SIZE_T instruction_count) {
+    if (debug == STD_NULL) return;
     debug->data.traceCount = instruction_count;
     debug->data.flagTrace = NTVDM64_TYPE_TRUE;
 }
 void vm_machine_debug_clear_trace(t_debug *debug) {
-    if (debug == NULL) return;
+    if (debug == STD_NULL) return;
     debug->data.flagTrace = NTVDM64_TYPE_FALSE;
 }
 void vm_machine_debug_record_start(t_debug *debug, const char *file_name) {
-    if (debug == NULL) return;
+    if (debug == STD_NULL) return;
     if (debug->connect.recordFile) {
         STD_FCLOSE(debug->connect.recordFile);
     }
@@ -274,12 +274,12 @@ void vm_machine_debug_record_start(t_debug *debug, const char *file_name) {
     }
 }
 void vm_machine_debug_record_stop(t_debug *debug) {
-    if (debug == NULL) return;
+    if (debug == STD_NULL) return;
     if (!debug->connect.recordFile) {
         STD_PRINTF("ERROR:\trecorder not turned on.\n");
     } else {
         STD_PRINTF("Record finished.\n");
         STD_FCLOSE(debug->connect.recordFile);
-        debug->connect.recordFile = (FILE *) NULL;
+        debug->connect.recordFile = (STD_FILE *) STD_NULL;
     }
 }

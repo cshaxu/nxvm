@@ -52,9 +52,9 @@ static C_INT vm_debug_read_register(C_VOID *context, core_product_debug_register
 {
     vm_composition_live_machine *machine =
         (vm_composition_live_machine *)context;
-    t_cpu *cpu = machine == NULL ? NULL : machine->cpu;
-    if (cpu == NULL) return 1;
-    if (value == NULL) return 1;
+    t_cpu *cpu = machine == STD_NULL ? STD_NULL : machine->cpu;
+    if (cpu == STD_NULL) return 1;
+    if (value == STD_NULL) return 1;
     switch (reg) {
     case CORE_PRODUCT_DEBUG_EAX: *value = cpu->data.eax; break; case CORE_PRODUCT_DEBUG_ECX: *value = cpu->data.ecx; break;
     case CORE_PRODUCT_DEBUG_EDX: *value = cpu->data.edx; break; case CORE_PRODUCT_DEBUG_EBX: *value = cpu->data.ebx; break;
@@ -76,8 +76,8 @@ static C_INT vm_debug_write_register(C_VOID *context, core_product_debug_registe
 {
     vm_composition_live_machine *machine =
         (vm_composition_live_machine *)context;
-    t_cpu *cpu = machine == NULL ? NULL : machine->cpu;
-    if (machine == NULL || cpu == NULL) return 1;
+    t_cpu *cpu = machine == STD_NULL ? STD_NULL : machine->cpu;
+    if (machine == STD_NULL || cpu == STD_NULL) return 1;
     switch (reg) {
     case CORE_PRODUCT_DEBUG_EAX: cpu->data.eax = value; break; case CORE_PRODUCT_DEBUG_ECX: cpu->data.ecx = value; break;
     case CORE_PRODUCT_DEBUG_EDX: cpu->data.edx = value; break; case CORE_PRODUCT_DEBUG_EBX: cpu->data.ebx = value; break;
@@ -100,50 +100,50 @@ static C_INT vm_debug_write_register(C_VOID *context, core_product_debug_registe
 static C_INT vm_debug_code_default_size(C_VOID *context)
 {
     vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
-    return machine == NULL ? 0 : machine->cpu->data.cs.seg.exec.defsize;
+    return machine == STD_NULL ? 0 : machine->cpu->data.cs.seg.exec.defsize;
 }
 static uint32_t vm_debug_code_base(C_VOID *context)
 {
     vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
-    return machine == NULL ? 0u : machine->cpu->data.cs.base;
+    return machine == STD_NULL ? 0u : machine->cpu->data.cs.base;
 }
 
 static C_INT vm_debug_read_linear(C_VOID *context, uint32_t address, C_VOID *out, uint8_t size)
 {
     vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
-    return machine == NULL ? 1 : core_machine_cpu_execution_read_linear(
+    return machine == STD_NULL ? 1 : core_machine_cpu_execution_read_linear(
         machine->cpu_execution, address, (ntvdm64_type_virtual_address)out, size);
 }
 static C_INT vm_debug_write_linear(C_VOID *context, uint32_t address, const C_VOID *in, uint8_t size)
 {
     vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
-    return machine == NULL ? 1 : core_machine_cpu_execution_write_linear(
+    return machine == STD_NULL ? 1 : core_machine_cpu_execution_write_linear(
         machine->cpu_execution, address, (ntvdm64_type_virtual_address)in, size);
 }
-static C_INT vm_debug_read_real(C_VOID *context, uint16_t seg, uint16_t off, C_VOID *out, size_t size)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine == NULL) return 1; core_machine_memory_read_real_from(machine->ram, seg, off, out, size); return 0; }
-static C_INT vm_debug_write_real(C_VOID *context, uint16_t seg, uint16_t off, const C_VOID *in, size_t size)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine == NULL) return 1; core_machine_memory_write_real_to(machine->ram, seg, off, in, size); return 0; }
+static C_INT vm_debug_read_real(C_VOID *context, uint16_t seg, uint16_t off, C_VOID *out, STD_SIZE_T size)
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine == STD_NULL) return 1; core_machine_memory_read_real_from(machine->ram, seg, off, out, size); return 0; }
+static C_INT vm_debug_write_real(C_VOID *context, uint16_t seg, uint16_t off, const C_VOID *in, STD_SIZE_T size)
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine == STD_NULL) return 1; core_machine_memory_write_real_to(machine->ram, seg, off, in, size); return 0; }
 static uint32_t vm_debug_read_port(C_VOID *context, uint16_t port)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; return machine == NULL ? 0u : core_machine_port_read(machine->port, port); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; return machine == STD_NULL ? 0u : core_machine_port_read(machine->port, port); }
 static C_VOID vm_debug_write_port(C_VOID *context, uint16_t port, uint32_t value)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_port_write(machine->port, port, value); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != STD_NULL) core_machine_port_write(machine->port, port, value); }
 static C_VOID vm_debug_set_break_real(C_VOID *context, uint16_t seg, uint16_t off)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) vm_machine_debug_set_breakpoint_real(machine->debug, seg, off); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != STD_NULL) vm_machine_debug_set_breakpoint_real(machine->debug, seg, off); }
 static C_VOID vm_debug_set_break_linear(C_VOID *context, uint32_t address)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) vm_machine_debug_set_breakpoint_linear(machine->debug, address); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != STD_NULL) vm_machine_debug_set_breakpoint_linear(machine->debug, address); }
 static C_VOID vm_debug_clear_break(C_VOID *context, C_INT linear)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine == NULL) return; if (linear) vm_machine_debug_clear_breakpoint_linear(machine->debug); else vm_machine_debug_clear_breakpoint_real(machine->debug); }
-static C_VOID vm_debug_set_trace(C_VOID *context, size_t count)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) vm_machine_debug_set_trace(machine->debug, count); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine == STD_NULL) return; if (linear) vm_machine_debug_clear_breakpoint_linear(machine->debug); else vm_machine_debug_clear_breakpoint_real(machine->debug); }
+static C_VOID vm_debug_set_trace(C_VOID *context, STD_SIZE_T count)
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != STD_NULL) vm_machine_debug_set_trace(machine->debug, count); }
 static C_VOID vm_debug_clear_trace(C_VOID *context)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) vm_machine_debug_clear_trace(machine->debug); }
-static size_t vm_debug_break_count(C_VOID *context)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; return machine == NULL ? 0u : vm_machine_debug_get_breakpoint_count(machine->debug); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != STD_NULL) vm_machine_debug_clear_trace(machine->debug); }
+static STD_SIZE_T vm_debug_break_count(C_VOID *context)
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; return machine == STD_NULL ? 0u : vm_machine_debug_get_breakpoint_count(machine->debug); }
 static C_VOID vm_debug_set_watch(C_VOID *context, core_product_debug_watch_kind kind, uint32_t address)
 {
     vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     if (kind == CORE_PRODUCT_DEBUG_WATCH_READ) { machine->cpuins->data.wrLinear = address; machine->cpuins->data.flagWR = NTVDM64_TYPE_TRUE; }
     else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) { machine->cpuins->data.wwLinear = address; machine->cpuins->data.flagWW = NTVDM64_TYPE_TRUE; }
     else { machine->cpuins->data.weLinear = address; machine->cpuins->data.flagWE = NTVDM64_TYPE_TRUE; }
@@ -151,21 +151,21 @@ static C_VOID vm_debug_set_watch(C_VOID *context, core_product_debug_watch_kind 
 static C_VOID vm_debug_clear_watch(C_VOID *context, core_product_debug_watch_kind kind)
 {
     vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     if (kind == CORE_PRODUCT_DEBUG_WATCH_READ) machine->cpuins->data.flagWR = NTVDM64_TYPE_FALSE;
     else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) machine->cpuins->data.flagWW = NTVDM64_TYPE_FALSE;
     else machine->cpuins->data.flagWE = NTVDM64_TYPE_FALSE;
 }
 static C_VOID vm_debug_print_registers(C_VOID *context)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_cpu_print_registers(machine->cpu_execution); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != STD_NULL) core_machine_cpu_print_registers(machine->cpu_execution); }
 static C_VOID vm_debug_print_segment_registers(C_VOID *context)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_cpu_print_segment_registers(machine->cpu_execution); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != STD_NULL) core_machine_cpu_print_segment_registers(machine->cpu_execution); }
 static C_VOID vm_debug_print_control_registers(C_VOID *context)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_cpu_print_control_registers(machine->cpu_execution); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != STD_NULL) core_machine_cpu_print_control_registers(machine->cpu_execution); }
 static C_VOID vm_debug_print_memory(C_VOID *context)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_cpu_print_memory_accesses(machine->cpu_execution); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != STD_NULL) core_machine_cpu_print_memory_accesses(machine->cpu_execution); }
 static C_VOID vm_debug_print_watchpoints(C_VOID *context)
-{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != NULL) core_machine_cpu_print_watchpoints(machine->cpu_execution); }
+{ vm_composition_live_machine *machine = (vm_composition_live_machine *)context; if (machine != STD_NULL) core_machine_cpu_print_watchpoints(machine->cpu_execution); }
 
 static const core_product_debug_target vmDebugTargetTemplate = {
     .is_running = vm_debug_running,
@@ -198,17 +198,17 @@ static const core_product_debug_target vmDebugTargetTemplate = {
     .print_control_registers = vm_debug_print_control_registers,
     .print_memory = vm_debug_print_memory,
     .print_watchpoints = vm_debug_print_watchpoints,
-    .context = NULL
+    .context = STD_NULL
 };
 
 const core_product_debug_target *vm_composition_debug_target(
     vm_composition_live_machine *machine)
 {
-    if (machine == NULL) return NULL;
-    if (machine->debug_target == NULL) {
+    if (machine == STD_NULL) return STD_NULL;
+    if (machine->debug_target == STD_NULL) {
         machine->debug_target = (core_product_debug_target *)STD_MALLOC(
             sizeof(*machine->debug_target));
-        if (machine->debug_target == NULL) return NULL;
+        if (machine->debug_target == STD_NULL) return STD_NULL;
     }
     *machine->debug_target = vmDebugTargetTemplate;
     machine->debug_target->context = machine;
@@ -217,7 +217,7 @@ const core_product_debug_target *vm_composition_debug_target(
 
 C_VOID vm_composition_debug_target_finalize(vm_composition_live_machine *machine)
 {
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     STD_FREE(machine->debug_target);
-    machine->debug_target = NULL;
+    machine->debug_target = STD_NULL;
 }

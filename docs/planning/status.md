@@ -135,6 +135,9 @@ the later platform input-flush design.
 scalar aliases; public headers now declare their `type.h` dependency directly.
 Guest firmware strings retain their native assembly vocabulary.
 
+**M5 T112 complete:** active project ISO C types, objects, constants, and
+atomic operations use `STD_*`; explicit atomic memory orders are unchanged.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

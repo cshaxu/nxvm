@@ -34,16 +34,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
     if (argc != 2) return 1;
     session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
-    if (session == NULL) return 1;
+    if (session == STD_NULL) return 1;
     vm_composition_initialize(session);
     if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) goto fail;
     target = vm_composition_debug_target(session);
-    if (target == NULL) goto fail;
+    if (target == STD_NULL) goto fail;
     core_product_debug_scope_enter(target);
     debug_scope_active = 1;
     vm_composition_control_reset(session->control);
-    thread = CreateThread(NULL, 0u, run_full_pc, session->control, 0u, NULL);
-    if (thread == NULL) goto fail;
+    thread = CreateThread(STD_NULL, 0u, run_full_pc, session->control, 0u, STD_NULL);
+    if (thread == STD_NULL) goto fail;
     Sleep(10u);
     if (!core_product_debug_is_running() ||
         !core_product_debug_request_pause(CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT) ||

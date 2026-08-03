@@ -45,7 +45,7 @@ static C_INT expect_status(ntvdm64_status actual, ntvdm64_status expected)
 
 C_INT main(C_VOID)
 {
-    core_machine *machine = NULL;
+    core_machine *machine = STD_NULL;
     core_machine_config config = {
         CORE_MACHINE_PROFILE_TEST_MINIMAL, 0u
     };
@@ -98,7 +98,7 @@ C_INT main(C_VOID)
     failed |= fixture.count != 1u ||
               fixture.events[0].type != CORE_MACHINE_TRACE_FAULT ||
               fixture.events[0].detail != 0x44u;
-    failed |= expect_status(core_machine_set_trace_provider(machine, NULL),
+    failed |= expect_status(core_machine_set_trace_provider(machine, STD_NULL),
                             NTVDM64_STATUS_OK);
     failed |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
     failed |= fixture.count != 1u;

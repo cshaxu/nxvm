@@ -26,7 +26,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
     if (argc != 2) return 1;
     session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
-    if (session == NULL) return 1;
+    if (session == STD_NULL) return 1;
     vm_composition_live_machine_initialize(session);
     vm_composition_control_initialize(session->control, session);
     if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) {
@@ -36,8 +36,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         return 1;
     }
     vm_composition_control_reset(session->control);
-    thread = CreateThread(NULL, 0u, run_full_pc, session->control, 0u, NULL);
-    if (thread == NULL) {
+    thread = CreateThread(STD_NULL, 0u, run_full_pc, session->control, 0u, STD_NULL);
+    if (thread == STD_NULL) {
         vm_composition_control_finalize(session->control, session);
         vm_composition_live_machine_finalize(session);
         STD_FREE(session);

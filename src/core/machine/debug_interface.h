@@ -21,7 +21,7 @@ ntvdm64_status core_machine_debug_read_memory(
     const core_machine *machine,
     uint32_t physical,
     C_VOID *out_data,
-    size_t size);
+    STD_SIZE_T size);
 ntvdm64_status core_machine_debug_step(
     core_machine *machine,
     core_machine_run_result *out_result);

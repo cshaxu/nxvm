@@ -67,7 +67,7 @@ static C_VOID int_13_03_hdd_write_sector(vm_profile_default_context *profile) {
 }
 
 C_VOID vm_profile_default_disk_initialize(t_qdx *qdx) {
-    if (qdx == NULL) return;
+    if (qdx == STD_NULL) return;
     qdx->table[0xa2] = int_13_02_hdd_read_sector;
     qdx->table[0xa3] = int_13_03_hdd_write_sector;
 }

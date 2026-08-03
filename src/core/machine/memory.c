@@ -23,8 +23,8 @@ static ntvdm64_type_virtual_address core_machine_memory_address(t_ram *ram,
 }
 
 /* Allocates memory for one composition-owned RAM object. */
-C_VOID core_machine_memory_allocate_for(t_ram *ram, size_t newsize) {
-    if (ram == NULL) return;
+C_VOID core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T newsize) {
+    if (ram == STD_NULL) return;
     if (newsize) {
         ram->connect.size = newsize;
         if (ram->connect.pBase) {
@@ -40,7 +40,7 @@ static C_VOID core_machine_memory_read_a20(t_port *port, ntvdm64_type_unsigned_1
     t_ram *ram = (t_ram *)owner;
 
     (C_VOID)port_id;
-    if (ram == NULL) return;
+    if (ram == STD_NULL) return;
     port->data.ioByte = ram->data.flagA20 ? VRAM_FLAG_A20 : NTVDM64_TYPE_ZERO_8;
 }
 static C_VOID core_machine_memory_write_a20(t_port *port, ntvdm64_type_unsigned_16 port_id,
@@ -49,14 +49,14 @@ static C_VOID core_machine_memory_write_a20(t_port *port, ntvdm64_type_unsigned_
     t_ram *ram = (t_ram *)owner;
 
     (C_VOID)port_id;
-    if (ram == NULL) return;
+    if (ram == STD_NULL) return;
     ram->data.flagA20 = NTVDM64_TYPE_GET_BIT(port->data.ioByte, VRAM_FLAG_A20);
 }
 
 C_VOID core_machine_memory_read_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
     ntvdm64_type_virtual_address destination, ntvdm64_type_native_unsigned byte)
 {
-    if (ram == NULL) return;
+    if (ram == STD_NULL) return;
     if (physical >= ram->connect.size && physical >= 0xfffe0000) {
         physical &= 0x001fffff;
     }
@@ -66,28 +66,28 @@ C_VOID core_machine_memory_read_physical(t_ram *ram, ntvdm64_type_unsigned_32 ph
 C_VOID core_machine_memory_write_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
     ntvdm64_type_virtual_address source, ntvdm64_type_native_unsigned byte)
 {
-    if (ram == NULL) return;
+    if (ram == STD_NULL) return;
     STD_MEMCPY((C_VOID *) core_machine_memory_address(ram, physical),
         (C_VOID *) source, byte);
 }
 
 C_VOID core_machine_memory_initialize(t_ram *ram)
 {
-    if (ram == NULL) return;
+    if (ram == STD_NULL) return;
     STD_MEMSET((C_VOID *)ram, NTVDM64_TYPE_ZERO_8, sizeof(*ram));
     core_machine_memory_allocate_for(ram, 1u << 24);
 }
 
 C_VOID core_machine_memory_reset(t_ram *ram)
 {
-    if (ram == NULL || ram->connect.pBase == 0u) return;
+    if (ram == STD_NULL || ram->connect.pBase == 0u) return;
     STD_MEMSET((C_VOID *)&ram->data, NTVDM64_TYPE_ZERO_8, sizeof(ram->data));
     STD_MEMSET((C_VOID *)ram->connect.pBase, NTVDM64_TYPE_ZERO_8, ram->connect.size);
 }
 
 C_VOID core_machine_memory_finalize(t_ram *ram)
 {
-    if (ram == NULL) return;
+    if (ram == STD_NULL) return;
     if (ram->connect.pBase != 0u) {
         STD_FREE((C_VOID *)ram->connect.pBase);
     }
@@ -104,11 +104,11 @@ C_VOID core_machine_memory_register_ports(t_ram *ram, t_port *port)
 }
 
 C_VOID core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
-    uint16_t offset, C_VOID *out_data, size_t size)
+    uint16_t offset, C_VOID *out_data, STD_SIZE_T size)
 {
     ntvdm64_type_unsigned_32 physical;
 
-    if (ram == NULL || ram->connect.size == 0u) return;
+    if (ram == STD_NULL || ram->connect.size == 0u) return;
     physical = core_machine_memory_wrap_a20(ram,
         (NTVDM64_TYPE_MASK_UNSIGNED_16(segment) << 4) + NTVDM64_TYPE_MASK_UNSIGNED_16(offset));
     physical %= ram->connect.size;
@@ -116,11 +116,11 @@ C_VOID core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
 }
 
 C_VOID core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
-    uint16_t offset, const C_VOID *in_data, size_t size)
+    uint16_t offset, const C_VOID *in_data, STD_SIZE_T size)
 {
     ntvdm64_type_unsigned_32 physical;
 
-    if (ram == NULL || ram->connect.size == 0u) return;
+    if (ram == STD_NULL || ram->connect.size == 0u) return;
     physical = core_machine_memory_wrap_a20(ram,
         (NTVDM64_TYPE_MASK_UNSIGNED_16(segment) << 4) + NTVDM64_TYPE_MASK_UNSIGNED_16(offset));
     physical %= ram->connect.size;
@@ -132,8 +132,8 @@ C_VOID *core_machine_memory_real_address(t_ram *ram, uint16_t segment,
 {
     ntvdm64_type_unsigned_32 physical;
 
-    if (ram == NULL || ram->connect.pBase == 0u || ram->connect.size == 0u) {
-        return NULL;
+    if (ram == STD_NULL || ram->connect.pBase == 0u || ram->connect.size == 0u) {
+        return STD_NULL;
     }
     physical = core_machine_memory_wrap_a20(ram,
         ((ntvdm64_type_unsigned_32)segment << 4) + offset);

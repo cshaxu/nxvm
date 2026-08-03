@@ -15,20 +15,20 @@ C_VOID core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
     t_cpuins *instructions, t_ram *memory, t_port *port)
 {
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     context->cpu = cpu;
     context->instructions = instructions;
     context->memory = memory;
     context->port = port;
-    context->pic_master = NULL;
-    context->pic_slave = NULL;
-    if (context->trace == NULL) {
+    context->pic_master = STD_NULL;
+    context->pic_slave = STD_NULL;
+    if (context->trace == STD_NULL) {
         context->trace = (ntvdm64_type_trace *)STD_MALLOC(sizeof(*context->trace));
     }
-    if (context->trace != NULL) {
+    if (context->trace != STD_NULL) {
         STD_MEMSET((C_VOID *)context->trace, NTVDM64_TYPE_ZERO_8, sizeof(*context->trace));
     }
-    context->extension_context = NULL;
+    context->extension_context = STD_NULL;
     context->stop_requested = NTVDM64_TYPE_FALSE;
     context->reset_requested = NTVDM64_TYPE_FALSE;
 }
@@ -37,7 +37,7 @@ C_VOID core_machine_cpu_execution_context_bind_pic(
     core_machine_cpu_execution_context *context, t_pic *master,
     t_pic *slave)
 {
-    if (context == NULL) return;
+    if (context == STD_NULL) return;
     context->pic_master = master;
     context->pic_slave = slave;
 }
@@ -45,30 +45,30 @@ C_VOID core_machine_cpu_execution_context_bind_pic(
 C_VOID core_machine_cpu_execution_context_bind_extension(
     core_machine_cpu_execution_context *context, C_VOID *extension_context)
 {
-    if (context != NULL) context->extension_context = extension_context;
+    if (context != STD_NULL) context->extension_context = extension_context;
 }
 
 C_VOID *core_machine_cpu_execution_context_extension(
     const core_machine_cpu_execution_context *context)
 {
-    return context == NULL ? NULL : context->extension_context;
+    return context == STD_NULL ? STD_NULL : context->extension_context;
 }
 
 C_VOID core_machine_cpu_state_initialize(
     core_machine_cpu_execution_context *context) {
-    if (context == NULL || context->cpu == NULL ||
-        context->instructions == NULL) return;
-    if (context != NULL) {
+    if (context == STD_NULL || context->cpu == STD_NULL ||
+        context->instructions == STD_NULL) return;
+    if (context != STD_NULL) {
         context->stop_requested = NTVDM64_TYPE_FALSE;
         context->reset_requested = NTVDM64_TYPE_FALSE;
     }
     core_machine_cpu_execution_initialize(context);
 }
 C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
-    if (context == NULL || context->cpu == NULL ||
-        context->instructions == NULL) return;
+    if (context == STD_NULL || context->cpu == STD_NULL ||
+        context->instructions == STD_NULL) return;
     STD_MEMSET((C_VOID *)context->cpu, NTVDM64_TYPE_ZERO_8, sizeof(t_cpu));
-    if (context != NULL) {
+    if (context != STD_NULL) {
         context->stop_requested = NTVDM64_TYPE_FALSE;
         context->reset_requested = NTVDM64_TYPE_FALSE;
     }
@@ -146,25 +146,25 @@ C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context)
 C_VOID core_machine_cpu_execution_request_stop(
     core_machine_cpu_execution_context *context)
 {
-    if (context != NULL) context->stop_requested = NTVDM64_TYPE_TRUE;
+    if (context != STD_NULL) context->stop_requested = NTVDM64_TYPE_TRUE;
 }
  ntvdm64_type_bool core_machine_cpu_execution_consume_stop_request(
     core_machine_cpu_execution_context *context)
 {
-    ntvdm64_type_bool requested = context != NULL && context->stop_requested;
-    if (context != NULL) context->stop_requested = NTVDM64_TYPE_FALSE;
+    ntvdm64_type_bool requested = context != STD_NULL && context->stop_requested;
+    if (context != STD_NULL) context->stop_requested = NTVDM64_TYPE_FALSE;
     return requested;
 }
 C_VOID core_machine_cpu_execution_request_reset(
     core_machine_cpu_execution_context *context)
 {
-    if (context != NULL) context->reset_requested = NTVDM64_TYPE_TRUE;
+    if (context != STD_NULL) context->reset_requested = NTVDM64_TYPE_TRUE;
 }
 ntvdm64_type_bool core_machine_cpu_execution_consume_reset_request(
     core_machine_cpu_execution_context *context)
 {
-    ntvdm64_type_bool requested = context != NULL && context->reset_requested;
-    if (context != NULL) context->reset_requested = NTVDM64_TYPE_FALSE;
+    ntvdm64_type_bool requested = context != STD_NULL && context->reset_requested;
+    if (context != STD_NULL) context->reset_requested = NTVDM64_TYPE_FALSE;
     return requested;
 }
 

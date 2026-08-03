@@ -9,7 +9,7 @@
 #include "core/platform/display_frame.h"
 
 typedef struct vm_platform_presentation_mailbox {
-    atomic_flag lock;
+    STD_ATOMIC_FLAG lock;
     core_platform_display_frame frame;
 } vm_platform_presentation_mailbox;
 

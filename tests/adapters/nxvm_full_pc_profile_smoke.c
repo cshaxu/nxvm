@@ -14,7 +14,7 @@ static C_INT verify_profile(C_VOID)
     const core_product_runtime_profile_descriptor *profile =
         vm_profile_full_pc_profile_descriptor();
 
-    return profile == NULL || STD_STRCMP(profile->name, "nxvm.full_pc") != 0 ||
+    return profile == STD_NULL || STD_STRCMP(profile->name, "nxvm.full_pc") != 0 ||
            !profile->permits_disk_boot || !profile->uses_legacy_adapter ||
            (profile->devices & (NXVM_RUNTIME_DEVICE_BIOS |
                                 NXVM_RUNTIME_DEVICE_CMOS |
@@ -30,7 +30,7 @@ static C_INT verify_image(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
 {
     vm_composition_full_pc_config config = { fdd, hdd, 0, 0u, boot_hdd };
     vm_composition_reset_vector vector;
-    vm_composition_full_pc *full_pc = NULL;
+    vm_composition_full_pc *full_pc = STD_NULL;
 
     if (vm_composition_full_pc_create(&config, &full_pc) != NTVDM64_STATUS_OK) {
         return 1;
@@ -47,8 +47,8 @@ static C_INT verify_image(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     if (argc != 3 || verify_profile() != 0 ||
-        verify_image(argv[1], NULL, 0) != 0 ||
-        verify_image(NULL, argv[2], 1) != 0) {
+        verify_image(argv[1], STD_NULL, 0) != 0 ||
+        verify_image(STD_NULL, argv[2], 1) != 0) {
         return 1;
     }
 

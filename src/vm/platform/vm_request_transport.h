@@ -10,7 +10,7 @@ typedef C_VOID (*vm_platform_request_consumer)(
     C_VOID *opaque, const nxvm_platform_vm_request *request);
 
 typedef struct vm_platform_request_transport {
-    atomic_bool locked;
+    STD_ATOMIC_BOOL locked;
     C_INT accepting;
     C_UINT execution_boundary_count;
     vm_platform_request_consumer consumer;

@@ -12,7 +12,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     core_product_runtime_registry registry;
     vm_composition_full_pc_config config;
     vm_composition_reset_vector vector;
-    vm_composition_full_pc *full_pc = NULL;
+    vm_composition_full_pc *full_pc = STD_NULL;
 
     if (argc != 2) {
         return 1;
@@ -21,15 +21,15 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (vm_profile_register_default_profile_builtin(&registry) != NTVDM64_STATUS_OK ||
         core_product_runtime_registry_find_profile(&registry,
             VM_PROFILE_PC_AT_PROFILE_ID,
-            NXVM_RUNTIME_PROFILE_MACHINE, NULL, NULL) == NULL ||
+            NXVM_RUNTIME_PROFILE_MACHINE, STD_NULL, STD_NULL) == STD_NULL ||
         core_product_runtime_registry_find_firmware_provider(&registry,
             VM_PROFILE_PC_AT_PROVIDER_ID,
-            VM_PROFILE_PC_AT_PROFILE_ID) == NULL ||
+            VM_PROFILE_PC_AT_PROFILE_ID) == STD_NULL ||
         core_product_runtime_registry_freeze(&registry) != NTVDM64_STATUS_OK) {
         return 1;
     }
     config.fdd_image = argv[1];
-    config.hdd_image = NULL;
+    config.hdd_image = STD_NULL;
     config.create_fdd = 0;
     config.create_hdd_cylinders = 0u;
     config.boot_hdd = 0;

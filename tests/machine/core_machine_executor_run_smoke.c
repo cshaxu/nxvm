@@ -10,7 +10,7 @@ C_INT main(C_VOID)
     core_machine_config config = {CORE_MACHINE_PROFILE_CUSTOM, 0u};
     core_machine_run_budget budget = {1u, 0u};
     core_machine_run_result result;
-    core_machine *machine = NULL;
+    core_machine *machine = STD_NULL;
     ntvdm64_type_unsigned_8 halt = 0xf4u;
 
     if (core_machine_create(&config, &machine) != NTVDM64_STATUS_OK ||

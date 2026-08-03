@@ -21,12 +21,12 @@ ntvdm64_status vdm_composition_minimal_session_create(
     vdm_composition_minimal_session *session;
     ntvdm64_status status;
 
-    if (out_session == NULL) {
+    if (out_session == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
-    *out_session = NULL;
+    *out_session = STD_NULL;
     session = (vdm_composition_minimal_session *)STD_CALLOC(1u, sizeof(*session));
-    if (session == NULL) {
+    if (session == STD_NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
     session->profile = ntvdm64_dos_minimal_profile_descriptor();
@@ -42,7 +42,7 @@ ntvdm64_status vdm_composition_minimal_session_create(
 ntvdm64_status vdm_composition_minimal_session_reset(
     vdm_composition_minimal_session *session)
 {
-    if (session == NULL) {
+    if (session == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     return core_product_runtime_dos_minimal_reset(session->dos_minimal);
@@ -51,12 +51,12 @@ ntvdm64_status vdm_composition_minimal_session_reset(
 const core_product_runtime_profile_descriptor *vdm_composition_minimal_session_profile(
     const vdm_composition_minimal_session *session)
 {
-    return session == NULL ? NULL : session->profile;
+    return session == STD_NULL ? STD_NULL : session->profile;
 }
 
 C_VOID vdm_composition_minimal_session_destroy(vdm_composition_minimal_session *session)
 {
-    if (session != NULL) {
+    if (session != STD_NULL) {
         core_product_runtime_dos_minimal_destroy(session->dos_minimal);
         STD_FREE(session);
     }

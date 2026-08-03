@@ -10,12 +10,12 @@
 C_INT main(C_VOID)
 {
     const core_product_runtime_profile_descriptor *profile;
-    core_product_runtime_dos_minimal *session = NULL;
+    core_product_runtime_dos_minimal *session = STD_NULL;
     core_product_runtime_text_snapshot snapshot;
     uint32_t value;
 
     profile = ntvdm64_dos_minimal_profile_descriptor();
-    if (profile == NULL || profile->permits_disk_boot || profile->uses_legacy_adapter ||
+    if (profile == STD_NULL || profile->permits_disk_boot || profile->uses_legacy_adapter ||
         (profile->devices & (NXVM_RUNTIME_DEVICE_BIOS |
                              NXVM_RUNTIME_DEVICE_FDD |
                              NXVM_RUNTIME_DEVICE_HDD |

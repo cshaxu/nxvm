@@ -9,7 +9,7 @@
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    vm_composition_full_pc_session *full_pc = NULL;
+    vm_composition_full_pc_session *full_pc = STD_NULL;
     vm_composition_full_pc_session_config full_pc_config;
 
     full_pc_config.fdd_image = argv[1];

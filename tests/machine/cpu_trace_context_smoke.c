@@ -27,9 +27,9 @@ C_INT main(C_VOID)
     core_machine_cpu_execution_context second = {0};
     C_INT failed = 0;
 
-    if (first_cpu == NULL || second_cpu == NULL || first_instructions == NULL ||
-        second_instructions == NULL || first_memory == NULL ||
-        second_memory == NULL || first_port == NULL || second_port == NULL) {
+    if (first_cpu == STD_NULL || second_cpu == STD_NULL || first_instructions == STD_NULL ||
+        second_instructions == STD_NULL || first_memory == STD_NULL ||
+        second_memory == STD_NULL || first_port == STD_NULL || second_port == STD_NULL) {
         failed = 1;
         goto cleanup;
     }
@@ -39,7 +39,7 @@ C_INT main(C_VOID)
     core_machine_cpu_execution_context_initialize(
         &second, second_cpu, second_instructions, second_memory, second_port);
 
-    failed |= first.trace == NULL || second.trace == NULL ||
+    failed |= first.trace == STD_NULL || second.trace == STD_NULL ||
         first.trace == second.trace;
     first.trace->flagError = 1;
     first.trace->callCount = 1u;

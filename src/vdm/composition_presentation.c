@@ -19,13 +19,13 @@ ntvdm64_status vdm_composition_presentation_create(
 {
     vdm_composition_presentation *presentation;
 
-    if (session == NULL || out_presentation == NULL) {
+    if (session == STD_NULL || out_presentation == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
-    *out_presentation = NULL;
+    *out_presentation = STD_NULL;
     presentation = (vdm_composition_presentation *)STD_CALLOC(1u,
                                                             sizeof(*presentation));
-    if (presentation == NULL) {
+    if (presentation == STD_NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
     presentation->session = session;
@@ -37,7 +37,7 @@ ntvdm64_status vdm_composition_presentation_enqueue_input(
     vdm_composition_presentation *presentation,
     nxvm_platform_input_event event)
 {
-    if (presentation == NULL) {
+    if (presentation == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     if (presentation->count == NXVM_DOS_MINIMAL_INPUT_CAPACITY) {
@@ -53,7 +53,7 @@ ntvdm64_status vdm_composition_presentation_apply_input(
     C_UINT index;
     ntvdm64_status status;
 
-    if (presentation == NULL) {
+    if (presentation == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     for (index = 0u; index < presentation->count; ++index) {
@@ -75,7 +75,7 @@ ntvdm64_status vdm_composition_presentation_capture_text(
     core_product_runtime_text_snapshot text;
     ntvdm64_status status;
 
-    if (presentation == NULL || out_snapshot == NULL) {
+    if (presentation == STD_NULL || out_snapshot == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     out_snapshot->timestamp = timestamp;

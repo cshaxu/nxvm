@@ -36,11 +36,11 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
     }
     context = (win32app_run_context *)GetWindowLongPtr(hWnd,
                                                         GWLP_USERDATA);
-    if (context == NULL) return DefWindowProc(hWnd, message, wParam, lParam);
+    if (context == STD_NULL) return DefWindowProc(hWnd, message, wParam, lParam);
 
     switch (message) {
     case WM_CREATE:
-        SetTimer(hWnd, TIMER_PAINT, 50, NULL);
+        SetTimer(hWnd, TIMER_PAINT, 50, STD_NULL);
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
@@ -87,7 +87,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
-    return (LRESULT) NULL;
+    return (LRESULT) STD_NULL;
 }
 
 static ATOM ThreadDisplayRegisterClass(const win32app_run_context *context) {
@@ -98,12 +98,12 @@ static ATOM ThreadDisplayRegisterClass(const win32app_run_context *context) {
     wcex.cbClsExtra        = 0;
     wcex.cbWndExtra        = 0;
     wcex.hInstance        = context->instance;
-    wcex.hIcon            = NULL;
-    wcex.hCursor        = LoadCursor(NULL, IDC_ARROW);
+    wcex.hIcon            = STD_NULL;
+    wcex.hCursor        = LoadCursor(STD_NULL, IDC_ARROW);
     wcex.hbrBackground    = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wcex.lpszMenuName    = NULL;
+    wcex.lpszMenuName    = STD_NULL;
     wcex.lpszClassName    = context->window_class;
-    wcex.hIconSm        = NULL;
+    wcex.hIconSm        = STD_NULL;
     return RegisterClassEx(&wcex);
 }
 
@@ -112,8 +112,8 @@ static BOOL ThreadDisplayInitInstance(win32app_run_context *context,
     DWORD dwStyle = WS_THICKFRAME | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
                     WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
     context->window = CreateWindow(context->window_class, context->title,
-                                   dwStyle, CW_USEDEFAULT, 0, 888, 484, NULL,
-                                   NULL, context->instance, context);
+                                   dwStyle, CW_USEDEFAULT, 0, 888, 484, STD_NULL,
+                                   STD_NULL, context->instance, context);
     /* window size is 888 x 484 for "Courier New" */
     if (!context->window) {
         return FALSE;
@@ -128,7 +128,7 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
     core_product_wait_scope previous = core_product_wait_scope_enter(
         context->platform->wait_scope);
     MSG msg;
-    context->instance = GetModuleHandle(NULL);
+    context->instance = GetModuleHandle(STD_NULL);
     ThreadDisplayRegisterClass(context);
     if (!ThreadDisplayInitInstance(context, 0)) {
         core_product_wait_scope_leave(previous);
@@ -139,7 +139,7 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
         context->window;
     ((vm_platform_run_context *)context->platform)->window_renderer =
         w32adisp_context_create();
-    if (context->platform->window_renderer == NULL) {
+    if (context->platform->window_renderer == STD_NULL) {
         DestroyWindow(context->window);
         core_product_wait_scope_leave(previous);
         STD_FREE(context);
@@ -148,15 +148,15 @@ static DWORD WINAPI ThreadDisplay(LPVOID lpParam) {
 
     w32adispInit((w32adisp_context *)context->platform->window_renderer,
                  context->window, context->platform->presentation);
-    while (GetMessage(&msg, NULL, 0, 0)) {
+    while (GetMessage(&msg, STD_NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
     vm_platform_execution_stop_for(context->platform->execution);
     w32adispFinal((w32adisp_context *)context->platform->window_renderer);
     w32adisp_context_destroy((w32adisp_context *)context->platform->window_renderer);
-    ((vm_platform_run_context *)context->platform)->window_renderer = NULL;
-    ((vm_platform_run_context *)context->platform)->window_surface.native_handle = NULL;
+    ((vm_platform_run_context *)context->platform)->window_renderer = STD_NULL;
+    ((vm_platform_run_context *)context->platform)->window_surface.native_handle = STD_NULL;
     core_product_wait_scope_leave(previous);
     STD_FREE(context);
     return 0;
@@ -190,20 +190,20 @@ VOID vm_platform_win32app_start_machine(const vm_platform_run_context *context) 
     DWORD thread_id;
     core_product_wait_scope previous;
 
-    if (context == NULL || context->execution == NULL ||
-        context->keyboard == NULL) return;
+    if (context == STD_NULL || context->execution == STD_NULL ||
+        context->keyboard == STD_NULL) return;
     previous = core_product_wait_scope_enter(context->wait_scope);
     run_context = STD_CALLOC(1u, sizeof(*run_context));
-    if (run_context == NULL) return;
+    if (run_context == STD_NULL) return;
     run_context->platform = context;
     run_context->window_class = _T("nxvm");
     run_context->title = _T("Neko's x86 Virtual Machine");
     oldDeviceFlip = vm_platform_execution_get_flip_for(context->execution);
-    CreateThread(NULL, 0, ThreadKernel, run_context, 0, &thread_id);
+    CreateThread(STD_NULL, 0, ThreadKernel, run_context, 0, &thread_id);
     while (oldDeviceFlip ==
            vm_platform_execution_get_flip_for(context->execution)) {
         core_product_utils_sleep(100);
     }
-    CreateThread(NULL, 0, ThreadDisplay, run_context, 0, &thread_id);
+    CreateThread(STD_NULL, 0, ThreadDisplay, run_context, 0, &thread_id);
     core_product_wait_scope_leave(previous);
 }

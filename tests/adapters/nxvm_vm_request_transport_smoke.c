@@ -26,7 +26,7 @@ C_INT main(C_VOID)
     nxvm_platform_vm_request request;
     nxvm_platform_vm_request copy;
     keyboard_state_observer observer = {0u, 0u, 0u};
-    size_t index;
+    STD_SIZE_T index;
 
     vm_platform_request_transport_initialize(&transport);
     request.kind = NXVM_PLATFORM_VM_REQUEST_KEY_PRESS;

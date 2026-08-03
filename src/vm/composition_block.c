@@ -9,7 +9,7 @@
 static C_VOID vmBlockGeometry(C_VOID *context, core_machine_block_geometry *out_geometry)
 {
     t_hdd *hdd = (t_hdd *)context;
-    if (hdd == NULL) return;
+    if (hdd == STD_NULL) return;
     out_geometry->present = hdd->connect.flagDiskExist;
     out_geometry->cylinders = hdd->data.ncyl;
     out_geometry->heads = hdd->data.nhead;
@@ -21,7 +21,7 @@ static C_INT vmBlockTransfer(C_VOID *context, ntvdm64_type_unsigned_8 cylinder, 
     ntvdm64_type_unsigned_8 sector, C_VOID *buffer, ntvdm64_type_native_unsigned byte_count, C_INT write)
 {
     t_hdd *hdd = (t_hdd *)context;
-    if (hdd == NULL || !hdd->connect.flagDiskExist || sector == NTVDM64_TYPE_ZERO_8 ||
+    if (hdd == STD_NULL || !hdd->connect.flagDiskExist || sector == NTVDM64_TYPE_ZERO_8 ||
         head >= hdd->data.nhead || sector > hdd->data.nsector ||
         cylinder >= hdd->data.ncyl || byte_count > hdd->data.nbyte * NTVDM64_TYPE_MAX_UNSIGNED_8) return NTVDM64_TYPE_FALSE;
     hdd->data.cyl = cylinder;
@@ -49,7 +49,7 @@ static C_INT vmBlockWrite(C_VOID *context, ntvdm64_type_unsigned_8 cylinder, ntv
 
 C_VOID vm_composition_bind_block(vm_composition_live_machine *machine)
 {
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     core_machine_block_provider_slot_bind(machine->block_provider, machine->hdd,
         vmBlockGeometry, vmBlockRead, vmBlockWrite);
     core_machine_block_provider_slot_freeze(machine->block_provider);

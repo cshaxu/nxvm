@@ -39,9 +39,9 @@ static DWORD WINAPI run_full_pc(C_VOID *opaque)
 static C_INT has_dos_prompt(const t_ram *ram)
 {
     const C_UCHAR *text;
-    size_t cell;
+    STD_SIZE_T cell;
 
-    if (ram == NULL || ram->connect.pBase == 0u ||
+    if (ram == STD_NULL || ram->connect.pBase == 0u ||
         ram->connect.size < TEXT_VIDEO_BASE + TEXT_VIDEO_CELLS * 2u) return 0;
     text = (const C_UCHAR *)ram->connect.pBase + TEXT_VIDEO_BASE;
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
@@ -56,9 +56,9 @@ static C_INT has_dos_prompt(const t_ram *ram)
 
 static C_INT frame_has_dos_prompt(const core_platform_display_frame *frame)
 {
-    size_t cell;
+    STD_SIZE_T cell;
 
-    if (frame == NULL) return 0;
+    if (frame == STD_NULL) return 0;
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         const C_UCHAR drive = frame->characters[cell];
         if (isalpha((C_UCHAR)drive) &&
@@ -74,19 +74,19 @@ static C_INT frame_has_dos_prompt(const core_platform_display_frame *frame)
 static C_VOID dump_text_screen(const t_ram *ram)
 {
     const C_UCHAR *text;
-    size_t row;
-    size_t column;
+    STD_SIZE_T row;
+    STD_SIZE_T column;
 
-    if (ram == NULL || ram->connect.pBase == 0u ||
+    if (ram == STD_NULL || ram->connect.pBase == 0u ||
         ram->connect.size < TEXT_VIDEO_BASE + TEXT_VIDEO_CELLS * 2u) return;
     text = (const C_UCHAR *)ram->connect.pBase + TEXT_VIDEO_BASE;
-    fputs("M5:T70:S2:SCREEN:\n", stderr);
+    fputs("M5:T70:S2:SCREEN:\n", STD_STDERR);
     for (row = 0u; row < 25u; ++row) {
         for (column = 0u; column < 80u; ++column) {
             const C_UCHAR character = text[(row * 80u + column) * 2u];
-            STD_FPUTC(isprint(character) ? character : ' ', stderr);
+            STD_FPUTC(isprint(character) ? character : ' ', STD_STDERR);
         }
-        STD_FPUTC('\n', stderr);
+        STD_FPUTC('\n', STD_STDERR);
     }
 }
 
@@ -101,11 +101,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
     if (argc != 2) return 1;
     session = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));
-    if (session == NULL) return 1;
+    if (session == STD_NULL) return 1;
     vm_composition_initialize(session);
     if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) goto fail;
-    thread = CreateThread(NULL, 0u, run_full_pc, session, 0u, NULL);
-    if (thread == NULL) goto fail;
+    thread = CreateThread(STD_NULL, 0u, run_full_pc, session, 0u, STD_NULL);
+    if (thread == STD_NULL) goto fail;
 
     for (elapsed = 0u; elapsed < DOS_PROMPT_TIMEOUT_MILLISECONDS;
          elapsed += 10u) {
@@ -122,7 +122,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     CloseHandle(thread);
     if (result != WAIT_OBJECT_0 || !prompt_seen) {
         dump_text_screen(session->ram);
-        fputs("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", stderr);
+        fputs("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
         goto fail;
     }
     vm_composition_finalize(session);

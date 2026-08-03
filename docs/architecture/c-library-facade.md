@@ -17,6 +17,12 @@ types/objects/constants/atomics; ISO C header ownership; Win32 vocabulary;
 platform input flush; then static and runtime closure. The older unprefixed
 uppercase names in this document are historical audit vocabulary only.
 
+T112 completes the second step: active project code uses `STD_SIZE_T`,
+`STD_FILE`, `STD_TIME_T`, `STD_VA_LIST`, `STD_NULL`, `STD_EOF`, `STD_SEEK_*`,
+standard-stream aliases, and `STD_ATOMIC_*` / `STD_MEMORY_ORDER_*`. The
+atomic facade is direct token mapping; it does not insert synchronization or
+alter explicit memory orders.
+
 ## Decision
 
 `src/type.h` is the repository's one facade for ISO C headers and C11 atomics.

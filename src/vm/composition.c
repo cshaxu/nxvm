@@ -66,7 +66,7 @@
 
 /* Initializes all devices, allocates space */
 C_VOID vm_composition_providers_initialize(vm_composition_live_machine *machine) {
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     core_machine_cpu_state_initialize(machine->cpu_execution);
     vm_machine_fdd_initialize(machine->fdd);
     vm_machine_hdd_initialize(machine->hdd);
@@ -116,7 +116,7 @@ C_VOID vm_composition_providers_initialize(vm_composition_live_machine *machine)
     _vbios_ _vport_ _vpic_
     core_machine_memory_initialize(machine->ram);
     core_machine_memory_register_ports(machine->ram, machine->port);
-    core_machine_pit_set_output(machine->pit, 1, NULL, NULL);
+    core_machine_pit_set_output(machine->pit, 1, STD_NULL, STD_NULL);
     _vbios_ _vport_ _vpit_
     vm_profile_default_qdx_initialize(machine->default_profile_context,
         machine->cpu_execution);
@@ -124,7 +124,7 @@ C_VOID vm_composition_providers_initialize(vm_composition_live_machine *machine)
 }
 
 C_VOID vm_composition_providers_refresh(vm_composition_live_machine *machine) {
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     vm_profile_default_qdx_refresh(machine->default_profile_context);
     _empty_
     vm_profile_default_bios_refresh(machine->default_bios);
@@ -140,7 +140,7 @@ C_VOID vm_composition_providers_refresh(vm_composition_live_machine *machine) {
 }
 
 C_VOID vm_composition_providers_reset(vm_composition_live_machine *machine) {
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     vm_machine_hdc_reset();
     vm_machine_cmos_reset(machine->cmos);
     vm_machine_fdc_reset(machine->fdc);
@@ -153,7 +153,7 @@ C_VOID vm_composition_providers_reset(vm_composition_live_machine *machine) {
 
 /* Finalize all devices, deallocates space */
 C_VOID vm_composition_providers_finalize(vm_composition_live_machine *machine) {
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     vm_profile_default_qdx_finalize(machine->default_profile_context);
     _empty_
     vm_profile_default_bios_finalize(machine->default_bios);
@@ -185,7 +185,7 @@ C_VOID vm_composition_providers_finalize(vm_composition_live_machine *machine) {
 }
 /* Print machine info */
 C_VOID vm_composition_print_machine(const vm_composition_live_machine *machine) {
-    if (machine == NULL) return;
+    if (machine == STD_NULL) return;
     STD_PRINTF("Machine:           %s\n", VM_COMPOSITION_MACHINE_NAME);
     STD_PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
     STD_PRINTF("RAM Size:          %d MB\n", machine->ram->connect.size >> 20);

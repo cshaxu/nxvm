@@ -11,7 +11,7 @@ C_INT main(C_VOID)
 {
     core_machine_firmware firmware;
     vm_profile_default_firmware_plan plan;
-    core_machine *machine = NULL;
+    core_machine *machine = STD_NULL;
     core_machine_config config = {
         CORE_MACHINE_PROFILE_TEST_MINIMAL, 0u
     };
@@ -26,7 +26,7 @@ C_INT main(C_VOID)
                "bios.int10.video") != 0 ||
         STD_STRCMP(core_machine_firmware_find_interrupt(&firmware, 0x13u)->id,
                "bios.int13.disk") != 0 ||
-        core_machine_firmware_find_interrupt(&firmware, 0x19u) != NULL ||
+        core_machine_firmware_find_interrupt(&firmware, 0x19u) != STD_NULL ||
         core_machine_firmware_freeze(&firmware) != NTVDM64_STATUS_OK ||
         core_machine_create(&config, &machine) != NTVDM64_STATUS_OK ||
         core_machine_reset(machine) != NTVDM64_STATUS_OK ||

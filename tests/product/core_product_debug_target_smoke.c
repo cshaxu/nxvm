@@ -9,7 +9,7 @@
 
 typedef struct debug_target_fixture {
     uint32_t eax;
-    size_t break_count;
+    STD_SIZE_T break_count;
 } debug_target_fixture;
 
 static C_INT debug_target_read_register(C_VOID *context,
@@ -18,7 +18,7 @@ static C_INT debug_target_read_register(C_VOID *context,
 {
     debug_target_fixture *fixture = context;
 
-    if (reg != CORE_PRODUCT_DEBUG_EAX || value == NULL) return 1;
+    if (reg != CORE_PRODUCT_DEBUG_EAX || value == STD_NULL) return 1;
     *value = fixture->eax;
     return 0;
 }
@@ -34,7 +34,7 @@ static C_INT debug_target_write_register(C_VOID *context,
     return 0;
 }
 
-static size_t debug_target_get_break_count(C_VOID *context)
+static STD_SIZE_T debug_target_get_break_count(C_VOID *context)
 {
     return ((debug_target_fixture *)context)->break_count;
 }

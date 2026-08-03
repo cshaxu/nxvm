@@ -36,8 +36,8 @@ static C_INT verify(const C_CHAR *fdd_path, const C_CHAR *hdd_path,
         vm_composition_default_profile_reset(&default_profile) != NTVDM64_STATUS_OK ||
         vm_composition_default_profile_is_running(&default_profile, &running) != NTVDM64_STATUS_OK ||
         running != 0 ||
-        vm_composition_default_profile_remove_fdd(&default_profile, NULL) != NTVDM64_STATUS_OK ||
-        vm_composition_default_profile_disconnect_hdd(&default_profile, NULL) != NTVDM64_STATUS_OK ||
+        vm_composition_default_profile_remove_fdd(&default_profile, STD_NULL) != NTVDM64_STATUS_OK ||
+        vm_composition_default_profile_disconnect_hdd(&default_profile, STD_NULL) != NTVDM64_STATUS_OK ||
         vm_composition_default_profile_get_reset_vector(&default_profile, &vector) != NTVDM64_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         vm_composition_default_profile_destroy(&default_profile);

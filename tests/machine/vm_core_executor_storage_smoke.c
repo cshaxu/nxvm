@@ -13,9 +13,9 @@ C_INT main(C_VOID)
 {
     vm_composition_live_machine *machine = STD_CALLOC(1u, sizeof(*machine));
 
-    if (machine == NULL) return 1;
+    if (machine == STD_NULL) return 1;
     vm_composition_live_machine_initialize(machine);
-    if (machine->core_machine == NULL ||
+    if (machine->core_machine == STD_NULL ||
         machine->cpu != core_machine_executor_cpu_borrow(machine->core_machine) ||
         machine->cpuins != core_machine_executor_cpu_instructions_borrow(
             machine->core_machine) ||

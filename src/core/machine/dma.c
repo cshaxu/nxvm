@@ -87,7 +87,7 @@ static C_VOID dma_port_read(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VO
     t_dma *dma;
     ntvdm64_type_unsigned_8 channel;
 
-    if (primary == NULL) return;
+    if (primary == STD_NULL) return;
     if (port_id <= 0x0007u) {
         channel = (ntvdm64_type_unsigned_8)(port_id >> 1);
         if ((port_id & 1u) == 0u) dma_read_address(primary, port, channel);
@@ -133,7 +133,7 @@ static C_VOID dma_port_write(t_port *port, ntvdm64_type_unsigned_16 port_id, C_V
     ntvdm64_type_unsigned_8 channel;
     ntvdm64_type_unsigned_16 local_port;
 
-    if (primary == NULL) return;
+    if (primary == STD_NULL) return;
     if (port_id <= 0x0007u) {
         channel = (ntvdm64_type_unsigned_8)(port_id >> 1);
         if ((port_id & 1u) == 0u) dma_write_address(primary, port, channel);
@@ -209,7 +209,7 @@ static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         break;
     case 0x01:
         /* write */
-        if (rdma->connect.read_provider[id] != NULL) {
+        if (rdma->connect.read_provider[id] != STD_NULL) {
             rdma->connect.read_provider[id](rdma->connect.device_owner[id], latch);
         } else {
             NTVDM64_TYPE_EXECUTE_FUNCTION(rdma->connect.fpReadDevice[id]);
@@ -241,7 +241,7 @@ static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
                 (rdma->data.page[id] << 16) + (rdma->data.currAddr[id] << 1),
                 (ntvdm64_type_virtual_address)(&latch->data.word), 2);
         }
-        if (rdma->connect.write_provider[id] != NULL) {
+        if (rdma->connect.write_provider[id] != STD_NULL) {
             rdma->connect.write_provider[id](rdma->connect.device_owner[id], latch);
         } else {
             NTVDM64_TYPE_EXECUTE_FUNCTION(rdma->connect.fpWriteDevice[id]);
@@ -331,7 +331,7 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
     }
     if (rdma->data.flagEOP) {
         rdma->data.isr = NTVDM64_TYPE_ZERO_8;
-        if (rdma->connect.close_provider[id] != NULL) {
+        if (rdma->connect.close_provider[id] != STD_NULL) {
             rdma->connect.close_provider[id](rdma->connect.device_owner[id], latch);
         } else {
             NTVDM64_TYPE_EXECUTE_FUNCTION(rdma->connect.fpCloseDevice[id]);
@@ -349,7 +349,7 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
 
 C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
                               ntvdm64_type_unsigned_8 drq_id) {
-    if (primary == NULL || secondary == NULL) return;
+    if (primary == STD_NULL || secondary == STD_NULL) return;
     switch (drq_id) {
     case 0:
     case 1:
@@ -375,7 +375,7 @@ C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
 C_VOID core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
     ntvdm64_type_unsigned_8 drq_id, ntvdm64_type_flat_address read_device, ntvdm64_type_flat_address write_device,
     ntvdm64_type_flat_address close_device) {
-    if (primary == NULL || secondary == NULL) return;
+    if (primary == STD_NULL || secondary == STD_NULL) return;
     switch (drq_id) {
     case 0:
     case 1:
@@ -406,7 +406,7 @@ C_VOID core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
     t_dma *dma;
     ntvdm64_type_unsigned_8 channel;
 
-    if (primary == NULL || secondary == NULL) return;
+    if (primary == STD_NULL || secondary == STD_NULL) return;
     if (drq_id <= 3u) {
         dma = primary;
         channel = drq_id;
@@ -438,8 +438,8 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     };
     ntvdm64_type_native_unsigned index;
 
-    if (latch == NULL || primary == NULL || secondary == NULL ||
-        port == NULL) return;
+    if (latch == STD_NULL || primary == STD_NULL || secondary == STD_NULL ||
+        port == STD_NULL) return;
     STD_MEMSET((C_VOID *)latch, NTVDM64_TYPE_ZERO_8, sizeof(*latch));
     STD_MEMSET((C_VOID *)primary, NTVDM64_TYPE_ZERO_8, sizeof(*primary));
     STD_MEMSET((C_VOID *)secondary, NTVDM64_TYPE_ZERO_8, sizeof(*secondary));
@@ -476,7 +476,7 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
 
 C_VOID core_machine_dma_reset(t_latch *latch, t_dma *primary,
     t_dma *secondary) {
-    if (latch == NULL || primary == NULL || secondary == NULL) return;
+    if (latch == STD_NULL || primary == STD_NULL || secondary == STD_NULL) return;
     STD_MEMSET((C_VOID *)(&latch->data), NTVDM64_TYPE_ZERO_8, sizeof(t_latch_data));
     doReset(primary);
     doReset(secondary);
@@ -486,7 +486,7 @@ C_VOID core_machine_dma_refresh(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_ram *ram) {
     ntvdm64_type_unsigned_8 id;
     ntvdm64_type_unsigned_8 realDRQ1, realDRQ2;
-    if (latch == NULL || primary == NULL || secondary == NULL || ram == NULL) return;
+    if (latch == STD_NULL || primary == STD_NULL || secondary == STD_NULL || ram == STD_NULL) return;
     if (NTVDM64_TYPE_GET_BIT(secondary->data.command, VDMA_COMMAND_CTRL)) {
         return;
     }
