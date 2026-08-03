@@ -5,7 +5,10 @@
  * to configure, debug and run the virtual machine.
  */
 
+#include "type.h"
+
 #include "core/product/utils.h"
+
 
 #include "vm/product/console.h"
 
@@ -26,7 +29,7 @@ static _Thread_local nxvm_product_console_context *consoleContext;
  * numArgs       [OUT] Number of argArrayuments
  * argArray        [OUT] Array of argArrayuments
  */
-static void parse() {
+static C_VOID parse() {
     numArgs = 0;
     argArray[numArgs] = STD_STRTOK(strCmdBuff, " \t\n\r\f");
     if (!argArray[numArgs]) {
@@ -45,7 +48,7 @@ static void parse() {
 
 /* Prints help commands. */
 #define GetHelp if (1) {doHelp();return;} else
-static void doHelp() {
+static C_VOID doHelp() {
     if (STD_STRCMP(argArray[0], "help")) {
         numArgs = 2;
         argArray[1] = argArray[0];
@@ -148,7 +151,7 @@ static void doHelp() {
 }
 
 /* Quits NXVM. */
-static void doExit() {
+static C_VOID doExit() {
     if (numArgs != 1) {
         GetHelp;
     }
@@ -160,7 +163,7 @@ static void doExit() {
 }
 
 /* Prints virtual machine status */
-static void doInfo() {
+static C_VOID doInfo() {
     if (numArgs != 1) {
         GetHelp;
     }
@@ -182,7 +185,7 @@ static void doInfo() {
 }
 
 /* Starts internal debugger */
-static void doDebug() {
+static C_VOID doDebug() {
     if (numArgs != 1) {
         GetHelp;
     }
@@ -190,7 +193,7 @@ static void doDebug() {
 }
 
 /* Executes cpu instruction recorder */
-static void doRecord() {
+static C_VOID doRecord() {
     if (numArgs < 2) {
         GetHelp;
     }
@@ -211,7 +214,7 @@ static void doRecord() {
 }
 
 /* Sets BIOS settings */
-static void doSet() {
+static C_VOID doSet() {
     if (numArgs < 2) {
         GetHelp;
     }
@@ -232,7 +235,7 @@ static void doSet() {
 }
 
 /* Set hardware connections */
-static void doDevice() {
+static C_VOID doDevice() {
     if (numArgs < 2) {
         GetHelp;
     }
@@ -330,13 +333,13 @@ static void doDevice() {
 }
 
 /* Tests NXVM: reset and start debugger */
-static void doTest() {
+static C_VOID doTest() {
     consoleTarget->reset(consoleTarget->context);
     consoleTarget->debug(consoleTarget->context);
 }
 
 /* Executes commands */
-static void execute() {
+static C_VOID execute() {
     if (!argArray[0] || !STD_STRLEN(argArray[0])) {
         return;
     } else if (!STD_STRCMP(argArray[0], "test")) {
@@ -375,28 +378,28 @@ static void execute() {
 }
 
 /* Initializes console */
-static void vm_product_console_initialize() {
-    argArray = (char **) STD_MALLOC(CONSOLE_MAXNARG * sizeof(char *));
+static C_VOID vm_product_console_initialize() {
+    argArray = (C_CHAR **) STD_MALLOC(CONSOLE_MAXNARG * sizeof(C_CHAR *));
     flagExit = 0;
     consoleTarget->initialize(consoleTarget->context);
 }
 
 /* Finalizes console */
-static void vm_product_console_finalize() {
+static C_VOID vm_product_console_finalize() {
     consoleTarget->finalize(consoleTarget->context);
     if (argArray) {
-        STD_FREE((void *) argArray);
+        STD_FREE((C_VOID *) argArray);
     }
 }
 
 /* Entry point of NXVM console */
-void nxvm_product_console_context_initialize(
+C_VOID nxvm_product_console_context_initialize(
     nxvm_product_console_context *context)
 {
     if (context != NULL) STD_MEMSET(context, 0, sizeof(*context));
 }
 
-void vm_product_console_main(nxvm_product_console_context *context,
+C_VOID vm_product_console_main(nxvm_product_console_context *context,
                  const nxvm_product_console_target *target) {
     nxvm_product_console_context *previous;
     if (context == NULL || target == NULL) return;

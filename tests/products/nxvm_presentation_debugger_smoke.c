@@ -1,14 +1,18 @@
+#include "type.h"
+
 #include <stdio.h>
 
+
 #include "vm/product/session_debugger.h"
+
 #include "vm/product/presentation.h"
 
 typedef struct input_fixture {
     uint16_t values[2];
-    unsigned count;
+    C_UINT count;
 } input_fixture;
 
-static ntvdm64_status consume_input(void *context, uint16_t scan_code)
+static ntvdm64_status consume_input(C_VOID *context, uint16_t scan_code)
 {
     input_fixture *fixture = (input_fixture *)context;
     if (fixture->count == 2u) return NTVDM64_STATUS_NO_MEMORY;
@@ -16,7 +20,7 @@ static ntvdm64_status consume_input(void *context, uint16_t scan_code)
     return NTVDM64_STATUS_OK;
 }
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_product_presentation presentation;
     core_machine_text_snapshot guest_text;

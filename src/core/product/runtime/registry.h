@@ -22,23 +22,23 @@ typedef enum core_product_runtime_firmware_provider_kind {
     NXVM_RUNTIME_FIRMWARE_PROVIDER_ABSENT = 3
 } core_product_runtime_firmware_provider_kind;
 
-typedef int (*core_product_runtime_capability_query)(void *context,
-                                              unsigned capability);
+typedef C_INT (*core_product_runtime_capability_query)(C_VOID *context,
+                                              C_UINT capability);
 
 typedef struct core_product_runtime_profile_descriptor_v1 {
-    const char *id;
+    const C_CHAR *id;
     core_product_runtime_profile_family family;
-    const char *owner;
-    const unsigned *required_capabilities;
+    const C_CHAR *owner;
+    const C_UINT *required_capabilities;
     size_t required_capability_count;
-    const char *firmware_provider_id;
+    const C_CHAR *firmware_provider_id;
 } core_product_runtime_profile_descriptor_v1;
 
 typedef struct core_product_runtime_firmware_provider_descriptor_v1 {
-    const char *id;
+    const C_CHAR *id;
     core_product_runtime_firmware_provider_kind kind;
-    const char *owner;
-    const char *machine_profile_id;
+    const C_CHAR *owner;
+    const C_CHAR *machine_profile_id;
 } core_product_runtime_firmware_provider_descriptor_v1;
 
 typedef struct core_product_runtime_registry {
@@ -46,10 +46,10 @@ typedef struct core_product_runtime_registry {
     const core_product_runtime_firmware_provider_descriptor_v1 *providers[NXVM_RUNTIME_REGISTRY_CAPACITY];
     size_t profile_count;
     size_t provider_count;
-    int frozen;
+    C_INT frozen;
 } core_product_runtime_registry;
 
-void core_product_runtime_registry_initialize(core_product_runtime_registry *registry);
+C_VOID core_product_runtime_registry_initialize(core_product_runtime_registry *registry);
 ntvdm64_status core_product_runtime_registry_register_profile(
     core_product_runtime_registry *registry,
     const core_product_runtime_profile_descriptor_v1 *descriptor);
@@ -59,15 +59,15 @@ ntvdm64_status core_product_runtime_registry_register_firmware_provider(
 ntvdm64_status core_product_runtime_registry_freeze(core_product_runtime_registry *registry);
 const core_product_runtime_profile_descriptor_v1 *core_product_runtime_registry_find_profile(
     const core_product_runtime_registry *registry,
-    const char *id,
+    const C_CHAR *id,
     core_product_runtime_profile_family family,
     core_product_runtime_capability_query capability_query,
-    void *capability_context);
+    C_VOID *capability_context);
 const core_product_runtime_firmware_provider_descriptor_v1 *
 core_product_runtime_registry_find_firmware_provider(
     const core_product_runtime_registry *registry,
-    const char *id,
-    const char *machine_profile_id);
+    const C_CHAR *id,
+    const C_CHAR *machine_profile_id);
 
 #ifdef __cplusplus
 }

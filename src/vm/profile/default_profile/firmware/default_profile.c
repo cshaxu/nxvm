@@ -1,4 +1,7 @@
+#include "type.h"
+
 #include "vm/profile/default_profile/firmware/default_profile.h"
+
 
 #include "core/machine/memory.h"
 
@@ -23,12 +26,12 @@ ntvdm64_status vm_profile_default_firmware_compose(
     }
     out_plan->reset_segment = 0xf000u;
     out_plan->reset_offset = 0xfff0u;
-    out_plan->service_count = (unsigned)(sizeof(services) / sizeof(services[0]));
+    out_plan->service_count = (C_UINT)(sizeof(services) / sizeof(services[0]));
     return NTVDM64_STATUS_OK;
 }
 
 ntvdm64_status vm_profile_default_firmware_apply_image(
-    core_machine *machine, int boot_hdd)
+    core_machine *machine, C_INT boot_hdd)
 {
     static const uint8_t reset_stub[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0xf0u };
     uint8_t value;
@@ -54,8 +57,8 @@ ntvdm64_status vm_profile_default_firmware_apply_image(
     return core_machine_memory_write(machine, 0xffff0u, reset_stub, sizeof(reset_stub));
 }
 
-void vm_profile_default_firmware_cmos_initialize(
-    vm_profile_default_firmware_cmos *cmos, int boot_hdd)
+C_VOID vm_profile_default_firmware_cmos_initialize(
+    vm_profile_default_firmware_cmos *cmos, C_INT boot_hdd)
 {
     if (cmos == NULL) return;
     cmos->equipment = 0x21u;

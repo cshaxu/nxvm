@@ -2,15 +2,19 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 
+#include "type.h"
+
 #include <stdio.h>
 
 #ifdef _WIN32
+
 #include <io.h>
 #define NXVM_DUP _dup
 #define NXVM_DUP2 _dup2
 #define NXVM_CLOSE _close
 #define NXVM_FILENO _fileno
 #else
+
 #include <unistd.h>
 #define NXVM_DUP dup
 #define NXVM_DUP2 dup2
@@ -18,15 +22,18 @@
 #define NXVM_FILENO fileno
 #endif
 
+
 #include "vm/composition_console.h"
+
 #include "vm/composition_live_machine.h"
+
 #include "vm/product/console.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_composition_live_machine machine = {0};
     FILE *input;
-    int saved_stdin;
+    C_INT saved_stdin;
 
     input = tmpfile();
     if (input == NULL ||

@@ -16,7 +16,7 @@ ntvdm64_status vdm_composition_minimal_session_reset(
     vdm_composition_minimal_session *session);
 const core_product_runtime_profile_descriptor *vdm_composition_minimal_session_profile(
     const vdm_composition_minimal_session *session);
-void vdm_composition_minimal_session_destroy(vdm_composition_minimal_session *session);
+C_VOID vdm_composition_minimal_session_destroy(vdm_composition_minimal_session *session);
 
 #ifdef __cplusplus
 }

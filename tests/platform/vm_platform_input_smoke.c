@@ -1,26 +1,30 @@
+#include "type.h"
+
 #include <stdint.h>
+
 #include <stdio.h>
+
 
 #include "vm/platform/input.h"
 
 typedef struct vm_platform_input_smoke_state {
-    int alt;
+    C_INT alt;
     uint32_t asynchronous_keys;
     uint32_t toggle_keys;
     uint16_t key_code;
-    unsigned stop_count;
+    C_UINT stop_count;
 } vm_platform_input_smoke_state;
 
-static int vm_platform_input_smoke_get_modifier(
-    void *context, vm_platform_keyboard_modifier modifier)
+static C_INT vm_platform_input_smoke_get_modifier(
+    C_VOID *context, vm_platform_keyboard_modifier modifier)
 {
     vm_platform_input_smoke_state *state = context;
 
     return modifier == VM_PLATFORM_KEYBOARD_MODIFIER_ALT ? state->alt : 0;
 }
 
-static void vm_platform_input_smoke_apply_host_state(
-    void *context, uint32_t asynchronous_keys, uint32_t toggle_keys)
+static C_VOID vm_platform_input_smoke_apply_host_state(
+    C_VOID *context, uint32_t asynchronous_keys, uint32_t toggle_keys)
 {
     vm_platform_input_smoke_state *state = context;
 
@@ -28,17 +32,17 @@ static void vm_platform_input_smoke_apply_host_state(
     state->toggle_keys = toggle_keys;
 }
 
-static void vm_platform_input_smoke_receive_key_press(void *context, uint16_t code)
+static C_VOID vm_platform_input_smoke_receive_key_press(C_VOID *context, uint16_t code)
 {
     ((vm_platform_input_smoke_state *)context)->key_code = code;
 }
 
-static void vm_platform_input_smoke_request_stop(void *context)
+static C_VOID vm_platform_input_smoke_request_stop(C_VOID *context)
 {
     ((vm_platform_input_smoke_state *)context)->stop_count += 1u;
 }
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_platform_input_smoke_state state = {1};
     vm_platform_input_smoke_state second_state = {0};

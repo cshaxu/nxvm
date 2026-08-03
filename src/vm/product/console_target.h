@@ -1,34 +1,37 @@
 #ifndef NTVDM64_VM_PRODUCT_CONSOLE_TARGET_H
 #define NTVDM64_VM_PRODUCT_CONSOLE_TARGET_H
 
+#include "type.h"
+
 #include <stddef.h>
+
 #include <stdint.h>
 
 typedef struct nxvm_product_console_target {
-    void (*initialize)(void *context);
-    void (*finalize)(void *context);
-    int (*is_running)(void *context);
-    void (*print_machine)(void *context);
-    int (*get_window_display)(void *context);
-    void (*set_window_display)(void *context, int enabled);
-    void (*print_bios)(void *context);
-    void (*print_status)(void *context);
-    void (*debug)(void *context);
-    void (*record_start)(void *context, const char *path);
-    void (*record_stop)(void *context);
-    void (*set_boot_hdd)(void *context, int enabled);
-    void (*set_memory)(void *context, size_t bytes);
-    void (*create_fdd)(void *context);
-    int (*insert_fdd)(void *context, const char *path);
-    int (*remove_fdd)(void *context, const char *path);
-    void (*create_hdd)(void *context, uint16_t cylinders);
-    int (*insert_hdd)(void *context, const char *path);
-    int (*remove_hdd)(void *context, const char *path);
-    void (*start)(void *context);
-    void (*reset)(void *context);
-    void (*stop)(void *context);
-    void (*resume)(void *context);
-    void *context;
+    C_VOID (*initialize)(C_VOID *context);
+    C_VOID (*finalize)(C_VOID *context);
+    C_INT (*is_running)(C_VOID *context);
+    C_VOID (*print_machine)(C_VOID *context);
+    C_INT (*get_window_display)(C_VOID *context);
+    C_VOID (*set_window_display)(C_VOID *context, C_INT enabled);
+    C_VOID (*print_bios)(C_VOID *context);
+    C_VOID (*print_status)(C_VOID *context);
+    C_VOID (*debug)(C_VOID *context);
+    C_VOID (*record_start)(C_VOID *context, const C_CHAR *path);
+    C_VOID (*record_stop)(C_VOID *context);
+    C_VOID (*set_boot_hdd)(C_VOID *context, C_INT enabled);
+    C_VOID (*set_memory)(C_VOID *context, size_t bytes);
+    C_VOID (*create_fdd)(C_VOID *context);
+    C_INT (*insert_fdd)(C_VOID *context, const C_CHAR *path);
+    C_INT (*remove_fdd)(C_VOID *context, const C_CHAR *path);
+    C_VOID (*create_hdd)(C_VOID *context, uint16_t cylinders);
+    C_INT (*insert_hdd)(C_VOID *context, const C_CHAR *path);
+    C_INT (*remove_hdd)(C_VOID *context, const C_CHAR *path);
+    C_VOID (*start)(C_VOID *context);
+    C_VOID (*reset)(C_VOID *context);
+    C_VOID (*stop)(C_VOID *context);
+    C_VOID (*resume)(C_VOID *context);
+    C_VOID *context;
 } nxvm_product_console_target;
 
 #endif

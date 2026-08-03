@@ -131,6 +131,10 @@ ctype, and formatting calls outside `type.*` use `STD_*`. The C facade is a
 base target rather than a core-machine dependency; `fflush(stdin)` remains for
 the later platform input-flush design.
 
+**M5 T111 complete:** active project declarations and definitions use `C_*`
+scalar aliases; public headers now declare their `type.h` dependency directly.
+Guest firmware strings retain their native assembly vocabulary.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

@@ -2,9 +2,13 @@
 
 /* VFDD implements Floppy Disk Drive: 3.5" 1.44MB. */
 
+#include "type.h"
+
 #include "core/product/utils.h"
 
+
 #include "core/machine/dma.h"
+
 
 #include "vm/machine/fdd.h"
 

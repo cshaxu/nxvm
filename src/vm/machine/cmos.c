@@ -2,16 +2,21 @@
 
 /* VCMOS implements CMOS and Real Time Clock DS1302. */
 
+#include "type.h"
+
 #include "core/product/utils.h"
+
 
 #include "core/machine/cpu.h"
 
+
 #include "core/machine/port.h"
+
 #include "vm/machine/cmos.h"
 
-static void io_write_0070(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
+static C_VOID io_write_0070(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
     t_cmos *cmos = (t_cmos *)owner;
-    (void)port_id;
+    (C_VOID)port_id;
     cmos->data.regId = port->data.ioByte; /* select reg id */
     if (NTVDM64_TYPE_GET_MSB_8(cmos->data.regId)) {
         /* if MSB=1, disable NMI */
@@ -20,11 +25,11 @@ static void io_write_0070(t_port *port, ntvdm64_type_unsigned_16 port_id, void *
         cmos->connect.cpu->data.flagMaskNMI = NTVDM64_TYPE_FALSE;
     }
 }
-static void io_write_0071(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
+static C_VOID io_write_0071(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
     t_cmos *cmos = (t_cmos *)owner;
     ntvdm64_type_native_unsigned i;
     ntvdm64_type_unsigned_16 checksum = NTVDM64_TYPE_ZERO_16;
-    (void)port_id;
+    (C_VOID)port_id;
     cmos->connect.reg[cmos->data.regId] = port->data.ioByte;
     if ((cmos->data.regId >= VCMOS_TYPE_DISK_FLOPPY) && (cmos->data.regId < VCMOS_CHECKSUM_MSB)) {
         for (i = VCMOS_TYPE_DISK_FLOPPY; i < VCMOS_CHECKSUM_MSB; ++i) {
@@ -34,23 +39,23 @@ static void io_write_0071(t_port *port, ntvdm64_type_unsigned_16 port_id, void *
     cmos->connect.reg[VCMOS_CHECKSUM_LSB] = NTVDM64_TYPE_MASK_UNSIGNED_8(checksum);
     cmos->connect.reg[VCMOS_CHECKSUM_MSB] = NTVDM64_TYPE_MASK_UNSIGNED_8(checksum >> 8);
 }
-static void io_read_0071(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
+static C_VOID io_read_0071(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
     t_cmos *cmos = (t_cmos *)owner;
-    (void)port_id;
+    (C_VOID)port_id;
     port->data.ioByte = cmos->connect.reg[cmos->data.regId];
 }
 
-void vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_port *port) {
-    STD_MEMSET((void *)cmos, NTVDM64_TYPE_ZERO_8, sizeof(*cmos));
+C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_port *port) {
+    STD_MEMSET((C_VOID *)cmos, NTVDM64_TYPE_ZERO_8, sizeof(*cmos));
     cmos->connect.cpu = cpu;
     core_machine_port_add_read(port, 0x0071, io_read_0071, cmos);
     core_machine_port_add_write(port, 0x0070, io_write_0070, cmos);
     core_machine_port_add_write(port, 0x0071, io_write_0071, cmos);
 }
-void vm_machine_cmos_reset(t_cmos *cmos) {
-    STD_MEMSET((void *)(&cmos->data), NTVDM64_TYPE_ZERO_8, sizeof(cmos->data));
+C_VOID vm_machine_cmos_reset(t_cmos *cmos) {
+    STD_MEMSET((C_VOID *)(&cmos->data), NTVDM64_TYPE_ZERO_8, sizeof(cmos->data));
 }
-void vm_machine_cmos_refresh(t_cmos *cmos) {
+C_VOID vm_machine_cmos_refresh(t_cmos *cmos) {
     time_t tCurr;
     struct tm *ptm;
     ntvdm64_type_unsigned_8 century, year, month, mday, wday, hour, min, sec;
@@ -81,4 +86,4 @@ void vm_machine_cmos_refresh(t_cmos *cmos) {
     cmos->connect.reg[VCMOS_RTC_YEAR]      = NTVDM64_TYPE_HEX_TO_BCD(year);
     cmos->connect.reg[VCMOS_RTC_CENTURY]   = NTVDM64_TYPE_HEX_TO_BCD(century);
 }
-void vm_machine_cmos_finalize(t_cmos *cmos) { (void)cmos; }
+C_VOID vm_machine_cmos_finalize(t_cmos *cmos) { (C_VOID)cmos; }

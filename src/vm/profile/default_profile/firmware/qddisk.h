@@ -3,12 +3,15 @@
 #ifndef NXVM_QDDISK_H
 #define NXVM_QDDISK_H
 
+
+
+#include "type.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct t_qdx t_qdx;
-void vm_profile_default_disk_initialize(t_qdx *qdx);
+C_VOID vm_profile_default_disk_initialize(t_qdx *qdx);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

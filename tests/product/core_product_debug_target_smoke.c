@@ -1,6 +1,10 @@
+#include "type.h"
+
 #include <stdio.h>
 
+
 #include "core/product/debug/debug_access.h"
+
 #include "core/product/debug/debug_target.h"
 
 typedef struct debug_target_fixture {
@@ -8,7 +12,7 @@ typedef struct debug_target_fixture {
     size_t break_count;
 } debug_target_fixture;
 
-static int debug_target_read_register(void *context,
+static C_INT debug_target_read_register(C_VOID *context,
                                       core_product_debug_register reg,
                                       uint32_t *value)
 {
@@ -19,7 +23,7 @@ static int debug_target_read_register(void *context,
     return 0;
 }
 
-static int debug_target_write_register(void *context,
+static C_INT debug_target_write_register(C_VOID *context,
                                        core_product_debug_register reg,
                                        uint32_t value)
 {
@@ -30,30 +34,30 @@ static int debug_target_write_register(void *context,
     return 0;
 }
 
-static size_t debug_target_get_break_count(void *context)
+static size_t debug_target_get_break_count(C_VOID *context)
 {
     return ((debug_target_fixture *)context)->break_count;
 }
 
-static int debug_target_is_running(void *context)
+static C_INT debug_target_is_running(C_VOID *context)
 {
-    (void)context;
+    (C_VOID)context;
     return 1;
 }
 
-static int debug_target_code_default_size(void *context)
+static C_INT debug_target_code_default_size(C_VOID *context)
 {
-    (void)context;
+    (C_VOID)context;
     return 16;
 }
 
-static uint32_t debug_target_code_base(void *context)
+static uint32_t debug_target_code_base(C_VOID *context)
 {
-    (void)context;
+    (C_VOID)context;
     return 0xf0000u;
 }
 
-int main(void)
+C_INT main(C_VOID)
 {
     debug_target_fixture fixture = {0x12345678u, 7u};
     core_product_debug_target target = {0};

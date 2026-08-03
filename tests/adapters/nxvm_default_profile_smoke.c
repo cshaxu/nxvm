@@ -1,9 +1,13 @@
+#include "type.h"
+
 #include <stdio.h>
 
+
 #include "vm/composition_full_pc.h"
+
 #include "vm/profile/default_profile/profile.h"
 
-int main(int argc, char **argv)
+C_INT main(C_INT argc, C_CHAR **argv)
 {
     core_product_runtime_registry registry;
     vm_composition_full_pc_config config;

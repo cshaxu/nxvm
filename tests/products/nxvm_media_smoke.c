@@ -1,9 +1,13 @@
+#include "type.h"
+
 #include <stdio.h>
+
 #include <string.h>
+
 
 #include "vm/product/media.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     static const vm_product_media_identity fdd = {
         "fdd.img", 1474560u,

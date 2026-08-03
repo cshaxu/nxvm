@@ -1,13 +1,22 @@
 /* Copyright 2012-2014 Neko. */
 
+#include "type.h"
+
 #include "core/product/utils.h"
+
 #include "core/machine/cpu.h"
+
 #include "core/machine/memory.h"
+
 #include "core/machine/pic.h"
+
 #include "core/machine/port.h"
 
+
 #include "vm/profile/default_profile/firmware/context.h"
+
 #include "vm/profile/default_profile/firmware/qdx.h"
+
 #include "qdkeyb.h"
 
 static ntvdm64_type_unsigned_8 keyboard_read_byte(vm_profile_default_context *profile,
@@ -28,14 +37,14 @@ static ntvdm64_type_unsigned_16 keyboard_read_word(vm_profile_default_context *p
     return value;
 }
 
-static void keyboard_write_byte(vm_profile_default_context *profile,
+static C_VOID keyboard_write_byte(vm_profile_default_context *profile,
     ntvdm64_type_unsigned_16 offset, ntvdm64_type_unsigned_8 value)
 {
     core_machine_memory_write_real_to(profile->ram, NTVDM64_TYPE_ZERO_16, offset, &value,
         sizeof(value));
 }
 
-static void keyboard_write_word(vm_profile_default_context *profile,
+static C_VOID keyboard_write_word(vm_profile_default_context *profile,
     ntvdm64_type_unsigned_16 offset, ntvdm64_type_unsigned_16 value)
 {
     core_machine_memory_write_real_to(profile->ram, NTVDM64_TYPE_ZERO_16, offset, &value,
@@ -100,29 +109,29 @@ static ntvdm64_type_unsigned_8 keyboard_flag0(vm_profile_default_context *profil
     return keyboard_read_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG0);
 }
 
-static void keyboard_set_flag0(vm_profile_default_context *profile,
-    ntvdm64_type_unsigned_8 mask, int enabled)
+static C_VOID keyboard_set_flag0(vm_profile_default_context *profile,
+    ntvdm64_type_unsigned_8 mask, C_INT enabled)
 {
     ntvdm64_type_unsigned_8 value = keyboard_flag0(profile);
     if (enabled) NTVDM64_TYPE_SET_BIT(value, mask); else NTVDM64_TYPE_CLEAR_BIT(value, mask);
     keyboard_write_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG0, value);
 }
 
-static void keyboard_set_flag1(vm_profile_default_context *profile,
-    ntvdm64_type_unsigned_8 mask, int enabled)
+static C_VOID keyboard_set_flag1(vm_profile_default_context *profile,
+    ntvdm64_type_unsigned_8 mask, C_INT enabled)
 {
     ntvdm64_type_unsigned_8 value = keyboard_read_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG1);
     if (enabled) NTVDM64_TYPE_SET_BIT(value, mask); else NTVDM64_TYPE_CLEAR_BIT(value, mask);
     keyboard_write_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG1, value);
 }
 
-static void keyboard_request_irq(vm_profile_default_context *profile)
+static C_VOID keyboard_request_irq(vm_profile_default_context *profile)
 {
     core_machine_pic_set_irq(profile->execution->pic_master,
         profile->execution->pic_slave, 0x01);
 }
 
-static void keyboard_read_input(vm_profile_default_context *profile)
+static C_VOID keyboard_read_input(vm_profile_default_context *profile)
 {
     t_cpu *cpu = profile->execution->cpu;
     while (keyboard_buffer_empty(profile)) core_product_utils_sleep(10);
@@ -130,7 +139,7 @@ static void keyboard_read_input(vm_profile_default_context *profile)
     keyboard_request_irq(profile);
 }
 
-static void keyboard_get_status(vm_profile_default_context *profile)
+static C_VOID keyboard_get_status(vm_profile_default_context *profile)
 {
     t_cpu *cpu = profile->execution->cpu;
     ntvdm64_type_unsigned_16 key = keyboard_buffer_peek(profile);
@@ -152,12 +161,12 @@ static void keyboard_get_status(vm_profile_default_context *profile)
     NTVDM64_TYPE_CLEAR_BIT(cpu->data.eflags, VCPU_EFLAGS_ZF);
 }
 
-static void keyboard_int_09(vm_profile_default_context *profile)
+static C_VOID keyboard_int_09(vm_profile_default_context *profile)
 {
     core_machine_port_write(profile->execution->port, 0x0020, 0x20);
 }
 
-static void keyboard_int_16(vm_profile_default_context *profile)
+static C_VOID keyboard_int_16(vm_profile_default_context *profile)
 {
     t_cpu *cpu = profile->execution->cpu;
 
@@ -182,7 +191,7 @@ static void keyboard_int_16(vm_profile_default_context *profile)
     }
 }
 
-static int keyboard_get_modifier(void *context,
+static C_INT keyboard_get_modifier(C_VOID *context,
     core_machine_keyboard_modifier modifier)
 {
     vm_profile_default_context *profile = context;
@@ -204,7 +213,7 @@ static int keyboard_get_modifier(void *context,
     return NTVDM64_TYPE_FALSE;
 }
 
-static void keyboard_apply_host_state(void *context,
+static C_VOID keyboard_apply_host_state(C_VOID *context,
     uint32_t asynchronous_keys, uint32_t toggle_keys)
 {
     vm_profile_default_context *profile = context;
@@ -237,10 +246,10 @@ static void keyboard_apply_host_state(void *context,
         (toggle_keys & NXVM_KEYBOARD_TOGGLE_PAUSE) != 0u);
 }
 
-static void keyboard_receive_key_press(void *context, uint16_t code)
+static C_VOID keyboard_receive_key_press(C_VOID *context, uint16_t code)
 {
     vm_profile_default_context *profile = context;
-    (void)keyboard_buffer_push(profile, code);
+    (C_VOID)keyboard_buffer_push(profile, code);
     keyboard_request_irq(profile);
 }
 
@@ -250,14 +259,14 @@ static const core_machine_keyboard_provider keyboard_provider = {
     keyboard_receive_key_press
 };
 
-void vm_profile_default_keyboard_initialize(t_qdx *qdx)
+C_VOID vm_profile_default_keyboard_initialize(t_qdx *qdx)
 {
     if (qdx == NULL) return;
     qdx->table[0x09] = keyboard_int_09;
     qdx->table[0x16] = keyboard_int_16;
 }
 
-const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(void)
+const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(C_VOID)
 {
     return &keyboard_provider;
 }

@@ -1,24 +1,37 @@
+#include "type.h"
+
 #include "vm/composition_cpu_probe.h"
 
+
 #include <stdlib.h>
+
 #include <string.h>
 
+
 #include "core/machine/cpu.h"
+
 #include "core/machine/cpu.h"
+
 #include "core/machine/memory.h"
+
 #include "core/machine/port.h"
+
 #include "core/machine/memory.h"
+
 #include "core/product/runtime/execution_context.h"
+
 #include "vm/composition_control.h"
+
 #include "core/machine/cpu_instructions.h"
+
 #include "vm/composition_live_machine.h"
 
 struct nxvm_cpu_probe {
-    int active;
+    C_INT active;
     vm_composition_live_machine machine;
 };
 
-static int vm_composition_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
+static C_INT vm_composition_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
     vm_composition_cpu_probe_state *state)
 {
     const t_cpu *cpu = probe == NULL ? NULL : probe->machine.cpu;
@@ -37,7 +50,7 @@ static int vm_composition_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
     return 1;
 }
 
-static int vm_composition_cpu_probe_reset(nxvm_cpu_probe *probe)
+static C_INT vm_composition_cpu_probe_reset(nxvm_cpu_probe *probe)
 {
     uint32_t eip = 0u;
 
@@ -56,7 +69,7 @@ static int vm_composition_cpu_probe_reset(nxvm_cpu_probe *probe)
     return 1;
 }
 
-int vm_composition_cpu_probe_create(nxvm_cpu_probe **out_probe)
+C_INT vm_composition_cpu_probe_create(nxvm_cpu_probe **out_probe)
 {
     nxvm_cpu_probe *probe;
 
@@ -77,7 +90,7 @@ int vm_composition_cpu_probe_create(nxvm_cpu_probe **out_probe)
     return 1;
 }
 
-int vm_composition_cpu_probe_step(
+C_INT vm_composition_cpu_probe_step(
     nxvm_cpu_probe *probe,
     const uint8_t *bytes,
     size_t byte_count,
@@ -114,7 +127,7 @@ int vm_composition_cpu_probe_step(
     return 1;
 }
 
-void vm_composition_cpu_probe_destroy(nxvm_cpu_probe *probe)
+C_VOID vm_composition_cpu_probe_destroy(nxvm_cpu_probe *probe)
 {
     if (probe != NULL && probe->active) {
         vm_composition_control_finalize(probe->machine.control, &probe->machine);

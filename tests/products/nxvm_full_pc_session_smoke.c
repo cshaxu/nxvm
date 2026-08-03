@@ -1,9 +1,13 @@
+#include "type.h"
+
 #include <stdio.h>
+
 #include <string.h>
+
 
 #include "vm/composition_session.h"
 
-int main(int argc, char **argv)
+C_INT main(C_INT argc, C_CHAR **argv)
 {
     vm_composition_full_pc_session *full_pc = NULL;
     vm_composition_full_pc_session_config full_pc_config;

@@ -20,7 +20,7 @@
 #define NTVDM64_TYPE_TRACE_SET_ERROR (_SetExcept_CE(0xffffffff))
 
 /* indicates functions not implemented */
-#define _______todo static void
+#define _______todo static C_VOID
 /* prints untested code path */
 #define _new_code_path_ do { \
 STD_PRINTF("NEW CODE PATH\n");if (context->trace != NULL) ntvdm64_type_trace_print(context->trace);} while (0)
@@ -46,26 +46,26 @@ STD_PRINTF("NEW CODE PATH\n");if (context->trace != NULL) ntvdm64_type_trace_pri
 /* memory management unit */
 /* kernel memory accessing */
 /* read content from reference */
-static void _kma_read_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kma_read_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_read_ref");
-    STD_MEMCPY((void *) rdata, (void *) ref, byte);
+    STD_MEMCPY((C_VOID *) rdata, (C_VOID *) ref, byte);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* write content to reference */
-static void _kma_write_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kma_write_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_write_ref");
-    STD_MEMCPY((void *) ref, (void *) rdata, byte);
+    STD_MEMCPY((C_VOID *) ref, (C_VOID *) rdata, byte);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* read content from physical */
-static void _kma_read_physical(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 physical, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 physical, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_read_physical");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(core_machine_memory_read_physical(context->memory, physical, rdata,
         byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* write content to physical */
-static void _kma_write_physical(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 physical, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kma_write_physical(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 physical, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_write_physical");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(core_machine_memory_write_physical(context->memory, physical, rdata,
         byte));
@@ -296,7 +296,7 @@ static ntvdm64_type_unsigned_32 _kma_linear_logical(core_machine_cpu_execution_c
     return linear;
 }
 /* read content from logical */
-static void _kma_read_linear(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+static C_VOID _kma_read_linear(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
     ntvdm64_type_unsigned_32 phy1, phy2;
     ntvdm64_type_unsigned_8  byte1, byte2;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_read_logical");
@@ -319,7 +319,7 @@ static void _kma_read_linear(core_machine_cpu_execution_context *context, ntvdm6
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* write content to logical */
-static void _kma_write_linear(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+static C_VOID _kma_write_linear(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
     ntvdm64_type_unsigned_32 phy1, phy2;
     ntvdm64_type_unsigned_8  byte1, byte2;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_write_linear");
@@ -342,7 +342,7 @@ static void _kma_write_linear(core_machine_cpu_execution_context *context, ntvdm
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* read content from logical */
-static void _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+static C_VOID _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
     /* ntvdm64_type_native_unsigned i; */
     ntvdm64_type_unsigned_32 linear;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_read_logical");
@@ -352,7 +352,7 @@ static void _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!force");
         instruction_state.data.mem[instruction_state.data.msize].flagWrite = NTVDM64_TYPE_FALSE;
         instruction_state.data.mem[instruction_state.data.msize].data = 0;
-        STD_MEMCPY((void *) NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (void *) rdata, byte);
+        STD_MEMCPY((C_VOID *) NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (C_VOID *) rdata, byte);
         instruction_state.data.mem[instruction_state.data.msize].byte = byte;
         instruction_state.data.mem[instruction_state.data.msize].linear = linear;
         if (instruction_state.data.flagWR) {
@@ -379,7 +379,7 @@ static void _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* write content to logical */
-static void _kma_write_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+static C_VOID _kma_write_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
     /* ntvdm64_type_native_unsigned i; */
     ntvdm64_type_unsigned_32 linear;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_write_logical");
@@ -389,7 +389,7 @@ static void _kma_write_logical(core_machine_cpu_execution_context *context, t_cp
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!force");
         instruction_state.data.mem[instruction_state.data.msize].flagWrite = NTVDM64_TYPE_TRUE;
         instruction_state.data.mem[instruction_state.data.msize].data = 0;
-        STD_MEMCPY((void *) NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (void *) rdata, byte);
+        STD_MEMCPY((C_VOID *) NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (C_VOID *) rdata, byte);
         instruction_state.data.mem[instruction_state.data.msize].byte = byte;
         instruction_state.data.mem[instruction_state.data.msize].linear = linear;
         if (instruction_state.data.flagWW) {
@@ -416,7 +416,7 @@ static void _kma_write_logical(core_machine_cpu_execution_context *context, t_cp
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* test logical accessing */
-static void _kma_test_linear(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+static C_VOID _kma_test_linear(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
     ntvdm64_type_unsigned_32 phy1, phy2;
     ntvdm64_type_unsigned_8  byte1, byte2;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_test_linear");
@@ -435,13 +435,13 @@ static void _kma_test_linear(core_machine_cpu_execution_context *context, ntvdm6
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kma_test_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+static C_VOID _kma_test_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
     ntvdm64_type_unsigned_32 linear;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_test_logical");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, write, vpl, force));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kma_test_access(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+static C_VOID _kma_test_access(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
     ntvdm64_type_unsigned_32 linear;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_test_access");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, write, vpl, force));
@@ -450,7 +450,7 @@ static void _kma_test_access(core_machine_cpu_execution_context *context, t_cpu_
 }
 
 /* general memory accessing */
-static void _m_read_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _m_read_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_read_ref");
     /* _m_write_ref allows in-module reads only */
     if (ref < (ntvdm64_type_virtual_address)(&cpu_state) && ref >= (ntvdm64_type_virtual_address)(&cpu_state) + sizeof(t_cpu) &&
@@ -460,7 +460,7 @@ static void _m_read_ref(core_machine_cpu_execution_context *context, ntvdm64_typ
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_ref(context, ref, rdata, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_write_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _m_write_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_write_ref");
     /* _m_write_ref allows in-module writes only */
     if (ref < (ntvdm64_type_virtual_address)(&cpu_state) && ref >= (ntvdm64_type_virtual_address)(&cpu_state) + sizeof(t_cpu) &&
@@ -470,30 +470,30 @@ static void _m_write_ref(core_machine_cpu_execution_context *context, ntvdm64_ty
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_write_ref(context, ref, rdata, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _m_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_read_logical");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, rsreg, offset, rdata, byte, _GetCPL, 0));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_write_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _m_write_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_write_logical");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, rsreg, offset, rdata, byte, _GetCPL, 0));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_test_access(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write) {
+static C_VOID _m_test_access(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write) {
     ntvdm64_type_virtual_address ref = 0;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_test_access");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, rsreg, offset, byte, write, _GetCPL, 0));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_test_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write) {
+static C_VOID _m_test_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write) {
     ntvdm64_type_virtual_address ref = 0;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_test_logical");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, rsreg, offset, byte, write, _GetCPL, 0));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _m_read_rm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _m_read_rm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_read_rm");
     instruction_state.data.crm = 0;
     if (instruction_state.data.flagMem)
@@ -502,7 +502,7 @@ static void _m_read_rm(core_machine_cpu_execution_context *context, ntvdm64_type
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_ref(context, instruction_state.data.rrm, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_write_rm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _m_write_rm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_write_rm");
     if (instruction_state.data.flagMem)
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_logical(context, instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), byte));
@@ -513,7 +513,7 @@ static void _m_write_rm(core_machine_cpu_execution_context *context, ntvdm64_typ
 
 /* segment accessing unit: _s_ */
 /* kernel segment accessing */
-static void _ksa_read_idt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_virtual_address rdata) {
+static C_VOID _ksa_read_idt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_virtual_address rdata) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_idt");
     if (!_GetCR0_PE) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_PE(0)");
@@ -528,7 +528,7 @@ static void _ksa_read_idt(core_machine_cpu_execution_context *context, ntvdm64_t
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_read_ldt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+static C_VOID _ksa_read_ldt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_read_ldt");
     if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (!_GetSelector_TI(selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -540,7 +540,7 @@ static void _ksa_read_ldt(core_machine_cpu_execution_context *context, ntvdm64_t
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.ldtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_read_gdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+static C_VOID _ksa_read_gdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_read_gdt");
     if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (_GetSelector_TI(selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -552,7 +552,7 @@ static void _ksa_read_gdt(core_machine_cpu_execution_context *context, ntvdm64_t
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_read_xdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+static C_VOID _ksa_read_xdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_read_xdt");
     if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (_GetSelector_TI(selector)) {
@@ -566,7 +566,7 @@ static void _ksa_read_xdt(core_machine_cpu_execution_context *context, ntvdm64_t
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_write_ldt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+static C_VOID _ksa_write_ldt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_write_ldt");
     if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (!_GetSelector_TI(selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -575,7 +575,7 @@ static void _ksa_write_ldt(core_machine_cpu_execution_context *context, ntvdm64_
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &cpu_state.data.ldtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_write_gdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+static C_VOID _ksa_write_gdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_write_gdt");
     if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (_GetSelector_TI(selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -584,7 +584,7 @@ static void _ksa_write_gdt(core_machine_cpu_execution_context *context, ntvdm64_
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_write_xdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+static C_VOID _ksa_write_xdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_write_xdt");
     if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (_GetSelector_TI(selector)) {
@@ -598,7 +598,7 @@ static void _ksa_write_xdt(core_machine_cpu_execution_context *context, ntvdm64_
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_16 selector) {
+static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_16 selector) {
     ntvdm64_type_unsigned_64 descriptor;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_load_sreg");
     switch (rsreg->sregtype) {
@@ -867,109 +867,109 @@ static ntvdm64_type_bool _s_check_selector(core_machine_cpu_execution_context *c
     NTVDM64_TYPE_TRACE_CALL_END;
     return NTVDM64_TYPE_FALSE;
 }
-static void _s_read_idt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_virtual_address rdata) {
+static C_VOID _s_read_idt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_virtual_address rdata) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_idt");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_read_idt(context, intid, rdata));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_xdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+static C_VOID _s_read_xdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_xdt");
     if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector, rdata));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_tss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_read_tss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_tss");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.tr, offset, rdata, byte, 0, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_es(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_read_es(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_es");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, &cpu_state.data.es, offset, rdata, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_cs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_read_cs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_cs");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.cs, offset, rdata, byte, 0, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_ss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_read_ss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_ss");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, &cpu_state.data.ss, offset, rdata, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_ds(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_read_ds(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_ds");
     NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_fs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_read_fs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_fs");
     NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_gs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_read_gs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_gs");
     NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_idt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_virtual_address rdata) {
+static C_VOID _s_write_idt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_virtual_address rdata) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_idt");
     NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_xdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+static C_VOID _s_write_xdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_xdt");
     if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, rdata));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_tss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_write_tss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_tss");
     NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_es(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_write_es(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_es");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_logical(context, &cpu_state.data.es, offset, rdata, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_cs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_write_cs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_cs");
     NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_ss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_write_ss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_ss");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_logical(context, &cpu_state.data.ss, offset, rdata, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_ds(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_write_ds(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_ds");
     NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_fs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_write_fs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_fs");
     NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_gs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_write_gs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_gs");
     NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_test_tss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_test_tss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_test_cs");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &cpu_state.data.tr, offset, byte, 0, 0x00, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_test_cs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_test_cs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_test_cs");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &cpu_state.data.cs, offset, byte, 0, 0x00, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_test_ss_push(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_test_ss_push(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_32 cesp = 0x00000000;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_test_ss_push");
     switch (_GetStackSize) {
@@ -993,7 +993,7 @@ static void _s_test_ss_push(core_machine_cpu_execution_context *context, ntvdm64
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_test_ss_pop(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_test_ss_pop(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_32 cesp = 0x00000000;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_test_ss_pop");
     switch (_GetStackSize) {
@@ -1013,12 +1013,12 @@ static void _s_test_ss_pop(core_machine_cpu_execution_context *context, ntvdm64_
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_16 selector) {
+static C_VOID _s_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_16 selector) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_sreg");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, rsreg, selector));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_gdtr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 base, ntvdm64_type_unsigned_16 limit, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_load_gdtr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 base, ntvdm64_type_unsigned_16 limit, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_gdtr");
     if (_GetCPL) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
@@ -1041,7 +1041,7 @@ static void _s_load_gdtr(core_machine_cpu_execution_context *context, ntvdm64_ty
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_idtr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 base, ntvdm64_type_unsigned_16 limit, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _s_load_idtr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 base, ntvdm64_type_unsigned_16 limit, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_idtr");
     if (_GetCPL) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
@@ -1064,7 +1064,7 @@ static void _s_load_idtr(core_machine_cpu_execution_context *context, ntvdm64_ty
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_ldtr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector) {
+static C_VOID _s_load_ldtr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_ldtr");
     if (_GetCPL) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
@@ -1079,7 +1079,7 @@ static void _s_load_ldtr(core_machine_cpu_execution_context *context, ntvdm64_ty
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.ldtr, selector));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_tr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector) {
+static C_VOID _s_load_tr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_tr");
     if (_GetCPL) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
@@ -1094,7 +1094,7 @@ static void _s_load_tr(core_machine_cpu_execution_context *context, ntvdm64_type
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.tr, selector));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_cr0_msw(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 msw) {
+static C_VOID _s_load_cr0_msw(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 msw) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_cr0_msw");
     if (_GetCPL) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
@@ -1112,42 +1112,42 @@ static void _s_load_cr0_msw(core_machine_cpu_execution_context *context, ntvdm64
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_cs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs) {
+static C_VOID _s_load_cs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_cs");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.cs, newcs));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_ss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newss) {
+static C_VOID _s_load_ss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newss) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_ss");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.ss, newss));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_ds(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newds) {
+static C_VOID _s_load_ds(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newds) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_ds");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.ds, newds));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_es(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newes) {
+static C_VOID _s_load_es(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newes) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_es");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.es, newes));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_fs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newfs) {
+static C_VOID _s_load_fs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newfs) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_fs");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.fs, newfs));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_gs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newgs) {
+static C_VOID _s_load_gs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newgs) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_gs");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.gs, newgs));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_test_eip(core_machine_cpu_execution_context *context) {
+static C_VOID _s_test_eip(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_test_eip");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_cs(context, cpu_state.data.eip, 0x01));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_test_esp(core_machine_cpu_execution_context *context) {
+static C_VOID _s_test_esp(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 cesp;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_test_esp");
     switch (_GetStackSize) {
@@ -1172,7 +1172,7 @@ _______todo _kpa_test_iomap(core_machine_cpu_execution_context *context, ntvdm64
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kpa_test_iomap");
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kpa_test_mode(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 portid, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kpa_test_mode(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 portid, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_p_test");
     if (_GetCR0_PE && (_GetCPL > (ntvdm64_type_unsigned_8)_GetEFLAGS_IOPL || _GetEFLAGS_VM)) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_PE(1),(CPL>IOPL/EFLAGS_VM(1))");
@@ -1182,7 +1182,7 @@ static void _kpa_test_mode(core_machine_cpu_execution_context *context, ntvdm64_
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* regular portid accessing */
-static void _p_input(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 portid, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _p_input(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 portid, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_p_input");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
     core_machine_port_execute_read(context->port, portid);
@@ -1214,7 +1214,7 @@ static void _p_input(core_machine_cpu_execution_context *context, ntvdm64_type_u
     instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _p_output(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 portid, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _p_output(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 portid, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_p_output");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
     switch (byte) {
@@ -1274,18 +1274,18 @@ static ntvdm64_type_bool _kdf_check_prefix(core_machine_cpu_execution_context *c
     return NTVDM64_TYPE_FALSE;
 }
 
-static void _kdf_skip(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kdf_skip(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_skip");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(cpu_state.data.eip += byte);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kdf_code(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kdf_code(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_code");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, rdata, byte));
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_skip(context, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kdf_modrm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 regbyte, ntvdm64_type_unsigned_8 rmbyte) {
+static C_VOID _kdf_modrm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 regbyte, ntvdm64_type_unsigned_8 rmbyte) {
     ntvdm64_type_signed_8 disp8;
     ntvdm64_type_unsigned_16 disp16;
     ntvdm64_type_unsigned_32 disp32;
@@ -1944,23 +1944,23 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, ntvdm64_type
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_skip(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _d_skip(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_skip");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_skip(context, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_code(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _d_code(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_code");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(context, rdata, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_imm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _d_imm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_imm");
     instruction_state.data.cimm = 0;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code(context, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cimm), byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_moffs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _d_moffs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_moffs");
     instruction_state.data.flagMem = NTVDM64_TYPE_TRUE;
     instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
@@ -1982,7 +1982,7 @@ static void _d_moffs(core_machine_cpu_execution_context *context, ntvdm64_type_u
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_modrm_sreg(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 rmbyte) {
+static C_VOID _d_modrm_sreg(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 rmbyte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_sreg");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, 0, rmbyte));
     instruction_state.data.rmovsreg = NULL;
@@ -2013,7 +2013,7 @@ static void _d_modrm_sreg(core_machine_cpu_execution_context *context, ntvdm64_t
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_modrm_ea(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 regbyte, ntvdm64_type_unsigned_8 rmbyte) {
+static C_VOID _d_modrm_ea(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 regbyte, ntvdm64_type_unsigned_8 rmbyte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_ea");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, regbyte, rmbyte));
     if (!instruction_state.data.flagMem) {
@@ -2023,7 +2023,7 @@ static void _d_modrm_ea(core_machine_cpu_execution_context *context, ntvdm64_typ
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_modrm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 regbyte, ntvdm64_type_unsigned_8 rmbyte) {
+static C_VOID _d_modrm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 regbyte, ntvdm64_type_unsigned_8 rmbyte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, regbyte, rmbyte));
     if (!instruction_state.data.flagMem && instruction_state.data.flagLock) {
@@ -2036,7 +2036,7 @@ static void _d_modrm(core_machine_cpu_execution_context *context, ntvdm64_type_u
 
 /* execution control unit: _e_ */
 /* kernel execution control */
-static void _kec_push(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kec_push(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_32 cesp;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_push");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, byte));
@@ -2065,7 +2065,7 @@ static void _kec_push(core_machine_cpu_execution_context *context, ntvdm64_type_
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kec_pop(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kec_pop(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_32 cesp;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_pop");
     switch (_GetStackSize) {
@@ -2095,7 +2095,7 @@ static void _kec_pop(core_machine_cpu_execution_context *context, ntvdm64_type_v
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kec_call_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kec_call_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_32 oldcs = cpu_state.data.cs.selector;
     t_cpu_data_sreg ccs = cpu_state.data.cs;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_call_far");
@@ -2130,7 +2130,7 @@ static void _kec_call_far(core_machine_cpu_execution_context *context, ntvdm64_t
     cpu_state.data.eip = neweip;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kec_call_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kec_call_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_call_near");
     switch (byte) {
     case 2:
@@ -2157,7 +2157,7 @@ static void _kec_call_near(core_machine_cpu_execution_context *context, ntvdm64_
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 _______todo _kec_task_switch(ntvdm64_type_unsigned_16 newtss);
-static void _kec_jmp_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kec_jmp_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     t_cpu_data_sreg ccs = cpu_state.data.cs;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_jmp_far");
     switch (byte) {
@@ -2179,7 +2179,7 @@ static void _kec_jmp_far(core_machine_cpu_execution_context *context, ntvdm64_ty
     cpu_state.data.eip = neweip;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kec_jmp_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kec_jmp_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_jmp_near");
     switch (byte) {
     case 2:
@@ -2198,7 +2198,7 @@ static void _kec_jmp_near(core_machine_cpu_execution_context *context, ntvdm64_t
     cpu_state.data.eip = neweip;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kec_ret_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
+static C_VOID _kec_ret_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
     t_cpu_data_sreg ccs = cpu_state.data.cs;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_ret_far");
     switch (byte) {
@@ -2231,7 +2231,7 @@ static void _kec_ret_far(core_machine_cpu_execution_context *context, ntvdm64_ty
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kec_ret_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _kec_ret_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_32 neweip = 0;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_ret_near");
     switch (byte) {
@@ -2268,7 +2268,7 @@ static void _kec_ret_near(core_machine_cpu_execution_context *context, ntvdm64_t
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* sub execution routine */
-static void _ser_call_far_real(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _ser_call_far_real(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_call_far_real");
     if (_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_call_far(context, newcs, neweip, byte));
@@ -2340,7 +2340,7 @@ _______todo _ser_call_far_tss(core_machine_cpu_execution_context *context, ntvdm
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ser_int_real(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _ser_int_real(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_16 cip;
     ntvdm64_type_unsigned_32 vector;
     ntvdm64_type_unsigned_32 oldcs = cpu_state.data.cs.selector;
@@ -2601,13 +2601,13 @@ _______todo _ser_int_protected(core_machine_cpu_execution_context *context, ntvd
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ser_ret_far_real(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
+static C_VOID _ser_ret_far_real(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_ret_far_real");
     if (_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_ret_far(context, newcs, neweip, parambyte, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ser_ret_far_same(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
+static C_VOID _ser_ret_far_same(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_ret_far_same");
     if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_ret_far(context, newcs, neweip, parambyte, byte));
@@ -2619,13 +2619,13 @@ _______todo _ser_ret_far_outer(core_machine_cpu_execution_context *context, ntvd
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ser_jmp_far_real(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _ser_jmp_far_real(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_real");
     if (_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_jmp_far(context, newcs, neweip, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ser_jmp_far_cs_conf(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _ser_jmp_far_cs_conf(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_64 descriptor;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_cs_conf");
     if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -2644,7 +2644,7 @@ static void _ser_jmp_far_cs_conf(core_machine_cpu_execution_context *context, nt
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_jmp_far(context, newcs, neweip, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ser_jmp_far_cs_nonc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _ser_jmp_far_cs_nonc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_64 descriptor;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_cs_nonc");
     if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -2692,17 +2692,17 @@ _______todo _ser_jmp_far_tss(core_machine_cpu_execution_context *context, ntvdm6
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* regular execute control */
-static void _e_push(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _e_push(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_push");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, rdata, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_pop(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _e_pop(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_pop");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, rdata, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_call_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _e_call_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_64 descriptor;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_call_far");
     if (!_IsProtected) {
@@ -2736,7 +2736,7 @@ static void _e_call_far(core_machine_cpu_execution_context *context, ntvdm64_typ
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_call_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _e_call_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_call_near");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_call_near(context, neweip, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
@@ -2980,7 +2980,7 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, ntvdm64_type_un
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_jcc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 csrc, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool condition) {
+static C_VOID _e_jcc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 csrc, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool condition) {
     ntvdm64_type_unsigned_32 neweip = cpu_state.data.eip;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_jcc");
     if (condition) {
@@ -3006,7 +3006,7 @@ static void _e_jcc(core_machine_cpu_execution_context *context, ntvdm64_type_uns
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_jmp_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _e_jmp_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_64 descriptor;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_jmp_far");
     if (!_IsProtected) {
@@ -3042,12 +3042,12 @@ static void _e_jmp_far(core_machine_cpu_execution_context *context, ntvdm64_type
     instruction_state.data.opr2 = cpu_state.data.eip;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_jmp_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _e_jmp_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_jmp_near");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_jmp_near(context, neweip, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_load_far(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_virtual_address rdest, ntvdm64_type_unsigned_16 selector, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _e_load_far(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_virtual_address rdest, ntvdm64_type_unsigned_16 selector, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_load_far");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, rsreg, selector));
     switch (byte) {
@@ -3069,7 +3069,7 @@ static void _e_load_far(core_machine_cpu_execution_context *context, t_cpu_data_
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_loopcc(core_machine_cpu_execution_context *context, ntvdm64_type_signed_8 csrc, ntvdm64_type_bool condition) {
+static C_VOID _e_loopcc(core_machine_cpu_execution_context *context, ntvdm64_type_signed_8 csrc, ntvdm64_type_bool condition) {
     ntvdm64_type_unsigned_32 cecx;
     ntvdm64_type_unsigned_32 neweip = cpu_state.data.eip;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_loopcc");
@@ -3094,12 +3094,12 @@ static void _e_loopcc(core_machine_cpu_execution_context *context, ntvdm64_type_
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_ret_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _e_ret_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_ret_near");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_ret_near(context, parambyte, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_ret_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
+static C_VOID _e_ret_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
     ntvdm64_type_unsigned_16 newcs;
     ntvdm64_type_unsigned_32 xs_sel;
     ntvdm64_type_unsigned_32 neweip = 0;
@@ -3210,7 +3210,7 @@ static void _e_ret_far(core_machine_cpu_execution_context *context, ntvdm64_type
 #define DAA_FLAG  (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF)
 #define DAS_FLAG  (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF)
 
-static void _kaf_calc_CF(core_machine_cpu_execution_context *context) {
+static C_VOID _kaf_calc_CF(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_calc_CF");
     switch (instruction_state.data.type) {
     case ADC8:
@@ -3261,7 +3261,7 @@ static void _kaf_calc_CF(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kaf_calc_OF(core_machine_cpu_execution_context *context) {
+static C_VOID _kaf_calc_OF(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_calc_OF");
     switch (instruction_state.data.type) {
     case ADC8:
@@ -3305,12 +3305,12 @@ static void _kaf_calc_OF(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kaf_calc_AF(core_machine_cpu_execution_context *context) {
+static C_VOID _kaf_calc_AF(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_calc_AF");
     NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_AF, ((instruction_state.data.opr1 ^ instruction_state.data.opr2) ^ instruction_state.data.result) & 0x10);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kaf_calc_PF(core_machine_cpu_execution_context *context) {
+static C_VOID _kaf_calc_PF(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 res8 = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
     ntvdm64_type_bool even = 1;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_calc_PF");
@@ -3321,12 +3321,12 @@ static void _kaf_calc_PF(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_PF, even);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kaf_calc_ZF(core_machine_cpu_execution_context *context) {
+static C_VOID _kaf_calc_ZF(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_calc_ZF");
     NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_ZF, !instruction_state.data.result);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kaf_calc_SF(core_machine_cpu_execution_context *context) {
+static C_VOID _kaf_calc_SF(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_calc_SF");
     switch (instruction_state.data.bit) {
     case 8:
@@ -3346,7 +3346,7 @@ static void _kaf_calc_SF(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kaf_set_flags(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 flags) {
+static C_VOID _kaf_set_flags(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 flags) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_set_flags");
     if (flags & VCPU_EFLAGS_CF) NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_calc_CF(context));
     if (flags & VCPU_EFLAGS_PF) NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_calc_PF(context));
@@ -3356,7 +3356,7 @@ static void _kaf_set_flags(core_machine_cpu_execution_context *context, ntvdm64_
     if (flags & VCPU_EFLAGS_OF) NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_calc_OF(context));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kas_move_index(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool flagsi, ntvdm64_type_bool flagdi) {
+static C_VOID _kas_move_index(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool flagsi, ntvdm64_type_bool flagdi) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kas_move_index");
     switch (_GetAddressSize) {
     case 2:
@@ -3456,7 +3456,7 @@ do { \
     } \
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, funflag)); \
 } while (0)
-static void _a_add(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_add(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_add");
     _kac_arith2(ADD_FLAG,
                 ADD8,  (instruction_state.data.opr1 + instruction_state.data.opr2),
@@ -3466,7 +3466,7 @@ static void _a_add(core_machine_cpu_execution_context *context, ntvdm64_type_uns
                 ADD32, (instruction_state.data.opr1 + instruction_state.data.opr2));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_adc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_adc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_adc");
     _kac_arith2(ADC_FLAG,
                 ADC8,  (instruction_state.data.opr1 + instruction_state.data.opr2 + _GetEFLAGS_CF),
@@ -3476,7 +3476,7 @@ static void _a_adc(core_machine_cpu_execution_context *context, ntvdm64_type_uns
                 ADC32, (instruction_state.data.opr1 + instruction_state.data.opr2 + _GetEFLAGS_CF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_and(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_and(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_and");
     _kac_arith2(AND_FLAG,
                 AND8,  (instruction_state.data.opr1 & instruction_state.data.opr2),
@@ -3489,7 +3489,7 @@ static void _a_and(core_machine_cpu_execution_context *context, ntvdm64_type_uns
     instruction_state.data.udf |= VCPU_EFLAGS_AF;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_or(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_or(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_or");
     _kac_arith2(OR_FLAG,
                 OR8,  (instruction_state.data.opr1 | instruction_state.data.opr2),
@@ -3502,7 +3502,7 @@ static void _a_or(core_machine_cpu_execution_context *context, ntvdm64_type_unsi
     instruction_state.data.udf |= VCPU_EFLAGS_AF;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_sbb(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_sbb(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_sbb");
     _kac_arith2(SBB_FLAG,
                 SBB8,  (instruction_state.data.opr1 - (instruction_state.data.opr2 + _GetEFLAGS_CF)),
@@ -3512,7 +3512,7 @@ static void _a_sbb(core_machine_cpu_execution_context *context, ntvdm64_type_uns
                 SBB32, (instruction_state.data.opr1 - (instruction_state.data.opr2 + _GetEFLAGS_CF)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_sub(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_sub(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_sub");
     _kac_arith2(SUB_FLAG,
                 SUB8,  (instruction_state.data.opr1 - instruction_state.data.opr2),
@@ -3522,7 +3522,7 @@ static void _a_sub(core_machine_cpu_execution_context *context, ntvdm64_type_uns
                 SUB32, (instruction_state.data.opr1 - instruction_state.data.opr2));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_xor(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_xor(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_xor");
     _kac_arith2(XOR_FLAG,
                 XOR8,  (instruction_state.data.opr1 ^ instruction_state.data.opr2),
@@ -3535,7 +3535,7 @@ static void _a_xor(core_machine_cpu_execution_context *context, ntvdm64_type_uns
     instruction_state.data.udf |= VCPU_EFLAGS_AF;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_cmp(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_cmp(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_cmp");
     _kac_arith2(CMP_FLAG,
                 CMP8,  ((ntvdm64_type_unsigned_8)instruction_state.data.opr1 - (ntvdm64_type_signed_8)instruction_state.data.opr2),
@@ -3545,7 +3545,7 @@ static void _a_cmp(core_machine_cpu_execution_context *context, ntvdm64_type_uns
                 CMP32, ((ntvdm64_type_unsigned_32)instruction_state.data.opr1 - (ntvdm64_type_signed_32)instruction_state.data.opr2));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_test(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_test(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_test");
     _kac_arith2(TEST_FLAG,
                 TEST8,  (instruction_state.data.opr1 & instruction_state.data.opr2),
@@ -3558,7 +3558,7 @@ static void _a_test(core_machine_cpu_execution_context *context, ntvdm64_type_un
     instruction_state.data.udf |= VCPU_EFLAGS_AF;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_inc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_inc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_inc");
     instruction_state.data.opr2 = 1;
     _kac_arith1(INC_FLAG,
@@ -3567,7 +3567,7 @@ static void _a_inc(core_machine_cpu_execution_context *context, ntvdm64_type_uns
                 ADD32, (instruction_state.data.opr1 + instruction_state.data.opr2));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_dec(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_dec(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_dec");
     instruction_state.data.opr2 = 1;
     _kac_arith1(DEC_FLAG,
@@ -3576,7 +3576,7 @@ static void _a_dec(core_machine_cpu_execution_context *context, ntvdm64_type_uns
                 SUB32, (instruction_state.data.opr1 - instruction_state.data.opr2));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_not(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_not(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_not");
     instruction_state.data.opr2 = 0;
     _kac_arith1(NOT_FLAG,
@@ -3585,7 +3585,7 @@ static void _a_not(core_machine_cpu_execution_context *context, ntvdm64_type_uns
                 ARITHTYPE_NULL, (~instruction_state.data.opr1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_neg(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_neg(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_neg");
     instruction_state.data.opr2 = cdest;
     cdest = 0;
@@ -3596,7 +3596,7 @@ static void _a_neg(core_machine_cpu_execution_context *context, ntvdm64_type_uns
     NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!instruction_state.data.opr2);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_mul(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_mul(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_unsigned_64 cdest;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_mul");
     switch (bit) {
@@ -3648,7 +3648,7 @@ static void _a_mul(core_machine_cpu_execution_context *context, ntvdm64_type_uns
                          VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_imul(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_imul(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_signed_64 cdest;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_imul");
     switch (bit) {
@@ -3715,7 +3715,7 @@ static void _a_imul(core_machine_cpu_execution_context *context, ntvdm64_type_un
                          VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_div(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_div(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_unsigned_64 temp = 0x0000000000000000;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_div");
     switch (bit) {
@@ -3804,7 +3804,7 @@ static void _a_div(core_machine_cpu_execution_context *context, ntvdm64_type_uns
                          VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_OF);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_idiv(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_idiv(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_signed_64 temp;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_idiv");
     switch (bit) {
@@ -3897,7 +3897,7 @@ static void _a_idiv(core_machine_cpu_execution_context *context, ntvdm64_type_un
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _a_imul3(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc1, ntvdm64_type_unsigned_64 csrc2, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_imul3(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc1, ntvdm64_type_unsigned_64 csrc2, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_signed_64 cdest;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_imul3");
     switch (bit) {
@@ -3976,7 +3976,7 @@ static void _a_imul3(core_machine_cpu_execution_context *context, ntvdm64_type_u
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _a_rol(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_rol(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_unsigned_8 count;
     ntvdm64_type_unsigned_32 flagcf;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_rol");
@@ -4049,7 +4049,7 @@ static void _a_rol(core_machine_cpu_execution_context *context, ntvdm64_type_uns
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_ror(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_ror(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_unsigned_8 count;
     ntvdm64_type_unsigned_32 flagcf;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_ror");
@@ -4122,7 +4122,7 @@ static void _a_ror(core_machine_cpu_execution_context *context, ntvdm64_type_uns
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_rcl(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_rcl(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_unsigned_8 count;
     ntvdm64_type_unsigned_32 flagcf;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_rcl");
@@ -4195,7 +4195,7 @@ static void _a_rcl(core_machine_cpu_execution_context *context, ntvdm64_type_uns
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_rcr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_rcr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_unsigned_8 count;
     ntvdm64_type_unsigned_32 flagcf;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_rcr");
@@ -4268,7 +4268,7 @@ static void _a_rcr(core_machine_cpu_execution_context *context, ntvdm64_type_uns
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_shl(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_shl(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_unsigned_8 count;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_shl");
     count = csrc & 0x1f;
@@ -4352,7 +4352,7 @@ static void _a_shl(core_machine_cpu_execution_context *context, ntvdm64_type_uns
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_shr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_shr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_unsigned_8 count;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_shr");
     count = csrc & 0x1f;
@@ -4433,7 +4433,7 @@ static void _a_shr(core_machine_cpu_execution_context *context, ntvdm64_type_uns
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_sar(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_sar(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_unsigned_8 count;
     ntvdm64_type_bool tempcf;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_shr");
@@ -4513,7 +4513,7 @@ static void _a_sar(core_machine_cpu_execution_context *context, ntvdm64_type_uns
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _p_ins(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _p_ins(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_32 cedi, data = 0;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_p_ins");
     switch (_GetAddressSize) {
@@ -4560,7 +4560,7 @@ static void _p_ins(core_machine_cpu_execution_context *context, ntvdm64_type_uns
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _p_outs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _p_outs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_32 cesi, data = 0;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_p_outs");
     switch (_GetAddressSize) {
@@ -4604,7 +4604,7 @@ static void _p_outs(core_machine_cpu_execution_context *context, ntvdm64_type_un
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_movs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _m_movs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_32 data = 0;
     ntvdm64_type_unsigned_32 cesi, cedi;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_movs");
@@ -4651,7 +4651,7 @@ static void _m_movs(core_machine_cpu_execution_context *context, ntvdm64_type_un
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_stos(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _m_stos(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_32 cedi;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_stos");
     switch (_GetAddressSize) {
@@ -4692,7 +4692,7 @@ static void _m_stos(core_machine_cpu_execution_context *context, ntvdm64_type_un
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_lods(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+static C_VOID _m_lods(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
     ntvdm64_type_unsigned_32 cesi = 0x00000000;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_lods");
     switch (_GetAddressSize) {
@@ -4739,7 +4739,7 @@ static void _m_lods(core_machine_cpu_execution_context *context, ntvdm64_type_un
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_cmps(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_cmps(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_unsigned_32 cesi, cedi;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_cmps");
     instruction_state.data.opr1 = 0;
@@ -4797,7 +4797,7 @@ static void _a_cmps(core_machine_cpu_execution_context *context, ntvdm64_type_un
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, CMP_FLAG));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_scas(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_scas(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_unsigned_32 cedi;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_scas");
     instruction_state.data.opr1 = 0;
@@ -4854,7 +4854,7 @@ static void _a_scas(core_machine_cpu_execution_context *context, ntvdm64_type_un
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 #define _adv NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_skip(context, 1))
-static void UndefinedOpcode(core_machine_cpu_execution_context *context) {
+static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("UndefinedOpcode");
     cpu_state = instruction_state.data.oldcpu;
     if (!_GetCR0_PE) {
@@ -4864,7 +4864,7 @@ static void UndefinedOpcode(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADD_RM8_R8(core_machine_cpu_execution_context *context) {
+static C_VOID ADD_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM8_R8");
     i386(0x00) {
         _adv;
@@ -4879,7 +4879,7 @@ static void ADD_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADD_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID ADD_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM32_R32");
     i386(0x01) {
         _adv;
@@ -4899,7 +4899,7 @@ static void ADD_RM32_R32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADD_R8_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID ADD_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R8_RM8");
     i386(0x02) {
         _adv;
@@ -4913,7 +4913,7 @@ static void ADD_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADD_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID ADD_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R32_RM32");
     i386(0x03) {
         _adv;
@@ -4931,7 +4931,7 @@ static void ADD_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADD_AL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID ADD_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_AL_I8");
     i386(0x04) {
         _adv;
@@ -4944,7 +4944,7 @@ static void ADD_AL_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADD_EAX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID ADD_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_EAX_I32");
     i386(0x05) {
         _adv;
@@ -4976,7 +4976,7 @@ static void ADD_EAX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_ES(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_ES(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ES");
     i386(0x06) {
@@ -4989,7 +4989,7 @@ static void PUSH_ES(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_ES(core_machine_cpu_execution_context *context) {
+static C_VOID POP_ES(core_machine_cpu_execution_context *context) {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
     ntvdm64_type_unsigned_32 xs_sel;
@@ -5004,7 +5004,7 @@ static void POP_ES(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_es(context, NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR_RM8_R8(core_machine_cpu_execution_context *context) {
+static C_VOID OR_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM8_R8");
     i386(0x08) {
         _adv;
@@ -5019,7 +5019,7 @@ static void OR_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID OR_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM32_R32");
     i386(0x09) {
         _adv;
@@ -5039,7 +5039,7 @@ static void OR_RM32_R32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR_R8_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID OR_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R8_RM8");
     i386(0x0a) {
         _adv;
@@ -5053,7 +5053,7 @@ static void OR_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID OR_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R32_RM32");
     i386(0x0b) {
         _adv;
@@ -5071,7 +5071,7 @@ static void OR_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR_AL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID OR_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_AL_I8");
     i386(0x0c) {
         _adv;
@@ -5084,7 +5084,7 @@ static void OR_AL_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR_EAX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID OR_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_EAX_I32");
     i386(0x0d) {
         _adv;
@@ -5116,7 +5116,7 @@ static void OR_EAX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_CS(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_CS(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_CS");
     i386(0x0e) {
@@ -5129,7 +5129,7 @@ static void PUSH_CS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_CS(core_machine_cpu_execution_context *context) {
+static C_VOID POP_CS(core_machine_cpu_execution_context *context) {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
     ntvdm64_type_unsigned_32 xs_sel;
@@ -5144,7 +5144,7 @@ static void POP_CS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_cs(context, NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_0F(core_machine_cpu_execution_context *context) {
+static C_VOID INS_0F(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 opcode = 0x00;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F");
     i386(0x0f) {
@@ -5156,7 +5156,7 @@ static void INS_0F(core_machine_cpu_execution_context *context) {
         POP_CS(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC_RM8_R8(core_machine_cpu_execution_context *context) {
+static C_VOID ADC_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM8_R8");
     i386(0x10) {
         _adv;
@@ -5171,7 +5171,7 @@ static void ADC_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID ADC_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM32_R32");
     i386(0x11) {
         _adv;
@@ -5191,7 +5191,7 @@ static void ADC_RM32_R32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC_R8_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID ADC_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R8_RM8");
     i386(0x12) {
         _adv;
@@ -5205,7 +5205,7 @@ static void ADC_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID ADC_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R32_RM32");
     i386(0x13) {
         _adv;
@@ -5223,7 +5223,7 @@ static void ADC_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC_AL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID ADC_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_AL_I8");
     i386(0x14) {
         _adv;
@@ -5236,7 +5236,7 @@ static void ADC_AL_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC_EAX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID ADC_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_EAX_I32");
     i386(0x15) {
         _adv;
@@ -5268,7 +5268,7 @@ static void ADC_EAX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_SS(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_SS(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_SS");
     i386(0x16) {
@@ -5281,7 +5281,7 @@ static void PUSH_SS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_SS(core_machine_cpu_execution_context *context) {
+static C_VOID POP_SS(core_machine_cpu_execution_context *context) {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
     ntvdm64_type_unsigned_32 xs_sel;
@@ -5296,7 +5296,7 @@ static void POP_SS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_ss(context, NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB_RM8_R8(core_machine_cpu_execution_context *context) {
+static C_VOID SBB_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM8_R8");
     i386(0x18) {
         _adv;
@@ -5311,7 +5311,7 @@ static void SBB_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID SBB_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM32_R32");
     i386(0x19) {
         _adv;
@@ -5331,7 +5331,7 @@ static void SBB_RM32_R32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB_R8_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SBB_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R8_RM8");
     i386(0x1a) {
         _adv;
@@ -5345,7 +5345,7 @@ static void SBB_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID SBB_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R32_RM32");
     i386(0x1b) {
         _adv;
@@ -5363,7 +5363,7 @@ static void SBB_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB_AL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID SBB_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_AL_I8");
     i386(0x1c) {
         _adv;
@@ -5376,7 +5376,7 @@ static void SBB_AL_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB_EAX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID SBB_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_EAX_I32");
     i386(0x1d) {
         _adv;
@@ -5408,7 +5408,7 @@ static void SBB_EAX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_DS(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_DS(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_DS");
     i386(0x1e) {
@@ -5421,7 +5421,7 @@ static void PUSH_DS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_DS(core_machine_cpu_execution_context *context) {
+static C_VOID POP_DS(core_machine_cpu_execution_context *context) {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
     ntvdm64_type_unsigned_32 xs_sel;
@@ -5436,7 +5436,7 @@ static void POP_DS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_ds(context, NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND_RM8_R8(core_machine_cpu_execution_context *context) {
+static C_VOID AND_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM8_R8");
     i386(0x20) {
         _adv;
@@ -5451,7 +5451,7 @@ static void AND_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID AND_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM32_R32");
     i386(0x21) {
         _adv;
@@ -5471,7 +5471,7 @@ static void AND_RM32_R32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND_R8_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID AND_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R8_RM8");
     i386(0x22) {
         _adv;
@@ -5485,7 +5485,7 @@ static void AND_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID AND_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R32_RM32");
     i386(0x23) {
         _adv;
@@ -5503,7 +5503,7 @@ static void AND_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND_AL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID AND_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_AL_I8");
     i386(0x24) {
         _adv;
@@ -5516,7 +5516,7 @@ static void AND_AL_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND_EAX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID AND_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_EAX_I32");
     i386(0x25) {
         _adv;
@@ -5548,7 +5548,7 @@ static void AND_EAX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_ES(core_machine_cpu_execution_context *context) {
+static C_VOID PREFIX_ES(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_ES");
     i386(0x26) {
         _adv;
@@ -5562,7 +5562,7 @@ static void PREFIX_ES(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DAA(core_machine_cpu_execution_context *context) {
+static C_VOID DAA(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 oldAL = cpu_state.data.al;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DAA");
     i386(0x27)
@@ -5585,7 +5585,7 @@ static void DAA(core_machine_cpu_execution_context *context) {
     instruction_state.data.udf |= VCPU_EFLAGS_OF;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB_RM8_R8(core_machine_cpu_execution_context *context) {
+static C_VOID SUB_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM8_R8");
     i386(0x28) {
         _adv;
@@ -5600,7 +5600,7 @@ static void SUB_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID SUB_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM32_R32");
     i386(0x29) {
         _adv;
@@ -5620,7 +5620,7 @@ static void SUB_RM32_R32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB_R8_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SUB_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R8_RM8");
     i386(0x2a) {
         _adv;
@@ -5634,7 +5634,7 @@ static void SUB_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID SUB_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R32_RM32");
     i386(0x2b) {
         _adv;
@@ -5652,7 +5652,7 @@ static void SUB_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB_AL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID SUB_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_AL_I8");
     i386(0x2c) {
         _adv;
@@ -5665,7 +5665,7 @@ static void SUB_AL_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB_EAX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID SUB_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_EAX_I32");
     i386(0x2d) {
         _adv;
@@ -5697,7 +5697,7 @@ static void SUB_EAX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_CS(core_machine_cpu_execution_context *context) {
+static C_VOID PREFIX_CS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_CS");
     i386(0x2e) {
         _adv;
@@ -5711,7 +5711,7 @@ static void PREFIX_CS(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DAS(core_machine_cpu_execution_context *context) {
+static C_VOID DAS(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 oldAL = cpu_state.data.al;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DAS");
     i386(0x2f)
@@ -5734,7 +5734,7 @@ static void DAS(core_machine_cpu_execution_context *context) {
     instruction_state.data.udf |= VCPU_EFLAGS_OF;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR_RM8_R8(core_machine_cpu_execution_context *context) {
+static C_VOID XOR_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM8_R8");
     i386(0x30) {
         _adv;
@@ -5749,7 +5749,7 @@ static void XOR_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID XOR_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM32_R32");
     i386(0x31) {
         _adv;
@@ -5769,7 +5769,7 @@ static void XOR_RM32_R32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR_R8_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID XOR_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R8_RM8");
     i386(0x32) {
         _adv;
@@ -5783,7 +5783,7 @@ static void XOR_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID XOR_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R32_RM32");
     i386(0x33) {
         _adv;
@@ -5801,7 +5801,7 @@ static void XOR_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR_AL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID XOR_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_AL_I8");
     i386(0x34) {
         _adv;
@@ -5814,7 +5814,7 @@ static void XOR_AL_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR_EAX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID XOR_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_EAX_I32");
     i386(0x35) {
         _adv;
@@ -5846,7 +5846,7 @@ static void XOR_EAX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_SS(core_machine_cpu_execution_context *context) {
+static C_VOID PREFIX_SS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_SS");
     i386(0x36) {
         _adv;
@@ -5860,7 +5860,7 @@ static void PREFIX_SS(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AAA(core_machine_cpu_execution_context *context) {
+static C_VOID AAA(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAA");
     i386(0x37) {
         _adv;
@@ -5881,7 +5881,7 @@ static void AAA(core_machine_cpu_execution_context *context) {
     instruction_state.data.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP_RM8_R8(core_machine_cpu_execution_context *context) {
+static C_VOID CMP_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM8_R8");
     i386(0x38) {
         _adv;
@@ -5894,7 +5894,7 @@ static void CMP_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID CMP_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM32_R32");
     i386(0x39) {
         _adv;
@@ -5910,7 +5910,7 @@ static void CMP_RM32_R32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP_R8_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID CMP_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R8_RM8");
     i386(0x3a) {
         _adv;
@@ -5923,7 +5923,7 @@ static void CMP_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.cr, instruction_state.data.crm, 8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID CMP_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R32_RM32");
     i386(0x3b) {
         _adv;
@@ -5939,7 +5939,7 @@ static void CMP_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP_AL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID CMP_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_AL_I8");
     i386(0x3c) {
         _adv;
@@ -5951,7 +5951,7 @@ static void CMP_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, cpu_state.data.al, instruction_state.data.cimm, 8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP_EAX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID CMP_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_EAX_I32");
     i386(0x3d) {
         _adv;
@@ -5980,7 +5980,7 @@ static void CMP_EAX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_DS(core_machine_cpu_execution_context *context) {
+static C_VOID PREFIX_DS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_DS");
     i386(0x3e) {
         _adv;
@@ -5994,7 +5994,7 @@ static void PREFIX_DS(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AAS(core_machine_cpu_execution_context *context) {
+static C_VOID AAS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAS");
     i386(0x3f) {
         _adv;
@@ -6015,7 +6015,7 @@ static void AAS(core_machine_cpu_execution_context *context) {
     instruction_state.data.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID INC_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EAX");
     i386(0x40) {
         _adv;
@@ -6044,7 +6044,7 @@ static void INC_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_ECX(core_machine_cpu_execution_context *context) {
+static C_VOID INC_ECX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ECX");
     i386(0x41) {
         _adv;
@@ -6073,7 +6073,7 @@ static void INC_ECX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_EDX(core_machine_cpu_execution_context *context) {
+static C_VOID INC_EDX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDX");
     i386(0x42) {
         _adv;
@@ -6102,7 +6102,7 @@ static void INC_EDX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_EBX(core_machine_cpu_execution_context *context) {
+static C_VOID INC_EBX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBX");
     i386(0x43) {
         _adv;
@@ -6131,7 +6131,7 @@ static void INC_EBX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_ESP(core_machine_cpu_execution_context *context) {
+static C_VOID INC_ESP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESP");
     i386(0x44) {
         _adv;
@@ -6160,7 +6160,7 @@ static void INC_ESP(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_EBP(core_machine_cpu_execution_context *context) {
+static C_VOID INC_EBP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBP");
     i386(0x45) {
         _adv;
@@ -6189,7 +6189,7 @@ static void INC_EBP(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_ESI(core_machine_cpu_execution_context *context) {
+static C_VOID INC_ESI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESI");
     i386(0x46) {
         _adv;
@@ -6218,7 +6218,7 @@ static void INC_ESI(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_EDI(core_machine_cpu_execution_context *context) {
+static C_VOID INC_EDI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDI");
     i386(0x47) {
         _adv;
@@ -6247,7 +6247,7 @@ static void INC_EDI(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID DEC_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EAX");
     i386(0x48) {
         _adv;
@@ -6276,7 +6276,7 @@ static void DEC_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_ECX(core_machine_cpu_execution_context *context) {
+static C_VOID DEC_ECX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ECX");
     i386(0x49) {
         _adv;
@@ -6305,7 +6305,7 @@ static void DEC_ECX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_EDX(core_machine_cpu_execution_context *context) {
+static C_VOID DEC_EDX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDX");
     i386(0x4a) {
         _adv;
@@ -6334,7 +6334,7 @@ static void DEC_EDX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_EBX(core_machine_cpu_execution_context *context) {
+static C_VOID DEC_EBX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBX");
     i386(0x4b) {
         _adv;
@@ -6363,7 +6363,7 @@ static void DEC_EBX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_ESP(core_machine_cpu_execution_context *context) {
+static C_VOID DEC_ESP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESP");
     i386(0x4c) {
         _adv;
@@ -6392,7 +6392,7 @@ static void DEC_ESP(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_EBP(core_machine_cpu_execution_context *context) {
+static C_VOID DEC_EBP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBP");
     i386(0x4d) {
         _adv;
@@ -6421,7 +6421,7 @@ static void DEC_EBP(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_ESI(core_machine_cpu_execution_context *context) {
+static C_VOID DEC_ESI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESI");
     i386(0x4e) {
         _adv;
@@ -6450,7 +6450,7 @@ static void DEC_ESI(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_EDI(core_machine_cpu_execution_context *context) {
+static C_VOID DEC_EDI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDI");
     i386(0x4f) {
         _adv;
@@ -6479,7 +6479,7 @@ static void DEC_EDI(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EAX");
     i386(0x50) {
         _adv;
@@ -6505,7 +6505,7 @@ static void PUSH_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_ECX(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_ECX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ECX");
     i386(0x51) {
         _adv;
@@ -6531,7 +6531,7 @@ static void PUSH_ECX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_EDX(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_EDX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDX");
     i386(0x52) {
         _adv;
@@ -6557,7 +6557,7 @@ static void PUSH_EDX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_EBX(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_EBX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBX");
     i386(0x53) {
         _adv;
@@ -6583,7 +6583,7 @@ static void PUSH_EBX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_ESP(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_ESP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESP");
     i386(0x54) {
         _adv;
@@ -6609,7 +6609,7 @@ static void PUSH_ESP(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_EBP(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_EBP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBP");
     i386(0x55) {
         _adv;
@@ -6635,7 +6635,7 @@ static void PUSH_EBP(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_ESI(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_ESI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESI");
     i386(0x56) {
         _adv;
@@ -6661,7 +6661,7 @@ static void PUSH_ESI(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_EDI(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_EDI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDI");
     i386(0x57) {
         _adv;
@@ -6687,7 +6687,7 @@ static void PUSH_EDI(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID POP_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EAX");
     i386(0x58) {
         _adv;
@@ -6713,7 +6713,7 @@ static void POP_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_ECX(core_machine_cpu_execution_context *context) {
+static C_VOID POP_ECX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ECX");
     i386(0x59) {
         _adv;
@@ -6739,7 +6739,7 @@ static void POP_ECX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_EDX(core_machine_cpu_execution_context *context) {
+static C_VOID POP_EDX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDX");
     i386(0x5a) {
         _adv;
@@ -6765,7 +6765,7 @@ static void POP_EDX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_EBX(core_machine_cpu_execution_context *context) {
+static C_VOID POP_EBX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBX");
     i386(0x5b) {
         _adv;
@@ -6791,7 +6791,7 @@ static void POP_EBX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_ESP(core_machine_cpu_execution_context *context) {
+static C_VOID POP_ESP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESP");
     i386(0x5c) {
         _adv;
@@ -6817,7 +6817,7 @@ static void POP_ESP(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_EBP(core_machine_cpu_execution_context *context) {
+static C_VOID POP_EBP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBP");
     i386(0x5d) {
         _adv;
@@ -6843,7 +6843,7 @@ static void POP_EBP(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_ESI(core_machine_cpu_execution_context *context) {
+static C_VOID POP_ESI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESI");
     i386(0x5e) {
         _adv;
@@ -6869,7 +6869,7 @@ static void POP_ESI(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_EDI(core_machine_cpu_execution_context *context) {
+static C_VOID POP_EDI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDI");
     i386(0x5f) {
         _adv;
@@ -6895,7 +6895,7 @@ static void POP_EDI(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSHA(core_machine_cpu_execution_context *context) {
+static C_VOID PUSHA(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 cesp;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHA");
     i386(0x60) {
@@ -6936,7 +6936,7 @@ static void PUSHA(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POPA(core_machine_cpu_execution_context *context) {
+static C_VOID POPA(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 cesp;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POPA");
     i386(0x61) {
@@ -6975,7 +6975,7 @@ static void POPA(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BOUND_R16_M16_16(core_machine_cpu_execution_context *context) {
+static C_VOID BOUND_R16_M16_16(core_machine_cpu_execution_context *context) {
     ntvdm64_type_signed_16 a16,l16,u16;
     ntvdm64_type_signed_32 a32,l32,u32;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BOUND_R16_M16_16");
@@ -7021,7 +7021,7 @@ static void BOUND_R16_M16_16(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ARPL_RM16_R16(core_machine_cpu_execution_context *context) {
+static C_VOID ARPL_RM16_R16(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ARPL_RM16_R16");
     i386(0x63) {
         if (_IsProtected) {
@@ -7044,7 +7044,7 @@ static void ARPL_RM16_R16(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_FS(core_machine_cpu_execution_context *context) {
+static C_VOID PREFIX_FS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_FS");
     i386(0x64) {
         _adv;
@@ -7055,7 +7055,7 @@ static void PREFIX_FS(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_GS(core_machine_cpu_execution_context *context) {
+static C_VOID PREFIX_GS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_GS");
     i386(0x65) {
         _adv;
@@ -7066,7 +7066,7 @@ static void PREFIX_GS(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_OprSize(core_machine_cpu_execution_context *context) {
+static C_VOID PREFIX_OprSize(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_OprSize");
     i386(0x66) {
         _adv;
@@ -7076,7 +7076,7 @@ static void PREFIX_OprSize(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_AddrSize(core_machine_cpu_execution_context *context) {
+static C_VOID PREFIX_AddrSize(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_AddrSize");
     i386(0x67) {
         _adv;
@@ -7086,7 +7086,7 @@ static void PREFIX_AddrSize(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_I32(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I32");
     i386(0x68) {
         _adv;
@@ -7097,7 +7097,7 @@ static void PUSH_I32(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IMUL_R32_RM32_I32(core_machine_cpu_execution_context *context) {
+static C_VOID IMUL_R32_RM32_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
     i386(0x69) {
         _adv;
@@ -7111,7 +7111,7 @@ static void IMUL_R32_RM32_I32(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_I8(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I8");
     i386(0x6a) {
         _adv;
@@ -7122,7 +7122,7 @@ static void PUSH_I8(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IMUL_R32_RM32_I8(core_machine_cpu_execution_context *context) {
+static C_VOID IMUL_R32_RM32_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I8");
     i386(0x6b) {
         _adv;
@@ -7136,7 +7136,7 @@ static void IMUL_R32_RM32_I8(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INSB(core_machine_cpu_execution_context *context) {
+static C_VOID INSB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INSB");
     i386(0x6c) {
         _adv;
@@ -7180,7 +7180,7 @@ static void INSB(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INSW(core_machine_cpu_execution_context *context) {
+static C_VOID INSW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INSW");
     i386(0x6d) {
         _adv;
@@ -7224,7 +7224,7 @@ static void INSW(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUTSB(core_machine_cpu_execution_context *context) {
+static C_VOID OUTSB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSB");
     i386(0x6e) {
         _adv;
@@ -7268,7 +7268,7 @@ static void OUTSB(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUTSW(core_machine_cpu_execution_context *context) {
+static C_VOID OUTSW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSW");
     i386(0x6f) {
         _adv;
@@ -7312,7 +7312,7 @@ static void OUTSW(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JO_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JO_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JO_REL8");
     i386(0x70) {
         _adv;
@@ -7324,7 +7324,7 @@ static void JO_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, _GetEFLAGS_OF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNO_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JNO_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNO_REL8");
     i386(0x71) {
         _adv;
@@ -7336,7 +7336,7 @@ static void JNO_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, !_GetEFLAGS_OF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JC_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JC_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JC_REL8");
     i386(0x72) {
         _adv;
@@ -7348,7 +7348,7 @@ static void JC_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, _GetEFLAGS_CF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNC_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JNC_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNC_REL8");
     i386(0x73) {
         _adv;
@@ -7360,7 +7360,7 @@ static void JNC_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, !_GetEFLAGS_CF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JZ_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JZ_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JZ_REL8");
     i386(0x74) {
         _adv;
@@ -7372,7 +7372,7 @@ static void JZ_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, _GetEFLAGS_ZF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNZ_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JNZ_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNZ_REL8");
     i386(0x75) {
         _adv;
@@ -7384,7 +7384,7 @@ static void JNZ_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, !_GetEFLAGS_ZF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNA_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JNA_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNA_REL8");
     i386(0x76) {
         _adv;
@@ -7397,7 +7397,7 @@ static void JNA_REL8(core_machine_cpu_execution_context *context) {
                 (_GetEFLAGS_CF || _GetEFLAGS_ZF)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JA_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JA_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JA_REL8");
     i386(0x77) {
         _adv;
@@ -7410,7 +7410,7 @@ static void JA_REL8(core_machine_cpu_execution_context *context) {
                 !(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JS_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JS_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JS_REL8");
     i386(0x78) {
         _adv;
@@ -7422,7 +7422,7 @@ static void JS_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, _GetEFLAGS_SF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNS_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JNS_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNS_REL8");
     i386(0x79) {
         _adv;
@@ -7434,7 +7434,7 @@ static void JNS_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, !_GetEFLAGS_SF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JP_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JP_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JP_REL8");
     _new_code_path_;
     i386(0x7a) {
@@ -7447,7 +7447,7 @@ static void JP_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, _GetEFLAGS_PF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNP_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JNP_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNP_REL8");
     _new_code_path_;
     i386(0x7b) {
@@ -7460,7 +7460,7 @@ static void JNP_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, !_GetEFLAGS_PF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JL_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JL_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JL_REL8");
     i386(0x7c) {
         _adv;
@@ -7472,7 +7472,7 @@ static void JL_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNL_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JNL_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNL_REL8");
     i386(0x7d) {
         _adv;
@@ -7484,7 +7484,7 @@ static void JNL_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNG_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JNG_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNG_REL8");
     i386(0x7e) {
         _adv;
@@ -7497,7 +7497,7 @@ static void JNG_REL8(core_machine_cpu_execution_context *context) {
                 (_GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF))));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JG_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JG_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JG_REL8");
     i386(0x7f) {
         _adv;
@@ -7510,7 +7510,7 @@ static void JG_REL8(core_machine_cpu_execution_context *context) {
                 (!_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF))));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_80(core_machine_cpu_execution_context *context) {
+static C_VOID INS_80(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_80");
     i386 (0x80) {
         _adv;
@@ -7583,7 +7583,7 @@ static void INS_80(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_81(core_machine_cpu_execution_context *context) {
+static C_VOID INS_81(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_81");
     i386(0x81) {
         _adv;
@@ -7719,7 +7719,7 @@ static void INS_81(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_83(core_machine_cpu_execution_context *context) {
+static C_VOID INS_83(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 bit;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_83");
     i386(0x83) {
@@ -7856,7 +7856,7 @@ static void INS_83(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void TEST_RM8_R8(core_machine_cpu_execution_context *context) {
+static C_VOID TEST_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM8_R8");
     i386(0x84) {
         _adv;
@@ -7869,7 +7869,7 @@ static void TEST_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_test(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void TEST_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID TEST_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM32_R32");
     i386(0x85) {
         _adv;
@@ -7885,7 +7885,7 @@ static void TEST_RM32_R32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_RM8_R8(core_machine_cpu_execution_context *context) {
+static C_VOID XCHG_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM8_R8");
     i386(0x86) {
         _adv;
@@ -7900,7 +7900,7 @@ static void XCHG_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID XCHG_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM32_R32");
     i386(0x87) {
         _adv;
@@ -7920,7 +7920,7 @@ static void XCHG_RM32_R32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_RM8_R8(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM8_R8");
     i386(0x88) {
         _adv;
@@ -7933,7 +7933,7 @@ static void MOV_RM8_R8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM32_R32");
     i386(0x89) {
         _adv;
@@ -7949,7 +7949,7 @@ static void MOV_RM32_R32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_R8_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R8_RM8");
     i386(0x8a) {
         _adv;
@@ -7962,7 +7962,7 @@ static void MOV_R8_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_RM32");
     i386(0x8b) {
         _adv;
@@ -7978,7 +7978,7 @@ static void MOV_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_RM16_SREG(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_RM16_SREG(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM16_SREG");
     i386(0x8c) {
         _adv;
@@ -7991,7 +7991,7 @@ static void MOV_RM16_SREG(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LEA_R32_M32(core_machine_cpu_execution_context *context) {
+static C_VOID LEA_R32_M32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LEA_R32_M32");
     i386(0x8d) {
         _adv;
@@ -8019,7 +8019,7 @@ static void LEA_R32_M32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_SREG_RM16(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_SREG_RM16(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_SREG_RM16");
     i386(0x8e) {
         _adv;
@@ -8042,7 +8042,7 @@ static void MOV_SREG_RM16(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_8F(core_machine_cpu_execution_context *context) {
+static C_VOID INS_8F(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_8F");
     i386(0x8f) {
         _adv;
@@ -8146,7 +8146,7 @@ static void INS_8F(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void NOP(core_machine_cpu_execution_context *context) {
+static C_VOID NOP(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("NOP");
     i386(0x90) {
         _adv;
@@ -8155,7 +8155,7 @@ static void NOP(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_ECX_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID XCHG_ECX_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ECX_EAX");
     i386(0x91) {
         _adv;
@@ -8188,7 +8188,7 @@ static void XCHG_ECX_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_EDX_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID XCHG_EDX_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDX_EAX");
     i386(0x92) {
         _adv;
@@ -8221,7 +8221,7 @@ static void XCHG_EDX_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_EBX_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID XCHG_EBX_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBX_EAX");
     i386(0x93) {
         _adv;
@@ -8254,7 +8254,7 @@ static void XCHG_EBX_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_ESP_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID XCHG_ESP_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESP_EAX");
     _new_code_path_;
     i386(0x94) {
@@ -8288,7 +8288,7 @@ static void XCHG_ESP_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_EBP_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID XCHG_EBP_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBP_EAX");
     i386(0x95) {
         _adv;
@@ -8321,7 +8321,7 @@ static void XCHG_EBP_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_ESI_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID XCHG_ESI_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESI_EAX");
     i386(0x96) {
         _adv;
@@ -8354,7 +8354,7 @@ static void XCHG_ESI_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_EDI_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID XCHG_EDI_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDI_EAX");
     i386(0x97) {
         _adv;
@@ -8387,7 +8387,7 @@ static void XCHG_EDI_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CBW(core_machine_cpu_execution_context *context) {
+static C_VOID CBW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CBW");
     i386(0x98) {
         _adv;
@@ -8409,7 +8409,7 @@ static void CBW(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CWD(core_machine_cpu_execution_context *context) {
+static C_VOID CWD(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CWD");
     i386(0x99) {
         _adv;
@@ -8432,7 +8432,7 @@ static void CWD(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CALL_PTR16_32(core_machine_cpu_execution_context *context) {
+static C_VOID CALL_PTR16_32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 newcs;
     ntvdm64_type_unsigned_32 neweip;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_PTR16_32");
@@ -8486,7 +8486,7 @@ _______todo WAIT(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSHF(core_machine_cpu_execution_context *context) {
+static C_VOID PUSHF(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 ceflags;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHF");
     i386(0x9c) {
@@ -8523,7 +8523,7 @@ static void PUSHF(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POPF(core_machine_cpu_execution_context *context) {
+static C_VOID POPF(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 mask = VCPU_EFLAGS_RESERVED;
     ntvdm64_type_unsigned_32 ceflags = NTVDM64_TYPE_ZERO_32;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POPF");
@@ -8616,7 +8616,7 @@ static void POPF(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SAHF(core_machine_cpu_execution_context *context) {
+static C_VOID SAHF(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 mask = (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF |
                       VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_CF);
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SAHF");
@@ -8629,7 +8629,7 @@ static void SAHF(core_machine_cpu_execution_context *context) {
     cpu_state.data.eflags = (cpu_state.data.ah & mask) | (cpu_state.data.eflags & ~mask);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LAHF(core_machine_cpu_execution_context *context) {
+static C_VOID LAHF(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LAHF");
     i386(0x9f) {
         _adv;
@@ -8640,7 +8640,7 @@ static void LAHF(core_machine_cpu_execution_context *context) {
     cpu_state.data.ah = NTVDM64_TYPE_MASK_UNSIGNED_8(cpu_state.data.flags);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_AL_MOFFS8(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_AL_MOFFS8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_MOFFS8");
     i386(0xa0) {
         _adv;
@@ -8653,7 +8653,7 @@ static void MOV_AL_MOFFS8(core_machine_cpu_execution_context *context) {
     cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.crm);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_EAX_MOFFS32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_EAX_MOFFS32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_MOFFS32");
     i386(0xa1) {
         _adv;
@@ -8679,7 +8679,7 @@ static void MOV_EAX_MOFFS32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_MOFFS8_AL(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_MOFFS8_AL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS8_AL");
     i386(0xa2) {
         _adv;
@@ -8693,7 +8693,7 @@ static void MOV_MOFFS8_AL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_MOFFS32_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_MOFFS32_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS32_EAX");
     i386(0xa3) {
         _adv;
@@ -8720,7 +8720,7 @@ static void MOV_MOFFS32_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVSB(core_machine_cpu_execution_context *context) {
+static C_VOID MOVSB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSB");
     i386(0xa4) {
         _adv;
@@ -8773,7 +8773,7 @@ static void MOVSB(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVSW(core_machine_cpu_execution_context *context) {
+static C_VOID MOVSW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSW");
     i386(0xa5) {
         _adv;
@@ -8826,7 +8826,7 @@ static void MOVSW(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMPSB(core_machine_cpu_execution_context *context) {
+static C_VOID CMPSB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSB");
     i386(0xa6) {
         _adv;
@@ -8888,7 +8888,7 @@ static void CMPSB(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMPSW(core_machine_cpu_execution_context *context) {
+static C_VOID CMPSW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSW");
     i386(0xa7) {
         _adv;
@@ -8950,7 +8950,7 @@ static void CMPSW(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void TEST_AL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID TEST_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_AL_I8");
     i386(0xa8) {
         _adv;
@@ -8962,7 +8962,7 @@ static void TEST_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_test(context, cpu_state.data.al, instruction_state.data.cimm, 8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void TEST_EAX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID TEST_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_EAX_I32");
     i386(0xa9) {
         _adv;
@@ -8992,7 +8992,7 @@ static void TEST_EAX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void STOSB(core_machine_cpu_execution_context *context) {
+static C_VOID STOSB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSB");
     i386(0xaa) {
         _adv;
@@ -9045,7 +9045,7 @@ static void STOSB(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void STOSW(core_machine_cpu_execution_context *context) {
+static C_VOID STOSW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSW");
     i386(0xab) {
         _adv;
@@ -9098,7 +9098,7 @@ static void STOSW(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LODSB(core_machine_cpu_execution_context *context) {
+static C_VOID LODSB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSB");
     i386(0xac) {
         _adv;
@@ -9151,7 +9151,7 @@ static void LODSB(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LODSW(core_machine_cpu_execution_context *context) {
+static C_VOID LODSW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSW");
     i386(0xad) {
         _adv;
@@ -9204,7 +9204,7 @@ static void LODSW(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SCASB(core_machine_cpu_execution_context *context) {
+static C_VOID SCASB(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASB");
     i386(0xae) {
         _adv;
@@ -9266,7 +9266,7 @@ static void SCASB(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SCASW(core_machine_cpu_execution_context *context) {
+static C_VOID SCASW(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASW");
     i386(0xaf) {
         _adv;
@@ -9328,7 +9328,7 @@ static void SCASW(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_AL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_I8");
     i386(0xb0) {
         _adv;
@@ -9340,7 +9340,7 @@ static void MOV_AL_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_CL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_CL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CL_I8");
     i386(0xb1) {
         _adv;
@@ -9352,7 +9352,7 @@ static void MOV_CL_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.cl = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_DL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_DL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DL_I8");
     i386(0xb2) {
         _adv;
@@ -9364,7 +9364,7 @@ static void MOV_DL_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.dl = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_BL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_BL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BL_I8");
     i386(0xb3) {
         _adv;
@@ -9376,7 +9376,7 @@ static void MOV_BL_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.bl = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_AH_I8(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_AH_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AH_I8");
     i386(0xb4) {
         _adv;
@@ -9388,7 +9388,7 @@ static void MOV_AH_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.ah = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_CH_I8(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_CH_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CH_I8");
     i386(0xb5) {
         _adv;
@@ -9400,7 +9400,7 @@ static void MOV_CH_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.ch = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_DH_I8(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_DH_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DH_I8");
     i386(0xb6) {
         _adv;
@@ -9412,7 +9412,7 @@ static void MOV_DH_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.dh = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_BH_I8(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_BH_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BH_I8");
     i386(0xb7) {
         _adv;
@@ -9424,7 +9424,7 @@ static void MOV_BH_I8(core_machine_cpu_execution_context *context) {
     cpu_state.data.bh = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_EAX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_EAX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_I32");
     i386(0xb8) {
         _adv;
@@ -9448,7 +9448,7 @@ static void MOV_EAX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_ECX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_ECX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ECX_I32");
     i386(0xb9) {
         _adv;
@@ -9472,7 +9472,7 @@ static void MOV_ECX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_EDX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_EDX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDX_I32");
     i386(0xba) {
         _adv;
@@ -9496,7 +9496,7 @@ static void MOV_EDX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_EBX_I32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_EBX_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBX_I32");
     i386(0xbb) {
         _adv;
@@ -9520,7 +9520,7 @@ static void MOV_EBX_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_ESP_I32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_ESP_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESP_I32");
     i386(0xbc) {
         _adv;
@@ -9544,7 +9544,7 @@ static void MOV_ESP_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_EBP_I32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_EBP_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBP_I32");
     i386(0xbd) {
         _adv;
@@ -9568,7 +9568,7 @@ static void MOV_EBP_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_ESI_I32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_ESI_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESI_I32");
     i386(0xbe) {
         _adv;
@@ -9592,7 +9592,7 @@ static void MOV_ESI_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_EDI_I32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_EDI_I32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDI_I32");
     i386(0xbf) {
         _adv;
@@ -9616,7 +9616,7 @@ static void MOV_EDI_I32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_C0(core_machine_cpu_execution_context *context) {
+static C_VOID INS_C0(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C0");
     _new_code_path_;
     i386(0xc0) {
@@ -9676,7 +9676,7 @@ static void INS_C0(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_C1(core_machine_cpu_execution_context *context) {
+static C_VOID INS_C1(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C1");
     i386(0xc1) {
         _adv;
@@ -9735,7 +9735,7 @@ static void INS_C1(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void RET_I16(core_machine_cpu_execution_context *context) {
+static C_VOID RET_I16(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RET_I16");
     i386(0xc2) {
         _adv;
@@ -9749,7 +9749,7 @@ static void RET_I16(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void RET(core_machine_cpu_execution_context *context) {
+static C_VOID RET(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RET");
     i386(0xc3) {
         _adv;
@@ -9761,7 +9761,7 @@ static void RET(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LES_R32_M16_32(core_machine_cpu_execution_context *context) {
+static C_VOID LES_R32_M16_32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 selector;
     ntvdm64_type_unsigned_32 offset;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LES_R32_M16_32");
@@ -9802,7 +9802,7 @@ static void LES_R32_M16_32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LDS_R32_M16_32(core_machine_cpu_execution_context *context) {
+static C_VOID LDS_R32_M16_32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 selector;
     ntvdm64_type_unsigned_32 offset;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LDS_R32_M16_32");
@@ -9843,7 +9843,7 @@ static void LDS_R32_M16_32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_C6(core_machine_cpu_execution_context *context) {
+static C_VOID INS_C6(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C6");
     i386(0xc6) {
         _adv;
@@ -9901,7 +9901,7 @@ static void INS_C6(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_C7(core_machine_cpu_execution_context *context) {
+static C_VOID INS_C7(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C7");
     i386(0xc7) {
         _adv;
@@ -10007,7 +10007,7 @@ static void INS_C7(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ENTER(core_machine_cpu_execution_context *context) {
+static C_VOID ENTER(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 data = 0;
     ntvdm64_type_unsigned_32 temp = 0;
     ntvdm64_type_native_unsigned i = 0;
@@ -10134,7 +10134,7 @@ static void ENTER(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LEAVE(core_machine_cpu_execution_context *context) {
+static C_VOID LEAVE(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LEAVE");
     i386(0xc9) {
         _adv;
@@ -10175,7 +10175,7 @@ static void LEAVE(core_machine_cpu_execution_context *context) {
         UndefinedOpcode(context);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void RETF_I16(core_machine_cpu_execution_context *context) {
+static C_VOID RETF_I16(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF_I16");
     i386(0xca) {
         _adv;
@@ -10189,7 +10189,7 @@ static void RETF_I16(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void RETF(core_machine_cpu_execution_context *context) {
+static C_VOID RETF(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF");
     i386(0xcb) {
         _adv;
@@ -10201,7 +10201,7 @@ static void RETF(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INT3(core_machine_cpu_execution_context *context) {
+static C_VOID INT3(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INT3");
     _new_code_path_;
     i386(0xcc) {
@@ -10214,7 +10214,7 @@ static void INT3(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INT_I8(core_machine_cpu_execution_context *context) {
+static C_VOID INT_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INT_I8");
     i386(0xcc) {
         _adv;
@@ -10228,7 +10228,7 @@ static void INT_I8(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INTO(core_machine_cpu_execution_context *context) {
+static C_VOID INTO(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INTO");
     _new_code_path_;
     i386(0xce) {
@@ -10241,7 +10241,7 @@ static void INTO(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IRET(core_machine_cpu_execution_context *context) {
+static C_VOID IRET(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IRET");
     i386(0xcf) {
         _adv;
@@ -10253,7 +10253,7 @@ static void IRET(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_D0(core_machine_cpu_execution_context *context) {
+static C_VOID INS_D0(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D0");
     i386(0xd0) {
         _adv;
@@ -10312,7 +10312,7 @@ static void INS_D0(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_D1(core_machine_cpu_execution_context *context) {
+static C_VOID INS_D1(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D1");
     i386(0xd1) {
         _adv;
@@ -10420,7 +10420,7 @@ static void INS_D1(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_D2(core_machine_cpu_execution_context *context) {
+static C_VOID INS_D2(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D2");
     i386(0xd2) {
         _adv;
@@ -10479,7 +10479,7 @@ static void INS_D2(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_D3(core_machine_cpu_execution_context *context) {
+static C_VOID INS_D3(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D3");
     i386(0xd3) {
         _adv;
@@ -10587,7 +10587,7 @@ static void INS_D3(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AAM(core_machine_cpu_execution_context *context) {
+static C_VOID AAM(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 base;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAM");
     i386(0xd4) {
@@ -10607,7 +10607,7 @@ static void AAM(core_machine_cpu_execution_context *context) {
     instruction_state.data.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_CF);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AAD(core_machine_cpu_execution_context *context) {
+static C_VOID AAD(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 base;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAD");
     i386(0xd5) {
@@ -10627,7 +10627,7 @@ static void AAD(core_machine_cpu_execution_context *context) {
     instruction_state.data.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_CF);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XLAT(core_machine_cpu_execution_context *context) {
+static C_VOID XLAT(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XLAT");
     i386(0xd7) {
         _adv;
@@ -10653,7 +10653,7 @@ static void XLAT(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LOOPNZ_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID LOOPNZ_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOPNZ_REL8");
     i386(0xe0) {
         _adv;
@@ -10665,7 +10665,7 @@ static void LOOPNZ_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_loopcc(context, (ntvdm64_type_signed_8)instruction_state.data.cimm, !_GetEFLAGS_ZF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LOOPZ_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID LOOPZ_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOPZ_REL8");
     i386(0xe1) {
         _adv;
@@ -10677,7 +10677,7 @@ static void LOOPZ_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_loopcc(context, (ntvdm64_type_signed_8)instruction_state.data.cimm, _GetEFLAGS_ZF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LOOP_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID LOOP_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOP_REL8");
     i386(0xe2) {
         _adv;
@@ -10689,7 +10689,7 @@ static void LOOP_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_loopcc(context, (ntvdm64_type_signed_8)instruction_state.data.cimm, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JCXZ_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JCXZ_REL8(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 cecx = 0x00000000;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JCXZ_REL8");
     i386(0xe3) {
@@ -10715,7 +10715,7 @@ static void JCXZ_REL8(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IN_AL_I8(core_machine_cpu_execution_context *context) {
+static C_VOID IN_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
     i386(0xe4) {
         _adv;
@@ -10727,7 +10727,7 @@ static void IN_AL_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.al), 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IN_EAX_I8(core_machine_cpu_execution_context *context) {
+static C_VOID IN_EAX_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_I8");
     _new_code_path_;
     i386(0xe5) {
@@ -10756,7 +10756,7 @@ static void IN_EAX_I8(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUT_I8_AL(core_machine_cpu_execution_context *context) {
+static C_VOID OUT_I8_AL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_AL");
     i386(0xe6) {
         _adv;
@@ -10769,7 +10769,7 @@ static void OUT_I8_AL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_END;
 
 }
-static void OUT_I8_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID OUT_I8_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_EAX");
     _new_code_path_;
     i386(0xe7) {
@@ -10798,7 +10798,7 @@ static void OUT_I8_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CALL_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID CALL_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_REL32");
     i386(0xe8) {
         _adv;
@@ -10830,7 +10830,7 @@ static void CALL_REL32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JMP_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JMP_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL32");
     i386(0xe9) {
         _adv;
@@ -10844,7 +10844,7 @@ static void JMP_REL32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JMP_PTR16_32(core_machine_cpu_execution_context *context) {
+static C_VOID JMP_PTR16_32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 newcs = 0x0000;
     ntvdm64_type_unsigned_32 neweip = 0x00000000;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_PTR16_32");
@@ -10884,7 +10884,7 @@ static void JMP_PTR16_32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JMP_REL8(core_machine_cpu_execution_context *context) {
+static C_VOID JMP_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL8");
     i386(0xeb) {
         _adv;
@@ -10896,7 +10896,7 @@ static void JMP_REL8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IN_AL_DX(core_machine_cpu_execution_context *context) {
+static C_VOID IN_AL_DX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_DX");
     i386(0xec) {
         _adv;
@@ -10907,7 +10907,7 @@ static void IN_AL_DX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.al), 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IN_EAX_DX(core_machine_cpu_execution_context *context) {
+static C_VOID IN_EAX_DX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_DX");
     i386(0xed) {
         _adv;
@@ -10933,7 +10933,7 @@ static void IN_EAX_DX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUT_DX_AL(core_machine_cpu_execution_context *context) {
+static C_VOID OUT_DX_AL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_AL");
     i386(0xee) {
         _adv;
@@ -10944,7 +10944,7 @@ static void OUT_DX_AL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_output(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.al), 1));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUT_DX_EAX(core_machine_cpu_execution_context *context) {
+static C_VOID OUT_DX_EAX(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_EAX");
     _new_code_path_;
     i386(0xef) {
@@ -10971,7 +10971,7 @@ static void OUT_DX_EAX(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_LOCK(core_machine_cpu_execution_context *context) {
+static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 opcode = 0x00;
     ntvdm64_type_unsigned_8 modrm = 0x00;
     ntvdm64_type_unsigned_8 opcode_0f = 0x00;
@@ -11049,7 +11049,7 @@ static void PREFIX_LOCK(core_machine_cpu_execution_context *context) {
     else _adv;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_REPNZ(core_machine_cpu_execution_context *context) {
+static C_VOID PREFIX_REPNZ(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPNZ");
     i386(0xf2) {
         _adv;
@@ -11061,7 +11061,7 @@ static void PREFIX_REPNZ(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_REPZ(core_machine_cpu_execution_context *context) {
+static C_VOID PREFIX_REPZ(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPZ");
     i386(0xf3) {
         _adv;
@@ -11073,7 +11073,7 @@ static void PREFIX_REPZ(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void HLT(core_machine_cpu_execution_context *context) {
+static C_VOID HLT(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("HLT");
     _new_code_path_;
     if (_GetCR0_PE && _GetCPL) {
@@ -11085,7 +11085,7 @@ static void HLT(core_machine_cpu_execution_context *context) {
     cpu_state.data.flagHalt = NTVDM64_TYPE_TRUE;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMC(core_machine_cpu_execution_context *context) {
+static C_VOID CMC(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMC");
     i386(0xf5) {
         _adv;
@@ -11097,7 +11097,7 @@ static void CMC(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_F6(core_machine_cpu_execution_context *context) {
+static C_VOID INS_F6(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F6");
     i386(0xf6) {
         _adv;
@@ -11160,7 +11160,7 @@ static void INS_F6(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_F7(core_machine_cpu_execution_context *context) {
+static C_VOID INS_F7(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F7");
     i386(0xf7) {
         _adv;
@@ -11274,7 +11274,7 @@ static void INS_F7(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CLC(core_machine_cpu_execution_context *context) {
+static C_VOID CLC(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLC");
     i386(0xf8) {
         _adv;
@@ -11286,7 +11286,7 @@ static void CLC(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void STC(core_machine_cpu_execution_context *context) {
+static C_VOID STC(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STC");
     i386(0xf9) {
         _adv;
@@ -11298,7 +11298,7 @@ static void STC(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CLI(core_machine_cpu_execution_context *context) {
+static C_VOID CLI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLI");
     i386(0xfa) {
         _adv;
@@ -11331,7 +11331,7 @@ static void CLI(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void STI(core_machine_cpu_execution_context *context) {
+static C_VOID STI(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STI");
     i386(0xfb) {
         _adv;
@@ -11365,7 +11365,7 @@ static void STI(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CLD(core_machine_cpu_execution_context *context) {
+static C_VOID CLD(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLD");
     i386(0xfc) {
         _adv;
@@ -11377,7 +11377,7 @@ static void CLD(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void STD(core_machine_cpu_execution_context *context) {
+static C_VOID STD(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLD");
     i386(0xfd) {
         _adv;
@@ -11389,7 +11389,7 @@ static void STD(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_FE(core_machine_cpu_execution_context *context) {
+static C_VOID INS_FE(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FE");
     i386(0xfe) {
         _adv;
@@ -11450,7 +11450,7 @@ static void INS_FE(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_FF(core_machine_cpu_execution_context *context) {
+static C_VOID INS_FF(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 modrm;
     ntvdm64_type_unsigned_16 newcs;
     ntvdm64_type_unsigned_32 neweip;
@@ -11632,7 +11632,7 @@ static void INS_FF(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _d_modrm_creg(core_machine_cpu_execution_context *context) {
+static C_VOID _d_modrm_creg(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_creg");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, 0, 4));
     if (instruction_state.data.flagMem) {
@@ -11684,7 +11684,7 @@ static void _d_modrm_creg(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_modrm_dreg(core_machine_cpu_execution_context *context) {
+static C_VOID _d_modrm_dreg(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_dreg");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, 0, 4));
     if (instruction_state.data.flagMem) {
@@ -11733,7 +11733,7 @@ static void _d_modrm_dreg(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_modrm_treg(core_machine_cpu_execution_context *context) {
+static C_VOID _d_modrm_treg(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_treg");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, 0, 4));
     if (instruction_state.data.flagMem) {
@@ -11786,7 +11786,7 @@ static void _d_modrm_treg(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_bit_rmimm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 regbyte, ntvdm64_type_unsigned_8 rmbyte, ntvdm64_type_bool write) {
+static C_VOID _d_bit_rmimm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 regbyte, ntvdm64_type_unsigned_8 rmbyte, ntvdm64_type_bool write) {
     /* xrm = actual destination, cimm = (1 << bitoffset) */
     ntvdm64_type_signed_16 bitoff16 = 0;
     ntvdm64_type_signed_32 bitoff32 = 0;
@@ -11860,7 +11860,7 @@ do { \
     NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, NTVDM64_TYPE_GET_BIT(instruction_state.data.opr1, instruction_state.data.opr2)); \
 } while (0)
 
-static void _a_bscc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit, ntvdm64_type_bool forward) {
+static C_VOID _a_bscc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit, ntvdm64_type_bool forward) {
     ntvdm64_type_unsigned_32 temp;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_bscc");
     if (forward) temp = 0;
@@ -11904,31 +11904,31 @@ static void _a_bscc(core_machine_cpu_execution_context *context, ntvdm64_type_un
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_bt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_32 bitoperand, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_bt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_32 bitoperand, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_bt");
     _kac_btcc;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_btc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_32 bitoperand, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_btc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_32 bitoperand, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_btc");
     _kac_btcc;
     NTVDM64_TYPE_MAKE_BIT(instruction_state.data.result, instruction_state.data.opr2, !_GetEFLAGS_CF);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_btr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_32 bitoperand, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_btr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_32 bitoperand, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_btr");
     _kac_btcc;
     NTVDM64_TYPE_CLEAR_BIT(instruction_state.data.result, instruction_state.data.opr2);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_bts(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_32 bitoperand, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_bts(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_32 bitoperand, ntvdm64_type_unsigned_8 bit) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_bts");
     _kac_btcc;
     NTVDM64_TYPE_SET_BIT(instruction_state.data.result, instruction_state.data.opr2);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _a_imul2(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_imul2(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_unsigned_64 temp;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_imul2");
     switch (bit) {
@@ -11974,7 +11974,7 @@ static void _a_imul2(core_machine_cpu_execution_context *context, ntvdm64_type_u
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_shld(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 count, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_shld(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 count, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_bool flagcf;
     ntvdm64_type_bool flagbit;
     ntvdm64_type_signed_32 i;
@@ -12051,7 +12051,7 @@ static void _a_shld(core_machine_cpu_execution_context *context, ntvdm64_type_un
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_shrd(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 count, ntvdm64_type_unsigned_8 bit) {
+static C_VOID _a_shrd(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 count, ntvdm64_type_unsigned_8 bit) {
     ntvdm64_type_bool flagcf;
     ntvdm64_type_bool flagbit;
     ntvdm64_type_signed_32 i;
@@ -12129,7 +12129,7 @@ static void _a_shrd(core_machine_cpu_execution_context *context, ntvdm64_type_un
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _m_setcc_rm(core_machine_cpu_execution_context *context, ntvdm64_type_bool condition) {
+static C_VOID _m_setcc_rm(core_machine_cpu_execution_context *context, ntvdm64_type_bool condition) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_setcc_rm");
     instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(!!condition);
     instruction_state.data.crm = instruction_state.data.result;
@@ -12137,7 +12137,7 @@ static void _m_setcc_rm(core_machine_cpu_execution_context *context, ntvdm64_typ
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void INS_0F_00(core_machine_cpu_execution_context *context) {
+static C_VOID INS_0F_00(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 modrm;
     ntvdm64_type_unsigned_64 descriptor;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_00");
@@ -12246,7 +12246,7 @@ static void INS_0F_00(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_0F_01(core_machine_cpu_execution_context *context) {
+static C_VOID INS_0F_01(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 modrm;
     ntvdm64_type_unsigned_16 limit;
     ntvdm64_type_unsigned_32 base;
@@ -12393,7 +12393,7 @@ static void INS_0F_01(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LAR_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID LAR_R32_RM32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 selector;
     ntvdm64_type_unsigned_64 descriptor;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LAR_R32_RM32");
@@ -12464,7 +12464,7 @@ static void LAR_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LSL_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID LSL_R32_RM32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 selector;
     ntvdm64_type_unsigned_32 limit;
     ntvdm64_type_unsigned_64 descriptor;
@@ -12533,7 +12533,7 @@ static void LSL_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CLTS(core_machine_cpu_execution_context *context) {
+static C_VOID CLTS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLTS");
     _new_code_path_;
     _adv;
@@ -12555,7 +12555,7 @@ _______todo WBINVD(core_machine_cpu_execution_context *context) {
     instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_R32_CR(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_R32_CR(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_CR");
     _adv;
     if (_GetCPL) {
@@ -12567,7 +12567,7 @@ static void MOV_R32_CR(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rrm, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cr), 4));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_R32_DR(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_R32_DR(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_DR");
     _new_code_path_;
     _adv;
@@ -12580,7 +12580,7 @@ static void MOV_R32_DR(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rrm, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cr), 4));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_CR_R32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_CR_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CR_R32");
     _adv;
     if (_GetCPL) {
@@ -12601,7 +12601,7 @@ static void MOV_CR_R32(core_machine_cpu_execution_context *context) {
     } */
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_DR_R32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_DR_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DR_R32");
     _new_code_path_;
     _adv;
@@ -12614,7 +12614,7 @@ static void MOV_DR_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 4));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_R32_TR(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_R32_TR(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_TR");
     _new_code_path_;
     _adv;
@@ -12627,7 +12627,7 @@ static void MOV_R32_TR(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rrm, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cr), 4));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_TR_R32(core_machine_cpu_execution_context *context) {
+static C_VOID MOV_TR_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_TR_R32");
     _new_code_path_;
     _adv;
@@ -12652,7 +12652,7 @@ _______todo RDMSR(core_machine_cpu_execution_context *context) {
     instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JO_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JO_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JO_REL32");
     _new_code_path_;
     _adv;
@@ -12660,7 +12660,7 @@ static void JO_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_OF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNO_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JNO_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNO_REL32");
     _new_code_path_;
     _adv;
@@ -12668,14 +12668,14 @@ static void JNO_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_OF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JC_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JC_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JC_REL32");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_CF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNC_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JNC_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNC_REL32");
     _new_code_path_;
     _adv;
@@ -12683,21 +12683,21 @@ static void JNC_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_CF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JZ_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JZ_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JZ_REL32");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_ZF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNZ_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JNZ_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNZ_REL32");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_ZF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNA_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JNA_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNA_REL32");
     _new_code_path_;
     _adv;
@@ -12706,7 +12706,7 @@ static void JNA_REL32(core_machine_cpu_execution_context *context) {
                 (_GetEFLAGS_CF || _GetEFLAGS_ZF)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JA_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JA_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JA_REL32");
     _new_code_path_;
     _adv;
@@ -12715,7 +12715,7 @@ static void JA_REL32(core_machine_cpu_execution_context *context) {
                 !(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JS_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JS_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JS_REL32");
     _new_code_path_;
     _adv;
@@ -12723,7 +12723,7 @@ static void JS_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_SF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNS_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JNS_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNS_REL32");
     _new_code_path_;
     _adv;
@@ -12731,7 +12731,7 @@ static void JNS_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_SF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JP_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JP_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JP_REL32");
     _new_code_path_;
     _adv;
@@ -12739,7 +12739,7 @@ static void JP_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_PF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNP_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JNP_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNP_REL32");
     _new_code_path_;
     _adv;
@@ -12747,7 +12747,7 @@ static void JNP_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_PF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JL_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JL_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JL_REL32");
     _new_code_path_;
     _adv;
@@ -12755,7 +12755,7 @@ static void JL_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNL_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JNL_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNL_REL32");
     _new_code_path_;
     _adv;
@@ -12763,7 +12763,7 @@ static void JNL_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JNG_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JNG_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JNG_REL32");
     _new_code_path_;
     _adv;
@@ -12772,7 +12772,7 @@ static void JNG_REL32(core_machine_cpu_execution_context *context) {
                 (_GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF))));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JG_REL32(core_machine_cpu_execution_context *context) {
+static C_VOID JG_REL32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JG_REL32");
     _new_code_path_;
     _adv;
@@ -12781,7 +12781,7 @@ static void JG_REL32(core_machine_cpu_execution_context *context) {
                 (!_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF))));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETO_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETO_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETO_RM8");
     _new_code_path_;
     _adv;
@@ -12789,7 +12789,7 @@ static void SETO_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_OF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETNO_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETNO_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETO_RM8");
     _new_code_path_;
     _adv;
@@ -12797,7 +12797,7 @@ static void SETNO_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !_GetEFLAGS_OF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETC_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETC_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETC_RM8");
     _new_code_path_;
     _adv;
@@ -12805,7 +12805,7 @@ static void SETC_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_CF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETNC_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETNC_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNC_RM8");
     _new_code_path_;
     _adv;
@@ -12813,7 +12813,7 @@ static void SETNC_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !_GetEFLAGS_CF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETZ_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETZ_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETZ_RM8");
     _new_code_path_;
     _adv;
@@ -12821,7 +12821,7 @@ static void SETZ_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_ZF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETNZ_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETNZ_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNZ_RM8");
     _new_code_path_;
     _adv;
@@ -12829,7 +12829,7 @@ static void SETNZ_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !_GetEFLAGS_ZF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETNA_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETNA_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNA_RM8");
     _new_code_path_;
     _adv;
@@ -12837,7 +12837,7 @@ static void SETNA_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_CF || _GetEFLAGS_ZF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETA_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETA_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETA_RM8");
     _new_code_path_;
     _adv;
@@ -12845,7 +12845,7 @@ static void SETA_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETS_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETS_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETS_RM8");
     _new_code_path_;
     _adv;
@@ -12853,7 +12853,7 @@ static void SETS_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_SF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETNS_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETNS_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNS_RM8");
     _new_code_path_;
     _adv;
@@ -12861,7 +12861,7 @@ static void SETNS_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !_GetEFLAGS_SF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETP_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETP_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETP_RM8");
     _new_code_path_;
     _adv;
@@ -12869,7 +12869,7 @@ static void SETP_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_PF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETNP_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETNP_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNP_RM8");
     _new_code_path_;
     _adv;
@@ -12877,7 +12877,7 @@ static void SETNP_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !_GetEFLAGS_PF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETL_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETL_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETL_RM8");
     _new_code_path_;
     _adv;
@@ -12885,7 +12885,7 @@ static void SETL_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_SF != _GetEFLAGS_OF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETNL_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETNL_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNL_RM8");
     _new_code_path_;
     _adv;
@@ -12893,7 +12893,7 @@ static void SETNL_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_SF == _GetEFLAGS_OF));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETNG_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETNG_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNG_RM8");
     _new_code_path_;
     _adv;
@@ -12901,7 +12901,7 @@ static void SETNG_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETG_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID SETG_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETG_RM8");
     _new_code_path_;
     _adv;
@@ -12909,7 +12909,7 @@ static void SETG_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF)));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_FS(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_FS(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_FS");
     _adv;
@@ -12917,7 +12917,7 @@ static void PUSH_FS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_FS(core_machine_cpu_execution_context *context) {
+static C_VOID POP_FS(core_machine_cpu_execution_context *context) {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
     ntvdm64_type_unsigned_32 xs_sel;
@@ -12933,7 +12933,7 @@ _______todo CPUID(core_machine_cpu_execution_context *context) {
     instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BT_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID BT_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BT_RM32_R32");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 0));
@@ -12941,7 +12941,7 @@ static void BT_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_bt(context, (ntvdm64_type_unsigned_32)instruction_state.data.crm, (ntvdm64_type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SHLD_RM32_R32_I8(core_machine_cpu_execution_context *context) {
+static C_VOID SHLD_RM32_R32_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_I8");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -12952,7 +12952,7 @@ static void SHLD_RM32_R32_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SHLD_RM32_R32_CL(core_machine_cpu_execution_context *context) {
+static C_VOID SHLD_RM32_R32_CL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_CL");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -12962,7 +12962,7 @@ static void SHLD_RM32_R32_CL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_GS(core_machine_cpu_execution_context *context) {
+static C_VOID PUSH_GS(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_32 xs_sel;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_GS");
     _adv;
@@ -12970,7 +12970,7 @@ static void PUSH_GS(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_GS(core_machine_cpu_execution_context *context) {
+static C_VOID POP_GS(core_machine_cpu_execution_context *context) {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
     ntvdm64_type_unsigned_32 xs_sel;
@@ -12986,7 +12986,7 @@ _______todo RSM(core_machine_cpu_execution_context *context) {
     instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BTS_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID BTS_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTS_RM32_R32");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
@@ -12996,7 +12996,7 @@ static void BTS_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SHRD_RM32_R32_I8(core_machine_cpu_execution_context *context) {
+static C_VOID SHRD_RM32_R32_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_I8");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -13007,7 +13007,7 @@ static void SHRD_RM32_R32_I8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SHRD_RM32_R32_CL(core_machine_cpu_execution_context *context) {
+static C_VOID SHRD_RM32_R32_CL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_CL");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -13017,7 +13017,7 @@ static void SHRD_RM32_R32_CL(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IMUL_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID IMUL_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -13026,7 +13026,7 @@ static void IMUL_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LSS_R32_M16_32(core_machine_cpu_execution_context *context) {
+static C_VOID LSS_R32_M16_32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 selector;
     ntvdm64_type_unsigned_32 offset;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LSS_R32_M16_32");
@@ -13055,7 +13055,7 @@ static void LSS_R32_M16_32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_load_far(context, &cpu_state.data.ss, instruction_state.data.rr, selector, offset, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BTR_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID BTR_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTR_RM32_R32");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
@@ -13065,7 +13065,7 @@ static void BTR_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LFS_R32_M16_32(core_machine_cpu_execution_context *context) {
+static C_VOID LFS_R32_M16_32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 selector;
     ntvdm64_type_unsigned_32 offset;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LFS_R32_M16_32");
@@ -13094,7 +13094,7 @@ static void LFS_R32_M16_32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_load_far(context, &cpu_state.data.fs, instruction_state.data.rr, selector, offset, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LGS_R32_M16_32(core_machine_cpu_execution_context *context) {
+static C_VOID LGS_R32_M16_32(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_16 selector;
     ntvdm64_type_unsigned_32 offset;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LGS_R32_M16_32");
@@ -13124,7 +13124,7 @@ static void LGS_R32_M16_32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_load_far(context, &cpu_state.data.gs, instruction_state.data.rr, selector, offset, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVZX_R32_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID MOVZX_R32_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM8");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, 1));
@@ -13133,7 +13133,7 @@ static void MOVZX_R32_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVZX_R32_RM16(core_machine_cpu_execution_context *context) {
+static C_VOID MOVZX_R32_RM16(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM16");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 4, 2));
@@ -13142,7 +13142,7 @@ static void MOVZX_R32_RM16(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 4));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_0F_BA(core_machine_cpu_execution_context *context) {
+static C_VOID INS_0F_BA(core_machine_cpu_execution_context *context) {
     ntvdm64_type_bool write = 0;
     ntvdm64_type_unsigned_8 modrm = 0x00;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_BA");
@@ -13206,7 +13206,7 @@ static void INS_0F_BA(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BTC_RM32_R32(core_machine_cpu_execution_context *context) {
+static C_VOID BTC_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTC_RM32_R32");
     _new_code_path_;
     _adv;
@@ -13217,7 +13217,7 @@ static void BTC_RM32_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BSF_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID BSF_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BSF_R32_RM32");
     _new_code_path_;
     _adv;
@@ -13231,7 +13231,7 @@ static void BSF_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BSR_R32_RM32(core_machine_cpu_execution_context *context) {
+static C_VOID BSR_R32_RM32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BSR_R32_RM32");
     _new_code_path_;
     _adv;
@@ -13245,7 +13245,7 @@ static void BSR_R32_RM32(core_machine_cpu_execution_context *context) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVSX_R32_RM8(core_machine_cpu_execution_context *context) {
+static C_VOID MOVSX_R32_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM8");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, 1));
@@ -13254,7 +13254,7 @@ static void MOVSX_R32_RM8(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVSX_R32_RM16(core_machine_cpu_execution_context *context) {
+static C_VOID MOVSX_R32_RM16(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM16");
     _adv;
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 4, 2));
@@ -13264,7 +13264,7 @@ static void MOVSX_R32_RM16(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void ExecInit(core_machine_cpu_execution_context *context) {
+static C_VOID ExecInit(core_machine_cpu_execution_context *context) {
     instruction_state.data.flagIgnore = NTVDM64_TYPE_FALSE;
     instruction_state.data.msize = 0;
     instruction_state.data.reccs = cpu_state.data.cs.selector;
@@ -13301,7 +13301,7 @@ static void ExecInit(core_machine_cpu_execution_context *context) {
     if (context->trace != NULL) ntvdm64_type_trace_initialize(context->trace);
 #endif
 }
-static void ExecFinal(core_machine_cpu_execution_context *context) {
+static C_VOID ExecFinal(core_machine_cpu_execution_context *context) {
     if (instruction_state.data.flagInsLoop) {
         cpu_state.data.cs = instruction_state.data.oldcpu.data.cs;
         cpu_state.data.eip = instruction_state.data.oldcpu.data.eip;
@@ -13322,7 +13322,7 @@ static void ExecFinal(core_machine_cpu_execution_context *context) {
         core_machine_cpu_execution_request_stop(context);
     }
 }
-static void ExecIns(core_machine_cpu_execution_context *context) {
+static C_VOID ExecIns(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 opcode = 0;
     ExecInit(context);
     do {
@@ -13340,7 +13340,7 @@ static void ExecIns(core_machine_cpu_execution_context *context) {
     }
     ExecFinal(context);
 }
-static void ExecInt(core_machine_cpu_execution_context *context) {
+static C_VOID ExecInt(core_machine_cpu_execution_context *context) {
     ntvdm64_type_unsigned_8 intr = 0x00;
     /* hardware interrupt handler */
     if (instruction_state.data.flagMaskInt)
@@ -13405,7 +13405,7 @@ ntvdm64_type_bool core_machine_cpu_execution_write_linear(
     return fail;
 }
 
-void core_machine_cpu_execution_initialize(
+C_VOID core_machine_cpu_execution_initialize(
     core_machine_cpu_execution_context *context) {
     instruction_state.connect.insTable[0x00] = (core_machine_cpu_instruction_handler) ADD_RM8_R8;
     instruction_state.connect.insTable[0x01] = (core_machine_cpu_instruction_handler) ADD_RM32_R32;
@@ -13922,18 +13922,18 @@ void core_machine_cpu_execution_initialize(
     instruction_state.connect.insTable_0f[0xfe] = (core_machine_cpu_instruction_handler) UndefinedOpcode;
     instruction_state.connect.insTable_0f[0xff] = (core_machine_cpu_instruction_handler) UndefinedOpcode;
 }
-void core_machine_cpu_execution_reset(
+C_VOID core_machine_cpu_execution_reset(
     core_machine_cpu_execution_context *context) {
-    STD_MEMSET((void *)(&instruction_state.data), NTVDM64_TYPE_ZERO_8, sizeof(t_cpuins_data));
+    STD_MEMSET((C_VOID *)(&instruction_state.data), NTVDM64_TYPE_ZERO_8, sizeof(t_cpuins_data));
 }
-void core_machine_cpu_execution_refresh(
+C_VOID core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context) {
     if (!cpu_state.data.flagHalt) {
         ExecIns(context);
     }
     ExecInt(context);
 }
-void core_machine_cpu_execution_finalize(
+C_VOID core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context)
 {
     if (context != NULL) {

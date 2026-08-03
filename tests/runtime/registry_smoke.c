@@ -1,15 +1,18 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "core/product/runtime/registry.h"
 
-static int capability_is_proven(void *context, unsigned capability)
+static C_INT capability_is_proven(C_VOID *context, C_UINT capability)
 {
-    return capability == 0u && *(const int *)context != 0;
+    return capability == 0u && *(const C_INT *)context != 0;
 }
 
-int main(void)
+C_INT main(C_VOID)
 {
-    const unsigned required[] = {
+    const C_UINT required[] = {
         0u
     };
     const core_product_runtime_profile_descriptor_v1 profile = {
@@ -21,7 +24,7 @@ int main(void)
         "firmware.provider.test",
         NXVM_RUNTIME_FIRMWARE_PROVIDER_BUILTIN, "test", "nxvm.machine.test"
     };
-    int capability_is_available = 0;
+    C_INT capability_is_available = 0;
     core_product_runtime_registry registry;
 
     core_product_runtime_registry_initialize(&registry);

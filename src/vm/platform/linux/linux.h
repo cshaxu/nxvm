@@ -11,10 +11,10 @@
 
 typedef struct vm_platform_run_context vm_platform_run_context;
 
-void vm_platform_linux_sleep(uint32_t milisec);
-void vm_platform_linux_display_set_screen(int window, const vm_platform_run_context *context);
-void vm_platform_linux_display_paint(int window, const vm_platform_run_context *context);
-void vm_platform_linux_start_machine(int window, const vm_platform_run_context *context);
+C_VOID vm_platform_linux_sleep(uint32_t milisec);
+C_VOID vm_platform_linux_display_set_screen(C_INT window, const vm_platform_run_context *context);
+C_VOID vm_platform_linux_display_paint(C_INT window, const vm_platform_run_context *context);
+C_VOID vm_platform_linux_start_machine(C_INT window, const vm_platform_run_context *context);
 
 #ifdef __cplusplus
 /*}_EOCD_*/

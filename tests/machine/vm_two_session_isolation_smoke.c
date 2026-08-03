@@ -1,17 +1,22 @@
+#include "type.h"
+
 #include <stdio.h>
+
 #include <stdlib.h>
 
+
 #include "core/machine/memory.h"
+
 #include "vm/composition_live_machine.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_composition_live_machine *first;
     vm_composition_live_machine *second;
-    unsigned char first_value = 0x11u;
-    unsigned char second_value = 0x22u;
-    unsigned char observed = 0u;
-    int failed = 0;
+    C_UCHAR first_value = 0x11u;
+    C_UCHAR second_value = 0x22u;
+    C_UCHAR observed = 0u;
+    C_INT failed = 0;
 
     first = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*first));
     second = (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*second));

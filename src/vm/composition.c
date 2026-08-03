@@ -2,26 +2,47 @@
 
 /* VM composition assembles the retained full-PC providers. */
 
+#include "type.h"
+
 #include "core/product/utils.h"
 
+
 #include "core/machine/port.h"
+
 #include "core/machine/memory.h"
+
 #include "core/machine/cpu.h"
+
 #include "vm/profile/default_profile/firmware/bios.h"
+
 #include "core/machine/pit.h"
+
 #include "core/machine/dma.h"
+
 #include "core/machine/pic.h"
+
 #include "vm/machine/cmos.h"
+
 #include "vm/machine/fdc.h"
+
 #include "vm/machine/fdd.h"
+
 #include "vm/machine/hdc.h"
+
 #include "vm/machine/hdd.h"
+
 #include "vm/composition_block.h"
+
 #include "vm/composition_display.h"
+
 #include "core/machine/kbc.h"
+
 #include "core/machine/vadp.h"
+
 #include "vm/profile/default_profile/firmware/qdx.h"
+
 #include "vm/composition_live_machine.h"
+
 
 #include "vm/composition.h"
 
@@ -44,7 +65,7 @@
 #define _qdx_
 
 /* Initializes all devices, allocates space */
-void vm_composition_providers_initialize(vm_composition_live_machine *machine) {
+C_VOID vm_composition_providers_initialize(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     core_machine_cpu_state_initialize(machine->cpu_execution);
     vm_machine_fdd_initialize(machine->fdd);
@@ -102,7 +123,7 @@ void vm_composition_providers_initialize(vm_composition_live_machine *machine) {
     _vbios_ _vcpu_ _vram_
 }
 
-void vm_composition_providers_refresh(vm_composition_live_machine *machine) {
+C_VOID vm_composition_providers_refresh(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_profile_default_qdx_refresh(machine->default_profile_context);
     _empty_
@@ -118,7 +139,7 @@ void vm_composition_providers_refresh(vm_composition_live_machine *machine) {
     vm_machine_fdc_refresh(machine->fdc);
 }
 
-void vm_composition_providers_reset(vm_composition_live_machine *machine) {
+C_VOID vm_composition_providers_reset(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_machine_hdc_reset();
     vm_machine_cmos_reset(machine->cmos);
@@ -131,7 +152,7 @@ void vm_composition_providers_reset(vm_composition_live_machine *machine) {
 }
 
 /* Finalize all devices, deallocates space */
-void vm_composition_providers_finalize(vm_composition_live_machine *machine) {
+C_VOID vm_composition_providers_finalize(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     vm_profile_default_qdx_finalize(machine->default_profile_context);
     _empty_
@@ -163,7 +184,7 @@ void vm_composition_providers_finalize(vm_composition_live_machine *machine) {
     core_machine_memory_finalize(machine->ram);
 }
 /* Print machine info */
-void vm_composition_print_machine(const vm_composition_live_machine *machine) {
+C_VOID vm_composition_print_machine(const vm_composition_live_machine *machine) {
     if (machine == NULL) return;
     STD_PRINTF("Machine:           %s\n", VM_COMPOSITION_MACHINE_NAME);
     STD_PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);

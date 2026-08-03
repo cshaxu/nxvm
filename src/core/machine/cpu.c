@@ -11,7 +11,7 @@
 #define cpu_state (*context->cpu)
 #define instruction_state (*context->instructions)
 
-void core_machine_cpu_execution_context_initialize(
+C_VOID core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
     t_cpuins *instructions, t_ram *memory, t_port *port)
 {
@@ -26,14 +26,14 @@ void core_machine_cpu_execution_context_initialize(
         context->trace = (ntvdm64_type_trace *)STD_MALLOC(sizeof(*context->trace));
     }
     if (context->trace != NULL) {
-        STD_MEMSET((void *)context->trace, NTVDM64_TYPE_ZERO_8, sizeof(*context->trace));
+        STD_MEMSET((C_VOID *)context->trace, NTVDM64_TYPE_ZERO_8, sizeof(*context->trace));
     }
     context->extension_context = NULL;
     context->stop_requested = NTVDM64_TYPE_FALSE;
     context->reset_requested = NTVDM64_TYPE_FALSE;
 }
 
-void core_machine_cpu_execution_context_bind_pic(
+C_VOID core_machine_cpu_execution_context_bind_pic(
     core_machine_cpu_execution_context *context, t_pic *master,
     t_pic *slave)
 {
@@ -42,19 +42,19 @@ void core_machine_cpu_execution_context_bind_pic(
     context->pic_slave = slave;
 }
 
-void core_machine_cpu_execution_context_bind_extension(
-    core_machine_cpu_execution_context *context, void *extension_context)
+C_VOID core_machine_cpu_execution_context_bind_extension(
+    core_machine_cpu_execution_context *context, C_VOID *extension_context)
 {
     if (context != NULL) context->extension_context = extension_context;
 }
 
-void *core_machine_cpu_execution_context_extension(
+C_VOID *core_machine_cpu_execution_context_extension(
     const core_machine_cpu_execution_context *context)
 {
     return context == NULL ? NULL : context->extension_context;
 }
 
-void core_machine_cpu_state_initialize(
+C_VOID core_machine_cpu_state_initialize(
     core_machine_cpu_execution_context *context) {
     if (context == NULL || context->cpu == NULL ||
         context->instructions == NULL) return;
@@ -64,10 +64,10 @@ void core_machine_cpu_state_initialize(
     }
     core_machine_cpu_execution_initialize(context);
 }
-void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
+C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
     if (context == NULL || context->cpu == NULL ||
         context->instructions == NULL) return;
-    STD_MEMSET((void *)context->cpu, NTVDM64_TYPE_ZERO_8, sizeof(t_cpu));
+    STD_MEMSET((C_VOID *)context->cpu, NTVDM64_TYPE_ZERO_8, sizeof(t_cpu));
     if (context != NULL) {
         context->stop_requested = NTVDM64_TYPE_FALSE;
         context->reset_requested = NTVDM64_TYPE_FALSE;
@@ -143,7 +143,7 @@ void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
 
 }
 
-void core_machine_cpu_execution_request_stop(
+C_VOID core_machine_cpu_execution_request_stop(
     core_machine_cpu_execution_context *context)
 {
     if (context != NULL) context->stop_requested = NTVDM64_TYPE_TRUE;
@@ -155,7 +155,7 @@ void core_machine_cpu_execution_request_stop(
     if (context != NULL) context->stop_requested = NTVDM64_TYPE_FALSE;
     return requested;
 }
-void core_machine_cpu_execution_request_reset(
+C_VOID core_machine_cpu_execution_request_reset(
     core_machine_cpu_execution_context *context)
 {
     if (context != NULL) context->reset_requested = NTVDM64_TYPE_TRUE;
@@ -168,20 +168,20 @@ ntvdm64_type_bool core_machine_cpu_execution_consume_reset_request(
     return requested;
 }
 
-int core_machine_cpu_read_linear(core_machine_cpu_execution_context *context, uint32_t linear, void *out_data, uint8_t size)
+C_INT core_machine_cpu_read_linear(core_machine_cpu_execution_context *context, uint32_t linear, C_VOID *out_data, uint8_t size)
 {
     return core_machine_cpu_execution_read_linear(context, linear,
         (ntvdm64_type_virtual_address)out_data, size);
 }
 
-int core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
-    uint32_t linear, const void *in_data, uint8_t size)
+C_INT core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
+    uint32_t linear, const C_VOID *in_data, uint8_t size)
 {
     return core_machine_cpu_execution_write_linear(context, linear,
         (ntvdm64_type_virtual_address)in_data, size);
 }
 
-int core_machine_cpu_load_segment(core_machine_cpu_execution_context *context,
+C_INT core_machine_cpu_load_segment(core_machine_cpu_execution_context *context,
     core_machine_cpu_segment segment, uint16_t selector)
 {
     switch (segment) {
@@ -207,7 +207,7 @@ int core_machine_cpu_load_segment(core_machine_cpu_execution_context *context,
     return 1;
 }
 
-int core_machine_cpu_get_code_default_size(const core_machine_cpu_execution_context *context)
+C_INT core_machine_cpu_get_code_default_size(const core_machine_cpu_execution_context *context)
 {
     return cpu_state.data.cs.seg.exec.defsize;
 }
@@ -217,7 +217,7 @@ uint32_t core_machine_cpu_get_code_base(const core_machine_cpu_execution_context
     return cpu_state.data.cs.base;
 }
 
-void core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context,
+C_VOID core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context,
     core_machine_cpu_watchpoint kind, uint32_t linear)
 {
     switch (kind) {
@@ -236,7 +236,7 @@ void core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context
     }
 }
 
-void core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *context,
+C_VOID core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *context,
     core_machine_cpu_watchpoint kind)
 {
     switch (kind) {
@@ -253,7 +253,7 @@ void core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *conte
 }
 
 /* Prints user segment registers (ES, CS, SS, DS, FS, GS) */
-static void print_sreg_seg(t_cpu_data_sreg *rsreg, const ntvdm64_type_string_pointer label) {
+static C_VOID print_sreg_seg(t_cpu_data_sreg *rsreg, const ntvdm64_type_string_pointer label) {
     STD_PRINTF("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, %s, ", label,
            rsreg->selector, rsreg->base, rsreg->limit,
            rsreg->dpl, rsreg->seg.accessed ? "A" : "a");
@@ -270,13 +270,13 @@ static void print_sreg_seg(t_cpu_data_sreg *rsreg, const ntvdm64_type_string_poi
     }
 }
 /* Prints system segment registers (TR, LDTR) */
-static void print_sreg_sys(t_cpu_data_sreg *rsreg, const ntvdm64_type_string_pointer label) {
+static C_VOID print_sreg_sys(t_cpu_data_sreg *rsreg, const ntvdm64_type_string_pointer label) {
     STD_PRINTF("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, Type=%04X\n", label,
            rsreg->selector, rsreg->base, rsreg->limit,
            rsreg->dpl, rsreg->sys.type);
 }
 /* Prints segment registers */
-void core_machine_cpu_print_segment_registers(const core_machine_cpu_execution_context *context) {
+C_VOID core_machine_cpu_print_segment_registers(const core_machine_cpu_execution_context *context) {
     print_sreg_seg(&cpu_state.data.es, "ES");
     print_sreg_seg(&cpu_state.data.cs, "CS");
     print_sreg_seg(&cpu_state.data.ss, "SS");
@@ -291,7 +291,7 @@ void core_machine_cpu_print_segment_registers(const core_machine_cpu_execution_c
            cpu_state.data.idtr.base, cpu_state.data.idtr.limit);
 }
 /* Prints control registers */
-void core_machine_cpu_print_control_registers(const core_machine_cpu_execution_context *context) {
+C_VOID core_machine_cpu_print_control_registers(const core_machine_cpu_execution_context *context) {
     STD_PRINTF("CR0=%08X: %s %s %s %s %s %s\n", cpu_state.data.cr0,
            _GetCR0_PG ? "PG" : "pg",
            _GetCR0_ET ? "ET" : "et",
@@ -303,7 +303,7 @@ void core_machine_cpu_print_control_registers(const core_machine_cpu_execution_c
     STD_PRINTF("CR3=PDBR=%08X\n", cpu_state.data.cr3);
 }
 /* Prints regular registers */
-void core_machine_cpu_print_registers(const core_machine_cpu_execution_context *context) {
+C_VOID core_machine_cpu_print_registers(const core_machine_cpu_execution_context *context) {
     STD_PRINTF( "EAX=%08X", cpu_state.data.eax);
     STD_PRINTF(" EBX=%08X", cpu_state.data.ebx);
     STD_PRINTF(" ECX=%08X", cpu_state.data.ecx);
@@ -331,7 +331,7 @@ void core_machine_cpu_print_registers(const core_machine_cpu_execution_context *
     STD_PRINTF("\n");
 }
 /* Prints active memory info */
-void core_machine_cpu_print_memory_accesses(const core_machine_cpu_execution_context *context) {
+C_VOID core_machine_cpu_print_memory_accesses(const core_machine_cpu_execution_context *context) {
     ntvdm64_type_native_unsigned i;
     for (i = 0; i < instruction_state.data.msize; ++i) {
         STD_PRINTF("%s: Lin=%08x, Data=%08x, Bytes=%1x\n",
@@ -339,7 +339,7 @@ void core_machine_cpu_print_memory_accesses(const core_machine_cpu_execution_con
                instruction_state.data.mem[i].linear, instruction_state.data.mem[i].data, instruction_state.data.mem[i].byte);
     }
 }
-void core_machine_cpu_print_watchpoints(const core_machine_cpu_execution_context *context) {
+C_VOID core_machine_cpu_print_watchpoints(const core_machine_cpu_execution_context *context) {
     if (instruction_state.data.flagWR) {
         STD_PRINTF("Watch-read point: Lin=%08x\n", instruction_state.data.wrLinear);
     }

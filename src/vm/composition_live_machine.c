@@ -1,10 +1,14 @@
+#include "type.h"
+
 #include "vm/composition_live_machine.h"
+
 
 #include "core/machine/machine.h"
 
+
 #include <stdlib.h>
 
-void vm_composition_live_machine_initialize(vm_composition_live_machine *machine)
+C_VOID vm_composition_live_machine_initialize(vm_composition_live_machine *machine)
 {
     if (machine == NULL || machine->core_machine != NULL) return;
     {
@@ -87,7 +91,7 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
         sizeof(*machine->control));
 }
 
-void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
+C_VOID vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
 {
     if (machine == NULL || machine->core_machine == NULL) return;
     core_machine_cpu_execution_context_bind_extension(machine->cpu_execution, NULL);

@@ -1,13 +1,16 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "core/machine/machine_interface.h"
 
-static int expect_status(ntvdm64_status actual, ntvdm64_status expected)
+static C_INT expect_status(ntvdm64_status actual, ntvdm64_status expected)
 {
     return actual == expected ? 0 : 1;
 }
 
-static int expect_lifecycle(
+static C_INT expect_lifecycle(
     core_machine *machine,
     core_machine_lifecycle expected)
 {
@@ -20,7 +23,7 @@ static int expect_lifecycle(
     return actual == expected ? 0 : 1;
 }
 
-int main(void)
+C_INT main(C_VOID)
 {
     core_machine *machine = NULL;
     core_machine_config config = {
@@ -30,7 +33,7 @@ int main(void)
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result run_result;
     core_machine_cpu_state cpu;
-    int result = 0;
+    C_INT result = 0;
 
     result |= expect_status(core_machine_create(&config, &machine),
                             NTVDM64_STATUS_OK);

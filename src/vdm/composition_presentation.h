@@ -1,7 +1,10 @@
 #ifndef NXVM_ADAPTERS_DOS_MINIMAL_PRESENTATION_H
 #define NXVM_ADAPTERS_DOS_MINIMAL_PRESENTATION_H
 
+#include "type.h"
+
 #include "core/platform/presentation.h"
+
 #include "vdm/machine/dos_minimal.h"
 
 #ifdef __cplusplus
@@ -27,7 +30,7 @@ ntvdm64_status vdm_composition_presentation_capture_text(
     vdm_composition_presentation *presentation,
     uint64_t timestamp,
     nxvm_vdm_presentation_snapshot *out_snapshot);
-void vdm_composition_presentation_destroy(
+C_VOID vdm_composition_presentation_destroy(
     vdm_composition_presentation *presentation);
 
 #ifdef __cplusplus

@@ -1,25 +1,28 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "vm/platform/execution.h"
 
 typedef struct vm_platform_execution_smoke_state {
-    int running;
-    int flip;
-    unsigned starts;
-    unsigned stops;
+    C_INT running;
+    C_INT flip;
+    C_UINT starts;
+    C_UINT stops;
 } vm_platform_execution_smoke_state;
 
-static int vm_platform_execution_smoke_is_running(void *context)
+static C_INT vm_platform_execution_smoke_is_running(C_VOID *context)
 {
     return ((vm_platform_execution_smoke_state *)context)->running;
 }
 
-static int vm_platform_execution_smoke_get_flip(void *context)
+static C_INT vm_platform_execution_smoke_get_flip(C_VOID *context)
 {
     return ((vm_platform_execution_smoke_state *)context)->flip;
 }
 
-static void vm_platform_execution_smoke_start(void *context)
+static C_VOID vm_platform_execution_smoke_start(C_VOID *context)
 {
     vm_platform_execution_smoke_state *state = context;
 
@@ -28,7 +31,7 @@ static void vm_platform_execution_smoke_start(void *context)
     state->flip = 1;
 }
 
-static void vm_platform_execution_smoke_stop(void *context)
+static C_VOID vm_platform_execution_smoke_stop(C_VOID *context)
 {
     vm_platform_execution_smoke_state *state = context;
 
@@ -36,7 +39,7 @@ static void vm_platform_execution_smoke_stop(void *context)
     state->running = 0;
 }
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_platform_execution_smoke_state state = {0};
     vm_platform_execution_smoke_state second_state = {0};

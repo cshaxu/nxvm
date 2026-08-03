@@ -2,10 +2,15 @@
 
 /* WIN32 provides win32 platform input and output interface. */
 
+#include "type.h"
+
 #include "vm/platform/input.h"
 
+
 #include "vm/platform/win32/win32con.h"
+
 #include "vm/platform/win32/win32app.h"
+
 #include "vm/platform/win32/win32.h"
 
 static const UCHAR CodeMap[][8]= {
@@ -117,7 +122,7 @@ static const UCHAR MoveKeyCode[][8] = {
     {0x53, 0x00, 0x53, 0xE0, 0x93, 0xE0, 0xA3, 0x00}
 };
 
-static uint32_t vm_platform_win32_keyboard_get_async_state(void)
+static uint32_t vm_platform_win32_keyboard_get_async_state(C_VOID)
 {
     uint32_t state = 0u;
 
@@ -132,7 +137,7 @@ static uint32_t vm_platform_win32_keyboard_get_async_state(void)
     return state;
 }
 
-static uint32_t vm_platform_win32_keyboard_get_toggle_state(void)
+static uint32_t vm_platform_win32_keyboard_get_toggle_state(C_VOID)
 {
     uint32_t state = 0u;
 
@@ -144,14 +149,14 @@ static uint32_t vm_platform_win32_keyboard_get_toggle_state(void)
     return state;
 }
 
-static int vm_platform_win32_keyboard_get_modifier_for(const vm_platform_run_context *context,
+static C_INT vm_platform_win32_keyboard_get_modifier_for(const vm_platform_run_context *context,
                                        vm_platform_keyboard_modifier modifier)
 {
     return context == NULL ? 0 : vm_platform_keyboard_get_modifier_for(
         context->keyboard, modifier);
 }
 
-static void vm_platform_win32_keyboard_apply_current_state_for(
+static C_VOID vm_platform_win32_keyboard_apply_current_state_for(
     const vm_platform_run_context *context)
 {
     uint32_t asynchronous_keys = vm_platform_win32_keyboard_get_async_state();
@@ -168,7 +173,7 @@ VOID vm_platform_win32_keyboard_make_status_for(const vm_platform_run_context *c
     uint32_t toggle_keys = vm_platform_win32_keyboard_get_toggle_state();
     vm_platform_keyboard_state_sink state_sink = context == NULL ? NULL :
         context->keyboard_state_sink;
-    void *state_context = context == NULL ? NULL : context->keyboard_state_context;
+    C_VOID *state_context = context == NULL ? NULL : context->keyboard_state_context;
 
     if (state_sink == NULL || state_sink(state_context, asynchronous_keys,
                                          toggle_keys) !=

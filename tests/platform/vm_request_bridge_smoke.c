@@ -1,6 +1,8 @@
+#include "type.h"
+
 #include "vm/platform/request_bridge.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     nxvm_platform_vm_request_bridge bridge;
     nxvm_platform_vm_request request;

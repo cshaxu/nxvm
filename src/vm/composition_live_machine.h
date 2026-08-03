@@ -1,34 +1,63 @@
 #ifndef NXVM_COMPOSITION_LIVE_MACHINE_H
 #define NXVM_COMPOSITION_LIVE_MACHINE_H
 
+#include "type.h"
+
 #include <stdint.h>
 
+
 #include "core/machine/cpu.h"
+
 #include "core/machine/machine_interface.h"
+
 #include "core/machine/cpu_instructions.h"
+
 #include "core/machine/port.h"
+
 #include "core/machine/memory.h"
+
 #include "core/machine/pic.h"
+
 #include "core/machine/pit.h"
+
 #include "core/machine/dma.h"
+
 #include "core/machine/kbc.h"
+
 #include "core/machine/vadp.h"
+
 #include "core/machine/block_provider.h"
+
 #include "core/machine/keyboard_interface.h"
+
 #include "core/machine/display_interface.h"
+
 #include "vm/machine/cmos.h"
+
 #include "vm/machine/fdd.h"
+
 #include "vm/machine/fdc.h"
+
 #include "vm/machine/hdd.h"
+
 #include "vm/machine/debug.h"
+
 #include "vm/profile/default_profile/firmware/bios.h"
+
 #include "vm/profile/default_profile/firmware/qdx.h"
+
 #include "vm/profile/default_profile/firmware/context.h"
+
 #include "vm/composition_control.h"
+
 #include "core/product/debug/debug_target.h"
+
 #include "core/product/debug/debug.h"
+
 #include "core/product/wait_provider.h"
+
 #include "vm/platform/platform.h"
+
 #include "vm/product/console.h"
 
 typedef struct vm_composition_live_machine {
@@ -89,7 +118,7 @@ typedef struct vm_composition_live_machine {
     vm_composition_control_state *control;
 } vm_composition_live_machine;
 
-void vm_composition_live_machine_initialize(vm_composition_live_machine *machine);
-void vm_composition_live_machine_finalize(vm_composition_live_machine *machine);
+C_VOID vm_composition_live_machine_initialize(vm_composition_live_machine *machine);
+C_VOID vm_composition_live_machine_finalize(vm_composition_live_machine *machine);
 
 #endif

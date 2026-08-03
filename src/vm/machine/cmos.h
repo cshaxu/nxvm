@@ -60,10 +60,10 @@ typedef struct {
 #define VCMOS_RTC_CENTURY      0x32
 #define VCMOS_FLAGS_INFO       0x33
 
-void vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_port *port);
-void vm_machine_cmos_reset(t_cmos *cmos);
-void vm_machine_cmos_refresh(t_cmos *cmos);
-void vm_machine_cmos_finalize(t_cmos *cmos);
+C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_port *port);
+C_VOID vm_machine_cmos_reset(t_cmos *cmos);
+C_VOID vm_machine_cmos_refresh(t_cmos *cmos);
+C_VOID vm_machine_cmos_finalize(t_cmos *cmos);
 
 #define VCMOS_POST "            \
 ; init cmos                   \n\

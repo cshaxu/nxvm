@@ -41,19 +41,19 @@ typedef struct {
 #define VFDD_BYTE_PER_MB ((1 << 10) * 1000)
 
 size_t vm_machine_fdd_image_size(const t_fdd *fdd);
-void vm_machine_fdd_set_pointer(t_fdd *fdd);
-void vm_machine_fdd_transfer_read(t_fdd *fdd, t_latch *latch);
-void vm_machine_fdd_transfer_write(t_fdd *fdd, t_latch *latch);
-void vm_machine_fdd_format_track(t_fdd *fdd, ntvdm64_type_unsigned_8 fill_byte);
-void vm_machine_fdd_initialize(t_fdd *fdd);
-void vm_machine_fdd_reset(t_fdd *fdd);
-void vm_machine_fdd_refresh(t_fdd *fdd);
-void vm_machine_fdd_finalize(t_fdd *fdd);
-void vm_machine_fdd_create_for(t_fdd *fdd);
-int vm_machine_fdd_insert_for(t_fdd *fdd, const char *file_name);
-int vm_machine_fdd_remove_for(t_fdd *fdd, const char *file_name);
+C_VOID vm_machine_fdd_set_pointer(t_fdd *fdd);
+C_VOID vm_machine_fdd_transfer_read(t_fdd *fdd, t_latch *latch);
+C_VOID vm_machine_fdd_transfer_write(t_fdd *fdd, t_latch *latch);
+C_VOID vm_machine_fdd_format_track(t_fdd *fdd, ntvdm64_type_unsigned_8 fill_byte);
+C_VOID vm_machine_fdd_initialize(t_fdd *fdd);
+C_VOID vm_machine_fdd_reset(t_fdd *fdd);
+C_VOID vm_machine_fdd_refresh(t_fdd *fdd);
+C_VOID vm_machine_fdd_finalize(t_fdd *fdd);
+C_VOID vm_machine_fdd_create_for(t_fdd *fdd);
+C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name);
+C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name);
 
-void vm_machine_fdd_print(const t_fdd *fdd);
+C_VOID vm_machine_fdd_print(const t_fdd *fdd);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

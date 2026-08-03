@@ -1,15 +1,17 @@
+#include "type.h"
+
 #include "vm/platform/input.h"
 
-void vm_platform_keyboard_transport_initialize(
+C_VOID vm_platform_keyboard_transport_initialize(
     vm_platform_keyboard_transport *transport,
-    const vm_platform_keyboard_sink *sink, void *context)
+    const vm_platform_keyboard_sink *sink, C_VOID *context)
 {
     if (transport == NULL) return;
     transport->sink = sink;
     transport->context = context;
 }
 
-int vm_platform_keyboard_get_modifier_for(
+C_INT vm_platform_keyboard_get_modifier_for(
     const vm_platform_keyboard_transport *transport,
     vm_platform_keyboard_modifier modifier)
 {
@@ -18,7 +20,7 @@ int vm_platform_keyboard_get_modifier_for(
         transport->sink->get_modifier(transport->context, modifier);
 }
 
-void vm_platform_keyboard_apply_host_state_for(
+C_VOID vm_platform_keyboard_apply_host_state_for(
     const vm_platform_keyboard_transport *transport,
     uint32_t asynchronous_keys, uint32_t toggle_keys)
 {
@@ -29,7 +31,7 @@ void vm_platform_keyboard_apply_host_state_for(
     }
 }
 
-void vm_platform_keyboard_receive_key_press_for(
+C_VOID vm_platform_keyboard_receive_key_press_for(
     const vm_platform_keyboard_transport *transport, uint16_t code)
 {
     if (transport != NULL && transport->sink != NULL &&
@@ -38,7 +40,7 @@ void vm_platform_keyboard_receive_key_press_for(
     }
 }
 
-void vm_platform_keyboard_request_stop_for(
+C_VOID vm_platform_keyboard_request_stop_for(
     const vm_platform_keyboard_transport *transport)
 {
     if (transport != NULL && transport->sink != NULL &&

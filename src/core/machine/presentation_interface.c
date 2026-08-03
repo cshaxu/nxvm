@@ -1,8 +1,11 @@
+#include "type.h"
+
 #include "core/machine/presentation_interface.h"
+
 
 #include <string.h>
 
-void core_machine_keyboard_queue_initialize(core_machine_keyboard_queue *queue)
+C_VOID core_machine_keyboard_queue_initialize(core_machine_keyboard_queue *queue)
 {
     if (queue != NULL) STD_MEMSET(queue, 0, sizeof(*queue));
 }
@@ -30,7 +33,7 @@ ntvdm64_status core_machine_keyboard_queue_pop(
     return NTVDM64_STATUS_OK;
 }
 
-void core_machine_text_snapshot_initialize(core_machine_text_snapshot *snapshot)
+C_VOID core_machine_text_snapshot_initialize(core_machine_text_snapshot *snapshot)
 {
     if (snapshot != NULL) {
         STD_MEMSET(snapshot, 0, sizeof(*snapshot));

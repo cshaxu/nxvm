@@ -1,3 +1,5 @@
+#include "type.h"
+
 #include "vm/profile/full_pc_profile.h"
 
 static const core_product_runtime_profile_descriptor vm_profile_full_pc_profile = {
@@ -14,7 +16,7 @@ static const core_product_runtime_profile_descriptor vm_profile_full_pc_profile 
     1
 };
 
-const core_product_runtime_profile_descriptor *vm_profile_full_pc_profile_descriptor(void)
+const core_product_runtime_profile_descriptor *vm_profile_full_pc_profile_descriptor(C_VOID)
 {
     return &vm_profile_full_pc_profile;
 }

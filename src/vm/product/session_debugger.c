@@ -1,3 +1,5 @@
+#include "type.h"
+
 #include "vm/product/session_debugger.h"
 
 static ntvdm64_status vm_product_debugger_require_boundary(
@@ -35,7 +37,7 @@ ntvdm64_status vm_product_debugger_read_cpu(
 
 ntvdm64_status vm_product_debugger_read_memory(
     const vm_product_debugger *debugger, uint32_t physical,
-    void *out_data, size_t size)
+    C_VOID *out_data, size_t size)
 {
     ntvdm64_status status = vm_product_debugger_require_boundary(debugger);
     return status == NTVDM64_STATUS_OK ?
@@ -58,7 +60,7 @@ ntvdm64_status vm_product_debugger_continue(
         core_machine_debug_continue(debugger->machine, budget, out_result) : status;
 }
 
-void vm_product_debugger_close_command_boundary(
+C_VOID vm_product_debugger_close_command_boundary(
     vm_product_debugger *debugger)
 {
     if (debugger != NULL) debugger->command_boundary_open = 0;

@@ -33,28 +33,28 @@ typedef struct vm_composition_control_state {
 
 #include "vm/composition_live_machine.h"
 
-void vm_composition_control_start(vm_composition_control_state *control);
-void vm_composition_control_reset(vm_composition_control_state *control);
-void vm_composition_control_stop(vm_composition_control_state *control);
-void vm_composition_control_request_pause(vm_composition_control_state *control,
+C_VOID vm_composition_control_start(vm_composition_control_state *control);
+C_VOID vm_composition_control_reset(vm_composition_control_state *control);
+C_VOID vm_composition_control_stop(vm_composition_control_state *control);
+C_VOID vm_composition_control_request_pause(vm_composition_control_state *control,
     vm_composition_pause_reason reason);
-int vm_composition_control_wait_for_pause(vm_composition_control_state *control,
-    unsigned milliseconds);
-int vm_composition_control_is_paused(const vm_composition_control_state *control);
+C_INT vm_composition_control_wait_for_pause(vm_composition_control_state *control,
+    C_UINT milliseconds);
+C_INT vm_composition_control_is_paused(const vm_composition_control_state *control);
 vm_composition_pause_reason vm_composition_control_get_pause_reason(
     const vm_composition_control_state *control);
-void vm_composition_control_continue(vm_composition_control_state *control);
-int vm_composition_control_step(vm_composition_control_state *control);
-void vm_composition_control_initialize(vm_composition_control_state *control,
+C_VOID vm_composition_control_continue(vm_composition_control_state *control);
+C_INT vm_composition_control_step(vm_composition_control_state *control);
+C_VOID vm_composition_control_initialize(vm_composition_control_state *control,
     vm_composition_live_machine *machine);
-void vm_composition_control_finalize(vm_composition_control_state *control,
+C_VOID vm_composition_control_finalize(vm_composition_control_state *control,
     vm_composition_live_machine *machine);
-int vm_composition_control_is_running(const vm_composition_control_state *control);
-int vm_composition_control_get_flip(const vm_composition_control_state *control);
-void vm_composition_control_print_status(const vm_composition_control_state *control);
-void vm_composition_control_bind_command_boundary(
+C_INT vm_composition_control_is_running(const vm_composition_control_state *control);
+C_INT vm_composition_control_get_flip(const vm_composition_control_state *control);
+C_VOID vm_composition_control_print_status(const vm_composition_control_state *control);
+C_VOID vm_composition_control_bind_command_boundary(
     vm_composition_control_state *control,
-    void (*callback)(void *opaque), void *opaque);
+    C_VOID (*callback)(C_VOID *opaque), C_VOID *opaque);
 
 #ifdef __cplusplus
 }

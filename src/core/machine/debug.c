@@ -1,3 +1,5 @@
+#include "type.h"
+
 #include "core/machine/debug_interface.h"
 
 static ntvdm64_status core_machine_debug_require_paused(
@@ -27,7 +29,7 @@ ntvdm64_status core_machine_debug_read_cpu(
 ntvdm64_status core_machine_debug_read_memory(
     const core_machine *machine,
     uint32_t physical,
-    void *out_data,
+    C_VOID *out_data,
     size_t size)
 {
     ntvdm64_status status = core_machine_debug_require_paused(machine);

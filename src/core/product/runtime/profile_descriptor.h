@@ -1,6 +1,8 @@
 #ifndef NXVM_RUNTIME_PROFILE_DESCRIPTOR_H
 #define NXVM_RUNTIME_PROFILE_DESCRIPTOR_H
 
+#include "type.h"
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -26,10 +28,10 @@ enum {
 };
 
 typedef struct core_product_runtime_profile_descriptor {
-    const char *name;
+    const C_CHAR *name;
     uint64_t devices;
-    int permits_disk_boot;
-    int uses_legacy_adapter;
+    C_INT permits_disk_boot;
+    C_INT uses_legacy_adapter;
 } core_product_runtime_profile_descriptor;
 
 #ifdef __cplusplus

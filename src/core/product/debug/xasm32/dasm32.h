@@ -9,7 +9,7 @@ extern "C" {
 
 #include "type.h"
 
-uint8_t dasm32(char *stmt, uint8_t *rcode, int flag32);
+uint8_t dasm32(C_CHAR *stmt, uint8_t *rcode, C_INT flag32);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

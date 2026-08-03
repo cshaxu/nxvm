@@ -10,10 +10,12 @@ compatibility alias behind.
 
 ## Retained Vocabulary
 
-The `type.*` all-uppercase C-runtime wrappers are intentional and remain
-unchanged: `LOCALTIME`, `STRCAT`, `STRCPY`, `STRTOK`, `STRCMP`, `STRLEN`,
-`PRINTF`, `FPRINTF`, `SPRINTF`, `FOPEN`, `FCLOSE`, `FREAD`, `FWRITE`, `FGETS`,
-`MALLOC`, `FREE`, `MEMSET`, `MEMCPY`, and `MEMCMP`.
+The `type.*` C-runtime wrappers are intentional and use the collision-safe
+`STD_*` spelling, including `STD_LOCALTIME`, `STD_STRCAT`, `STD_STRCPY`,
+`STD_STRTOK`, `STD_STRCMP`, `STD_STRLEN`, `STD_PRINTF`, `STD_FPRINTF`,
+`STD_SPRINTF`, `STD_FOPEN`, `STD_FCLOSE`, `STD_FREAD`, `STD_FWRITE`,
+`STD_FGETS`, `STD_MALLOC`, `STD_FREE`, `STD_MEMSET`, `STD_MEMCPY`, and
+`STD_MEMCMP`.
 
 Keep the approved compact families: `kbc`, `vadp`, `win32app`, `win32con`,
 `linuxapp`, `linuxcon`, `w32*`, `xasm32`, `aasm`, `dasm`, and `debug`. Keep
@@ -35,9 +37,16 @@ prefixes on enclosing public APIs.
 | T105 | `vm/product` and `vm/profile` | Rename `consoleMain` and remaining `nxvm_product_nxvm_*` / `nxvm_vm_*` public APIs to `vm_product_*` / `vm_profile_*`. |
 | T106 | Implemented `vdm/` skeleton | Rename `nxvm_runtime_dos_minimal_*`, `nxvm_dos_minimal_*`, and `ntvdm64_vdm_minimal_*` to `vdm_machine_*` or `vdm_composition_*`. No new VDM behavior. |
 | T107 | Root type completion and closure | Resolve the T101 inventory of active `t_*` public aliases and legacy non-retained macros, then run an owner-prefix and retained-vocabulary closure scan. |
+| T111 | C scalar aliases | Adopt `C_*` aliases in active project code. |
+| T112 | ISO C type/object/atomic aliases | Adopt `STD_*` types, objects, constants, and atomics without changing memory order. |
+| T113 | ISO C header ownership | Make `type.*` the ISO C header boundary; remove `memory.h` and add a scan. |
+| T114 | Win32 adapter vocabulary | Adopt `WIN32_*` at the project-facing edge of Win32 adapters. |
+| T115 | Input flush capability | Replace `fflush(stdin)` with an explicit platform capability. |
+| T116 | Closure audit | Prove static naming, dependency, GCC, DOS, Console, and documentation closure. |
 
 Each code-changing task produces `nxvm_0_5_0NNN.exe` when it changes the
 runnable NXVM path. T98 and T108 are planning-only and produce no artifacts.
+T111--T116 follow the same artifact and regression policy.
 
 ## Mapping Rules
 

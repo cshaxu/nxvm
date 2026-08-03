@@ -1,6 +1,8 @@
+#include "type.h"
+
 #include "vm/product/presentation.h"
 
-void vm_product_presentation_initialize(
+C_VOID vm_product_presentation_initialize(
     vm_product_presentation *presentation)
 {
     if (presentation == NULL) return;
@@ -27,7 +29,7 @@ ntvdm64_status vm_product_presentation_open_command_boundary(
 
 ntvdm64_status vm_product_presentation_apply_input(
     vm_product_presentation *presentation,
-    vm_product_input_consumer consumer, void *context)
+    vm_product_input_consumer consumer, C_VOID *context)
 {
     uint16_t scan_code;
     ntvdm64_status status;
@@ -59,7 +61,7 @@ ntvdm64_status vm_product_presentation_capture_text(
     return core_machine_text_snapshot_copy(&presentation->published_text, out_snapshot);
 }
 
-void vm_product_presentation_close_command_boundary(
+C_VOID vm_product_presentation_close_command_boundary(
     vm_product_presentation *presentation)
 {
     if (presentation != NULL) presentation->command_boundary_open = 0;

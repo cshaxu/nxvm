@@ -1,8 +1,11 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "vm/platform/presentation_mailbox.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_platform_presentation_mailbox first;
     vm_platform_presentation_mailbox second;

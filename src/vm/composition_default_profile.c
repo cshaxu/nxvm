@@ -1,6 +1,10 @@
+#include "type.h"
+
 #include "vm/composition_default_profile.h"
 
+
 #include <string.h>
+
 
 #include "vm/composition_full_pc.h"
 
@@ -54,7 +58,7 @@ ntvdm64_status vm_composition_default_profile_get_reset_vector(
 }
 
 ntvdm64_status vm_composition_default_profile_set_window_display(
-    vm_composition_default_profile *default_profile, int enabled)
+    vm_composition_default_profile *default_profile, C_INT enabled)
 {
     if (default_profile == NULL || !default_profile->active) return NTVDM64_STATUS_INVALID_STATE;
     return vm_composition_full_pc_set_window_display(default_profile->full_pc, enabled);
@@ -73,18 +77,18 @@ ntvdm64_status vm_composition_default_profile_reset(vm_composition_default_profi
     return vm_composition_full_pc_reset(default_profile->full_pc);
 }
 
-void vm_composition_default_profile_run(vm_composition_default_profile *default_profile)
+C_VOID vm_composition_default_profile_run(vm_composition_default_profile *default_profile)
 {
     if (default_profile != NULL && default_profile->active) vm_composition_full_pc_run(default_profile->full_pc);
 }
 
-void vm_composition_default_profile_resume(vm_composition_default_profile *default_profile)
+C_VOID vm_composition_default_profile_resume(vm_composition_default_profile *default_profile)
 {
     if (default_profile != NULL && default_profile->active) vm_composition_full_pc_resume(default_profile->full_pc);
 }
 
 ntvdm64_status vm_composition_default_profile_is_running(
-    const vm_composition_default_profile *default_profile, int *out_running)
+    const vm_composition_default_profile *default_profile, C_INT *out_running)
 {
     if (default_profile == NULL || !default_profile->active) return NTVDM64_STATUS_INVALID_STATE;
     return vm_composition_full_pc_is_running(default_profile->full_pc, out_running);
@@ -97,37 +101,37 @@ ntvdm64_status vm_composition_default_profile_debug(vm_composition_default_profi
 }
 
 ntvdm64_status vm_composition_default_profile_remove_fdd(
-    vm_composition_default_profile *default_profile, const char *path)
+    vm_composition_default_profile *default_profile, const C_CHAR *path)
 {
     if (default_profile == NULL || !default_profile->active) return NTVDM64_STATUS_INVALID_STATE;
     return vm_composition_full_pc_remove_fdd(default_profile->full_pc, path);
 }
 
 ntvdm64_status vm_composition_default_profile_disconnect_hdd(
-    vm_composition_default_profile *default_profile, const char *path)
+    vm_composition_default_profile *default_profile, const C_CHAR *path)
 {
     if (default_profile == NULL || !default_profile->active) return NTVDM64_STATUS_INVALID_STATE;
     return vm_composition_full_pc_disconnect_hdd(default_profile->full_pc, path);
 }
 
 ntvdm64_status vm_composition_default_profile_record_start(
-    vm_composition_default_profile *default_profile, const char *path)
+    vm_composition_default_profile *default_profile, const C_CHAR *path)
 {
     if (default_profile == NULL || !default_profile->active) return NTVDM64_STATUS_INVALID_STATE;
     return vm_composition_full_pc_record_start(default_profile->full_pc, path);
 }
 
-void vm_composition_default_profile_record_stop(vm_composition_default_profile *default_profile)
+C_VOID vm_composition_default_profile_record_stop(vm_composition_default_profile *default_profile)
 {
     if (default_profile != NULL && default_profile->active) vm_composition_full_pc_record_stop(default_profile->full_pc);
 }
 
-void vm_composition_default_profile_request_stop(vm_composition_default_profile *default_profile)
+C_VOID vm_composition_default_profile_request_stop(vm_composition_default_profile *default_profile)
 {
     if (default_profile != NULL && default_profile->active) vm_composition_full_pc_request_stop(default_profile->full_pc);
 }
 
-void vm_composition_default_profile_destroy(vm_composition_default_profile *default_profile)
+C_VOID vm_composition_default_profile_destroy(vm_composition_default_profile *default_profile)
 {
     if (default_profile != NULL && default_profile->active) {
         vm_composition_full_pc_destroy(default_profile->full_pc);

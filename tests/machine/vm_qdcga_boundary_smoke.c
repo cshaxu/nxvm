@@ -1,11 +1,17 @@
+#include "type.h"
+
 #include <stdio.h>
+
 #include <stdlib.h>
 
+
 #include "vm/composition_machine.h"
+
 #include "vm/profile/default_profile/firmware/qdcga.h"
+
 #include "vm/profile/default_profile/firmware/qdx.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_composition_live_machine *session =
         (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));

@@ -1,5 +1,9 @@
+#include "type.h"
+
 #include <stdint.h>
+
 #include <stdio.h>
+
 
 #include "core/machine/machine_interface.h"
 
@@ -9,7 +13,7 @@ typedef struct port_fixture {
 } port_fixture;
 
 static ntvdm64_status port_read(
-    void *owner,
+    C_VOID *owner,
     uint16_t port,
     uint32_t *out_value)
 {
@@ -21,7 +25,7 @@ static ntvdm64_status port_read(
 }
 
 static ntvdm64_status port_write(
-    void *owner,
+    C_VOID *owner,
     uint16_t port,
     uint32_t value)
 {
@@ -32,12 +36,12 @@ static ntvdm64_status port_write(
     return NTVDM64_STATUS_OK;
 }
 
-static int expect_status(ntvdm64_status actual, ntvdm64_status expected)
+static C_INT expect_status(ntvdm64_status actual, ntvdm64_status expected)
 {
     return actual == expected ? 0 : 1;
 }
 
-int main(void)
+C_INT main(C_VOID)
 {
     core_machine *first = NULL;
     core_machine *second = NULL;
@@ -51,7 +55,7 @@ int main(void)
     port_fixture second_port = { 0u, 0u };
     uint8_t value;
     uint32_t port_value;
-    int result = 0;
+    C_INT result = 0;
 
     result |= expect_status(core_machine_create(&config, &first),
                             NTVDM64_STATUS_OK);

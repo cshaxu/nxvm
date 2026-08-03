@@ -11,10 +11,10 @@ extern "C" {
 
 #define NXVM_DEVICE_HDC "Unknown Hard Drive Controller"
 
-void vm_machine_hdc_initialize();
-void vm_machine_hdc_reset();
-void vm_machine_hdc_refresh();
-void vm_machine_hdc_finalize();
+C_VOID vm_machine_hdc_initialize();
+C_VOID vm_machine_hdc_reset();
+C_VOID vm_machine_hdc_refresh();
+C_VOID vm_machine_hdc_finalize();
 
 #define VHDC_INT_SOFT_HDD_13 "\
 test dl, 80                 \n\

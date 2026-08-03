@@ -1,9 +1,13 @@
+#include "type.h"
+
 #include <stdio.h>
 
+
 #include "vm/profile/default_profile/profile.h"
+
 #include "vm/composition_session_model.h"
 
-static int verify(const char *fdd_path, const char *hdd_path,
+static C_INT verify(const C_CHAR *fdd_path, const C_CHAR *hdd_path,
                   vm_product_boot_target target)
 {
     static const vm_product_media_identity fdd = {
@@ -42,7 +46,7 @@ static int verify(const char *fdd_path, const char *hdd_path,
     return 0;
 }
 
-static int verify_created(void)
+static C_INT verify_created(C_VOID)
 {
     vm_composition_session_model_config config = {
         NULL, NULL, NULL, NULL, 1, 1u, VM_PRODUCT_BOOT_HDD
@@ -62,7 +66,7 @@ static int verify_created(void)
     return 0;
 }
 
-int main(int argc, char **argv)
+C_INT main(C_INT argc, C_CHAR **argv)
 {
     if (argc != 3 || verify(argv[1], argv[2], VM_PRODUCT_BOOT_FDD) != 0 ||
         verify(argv[1], argv[2], VM_PRODUCT_BOOT_HDD) != 0 ||

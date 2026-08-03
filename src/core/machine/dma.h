@@ -15,7 +15,7 @@ extern "C" {
 typedef ntvdm64_type_unsigned_8 t_page;
 typedef struct t_latch t_latch;
 typedef struct t_ram t_ram;
-typedef void (*core_machine_dma_device_provider)(void *owner, t_latch *latch);
+typedef C_VOID (*core_machine_dma_device_provider)(C_VOID *owner, t_latch *latch);
 
 #define VDMA_CHANNEL_COUNT 4
 
@@ -54,7 +54,7 @@ typedef struct {
     core_machine_dma_device_provider read_provider[VDMA_CHANNEL_COUNT];
     core_machine_dma_device_provider write_provider[VDMA_CHANNEL_COUNT];
     core_machine_dma_device_provider close_provider[VDMA_CHANNEL_COUNT];
-    void *device_owner[VDMA_CHANNEL_COUNT];
+    C_VOID *device_owner[VDMA_CHANNEL_COUNT];
 } t_dma_connect;
 
 typedef struct t_dma {
@@ -156,22 +156,22 @@ struct t_latch {
 #define VDMA_GetISR_ISR(cisr) (((cisr) & VDMA_ISR_ISR) >> 4)
 #define VDMA_SetISR(cisr, id) ((cisr) = (VDMA_ISR_IS | ((id) << 4)))
 
-void core_machine_dma_initialize(t_latch *latch, t_dma *primary,
+C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_port *port);
-void core_machine_dma_reset(t_latch *latch, t_dma *primary,
+C_VOID core_machine_dma_reset(t_latch *latch, t_dma *primary,
     t_dma *secondary);
-void core_machine_dma_refresh(t_latch *latch, t_dma *primary,
+C_VOID core_machine_dma_refresh(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_ram *ram);
-void core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
+C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
     ntvdm64_type_unsigned_8 drq_id);
-void core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
+C_VOID core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
     ntvdm64_type_unsigned_8 drq_id, ntvdm64_type_flat_address read_device, ntvdm64_type_flat_address write_device,
     ntvdm64_type_flat_address close_device);
-void core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
+C_VOID core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
     ntvdm64_type_unsigned_8 drq_id, core_machine_dma_device_provider read_provider,
     core_machine_dma_device_provider write_provider,
-    core_machine_dma_device_provider close_provider, void *owner);
-void core_machine_dma_finalize(t_latch *latch, t_dma *primary,
+    core_machine_dma_device_provider close_provider, C_VOID *owner);
+C_VOID core_machine_dma_finalize(t_latch *latch, t_dma *primary,
     t_dma *secondary);
 
 #define VDMA_POST "\

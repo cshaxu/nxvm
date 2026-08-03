@@ -1,9 +1,13 @@
 #ifndef NTVDM64_CORE_MACHINE_DEBUG_INTERFACE_H
 #define NTVDM64_CORE_MACHINE_DEBUG_INTERFACE_H
 
+#include "type.h"
+
 #include <stddef.h>
 
+
 #include "core/machine/cpu_interface.h"
+
 #include "core/machine/machine_interface.h"
 
 #ifdef __cplusplus
@@ -16,7 +20,7 @@ ntvdm64_status core_machine_debug_read_cpu(
 ntvdm64_status core_machine_debug_read_memory(
     const core_machine *machine,
     uint32_t physical,
-    void *out_data,
+    C_VOID *out_data,
     size_t size);
 ntvdm64_status core_machine_debug_step(
     core_machine *machine,

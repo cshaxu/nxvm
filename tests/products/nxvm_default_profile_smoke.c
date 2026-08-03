@@ -1,9 +1,13 @@
+#include "type.h"
+
 #include <stdio.h>
 
+
 #include "vm/product/media.h"
+
 #include "vm/composition_default_profile.h"
 
-static int verify(const char *fdd_path, const char *hdd_path,
+static C_INT verify(const C_CHAR *fdd_path, const C_CHAR *hdd_path,
                   vm_product_boot_target boot_target)
 {
     static const vm_product_media_identity fdd = {
@@ -17,7 +21,7 @@ static int verify(const char *fdd_path, const char *hdd_path,
     vm_product_media_policy media;
     vm_composition_default_profile default_profile = { 0 };
     vm_composition_default_profile_reset_vector vector;
-    int running = 1;
+    C_INT running = 1;
 
     vm_product_media_policy_initialize(&media);
     if (vm_product_media_configure(&media, VM_PRODUCT_BOOT_FDD,
@@ -43,7 +47,7 @@ static int verify(const char *fdd_path, const char *hdd_path,
     return 0;
 }
 
-int main(int argc, char **argv)
+C_INT main(C_INT argc, C_CHAR **argv)
 {
     if (argc != 3 || verify(argv[1], argv[2], VM_PRODUCT_BOOT_FDD) != 0 ||
         verify(argv[1], argv[2], VM_PRODUCT_BOOT_HDD) != 0) return 1;

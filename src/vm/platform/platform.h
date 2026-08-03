@@ -21,36 +21,36 @@ typedef struct vm_platform_run_context {
     const core_product_wait_scope *wait_scope;
     core_platform_host_surface_context console_surface;
     core_platform_host_surface_context window_surface;
-    void *console_renderer;
-    void *window_renderer;
+    C_VOID *console_renderer;
+    C_VOID *window_renderer;
     uint64_t terminal_displayed_generation;
-    int window_display;
+    C_INT window_display;
     vm_platform_keyboard_state_sink keyboard_state_sink;
-    void *keyboard_state_context;
+    C_VOID *keyboard_state_context;
 } vm_platform_run_context;
 
-void vm_platform_run_context_initialize(
+C_VOID vm_platform_run_context_initialize(
     vm_platform_run_context *context,
     const vm_platform_execution_transport *execution,
     const vm_platform_keyboard_transport *keyboard,
     const vm_platform_presentation_mailbox *presentation,
     const core_product_wait_scope *wait_scope);
-void vm_platform_run_context_bind_keyboard_state(
+C_VOID vm_platform_run_context_bind_keyboard_state(
     vm_platform_run_context *context, vm_platform_keyboard_state_sink sink,
-    void *sink_context);
-int vm_platform_run_context_get_window_display(
+    C_VOID *sink_context);
+C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context);
-void vm_platform_run_context_set_window_display(
-    vm_platform_run_context *context, int enabled);
+C_VOID vm_platform_run_context_set_window_display(
+    vm_platform_run_context *context, C_INT enabled);
 
 /* Device Operations */
-void vm_platform_display_set_screen(const vm_platform_run_context *context);
-void vm_platform_display_paint(const vm_platform_run_context *context);
+C_VOID vm_platform_display_set_screen(const vm_platform_run_context *context);
+C_VOID vm_platform_display_paint(const vm_platform_run_context *context);
 
-void vm_platform_start(const vm_platform_run_context *context);
+C_VOID vm_platform_start(const vm_platform_run_context *context);
 
-void vm_platform_initialize();
-void vm_platform_finalize();
+C_VOID vm_platform_initialize();
+C_VOID vm_platform_finalize();
 
 #ifdef __cplusplus
 }/*_EOCD_*/

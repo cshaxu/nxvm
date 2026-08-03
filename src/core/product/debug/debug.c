@@ -3,8 +3,12 @@
 /* DEBUG is the debug console for users to break, trace, lookup,
  * and print virtual machine devices. */
 
+#include "type.h"
+
 #include "core/product/utils.h"
+
 #include "core/product/debug/debug_access.h"
+
 
 #include "core/product/debug/debug.h"
 
@@ -26,13 +30,13 @@ static uint32_t debug_register(core_product_debug_register reg) {
     core_product_debug_read_register(reg, &value);
     return value;
 }
-static int debug_set_register(core_product_debug_register reg, uint32_t value) {
+static C_INT debug_set_register(core_product_debug_register reg, uint32_t value) {
     return core_product_debug_write_register(reg, value);
 }
-static int debug_flag(uint32_t mask) {
+static C_INT debug_flag(uint32_t mask) {
     return (debug_register(CORE_PRODUCT_DEBUG_EFLAGS) & mask) != 0;
 }
-static void debug_set_flag(uint32_t mask, int set) {
+static C_VOID debug_set_flag(uint32_t mask, C_INT set) {
     uint32_t flags = debug_register(CORE_PRODUCT_DEBUG_EFLAGS);
     debug_set_register(CORE_PRODUCT_DEBUG_EFLAGS, set ? flags | mask : flags & ~mask);
 }
@@ -64,10 +68,10 @@ static void debug_set_flag(uint32_t mask, int set) {
 #define _fs ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_FS))
 #define _gs ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_GS))
 
-static void seterr(size_t pos) {
+static C_VOID seterr(size_t pos) {
     nErrPos = (size_t)(arg[pos] - strCmdCopy + STD_STRLEN(arg[pos]) + 1);
 }
-static uint8_t scannubit8(char *s) {
+static uint8_t scannubit8(C_CHAR *s) {
     uint8_t ans = 0;
     size_t i = 0;
     if (s[0] == '\'' && s[2] == '\'') {
@@ -91,7 +95,7 @@ static uint8_t scannubit8(char *s) {
     }
     return ans;
 }
-static uint16_t scannubit16(char *s) {
+static uint16_t scannubit16(C_CHAR *s) {
     uint16_t ans = 0;
     size_t i = 0;
     ntvdm64_type_string_lower(s);
@@ -112,7 +116,7 @@ static uint16_t scannubit16(char *s) {
     }
     return ans;
 }
-static uint32_t scannubit32(char *s) {
+static uint32_t scannubit32(C_CHAR *s) {
     uint32_t ans = 0;
     size_t i = 0;
     ntvdm64_type_string_lower(s);
@@ -143,9 +147,9 @@ static uint32_t scannubit32(char *s) {
 #define seg (debugContext->parsed_segment)
 #define ptr (debugContext->parsed_offset)
 
-static void addrparse(uint16_t defseg, const char *addr) {
-    char *cseg, *cptr;
-    char ccopy[0x100];
+static C_VOID addrparse(uint16_t defseg, const C_CHAR *addr) {
+    C_CHAR *cseg, *cptr;
+    C_CHAR ccopy[0x100];
     STD_STRCPY(ccopy, addr);
     cseg = STD_STRTOK(ccopy,":");
     cptr = STD_STRTOK(NULL,"");
@@ -170,11 +174,11 @@ static void addrparse(uint16_t defseg, const char *addr) {
 
 /* DEBUG CMD BEGIN */
 /* assemble */
-static void aconsole() {
+static C_VOID aconsole() {
     size_t i, len, errAsmPos;
-    char cmdAsmBuff[0x100];
+    C_CHAR cmdAsmBuff[0x100];
     uint8_t acode[15];
-    int flagExitAsm = 0;
+    C_INT flagExitAsm = 0;
     while (!flagExitAsm) {
         STD_PRINTF("%04X:%04X ", asmSegRec, asmPtrRec);
         fflush(stdin);
@@ -192,7 +196,7 @@ static void aconsole() {
         if (!len) {
             errAsmPos = STD_STRLEN(cmdAsmBuff) + 9;
         } else {
-            if (core_product_debug_write_linear((asmSegRec << 4) + asmPtrRec, (void *) acode, (uint8_t) len)) {
+            if (core_product_debug_write_linear((asmSegRec << 4) + asmPtrRec, (C_VOID *) acode, (uint8_t) len)) {
                 STD_PRINTF("debug: fail to write to L%08X\n", (asmSegRec << 4) + asmPtrRec);
                 return;
             }
@@ -206,7 +210,7 @@ static void aconsole() {
         }
     }
 }
-static void a() {
+static C_VOID a() {
     if (narg == 1) {
         aconsole();
     } else if (narg == 2) {
@@ -222,7 +226,7 @@ static void a() {
     }
 }
 /* compare */
-static void c() {
+static C_VOID c() {
     size_t i;
     uint8_t val1, val2;
     uint16_t seg1, ptr1, seg2, ptr2, range;
@@ -238,8 +242,8 @@ static void c() {
         range = scannubit16(arg[2])-ptr1;
         if (!nErrPos) {
             for (i = 0; i <= range; ++i) {
-                core_product_debug_read_real(seg1, (uint16_t)(ptr1 + i), (void *)(&val1), 1);
-                core_product_debug_read_real(seg2, (uint16_t)(ptr2 + i), (void *)(&val2), 1);
+                core_product_debug_read_real(seg1, (uint16_t)(ptr1 + i), (C_VOID *)(&val1), 1);
+                core_product_debug_read_real(seg2, (uint16_t)(ptr2 + i), (C_VOID *)(&val2), 1);
                 if (val1 != val2) {
                     STD_PRINTF("%04X:%04X  ", seg1, (uint16_t)(ptr1 + i));
                     STD_PRINTF("%02X  %02X", val1, val2);
@@ -250,8 +254,8 @@ static void c() {
     }
 }
 /* dump */
-static void dprint(uint16_t segment, uint16_t start, uint16_t end) {
-    char t, c[0x11];
+static C_VOID dprint(uint16_t segment, uint16_t start, uint16_t end) {
+    C_CHAR t, c[0x11];
     uint16_t iaddr;
     if (start > end) end = 0xffff;
     if ((uint32_t)((segment << 4) + end) > 0x000fffff) {
@@ -269,7 +273,7 @@ static void dprint(uint16_t segment, uint16_t start, uint16_t end) {
             STD_PRINTF("  ");
             c[iaddr % 0x10] = ' ';
         } else {
-            core_product_debug_read_real(segment, iaddr, (void *)(&c[iaddr % 0x10]), 1);
+            core_product_debug_read_real(segment, iaddr, (C_VOID *)(&c[iaddr % 0x10]), 1);
             STD_PRINTF("%02X", c[iaddr % 0x10] & 0xff);
             t = c[iaddr % 0x10];
             if ((t >=1 && t <= 7) || t == ' ' ||
@@ -294,7 +298,7 @@ static void dprint(uint16_t segment, uint16_t start, uint16_t end) {
     dumpSegRec = segment;
     dumpPtrRec = end + 1;
 }
-static void d() {
+static C_VOID d() {
     uint16_t ptr2;
     if (narg == 1) {
         dprint(dumpSegRec, dumpPtrRec, dumpPtrRec + 0x7f);
@@ -320,10 +324,10 @@ static void d() {
     }
 }
 /* enter */
-static void e() {
+static C_VOID e() {
     size_t i;
     uint8_t val;
-    char s[0x100];
+    C_CHAR s[0x100];
     if (narg == 1) {
         seterr(0);
     } else if (narg == 2) {
@@ -332,14 +336,14 @@ static void e() {
             return;
         }
         STD_PRINTF("%04X:%04X  ", seg, ptr);
-        core_product_debug_read_real(seg, ptr, (void *)(&val), 1);
+        core_product_debug_read_real(seg, ptr, (C_VOID *)(&val), 1);
         STD_PRINTF("%02X", val);
         STD_PRINTF(".");
         STD_FGETS(s, 0x100, stdin);
         ntvdm64_type_string_lower(s); /* MARK */
         val = scannubit8(s); /* MARK */
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            core_product_debug_write_real(seg, ptr, (void *)(&val), 1);
+            core_product_debug_write_real(seg, ptr, (C_VOID *)(&val), 1);
         }
     } else if (narg > 2) {
         addrparse(_ds, arg[1]);
@@ -349,7 +353,7 @@ static void e() {
         for (i = 2; i < narg; ++i) {
             val = scannubit8(arg[i]); /* MARK */
             if (!nErrPos) {
-                core_product_debug_write_real(seg, ptr, (void *)(&val), 1);
+                core_product_debug_write_real(seg, ptr, (C_VOID *)(&val), 1);
             } else {
                 break;
             }
@@ -358,7 +362,7 @@ static void e() {
     }
 }
 /* fill */
-static void f() {
+static C_VOID f() {
     uint8_t nbyte;
     uint8_t val;
     size_t i, j;
@@ -376,7 +380,7 @@ static void f() {
             for (i = ptr, j = 0; i <= end; ++i, ++j) {
                 val = scannubit8(arg[j % nbyte + 3]);
                 if (!nErrPos) {
-                    core_product_debug_write_real(seg, (uint16_t) i, (void *)(&val), 1);
+                    core_product_debug_write_real(seg, (uint16_t) i, (C_VOID *)(&val), 1);
                 } else {
                     return;
                 }
@@ -385,8 +389,8 @@ static void f() {
     }
 }
 /* go */
-static void rprintregs();
-static void g() {
+static C_VOID rprintregs();
+static C_VOID g() {
     if (core_product_debug_is_running()) {
         STD_PRINTF("NXVM is already running.\n");
         return;
@@ -424,7 +428,7 @@ static void g() {
     rprintregs();
 }
 /* hex */
-static void h() {
+static C_VOID h() {
     uint16_t val1, val2;
     if (narg != 3) {
         seterr(narg - 1);
@@ -440,7 +444,7 @@ static void h() {
     }
 }
 /* input */
-static void i() {
+static C_VOID i() {
     uint16_t in;
     if (narg != 2) {
         seterr(narg - 1);
@@ -453,7 +457,7 @@ static void i() {
     }
 }
 /* load */
-static void l() {
+static C_VOID l() {
     uint8_t c;
     uint16_t i = 0;
     uint32_t len = 0;
@@ -475,7 +479,7 @@ static void l() {
         if (!nErrPos) {
             c = STD_FGETC(load);
             while (!STD_FEOF(load)) {
-                core_product_debug_write_real(seg + i, ptr + len++, (void *)(&c), 1);
+                core_product_debug_write_real(seg + i, ptr + len++, (C_VOID *)(&c), 1);
                 i = len / 0x10000;
                 c = STD_FGETC(load);
             }
@@ -487,7 +491,7 @@ static void l() {
     }
 }
 /* move */
-static void m() {
+static C_VOID m() {
     size_t i;
     uint8_t val;
     uint16_t seg1, ptr1, range, seg2, ptr2;
@@ -503,25 +507,25 @@ static void m() {
         if (!nErrPos) {
             if (((seg1 << 4) + ptr1) < ((seg2 << 4) + ptr2)) {
                 for (i = 0; i <= range; ++i) {
-                    core_product_debug_read_real(seg1, (uint16_t)(ptr1 + range - i), (void *)(&val), 1);
-                    core_product_debug_write_real(seg2, (uint16_t)(ptr2 + range - i), (void *)(&val), 1);
+                    core_product_debug_read_real(seg1, (uint16_t)(ptr1 + range - i), (C_VOID *)(&val), 1);
+                    core_product_debug_write_real(seg2, (uint16_t)(ptr2 + range - i), (C_VOID *)(&val), 1);
                 }
             } else if (((seg1 << 4) + ptr1) > ((seg2 << 4) + ptr2)) {
                 for (i = 0; i <= range; ++i) {
-                    core_product_debug_read_real(seg1, (uint16_t)(ptr1 + i), (void *)(&val), 1);
-                    core_product_debug_write_real(seg2, (uint16_t)(ptr2 + i), (void *)(&val), 1);
+                    core_product_debug_read_real(seg1, (uint16_t)(ptr1 + i), (C_VOID *)(&val), 1);
+                    core_product_debug_write_real(seg2, (uint16_t)(ptr2 + i), (C_VOID *)(&val), 1);
                 }
             }
         }
     }
 }
 /* name */
-static void n() {
+static C_VOID n() {
     if (narg != 2) seterr(narg - 1);
     else STD_STRCPY(strFileName,arg[1]);
 }
 /* output */
-static void o() {
+static C_VOID o() {
     uint16_t out;
     uint32_t value;
     if (narg != 3) seterr(narg - 1);
@@ -534,7 +538,7 @@ static void o() {
     }
 }
 /* quit */
-static void q() {
+static C_VOID q() {
     flagExit = 1;
 }
 /* register */
@@ -542,8 +546,8 @@ static uint8_t uprintins(uint16_t segment, uint16_t off) {
     size_t i;
     uint8_t len;
     uint8_t ucode[15];
-    char str[0x100], stmt[0x100], sbin[0x100];
-    if (core_product_debug_read_linear((segment << 4) + off, (void *) ucode, 15)) {
+    C_CHAR str[0x100], stmt[0x100], sbin[0x100];
+    if (core_product_debug_read_linear((segment << 4) + off, (C_VOID *) ucode, 15)) {
         len = 0;
         STD_SPRINTF(str, "%04X:%04X <ERROR>", segment, off);
     } else {
@@ -561,7 +565,7 @@ static uint8_t uprintins(uint16_t segment, uint16_t off) {
     STD_PRINTF("%s\n", str);
     return len;
 }
-static void rprintflags() {
+static C_VOID rprintflags() {
     STD_PRINTF("%s ", debug_flag(0x0800u) ? "OV" : "NV");
     STD_PRINTF("%s ", debug_flag(0x0400u) ? "DN" : "UP");
     STD_PRINTF("%s ", debug_flag(0x0200u) ? "EI" : "DI");
@@ -571,7 +575,7 @@ static void rprintflags() {
     STD_PRINTF("%s ", debug_flag(0x0004u) ? "PE" : "PO");
     STD_PRINTF("%s ", debug_flag(0x0001u) ? "CY" : "NC");
 }
-static void rprintregs() {
+static C_VOID rprintregs() {
     STD_PRINTF(  "AX=%04X", _ax);
     STD_PRINTF("  BX=%04X", _bx);
     STD_PRINTF("  CX=%04X", _cx);
@@ -592,9 +596,9 @@ static void rprintregs() {
     uasmSegRec = _cs;
     uasmPtrRec = _ip;
 }
-static void rscanregs() {
+static C_VOID rscanregs() {
     uint16_t value;
-    char s[0x100];
+    C_CHAR s[0x100];
     if (!STD_STRCMP(arg[1], "ax")) {
         STD_PRINTF("AX ");
         STD_PRINTF("%04X", _ax);
@@ -764,7 +768,7 @@ static void rscanregs() {
         STD_PRINTF("br Error\n");
     }
 }
-static void r() {
+static C_VOID r() {
     if (narg == 1) {
         rprintregs();
     } else if (narg == 2) {
@@ -772,9 +776,9 @@ static void r() {
     } else seterr(2);
 }
 /* search */
-static void s() {
+static C_VOID s() {
     size_t i;
-    int flagFound = 0;
+    C_INT flagFound = 0;
     uint16_t p, pfront, start, end;
     uint8_t cstart, val;
     if (narg < 4) {
@@ -787,12 +791,12 @@ static void s() {
             p = start;
             cstart = scannubit8(arg[3]);
             while (p <= end) {
-                core_product_debug_read_real(seg, p, (void *)(&val), 1);
+                core_product_debug_read_real(seg, p, (C_VOID *)(&val), 1);
                 if (val == cstart) {
                     pfront = p;
                     flagFound = 1;
                     for (i = 3; i < narg; ++i) {
-                        core_product_debug_read_real(seg, p, (void *)(&val), 1);
+                        core_product_debug_read_real(seg, p, (C_VOID *)(&val), 1);
                         if (val != scannubit8(arg[i])) {
                             flagFound = 0;
                             p = pfront + 1;
@@ -811,7 +815,7 @@ static void s() {
     }
 }
 /* trace */
-static void t() {
+static C_VOID t() {
     size_t i;
     uint16_t count;
     if (core_product_debug_is_running()) {
@@ -864,7 +868,7 @@ static void t() {
     core_product_debug_clear_trace();
 }
 /* unassemble */
-static void uprint(uint16_t segment, uint16_t start, uint16_t end) {
+static C_VOID uprint(uint16_t segment, uint16_t start, uint16_t end) {
     uint8_t len;
     uint32_t boundary;
     if (start > end) {
@@ -885,7 +889,7 @@ static void uprint(uint16_t segment, uint16_t start, uint16_t end) {
     uasmPtrRec = start;
     return;
 }
-static void u() {
+static C_VOID u() {
     uint16_t ptr2;
     if (narg == 1) {
         uprint(uasmSegRec, uasmPtrRec, uasmPtrRec + 0x1f);
@@ -911,9 +915,9 @@ static void u() {
     }
 }
 /* verbal */
-static void v() {
+static C_VOID v() {
     size_t i;
-    char str[0x100];
+    C_CHAR str[0x100];
     STD_PRINTF(":");
     STD_FGETS(str, 0x100, stdin);
     str[STD_STRLEN(str) - 1] = '\0';
@@ -932,7 +936,7 @@ static void v() {
     }
 }
 /* write */
-static void w() {
+static C_VOID w() {
     size_t i = 0;
     uint8_t val;
     uint32_t len = (_bx << 16) + _cx;
@@ -964,7 +968,7 @@ static void w() {
         }
         if (!nErrPos) {
             while (i < len) {
-                core_product_debug_read_real(seg, (uint8_t)(ptr + i++), (void *)(&val), 1);
+                core_product_debug_read_real(seg, (uint8_t)(ptr + i++), (C_VOID *)(&val), 1);
                 STD_FPUTC(val, write);
             }
         }
@@ -982,8 +986,8 @@ static uint8_t xuprintins(uint32_t linear) {
     size_t i;
     uint8_t len;
     uint8_t ucode[15];
-    char str[0x100], stmt[0x100], sbin[0x100];
-    if (core_product_debug_read_linear(linear, (void *) ucode, 15)) {
+    C_CHAR str[0x100], stmt[0x100], sbin[0x100];
+    if (core_product_debug_read_linear(linear, (C_VOID *) ucode, 15)) {
         len = 0;
         STD_SPRINTF(str, "L%08X <ERROR>", linear);
     } else {
@@ -1001,17 +1005,17 @@ static uint8_t xuprintins(uint32_t linear) {
     STD_PRINTF("%s\n", str);
     return len;
 }
-static void xrprintreg() {
+static C_VOID xrprintreg() {
     core_product_debug_print_registers();
     xulin = core_product_debug_get_code_base() + _eip;
     xuprintins(xulin);
 }
 /* assemble */
-static void xaconsole(uint32_t linear) {
+static C_VOID xaconsole(uint32_t linear) {
     size_t i, len, errAsmPos;
-    char astmt[0x100];
+    C_CHAR astmt[0x100];
     uint8_t acode[15];
-    int flagExitAsm = 0;
+    C_INT flagExitAsm = 0;
     while (!flagExitAsm) {
         STD_PRINTF("L%08X ", linear);
         STD_FGETS(astmt, 0x100, stdin);
@@ -1026,7 +1030,7 @@ static void xaconsole(uint32_t linear) {
         if (!len) {
             errAsmPos = STD_STRLEN(astmt) + 9;
         } else {
-            if (core_product_debug_write_linear(linear, (void *) acode, (uint8_t) len)) {
+            if (core_product_debug_write_linear(linear, (C_VOID *) acode, (uint8_t) len)) {
                 STD_PRINTF("debug: fail to write to L%08X\n", linear);
                 return;
             }
@@ -1041,7 +1045,7 @@ static void xaconsole(uint32_t linear) {
     }
     xalin = linear;
 }
-static void xa() {
+static C_VOID xa() {
     if (narg == 1) {
         xaconsole(xalin);
     } else if (narg == 2) {
@@ -1055,7 +1059,7 @@ static void xa() {
     }
 }
 /* compare */
-static void xc() {
+static C_VOID xc() {
     size_t i, count;
     uint32_t lin1, lin2;
     uint8_t val1, val2;
@@ -1078,11 +1082,11 @@ static void xc() {
             return;
         }
         for (i = 0; i < count; ++i) {
-            if (core_product_debug_read_linear((uint32_t)(lin1 + i), (void *)(&val1), 1)) {
+            if (core_product_debug_read_linear((uint32_t)(lin1 + i), (C_VOID *)(&val1), 1)) {
                 STD_PRINTF("debug: fail to read from L%08X.\n", (uint32_t)(lin1 + i));
                 return;
             }
-            if (core_product_debug_read_linear((uint32_t)(lin2 + i), (void *)(&val2), 1)) {
+            if (core_product_debug_read_linear((uint32_t)(lin2 + i), (C_VOID *)(&val2), 1)) {
                 STD_PRINTF("debug: fail to read from L%08X.\n", (uint32_t)(lin2 + i));
                 return;
             }
@@ -1093,8 +1097,8 @@ static void xc() {
     }
 }
 /* dump */
-static void xdprint(uint32_t linear,uint32_t count) {
-    char t, c[0x11];
+static C_VOID xdprint(uint32_t linear,uint32_t count) {
+    C_CHAR t, c[0x11];
     uint32_t ilinear;
     uint32_t start = linear;
     uint32_t end = linear + count - 1;
@@ -1109,7 +1113,7 @@ static void xdprint(uint32_t linear,uint32_t count) {
             STD_PRINTF("  ");
             c[ilinear % 0x10] = ' ';
         } else {
-            if (core_product_debug_read_linear(ilinear, (void *)(&c[ilinear % 0x10]), 1)) {
+            if (core_product_debug_read_linear(ilinear, (C_VOID *)(&c[ilinear % 0x10]), 1)) {
                 STD_PRINTF("debug: fail to read from L%08X\n", ilinear);
                 return;
             } else {
@@ -1133,7 +1137,7 @@ static void xdprint(uint32_t linear,uint32_t count) {
     }
     xdlin = ilinear;
 }
-static void xd() {
+static C_VOID xd() {
     uint32_t count;
     if (narg == 1) {
         xdprint(xdlin, 0x80);
@@ -1155,11 +1159,11 @@ static void xd() {
     }
 }
 /* enter */
-static void xe() {
+static C_VOID xe() {
     size_t i;
     uint8_t val;
     uint32_t linear;
-    char s[0x100];
+    C_CHAR s[0x100];
     if (narg == 1) {
         seterr(0);
     } else if (narg == 2) {
@@ -1167,7 +1171,7 @@ static void xe() {
         if (nErrPos) {
             return;
         }
-        if (core_product_debug_read_linear(linear, (void *)(&val), 1)) {
+        if (core_product_debug_read_linear(linear, (C_VOID *)(&val), 1)) {
             STD_PRINTF("debug: fail to read from L%08X.\n", linear);
             return;
         }
@@ -1179,7 +1183,7 @@ static void xe() {
             return;
         }
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (core_product_debug_write_linear(linear, (void *)(&val), 1)) {
+            if (core_product_debug_write_linear(linear, (C_VOID *)(&val), 1)) {
                 STD_PRINTF("debug: fail to write to L%08X.\n", linear);
             }
         }
@@ -1191,7 +1195,7 @@ static void xe() {
         for (i = 2; i < narg; ++i) {
             val = scannubit8(arg[i]);
             if (!nErrPos) {
-                if (core_product_debug_write_linear(linear, (void *)(&val), 1)) {
+                if (core_product_debug_write_linear(linear, (C_VOID *)(&val), 1)) {
                     STD_PRINTF("debug: fail to write to L%08X.\n", linear);
                     return;
                 }
@@ -1203,7 +1207,7 @@ static void xe() {
     }
 }
 /* fill */
-static void xf() {
+static C_VOID xf() {
     uint8_t val;
     size_t i, j, count, bcount;
     uint32_t linear;
@@ -1224,7 +1228,7 @@ static void xf() {
             if (nErrPos) {
                 return;
             }
-            if (core_product_debug_write_linear((uint32_t)(linear + i), (void *)(&val), 1)) {
+            if (core_product_debug_write_linear((uint32_t)(linear + i), (C_VOID *)(&val), 1)) {
                 STD_PRINTF("debug: fail to write to L%08X.\n", (uint32_t)(linear + i));
                 return;
             }
@@ -1232,7 +1236,7 @@ static void xf() {
     }
 }
 /* go */
-static void xg() {
+static C_VOID xg() {
     size_t i, count = 0;
     uint32_t linear;
     if (core_product_debug_is_running()) {
@@ -1272,7 +1276,7 @@ static void xg() {
     core_product_debug_clear_break(1);
 }
 /* move */
-static void xm() {
+static C_VOID xm() {
     uint8_t val;
     size_t i;
     uint32_t lin1, lin2, count;
@@ -1292,11 +1296,11 @@ static void xm() {
             return;
         }
         for (i = 0; i < count; ++i) {
-            if (core_product_debug_read_linear((uint32_t)(lin1 + i), (void *)(&val), 1)) {
+            if (core_product_debug_read_linear((uint32_t)(lin1 + i), (C_VOID *)(&val), 1)) {
                 STD_PRINTF("debug: fail to read from L%08X.\n", lin1 + i);
                 return;
             }
-            if (core_product_debug_write_linear((uint32_t)(lin2 + i), (void *)(&val), 1)) {
+            if (core_product_debug_write_linear((uint32_t)(lin2 + i), (C_VOID *)(&val), 1)) {
                 STD_PRINTF("debug: fail to write to L%08X.\n", lin2 + i);
                 return;
             }
@@ -1304,7 +1308,7 @@ static void xm() {
     }
 }
 /* search */
-static void xs() {
+static C_VOID xs() {
     size_t i, count, bcount;
     uint32_t linear;
     uint8_t val, mem[256], line[256];
@@ -1329,18 +1333,18 @@ static void xs() {
             line[i] = val;
         }
         for (i = 0; i < count; ++i) {
-            if (core_product_debug_read_linear((uint32_t)(linear + i), (void *) mem, (uint8_t) bcount)) {
+            if (core_product_debug_read_linear((uint32_t)(linear + i), (C_VOID *) mem, (uint8_t) bcount)) {
                 STD_PRINTF("debug: fail to read from L%08X.\n", linear + i);
                 return;
             }
-            if (!STD_MEMCMP((void *) mem, (void *) line, bcount)) {
+            if (!STD_MEMCMP((C_VOID *) mem, (C_VOID *) line, bcount)) {
                 STD_PRINTF("L%08X\n", linear + i);
             }
         }
     }
 }
 /* trace */
-static void xt() {
+static C_VOID xt() {
     size_t i;
     uint32_t count;
     if (core_product_debug_is_running()) {
@@ -1386,9 +1390,9 @@ static void xt() {
     core_product_debug_clear_trace();
 }
 /* register */
-static void xrscanreg() {
+static C_VOID xrscanreg() {
     uint32_t value;
-    char s[0x100];
+    C_CHAR s[0x100];
     if (!STD_STRCMP(arg[1], "eax")) {
         STD_PRINTF("EAX ");
         STD_PRINTF("%08X", _eax);
@@ -1579,7 +1583,7 @@ static void xrscanreg() {
         STD_PRINTF("br Error\n");
     }
 }
-static void xr() {
+static C_VOID xr() {
     if (narg == 1) {
         xrprintreg();
     } else if (narg == 2) {
@@ -1589,7 +1593,7 @@ static void xr() {
     }
 }
 /* unassemble */
-static void xuprint(uint32_t linear, uint8_t count) {
+static C_VOID xuprint(uint32_t linear, uint8_t count) {
     uint32_t len = 0;
     size_t i;
     for (i = 0; i < count; ++i) {
@@ -1601,7 +1605,7 @@ static void xuprint(uint32_t linear, uint8_t count) {
     }
     xulin = linear;
 }
-static void xu() {
+static C_VOID xu() {
     uint32_t count;
     if (narg == 1) {
         xuprint(xulin, 10);
@@ -1623,7 +1627,7 @@ static void xu() {
     }
 }
 /* watch */
-static void xw() {
+static C_VOID xw() {
     uint32_t linear;
     switch (narg) {
     case 1:
@@ -1678,7 +1682,7 @@ static void xw() {
         break;
     }
 }
-static void xhelp() {
+static C_VOID xhelp() {
     STD_PRINTF("assemble        XA [address]\n");
     STD_PRINTF("compare         XC addr1 addr2 count_byte\n");
     STD_PRINTF("dump            XD [address [count_byte]]\n");
@@ -1695,7 +1699,7 @@ static void xhelp() {
     STD_PRINTF("unassemble      XU [address [count_instr]]\n");
     STD_PRINTF("watch           XW r/w/e address\n");
 }
-static void x() {
+static C_VOID x() {
     size_t i;
     arg[narg] = arg[0];
     for (i = 1; i < narg; ++i) {
@@ -1744,7 +1748,7 @@ static void x() {
 /* EXTENDED DEBUG CMD END */
 
 /* main routines */
-static void help() {
+static C_VOID help() {
     STD_PRINTF("assemble        A [address]\n");
     STD_PRINTF("compare         C range address\n");
     STD_PRINTF("dump            D [range]\n");
@@ -1777,7 +1781,7 @@ static void help() {
     /* STD_PRINTF("display expanded memory status  XS\n"); */
 }
 
-static void parse() {
+static C_VOID parse() {
     STD_STRCPY(strCmdCopy, strCmdBuff);
     narg = 0;
     arg[0] = STD_STRTOK(strCmdCopy, " ,\t\n\r\f");
@@ -1802,7 +1806,7 @@ static void parse() {
     }
 }
 
-static void exec() {
+static C_VOID exec() {
     nErrPos = 0;
     if (!arg[0]) {
         return;
@@ -1877,12 +1881,12 @@ static void exec() {
     }
 }
 
-void core_product_debug_context_initialize(core_product_debug_context *context)
+C_VOID core_product_debug_context_initialize(core_product_debug_context *context)
 {
     if (context != NULL) STD_MEMSET(context, 0, sizeof(*context));
 }
 
-void core_product_debug_main(core_product_debug_context *context,
+C_VOID core_product_debug_main(core_product_debug_context *context,
                const core_product_debug_target *target) {
     size_t i;
     core_product_debug_context *previous;
@@ -1899,7 +1903,7 @@ void core_product_debug_main(core_product_debug_context *context,
     xalin = 0;
     xdlin = 0;
     xulin = core_product_debug_get_code_base() + _eip;
-    arg = (char **) STD_MALLOC(DEBUG_MAXNARG * sizeof(char *));
+    arg = (C_CHAR **) STD_MALLOC(DEBUG_MAXNARG * sizeof(C_CHAR *));
     flagExit = 0;
     while (!flagExit) {
         fflush(stdin);
@@ -1914,7 +1918,7 @@ void core_product_debug_main(core_product_debug_context *context,
             STD_PRINTF("^ Error\n");
         }
     }
-    STD_FREE((void *) arg);
+    STD_FREE((C_VOID *) arg);
     core_product_debug_scope_leave();
     debugContext = previous;
 }

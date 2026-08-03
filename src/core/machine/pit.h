@@ -18,7 +18,7 @@ typedef enum {
     VPIT_STATUS_RW_MSB
 } t_pit_data_status_rw;
 
-typedef void (*core_machine_pit_output_provider)(void *owner);
+typedef C_VOID (*core_machine_pit_output_provider)(C_VOID *owner);
 
 typedef struct {
     /* control words[0-2] for counter 0-2, and cw[3] is read-back command */
@@ -38,7 +38,7 @@ typedef struct {
 typedef struct {
     ntvdm64_type_bool flagGate[3];  /* enable or disable counter */
     core_machine_pit_output_provider output[3];
-    void *output_owner[3];
+    C_VOID *output_owner[3];
 } t_pit_connect;
 
 typedef struct {
@@ -78,12 +78,12 @@ typedef struct {
 #define VPIT_SB_NC  0x40 /* null count (1) or count available (0) */
 #define VPIT_SB_OUT 0x80 /* state of out pin high(1) or low(0) */
 
-void core_machine_pit_initialize(t_pit *pit, t_port *port);
-void core_machine_pit_reset(t_pit *pit);
-void core_machine_pit_refresh(t_pit *pit);
-void core_machine_pit_finalize(t_pit *pit);
-void core_machine_pit_set_output(t_pit *pit, ntvdm64_type_unsigned_8 id,
-    core_machine_pit_output_provider provider, void *owner);
+C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port);
+C_VOID core_machine_pit_reset(t_pit *pit);
+C_VOID core_machine_pit_refresh(t_pit *pit);
+C_VOID core_machine_pit_finalize(t_pit *pit);
+C_VOID core_machine_pit_set_output(t_pit *pit, ntvdm64_type_unsigned_8 id,
+    core_machine_pit_output_provider provider, C_VOID *owner);
 
 #define VPIT_POST "                                 \
 ; init pit                                        \n\

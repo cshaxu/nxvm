@@ -1,31 +1,49 @@
+#include "type.h"
+
 #include "vm/composition_full_pc.h"
 
+
 #include <stdlib.h>
+
 #include <string.h>
 
+
 #include "vm/composition_control.h"
+
 #include "core/machine/cpu.h"
+
 #include "core/machine/memory.h"
+
 #include "vm/machine/debug.h"
+
 #include "core/machine/keyboard_interface.h"
+
 #include "vm/machine/fdd.h"
+
 #include "vm/machine/hdd.h"
+
 #include "vm/profile/default_profile/firmware/bios.h"
+
 #include "vm/platform/vm_request_transport.h"
+
 #include "vm/platform/win32/win32.h"
+
 #include "core/product/debug/debug.h"
+
 #include "vm/composition_machine.h"
+
 #include "vm/composition_debug.h"
+
 #include "vm/platform/platform.h"
 
 struct vm_composition_full_pc {
-    int active;
+    C_INT active;
     vm_platform_request_transport transport;
     vm_composition_live_machine machine;
 };
 
-static int vm_composition_full_pc_enqueue_keyboard_state(
-    void *opaque, uint32_t asynchronous_keys, uint32_t toggle_keys)
+static C_INT vm_composition_full_pc_enqueue_keyboard_state(
+    C_VOID *opaque, uint32_t asynchronous_keys, uint32_t toggle_keys)
 {
     nxvm_platform_vm_request request;
 
@@ -36,8 +54,8 @@ static int vm_composition_full_pc_enqueue_keyboard_state(
         (vm_platform_request_transport *)opaque, &request);
 }
 
-static void vm_composition_full_pc_consume_request(
-    void *opaque, const nxvm_platform_vm_request *request)
+static C_VOID vm_composition_full_pc_consume_request(
+    C_VOID *opaque, const nxvm_platform_vm_request *request)
 {
     vm_composition_full_pc *full_pc = (vm_composition_full_pc *)opaque;
 
@@ -50,7 +68,7 @@ static void vm_composition_full_pc_consume_request(
     }
 }
 
-static uint16_t nxvm_baseline_read_u16(const void *source)
+static uint16_t nxvm_baseline_read_u16(const C_VOID *source)
 {
     uint16_t value;
 
@@ -124,14 +142,14 @@ ntvdm64_status vm_composition_full_pc_get_reset_vector(
     return NTVDM64_STATUS_OK;
 }
 
-void vm_composition_full_pc_run(vm_composition_full_pc *full_pc)
+C_VOID vm_composition_full_pc_run(vm_composition_full_pc *full_pc)
 {
     if (full_pc != NULL && full_pc->active) {
         vm_composition_start(&full_pc->machine);
     }
 }
 
-ntvdm64_status vm_composition_full_pc_set_window_display(vm_composition_full_pc *full_pc, int enabled)
+ntvdm64_status vm_composition_full_pc_set_window_display(vm_composition_full_pc *full_pc, C_INT enabled)
 {
     if (full_pc == NULL || !full_pc->active || vm_composition_control_is_running(full_pc->machine.control)) {
         return NTVDM64_STATUS_INVALID_STATE;
@@ -161,14 +179,14 @@ ntvdm64_status vm_composition_full_pc_reset(vm_composition_full_pc *full_pc)
     return NTVDM64_STATUS_OK;
 }
 
-void vm_composition_full_pc_resume(vm_composition_full_pc *full_pc)
+C_VOID vm_composition_full_pc_resume(vm_composition_full_pc *full_pc)
 {
     if (full_pc != NULL && full_pc->active && !vm_composition_control_is_running(full_pc->machine.control)) {
         vm_composition_resume(&full_pc->machine);
     }
 }
 
-ntvdm64_status vm_composition_full_pc_is_running(const vm_composition_full_pc *full_pc, int *out_running)
+ntvdm64_status vm_composition_full_pc_is_running(const vm_composition_full_pc *full_pc, C_INT *out_running)
 {
     if (full_pc == NULL || !full_pc->active || out_running == NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
@@ -188,7 +206,7 @@ ntvdm64_status vm_composition_full_pc_debug(vm_composition_full_pc *full_pc)
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status vm_composition_full_pc_remove_fdd(vm_composition_full_pc *full_pc, const char *path)
+ntvdm64_status vm_composition_full_pc_remove_fdd(vm_composition_full_pc *full_pc, const C_CHAR *path)
 {
     if (full_pc == NULL || !full_pc->active || vm_composition_control_is_running(full_pc->machine.control)) {
         return NTVDM64_STATUS_INVALID_STATE;
@@ -197,7 +215,7 @@ ntvdm64_status vm_composition_full_pc_remove_fdd(vm_composition_full_pc *full_pc
         NTVDM64_STATUS_FAULT : NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status vm_composition_full_pc_disconnect_hdd(vm_composition_full_pc *full_pc, const char *path)
+ntvdm64_status vm_composition_full_pc_disconnect_hdd(vm_composition_full_pc *full_pc, const C_CHAR *path)
 {
     if (full_pc == NULL || !full_pc->active || vm_composition_control_is_running(full_pc->machine.control)) {
         return NTVDM64_STATUS_INVALID_STATE;
@@ -205,7 +223,7 @@ ntvdm64_status vm_composition_full_pc_disconnect_hdd(vm_composition_full_pc *ful
     return vm_machine_hdd_remove(full_pc->machine.hdd, path) ? NTVDM64_STATUS_FAULT : NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status vm_composition_full_pc_record_start(vm_composition_full_pc *full_pc, const char *path)
+ntvdm64_status vm_composition_full_pc_record_start(vm_composition_full_pc *full_pc, const C_CHAR *path)
 {
     if (full_pc == NULL || !full_pc->active || path == NULL || path[0] == '\0') {
         return NTVDM64_STATUS_INVALID_STATE;
@@ -214,20 +232,20 @@ ntvdm64_status vm_composition_full_pc_record_start(vm_composition_full_pc *full_
     return NTVDM64_STATUS_OK;
 }
 
-void vm_composition_full_pc_record_stop(vm_composition_full_pc *full_pc)
+C_VOID vm_composition_full_pc_record_stop(vm_composition_full_pc *full_pc)
 {
     if (full_pc != NULL && full_pc->active)
         vm_machine_debug_record_stop(full_pc->machine.debug);
 }
 
-void vm_composition_full_pc_request_stop(vm_composition_full_pc *full_pc)
+C_VOID vm_composition_full_pc_request_stop(vm_composition_full_pc *full_pc)
 {
     if (full_pc != NULL && full_pc->active) {
         vm_composition_control_stop(full_pc->machine.control);
     }
 }
 
-void vm_composition_full_pc_destroy(vm_composition_full_pc *full_pc)
+C_VOID vm_composition_full_pc_destroy(vm_composition_full_pc *full_pc)
 {
     if (full_pc != NULL && full_pc->active) {
         vm_platform_run_context_bind_keyboard_state(

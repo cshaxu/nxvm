@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#include "type.h"
+
 #include "core/machine/keyboard_interface.h"
 
 #define QDKEYB_VBIOS_ADDR_KEYB_FLAG0         0x0417
@@ -35,8 +37,8 @@ extern "C" {
 #define QDKEYB_FLAG1_D_LCTRL   0x01
 
 typedef struct t_qdx t_qdx;
-void vm_profile_default_keyboard_initialize(t_qdx *qdx);
-const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(void);
+C_VOID vm_profile_default_keyboard_initialize(t_qdx *qdx);
+const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(C_VOID);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

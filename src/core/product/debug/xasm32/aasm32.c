@@ -1,6 +1,9 @@
 /* This file is a part of NXVM project. */
 
+#include "type.h"
+
 #include "core/product/utils.h"
+
 
 #include "core/product/debug/xasm32/aasm32.h"
 
@@ -126,18 +129,18 @@ typedef struct {
     t_aasm_oprcreg  creg;
     t_aasm_oprdreg  dreg;
     t_aasm_oprtreg  treg;
-    uint8_t   imms;  /* if imm is signed */
+    uint8_t   imms;  /* if imm is C_INT */
     uint8_t   immn;  /* if imm is negative */
     uint8_t   imm8;
     uint16_t  imm16;
     uint32_t    imm32;
-    char            disp8;
+    C_CHAR            disp8;
     uint16_t  disp16; /* use as imm when type = 6; use by modrm as disp when mod = 0,1,2; */
     uint32_t    disp32; /* use as imm when type = 7; use by modrm as disp when mod = 0,1,2; */
     t_aasm_oprptr   ptr; /* 0 = near; 1 = far */
     uint16_t   rcs;
     uint32_t       reip;
-    char            label[0x100];
+    C_CHAR            label[0x100];
     uint8_t flages, flagcs, flagss, flagds, flagfs, flaggs;
 } t_aasm_oprinfo;
 /* global variables */
@@ -152,19 +155,19 @@ typedef struct aasm32_context {
     t_aasm_prefix prefix_lock, prefix_repz, prefix_repnz;
     uint8_t acode[15];
     uint8_t iop;
-    char *rop, *ropr1, *ropr2, *ropr3;
+    C_CHAR *rop, *ropr1, *ropr2, *ropr3;
     uint16_t avcs, avip;
-    char *aop, *aopr1, *aopr2;
+    C_CHAR *aop, *aopr1, *aopr2;
     uint8_t flagError;
     t_aasm_oprinfo aoprig, aopri1, aopri2, aopri3;
     t_aasm_oprinfo *rinfo;
     uint8_t tokimm8;
     uint16_t tokimm16;
     uint32_t tokimm32;
-    char tokchar;
-    char tokstring[0x100], toklabel[0x100];
-    char *tokptr;
-    char *rstart;
+    C_CHAR tokchar;
+    C_CHAR tokstring[0x100], toklabel[0x100];
+    C_CHAR *tokptr;
+    C_CHAR *rstart;
 } aasm32_context;
 
 static _Thread_local aasm32_context *aasmContext;
@@ -620,13 +623,13 @@ typedef enum {
 /* token variables */
 #define tokch  (*tokptr)
 #define take(n) (flagend = 1, token = (n))
-static t_aasm_token gettoken(char *str) {
+static t_aasm_token gettoken(C_CHAR *str) {
     uint8_t toklen = 0;
     uint32_t tokimm = 0;
     uint8_t flagend = 0;
     t_aasm_token token = TOKEN_NULL;
     t_aasm_scan_state state = STATE_START;
-    char *tokptrbak;
+    C_CHAR *tokptrbak;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("gettoken");
     tokimm8 = 0x00;
     tokimm16 = 0x0000;
@@ -2549,7 +2552,7 @@ static t_aasm_token gettoken(char *str) {
     NTVDM64_TYPE_TRACE_CALL_END;
     return token;
 }
-static void printtoken(t_aasm_token token) {
+static C_VOID printtoken(t_aasm_token token) {
     switch (token) {
     case TOKEN_NULL:
         STD_PRINTF(" NULL ");
@@ -2734,7 +2737,7 @@ static void printtoken(t_aasm_token token) {
         break;
     }
 }
-static void matchtoken(t_aasm_token token) {
+static C_VOID matchtoken(t_aasm_token token) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("matchtoken");
     if (gettoken(NULL) != token) _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
@@ -2748,7 +2751,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
     uint8_t eax,ecx,edx,ebx,esp,ebp,esi,edi;
     uint8_t ieax,iecx,iedx,iebx,iebp,iesi,iedi;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("parsearg_mem");
-    STD_MEMSET((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
+    STD_MEMSET((C_VOID *)(&info), 0x00, sizeof(t_aasm_oprinfo));
     bx = bp = si = di = neg = al = 0;
     eax = ecx = edx = ebx = esp = ebp = esi = edi = 0;
     ieax = iecx = iedx = iebx = iebp = iesi = iedi = 0;
@@ -3287,7 +3290,7 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
     t_aasm_oprinfo info;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("parsearg_imm");
 
-    STD_MEMSET((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
+    STD_MEMSET((C_VOID *)(&info), 0x00, sizeof(t_aasm_oprinfo));
 
     if (token == TOKEN_PLUS) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_PLUS)");
@@ -3340,11 +3343,11 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
     NTVDM64_TYPE_TRACE_CALL_END;
     return info;
 }
-static t_aasm_oprinfo parsearg(char *arg) {
+static t_aasm_oprinfo parsearg(C_CHAR *arg) {
     t_aasm_token token;
     t_aasm_oprinfo info;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("parsearg");
-    STD_MEMSET((void *)(&info), 0x00 ,sizeof(t_aasm_oprinfo));
+    STD_MEMSET((C_VOID *)(&info), 0x00 ,sizeof(t_aasm_oprinfo));
     if (!arg || !arg[0]) {
         info.type = TYPE_NONE;
         NTVDM64_TYPE_TRACE_CALL_END;
@@ -3701,34 +3704,34 @@ static t_aasm_oprinfo parsearg(char *arg) {
     return info;
 }
 /* assembly compiler: code generator */
-static void _c_setbyte(uint8_t byte) {
+static C_VOID _c_setbyte(uint8_t byte) {
     (*(uint8_t *)(acode + iop)) = byte;
     iop += 1;
 }
-static void _c_setword(uint16_t word) {
+static C_VOID _c_setword(uint16_t word) {
     (*(uint16_t *)(acode + iop)) = word;
     iop += 2;
 }
-static void _c_setdword(uint32_t dword) {
+static C_VOID _c_setdword(uint32_t dword) {
     (*(uint32_t *)(acode + iop)) = dword;
     iop += 4;
 }
-static void _c_imm8(uint8_t byte) {
+static C_VOID _c_imm8(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_c_imm8");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_setbyte(byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _c_imm16(uint16_t word) {
+static C_VOID _c_imm16(uint16_t word) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_c_imm16");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_setword(word));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _c_imm32(uint32_t dword) {
+static C_VOID _c_imm32(uint32_t dword) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_c_imm32");
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_setdword(dword));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
+static C_VOID _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
     uint8_t sibval;
     uint8_t modrmval = (reg << 3);
 
@@ -3962,13 +3965,13 @@ static void _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
 }
 
 /* concrete instructions */
-static void ADD_RM8_R8() {
+static C_VOID ADD_RM8_R8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM8_R8");
     _c_setbyte(0x00);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADD_RM32_R32(uint8_t byte) {
+static C_VOID ADD_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x01);
@@ -3989,13 +3992,13 @@ static void ADD_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADD_R8_RM8() {
+static C_VOID ADD_R8_RM8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R8_RM8");
     _c_setbyte(0x02);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADD_R32_RM32(uint8_t byte) {
+static C_VOID ADD_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x03);
@@ -4016,13 +4019,13 @@ static void ADD_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADD_AL_I8() {
+static C_VOID ADD_AL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_AL_I8");
     _c_setbyte(0x04);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADD_EAX_I32(uint8_t byte) {
+static C_VOID ADD_EAX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x05);
@@ -4043,23 +4046,23 @@ static void ADD_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_ES() {
+static C_VOID PUSH_ES() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ES");
     _c_setbyte(0x06);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_ES() {
+static C_VOID POP_ES() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ES");
     _c_setbyte(0x07);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR_RM8_R8() {
+static C_VOID OR_RM8_R8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM8_R8");
     _c_setbyte(0x08);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR_RM32_R32(uint8_t byte) {
+static C_VOID OR_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x09);
@@ -4080,13 +4083,13 @@ static void OR_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR_R8_RM8() {
+static C_VOID OR_R8_RM8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R8_RM8");
     _c_setbyte(0x0a);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR_R32_RM32(uint8_t byte) {
+static C_VOID OR_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x0b);
@@ -4107,13 +4110,13 @@ static void OR_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR_AL_I8() {
+static C_VOID OR_AL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_AL_I8");
     _c_setbyte(0x0c);
     _c_imm8(aopri2.imm8);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR_EAX_I32(uint8_t byte) {
+static C_VOID OR_EAX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x0d);
@@ -4134,28 +4137,28 @@ static void OR_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_CS() {
+static C_VOID PUSH_CS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_CS");
     _c_setbyte(0x0e);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_CS() {
+static C_VOID POP_CS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_CS");
     _c_setbyte(0x0f);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_0F() {
+static C_VOID INS_0F() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F");
     _c_setbyte(0x0f);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC_RM8_R8() {
+static C_VOID ADC_RM8_R8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM8_R8");
     _c_setbyte(0x10);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC_RM32_R32(uint8_t byte) {
+static C_VOID ADC_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x11);
@@ -4176,13 +4179,13 @@ static void ADC_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC_R8_RM8() {
+static C_VOID ADC_R8_RM8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R8_RM8");
     _c_setbyte(0x12);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC_R32_RM32(uint8_t byte) {
+static C_VOID ADC_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x13);
@@ -4203,13 +4206,13 @@ static void ADC_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC_AL_I8() {
+static C_VOID ADC_AL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_AL_I8");
     _c_setbyte(0x14);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC_EAX_I32(uint8_t byte) {
+static C_VOID ADC_EAX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x15);
@@ -4230,23 +4233,23 @@ static void ADC_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_SS() {
+static C_VOID PUSH_SS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_SS");
     _c_setbyte(0x16);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_SS() {
+static C_VOID POP_SS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_SS");
     _c_setbyte(0x17);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB_RM8_R8() {
+static C_VOID SBB_RM8_R8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM8_R8");
     _c_setbyte(0x18);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB_RM32_R32(uint8_t byte) {
+static C_VOID SBB_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x19);
@@ -4267,13 +4270,13 @@ static void SBB_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB_R8_RM8() {
+static C_VOID SBB_R8_RM8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R8_RM8");
     _c_setbyte(0x1a);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB_R32_RM32(uint8_t byte) {
+static C_VOID SBB_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x1b);
@@ -4294,13 +4297,13 @@ static void SBB_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB_AL_I8() {
+static C_VOID SBB_AL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_AL_I8");
     _c_setbyte(0x1c);
     _c_imm8(aopri2.imm8);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB_EAX_I32(uint8_t byte) {
+static C_VOID SBB_EAX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x1d);
@@ -4321,23 +4324,23 @@ static void SBB_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_DS() {
+static C_VOID PUSH_DS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_DS");
     _c_setbyte(0x1e);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_DS() {
+static C_VOID POP_DS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_DS");
     _c_setbyte(0x1f);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND_RM8_R8() {
+static C_VOID AND_RM8_R8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM8_R8");
     _c_setbyte(0x20);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND_RM32_R32(uint8_t byte) {
+static C_VOID AND_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x21);
@@ -4358,13 +4361,13 @@ static void AND_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND_R8_RM8() {
+static C_VOID AND_R8_RM8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R8_RM8");
     _c_setbyte(0x22);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND_R32_RM32(uint8_t byte) {
+static C_VOID AND_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x23);
@@ -4385,13 +4388,13 @@ static void AND_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND_AL_I8() {
+static C_VOID AND_AL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_AL_I8");
     _c_setbyte(0x24);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND_EAX_I32(uint8_t byte) {
+static C_VOID AND_EAX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x25);
@@ -4412,25 +4415,25 @@ static void AND_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_ES() {
+static C_VOID PREFIX_ES() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_ES");
     if (ARG_NONE) aoprig.flages = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DAA() {
+static C_VOID DAA() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DAA");
     if (ARG_NONE) _c_setbyte(0x27);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB_RM8_R8() {
+static C_VOID SUB_RM8_R8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM8_R8");
     _c_setbyte(0x28);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB_RM32_R32(uint8_t byte) {
+static C_VOID SUB_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x29);
@@ -4451,13 +4454,13 @@ static void SUB_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB_R8_RM8() {
+static C_VOID SUB_R8_RM8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R8_RM8");
     _c_setbyte(0x2a);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB_R32_RM32(uint8_t byte) {
+static C_VOID SUB_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x2b);
@@ -4478,13 +4481,13 @@ static void SUB_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB_AL_I8() {
+static C_VOID SUB_AL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_AL_I8");
     _c_setbyte(0x2c);
     _c_imm8(aopri2.imm8);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB_EAX_I32(uint8_t byte) {
+static C_VOID SUB_EAX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x2d);
@@ -4505,25 +4508,25 @@ static void SUB_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_CS() {
+static C_VOID PREFIX_CS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_CS");
     if (ARG_NONE) aoprig.flagcs = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DAS() {
+static C_VOID DAS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DAS");
     if (ARG_NONE) _c_setbyte(0x2f);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR_RM8_R8() {
+static C_VOID XOR_RM8_R8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM8_R8");
     _c_setbyte(0x30);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR_RM32_R32(uint8_t byte) {
+static C_VOID XOR_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x31);
@@ -4544,13 +4547,13 @@ static void XOR_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR_R8_RM8() {
+static C_VOID XOR_R8_RM8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R8_RM8");
     _c_setbyte(0x32);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR_R32_RM32(uint8_t byte) {
+static C_VOID XOR_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x33);
@@ -4571,13 +4574,13 @@ static void XOR_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR_AL_I8() {
+static C_VOID XOR_AL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_AL_I8");
     _c_setbyte(0x34);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR_EAX_I32(uint8_t byte) {
+static C_VOID XOR_EAX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x35);
@@ -4598,25 +4601,25 @@ static void XOR_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_SS() {
+static C_VOID PREFIX_SS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_SS");
     if (ARG_NONE) aoprig.flagss = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AAA() {
+static C_VOID AAA() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAA");
     if (ARG_NONE) _c_setbyte(0x37);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP_RM8_R8() {
+static C_VOID CMP_RM8_R8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM8_R8");
     _c_setbyte(0x38);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP_RM32_R32(uint8_t byte) {
+static C_VOID CMP_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x39);
@@ -4637,13 +4640,13 @@ static void CMP_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP_R8_RM8() {
+static C_VOID CMP_R8_RM8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R8_RM8");
     _c_setbyte(0x3a);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP_R32_RM32(uint8_t byte) {
+static C_VOID CMP_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x3b);
@@ -4664,13 +4667,13 @@ static void CMP_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP_AL_I8() {
+static C_VOID CMP_AL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_AL_I8");
     _c_setbyte(0x3c);
     _c_imm8(aopri2.imm8);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP_EAX_I32(uint8_t byte) {
+static C_VOID CMP_EAX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x3d);
@@ -4691,224 +4694,224 @@ static void CMP_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_DS() {
+static C_VOID PREFIX_DS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_DS");
     if (ARG_NONE) aoprig.flagds = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AAS() {
+static C_VOID AAS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAS");
     if (ARG_NONE) _c_setbyte(0x3f);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_EAX(uint8_t byte) {
+static C_VOID INC_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x40);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_ECX(uint8_t byte) {
+static C_VOID INC_ECX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ECX");
     _SetOperandSize(byte);
     _c_setbyte(0x41);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_EDX(uint8_t byte) {
+static C_VOID INC_EDX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDX");
     _SetOperandSize(byte);
     _c_setbyte(0x42);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_EBX(uint8_t byte) {
+static C_VOID INC_EBX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBX");
     _SetOperandSize(byte);
     _c_setbyte(0x43);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_ESP(uint8_t byte) {
+static C_VOID INC_ESP(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESP");
     _SetOperandSize(byte);
     _c_setbyte(0x44);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_EBP(uint8_t byte) {
+static C_VOID INC_EBP(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBP");
     _SetOperandSize(byte);
     _c_setbyte(0x45);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_ESI(uint8_t byte) {
+static C_VOID INC_ESI(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESI");
     _SetOperandSize(byte);
     _c_setbyte(0x46);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC_EDI(uint8_t byte) {
+static C_VOID INC_EDI(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDI");
     _SetOperandSize(byte);
     _c_setbyte(0x47);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_EAX(uint8_t byte) {
+static C_VOID DEC_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x48);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_ECX(uint8_t byte) {
+static C_VOID DEC_ECX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ECX");
     _SetOperandSize(byte);
     _c_setbyte(0x49);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_EDX(uint8_t byte) {
+static C_VOID DEC_EDX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDX");
     _SetOperandSize(byte);
     _c_setbyte(0x4a);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_EBX(uint8_t byte) {
+static C_VOID DEC_EBX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBX");
     _SetOperandSize(byte);
     _c_setbyte(0x4b);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_ESP(uint8_t byte) {
+static C_VOID DEC_ESP(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESP");
     _SetOperandSize(byte);
     _c_setbyte(0x4c);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_EBP(uint8_t byte) {
+static C_VOID DEC_EBP(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBP");
     _SetOperandSize(byte);
     _c_setbyte(0x4d);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_ESI(uint8_t byte) {
+static C_VOID DEC_ESI(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESI");
     _SetOperandSize(byte);
     _c_setbyte(0x4e);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC_EDI(uint8_t byte) {
+static C_VOID DEC_EDI(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDI");
     _SetOperandSize(byte);
     _c_setbyte(0x4f);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_EAX(uint8_t byte) {
+static C_VOID PUSH_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x50);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_ECX(uint8_t byte) {
+static C_VOID PUSH_ECX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ECX");
     _SetOperandSize(byte);
     _c_setbyte(0x51);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_EDX(uint8_t byte) {
+static C_VOID PUSH_EDX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDX");
     _SetOperandSize(byte);
     _c_setbyte(0x52);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_EBX(uint8_t byte) {
+static C_VOID PUSH_EBX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBX");
     _SetOperandSize(byte);
     _c_setbyte(0x53);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_ESP(uint8_t byte) {
+static C_VOID PUSH_ESP(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESP");
     _SetOperandSize(byte);
     _c_setbyte(0x54);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_EBP(uint8_t byte) {
+static C_VOID PUSH_EBP(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBP");
     _SetOperandSize(byte);
     _c_setbyte(0x55);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_ESI(uint8_t byte) {
+static C_VOID PUSH_ESI(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESI");
     _SetOperandSize(byte);
     _c_setbyte(0x56);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_EDI(uint8_t byte) {
+static C_VOID PUSH_EDI(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDI");
     _SetOperandSize(byte);
     _c_setbyte(0x57);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_EAX(uint8_t byte) {
+static C_VOID POP_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x58);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_ECX(uint8_t byte) {
+static C_VOID POP_ECX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ECX");
     _SetOperandSize(byte);
     _c_setbyte(0x59);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_EDX(uint8_t byte) {
+static C_VOID POP_EDX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDX");
     _SetOperandSize(byte);
     _c_setbyte(0x5a);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_EBX(uint8_t byte) {
+static C_VOID POP_EBX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBX");
     _SetOperandSize(byte);
     _c_setbyte(0x5b);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_ESP(uint8_t byte) {
+static C_VOID POP_ESP(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESP");
     _SetOperandSize(byte);
     _c_setbyte(0x5c);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_EBP(uint8_t byte) {
+static C_VOID POP_EBP(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBP");
     _SetOperandSize(byte);
     _c_setbyte(0x5d);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_ESI(uint8_t byte) {
+static C_VOID POP_ESI(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESI");
     _SetOperandSize(byte);
     _c_setbyte(0x5e);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_EDI(uint8_t byte) {
+static C_VOID POP_EDI(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDI");
     _SetOperandSize(byte);
     _c_setbyte(0x5f);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSHA(uint8_t byte) {
+static C_VOID PUSHA(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHA");
     _SetOperandSize(byte);
     _c_setbyte(0x60);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POPA(uint8_t byte) {
+static C_VOID POPA(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POPA");
     _SetOperandSize(byte);
     _c_setbyte(0x61);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void BOUND_R32_M32_32(uint8_t byte) {
+static C_VOID BOUND_R32_M32_32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BOUND_R32_M32_32");
     _SetOperandSize(byte);
     _c_setbyte(0x62);
@@ -4929,7 +4932,7 @@ static void BOUND_R32_M32_32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ARPL_RM16_R16() {
+static C_VOID ARPL_RM16_R16() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ARPL_RM16_R16");
     if (ARG_RM16_R16) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_RM16_R16");
@@ -4939,31 +4942,31 @@ static void ARPL_RM16_R16() {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_FS() {
+static C_VOID PREFIX_FS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_FS");
     if (ARG_NONE) aoprig.flagfs = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_GS() {
+static C_VOID PREFIX_GS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_GS");
     if (ARG_NONE) aoprig.flaggs = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_OprSize() {
+static C_VOID PREFIX_OprSize() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_OprSize");
     if (ARG_NONE) prefix_oprsizeg = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_AddrSize() {
+static C_VOID PREFIX_AddrSize() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_AddrSize");
     if (ARG_NONE) prefix_addrsizeg = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_I32(uint8_t byte) {
+static C_VOID PUSH_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x68);
@@ -4984,7 +4987,7 @@ static void PUSH_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IMUL_R32_RM32_I32(uint8_t byte) {
+static C_VOID IMUL_R32_RM32_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x69);
@@ -5007,13 +5010,13 @@ static void IMUL_R32_RM32_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;;
 }
-static void PUSH_I8() {
+static C_VOID PUSH_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I8");
     _c_setbyte(0x6a);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IMUL_R32_RM32_I8(uint8_t byte) {
+static C_VOID IMUL_R32_RM32_I8(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x6b);
@@ -5036,7 +5039,7 @@ static void IMUL_R32_RM32_I8(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;;
 }
-static void INSB() {
+static C_VOID INSB() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INSB");
     _c_setbyte(0x6c);
     rinfo = NULL;
@@ -5046,7 +5049,7 @@ static void INSB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INSW(uint8_t byte) {
+static C_VOID INSW(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INSW");
     _SetOperandSize(byte);
     _c_setbyte(0x6d);
@@ -5074,7 +5077,7 @@ static void INSW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUTSB() {
+static C_VOID OUTSB() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSB");
     _c_setbyte(0x6e);
     rinfo = &aopri1;
@@ -5085,7 +5088,7 @@ static void OUTSB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUTSW(uint8_t byte) {
+static C_VOID OUTSW(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSW");
     _SetOperandSize(byte);
     _c_setbyte(0x6f);
@@ -5114,14 +5117,14 @@ static void OUTSW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_80(uint8_t rid) {
+static C_VOID INS_80(uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_80");
     _c_setbyte(0x80);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_81(uint8_t rid, uint8_t byte) {
+static C_VOID INS_81(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_81");
     _SetOperandSize(byte);
     _c_setbyte(0x81);
@@ -5143,7 +5146,7 @@ static void INS_81(uint8_t rid, uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_83(uint8_t rid, uint8_t byte) {
+static C_VOID INS_83(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_83");
     _SetOperandSize(byte);
     _c_setbyte(0x83);
@@ -5151,13 +5154,13 @@ static void INS_83(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void TEST_RM8_R8() {
+static C_VOID TEST_RM8_R8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM8_R8");
     _c_setbyte(0x84);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void TEST_RM32_R32(uint8_t byte) {
+static C_VOID TEST_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x85);
@@ -5178,13 +5181,13 @@ static void TEST_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_RM8_R8() {
+static C_VOID XCHG_RM8_R8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM8_R8");
     _c_setbyte(0x86);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_RM32_R32(uint8_t byte) {
+static C_VOID XCHG_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x87);
@@ -5205,13 +5208,13 @@ static void XCHG_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_RM8_R8() {
+static C_VOID MOV_RM8_R8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM8_R8");
     _c_setbyte(0x88);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_RM32_R32(uint8_t byte) {
+static C_VOID MOV_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x89);
@@ -5232,13 +5235,13 @@ static void MOV_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_R8_RM8() {
+static C_VOID MOV_R8_RM8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM8_R8");
     _c_setbyte(0x8a);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_R32_RM32(uint8_t byte) {
+static C_VOID MOV_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x8b);
@@ -5259,14 +5262,14 @@ static void MOV_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_RM16_SREG(uint8_t byte) {
+static C_VOID MOV_RM16_SREG(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM16_SREG");
     _SetOperandSize(byte);
     _c_setbyte(0x8c);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.sreg));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LEA_R32_M32(uint8_t byte) {
+static C_VOID LEA_R32_M32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LEA_R32_M32");
     _SetOperandSize(byte);
     _c_setbyte(0x8d);
@@ -5287,89 +5290,89 @@ static void LEA_R32_M32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_SREG_RM16(uint8_t byte) {
+static C_VOID MOV_SREG_RM16(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_SREG_RM16");
     _SetOperandSize(byte);
     _c_setbyte(0x8e);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.sreg));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_8F(uint8_t rid, uint8_t byte) {
+static C_VOID INS_8F(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_8F");
     _SetOperandSize(byte);
     _c_setbyte(0x8f);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void NOP() {
+static C_VOID NOP() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("NOP");
     if (ARG_NONE) _c_setbyte(0x90);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_EAX_EAX(uint8_t byte) {
+static C_VOID XCHG_EAX_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EAX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x90);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_ECX_EAX(uint8_t byte) {
+static C_VOID XCHG_ECX_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ECX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x91);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_EDX_EAX(uint8_t byte) {
+static C_VOID XCHG_EDX_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x92);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_EBX_EAX(uint8_t byte) {
+static C_VOID XCHG_EBX_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x93);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_ESP_EAX(uint8_t byte) {
+static C_VOID XCHG_ESP_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESP_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x94);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_EBP_EAX(uint8_t byte) {
+static C_VOID XCHG_EBP_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBP_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x95);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_ESI_EAX(uint8_t byte) {
+static C_VOID XCHG_ESI_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESI_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x96);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG_EDI_EAX(uint8_t byte) {
+static C_VOID XCHG_EDI_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDI_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x97);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CBW(uint8_t byte) {
+static C_VOID CBW(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CBW");
     _SetOperandSize(byte);
     if (ARG_NONE) _c_setbyte(0x98);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CWD(uint8_t byte) {
+static C_VOID CWD(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CWD");
     _SetOperandSize(byte);
     if (ARG_NONE) _c_setbyte(0x99);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CALL_PTR16_32(uint8_t byte) {
+static C_VOID CALL_PTR16_32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_PTR16_32");
     _SetOperandSize(byte);
     _c_setbyte(0x9a);
@@ -5391,34 +5394,34 @@ static void CALL_PTR16_32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.rcs));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void WAIT() {
+static C_VOID WAIT() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("WAIT");
     _c_setbyte(0x9b);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSHF(uint8_t byte) {
+static C_VOID PUSHF(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHF");
     _SetOperandSize(byte);
     _c_setbyte(0x9c);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POPF(uint8_t byte) {
+static C_VOID POPF(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POPF");
     _SetOperandSize(byte);
     _c_setbyte(0x9d);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SAHF() {
+static C_VOID SAHF() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SAHF");
     _c_setbyte(0x9e);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LAHF() {
+static C_VOID LAHF() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LAHF");
     _c_setbyte(0x9f);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_AL_MOFFS8() {
+static C_VOID MOV_AL_MOFFS8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_MOFFS8");
     _c_setbyte(0xa0);
     if (aopri2.mem == MEM_BP) {
@@ -5434,7 +5437,7 @@ static void MOV_AL_MOFFS8() {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_EAX_MOFFS32(uint8_t byte) {
+static C_VOID MOV_EAX_MOFFS32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_MOFFS32");
     _SetOperandSize(byte);
     _c_setbyte(0xa1);
@@ -5451,7 +5454,7 @@ static void MOV_EAX_MOFFS32(uint8_t byte) {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_MOFFS8_AL() {
+static C_VOID MOV_MOFFS8_AL() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS8_AL");
     _c_setbyte(0xa2);
     if (aopri1.mem == MEM_BP) {
@@ -5467,7 +5470,7 @@ static void MOV_MOFFS8_AL() {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_MOFFS32_EAX(uint8_t byte) {
+static C_VOID MOV_MOFFS32_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS32_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0xa3);
@@ -5484,7 +5487,7 @@ static void MOV_MOFFS32_EAX(uint8_t byte) {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVSB() {
+static C_VOID MOVSB() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSB");
     _c_setbyte(0xa4);
     rinfo = &aopri2;
@@ -5495,7 +5498,7 @@ static void MOVSB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVSW(uint8_t byte) {
+static C_VOID MOVSW(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSW");
     _SetOperandSize(byte);
     _c_setbyte(0xa5);
@@ -5524,7 +5527,7 @@ static void MOVSW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMPSB() {
+static C_VOID CMPSB() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSB");
     _c_setbyte(0xa6);
     rinfo = &aopri1;
@@ -5535,7 +5538,7 @@ static void CMPSB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMPSW(uint8_t byte) {
+static C_VOID CMPSW(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSW");
     _SetOperandSize(byte);
     _c_setbyte(0xa7);
@@ -5564,13 +5567,13 @@ static void CMPSW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void TEST_AL_I8() {
+static C_VOID TEST_AL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_AL_I8");
     _c_setbyte(0xa8);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void TEST_EAX_I32(uint8_t byte) {
+static C_VOID TEST_EAX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xa9);
@@ -5591,7 +5594,7 @@ static void TEST_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void STOSB() {
+static C_VOID STOSB() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSB");
     _c_setbyte(0xaa);
     rinfo = NULL;
@@ -5601,7 +5604,7 @@ static void STOSB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void STOSW(uint8_t byte) {
+static C_VOID STOSW(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSW");
     _SetOperandSize(byte);
     _c_setbyte(0xab);
@@ -5629,7 +5632,7 @@ static void STOSW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LODSB() {
+static C_VOID LODSB() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSB");
     _c_setbyte(0xac);
     rinfo = &aopri1;
@@ -5640,7 +5643,7 @@ static void LODSB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LODSW(uint8_t byte) {
+static C_VOID LODSW(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSW");
     _SetOperandSize(byte);
     _c_setbyte(0xad);
@@ -5669,7 +5672,7 @@ static void LODSW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SCASB() {
+static C_VOID SCASB() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASB");
     _c_setbyte(0xae);
     rinfo = NULL;
@@ -5679,7 +5682,7 @@ static void SCASB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SCASW(uint8_t byte) {
+static C_VOID SCASW(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASW");
     _SetOperandSize(byte);
     _c_setbyte(0xaf);
@@ -5707,55 +5710,55 @@ static void SCASW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_AL_I8() {
+static C_VOID MOV_AL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_I8");
     _c_setbyte(0xb0);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_CL_I8() {
+static C_VOID MOV_CL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CL_I8");
     _c_setbyte(0xb1);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_DL_I8() {
+static C_VOID MOV_DL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DL_I8");
     _c_setbyte(0xb2);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_BL_I8() {
+static C_VOID MOV_BL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BL_I8");
     _c_setbyte(0xb3);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_AH_I8() {
+static C_VOID MOV_AH_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AH_I8");
     _c_setbyte(0xb4);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_CH_I8() {
+static C_VOID MOV_CH_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CH_I8");
     _c_setbyte(0xb5);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_DH_I8() {
+static C_VOID MOV_DH_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DH_I8");
     _c_setbyte(0xb6);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_BH_I8() {
+static C_VOID MOV_BH_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BH_I8");
     _c_setbyte(0xb7);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_EAX_I32(uint8_t byte) {
+static C_VOID MOV_EAX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xb8);
@@ -5776,7 +5779,7 @@ static void MOV_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_ECX_I32(uint8_t byte) {
+static C_VOID MOV_ECX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ECX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xb9);
@@ -5797,7 +5800,7 @@ static void MOV_ECX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_EDX_I32(uint8_t byte) {
+static C_VOID MOV_EDX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xba);
@@ -5818,7 +5821,7 @@ static void MOV_EDX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_EBX_I32(uint8_t byte) {
+static C_VOID MOV_EBX_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbb);
@@ -5839,7 +5842,7 @@ static void MOV_EBX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_ESP_I32(uint8_t byte) {
+static C_VOID MOV_ESP_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESP_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbc);
@@ -5860,7 +5863,7 @@ static void MOV_ESP_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_EBP_I32(uint8_t byte) {
+static C_VOID MOV_EBP_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBP_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbd);
@@ -5881,7 +5884,7 @@ static void MOV_EBP_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_ESI_I32(uint8_t byte) {
+static C_VOID MOV_ESI_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESI_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbe);
@@ -5902,7 +5905,7 @@ static void MOV_ESI_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_EDI_I32(uint8_t byte) {
+static C_VOID MOV_EDI_I32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDI_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbf);
@@ -5923,14 +5926,14 @@ static void MOV_EDI_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_C0(uint8_t rid) {
+static C_VOID INS_C0(uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C0");
     _c_setbyte(0xc0);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_C1(uint8_t rid, uint8_t byte) {
+static C_VOID INS_C1(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C1");
     _SetOperandSize(byte);
     _c_setbyte(0xc1);
@@ -5938,18 +5941,18 @@ static void INS_C1(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void RET_I16() {
+static C_VOID RET_I16() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RET_I16");
     _c_setbyte(0xc2);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void RET_() {
+static C_VOID RET_() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RET");
     _c_setbyte(0xc3);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LES_R32_M16_32(uint8_t byte) {
+static C_VOID LES_R32_M16_32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LES_R32_M16_32");
     _SetOperandSize(byte);
     _c_setbyte(0xc4);
@@ -5970,7 +5973,7 @@ static void LES_R32_M16_32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LDS_R32_M16_32(uint8_t byte) {
+static C_VOID LDS_R32_M16_32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LDS_R32_M16_32");
     _c_setbyte(0xc5);
     switch (byte) {
@@ -5990,14 +5993,14 @@ static void LDS_R32_M16_32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_C6(uint8_t rid) {
+static C_VOID INS_C6(uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C6");
     _c_setbyte(0xc6);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_C7(uint8_t rid, uint8_t byte) {
+static C_VOID INS_C7(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C7");
     _SetOperandSize(byte);
     _c_setbyte(0xc7);
@@ -6019,7 +6022,7 @@ static void INS_C7(uint8_t rid, uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ENTER() {
+static C_VOID ENTER() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ENTER");
     if (ARG_I16_I8) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_I16_I8");
@@ -6030,72 +6033,72 @@ static void ENTER() {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LEAVE() {
+static C_VOID LEAVE() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LEAVE");
     if (ARG_NONE) _c_setbyte(0xc9);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void RETF_I16() {
+static C_VOID RETF_I16() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF_I16");
     _c_setbyte(0xca);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void RETF_() {
+static C_VOID RETF_() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF_");
     _c_setbyte(0xcb);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INT3() {
+static C_VOID INT3() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INT3");
     _c_setbyte(0xcc);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INT_I8() {
+static C_VOID INT_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INT_I8");
     _c_setbyte(0xcd);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INTO() {
+static C_VOID INTO() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INTO");
     _c_setbyte(0xcd);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IRET(uint8_t byte) {
+static C_VOID IRET(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IRET");
     _SetOperandSize(byte);
     _c_setbyte(0xcf);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_D0(uint8_t rid) {
+static C_VOID INS_D0(uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_DO");
     _c_setbyte(0xd0);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_D1(uint8_t rid, uint8_t byte) {
+static C_VOID INS_D1(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D1");
     _SetOperandSize(byte);
     _c_setbyte(0xd1);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_D2(uint8_t rid) {
+static C_VOID INS_D2(uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D2");
     _c_setbyte(0xd2);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_D3(uint8_t rid, uint8_t byte) {
+static C_VOID INS_D3(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D3");
     _SetOperandSize(byte);
     _c_setbyte(0xd3);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AAM() {
+static C_VOID AAM() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAM");
     if (ARG_NONE) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_NONE");
@@ -6110,7 +6113,7 @@ static void AAM() {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AAD() {
+static C_VOID AAD() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAD");
     if (ARG_NONE) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_NONE");
@@ -6125,7 +6128,7 @@ static void AAD() {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XLATB() {
+static C_VOID XLATB() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XLATB");
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
@@ -6137,32 +6140,32 @@ static void XLATB() {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IN_AL_I8() {
+static C_VOID IN_AL_I8() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
     _c_setbyte(0xe4);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IN_EAX_I8(uint8_t byte) {
+static C_VOID IN_EAX_I8(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
     _SetOperandSize(byte);
     _c_setbyte(0xe5);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUT_I8_AL() {
+static C_VOID OUT_I8_AL() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_AL");
     _c_setbyte(0xe6);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUT_I8_EAX(uint8_t byte) {
+static C_VOID OUT_I8_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_EAX");
     _c_setbyte(0xe7);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CALL_REL32(uint8_t byte) {
+static C_VOID CALL_REL32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_REL32");
     _SetOperandSize(byte);
     _c_setbyte(0xe8);
@@ -6183,7 +6186,7 @@ static void CALL_REL32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JMP_REL32(uint8_t byte) {
+static C_VOID JMP_REL32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL32");
     _SetOperandSize(byte);
     _c_setbyte(0xe9);
@@ -6204,7 +6207,7 @@ static void JMP_REL32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JMP_PTR16_32(uint8_t byte) {
+static C_VOID JMP_PTR16_32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_PTR16_32");
     _SetOperandSize(byte);
     _c_setbyte(0xea);
@@ -6226,35 +6229,35 @@ static void JMP_PTR16_32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.rcs));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IN_AL_DX() {
+static C_VOID IN_AL_DX() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_DX");
     _c_setbyte(0xec);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IN_EAX_DX(uint8_t byte) {
+static C_VOID IN_EAX_DX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_DX");
     _SetOperandSize(byte);
     _c_setbyte(0xed);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUT_DX_AL() {
+static C_VOID OUT_DX_AL() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_AL");
     _c_setbyte(0xee);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUT_DX_EAX(uint8_t byte) {
+static C_VOID OUT_DX_EAX(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0xef);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_LOCK() {
+static C_VOID PREFIX_LOCK() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
     if (ARG_NONE) prefix_lock = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void QDX() {
+static C_VOID QDX() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
     if (ARG_I8) {
         _c_setbyte(0xf1);
@@ -6262,38 +6265,38 @@ static void QDX() {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_REPNZ() {
+static C_VOID PREFIX_REPNZ() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPNZ");
     if (ARG_NONE) prefix_repnz = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PREFIX_REPZ() {
+static C_VOID PREFIX_REPZ() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPZ");
     if (ARG_NONE) prefix_repz = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void HLT() {
+static C_VOID HLT() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("HLT");
     if (ARG_NONE) _c_setbyte(0xf4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMC() {
+static C_VOID CMC() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMC");
     if (ARG_NONE) _c_setbyte(0xf5);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_F6(uint8_t rid) {
+static C_VOID INS_F6(uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F6");
     _c_setbyte(0xf6);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     if (!rid) NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_F7(uint8_t rid, uint8_t byte) {
+static C_VOID INS_F7(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F7");
     _SetOperandSize(byte);
     _c_setbyte(0xf7);
@@ -6319,49 +6322,49 @@ static void INS_F7(uint8_t rid, uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CLC() {
+static C_VOID CLC() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLC");
     if (ARG_NONE) _c_setbyte(0xf8);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void STC() {
+static C_VOID STC() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STC");
     if (ARG_NONE) _c_setbyte(0xf9);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CLI() {
+static C_VOID CLI() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLI");
     if (ARG_NONE) _c_setbyte(0xfa);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void STI() {
+static C_VOID STI() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STI");
     if (ARG_NONE) _c_setbyte(0xfb);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CLD() {
+static C_VOID CLD() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLD");
     if (ARG_NONE) _c_setbyte(0xfc);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void STD() {
+static C_VOID STD() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STD");
     if (ARG_NONE) _c_setbyte(0xfd);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_FE(uint8_t rid) {
+static C_VOID INS_FE(uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FE");
     _c_setbyte(0xfe);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_FF(uint8_t rid, uint8_t byte) {
+static C_VOID INS_FF(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FF");
     _SetOperandSize(byte);
     _c_setbyte(0xff);
@@ -6369,7 +6372,7 @@ static void INS_FF(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* concrete extended instructions */
-static void INS_0F_00(uint8_t rid, uint8_t byte) {
+static C_VOID INS_0F_00(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_00");
     _SetOperandSize(byte);
     INS_0F();
@@ -6377,7 +6380,7 @@ static void INS_0F_00(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_0F_01(uint8_t rid, uint8_t byte) {
+static C_VOID INS_0F_01(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_01");
     _SetOperandSize(byte);
     INS_0F();
@@ -6385,7 +6388,7 @@ static void INS_0F_01(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LAR_R32_RM32(uint8_t byte) {
+static C_VOID LAR_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LAR_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6407,7 +6410,7 @@ static void LAR_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LSL_R32_RM32(uint8_t byte) {
+static C_VOID LSL_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LSL_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6429,55 +6432,55 @@ static void LSL_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CLTS() {
+static C_VOID CLTS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLTS");
     INS_0F();
     _c_setbyte(0x06);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_R32_CR(uint8_t crid) {
+static C_VOID MOV_R32_CR(uint8_t crid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_CR");
     INS_0F();
     _c_setbyte(0x20);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, crid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_R32_DR(uint8_t drid) {
+static C_VOID MOV_R32_DR(uint8_t drid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_DR");
     INS_0F();
     _c_setbyte(0x21);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, drid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_CR_R32(uint8_t crid) {
+static C_VOID MOV_CR_R32(uint8_t crid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CR_R32");
     INS_0F();
     _c_setbyte(0x22);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, crid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_DR_R32(uint8_t drid) {
+static C_VOID MOV_DR_R32(uint8_t drid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DR_R32");
     INS_0F();
     _c_setbyte(0x23);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, drid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_R32_TR(uint8_t trid) {
+static C_VOID MOV_R32_TR(uint8_t trid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_TR");
     INS_0F();
     _c_setbyte(0x24);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, trid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV_TR_R32(uint8_t trid) {
+static C_VOID MOV_TR_R32(uint8_t trid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_TR_R32");
     INS_0F();
     _c_setbyte(0x26);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, trid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SETCC_RM8(uint8_t opcode) {
+static C_VOID SETCC_RM8(uint8_t opcode) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETCC_RM8");
     if (ARG_RM8) {
         INS_0F();
@@ -6486,19 +6489,19 @@ static void SETCC_RM8(uint8_t opcode) {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_FS() {
+static C_VOID PUSH_FS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_FS");
     INS_0F();
     _c_setbyte(0xa0);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_FS() {
+static C_VOID POP_FS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_FS");
     INS_0F();
     _c_setbyte(0xa1);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BT_RM32_R32(uint8_t byte) {
+static C_VOID BT_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BT_RM32_R32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6516,7 +6519,7 @@ static void BT_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SHLD_RM32_R32_I8(uint8_t byte) {
+static C_VOID SHLD_RM32_R32_I8(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_I8");
     _SetOperandSize(byte);
     INS_0F();
@@ -6535,7 +6538,7 @@ static void SHLD_RM32_R32_I8(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri3.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SHLD_RM32_R32_CL(uint8_t byte) {
+static C_VOID SHLD_RM32_R32_CL(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_CL");
     _SetOperandSize(byte);
     INS_0F();
@@ -6553,19 +6556,19 @@ static void SHLD_RM32_R32_CL(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void PUSH_GS() {
+static C_VOID PUSH_GS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_GS");
     INS_0F();
     _c_setbyte(0xa8);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP_GS() {
+static C_VOID POP_GS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_GS");
     INS_0F();
     _c_setbyte(0xa9);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BTS_RM32_R32(uint8_t byte) {
+static C_VOID BTS_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTS_RM32_R32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6583,7 +6586,7 @@ static void BTS_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SHRD_RM32_R32_I8(uint8_t byte) {
+static C_VOID SHRD_RM32_R32_I8(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_I8");
     _SetOperandSize(byte);
     INS_0F();
@@ -6602,7 +6605,7 @@ static void SHRD_RM32_R32_I8(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri3.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SHRD_RM32_R32_CL(uint8_t byte) {
+static C_VOID SHRD_RM32_R32_CL(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_CL");
     _SetOperandSize(byte);
     INS_0F();
@@ -6620,7 +6623,7 @@ static void SHRD_RM32_R32_CL(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IMUL_R32_RM32(uint8_t byte) {
+static C_VOID IMUL_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6638,7 +6641,7 @@ static void IMUL_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LSS_R32_M16_32(uint8_t byte) {
+static C_VOID LSS_R32_M16_32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LSS_R32_M16_32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6660,7 +6663,7 @@ static void LSS_R32_M16_32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BTR_RM32_R32(uint8_t byte) {
+static C_VOID BTR_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTR_RM32_R32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6678,7 +6681,7 @@ static void BTR_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LFS_R32_M16_32(uint8_t byte) {
+static C_VOID LFS_R32_M16_32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LFS_R32_M16_32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6700,7 +6703,7 @@ static void LFS_R32_M16_32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LGS_R32_M16_32(uint8_t byte) {
+static C_VOID LGS_R32_M16_32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LGS_R32_M16_32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6722,7 +6725,7 @@ static void LGS_R32_M16_32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVZX_R32_RM8(uint8_t byte) {
+static C_VOID MOVZX_R32_RM8(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM8");
     _SetOperandSize(byte);
     INS_0F();
@@ -6744,14 +6747,14 @@ static void MOVZX_R32_RM8(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVZX_R32_RM16() {
+static C_VOID MOVZX_R32_RM16() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM16");
     INS_0F();
     _c_setbyte(0xb7);
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS_0F_BA(uint8_t rid, uint8_t byte) {
+static C_VOID INS_0F_BA(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_BA");
     _SetOperandSize(byte);
     INS_0F();
@@ -6760,7 +6763,7 @@ static void INS_0F_BA(uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BTC_RM32_R32(uint8_t byte) {
+static C_VOID BTC_RM32_R32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTC_RM32_R32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6778,7 +6781,7 @@ static void BTC_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BSF_R32_RM32(uint8_t byte) {
+static C_VOID BSF_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BSF_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6800,7 +6803,7 @@ static void BSF_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BSR_R32_RM32(uint8_t byte) {
+static C_VOID BSR_R32_RM32(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BSR_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
@@ -6822,7 +6825,7 @@ static void BSR_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVSX_R32_RM8(uint8_t byte) {
+static C_VOID MOVSX_R32_RM8(uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM8");
     _SetOperandSize(byte);
     INS_0F();
@@ -6844,7 +6847,7 @@ static void MOVSX_R32_RM8(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVSX_R32_RM16() {
+static C_VOID MOVSX_R32_RM16() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM16");
     INS_0F();
     _c_setbyte(0xbf);
@@ -6853,7 +6856,7 @@ static void MOVSX_R32_RM16() {
 }
 
 /* abstract instructions */
-static void PUSH() {
+static C_VOID PUSH() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH");
     if      (ARG_ES) PUSH_ES();
     else if (ARG_CS) PUSH_CS();
@@ -6885,7 +6888,7 @@ static void PUSH() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void POP() {
+static C_VOID POP() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP");
     if      (ARG_ES) POP_ES();
     else if (ARG_CS) POP_CS();
@@ -6914,7 +6917,7 @@ static void POP() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADD() {
+static C_VOID ADD() {
     uint8_t rid = 0x00;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD");
     if      (ARG_AL_I8)    ADD_AL_I8();
@@ -6960,7 +6963,7 @@ static void ADD() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OR() {
+static C_VOID OR() {
     uint8_t rid = 0x01;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR");
     if      (ARG_AL_I8)    OR_AL_I8();
@@ -7006,7 +7009,7 @@ static void OR() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ADC() {
+static C_VOID ADC() {
     uint8_t rid = 0x02;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC");
     if      (ARG_AL_I8)    ADC_AL_I8();
@@ -7052,7 +7055,7 @@ static void ADC() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SBB() {
+static C_VOID SBB() {
     uint8_t rid = 0x03;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB");
     if      (ARG_AL_I8)    SBB_AL_I8();
@@ -7098,7 +7101,7 @@ static void SBB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void AND() {
+static C_VOID AND() {
     uint8_t rid = 0x04;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND");
     if      (ARG_AL_I8)    AND_AL_I8();
@@ -7144,7 +7147,7 @@ static void AND() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SUB() {
+static C_VOID SUB() {
     uint8_t rid = 0x05;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB");
     if      (ARG_AL_I8)    SUB_AL_I8();
@@ -7190,7 +7193,7 @@ static void SUB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XOR() {
+static C_VOID XOR() {
     uint8_t rid = 0x06;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR");
     if      (ARG_AL_I8)    XOR_AL_I8();
@@ -7236,7 +7239,7 @@ static void XOR() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMP() {
+static C_VOID CMP() {
     uint8_t rid = 0x07;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP");
     if      (ARG_AL_I8)    CMP_AL_I8();
@@ -7282,7 +7285,7 @@ static void CMP() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INC() {
+static C_VOID INC() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC");
     if      (ARG_AX) INC_EAX(2);
     else if (ARG_CX) INC_ECX(2);
@@ -7306,7 +7309,7 @@ static void INC() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DEC() {
+static C_VOID DEC() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC");
     if      (ARG_AX) DEC_EAX(2);
     else if (ARG_CX) DEC_ECX(2);
@@ -7330,14 +7333,14 @@ static void DEC() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BOUND() {
+static C_VOID BOUND() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BOUND");
     if (ARG_R16_M16) BOUND_R32_M32_32(2);
     else if (ARG_R32_M32) BOUND_R32_M32_32(4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IMUL() {
+static C_VOID IMUL() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL");
     if      (ARG_RM8s) INS_F6(0x05);
     else if (ARG_RM16s) INS_F7(0x05, 2);
@@ -7351,7 +7354,7 @@ static void IMUL() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INS() {
+static C_VOID INS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS");
     if (ARG_ESDI8s_DX || ARG_ESEDI8s_DX) INSB();
     else if (ARG_ESDI16s_DX || ARG_ESEDI16s_DX) INSW(2);
@@ -7359,7 +7362,7 @@ static void INS() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUTS() {
+static C_VOID OUTS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTS");
     if (ARG_DX_DSSI8s || ARG_DX_DSESI8s) OUTSB();
     else if (ARG_DX_DSSI16s || ARG_DX_DSESI16s) OUTSW(2);
@@ -7367,7 +7370,7 @@ static void OUTS() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JCC_REL(uint8_t opcode) {
+static C_VOID JCC_REL(uint8_t opcode) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JCC_REL");
     if (ARG_PNONE_I8s || ARG_SHORT_I8s) {
         _c_setbyte(opcode);
@@ -7385,7 +7388,7 @@ static void JCC_REL(uint8_t opcode) {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void TEST() {
+static C_VOID TEST() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST");
     if      (ARG_AL_I8) TEST_AL_I8();
     else if (ARG_AX_I16) TEST_EAX_I32(2);
@@ -7399,7 +7402,7 @@ static void TEST() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XCHG() {
+static C_VOID XCHG() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG");
     if      (ARG_AX_AX) XCHG_EAX_EAX(2);
     else if (ARG_CX_AX) XCHG_ECX_EAX(2);
@@ -7423,7 +7426,7 @@ static void XCHG() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOV() {
+static C_VOID MOV() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV");
     if      (ARG_AL_I8)  MOV_AL_I8();
     else if (ARG_CL_I8)  MOV_CL_I8();
@@ -7493,14 +7496,14 @@ static void MOV() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LEA() {
+static C_VOID LEA() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LEA");
     if (ARG_R16_M16) LEA_R32_M32(2);
     else if (ARG_R32_M32) LEA_R32_M32(4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CALL() {
+static C_VOID CALL() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL");
     if      (ARG_FAR_I16_16) CALL_PTR16_32(2);
     else if (ARG_FAR_I16_32) CALL_PTR16_32(4);
@@ -7513,7 +7516,7 @@ static void CALL() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVS() {
+static C_VOID MOVS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVS");
     if (ARG_ESDI8s_DSSI8s || ARG_ESEDI8s_DSESI8s) MOVSB();
     else if (ARG_ESDI16s_DSSI16s || ARG_ESEDI16s_DSESI16s) MOVSW(2);
@@ -7521,7 +7524,7 @@ static void MOVS() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void CMPS() {
+static C_VOID CMPS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPS");
     if (ARG_DSSI8s_ESDI8s || ARG_DSESI8s_ESEDI8s) CMPSB();
     else if (ARG_DSSI16s_ESDI16s || ARG_DSESI16s_ESEDI16s) CMPSW(2);
@@ -7529,7 +7532,7 @@ static void CMPS() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void STOS() {
+static C_VOID STOS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STOS");
     if (ARG_ESDI8s || ARG_ESEDI8s) STOSB();
     else if (ARG_ESDI16s || ARG_ESEDI16s) STOSW(2);
@@ -7537,7 +7540,7 @@ static void STOS() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LODS() {
+static C_VOID LODS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LODS");
     if (ARG_DSSI8s || ARG_DSESI8s) LODSB();
     else if (ARG_DSSI16s || ARG_DSESI16s) LODSW(2);
@@ -7545,7 +7548,7 @@ static void LODS() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SCAS() {
+static C_VOID SCAS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SCAS");
     if (ARG_ESDI8s || ARG_ESEDI8s) SCASB();
     else if (ARG_ESDI16s || ARG_ESEDI16s) SCASW(2);
@@ -7553,47 +7556,47 @@ static void SCAS() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void RET() {
+static C_VOID RET() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RET");
     if (ARG_I16u) RET_I16();
     else if (ARG_NONE) RET_();
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LES() {
+static C_VOID LES() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LES");
     if (ARG_R16_M16) LES_R32_M16_32(2);
     else if (ARG_R32_M32) LES_R32_M16_32(4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LDS() {
+static C_VOID LDS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LDS");
     if (ARG_R16_M16) LDS_R32_M16_32(2);
     else if (ARG_R32_M32) LDS_R32_M16_32(4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void RETF() {
+static C_VOID RETF() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF");
     if      (ARG_I16u) RETF_I16();
     else if (ARG_NONE) RETF_();
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void INT() {
+static C_VOID INT() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INT");
     if (ARG_I8) INT_I8();
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void XLAT() {
+static C_VOID XLAT() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XLAT");
     if (ARG_DSBXAL8 || ARG_DSEBXAL8) XLATB();
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ROL() {
+static C_VOID ROL() {
     uint8_t rid = 0x00;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ROL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
@@ -7608,7 +7611,7 @@ static void ROL() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void ROR() {
+static C_VOID ROR() {
     uint8_t rid = 0x01;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ROR");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
@@ -7623,7 +7626,7 @@ static void ROR() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void RCL() {
+static C_VOID RCL() {
     uint8_t rid = 0x02;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RCL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
@@ -7638,7 +7641,7 @@ static void RCL() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void RCR() {
+static C_VOID RCR() {
     uint8_t rid = 0x03;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
@@ -7653,7 +7656,7 @@ static void RCR() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SHL() {
+static C_VOID SHL() {
     uint8_t rid = 0x04;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
@@ -7668,7 +7671,7 @@ static void SHL() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SHR() {
+static C_VOID SHR() {
     uint8_t rid = 0x05;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHR");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
@@ -7683,7 +7686,7 @@ static void SHR() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SAL() {
+static C_VOID SAL() {
     uint8_t rid = 0x04;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SAL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
@@ -7698,7 +7701,7 @@ static void SAL() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SAR() {
+static C_VOID SAR() {
     uint8_t rid = 0x07;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SAR");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
@@ -7713,7 +7716,7 @@ static void SAR() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IN() {
+static C_VOID IN() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN");
     if      (ARG_AL_I8u)  IN_AL_I8();
     else if (ARG_AX_I8u)  IN_EAX_I8(2);
@@ -7724,7 +7727,7 @@ static void IN() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void OUT() {
+static C_VOID OUT() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT");
     if      (ARG_I8u_AL)  OUT_I8_AL();
     else if (ARG_I8u_AX)  OUT_I8_EAX(2);
@@ -7735,7 +7738,7 @@ static void OUT() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void NOT() {
+static C_VOID NOT() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("NOT");
     if      (ARG_RM8s) INS_F6(0x02);
     else if (ARG_RM16s) INS_F7(0x02, 2);
@@ -7743,7 +7746,7 @@ static void NOT() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void NEG() {
+static C_VOID NEG() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("NEG");
     if      (ARG_RM8s) INS_F6(0x03);
     else if (ARG_RM16s) INS_F7(0x03, 2);
@@ -7751,7 +7754,7 @@ static void NEG() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MUL() {
+static C_VOID MUL() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MUL");
     if      (ARG_RM8s) INS_F6(0x04);
     else if (ARG_RM16s) INS_F7(0x04, 2);
@@ -7759,7 +7762,7 @@ static void MUL() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void DIV() {
+static C_VOID DIV() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DIV");
     if      (ARG_RM8s) INS_F6(0x06);
     else if (ARG_RM16s) INS_F7(0x06, 2);
@@ -7767,7 +7770,7 @@ static void DIV() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void IDIV() {
+static C_VOID IDIV() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IDIV");
     if      (ARG_RM8s) INS_F6(0x07);
     else if (ARG_RM16s) INS_F7(0x07, 2);
@@ -7775,7 +7778,7 @@ static void IDIV() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void JMP() {
+static C_VOID JMP() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP");
     if      (ARG_FAR_I16_16) JMP_PTR16_32(2);
     else if (ARG_FAR_I16_32) JMP_PTR16_32(4);
@@ -7790,7 +7793,7 @@ static void JMP() {
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* abstract extended instructions */
-static void SLDT() {
+static C_VOID SLDT() {
     uint8_t rid = 0x00;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SLDT");
     if (ARG_RM16) INS_0F_00(rid, 2);
@@ -7798,7 +7801,7 @@ static void SLDT() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void STR() {
+static C_VOID STR() {
     uint8_t rid = 0x01;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STR");
     if (ARG_RM16) INS_0F_00(rid, 2);
@@ -7806,35 +7809,35 @@ static void STR() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LLDT() {
+static C_VOID LLDT() {
     uint8_t rid = 0x02;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LLDT");
     if (ARG_RM16) INS_0F_00(rid, 0);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LTR() {
+static C_VOID LTR() {
     uint8_t rid = 0x03;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LTR");
     if (ARG_RM16) INS_0F_00(rid, 0);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void VERR() {
+static C_VOID VERR() {
     uint8_t rid = 0x04;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("VERR");
     if (ARG_RM16) INS_0F_00(rid, 0);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void VERW() {
+static C_VOID VERW() {
     uint8_t rid = 0x05;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("VERW");
     if (ARG_RM16) INS_0F_00(rid, 0);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SGDT() {
+static C_VOID SGDT() {
     uint8_t rid = 0x00;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SGDT");
     if (ARG_M16s) INS_0F_01(rid, 2);
@@ -7842,7 +7845,7 @@ static void SGDT() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SIDT() {
+static C_VOID SIDT() {
     uint8_t rid = 0x01;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SIDT");
     if (ARG_M16s) INS_0F_01(rid, 2);
@@ -7850,7 +7853,7 @@ static void SIDT() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LGDT() {
+static C_VOID LGDT() {
     uint8_t rid = 0x02;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SIDT");
     if (ARG_M16s) INS_0F_01(rid, 2);
@@ -7858,7 +7861,7 @@ static void LGDT() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LIDT() {
+static C_VOID LIDT() {
     uint8_t rid = 0x03;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LIDT");
     if (ARG_M16s) INS_0F_01(rid, 2);
@@ -7866,7 +7869,7 @@ static void LIDT() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SMSW() {
+static C_VOID SMSW() {
     uint8_t rid = 0x04;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SMSW");
     if (ARG_RM16) INS_0F_01(rid, 2);
@@ -7874,28 +7877,28 @@ static void SMSW() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LMSW() {
+static C_VOID LMSW() {
     uint8_t rid = 0x06;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LMSW");
     if (ARG_RM16) INS_0F_01(rid, 0);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LAR() {
+static C_VOID LAR() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LAR");
     if (ARG_R16_RM16) LAR_R32_RM32(2);
     else if (ARG_R32_RM32) LAR_R32_RM32(4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LSL() {
+static C_VOID LSL() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LSL");
     if (ARG_R16_RM16) LSL_R32_RM32(2);
     else if (ARG_R32_RM32) LSL_R32_RM32(4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BT() {
+static C_VOID BT() {
     uint8_t rid = 0x04;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BT");
     if (ARG_RM16_R16) BT_RM32_R32(2);
@@ -7905,7 +7908,7 @@ static void BT() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SHLD() {
+static C_VOID SHLD() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD");
     if (ARG_RM16_R16_I8) SHLD_RM32_R32_I8(2);
     if (ARG_RM16_R16_CL) SHLD_RM32_R32_CL(2);
@@ -7914,7 +7917,7 @@ static void SHLD() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BTS() {
+static C_VOID BTS() {
     uint8_t rid = 0x05;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTS");
     if (ARG_RM16_R16) BTS_RM32_R32(2);
@@ -7924,7 +7927,7 @@ static void BTS() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void SHRD() {
+static C_VOID SHRD() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD");
     if (ARG_RM16_R16_I8) SHRD_RM32_R32_I8(2);
     if (ARG_RM16_R16_CL) SHRD_RM32_R32_CL(2);
@@ -7933,14 +7936,14 @@ static void SHRD() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LSS() {
+static C_VOID LSS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LSS");
     if (ARG_R16_M16) LSS_R32_M16_32(2);
     else if (ARG_R32_M32) LSS_R32_M16_32(4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BTR() {
+static C_VOID BTR() {
     uint8_t rid = 0x06;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTR");
     if (ARG_RM16_R16) BTR_RM32_R32(2);
@@ -7950,21 +7953,21 @@ static void BTR() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LFS() {
+static C_VOID LFS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LFS");
     if (ARG_R16_M16) LFS_R32_M16_32(2);
     else if (ARG_R32_M32) LFS_R32_M16_32(4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void LGS() {
+static C_VOID LGS() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LGS");
     if (ARG_R16_M16) LGS_R32_M16_32(2);
     else if (ARG_R32_M32) LGS_R32_M16_32(4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVZX() {
+static C_VOID MOVZX() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX");
     if (ARG_R16_RM8s) MOVZX_R32_RM8(2);
     else if (ARG_R32_RM8s) MOVZX_R32_RM8(4);
@@ -7972,7 +7975,7 @@ static void MOVZX() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BTC() {
+static C_VOID BTC() {
     uint8_t rid = 0x07;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTC");
     if (ARG_RM16_R16) BTC_RM32_R32(2);
@@ -7982,21 +7985,21 @@ static void BTC() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BSF() {
+static C_VOID BSF() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BSF");
     if (ARG_R16_RM16) BSF_R32_RM32(2);
     else if (ARG_R32_RM32) BSF_R32_RM32(4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void BSR() {
+static C_VOID BSR() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BSR");
     if (ARG_R16_RM16) BSR_R32_RM32(2);
     else if (ARG_R32_RM32) BSR_R32_RM32(4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void MOVSX() {
+static C_VOID MOVSX() {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX");
     if (ARG_R16_RM8s) MOVSX_R32_RM8(2);
     else if (ARG_R32_RM8s) MOVSX_R32_RM8(4);
@@ -8006,13 +8009,13 @@ static void MOVSX() {
 }
 
 /* main routines */
-static int is_end(char c) {
+static C_INT is_end(C_CHAR c) {
     return (!c || c == '\n' || c == ';');
 }
-static int is_space(char c) {
+static C_INT is_space(C_CHAR c) {
     return (c == ' ' || c == '\t');
 }
-static int is_prefix() {
+static C_INT is_prefix() {
     if (!STD_STRCMP(rop, "es:") || !STD_STRCMP(rop, "cs:") ||
             !STD_STRCMP(rop, "ss:") || !STD_STRCMP(rop, "ds:") ||
             !STD_STRCMP(rop, "fs:") || !STD_STRCMP(rop, "gs:") ||
@@ -8024,7 +8027,7 @@ static int is_prefix() {
         return 0;
     }
 }
-static void exec() {
+static C_VOID exec() {
     /* assemble single statement */
     NTVDM64_TYPE_TRACE_CALL_BEGIN("exec");
     if (!rop || is_end(rop[0])) ;
@@ -8246,8 +8249,8 @@ static void exec() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static char *take_arg(char *s) {
-    char *rend, *rresult;
+static C_CHAR *take_arg(C_CHAR *s) {
+    C_CHAR *rend, *rresult;
     if (s) {
         rstart = s;
     }
@@ -8276,10 +8279,10 @@ static char *take_arg(char *s) {
     *(rend + 1) = 0;
     return rresult;
 }
-static uint8_t aasm32_execute(const char *stmt, uint8_t *rcode, int flag32) {
+static uint8_t aasm32_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
     uint8_t len;
-    char astmt[0x100];
-    char *rstmt;
+    C_CHAR astmt[0x100];
+    C_CHAR *rstmt;
     uint8_t flagprefix;
 
     if (!stmt || is_end(stmt[0])) {
@@ -8290,7 +8293,7 @@ static uint8_t aasm32_execute(const char *stmt, uint8_t *rcode, int flag32) {
     ntvdm64_type_trace_initialize(&trace);
 #endif
 
-    STD_MEMCPY((void *) astmt, (void *) stmt, 0x100);
+    STD_MEMCPY((C_VOID *) astmt, (C_VOID *) stmt, 0x100);
     ntvdm64_type_string_lower(astmt);
     rstmt = astmt;
 
@@ -8301,10 +8304,10 @@ static uint8_t aasm32_execute(const char *stmt, uint8_t *rcode, int flag32) {
     flagError = 0;
 
     iop = 0;
-    STD_MEMSET((void *)(&aopri1), 0x00, sizeof(t_aasm_oprinfo));
-    STD_MEMSET((void *)(&aopri2), 0x00, sizeof(t_aasm_oprinfo));
-    STD_MEMSET((void *)(&aopri3), 0x00, sizeof(t_aasm_oprinfo));
-    STD_MEMSET((void *)(&aoprig), 0x00, sizeof(t_aasm_oprinfo));
+    STD_MEMSET((C_VOID *)(&aopri1), 0x00, sizeof(t_aasm_oprinfo));
+    STD_MEMSET((C_VOID *)(&aopri2), 0x00, sizeof(t_aasm_oprinfo));
+    STD_MEMSET((C_VOID *)(&aopri3), 0x00, sizeof(t_aasm_oprinfo));
+    STD_MEMSET((C_VOID *)(&aoprig), 0x00, sizeof(t_aasm_oprinfo));
     prefix_oprsizeg = prefix_addrsizeg = 0;
 
     rop = ropr1 = ropr2 = ropr3 = NULL;
@@ -8395,7 +8398,7 @@ static uint8_t aasm32_execute(const char *stmt, uint8_t *rcode, int flag32) {
             (*(rcode + len)) = 0x66;
             len++;
         }
-        STD_MEMCPY((void *)(rcode + len), (void *) acode, iop);
+        STD_MEMCPY((C_VOID *)(rcode + len), (C_VOID *) acode, iop);
         len += iop;
     } else {
 #if AASM_TRACE == 1
@@ -8415,7 +8418,7 @@ static uint8_t aasm32_execute(const char *stmt, uint8_t *rcode, int flag32) {
     return len;
 }
 
-uint8_t aasm32(const char *stmt, uint8_t *rcode, int flag32) {
+uint8_t aasm32(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
     aasm32_context local_context;
     aasm32_context *previous = aasmContext;
     uint8_t result;
@@ -8430,19 +8433,19 @@ uint8_t aasm32(const char *stmt, uint8_t *rcode, int flag32) {
 
 /* extended routines - assemble a paragraph with call/jmp labels */
 typedef struct {
-    char stmt[0x100];
+    C_CHAR stmt[0x100];
     uint32_t stmt_id;
     uint8_t code_array[15];
     uint8_t code_len;
     uint8_t flag_is_label;
     uint8_t flag_has_label;
-    char label_str[0x100];
-    char op_str[0x100];
+    C_CHAR label_str[0x100];
+    C_CHAR op_str[0x100];
     t_aasm_oprptr ptr;
 } t_aasm_instr;
 /* default operand size */
 #define _GetOperandSize (defsize ? 4 : 2)
-static void asmx_get_label(t_aasm_instr *rinstr) {
+static C_VOID asmx_get_label(t_aasm_instr *rinstr) {
     size_t i = 0, j = 0;
     rinstr->label_str[0] = 0;
     rinstr->flag_has_label = 0;
@@ -8472,9 +8475,9 @@ static void asmx_get_label(t_aasm_instr *rinstr) {
         rinstr->flag_is_label = 1;
     }
 }
-static void asmx_parse_instr(t_aasm_instr *rinstr) {
+static C_VOID asmx_parse_instr(t_aasm_instr *rinstr) {
     size_t i;
-    char *rstmt;
+    C_CHAR *rstmt;
     t_aasm_token token;
     i = 0;
     rinstr->code_len = 0;
@@ -8576,11 +8579,11 @@ static void asmx_parse_instr(t_aasm_instr *rinstr) {
         }
     }
 }
-static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
+static uint32_t aasm32x_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
     int32_t i, j, k, count;
     uint32_t len;
     uint32_t offset;
-    char imm[0x100];
+    C_CHAR imm[0x100];
     t_aasm_instr *instr;
     count = 1;
     flagError = 0;
@@ -8630,7 +8633,7 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
     }
     count = k;
     for (i = 0; i < count; ++i) {
-        STD_MEMSET((void *) instr[i].code_array, 0x00, 15);
+        STD_MEMSET((C_VOID *) instr[i].code_array, 0x00, 15);
         asmx_get_label(&instr[i]);
         if (instr[i].flag_has_label) {
             if (instr[i].flag_is_label) {
@@ -8643,7 +8646,7 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
             instr[i].code_len = aasm32(instr[i].stmt, instr[i].code_array, flag32);
         }
         if (flagError) {
-            STD_FREE((void *) instr);
+            STD_FREE((C_VOID *) instr);
             return 0;
         }
         if (!instr[i].code_len) {
@@ -8664,7 +8667,7 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
             STD_PRINTF("\n");
         }
         if (flagError) {
-            STD_FREE((void *) instr);
+            STD_FREE((C_VOID *) instr);
             return 0;
         }
     }
@@ -8729,7 +8732,7 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
                         aasm32(instr[j].stmt, instr[j].code_array, flag32);
                     }
                     if (flagError) {
-                        STD_FREE((void *) instr);
+                        STD_FREE((C_VOID *) instr);
                         return 0;
                     }
                 }
@@ -8789,7 +8792,7 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
                         aasm32(instr[j].stmt, instr[j].code_array, flag32);
                     }
                     if (flagError) {
-                        STD_FREE((void *) instr);
+                        STD_FREE((C_VOID *) instr);
                         return 0;
                     }
                 }
@@ -8803,14 +8806,14 @@ static uint32_t aasm32x_execute(const char *stmt, uint8_t *rcode, int flag32) {
         STD_PRINTF("[");
         for (j = 0;j < instr[i].code_len;++j) STD_PRINTF("%02X", instr[i].code_array[j]);
         STD_PRINTF("]\n");*/
-        STD_MEMCPY((void *)(rcode + len), (void *) instr[i].code_array, instr[i].code_len);
+        STD_MEMCPY((C_VOID *)(rcode + len), (C_VOID *) instr[i].code_array, instr[i].code_len);
         len += instr[i].code_len;
     }
-    STD_FREE((void *) instr);
+    STD_FREE((C_VOID *) instr);
     return len;
 }
 
-uint32_t aasm32x(const char *stmt, uint8_t *rcode, int flag32) {
+uint32_t aasm32x(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
     aasm32_context local_context;
     aasm32_context *previous = aasmContext;
     uint32_t result;

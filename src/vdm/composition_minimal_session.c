@@ -1,8 +1,13 @@
+#include "type.h"
+
 #include "vdm/composition_minimal_session.h"
+
 
 #include <stdlib.h>
 
+
 #include "vdm/machine/dos_minimal.h"
+
 #include "vdm/profile/dos_minimal_profile.h"
 
 struct vdm_composition_minimal_session {
@@ -49,7 +54,7 @@ const core_product_runtime_profile_descriptor *vdm_composition_minimal_session_p
     return session == NULL ? NULL : session->profile;
 }
 
-void vdm_composition_minimal_session_destroy(vdm_composition_minimal_session *session)
+C_VOID vdm_composition_minimal_session_destroy(vdm_composition_minimal_session *session)
 {
     if (session != NULL) {
         core_product_runtime_dos_minimal_destroy(session->dos_minimal);

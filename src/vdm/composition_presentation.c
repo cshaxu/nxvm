@@ -1,4 +1,7 @@
+#include "type.h"
+
 #include "vdm/composition_presentation.h"
+
 
 #include <stdlib.h>
 
@@ -7,7 +10,7 @@
 struct vdm_composition_presentation {
     core_product_runtime_dos_minimal *session;
     nxvm_platform_input_event input[NXVM_DOS_MINIMAL_INPUT_CAPACITY];
-    unsigned count;
+    C_UINT count;
 };
 
 ntvdm64_status vdm_composition_presentation_create(
@@ -47,7 +50,7 @@ ntvdm64_status vdm_composition_presentation_enqueue_input(
 ntvdm64_status vdm_composition_presentation_apply_input(
     vdm_composition_presentation *presentation)
 {
-    unsigned index;
+    C_UINT index;
     ntvdm64_status status;
 
     if (presentation == NULL) {
@@ -82,7 +85,7 @@ ntvdm64_status vdm_composition_presentation_capture_text(
     return NTVDM64_STATUS_OK;
 }
 
-void vdm_composition_presentation_destroy(
+C_VOID vdm_composition_presentation_destroy(
     vdm_composition_presentation *presentation)
 {
     STD_FREE(presentation);

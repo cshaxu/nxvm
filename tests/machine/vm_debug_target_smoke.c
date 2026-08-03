@@ -1,11 +1,17 @@
+#include "type.h"
+
 #include <stdio.h>
+
 #include <stdlib.h>
 
+
 #include "core/product/debug/debug_target.h"
+
 #include "vm/composition_debug.h"
+
 #include "vm/composition_machine.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_composition_live_machine *session;
     const core_product_debug_target *target;

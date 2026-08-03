@@ -1,20 +1,28 @@
+#include "type.h"
+
 #include "core/machine/display_interface.h"
+
 #include "vm/composition_display.h"
+
 #include "core/platform/display_frame.h"
+
 #include "vm/platform/platform.h"
+
 #include "vm/composition_live_machine.h"
+
 #include "vm/profile/default_profile/firmware/qdcga.h"
+
 
 #include <string.h>
 
-void vm_composition_publish_display(vm_composition_live_machine *machine,
-    int force)
+C_VOID vm_composition_publish_display(vm_composition_live_machine *machine,
+    C_INT force)
 {
     core_platform_display_frame frame;
     uint16_t row;
     uint16_t column;
-    int buffer_changed;
-    int cursor_changed;
+    C_INT buffer_changed;
+    C_INT cursor_changed;
 
     core_machine_display_snapshot snapshot;
 
@@ -54,7 +62,7 @@ void vm_composition_publish_display(vm_composition_live_machine *machine,
                                              &frame);
 }
 
-static void vmCompositionDisplayModeChanged(void *context)
+static C_VOID vmCompositionDisplayModeChanged(C_VOID *context)
 {
     vm_composition_live_machine *machine = context;
 
@@ -62,7 +70,7 @@ static void vmCompositionDisplayModeChanged(void *context)
     vm_platform_display_set_screen(machine->platform_run_context);
 }
 
-void vm_composition_bind_display(vm_composition_live_machine *machine)
+C_VOID vm_composition_bind_display(vm_composition_live_machine *machine)
 {
     if (machine == NULL) return;
     core_machine_display_provider_slot_bind(machine->display_provider,

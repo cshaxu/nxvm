@@ -7,21 +7,23 @@
 extern "C" {
 #endif
 
+#include "type.h"
+
 #include "vm/product/console_target.h"
 
 typedef struct nxvm_product_console_context {
     size_t argument_count;
-    char **arguments;
-    int exit_requested;
-    char command_buffer[0x100];
+    C_CHAR **arguments;
+    C_INT exit_requested;
+    C_CHAR command_buffer[0x100];
     const nxvm_product_console_target *target;
 } nxvm_product_console_context;
 
-void nxvm_product_console_context_initialize(
+C_VOID nxvm_product_console_context_initialize(
     nxvm_product_console_context *context);
 
 /* Entry point of NXVM console */
-void vm_product_console_main(nxvm_product_console_context *context,
+C_VOID vm_product_console_main(nxvm_product_console_context *context,
                  const nxvm_product_console_target *target);
 
 #ifdef __cplusplus

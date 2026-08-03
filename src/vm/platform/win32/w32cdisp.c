@@ -2,14 +2,21 @@
 
 /* W32CDISP provides win32 console output interface. */
 
+#include "type.h"
+
 #include "core/product/utils.h"
+
 
 #include <stdlib.h>
 
+
 #include "core/platform/display_frame.h"
+
 #include "vm/platform/presentation_mailbox.h"
 
+
 #include "vm/platform/win32/win32con.h"
+
 #include "vm/platform/win32/w32cdisp.h"
 
 struct w32cdisp_context {
@@ -25,7 +32,7 @@ struct w32cdisp_context {
     uint64_t displayed_generation;
 };
 
-w32cdisp_context *w32cdisp_context_create(void) {
+w32cdisp_context *w32cdisp_context_create(C_VOID) {
     return STD_CALLOC(1u, sizeof(w32cdisp_context));
 }
 

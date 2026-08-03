@@ -1,8 +1,11 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "vdm/composition_presentation.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     core_product_runtime_dos_minimal *first = NULL;
     core_product_runtime_dos_minimal *second = NULL;

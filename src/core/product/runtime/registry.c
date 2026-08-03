@@ -1,13 +1,16 @@
+#include "type.h"
+
 #include "core/product/runtime/registry.h"
+
 
 #include <string.h>
 
-static int valid_text(const char *value)
+static C_INT valid_text(const C_CHAR *value)
 {
     return value != NULL && value[0] != '\0';
 }
 
-static int profile_valid(const core_product_runtime_profile_descriptor_v1 *descriptor)
+static C_INT profile_valid(const core_product_runtime_profile_descriptor_v1 *descriptor)
 {
     return descriptor != NULL && valid_text(descriptor->id) &&
         valid_text(descriptor->owner) &&
@@ -19,7 +22,7 @@ static int profile_valid(const core_product_runtime_profile_descriptor_v1 *descr
          valid_text(descriptor->firmware_provider_id));
 }
 
-static int provider_valid(
+static C_INT provider_valid(
     const core_product_runtime_firmware_provider_descriptor_v1 *descriptor)
 {
     return descriptor != NULL && valid_text(descriptor->id) &&
@@ -29,7 +32,7 @@ static int provider_valid(
          descriptor->kind == NXVM_RUNTIME_FIRMWARE_PROVIDER_ABSENT);
 }
 
-void core_product_runtime_registry_initialize(core_product_runtime_registry *registry)
+C_VOID core_product_runtime_registry_initialize(core_product_runtime_registry *registry)
 {
     if (registry != NULL) {
         STD_MEMSET(registry, 0, sizeof(*registry));
@@ -94,10 +97,10 @@ ntvdm64_status core_product_runtime_registry_freeze(core_product_runtime_registr
 }
 
 const core_product_runtime_profile_descriptor_v1 *core_product_runtime_registry_find_profile(
-    const core_product_runtime_registry *registry, const char *id,
+    const core_product_runtime_registry *registry, const C_CHAR *id,
     core_product_runtime_profile_family family,
     core_product_runtime_capability_query capability_query,
-    void *capability_context)
+    C_VOID *capability_context)
 {
     size_t index;
     size_t capability;
@@ -124,8 +127,8 @@ const core_product_runtime_profile_descriptor_v1 *core_product_runtime_registry_
 
 const core_product_runtime_firmware_provider_descriptor_v1 *
 core_product_runtime_registry_find_firmware_provider(
-    const core_product_runtime_registry *registry, const char *id,
-    const char *machine_profile_id)
+    const core_product_runtime_registry *registry, const C_CHAR *id,
+    const C_CHAR *machine_profile_id)
 {
     size_t index;
 

@@ -1,10 +1,17 @@
+#include "type.h"
+
 #include <windows.h>
+
 
 #include <stdio.h>
 
+
 #include "vm/composition_control.h"
+
 #include "vm/machine/fdd.h"
+
 #include "vm/profile/default_profile/firmware/bios.h"
+
 #include "core/product/runtime/execution_context.h"
 
 static DWORD WINAPI run_device(LPVOID parameter)
@@ -12,7 +19,7 @@ static DWORD WINAPI run_device(LPVOID parameter)
     vm_composition_control_start((vm_composition_control_state *)parameter);
     return 0u;
 }
-int main(int argc, char **argv)
+C_INT main(C_INT argc, C_CHAR **argv)
 {
     HANDLE thread;
     DWORD result;
@@ -59,7 +66,7 @@ int main(int argc, char **argv)
     if (result != WAIT_OBJECT_0) {
         fprintf(stderr,
             "M5:T10:S4:CONTEXT-LIFECYCLE:STOP-FAILED:%lu:%d\n",
-            (unsigned long)result,
+            (C_ULONG)result,
             0);
         return 1;
     }

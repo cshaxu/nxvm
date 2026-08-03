@@ -9,20 +9,27 @@
  * Start:      01/25/2012
  */
 
+#include "type.h"
+
 #include <stdlib.h>
 
+
 #include "core/product/utils.h"
+
 #include "version.h"
+
 #include "vm/composition_console.h"
+
 #include "vm/composition_live_machine.h"
+
 #include "vm/product/console.h"
 
-int main(int argc, char **argv) {
-    char banner[160];
+C_INT main(C_INT argc, C_CHAR **argv) {
+    C_CHAR banner[160];
     vm_composition_live_machine *machine;
 
-    (void)argc;
-    (void)argv;
+    (C_VOID)argc;
+    (C_VOID)argv;
     if (!ntvdm64_version_format_nxvm_banner(banner, sizeof(banner),
         NXVM_BUILD_SUFFIX)) {
         return 1;

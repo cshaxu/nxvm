@@ -31,7 +31,7 @@ typedef struct nxvm_platform_vm_request {
     union {
         nxvm_platform_vm_keyboard_state keyboard_state;
         nxvm_platform_vm_key_press key_press;
-        int window_display;
+        C_INT window_display;
     } data;
 } nxvm_platform_vm_request;
 
@@ -41,7 +41,7 @@ typedef struct nxvm_platform_vm_request_bridge {
     size_t count;
 } nxvm_platform_vm_request_bridge;
 
-void nxvm_platform_vm_request_bridge_initialize(
+C_VOID nxvm_platform_vm_request_bridge_initialize(
     nxvm_platform_vm_request_bridge *bridge);
 ntvdm64_status nxvm_platform_vm_request_bridge_enqueue(
     nxvm_platform_vm_request_bridge *bridge,

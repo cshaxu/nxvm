@@ -156,14 +156,14 @@ ntvdm64_type_unsigned_8 VFDC_GetBPSC(ntvdm64_type_unsigned_16 cb); /* convert bp
 /* #define VFDC_GetBPS(cbyte)  (0x0080 << (cbyte))  * bytes per sector */
 /* sector size code */
 
-void vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
+C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
     t_dma *dma_primary, t_dma *dma_secondary, t_pic *pic_master,
     t_pic *pic_slave, t_port *port);
-void vm_machine_fdc_initialize(t_fdc *fdc);
-void vm_machine_fdc_reset(t_fdc *fdc);
-void vm_machine_fdc_refresh(t_fdc *fdc);
-void vm_machine_fdc_finalize(t_fdc *fdc);
-void vm_machine_fdc_print(const t_fdc *fdc);
+C_VOID vm_machine_fdc_initialize(t_fdc *fdc);
+C_VOID vm_machine_fdc_reset(t_fdc *fdc);
+C_VOID vm_machine_fdc_refresh(t_fdc *fdc);
+C_VOID vm_machine_fdc_finalize(t_fdc *fdc);
+C_VOID vm_machine_fdc_print(const t_fdc *fdc);
 
 #define VFDC_POST "           \
 ; init vfdc                 \n\

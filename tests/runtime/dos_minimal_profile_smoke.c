@@ -1,9 +1,13 @@
+#include "type.h"
+
 #include <stdio.h>
 
+
 #include "vdm/machine/dos_minimal.h"
+
 #include "vdm/profile/dos_minimal_profile.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     const core_product_runtime_profile_descriptor *profile;
     core_product_runtime_dos_minimal *session = NULL;

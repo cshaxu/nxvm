@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#include "type.h"
+
 #include "core/machine/cpu.h"
 
 typedef enum {
@@ -61,7 +63,7 @@ typedef struct {
     /* execution control */
     t_cpu  oldcpu;
     ntvdm64_type_bool flagInsLoop;
-    ntvdm64_type_bool flagMaskInt; /* if int is disabled once */
+    ntvdm64_type_bool flagMaskInt; /* if C_INT is disabled once */
 
     /* memory management */
     t_cpuins_data_logical mrm;
@@ -100,7 +102,7 @@ typedef struct t_port t_port;
 typedef struct t_pic t_pic;
 typedef struct core_machine_cpu_execution_context
     core_machine_cpu_execution_context;
-typedef void (*core_machine_cpu_instruction_handler)(
+typedef C_VOID (*core_machine_cpu_instruction_handler)(
     core_machine_cpu_execution_context *context);
 
 typedef struct {
@@ -123,20 +125,20 @@ struct core_machine_cpu_execution_context {
     t_pic *pic_master;
     t_pic *pic_slave;
     ntvdm64_type_trace *trace;
-    void *extension_context;
+    C_VOID *extension_context;
     ntvdm64_type_bool stop_requested;
     ntvdm64_type_bool reset_requested;
 };
 
-void core_machine_cpu_execution_context_initialize(
+C_VOID core_machine_cpu_execution_context_initialize(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
     t_cpuins *instructions, t_ram *memory, t_port *port);
-void core_machine_cpu_execution_context_bind_pic(
+C_VOID core_machine_cpu_execution_context_bind_pic(
     core_machine_cpu_execution_context *context, t_pic *master,
     t_pic *slave);
-void core_machine_cpu_execution_context_bind_extension(
-    core_machine_cpu_execution_context *context, void *extension_context);
-void *core_machine_cpu_execution_context_extension(
+C_VOID core_machine_cpu_execution_context_bind_extension(
+    core_machine_cpu_execution_context *context, C_VOID *extension_context);
+C_VOID *core_machine_cpu_execution_context_extension(
     const core_machine_cpu_execution_context *context);
 ntvdm64_type_bool core_machine_cpu_execution_load_segment(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
@@ -147,13 +149,13 @@ ntvdm64_type_bool core_machine_cpu_execution_read_linear(
 ntvdm64_type_bool core_machine_cpu_execution_write_linear(
     core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear,
     ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte);
-void core_machine_cpu_execution_initialize(
+C_VOID core_machine_cpu_execution_initialize(
     core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_reset(
+C_VOID core_machine_cpu_execution_reset(
     core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_refresh(
+C_VOID core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_finalize(
+C_VOID core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context);
 
 #define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */
@@ -164,7 +166,7 @@ void core_machine_cpu_execution_finalize(
 #define VCPUINS_EXCEPT_BR  0x00000020 /* 05 - fault: boundary check fail */
 #define VCPUINS_EXCEPT_UD  0x00000040 /* 06 - fault: invalid opcode */
 #define VCPUINS_EXCEPT_NM  0x00000080 /* 07 - fault: coprocessor not available */
-#define VCPUINS_EXCEPT_DF  0x00000100 /* 08 - abort: double fault */
+#define VCPUINS_EXCEPT_DF  0x00000100 /* 08 - abort: C_DOUBLE fault */
 #define VCPUINS_EXCEPT_09  0x00000200 /* 09 - abort: reserved */
 #define VCPUINS_EXCEPT_TS  0x00000400 /* 10 - fault: task state segment fail */
 #define VCPUINS_EXCEPT_NP  0x00000800 /* 11 - fault: segment not present */

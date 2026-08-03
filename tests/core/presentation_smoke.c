@@ -1,14 +1,17 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "core/machine/presentation_interface.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     core_machine_keyboard_queue queue;
     core_machine_text_snapshot source;
     core_machine_text_snapshot copy;
     uint16_t key;
-    unsigned index;
+    C_UINT index;
 
     core_machine_keyboard_queue_initialize(&queue);
     if (core_machine_keyboard_queue_push(&queue, 0x1eu) != NTVDM64_STATUS_OK ||

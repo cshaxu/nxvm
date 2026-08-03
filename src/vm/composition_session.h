@@ -11,9 +11,9 @@ extern "C" {
 typedef struct vm_composition_full_pc_session vm_composition_full_pc_session;
 
 typedef struct vm_composition_full_pc_session_config {
-    const char *fdd_image;
-    const char *hdd_image;
-    int boot_hdd;
+    const C_CHAR *fdd_image;
+    const C_CHAR *hdd_image;
+    C_INT boot_hdd;
 } vm_composition_full_pc_session_config;
 
 ntvdm64_status vm_composition_full_pc_session_create(
@@ -22,7 +22,7 @@ ntvdm64_status vm_composition_full_pc_session_create(
 ntvdm64_status vm_composition_full_pc_session_reset(vm_composition_full_pc_session *session);
 const core_product_runtime_profile_descriptor *vm_composition_full_pc_session_profile(
     const vm_composition_full_pc_session *session);
-void vm_composition_full_pc_session_destroy(vm_composition_full_pc_session *session);
+C_VOID vm_composition_full_pc_session_destroy(vm_composition_full_pc_session *session);
 
 #ifdef __cplusplus
 }

@@ -1,8 +1,11 @@
+#include "type.h"
+
 #include "vm/product/media.h"
+
 
 #include <string.h>
 
-static int vm_product_media_valid_target(
+static C_INT vm_product_media_valid_target(
     vm_product_boot_target target)
 {
     return target == VM_PRODUCT_BOOT_FDD ||
@@ -17,8 +20,8 @@ static vm_product_block_provider *vm_product_media_mutable_provider(
     return NULL;
 }
 
-static int vm_product_media_copy(char *destination, size_t capacity,
-                                        const char *source)
+static C_INT vm_product_media_copy(C_CHAR *destination, size_t capacity,
+                                        const C_CHAR *source)
 {
     size_t length;
 
@@ -29,7 +32,7 @@ static int vm_product_media_copy(char *destination, size_t capacity,
     return 1;
 }
 
-void vm_product_media_policy_initialize(
+C_VOID vm_product_media_policy_initialize(
     vm_product_media_policy *policy)
 {
     if (policy != NULL) STD_MEMSET(policy, 0, sizeof(*policy));
@@ -38,7 +41,7 @@ void vm_product_media_policy_initialize(
 ntvdm64_status vm_product_media_configure(
     vm_product_media_policy *policy,
     vm_product_boot_target target,
-    const char *path,
+    const C_CHAR *path,
     const vm_product_media_identity *identity)
 {
     vm_product_block_provider *provider;

@@ -7,16 +7,18 @@
 extern "C" {
 #endif
 
+#include "type.h"
+
 #include "core/product/debug/debug_target.h"
 
 typedef struct core_product_debug_context {
     size_t error_position;
     size_t argument_count;
-    char **arguments;
-    int exit_requested;
-    char command_buffer[0x100];
-    char command_copy[0x100];
-    char file_name[0x100];
+    C_CHAR **arguments;
+    C_INT exit_requested;
+    C_CHAR command_buffer[0x100];
+    C_CHAR command_copy[0x100];
+    C_CHAR file_name[0x100];
     uint16_t dump_segment;
     uint16_t dump_offset;
     uint16_t assemble_segment;
@@ -27,8 +29,8 @@ typedef struct core_product_debug_context {
     uint16_t parsed_offset;
 } core_product_debug_context;
 
-void core_product_debug_context_initialize(core_product_debug_context *context);
-void core_product_debug_main(core_product_debug_context *context,
+C_VOID core_product_debug_context_initialize(core_product_debug_context *context);
+C_VOID core_product_debug_main(core_product_debug_context *context,
                const core_product_debug_target *target);
 
 #ifdef __cplusplus

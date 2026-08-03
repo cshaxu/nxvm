@@ -1,6 +1,10 @@
+#include "type.h"
+
 #include "vm/composition_session_model.h"
 
+
 #include <string.h>
+
 
 #include "vm/profile/default_profile/profile.h"
 
@@ -110,7 +114,7 @@ ntvdm64_status vm_composition_session_model_get_execution_reset_vector(
     return vm_composition_default_profile_get_reset_vector(&session->default_profile, out_vector);
 }
 
-void vm_composition_session_model_destroy(vm_composition_session_model *session)
+C_VOID vm_composition_session_model_destroy(vm_composition_session_model *session)
 {
     if (session == NULL) return;
     vm_composition_default_profile_destroy(&session->default_profile);

@@ -15,18 +15,18 @@ typedef enum vm_product_boot_target {
 } vm_product_boot_target;
 
 typedef struct vm_product_media_identity {
-    const char *logical_name;
+    const C_CHAR *logical_name;
     uint64_t expected_bytes;
-    const char *expected_sha256;
+    const C_CHAR *expected_sha256;
 } vm_product_media_identity;
 
 typedef struct vm_product_block_provider {
-    char path[VM_PRODUCT_MEDIA_PATH_CAPACITY];
-    char logical_name[VM_PRODUCT_MEDIA_NAME_CAPACITY];
-    char expected_sha256[VM_PRODUCT_MEDIA_SHA256_CAPACITY];
+    C_CHAR path[VM_PRODUCT_MEDIA_PATH_CAPACITY];
+    C_CHAR logical_name[VM_PRODUCT_MEDIA_NAME_CAPACITY];
+    C_CHAR expected_sha256[VM_PRODUCT_MEDIA_SHA256_CAPACITY];
     uint64_t expected_bytes;
-    int configured;
-    int created;
+    C_INT configured;
+    C_INT created;
     uint16_t cylinders;
 } vm_product_block_provider;
 
@@ -34,15 +34,15 @@ typedef struct vm_product_media_policy {
     vm_product_block_provider fdd;
     vm_product_block_provider hdd;
     vm_product_boot_target boot_target;
-    int frozen;
+    C_INT frozen;
 } vm_product_media_policy;
 
-void vm_product_media_policy_initialize(
+C_VOID vm_product_media_policy_initialize(
     vm_product_media_policy *policy);
 ntvdm64_status vm_product_media_configure(
     vm_product_media_policy *policy,
     vm_product_boot_target target,
-    const char *path,
+    const C_CHAR *path,
     const vm_product_media_identity *identity);
 ntvdm64_status vm_product_media_configure_created(
     vm_product_media_policy *policy,

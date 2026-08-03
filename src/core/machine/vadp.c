@@ -2,26 +2,28 @@
 
 /* VVADP is Video Adapter: not implemented yet. */
 
+#include "type.h"
+
 #include "core/machine/vadp.h"
 
-void core_machine_vadp_initialize(t_vadp *adapter)
+C_VOID core_machine_vadp_initialize(t_vadp *adapter)
 {
     if (adapter == NULL) return;
-    STD_MEMSET((void *)adapter, NTVDM64_TYPE_ZERO_8, sizeof(*adapter));
+    STD_MEMSET((C_VOID *)adapter, NTVDM64_TYPE_ZERO_8, sizeof(*adapter));
 }
 
-void core_machine_vadp_reset(t_vadp *adapter)
+C_VOID core_machine_vadp_reset(t_vadp *adapter)
 {
     if (adapter == NULL) return;
-    STD_MEMSET((void *)&adapter->data, NTVDM64_TYPE_ZERO_8, sizeof(adapter->data));
+    STD_MEMSET((C_VOID *)&adapter->data, NTVDM64_TYPE_ZERO_8, sizeof(adapter->data));
 }
 
-void core_machine_vadp_refresh(t_vadp *adapter)
+C_VOID core_machine_vadp_refresh(t_vadp *adapter)
 {
-    (void)adapter;
+    (C_VOID)adapter;
 }
 
-void core_machine_vadp_finalize(t_vadp *adapter)
+C_VOID core_machine_vadp_finalize(t_vadp *adapter)
 {
-    (void)adapter;
+    (C_VOID)adapter;
 }

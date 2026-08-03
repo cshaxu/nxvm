@@ -1,10 +1,15 @@
+#include "type.h"
+
 #include <stdio.h>
+
 #include <stdlib.h>
 
+
 #include "core/machine/keyboard_interface.h"
+
 #include "vm/composition_machine.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_composition_live_machine *session =
         (vm_composition_live_machine *)STD_CALLOC(1u, sizeof(*session));

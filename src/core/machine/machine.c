@@ -1,4 +1,7 @@
+#include "type.h"
+
 #include "core/machine/machine.h"
+
 
 #include <stdlib.h>
 
@@ -10,7 +13,7 @@ static uint32_t core_machine_linear_pc(const core_machine *machine)
     return machine->cpu.state.cs_base + machine->cpu.state.eip;
 }
 
-static int core_machine_profile_is_supported(core_machine_profile profile)
+static C_INT core_machine_profile_is_supported(core_machine_profile profile)
 {
     return profile == CORE_MACHINE_PROFILE_CUSTOM ||
            profile == CORE_MACHINE_PROFILE_TEST_MINIMAL;
@@ -74,7 +77,7 @@ t_vadp *core_machine_shared_vadp_borrow(core_machine *machine)
 { return machine != NULL && machine->shared_devices_enabled ? &machine->shared_vadp : NULL; }
 
 ntvdm64_status core_machine_bind_execution_provider(core_machine *machine,
-    const core_machine_execution_provider *provider, void *context)
+    const core_machine_execution_provider *provider, C_VOID *context)
 {
     if (machine == NULL || machine->execution_provider_frozen ||
         machine->lifecycle == CORE_MACHINE_RUNNING) {
@@ -353,7 +356,7 @@ ntvdm64_status core_machine_report_fault(
     return NTVDM64_STATUS_OK;
 }
 
-void core_machine_destroy(core_machine *machine)
+C_VOID core_machine_destroy(core_machine *machine)
 {
     if (machine != NULL) {
         core_machine_cpu_execution_finalize(&machine->executor_cpu_execution);
