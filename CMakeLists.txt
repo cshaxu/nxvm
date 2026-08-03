@@ -316,6 +316,16 @@ target_link_libraries(nxvm-core-product-debug-target-smoke PRIVATE
     nxvm-product-core-debug
 )
 
+add_executable(nxvm-core-product-xasm-smoke
+    tests/product/core_product_xasm_smoke.c
+)
+target_include_directories(nxvm-core-product-xasm-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-core-product-xasm-smoke PRIVATE
+    nxvm-product-core-utils
+)
+
 
 add_library(nxvm-vm-profile STATIC ${NXVM_PROFILE_VM_SOURCES})
 target_include_directories(nxvm-vm-profile PUBLIC
@@ -716,6 +726,7 @@ add_nxvm_version_artifact(nxvm-0-5-0123 "0.5.0123")
 add_nxvm_version_artifact(nxvm-0-5-0125 "0.5.0125")
 add_nxvm_version_artifact(nxvm-0-5-0126 "0.5.0126")
 add_nxvm_version_artifact(nxvm-0-5-0127 "0.5.0127")
+add_nxvm_version_artifact(nxvm-0-5-0129 "0.5.0129")
 add_nxvm_version_artifact(nxvm-0-5-0130 "0.5.0130")
 add_nxvm_version_artifact(nxvm-0-5-0131 "0.5.0131")
 add_nxvm_version_artifact(nxvm-0-5-0133 "0.5.0133")
