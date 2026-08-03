@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "core/machine/vglobal.h"
+#include "type.h"
 
 typedef struct t_ram t_ram;
 typedef struct core_machine_block_provider_slot core_machine_block_provider_slot;

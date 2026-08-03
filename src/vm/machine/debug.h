@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "core/machine/vglobal.h"
+#include "type.h"
 #include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
 

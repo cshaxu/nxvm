@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "core/machine/vglobal.h"
+#include "type.h"
 #include "core/machine/port.h"
 
 #define NXVM_DEVICE_DMA "Intel 8237A"

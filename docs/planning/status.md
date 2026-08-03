@@ -96,6 +96,9 @@ C-runtime wrappers and approved compact names are explicit retentions.
 collision-safe uppercase facade, direct-call inventory, and two behavior risks
 are recorded before the `type.*` call-site migrations.
 
+**M5 T99 complete:** all active former `vglobal.h` callers include the root
+`type.h` foundation directly; the forwarding header is deleted.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

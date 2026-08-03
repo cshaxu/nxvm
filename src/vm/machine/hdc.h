@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#include "core/machine/vglobal.h"
+#include "type.h"
 
 #define NXVM_DEVICE_HDC "Unknown Hard Drive Controller"
 
