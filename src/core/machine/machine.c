@@ -9,31 +9,9 @@ static uint32_t core_machine_linear_pc(const core_machine *machine)
     return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
 }
 
-static C_INT core_machine_profile_is_supported(core_machine_profile profile)
-{
-    return profile == CORE_MACHINE_PROFILE_CUSTOM;
-}
-
-ntvdm64_status core_machine_enable_executor(core_machine *machine)
-{
-    if (machine == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
-    if (machine->config.profile != CORE_MACHINE_PROFILE_CUSTOM) {
-        return NTVDM64_STATUS_UNSUPPORTED;
-    }
-    if (machine->executor_enabled) return NTVDM64_STATUS_OK;
-    if (machine->lifecycle == CORE_MACHINE_RUNNING) {
-        return NTVDM64_STATUS_INVALID_STATE;
-    }
-    core_machine_cpu_execution_context_initialize(&machine->executor_cpu_execution,
-        &machine->executor_cpu, &machine->executor_cpu_instructions,
-        &machine->executor_memory, &machine->executor_port);
-    machine->executor_enabled = 1;
-    return NTVDM64_STATUS_OK;
-}
-
 ntvdm64_status core_machine_prepare_executor_cpu(core_machine *machine)
 {
-    if (machine == STD_NULL || !machine->executor_enabled) {
+    if (machine == STD_NULL) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
     core_machine_cpu_state_initialize(&machine->executor_cpu_execution);
@@ -42,7 +20,7 @@ ntvdm64_status core_machine_prepare_executor_cpu(core_machine *machine)
 
 ntvdm64_status core_machine_prepare_executor_bus(core_machine *machine)
 {
-    if (machine == STD_NULL || !machine->executor_enabled) {
+    if (machine == STD_NULL) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
     core_machine_port_initialize(&machine->executor_port);
@@ -51,7 +29,7 @@ ntvdm64_status core_machine_prepare_executor_bus(core_machine *machine)
 
 ntvdm64_status core_machine_prepare_executor_memory(core_machine *machine)
 {
-    if (machine == STD_NULL || !machine->executor_enabled) {
+    if (machine == STD_NULL) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
     core_machine_memory_initialize(&machine->executor_memory);
@@ -61,24 +39,24 @@ ntvdm64_status core_machine_prepare_executor_memory(core_machine *machine)
 }
 
 t_cpu *core_machine_executor_cpu_borrow(core_machine *machine)
-{ return machine != STD_NULL && machine->executor_enabled ? &machine->executor_cpu : STD_NULL; }
+{ return machine != STD_NULL ? &machine->executor_cpu : STD_NULL; }
 
 t_cpuins *core_machine_executor_cpu_instructions_borrow(core_machine *machine)
-{ return machine != STD_NULL && machine->executor_enabled ? &machine->executor_cpu_instructions : STD_NULL; }
+{ return machine != STD_NULL ? &machine->executor_cpu_instructions : STD_NULL; }
 
 core_machine_cpu_execution_context *core_machine_executor_cpu_execution_borrow(
     core_machine *machine)
-{ return machine != STD_NULL && machine->executor_enabled ? &machine->executor_cpu_execution : STD_NULL; }
+{ return machine != STD_NULL ? &machine->executor_cpu_execution : STD_NULL; }
 
 t_ram *core_machine_executor_memory_borrow(core_machine *machine)
-{ return machine != STD_NULL && machine->executor_enabled ? &machine->executor_memory : STD_NULL; }
+{ return machine != STD_NULL ? &machine->executor_memory : STD_NULL; }
 
 t_port *core_machine_executor_port_borrow(core_machine *machine)
-{ return machine != STD_NULL && machine->executor_enabled ? &machine->executor_port : STD_NULL; }
+{ return machine != STD_NULL ? &machine->executor_port : STD_NULL; }
 
 ntvdm64_status core_machine_enable_shared_devices(core_machine *machine)
 {
-    if (machine == STD_NULL || !machine->executor_enabled) {
+    if (machine == STD_NULL) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
     machine->shared_devices_enabled = 1;
@@ -131,7 +109,7 @@ ntvdm64_status core_machine_get_cpu_state(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    if (!machine->executor_enabled || machine->lifecycle == CORE_MACHINE_INITIALIZED) {
+    if (machine->lifecycle == CORE_MACHINE_INITIALIZED) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
     out_state->cs = machine->executor_cpu.data.cs.selector;
@@ -147,33 +125,24 @@ ntvdm64_status core_machine_create(
     core_machine **out_machine)
 {
     core_machine *machine;
-    ntvdm64_status status;
-
     if (config == STD_NULL || out_machine == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
     *out_machine = STD_NULL;
 
-    if (!core_machine_profile_is_supported(config->profile)) {
-        return NTVDM64_STATUS_UNSUPPORTED;
-    }
-
     machine = (core_machine *)STD_CALLOC(1u, sizeof(*machine));
     if (machine == STD_NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
 
-    machine->config = *config;
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     STD_ATOMIC_INIT(&machine->stop_requested, 0);
     core_machine_trace_initialize(machine);
 
-    status = core_machine_enable_executor(machine);
-    if (status != NTVDM64_STATUS_OK) {
-        core_machine_destroy(machine);
-        return status;
-    }
+    core_machine_cpu_execution_context_initialize(&machine->executor_cpu_execution,
+        &machine->executor_cpu, &machine->executor_cpu_instructions,
+        &machine->executor_memory, &machine->executor_port);
 
     *out_machine = machine;
 
@@ -190,21 +159,17 @@ ntvdm64_status core_machine_reset(core_machine *machine)
         return NTVDM64_STATUS_INVALID_STATE;
     }
 
-    if (machine->executor_enabled) {
-        core_machine_cpu_state_reset(&machine->executor_cpu_execution);
-        core_machine_port_reset(&machine->executor_port);
-        core_machine_memory_reset(&machine->executor_memory);
-        if (machine->shared_devices_enabled) {
-            core_machine_kbc_reset(&machine->shared_kbc);
-            core_machine_dma_reset(&machine->shared_dma_latch,
-                &machine->shared_dma_primary, &machine->shared_dma_secondary);
-            core_machine_pic_reset(&machine->shared_pic_master,
-                &machine->shared_pic_slave);
-            core_machine_pit_reset(&machine->shared_pit);
-            core_machine_vadp_reset(&machine->shared_vadp);
-        }
-    } else {
-        return NTVDM64_STATUS_INVALID_STATE;
+    core_machine_cpu_state_reset(&machine->executor_cpu_execution);
+    core_machine_port_reset(&machine->executor_port);
+    core_machine_memory_reset(&machine->executor_memory);
+    if (machine->shared_devices_enabled) {
+        core_machine_kbc_reset(&machine->shared_kbc);
+        core_machine_dma_reset(&machine->shared_dma_latch,
+            &machine->shared_dma_primary, &machine->shared_dma_secondary);
+        core_machine_pic_reset(&machine->shared_pic_master,
+            &machine->shared_pic_slave);
+        core_machine_pit_reset(&machine->shared_pit);
+        core_machine_vadp_reset(&machine->shared_vadp);
     }
 
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
@@ -264,10 +229,6 @@ ntvdm64_status core_machine_run(
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_STOP, 0u, 0u,
                                (uint32_t)result->reason);
         return NTVDM64_STATUS_OK;
-    }
-
-    if (!machine->executor_enabled) {
-        return NTVDM64_STATUS_UNSUPPORTED;
     }
 
     machine->lifecycle = CORE_MACHINE_RUNNING;

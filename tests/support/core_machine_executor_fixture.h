@@ -7,7 +7,7 @@ static ntvdm64_status test_core_machine_create_executor(
     STD_SIZE_T memory_bytes,
     core_machine **out_machine)
 {
-    core_machine_config config = { CORE_MACHINE_PROFILE_CUSTOM, memory_bytes };
+    core_machine_config config = { memory_bytes };
     ntvdm64_status status;
 
     status = core_machine_create(&config, out_machine);

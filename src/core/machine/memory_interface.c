@@ -15,16 +15,12 @@ ntvdm64_status core_machine_memory_read(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    if (machine->executor_enabled) {
-        if (machine->executor_memory.connect.pBase == 0u) {
-            return NTVDM64_STATUS_INVALID_STATE;
-        }
-        core_machine_memory_read_physical((t_ram *)&machine->executor_memory,
-            physical, (ntvdm64_type_virtual_address)out_data, size);
-        return NTVDM64_STATUS_OK;
+    if (machine->executor_memory.connect.pBase == 0u) {
+        return NTVDM64_STATUS_INVALID_STATE;
     }
-
-    return NTVDM64_STATUS_INVALID_STATE;
+    core_machine_memory_read_physical((t_ram *)&machine->executor_memory,
+        physical, (ntvdm64_type_virtual_address)out_data, size);
+    return NTVDM64_STATUS_OK;
 }
 
 ntvdm64_status core_machine_memory_write(
@@ -37,16 +33,12 @@ ntvdm64_status core_machine_memory_write(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    if (machine->executor_enabled) {
-        if (machine->executor_memory.connect.pBase == 0u) {
-            return NTVDM64_STATUS_INVALID_STATE;
-        }
-        core_machine_memory_write_physical(&machine->executor_memory, physical,
-            (ntvdm64_type_virtual_address)data, size);
-        return NTVDM64_STATUS_OK;
+    if (machine->executor_memory.connect.pBase == 0u) {
+        return NTVDM64_STATUS_INVALID_STATE;
     }
-
-    return NTVDM64_STATUS_INVALID_STATE;
+    core_machine_memory_write_physical(&machine->executor_memory, physical,
+        (ntvdm64_type_virtual_address)data, size);
+    return NTVDM64_STATUS_OK;
 }
 
 ntvdm64_status core_machine_set_a20(
@@ -57,12 +49,9 @@ ntvdm64_status core_machine_set_a20(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    if (machine->executor_enabled) {
-        if (machine->executor_memory.connect.pBase == 0u) {
-            return NTVDM64_STATUS_INVALID_STATE;
-        }
-        machine->executor_memory.data.flagA20 = enabled != 0;
-        return NTVDM64_STATUS_OK;
+    if (machine->executor_memory.connect.pBase == 0u) {
+        return NTVDM64_STATUS_INVALID_STATE;
     }
-    return NTVDM64_STATUS_INVALID_STATE;
+    machine->executor_memory.data.flagA20 = enabled != 0;
+    return NTVDM64_STATUS_OK;
 }

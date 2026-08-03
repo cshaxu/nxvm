@@ -6,7 +6,6 @@
 #include "core/machine/lifecycle_interface.h"
 #include "core/machine/memory_interface.h"
 #include "core/machine/port_interface.h"
-#include "core/machine/profile_interface.h"
 #include "type.h"
 #include "core/machine/trace_interface.h"
 
@@ -15,6 +14,14 @@ extern "C" {
 #endif
 
 typedef struct core_machine core_machine;
+
+#define CORE_MACHINE_DEFAULT_MEMORY_BYTES (16u * 1024u * 1024u)
+#define CORE_MACHINE_MINIMUM_MEMORY_BYTES (2u * 1024u * 1024u)
+#define CORE_MACHINE_MAXIMUM_MEMORY_BYTES (64u * 1024u * 1024u)
+
+typedef struct core_machine_config {
+    STD_SIZE_T memory_bytes;
+} core_machine_config;
 
 typedef enum core_machine_stop_reason {
     CORE_MACHINE_STOP_NONE = 0,
