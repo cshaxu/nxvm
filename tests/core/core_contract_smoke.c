@@ -24,12 +24,12 @@ C_INT main(C_VOID)
     }
 
     if (core_machine_run(machine, budget, &result) !=
-        NTVDM64_STATUS_OK) {
+        NTVDM64_STATUS_UNSUPPORTED) {
         core_machine_destroy(machine);
         return 3;
     }
 
-    if (result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 0u) {
+    if (result.reason != CORE_MACHINE_STOP_NONE || result.executed != 0u) {
         core_machine_destroy(machine);
         return 4;
     }

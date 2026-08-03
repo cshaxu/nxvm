@@ -169,8 +169,11 @@ match the same directory rule.
 recorded in [`m5-unique-owner-convergence.md`](m5-unique-owner-convergence.md).
 
 **M5 T120 complete:** an active `vm_session` cannot be initialized twice.
-Console lifecycle, debugger, session, and DOS-prompt gates passed; T121 is
-active to converge the core-machine production executor state.
+Console lifecycle, debugger, session, and DOS-prompt gates passed.
+
+**M5 T121 complete:** custom core machines have one production executor;
+test-minimal state is explicitly non-executing contract-fixture state. Core
+and DOS-prompt gates passed; T122 is active to remove parallel VM test models.
 
 ## Short-Term M5 Plan
 
