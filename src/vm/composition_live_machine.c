@@ -77,6 +77,11 @@ void vm_composition_live_machine_initialize(vm_composition_live_machine *machine
     machine->keyboard_transport = &machine->keyboard_transport_storage;
     machine->wait_scope = &machine->wait_scope_storage;
     machine->platform_run_context = &machine->platform_run_context_storage;
+    machine->debugger_context = &machine->debugger_context_storage;
+    core_product_debug_context_initialize(machine->debugger_context);
+    machine->console_context = &machine->console_context_storage;
+    nxvm_product_console_context_initialize(machine->console_context);
+    machine->console_target = &machine->console_target_storage;
     machine->display_generation = 0u;
     machine->control = (vm_composition_control_state *)calloc(1u,
         sizeof(*machine->control));
@@ -118,6 +123,9 @@ void vm_composition_live_machine_finalize(vm_composition_live_machine *machine)
     machine->keyboard_transport = NULL;
     machine->wait_scope = NULL;
     machine->platform_run_context = NULL;
+    machine->debugger_context = NULL;
+    machine->console_context = NULL;
+    machine->console_target = NULL;
     free(machine->control);
     machine->control = NULL;
     core_machine_destroy(machine->core_machine);

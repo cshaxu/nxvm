@@ -25,7 +25,7 @@ plan.
 | 7 | `core/product` | Pass | Debugger command workspace is caller-owned; assembler/disassembler workspaces are invocation-owned; target/wait remain thread-local scopes only. |
 | 8 | `vm/product` | Pass | Console parser, command buffer, target, and exit state are caller-owned Console-context fields. |
 | 9 | `vdm/product` | Absent | No production CLI/UI implementation; do not add speculative session code. |
-| 10 | `vm/composition` | Partial | It owns construction and threads, but must adopt the new machine/platform/product contexts without reintroducing hidden state. |
+| 10 | `vm/composition` | Pass | Composition owns machine, platform, debugger, and Console context lifetimes without product-global selection. |
 | 11 | `vdm/composition` | Pass for current scope | Minimal composition is instance-owned; future product composition must bind the same context and lease contracts. |
 
 `vm/profile` and `vdm/profile` currently pass: runtime profile context is
@@ -58,7 +58,7 @@ a higher-priority migration.
 | T90 | Contextualize VM Win32 Console/window renderers and define Linux curses as an explicit exclusive surface lease; audit absent VDM platform against that contract without speculative code. | T88, T89 | Complete: two Win32 presentation contexts have independent resources; Console/terminal leases use the shared deterministic contract. |
 | T91 | Make shared debugger parser/assembler/disassembler state session-owned. | T88 | Complete: caller-owned command workspace and invocation-owned assembler/disassembler workspaces; retained debugger/FDD gates pass. |
 | T92 | Make NXVM Console parser, target, and exit state session-owned; audit absent VDM product against the same contract without speculative code. | T88, T91 | Complete: caller-owned Console context; retained `help`/`exit` grammar and output pass. |
-| T93 | Update VM root composition to construct, bind, and tear down the new machine/platform/product contexts. | T88--T92 | Two full VM sessions preserve independent control, Console, debugger, and presentation behavior. |
+| T93 | Update VM root composition to construct, bind, and tear down the new machine/platform/product contexts. | T88--T92 | Complete: two full VM sessions preserve independent construction state; GCC, FDD, and HDD gates pass. |
 | T94 | Audit VDM root composition against the same contracts; change code only if current minimal composition violates them. | T89, T91, T93 | VDM-minimal remains instance-owned and no VM dependency is introduced. |
 | T95 | Run the module checklist closure audit and remove temporary compatibility state. | T88--T94 | Static inventory, default GCC preset, two-session VM, FDD/HDD, display, Console/debugger, and VDM-minimal regressions pass. |
 
