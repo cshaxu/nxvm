@@ -12,22 +12,22 @@ int main(void)
 
     session = (vm_composition_live_machine *)calloc(1u, sizeof(*session));
     if (session == NULL) return 1;
-    machineInit(session);
+    vm_composition_initialize(session);
     machine = session;
     if (machine == NULL || machine->debug != &machine->debug_storage) {
-        machineFinal(session);
+        vm_composition_finalize(session);
         free(session);
         return 1;
     }
     vm_machine_debug_set_trace(machine->debug, 2u);
     if (!machine->debug->data.flagTrace ||
         machine->debug->data.traceCount != 2u) {
-        machineFinal(session);
+        vm_composition_finalize(session);
         free(session);
         return 1;
     }
     vm_machine_debug_clear_trace(machine->debug);
-    machineFinal(session);
+    vm_composition_finalize(session);
     free(session);
     puts("M5:T43:S1:DEBUG-AUTHORITY:OK");
     return 0;

@@ -15,7 +15,7 @@
 static void vm_composition_console_initialize(void *context)
 {
     vm_composition_live_machine *machine = (vm_composition_live_machine *)context;
-    machineInit(machine);
+    vm_composition_initialize(machine);
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
     vm_machine_fdd_insert_for(machine->fdd, "d:/fd.img");
     vm_machine_hdd_insert(machine->hdd, "d:/hd.img");
@@ -25,7 +25,7 @@ static void vm_composition_console_initialize(void *context)
 #endif
 }
 
-static void vm_composition_console_finalize(void *context) { machineFinal((vm_composition_live_machine *)context); }
+static void vm_composition_console_finalize(void *context) { vm_composition_finalize((vm_composition_live_machine *)context); }
 static int vm_composition_console_is_running(void *context) { return vm_composition_control_is_running(((vm_composition_live_machine *)context)->control); }
 static void vm_composition_console_print_machine(void *context) { vm_composition_print_machine((vm_composition_live_machine *)context); }
 static int vm_composition_console_get_window_display(void *context) { return vm_platform_run_context_get_window_display(((vm_composition_live_machine *)context)->platform_run_context); }
@@ -56,10 +56,10 @@ static int vm_composition_console_remove_fdd(void *context, const char *path) { 
 static void vm_composition_console_create_hdd(void *context, uint16_t cylinders) { vm_machine_hdd_create(((vm_composition_live_machine *)context)->hdd, cylinders); }
 static int vm_composition_console_insert_hdd(void *context, const char *path) { return vm_machine_hdd_insert(((vm_composition_live_machine *)context)->hdd, path); }
 static int vm_composition_console_remove_hdd(void *context, const char *path) { return vm_machine_hdd_remove(((vm_composition_live_machine *)context)->hdd, path); }
-static void vm_composition_console_start(void *context) { machineStart((vm_composition_live_machine *)context); }
-static void vm_composition_console_reset(void *context) { machineReset((vm_composition_live_machine *)context); }
-static void vm_composition_console_stop(void *context) { machineStop((vm_composition_live_machine *)context); }
-static void vm_composition_console_resume(void *context) { machineResume((vm_composition_live_machine *)context); }
+static void vm_composition_console_start(void *context) { vm_composition_start((vm_composition_live_machine *)context); }
+static void vm_composition_console_reset(void *context) { vm_composition_reset((vm_composition_live_machine *)context); }
+static void vm_composition_console_stop(void *context) { vm_composition_stop((vm_composition_live_machine *)context); }
+static void vm_composition_console_resume(void *context) { vm_composition_resume((vm_composition_live_machine *)context); }
 
 static const nxvm_product_console_target vmCompositionConsoleTargetTemplate = {
     vm_composition_console_initialize, vm_composition_console_finalize,

@@ -73,7 +73,7 @@ ntvdm64_status nxvm_full_pc_create(
     full_pc = (nxvm_full_pc *)calloc(1u, sizeof(*full_pc));
     if (full_pc == NULL) return NTVDM64_STATUS_NO_MEMORY;
 
-    machineInit(&full_pc->machine);
+    vm_composition_initialize(&full_pc->machine);
     nxvm_vm_request_transport_initialize(&full_pc->transport);
     nxvm_vm_request_transport_bind_consumer(
         &full_pc->transport,
@@ -93,7 +93,7 @@ ntvdm64_status nxvm_full_pc_create(
         vm_composition_control_bind_command_boundary(full_pc->machine.control, NULL, NULL);
         nxvm_vm_request_transport_close(&full_pc->transport);
         nxvm_vm_request_transport_discard(&full_pc->transport);
-        machineFinal(&full_pc->machine);
+        vm_composition_finalize(&full_pc->machine);
         free(full_pc);
         return NTVDM64_STATUS_FAULT;
     }
@@ -127,7 +127,7 @@ ntvdm64_status nxvm_full_pc_get_reset_vector(
 void nxvm_full_pc_run(nxvm_full_pc *full_pc)
 {
     if (full_pc != NULL && full_pc->active) {
-        machineStart(&full_pc->machine);
+        vm_composition_start(&full_pc->machine);
     }
 }
 
@@ -157,14 +157,14 @@ ntvdm64_status nxvm_full_pc_reset(nxvm_full_pc *full_pc)
     if (full_pc == NULL || !full_pc->active || vm_composition_control_is_running(full_pc->machine.control)) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
-    machineReset(&full_pc->machine);
+    vm_composition_reset(&full_pc->machine);
     return NTVDM64_STATUS_OK;
 }
 
 void nxvm_full_pc_resume(nxvm_full_pc *full_pc)
 {
     if (full_pc != NULL && full_pc->active && !vm_composition_control_is_running(full_pc->machine.control)) {
-        machineResume(&full_pc->machine);
+        vm_composition_resume(&full_pc->machine);
     }
 }
 
@@ -236,7 +236,7 @@ void nxvm_full_pc_destroy(nxvm_full_pc *full_pc)
         vm_composition_control_bind_command_boundary(full_pc->machine.control, NULL, NULL);
         nxvm_vm_request_transport_close(&full_pc->transport);
         nxvm_vm_request_transport_discard(&full_pc->transport);
-        machineFinal(&full_pc->machine);
+        vm_composition_finalize(&full_pc->machine);
         full_pc->active = 0;
     }
     free(full_pc);

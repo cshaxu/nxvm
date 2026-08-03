@@ -9,13 +9,13 @@ int main(void)
     vm_composition_live_machine session = {0};
     const vm_composition_live_machine *machine;
 
-    machineInit(&session);
+    vm_composition_initialize(&session);
     machine = (&session);
     if (machine == NULL || machine->hdd != &session.hdd_storage) {
-        machineFinal(&session);
+        vm_composition_finalize(&session);
         return 1;
     }
-    machineFinal(&session);
+    vm_composition_finalize(&session);
     puts("M5:T36:S1:HDD-AUTHORITY:OK");
     return 0;
 }

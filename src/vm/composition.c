@@ -49,7 +49,7 @@ void vm_composition_providers_initialize(vm_composition_live_machine *machine) {
     core_machine_cpu_state_initialize(machine->cpu_execution);
     vm_machine_fdd_initialize(machine->fdd);
     vm_machine_hdd_initialize(machine->hdd);
-    vmCompositionBindBlock(machine);
+    vm_composition_bind_block(machine);
     vm_profile_default_bios_initialize(machine->default_bios);
     core_machine_vadp_initialize(machine->vadp);
     vm_profile_default_bios_add_interrupt(machine->default_bios,
@@ -81,7 +81,7 @@ void vm_composition_providers_initialize(vm_composition_live_machine *machine) {
     vm_profile_default_bios_add_interrupt(machine->default_bios, VFDC_INT_SOFT_FDD_40, 0x13);
     vm_profile_default_bios_add_interrupt(machine->default_bios, VFDC_INT_SOFT_FDD_40, 0x40);
     _vbios_ _vport_ _vdma_
-    vhdcInit();
+    vm_machine_hdc_initialize();
     vm_profile_default_bios_add_interrupt(machine->default_bios, VHDC_INT_SOFT_HDD_13, 0x13);
     _vbios_ _vport_ _vdma_ _vfdc_
     core_machine_pit_initialize(machine->pit, machine->port);
@@ -110,7 +110,7 @@ void vm_composition_providers_refresh(vm_composition_live_machine *machine) {
     _empty_
     vm_machine_fdd_refresh(machine->fdd);
     _empty_
-    vhdcRefresh();
+    vm_machine_hdc_refresh();
     _empty_
     vm_machine_hdd_refresh(machine->hdd);
     _empty_
@@ -120,7 +120,7 @@ void vm_composition_providers_refresh(vm_composition_live_machine *machine) {
 
 void vm_composition_providers_reset(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
-    vhdcReset();
+    vm_machine_hdc_reset();
     vm_machine_cmos_reset(machine->cmos);
     vm_machine_fdc_reset(machine->fdc);
     vm_machine_fdd_reset(machine->fdd);
@@ -144,7 +144,7 @@ void vm_composition_providers_finalize(vm_composition_live_machine *machine) {
     _empty_
     vm_machine_fdc_finalize(machine->fdc);
     _empty_
-    vhdcFinal();
+    vm_machine_hdc_finalize();
     _empty_
     core_machine_kbc_finalize(machine->kbc);
     _empty_
