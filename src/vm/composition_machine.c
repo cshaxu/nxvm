@@ -166,13 +166,13 @@ void vm_composition_resume(vm_composition_live_machine *machine) {
     if (vm_composition_control_is_paused(machine->control)) {
         vm_composition_control_continue(machine->control);
     } else {
-        platformStart(machine->platform_run_context);
+        vm_platform_start(machine->platform_run_context);
     }
 }
 
 void vm_composition_initialize(vm_composition_live_machine *machine) {
     if (machine == NULL) return;
-    platformInit();
+    vm_platform_initialize();
     vm_composition_live_machine_initialize(machine);
     if (machine->core_machine == NULL) return;
     core_product_wait_scope_initialize(machine->wait_scope,
@@ -202,5 +202,5 @@ void vm_composition_finalize(vm_composition_live_machine *machine) {
     vm_machine_debug_bind_pause(machine->debug, NULL, NULL);
     vm_composition_debug_target_finalize(machine);
     vm_composition_live_machine_finalize(machine);
-    platformFinal();
+    vm_platform_finalize();
 }

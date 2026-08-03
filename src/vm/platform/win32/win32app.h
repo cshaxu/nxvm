@@ -11,10 +11,10 @@ extern "C" {
 
 typedef struct vm_platform_run_context vm_platform_run_context;
 
-VOID win32appDisplaySetScreen(const vm_platform_run_context *context);
-VOID win32appDisplayPaint(const vm_platform_run_context *context);
+VOID vm_platform_win32app_display_set_screen(const vm_platform_run_context *context);
+VOID vm_platform_win32app_display_paint(const vm_platform_run_context *context);
 
-VOID win32appStartMachine(const vm_platform_run_context *context);
+VOID vm_platform_win32app_start_machine(const vm_platform_run_context *context);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

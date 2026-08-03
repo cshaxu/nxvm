@@ -54,31 +54,31 @@ void vm_platform_run_context_bind_keyboard_state(
 
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
 #include "vm/platform/win32/win32.h"
-void platformDisplaySetScreen(const vm_platform_run_context *context) {
-    win32DisplaySetScreen(vm_platform_run_context_get_window_display(context), context);
+void vm_platform_display_set_screen(const vm_platform_run_context *context) {
+    vm_platform_win32_display_set_screen(vm_platform_run_context_get_window_display(context), context);
 }
-void platformDisplayPaint(const vm_platform_run_context *context) {
-    win32DisplayPaint(vm_platform_run_context_get_window_display(context), context);
+void vm_platform_display_paint(const vm_platform_run_context *context) {
+    vm_platform_win32_display_paint(vm_platform_run_context_get_window_display(context), context);
 }
-void platformStart(const vm_platform_run_context *context) {
-    win32StartMachine(vm_platform_run_context_get_window_display(context), context);
+void vm_platform_start(const vm_platform_run_context *context) {
+    vm_platform_win32_start_machine(vm_platform_run_context_get_window_display(context), context);
 }
 #elif GLOBAL_PLATFORM == GLOBAL_VAR_LINUX
 #include "vm/platform/linux/linux.h"
-void platformDisplaySetScreen(const vm_platform_run_context *context) {
+void vm_platform_display_set_screen(const vm_platform_run_context *context) {
     (void)context;
-    linuxDisplaySetScreen(vm_platform_run_context_get_window_display(context), context);
+    vm_platform_linux_display_set_screen(vm_platform_run_context_get_window_display(context), context);
 }
-void platformDisplayPaint(const vm_platform_run_context *context) {
+void vm_platform_display_paint(const vm_platform_run_context *context) {
     (void)context;
-    linuxDisplayPaint(vm_platform_run_context_get_window_display(context), context);
+    vm_platform_linux_display_paint(vm_platform_run_context_get_window_display(context), context);
 }
-void platformStart(const vm_platform_run_context *context) {
-    linuxStartMachine(vm_platform_run_context_get_window_display(context), context);
+void vm_platform_start(const vm_platform_run_context *context) {
+    vm_platform_linux_start_machine(vm_platform_run_context_get_window_display(context), context);
 }
 #endif
 
-void platformInit() {
+void vm_platform_initialize() {
 }
 
-void platformFinal() {}
+void vm_platform_finalize() {}

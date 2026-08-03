@@ -59,7 +59,7 @@ static void vmCompositionDisplayModeChanged(void *context)
     vm_composition_live_machine *machine = context;
 
     vm_composition_publish_display(machine, 1);
-    platformDisplaySetScreen(machine->platform_run_context);
+    vm_platform_display_set_screen(machine->platform_run_context);
 }
 
 void vm_composition_bind_display(vm_composition_live_machine *machine)
