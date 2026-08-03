@@ -52,14 +52,14 @@ void vm_composition_control_start(vm_composition_control_state *control) {
     machine = (vm_composition_live_machine *)control->execution_context.device;
     if (machine == NULL || machine->core_machine == NULL) return;
     core_product_execution_context_activate(&control->execution_context);
-    atomic_store(&control->flagRun, True);
+    atomic_store(&control->flagRun, NTVDM64_TYPE_TRUE);
     atomic_store(&control->flagFlip, !atomic_load(&control->flagFlip));
     while (atomic_load(&control->flagRun)) {
-        if (atomic_exchange(&control->flagReset, False)) {
+        if (atomic_exchange(&control->flagReset, NTVDM64_TYPE_FALSE)) {
             core_product_execution_context_reset(&control->execution_context);
         }
         if (atomic_load(&control->pauseRequested)) {
-            atomic_store(&control->paused, True);
+            atomic_store(&control->paused, NTVDM64_TYPE_TRUE);
         }
         while (atomic_load(&control->flagRun) && atomic_load(&control->paused)) {
             core_product_execution_context_run_command_boundary(&control->execution_context);
@@ -77,7 +77,7 @@ void vm_composition_control_start(vm_composition_control_state *control) {
             vm_composition_control_stop(control);
             continue;
         }
-        vm_composition_publish_display(machine, False);
+        vm_composition_publish_display(machine, NTVDM64_TYPE_FALSE);
         if (result.reason == CORE_MACHINE_STOP_RESET_REQUESTED) {
             vm_composition_control_reset(control);
         }
@@ -87,7 +87,7 @@ void vm_composition_control_start(vm_composition_control_state *control) {
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             core_platform_sleep_milliseconds(1u);
         }
-        if (atomic_exchange(&control->stepRequested, False)) {
+        if (atomic_exchange(&control->stepRequested, NTVDM64_TYPE_FALSE)) {
             vm_composition_control_request_pause(control, VM_COMPOSITION_PAUSE_STEP);
         }
     }
@@ -98,10 +98,10 @@ void vm_composition_control_start(vm_composition_control_state *control) {
 void vm_composition_control_reset(vm_composition_control_state *control) {
     if (control == NULL) return;
     if (atomic_load(&control->flagRun)) {
-        atomic_store(&control->flagReset, True);
+        atomic_store(&control->flagReset, NTVDM64_TYPE_TRUE);
     } else {
         core_product_execution_context_reset(&control->execution_context);
-        atomic_store(&control->flagReset, False);
+        atomic_store(&control->flagReset, NTVDM64_TYPE_FALSE);
     }
 }
 
@@ -114,9 +114,9 @@ void vm_composition_control_stop(vm_composition_control_state *control)  {
     if (machine != NULL && machine->core_machine != NULL) {
         core_machine_request_stop(machine->core_machine);
     }
-    atomic_store(&control->flagRun, False);
-    atomic_store(&control->paused, False);
-    atomic_store(&control->pauseRequested, False);
+    atomic_store(&control->flagRun, NTVDM64_TYPE_FALSE);
+    atomic_store(&control->paused, NTVDM64_TYPE_FALSE);
+    atomic_store(&control->pauseRequested, NTVDM64_TYPE_FALSE);
 }
 
 void vm_composition_control_request_pause(vm_composition_control_state *control,
@@ -124,11 +124,11 @@ void vm_composition_control_request_pause(vm_composition_control_state *control,
 {
     if (control == NULL) return;
     if (!atomic_load(&control->flagRun)) {
-        atomic_store(&control->paused, True);
+        atomic_store(&control->paused, NTVDM64_TYPE_TRUE);
         atomic_store(&control->pauseReason, reason);
         return;
     }
-    atomic_store(&control->pauseRequested, True);
+    atomic_store(&control->pauseRequested, NTVDM64_TYPE_TRUE);
     atomic_store(&control->pauseReason, reason);
 }
 
@@ -137,7 +137,7 @@ int vm_composition_control_wait_for_pause(vm_composition_control_state *control,
 {
     unsigned waited = 0u;
 
-    if (control == NULL) return False;
+    if (control == NULL) return NTVDM64_TYPE_FALSE;
     while (atomic_load(&control->flagRun) && !atomic_load(&control->paused) &&
            waited < milliseconds) {
         core_platform_sleep_milliseconds(1u);
@@ -161,20 +161,20 @@ vm_composition_pause_reason vm_composition_control_get_pause_reason(
 void vm_composition_control_continue(vm_composition_control_state *control)
 {
     if (control == NULL) return;
-    atomic_store(&control->pauseRequested, False);
-    atomic_store(&control->paused, False);
-    atomic_store(&control->stepRequested, False);
+    atomic_store(&control->pauseRequested, NTVDM64_TYPE_FALSE);
+    atomic_store(&control->paused, NTVDM64_TYPE_FALSE);
+    atomic_store(&control->stepRequested, NTVDM64_TYPE_FALSE);
     atomic_store(&control->pauseReason, VM_COMPOSITION_PAUSE_NONE);
 }
 
 int vm_composition_control_step(vm_composition_control_state *control)
 {
-    if (control == NULL || !atomic_load(&control->paused)) return False;
-    atomic_store(&control->pauseRequested, False);
-    atomic_store(&control->paused, False);
-    atomic_store(&control->stepRequested, True);
+    if (control == NULL || !atomic_load(&control->paused)) return NTVDM64_TYPE_FALSE;
+    atomic_store(&control->pauseRequested, NTVDM64_TYPE_FALSE);
+    atomic_store(&control->paused, NTVDM64_TYPE_FALSE);
+    atomic_store(&control->stepRequested, NTVDM64_TYPE_TRUE);
     atomic_store(&control->pauseReason, VM_COMPOSITION_PAUSE_NONE);
-    return True;
+    return NTVDM64_TYPE_TRUE;
 }
 
 void vm_composition_control_bind_command_boundary(
@@ -190,13 +190,13 @@ void vm_composition_control_initialize(vm_composition_control_state *control,
     vm_composition_live_machine *machine) {
 
     if (control == NULL || machine == NULL) return;
-    MEMSET((void *)(control), Zero8, sizeof(*control));
-    atomic_init(&control->flagFlip, False);
-    atomic_init(&control->flagRun, False);
-    atomic_init(&control->flagReset, False);
-    atomic_init(&control->pauseRequested, False);
-    atomic_init(&control->paused, False);
-    atomic_init(&control->stepRequested, False);
+    MEMSET((void *)(control), NTVDM64_TYPE_ZERO_8, sizeof(*control));
+    atomic_init(&control->flagFlip, NTVDM64_TYPE_FALSE);
+    atomic_init(&control->flagRun, NTVDM64_TYPE_FALSE);
+    atomic_init(&control->flagReset, NTVDM64_TYPE_FALSE);
+    atomic_init(&control->pauseRequested, NTVDM64_TYPE_FALSE);
+    atomic_init(&control->paused, NTVDM64_TYPE_FALSE);
+    atomic_init(&control->stepRequested, NTVDM64_TYPE_FALSE);
     atomic_init(&control->pauseReason, VM_COMPOSITION_PAUSE_NONE);
     core_product_execution_context_initialize(&control->execution_context);
     core_product_execution_context_bind_machine_state(

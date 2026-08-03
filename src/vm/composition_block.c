@@ -13,13 +13,13 @@ static void vmBlockGeometry(void *context, core_machine_block_geometry *out_geom
     out_geometry->bytes_per_sector = hdd->data.nbyte;
 }
 
-static int vmBlockTransfer(void *context, t_nubit8 cylinder, t_nubit8 head,
-    t_nubit8 sector, void *buffer, t_nubitcc byte_count, int write)
+static int vmBlockTransfer(void *context, ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head,
+    ntvdm64_type_unsigned_8 sector, void *buffer, ntvdm64_type_native_unsigned byte_count, int write)
 {
     t_hdd *hdd = (t_hdd *)context;
-    if (hdd == NULL || !hdd->connect.flagDiskExist || sector == Zero8 ||
+    if (hdd == NULL || !hdd->connect.flagDiskExist || sector == NTVDM64_TYPE_ZERO_8 ||
         head >= hdd->data.nhead || sector > hdd->data.nsector ||
-        cylinder >= hdd->data.ncyl || byte_count > hdd->data.nbyte * Max8) return False;
+        cylinder >= hdd->data.ncyl || byte_count > hdd->data.nbyte * NTVDM64_TYPE_MAX_UNSIGNED_8) return NTVDM64_TYPE_FALSE;
     hdd->data.cyl = cylinder;
     hdd->data.head = head;
     hdd->data.sector = sector;
@@ -28,19 +28,19 @@ static int vmBlockTransfer(void *context, t_nubit8 cylinder, t_nubit8 head,
         hdd->data.nsector + (hdd->data.sector - 1)) * hdd->data.nbyte;
     if (write) MEMCPY((void *)hdd->connect.pCurrByte, buffer, byte_count);
     else MEMCPY(buffer, (void *)hdd->connect.pCurrByte, byte_count);
-    return True;
+    return NTVDM64_TYPE_TRUE;
 }
 
-static int vmBlockRead(void *context, t_nubit8 cylinder, t_nubit8 head,
-    t_nubit8 sector, void *buffer, t_nubitcc byte_count)
+static int vmBlockRead(void *context, ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head,
+    ntvdm64_type_unsigned_8 sector, void *buffer, ntvdm64_type_native_unsigned byte_count)
 {
-    return vmBlockTransfer(context, cylinder, head, sector, buffer, byte_count, False);
+    return vmBlockTransfer(context, cylinder, head, sector, buffer, byte_count, NTVDM64_TYPE_FALSE);
 }
 
-static int vmBlockWrite(void *context, t_nubit8 cylinder, t_nubit8 head,
-    t_nubit8 sector, void *buffer, t_nubitcc byte_count)
+static int vmBlockWrite(void *context, ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head,
+    ntvdm64_type_unsigned_8 sector, void *buffer, ntvdm64_type_native_unsigned byte_count)
 {
-    return vmBlockTransfer(context, cylinder, head, sector, buffer, byte_count, True);
+    return vmBlockTransfer(context, cylinder, head, sector, buffer, byte_count, NTVDM64_TYPE_TRUE);
 }
 
 void vm_composition_bind_block(vm_composition_live_machine *machine)

@@ -15,9 +15,9 @@
 #define instruction_state (*context->instructions)
 #define ExecCpuInstruction(handler) ((handler) ? ((handler)(context), 0) : 0)
 
-#define UTILS_TRACE_VAR    (*context->trace)
-#define UTILS_TRACE_ERROR  instruction_state.data.except
-#define UTILS_TRACE_SETERR (_SetExcept_CE(0xffffffff))
+#define NTVDM64_TYPE_TRACE_CONTEXT    (*context->trace)
+#define NTVDM64_TYPE_TRACE_ERROR  instruction_state.data.except
+#define NTVDM64_TYPE_TRACE_SET_ERROR (_SetExcept_CE(0xffffffff))
 
 /* indicates functions not implemented */
 #define _______todo static void
@@ -32,149 +32,149 @@ PRINTF("NEW CODE PATH\n");if (context->trace != NULL) ntvdm64_type_trace_print(c
 /* address size of the source operand */
 #define _GetAddressSize ((cpu_state.data.cs.seg.exec.defsize ^ instruction_state.data.prefix_addrsize) ? 4 : 2)
 /* if opcode indicates a prefix */
-#define _SetExcept_DE(n) (SetBit(instruction_state.data.except, VCPUINS_EXCEPT_DE), instruction_state.data.excode = (n), PRINTF("#DE(%x) - divide error\n",    instruction_state.data.excode))
-#define _SetExcept_PF(n) (SetBit(instruction_state.data.except, VCPUINS_EXCEPT_PF), instruction_state.data.excode = (n), PRINTF("#PF(%x) - page fault\n",      instruction_state.data.excode))
-#define _SetExcept_GP(n) (SetBit(instruction_state.data.except, VCPUINS_EXCEPT_GP), instruction_state.data.excode = (n), PRINTF("#GP(%x) - general protect\n", instruction_state.data.excode))
-#define _SetExcept_SS(n) (SetBit(instruction_state.data.except, VCPUINS_EXCEPT_SS), instruction_state.data.excode = (n), PRINTF("#SS(%x) - stack segment\n",   instruction_state.data.excode))
-#define _SetExcept_UD(n) (SetBit(instruction_state.data.except, VCPUINS_EXCEPT_UD), instruction_state.data.excode = (n), PRINTF("#UD(%x) - undefined\n",       instruction_state.data.excode))
-#define _SetExcept_NP(n) (SetBit(instruction_state.data.except, VCPUINS_EXCEPT_NP), instruction_state.data.excode = (n), PRINTF("#NP(%x) - not present\n",     instruction_state.data.excode))
-#define _SetExcept_BR(n) (SetBit(instruction_state.data.except, VCPUINS_EXCEPT_BR), instruction_state.data.excode = (n), PRINTF("#BR(%x) - boundary\n",        instruction_state.data.excode))
-#define _SetExcept_TS(n) (SetBit(instruction_state.data.except, VCPUINS_EXCEPT_TS), instruction_state.data.excode = (n), PRINTF("#TS(%x) - task state\n",      instruction_state.data.excode))
-#define _SetExcept_NM(n) (SetBit(instruction_state.data.except, VCPUINS_EXCEPT_NM), instruction_state.data.excode = (n), PRINTF("#NM(%x) - divide error\n",    instruction_state.data.excode))
-#define _SetExcept_CE(n) (SetBit(instruction_state.data.except, VCPUINS_EXCEPT_CE), instruction_state.data.excode = (n), PRINTF("#CE(%x) - internal error\n",  instruction_state.data.excode))
+#define _SetExcept_DE(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_DE), instruction_state.data.excode = (n), PRINTF("#DE(%x) - divide error\n",    instruction_state.data.excode))
+#define _SetExcept_PF(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_PF), instruction_state.data.excode = (n), PRINTF("#PF(%x) - page fault\n",      instruction_state.data.excode))
+#define _SetExcept_GP(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP), instruction_state.data.excode = (n), PRINTF("#GP(%x) - general protect\n", instruction_state.data.excode))
+#define _SetExcept_SS(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_SS), instruction_state.data.excode = (n), PRINTF("#SS(%x) - stack segment\n",   instruction_state.data.excode))
+#define _SetExcept_UD(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_UD), instruction_state.data.excode = (n), PRINTF("#UD(%x) - undefined\n",       instruction_state.data.excode))
+#define _SetExcept_NP(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NP), instruction_state.data.excode = (n), PRINTF("#NP(%x) - not present\n",     instruction_state.data.excode))
+#define _SetExcept_BR(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR), instruction_state.data.excode = (n), PRINTF("#BR(%x) - boundary\n",        instruction_state.data.excode))
+#define _SetExcept_TS(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_TS), instruction_state.data.excode = (n), PRINTF("#TS(%x) - task state\n",      instruction_state.data.excode))
+#define _SetExcept_NM(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM), instruction_state.data.excode = (n), PRINTF("#NM(%x) - divide error\n",    instruction_state.data.excode))
+#define _SetExcept_CE(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_CE), instruction_state.data.excode = (n), PRINTF("#CE(%x) - internal error\n",  instruction_state.data.excode))
 
 /* memory management unit */
 /* kernel memory accessing */
 /* read content from reference */
-static void _kma_read_ref(core_machine_cpu_execution_context *context, t_vaddrcc ref, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_kma_read_ref");
+static void _kma_read_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_read_ref");
     MEMCPY((void *) rdata, (void *) ref, byte);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* write content to reference */
-static void _kma_write_ref(core_machine_cpu_execution_context *context, t_vaddrcc ref, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_kma_write_ref");
+static void _kma_write_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_write_ref");
     MEMCPY((void *) ref, (void *) rdata, byte);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* read content from physical */
-static void _kma_read_physical(core_machine_cpu_execution_context *context, t_nubit32 physical, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_kma_read_physical");
-    _chr(core_machine_memory_read_physical(context->memory, physical, rdata,
+static void _kma_read_physical(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 physical, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_read_physical");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(core_machine_memory_read_physical(context->memory, physical, rdata,
         byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* write content to physical */
-static void _kma_write_physical(core_machine_cpu_execution_context *context, t_nubit32 physical, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_kma_write_physical");
-    _chr(core_machine_memory_write_physical(context->memory, physical, rdata,
+static void _kma_write_physical(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 physical, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_write_physical");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(core_machine_memory_write_physical(context->memory, physical, rdata,
         byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* translate linear to physical - paging mechanism*/
-static t_nubit32 _kma_physical_linear(core_machine_cpu_execution_context *context, t_nubit32 linear, t_nubit8 byte, t_bool write, t_nubit8 vpl) {
-    t_nubit32 ppde, ppte; /* page table entries */
-    t_nubit32 cpde, cpte;
-    _cb("_t_kma_physical_linear");
-    if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) _impossible_rz_;
+static ntvdm64_type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write, ntvdm64_type_unsigned_8 vpl) {
+    ntvdm64_type_unsigned_32 ppde, ppte; /* page table entries */
+    ntvdm64_type_unsigned_32 cpde, cpte;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_t_kma_physical_linear");
+    if (_GetLinear_Offset(linear) > NTVDM64_TYPE_MASK_UNSIGNED_32(_GetPageSize - byte)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
     if (!_IsPaging) {
-        _ce;
+        NTVDM64_TYPE_TRACE_CALL_END;
         return linear;
     }
     ppde = _GetCR3_Base + _GetLinear_Dir(linear) * 4;
-    _chrz(_kma_read_physical(context, ppde, GetRef(cpde), 4));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_kma_read_physical(context, ppde, NTVDM64_TYPE_REFERENCE_OF(cpde), 4));
     if (!_IsPageEntryPresent(cpde)) {
-        _bb("!PageDirEntryPresent");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!PageDirEntryPresent");
         cpu_state.data.cr2 = linear;
-        _chrz(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     if (vpl == 0x03) {
-        _bb("vpl(3)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("vpl(3)");
         if (!_GetPageEntry_US(cpde)) {
-            _bb("PageDirEntry_US(0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("PageDirEntry_US(0)");
             cpu_state.data.cr2 = linear;
-            _chrz(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (write && !_IsPageEntryWritable(cpde)) {
-            _bb("write,!PageDirEntryWritable");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("write,!PageDirEntryWritable");
             cpu_state.data.cr2 = linear;
-            _chrz(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     _SetPageEntry_A(cpde);
-    _chrz(_kma_write_physical(context, ppde, GetRef(cpde), 4));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_kma_write_physical(context, ppde, NTVDM64_TYPE_REFERENCE_OF(cpde), 4));
     ppte = _GetPageEntry_Base(cpde) + _GetLinear_Page(linear) * 4;
-    _chrz(_kma_read_physical(context, ppte, GetRef(cpte), 4));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_kma_read_physical(context, ppte, NTVDM64_TYPE_REFERENCE_OF(cpte), 4));
     if (!_IsPageEntryPresent(cpte)) {
-        _bb("!PageTabEntryPresent");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!PageTabEntryPresent");
         cpu_state.data.cr2 = linear;
-        _chrz(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     if (vpl == 0x03) {
-        _bb("vpl(3)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("vpl(3)");
         if (!_GetPageEntry_US(cpte)) {
-            _bb("PageTabEntry_US(0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("PageTabEntry_US(0)");
             cpu_state.data.cr2 = linear;
-            _chrz(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (write && !_IsPageEntryWritable(cpte)) {
-            _bb("write,!PageTabEntryWritable");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("write,!PageTabEntryWritable");
             cpu_state.data.cr2 = linear;
-            _chrz(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     _SetPageEntry_A(cpte);
     if (write) _SetPageEntry_D(cpte);
-    _chrz(_kma_write_physical(context, ppte, GetRef(cpte), 4));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_kma_write_physical(context, ppte, NTVDM64_TYPE_REFERENCE_OF(cpte), 4));
+    NTVDM64_TYPE_TRACE_CALL_END;
     return (_GetPageEntry_Base(cpte) + _GetLinear_Offset(linear));
 }
 /* translate logical to linear - segmentation mechanism */
-static t_nubit32 _kma_linear_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force) {
-    t_nubit32 linear;
-    t_nubit32 upper, lower;
-    _cb("_kma_linear_logical");
+static ntvdm64_type_unsigned_32 _kma_linear_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+    ntvdm64_type_unsigned_32 linear;
+    ntvdm64_type_unsigned_32 upper, lower;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_linear_logical");
     switch (rsreg->sregtype) {
     case SREG_CODE:
-        _bb("sregtype(SREG_CODE)");
-        if (!rsreg->flagValid) _impossible_rz_;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_CODE)");
+        if (!rsreg->flagValid) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
         if (_IsProtected) {
-            _bb("Protected");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected");
             if (!force) {
-                _bb("force");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("force");
                 if (write) {
-                    _bb("write");
-                    _chrz(_SetExcept_GP(0));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("write");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_GP(0));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (!rsreg->seg.exec.readable) {
-                    _bb("!readable");
-                    _chrz(_SetExcept_GP(0));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!readable");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_GP(0));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         lower = 0x00000000;
         upper = rsreg->limit;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case SREG_STACK:
-        _bb("sregtype(SREG_STACK)");
-        if (!rsreg->flagValid) _impossible_rz_;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_STACK)");
+        if (!rsreg->flagValid) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
         if (_IsProtected) {
-            _bb("Protected");
-            if (rsreg->seg.executable || !rsreg->seg.data.writable) _impossible_rz_;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected");
+            if (rsreg->seg.executable || !rsreg->seg.data.writable) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (rsreg->seg.data.expdown) {
             lower = rsreg->limit + 1;
@@ -183,45 +183,45 @@ static t_nubit32 _kma_linear_logical(core_machine_cpu_execution_context *context
             lower = 0x00000000;
             upper = rsreg->limit;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case SREG_DATA:
-        _bb("sregtype(SREG_DATA)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_DATA)");
         if (!rsreg->flagValid) {
-            _bb("selector(null)");
-            _chrz(_SetExcept_GP(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(null)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_GP(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (_IsProtected) {
-            _bb("Protected");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected");
             if (_IsSelectorNull(rsreg->selector)) {
-                _bb("selector(null)");
-                _chrz(_SetExcept_GP(0));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(null)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_GP(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            if (rsreg->seg.executable && !rsreg->seg.exec.readable) _impossible_rz_;
+            if (rsreg->seg.executable && !rsreg->seg.exec.readable) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
             if (!force) {
-                _bb("force");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("force");
                 if (write) {
-                    _bb("write");
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("write");
                     if (rsreg->seg.executable) {
-                        _bb("executable");
-                        _chrz(_SetExcept_GP(0));
-                        _be;
+                        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("executable");
+                        NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_GP(0));
+                        NTVDM64_TYPE_TRACE_BLOCK_END;
                     } else {
-                        _bb("!executable");
+                        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!executable");
                         if (!rsreg->seg.data.writable) {
-                            _bb("!writable");
-                            _chrz(_SetExcept_GP(0));
-                            _be;
+                            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!writable");
+                            NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_GP(0));
+                            NTVDM64_TYPE_TRACE_BLOCK_END;
                         }
-                        _be;
+                        NTVDM64_TYPE_TRACE_BLOCK_END;
                     }
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (rsreg->seg.data.expdown) {
             lower = rsreg->limit + 1;
@@ -230,129 +230,129 @@ static t_nubit32 _kma_linear_logical(core_machine_cpu_execution_context *context
             lower = 0x00000000;
             upper = rsreg->limit;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case SREG_GDTR:
-        _bb("sregtype(SREG_GDTR)");
-        if (!_GetCR0_PE) _impossible_rz_;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_GDTR)");
+        if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
         lower = 0x00000000;
         upper = rsreg->limit;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case SREG_IDTR:
-        _bb("sregtype(SREG_IDTR)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_IDTR)");
         lower = 0x00000000;
         upper = rsreg->limit;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case SREG_LDTR:
-        _bb("sregtype(SREG_LDTR)");
-        if (!_GetCR0_PE) _impossible_rz_;
-        if (_GetSelector_TI(rsreg->selector)) _impossible_rz_;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_LDTR)");
+        if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
+        if (_GetSelector_TI(rsreg->selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
         if (!rsreg->flagValid || _IsSelectorNull(rsreg->selector)) {
-            _bb("selector(null)");
-            _chrz(_SetExcept_GP(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(null)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_GP(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         lower = 0x00000000;
         upper = rsreg->limit;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case SREG_TR:
-        _bb("sregtype(SREG_TR)");
-        if (!_GetCR0_PE) _impossible_rz_;
-        if (!rsreg->flagValid || _IsSelectorNull(rsreg->selector)) _impossible_rz_;
-        if (_GetSelector_TI(rsreg->selector)) _impossible_rz_;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_TR)");
+        if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
+        if (!rsreg->flagValid || _IsSelectorNull(rsreg->selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
+        if (_GetSelector_TI(rsreg->selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
         lower = 0x00000000;
         upper = rsreg->limit;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_rz_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
     }
     linear = rsreg->base + offset;
     if (offset < lower || offset > upper - (byte - 1)) {
-        _bb("offset(<lower/>upper)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("offset(<lower/>upper)");
         switch (rsreg->sregtype) {
         case SREG_STACK:
-            _bb("sregtype(SREG_STACK)");
-            _chrz(_SetExcept_SS(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_STACK)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_SS(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case SREG_TR:
-            _bb("sregtype(SREG_TR)");
-            _chrz(_SetExcept_TS(rsreg->selector));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_TR)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_TS(rsreg->selector));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _bb("sregtype(default)");
-            _chrz(_SetExcept_GP(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(default)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_GP(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
     return linear;
 }
 /* read content from logical */
-static void _kma_read_linear(core_machine_cpu_execution_context *context, t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte, t_nubit8 vpl, t_bool force) {
-    t_nubit32 phy1, phy2;
-    t_nubit8  byte1, byte2;
-    _cb("_kma_read_logical");
-    if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
-        _bb("Linear_Offset(>PageSize)");
+static void _kma_read_linear(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+    ntvdm64_type_unsigned_32 phy1, phy2;
+    ntvdm64_type_unsigned_8  byte1, byte2;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_read_logical");
+    if (_GetLinear_Offset(linear) > NTVDM64_TYPE_MASK_UNSIGNED_32(_GetPageSize - byte)) {
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Linear_Offset(>PageSize)");
         byte1 = _GetPageSize - _GetLinear_Offset(linear);
         byte2 = byte - byte1;
-        _chr(phy1 = _kma_physical_linear(context, linear        , byte1, 0, vpl));
-        _chr(phy2 = _kma_physical_linear(context, linear + byte1, byte2, 0, vpl));
-        _chr(_kma_read_physical(context, phy1, rdata        , byte1));
-        _chr(_kma_read_physical(context, phy2, rdata + byte1, byte2));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear        , byte1, 0, vpl));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(phy2 = _kma_physical_linear(context, linear + byte1, byte2, 0, vpl));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, phy1, rdata        , byte1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, phy2, rdata + byte1, byte2));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("Linear_Offset(<=PageSize)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Linear_Offset(<=PageSize)");
         byte1 = byte;
-        _chr(phy1 = _kma_physical_linear(context, linear, byte1, 0, vpl));
-        _chr(_kma_read_physical(context, phy1, rdata, byte1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, 0, vpl));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, phy1, rdata, byte1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* write content to logical */
-static void _kma_write_linear(core_machine_cpu_execution_context *context, t_nubit32 linear, t_vaddrcc rdata, t_nubit8 byte, t_nubit8 vpl, t_bool force) {
-    t_nubit32 phy1, phy2;
-    t_nubit8  byte1, byte2;
-    _cb("_kma_write_linear");
-    if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
-        _bb("Linear_Offset(>PageSize)");
+static void _kma_write_linear(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+    ntvdm64_type_unsigned_32 phy1, phy2;
+    ntvdm64_type_unsigned_8  byte1, byte2;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_write_linear");
+    if (_GetLinear_Offset(linear) > NTVDM64_TYPE_MASK_UNSIGNED_32(_GetPageSize - byte)) {
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Linear_Offset(>PageSize)");
         byte1 = _GetPageSize - _GetLinear_Offset(linear);
         byte2 = byte - byte1;
-        _chr(phy1 = _kma_physical_linear(context, linear, byte1, 1, vpl));
-        _chr(phy2 = _kma_physical_linear(context, linear + byte1, byte2, 1, vpl));
-        _chr(_kma_write_physical(context, phy1, rdata, byte1));
-        _chr(_kma_write_physical(context, phy2, rdata + byte1, byte2));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, 1, vpl));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(phy2 = _kma_physical_linear(context, linear + byte1, byte2, 1, vpl));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, phy1, rdata, byte1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, phy2, rdata + byte1, byte2));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("Linear_Offset(<=PageSize)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Linear_Offset(<=PageSize)");
         byte1 = byte;
-        _chr(phy1 = _kma_physical_linear(context, linear, byte1, 1, vpl));
-        _chr(_kma_write_physical(context, phy1, rdata, byte1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, 1, vpl));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, phy1, rdata, byte1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* read content from logical */
-static void _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte, t_nubit8 vpl, t_bool force) {
-    /* t_nubitcc i; */
-    t_nubit32 linear;
-    _cb("_kma_read_logical");
-    _chr(linear = _kma_linear_logical(context, rsreg, offset, byte, 0, vpl, force));
-    _chr(_kma_read_linear(context, linear, rdata, byte, vpl, force));
+static void _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+    /* ntvdm64_type_native_unsigned i; */
+    ntvdm64_type_unsigned_32 linear;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_read_logical");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, 0, vpl, force));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_linear(context, linear, rdata, byte, vpl, force));
     if (!force) {
-        _bb("!force");
-        instruction_state.data.mem[instruction_state.data.msize].flagWrite = False;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!force");
+        instruction_state.data.mem[instruction_state.data.msize].flagWrite = NTVDM64_TYPE_FALSE;
         instruction_state.data.mem[instruction_state.data.msize].data = 0;
-        MEMCPY((void *) GetRef(instruction_state.data.mem[instruction_state.data.msize].data), (void *) rdata, byte);
+        MEMCPY((void *) NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (void *) rdata, byte);
         instruction_state.data.mem[instruction_state.data.msize].byte = byte;
         instruction_state.data.mem[instruction_state.data.msize].linear = linear;
         if (instruction_state.data.flagWR) {
@@ -367,29 +367,29 @@ static void _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu
         /* for (i = 0;i < instruction_state.data.msize;++i) {
             if (instruction_state.data.mem[i].flagWrite == instruction_state.data.mem[instruction_state.data.msize].flagWrite &&
                 instruction_state.data.mem[i].linear == instruction_state.data.mem[instruction_state.data.msize].linear) {
-                _bb("mem(same)");
-                _impossible_rz_;
-                _ce;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("mem(same)");
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
+                NTVDM64_TYPE_TRACE_CALL_END;
             }
         } */
         instruction_state.data.msize++;
-        if (instruction_state.data.msize == 0x20) _impossible_r_;
-        _be;
+        if (instruction_state.data.msize == 0x20) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* write content to logical */
-static void _kma_write_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte, t_nubit8 vpl, t_bool force) {
-    /* t_nubitcc i; */
-    t_nubit32 linear;
-    _cb("_kma_write_logical");
-    _chr(linear = _kma_linear_logical(context, rsreg, offset, byte, 1, vpl, force));
-    _chr(_kma_write_linear(context, linear, rdata, byte, vpl, force));
+static void _kma_write_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+    /* ntvdm64_type_native_unsigned i; */
+    ntvdm64_type_unsigned_32 linear;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_write_logical");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, 1, vpl, force));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_write_linear(context, linear, rdata, byte, vpl, force));
     if (!force) {
-        _bb("!force");
-        instruction_state.data.mem[instruction_state.data.msize].flagWrite = True;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!force");
+        instruction_state.data.mem[instruction_state.data.msize].flagWrite = NTVDM64_TYPE_TRUE;
         instruction_state.data.mem[instruction_state.data.msize].data = 0;
-        MEMCPY((void *) GetRef(instruction_state.data.mem[instruction_state.data.msize].data), (void *) rdata, byte);
+        MEMCPY((void *) NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (void *) rdata, byte);
         instruction_state.data.mem[instruction_state.data.msize].byte = byte;
         instruction_state.data.mem[instruction_state.data.msize].linear = linear;
         if (instruction_state.data.flagWW) {
@@ -404,852 +404,852 @@ static void _kma_write_logical(core_machine_cpu_execution_context *context, t_cp
         /* for (i = 0;i < instruction_state.data.msize;++i) {
             if (instruction_state.data.mem[i].flagWrite == instruction_state.data.mem[instruction_state.data.msize].flagWrite &&
                 instruction_state.data.mem[i].linear == instruction_state.data.mem[instruction_state.data.msize].linear) {
-                _bb("mem(same)");
-                _impossible_r_;
-                _ce;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("mem(same)");
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                NTVDM64_TYPE_TRACE_CALL_END;
             }
         } */
         instruction_state.data.msize++;
-        if (instruction_state.data.msize == 0x20) _impossible_r_;
-        _be;
+        if (instruction_state.data.msize == 0x20) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* test logical accessing */
-static void _kma_test_linear(core_machine_cpu_execution_context *context, t_nubit32 linear, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force) {
-    t_nubit32 phy1, phy2;
-    t_nubit8  byte1, byte2;
-    _cb("_kma_test_linear");
-    if (_GetLinear_Offset(linear) > GetMax32(_GetPageSize - byte)) {
-        _bb("Linear_Offset(>PageSize)");
+static void _kma_test_linear(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+    ntvdm64_type_unsigned_32 phy1, phy2;
+    ntvdm64_type_unsigned_8  byte1, byte2;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_test_linear");
+    if (_GetLinear_Offset(linear) > NTVDM64_TYPE_MASK_UNSIGNED_32(_GetPageSize - byte)) {
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Linear_Offset(>PageSize)");
         byte1 = _GetPageSize - _GetLinear_Offset(linear);
         byte2 = byte - byte1;
-        _chr(phy1 = _kma_physical_linear(context, linear        , byte1, write, vpl));
-        _chr(phy2 = _kma_physical_linear(context, linear + byte1, byte2, write, vpl));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear        , byte1, write, vpl));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(phy2 = _kma_physical_linear(context, linear + byte1, byte2, write, vpl));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("Linear_Offset(<=PageSize)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Linear_Offset(<=PageSize)");
         byte1 = byte;
-        _chr(phy1 = _kma_physical_linear(context, linear, byte1, write, vpl));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, write, vpl));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kma_test_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force) {
-    t_nubit32 linear;
-    _cb("_kma_test_logical");
-    _chr(linear = _kma_linear_logical(context, rsreg, offset, byte, write, vpl, force));
-    _ce;
+static void _kma_test_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+    ntvdm64_type_unsigned_32 linear;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_test_logical");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, write, vpl, force));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kma_test_access(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write, t_nubit8 vpl, t_bool force) {
-    t_nubit32 linear;
-    _cb("_kma_test_access");
-    _chr(linear = _kma_linear_logical(context, rsreg, offset, byte, write, vpl, force));
-    _chr(_kma_test_linear(context, linear, byte, write, vpl, force));
-    _ce;
+static void _kma_test_access(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write, ntvdm64_type_unsigned_8 vpl, ntvdm64_type_bool force) {
+    ntvdm64_type_unsigned_32 linear;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_test_access");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(linear = _kma_linear_logical(context, rsreg, offset, byte, write, vpl, force));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_linear(context, linear, byte, write, vpl, force));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* general memory accessing */
-static void _m_read_ref(core_machine_cpu_execution_context *context, t_vaddrcc ref, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_m_read_ref");
+static void _m_read_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_read_ref");
     /* _m_write_ref allows in-module reads only */
-    if (ref < (t_vaddrcc)(&cpu_state) && ref >= (t_vaddrcc)(&cpu_state) + sizeof(t_cpu) &&
-            ref < (t_vaddrcc)(&instruction_state) && ref >= (t_vaddrcc)(&instruction_state) + sizeof(t_cpuins)) {
-        _impossible_r_;
+    if (ref < (ntvdm64_type_virtual_address)(&cpu_state) && ref >= (ntvdm64_type_virtual_address)(&cpu_state) + sizeof(t_cpu) &&
+            ref < (ntvdm64_type_virtual_address)(&instruction_state) && ref >= (ntvdm64_type_virtual_address)(&instruction_state) + sizeof(t_cpuins)) {
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     }
-    _chr(_kma_read_ref(context, ref, rdata, byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_ref(context, ref, rdata, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_write_ref(core_machine_cpu_execution_context *context, t_vaddrcc ref, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_m_write_ref");
+static void _m_write_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_write_ref");
     /* _m_write_ref allows in-module writes only */
-    if (ref < (t_vaddrcc)(&cpu_state) && ref >= (t_vaddrcc)(&cpu_state) + sizeof(t_cpu) &&
-            ref < (t_vaddrcc)(&instruction_state) && ref >= (t_vaddrcc)(&instruction_state) + sizeof(t_cpuins)) {
-        _impossible_r_;
+    if (ref < (ntvdm64_type_virtual_address)(&cpu_state) && ref >= (ntvdm64_type_virtual_address)(&cpu_state) + sizeof(t_cpu) &&
+            ref < (ntvdm64_type_virtual_address)(&instruction_state) && ref >= (ntvdm64_type_virtual_address)(&instruction_state) + sizeof(t_cpuins)) {
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     }
-    _chr(_kma_write_ref(context, ref, rdata, byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_write_ref(context, ref, rdata, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_m_read_logical");
-    _chr(_kma_read_logical(context, rsreg, offset, rdata, byte, _GetCPL, 0));
-    _ce;
+static void _m_read_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_read_logical");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, rsreg, offset, rdata, byte, _GetCPL, 0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_write_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_m_write_logical");
-    _chr(_kma_write_logical(context, rsreg, offset, rdata, byte, _GetCPL, 0));
-    _ce;
+static void _m_write_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_write_logical");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, rsreg, offset, rdata, byte, _GetCPL, 0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_test_access(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write) {
-    t_vaddrcc ref = 0;
-    _cb("_m_test_access");
-    _chr(_kma_test_access(context, rsreg, offset, byte, write, _GetCPL, 0));
-    _ce;
+static void _m_test_access(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write) {
+    ntvdm64_type_virtual_address ref = 0;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_test_access");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, rsreg, offset, byte, write, _GetCPL, 0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_test_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, t_nubit32 offset, t_nubit8 byte, t_bool write) {
-    t_vaddrcc ref = 0;
-    _cb("_m_test_logical");
-    _chr(_kma_test_logical(context, rsreg, offset, byte, write, _GetCPL, 0));
-    _ce;
+static void _m_test_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool write) {
+    ntvdm64_type_virtual_address ref = 0;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_test_logical");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, rsreg, offset, byte, write, _GetCPL, 0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _m_read_rm(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    _cb("_m_read_rm");
+static void _m_read_rm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_read_rm");
     instruction_state.data.crm = 0;
     if (instruction_state.data.flagMem)
-        _chr(_m_read_logical(context, instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, GetRef(instruction_state.data.crm), byte));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), byte));
     else
-        _chr(_m_read_ref(context, instruction_state.data.rrm, GetRef(instruction_state.data.crm), byte));
-    _ce;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_ref(context, instruction_state.data.rrm, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_write_rm(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    _cb("_m_write_rm");
+static void _m_write_rm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_write_rm");
     if (instruction_state.data.flagMem)
-        _chr(_m_write_logical(context, instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, GetRef(instruction_state.data.crm), byte));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_logical(context, instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), byte));
     else
-        _chr(_m_write_ref(context, instruction_state.data.rrm, GetRef(instruction_state.data.crm), byte));
-    _ce;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rrm, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* segment accessing unit: _s_ */
 /* kernel segment accessing */
-static void _ksa_read_idt(core_machine_cpu_execution_context *context, t_nubit8 intid, t_vaddrcc rdata) {
-    _cb("_s_read_idt");
+static void _ksa_read_idt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_virtual_address rdata) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_idt");
     if (!_GetCR0_PE) {
-        _bb("CR0_PE(0)");
-        if (GetMax16(intid * 4 + 3) > GetMax16(cpu_state.data.idtr.limit)) _impossible_r_;
-        _chr(_kma_read_logical(context, &cpu_state.data.idtr, (intid * 4), rdata, 4, 0x00, 0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_PE(0)");
+        if (NTVDM64_TYPE_MASK_UNSIGNED_16(intid * 4 + 3) > NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.idtr.limit)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.idtr, (intid * 4), rdata, 4, 0x00, 0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("CR0_PE(1)");
-        if (GetMax16(intid * 8 + 7) > GetMax16(cpu_state.data.idtr.limit)) _impossible_r_;
-        _chr(_kma_read_logical(context, &cpu_state.data.idtr, (intid * 8), rdata, 8, 0x00, 0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_PE(1)");
+        if (NTVDM64_TYPE_MASK_UNSIGNED_16(intid * 8 + 7) > NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.idtr.limit)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.idtr, (intid * 8), rdata, 8, 0x00, 0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_read_ldt(core_machine_cpu_execution_context *context, t_nubit16 selector, t_vaddrcc rdata) {
-    _cb("_ksa_read_ldt");
-    if (!_GetCR0_PE) _impossible_r_;
-    if (!_GetSelector_TI(selector)) _impossible_r_;
-    if (GetMax16(_GetSelector_Offset(selector) + 7) > GetMax16(cpu_state.data.ldtr.limit)) {
-        _bb("Selector_Offset(>ldtr.limit)");
-        _chr(_SetExcept_GP(selector));
-        _be;
+static void _ksa_read_ldt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_read_ldt");
+    if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (!_GetSelector_TI(selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (NTVDM64_TYPE_MASK_UNSIGNED_16(_GetSelector_Offset(selector) + 7) > NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.ldtr.limit)) {
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Selector_Offset(>ldtr.limit)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_kma_read_logical(context, &cpu_state.data.ldtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.ldtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_read_gdt(core_machine_cpu_execution_context *context, t_nubit16 selector, t_vaddrcc rdata) {
-    _cb("_ksa_read_gdt");
-    if (!_GetCR0_PE) _impossible_r_;
-    if (_GetSelector_TI(selector)) _impossible_r_;
-    if (GetMax16(_GetSelector_Offset(selector) + 7) > GetMax16(cpu_state.data.gdtr.limit)) {
-        _bb("Selector_Offset(>gdtr.limit)");
-        _chr(_SetExcept_GP(selector));
-        _be;
+static void _ksa_read_gdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_read_gdt");
+    if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (_GetSelector_TI(selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (NTVDM64_TYPE_MASK_UNSIGNED_16(_GetSelector_Offset(selector) + 7) > NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.gdtr.limit)) {
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Selector_Offset(>gdtr.limit)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_kma_read_logical(context, &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_read_xdt(core_machine_cpu_execution_context *context, t_nubit16 selector, t_vaddrcc rdata) {
-    _cb("_ksa_read_xdt");
-    if (!_GetCR0_PE) _impossible_r_;
+static void _ksa_read_xdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_read_xdt");
+    if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (_GetSelector_TI(selector)) {
-        _bb("Selector_TI");
-        _chr(_ksa_read_ldt(context, selector, rdata));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Selector_TI");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_read_ldt(context, selector, rdata));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("!Selector_TI");
-        _chr(_ksa_read_gdt(context, selector, rdata));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Selector_TI");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_read_gdt(context, selector, rdata));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_write_ldt(core_machine_cpu_execution_context *context, t_nubit16 selector, t_vaddrcc rdata) {
-    _cb("_ksa_write_ldt");
-    if (!_GetCR0_PE) _impossible_r_;
-    if (!_GetSelector_TI(selector)) _impossible_r_;
-    if (GetMax16(_GetSelector_Offset(selector) + 7) > GetMax16(cpu_state.data.ldtr.limit))
-        _impossible_r_;
-    _chr(_kma_write_logical(context, &cpu_state.data.ldtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
-    _ce;
+static void _ksa_write_ldt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_write_ldt");
+    if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (!_GetSelector_TI(selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (NTVDM64_TYPE_MASK_UNSIGNED_16(_GetSelector_Offset(selector) + 7) > NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.ldtr.limit))
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &cpu_state.data.ldtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_write_gdt(core_machine_cpu_execution_context *context, t_nubit16 selector, t_vaddrcc rdata) {
-    _cb("_ksa_write_gdt");
-    if (!_GetCR0_PE) _impossible_r_;
-    if (_GetSelector_TI(selector)) _impossible_r_;
-    if (GetMax16(_GetSelector_Offset(selector) + 7) > GetMax16(cpu_state.data.gdtr.limit))
-        _impossible_r_;
-    _chr(_kma_write_logical(context, &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
-    _ce;
+static void _ksa_write_gdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_write_gdt");
+    if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (_GetSelector_TI(selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (NTVDM64_TYPE_MASK_UNSIGNED_16(_GetSelector_Offset(selector) + 7) > NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.gdtr.limit))
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &cpu_state.data.gdtr, _GetSelector_Offset(selector), rdata, 8, 0x00, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_write_xdt(core_machine_cpu_execution_context *context, t_nubit16 selector, t_vaddrcc rdata) {
-    _cb("_ksa_write_xdt");
-    if (!_GetCR0_PE) _impossible_r_;
+static void _ksa_write_xdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_write_xdt");
+    if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (_GetSelector_TI(selector)) {
-        _bb("Selector_TI");
-        _chr(_ksa_write_ldt(context, selector, rdata));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Selector_TI");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_write_ldt(context, selector, rdata));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("!Selector_TI");
-        _chr(_ksa_write_gdt(context, selector, rdata));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Selector_TI");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_write_gdt(context, selector, rdata));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, t_nubit16 selector) {
-    t_nubit64 descriptor;
-    _cb("_ksa_load_sreg");
+static void _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_16 selector) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ksa_load_sreg");
     switch (rsreg->sregtype) {
     case SREG_CODE:
         /* note: privilege checking not performed */
-        _bb("sregtype(SREG_CODE)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_CODE)");
         if (_IsProtected) {
-            _bb("Protected(1)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected(1)");
             if (_IsSelectorNull(selector)) {
-                _bb("selector(null)");
-                _chr(_SetExcept_GP(0));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(null)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _chr(_ksa_read_xdt(context, selector, GetRef(descriptor)));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
             if (!_IsDescCode(descriptor)) {
-                _bb("!DescCode");
-                _chr(_SetExcept_GP(selector));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescCode");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
             if (!_IsDescPresent(descriptor)) {
-                _bb("!DescPresent");
-                _chr(_SetExcept_NP(selector));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(selector));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
             _SetDescUserAccessed(descriptor);
-            _chr(_ksa_write_xdt(context, selector, GetRef(descriptor)));
-            rsreg->flagValid = True;
-            rsreg->base = (t_nubit32)_GetDescSeg_Base(descriptor);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+            rsreg->flagValid = NTVDM64_TYPE_TRUE;
+            rsreg->base = (ntvdm64_type_unsigned_32)_GetDescSeg_Base(descriptor);
             if (_IsDescCodeNonConform(descriptor))
-                rsreg->dpl = (t_nubit4)_GetDesc_DPL(descriptor);
-            rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(descriptor) ?
+                rsreg->dpl = (ntvdm64_type_unsigned_4)_GetDesc_DPL(descriptor);
+            rsreg->limit = (ntvdm64_type_unsigned_32)((_IsDescSegGranularLarge(descriptor) ?
                                         ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
-            rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(descriptor);
-            rsreg->seg.executable = (t_bool)_IsDescUserExecutable(descriptor);
-            rsreg->seg.exec.defsize = (t_bool)_IsDescCode32(descriptor);
-            rsreg->seg.exec.conform = (t_bool)_IsDescCodeConform(descriptor);
-            rsreg->seg.exec.readable = (t_bool)_IsDescCodeReadable(descriptor);
+            rsreg->seg.accessed = (ntvdm64_type_bool)_IsDescUserAccessed(descriptor);
+            rsreg->seg.executable = (ntvdm64_type_bool)_IsDescUserExecutable(descriptor);
+            rsreg->seg.exec.defsize = (ntvdm64_type_bool)_IsDescCode32(descriptor);
+            rsreg->seg.exec.conform = (ntvdm64_type_bool)_IsDescCodeConform(descriptor);
+            rsreg->seg.exec.readable = (ntvdm64_type_bool)_IsDescCodeReadable(descriptor);
             rsreg->selector = (selector & ~VCPU_SELECTOR_RPL) | _GetCPL;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("!Protected");
-            rsreg->flagValid = True;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Protected");
+            rsreg->flagValid = NTVDM64_TYPE_TRUE;
             rsreg->base = (selector << 4);
             rsreg->selector = selector;
             if (_GetCR0_PE && _GetEFLAGS_VM) {
                 rsreg->dpl = 0x03;
                 rsreg->limit = 0x0000ffff;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case SREG_DATA:
-        _bb("sregtype(SREG_DATA)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_DATA)");
         if (_IsProtected) {
-            _bb("Protected");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected");
             if (_IsSelectorNull(selector)) {
-                _bb("selector(null)");
-                rsreg->flagValid = False;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(null)");
+                rsreg->flagValid = NTVDM64_TYPE_FALSE;
                 rsreg->selector = selector;
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("selector(!null)");
-                _chr(_ksa_read_xdt(context, selector, GetRef(descriptor)));
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(!null)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
                 if (!_IsDescData(descriptor) && !_IsDescCodeReadable(descriptor)) {
-                    _bb("!DescData,!DescCodeReadable");
-                    _chr(_SetExcept_GP(selector));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescData,!DescCodeReadable");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (_IsDescData(descriptor) || _IsDescCodeNonConform(descriptor)) {
-                    _bb("DescData/DescCodeNonConform)");
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DescData/DescCodeNonConform)");
                     if (_GetSelector_RPL(selector) > _GetDesc_DPL(descriptor) ||
                             _GetCPL > _GetDesc_DPL(descriptor)) {
-                        _bb("PL(fail)");
-                        _chr(_SetExcept_GP(selector));
-                        _be;
+                        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("PL(fail)");
+                        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                        NTVDM64_TYPE_TRACE_BLOCK_END;
                     }
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (!_IsDescPresent(descriptor)) {
-                    _bb("!DescPresent");
-                    _chr(_SetExcept_NP(selector));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(selector));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 _SetDescUserAccessed(descriptor);
-                _chr(_ksa_write_xdt(context, selector, GetRef(descriptor)));
-                rsreg->flagValid = True;
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+                rsreg->flagValid = NTVDM64_TYPE_TRUE;
                 rsreg->selector = selector;
-                rsreg->base = (t_nubit32)_GetDescSeg_Base(descriptor);
-                rsreg->dpl = (t_nubit4)_GetDesc_DPL(descriptor);
-                rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(descriptor) ?
+                rsreg->base = (ntvdm64_type_unsigned_32)_GetDescSeg_Base(descriptor);
+                rsreg->dpl = (ntvdm64_type_unsigned_4)_GetDesc_DPL(descriptor);
+                rsreg->limit = (ntvdm64_type_unsigned_32)((_IsDescSegGranularLarge(descriptor) ?
                                             ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
-                rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(descriptor);
-                rsreg->seg.executable = (t_bool)_IsDescUserExecutable(descriptor);
+                rsreg->seg.accessed = (ntvdm64_type_bool)_IsDescUserAccessed(descriptor);
+                rsreg->seg.executable = (ntvdm64_type_bool)_IsDescUserExecutable(descriptor);
                 if (rsreg->seg.executable) {
-                    rsreg->seg.exec.defsize = (t_bool)_IsDescCode32(descriptor);
-                    rsreg->seg.exec.conform = (t_bool)_IsDescCodeConform(descriptor);
-                    rsreg->seg.exec.readable = (t_bool)_IsDescCodeReadable(descriptor);
+                    rsreg->seg.exec.defsize = (ntvdm64_type_bool)_IsDescCode32(descriptor);
+                    rsreg->seg.exec.conform = (ntvdm64_type_bool)_IsDescCodeConform(descriptor);
+                    rsreg->seg.exec.readable = (ntvdm64_type_bool)_IsDescCodeReadable(descriptor);
                 } else {
-                    rsreg->seg.data.big = (t_bool)_IsDescDataBig(descriptor);
-                    rsreg->seg.data.expdown = (t_bool)_IsDescDataExpDown(descriptor);
-                    rsreg->seg.data.writable = (t_bool)_IsDescDataWritable(descriptor);
+                    rsreg->seg.data.big = (ntvdm64_type_bool)_IsDescDataBig(descriptor);
+                    rsreg->seg.data.expdown = (ntvdm64_type_bool)_IsDescDataExpDown(descriptor);
+                    rsreg->seg.data.writable = (ntvdm64_type_bool)_IsDescDataWritable(descriptor);
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("!Protected");
-            rsreg->flagValid = True;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Protected");
+            rsreg->flagValid = NTVDM64_TYPE_TRUE;
             rsreg->selector = selector;
             rsreg->base = (selector << 4);
             if (_GetCR0_PE && _GetEFLAGS_VM) {
                 rsreg->dpl = 0x03;
                 rsreg->limit = 0x0000ffff;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case SREG_STACK:
-        _bb("sregtype(SREG_STACK)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_STACK)");
         if (_IsProtected) {
-            _bb("Protected(1)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected(1)");
             if (_IsSelectorNull(selector)) {
-                _bb("selector(null)");
-                _chr(_SetExcept_GP(0));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(null)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
             if (_GetSelector_RPL(selector) != _GetCPL) {
-                _bb("Selector_RPL(!CPL)");
-                _chr(_SetExcept_GP(selector));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Selector_RPL(!CPL)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _chr(_ksa_read_xdt(context, selector, GetRef(descriptor)));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
             if (!_IsDescDataWritable(descriptor)) {
-                _bb("!DescDataWritable");
-                _chr(_SetExcept_GP(selector));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescDataWritable");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
             if (_GetDesc_DPL(descriptor) != _GetCPL) {
-                _bb("Desc_DPL(!CPL)");
-                _chr(_SetExcept_GP(selector));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Desc_DPL(!CPL)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
             if (!_IsDescPresent(descriptor)) {
-                _bb("!DescPresent");
-                _chr(_SetExcept_SS(selector));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_SS(selector));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
             _SetDescUserAccessed(descriptor);
-            _chr(_ksa_write_xdt(context, selector, GetRef(descriptor)));
-            rsreg->flagValid = True;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+            rsreg->flagValid = NTVDM64_TYPE_TRUE;
             rsreg->selector = selector;
-            rsreg->base = (t_nubit32)_GetDescSeg_Base(descriptor);
-            rsreg->dpl = (t_nubit4)_GetDesc_DPL(descriptor);
-            rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(descriptor) ?
+            rsreg->base = (ntvdm64_type_unsigned_32)_GetDescSeg_Base(descriptor);
+            rsreg->dpl = (ntvdm64_type_unsigned_4)_GetDesc_DPL(descriptor);
+            rsreg->limit = (ntvdm64_type_unsigned_32)((_IsDescSegGranularLarge(descriptor) ?
                                         ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
-            rsreg->seg.accessed = (t_bool)_IsDescUserAccessed(descriptor);
-            rsreg->seg.executable = (t_bool)_IsDescUserExecutable(descriptor);
-            rsreg->seg.data.big = (t_bool)_IsDescDataBig(descriptor);
-            rsreg->seg.data.expdown = (t_bool)_IsDescDataExpDown(descriptor);
-            rsreg->seg.data.writable = (t_bool)_IsDescDataWritable(descriptor);
-            _be;
+            rsreg->seg.accessed = (ntvdm64_type_bool)_IsDescUserAccessed(descriptor);
+            rsreg->seg.executable = (ntvdm64_type_bool)_IsDescUserExecutable(descriptor);
+            rsreg->seg.data.big = (ntvdm64_type_bool)_IsDescDataBig(descriptor);
+            rsreg->seg.data.expdown = (ntvdm64_type_bool)_IsDescDataExpDown(descriptor);
+            rsreg->seg.data.writable = (ntvdm64_type_bool)_IsDescDataWritable(descriptor);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("!Protected");
-            rsreg->flagValid = True;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Protected");
+            rsreg->flagValid = NTVDM64_TYPE_TRUE;
             rsreg->selector = selector;
             rsreg->base = (selector << 4);
             if (_GetCR0_PE && _GetEFLAGS_VM) {
                 rsreg->dpl = 0x03;
                 rsreg->limit = 0x0000ffff;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case SREG_TR:
-        _bb("sregtype(SREG_TR)");
-        if (!_IsProtected) _impossible_r_;
-        if (_GetCPL) _impossible_r_;
-        if (_GetSelector_TI(selector)) _impossible_r_;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_TR)");
+        if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        if (_GetCPL) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        if (_GetSelector_TI(selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         if (_IsSelectorNull(selector)) {
-            _bb("selector(null)");
-            _chr(_SetExcept_GP(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(null)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _chr(_ksa_read_xdt(context, selector, GetRef(descriptor)));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
         if (!_IsDescTSSAvl(descriptor)) {
-            _bb("!DescTssAvl");
-            _chr(_SetExcept_GP(selector));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescTssAvl");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (!_IsDescPresent(descriptor)) {
-            _bb("!DescPresent");
-            _chr(_SetExcept_NP(selector));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(selector));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         _SetDescTSSBusy(descriptor);
-        _chr(_ksa_write_xdt(context, selector, GetRef(descriptor)));
-        rsreg->flagValid = True;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+        rsreg->flagValid = NTVDM64_TYPE_TRUE;
         rsreg->selector = selector;
-        rsreg->base = (t_nubit32)_GetDescSeg_Base(descriptor);
-        rsreg->dpl = (t_nubit4)_GetDesc_DPL(descriptor);
-        rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(descriptor) ?
+        rsreg->base = (ntvdm64_type_unsigned_32)_GetDescSeg_Base(descriptor);
+        rsreg->dpl = (ntvdm64_type_unsigned_4)_GetDesc_DPL(descriptor);
+        rsreg->limit = (ntvdm64_type_unsigned_32)((_IsDescSegGranularLarge(descriptor) ?
                                     (_GetDescSeg_Limit(descriptor) << 12 | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
-        rsreg->sys.type = (t_nubit4)_GetDesc_Type(descriptor);
-        _be;
+        rsreg->sys.type = (ntvdm64_type_unsigned_4)_GetDesc_Type(descriptor);
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case SREG_LDTR:
-        _bb("sregtype(SREG_LDTR)");
-        if (!_IsProtected) _impossible_r_;
-        if (_GetCPL) _impossible_r_;
-        if (_GetSelector_TI(selector)) _impossible_r_;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_LDTR)");
+        if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        if (_GetCPL) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        if (_GetSelector_TI(selector)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         if (_IsSelectorNull(selector)) {
-            _bb("selector(null)");
-            rsreg->flagValid = False;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(null)");
+            rsreg->flagValid = NTVDM64_TYPE_FALSE;
             rsreg->selector = selector;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("selector(!null)");
-            _chr(_ksa_read_xdt(context, selector, GetRef(descriptor)));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(!null)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
             if (!_IsDescLDT(descriptor)) {
-                _bb("descriptor(!LDT)");
-                _chr(_SetExcept_GP(selector));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("descriptor(!LDT)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
             if (!_IsDescPresent(descriptor)) {
-                _bb("descriptor(!P)");
-                _chr(_SetExcept_NP(selector));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("descriptor(!P)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(selector));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            rsreg->flagValid = True;
+            rsreg->flagValid = NTVDM64_TYPE_TRUE;
             rsreg->selector = selector;
-            rsreg->base = (t_nubit32)_GetDescSeg_Base(descriptor);
-            rsreg->dpl = (t_nubit4)_GetDesc_DPL(descriptor);
-            rsreg->limit = (t_nubit32)((_IsDescSegGranularLarge(descriptor) ?
+            rsreg->base = (ntvdm64_type_unsigned_32)_GetDescSeg_Base(descriptor);
+            rsreg->dpl = (ntvdm64_type_unsigned_4)_GetDesc_DPL(descriptor);
+            rsreg->limit = (ntvdm64_type_unsigned_32)((_IsDescSegGranularLarge(descriptor) ?
                                         (_GetDescSeg_Limit(descriptor) << 12 | 0x0fff) : (_GetDescSeg_Limit(descriptor))));
-            rsreg->sys.type = (t_nubit4)_GetDesc_Type(descriptor);
-            _be;
+            rsreg->sys.type = (ntvdm64_type_unsigned_4)_GetDesc_Type(descriptor);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case SREG_GDTR:
     case SREG_IDTR:
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* regular segment accessing */
-static t_bool _s_check_selector(core_machine_cpu_execution_context *context, t_nubit16 selector) {
+static ntvdm64_type_bool _s_check_selector(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector) {
     /* 0 = succ, 1 = fail */
-    _cb("_s_check_selector");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_check_selector");
     if (_IsSelectorNull(selector)) {
-        _ce;
-        return True;
+        NTVDM64_TYPE_TRACE_CALL_END;
+        return NTVDM64_TYPE_TRUE;
     }
-    if (GetMax32(_GetSelector_Offset(selector) + 7) >
-            (_GetSelector_TI(selector) ? GetMax32(cpu_state.data.ldtr.limit) :
-             GetMax32(cpu_state.data.gdtr.limit))) {
-        _ce;
-        return True;
+    if (NTVDM64_TYPE_MASK_UNSIGNED_32(_GetSelector_Offset(selector) + 7) >
+            (_GetSelector_TI(selector) ? NTVDM64_TYPE_MASK_UNSIGNED_32(cpu_state.data.ldtr.limit) :
+             NTVDM64_TYPE_MASK_UNSIGNED_32(cpu_state.data.gdtr.limit))) {
+        NTVDM64_TYPE_TRACE_CALL_END;
+        return NTVDM64_TYPE_TRUE;
     }
-    _ce;
-    return False;
+    NTVDM64_TYPE_TRACE_CALL_END;
+    return NTVDM64_TYPE_FALSE;
 }
-static void _s_read_idt(core_machine_cpu_execution_context *context, t_nubit8 intid, t_vaddrcc rdata) {
-    _cb("_s_read_idt");
-    _chr(_ksa_read_idt(context, intid, rdata));
-    _ce;
+static void _s_read_idt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_virtual_address rdata) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_idt");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_read_idt(context, intid, rdata));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_xdt(core_machine_cpu_execution_context *context, t_nubit16 selector, t_vaddrcc rdata) {
-    _cb("_s_read_xdt");
-    if (!_GetCR0_PE) _impossible_r_;
-    _chr(_ksa_read_xdt(context, selector, rdata));
-    _ce;
+static void _s_read_xdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_xdt");
+    if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector, rdata));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_tss(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_read_tss");
-    _chr(_kma_read_logical(context, &cpu_state.data.tr, offset, rdata, byte, 0, 1));
-    _ce;
+static void _s_read_tss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_tss");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.tr, offset, rdata, byte, 0, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_es(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_read_es");
-    _chr(_m_read_logical(context, &cpu_state.data.es, offset, rdata, byte));
-    _ce;
+static void _s_read_es(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_es");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, &cpu_state.data.es, offset, rdata, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_cs(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_read_cs");
-    _chr(_kma_read_logical(context, &cpu_state.data.cs, offset, rdata, byte, 0, 1));
-    _ce;
+static void _s_read_cs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_cs");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.cs, offset, rdata, byte, 0, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_ss(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_read_ss");
-    _chr(_m_read_logical(context, &cpu_state.data.ss, offset, rdata, byte));
-    _ce;
+static void _s_read_ss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_ss");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, &cpu_state.data.ss, offset, rdata, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_ds(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_read_ds");
-    _impossible_r_;
-    _ce;
+static void _s_read_ds(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_ds");
+    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_fs(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_read_fs");
-    _impossible_r_;
-    _ce;
+static void _s_read_fs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_fs");
+    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_read_gs(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_read_gs");
-    _impossible_r_;
-    _ce;
+static void _s_read_gs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_read_gs");
+    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_idt(core_machine_cpu_execution_context *context, t_nubit8 intid, t_vaddrcc rdata) {
-    _cb("_s_write_idt");
-    _impossible_r_;
-    _ce;
+static void _s_write_idt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_virtual_address rdata) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_idt");
+    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_xdt(core_machine_cpu_execution_context *context, t_nubit16 selector, t_vaddrcc rdata) {
-    _cb("_s_write_xdt");
-    if (!_GetCR0_PE) _impossible_r_;
-    _chr(_ksa_write_xdt(context, selector, rdata));
-    _ce;
+static void _s_write_xdt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector, ntvdm64_type_virtual_address rdata) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_xdt");
+    if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_write_xdt(context, selector, rdata));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_tss(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_write_tss");
-    _impossible_r_;
-    _ce;
+static void _s_write_tss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_tss");
+    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_es(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_write_es");
-    _chr(_m_write_logical(context, &cpu_state.data.es, offset, rdata, byte));
-    _ce;
+static void _s_write_es(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_es");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_logical(context, &cpu_state.data.es, offset, rdata, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_cs(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_write_cs");
-    _impossible_r_;
-    _ce;
+static void _s_write_cs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_cs");
+    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_ss(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_write_ss");
-    _chr(_m_write_logical(context, &cpu_state.data.ss, offset, rdata, byte));
-    _ce;
+static void _s_write_ss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_ss");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_logical(context, &cpu_state.data.ss, offset, rdata, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_ds(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_write_ds");
-    _impossible_r_;
-    _ce;
+static void _s_write_ds(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_ds");
+    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_fs(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_write_fs");
-    _impossible_r_;
-    _ce;
+static void _s_write_fs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_fs");
+    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_write_gs(core_machine_cpu_execution_context *context, t_nubit32 offset, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_s_write_gs");
-    _impossible_r_;
-    _ce;
+static void _s_write_gs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_write_gs");
+    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_test_tss(core_machine_cpu_execution_context *context, t_nubit32 offset, t_nubit8 byte) {
-    _cb("_s_test_cs");
-    _chr(_kma_test_logical(context, &cpu_state.data.tr, offset, byte, 0, 0x00, 1));
-    _ce;
+static void _s_test_tss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_test_cs");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &cpu_state.data.tr, offset, byte, 0, 0x00, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_test_cs(core_machine_cpu_execution_context *context, t_nubit32 offset, t_nubit8 byte) {
-    _cb("_s_test_cs");
-    _chr(_kma_test_logical(context, &cpu_state.data.cs, offset, byte, 0, 0x00, 1));
-    _ce;
+static void _s_test_cs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_test_cs");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &cpu_state.data.cs, offset, byte, 0, 0x00, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_test_ss_push(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    t_nubit32 cesp = 0x00000000;
-    _cb("_s_test_ss_push");
+static void _s_test_ss_push(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_32 cesp = 0x00000000;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_test_ss_push");
     switch (_GetStackSize) {
     case 2:
-        _bb("StackSize(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("StackSize(2)");
         if (cpu_state.data.sp && cpu_state.data.sp < byte)
-            _chr(_SetExcept_SS(0));
-        _chr(_m_test_access(context, &cpu_state.data.ss, GetMax16(cpu_state.data.sp - byte), byte, 1));
-        _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_SS(0));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.ss, NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.sp - byte), byte, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("StackSize(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("StackSize(4)");
         if (cpu_state.data.esp && cpu_state.data.esp < byte)
-            _chr(_SetExcept_SS(0));
-        _chr(_m_test_access(context, &cpu_state.data.ss, GetMax32(cpu_state.data.esp - byte), byte, 1));
-        _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_SS(0));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.ss, NTVDM64_TYPE_MASK_UNSIGNED_32(cpu_state.data.esp - byte), byte, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_test_ss_pop(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    t_nubit32 cesp = 0x00000000;
-    _cb("_s_test_ss_pop");
+static void _s_test_ss_pop(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_32 cesp = 0x00000000;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_test_ss_pop");
     switch (_GetStackSize) {
     case 2:
-        _bb("StackSize(2)");
-        _chr(_m_test_access(context, &cpu_state.data.ss, cpu_state.data.sp, byte, 0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("StackSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.ss, cpu_state.data.sp, byte, 0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("StackSize(4)");
-        _chr(_m_test_access(context, &cpu_state.data.ss, cpu_state.data.esp, byte, 0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("StackSize(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.ss, cpu_state.data.esp, byte, 0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, t_nubit16 selector) {
-    _cb("_s_load_sreg");
-    _chr(_ksa_load_sreg(context, rsreg, selector));
-    _ce;
+static void _s_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_unsigned_16 selector) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_sreg");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, rsreg, selector));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_gdtr(core_machine_cpu_execution_context *context, t_nubit32 base, t_nubit16 limit, t_nubit8 byte) {
-    _cb("_s_load_gdtr");
+static void _s_load_gdtr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 base, ntvdm64_type_unsigned_16 limit, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_gdtr");
     if (_GetCPL) {
-        _bb("CPL(!0)");
-        _chr(_SetExcept_GP(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     cpu_state.data.gdtr.limit = limit;
     switch (byte) {
     case 2:
-        cpu_state.data.gdtr.base = GetMax24(base);
+        cpu_state.data.gdtr.base = NTVDM64_TYPE_MASK_UNSIGNED_24(base);
         break;
     case 4:
-        cpu_state.data.gdtr.base = GetMax32(base);
+        cpu_state.data.gdtr.base = NTVDM64_TYPE_MASK_UNSIGNED_32(base);
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_idtr(core_machine_cpu_execution_context *context, t_nubit32 base, t_nubit16 limit, t_nubit8 byte) {
-    _cb("_s_load_idtr");
+static void _s_load_idtr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 base, ntvdm64_type_unsigned_16 limit, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_idtr");
     if (_GetCPL) {
-        _bb("CPL(!0)");
-        _chr(_SetExcept_GP(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     cpu_state.data.idtr.limit = limit;
     switch (byte) {
     case 2:
-        cpu_state.data.idtr.base = GetMax24(base);
+        cpu_state.data.idtr.base = NTVDM64_TYPE_MASK_UNSIGNED_24(base);
         break;
     case 4:
-        cpu_state.data.idtr.base = GetMax32(base);
+        cpu_state.data.idtr.base = NTVDM64_TYPE_MASK_UNSIGNED_32(base);
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_ldtr(core_machine_cpu_execution_context *context, t_nubit16 selector) {
-    _cb("_s_load_ldtr");
+static void _s_load_ldtr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_ldtr");
     if (_GetCPL) {
-        _bb("CPL(!0)");
-        _chr(_SetExcept_GP(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     if (_GetSelector_TI(selector)) {
-        _bb("Selector_TI(1)");
-        _chr(_SetExcept_GP(selector));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Selector_TI(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_s_load_sreg(context, &cpu_state.data.ldtr, selector));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.ldtr, selector));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_tr(core_machine_cpu_execution_context *context, t_nubit16 selector) {
-    _cb("_s_load_tr");
+static void _s_load_tr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 selector) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_tr");
     if (_GetCPL) {
-        _bb("CPL(!0)");
-        _chr(_SetExcept_GP(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     if (_GetSelector_TI(selector)) {
-        _bb("Selector_TI(1)");
-        _chr(_SetExcept_GP(selector));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Selector_TI(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_s_load_sreg(context, &cpu_state.data.tr, selector));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.tr, selector));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_cr0_msw(core_machine_cpu_execution_context *context, t_nubit16 msw) {
-    _cb("_s_load_cr0_msw");
+static void _s_load_cr0_msw(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 msw) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_cr0_msw");
     if (_GetCPL) {
-        _bb("CPL(!0)");
-        _chr(_SetExcept_GP(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     if (!_GetCR0_PE) {
-        _bb("CR0_PE(0)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_PE(0)");
         cpu_state.data.cr0 = (cpu_state.data.cr0 & 0xfffffff0) | (msw & 0x000f);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("CR0_PE(1)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_PE(1)");
         cpu_state.data.cr0 = (cpu_state.data.cr0 & 0xfffffff0) | (msw & 0x000e) | 0x01;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_cs(core_machine_cpu_execution_context *context, t_nubit16 newcs) {
-    _cb("_s_load_cs");
-    _chr(_s_load_sreg(context, &cpu_state.data.cs, newcs));
-    _ce;
+static void _s_load_cs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_cs");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.cs, newcs));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_ss(core_machine_cpu_execution_context *context, t_nubit16 newss) {
-    _cb("_s_load_ss");
-    _chr(_s_load_sreg(context, &cpu_state.data.ss, newss));
-    _ce;
+static void _s_load_ss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newss) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_ss");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.ss, newss));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_ds(core_machine_cpu_execution_context *context, t_nubit16 newds) {
-    _cb("_s_load_ds");
-    _chr(_s_load_sreg(context, &cpu_state.data.ds, newds));
-    _ce;
+static void _s_load_ds(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newds) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_ds");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.ds, newds));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_es(core_machine_cpu_execution_context *context, t_nubit16 newes) {
-    _cb("_s_load_es");
-    _chr(_s_load_sreg(context, &cpu_state.data.es, newes));
-    _ce;
+static void _s_load_es(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newes) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_es");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.es, newes));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_fs(core_machine_cpu_execution_context *context, t_nubit16 newfs) {
-    _cb("_s_load_fs");
-    _chr(_s_load_sreg(context, &cpu_state.data.fs, newfs));
-    _ce;
+static void _s_load_fs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newfs) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_fs");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.fs, newfs));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _s_load_gs(core_machine_cpu_execution_context *context, t_nubit16 newgs) {
-    _cb("_s_load_gs");
-    _chr(_s_load_sreg(context, &cpu_state.data.gs, newgs));
-    _ce;
+static void _s_load_gs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newgs) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_load_gs");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, &cpu_state.data.gs, newgs));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _s_test_eip(core_machine_cpu_execution_context *context) {
-    _cb("_s_test_eip");
-    _chr(_s_test_cs(context, cpu_state.data.eip, 0x01));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_test_eip");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_cs(context, cpu_state.data.eip, 0x01));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _s_test_esp(core_machine_cpu_execution_context *context) {
-    t_nubit32 cesp;
-    _cb("_s_test_esp");
+    ntvdm64_type_unsigned_32 cesp;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_s_test_esp");
     switch (_GetStackSize) {
     case 2:
-        cesp = GetMax16(cpu_state.data.esp);
+        cesp = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.esp);
         break;
     case 4:
-        cesp = GetMax32(cpu_state.data.esp);
+        cesp = NTVDM64_TYPE_MASK_UNSIGNED_32(cpu_state.data.esp);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _chr(_m_test_logical(context, &cpu_state.data.ss, cesp, 0x00, 0));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_test_logical(context, &cpu_state.data.ss, cesp, 0x00, 0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* portid accessing unit */
 /* kernel portid accessing */
-_______todo _kpa_test_iomap(core_machine_cpu_execution_context *context, t_nubit16 portid, t_nubit8 byte) {
+_______todo _kpa_test_iomap(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 portid, ntvdm64_type_unsigned_8 byte) {
     /* TODO: iomap tester not implemented */
-    _cb("_kpa_test_iomap");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kpa_test_iomap");
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kpa_test_mode(core_machine_cpu_execution_context *context, t_nubit16 portid, t_nubit8 byte) {
-    _cb("_p_test");
-    if (_GetCR0_PE && (_GetCPL > (t_nubit8)_GetEFLAGS_IOPL || _GetEFLAGS_VM)) {
-        _bb("CR0_PE(1),(CPL>IOPL/EFLAGS_VM(1))");
-        _chr(_kpa_test_iomap(context, portid, byte));
-        _be;
+static void _kpa_test_mode(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 portid, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_p_test");
+    if (_GetCR0_PE && (_GetCPL > (ntvdm64_type_unsigned_8)_GetEFLAGS_IOPL || _GetEFLAGS_VM)) {
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_PE(1),(CPL>IOPL/EFLAGS_VM(1))");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kpa_test_iomap(context, portid, byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* regular portid accessing */
-static void _p_input(core_machine_cpu_execution_context *context, t_nubit16 portid, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_p_input");
-    _chr(_kpa_test_mode(context, portid, byte));
+static void _p_input(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 portid, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_p_input");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
     core_machine_port_execute_read(context->port, portid);
     switch (byte) {
     case 1:
-        _bb("byte(1)");
-        _chr(_m_write_ref(context, rdata,
-            GetRef(context->port->data.ioByte), 1));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, rdata,
+            NTVDM64_TYPE_REFERENCE_OF(context->port->data.ioByte), 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("byte(2)");
-        _chr(_m_write_ref(context, rdata,
-            GetRef(context->port->data.ioWord), 2));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, rdata,
+            NTVDM64_TYPE_REFERENCE_OF(context->port->data.ioWord), 2));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_m_write_ref(context, rdata,
-            GetRef(context->port->data.ioDWord), 4));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, rdata,
+            NTVDM64_TYPE_REFERENCE_OF(context->port->data.ioDWord), 4));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    instruction_state.data.flagIgnore = True;
-    _ce;
+    instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _p_output(core_machine_cpu_execution_context *context, t_nubit16 portid, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_p_output");
-    _chr(_kpa_test_mode(context, portid, byte));
+static void _p_output(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 portid, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_p_output");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
     switch (byte) {
     case 1:
-        _bb("byte(1)");
-        _chr(_m_read_ref(context, rdata,
-            GetRef(context->port->data.ioByte), 1));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_ref(context, rdata,
+            NTVDM64_TYPE_REFERENCE_OF(context->port->data.ioByte), 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("byte(2)");
-        _chr(_m_read_ref(context, rdata,
-            GetRef(context->port->data.ioWord), 2));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_ref(context, rdata,
+            NTVDM64_TYPE_REFERENCE_OF(context->port->data.ioWord), 2));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_m_read_ref(context, rdata,
-            GetRef(context->port->data.ioDWord), 4));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_ref(context, rdata,
+            NTVDM64_TYPE_REFERENCE_OF(context->port->data.ioDWord), 4));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
     core_machine_port_execute_write(context->port, portid);
-    instruction_state.data.flagIgnore = True;
-    _ce;
+    instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* decoding unit */
 /* kernel decoding function */
-static t_bool _kdf_check_prefix(core_machine_cpu_execution_context *context, t_nubit8 opcode) {
+static ntvdm64_type_bool _kdf_check_prefix(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 opcode) {
     switch (opcode) {
     case 0xf0:
     case 0xf2:
@@ -1258,191 +1258,191 @@ static t_bool _kdf_check_prefix(core_machine_cpu_execution_context *context, t_n
     case 0x36:
     case 0x3e:
     case 0x26:
-        return True;
+        return NTVDM64_TYPE_TRUE;
         break;
     case 0x64:
     case 0x65:
     case 0x66:
     case 0x67:
-        i386(opcode) return True;
-        else return False;
+        i386(opcode) return NTVDM64_TYPE_TRUE;
+        else return NTVDM64_TYPE_FALSE;
         break;
     default:
-        return False;
+        return NTVDM64_TYPE_FALSE;
         break;
     }
-    return False;
+    return NTVDM64_TYPE_FALSE;
 }
 
-static void _kdf_skip(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    _cb("_kdf_skip");
-    _chr(cpu_state.data.eip += byte);
-    _ce;
+static void _kdf_skip(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_skip");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(cpu_state.data.eip += byte);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kdf_code(core_machine_cpu_execution_context *context, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_kdf_code");
-    _chr(_s_read_cs(context, cpu_state.data.eip, rdata, byte));
-    _chr(_kdf_skip(context, byte));
-    _ce;
+static void _kdf_code(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_code");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, rdata, byte));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_skip(context, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 regbyte, t_nubit8 rmbyte) {
-    t_nsbit8 disp8;
-    t_nubit16 disp16;
-    t_nubit32 disp32;
-    t_nubit32 sibindex;
-    t_nubit8 modrm, sib;
-    _cb("_kdf_modrm");
-    _chr(_kdf_code(context, GetRef(modrm), 1));
-    instruction_state.data.flagMem = True;
+static void _kdf_modrm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 regbyte, ntvdm64_type_unsigned_8 rmbyte) {
+    ntvdm64_type_signed_8 disp8;
+    ntvdm64_type_unsigned_16 disp16;
+    ntvdm64_type_unsigned_32 disp32;
+    ntvdm64_type_unsigned_32 sibindex;
+    ntvdm64_type_unsigned_8 modrm, sib;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_modrm");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(context, NTVDM64_TYPE_REFERENCE_OF(modrm), 1));
+    instruction_state.data.flagMem = NTVDM64_TYPE_TRUE;
     instruction_state.data.mrm.rsreg = NULL;
     instruction_state.data.mrm.offset = 0;
     instruction_state.data.cr = instruction_state.data.crm = 0;
-    instruction_state.data.rrm = instruction_state.data.rr = (t_vaddrcc)NULL;
+    instruction_state.data.rrm = instruction_state.data.rr = (ntvdm64_type_virtual_address)NULL;
     switch (_GetAddressSize) {
     case 2:
-        _bb("AddressSize(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
         switch (_GetModRM_MOD(modrm)) {
         case 0:
-            _bb("ModRM_MOD(0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(0)");
             switch (_GetModRM_RM(modrm)) {
             case 0:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bx + cpu_state.data.si);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bx + cpu_state.data.si);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 1:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bx + cpu_state.data.di);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bx + cpu_state.data.di);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 2:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bp + cpu_state.data.si);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bp + cpu_state.data.si);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
                 break;
             case 3:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bp + cpu_state.data.di);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bp + cpu_state.data.di);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
                 break;
             case 4:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.si);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.si);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 5:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.di);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.di);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 6:
-                _bb("ModRM_RM(6)");
-                _chr(_kdf_code(context, GetRef(disp16), 2));
-                instruction_state.data.mrm.offset = GetMax16(disp16);
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(6)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(context, NTVDM64_TYPE_REFERENCE_OF(disp16), 2));
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(disp16);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 7:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bx);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bx);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1:
-            _bb("ModRM_MOD(1)");
-            _chr(_kdf_code(context, GetRef(disp8), 1));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(1)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(context, NTVDM64_TYPE_REFERENCE_OF(disp8), 1));
             switch (_GetModRM_RM(modrm)) {
             case 0:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bx + cpu_state.data.si + disp8);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bx + cpu_state.data.si + disp8);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 1:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bx + cpu_state.data.di + disp8);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bx + cpu_state.data.di + disp8);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 2:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bp + cpu_state.data.si + disp8);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bp + cpu_state.data.si + disp8);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
                 break;
             case 3:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bp + cpu_state.data.di + disp8);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bp + cpu_state.data.di + disp8);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
                 break;
             case 4:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.si + disp8);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.si + disp8);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 5:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.di + disp8);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.di + disp8);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 6:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bp + disp8);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bp + disp8);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
                 break;
             case 7:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bx + disp8);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bx + disp8);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2:
-            _bb("ModRM_MOD(2)");
-            _chr(_kdf_code(context, GetRef(disp16), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(context, NTVDM64_TYPE_REFERENCE_OF(disp16), 2));
             switch (_GetModRM_RM(modrm)) {
             case 0:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bx + cpu_state.data.si + disp16);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bx + cpu_state.data.si + disp16);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 1:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bx + cpu_state.data.di + disp16);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bx + cpu_state.data.di + disp16);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 2:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bp + cpu_state.data.si + disp16);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bp + cpu_state.data.si + disp16);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
                 break;
             case 3:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bp + cpu_state.data.di + disp16);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bp + cpu_state.data.di + disp16);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
                 break;
             case 4:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.si + disp16);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.si + disp16);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 5:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.di + disp16);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.di + disp16);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 6:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bp + disp16);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bp + disp16);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
                 break;
             case 7:
-                instruction_state.data.mrm.offset = GetMax16(cpu_state.data.bx + disp16);
+                instruction_state.data.mrm.offset = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.bx + disp16);
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3:
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("AddressSize(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
         if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4) {
-            _bb("ModRM_MOD(!3),ModRM_RM(4)");
-            _chr(_kdf_code(context, GetRef(sib), 1));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(!3),ModRM_RM(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(context, NTVDM64_TYPE_REFERENCE_OF(sib), 1));
             switch (_GetSIB_Index(sib)) {
             case 0:
                 sibindex = cpu_state.data.eax;
@@ -1469,15 +1469,15 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 reg
                 sibindex = cpu_state.data.edi;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             sibindex <<= _GetSIB_SS(sib);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         switch (_GetModRM_MOD(modrm)) {
         case 0:
-            _bb("ModRM_MOD(0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(0)");
             switch (_GetModRM_RM(modrm)) {
             case 0:
                 instruction_state.data.mrm.offset = cpu_state.data.eax;
@@ -1496,7 +1496,7 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 reg
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 4:
-                _bb("ModRM_RM(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(4)");
                 switch (_GetSIB_Base(sib)) {
                 case 0:
                     instruction_state.data.mrm.offset = cpu_state.data.eax + sibindex;
@@ -1519,11 +1519,11 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 reg
                     instruction_state.data.mrm.rsreg = instruction_state.data.roverss;
                     break;
                 case 5:
-                    _bb("SIB_Base(5)");
-                    _chr(_kdf_code(context, GetRef(disp32), 4));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SIB_Base(5)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(context, NTVDM64_TYPE_REFERENCE_OF(disp32), 4));
                     instruction_state.data.mrm.offset = disp32 + sibindex;
                     instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 case 6:
                     instruction_state.data.mrm.offset = cpu_state.data.esi + sibindex;
@@ -1534,17 +1534,17 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 reg
                     instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 5:
-                _bb("ModRM_RM(5)");
-                _chr(_kdf_code(context, GetRef(disp32), 4));
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(5)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(context, NTVDM64_TYPE_REFERENCE_OF(disp32), 4));
                 instruction_state.data.mrm.offset = disp32;
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 6:
                 instruction_state.data.mrm.offset = cpu_state.data.esi;
@@ -1555,14 +1555,14 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 reg
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1:
-            _bb("ModRM_MOD(1)");
-            _chr(_kdf_code(context, GetRef(disp8), 1));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(1)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(context, NTVDM64_TYPE_REFERENCE_OF(disp8), 1));
             switch (_GetModRM_RM(modrm)) {
             case 0:
                 instruction_state.data.mrm.offset = cpu_state.data.eax + disp8;
@@ -1581,7 +1581,7 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 reg
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 4:
-                _bb("ModRM_RM(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(4)");
                 switch (_GetSIB_Base(sib)) {
                 case 0:
                     instruction_state.data.mrm.offset = cpu_state.data.eax + sibindex + disp8;
@@ -1616,10 +1616,10 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 reg
                     instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 5:
                 instruction_state.data.mrm.offset = cpu_state.data.ebp + disp8;
@@ -1634,14 +1634,14 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 reg
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2:
-            _bb("ModRM_MOD(2)");
-            _chr(_kdf_code(context, GetRef(disp32), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(context, NTVDM64_TYPE_REFERENCE_OF(disp32), 4));
             switch (_GetModRM_RM(modrm)) {
             case 0:
                 instruction_state.data.mrm.offset = cpu_state.data.eax + disp32;
@@ -1660,7 +1660,7 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 reg
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             case 4:
-                _bb("ModRM_RM(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(4)");
                 switch (_GetSIB_Base(sib)) {
                 case 0:
                     instruction_state.data.mrm.offset = cpu_state.data.eax + sibindex + disp32;
@@ -1695,10 +1695,10 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 reg
                     instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 5:
                 instruction_state.data.mrm.offset = cpu_state.data.ebp + disp32;
@@ -1713,128 +1713,128 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 reg
                 instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3:
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     if (_GetModRM_MOD(modrm) == 3) {
-        _bb("ModRM_MOD(3)");
-        instruction_state.data.flagMem = False;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(3)");
+        instruction_state.data.flagMem = NTVDM64_TYPE_FALSE;
         switch (rmbyte) {
         case 1:
             switch (_GetModRM_RM(modrm)) {
             case 0:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.al);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.al);
                 break;
             case 1:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.cl);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.cl);
                 break;
             case 2:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.dl);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.dl);
                 break;
             case 3:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.bl);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.bl);
                 break;
             case 4:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.ah);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.ah);
                 break;
             case 5:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.ch);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.ch);
                 break;
             case 6:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.dh);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.dh);
                 break;
             case 7:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.bh);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.bh);
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             break;
         case 2:
             switch (_GetModRM_RM(modrm)) {
             case 0:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.ax);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.ax);
                 break;
             case 1:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.cx);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.cx);
                 break;
             case 2:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.dx);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.dx);
                 break;
             case 3:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.bx);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.bx);
                 break;
             case 4:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.sp);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.sp);
                 break;
             case 5:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.bp);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.bp);
                 break;
             case 6:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.si);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.si);
                 break;
             case 7:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.di);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.di);
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             break;
         case 4:
             switch (_GetModRM_RM(modrm)) {
             case 0:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.eax);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.eax);
                 break;
             case 1:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.ecx);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.ecx);
                 break;
             case 2:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.edx);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.edx);
                 break;
             case 3:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.ebx);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.ebx);
                 break;
             case 4:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.esp);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.esp);
                 break;
             case 5:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.ebp);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.ebp);
                 break;
             case 6:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.esi);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.esi);
                 break;
             case 7:
-                instruction_state.data.rrm = (t_vaddrcc)(&cpu_state.data.edi);
+                instruction_state.data.rrm = (ntvdm64_type_virtual_address)(&cpu_state.data.edi);
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             break;
         default:
-            _bb("rmbyte");
-            _chr(_SetExcept_CE(rmbyte));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("rmbyte");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(rmbyte));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         }
-        _chr(_m_read_ref(context, instruction_state.data.rrm, GetRef(instruction_state.data.crm), rmbyte));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_ref(context, instruction_state.data.rrm, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), rmbyte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     if (!regbyte) {
         /* reg is operation or segment */
@@ -1844,147 +1844,147 @@ static void _kdf_modrm(core_machine_cpu_execution_context *context, t_nubit8 reg
         case 1:
             switch (_GetModRM_REG(modrm)) {
             case 0:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.al);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.al);
                 break;
             case 1:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.cl);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.cl);
                 break;
             case 2:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.dl);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.dl);
                 break;
             case 3:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.bl);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.bl);
                 break;
             case 4:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.ah);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.ah);
                 break;
             case 5:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.ch);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.ch);
                 break;
             case 6:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.dh);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.dh);
                 break;
             case 7:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.bh);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.bh);
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             break;
         case 2:
             switch (_GetModRM_REG(modrm)) {
             case 0:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.ax);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.ax);
                 break;
             case 1:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.cx);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.cx);
                 break;
             case 2:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.dx);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.dx);
                 break;
             case 3:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.bx);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.bx);
                 break;
             case 4:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.sp);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.sp);
                 break;
             case 5:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.bp);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.bp);
                 break;
             case 6:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.si);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.si);
                 break;
             case 7:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.di);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.di);
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             break;
         case 4:
             switch (_GetModRM_REG(modrm)) {
             case 0:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.eax);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.eax);
                 break;
             case 1:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.ecx);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.ecx);
                 break;
             case 2:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.edx);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.edx);
                 break;
             case 3:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.ebx);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.ebx);
                 break;
             case 4:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.esp);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.esp);
                 break;
             case 5:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.ebp);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.ebp);
                 break;
             case 6:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.esi);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.esi);
                 break;
             case 7:
-                instruction_state.data.rr = (t_vaddrcc)(&cpu_state.data.edi);
+                instruction_state.data.rr = (ntvdm64_type_virtual_address)(&cpu_state.data.edi);
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             break;
         default:
-            _bb("regbyte");
-            _chr(_SetExcept_CE(regbyte));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("regbyte");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(regbyte));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         }
-        _chr(_m_read_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.cr), regbyte));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cr), regbyte));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_skip(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    _cb("_d_skip");
-    _chr(_kdf_skip(context, byte));
-    _ce;
+static void _d_skip(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_skip");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_skip(context, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_code(core_machine_cpu_execution_context *context, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_d_code");
-    _chr(_kdf_code(context, rdata, byte));
-    _ce;
+static void _d_code(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_code");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(context, rdata, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_imm(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    _cb("_d_imm");
+static void _d_imm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_imm");
     instruction_state.data.cimm = 0;
-    _chr(_d_code(context, GetRef(instruction_state.data.cimm), byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code(context, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cimm), byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_moffs(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    _cb("_d_moffs");
-    instruction_state.data.flagMem = True;
+static void _d_moffs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_moffs");
+    instruction_state.data.flagMem = NTVDM64_TYPE_TRUE;
     instruction_state.data.mrm.rsreg = instruction_state.data.roverds;
     instruction_state.data.mrm.offset = 0;
     switch (_GetAddressSize) {
     case 2:
-        _bb("AddressSize(2)");
-        _chr(_d_code(context, GetRef(instruction_state.data.mrm.offset), 2));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code(context, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mrm.offset), 2));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("AddressSize(4)");
-        _chr(_d_code(context, GetRef(instruction_state.data.mrm.offset), 4));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code(context, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mrm.offset), 4));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_modrm_sreg(core_machine_cpu_execution_context *context, t_nubit8 rmbyte) {
-    _cb("_d_modrm_sreg");
-    _chr(_kdf_modrm(context, 0, rmbyte));
+static void _d_modrm_sreg(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 rmbyte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_sreg");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, 0, rmbyte));
     instruction_state.data.rmovsreg = NULL;
     switch (instruction_state.data.cr) {
     case 0:
@@ -2006,52 +2006,52 @@ static void _d_modrm_sreg(core_machine_cpu_execution_context *context, t_nubit8 
         instruction_state.data.rmovsreg = &cpu_state.data.gs;
         break;
     default:
-        _bb("instruction_state.data.cr");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_modrm_ea(core_machine_cpu_execution_context *context, t_nubit8 regbyte, t_nubit8 rmbyte) {
-    _cb("_d_modrm_ea");
-    _chr(_kdf_modrm(context, regbyte, rmbyte));
+static void _d_modrm_ea(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 regbyte, ntvdm64_type_unsigned_8 rmbyte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_ea");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, regbyte, rmbyte));
     if (!instruction_state.data.flagMem) {
-        _bb("flagMem(0)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_modrm(core_machine_cpu_execution_context *context, t_nubit8 regbyte, t_nubit8 rmbyte) {
-    _cb("_d_modrm");
-    _chr(_kdf_modrm(context, regbyte, rmbyte));
+static void _d_modrm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 regbyte, ntvdm64_type_unsigned_8 rmbyte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, regbyte, rmbyte));
     if (!instruction_state.data.flagMem && instruction_state.data.flagLock) {
-        _bb("flagMem(0),flagLock(1)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0),flagLock(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* execution control unit: _e_ */
 /* kernel execution control */
-static void _kec_push(core_machine_cpu_execution_context *context, t_vaddrcc rdata, t_nubit8 byte) {
-    t_nubit32 cesp;
-    _cb("_kec_push");
-    _chr(_s_test_ss_push(context, byte));
+static void _kec_push(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_32 cesp;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_push");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, byte));
     switch (_GetStackSize) {
     case 2:
-        cesp = GetMax16(cpu_state.data.sp - byte);
+        cesp = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.sp - byte);
         break;
     case 4:
-        cesp = GetMax32(cpu_state.data.esp - byte);
+        cesp = NTVDM64_TYPE_MASK_UNSIGNED_32(cpu_state.data.esp - byte);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _chr(_s_write_ss(context, cesp, rdata, byte));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_write_ss(context, cesp, rdata, byte));
     switch (_GetStackSize) {
     case 2:
         cpu_state.data.sp -= byte;
@@ -2060,14 +2060,14 @@ static void _kec_push(core_machine_cpu_execution_context *context, t_vaddrcc rda
         cpu_state.data.esp -= byte;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kec_pop(core_machine_cpu_execution_context *context, t_vaddrcc rdata, t_nubit8 byte) {
-    t_nubit32 cesp;
-    _cb("_kec_pop");
+static void _kec_pop(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_32 cesp;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_pop");
     switch (_GetStackSize) {
     case 2:
         cesp = cpu_state.data.sp;
@@ -2076,11 +2076,11 @@ static void _kec_pop(core_machine_cpu_execution_context *context, t_vaddrcc rdat
         cesp = cpu_state.data.esp;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _chr(_s_read_ss(context, cesp, rdata, byte));
-    if (rdata != GetRef(cpu_state.data.esp)) {
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_ss(context, cesp, rdata, byte));
+    if (rdata != NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.esp)) {
         switch (_GetStackSize) {
         case 2:
             cpu_state.data.sp += byte;
@@ -2089,133 +2089,133 @@ static void _kec_pop(core_machine_cpu_execution_context *context, t_vaddrcc rdat
             cpu_state.data.esp += byte;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kec_call_far(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte) {
-    t_nubit32 oldcs = cpu_state.data.cs.selector;
+static void _kec_call_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_32 oldcs = cpu_state.data.cs.selector;
     t_cpu_data_sreg ccs = cpu_state.data.cs;
-    _cb("_kec_call_far");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_call_far");
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_s_test_ss_push(context, 4));
-        neweip = GetMax16(neweip);
-        _chr(_ksa_load_sreg(context, &ccs, newcs));
-        _chr(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
-        _chr(_kec_push(context, GetRef(oldcs), 2));
-        _chr(_kec_push(context, GetRef(cpu_state.data.ip), 2));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, 4));
+        neweip = NTVDM64_TYPE_MASK_UNSIGNED_16(neweip);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, &ccs, newcs));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(oldcs), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ip), 2));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_s_test_ss_push(context, 8));
-        neweip = GetMax32(neweip);
-        _chr(_ksa_load_sreg(context, &ccs, newcs));
-        _chr(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
-        _chr(_kec_push(context, GetRef(oldcs), 4));
-        _chr(_kec_push(context, GetRef(cpu_state.data.eip), 4));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, 8));
+        neweip = NTVDM64_TYPE_MASK_UNSIGNED_32(neweip);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, &ccs, newcs));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(oldcs), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eip), 4));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
     cpu_state.data.cs = ccs;
     cpu_state.data.eip = neweip;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kec_call_near(core_machine_cpu_execution_context *context, t_nubit32 neweip, t_nubit8 byte) {
-    _cb("_kec_call_near");
+static void _kec_call_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_call_near");
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        neweip = GetMax16(neweip);
-        _chr(_s_test_cs(context, neweip, 0x01));
-        _chr(_kec_push(context, GetRef(cpu_state.data.ip), 2));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        neweip = NTVDM64_TYPE_MASK_UNSIGNED_16(neweip);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_cs(context, neweip, 0x01));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ip), 2));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        neweip = GetMax32(neweip);
-        _chr(_s_test_cs(context, neweip, 0x01));
-        _chr(_kec_push(context, GetRef(cpu_state.data.eip), 4));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        neweip = NTVDM64_TYPE_MASK_UNSIGNED_32(neweip);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_cs(context, neweip, 0x01));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eip), 4));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
     cpu_state.data.eip = neweip;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _kec_task_switch(t_nubit16 newtss);
-static void _kec_jmp_far(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte) {
+_______todo _kec_task_switch(ntvdm64_type_unsigned_16 newtss);
+static void _kec_jmp_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
     t_cpu_data_sreg ccs = cpu_state.data.cs;
-    _cb("_kec_jmp_far");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_jmp_far");
     switch (byte) {
     case 2:
-        neweip = GetMax16(neweip);
+        neweip = NTVDM64_TYPE_MASK_UNSIGNED_16(neweip);
         break;
     case 4:
-        neweip = GetMax32(neweip);
+        neweip = NTVDM64_TYPE_MASK_UNSIGNED_32(neweip);
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _chr(_ksa_load_sreg(context, &ccs, newcs));
-    _chr(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, &ccs, newcs));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
     cpu_state.data.cs = ccs;
     cpu_state.data.eip = neweip;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kec_jmp_near(core_machine_cpu_execution_context *context, t_nubit32 neweip, t_nubit8 byte) {
-    _cb("_kec_jmp_near");
+static void _kec_jmp_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_jmp_near");
     switch (byte) {
     case 2:
-        neweip = GetMax16(neweip);
+        neweip = NTVDM64_TYPE_MASK_UNSIGNED_16(neweip);
         break;
     case 4:
-        neweip = GetMax32(neweip);
+        neweip = NTVDM64_TYPE_MASK_UNSIGNED_32(neweip);
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _chr(_s_test_cs(context, neweip, 0x01));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_cs(context, neweip, 0x01));
     cpu_state.data.eip = neweip;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kec_ret_far(core_machine_cpu_execution_context *context, t_nubit32 newcs, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte) {
+static void _kec_ret_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
     t_cpu_data_sreg ccs = cpu_state.data.cs;
-    _cb("_kec_ret_far");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_ret_far");
     switch (byte) {
     case 2:
-        neweip = GetMax16(neweip);
+        neweip = NTVDM64_TYPE_MASK_UNSIGNED_16(neweip);
         break;
     case 4:
-        neweip = GetMax32(neweip);
+        neweip = NTVDM64_TYPE_MASK_UNSIGNED_32(neweip);
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _chr(_ksa_load_sreg(context, &ccs, newcs));
-    _chr(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, &ccs, newcs));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
     cpu_state.data.cs = ccs;
     cpu_state.data.eip = neweip;
     switch (_GetStackSize) {
@@ -2226,31 +2226,31 @@ static void _kec_ret_far(core_machine_cpu_execution_context *context, t_nubit32 
         cpu_state.data.esp += parambyte;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kec_ret_near(core_machine_cpu_execution_context *context, t_nubit16 parambyte, t_nubit8 byte) {
-    t_nubit32 neweip = 0;
-    _cb("_kec_ret_near");
+static void _kec_ret_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_32 neweip = 0;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kec_ret_near");
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_kec_pop(context, GetRef(neweip), 2));
-        _chr(_s_test_cs(context, neweip, 0x01));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweip), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_cs(context, neweip, 0x01));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_kec_pop(context, GetRef(neweip), 4));
-        _chr(_s_test_cs(context, neweip, 0x01));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweip), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_cs(context, neweip, 0x01));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
     cpu_state.data.eip = neweip;
@@ -2262,143 +2262,143 @@ static void _kec_ret_near(core_machine_cpu_execution_context *context, t_nubit16
         cpu_state.data.esp += parambyte;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* sub execution routine */
-static void _ser_call_far_real(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte) {
-    _cb("_ser_call_far_real");
-    if (_IsProtected) _impossible_r_;
-    _chr(_kec_call_far(context, newcs, neweip, byte));
-    _ce;
+static void _ser_call_far_real(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_call_far_real");
+    if (_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_call_far(context, newcs, neweip, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _ser_call_far_cs_conf(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte) {
-    t_nubit64 descriptor;
-    _cb("_ser_call_far_cs_conf");
-    if (!_IsProtected) _impossible_r_;
-    _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
-    if (!_IsDescCodeConform(descriptor)) _impossible_r_;
+_______todo _ser_call_far_cs_conf(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_call_far_cs_conf");
+    if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescCodeConform(descriptor)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (_GetDesc_DPL(descriptor) > _GetCPL) {
-        _bb("DPL(>CPL)");
-        _chr(_SetExcept_GP(newcs));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DPL(>CPL)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     if (!_IsDescPresent(descriptor)) {
-        _bb("!DescPresent");
-        _chr(_SetExcept_NP(newcs));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_kec_call_far(context, newcs, neweip, byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_call_far(context, newcs, neweip, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _ser_call_far_cs_nonc(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte) {
-    t_nubit64 descriptor;
-    _cb("_ser_call_far_cs_nonc");
-    if (!_IsProtected) _impossible_r_;
-    _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
-    if (!_IsDescCodeNonConform(descriptor)) _impossible_r_;
+_______todo _ser_call_far_cs_nonc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_call_far_cs_nonc");
+    if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescCodeNonConform(descriptor)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (_GetDesc_DPL(descriptor) != _GetCPL ||
             _GetSelector_RPL(newcs) > _GetCPL) {
-        _bb("DPL(!CPL)/RPL(>CPL)");
-        _chr(_SetExcept_GP(newcs));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DPL(!CPL)/RPL(>CPL)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     if (!_IsDescPresent(descriptor)) {
-        _bb("!DescPresent");
-        _chr(_SetExcept_NP(newcs));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_kec_call_far(context, newcs, neweip, byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_call_far(context, newcs, neweip, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _ser_call_far_call_gate(core_machine_cpu_execution_context *context, t_nubit16 newcs) {
-    t_nubit64 descriptor;
-    _cb("_ser_call_far_call_gate");
-    if (!_IsProtected) _impossible_r_;
-    _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
-    if (!_IsDescCallGate(descriptor)) _impossible_r_;
-    _chr(_SetExcept_CE(0));
-    _ce;
+_______todo _ser_call_far_call_gate(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_call_far_call_gate");
+    if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescCallGate(descriptor)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _ser_call_far_task_gate(core_machine_cpu_execution_context *context, t_nubit16 newcs) {
-    t_nubit64 descriptor;
-    _cb("_ser_call_far_task_gate");
-    if (!_IsProtected) _impossible_r_;
-    _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
-    if (!_IsDescTaskGate(descriptor)) _impossible_r_;
-    _chr(_SetExcept_CE(0));
-    _ce;
+_______todo _ser_call_far_task_gate(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_call_far_task_gate");
+    if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescTaskGate(descriptor)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _ser_call_far_tss(core_machine_cpu_execution_context *context, t_nubit16 newcs) {
-    t_nubit64 descriptor;
-    _cb("_ser_call_far_tss");
-    if (!_IsProtected) _impossible_r_;
-    _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
-    if (!_IsDescTSS(descriptor)) _impossible_r_;
-    _chr(_SetExcept_CE(0));
-    _ce;
+_______todo _ser_call_far_tss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_call_far_tss");
+    if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescTSS(descriptor)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ser_int_real(core_machine_cpu_execution_context *context, t_nubit8 intid, t_nubit8 byte) {
-    t_nubit16 cip;
-    t_nubit32 vector;
-    t_nubit32 oldcs = cpu_state.data.cs.selector;
-    _cb("_ser_int_real");
-    if (_IsProtected) _impossible_r_;
-    if (GetMax16(intid * 4 + 3) > GetMax16(cpu_state.data.idtr.limit)) {
-        _bb("intid(>idtr.limit)");
-        _chr(_SetExcept_GP(0));
-        _be;
+static void _ser_int_real(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_16 cip;
+    ntvdm64_type_unsigned_32 vector;
+    ntvdm64_type_unsigned_32 oldcs = cpu_state.data.cs.selector;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_int_real");
+    if (_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (NTVDM64_TYPE_MASK_UNSIGNED_16(intid * 4 + 3) > NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.idtr.limit)) {
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("intid(>idtr.limit)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_s_test_ss_push(context, 6));
-        _chr(_kec_push(context, GetRef(cpu_state.data.flags), 2));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, 6));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.flags), 2));
         _ClrEFLAGS_IF;
         _ClrEFLAGS_TF;
-        _chr(_kec_push(context, GetRef(oldcs), 2));
-        _chr(_kec_push(context, GetRef(cpu_state.data.ip), 2));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(oldcs), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ip), 2));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_s_test_ss_push(context, 12));
-        _chr(_kec_push(context, GetRef(cpu_state.data.eflags), 4));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, 12));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eflags), 4));
         _ClrEFLAGS_IF;
         _ClrEFLAGS_TF;
-        _chr(_kec_push(context, GetRef(oldcs), 4));
-        _chr(_kec_push(context, GetRef(cpu_state.data.eip), 4));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(oldcs), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eip), 4));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _chr(_s_read_idt(context, intid, GetRef(vector)));
-    cip = GetMax16(vector);
-    _chr(_s_test_cs(context, cip, 0x01));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_idt(context, intid, NTVDM64_TYPE_REFERENCE_OF(vector)));
+    cip = NTVDM64_TYPE_MASK_UNSIGNED_16(vector);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_cs(context, cip, 0x01));
     cpu_state.data.eip = cip;
-    _chr(_s_load_cs(context, GetMax16(vector >> 16)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_cs(context, NTVDM64_TYPE_MASK_UNSIGNED_16(vector >> 16)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _ser_int_protected(core_machine_cpu_execution_context *context, t_nubit8 intid, t_nubit8 byte, t_bool flagext) {
-    t_nubit16 oldss;
-    t_nubit32 oldeflags, oldesp, newesp = Zero32;
-    t_nubit32 xs_sel;
-    t_nubit16 newcs, newss = Zero16;
-    t_nubit64 cs_desc, ss_desc, gate_desc;
-    _cb("_ser_int_protected");
-    if (!_GetCR0_PE) _impossible_r_;
-    if (GetMax16(intid * 8 + 7) > GetMax16(cpu_state.data.idtr.limit)) {
-        _bb("intid(>idtr.limit)");
-        _chr(_SetExcept_GP(intid * 8 + 2 + !!flagext));
-        _be;
+_______todo _ser_int_protected(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool flagext) {
+    ntvdm64_type_unsigned_16 oldss;
+    ntvdm64_type_unsigned_32 oldeflags, oldesp, newesp = NTVDM64_TYPE_ZERO_32;
+    ntvdm64_type_unsigned_32 xs_sel;
+    ntvdm64_type_unsigned_16 newcs, newss = NTVDM64_TYPE_ZERO_16;
+    ntvdm64_type_unsigned_64 cs_desc, ss_desc, gate_desc;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_int_protected");
+    if (!_GetCR0_PE) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (NTVDM64_TYPE_MASK_UNSIGNED_16(intid * 8 + 7) > NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.idtr.limit)) {
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("intid(>idtr.limit)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(intid * 8 + 2 + !!flagext));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_s_read_idt(context, intid, GetRef(gate_desc)));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_idt(context, intid, NTVDM64_TYPE_REFERENCE_OF(gate_desc)));
     switch (_GetDesc_Type(gate_desc)) {
     case VCPU_DESC_SYS_TYPE_TASKGATE:
     case VCPU_DESC_SYS_TYPE_INTGATE_16:
@@ -2407,134 +2407,134 @@ _______todo _ser_int_protected(core_machine_cpu_execution_context *context, t_nu
     case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
         break;
     default:
-        _bb("Desc_Type(!TaskGate/!IntGate/!TrapGate)");
-        _chr(_SetExcept_GP(intid * 8 + 2 + !!flagext));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Desc_Type(!TaskGate/!IntGate/!TrapGate)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(intid * 8 + 2 + !!flagext));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
     if (!flagext) {
-        _bb("!flagext");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!flagext");
         if (_GetDesc_DPL(gate_desc) < _GetCPL) {
-            _bb("DPL(<CPL)");
-            _chr(_SetExcept_GP(intid * 8 + 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DPL(<CPL)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(intid * 8 + 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     if (!_IsDescPresent(gate_desc)) {
-        _bb("!DescPresent");
-        _chr(_SetExcept_NP(intid * 8 + 2 + !!flagext));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(intid * 8 + 2 + !!flagext));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     if (_GetDesc_Type(gate_desc) == VCPU_DESC_SYS_TYPE_TASKGATE) {
-        _bb("Desc_Type(TaskGate)");
-        _chr(_SetExcept_CE(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Desc_Type(TaskGate)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("Desc_Type(!TaskGate)");
-        newcs = GetMax16(_GetDescGate_Selector(gate_desc));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Desc_Type(!TaskGate)");
+        newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(gate_desc));
         if (_IsSelectorNull(newcs)) {
-            _bb("newcs(null)");
-            _chr(_SetExcept_GP(!!flagext));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("newcs(null)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(!!flagext));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (_GetSelector_TI(newcs)) {
-            _bb("Selector_TI(1)");
-            if (GetMax16(_GetSelector_Offset(newcs) + 7) > GetMax16(cpu_state.data.ldtr.limit)) {
-                _bb("Selector_Offset(>ldtr.limit)");
-                _chr(_SetExcept_GP(newcs & 0xfffc + !!flagext));
-                _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Selector_TI(1)");
+            if (NTVDM64_TYPE_MASK_UNSIGNED_16(_GetSelector_Offset(newcs) + 7) > NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.ldtr.limit)) {
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Selector_Offset(>ldtr.limit)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffc + !!flagext));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("Selector_TI(0)");
-            if (GetMax16(_GetSelector_Offset(newcs) + 7) > GetMax16(cpu_state.data.gdtr.limit)) {
-                _bb("Selector_Offset(>gdtr.limit)");
-                _chr(_SetExcept_GP(newcs & 0xfffc + !!flagext));
-                _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Selector_TI(0)");
+            if (NTVDM64_TYPE_MASK_UNSIGNED_16(_GetSelector_Offset(newcs) + 7) > NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.gdtr.limit)) {
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Selector_Offset(>gdtr.limit)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffc + !!flagext));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _chr(_s_read_xdt(context, newcs, GetRef(cs_desc)));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(cs_desc)));
         if (!_IsDescCode(cs_desc) ||
                 _GetDesc_DPL(cs_desc) > _GetCPL) {
-            _bb("!DescCode/DPL(>CPL)");
-            _chr(_SetExcept_GP(newcs & 0xfffc + !!flagext));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescCode/DPL(>CPL)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffc + !!flagext));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (!_IsDescPresent(cs_desc)) {
-            _bb("!DescPresent");
-            _chr(_SetExcept_NP(newcs & 0xfffc + !!flagext));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffc + !!flagext));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (_IsDescCodeNonConform(cs_desc) &&
                 _GetDesc_DPL(cs_desc) < _GetCPL) {
-            _bb("DescCodeNonConform,DPL(<CPL)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DescCodeNonConform,DPL(<CPL)");
             if (!_GetEFLAGS_VM) {
-                _bb("EFLAS_VM(0)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAS_VM(0)");
                 /* INTER-PRIVILEGE-LEVEL-INTERRUPT */
-                _chr(_SetExcept_CE(0));
-                _be;
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("EFLAS_VM(1)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAS_VM(1)");
                 if (_GetDesc_DPL(cs_desc) != 0) {
-                    _bb("DPL(!0)");
-                    _chr(_SetExcept_GP(newcs));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DPL(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 /* INTERRUPT-FROM-VIRTUAL-8086-MODE */
                 switch (cpu_state.data.tr.sys.type) {
                 case VCPU_DESC_SYS_TYPE_TSS_32_AVL:
                 case VCPU_DESC_SYS_TYPE_TSS_32_BUSY:
-                    _bb("tr.type(32)");
-                    _chr(_s_test_tss(context, 4, 8));
-                    _chr(_s_read_tss(context, 4, GetRef(newesp), 4));
-                    _chr(_s_read_tss(context, 8, GetRef(newss), 2));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("tr.type(32)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_tss(context, 4, 8));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 4, NTVDM64_TYPE_REFERENCE_OF(newesp), 4));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 8, NTVDM64_TYPE_REFERENCE_OF(newss), 2));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 case VCPU_DESC_SYS_TYPE_TSS_16_AVL:
                 case VCPU_DESC_SYS_TYPE_TSS_16_BUSY:
-                    _bb("tr.type(16)");
-                    _chr(_s_test_tss(context, 2, 4));
-                    _chr(_s_read_tss(context, 2, GetRef(newesp), 2));
-                    _chr(_s_read_tss(context, 4, GetRef(newss), 2));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("tr.type(16)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_tss(context, 2, 4));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 2, NTVDM64_TYPE_REFERENCE_OF(newesp), 2));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 4, NTVDM64_TYPE_REFERENCE_OF(newss), 2));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
                 if (_IsSelectorNull(newss)) {
-                    _bb("newss(null)");
-                    _chr(_SetExcept_TS(!!flagext));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("newss(null)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(!!flagext));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (_GetSelector_RPL(newss) != _GetDesc_DPL(cs_desc)) {
-                    _bb("RPL(newss)!=DPL(newcs)");
-                    _chr(_SetExcept_TS(newss & 0xfffc + !!flagext));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RPL(newss)!=DPL(newcs)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newss & 0xfffc + !!flagext));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                _chr(_s_read_xdt(context, newss, GetRef(ss_desc)));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newss, NTVDM64_TYPE_REFERENCE_OF(ss_desc)));
                 if (_GetDesc_DPL(ss_desc) !=
                         _GetDesc_DPL(cs_desc)) {
-                    _bb("DPL(newss)!=DPL(newcs)");
-                    _chr(_SetExcept_TS(newss & 0xfffc + !!flagext));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DPL(newss)!=DPL(newcs)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newss & 0xfffc + !!flagext));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (!_IsDescPresent(ss_desc)) {
-                    _bb("!DescPresent(newss)");
-                    _chr(_SetExcept_SS(newss & 0xfffc + !!flagext));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescPresent(newss)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_SS(newss & 0xfffc + !!flagext));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                /*_chr(_ksa_load_sreg(context, &css, &ss_xdesc));
+                /*NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, &css, &ss_xdesc));
                 if (_IsDescSys32(gate_desc)) {
-                    _bb("DescSys32(gate)");
-                    _chr(_kma_test_logical(context, &css, newesp, 36, 1, 0x00, 0));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DescSys32(gate)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &css, newesp, 36, 1, 0x00, 0));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 } else {
-                    _bb("!DescSys32(gate)");
-                    _chr(_kma_test_logical(context, &css, newesp, 18, 1, 0x00, 0));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescSys32(gate)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &css, newesp, 18, 1, 0x00, 0));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }*/
                 oldeflags = cpu_state.data.eflags;
                 _ClrEFLAGS_VM;
@@ -2546,636 +2546,636 @@ _______todo _ser_int_protected(core_machine_cpu_execution_context *context, t_nu
                     _ClrEFLAGS_IF;
                 oldss = cpu_state.data.ss.selector;
                 oldesp = cpu_state.data.esp;
-                _chr(_ksa_load_sreg(context, &cpu_state.data.ss, newss));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, &cpu_state.data.ss, newss));
                 cpu_state.data.esp = newesp;
                 if (_IsDescSys32(gate_desc)) {
-                    _bb("DescSys32(gate)");
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DescSys32(gate)");
                     xs_sel = cpu_state.data.gs.selector;
-                    _chr(_kec_push(context, GetRef(xs_sel), 4));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
                     xs_sel = cpu_state.data.fs.selector;
-                    _chr(_kec_push(context, GetRef(xs_sel), 4));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
                     xs_sel = cpu_state.data.ds.selector;
-                    _chr(_kec_push(context, GetRef(xs_sel), 4));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
                     xs_sel = cpu_state.data.es.selector;
-                    _chr(_kec_push(context, GetRef(xs_sel), 4));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
                     xs_sel = oldss;
-                    _chr(_kec_push(context, GetRef(xs_sel), 4));
-                    _chr(_kec_push(context, GetRef(oldesp), 4));
-                    _chr(_kec_push(context, GetRef(oldeflags), 4));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(oldesp), 4));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(oldeflags), 4));
                     xs_sel = cpu_state.data.cs.selector;
-                    _chr(_kec_push(context, GetRef(xs_sel), 4));
-                    _chr(_kec_push(context, GetRef(cpu_state.data.eip), 4));
-                    _chr(_s_load_gs(context, 0x0000));
-                    _chr(_s_load_fs(context, 0x0000));
-                    _chr(_s_load_ds(context, 0x0000));
-                    _chr(_s_load_es(context, 0x0000));
-                    _chr(_ksa_load_sreg(context, &cpu_state.data.cs, newcs));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eip), 4));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_gs(context, 0x0000));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_fs(context, 0x0000));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_ds(context, 0x0000));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_es(context, 0x0000));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, &cpu_state.data.cs, newcs));
                     switch (byte) {
                     case 2:
-                        cpu_state.data.eip = GetMax16(_GetDescGate_Offset(gate_desc));
+                        cpu_state.data.eip = NTVDM64_TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc));
                         break;
                     case 4:
-                        cpu_state.data.eip = GetMax32(_GetDescGate_Offset(gate_desc));
+                        cpu_state.data.eip = NTVDM64_TYPE_MASK_UNSIGNED_32(_GetDescGate_Offset(gate_desc));
                         break;
                     default:
-                        _bb("byte");
-                        _chr(_SetExcept_CE(byte));
-                        _be;
+                        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+                        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+                        NTVDM64_TYPE_TRACE_BLOCK_END;
                         break;
                     }
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 } else {
-                    _bb("!DescSys32(gate)");
-                    _chr(_SetExcept_CE(0));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescSys32(gate)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("DescCodeConform/DPL(>=CPL)");
-            _chr(_SetExcept_CE(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DescCodeConform/DPL(>=CPL)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ser_ret_far_real(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte) {
-    _cb("_ser_ret_far_real");
-    if (_IsProtected) _impossible_r_;
-    _chr(_kec_ret_far(context, newcs, neweip, parambyte, byte));
-    _ce;
+static void _ser_ret_far_real(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_ret_far_real");
+    if (_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_ret_far(context, newcs, neweip, parambyte, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ser_ret_far_same(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte) {
-    _cb("_ser_ret_far_same");
-    if (!_IsProtected) _impossible_r_;
-    _chr(_kec_ret_far(context, newcs, neweip, parambyte, byte));
-    _ce;
+static void _ser_ret_far_same(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_ret_far_same");
+    if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_ret_far(context, newcs, neweip, parambyte, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _ser_ret_far_outer(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit16 parambyte, t_nubit16 byte) {
-    _cb("_ser_ret_far_outer");
-    if (!_IsProtected) _impossible_r_;
-    _chr(_SetExcept_CE(0));
-    _ce;
+_______todo _ser_ret_far_outer(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_ret_far_outer");
+    if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ser_jmp_far_real(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte) {
-    _cb("_ser_jmp_far_real");
-    if (_IsProtected) _impossible_r_;
-    _chr(_kec_jmp_far(context, newcs, neweip, byte));
-    _ce;
+static void _ser_jmp_far_real(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_real");
+    if (_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_jmp_far(context, newcs, neweip, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ser_jmp_far_cs_conf(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte) {
-    t_nubit64 descriptor;
-    _cb("_ser_jmp_far_cs_conf");
-    if (!_IsProtected) _impossible_r_;
-    _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
-    if (!_IsDescCodeConform(descriptor)) _impossible_r_;
+static void _ser_jmp_far_cs_conf(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_cs_conf");
+    if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescCodeConform(descriptor)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (_GetDesc_DPL(descriptor) > _GetCPL) {
-        _bb("DPL(>CPL)");
-        _chr(_SetExcept_GP(newcs));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DPL(>CPL)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     if (!_IsDescPresent(descriptor)) {
-        _bb("!DescPresent");
-        _chr(_SetExcept_NP(newcs));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_kec_jmp_far(context, newcs, neweip, byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_jmp_far(context, newcs, neweip, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _ser_jmp_far_cs_nonc(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte) {
-    t_nubit64 descriptor;
-    _cb("_ser_jmp_far_cs_nonc");
-    if (!_IsProtected) _impossible_r_;
-    _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
-    if (!_IsDescCodeNonConform(descriptor)) _impossible_r_;
+static void _ser_jmp_far_cs_nonc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_cs_nonc");
+    if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescCodeNonConform(descriptor)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (_GetDesc_DPL(descriptor) != _GetCPL ||
             _GetSelector_RPL(newcs) > _GetCPL) {
-        _bb("DPL(!CPL)/RPL(>CPL)");
-        _chr(_SetExcept_GP(newcs));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DPL(!CPL)/RPL(>CPL)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     if (!_IsDescPresent(descriptor)) {
-        _bb("!DescPresent");
-        _chr(_SetExcept_NP(newcs));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_kec_jmp_far(context, newcs, neweip, byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_jmp_far(context, newcs, neweip, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _ser_jmp_far_call_gate(core_machine_cpu_execution_context *context, t_nubit16 newcs) {
-    t_nubit64 descriptor;
-    _cb("_ser_jmp_far_call_gate");
-    if (!_IsProtected) _impossible_r_;
-    _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
-    if (!_IsDescCallGate(descriptor)) _impossible_r_;
-    _chr(_SetExcept_CE(0));
-    _ce;
+_______todo _ser_jmp_far_call_gate(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_call_gate");
+    if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescCallGate(descriptor)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _ser_jmp_far_task_gate(core_machine_cpu_execution_context *context, t_nubit16 newcs) {
-    t_nubit64 descriptor;
-    _cb("_ser_jmp_far_task_gate");
-    if (!_IsProtected) _impossible_r_;
-    _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
-    if (!_IsDescTaskGate(descriptor)) _impossible_r_;
-    _chr(_SetExcept_CE(0));
-    _ce;
+_______todo _ser_jmp_far_task_gate(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_task_gate");
+    if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescTaskGate(descriptor)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _ser_jmp_far_tss(core_machine_cpu_execution_context *context, t_nubit16 newcs) {
-    t_nubit64 descriptor;
-    _cb("_ser_jmp_far_tss");
-    if (!_IsProtected) _impossible_r_;
-    _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
-    if (!_IsDescTSS(descriptor)) _impossible_r_;
-    _chr(_SetExcept_CE(0));
-    _ce;
+_______todo _ser_jmp_far_tss(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_tss");
+    if (!_IsProtected) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescTSS(descriptor)) NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* regular execute control */
-static void _e_push(core_machine_cpu_execution_context *context, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_e_push");
-    _chr(_kec_push(context, rdata, byte));
-    _ce;
+static void _e_push(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_push");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_push(context, rdata, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_pop(core_machine_cpu_execution_context *context, t_vaddrcc rdata, t_nubit8 byte) {
-    _cb("_e_pop");
-    _chr(_kec_pop(context, rdata, byte));
-    _ce;
+static void _e_pop(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_pop");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, rdata, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_call_far(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte) {
-    t_nubit64 descriptor;
-    _cb("_e_call_far");
+static void _e_call_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_call_far");
     if (!_IsProtected) {
-        _bb("!Protected");
-        _chr(_ser_call_far_real(context, newcs, neweip, byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Protected");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_call_far_real(context, newcs, neweip, byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("Protected");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected");
         if (_IsSelectorNull(newcs)) {
-            _bb("newcs(null)");
-            _chr(_SetExcept_GP(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("newcs(null)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
         if (_IsDescCodeConform(descriptor))
-            _chr(_ser_call_far_cs_conf(context, newcs, neweip, byte));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_call_far_cs_conf(context, newcs, neweip, byte));
         else if (_IsDescCodeNonConform(descriptor))
-            _chr(_ser_call_far_cs_nonc(context, newcs, neweip, byte));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_call_far_cs_nonc(context, newcs, neweip, byte));
         else if (_IsDescCallGate(descriptor))
-            _chr(_ser_call_far_call_gate(context, newcs));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_call_far_call_gate(context, newcs));
         else if (_IsDescTaskGate(descriptor))
-            _chr(_ser_call_far_task_gate(context, newcs));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_call_far_task_gate(context, newcs));
         else if (_IsDescTSS(descriptor))
-            _chr(_ser_call_far_tss(context, newcs));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_call_far_tss(context, newcs));
         else {
-            _bb("desc(invalid)");
-            _chr(_SetExcept_GP(newcs));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("desc(invalid)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_call_near(core_machine_cpu_execution_context *context, t_nubit32 neweip, t_nubit8 byte) {
-    _cb("_e_call_near");
-    _chr(_kec_call_near(context, neweip, byte));
-    _ce;
+static void _e_call_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_call_near");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_call_near(context, neweip, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _e_int3(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    _cb("_e_int3");
+_______todo _e_int3(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_int3");
     if (!_GetCR0_PE) {
-        _bb("Real");
-        _chr(_ser_int_real(context, 0x03, byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Real");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_int_real(context, 0x03, byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("!Real");
-        _chr(_ser_int_protected(context, 0x03, byte, 0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Real");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, 0x03, byte, 0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _e_into(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    _cb("_e_into");
+_______todo _e_into(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_into");
     if (_GetEFLAGS_OF) {
-        _bb("EFLAGS_OF(1)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_OF(1)");
         if (!_GetCR0_PE) {
-            _bb("Real");
-            _chr(_ser_int_real(context, 0x04, byte));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Real");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_int_real(context, 0x04, byte));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("!Real");
-            _chr(_ser_int_protected(context, 0x04, byte, 0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Real");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, 0x04, byte, 0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _e_int_n(core_machine_cpu_execution_context *context, t_nubit8 intid, t_nubit8 byte) {
-    _cb("_e_int_n");
+_______todo _e_int_n(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_int_n");
     if (!_GetCR0_PE) {
-        _bb("Real");
-        _chr(_ser_int_real(context, intid, byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Real");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_int_real(context, intid, byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("!Real");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Real");
         if (_GetEFLAGS_VM && _GetEFLAGS_IOPL < 3) {
-            _bb("EFLAGAS_VM(1),IOPL(<3)");
-            _chr(_SetExcept_GP(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGAS_VM(1),IOPL(<3)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("EFLAGS_VM(0)/IOPL(3)");
-            _chr(_ser_int_protected(context, intid, byte, 0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_VM(0)/IOPL(3)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, intid, byte, 0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _e_intr_n(core_machine_cpu_execution_context *context, t_nubit8 intid, t_nubit8 byte) {
-    _cb("_e_intr_n");
+_______todo _e_intr_n(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 intid, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_intr_n");
     if (!_GetCR0_PE) {
-        _bb("Real");
-        _chr(_ser_int_real(context, intid, byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Real");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_int_real(context, intid, byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("!Real");
-        _chr(_ser_int_protected(context, intid, byte, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Real");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, intid, byte, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _e_except_n(core_machine_cpu_execution_context *context, t_nubit8 exid, t_nubit8 byte) {
-    _cb("_e_except_n");
+_______todo _e_except_n(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 exid, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_except_n");
     instruction_state.data.except &= ~(1 << exid);
     if (!_GetCR0_PE) {
-        _bb("Real");
-        _chr(_ser_int_real(context, exid, byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Real");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_int_real(context, exid, byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("!Real");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Real");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-_______todo _e_iret(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    t_nubit16 newcs, newss, newds, newes, newfs, newgs;
-    t_nubit32 neweip = Zero32, newesp, neweflags = Zero32;
-    t_nubit32 xs_sel;
-    t_nubit32 mask = VCPU_EFLAGS_RESERVED;
+_______todo _e_iret(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_16 newcs, newss, newds, newes, newfs, newgs;
+    ntvdm64_type_unsigned_32 neweip = NTVDM64_TYPE_ZERO_32, newesp, neweflags = NTVDM64_TYPE_ZERO_32;
+    ntvdm64_type_unsigned_32 xs_sel;
+    ntvdm64_type_unsigned_32 mask = VCPU_EFLAGS_RESERVED;
     t_cpu_data_sreg ccs = cpu_state.data.cs;
-    _cb("_e_iret");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_iret");
     if (!_GetCR0_PE) {
-        _bb("Real");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Real");
         switch (byte) {
         case 2:
-            _bb("byte(2)");
-            _chr(_s_test_ss_pop(context, 6));
-            _chr(_kec_pop(context, GetRef(neweip), 2));
-            _chr(_kec_pop(context, GetRef(xs_sel), 2));
-            newcs = GetMax16(xs_sel);
-            _chr(_kec_pop(context, GetRef(neweflags), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 6));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweip), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 2));
+            newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweflags), 2));
             mask |= 0xffff0000;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("byte(4)");
-            _chr(_s_test_ss_pop(context, 12));
-            _chr(_kec_pop(context, GetRef(neweip), 4));
-            _chr(_kec_pop(context, GetRef(xs_sel), 4));
-            newcs = GetMax16(xs_sel);
-            _chr(_kec_pop(context, GetRef(neweflags), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 12));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweip), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
+            newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweflags), 4));
             /* cpu_state.data.eflags = (neweflags & 0x00257fd5) | (cpu_state.data.eflags & 0x001a0000); */
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _bb("byte");
-            _chr(_SetExcept_CE(byte));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         }
-        _chr(_ksa_load_sreg(context, &ccs, newcs));
-        _chr(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, &ccs, newcs));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
         cpu_state.data.cs = ccs;
         cpu_state.data.eip = neweip;
         cpu_state.data.eflags = (neweflags & ~mask) | (cpu_state.data.eflags & mask);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("!Real");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Real");
         if (_GetEFLAGS_VM) {
-            _bb("V86");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("V86");
             /* RETURN-FROM-VIRTUAL-8086-MODE */
             if (_GetEFLAGS_IOPL == 3) {
-                _bb("EFLAGS_IOPL(3)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_IOPL(3)");
                 switch (byte) {
                 case 2:
-                    _bb("byte(2)");
-                    _chr(_s_test_ss_pop(context, 6));
-                    _chr(_kec_pop(context, GetRef(neweip), 2));
-                    _chr(_kec_pop(context, GetRef(xs_sel), 2));
-                    newcs = GetMax16(xs_sel);
-                    _chr(_kec_pop(context, GetRef(neweflags), 2));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 6));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweip), 2));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 2));
+                    newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweflags), 2));
                     mask |= (0xffff0000 | VCPU_EFLAGS_IOPL);
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 case 4:
-                    _bb("byte(4)");
-                    _chr(_s_test_ss_pop(context, 12));
-                    _chr(_kec_pop(context, GetRef(neweip), 4));
-                    _chr(_kec_pop(context, GetRef(xs_sel), 4));
-                    newcs = GetMax16(xs_sel);
-                    _chr(_kec_pop(context, GetRef(neweflags), 4));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 12));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweip), 4));
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
+                    newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweflags), 4));
                     mask |= (VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL);
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 default:
-                    _bb("byte");
-                    _chr(_SetExcept_CE(byte));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 }
-                _chr(_ksa_load_sreg(context, &ccs, newcs));
-                _chr(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, &ccs, newcs));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
                 cpu_state.data.cs = ccs;
                 cpu_state.data.eip = neweip;
                 cpu_state.data.eflags = (neweflags & ~mask) | (cpu_state.data.eflags & mask);
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("EFLAGS_IOPL(!3)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_IOPL(!3)");
                 /* trap to virtual-8086 monitor */
                 instruction_state.data.oldcpu = cpu_state;
-                _chr(_SetExcept_GP(0));
-                _be;
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else if (_GetEFLAGS_NT) {
-            _bb("Nested");
-            _chr(_SetExcept_CE(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Nested");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("Protected,!Nested");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected,!Nested");
             switch (byte) {
             case 2:
-                _bb("byte(2)");
-                _chr(_s_test_ss_pop(context, 6));
-                _chr(_kec_pop(context, GetRef(neweip), 2));
-                _chr(_kec_pop(context, GetRef(xs_sel), 2));
-                newcs = GetMax16(xs_sel);
-                _chr(_kec_pop(context, GetRef(neweflags), 2));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 6));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweip), 2));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 2));
+                newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweflags), 2));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("byte(4)");
-                _chr(_s_test_ss_pop(context, 12));
-                _chr(_kec_pop(context, GetRef(neweip), 4));
-                _chr(_kec_pop(context, GetRef(xs_sel), 4));
-                newcs = GetMax16(xs_sel);
-                _chr(_kec_pop(context, GetRef(neweflags), 4));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 12));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweip), 4));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
+                newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweflags), 4));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _bb("byte");
-                _chr(_SetExcept_CE(byte));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             }
-            if (GetBit(neweflags, VCPU_EFLAGS_VM) && !_GetCPL) {
-                _bb("neweflags(VM),CPL(0)");
+            if (NTVDM64_TYPE_GET_BIT(neweflags, VCPU_EFLAGS_VM) && !_GetCPL) {
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("neweflags(VM),CPL(0)");
                 /* return to v86 */
-                _chr(_s_test_ss_pop(context, 24));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 24));
                 cpu_state.data.eflags = (neweflags & ~mask) | (cpu_state.data.eflags & mask);
-                _chr(_ksa_load_sreg(context, &ccs, newcs));
-                _chr(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, &ccs, newcs));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
                 cpu_state.data.cs = ccs;
                 cpu_state.data.eip = neweip;
-                _chr(_kec_pop(context, GetRef(newesp), 4));
-                _chr(_kec_pop(context, GetRef(xs_sel), 4));
-                newss = GetMax16(xs_sel);
-                _chr(_kec_pop(context, GetRef(xs_sel), 4));
-                newes = GetMax16(xs_sel);
-                _chr(_kec_pop(context, GetRef(xs_sel), 4));
-                newds = GetMax16(xs_sel);
-                _chr(_kec_pop(context, GetRef(xs_sel), 4));
-                newfs = GetMax16(xs_sel);
-                _chr(_kec_pop(context, GetRef(xs_sel), 4));
-                newgs = GetMax16(xs_sel);
-                _chr(_s_load_ss(context, newss));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(newesp), 4));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
+                newss = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
+                newes = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
+                newds = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
+                newfs = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
+                newgs = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_ss(context, newss));
                 cpu_state.data.esp = newesp;
-                _chr(_s_load_es(context, newes));
-                _chr(_s_load_ds(context, newds));
-                _chr(_s_load_fs(context, newfs));
-                _chr(_s_load_gs(context, newgs));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_es(context, newes));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_ds(context, newds));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_fs(context, newfs));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_gs(context, newgs));
                 _MakeCPL(0x03);
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("neweflags(!VM)/CPL(!0)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("neweflags(!VM)/CPL(!0)");
                 /* return to proctected */
-                _chr(_SetExcept_CE(0));
-                _be;
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_jcc(core_machine_cpu_execution_context *context, t_nubit32 csrc, t_nubit8 byte, t_bool condition) {
-    t_nubit32 neweip = cpu_state.data.eip;
-    _cb("_e_jcc");
+static void _e_jcc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 csrc, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool condition) {
+    ntvdm64_type_unsigned_32 neweip = cpu_state.data.eip;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_jcc");
     if (condition) {
-        _bb("condition(1)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("condition(1)");
         switch (byte) {
         case 1:
-            neweip += (t_nsbit8)csrc;
+            neweip += (ntvdm64_type_signed_8)csrc;
             break;
         case 2:
-            neweip += (t_nsbit16)csrc;
+            neweip += (ntvdm64_type_signed_16)csrc;
             break;
         case 4:
-            neweip += (t_nsbit32)csrc;
+            neweip += (ntvdm64_type_signed_32)csrc;
             break;
         default:
-            _bb("byte");
-            _chr(_SetExcept_CE(byte));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         }
-        _chr(_kec_jmp_near(context, neweip, _GetOperandSize));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_jmp_near(context, neweip, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_jmp_far(core_machine_cpu_execution_context *context, t_nubit16 newcs, t_nubit32 neweip, t_nubit8 byte) {
-    t_nubit64 descriptor;
-    _cb("_e_jmp_far");
+static void _e_jmp_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 newcs, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_jmp_far");
     if (!_IsProtected) {
-        _bb("Protected(0)");
-        _chr(_ser_jmp_far_real(context, newcs, neweip, byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected(0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_jmp_far_real(context, newcs, neweip, byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("Protected(1)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected(1)");
         if (_IsSelectorNull(newcs)) {
-            _bb("selector(null)");
-            _chr(_SetExcept_GP(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(null)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
         if (_IsDescCodeConform(descriptor))
-            _chr(_ser_jmp_far_cs_conf(context, newcs, neweip, byte));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_jmp_far_cs_conf(context, newcs, neweip, byte));
         else if (_IsDescCodeNonConform(descriptor))
-            _chr(_ser_jmp_far_cs_nonc(context, newcs, neweip, byte));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_jmp_far_cs_nonc(context, newcs, neweip, byte));
         else if (_IsDescCallGate(descriptor))
-            _chr(_ser_jmp_far_call_gate(context, newcs));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_jmp_far_call_gate(context, newcs));
         else if (_IsDescTaskGate(descriptor))
-            _chr(_ser_jmp_far_task_gate(context, newcs));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_jmp_far_task_gate(context, newcs));
         else if (_IsDescTSS(descriptor))
-            _chr(_ser_jmp_far_tss(context, newcs));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_jmp_far_tss(context, newcs));
         else {
-            _bb("newcs(invalid)");
-            _chr(_SetExcept_GP(newcs));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("newcs(invalid)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     instruction_state.data.opr1 = cpu_state.data.cs.selector;
     instruction_state.data.opr2 = cpu_state.data.eip;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_jmp_near(core_machine_cpu_execution_context *context, t_nubit32 neweip, t_nubit8 byte) {
-    _cb("_e_jmp_near");
-    _chr(_kec_jmp_near(context, neweip, byte));
-    _ce;
+static void _e_jmp_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 neweip, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_jmp_near");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_jmp_near(context, neweip, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_load_far(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, t_vaddrcc rdest, t_nubit16 selector, t_nubit32 offset, t_nubit8 byte) {
-    _cb("_e_load_far");
-    _chr(_s_load_sreg(context, rsreg, selector));
+static void _e_load_far(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, ntvdm64_type_virtual_address rdest, ntvdm64_type_unsigned_16 selector, ntvdm64_type_unsigned_32 offset, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_load_far");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, rsreg, selector));
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_m_write_ref(context, rdest, GetRef(offset), 2));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, rdest, NTVDM64_TYPE_REFERENCE_OF(offset), 2));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_m_write_ref(context, rdest, GetRef(offset), 4));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, rdest, NTVDM64_TYPE_REFERENCE_OF(offset), 4));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_loopcc(core_machine_cpu_execution_context *context, t_nsbit8 csrc, t_bool condition) {
-    t_nubit32 cecx;
-    t_nubit32 neweip = cpu_state.data.eip;
-    _cb("_e_loopcc");
+static void _e_loopcc(core_machine_cpu_execution_context *context, ntvdm64_type_signed_8 csrc, ntvdm64_type_bool condition) {
+    ntvdm64_type_unsigned_32 cecx;
+    ntvdm64_type_unsigned_32 neweip = cpu_state.data.eip;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_loopcc");
     switch (_GetAddressSize) {
     case 2:
         cpu_state.data.cx--;
-        cecx = GetMax16(cpu_state.data.ecx);
+        cecx = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.ecx);
         break;
     case 4:
         cpu_state.data.ecx--;
-        cecx = GetMax32(cpu_state.data.ecx);
+        cecx = NTVDM64_TYPE_MASK_UNSIGNED_32(cpu_state.data.ecx);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     if (cecx && condition) {
-        _bb("cecx(!0),condition(1)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cecx(!0),condition(1)");
         neweip += csrc;
-        _chr(_kec_jmp_near(context, neweip, _GetOperandSize));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_jmp_near(context, neweip, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_ret_near(core_machine_cpu_execution_context *context, t_nubit16 parambyte, t_nubit8 byte) {
-    _cb("_e_ret_near");
-    _chr(_kec_ret_near(context, parambyte, byte));
-    _ce;
+static void _e_ret_near(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_8 byte) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_ret_near");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_ret_near(context, parambyte, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _e_ret_far(core_machine_cpu_execution_context *context, t_nubit16 parambyte, t_nubit16 byte) {
-    t_nubit16 newcs;
-    t_nubit32 xs_sel;
-    t_nubit32 neweip = 0;
-    t_nubit64 descriptor;
-    _cb("_e_ret_far");
+static void _e_ret_far(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 parambyte, ntvdm64_type_unsigned_16 byte) {
+    ntvdm64_type_unsigned_16 newcs;
+    ntvdm64_type_unsigned_32 xs_sel;
+    ntvdm64_type_unsigned_32 neweip = 0;
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_e_ret_far");
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_s_test_ss_pop(context, 4));
-        _chr(_kec_pop(context, GetRef(neweip), 2));
-        _chr(_kec_pop(context, GetRef(xs_sel), 2));
-        newcs = GetMax16(xs_sel);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweip), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 2));
+        newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_s_test_ss_pop(context, 8));
-        _chr(_kec_pop(context, GetRef(neweip), 4));
-        _chr(_kec_pop(context, GetRef(xs_sel), 4));
-        newcs = GetMax16(xs_sel);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(neweip), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kec_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), 4));
+        newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel);
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
     if (!_IsProtected) {
-        _bb("!Protected");
-        _chr(_ser_ret_far_real(context, newcs, neweip, parambyte, byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Protected");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_ret_far_real(context, newcs, neweip, parambyte, byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("Protected");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected");
         if (_IsSelectorNull(newcs)) {
-            _bb("selector(null)");
-            _chr(_SetExcept_GP(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(null)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _chr(_s_read_xdt(context, newcs, GetRef(descriptor)));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
         if (!_IsDescCode(descriptor)) {
-            _bb("!DescCode");
-            _chr(_SetExcept_GP(newcs));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescCode");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (_GetSelector_RPL(newcs) < _GetCPL) {
-            _bb("RPL(<CPL)");
-            _chr(_SetExcept_GP(newcs));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RPL(<CPL)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (_IsDescCodeConform(descriptor)) {
-            _bb("DescCodeConform");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DescCodeConform");
             if (_GetDesc_DPL(descriptor) > _GetSelector_RPL(newcs)) {
-                _bb("DPL(>RPL)");
-                _chr(_SetExcept_GP(newcs));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DPL(>RPL)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (!_IsDescPresent(descriptor)) {
-            _bb("!DescPresent");
-            _chr(_SetExcept_NP(newcs));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         if (_GetSelector_RPL(newcs) > _GetCPL) {
-            _bb("RPL(>CPL)");
-            _chr(_ser_ret_far_outer(context, newcs, neweip, parambyte, byte));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RPL(>CPL)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_ret_far_outer(context, newcs, neweip, parambyte, byte));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("RPL(<=CPL)");
-            _chr(_ser_ret_far_same(context, newcs, neweip, parambyte, byte));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RPL(<=CPL)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_ser_ret_far_same(context, newcs, neweip, parambyte, byte));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* arithmetic unit */
@@ -3211,39 +3211,39 @@ static void _e_ret_far(core_machine_cpu_execution_context *context, t_nubit16 pa
 #define DAS_FLAG  (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF)
 
 static void _kaf_calc_CF(core_machine_cpu_execution_context *context) {
-    _cb("_kaf_calc_CF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_calc_CF");
     switch (instruction_state.data.type) {
     case ADC8:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, (
-                    (_GetEFLAGS_CF && instruction_state.data.opr2 == Max8) ?
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (
+                    (_GetEFLAGS_CF && instruction_state.data.opr2 == NTVDM64_TYPE_MAX_UNSIGNED_8) ?
                     1 : ((instruction_state.data.result < instruction_state.data.opr1) || (instruction_state.data.result < instruction_state.data.opr2))));
         break;
     case ADC16:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, (
-                    (_GetEFLAGS_CF && instruction_state.data.opr2 == Max16) ?
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (
+                    (_GetEFLAGS_CF && instruction_state.data.opr2 == NTVDM64_TYPE_MAX_UNSIGNED_16) ?
                     1 : ((instruction_state.data.result < instruction_state.data.opr1) || (instruction_state.data.result < instruction_state.data.opr2))));
         break;
     case ADC32:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, (
-                    (_GetEFLAGS_CF && instruction_state.data.opr2 == Max32) ?
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (
+                    (_GetEFLAGS_CF && instruction_state.data.opr2 == NTVDM64_TYPE_MAX_UNSIGNED_32) ?
                     1 : ((instruction_state.data.result < instruction_state.data.opr1) || (instruction_state.data.result < instruction_state.data.opr2))));
         break;
     case ADD8:
     case ADD16:
     case ADD32:
-        MakeBit(cpu_state.data.eflags,VCPU_EFLAGS_CF,(instruction_state.data.result < instruction_state.data.opr1) || (instruction_state.data.result < instruction_state.data.opr2));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags,VCPU_EFLAGS_CF,(instruction_state.data.result < instruction_state.data.opr1) || (instruction_state.data.result < instruction_state.data.opr2));
         break;
     case SBB8:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, (instruction_state.data.opr1 < instruction_state.data.result) ||
-                (_GetEFLAGS_CF && (instruction_state.data.opr2 == Max8)));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (instruction_state.data.opr1 < instruction_state.data.result) ||
+                (_GetEFLAGS_CF && (instruction_state.data.opr2 == NTVDM64_TYPE_MAX_UNSIGNED_8)));
         break;
     case SBB16:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, (instruction_state.data.opr1 < instruction_state.data.result) ||
-                (_GetEFLAGS_CF && (instruction_state.data.opr2 == Max16)));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (instruction_state.data.opr1 < instruction_state.data.result) ||
+                (_GetEFLAGS_CF && (instruction_state.data.opr2 == NTVDM64_TYPE_MAX_UNSIGNED_16)));
         break;
     case SBB32:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, (instruction_state.data.opr1 < instruction_state.data.result) ||
-                (_GetEFLAGS_CF && (instruction_state.data.opr2 == Max32)));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (instruction_state.data.opr1 < instruction_state.data.result) ||
+                (_GetEFLAGS_CF && (instruction_state.data.opr2 == NTVDM64_TYPE_MAX_UNSIGNED_32)));
         break;
     case SUB8:
     case SUB16:
@@ -3251,113 +3251,113 @@ static void _kaf_calc_CF(core_machine_cpu_execution_context *context) {
     case CMP8:
     case CMP16:
     case CMP32:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, instruction_state.data.opr1 < instruction_state.data.opr2);
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, instruction_state.data.opr1 < instruction_state.data.opr2);
         break;
     default:
-        _bb("type");
-        _chr(_SetExcept_CE(instruction_state.data.type));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("type");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(instruction_state.data.type));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _kaf_calc_OF(core_machine_cpu_execution_context *context) {
-    _cb("_kaf_calc_OF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_calc_OF");
     switch (instruction_state.data.type) {
     case ADC8:
     case ADD8:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                (GetMSB8(instruction_state.data.opr1) == GetMSB8(instruction_state.data.opr2)) && (GetMSB8(instruction_state.data.opr1) != GetMSB8(instruction_state.data.result)));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                (NTVDM64_TYPE_GET_MSB_8(instruction_state.data.opr1) == NTVDM64_TYPE_GET_MSB_8(instruction_state.data.opr2)) && (NTVDM64_TYPE_GET_MSB_8(instruction_state.data.opr1) != NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result)));
         break;
     case ADC16:
     case ADD16:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                (GetMSB16(instruction_state.data.opr1) == GetMSB16(instruction_state.data.opr2)) && (GetMSB16(instruction_state.data.opr1) != GetMSB16(instruction_state.data.result)));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                (NTVDM64_TYPE_GET_MSB_16(instruction_state.data.opr1) == NTVDM64_TYPE_GET_MSB_16(instruction_state.data.opr2)) && (NTVDM64_TYPE_GET_MSB_16(instruction_state.data.opr1) != NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result)));
         break;
     case ADC32:
     case ADD32:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                (GetMSB32(instruction_state.data.opr1) == GetMSB32(instruction_state.data.opr2)) && (GetMSB32(instruction_state.data.opr1) != GetMSB32(instruction_state.data.result)));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                (NTVDM64_TYPE_GET_MSB_32(instruction_state.data.opr1) == NTVDM64_TYPE_GET_MSB_32(instruction_state.data.opr2)) && (NTVDM64_TYPE_GET_MSB_32(instruction_state.data.opr1) != NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result)));
         break;
     case SBB8:
     case SUB8:
     case CMP8:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                (GetMSB8(instruction_state.data.opr1) != GetMSB8(instruction_state.data.opr2)) && (GetMSB8(instruction_state.data.opr2) == GetMSB8(instruction_state.data.result)));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                (NTVDM64_TYPE_GET_MSB_8(instruction_state.data.opr1) != NTVDM64_TYPE_GET_MSB_8(instruction_state.data.opr2)) && (NTVDM64_TYPE_GET_MSB_8(instruction_state.data.opr2) == NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result)));
         break;
     case SBB16:
     case SUB16:
     case CMP16:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                (GetMSB16(instruction_state.data.opr1) != GetMSB16(instruction_state.data.opr2)) && (GetMSB16(instruction_state.data.opr2) == GetMSB16(instruction_state.data.result)));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                (NTVDM64_TYPE_GET_MSB_16(instruction_state.data.opr1) != NTVDM64_TYPE_GET_MSB_16(instruction_state.data.opr2)) && (NTVDM64_TYPE_GET_MSB_16(instruction_state.data.opr2) == NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result)));
         break;
     case SBB32:
     case SUB32:
     case CMP32:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                (GetMSB32(instruction_state.data.opr1) != GetMSB32(instruction_state.data.opr2)) && (GetMSB32(instruction_state.data.opr2) == GetMSB32(instruction_state.data.result)));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                (NTVDM64_TYPE_GET_MSB_32(instruction_state.data.opr1) != NTVDM64_TYPE_GET_MSB_32(instruction_state.data.opr2)) && (NTVDM64_TYPE_GET_MSB_32(instruction_state.data.opr2) == NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result)));
         break;
     default:
-        _bb("type");
-        _chr(_SetExcept_CE(instruction_state.data.type));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("type");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(instruction_state.data.type));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _kaf_calc_AF(core_machine_cpu_execution_context *context) {
-    _cb("_kaf_calc_AF");
-    MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_AF, ((instruction_state.data.opr1 ^ instruction_state.data.opr2) ^ instruction_state.data.result) & 0x10);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_calc_AF");
+    NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_AF, ((instruction_state.data.opr1 ^ instruction_state.data.opr2) ^ instruction_state.data.result) & 0x10);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _kaf_calc_PF(core_machine_cpu_execution_context *context) {
-    t_nubit8 res8 = GetMax8(instruction_state.data.result);
-    t_bool even = 1;
-    _cb("_kaf_calc_PF");
+    ntvdm64_type_unsigned_8 res8 = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
+    ntvdm64_type_bool even = 1;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_calc_PF");
     while (res8) {
         even = 1 - even;
         res8 &= res8-1;
     }
-    MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_PF, even);
-    _ce;
+    NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_PF, even);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _kaf_calc_ZF(core_machine_cpu_execution_context *context) {
-    _cb("_kaf_calc_ZF");
-    MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_ZF, !instruction_state.data.result);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_calc_ZF");
+    NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_ZF, !instruction_state.data.result);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _kaf_calc_SF(core_machine_cpu_execution_context *context) {
-    _cb("_kaf_calc_SF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_calc_SF");
     switch (instruction_state.data.bit) {
     case 8:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_SF, GetMSB8(instruction_state.data.result));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_SF, NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result));
         break;
     case 16:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_SF, GetMSB16(instruction_state.data.result));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_SF, NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result));
         break;
     case 32:
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_SF, GetMSB32(instruction_state.data.result));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_SF, NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result));
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(instruction_state.data.bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(instruction_state.data.bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kaf_set_flags(core_machine_cpu_execution_context *context, t_nubit16 flags) {
-    _cb("_kaf_set_flags");
-    if (flags & VCPU_EFLAGS_CF) _chr(_kaf_calc_CF(context));
-    if (flags & VCPU_EFLAGS_PF) _chr(_kaf_calc_PF(context));
-    if (flags & VCPU_EFLAGS_AF) _chr(_kaf_calc_AF(context));
-    if (flags & VCPU_EFLAGS_ZF) _chr(_kaf_calc_ZF(context));
-    if (flags & VCPU_EFLAGS_SF) _chr(_kaf_calc_SF(context));
-    if (flags & VCPU_EFLAGS_OF) _chr(_kaf_calc_OF(context));
-    _ce;
+static void _kaf_set_flags(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_16 flags) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kaf_set_flags");
+    if (flags & VCPU_EFLAGS_CF) NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_calc_CF(context));
+    if (flags & VCPU_EFLAGS_PF) NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_calc_PF(context));
+    if (flags & VCPU_EFLAGS_AF) NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_calc_AF(context));
+    if (flags & VCPU_EFLAGS_ZF) NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_calc_ZF(context));
+    if (flags & VCPU_EFLAGS_SF) NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_calc_SF(context));
+    if (flags & VCPU_EFLAGS_OF) NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_calc_OF(context));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _kas_move_index(core_machine_cpu_execution_context *context, t_nubit8 byte, t_bool flagsi, t_bool flagdi) {
-    _cb("_kas_move_index");
+static void _kas_move_index(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte, ntvdm64_type_bool flagsi, ntvdm64_type_bool flagdi) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kas_move_index");
     switch (_GetAddressSize) {
     case 2:
         if (_GetEFLAGS_DF) {
@@ -3378,10 +3378,10 @@ static void _kas_move_index(core_machine_cpu_execution_context *context, t_nubit
         }
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 #define _kac_arith1(funflag, type8, expr8, type16, expr16, type32, expr32) \
@@ -3390,26 +3390,26 @@ do { \
     case 8: \
         instruction_state.data.bit = 8; \
         instruction_state.data.type = (type8); \
-        instruction_state.data.opr1 = GetMax8(cdest); \
-        instruction_state.data.result = GetMax8(expr8); \
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_8(cdest); \
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(expr8); \
         break; \
     case 16: \
         instruction_state.data.bit = 16; \
         instruction_state.data.type = (type16); \
-        instruction_state.data.opr1 = GetMax16(cdest); \
-        instruction_state.data.result = GetMax16(expr16); \
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest); \
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(expr16); \
         break; \
     case 32: \
         instruction_state.data.bit = 32; \
         instruction_state.data.type = (type32); \
-        instruction_state.data.opr1 = GetMax32(cdest); \
-        instruction_state.data.result = GetMax32(expr32); \
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest); \
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(expr32); \
         break; \
-    default: _bb("bit"); \
-        _chr(_SetExcept_CE(bit)); \
-        _be;break; \
+    default: NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit"); \
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit)); \
+        NTVDM64_TYPE_TRACE_BLOCK_END;break; \
     } \
-    _chr(_kaf_set_flags(context, funflag)); \
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, funflag)); \
 } while (0)
 #define _kac_arith2(funflag, type8, expr8, type12, expr12, type16, expr16, \
     type20, expr20, type32, expr32) \
@@ -3418,66 +3418,66 @@ do { \
     case 8: \
         instruction_state.data.bit = 8; \
         instruction_state.data.type = (type8); \
-        instruction_state.data.opr1 = GetMax8(cdest); \
-        instruction_state.data.opr2 = GetMax8(csrc); \
-        instruction_state.data.result = GetMax8(expr8); \
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_8(cdest); \
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_8(csrc); \
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(expr8); \
         break; \
     case 12: \
         instruction_state.data.bit = 16; \
         instruction_state.data.type = (type12);\
-        instruction_state.data.opr1 = GetMax16(cdest); \
-        instruction_state.data.opr2 = GetMax16((t_nsbit8)csrc); \
-        instruction_state.data.result = GetMax16(expr12); \
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest); \
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_16((ntvdm64_type_signed_8)csrc); \
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(expr12); \
         break; \
     case 16: \
         instruction_state.data.bit = 16; \
         instruction_state.data.type = (type16); \
-        instruction_state.data.opr1 = GetMax16(cdest); \
-        instruction_state.data.opr2 = GetMax16(csrc); \
-        instruction_state.data.result = GetMax16(expr16); \
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest); \
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_16(csrc); \
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(expr16); \
         break; \
     case 20: \
         instruction_state.data.bit = 32; \
         instruction_state.data.type = (type20); \
-        instruction_state.data.opr1 = GetMax32(cdest); \
-        instruction_state.data.opr2 = GetMax32((t_nsbit8)csrc); \
-        instruction_state.data.result = GetMax32(expr20); \
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest); \
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_8)csrc); \
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(expr20); \
         break; \
     case 32: \
         instruction_state.data.bit = 32; \
         instruction_state.data.type = (type32); \
-        instruction_state.data.opr1 = GetMax32(cdest); \
-        instruction_state.data.opr2 = GetMax32(csrc); \
-        instruction_state.data.result = GetMax32(expr32); \
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest); \
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_32(csrc); \
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(expr32); \
         break; \
-    default: _bb("bit"); \
-        _chr(_SetExcept_CE(bit)); \
-        _be;break; \
+    default: NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit"); \
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit)); \
+        NTVDM64_TYPE_TRACE_BLOCK_END;break; \
     } \
-    _chr(_kaf_set_flags(context, funflag)); \
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, funflag)); \
 } while (0)
-static void _a_add(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit) {
-    _cb("_a_add");
+static void _a_add(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_add");
     _kac_arith2(ADD_FLAG,
                 ADD8,  (instruction_state.data.opr1 + instruction_state.data.opr2),
                 ADD16, (instruction_state.data.opr1 + instruction_state.data.opr2),
                 ADD16, (instruction_state.data.opr1 + instruction_state.data.opr2),
                 ADD32, (instruction_state.data.opr1 + instruction_state.data.opr2),
                 ADD32, (instruction_state.data.opr1 + instruction_state.data.opr2));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_adc(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit) {
-    _cb("_a_adc");
+static void _a_adc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_adc");
     _kac_arith2(ADC_FLAG,
                 ADC8,  (instruction_state.data.opr1 + instruction_state.data.opr2 + _GetEFLAGS_CF),
                 ADC16, (instruction_state.data.opr1 + instruction_state.data.opr2 + _GetEFLAGS_CF),
                 ADC16, (instruction_state.data.opr1 + instruction_state.data.opr2 + _GetEFLAGS_CF),
                 ADC32, (instruction_state.data.opr1 + instruction_state.data.opr2 + _GetEFLAGS_CF),
                 ADC32, (instruction_state.data.opr1 + instruction_state.data.opr2 + _GetEFLAGS_CF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_and(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit) {
-    _cb("_a_and");
+static void _a_and(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_and");
     _kac_arith2(AND_FLAG,
                 AND8,  (instruction_state.data.opr1 & instruction_state.data.opr2),
                 AND16, (instruction_state.data.opr1 & instruction_state.data.opr2),
@@ -3487,10 +3487,10 @@ static void _a_and(core_machine_cpu_execution_context *context, t_nubit64 cdest,
     _ClrEFLAGS_OF;
     _ClrEFLAGS_CF;
     instruction_state.data.udf |= VCPU_EFLAGS_AF;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_or(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit) {
-    _cb("_a_or");
+static void _a_or(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_or");
     _kac_arith2(OR_FLAG,
                 OR8,  (instruction_state.data.opr1 | instruction_state.data.opr2),
                 OR16, (instruction_state.data.opr1 | instruction_state.data.opr2),
@@ -3500,30 +3500,30 @@ static void _a_or(core_machine_cpu_execution_context *context, t_nubit64 cdest, 
     _ClrEFLAGS_OF;
     _ClrEFLAGS_CF;
     instruction_state.data.udf |= VCPU_EFLAGS_AF;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_sbb(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit) {
-    _cb("_a_sbb");
+static void _a_sbb(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_sbb");
     _kac_arith2(SBB_FLAG,
                 SBB8,  (instruction_state.data.opr1 - (instruction_state.data.opr2 + _GetEFLAGS_CF)),
                 SBB16, (instruction_state.data.opr1 - (instruction_state.data.opr2 + _GetEFLAGS_CF)),
                 SBB16, (instruction_state.data.opr1 - (instruction_state.data.opr2 + _GetEFLAGS_CF)),
                 SBB32, (instruction_state.data.opr1 - (instruction_state.data.opr2 + _GetEFLAGS_CF)),
                 SBB32, (instruction_state.data.opr1 - (instruction_state.data.opr2 + _GetEFLAGS_CF)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_sub(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit) {
-    _cb("_a_sub");
+static void _a_sub(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_sub");
     _kac_arith2(SUB_FLAG,
                 SUB8,  (instruction_state.data.opr1 - instruction_state.data.opr2),
                 SUB16, (instruction_state.data.opr1 - instruction_state.data.opr2),
                 SUB16, (instruction_state.data.opr1 - instruction_state.data.opr2),
                 SUB32, (instruction_state.data.opr1 - instruction_state.data.opr2),
                 SUB32, (instruction_state.data.opr1 - instruction_state.data.opr2));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_xor(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit) {
-    _cb("_a_xor");
+static void _a_xor(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_xor");
     _kac_arith2(XOR_FLAG,
                 XOR8,  (instruction_state.data.opr1 ^ instruction_state.data.opr2),
                 XOR16, (instruction_state.data.opr1 ^ instruction_state.data.opr2),
@@ -3533,20 +3533,20 @@ static void _a_xor(core_machine_cpu_execution_context *context, t_nubit64 cdest,
     _ClrEFLAGS_OF;
     _ClrEFLAGS_CF;
     instruction_state.data.udf |= VCPU_EFLAGS_AF;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_cmp(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit) {
-    _cb("_a_cmp");
+static void _a_cmp(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_cmp");
     _kac_arith2(CMP_FLAG,
-                CMP8,  ((t_nubit8)instruction_state.data.opr1 - (t_nsbit8)instruction_state.data.opr2),
-                CMP16, ((t_nubit16)instruction_state.data.opr1 - (t_nsbit8)instruction_state.data.opr2),
-                CMP16, ((t_nubit16)instruction_state.data.opr1 - (t_nsbit16)instruction_state.data.opr2),
-                CMP32, ((t_nubit32)instruction_state.data.opr1 - (t_nsbit8)instruction_state.data.opr2),
-                CMP32, ((t_nubit32)instruction_state.data.opr1 - (t_nsbit32)instruction_state.data.opr2));
-    _ce;
+                CMP8,  ((ntvdm64_type_unsigned_8)instruction_state.data.opr1 - (ntvdm64_type_signed_8)instruction_state.data.opr2),
+                CMP16, ((ntvdm64_type_unsigned_16)instruction_state.data.opr1 - (ntvdm64_type_signed_8)instruction_state.data.opr2),
+                CMP16, ((ntvdm64_type_unsigned_16)instruction_state.data.opr1 - (ntvdm64_type_signed_16)instruction_state.data.opr2),
+                CMP32, ((ntvdm64_type_unsigned_32)instruction_state.data.opr1 - (ntvdm64_type_signed_8)instruction_state.data.opr2),
+                CMP32, ((ntvdm64_type_unsigned_32)instruction_state.data.opr1 - (ntvdm64_type_signed_32)instruction_state.data.opr2));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_test(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit) {
-    _cb("_a_test");
+static void _a_test(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_test");
     _kac_arith2(TEST_FLAG,
                 TEST8,  (instruction_state.data.opr1 & instruction_state.data.opr2),
                 TEST16, (instruction_state.data.opr1 & instruction_state.data.opr2),
@@ -3556,966 +3556,966 @@ static void _a_test(core_machine_cpu_execution_context *context, t_nubit64 cdest
     _ClrEFLAGS_OF;
     _ClrEFLAGS_CF;
     instruction_state.data.udf |= VCPU_EFLAGS_AF;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_inc(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit8 bit) {
-    _cb("_a_inc");
+static void _a_inc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_inc");
     instruction_state.data.opr2 = 1;
     _kac_arith1(INC_FLAG,
                 ADD8,  (instruction_state.data.opr1 + instruction_state.data.opr2),
                 ADD16, (instruction_state.data.opr1 + instruction_state.data.opr2),
                 ADD32, (instruction_state.data.opr1 + instruction_state.data.opr2));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_dec(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit8 bit) {
-    _cb("_a_dec");
+static void _a_dec(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_dec");
     instruction_state.data.opr2 = 1;
     _kac_arith1(DEC_FLAG,
                 SUB8,  (instruction_state.data.opr1 - instruction_state.data.opr2),
                 SUB16, (instruction_state.data.opr1 - instruction_state.data.opr2),
                 SUB32, (instruction_state.data.opr1 - instruction_state.data.opr2));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_not(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit8 bit) {
-    _cb("_a_not");
+static void _a_not(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_not");
     instruction_state.data.opr2 = 0;
     _kac_arith1(NOT_FLAG,
                 ARITHTYPE_NULL, (~instruction_state.data.opr1),
                 ARITHTYPE_NULL, (~instruction_state.data.opr1),
                 ARITHTYPE_NULL, (~instruction_state.data.opr1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_neg(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit8 bit) {
-    _cb("_a_neg");
+static void _a_neg(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_neg");
     instruction_state.data.opr2 = cdest;
     cdest = 0;
     _kac_arith1(NEG_FLAG,
-                SUB8,  (GetMax8(instruction_state.data.opr1) - GetMax8(instruction_state.data.opr2)),
-                SUB16, (GetMax16(instruction_state.data.opr1) - GetMax16(instruction_state.data.opr2)),
-                SUB32, (GetMax32(instruction_state.data.opr1) - GetMax32(instruction_state.data.opr2)));
-    MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!instruction_state.data.opr2);
-    _ce;
+                SUB8,  (NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.opr1) - NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.opr2)),
+                SUB16, (NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.opr1) - NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.opr2)),
+                SUB32, (NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.opr1) - NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.opr2)));
+    NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!instruction_state.data.opr2);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_mul(core_machine_cpu_execution_context *context, t_nubit64 csrc, t_nubit8 bit) {
-    t_nubit64 cdest;
-    _cb("_a_mul");
+static void _a_mul(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_unsigned_64 cdest;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_mul");
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         instruction_state.data.bit = 8;
         instruction_state.data.opr1 = cpu_state.data.al;
-        instruction_state.data.opr2 = GetMax8(csrc);
-        cdest = GetMax16(cpu_state.data.al * instruction_state.data.opr2);
-        cpu_state.data.ax = GetMax16(cdest);
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF, !!cpu_state.data.ah);
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!cpu_state.data.ah);
-        instruction_state.data.result = GetMax16(cdest);
-        _be;
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_8(csrc);
+        cdest = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.al * instruction_state.data.opr2);
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF, !!cpu_state.data.ah);
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!cpu_state.data.ah);
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         instruction_state.data.bit = 16;
         instruction_state.data.opr1 = cpu_state.data.ax;
-        instruction_state.data.opr2 = GetMax16(csrc);
-        cdest = GetMax32(cpu_state.data.ax * instruction_state.data.opr2);
-        cpu_state.data.dx = GetMax16(cdest >> 16);
-        cpu_state.data.ax = GetMax16(cdest);
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF, !!cpu_state.data.dx);
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!cpu_state.data.dx);
-        instruction_state.data.result = GetMax32(cdest);
-        _be;
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_16(csrc);
+        cdest = NTVDM64_TYPE_MASK_UNSIGNED_32(cpu_state.data.ax * instruction_state.data.opr2);
+        cpu_state.data.dx = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest >> 16);
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF, !!cpu_state.data.dx);
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!cpu_state.data.dx);
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         instruction_state.data.bit = 32;
         instruction_state.data.opr1 = cpu_state.data.eax;
-        instruction_state.data.opr2 = GetMax32(csrc);
-        cdest = GetMax64(cpu_state.data.eax * instruction_state.data.opr2);
-        cpu_state.data.edx = GetMax32(cdest >> 32);
-        cpu_state.data.eax = GetMax32(cdest);
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF, !!cpu_state.data.edx);
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!cpu_state.data.edx);
-        instruction_state.data.result = GetMax64(cdest);
-        _be;
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_32(csrc);
+        cdest = NTVDM64_TYPE_MASK_UNSIGNED_64(cpu_state.data.eax * instruction_state.data.opr2);
+        cpu_state.data.edx = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest >> 32);
+        cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF, !!cpu_state.data.edx);
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!cpu_state.data.edx);
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_64(cdest);
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
     instruction_state.data.udf |= (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF |
                          VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_imul(core_machine_cpu_execution_context *context, t_nubit64 csrc, t_nubit8 bit) {
-    t_nsbit64 cdest;
-    _cb("_a_imul");
+static void _a_imul(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_signed_64 cdest;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_imul");
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         instruction_state.data.bit = 8;
         instruction_state.data.opr1 = cpu_state.data.al;
-        instruction_state.data.opr2 = GetMax8((t_nsbit8)csrc);
-        cdest = GetMax16((t_nsbit8)cpu_state.data.al * (t_nsbit8)instruction_state.data.opr2);
-        cpu_state.data.ax = GetMax16(cdest);
-        if (GetMax16(cdest) == (t_nsbit16)((t_nsbit8)cpu_state.data.al)) {
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_8((ntvdm64_type_signed_8)csrc);
+        cdest = NTVDM64_TYPE_MASK_UNSIGNED_16((ntvdm64_type_signed_8)cpu_state.data.al * (ntvdm64_type_signed_8)instruction_state.data.opr2);
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
+        if (NTVDM64_TYPE_MASK_UNSIGNED_16(cdest) == (ntvdm64_type_signed_16)((ntvdm64_type_signed_8)cpu_state.data.al)) {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
         } else {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
         }
-        instruction_state.data.result = GetMax16(cdest);
-        _be;
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         instruction_state.data.bit = 16;
         instruction_state.data.opr1 = cpu_state.data.ax;
-        instruction_state.data.opr2 = GetMax16((t_nsbit16)csrc);
-        cdest = GetMax32((t_nsbit16)cpu_state.data.ax * (t_nsbit16)instruction_state.data.opr2);
-        cpu_state.data.ax = GetMax16(cdest);
-        cpu_state.data.dx = GetMax16(cdest >> 16);
-        if (GetMax32(cdest) == (t_nsbit32)((t_nsbit16)cpu_state.data.ax)) {
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_16((ntvdm64_type_signed_16)csrc);
+        cdest = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_16)cpu_state.data.ax * (ntvdm64_type_signed_16)instruction_state.data.opr2);
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
+        cpu_state.data.dx = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest >> 16);
+        if (NTVDM64_TYPE_MASK_UNSIGNED_32(cdest) == (ntvdm64_type_signed_32)((ntvdm64_type_signed_16)cpu_state.data.ax)) {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
         } else {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
         }
-        instruction_state.data.result = GetMax32(cdest);
-        _be;
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         instruction_state.data.bit = 32;
         instruction_state.data.opr1 = cpu_state.data.eax;
-        instruction_state.data.opr2 = GetMax32((t_nsbit32)csrc);
-        cdest = GetMax64((t_nsbit32)cpu_state.data.eax * (t_nsbit32)instruction_state.data.opr2);
-        cpu_state.data.eax = GetMax32(cdest);
-        cpu_state.data.edx = GetMax32(cdest >> 32);
-        if (GetMax64(cdest) == (t_nsbit64)((t_nsbit32)cpu_state.data.eax)) {
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_32)csrc);
+        cdest = NTVDM64_TYPE_MASK_UNSIGNED_64((ntvdm64_type_signed_32)cpu_state.data.eax * (ntvdm64_type_signed_32)instruction_state.data.opr2);
+        cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
+        cpu_state.data.edx = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest >> 32);
+        if (NTVDM64_TYPE_MASK_UNSIGNED_64(cdest) == (ntvdm64_type_signed_64)((ntvdm64_type_signed_32)cpu_state.data.eax)) {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
         } else {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
         }
-        instruction_state.data.result = GetMax64(cdest);
-        _be;
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_64(cdest);
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
     instruction_state.data.udf |= (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF |
                          VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_div(core_machine_cpu_execution_context *context, t_nubit64 csrc, t_nubit8 bit) {
-    t_nubit64 temp = 0x0000000000000000;
-    _cb("_a_div");
+static void _a_div(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_unsigned_64 temp = 0x0000000000000000;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_div");
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         instruction_state.data.bit = 8;
-        instruction_state.data.opr1 = GetMax16(cpu_state.data.ax);
-        instruction_state.data.opr2 = GetMax8(csrc);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.ax);
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_8(csrc);
         if (!instruction_state.data.opr2) {
-            _bb("opr2(0)");
-            _chr(_SetExcept_DE(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("opr2(!0)");
-            temp = GetMax16((t_nubit16)instruction_state.data.opr1 / (t_nubit8)instruction_state.data.opr2);
-            if (temp > Max8) {
-                _bb("temp(>0xff)");
-                _chr(_SetExcept_DE(0));
-                _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            temp = NTVDM64_TYPE_MASK_UNSIGNED_16((ntvdm64_type_unsigned_16)instruction_state.data.opr1 / (ntvdm64_type_unsigned_8)instruction_state.data.opr2);
+            if (temp > NTVDM64_TYPE_MAX_UNSIGNED_8) {
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("temp(>0xff)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                cpu_state.data.al = GetMax8(temp);
-                cpu_state.data.ah = GetMax8((t_nubit16)instruction_state.data.opr1 % (t_nubit8)instruction_state.data.opr2);
+                cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(temp);
+                cpu_state.data.ah = NTVDM64_TYPE_MASK_UNSIGNED_8((ntvdm64_type_unsigned_16)instruction_state.data.opr1 % (ntvdm64_type_unsigned_8)instruction_state.data.opr2);
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         instruction_state.data.result = cpu_state.data.ax;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = GetMax32((cpu_state.data.dx << 16) | cpu_state.data.ax);
-        instruction_state.data.opr2 = GetMax16(csrc);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32((cpu_state.data.dx << 16) | cpu_state.data.ax);
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_16(csrc);
         if (!instruction_state.data.opr2) {
-            _bb("opr2(0)");
-            _chr(_SetExcept_DE(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("opr2(!0)");
-            temp = GetMax32((t_nubit32)instruction_state.data.opr1 / (t_nubit16)instruction_state.data.opr2);
-            if (temp > Max16) {
-                _bb("temp(>0xffff)");
-                _chr(_SetExcept_DE(0));
-                _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            temp = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_unsigned_32)instruction_state.data.opr1 / (ntvdm64_type_unsigned_16)instruction_state.data.opr2);
+            if (temp > NTVDM64_TYPE_MAX_UNSIGNED_16) {
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("temp(>0xffff)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                cpu_state.data.ax = GetMax16(temp);
-                cpu_state.data.dx = GetMax16((t_nubit32)instruction_state.data.opr1 % (t_nubit16)instruction_state.data.opr2);
+                cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(temp);
+                cpu_state.data.dx = NTVDM64_TYPE_MASK_UNSIGNED_16((ntvdm64_type_unsigned_32)instruction_state.data.opr1 % (ntvdm64_type_unsigned_16)instruction_state.data.opr2);
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         instruction_state.data.result = (cpu_state.data.dx << 16) | cpu_state.data.ax;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = GetMax64(((t_nubit64)cpu_state.data.edx << 32) | cpu_state.data.eax);
-        instruction_state.data.opr2 = GetMax32(csrc);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_64(((ntvdm64_type_unsigned_64)cpu_state.data.edx << 32) | cpu_state.data.eax);
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_32(csrc);
         if (!instruction_state.data.opr2) {
-            _bb("opr2(0)");
-            _chr(_SetExcept_DE(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("opr2(!0)");
-            temp = GetMax64((t_nubit64)instruction_state.data.opr1 / (t_nubit32)instruction_state.data.opr2);
-            if (temp > Max32) {
-                _bb("temp(>0xffffffff)");
-                _chr(_SetExcept_DE(0));
-                _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            temp = NTVDM64_TYPE_MASK_UNSIGNED_64((ntvdm64_type_unsigned_64)instruction_state.data.opr1 / (ntvdm64_type_unsigned_32)instruction_state.data.opr2);
+            if (temp > NTVDM64_TYPE_MAX_UNSIGNED_32) {
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("temp(>0xffffffff)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                cpu_state.data.eax = GetMax32(temp);
-                cpu_state.data.edx = GetMax32((t_nubit64)instruction_state.data.opr1 % (t_nubit32)instruction_state.data.opr2);
+                cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(temp);
+                cpu_state.data.edx = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_unsigned_64)instruction_state.data.opr1 % (ntvdm64_type_unsigned_32)instruction_state.data.opr2);
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        instruction_state.data.result = ((t_nubit64)cpu_state.data.edx << 32) | cpu_state.data.eax;
-        _be;
+        instruction_state.data.result = ((ntvdm64_type_unsigned_64)cpu_state.data.edx << 32) | cpu_state.data.eax;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
     instruction_state.data.udf |= (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_CF |
                          VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_OF);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_idiv(core_machine_cpu_execution_context *context, t_nubit64 csrc, t_nubit8 bit) {
-    t_nsbit64 temp;
-    _cb("_a_idiv");
+static void _a_idiv(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_signed_64 temp;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_idiv");
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         instruction_state.data.bit = 8;
-        instruction_state.data.opr1 = GetMax16((t_nsbit16)cpu_state.data.ax);
-        instruction_state.data.opr2 = GetMax8((t_nsbit8)csrc);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16((ntvdm64_type_signed_16)cpu_state.data.ax);
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_8((ntvdm64_type_signed_8)csrc);
         if (!instruction_state.data.opr2) {
-            _bb("opr2(0)");
-            _chr(_SetExcept_DE(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("opr2(!0)");
-            temp = GetMax16((t_nsbit16)instruction_state.data.opr1 / (t_nsbit8)instruction_state.data.opr2);
-            if ((temp > 0 && GetMax8(temp) > 0x7f) ||
-                    (temp < 0 && GetMax8(temp) < 0x80)) {
-                _bb("temp(>0x7f/<0x80)");
-                _chr(_SetExcept_DE(0));
-                _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            temp = NTVDM64_TYPE_MASK_UNSIGNED_16((ntvdm64_type_signed_16)instruction_state.data.opr1 / (ntvdm64_type_signed_8)instruction_state.data.opr2);
+            if ((temp > 0 && NTVDM64_TYPE_MASK_UNSIGNED_8(temp) > 0x7f) ||
+                    (temp < 0 && NTVDM64_TYPE_MASK_UNSIGNED_8(temp) < 0x80)) {
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("temp(>0x7f/<0x80)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                cpu_state.data.al = GetMax8(temp);
-                cpu_state.data.ah = GetMax8((t_nsbit16)instruction_state.data.opr1 % (t_nsbit8)instruction_state.data.opr2);
+                cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(temp);
+                cpu_state.data.ah = NTVDM64_TYPE_MASK_UNSIGNED_8((ntvdm64_type_signed_16)instruction_state.data.opr1 % (ntvdm64_type_signed_8)instruction_state.data.opr2);
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         instruction_state.data.result = cpu_state.data.ax;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = GetMax32((t_nsbit32)((cpu_state.data.dx << 16) | cpu_state.data.ax));
-        instruction_state.data.opr2 = GetMax16((t_nsbit16)csrc);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_32)((cpu_state.data.dx << 16) | cpu_state.data.ax));
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_16((ntvdm64_type_signed_16)csrc);
         if (!instruction_state.data.opr2) {
-            _bb("opr2(0)");
-            _chr(_SetExcept_DE(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("opr2(!0)");
-            temp = GetMax32((t_nsbit32)instruction_state.data.opr1 / (t_nsbit16)instruction_state.data.opr2);
-            if ((temp > 0 && GetMax16(temp) > 0x7fff) ||
-                    (temp < 0 && GetMax16(temp) < 0x8000)) {
-                _bb("temp(>0x7fff/<0x8000)");
-                _chr(_SetExcept_DE(0));
-                _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            temp = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_32)instruction_state.data.opr1 / (ntvdm64_type_signed_16)instruction_state.data.opr2);
+            if ((temp > 0 && NTVDM64_TYPE_MASK_UNSIGNED_16(temp) > 0x7fff) ||
+                    (temp < 0 && NTVDM64_TYPE_MASK_UNSIGNED_16(temp) < 0x8000)) {
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("temp(>0x7fff/<0x8000)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                cpu_state.data.ax = GetMax16(temp);
-                cpu_state.data.dx = GetMax16((t_nsbit32)instruction_state.data.opr1 % (t_nsbit16)instruction_state.data.opr2);
+                cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(temp);
+                cpu_state.data.dx = NTVDM64_TYPE_MASK_UNSIGNED_16((ntvdm64_type_signed_32)instruction_state.data.opr1 % (ntvdm64_type_signed_16)instruction_state.data.opr2);
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        instruction_state.data.result = ((t_nubit32)cpu_state.data.dx << 16) | cpu_state.data.ax;
-        _be;
+        instruction_state.data.result = ((ntvdm64_type_unsigned_32)cpu_state.data.dx << 16) | cpu_state.data.ax;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = GetMax64((t_nsbit64)(((t_nubit64)cpu_state.data.edx << 32) | cpu_state.data.eax));
-        instruction_state.data.opr2 = GetMax32((t_nsbit32)csrc);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_64((ntvdm64_type_signed_64)(((ntvdm64_type_unsigned_64)cpu_state.data.edx << 32) | cpu_state.data.eax));
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_32)csrc);
         if (!instruction_state.data.opr2) {
-            _bb("opr2(0)");
-            _chr(_SetExcept_DE(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("opr2(!0)");
-            temp = GetMax64((t_nsbit64)instruction_state.data.opr1 / (t_nsbit32)instruction_state.data.opr2);
-            if ((temp > 0 && GetMax32(temp) > 0x7fffffff) ||
-                    (temp < 0 && GetMax32(temp) < 0x80000000)) {
-                _bb("temp(>0x7fffffff/<0x80000000)");
-                _chr(_SetExcept_DE(0));
-                _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            temp = NTVDM64_TYPE_MASK_UNSIGNED_64((ntvdm64_type_signed_64)instruction_state.data.opr1 / (ntvdm64_type_signed_32)instruction_state.data.opr2);
+            if ((temp > 0 && NTVDM64_TYPE_MASK_UNSIGNED_32(temp) > 0x7fffffff) ||
+                    (temp < 0 && NTVDM64_TYPE_MASK_UNSIGNED_32(temp) < 0x80000000)) {
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("temp(>0x7fffffff/<0x80000000)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                cpu_state.data.eax = GetMax32(temp);
-                cpu_state.data.edx = GetMax32((t_nsbit64)instruction_state.data.opr1 % (t_nsbit32)instruction_state.data.opr2);
+                cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(temp);
+                cpu_state.data.edx = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_64)instruction_state.data.opr1 % (ntvdm64_type_signed_32)instruction_state.data.opr2);
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        instruction_state.data.result = ((t_nubit64)cpu_state.data.edx << 32) | cpu_state.data.eax;
-        _be;
+        instruction_state.data.result = ((ntvdm64_type_unsigned_64)cpu_state.data.edx << 32) | cpu_state.data.eax;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
     instruction_state.data.udf |= (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_CF |
                          VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_OF);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _a_imul3(core_machine_cpu_execution_context *context, t_nubit64 csrc1, t_nubit64 csrc2, t_nubit8 bit) {
-    t_nsbit64 cdest;
-    _cb("_a_imul3");
+static void _a_imul3(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc1, ntvdm64_type_unsigned_64 csrc2, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_signed_64 cdest;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_imul3");
     switch (bit) {
     case 12:
-        _bb("bit(16+8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16+8)");
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = (t_nsbit16)csrc1;
-        instruction_state.data.opr2 = (t_nsbit8)csrc2;
-        cdest = GetMax32((t_nsbit16)instruction_state.data.opr1 * (t_nsbit8)instruction_state.data.opr2);
-        instruction_state.data.result = GetMax16(cdest);
-        if (GetMax32(cdest) != GetMax32((t_nsbit16)instruction_state.data.result)) {
+        instruction_state.data.opr1 = (ntvdm64_type_signed_16)csrc1;
+        instruction_state.data.opr2 = (ntvdm64_type_signed_8)csrc2;
+        cdest = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_16)instruction_state.data.opr1 * (ntvdm64_type_signed_8)instruction_state.data.opr2);
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
+        if (NTVDM64_TYPE_MASK_UNSIGNED_32(cdest) != NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_16)instruction_state.data.result)) {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
         } else {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16+16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16+16)");
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = (t_nsbit16)csrc1;
-        instruction_state.data.opr2 = (t_nsbit16)csrc2;
-        cdest = GetMax32((t_nsbit16)instruction_state.data.opr1 * (t_nsbit16)instruction_state.data.opr2);
-        instruction_state.data.result = GetMax16(cdest);
-        if (GetMax32(cdest) != GetMax32((t_nsbit16)instruction_state.data.result)) {
+        instruction_state.data.opr1 = (ntvdm64_type_signed_16)csrc1;
+        instruction_state.data.opr2 = (ntvdm64_type_signed_16)csrc2;
+        cdest = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_16)instruction_state.data.opr1 * (ntvdm64_type_signed_16)instruction_state.data.opr2);
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
+        if (NTVDM64_TYPE_MASK_UNSIGNED_32(cdest) != NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_16)instruction_state.data.result)) {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
         } else {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 20:
-        _bb("bit(32+8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32+8)");
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = (t_nsbit32)csrc1;
-        instruction_state.data.opr2 = (t_nsbit8)csrc2;
-        cdest = GetMax64((t_nsbit32)instruction_state.data.opr1 * (t_nsbit8)instruction_state.data.opr2);
-        instruction_state.data.result = GetMax32(cdest);
-        if (GetMax64(cdest) != GetMax64((t_nsbit32)instruction_state.data.result)) {
+        instruction_state.data.opr1 = (ntvdm64_type_signed_32)csrc1;
+        instruction_state.data.opr2 = (ntvdm64_type_signed_8)csrc2;
+        cdest = NTVDM64_TYPE_MASK_UNSIGNED_64((ntvdm64_type_signed_32)instruction_state.data.opr1 * (ntvdm64_type_signed_8)instruction_state.data.opr2);
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
+        if (NTVDM64_TYPE_MASK_UNSIGNED_64(cdest) != NTVDM64_TYPE_MASK_UNSIGNED_64((ntvdm64_type_signed_32)instruction_state.data.result)) {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
         } else {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32+32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32+32");
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = (t_nsbit32)csrc1;
-        instruction_state.data.opr2 = (t_nsbit32)csrc2;
-        cdest = GetMax64((t_nsbit32)instruction_state.data.opr1 * (t_nsbit32)instruction_state.data.opr2);
-        instruction_state.data.result = GetMax32(cdest);
-        if (GetMax64(cdest) != GetMax64((t_nsbit32)instruction_state.data.result)) {
+        instruction_state.data.opr1 = (ntvdm64_type_signed_32)csrc1;
+        instruction_state.data.opr2 = (ntvdm64_type_signed_32)csrc2;
+        cdest = NTVDM64_TYPE_MASK_UNSIGNED_64((ntvdm64_type_signed_32)instruction_state.data.opr1 * (ntvdm64_type_signed_32)instruction_state.data.opr2);
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
+        if (NTVDM64_TYPE_MASK_UNSIGNED_64(cdest) != NTVDM64_TYPE_MASK_UNSIGNED_64((ntvdm64_type_signed_32)instruction_state.data.result)) {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
         } else {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
     instruction_state.data.udf |= (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF |
                          VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _a_rol(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit) {
-    t_nubit8 count;
-    t_nubit32 flagcf;
-    _cb("_a_rol");
+static void _a_rol(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_unsigned_8 count;
+    ntvdm64_type_unsigned_32 flagcf;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_rol");
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         count = csrc & 0x07;
         instruction_state.data.bit = 8;
-        instruction_state.data.opr1 = GetMax8(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            flagcf = !!GetMSB8(instruction_state.data.result);
-            instruction_state.data.result = GetMax8(instruction_state.data.result << 1) | flagcf;
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!GetLSB8(instruction_state.data.result));
+            flagcf = !!NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result);
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result << 1) | flagcf;
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!NTVDM64_TYPE_GET_LSB_UNSIGNED_8(instruction_state.data.result));
             count--;
         }
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB8(instruction_state.data.result)) ^ _GetEFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result)) ^ _GetEFLAGS_CF));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         count = csrc & 0x0f;
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = GetMax16(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            flagcf = !!GetMSB16(instruction_state.data.result);
-            instruction_state.data.result = GetMax16(instruction_state.data.result << 1) | flagcf;
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!GetLSB16(instruction_state.data.result));
+            flagcf = !!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result);
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result << 1) | flagcf;
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!NTVDM64_TYPE_GET_LSB_UNSIGNED_16(instruction_state.data.result));
             count--;
         }
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB16(instruction_state.data.result)) ^ _GetEFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result)) ^ _GetEFLAGS_CF));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         count = csrc & 0x1f;
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = GetMax32(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            flagcf = !!GetMSB32(instruction_state.data.result);
-            instruction_state.data.result = GetMax32(instruction_state.data.result << 1) | flagcf;
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!GetLSB32(instruction_state.data.result));
+            flagcf = !!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result);
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result << 1) | flagcf;
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!NTVDM64_TYPE_GET_LSB_UNSIGNED_32(instruction_state.data.result));
             count--;
         }
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB32(instruction_state.data.result)) ^ _GetEFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result)) ^ _GetEFLAGS_CF));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_ror(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit) {
-    t_nubit8 count;
-    t_nubit32 flagcf;
-    _cb("_a_ror");
+static void _a_ror(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_unsigned_8 count;
+    ntvdm64_type_unsigned_32 flagcf;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_ror");
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         count = csrc & 0x07;
         instruction_state.data.bit = 8;
-        instruction_state.data.opr1 = GetMax8(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            flagcf = GetLSB8(instruction_state.data.result) ? MSB8 : 0;
-            instruction_state.data.result = GetMax8(instruction_state.data.result >> 1) | flagcf;
+            flagcf = NTVDM64_TYPE_GET_LSB_UNSIGNED_8(instruction_state.data.result) ? NTVDM64_TYPE_MSB_8 : 0;
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result >> 1) | flagcf;
             count--;
         }
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!GetMSB8(instruction_state.data.result));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result));
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB8(instruction_state.data.result)) ^ (!!GetMSB7(instruction_state.data.result))));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result)) ^ (!!NTVDM64_TYPE_GET_MSB_7(instruction_state.data.result))));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         count = csrc & 0x0f;
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = GetMax16(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            flagcf = GetLSB16(instruction_state.data.result) ? MSB16 : 0;
-            instruction_state.data.result = GetMax16(instruction_state.data.result >> 1) | flagcf;
+            flagcf = NTVDM64_TYPE_GET_LSB_UNSIGNED_16(instruction_state.data.result) ? NTVDM64_TYPE_MSB_16 : 0;
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result >> 1) | flagcf;
             count--;
         }
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!GetMSB16(instruction_state.data.result));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result));
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB16(instruction_state.data.result)) ^ (!!GetMSB15(instruction_state.data.result))));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result)) ^ (!!NTVDM64_TYPE_GET_MSB_15(instruction_state.data.result))));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         count = csrc & 0x1f;
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = GetMax32(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            flagcf = GetLSB32(instruction_state.data.result) ? MSB32 : 0;
-            instruction_state.data.result = GetMax32(instruction_state.data.result >> 1) | flagcf;
+            flagcf = NTVDM64_TYPE_GET_LSB_UNSIGNED_32(instruction_state.data.result) ? NTVDM64_TYPE_MSB_32 : 0;
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result >> 1) | flagcf;
             count--;
         }
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!GetMSB32(instruction_state.data.result));
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result));
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB32(instruction_state.data.result)) ^ (!!GetMSB31(instruction_state.data.result))));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result)) ^ (!!NTVDM64_TYPE_GET_MSB_31(instruction_state.data.result))));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_rcl(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit) {
-    t_nubit8 count;
-    t_nubit32 flagcf;
-    _cb("_a_rcl");
+static void _a_rcl(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_unsigned_8 count;
+    ntvdm64_type_unsigned_32 flagcf;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_rcl");
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         count = (csrc & 0x1f) % 9;
         instruction_state.data.bit = 8;
-        instruction_state.data.opr1 = GetMax8(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            flagcf = !!GetMSB8(instruction_state.data.result);
-            instruction_state.data.result = GetMax8(instruction_state.data.result << 1) | _GetEFLAGS_CF;
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, flagcf);
+            flagcf = !!NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result);
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result << 1) | _GetEFLAGS_CF;
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, flagcf);
             count--;
         }
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB8(instruction_state.data.result)) ^ _GetEFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result)) ^ _GetEFLAGS_CF));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         count = (csrc & 0x1f) % 17;
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = GetMax16(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            flagcf = !!GetMSB16(instruction_state.data.result);
-            instruction_state.data.result = GetMax16(instruction_state.data.result << 1) | _GetEFLAGS_CF;
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, flagcf);
+            flagcf = !!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result);
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result << 1) | _GetEFLAGS_CF;
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, flagcf);
             count--;
         }
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB16(instruction_state.data.result)) ^ _GetEFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result)) ^ _GetEFLAGS_CF));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         count = (csrc & 0x1f);
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = GetMax32(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            flagcf = !!GetMSB32(instruction_state.data.result);
-            instruction_state.data.result = GetMax32(instruction_state.data.result << 1) | _GetEFLAGS_CF;
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, flagcf);
+            flagcf = !!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result);
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result << 1) | _GetEFLAGS_CF;
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, flagcf);
             count--;
         }
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB32(instruction_state.data.result)) ^ _GetEFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result)) ^ _GetEFLAGS_CF));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_rcr(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit) {
-    t_nubit8 count;
-    t_nubit32 flagcf;
-    _cb("_a_rcr");
+static void _a_rcr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_unsigned_8 count;
+    ntvdm64_type_unsigned_32 flagcf;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_rcr");
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         count = (csrc & 0x1f) % 9;
         instruction_state.data.bit = 8;
-        instruction_state.data.opr1 = GetMax8(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB8(instruction_state.data.result)) ^ _GetEFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result)) ^ _GetEFLAGS_CF));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
         while (count) {
-            flagcf = GetLSB8(instruction_state.data.result);
-            instruction_state.data.result = GetMax8(instruction_state.data.result >> 1) | (_GetEFLAGS_CF ? MSB8 : 0);
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!flagcf);
+            flagcf = NTVDM64_TYPE_GET_LSB_UNSIGNED_8(instruction_state.data.result);
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result >> 1) | (_GetEFLAGS_CF ? NTVDM64_TYPE_MSB_8 : 0);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!flagcf);
             count--;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         count = (csrc & 0x1f) % 17;
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = GetMax16(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB16(instruction_state.data.result)) ^ _GetEFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result)) ^ _GetEFLAGS_CF));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
         while (count) {
-            flagcf = GetLSB16(instruction_state.data.result);
-            instruction_state.data.result = GetMax16(instruction_state.data.result >> 1) | (_GetEFLAGS_CF ? MSB16 : 0);
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!flagcf);
+            flagcf = NTVDM64_TYPE_GET_LSB_UNSIGNED_16(instruction_state.data.result);
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result >> 1) | (_GetEFLAGS_CF ? NTVDM64_TYPE_MSB_16 : 0);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!flagcf);
             count--;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         count = (csrc & 0x1f);
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = GetMax32(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB32(instruction_state.data.result)) ^ _GetEFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result)) ^ _GetEFLAGS_CF));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
         while (count) {
-            flagcf = GetLSB32(instruction_state.data.result);
-            instruction_state.data.result = GetMax32(instruction_state.data.result >> 1) | (_GetEFLAGS_CF ? MSB32 : 0);
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!flagcf);
+            flagcf = NTVDM64_TYPE_GET_LSB_UNSIGNED_32(instruction_state.data.result);
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result >> 1) | (_GetEFLAGS_CF ? NTVDM64_TYPE_MSB_32 : 0);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!flagcf);
             count--;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_shl(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit) {
-    t_nubit8 count;
-    _cb("_a_shl");
+static void _a_shl(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_unsigned_8 count;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_shl");
     count = csrc & 0x1f;
     instruction_state.data.opr2 = count;
     if (count >= bit) instruction_state.data.udf |= VCPU_EFLAGS_CF;
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         instruction_state.data.bit = 8;
-        instruction_state.data.opr1 = GetMax8(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!GetMSB8(instruction_state.data.result));
-            instruction_state.data.result = GetMax8(instruction_state.data.result << 1);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, !!NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result));
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result << 1);
             count--;
         }
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB8(instruction_state.data.result)) ^ _GetEFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result)) ^ _GetEFLAGS_CF));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
         if (instruction_state.data.opr2 != 0) {
-            _bb("opr2(!0)");
-            _chr(_kaf_set_flags(context, SHL_FLAG));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, SHL_FLAG));
             instruction_state.data.udf |= VCPU_EFLAGS_AF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = GetMax16(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            MakeBit(cpu_state.data.eflags,VCPU_EFLAGS_CF, !!GetMSB16(instruction_state.data.result));
-            instruction_state.data.result = GetMax16(instruction_state.data.result << 1);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags,VCPU_EFLAGS_CF, !!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result));
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result << 1);
             count--;
         }
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB16(instruction_state.data.result)) ^ _GetEFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result)) ^ _GetEFLAGS_CF));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
         if (instruction_state.data.opr2 != 0) {
-            _bb("opr2(!0)");
-            _chr(_kaf_set_flags(context, SHL_FLAG));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, SHL_FLAG));
             instruction_state.data.udf |= VCPU_EFLAGS_AF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = GetMax32(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            MakeBit(cpu_state.data.eflags,VCPU_EFLAGS_CF, !!GetMSB32(instruction_state.data.result));
-            instruction_state.data.result = GetMax32(instruction_state.data.result << 1);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags,VCPU_EFLAGS_CF, !!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result));
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result << 1);
             count--;
         }
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                    ((!!GetMSB32(instruction_state.data.result)) ^ _GetEFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                    ((!!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result)) ^ _GetEFLAGS_CF));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
         if (instruction_state.data.opr2 != 0) {
-            _bb("opr2(!0)");
-            _chr(_kaf_set_flags(context, SHL_FLAG));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, SHL_FLAG));
             instruction_state.data.udf |= VCPU_EFLAGS_AF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_shr(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit) {
-    t_nubit8 count;
-    _cb("_a_shr");
+static void _a_shr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_unsigned_8 count;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_shr");
     count = csrc & 0x1f;
     instruction_state.data.opr2 = count;
     if (count >= bit) instruction_state.data.udf |= VCPU_EFLAGS_CF;
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         instruction_state.data.bit = 8;
-        instruction_state.data.opr1 = GetMax8(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, (!!GetLSB8(instruction_state.data.result)));
-            instruction_state.data.result = GetMax8(instruction_state.data.result >> 1);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (!!NTVDM64_TYPE_GET_LSB_UNSIGNED_8(instruction_state.data.result)));
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result >> 1);
             count--;
         }
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF, (!!GetMSB8(instruction_state.data.opr1)));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF, (!!NTVDM64_TYPE_GET_MSB_8(instruction_state.data.opr1)));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
         if (instruction_state.data.opr2 != 0) {
-            _bb("opr2(!0)");
-            _chr(_kaf_set_flags(context, SHR_FLAG));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, SHR_FLAG));
             instruction_state.data.udf |= VCPU_EFLAGS_AF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = GetMax16(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            MakeBit(cpu_state.data.eflags,VCPU_EFLAGS_CF, (!!GetLSB16(instruction_state.data.result)));
-            instruction_state.data.result = GetMax16(instruction_state.data.result >> 1);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags,VCPU_EFLAGS_CF, (!!NTVDM64_TYPE_GET_LSB_UNSIGNED_16(instruction_state.data.result)));
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result >> 1);
             count--;
         }
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF, (!!GetMSB16(instruction_state.data.opr1)));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF, (!!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.opr1)));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
         if (instruction_state.data.opr2 != 0) {
-            _bb("opr2(!0)");
-            _chr(_kaf_set_flags(context, SHR_FLAG));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, SHR_FLAG));
             instruction_state.data.udf |= VCPU_EFLAGS_AF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = GetMax32(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            MakeBit(cpu_state.data.eflags,VCPU_EFLAGS_CF, (!!GetLSB32(instruction_state.data.result)));
-            instruction_state.data.result = GetMax32(instruction_state.data.result >> 1);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags,VCPU_EFLAGS_CF, (!!NTVDM64_TYPE_GET_LSB_UNSIGNED_32(instruction_state.data.result)));
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result >> 1);
             count--;
         }
         if (instruction_state.data.opr2 == 1)
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF, (!!GetMSB32(instruction_state.data.opr1)));
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF, (!!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.opr1)));
         else
             instruction_state.data.udf |= VCPU_EFLAGS_OF;
         if (instruction_state.data.opr2 != 0) {
-            _bb("opr2(!0)");
-            _chr(_kaf_set_flags(context, SHR_FLAG));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, SHR_FLAG));
             instruction_state.data.udf |= VCPU_EFLAGS_AF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_sar(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit8 csrc, t_nubit8 bit) {
-    t_nubit8 count;
-    t_bool tempcf;
-    _cb("_a_shr");
+static void _a_sar(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_8 csrc, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_unsigned_8 count;
+    ntvdm64_type_bool tempcf;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_shr");
     count = csrc & 0x1f;
     instruction_state.data.opr2 = count;
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         instruction_state.data.bit = 8;
-        instruction_state.data.opr1 = GetMax8(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, (!!GetLSB8(instruction_state.data.result)));
-            tempcf = GetMSB8(instruction_state.data.result);
-            instruction_state.data.result = GetMax8((t_nsbit8)instruction_state.data.result >> 1);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (!!NTVDM64_TYPE_GET_LSB_UNSIGNED_8(instruction_state.data.result)));
+            tempcf = NTVDM64_TYPE_GET_MSB_8(instruction_state.data.result);
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8((ntvdm64_type_signed_8)instruction_state.data.result >> 1);
             count--;
         }
         if (instruction_state.data.opr2 == 1) _ClrEFLAGS_OF;
         else instruction_state.data.udf |= VCPU_EFLAGS_OF;
         if (instruction_state.data.opr2 != 0) {
-            _bb("opr2(!0)");
-            _chr(_kaf_set_flags(context, SAR_FLAG));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, SAR_FLAG));
             instruction_state.data.udf |= VCPU_EFLAGS_AF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = GetMax16(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, (!!GetLSB16(instruction_state.data.result)));
-            instruction_state.data.result = GetMax16((t_nsbit16)instruction_state.data.result >> 1);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (!!NTVDM64_TYPE_GET_LSB_UNSIGNED_16(instruction_state.data.result)));
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16((ntvdm64_type_signed_16)instruction_state.data.result >> 1);
             count--;
         }
         if (instruction_state.data.opr2 == 1) _ClrEFLAGS_OF;
         else instruction_state.data.udf |= VCPU_EFLAGS_OF;
         if (instruction_state.data.opr2 != 0) {
-            _bb("opr2(!0)");
-            _chr(_kaf_set_flags(context, SAR_FLAG));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, SAR_FLAG));
             instruction_state.data.udf |= VCPU_EFLAGS_AF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = GetMax32(cdest);
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
         while (count) {
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, (!!GetLSB32(instruction_state.data.result)));
-            instruction_state.data.result = GetMax32((t_nsbit32)instruction_state.data.result >> 1);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, (!!NTVDM64_TYPE_GET_LSB_UNSIGNED_32(instruction_state.data.result)));
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_32)instruction_state.data.result >> 1);
             count--;
         }
         if (instruction_state.data.opr2 == 1) _ClrEFLAGS_OF;
         else instruction_state.data.udf |= VCPU_EFLAGS_OF;
         if (instruction_state.data.opr2 != 0) {
-            _bb("opr2(!0)");
-            _chr(_kaf_set_flags(context, SAR_FLAG));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, SAR_FLAG));
             instruction_state.data.udf |= VCPU_EFLAGS_AF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _p_ins(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    t_nubit32 cedi, data = 0;
-    _cb("_p_ins");
+static void _p_ins(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_32 cedi, data = 0;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_p_ins");
     switch (_GetAddressSize) {
     case 2:
         cedi = cpu_state.data.di;
@@ -4524,45 +4524,45 @@ static void _p_ins(core_machine_cpu_execution_context *context, t_nubit8 byte) {
         cedi = cpu_state.data.edi;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (byte) {
     case 1:
-        _bb("byte(1)");
-        _chr(_m_test_access(context, &cpu_state.data.es, cedi, 1, 1));
-        _chr(_p_input(context, cpu_state.data.dx, GetRef(data), 1));
-        _chr(_s_write_es(context, cedi, GetRef(data), 1));
-        _chr(_kas_move_index(context, 1, 0, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.es, cedi, 1, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(data), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_write_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(data), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 1, 0, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("byte(2)");
-        _chr(_m_test_access(context, &cpu_state.data.es, cedi, 2, 1));
-        _chr(_p_input(context, cpu_state.data.dx, GetRef(data), 2));
-        _chr(_s_write_es(context, cedi, GetRef(data), 2));
-        _chr(_kas_move_index(context, 2, 0, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.es, cedi, 2, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(data), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_write_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(data), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 2, 0, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_m_test_access(context, &cpu_state.data.es, cedi, 4, 1));
-        _chr(_p_input(context, cpu_state.data.dx, GetRef(data), 4));
-        _chr(_s_write_es(context, cedi, GetRef(data), 4));
-        _chr(_kas_move_index(context, 4, 0, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_test_access(context, &cpu_state.data.es, cedi, 4, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(data), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_write_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(data), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 4, 0, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _p_outs(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    t_nubit32 cesi, data = 0;
-    _cb("_p_outs");
+static void _p_outs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_32 cesi, data = 0;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_p_outs");
     switch (_GetAddressSize) {
     case 2:
         cesi = cpu_state.data.si;
@@ -4571,43 +4571,43 @@ static void _p_outs(core_machine_cpu_execution_context *context, t_nubit8 byte) 
         cesi = cpu_state.data.esi;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (byte) {
     case 1:
-        _bb("byte(1)");
-        _chr(_m_read_logical(context, instruction_state.data.roverds, cesi, GetRef(data), 1));
-        _chr(_p_output(context, cpu_state.data.dx, GetRef(data), 1));
-        _chr(_kas_move_index(context, 1, 1, 0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, cesi, NTVDM64_TYPE_REFERENCE_OF(data), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_output(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(data), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 1, 1, 0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("byte(2)");
-        _chr(_m_read_logical(context, instruction_state.data.roverds, cesi, GetRef(data), 2));
-        _chr(_p_output(context, cpu_state.data.dx, GetRef(data), 2));
-        _chr(_kas_move_index(context, 2, 1, 0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, cesi, NTVDM64_TYPE_REFERENCE_OF(data), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_output(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(data), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 2, 1, 0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_m_read_logical(context, instruction_state.data.roverds, cesi, GetRef(data), 4));
-        _chr(_p_output(context, cpu_state.data.dx, GetRef(data), 4));
-        _chr(_kas_move_index(context, 4, 1, 0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, cesi, NTVDM64_TYPE_REFERENCE_OF(data), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_output(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(data), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 4, 1, 0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_movs(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    t_nubit32 data = 0;
-    t_nubit32 cesi, cedi;
-    _cb("_m_movs");
+static void _m_movs(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_32 data = 0;
+    ntvdm64_type_unsigned_32 cesi, cedi;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_movs");
     switch (_GetAddressSize) {
     case 2:
         cesi = cpu_state.data.si;
@@ -4618,42 +4618,42 @@ static void _m_movs(core_machine_cpu_execution_context *context, t_nubit8 byte) 
         cedi = cpu_state.data.edi;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (byte) {
     case 1:
-        _bb("byte(1)");
-        _chr(_m_read_logical(context, instruction_state.data.roverds, cesi, GetRef(data), 1));
-        _chr(_s_write_es(context, cedi, GetRef(data), 1));
-        _chr(_kas_move_index(context, 1, 1, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, cesi, NTVDM64_TYPE_REFERENCE_OF(data), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_write_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(data), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 1, 1, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("byte(2)");
-        _chr(_m_read_logical(context, instruction_state.data.roverds, cesi, GetRef(data), 2));
-        _chr(_s_write_es(context, cedi, GetRef(data), 2));
-        _chr(_kas_move_index(context, 2, 1, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, cesi, NTVDM64_TYPE_REFERENCE_OF(data), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_write_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(data), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 2, 1, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_m_read_logical(context, instruction_state.data.roverds, cesi, GetRef(data), 4));
-        _chr(_s_write_es(context, cedi, GetRef(data), 4));
-        _chr(_kas_move_index(context, 4, 1, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, cesi, NTVDM64_TYPE_REFERENCE_OF(data), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_write_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(data), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 4, 1, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_stos(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    t_nubit32 cedi;
-    _cb("_m_stos");
+static void _m_stos(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_32 cedi;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_stos");
     switch (_GetAddressSize) {
     case 2:
         cedi = cpu_state.data.di;
@@ -4662,39 +4662,39 @@ static void _m_stos(core_machine_cpu_execution_context *context, t_nubit8 byte) 
         cedi = cpu_state.data.edi;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (byte) {
     case 1:
-        _bb("byte(1)");
-        _chr(_s_write_es(context, cedi, GetRef(cpu_state.data.al), 1));
-        _chr(_kas_move_index(context, 1, 0, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_write_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.al), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 1, 0, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("byte(2)");
-        _chr(_s_write_es(context, cedi, GetRef(cpu_state.data.ax), 2));
-        _chr(_kas_move_index(context, 2, 0, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_write_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 2, 0, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_s_write_es(context, cedi, GetRef(cpu_state.data.eax), 4));
-        _chr(_kas_move_index(context, 4, 0, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_write_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eax), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 4, 0, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _m_lods(core_machine_cpu_execution_context *context, t_nubit8 byte) {
-    t_nubit32 cesi = 0x00000000;
-    _cb("_m_lods");
+static void _m_lods(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_unsigned_32 cesi = 0x00000000;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_lods");
     switch (_GetAddressSize) {
     case 2:
         cesi = cpu_state.data.si;
@@ -4703,45 +4703,45 @@ static void _m_lods(core_machine_cpu_execution_context *context, t_nubit8 byte) 
         cesi = cpu_state.data.esi;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (byte) {
     case 1:
-        _bb("byte(1)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(1)");
         instruction_state.data.bit = 8;
-        _chr(_m_read_logical(context, instruction_state.data.roverds, cesi, GetRef(cpu_state.data.al), 1));
-        _chr(_kas_move_index(context, 1, 1, 0));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, cesi, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.al), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 1, 1, 0));
         instruction_state.data.result = cpu_state.data.al;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("byte(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
         instruction_state.data.bit = 16;
-        _chr(_m_read_logical(context, instruction_state.data.roverds, cesi, GetRef(cpu_state.data.ax), 2));
-        _chr(_kas_move_index(context, 2, 1, 0));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, cesi, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 2, 1, 0));
         instruction_state.data.result = cpu_state.data.ax;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
         instruction_state.data.bit = 32;
-        _chr(_m_read_logical(context, instruction_state.data.roverds, cesi, GetRef(cpu_state.data.eax), 4));
-        _chr(_kas_move_index(context, 4, 1, 0));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, cesi, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eax), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 4, 1, 0));
         instruction_state.data.result = cpu_state.data.eax;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("byte");
-        _chr(_SetExcept_CE(byte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_cmps(core_machine_cpu_execution_context *context, t_nubit8 bit) {
-    t_nubit32 cesi, cedi;
-    _cb("_a_cmps");
+static void _a_cmps(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_unsigned_32 cesi, cedi;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_cmps");
     instruction_state.data.opr1 = 0;
     instruction_state.data.opr2 = 0;
     switch (_GetAddressSize) {
@@ -4754,52 +4754,52 @@ static void _a_cmps(core_machine_cpu_execution_context *context, t_nubit8 bit) {
         cedi = cpu_state.data.edi;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         instruction_state.data.bit = 8;
         instruction_state.data.type = CMP8;
-        _chr(_m_read_logical(context, instruction_state.data.roverds, cesi, GetRef(instruction_state.data.opr1), 1));
-        _chr(_s_read_es(context, cedi, GetRef(instruction_state.data.opr2), 1));
-        instruction_state.data.result = GetMax8(instruction_state.data.opr1 - instruction_state.data.opr2);
-        _chr(_kas_move_index(context, 1, 1, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, cesi, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.opr1), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.opr2), 1));
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.opr1 - instruction_state.data.opr2);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 1, 1, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         instruction_state.data.bit = 16;
         instruction_state.data.type = CMP16;
-        _chr(_m_read_logical(context, instruction_state.data.roverds, cesi, GetRef(instruction_state.data.opr1), 2));
-        _chr(_s_read_es(context, cedi, GetRef(instruction_state.data.opr2), 2));
-        instruction_state.data.result = GetMax16(instruction_state.data.opr1 - instruction_state.data.opr2);
-        _chr(_kas_move_index(context, 2, 1, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, cesi, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.opr1), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.opr2), 2));
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.opr1 - instruction_state.data.opr2);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 2, 1, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         instruction_state.data.bit = 32;
         instruction_state.data.type = CMP32;
-        _chr(_m_read_logical(context, instruction_state.data.roverds, cesi, GetRef(instruction_state.data.opr1), 4));
-        _chr(_s_read_es(context, cedi, GetRef(instruction_state.data.opr2), 4));
-        instruction_state.data.result = GetMax32(instruction_state.data.opr1 - instruction_state.data.opr2);
-        _chr(_kas_move_index(context, 4, 1, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, cesi, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.opr1), 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.opr2), 4));
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.opr1 - instruction_state.data.opr2);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 4, 1, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _chr(_kaf_set_flags(context, CMP_FLAG));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, CMP_FLAG));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_scas(core_machine_cpu_execution_context *context, t_nubit8 bit) {
-    t_nubit32 cedi;
-    _cb("_a_scas");
+static void _a_scas(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_unsigned_32 cedi;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_scas");
     instruction_state.data.opr1 = 0;
     instruction_state.data.opr2 = 0;
     switch (_GetAddressSize) {
@@ -4810,175 +4810,175 @@ static void _a_scas(core_machine_cpu_execution_context *context, t_nubit8 bit) {
         cedi = cpu_state.data.edi;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (bit) {
     case 8:
-        _bb("bit(8)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(8)");
         instruction_state.data.bit = 8;
         instruction_state.data.type = CMP8;
-        _chr(instruction_state.data.opr1 = cpu_state.data.al);
-        _chr(_s_read_es(context, cedi, GetRef(instruction_state.data.opr2), 1));
-        instruction_state.data.result = GetMax8(instruction_state.data.opr1 - instruction_state.data.opr2);
-        _chr(_kas_move_index(context, 1, 0, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(instruction_state.data.opr1 = cpu_state.data.al);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.opr2), 1));
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.opr1 - instruction_state.data.opr2);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 1, 0, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 16:
-        _bb("bit(16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
         instruction_state.data.bit = 16;
         instruction_state.data.type = CMP16;
-        _chr(instruction_state.data.opr1 = cpu_state.data.ax);
-        _chr(_s_read_es(context, cedi, GetRef(instruction_state.data.opr2), 2));
-        instruction_state.data.result = GetMax16(instruction_state.data.opr1 - instruction_state.data.opr2);
-        _chr(_kas_move_index(context, 2, 0, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(instruction_state.data.opr1 = cpu_state.data.ax);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.opr2), 2));
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.opr1 - instruction_state.data.opr2);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 2, 0, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
         instruction_state.data.bit = 32;
         instruction_state.data.type = CMP32;
-        _chr(instruction_state.data.opr1 = cpu_state.data.eax);
-        _chr(_s_read_es(context, cedi, GetRef(instruction_state.data.opr2), 4));
-        instruction_state.data.result = GetMax32(instruction_state.data.opr1 - instruction_state.data.opr2);
-        _chr(_kas_move_index(context, 4, 0, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(instruction_state.data.opr1 = cpu_state.data.eax);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_es(context, cedi, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.opr2), 4));
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.opr1 - instruction_state.data.opr2);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kas_move_index(context, 4, 0, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _chr(_kaf_set_flags(context, CMP_FLAG));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, CMP_FLAG));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-#define _adv _chr(_d_skip(context, 1))
+#define _adv NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_skip(context, 1))
 static void UndefinedOpcode(core_machine_cpu_execution_context *context) {
-    _cb("UndefinedOpcode");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("UndefinedOpcode");
     cpu_state = instruction_state.data.oldcpu;
     if (!_GetCR0_PE) {
         PRINTF("The NXVM CPU has encountered an illegal instruction at L%08X.\n", cpu_state.data.cs.base + cpu_state.data.eip);
         core_machine_cpu_execution_request_stop(context);
     }
-    _chr(_SetExcept_UD(0));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_RM8_R8(core_machine_cpu_execution_context *context) {
-    _cb("ADD_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM8_R8");
     i386(0x00) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("ADD_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM32_R32");
     i386(0x01) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_R8_RM8(core_machine_cpu_execution_context *context) {
-    _cb("ADD_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R8_RM8");
     i386(0x02) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_add(context, instruction_state.data.cr, instruction_state.data.crm, 8));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.cr, instruction_state.data.crm, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_R32_RM32(core_machine_cpu_execution_context *context) {
-    _cb("ADD_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R32_RM32");
     i386(0x03) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_add(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_add(context, instruction_state.data.cr, instruction_state.data.crm, 16));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.cr, instruction_state.data.crm, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_AL_I8(core_machine_cpu_execution_context *context) {
-    _cb("ADD_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_AL_I8");
     i386(0x04) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_a_add(context, cpu_state.data.al, instruction_state.data.cimm, 8));
-    cpu_state.data.al = GetMax8(instruction_state.data.result);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, cpu_state.data.al, instruction_state.data.cimm, 8));
+    cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_EAX_I32(core_machine_cpu_execution_context *context) {
-    _cb("ADD_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_EAX_I32");
     i386(0x05) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_d_imm(context, 2));
-            _chr(_a_add(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-            cpu_state.data.ax = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+            cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_d_imm(context, 4));
-            _chr(_a_add(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
-            cpu_state.data.eax = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
+            cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        _chr(_a_add(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-        cpu_state.data.ax = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_ES(core_machine_cpu_execution_context *context) {
-    t_nubit32 xs_sel;
-    _cb("PUSH_ES");
+    ntvdm64_type_unsigned_32 xs_sel;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ES");
     i386(0x06) {
         _adv;
     }
@@ -4986,139 +4986,139 @@ static void PUSH_ES(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
     }
     xs_sel = cpu_state.data.es.selector;
-    _chr(_e_push(context, GetRef(xs_sel), _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_ES(core_machine_cpu_execution_context *context) {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
-    t_nubit32 xs_sel;
-    _cb("POP_ES");
+    ntvdm64_type_unsigned_32 xs_sel;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ES");
     i386(0x07) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_e_pop(context, GetRef(xs_sel), _GetOperandSize));
-    _chr(_s_load_es(context, GetMax16(xs_sel)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_es(context, NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_RM8_R8(core_machine_cpu_execution_context *context) {
-    _cb("OR_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM8_R8");
     i386(0x08) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("OR_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM32_R32");
     i386(0x09) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_R8_RM8(core_machine_cpu_execution_context *context) {
-    _cb("OR_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R8_RM8");
     i386(0x0a) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_or(context, instruction_state.data.cr, instruction_state.data.crm, 8));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.cr, instruction_state.data.crm, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_R32_RM32(core_machine_cpu_execution_context *context) {
-    _cb("OR_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R32_RM32");
     i386(0x0b) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_or(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_or(context, instruction_state.data.cr, instruction_state.data.crm, 16));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.cr, instruction_state.data.crm, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_AL_I8(core_machine_cpu_execution_context *context) {
-    _cb("OR_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_AL_I8");
     i386(0x0c) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_a_or(context, cpu_state.data.al, instruction_state.data.cimm, 8));
-    cpu_state.data.al = GetMax8(instruction_state.data.result);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, cpu_state.data.al, instruction_state.data.cimm, 8));
+    cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_EAX_I32(core_machine_cpu_execution_context *context) {
-    _cb("OR_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_EAX_I32");
     i386(0x0d) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_d_imm(context, 2));
-            _chr(_a_or(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-            cpu_state.data.ax = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+            cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_d_imm(context, 4));
-            _chr(_a_or(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
-            cpu_state.data.eax = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
+            cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        _chr(_a_or(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-        cpu_state.data.ax = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_CS(core_machine_cpu_execution_context *context) {
-    t_nubit32 xs_sel;
-    _cb("PUSH_CS");
+    ntvdm64_type_unsigned_32 xs_sel;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_CS");
     i386(0x0e) {
         _adv;
     }
@@ -5126,151 +5126,151 @@ static void PUSH_CS(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
     }
     xs_sel = cpu_state.data.cs.selector;
-    _chr(_e_push(context, GetRef(xs_sel), _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_CS(core_machine_cpu_execution_context *context) {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
-    t_nubit32 xs_sel;
-    _cb("POP_CS");
+    ntvdm64_type_unsigned_32 xs_sel;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_CS");
     i386(0x0f) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_e_pop(context, GetRef(xs_sel), _GetOperandSize));
-    _chr(_s_load_cs(context, GetMax16(xs_sel)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_cs(context, NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_0F(core_machine_cpu_execution_context *context) {
-    t_nubit8 opcode = 0x00;
-    _cb("INS_0F");
+    ntvdm64_type_unsigned_8 opcode = 0x00;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F");
     i386(0x0f) {
         _adv;
-        _chr(_s_read_cs(context, cpu_state.data.eip, GetRef(opcode), 1));
-        _chr(ExecCpuInstruction(instruction_state.connect.insTable_0f[opcode]));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, NTVDM64_TYPE_REFERENCE_OF(opcode), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(ExecCpuInstruction(instruction_state.connect.insTable_0f[opcode]));
     }
     else
         POP_CS(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_RM8_R8(core_machine_cpu_execution_context *context) {
-    _cb("ADC_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM8_R8");
     i386(0x10) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("ADC_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM32_R32");
     i386(0x11) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_R8_RM8(core_machine_cpu_execution_context *context) {
-    _cb("ADC_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R8_RM8");
     i386(0x12) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_adc(context, instruction_state.data.cr, instruction_state.data.crm, 8));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.cr, instruction_state.data.crm, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_R32_RM32(core_machine_cpu_execution_context *context) {
-    _cb("ADC_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R32_RM32");
     i386(0x13) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_adc(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_adc(context, instruction_state.data.cr, instruction_state.data.crm, 16));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.cr, instruction_state.data.crm, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_AL_I8(core_machine_cpu_execution_context *context) {
-    _cb("ADC_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_AL_I8");
     i386(0x14) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_a_adc(context, cpu_state.data.al, instruction_state.data.cimm, 8));
-    cpu_state.data.al = GetMax8(instruction_state.data.result);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, cpu_state.data.al, instruction_state.data.cimm, 8));
+    cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_EAX_I32(core_machine_cpu_execution_context *context) {
-    _cb("ADC_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_EAX_I32");
     i386(0x15) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_d_imm(context, 2));
-            _chr(_a_adc(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-            cpu_state.data.ax = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+            cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_d_imm(context, 4));
-            _chr(_a_adc(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
-            cpu_state.data.eax = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
+            cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        _chr(_a_adc(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-        cpu_state.data.ax = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_SS(core_machine_cpu_execution_context *context) {
-    t_nubit32 xs_sel;
-    _cb("PUSH_SS");
+    ntvdm64_type_unsigned_32 xs_sel;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_SS");
     i386(0x16) {
         _adv;
     }
@@ -5278,139 +5278,139 @@ static void PUSH_SS(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
     }
     xs_sel = cpu_state.data.ss.selector;
-    _chr(_e_push(context, GetRef(xs_sel), _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_SS(core_machine_cpu_execution_context *context) {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
-    t_nubit32 xs_sel;
-    _cb("POP_SS");
+    ntvdm64_type_unsigned_32 xs_sel;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_SS");
     i386(0x17) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_e_pop(context, GetRef(xs_sel), _GetOperandSize));
-    _chr(_s_load_ss(context, GetMax16(xs_sel)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_ss(context, NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_RM8_R8(core_machine_cpu_execution_context *context) {
-    _cb("SBB_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM8_R8");
     i386(0x18) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("SBB_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM32_R32");
     i386(0x19) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_R8_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SBB_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R8_RM8");
     i386(0x1a) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_sbb(context, instruction_state.data.cr, instruction_state.data.crm, 8));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.cr, instruction_state.data.crm, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_R32_RM32(core_machine_cpu_execution_context *context) {
-    _cb("SBB_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R32_RM32");
     i386(0x1b) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_sbb(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_sbb(context, instruction_state.data.cr, instruction_state.data.crm, 16));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.cr, instruction_state.data.crm, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_AL_I8(core_machine_cpu_execution_context *context) {
-    _cb("SBB_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_AL_I8");
     i386(0x1c) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_a_sbb(context, cpu_state.data.al, instruction_state.data.cimm, 8));
-    cpu_state.data.al = GetMax8(instruction_state.data.result);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, cpu_state.data.al, instruction_state.data.cimm, 8));
+    cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_EAX_I32(core_machine_cpu_execution_context *context) {
-    _cb("SBB_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_EAX_I32");
     i386(0x1d) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_d_imm(context, 2));
-            _chr(_a_sbb(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-            cpu_state.data.ax = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+            cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_d_imm(context, 4));
-            _chr(_a_sbb(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
-            cpu_state.data.eax = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
+            cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        _chr(_a_sbb(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-        cpu_state.data.ax = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_DS(core_machine_cpu_execution_context *context) {
-    t_nubit32 xs_sel;
-    _cb("PUSH_DS");
+    ntvdm64_type_unsigned_32 xs_sel;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_DS");
     i386(0x1e) {
         _adv;
     }
@@ -5418,138 +5418,138 @@ static void PUSH_DS(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
     }
     xs_sel = cpu_state.data.ds.selector;
-    _chr(_e_push(context, GetRef(xs_sel), _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_DS(core_machine_cpu_execution_context *context) {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
-    t_nubit32 xs_sel;
-    _cb("POP_DS");
+    ntvdm64_type_unsigned_32 xs_sel;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_DS");
     i386(0x1f) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_e_pop(context, GetRef(xs_sel), _GetOperandSize));
-    _chr(_s_load_ds(context, GetMax16(xs_sel)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_ds(context, NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_RM8_R8(core_machine_cpu_execution_context *context) {
-    _cb("AND_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM8_R8");
     i386(0x20) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("AND_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM32_R32");
     i386(0x21) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_R8_RM8(core_machine_cpu_execution_context *context) {
-    _cb("AND_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R8_RM8");
     i386(0x22) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_and(context, instruction_state.data.cr, instruction_state.data.crm, 8));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.cr, instruction_state.data.crm, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_R32_RM32(core_machine_cpu_execution_context *context) {
-    _cb("AND_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R32_RM32");
     i386(0x23) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_and(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_and(context, instruction_state.data.cr, instruction_state.data.crm, 16));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.cr, instruction_state.data.crm, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_AL_I8(core_machine_cpu_execution_context *context) {
-    _cb("AND_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_AL_I8");
     i386(0x24) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_a_and(context, cpu_state.data.al, instruction_state.data.cimm, 8));
-    cpu_state.data.al = GetMax8(instruction_state.data.result);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, cpu_state.data.al, instruction_state.data.cimm, 8));
+    cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_EAX_I32(core_machine_cpu_execution_context *context) {
-    _cb("AND_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_EAX_I32");
     i386(0x25) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_d_imm(context, 2));
-            _chr(_a_and(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-            cpu_state.data.ax = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+            cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_d_imm(context, 4));
-            _chr(_a_and(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
-            cpu_state.data.eax = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
+            cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        _chr(_a_and(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-        cpu_state.data.ax = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_ES(core_machine_cpu_execution_context *context) {
-    _cb("PREFIX_ES");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_ES");
     i386(0x26) {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.es;
@@ -5560,18 +5560,18 @@ static void PREFIX_ES(core_machine_cpu_execution_context *context) {
         instruction_state.data.roverds = &cpu_state.data.es;
         instruction_state.data.roverss = &cpu_state.data.es;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DAA(core_machine_cpu_execution_context *context) {
-    t_nubit8 oldAL = cpu_state.data.al;
-    _cb("DAA");
+    ntvdm64_type_unsigned_8 oldAL = cpu_state.data.al;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DAA");
     i386(0x27)
     _adv;
     else
         cpu_state.data.ip++;
     if (((cpu_state.data.al & 0x0f) > 0x09) || _GetEFLAGS_AF) {
         cpu_state.data.al += 0x06;
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF,
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF,
                 _GetEFLAGS_CF || ((cpu_state.data.al < oldAL) || (cpu_state.data.al < 0x06)));
         _SetEFLAGS_AF;
     } else _ClrEFLAGS_AF;
@@ -5580,125 +5580,125 @@ static void DAA(core_machine_cpu_execution_context *context) {
         _SetEFLAGS_CF;
     } else _ClrEFLAGS_CF;
     instruction_state.data.bit = 8;
-    instruction_state.data.result = (t_nubit32)cpu_state.data.al;
-    _chr(_kaf_set_flags(context, DAA_FLAG));
+    instruction_state.data.result = (ntvdm64_type_unsigned_32)cpu_state.data.al;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, DAA_FLAG));
     instruction_state.data.udf |= VCPU_EFLAGS_OF;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_RM8_R8(core_machine_cpu_execution_context *context) {
-    _cb("SUB_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM8_R8");
     i386(0x28) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("SUB_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM32_R32");
     i386(0x29) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_R8_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SUB_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R8_RM8");
     i386(0x2a) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_sub(context, instruction_state.data.cr, instruction_state.data.crm, 8));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.cr, instruction_state.data.crm, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_R32_RM32(core_machine_cpu_execution_context *context) {
-    _cb("SUB_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R32_RM32");
     i386(0x2b) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_sub(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_sub(context, instruction_state.data.cr, instruction_state.data.crm, 16));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.cr, instruction_state.data.crm, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_AL_I8(core_machine_cpu_execution_context *context) {
-    _cb("SUB_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_AL_I8");
     i386(0x2c) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_a_sub(context, cpu_state.data.al, instruction_state.data.cimm, 8));
-    cpu_state.data.al = GetMax8(instruction_state.data.result);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, cpu_state.data.al, instruction_state.data.cimm, 8));
+    cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_EAX_I32(core_machine_cpu_execution_context *context) {
-    _cb("SUB_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_EAX_I32");
     i386(0x2d) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_d_imm(context, 2));
-            _chr(_a_sub(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-            cpu_state.data.ax = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+            cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_d_imm(context, 4));
-            _chr(_a_sub(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
-            cpu_state.data.eax = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
+            cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        _chr(_a_sub(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-        cpu_state.data.ax = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_CS(core_machine_cpu_execution_context *context) {
-    _cb("PREFIX_CS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_CS");
     i386(0x2e) {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.cs;
@@ -5709,18 +5709,18 @@ static void PREFIX_CS(core_machine_cpu_execution_context *context) {
         instruction_state.data.roverds = &cpu_state.data.cs;
         instruction_state.data.roverss = &cpu_state.data.cs;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DAS(core_machine_cpu_execution_context *context) {
-    t_nubit8 oldAL = cpu_state.data.al;
-    _cb("DAS");
+    ntvdm64_type_unsigned_8 oldAL = cpu_state.data.al;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DAS");
     i386(0x2f)
     _adv;
     else
         cpu_state.data.ip++;
     if (((cpu_state.data.al & 0x0f) > 0x09) || _GetEFLAGS_AF) {
         cpu_state.data.al -= 0x06;
-        MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF,
+        NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF,
                 _GetEFLAGS_CF || (oldAL < 0x06));
         _SetEFLAGS_AF;
     } else _ClrEFLAGS_AF;
@@ -5729,125 +5729,125 @@ static void DAS(core_machine_cpu_execution_context *context) {
         _SetEFLAGS_CF;
     } else _ClrEFLAGS_CF;
     instruction_state.data.bit = 8;
-    instruction_state.data.result = (t_nubit32)cpu_state.data.al;
-    _chr(_kaf_set_flags(context, DAS_FLAG));
+    instruction_state.data.result = (ntvdm64_type_unsigned_32)cpu_state.data.al;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, DAS_FLAG));
     instruction_state.data.udf |= VCPU_EFLAGS_OF;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_RM8_R8(core_machine_cpu_execution_context *context) {
-    _cb("XOR_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM8_R8");
     i386(0x30) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("XOR_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM32_R32");
     i386(0x31) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cr, 16));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_R8_RM8(core_machine_cpu_execution_context *context) {
-    _cb("XOR_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R8_RM8");
     i386(0x32) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_xor(context, instruction_state.data.cr, instruction_state.data.crm, 8));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.cr, instruction_state.data.crm, 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_R32_RM32(core_machine_cpu_execution_context *context) {
-    _cb("XOR_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R32_RM32");
     i386(0x33) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_xor(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_xor(context, instruction_state.data.cr, instruction_state.data.crm, 16));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.cr, instruction_state.data.crm, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_AL_I8(core_machine_cpu_execution_context *context) {
-    _cb("XOR_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_AL_I8");
     i386(0x34) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_a_xor(context, cpu_state.data.al, instruction_state.data.cimm, 8));
-    cpu_state.data.al = GetMax8(instruction_state.data.result);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, cpu_state.data.al, instruction_state.data.cimm, 8));
+    cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.result);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_EAX_I32(core_machine_cpu_execution_context *context) {
-    _cb("XOR_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_EAX_I32");
     i386(0x35) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperxorSize(2)");
-            _chr(_d_imm(context, 2));
-            _chr(_a_xor(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-            cpu_state.data.ax = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperxorSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+            cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperxorSize(4)");
-            _chr(_d_imm(context, 4));
-            _chr(_a_xor(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
-            cpu_state.data.eax = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperxorSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
+            cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        _chr(_a_xor(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-        cpu_state.data.ax = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_SS(core_machine_cpu_execution_context *context) {
-    _cb("PREFIX_SS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_SS");
     i386(0x36) {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.ss;
@@ -5858,10 +5858,10 @@ static void PREFIX_SS(core_machine_cpu_execution_context *context) {
         instruction_state.data.roverds = &cpu_state.data.ss;
         instruction_state.data.roverss = &cpu_state.data.ss;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AAA(core_machine_cpu_execution_context *context) {
-    _cb("AAA");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAA");
     i386(0x37) {
         _adv;
     }
@@ -5879,109 +5879,109 @@ static void AAA(core_machine_cpu_execution_context *context) {
     }
     cpu_state.data.al &= 0x0f;
     instruction_state.data.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_RM8_R8(core_machine_cpu_execution_context *context) {
-    _cb("CMP_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM8_R8");
     i386(0x38) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cr, 8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cr, 8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("CMP_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM32_R32");
     i386(0x39) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cr, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cr, 16));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_R8_RM8(core_machine_cpu_execution_context *context) {
-    _cb("CMP_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R8_RM8");
     i386(0x3a) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_cmp(context, instruction_state.data.cr, instruction_state.data.crm, 8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.cr, instruction_state.data.crm, 8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_R32_RM32(core_machine_cpu_execution_context *context) {
-    _cb("CMP_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R32_RM32");
     i386(0x3b) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_cmp(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 2, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_a_cmp(context, instruction_state.data.cr, instruction_state.data.crm, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.cr, instruction_state.data.crm, 16));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_AL_I8(core_machine_cpu_execution_context *context) {
-    _cb("CMP_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_AL_I8");
     i386(0x3c) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_a_cmp(context, cpu_state.data.al, instruction_state.data.cimm, 8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, cpu_state.data.al, instruction_state.data.cimm, 8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_EAX_I32(core_machine_cpu_execution_context *context) {
-    _cb("CMP_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_EAX_I32");
     i386(0x3d) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_d_imm(context, 2));
-            _chr(_a_cmp(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_d_imm(context, 4));
-            _chr(_a_cmp(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        _chr(_a_cmp(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_DS(core_machine_cpu_execution_context *context) {
-    _cb("PREFIX_DS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_DS");
     i386(0x3e) {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.ds;
@@ -5992,10 +5992,10 @@ static void PREFIX_DS(core_machine_cpu_execution_context *context) {
         instruction_state.data.roverds = &cpu_state.data.ds;
         instruction_state.data.roverss = &cpu_state.data.ds;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AAS(core_machine_cpu_execution_context *context) {
-    _cb("AAS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAS");
     i386(0x3f) {
         _adv;
     }
@@ -6013,1039 +6013,1039 @@ static void AAS(core_machine_cpu_execution_context *context) {
     }
     cpu_state.data.al &= 0x0f;
     instruction_state.data.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EAX(core_machine_cpu_execution_context *context) {
-    _cb("INC_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EAX");
     i386(0x40) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_inc(context, cpu_state.data.ax, 16));
-            cpu_state.data.ax = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.ax, 16));
+            cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_inc(context, cpu_state.data.eax, 32));
-            cpu_state.data.eax = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.eax, 32));
+            cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_inc(context, cpu_state.data.ax, 16));
-        cpu_state.data.ax = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.ax, 16));
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_ECX(core_machine_cpu_execution_context *context) {
-    _cb("INC_ECX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ECX");
     i386(0x41) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_inc(context, cpu_state.data.cx, 16));
-            cpu_state.data.cx = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.cx, 16));
+            cpu_state.data.cx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_inc(context, cpu_state.data.ecx, 32));
-            cpu_state.data.ecx = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.ecx, 32));
+            cpu_state.data.ecx = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_inc(context, cpu_state.data.cx, 16));
-        cpu_state.data.cx = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.cx, 16));
+        cpu_state.data.cx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EDX(core_machine_cpu_execution_context *context) {
-    _cb("INC_EDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDX");
     i386(0x42) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_inc(context, cpu_state.data.dx, 16));
-            cpu_state.data.dx = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.dx, 16));
+            cpu_state.data.dx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_inc(context, cpu_state.data.edx, 32));
-            cpu_state.data.edx = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.edx, 32));
+            cpu_state.data.edx = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_inc(context, cpu_state.data.dx, 16));
-        cpu_state.data.dx = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.dx, 16));
+        cpu_state.data.dx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EBX(core_machine_cpu_execution_context *context) {
-    _cb("INC_EBX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBX");
     i386(0x43) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_inc(context, cpu_state.data.bx, 16));
-            cpu_state.data.bx = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.bx, 16));
+            cpu_state.data.bx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_inc(context, cpu_state.data.ebx, 32));
-            cpu_state.data.ebx = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.ebx, 32));
+            cpu_state.data.ebx = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_inc(context, cpu_state.data.bx, 16));
-        cpu_state.data.bx = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.bx, 16));
+        cpu_state.data.bx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_ESP(core_machine_cpu_execution_context *context) {
-    _cb("INC_ESP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESP");
     i386(0x44) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_inc(context, cpu_state.data.sp, 16));
-            cpu_state.data.sp = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.sp, 16));
+            cpu_state.data.sp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_inc(context, cpu_state.data.esp, 32));
-            cpu_state.data.esp = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.esp, 32));
+            cpu_state.data.esp = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_inc(context, cpu_state.data.sp, 16));
-        cpu_state.data.sp = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.sp, 16));
+        cpu_state.data.sp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EBP(core_machine_cpu_execution_context *context) {
-    _cb("INC_EBP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBP");
     i386(0x45) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_inc(context, cpu_state.data.bp, 16));
-            cpu_state.data.bp = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.bp, 16));
+            cpu_state.data.bp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_inc(context, cpu_state.data.ebp, 32));
-            cpu_state.data.ebp = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.ebp, 32));
+            cpu_state.data.ebp = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_inc(context, cpu_state.data.bp, 16));
-        cpu_state.data.bp = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.bp, 16));
+        cpu_state.data.bp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_ESI(core_machine_cpu_execution_context *context) {
-    _cb("INC_ESI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESI");
     i386(0x46) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_inc(context, cpu_state.data.si, 16));
-            cpu_state.data.si = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.si, 16));
+            cpu_state.data.si = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_inc(context, cpu_state.data.esi, 32));
-            cpu_state.data.esi = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.esi, 32));
+            cpu_state.data.esi = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_inc(context, cpu_state.data.si, 16));
-        cpu_state.data.si = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.si, 16));
+        cpu_state.data.si = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EDI(core_machine_cpu_execution_context *context) {
-    _cb("INC_EDI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDI");
     i386(0x47) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_inc(context, cpu_state.data.di, 16));
-            cpu_state.data.di = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.di, 16));
+            cpu_state.data.di = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_inc(context, cpu_state.data.edi, 32));
-            cpu_state.data.edi = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.edi, 32));
+            cpu_state.data.edi = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_inc(context, cpu_state.data.di, 16));
-        cpu_state.data.di = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, cpu_state.data.di, 16));
+        cpu_state.data.di = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EAX(core_machine_cpu_execution_context *context) {
-    _cb("DEC_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EAX");
     i386(0x48) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_dec(context, cpu_state.data.ax, 16));
-            cpu_state.data.ax = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.ax, 16));
+            cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_dec(context, cpu_state.data.eax, 32));
-            cpu_state.data.eax = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.eax, 32));
+            cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_dec(context, cpu_state.data.ax, 16));
-        cpu_state.data.ax = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.ax, 16));
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_ECX(core_machine_cpu_execution_context *context) {
-    _cb("DEC_ECX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ECX");
     i386(0x49) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_dec(context, cpu_state.data.cx, 16));
-            cpu_state.data.cx = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.cx, 16));
+            cpu_state.data.cx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_dec(context, cpu_state.data.ecx, 32));
-            cpu_state.data.ecx = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.ecx, 32));
+            cpu_state.data.ecx = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_dec(context, cpu_state.data.cx, 16));
-        cpu_state.data.cx = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.cx, 16));
+        cpu_state.data.cx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EDX(core_machine_cpu_execution_context *context) {
-    _cb("DEC_EDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDX");
     i386(0x4a) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_dec(context, cpu_state.data.dx, 16));
-            cpu_state.data.dx = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.dx, 16));
+            cpu_state.data.dx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_dec(context, cpu_state.data.edx, 32));
-            cpu_state.data.edx = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.edx, 32));
+            cpu_state.data.edx = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_dec(context, cpu_state.data.dx, 16));
-        cpu_state.data.dx = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.dx, 16));
+        cpu_state.data.dx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EBX(core_machine_cpu_execution_context *context) {
-    _cb("DEC_EBX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBX");
     i386(0x4b) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_dec(context, cpu_state.data.bx, 16));
-            cpu_state.data.bx = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.bx, 16));
+            cpu_state.data.bx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_dec(context, cpu_state.data.ebx, 32));
-            cpu_state.data.ebx = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.ebx, 32));
+            cpu_state.data.ebx = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_dec(context, cpu_state.data.bx, 16));
-        cpu_state.data.bx = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.bx, 16));
+        cpu_state.data.bx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_ESP(core_machine_cpu_execution_context *context) {
-    _cb("DEC_ESP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESP");
     i386(0x4c) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_dec(context, cpu_state.data.sp, 16));
-            cpu_state.data.sp = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.sp, 16));
+            cpu_state.data.sp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_dec(context, cpu_state.data.esp, 32));
-            cpu_state.data.esp = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.esp, 32));
+            cpu_state.data.esp = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_dec(context, cpu_state.data.sp, 16));
-        cpu_state.data.sp = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.sp, 16));
+        cpu_state.data.sp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EBP(core_machine_cpu_execution_context *context) {
-    _cb("DEC_EBP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBP");
     i386(0x4d) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_dec(context, cpu_state.data.bp, 16));
-            cpu_state.data.bp = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.bp, 16));
+            cpu_state.data.bp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_dec(context, cpu_state.data.ebp, 32));
-            cpu_state.data.ebp = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.ebp, 32));
+            cpu_state.data.ebp = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_dec(context, cpu_state.data.bp, 16));
-        cpu_state.data.bp = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.bp, 16));
+        cpu_state.data.bp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_ESI(core_machine_cpu_execution_context *context) {
-    _cb("DEC_ESI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESI");
     i386(0x4e) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_dec(context, cpu_state.data.si, 16));
-            cpu_state.data.si = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.si, 16));
+            cpu_state.data.si = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_dec(context, cpu_state.data.esi, 32));
-            cpu_state.data.esi = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.esi, 32));
+            cpu_state.data.esi = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_dec(context, cpu_state.data.si, 16));
-        cpu_state.data.si = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.si, 16));
+        cpu_state.data.si = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EDI(core_machine_cpu_execution_context *context) {
-    _cb("DEC_EDI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDI");
     i386(0x4f) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_a_dec(context, cpu_state.data.di, 16));
-            cpu_state.data.di = GetMax16(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.di, 16));
+            cpu_state.data.di = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_a_dec(context, cpu_state.data.edi, 32));
-            cpu_state.data.edi = GetMax32(instruction_state.data.result);
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.edi, 32));
+            cpu_state.data.edi = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.result);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_a_dec(context, cpu_state.data.di, 16));
-        cpu_state.data.di = GetMax16(instruction_state.data.result);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, cpu_state.data.di, 16));
+        cpu_state.data.di = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.result);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EAX(core_machine_cpu_execution_context *context) {
-    _cb("PUSH_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EAX");
     i386(0x50) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_push(context, GetRef(cpu_state.data.ax), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_push(context, GetRef(cpu_state.data.eax), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eax), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_push(context, GetRef(cpu_state.data.ax), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_ECX(core_machine_cpu_execution_context *context) {
-    _cb("PUSH_ECX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ECX");
     i386(0x51) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_push(context, GetRef(cpu_state.data.cx), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.cx), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_push(context, GetRef(cpu_state.data.ecx), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ecx), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_push(context, GetRef(cpu_state.data.cx), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.cx), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EDX(core_machine_cpu_execution_context *context) {
-    _cb("PUSH_EDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDX");
     i386(0x52) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_push(context, GetRef(cpu_state.data.dx), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.dx), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_push(context, GetRef(cpu_state.data.edx), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.edx), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_push(context, GetRef(cpu_state.data.dx), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.dx), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EBX(core_machine_cpu_execution_context *context) {
-    _cb("PUSH_EBX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBX");
     i386(0x53) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_push(context, GetRef(cpu_state.data.bx), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bx), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_push(context, GetRef(cpu_state.data.ebx), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ebx), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_push(context, GetRef(cpu_state.data.bx), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bx), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_ESP(core_machine_cpu_execution_context *context) {
-    _cb("PUSH_ESP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESP");
     i386(0x54) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_push(context, GetRef(cpu_state.data.sp), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.sp), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_push(context, GetRef(cpu_state.data.esp), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.esp), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_push(context, GetRef(cpu_state.data.sp), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.sp), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EBP(core_machine_cpu_execution_context *context) {
-    _cb("PUSH_EBP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBP");
     i386(0x55) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_push(context, GetRef(cpu_state.data.bp), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bp), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_push(context, GetRef(cpu_state.data.ebp), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ebp), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_push(context, GetRef(cpu_state.data.bp), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bp), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_ESI(core_machine_cpu_execution_context *context) {
-    _cb("PUSH_ESI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESI");
     i386(0x56) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_push(context, GetRef(cpu_state.data.si), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.si), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_push(context, GetRef(cpu_state.data.esi), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.esi), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_push(context, GetRef(cpu_state.data.si), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.si), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EDI(core_machine_cpu_execution_context *context) {
-    _cb("PUSH_EDI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDI");
     i386(0x57) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_push(context, GetRef(cpu_state.data.di), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.di), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_push(context, GetRef(cpu_state.data.edi), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.edi), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_push(context, GetRef(cpu_state.data.di), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.di), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EAX(core_machine_cpu_execution_context *context) {
-    _cb("POP_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EAX");
     i386(0x58) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.ax), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.eax), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eax), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_pop(context, GetRef(cpu_state.data.ax), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_ECX(core_machine_cpu_execution_context *context) {
-    _cb("POP_ECX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ECX");
     i386(0x59) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.cx), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.cx), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.ecx), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ecx), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_pop(context, GetRef(cpu_state.data.cx), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.cx), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EDX(core_machine_cpu_execution_context *context) {
-    _cb("POP_EDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDX");
     i386(0x5a) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.dx), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.dx), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.edx), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.edx), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_pop(context, GetRef(cpu_state.data.dx), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.dx), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EBX(core_machine_cpu_execution_context *context) {
-    _cb("POP_EBX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBX");
     i386(0x5b) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.bx), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bx), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.ebx), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ebx), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_pop(context, GetRef(cpu_state.data.bx), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bx), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_ESP(core_machine_cpu_execution_context *context) {
-    _cb("POP_ESP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESP");
     i386(0x5c) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.sp), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.sp), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.esp), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.esp), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_pop(context, GetRef(cpu_state.data.sp), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.sp), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EBP(core_machine_cpu_execution_context *context) {
-    _cb("POP_EBP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBP");
     i386(0x5d) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.bp), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bp), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.ebp), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ebp), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_pop(context, GetRef(cpu_state.data.bp), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bp), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_ESI(core_machine_cpu_execution_context *context) {
-    _cb("POP_ESI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESI");
     i386(0x5e) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.si), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.si), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.esi), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.esi), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_pop(context, GetRef(cpu_state.data.si), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.si), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EDI(core_machine_cpu_execution_context *context) {
-    _cb("POP_EDI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDI");
     i386(0x5f) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.di), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.di), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.edi), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.edi), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_pop(context, GetRef(cpu_state.data.di), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.di), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSHA(core_machine_cpu_execution_context *context) {
-    t_nubit32 cesp;
-    _cb("PUSHA");
+    ntvdm64_type_unsigned_32 cesp;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHA");
     i386(0x60) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
             cesp = cpu_state.data.sp;
-            _chr(_e_push(context, GetRef(cpu_state.data.ax), 2));
-            _chr(_e_push(context, GetRef(cpu_state.data.cx), 2));
-            _chr(_e_push(context, GetRef(cpu_state.data.dx), 2));
-            _chr(_e_push(context, GetRef(cpu_state.data.bx), 2));
-            _chr(_e_push(context, GetRef(cesp),    2));
-            _chr(_e_push(context, GetRef(cpu_state.data.bp), 2));
-            _chr(_e_push(context, GetRef(cpu_state.data.si), 2));
-            _chr(_e_push(context, GetRef(cpu_state.data.di), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.cx), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.dx), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bx), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cesp),    2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bp), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.si), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.di), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             cesp = cpu_state.data.esp;
-            _chr(_e_push(context, GetRef(cpu_state.data.eax), 4));
-            _chr(_e_push(context, GetRef(cpu_state.data.ecx), 4));
-            _chr(_e_push(context, GetRef(cpu_state.data.edx), 4));
-            _chr(_e_push(context, GetRef(cpu_state.data.ebx), 4));
-            _chr(_e_push(context, GetRef(cesp),     4));
-            _chr(_e_push(context, GetRef(cpu_state.data.ebp), 4));
-            _chr(_e_push(context, GetRef(cpu_state.data.esi), 4));
-            _chr(_e_push(context, GetRef(cpu_state.data.edi), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eax), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ecx), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.edx), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ebx), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cesp),     4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ebp), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.esi), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.edi), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POPA(core_machine_cpu_execution_context *context) {
-    t_nubit32 cesp;
-    _cb("POPA");
+    ntvdm64_type_unsigned_32 cesp;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POPA");
     i386(0x61) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.di), 2));
-            _chr(_e_pop(context, GetRef(cpu_state.data.si), 2));
-            _chr(_e_pop(context, GetRef(cpu_state.data.bp), 2));
-            _chr(_e_pop(context, GetRef(cesp),    2));
-            _chr(_e_pop(context, GetRef(cpu_state.data.bx), 2));
-            _chr(_e_pop(context, GetRef(cpu_state.data.dx), 2));
-            _chr(_e_pop(context, GetRef(cpu_state.data.cx), 2));
-            _chr(_e_pop(context, GetRef(cpu_state.data.ax), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.di), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.si), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bp), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cesp),    2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bx), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.dx), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.cx), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.edi), 4));
-            _chr(_e_pop(context, GetRef(cpu_state.data.esi), 4));
-            _chr(_e_pop(context, GetRef(cpu_state.data.ebp), 4));
-            _chr(_e_pop(context, GetRef(cesp),     4));
-            _chr(_e_pop(context, GetRef(cpu_state.data.ebx), 4));
-            _chr(_e_pop(context, GetRef(cpu_state.data.edx), 4));
-            _chr(_e_pop(context, GetRef(cpu_state.data.ecx), 4));
-            _chr(_e_pop(context, GetRef(cpu_state.data.eax), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.edi), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.esi), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ebp), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cesp),     4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ebx), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.edx), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ecx), 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eax), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BOUND_R16_M16_16(core_machine_cpu_execution_context *context) {
-    t_nsbit16 a16,l16,u16;
-    t_nsbit32 a32,l32,u32;
-    _cb("BOUND_R16_M16_16");
+    ntvdm64_type_signed_16 a16,l16,u16;
+    ntvdm64_type_signed_32 a32,l32,u32;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BOUND_R16_M16_16");
     i386(0x62) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize * 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize * 2));
         if (!instruction_state.data.flagMem) {
-            _bb("flagMem(0)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            a16 = (t_nsbit16)instruction_state.data.cr;
-            _chr(_m_read_rm(context, 2));
-            l16 = (t_nsbit16)instruction_state.data.crm;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            a16 = (ntvdm64_type_signed_16)instruction_state.data.cr;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            l16 = (ntvdm64_type_signed_16)instruction_state.data.crm;
             instruction_state.data.mrm.offset += 2;
-            _chr(_m_read_rm(context, 2));
-            u16 = (t_nsbit16)instruction_state.data.crm;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            u16 = (ntvdm64_type_signed_16)instruction_state.data.crm;
             if (a16 < l16 || a16 > u16)
-                _chr(_SetExcept_BR(0));
-            _be;
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_BR(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            a32 = (t_nsbit32)instruction_state.data.cr;
-            _chr(_m_read_rm(context, 4));
-            l32 = (t_nsbit32)instruction_state.data.crm;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            a32 = (ntvdm64_type_signed_32)instruction_state.data.cr;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 4));
+            l32 = (ntvdm64_type_signed_32)instruction_state.data.crm;
             instruction_state.data.mrm.offset += 2;
-            _chr(_m_read_rm(context, 4));
-            u32 = (t_nsbit32)instruction_state.data.crm;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 4));
+            u32 = (ntvdm64_type_signed_32)instruction_state.data.crm;
             if (a32 < l32 || a32 > u32)
-                _chr(_SetExcept_BR(0));
-            _be;
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_BR(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ARPL_RM16_R16(core_machine_cpu_execution_context *context) {
-    _cb("ARPL_RM16_R16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ARPL_RM16_R16");
     i386(0x63) {
         if (_IsProtected) {
             _adv;
-            _chr(_d_modrm(context, 2, 2));
-            _chr(_m_read_rm(context, 2));
-            instruction_state.data.cr = GetMax16(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 2, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            instruction_state.data.cr = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
             if (_GetSelector_RPL(instruction_state.data.crm) < _GetSelector_RPL(instruction_state.data.cr)) {
                 _SetEFLAGS_ZF;
-                instruction_state.data.result = GetMax16((instruction_state.data.crm & ~VCPU_SELECTOR_RPL) |
+                instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16((instruction_state.data.crm & ~VCPU_SELECTOR_RPL) |
                                                (instruction_state.data.cr & VCPU_SELECTOR_RPL));
                 instruction_state.data.crm = instruction_state.data.result;
-                _chr(_m_write_rm(context, 2));
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
             } else
                 _ClrEFLAGS_ZF;
         } else
-            _chr(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_FS(core_machine_cpu_execution_context *context) {
-    _cb("PREFIX_FS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_FS");
     i386(0x64) {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.fs;
@@ -7053,10 +7053,10 @@ static void PREFIX_FS(core_machine_cpu_execution_context *context) {
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_GS(core_machine_cpu_execution_context *context) {
-    _cb("PREFIX_GS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_GS");
     i386(0x65) {
         _adv;
         instruction_state.data.roverds = &cpu_state.data.gs;
@@ -7064,378 +7064,378 @@ static void PREFIX_GS(core_machine_cpu_execution_context *context) {
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_OprSize(core_machine_cpu_execution_context *context) {
-    _cb("PREFIX_OprSize");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_OprSize");
     i386(0x66) {
         _adv;
-        instruction_state.data.prefix_oprsize = True;
+        instruction_state.data.prefix_oprsize = NTVDM64_TYPE_TRUE;
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_AddrSize(core_machine_cpu_execution_context *context) {
-    _cb("PREFIX_AddrSize");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_AddrSize");
     i386(0x67) {
         _adv;
-        instruction_state.data.prefix_addrsize = True;
+        instruction_state.data.prefix_addrsize = NTVDM64_TYPE_TRUE;
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_I32(core_machine_cpu_execution_context *context) {
-    _cb("PUSH_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I32");
     i386(0x68) {
         _adv;
-        _chr(_d_imm(context, _GetOperandSize));
-        _chr(_e_push(context, GetRef(instruction_state.data.cimm), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cimm), _GetOperandSize));
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IMUL_R32_RM32_I32(core_machine_cpu_execution_context *context) {
-    _cb("IMUL_R32_RM32_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
     i386(0x69) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_d_imm(context, _GetOperandSize));
-        _chr(_a_imul3(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_imul3(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_I8(core_machine_cpu_execution_context *context) {
-    _cb("PUSH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I8");
     i386(0x6a) {
         _adv;
-        _chr(_d_imm(context, 1));
-        _chr(_e_push(context, GetRef(instruction_state.data.cimm), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cimm), _GetOperandSize));
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IMUL_R32_RM32_I8(core_machine_cpu_execution_context *context) {
-    _cb("IMUL_R32_RM32_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I8");
     i386(0x6b) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_d_imm(context, 1));
-        _chr(_a_imul3(context, instruction_state.data.crm, instruction_state.data.cimm, ((_GetOperandSize * 8 + 8) >> 1)));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_imul3(context, instruction_state.data.crm, instruction_state.data.cimm, ((_GetOperandSize * 8 + 8) >> 1)));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INSB(core_machine_cpu_execution_context *context) {
-    _cb("INSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INSB");
     i386(0x6c) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_p_ins(context, 1));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_ins(context, 1));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_p_ins(context, 1));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_ins(context, 1));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_p_ins(context, 1));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_ins(context, 1));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INSW(core_machine_cpu_execution_context *context) {
-    _cb("INSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INSW");
     i386(0x6d) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_p_ins(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_ins(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_p_ins(context, _GetOperandSize));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_ins(context, _GetOperandSize));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_p_ins(context, _GetOperandSize));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_ins(context, _GetOperandSize));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUTSB(core_machine_cpu_execution_context *context) {
-    _cb("OUTSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSB");
     i386(0x6e) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_p_ins(context, 1));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_ins(context, 1));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_p_ins(context, 1));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_ins(context, 1));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_p_ins(context, 1));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_ins(context, 1));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUTSW(core_machine_cpu_execution_context *context) {
-    _cb("OUTSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSW");
     i386(0x6f) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_p_outs(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_outs(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_p_outs(context, _GetOperandSize));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_outs(context, _GetOperandSize));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_p_outs(context, _GetOperandSize));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_outs(context, _GetOperandSize));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JO_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JO_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JO_REL8");
     i386(0x70) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, _GetEFLAGS_OF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, _GetEFLAGS_OF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNO_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JNO_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNO_REL8");
     i386(0x71) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, !_GetEFLAGS_OF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, !_GetEFLAGS_OF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JC_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JC_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JC_REL8");
     i386(0x72) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, _GetEFLAGS_CF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, _GetEFLAGS_CF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNC_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JNC_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNC_REL8");
     i386(0x73) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, !_GetEFLAGS_CF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, !_GetEFLAGS_CF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JZ_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JZ_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JZ_REL8");
     i386(0x74) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, _GetEFLAGS_ZF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, _GetEFLAGS_ZF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNZ_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JNZ_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNZ_REL8");
     i386(0x75) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, !_GetEFLAGS_ZF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, !_GetEFLAGS_ZF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNA_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JNA_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNA_REL8");
     i386(0x76) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1,
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1,
                 (_GetEFLAGS_CF || _GetEFLAGS_ZF)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JA_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JA_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JA_REL8");
     i386(0x77) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1,
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1,
                 !(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JS_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JS_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JS_REL8");
     i386(0x78) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, _GetEFLAGS_SF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, _GetEFLAGS_SF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNS_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JNS_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNS_REL8");
     i386(0x79) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, !_GetEFLAGS_SF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, !_GetEFLAGS_SF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JP_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JP_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JP_REL8");
     _new_code_path_;
     i386(0x7a) {
         _adv;
@@ -7443,12 +7443,12 @@ static void JP_REL8(core_machine_cpu_execution_context *context) {
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, _GetEFLAGS_PF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, _GetEFLAGS_PF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNP_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JNP_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNP_REL8");
     _new_code_path_;
     i386(0x7b) {
         _adv;
@@ -7456,727 +7456,727 @@ static void JNP_REL8(core_machine_cpu_execution_context *context) {
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, !_GetEFLAGS_PF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, !_GetEFLAGS_PF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JL_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JL_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JL_REL8");
     i386(0x7c) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNL_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JNL_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNL_REL8");
     i386(0x7d) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNG_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JNG_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNG_REL8");
     i386(0x7e) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1,
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1,
                 (_GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF))));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JG_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JG_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JG_REL8");
     i386(0x7f) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1,
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1,
                 (!_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF))));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_80(core_machine_cpu_execution_context *context) {
-    _cb("INS_80");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_80");
     i386 (0x80) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_d_imm(context, 1));
-    _chr(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     switch (instruction_state.data.cr) {
     case 0: /* ADD_RM8_I8 */
-        _bb("ADD_RM8_I8");
-        _chr(_a_add(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADD_RM8_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* OR_RM8_I8 */
-        _bb("OR_RM8_I8");
-        _chr(_a_or(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OR_RM8_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* ADC_RM8_I8 */
-        _bb("ADC_RM8_I8");
-        _chr(_a_adc(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADC_RM8_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* SBB_RM8_I8 */
-        _bb("SBB_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SBB_RM8_I8");
         _new_code_path_;
-        _chr(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* AND_RM8_I8 */
-        _bb("AND_RM8_I8");
-        _chr(_a_and(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AND_RM8_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SUB_RM8_I8 */
-        _bb("SUB_RM8_I8");
-        _chr(_a_sub(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SUB_RM8_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* XOR_RM8_I8 */
-        _bb("XOR_RM8_I8");
-        _chr(_a_xor(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("XOR_RM8_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* CMP_RM8_I8 */
-        _bb("CMP_RM8_I8");
-        _chr(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CMP_RM8_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_81(core_machine_cpu_execution_context *context) {
-    _cb("INS_81");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_81");
     i386(0x81) {
         _adv;
-        _chr(_d_modrm(context, 0, _GetOperandSize));
-        _chr(_d_imm(context, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (instruction_state.data.cr) {
         case 0: /* ADD_RM32_I32 */
-            _bb("ADD_RM32_I32");
-            _chr(_a_add(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADD_RM32_I32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* OR_RM32_I32 */
-            _bb("OR_RM32_I32");
-            _chr(_a_or(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OR_RM32_I32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* ADC_RM32_I32 */
-            _bb("ADC_RM32_I32");
-            _chr(_a_adc(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADC_RM32_I32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* SBB_RM32_I32 */
-            _bb("SBB_RM32_I32");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SBB_RM32_I32");
             _new_code_path_;
-            _chr(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* AND_RM32_I32 */
-            _bb("AND_RM32_I32");
-            _chr(_a_and(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AND_RM32_I32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* SUB_RM32_I32 */
-            _bb("SUB_RM32_I32");
-            _chr(_a_sub(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SUB_RM32_I32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* XOR_RM32_I32 */
-            _bb("XOR_RM32_I32");
-            _chr(_a_xor(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("XOR_RM32_I32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* CMP_RM32_I32 */
-            _bb("CMP_RM32_I32");
-            _chr(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CMP_RM32_I32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 0, 2));
-        _chr(_d_imm(context, 2));
-        _chr(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         switch (instruction_state.data.cr) {
         case 0: /* ADD_RM16_I16 */
-            _bb("ADD_RM16_I16");
-            _chr(_a_add(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADD_RM16_I16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* OR_RM16_I16 */
-            _bb("OR_RM16_I16");
-            _chr(_a_or(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OR_RM16_I16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* ADC_RM16_I16 */
-            _bb("ADC_RM16_I16");
-            _chr(_a_adc(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADC_RM16_I16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* SBB_RM16_I16 */
-            _bb("SBB_RM16_I16");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SBB_RM16_I16");
             _new_code_path_;
-            _chr(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* AND_RM16_I16 */
-            _bb("AND_RM16_I16");
-            _chr(_a_and(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AND_RM16_I16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* SUB_RM16_I16 */
-            _bb("SUB_RM16_I16");
-            _chr(_a_sub(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SUB_RM16_I16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* XOR_RM16_I16 */
-            _bb("XOR_RM16_I16");
-            _chr(_a_xor(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("XOR_RM16_I16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* CMP_RM16_I16 */
-            _bb("CMP_RM16_I16");
-            _chr(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CMP_RM16_I16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cimm, 2 * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_83(core_machine_cpu_execution_context *context) {
-    t_nubit8 bit;
-    _cb("INS_83");
+    ntvdm64_type_unsigned_8 bit;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_83");
     i386(0x83) {
         _adv;
-        _chr(_d_modrm(context, 0, _GetOperandSize));
-        _chr(_d_imm(context, 1));
-        _chr(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         bit = (_GetOperandSize * 8 + 8) >> 1;
         switch (instruction_state.data.cr) {
         case 0: /* ADD_RM32_I8 */
-            _bb("ADD_RM32_I8");
-            _chr(_a_add(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADD_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* OR_RM32_I8 */
-            _bb("OR_RM32_I8");
-            _chr(_a_or(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OR_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* ADC_RM32_I8 */
-            _bb("ADC_RM32_I8");
-            _chr(_a_adc(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADC_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* SBB_RM32_I8 */
-            _bb("SBB_RM32_I8");
-            _chr(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SBB_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* AND_RM32_I8 */
-            _bb("AND_RM32_I8");
-            _chr(_a_and(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AND_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* SUB_RM32_I8 */
-            _bb("SUB_RM32_I8");
-            _chr(_a_sub(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SUB_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* XOR_RM32_I8 */
-            _bb("XOR_RM32_I8");
-            _chr(_a_xor(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("XOR_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* CMP_RM32_I8 */
-            _bb("CMP_RM32_I8");
-            _chr(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CMP_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 0, 2));
-        _chr(_d_imm(context, 1));
-        _chr(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         bit = 12;
         switch (instruction_state.data.cr) {
         case 0: /* ADD_RM16_I8 */
-            _bb("ADD_RM16_I8");
-            _chr(_a_add(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADD_RM16_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_add(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* OR_RM16_I8 */
-            _bb("OR_RM16_I8");
-            _chr(_a_or(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OR_RM16_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_or(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* ADC_RM16_I8 */
-            _bb("ADC_RM16_I8");
-            _chr(_a_adc(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADC_RM16_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_adc(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* SBB_RM16_I8 */
-            _bb("SBB_RM16_I8");
-            _chr(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SBB_RM16_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sbb(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* AND_RM16_I8 */
-            _bb("AND_RM16_I8");
-            _chr(_a_and(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AND_RM16_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_and(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* SUB_RM16_I8 */
-            _bb("SUB_RM16_I8");
-            _chr(_a_sub(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SUB_RM16_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sub(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* XOR_RM16_I8 */
-            _bb("XOR_RM16_I8");
-            _chr(_a_xor(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("XOR_RM16_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_xor(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* CMP_RM16_I8 */
-            _bb("CMP_RM16_I8");
-            _chr(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CMP_RM16_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmp(context, instruction_state.data.crm, instruction_state.data.cimm, bit));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST_RM8_R8(core_machine_cpu_execution_context *context) {
-    _cb("TEST_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM8_R8");
     i386(0x84) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_a_test(context, instruction_state.data.crm, instruction_state.data.cr, 8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_test(context, instruction_state.data.crm, instruction_state.data.cr, 8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("TEST_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM32_R32");
     i386(0x85) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_a_test(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_test(context, instruction_state.data.crm, instruction_state.data.cr, _GetOperandSize * 8));
     }
     else {
         cpu_state.data.ip++;
         _d_modrm(context, 2, 2);
-        _chr(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         _a_test(context, instruction_state.data.crm, instruction_state.data.cr, 16);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_RM8_R8(core_machine_cpu_execution_context *context) {
-    _cb("XCHG_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM8_R8");
     i386(0x86) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 1));
     instruction_state.data.crm = instruction_state.data.cr;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("XCHG_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM32_R32");
     i386(0x87) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
         instruction_state.data.crm = instruction_state.data.cr;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
         _d_modrm(context, 2, 2);
-        _chr(_m_read_rm(context, 2));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 2));
         instruction_state.data.crm = instruction_state.data.cr;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_RM8_R8(core_machine_cpu_execution_context *context) {
-    _cb("MOV_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM8_R8");
     i386(0x88) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
     instruction_state.data.crm = instruction_state.data.cr;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM32_R32");
     i386(0x89) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
         instruction_state.data.crm = instruction_state.data.cr;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
         _d_modrm(context, 2, 2);
         instruction_state.data.crm = instruction_state.data.cr;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R8_RM8(core_machine_cpu_execution_context *context) {
-    _cb("MOV_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R8_RM8");
     i386(0x8a) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 1, 1));
-    _chr(_m_read_rm(context, 1));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R32_RM32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_RM32");
     i386(0x8b) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
         _d_modrm(context, 2, 2);
-        _chr(_m_read_rm(context, 2));
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_RM16_SREG(core_machine_cpu_execution_context *context) {
-    _cb("MOV_RM16_SREG");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM16_SREG");
     i386(0x8c) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm_sreg(context, 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
     instruction_state.data.crm = instruction_state.data.rmovsreg->selector;
-    _chr(_m_write_rm(context, 2));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LEA_R32_M32(core_machine_cpu_execution_context *context) {
-    _cb("LEA_R32_M32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LEA_R32_M32");
     i386(0x8d) {
         _adv;
-        _chr(_d_modrm_ea(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, _GetOperandSize, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.mrm.offset), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mrm.offset), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.mrm.offset), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mrm.offset), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
         _d_modrm_ea(context, 2, 2);
-        _m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.mrm.offset), 2);
+        _m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mrm.offset), 2);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_SREG_RM16(core_machine_cpu_execution_context *context) {
-    _cb("MOV_SREG_RM16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_SREG_RM16");
     i386(0x8e) {
         _adv;
-        _chr(_d_modrm_sreg(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
         if (instruction_state.data.rmovsreg->sregtype == SREG_CODE) {
-            _bb("sregtype(SREG_CODE)");
-            _chr(_SetExcept_UD(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_CODE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _chr(_m_read_rm(context, 2));
-        _chr(_s_load_sreg(context, instruction_state.data.rmovsreg, GetMax16(instruction_state.data.crm)));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, instruction_state.data.rmovsreg, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)));
         if (instruction_state.data.rmovsreg->sregtype == SREG_STACK)
-            instruction_state.data.flagMaskInt = True;
+            instruction_state.data.flagMaskInt = NTVDM64_TYPE_TRUE;
     }
     else {
         cpu_state.data.ip++;
         _d_modrm_sreg(context, 2);
-        _chr(_m_read_rm(context, 2));
-        _chr(_s_load_sreg(context, instruction_state.data.rmovsreg, GetMax16(instruction_state.data.crm)));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, instruction_state.data.rmovsreg, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_8F(core_machine_cpu_execution_context *context) {
-    _cb("INS_8F");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_8F");
     i386(0x8f) {
         _adv;
-        _chr(_d_modrm(context, 0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         switch (instruction_state.data.cr) {
         case 0: /* POP_RM32 */
-            _bb("POP_RM32");
-            _chr(_e_pop(context, GetRef(instruction_state.data.crm), _GetOperandSize));
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("POP_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1:
-            _bb("instruction_state.data.cr(1)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(1)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2:
-            _bb("instruction_state.data.cr(2)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3:
-            _bb("instruction_state.data.cr(3)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(3)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("instruction_state.data.cr(4)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5:
-            _bb("instruction_state.data.cr(5)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(5)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6:
-            _bb("instruction_state.data.cr(6)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7:
-            _bb("instruction_state.data.cr(7)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(7)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         switch (instruction_state.data.cr) {
         case 0: /* POP_RM16 */
-            _bb("POP_RM16");
-            _chr(_e_pop(context, GetRef(instruction_state.data.crm), 2));
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("POP_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1:
-            _bb("instruction_state.data.cr(1)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(1)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2:
-            _bb("instruction_state.data.cr(2)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3:
-            _bb("instruction_state.data.cr(3)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(3)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("instruction_state.data.cr(4)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5:
-            _bb("instruction_state.data.cr(5)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(5)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6:
-            _bb("instruction_state.data.cr(6)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7:
-            _bb("instruction_state.data.cr(7)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(7)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void NOP(core_machine_cpu_execution_context *context) {
-    _cb("NOP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("NOP");
     i386(0x90) {
         _adv;
     }
     else
         cpu_state.data.ip++;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_ECX_EAX(core_machine_cpu_execution_context *context) {
-    _cb("XCHG_ECX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ECX_EAX");
     i386(0x91) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
             instruction_state.data.cr = cpu_state.data.ax;
             cpu_state.data.ax = cpu_state.data.cx;
-            cpu_state.data.cx = GetMax16(instruction_state.data.cr);
-            _be;
+            cpu_state.data.cx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             _new_code_path_;
             instruction_state.data.cr = cpu_state.data.eax;
             cpu_state.data.eax = cpu_state.data.ecx;
-            cpu_state.data.ecx = GetMax32(instruction_state.data.cr);
-            _be;
+            cpu_state.data.ecx = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
@@ -8184,32 +8184,32 @@ static void XCHG_ECX_EAX(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.cx;
-        cpu_state.data.cx = GetMax16(instruction_state.data.cr);
+        cpu_state.data.cx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EDX_EAX(core_machine_cpu_execution_context *context) {
-    _cb("XCHG_EDX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDX_EAX");
     i386(0x92) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
             instruction_state.data.cr = cpu_state.data.ax;
             cpu_state.data.ax = cpu_state.data.dx;
-            cpu_state.data.dx = GetMax16(instruction_state.data.cr);
-            _be;
+            cpu_state.data.dx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             _new_code_path_;
             instruction_state.data.cr = cpu_state.data.eax;
             cpu_state.data.eax = cpu_state.data.edx;
-            cpu_state.data.edx = GetMax32(instruction_state.data.cr);
-            _be;
+            cpu_state.data.edx = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
@@ -8217,32 +8217,32 @@ static void XCHG_EDX_EAX(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.dx;
-        cpu_state.data.dx = GetMax16(instruction_state.data.cr);
+        cpu_state.data.dx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EBX_EAX(core_machine_cpu_execution_context *context) {
-    _cb("XCHG_EBX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBX_EAX");
     i386(0x93) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
             instruction_state.data.cr = cpu_state.data.ax;
             cpu_state.data.ax = cpu_state.data.bx;
-            cpu_state.data.bx = GetMax16(instruction_state.data.cr);
-            _be;
+            cpu_state.data.bx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             _new_code_path_;
             instruction_state.data.cr = cpu_state.data.eax;
             cpu_state.data.eax = cpu_state.data.ebx;
-            cpu_state.data.ebx = GetMax32(instruction_state.data.cr);
-            _be;
+            cpu_state.data.ebx = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
@@ -8250,33 +8250,33 @@ static void XCHG_EBX_EAX(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.bx;
-        cpu_state.data.bx = GetMax16(instruction_state.data.cr);
+        cpu_state.data.bx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_ESP_EAX(core_machine_cpu_execution_context *context) {
-    _cb("XCHG_ESP_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESP_EAX");
     _new_code_path_;
     i386(0x94) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
             instruction_state.data.cr = cpu_state.data.ax;
             cpu_state.data.ax = cpu_state.data.sp;
-            cpu_state.data.sp = GetMax16(instruction_state.data.cr);
-            _be;
+            cpu_state.data.sp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             _new_code_path_;
             instruction_state.data.cr = cpu_state.data.eax;
             cpu_state.data.eax = cpu_state.data.esp;
-            cpu_state.data.esp = GetMax32(instruction_state.data.cr);
-            _be;
+            cpu_state.data.esp = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
@@ -8284,32 +8284,32 @@ static void XCHG_ESP_EAX(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.sp;
-        cpu_state.data.sp = GetMax16(instruction_state.data.cr);
+        cpu_state.data.sp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EBP_EAX(core_machine_cpu_execution_context *context) {
-    _cb("XCHG_EBP_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBP_EAX");
     i386(0x95) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
             instruction_state.data.cr = cpu_state.data.ax;
             cpu_state.data.ax = cpu_state.data.bp;
-            cpu_state.data.bp = GetMax16(instruction_state.data.cr);
-            _be;
+            cpu_state.data.bp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             _new_code_path_;
             instruction_state.data.cr = cpu_state.data.eax;
             cpu_state.data.eax = cpu_state.data.ebp;
-            cpu_state.data.ebp = GetMax32(instruction_state.data.cr);
-            _be;
+            cpu_state.data.ebp = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
@@ -8317,32 +8317,32 @@ static void XCHG_EBP_EAX(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.bp;
-        cpu_state.data.bp = GetMax16(instruction_state.data.cr);
+        cpu_state.data.bp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_ESI_EAX(core_machine_cpu_execution_context *context) {
-    _cb("XCHG_ESI_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESI_EAX");
     i386(0x96) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
             instruction_state.data.cr = cpu_state.data.ax;
             cpu_state.data.ax = cpu_state.data.si;
-            cpu_state.data.si = GetMax16(instruction_state.data.cr);
-            _be;
+            cpu_state.data.si = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             _new_code_path_;
             instruction_state.data.cr = cpu_state.data.eax;
             cpu_state.data.eax = cpu_state.data.esi;
-            cpu_state.data.esi = GetMax32(instruction_state.data.cr);
-            _be;
+            cpu_state.data.esi = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
@@ -8350,32 +8350,32 @@ static void XCHG_ESI_EAX(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.si;
-        cpu_state.data.si = GetMax16(instruction_state.data.cr);
+        cpu_state.data.si = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EDI_EAX(core_machine_cpu_execution_context *context) {
-    _cb("XCHG_EDI_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDI_EAX");
     i386(0x97) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
             instruction_state.data.cr = cpu_state.data.ax;
             cpu_state.data.ax = cpu_state.data.di;
-            cpu_state.data.di = GetMax16(instruction_state.data.cr);
-            _be;
+            cpu_state.data.di = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             _new_code_path_;
             instruction_state.data.cr = cpu_state.data.eax;
             cpu_state.data.eax = cpu_state.data.edi;
-            cpu_state.data.edi = GetMax32(instruction_state.data.cr);
-            _be;
+            cpu_state.data.edi = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cr);
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
@@ -8383,45 +8383,45 @@ static void XCHG_EDI_EAX(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         instruction_state.data.cr = cpu_state.data.ax;
         cpu_state.data.ax = cpu_state.data.di;
-        cpu_state.data.di = GetMax16(instruction_state.data.cr);
+        cpu_state.data.di = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cr);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CBW(core_machine_cpu_execution_context *context) {
-    _cb("CBW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CBW");
     i386(0x98) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            cpu_state.data.ax = (t_nsbit8)cpu_state.data.al;
+            cpu_state.data.ax = (ntvdm64_type_signed_8)cpu_state.data.al;
             break;
         case 4:
-            cpu_state.data.eax = (t_nsbit16)cpu_state.data.ax;
+            cpu_state.data.eax = (ntvdm64_type_signed_16)cpu_state.data.ax;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        cpu_state.data.ax = (t_nsbit8)cpu_state.data.al;
+        cpu_state.data.ax = (ntvdm64_type_signed_8)cpu_state.data.al;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CWD(core_machine_cpu_execution_context *context) {
-    _cb("CWD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CWD");
     i386(0x99) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            cpu_state.data.dx = GetMSB16(cpu_state.data.ax) ? 0xffff : 0x0000;
+            cpu_state.data.dx = NTVDM64_TYPE_GET_MSB_16(cpu_state.data.ax) ? 0xffff : 0x0000;
             break;
         case 4:
-            cpu_state.data.edx = GetMSB32(cpu_state.data.eax) ? 0xffffffff : 0x00000000;
+            cpu_state.data.edx = NTVDM64_TYPE_GET_MSB_32(cpu_state.data.eax) ? 0xffffffff : 0x00000000;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
@@ -8430,196 +8430,196 @@ static void CWD(core_machine_cpu_execution_context *context) {
         if (cpu_state.data.ax & 0x8000) cpu_state.data.dx = 0xffff;
         else cpu_state.data.dx = 0x0000;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CALL_PTR16_32(core_machine_cpu_execution_context *context) {
-    t_nubit16 newcs;
-    t_nubit32 neweip;
-    _cb("CALL_PTR16_32");
+    ntvdm64_type_unsigned_16 newcs;
+    ntvdm64_type_unsigned_32 neweip;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_PTR16_32");
     i386(0x9a) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_d_imm(context, 4));
-            neweip = GetMax16(instruction_state.data.cimm);
-            newcs = GetMax16(instruction_state.data.cimm >> 16);
-            _chr(_e_call_far(context, newcs, neweip, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
+            neweip = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
+            newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm >> 16);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_call_far(context, newcs, neweip, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_d_imm(context, 8));
-            neweip = GetMax32(instruction_state.data.cimm);
-            newcs = GetMax16(instruction_state.data.cimm >> 32);
-            _chr(_e_call_far(context, newcs, neweip, 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 8));
+            neweip = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm);
+            newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm >> 32);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_call_far(context, newcs, neweip, 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
         _d_imm(context, 4);
-        neweip = GetMax16(instruction_state.data.cimm);
-        newcs = GetMax16(instruction_state.data.cimm >> 16);
+        neweip = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
+        newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm >> 16);
         _e_call_far(context, newcs, neweip, 2);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 _______todo WAIT(core_machine_cpu_execution_context *context) {
     /* not implemented */
-    _cb("WAIT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("WAIT");
     _new_code_path_;
     i386(0x9b) {
         _adv;
         if (_GetCR0_TS) {
-            _bb("CR0_TS(1)");
-            _chr(_SetExcept_NM(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_TS(1)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_NM(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
         cpu_state.data.ip++;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSHF(core_machine_cpu_execution_context *context) {
-    t_nubit32 ceflags;
-    _cb("PUSHF");
+    ntvdm64_type_unsigned_32 ceflags;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHF");
     i386(0x9c) {
         _adv;
         if (!_GetCR0_PE || (_GetCR0_PE && (!_GetEFLAGS_VM || (_GetEFLAGS_VM && (_GetEFLAGS_IOPL == 3))))) {
-            _bb("Real/Protected/(V86,IOPL(3))");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Real/Protected/(V86,IOPL(3))");
             switch (_GetOperandSize) {
             case 2:
-                _bb("OperandSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
                 ceflags = cpu_state.data.flags;
-                _chr(_e_push(context, GetRef(ceflags), 2));
-                _be;
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(ceflags), 2));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("OperandSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
                 ceflags = cpu_state.data.eflags & ~(VCPU_EFLAGS_VM | VCPU_EFLAGS_RF);
-                _chr(_e_push(context, GetRef(ceflags), 4));
-                _be;
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(ceflags), 4));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("EFLAGS_VM(1),EFLAGS_IOPL(!3)");
-            _chr(_SetExcept_GP(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_VM(1),EFLAGS_IOPL(!3)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
         cpu_state.data.ip++;
-        _e_push(context, GetRef(cpu_state.data.flags), 2);
+        _e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.flags), 2);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POPF(core_machine_cpu_execution_context *context) {
-    t_nubit32 mask = VCPU_EFLAGS_RESERVED;
-    t_nubit32 ceflags = Zero32;
-    _cb("POPF");
+    ntvdm64_type_unsigned_32 mask = VCPU_EFLAGS_RESERVED;
+    ntvdm64_type_unsigned_32 ceflags = NTVDM64_TYPE_ZERO_32;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POPF");
     i386(0x9d) {
         _adv;
         if (!_GetCR0_PE || !_GetEFLAGS_VM) {
-            _bb("!V86");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!V86");
             if (!_GetCPL) {
-                _bb("CPL(0)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(0)");
                 switch (_GetOperandSize) {
                 case 2:
-                    _bb("OperandSize(2)");
-                    _chr(_e_pop(context, GetRef(ceflags), 2));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(ceflags), 2));
                     mask |= 0xffff0000;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 case 4:
-                    _bb("OperandSize(4)");
-                    _chr(_e_pop(context, GetRef(ceflags), 4));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(ceflags), 4));
                     mask |= VCPU_EFLAGS_VM;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("CPL(!0)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
                 _new_code_path_;
                 switch (_GetOperandSize) {
                 case 2:
-                    _bb("OperandSize(2)");
-                    _chr(_e_pop(context, GetRef(ceflags), 2));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(ceflags), 2));
                     mask |= (0xffff0000 | VCPU_EFLAGS_IOPL);
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 case 4:
-                    _bb("OperandSize(4)");
-                    _chr(_e_pop(context, GetRef(ceflags), 4));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(ceflags), 4));
                     mask |= (VCPU_EFLAGS_VM | VCPU_EFLAGS_RF | VCPU_EFLAGS_IOPL);
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("V86");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("V86");
             if (instruction_state.data.prefix_oprsize) {
-                _bb("prefix_oprsize(1)");
-                _chr(_SetExcept_GP(0));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_oprsize(1)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
             if (_GetEFLAGS_IOPL == 0x03) {
-                _bb("EFLAGS_IOPL(3)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_IOPL(3)");
                 switch (_GetOperandSize) {
                 case 2:
-                    _bb("OperandSize(2)");
-                    _chr(_e_pop(context, GetRef(ceflags), 2));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(ceflags), 2));
                     mask |= (0xffff0000 | VCPU_EFLAGS_IOPL);
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 case 4:
-                    _bb("OperandSize(4)");
-                    _chr(_e_pop(context, GetRef(ceflags), 4));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(ceflags), 4));
                     mask |= (VCPU_EFLAGS_VM | VCPU_EFLAGS_RF | VCPU_EFLAGS_IOPL);
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("EFLAGS_IOPL(!3)");
-                _chr(_SetExcept_GP(0));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_IOPL(!3)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         cpu_state.data.eflags = (ceflags & ~mask) | (cpu_state.data.eflags & mask);
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_pop(context, GetRef(cpu_state.data.flags), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.flags), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SAHF(core_machine_cpu_execution_context *context) {
-    t_nubit32 mask = (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF |
+    ntvdm64_type_unsigned_32 mask = (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF |
                       VCPU_EFLAGS_AF | VCPU_EFLAGS_PF | VCPU_EFLAGS_CF);
-    _cb("SAHF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SAHF");
     i386(0x9e) {
         _adv;
     }
@@ -8627,77 +8627,77 @@ static void SAHF(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
     }
     cpu_state.data.eflags = (cpu_state.data.ah & mask) | (cpu_state.data.eflags & ~mask);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LAHF(core_machine_cpu_execution_context *context) {
-    _cb("LAHF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LAHF");
     i386(0x9f) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    cpu_state.data.ah = GetMax8(cpu_state.data.flags);
-    _ce;
+    cpu_state.data.ah = NTVDM64_TYPE_MASK_UNSIGNED_8(cpu_state.data.flags);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_AL_MOFFS8(core_machine_cpu_execution_context *context) {
-    _cb("MOV_AL_MOFFS8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_MOFFS8");
     i386(0xa0) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_moffs(context, 1));
-    _chr(_m_read_rm(context, 1));
-    cpu_state.data.al = GetMax8(instruction_state.data.crm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.crm);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EAX_MOFFS32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_EAX_MOFFS32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_MOFFS32");
     i386(0xa1) {
         _adv;
-        _chr(_d_moffs(context, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            cpu_state.data.ax = GetMax16(instruction_state.data.crm);
+            cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
             break;
         case 4:
-            cpu_state.data.eax = GetMax32(instruction_state.data.crm);
+            cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_moffs(context, 2));
-        _chr(_m_read_rm(context, 2));
-        cpu_state.data.ax = GetMax16(instruction_state.data.crm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_MOFFS8_AL(core_machine_cpu_execution_context *context) {
-    _cb("MOV_MOFFS8_AL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS8_AL");
     i386(0xa2) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_moffs(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(context, 1));
     instruction_state.data.result = cpu_state.data.al;
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_MOFFS32_EAX(core_machine_cpu_execution_context *context) {
-    _cb("MOV_MOFFS32_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS32_EAX");
     i386(0xa3) {
         _adv;
-        _chr(_d_moffs(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(context, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
             instruction_state.data.result = cpu_state.data.ax;
@@ -8706,58 +8706,58 @@ static void MOV_MOFFS32_EAX(core_machine_cpu_execution_context *context) {
             instruction_state.data.result = cpu_state.data.eax;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_moffs(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(context, 2));
         instruction_state.data.crm = cpu_state.data.ax;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSB(core_machine_cpu_execution_context *context) {
-    _cb("MOVSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSB");
     i386(0xa4) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_m_movs(context, 1));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_movs(context, 1));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_m_movs(context, 1));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_movs(context, 1));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_m_movs(context, 1));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_movs(context, 1));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
@@ -8768,49 +8768,49 @@ static void MOVSB(core_machine_cpu_execution_context *context) {
                 _m_movs(context, 1);
                 cpu_state.data.cx--;
             }
-            if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
+            if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSW(core_machine_cpu_execution_context *context) {
-    _cb("MOVSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSW");
     i386(0xa5) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_m_movs(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_movs(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_m_movs(context, _GetOperandSize));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_movs(context, _GetOperandSize));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_m_movs(context, _GetOperandSize));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_movs(context, _GetOperandSize));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
@@ -8821,55 +8821,55 @@ static void MOVSW(core_machine_cpu_execution_context *context) {
                 _m_movs(context, 2);
                 cpu_state.data.cx--;
             }
-            if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
+            if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMPSB(core_machine_cpu_execution_context *context) {
-    _cb("CMPSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSB");
     i386(0xa6) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_a_cmps(context, 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmps(context, 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_a_cmps(context, 8));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmps(context, 8));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = True;
-                _be;
+                    instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_a_cmps(context, 8));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmps(context, 8));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = True;
-                _be;
+                    instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
@@ -8883,55 +8883,55 @@ static void CMPSB(core_machine_cpu_execution_context *context) {
             if (cpu_state.data.cx &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                instruction_state.data.flagInsLoop = True;
+                instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMPSW(core_machine_cpu_execution_context *context) {
-    _cb("CMPSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSW");
     i386(0xa7) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_a_cmps(context, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmps(context, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_a_cmps(context, _GetOperandSize * 8));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmps(context, _GetOperandSize * 8));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = True;
-                _be;
+                    instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_a_cmps(context, _GetOperandSize * 8));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_cmps(context, _GetOperandSize * 8));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = True;
-                _be;
+                    instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
@@ -8945,91 +8945,91 @@ static void CMPSW(core_machine_cpu_execution_context *context) {
             if (cpu_state.data.cx &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                instruction_state.data.flagInsLoop = True;
+                instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST_AL_I8(core_machine_cpu_execution_context *context) {
-    _cb("TEST_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_AL_I8");
     i386(0xa8) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_a_test(context, cpu_state.data.al, instruction_state.data.cimm, 8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_test(context, cpu_state.data.al, instruction_state.data.cimm, 8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST_EAX_I32(core_machine_cpu_execution_context *context) {
-    _cb("TEST_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_EAX_I32");
     i386(0xa9) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_d_imm(context, 2));
-            _chr(_a_test(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_test(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             _new_code_path_;
-            _chr(_d_imm(context, 4));
-            _chr(_a_test(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_test(context, cpu_state.data.eax, instruction_state.data.cimm, 32));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        _chr(_a_test(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_test(context, cpu_state.data.ax, instruction_state.data.cimm, 16));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STOSB(core_machine_cpu_execution_context *context) {
-    _cb("STOSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSB");
     i386(0xaa) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_m_stos(context, 1));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_stos(context, 1));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_m_stos(context, 1));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_stos(context, 1));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_m_stos(context, 1));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_stos(context, 1));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
@@ -9040,49 +9040,49 @@ static void STOSB(core_machine_cpu_execution_context *context) {
                 _m_stos(context, 1);
                 cpu_state.data.cx--;
             }
-            if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
+            if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STOSW(core_machine_cpu_execution_context *context) {
-    _cb("STOSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSW");
     i386(0xab) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_m_stos(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_stos(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_m_stos(context, _GetOperandSize));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_stos(context, _GetOperandSize));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_m_stos(context, _GetOperandSize));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_stos(context, _GetOperandSize));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
@@ -9093,49 +9093,49 @@ static void STOSW(core_machine_cpu_execution_context *context) {
                 _m_stos(context, 2);
                 cpu_state.data.cx--;
             }
-            if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
+            if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LODSB(core_machine_cpu_execution_context *context) {
-    _cb("LODSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSB");
     i386(0xac) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_m_lods(context, 1));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_lods(context, 1));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_m_lods(context, 1));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_lods(context, 1));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_m_lods(context, 1));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_lods(context, 1));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
@@ -9146,49 +9146,49 @@ static void LODSB(core_machine_cpu_execution_context *context) {
                 _m_lods(context, 1);
                 cpu_state.data.cx--;
             }
-            if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
+            if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LODSW(core_machine_cpu_execution_context *context) {
-    _cb("LODSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSW");
     i386(0xad) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_m_lods(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_lods(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_m_lods(context, _GetOperandSize));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_lods(context, _GetOperandSize));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_m_lods(context, _GetOperandSize));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_lods(context, _GetOperandSize));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = True;
-                _be;
+                if (cpu_state.data.ecx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
@@ -9199,55 +9199,55 @@ static void LODSW(core_machine_cpu_execution_context *context) {
                 _m_lods(context, 2);
                 cpu_state.data.cx--;
             }
-            if (cpu_state.data.cx) instruction_state.data.flagInsLoop = True;
+            if (cpu_state.data.cx) instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SCASB(core_machine_cpu_execution_context *context) {
-    _cb("SCASB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASB");
     i386(0xae) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_a_scas(context, 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_scas(context, 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_a_scas(context, 8));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_scas(context, 8));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = True;
-                _be;
+                    instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_a_scas(context, 8));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_scas(context, 8));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = True;
-                _be;
+                    instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
@@ -9261,55 +9261,55 @@ static void SCASB(core_machine_cpu_execution_context *context) {
             if (cpu_state.data.cx &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                instruction_state.data.flagInsLoop = True;
+                instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SCASW(core_machine_cpu_execution_context *context) {
-    _cb("SCASW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASW");
     i386(0xaf) {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE) {
-            _bb("prefix_rep(PREFIX_REP_NONE)");
-            _chr(_a_scas(context, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_scas(context, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else {
-            _bb("prefix_rep(!PREFIX_REP_NONE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("prefix_rep(!PREFIX_REP_NONE)");
             switch (_GetAddressSize) {
             case 2:
-                _bb("AddressSize(2)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
                 if (cpu_state.data.cx) {
-                    _bb("cx(!0)");
-                    _chr(_a_scas(context, _GetOperandSize * 8));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_scas(context, _GetOperandSize * 8));
                     cpu_state.data.cx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.cx &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = True;
-                _be;
+                    instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("AddressSize(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
                 if (cpu_state.data.ecx) {
-                    _bb("ecx(!0)");
-                    _chr(_a_scas(context, _GetOperandSize * 8));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_scas(context, _GetOperandSize * 8));
                     cpu_state.data.ecx--;
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
                 if (cpu_state.data.ecx &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                         !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                    instruction_state.data.flagInsLoop = True;
-                _be;
+                    instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
@@ -9323,827 +9323,827 @@ static void SCASW(core_machine_cpu_execution_context *context) {
             if (cpu_state.data.cx &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZ && !_GetEFLAGS_ZF) &&
                     !(instruction_state.data.prefix_rep == PREFIX_REP_REPZNZ && _GetEFLAGS_ZF))
-                instruction_state.data.flagInsLoop = True;
+                instruction_state.data.flagInsLoop = NTVDM64_TYPE_TRUE;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_AL_I8(core_machine_cpu_execution_context *context) {
-    _cb("MOV_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_I8");
     i386(0xb0) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    cpu_state.data.al = GetMax8(instruction_state.data.cimm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_CL_I8(core_machine_cpu_execution_context *context) {
-    _cb("MOV_CL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CL_I8");
     i386(0xb1) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    cpu_state.data.cl = GetMax8(instruction_state.data.cimm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    cpu_state.data.cl = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_DL_I8(core_machine_cpu_execution_context *context) {
-    _cb("MOV_DL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DL_I8");
     i386(0xb2) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    cpu_state.data.dl = GetMax8(instruction_state.data.cimm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    cpu_state.data.dl = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_BL_I8(core_machine_cpu_execution_context *context) {
-    _cb("MOV_BL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BL_I8");
     i386(0xb3) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    cpu_state.data.bl = GetMax8(instruction_state.data.cimm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    cpu_state.data.bl = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_AH_I8(core_machine_cpu_execution_context *context) {
-    _cb("MOV_AH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AH_I8");
     i386(0xb4) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    cpu_state.data.ah = GetMax8(instruction_state.data.cimm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    cpu_state.data.ah = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_CH_I8(core_machine_cpu_execution_context *context) {
-    _cb("MOV_CH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CH_I8");
     i386(0xb5) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    cpu_state.data.ch = GetMax8(instruction_state.data.cimm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    cpu_state.data.ch = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_DH_I8(core_machine_cpu_execution_context *context) {
-    _cb("MOV_DH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DH_I8");
     i386(0xb6) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    cpu_state.data.dh = GetMax8(instruction_state.data.cimm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    cpu_state.data.dh = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_BH_I8(core_machine_cpu_execution_context *context) {
-    _cb("MOV_BH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BH_I8");
     i386(0xb7) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    cpu_state.data.bh = GetMax8(instruction_state.data.cimm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    cpu_state.data.bh = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EAX_I32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_I32");
     i386(0xb8) {
         _adv;
-        _chr(_d_imm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            cpu_state.data.ax = GetMax16(instruction_state.data.cimm);
+            cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
             break;
         case 4:
-            cpu_state.data.eax = GetMax32(instruction_state.data.cimm);
+            cpu_state.data.eax = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        cpu_state.data.ax = GetMax16(instruction_state.data.cimm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        cpu_state.data.ax = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_ECX_I32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_ECX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ECX_I32");
     i386(0xb9) {
         _adv;
-        _chr(_d_imm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            cpu_state.data.cx = GetMax16(instruction_state.data.cimm);
+            cpu_state.data.cx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
             break;
         case 4:
-            cpu_state.data.ecx = GetMax32(instruction_state.data.cimm);
+            cpu_state.data.ecx = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        cpu_state.data.cx = GetMax16(instruction_state.data.cimm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        cpu_state.data.cx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EDX_I32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_EDX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDX_I32");
     i386(0xba) {
         _adv;
-        _chr(_d_imm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            cpu_state.data.dx = GetMax16(instruction_state.data.cimm);
+            cpu_state.data.dx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
             break;
         case 4:
-            cpu_state.data.edx = GetMax32(instruction_state.data.cimm);
+            cpu_state.data.edx = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        cpu_state.data.dx = GetMax16(instruction_state.data.cimm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        cpu_state.data.dx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EBX_I32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_EBX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBX_I32");
     i386(0xbb) {
         _adv;
-        _chr(_d_imm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            cpu_state.data.bx = GetMax16(instruction_state.data.cimm);
+            cpu_state.data.bx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
             break;
         case 4:
-            cpu_state.data.ebx = GetMax32(instruction_state.data.cimm);
+            cpu_state.data.ebx = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        cpu_state.data.bx = GetMax16(instruction_state.data.cimm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        cpu_state.data.bx = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_ESP_I32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_ESP_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESP_I32");
     i386(0xbc) {
         _adv;
-        _chr(_d_imm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            cpu_state.data.sp = GetMax16(instruction_state.data.cimm);
+            cpu_state.data.sp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
             break;
         case 4:
-            cpu_state.data.esp = GetMax32(instruction_state.data.cimm);
+            cpu_state.data.esp = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        cpu_state.data.sp = GetMax16(instruction_state.data.cimm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        cpu_state.data.sp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EBP_I32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_EBP_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBP_I32");
     i386(0xbd) {
         _adv;
-        _chr(_d_imm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            cpu_state.data.bp = GetMax16(instruction_state.data.cimm);
+            cpu_state.data.bp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
             break;
         case 4:
-            cpu_state.data.ebp = GetMax32(instruction_state.data.cimm);
+            cpu_state.data.ebp = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        cpu_state.data.bp = GetMax16(instruction_state.data.cimm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        cpu_state.data.bp = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_ESI_I32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_ESI_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESI_I32");
     i386(0xbe) {
         _adv;
-        _chr(_d_imm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            cpu_state.data.si = GetMax16(instruction_state.data.cimm);
+            cpu_state.data.si = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
             break;
         case 4:
-            cpu_state.data.esi = GetMax32(instruction_state.data.cimm);
+            cpu_state.data.esi = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        cpu_state.data.si = GetMax16(instruction_state.data.cimm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        cpu_state.data.si = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EDI_I32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_EDI_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDI_I32");
     i386(0xbf) {
         _adv;
-        _chr(_d_imm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            cpu_state.data.di = GetMax16(instruction_state.data.cimm);
+            cpu_state.data.di = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
             break;
         case 4:
-            cpu_state.data.edi = GetMax32(instruction_state.data.cimm);
+            cpu_state.data.edi = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        cpu_state.data.di = GetMax16(instruction_state.data.cimm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        cpu_state.data.di = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_C0(core_machine_cpu_execution_context *context) {
-    _cb("INS_C0");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C0");
     _new_code_path_;
     i386(0xc0) {
         _adv;
-        _chr(_d_modrm(context, 0, 1));
-        _chr(_m_read_rm(context, 1));
-        _chr(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         switch (instruction_state.data.cr) {
         case 0: /* ROL_RM8_I8 */
-            _bb("ROL_RM8_I8");
-            _chr(_a_rol(context, GetMax8(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM8_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rol(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* ROR_RM8_I8 */
-            _bb("ROR_RM8_I8");
-            _chr(_a_ror(context, GetMax8(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM8_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_ror(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* RCL_RM8_I8 */
-            _bb("RCL_RM8_I8");
-            _chr(_a_rcl(context, GetMax8(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM8_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcl(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* RCR_RM8_I8 */
-            _bb("RCR_RM8_I8");
-            _chr(_a_rcr(context, GetMax8(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM8_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcr(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* SHL_RM8_I8 */
-            _bb("SHL_RM8_I8");
-            _chr(_a_shl(context, GetMax8(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM8_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shl(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* SHR_RM8_I8 */
-            _bb("SHR_RM8_I8");
-            _chr(_a_shr(context, GetMax8(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM8_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shr(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* UndefinedOpcode */
-            _bb("instruction_state.data.cr(6)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* SAR_RM8_I8 */
-            _bb("SAR_RM8_I8");
-            _chr(_a_sar(context, GetMax8(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM8_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sar(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_C1(core_machine_cpu_execution_context *context) {
-    _cb("INS_C1");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C1");
     i386(0xc1) {
         _adv;
-        _chr(_d_modrm(context, 0, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
-        _chr(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         switch (instruction_state.data.cr) {
         case 0: /* ROL_RM32_I8 */
-            _bb("ROL_RM32_I8");
-            _chr(_a_rol(context, GetMax32(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rol(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* ROR_RM32_I8 */
-            _bb("ROR_RM32_I8");
-            _chr(_a_ror(context, GetMax32(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_ror(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* RCL_RM32_I8 */
-            _bb("RCL_RM32_I8");
-            _chr(_a_rcl(context, GetMax32(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcl(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* RCR_RM32_I8 */
-            _bb("RCR_RM32_I8");
-            _chr(_a_rcr(context, GetMax32(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcr(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* SHL_RM32_I8 */
-            _bb("SHL_RM32_I8");
-            _chr(_a_shl(context, GetMax32(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shl(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* SHR_RM32_I8 */
-            _bb("SHR_RM32_I8");
-            _chr(_a_shr(context, GetMax32(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shr(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* UndefinedOpcode */
-            _bb("instruction_state.data.cr(6)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* SAR_RM32_I8 */
-            _bb("SAR_RM32_I8");
-            _chr(_a_sar(context, GetMax32(instruction_state.data.crm), GetMax8(instruction_state.data.cimm), _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM32_I8");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sar(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm), NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RET_I16(core_machine_cpu_execution_context *context) {
-    _cb("RET_I16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RET_I16");
     i386(0xc2) {
         _adv;
-        _chr(_d_imm(context, 2));
-        _chr(_e_ret_near(context, GetMax16(instruction_state.data.cimm), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_ret_near(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm), _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
         _d_imm(context, 2);
-        _e_ret_near(context, GetMax16(instruction_state.data.cimm), 2);
+        _e_ret_near(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm), 2);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RET(core_machine_cpu_execution_context *context) {
-    _cb("RET");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RET");
     i386(0xc3) {
         _adv;
-        _chr(_e_ret_near(context, 0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_ret_near(context, 0, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_ret_near(context, 0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_ret_near(context, 0, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LES_R32_M16_32(core_machine_cpu_execution_context *context) {
-    t_nubit16 selector;
-    t_nubit32 offset;
-    _cb("LES_R32_M16_32");
+    ntvdm64_type_unsigned_16 selector;
+    ntvdm64_type_unsigned_32 offset;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LES_R32_M16_32");
     i386(0xc4) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
         if (!instruction_state.data.flagMem) {
-            _bb("flagMem(0)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _chr(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            offset = GetMax16(instruction_state.data.crm);
+            offset = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
             break;
         case 4:
-            offset = GetMax32(instruction_state.data.crm);
+            offset = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         instruction_state.data.mrm.offset += _GetOperandSize;
-        _chr(_m_read_rm(context, 2));
-        selector = GetMax16(instruction_state.data.crm);
-        _chr(_e_load_far(context, &cpu_state.data.es, instruction_state.data.rr, selector, offset, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        selector = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_load_far(context, &cpu_state.data.es, instruction_state.data.rr, selector, offset, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
         _d_modrm(context, 2, 4);
-        _chr(_m_read_rm(context, 2));
-        offset = GetMax16(instruction_state.data.crm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        offset = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         instruction_state.data.mrm.offset += 2;
-        _chr(_m_read_rm(context, 2));
-        selector = GetMax16(instruction_state.data.crm);
-        _chr(_e_load_far(context, &cpu_state.data.es, instruction_state.data.rr, selector, offset, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        selector = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_load_far(context, &cpu_state.data.es, instruction_state.data.rr, selector, offset, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LDS_R32_M16_32(core_machine_cpu_execution_context *context) {
-    t_nubit16 selector;
-    t_nubit32 offset;
-    _cb("LDS_R32_M16_32");
+    ntvdm64_type_unsigned_16 selector;
+    ntvdm64_type_unsigned_32 offset;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LDS_R32_M16_32");
     i386(0xc5) {
         _adv;
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
         if (!instruction_state.data.flagMem) {
-            _bb("flagMem(0)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _chr(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
-            offset = GetMax16(instruction_state.data.crm);
+            offset = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
             break;
         case 4:
-            offset = GetMax32(instruction_state.data.crm);
+            offset = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         instruction_state.data.mrm.offset += _GetOperandSize;
-        _chr(_m_read_rm(context, 2));
-        selector = GetMax16(instruction_state.data.crm);
-        _chr(_e_load_far(context, &cpu_state.data.ds, instruction_state.data.rr, selector, offset, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        selector = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_load_far(context, &cpu_state.data.ds, instruction_state.data.rr, selector, offset, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
         _d_modrm(context, 2, 4);
-        _chr(_m_read_rm(context, 2));
-        offset = GetMax16(instruction_state.data.crm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        offset = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         instruction_state.data.mrm.offset += 2;
-        _chr(_m_read_rm(context, 2));
-        selector = GetMax16(instruction_state.data.crm);
-        _chr(_e_load_far(context, &cpu_state.data.ds, instruction_state.data.rr, selector, offset, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        selector = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_load_far(context, &cpu_state.data.ds, instruction_state.data.rr, selector, offset, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_C6(core_machine_cpu_execution_context *context) {
-    _cb("INS_C6");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C6");
     i386(0xc6) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
     switch (instruction_state.data.cr) {
     case 0: /* MOV_RM8_I8 */
-        _bb("MOV_RM8_I8");
-        _chr(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MOV_RM8_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         instruction_state.data.crm = instruction_state.data.cimm;
-        _chr(_m_write_rm(context, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1:
-        _bb("instruction_state.data.cr(1)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("instruction_state.data.cr(2)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        _bb("instruction_state.data.cr(3)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(3)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("instruction_state.data.cr(4)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        _bb("instruction_state.data.cr(5)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(5)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        _bb("instruction_state.data.cr(6)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        _bb("instruction_state.data.cr(7)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(7)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_C7(core_machine_cpu_execution_context *context) {
-    _cb("INS_C7");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C7");
     i386(0xc7) {
         _adv;
-        _chr(_d_modrm(context, 0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         switch (instruction_state.data.cr) {
         case 0: /* MOV_RM32_I32 */
-            _bb("MOV_RM32_I32");
-            _chr(_d_imm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MOV_RM32_I32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
             instruction_state.data.crm = instruction_state.data.cimm;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1:
-            _bb("instruction_state.data.cr(1)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(1)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2:
-            _bb("instruction_state.data.cr(2)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3:
-            _bb("instruction_state.data.cr(3)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(3)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("instruction_state.data.cr(4)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5:
-            _bb("instruction_state.data.cr(5)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(5)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6:
-            _bb("instruction_state.data.cr(6)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7:
-            _bb("instruction_state.data.cr(7)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(7)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         switch (instruction_state.data.cr) {
         case 0: /* MOV_RM16_I16 */
-            _bb("MOV_RM16_I16");
-            _chr(_d_imm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MOV_RM16_I16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
             instruction_state.data.crm = instruction_state.data.cimm;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1:
-            _bb("instruction_state.data.cr(1)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(1)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2:
-            _bb("instruction_state.data.cr(2)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3:
-            _bb("instruction_state.data.cr(3)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(3)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("instruction_state.data.cr(4)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5:
-            _bb("instruction_state.data.cr(5)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(5)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6:
-            _bb("instruction_state.data.cr(6)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7:
-            _bb("instruction_state.data.cr(7)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(7)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ENTER(core_machine_cpu_execution_context *context) {
-    t_nubit32 data = 0;
-    t_nubit32 temp = 0;
-    t_nubitcc i = 0;
-    t_nubit16 size = Zero16;
-    t_nubit8 level = Zero8;
-    _cb("ENTER");
+    ntvdm64_type_unsigned_32 data = 0;
+    ntvdm64_type_unsigned_32 temp = 0;
+    ntvdm64_type_native_unsigned i = 0;
+    ntvdm64_type_unsigned_16 size = NTVDM64_TYPE_ZERO_16;
+    ntvdm64_type_unsigned_8 level = NTVDM64_TYPE_ZERO_8;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ENTER");
     i386(0xc8) {
         _adv;
-        _chr(_d_imm(context, 2));
-        size = (t_nubit16) instruction_state.data.cimm;
-        _chr(_d_imm(context, 1));
-        level = (t_nubit8) instruction_state.data.cimm;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        size = (ntvdm64_type_unsigned_16) instruction_state.data.cimm;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        level = (ntvdm64_type_unsigned_8) instruction_state.data.cimm;
         level %= 32;
         switch (_GetStackSize) {
         case 2:
-            _bb("StackSize(2)");
-            _chr(_e_push(context, GetRef(cpu_state.data.bp), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("StackSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bp), 2));
             temp = cpu_state.data.sp;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("StackSize(4)");
-            _chr(_e_push(context, GetRef(cpu_state.data.ebp), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("StackSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ebp), 4));
             temp = cpu_state.data.esp;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         if (level) {
-            _bb("level(!0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("level(!0)");
             for (i = 0; i < level; ++i) {
-                _bb("for");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("for");
                 switch (_GetOperandSize) {
                 case 2:
-                    _bb("OperandSize(2)");
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
                     switch (_GetStackSize) {
                     case 2:
-                        _bb("StackSize(2)");
+                        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("StackSize(2)");
                         cpu_state.data.bp -= 2;
-                        _chr(_s_read_ss(context, cpu_state.data.bp, GetRef(data), 2));
-                        _chr(_e_push(context, GetRef(data), 2));
-                        _be;
+                        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_ss(context, cpu_state.data.bp, NTVDM64_TYPE_REFERENCE_OF(data), 2));
+                        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(data), 2));
+                        NTVDM64_TYPE_TRACE_BLOCK_END;
                         break;
                     case 4:
-                        _bb("StackSize(4)");
+                        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("StackSize(4)");
                         cpu_state.data.ebp -= 2;
-                        _chr(_s_read_ss(context, cpu_state.data.ebp, GetRef(data), 2));
-                        _chr(_e_push(context, GetRef(data), 2));
-                        _be;
+                        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_ss(context, cpu_state.data.ebp, NTVDM64_TYPE_REFERENCE_OF(data), 2));
+                        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(data), 2));
+                        NTVDM64_TYPE_TRACE_BLOCK_END;
                         break;
                     default:
-                        _impossible_r_;
+                        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                         break;
                     }
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 case 4:
-                    _bb("OperandSize(4)");
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
                     switch (_GetStackSize) {
                     case 2:
-                        _bb("StackSize(2)");
+                        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("StackSize(2)");
                         cpu_state.data.bp -= 4;
-                        _chr(_s_read_ss(context, cpu_state.data.bp, GetRef(data), 4));
-                        _chr(_e_push(context, GetRef(data), 4));
-                        _be;
+                        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_ss(context, cpu_state.data.bp, NTVDM64_TYPE_REFERENCE_OF(data), 4));
+                        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(data), 4));
+                        NTVDM64_TYPE_TRACE_BLOCK_END;
                         break;
                     case 4:
-                        _bb("StackSize(4)");
+                        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("StackSize(4)");
                         cpu_state.data.ebp -= 4;
-                        _chr(_s_read_ss(context, cpu_state.data.ebp, GetRef(data), 4));
-                        _chr(_e_push(context, GetRef(data), 4));
-                        _be;
+                        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_ss(context, cpu_state.data.ebp, NTVDM64_TYPE_REFERENCE_OF(data), 4));
+                        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(data), 4));
+                        NTVDM64_TYPE_TRACE_BLOCK_END;
                         break;
                     default:
-                        _impossible_r_;
+                        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                         break;
                     }
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
             switch (_GetOperandSize) {
             case 2:
-                _bb("OperandSize(2)");
-                _chr(_e_push(context, GetRef(temp), 2));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(temp), 2));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
-                _bb("OperandSize(4)");
-                _chr(_e_push(context, GetRef(temp), 4));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(temp), 4));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         switch (_GetStackSize) {
         case 2:
-            _bb("StackSize(2)");
-            cpu_state.data.bp = GetMax16(temp);
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("StackSize(2)");
+            cpu_state.data.bp = NTVDM64_TYPE_MASK_UNSIGNED_16(temp);
             cpu_state.data.sp = cpu_state.data.bp - size;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("StackSize(4)");
-            cpu_state.data.ebp = GetMax32(temp);
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("StackSize(4)");
+            cpu_state.data.ebp = NTVDM64_TYPE_MASK_UNSIGNED_32(temp);
             cpu_state.data.esp = cpu_state.data.ebp - size;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LEAVE(core_machine_cpu_execution_context *context) {
-    _cb("LEAVE");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LEAVE");
     i386(0xc9) {
         _adv;
         if (!_IsProtected && cpu_state.data.ebp > 0x0000ffff) {
-            _bb("Protected(0),ebp(>0000ffff)");
-            _chr(_SetExcept_GP(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected(0),ebp(>0000ffff)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _chr(_m_test_logical(context, &cpu_state.data.ss, cpu_state.data.ebp, _GetOperandSize, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_test_logical(context, &cpu_state.data.ss, cpu_state.data.ebp, _GetOperandSize, 1));
         switch (_GetStackSize) {
         case 2:
             cpu_state.data.sp = cpu_state.data.bp;
@@ -10152,549 +10152,549 @@ static void LEAVE(core_machine_cpu_execution_context *context) {
             cpu_state.data.esp = cpu_state.data.ebp;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.bp), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.bp), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_e_pop(context, GetRef(cpu_state.data.ebp), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ebp), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else
         UndefinedOpcode(context);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RETF_I16(core_machine_cpu_execution_context *context) {
-    _cb("RETF_I16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF_I16");
     i386(0xca) {
         _adv;
-        _chr(_d_imm(context, 2));
-        _chr(_e_ret_far(context, GetMax16(instruction_state.data.cimm), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_ret_far(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm), _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
         _d_imm(context, 2);
-        _e_ret_far(context, GetMax16(instruction_state.data.cimm), 2);
+        _e_ret_far(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm), 2);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RETF(core_machine_cpu_execution_context *context) {
-    _cb("RETF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF");
     i386(0xcb) {
         _adv;
-        _chr(_e_ret_far(context, 0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_ret_far(context, 0, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_ret_far(context, 0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_ret_far(context, 0, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INT3(core_machine_cpu_execution_context *context) {
-    _cb("INT3");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INT3");
     _new_code_path_;
     i386(0xcc) {
         _adv;
-        _chr(_e_int3(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_int3(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
         _e_int_n(context, 0x03, _GetOperandSize);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INT_I8(core_machine_cpu_execution_context *context) {
-    _cb("INT_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INT_I8");
     i386(0xcc) {
         _adv;
-        _chr(_d_imm(context, 1));
-        _chr(_e_int_n(context, (t_nubit8)instruction_state.data.cimm, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_int_n(context, (ntvdm64_type_unsigned_8)instruction_state.data.cimm, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
         _d_imm(context, 1);
-        _e_int_n(context, (t_nubit8)instruction_state.data.cimm, 2);
+        _e_int_n(context, (ntvdm64_type_unsigned_8)instruction_state.data.cimm, 2);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INTO(core_machine_cpu_execution_context *context) {
-    _cb("INTO");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INTO");
     _new_code_path_;
     i386(0xce) {
         _adv;
-        _chr(_e_into(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_into(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
         if (_GetEFLAGS_OF) _e_int_n(context, 0x04, _GetOperandSize);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IRET(core_machine_cpu_execution_context *context) {
-    _cb("IRET");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IRET");
     i386(0xcf) {
         _adv;
-        _chr(_e_iret(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_iret(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_e_iret(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_iret(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_D0(core_machine_cpu_execution_context *context) {
-    _cb("INS_D0");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D0");
     i386(0xd0) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     switch (instruction_state.data.cr) {
     case 0: /* ROL_RM8 */
-        _bb("ROL_RM8");
-        _chr(_a_rol(context, instruction_state.data.crm, 1, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rol(context, instruction_state.data.crm, 1, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM8 */
-        _bb("ROR_RM8");
-        _chr(_a_ror(context, instruction_state.data.crm, 1, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_ror(context, instruction_state.data.crm, 1, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM8 */
-        _bb("RCL_RM8");
-        _chr(_a_rcl(context, instruction_state.data.crm, 1, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcl(context, instruction_state.data.crm, 1, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM8 */
-        _bb("RCR_RM8");
-        _chr(_a_rcr(context, instruction_state.data.crm, 1, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcr(context, instruction_state.data.crm, 1, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM8 */
-        _bb("SHL_RM8");
-        _chr(_a_shl(context, instruction_state.data.crm, 1, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shl(context, instruction_state.data.crm, 1, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM8 */
-        _bb("SHR_RM8");
-        _chr(_a_shr(context, instruction_state.data.crm, 1, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shr(context, instruction_state.data.crm, 1, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        _bb("instruction_state.data.cr(6)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM8 */
-        _bb("SAR_RM8");
-        _chr(_a_sar(context, instruction_state.data.crm, 1, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sar(context, instruction_state.data.crm, 1, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_D1(core_machine_cpu_execution_context *context) {
-    _cb("INS_D1");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D1");
     i386(0xd1) {
         _adv;
-        _chr(_d_modrm(context, 0, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (instruction_state.data.cr) {
         case 0: /* ROL_RM32 */
-            _bb("ROL_RM32");
-            _chr(_a_rol(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rol(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* ROR_RM32 */
-            _bb("ROR_RM32");
-            _chr(_a_ror(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_ror(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* RCL_RM32 */
-            _bb("RCL_RM32");
-            _chr(_a_rcl(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcl(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* RCR_RM32 */
-            _bb("RCR_RM32");
-            _chr(_a_rcr(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcr(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* SHL_RM32 */
-            _bb("SHL_RM32");
-            _chr(_a_shl(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shl(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* SHR_RM32 */
-            _bb("SHR_RM32");
-            _chr(_a_shr(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shr(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* UndefinedOpcode */
-            _bb("instruction_state.data.cr(6)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* SAR_RM32 */
-            _bb("SAR_RM32");
-            _chr(_a_sar(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sar(context, instruction_state.data.crm, 1, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 0, 2));
-        _chr(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         switch (instruction_state.data.cr) {
         case 0: /* ROL_RM16 */
-            _bb("ROL_RM16");
-            _chr(_a_rol(context, instruction_state.data.crm, 1, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rol(context, instruction_state.data.crm, 1, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* ROR_RM16 */
-            _bb("ROR_RM16");
-            _chr(_a_ror(context, instruction_state.data.crm, 1, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_ror(context, instruction_state.data.crm, 1, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* RCL_RM16 */
-            _bb("RCL_RM16");
-            _chr(_a_rcl(context, instruction_state.data.crm, 1, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcl(context, instruction_state.data.crm, 1, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* RCR_RM16 */
-            _bb("RCR_RM16");
-            _chr(_a_rcr(context, instruction_state.data.crm, 1, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcr(context, instruction_state.data.crm, 1, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* SHL_RM16 */
-            _bb("SHL_RM16");
-            _chr(_a_shl(context, instruction_state.data.crm, 1, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shl(context, instruction_state.data.crm, 1, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* SHR_RM16 */
-            _bb("SHR_RM16");
-            _chr(_a_shr(context, instruction_state.data.crm, 1, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shr(context, instruction_state.data.crm, 1, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* UndefinedOpcode */
-            _bb("instruction_state.data.cr(6)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* SAR_RM16 */
-            _bb("SAR_RM16");
-            _chr(_a_sar(context, instruction_state.data.crm, 1, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sar(context, instruction_state.data.crm, 1, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_D2(core_machine_cpu_execution_context *context) {
-    _cb("INS_D2");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D2");
     i386(0xd2) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     switch (instruction_state.data.cr) {
     case 0: /* ROL_RM8_CL */
-        _bb("ROL_RM8_CL");
-        _chr(_a_rol(context, instruction_state.data.crm, cpu_state.data.cl, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM8_CL");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rol(context, instruction_state.data.crm, cpu_state.data.cl, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM8_CL */
-        _bb("ROR_RM8_CL");
-        _chr(_a_ror(context, instruction_state.data.crm, cpu_state.data.cl, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM8_CL");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_ror(context, instruction_state.data.crm, cpu_state.data.cl, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM8_CL */
-        _bb("RCL_RM8_CL");
-        _chr(_a_rcl(context, instruction_state.data.crm, cpu_state.data.cl, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM8_CL");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcl(context, instruction_state.data.crm, cpu_state.data.cl, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM8_CL */
-        _bb("RCR_RM8_CL");
-        _chr(_a_rcr(context, instruction_state.data.crm, cpu_state.data.cl, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM8_CL");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcr(context, instruction_state.data.crm, cpu_state.data.cl, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM8_CL */
-        _bb("SHL_RM8_CL");
-        _chr(_a_shl(context, instruction_state.data.crm, cpu_state.data.cl, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM8_CL");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shl(context, instruction_state.data.crm, cpu_state.data.cl, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM8_CL */
-        _bb("SHR_RM8_CL");
-        _chr(_a_shr(context, instruction_state.data.crm, cpu_state.data.cl, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM8_CL");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shr(context, instruction_state.data.crm, cpu_state.data.cl, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        _bb("instruction_state.data.cr(6)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM8_CL */
-        _bb("SAR_RM8_CL");
-        _chr(_a_sar(context, instruction_state.data.crm, cpu_state.data.cl, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM8_CL");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sar(context, instruction_state.data.crm, cpu_state.data.cl, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_D3(core_machine_cpu_execution_context *context) {
-    _cb("INS_D3");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D3");
     i386(0xd3) {
         _adv;
-        _chr(_d_modrm(context, 0, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (instruction_state.data.cr) {
         case 0: /* ROL_RM32_CL */
-            _bb("ROL_RM32_CL");
-            _chr(_a_rol(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM32_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rol(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* ROR_RM32_CL */
-            _bb("ROR_RM32_CL");
-            _chr(_a_ror(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM32_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_ror(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* RCL_RM32_CL */
-            _bb("RCL_RM32_CL");
-            _chr(_a_rcl(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM32_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcl(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* RCR_RM32_CL */
-            _bb("RCR_RM32_CL");
-            _chr(_a_rcr(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM32_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcr(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* SHL_RM32_CL */
-            _bb("SHL_RM32_CL");
-            _chr(_a_shl(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM32_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shl(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* SHR_RM32_CL */
-            _bb("SHR_RM32_CL");
-            _chr(_a_shr(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM32_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shr(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* UndefinedOpcode */
-            _bb("instruction_state.data.cr(6)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* SAR_RM32_CL */
-            _bb("SAR_RM32_CL");
-            _chr(_a_sar(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM32_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sar(context, instruction_state.data.crm, cpu_state.data.cl, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 0, 2));
-        _chr(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         switch (instruction_state.data.cr) {
         case 0: /* ROL_RM16_CL */
-            _bb("ROL_RM16_CL");
-            _chr(_a_rol(context, instruction_state.data.crm, cpu_state.data.cl, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM16_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rol(context, instruction_state.data.crm, cpu_state.data.cl, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* ROR_RM16_CL */
-            _bb("ROR_RM16_CL");
-            _chr(_a_ror(context, instruction_state.data.crm, cpu_state.data.cl, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM16_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_ror(context, instruction_state.data.crm, cpu_state.data.cl, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* RCL_RM16_CL */
-            _bb("RCL_RM16_CL");
-            _chr(_a_rcl(context, instruction_state.data.crm, cpu_state.data.cl, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM16_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcl(context, instruction_state.data.crm, cpu_state.data.cl, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* RCR_RM16_CL */
-            _bb("RCR_RM16_CL");
-            _chr(_a_rcr(context, instruction_state.data.crm, cpu_state.data.cl, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM16_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_rcr(context, instruction_state.data.crm, cpu_state.data.cl, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* SHL_RM16_CL */
-            _bb("SHL_RM16_CL");
-            _chr(_a_shl(context, instruction_state.data.crm, cpu_state.data.cl, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM16_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shl(context, instruction_state.data.crm, cpu_state.data.cl, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* SHR_RM16_CL */
-            _bb("SHR_RM16_CL");
-            _chr(_a_shr(context, instruction_state.data.crm, cpu_state.data.cl, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM16_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shr(context, instruction_state.data.crm, cpu_state.data.cl, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* UndefinedOpcode */
-            _bb("instruction_state.data.cr(6)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* SAR_RM16_CL */
-            _bb("SAR_RM16_CL");
-            _chr(_a_sar(context, instruction_state.data.crm, cpu_state.data.cl, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM16_CL");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_sar(context, instruction_state.data.crm, cpu_state.data.cl, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AAM(core_machine_cpu_execution_context *context) {
-    t_nubit8 base;
-    _cb("AAM");
+    ntvdm64_type_unsigned_8 base;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAM");
     i386(0xd4) {
         _adv;
-        _chr(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
     }
     else {
         cpu_state.data.ip++;
         _d_imm(context, 1);
     }
-    base = GetMax8(instruction_state.data.cimm);
+    base = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
     cpu_state.data.ah = cpu_state.data.al / base;
     cpu_state.data.al = cpu_state.data.al % base;
     instruction_state.data.bit = 0x08;
-    instruction_state.data.result = GetMax8(cpu_state.data.al);
-    _chr(_kaf_set_flags(context, AAM_FLAG));
+    instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(cpu_state.data.al);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, AAM_FLAG));
     instruction_state.data.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_CF);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AAD(core_machine_cpu_execution_context *context) {
-    t_nubit8 base;
-    _cb("AAD");
+    ntvdm64_type_unsigned_8 base;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAD");
     i386(0xd5) {
         _adv;
-        _chr(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
     }
     else {
         cpu_state.data.ip++;
         _d_imm(context, 1);
     }
-    base = GetMax8(instruction_state.data.cimm);
-    cpu_state.data.al = GetMax8(cpu_state.data.al + (cpu_state.data.ah * base));
+    base = NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
+    cpu_state.data.al = NTVDM64_TYPE_MASK_UNSIGNED_8(cpu_state.data.al + (cpu_state.data.ah * base));
     cpu_state.data.ah = 0x00;
     instruction_state.data.bit = 0x08;
-    instruction_state.data.result = GetMax8(cpu_state.data.al);
-    _chr(_kaf_set_flags(context, AAD_FLAG));
+    instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(cpu_state.data.al);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, AAD_FLAG));
     instruction_state.data.udf |= (VCPU_EFLAGS_OF | VCPU_EFLAGS_AF | VCPU_EFLAGS_CF);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XLAT(core_machine_cpu_execution_context *context) {
-    _cb("XLAT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XLAT");
     i386(0xd7) {
         _adv;
         switch (_GetAddressSize) {
         case 2:
-            _bb("AddressSize(2)");
-            _chr(_m_read_logical(context, instruction_state.data.roverds, (cpu_state.data.bx + cpu_state.data.al), GetRef(cpu_state.data.al), 1));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, (cpu_state.data.bx + cpu_state.data.al), NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.al), 1));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("AddressSize(4)");
-            _chr(_m_read_logical(context, instruction_state.data.roverds, (cpu_state.data.ebx + cpu_state.data.al), GetRef(cpu_state.data.al), 1));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, (cpu_state.data.ebx + cpu_state.data.al), NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.al), 1));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_m_read_logical(context, instruction_state.data.roverds, (cpu_state.data.bx + cpu_state.data.al), GetRef(cpu_state.data.al), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_logical(context, instruction_state.data.roverds, (cpu_state.data.bx + cpu_state.data.al), NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.al), 1));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LOOPNZ_REL8(core_machine_cpu_execution_context *context) {
-    _cb("LOOPNZ_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOPNZ_REL8");
     i386(0xe0) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_loopcc(context, (t_nsbit8)instruction_state.data.cimm, !_GetEFLAGS_ZF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_loopcc(context, (ntvdm64_type_signed_8)instruction_state.data.cimm, !_GetEFLAGS_ZF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LOOPZ_REL8(core_machine_cpu_execution_context *context) {
-    _cb("LOOPZ_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOPZ_REL8");
     i386(0xe1) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_loopcc(context, (t_nsbit8)instruction_state.data.cimm, _GetEFLAGS_ZF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_loopcc(context, (ntvdm64_type_signed_8)instruction_state.data.cimm, _GetEFLAGS_ZF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LOOP_REL8(core_machine_cpu_execution_context *context) {
-    _cb("LOOP_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOP_REL8");
     i386(0xe2) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_loopcc(context, (t_nsbit8)instruction_state.data.cimm, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_loopcc(context, (ntvdm64_type_signed_8)instruction_state.data.cimm, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JCXZ_REL8(core_machine_cpu_execution_context *context) {
-    t_nubit32 cecx = 0x00000000;
-    _cb("JCXZ_REL8");
+    ntvdm64_type_unsigned_32 cecx = 0x00000000;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JCXZ_REL8");
     i386(0xe3) {
         _adv;
-        _chr(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         switch (_GetAddressSize) {
         case 2:
             cecx = cpu_state.data.cx;
@@ -10703,284 +10703,284 @@ static void JCXZ_REL8(core_machine_cpu_execution_context *context) {
             cecx = cpu_state.data.ecx;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, !cecx));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, !cecx));
     }
     else {
         cpu_state.data.ip++;
         _d_imm(context, 1);
-        _e_jcc(context, GetMax32(instruction_state.data.cimm), 1, !cpu_state.data.cx);
+        _e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, !cpu_state.data.cx);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN_AL_I8(core_machine_cpu_execution_context *context) {
-    _cb("IN_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
     i386(0xe4) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_p_input(context, GetMax8(instruction_state.data.cimm), GetRef(cpu_state.data.al), 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.al), 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN_EAX_I8(core_machine_cpu_execution_context *context) {
-    _cb("IN_EAX_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_I8");
     _new_code_path_;
     i386(0xe5) {
         _adv;
-        _chr(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_p_input(context, GetMax8(instruction_state.data.cimm), GetRef(cpu_state.data.ax), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_p_input(context, GetMax8(instruction_state.data.cimm), GetRef(cpu_state.data.eax), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eax), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 1));
-        _chr(_p_input(context, GetMax8(instruction_state.data.cimm), GetRef(cpu_state.data.ax), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUT_I8_AL(core_machine_cpu_execution_context *context) {
-    _cb("OUT_I8_AL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_AL");
     i386(0xe6) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_p_output(context, GetMax8(instruction_state.data.cimm), GetRef(cpu_state.data.al), 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_output(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.al), 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 
 }
 static void OUT_I8_EAX(core_machine_cpu_execution_context *context) {
-    _cb("OUT_I8_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_EAX");
     _new_code_path_;
     i386(0xe7) {
         _adv;
-        _chr(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_p_output(context, GetMax8(instruction_state.data.cimm), GetRef(cpu_state.data.ax), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_output(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_p_output(context, GetMax8(instruction_state.data.cimm), GetRef(cpu_state.data.eax), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_output(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eax), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
         _d_imm(context, 1);
-        _p_output(context, GetMax8(instruction_state.data.cimm), GetRef(cpu_state.data.ax), 2);
+        _p_output(context, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CALL_REL32(core_machine_cpu_execution_context *context) {
-    _cb("CALL_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_REL32");
     i386(0xe8) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_d_imm(context, 2));
-            _chr(_e_call_near(context, GetMax16(cpu_state.data.ip + (t_nsbit16)instruction_state.data.cimm), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_call_near(context, NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.ip + (ntvdm64_type_signed_16)instruction_state.data.cimm), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             _new_code_path_;
-            _chr(_d_imm(context, 4));
-            _chr(_e_call_near(context, GetMax32(cpu_state.data.eip + (t_nsbit32)instruction_state.data.cimm), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_call_near(context, NTVDM64_TYPE_MASK_UNSIGNED_32(cpu_state.data.eip + (ntvdm64_type_signed_32)instruction_state.data.cimm), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _bb("OperandSize");
-            _chr(_SetExcept_CE(_GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(_GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        _chr(_e_call_near(context, GetMax16(cpu_state.data.ip + (t_nsbit16)instruction_state.data.cimm), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_call_near(context, NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.ip + (ntvdm64_type_signed_16)instruction_state.data.cimm), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JMP_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JMP_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL32");
     i386(0xe9) {
         _adv;
-        _chr(_d_imm(context, _GetOperandSize));
-        _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, 1));
     }
     else {
         cpu_state.data.ip++;
         _d_imm(context, 2);
-        _e_jcc(context, GetMax32(instruction_state.data.cimm), 2, 1);
+        _e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 2, 1);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JMP_PTR16_32(core_machine_cpu_execution_context *context) {
-    t_nubit16 newcs = 0x0000;
-    t_nubit32 neweip = 0x00000000;
-    _cb("JMP_PTR16_32");
+    ntvdm64_type_unsigned_16 newcs = 0x0000;
+    ntvdm64_type_unsigned_32 neweip = 0x00000000;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_PTR16_32");
     i386(0xea) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_d_imm(context, 2));
-            neweip = (t_nubit16)instruction_state.data.cimm;
-            _chr(_d_imm(context, 2));
-            newcs = (t_nubit16)instruction_state.data.cimm;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            neweip = (ntvdm64_type_unsigned_16)instruction_state.data.cimm;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            newcs = (ntvdm64_type_unsigned_16)instruction_state.data.cimm;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             _new_code_path_;
-            _chr(_d_imm(context, 4));
-            neweip = (t_nubit32)instruction_state.data.cimm;
-            _chr(_d_imm(context, 2));
-            newcs = (t_nubit16)instruction_state.data.cimm;
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 4));
+            neweip = (ntvdm64_type_unsigned_32)instruction_state.data.cimm;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            newcs = (ntvdm64_type_unsigned_16)instruction_state.data.cimm;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _chr(_e_jmp_far(context, newcs, neweip, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jmp_far(context, newcs, neweip, _GetOperandSize));
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_imm(context, 2));
-        neweip = (t_nubit16)instruction_state.data.cimm;
-        _chr(_d_imm(context, 2));
-        newcs = (t_nubit16)instruction_state.data.cimm;
-        _chr(_e_jmp_far(context, newcs, neweip, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        neweip = (ntvdm64_type_unsigned_16)instruction_state.data.cimm;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+        newcs = (ntvdm64_type_unsigned_16)instruction_state.data.cimm;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jmp_far(context, newcs, neweip, 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JMP_REL8(core_machine_cpu_execution_context *context) {
-    _cb("JMP_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL8");
     i386(0xeb) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_imm(context, 1));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), 1, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), 1, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN_AL_DX(core_machine_cpu_execution_context *context) {
-    _cb("IN_AL_DX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_DX");
     i386(0xec) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_p_input(context, cpu_state.data.dx, GetRef(cpu_state.data.al), 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.al), 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN_EAX_DX(core_machine_cpu_execution_context *context) {
-    _cb("IN_EAX_DX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_DX");
     i386(0xed) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_p_input(context, cpu_state.data.dx, GetRef(cpu_state.data.ax), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_p_input(context, cpu_state.data.dx, GetRef(cpu_state.data.eax), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eax), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_p_input(context, cpu_state.data.dx, GetRef(cpu_state.data.ax), 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_input(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUT_DX_AL(core_machine_cpu_execution_context *context) {
-    _cb("OUT_DX_AL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_AL");
     i386(0xee) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_p_output(context, cpu_state.data.dx, GetRef(cpu_state.data.al), 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_output(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.al), 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUT_DX_EAX(core_machine_cpu_execution_context *context) {
-    _cb("OUT_DX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_EAX");
     _new_code_path_;
     i386(0xef) {
         _adv;
         switch (_GetOperandSize) {
         case 2:
-            _bb("OperandSize(2)");
-            _chr(_p_output(context, cpu_state.data.dx, GetRef(cpu_state.data.ax), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_output(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("OperandSize(4)");
-            _chr(_p_output(context, cpu_state.data.dx, GetRef(cpu_state.data.eax), 4));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_p_output(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.eax), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _p_output(context, cpu_state.data.dx, GetRef(cpu_state.data.ax), 2);
+        _p_output(context, cpu_state.data.dx, NTVDM64_TYPE_REFERENCE_OF(cpu_state.data.ax), 2);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_LOCK(core_machine_cpu_execution_context *context) {
-    t_nubit8 opcode = 0x00;
-    t_nubit8 modrm = 0x00;
-    t_nubit8 opcode_0f = 0x00;
-    t_nubit32 ceip = cpu_state.data.eip;
-    _cb("PREFIX_LOCK");
+    ntvdm64_type_unsigned_8 opcode = 0x00;
+    ntvdm64_type_unsigned_8 modrm = 0x00;
+    ntvdm64_type_unsigned_8 opcode_0f = 0x00;
+    ntvdm64_type_unsigned_32 ceip = cpu_state.data.eip;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
     i386(0xf0) {
         _adv;
         do {
-            _chr(_s_read_cs(context, ceip, GetRef(opcode), 1));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip, NTVDM64_TYPE_REFERENCE_OF(opcode), 1));
             ceip++;
         } while (_kdf_check_prefix(context, opcode));
         switch (opcode) {
@@ -11004,53 +11004,53 @@ static void PREFIX_LOCK(core_machine_cpu_execution_context *context) {
         case 0xf7: /* NOT, NEG */
         case 0xfe:
         case 0xff: /* DEC, INC */
-            instruction_state.data.flagLock = True;
+            instruction_state.data.flagLock = NTVDM64_TYPE_TRUE;
             break;
         case 0x80:
         case 0x81:
         case 0x83:
-            _bb("opcode(0x80/0x81/0x83)");
-            _chr(_s_read_cs(context, ceip, GetRef(modrm), 1));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opcode(0x80/0x81/0x83)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip, NTVDM64_TYPE_REFERENCE_OF(modrm), 1));
             if (_GetModRM_REG(modrm) != 7)
-                instruction_state.data.flagLock = True;
+                instruction_state.data.flagLock = NTVDM64_TYPE_TRUE;
             else {
-                _bb("ModRM_REG(7)");
-                _chr(_SetExcept_UD(0));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 0x0f:
-            _bb("opcode(0f)");
-            _chr(_s_read_cs(context, ceip, GetRef(opcode_0f), 1));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opcode(0f)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, ceip, NTVDM64_TYPE_REFERENCE_OF(opcode_0f), 1));
             switch (opcode_0f) {
             case 0xa3: /* BT */
             case 0xab: /* BTS */
             case 0xb3: /* BTR */
             case 0xbb: /* BTC */
             case 0xba:
-                instruction_state.data.flagLock = True;
+                instruction_state.data.flagLock = NTVDM64_TYPE_TRUE;
                 break;
             default:
-                _bb("opcode_0f");
-                _chr(_SetExcept_UD(0));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opcode_0f");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _bb("opcode");
-            _chr(_SetExcept_UD(0));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("opcode");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         }
     }
     else _adv;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_REPNZ(core_machine_cpu_execution_context *context) {
-    _cb("PREFIX_REPNZ");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPNZ");
     i386(0xf2) {
         _adv;
         instruction_state.data.prefix_rep = PREFIX_REP_REPZNZ;
@@ -11059,10 +11059,10 @@ static void PREFIX_REPNZ(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         instruction_state.data.prefix_rep = PREFIX_REP_REPZNZ;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_REPZ(core_machine_cpu_execution_context *context) {
-    _cb("PREFIX_REPZ");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPZ");
     i386(0xf3) {
         _adv;
         instruction_state.data.prefix_rep = PREFIX_REP_REPZ;
@@ -11071,22 +11071,22 @@ static void PREFIX_REPZ(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         instruction_state.data.prefix_rep = PREFIX_REP_REPZ;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void HLT(core_machine_cpu_execution_context *context) {
-    _cb("HLT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("HLT");
     _new_code_path_;
     if (_GetCR0_PE && _GetCPL) {
-        _bb("CR0_PE(1),CPL(!0)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_PE(1),CPL(!0)");
         _SetExcept_GP(0);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     _adv;
-    cpu_state.data.flagHalt = True;
-    _ce;
+    cpu_state.data.flagHalt = NTVDM64_TYPE_TRUE;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMC(core_machine_cpu_execution_context *context) {
-    _cb("CMC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMC");
     i386(0xf5) {
         _adv;
         cpu_state.data.eflags ^= VCPU_EFLAGS_CF;
@@ -11095,187 +11095,187 @@ static void CMC(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         cpu_state.data.eflags ^= VCPU_EFLAGS_CF;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_F6(core_machine_cpu_execution_context *context) {
-    _cb("INS_F6");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F6");
     i386(0xf6) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     switch (instruction_state.data.cr) {
     case 0: /* TEST_RM8_I8 */
-        _bb("TEST_RM8_I8");
-        _chr(_d_imm(context, 1));
-        _chr(_a_test(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("TEST_RM8_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_test(context, instruction_state.data.crm, instruction_state.data.cimm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* UndefinedOpcode */
-        _bb("ModRM_REG(1)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* NOT_RM8 */
-        _bb("NOT_RM8");
-        _chr(_a_not(context, instruction_state.data.crm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NOT_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_not(context, instruction_state.data.crm, 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* NEG_RM8 */
-        _bb("NEG_RM8");
-        _chr(_a_neg(context, instruction_state.data.crm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NEG_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_neg(context, instruction_state.data.crm, 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* MUL_RM8 */
-        _bb("MUL_RM8");
-        _chr(_a_mul(context, instruction_state.data.crm, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MUL_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_mul(context, instruction_state.data.crm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* IMUL_RM8 */
-        _bb("IMUL_RM8");
-        _chr(_a_imul(context, instruction_state.data.crm, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IMUL_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_imul(context, instruction_state.data.crm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* DIV_RM8 */
-        _bb("DIV_RM8");
-        _chr(_a_div(context, instruction_state.data.crm, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DIV_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_div(context, instruction_state.data.crm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* IDIV_RM8 */
-        _bb("IDIV_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IDIV_RM8");
         _new_code_path_;
-        _chr(_a_idiv(context, instruction_state.data.crm, 8));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_idiv(context, instruction_state.data.crm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_F7(core_machine_cpu_execution_context *context) {
-    _cb("INS_F7");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F7");
     i386(0xf7) {
         _adv;
-        _chr(_d_modrm(context, 0, _GetOperandSize));
-        _chr(_m_read_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (instruction_state.data.cr) {
         case 0: /* TEST_RM32_I32 */
-            _bb("TEST_RM32_I32");
-            _chr(_d_imm(context, _GetOperandSize));
-            _chr(_a_test(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("TEST_RM32_I32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_test(context, instruction_state.data.crm, instruction_state.data.cimm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* UndefinedOpcode */
-            _bb("ModRM_REG(1)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(1)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* NOT_RM32 */
-            _bb("NOT_RM32");
-            _chr(_a_not(context, instruction_state.data.crm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NOT_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_not(context, instruction_state.data.crm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* NEG_RM32 */
-            _bb("NEG_RM32");
-            _chr(_a_neg(context, instruction_state.data.crm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NEG_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_neg(context, instruction_state.data.crm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* MUL_RM32 */
-            _bb("MUL_RM32");
-            _chr(_a_mul(context, instruction_state.data.crm, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MUL_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_mul(context, instruction_state.data.crm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* IMUL_RM32 */
-            _bb("IMUL_RM32");
-            _chr(_a_imul(context, instruction_state.data.crm, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IMUL_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_imul(context, instruction_state.data.crm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* DIV_RM32 */
-            _bb("DIV_RM32");
-            _chr(_a_div(context, instruction_state.data.crm, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DIV_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_div(context, instruction_state.data.crm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* IDIV_RM32 */
-            _bb("IDIV_RM32");
-            _chr(_a_idiv(context, instruction_state.data.crm, _GetOperandSize * 8));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IDIV_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_idiv(context, instruction_state.data.crm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_d_modrm(context, 0, 2));
-        _chr(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         switch (instruction_state.data.cr) {
         case 0: /* TEST_RM16_I16 */
-            _bb("TEST_RM16_I16");
-            _chr(_d_imm(context, 2));
-            _chr(_a_test(context, instruction_state.data.crm, instruction_state.data.cimm, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("TEST_RM16_I16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_test(context, instruction_state.data.crm, instruction_state.data.cimm, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* UndefinedOpcode */
-            _bb("ModRM_REG(1)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(1)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* NOT_RM16 */
-            _bb("NOT_RM16");
-            _chr(_a_not(context, instruction_state.data.crm, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NOT_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_not(context, instruction_state.data.crm, 16));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* NEG_RM16 */
-            _bb("NEG_RM16");
-            _chr(_a_neg(context, instruction_state.data.crm, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NEG_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_neg(context, instruction_state.data.crm, 16));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* MUL_RM16 */
-            _bb("MUL_RM16");
-            _chr(_a_mul(context, instruction_state.data.crm, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MUL_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_mul(context, instruction_state.data.crm, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* IMUL_RM16 */
-            _bb("IMUL_RM16");
-            _chr(_a_imul(context, instruction_state.data.crm, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IMUL_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_imul(context, instruction_state.data.crm, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* DIV_RM16 */
-            _bb("DIV_RM16");
-            _chr(_a_div(context, instruction_state.data.crm, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DIV_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_div(context, instruction_state.data.crm, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* IDIV_RM16 */
-            _bb("IDIV_RM16");
-            _chr(_a_idiv(context, instruction_state.data.crm, 16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IDIV_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_idiv(context, instruction_state.data.crm, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CLC(core_machine_cpu_execution_context *context) {
-    _cb("CLC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLC");
     i386(0xf8) {
         _adv;
         _ClrEFLAGS_CF;
@@ -11284,10 +11284,10 @@ static void CLC(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         _ClrEFLAGS_CF;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STC(core_machine_cpu_execution_context *context) {
-    _cb("STC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STC");
     i386(0xf9) {
         _adv;
         _SetEFLAGS_CF;
@@ -11296,77 +11296,77 @@ static void STC(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         _SetEFLAGS_CF;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CLI(core_machine_cpu_execution_context *context) {
-    _cb("CLI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLI");
     i386(0xfa) {
         _adv;
         if (!_GetCR0_PE)
             _ClrEFLAGS_IF;
         else {
-            _bb("CR0_PE(1)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_PE(1)");
             _new_code_path_;
             if (!_GetEFLAGS_VM) {
-                _bb("EFLAGS_VM(0)");
-                if (_GetCPL <= (t_nubit8)(_GetEFLAGS_IOPL))
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_VM(0)");
+                if (_GetCPL <= (ntvdm64_type_unsigned_8)(_GetEFLAGS_IOPL))
                     _ClrEFLAGS_IF;
                 else
-                    _chr(_SetExcept_GP(0));
-                _be;
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("EFLAGS_VM(1)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_VM(1)");
                 if (_GetEFLAGS_IOPL == 3)
                     _ClrEFLAGS_IF;
                 else
-                    _chr(_SetExcept_GP(0));
-                _be;
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
     }
     else {
         cpu_state.data.ip++;
         _ClrEFLAGS_IF;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STI(core_machine_cpu_execution_context *context) {
-    _cb("STI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STI");
     i386(0xfb) {
         _adv;
         if (!_GetCR0_PE)
             _SetEFLAGS_IF;
         else {
-            _bb("CR0_PE(1)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_PE(1)");
             _new_code_path_;
             if (!_GetEFLAGS_VM) {
-                _bb("EFLAGS_VM(0)");
-                if (_GetCPL <= (t_nubit8)(_GetEFLAGS_IOPL))
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_VM(0)");
+                if (_GetCPL <= (ntvdm64_type_unsigned_8)(_GetEFLAGS_IOPL))
                     _SetEFLAGS_IF;
                 else
-                    _chr(_SetExcept_GP(0));
-                _be;
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("EFLAGS_VM(1)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_VM(1)");
                 if (_GetEFLAGS_IOPL == 3)
                     _SetEFLAGS_IF;
                 else
-                    _chr(_SetExcept_GP(0));
-                _be;
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        instruction_state.data.flagMaskInt = True;
+        instruction_state.data.flagMaskInt = NTVDM64_TYPE_TRUE;
     }
     else {
         cpu_state.data.ip++;
         _SetEFLAGS_IF;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CLD(core_machine_cpu_execution_context *context) {
-    _cb("CLD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLD");
     i386(0xfc) {
         _adv;
         _ClrEFLAGS_DF;
@@ -11375,10 +11375,10 @@ static void CLD(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         _ClrEFLAGS_DF;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STD(core_machine_cpu_execution_context *context) {
-    _cb("CLD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLD");
     i386(0xfd) {
         _adv;
         _SetEFLAGS_DF;
@@ -11387,460 +11387,460 @@ static void STD(core_machine_cpu_execution_context *context) {
         cpu_state.data.ip++;
         _SetEFLAGS_DF;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_FE(core_machine_cpu_execution_context *context) {
-    _cb("INS_FE");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FE");
     i386(0xfe) {
         _adv;
     }
     else {
         cpu_state.data.ip++;
     }
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_read_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
     switch (instruction_state.data.cr) {
     case 0: /* INC_RM8 */
-        _bb("INC_RM8");
-        _chr(_a_inc(context, instruction_state.data.crm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("INC_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, instruction_state.data.crm, 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* DEC_RM8 */
-        _bb("DEC_RM8");
-        _chr(_a_dec(context, instruction_state.data.crm, 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DEC_RM8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, instruction_state.data.crm, 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, 1));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("instruction_state.data.cr(2)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        _bb("instruction_state.data.cr(3)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(3)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("instruction_state.data.cr(4)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        _bb("instruction_state.data.cr(5)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(5)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        _bb("instruction_state.data.cr(6)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        _bb("instruction_state.data.cr(7)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(7)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_FF(core_machine_cpu_execution_context *context) {
-    t_nubit8 modrm;
-    t_nubit16 newcs;
-    t_nubit32 neweip;
-    _cb("INS_FF");
+    ntvdm64_type_unsigned_8 modrm;
+    ntvdm64_type_unsigned_16 newcs;
+    ntvdm64_type_unsigned_32 neweip;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FF");
     i386(0xff) {
         _adv;
-        _chr(_s_read_cs(context, cpu_state.data.eip, GetRef(modrm), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, NTVDM64_TYPE_REFERENCE_OF(modrm), 1));
         switch (_GetModRM_REG(modrm)) {
         case 0: /* INC_RM32 */
-            _bb("INC_RM32");
-            _chr(_d_modrm(context, 0, _GetOperandSize));
-            _chr(_m_read_rm(context, _GetOperandSize));
-            _chr(_a_inc(context, instruction_state.data.crm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("INC_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, instruction_state.data.crm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* DEC_RM32 */
-            _bb("DEC_RM32");
-            _chr(_d_modrm(context, 0, _GetOperandSize));
-            _chr(_m_read_rm(context, _GetOperandSize));
-            _chr(_a_dec(context, instruction_state.data.crm, _GetOperandSize * 8));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DEC_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, instruction_state.data.crm, _GetOperandSize * 8));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* CALL_RM32 */
-            _bb("CALL_RM32");
-            _chr(_d_modrm(context, 0, _GetOperandSize));
-            _chr(_m_read_rm(context, _GetOperandSize));
-            neweip = GetMax32(instruction_state.data.crm);
-            _chr(_e_call_near(context, neweip, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CALL_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+            neweip = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_call_near(context, neweip, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* CALL_M16_32 */
-            _bb("CALL_M16_32");
-            _chr(_d_modrm(context, 0, _GetOperandSize + 2));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CALL_M16_32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize + 2));
             if (!instruction_state.data.flagMem) {
-                _bb("flagMem(0)");
-                _chr(UndefinedOpcode(context));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _chr(_m_read_rm(context, _GetOperandSize));
-            neweip = (t_nubit32)instruction_state.data.crm;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+            neweip = (ntvdm64_type_unsigned_32)instruction_state.data.crm;
             instruction_state.data.mrm.offset += _GetOperandSize;
-            _chr(_m_read_rm(context, 2));
-            newcs = GetMax16(instruction_state.data.crm);
-            _chr(_e_call_far(context, newcs, neweip, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_call_far(context, newcs, neweip, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* JMP_RM32 */
-            _bb("JMP_RM32");
-            _chr(_d_modrm(context, 0, _GetOperandSize));
-            _chr(_m_read_rm(context, _GetOperandSize));
-            neweip = GetMax32(instruction_state.data.crm);
-            _chr(_e_jmp_near(context, neweip, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("JMP_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+            neweip = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jmp_near(context, neweip, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* JMP_M16_32 */
-            _bb("JMP_M16_32");
-            _chr(_d_modrm(context, 0, _GetOperandSize + 2));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("JMP_M16_32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize + 2));
             if (!instruction_state.data.flagMem) {
-                _bb("flagMem(0)");
-                _chr(UndefinedOpcode(context));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _chr(_m_read_rm(context, _GetOperandSize));
-            neweip = (t_nubit32)instruction_state.data.crm;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+            neweip = (ntvdm64_type_unsigned_32)instruction_state.data.crm;
             instruction_state.data.mrm.offset += _GetOperandSize;
-            _chr(_m_read_rm(context, 2));
-            newcs = GetMax16(instruction_state.data.crm);
-            _chr(_e_jmp_far(context, newcs, neweip, _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jmp_far(context, newcs, neweip, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* PUSH_RM32 */
-            _bb("PUSH_RM32");
-            _chr(_d_modrm(context, 0, _GetOperandSize));
-            _chr(_m_read_rm(context, _GetOperandSize));
-            _chr(_e_push(context, GetRef(instruction_state.data.crm), _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("PUSH_RM32");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* UndefinedOpcode */
-            _bb("ModRM_REG(7)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
     else {
         cpu_state.data.ip++;
-        _chr(_s_read_cs(context, cpu_state.data.eip, GetRef(modrm), 1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, NTVDM64_TYPE_REFERENCE_OF(modrm), 1));
         switch (_GetModRM_REG(modrm)) {
         case 0: /* INC_RM16 */
-            _bb("INC_RM16");
-            _chr(_d_modrm(context, 0, 2));
-            _chr(_m_read_rm(context, 2));
-            _chr(_a_inc(context, instruction_state.data.crm, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("INC_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_inc(context, instruction_state.data.crm, 16));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* DEC_RM16 */
-            _bb("DEC_RM16");
-            _chr(_d_modrm(context, 0, 2));
-            _chr(_m_read_rm(context, 2));
-            _chr(_a_dec(context, instruction_state.data.crm, 16));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DEC_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_dec(context, instruction_state.data.crm, 16));
             instruction_state.data.crm = instruction_state.data.result;
-            _chr(_m_write_rm(context, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* CALL_RM16 */
-            _bb("CALL_RM16");
-            _chr(_d_modrm(context, 0, 2));
-            _chr(_m_read_rm(context, 2));
-            neweip = GetMax16(instruction_state.data.crm);
-            _chr(_e_call_near(context, neweip, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CALL_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            neweip = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_call_near(context, neweip, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* CALL_M16_16 */
-            _bb("CALL_M16_16");
-            _chr(_d_modrm(context, 0, 4));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CALL_M16_16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 4));
             if (!instruction_state.data.flagMem) {
-                _bb("flagMem(0)");
-                _chr(UndefinedOpcode(context));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _chr(_m_read_rm(context, 2));
-            neweip = (t_nubit16)instruction_state.data.crm;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            neweip = (ntvdm64_type_unsigned_16)instruction_state.data.crm;
             instruction_state.data.mrm.offset += 2;
-            _chr(_m_read_rm(context, 2));
-            newcs = GetMax16(instruction_state.data.crm);
-            _chr(_e_call_far(context, newcs, neweip, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_call_far(context, newcs, neweip, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* JMP_RM16 */
-            _bb("JMP_RM16");
-            _chr(_d_modrm(context, 0, 2));
-            _chr(_m_read_rm(context, 2));
-            neweip = GetMax16(instruction_state.data.crm);
-            _chr(_e_jmp_near(context, neweip, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("JMP_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            neweip = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jmp_near(context, neweip, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* JMP_M16_16 */
-            _bb("JMP_M16_16");
-            _chr(_d_modrm(context, 0, 4));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("JMP_M16_16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 4));
             if (!instruction_state.data.flagMem) {
-                _bb("flagMem(0)");
-                _chr(UndefinedOpcode(context));
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _chr(_m_read_rm(context, 2));
-            neweip = (t_nubit16)instruction_state.data.crm;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            neweip = (ntvdm64_type_unsigned_16)instruction_state.data.crm;
             instruction_state.data.mrm.offset += 2;
-            _chr(_m_read_rm(context, 2));
-            newcs = GetMax16(instruction_state.data.crm);
-            _chr(_e_jmp_far(context, newcs, neweip, 2));
-            _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            newcs = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jmp_far(context, newcs, neweip, 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6: /* PUSH_RM16 */
-            _bb("PUSH_RM16");
-            _chr(_d_modrm(context, 0, 2));
-            _chr(_m_read_rm(context, 2));
-            _chr(_e_push(context, GetRef(instruction_state.data.crm), 2));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("PUSH_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7: /* UndefinedOpcode */
-            _bb("ModRM_REG(7)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 static void _d_modrm_creg(core_machine_cpu_execution_context *context) {
-    _cb("_d_modrm_creg");
-    _chr(_kdf_modrm(context, 0, 4));
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_creg");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, 0, 4));
     if (instruction_state.data.flagMem) {
-        _bb("flagMem(1)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     switch (instruction_state.data.cr) {
     case 0:
-        instruction_state.data.rr = (t_vaddrcc)&cpu_state.data.cr0;
+        instruction_state.data.rr = (ntvdm64_type_virtual_address)&cpu_state.data.cr0;
         instruction_state.data.cr = cpu_state.data.cr0;
         break;
     case 1:
-        _bb("instruction_state.data.cr(1)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        instruction_state.data.rr = (t_vaddrcc)&cpu_state.data.cr2;
+        instruction_state.data.rr = (ntvdm64_type_virtual_address)&cpu_state.data.cr2;
         instruction_state.data.cr = cpu_state.data.cr2;
         break;
     case 3:
-        instruction_state.data.rr = (t_vaddrcc)&cpu_state.data.cr3;
+        instruction_state.data.rr = (ntvdm64_type_virtual_address)&cpu_state.data.cr3;
         instruction_state.data.cr = cpu_state.data.cr3;
         break;
     case 4:
-        _bb("instruction_state.data.cr(4)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        _bb("instruction_state.data.cr(5)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(5)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        _bb("instruction_state.data.cr(6)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        _bb("instruction_state.data.cr(7)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(7)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _d_modrm_dreg(core_machine_cpu_execution_context *context) {
-    _cb("_d_modrm_dreg");
-    _chr(_kdf_modrm(context, 0, 4));
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_dreg");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, 0, 4));
     if (instruction_state.data.flagMem) {
-        _bb("flagMem(1)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     switch (instruction_state.data.cr) {
     case 0:
-        instruction_state.data.rr = (t_vaddrcc)&cpu_state.data.dr0;
+        instruction_state.data.rr = (ntvdm64_type_virtual_address)&cpu_state.data.dr0;
         instruction_state.data.cr = cpu_state.data.dr0;
         break;
     case 1:
-        instruction_state.data.rr = (t_vaddrcc)&cpu_state.data.dr1;
+        instruction_state.data.rr = (ntvdm64_type_virtual_address)&cpu_state.data.dr1;
         instruction_state.data.cr = cpu_state.data.dr1;
         break;
     case 2:
-        instruction_state.data.rr = (t_vaddrcc)&cpu_state.data.dr2;
+        instruction_state.data.rr = (ntvdm64_type_virtual_address)&cpu_state.data.dr2;
         instruction_state.data.cr = cpu_state.data.dr2;
         break;
     case 3:
-        instruction_state.data.rr = (t_vaddrcc)&cpu_state.data.dr3;
+        instruction_state.data.rr = (ntvdm64_type_virtual_address)&cpu_state.data.dr3;
         instruction_state.data.cr = cpu_state.data.dr3;
         break;
     case 4:
-        _bb("instruction_state.data.cr(4)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        _bb("instruction_state.data.cr(5)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(5)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        instruction_state.data.rr = (t_vaddrcc)&cpu_state.data.dr6;
+        instruction_state.data.rr = (ntvdm64_type_virtual_address)&cpu_state.data.dr6;
         instruction_state.data.cr = cpu_state.data.dr6;
         break;
     case 7:
-        instruction_state.data.rr = (t_vaddrcc)&cpu_state.data.dr7;
+        instruction_state.data.rr = (ntvdm64_type_virtual_address)&cpu_state.data.dr7;
         instruction_state.data.cr = cpu_state.data.dr7;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _d_modrm_treg(core_machine_cpu_execution_context *context) {
-    _cb("_d_modrm_treg");
-    _chr(_kdf_modrm(context, 0, 4));
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_treg");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, 0, 4));
     if (instruction_state.data.flagMem) {
-        _bb("flagMem(1)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     switch (instruction_state.data.cr) {
     case 0:
-        _bb("instruction_state.data.cr(0)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1:
-        _bb("instruction_state.data.cr(1)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("instruction_state.data.cr(2)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        _bb("instruction_state.data.cr(3)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(3)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("instruction_state.data.cr(4)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        _bb("instruction_state.data.cr(5)");
-        _chr(_SetExcept_UD(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(5)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        instruction_state.data.rr = (t_vaddrcc)&cpu_state.data.tr6;
+        instruction_state.data.rr = (ntvdm64_type_virtual_address)&cpu_state.data.tr6;
         instruction_state.data.cr = cpu_state.data.tr6;
         break;
     case 7:
-        instruction_state.data.rr = (t_vaddrcc)&cpu_state.data.tr7;
+        instruction_state.data.rr = (ntvdm64_type_virtual_address)&cpu_state.data.tr7;
         instruction_state.data.cr = cpu_state.data.tr7;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _d_bit_rmimm(core_machine_cpu_execution_context *context, t_nubit8 regbyte, t_nubit8 rmbyte, t_bool write) {
+static void _d_bit_rmimm(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_8 regbyte, ntvdm64_type_unsigned_8 rmbyte, ntvdm64_type_bool write) {
     /* xrm = actual destination, cimm = (1 << bitoffset) */
-    t_nsbit16 bitoff16 = 0;
-    t_nsbit32 bitoff32 = 0;
-    t_nubit32 bitoperand = 0;
-    _cb("_d_bit_rmimm");
-    _chr(_kdf_modrm(context, regbyte, rmbyte));
-    if (!regbyte) _chr(_d_imm(context, 1));
+    ntvdm64_type_signed_16 bitoff16 = 0;
+    ntvdm64_type_signed_32 bitoff32 = 0;
+    ntvdm64_type_unsigned_32 bitoperand = 0;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_bit_rmimm");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(context, regbyte, rmbyte));
+    if (!regbyte) NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
     switch (rmbyte) {
     case 2:
-        _bb("rmbyte(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("rmbyte(2)");
         if (instruction_state.data.flagMem && regbyte) {
             /* valid for btcc_m16_r16 */
-            _bb("flagMem(1),regbyte(1)");
-            bitoff16 = (t_nsbit16)instruction_state.data.cr;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(1),regbyte(1)");
+            bitoff16 = (ntvdm64_type_signed_16)instruction_state.data.cr;
             if (bitoff16 >= 0)
                 instruction_state.data.mrm.offset += 2 * (bitoff16 / 16);
             else
                 instruction_state.data.mrm.offset += 2 * ((bitoff16 - 15) / 16);
-            bitoperand = ((t_nubit16)bitoff16) % 16;
-            _be;
+            bitoperand = ((ntvdm64_type_unsigned_16)bitoff16) % 16;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else if (regbyte) {
             bitoperand = instruction_state.data.cr % 16;
         } else {
-            bitoperand = (GetMax16(instruction_state.data.cimm) % 16);
+            bitoperand = (NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm) % 16);
         }
-        _chr(instruction_state.data.cimm = GetMax16((1 << bitoperand)));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(instruction_state.data.cimm = NTVDM64_TYPE_MASK_UNSIGNED_16((1 << bitoperand)));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("rmbyte(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("rmbyte(4)");
         if (instruction_state.data.flagMem && regbyte) {
-            _bb("flagMem(1),regbyte(1)");
-            bitoff32 = (t_nsbit32)instruction_state.data.cr;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(1),regbyte(1)");
+            bitoff32 = (ntvdm64_type_signed_32)instruction_state.data.cr;
             if (bitoff32 >= 0)
                 instruction_state.data.mrm.offset += 4 * (bitoff32 / 32);
             else
                 instruction_state.data.mrm.offset += 4 * ((bitoff32 - 31) / 32);
-            bitoperand = ((t_nubit32)bitoff32) % 32;
-            _be;
+            bitoperand = ((ntvdm64_type_unsigned_32)bitoff32) % 32;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else if (regbyte) {
             bitoperand = instruction_state.data.cr % 32;
         } else {
-            bitoperand = (GetMax32(instruction_state.data.cimm) % 32);
+            bitoperand = (NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm) % 32);
         }
-        _chr(instruction_state.data.cimm = GetMax32((1 << bitoperand)));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(instruction_state.data.cimm = NTVDM64_TYPE_MASK_UNSIGNED_32((1 << bitoperand)));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("rmbyte");
-        _chr(_SetExcept_CE(rmbyte));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("rmbyte");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(rmbyte));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 #define SHLD_FLAG (VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF)
@@ -11849,139 +11849,139 @@ static void _d_bit_rmimm(core_machine_cpu_execution_context *context, t_nubit8 r
 #define _kac_btcc \
 do { \
     switch (bit) { \
-    case 16: instruction_state.data.opr1 = GetMax16(cdest);break; \
-    case 32: instruction_state.data.opr1 = GetMax32(cdest);break; \
-    default: _bb("bit"); \
-        _chr(_SetExcept_CE(bit)); \
-        _be;break; \
+    case 16: instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);break; \
+    case 32: instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);break; \
+    default: NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit"); \
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit)); \
+        NTVDM64_TYPE_TRACE_BLOCK_END;break; \
     } \
     instruction_state.data.opr2 = bitoperand; \
     instruction_state.data.result = instruction_state.data.opr1; \
-    MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF, GetBit(instruction_state.data.opr1, instruction_state.data.opr2)); \
+    NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF, NTVDM64_TYPE_GET_BIT(instruction_state.data.opr1, instruction_state.data.opr2)); \
 } while (0)
 
-static void _a_bscc(core_machine_cpu_execution_context *context, t_nubit64 csrc, t_nubit8 bit, t_bool forward) {
-    t_nubit32 temp;
-    _cb("_a_bscc");
+static void _a_bscc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit, ntvdm64_type_bool forward) {
+    ntvdm64_type_unsigned_32 temp;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_bscc");
     if (forward) temp = 0;
     else temp = bit - 1;
     switch (bit) {
     case 16:
-        _bb("bit(16)");
-        instruction_state.data.opr1 = GetMax16(csrc);
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(csrc);
         if (!instruction_state.data.opr1)
             _SetEFLAGS_ZF;
         else {
             _ClrEFLAGS_ZF;
-            while (!GetBit(instruction_state.data.opr1, GetMax64(1 << temp))) {
+            while (!NTVDM64_TYPE_GET_BIT(instruction_state.data.opr1, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << temp))) {
                 if (forward) temp++;
                 else temp--;
             }
-            instruction_state.data.result = GetMax16(temp);
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(temp);
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32)");
-        instruction_state.data.opr1 = GetMax32(csrc);
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(csrc);
         if (!instruction_state.data.opr1)
             _SetEFLAGS_ZF;
         else {
             _ClrEFLAGS_ZF;
-            while (!GetBit(instruction_state.data.opr1, GetMax64(1 << temp))) {
+            while (!NTVDM64_TYPE_GET_BIT(instruction_state.data.opr1, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << temp))) {
                 if (forward) temp++;
                 else temp--;
             }
-            instruction_state.data.result = GetMax32(temp);
+            instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(temp);
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_bt(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit) {
-    _cb("_a_bt");
+static void _a_bt(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_32 bitoperand, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_bt");
     _kac_btcc;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_btc(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit) {
-    _cb("_a_btc");
+static void _a_btc(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_32 bitoperand, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_btc");
     _kac_btcc;
-    MakeBit(instruction_state.data.result, instruction_state.data.opr2, !_GetEFLAGS_CF);
-    _ce;
+    NTVDM64_TYPE_MAKE_BIT(instruction_state.data.result, instruction_state.data.opr2, !_GetEFLAGS_CF);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_btr(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit) {
-    _cb("_a_btr");
+static void _a_btr(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_32 bitoperand, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_btr");
     _kac_btcc;
-    ClrBit(instruction_state.data.result, instruction_state.data.opr2);
-    _ce;
+    NTVDM64_TYPE_CLEAR_BIT(instruction_state.data.result, instruction_state.data.opr2);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_bts(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit32 bitoperand, t_nubit8 bit) {
-    _cb("_a_bts");
+static void _a_bts(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_32 bitoperand, ntvdm64_type_unsigned_8 bit) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_bts");
     _kac_btcc;
-    SetBit(instruction_state.data.result, instruction_state.data.opr2);
-    _ce;
+    NTVDM64_TYPE_SET_BIT(instruction_state.data.result, instruction_state.data.opr2);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _a_imul2(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit64 csrc, t_nubit8 bit) {
-    t_nubit64 temp;
-    _cb("_a_imul2");
+static void _a_imul2(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_unsigned_64 temp;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_imul2");
     switch (bit) {
     case 16:
-        _bb("bit(16+16)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16+16)");
         _new_code_path_;
         instruction_state.data.bit = 16;
-        instruction_state.data.opr1 = GetMax16((t_nsbit16)cdest);
-        instruction_state.data.opr2 = GetMax16((t_nsbit16)csrc);
-        temp = GetMax32((t_nsbit16)instruction_state.data.opr1 * (t_nsbit16)instruction_state.data.opr2);
-        instruction_state.data.result = GetMax16(temp);
-        if (GetMax32(temp) != GetMax32((t_nsbit16)instruction_state.data.result)) {
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16((ntvdm64_type_signed_16)cdest);
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_16((ntvdm64_type_signed_16)csrc);
+        temp = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_16)instruction_state.data.opr1 * (ntvdm64_type_signed_16)instruction_state.data.opr2);
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_16(temp);
+        if (NTVDM64_TYPE_MASK_UNSIGNED_32(temp) != NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_16)instruction_state.data.result)) {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
         } else {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 32:
-        _bb("bit(32+32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32+32");
         _new_code_path_;
         instruction_state.data.bit = 32;
-        instruction_state.data.opr1 = GetMax32((t_nsbit32)cdest);
-        instruction_state.data.opr2 = GetMax32((t_nsbit32)csrc);
-        temp = GetMax64((t_nsbit32)instruction_state.data.opr1 * (t_nsbit32)instruction_state.data.opr2);
-        instruction_state.data.result = GetMax32(temp);
-        if (GetMax64(temp) != GetMax64((t_nsbit32)instruction_state.data.result)) {
+        instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_32)cdest);
+        instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_32((ntvdm64_type_signed_32)csrc);
+        temp = NTVDM64_TYPE_MASK_UNSIGNED_64((ntvdm64_type_signed_32)instruction_state.data.opr1 * (ntvdm64_type_signed_32)instruction_state.data.opr2);
+        instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_32(temp);
+        if (NTVDM64_TYPE_MASK_UNSIGNED_64(temp) != NTVDM64_TYPE_MASK_UNSIGNED_64((ntvdm64_type_signed_32)instruction_state.data.result)) {
             _SetEFLAGS_CF;
             _SetEFLAGS_OF;
         } else {
             _ClrEFLAGS_CF;
             _ClrEFLAGS_OF;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _bb("bit");
-        _chr(_SetExcept_CE(bit));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_shld(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit64 csrc, t_nubit8 count, t_nubit8 bit) {
-    t_bool flagcf;
-    t_bool flagbit;
-    t_nsbit32 i;
-    _cb("_a_shld");
+static void _a_shld(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 count, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_bool flagcf;
+    ntvdm64_type_bool flagbit;
+    ntvdm64_type_signed_32 i;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_shld");
     count &= 0x1f;
     if (!count) {
-        _ce;
+        NTVDM64_TYPE_TRACE_CALL_END;
         return;
     }
     if (count > bit) {
@@ -11993,72 +11993,72 @@ static void _a_shld(core_machine_cpu_execution_context *context, t_nubit64 cdest
     } else {
         switch (bit) {
         case 16:
-            _bb("bit(16)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
             instruction_state.data.bit = 16;
-            instruction_state.data.opr1 = GetMax16(cdest);
-            instruction_state.data.opr2 = GetMax16(csrc);
+            instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
+            instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_16(csrc);
             instruction_state.data.result = instruction_state.data.opr1;
-            flagcf = !!GetMSB16(instruction_state.data.result);
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF,
-                    GetBit(instruction_state.data.result, GetMax64(1 << (bit - count))));
-            for (i = (t_nsbit32)(bit - 1); i >= (t_nsbit32)count; --i) {
-                flagbit = GetBit(instruction_state.data.opr1, GetMax64(1 << (i - count)));
-                MakeBit(instruction_state.data.result, GetMax64(1 << i), flagbit);
+            flagcf = !!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF,
+                    NTVDM64_TYPE_GET_BIT(instruction_state.data.result, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << (bit - count))));
+            for (i = (ntvdm64_type_signed_32)(bit - 1); i >= (ntvdm64_type_signed_32)count; --i) {
+                flagbit = NTVDM64_TYPE_GET_BIT(instruction_state.data.opr1, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << (i - count)));
+                NTVDM64_TYPE_MAKE_BIT(instruction_state.data.result, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
             }
-            for (i = (t_nsbit32)(count - 1); i >= 0; --i) {
-                flagbit = GetBit(instruction_state.data.opr2, GetMax64(1 << (i - count + bit)));
-                MakeBit(instruction_state.data.result, GetMax64(1 << i), flagbit);
+            for (i = (ntvdm64_type_signed_32)(count - 1); i >= 0; --i) {
+                flagbit = NTVDM64_TYPE_GET_BIT(instruction_state.data.opr2, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << (i - count + bit)));
+                NTVDM64_TYPE_MAKE_BIT(instruction_state.data.result, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
             }
             if (count == 1)
-                MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                        ((!!GetMSB16(instruction_state.data.result)) ^ flagcf));
+                NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                        ((!!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result)) ^ flagcf));
             else
                 instruction_state.data.udf |= VCPU_EFLAGS_OF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 32:
-            _bb("bit(32)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
             instruction_state.data.bit = 32;
-            instruction_state.data.opr1 = GetMax32(cdest);
-            instruction_state.data.opr2 = GetMax32(csrc);
+            instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
+            instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_32(csrc);
             instruction_state.data.result = instruction_state.data.opr1;
-            flagcf = !!GetMSB32(instruction_state.data.result);
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF,
-                    GetBit(instruction_state.data.result, GetMax64(1 << (bit - count))));
-            for (i = (t_nsbit32)(bit - 1); i >= (t_nsbit32)count; --i) {
-                flagbit = GetBit(instruction_state.data.opr1, GetMax64(1 << (i - count)));
-                MakeBit(instruction_state.data.result, GetMax64(1 << i), flagbit);
+            flagcf = !!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF,
+                    NTVDM64_TYPE_GET_BIT(instruction_state.data.result, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << (bit - count))));
+            for (i = (ntvdm64_type_signed_32)(bit - 1); i >= (ntvdm64_type_signed_32)count; --i) {
+                flagbit = NTVDM64_TYPE_GET_BIT(instruction_state.data.opr1, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << (i - count)));
+                NTVDM64_TYPE_MAKE_BIT(instruction_state.data.result, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
             }
-            for (i = (t_nsbit32)(count - 1); i >= 0; --i) {
-                flagbit = GetBit(instruction_state.data.opr2, GetMax64(1 << (i - count + bit)));
-                MakeBit(instruction_state.data.result, GetMax64(1 << i), flagbit);
+            for (i = (ntvdm64_type_signed_32)(count - 1); i >= 0; --i) {
+                flagbit = NTVDM64_TYPE_GET_BIT(instruction_state.data.opr2, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << (i - count + bit)));
+                NTVDM64_TYPE_MAKE_BIT(instruction_state.data.result, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
             }
             if (count == 1)
-                MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                        ((!!GetMSB32(instruction_state.data.result)) ^ flagcf));
+                NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                        ((!!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result)) ^ flagcf));
             else
                 instruction_state.data.udf |= VCPU_EFLAGS_OF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _bb("bit");
-            _chr(_SetExcept_CE(bit));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         }
-        _chr(_kaf_set_flags(context, SHLD_FLAG));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, SHLD_FLAG));
         instruction_state.data.udf |= VCPU_EFLAGS_AF;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
-static void _a_shrd(core_machine_cpu_execution_context *context, t_nubit64 cdest, t_nubit64 csrc, t_nubit8 count, t_nubit8 bit) {
-    t_bool flagcf;
-    t_bool flagbit;
-    t_nsbit32 i;
-    _cb("_a_shrd");
+static void _a_shrd(core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_64 cdest, ntvdm64_type_unsigned_64 csrc, ntvdm64_type_unsigned_8 count, ntvdm64_type_unsigned_8 bit) {
+    ntvdm64_type_bool flagcf;
+    ntvdm64_type_bool flagbit;
+    ntvdm64_type_signed_32 i;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_a_shrd");
     count &= 0x1f;
     if (!count) {
-        _ce;
+        NTVDM64_TYPE_TRACE_CALL_END;
         return;
     }
     if (count > bit) {
@@ -12070,123 +12070,123 @@ static void _a_shrd(core_machine_cpu_execution_context *context, t_nubit64 cdest
     } else {
         switch (bit) {
         case 16:
-            _bb("bit(16)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(16)");
             instruction_state.data.bit = 16;
-            instruction_state.data.opr1 = GetMax16(cdest);
-            instruction_state.data.opr2 = GetMax16(csrc);
+            instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_16(cdest);
+            instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_16(csrc);
             instruction_state.data.result = instruction_state.data.opr1;
-            flagcf = !!GetMSB16(instruction_state.data.result);
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF,
-                    GetBit(instruction_state.data.result, GetMax64(1 << (count - 1))));
-            for (i = 0; i <= (t_nsbit32)(bit - count - 1); ++i) {
-                flagbit = GetBit(instruction_state.data.opr1, GetMax64(1 << (i + count)));
-                MakeBit(instruction_state.data.result, GetMax64(1 << i), flagbit);
+            flagcf = !!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF,
+                    NTVDM64_TYPE_GET_BIT(instruction_state.data.result, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << (count - 1))));
+            for (i = 0; i <= (ntvdm64_type_signed_32)(bit - count - 1); ++i) {
+                flagbit = NTVDM64_TYPE_GET_BIT(instruction_state.data.opr1, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << (i + count)));
+                NTVDM64_TYPE_MAKE_BIT(instruction_state.data.result, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
             }
-            for (i = (t_nsbit32)(bit - count); i <= (t_nsbit32)(bit - 1); ++i) {
-                flagbit = GetBit(instruction_state.data.opr2, GetMax64(1 << (i + count - bit)));
-                MakeBit(instruction_state.data.result, GetMax64(1 << i), flagbit);
+            for (i = (ntvdm64_type_signed_32)(bit - count); i <= (ntvdm64_type_signed_32)(bit - 1); ++i) {
+                flagbit = NTVDM64_TYPE_GET_BIT(instruction_state.data.opr2, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << (i + count - bit)));
+                NTVDM64_TYPE_MAKE_BIT(instruction_state.data.result, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
             }
             if (count == 1)
-                MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                        ((!!GetMSB16(instruction_state.data.result)) ^ flagcf));
+                NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                        ((!!NTVDM64_TYPE_GET_MSB_16(instruction_state.data.result)) ^ flagcf));
             else
                 instruction_state.data.udf |= VCPU_EFLAGS_OF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 32:
-            _bb("bit(32)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit(32)");
             instruction_state.data.bit = 32;
-            instruction_state.data.opr1 = GetMax32(cdest);
-            instruction_state.data.opr2 = GetMax32(csrc);
+            instruction_state.data.opr1 = NTVDM64_TYPE_MASK_UNSIGNED_32(cdest);
+            instruction_state.data.opr2 = NTVDM64_TYPE_MASK_UNSIGNED_32(csrc);
             instruction_state.data.result = instruction_state.data.opr1;
-            flagcf = !!GetMSB32(instruction_state.data.result);
-            MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_CF,
-                    GetBit(instruction_state.data.result, GetMax64(1 << (count - 1))));
-            for (i = 0; i <= (t_nsbit32)(bit - count - 1); ++i) {
-                flagbit = GetBit(instruction_state.data.opr1, GetMax64(1 << (i + count)));
-                MakeBit(instruction_state.data.result, GetMax64(1 << i), flagbit);
+            flagcf = !!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result);
+            NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF,
+                    NTVDM64_TYPE_GET_BIT(instruction_state.data.result, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << (count - 1))));
+            for (i = 0; i <= (ntvdm64_type_signed_32)(bit - count - 1); ++i) {
+                flagbit = NTVDM64_TYPE_GET_BIT(instruction_state.data.opr1, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << (i + count)));
+                NTVDM64_TYPE_MAKE_BIT(instruction_state.data.result, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
             }
-            for (i = (t_nsbit32)(bit - count); i <= (t_nsbit32)(bit - 1); ++i) {
-                flagbit = GetBit(instruction_state.data.opr2, GetMax64(1 << (i + count - bit)));
-                MakeBit(instruction_state.data.result, GetMax64(1 << i), flagbit);
+            for (i = (ntvdm64_type_signed_32)(bit - count); i <= (ntvdm64_type_signed_32)(bit - 1); ++i) {
+                flagbit = NTVDM64_TYPE_GET_BIT(instruction_state.data.opr2, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << (i + count - bit)));
+                NTVDM64_TYPE_MAKE_BIT(instruction_state.data.result, NTVDM64_TYPE_MASK_UNSIGNED_64(1 << i), flagbit);
             }
             if (count == 1)
-                MakeBit(cpu_state.data.eflags, VCPU_EFLAGS_OF,
-                        ((!!GetMSB32(instruction_state.data.result)) ^ flagcf));
+                NTVDM64_TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
+                        ((!!NTVDM64_TYPE_GET_MSB_32(instruction_state.data.result)) ^ flagcf));
             else
                 instruction_state.data.udf |= VCPU_EFLAGS_OF;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _bb("bit");
-            _chr(_SetExcept_CE(bit));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bit");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(bit));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         }
-        _chr(_kaf_set_flags(context, SHRD_FLAG));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_kaf_set_flags(context, SHRD_FLAG));
         instruction_state.data.udf |= VCPU_EFLAGS_AF;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static void _m_setcc_rm(core_machine_cpu_execution_context *context, t_bool condition) {
-    _cb("_m_setcc_rm");
-    instruction_state.data.result = GetMax8(!!condition);
+static void _m_setcc_rm(core_machine_cpu_execution_context *context, ntvdm64_type_bool condition) {
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_m_setcc_rm");
+    instruction_state.data.result = NTVDM64_TYPE_MASK_UNSIGNED_8(!!condition);
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, 1));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 1));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 static void INS_0F_00(core_machine_cpu_execution_context *context) {
-    t_nubit8 modrm;
-    t_nubit64 descriptor;
-    _cb("INS_0F_00");
+    ntvdm64_type_unsigned_8 modrm;
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_00");
     _adv;
     if (_IsProtected) {
-        _bb("Protected");
-        _chr(_s_read_cs(context, cpu_state.data.eip, GetRef(modrm), 1));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, NTVDM64_TYPE_REFERENCE_OF(modrm), 1));
         switch (_GetModRM_REG(modrm)) {
         case 0: /* SLDT_RM16 */
-            _bb("SLDT_RM16");
-            _chr(_d_modrm(context, 0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
-            instruction_state.data.crm = GetMax16(cpu_state.data.ldtr.selector);
-            _chr(_m_write_rm(context, instruction_state.data.flagMem ? 2 : _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SLDT_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
+            instruction_state.data.crm = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.ldtr.selector);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, instruction_state.data.flagMem ? 2 : _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* STR_RM16 */
-            _bb("STR_RM16");
-            _chr(_d_modrm(context, 0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
-            instruction_state.data.crm = GetMax16(cpu_state.data.tr.selector);
-            _chr(_m_write_rm(context, instruction_state.data.flagMem ? 2 : _GetOperandSize));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("STR_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
+            instruction_state.data.crm = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.tr.selector);
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, instruction_state.data.flagMem ? 2 : _GetOperandSize));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* LLDT_RM16 */
-            _bb("LLDT_RM16");
-            _chr(_d_modrm(context, 0, 2));
-            _chr(_m_read_rm(context, 2));
-            _chr(_s_load_ldtr(context, GetMax16(instruction_state.data.crm)));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LLDT_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_ldtr(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3: /* LTR_RM16 */
-            _bb("LTR_RM16");
-            _chr(_d_modrm(context, 0, 2));
-            _chr(_m_read_rm(context, 2));
-            _chr(_s_load_tr(context, GetMax16(instruction_state.data.crm)));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LTR_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_tr(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4: /* VERR_RM16 */
-            _bb("VERR_RM16");
-            _chr(_d_modrm(context, 0, 2));
-            _chr(_m_read_rm(context, 2));
-            if (_s_check_selector(context, GetMax16(instruction_state.data.crm))) {
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("VERR_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            if (_s_check_selector(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm))) {
                 _ClrEFLAGS_ZF;
             } else {
-                _bb("selector(valid)");
-                _chr(_s_read_xdt(context, GetMax16(instruction_state.data.crm), GetRef(descriptor)));
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(valid)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm), NTVDM64_TYPE_REFERENCE_OF(descriptor)));
                 if (_IsDescSys(descriptor) ||
                         (!_IsDescCodeConform(descriptor) &&
                          (_GetCPL > _GetDesc_DPL(descriptor) ||
-                          _GetSelector_RPL(GetMax16(instruction_state.data.crm)) > _GetDesc_DPL(descriptor)))) {
+                          _GetSelector_RPL(NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)) > _GetDesc_DPL(descriptor)))) {
                     _ClrEFLAGS_ZF;
                 } else {
                     if (_IsDescData(descriptor) || _IsDescCodeReadable(descriptor)) {
@@ -12195,23 +12195,23 @@ static void INS_0F_00(core_machine_cpu_execution_context *context) {
                         _ClrEFLAGS_ZF;
                     }
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 5: /* VERW_RM16 */
-            _bb("VERW_RM16");
-            _chr(_d_modrm(context, 0, 2));
-            _chr(_m_read_rm(context, 2));
-            if (_s_check_selector(context, GetMax16(instruction_state.data.crm))) {
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("VERW_RM16");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+            if (_s_check_selector(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm))) {
                 _ClrEFLAGS_ZF;
             } else {
-                _bb("selector(valid)");
-                _chr(_s_read_xdt(context, GetMax16(instruction_state.data.crm), GetRef(descriptor)));
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(valid)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm), NTVDM64_TYPE_REFERENCE_OF(descriptor)));
                 if (_IsDescSys(descriptor) ||
                         (!_IsDescCodeConform(descriptor) &&
                          (_GetCPL > _GetDesc_DPL(descriptor) ||
-                          _GetSelector_RPL(GetMax16(instruction_state.data.crm)) > _GetDesc_DPL(descriptor)))) {
+                          _GetSelector_RPL(NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)) > _GetDesc_DPL(descriptor)))) {
                     _ClrEFLAGS_ZF;
                 } else {
                     if (_IsDescDataWritable(descriptor)) {
@@ -12220,194 +12220,194 @@ static void INS_0F_00(core_machine_cpu_execution_context *context) {
                         _ClrEFLAGS_ZF;
                     }
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 6:
-            _bb("ModRM_REG(6)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(6)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 7:
-            _bb("ModRM_REG(7)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("!Protected");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!Protected");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_0F_01(core_machine_cpu_execution_context *context) {
-    t_nubit8 modrm;
-    t_nubit16 limit;
-    t_nubit32 base;
-    _cb("INS_0F_01");
+    ntvdm64_type_unsigned_8 modrm;
+    ntvdm64_type_unsigned_16 limit;
+    ntvdm64_type_unsigned_32 base;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_01");
     _adv;
-    _chr(_s_read_cs(context, cpu_state.data.eip, GetRef(modrm), 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, NTVDM64_TYPE_REFERENCE_OF(modrm), 1));
     switch (_GetModRM_REG(modrm)) {
     case 0: /* SGDT_M32_16 */
-        _bb("SGDT_M32_16");
-        _chr(_d_modrm(context, 0, 6));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SGDT_M32_16");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 6));
         if (!instruction_state.data.flagMem) {
-            _bb("flagMem(0)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         instruction_state.data.crm = cpu_state.data.gdtr.limit;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
         instruction_state.data.mrm.offset += 2;
         switch (_GetOperandSize) {
         case 2:
-            instruction_state.data.crm = GetMax24(cpu_state.data.gdtr.base);
+            instruction_state.data.crm = NTVDM64_TYPE_MASK_UNSIGNED_24(cpu_state.data.gdtr.base);
             break;
         case 4:
-            instruction_state.data.crm = GetMax32(cpu_state.data.gdtr.base);
+            instruction_state.data.crm = NTVDM64_TYPE_MASK_UNSIGNED_32(cpu_state.data.gdtr.base);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _chr(_m_write_rm(context, 4));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 4));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* SIDT_M32_16 */
-        _bb("SIDT_M32_16");
-        _chr(_d_modrm(context, 0, 6));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SIDT_M32_16");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 6));
         if (!instruction_state.data.flagMem) {
-            _bb("flagMem(0)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         instruction_state.data.crm = cpu_state.data.idtr.limit;
-        _chr(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
         instruction_state.data.mrm.offset += 2;
         switch (_GetOperandSize) {
         case 2:
-            instruction_state.data.crm = GetMax24(cpu_state.data.idtr.base);
+            instruction_state.data.crm = NTVDM64_TYPE_MASK_UNSIGNED_24(cpu_state.data.idtr.base);
             break;
         case 4:
-            instruction_state.data.crm = GetMax32(cpu_state.data.idtr.base);
+            instruction_state.data.crm = NTVDM64_TYPE_MASK_UNSIGNED_32(cpu_state.data.idtr.base);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _chr(_m_write_rm(context, 4));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 4));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* LGDT_M32_16 */
-        _bb("LGDT_M32_16");
-        _chr(_d_modrm(context, 0, 6));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LGDT_M32_16");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 6));
         if (!instruction_state.data.flagMem) {
-            _bb("flagMem(0)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _chr(_m_read_rm(context, 2));
-        limit = GetMax16(instruction_state.data.crm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        limit = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         instruction_state.data.mrm.offset += 2;
-        _chr(_m_read_rm(context, 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 4));
         switch (_GetOperandSize) {
         case 2:
-            base = GetMax24(instruction_state.data.crm);
+            base = NTVDM64_TYPE_MASK_UNSIGNED_24(instruction_state.data.crm);
             break;
         case 4:
-            base = GetMax32(instruction_state.data.crm);
+            base = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         /* PRINTF("LGDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
                 instruction_state.data.linear, base, limit); */
-        _chr(_s_load_gdtr(context, base, limit, _GetOperandSize));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_gdtr(context, base, limit, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* LIDT_M32_16 */
-        _bb("LIDT_M32_16");
-        _chr(_d_modrm(context, 0, 6));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LIDT_M32_16");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 6));
         if (!instruction_state.data.flagMem) {
-            _bb("flagMem(0)");
-            _chr(UndefinedOpcode(context));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _chr(_m_read_rm(context, 2));
-        limit = GetMax16(instruction_state.data.crm);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        limit = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         instruction_state.data.mrm.offset += 2;
-        _chr(_m_read_rm(context, 4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 4));
         switch (_GetOperandSize) {
         case 2:
-            base = GetMax24(instruction_state.data.crm);
+            base = NTVDM64_TYPE_MASK_UNSIGNED_24(instruction_state.data.crm);
             break;
         case 4:
-            base = GetMax32(instruction_state.data.crm);
+            base = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         /* PRINTF("LIDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
                  instruction_state.data.linear, base, limit); */
-        _chr(_s_load_idtr(context, base, limit, _GetOperandSize));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_idtr(context, base, limit, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SMSW_RM16 */
-        _bb("SMSW_RM16");
-        _chr(_d_modrm(context, 0, ((_GetModRM_MOD(modrm) == 3) ? _GetOperandSize : 2)));
-        instruction_state.data.crm = GetMax16(cpu_state.data.cr0);
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SMSW_RM16");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, ((_GetModRM_MOD(modrm) == 3) ? _GetOperandSize : 2)));
+        instruction_state.data.crm = NTVDM64_TYPE_MASK_UNSIGNED_16(cpu_state.data.cr0);
         if (_GetOperandSize == 4 && !instruction_state.data.flagMem)
-            _chr(_m_write_rm(context, 4));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 4));
         else
-            _chr(_m_write_rm(context, 2));
-        _be;
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        _bb("ModRM_REG(5)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(5)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* LMSW_RM16 */
-        _bb("LMSW_RM16");
-        _chr(_d_modrm(context, 0, 2));
-        _chr(_m_read_rm(context, 2));
-        _chr(_s_load_cr0_msw(context, GetMax16(instruction_state.data.crm)));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LMSW_RM16");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_cr0_msw(context, NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        _bb("ModRM_REG(7)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LAR_R32_RM32(core_machine_cpu_execution_context *context) {
-    t_nubit16 selector;
-    t_nubit64 descriptor;
-    _cb("LAR_R32_RM32");
+    ntvdm64_type_unsigned_16 selector;
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LAR_R32_RM32");
     _adv;
     if (_IsProtected) {
-        _bb("Protected(1)");
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, 2));
-        selector = GetMax16(instruction_state.data.crm);
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        selector = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         if (_s_check_selector(context, selector)) {
             _ClrEFLAGS_ZF;
         } else {
-            _bb("selector(valid)");
-            _chr(_s_read_xdt(context, selector, GetRef(descriptor)));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(valid)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, selector, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
             if (_IsDescUser(descriptor)) {
                 if (_IsDescCodeConform(descriptor))
                     _SetEFLAGS_ZF;
@@ -12434,52 +12434,52 @@ static void LAR_R32_RM32(core_machine_cpu_execution_context *context) {
                 }
             }
             if (_GetEFLAGS_ZF) {
-                _bb("EFLAGS_ZF");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_ZF");
                 switch (_GetOperandSize) {
                 case 2:
-                    _bb("OperandSize(2)");
-                    descriptor = (GetMax16(descriptor >> 32) & 0xff00);
-                    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(descriptor), 2));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+                    descriptor = (NTVDM64_TYPE_MASK_UNSIGNED_16(descriptor >> 32) & 0xff00);
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(descriptor), 2));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 case 4:
-                    _bb("OperandSize(4)");
-                    descriptor = (GetMax32(descriptor >> 32) & 0x00ffff00);
-                    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(descriptor), 4));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+                    descriptor = (NTVDM64_TYPE_MASK_UNSIGNED_32(descriptor >> 32) & 0x00ffff00);
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(descriptor), 4));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("Protected(0)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected(0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LSL_R32_RM32(core_machine_cpu_execution_context *context) {
-    t_nubit16 selector;
-    t_nubit32 limit;
-    t_nubit64 descriptor;
-    _cb("LSL_R32_RM32");
+    ntvdm64_type_unsigned_16 selector;
+    ntvdm64_type_unsigned_32 limit;
+    ntvdm64_type_unsigned_64 descriptor;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LSL_R32_RM32");
     _adv;
     if (_IsProtected) {
-        _bb("Protected(1)");
-        _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-        _chr(_m_read_rm(context, 2));
-        selector = GetMax16(instruction_state.data.crm);
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+        selector = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         if (_s_check_selector(context, selector)) {
             _ClrEFLAGS_ZF;
         } else {
-            _bb("selector(valid)");
-            _chr(_s_read_xdt(context, selector, GetRef(descriptor)));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("selector(valid)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, selector, NTVDM64_TYPE_REFERENCE_OF(descriptor)));
             if (_IsDescUser(descriptor)) {
                 if (_IsDescCodeConform(descriptor))
                     _SetEFLAGS_ZF;
@@ -12503,800 +12503,800 @@ static void LSL_R32_RM32(core_machine_cpu_execution_context *context) {
                 }
             }
             if (_GetEFLAGS_ZF) {
-                _bb("EFLAGS_ZF");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_ZF");
                 limit = _IsDescSegGranularLarge(descriptor) ?
                         ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) : _GetDescSeg_Limit(descriptor);
                 switch (_GetOperandSize) {
                 case 2:
-                    _bb("OperandSize(2)");
-                    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(limit), 2));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(limit), 2));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 case 4:
-                    _bb("OperandSize(4)");
-                    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(limit), 4));
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(limit), 4));
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
-        _bb("Protected(0)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("Protected(0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CLTS(core_machine_cpu_execution_context *context) {
-    _cb("CLTS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLTS");
     _new_code_path_;
     _adv;
     if (!_GetCR0_PE) {
         _ClrCR0_TS;
     } else {
-        _bb("CR0_PE(1)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CR0_PE(1)");
         if (_GetCPL > 0)
-            _chr(_SetExcept_GP(0));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
         else
             _ClrCR0_TS;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 _______todo WBINVD(core_machine_cpu_execution_context *context) {
-    _cb("WBINVD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("WBINVD");
     UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = True;
-    _ce;
+    instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R32_CR(core_machine_cpu_execution_context *context) {
-    _cb("MOV_R32_CR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_CR");
     _adv;
     if (_GetCPL) {
-        _bb("CPL(!0)");
-        _chr(_SetExcept_GP(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_d_modrm_creg(context));
-    _chr(_m_write_ref(context, instruction_state.data.rrm, GetRef(instruction_state.data.cr), 4));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_creg(context));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rrm, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cr), 4));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R32_DR(core_machine_cpu_execution_context *context) {
-    _cb("MOV_R32_DR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_DR");
     _new_code_path_;
     _adv;
     if (_GetCPL) {
-        _bb("CPL(!0)");
-        _chr(_SetExcept_GP(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_d_modrm_dreg(context));
-    _chr(_m_write_ref(context, instruction_state.data.rrm, GetRef(instruction_state.data.cr), 4));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_dreg(context));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rrm, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cr), 4));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_CR_R32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_CR_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CR_R32");
     _adv;
     if (_GetCPL) {
-        _bb("CPL(!0)");
-        _chr(_SetExcept_GP(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_d_modrm_creg(context));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), 4));
-    /* if (instruction_state.data.rr == (t_vaddrcc)&cpu_state.data.cr0) {
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_creg(context));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 4));
+    /* if (instruction_state.data.rr == (ntvdm64_type_virtual_address)&cpu_state.data.cr0) {
         PRINTF("MOV_CR_R32: executed at L%08X, CR0=%08X\n", instruction_state.data.linear, cpu_state.data.cr0);
     }
-    if (instruction_state.data.rr == (t_vaddrcc)&cpu_state.data.cr2) {
+    if (instruction_state.data.rr == (ntvdm64_type_virtual_address)&cpu_state.data.cr2) {
         PRINTF("MOV_CR_R32: executed at L%08X, CR2=%08X\n", instruction_state.data.linear, cpu_state.data.cr2);
     }
-    if (instruction_state.data.rr == (t_vaddrcc)&cpu_state.data.cr3) {
+    if (instruction_state.data.rr == (ntvdm64_type_virtual_address)&cpu_state.data.cr3) {
         PRINTF("MOV_CR_R32: executed at L%08X, CR3=%08X\n", instruction_state.data.linear, cpu_state.data.cr3);
     } */
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_DR_R32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_DR_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DR_R32");
     _new_code_path_;
     _adv;
     if (_GetCPL) {
-        _bb("CPL(!0)");
-        _chr(_SetExcept_GP(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_d_modrm_dreg(context));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), 4));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_dreg(context));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 4));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R32_TR(core_machine_cpu_execution_context *context) {
-    _cb("MOV_R32_TR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_TR");
     _new_code_path_;
     _adv;
     if (_GetCPL) {
-        _bb("CPL(!0)");
-        _chr(_SetExcept_GP(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_d_modrm_treg(context));
-    _chr(_m_write_ref(context, instruction_state.data.rrm, GetRef(instruction_state.data.cr), 4));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_treg(context));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rrm, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.cr), 4));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_TR_R32(core_machine_cpu_execution_context *context) {
-    _cb("MOV_TR_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_TR_R32");
     _new_code_path_;
     _adv;
     if (_GetCPL) {
-        _bb("CPL(!0)");
-        _chr(_SetExcept_GP(0));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CPL(!0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_d_modrm_treg(context));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), 4));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_treg(context));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 4));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 _______todo WRMSR(core_machine_cpu_execution_context *context) {
-    _cb("WRMSR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("WRMSR");
     UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = True;
-    _ce;
+    instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 _______todo RDMSR(core_machine_cpu_execution_context *context) {
-    _cb("RDMSR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RDMSR");
     UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = True;
-    _ce;
+    instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JO_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JO_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JO_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_OF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_OF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNO_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JNO_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNO_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_OF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_OF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JC_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JC_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JC_REL32");
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_CF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_CF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNC_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JNC_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNC_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_CF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_CF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JZ_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JZ_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JZ_REL32");
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_ZF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_ZF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNZ_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JNZ_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNZ_REL32");
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_ZF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_ZF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNA_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JNA_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNA_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize,
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize,
                 (_GetEFLAGS_CF || _GetEFLAGS_ZF)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JA_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JA_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JA_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize,
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize,
                 !(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JS_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JS_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JS_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_SF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_SF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNS_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JNS_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNS_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_SF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_SF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JP_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JP_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JP_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_PF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, _GetEFLAGS_PF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNP_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JNP_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNP_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_PF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, !_GetEFLAGS_PF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JL_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JL_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JL_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, (_GetEFLAGS_SF != _GetEFLAGS_OF)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNL_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JNL_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNL_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize, (_GetEFLAGS_SF == _GetEFLAGS_OF)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNG_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JNG_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNG_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize,
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize,
                 (_GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF))));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JG_REL32(core_machine_cpu_execution_context *context) {
-    _cb("JG_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JG_REL32");
     _new_code_path_;
     _adv;
-    _chr(_d_imm(context, _GetOperandSize));
-    _chr(_e_jcc(context, GetMax32(instruction_state.data.cimm), _GetOperandSize,
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_jcc(context, NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm), _GetOperandSize,
                 (!_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF))));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETO_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETO_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETO_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, _GetEFLAGS_OF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_OF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNO_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETO_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETO_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, !_GetEFLAGS_OF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !_GetEFLAGS_OF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETC_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETC_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETC_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, _GetEFLAGS_CF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_CF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNC_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETNC_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNC_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, !_GetEFLAGS_CF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !_GetEFLAGS_CF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETZ_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETZ_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETZ_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, _GetEFLAGS_ZF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_ZF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNZ_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETNZ_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNZ_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, !_GetEFLAGS_ZF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !_GetEFLAGS_ZF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNA_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETNA_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNA_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, _GetEFLAGS_CF || _GetEFLAGS_ZF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_CF || _GetEFLAGS_ZF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETA_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETA_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETA_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, !(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !(_GetEFLAGS_CF || _GetEFLAGS_ZF)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETS_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETS_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETS_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, _GetEFLAGS_SF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_SF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNS_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETNS_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNS_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, !_GetEFLAGS_SF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !_GetEFLAGS_SF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETP_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETP_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETP_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, _GetEFLAGS_PF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_PF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNP_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETNP_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNP_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, !_GetEFLAGS_PF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !_GetEFLAGS_PF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETL_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETL_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETL_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, _GetEFLAGS_SF != _GetEFLAGS_OF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_SF != _GetEFLAGS_OF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNL_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETNL_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNL_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, _GetEFLAGS_SF == _GetEFLAGS_OF));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_SF == _GetEFLAGS_OF));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNG_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETNG_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNG_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, _GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, _GetEFLAGS_ZF || (_GetEFLAGS_SF != _GetEFLAGS_OF)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETG_RM8(core_machine_cpu_execution_context *context) {
-    _cb("SETG_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETG_RM8");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, 0, 1));
-    _chr(_m_setcc_rm(context, !_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_setcc_rm(context, !_GetEFLAGS_ZF && (_GetEFLAGS_SF == _GetEFLAGS_OF)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_FS(core_machine_cpu_execution_context *context) {
-    t_nubit32 xs_sel;
-    _cb("PUSH_FS");
+    ntvdm64_type_unsigned_32 xs_sel;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_FS");
     _adv;
     xs_sel = cpu_state.data.fs.selector;
-    _chr(_e_push(context, GetRef(xs_sel), _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_FS(core_machine_cpu_execution_context *context) {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
-    t_nubit32 xs_sel;
-    _cb("POP_FS");
+    ntvdm64_type_unsigned_32 xs_sel;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_FS");
     _adv;
-    _chr(_e_pop(context, GetRef(xs_sel), _GetOperandSize));
-    _chr(_s_load_fs(context, GetMax16(xs_sel)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_fs(context, NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 _______todo CPUID(core_machine_cpu_execution_context *context) {
-    _cb("CPUID");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CPUID");
     UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = True;
-    _ce;
+    instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BT_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("BT_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BT_RM32_R32");
     _adv;
-    _chr(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 0));
-    _chr(_m_read_rm(context, _GetOperandSize));
-    _chr(_a_bt(context, (t_nubit32)instruction_state.data.crm, (t_nubit32)instruction_state.data.cimm, _GetOperandSize * 8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 0));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_bt(context, (ntvdm64_type_unsigned_32)instruction_state.data.crm, (ntvdm64_type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHLD_RM32_R32_I8(core_machine_cpu_execution_context *context) {
-    _cb("SHLD_RM32_R32_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_I8");
     _adv;
-    _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    _chr(_m_read_rm(context, _GetOperandSize));
-    _chr(_d_imm(context, 1));
-    _chr(_a_shld(context, instruction_state.data.crm, instruction_state.data.cr, GetMax8(instruction_state.data.cimm), _GetOperandSize * 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shld(context, instruction_state.data.crm, instruction_state.data.cr, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHLD_RM32_R32_CL(core_machine_cpu_execution_context *context) {
-    _cb("SHLD_RM32_R32_CL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_CL");
     _adv;
-    _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    _chr(_m_read_rm(context, _GetOperandSize));
-    _chr(_a_shld(context, instruction_state.data.crm, instruction_state.data.cr, cpu_state.data.cl, _GetOperandSize * 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shld(context, instruction_state.data.crm, instruction_state.data.cr, cpu_state.data.cl, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_GS(core_machine_cpu_execution_context *context) {
-    t_nubit32 xs_sel;
-    _cb("PUSH_GS");
+    ntvdm64_type_unsigned_32 xs_sel;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_GS");
     _adv;
     xs_sel = cpu_state.data.gs.selector;
-    _chr(_e_push(context, GetRef(xs_sel), _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_push(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_GS(core_machine_cpu_execution_context *context) {
     /* note: not sure if operand size is 32,
         push/pop selector only or with higher 16 bit */
-    t_nubit32 xs_sel;
-    _cb("POP_GS");
+    ntvdm64_type_unsigned_32 xs_sel;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_GS");
     _adv;
-    _chr(_e_pop(context, GetRef(xs_sel), _GetOperandSize));
-    _chr(_s_load_gs(context, GetMax16(xs_sel)));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_pop(context, NTVDM64_TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_gs(context, NTVDM64_TYPE_MASK_UNSIGNED_16(xs_sel)));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 _______todo RSM(core_machine_cpu_execution_context *context) {
-    _cb("RSM");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RSM");
     UndefinedOpcode(context);
-    instruction_state.data.flagIgnore = True;
-    _ce;
+    instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BTS_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("BTS_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTS_RM32_R32");
     _adv;
-    _chr(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
-    _chr(_m_read_rm(context, _GetOperandSize));
-    _chr(_a_bts(context, (t_nubit32)instruction_state.data.crm, (t_nubit32)instruction_state.data.cimm, _GetOperandSize * 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_bts(context, (ntvdm64_type_unsigned_32)instruction_state.data.crm, (ntvdm64_type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHRD_RM32_R32_I8(core_machine_cpu_execution_context *context) {
-    _cb("SHRD_RM32_R32_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_I8");
     _adv;
-    _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    _chr(_m_read_rm(context, _GetOperandSize));
-    _chr(_d_imm(context, 1));
-    _chr(_a_shrd(context, instruction_state.data.crm, instruction_state.data.cr, GetMax8(instruction_state.data.cimm), _GetOperandSize * 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shrd(context, instruction_state.data.crm, instruction_state.data.cr, NTVDM64_TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHRD_RM32_R32_CL(core_machine_cpu_execution_context *context) {
-    _cb("SHRD_RM32_R32_CL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_CL");
     _adv;
-    _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    _chr(_m_read_rm(context, _GetOperandSize));
-    _chr(_a_shrd(context, instruction_state.data.crm, instruction_state.data.cr, cpu_state.data.cl, _GetOperandSize * 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_shrd(context, instruction_state.data.crm, instruction_state.data.cr, cpu_state.data.cl, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IMUL_R32_RM32(core_machine_cpu_execution_context *context) {
-    _cb("IMUL_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32");
     _adv;
-    _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    _chr(_m_read_rm(context, _GetOperandSize));
-    _chr(_a_imul2(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_imul2(context, instruction_state.data.cr, instruction_state.data.crm, _GetOperandSize * 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LSS_R32_M16_32(core_machine_cpu_execution_context *context) {
-    t_nubit16 selector;
-    t_nubit32 offset;
-    _cb("LSS_R32_M16_32");
+    ntvdm64_type_unsigned_16 selector;
+    ntvdm64_type_unsigned_32 offset;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LSS_R32_M16_32");
     _adv;
-    _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
     if (!instruction_state.data.flagMem) {
-        _bb("flagMem(0)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        offset = GetMax16(instruction_state.data.crm);
+        offset = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         break;
     case 4:
-        offset = GetMax32(instruction_state.data.crm);
+        offset = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     instruction_state.data.mrm.offset += _GetOperandSize;
-    _chr(_m_read_rm(context, 2));
-    selector = GetMax16(instruction_state.data.crm);
-    _chr(_e_load_far(context, &cpu_state.data.ss, instruction_state.data.rr, selector, offset, _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+    selector = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_load_far(context, &cpu_state.data.ss, instruction_state.data.rr, selector, offset, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BTR_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("BTR_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTR_RM32_R32");
     _adv;
-    _chr(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
-    _chr(_m_read_rm(context, _GetOperandSize));
-    _chr(_a_btr(context, (t_nubit32)instruction_state.data.crm, (t_nubit32)instruction_state.data.cimm, _GetOperandSize * 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_btr(context, (ntvdm64_type_unsigned_32)instruction_state.data.crm, (ntvdm64_type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LFS_R32_M16_32(core_machine_cpu_execution_context *context) {
-    t_nubit16 selector;
-    t_nubit32 offset;
-    _cb("LFS_R32_M16_32");
+    ntvdm64_type_unsigned_16 selector;
+    ntvdm64_type_unsigned_32 offset;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LFS_R32_M16_32");
     _adv;
-    _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
     if (!instruction_state.data.flagMem) {
-        _bb("flagMem(0)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        offset = GetMax16(instruction_state.data.crm);
+        offset = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         break;
     case 4:
-        offset = GetMax32(instruction_state.data.crm);
+        offset = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     instruction_state.data.mrm.offset += _GetOperandSize;
-    _chr(_m_read_rm(context, 2));
-    selector = GetMax16(instruction_state.data.crm);
-    _chr(_e_load_far(context, &cpu_state.data.fs, instruction_state.data.rr, selector, offset, _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+    selector = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_load_far(context, &cpu_state.data.fs, instruction_state.data.rr, selector, offset, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LGS_R32_M16_32(core_machine_cpu_execution_context *context) {
-    t_nubit16 selector;
-    t_nubit32 offset;
-    _cb("LGS_R32_M16_32");
+    ntvdm64_type_unsigned_16 selector;
+    ntvdm64_type_unsigned_32 offset;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LGS_R32_M16_32");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
     if (!instruction_state.data.flagMem) {
-        _bb("flagMem(0)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _chr(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
-        offset = GetMax16(instruction_state.data.crm);
+        offset = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         break;
     case 4:
-        offset = GetMax32(instruction_state.data.crm);
+        offset = NTVDM64_TYPE_MASK_UNSIGNED_32(instruction_state.data.crm);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     instruction_state.data.mrm.offset += _GetOperandSize;
-    _chr(_m_read_rm(context, 2));
-    selector = GetMax16(instruction_state.data.crm);
-    _chr(_e_load_far(context, &cpu_state.data.gs, instruction_state.data.rr, selector, offset, _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+    selector = NTVDM64_TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_e_load_far(context, &cpu_state.data.gs, instruction_state.data.rr, selector, offset, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVZX_R32_RM8(core_machine_cpu_execution_context *context) {
-    _cb("MOVZX_R32_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM8");
     _adv;
-    _chr(_d_modrm(context, _GetOperandSize, 1));
-    _chr(_m_read_rm(context, 1));
-    instruction_state.data.crm = (t_nubit8)instruction_state.data.crm;
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    instruction_state.data.crm = (ntvdm64_type_unsigned_8)instruction_state.data.crm;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVZX_R32_RM16(core_machine_cpu_execution_context *context) {
-    _cb("MOVZX_R32_RM16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM16");
     _adv;
-    _chr(_d_modrm(context, 4, 2));
-    _chr(_m_read_rm(context, 2));
-    instruction_state.data.crm = (t_nubit16)instruction_state.data.crm;
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), 4));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 4, 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+    instruction_state.data.crm = (ntvdm64_type_unsigned_16)instruction_state.data.crm;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 4));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_0F_BA(core_machine_cpu_execution_context *context) {
-    t_bool write = 0;
-    t_nubit8 modrm = 0x00;
-    _cb("INS_0F_BA");
+    ntvdm64_type_bool write = 0;
+    ntvdm64_type_unsigned_8 modrm = 0x00;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_BA");
     _new_code_path_;
     _adv;
-    _chr(_s_read_cs(context, cpu_state.data.eip, GetRef(modrm), 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip, NTVDM64_TYPE_REFERENCE_OF(modrm), 1));
     if (_GetModRM_REG(modrm) == 4) write = 0;
     else write = 1;
-    _chr(_d_bit_rmimm(context, 0, _GetOperandSize, write));
-    _chr(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_bit_rmimm(context, 0, _GetOperandSize, write));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     switch (instruction_state.data.cr) {
     case 0:
-        _bb("instruction_state.data.cr(0)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1:
-        _bb("instruction_state.data.cr(1)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("instruction_state.data.cr(2)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        _bb("instruction_state.data.cr(3)");
-        _chr(UndefinedOpcode(context));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("instruction_state.data.cr(3)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* BT_RM32_I8 */
-        _bb("BT_RM32_I8");
-        _chr(_a_bt(context, (t_nubit32)instruction_state.data.crm, (t_nubit32)instruction_state.data.cimm, _GetOperandSize * 8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("BT_RM32_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_bt(context, (ntvdm64_type_unsigned_32)instruction_state.data.crm, (ntvdm64_type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* BTS_RM32_I8 */
-        _bb("BTS_RM32_I8");
-        _chr(_a_bts(context, (t_nubit32)instruction_state.data.crm, (t_nubit32)instruction_state.data.cimm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("BTS_RM32_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_bts(context, (ntvdm64_type_unsigned_32)instruction_state.data.crm, (ntvdm64_type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* BTR_RM32_I8 */
-        _bb("BTR_RM32_I8");
-        _chr(_a_btr(context, (t_nubit32)instruction_state.data.crm, (t_nubit32)instruction_state.data.cimm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("BTR_RM32_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_btr(context, (ntvdm64_type_unsigned_32)instruction_state.data.crm, (ntvdm64_type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* BTC_RM32_I8 */
-        _bb("BTC_RM32_I8");
-        _chr(_a_btc(context, (t_nubit32)instruction_state.data.crm, (t_nubit32)instruction_state.data.cimm, _GetOperandSize * 8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("BTC_RM32_I8");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_btc(context, (ntvdm64_type_unsigned_32)instruction_state.data.crm, (ntvdm64_type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
         instruction_state.data.crm = instruction_state.data.result;
-        _chr(_m_write_rm(context, _GetOperandSize));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BTC_RM32_R32(core_machine_cpu_execution_context *context) {
-    _cb("BTC_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTC_RM32_R32");
     _new_code_path_;
     _adv;
-    _chr(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
-    _chr(_m_read_rm(context, _GetOperandSize));
-    _chr(_a_btc(context, (t_nubit32)instruction_state.data.crm, (t_nubit32)instruction_state.data.cimm, _GetOperandSize * 8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_bit_rmimm(context, _GetOperandSize, _GetOperandSize, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_btc(context, (ntvdm64_type_unsigned_32)instruction_state.data.crm, (ntvdm64_type_unsigned_32)instruction_state.data.cimm, _GetOperandSize * 8));
     instruction_state.data.crm = instruction_state.data.result;
-    _chr(_m_write_rm(context, _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BSF_R32_RM32(core_machine_cpu_execution_context *context) {
-    _cb("BSF_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BSF_R32_RM32");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    _chr(_m_read_rm(context, _GetOperandSize));
-    _chr(_a_bscc(context, instruction_state.data.crm, _GetOperandSize * 8, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_bscc(context, instruction_state.data.crm, _GetOperandSize * 8, 1));
     if (!_GetEFLAGS_ZF) {
-        _bb("EFLAGS_ZF(0)");
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), _GetOperandSize));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_ZF(0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BSR_R32_RM32(core_machine_cpu_execution_context *context) {
-    _cb("BSR_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BSR_R32_RM32");
     _new_code_path_;
     _adv;
-    _chr(_d_modrm(context, _GetOperandSize, _GetOperandSize));
-    _chr(_m_read_rm(context, _GetOperandSize));
-    _chr(_a_bscc(context, instruction_state.data.crm, _GetOperandSize * 8, 0));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_a_bscc(context, instruction_state.data.crm, _GetOperandSize * 8, 0));
     if (!_GetEFLAGS_ZF) {
-        _bb("EFLAGS_ZF(0)");
-        _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.result), _GetOperandSize));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("EFLAGS_ZF(0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.result), _GetOperandSize));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSX_R32_RM8(core_machine_cpu_execution_context *context) {
-    _cb("MOVSX_R32_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM8");
     _adv;
-    _chr(_d_modrm(context, _GetOperandSize, 1));
-    _chr(_m_read_rm(context, 1));
-    instruction_state.data.crm = (t_nsbit8)instruction_state.data.crm;
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), _GetOperandSize));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
+    instruction_state.data.crm = (ntvdm64_type_signed_8)instruction_state.data.crm;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSX_R32_RM16(core_machine_cpu_execution_context *context) {
-    _cb("MOVSX_R32_RM16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM16");
     _adv;
-    _chr(_d_modrm(context, 4, 2));
-    _chr(_m_read_rm(context, 2));
-    instruction_state.data.crm = (t_nsbit16)instruction_state.data.crm;
-    _chr(_m_write_ref(context, instruction_state.data.rr, GetRef(instruction_state.data.crm), 4));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 4, 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+    instruction_state.data.crm = (ntvdm64_type_signed_16)instruction_state.data.crm;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 4));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 static void ExecInit(core_machine_cpu_execution_context *context) {
-    instruction_state.data.flagIgnore = False;
+    instruction_state.data.flagIgnore = NTVDM64_TYPE_FALSE;
     instruction_state.data.msize = 0;
     instruction_state.data.reccs = cpu_state.data.cs.selector;
     instruction_state.data.receip = cpu_state.data.eip;
     instruction_state.data.linear = cpu_state.data.cs.base + cpu_state.data.eip;
     if (core_machine_cpu_execution_read_linear(context,
         instruction_state.data.linear,
-        (t_vaddrcc) instruction_state.data.opcodes, 15)) {
+        (ntvdm64_type_virtual_address) instruction_state.data.opcodes, 15)) {
         instruction_state.data.oplen = 0;
     } else {
         instruction_state.data.oplen = 15;
     }
 
-    instruction_state.data.flagLock = False;
+    instruction_state.data.flagLock = NTVDM64_TYPE_FALSE;
     instruction_state.data.oldcpu = cpu_state;
     instruction_state.data.roverds = &cpu_state.data.ds;
     instruction_state.data.roverss = &cpu_state.data.ss;
     instruction_state.data.prefix_rep = PREFIX_REP_NONE;
-    instruction_state.data.prefix_oprsize = False;
-    instruction_state.data.prefix_addrsize = False;
-    instruction_state.data.flagMem = False;
-    instruction_state.data.flagInsLoop = False;
-    instruction_state.data.flagMaskInt = False;
+    instruction_state.data.prefix_oprsize = NTVDM64_TYPE_FALSE;
+    instruction_state.data.prefix_addrsize = NTVDM64_TYPE_FALSE;
+    instruction_state.data.flagMem = NTVDM64_TYPE_FALSE;
+    instruction_state.data.flagInsLoop = NTVDM64_TYPE_FALSE;
+    instruction_state.data.flagMaskInt = NTVDM64_TYPE_FALSE;
     instruction_state.data.bit = 0;
     instruction_state.data.opr1 = 0;
     instruction_state.data.opr2 = 0;
     instruction_state.data.result = 0;
-    instruction_state.data.udf = Zero32;
+    instruction_state.data.udf = NTVDM64_TYPE_ZERO_32;
     instruction_state.data.mrm.rsreg = NULL;
-    instruction_state.data.mrm.offset = Zero32;
-    instruction_state.data.except = Zero32;
-    instruction_state.data.excode = Zero32;
+    instruction_state.data.mrm.offset = NTVDM64_TYPE_ZERO_32;
+    instruction_state.data.except = NTVDM64_TYPE_ZERO_32;
+    instruction_state.data.excode = NTVDM64_TYPE_ZERO_32;
 #if VCPUINS_TRACE == 1
     if (context->trace != NULL) ntvdm64_type_trace_initialize(context->trace);
 #endif
@@ -13314,24 +13314,24 @@ static void ExecFinal(core_machine_cpu_execution_context *context) {
 #endif
     if (instruction_state.data.except) {
         cpu_state = instruction_state.data.oldcpu;
-        if (GetBit(instruction_state.data.except, VCPUINS_EXCEPT_GP)) {
+        if (NTVDM64_TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP)) {
             ExecInit(context);
-            ClrBit(instruction_state.data.except, VCPUINS_EXCEPT_GP);
+            NTVDM64_TYPE_CLEAR_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP);
             _e_except_n(context, 0x0d, _GetOperandSize);
         }
         core_machine_cpu_execution_request_stop(context);
     }
 }
 static void ExecIns(core_machine_cpu_execution_context *context) {
-    t_nubit8 opcode = 0;
+    ntvdm64_type_unsigned_8 opcode = 0;
     ExecInit(context);
     do {
-        _cb("ExecIns");
-        _chb(_s_read_cs(context, cpu_state.data.eip, GetRef(opcode), 1));
-        _chb(ExecCpuInstruction(instruction_state.connect.insTable[opcode]));
-        _chb(_s_test_eip(context));
-        _chb(_s_test_esp(context));
-        _ce;
+        NTVDM64_TYPE_TRACE_CALL_BEGIN("ExecIns");
+        NTVDM64_TYPE_TRACE_CHECK_BREAK(_s_read_cs(context, cpu_state.data.eip, NTVDM64_TYPE_REFERENCE_OF(opcode), 1));
+        NTVDM64_TYPE_TRACE_CHECK_BREAK(ExecCpuInstruction(instruction_state.connect.insTable[opcode]));
+        NTVDM64_TYPE_TRACE_CHECK_BREAK(_s_test_eip(context));
+        NTVDM64_TYPE_TRACE_CHECK_BREAK(_s_test_esp(context));
+        NTVDM64_TYPE_TRACE_CALL_END;
     } while (_kdf_check_prefix(context, opcode));
     if (instruction_state.data.flagWE && instruction_state.data.weLinear == instruction_state.data.linear) {
         PRINTF("Watch point caught at L%08x: EXECUTED\n", instruction_state.data.linear);
@@ -13341,29 +13341,29 @@ static void ExecIns(core_machine_cpu_execution_context *context) {
     ExecFinal(context);
 }
 static void ExecInt(core_machine_cpu_execution_context *context) {
-    t_nubit8 intr = 0x00;
+    ntvdm64_type_unsigned_8 intr = 0x00;
     /* hardware interrupt handler */
     if (instruction_state.data.flagMaskInt)
         return;
     if (!cpu_state.data.flagMaskNMI && cpu_state.data.flagNMI) {
-        cpu_state.data.flagHalt = False;
-        cpu_state.data.flagNMI = False;
+        cpu_state.data.flagHalt = NTVDM64_TYPE_FALSE;
+        cpu_state.data.flagNMI = NTVDM64_TYPE_FALSE;
         ExecInit(context);
         _e_intr_n(context, 0x02, _GetOperandSize);
         ExecFinal(context);
     }
     if (_GetEFLAGS_IF && core_machine_pic_scan_interrupt(
             context->pic_master, context->pic_slave)) {
-        cpu_state.data.flagHalt = False;
+        cpu_state.data.flagHalt = NTVDM64_TYPE_FALSE;
         intr = core_machine_pic_get_interrupt(context->pic_master,
             context->pic_slave);
         ExecInit(context);
         _e_intr_n(context, intr, _GetOperandSize);
         ExecFinal(context);
-        instruction_state.data.flagIgnore = True;
+        instruction_state.data.flagIgnore = NTVDM64_TYPE_TRUE;
     }
     if (_GetEFLAGS_TF) {
-        cpu_state.data.flagHalt = False;
+        cpu_state.data.flagHalt = NTVDM64_TYPE_FALSE;
         ExecInit(context);
         _e_intr_n(context, 0x01, _GetOperandSize);
         ExecFinal(context);
@@ -13371,33 +13371,33 @@ static void ExecInt(core_machine_cpu_execution_context *context) {
 }
 
 /* external interface */
-t_bool core_machine_cpu_execution_load_segment(
+ntvdm64_type_bool core_machine_cpu_execution_load_segment(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
-    t_nubit16 selector) {
-    t_bool fail;
-    t_nubit32 oldexcept = instruction_state.data.except;
+    ntvdm64_type_unsigned_16 selector) {
+    ntvdm64_type_bool fail;
+    ntvdm64_type_unsigned_32 oldexcept = instruction_state.data.except;
     instruction_state.data.except = 0;
     _ksa_load_sreg(context, rsreg, selector);
     fail = !!instruction_state.data.except;
     instruction_state.data.except = oldexcept;
     return fail;
 }
-t_bool core_machine_cpu_execution_read_linear(
-    core_machine_cpu_execution_context *context, t_nubit32 linear,
-    t_vaddrcc rdata, t_nubit8 byte) {
-    t_bool fail;
-    t_nubit32 oldexcept = instruction_state.data.except;
+ntvdm64_type_bool core_machine_cpu_execution_read_linear(
+    core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear,
+    ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_bool fail;
+    ntvdm64_type_unsigned_32 oldexcept = instruction_state.data.except;
     instruction_state.data.except = 0;
     _kma_read_linear(context, linear, rdata, byte, 0x00, 1);
     fail = !!instruction_state.data.except;
     instruction_state.data.except = oldexcept;
     return fail;
 }
-t_bool core_machine_cpu_execution_write_linear(
-    core_machine_cpu_execution_context *context, t_nubit32 linear,
-    t_vaddrcc rdata, t_nubit8 byte) {
-    t_bool fail;
-    t_nubit32 oldexcept = instruction_state.data.except;
+ntvdm64_type_bool core_machine_cpu_execution_write_linear(
+    core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear,
+    ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
+    ntvdm64_type_bool fail;
+    ntvdm64_type_unsigned_32 oldexcept = instruction_state.data.except;
     instruction_state.data.except = 0;
     _kma_write_linear(context, linear, rdata, byte, 0x00, 1);
     fail = !!instruction_state.data.except;
@@ -13924,7 +13924,7 @@ void core_machine_cpu_execution_initialize(
 }
 void core_machine_cpu_execution_reset(
     core_machine_cpu_execution_context *context) {
-    MEMSET((void *)(&instruction_state.data), Zero8, sizeof(t_cpuins_data));
+    MEMSET((void *)(&instruction_state.data), NTVDM64_TYPE_ZERO_8, sizeof(t_cpuins_data));
 }
 void core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context) {

@@ -20,9 +20,9 @@ int main(void)
     reset_vector[1] = invalid_instruction[1];
     vm_composition_control_start(session.control);
 
-    failed |= vm_composition_control_is_running(session.control) != False;
+    failed |= vm_composition_control_is_running(session.control) != NTVDM64_TYPE_FALSE;
     failed |= core_machine_cpu_execution_consume_stop_request(
-        session.cpu_execution) != False;
+        session.cpu_execution) != NTVDM64_TYPE_FALSE;
     vm_composition_control_finalize(session.control, &session);
     vm_composition_live_machine_finalize(&session);
 

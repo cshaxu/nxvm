@@ -22,21 +22,21 @@ typedef void (*core_machine_pit_output_provider)(void *owner);
 
 typedef struct {
     /* control words[0-2] for counter 0-2, and cw[3] is read-back command */
-    t_nubit8 cw[4];
+    ntvdm64_type_unsigned_8 cw[4];
 
-    t_nubit16 init[3];  /* initial counts */
-    t_nubit16 count[3]; /* counter[0-2] */
-    t_nubit16 latch[3]; /* latch counts */
+    ntvdm64_type_unsigned_16 init[3];  /* initial counts */
+    ntvdm64_type_unsigned_16 count[3]; /* counter[0-2] */
+    ntvdm64_type_unsigned_16 latch[3]; /* latch counts */
 
-    t_bool flagReady[3]; /* flag of ready */
-    t_bool flagLatch[3]; /* flag of latch status */
+    ntvdm64_type_bool flagReady[3]; /* flag of ready */
+    ntvdm64_type_bool flagLatch[3]; /* flag of latch status */
 
     t_pit_data_status_rw flagRead[3];  /* flag of low byte read */
     t_pit_data_status_rw flagWrite[3]; /* flag of low byte write */
 } t_pit_data;
 
 typedef struct {
-    t_bool flagGate[3];  /* enable or disable counter */
+    ntvdm64_type_bool flagGate[3];  /* enable or disable counter */
     core_machine_pit_output_provider output[3];
     void *output_owner[3];
 } t_pit_connect;
@@ -82,7 +82,7 @@ void core_machine_pit_initialize(t_pit *pit, t_port *port);
 void core_machine_pit_reset(t_pit *pit);
 void core_machine_pit_refresh(t_pit *pit);
 void core_machine_pit_finalize(t_pit *pit);
-void core_machine_pit_set_output(t_pit *pit, t_nubit8 id,
+void core_machine_pit_set_output(t_pit *pit, ntvdm64_type_unsigned_8 id,
     core_machine_pit_output_provider provider, void *owner);
 
 #define VPIT_POST "                                 \

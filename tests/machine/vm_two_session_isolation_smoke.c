@@ -37,21 +37,21 @@ int main(void)
     failed |= second->cpu_execution->instructions != second->cpuins;
 
     core_machine_memory_write_physical(first->ram, 0u,
-        (t_vaddrcc)&first_value, 1u);
+        (ntvdm64_type_virtual_address)&first_value, 1u);
     core_machine_memory_write_physical(second->ram, 0u,
-        (t_vaddrcc)&second_value, 1u);
+        (ntvdm64_type_virtual_address)&second_value, 1u);
     core_machine_memory_read_physical(first->ram, 0u,
-        (t_vaddrcc)&observed, 1u);
+        (ntvdm64_type_virtual_address)&observed, 1u);
     failed |= observed != first_value;
     core_machine_memory_read_physical(second->ram, 0u,
-        (t_vaddrcc)&observed, 1u);
+        (ntvdm64_type_virtual_address)&observed, 1u);
     failed |= observed != second_value;
 
     first->cpu->data.eax = 0x11111111u;
     second->cpu->data.eax = 0x22222222u;
-    first->cpuins->data.flagWR = True;
+    first->cpuins->data.flagWR = NTVDM64_TYPE_TRUE;
     failed |= second->cpu->data.eax != 0x22222222u;
-    failed |= second->cpuins->data.flagWR != False;
+    failed |= second->cpuins->data.flagWR != NTVDM64_TYPE_FALSE;
 
     core_machine_memory_finalize(second->ram);
     core_machine_memory_finalize(first->ram);

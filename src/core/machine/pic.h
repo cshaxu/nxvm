@@ -16,12 +16,12 @@ typedef enum {ICW1, ICW2, ICW3, ICW4, OCW1} t_pic_init_status;
 
 #define ocw1 imr
 typedef struct {
-    t_nubit8 irr;  /* Interrupt Request Register */
-    t_nubit8 imr;  /* Interrupt Mask Register */
-    t_nubit8 isr;  /* In Service Register */
-    t_nubit8 icw1, icw2, icw3, icw4, ocw2, ocw3; /* command words */
+    ntvdm64_type_unsigned_8 irr;  /* Interrupt Request Register */
+    ntvdm64_type_unsigned_8 imr;  /* Interrupt Mask Register */
+    ntvdm64_type_unsigned_8 isr;  /* In Service Register */
+    ntvdm64_type_unsigned_8 icw1, icw2, icw3, icw4, ocw2, ocw3; /* command words */
     t_pic_init_status status; /* initialization status */
-    t_nubit8 irx; /* id of current top potential ir */
+    ntvdm64_type_unsigned_8 irx; /* id of current top potential ir */
 } t_pic_data;
 
 typedef struct t_pic {
@@ -109,10 +109,10 @@ void core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port);
 void core_machine_pic_reset(t_pic *master, t_pic *slave);
 void core_machine_pic_refresh(t_pic *master, t_pic *slave);
 void core_machine_pic_finalize(t_pic *master, t_pic *slave);
-void core_machine_pic_set_irq(t_pic *master, t_pic *slave, t_nubit8 irq_id);
+void core_machine_pic_set_irq(t_pic *master, t_pic *slave, ntvdm64_type_unsigned_8 irq_id);
 void core_machine_pic_timer_output(void *owner);
-t_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
-t_nubit8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
+ntvdm64_type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
+ntvdm64_type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
 
 #define VPIC_POST "           \
 ; init pic master           \n\

@@ -7,13 +7,13 @@
 void core_machine_vadp_initialize(t_vadp *adapter)
 {
     if (adapter == NULL) return;
-    MEMSET((void *)adapter, Zero8, sizeof(*adapter));
+    MEMSET((void *)adapter, NTVDM64_TYPE_ZERO_8, sizeof(*adapter));
 }
 
 void core_machine_vadp_reset(t_vadp *adapter)
 {
     if (adapter == NULL) return;
-    MEMSET((void *)&adapter->data, Zero8, sizeof(adapter->data));
+    MEMSET((void *)&adapter->data, NTVDM64_TYPE_ZERO_8, sizeof(adapter->data));
 }
 
 void core_machine_vadp_refresh(t_vadp *adapter)

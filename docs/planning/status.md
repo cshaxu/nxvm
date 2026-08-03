@@ -120,6 +120,9 @@ legacy APIs now use their actual source-owner prefixes.
 **M5 T106 complete:** the implemented VDM composition skeleton now uses
 `vdm_composition_*` names without adding a VDM runtime path.
 
+**M5 T107 complete:** root `type.*` aliases and non-retained macros use
+`ntvdm64_type_*` / `NTVDM64_TYPE_*`; module-owned structs remain separate.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

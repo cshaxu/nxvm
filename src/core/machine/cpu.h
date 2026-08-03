@@ -32,11 +32,11 @@ typedef struct core_machine_cpu_execution_context
 
 void core_machine_cpu_execution_request_stop(
     core_machine_cpu_execution_context *context);
-t_bool core_machine_cpu_execution_consume_stop_request(
+ntvdm64_type_bool core_machine_cpu_execution_consume_stop_request(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_request_reset(
     core_machine_cpu_execution_context *context);
-t_bool core_machine_cpu_execution_consume_reset_request(
+ntvdm64_type_bool core_machine_cpu_execution_consume_reset_request(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_state_initialize(
     core_machine_cpu_execution_context *context);
@@ -59,32 +59,32 @@ typedef enum {
 } t_cpu_data_sreg_type;
 
 typedef struct {
-    t_bool flagValid;
-    t_nubit16 selector;
+    ntvdm64_type_bool flagValid;
+    ntvdm64_type_unsigned_16 selector;
     /* invisible portion/descriptor part */
     t_cpu_data_sreg_type sregtype;
-    t_nubit32 base;
-    t_nubit32 limit;
-    t_nubit4  dpl; /* if segment is cs, this is cpl */
+    ntvdm64_type_unsigned_32 base;
+    ntvdm64_type_unsigned_32 limit;
+    ntvdm64_type_unsigned_4  dpl; /* if segment is cs, this is cpl */
     union {
         struct {
-            t_bool executable;
-            t_bool accessed;
+            ntvdm64_type_bool executable;
+            ntvdm64_type_bool accessed;
             union {
                 struct {
-                    t_bool defsize; /* 16-bit (0) or 32-bit (1) */
-                    t_bool conform;
-                    t_bool readable;
+                    ntvdm64_type_bool defsize; /* 16-bit (0) or 32-bit (1) */
+                    ntvdm64_type_bool conform;
+                    ntvdm64_type_bool readable;
                 } exec;
                 struct {
-                    t_bool big;
-                    t_bool expdown;
-                    t_bool writable;
+                    ntvdm64_type_bool big;
+                    ntvdm64_type_bool expdown;
+                    ntvdm64_type_bool writable;
                 } data;
             };
         } seg;
         struct {
-            t_nubit4 type;
+            ntvdm64_type_unsigned_4 type;
         } sys;
     };
 } t_cpu_data_sreg;
@@ -94,72 +94,72 @@ typedef struct {
     union {
         union {
             struct {
-                t_nubit8 al,ah;
+                ntvdm64_type_unsigned_8 al,ah;
             };
-            t_nubit16 ax;
+            ntvdm64_type_unsigned_16 ax;
         };
-        t_nubit32 eax;
+        ntvdm64_type_unsigned_32 eax;
     };
     union {
         union {
             struct {
-                t_nubit8 bl,bh;
+                ntvdm64_type_unsigned_8 bl,bh;
             };
-            t_nubit16 bx;
+            ntvdm64_type_unsigned_16 bx;
         };
-        t_nubit32 ebx;
+        ntvdm64_type_unsigned_32 ebx;
     };
     union {
         union {
             struct {
-                t_nubit8 cl,ch;
+                ntvdm64_type_unsigned_8 cl,ch;
             };
-            t_nubit16 cx;
+            ntvdm64_type_unsigned_16 cx;
         };
-        t_nubit32 ecx;
+        ntvdm64_type_unsigned_32 ecx;
     };
     union {
         union {
             struct {
-                t_nubit8 dl,dh;
+                ntvdm64_type_unsigned_8 dl,dh;
             };
-            t_nubit16 dx;
+            ntvdm64_type_unsigned_16 dx;
         };
-        t_nubit32 edx;
+        ntvdm64_type_unsigned_32 edx;
     };
     union {
-        t_nubit16 sp;
-        t_nubit32 esp;
+        ntvdm64_type_unsigned_16 sp;
+        ntvdm64_type_unsigned_32 esp;
     };
     union {
-        t_nubit16 bp;
-        t_nubit32 ebp;
+        ntvdm64_type_unsigned_16 bp;
+        ntvdm64_type_unsigned_32 ebp;
     };
     union {
-        t_nubit16 si;
-        t_nubit32 esi;
+        ntvdm64_type_unsigned_16 si;
+        ntvdm64_type_unsigned_32 esi;
     };
     union {
-        t_nubit16 di;
-        t_nubit32 edi;
+        ntvdm64_type_unsigned_16 di;
+        ntvdm64_type_unsigned_32 edi;
     };
     union {
-        t_nubit16 ip;
-        t_nubit32 eip;
+        ntvdm64_type_unsigned_16 ip;
+        ntvdm64_type_unsigned_32 eip;
     };
     union {
-        t_nubit16 flags;
-        t_nubit32 eflags;
+        ntvdm64_type_unsigned_16 flags;
+        ntvdm64_type_unsigned_32 eflags;
     };
     /* segment registers */
     t_cpu_data_sreg es, cs, ss, ds, fs, gs;
     t_cpu_data_sreg ldtr, tr, gdtr, idtr;
     /* control registers */
-    t_nubit32 cr0, cr1, cr2, cr3, cr4, cr5, cr6, cr7;
-    t_nubit32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
-    t_nubit32 tr0, tr1, tr2, tr3, tr4, tr5, tr6, tr7;
+    ntvdm64_type_unsigned_32 cr0, cr1, cr2, cr3, cr4, cr5, cr6, cr7;
+    ntvdm64_type_unsigned_32 dr0, dr1, dr2, dr3, dr4, dr5, dr6, dr7;
+    ntvdm64_type_unsigned_32 tr0, tr1, tr2, tr3, tr4, tr5, tr6, tr7;
     /* control flags */
-    t_bool flagMaskNMI, flagNMI, flagHalt;
+    ntvdm64_type_bool flagMaskNMI, flagNMI, flagHalt;
 } t_cpu_data;
 
 typedef struct {
@@ -191,66 +191,66 @@ typedef struct {
 #define VCPU_EFLAGS_ID    0x00200000
 #define VCPU_EFLAGS_RESERVED 0xffc0802a
 */
-#define _GetEFLAGS_CF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_CF))
-#define _GetEFLAGS_PF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_PF))
-#define _GetEFLAGS_AF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_AF))
-#define _GetEFLAGS_ZF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
-#define _GetEFLAGS_SF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_SF))
-#define _GetEFLAGS_TF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_TF))
-#define _GetEFLAGS_IF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_IF))
-#define _GetEFLAGS_DF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_DF))
-#define _GetEFLAGS_OF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_OF))
-#define _GetEFLAGS_IOPLL (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
-#define _GetEFLAGS_IOPLH (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
+#define _GetEFLAGS_CF    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF))
+#define _GetEFLAGS_PF    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_PF))
+#define _GetEFLAGS_AF    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_AF))
+#define _GetEFLAGS_ZF    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
+#define _GetEFLAGS_SF    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_SF))
+#define _GetEFLAGS_TF    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_TF))
+#define _GetEFLAGS_IF    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_IF))
+#define _GetEFLAGS_DF    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_DF))
+#define _GetEFLAGS_OF    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF))
+#define _GetEFLAGS_IOPLL (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
+#define _GetEFLAGS_IOPLH (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
 #define _GetEFLAGS_IOPL  ((cpu_state.data.eflags & VCPU_EFLAGS_IOPL) >> 12)
-#define _GetEFLAGS_NT    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_NT))
-#define _GetEFLAGS_RF    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_RF))
-#define _GetEFLAGS_VM    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_VM))
+#define _GetEFLAGS_NT    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_NT))
+#define _GetEFLAGS_RF    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_RF))
+#define _GetEFLAGS_VM    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_VM))
 /*
-#define _GetEFLAGS_AC    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_AC))
-#define _GetEFLAGS_VIF   (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
-#define _GetEFLAGS_VIP   (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
-#define _GetEFLAGS_ID    (GetBit(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
-#define _SetEFLAGS_CF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_CF))
-#define _SetEFLAGS_PF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_PF))
-#define _SetEFLAGS_AF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_AF))
-#define _SetEFLAGS_ZF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
-#define _SetEFLAGS_SF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_SF))
-#define _SetEFLAGS_TF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_TF))
-#define _SetEFLAGS_IF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_IF))
-#define _SetEFLAGS_DF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_DF))
-#define _SetEFLAGS_OF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_OF))
-#define _SetEFLAGS_IOPLL (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
-#define _SetEFLAGS_IOPLH (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
-#define _SetEFLAGS_IOPL  (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPL)
-#define _SetEFLAGS_NT    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_NT))
-#define _SetEFLAGS_RF    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_RF))
-#define _SetEFLAGS_VM    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_VM))
+#define _GetEFLAGS_AC    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_AC))
+#define _GetEFLAGS_VIF   (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
+#define _GetEFLAGS_VIP   (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
+#define _GetEFLAGS_ID    (NTVDM64_TYPE_GET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
+#define _SetEFLAGS_CF    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF))
+#define _SetEFLAGS_PF    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_PF))
+#define _SetEFLAGS_AF    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_AF))
+#define _SetEFLAGS_ZF    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
+#define _SetEFLAGS_SF    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_SF))
+#define _SetEFLAGS_TF    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_TF))
+#define _SetEFLAGS_IF    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_IF))
+#define _SetEFLAGS_DF    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_DF))
+#define _SetEFLAGS_OF    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF))
+#define _SetEFLAGS_IOPLL (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
+#define _SetEFLAGS_IOPLH (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
+#define _SetEFLAGS_IOPL  (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_IOPL)
+#define _SetEFLAGS_NT    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_NT))
+#define _SetEFLAGS_RF    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_RF))
+#define _SetEFLAGS_VM    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_VM))
 /*
-#define _SetEFLAGS_AC    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_AC))
-#define _SetEFLAGS_VIF   (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
-#define _SetEFLAGS_VIP   (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
-#define _SetEFLAGS_ID    (SetBit(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
-#define _ClrEFLAGS_CF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_CF))
-#define _ClrEFLAGS_PF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_PF))
-#define _ClrEFLAGS_AF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_AF))
-#define _ClrEFLAGS_ZF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
-#define _ClrEFLAGS_SF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_SF))
-#define _ClrEFLAGS_TF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_TF))
-#define _ClrEFLAGS_IF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_IF))
-#define _ClrEFLAGS_DF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_DF))
-#define _ClrEFLAGS_OF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_OF))
-#define _ClrEFLAGS_IOPLL (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
-#define _ClrEFLAGS_IOPLH (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
-#define _ClrEFLAGS_IOPL  (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_IOPL)
-#define _ClrEFLAGS_NT    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_NT))
-#define _ClrEFLAGS_RF    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_RF))
-#define _ClrEFLAGS_VM    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_VM))
+#define _SetEFLAGS_AC    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_AC))
+#define _SetEFLAGS_VIF   (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
+#define _SetEFLAGS_VIP   (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
+#define _SetEFLAGS_ID    (NTVDM64_TYPE_SET_BIT(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
+#define _ClrEFLAGS_CF    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_CF))
+#define _ClrEFLAGS_PF    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_PF))
+#define _ClrEFLAGS_AF    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_AF))
+#define _ClrEFLAGS_ZF    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_ZF))
+#define _ClrEFLAGS_SF    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_SF))
+#define _ClrEFLAGS_TF    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_TF))
+#define _ClrEFLAGS_IF    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_IF))
+#define _ClrEFLAGS_DF    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_DF))
+#define _ClrEFLAGS_OF    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF))
+#define _ClrEFLAGS_IOPLL (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_IOPLL))
+#define _ClrEFLAGS_IOPLH (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_IOPLH))
+#define _ClrEFLAGS_IOPL  (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_IOPL)
+#define _ClrEFLAGS_NT    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_NT))
+#define _ClrEFLAGS_RF    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_RF))
+#define _ClrEFLAGS_VM    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_VM))
 /*
-#define _ClrEFLAGS_AC    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_AC))
-#define _ClrEFLAGS_VIF   (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
-#define _ClrEFLAGS_VIP   (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
-#define _ClrEFLAGS_ID    (ClrBit(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
+#define _ClrEFLAGS_AC    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_AC))
+#define _ClrEFLAGS_VIF   (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_VIF))
+#define _ClrEFLAGS_VIP   (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_VIP))
+#define _ClrEFLAGS_ID    (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_ID))*/
 
 #define VCPU_ModRM_MOD 0xc0
 #define VCPU_ModRM_REG 0x38
@@ -268,9 +268,9 @@ typedef struct {
 #define VCPU_CR0_PE 0x00000001
 #define VCPU_CR0_TS 0x00000008
 #define VCPU_CR0_PG 0x80000000
-#define _GetCR0_PE (GetBit(cpu_state.data.cr0, VCPU_CR0_PE))
-#define _GetCR0_PG (GetBit(cpu_state.data.cr0, VCPU_CR0_PG))
-#define _SetCR0_TS (SetBit(cpu_state.data.cr0, VCPU_CR0_TS))
+#define _GetCR0_PE (NTVDM64_TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_PE))
+#define _GetCR0_PG (NTVDM64_TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_PG))
+#define _SetCR0_TS (NTVDM64_TYPE_SET_BIT(cpu_state.data.cr0, VCPU_CR0_TS))
 
 #define _MakePageFaultErrorCode(p, wr, us) ((p) | ((wr) << 1) | ((us) << 2))
 
@@ -287,14 +287,14 @@ typedef struct {
 #define VCPU_PGENTRY_US    0x00000004 /* user/supervisor */
 #define VCPU_PGENTRY_RW    0x00000002 /* writable */
 #define VCPU_PGENTRY_P     0x00000001 /* present */
-#define _GetPageEntry_P(pge)      (GetBit((pge), VCPU_PGENTRY_P))
-#define _GetPageEntry_RW(pge)     (GetBit((pge), VCPU_PGENTRY_RW))
-#define _GetPageEntry_US(pge)     (GetBit((pge), VCPU_PGENTRY_US))
-#define _GetPageEntry_A(pge)      (GetBit((pge), VCPU_PGENTRY_A))
-#define _GetPageEntry_D(pge)      (GetBit((pge), VCPU_PGENTRY_D))
+#define _GetPageEntry_P(pge)      (NTVDM64_TYPE_GET_BIT((pge), VCPU_PGENTRY_P))
+#define _GetPageEntry_RW(pge)     (NTVDM64_TYPE_GET_BIT((pge), VCPU_PGENTRY_RW))
+#define _GetPageEntry_US(pge)     (NTVDM64_TYPE_GET_BIT((pge), VCPU_PGENTRY_US))
+#define _GetPageEntry_A(pge)      (NTVDM64_TYPE_GET_BIT((pge), VCPU_PGENTRY_A))
+#define _GetPageEntry_D(pge)      (NTVDM64_TYPE_GET_BIT((pge), VCPU_PGENTRY_D))
 #define _GetPageEntry_Base(pge)   ((pge) & VCPU_PGENTRY_BASE)
-#define _SetPageEntry_A(pge)      (SetBit((pge), VCPU_PGENTRY_A))
-#define _SetPageEntry_D(pge)      (SetBit((pge), VCPU_PGENTRY_D))
+#define _SetPageEntry_A(pge)      (NTVDM64_TYPE_SET_BIT((pge), VCPU_PGENTRY_A))
+#define _SetPageEntry_D(pge)      (NTVDM64_TYPE_SET_BIT((pge), VCPU_PGENTRY_D))
 #define _IsPageEntryPresent(pge)  _GetPageEntry_P(pge)
 #define _IsPageEntryWritable(pge) _GetPageEntry_RW(pge)
 #define _GetPageSize              VCPU_PAGESIZE
@@ -303,7 +303,7 @@ typedef struct {
 #define VCPU_SELECTOR_TI  0x0004 /* table indicator */
 #define VCPU_SELECTOR_IDX 0xfff8 /* index */
 #define _GetSelector_RPL(selector)    (((selector) & VCPU_SELECTOR_RPL) >> 0)
-#define _GetSelector_TI(selector)     (GetBit((selector), VCPU_SELECTOR_TI))
+#define _GetSelector_TI(selector)     (NTVDM64_TYPE_GET_BIT((selector), VCPU_SELECTOR_TI))
 #define _GetSelector_Index(selector)  (((selector) & VCPU_SELECTOR_IDX) >> 3)
 #define _GetSelector_Offset(selector) (((selector) & VCPU_SELECTOR_IDX) >> 0)
 #define _IsSelectorNull(selector)     (!_GetSelector_TI(selector) && !_GetSelector_Index(selector))
@@ -317,11 +317,11 @@ typedef struct {
 /* descriptor type */
 #define _GetDesc_Type(descriptor) (((descriptor) & VCPU_DESC_TYPE) >> 40)
 /* system segment (0) or user segment (1) */
-#define _GetDesc_S(descriptor)    (GetBit((descriptor), VCPU_DESC_S))
+#define _GetDesc_S(descriptor)    (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_S))
 /* descriptor previlege level */
 #define _GetDesc_DPL(descriptor)  (((descriptor) & VCPU_DESC_DPL) >> 45)
 /* descriptor presence */
-#define _GetDesc_P(descriptor)    (GetBit((descriptor), VCPU_DESC_P))
+#define _GetDesc_P(descriptor)    (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_P))
 
 #define _IsDescUser(descriptor)    (_GetDesc_S(descriptor))
 #define _IsDescSys(descriptor)     (!_GetDesc_S(descriptor))
@@ -350,9 +350,9 @@ typedef struct {
 #define VCPU_DESC_SYS_TYPE_INTGATE_32  0x0e
 #define VCPU_DESC_SYS_TYPE_TRAPGATE_32 0x0f
 
-#define _GetDescSys_Type_E(descriptor)   (GetBit((descriptor), VCPU_DESC_TSS_TYPE_E))
-#define _GetDescTSS_Type_B(descriptor)   (GetBit((descriptor), VCPU_DESC_TSS_TYPE_B))
-#define _SetDescTSS_Type_B(descriptor)   (SetBit((descriptor), VCPU_DESC_TSS_TYPE_B))
+#define _GetDescSys_Type_E(descriptor)   (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_TSS_TYPE_E))
+#define _GetDescTSS_Type_B(descriptor)   (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_TSS_TYPE_B))
+#define _SetDescTSS_Type_B(descriptor)   (NTVDM64_TYPE_SET_BIT((descriptor), VCPU_DESC_TSS_TYPE_B))
 
 #define _IsDescSys32(descriptor)      (_IsDescSys(descriptor) && _GetDescSys_Type_E(descriptor))
 #define _IsDescLDT(descriptor)        (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_LDT))
@@ -399,18 +399,18 @@ typedef struct {
 #define _GetDescSeg_Base(descriptor) \
     ((((descriptor) & VCPU_DESC_SEG_BASE_0) >> 16) | (((descriptor) & VCPU_DESC_SEG_BASE_1) >> 32))
 /* segment granularity */
-#define _GetDescSeg_G(descriptor)        (GetBit((descriptor), VCPU_DESC_SEG_G))
+#define _GetDescSeg_G(descriptor)        (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_SEG_G))
 
-#define _GetDescUser_Avl(descriptor)     (GetBit((descriptor), VCPU_DESC_USER_AVL))
-#define _GetDescUser_Type_A(descriptor)  (GetBit((descriptor), VCPU_DESC_USER_TYPE_A))
-#define _SetDescUser_Type_A(descriptor)  (SetBit((descriptor), VCPU_DESC_USER_TYPE_A))
-#define _GetDescData_Type_W(descriptor)  (GetBit((descriptor), VCPU_DESC_DATA_TYPE_W))
-#define _GetDescData_Type_E(descriptor)  (GetBit((descriptor), VCPU_DESC_DATA_TYPE_E))
-#define _GetDescCode_Type_R(descriptor)  (GetBit((descriptor), VCPU_DESC_CODE_TYPE_R))
-#define _GetDescCode_Type_C(descriptor)  (GetBit((descriptor), VCPU_DESC_CODE_TYPE_C))
-#define _GetDescUser_Type_CD(descriptor) (GetBit((descriptor), VCPU_DESC_USER_TYPE_CD))
-#define _GetDescData_B(descriptor)       (GetBit((descriptor), VCPU_DESC_DATA_B))
-#define _GetDescCode_D(descriptor)       (GetBit((descriptor), VCPU_DESC_CODE_D))
+#define _GetDescUser_Avl(descriptor)     (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_USER_AVL))
+#define _GetDescUser_Type_A(descriptor)  (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_USER_TYPE_A))
+#define _SetDescUser_Type_A(descriptor)  (NTVDM64_TYPE_SET_BIT((descriptor), VCPU_DESC_USER_TYPE_A))
+#define _GetDescData_Type_W(descriptor)  (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_DATA_TYPE_W))
+#define _GetDescData_Type_E(descriptor)  (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_DATA_TYPE_E))
+#define _GetDescCode_Type_R(descriptor)  (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_CODE_TYPE_R))
+#define _GetDescCode_Type_C(descriptor)  (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_CODE_TYPE_C))
+#define _GetDescUser_Type_CD(descriptor) (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_USER_TYPE_CD))
+#define _GetDescData_B(descriptor)       (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_DATA_B))
+#define _GetDescCode_D(descriptor)       (NTVDM64_TYPE_GET_BIT((descriptor), VCPU_DESC_CODE_D))
 
 #define _IsDescSegGranularLarge(descriptor)  (_GetDescSeg_G(descriptor))
 #define _IsDescUserAccessed(descriptor)      (_IsDescUser(descriptor) && _GetDescUser_Type_A(descriptor))
@@ -427,17 +427,17 @@ typedef struct {
 #define _IsDescCode32(descriptor)            (_IsDescCode(descriptor) && _GetDescCode_D(descriptor))
 
 #define _MakeDescSeg(base, limit, type, s, dpl, p, avl, db, g) \
-    (((t_nubit64)((base)  & 0xff000000) << 32) | \
-     ((t_nubit64)((g)     & 0x00000001) << 55) | \
-     ((t_nubit64)((db)    & 0x00000001) << 54) | \
-     ((t_nubit64)((avl)   & 0x00000001) << 52) | \
-     ((t_nubit64)((limit) & 0x000f0000) << 32) | \
-     ((t_nubit64)((p)     & 0x00000001) << 47) | \
-     ((t_nubit64)((dpl)   & 0x00000003) << 45) | \
-     ((t_nubit64)((s)     & 0x00000001) << 44) | \
-     ((t_nubit64)((type)  & 0x0000000f) << 40) | \
-     ((t_nubit64)((base)  & 0x00ffffff) << 16) | \
-     ((t_nubit64)((limit) & 0x0000ffff) << 0))
+    (((ntvdm64_type_unsigned_64)((base)  & 0xff000000) << 32) | \
+     ((ntvdm64_type_unsigned_64)((g)     & 0x00000001) << 55) | \
+     ((ntvdm64_type_unsigned_64)((db)    & 0x00000001) << 54) | \
+     ((ntvdm64_type_unsigned_64)((avl)   & 0x00000001) << 52) | \
+     ((ntvdm64_type_unsigned_64)((limit) & 0x000f0000) << 32) | \
+     ((ntvdm64_type_unsigned_64)((p)     & 0x00000001) << 47) | \
+     ((ntvdm64_type_unsigned_64)((dpl)   & 0x00000003) << 45) | \
+     ((ntvdm64_type_unsigned_64)((s)     & 0x00000001) << 44) | \
+     ((ntvdm64_type_unsigned_64)((type)  & 0x0000000f) << 40) | \
+     ((ntvdm64_type_unsigned_64)((base)  & 0x00ffffff) << 16) | \
+     ((ntvdm64_type_unsigned_64)((limit) & 0x0000ffff) << 0))
 
 /* DESCRIPTOR DEFINITION III: System Part */
 #define VCPU_DESC_GATE_SELECTOR 0x00000000ffff0000
@@ -456,14 +456,14 @@ typedef struct {
 #define VCPU_CR0_TS 0x00000008
 #define VCPU_CR0_ET 0x00000010
 #define VCPU_CR0_PG 0x80000000
-#define _GetCR0_PE (GetBit(cpu_state.data.cr0, VCPU_CR0_PE))
-#define _GetCR0_MP (GetBit(cpu_state.data.cr0, VCPU_CR0_MP))
-#define _GetCR0_EM (GetBit(cpu_state.data.cr0, VCPU_CR0_EM))
-#define _GetCR0_TS (GetBit(cpu_state.data.cr0, VCPU_CR0_TS))
-#define _GetCR0_ET (GetBit(cpu_state.data.cr0, VCPU_CR0_ET))
-#define _GetCR0_PG (GetBit(cpu_state.data.cr0, VCPU_CR0_PG))
-#define _SetCR0_TS (SetBit(cpu_state.data.cr0, VCPU_CR0_TS))
-#define _ClrCR0_TS (ClrBit(cpu_state.data.cr0, VCPU_CR0_TS))
+#define _GetCR0_PE (NTVDM64_TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_PE))
+#define _GetCR0_MP (NTVDM64_TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_MP))
+#define _GetCR0_EM (NTVDM64_TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_EM))
+#define _GetCR0_TS (NTVDM64_TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_TS))
+#define _GetCR0_ET (NTVDM64_TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_ET))
+#define _GetCR0_PG (NTVDM64_TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_PG))
+#define _SetCR0_TS (NTVDM64_TYPE_SET_BIT(cpu_state.data.cr0, VCPU_CR0_TS))
+#define _ClrCR0_TS (NTVDM64_TYPE_CLEAR_BIT(cpu_state.data.cr0, VCPU_CR0_TS))
 
 #define VCPU_CR3_BASE   0xfffff000
 #define _GetCR3_Base    (cpu_state.data.cr3 & VCPU_CR3_BASE)

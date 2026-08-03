@@ -14,13 +14,13 @@ extern "C" {
 #define NXVM_DEVICE_CMOS "DS1302"
 
 typedef struct {
-    t_nubit8 reg[0x80]; /* cmos registers */
+    ntvdm64_type_unsigned_8 reg[0x80]; /* cmos registers */
     t_cpu *cpu;
     time_t last_refresh;
 } t_cmos_connect;
 
 typedef struct {
-    t_nubit8 regId; /* id of specified cmos register*/
+    ntvdm64_type_unsigned_8 regId; /* id of specified cmos register*/
 } t_cmos_data;
 
 typedef struct {

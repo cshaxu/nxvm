@@ -4,14 +4,14 @@
 
 #include "core/product/debug/xasm32/dasm32.h"
 
-#define UTILS_TRACE_VAR    trace
-#define UTILS_TRACE_ERROR  flagError
-#define UTILS_TRACE_SETERR (flagError = 1)
+#define NTVDM64_TYPE_TRACE_CONTEXT    trace
+#define NTVDM64_TYPE_TRACE_ERROR  flagError
+#define NTVDM64_TYPE_TRACE_SET_ERROR (flagError = 1)
 
 typedef uint8_t t_dasm_prefix;
 
 typedef struct dasm32_context {
-    t_utils_trace trace;
+    ntvdm64_type_trace trace;
     uint8_t defsize;
     uint8_t flagError;
     uint8_t *drcode;
@@ -78,7 +78,7 @@ static void SPRINTFSI(char *str, uint32_t imm, uint8_t byte) {
     uint8_t i8u;
     uint16_t i16u;
     uint32_t i32u;
-    _cb("SPRINTFSI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SPRINTFSI");
     i8u = (uint8_t)(imm);
     i16u = (uint16_t)(imm);
     i32u = (uint32_t)(imm);
@@ -111,15 +111,15 @@ static void SPRINTFSI(char *str, uint32_t imm, uint8_t byte) {
         SPRINTF(str, "%c%08X", sign, i32u);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* kernel decoding function */
 static uint8_t _kdf_check_prefix(uint8_t opcode) {
-    _cb("_kdf_check_prefix");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_check_prefix");
     switch (opcode) {
     case 0xf0:
     case 0xf2:
@@ -128,37 +128,37 @@ static uint8_t _kdf_check_prefix(uint8_t opcode) {
     case 0x36:
     case 0x3e:
     case 0x26:
-        _ce;
+        NTVDM64_TYPE_TRACE_CALL_END;
         return 1;
         break;
     case 0x64:
     case 0x65:
     case 0x66:
     case 0x67:
-        _ce;
+        NTVDM64_TYPE_TRACE_CALL_END;
         return 1;
         break;
     default:
-        _ce;
+        NTVDM64_TYPE_TRACE_CALL_END;
         return 0;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
     return 0;
 }
 
 static void _kdf_skip(uint8_t byte) {
-    _cb("_kdf_skip");
-    _chr(iop += byte);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_skip");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(iop += byte);
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _kdf_code(uint8_t *rdata, uint8_t byte) {
     size_t i;
-    _cb("_kdf_code");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_code");
     for (i = 0; i < byte; ++i)
         *(rdata + i) = *(drcode + iop + i);
-    _chr(_kdf_skip(byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_skip(byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
     char disp8;
@@ -168,8 +168,8 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
     uint8_t modrm, sib;
     char sign;
     uint8_t disp8u;
-    _cb("_kdf_modrm");
-    _chr(_kdf_code(&modrm, 1));
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_modrm");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(&modrm, 1));
     flagmem = 1;
     drm[0] = dr[0] = dsibindex[0] = 0;
     switch (rmbyte) {
@@ -188,10 +188,10 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
     }
     switch (_GetAddressSize) {
     case 2:
-        _bb("AddressSize(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
         switch (_GetModRM_MOD(modrm)) {
         case 0:
-            _bb("ModRM_MOD(0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(0)");
             switch (_GetModRM_RM(modrm)) {
             case 0:
                 SPRINTF(drm, "%s:[BX+SI]", doverds);
@@ -212,24 +212,24 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(drm, "%s:[DI]",    doverds);
                 break;
             case 6:
-                _bb("ModRM_RM(6)");
-                _chr(_kdf_code((uint8_t *)(&disp16), 2));
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(6)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code((uint8_t *)(&disp16), 2));
                 SPRINTF(drm, "%s:[%04X]", doverds, disp16);
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 7:
                 SPRINTF(drm, "%s:[BX]", doverds);
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
 
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1:
-            _bb("ModRM_MOD(1)");
-            _chr(_kdf_code((uint8_t *)(&disp8), 1));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(1)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code((uint8_t *)(&disp8), 1));
             sign = (disp8 & 0x80) ? '-' : '+';
             disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
             switch (_GetModRM_RM(modrm)) {
@@ -258,14 +258,14 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(drm, "%s:[BX%c%02X]",    doverds, sign, disp8u);
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2:
-            _bb("ModRM_MOD(2)");
-            _chr(_kdf_code((uint8_t *)(&disp16), 2));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code((uint8_t *)(&disp16), 2));
             switch (_GetModRM_RM(modrm)) {
             case 0:
                 SPRINTF(drm, "%s:[BX+SI+%04X]", doverds, disp16);
@@ -292,24 +292,24 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(drm, "%s:[BX+%04X]",    doverds, disp16);
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3:
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("AddressSize(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
         if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4) {
-            _bb("ModRM_MOD(!3),ModRM_RM(4)");
-            _chr(_kdf_code((uint8_t *)(&sib), 1));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(!3),ModRM_RM(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code((uint8_t *)(&sib), 1));
             switch (_GetSIB_Index(sib)) {
             case 0:
                 SPRINTF(dsibindex, "+EAX*%02X", (1 << _GetSIB_SS(sib)));
@@ -335,13 +335,13 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(dsibindex, "+EDI*%02X", (1 << _GetSIB_SS(sib)));
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
         }
         switch (_GetModRM_MOD(modrm)) {
         case 0:
-            _bb("ModRM_MOD(0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(0)");
             switch (_GetModRM_RM(modrm)) {
             case 0:
                 SPRINTF(drm, "%s:[EAX]", doverds);
@@ -356,7 +356,7 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(drm, "%s:[EBX]", doverds);
                 break;
             case 4:
-                _bb("ModRM_RM(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(4)");
                 switch (_GetSIB_Base(sib)) {
                 case 0:
                     SPRINTF(drm, "%s:[EAX%s]", doverds, dsibindex);
@@ -374,10 +374,10 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                     SPRINTF(drm, "%s:[ESP%s]", doverss, dsibindex);
                     break;
                 case 5:
-                    _bb("SIB_Base(5)");
-                    _chr(_kdf_code((uint8_t *)(&disp32), 4));
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SIB_Base(5)");
+                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code((uint8_t *)(&disp32), 4));
                     SPRINTF(drm, "%s:[%08X%s]", doverds, disp32, dsibindex);
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                     break;
                 case 6:
                     SPRINTF(drm, "%s:[ESI%s]", doverds, dsibindex);
@@ -386,16 +386,16 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                     SPRINTF(drm, "%s:[EDI%s]", doverds, dsibindex);
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 5:
-                _bb("ModRM_RM(5)");
-                _chr(_kdf_code((uint8_t *)(&disp32), 4));
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(5)");
+                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code((uint8_t *)(&disp32), 4));
                 SPRINTF(drm, "%s:[%08X]", doverds, disp32);
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 6:
                 SPRINTF(drm, "%s:[ESI]", doverds);
@@ -404,14 +404,14 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(drm, "%s:[EDI]", doverds);
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 1:
-            _bb("ModRM_MOD(1)");
-            _chr(_kdf_code((uint8_t *)(&disp8), 1));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(1)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code((uint8_t *)(&disp8), 1));
             sign = (disp8 & 0x80) ? '-' : '+';
             disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
             switch (_GetModRM_RM(modrm)) {
@@ -428,7 +428,7 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(drm, "%s:[EBX%c%02X]", doverds, sign, disp8u);
                 break;
             case 4:
-                _bb("ModRM_RM(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(4)");
                 switch (_GetSIB_Base(sib)) {
                 case 0:
                     SPRINTF(drm, "%s:[EAX%s%c%02X]", doverds, dsibindex, sign, disp8u);
@@ -455,10 +455,10 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                     SPRINTF(drm, "%s:[EDI%s%c%02X]", doverds, dsibindex, sign, disp8u);
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 5:
                 SPRINTF(drm, "%s:[EBP%c%02X]", doverss, sign, disp8u);
@@ -470,14 +470,14 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(drm, "%s:[EDI%c%02X]", doverds, sign, disp8u);
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 2:
-            _bb("ModRM_MOD(2)");
-            _chr(_kdf_code((uint8_t *)(&disp32), 4));
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code((uint8_t *)(&disp32), 4));
             switch (_GetModRM_RM(modrm)) {
             case 0:
                 SPRINTF(drm, "%s:[EAX+%08X]", doverds, disp32);
@@ -492,7 +492,7 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(drm, "%s:[EBX+%08X]", doverds, disp32);
                 break;
             case 4:
-                _bb("ModRM_RM(4)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(4)");
                 switch (_GetSIB_Base(sib)) {
                 case 0:
                     SPRINTF(drm, "%s:[EAX%s+%08X]", doverds, dsibindex, disp32);
@@ -519,10 +519,10 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                     SPRINTF(drm, "%s:[EDI%s+%08X]", doverds, dsibindex, disp32);
                     break;
                 default:
-                    _impossible_r_;
+                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case 5:
                 SPRINTF(drm, "%s:[EBP+%08X]", doverss, disp32);
@@ -534,25 +534,25 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(drm, "%s:[EDI+%08X]", doverds, disp32);
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 3:
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     if (_GetModRM_MOD(modrm) == 3) {
-        _bb("ModRM_MOD(3)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(3)");
         flagmem = 0;
         switch (rmbyte) {
         case 1:
@@ -582,7 +582,7 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(drm, "BH");
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             break;
@@ -613,7 +613,7 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(drm, "DI");
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             break;
@@ -644,15 +644,15 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
                 SPRINTF(drm, "EDI");
                 break;
             default:
-                _impossible_r_;
+                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     switch (regbyte) {
     case 0:
@@ -691,7 +691,7 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
             SPRINTF(dr, "BH");
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         break;
@@ -722,7 +722,7 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
             SPRINTF(dr, "DI");
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         break;
@@ -753,58 +753,58 @@ static void _kdf_modrm(uint8_t regbyte, uint8_t rmbyte) {
             SPRINTF(dr, "EDI");
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _d_skip(uint8_t byte) {
-    _cb("_d_skip");
-    _chr(_kdf_skip(byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_skip");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_skip(byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _d_code(uint8_t *rdata, uint8_t byte) {
-    _cb("_d_code");
-    _chr(_kdf_code(rdata, byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_code");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(rdata, byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _d_imm(uint8_t byte) {
-    _cb("_d_imm");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_imm");
     cimm = 0;
-    _chr(_d_code((uint8_t *)(&cimm), byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code((uint8_t *)(&cimm), byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _d_moffs(uint8_t byte) {
     uint32_t offset = 0;
-    _cb("_d_moffs");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_moffs");
     flagmem = 1;
     switch (_GetAddressSize) {
     case 2:
-        _bb("AddressSize(2)");
-        _chr(_d_code((uint8_t *)(&offset), 2));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code((uint8_t *)(&offset), 2));
         SPRINTF(drm, "%s:[%04X]", doverds, (uint16_t)(offset));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("AddressSize(4)");
-        _chr(_d_code((uint8_t *)(&offset), 4));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code((uint8_t *)(&offset), 4));
         SPRINTF(drm, "%s:[%08X]", doverds, (uint32_t)(offset));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _d_modrm_sreg(uint8_t rmbyte) {
-    _cb("_d_modrm_sreg");
-    _chr(_kdf_modrm(0, rmbyte));
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_sreg");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(0, rmbyte));
     switch (cr) {
     case 0:
         SPRINTF(dr, "ES");
@@ -825,659 +825,659 @@ static void _d_modrm_sreg(uint8_t rmbyte) {
         SPRINTF(dr, "GS");
         break;
     default:
-        _bb("cr");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr");
         SPRINTF(dr, "<ERROR>");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _d_modrm(uint8_t regbyte, uint8_t rmbyte) {
-    _cb("_d_modrm");
-    _chr(_kdf_modrm(regbyte, rmbyte));
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(regbyte, rmbyte));
     if (!flagmem && flaglock) {
-        _bb("flagmem(0),flaglock(1)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0),flaglock(1)");
         SPRINTF(drm, "<ERROR>");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-#define _adv _chr(_d_skip(1))
+#define _adv NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_skip(1))
 
 static void UndefinedOpcode() {
-    _cb("UndefinedOpcode");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("UndefinedOpcode");
     SPRINTF(dop, "<ERROR>");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_RM8_R8() {
-    _cb("ADD_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM8_R8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "ADD");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_RM32_R32() {
-    _cb("ADD_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM32_R32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "ADD");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_R8_RM8() {
-    _cb("ADD_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R8_RM8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "ADD");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_R32_RM32() {
-    _cb("ADD_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R32_RM32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "ADD");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_AL_I8() {
-    _cb("ADD_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_AL_I8");
     _adv;
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dop, "ADD");
     SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_EAX_I32() {
-    _cb("ADD_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_EAX_I32");
     _adv;
     SPRINTF(dop, "ADD");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
-        _chr(_d_imm(2));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
         SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
-        _chr(_d_imm(4));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(4));
         SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_ES() {
-    _cb("PUSH_ES");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ES");
     _adv;
     SPRINTF(dop, "PUSH");
     SPRINTF(dopr, "ES");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_ES() {
-    _cb("POP_ES");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ES");
     _adv;
     SPRINTF(dop, "POP");
     SPRINTF(dopr, "ES");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_RM8_R8() {
-    _cb("OR_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM8_R8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "OR");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_RM32_R32() {
-    _cb("OR_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM32_R32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "OR");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_R8_RM8() {
-    _cb("OR_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R8_RM8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "OR");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_R32_RM32() {
-    _cb("OR_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R32_RM32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "OR");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_AL_I8() {
-    _cb("OR_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_AL_I8");
     _adv;
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dop, "OR");
     SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_EAX_I32() {
-    _cb("OR_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_EAX_I32");
     _adv;
     SPRINTF(dop, "OR");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
-        _chr(_d_imm(2));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
         SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
-        _chr(_d_imm(4));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(4));
         SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 static void PUSH_CS() {
-    _cb("PUSH_CS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_CS");
     _adv;
     SPRINTF(dop, "PUSH");
     SPRINTF(dopr, "CS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_CS() {
-    _cb("POP_CS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_CS");
     _adv;
     SPRINTF(dop, "POP");
     SPRINTF(dopr, "CS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_0F() {
     uint8_t oldiop;
     uint8_t opcode;
-    _cb("INS_0F");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F");
     _adv;
     oldiop = iop;
-    _chr(_d_code((uint8_t *)(&opcode), 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code((uint8_t *)(&opcode), 1));
     iop = oldiop;
-    _chr((*(dtable_0f[opcode]))());
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN((*(dtable_0f[opcode]))());
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_RM8_R8() {
-    _cb("ADC_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM8_R8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "ADC");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_RM32_R32() {
-    _cb("ADC_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM32_R32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "ADC");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_R8_RM8() {
-    _cb("ADC_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R8_RM8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "ADC");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_R32_RM32() {
-    _cb("ADC_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R32_RM32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "ADC");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_AL_I8() {
-    _cb("ADC_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_AL_I8");
     _adv;
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dop, "ADC");
     SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_EAX_I32() {
-    _cb("ADC_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_EAX_I32");
     _adv;
     SPRINTF(dop, "ADC");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
-        _chr(_d_imm(2));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
         SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
-        _chr(_d_imm(4));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(4));
         SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 static void PUSH_SS() {
-    _cb("PUSH_SS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_SS");
     _adv;
     SPRINTF(dop, "PUSH");
     SPRINTF(dopr, "SS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_SS() {
-    _cb("POP_SS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_SS");
     _adv;
     SPRINTF(dop, "POP");
     SPRINTF(dopr, "SS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_RM8_R8() {
-    _cb("SBB_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM8_R8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "SBB");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_RM32_R32() {
-    _cb("SBB_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM32_R32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "SBB");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_R8_RM8() {
-    _cb("SBB_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R8_RM8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "SBB");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_R32_RM32() {
-    _cb("SBB_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R32_RM32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "SBB");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_AL_I8() {
-    _cb("SBB_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_AL_I8");
     _adv;
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dop, "SBB");
     SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_EAX_I32() {
-    _cb("SBB_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_EAX_I32");
     _adv;
     SPRINTF(dop, "SBB");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
-        _chr(_d_imm(2));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
         SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
-        _chr(_d_imm(4));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(4));
         SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 static void PUSH_DS() {
-    _cb("PUSH_DS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_DS");
     _adv;
     SPRINTF(dop, "PUSH");
     SPRINTF(dopr, "DS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_DS() {
-    _cb("POP_DS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_DS");
     _adv;
     SPRINTF(dop, "POP");
     SPRINTF(dopr, "DS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_RM8_R8() {
-    _cb("AND_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM8_R8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "AND");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_RM32_R32() {
-    _cb("AND_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM32_R32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "AND");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_R8_RM8() {
-    _cb("AND_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R8_RM8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "AND");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_R32_RM32() {
-    _cb("AND_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R32_RM32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "AND");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_AL_I8() {
-    _cb("AND_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_AL_I8");
     _adv;
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dop, "AND");
     SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_EAX_I32() {
-    _cb("AND_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_EAX_I32");
     _adv;
     SPRINTF(dop, "AND");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
-        _chr(_d_imm(2));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
         SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
-        _chr(_d_imm(4));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(4));
         SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_ES() {
-    _cb("PREFIX_ES");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_ES");
     _adv;
     SPRINTF(doverds, "ES");
     SPRINTF(doverss, "ES");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DAA() {
-    _cb("DAA");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DAA");
     _adv;
     SPRINTF(dop, "DAA");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_RM8_R8() {
-    _cb("SUB_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM8_R8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "SUB");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_RM32_R32() {
-    _cb("SUB_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM32_R32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "SUB");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_R8_RM8() {
-    _cb("SUB_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R8_RM8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "SUB");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_R32_RM32() {
-    _cb("SUB_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R32_RM32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "SUB");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_AL_I8() {
-    _cb("SUB_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_AL_I8");
     _adv;
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dop, "SUB");
     SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_EAX_I32() {
-    _cb("SUB_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_EAX_I32");
     _adv;
     SPRINTF(dop, "SUB");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
-        _chr(_d_imm(2));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
         SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
-        _chr(_d_imm(4));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(4));
         SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_CS() {
-    _cb("PREFIX_CS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_CS");
     _adv;
     SPRINTF(doverds, "CS");
     SPRINTF(doverss, "CS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DAS() {
-    _cb("DAS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DAS");
     _adv;
     SPRINTF(dop, "DAS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_RM8_R8() {
-    _cb("XOR_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM8_R8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "XOR");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_RM32_R32() {
-    _cb("XOR_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM32_R32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "XOR");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_R8_RM8() {
-    _cb("XOR_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R8_RM8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "XOR");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_R32_RM32() {
-    _cb("XOR_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R32_RM32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "XOR");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_AL_I8() {
-    _cb("XOR_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_AL_I8");
     _adv;
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dop, "XOR");
     SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_EAX_I32() {
-    _cb("XOR_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_EAX_I32");
     _adv;
     SPRINTF(dop, "XOR");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
-        _chr(_d_imm(2));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
         SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
-        _chr(_d_imm(4));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(4));
         SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_SS() {
-    _cb("PREFIX_SS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_SS");
     _adv;
     SPRINTF(doverds, "SS");
     SPRINTF(doverss, "SS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AAA() {
-    _cb("AAA");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAA");
     _adv;
     SPRINTF(dop, "AAA");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_RM8_R8() {
-    _cb("CMP_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM8_R8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "CMP");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_RM32_R32() {
-    _cb("CMP_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM32_R32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "CMP");
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_R8_RM8() {
-    _cb("CMP_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R8_RM8");
     _adv;
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dop, "CMP");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_R32_RM32() {
-    _cb("CMP_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R32_RM32");
     _adv;
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dop, "CMP");
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_AL_I8() {
-    _cb("CMP_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_AL_I8");
     _adv;
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dop, "CMP");
     SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_EAX_I32() {
-    _cb("CMP_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_EAX_I32");
     _adv;
     SPRINTF(dop, "CMP");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
-        _chr(_d_imm(2));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
         SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
-        _chr(_d_imm(4));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(4));
         SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_DS() {
-    _cb("PREFIX_DS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_DS");
     _adv;
     SPRINTF(doverds, "DS");
     SPRINTF(doverss, "DS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AAS() {
-    _cb("AAS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAS");
     _adv;
     SPRINTF(dop, "AAS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EAX() {
-    _cb("INC_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EAX");
     _adv;
     SPRINTF(dop, "INC");
     switch (_GetOperandSize) {
@@ -1488,13 +1488,13 @@ static void INC_EAX() {
         SPRINTF(dopr, "EAX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_ECX() {
-    _cb("INC_ECX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ECX");
     _adv;
     SPRINTF(dop, "INC");
     switch (_GetOperandSize) {
@@ -1505,13 +1505,13 @@ static void INC_ECX() {
         SPRINTF(dopr, "ECX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EDX() {
-    _cb("INC_EDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDX");
     _adv;
     SPRINTF(dop, "INC");
     switch (_GetOperandSize) {
@@ -1522,13 +1522,13 @@ static void INC_EDX() {
         SPRINTF(dopr, "EDX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EBX() {
-    _cb("INC_EBX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBX");
     _adv;
     SPRINTF(dop, "INC");
     switch (_GetOperandSize) {
@@ -1539,13 +1539,13 @@ static void INC_EBX() {
         SPRINTF(dopr, "EBX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_ESP() {
-    _cb("INC_ESP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESP");
     _adv;
     SPRINTF(dop, "INC");
     switch (_GetOperandSize) {
@@ -1556,13 +1556,13 @@ static void INC_ESP() {
         SPRINTF(dopr, "ESP");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EBP() {
-    _cb("INC_EBP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBP");
     _adv;
     SPRINTF(dop, "INC");
     switch (_GetOperandSize) {
@@ -1573,13 +1573,13 @@ static void INC_EBP() {
         SPRINTF(dopr, "EBP");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_ESI() {
-    _cb("INC_ESI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESI");
     _adv;
     SPRINTF(dop, "INC");
     switch (_GetOperandSize) {
@@ -1590,13 +1590,13 @@ static void INC_ESI() {
         SPRINTF(dopr, "ESI");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EDI() {
-    _cb("INC_EDI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDI");
     _adv;
     SPRINTF(dop, "INC");
     switch (_GetOperandSize) {
@@ -1607,13 +1607,13 @@ static void INC_EDI() {
         SPRINTF(dopr, "EDI");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EAX() {
-    _cb("DEC_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EAX");
     _adv;
     SPRINTF(dop, "DEC");
     switch (_GetOperandSize) {
@@ -1624,13 +1624,13 @@ static void DEC_EAX() {
         SPRINTF(dopr, "EAX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_ECX() {
-    _cb("DEC_ECX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ECX");
     _adv;
     SPRINTF(dop, "DEC");
     switch (_GetOperandSize) {
@@ -1641,13 +1641,13 @@ static void DEC_ECX() {
         SPRINTF(dopr, "ECX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EDX() {
-    _cb("DEC_EDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDX");
     _adv;
     SPRINTF(dop, "DEC");
     switch (_GetOperandSize) {
@@ -1658,13 +1658,13 @@ static void DEC_EDX() {
         SPRINTF(dopr, "EDX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EBX() {
-    _cb("DEC_EBX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBX");
     _adv;
     SPRINTF(dop, "DEC");
     switch (_GetOperandSize) {
@@ -1675,13 +1675,13 @@ static void DEC_EBX() {
         SPRINTF(dopr, "EBX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_ESP() {
-    _cb("DEC_ESP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESP");
     _adv;
     SPRINTF(dop, "DEC");
     switch (_GetOperandSize) {
@@ -1692,13 +1692,13 @@ static void DEC_ESP() {
         SPRINTF(dopr, "ESP");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EBP() {
-    _cb("DEC_EBP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBP");
     _adv;
     SPRINTF(dop, "DEC");
     switch (_GetOperandSize) {
@@ -1709,13 +1709,13 @@ static void DEC_EBP() {
         SPRINTF(dopr, "EBP");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_ESI() {
-    _cb("DEC_ESI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESI");
     _adv;
     SPRINTF(dop, "DEC");
     switch (_GetOperandSize) {
@@ -1726,13 +1726,13 @@ static void DEC_ESI() {
         SPRINTF(dopr, "ESI");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EDI() {
-    _cb("DEC_EDI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDI");
     _adv;
     SPRINTF(dop, "DEC");
     switch (_GetOperandSize) {
@@ -1743,13 +1743,13 @@ static void DEC_EDI() {
         SPRINTF(dopr, "EDI");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EAX() {
-    _cb("PUSH_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EAX");
     _adv;
     SPRINTF(dop, "PUSH");
     switch (_GetOperandSize) {
@@ -1760,13 +1760,13 @@ static void PUSH_EAX() {
         SPRINTF(dopr, "EAX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_ECX() {
-    _cb("PUSH_ECX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ECX");
     _adv;
     SPRINTF(dop, "PUSH");
     switch (_GetOperandSize) {
@@ -1777,13 +1777,13 @@ static void PUSH_ECX() {
         SPRINTF(dopr, "ECX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EDX() {
-    _cb("PUSH_EDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDX");
     _adv;
     SPRINTF(dop, "PUSH");
     switch (_GetOperandSize) {
@@ -1794,13 +1794,13 @@ static void PUSH_EDX() {
         SPRINTF(dopr, "EDX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EBX() {
-    _cb("PUSH_EBX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBX");
     _adv;
     SPRINTF(dop, "PUSH");
     switch (_GetOperandSize) {
@@ -1811,13 +1811,13 @@ static void PUSH_EBX() {
         SPRINTF(dopr, "EBX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_ESP() {
-    _cb("PUSH_ESP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESP");
     _adv;
     SPRINTF(dop, "PUSH");
     switch (_GetOperandSize) {
@@ -1828,13 +1828,13 @@ static void PUSH_ESP() {
         SPRINTF(dopr, "ESP");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EBP() {
-    _cb("PUSH_EBP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBP");
     _adv;
     SPRINTF(dop, "PUSH");
     switch (_GetOperandSize) {
@@ -1845,13 +1845,13 @@ static void PUSH_EBP() {
         SPRINTF(dopr, "EBP");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_ESI() {
-    _cb("PUSH_ESI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESI");
     _adv;
     SPRINTF(dop, "PUSH");
     switch (_GetOperandSize) {
@@ -1862,13 +1862,13 @@ static void PUSH_ESI() {
         SPRINTF(dopr, "ESI");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EDI() {
-    _cb("PUSH_EDI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDI");
     _adv;
     SPRINTF(dop, "PUSH");
     switch (_GetOperandSize) {
@@ -1879,13 +1879,13 @@ static void PUSH_EDI() {
         SPRINTF(dopr, "EDI");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EAX() {
-    _cb("POP_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EAX");
     _adv;
     SPRINTF(dop, "POP");
     switch (_GetOperandSize) {
@@ -1896,13 +1896,13 @@ static void POP_EAX() {
         SPRINTF(dopr, "EAX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_ECX() {
-    _cb("POP_ECX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ECX");
     _adv;
     SPRINTF(dop, "POP");
     switch (_GetOperandSize) {
@@ -1913,13 +1913,13 @@ static void POP_ECX() {
         SPRINTF(dopr, "ECX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EDX() {
-    _cb("POP_EDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDX");
     _adv;
     SPRINTF(dop, "POP");
     switch (_GetOperandSize) {
@@ -1930,13 +1930,13 @@ static void POP_EDX() {
         SPRINTF(dopr, "EDX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EBX() {
-    _cb("POP_EBX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBX");
     _adv;
     SPRINTF(dop, "POP");
     switch (_GetOperandSize) {
@@ -1947,13 +1947,13 @@ static void POP_EBX() {
         SPRINTF(dopr, "EBX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_ESP() {
-    _cb("POP_ESP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESP");
     _adv;
     SPRINTF(dop, "POP");
     switch (_GetOperandSize) {
@@ -1964,13 +1964,13 @@ static void POP_ESP() {
         SPRINTF(dopr, "ESP");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EBP() {
-    _cb("POP_EBP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBP");
     _adv;
     SPRINTF(dop, "POP");
     switch (_GetOperandSize) {
@@ -1981,13 +1981,13 @@ static void POP_EBP() {
         SPRINTF(dopr, "EBP");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_ESI() {
-    _cb("POP_ESI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESI");
     _adv;
     SPRINTF(dop, "POP");
     switch (_GetOperandSize) {
@@ -1998,13 +1998,13 @@ static void POP_ESI() {
         SPRINTF(dopr, "ESI");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EDI() {
-    _cb("POP_EDI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDI");
     _adv;
     SPRINTF(dop, "POP");
     switch (_GetOperandSize) {
@@ -2015,15 +2015,15 @@ static void POP_EDI() {
         SPRINTF(dopr, "EDI");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 
 static void PUSHA() {
-    _cb("PUSHA");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHA");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -2033,13 +2033,13 @@ static void PUSHA() {
         SPRINTF(dop, "PUSHAD");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POPA() {
-    _cb("POPA");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POPA");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -2049,62 +2049,62 @@ static void POPA() {
         SPRINTF(dop, "POPAD");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BOUND_R16_M16_16() {
-    _cb("BOUND_R16_M16_16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BOUND_R16_M16_16");
     _adv;
     SPRINTF(dop, "BOUND");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize * 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize * 2));
     if (!flagmem) {
         SPRINTF(dopr, "<ERROR>");
     } else {
         SPRINTF(dopr, "%s,%s", dr, drm);
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ARPL_RM16_R16() {
-    _cb("ARPL_RM16_R16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ARPL_RM16_R16");
     _adv;
     SPRINTF(dop, "ARPL");
-    _chr(_d_modrm(2, 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(2, 2));
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_FS() {
-    _cb("PREFIX_FS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_FS");
     _adv;
     SPRINTF(doverds, "FS");
     SPRINTF(doverss, "FS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_GS() {
-    _cb("PREFIX_GS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_GS");
     _adv;
     SPRINTF(doverds, "GS");
     SPRINTF(doverss, "GS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_OprSize() {
-    _cb("PREFIX_OprSize");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_OprSize");
     _adv;
     prefix_oprsize = 0x01;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_AddrSize() {
-    _cb("PREFIX_AddrSize");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_AddrSize");
     _adv;
     prefix_addrsize = 0x01;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_I32() {
-    _cb("PUSH_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I32");
     _adv;
     SPRINTF(dop, "PUSH");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "%04X", (uint16_t)(cimm));
@@ -2113,17 +2113,17 @@ static void PUSH_I32() {
         SPRINTF(dopr, "%08X", (uint32_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IMUL_R32_RM32_I32() {
-    _cb("IMUL_R32_RM32_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
     _adv;
     SPRINTF(dop, "IMUL");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "%s,%s,%04X", dr, drm, (uint16_t)(cimm));
@@ -2132,31 +2132,31 @@ static void IMUL_R32_RM32_I32() {
         SPRINTF(dopr, "%s,%s,%08X", dr, drm, (uint32_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_I8() {
-    _cb("PUSH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I8");
     _adv;
     SPRINTF(dop, "PUSH");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IMUL_R32_RM32_I8() {
-    _cb("IMUL_R32_RM32_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I8");
     _adv;
     SPRINTF(dop, "IMUL");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "%s,%s,%02X", dr, drm, (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INSB() {
     char dptr[0x100];
-    _cb("INSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INSB");
     _adv;
     SPRINTF(dop, "INSB");
     SPRINTF(dptr, "BYTE PTR ");
@@ -2168,14 +2168,14 @@ static void INSB() {
         SPRINTF(dopr, "ES:[EDI],DX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INSW() {
     char dptr[0x100];
-    _cb("INSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INSW");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -2187,7 +2187,7 @@ static void INSW() {
         SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (_GetAddressSize) {
@@ -2198,14 +2198,14 @@ static void INSW() {
         SPRINTF(dopr, "ES:[EDI],DX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUTSB() {
     char dptr[0x100];
-    _cb("OUTSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSB");
     _adv;
     SPRINTF(dop, "OUTSB");
     SPRINTF(dptr, "BYTE PTR ");
@@ -2217,14 +2217,14 @@ static void OUTSB() {
         SPRINTF(dopr, "DX,%s:[ESI]", doverds);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUTSW() {
     char dptr[0x100];
-    _cb("OUTSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSW");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -2236,7 +2236,7 @@ static void OUTSW() {
         SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (_GetAddressSize) {
@@ -2247,240 +2247,240 @@ static void OUTSW() {
         SPRINTF(dopr, "DX,%s:[ESI]", doverds);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JO_REL8() {
-    _cb("JO_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JO_REL8");
     _adv;
     SPRINTF(dop, "JO");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNO_REL8() {
-    _cb("JNO_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNO_REL8");
     _adv;
     SPRINTF(dop, "JNO");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JC_REL8() {
-    _cb("JC_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JC_REL8");
     _adv;
     SPRINTF(dop, "JC");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNC_REL8() {
-    _cb("JNC_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNC_REL8");
     _adv;
     SPRINTF(dop, "JNC");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JZ_REL8() {
-    _cb("JZ_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JZ_REL8");
     _adv;
     SPRINTF(dop, "JZ");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNZ_REL8() {
-    _cb("JNZ_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNZ_REL8");
     _adv;
     SPRINTF(dop, "JNZ");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNA_REL8() {
-    _cb("JNA_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNA_REL8");
     _adv;
     SPRINTF(dop, "JNA");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JA_REL8() {
-    _cb("JA_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JA_REL8");
     _adv;
     SPRINTF(dop, "JA");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JS_REL8() {
-    _cb("JS_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JS_REL8");
     _adv;
     SPRINTF(dop, "JS");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNS_REL8() {
-    _cb("JNS_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNS_REL8");
     _adv;
     SPRINTF(dop, "JNS");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JP_REL8() {
-    _cb("JP_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JP_REL8");
     _adv;
     SPRINTF(dop, "JP");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNP_REL8() {
-    _cb("JNP_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNP_REL8");
     _adv;
     SPRINTF(dop, "JNP");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JL_REL8() {
-    _cb("JL_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JL_REL8");
     _adv;
     SPRINTF(dop, "JL");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNL_REL8() {
-    _cb("JNL_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNL_REL8");
     _adv;
     SPRINTF(dop, "JNL");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNG_REL8() {
-    _cb("JNG_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNG_REL8");
     _adv;
     SPRINTF(dop, "JNG");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JG_REL8() {
-    _cb("JG_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JG_REL8");
     _adv;
     SPRINTF(dop, "JG");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_80() {
-    _cb("INS_80");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_80");
     _adv;
-    _chr(_d_modrm(0, 1));
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     switch (cr) {
     case 0: /* ADD_RM8_I8 */
-        _bb("ADD_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADD_RM8_I8");
         SPRINTF(dop, "ADD");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* OR_RM8_I8 */
-        _bb("OR_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OR_RM8_I8");
         SPRINTF(dop, "OR");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* ADC_RM8_I8 */
-        _bb("ADC_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADC_RM8_I8");
         SPRINTF(dop, "ADC");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* SBB_RM8_I8 */
-        _bb("SBB_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SBB_RM8_I8");
         SPRINTF(dop, "SBB");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* AND_RM8_I8 */
-        _bb("AND_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AND_RM8_I8");
         SPRINTF(dop, "AND");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SUB_RM8_I8 */
-        _bb("SUB_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SUB_RM8_I8");
         SPRINTF(dop, "SUB");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* XOR_RM8_I8 */
-        _bb("XOR_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("XOR_RM8_I8");
         SPRINTF(dop, "XOR");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* CMP_RM8_I8 */
-        _bb("CMP_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CMP_RM8_I8");
         SPRINTF(dop, "CMP");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_81() {
-    _cb("INS_81");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_81");
     _adv;
-    _chr(_d_modrm(0, _GetOperandSize));
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (cr) {
     case 0: /* ADD_RM32_I32 */
-        _bb("ADD_RM32_I32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADD_RM32_I32");
         SPRINTF(dop, "ADD");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* OR_RM32_I32 */
-        _bb("OR_RM32_I32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OR_RM32_I32");
         SPRINTF(dop, "OR");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* ADC_RM32_I32 */
-        _bb("ADC_RM32_I32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADC_RM32_I32");
         SPRINTF(dop, "ADC");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* SBB_RM32_I32 */
-        _bb("SBB_RM32_I32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SBB_RM32_I32");
         SPRINTF(dop, "SBB");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* AND_RM32_I32 */
-        _bb("AND_RM32_I32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AND_RM32_I32");
         SPRINTF(dop, "AND");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SUB_RM32_I32 */
-        _bb("SUB_RM32_I32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SUB_RM32_I32");
         SPRINTF(dop, "SUB");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* XOR_RM32_I32 */
-        _bb("XOR_RM32_I32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("XOR_RM32_I32");
         SPRINTF(dop, "XOR");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* CMP_RM32_I32 */
-        _bb("CMP_RM32_I32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CMP_RM32_I32");
         SPRINTF(dop, "CMP");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (_GetOperandSize) {
@@ -2491,161 +2491,161 @@ static void INS_81() {
         SPRINTF(dopr, "%s,%08X", drm, (uint32_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_83() {
     char dsimm[0x100];
-    _cb("INS_83");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_83");
     _adv;
-    _chr(_d_modrm(0, _GetOperandSize));
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     switch (cr) {
     case 0: /* ADD_RM32_I8 */
-        _bb("ADD_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADD_RM32_I8");
         SPRINTF(dop, "ADD");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* OR_RM32_I8 */
-        _bb("OR_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OR_RM32_I8");
         SPRINTF(dop, "OR");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* ADC_RM32_I8 */
-        _bb("ADC_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADC_RM32_I8");
         SPRINTF(dop, "ADC");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* SBB_RM32_I8 */
-        _bb("SBB_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SBB_RM32_I8");
         SPRINTF(dop, "SBB");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* AND_RM32_I8 */
-        _bb("AND_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AND_RM32_I8");
         SPRINTF(dop, "AND");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SUB_RM32_I8 */
-        _bb("SUB_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SUB_RM32_I8");
         SPRINTF(dop, "SUB");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* XOR_RM32_I8 */
-        _bb("XOR_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("XOR_RM32_I8");
         SPRINTF(dop, "XOR");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* CMP_RM32_I8 */
-        _bb("CMP_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CMP_RM32_I8");
         SPRINTF(dop, "CMP");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     SPRINTFSI(dsimm, (uint8_t)(cimm), 1);
     SPRINTF(dopr, "%s,%s", drm, dsimm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST_RM8_R8() {
-    _cb("TEST_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM8_R8");
     _adv;
     SPRINTF(dop, "TEST");
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST_RM32_R32() {
-    _cb("TEST_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM32_R32");
     _adv;
     SPRINTF(dop, "TEST");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_RM8_R8() {
-    _cb("XCHG_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM8_R8");
     _adv;
     SPRINTF(dop, "XCHG");
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_RM32_R32() {
-    _cb("XCHG_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM32_R32");
     _adv;
     SPRINTF(dop, "XCHG");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_RM8_R8() {
-    _cb("MOV_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM8_R8");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_RM32_R32() {
-    _cb("MOV_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM32_R32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R8_RM8() {
-    _cb("MOV_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R8_RM8");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_modrm(1, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(1, 1));
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R32_RM32() {
-    _cb("MOV_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_RM32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_RM16_SREG() {
-    _cb("MOV_RM16_SREG");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM16_SREG");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_modrm_sreg(2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_sreg(2));
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LEA_R32_M32() {
-    _cb("LEA_R32_M32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LEA_R32_M32");
     _adv;
     SPRINTF(dop, "LEA");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_SREG_RM16() {
-    _cb("MOV_SREG_RM16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_SREG_RM16");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_modrm_sreg(2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_sreg(2));
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_8F() {
-    _cb("INS_8F");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_8F");
     _adv;
-    _chr(_d_modrm(9, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(9, _GetOperandSize));
     switch (cr) {
     case 0: /* POP_RM32 */
-        _bb("POP_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("POP_RM32");
         switch (_GetOperandSize) {
         case 2:
             SPRINTF(dop, "POP");
@@ -2654,208 +2654,208 @@ static void INS_8F() {
             SPRINTF(dop, "POPD");
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1:
-        _bb("cr(1)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("cr(2)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        _bb("cr(3)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(3)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("cr(4)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        _bb("cr(5)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(5)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        _bb("cr(6)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        _bb("cr(7)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(7)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void NOP() {
-    _cb("NOP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("NOP");
     _adv;
     SPRINTF(dop, "NOP");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_ECX_EAX() {
-    _cb("XCHG_ECX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ECX_EAX");
     _adv;
     SPRINTF(dop, "XCHG");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         SPRINTF(dopr, "CX,AX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         SPRINTF(dopr, "ECX,EAX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EDX_EAX() {
-    _cb("XCHG_EDX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDX_EAX");
     _adv;
     SPRINTF(dop, "XCHG");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         SPRINTF(dopr, "DX,AX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         SPRINTF(dopr, "EDX,EAX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EBX_EAX() {
-    _cb("XCHG_EBX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBX_EAX");
     _adv;
     SPRINTF(dop, "XCHG");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         SPRINTF(dopr, "BX,AX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         SPRINTF(dopr, "EBX,EAX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_ESP_EAX() {
-    _cb("XCHG_ESP_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESP_EAX");
     _adv;
     SPRINTF(dop, "XCHG");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         SPRINTF(dopr, "SP,AX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         SPRINTF(dopr, "ESP,EAX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EBP_EAX() {
-    _cb("XCHG_EBP_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBP_EAX");
     _adv;
     SPRINTF(dop, "XCHG");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         SPRINTF(dopr, "BP,AX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         SPRINTF(dopr, "EBP,EAX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_ESI_EAX() {
-    _cb("XCHG_ESI_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESI_EAX");
     _adv;
     SPRINTF(dop, "XCHG");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         SPRINTF(dopr, "SI,AX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         SPRINTF(dopr, "ESI,EAX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EDI_EAX() {
-    _cb("XCHG_EDI_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDI_EAX");
     _adv;
     SPRINTF(dop, "XCHG");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         SPRINTF(dopr, "DI,AX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         SPRINTF(dopr, "EDI,EAX");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CBW() {
-    _cb("CBW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CBW");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -2865,13 +2865,13 @@ static void CBW() {
         SPRINTF(dop, "CWDE");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CWD() {
-    _cb("CWD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CWD");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -2881,48 +2881,48 @@ static void CWD() {
         SPRINTF(dop, "CDQ");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CALL_PTR16_32() {
     uint16_t newcs;
     uint32_t neweip;
-    _cb("CALL_PTR16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_PTR16_32");
     _adv;
     SPRINTF(dop, "CALL");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
-        _chr(_d_imm(4));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(4));
         neweip = (uint16_t)(cimm);
         newcs = (uint16_t)(cimm >> 16);
         SPRINTF(dopr, "%04X:%04X", newcs, (uint16_t)(neweip));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
-        _chr(_d_imm(8));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(8));
         neweip = (uint32_t)(cimm);
         newcs = (uint16_t)(cimm >> 32);
         SPRINTF(dopr, "%04X:%08X", newcs, (uint32_t)(neweip));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void WAIT() {
-    _cb("WAIT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("WAIT");
     _adv;
     SPRINTF(dop, "WAIT");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSHF() {
-    _cb("PUSHF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHF");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -2932,13 +2932,13 @@ static void PUSHF() {
         SPRINTF(dop, "PUSHFD");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POPF() {
-    _cb("POPF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POPF");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -2948,36 +2948,36 @@ static void POPF() {
         SPRINTF(dop, "POPFD");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SAHF() {
-    _cb("SAHF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SAHF");
     _adv;
     SPRINTF(dop, "SAHF");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LAHF() {
-    _cb("LAHF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LAHF");
     _adv;
     SPRINTF(dop, "LAHF");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_AL_MOFFS8() {
-    _cb("MOV_AL_MOFFS8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_MOFFS8");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_moffs(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(1));
     SPRINTF(dopr, "AL,%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EAX_MOFFS32() {
-    _cb("MOV_EAX_MOFFS32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_MOFFS32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_moffs(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "AX,%s", drm);
@@ -2986,24 +2986,24 @@ static void MOV_EAX_MOFFS32() {
         SPRINTF(dopr, "EAX,%s", drm);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_MOFFS8_AL() {
-    _cb("MOV_MOFFS8_AL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS8_AL");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_moffs(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(1));
     SPRINTF(dopr, "%s,AL", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_MOFFS32_EAX() {
-    _cb("MOV_MOFFS32_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS32_EAX");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_moffs(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "%s,AX", drm);
@@ -3012,14 +3012,14 @@ static void MOV_MOFFS32_EAX() {
         SPRINTF(dopr, "%s,EAX", drm);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSB() {
     char dptr[0x100];
-    _cb("MOVS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVS");
     _adv;
     SPRINTF(dop, "MOVSB");
     SPRINTF(dptr, "BYTE PTR ");
@@ -3031,14 +3031,14 @@ static void MOVSB() {
         SPRINTF(dopr, "ES:[EDI],%s:[ESI]", doverds);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSW() {
     char dptr[0x100];
-    _cb("MOVSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSW");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -3050,7 +3050,7 @@ static void MOVSW() {
         SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (_GetAddressSize) {
@@ -3061,14 +3061,14 @@ static void MOVSW() {
         SPRINTF(dopr, "ES:[EDI],%s:[ESI]", doverds);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMPSB() {
     char dptr[0x100];
-    _cb("CMPSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSB");
     _adv;
     SPRINTF(dop, "CMPSB");
     SPRINTF(dptr, "BYTE PTR ");
@@ -3080,14 +3080,14 @@ static void CMPSB() {
         SPRINTF(dopr, "%s:[ESI],ES:[EDI]", doverds);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMPSW() {
     char dptr[0x100];
-    _cb("CMPSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSW");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -3099,7 +3099,7 @@ static void CMPSW() {
         SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (_GetAddressSize) {
@@ -3110,24 +3110,24 @@ static void CMPSW() {
         SPRINTF(dopr, "%s:[ESI],ES:[EDI]", doverds);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST_AL_I8() {
-    _cb("TEST_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_AL_I8");
     _adv;
     SPRINTF(dop, "TEST");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST_EAX_I32() {
-    _cb("TEST_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_EAX_I32");
     _adv;
     SPRINTF(dop, "TEST");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
@@ -3136,14 +3136,14 @@ static void TEST_EAX_I32() {
         SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STOSB() {
     char dptr[0x100];
-    _cb("STOSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSB");
     _adv;
     SPRINTF(dop, "STOSB");
     SPRINTF(dptr, "BYTE PTR ");
@@ -3155,14 +3155,14 @@ static void STOSB() {
         SPRINTF(dopr, "ES:[EDI]");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STOSW() {
     char dptr[0x100];
-    _cb("STOSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSW");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -3174,7 +3174,7 @@ static void STOSW() {
         SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (_GetAddressSize) {
@@ -3185,14 +3185,14 @@ static void STOSW() {
         SPRINTF(dopr, "ES:[EDI]");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LODSB() {
     char dptr[0x100];
-    _cb("LODSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSB");
     _adv;
     SPRINTF(dop, "LODSB");
     SPRINTF(dptr, "BYTE PTR ");
@@ -3204,14 +3204,14 @@ static void LODSB() {
         SPRINTF(dopr, "%s:[ESI]", doverds);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LODSW() {
     char dptr[0x100];
-    _cb("LODSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSW");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -3223,7 +3223,7 @@ static void LODSW() {
         SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (_GetAddressSize) {
@@ -3234,14 +3234,14 @@ static void LODSW() {
         SPRINTF(dopr, "%s:[ESI]", doverds);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SCASB() {
     char dptr[0x100];
-    _cb("SCASB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASB");
     _adv;
     SPRINTF(dop, "SCASB");
     SPRINTF(dptr, "BYTE PTR ");
@@ -3253,14 +3253,14 @@ static void SCASB() {
         SPRINTF(dopr, "ES:[EDI]");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SCASW() {
     char dptr[0x100];
-    _cb("SCASW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASW");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -3272,7 +3272,7 @@ static void SCASW() {
         SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     switch (_GetAddressSize) {
@@ -3283,80 +3283,80 @@ static void SCASW() {
         SPRINTF(dopr, "ES:[EDI]");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_AL_I8() {
-    _cb("MOV_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_I8");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_CL_I8() {
-    _cb("MOV_CL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CL_I8");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "CL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_DL_I8() {
-    _cb("MOV_DL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DL_I8");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "DL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_BL_I8() {
-    _cb("MOV_BL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BL_I8");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "BL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_AH_I8() {
-    _cb("MOV_AH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AH_I8");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "AH,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_CH_I8() {
-    _cb("MOV_CH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CH_I8");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "CH,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_DH_I8() {
-    _cb("MOV_DH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DH_I8");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "DH,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_BH_I8() {
-    _cb("MOV_BH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BH_I8");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "BH,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EAX_I32() {
-    _cb("MOV_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_I32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
@@ -3365,16 +3365,16 @@ static void MOV_EAX_I32() {
         SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_ECX_I32() {
-    _cb("MOV_ECX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ECX_I32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "CX,%04X", (uint16_t)(cimm));
@@ -3383,16 +3383,16 @@ static void MOV_ECX_I32() {
         SPRINTF(dopr, "ECX,%08X", (uint32_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EDX_I32() {
-    _cb("MOV_EDX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDX_I32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "DX,%04X", (uint16_t)(cimm));
@@ -3401,16 +3401,16 @@ static void MOV_EDX_I32() {
         SPRINTF(dopr, "EDX,%08X", (uint32_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EBX_I32() {
-    _cb("MOV_EBX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBX_I32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "BX,%04X", (uint16_t)(cimm));
@@ -3419,16 +3419,16 @@ static void MOV_EBX_I32() {
         SPRINTF(dopr, "EBX,%08X", (uint32_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_ESP_I32() {
-    _cb("MOV_ESP_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESP_I32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "SP,%04X", (uint16_t)(cimm));
@@ -3437,16 +3437,16 @@ static void MOV_ESP_I32() {
         SPRINTF(dopr, "ESP,%08X", (uint32_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EBP_I32() {
-    _cb("MOV_EBP_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBP_I32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "BP,%04X", (uint16_t)(cimm));
@@ -3455,16 +3455,16 @@ static void MOV_EBP_I32() {
         SPRINTF(dopr, "EBP,%08X", (uint32_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_ESI_I32() {
-    _cb("MOV_ESI_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESI_I32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "SI,%04X", (uint16_t)(cimm));
@@ -3473,16 +3473,16 @@ static void MOV_ESI_I32() {
         SPRINTF(dopr, "ESI,%08X", (uint32_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EDI_I32() {
-    _cb("MOV_EDI_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDI_I32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "DI,%04X", (uint16_t)(cimm));
@@ -3491,231 +3491,231 @@ static void MOV_EDI_I32() {
         SPRINTF(dopr, "EDI,%08X", (uint32_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_C0() {
-    _cb("INS_C0");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C0");
     _adv;
-    _chr(_d_modrm(0, 1));
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     switch (cr) {
     case 0: /* ROL_RM8_I8 */
-        _bb("ROL_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM8_I8");
         SPRINTF(dop, "ROL");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM8_I8 */
-        _bb("ROR_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM8_I8");
         SPRINTF(dop, "ROL");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM8_I8 */
-        _bb("RCL_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM8_I8");
         SPRINTF(dop, "RCL");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM8_I8 */
-        _bb("RCR_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM8_I8");
         SPRINTF(dop, "RCR");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM8_I8 */
-        _bb("SHL_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM8_I8");
         SPRINTF(dop, "SHL");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM8_I8 */
-        _bb("SHR_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM8_I8");
         SPRINTF(dop, "SHR");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        _bb("cr(6)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM8_I8 */
-        _bb("SAR_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM8_I8");
         SPRINTF(dop, "SAR");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_C1() {
-    _cb("INS_C1");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C1");
     _adv;
-    _chr(_d_modrm(0, _GetOperandSize));
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     switch (cr) {
     case 0: /* ROL_RM32_I8 */
-        _bb("ROL_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM32_I8");
         SPRINTF(dop, "ROL");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM32_I8 */
-        _bb("ROR_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM32_I8");
         SPRINTF(dop, "ROR");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM32_I8 */
-        _bb("RCL_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM32_I8");
         SPRINTF(dop, "RCL");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM32_I8 */
-        _bb("RCR_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM32_I8");
         SPRINTF(dop, "RCR");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM32_I8 */
-        _bb("SHL_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM32_I8");
         SPRINTF(dop, "SHL");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM32_I8 */
-        _bb("SHR_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM32_I8");
         SPRINTF(dop, "SHR");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        _bb("cr(6)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM32_I8 */
-        _bb("SAR_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM32_I8");
         SPRINTF(dop, "SAR");
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RET_I16() {
-    _cb("RET_I16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RET_I16");
     _adv;
     SPRINTF(dop, "RET");
-    _chr(_d_imm(2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
     SPRINTF(dopr, "%04X", (uint16_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RET() {
-    _cb("RET");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RET");
     _adv;
     SPRINTF(dop, "RET");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LES_R32_M16_32() {
-    _cb("LES_R32_M16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LES_R32_M16_32");
     _adv;
     SPRINTF(dop, "LES");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
     if (!flagmem) {
-        _bb("flagmem(0)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
         SPRINTF(drm, "<ERROR>");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LDS_R32_M16_32() {
-    _cb("LDS_R32_M16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LDS_R32_M16_32");
     _adv;
     SPRINTF(dop, "LDS");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
     if (!flagmem) {
-        _bb("flagmem(0)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
         SPRINTF(drm, "<ERROR>");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_C6() {
-    _cb("INS_C6");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C6");
     _adv;
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     switch (cr) {
     case 0: /* MOV_RM8_I8 */
-        _bb("MOV_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MOV_RM8_I8");
         SPRINTF(dop, "MOV");
-        _chr(_d_imm(1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1:
-        _bb("cr(1)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("cr(2)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        _bb("cr(3)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(3)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("cr(4)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        _bb("cr(5)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(5)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        _bb("cr(6)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        _bb("cr(7)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(7)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_C7() {
-    _cb("INS_C7");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C7");
     _adv;
-    _chr(_d_modrm(0, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
     switch (cr) {
     case 0: /* MOV_RM32_I32 */
-        _bb("MOV_RM32_I32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MOV_RM32_I32");
         SPRINTF(dop, "MOV");
-        _chr(_d_imm(_GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
             SPRINTF(dopr, "%s,%04X", drm, (uint16_t)(cimm));
@@ -3724,106 +3724,106 @@ static void INS_C7() {
             SPRINTF(dopr, "%s,%08X", drm, (uint32_t)(cimm));
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1:
-        _bb("cr(1)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("cr(2)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        _bb("cr(3)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(3)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("cr(4)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        _bb("cr(5)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(5)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        _bb("cr(6)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        _bb("cr(7)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(7)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ENTER() {
     char dframesize[0x100], dnestlevel[0x100];
-    _cb("ENTER");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ENTER");
     _adv;
     SPRINTF(dop, "ENTER");
-    _chr(_d_imm(2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
     SPRINTF(dframesize, "%04X", (uint16_t)(cimm));
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dnestlevel, "%02X", (uint8_t)(cimm));
     SPRINTF(dopr, "%s,%s", dframesize, dnestlevel);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LEAVE() {
-    _cb("LEAVE");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LEAVE");
     _adv;
     SPRINTF(dop, "LEAVE");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RETF_I16() {
-    _cb("RETF_I16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF_I16");
     _adv;
     SPRINTF(dop, "RETF");
-    _chr(_d_imm(2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
     SPRINTF(dopr, "%04X", (uint16_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RETF() {
-    _cb("RETF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF");
     _adv;
     SPRINTF(dop, "RETF");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INT3() {
-    _cb("INT3");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INT3");
     _adv;
     SPRINTF(dop, "INT3");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INT_I8() {
-    _cb("INT_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INT_I8");
     _adv;
     SPRINTF(dop, "INT");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INTO() {
-    _cb("INTO");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INTO");
     _adv;
     SPRINTF(dop, "INTO");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IRET() {
-    _cb("IRET");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IRET");
     _adv;
     switch (_GetOperandSize) {
     case 2:
@@ -3833,261 +3833,261 @@ static void IRET() {
         SPRINTF(dop, "IRETD");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_D0() {
-    _cb("INS_D0");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D0");
     _adv;
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     switch (cr) {
     case 0: /* ROL_RM8 */
-        _bb("ROL_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM8");
         SPRINTF(dop, "ROL");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM8 */
-        _bb("ROR_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM8");
         SPRINTF(dop, "ROR");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM8 */
-        _bb("RCL_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM8");
         SPRINTF(dop, "RCL");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM8 */
-        _bb("RCR_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM8");
         SPRINTF(dop, "RCR");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM8 */
-        _bb("SHL_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM8");
         SPRINTF(dop, "SHL");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM8 */
-        _bb("SHR_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM8");
         SPRINTF(dop, "SHR");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        _bb("cr(6)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM8 */
-        _bb("SAR_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM8");
         SPRINTF(dop, "SAR");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_D1() {
-    _cb("INS_D1");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D1");
     _adv;
-    _chr(_d_modrm(0, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
     switch (cr) {
     case 0: /* ROL_RM32 */
-        _bb("ROL_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM32");
         SPRINTF(dop, "ROL");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM32 */
-        _bb("ROR_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM32");
         SPRINTF(dop, "ROR");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM32 */
-        _bb("RCL_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM32");
         SPRINTF(dop, "RCL");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM32 */
-        _bb("RCR_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM32");
         SPRINTF(dop, "RCR");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM32 */
-        _bb("SHL_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM32");
         SPRINTF(dop, "SHL");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM32 */
-        _bb("SHR_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM32");
         SPRINTF(dop, "SHR");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        _bb("cr(6)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM32 */
-        _bb("SAR_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM32");
         SPRINTF(dop, "SAR");
         SPRINTF(dopr, "%s,01", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_D2() {
-    _cb("INS_D2");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D2");
     _adv;
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     switch (cr) {
     case 0: /* ROL_RM8_CL */
-        _bb("ROL_RM8_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM8_CL");
         SPRINTF(dop, "ROL");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM8_CL */
-        _bb("ROR_RM8_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM8_CL");
         SPRINTF(dop, "ROR");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM8_CL */
-        _bb("RCL_RM8_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM8_CL");
         SPRINTF(dop, "RCL");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM8_CL */
-        _bb("RCR_RM8_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM8_CL");
         SPRINTF(dop, "RCR");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM8_CL */
-        _bb("SHL_RM8_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM8_CL");
         SPRINTF(dop, "SHL");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM8_CL */
-        _bb("SHR_RM8_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM8_CL");
         SPRINTF(dop, "SHR");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        _bb("cr(6)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM8_CL */
-        _bb("SAR_RM8_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM8_CL");
         SPRINTF(dop, "SAR");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_D3() {
-    _cb("INS_D3");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D3");
     _adv;
-    _chr(_d_modrm(0, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
     switch (cr) {
     case 0: /* ROL_RM32_CL */
-        _bb("ROL_RM32_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM32_CL");
         SPRINTF(dop, "ROL");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM32_CL */
-        _bb("ROR_RM32_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM32_CL");
         SPRINTF(dop, "ROR");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM32_CL */
-        _bb("RCL_RM32_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM32_CL");
         SPRINTF(dop, "RCL");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM32_CL */
-        _bb("RCR_RM32_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM32_CL");
         SPRINTF(dop, "RCR");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM32_CL */
-        _bb("SHL_RM32_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM32_CL");
         SPRINTF(dop, "SHL");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM32_CL */
-        _bb("SHR_RM32_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM32_CL");
         SPRINTF(dop, "SHR");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        _bb("cr(6)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM32_CL */
-        _bb("SAR_RM32_CL");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM32_CL");
         SPRINTF(dop, "SAR");
         SPRINTF(dopr, "%s,CL", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AAM() {
-    _cb("AAM");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAM");
     _adv;
     SPRINTF(dop, "AAM");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     if ((uint8_t)(cimm) != 0x0a) SPRINTF(dopr, "%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AAD() {
-    _cb("AAD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAD");
     _adv;
     SPRINTF(dop, "AAD");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     if ((uint8_t)(cimm) != 0x0a) SPRINTF(dopr, "%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XLAT() {
-    _cb("XLAT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XLAT");
     _adv;
     SPRINTF(dop, "XLATB");
     switch (_GetAddressSize) {
@@ -4098,56 +4098,56 @@ static void XLAT() {
         SPRINTF(dopr, "%s:[EBX+AL]", doverds);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LOOPNZ_REL8() {
-    _cb("LOOPNZ_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOPNZ_REL8");
     _adv;
     SPRINTF(dop, "LOOPNZ");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LOOPZ_REL8() {
-    _cb("LOOPZ_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOPZ_REL8");
     _adv;
     SPRINTF(dop, "LOOPZ");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LOOP_REL8() {
-    _cb("LOOP_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOP_REL8");
     _adv;
     SPRINTF(dop, "LOOP");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JCXZ_REL8() {
-    _cb("JCXZ_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JCXZ_REL8");
     _adv;
     SPRINTF(dop, "JCXZ");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN_AL_I8() {
-    _cb("IN_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
     _adv;
     SPRINTF(dop, "IN");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN_EAX_I8() {
-    _cb("IN_EAX_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_I8");
     _adv;
     SPRINTF(dop, "IN");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "AX,%02X", (uint8_t)(cimm));
@@ -4156,24 +4156,24 @@ static void IN_EAX_I8() {
         SPRINTF(dopr, "EAX,%02X", (uint8_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUT_I8_AL() {
-    _cb("OUT_I8_AL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_AL");
     _adv;
     SPRINTF(dop, "OUT");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "%02X,AL", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUT_I8_EAX() {
-    _cb("OUT_I8_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_EAX");
     _adv;
     SPRINTF(dop, "OUT");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     switch (_GetOperandSize) {
     case 2:
         SPRINTF(dopr, "%02X,AX", (uint8_t)(cimm));
@@ -4182,16 +4182,16 @@ static void OUT_I8_EAX() {
         SPRINTF(dopr, "%02X,EAX", (uint8_t)(cimm));
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CALL_REL32() {
-    _cb("CALL_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_REL32");
     _adv;
     SPRINTF(dop, "CALL");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -4200,16 +4200,16 @@ static void CALL_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JMP_REL32() {
-    _cb("JMP_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL32");
     _adv;
     SPRINTF(dop, "JMP");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -4218,60 +4218,60 @@ static void JMP_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JMP_PTR16_32() {
     uint16_t newcs;
     uint32_t neweip;
-    _cb("JMP_PTR16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_PTR16_32");
     _adv;
     SPRINTF(dop, "JMP");
     switch (_GetOperandSize) {
     case 2:
-        _bb("OperandSize(2)");
-        _chr(_d_imm(2));
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
         neweip = (uint16_t)(cimm);
-        _chr(_d_imm(2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
         newcs = (uint16_t)(cimm);
         SPRINTF(dopr, "%04X:%04X", newcs, (uint16_t)(neweip));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("OperandSize(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         _newins_;
-        _chr(_d_imm(4));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(4));
         neweip = (uint32_t)(cimm);
-        _chr(_d_imm(2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(2));
         newcs = (uint16_t)(cimm);
         SPRINTF(dopr, "%04X:%08X", newcs, (uint32_t)(neweip));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JMP_REL8() {
-    _cb("JMP_REL8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL8");
     _adv;
     SPRINTF(dop, "JMP");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTFSI(dopr, (uint8_t)(cimm), 1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN_AL_DX() {
-    _cb("IN_AL_DX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_DX");
     _adv;
     SPRINTF(dop, "IN");
     SPRINTF(dopr, "AL,DX");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN_EAX_DX() {
-    _cb("IN_EAX_DX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_DX");
     _adv;
     SPRINTF(dop, "IN");
     switch (_GetOperandSize) {
@@ -4282,20 +4282,20 @@ static void IN_EAX_DX() {
         SPRINTF(dopr, "EAX,DX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUT_DX_AL() {
-    _cb("OUT_DX_AL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_AL");
     _adv;
     SPRINTF(dop, "OUT");
     SPRINTF(dopr, "DX,AL");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUT_DX_EAX() {
-    _cb("OUT_DX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_EAX");
     _adv;
     SPRINTF(dop, "OUT");
     switch (_GetOperandSize) {
@@ -4306,109 +4306,109 @@ static void OUT_DX_EAX() {
         SPRINTF(dopr, "DX,EAX");
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_LOCK() {
-    _cb("PREFIX_LOCK");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
     _adv;
     SPRINTF(dop, "LOCK:");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_REPNZ() {
-    _cb("PREFIX_REPNZ");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPNZ");
     _adv;
     SPRINTF(dop, "REPNZ:");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_REPZ() {
-    _cb("PREFIX_REPZ");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPZ");
     _adv;
     SPRINTF(dop, "REPZ:");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void HLT() {
-    _cb("HLT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("HLT");
     _adv;
     SPRINTF(dop, "HLT");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMC() {
-    _cb("CMC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMC");
     _adv;
     SPRINTF(dop, "CMC");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_F6() {
-    _cb("INS_F6");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F6");
     _adv;
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     switch (cr) {
     case 0: /* TEST_RM8_I8 */
-        _bb("TEST_RM8_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("TEST_RM8_I8");
         SPRINTF(dop, "TEST");
-        _chr(_d_imm(1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* UndefinedOpcode */
-        _bb("ModRM_REG(1)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* NOT_RM8 */
-        _bb("NOT_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NOT_RM8");
         SPRINTF(dop, "NOT");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* NEG_RM8 */
-        _bb("NEG_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NEG_RM8");
         SPRINTF(dop, "NEG");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* MUL_RM8 */
-        _bb("MUL_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MUL_RM8");
         SPRINTF(dop, "MUL");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* IMUL_RM8 */
-        _bb("IMUL_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IMUL_RM8");
         SPRINTF(dop, "IMUL");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* DIV_RM8 */
-        _bb("DIV_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DIV_RM8");
         SPRINTF(dop, "DIV");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* IDIV_RM8 */
-        _bb("IDIV_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IDIV_RM8");
         SPRINTF(dop, "IDIV");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_F7() {
-    _cb("INS_F7");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F7");
     _adv;
-    _chr(_d_modrm(0, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
     switch (cr) {
     case 0: /* TEST_RM32_I32 */
-        _bb("TEST_RM32_I32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("TEST_RM32_I32");
         SPRINTF(dop, "TEST");
-        _chr(_d_imm(_GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
         switch (_GetOperandSize) {
         case 2:
             SPRINTF(dopr, "%s,%04X", drm, (uint16_t)(cimm));
@@ -4417,186 +4417,186 @@ static void INS_F7() {
             SPRINTF(dopr, "%s,%08X", drm, (uint32_t)(cimm));
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* UndefinedOpcode */
-        _bb("ModRM_REG(1)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* NOT_RM32 */
-        _bb("NOT_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NOT_RM32");
         SPRINTF(dop, "NOT");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* NEG_RM32 */
-        _bb("NEG_RM16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NEG_RM16");
         SPRINTF(dop, "NEG");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* MUL_RM32 */
-        _bb("MUL_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MUL_RM32");
         SPRINTF(dop, "MUL");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* IMUL_RM32 */
-        _bb("IMUL_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IMUL_RM32");
         SPRINTF(dop, "IMUL");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* DIV_RM32 */
-        _bb("DIV_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DIV_RM32");
         SPRINTF(dop, "DIV");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* IDIV_RM32 */
-        _bb("IDIV_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IDIV_RM32");
         SPRINTF(dop, "IDIV");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CLC() {
-    _cb("CLC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLC");
     _adv;
     SPRINTF(dop, "CLC");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STC() {
-    _cb("STC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STC");
     _adv;
     SPRINTF(dop, "STC");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CLI() {
-    _cb("CLI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLI");
     _adv;
     SPRINTF(dop, "CLI");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STI() {
-    _cb("STI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STI");
     _adv;
     SPRINTF(dop, "STI");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CLD() {
-    _cb("CLD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLD");
     _adv;
     SPRINTF(dop, "CLD");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STD() {
-    _cb("STD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STD");
     _adv;
     SPRINTF(dop, "STD");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_FE() {
-    _cb("INS_FE");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FE");
     _adv;
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     switch (cr) {
     case 0: /* INC_RM8 */
-        _bb("INC_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("INC_RM8");
         SPRINTF(dop, "INC");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* DEC_RM8 */
-        _bb("DEC_RM8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DEC_RM8");
         SPRINTF(dop, "DEC");
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("cr(2)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        _bb("cr(3)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(3)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("cr(4)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        _bb("cr(5)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(5)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        _bb("cr(6)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        _bb("cr(7)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(7)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_FF() {
     char dptr[0x100];
     uint8_t oldiop;
     uint8_t modrm;
-    _cb("INS_FF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FF");
     _adv;
     oldiop = iop;
-    _chr(_d_code((uint8_t *)(&modrm), 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code((uint8_t *)(&modrm), 1));
     iop = oldiop;
     switch (_GetModRM_REG(modrm)) {
     case 0: /* INC_RM32 */
-        _bb("INC_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("INC_RM32");
         SPRINTF(dop, "INC");
-        _chr(_d_modrm(0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* DEC_RM32 */
-        _bb("DEC_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DEC_RM32");
         SPRINTF(dop, "DEC");
-        _chr(_d_modrm(0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* CALL_RM32 */
-        _bb("CALL_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CALL_RM32");
         SPRINTF(dop, "CALL");
-        _chr(_d_modrm(0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* CALL_M16_32 */
-        _bb("CALL_M16_32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CALL_M16_32");
         SPRINTF(dop, "CALL");
-        _chr(_d_modrm(9, _GetOperandSize + 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(9, _GetOperandSize + 2));
         if (!flagmem) {
-            _bb("flagmem(0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
             SPRINTF(drm, "<ERROR>");
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         switch (_GetOperandSize) {
         case 2:
@@ -4606,27 +4606,27 @@ static void INS_FF() {
             SPRINTF(dptr, "DWORD PTR ");
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         SPRINTF(dopr, "FAR %s%s", dptr, drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* JMP_RM32 */
-        _bb("JMP_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("JMP_RM32");
         SPRINTF(dop, "JMP");
-        _chr(_d_modrm(0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* JMP_M16_32 */
-        _bb("JMP_M16_32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("JMP_M16_32");
         SPRINTF(dop, "JMP");
-        _chr(_d_modrm(9, _GetOperandSize + 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(9, _GetOperandSize + 2));
         if (!flagmem) {
-            _bb("flagmem(0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
             SPRINTF(drm, "<ERROR>");
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         switch (_GetOperandSize) {
         case 2:
@@ -4636,38 +4636,38 @@ static void INS_FF() {
             SPRINTF(dptr, "DWORD PTR ");
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         SPRINTF(dopr, "FAR %s%s", dptr, drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* PUSH_RM32 */
-        _bb("PUSH_RM32");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("PUSH_RM32");
         SPRINTF(dop, "PUSH");
-        _chr(_d_modrm(0, _GetOperandSize));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* UndefinedOpcode */
-        _bb("ModRM_REG(7)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 static void _d_modrm_creg() {
-    _cb("_d_modrm_creg");
-    _chr(_kdf_modrm(9, 4));
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_creg");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(9, 4));
     if (flagmem) {
-        _bb("flagmem(1)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(1)");
         SPRINTF(drm, "<ERROR>");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     switch (cr) {
     case 0:
@@ -4683,15 +4683,15 @@ static void _d_modrm_creg() {
         SPRINTF(dr, "<ERROR>");
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _d_modrm_dreg() {
-    _cb("_d_modrm_dreg");
-    _chr(_kdf_modrm(9, 4));
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_dreg");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(9, 4));
     if (flagmem) {
-        _bb("flagmem(1)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(1)");
         SPRINTF(drm, "<ERROR>");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     switch (cr) {
     case 0:
@@ -4716,15 +4716,15 @@ static void _d_modrm_dreg() {
         SPRINTF(dr, "<ERROR>");
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _d_modrm_treg() {
-    _cb("_d_modrm_treg");
-    _chr(_kdf_modrm(9, 4));
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_treg");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(9, 4));
     if (flagmem) {
-        _bb("flagmem(1)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(1)");
         SPRINTF(drm, "<ERROR>");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     switch (cr) {
     case 6:
@@ -4737,91 +4737,91 @@ static void _d_modrm_treg() {
         SPRINTF(dr, "<ERROR>");
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 static void INS_0F_00() {
     uint8_t modrm, oldiop;
-    _cb("INS_0F_00");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_00");
     _adv;
     oldiop = iop;
-    _chr(_d_code((uint8_t *)(&modrm), 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code((uint8_t *)(&modrm), 1));
     iop = oldiop;
     switch (_GetModRM_REG(modrm)) {
     case 0: /* SLDT_RM16 */
-        _bb("SLDT_RM16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SLDT_RM16");
         SPRINTF(dop, "SLDT");
-        _chr(_d_modrm(0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* STR_RM16 */
-        _bb("STR_RM16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("STR_RM16");
         SPRINTF(dop, "STR");
-        _chr(_d_modrm(0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* LLDT_RM16 */
-        _bb("LLDT_RM16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LLDT_RM16");
         SPRINTF(dop, "LLDT");
-        _chr(_d_modrm(0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 2));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* LTR_RM16 */
-        _bb("LTR_RM16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LTR_RM16");
         SPRINTF(dop, "LTR");
-        _chr(_d_modrm(0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 2));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* VERR_RM16 */
-        _bb("VERR_RM16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("VERR_RM16");
         SPRINTF(dop, "VERR");
-        _chr(_d_modrm(0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 2));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* VERW_RM16 */
-        _bb("VERW_RM16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("VERW_RM16");
         SPRINTF(dop, "VERW");
-        _chr(_d_modrm(0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 2));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        _bb("ModRM_REG(6)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(6)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        _bb("ModRM_REG(7)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_0F_01() {
     uint8_t modrm, oldiop;
-    _cb("INS_0F_01");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_01");
     _adv;
     oldiop = iop;
-    _chr(_d_code((uint8_t *)(&modrm), 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code((uint8_t *)(&modrm), 1));
     iop = oldiop;
     switch (_GetModRM_REG(modrm)) {
     case 0: /* SGDT_M32_16 */
-        _bb("SGDT_M32_16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SGDT_M32_16");
         SPRINTF(dop, "SGDT");
-        _chr(_d_modrm(0, 6));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 6));
         if (!flagmem) {
-            _bb("flagmem(0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
             SPRINTF(drm, "<ERROR>");
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         switch (_GetOperandSize) {
         case 2:
@@ -4831,19 +4831,19 @@ static void INS_0F_01() {
             SPRINTF(dopr, "DWORD PTR %s", drm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* SIDT_M32_16 */
-        _bb("SIDT_M32_16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SIDT_M32_16");
         SPRINTF(dop, "SIDT");
-        _chr(_d_modrm(0, 6));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 6));
         if (!flagmem) {
-            _bb("flagmem(0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
             SPRINTF(drm, "<ERROR>");
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         switch (_GetOperandSize) {
         case 2:
@@ -4853,19 +4853,19 @@ static void INS_0F_01() {
             SPRINTF(dopr, "DWORD PTR %s", drm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* LGDT_M32_16 */
-        _bb("LGDT_M32_16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LGDT_M32_16");
         SPRINTF(dop, "LGDT");
-        _chr(_d_modrm(0, 6));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 6));
         if (!flagmem) {
-            _bb("flagmem(0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
             SPRINTF(drm, "<ERROR>");
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         switch (_GetOperandSize) {
         case 2:
@@ -4875,19 +4875,19 @@ static void INS_0F_01() {
             SPRINTF(dopr, "DWORD PTR %s", drm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* LIDT_M32_16 */
-        _bb("LIDT_M32_16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LIDT_M32_16");
         SPRINTF(dop, "LIDT");
-        _chr(_d_modrm(0, 6));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 6));
         if (!flagmem) {
-            _bb("flagmem(0)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
             SPRINTF(drm, "<ERROR>");
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         }
         switch (_GetOperandSize) {
         case 2:
@@ -4897,119 +4897,119 @@ static void INS_0F_01() {
             SPRINTF(dopr, "DWORD PTR %s", drm);
             break;
         default:
-            _impossible_r_;
+            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SMSW_RM16 */
-        _bb("SMSW_RM16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SMSW_RM16");
         SPRINTF(dop, "SMSW");
-        _chr(_d_modrm(0, ((_GetModRM_MOD(modrm) == 3) ? _GetOperandSize : 2)));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, ((_GetModRM_MOD(modrm) == 3) ? _GetOperandSize : 2)));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        _bb("ModRM_REG(5)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(5)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* LMSW_RM16 */
-        _bb("LMSW_RM16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LMSW_RM16");
         SPRINTF(dop, "LMSW");
-        _chr(_d_modrm(0, 2));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 2));
         SPRINTF(dopr, "%s", drm);
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        _bb("ModRM_REG(7)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LAR_R32_RM32() {
-    _cb("LAR_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LAR_R32_RM32");
     _adv;
     SPRINTF(dop, "LAR");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LSL_R32_RM32() {
-    _cb("LSL_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LSL_R32_RM32");
     _adv;
     SPRINTF(dop, "LSL");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CLTS() {
-    _cb("CLTS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLTS");
     _adv;
     SPRINTF(dop, "CLTS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void WBINVD() {}
 static void MOV_R32_CR() {
-    _cb("MOV_R32_CR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_CR");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_modrm_creg());
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_creg());
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R32_DR() {
-    _cb("MOV_R32_DR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_DR");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_modrm_dreg());
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_dreg());
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_CR_R32() {
-    _cb("MOV_CR_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CR_R32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_modrm_creg());
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_creg());
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_DR_R32() {
-    _cb("MOV_DR_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DR_R32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_modrm_dreg());
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_dreg());
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R32_TR() {
-    _cb("MOV_R32_TR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_TR");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_modrm_treg());
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_treg());
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_TR_R32() {
-    _cb("MOV_TR_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_TR_R32");
     _adv;
     SPRINTF(dop, "MOV");
-    _chr(_d_modrm_treg());
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_treg());
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void WRMSR() {}
 static void RDMSR() {}
 static void JO_REL32() {
-    _cb("JO_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JO_REL32");
     _adv;
     SPRINTF(dop, "JO");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5018,16 +5018,16 @@ static void JO_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNO_REL32() {
-    _cb("JNO_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNO_REL32");
     _adv;
     SPRINTF(dop, "JNO");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5036,16 +5036,16 @@ static void JNO_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JC_REL32() {
-    _cb("JC_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JC_REL32");
     _adv;
     SPRINTF(dop, "JC");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5054,16 +5054,16 @@ static void JC_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNC_REL32() {
-    _cb("JNC_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNC_REL32");
     _adv;
     SPRINTF(dop, "JNC");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5072,16 +5072,16 @@ static void JNC_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JZ_REL32() {
-    _cb("JZ_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JZ_REL32");
     _adv;
     SPRINTF(dop, "JZ");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5090,16 +5090,16 @@ static void JZ_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNZ_REL32() {
-    _cb("JNZ_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNZ_REL32");
     _adv;
     SPRINTF(dop, "JNZ");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5108,16 +5108,16 @@ static void JNZ_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNA_REL32() {
-    _cb("JNA_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNA_REL32");
     _adv;
     SPRINTF(dop, "JNA");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5126,16 +5126,16 @@ static void JNA_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JA_REL32() {
-    _cb("JA_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JA_REL32");
     _adv;
     SPRINTF(dop, "JA");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5144,16 +5144,16 @@ static void JA_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JS_REL32() {
-    _cb("JS_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JS_REL32");
     _adv;
     SPRINTF(dop, "JS");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5162,16 +5162,16 @@ static void JS_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNS_REL32() {
-    _cb("JNS_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNS_REL32");
     _adv;
     SPRINTF(dop, "JNS");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5180,16 +5180,16 @@ static void JNS_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JP_REL32() {
-    _cb("JP_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JP_REL32");
     _adv;
     SPRINTF(dop, "JP");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5198,16 +5198,16 @@ static void JP_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNP_REL32() {
-    _cb("JNP_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNP_REL32");
     _adv;
     SPRINTF(dop, "JNP");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5216,16 +5216,16 @@ static void JNP_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JL_REL32() {
-    _cb("JL_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JL_REL32");
     _adv;
     SPRINTF(dop, "JL");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5234,16 +5234,16 @@ static void JL_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNL_REL32() {
-    _cb("JNL_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNL_REL32");
     _adv;
     SPRINTF(dop, "JNL");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5252,16 +5252,16 @@ static void JNL_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JNG_REL32() {
-    _cb("JNG_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNG_REL32");
     _adv;
     SPRINTF(dop, "JNG");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5270,16 +5270,16 @@ static void JNG_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JG_REL32() {
-    _cb("JG_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JG_REL32");
     _adv;
     SPRINTF(dop, "JG");
-    _chr(_d_imm(_GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(_GetOperandSize));
     switch (_GetOperandSize) {
     case 2:
         SPRINTFSI(dopr, (uint16_t)(cimm), 2);
@@ -5288,412 +5288,412 @@ static void JG_REL32() {
         SPRINTFSI(dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETO_RM8() {
-    _cb("SETO_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETO_RM8");
     _adv;
     SPRINTF(dop, "SETO");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNO_RM8() {
-    _cb("SETO_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETO_RM8");
     _adv;
     SPRINTF(dop, "SETNO");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETC_RM8() {
-    _cb("SETC_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETC_RM8");
     _adv;
     SPRINTF(dop, "SETC");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNC_RM8() {
-    _cb("SETNC_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNC_RM8");
     _adv;
     SPRINTF(dop, "SETNC");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETZ_RM8() {
-    _cb("SETZ_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETZ_RM8");
     _adv;
     SPRINTF(dop, "SETZ");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNZ_RM8() {
-    _cb("SETNZ_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNZ_RM8");
     _adv;
     SPRINTF(dop, "SETNZ");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNA_RM8() {
-    _cb("SETNA_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNA_RM8");
     _adv;
     SPRINTF(dop, "SETNA");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETA_RM8() {
-    _cb("SETA_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETA_RM8");
     _adv;
     SPRINTF(dop, "SETA");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETS_RM8() {
-    _cb("SETS_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETS_RM8");
     _adv;
     SPRINTF(dop, "SETS");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNS_RM8() {
-    _cb("SETNS_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNS_RM8");
     _adv;
     SPRINTF(dop, "SETNS");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETP_RM8() {
-    _cb("SETP_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETP_RM8");
     _adv;
     SPRINTF(dop, "SETP");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNP_RM8() {
-    _cb("SETNP_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNP_RM8");
     _adv;
     SPRINTF(dop, "SETNP");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETL_RM8() {
-    _cb("SETL_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETL_RM8");
     _adv;
     SPRINTF(dop, "SETL");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNL_RM8() {
-    _cb("SETNL_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNL_RM8");
     _adv;
     SPRINTF(dop, "SETNL");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETNG_RM8() {
-    _cb("SETNG_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNG_RM8");
     _adv;
     SPRINTF(dop, "SETNG");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETG_RM8() {
-    _cb("SETG_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETG_RM8");
     _adv;
     SPRINTF(dop, "SETG");
-    _chr(_d_modrm(0, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, 1));
     SPRINTF(dopr, "%s", drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_FS() {
-    _cb("PUSH_FS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_FS");
     _adv;
     SPRINTF(dop, "PUSH");
     SPRINTF(dopr, "FS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_FS() {
-    _cb("POP_FS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_FS");
     _adv;
     SPRINTF(dop, "POP");
     SPRINTF(dopr, "FS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CPUID() {}
 static void BT_RM32_R32() {
-    _cb("BT_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BT_RM32_R32");
     _adv;
     SPRINTF(dop, "BT");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHLD_RM32_R32_I8() {
-    _cb("SHLD_RM32_R32_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_I8");
     _adv;
     SPRINTF(dop, "SHLD");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "%s,%s,%02X", drm, dr, (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHLD_RM32_R32_CL() {
-    _cb("SHLD_RM32_R32_CL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_CL");
     _adv;
     SPRINTF(dop, "SHLD");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s,CL", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_GS() {
-    _cb("PUSH_GS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_GS");
     _adv;
     SPRINTF(dop, "PUSH");
     SPRINTF(dopr, "GS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_GS() {
-    _cb("POP_GS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_GS");
     _adv;
     SPRINTF(dop, "POP");
     SPRINTF(dopr, "GS");
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RSM() {}
 static void BTS_RM32_R32() {
-    _cb("BTS_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTS_RM32_R32");
     _adv;
     SPRINTF(dop, "BTS");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHRD_RM32_R32_I8() {
-    _cb("SHRD_RM32_R32_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_I8");
     _adv;
     SPRINTF(dop, "SHRD");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "%s,%s,%02X", drm, dr, (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHRD_RM32_R32_CL() {
-    _cb("SHRD_RM32_R32_CL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_CL");
     _adv;
     SPRINTF(dop, "SHRD");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s,CL", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IMUL_R32_RM32() {
-    _cb("IMUL_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32");
     _adv;
     SPRINTF(dop, "IMUL");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LSS_R32_M16_32() {
-    _cb("LSS_R32_M16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LSS_R32_M16_32");
     _adv;
     SPRINTF(dop, "LSS");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
     if (!flagmem) {
-        _bb("flagmem(0)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
         SPRINTF(drm, "<ERROR>");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BTR_RM32_R32() {
-    _cb("BTR_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTR_RM32_R32");
     _adv;
     SPRINTF(dop, "BTR");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LFS_R32_M16_32() {
-    _cb("LFS_R32_M16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LFS_R32_M16_32");
     _adv;
     SPRINTF(dop, "LFS");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
     if (!flagmem) {
-        _bb("flagmem(0)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
         SPRINTF(drm, "<ERROR>");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LGS_R32_M16_32() {
-    _cb("LGS_R32_M16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LGS_R32_M16_32");
     _adv;
     SPRINTF(dop, "LGS");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize + 2));
     if (!flagmem) {
-        _bb("flagmem(0)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
         SPRINTF(drm, "<ERROR>");
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVZX_R32_RM8() {
     char dptr[0x100];
-    _cb("MOVZX_R32_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM8");
     _adv;
     SPRINTF(dop, "MOVZX");
-    _chr(_d_modrm(_GetOperandSize, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, 1));
     if (flagmem) SPRINTF(dptr, "BYTE PTR ");
     else dptr[0] = 0;
     SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVZX_R32_RM16() {
     char dptr[0x100];
-    _cb("MOVZX_R32_RM16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM16");
     _adv;
     SPRINTF(dop, "MOVZX");
-    _chr(_d_modrm(4, 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(4, 2));
     if (flagmem) SPRINTF(dptr, "WORD PTR ");
     else dptr[0] = 0;
     SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_0F_BA() {
     uint8_t modrm, oldiop;
-    _cb("INS_0F_BA");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_BA");
     _adv;
     oldiop = iop;
-    _chr(_d_code((uint8_t *)(&modrm), 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code((uint8_t *)(&modrm), 1));
     iop = oldiop;
-    _chr(_d_modrm(0, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(0, _GetOperandSize));
     switch (cr) {
     case 0:
-        _bb("cr(0)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(0)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 1:
-        _bb("cr(1)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(1)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        _bb("cr(2)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        _bb("cr(3)");
-        _chr(UndefinedOpcode());
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(3)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode());
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* BT_RM32_I8 */
-        _bb("BT_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("BT_RM32_I8");
         SPRINTF(dop, "BT");
-        _chr(_d_imm(1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* BTS_RM32_I8 */
-        _bb("BTS_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("BTS_RM32_I8");
         SPRINTF(dop, "BTS");
-        _chr(_d_imm(1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* BTR_RM32_I8 */
-        _bb("BTR_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("BTR_RM32_I8");
         SPRINTF(dop, "BTR");
-        _chr(_d_imm(1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* BTC_RM32_I8 */
-        _bb("BTC_RM32_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("BTC_RM32_I8");
         SPRINTF(dop, "BTC");
-        _chr(_d_imm(1));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
         SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
-        _impossible_r_;
+        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BTC_RM32_R32() {
-    _cb("BTC_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTC_RM32_R32");
     _adv;
     SPRINTF(dop, "BTC");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", drm, dr);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BSF_R32_RM32() {
-    _cb("BSF_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BSF_R32_RM32");
     _adv;
     SPRINTF(dop, "BSF");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BSR_R32_RM32() {
-    _cb("BSR_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BSR_R32_RM32");
     _adv;
     SPRINTF(dop, "BSR");
-    _chr(_d_modrm(_GetOperandSize, _GetOperandSize));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, _GetOperandSize));
     SPRINTF(dopr, "%s,%s", dr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSX_R32_RM8() {
     char dptr[0x100];
-    _cb("MOVSX_R32_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM8");
     _adv;
     SPRINTF(dop, "MOVSX");
-    _chr(_d_modrm(_GetOperandSize, 1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(_GetOperandSize, 1));
     if (flagmem) SPRINTF(dptr, "BYTE PTR ");
     else dptr[0] = 0;
     SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSX_R32_RM16() {
     char dptr[0x100];
-    _cb("MOVSX_R32_RM16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM16");
     _adv;
     SPRINTF(dop, "MOVSX");
-    _chr(_d_modrm(4, 2));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(4, 2));
     if (flagmem) SPRINTF(dptr, "WORD PTR ");
     else dptr[0] = 0;
     SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void QDX() {
-    _cb("QDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("QDX");
     _adv;
     SPRINTF(dop, "QDX");
-    _chr(_d_imm(1));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(1));
     SPRINTF(dopr, "%02X", (uint8_t)(cimm));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 static uint8_t dasm32_execute(char *stmt, uint8_t *rcode, int flag32) {
@@ -6233,14 +6233,14 @@ static uint8_t dasm32_execute(char *stmt, uint8_t *rcode, int flag32) {
     SPRINTF(doverss, "SS");
 
     do {
-        _cb("dasm32");
+        NTVDM64_TYPE_TRACE_CALL_BEGIN("dasm32");
         dop[0] = 0;
         dopr[0] = 0;
         dstmt[0] = 0;
         oldiop = iop;
-        _chb(_d_code((uint8_t *)(&opcode), 1));
+        NTVDM64_TYPE_TRACE_CHECK_BREAK(_d_code((uint8_t *)(&opcode), 1));
         iop = oldiop;
-        _chb((*(dtable[opcode]))());
+        NTVDM64_TYPE_TRACE_CHECK_BREAK((*(dtable[opcode]))());
         if (STRLEN(dop)) {
             STRCAT(dop, " ");
             STRCPY(dstmt, dop);
@@ -6248,7 +6248,7 @@ static uint8_t dasm32_execute(char *stmt, uint8_t *rcode, int flag32) {
             STRCAT(dstmt, dopr);
             STRCAT(stmt, dstmt);
         }
-        _ce;
+        NTVDM64_TYPE_TRACE_CALL_END;
     } while (_kdf_check_prefix(opcode));
 #if DASM_TRACE == 1
     if (trace.callCount || trace.flagError) {

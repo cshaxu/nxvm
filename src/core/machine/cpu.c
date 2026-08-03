@@ -23,14 +23,14 @@ void core_machine_cpu_execution_context_initialize(
     context->pic_master = NULL;
     context->pic_slave = NULL;
     if (context->trace == NULL) {
-        context->trace = (t_utils_trace *)MALLOC(sizeof(*context->trace));
+        context->trace = (ntvdm64_type_trace *)MALLOC(sizeof(*context->trace));
     }
     if (context->trace != NULL) {
-        MEMSET((void *)context->trace, Zero8, sizeof(*context->trace));
+        MEMSET((void *)context->trace, NTVDM64_TYPE_ZERO_8, sizeof(*context->trace));
     }
     context->extension_context = NULL;
-    context->stop_requested = False;
-    context->reset_requested = False;
+    context->stop_requested = NTVDM64_TYPE_FALSE;
+    context->reset_requested = NTVDM64_TYPE_FALSE;
 }
 
 void core_machine_cpu_execution_context_bind_pic(
@@ -59,85 +59,85 @@ void core_machine_cpu_state_initialize(
     if (context == NULL || context->cpu == NULL ||
         context->instructions == NULL) return;
     if (context != NULL) {
-        context->stop_requested = False;
-        context->reset_requested = False;
+        context->stop_requested = NTVDM64_TYPE_FALSE;
+        context->reset_requested = NTVDM64_TYPE_FALSE;
     }
     core_machine_cpu_execution_initialize(context);
 }
 void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
     if (context == NULL || context->cpu == NULL ||
         context->instructions == NULL) return;
-    MEMSET((void *)context->cpu, Zero8, sizeof(t_cpu));
+    MEMSET((void *)context->cpu, NTVDM64_TYPE_ZERO_8, sizeof(t_cpu));
     if (context != NULL) {
-        context->stop_requested = False;
-        context->reset_requested = False;
+        context->stop_requested = NTVDM64_TYPE_FALSE;
+        context->reset_requested = NTVDM64_TYPE_FALSE;
     }
 
     cpu_state.data.eip = 0x0000fff0;
     cpu_state.data.eflags = 0x00000002;
 
     cpu_state.data.cs.base = 0xffff0000;
-    cpu_state.data.cs.dpl = Zero4;
-    cpu_state.data.cs.limit = Max32;
-    cpu_state.data.cs.seg.accessed = True;
-    cpu_state.data.cs.seg.executable = True;
-    cpu_state.data.cs.seg.exec.conform = False;
-    cpu_state.data.cs.seg.exec.defsize = False;
-    cpu_state.data.cs.seg.exec.readable = True;
+    cpu_state.data.cs.dpl = NTVDM64_TYPE_ZERO_4;
+    cpu_state.data.cs.limit = NTVDM64_TYPE_MAX_UNSIGNED_32;
+    cpu_state.data.cs.seg.accessed = NTVDM64_TYPE_TRUE;
+    cpu_state.data.cs.seg.executable = NTVDM64_TYPE_TRUE;
+    cpu_state.data.cs.seg.exec.conform = NTVDM64_TYPE_FALSE;
+    cpu_state.data.cs.seg.exec.defsize = NTVDM64_TYPE_FALSE;
+    cpu_state.data.cs.seg.exec.readable = NTVDM64_TYPE_TRUE;
     cpu_state.data.cs.selector = 0xf000;
     cpu_state.data.cs.sregtype = SREG_CODE;
-    cpu_state.data.cs.flagValid = True;
+    cpu_state.data.cs.flagValid = NTVDM64_TYPE_TRUE;
 
-    cpu_state.data.ss.base = Zero32;
-    cpu_state.data.ss.dpl = Zero4;
-    cpu_state.data.ss.limit = Max16;
-    cpu_state.data.ss.seg.accessed = True;
-    cpu_state.data.ss.seg.executable = False;
-    cpu_state.data.ss.seg.data.big = False;
-    cpu_state.data.ss.seg.data.expdown = False;
-    cpu_state.data.ss.seg.data.writable = True;
-    cpu_state.data.ss.selector = Zero16;
+    cpu_state.data.ss.base = NTVDM64_TYPE_ZERO_32;
+    cpu_state.data.ss.dpl = NTVDM64_TYPE_ZERO_4;
+    cpu_state.data.ss.limit = NTVDM64_TYPE_MAX_UNSIGNED_16;
+    cpu_state.data.ss.seg.accessed = NTVDM64_TYPE_TRUE;
+    cpu_state.data.ss.seg.executable = NTVDM64_TYPE_FALSE;
+    cpu_state.data.ss.seg.data.big = NTVDM64_TYPE_FALSE;
+    cpu_state.data.ss.seg.data.expdown = NTVDM64_TYPE_FALSE;
+    cpu_state.data.ss.seg.data.writable = NTVDM64_TYPE_TRUE;
+    cpu_state.data.ss.selector = NTVDM64_TYPE_ZERO_16;
     cpu_state.data.ss.sregtype = SREG_STACK;
-    cpu_state.data.ss.flagValid = True;
+    cpu_state.data.ss.flagValid = NTVDM64_TYPE_TRUE;
 
-    cpu_state.data.ds.base = Zero32;
-    cpu_state.data.ds.dpl = Zero4;
-    cpu_state.data.ds.limit = Max16;
-    cpu_state.data.ds.seg.accessed = True;
-    cpu_state.data.ss.seg.executable = False;
-    cpu_state.data.ds.seg.data.big = False;
-    cpu_state.data.ds.seg.data.expdown = False;
-    cpu_state.data.ds.seg.data.writable = True;
-    cpu_state.data.ds.selector = Zero16;
+    cpu_state.data.ds.base = NTVDM64_TYPE_ZERO_32;
+    cpu_state.data.ds.dpl = NTVDM64_TYPE_ZERO_4;
+    cpu_state.data.ds.limit = NTVDM64_TYPE_MAX_UNSIGNED_16;
+    cpu_state.data.ds.seg.accessed = NTVDM64_TYPE_TRUE;
+    cpu_state.data.ss.seg.executable = NTVDM64_TYPE_FALSE;
+    cpu_state.data.ds.seg.data.big = NTVDM64_TYPE_FALSE;
+    cpu_state.data.ds.seg.data.expdown = NTVDM64_TYPE_FALSE;
+    cpu_state.data.ds.seg.data.writable = NTVDM64_TYPE_TRUE;
+    cpu_state.data.ds.selector = NTVDM64_TYPE_ZERO_16;
     cpu_state.data.ds.sregtype = SREG_DATA;
-    cpu_state.data.ds.flagValid = True;
+    cpu_state.data.ds.flagValid = NTVDM64_TYPE_TRUE;
     cpu_state.data.gs = cpu_state.data.fs = cpu_state.data.es = cpu_state.data.ds;
 
-    cpu_state.data.ldtr.base = Zero32;
-    cpu_state.data.ldtr.dpl = Zero4;
-    cpu_state.data.ldtr.limit = Max16;
-    cpu_state.data.ldtr.selector = Zero16;
+    cpu_state.data.ldtr.base = NTVDM64_TYPE_ZERO_32;
+    cpu_state.data.ldtr.dpl = NTVDM64_TYPE_ZERO_4;
+    cpu_state.data.ldtr.limit = NTVDM64_TYPE_MAX_UNSIGNED_16;
+    cpu_state.data.ldtr.selector = NTVDM64_TYPE_ZERO_16;
     cpu_state.data.ldtr.sregtype = SREG_LDTR;
     cpu_state.data.ldtr.sys.type = VCPU_DESC_SYS_TYPE_LDT;
-    cpu_state.data.ldtr.flagValid = True;
+    cpu_state.data.ldtr.flagValid = NTVDM64_TYPE_TRUE;
 
-    cpu_state.data.tr.base = Zero32;
-    cpu_state.data.tr.dpl = Zero4;
-    cpu_state.data.tr.limit = Max16;
-    cpu_state.data.tr.selector = Zero16;
+    cpu_state.data.tr.base = NTVDM64_TYPE_ZERO_32;
+    cpu_state.data.tr.dpl = NTVDM64_TYPE_ZERO_4;
+    cpu_state.data.tr.limit = NTVDM64_TYPE_MAX_UNSIGNED_16;
+    cpu_state.data.tr.selector = NTVDM64_TYPE_ZERO_16;
     cpu_state.data.tr.sregtype = SREG_TR;
     cpu_state.data.tr.sys.type = VCPU_DESC_SYS_TYPE_TSS_16_AVL;
-    cpu_state.data.tr.flagValid = True;
+    cpu_state.data.tr.flagValid = NTVDM64_TYPE_TRUE;
 
-    cpu_state.data.idtr.base = Zero32;
+    cpu_state.data.idtr.base = NTVDM64_TYPE_ZERO_32;
     cpu_state.data.idtr.limit = 0x03ff;
     cpu_state.data.idtr.sregtype = SREG_IDTR;
-    cpu_state.data.idtr.flagValid = True;
+    cpu_state.data.idtr.flagValid = NTVDM64_TYPE_TRUE;
 
-    cpu_state.data.gdtr.base = Zero32;
-    cpu_state.data.gdtr.limit = Max16;
+    cpu_state.data.gdtr.base = NTVDM64_TYPE_ZERO_32;
+    cpu_state.data.gdtr.limit = NTVDM64_TYPE_MAX_UNSIGNED_16;
     cpu_state.data.gdtr.sregtype = SREG_GDTR;
-    cpu_state.data.gdtr.flagValid = True;
+    cpu_state.data.gdtr.flagValid = NTVDM64_TYPE_TRUE;
 
     core_machine_cpu_execution_reset(context);
 
@@ -146,39 +146,39 @@ void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context) {
 void core_machine_cpu_execution_request_stop(
     core_machine_cpu_execution_context *context)
 {
-    if (context != NULL) context->stop_requested = True;
+    if (context != NULL) context->stop_requested = NTVDM64_TYPE_TRUE;
 }
- t_bool core_machine_cpu_execution_consume_stop_request(
+ ntvdm64_type_bool core_machine_cpu_execution_consume_stop_request(
     core_machine_cpu_execution_context *context)
 {
-    t_bool requested = context != NULL && context->stop_requested;
-    if (context != NULL) context->stop_requested = False;
+    ntvdm64_type_bool requested = context != NULL && context->stop_requested;
+    if (context != NULL) context->stop_requested = NTVDM64_TYPE_FALSE;
     return requested;
 }
 void core_machine_cpu_execution_request_reset(
     core_machine_cpu_execution_context *context)
 {
-    if (context != NULL) context->reset_requested = True;
+    if (context != NULL) context->reset_requested = NTVDM64_TYPE_TRUE;
 }
-t_bool core_machine_cpu_execution_consume_reset_request(
+ntvdm64_type_bool core_machine_cpu_execution_consume_reset_request(
     core_machine_cpu_execution_context *context)
 {
-    t_bool requested = context != NULL && context->reset_requested;
-    if (context != NULL) context->reset_requested = False;
+    ntvdm64_type_bool requested = context != NULL && context->reset_requested;
+    if (context != NULL) context->reset_requested = NTVDM64_TYPE_FALSE;
     return requested;
 }
 
 int core_machine_cpu_read_linear(core_machine_cpu_execution_context *context, uint32_t linear, void *out_data, uint8_t size)
 {
     return core_machine_cpu_execution_read_linear(context, linear,
-        (t_vaddrcc)out_data, size);
+        (ntvdm64_type_virtual_address)out_data, size);
 }
 
 int core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
     uint32_t linear, const void *in_data, uint8_t size)
 {
     return core_machine_cpu_execution_write_linear(context, linear,
-        (t_vaddrcc)in_data, size);
+        (ntvdm64_type_virtual_address)in_data, size);
 }
 
 int core_machine_cpu_load_segment(core_machine_cpu_execution_context *context,
@@ -223,15 +223,15 @@ void core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context
     switch (kind) {
     case CORE_MACHINE_CPU_WATCH_READ:
         instruction_state.data.wrLinear = linear;
-        instruction_state.data.flagWR = True;
+        instruction_state.data.flagWR = NTVDM64_TYPE_TRUE;
         break;
     case CORE_MACHINE_CPU_WATCH_WRITE:
         instruction_state.data.wwLinear = linear;
-        instruction_state.data.flagWW = True;
+        instruction_state.data.flagWW = NTVDM64_TYPE_TRUE;
         break;
     case CORE_MACHINE_CPU_WATCH_EXECUTE:
         instruction_state.data.weLinear = linear;
-        instruction_state.data.flagWE = True;
+        instruction_state.data.flagWE = NTVDM64_TYPE_TRUE;
         break;
     }
 }
@@ -241,19 +241,19 @@ void core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *conte
 {
     switch (kind) {
     case CORE_MACHINE_CPU_WATCH_READ:
-        instruction_state.data.flagWR = False;
+        instruction_state.data.flagWR = NTVDM64_TYPE_FALSE;
         break;
     case CORE_MACHINE_CPU_WATCH_WRITE:
-        instruction_state.data.flagWW = False;
+        instruction_state.data.flagWW = NTVDM64_TYPE_FALSE;
         break;
     case CORE_MACHINE_CPU_WATCH_EXECUTE:
-        instruction_state.data.flagWE = False;
+        instruction_state.data.flagWE = NTVDM64_TYPE_FALSE;
         break;
     }
 }
 
 /* Prints user segment registers (ES, CS, SS, DS, FS, GS) */
-static void print_sreg_seg(t_cpu_data_sreg *rsreg, const t_strptr label) {
+static void print_sreg_seg(t_cpu_data_sreg *rsreg, const ntvdm64_type_string_pointer label) {
     PRINTF("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, %s, ", label,
            rsreg->selector, rsreg->base, rsreg->limit,
            rsreg->dpl, rsreg->seg.accessed ? "A" : "a");
@@ -270,7 +270,7 @@ static void print_sreg_seg(t_cpu_data_sreg *rsreg, const t_strptr label) {
     }
 }
 /* Prints system segment registers (TR, LDTR) */
-static void print_sreg_sys(t_cpu_data_sreg *rsreg, const t_strptr label) {
+static void print_sreg_sys(t_cpu_data_sreg *rsreg, const ntvdm64_type_string_pointer label) {
     PRINTF("%s=%04X, Base=%08X, Limit=%08X, DPL=%01X, Type=%04X\n", label,
            rsreg->selector, rsreg->base, rsreg->limit,
            rsreg->dpl, rsreg->sys.type);
@@ -332,7 +332,7 @@ void core_machine_cpu_print_registers(const core_machine_cpu_execution_context *
 }
 /* Prints active memory info */
 void core_machine_cpu_print_memory_accesses(const core_machine_cpu_execution_context *context) {
-    t_nubitcc i;
+    ntvdm64_type_native_unsigned i;
     for (i = 0; i < instruction_state.data.msize; ++i) {
         PRINTF("%s: Lin=%08x, Data=%08x, Bytes=%1x\n",
                instruction_state.data.mem[i].flagWrite ? "Write" : "Read",

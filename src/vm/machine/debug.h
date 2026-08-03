@@ -30,12 +30,12 @@ typedef struct {
 } t_debug_connect;
 
 typedef struct {
-    t_bool flagBreak; /* breakpoint set (1) or not (0) */
-    t_bool flagBreak32;
-    t_bool flagTrace; /* tracer set(1) or not (0) */
-    t_nubitcc breakCount, traceCount;
-    t_nubit16 breakCS, breakIP;
-    t_nubit32 breakLinear;
+    ntvdm64_type_bool flagBreak; /* breakpoint set (1) or not (0) */
+    ntvdm64_type_bool flagBreak32;
+    ntvdm64_type_bool flagTrace; /* tracer set(1) or not (0) */
+    ntvdm64_type_native_unsigned breakCount, traceCount;
+    ntvdm64_type_unsigned_16 breakCS, breakIP;
+    ntvdm64_type_unsigned_32 breakLinear;
 } t_debug_data;
 
 typedef struct {

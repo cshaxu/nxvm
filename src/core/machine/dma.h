@@ -12,7 +12,7 @@ extern "C" {
 
 #define NXVM_DEVICE_DMA "Intel 8237A"
 
-typedef t_nubit8 t_page;
+typedef ntvdm64_type_unsigned_8 t_page;
 typedef struct t_latch t_latch;
 typedef struct t_ram t_ram;
 typedef void (*core_machine_dma_device_provider)(void *owner, t_latch *latch);
@@ -21,24 +21,24 @@ typedef void (*core_machine_dma_device_provider)(void *owner, t_latch *latch);
 
 typedef struct {
 
-    t_nubit16 baseAddr[VDMA_CHANNEL_COUNT];  /* base address */
-    t_nubit16 baseCount[VDMA_CHANNEL_COUNT]; /* base word count */
-    t_nubit16 currAddr[VDMA_CHANNEL_COUNT];  /* current address */
-    t_nubit16 currCount[VDMA_CHANNEL_COUNT]; /* current word count */
-    t_nubit8  mode[VDMA_CHANNEL_COUNT];      /* mode register */
+    ntvdm64_type_unsigned_16 baseAddr[VDMA_CHANNEL_COUNT];  /* base address */
+    ntvdm64_type_unsigned_16 baseCount[VDMA_CHANNEL_COUNT]; /* base word count */
+    ntvdm64_type_unsigned_16 currAddr[VDMA_CHANNEL_COUNT];  /* current address */
+    ntvdm64_type_unsigned_16 currCount[VDMA_CHANNEL_COUNT]; /* current word count */
+    ntvdm64_type_unsigned_8  mode[VDMA_CHANNEL_COUNT];      /* mode register */
     t_page    page[VDMA_CHANNEL_COUNT];      /* page register */
 
-    t_nubit8 command; /* command register */
-    t_nubit8 status;  /* status register */
-    t_nubit8 mask;    /* mask register */
-    t_nubit8 request; /* request register */
-    t_nubit8 temp;    /* temporary register */
-    t_nubit8 drx;     /* dreq id of highest priority */
-    t_bool   flagMSB; /* flip-flop for msb/lsb */
-    t_bool   flagEOP; /* end of process */
+    ntvdm64_type_unsigned_8 command; /* command register */
+    ntvdm64_type_unsigned_8 status;  /* status register */
+    ntvdm64_type_unsigned_8 mask;    /* mask register */
+    ntvdm64_type_unsigned_8 request; /* request register */
+    ntvdm64_type_unsigned_8 temp;    /* temporary register */
+    ntvdm64_type_unsigned_8 drx;     /* dreq id of highest priority */
+    ntvdm64_type_bool   flagMSB; /* flip-flop for msb/lsb */
+    ntvdm64_type_bool   flagEOP; /* end of process */
 
     /* id of request in service in D5-D4, flag of in service in D0 */
-    t_nubit8 isr;
+    ntvdm64_type_unsigned_8 isr;
 } t_dma_data;
 
 typedef struct {
@@ -46,11 +46,11 @@ typedef struct {
     t_latch *latch;
     struct t_dma *peer;
     /* get data from device to latch */
-    t_faddrcc fpReadDevice[VDMA_CHANNEL_COUNT];
+    ntvdm64_type_flat_address fpReadDevice[VDMA_CHANNEL_COUNT];
     /* write data to device from latch */
-    t_faddrcc fpWriteDevice[VDMA_CHANNEL_COUNT];
+    ntvdm64_type_flat_address fpWriteDevice[VDMA_CHANNEL_COUNT];
     /* send eop signal to device */
-    t_faddrcc fpCloseDevice[VDMA_CHANNEL_COUNT];
+    ntvdm64_type_flat_address fpCloseDevice[VDMA_CHANNEL_COUNT];
     core_machine_dma_device_provider read_provider[VDMA_CHANNEL_COUNT];
     core_machine_dma_device_provider write_provider[VDMA_CHANNEL_COUNT];
     core_machine_dma_device_provider close_provider[VDMA_CHANNEL_COUNT];
@@ -63,8 +63,8 @@ typedef struct t_dma {
 } t_dma;
 
 typedef union {
-    t_nubit8  byte;
-    t_nubit16 word;
+    ntvdm64_type_unsigned_8  byte;
+    ntvdm64_type_unsigned_16 word;
 } t_latch_data;
 
 struct t_latch {
@@ -137,7 +137,7 @@ struct t_latch {
 #define VDMA_GetMODE_M(cmode)  (((cmode) & VDMA_MODE_M) >> 6)
 
 /* tells if drq id is in request register */
-#define VDMA_GetREQUEST_DRQ(creq, id) (GetBit((creq), VDMA_REQUEST_DRQ(id)))
+#define VDMA_GetREQUEST_DRQ(creq, id) (NTVDM64_TYPE_GET_BIT((creq), VDMA_REQUEST_DRQ(id)))
 
 /* select request register channel */
 #define VDMA_GetREQSC_CS(creqsc) ((creqsc) & VDMA_REQSC_CS)
@@ -146,9 +146,9 @@ struct t_latch {
 #define VDMA_GetMASKSC_CS(cmasksc) ((cmasksc) & VDMA_MASKSC_CS)
 
 /* get terminal counter */
-#define VDMA_GetSTATUS_TC(cstatus, id)  (GetBit((cstatus), VDMA_STATUS_TC(id)))
+#define VDMA_GetSTATUS_TC(cstatus, id)  (NTVDM64_TYPE_GET_BIT((cstatus), VDMA_STATUS_TC(id)))
 /* get drq in status register */
-#define VDMA_GetSTATUS_DRQ(cstatus, id) (GetBit((cstatus), VDMA_STATUS_DRQ(id)))
+#define VDMA_GetSTATUS_DRQ(cstatus, id) (NTVDM64_TYPE_GET_BIT((cstatus), VDMA_STATUS_DRQ(id)))
 /* get all drqs in status register */
 #define VDMA_GetSTATUS_DRQS(cstatus)    (((cstatus) & VDMA_STATUS_DRQS) >> 4)
 
@@ -163,12 +163,12 @@ void core_machine_dma_reset(t_latch *latch, t_dma *primary,
 void core_machine_dma_refresh(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_ram *ram);
 void core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
-    t_nubit8 drq_id);
+    ntvdm64_type_unsigned_8 drq_id);
 void core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
-    t_nubit8 drq_id, t_faddrcc read_device, t_faddrcc write_device,
-    t_faddrcc close_device);
+    ntvdm64_type_unsigned_8 drq_id, ntvdm64_type_flat_address read_device, ntvdm64_type_flat_address write_device,
+    ntvdm64_type_flat_address close_device);
 void core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
-    t_nubit8 drq_id, core_machine_dma_device_provider read_provider,
+    ntvdm64_type_unsigned_8 drq_id, core_machine_dma_device_provider read_provider,
     core_machine_dma_device_provider write_provider,
     core_machine_dma_device_provider close_provider, void *owner);
 void core_machine_dma_finalize(t_latch *latch, t_dma *primary,

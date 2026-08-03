@@ -4,7 +4,7 @@
 void core_machine_block_provider_slot_initialize(
     core_machine_block_provider_slot *slot)
 {
-    if (slot != NULL) MEMSET(slot, Zero8, sizeof(*slot));
+    if (slot != NULL) MEMSET(slot, NTVDM64_TYPE_ZERO_8, sizeof(*slot));
 }
 
 void core_machine_block_provider_slot_bind(
@@ -23,13 +23,13 @@ void core_machine_block_provider_slot_bind(
 void core_machine_block_provider_slot_freeze(
     core_machine_block_provider_slot *slot)
 {
-    if (slot != NULL) slot->frozen = True;
+    if (slot != NULL) slot->frozen = NTVDM64_TYPE_TRUE;
 }
 
 void core_machine_block_provider_slot_finalize(
     core_machine_block_provider_slot *slot)
 {
-    if (slot != NULL) MEMSET(slot, Zero8, sizeof(*slot));
+    if (slot != NULL) MEMSET(slot, NTVDM64_TYPE_ZERO_8, sizeof(*slot));
 }
 
 void core_machine_block_get_geometry_from(
@@ -37,15 +37,15 @@ void core_machine_block_get_geometry_from(
     core_machine_block_geometry *out_geometry)
 {
     if (out_geometry == NULL) return;
-    MEMSET(out_geometry, Zero8, sizeof(*out_geometry));
+    MEMSET(out_geometry, NTVDM64_TYPE_ZERO_8, sizeof(*out_geometry));
     if (slot != NULL && slot->geometry_provider != NULL) {
         slot->geometry_provider(slot->context, out_geometry);
     }
 }
 
 int core_machine_block_read_from(const core_machine_block_provider_slot *slot,
-    t_nubit8 cylinder, t_nubit8 head, t_nubit8 sector, void *buffer,
-    t_nubitcc byte_count)
+    ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head, ntvdm64_type_unsigned_8 sector, void *buffer,
+    ntvdm64_type_native_unsigned byte_count)
 {
     return slot != NULL && slot->read_provider != NULL &&
         slot->read_provider(slot->context, cylinder, head, sector, buffer,
@@ -53,8 +53,8 @@ int core_machine_block_read_from(const core_machine_block_provider_slot *slot,
 }
 
 int core_machine_block_write_from(const core_machine_block_provider_slot *slot,
-    t_nubit8 cylinder, t_nubit8 head, t_nubit8 sector, void *buffer,
-    t_nubitcc byte_count)
+    ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head, ntvdm64_type_unsigned_8 sector, void *buffer,
+    ntvdm64_type_native_unsigned byte_count)
 {
     return slot != NULL && slot->write_provider != NULL &&
         slot->write_provider(slot->context, cylinder, head, sector, buffer,

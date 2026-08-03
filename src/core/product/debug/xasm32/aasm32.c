@@ -4,16 +4,16 @@
 
 #include "core/product/debug/xasm32/aasm32.h"
 
-#define UTILS_TRACE_VAR   trace
-#define UTILS_TRACE_ERROR flagError
+#define NTVDM64_TYPE_TRACE_CONTEXT   trace
+#define NTVDM64_TYPE_TRACE_ERROR flagError
 
-#if UTILS_TRACE_ENABLED == 1
+#if NTVDM64_TYPE_TRACE_ENABLED == 1
 #define _chrf(n) \
     do { \
         (n); \
-        if (UTILS_TRACE_ERROR) { \
-            (UTILS_TRACE_VAR).flagError = 1; \
-            ntvdm64_type_trace_finalize(&(UTILS_TRACE_VAR)); \
+        if (NTVDM64_TYPE_TRACE_ERROR) { \
+            (NTVDM64_TYPE_TRACE_CONTEXT).flagError = 1; \
+            ntvdm64_type_trace_finalize(&(NTVDM64_TYPE_TRACE_CONTEXT)); \
             return info; \
         } \
     } while (0)
@@ -21,7 +21,7 @@
 #define _chrf(n) \
     do { \
         (n); \
-        if (UTILS_TRACE_ERROR) { \
+        if (NTVDM64_TYPE_TRACE_ERROR) { \
             return info; \
         } \
     } while (0)
@@ -145,7 +145,7 @@ typedef struct {
 typedef uint8_t t_aasm_prefix;
 
 typedef struct aasm32_context {
-    t_utils_trace trace;
+    ntvdm64_type_trace trace;
     uint8_t defsize;
     t_aasm_prefix prefix_oprsizeg, prefix_addrsizeg;
     t_aasm_prefix prefix_oprsize, prefix_addrsize;
@@ -627,20 +627,20 @@ static t_aasm_token gettoken(char *str) {
     t_aasm_token token = TOKEN_NULL;
     t_aasm_scan_state state = STATE_START;
     char *tokptrbak;
-    _cb("gettoken");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("gettoken");
     tokimm8 = 0x00;
     tokimm16 = 0x0000;
     tokimm32 = 0x00000000;
     if (str) tokptr = str;
     if (!tokptr) {
-        _ce;
+        NTVDM64_TYPE_TRACE_CALL_END;
         return token;
     }
     tokptrbak = tokptr;
     do {
         switch (state) {
         case STATE_START:
-            _bb("state(STATE_START)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_START)");
             switch (tokch) {
             case '[':
                 take(TOKEN_LSPAREN);
@@ -775,10 +775,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_NUM1:
-            _bb("state(STATE_NUM1)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_NUM1)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -865,10 +865,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_NUM2:
-            _bb("state(STATE_NUM2)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_NUM2)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -956,10 +956,10 @@ static t_aasm_token gettoken(char *str) {
                 take(TOKEN_IMM8);
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_NUM3:
-            _bb("state(STATE_NUM3)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_NUM3)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -1046,10 +1046,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_NUM4:
-            _bb("state(STATE_NUM4)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_NUM4)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -1137,10 +1137,10 @@ static t_aasm_token gettoken(char *str) {
                 take(TOKEN_IMM16);
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_NUM5:
-            _bb("state(STATE_NUM5)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_NUM5)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -1227,10 +1227,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_NUM6:
-            _bb("state(STATE_NUM6)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_NUM6)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -1317,10 +1317,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_NUM7:
-            _bb("state(STATE_NUM7)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_NUM7)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -1407,10 +1407,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_NUM8:
-            _bb("state(STATE_NUM8)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_NUM8)");
             switch (tokch) {
             case '0':
             case '1':
@@ -1438,10 +1438,10 @@ static t_aasm_token gettoken(char *str) {
                 take(TOKEN_IMM32);
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_A:
-            _bb("state(STATE_A)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_A)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -1537,10 +1537,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_B:
-            _bb("state(STATE_B)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_B)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -1642,10 +1642,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_C:
-            _bb("state(STATE_C)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_C)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -1747,10 +1747,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_D:
-            _bb("state(STATE_D)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_D)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -1858,10 +1858,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_E:
-            _bb("state(STATE_E)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_E)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -1951,10 +1951,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_F:
-            _bb("state(STATE_F)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_F)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -2044,10 +2044,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_G:
-            _bb("state(STATE_G)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_G)");
             switch (tokch) {
             case 's':
                 take(TOKEN_GS);
@@ -2057,10 +2057,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_N:
-            _bb("state(STATE_N)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_N)");
             switch (tokch) {
             case 'e':
                 state = STATE_NE;
@@ -2070,10 +2070,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_P:
-            _bb("state(STATE_P)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_P)");
             switch (tokch) {
             case 't':
                 state = STATE_PT;
@@ -2083,10 +2083,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_S:
-            _bb("state(STATE_S)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_S)");
             switch (tokch) {
             case 'i':
                 take(TOKEN_SI);
@@ -2105,10 +2105,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_T:
-            _bb("state(STATE_T)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_T)");
             switch (tokch) {
             case 'r':
                 state = STATE_TR;
@@ -2118,10 +2118,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_W:
-            _bb("state(STATE_W)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_W)");
             switch (tokch) {
             case 'o':
                 state = STATE_WO;
@@ -2131,10 +2131,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_BY:
-            _bb("state(STATE_BY)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_BY)");
             switch (tokch) {
             case 't':
                 state = STATE_BYT;
@@ -2144,10 +2144,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_CR:
-            _bb("state(STATE_CR)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_CR)");
             switch (tokch) {
             case '0':
                 take(TOKEN_CR0);
@@ -2163,10 +2163,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_DR:
-            _bb("state(STATE_DR)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_DR)");
             switch (tokch) {
             case '0':
                 take(TOKEN_DR0);
@@ -2191,10 +2191,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_DW:
-            _bb("state(STATE_DW)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_DW)");
             switch (tokch) {
             case 'o':
                 state = STATE_DWO;
@@ -2204,10 +2204,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_EA:
-            _bb("state(STATE_EA)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_EA)");
             switch (tokch) {
             case 'x':
                 take(TOKEN_EAX);
@@ -2218,10 +2218,10 @@ static t_aasm_token gettoken(char *str) {
                 take(TOKEN_IMM8);
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_EB:
-            _bb("state(STATE_EB)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_EB)");
             switch (tokch) {
             case 'p':
                 take(TOKEN_EBP);
@@ -2235,10 +2235,10 @@ static t_aasm_token gettoken(char *str) {
                 take(TOKEN_IMM8);
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_EC:
-            _bb("state(STATE_EC)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_EC)");
             switch (tokch) {
             case 'x':
                 take(TOKEN_ECX);
@@ -2249,10 +2249,10 @@ static t_aasm_token gettoken(char *str) {
                 take(TOKEN_IMM8);
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_ED:
-            _bb("state(STATE_ED)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_ED)");
             switch (tokch) {
             case 'i':
                 take(TOKEN_EDI);
@@ -2266,10 +2266,10 @@ static t_aasm_token gettoken(char *str) {
                 take(TOKEN_IMM8);
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_ES:
-            _bb("state(STATE_ES)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_ES)");
             switch (tokch) {
             case 'i':
                 take(TOKEN_ESI);
@@ -2282,10 +2282,10 @@ static t_aasm_token gettoken(char *str) {
                 take(TOKEN_ES);
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_FA:
-            _bb("state(STATE_FA)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_FA)");
             switch (tokch) {
             case '0':
                 tokimm = (tokimm << 4) | 0x0;
@@ -2376,10 +2376,10 @@ static t_aasm_token gettoken(char *str) {
                 take(TOKEN_IMM8);
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_NE:
-            _bb("state(STATE_NE)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_NE)");
             switch (tokch) {
             case 'a':
                 state = STATE_NEA;
@@ -2389,10 +2389,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_PT:
-            _bb("state(STATE_PT)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_PT)");
             switch (tokch) {
             case 'r':
                 take(TOKEN_PTR);
@@ -2402,10 +2402,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_SH:
-            _bb("state(STATE_SH)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_SH)");
             switch (tokch) {
             case 'o':
                 state = STATE_SHO;
@@ -2415,10 +2415,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_TR:
-            _bb("state(STATE_TR)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_TR)");
             switch (tokch) {
             case '6':
                 take(TOKEN_TR6);
@@ -2431,10 +2431,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_WO:
-            _bb("state(STATE_WO)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_WO)");
             switch (tokch) {
             case 'r':
                 state = STATE_WOR;
@@ -2444,10 +2444,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_BYT:
-            _bb("state(STATE_BYT)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_BYT)");
             switch (tokch) {
             case 'e':
                 take(TOKEN_BYTE);
@@ -2457,10 +2457,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_DWO:
-            _bb("state(STATE_DWO)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_DWO)");
             switch (tokch) {
             case 'r':
                 state = STATE_DWOR;
@@ -2470,10 +2470,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_NEA:
-            _bb("state(STATE_NEA)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_NEA)");
             switch (tokch) {
             case 'r':
                 take(TOKEN_NEAR);
@@ -2483,10 +2483,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_SHO:
-            _bb("state(STATE_SHO)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_SHO)");
             switch (tokch) {
             case 'r':
                 state = STATE_SHOR;
@@ -2496,10 +2496,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_WOR:
-            _bb("state(STATE_WOR)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_WOR)");
             switch (tokch) {
             case 'd':
                 take(TOKEN_WORD);
@@ -2509,10 +2509,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_DWOR:
-            _bb("state(STATE_DWOR)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_DWOR)");
             switch (tokch) {
             case 'd':
                 take(TOKEN_DWORD);
@@ -2522,10 +2522,10 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case STATE_SHOR:
-            _bb("state(STATE_SHOR)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(STATE_SHOR)");
             switch (tokch) {
             case 't':
                 take(TOKEN_SHORT);
@@ -2535,18 +2535,18 @@ static t_aasm_token gettoken(char *str) {
                 _sert_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
-            _bb("state(default)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("state(default)");
             tokptr--;
             _sert_;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         }
         tokptr++;
     } while (!flagend);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
     return token;
 }
 static void printtoken(t_aasm_token token) {
@@ -2735,9 +2735,9 @@ static void printtoken(t_aasm_token token) {
     }
 }
 static void matchtoken(t_aasm_token token) {
-    _cb("matchtoken");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("matchtoken");
     if (gettoken(NULL) != token) _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* assembly compiler: parser / grammar */
@@ -2747,7 +2747,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
     uint8_t bx,bp,si,di,neg,al;
     uint8_t eax,ecx,edx,ebx,esp,ebp,esi,edi;
     uint8_t ieax,iecx,iedx,iebx,iebp,iesi,iedi;
-    _cb("parsearg_mem");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("parsearg_mem");
     MEMSET((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
     bx = bp = si = di = neg = al = 0;
     eax = ecx = edx = ebx = esp = ebp = esi = edi = 0;
@@ -2760,7 +2760,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
     oldtoken = token;
     _chrf(token = gettoken(NULL));
     if (token == TOKEN_COLON) {
-        _bb("token(TOKEN_COLON");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_COLON");
         switch (oldtoken) {
         case TOKEN_ES:
             info.flages = 1;
@@ -2784,9 +2784,9 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             _serf_;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (token == TOKEN_NULL || token == TOKEN_END) {
-        _bb("token(TOKEN_NULL/TOKEN_END)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_NULL/TOKEN_END)");
         switch (oldtoken) {
         case TOKEN_ES:
             info.type = TYPE_SREG;
@@ -2822,8 +2822,8 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             _serf_;
             break;
         }
-        _be;
-        _ce;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
+        NTVDM64_TYPE_TRACE_CALL_END;
         return info;
     } else _serf_;
     _chrf(matchtoken(TOKEN_LSPAREN));
@@ -2833,12 +2833,12 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
         case TOKEN_PLUS:
             break;
         case TOKEN_MINUS:
-            _bb("token(TOKEN_MINUS)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_MINUS)");
             _chrf(token = gettoken(NULL));
             neg = 1;
             switch (token) {
             case TOKEN_IMM8:
-                _bb("token(TOKEN_IMM8)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_IMM8)");
                 if (info.mod != MOD_M) _serf_;
                 if (tokimm8 > 0x80) _serf_;
                 else {
@@ -2846,10 +2846,10 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                     info.disp8 = tokimm8;
                     info.mod = MOD_M_DISP8;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case TOKEN_IMM16:
-                _bb("token(TOKEN_IMM16)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_IMM16)");
                 if (info.mod != MOD_M) _serf_;
                 if (tokimm16 > 0xff80) _serf_;
                 else {
@@ -2857,10 +2857,10 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                     info.disp16 = tokimm16;
                     info.mod = MOD_M_DISP16;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             case TOKEN_IMM32:
-                _bb("token(TOKEN_IMM32)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_IMM32)");
                 if (info.mod != MOD_M) _serf_;
                 if (tokimm32 > 0xffffff80) _serf_;
                 else {
@@ -2868,73 +2868,73 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                     info.disp32 = tokimm32;
                     info.mod = MOD_M_DISP32;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
                 break;
             default:
                 _serf_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_BX:
-            _bb("token(TOKEN_BX)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_BX)");
             if (bx) _serf_;
             else bx = 1;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_SI:
-            _bb("token(TOKEN_SI)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SI)");
             if (si) _serf_;
             else si = 1;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_BP:
-            _bb("token(TOKEN_BP)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_BP)");
             if (bp) _serf_;
             else bp = 1;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_DI:
-            _bb("token(TOKEN_DI)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_DI)");
             if (di) _serf_;
             else di = 1;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_AL:
-            _bb("token(TOKEN_AL)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_AL)");
             if (al) _serf_;
             else al = 1;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_IMM8:
-            _bb("token(TOKEN_IMM8)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_IMM8)");
             if (info.mod != MOD_M) _serf_;
             info.mod = MOD_M_DISP8;
             info.disp8 = tokimm8;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_IMM16:
-            _bb("token(TOKEN_IMM16)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_IMM16)");
             if (info.mod != MOD_M) _serf_;
             info.mod = MOD_M_DISP16;
             info.disp16 = tokimm16;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_IMM32:
-            _bb("token(TOKEN_IMM32)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_IMM32)");
             if (info.mod != MOD_M) _serf_;
             info.mod = MOD_M_DISP32;
             info.disp32 = tokimm32;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_EAX:
-            _bb("token(TOKEN_EAX)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EAX)");
             _chrf(token = gettoken(NULL));
             if (token == TOKEN_TIMES) {
-                _bb("token(TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (ieax) _serf_;
                 else {
-                    _bb("!ieax");
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!ieax");
                     ieax = 1;
                     _chrf(token = gettoken(NULL));
                     if (token != TOKEN_IMM8) _serf_;
@@ -2943,29 +2943,29 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                         info.sib.index = R32_EAX;
                         _chrf(token = gettoken(NULL));
                     }
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("token(TOKEN_!TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_!TIMES)");
                 if (eax) _serf_;
                 else {
                     eax = 1;
                     info.sib.base = R32_EAX;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             continue;
             break;
         case TOKEN_ECX:
-            _bb("token(TOKEN_ECX)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_ECX)");
             _chrf(token = gettoken(NULL));
             if (token == TOKEN_TIMES) {
-                _bb("token(TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iecx) _serf_;
                 else {
-                    _bb("!iecx");
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iecx");
                     iecx = 1;
                     _chrf(token = gettoken(NULL));
                     if (token != TOKEN_IMM8) _serf_;
@@ -2974,29 +2974,29 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                         info.sib.index = R32_ECX;
                         _chrf(token = gettoken(NULL));
                     }
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("token(!TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(!TOKEN_TIMES)");
                 if (ecx) _serf_;
                 else {
                     ecx = 1;
                     info.sib.base = R32_ECX;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             continue;
             break;
         case TOKEN_EDX:
-            _bb("token(TOKEN_EDX)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EDX)");
             _chrf(token = gettoken(NULL));
             if (token == TOKEN_TIMES) {
-                _bb("token(TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iedx) _serf_;
                 else {
-                    _bb("!iedx");
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iedx");
                     iedx = 1;
                     _chrf(token = gettoken(NULL));
                     if (token != TOKEN_IMM8) _serf_;
@@ -3005,29 +3005,29 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                         info.sib.index = R32_EDX;
                         _chrf(token = gettoken(NULL));
                     }
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("token(!TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(!TOKEN_TIMES)");
                 if (edx) _serf_;
                 else {
                     edx = 1;
                     info.sib.base = R32_EDX;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             continue;
             break;
         case TOKEN_EBX:
-            _bb("token(TOKEN_EBX)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EBX)");
             _chrf(token = gettoken(NULL));
             if (token == TOKEN_TIMES) {
-                _bb("token(TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iebx) _serf_;
                 else {
-                    _bb("!iebx");
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iebx");
                     iebx = 1;
                     _chrf(token = gettoken(NULL));
                     if (token != TOKEN_IMM8) _serf_;
@@ -3036,45 +3036,45 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                         info.sib.index = R32_EBX;
                         _chrf(token = gettoken(NULL));
                     }
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("token(!TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(!TOKEN_TIMES)");
                 if (ebx) _serf_;
                 else {
                     ebx = 1;
                     info.sib.base = R32_EBX;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             continue;
             break;
         case TOKEN_ESP:
-            _bb("token(TOKEN_ESP)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_ESP)");
             _chrf(token = gettoken(NULL));
             if (token == TOKEN_TIMES) _serf_;
             else {
-                _bb("token(!TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(!TOKEN_TIMES)");
                 if (esp) _serf_;
                 else {
                     esp = 1;
                     info.sib.base = R32_ESP;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             continue;
             break;
         case TOKEN_EBP:
-            _bb("token(TOKEN_EBP)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EBP)");
             _chrf(token = gettoken(NULL));
             if (token == TOKEN_TIMES) {
-                _bb("token(TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iebp) _serf_;
                 else {
-                    _bb("!iebp");
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iebp");
                     iebx = 1;
                     _chrf(token = gettoken(NULL));
                     if (token != TOKEN_IMM8) _serf_;
@@ -3083,29 +3083,29 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                         info.sib.index = R32_EBP;
                         _chrf(token = gettoken(NULL));
                     }
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("token(!TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(!TOKEN_TIMES)");
                 if (ebp) _serf_;
                 else {
                     ebp = 1;
                     info.sib.base = R32_EBP;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             continue;
             break;
         case TOKEN_ESI:
-            _bb("token(TOKEN_ESI)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_ESI)");
             _chrf(token = gettoken(NULL));
             if (token == TOKEN_TIMES) {
-                _bb("token(TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iesi) _serf_;
                 else {
-                    _bb("!iesi");
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iesi");
                     iesi = 1;
                     _chrf(token = gettoken(NULL));
                     if (token != TOKEN_IMM8) _serf_;
@@ -3114,29 +3114,29 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                         info.sib.index = R32_ESI;
                         _chrf(token = gettoken(NULL));
                     }
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("token(!TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(!TOKEN_TIMES)");
                 if (esi) _serf_;
                 else {
                     esi = 1;
                     info.sib.base = R32_ESI;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             continue;
             break;
         case TOKEN_EDI:
-            _bb("token(TOKEN_EDI)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EDI)");
             _chrf(token = gettoken(NULL));
             if (token == TOKEN_TIMES) {
-                _bb("token(TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iedi) _serf_;
                 else {
-                    _bb("!iedi");
+                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iedi");
                     iedi = 1;
                     _chrf(token = gettoken(NULL));
                     if (token != TOKEN_IMM8) _serf_;
@@ -3145,19 +3145,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                         info.sib.index = R32_EDI;
                         _chrf(token = gettoken(NULL));
                     }
-                    _be;
+                    NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("token(!TOKEN_TIMES)");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(!TOKEN_TIMES)");
                 if (edi) _serf_;
                 else {
                     edi = 1;
                     info.sib.base = R32_EDI;
                 }
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             continue;
             break;
         default:
@@ -3170,7 +3170,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
     if (token != TOKEN_END) _serf_;
 
     if (al) {
-        _bb("al");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("al");
         if (bp || si || di || eax || ecx || edx || esp || ebp || esi || edi ||
                 ieax || iecx || iedx || iebx || iebp || iesi || iedi || info.mod != MOD_M)
             _serf_;
@@ -3179,19 +3179,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
         } else if (!bx && ebx) {
             info.mem = MEM_EBX_AL;
         } else _serf_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else {
         if (bx || bp || si || di || info.mod == MOD_M_DISP16) {
-            _bb("16-bit Addressing");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("16-bit Addressing");
             if (!bx && !si && !bp && !di) {
-                _bb("[DISP16]");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("[DISP16]");
                 info.mem = MEM_BP;
                 if (info.mod == MOD_M_DISP16)
                     info.mod = MOD_M;
                 else _serf_;
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("bx/bp/si/di");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("bx/bp/si/di");
                 if ( bx &&  si && !bp && !di) info.mem = MEM_BX_SI;
                 else if ( bx && !si && !bp &&  di) info.mem = MEM_BX_DI;
                 else if (!bx &&  si &&  bp && !di) info.mem = MEM_BP_SI;
@@ -3206,14 +3206,14 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                     }
                 } else if (!bx && !si && !bp && di) info.mem = MEM_DI;
                 else _serf_;
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else if (eax || ecx || edx || ebx || esp || ebp || esi || edi ||
                    ieax || iecx || iedx || iebx || iebp || iesi || iedi || info.mod == MOD_M_DISP32) {
-            _bb("32-bit Addressing");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("32-bit Addressing");
             if (!eax && !ecx && !edx && !ebx && !esp && !ebp && !esi && !edi) {
-                _bb("!base");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!base");
                 if (info.mod == MOD_M_DISP32) {
                     info.mod = MOD_M;
                     if ( ieax || iecx || iedx || iebx || iebp || iesi || iedi)
@@ -3221,9 +3221,9 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                     else
                         info.mem = MEM_EBP;
                 } else _serf_;
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             } else {
-                _bb("base");
+                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("base");
                 if (esp || ieax || iecx || iedx || iebx || iebp || iesi || iedi) {
                     info.mem = MEM_SIB;
                 } else if (eax) info.mem = MEM_EAX;
@@ -3234,9 +3234,9 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
                 else if (esi) info.mem = MEM_ESI;
                 else if (edi) info.mem = MEM_EDI;
                 else _serf_;
-                _be;
+                NTVDM64_TYPE_TRACE_BLOCK_END;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else _serf_;
     }
     switch (info.mem) {
@@ -3280,27 +3280,27 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
         break;
     }
     info.type = TYPE_M;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
     return info;
 }
 static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
     t_aasm_oprinfo info;
-    _cb("parsearg_imm");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("parsearg_imm");
 
     MEMSET((void *)(&info), 0x00, sizeof(t_aasm_oprinfo));
 
     if (token == TOKEN_PLUS) {
-        _bb("token(TOKEN_PLUS)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_PLUS)");
         info.imms = 1;
         info.immn = 0;
         _chrf(token = gettoken(NULL));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (token == TOKEN_MINUS) {
-        _bb("token(TOKEN_MINUS)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_MINUS)");
         info.imms = 1;
         info.immn = 1;
         _chrf(token = gettoken(NULL));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
 
     if (token == TOKEN_IMM8) {
@@ -3319,7 +3319,7 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
 
     _chrf(token = gettoken(NULL));
     if (token == TOKEN_COLON) {
-        _bb("token(!TOKEN_END)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(!TOKEN_END)");
         if (info.imms) _serf_;
         if (info.type == TYPE_I16) info.rcs = info.imm16;
         else {
@@ -3335,19 +3335,19 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
             info.reip = tokimm32;
             info.type = TYPE_I16_32;
         } else _serf_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (token != TOKEN_END) _serf_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
     return info;
 }
 static t_aasm_oprinfo parsearg(char *arg) {
     t_aasm_token token;
     t_aasm_oprinfo info;
-    _cb("parsearg");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("parsearg");
     MEMSET((void *)(&info), 0x00 ,sizeof(t_aasm_oprinfo));
     if (!arg || !arg[0]) {
         info.type = TYPE_NONE;
-        _ce;
+        NTVDM64_TYPE_TRACE_CALL_END;
         return info;
     }
     _chrf(token = gettoken(arg));
@@ -3357,30 +3357,30 @@ static t_aasm_oprinfo parsearg(char *arg) {
         info.type = TYPE_NONE;
         break;
     case TOKEN_BYTE:
-        _bb("token(TOKEN_BYTE)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_BYTE)");
         _chrf(token = gettoken(NULL));
         if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
         _chrf(info = parsearg_mem(token));
         info.type = TYPE_M8;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case TOKEN_WORD:
-        _bb("token(TOKEN_WORD)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_WORD)");
         _chrf(token = gettoken(NULL));
         if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
         _chrf(info = parsearg_mem(token));
         info.type = TYPE_M16;
         info.ptr = PTR_NEAR;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case TOKEN_DWORD:
-        _bb("token(TOKEN_DWORD)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_DWORD)");
         _chrf(token = gettoken(NULL));
         if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
         _chrf(info = parsearg_mem(token));
         info.type = TYPE_M32;
         info.ptr = PTR_FAR;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case TOKEN_AL:
         info.type = TYPE_R8;
@@ -3524,16 +3524,16 @@ static t_aasm_oprinfo parsearg(char *arg) {
     case TOKEN_DS:
     case TOKEN_FS:
     case TOKEN_GS:
-        _bb("token(TOKEN_SREGs)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SREGs)");
         _chrf(info = parsearg_mem(token));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case TOKEN_PLUS:
     case TOKEN_MINUS:
     case TOKEN_IMM8:
     case TOKEN_IMM16:
     case TOKEN_IMM32:
-        _bb("token(TOKEN_IMMs)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_IMMs)");
         _chrf(info = parsearg_imm(token));
         if (info.type == TYPE_I16_16)
             info.ptr = PTR_FAR;
@@ -3541,48 +3541,48 @@ static t_aasm_oprinfo parsearg(char *arg) {
             info.ptr = PTR_FAR;
         else
             info.ptr = PTR_NONE;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case TOKEN_SHORT:
-        _bb("token(TOKEN_SHORT)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SHORT)");
         _chrf(token = gettoken(NULL));
         if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
         if (token == TOKEN_PLUS || token == TOKEN_MINUS) {
-            _bb("token(TOKEN_SIGNs)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SIGNs)");
             _chrf(info = parsearg_imm(token));
             if (info.type != TYPE_I8) _serf_;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
         } else _serf_;
         info.ptr = PTR_SHORT;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case TOKEN_NEAR:
-        _bb("token(TOKEN_NEAR)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_NEAR)");
         _chrf(token = gettoken(NULL));
         if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
         switch (token) {
         case TOKEN_WORD:
-            _bb("token(TOKEN_WORD)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_WORD)");
             _chrf(token = gettoken(NULL));
             if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
             _chrf(info = parsearg_mem(token));
             info.type = TYPE_M16;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_DWORD:
-            _bb("token(TOKEN_DWORD)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_DWORD)");
             _chrf(token = gettoken(NULL));
             if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
             _chrf(info = parsearg_mem(token));
             info.type = TYPE_M32;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_PLUS:
         case TOKEN_MINUS:
-            _bb("token(TOKEN_PLUS/TOKEN_MINUS)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_PLUS/TOKEN_MINUS)");
             _chrf(info = parsearg_imm(token));
             if (info.type != TYPE_I16 && info.type != TYPE_I32) _serf_;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_ES:
         case TOKEN_CS:
@@ -3590,46 +3590,46 @@ static t_aasm_oprinfo parsearg(char *arg) {
         case TOKEN_DS:
         case TOKEN_FS:
         case TOKEN_GS:
-            _bb("token(TOKEN_SREGs)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SREGs)");
             _chrf(info = parsearg_mem(token));
             if (info.type != TYPE_M) _serf_;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
             _serf_;
             break;
         }
         info.ptr = PTR_NEAR;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case TOKEN_FAR:
-        _bb("token(TOKEN_FAR)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_FAR)");
         _chrf(token = gettoken(NULL));
         if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
         switch (token) {
         case TOKEN_WORD:
-            _bb("token(TOKEN_WORD)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_WORD)");
             _chrf(token = gettoken(NULL));
             if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
             _chrf(info = parsearg_mem(token));
             info.type = TYPE_M16;
             info.ptr = PTR_FAR;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_DWORD:
-            _bb("token(TOKEN_DWORD)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_DWORD)");
             _chrf(token = gettoken(NULL));
             if (token == TOKEN_PTR) _chrf(token = gettoken(NULL));
             _chrf(info = parsearg_mem(token));
             info.type = TYPE_M32;
             info.ptr = PTR_FAR;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_IMM16:
-            _bb("token(TOKEN_IMM16)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_IMM16)");
             _chrf(info = parsearg_imm(token));
             if (info.type != TYPE_I16_16 && info.type != TYPE_I16_32) _serf_;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_ES:
         case TOKEN_CS:
@@ -3637,17 +3637,17 @@ static t_aasm_oprinfo parsearg(char *arg) {
         case TOKEN_DS:
         case TOKEN_FS:
         case TOKEN_GS:
-            _bb("token(TOKEN_SREGs)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SREGs)");
             _chrf(info = parsearg_mem(token));
             if (info.type != TYPE_M) _serf_;
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
             _serf_;
             break;
         }
         info.ptr = PTR_FAR;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case TOKEN_CR0:
         info.type = TYPE_CREG;
@@ -3697,7 +3697,7 @@ static t_aasm_oprinfo parsearg(char *arg) {
         _serf_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
     return info;
 }
 /* assembly compiler: code generator */
@@ -3714,25 +3714,25 @@ static void _c_setdword(uint32_t dword) {
     iop += 4;
 }
 static void _c_imm8(uint8_t byte) {
-    _cb("_c_imm8");
-    _chr(_c_setbyte(byte));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_c_imm8");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_setbyte(byte));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _c_imm16(uint16_t word) {
-    _cb("_c_imm16");
-    _chr(_c_setword(word));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_c_imm16");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_setword(word));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _c_imm32(uint32_t dword) {
-    _cb("_c_imm32");
-    _chr(_c_setdword(dword));
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_c_imm32");
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_setdword(dword));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
     uint8_t sibval;
     uint8_t modrmval = (reg << 3);
 
-    _cb("_c_rminfo");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("_c_rminfo");
 
     switch (rminfo.mem) {
     case MEM_BX_SI:
@@ -3743,7 +3743,7 @@ static void _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
     case MEM_DI:
     case MEM_BP:
     case MEM_BX:
-        _bb("16-bit Addressing");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("16-bit Addressing");
         _SetAddressSize(2);
         switch (rminfo.mod) {
         case MOD_M:
@@ -3771,7 +3771,7 @@ static void _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
             _c_setword(rminfo.disp16);
             break;
         case MOD_R:
-            _bb("mod(MOD_R)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("mod(MOD_R)");
             modrmval |= (3 << 6);
             switch (rminfo.type) {
             case TYPE_R8:
@@ -3790,13 +3790,13 @@ static void _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
                 _ser_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
             _ser_;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case MEM_EAX:
     case MEM_ECX:
@@ -3806,7 +3806,7 @@ static void _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
     case MEM_EBP:
     case MEM_ESI:
     case MEM_EDI:
-        _bb("32-bit Addressing");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("32-bit Addressing");
         _SetAddressSize(4);
         switch (rminfo.mod) {
         case MOD_M:
@@ -3927,7 +3927,7 @@ static void _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
             _c_setdword(rminfo.disp32);
             break;
         case MOD_R:
-            _bb("mod(MOD_R)");
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("mod(MOD_R)");
             modrmval |= (3 << 6);
             switch (rminfo.type) {
             case TYPE_R8:
@@ -3946,1136 +3946,1136 @@ static void _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
                 _ser_;
                 break;
             }
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
             _ser_;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* concrete instructions */
 static void ADD_RM8_R8() {
-    _cb("ADD_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM8_R8");
     _c_setbyte(0x00);
-    _chr(_c_modrm(aopri1, aopri2.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_RM32_R32(uint8_t byte) {
-    _cb("ADD_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x01);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri1, aopri2.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri1, aopri2.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_R8_RM8() {
-    _cb("ADD_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R8_RM8");
     _c_setbyte(0x02);
-    _chr(_c_modrm(aopri2, aopri1.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_R32_RM32(uint8_t byte) {
-    _cb("ADD_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x03);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_AL_I8() {
-    _cb("ADD_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_AL_I8");
     _c_setbyte(0x04);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD_EAX_I32(uint8_t byte) {
-    _cb("ADD_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x05);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_ES() {
-    _cb("PUSH_ES");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ES");
     _c_setbyte(0x06);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_ES() {
-    _cb("POP_ES");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ES");
     _c_setbyte(0x07);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_RM8_R8() {
-    _cb("OR_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM8_R8");
     _c_setbyte(0x08);
-    _chr(_c_modrm(aopri1, aopri2.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_RM32_R32(uint8_t byte) {
-    _cb("OR_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x09);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri1, aopri2.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri1, aopri2.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_R8_RM8() {
-    _cb("OR_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R8_RM8");
     _c_setbyte(0x0a);
-    _chr(_c_modrm(aopri2, aopri1.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_R32_RM32(uint8_t byte) {
-    _cb("OR_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x0b);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_AL_I8() {
-    _cb("OR_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_AL_I8");
     _c_setbyte(0x0c);
     _c_imm8(aopri2.imm8);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR_EAX_I32(uint8_t byte) {
-    _cb("OR_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x0d);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_CS() {
-    _cb("PUSH_CS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_CS");
     _c_setbyte(0x0e);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_CS() {
-    _cb("POP_CS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_CS");
     _c_setbyte(0x0f);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_0F() {
-    _cb("INS_0F");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F");
     _c_setbyte(0x0f);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_RM8_R8() {
-    _cb("ADC_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM8_R8");
     _c_setbyte(0x10);
-    _chr(_c_modrm(aopri1, aopri2.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_RM32_R32(uint8_t byte) {
-    _cb("ADC_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x11);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri1, aopri2.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri1, aopri2.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_R8_RM8() {
-    _cb("ADC_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R8_RM8");
     _c_setbyte(0x12);
-    _chr(_c_modrm(aopri2, aopri1.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_R32_RM32(uint8_t byte) {
-    _cb("ADC_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x13);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_AL_I8() {
-    _cb("ADC_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_AL_I8");
     _c_setbyte(0x14);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC_EAX_I32(uint8_t byte) {
-    _cb("ADC_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x15);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_SS() {
-    _cb("PUSH_SS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_SS");
     _c_setbyte(0x16);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_SS() {
-    _cb("POP_SS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_SS");
     _c_setbyte(0x17);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_RM8_R8() {
-    _cb("SBB_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM8_R8");
     _c_setbyte(0x18);
-    _chr(_c_modrm(aopri1, aopri2.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_RM32_R32(uint8_t byte) {
-    _cb("SBB_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x19);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri1, aopri2.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri1, aopri2.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_R8_RM8() {
-    _cb("SBB_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R8_RM8");
     _c_setbyte(0x1a);
-    _chr(_c_modrm(aopri2, aopri1.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_R32_RM32(uint8_t byte) {
-    _cb("SBB_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x1b);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_AL_I8() {
-    _cb("SBB_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_AL_I8");
     _c_setbyte(0x1c);
     _c_imm8(aopri2.imm8);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB_EAX_I32(uint8_t byte) {
-    _cb("SBB_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x1d);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_DS() {
-    _cb("PUSH_DS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_DS");
     _c_setbyte(0x1e);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_DS() {
-    _cb("POP_DS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_DS");
     _c_setbyte(0x1f);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_RM8_R8() {
-    _cb("AND_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM8_R8");
     _c_setbyte(0x20);
-    _chr(_c_modrm(aopri1, aopri2.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_RM32_R32(uint8_t byte) {
-    _cb("AND_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x21);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri1, aopri2.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri1, aopri2.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_R8_RM8() {
-    _cb("AND_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R8_RM8");
     _c_setbyte(0x22);
-    _chr(_c_modrm(aopri2, aopri1.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_R32_RM32(uint8_t byte) {
-    _cb("AND_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x23);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_AL_I8() {
-    _cb("AND_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_AL_I8");
     _c_setbyte(0x24);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND_EAX_I32(uint8_t byte) {
-    _cb("AND_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x25);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_ES() {
-    _cb("PREFIX_ES");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_ES");
     if (ARG_NONE) aoprig.flages = 1;
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DAA() {
-    _cb("DAA");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DAA");
     if (ARG_NONE) _c_setbyte(0x27);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_RM8_R8() {
-    _cb("SUB_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM8_R8");
     _c_setbyte(0x28);
-    _chr(_c_modrm(aopri1, aopri2.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_RM32_R32(uint8_t byte) {
-    _cb("SUB_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x29);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri1, aopri2.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri1, aopri2.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_R8_RM8() {
-    _cb("SUB_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R8_RM8");
     _c_setbyte(0x2a);
-    _chr(_c_modrm(aopri2, aopri1.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_R32_RM32(uint8_t byte) {
-    _cb("SUB_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x2b);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_AL_I8() {
-    _cb("SUB_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_AL_I8");
     _c_setbyte(0x2c);
     _c_imm8(aopri2.imm8);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB_EAX_I32(uint8_t byte) {
-    _cb("SUB_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x2d);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_CS() {
-    _cb("PREFIX_CS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_CS");
     if (ARG_NONE) aoprig.flagcs = 1;
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DAS() {
-    _cb("DAS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DAS");
     if (ARG_NONE) _c_setbyte(0x2f);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_RM8_R8() {
-    _cb("XOR_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM8_R8");
     _c_setbyte(0x30);
-    _chr(_c_modrm(aopri1, aopri2.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_RM32_R32(uint8_t byte) {
-    _cb("XOR_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x31);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri1, aopri2.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri1, aopri2.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_R8_RM8() {
-    _cb("XOR_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R8_RM8");
     _c_setbyte(0x32);
-    _chr(_c_modrm(aopri2, aopri1.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_R32_RM32(uint8_t byte) {
-    _cb("XOR_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x33);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_AL_I8() {
-    _cb("XOR_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_AL_I8");
     _c_setbyte(0x34);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR_EAX_I32(uint8_t byte) {
-    _cb("XOR_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x35);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_SS() {
-    _cb("PREFIX_SS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_SS");
     if (ARG_NONE) aoprig.flagss = 1;
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AAA() {
-    _cb("AAA");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAA");
     if (ARG_NONE) _c_setbyte(0x37);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_RM8_R8() {
-    _cb("CMP_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM8_R8");
     _c_setbyte(0x38);
-    _chr(_c_modrm(aopri1, aopri2.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_RM32_R32(uint8_t byte) {
-    _cb("CMP_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x39);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri1, aopri2.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri1, aopri2.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_R8_RM8() {
-    _cb("CMP_R8_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R8_RM8");
     _c_setbyte(0x3a);
-    _chr(_c_modrm(aopri2, aopri1.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_R32_RM32(uint8_t byte) {
-    _cb("CMP_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x3b);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_AL_I8() {
-    _cb("CMP_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_AL_I8");
     _c_setbyte(0x3c);
     _c_imm8(aopri2.imm8);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP_EAX_I32(uint8_t byte) {
-    _cb("CMP_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x3d);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_DS() {
-    _cb("PREFIX_DS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_DS");
     if (ARG_NONE) aoprig.flagds = 1;
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AAS() {
-    _cb("AAS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAS");
     if (ARG_NONE) _c_setbyte(0x3f);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EAX(uint8_t byte) {
-    _cb("INC_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x40);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_ECX(uint8_t byte) {
-    _cb("INC_ECX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ECX");
     _SetOperandSize(byte);
     _c_setbyte(0x41);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EDX(uint8_t byte) {
-    _cb("INC_EDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDX");
     _SetOperandSize(byte);
     _c_setbyte(0x42);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EBX(uint8_t byte) {
-    _cb("INC_EBX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBX");
     _SetOperandSize(byte);
     _c_setbyte(0x43);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_ESP(uint8_t byte) {
-    _cb("INC_ESP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESP");
     _SetOperandSize(byte);
     _c_setbyte(0x44);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EBP(uint8_t byte) {
-    _cb("INC_EBP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBP");
     _SetOperandSize(byte);
     _c_setbyte(0x45);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_ESI(uint8_t byte) {
-    _cb("INC_ESI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESI");
     _SetOperandSize(byte);
     _c_setbyte(0x46);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC_EDI(uint8_t byte) {
-    _cb("INC_EDI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDI");
     _SetOperandSize(byte);
     _c_setbyte(0x47);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EAX(uint8_t byte) {
-    _cb("DEC_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x48);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_ECX(uint8_t byte) {
-    _cb("DEC_ECX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ECX");
     _SetOperandSize(byte);
     _c_setbyte(0x49);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EDX(uint8_t byte) {
-    _cb("DEC_EDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDX");
     _SetOperandSize(byte);
     _c_setbyte(0x4a);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EBX(uint8_t byte) {
-    _cb("DEC_EBX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBX");
     _SetOperandSize(byte);
     _c_setbyte(0x4b);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_ESP(uint8_t byte) {
-    _cb("DEC_ESP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESP");
     _SetOperandSize(byte);
     _c_setbyte(0x4c);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EBP(uint8_t byte) {
-    _cb("DEC_EBP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBP");
     _SetOperandSize(byte);
     _c_setbyte(0x4d);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_ESI(uint8_t byte) {
-    _cb("DEC_ESI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESI");
     _SetOperandSize(byte);
     _c_setbyte(0x4e);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC_EDI(uint8_t byte) {
-    _cb("DEC_EDI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDI");
     _SetOperandSize(byte);
     _c_setbyte(0x4f);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EAX(uint8_t byte) {
-    _cb("PUSH_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x50);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_ECX(uint8_t byte) {
-    _cb("PUSH_ECX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ECX");
     _SetOperandSize(byte);
     _c_setbyte(0x51);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EDX(uint8_t byte) {
-    _cb("PUSH_EDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDX");
     _SetOperandSize(byte);
     _c_setbyte(0x52);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EBX(uint8_t byte) {
-    _cb("PUSH_EBX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBX");
     _SetOperandSize(byte);
     _c_setbyte(0x53);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_ESP(uint8_t byte) {
-    _cb("PUSH_ESP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESP");
     _SetOperandSize(byte);
     _c_setbyte(0x54);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EBP(uint8_t byte) {
-    _cb("PUSH_EBP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBP");
     _SetOperandSize(byte);
     _c_setbyte(0x55);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_ESI(uint8_t byte) {
-    _cb("PUSH_ESI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESI");
     _SetOperandSize(byte);
     _c_setbyte(0x56);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_EDI(uint8_t byte) {
-    _cb("PUSH_EDI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDI");
     _SetOperandSize(byte);
     _c_setbyte(0x57);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EAX(uint8_t byte) {
-    _cb("POP_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x58);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_ECX(uint8_t byte) {
-    _cb("POP_ECX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ECX");
     _SetOperandSize(byte);
     _c_setbyte(0x59);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EDX(uint8_t byte) {
-    _cb("POP_EDX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDX");
     _SetOperandSize(byte);
     _c_setbyte(0x5a);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EBX(uint8_t byte) {
-    _cb("POP_EBX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBX");
     _SetOperandSize(byte);
     _c_setbyte(0x5b);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_ESP(uint8_t byte) {
-    _cb("POP_ESP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESP");
     _SetOperandSize(byte);
     _c_setbyte(0x5c);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EBP(uint8_t byte) {
-    _cb("POP_EBP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBP");
     _SetOperandSize(byte);
     _c_setbyte(0x5d);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_ESI(uint8_t byte) {
-    _cb("POP_ESI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESI");
     _SetOperandSize(byte);
     _c_setbyte(0x5e);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_EDI(uint8_t byte) {
-    _cb("POP_EDI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDI");
     _SetOperandSize(byte);
     _c_setbyte(0x5f);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSHA(uint8_t byte) {
-    _cb("PUSHA");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHA");
     _SetOperandSize(byte);
     _c_setbyte(0x60);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POPA(uint8_t byte) {
-    _cb("POPA");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POPA");
     _SetOperandSize(byte);
     _c_setbyte(0x61);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 static void BOUND_R32_M32_32(uint8_t byte) {
-    _cb("BOUND_R32_M32_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BOUND_R32_M32_32");
     _SetOperandSize(byte);
     _c_setbyte(0x62);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ARPL_RM16_R16() {
-    _cb("ARPL_RM16_R16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ARPL_RM16_R16");
     if (ARG_RM16_R16) {
-        _bb("ARG_RM16_R16");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_RM16_R16");
         _c_setbyte(0x63);
-        _chr(_c_modrm(aopri1, aopri2.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_FS() {
-    _cb("PREFIX_FS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_FS");
     if (ARG_NONE) aoprig.flagfs = 1;
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_GS() {
-    _cb("PREFIX_GS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_GS");
     if (ARG_NONE) aoprig.flaggs = 1;
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_OprSize() {
-    _cb("PREFIX_OprSize");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_OprSize");
     if (ARG_NONE) prefix_oprsizeg = 1;
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_AddrSize() {
-    _cb("PREFIX_AddrSize");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_AddrSize");
     if (ARG_NONE) prefix_addrsizeg = 1;
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_I32(uint8_t byte) {
-    _cb("PUSH_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x68);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri1.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri1.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri1.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IMUL_R32_RM32_I32(uint8_t byte) {
-    _cb("IMUL_R32_RM32_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x69);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _chr(_c_imm16(aopri3.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri3.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _chr(_c_imm32(aopri3.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri3.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;;
+    NTVDM64_TYPE_TRACE_CALL_END;;
 }
 static void PUSH_I8() {
-    _cb("PUSH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I8");
     _c_setbyte(0x6a);
-    _chr(_c_imm8(aopri1.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IMUL_R32_RM32_I8(uint8_t byte) {
-    _cb("IMUL_R32_RM32_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
     _SetOperandSize(byte);
     _c_setbyte(0x6b);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _chr(_c_imm8(aopri3.imm8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri3.imm8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _chr(_c_imm8(aopri3.imm8));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri3.imm8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;;
+    NTVDM64_TYPE_TRACE_CALL_END;;
 }
 static void INSB() {
-    _cb("INSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INSB");
     _c_setbyte(0x6c);
     rinfo = NULL;
     if (ARG_NONE) ;
     else if (ARG_ESDI8_DX) _SetAddressSize(2);
     else if (ARG_ESEDI8_DX) _SetAddressSize(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INSW(uint8_t byte) {
-    _cb("INSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INSW");
     _SetOperandSize(byte);
     _c_setbyte(0x6d);
     rinfo = NULL;
     switch (byte) {
     case 2:
-        _bb("byte(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
         if (ARG_NONE) ;
         else if (ARG_ESDI16_DX) _SetAddressSize(2);
         else if (ARG_ESEDI16_DX) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
         if (ARG_NONE) ;
         else if (ARG_ESDI32_DX) _SetAddressSize(2);
         else if (ARG_ESEDI32_DX) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUTSB() {
-    _cb("OUTSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSB");
     _c_setbyte(0x6e);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
@@ -5083,409 +5083,409 @@ static void OUTSB() {
     else if (ARG_DX_DSSI8) _SetAddressSize(2);
     else if (ARG_DSESI8) _SetAddressSize(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUTSW(uint8_t byte) {
-    _cb("OUTSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSW");
     _SetOperandSize(byte);
     _c_setbyte(0x6f);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
     switch (byte) {
     case 2:
-        _bb("byte(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
         if (ARG_NONE) rinfo = NULL;
         else if (ARG_DX_DSSI16) _SetAddressSize(2);
         else if (ARG_DX_DSESI16) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
         if (ARG_NONE) rinfo = NULL;
         else if (ARG_DX_DSSI32) _SetAddressSize(2);
         else if (ARG_DX_DSESI32) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_80(uint8_t rid) {
-    _cb("INS_80");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_80");
     _c_setbyte(0x80);
-    _chr(_c_modrm(aopri1, rid));
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_81(uint8_t rid, uint8_t byte) {
-    _cb("INS_81");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_81");
     _SetOperandSize(byte);
     _c_setbyte(0x81);
-    _chr(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_83(uint8_t rid, uint8_t byte) {
-    _cb("INS_83");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_83");
     _SetOperandSize(byte);
     _c_setbyte(0x83);
-    _chr(_c_modrm(aopri1, rid));
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST_RM8_R8() {
-    _cb("TEST_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM8_R8");
     _c_setbyte(0x84);
-    _chr(_c_modrm(aopri1, aopri2.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST_RM32_R32(uint8_t byte) {
-    _cb("TEST_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x85);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri1, aopri2.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri1, aopri2.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_RM8_R8() {
-    _cb("XCHG_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM8_R8");
     _c_setbyte(0x86);
-    _chr(_c_modrm(aopri1, aopri2.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_RM32_R32(uint8_t byte) {
-    _cb("XCHG_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x87);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri1, aopri2.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri1, aopri2.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_RM8_R8() {
-    _cb("MOV_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM8_R8");
     _c_setbyte(0x88);
-    _chr(_c_modrm(aopri1, aopri2.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_RM32_R32(uint8_t byte) {
-    _cb("MOV_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM32_R32");
     _SetOperandSize(byte);
     _c_setbyte(0x89);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri1, aopri2.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri1, aopri2.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R8_RM8() {
-    _cb("MOV_RM8_R8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM8_R8");
     _c_setbyte(0x8a);
-    _chr(_c_modrm(aopri2, aopri1.reg8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R32_RM32(uint8_t byte) {
-    _cb("MOV_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_RM32");
     _SetOperandSize(byte);
     _c_setbyte(0x8b);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_RM16_SREG(uint8_t byte) {
-    _cb("MOV_RM16_SREG");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM16_SREG");
     _SetOperandSize(byte);
     _c_setbyte(0x8c);
-    _chr(_c_modrm(aopri1, aopri2.sreg));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.sreg));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LEA_R32_M32(uint8_t byte) {
-    _cb("LEA_R32_M32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LEA_R32_M32");
     _SetOperandSize(byte);
     _c_setbyte(0x8d);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_SREG_RM16(uint8_t byte) {
-    _cb("MOV_SREG_RM16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_SREG_RM16");
     _SetOperandSize(byte);
     _c_setbyte(0x8e);
-    _chr(_c_modrm(aopri2, aopri1.sreg));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.sreg));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_8F(uint8_t rid, uint8_t byte) {
-    _cb("INS_8F");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_8F");
     _SetOperandSize(byte);
     _c_setbyte(0x8f);
-    _chr(_c_modrm(aopri1, rid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void NOP() {
-    _cb("NOP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("NOP");
     if (ARG_NONE) _c_setbyte(0x90);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EAX_EAX(uint8_t byte) {
-    _cb("XCHG_EAX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EAX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x90);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_ECX_EAX(uint8_t byte) {
-    _cb("XCHG_ECX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ECX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x91);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EDX_EAX(uint8_t byte) {
-    _cb("XCHG_EDX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x92);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EBX_EAX(uint8_t byte) {
-    _cb("XCHG_EBX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x93);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_ESP_EAX(uint8_t byte) {
-    _cb("XCHG_ESP_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESP_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x94);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EBP_EAX(uint8_t byte) {
-    _cb("XCHG_EBP_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBP_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x95);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_ESI_EAX(uint8_t byte) {
-    _cb("XCHG_ESI_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESI_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x96);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG_EDI_EAX(uint8_t byte) {
-    _cb("XCHG_EDI_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDI_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0x97);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CBW(uint8_t byte) {
-    _cb("CBW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CBW");
     _SetOperandSize(byte);
     if (ARG_NONE) _c_setbyte(0x98);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CWD(uint8_t byte) {
-    _cb("CWD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CWD");
     _SetOperandSize(byte);
     if (ARG_NONE) _c_setbyte(0x99);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CALL_PTR16_32(uint8_t byte) {
-    _cb("CALL_PTR16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_PTR16_32");
     _SetOperandSize(byte);
     _c_setbyte(0x9a);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16((uint16_t) aopri1.reip));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16((uint16_t) aopri1.reip));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32((uint32_t) aopri1.reip));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32((uint32_t) aopri1.reip));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _chr(_c_imm16(aopri1.rcs));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.rcs));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void WAIT() {
-    _cb("WAIT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("WAIT");
     _c_setbyte(0x9b);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSHF(uint8_t byte) {
-    _cb("PUSHF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHF");
     _SetOperandSize(byte);
     _c_setbyte(0x9c);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POPF(uint8_t byte) {
-    _cb("POPF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POPF");
     _SetOperandSize(byte);
     _c_setbyte(0x9d);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SAHF() {
-    _cb("SAHF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SAHF");
     _c_setbyte(0x9e);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LAHF() {
-    _cb("LAHF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LAHF");
     _c_setbyte(0x9f);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_AL_MOFFS8() {
-    _cb("MOV_AL_MOFFS8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_MOFFS8");
     _c_setbyte(0xa0);
     if (aopri2.mem == MEM_BP) {
-        _bb("16-bit Addressing");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("16-bit Addressing");
         _SetAddressSize(2);
-        _chr(_c_imm16(aopri2.disp16));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.disp16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (aopri2.mem == MEM_EBP) {
-        _bb("32-bit Addressing");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("32-bit Addressing");
         _SetAddressSize(4);
-        _chr(_c_imm16(aopri2.disp32));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.disp32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EAX_MOFFS32(uint8_t byte) {
-    _cb("MOV_EAX_MOFFS32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_MOFFS32");
     _SetOperandSize(byte);
     _c_setbyte(0xa1);
     if (aopri2.mem == MEM_BP) {
-        _bb("16-bit Addressing");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("16-bit Addressing");
         _SetAddressSize(2);
-        _chr(_c_imm16(aopri2.disp16));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.disp16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (aopri2.mem == MEM_EBP) {
-        _bb("32-bit Addressing");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("32-bit Addressing");
         _SetAddressSize(4);
-        _chr(_c_imm32(aopri2.disp32));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.disp32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_MOFFS8_AL() {
-    _cb("MOV_MOFFS8_AL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS8_AL");
     _c_setbyte(0xa2);
     if (aopri1.mem == MEM_BP) {
-        _bb("16-bit Addressing");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("16-bit Addressing");
         _SetAddressSize(2);
-        _chr(_c_imm16(aopri1.disp16));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.disp16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (aopri1.mem == MEM_EBP) {
-        _bb("32-bit Addressing");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("32-bit Addressing");
         _SetAddressSize(4);
-        _chr(_c_imm16(aopri1.disp32));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.disp32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_MOFFS32_EAX(uint8_t byte) {
-    _cb("MOV_MOFFS32_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS32_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0xa3);
     if (aopri1.mem == MEM_BP) {
-        _bb("16-bit Addressing");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("16-bit Addressing");
         _SetAddressSize(2);
-        _chr(_c_imm16(aopri1.disp16));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.disp16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (aopri1.mem == MEM_EBP) {
-        _bb("32-bit Addressing");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("32-bit Addressing");
         _SetAddressSize(4);
-        _chr(_c_imm32(aopri1.disp32));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri1.disp32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSB() {
-    _cb("MOVSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSB");
     _c_setbyte(0xa4);
     rinfo = &aopri2;
     if (rinfo->flagds) rinfo->flagds = 0;
@@ -5493,39 +5493,39 @@ static void MOVSB() {
     else if (ARG_ESDI8_DSSI8) _SetAddressSize(2);
     else if (ARG_ESEDI8_DSESI8) _SetAddressSize(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSW(uint8_t byte) {
-    _cb("MOVSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSW");
     _SetOperandSize(byte);
     _c_setbyte(0xa5);
     rinfo = &aopri2;
     if (rinfo->flagds) rinfo->flagds = 0;
     switch (byte) {
     case 2:
-        _bb("byte(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
         if (ARG_NONE) rinfo = NULL;
         else if (ARG_ESDI16_DSSI16) _SetAddressSize(2);
         else if (ARG_ESEDI16_DSESI16) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
         if (ARG_NONE) rinfo = NULL;
         else if (ARG_ESDI32_DSSI32) _SetAddressSize(2);
         else if (ARG_ESEDI32_DSESI32) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMPSB() {
-    _cb("CMPSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSB");
     _c_setbyte(0xa6);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
@@ -5533,104 +5533,104 @@ static void CMPSB() {
     else if (ARG_DSSI8_ESDI8) _SetAddressSize(2);
     else if (ARG_DSESI8_ESEDI8) _SetAddressSize(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMPSW(uint8_t byte) {
-    _cb("CMPSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSW");
     _SetOperandSize(byte);
     _c_setbyte(0xa7);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
     switch (byte) {
     case 2:
-        _bb("byte(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
         if (ARG_NONE) rinfo = NULL;
         else if (ARG_DSSI16_ESDI16) _SetAddressSize(2);
         else if (ARG_DSESI16_ESEDI16) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
         if (ARG_NONE) rinfo = NULL;
         else if (ARG_DSSI32_ESDI32) _SetAddressSize(2);
         else if (ARG_DSESI32_ESEDI32) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST_AL_I8() {
-    _cb("TEST_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_AL_I8");
     _c_setbyte(0xa8);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST_EAX_I32(uint8_t byte) {
-    _cb("TEST_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xa9);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STOSB() {
-    _cb("STOSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSB");
     _c_setbyte(0xaa);
     rinfo = NULL;
     if (ARG_NONE) ;
     else if (ARG_ESDI8) _SetAddressSize(2);
     else if (ARG_ESEDI8) _SetAddressSize(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STOSW(uint8_t byte) {
-    _cb("STOSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSW");
     _SetOperandSize(byte);
     _c_setbyte(0xab);
     rinfo = NULL;
     switch (byte) {
     case 2:
-        _bb("byte(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
         if (ARG_NONE) ;
         else if (ARG_ESDI16) _SetAddressSize(2);
         else if (ARG_ESEDI16) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
         if (ARG_NONE) ;
         else if (ARG_ESDI32) _SetAddressSize(2);
         else if (ARG_ESEDI32) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LODSB() {
-    _cb("LODSB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSB");
     _c_setbyte(0xac);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
@@ -5638,495 +5638,495 @@ static void LODSB() {
     else if (ARG_DSSI8) _SetAddressSize(2);
     else if (ARG_DSESI8) _SetAddressSize(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LODSW(uint8_t byte) {
-    _cb("LODSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSW");
     _SetOperandSize(byte);
     _c_setbyte(0xad);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
     switch (byte) {
     case 2:
-        _bb("byte(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
         if (ARG_NONE) rinfo = NULL;
         else if (ARG_DSSI16) _SetAddressSize(2);
         else if (ARG_DSESI16) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
         if (ARG_NONE) rinfo = NULL;
         else if (ARG_DSSI32) _SetAddressSize(2);
         else if (ARG_DSESI32) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SCASB() {
-    _cb("SCASB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASB");
     _c_setbyte(0xae);
     rinfo = NULL;
     if (ARG_NONE) ;
     else if (ARG_ESDI8) _SetAddressSize(2);
     else if (ARG_ESEDI8) _SetAddressSize(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SCASW(uint8_t byte) {
-    _cb("SCASW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASW");
     _SetOperandSize(byte);
     _c_setbyte(0xaf);
     rinfo = NULL;
     switch (byte) {
     case 2:
-        _bb("byte(2)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
         if (ARG_NONE) ;
         else if (ARG_ESDI16) _SetAddressSize(2);
         else if (ARG_ESEDI16) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
         if (ARG_NONE) ;
         else if (ARG_ESDI32) _SetAddressSize(2);
         else if (ARG_ESEDI32) _SetAddressSize(4);
         else _ser_;
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_AL_I8() {
-    _cb("MOV_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_I8");
     _c_setbyte(0xb0);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_CL_I8() {
-    _cb("MOV_CL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CL_I8");
     _c_setbyte(0xb1);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_DL_I8() {
-    _cb("MOV_DL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DL_I8");
     _c_setbyte(0xb2);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_BL_I8() {
-    _cb("MOV_BL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BL_I8");
     _c_setbyte(0xb3);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_AH_I8() {
-    _cb("MOV_AH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AH_I8");
     _c_setbyte(0xb4);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_CH_I8() {
-    _cb("MOV_CH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CH_I8");
     _c_setbyte(0xb5);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_DH_I8() {
-    _cb("MOV_DH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DH_I8");
     _c_setbyte(0xb6);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_BH_I8() {
-    _cb("MOV_BH_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BH_I8");
     _c_setbyte(0xb7);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EAX_I32(uint8_t byte) {
-    _cb("MOV_EAX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xb8);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_ECX_I32(uint8_t byte) {
-    _cb("MOV_ECX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ECX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xb9);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EDX_I32(uint8_t byte) {
-    _cb("MOV_EDX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xba);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EBX_I32(uint8_t byte) {
-    _cb("MOV_EBX_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBX_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbb);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_ESP_I32(uint8_t byte) {
-    _cb("MOV_ESP_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESP_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbc);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EBP_I32(uint8_t byte) {
-    _cb("MOV_EBP_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBP_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbd);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_ESI_I32(uint8_t byte) {
-    _cb("MOV_ESI_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESI_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbe);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_EDI_I32(uint8_t byte) {
-    _cb("MOV_EDI_I32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDI_I32");
     _SetOperandSize(byte);
     _c_setbyte(0xbf);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_C0(uint8_t rid) {
-    _cb("INS_C0");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C0");
     _c_setbyte(0xc0);
-    _chr(_c_modrm(aopri1, rid));
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_C1(uint8_t rid, uint8_t byte) {
-    _cb("INS_C1");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C1");
     _SetOperandSize(byte);
     _c_setbyte(0xc1);
-    _chr(_c_modrm(aopri1, rid));
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RET_I16() {
-    _cb("RET_I16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RET_I16");
     _c_setbyte(0xc2);
-    _chr(_c_imm16(aopri1.imm16));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RET_() {
-    _cb("RET");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RET");
     _c_setbyte(0xc3);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LES_R32_M16_32(uint8_t byte) {
-    _cb("LES_R32_M16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LES_R32_M16_32");
     _SetOperandSize(byte);
     _c_setbyte(0xc4);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LDS_R32_M16_32(uint8_t byte) {
-    _cb("LDS_R32_M16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LDS_R32_M16_32");
     _c_setbyte(0xc5);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_C6(uint8_t rid) {
-    _cb("INS_C6");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C6");
     _c_setbyte(0xc6);
-    _chr(_c_modrm(aopri1, rid));
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_C7(uint8_t rid, uint8_t byte) {
-    _cb("INS_C7");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C7");
     _SetOperandSize(byte);
     _c_setbyte(0xc7);
-    _chr(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri2.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri2.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ENTER() {
-    _cb("ENTER");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ENTER");
     if (ARG_I16_I8) {
-        _bb("ARG_I16_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_I16_I8");
         _c_setbyte(0xc8);
-        _chr(_c_imm16(aopri1.imm16));
-        _chr(_c_imm8(aopri2.imm8));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LEAVE() {
-    _cb("LEAVE");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LEAVE");
     if (ARG_NONE) _c_setbyte(0xc9);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RETF_I16() {
-    _cb("RETF_I16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF_I16");
     _c_setbyte(0xca);
-    _chr(_c_imm16(aopri1.imm16));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RETF_() {
-    _cb("RETF_");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF_");
     _c_setbyte(0xcb);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INT3() {
-    _cb("INT3");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INT3");
     _c_setbyte(0xcc);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INT_I8() {
-    _cb("INT_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INT_I8");
     _c_setbyte(0xcd);
-    _chr(_c_imm8(aopri1.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INTO() {
-    _cb("INTO");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INTO");
     _c_setbyte(0xcd);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IRET(uint8_t byte) {
-    _cb("IRET");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IRET");
     _SetOperandSize(byte);
     _c_setbyte(0xcf);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_D0(uint8_t rid) {
-    _cb("INS_DO");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_DO");
     _c_setbyte(0xd0);
-    _chr(_c_modrm(aopri1, rid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_D1(uint8_t rid, uint8_t byte) {
-    _cb("INS_D1");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D1");
     _SetOperandSize(byte);
     _c_setbyte(0xd1);
-    _chr(_c_modrm(aopri1, rid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_D2(uint8_t rid) {
-    _cb("INS_D2");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D2");
     _c_setbyte(0xd2);
-    _chr(_c_modrm(aopri1, rid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_D3(uint8_t rid, uint8_t byte) {
-    _cb("INS_D3");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D3");
     _SetOperandSize(byte);
     _c_setbyte(0xd3);
-    _chr(_c_modrm(aopri1, rid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AAM() {
-    _cb("AAM");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAM");
     if (ARG_NONE) {
-        _bb("ARG_NONE");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_NONE");
         _c_setbyte(0xd4);
-        _chr(_c_imm8(0x0a));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(0x0a));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (ARG_I8) {
-        _bb("ARG_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_I8");
         _c_setbyte(0xd4);
-        _chr(_c_imm8(aopri1.imm8));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AAD() {
-    _cb("AAD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAD");
     if (ARG_NONE) {
-        _bb("ARG_NONE");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_NONE");
         _c_setbyte(0xd5);
-        _chr(_c_imm8(0x0a));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(0x0a));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (ARG_I8) {
-        _bb("ARG_I8");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_I8");
         _c_setbyte(0xd5);
-        _chr(_c_imm8(aopri1.imm8));
-        _be;
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XLATB() {
-    _cb("XLATB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XLATB");
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
     _c_setbyte(0xd7);
@@ -6135,726 +6135,726 @@ static void XLATB() {
     } else if (ARG_DSEBXAL8) {
         _SetAddressSize(4);
     } else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN_AL_I8() {
-    _cb("IN_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
     _c_setbyte(0xe4);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN_EAX_I8(uint8_t byte) {
-    _cb("IN_AL_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
     _SetOperandSize(byte);
     _c_setbyte(0xe5);
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUT_I8_AL() {
-    _cb("OUT_I8_AL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_AL");
     _c_setbyte(0xe6);
-    _chr(_c_imm8(aopri1.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUT_I8_EAX(uint8_t byte) {
-    _cb("OUT_I8_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_EAX");
     _c_setbyte(0xe7);
-    _chr(_c_imm8(aopri1.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CALL_REL32(uint8_t byte) {
-    _cb("CALL_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_REL32");
     _SetOperandSize(byte);
     _c_setbyte(0xe8);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri1.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri1.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri1.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JMP_REL32(uint8_t byte) {
-    _cb("JMP_REL32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL32");
     _SetOperandSize(byte);
     _c_setbyte(0xe9);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16(aopri1.imm16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32(aopri1.imm32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri1.imm32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JMP_PTR16_32(uint8_t byte) {
-    _cb("JMP_PTR16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_PTR16_32");
     _SetOperandSize(byte);
     _c_setbyte(0xea);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_imm16((uint16_t) aopri1.reip));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16((uint16_t) aopri1.reip));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_imm32((uint32_t) aopri1.reip));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32((uint32_t) aopri1.reip));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _chr(_c_imm16(aopri1.rcs));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.rcs));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN_AL_DX() {
-    _cb("IN_AL_DX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_DX");
     _c_setbyte(0xec);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN_EAX_DX(uint8_t byte) {
-    _cb("IN_EAX_DX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_DX");
     _SetOperandSize(byte);
     _c_setbyte(0xed);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUT_DX_AL() {
-    _cb("OUT_DX_AL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_AL");
     _c_setbyte(0xee);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUT_DX_EAX(uint8_t byte) {
-    _cb("OUT_DX_EAX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(0xef);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_LOCK() {
-    _cb("PREFIX_LOCK");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
     if (ARG_NONE) prefix_lock = 1;
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void QDX() {
-    _cb("PREFIX_LOCK");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
     if (ARG_I8) {
         _c_setbyte(0xf1);
-        _chr(_c_imm8(aopri1.imm8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
     } else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_REPNZ() {
-    _cb("PREFIX_REPNZ");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPNZ");
     if (ARG_NONE) prefix_repnz = 1;
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PREFIX_REPZ() {
-    _cb("PREFIX_REPZ");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPZ");
     if (ARG_NONE) prefix_repz = 1;
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void HLT() {
-    _cb("HLT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("HLT");
     if (ARG_NONE) _c_setbyte(0xf4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMC() {
-    _cb("CMC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMC");
     if (ARG_NONE) _c_setbyte(0xf5);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_F6(uint8_t rid) {
-    _cb("INS_F6");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F6");
     _c_setbyte(0xf6);
-    _chr(_c_modrm(aopri1, rid));
-    if (!rid) _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    if (!rid) NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_F7(uint8_t rid, uint8_t byte) {
-    _cb("INS_F7");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F7");
     _SetOperandSize(byte);
     _c_setbyte(0xf7);
-    _chr(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
     if (!rid) {
-        _bb("!rid");
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!rid");
         switch (byte) {
         case 2:
-            _bb("byte(2)");
-            _chr(_c_imm16(aopri2.imm16));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            _bb("byte(4)");
-            _chr(_c_imm32(aopri2.imm32));
-            _be;
+            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+            NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
             _ser_;
             break;
         }
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_END;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CLC() {
-    _cb("CLC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLC");
     if (ARG_NONE) _c_setbyte(0xf8);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STC() {
-    _cb("STC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STC");
     if (ARG_NONE) _c_setbyte(0xf9);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CLI() {
-    _cb("CLI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLI");
     if (ARG_NONE) _c_setbyte(0xfa);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STI() {
-    _cb("STI");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STI");
     if (ARG_NONE) _c_setbyte(0xfb);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CLD() {
-    _cb("CLD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLD");
     if (ARG_NONE) _c_setbyte(0xfc);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STD() {
-    _cb("STD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STD");
     if (ARG_NONE) _c_setbyte(0xfd);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_FE(uint8_t rid) {
-    _cb("INS_FE");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FE");
     _c_setbyte(0xfe);
-    _chr(_c_modrm(aopri1, rid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_FF(uint8_t rid, uint8_t byte) {
-    _cb("INS_FF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FF");
     _SetOperandSize(byte);
     _c_setbyte(0xff);
-    _chr(_c_modrm(aopri1, rid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* concrete extended instructions */
 static void INS_0F_00(uint8_t rid, uint8_t byte) {
-    _cb("INS_0F_00");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_00");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0x00);
-    _chr(_c_modrm(aopri1, rid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_0F_01(uint8_t rid, uint8_t byte) {
-    _cb("INS_0F_01");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_01");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0x01);
-    _chr(_c_modrm(aopri1, rid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LAR_R32_RM32(uint8_t byte) {
-    _cb("LAR_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LAR_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0x02);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LSL_R32_RM32(uint8_t byte) {
-    _cb("LSL_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LSL_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0x03);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CLTS() {
-    _cb("CLTS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLTS");
     INS_0F();
     _c_setbyte(0x06);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R32_CR(uint8_t crid) {
-    _cb("MOV_R32_CR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_CR");
     INS_0F();
     _c_setbyte(0x20);
-    _chr(_c_modrm(aopri1, crid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, crid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R32_DR(uint8_t drid) {
-    _cb("MOV_R32_DR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_DR");
     INS_0F();
     _c_setbyte(0x21);
-    _chr(_c_modrm(aopri1, drid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, drid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_CR_R32(uint8_t crid) {
-    _cb("MOV_CR_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CR_R32");
     INS_0F();
     _c_setbyte(0x22);
-    _chr(_c_modrm(aopri2, crid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, crid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_DR_R32(uint8_t drid) {
-    _cb("MOV_DR_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DR_R32");
     INS_0F();
     _c_setbyte(0x23);
-    _chr(_c_modrm(aopri2, drid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, drid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_R32_TR(uint8_t trid) {
-    _cb("MOV_R32_TR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_TR");
     INS_0F();
     _c_setbyte(0x24);
-    _chr(_c_modrm(aopri1, trid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, trid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV_TR_R32(uint8_t trid) {
-    _cb("MOV_TR_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_TR_R32");
     INS_0F();
     _c_setbyte(0x26);
-    _chr(_c_modrm(aopri2, trid));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, trid));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SETCC_RM8(uint8_t opcode) {
-    _cb("SETCC_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETCC_RM8");
     if (ARG_RM8) {
         INS_0F();
         _c_setbyte(opcode);
-        _chr(_c_modrm(aopri1, 0));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, 0));
     } else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_FS() {
-    _cb("PUSH_FS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_FS");
     INS_0F();
     _c_setbyte(0xa0);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_FS() {
-    _cb("POP_FS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_FS");
     INS_0F();
     _c_setbyte(0xa1);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BT_RM32_R32(uint8_t byte) {
-    _cb("BT_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BT_RM32_R32");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xa3);
     switch (byte) {
     case 2:
-        _chr(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
         break;
     case 4:
-        _chr(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHLD_RM32_R32_I8(uint8_t byte) {
-    _cb("SHLD_RM32_R32_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_I8");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xa4);
     switch (byte) {
     case 2:
-        _chr(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
         break;
     case 4:
-        _chr(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
         break;
     }
-    _chr(_c_imm8(aopri3.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri3.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHLD_RM32_R32_CL(uint8_t byte) {
-    _cb("SHLD_RM32_R32_CL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_CL");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xa5);
     switch (byte) {
     case 2:
-        _chr(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
         break;
     case 4:
-        _chr(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void PUSH_GS() {
-    _cb("PUSH_GS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_GS");
     INS_0F();
     _c_setbyte(0xa8);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP_GS() {
-    _cb("POP_GS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_GS");
     INS_0F();
     _c_setbyte(0xa9);
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BTS_RM32_R32(uint8_t byte) {
-    _cb("BTS_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTS_RM32_R32");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xab);
     switch (byte) {
     case 2:
-        _chr(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
         break;
     case 4:
-        _chr(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHRD_RM32_R32_I8(uint8_t byte) {
-    _cb("SHRD_RM32_R32_I8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_I8");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xac);
     switch (byte) {
     case 2:
-        _chr(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
         break;
     case 4:
-        _chr(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
         break;
     }
-    _chr(_c_imm8(aopri3.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri3.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHRD_RM32_R32_CL(uint8_t byte) {
-    _cb("SHRD_RM32_R32_CL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_CL");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xad);
     switch (byte) {
     case 2:
-        _chr(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
         break;
     case 4:
-        _chr(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IMUL_R32_RM32(uint8_t byte) {
-    _cb("IMUL_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xab);
     switch (byte) {
     case 2:
-        _chr(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
         break;
     case 4:
-        _chr(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LSS_R32_M16_32(uint8_t byte) {
-    _cb("LSS_R32_M16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LSS_R32_M16_32");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xb2);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BTR_RM32_R32(uint8_t byte) {
-    _cb("BTR_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTR_RM32_R32");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xb3);
     switch (byte) {
     case 2:
-        _chr(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
         break;
     case 4:
-        _chr(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LFS_R32_M16_32(uint8_t byte) {
-    _cb("LFS_R32_M16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LFS_R32_M16_32");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xb4);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LGS_R32_M16_32(uint8_t byte) {
-    _cb("LGS_R32_M16_32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LGS_R32_M16_32");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xb5);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVZX_R32_RM8(uint8_t byte) {
-    _cb("MOVZX_R32_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM8");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xb6);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVZX_R32_RM16() {
-    _cb("MOVZX_R32_RM16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM16");
     INS_0F();
     _c_setbyte(0xb7);
-    _chr(_c_modrm(aopri2, aopri1.reg32));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS_0F_BA(uint8_t rid, uint8_t byte) {
-    _cb("INS_0F_BA");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_BA");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xba);
-    _chr(_c_modrm(aopri1, rid));
-    _chr(_c_imm8(aopri2.imm8));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BTC_RM32_R32(uint8_t byte) {
-    _cb("BTC_RM32_R32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTC_RM32_R32");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xbb);
     switch (byte) {
     case 2:
-        _chr(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
         break;
     case 4:
-        _chr(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BSF_R32_RM32(uint8_t byte) {
-    _cb("BSF_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BSF_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xbc);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BSR_R32_RM32(uint8_t byte) {
-    _cb("BSR_R32_RM32");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BSR_R32_RM32");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xbd);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSX_R32_RM8(uint8_t byte) {
-    _cb("MOVSX_R32_RM8");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM8");
     _SetOperandSize(byte);
     INS_0F();
     _c_setbyte(0xbe);
     switch (byte) {
     case 2:
-        _bb("byte(2)");
-        _chr(_c_modrm(aopri2, aopri1.reg16));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        _bb("byte(4)");
-        _chr(_c_modrm(aopri2, aopri1.reg32));
-        _be;
+        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSX_R32_RM16() {
-    _cb("MOVSX_R32_RM16");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM16");
     INS_0F();
     _c_setbyte(0xbf);
-    _chr(_c_modrm(aopri2, aopri1.reg32));
-    _ce;
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* abstract instructions */
 static void PUSH() {
-    _cb("PUSH");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH");
     if      (ARG_ES) PUSH_ES();
     else if (ARG_CS) PUSH_CS();
     else if (ARG_SS) PUSH_SS();
@@ -6883,10 +6883,10 @@ static void PUSH() {
     else if (ARG_I16) PUSH_I32(2);
     else if (ARG_I32) PUSH_I32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void POP() {
-    _cb("POP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP");
     if      (ARG_ES) POP_ES();
     else if (ARG_CS) POP_CS();
     else if (ARG_SS) POP_SS();
@@ -6912,11 +6912,11 @@ static void POP() {
     else if (ARG_RM16) INS_8F(0x00, 2);
     else if (ARG_RM32) INS_8F(0x00, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADD() {
     uint8_t rid = 0x00;
-    _cb("ADD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD");
     if      (ARG_AL_I8)    ADD_AL_I8();
     else if (ARG_AX_I16)   ADD_EAX_I32(2);
     else if (ARG_EAX_I32)  ADD_EAX_I32(4);
@@ -6958,11 +6958,11 @@ static void ADD() {
     else if (ARG_RM16_R16) ADD_RM32_R32(2);
     else if (ARG_RM32_R32) ADD_RM32_R32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OR() {
     uint8_t rid = 0x01;
-    _cb("OR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR");
     if      (ARG_AL_I8)    OR_AL_I8();
     else if (ARG_AX_I16)   OR_EAX_I32(2);
     else if (ARG_EAX_I32)  OR_EAX_I32(4);
@@ -7004,11 +7004,11 @@ static void OR() {
     else if (ARG_RM16_R16) OR_RM32_R32(2);
     else if (ARG_RM32_R32) OR_RM32_R32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ADC() {
     uint8_t rid = 0x02;
-    _cb("ADC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC");
     if      (ARG_AL_I8)    ADC_AL_I8();
     else if (ARG_AX_I16)   ADC_EAX_I32(2);
     else if (ARG_EAX_I32)  ADC_EAX_I32(4);
@@ -7050,11 +7050,11 @@ static void ADC() {
     else if (ARG_RM16_R16) ADC_RM32_R32(2);
     else if (ARG_RM32_R32) ADC_RM32_R32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SBB() {
     uint8_t rid = 0x03;
-    _cb("SBB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB");
     if      (ARG_AL_I8)    SBB_AL_I8();
     else if (ARG_AX_I16)   SBB_EAX_I32(2);
     else if (ARG_EAX_I32)  SBB_EAX_I32(4);
@@ -7096,11 +7096,11 @@ static void SBB() {
     else if (ARG_RM16_R16) SBB_RM32_R32(2);
     else if (ARG_RM32_R32) SBB_RM32_R32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void AND() {
     uint8_t rid = 0x04;
-    _cb("AND");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND");
     if      (ARG_AL_I8)    AND_AL_I8();
     else if (ARG_AX_I16)   AND_EAX_I32(2);
     else if (ARG_EAX_I32)  AND_EAX_I32(4);
@@ -7142,11 +7142,11 @@ static void AND() {
     else if (ARG_RM16_R16) AND_RM32_R32(2);
     else if (ARG_RM32_R32) AND_RM32_R32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SUB() {
     uint8_t rid = 0x05;
-    _cb("SUB");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB");
     if      (ARG_AL_I8)    SUB_AL_I8();
     else if (ARG_AX_I16)   SUB_EAX_I32(2);
     else if (ARG_EAX_I32)  SUB_EAX_I32(4);
@@ -7188,11 +7188,11 @@ static void SUB() {
     else if (ARG_RM16_R16) SUB_RM32_R32(2);
     else if (ARG_RM32_R32) SUB_RM32_R32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XOR() {
     uint8_t rid = 0x06;
-    _cb("XOR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR");
     if      (ARG_AL_I8)    XOR_AL_I8();
     else if (ARG_AX_I16)   XOR_EAX_I32(2);
     else if (ARG_EAX_I32)  XOR_EAX_I32(4);
@@ -7234,11 +7234,11 @@ static void XOR() {
     else if (ARG_RM16_R16) XOR_RM32_R32(2);
     else if (ARG_RM32_R32) XOR_RM32_R32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMP() {
     uint8_t rid = 0x07;
-    _cb("CMP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP");
     if      (ARG_AL_I8)    CMP_AL_I8();
     else if (ARG_AX_I16)   CMP_EAX_I32(2);
     else if (ARG_EAX_I32)  CMP_EAX_I32(4);
@@ -7280,10 +7280,10 @@ static void CMP() {
     else if (ARG_RM16_R16) CMP_RM32_R32(2);
     else if (ARG_RM32_R32) CMP_RM32_R32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INC() {
-    _cb("INC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC");
     if      (ARG_AX) INC_EAX(2);
     else if (ARG_CX) INC_ECX(2);
     else if (ARG_DX) INC_EDX(2);
@@ -7304,10 +7304,10 @@ static void INC() {
     else if (ARG_RM16s) INS_FF(0x00, 2);
     else if (ARG_RM32s) INS_FF(0x00, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DEC() {
-    _cb("DEC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC");
     if      (ARG_AX) DEC_EAX(2);
     else if (ARG_CX) DEC_ECX(2);
     else if (ARG_DX) DEC_EDX(2);
@@ -7328,17 +7328,17 @@ static void DEC() {
     else if (ARG_RM16s) INS_FF(0x01, 2);
     else if (ARG_RM32s) INS_FF(0x01, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BOUND() {
-    _cb("BOUND");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BOUND");
     if (ARG_R16_M16) BOUND_R32_M32_32(2);
     else if (ARG_R32_M32) BOUND_R32_M32_32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IMUL() {
-    _cb("IMUL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL");
     if      (ARG_RM8s) INS_F6(0x05);
     else if (ARG_RM16s) INS_F7(0x05, 2);
     else if (ARG_RM32s) INS_F7(0x05, 4);
@@ -7349,26 +7349,26 @@ static void IMUL() {
     else if (ARG_R16_RM16_I16) IMUL_R32_RM32_I32(2);
     else if (ARG_R32_RM32_I32) IMUL_R32_RM32_I32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INS() {
-    _cb("INS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS");
     if (ARG_ESDI8s_DX || ARG_ESEDI8s_DX) INSB();
     else if (ARG_ESDI16s_DX || ARG_ESEDI16s_DX) INSW(2);
     else if (ARG_ESDI32s_DX || ARG_ESEDI32s_DX) INSW(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUTS() {
-    _cb("OUTS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTS");
     if (ARG_DX_DSSI8s || ARG_DX_DSESI8s) OUTSB();
     else if (ARG_DX_DSSI16s || ARG_DX_DSESI16s) OUTSW(2);
     else if (ARG_DX_DSSI32s || ARG_DX_DSESI32s) OUTSW(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JCC_REL(uint8_t opcode) {
-    _cb("JCC_REL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JCC_REL");
     if (ARG_PNONE_I8s || ARG_SHORT_I8s) {
         _c_setbyte(opcode);
         _c_imm8(aopri1.imm8);
@@ -7383,10 +7383,10 @@ static void JCC_REL(uint8_t opcode) {
         _c_setbyte(opcode + 0x10);
         _c_imm16(aopri1.imm32);
     } else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void TEST() {
-    _cb("TEST");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST");
     if      (ARG_AL_I8) TEST_AL_I8();
     else if (ARG_AX_I16) TEST_EAX_I32(2);
     else if (ARG_EAX_I32) TEST_EAX_I32(4);
@@ -7397,10 +7397,10 @@ static void TEST() {
     else if (ARG_RM16_I16) INS_F7(0x00, 2);
     else if (ARG_RM32_I32) INS_F7(0x00, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XCHG() {
-    _cb("XCHG");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG");
     if      (ARG_AX_AX) XCHG_EAX_EAX(2);
     else if (ARG_CX_AX) XCHG_ECX_EAX(2);
     else if (ARG_DX_AX) XCHG_EDX_EAX(2);
@@ -7421,10 +7421,10 @@ static void XCHG() {
     else if (ARG_RM16_R16) XCHG_RM32_R32(2);
     else if (ARG_RM32_R32) XCHG_RM32_R32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOV() {
-    _cb("MOV");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV");
     if      (ARG_AL_I8)  MOV_AL_I8();
     else if (ARG_CL_I8)  MOV_CL_I8();
     else if (ARG_DL_I8)  MOV_DL_I8();
@@ -7491,17 +7491,17 @@ static void MOV() {
     else if (ARG_TR6_R32)  MOV_TR_R32(6);
     else if (ARG_TR7_R32)  MOV_TR_R32(7);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LEA() {
-    _cb("LEA");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LEA");
     if (ARG_R16_M16) LEA_R32_M32(2);
     else if (ARG_R32_M32) LEA_R32_M32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CALL() {
-    _cb("CALL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL");
     if      (ARG_FAR_I16_16) CALL_PTR16_32(2);
     else if (ARG_FAR_I16_32) CALL_PTR16_32(4);
     else if (ARG_NEAR_I16s  || ARG_PNONE_I16s) CALL_REL32(2);
@@ -7511,91 +7511,91 @@ static void CALL() {
     else if (ARG_FAR_M16_16) INS_FF(0x03, 2);
     else if (ARG_FAR_M16_32) INS_FF(0x03, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVS() {
-    _cb("MOVS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVS");
     if (ARG_ESDI8s_DSSI8s || ARG_ESEDI8s_DSESI8s) MOVSB();
     else if (ARG_ESDI16s_DSSI16s || ARG_ESEDI16s_DSESI16s) MOVSW(2);
     else if (ARG_ESDI32s_DSSI32s || ARG_ESEDI32s_DSESI32s) MOVSW(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void CMPS() {
-    _cb("CMPS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPS");
     if (ARG_DSSI8s_ESDI8s || ARG_DSESI8s_ESEDI8s) CMPSB();
     else if (ARG_DSSI16s_ESDI16s || ARG_DSESI16s_ESEDI16s) CMPSW(2);
     else if (ARG_DSSI32s_ESDI32s || ARG_DSESI32s_ESEDI32s) CMPSW(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STOS() {
-    _cb("STOS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STOS");
     if (ARG_ESDI8s || ARG_ESEDI8s) STOSB();
     else if (ARG_ESDI16s || ARG_ESEDI16s) STOSW(2);
     else if (ARG_ESDI32s || ARG_ESEDI32s) STOSW(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LODS() {
-    _cb("LODS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LODS");
     if (ARG_DSSI8s || ARG_DSESI8s) LODSB();
     else if (ARG_DSSI16s || ARG_DSESI16s) LODSW(2);
     else if (ARG_DSSI32s || ARG_DSESI32s) LODSW(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SCAS() {
-    _cb("SCAS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SCAS");
     if (ARG_ESDI8s || ARG_ESEDI8s) SCASB();
     else if (ARG_ESDI16s || ARG_ESEDI16s) SCASW(2);
     else if (ARG_ESDI32s || ARG_ESEDI32s) SCASW(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RET() {
-    _cb("RET");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RET");
     if (ARG_I16u) RET_I16();
     else if (ARG_NONE) RET_();
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LES() {
-    _cb("LES");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LES");
     if (ARG_R16_M16) LES_R32_M16_32(2);
     else if (ARG_R32_M32) LES_R32_M16_32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LDS() {
-    _cb("LDS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LDS");
     if (ARG_R16_M16) LDS_R32_M16_32(2);
     else if (ARG_R32_M32) LDS_R32_M16_32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RETF() {
-    _cb("RETF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF");
     if      (ARG_I16u) RETF_I16();
     else if (ARG_NONE) RETF_();
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void INT() {
-    _cb("INT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("INT");
     if (ARG_I8) INT_I8();
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void XLAT() {
-    _cb("XLAT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("XLAT");
     if (ARG_DSBXAL8 || ARG_DSEBXAL8) XLATB();
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ROL() {
     uint8_t rid = 0x00;
-    _cb("ROL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ROL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
     else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
@@ -7606,11 +7606,11 @@ static void ROL() {
     else if (ARG_RM16_I8) INS_C1(rid, 2);
     else if (ARG_RM32_I8) INS_C1(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void ROR() {
     uint8_t rid = 0x01;
-    _cb("ROR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("ROR");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
     else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
@@ -7621,11 +7621,11 @@ static void ROR() {
     else if (ARG_RM16_I8) INS_C1(rid, 2);
     else if (ARG_RM32_I8) INS_C1(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RCL() {
     uint8_t rid = 0x02;
-    _cb("RCL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("RCL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
     else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
@@ -7636,11 +7636,11 @@ static void RCL() {
     else if (ARG_RM16_I8) INS_C1(rid, 2);
     else if (ARG_RM32_I8) INS_C1(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void RCR() {
     uint8_t rid = 0x03;
-    _cb("IN");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
     else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
@@ -7651,11 +7651,11 @@ static void RCR() {
     else if (ARG_RM16_I8) INS_C1(rid, 2);
     else if (ARG_RM32_I8) INS_C1(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHL() {
     uint8_t rid = 0x04;
-    _cb("SHL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
     else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
@@ -7666,11 +7666,11 @@ static void SHL() {
     else if (ARG_RM16_I8) INS_C1(rid, 2);
     else if (ARG_RM32_I8) INS_C1(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHR() {
     uint8_t rid = 0x05;
-    _cb("SHR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHR");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
     else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
@@ -7681,11 +7681,11 @@ static void SHR() {
     else if (ARG_RM16_I8) INS_C1(rid, 2);
     else if (ARG_RM32_I8) INS_C1(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SAL() {
     uint8_t rid = 0x04;
-    _cb("SAL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SAL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
     else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
@@ -7696,11 +7696,11 @@ static void SAL() {
     else if (ARG_RM16_I8) INS_C1(rid, 2);
     else if (ARG_RM32_I8) INS_C1(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SAR() {
     uint8_t rid = 0x07;
-    _cb("SAR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SAR");
     if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
     else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
     else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
@@ -7711,10 +7711,10 @@ static void SAR() {
     else if (ARG_RM16_I8) INS_C1(rid, 2);
     else if (ARG_RM32_I8) INS_C1(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IN() {
-    _cb("IN");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN");
     if      (ARG_AL_I8u)  IN_AL_I8();
     else if (ARG_AX_I8u)  IN_EAX_I8(2);
     else if (ARG_EAX_I8u) IN_EAX_I8(4);
@@ -7722,10 +7722,10 @@ static void IN() {
     else if (ARG_AX_DX)   IN_EAX_DX(2);
     else if (ARG_EAX_DX)  IN_EAX_DX(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void OUT() {
-    _cb("OUT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT");
     if      (ARG_I8u_AL)  OUT_I8_AL();
     else if (ARG_I8u_AX)  OUT_I8_EAX(2);
     else if (ARG_I8u_EAX) OUT_I8_EAX(4);
@@ -7733,50 +7733,50 @@ static void OUT() {
     else if (ARG_DX_AX)   OUT_DX_EAX(2);
     else if (ARG_DX_EAX)  OUT_DX_EAX(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void NOT() {
-    _cb("NOT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("NOT");
     if      (ARG_RM8s) INS_F6(0x02);
     else if (ARG_RM16s) INS_F7(0x02, 2);
     else if (ARG_RM32s) INS_F7(0x02, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void NEG() {
-    _cb("NEG");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("NEG");
     if      (ARG_RM8s) INS_F6(0x03);
     else if (ARG_RM16s) INS_F7(0x03, 2);
     else if (ARG_RM32s) INS_F7(0x03, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MUL() {
-    _cb("MUL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MUL");
     if      (ARG_RM8s) INS_F6(0x04);
     else if (ARG_RM16s) INS_F7(0x04, 2);
     else if (ARG_RM32s) INS_F7(0x04, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void DIV() {
-    _cb("DIV");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("DIV");
     if      (ARG_RM8s) INS_F6(0x06);
     else if (ARG_RM16s) INS_F7(0x06, 2);
     else if (ARG_RM32s) INS_F7(0x06, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void IDIV() {
-    _cb("IDIV");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("IDIV");
     if      (ARG_RM8s) INS_F6(0x07);
     else if (ARG_RM16s) INS_F7(0x07, 2);
     else if (ARG_RM32s) INS_F7(0x07, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void JMP() {
-    _cb("JMP");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP");
     if      (ARG_FAR_I16_16) JMP_PTR16_32(2);
     else if (ARG_FAR_I16_32) JMP_PTR16_32(4);
     else if (ARG_SHORT_I8s  || ARG_PNONE_I8s)  JCC_REL(0xeb);
@@ -7787,222 +7787,222 @@ static void JMP() {
     else if (ARG_FAR_M16_16) INS_FF(0x05, 2);
     else if (ARG_FAR_M16_32) INS_FF(0x05, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* abstract extended instructions */
 static void SLDT() {
     uint8_t rid = 0x00;
-    _cb("SLDT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SLDT");
     if (ARG_RM16) INS_0F_00(rid, 2);
     else if (ARG_R32) INS_0F_00(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void STR() {
     uint8_t rid = 0x01;
-    _cb("STR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("STR");
     if (ARG_RM16) INS_0F_00(rid, 2);
     else if (ARG_R32) INS_0F_00(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LLDT() {
     uint8_t rid = 0x02;
-    _cb("LLDT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LLDT");
     if (ARG_RM16) INS_0F_00(rid, 0);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LTR() {
     uint8_t rid = 0x03;
-    _cb("LTR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LTR");
     if (ARG_RM16) INS_0F_00(rid, 0);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void VERR() {
     uint8_t rid = 0x04;
-    _cb("VERR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("VERR");
     if (ARG_RM16) INS_0F_00(rid, 0);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void VERW() {
     uint8_t rid = 0x05;
-    _cb("VERW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("VERW");
     if (ARG_RM16) INS_0F_00(rid, 0);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SGDT() {
     uint8_t rid = 0x00;
-    _cb("SGDT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SGDT");
     if (ARG_M16s) INS_0F_01(rid, 2);
     else if (ARG_M32s) INS_0F_01(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SIDT() {
     uint8_t rid = 0x01;
-    _cb("SIDT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SIDT");
     if (ARG_M16s) INS_0F_01(rid, 2);
     else if (ARG_M32s) INS_0F_01(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LGDT() {
     uint8_t rid = 0x02;
-    _cb("SIDT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SIDT");
     if (ARG_M16s) INS_0F_01(rid, 2);
     else if (ARG_M32) INS_0F_01(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LIDT() {
     uint8_t rid = 0x03;
-    _cb("LIDT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LIDT");
     if (ARG_M16s) INS_0F_01(rid, 2);
     else if (ARG_M32) INS_0F_01(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SMSW() {
     uint8_t rid = 0x04;
-    _cb("SMSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SMSW");
     if (ARG_RM16) INS_0F_01(rid, 2);
     else if (ARG_R32) INS_0F_01(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LMSW() {
     uint8_t rid = 0x06;
-    _cb("LMSW");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LMSW");
     if (ARG_RM16) INS_0F_01(rid, 0);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LAR() {
-    _cb("LAR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LAR");
     if (ARG_R16_RM16) LAR_R32_RM32(2);
     else if (ARG_R32_RM32) LAR_R32_RM32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LSL() {
-    _cb("LSL");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LSL");
     if (ARG_R16_RM16) LSL_R32_RM32(2);
     else if (ARG_R32_RM32) LSL_R32_RM32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BT() {
     uint8_t rid = 0x04;
-    _cb("BT");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BT");
     if (ARG_RM16_R16) BT_RM32_R32(2);
     else if (ARG_RM32_R32) BT_RM32_R32(4);
     else if (ARG_RM16_I8) INS_0F_BA(rid, 2);
     else if (ARG_RM32_I8) INS_0F_BA(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHLD() {
-    _cb("SHLD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD");
     if (ARG_RM16_R16_I8) SHLD_RM32_R32_I8(2);
     if (ARG_RM16_R16_CL) SHLD_RM32_R32_CL(2);
     else if (ARG_RM32_R32_I8) SHLD_RM32_R32_I8(4);
     else if (ARG_RM32_R32_CL) SHLD_RM32_R32_CL(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BTS() {
     uint8_t rid = 0x05;
-    _cb("BTS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTS");
     if (ARG_RM16_R16) BTS_RM32_R32(2);
     else if (ARG_RM32_R32) BTS_RM32_R32(4);
     else if (ARG_RM16_I8) INS_0F_BA(rid, 2);
     else if (ARG_RM32_I8) INS_0F_BA(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void SHRD() {
-    _cb("SHRD");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD");
     if (ARG_RM16_R16_I8) SHRD_RM32_R32_I8(2);
     if (ARG_RM16_R16_CL) SHRD_RM32_R32_CL(2);
     else if (ARG_RM32_R32_I8) SHRD_RM32_R32_I8(4);
     else if (ARG_RM32_R32_CL) SHRD_RM32_R32_CL(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LSS() {
-    _cb("LSS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LSS");
     if (ARG_R16_M16) LSS_R32_M16_32(2);
     else if (ARG_R32_M32) LSS_R32_M16_32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BTR() {
     uint8_t rid = 0x06;
-    _cb("BTR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTR");
     if (ARG_RM16_R16) BTR_RM32_R32(2);
     else if (ARG_RM32_R32) BTR_RM32_R32(4);
     else if (ARG_RM16_I8) INS_0F_BA(rid, 2);
     else if (ARG_RM32_I8) INS_0F_BA(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LFS() {
-    _cb("LFS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LFS");
     if (ARG_R16_M16) LFS_R32_M16_32(2);
     else if (ARG_R32_M32) LFS_R32_M16_32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void LGS() {
-    _cb("LGS");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("LGS");
     if (ARG_R16_M16) LGS_R32_M16_32(2);
     else if (ARG_R32_M32) LGS_R32_M16_32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVZX() {
-    _cb("MOVZX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX");
     if (ARG_R16_RM8s) MOVZX_R32_RM8(2);
     else if (ARG_R32_RM8s) MOVZX_R32_RM8(4);
     else if (ARG_R32_RM16s) MOVZX_R32_RM16();
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BTC() {
     uint8_t rid = 0x07;
-    _cb("BTC");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTC");
     if (ARG_RM16_R16) BTC_RM32_R32(2);
     else if (ARG_RM32_R32) BTC_RM32_R32(4);
     else if (ARG_RM16_I8) INS_0F_BA(rid, 2);
     else if (ARG_RM32_I8) INS_0F_BA(rid, 4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BSF() {
-    _cb("BSF");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BSF");
     if (ARG_R16_RM16) BSF_R32_RM32(2);
     else if (ARG_R32_RM32) BSF_R32_RM32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void BSR() {
-    _cb("BSR");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("BSR");
     if (ARG_R16_RM16) BSR_R32_RM32(2);
     else if (ARG_R32_RM32) BSR_R32_RM32(4);
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static void MOVSX() {
-    _cb("MOVSX");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX");
     if (ARG_R16_RM8s) MOVSX_R32_RM8(2);
     else if (ARG_R32_RM8s) MOVSX_R32_RM8(4);
     else if (ARG_R32_RM16s) MOVSX_R32_RM16();
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* main routines */
@@ -8026,7 +8026,7 @@ static int is_prefix() {
 }
 static void exec() {
     /* assemble single statement */
-    _cb("exec");
+    NTVDM64_TYPE_TRACE_CALL_BEGIN("exec");
     if (!rop || is_end(rop[0])) ;
     else if (!STRCMP(rop, "add")) ADD();
     else if (!STRCMP(rop,"push")) PUSH();
@@ -8244,7 +8244,7 @@ static void exec() {
     else if (!STRCMP(rop, "movsx")) MOVSX();
     else if (!STRCMP(rop, "qdx"))   QDX();
     else _ser_;
-    _ce;
+    NTVDM64_TYPE_TRACE_CALL_END;
 }
 static char *take_arg(char *s) {
     char *rend, *rresult;
