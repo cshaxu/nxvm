@@ -86,7 +86,8 @@ M5:T70:S2:DOS-PROMPT:OK
 
 The task artifact is `build/output/nxvm_0_5_0142.exe`, banner `0.5.0142`.
 S5 rebuilt it as
-`1E76A4D338CED55494245CBCCA5A5112EAAB0EC4D1CC511559B7B8EEFF5E5EC6`.
+`1E76A4D338CED55494245CBCCA5A5112EAAB0EC4D1CC511559B7B8EEFF5E5EC6`;
+S6 records the current artifact hash after execution-context cleanup.
 
 ## Environment Limit
 

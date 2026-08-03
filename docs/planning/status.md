@@ -259,10 +259,10 @@ remain a designated POSIX-environment handoff.
 device lifecycle. Windows GCC core, VDM, debugger, session, Console, and FDD
 DOS-prompt gates pass with `nxvm_0_5_0141.exe`.
 
-**M5 T142 complete:** the VM raw-alias map and its forwarding borrow facade
-are both removed. Only root composition directly borrows core-owned
-capabilities to bind VM providers/profile firmware or the debugger adapter;
-there is no copied state and no peer-module raw-core access.
+**M5 T142 complete:** the VM raw-alias map, forwarding borrow facade, and
+execution-context CPU/RAM/port aliases are removed. Root composition directly
+borrows core-owned capabilities only for actual binding/debug-target assembly;
+the execution context holds its explicit `vm_session*` callback owner.
 
 ## Short-Term M5 Plan
 
