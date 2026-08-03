@@ -64,6 +64,67 @@ worker and renderer resource.
 Historical M5 T137 already completed the former generic execution-context
 rename and move into `vm/composition`; it is not repeated in this sequence.
 
+## Task Exit Standards
+
+### T138: Run-Handle Design
+
+T138 exits only when the contract names the run-handle owner, creator, worker
+event reporters, cancellation requester, joiner, renderer/window destroyer,
+and session finalizer; covers normal guest stop, Console `STOP`, Console
+`EXIT`, window close, and partial thread-start failure; and preserves the
+distinction between Console idle-after-stop and session destruction. It
+produces no runnable artifact.
+
+### T139: Win32 Run Handle
+
+T139 exits only when a live run has exactly one session-owned handle; kernel
+and display workers free no shared state; every Win32 completion/cancellation
+route reaches request-stop then joins both workers before host-surface teardown;
+and no session finalizer can run while that handle is live. Gates cover Console
+lifecycle, normal guest stop, window close, repeated cancellation, failed
+second-thread creation, two-session host-surface contention, and FDD DOS
+prompt. It produces a task artifact.
+
+### T140: Linux Parity
+
+T140 exits only when Linux Console source has the same explicit handle,
+worker-reporting, request-stop, join, and sole-destroyer structure as Win32;
+no Linux worker frees shared run/session state; and static source checks map
+every T139 lifecycle event to its Linux equivalent. Native POSIX compilation
+and runtime verification are deferred to the designated POSIX environment.
+This task produces no Windows artifact unless it changes a runnable Windows
+path.
+
+### T141: Core Lifecycle Closure
+
+T141 proceeds in small gates: remove profile/enable selection; establish
+unconditional standard core creation; then move core device lifecycle one
+device family at a time. It exits only when no `CORE_MACHINE_PROFILE_*`,
+`core_machine_enable_executor()`, VM/VDM core-type branch, or VM direct
+core-device prepare/reset/refresh/finalize call remains; both products use the
+same `core_machine_create -> bind -> freeze -> reset -> run -> destroy` path;
+and core executor lifecycle, VDM skeleton, two-session, Console/debugger, and
+FDD DOS-prompt gates pass. It produces a task artifact.
+
+### T142: Access Boundary Closure
+
+T142 proceeds by CPU/RAM/port first, then shared devices, then debugger access.
+It exits only when `vm_session` has no raw alias map for core internals; VM
+composition, firmware, platform, and debugger reach core only through bounded
+composition, provider, or debug access contracts; no cached duplicate state or
+direct lifecycle bypass remains; and two-session, debugger, Console, and FDD
+DOS-prompt gates pass. It produces a task artifact.
+
+### M5 Unique-Owner Closure
+
+M5 may claim its unique-owner objective only after T139 through T142 complete
+and a final source-and-runtime audit confirms one core-machine creation path,
+one live platform-run owner, no TLS/current-object selection dependency, no
+core-to-VM/VDM dependency, no raw core alias map, and no second session or
+machine execution path. The final audit records its source scans, creator /
+joiner / destroyer map, full focused gate set, and any platform-specific test
+environment limits.
+
 ## T141 Core Lifecycle Constraint
 
 Earlier M5 work moved live CPU/RAM/port and shared-device storage into
