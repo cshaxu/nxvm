@@ -79,16 +79,24 @@ C_INT main(C_INT argc, C_CHAR **argv)
             scan_codes[index], virtual_keys[index]);
     }
     result = WaitForSingleObject(thread, MEM_FAULT_TIMEOUT_MILLISECONDS);
-    if (result != WAIT_OBJECT_0 ||
+    if ((result != WAIT_OBJECT_0 && result != WAIT_TIMEOUT) ||
         core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) !=
-            NTVDM64_STATUS_OK ||
-        !diagnostic.first_fault.valid ||
-        !NTVDM64_TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
-            VCPUINS_EXCEPT_UD)) goto fail;
-    vm_dos_mem_fault_print(&diagnostic);
+            NTVDM64_STATUS_OK) goto fail;
+    if (diagnostic.first_fault.valid) {
+        vm_dos_mem_fault_print(&diagnostic);
+        if (NTVDM64_TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                VCPUINS_EXCEPT_UD) &&
+            diagnostic.first_fault.point.byte_count >= 2u &&
+            diagnostic.first_fault.point.bytes[0] == 0xdbu &&
+            diagnostic.first_fault.point.bytes[1] == 0xe3u) goto fail;
+    } else {
+        STD_PRINTF("M5:T156:S1:DOS-MEM-NEXT:RUNNING\n");
+    }
+    vm_session_stop(session);
+    if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
     CloseHandle(thread);
     vm_session_destroy(session);
-    STD_PRINTF("M5:T152:S1:DOS-MEM-UD:OK\n");
+    STD_PRINTF("M5:T156:S1:DOS-MEM-FNINIT-PASSED:OK\n");
     return 0;
 
 fail:

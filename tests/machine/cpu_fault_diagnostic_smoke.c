@@ -33,8 +33,8 @@ C_INT main(C_VOID)
     for (index = 0u; index < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY; ++index) {
         program[index] = 0x90u;
     }
-    program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY] = 0xdbu;
-    program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 1u] = 0xe3u;
+    program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY] = 0xd6u;
+    program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 1u] = 0x90u;
     core_machine_memory_write_real_to(core_machine_executor_memory_borrow(machine),
         0u, 0u, program, sizeof(program));
     if (
@@ -47,10 +47,10 @@ C_INT main(C_VOID)
             VCPUINS_EXCEPT_UD) ||
         diagnostic.first_fault.point.linear_pc !=
             CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
-        diagnostic.first_fault.point.bytes[0] != 0xdbu ||
-        diagnostic.first_fault.point.bytes[1] != 0xe3u ||
+        diagnostic.first_fault.point.bytes[0] != 0xd6u ||
+        diagnostic.first_fault.point.bytes[1] != 0x90u ||
         last->linear_pc != CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
-        last->bytes[0] != 0xdbu || last->bytes[1] != 0xe3u) goto fail;
+        last->bytes[0] != 0xd6u || last->bytes[1] != 0x90u) goto fail;
     core_machine_destroy(machine);
     STD_PRINTF("M5:T152:S1:CPU-FAULT-DIAGNOSTIC:OK\n");
     return 0;

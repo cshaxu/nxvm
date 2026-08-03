@@ -255,6 +255,8 @@ ntvdm64_status core_machine_create(
     core_machine_cpu_execution_context_bind_profiles(
         &machine->executor_cpu_execution, machine->cpu_profile,
         machine->fpu.profile);
+    core_machine_cpu_execution_context_bind_fpu(
+        &machine->executor_cpu_execution, &machine->fpu);
     core_machine_cpu_execution_context_bind_diagnostic_provider(
         &machine->executor_cpu_execution, &core_machine_cpu_diagnostic_provider,
         machine);
