@@ -18,7 +18,8 @@ static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
         vm_session_destroy(session);
         return 1;
     }
-    core_machine_memory_allocate_for(session->ram, 16384u * 1024u);
+    core_machine_memory_allocate_for(
+        vm_composition_machine_access_memory(session->core_access), 16384u * 1024u);
     vm_session_reset(session);
     if (vm_machine_fdd_remove_for(session->fdd, STD_NULL) ||
         vm_machine_hdd_remove(session->hdd, STD_NULL) ||

@@ -176,12 +176,17 @@ C_VOID vm_session_control_initialize(vm_session_control_state *control,
     STD_ATOMIC_INIT(&control->pauseReason, VM_SESSION_PAUSE_NONE);
     vm_session_execution_context_initialize(&control->execution_context);
     vm_session_execution_context_bind_machine_state(
-        &control->execution_context, machine->cpu, machine->ram, machine->port,
+        &control->execution_context,
+        vm_composition_machine_access_cpu(machine->core_access),
+        vm_composition_machine_access_memory(machine->core_access),
+        vm_composition_machine_access_port(machine->core_access),
         machine);
     vm_session_execution_context_bind_callbacks(
         &control->execution_context, &device_execution_callbacks);
     vm_session_execution_context_activate(&control->execution_context);
-    vm_machine_debug_initialize(machine->debug, machine->cpu, machine->cpuins);
+    vm_machine_debug_initialize(machine->debug,
+        vm_composition_machine_access_cpu(machine->core_access),
+        vm_composition_machine_access_instructions(machine->core_access));
     vm_session_providers_initialize(machine);
     if (!vm_session_bind_execution_provider(machine)) {
         vm_session_control_stop(control);

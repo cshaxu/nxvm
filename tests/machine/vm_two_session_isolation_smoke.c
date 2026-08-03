@@ -27,32 +27,32 @@ C_INT main(C_VOID)
     vm_session_storage_initialize(first);
     vm_session_storage_initialize(second);
 
-    failed |= first->cpu == second->cpu;
-    failed |= first->cpuins == second->cpuins;
-    failed |= first->cpu_execution == second->cpu_execution;
-    failed |= first->ram == second->ram;
-    failed |= first->port == second->port;
-    failed |= first->cpu_execution->cpu != first->cpu;
-    failed |= second->cpu_execution->cpu != second->cpu;
-    failed |= first->cpu_execution->instructions != first->cpuins;
-    failed |= second->cpu_execution->instructions != second->cpuins;
+    failed |= vm_composition_machine_access_cpu(first->core_access) == vm_composition_machine_access_cpu(second->core_access);
+    failed |= vm_composition_machine_access_instructions(first->core_access) == vm_composition_machine_access_instructions(second->core_access);
+    failed |= vm_composition_machine_access_execution(first->core_access) == vm_composition_machine_access_execution(second->core_access);
+    failed |= vm_composition_machine_access_memory(first->core_access) == vm_composition_machine_access_memory(second->core_access);
+    failed |= vm_composition_machine_access_port(first->core_access) == vm_composition_machine_access_port(second->core_access);
+    failed |= vm_composition_machine_access_execution(first->core_access)->cpu != vm_composition_machine_access_cpu(first->core_access);
+    failed |= vm_composition_machine_access_execution(second->core_access)->cpu != vm_composition_machine_access_cpu(second->core_access);
+    failed |= vm_composition_machine_access_execution(first->core_access)->instructions != vm_composition_machine_access_instructions(first->core_access);
+    failed |= vm_composition_machine_access_execution(second->core_access)->instructions != vm_composition_machine_access_instructions(second->core_access);
 
-    core_machine_memory_write_physical(first->ram, 0u,
+    core_machine_memory_write_physical(vm_composition_machine_access_memory(first->core_access), 0u,
         (ntvdm64_type_virtual_address)&first_value, 1u);
-    core_machine_memory_write_physical(second->ram, 0u,
+    core_machine_memory_write_physical(vm_composition_machine_access_memory(second->core_access), 0u,
         (ntvdm64_type_virtual_address)&second_value, 1u);
-    core_machine_memory_read_physical(first->ram, 0u,
+    core_machine_memory_read_physical(vm_composition_machine_access_memory(first->core_access), 0u,
         (ntvdm64_type_virtual_address)&observed, 1u);
     failed |= observed != first_value;
-    core_machine_memory_read_physical(second->ram, 0u,
+    core_machine_memory_read_physical(vm_composition_machine_access_memory(second->core_access), 0u,
         (ntvdm64_type_virtual_address)&observed, 1u);
     failed |= observed != second_value;
 
-    first->cpu->data.eax = 0x11111111u;
-    second->cpu->data.eax = 0x22222222u;
-    first->cpuins->data.flagWR = NTVDM64_TYPE_TRUE;
-    failed |= second->cpu->data.eax != 0x22222222u;
-    failed |= second->cpuins->data.flagWR != NTVDM64_TYPE_FALSE;
+    vm_composition_machine_access_cpu(first->core_access)->data.eax = 0x11111111u;
+    vm_composition_machine_access_cpu(second->core_access)->data.eax = 0x22222222u;
+    vm_composition_machine_access_instructions(first->core_access)->data.flagWR = NTVDM64_TYPE_TRUE;
+    failed |= vm_composition_machine_access_cpu(second->core_access)->data.eax != 0x22222222u;
+    failed |= vm_composition_machine_access_instructions(second->core_access)->data.flagWR != NTVDM64_TYPE_FALSE;
 
     vm_session_storage_finalize(second);
     vm_session_storage_finalize(first);

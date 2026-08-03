@@ -47,6 +47,9 @@ static uint16_t vm_session_read_u16(const C_VOID *source)
 
 C_VOID vm_session_storage_initialize(vm_session *machine)
 {
+    core_machine_cpu_execution_context *execution;
+    t_ram *memory;
+
     if (machine == STD_NULL || machine->core_machine != STD_NULL) return;
     {
         core_machine_config config = {0};
@@ -58,18 +61,16 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
             return;
         }
     }
-    machine->ram = core_machine_executor_memory_borrow(machine->core_machine);
-    machine->port = core_machine_executor_port_borrow(machine->core_machine);
-    machine->cpu = core_machine_executor_cpu_borrow(machine->core_machine);
-    machine->cpuins = core_machine_executor_cpu_instructions_borrow(
+    machine->core_access = &machine->core_access_storage;
+    vm_composition_machine_access_initialize(machine->core_access,
         machine->core_machine);
-    machine->cpu_execution = core_machine_executor_cpu_execution_borrow(
-        machine->core_machine);
+    memory = vm_composition_machine_access_memory(machine->core_access);
+    execution = vm_composition_machine_access_execution(machine->core_access);
     machine->pic_master = core_machine_shared_pic_master_borrow(
         machine->core_machine);
     machine->pic_slave = core_machine_shared_pic_slave_borrow(
         machine->core_machine);
-    core_machine_cpu_execution_context_bind_pic(machine->cpu_execution,
+    core_machine_cpu_execution_context_bind_pic(execution,
         machine->pic_master, machine->pic_slave);
     machine->pit = core_machine_shared_pit_borrow(machine->core_machine);
     machine->dma_latch = core_machine_shared_dma_latch_borrow(
@@ -89,11 +90,11 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     machine->default_qdx = &machine->default_qdx_storage;
     machine->default_profile_context = &machine->default_profile_context_storage;
     vm_profile_default_context_initialize(machine->default_profile_context,
-        machine->default_bios, machine->default_qdx, machine->ram,
+        machine->default_bios, machine->default_qdx, memory,
         machine->vadp, STD_NULL, STD_NULL);
-    core_machine_cpu_execution_context_bind_extension(machine->cpu_execution,
+    core_machine_cpu_execution_context_bind_extension(execution,
         machine->default_profile_context);
-    machine->default_profile_context->execution = machine->cpu_execution;
+    machine->default_profile_context->execution = execution;
     machine->block_provider = &machine->block_provider_storage;
     core_machine_block_provider_slot_initialize(machine->block_provider);
     machine->default_profile_context->block_provider = machine->block_provider;
@@ -124,12 +125,8 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
 C_VOID vm_session_storage_finalize(vm_session *machine)
 {
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
-    core_machine_cpu_execution_context_bind_extension(machine->cpu_execution, STD_NULL);
-    machine->cpu = STD_NULL;
-    machine->cpuins = STD_NULL;
-    machine->cpu_execution = STD_NULL;
-    machine->ram = STD_NULL;
-    machine->port = STD_NULL;
+    core_machine_cpu_execution_context_bind_extension(
+        vm_composition_machine_access_execution(machine->core_access), STD_NULL);
     machine->pic_master = STD_NULL;
     machine->pic_slave = STD_NULL;
     machine->pit = STD_NULL;
@@ -161,6 +158,8 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     machine->debugger_context = STD_NULL;
     machine->console_context = STD_NULL;
     machine->console_target = STD_NULL;
+    vm_composition_machine_access_finalize(machine->core_access);
+    machine->core_access = STD_NULL;
     STD_FREE(machine->control);
     machine->control = STD_NULL;
     core_machine_destroy(machine->core_machine);
@@ -213,7 +212,9 @@ C_INT vm_session_get_reset_vector(const vm_session *session,
 {
     if (session == STD_NULL || session->core_machine == STD_NULL ||
         out_vector == STD_NULL) return NTVDM64_STATUS_INVALID_STATE;
-    out_vector->cs = vm_session_read_u16(&session->cpu->data.cs.selector);
-    out_vector->ip = vm_session_read_u16(&session->cpu->data.ip);
+    out_vector->cs = vm_session_read_u16(
+        &vm_composition_machine_access_cpu(session->core_access)->data.cs.selector);
+    out_vector->ip = vm_session_read_u16(
+        &vm_composition_machine_access_cpu(session->core_access)->data.ip);
     return NTVDM64_STATUS_OK;
 }

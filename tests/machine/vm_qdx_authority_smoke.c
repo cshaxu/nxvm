@@ -21,7 +21,8 @@ C_INT main(C_VOID)
     if (machine == STD_NULL ||
         machine->default_qdx != &machine->default_qdx_storage ||
         machine->default_profile_context->qdx != machine->default_qdx ||
-        core_machine_cpu_execution_context_extension(machine->cpu_execution) !=
+        core_machine_cpu_execution_context_extension(
+            vm_composition_machine_access_execution(session->core_access)) !=
             machine->default_profile_context) {
         vm_session_finalize(session);
         STD_FREE(session);
