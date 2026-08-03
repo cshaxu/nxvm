@@ -2,7 +2,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "core/platform/sleep.h"
-#include "core/product/runtime/execution_context.h"
+#include "vm/composition/session_execution_context.h"
 #include "vm/composition/display_bridge.h"
 #include "vm/composition/session.h"
 #include "vm/composition/session_control.h"
@@ -19,18 +19,18 @@ C_VOID vm_session_runner_run(vm_session *session)
     control = session->control;
     while (STD_ATOMIC_LOAD(&control->flagRun)) {
         if (STD_ATOMIC_EXCHANGE(&control->flagReset, NTVDM64_TYPE_FALSE)) {
-            core_product_execution_context_reset(&control->execution_context);
+            vm_session_execution_context_reset(&control->execution_context);
         }
         if (STD_ATOMIC_LOAD(&control->pauseRequested)) {
             STD_ATOMIC_STORE(&control->paused, NTVDM64_TYPE_TRUE);
         }
         while (STD_ATOMIC_LOAD(&control->flagRun) && STD_ATOMIC_LOAD(&control->paused)) {
-            core_product_execution_context_run_command_boundary(&control->execution_context);
+            vm_session_execution_context_run_command_boundary(&control->execution_context);
             core_platform_sleep_milliseconds(1u);
         }
         if (!STD_ATOMIC_LOAD(&control->flagRun)) break;
-        core_product_execution_context_run_command_boundary(&control->execution_context);
-        core_product_execution_context_debug_refresh(&control->execution_context);
+        vm_session_execution_context_run_command_boundary(&control->execution_context);
+        vm_session_execution_context_debug_refresh(&control->execution_context);
         if (STD_ATOMIC_LOAD(&control->pauseRequested)) continue;
         if (core_machine_run(session->core_machine, budget, &result) != NTVDM64_STATUS_OK) {
             vm_session_control_stop(control);

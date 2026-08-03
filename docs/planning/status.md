@@ -236,6 +236,11 @@ facade, core has no VM/VDM include, and NXVM retains one product entry/run
 path. Windows GCC plus all 54 smoke executables pass; Linux remains a native
 POSIX follow-up gate and VDM intentionally remains non-runnable.
 
+**M5 T137 complete:** VM-only execution control is now named
+`vm_session_execution_context` and compiled directly in VM composition; the
+generic `nxvm-runtime` target is removed. Focused execution, Console,
+two-session, and FDD DOS-prompt gates pass with `nxvm_0_5_0137.exe`.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

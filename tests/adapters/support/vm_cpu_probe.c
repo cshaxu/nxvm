@@ -16,7 +16,7 @@
 
 #include "core/machine/memory.h"
 
-#include "core/product/runtime/execution_context.h"
+#include "vm/composition/session_execution_context.h"
 
 #include "vm/composition/session_control.h"
 
