@@ -198,6 +198,10 @@ TLS implementation dependencies (debug, Console, wait), plus VDM's intentional
 non-runnable skeleton boundary and host-lease verification gap. These are
 post-audit work, not evidence that the unique-owner objective has fully closed.
 
+**M5 T128 active:** [`m5-t128-t136-convergence.md`](m5-t128-t136-convergence.md)
+defines the explicit-invocation and unified-executor sequence before runtime
+changes begin.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in
