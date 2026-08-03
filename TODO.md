@@ -40,6 +40,27 @@ import. `docs/planning/status.md` remains authoritative for active work.
   provider source into VM-only device lifecycle, default-profile firmware
   lifecycle, a thin order-only coordinator, and a separate machine-information
   adapter. A source-shape gate rejects a return to the mixed file.
+- [ ] **Frozen-core API bypass (`TODO(High)`).** The public mutable
+  `core_machine_executor_*_borrow` surface can bypass the T160 configuration
+  boundary. The retained `DEVICE ram` Console command reaches
+  `core_machine_memory_allocate_for` through this route. Define a replacement
+  configuration/reconstruction contract before changing it; also constrain
+  direct CPU/diagnostic observation to a copied, synchronized boundary.
+- [ ] **Default-session media policy (`TODO(High)`).** The NXVM session
+  factory must not commit machine-local image paths or silently select host
+  media. Preserve explicit `DEVICE` media commands and define the approved
+  no-media/default-fixture policy before removing the current paths.
+- [ ] **VM Console composition adapter (`TODO(Medium)`).**
+  `vm/composition/session/provider.c` combines session-factory callbacks and
+  selected-session Console command adapters. Split it into accurately named
+  source owners without changing Console grammar or selected-session semantics.
+- [ ] **Contract and vocabulary drift (`TODO(Medium)`).** Reconcile
+  `docs/architecture/contracts.md` with actual lowercase C API names and
+  current profile enums. Add the missing `STD_MEMMOVE` facade and remove the
+  direct VDM `memmove` use in a bounded vocabulary task.
+- [ ] **CMake core target clarity (`TODO(Low)`).** `nxvm-core` and
+  `nxvm-core-machine` together form one runtime core, not two guest executors;
+  make their target names/dependency roles unambiguous in a build-only task.
 
 ### Platform, Product, And Session Boundaries
 
