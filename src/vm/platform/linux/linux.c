@@ -6,6 +6,8 @@
 
 #include <unistd.h>
 
+#include "vm/platform/platform.h"
+
 
 #include "vm/platform/linux/linuxcon.h"
 
@@ -29,9 +31,22 @@ C_VOID vm_platform_linux_display_paint(C_INT window, const vm_platform_run_conte
     }
 }
 
-C_VOID vm_platform_linux_start_machine(C_INT window, const vm_platform_run_context *context) {
-    if (window) {
-    } else {
-        lnxcStartMachine(context);
+ntvdm64_status vm_platform_linux_run_handle_start(
+    const vm_platform_run_context *context, vm_platform_run_handle *handle) {
+    if (vm_platform_run_context_get_window_display(context)) {
+        return NTVDM64_STATUS_UNSUPPORTED;
     }
+    return vm_platform_linuxcon_run_handle_start(context, handle);
+}
+
+C_VOID vm_platform_linux_run_handle_request_stop(vm_platform_run_handle *handle) {
+    vm_platform_linuxcon_run_handle_request_stop(handle);
+}
+
+C_VOID vm_platform_linux_run_handle_join(vm_platform_run_handle *handle) {
+    vm_platform_linuxcon_run_handle_join(handle);
+}
+
+C_VOID vm_platform_linux_run_handle_finalize(vm_platform_run_handle *handle) {
+    vm_platform_linuxcon_run_handle_finalize(handle);
 }
