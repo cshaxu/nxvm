@@ -2,7 +2,8 @@
 
 ## Status
 
-Story 1, T75 S1 through T81 S1, is complete. Story 2 is planned but not active.
+Story 1, T75 S1 through T81 S1, is complete. Story 2 begins with T82 S1,
+the real-executor contract and migration map.
 
 ## Story 1: Remove Residual Global Facades
 
