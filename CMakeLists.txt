@@ -546,6 +546,9 @@ add_custom_target(nxvm-cpu-fpu-static-closure
     COMMAND ${CMAKE_COMMAND} -DNTVDM64_SOURCE_DIR=${CMAKE_SOURCE_DIR}
         -P ${CMAKE_SOURCE_DIR}/cmake/verify_cpu_fpu_closure.cmake
     DEPENDS nxvm-core-machine-cpu-fpu-profile-closure-smoke)
+add_custom_target(nxvm-core-lifecycle-ownership-closure
+    COMMAND ${CMAKE_COMMAND} -DNTVDM64_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -P ${CMAKE_SOURCE_DIR}/cmake/verify_core_lifecycle_ownership.cmake)
 add_executable(nxvm-vm-two-session-isolation-smoke
     tests/machine/vm_two_session_isolation_smoke.c)
 target_link_libraries(nxvm-vm-two-session-isolation-smoke PRIVATE
@@ -812,6 +815,7 @@ add_nxvm_version_artifact(nxvm-0-5-0155 "0.5.0155")
 add_nxvm_version_artifact(nxvm-0-5-0156 "0.5.0156")
 add_nxvm_version_artifact(nxvm-0-5-0157 "0.5.0157")
 add_nxvm_version_artifact(nxvm-0-5-0158 "0.5.0158")
+add_nxvm_version_artifact(nxvm-0-5-0159 "0.5.0159")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

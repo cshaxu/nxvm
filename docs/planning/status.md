@@ -330,6 +330,13 @@ ESC, CPU-gate, debugger, and FDD prompt evidence remain green. Evidence is
 [`M5-T158.md`](../tracking/M5-T158.md). Present FPU profiles remain
 unavailable, and i386 protected-mode/paging completion remains separate work.
 
+**M5 T159 S1 complete: core lifecycle boundary audit.** T141's core-owned
+lifecycle is now reconfirmed against current source and guarded by a static
+VM/VDM ownership gate. `providers.c` retains only VM-only device, firmware,
+and provider work; it cannot interleave generic core-device lifecycle calls.
+Evidence is [`M5-T159.md`](../tracking/M5-T159.md). No guest lifecycle order
+changed.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in
