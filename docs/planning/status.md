@@ -67,8 +67,9 @@ T93 moved VM context lifetime into composition. Its GCC artifact is
 
 ## Active Work
 
-**M5 T94 S1: VDM composition audit.** Verify DOS-minimal composition against
-the same session-lifetime rules; modify it only for a demonstrated violation.
+**M5 T95 S1: ordered session-readiness closure.** Audit every implemented
+module against the fixed checklist and run the complete structural and product
+regression set. T94 confirmed that DOS-minimal composition is session-owned.
 
 ## Short-Term M5 Plan
 
