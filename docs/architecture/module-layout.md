@@ -108,6 +108,14 @@ composition owns the host implementation and its lifetime. Its runtime
 infrastructure lives in `core/product/runtime`; there is no top-level runtime
 module.
 
+A `core/platform` host-surface context contains only a surface kind and an
+opaque native handle. A host resource that cannot be shared, such as a process
+terminal, is represented by a caller-owned `core_platform_host_surface_lease`.
+It atomically names one explicit composition owner; acquire by a second owner
+fails, and only that owner can release it. The contract has no guest state,
+renderer state, process singleton, or product policy. VM and VDM composition
+choose whether to create a context, acquire a lease, or reject a request.
+
 The retained hardware debugger command language, prompt, help, and text
 presentation are shared product UX and belong in `core/product/debug`. Its
 core-owned debug target declares the machine effects it needs; VM and VDM root

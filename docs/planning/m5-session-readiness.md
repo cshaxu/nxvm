@@ -19,7 +19,7 @@ plan.
 | 1 | `core/machine` | Pass | Guest state, providers, executor storage, and CPU trace workspace are per `core_machine` execution context. |
 | 2 | `vm/machine` | Pass | Full-PC objects are per session; control state is atomic and guest reset remains execution-boundary work. |
 | 3 | `vdm/machine` | Pass for current scope | DOS-minimal instances own their state. It has no concurrent host-entry contract yet, so no new code is required before a VDM run loop exists. |
-| 4 | `core/platform` | Gap | Define shared host-capability contexts and host-surface lease contract; it must not hold guest state. |
+| 4 | `core/platform` | Pass | Shared host-surface contexts carry opaque handles; process-exclusive host resources use explicit atomic leases. |
 | 5 | `vm/platform` | Fail | Console/window rendering state becomes context-owned; Linux terminal capability has an explicit exclusive lease. |
 | 6 | `vdm/platform` | Absent | No production implementation; define against the core platform contracts when M8/M9 admits it. |
 | 7 | `core/product` | Fail | Debugger parser, assembler, and disassembler workspaces become session-owned contexts; thread-local target/wait scopes remain scopes only. |
@@ -39,7 +39,7 @@ a higher-priority migration.
 | Owner | Current mutable state | Required disposition |
 | --- | --- | --- |
 | `core/machine` | `core_machine`, installed provider state, and CPU instruction trace workspace | Session-owned. |
-| `core/platform` | wait/debug scopes | Thread-local scopes are allowed; add host-surface context/lease contract before host code moves here. |
+| `core/platform` | wait/debug scopes; host-surface contexts and leases | Thread-local scopes and caller-owned opaque contexts are allowed; leases name one composition owner. |
 | `core/product` | `debug.c`, `aasm32.c`, and `dasm32.c` parser workspaces | Caller-owned debugger context. |
 | `vm/machine` | `vm_composition_control_state` run/reset/pause/step fields and debug instrumentation | Atomic command/state boundary; instrumentation is session-owned or disabled. |
 | `vm/platform/win32` | Console buffer and GDI renderer state | Per-surface context owned by the VM platform session. |

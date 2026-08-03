@@ -48,11 +48,14 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 T88 made CPU trace workspaces execution-context-owned and VM control state
 atomic. Its GCC artifact is `build/output/nxvm_0_5_0088.exe`.
 
+T89 confirmed VDM-minimal state is instance-owned and added the shared
+host-surface context/lease contract. It changes no runnable product path.
+
 ## Active Work
 
-**M5 T89 S1: VDM machine audit and core platform contract.** Confirm the
-current VDM-minimal machine remains instance-owned, then specify the shared
-host-surface context and exclusive-lease contract without moving product policy.
+**M5 T90 S1: VM platform surface contexts.** Move each VM renderer's mutable
+state into a context and bind console/terminal exclusivity through the core
+host-surface lease contract.
 
 ## Short-Term M5 Plan
 
