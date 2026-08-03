@@ -205,7 +205,8 @@ set(NXVM_MACHINE_CORE_SOURCES
 set(NXVM_CORE_PRODUCT_RUNTIME_SOURCES
     src/core/product/runtime/execution_context.c
 )
-add_library(ntvdm64-core-platform STATIC)
+add_library(ntvdm64-core-platform STATIC
+    src/core/platform/host_surface_interface.c)
 if(WIN32)
     target_sources(ntvdm64-core-platform PRIVATE
         src/core/platform/win32/sleep.c)
@@ -215,6 +216,12 @@ else()
 endif()
 target_include_directories(ntvdm64-core-platform PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
+)
+add_executable(ntvdm64-core-platform-host-surface-smoke
+    tests/platform/core_platform_host_surface_smoke.c
+)
+target_link_libraries(ntvdm64-core-platform-host-surface-smoke PRIVATE
+    ntvdm64-core-platform
 )
 set(NXVM_PLATFORM_VM_SOURCES
     src/vm/platform/platform.c
@@ -768,6 +775,8 @@ if(NTVDM64_ENABLE_BOCHX_RESEARCH)
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(ntvdm64-core-platform PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(ntvdm64-core-platform-host-surface-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-runtime PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-runtime-registry-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
