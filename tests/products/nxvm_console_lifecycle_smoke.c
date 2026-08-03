@@ -22,15 +22,15 @@
 #endif
 
 
-#include "vm/composition/session/console_target.h"
-
-#include "vm/composition/session/session.h"
-
+#include "vm/composition/session/provider.h"
 #include "vm/product/console.h"
 
 C_INT main(C_VOID)
 {
-    vm_session machine = {0};
+    core_product_session_provider session_provider;
+    core_product_session_manager *session_manager = STD_NULL;
+    vm_product_console_machine_provider machine_provider;
+    nxvm_product_console_context console_context;
     STD_FILE *input;
     C_INT saved_stdin;
 
@@ -50,20 +50,23 @@ C_INT main(C_VOID)
         return 1;
     }
 
-    vm_session_storage_initialize(&machine);
-    if (machine.core_machine == STD_NULL) {
+    vm_session_provider_initialize(&session_provider);
+    if (core_product_session_manager_create(&session_provider, &session_manager) !=
+            NTVDM64_STATUS_OK ||
+        core_product_session_manager_open(session_manager, STD_NULL) !=
+            NTVDM64_STATUS_OK) {
         NXVM_DUP2(saved_stdin, NXVM_FILENO(STD_STDIN));
         NXVM_CLOSE(saved_stdin);
         STD_FCLOSE(input);
         return 1;
     }
-    vm_session_console_target_initialize(machine.console_target, &machine);
-    vm_product_console_main(machine.console_context, machine.console_target);
+    vm_session_machine_provider_initialize(&machine_provider, session_manager);
+    vm_product_console_main(&console_context, &machine_provider);
 
     NXVM_DUP2(saved_stdin, NXVM_FILENO(STD_STDIN));
     NXVM_CLOSE(saved_stdin);
     STD_FCLOSE(input);
-    if (machine.core_machine != STD_NULL) return 1;
+    core_product_session_manager_destroy(session_manager);
     puts("M5:T96:S1:CONSOLE-LIFECYCLE:OK");
     return 0;
 }

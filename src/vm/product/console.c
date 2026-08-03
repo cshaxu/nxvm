@@ -20,7 +20,7 @@
 #define argArray (consoleContext->arguments)
 #define flagExit (consoleContext->exit_requested)
 #define strCmdBuff (consoleContext->command_buffer)
-#define consoleTarget (consoleContext->target)
+#define machineProvider (consoleContext->machine_provider)
 
 /*
  * Parses command-line input.
@@ -155,7 +155,7 @@ static C_VOID doExit(nxvm_product_console_context *context) {
     if (numArgs != 1) {
         GetHelp;
     }
-    if (!consoleTarget->is_running(consoleTarget->context)) {
+    if (!machineProvider->is_running(machineProvider->context)) {
         flagExit = 1;
     } else {
         STD_PRINTF("Please stop NXVM before exit.\n");
@@ -169,19 +169,19 @@ static C_VOID doInfo(nxvm_product_console_context *context) {
     }
     STD_PRINTF("NXVM Device Info\n");
     STD_PRINTF("================\n");
-    consoleTarget->print_machine(consoleTarget->context);
+    machineProvider->print_machine(machineProvider->context);
     STD_PRINTF("\n");
     STD_PRINTF("NXVM Platform Info\n");
     STD_PRINTF("==================\n");
-    STD_PRINTF("Display Type: %s\n", consoleTarget->get_window_display(consoleTarget->context) ? "Window" : "Console");
+    STD_PRINTF("Display Type: %s\n", machineProvider->get_window_display(machineProvider->context) ? "Window" : "Console");
     STD_PRINTF("\n");
     STD_PRINTF("NXVM BIOS Settings\n");
     STD_PRINTF("==================\n");
-    consoleTarget->print_bios(consoleTarget->context);
+    machineProvider->print_bios(machineProvider->context);
     STD_PRINTF("\n");
     STD_PRINTF("NXVM Device Status\n");
     STD_PRINTF("==================\n");
-    consoleTarget->print_status(consoleTarget->context);
+    machineProvider->print_status(machineProvider->context);
 }
 
 /* Starts internal debugger */
@@ -189,7 +189,7 @@ static C_VOID doDebug(nxvm_product_console_context *context) {
     if (numArgs != 1) {
         GetHelp;
     }
-    consoleTarget->debug(consoleTarget->context);
+    machineProvider->debug(machineProvider->context);
 }
 
 /* Executes cpu instruction recorder */
@@ -197,7 +197,7 @@ static C_VOID doRecord(nxvm_product_console_context *context) {
     if (numArgs < 2) {
         GetHelp;
     }
-    if (consoleTarget->is_running(consoleTarget->context)) {
+    if (machineProvider->is_running(machineProvider->context)) {
         STD_PRINTF("Cannot change record status or dump record now.\n");
         return;
     }
@@ -205,9 +205,9 @@ static C_VOID doRecord(nxvm_product_console_context *context) {
         if (numArgs != 3) {
             GetHelp;
         }
-        consoleTarget->record_start(consoleTarget->context, argArray[2]);
+        machineProvider->record_start(machineProvider->context, argArray[2]);
     } else if (!STD_STRCMP(argArray[1], "stop")) {
-        consoleTarget->record_stop(consoleTarget->context);
+        machineProvider->record_stop(machineProvider->context);
     } else {
         GetHelp;
     }
@@ -223,9 +223,9 @@ static C_VOID doSet(nxvm_product_console_context *context) {
             GetHelp;
         }
         if (!STD_STRCMP(argArray[2], "fdd")) {
-            consoleTarget->set_boot_hdd(consoleTarget->context, 0);
+            machineProvider->set_boot_hdd(machineProvider->context, 0);
         } else if (!STD_STRCMP(argArray[2], "hdd")) {
-            consoleTarget->set_boot_hdd(consoleTarget->context, 1);
+            machineProvider->set_boot_hdd(machineProvider->context, 1);
         } else {
             GetHelp;
         }
@@ -239,7 +239,7 @@ static C_VOID doDevice(nxvm_product_console_context *context) {
     if (numArgs < 2) {
         GetHelp;
     }
-    if (consoleTarget->is_running(consoleTarget->context)) {
+    if (machineProvider->is_running(machineProvider->context)) {
         STD_PRINTF("Cannot change device now.\n");
         return;
     }
@@ -247,15 +247,15 @@ static C_VOID doDevice(nxvm_product_console_context *context) {
         if (numArgs != 3) {
             GetHelp;
         }
-        consoleTarget->set_memory(consoleTarget->context, (STD_SIZE_T)STD_ATOI(argArray[2]) << 10);
+        machineProvider->set_memory(machineProvider->context, (STD_SIZE_T)STD_ATOI(argArray[2]) << 10);
     } else if (!STD_STRCMP(argArray[1], "display")) {
         if (numArgs != 3) {
             GetHelp;
         }
         if (!STD_STRCMP(argArray[2], "console")) {
-            consoleTarget->set_window_display(consoleTarget->context, 0);
+            machineProvider->set_window_display(machineProvider->context, 0);
         } else if (!STD_STRCMP(argArray[2], "window")) {
-            consoleTarget->set_window_display(consoleTarget->context, 1);
+            machineProvider->set_window_display(machineProvider->context, 1);
         } else {
             GetHelp;
         }
@@ -264,13 +264,13 @@ static C_VOID doDevice(nxvm_product_console_context *context) {
             GetHelp;
         }
         if (!STD_STRCMP(argArray[2], "create")) {
-            consoleTarget->create_fdd(consoleTarget->context);
+            machineProvider->create_fdd(machineProvider->context);
             STD_PRINTF("Floppy disk created.\n");
         } else if (!STD_STRCMP(argArray[2], "insert")) {
             if (numArgs < 4) {
                 GetHelp;
             }
-            if (!consoleTarget->insert_fdd(consoleTarget->context, argArray[3])) {
+            if (!machineProvider->insert_fdd(machineProvider->context, argArray[3])) {
                 STD_PRINTF("Floppy disk inserted.\n");
             } else {
                 STD_PRINTF("Cannot read floppy disk from '%s'.\n", argArray[3]);
@@ -279,7 +279,7 @@ static C_VOID doDevice(nxvm_product_console_context *context) {
             if (numArgs < 4) {
                 argArray[3] = STD_NULL;
             }
-            if (!consoleTarget->remove_fdd(consoleTarget->context, argArray[3])) {
+            if (!machineProvider->remove_fdd(machineProvider->context, argArray[3])) {
                 STD_PRINTF("Floppy disk removed.\n");
             } else {
                 STD_PRINTF("Cannot write floppy disk to '%s'.\n", argArray[3]);
@@ -295,7 +295,7 @@ static C_VOID doDevice(nxvm_product_console_context *context) {
             if (numArgs > 3) {
                 if (numArgs == 5 && !STD_STRCMP(argArray[3], "cyl")) {
                     if (STD_ATOI(argArray[4])) {
-                        consoleTarget->create_hdd(consoleTarget->context, (uint16_t)STD_ATOI(argArray[4]));
+                        machineProvider->create_hdd(machineProvider->context, (uint16_t)STD_ATOI(argArray[4]));
                     } else {
                         GetHelp;
                     }
@@ -303,14 +303,14 @@ static C_VOID doDevice(nxvm_product_console_context *context) {
                     GetHelp;
                 }
             } else {
-                consoleTarget->create_hdd(consoleTarget->context, 20);
+                machineProvider->create_hdd(machineProvider->context, 20);
             }
             STD_PRINTF("Hard disk created.\n");
         } else if (!STD_STRCMP(argArray[2], "connect")) {
             if (numArgs < 4) {
                 GetHelp;
             }
-            if (!consoleTarget->insert_hdd(consoleTarget->context, argArray[3])) {
+            if (!machineProvider->insert_hdd(machineProvider->context, argArray[3])) {
                 STD_PRINTF("Hard disk connected.\n");
             } else {
                 STD_PRINTF("Cannot read hard disk from '%s'.\n", argArray[3]);
@@ -319,7 +319,7 @@ static C_VOID doDevice(nxvm_product_console_context *context) {
             if (numArgs < 4) {
                 argArray[3] = STD_NULL;
             }
-            if (!consoleTarget->remove_hdd(consoleTarget->context, argArray[3])) {
+            if (!machineProvider->remove_hdd(machineProvider->context, argArray[3])) {
                 STD_PRINTF("Hard disk disconnected.\n");
             } else {
                 STD_PRINTF("Cannot write hard disk to '%s'.\n", argArray[3]);
@@ -334,8 +334,8 @@ static C_VOID doDevice(nxvm_product_console_context *context) {
 
 /* Tests NXVM: reset and start debugger */
 static C_VOID doTest(nxvm_product_console_context *context) {
-    consoleTarget->reset(consoleTarget->context);
-    consoleTarget->debug(consoleTarget->context);
+    machineProvider->reset(machineProvider->context);
+    machineProvider->debug(machineProvider->context);
 }
 
 /* Executes commands */
@@ -359,18 +359,18 @@ static C_VOID execute(nxvm_product_console_context *context) {
     } else if (!STD_STRCMP(argArray[0], "device")) {
         doDevice(context);
     } else if (!STD_STRCMP(argArray[0], "mode")) {
-        if (!consoleTarget->is_running(consoleTarget->context)) {
-            consoleTarget->set_window_display(consoleTarget->context,
-                !consoleTarget->get_window_display(consoleTarget->context));
+        if (!machineProvider->is_running(machineProvider->context)) {
+            machineProvider->set_window_display(machineProvider->context,
+                !machineProvider->get_window_display(machineProvider->context));
         }
     } else if (!STD_STRCMP(argArray[0], "start")) {
-        consoleTarget->start(consoleTarget->context);
+        machineProvider->start(machineProvider->context);
     } else if (!STD_STRCMP(argArray[0], "reset")) {
-        consoleTarget->reset(consoleTarget->context);
+        machineProvider->reset(machineProvider->context);
     } else if (!STD_STRCMP(argArray[0], "stop")) {
-        consoleTarget->stop(consoleTarget->context);
+        machineProvider->stop(machineProvider->context);
     } else if (!STD_STRCMP(argArray[0], "resume")) {
-        consoleTarget->resume(consoleTarget->context);
+        machineProvider->resume(machineProvider->context);
     } else {
         STD_PRINTF("Illegal command '%s'.\n",argArray[0]);
     }
@@ -381,12 +381,12 @@ static C_VOID execute(nxvm_product_console_context *context) {
 static C_VOID vm_product_console_initialize(nxvm_product_console_context *context) {
     argArray = (C_CHAR **) STD_MALLOC(CONSOLE_MAXNARG * sizeof(C_CHAR *));
     flagExit = 0;
-    consoleTarget->initialize(consoleTarget->context);
+    machineProvider->initialize(machineProvider->context);
 }
 
 /* Finalizes console */
 static C_VOID vm_product_console_finalize(nxvm_product_console_context *context) {
-    consoleTarget->finalize(consoleTarget->context);
+    machineProvider->finalize(machineProvider->context);
     if (argArray) {
         STD_FREE((C_VOID *) argArray);
     }
@@ -400,10 +400,10 @@ C_VOID nxvm_product_console_context_initialize(
 }
 
 C_VOID vm_product_console_main(nxvm_product_console_context *context,
-                 const nxvm_product_console_target *target) {
-    if (context == STD_NULL || target == STD_NULL) return;
+                 const vm_product_console_machine_provider *machine_provider) {
+    if (context == STD_NULL || machine_provider == STD_NULL) return;
     nxvm_product_console_context_initialize(context);
-    consoleTarget = target;
+    machineProvider = machine_provider;
     vm_product_console_initialize(context);
     STD_PRINTF("\nPlease enter 'HELP' for information.\n\n");
     while (!flagExit) {

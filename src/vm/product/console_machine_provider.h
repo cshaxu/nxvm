@@ -1,11 +1,11 @@
-#ifndef NTVDM64_VM_PRODUCT_CONSOLE_TARGET_H
-#define NTVDM64_VM_PRODUCT_CONSOLE_TARGET_H
+#ifndef NTVDM64_VM_PRODUCT_CONSOLE_MACHINE_PROVIDER_H
+#define NTVDM64_VM_PRODUCT_CONSOLE_MACHINE_PROVIDER_H
 
 #include "type.h"
 
 
 
-typedef struct nxvm_product_console_target {
+typedef struct vm_product_console_machine_provider {
     C_VOID (*initialize)(C_VOID *context);
     C_VOID (*finalize)(C_VOID *context);
     C_INT (*is_running)(C_VOID *context);
@@ -30,6 +30,6 @@ typedef struct nxvm_product_console_target {
     C_VOID (*stop)(C_VOID *context);
     C_VOID (*resume)(C_VOID *context);
     C_VOID *context;
-} nxvm_product_console_target;
+} vm_product_console_machine_provider;
 
 #endif

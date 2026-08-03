@@ -21,7 +21,7 @@
     {
       "name": "nxvm-current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-0-5-0145"]
+      "targets": ["nxvm-0-5-0146"]
     },
     {
       "name": "nxvm-current-gates-gcc",
@@ -33,6 +33,7 @@
         "nxvm-core-machine-trace-context-smoke",
         "nxvm-core-product-wait-smoke",
         "nxvm-core-product-session-contract-smoke",
+        "nxvm-core-product-session-manager-smoke",
         "nxvm-core-product-debug-target-smoke",
         "nxvm-vm-platform-surface-context-smoke",
         "nxvm-vm-platform-execution-smoke",
