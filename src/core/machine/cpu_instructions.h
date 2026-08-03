@@ -111,6 +111,13 @@ typedef struct {
     core_machine_cpu_instruction_handler insTable_0f[0x100];
 } t_cpuins_connect;
 
+typedef struct core_machine_cpu_execution_diagnostic_provider {
+    C_VOID (*record_instruction)(C_VOID *context, const C_VOID *cpu,
+        const t_cpuins *instructions);
+    C_VOID (*record_fault)(C_VOID *context, const C_VOID *cpu,
+        const t_cpuins *instructions);
+} core_machine_cpu_execution_diagnostic_provider;
+
 struct t_cpuins {
     t_cpuins_data data;
     t_cpuins_connect connect;
@@ -126,6 +133,8 @@ struct core_machine_cpu_execution_context {
     t_pic *pic_slave;
     ntvdm64_type_trace *trace;
     C_VOID *extension_context;
+    const core_machine_cpu_execution_diagnostic_provider *diagnostic_provider;
+    C_VOID *diagnostic_context;
     ntvdm64_type_bool stop_requested;
     ntvdm64_type_bool reset_requested;
 };
@@ -140,6 +149,10 @@ C_VOID core_machine_cpu_execution_context_bind_extension(
     core_machine_cpu_execution_context *context, C_VOID *extension_context);
 C_VOID *core_machine_cpu_execution_context_extension(
     const core_machine_cpu_execution_context *context);
+C_VOID core_machine_cpu_execution_context_bind_diagnostic_provider(
+    core_machine_cpu_execution_context *context,
+    const core_machine_cpu_execution_diagnostic_provider *provider,
+    C_VOID *provider_context);
 ntvdm64_type_bool core_machine_cpu_execution_load_segment(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
     ntvdm64_type_unsigned_16 selector);

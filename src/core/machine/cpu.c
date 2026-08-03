@@ -29,6 +29,8 @@ C_VOID core_machine_cpu_execution_context_initialize(
         STD_MEMSET((C_VOID *)context->trace, NTVDM64_TYPE_ZERO_8, sizeof(*context->trace));
     }
     context->extension_context = STD_NULL;
+    context->diagnostic_provider = STD_NULL;
+    context->diagnostic_context = STD_NULL;
     context->stop_requested = NTVDM64_TYPE_FALSE;
     context->reset_requested = NTVDM64_TYPE_FALSE;
 }
@@ -52,6 +54,16 @@ C_VOID *core_machine_cpu_execution_context_extension(
     const core_machine_cpu_execution_context *context)
 {
     return context == STD_NULL ? STD_NULL : context->extension_context;
+}
+
+C_VOID core_machine_cpu_execution_context_bind_diagnostic_provider(
+    core_machine_cpu_execution_context *context,
+    const core_machine_cpu_execution_diagnostic_provider *provider,
+    C_VOID *provider_context)
+{
+    if (context == STD_NULL) return;
+    context->diagnostic_provider = provider;
+    context->diagnostic_context = provider_context;
 }
 
 C_VOID core_machine_cpu_state_initialize(

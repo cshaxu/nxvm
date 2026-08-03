@@ -70,6 +70,10 @@ ntvdm64_status core_machine_get_cpu_state(
     const core_machine *machine,
     core_machine_cpu_state *out_state);
 
+ntvdm64_status core_machine_get_cpu_diagnostic(
+    const core_machine *machine,
+    core_machine_cpu_diagnostic *out_diagnostic);
+
 ntvdm64_status core_machine_run(
     core_machine *machine,
     core_machine_run_budget budget,

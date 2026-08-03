@@ -473,6 +473,13 @@ target_link_libraries(nxvm-core-machine-trace-context-smoke PRIVATE
     nxvm-core-machine
 )
 
+add_executable(nxvm-core-machine-cpu-fault-diagnostic-smoke
+    tests/machine/cpu_fault_diagnostic_smoke.c
+)
+target_link_libraries(nxvm-core-machine-cpu-fault-diagnostic-smoke PRIVATE
+    nxvm-core
+)
+
 add_executable(nxvm-core-machine-ram-port-context-smoke
     tests/machine/ram_port_context_smoke.c
 )
@@ -511,6 +518,10 @@ target_link_libraries(nxvm-vm-dos-prompt-smoke PRIVATE
 add_executable(nxvm-vm-dos-keyboard-smoke
     tests/machine/vm_dos_keyboard_smoke.c)
 target_link_libraries(nxvm-vm-dos-keyboard-smoke PRIVATE
+    nxvm-vm-composition)
+add_executable(nxvm-vm-dos-mem-fault-smoke
+    tests/machine/vm_dos_mem_fault_smoke.c)
+target_link_libraries(nxvm-vm-dos-mem-fault-smoke PRIVATE
     nxvm-vm-composition)
 add_executable(nxvm-vm-two-session-isolation-smoke
     tests/machine/vm_two_session_isolation_smoke.c)
@@ -772,6 +783,7 @@ add_nxvm_version_artifact(nxvm-0-5-0148 "0.5.0148")
 add_nxvm_version_artifact(nxvm-0-5-0149 "0.5.0149")
 add_nxvm_version_artifact(nxvm-0-5-0150 "0.5.0150")
 add_nxvm_version_artifact(nxvm-0-5-0151 "0.5.0151")
+add_nxvm_version_artifact(nxvm-0-5-0152 "0.5.0152")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

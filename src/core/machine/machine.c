@@ -2,6 +2,97 @@
 
 #include "core/machine/machine.h"
 
+static C_VOID core_machine_cpu_diagnostic_copy_point(
+    core_machine_cpu_execution_point *point, const t_cpu *cpu,
+    const t_cpuins *instructions)
+{
+    if (point == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
+    point->cs = cpu->data.cs.selector;
+    point->cs_base = cpu->data.cs.base;
+    point->eip = cpu->data.eip;
+    point->linear_pc = instructions->data.linear;
+    point->byte_count = (uint8_t)instructions->data.oplen;
+    STD_MEMCPY(point->bytes, instructions->data.opcodes, sizeof(point->bytes));
+}
+
+static C_VOID core_machine_cpu_diagnostic_record_instruction(C_VOID *opaque,
+    const C_VOID *opaque_cpu, const t_cpuins *instructions)
+{
+    core_machine *machine = (core_machine *)opaque;
+    const t_cpu *cpu = (const t_cpu *)opaque_cpu;
+    core_machine_cpu_diagnostic_state *state;
+
+    if (machine == STD_NULL) return;
+    state = &machine->cpu_diagnostic;
+    core_machine_cpu_diagnostic_copy_point(
+        &state->snapshot.recent[state->next_index], cpu, instructions);
+    state->next_index = (state->next_index + 1u) % CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY;
+    if (state->snapshot.recent_count < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY) {
+        ++state->snapshot.recent_count;
+    }
+}
+
+static C_VOID core_machine_cpu_diagnostic_record_fault(C_VOID *opaque,
+    const C_VOID *opaque_cpu, const t_cpuins *instructions)
+{
+    core_machine *machine = (core_machine *)opaque;
+    const t_cpu *cpu = (const t_cpu *)opaque_cpu;
+    core_machine_cpu_fault_snapshot *fault;
+
+    if (machine == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
+    fault = &machine->cpu_diagnostic.snapshot.first_fault;
+    if (fault->valid) return;
+    STD_MEMSET(fault, 0, sizeof(*fault));
+    fault->valid = 1;
+    fault->exception_mask = instructions->data.except;
+    fault->exception_code = instructions->data.excode;
+    core_machine_cpu_diagnostic_copy_point(&fault->point, cpu, instructions);
+    fault->eax = cpu->data.eax;
+    fault->ebx = cpu->data.ebx;
+    fault->ecx = cpu->data.ecx;
+    fault->edx = cpu->data.edx;
+    fault->esp = cpu->data.esp;
+    fault->ebp = cpu->data.ebp;
+    fault->esi = cpu->data.esi;
+    fault->edi = cpu->data.edi;
+    fault->eflags = cpu->data.eflags;
+}
+
+static const core_machine_cpu_execution_diagnostic_provider
+    core_machine_cpu_diagnostic_provider = {
+        core_machine_cpu_diagnostic_record_instruction,
+        core_machine_cpu_diagnostic_record_fault
+    };
+
+static C_VOID core_machine_cpu_diagnostic_ordered_copy(
+    const core_machine_cpu_diagnostic_state *state,
+    core_machine_cpu_diagnostic *out_diagnostic)
+{
+    STD_SIZE_T index;
+    STD_SIZE_T first;
+
+    *out_diagnostic = state->snapshot;
+    if (state->snapshot.recent_count < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
+        state->next_index == 0u) return;
+    first = state->next_index;
+    for (index = 0u; index < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY; ++index) {
+        out_diagnostic->recent[index] = state->snapshot.recent[
+            (first + index) % CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY];
+    }
+}
+
+C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine)
+{
+    if (machine != STD_NULL) {
+        STD_MEMSET(&machine->cpu_diagnostic, 0, sizeof(machine->cpu_diagnostic));
+    }
+}
+
+C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine)
+{
+    core_machine_cpu_diagnostic_initialize(machine);
+}
+
 
 
 static uint32_t core_machine_linear_pc(const core_machine *machine)
@@ -82,6 +173,17 @@ ntvdm64_status core_machine_get_cpu_state(
     return NTVDM64_STATUS_OK;
 }
 
+ntvdm64_status core_machine_get_cpu_diagnostic(
+    const core_machine *machine, core_machine_cpu_diagnostic *out_diagnostic)
+{
+    if (machine == STD_NULL || out_diagnostic == STD_NULL) {
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
+    }
+    core_machine_cpu_diagnostic_ordered_copy(&machine->cpu_diagnostic,
+        out_diagnostic);
+    return NTVDM64_STATUS_OK;
+}
+
 ntvdm64_status core_machine_create(
     const core_machine_config *config,
     core_machine **out_machine)
@@ -101,10 +203,14 @@ ntvdm64_status core_machine_create(
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     STD_ATOMIC_INIT(&machine->stop_requested, 0);
     core_machine_trace_initialize(machine);
+    core_machine_cpu_diagnostic_initialize(machine);
 
     core_machine_cpu_execution_context_initialize(&machine->executor_cpu_execution,
         &machine->executor_cpu, &machine->executor_cpu_instructions,
         &machine->executor_memory, &machine->executor_port);
+    core_machine_cpu_execution_context_bind_diagnostic_provider(
+        &machine->executor_cpu_execution, &core_machine_cpu_diagnostic_provider,
+        machine);
     core_machine_cpu_state_initialize(&machine->executor_cpu_execution);
     core_machine_port_initialize(&machine->executor_port);
     if (core_machine_bus_initialize(machine) != NTVDM64_STATUS_OK) {
@@ -154,6 +260,7 @@ ntvdm64_status core_machine_reset(core_machine *machine)
 
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
     machine->fault_detail = 0u;
+    core_machine_cpu_diagnostic_reset(machine);
     if (machine->execution_provider != STD_NULL &&
         machine->execution_provider->reset != STD_NULL) {
         machine->execution_provider->reset(machine->execution_provider_context);

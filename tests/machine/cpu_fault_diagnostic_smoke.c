@@ -1,0 +1,59 @@
+#include "type.h"
+
+#include "core/machine/cpu.h"
+#include "core/machine/machine_interface.h"
+#include "core/machine/memory.h"
+
+C_INT main(C_VOID)
+{
+    const core_machine_config config = { CORE_MACHINE_DEFAULT_MEMORY_BYTES };
+    C_UCHAR program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 2u];
+    core_machine *machine = STD_NULL;
+    core_machine_cpu_execution_context *execution;
+    t_cpu *cpu;
+    core_machine_run_budget budget = {
+        CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 1u, 0u
+    };
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    const core_machine_cpu_execution_point *last;
+    STD_SIZE_T index;
+
+    if (core_machine_create(&config, &machine) != NTVDM64_STATUS_OK ||
+        core_machine_reset(machine) != NTVDM64_STATUS_OK) goto fail;
+    cpu = core_machine_executor_cpu_borrow(machine);
+    execution = core_machine_executor_cpu_execution_borrow(machine);
+    if (core_machine_cpu_execution_load_segment(execution, &cpu->data.cs, 0u) ||
+        core_machine_cpu_execution_load_segment(execution, &cpu->data.ds, 0u) ||
+        core_machine_cpu_execution_load_segment(execution, &cpu->data.es, 0u) ||
+        core_machine_cpu_execution_load_segment(execution, &cpu->data.ss, 0u)) goto fail;
+    cpu->data.eip = 0u;
+    for (index = 0u; index < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY; ++index) {
+        program[index] = 0x90u;
+    }
+    program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY] = 0xdbu;
+    program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 1u] = 0xe3u;
+    core_machine_memory_write_real_to(core_machine_executor_memory_borrow(machine),
+        0u, 0u, program, sizeof(program));
+    if (
+        core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK ||
+        core_machine_get_cpu_diagnostic(machine, &diagnostic) != NTVDM64_STATUS_OK) goto fail;
+    last = &diagnostic.recent[diagnostic.recent_count - 1u];
+    if (diagnostic.recent_count != CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
+        !diagnostic.first_fault.valid ||
+        !NTVDM64_TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            VCPUINS_EXCEPT_UD) ||
+        diagnostic.first_fault.point.linear_pc !=
+            CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
+        diagnostic.first_fault.point.bytes[0] != 0xdbu ||
+        diagnostic.first_fault.point.bytes[1] != 0xe3u ||
+        last->linear_pc != CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
+        last->bytes[0] != 0xdbu || last->bytes[1] != 0xe3u) goto fail;
+    core_machine_destroy(machine);
+    STD_PRINTF("M5:T152:S1:CPU-FAULT-DIAGNOSTIC:OK\n");
+    return 0;
+
+fail:
+    core_machine_destroy(machine);
+    return 1;
+}
