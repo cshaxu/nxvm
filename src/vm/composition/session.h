@@ -89,14 +89,6 @@ typedef struct vm_session {
     vm_composition_machine_access core_access_storage;
     uint64_t display_generation;
     core_product_debug_target *debug_target;
-    t_pic *pic_master;
-    t_pic *pic_slave;
-    t_pit *pit;
-    t_latch *dma_latch;
-    t_dma *dma_primary;
-    t_dma *dma_secondary;
-    t_kbc *kbc;
-    t_vadp *vadp;
     t_cmos *cmos;
     t_fdd *fdd;
     t_fdc *fdc;

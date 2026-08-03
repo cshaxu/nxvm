@@ -35,3 +35,28 @@ t_ram *vm_composition_machine_access_memory(
 t_port *vm_composition_machine_access_port(
     const vm_composition_machine_access *access)
 { return access == STD_NULL ? STD_NULL : core_machine_executor_port_borrow(access->machine); }
+
+t_pic *vm_composition_machine_access_pic_master(
+    const vm_composition_machine_access *access)
+{ return access == STD_NULL ? STD_NULL : core_machine_shared_pic_master_borrow(access->machine); }
+t_pic *vm_composition_machine_access_pic_slave(
+    const vm_composition_machine_access *access)
+{ return access == STD_NULL ? STD_NULL : core_machine_shared_pic_slave_borrow(access->machine); }
+t_pit *vm_composition_machine_access_pit(
+    const vm_composition_machine_access *access)
+{ return access == STD_NULL ? STD_NULL : core_machine_shared_pit_borrow(access->machine); }
+t_latch *vm_composition_machine_access_dma_latch(
+    const vm_composition_machine_access *access)
+{ return access == STD_NULL ? STD_NULL : core_machine_shared_dma_latch_borrow(access->machine); }
+t_dma *vm_composition_machine_access_dma_primary(
+    const vm_composition_machine_access *access)
+{ return access == STD_NULL ? STD_NULL : core_machine_shared_dma_primary_borrow(access->machine); }
+t_dma *vm_composition_machine_access_dma_secondary(
+    const vm_composition_machine_access *access)
+{ return access == STD_NULL ? STD_NULL : core_machine_shared_dma_secondary_borrow(access->machine); }
+t_kbc *vm_composition_machine_access_kbc(
+    const vm_composition_machine_access *access)
+{ return access == STD_NULL ? STD_NULL : core_machine_shared_kbc_borrow(access->machine); }
+t_vadp *vm_composition_machine_access_vadp(
+    const vm_composition_machine_access *access)
+{ return access == STD_NULL ? STD_NULL : core_machine_shared_vadp_borrow(access->machine); }

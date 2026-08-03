@@ -88,9 +88,13 @@ C_VOID vm_session_providers_initialize(vm_session *machine) {
     _vbios_ _vport_
     vm_profile_default_bios_add_post(machine->default_bios, VDMA_POST);
     _vbios_ _vport_
-    vm_machine_fdc_connect(machine->fdc, machine->fdd, machine->dma_latch,
-        machine->dma_primary, machine->dma_secondary, machine->pic_master,
-        machine->pic_slave, vm_composition_machine_access_port(machine->core_access));
+    vm_machine_fdc_connect(machine->fdc, machine->fdd,
+        vm_composition_machine_access_dma_latch(machine->core_access),
+        vm_composition_machine_access_dma_primary(machine->core_access),
+        vm_composition_machine_access_dma_secondary(machine->core_access),
+        vm_composition_machine_access_pic_master(machine->core_access),
+        vm_composition_machine_access_pic_slave(machine->core_access),
+        vm_composition_machine_access_port(machine->core_access));
     vm_machine_fdc_initialize(machine->fdc);
     vm_profile_default_bios_add_post(machine->default_bios, VFDC_POST);
     vm_profile_default_bios_add_interrupt(machine->default_bios, VFDC_INT_HARD_FDD_0E, 0x0e);
