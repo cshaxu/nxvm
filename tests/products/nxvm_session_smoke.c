@@ -1,6 +1,8 @@
 #include "type.h"
 
 #include "vm/composition/session.h"
+#include "vm/composition/session_control.h"
+#include "vm/composition/session_lifecycle.h"
 
 static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
 {
@@ -34,10 +36,34 @@ static C_INT verify_created(C_VOID)
     return 0;
 }
 
+static C_INT verify_initialize_once(C_VOID)
+{
+    vm_session *session = STD_NULL;
+    core_machine *core_machine;
+    vm_session_control_state *control;
+
+    if (vm_session_create(STD_NULL, &session) != NTVDM64_STATUS_OK ||
+        session == STD_NULL || !session->active) {
+        vm_session_destroy(session);
+        return 1;
+    }
+    core_machine = session->core_machine;
+    control = session->control;
+    vm_session_initialize(session);
+    if (!session->active || session->core_machine != core_machine ||
+        session->control != control) {
+        vm_session_destroy(session);
+        return 1;
+    }
+    vm_session_destroy(session);
+    return 0;
+}
+
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     if (argc != 3 || verify(argv[1], argv[2], 0) != 0 ||
-        verify(argv[1], argv[2], 1) != 0 || verify_created() != 0) return 1;
+        verify(argv[1], argv[2], 1) != 0 || verify_created() != 0 ||
+        verify_initialize_once() != 0) return 1;
     puts("M5:T7:S1:NXVM-SESSION:OK");
     return 0;
 }

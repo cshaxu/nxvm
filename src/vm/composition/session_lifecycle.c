@@ -190,6 +190,7 @@ C_VOID vm_session_resume(vm_session *machine) {
 
 C_VOID vm_session_initialize(vm_session *machine) {
     if (machine == STD_NULL) return;
+    if (machine->active) return;
     vm_platform_initialize();
     vm_session_storage_initialize(machine);
     if (machine->core_machine == STD_NULL) return;

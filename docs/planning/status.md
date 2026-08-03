@@ -167,8 +167,10 @@ match the same directory rule.
 
 **M5 T119 complete:** the T120--T127 unique-owner convergence baseline is
 recorded in [`m5-unique-owner-convergence.md`](m5-unique-owner-convergence.md).
-T120 is active; it closes the retained Console's duplicate session
-initialization path without changing Console behavior.
+
+**M5 T120 complete:** an active `vm_session` cannot be initialized twice.
+Console lifecycle, debugger, session, and DOS-prompt gates passed; T121 is
+active to converge the core-machine production executor state.
 
 ## Short-Term M5 Plan
 
