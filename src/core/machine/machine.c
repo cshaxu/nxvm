@@ -355,6 +355,9 @@ nxvm_core_status core_machine_report_fault(
 
 void core_machine_destroy(core_machine *machine)
 {
+    if (machine != NULL) {
+        core_machine_cpu_execution_finalize(&machine->executor_cpu_execution);
+    }
     core_machine_trace_finalize(machine);
     core_machine_bus_finalize(machine);
     core_machine_instance_memory_finalize(machine);

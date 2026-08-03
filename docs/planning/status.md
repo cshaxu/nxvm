@@ -45,11 +45,14 @@ provider slot. Its GCC artifact is `build/output/nxvm_0_5_0076.exe`.
 T77 moved QDCGA display notifications and display generation to their owning
 profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
+T88 made CPU trace workspaces execution-context-owned and VM control state
+atomic. Its GCC artifact is `build/output/nxvm_0_5_0088.exe`.
+
 ## Active Work
 
-**M5 T88 S1: Machine session-state closure.** Replace the remaining core trace
-workspace and VM control/instrumentation globals with session-owned state and a
-synchronized command boundary.
+**M5 T89 S1: VDM machine audit and core platform contract.** Confirm the
+current VDM-minimal machine remains instance-owned, then specify the shared
+host-surface context and exclusive-lease contract without moving product policy.
 
 ## Short-Term M5 Plan
 

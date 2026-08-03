@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "core/machine/cpu.h"
+#include "core/machine/cpu_instructions.h"
+#include "core/machine/memory.h"
+#include "core/machine/port.h"
+
+int main(void)
+{
+    t_cpu *first_cpu = calloc(1u, sizeof(*first_cpu));
+    t_cpu *second_cpu = calloc(1u, sizeof(*second_cpu));
+    t_cpuins *first_instructions = calloc(1u, sizeof(*first_instructions));
+    t_cpuins *second_instructions = calloc(1u, sizeof(*second_instructions));
+    t_ram *first_memory = calloc(1u, sizeof(*first_memory));
+    t_ram *second_memory = calloc(1u, sizeof(*second_memory));
+    t_port *first_port = calloc(1u, sizeof(*first_port));
+    t_port *second_port = calloc(1u, sizeof(*second_port));
+    core_machine_cpu_execution_context first = {0};
+    core_machine_cpu_execution_context second = {0};
+    int failed = 0;
+
+    if (first_cpu == NULL || second_cpu == NULL || first_instructions == NULL ||
+        second_instructions == NULL || first_memory == NULL ||
+        second_memory == NULL || first_port == NULL || second_port == NULL) {
+        failed = 1;
+        goto cleanup;
+    }
+
+    core_machine_cpu_execution_context_initialize(
+        &first, first_cpu, first_instructions, first_memory, first_port);
+    core_machine_cpu_execution_context_initialize(
+        &second, second_cpu, second_instructions, second_memory, second_port);
+
+    failed |= first.trace == NULL || second.trace == NULL ||
+        first.trace == second.trace;
+    first.trace->flagError = 1;
+    first.trace->callCount = 1u;
+    failed |= second.trace->flagError != 0;
+    failed |= second.trace->callCount != 0u;
+
+    core_machine_cpu_execution_context_initialize(
+        &first, first_cpu, first_instructions, first_memory, first_port);
+    failed |= first.trace->flagError != 0;
+    failed |= first.trace->callCount != 0u;
+
+    core_machine_cpu_execution_finalize(&second);
+    core_machine_cpu_execution_finalize(&first);
+
+cleanup:
+    free(second_port);
+    free(first_port);
+    free(second_memory);
+    free(first_memory);
+    free(second_instructions);
+    free(first_instructions);
+    free(second_cpu);
+    free(first_cpu);
+    if (failed) return 1;
+    puts("M5:T88:S1:TRACE-CONTEXT:OK");
+    return 0;
+}

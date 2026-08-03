@@ -1,6 +1,8 @@
 #ifndef NTVDM64_VM_COMPOSITION_CONTROL_H
 #define NTVDM64_VM_COMPOSITION_CONTROL_H
 
+#include <stdatomic.h>
+
 #include "type.h"
 #include "core/product/runtime/execution_context.h"
 
@@ -19,13 +21,13 @@ typedef enum vm_composition_pause_reason {
 typedef struct vm_composition_live_machine vm_composition_live_machine;
 
 typedef struct vm_composition_control_state {
-    int flagFlip;
-    int flagRun;
-    int flagReset;
-    int pauseRequested;
-    int paused;
-    int stepRequested;
-    vm_composition_pause_reason pauseReason;
+    atomic_bool flagFlip;
+    atomic_bool flagRun;
+    atomic_bool flagReset;
+    atomic_bool pauseRequested;
+    atomic_bool paused;
+    atomic_bool stepRequested;
+    atomic_int pauseReason;
     nxvm_execution_context execution_context;
 } vm_composition_control_state;
 

@@ -15,17 +15,15 @@
 #define instruction_state (*context->instructions)
 #define ExecCpuInstruction(handler) ((handler) ? ((handler)(context), 0) : 0)
 
-#define UTILS_TRACE_VAR    trace
+#define UTILS_TRACE_VAR    (*context->trace)
 #define UTILS_TRACE_ERROR  instruction_state.data.except
 #define UTILS_TRACE_SETERR (_SetExcept_CE(0xffffffff))
-
-static t_utils_trace UTILS_TRACE_VAR;
 
 /* indicates functions not implemented */
 #define _______todo static void
 /* prints untested code path */
 #define _new_code_path_ do { \
-PRINTF("NEW CODE PATH\n");utilsTracePrint(&(UTILS_TRACE_VAR));} while (0)
+PRINTF("NEW CODE PATH\n");if (context->trace != NULL) utilsTracePrint(context->trace);} while (0)
 
 /* stack pointer size */
 #define _GetStackSize   (cpu_state.data.ss.seg.data.big ? 4 : 2)
@@ -13300,7 +13298,7 @@ static void ExecInit(core_machine_cpu_execution_context *context) {
     instruction_state.data.except = Zero32;
     instruction_state.data.excode = Zero32;
 #if VCPUINS_TRACE == 1
-    utilsTraceInit(&trace);
+    if (context->trace != NULL) utilsTraceInit(context->trace);
 #endif
 }
 static void ExecFinal(core_machine_cpu_execution_context *context) {
@@ -13309,8 +13307,10 @@ static void ExecFinal(core_machine_cpu_execution_context *context) {
         cpu_state.data.eip = instruction_state.data.oldcpu.data.eip;
     }
 #if VCPUINS_TRACE == 1
-    if (trace.callCount && !instruction_state.data.except) _SetExcept_CE(trace.cid);
-    utilsTraceFinal(&trace);
+    if (context->trace != NULL && context->trace->callCount &&
+        !instruction_state.data.except)
+        _SetExcept_CE(0);
+    if (context->trace != NULL) utilsTraceFinal(context->trace);
 #endif
     if (instruction_state.data.except) {
         cpu_state = instruction_state.data.oldcpu;
@@ -13934,4 +13934,10 @@ void core_machine_cpu_execution_refresh(
     ExecInt(context);
 }
 void core_machine_cpu_execution_finalize(
-    core_machine_cpu_execution_context *context) { (void)context; }
+    core_machine_cpu_execution_context *context)
+{
+    if (context != NULL) {
+        FREE(context->trace);
+        context->trace = NULL;
+    }
+}

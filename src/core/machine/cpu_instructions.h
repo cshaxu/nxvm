@@ -122,6 +122,7 @@ struct core_machine_cpu_execution_context {
     t_port *port;
     t_pic *pic_master;
     t_pic *pic_slave;
+    t_utils_trace *trace;
     void *extension_context;
     t_bool stop_requested;
     t_bool reset_requested;

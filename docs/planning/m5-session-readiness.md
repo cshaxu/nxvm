@@ -16,8 +16,8 @@ plan.
 
 | Priority | Module | Current judgement | Closure condition |
 | --- | --- | --- | --- |
-| 1 | `core/machine` | Partial | Guest state, providers, and executor storage are per `core_machine`; retire the remaining file-static trace workspace. |
-| 2 | `vm/machine` | Partial | Full-PC objects are per session, but control and debug-instrumentation state cross thread/session boundaries. |
+| 1 | `core/machine` | Pass | Guest state, providers, executor storage, and CPU trace workspace are per `core_machine` execution context. |
+| 2 | `vm/machine` | Pass | Full-PC objects are per session; control state is atomic and guest reset remains execution-boundary work. |
 | 3 | `vdm/machine` | Pass for current scope | DOS-minimal instances own their state. It has no concurrent host-entry contract yet, so no new code is required before a VDM run loop exists. |
 | 4 | `core/platform` | Gap | Define shared host-capability contexts and host-surface lease contract; it must not hold guest state. |
 | 5 | `vm/platform` | Fail | Console/window rendering state becomes context-owned; Linux terminal capability has an explicit exclusive lease. |
@@ -38,10 +38,10 @@ a higher-priority migration.
 
 | Owner | Current mutable state | Required disposition |
 | --- | --- | --- |
-| `core/machine` | `core_machine` and installed provider state; CPU instruction trace workspace | Session-owned except the trace workspace, which T88 makes machine- or call-owned. |
+| `core/machine` | `core_machine`, installed provider state, and CPU instruction trace workspace | Session-owned. |
 | `core/platform` | wait/debug scopes | Thread-local scopes are allowed; add host-surface context/lease contract before host code moves here. |
 | `core/product` | `debug.c`, `aasm32.c`, and `dasm32.c` parser workspaces | Caller-owned debugger context. |
-| `vm/machine` | `vm_composition_control_state` run/reset/pause/step fields; debug instruction counter | Synchronized command/state boundary and session-owned instrumentation. |
+| `vm/machine` | `vm_composition_control_state` run/reset/pause/step fields and debug instrumentation | Atomic command/state boundary; instrumentation is session-owned or disabled. |
 | `vm/platform/win32` | Console buffer and GDI renderer state | Per-surface context owned by the VM platform session. |
 | `vm/platform/linux` | curses `stdscr` and display generation | Explicit process-exclusive terminal lease plus per-lease state. |
 | `vm/product` | `console.c` target, parser buffer, arguments, and exit flag | Console-session object. |
