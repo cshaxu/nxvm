@@ -25,6 +25,7 @@ prefixes on enclosing public APIs.
 
 | Task | Owner and rename boundary | Required result |
 | --- | --- | --- |
+| T108 | Root C-library facade audit | Define the complete `type.*` standard C facade and its collision-safe uppercase aliases before any call-site migration. Planning only. |
 | T99 | Root foundation include boundary | Replace every active `core/machine/vglobal.h` include with `type.h`; delete `vglobal.h`. |
 | T100 | Root foundation helper APIs | Rename `utilsLowerStr` and `utilsTrace*` to `ntvdm64_type_*`; leave uppercase wrappers unchanged. |
 | T101 | Root status/type vocabulary | Rename `nxvm_core_status` and its status constants to root-owned `ntvdm64_*` names; inventory remaining `t_*` aliases and legacy macros for the final type task. |
@@ -36,7 +37,7 @@ prefixes on enclosing public APIs.
 | T107 | Root type completion and closure | Resolve the T101 inventory of active `t_*` public aliases and legacy non-retained macros, then run an owner-prefix and retained-vocabulary closure scan. |
 
 Each code-changing task produces `nxvm_0_5_0NNN.exe` when it changes the
-runnable NXVM path. T98 is planning-only and produces no artifact.
+runnable NXVM path. T98 and T108 are planning-only and produce no artifacts.
 
 ## Mapping Rules
 

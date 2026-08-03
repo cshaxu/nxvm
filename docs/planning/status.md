@@ -92,6 +92,10 @@ surface no longer uses `vmachine*` or `devicePrintMachine` names. Evidence is
 legacy symbols are scheduled in owner-bounded tasks; uppercase `type.*`
 C-runtime wrappers and approved compact names are explicit retentions.
 
+**M5 T108 C-library facade audit: complete.** The standard C vocabulary,
+collision-safe uppercase facade, direct-call inventory, and two behavior risks
+are recorded before the `type.*` call-site migrations.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in
@@ -101,8 +105,8 @@ active session-readiness sequence is defined in
 then root composition in the fixed core/VM/VDM order.
 
 [M5 Naming Remediation](m5-naming-remediation.md) is the approved execution
-order for the remaining active old-style APIs. It begins with `vglobal.h` and
-does not start M6.
+order for the remaining active old-style APIs. Its T108 C-library facade audit
+precedes `vglobal.h` cleanup and does not start M6.
 
 M6 has not started. M7 implementation remains ineligible until M6 defines and
 closes its implementation breakdown.
